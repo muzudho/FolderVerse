@@ -122,7 +122,8 @@ public sealed partial class CubeNet
                 ui.Box(new((int)Math.Min(pa.X,pb.X)-thickness/2,(int)Math.Min(pa.Y,pb.Y)-thickness/2,Math.Max(thickness,(int)Math.Abs(pa.X-pb.X)),Math.Max(thickness,(int)Math.Abs(pa.Y-pb.Y))),color);
             }
             int capital=Enumerable.Range(0,setup.ActiveCount).FirstOrDefault(r=>setup.TerritoryCounts[r]>0 && setup.Capitals[r]==cell.Id,-1);
-            if(capital>=0)
+            DrawCellRoutes(ui,setup,cell.Id,p=>face.Project(p)*fit.Scale+fit.Origin);
+            if(ShowFlags && capital>=0)
             {
                 int cx=rect.Center.X,cy=rect.Center.Y;
                 ui.Box(new(cx-1,cy-9,2,18),new(255,242,206));ui.Box(new(cx+1,cy-9,Math.Max(7,rect.Width/5),7),setup.OwnerColor(capital));
@@ -170,15 +171,18 @@ public sealed partial class CubeNet
         }
         foreach(int ruler in Enumerable.Range(0,setup.ActiveCount).OrderBy(r=>r==setup.PlayerSlot?1:0))
         {
+        if(!ShowBatteries)continue;
         var location=CellBounds(setup.Cells[setup.ConquerorLocations[ruler]],panel);
+        var currentFace=Faces.First(f=>f.Face==setup.Cells[setup.ConquerorLocations[ruler]].Face);
+        var position=currentFace.Project(setup.Routes.Position(setup.ConquerorLocations[ruler],setup.ConquerorPoints[ruler]))*fit.Scale+fit.Origin;
         if(ruler!=setup.PlayerSlot)
         {
-            int x=location.Center.X-7+(ruler%3-1)*13,y=location.Center.Y+7+(ruler%2)*10;
+            int x=(int)position.X-7,y=(int)position.Y-4;
             var tint=Color.Lerp(setup.OwnerColor(ruler),Color.White,(MathF.Sin(pulse*4+ruler)+1)*.25f);
             ui.Box(new(x-2,y-2,17,12),new Color(12,27,36));ui.Box(new(x,y,12,8),tint);ui.Box(new(x+12,y+2,2,4),tint);
             continue;
         }
-        int bx=location.Center.X-13,by=location.Center.Y-17;
+        int bx=(int)position.X-13,by=(int)position.Y-8;
         var battery=Color.Lerp(new Color(255,240,119),Color.White,(MathF.Sin(pulse*4)+1)/2);
         ui.Box(new(bx-3,by-3,32,22),new Color(12,27,36));
         ui.Box(new(bx,by,25,16),battery);ui.Box(new(bx+25,by+4,4,8),battery);

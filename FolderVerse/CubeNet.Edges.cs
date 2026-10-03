@@ -141,9 +141,12 @@ public sealed partial class CubeNet
                 var a=Project(corners[edge]);var b=Project(corners[(edge+1)%4]);var delta=b-a;
                 ui.Tile((a+b)/2,new Vector2(delta.Length(),2),MathF.Atan2(delta.Y,delta.X),world.OwnerColor(world.Owners[cell.Id]));
             }
-            foreach(int ruler in Enumerable.Range(0,world.ActiveCount).Where(r=>world.ConquerorLocations[r]==cell.Id).OrderBy(r=>r==world.PlayerSlot?1:0))
+            DrawCellRoutes(ui,world,cell.Id,Project);
+            if(ShowFlags && Enumerable.Range(0,world.ActiveCount).Any(r=>world.TerritoryCounts[r]>0 && world.Capitals[r]==cell.Id))
+            {var at=Project(cell.Center);ui.Tile(at,new Vector2(3,16),moving?angle:0,Color.White);ui.Tile(at+new Vector2(5,-5),new Vector2(9,6),moving?angle:0,world.OwnerColor(world.Owners[cell.Id]));}
+            foreach(int ruler in Enumerable.Range(0,world.ActiveCount).Where(r=>ShowBatteries && world.ConquerorLocations[r]==cell.Id).OrderBy(r=>r==world.PlayerSlot?1:0))
             {
-                var at=Project(cell.Center);float turn=moving?angle:0;
+                var at=Project(world.Routes.Position(cell.Id,world.ConquerorPoints[ruler]));float turn=moving?angle:0;
                 var tint=Color.Lerp(world.OwnerColor(ruler),Color.White,(MathF.Sin(pulse*4+ruler)+1)*.25f);
                 ui.Tile(at,new Vector2(ruler==world.PlayerSlot?29:17,14),turn,new Color(12,27,36));
                 ui.Tile(at,new Vector2(ruler==world.PlayerSlot?25:13,10),turn,tint);

@@ -71,7 +71,7 @@ public partial class Game1
             int y=682+direction*61;bool enabled=simulation.CanMigrate(_setup,_populationCell,direction);
             int target=simulation.Neighbor(_setup,_populationCell,direction);
             _ui.Text(PopulationDirections[direction]+"へ",new(84,y+5),.7f,enabled?Cream:new Color(134,156,164));
-            string destination=enabled?_setup.CityNames[target]:simulation.Cells[target].Land?"他国：移住できない":"海：移住できない";
+            string destination=enabled?_setup.CityNames[target]:!simulation.Cells[target].Land?"海：移住できない":_setup.Owners[target]!=_setup.PlayerSlot?"他国：移住できない":"陸路なし：移住できない";
             _ui.Text(destination,new(170,y+12),Math.Min(.42f,300/_font.MeasureString(destination).X),new(170,200,211));
             _ui.Center(Percent(population.Migration[_populationRole,direction]),new(496,y,216,44),.65f,enabled?Color.White:new Color(134,156,164));
             _ui.Button(MigrationButton(direction,false),"−",enabled?Muted:new Color(37,52,60),.7f);

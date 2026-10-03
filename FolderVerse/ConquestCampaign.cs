@@ -11,7 +11,11 @@ public sealed class ConquestCampaign
     public void Advance(WorldSetup world,int direction,long fighters,bool enemies=true)
     {
         var orders=new List<March>();
-        if(direction>=0)orders.Add(new(world.PlayerSlot,direction,fighters));
+        if(direction>=0)
+        {
+            if(world.Routes.ForRuler(world.PlayerSlot,direction)==null){Report="経路がつながっていないため移動できない";return;}
+            orders.Add(new(world.PlayerSlot,direction,fighters));
+        }
         if(enemies)
         {
             var random=new SeedRandom(world.PlacementSeed^world.Population.Turn^0x57421);
@@ -20,14 +24,14 @@ public sealed class ConquestCampaign
                 if(ruler==world.PlayerSlot)continue;
                 int source=world.ConquerorLocations[ruler];
                 long army=world.Owners[source]==ruler && world.TerritoryCounts[ruler]>0?world.Population.Cells[source].People[0]/2:0;
-                int move=Enumerable.Range(0,4).OrderBy(d=>
+                int move=Enumerable.Range(0,4).Where(d=>world.Routes.ForRuler(ruler,d)!=null).OrderBy(d=>
                 {
                     int target=world.Population.Neighbor(world,source,d);
                     return world.TerritoryCounts[ruler]==0?random.Next(100):
                         world.Owners[source]!=ruler?(world.Owners[target]==ruler?0:100):
                         world.Owners[target]!=ruler && world.Population.Cells[target].People[0]<army?0:50+random.Next(50);
-                }).First();
-                orders.Add(new(ruler,move,army));
+                }).DefaultIfEmpty(-1).First();
+                if(move>=0)orders.Add(new(ruler,move,army));
             }
         }
         Resolve(world,orders);
@@ -36,6 +40,8 @@ public sealed class ConquestCampaign
     {
         if(orders.Select(o=>o.Ruler).Distinct().Count()!=orders.Count)throw new ArgumentException("One march per ruler per turn.");
         foreach(var order in orders)if(order.Ruler<0 || order.Ruler>=world.ActiveCount || order.Direction<0 || order.Direction>3 || order.Fighters<0)throw new ArgumentOutOfRangeException(nameof(orders));
+        var routes=orders.ToDictionary(o=>o.Ruler,o=>world.Routes.ForRuler(o.Ruler,o.Direction));
+        if(routes.Values.Any(r=>r==null))throw new InvalidOperationException("March has no reachable terrain route.");
         var arrivals=new Dictionary<int,Dictionary<int,long>>();
         var sources=orders.ToDictionary(o=>o.Ruler,o=>world.ConquerorLocations[o.Ruler]);
         var retreats=new List<(int Ruler,long Fighters)>();
@@ -47,6 +53,7 @@ public sealed class ConquestCampaign
             world.Population.Cells[source].People[0]-=army;
             int target=world.Population.Neighbor(world,source,order.Direction);
             world.ConquerorLocations[order.Ruler]=target;
+            world.ConquerorPoints[order.Ruler]=routes[order.Ruler].Entry;
             if(!arrivals.TryGetValue(target,out var forces))arrivals[target]=forces=new();
             forces[order.Ruler]=army;
         }

@@ -146,7 +146,8 @@ public partial class Game1 : Game
             }
             _statusCell=_net.IsAnimating?-1:_net.Hit(_setup,NetPanel,_pointer);
             _net.HoverEdge(NetPanel,_pointer);
-            if(click && MovementClick(_pointer,keyboard)){}
+            if(click && RouteLayerClick(_pointer)){}
+            else if(click && MovementClick(_pointer,keyboard)){}
             else if(click && PopulationClick(_pointer,keyboard)){}
             else if(click && StatusBack.Contains(_pointer)){_screen=Screen.PlayerReady;_populationCell=-1;_movementOpen=false;}
             else if(click && NetButton(0).Contains(_pointer))_net.Turn(_setup,-1);
@@ -391,7 +392,7 @@ public partial class Game1 : Game
             _net.Draw(_ui,_setup,NetPanel,_statusCell,_animationTime);_spriteBatch.End();
         }
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
-        string location="征服者現在地　"+WorldCoordinates.Label(_setup,_setup.ConquerorLocations[player]);
+        string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
         _ui.Text("辺クリック：つなぎ替え / ホイール：拡縮 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
         _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
@@ -408,6 +409,7 @@ public partial class Game1 : Game
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(984,974,870,42),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
         if(_populationCell>=0)DrawPopulationPanel();
         if(_movementOpen)DrawMovementPanel();
+        DrawRouteLayerButtons();
     }
     private void DrawCastPreviewInfo()
     {
