@@ -27,6 +27,7 @@ public class Game1 : Game
     private double _rollTime;
     private float _yaw=-0.55f,_pitch=0.3f;
     private bool _dragging;
+    private bool _mapDragging;
     private CharacterTile[] _selectionTiles=Array.Empty<CharacterTile>();
     private int _hoveredSlot=-1,_previewOwner=-1;
     private float _animationTime;
@@ -130,6 +131,16 @@ public class Game1 : Game
         { if((click && StartButton.Contains(_pointer)) || enter)BeginRolling(); }
         else if(IsStatusScreen)
         {
+            bool pan=active && keyboard.IsKeyDown(Keys.Space);
+            if(!pan || mouse.LeftButton!=ButtonState.Pressed)_mapDragging=false;
+            if(pan && click && NetPanel.Contains(_pointer))_mapDragging=true;
+            if(_mapDragging && _previousMouse.LeftButton==ButtonState.Pressed)
+            {var old=CanvasPoint(_previousMouse);_net.Drag(new Vector2(_pointer.X-old.X,_pointer.Y-old.Y));}
+            if(active && NetPanel.Contains(_pointer))
+            {
+                int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
+                if(wheel!=0)_net.ZoomAt(NetPanel,_pointer,wheel);
+            }
             _statusCell=_net.Hit(_setup,NetPanel,_pointer);
             if(click && StatusBack.Contains(_pointer)){_screen=Screen.PlayerReady;}
             else if(click && NetButton(0).Contains(_pointer))_net.Turn(_setup,-1);
@@ -137,7 +148,7 @@ public class Game1 : Game
             else if(click && NetButton(2).Contains(_pointer))_net.Home(_setup);
             else if(click && NetButton(3).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.Capitals[_setup.PlayerSlot]].Face);
             else if(click && NetButton(4).Contains(_pointer))_net.Turn(_setup,(4-_net.Rotation)%4);
-            else if(click && _statusCell>=0)_net.SetCenter(_setup,_setup.Cells[_statusCell].Face);
+            else if(click && !pan && _statusCell>=0)_net.SetCenter(_setup,_setup.Cells[_statusCell].Face);
             if(active)
             {
                 if(keyboard.IsKeyDown(Keys.Up) && _previousKeyboard.IsKeyUp(Keys.Up))_net.Move(_setup,0);
@@ -349,7 +360,8 @@ public class Game1 : Game
         _ui.Box(new(210,633,520,62),new(27,46,55));
         _ui.Center("征服者　"+_setup.ConquerorNames[player],new(90,641,760,56),0.88f,Cream);
         _ui.Center("政治体制　"+WorldSetup.PoliticalSystem,new(90,710,760,45),0.7f,new(181,204,211));
-        _ui.Center("首都　"+_setup.CityNames[capital],new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString("首都　"+_setup.CityNames[capital]).X),Cream);
+        string capitalLabel="首都　"+WorldCoordinates.Label(_setup,capital);
+        _ui.Center(capitalLabel,new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
         _ui.Center("征服地　"+_setup.TerritoryCounts[player]+" cell / "+_setup.Cells.Length+" cell",new(90,842,760,48),0.76f,Cream);
         _ui.Center("海の都市も、人が集まる地点の名前",new(90,900,760,44),0.50f,new(164,192,202));
         _ui.Center("ノルテ＝北 / スール＝南 / エステ＝東 / オエステ＝西",new(70,950,800,40),0.40f,new(164,192,202));
@@ -357,14 +369,26 @@ public class Game1 : Game
         _ui.Text("地球儀の展開図 / "+CubeNet.FaceNames[_net.CenterFace]+" が中心",new(991,156),0.68f,Cream);
         string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地球の北＝＋Y / 北を上に";
         _ui.Text(north+" / 回転 "+(_net.Rotation*90)+"°",new(991,203),0.43f,new(177,206,216));
-        _net.Draw(_ui,_setup,NetPanel,_statusCell,_animationTime);
-        _ui.Text("同じ英字の辺はつながる / 面クリック・矢印キーで中心を移動",new(991,846),0.39f,new(177,206,216));
+        var canvas=CanvasBounds();
+        var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
+        _spriteBatch.End();
+        var oldScissor=GraphicsDevice.ScissorRectangle;
+        GraphicsDevice.ScissorRectangle=new(canvas.X+(int)(990*canvas.Width/1920f),canvas.Y+(int)(226*canvas.Height/1080f),(int)(880*canvas.Width/1920f),(int)(598*canvas.Height/1080f));
+        using(var clipping=new RasterizerState{ScissorTestEnable=true})
+        {
+            _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clipping);
+            _net.Draw(_ui,_setup,NetPanel,_statusCell,_animationTime);_spriteBatch.End();
+        }
+        GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
+        string location="征服者現在地　"+WorldCoordinates.Label(_setup,_setup.ConquerorLocations[player]);
+        _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
+        _ui.Text("ホイール：拡縮 / スペース＋ドラッグ：移動 / 座標：（経番,緯番）",new(991,865),0.37f,new(177,206,216));
         _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
         _ui.Button(NetButton(2),"自分の国へ",Accent,0.52f);_ui.Button(NetButton(3),"首都の面へ",Muted,0.48f);_ui.Button(NetButton(4),"北を上に",Muted,0.52f);
         if(_statusCell>=0)
         {
             var cell=_setup.Cells[_statusCell];int owner=_setup.Owners[cell.Id];
-            string label=_setup.CityNames[cell.Id]+" / "+_setup.ConquerorNames[owner];
+            string label=WorldCoordinates.Label(_setup,cell.Id)+" / "+_setup.ConquerorNames[owner];
             _ui.Center(label,new(970,973,914,58),Math.Min(0.57f,880/_font.MeasureString(label).X),_setup.OwnerColor(owner));
         }
         _ui.Button(StatusBack,"キャラ選択へ戻る",Muted,0.48f);

@@ -39,6 +39,7 @@ public sealed class WorldSetup
     public int[] ColorIndices { get; private set; } = Enumerable.Range(0,20).ToArray();
     public int[] Owners { get; private set; } = Array.Empty<int>();
     public int[] Capitals { get; private set; } = Array.Empty<int>();
+    public int[] ConquerorLocations { get; private set; } = Array.Empty<int>();
     public int[] TerritoryCounts { get; private set; } = new int[20];
     public string[] CityNames { get; private set; } = Array.Empty<string>();
     public string[] ConquerorNames { get; private set; } = Array.Empty<string>();
@@ -93,7 +94,7 @@ public sealed class WorldSetup
         ConquerorNames=WorldNames.Conquerors(Looks,seed);
         ClearPlacement();
     }
-    public void ClearPlacement() { PlayerSlot=-1; Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); TerritoryCounts = new int[20]; }
+    public void ClearPlacement() { PlayerSlot=-1; Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); ConquerorLocations=Array.Empty<int>(); TerritoryCounts = new int[20]; }
     public void SetPlacement(int seed)
     {
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
@@ -102,6 +103,7 @@ public sealed class WorldSetup
         var random = new SeedRandom(seed);
         int[] order = Enumerable.Range(0, Cells.Length).ToArray(); random.Shuffle(order);
         Owners = Enumerable.Repeat(-1, Cells.Length).ToArray(); Capitals = order.Take(ActiveCount).ToArray();
+        ConquerorLocations=(int[])Capitals.Clone();
         TerritoryCounts = new int[20];
         var frontier = new List<(int Owner, int Cell)>();
         for(int owner = 0; owner < ActiveCount; owner++)
