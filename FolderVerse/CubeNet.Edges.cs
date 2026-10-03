@@ -132,11 +132,11 @@ public sealed partial class CubeNet
             {
                 var p=cell.Origin+cell.U*((x+.5f)/detail)+cell.V*((y+.5f)/detail);float elevation=WorldTerrain.Elevation(p,offset);
                 var color=(cell.Face==2||cell.Face==3)&&elevation>=.52f?elevation>=WorldTerrain.MountainHeight?new Color(183,200,215):new Color(245,249,255):WorldTerrain.ColorAt(elevation);
-                var post=world.Outposts.At(cell.Id,new Point(x,y));if(post!=null)color=Color.Lerp(color,world.OwnerColor(post.Owner),post.Owner==world.PlayerSlot?.4f:.16f);
+                var post=world.Outposts.At(cell.Id,new Point(x,y));if(!ShowRoutes && post!=null)color=Color.Lerp(color,world.OwnerColor(post.Owner),post.Owner==world.PlayerSlot?.4f:.16f);
                 ui.Tile(Project(p),new Vector2(fit.Scale/detail+1),moving?angle:0,color);
             }
             var corners=cell.Corners;
-            for(int edge=0;edge<4;edge++)
+            for(int edge=0;!ShowRoutes && edge<4;edge++)
             {
                 var neighbor=cell.Neighbors.First(id=>world.Cells[id].Corners.Contains(corners[edge]) && world.Cells[id].Corners.Contains(corners[(edge+1)%4]));
                 int owner=world.Outposts.FullOwner(cell.Id);

@@ -46,12 +46,27 @@ public sealed partial class CubeNet
                 ui.Tile(point,new Vector2(7),MathHelper.PiOver4,new Color(15,34,44));
                 ui.Tile(point,new Vector2(4),MathHelper.PiOver4,portal.Open?portal.Terrain==TravelTerrain.Mountain?new Color(255,163,70):Color.White:new Color(112,116,124));
             }
+            foreach(var post in world.Outposts.InCell(cell))
+            {
+                var position=world.Routes.Position(cell,post.Center);var at=project(position);
+                float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);
+                Disc(ui,at,radius+2,new Color(13,36,44));
+                Disc(ui,at,radius,world.OwnerColor(post.Owner));
+            }
         }
         if(ShowFlags)foreach(var post in world.Outposts.InCell(cell))
         {
             var point=project(world.Routes.Position(cell,post.Center));
             ui.Tile(point+new Vector2(0,-3),new Vector2(2,13),0,Color.White);
             ui.Tile(point+new Vector2(4,-6),new Vector2(8,5),0,world.OwnerColor(post.Owner));
+        }
+    }
+    private static void Disc(UiPainter ui,Vector2 center,float radius,Color color)
+    {
+        for(float y=-radius+.5f;y<radius;y++)
+        {
+            float width=2*MathF.Sqrt(Math.Max(0,radius*radius-y*y));
+            ui.Tile(center+new Vector2(0,y),new Vector2(width,1.1f),0,color);
         }
     }
 }

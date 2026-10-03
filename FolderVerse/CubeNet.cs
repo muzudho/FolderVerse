@@ -108,13 +108,12 @@ public sealed partial class CubeNet
                 float elevation=WorldTerrain.Elevation(p,offset);
                 Color terrain=(cell.Face==2 || cell.Face==3) && elevation>=0.52f?elevation>=WorldTerrain.MountainHeight?new Color(183,200,215):new Color(245,249,255):WorldTerrain.ColorAt(elevation);
                 var post=setup.Outposts.At(cell.Id,new Point(x,y));
-                if(post!=null)terrain=Color.Lerp(terrain,setup.OwnerColor(post.Owner),post.Owner==setup.PlayerSlot?.4f:.16f);
+                if(!ShowRoutes && post!=null)terrain=Color.Lerp(terrain,setup.OwnerColor(post.Owner),post.Owner==setup.PlayerSlot?.4f:.16f);
                 ui.Box(new(px-size/2,py-size/2,size,size),terrain);
             }
             int owner=setup.Outposts.FullOwner(cell.Id);Color color=owner<0?new Color(170,181,191):setup.OwnerColor(owner);
-            // Full-cell country color under a translucent terrain overlay highlights the player's country.
             int thickness=owner==setup.PlayerSlot?3:2;
-            foreach(int edge in Enumerable.Range(0,4))
+            foreach(int edge in ShowRoutes?Enumerable.Empty<int>():Enumerable.Range(0,4))
             {
                 var a=cell.Corners[edge];var b=cell.Corners[(edge+1)%4];
                 if(!ShowRoutes)

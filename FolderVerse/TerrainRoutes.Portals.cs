@@ -113,19 +113,82 @@ public sealed partial class TerrainRoutes
         return result.ToArray();
     }
     public static string TerrainName(TravelTerrain terrain)=>terrain switch {TravelTerrain.Sea=>"海",TravelTerrain.Land=>"陸",_=>"山"};
+    private readonly Dictionary<RouteStep,Vector3[]> _curves=new();
     public Vector3[] Curve(int cell,RouteStep route)
     {
-        var result=new List<Vector3>();var path=route.Path;if(path.Length==0)return Array.Empty<Vector3>();
-        result.Add(Position(cell,path[0]));
-        for(int i=1;i<path.Length-1;i++)
+        if(_curves.TryGetValue(route,out var cached))return cached;
+        if(route.Path.Length==0)return Array.Empty<Vector3>();
+        var surface=_world.Cells[cell];var reachable=Reach(cell,route.Path[0],false,true);
+        // Validate shortcuts against the actual connected terrain, including closed edges.
+        bool Safe(IEnumerable<Vector3> samples)
         {
-            var a=Position(cell,path[i-1]);var b=Position(cell,path[i]);var c=Position(cell,path[i+1]);
-            if(Vector3.Cross(b-a,c-b).LengthSquared()<.000001f){result.Add(b);continue;}
-            // Round only inside the middle terrain pixel; never cut across a wall.
-            var before=Vector3.Lerp(b,a,.35f);var after=Vector3.Lerp(b,c,.35f);result.Add(before);
-            for(int j=1;j<=6;j++){float t=j/6f;result.Add(before*(1-t)*(1-t)+b*2*t*(1-t)+after*t*t);}
+            var exact=new List<Vector3>();Vector3? last=null;
+            foreach(var point in samples)
+            {
+                if(last.HasValue)
+                {
+                    var from=last.Value;var a=from-surface.Origin;var b=point-surface.Origin;
+                    float ax=Vector3.Dot(a,surface.U)*10,ay=Vector3.Dot(a,surface.V)*10;
+                    float bx=Vector3.Dot(b,surface.U)*10,by=Vector3.Dot(b,surface.V)*10;
+                    var cuts=new List<float>{0,1};
+                    for(int boundary=1;boundary<10;boundary++)
+                    {
+                        if(Math.Abs(bx-ax)>.000001f){float t=(boundary-ax)/(bx-ax);if(t>0 && t<1)cuts.Add(t);}
+                        if(Math.Abs(by-ay)>.000001f){float t=(boundary-ay)/(by-ay);if(t>0 && t<1)cuts.Add(t);}
+                    }
+                    cuts.Sort();
+                    for(int i=1;i<cuts.Count;i++)exact.Add(Vector3.Lerp(from,point,(cuts[i-1]+cuts[i])/2));
+                }
+                exact.Add(point);last=point;
+            }
+            int previous=-1;
+            foreach(var position in exact)
+            {
+                var delta=position-surface.Origin;float x=Vector3.Dot(delta,surface.U)*10,y=Vector3.Dot(delta,surface.V)*10;
+                if(x<-.0001f || y<-.0001f || x>10.0001f || y>10.0001f)return false;
+                int next=Math.Clamp((int)MathF.Floor(y),0,9)*10+Math.Clamp((int)MathF.Floor(x),0,9);
+                if(!reachable.ContainsKey(next))return false;
+                if(previous>=0 && next!=previous && !_links[cell][previous].Contains(next))
+                {
+                    int dx=Math.Abs(next%10-previous%10),dy=Math.Abs(next/10-previous/10);
+                    if(dx!=1 || dy!=1)return false;
+                    int across=previous/10*10+next%10,down=next/10*10+previous%10;
+                    if(!(_links[cell][previous].Contains(across) && _links[cell][across].Contains(next)) ||
+                       !(_links[cell][previous].Contains(down) && _links[cell][down].Contains(next)))return false;
+                }
+                previous=next;
+            }
+            return true;
         }
-        if(path.Length>1)result.Add(Position(cell,path[^1]));
-        if(route.Portal!=null)result.Add(route.Portal.Position);return result.ToArray();
+        Vector3[] Line(Vector3 a,Vector3 b)
+        {
+            int count=Math.Max(1,(int)MathF.Ceiling(Vector3.Distance(a,b)*200));
+            return Enumerable.Range(0,count+1).Select(i=>Vector3.Lerp(a,b,i/(float)count)).ToArray();
+        }
+        var raw=route.Path.Select(p=>Position(cell,p)).ToList();
+        if(route.Portal!=null)raw.Add(route.Portal.Position);
+        // Remove the stair steps wherever a direct segment stays in the same traversable region.
+        var path=new List<Vector3>{raw[0]};int at=0;
+        while(at<raw.Count-1)
+        {
+            int next=raw.Count-1;while(next>at+1 && !Safe(Line(raw[at],raw[next])))next--;
+            path.Add(raw[next]);at=next;
+        }
+        var result=new List<Vector3>{path[0]};
+        for(int i=1;i<path.Count-1;i++)
+        {
+            var a=path[i-1];var b=path[i];var c=path[i+1];bool rounded=false;
+            foreach(float fraction in new[]{.45f,.3f,.15f})
+            {
+                var before=Vector3.Lerp(b,a,fraction);var after=Vector3.Lerp(b,c,fraction);
+                int count=Math.Max(12,(int)MathF.Ceiling((Vector3.Distance(before,b)+Vector3.Distance(b,after))*200));
+                var curve=Enumerable.Range(0,count+1).Select(j=>{float t=j/(float)count;return before*(1-t)*(1-t)+b*2*t*(1-t)+after*t*t;}).ToArray();
+                if(!Safe(curve))continue;
+                result.AddRange(curve);rounded=true;break;
+            }
+            if(!rounded)result.Add(b);
+        }
+        if(path.Count>1)result.Add(path[^1]);
+        return _curves[route]=result.ToArray();
     }
 }
