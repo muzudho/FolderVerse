@@ -48,6 +48,16 @@ public sealed partial class CubeNet
                 Disc(ui,at,radius+2,new Color(13,36,44));
                 Disc(ui,at,radius,world.OwnerColor(post.Owner));
             }
+            foreach(var harbor in world.Routes.Harbors(cell))
+            {
+                var at=project(harbor.Position);var gold=new Color(255,204,83);
+                ui.Tile(at,new Vector2(12,14),0,new Color(13,36,44));
+                ui.Tile(at+new Vector2(0,-1),new Vector2(2,10),0,gold);
+                ui.Tile(at+new Vector2(0,-3),new Vector2(7,2),0,gold);
+                ui.Tile(at+new Vector2(0,4),new Vector2(9,2),0,gold);
+                ui.Tile(at+new Vector2(-4,2),new Vector2(2,4),0,gold);
+                ui.Tile(at+new Vector2(4,2),new Vector2(2,4),0,gold);
+            }
         }
         if(ShowFlags)foreach(var post in world.Outposts.InCell(cell))
         {

@@ -382,7 +382,9 @@ public partial class Game1 : Game
         _ui.Box(new(970,142,914,750),new(20,42,54));
         _ui.Text("地球儀の展開図 / "+CubeNet.FaceNames[_net.CenterFace]+" が中心",new(991,156),0.68f,Cream);
         string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地球の北＝＋Y / 北を上に";
-        _ui.Text(north+" / 回転 "+(_net.Rotation*90)+"°",new(991,203),0.43f,new(177,206,216));
+        string orientation=north+" / 回転 "+(_net.Rotation*90)+"°";
+        _ui.Text(orientation,new(991,203),Math.Min(.43f,500/_font.MeasureString(orientation).X),new(177,206,216));
+        _ui.Text("△：山頂 / 錨：港",new(1510,203),.43f,new(255,204,83));
         var canvas=CanvasBounds();
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _spriteBatch.End();

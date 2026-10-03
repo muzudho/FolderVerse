@@ -155,13 +155,13 @@ public sealed partial class TerrainRoutes
                 if(x<-.0001f || y<-.0001f || x>10.0001f || y>10.0001f)return false;
                 int next=Math.Clamp((int)MathF.Floor(y),0,9)*10+Math.Clamp((int)MathF.Floor(x),0,9);
                 if(!reachable.ContainsKey(next))return false;
-                if(previous>=0 && next!=previous && !_links[cell][previous].Contains(next))
+                if(previous>=0 && next!=previous && !NavigableLink(cell,previous,next))
                 {
                     int dx=Math.Abs(next%10-previous%10),dy=Math.Abs(next/10-previous/10);
                     if(dx!=1 || dy!=1)return false;
                     int across=previous/10*10+next%10,down=next/10*10+previous%10;
-                    if(!(_links[cell][previous].Contains(across) && _links[cell][across].Contains(next)) ||
-                       !(_links[cell][previous].Contains(down) && _links[cell][down].Contains(next)))return false;
+                    if(!(NavigableLink(cell,previous,across) && NavigableLink(cell,across,next)) ||
+                       !(NavigableLink(cell,previous,down) && NavigableLink(cell,down,next)))return false;
                 }
                 previous=next;
             }

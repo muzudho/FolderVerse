@@ -1,5 +1,6 @@
 namespace FolderVerse;
 using System;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -7,17 +8,25 @@ public partial class Game1
 {
     private bool _movementOpen;
     private long _escort;
+    private readonly int[] _arrivalChoices=new int[4];
     private static readonly Rectangle MovementButton=new(328,1018,208,52);
     private static Rectangle MarchButton(int direction)=>new(84,445+direction*94,770,76);
+    private static Rectangle ArrivalButton(int direction)=>new(722,487+direction*94,118,30);
+    private RouteStep SelectedArrival(int direction)
+    {
+        var choices=_setup.Routes.ArrivalChoices(_setup.PlayerSlot,direction);
+        return choices.Length==0?null:choices[_arrivalChoices[direction]%choices.Length];
+    }
     private long AvailableEscort
     {
         get {var post=_setup.Outposts.Current(_setup.PlayerSlot);return post!=null && post.Owner==_setup.PlayerSlot?post.Population.People[0]:0;}
     }
     private bool MovementClick(Point pointer,KeyboardState keyboard)
     {
-        if(MovementButton.Contains(pointer)){_movementOpen=!_movementOpen;_populationCell=-1;_escort=Math.Min(_escort,AvailableEscort);return true;}
+        if(MovementButton.Contains(pointer)){_movementOpen=!_movementOpen;_populationCell=-1;_escort=Math.Min(_escort,AvailableEscort);Array.Clear(_arrivalChoices);return true;}
         if(!_movementOpen)return false;
         if(new Rectangle(803,169,58,44).Contains(pointer)){_movementOpen=false;return true;}
+        for(int d=0;d<4;d++)if(ArrivalButton(d).Contains(pointer) && _setup.Routes.ArrivalChoices(_setup.PlayerSlot,d).Length>1){_arrivalChoices[d]++;return true;}
         long step=keyboard.IsKeyDown(Keys.LeftControl)||keyboard.IsKeyDown(Keys.RightControl)?10000:keyboard.IsKeyDown(Keys.LeftShift)||keyboard.IsKeyDown(Keys.RightShift)?1000:100;
         if(new Rectangle(84,339,94,60).Contains(pointer))_escort=Math.Max(0,_escort-step);
         else if(new Rectangle(190,339,94,60).Contains(pointer))_escort=Math.Min(AvailableEscort,_escort+step);
@@ -25,8 +34,9 @@ public partial class Game1
         else if(new Rectangle(519,339,200,60).Contains(pointer))_escort=0;
         for(int d=0;d<4;d++)if(MarchButton(d).Contains(pointer))
         {
-            if(_setup.Routes.ForRuler(_setup.PlayerSlot,d)==null)return true;
-            _setup.Campaign.Advance(_setup,d,_escort);_escort=Math.Min(_escort,AvailableEscort);
+            var arrival=SelectedArrival(d);if(arrival==null)return true;
+            int post=_setup.Outposts.At(arrival.Target,arrival.Entry).Id;
+            _setup.Campaign.Advance(_setup,d,_escort,arrivalOutpost:post);_escort=Math.Min(_escort,AvailableEscort);Array.Clear(_arrivalChoices);
             _world.ShowSetup(_setup,true);
             _net.SetCenter(_setup,_setup.Cells[_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
             _populationCell=-1;return true;
@@ -46,13 +56,15 @@ public partial class Game1
         _ui.Button(new(305,339,200,60),"全員",Muted,.7f);_ui.Button(new(519,339,200,60),"０人",Muted,.7f);
         for(int d=0;d<4;d++)
         {
-            var route=_setup.Routes.ForRuler(ruler,d);bool open=route!=null;
+            var route=SelectedArrival(d);bool open=route!=null;
             int target=_setup.Population.Neighbor(_setup,source,d);var post=open?_setup.Outposts.At(target,route.Entry):null;bool own=post?.Owner==ruler;
             var rect=MarchButton(d);_ui.Button(rect,"",open?(own?Accent:Muted):new Color(37,52,60));
             string label=PopulationDirections[d]+(open?"へ移動 / "+(own?"自国拠点":"他国拠点")+" / 守備 "+post.Population.People[0].ToString("N0")+" 人":"：経路なし / 上陸・通行できない");
             _ui.Text(label,new(rect.X+16,rect.Y+8),.58f,Cream);
-            string name=open?WorldCoordinates.Label(_setup,target)+" / "+_setup.Routes.PointName(source,route.Exit)+" → "+_setup.Routes.PointName(target,route.Entry):WorldCoordinates.Label(_setup,target);
-            _ui.Text(name,new(rect.X+16,rect.Y+43),Math.Min(.43f,730/_font.MeasureString(name).X),new(186,215,223));
+            string name=open?WorldCoordinates.Label(_setup,target)+" / "+TerrainRoutes.TerrainName(post.Terrain)+"拠点・"+_setup.Routes.PointName(target,post.Center):WorldCoordinates.Label(_setup,target);
+            _ui.Text(name,new(rect.X+16,rect.Y+43),Math.Min(.43f,610/_font.MeasureString(name).X),new(186,215,223));
+            var options=_setup.Routes.ArrivalChoices(ruler,d);
+            if(options.Length>1)_ui.Button(ArrivalButton(d),$"拠点 {_arrivalChoices[d]%options.Length+1}/{options.Length} →",Accent,.36f);
         }
         string pattern="現在の拠点："+(_setup.Outposts.Current(ruler) is {} current?_setup.Outposts.Pattern(current):"通行不可");
         _ui.Text(pattern,new(84,837),Math.Min(.53f,770/_font.MeasureString(pattern).X),Cream);

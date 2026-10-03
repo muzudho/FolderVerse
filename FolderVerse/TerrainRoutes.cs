@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 public sealed record RouteStep(int Target,Point Exit,Point Entry,Point[] Path)
 {
     public RoutePortal Portal {get;init;}
+    public Point[] ArrivalPath {get;init;}=Array.Empty<Point>();
 }
 public sealed partial class TerrainRoutes
 {
@@ -44,6 +45,7 @@ public sealed partial class TerrainRoutes
             }
         }
         BuildPortals();
+        RepairConnectivity();
     }
     public Point Start(int cell)
     {
@@ -60,8 +62,7 @@ public sealed partial class TerrainRoutes
     {
         if(!Walkable(cell,start) || (landOnly && !Land(cell,start)))return new();
         var previous=new Dictionary<int,int>{{Id(start),-1}};var queue=new Queue<int>();queue.Enqueue(Id(start));
-        var mode=Terrain(cell,start);
-        while(queue.Count>0){int id=queue.Dequeue();foreach(int next in _links[cell][id])if((!landOnly || Land(cell,PointAt(next))) && (!stayInMode || (mode==TravelTerrain.Sea?Terrain(cell,PointAt(next))==TravelTerrain.Sea:Terrain(cell,PointAt(next))!=TravelTerrain.Sea)) && previous.TryAdd(next,id))queue.Enqueue(next);}
+        while(queue.Count>0){int id=queue.Dequeue();foreach(int next in _links[cell][id])if((!landOnly || Land(cell,PointAt(next))) && (!stayInMode || NavigableLink(cell,id,next)) && previous.TryAdd(next,id))queue.Enqueue(next);}
         return previous;
     }
     public RouteStep Find(int cell,Point start,int direction,bool landOnly=false,bool stayInMode=false)
