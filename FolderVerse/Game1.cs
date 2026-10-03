@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-public class Game1 : Game
+public partial class Game1 : Game
 {
     private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, WorldStatus }
     private readonly GraphicsDeviceManager _graphics;
@@ -125,7 +125,8 @@ public class Game1 : Game
         }
         else if(escape)
         {
-            if(_screen==Screen.Title)Exit(); else { _screen=Screen.Title; _dragging=false; }
+            if(IsStatusScreen && _populationCell>=0)_populationCell=-1;
+            else if(_screen==Screen.Title)Exit(); else { _screen=Screen.Title; _dragging=false; }
         }
         else if(_screen==Screen.Title)
         { if((click && StartButton.Contains(_pointer)) || enter)BeginRolling(); }
@@ -142,13 +143,19 @@ public class Game1 : Game
                 if(wheel!=0)_net.ZoomAt(NetPanel,_pointer,wheel);
             }
             _statusCell=_net.Hit(_setup,NetPanel,_pointer);
-            if(click && StatusBack.Contains(_pointer)){_screen=Screen.PlayerReady;}
+            if(click && PopulationClick(_pointer,keyboard)){}
+            else if(click && StatusBack.Contains(_pointer)){_screen=Screen.PlayerReady;_populationCell=-1;}
             else if(click && NetButton(0).Contains(_pointer))_net.Turn(_setup,-1);
             else if(click && NetButton(1).Contains(_pointer))_net.Turn(_setup,1);
             else if(click && NetButton(2).Contains(_pointer))_net.Home(_setup);
             else if(click && NetButton(3).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.Capitals[_setup.PlayerSlot]].Face);
             else if(click && NetButton(4).Contains(_pointer))_net.Turn(_setup,(4-_net.Rotation)%4);
-            else if(click && !pan && _statusCell>=0)_net.SetCenter(_setup,_setup.Cells[_statusCell].Face);
+            else if(click && !pan && _statusCell>=0)
+            {
+                if(_setup.Owners[_statusCell]==_setup.PlayerSlot && _setup.Population.Cells[_statusCell].Land)
+                {_populationCell=_statusCell;_populationRole=0;}
+                else _net.SetCenter(_setup,_setup.Cells[_statusCell].Face);
+            }
             if(active)
             {
                 if(keyboard.IsKeyDown(Keys.Up) && _previousKeyboard.IsKeyUp(Keys.Up))_net.Move(_setup,0);
@@ -162,7 +169,7 @@ public class Game1 : Game
             _hoveredSlot=active && _screen==Screen.PlayerSelect?HitSelection(_pointer):-1;
             if(click && CastBack.Contains(_pointer)){_screen=Screen.Ready;_hoveredSlot=-1;_world.HighlightOwner(_setup,-1);}
             else if(click && _screen==Screen.PlayerReady && CastRetry.Contains(_pointer)){_screen=Screen.PlayerSelect;}
-            else if(_screen==Screen.PlayerReady && ((click && StatusProceed.Contains(_pointer)) || enter)){_net.Home(_setup);_statusCell=-1;_screen=Screen.WorldStatus;}
+            else if(_screen==Screen.PlayerReady && ((click && StatusProceed.Contains(_pointer)) || enter)){_net.Home(_setup);_statusCell=-1;_populationCell=-1;_screen=Screen.WorldStatus;}
             else if(click && _hoveredSlot>=0){_setup.SelectPlayer(_hoveredSlot);_screen=Screen.PlayerReady;_hoveredSlot=-1;}
             if(IsSelectionScreen)
             {
@@ -392,6 +399,8 @@ public class Game1 : Game
             _ui.Center(label,new(970,973,914,58),Math.Min(0.57f,880/_font.MeasureString(label).X),_setup.OwnerColor(owner));
         }
         _ui.Button(StatusBack,"キャラ選択へ戻る",Muted,0.48f);
+        _ui.Button(PopulationTurnButton,$"ターン {_setup.Population.Turn} → 次へ",Accent,0.62f);
+        if(_populationCell>=0)DrawPopulationPanel();
     }
     private void DrawCastPreviewInfo()
     {
