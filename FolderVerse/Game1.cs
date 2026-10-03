@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 public class Game1 : Game
 {
-    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready }
+    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady }
     private readonly GraphicsDeviceManager _graphics;
     private readonly Random _random=new();
     private readonly WorldSetup _setup=new();
@@ -27,6 +27,9 @@ public class Game1 : Game
     private double _rollTime;
     private float _yaw=-0.55f,_pitch=0.3f;
     private bool _dragging;
+    private CharacterTile[] _selectionTiles=Array.Empty<CharacterTile>();
+    private int _hoveredSlot=-1;
+    private bool IsSelectionScreen=>_screen is Screen.PlayerSelect or Screen.PlayerReady;
     private static readonly Color Accent=new(45,135,142),Muted=new(58,78,100),Cream=new(255,232,184);
     private static readonly Rectangle StartButton=new(740,884,440,106),ActionButton=new(1360,750,400,90),RetryButton=new(1360,860,400,80),BackButton=new(100,960,320,65),PreviewArea=new(130,240,1120,680),WorldSeedButton=new(520,960,730,65);
     private static readonly Rectangle CastPreview=new(312,292,1296,540),CastBack=new(54,1020,200,50),CastRetry=new(266,1020,240,50),CastAction=new(518,1020,480,50);
@@ -116,6 +119,13 @@ public class Game1 : Game
         }
         else if(_screen==Screen.Title)
         { if((click && StartButton.Contains(_pointer)) || enter)BeginRolling(); }
+        else if(IsSelectionScreen)
+        {
+            _hoveredSlot=active && _screen==Screen.PlayerSelect?HitSelection(_pointer):-1;
+            if(click && CastBack.Contains(_pointer)){_screen=Screen.Ready;_hoveredSlot=-1;}
+            else if(click && _screen==Screen.PlayerReady && CastRetry.Contains(_pointer)){_screen=Screen.PlayerSelect;}
+            else if(click && _hoveredSlot>=0){_setup.SelectPlayer(_hoveredSlot);_screen=Screen.PlayerReady;_hoveredSlot=-1;}
+        }
         else if(!IsCastScreen)
         {
             if(click && BackButton.Contains(_pointer))_screen=Screen.Title;
@@ -139,7 +149,8 @@ public class Game1 : Game
                     case Screen.CastRolling:_screen=Screen.CastReview;break;
                     case Screen.CastReview:BeginPlacement();break;
                     case Screen.PlacementRolling:_screen=Screen.PlacementReview;break;
-                    case Screen.PlacementReview:_screen=Screen.Ready;break;
+                    case Screen.PlacementReview:BeginSelection();break;
+                    case Screen.Ready:BeginSelection();break;
                 }
             }
             else if(click && CastRetry.Contains(_pointer))
@@ -214,11 +225,70 @@ public class Game1 : Game
         _ui.Button(CastBack,"世界へ戻る",Muted,0.48f);
         _ui.Button(CastRetry,_screen is Screen.CastRolling or Screen.CastReview?"人物を再抽選":"配置を再抽選",Muted,0.48f);
         string action=IsRolling?"STOP":_screen==Screen.CastReview?"登場人物を確定 / 初期配置へ":_screen==Screen.PlacementReview?"初期配置を確定":"初期配置を確定済み";
-        if(_screen==Screen.Ready)_ui.Center(action,CastAction,0.58f,new(126,218,174));else _ui.Button(CastAction,action,Accent,0.57f);
+        _ui.Button(CastAction,_screen==Screen.Ready?"世界征服者を選択":action,Accent,0.57f);
         _ui.Button(SeedButton(0),"世界 SEED "+_setup.WorldSeed,Muted,0.36f);
         _ui.Button(SeedButton(1),"人物 SEED "+_setup.CastSeed,Muted,0.36f);
         if(HasTerritories)_ui.Button(SeedButton(2),"配置 SEED "+_setup.PlacementSeed,Muted,0.36f);
         else _ui.Center("配置 SEED / 人物確定後",SeedButton(2),0.36f,Color.Gray);
+    }
+    private void BeginSelection()
+    {
+        _selectionTiles=CharacterSelectionLayout.Create(_setup.TerritoryCounts,_setup.ActiveCount);
+        _screen=Screen.PlayerSelect;_dragging=false;_hoveredSlot=-1;
+    }
+    private int HitSelection(Point point)
+    {
+        // Keep both the resting and raised bounds hot to prevent hover jitter.
+        if(_hoveredSlot>=0)
+        {
+            var rect=_selectionTiles[_hoveredSlot].Bounds;
+            var raised=rect;raised.Offset(-10,-10);
+            if(rect.Contains(point) || raised.Contains(point))return _hoveredSlot;
+        }
+        foreach(var tile in _selectionTiles)if(tile.Bounds.Contains(point))return tile.Slot;
+        return -1;
+    }
+    private void DrawSelectionTile(CharacterTile tile,bool floating)
+    {
+        var rect=tile.Bounds;Color color=_setup.OwnerColor(tile.Slot);
+        if(floating)
+        {
+            // Logical canvas pixels; scales with the 16:9 game view.
+            for(int pad=6;pad>=0;pad-=2)
+                _ui.Box(new(rect.X-pad,rect.Y-pad,rect.Width+pad*2,rect.Height+pad*2),new Color(0,0,0,35));
+            rect.Offset(-10,-10);
+        }
+        _ui.Box(rect,color);
+        var image=new Rectangle(rect.X+4,rect.Y+4,rect.Width-8,rect.Height-8);
+        _portraitRenderer.Draw(_spriteBatch,_setup.Looks[tile.Slot],image);
+        _counter.Draw(_spriteBatch,_setup.TerritoryCounts[tile.Slot],image,color);
+        _ui.Box(new(rect.X+5,rect.Y+5,Math.Min(65,rect.Width-10),27),new Color(10,25,35,210));
+        _ui.Text("#"+(tile.Slot+1).ToString("00"),new(rect.X+10,rect.Y+7),Math.Min(0.42f,(rect.Width-20)/_font.MeasureString("#00").X),color);
+        if(_screen==Screen.PlayerReady && tile.Slot==_setup.PlayerSlot)
+        {
+            _ui.Box(new(rect.X+4,rect.Y+34,Math.Min(rect.Width-8,140),33),new Color(10,25,35,220));
+            _ui.Text("あなた",new(rect.X+10,rect.Y+34),Math.Min(0.55f,(rect.Width-20)/_font.MeasureString("あなた").X),Cream);
+        }
+    }
+    private void DrawSelectionUi()
+    {
+        _ui.Text("世界征服者選択",new(54,22),1.1f,Cream);
+        _ui.Text("領地の大きさで顔も変わる / クリックして自分を決めよう",new(730,40),0.58f,new Color(170,206,216));
+        for(int y=0;y<CharacterSelectionLayout.Rows;y++)for(int x=0;x<CharacterSelectionLayout.Columns;x++)
+        {
+            var cell=new CharacterTile(0,x,y,1).Bounds;
+            _ui.Box(cell,(x/4+y/4)%2==0?new Color(27,51,64):new Color(24,45,58));
+            _ui.Box(new(cell.X,cell.Y,cell.Width,y%4==0?2:1),y%4==0?new Color(62,85,96):new Color(41,65,76));
+            _ui.Box(new(cell.X,cell.Y,x%4==0?2:1,cell.Height),x%4==0?new Color(62,85,96):new Color(41,65,76));
+        }
+        foreach(var tile in _selectionTiles)if(tile.Slot!=_hoveredSlot)DrawSelectionTile(tile,false);
+        if(_hoveredSlot>=0)DrawSelectionTile(_selectionTiles[_hoveredSlot],true);
+        _ui.Button(CastBack,"配置を確認",Muted,0.48f);
+        if(_screen==Screen.PlayerReady)_ui.Button(CastRetry,"選び直す",Accent,0.48f);
+        int focus=_screen==Screen.PlayerReady?_setup.PlayerSlot:_hoveredSlot;
+        string detail=focus<0?"顔にカーソルを合わせて選択":
+            (_screen==Screen.PlayerReady?"あなたは ":"")+"#"+(focus+1).ToString("00")+" "+ConquerorCatalog.Themes[_setup.Looks[focus].BaseId];
+        _ui.Center(detail,new(520,1020,1340,50),0.64f,focus<0?Cream:_setup.OwnerColor(focus));
     }
     private void DrawCastPreviewInfo()
     {
@@ -250,11 +320,14 @@ public class Game1 : Game
         if(_screen!=Screen.Title)
         {
             _spriteBatch.Begin(transformMatrix:transform);
-            _ui.Box(new(0,0,1920,1080),new(16,35,46)); if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
+            _ui.Box(new(0,0,1920,1080),new(16,35,46)); if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
+            if(!IsSelectionScreen)
+            {
             var area=IsCastScreen?CastPreview:PreviewArea;
             GraphicsDevice.Viewport=new Viewport(canvas.X+(int)(area.X*canvas.Width/1920f),canvas.Y+(int)(area.Y*canvas.Height/1080f),Math.Max(1,(int)(area.Width*canvas.Width/1920f)),Math.Max(1,(int)(area.Height*canvas.Height/1080f)));
             _world.Draw(_yaw,_pitch); GraphicsDevice.Viewport=viewport;
             if(IsCastScreen) { _spriteBatch.Begin(transformMatrix:transform); DrawCastPreviewInfo(); _spriteBatch.End(); }
+            }
         }
         if(_seedDialog.IsOpen) { _spriteBatch.Begin(transformMatrix:transform); _seedDialog.Draw(_ui); _spriteBatch.End(); }
         // Read the finished game frame before the save notification is drawn.

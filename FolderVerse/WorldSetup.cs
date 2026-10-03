@@ -40,6 +40,12 @@ public sealed class WorldSetup
     public int[] Owners { get; private set; } = Array.Empty<int>();
     public int[] Capitals { get; private set; } = Array.Empty<int>();
     public int[] TerritoryCounts { get; private set; } = new int[20];
+    public int PlayerSlot { get; private set; } = -1;
+    public void SelectPlayer(int slot)
+    {
+        if(slot<0 || slot>=ActiveCount || Owners.Length==0)throw new ArgumentOutOfRangeException(nameof(slot));
+        PlayerSlot=slot;
+    }
     public int ActiveCount => Math.Min(20, Cells.Length);
     public static readonly Color[] Colors = {
         new(239,88,97), new(66,171,235), new(247,194,63), new(76,195,139), new(178,117,239),
@@ -82,10 +88,11 @@ public sealed class WorldSetup
         }
         ClearPlacement();
     }
-    public void ClearPlacement() { Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); TerritoryCounts = new int[20]; }
+    public void ClearPlacement() { PlayerSlot=-1; Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); TerritoryCounts = new int[20]; }
     public void SetPlacement(int seed)
     {
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
+        PlayerSlot=-1;
         PlacementSeed = seed;
         var random = new SeedRandom(seed);
         int[] order = Enumerable.Range(0, Cells.Length).ToArray(); random.Shuffle(order);
