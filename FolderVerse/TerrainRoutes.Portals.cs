@@ -91,7 +91,11 @@ public sealed partial class TerrainRoutes
             }
             _portals[cell.Id][d]=portals.ToArray();
         }
-        _display=_world.Cells.Select(c=>BuildDisplay(c.Id)).ToArray();
+        _display=_world.Cells.Select(_=>Array.Empty<RouteStep>()).ToArray();
+    }
+    public void RefreshDisplay()
+    {
+        _curves.Clear();_display=_world.Cells.Select(c=>BuildDisplay(c.Id)).ToArray();
     }
     private static Point[] Trace(Dictionary<int,int> previous,int last)
     {
@@ -100,13 +104,16 @@ public sealed partial class TerrainRoutes
     private RouteStep[] BuildDisplay(int cell)
     {
         var result=new List<RouteStep>();var covered=new HashSet<int>();
-        foreach(var portal in _portals[cell].SelectMany(p=>p).Where(p=>p.Open))
+        foreach(var post in _world.Outposts.InCell(cell))
         {
-            int id=Id(portal.Exit);if(covered.Contains(id))continue;
-            var component=Reach(cell,portal.Exit,false,true);
+            int id=Id(post.Center);if(covered.Contains(id))continue;
+            var component=Reach(cell,post.Center,false,true);
             foreach(int point in component.Keys)covered.Add(point);
-            int root=component.Keys.OrderBy(n=>Vector2.DistanceSquared(new Vector2(n%10,n/10),new Vector2(4.5f))).ThenBy(n=>n).First();
+            var nodes=_world.Outposts.InCell(cell).Where(p=>component.ContainsKey(Id(p.Center))).ToArray();
+            int root=nodes.OrderBy(p=>Vector2.DistanceSquared(new Vector2(p.Center.X,p.Center.Y),new Vector2(4.5f))).ThenBy(p=>p.Id).Select(p=>Id(p.Center)).First();
             var previous=Reach(cell,PointAt(root),false,true);
+            foreach(var node in nodes.Where(p=>Id(p.Center)!=root))
+                result.Add(new(cell,node.Center,node.Center,Trace(previous,Id(node.Center))));
             foreach(var next in _portals[cell].SelectMany(p=>p).Where(p=>p.Open && previous.ContainsKey(Id(p.Exit))))
                 result.Add(new(next.Target,next.Exit,next.Entry,Trace(previous,Id(next.Exit))){Portal=next});
         }
@@ -162,8 +169,8 @@ public sealed partial class TerrainRoutes
         }
         Vector3[] Line(Vector3 a,Vector3 b)
         {
-            int count=Math.Max(1,(int)MathF.Ceiling(Vector3.Distance(a,b)*200));
-            return Enumerable.Range(0,count+1).Select(i=>Vector3.Lerp(a,b,i/(float)count)).ToArray();
+            // Safe checks every crossed pixel boundary exactly; straight lines need only endpoints.
+            return new[]{a,b};
         }
         var raw=route.Path.Select(p=>Position(cell,p)).ToList();
         if(route.Portal!=null)raw.Add(route.Portal.Position);
@@ -188,7 +195,27 @@ public sealed partial class TerrainRoutes
             }
             if(!rounded)result.Add(b);
         }
-        if(path.Count>1)result.Add(path[^1]);
+        if(path.Count>1)
+        {
+            var end=path[^1];bool joined=false;
+            if(route.Portal!=null)
+            {
+                // Both cells approach the shared edge along its normal, so unfolded joins have one tangent.
+                var relative=end-surface.Origin;
+                float u=Vector3.Dot(relative,surface.U),v=Vector3.Dot(relative,surface.V);
+                var inward=u<.0001f?surface.U:u>.9999f?-surface.U:v<.0001f?surface.V:-surface.V;
+                var start=result[^1];var first=Vector3.Lerp(start,end,.33f);
+                foreach(float distance in new[]{.06f,.035f,.015f})
+                {
+                    var second=end+inward*distance;
+                    int count=Math.Max(20,(int)MathF.Ceiling(Vector3.Distance(start,end)*250));
+                    var join=Enumerable.Range(0,count+1).Select(j=>{float t=j/(float)count,s=1-t;return start*s*s*s+first*3*s*s*t+second*3*s*t*t+end*t*t*t;}).ToArray();
+                    if(!Safe(join))continue;
+                    result.AddRange(join.Skip(1));joined=true;break;
+                }
+            }
+            if(!joined)result.Add(end);
+        }
         return _curves[route]=result.ToArray();
     }
 }

@@ -1,0 +1,37 @@
+[
+  {
+    "baseId": 5,
+    "originalSheet": "sheet-01.png",
+    "file": "base-06-normalized.png",
+    "prompt": "Use case: identity-preserve. Edit the attached game portrait atlas. EXTRACT ONLY the SIX portraits in the BOTTOM (sixth) ROW: silver-haired elf radio officer with round glasses, black/navy and gold uniform, green battery radio toy. The other five rows must NOT appear in the result. Create a NEW atlas of this single character's six existing variants, laid out as EXACTLY THREE COLUMNS by TWO ROWS of equal SQUARE panels. Landscape canvas 1536x1024, tile size 512x512. Variants from original bottom row columns 1,2,3 go to output top row left,middle,right; columns 4,5,6 go to output bottom row left,middle,right. Preserve her identity, face, expression, eye features, costume, pose, head angle, gaze, toy and background in each variant. Expand/recompose background/torso to obtain SQUARE portraits with natural uncompressed face proportions, NOT stretching. Large readable head and face, upper torso. Do not redesign, do not invent any characters. Only six panels, only this one original character, equal size, no borders/gutters/labels/text. All panels must be exactly square. Horizontal divider at half height, vertical dividers at one third and two thirds width. Keep all six poses different and in exact variant order.",
+    "generator": "built-in image_gen"
+  },
+  {
+    "baseId": 17,
+    "originalSheet": "sheet-03.png",
+    "file": "base-18-normalized.png",
+    "prompt": "Use case: identity-preserve. Edit the attached game portrait atlas. EXTRACT ONLY the SIX portraits in the BOTTOM (sixth) ROW: blonde elf camera officer with round glasses, navy and gold uniform, blue battery camera toy. The other five rows must NOT appear in the result. Create a NEW atlas of this single character's six existing variants, laid out as EXACTLY THREE COLUMNS by TWO ROWS of equal SQUARE panels. Landscape canvas 1536x1024, tile size 512x512. Variants from original bottom row columns 1,2,3 go to output top row left,middle,right; columns 4,5,6 go to output bottom row left,middle,right. Preserve her identity, face, expression, eye features, costume, pose, head angle, gaze, toy and background in each variant. Expand/recompose background/torso to obtain SQUARE portraits with natural uncompressed face proportions, NOT stretching. Large readable head and face, upper torso. Do not redesign, do not invent any characters. Only six panels, only this one original character, equal size, no borders/gutters/labels/text. All panels must be exactly square. Horizontal divider at half height, vertical dividers at one third and two thirds width. Keep all six poses different and in exact variant order.",
+    "generator": "built-in image_gen"
+  },
+  {
+    "baseId": 29,
+    "originalSheet": "sheet-05.png",
+    "file": "base-30-normalized.png",
+    "prompt": "Use case: identity-preserve. Edit the attached game portrait atlas. EXTRACT ONLY the SIX portraits in the BOTTOM (sixth) ROW: lavender-haired elf officer with eyepatch, navy and gold uniform, blue battery toy. The other five rows must NOT appear in the result. Create a NEW atlas of this single character's six existing variants, laid out as EXACTLY THREE COLUMNS by TWO ROWS of equal SQUARE panels. Landscape canvas 1536x1024, tile size 512x512. Variants from original bottom row columns 1,2,3 go to output top row left,middle,right; columns 4,5,6 go to output bottom row left,middle,right. Preserve her identity, face, expression, eye features, costume, pose, head angle, gaze, toy and background in each variant. Expand/recompose background/torso to obtain SQUARE portraits with natural uncompressed face proportions, NOT stretching. Large readable head and face, upper torso. Do not redesign, do not invent any characters. Only six panels, only this one original character, equal size, no borders/gutters/labels/text. All panels must be exactly square. Horizontal divider at half height, vertical dividers at one third and two thirds width. Keep all six poses different and in exact variant order.",
+    "generator": "built-in image_gen"
+  },
+  {
+    "baseId": 41,
+    "originalSheet": "sheet-07.png",
+    "file": "base-42-normalized.png",
+    "prompt": "Use case: identity-preserve. Edit the attached game portrait atlas. EXTRACT ONLY the SIX portraits in the BOTTOM (sixth) ROW: brown-haired elf woman with round glasses and gold crown, navy and gold ornate outfit, golden battery toy. The other five rows must NOT appear in the result. Create a NEW atlas of this single character's six existing variants, laid out as EXACTLY THREE COLUMNS by TWO ROWS of equal SQUARE panels. Landscape canvas 1536x1024, tile size 512x512. Variants from original bottom row columns 1,2,3 go to output top row left,middle,right; columns 4,5,6 go to output bottom row left,middle,right. Preserve her identity, face, expression, eye features, costume, pose, head angle, gaze, toy and background in each variant. Expand/recompose background/torso to obtain SQUARE portraits with natural uncompressed face proportions, NOT stretching. Large readable head and face, upper torso. Do not redesign, do not invent any characters. Only six panels, only this one original character, equal size, no borders/gutters/labels/text. All panels must be exactly square. Horizontal divider at half height, vertical dividers at one third and two thirds width. Keep all six poses different and in exact variant order.",
+    "generator": "built-in image_gen"
+  },
+  {
+    "baseId": 59,
+    "originalSheet": "sheet-10.png",
+    "file": "base-60-normalized.png",
+    "prompt": "Use case: identity-preserve. Edit the attached game portrait atlas. EXTRACT ONLY the SIX portraits in the BOTTOM (sixth) ROW: teal-haired elf inventor with opaque spiral glasses, navy and gold uniform, green and golden battery toys. The other five rows must NOT appear in the result. Create a NEW atlas of this single character's six existing variants, laid out as EXACTLY THREE COLUMNS by TWO ROWS of equal SQUARE panels. Landscape canvas 1536x1024, tile size 512x512. Variants from original bottom row columns 1,2,3 go to output top row left,middle,right; columns 4,5,6 go to output bottom row left,middle,right. Preserve her identity, face, expression, eye features, costume, pose, head angle, gaze, toy and background in each variant. Expand/recompose background/torso to obtain SQUARE portraits with natural uncompressed face proportions, NOT stretching. Large readable head and face, upper torso. Do not redesign, do not invent any characters. Only six panels, only this one original character, equal size, no borders/gutters/labels/text. All panels must be exactly square. Horizontal divider at half height, vertical dividers at one third and two thirds width. Keep all six poses different and in exact variant order.",
+    "generator": "built-in image_gen"
+  }
+]

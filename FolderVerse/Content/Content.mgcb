@@ -120,3 +120,48 @@
 /processor:TextureProcessor
 /processorParam:PremultiplyAlpha=True
 /build:Images/title-logo.png
+
+#begin Images/Portraits/base-06-normalized.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/base-06-normalized.png
+
+#begin Images/Portraits/base-18-normalized.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/base-18-normalized.png
+
+#begin Images/Portraits/base-30-normalized.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/base-30-normalized.png
+
+#begin Images/Portraits/base-42-normalized.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/base-42-normalized.png
+
+#begin Images/Portraits/base-60-normalized.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/base-60-normalized.png

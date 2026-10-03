@@ -40,12 +40,6 @@ public sealed partial class CubeNet
                     ui.Tile((a+b)/2,new Vector2(delta.Length()+1,2),MathF.Atan2(delta.Y,delta.X),color);
                 }
             }
-            foreach(var portal in Enumerable.Range(0,4).SelectMany(d=>world.Routes.Portals(cell,d)))
-            {
-                var point=project(portal.Position);
-                ui.Tile(point,new Vector2(7),MathHelper.PiOver4,new Color(15,34,44));
-                ui.Tile(point,new Vector2(4),MathHelper.PiOver4,portal.Open?portal.Terrain==TravelTerrain.Mountain?new Color(255,163,70):Color.White:new Color(112,116,124));
-            }
             foreach(var post in world.Outposts.InCell(cell))
             {
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);

@@ -84,12 +84,15 @@ public sealed class WorldSetup
         int familyBase=random.Next(ConquerorCatalog.BaseCount);
         int familySize=random.Next(5)==0 ? 2+random.Next(5) : 0;
         int[] variants=Enumerable.Range(0,6).ToArray();random.Shuffle(variants);
+        // Three out of four casts guarantee different bases; the remaining casts allow sisters.
+        bool distinctBases=random.Next(4)<3;
+        int[] bases=Enumerable.Range(0,ConquerorCatalog.BaseCount).ToArray();random.Shuffle(bases);
         for(int slot=0;slot<20;slot++)
         {
             ConquerorLook look;
             do
             {
-                int baseId=slot<familySize ? familyBase :
+                int baseId=distinctBases?bases[slot]:slot<familySize ? familyBase :
                     slot>0 && random.Next(100)<18 ? Portraits[random.Next(slot)] : random.Next(60);
                 if(Looks.Take(slot).Count(l=>l.BaseId==baseId)>=6)baseId=random.Next(60);
                 look=new(baseId,slot<familySize?variants[slot]:random.Next(6));
@@ -125,6 +128,7 @@ public sealed class WorldSetup
         Routes.Initialize(this);
         ConquerorPoints=ConquerorLocations.Select(Routes.Start).ToArray();
         Outposts.Initialize(this);
+        Routes.RefreshDisplay();
         Campaign.Reset();
     }
     public static SurfaceCell[] CreateCells(int width, int height, int depth)
