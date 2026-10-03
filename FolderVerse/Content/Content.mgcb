@@ -24,3 +24,7 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Images/title-screen.png
+#begin UiFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/build:UiFont.spritefont
