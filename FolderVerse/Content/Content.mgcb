@@ -109,3 +109,8 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
 /build:Images/Portraits/sheet-10.png
+
+#begin ToyCounterFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/build:ToyCounterFont.spritefont

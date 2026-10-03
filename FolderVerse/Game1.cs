@@ -18,6 +18,7 @@ public class Game1 : Game
     private PortraitRenderer _portraitRenderer;
     private SpriteFont _font;
     private UiPainter _ui;
+    private ToyCounterRenderer _counter;
     private WorldPreview _world;
     private Screen _screen;
     private MouseState _previousMouse;
@@ -37,6 +38,7 @@ public class Game1 : Game
     public Game1()
     {
         _graphics=new GraphicsDeviceManager(this) { PreferredBackBufferWidth=1920,PreferredBackBufferHeight=1080,PreferredDepthStencilFormat=DepthFormat.Depth24 };
+        InactiveSleepTime=TimeSpan.Zero;
         Content.RootDirectory="Content"; Window.Title="Folder Verse"; Window.AllowUserResizing=true; IsMouseVisible=true;
     }
     protected override void LoadContent()
@@ -44,6 +46,7 @@ public class Game1 : Game
         _spriteBatch=new SpriteBatch(GraphicsDevice); _titleScreen=Content.Load<Texture2D>("Images/title-screen");
         _portraitRenderer=new PortraitRenderer(Content); _font=Content.Load<SpriteFont>("UiFont");
         _pixel=new Texture2D(GraphicsDevice,1,1); _pixel.SetData(new[]{Color.White});
+        _counter=new ToyCounterRenderer(Content.Load<SpriteFont>("ToyCounterFont"),_pixel);
         _ui=new UiPainter(_spriteBatch,_pixel,_font); _world=new WorldPreview(GraphicsDevice);
     }
     private Rectangle CanvasBounds()
@@ -79,7 +82,7 @@ public class Game1 : Game
         bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
-        double elapsed=active?gameTime.ElapsedGameTime.TotalSeconds:0;
+        double elapsed=gameTime.ElapsedGameTime.TotalSeconds;
         _screenshots.Update(gameTime.ElapsedGameTime.TotalSeconds);
         bool captureChord=keyboard.IsKeyDown(Keys.P) && (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
@@ -204,9 +207,9 @@ public class Game1 : Game
             _portraitRenderer.Draw(_spriteBatch,_setup.Looks[slot],new Rectangle(rect.X+7,rect.Y+7,rect.Width-14,rect.Height-14),active);
             _ui.Box(new(rect.X+8,rect.Y+8,70,28),new Color(10,25,35,215));
             _ui.Text("#"+(slot+1).ToString("00"),new(rect.X+16,rect.Y+10),0.46f,active?color:Color.Gray);
-            string cells=!active?"待機":HasTerritories?_setup.TerritoryCounts[slot]+" セル":"参戦";
-            _ui.Box(new(rect.Right-101,rect.Bottom-38,92,29),new Color(10,25,35,215));
-            _ui.Text(cells,new(rect.Right-94,rect.Bottom-37),0.45f,Color.White);
+            if(HasTerritories)
+                _counter.Draw(_spriteBatch,active?_setup.TerritoryCounts[slot]:0,
+                    new Rectangle(rect.X+7,rect.Y+7,rect.Width-14,rect.Height-14),color);
         }
         _ui.Button(CastBack,"世界へ戻る",Muted,0.48f);
         _ui.Button(CastRetry,_screen is Screen.CastRolling or Screen.CastReview?"人物を再抽選":"配置を再抽選",Muted,0.48f);
