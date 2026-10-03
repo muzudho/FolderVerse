@@ -87,6 +87,7 @@ public sealed class WorldPreview : IDisposable
         }
         for(int owner=0;owner<setup.Capitals.Length;owner++)
         {
+            if(setup.TerritoryCounts[owner]==0)continue;
             var cell=setup.Cells[setup.Capitals[owner]]; var foot=cell.Center+cell.Normal*0.03f;
             var top=foot+cell.Normal*0.48f;
             Quad(foot-cell.U*0.013f,foot+cell.U*0.013f,top+cell.U*0.013f,top-cell.U*0.013f,new Color(255,241,198),cell.V);

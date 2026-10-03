@@ -125,7 +125,8 @@ public partial class Game1 : Game
         }
         else if(escape)
         {
-            if(IsStatusScreen && _populationCell>=0)_populationCell=-1;
+            if(IsStatusScreen && _movementOpen)_movementOpen=false;
+            else if(IsStatusScreen && _populationCell>=0)_populationCell=-1;
             else if(_screen==Screen.Title)Exit(); else { _screen=Screen.Title; _dragging=false; }
         }
         else if(_screen==Screen.Title)
@@ -143,17 +144,18 @@ public partial class Game1 : Game
                 if(wheel!=0)_net.ZoomAt(NetPanel,_pointer,wheel);
             }
             _statusCell=_net.Hit(_setup,NetPanel,_pointer);
-            if(click && PopulationClick(_pointer,keyboard)){}
-            else if(click && StatusBack.Contains(_pointer)){_screen=Screen.PlayerReady;_populationCell=-1;}
+            if(click && MovementClick(_pointer,keyboard)){}
+            else if(click && PopulationClick(_pointer,keyboard)){}
+            else if(click && StatusBack.Contains(_pointer)){_screen=Screen.PlayerReady;_populationCell=-1;_movementOpen=false;}
             else if(click && NetButton(0).Contains(_pointer))_net.Turn(_setup,-1);
             else if(click && NetButton(1).Contains(_pointer))_net.Turn(_setup,1);
             else if(click && NetButton(2).Contains(_pointer))_net.Home(_setup);
-            else if(click && NetButton(3).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.Capitals[_setup.PlayerSlot]].Face);
+            else if(click && NetButton(3).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
             else if(click && NetButton(4).Contains(_pointer))_net.Turn(_setup,(4-_net.Rotation)%4);
             else if(click && !pan && _statusCell>=0)
             {
                 if(_setup.Owners[_statusCell]==_setup.PlayerSlot && _setup.Population.Cells[_statusCell].Land)
-                {_populationCell=_statusCell;_populationRole=0;}
+                {_populationCell=_statusCell;_populationRole=0;_movementOpen=false;}
                 else _net.SetCenter(_setup,_setup.Cells[_statusCell].Face);
             }
             if(active)
@@ -366,8 +368,8 @@ public partial class Game1 : Game
         _ui.Center("★ 世界征服者 ★",new(330,165,282,42),0.65f,new(255,227,132));
         _ui.Box(new(210,633,520,62),new(27,46,55));
         _ui.Center("征服者　"+_setup.ConquerorNames[player],new(90,641,760,56),0.88f,Cream);
-        _ui.Center("政治体制　"+WorldSetup.PoliticalSystem,new(90,710,760,45),0.7f,new(181,204,211));
-        string capitalLabel="首都　"+WorldCoordinates.Label(_setup,capital);
+        _ui.Center(_setup.TerritoryCounts[player]>0?"政治体制　"+WorldSetup.PoliticalSystem:"放浪者",new(90,710,760,45),0.7f,new(181,204,211));
+        string capitalLabel=_setup.TerritoryCounts[player]==0?"放浪者 / 自国なし":"首都　"+WorldCoordinates.Label(_setup,capital);
         _ui.Center(capitalLabel,new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
         _ui.Center("征服地　"+_setup.TerritoryCounts[player]+" cell / "+_setup.Cells.Length+" cell",new(90,842,760,48),0.76f,Cream);
         _ui.Center("海の都市も、人が集まる地点の名前",new(90,900,760,44),0.50f,new(164,192,202));
@@ -391,7 +393,7 @@ public partial class Game1 : Game
         _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
         _ui.Text("ホイール：拡縮 / スペース＋ドラッグ：移動 / 座標：（経番,緯番）",new(991,865),0.37f,new(177,206,216));
         _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
-        _ui.Button(NetButton(2),"自分の国へ",Accent,0.52f);_ui.Button(NetButton(3),"首都の面へ",Muted,0.48f);_ui.Button(NetButton(4),"北を上に",Muted,0.52f);
+        _ui.Button(NetButton(2),"自分の国へ",Accent,0.52f);_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);_ui.Button(NetButton(4),"北を上に",Muted,0.52f);
         if(_statusCell>=0)
         {
             var cell=_setup.Cells[_statusCell];int owner=_setup.Owners[cell.Id];
@@ -400,7 +402,10 @@ public partial class Game1 : Game
         }
         _ui.Button(StatusBack,"キャラ選択へ戻る",Muted,0.48f);
         _ui.Button(PopulationTurnButton,$"ターン {_setup.Population.Turn} → 次へ",Accent,0.62f);
+        _ui.Button(MovementButton,"移動",Accent,.65f);
+        if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(984,974,870,42),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
         if(_populationCell>=0)DrawPopulationPanel();
+        if(_movementOpen)DrawMovementPanel();
     }
     private void DrawCastPreviewInfo()
     {

@@ -29,7 +29,7 @@ public sealed class CubeNet
     public void Home(WorldSetup setup)
     {
         ResetView();
-        int capitalFace=setup.Cells[setup.Capitals[setup.PlayerSlot]].Face;
+        int capitalFace=setup.Cells[setup.TerritoryCounts[setup.PlayerSlot]==0?setup.ConquerorLocations[setup.PlayerSlot]:setup.Capitals[setup.PlayerSlot]].Face;
         CenterFace=Enumerable.Range(0,6).OrderByDescending(f=>setup.Cells.Count(c=>c.Face==f && setup.Owners[c.Id]==setup.PlayerSlot)).ThenBy(f=>f==capitalFace?0:1).ThenBy(f=>f).First();
         Rotation=0;Build(setup);
     }
@@ -118,7 +118,7 @@ public sealed class CubeNet
                 var pa=face.Project(a)*fit.Scale+fit.Origin;var pb=face.Project(b)*fit.Scale+fit.Origin;
                 ui.Box(new((int)Math.Min(pa.X,pb.X)-thickness/2,(int)Math.Min(pa.Y,pb.Y)-thickness/2,Math.Max(thickness,(int)Math.Abs(pa.X-pb.X)),Math.Max(thickness,(int)Math.Abs(pa.Y-pb.Y))),color);
             }
-            int capital=Array.IndexOf(setup.Capitals,cell.Id);
+            int capital=Enumerable.Range(0,setup.ActiveCount).FirstOrDefault(r=>setup.TerritoryCounts[r]>0 && setup.Capitals[r]==cell.Id,-1);
             if(capital>=0)
             {
                 int cx=rect.Center.X,cy=rect.Center.Y;
@@ -165,11 +165,21 @@ public sealed class CubeNet
                 ui.Center(label,new((int)outside.X-24,(int)outside.Y-8,48,16),0.27f,new Color(213,232,239));
             }
         }
-        var location=CellBounds(setup.Cells[setup.ConquerorLocations[setup.PlayerSlot]],panel);
+        foreach(int ruler in Enumerable.Range(0,setup.ActiveCount).OrderBy(r=>r==setup.PlayerSlot?1:0))
+        {
+        var location=CellBounds(setup.Cells[setup.ConquerorLocations[ruler]],panel);
+        if(ruler!=setup.PlayerSlot)
+        {
+            int x=location.Center.X-7+(ruler%3-1)*13,y=location.Center.Y+7+(ruler%2)*10;
+            var tint=Color.Lerp(setup.OwnerColor(ruler),Color.White,(MathF.Sin(pulse*4+ruler)+1)*.25f);
+            ui.Box(new(x-2,y-2,17,12),new Color(12,27,36));ui.Box(new(x,y,12,8),tint);ui.Box(new(x+12,y+2,2,4),tint);
+            continue;
+        }
         int bx=location.Center.X-13,by=location.Center.Y-17;
         var battery=Color.Lerp(new Color(255,240,119),Color.White,(MathF.Sin(pulse*4)+1)/2);
         ui.Box(new(bx-3,by-3,32,22),new Color(12,27,36));
         ui.Box(new(bx,by,25,16),battery);ui.Box(new(bx+25,by+4,4,8),battery);
         for(int i=0;i<3;i++)ui.Box(new(bx+3+i*7,by+3,5,10),new Color(35,112,70));
+        }
     }
 }

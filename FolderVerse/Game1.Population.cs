@@ -18,7 +18,7 @@ public partial class Game1
     {
         decimal step=keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl)?100:
             keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift)?10:1;
-        if(PopulationTurnButton.Contains(pointer)){_setup.Population.Advance(_setup);return true;}
+        if(PopulationTurnButton.Contains(pointer)){_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);if(_populationCell>=0 && _setup.Owners[_populationCell]!=_setup.PlayerSlot)_populationCell=-1;return true;}
         if(_populationCell<0)return false;
         if(new Rectangle(803,169,58,44).Contains(pointer)){_populationCell=-1;return true;}
         var simulation=_setup.Population;var population=simulation.Cells[_populationCell];

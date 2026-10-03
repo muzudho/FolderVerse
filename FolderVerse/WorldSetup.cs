@@ -46,6 +46,7 @@ public sealed class WorldSetup
     public const string PoliticalSystem="独裁者";
     public int PlayerSlot { get; private set; } = -1;
     public PopulationSimulation Population {get;}=new();
+    public ConquestCampaign Campaign {get;}=new();
     public void SelectPlayer(int slot)
     {
         if(slot<0 || slot>=ActiveCount || Owners.Length==0)throw new ArgumentOutOfRangeException(nameof(slot));
@@ -118,6 +119,7 @@ public sealed class WorldSetup
             foreach(int n in Cells[next.Cell].Neighbors) if(Owners[n] < 0) frontier.Add((next.Owner,n));
         }
         Population.Initialize(this);
+        Campaign.Reset();
     }
     public static SurfaceCell[] CreateCells(int width, int height, int depth)
     {
