@@ -2,9 +2,10 @@ namespace FolderVerse;
 using System;
 using Microsoft.Xna.Framework;
 
-public enum TerrainKind { Sea,Coast,Grassland,Hill }
+public enum TerrainKind { Sea,Coast,Grassland,Hill,Mountain }
 public static class WorldTerrain
 {
+    public const float MountainHeight=0.72f;
     public static Vector3 Offset(int seed)
     {
         var random=new SeedRandom(seed);return new Vector3(random.Unit(),random.Unit(),random.Unit())*100;
@@ -14,13 +15,14 @@ public static class WorldTerrain
         var sample=center*0.72f+offset;
         return Noise(sample)*0.68f+Noise(sample*2.07f)*0.23f+Noise(sample*4.13f)*0.09f;
     }
-    public static TerrainKind Kind(float height)=>height<0.52f?TerrainKind.Sea:height<0.55f?TerrainKind.Coast:height<0.70f?TerrainKind.Grassland:TerrainKind.Hill;
-    public static Color ColorAt(float height)=>height<0.47f?new(32,112,182):height<0.52f?new(53,155,207):height<0.55f?new(237,211,140):height<0.70f?new(85,164,103):new(167,188,124);    public static TerrainKind CellKind(SurfaceCell cell,Vector3 offset)
+    public static TerrainKind Kind(float height)=>height<0.52f?TerrainKind.Sea:height<0.55f?TerrainKind.Coast:height<0.70f?TerrainKind.Grassland:height<MountainHeight?TerrainKind.Hill:TerrainKind.Mountain;
+    public static Color ColorAt(float height)=>height<0.47f?new(32,112,182):height<0.52f?new(53,155,207):height<0.55f?new(237,211,140):height<0.70f?new(85,164,103):height<MountainHeight?new(167,188,124):height<.77f?new(111,101,96):new(227,235,242);
+    public static TerrainKind CellKind(SurfaceCell cell,Vector3 offset)
     {
-        int[] counts=new int[4];
+        int[] counts=new int[5];
         for(int y=0;y<10;y++)for(int x=0;x<10;x++)
             counts[(int)Kind(Elevation(cell.Origin+cell.U*((x+0.5f)/10)+cell.V*((y+0.5f)/10),offset))]++;
-        int best=0;for(int i=1;i<4;i++)if(counts[i]>counts[best])best=i;
+        int best=0;for(int i=1;i<counts.Length;i++)if(counts[i]>counts[best])best=i;
         return (TerrainKind)best;
     }
     private static float Noise(Vector3 p)

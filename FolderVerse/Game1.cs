@@ -158,8 +158,9 @@ public partial class Game1 : Game
             else if(click && !pan && !_net.IsAnimating && _net.ClickEdge()){}
             else if(click && !pan && !_net.IsAnimating && _statusCell>=0)
             {
-                if(_setup.Owners[_statusCell]==_setup.PlayerSlot && _setup.Population.Cells[_statusCell].Land)
-                {_populationCell=_statusCell;_populationRole=0;_movementOpen=false;}
+                var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);var post=_setup.Outposts.At(_statusCell,point);
+                if(post!=null && post.Owner==_setup.PlayerSlot && post.Population.Land)
+                {_populationCell=_statusCell;_populationOutpost=post.Id;_populationRole=0;_movementOpen=false;}
             }
             if(active)
             {
@@ -374,7 +375,8 @@ public partial class Game1 : Game
         _ui.Center(_setup.TerritoryCounts[player]>0?"政治体制　"+WorldSetup.PoliticalSystem:"放浪者",new(90,710,760,45),0.7f,new(181,204,211));
         string capitalLabel=_setup.TerritoryCounts[player]==0?"放浪者 / 自国なし":"首都　"+WorldCoordinates.Label(_setup,capital);
         _ui.Center(capitalLabel,new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
-        _ui.Center("征服地　"+_setup.TerritoryCounts[player]+" cell / "+_setup.Cells.Length+" cell",new(90,842,760,48),0.76f,Cream);
+        int fully=System.Linq.Enumerable.Count(_setup.Cells,c=>_setup.Outposts.FullOwner(c.Id)==player);
+        _ui.Center("完全占領　"+fully+" cell / 拠点 "+System.Linq.Enumerable.Count(_setup.Outposts.All,p=>p.Owner==player),new(90,842,760,48),0.76f,Cream);
         _ui.Center("海の都市も、人が集まる地点の名前",new(90,900,760,44),0.50f,new(164,192,202));
         _ui.Center("ノルテ＝北 / スール＝南 / エステ＝東 / オエステ＝西",new(70,950,800,40),0.40f,new(164,192,202));
         _ui.Box(new(970,142,914,750),new(20,42,54));
@@ -400,13 +402,15 @@ public partial class Game1 : Game
         if(_statusCell>=0)
         {
             var cell=_setup.Cells[_statusCell];int owner=_setup.Owners[cell.Id];
-            string label=WorldCoordinates.Label(_setup,cell.Id)+" / "+_setup.ConquerorNames[owner];
-            _ui.Center(label,new(970,973,914,58),Math.Min(0.57f,880/_font.MeasureString(label).X),_setup.OwnerColor(owner));
+            string label=WorldCoordinates.Label(_setup,cell.Id)+" / "+(_setup.Outposts.FullOwner(cell.Id)<0?"未占領（部分占拠）":"完全占領")+" / "+_setup.Outposts.Shares(cell.Id);
+            _ui.Center(label,new(970,970,914,32),Math.Min(0.45f,880/_font.MeasureString(label).X),_setup.OwnerColor(owner));
+            string pattern=_setup.Outposts.CellPattern(cell.Id);
+            _ui.Center(pattern,new(970,1003,914,32),Math.Min(0.40f,880/_font.MeasureString(pattern).X),Cream);
         }
         _ui.Button(StatusBack,"キャラ選択へ戻る",Muted,0.48f);
         _ui.Button(PopulationTurnButton,$"ターン {_setup.Population.Turn} → 次へ",Accent,0.62f);
         _ui.Button(MovementButton,"移動",Accent,.65f);
-        if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(984,974,870,42),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
+        if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(984,1037,870,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
         if(_populationCell>=0)DrawPopulationPanel();
         if(_movementOpen)DrawMovementPanel();
         DrawRouteLayerButtons();

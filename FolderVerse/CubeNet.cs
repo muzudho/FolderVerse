@@ -106,28 +106,28 @@ public sealed partial class CubeNet
                 var a=face.Project(p);int px=(int)(fit.Origin.X+a.X*fit.Scale),py=(int)(fit.Origin.Y+a.Y*fit.Scale);
                 int size=(int)Math.Ceiling(fit.Scale/detail)+1;
                 float elevation=WorldTerrain.Elevation(p,offset);
-                Color terrain=(cell.Face==2 || cell.Face==3) && elevation>=0.52f?new Color(245,249,255):WorldTerrain.ColorAt(elevation);
+                Color terrain=(cell.Face==2 || cell.Face==3) && elevation>=0.52f?elevation>=WorldTerrain.MountainHeight?new Color(183,200,215):new Color(245,249,255):WorldTerrain.ColorAt(elevation);
+                var post=setup.Outposts.At(cell.Id,new Point(x,y));
+                if(post!=null)terrain=Color.Lerp(terrain,setup.OwnerColor(post.Owner),post.Owner==setup.PlayerSlot?.4f:.16f);
                 ui.Box(new(px-size/2,py-size/2,size,size),terrain);
             }
-            int owner=setup.Owners[cell.Id];Color color=setup.OwnerColor(owner);
-            ui.Box(rect,color*(owner==setup.PlayerSlot?0.45f+0.10f*MathF.Sin(pulse*2):0.16f));
+            int owner=setup.Outposts.FullOwner(cell.Id);Color color=owner<0?new Color(170,181,191):setup.OwnerColor(owner);
             // Full-cell country color under a translucent terrain overlay highlights the player's country.
             int thickness=owner==setup.PlayerSlot?3:2;
             foreach(int edge in Enumerable.Range(0,4))
             {
                 var a=cell.Corners[edge];var b=cell.Corners[(edge+1)%4];
+                if(!ShowRoutes)
+                {
+                    var ga=face.Project(a)*fit.Scale+fit.Origin;var gb=face.Project(b)*fit.Scale+fit.Origin;var gd=gb-ga;
+                    ui.Tile((ga+gb)/2,new Vector2(gd.Length(),1),MathF.Atan2(gd.Y,gd.X),new Color(20,42,52));
+                }
                 var neighbor=cell.Neighbors.First(id=>Array.Exists(setup.Cells[id].Corners,p=>p==a) && Array.Exists(setup.Cells[id].Corners,p=>p==b));
-                if(setup.Owners[neighbor]==owner && setup.Cells[neighbor].Face==cell.Face)continue;
+                if(owner>=0 && setup.Outposts.FullOwner(neighbor)==owner && setup.Cells[neighbor].Face==cell.Face)continue;
                 var pa=face.Project(a)*fit.Scale+fit.Origin;var pb=face.Project(b)*fit.Scale+fit.Origin;
                 ui.Box(new((int)Math.Min(pa.X,pb.X)-thickness/2,(int)Math.Min(pa.Y,pb.Y)-thickness/2,Math.Max(thickness,(int)Math.Abs(pa.X-pb.X)),Math.Max(thickness,(int)Math.Abs(pa.Y-pb.Y))),color);
             }
-            int capital=Enumerable.Range(0,setup.ActiveCount).FirstOrDefault(r=>setup.TerritoryCounts[r]>0 && setup.Capitals[r]==cell.Id,-1);
             DrawCellRoutes(ui,setup,cell.Id,p=>face.Project(p)*fit.Scale+fit.Origin);
-            if(ShowFlags && capital>=0)
-            {
-                int cx=rect.Center.X,cy=rect.Center.Y;
-                ui.Box(new(cx-1,cy-9,2,18),new(255,242,206));ui.Box(new(cx+1,cy-9,Math.Max(7,rect.Width/5),7),setup.OwnerColor(capital));
-            }
             if(focused==cell.Id)
             {
                 ui.Box(new(rect.Left,rect.Top,rect.Width,3),Color.White);ui.Box(new(rect.Left,rect.Bottom-3,rect.Width,3),Color.White);

@@ -13,6 +13,7 @@ public static class WorldNames
         new[]{"マーレ","インスラ","ペニンスラ"},
         new[]{"ペニンスラ","インスラ","ファレーズ","マーレ"},
         new[]{"プラデラ","ヴァレー","タール","バッサン","フルス","フォンス"},
+        new[]{"モンターニャ","ベルク","コリナ","クエバ"},
         new[]{"モンターニャ","ベルク","コリナ","クエバ"}
     };
     public static string[] Cities(SurfaceCell[] cells,int seed)

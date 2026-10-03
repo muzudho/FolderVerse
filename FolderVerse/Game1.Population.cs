@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Input;
 public partial class Game1
 {
     private int _populationCell=-1,_populationRole;
+    private int _populationOutpost=-1;
     private static readonly Rectangle PopulationTurnButton=new(548,1018,350,52);
     private static readonly string[] PopulationRoles={"戦闘員数","生産者数","残数"};
     private static readonly string[] PopulationDirections={"北","東","南","西"};
@@ -18,33 +19,33 @@ public partial class Game1
     {
         decimal step=keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl)?100:
             keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift)?10:1;
-        if(PopulationTurnButton.Contains(pointer)){_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);if(_populationCell>=0 && _setup.Owners[_populationCell]!=_setup.PlayerSlot)_populationCell=-1;return true;}
+        if(PopulationTurnButton.Contains(pointer)){_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);if(_populationCell>=0 && _setup.Outposts.All[_populationOutpost].Owner!=_setup.PlayerSlot)_populationCell=-1;return true;}
         if(_populationCell<0)return false;
         if(new Rectangle(803,169,58,44).Contains(pointer)){_populationCell=-1;return true;}
-        var simulation=_setup.Population;var population=simulation.Cells[_populationCell];
+        var simulation=_setup.Population;var population=_setup.Outposts.All[_populationOutpost].Population;
         for(int role=0;role<3;role++)if(RoleButton(role).Contains(pointer)){_populationRole=role;return true;}
         for(int row=0;row<3;row++)foreach(bool plus in new[]{false,true})
         {
             if(!RateButton(row,plus).Contains(pointer))continue;
-            if(row<2)simulation.AdjustConversion(_populationCell,row,(plus?1:-1)*step);
+            if(row<2)simulation.AdjustOutpostConversion(_setup,_populationOutpost,row,(plus?1:-1)*step);
             else population.BirthPercent=Math.Clamp(population.BirthPercent+(plus?0.00001m:-0.00001m)*step,0,100);
             return true;
         }
         for(int direction=0;direction<4;direction++)foreach(bool plus in new[]{false,true})
         {
             if(!MigrationButton(direction,plus).Contains(pointer))continue;
-            if(simulation.CanMigrate(_setup,_populationCell,direction))simulation.AdjustMigration(_populationCell,_populationRole,direction,(plus?0.1m:-0.1m)*step);
+            if(simulation.CanMigrateOutpost(_setup,_populationOutpost,direction))simulation.AdjustOutpostMigration(_setup,_populationOutpost,_populationRole,direction,(plus?0.1m:-0.1m)*step);
             return true;
         }
         return new Rectangle(54,150,850,825).Contains(pointer);
     }
     private void DrawPopulationPanel()
     {
-        var simulation=_setup.Population;var population=simulation.Cells[_populationCell];
+        var simulation=_setup.Population;var post=_setup.Outposts.All[_populationOutpost];var population=post.Population;
         _ui.Box(new(64,162,850,825),new Color(3,13,20)*.8f);
         _ui.Box(new(54,150,850,825),new(27,49,62));
         _ui.Box(new(54,150,850,6),_setup.OwnerColor(_setup.PlayerSlot));
-        string city=WorldCoordinates.Label(_setup,_populationCell);
+        string city=_setup.Outposts.Label(post)+" / "+_setup.Outposts.Pattern(post);
         _ui.Text(city,new(84,178),Math.Min(.7f,690/_font.MeasureString(city).X),Cream);
         _ui.Button(new(803,169,58,44),"×",Muted,.7f);
         _ui.Text("健康な若者の総数",new(84,235),.75f,Cream);
@@ -68,10 +69,10 @@ public partial class Game1
         _ui.Text("１ターン後の移住 / "+PopulationRoles[_populationRole]+" / 0.1 %ずつ",new(84,647),.50f,Cream);
         for(int direction=0;direction<4;direction++)
         {
-            int y=682+direction*61;bool enabled=simulation.CanMigrate(_setup,_populationCell,direction);
+            int y=682+direction*61;bool enabled=simulation.CanMigrateOutpost(_setup,_populationOutpost,direction);
             int target=simulation.Neighbor(_setup,_populationCell,direction);
             _ui.Text(PopulationDirections[direction]+"へ",new(84,y+5),.7f,enabled?Cream:new Color(134,156,164));
-            string destination=enabled?_setup.CityNames[target]:!simulation.Cells[target].Land?"海：移住できない":_setup.Owners[target]!=_setup.PlayerSlot?"他国：移住できない":"陸路なし：移住できない";
+            string destination=enabled?_setup.CityNames[target]:"陸路なし・他国拠点：移住不可";
             _ui.Text(destination,new(170,y+12),Math.Min(.42f,300/_font.MeasureString(destination).X),new(170,200,211));
             _ui.Center(Percent(population.Migration[_populationRole,direction]),new(496,y,216,44),.65f,enabled?Color.White:new Color(134,156,164));
             _ui.Button(MigrationButton(direction,false),"−",enabled?Muted:new Color(37,52,60),.7f);

@@ -131,19 +131,20 @@ public sealed partial class CubeNet
             for(int y=0;y<detail;y++)for(int x=0;x<detail;x++)
             {
                 var p=cell.Origin+cell.U*((x+.5f)/detail)+cell.V*((y+.5f)/detail);float elevation=WorldTerrain.Elevation(p,offset);
-                var color=(cell.Face==2||cell.Face==3)&&elevation>=.52f?new Color(245,249,255):WorldTerrain.ColorAt(elevation);
-                color=Color.Lerp(color,world.OwnerColor(world.Owners[cell.Id]),world.Owners[cell.Id]==world.PlayerSlot?.4f:.16f);
+                var color=(cell.Face==2||cell.Face==3)&&elevation>=.52f?elevation>=WorldTerrain.MountainHeight?new Color(183,200,215):new Color(245,249,255):WorldTerrain.ColorAt(elevation);
+                var post=world.Outposts.At(cell.Id,new Point(x,y));if(post!=null)color=Color.Lerp(color,world.OwnerColor(post.Owner),post.Owner==world.PlayerSlot?.4f:.16f);
                 ui.Tile(Project(p),new Vector2(fit.Scale/detail+1),moving?angle:0,color);
             }
             var corners=cell.Corners;
             for(int edge=0;edge<4;edge++)
             {
+                var neighbor=cell.Neighbors.First(id=>world.Cells[id].Corners.Contains(corners[edge]) && world.Cells[id].Corners.Contains(corners[(edge+1)%4]));
+                int owner=world.Outposts.FullOwner(cell.Id);
+                if(ShowRoutes && owner>=0 && world.Outposts.FullOwner(neighbor)==owner && world.Cells[neighbor].Face==cell.Face)continue;
                 var a=Project(corners[edge]);var b=Project(corners[(edge+1)%4]);var delta=b-a;
-                ui.Tile((a+b)/2,new Vector2(delta.Length(),2),MathF.Atan2(delta.Y,delta.X),world.OwnerColor(world.Owners[cell.Id]));
+                ui.Tile((a+b)/2,new Vector2(delta.Length(),2),MathF.Atan2(delta.Y,delta.X),owner<0?new Color(170,181,191):world.OwnerColor(owner));
             }
             DrawCellRoutes(ui,world,cell.Id,Project);
-            if(ShowFlags && Enumerable.Range(0,world.ActiveCount).Any(r=>world.TerritoryCounts[r]>0 && world.Capitals[r]==cell.Id))
-            {var at=Project(cell.Center);ui.Tile(at,new Vector2(3,16),moving?angle:0,Color.White);ui.Tile(at+new Vector2(5,-5),new Vector2(9,6),moving?angle:0,world.OwnerColor(world.Owners[cell.Id]));}
             foreach(int ruler in Enumerable.Range(0,world.ActiveCount).Where(r=>ShowBatteries && world.ConquerorLocations[r]==cell.Id).OrderBy(r=>r==world.PlayerSlot?1:0))
             {
                 var at=Project(world.Routes.Position(cell.Id,world.ConquerorPoints[ruler]));float turn=moving?angle:0;
