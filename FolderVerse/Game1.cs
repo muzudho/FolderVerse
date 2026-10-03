@@ -14,7 +14,8 @@ public class Game1 : Game
     private readonly SeedDialog _seedDialog=new();
     private readonly ScreenshotCapture _screenshots=new();
     private SpriteBatch _spriteBatch;
-    private Texture2D _titleScreen,_pixel,_portraits;
+    private Texture2D _titleScreen,_pixel;
+    private PortraitRenderer _portraitRenderer;
     private SpriteFont _font;
     private UiPainter _ui;
     private WorldPreview _world;
@@ -41,7 +42,7 @@ public class Game1 : Game
     protected override void LoadContent()
     {
         _spriteBatch=new SpriteBatch(GraphicsDevice); _titleScreen=Content.Load<Texture2D>("Images/title-screen");
-        _portraits=Content.Load<Texture2D>("Images/conquerors-v2"); _font=Content.Load<SpriteFont>("UiFont");
+        _portraitRenderer=new PortraitRenderer(Content); _font=Content.Load<SpriteFont>("UiFont");
         _pixel=new Texture2D(GraphicsDevice,1,1); _pixel.SetData(new[]{Color.White});
         _ui=new UiPainter(_spriteBatch,_pixel,_font); _world=new WorldPreview(GraphicsDevice);
     }
@@ -200,12 +201,9 @@ public class Game1 : Game
             var rect=PortraitCell(slot);int portrait=_setup.Portraits[slot];Color color=_setup.OwnerColor(slot);
             bool active=slot<_setup.ActiveCount;
             _ui.Box(new(rect.X+2,rect.Y+2,rect.Width-4,rect.Height-4),active?color:new Color(57,69,77));
-            int sx=portrait%5*_portraits.Width/5,ex=(portrait%5+1)*_portraits.Width/5;
-            int sy=portrait/5*_portraits.Height/4,ey=(portrait/5+1)*_portraits.Height/4;
-            // Use the upper 70% of each portrait, so the face occupies the full-width card.
-            _spriteBatch.Draw(_portraits,new Rectangle(rect.X+7,rect.Y+7,rect.Width-14,rect.Height-14),new Rectangle(sx,sy,ex-sx,(int)((ey-sy)*0.7f)),active?Color.White:new Color(115,115,115));
+            _portraitRenderer.Draw(_spriteBatch,_setup.Looks[slot],new Rectangle(rect.X+7,rect.Y+7,rect.Width-14,rect.Height-14),active);
             _ui.Box(new(rect.X+8,rect.Y+8,70,28),new Color(10,25,35,215));
-            _ui.Text("#"+(portrait+1).ToString("00"),new(rect.X+16,rect.Y+10),0.46f,active?color:Color.Gray);
+            _ui.Text("#"+(slot+1).ToString("00"),new(rect.X+16,rect.Y+10),0.46f,active?color:Color.Gray);
             string cells=!active?"待機":HasTerritories?_setup.TerritoryCounts[slot]+" セル":"参戦";
             _ui.Box(new(rect.Right-101,rect.Bottom-38,92,29),new Color(10,25,35,215));
             _ui.Text(cells,new(rect.Right-94,rect.Bottom-37),0.45f,Color.White);
@@ -224,8 +222,19 @@ public class Game1 : Game
         _ui.Box(new(CastPreview.X+18,CastPreview.Y+12,CastPreview.Width-36,48),new Color(12,32,44,220));
         _ui.Center($"{_setup.Width} x {_setup.Height} x {_setup.Depth} / {_setup.Cells.Length} セル / {_setup.ActiveCount} 人",new(CastPreview.X,CastPreview.Y+12,CastPreview.Width,48),0.72f,Cream);
         string stage=_screen switch { Screen.CastRolling=>"登場人物を抽選中",Screen.CastReview=>"登場人物を確認",Screen.PlacementRolling=>"初期配置を抽選中",Screen.PlacementReview=>"初期配置を確認",_=>"初期配置を確定済み" };
-        _ui.Center(stage+" / 左ドラッグで回転",new(CastPreview.X,CastPreview.Bottom-48,CastPreview.Width,40),0.53f,new(170,206,216));
-    }    protected override void Draw(GameTime gameTime)
+        string detail=stage+" / 左ドラッグで回転";
+        for(int slot=0;slot<20;slot++) if(PortraitCell(slot).Contains(_pointer))
+        {
+            var look=_setup.Looks[slot];int sisters=0;
+            foreach(var other in _setup.Looks)if(other.BaseId==look.BaseId)sisters++;
+            detail="B"+(look.BaseId+1).ToString("00")+"-"+(look.VariantId+1)+" "+ConquerorCatalog.Themes[look.BaseId]+" / "+look.PersonalityName+" / "+look.SituationName;
+            if(sisters>1)detail+=" / 姉妹 "+sisters+" 人";
+            break;
+        }
+        _ui.Center(detail,new(CastPreview.X,CastPreview.Bottom-48,CastPreview.Width,40),0.48f,new(170,206,216));
+    }
+
+    protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(new Color(16,35,46)); var viewport=GraphicsDevice.Viewport; var canvas=CanvasBounds();
         if(canvas.Width<=0 || canvas.Height<=0){base.Draw(gameTime);return;}

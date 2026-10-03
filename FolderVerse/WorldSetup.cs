@@ -35,6 +35,8 @@ public sealed class WorldSetup
     public int Depth { get; private set; }
     public SurfaceCell[] Cells { get; private set; } = Array.Empty<SurfaceCell>();
     public int[] Portraits { get; private set; } = Enumerable.Range(0,20).ToArray();
+    public ConquerorLook[] Looks { get; private set; } = new ConquerorLook[20];
+    public int[] ColorIndices { get; private set; } = Enumerable.Range(0,20).ToArray();
     public int[] Owners { get; private set; } = Array.Empty<int>();
     public int[] Capitals { get; private set; } = Array.Empty<int>();
     public int[] TerritoryCounts { get; private set; } = new int[20];
@@ -45,7 +47,7 @@ public sealed class WorldSetup
         new(220,177,135), new(188,68,96), new(34,119,173), new(174,137,26), new(32,132,103),
         new(126,71,171), new(181,97,43), new(176,76,139), new(35,138,144), new(217,228,240)
     };
-    public Color OwnerColor(int slot) => Colors[Portraits[slot]];
+    public Color OwnerColor(int slot) => Colors[ColorIndices[slot]];
     public void SetWorld(int seed)
     {
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
@@ -58,8 +60,27 @@ public sealed class WorldSetup
     public void SetCast(int seed)
     {
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
-        CastSeed = seed; Portraits = Enumerable.Range(0,20).ToArray();
-        new SeedRandom(seed).Shuffle(Portraits); ClearPlacement();
+        CastSeed=seed;
+        var random=new SeedRandom(seed);
+        Portraits=new int[20]; Looks=new ConquerorLook[20];
+        ColorIndices=Enumerable.Range(0,20).ToArray();random.Shuffle(ColorIndices);
+        // Draw distinct completed portraits. A family can contain all six sisters.
+        int familyBase=random.Next(ConquerorCatalog.BaseCount);
+        int familySize=random.Next(5)==0 ? 2+random.Next(5) : 0;
+        int[] variants=Enumerable.Range(0,6).ToArray();random.Shuffle(variants);
+        for(int slot=0;slot<20;slot++)
+        {
+            ConquerorLook look;
+            do
+            {
+                int baseId=slot<familySize ? familyBase :
+                    slot>0 && random.Next(100)<18 ? Portraits[random.Next(slot)] : random.Next(60);
+                if(Looks.Take(slot).Count(l=>l.BaseId==baseId)>=6)baseId=random.Next(60);
+                look=new(baseId,slot<familySize?variants[slot]:random.Next(6));
+            } while(Array.IndexOf(Looks,look,0,slot)>=0);
+            Looks[slot]=look;Portraits[slot]=look.BaseId;
+        }
+        ClearPlacement();
     }
     public void ClearPlacement() { Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); TerritoryCounts = new int[20]; }
     public void SetPlacement(int seed)
