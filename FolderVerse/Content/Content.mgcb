@@ -114,3 +114,9 @@
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /build:ToyCounterFont.spritefont
+
+#begin Images/title-logo.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:PremultiplyAlpha=True
+/build:Images/title-logo.png

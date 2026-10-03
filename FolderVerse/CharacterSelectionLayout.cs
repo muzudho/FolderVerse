@@ -24,11 +24,11 @@ public static class CharacterSelectionLayout
         if(activeCount<1 || activeCount>20 || counts.Length<activeCount || counts.Take(activeCount).Any(n=>n<=0))
             throw new ArgumentException("Selection requires allocated territories.");
         int total=counts.Take(activeCount).Sum();
-        int[] sides=counts.Take(activeCount).Select(n=>Math.Clamp((int)Math.Sqrt((double)(Columns*Rows)*n/total),1,Rows)).ToArray();
+        int[] sides=counts.Take(activeCount).Select(n=>Math.Clamp((int)Math.Sqrt((double)(Columns*Rows-64)*n/total),1,Rows)).Append(8).ToArray();
         while(true)
         {
-            bool[,] used=new bool[Columns,Rows];var result=new CharacterTile[activeCount];bool fits=true;
-            foreach(int slot in Enumerable.Range(0,activeCount).OrderByDescending(i=>sides[i]).ThenByDescending(i=>counts[i]).ThenBy(i=>i))
+            bool[,] used=new bool[Columns,Rows];var result=new CharacterTile[activeCount+1];bool fits=true;
+            foreach(int slot in Enumerable.Range(0,activeCount+1).OrderByDescending(i=>sides[i]).ThenByDescending(i=>i==activeCount?int.MaxValue:counts[i]).ThenBy(i=>i))
             {
                 int size=sides[slot];bool placed=false;
                 for(int y=0;y<=Rows-size && !placed;y++)for(int x=0;x<=Columns-size && !placed;x++)
@@ -36,7 +36,7 @@ public static class CharacterSelectionLayout
                     bool empty=true;
                     for(int dy=0;dy<size && empty;dy++)for(int dx=0;dx<size;dx++)if(used[x+dx,y+dy]){empty=false;break;}
                     if(!empty)continue;
-                    result[slot]=new(slot,x,y,size);
+                    result[slot]=new(slot==activeCount?-1:slot,x,y,size);
                     for(int dy=0;dy<size;dy++)for(int dx=0;dx<size;dx++)used[x+dx,y+dy]=true;
                     placed=true;
                 }

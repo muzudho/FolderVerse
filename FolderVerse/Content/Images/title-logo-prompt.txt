@@ -1,0 +1,1 @@
+Built-in imagegen edit. Reference: title-screen.png. Extract ONLY existing FOLDER VERSE logo, Japanese subtitle and small stars/rays onto transparent full canvas. Preserve playful cream/navy lettering and original placement. Remove background, globe, toys, furniture, START button and all unrelated text. Use as faint setup-screen overlay.

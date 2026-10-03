@@ -13,6 +13,9 @@ public sealed class WorldPreview : IDisposable
     private int _primitiveCount;
     private VertexBuffer _markers;
     private int _markerCount;
+    private VertexBuffer _highlight;
+    private int _highlightCount;
+    public int HighlightedOwner { get; private set; } = -1;
     public int Width { get; private set; }
     public int Height { get; private set; }
     public int Depth { get; private set; }
@@ -35,6 +38,7 @@ public sealed class WorldPreview : IDisposable
     {
         if (width < 1 || width > 5 || height < 1 || height > 5 || depth < 1 || depth > 5)
             throw new ArgumentOutOfRangeException(nameof(width));
+        _highlight?.Dispose();_highlight=null;_highlightCount=0;HighlightedOwner=-1;
         Width = width; Height = height; Depth = depth; Seed = seed;
         _markers?.Dispose(); _markers = null; _markerCount = 0;
         var mesh = new List<VertexPositionColorNormal>();
@@ -92,6 +96,21 @@ public sealed class WorldPreview : IDisposable
         _markers=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
         _markers.SetData(mesh.ToArray()); _markerCount=mesh.Count/3;
     }
+    public void HighlightOwner(WorldSetup setup,int owner)
+    {
+        if(owner==HighlightedOwner)return;
+        _highlight?.Dispose();_highlight=null;_highlightCount=0;HighlightedOwner=owner;
+        if(owner<0 || owner>=setup.ActiveCount || setup.Owners.Length==0)return;
+        var mesh=new List<VertexPositionColorNormal>();
+        foreach(var cell in setup.Cells)
+        {
+            if(setup.Owners[cell.Id]!=owner)continue;
+            var points=cell.Corners;var lift=cell.Normal*0.008f;var color=setup.OwnerColor(owner);
+            foreach(int index in new[]{0,1,2,0,2,3})mesh.Add(new(points[index]+lift,color,cell.Normal));
+        }
+        _highlight=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
+        _highlight.SetData(mesh.ToArray());_highlightCount=mesh.Count/3;
+    }
     private static void AddFace(List<VertexPositionColorNormal> mesh, Vector3 origin, Vector3 u, Vector3 v, Vector3 normal, int unitsU, int unitsV, Vector3 offset)
     {
         const int detail = 10;
@@ -133,7 +152,7 @@ public sealed class WorldPreview : IDisposable
         return (h ^ (h >> 16)) / (float)uint.MaxValue;
     }
 
-    public void Draw(float yaw, float pitch)
+    public void Draw(float yaw, float pitch,float glow=0)
     {
         _device.BlendState = BlendState.Opaque;
         _device.DepthStencilState = DepthStencilState.Default;
@@ -148,6 +167,14 @@ public sealed class WorldPreview : IDisposable
             pass.Apply();
             _device.DrawPrimitives(PrimitiveType.TriangleList, 0, _primitiveCount);
         }
+        if(_highlight!=null)
+        {
+            _device.SetVertexBuffer(_highlight);_effect.LightingEnabled=false;
+            // Unlit country fill plus a subtle pulse makes the selected land stand out.
+            _effect.DiffuseColor=new Vector3(0.82f+0.18f*(0.5f+0.5f*MathF.Sin(glow*3)));
+            foreach(var pass in _effect.CurrentTechnique.Passes){pass.Apply();_device.DrawPrimitives(PrimitiveType.TriangleList,0,_highlightCount);}
+            _effect.DiffuseColor=Vector3.One;_effect.LightingEnabled=true;
+        }
         if(_markers != null)
         {
             _device.SetVertexBuffer(_markers); _effect.LightingEnabled=false;
@@ -155,5 +182,5 @@ public sealed class WorldPreview : IDisposable
             _effect.LightingEnabled=true;
         }
     }
-    public void Dispose() { _vertices?.Dispose(); _markers?.Dispose(); _effect.Dispose(); }
+    public void Dispose() { _vertices?.Dispose(); _markers?.Dispose();_highlight?.Dispose(); _effect.Dispose(); }
 }

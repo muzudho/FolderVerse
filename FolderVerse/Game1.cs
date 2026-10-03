@@ -14,7 +14,7 @@ public class Game1 : Game
     private readonly SeedDialog _seedDialog=new();
     private readonly ScreenshotCapture _screenshots=new();
     private SpriteBatch _spriteBatch;
-    private Texture2D _titleScreen,_pixel;
+    private Texture2D _titleScreen,_titleLogo,_pixel;
     private PortraitRenderer _portraitRenderer;
     private SpriteFont _font;
     private UiPainter _ui;
@@ -28,7 +28,9 @@ public class Game1 : Game
     private float _yaw=-0.55f,_pitch=0.3f;
     private bool _dragging;
     private CharacterTile[] _selectionTiles=Array.Empty<CharacterTile>();
-    private int _hoveredSlot=-1;
+    private int _hoveredSlot=-1,_previewOwner=-1;
+    private float _animationTime;
+    private Rectangle SelectionGlobe=>_selectionTiles.Length==0?Rectangle.Empty:_selectionTiles[^1].Bounds;
     private bool IsSelectionScreen=>_screen is Screen.PlayerSelect or Screen.PlayerReady;
     private static readonly Color Accent=new(45,135,142),Muted=new(58,78,100),Cream=new(255,232,184);
     private static readonly Rectangle StartButton=new(740,884,440,106),ActionButton=new(1360,750,400,90),RetryButton=new(1360,860,400,80),BackButton=new(100,960,320,65),PreviewArea=new(130,240,1120,680),WorldSeedButton=new(520,960,730,65);
@@ -47,6 +49,7 @@ public class Game1 : Game
     protected override void LoadContent()
     {
         _spriteBatch=new SpriteBatch(GraphicsDevice); _titleScreen=Content.Load<Texture2D>("Images/title-screen");
+        _titleLogo=Content.Load<Texture2D>("Images/title-logo");
         _portraitRenderer=new PortraitRenderer(Content); _font=Content.Load<SpriteFont>("UiFont");
         _pixel=new Texture2D(GraphicsDevice,1,1); _pixel.SetData(new[]{Color.White});
         _counter=new ToyCounterRenderer(Content.Load<SpriteFont>("ToyCounterFont"),_pixel);
@@ -86,6 +89,7 @@ public class Game1 : Game
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds;
+        _animationTime+=(float)elapsed;
         _screenshots.Update(gameTime.ElapsedGameTime.TotalSeconds);
         bool captureChord=keyboard.IsKeyDown(Keys.P) && (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
@@ -122,9 +126,16 @@ public class Game1 : Game
         else if(IsSelectionScreen)
         {
             _hoveredSlot=active && _screen==Screen.PlayerSelect?HitSelection(_pointer):-1;
-            if(click && CastBack.Contains(_pointer)){_screen=Screen.Ready;_hoveredSlot=-1;}
+            if(click && CastBack.Contains(_pointer)){_screen=Screen.Ready;_hoveredSlot=-1;_world.HighlightOwner(_setup,-1);}
             else if(click && _screen==Screen.PlayerReady && CastRetry.Contains(_pointer)){_screen=Screen.PlayerSelect;}
             else if(click && _hoveredSlot>=0){_setup.SelectPlayer(_hoveredSlot);_screen=Screen.PlayerReady;_hoveredSlot=-1;}
+            if(IsSelectionScreen)
+            {
+                Rotate(mouse,click,active,SelectionGlobe);
+                if(!_dragging)_yaw+=(float)elapsed*0.3f;
+                if(_hoveredSlot>=0)_previewOwner=_hoveredSlot;
+                _world.HighlightOwner(_setup,_screen==Screen.PlayerReady?_setup.PlayerSlot:_previewOwner);
+            }
         }
         else if(!IsCastScreen)
         {
@@ -234,7 +245,8 @@ public class Game1 : Game
     private void BeginSelection()
     {
         _selectionTiles=CharacterSelectionLayout.Create(_setup.TerritoryCounts,_setup.ActiveCount);
-        _screen=Screen.PlayerSelect;_dragging=false;_hoveredSlot=-1;
+        _screen=Screen.PlayerSelect;_dragging=false;_hoveredSlot=-1;_previewOwner=-1;
+        _world.HighlightOwner(_setup,-1);
     }
     private int HitSelection(Point point)
     {
@@ -245,7 +257,7 @@ public class Game1 : Game
             var raised=rect;raised.Offset(-10,-10);
             if(rect.Contains(point) || raised.Contains(point))return _hoveredSlot;
         }
-        foreach(var tile in _selectionTiles)if(tile.Bounds.Contains(point))return tile.Slot;
+        foreach(var tile in _selectionTiles)if(tile.Slot>=0 && tile.Bounds.Contains(point))return tile.Slot;
         return -1;
     }
     private void DrawSelectionTile(CharacterTile tile,bool floating)
@@ -281,7 +293,11 @@ public class Game1 : Game
             _ui.Box(new(cell.X,cell.Y,cell.Width,y%4==0?2:1),y%4==0?new Color(62,85,96):new Color(41,65,76));
             _ui.Box(new(cell.X,cell.Y,x%4==0?2:1,cell.Height),x%4==0?new Color(62,85,96):new Color(41,65,76));
         }
-        foreach(var tile in _selectionTiles)if(tile.Slot!=_hoveredSlot)DrawSelectionTile(tile,false);
+        foreach(var tile in _selectionTiles)if(tile.Slot>=0 && tile.Slot!=_hoveredSlot)DrawSelectionTile(tile,false);
+        var globe=SelectionGlobe;
+        _ui.Box(globe,new Color(74,111,128));
+        _ui.Box(new(globe.X+4,globe.Y+4,globe.Width-8,globe.Height-8),new Color(23,49,64));
+        _ui.Center("地球儀 / 左ドラッグで回転",new(globe.X,globe.Bottom-35,globe.Width,30),0.46f,Cream);
         if(_hoveredSlot>=0)DrawSelectionTile(_selectionTiles[_hoveredSlot],true);
         _ui.Button(CastBack,"配置を確認",Muted,0.48f);
         if(_screen==Screen.PlayerReady)_ui.Button(CastRetry,"選び直す",Accent,0.48f);
@@ -320,13 +336,16 @@ public class Game1 : Game
         if(_screen!=Screen.Title)
         {
             _spriteBatch.Begin(transformMatrix:transform);
-            _ui.Box(new(0,0,1920,1080),new(16,35,46)); if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
-            if(!IsSelectionScreen)
+            _ui.Box(new(0,0,1920,1080),new(16,35,46));
+            _spriteBatch.Draw(_titleLogo,new Rectangle(0,0,1920,1080),Color.White*0.14f);
+            if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
             {
-            var area=IsCastScreen?CastPreview:PreviewArea;
+            var globe=SelectionGlobe;
+            var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;
             GraphicsDevice.Viewport=new Viewport(canvas.X+(int)(area.X*canvas.Width/1920f),canvas.Y+(int)(area.Y*canvas.Height/1080f),Math.Max(1,(int)(area.Width*canvas.Width/1920f)),Math.Max(1,(int)(area.Height*canvas.Height/1080f)));
-            _world.Draw(_yaw,_pitch); GraphicsDevice.Viewport=viewport;
-            if(IsCastScreen) { _spriteBatch.Begin(transformMatrix:transform); DrawCastPreviewInfo(); _spriteBatch.End(); }
+            _world.Draw(_yaw,_pitch,_animationTime); GraphicsDevice.Viewport=viewport;
+            if(IsCastScreen && !IsSelectionScreen) { _spriteBatch.Begin(transformMatrix:transform); DrawCastPreviewInfo(); _spriteBatch.End(); }
+            if(IsSelectionScreen && _hoveredSlot>=0){_spriteBatch.Begin(transformMatrix:transform);DrawSelectionTile(_selectionTiles[_hoveredSlot],true);_spriteBatch.End();}
             }
         }
         if(_seedDialog.IsOpen) { _spriteBatch.Begin(transformMatrix:transform); _seedDialog.Draw(_ui); _spriteBatch.End(); }
