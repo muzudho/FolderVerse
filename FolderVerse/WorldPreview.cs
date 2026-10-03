@@ -123,33 +123,11 @@ public sealed class WorldPreview : IDisposable
             var c = b + v / countV;
             var d = a + v / countV;
             var center = (a + c) * 0.5f;
-            var sample = center * 0.72f + offset;
-            float elevation = Noise(sample) * 0.68f + Noise(sample * 2.07f) * 0.23f + Noise(sample * 4.13f) * 0.09f;
-            Color color = elevation < 0.47f ? new Color(32, 112, 182)
-                : elevation < 0.52f ? new Color(53, 155, 207)
-                : elevation < 0.55f ? new Color(237, 211, 140)
-                : elevation < 0.70f ? new Color(85, 164, 103)
-                : new Color(167, 188, 124);
+            Color color=WorldTerrain.ColorAt(WorldTerrain.Elevation(center,offset));
             if (x % detail == 0 || y % detail == 0) color = Color.Lerp(color, new Color(17, 47, 62), 0.3f);
             mesh.Add(new(a, color, normal)); mesh.Add(new(b, color, normal)); mesh.Add(new(c, color, normal));
             mesh.Add(new(a, color, normal)); mesh.Add(new(c, color, normal)); mesh.Add(new(d, color, normal));
         }
-    }
-
-    private static float Noise(Vector3 p)
-    {
-        int x = (int)MathF.Floor(p.X), y = (int)MathF.Floor(p.Y), z = (int)MathF.Floor(p.Z);
-        float tx = Smooth(p.X - x), ty = Smooth(p.Y - y), tz = Smooth(p.Z - z);
-        float bottom = MathHelper.Lerp(MathHelper.Lerp(Hash(x,y,z), Hash(x+1,y,z), tx), MathHelper.Lerp(Hash(x,y+1,z), Hash(x+1,y+1,z), tx), ty);
-        float top = MathHelper.Lerp(MathHelper.Lerp(Hash(x,y,z+1), Hash(x+1,y,z+1), tx), MathHelper.Lerp(Hash(x,y+1,z+1), Hash(x+1,y+1,z+1), tx), ty);
-        return MathHelper.Lerp(bottom, top, tz);
-    }
-    private static float Smooth(float x) => x * x * (3 - 2 * x);
-    private static float Hash(int x, int y, int z)
-    {
-        uint h = unchecked((uint)x * 374761393u + (uint)y * 668265263u + (uint)z * 2147483647u);
-        h = (h ^ (h >> 13)) * 1274126177u;
-        return (h ^ (h >> 16)) / (float)uint.MaxValue;
     }
 
     public void Draw(float yaw, float pitch,float glow=0)

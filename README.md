@@ -89,7 +89,7 @@ manifest.json に360枚の指定を保存。prompt-01.txt ～ prompt-10.txt に�
 10pxは1920×1080の論理画面での寸法で、ウィンドウの拡縮時は他の要素と同率で拡縮する。
 クリックで WorldSetup.PlayerSlot に国のスロット番号を記録し、その人物を「あなた」と表示する。
 選び直すボタンで再選択できる。人物・世界・初期配置を作り直すと操作人物の指定を解除する。
-プレイヤー選択後の実際の世界征服ゲーム本編は今後の実装。
+プレイヤー確定後は「世界征服状況へ」ボタン、または Enter で状況画面へ進む。
 ## 顔クロップ修正・設定画面ロゴ・選択地球儀
 
 生成画像のシートは行高さが微妙に不均等で、特にシート07はずれが大きかった。全10シートを測定して等分クロップを廃止。シート07は実際の境界
@@ -105,3 +105,30 @@ title-logo.png は組み込みimagegenでタイトル画像からロゴ・副題
 地球儀は自動回転し、左ドラッグで回せる。人物選択対象にはならない。
 最後にホバーした人物の領地を国境と同じ色で全面塗りし、照明に依存しない明るさで穏やかに点滅させる。
 キャラ確定後は自分の国をハイライトする。配置確認へ戻ると解除する。
+
+## 世界征服状況
+
+左側にはカレンダー2×2マスの肖像と金色の額縁、征服者名、政治体制（全員「独裁者」）、首都名、領地数を表示する。
+右側は地球儀と同じ地形を使う6面の展開図。自国のセルが最も多い面を中央に置き、自国の色を点滅させる。
+左右回転ボタンで90度ずつ回転し、面クリックまたは矢印キーで中心面を移す。「自分の国へ」「首都の面へ」「北を上に」で表示を戻せる。
+同じ英字が付いた辺同士は地球上でつながる。セルへのホバーで都市名と征服者名を表示する。
+通常面の北は +Y。北極面の上は +Z、南極面の上は -Z を基準とする。
+
+各セルは世界SEEDから再現できる固有の都市名を持つ。海・沿岸・草原・丘陵の地形に合わせた語をカタカナで組み合わせる。
+海セルは面をまたぐ隣接関係で最寄りの陸地都市を探し、「都市名・方角」という集合地点名を付ける。
+方角はその都市の北方向を基準にする。すべて海の世界には独立した名前を付ける。
+同名になる海域には追加の語を付けて区別する。征服者名は人物SEEDから再現する。
+
+語彙の出典は Wiktionary。読みはゲーム向けの近似で、合成名は架空の地名。
+
+| 用語 | 読み・意味 | 出典 |
+| --- | --- | --- |
+| vallée / Tal | ヴァレー / タール：谷 | [仏](https://en.wiktionary.org/wiki/vall%C3%A9e)・[独](https://en.wiktionary.org/wiki/Tal) |
+| río / Fluss | リオ / フルス：川 | [西](https://en.wiktionary.org/wiki/r%C3%ADo)・[独](https://en.wiktionary.org/wiki/Fluss) |
+| montaña / Berg / colina | モンターニャ / ベルク：山、コリナ：丘 | [山](https://en.wiktionary.org/wiki/monta%C3%B1a)・[山](https://en.wiktionary.org/wiki/Berg)・[丘](https://en.wiktionary.org/wiki/colina) |
+| bassin / falaise / cueva / pradera | バッサン：盆地、ファレーズ：崖、クエバ：洞窟、プラデラ：草原 | [盆地](https://en.wiktionary.org/wiki/bassin)・[崖](https://en.wiktionary.org/wiki/falaise)・[洞窟](https://en.wiktionary.org/wiki/cueva)・[草原](https://en.wiktionary.org/wiki/pradera) |
+| mare / insula / península / fons | マーレ：海、インスラ：島、ペニンスラ：半島、フォンス：泉 | [海](https://en.wiktionary.org/wiki/mare)・[島](https://en.wiktionary.org/wiki/insula)・[半島](https://en.wiktionary.org/wiki/pen%C3%ADnsula)・[泉](https://en.wiktionary.org/wiki/fons) |
+| nova / vecchio / alto / bajo | ノヴァ：新しい、ヴェッキオ：古い、アルト：高い、バホ：低い | [新](https://en.wiktionary.org/wiki/nova)・[古](https://en.wiktionary.org/wiki/vecchio)・[高](https://en.wiktionary.org/wiki/alto)・[低](https://en.wiktionary.org/wiki/bajo) |
+| rosa / mela / victoria / miracolo | ローザ：バラ、メーラ：リンゴ、ヴィクトリア：勝利、ミラコロ：奇跡 | [バラ](https://en.wiktionary.org/wiki/rosa)・[リンゴ](https://en.wiktionary.org/wiki/mela)・[勝利](https://en.wiktionary.org/wiki/victoria)・[奇跡](https://en.wiktionary.org/wiki/miracolo) |
+| polis / ciudad / plaza / ville / town | ポリス / シウダード：都市、プラサ：広場、ヴィル / タウン：町 | [都市](https://en.wiktionary.org/wiki/polis)・[都市](https://en.wiktionary.org/wiki/ciudad)・[広場](https://en.wiktionary.org/wiki/plaza)・[町](https://en.wiktionary.org/wiki/ville)・[町](https://en.wiktionary.org/wiki/town) |
+| norte / sur / este / oeste | ノルテ：北、スール：南、エステ：東、オエステ：西 | [北](https://en.wiktionary.org/wiki/norte)・[南](https://en.wiktionary.org/wiki/sur)・[東](https://en.wiktionary.org/wiki/este)・[西](https://en.wiktionary.org/wiki/oeste) |

@@ -40,6 +40,9 @@ public sealed class WorldSetup
     public int[] Owners { get; private set; } = Array.Empty<int>();
     public int[] Capitals { get; private set; } = Array.Empty<int>();
     public int[] TerritoryCounts { get; private set; } = new int[20];
+    public string[] CityNames { get; private set; } = Array.Empty<string>();
+    public string[] ConquerorNames { get; private set; } = Array.Empty<string>();
+    public const string PoliticalSystem="独裁者";
     public int PlayerSlot { get; private set; } = -1;
     public void SelectPlayer(int slot)
     {
@@ -61,6 +64,7 @@ public sealed class WorldSetup
         var random = new SeedRandom(seed);
         Width = random.Next(5) + 1; Height = random.Next(5) + 1; Depth = random.Next(5) + 1;
         Cells = CreateCells(Width, Height, Depth);
+        CityNames=WorldNames.Cities(Cells,seed);
         ClearPlacement();
     }
     public void SetCast(int seed)
@@ -86,6 +90,7 @@ public sealed class WorldSetup
             } while(Array.IndexOf(Looks,look,0,slot)>=0);
             Looks[slot]=look;Portraits[slot]=look.BaseId;
         }
+        ConquerorNames=WorldNames.Conquerors(Looks,seed);
         ClearPlacement();
     }
     public void ClearPlacement() { PlayerSlot=-1; Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); TerritoryCounts = new int[20]; }

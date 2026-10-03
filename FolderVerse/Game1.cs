@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 public class Game1 : Game
 {
-    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady }
+    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, WorldStatus }
     private readonly GraphicsDeviceManager _graphics;
     private readonly Random _random=new();
     private readonly WorldSetup _setup=new();
@@ -30,6 +30,11 @@ public class Game1 : Game
     private CharacterTile[] _selectionTiles=Array.Empty<CharacterTile>();
     private int _hoveredSlot=-1,_previewOwner=-1;
     private float _animationTime;
+    private readonly CubeNet _net=new();
+    private int _statusCell=-1;
+    private static readonly Rectangle NetPanel=new(1040,240,790,580),StatusBack=new(54,1018,260,52),StatusProceed=new(518,1020,480,50);
+    private static Rectangle NetButton(int i)=>new(984+i*177,912,166,50);
+    private bool IsStatusScreen=>_screen==Screen.WorldStatus;
     private Rectangle SelectionGlobe=>_selectionTiles.Length==0?Rectangle.Empty:_selectionTiles[^1].Bounds;
     private bool IsSelectionScreen=>_screen is Screen.PlayerSelect or Screen.PlayerReady;
     private static readonly Color Accent=new(45,135,142),Muted=new(58,78,100),Cream=new(255,232,184);
@@ -123,11 +128,30 @@ public class Game1 : Game
         }
         else if(_screen==Screen.Title)
         { if((click && StartButton.Contains(_pointer)) || enter)BeginRolling(); }
+        else if(IsStatusScreen)
+        {
+            _statusCell=_net.Hit(_setup,NetPanel,_pointer);
+            if(click && StatusBack.Contains(_pointer)){_screen=Screen.PlayerReady;}
+            else if(click && NetButton(0).Contains(_pointer))_net.Turn(_setup,-1);
+            else if(click && NetButton(1).Contains(_pointer))_net.Turn(_setup,1);
+            else if(click && NetButton(2).Contains(_pointer))_net.Home(_setup);
+            else if(click && NetButton(3).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.Capitals[_setup.PlayerSlot]].Face);
+            else if(click && NetButton(4).Contains(_pointer))_net.Turn(_setup,(4-_net.Rotation)%4);
+            else if(click && _statusCell>=0)_net.SetCenter(_setup,_setup.Cells[_statusCell].Face);
+            if(active)
+            {
+                if(keyboard.IsKeyDown(Keys.Up) && _previousKeyboard.IsKeyUp(Keys.Up))_net.Move(_setup,0);
+                if(keyboard.IsKeyDown(Keys.Right) && _previousKeyboard.IsKeyUp(Keys.Right))_net.Move(_setup,1);
+                if(keyboard.IsKeyDown(Keys.Down) && _previousKeyboard.IsKeyUp(Keys.Down))_net.Move(_setup,2);
+                if(keyboard.IsKeyDown(Keys.Left) && _previousKeyboard.IsKeyUp(Keys.Left))_net.Move(_setup,3);
+            }
+        }
         else if(IsSelectionScreen)
         {
             _hoveredSlot=active && _screen==Screen.PlayerSelect?HitSelection(_pointer):-1;
             if(click && CastBack.Contains(_pointer)){_screen=Screen.Ready;_hoveredSlot=-1;_world.HighlightOwner(_setup,-1);}
             else if(click && _screen==Screen.PlayerReady && CastRetry.Contains(_pointer)){_screen=Screen.PlayerSelect;}
+            else if(_screen==Screen.PlayerReady && ((click && StatusProceed.Contains(_pointer)) || enter)){_net.Home(_setup);_statusCell=-1;_screen=Screen.WorldStatus;}
             else if(click && _hoveredSlot>=0){_setup.SelectPlayer(_hoveredSlot);_screen=Screen.PlayerReady;_hoveredSlot=-1;}
             if(IsSelectionScreen)
             {
@@ -300,11 +324,50 @@ public class Game1 : Game
         _ui.Center("地球儀 / 左ドラッグで回転",new(globe.X,globe.Bottom-35,globe.Width,30),0.46f,Cream);
         if(_hoveredSlot>=0)DrawSelectionTile(_selectionTiles[_hoveredSlot],true);
         _ui.Button(CastBack,"配置を確認",Muted,0.48f);
-        if(_screen==Screen.PlayerReady)_ui.Button(CastRetry,"選び直す",Accent,0.48f);
+        if(_screen==Screen.PlayerReady){_ui.Button(CastRetry,"選び直す",Accent,0.48f);_ui.Button(StatusProceed,"世界征服状況へ",Accent,0.57f);}
         int focus=_screen==Screen.PlayerReady?_setup.PlayerSlot:_hoveredSlot;
         string detail=focus<0?"顔にカーソルを合わせて選択":
             (_screen==Screen.PlayerReady?"あなたは ":"")+"#"+(focus+1).ToString("00")+" "+ConquerorCatalog.Themes[_setup.Looks[focus].BaseId];
-        _ui.Center(detail,new(520,1020,1340,50),0.64f,focus<0?Cream:_setup.OwnerColor(focus));
+        _ui.Center(detail,new(_screen==Screen.PlayerReady?1010:520,1020,_screen==Screen.PlayerReady?850:1340,50),0.64f,focus<0?Cream:_setup.OwnerColor(focus));
+    }
+    private void DrawStatusUi()
+    {
+        _ui.Text("世界征服状況",new(54,22),1.1f,Cream);
+        int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
+        var image=new Rectangle(212,220,518,360);
+        // Raised ceremonial frame: layered gilt bevels, corners and a crest.
+        _ui.Box(new(188,203,570,412),new Color(4,14,23,180));
+        Color[] gold={new(100,58,18),new(235,177,64),new(255,231,152),new(127,76,21),new(239,192,85)};
+        for(int i=0;i<gold.Length;i++){int margin=24-i*4;_ui.Box(new(image.X-margin,image.Y-margin,image.Width+margin*2,image.Height+margin*2),gold[i]);}
+        _portraitRenderer.Draw(_spriteBatch,_setup.Looks[player],image);
+        foreach(var corner in new[]{new Point(image.Left-14,image.Top-14),new Point(image.Right+14,image.Top-14),new Point(image.Left-14,image.Bottom+14),new Point(image.Right+14,image.Bottom+14)})
+        {
+            _spriteBatch.Draw(_pixel,new Vector2(corner.X,corner.Y),null,color,MathHelper.PiOver4,new Vector2(0.5f),new Vector2(22),SpriteEffects.None,0);
+        }
+        _ui.Box(new(330,165,282,42),new(125,78,28));
+        _ui.Center("★ 世界征服者 ★",new(330,165,282,42),0.65f,new(255,227,132));
+        _ui.Box(new(210,633,520,62),new(27,46,55));
+        _ui.Center("征服者　"+_setup.ConquerorNames[player],new(90,641,760,56),0.88f,Cream);
+        _ui.Center("政治体制　"+WorldSetup.PoliticalSystem,new(90,710,760,45),0.7f,new(181,204,211));
+        _ui.Center("首都　"+_setup.CityNames[capital],new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString("首都　"+_setup.CityNames[capital]).X),Cream);
+        _ui.Center("征服地　"+_setup.TerritoryCounts[player]+" cell / "+_setup.Cells.Length+" cell",new(90,842,760,48),0.76f,Cream);
+        _ui.Center("海の都市も、人が集まる地点の名前",new(90,900,760,44),0.50f,new(164,192,202));
+        _ui.Center("ノルテ＝北 / スール＝南 / エステ＝東 / オエステ＝西",new(70,950,800,40),0.40f,new(164,192,202));
+        _ui.Box(new(970,142,914,750),new(20,42,54));
+        _ui.Text("地球儀の展開図 / "+CubeNet.FaceNames[_net.CenterFace]+" が中心",new(991,156),0.68f,Cream);
+        string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地球の北＝＋Y / 北を上に";
+        _ui.Text(north+" / 回転 "+(_net.Rotation*90)+"°",new(991,203),0.43f,new(177,206,216));
+        _net.Draw(_ui,_setup,NetPanel,_statusCell,_animationTime);
+        _ui.Text("同じ英字の辺はつながる / 面クリック・矢印キーで中心を移動",new(991,846),0.39f,new(177,206,216));
+        _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
+        _ui.Button(NetButton(2),"自分の国へ",Accent,0.52f);_ui.Button(NetButton(3),"首都の面へ",Muted,0.48f);_ui.Button(NetButton(4),"北を上に",Muted,0.52f);
+        if(_statusCell>=0)
+        {
+            var cell=_setup.Cells[_statusCell];int owner=_setup.Owners[cell.Id];
+            string label=_setup.CityNames[cell.Id]+" / "+_setup.ConquerorNames[owner];
+            _ui.Center(label,new(970,973,914,58),Math.Min(0.57f,880/_font.MeasureString(label).X),_setup.OwnerColor(owner));
+        }
+        _ui.Button(StatusBack,"キャラ選択へ戻る",Muted,0.48f);
     }
     private void DrawCastPreviewInfo()
     {
@@ -338,7 +401,9 @@ public class Game1 : Game
             _spriteBatch.Begin(transformMatrix:transform);
             _ui.Box(new(0,0,1920,1080),new(16,35,46));
             _spriteBatch.Draw(_titleLogo,new Rectangle(0,0,1920,1080),Color.White*0.14f);
-            if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
+            if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
+            {
+            if(!IsStatusScreen)
             {
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;
@@ -346,6 +411,7 @@ public class Game1 : Game
             _world.Draw(_yaw,_pitch,_animationTime); GraphicsDevice.Viewport=viewport;
             if(IsCastScreen && !IsSelectionScreen) { _spriteBatch.Begin(transformMatrix:transform); DrawCastPreviewInfo(); _spriteBatch.End(); }
             if(IsSelectionScreen && _hoveredSlot>=0){_spriteBatch.Begin(transformMatrix:transform);DrawSelectionTile(_selectionTiles[_hoveredSlot],true);_spriteBatch.End();}
+            }
             }
         }
         if(_seedDialog.IsOpen) { _spriteBatch.Begin(transformMatrix:transform); _seedDialog.Draw(_ui); _spriteBatch.End(); }
