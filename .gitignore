@@ -363,3 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 # Local game screenshots
 /Screenshots/
+
+# Keep development diaries under version control.
+!/docs/dev/log/
+!/docs/dev/log/**
