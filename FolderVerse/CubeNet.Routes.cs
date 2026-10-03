@@ -27,6 +27,7 @@ public sealed partial class CubeNet
         if(ShowRoutes)
         {
             var active=world.ConquerorLocations.Select((c,r)=>(Cell:c,Ruler:r)).Where(p=>p.Cell==cell)
+                .Where(p=>world.Outposts.Current(p.Ruler)?.Center!=world.ConquerorPoints[p.Ruler])
                 .SelectMany(p=>Enumerable.Range(0,4).Select(d=>world.Routes.ForRuler(p.Ruler,d))).Where(r=>r!=null);
             foreach(var route in world.Routes.DisplayPaths(cell).Concat(active))
             {

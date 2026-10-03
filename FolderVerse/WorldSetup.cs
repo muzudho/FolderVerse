@@ -128,6 +128,8 @@ public sealed class WorldSetup
         Routes.Initialize(this);
         ConquerorPoints=ConquerorLocations.Select(Routes.Start).ToArray();
         Outposts.Initialize(this);
+        // Start at the actual outpost node, rather than a separate point near the cell centre.
+        for(int ruler=0;ruler<ActiveCount;ruler++)ConquerorPoints[ruler]=Outposts.Current(ruler).Center;
         Routes.RefreshDisplay();
         Campaign.Reset();
     }
