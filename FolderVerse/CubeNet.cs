@@ -8,7 +8,7 @@ public sealed record NetFace(int Face,Vector3 Right,Vector3 Up,Vector2 Center,fl
 {
     public Vector2 Project(Vector3 point)=>Center+new Vector2(Vector3.Dot(point,Right),-Vector3.Dot(point,Up));
 }
-public sealed class CubeNet
+public sealed partial class CubeNet
 {
     public int CenterFace { get; private set; }
     public int Rotation { get; private set; }
@@ -28,15 +28,17 @@ public sealed class CubeNet
     public static readonly string[] FaceNames={"東面","西面","北極面","南極面","正面","背面"};
     public void Home(WorldSetup setup)
     {
+        CancelAnimation();
         ResetView();
         int capitalFace=setup.Cells[setup.TerritoryCounts[setup.PlayerSlot]==0?setup.ConquerorLocations[setup.PlayerSlot]:setup.Capitals[setup.PlayerSlot]].Face;
         CenterFace=Enumerable.Range(0,6).OrderByDescending(f=>setup.Cells.Count(c=>c.Face==f && setup.Owners[c.Id]==setup.PlayerSlot)).ThenBy(f=>f==capitalFace?0:1).ThenBy(f=>f).First();
         Rotation=0;Build(setup);
     }
-    public void SetCenter(WorldSetup setup,int face){CenterFace=face;Rotation=0;Build(setup);}
-    public void Turn(WorldSetup setup,int direction){Rotation=(Rotation+direction+4)%4;Build(setup);}
+    public void SetCenter(WorldSetup setup,int face){CancelAnimation();CenterFace=face;Rotation=0;Build(setup);}
+    public void Turn(WorldSetup setup,int direction){CancelAnimation();Rotation=(Rotation+direction+4)%4;Build(setup);}
     public void Move(WorldSetup setup,int direction)
     {
+        CancelAnimation();
         var center=Faces[0];var normal=direction switch{0=>center.Up,1=>center.Right,2=>-center.Up,_=>-center.Right};
         CenterFace=Array.IndexOf(Normals,normal);Build(setup);
     }
@@ -91,6 +93,7 @@ public sealed class CubeNet
     }
     public void Draw(UiPainter ui,WorldSetup setup,Rectangle panel,int focused,float pulse)
     {
+        if(IsAnimating){DrawAnimation(ui,setup,panel,pulse);return;}
         var fit=Fit(panel);var offset=WorldTerrain.Offset(setup.WorldSeed);
         foreach(var cell in setup.Cells)
         {
@@ -181,5 +184,6 @@ public sealed class CubeNet
         ui.Box(new(bx,by,25,16),battery);ui.Box(new(bx+25,by+4,4,8),battery);
         for(int i=0;i<3;i++)ui.Box(new(bx+3+i*7,by+3,5,10),new Color(35,112,70));
         }
+        DrawHoveredEdge(ui,panel);
     }
 }

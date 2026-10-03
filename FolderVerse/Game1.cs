@@ -96,6 +96,7 @@ public partial class Game1 : Game
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds;
         _animationTime+=(float)elapsed;
+        _net.UpdateAnimation((float)elapsed);
         _screenshots.Update(gameTime.ElapsedGameTime.TotalSeconds);
         bool captureChord=keyboard.IsKeyDown(Keys.P) && (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
@@ -143,7 +144,8 @@ public partial class Game1 : Game
                 int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
                 if(wheel!=0)_net.ZoomAt(NetPanel,_pointer,wheel);
             }
-            _statusCell=_net.Hit(_setup,NetPanel,_pointer);
+            _statusCell=_net.IsAnimating?-1:_net.Hit(_setup,NetPanel,_pointer);
+            _net.HoverEdge(NetPanel,_pointer);
             if(click && MovementClick(_pointer,keyboard)){}
             else if(click && PopulationClick(_pointer,keyboard)){}
             else if(click && StatusBack.Contains(_pointer)){_screen=Screen.PlayerReady;_populationCell=-1;_movementOpen=false;}
@@ -152,11 +154,11 @@ public partial class Game1 : Game
             else if(click && NetButton(2).Contains(_pointer))_net.Home(_setup);
             else if(click && NetButton(3).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
             else if(click && NetButton(4).Contains(_pointer))_net.Turn(_setup,(4-_net.Rotation)%4);
-            else if(click && !pan && _statusCell>=0)
+            else if(click && !pan && !_net.IsAnimating && _net.ClickEdge()){}
+            else if(click && !pan && !_net.IsAnimating && _statusCell>=0)
             {
                 if(_setup.Owners[_statusCell]==_setup.PlayerSlot && _setup.Population.Cells[_statusCell].Land)
                 {_populationCell=_statusCell;_populationRole=0;_movementOpen=false;}
-                else _net.SetCenter(_setup,_setup.Cells[_statusCell].Face);
             }
             if(active)
             {
@@ -391,7 +393,7 @@ public partial class Game1 : Game
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         string location="征服者現在地　"+WorldCoordinates.Label(_setup,_setup.ConquerorLocations[player]);
         _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
-        _ui.Text("ホイール：拡縮 / スペース＋ドラッグ：移動 / 座標：（経番,緯番）",new(991,865),0.37f,new(177,206,216));
+        _ui.Text("辺クリック：つなぎ替え / ホイール：拡縮 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
         _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
         _ui.Button(NetButton(2),"自分の国へ",Accent,0.52f);_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);_ui.Button(NetButton(4),"北を上に",Muted,0.52f);
         if(_statusCell>=0)

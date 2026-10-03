@@ -11,6 +11,7 @@ public sealed class UiPainter
     public Point Pointer { get; set; }
     public UiPainter(SpriteBatch batch, Texture2D pixel, SpriteFont font) { Batch=batch; _pixel=pixel; _font=font; }
     public void Box(Rectangle rect, Color color) => Batch.Draw(_pixel,rect,color);
+    public void Tile(Vector2 center,Vector2 size,float rotation,Color color)=>Batch.Draw(_pixel,center,null,color,rotation,new Vector2(.5f),size,SpriteEffects.None,0);
     public void Text(string text, Vector2 at, float scale, Color color) => Batch.DrawString(_font,text,at,color,0,Vector2.Zero,scale,SpriteEffects.None,0);
     public void Center(string text, Rectangle rect, float scale, Color color)
     {
