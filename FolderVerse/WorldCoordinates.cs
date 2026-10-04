@@ -1,6 +1,7 @@
 namespace FolderVerse;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 public static class WorldCoordinates
@@ -35,5 +36,28 @@ public static class WorldCoordinates
     public static string Label(WorldSetup world,int cellId)
     {
         var at=At(world,world.Cells[cellId]);return world.CityNames[cellId]+$"（{at.X},{at.Y}）";
+    }
+    public static Dictionary<int,(bool Longitude,bool Latitude)> GlobeLabelComponents(WorldSetup world,IEnumerable<int> visible)
+    {
+        var coordinates=visible.Distinct().ToDictionary(id=>id,id=>At(world,world.Cells[id]));
+        bool Interior(int id,bool longitude)
+        {
+            var cell=world.Cells[id];var coordinate=coordinates[id];
+            var neighbors=cell.Neighbors.Where(n=>coordinates.ContainsKey(n) && world.Cells[n].Face==cell.Face)
+                .Where(n=>longitude?coordinates[n].X==coordinate.X:coordinates[n].Y==coordinate.Y).ToArray();
+            for(int i=0;i<neighbors.Length;i++)for(int j=i+1;j<neighbors.Length;j++)
+            {
+                var a=Vector3.Normalize(world.Cells[neighbors[i]].Center-cell.Center);
+                var b=Vector3.Normalize(world.Cells[neighbors[j]].Center-cell.Center);
+                if(Vector3.Dot(a,b)<-.99f)return true;
+            }
+            return false;
+        }
+        return coordinates.Keys.ToDictionary(id=>id,id=>
+        {
+            bool longitude=!Interior(id,true),latitude=!Interior(id,false);
+            // A label must retain at least one coordinate, even at intersecting runs.
+            return (longitude,latitude || !longitude);
+        });
     }
 }

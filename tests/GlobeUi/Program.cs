@@ -33,6 +33,21 @@ sealed class GlobeCheck:Game1
         }
         Check(checkedOffsets>0,"Normals did not separate coordinates from the surface");
         Check(!globe.ProjectVisible(new(0,0,-setup.Depth/2f),Vector3.Forward,0,0,panel,out _,2f),"Raised back label visible");
+        foreach(bool longitude in new[]{true,false})
+        {
+            var run=setup.Cells.Where(c=>c.Face==0)
+                .GroupBy(c=>longitude?WorldCoordinates.At(setup,c).X:WorldCoordinates.At(setup,c).Y)
+                .First(g=>g.Count()>=3).OrderBy(c=>longitude?WorldCoordinates.At(setup,c).Y:WorldCoordinates.At(setup,c).X).ToArray();
+            var components=WorldCoordinates.GlobeLabelComponents(setup,run.Select(c=>c.Id));
+            for(int i=0;i<run.Length;i++)
+            {
+                var shown=components[run[i].Id];bool endpoint=i==0 || i==run.Length-1;
+                Check((longitude?shown.Longitude:shown.Latitude)==endpoint,"Repeated coordinate endpoints/interior wrong");
+                Check(longitude?shown.Latitude:shown.Longitude,"Changing coordinate was suppressed");
+            }
+            var isolated=WorldCoordinates.GlobeLabelComponents(setup,new[]{run[0].Id,run[^1].Id});
+            Check(isolated.Values.All(v=>v.Longitude && v.Latitude),"Gap endpoints were suppressed");
+        }
     }
     protected override void Update(GameTime time)
     {
@@ -44,7 +59,10 @@ sealed class GlobeCheck:Game1
                 float yaw=(float)Get("_yaw");Input(new(1400,500),ButtonState.Pressed);Input(new(1460,530),ButtonState.Pressed);Input(new(1460,530),ButtonState.Released);
                 Check((float)Get("_yaw")!=yaw,"Globe drag failed");break;
             case 2:Click(new(410,1040));Check(!(bool)Get("_statusGlobe") && (bool)Get("_movementOpen"),"Movement did not open net");break;
-            case 3:Click(new(830,190));Check((bool)Get("_statusGlobe") && !(bool)Get("_movementOpen"),"Movement did not restore globe");break;
+            case 3:
+                Click(new(830,190));Check((bool)Get("_statusGlobe") && !(bool)Get("_movementOpen"),"Movement did not restore globe");
+                Click(new(1730,935));Check((float)Get("_yaw")==0 && (float)Get("_pitch")==0,"Head/belly orientation reset failed");
+                Check(WorldPreview.Orientation(0,0)==Matrix.Identity,"Reset orientation is not head up and belly forward");break;
             case 4:Click(new(1810,104));Check(!(bool)Get("_statusGlobe"),"Net toggle failed");break;
             case 5:Click(new(1710,104));var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();break;
             case 6:Console.WriteLine("PASS: globe/net switching, two-cell normal offset and visible normal lines, back-face hiding, drag rotation, movement view restoration, coordinate colors and small window.");Exit();break;
@@ -58,6 +76,8 @@ sealed class GlobeCheck:Game1
             bool Has(Color c)=>Enumerable.Range(240,580).Any(y=>Enumerable.Range(1040,790).Any(x=>pixels[y*p.BackBufferWidth+x]==c));
             Check(Has(WorldCoordinates.LongitudeColor)&&Has(WorldCoordinates.LatitudeColor),"Projected coordinates missing");
             Check(Has(new Color(172,202,215)),"Normal lines missing");
+            var toy=new Rectangle(1601,359,221,265);
+            Check(Enumerable.Range(toy.Top,toy.Height).Sum(y=>Enumerable.Range(toy.Left,toy.Width).Count(x=>pixels[y*p.BackBufferWidth+x]!=pixels[300*p.BackBufferWidth+1800]))>1000,"Direction robot missing");
         }
         using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);
         using var output=File.Create(Path.Combine(AppContext.BaseDirectory,$"globe-ui-{frame}.png"));texture.SaveAsPng(output,p.BackBufferWidth,p.BackBufferHeight);frame++;

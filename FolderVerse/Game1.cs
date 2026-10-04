@@ -145,7 +145,7 @@ public partial class Game1 : Game
                 else if(click && NetButton(0).Contains(_pointer))_yaw-=MathHelper.PiOver4;
                 else if(click && NetButton(1).Contains(_pointer))_yaw+=MathHelper.PiOver4;
                 else if(click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
-                else if(click && NetButton(4).Contains(_pointer))_pitch=0;
+                else if(click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
                 Rotate(mouse,click && !_movementOpen && _populationCell<0,active,NetPanel);
             }
             else
@@ -169,7 +169,7 @@ public partial class Game1 : Game
             else if(click && NetButton(1).Contains(_pointer))_net.Turn(_setup,1);
             else if(click && NetButton(2).Contains(_pointer))_net.Home(_setup);
             else if(click && NetButton(3).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
-            else if(click && NetButton(4).Contains(_pointer))_net.Turn(_setup,(4-_net.Rotation)%4);
+            else if(click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
             else if(click && !pan && !_net.IsAnimating && _net.ClickEdge()){}
             else if(click && !pan && !_movementOpen && !_net.IsAnimating && _statusCell>=0)
             {
@@ -411,11 +411,15 @@ public partial class Game1 : Game
         if(_statusGlobe)
         {
             var viewport=GraphicsDevice.Viewport;
-            GraphicsDevice.Viewport=OrientationViewport(NetPanel,canvas);
+            var areas=OrientationAreas(NetPanel,false);
+            GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
             _world.Draw(_yaw,_pitch,_animationTime,false);
+            GraphicsDevice.Viewport=OrientationViewport(areas.Toy,canvas);
+            _orientationToy.Draw(_yaw,_pitch);
             GraphicsDevice.Viewport=viewport;
             _spriteBatch.Begin(transformMatrix:transform);
-            _net.DrawGlobeLayers(_ui,_setup,_world,NetPanel,_yaw,_pitch,_animationTime);
+            _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
+            DrawOrientationLegend(areas.Toy,areas.Legend,"方向のロボット");
             DrawStatusGlobeCoordinates();_spriteBatch.End();
         }
         else using(var clipping=new RasterizerState{ScissorTestEnable=true})
@@ -428,7 +432,9 @@ public partial class Game1 : Game
         _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
         _ui.Text(_statusGlobe?"左ドラッグ：回転 / 移動先は展開図で選択":"辺クリック：つなぎ替え / ホイール：拡縮 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
         _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
-        _ui.Button(NetButton(2),"自分の国へ",Accent,0.52f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);_ui.Button(NetButton(4),"北を上に",Muted,0.52f);
+        _ui.Button(NetButton(2),"自分の国へ",Accent,0.52f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
+        const string resetLabel="頭を上へ、腹を手前へ";
+        _ui.Button(OrientationResetButton,resetLabel,Muted,Math.Min(.52f,(OrientationResetButton.Width-16)/_font.MeasureString(resetLabel).X));
         if(_statusCell>=0)
         {
             var cell=_setup.Cells[_statusCell];int owner=_setup.Owners[cell.Id];

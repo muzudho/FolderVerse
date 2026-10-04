@@ -17,10 +17,10 @@ public partial class Game1
     private static Viewport OrientationViewport(Rectangle area,Rectangle canvas)=>new(
         canvas.X+(int)(area.X*canvas.Width/1920f),canvas.Y+(int)(area.Y*canvas.Height/1080f),
         Math.Max(1,(int)(area.Width*canvas.Width/1920f)),Math.Max(1,(int)(area.Height*canvas.Height/1080f)));
-    private void DrawOrientationLegend(Rectangle toy,Rectangle legend)
+    private void DrawOrientationLegend(Rectangle toy,Rectangle legend,string title="向きの人形")
     {
         bool compact=toy.Width<180;float scale=compact?.30f:.43f;
-        _ui.Center("向きの人形",new(toy.X,toy.Y-(compact?22:32),toy.Width,compact?22:32),scale,Cream);
+        _ui.Center(title,new(toy.X,toy.Y-(compact?22:32),toy.Width,compact?22:32),scale,Cream);
         string[] labels={"碗 +X","箸 -X","頭 +Y","足 -Y","腹 +Z","背 -Z"};
         Color[] colors={WorldCoordinates.LongitudeColor,WorldCoordinates.LatitudeColor,new(132,191,255)};
         for(int i=0;i<labels.Length;i++)

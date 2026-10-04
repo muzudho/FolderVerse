@@ -1,19 +1,26 @@
 namespace FolderVerse;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 
 public partial class Game1
 {
     private bool _statusGlobe;
+    private static Rectangle StatusGlobeArea=>OrientationAreas(NetPanel,false).Globe;
+    private Rectangle OrientationResetButton=>_statusGlobe?new(NetButton(3).X,912,343,50):NetButton(4);
+    private void ResetStatusOrientation()
+    {
+        _yaw=_pitch=0;_dragging=false;_net.SetCenter(_setup,4);
+    }
     private int HitGlobeNode(Point pointer)
     {
-        if(!NetPanel.Contains(pointer))return -1;
+        if(!StatusGlobeArea.Contains(pointer))return -1;
         int nearest=-1;float distance=144;
         foreach(var node in _setup.Nodes.All)
         {
             var cell=_setup.Cells[node.Cell];
-            if(!_world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center),cell.Normal,_yaw,_pitch,NetPanel,out var at))continue;
+            if(!_world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center),cell.Normal,_yaw,_pitch,StatusGlobeArea,out var at))continue;
             float candidate=Vector2.DistanceSquared(at,new(pointer.X,pointer.Y));
             if(candidate<distance){nearest=node.Id;distance=candidate;}
         }
@@ -28,18 +35,30 @@ public partial class Game1
     private void DrawStatusGlobeCoordinates()
     {
         var occupied=new List<Rectangle>();
-        var labels=new List<(Vector2 Foot,Vector2 Tip,Rectangle Bounds,string Longitude,string Latitude)>();
+        var labels=new List<(int Cell,Vector2 Foot,Vector2 Tip,Rectangle Bounds,string Longitude,string Latitude)>();
         const float scale=WorldCoordinates.MapFontScale;
         foreach(var cell in _setup.Cells)
         {
-            if(!_world.ProjectVisible(cell.Center,cell.Normal,_yaw,_pitch,NetPanel,out var foot) ||
-                !_world.ProjectVisible(cell.Center,cell.Normal,_yaw,_pitch,NetPanel,out var point,2f))continue;
+            if(!_world.ProjectVisible(cell.Center,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var foot) ||
+                !_world.ProjectVisible(cell.Center,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var point,2f))continue;
             var coordinate=WorldCoordinates.At(_setup,cell);
             string longitude=coordinate.X.ToString(),latitude=coordinate.Y.ToString();
             float width=_ui.Measure(longitude,scale).X+_ui.Measure(latitude,scale).X+14;
             var label=new Rectangle((int)(point.X-width/2)-3,(int)point.Y-13,(int)Math.Ceiling(width)+6,26);
-            if(!NetPanel.Contains(label) || occupied.Exists(r=>r.Intersects(label)))continue;
-            occupied.Add(label);labels.Add((foot,point,label,longitude,latitude));
+            if(!StatusGlobeArea.Contains(label) || occupied.Exists(r=>r.Intersects(label)))continue;
+            occupied.Add(label);labels.Add((cell.Id,foot,point,label,longitude,latitude));
+        }
+        // Use the actually visible labels so clipping and thinning create new endpoints.
+        var components=WorldCoordinates.GlobeLabelComponents(_setup,labels.Select(l=>l.Cell));
+        for(int i=0;i<labels.Count;i++)
+        {
+            var label=labels[i];var shown=components[label.Cell];
+            if(!shown.Longitude)label.Longitude="";
+            if(!shown.Latitude)label.Latitude="";
+            float width=_ui.Measure(label.Longitude,scale).X+_ui.Measure(label.Latitude,scale).X+
+                (shown.Longitude && shown.Latitude?14:0);
+            label.Bounds=new((int)(label.Tip.X-width/2)-3,(int)label.Tip.Y-13,(int)Math.Ceiling(width)+6,26);
+            labels[i]=label;
         }
         // Draw the normals first so they cannot paint over any coordinate text.
         var normalColor=new Color(172,202,215);
