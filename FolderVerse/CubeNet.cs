@@ -107,11 +107,11 @@ public sealed partial class CubeNet
                 int size=(int)Math.Ceiling(fit.Scale/detail)+1;
                 float elevation=WorldTerrain.Elevation(p,offset);
                 Color terrain=(cell.Face==2 || cell.Face==3) && elevation>=0.52f?elevation>=WorldTerrain.MountainHeight?new Color(183,200,215):new Color(245,249,255):WorldTerrain.ColorAt(elevation);
-                var post=setup.Outposts.At(cell.Id,new Point(x,y));
+                var post=setup.Nodes.At(cell.Id,new Point(x,y));
                 if(!ShowRoutes && post!=null)terrain=Color.Lerp(terrain,setup.OwnerColor(post.Owner),post.Owner==setup.PlayerSlot?.4f:.16f);
                 ui.Box(new(px-size/2,py-size/2,size,size),terrain);
             }
-            int owner=setup.Outposts.FullOwner(cell.Id);Color color=owner<0?new Color(170,181,191):setup.OwnerColor(owner);
+            int owner=setup.Nodes.FullOwner(cell.Id);Color color=owner<0?new Color(170,181,191):setup.OwnerColor(owner);
             int thickness=owner==setup.PlayerSlot?3:2;
             foreach(int edge in ShowRoutes?Enumerable.Empty<int>():Enumerable.Range(0,4))
             {
@@ -122,7 +122,7 @@ public sealed partial class CubeNet
                     ui.Tile((ga+gb)/2,new Vector2(gd.Length(),1),MathF.Atan2(gd.Y,gd.X),new Color(20,42,52));
                 }
                 var neighbor=cell.Neighbors.First(id=>Array.Exists(setup.Cells[id].Corners,p=>p==a) && Array.Exists(setup.Cells[id].Corners,p=>p==b));
-                if(owner>=0 && setup.Outposts.FullOwner(neighbor)==owner && setup.Cells[neighbor].Face==cell.Face)continue;
+                if(owner>=0 && setup.Nodes.FullOwner(neighbor)==owner && setup.Cells[neighbor].Face==cell.Face)continue;
                 var pa=face.Project(a)*fit.Scale+fit.Origin;var pb=face.Project(b)*fit.Scale+fit.Origin;
                 ui.Box(new((int)Math.Min(pa.X,pb.X)-thickness/2,(int)Math.Min(pa.Y,pb.Y)-thickness/2,Math.Max(thickness,(int)Math.Abs(pa.X-pb.X)),Math.Max(thickness,(int)Math.Abs(pa.Y-pb.Y))),color);
             }

@@ -27,6 +27,6 @@ public partial class Game1
         _ui.Box(new(mode.X+14,mode.Y+18,12,12),!_net.ShowRoutes?new Color(255,234,124):new Color(26,41,50));
         _ui.Text("グリッド",new(mode.X+34,mode.Y+8),.57f,Cream);
         _ui.Box(new(mode.X+164,mode.Y+18,12,12),_net.ShowRoutes?new Color(255,234,124):new Color(26,41,50));
-        _ui.Text("航路",new(mode.X+184,mode.Y+8),.57f,Cream);
+        _ui.Text("交通路",new(mode.X+184,mode.Y+8),.57f,Cream);
     }
 }

@@ -9,7 +9,6 @@ public sealed partial class TerrainRoutes
 {
     private readonly HashSet<(int Cell,int A,int B)> _harborEdges=new();
     private readonly List<Harbor> _harbors=new();
-    private readonly Dictionary<(int Cell,int Point,int Direction),RouteStep[]> _arrivalCache=new();
     public int ComponentsBeforeRepair {get;private set;}
     public int ComponentsAfterRepair {get;private set;}
     public IEnumerable<Harbor> Harbors(int cell)=>_harbors.Where(h=>h.Cell==cell);
@@ -31,7 +30,7 @@ public sealed partial class TerrainRoutes
     }
     private void RepairConnectivity()
     {
-        _harborEdges.Clear();_harbors.Clear();_arrivalCache.Clear();
+        _harborEdges.Clear();_harbors.Clear();_nodeCache.Clear();
         int count=_world.Cells.Length*100;var parent=Enumerable.Range(0,count).ToArray();
         int Root(int n){while(parent[n]!=n){parent[n]=parent[parent[n]];n=parent[n];}return n;}
         void Join(int a,int b){a=Root(a);b=Root(b);if(a!=b)parent[Math.Max(a,b)]=Math.Min(a,b);}
@@ -80,7 +79,7 @@ public sealed partial class TerrainRoutes
                     if(cost>=distance[next])continue;distance[next]=cost;previous[next]=current;crossings[next]=edge.Portal;queue.Enqueue(next,(cost,next));
                 }
             }
-            if(destination<0)throw new InvalidOperationException("No physical connector for an isolated outpost.");
+            if(destination<0)throw new InvalidOperationException("No physical connector for an isolated Node.");
             var path=new List<int>();for(int n=destination;n>=0;n=previous[n])path.Add(n);path.Reverse();
             foreach(int node in path)if(!Required(node))_passes[node/100][node%100]=true;
             for(int i=1;i<path.Count;i++)
@@ -105,28 +104,5 @@ public sealed partial class TerrainRoutes
             }
         }
         ComponentsAfterRepair=Groups();_cache.Clear();
-    }
-    public RouteStep[] ArrivalChoices(int ruler,int direction)
-    {
-        int cell=_world.ConquerorLocations[ruler];var start=_world.ConquerorPoints[ruler];
-        var key=(cell,Id(start),direction);if(_arrivalCache.TryGetValue(key,out var cached))return cached;
-        var reachable=Reach(cell,start,false,true);var choices=new List<RouteStep>();
-        foreach(var portal in Portals(cell,direction).Where(p=>p.Open && reachable.ContainsKey(Id(p.Exit))).OrderBy(p=>Trace(reachable,Id(p.Exit)).Length))
-        {
-            var path=Trace(reachable,Id(portal.Exit));var arrival=Reach(portal.Target,portal.Entry,false,true);
-            var entryPost=_world.Outposts.At(portal.Target,portal.Entry);
-            foreach(var post in _world.Outposts.InCell(portal.Target).Where(p=>arrival.ContainsKey(Id(p.Center))).OrderBy(p=>p.Id==entryPost.Id?0:1).ThenBy(p=>p.Id))
-            {
-                if(choices.Any(r=>_world.Outposts.At(r.Target,r.Entry).Id==post.Id))continue;
-                var point=post.Id==entryPost.Id?portal.Entry:post.Center;
-                choices.Add(new(portal.Target,portal.Exit,point,path){Portal=portal,ArrivalPath=Trace(arrival,Id(point))});
-            }
-        }
-        return _arrivalCache[key]=choices.ToArray();
-    }
-    public RouteStep ForMarch(int ruler,int direction,int outpost)
-    {
-        if(outpost<0)return ForRuler(ruler,direction);
-        return ArrivalChoices(ruler,direction).FirstOrDefault(r=>_world.Outposts.At(r.Target,r.Entry).Id==outpost);
     }
 }

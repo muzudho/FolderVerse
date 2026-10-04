@@ -42,7 +42,7 @@ public sealed class WorldSetup
     public int[] ConquerorLocations { get; private set; } = Array.Empty<int>();
     public Point[] ConquerorPoints {get;private set;}=Array.Empty<Point>();
     public TerrainRoutes Routes {get;}=new();
-    public WorldOutposts Outposts {get;}=new();
+    public WorldNodes Nodes {get;}=new();
     public int[] TerritoryCounts { get; private set; } = new int[20];
     public string[] CityNames { get; private set; } = Array.Empty<string>();
     public string[] ConquerorNames { get; private set; } = Array.Empty<string>();
@@ -127,9 +127,9 @@ public sealed class WorldSetup
         Population.Initialize(this);
         Routes.Initialize(this);
         ConquerorPoints=ConquerorLocations.Select(Routes.Start).ToArray();
-        Outposts.Initialize(this);
-        // Start at the actual outpost node, rather than a separate point near the cell centre.
-        for(int ruler=0;ruler<ActiveCount;ruler++)ConquerorPoints[ruler]=Outposts.Current(ruler).Center;
+        Nodes.Initialize(this);
+        // Start at the Node centre.
+        for(int ruler=0;ruler<ActiveCount;ruler++)ConquerorPoints[ruler]=Nodes.Current(ruler).Center;
         Routes.RefreshDisplay();
         Campaign.Reset();
     }

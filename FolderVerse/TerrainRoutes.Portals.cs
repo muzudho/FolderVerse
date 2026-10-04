@@ -95,7 +95,7 @@ public sealed partial class TerrainRoutes
     }
     public void RefreshDisplay()
     {
-        _curves.Clear();_display=_world.Cells.Select(c=>BuildDisplay(c.Id)).ToArray();
+        _nodeCache.Clear();_curves.Clear();_display=_world.Cells.Select(c=>BuildDisplay(c.Id)).ToArray();
     }
     private static Point[] Trace(Dictionary<int,int> previous,int last)
     {
@@ -103,19 +103,11 @@ public sealed partial class TerrainRoutes
     }
     private RouteStep[] BuildDisplay(int cell)
     {
-        var result=new List<RouteStep>();var covered=new HashSet<int>();
-        foreach(var post in _world.Outposts.InCell(cell))
+        var result=new List<RouteStep>();
+        foreach(var post in _world.Nodes.InCell(cell))
         {
-            int id=Id(post.Center);if(covered.Contains(id))continue;
-            var component=Reach(cell,post.Center,false,true);
-            foreach(int point in component.Keys)covered.Add(point);
-            var nodes=_world.Outposts.InCell(cell).Where(p=>component.ContainsKey(Id(p.Center))).ToArray();
-            int root=nodes.OrderBy(p=>Vector2.DistanceSquared(new Vector2(p.Center.X,p.Center.Y),new Vector2(4.5f))).ThenBy(p=>p.Id).Select(p=>Id(p.Center)).First();
-            var previous=Reach(cell,PointAt(root),false,true);
-            foreach(var node in nodes.Where(p=>Id(p.Center)!=root))
-                result.Add(new(cell,node.Center,node.Center,Trace(previous,Id(node.Center))));
-            foreach(var next in _portals[cell].SelectMany(p=>p).Where(p=>p.Open && previous.ContainsKey(Id(p.Exit))))
-                result.Add(new(next.Target,next.Exit,next.Entry,Trace(previous,Id(next.Exit))){Portal=next});
+            foreach(var route in Neighbors(post))
+                if(route.Target!=cell || _world.Nodes.At(cell,route.Entry).Id>post.Id)result.Add(route);
         }
         return result.ToArray();
     }
@@ -126,6 +118,7 @@ public sealed partial class TerrainRoutes
         if(_curves.TryGetValue(route,out var cached))return cached;
         if(route.Path.Length==0)return Array.Empty<Vector3>();
         var surface=_world.Cells[cell];var reachable=Reach(cell,route.Path[0],false,true);
+        var pathNodes=route.Path.Select(p=>_world.Nodes.At(cell,p)?.Id).ToHashSet();
         // Validate shortcuts against the actual connected terrain, including closed edges.
         bool Safe(IEnumerable<Vector3> samples)
         {
@@ -154,7 +147,7 @@ public sealed partial class TerrainRoutes
                 var delta=position-surface.Origin;float x=Vector3.Dot(delta,surface.U)*10,y=Vector3.Dot(delta,surface.V)*10;
                 if(x<-.0001f || y<-.0001f || x>10.0001f || y>10.0001f)return false;
                 int next=Math.Clamp((int)MathF.Floor(y),0,9)*10+Math.Clamp((int)MathF.Floor(x),0,9);
-                if(!reachable.ContainsKey(next))return false;
+                if(!reachable.ContainsKey(next) || !pathNodes.Contains(_world.Nodes.At(cell,PointAt(next))?.Id))return false;
                 if(previous>=0 && next!=previous && !NavigableLink(cell,previous,next))
                 {
                     int dx=Math.Abs(next%10-previous%10),dy=Math.Abs(next/10-previous/10);

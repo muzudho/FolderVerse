@@ -62,7 +62,7 @@ public sealed partial class PopulationSimulation
     }
     public void Advance(WorldSetup world)
     {
-        if(world.Outposts.All.Length>0){AdvanceOutposts(world);return;}
+        if(world.Nodes.All.Length>0){AdvanceNodes(world);return;}
         var staged=Cells.Select(p=>(long[])p.People.Clone()).ToArray();
         for(int id=0;id<Cells.Length;id++)
         {

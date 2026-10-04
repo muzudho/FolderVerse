@@ -27,7 +27,7 @@ public sealed partial class CubeNet
         if(ShowRoutes)
         {
             var active=world.ConquerorLocations.Select((c,r)=>(Cell:c,Ruler:r)).Where(p=>p.Cell==cell)
-                .Where(p=>world.Outposts.Current(p.Ruler)?.Center!=world.ConquerorPoints[p.Ruler])
+                .Where(p=>world.Nodes.Current(p.Ruler)?.Center!=world.ConquerorPoints[p.Ruler])
                 .SelectMany(p=>Enumerable.Range(0,4).Select(d=>world.Routes.ForRuler(p.Ruler,d))).Where(r=>r!=null);
             foreach(var route in world.Routes.DisplayPaths(cell).Concat(active))
             {
@@ -41,7 +41,7 @@ public sealed partial class CubeNet
                     ui.Tile((a+b)/2,new Vector2(delta.Length()+1,2),MathF.Atan2(delta.Y,delta.X),color);
                 }
             }
-            foreach(var post in world.Outposts.InCell(cell))
+            foreach(var post in world.Nodes.InCell(cell))
             {
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
                 float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);
@@ -59,7 +59,7 @@ public sealed partial class CubeNet
                 ui.Tile(at+new Vector2(4,2),new Vector2(2,4),0,gold);
             }
         }
-        if(ShowFlags)foreach(var post in world.Outposts.InCell(cell))
+        if(ShowFlags)foreach(var post in world.Nodes.InCell(cell))
         {
             var point=project(world.Routes.Position(cell,post.Center));
             ui.Tile(point+new Vector2(0,-3),new Vector2(2,13),0,Color.White);

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
-public sealed class Outpost
+public sealed class Node
 {
     public int Id,Cell,Owner;
     public Point Center;
@@ -12,14 +12,14 @@ public sealed class Outpost
     public TravelTerrain Terrain;
     public CellPopulation Population=new();
 }
-public sealed class WorldOutposts
+public sealed class WorldNodes
 {
-    public Outpost[] All {get;private set;}=Array.Empty<Outpost>();
+    public Node[] All {get;private set;}=Array.Empty<Node>();
     private int[][] _regions;
     private WorldSetup _world;
     public void Initialize(WorldSetup world)
     {
-        _world=world;var result=new List<Outpost>();_regions=world.Cells.Select(_=>Enumerable.Repeat(-1,100).ToArray()).ToArray();
+        _world=world;var result=new List<Node>();_regions=world.Cells.Select(_=>Enumerable.Repeat(-1,100).ToArray()).ToArray();
         foreach(var cell in world.Cells)
         {
             var links=world.Routes.Segments(cell.Id).ToArray();
@@ -54,13 +54,13 @@ public sealed class WorldOutposts
         }
         Recount();
     }
-    public IEnumerable<Outpost> InCell(int cell)=>All.Where(p=>p.Cell==cell);
-    public Outpost At(int cell,Point point)
+    public IEnumerable<Node> InCell(int cell)=>All.Where(p=>p.Cell==cell);
+    public Node At(int cell,Point point)
     {
         if(_regions==null || cell<0 || cell>=_regions.Length || point.X<0 || point.X>9 || point.Y<0 || point.Y>9)return null;
         int id=_regions[cell][point.Y*10+point.X];return id<0?null:All[id];
     }
-    public Outpost Current(int ruler)=>At(_world.ConquerorLocations[ruler],_world.ConquerorPoints[ruler]);
+    public Node Current(int ruler)=>At(_world.ConquerorLocations[ruler],_world.ConquerorPoints[ruler]);
     public void Recount()
     {
         Array.Clear(_world.TerritoryCounts);
@@ -75,17 +75,16 @@ public sealed class WorldOutposts
             if(_world.TerritoryCounts[ruler]>0 && !InCell(_world.Capitals[ruler]).Any(p=>p.Owner==ruler))
                 _world.Capitals[ruler]=All.Where(p=>p.Owner==ruler).OrderByDescending(p=>p.Population.Total).ThenBy(p=>p.Id).First().Cell;
     }
-    public string Label(Outpost p)=>WorldCoordinates.Label(_world,p.Cell)+" / "+TerrainRoutes.TerrainName(p.Terrain)+"拠点・"+_world.Routes.PointName(p.Cell,p.Center);
+    public string Label(Node p)=>WorldCoordinates.Label(_world,p.Cell)+" / "+TerrainRoutes.TerrainName(p.Terrain)+"拠点・"+_world.Routes.PointName(p.Cell,p.Center)+$" [Node {p.Id+1}]";
     public int FullOwner(int cell)
     {
         var owners=InCell(cell).Select(p=>p.Owner).Distinct().ToArray();return owners.Length==1?owners[0]:-1;
     }
-    public string Pattern(Outpost p)
+    public string Pattern(Node p)
     {
-        string[] directions={"北","東","南","西"};
-        var exits=Enumerable.Range(0,4).Where(d=>_world.Routes.Find(p.Cell,p.Center,d,false,true)!=null).ToArray();
-        string shape=exits.Length switch{0=>"孤立",1=>"行き止まり",2=>(exits[0]+2)%4==exits[1]?"Ｉ字":"Ｌ字",3=>"Ｔ字",_=>"十字"};
-        return shape+(exits.Length==0?"":"（"+string.Join("・",exits.Select(d=>directions[d]))+"）");
+        var exits=_world.Routes.Neighbors(p);
+        string shape=exits.Length switch{0=>"孤立",1=>"行き止まり",_=>$"{exits.Length} 接続"};
+        return shape+(exits.Length==0?"":"（"+string.Join("・",exits.Select(r=>_world.Routes.DirectionLabel(p,r)).Distinct())+"）");
     }
     public string CellPattern(int cell)=>string.Join(" / ",InCell(cell).Select(p=>TerrainRoutes.TerrainName(p.Terrain)+"："+Pattern(p)).Distinct());
     public string Shares(int cell)
