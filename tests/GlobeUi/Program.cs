@@ -7,7 +7,7 @@ using var game=new GlobeCheck();game.Run();
 sealed class GlobeCheck:Game1
 {
     const BindingFlags Flags=BindingFlags.Instance|BindingFlags.NonPublic;
-    int frame,updated=-1;WorldSetup setup;WorldPreview globe;
+    int frame,updated=-1,portTarget;WorldSetup setup;WorldPreview globe;
     object Get(string n)=>typeof(Game1).GetField(n,Flags)!.GetValue(this)!;
     void Set(string n,object v)=>typeof(Game1).GetField(n,Flags)!.SetValue(this,v);
     static void Check(bool value,string message){if(!value)throw new Exception(message);}
@@ -90,14 +90,29 @@ sealed class GlobeCheck:Game1
             case 1:
                 float yaw=(float)Get("_yaw");Input(new(1400,500),ButtonState.Pressed);Input(new(1460,530),ButtonState.Pressed);Input(new(1460,530),ButtonState.Released);
                 Check((float)Get("_yaw")!=yaw,"Globe drag failed");break;
-            case 2:Click(new(410,1040));Check(!(bool)Get("_statusGlobe") && (bool)Get("_movementOpen"),"Movement did not open net");break;
+            case 2:
+                var port=setup.Nodes.All.First(p=>p.IsHarbor);portTarget=port.Id;
+                var route=setup.Routes.Neighbors(port).First();var source=setup.Nodes.At(route.Target,route.Entry);
+                foreach(var post in setup.Nodes.All)post.Population.People[0]=0;
+                setup.ConquerorLocations[0]=source.Cell;setup.ConquerorPoints[0]=source.Center;
+                source.Owner=0;source.Population.People[0]=1000;port.Owner=1;port.Population.People[0]=10;
+                Set("_yaw",-MathF.Atan2(setup.Cells[port.Cell].Normal.X,setup.Cells[port.Cell].Normal.Z));Set("_pitch",MathF.Asin(setup.Cells[port.Cell].Normal.Y));
+                Click(new(410,1040));Check((bool)Get("_statusGlobe") && (bool)Get("_movementOpen") && ((CubeNet)Get("_net")).ShowRoutes,"Globe movement switched view or did not open routes");
+                Set("_escort",100L);
+                float yawBefore=(float)Get("_yaw");Input(new(1540,300),ButtonState.Pressed);Input(new(1550,305),ButtonState.Pressed);Input(new(1550,305),ButtonState.Released);
+                Check((float)Get("_yaw")!=yawBefore && (bool)Get("_statusGlobe"),"Globe cannot rotate during movement selection");
+                var area=(Rectangle)typeof(Game1).GetProperty("StatusGlobeArea",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+                Check(globe.ProjectVisible(setup.Routes.Position(port.Cell,port.Center),setup.Cells[port.Cell].Normal,(float)Get("_yaw"),(float)Get("_pitch"),area,out var target),"Port target not visible");
+                Click(target.ToPoint());Check((int)Get("_selectedMoveNode")==portTarget && setup.Nodes.Current(0).Id==source.Id,"Globe click did not select port or moved before confirm");break;
             case 3:
-                Click(new(830,190));Check((bool)Get("_statusGlobe") && !(bool)Get("_movementOpen"),"Movement did not restore globe");
+                Click(new(700,935));Check((bool)Get("_statusGlobe") && !(bool)Get("_movementOpen") && setup.Nodes.Current(0).Id==portTarget && setup.Nodes.All[portTarget].Owner==0,"Globe port confirm or conquest failed");
+                Check(!((CubeNet)Get("_net")).ShowRoutes,"Confirm did not restore grid mode");
+                Click(new(410,1040));Click(new(830,190));Check((bool)Get("_statusGlobe") && !(bool)Get("_movementOpen") && !((CubeNet)Get("_net")).ShowRoutes,"Cancel changed globe or failed to restore grid");
                 Click(new(1730,935));Check((float)Get("_yaw")==0 && (float)Get("_pitch")==0,"Head/belly orientation reset failed");
                 Check(WorldPreview.Orientation(0,0)==Matrix.Identity,"Reset orientation is not head up and belly forward");break;
             case 4:Click(new(1810,104));Check(!(bool)Get("_statusGlobe"),"Net toggle failed");break;
             case 5:Click(new(1710,104));var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();break;
-            case 6:Console.WriteLine("PASS: globe/net switching, two-cell normal offset and visible normal lines, back-face hiding, drag rotation, movement view restoration, coordinate colors and small window.");Exit();break;
+            case 6:Console.WriteLine("PASS: globe retained during movement; traffic mode, rotation, port picking and conquest; confirm/cancel restore grid; coordinates, robot and small window.");Exit();break;
         }
     }
     protected override void Draw(GameTime time)

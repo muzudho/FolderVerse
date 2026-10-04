@@ -13,16 +13,17 @@ public partial class Game1
     {
         _yaw=_pitch=0;_dragging=false;_net.SetCenter(_setup,4);
     }
-    private int HitGlobeNode(Point pointer)
+    private int HitGlobeNode(Point pointer,IEnumerable<int> candidates=null)
     {
         if(!StatusGlobeArea.Contains(pointer))return -1;
-        int nearest=-1;float distance=144;
-        foreach(var node in _setup.Nodes.All)
+        int nearest=-1;float distance=float.PositiveInfinity;
+        foreach(var node in (candidates??_setup.Nodes.All.Select(n=>n.Id)).Select(id=>_setup.Nodes.All[id]))
         {
             var cell=_setup.Cells[node.Cell];
             if(!_world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center),cell.Normal,_yaw,_pitch,StatusGlobeArea,out var at))continue;
             float candidate=Vector2.DistanceSquared(at,new(pointer.X,pointer.Y));
-            if(candidate<distance){nearest=node.Id;distance=candidate;}
+            float radius=node.IsHarbor?22:12;
+            if(candidate<=radius*radius && candidate<distance){nearest=node.Id;distance=candidate;}
         }
         return nearest;
     }

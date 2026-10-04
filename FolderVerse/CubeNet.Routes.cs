@@ -22,7 +22,7 @@ public sealed partial class CubeNet
         var fit=Fit(panel);float radius=MathHelper.Clamp(fit.Scale*.06f,4,10)+4;
         var point=new Vector2(pointer.X,pointer.Y);
         return (candidates??world.Nodes.All.Select(n=>n.Id)).Select(id=>(Id:id,Distance:Vector2.DistanceSquared(NodePosition(world,world.Nodes.All[id],panel),point)))
-            .Where(n=>n.Distance<=radius*radius).OrderBy(n=>n.Distance).ThenBy(n=>n.Id).Select(n=>n.Id).DefaultIfEmpty(-1).First();
+            .Where(n=>n.Distance<=MathF.Pow(world.Nodes.All[n.Id].IsHarbor?Math.Max(radius,22):radius,2)).OrderBy(n=>n.Distance).ThenBy(n=>n.Id).Select(n=>n.Id).DefaultIfEmpty(-1).First();
     }
     public Point MicroPoint(WorldSetup world,int cell,Rectangle panel,Point pointer)
     {
@@ -61,6 +61,7 @@ public sealed partial class CubeNet
             {
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
                 float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);
+                if(post.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
                 if(MovementTargets.Contains(post.Id) && MathF.Sin(pulse*6)>=0)
                 {
                     Disc(ui,at,radius+7,new Color(255,219,96));
@@ -71,26 +72,40 @@ public sealed partial class CubeNet
                     Disc(ui,at,radius+4,Color.White);
                     Disc(ui,at,radius+2,new Color(13,36,44));
                 }
-                Disc(ui,at,radius+2,new Color(13,36,44));
-                Disc(ui,at,radius,world.OwnerColor(post.Owner));
-            }
-            foreach(var harbor in world.Routes.Harbors(cell))
-            {
-                var at=project(harbor.Position);var gold=new Color(255,204,83);
-                ui.Tile(at,new Vector2(12,14),0,new Color(13,36,44));
-                ui.Tile(at+new Vector2(0,-1),new Vector2(2,10),0,gold);
-                ui.Tile(at+new Vector2(0,-3),new Vector2(7,2),0,gold);
-                ui.Tile(at+new Vector2(0,4),new Vector2(9,2),0,gold);
-                ui.Tile(at+new Vector2(-4,2),new Vector2(2,4),0,gold);
-                ui.Tile(at+new Vector2(4,2),new Vector2(2,4),0,gold);
+                if(post.IsHarbor)DrawHarbor(ui,at,radius,world.OwnerColor(post.Owner));
+                else
+                {
+                    Disc(ui,at,radius+2,new Color(13,36,44));
+                    Disc(ui,at,radius,world.OwnerColor(post.Owner));
+                }
             }
         }
-        if(ShowFlags)foreach(var post in world.Nodes.InCell(cell))
+        if(!ShowRoutes)foreach(var post in world.Nodes.InCell(cell).Where(p=>p.IsHarbor))
+            DrawHarbor(ui,project(world.Routes.Position(cell,post.Center)),12,world.OwnerColor(post.Owner));
+        if(ShowFlags)foreach(var post in world.Nodes.InCell(cell).Where(p=>!p.IsHarbor))
         {
             var point=project(world.Routes.Position(cell,post.Center));
             ui.Tile(point+new Vector2(0,-3),new Vector2(2,13),0,Color.White);
             ui.Tile(point+new Vector2(4,-6),new Vector2(8,5),0,world.OwnerColor(post.Owner));
         }
+    }
+    private static void DrawHarbor(UiPainter ui,Vector2 at,float radius,Color color)
+    {
+        void Stroke(Vector2 a,Vector2 b,float width,Color tint)
+        {
+            a=at+a*radius;b=at+b*radius;var delta=b-a;
+            ui.Tile((a+b)/2,new(delta.Length()+width,width),MathF.Atan2(delta.Y,delta.X),tint);
+        }
+        void Shape(float width,Color tint)
+        {
+            Stroke(new(0,-.55f),new(0,.7f),width,tint);
+            Stroke(new(-.48f,-.2f),new(.48f,-.2f),width,tint);
+            Stroke(new(0,.7f),new(-.7f,.35f),width,tint);Stroke(new(0,.7f),new(.7f,.35f),width,tint);
+            Stroke(new(-.7f,.35f),new(-.7f,.05f),width,tint);Stroke(new(.7f,.35f),new(.7f,.05f),width,tint);
+        }
+        var dark=new Color(13,36,44);Shape(6,dark);Shape(3,color);
+        var eye=at+new Vector2(0,-.65f)*radius;
+        Disc(ui,eye,radius*.27f+2,dark);Disc(ui,eye,radius*.27f,color);Disc(ui,eye,radius*.12f,dark);
     }
     private static void Disc(UiPainter ui,Vector2 center,float radius,Color color)
     {

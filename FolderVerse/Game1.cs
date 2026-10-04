@@ -139,14 +139,12 @@ public partial class Game1 : Game
             if(_statusGlobe)
             {
                 _statusCell=-1;
-                if(click && RouteLayerClick(_pointer)){}
-                else if(click && MovementClick(_pointer,keyboard)){}
-                else if(click && PopulationClick(_pointer,keyboard)){}
-                else if(click && NetButton(0).Contains(_pointer))_yaw-=MathHelper.PiOver4;
+                bool action=click && (RouteLayerClick(_pointer) || MovementClick(_pointer,keyboard) || PopulationClick(_pointer,keyboard));
+                if(!action && click && NetButton(0).Contains(_pointer))_yaw-=MathHelper.PiOver4;
                 else if(click && NetButton(1).Contains(_pointer))_yaw+=MathHelper.PiOver4;
                 else if(click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
                 else if(click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
-                Rotate(mouse,click && !_movementOpen && _populationCell<0,active,NetPanel);
+                Rotate(mouse,click && !action && _populationCell<0,active,NetPanel);
             }
             else
             {
@@ -430,7 +428,7 @@ public partial class Game1 : Game
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
-        _ui.Text(_statusGlobe?"左ドラッグ：回転 / 移動先は展開図で選択":"辺クリック：つなぎ替え / ホイール：拡縮 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
+        _ui.Text(_statusGlobe?"左ドラッグ：回転 / 点滅する拠点で移動先を選択":"辺クリック：つなぎ替え / ホイール：拡縮 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
         _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
         _ui.Button(NetButton(2),"自分の国へ",Accent,0.52f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
         const string resetLabel="頭を上へ、腹を手前へ";

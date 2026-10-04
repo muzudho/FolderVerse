@@ -89,6 +89,7 @@ public sealed partial class TerrainRoutes
     }
     public string LocationLabel(int ruler)
     {
+        var node=_world.Nodes.Current(ruler);if(node?.IsHarbor==true)return _world.Nodes.Label(node);
         int cell=_world.ConquerorLocations[ruler];var at=WorldCoordinates.At(_world,_world.Cells[cell]);
         return _world.CityNames[cell]+$"（{at.X},{at.Y},{PointName(cell,_world.ConquerorPoints[ruler])}・{TerrainName(Terrain(cell,_world.ConquerorPoints[ruler]))}）";
     }

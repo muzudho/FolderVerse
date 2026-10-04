@@ -2,11 +2,24 @@ using FolderVerse;
 using Microsoft.Xna.Framework;
 
 static void Check(bool condition,string message){if(!condition)throw new Exception(message);}
-int maximum=0,total=0,local=0,crossFace=0;bool localBattle=false,remoteBattle=false;
+int maximum=0,total=0,local=0,crossFace=0,harbors=0;bool localBattle=false,remoteBattle=false,harborBattle=false;
 for(int seed=0;seed<64;seed++)
 {
     var world=new WorldSetup();world.SetWorld(seed);world.SetCast(123);world.SetPlacement(456);world.SelectPlayer(0);
     var graph=world.Nodes.All.Select(world.Routes.Neighbors).ToArray();
+    var ports=world.Nodes.All.Where(p=>p.IsHarbor).ToArray();harbors+=ports.Length;
+    Check(ports.Select(p=>p.Name).Distinct().Count()==ports.Length,"Duplicate port name");
+    foreach(var port in ports)
+    {
+        Check(port.Points.Length==1 && port.Center==port.Points[0] && port.Population.Land,"Port must be a land-side singleton Node");
+        Check(graph[port.Id].Any(r=>world.Nodes.At(r.Target,r.Entry).Terrain==TravelTerrain.Sea),"Port lacks a sea connection");
+    }
+    foreach(var harbor in world.Cells.SelectMany(c=>world.Routes.Harbors(c.Id)))
+    {
+        var land=world.Routes.Land(harbor.Cell,harbor.Point)?world.Nodes.At(harbor.Cell,harbor.Point):world.Nodes.At(harbor.Target,harbor.Other);
+        Check(land.IsHarbor,"Coastal connector is missing its port Node");
+    }
+    var names=ports.Select(p=>(p.Cell,p.Center,p.Name)).ToArray();
     var visited=new HashSet<int>{0};var queue=new Queue<int>();queue.Enqueue(0);
     while(queue.Count>0)foreach(var route in graph[queue.Dequeue()])
     {int next=world.Nodes.At(route.Target,route.Entry).Id;if(visited.Add(next))queue.Enqueue(next);}
@@ -30,7 +43,7 @@ for(int seed=0;seed<64;seed++)
                 Check(route.ArrivalPath.All(p=>world.Nodes.At(target.Cell,p)?.Id==target.Id),"Cross-cell move skipped a Node");
                 if(world.Cells[source.Cell].Face!=world.Cells[target.Cell].Face)crossFace++;
             }
-            if((route.Target==source.Cell && !localBattle)||(route.Target!=source.Cell && !remoteBattle))
+            if((route.Target==source.Cell && !localBattle)||(route.Target!=source.Cell && !remoteBattle)||(!harborBattle && target.IsHarbor))
             {
                 world.ConquerorLocations[0]=source.Cell;world.ConquerorPoints[0]=source.Center;
                 source.Owner=0;source.Population.People[0]=1000;target.Owner=1;target.Population.People[0]=10;
@@ -40,6 +53,7 @@ for(int seed=0;seed<64;seed++)
                 Check(target.Owner==0,"Target battle failed");
                 Check(world.Nodes.All.All(p=>p.Id==target.Id || p.Owner==owners[p.Id]),"Battle affected an unrelated Node");
                 if(route.Target==source.Cell)localBattle=true;else remoteBattle=true;
+                if(target.IsHarbor)harborBattle=true;
                 var home=world.Nodes.Current(0);int before=world.Population.Turn;
                 world.Campaign.Advance(world,home.Id,0,enemies:false);
                 Check(world.Population.Turn==before,"Invalid self move advanced turn");
@@ -49,7 +63,8 @@ for(int seed=0;seed<64;seed++)
     for(int turn=0;turn<3;turn++)world.Campaign.Advance(world,-1,0);
     Check(Enumerable.Range(0,world.ActiveCount).All(r=>world.ConquerorPoints[r]==world.Nodes.Current(r).Center),"Enemy failed to arrive at Node centre");
     world.SetPlacement(789);Check(world.Routes.ComponentsAfterRepair==1,"Regeneration failed");
+    Check(names.All(p=>world.Nodes.At(p.Cell,p.Center).Name==p.Name),"Port names changed on replacement");
     foreach(var node in world.Nodes.All)Check(world.Routes.Neighbors(node).All(r=>world.Nodes.At(r.Target,r.Entry)!=null),"Stale graph cache after regeneration");
 }
-Check(localBattle && remoteBattle && local>0 && crossFace>0,"Required movement scenarios absent");
-Console.WriteLine($"PASS: 64 worlds, {total} Nodes; maximum destinations {maximum}; local links {local}; face-crossing links {crossFace}; local/remote battles, enemy turns, regeneration.");
+Check(localBattle && remoteBattle && harborBattle && harbors>0 && local>0 && crossFace>0,"Required movement scenarios absent");
+Console.WriteLine($"PASS: 64 worlds, {total} Nodes including {harbors} ports; maximum destinations {maximum}; reciprocal connected graph, port sea links/names/conquest, local/remote battles, enemy turns and regeneration.");

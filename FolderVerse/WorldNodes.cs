@@ -10,6 +10,8 @@ public sealed class Node
     public Point Center;
     public Point[] Points;
     public TravelTerrain Terrain;
+    public bool IsHarbor;
+    public string Name;
     public CellPopulation Population=new();
 }
 public sealed class WorldNodes
@@ -20,25 +22,30 @@ public sealed class WorldNodes
     public void Initialize(WorldSetup world)
     {
         _world=world;var result=new List<Node>();_regions=world.Cells.Select(_=>Enumerable.Repeat(-1,100).ToArray()).ToArray();
+        var harbors=world.Cells.SelectMany(c=>world.Routes.Harbors(c.Id))
+            .SelectMany(h=>new[]{(Cell:h.Cell,Point:h.Point),(Cell:h.Target,Point:h.Other)})
+            .Where(h=>world.Routes.Land(h.Cell,h.Point)).ToHashSet();
         foreach(var cell in world.Cells)
         {
             var links=world.Routes.Segments(cell.Id).ToArray();
             for(int i=0;i<100;i++)
             {
                 var start=new Point(i%10,i/10);if(_regions[cell.Id][i]>=0 || !world.Routes.Walkable(cell.Id,start))continue;
-                var terrain=world.Routes.Terrain(cell.Id,start);var points=new List<Point>{start};var queue=new Queue<Point>();queue.Enqueue(start);_regions[cell.Id][i]=result.Count;
+                bool harbor=harbors.Contains((cell.Id,start));
+                var terrain=world.Routes.Terrain(cell.Id,start);var points=new List<Point>{start};var queue=new Queue<Point>();if(!harbor)queue.Enqueue(start);_regions[cell.Id][i]=result.Count;
                 while(queue.Count>0)
                 {
                     var point=queue.Dequeue();foreach(var edge in links.Where(e=>e.A==point || e.B==point))
                     {
                         var next=edge.A==point?edge.B:edge.A;int index=next.Y*10+next.X;
-                        if(_regions[cell.Id][index]>=0 || world.Routes.Terrain(cell.Id,next)!=terrain)continue;
+                        if(_regions[cell.Id][index]>=0 || harbors.Contains((cell.Id,next)) || world.Routes.Terrain(cell.Id,next)!=terrain)continue;
                         _regions[cell.Id][index]=result.Count;points.Add(next);queue.Enqueue(next);
                     }
                 }
                 var centroid=new Vector2((float)points.Average(p=>p.X),(float)points.Average(p=>p.Y));
                 var center=points.OrderBy(p=>Vector2.DistanceSquared(new Vector2(p.X,p.Y),centroid)).ThenBy(p=>p.Y*10+p.X).First();
-                result.Add(new(){Id=result.Count,Cell=cell.Id,Owner=world.Owners[cell.Id],Center=center,Points=points.ToArray(),Terrain=terrain,Population=new(){Land=terrain!=TravelTerrain.Sea}});
+                result.Add(new(){Id=result.Count,Cell=cell.Id,Owner=world.Owners[cell.Id],Center=center,Points=points.ToArray(),Terrain=terrain,IsHarbor=harbor,
+                    Name=harbor?CoastalNames.For(world.WorldSeed,cell.Id,center):null,Population=new(){Land=terrain!=TravelTerrain.Sea}});
             }
         }
         All=result.ToArray();
@@ -75,7 +82,12 @@ public sealed class WorldNodes
             if(_world.TerritoryCounts[ruler]>0 && !InCell(_world.Capitals[ruler]).Any(p=>p.Owner==ruler))
                 _world.Capitals[ruler]=All.Where(p=>p.Owner==ruler).OrderByDescending(p=>p.Population.Total).ThenBy(p=>p.Id).First().Cell;
     }
-    public string Label(Node p)=>WorldCoordinates.Label(_world,p.Cell)+" / "+TerrainRoutes.TerrainName(p.Terrain)+"拠点・"+_world.Routes.PointName(p.Cell,p.Center)+$" [Node {p.Id+1}]";
+    public string Label(Node p)
+    {
+        var coordinate=WorldCoordinates.At(_world,_world.Cells[p.Cell]);
+        string name=p.IsHarbor?p.Name+$"（{coordinate.X},{coordinate.Y}）":WorldCoordinates.Label(_world,p.Cell);
+        return name+" / "+(p.IsHarbor?"海港":TerrainRoutes.TerrainName(p.Terrain))+"拠点・"+_world.Routes.PointName(p.Cell,p.Center)+$" [Node {p.Id+1}]";
+    }
     public int FullOwner(int cell)
     {
         var owners=InCell(cell).Select(p=>p.Owner).Distinct().ToArray();return owners.Length==1?owners[0]:-1;
