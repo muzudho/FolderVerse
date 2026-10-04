@@ -16,7 +16,7 @@ public partial class Game1
     private void OpenBattle()
     {
         _battleWaves=BattleSchedule.Create(_setup.Campaign.Battles);
-        if(_battleWaves.Length==0)return;
+        if(_battleWaves.Length==0){OpenDisposition();return;}
         _battleWave=0;_screen=Screen.Battle;_populationCell=-1;_dragging=false;
         BeginBattleWave();
     }
@@ -32,7 +32,7 @@ public partial class Game1
         if(!proceed)return;
         if(_battleAge<BattleSeconds){_battleAge=BattleSeconds;return;}
         if(++_battleWave<_battleWaves.Length)BeginBattleWave();
-        else{_screen=Screen.WorldStatus;_battleTiles=Array.Empty<CharacterTile>();}
+        else{_screen=Screen.WorldStatus;_battleTiles=Array.Empty<CharacterTile>();OpenDisposition();}
     }
     private void DrawBattleUi()
     {

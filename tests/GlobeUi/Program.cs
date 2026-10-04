@@ -108,6 +108,7 @@ sealed class GlobeCheck:Game1
                 Click(new(700,935));Check((bool)Get("_statusGlobe") && !(bool)Get("_movementOpen") && setup.Nodes.Current(0).Id==portTarget && setup.Nodes.All[portTarget].Owner==0,"Globe port confirm or conquest failed");
                 Check(!((CubeNet)Get("_net")).ShowRoutes,"Confirm did not restore grid mode");
                 while(Get("_screen").ToString()=="Battle")typeof(Game1).GetMethod("UpdateBattle",Flags)!.Invoke(this,new object[]{3d,true});
+                while(Get("_screen").ToString()=="Disposition"){Set("_pointer",new Point(900,895));typeof(Game1).GetMethod("DispositionInput",Flags)!.Invoke(this,new object[]{true,false});}
                 Click(new(410,1040));Click(new(830,190));Check((bool)Get("_statusGlobe") && !(bool)Get("_movementOpen") && !((CubeNet)Get("_net")).ShowRoutes,"Cancel changed globe or failed to restore grid");
                 Click(new(1730,935));Check((float)Get("_yaw")==0 && (float)Get("_pitch")==0,"Head/belly orientation reset failed");
                 Check(WorldPreview.Orientation(0,0)==Matrix.Identity,"Reset orientation is not head up and belly forward");break;

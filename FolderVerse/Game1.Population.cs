@@ -19,7 +19,7 @@ public partial class Game1
     {
         decimal step=keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl)?100:
             keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift)?10:1;
-        if(PopulationTurnButton.Contains(pointer)){_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);if(_populationCell>=0 && _setup.Nodes.All[_populationNode].Owner!=_setup.PlayerSlot)_populationCell=-1;OpenBattle();return true;}
+        if(PopulationTurnButton.Contains(pointer)){_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);if(_populationCell>=0 && !_setup.Relations.Allied(_setup.Nodes.All[_populationNode].Owner,_setup.PlayerSlot))_populationCell=-1;OpenBattle();return true;}
         if(_populationCell<0)return false;
         if(new Rectangle(803,169,58,44).Contains(pointer)){_populationCell=-1;return true;}
         var simulation=_setup.Population;var population=_setup.Nodes.All[_populationNode].Population;
@@ -72,7 +72,7 @@ public partial class Game1
             int y=682+direction*61;bool enabled=simulation.CanMigrateNode(_setup,_populationNode,direction);
             int target=simulation.Neighbor(_setup,_populationCell,direction);
             _ui.Text(PopulationDirections[direction]+"へ",new(84,y+5),.7f,enabled?Cream:new Color(134,156,164));
-            string destination=enabled?_setup.CityNames[target]:"陸路なし・他国節点：移住不可";
+            string destination=enabled?_setup.CityNames[target]:"陸路なし・敵国節点：移住不可";
             _ui.Text(destination,new(170,y+12),Math.Min(.42f,300/_font.MeasureString(destination).X),new(170,200,211));
             _ui.Center(Percent(population.Migration[_populationRole,direction]),new(496,y,216,44),.65f,enabled?Color.White:new Color(134,156,164));
             _ui.Button(MigrationButton(direction,false),"−",enabled?Muted:new Color(37,52,60),.7f);

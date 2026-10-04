@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 public partial class Game1 : Game
 {
-    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, WorldStatus, Battle }
+    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, WorldStatus, Battle, Disposition, InactiveList, Hierarchy }
     private readonly GraphicsDeviceManager _graphics;
     private readonly Random _random=new();
     private readonly WorldSetup _setup=new();
@@ -104,6 +104,18 @@ public partial class Game1 : Game
         bool captureChord=keyboard.IsKeyDown(Keys.P) && (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
         if(active && captureChord && !previousChord)_screenshots.Request();
+        if(_screen==Screen.Hierarchy)
+        {
+            if(active && (escape || click && InactiveBack.Contains(_pointer)))_screen=Screen.WorldStatus;
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
+        if(_screen is Screen.Disposition or Screen.InactiveList)
+        {
+            if(active)DispositionInput(click,escape);
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
+        if(IsStatusScreen && click && StatusMenuClick(_pointer))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Battle)
         {
             if(click)foreach(var tile in _battleTiles)if(tile.Slot>=0 && tile.Bounds.Contains(_pointer))_battleFocus=tile.Slot;
@@ -180,7 +192,7 @@ public partial class Game1 : Game
             else if(click && !pan && !_movementOpen && !_net.IsAnimating && _statusCell>=0)
             {
                 var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);var post=_setup.Nodes.At(_statusCell,point);
-                if(post!=null && post.Owner==_setup.PlayerSlot && post.Population.Land)
+                if(post!=null && _setup.Relations.Allied(post.Owner,_setup.PlayerSlot) && post.Population.Land)
                 {_populationCell=_statusCell;_populationNode=post.Id;_populationRole=0;_movementOpen=false;}
             }
             if(active)
@@ -450,12 +462,13 @@ public partial class Game1 : Game
             string pattern=_setup.Nodes.CellPattern(cell.Id);
             _ui.Center(pattern,new(970,1003,914,32),Math.Min(0.40f,880/_font.MeasureString(pattern).X),Cream);
         }
-        _ui.Button(PopulationTurnButton,$"ターン {_setup.Population.Turn} → 次へ",Accent,0.62f);
+        _ui.Button(PopulationTurnButton,_setup.Relations.Party(_setup).Length>1?"手下のターン":$"ターン {_setup.Population.Turn} → 次へ",Accent,0.62f);
         _ui.Button(MovementButton,"移動",Accent,.65f);
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(984,1037,870,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
         if(_populationCell>=0)DrawPopulationPanel();
         if(_movementOpen)DrawMovementPanel();
         DrawRouteLayerButtons();
+        DrawStatusMenu();
         DrawNodeTooltip();
     }
     private void DrawCastPreviewInfo()
@@ -490,10 +503,10 @@ public partial class Game1 : Game
             _spriteBatch.Begin(transformMatrix:transform);
             _ui.Box(new(0,0,1920,1080),new(16,35,46));
             _spriteBatch.Draw(_titleLogo,new Rectangle(0,0,1920,1080),Color.White*0.14f);
-            if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
+            if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
             {
             if(_screen==Screen.Battle)DrawBattleGlobe(canvas,transform);
-            else if(!IsStatusScreen)
+            else if(!IsStatusScreen && _screen is not (Screen.Disposition or Screen.InactiveList or Screen.Hierarchy))
             {
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;

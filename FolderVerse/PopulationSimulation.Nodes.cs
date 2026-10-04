@@ -9,7 +9,7 @@ public sealed partial class PopulationSimulation
         var source=world.Nodes.All[id];if(!source.Population.Land)return false;
         var route=world.Routes.Find(source.Cell,source.Center,direction,true);if(route==null)return false;
         var target=world.Nodes.At(route.Target,route.Entry);
-        return target!=null && target.Population.Land && source.Owner==target.Owner;
+        return target!=null && target.Population.Land && world.Relations.Allied(source.Owner,target.Owner);
     }
     public void AdjustNodeConversion(WorldSetup world,int id,int role,decimal delta)
     {

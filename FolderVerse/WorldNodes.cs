@@ -73,7 +73,7 @@ public sealed class WorldNodes
         Array.Clear(_world.TerritoryCounts);
         foreach(var cell in _world.Cells)
         {
-            var posts=InCell(cell.Id).ToArray();foreach(int ruler in posts.Select(p=>p.Owner).Distinct())_world.TerritoryCounts[ruler]++;
+            var posts=InCell(cell.Id).ToArray();foreach(int ruler in posts.Select(p=>p.Owner).Where(r=>r>=0).Distinct())_world.TerritoryCounts[ruler]++;
             if(posts.Length>0 && !posts.Any(p=>p.Owner==_world.Owners[cell.Id]))
                 _world.Owners[cell.Id]=posts.GroupBy(p=>p.Owner).OrderByDescending(g=>g.Sum(p=>p.Points.Length)).ThenBy(g=>g.Key).First().Key;
             for(int role=0;role<3;role++)_world.Population.Cells[cell.Id].People[role]=posts.Sum(p=>p.Population.People[role]);
@@ -102,6 +102,6 @@ public sealed class WorldNodes
     public string Shares(int cell)
     {
         var posts=InCell(cell).ToArray();int total=posts.Sum(p=>p.Points.Length);
-        return string.Join(" / ",posts.GroupBy(p=>p.Owner).OrderByDescending(g=>g.Sum(p=>p.Points.Length)).Select(g=>_world.ConquerorNames[g.Key]+$" {100m*g.Sum(p=>p.Points.Length)/Math.Max(1,total):0}%"));
+        return string.Join(" / ",posts.GroupBy(p=>p.Owner).OrderByDescending(g=>g.Sum(p=>p.Points.Length)).Select(g=>(g.Key<0?"未征服":_world.ConquerorNames[g.Key])+$" {100m*g.Sum(p=>p.Points.Length)/Math.Max(1,total):0}%"));
     }
 }

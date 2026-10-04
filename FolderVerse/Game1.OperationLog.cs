@@ -14,7 +14,9 @@ public partial class Game1
     public string OperationLogPath=>_operations.FilePath;
     private object OperationState()=>new
     {
-        screen=_screen.ToString(),phase=IsStatusScreen || _screen==Screen.Battle?"Game":_screen==Screen.Title?"Title":"Setup",
+        screen=_screen.ToString(),phase=IsStatusScreen || _screen is Screen.Battle or Screen.Disposition or Screen.InactiveList or Screen.Hierarchy?"Game":_screen==Screen.Title?"Title":"Setup",
+        superiors=_setup.Relations.Superiors,
+        party=_setup.Relations.Party(_setup),powered=_setup.Relations.Powered,released=_setup.Relations.Released,teams=_setup.Relations.Teams,pendingCaptives=_setup.Relations.Pending.ToArray(),submitted=_setup.Campaign.Submitted,menuOpen=_statusMenuOpen,
         battleWave=_battleWave,battleAge=_battleAge,battleFocus=_battleFocus,battleCount=_setup.Campaign.Battles.Count,
         overlay=_seedDialog.IsOpen?"SeedDialog":_movementOpen?"Movement":_populationCell>=0?"Population":"None",
         view=_statusGlobe?"Globe":"Net",layer=_net.ShowRoutes?"Traffic":"Grid",flags=_net.ShowFlags,batteries=_net.ShowBatteries,
@@ -26,6 +28,12 @@ public partial class Game1
     };
     private string InputTarget(Point point)
     {
+        if(_screen==Screen.Disposition)return "conqueror_disposition";
+        if(_screen==Screen.InactiveList)return "inactive_conquerors";
+        if(_screen==Screen.Hierarchy)return "conqueror_hierarchy";
+        if(IsStatusScreen && StatusMenuButton.Contains(point))return "status_menu";
+        if(IsStatusScreen && _statusMenuOpen && InactiveMenuItem.Contains(point))return "open_inactive_conquerors";
+        if(IsStatusScreen && _statusMenuOpen && HierarchyMenuItem.Contains(point))return "open_conqueror_hierarchy";
         if(_screen==Screen.Battle)
         {
             if(BattleContinue.Contains(point))return "battle_continue";

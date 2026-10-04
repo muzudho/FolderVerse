@@ -46,7 +46,7 @@ public sealed partial class PopulationSimulation
     public bool CanMigrate(WorldSetup world,int cellId,int direction)
     {
         int target=Neighbor(world,cellId,direction);
-        return Cells[cellId].Land && Cells[target].Land && world.Owners[cellId]==world.Owners[target] &&
+        return Cells[cellId].Land && Cells[target].Land && world.Relations.Allied(world.Owners[cellId],world.Owners[target]) &&
             world.Routes.Find(cellId,world.Routes.Start(cellId),direction,true)!=null;
     }
     public void AdjustConversion(int cellId,int role,decimal delta)

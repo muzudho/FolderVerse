@@ -96,6 +96,7 @@ public sealed class WorldPreview : IDisposable
             Quad(top,top+cell.U*0.27f,top+cell.U*0.27f-cell.Normal*0.18f,top-cell.Normal*0.18f,setup.OwnerColor(owner),cell.V);
             Quad(foot-cell.U*0.12f-cell.V*0.12f,foot+cell.U*0.12f-cell.V*0.12f,foot+cell.U*0.12f+cell.V*0.12f,foot-cell.U*0.12f+cell.V*0.12f,setup.OwnerColor(owner),cell.Normal);
         }
+        if(mesh.Count==0)return;
         _markers=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
         _markers.SetData(mesh.ToArray()); _markerCount=mesh.Count/3;
     }

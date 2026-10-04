@@ -40,7 +40,7 @@ public partial class Game1
     }
     private long AvailableEscort
     {
-        get {var node=_setup.Nodes.Current(_setup.PlayerSlot);return node!=null && node.Owner==_setup.PlayerSlot?node.Population.People[0]:0;}
+        get {var node=_setup.Nodes.Current(_setup.PlayerSlot);return node!=null && _setup.Relations.Allied(node.Owner,_setup.PlayerSlot)?node.Population.People[0]:0;}
     }
     private bool MovementClick(Point pointer,KeyboardState keyboard)
     {
@@ -92,9 +92,10 @@ public partial class Game1
         for(int row=0;row<MovesPerPage;row++)
         {
             int index=_movementPage*MovesPerPage+row;if(index>=choices.Length)break;
-            var route=choices[index];var node=_setup.Nodes.At(route.Target,route.Entry);bool own=node.Owner==ruler;
+            var route=choices[index];var node=_setup.Nodes.At(route.Target,route.Entry);
+            string relationship=node.Owner<0?"未征服の節点":node.Owner==ruler?"自国節点":_setup.Relations.Allied(node.Owner,ruler)?"手下の節点":"他国節点";
             var rect=MarchButton(row);_ui.Button(rect,"",node.Id==_selectedMoveNode?Accent:Muted);
-            string label=(node.Id==_selectedMoveNode?"選択：":"")+_setup.Routes.DirectionLabel(current,route)+" / "+(node.Cell==current.Cell?"セル内":"隣接セル")+" / "+(own?"自国節点":"他国節点")+" / 守備 "+node.Population.People[0].ToString("N0")+" 人";
+            string label=(node.Id==_selectedMoveNode?"選択：":"")+_setup.Routes.DirectionLabel(current,route)+" / "+(node.Cell==current.Cell?"セル内":"隣接セル")+" / "+relationship+" / 守備 "+node.Population.People[0].ToString("N0")+" 人";
             _ui.Text(label,new(rect.X+16,rect.Y+5),Math.Min(.53f,738/_font.MeasureString(label).X),Cream);
             string name=_setup.Nodes.Label(node);
             _ui.Text(name,new(rect.X+16,rect.Y+35),Math.Min(.43f,738/_font.MeasureString(name).X),new(186,215,223));

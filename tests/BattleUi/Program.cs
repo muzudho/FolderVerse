@@ -8,6 +8,7 @@ static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 var world=new WorldSetup();world.SetWorld(0);world.SetCast(123);world.SetPlacement(456);world.SelectPlayer(0);
 void Clear()
 {
+    world.Relations.Reset();world.SelectPlayer(0);
     foreach(var n in world.Nodes.All){Array.Clear(n.Population.People);Array.Clear(n.Population.Conversion);Array.Clear(n.Population.Migration);n.Population.BirthPercent=0;}
 }
 void Place(int ruler,Node n){world.ConquerorLocations[ruler]=n.Cell;world.ConquerorPoints[ruler]=n.Center;n.Owner=ruler;}

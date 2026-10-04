@@ -54,6 +54,7 @@ sealed class NodeUiCheck:Game1
                 Click(700,936);Check(world.Nodes.Current(0).Id==target && world.Population.Turn==1,"Confirm did not move once");
                 Check(!(bool)Get("_movementOpen") && !net.ShowRoutes && net.MovementTargets.Count==0 && net.SelectedTarget==-1,"Confirm did not restore grid");
                 while(Get("_screen").ToString()=="Battle")typeof(Game1).GetMethod("UpdateBattle",Private)!.Invoke(this,new object[]{3d,true});
+                while(Get("_screen").ToString()=="Disposition"){Set("_pointer",new Point(900,895));typeof(Game1).GetMethod("DispositionInput",Private)!.Invoke(this,new object[]{true,false});}
                 MapClick(new Point(180,1044));Check(Get("_screen").ToString()=="WorldStatus","Removed back button still active");break;
             case 5:
                 Click(430,1044);Click(829,190);Check(!net.ShowRoutes && !(bool)Get("_movementOpen"),"Cancel X did not restore grid");

@@ -50,10 +50,12 @@ public sealed class WorldSetup
     public int PlayerSlot { get; private set; } = -1;
     public PopulationSimulation Population {get;}=new();
     public ConquestCampaign Campaign {get;}=new();
+    public ConquerorRelations Relations {get;}=new();
     public void SelectPlayer(int slot)
     {
         if(slot<0 || slot>=ActiveCount || Owners.Length==0)throw new ArgumentOutOfRangeException(nameof(slot));
         PlayerSlot=slot;
+        if(Relations.Party(this).Length<=1)Relations.Leader=slot;
     }
     public int ActiveCount => Math.Min(20, Cells.Length);
     public static readonly Color[] Colors = {
@@ -62,7 +64,7 @@ public sealed class WorldSetup
         new(220,177,135), new(188,68,96), new(34,119,173), new(174,137,26), new(32,132,103),
         new(126,71,171), new(181,97,43), new(176,76,139), new(35,138,144), new(217,228,240)
     };
-    public Color OwnerColor(int slot) => Colors[ColorIndices[slot]];
+    public Color OwnerColor(int slot) => slot<0?new Color(155,169,180):Colors[ColorIndices[slot]];
     public void SetWorld(int seed)
     {
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
@@ -107,6 +109,7 @@ public sealed class WorldSetup
     {
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
         PlayerSlot=-1;
+        Relations.Reset();
         PlacementSeed = seed;
         var random = new SeedRandom(seed);
         int[] order = Enumerable.Range(0, Cells.Length).ToArray(); random.Shuffle(order);

@@ -135,7 +135,7 @@ public sealed partial class CubeNet
         }
         foreach(int ruler in Enumerable.Range(0,setup.ActiveCount).OrderBy(r=>r==setup.PlayerSlot?1:0))
         {
-        if(!ShowBatteries)continue;
+        if(!ShowBatteries || !setup.Relations.Powered[ruler])continue;
         var location=CellBounds(setup.Cells[setup.ConquerorLocations[ruler]],panel);
         var currentFace=Faces.First(f=>f.Face==setup.Cells[setup.ConquerorLocations[ruler]].Face);
         var position=currentFace.Project(setup.Routes.Position(setup.ConquerorLocations[ruler],setup.ConquerorPoints[ruler]))*fit.Scale+fit.Origin;
