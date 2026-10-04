@@ -62,6 +62,7 @@ public partial class Game1 : Game
         _counter=new ToyCounterRenderer(Content.Load<SpriteFont>("ToyCounterFont"),_pixel);
         _ui=new UiPainter(_spriteBatch,_pixel,_font); _world=new WorldPreview(GraphicsDevice);
         _orientationToy=new ToyOrientationRenderer(GraphicsDevice);
+        LoadScreenshotFeedback();
     }
     private Rectangle CanvasBounds()
     {
@@ -500,7 +501,7 @@ public partial class Game1 : Game
         }
         if(_seedDialog.IsOpen) { _spriteBatch.Begin(transformMatrix:transform); _seedDialog.Draw(_ui); _spriteBatch.End(); }
         // Read the finished game frame before the save notification is drawn.
-        _screenshots.CaptureAfterDraw(GraphicsDevice);
+        if(_screenshots.CaptureAfterDraw(GraphicsDevice))StartScreenshotFeedback(gameTime.TotalGameTime.TotalSeconds);
         if(_screenshots.MessageSeconds>0)
         {
             _spriteBatch.Begin(transformMatrix:transform);
@@ -515,8 +516,9 @@ public partial class Game1 : Game
             _ui.Center("Operation log unavailable. Check Logs folder permissions or disk space.",new(440,18,1420,55),.4f,Color.White);
             _spriteBatch.End();
         }
+        DrawScreenshotFeedback(gameTime.TotalGameTime.TotalSeconds);
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){_operations.Dispose();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){DisposeScreenshotFeedback();_operations.Dispose();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
 }

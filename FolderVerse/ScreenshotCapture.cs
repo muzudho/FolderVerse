@@ -24,9 +24,9 @@ public sealed class ScreenshotCapture
         }
         return Path.Combine(AppContext.BaseDirectory,"Screenshots");
     }
-    public void CaptureAfterDraw(GraphicsDevice device)
+    public bool CaptureAfterDraw(GraphicsDevice device)
     {
-        if(!_pending)return;
+        if(!_pending)return false;
         _pending=false;
         try
         {
@@ -39,8 +39,10 @@ public sealed class ScreenshotCapture
             var path=Path.Combine(folder,"FolderVerse_"+stamp+"_"+Guid.NewGuid().ToString("N")[..6]+".png");
             using(var output=new FileStream(path,FileMode.CreateNew,FileAccess.Write))texture.SaveAsPng(output,width,height);
             LastSavedPath=path;Message="Screenshot saved: "+Path.GetFileName(path);MessageSeconds=3;
+            return true;
         }
         catch(Exception error) when(error is IOException or UnauthorizedAccessException or InvalidOperationException or NotSupportedException)
         { Message="Screenshot failed ("+error.GetType().Name+"). Check Screenshots folder.";MessageSeconds=6; }
+        return false;
     }
 }
