@@ -61,7 +61,7 @@ sealed class NodeUiCheck:Game1
                 Click(430,1044);Input(new Point(0,0),ButtonState.Released,Keys.Escape);Input(new Point(0,0),ButtonState.Released);
                 Check(net.ShowRoutes && !(bool)Get("_movementOpen") && net.MovementTargets.Count==0,"Escape did not restore mode");break;
             case 7:
-                Click(430,1044);MapClick(new Point(1500,104));Check(net.ShowRoutes,"Mode toggle escaped temporary traffic mode");
+                Click(430,1044);MapClick(new Point(1550,104));Check(net.ShowRoutes,"Traffic selection escaped temporary traffic mode");
                 int turn=world.Population.Turn;MapClick(new Point(700,1044));Check(world.Population.Turn==turn,"Waiting changed candidates during selection");
                 Click(430,1044);net.ShowFlags=false;
                 enemy=world.Nodes.All.First(n=>Panel.Contains(net.NodePosition(world,n,Panel)) && Vector2.Distance(net.NodePosition(world,n,Panel),net.NodePosition(world,world.Nodes.Current(0),Panel))>60).Id;

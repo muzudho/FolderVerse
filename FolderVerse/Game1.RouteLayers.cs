@@ -7,12 +7,24 @@ public partial class Game1
     private static readonly Rectangle MapViewButton=new(1674,82,184,48);
     private bool RouteLayerClick(Point pointer)
     {
-        if(MapViewButton.Contains(pointer)){_statusGlobe=pointer.X<MapViewButton.Center.X;_dragging=false;_statusCell=-1;return true;}
+        if(MapViewButton.Contains(pointer))
+        {
+            bool globe=pointer.X<MapViewButton.Center.X;
+            _inputOutcome=_statusGlobe==globe?"already_selected":"view_changed";
+            _statusGlobe=globe;_dragging=_mapDragging=false;_statusCell=-1;return true;
+        }
         for(int i=0;i<3;i++)if(RouteLayerButton(i).Contains(pointer))
         {
             if(i==0)_net.ShowFlags=!_net.ShowFlags;
             if(i==1)_net.ShowBatteries=!_net.ShowBatteries;
-            if(i==2 && !_movementOpen)_net.ShowRoutes=!_net.ShowRoutes;
+            if(i==2)
+            {
+                bool traffic=pointer.X>=RouteLayerButton(2).Center.X;
+                bool cancel=!traffic && _movementOpen;
+                if(cancel)CloseMovement();
+                _inputOutcome=cancel?"movement_cancelled_for_grid":_net.ShowRoutes==traffic?"already_selected":"layer_changed";
+                _net.ShowRoutes=traffic;
+            }
             return true;
         }
         return false;

@@ -90,7 +90,7 @@ public partial class Game1 : Game
     }
     protected override void Update(GameTime gameTime)
     { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive); base.Update(gameTime); }
-    private void HandleInput(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
+    private void HandleInputCore(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
     {
         _pointer=CanvasPoint(mouse); _ui.Pointer=_pointer;
         bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
@@ -508,7 +508,15 @@ public partial class Game1 : Game
             _ui.Center(_screenshots.Message,new(440,18,1420,55),0.4f,Color.White);
             _spriteBatch.End();
         }
+        if(_operations.Error!=null)
+        {
+            _spriteBatch.Begin(transformMatrix:transform);
+            _ui.Box(new(430,18,1440,55),new Color(8,24,34,230));
+            _ui.Center("Operation log unavailable. Check Logs folder permissions or disk space.",new(440,18,1420,55),.4f,Color.White);
+            _spriteBatch.End();
+        }
+        LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){_operations.Dispose();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
 }
