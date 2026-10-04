@@ -9,9 +9,8 @@ public partial class Game1
     {
         if(MapViewButton.Contains(pointer))
         {
-            bool globe=pointer.X<MapViewButton.Center.X;
-            _inputOutcome=_statusGlobe==globe?"already_selected":"view_changed";
-            _statusGlobe=globe;_dragging=_mapDragging=false;_statusCell=-1;return true;
+            _statusGlobe=!_statusGlobe;_inputOutcome="view_changed";
+            _dragging=_mapDragging=false;_statusCell=-1;return true;
         }
         for(int i=0;i<3;i++)if(RouteLayerButton(i).Contains(pointer))
         {

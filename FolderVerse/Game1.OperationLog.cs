@@ -27,7 +27,7 @@ public partial class Game1
     {
         if(_seedDialog.IsOpen)return "seed_dialog";
         if(!IsStatusScreen)return _screen.ToString();
-        if(MapViewButton.Contains(point))return point.X<MapViewButton.Center.X?"select_globe":"select_net";
+        if(MapViewButton.Contains(point))return "toggle_globe_net";
         if(RouteLayerButton(2).Contains(point))return point.X<RouteLayerButton(2).Center.X?"select_grid":"select_traffic";
         if(RouteLayerButton(0).Contains(point))return "toggle_flags";
         if(RouteLayerButton(1).Contains(point))return "toggle_batteries";

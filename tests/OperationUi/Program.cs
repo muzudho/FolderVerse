@@ -39,7 +39,9 @@ sealed class OperationCheck:Game1
                 Click(new(1400,104));Check(!(bool)Get("_movementOpen") && !net.ShowRoutes && net.MovementTargets.Count==0,"Grid was silently ignored during movement");break;
             case 2:
                 for(int i=0;i<8;i++){Click(new(1710,104));Check((bool)Get("_statusGlobe"),"Globe switch ignored");Click(new(1810,104));Check(!(bool)Get("_statusGlobe"),"Net switch ignored");}
-                Click(new(1710,104));Click(new(1710,104));Check((bool)Get("_statusGlobe"),"Repeated globe click toggled view");break;
+                Click(new(1710,104));Check((bool)Get("_statusGlobe"),"View toggle failed");
+                Click(new(1759,104));Check(!(bool)Get("_statusGlobe"),"Repeated view-button click did not toggle");
+                Click(new(1759,104));Check((bool)Get("_statusGlobe"),"Repeated view-button click did not restore globe");break;
             case 3:
                 Input(new(1810,104),ButtonState.Released,false);Input(new(1810,104),ButtonState.Pressed,false);Input(new(1810,104),ButtonState.Released,false);
                 Check((bool)Get("_statusGlobe"),"Inactive click changed view");Click(new(1810,104));Check(!(bool)Get("_statusGlobe"),"Active click after focus loss was ignored");break;
