@@ -18,7 +18,7 @@ public sealed partial class CubeNet
     }
     public int HitNode(WorldSetup world,Rectangle panel,Point pointer,IEnumerable<int> candidates=null)
     {
-        if(IsAnimating || !panel.Contains(pointer))return -1;
+        if(IsAnimating || !panel.Contains(pointer) || OnRuler(panel,pointer))return -1;
         var fit=Fit(panel);float radius=MathHelper.Clamp(fit.Scale*.06f,4,10)+4;
         var point=new Vector2(pointer.X,pointer.Y);
         return (candidates??world.Nodes.All.Select(n=>n.Id)).Select(id=>(Id:id,Distance:Vector2.DistanceSquared(NodePosition(world,world.Nodes.All[id],panel),point)))

@@ -20,6 +20,7 @@ public partial class Game1 : Game
     private UiPainter _ui;
     private ToyCounterRenderer _counter;
     private WorldPreview _world;
+    private ToyOrientationRenderer _orientationToy;
     private Screen _screen;
     private MouseState _previousMouse;
     private KeyboardState _previousKeyboard;
@@ -60,6 +61,7 @@ public partial class Game1 : Game
         _pixel=new Texture2D(GraphicsDevice,1,1); _pixel.SetData(new[]{Color.White});
         _counter=new ToyCounterRenderer(Content.Load<SpriteFont>("ToyCounterFont"),_pixel);
         _ui=new UiPainter(_spriteBatch,_pixel,_font); _world=new WorldPreview(GraphicsDevice);
+        _orientationToy=new ToyOrientationRenderer(GraphicsDevice);
     }
     private Rectangle CanvasBounds()
     {
@@ -144,7 +146,7 @@ public partial class Game1 : Game
                 int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
                 if(wheel!=0)_net.ZoomAt(NetPanel,_pointer,wheel);
             }
-            _statusCell=_net.IsAnimating?-1:_net.Hit(_setup,NetPanel,_pointer);
+            _statusCell=_net.IsAnimating || _net.OnRuler(NetPanel,_pointer)?-1:_net.Hit(_setup,NetPanel,_pointer);
             _net.HoverEdge(NetPanel,_pointer);
             if(click && RouteLayerClick(_pointer)){}
             else if(click && MovementClick(_pointer,keyboard)){}
@@ -344,7 +346,7 @@ public partial class Game1 : Game
         var globe=SelectionGlobe;
         _ui.Box(globe,new Color(74,111,128));
         _ui.Box(new(globe.X+4,globe.Y+4,globe.Width-8,globe.Height-8),new Color(23,49,64));
-        _ui.Center("地球儀 / 左ドラッグで回転",new(globe.X,globe.Bottom-35,globe.Width,30),0.46f,Cream);
+        _ui.Center(_world.GlobeName+" / 左ドラッグで回転",new(globe.X,globe.Bottom-35,globe.Width,30),0.46f,Cream);
         if(_hoveredSlot>=0)DrawSelectionTile(_selectionTiles[_hoveredSlot],true);
         _ui.Button(CastBack,"配置を確認",Muted,0.48f);
         if(_screen==Screen.PlayerReady){_ui.Button(CastRetry,"選び直す",Accent,0.48f);_ui.Button(StatusProceed,"世界征服状況へ",Accent,0.57f);}
@@ -379,8 +381,8 @@ public partial class Game1 : Game
         _ui.Center("海の都市も、人が集まる地点の名前",new(90,900,760,44),0.50f,new(164,192,202));
         _ui.Center("ノルテ＝北 / スール＝南 / エステ＝東 / オエステ＝西",new(70,950,800,40),0.40f,new(164,192,202));
         _ui.Box(new(970,142,914,750),new(20,42,54));
-        _ui.Text("地球儀の展開図 / "+CubeNet.FaceNames[_net.CenterFace]+" が中心",new(991,156),0.68f,Cream);
-        string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地球の北＝＋Y / 北を上に";
+        _ui.Text(_world.GlobeName+"の展開図 / "+CubeNet.FaceNames[_net.CenterFace]+" が中心",new(991,156),0.68f,Cream);
+        string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地星の北＝＋Y / 北を上に";
         string orientation=north+" / 回転 "+(_net.Rotation*90)+"°";
         _ui.Text(orientation,new(991,203),Math.Min(.43f,500/_font.MeasureString(orientation).X),new(177,206,216));
         _ui.Text("経番",new(1450,203),.38f,WorldCoordinates.LongitudeColor);
@@ -397,6 +399,7 @@ public partial class Game1 : Game
             _net.Draw(_ui,_setup,NetPanel,_statusCell,_animationTime);_spriteBatch.End();
         }
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
+        _net.DrawRulers(_ui,_setup,NetPanel,_statusCell);
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
         _ui.Text("辺クリック：つなぎ替え / ホイール：拡縮 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
@@ -456,8 +459,12 @@ public partial class Game1 : Game
             {
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;
-            GraphicsDevice.Viewport=new Viewport(canvas.X+(int)(area.X*canvas.Width/1920f),canvas.Y+(int)(area.Y*canvas.Height/1080f),Math.Max(1,(int)(area.Width*canvas.Width/1920f)),Math.Max(1,(int)(area.Height*canvas.Height/1080f)));
+            var areas=OrientationAreas(area,IsCastScreen && !IsSelectionScreen);
+            GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
             _world.Draw(_yaw,_pitch,_animationTime); GraphicsDevice.Viewport=viewport;
+            GraphicsDevice.Viewport=OrientationViewport(areas.Toy,canvas);
+            _orientationToy.Draw(_yaw,_pitch);GraphicsDevice.Viewport=viewport;
+            _spriteBatch.Begin(transformMatrix:transform);DrawOrientationLegend(areas.Toy,areas.Legend);_spriteBatch.End();
             if(IsCastScreen && !IsSelectionScreen) { _spriteBatch.Begin(transformMatrix:transform); DrawCastPreviewInfo(); _spriteBatch.End(); }
             if(IsSelectionScreen && _hoveredSlot>=0){_spriteBatch.Begin(transformMatrix:transform);DrawSelectionTile(_selectionTiles[_hoveredSlot],true);_spriteBatch.End();}
             }
@@ -475,5 +482,5 @@ public partial class Game1 : Game
         }
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
 }

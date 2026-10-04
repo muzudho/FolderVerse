@@ -79,21 +79,19 @@ public sealed partial class CubeNet
     }
     public void HoverEdge(Rectangle panel,Point pointer)
     {
-        HoveredFace=HoveredSide=-1;if(IsAnimating || !panel.Contains(pointer))return;
-        var fit=Fit(panel);float nearest=12;
-        foreach(var face in Faces)
+        HoveredFace=HoveredSide=-1;if(IsAnimating || !MapViewport(panel).Contains(pointer) || OnRuler(panel,pointer))return;
+        var labels=SeamLabels(panel);
+        foreach(var label in labels)if(label.Bounds.Contains(pointer))
+        {HoveredFace=label.Face;HoveredSide=label.Side;return;}
+        float nearest=8;
+        foreach(var label in labels)
         {
-            var center=face.Center*fit.Scale+fit.Origin;
-            if(Math.Abs(pointer.X-center.X)<face.Width*fit.Scale/2-2 && Math.Abs(pointer.Y-center.Y)<face.Height*fit.Scale/2-2)return;
-        }
-        foreach(var face in Faces)for(int side=0;side<4;side++)
-        {
-            var ends=EdgeEnds(face,side);var a=ends.A*fit.Scale+fit.Origin;var b=ends.B*fit.Scale+fit.Origin;
+            var a=label.A;var b=label.B;
             var point=new Vector2(pointer.X,pointer.Y);var line=b-a;
             float t=MathHelper.Clamp(Vector2.Dot(point-a,line)/line.LengthSquared(),0,1);
             float distance=Vector2.Distance(point,a+t*line);
-            if(distance>=nearest || AttachPlan(face.Face,side,out _,out _)==null)continue;
-            nearest=distance;HoveredFace=face.Face;HoveredSide=side;
+            if(distance>=nearest)continue;
+            nearest=distance;HoveredFace=label.Face;HoveredSide=label.Side;
         }
     }
     public bool ClickEdge()
@@ -112,9 +110,12 @@ public sealed partial class CubeNet
     }
     private void DrawHoveredEdge(UiPainter ui,Rectangle panel)
     {
-        if(HoveredFace<0)return;var fit=Fit(panel);var ends=EdgeEnds(Faces.First(f=>f.Face==HoveredFace),HoveredSide);
-        var a=ends.A*fit.Scale+fit.Origin;var b=ends.B*fit.Scale+fit.Origin;
-        ui.Box(new((int)Math.Min(a.X,b.X)-3,(int)Math.Min(a.Y,b.Y)-3,Math.Max(6,(int)Math.Abs(a.X-b.X)+6),Math.Max(6,(int)Math.Abs(a.Y-b.Y)+6)),new Color(255,230,112));
+        if(HoveredFace<0)return;
+        foreach(var label in SeamLabels(panel).Where(l=>l.Name==HoveredSeam))
+        {
+            var a=label.A;var b=label.B;
+            ui.Box(new((int)Math.Min(a.X,b.X)-2,(int)Math.Min(a.Y,b.Y)-2,Math.Max(4,(int)Math.Abs(a.X-b.X)+4),Math.Max(4,(int)Math.Abs(a.Y-b.Y)+4)),new Color(255,230,112));
+        }
     }
     private void DrawAnimation(UiPainter ui,WorldSetup world,Rectangle panel,float pulse)
     {

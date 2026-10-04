@@ -133,49 +133,6 @@ public sealed partial class CubeNet
                 ui.Box(new(rect.Left,rect.Top,3,rect.Height),Color.White);ui.Box(new(rect.Right-3,rect.Top,3,rect.Height),Color.White);
             }
         }
-        foreach(var face in Faces)
-        {
-            var center=face.Center*fit.Scale+fit.Origin;
-            var bounds=new Rectangle((int)(center.X-face.Width*fit.Scale/2),(int)(center.Y-face.Height*fit.Scale/2),(int)(face.Width*fit.Scale),(int)(face.Height*fit.Scale));
-            Vector3[] directions={face.Up,face.Right,-face.Up,-face.Right};
-            for(int side=0;side<4;side++)
-            {
-                int other=Array.IndexOf(Normals,directions[side]);
-                var neighbor=Faces.First(f=>f.Face==other);
-                var expected=face.Center+(side switch {0=>new Vector2(0,-(face.Height+neighbor.Height)/2),1=>new Vector2((face.Width+neighbor.Width)/2,0),2=>new Vector2(0,(face.Height+neighbor.Height)/2),_=>new Vector2(-(face.Width+neighbor.Width)/2,0)});
-                if(Vector2.DistanceSquared(expected,neighbor.Center)<0.001f)continue;
-                Vector2 at=center+(side switch{0=>new(0,-bounds.Height/2f),1=>new(bounds.Width/2f,0),2=>new(0,bounds.Height/2f),_=>new(-bounds.Width/2f,0)});
-                at+=side switch {0=>new Vector2(0,-38),1=>new Vector2(38,0),2=>new Vector2(0,38),_=>new Vector2(-38,0)};
-                ui.Text(Seam(face.Face,other),at-new Vector2(6,11),0.35f,new(255,230,158));
-            }
-        }
-        // Coordinates sit beyond exposed edges, never on top of terrain.
-        var coordinateBounds=new List<Rectangle>();
-        foreach(var cell in setup.Cells)
-        {
-            var rect=CellBounds(cell,panel);var face=Faces.First(f=>f.Face==cell.Face);
-            foreach(int edge in Enumerable.Range(0,4))
-            {
-                var a=cell.Corners[edge];var b=cell.Corners[(edge+1)%4];
-                int other=cell.Neighbors.First(id=>Array.Exists(setup.Cells[id].Corners,p=>p==a) && Array.Exists(setup.Cells[id].Corners,p=>p==b));
-                if(setup.Cells[other].Face==cell.Face)continue;
-                var otherFace=Faces.First(f=>f.Face==setup.Cells[other].Face);
-                if(Vector2.DistanceSquared(face.Project(a),otherFace.Project(a))<.001f && Vector2.DistanceSquared(face.Project(b),otherFace.Project(b))<.001f)continue;
-                var midpoint=(face.Project(a)+face.Project(b))/2*fit.Scale+fit.Origin;
-                var away=Vector2.Normalize(midpoint-new Vector2(rect.Center.X,rect.Center.Y));
-                var outside=midpoint+away*16;
-                var coordinate=WorldCoordinates.At(setup,cell);
-                bool latitude=Math.Abs(Vector3.Dot(b-a,Vector3.Up))>.5f;
-                bool pair=cell.Face==2 || cell.Face==3;
-                string label=pair?$"（{coordinate.X},{coordinate.Y}）":latitude?coordinate.Y.ToString():coordinate.X.ToString();
-                var size=ui.Measure(label,WorldCoordinates.MapFontScale);
-                var bounds=new Rectangle((int)(outside.X-size.X/2)-3,(int)(outside.Y-size.Y/2)-2,(int)Math.Ceiling(size.X)+6,(int)Math.Ceiling(size.Y)+4);
-                // Keep the font fixed when zooming out; omit colliding ticks instead of shrinking them.
-                if(coordinateBounds.Any(r=>r.Intersects(bounds)))continue;
-                coordinateBounds.Add(bounds);
-                ui.Center(label,new((int)outside.X-48,(int)outside.Y-11,96,22),WorldCoordinates.MapFontScale,pair?new Color(213,232,239):latitude?WorldCoordinates.LatitudeColor:WorldCoordinates.LongitudeColor);
-            }
-        }
         foreach(int ruler in Enumerable.Range(0,setup.ActiveCount).OrderBy(r=>r==setup.PlayerSlot?1:0))
         {
         if(!ShowBatteries)continue;
@@ -196,5 +153,6 @@ public sealed partial class CubeNet
         for(int i=0;i<3;i++)ui.Box(new(bx+3+i*7,by+3,5,10),new Color(35,112,70));
         }
         DrawHoveredEdge(ui,panel);
+        DrawSeamLabels(ui,panel);
     }
 }
