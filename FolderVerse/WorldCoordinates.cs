@@ -61,4 +61,22 @@ public static class WorldCoordinates
             return (longitude,latitude);
         });
     }
+    public static Dictionary<int,(bool Longitude,bool Latitude)> GlobeScreenLabelComponents(WorldSetup world,IReadOnlyDictionary<int,Vector2> positions)
+    {
+        var result=GlobeLabelComponents(world,positions.Keys);
+        var sideCells=positions.Keys.Where(id=>world.Cells[id].Face is not (2 or 3))
+            .Select(id=>(Id:id,Face:world.Cells[id].Face,Coordinate:At(world,world.Cells[id]))).ToArray();
+        foreach(var cell in sideCells)result[cell.Id]=(false,false);
+        foreach(var column in sideCells.GroupBy(c=>(c.Face,c.Coordinate.X)))
+        {
+            int id=column.OrderBy(c=>positions[c.Id].Y).ThenBy(c=>positions[c.Id].X).ThenBy(c=>c.Id).First().Id;
+            result[id]=(true,result[id].Latitude);
+        }
+        foreach(var row in sideCells.GroupBy(c=>(c.Face,c.Coordinate.Y)))
+        {
+            int id=row.OrderBy(c=>positions[c.Id].X).ThenBy(c=>positions[c.Id].Y).ThenBy(c=>c.Id).First().Id;
+            result[id]=(result[id].Longitude,true);
+        }
+        return result;
+    }
 }

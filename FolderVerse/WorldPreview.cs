@@ -126,7 +126,7 @@ public sealed class WorldPreview : IDisposable
             var c = b + v / countV;
             var d = a + v / countV;
             var center = (a + c) * 0.5f;
-            Color color=WorldTerrain.ColorAt(WorldTerrain.Elevation(center,offset));
+            Color color=WorldTerrain.ColorAt(WorldTerrain.Elevation(center,offset),normal);
             if (x % detail == 0 || y % detail == 0) color = Color.Lerp(color, new Color(17, 47, 62), 0.3f);
             mesh.Add(new(a, color, normal)); mesh.Add(new(b, color, normal)); mesh.Add(new(c, color, normal));
             mesh.Add(new(a, color, normal)); mesh.Add(new(c, color, normal)); mesh.Add(new(d, color, normal));

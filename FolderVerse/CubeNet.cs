@@ -106,7 +106,7 @@ public sealed partial class CubeNet
                 var a=face.Project(p);int px=(int)(fit.Origin.X+a.X*fit.Scale),py=(int)(fit.Origin.Y+a.Y*fit.Scale);
                 int size=(int)Math.Ceiling(fit.Scale/detail)+1;
                 float elevation=WorldTerrain.Elevation(p,offset);
-                Color terrain=(cell.Face==2 || cell.Face==3) && elevation>=0.52f?elevation>=WorldTerrain.MountainHeight?new Color(183,200,215):new Color(245,249,255):WorldTerrain.ColorAt(elevation);
+                Color terrain=WorldTerrain.ColorAt(elevation,cell.Normal);
                 var post=setup.Nodes.At(cell.Id,new Point(x,y));
                 if(!ShowRoutes && post!=null)terrain=Color.Lerp(terrain,setup.OwnerColor(post.Owner),post.Owner==setup.PlayerSlot?.4f:.16f);
                 ui.Box(new(px-size/2,py-size/2,size,size),terrain);

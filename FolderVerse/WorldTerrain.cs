@@ -17,6 +17,13 @@ public static class WorldTerrain
     }
     public static TerrainKind Kind(float height)=>height<0.52f?TerrainKind.Sea:height<0.55f?TerrainKind.Coast:height<0.70f?TerrainKind.Grassland:height<MountainHeight?TerrainKind.Hill:TerrainKind.Mountain;
     public static Color ColorAt(float height)=>height<0.47f?new(32,112,182):height<0.52f?new(53,155,207):height<0.55f?new(237,211,140):height<0.70f?new(85,164,103):height<MountainHeight?new(167,188,124):height<.77f?new(111,101,96):new(227,235,242);
+    public static Color ColorAt(float height,Vector3 normal)
+    {
+        if(Math.Abs(normal.Y)<.5f)return ColorAt(height);
+        if(height<.47f)return new(139,185,214);
+        if(height<.52f)return new(181,216,234);
+        return height>=MountainHeight?new(224,234,243):new(245,249,255);
+    }
     public static TerrainKind CellKind(SurfaceCell cell,Vector3 offset)
     {
         int[] counts=new int[5];

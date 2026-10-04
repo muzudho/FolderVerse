@@ -33,6 +33,31 @@ sealed class GlobeCheck:Game1
         }
         Check(checkedOffsets>0,"Normals did not separate coordinates from the surface");
         Check(!globe.ProjectVisible(new(0,0,-setup.Depth/2f),Vector3.Forward,0,0,panel,out _,2f),"Raised back label visible");
+        foreach(float yaw in new[]{-.55f,.55f,2.2f})
+        {
+            var positions=setup.Cells.Where(c=>c.Face is not (2 or 3)).ToDictionary(c=>c.Id,c=>
+            {
+                globe.ProjectVisible(c.Center,c.Normal,yaw,.3f,panel,out var point,2f);return point;
+            });
+            var screenComponents=WorldCoordinates.GlobeScreenLabelComponents(setup,positions);
+            foreach(var group in setup.Cells.Where(c=>positions.ContainsKey(c.Id)).GroupBy(c=>(c.Face,WorldCoordinates.At(setup,c).X)))
+            {
+                var kept=group.Where(c=>screenComponents[c.Id].Longitude).ToArray();
+                Check(kept.Length==1 && positions[kept[0].Id].Y==group.Min(c=>positions[c.Id].Y),"Longitude is not only at the screen top");
+            }
+            foreach(var group in setup.Cells.Where(c=>positions.ContainsKey(c.Id)).GroupBy(c=>(c.Face,WorldCoordinates.At(setup,c).Y)))
+            {
+                var kept=group.Where(c=>screenComponents[c.Id].Latitude).ToArray();
+                Check(kept.Length==1 && positions[kept[0].Id].X==group.Min(c=>positions[c.Id].X),"Latitude is not only at the screen left");
+            }
+        }
+        foreach(float height in new[]{.4f,.5f,.53f,.6f,.73f,.8f})
+        {
+            var head=WorldTerrain.ColorAt(height,Vector3.Up);var foot=WorldTerrain.ColorAt(height,Vector3.Down);
+            Check(head==foot,"Polar palettes differ");
+            Check(WorldTerrain.ColorAt(height,Vector3.Right)==WorldTerrain.ColorAt(height),"Side palette changed");
+            Check(WorldTerrain.Kind(height)==TerrainKind.Sea?head.R>100 && head.B>head.R:head.R>=224 && head.G>=224 && head.B>=224,"Polar terrain is not icy blue or snow white");
+        }
         var faceCells=setup.Cells.Where(c=>c.Face==0).ToArray();
         var gridComponents=WorldCoordinates.GlobeLabelComponents(setup,faceCells.Select(c=>c.Id));
         int minX=faceCells.Min(c=>c.X),maxX=faceCells.Max(c=>c.X),minY=faceCells.Min(c=>c.Y),maxY=faceCells.Max(c=>c.Y);

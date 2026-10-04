@@ -132,7 +132,7 @@ public sealed partial class CubeNet
             for(int y=0;y<detail;y++)for(int x=0;x<detail;x++)
             {
                 var p=cell.Origin+cell.U*((x+.5f)/detail)+cell.V*((y+.5f)/detail);float elevation=WorldTerrain.Elevation(p,offset);
-                var color=(cell.Face==2||cell.Face==3)&&elevation>=.52f?elevation>=WorldTerrain.MountainHeight?new Color(183,200,215):new Color(245,249,255):WorldTerrain.ColorAt(elevation);
+                var color=WorldTerrain.ColorAt(elevation,cell.Normal);
                 var post=world.Nodes.At(cell.Id,new Point(x,y));if(!ShowRoutes && post!=null)color=Color.Lerp(color,world.OwnerColor(post.Owner),post.Owner==world.PlayerSlot?.4f:.16f);
                 ui.Tile(Project(p),new Vector2(fit.Scale/detail+1),moving?angle:0,color);
             }

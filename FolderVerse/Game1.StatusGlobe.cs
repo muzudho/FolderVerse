@@ -49,7 +49,7 @@ public partial class Game1
             occupied.Add(label);labels.Add((cell.Id,foot,point,label,longitude,latitude));
         }
         // Use the actually visible labels so clipping and thinning create new endpoints.
-        var components=WorldCoordinates.GlobeLabelComponents(_setup,labels.Select(l=>l.Cell));
+        var components=WorldCoordinates.GlobeScreenLabelComponents(_setup,labels.ToDictionary(l=>l.Cell,l=>l.Tip));
         for(int i=labels.Count-1;i>=0;i--)
         {
             var label=labels[i];var shown=components[label.Cell];
