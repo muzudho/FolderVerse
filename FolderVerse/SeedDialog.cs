@@ -1,5 +1,6 @@
 namespace FolderVerse;
 using System;
+using System.Text.RegularExpressions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -12,7 +13,26 @@ public sealed class UiPainter
     public UiPainter(SpriteBatch batch, Texture2D pixel, SpriteFont font) { Batch=batch; _pixel=pixel; _font=font; }
     public void Box(Rectangle rect, Color color) => Batch.Draw(_pixel,rect,color);
     public void Tile(Vector2 center,Vector2 size,float rotation,Color color)=>Batch.Draw(_pixel,center,null,color,rotation,new Vector2(.5f),size,SpriteEffects.None,0);
-    public void Text(string text, Vector2 at, float scale, Color color) => Batch.DrawString(_font,text,at,color,0,Vector2.Zero,scale,SpriteEffects.None,0);
+    public Vector2 Measure(string text,float scale)=>_font.MeasureString(text)*scale;
+    private static readonly Regex Coordinates=new(@"（(?<longitude>-?\d+),(?<latitude>-?\d+)(?=[,）])",RegexOptions.Compiled);
+    public void Text(string text, Vector2 at, float scale, Color color)
+    {
+        int start=0;
+        void Run(string part,Color tint)
+        {
+            Batch.DrawString(_font,part,at,tint,0,Vector2.Zero,scale,SpriteEffects.None,0);
+            at.X+=_font.MeasureString(part).X*scale;
+        }
+        foreach(Match match in Coordinates.Matches(text))
+        {
+            var longitude=match.Groups["longitude"];var latitude=match.Groups["latitude"];
+            Run(text.Substring(start,longitude.Index-start),color);
+            Run(longitude.Value,WorldCoordinates.LongitudeColor);
+            Run(",",color);Run(latitude.Value,WorldCoordinates.LatitudeColor);
+            start=latitude.Index+latitude.Length;
+        }
+        Run(text.Substring(start),color);
+    }
     public void Center(string text, Rectangle rect, float scale, Color color)
     {
         var size=_font.MeasureString(text)*scale;

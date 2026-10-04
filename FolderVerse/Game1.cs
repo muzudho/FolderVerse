@@ -126,7 +126,7 @@ public partial class Game1 : Game
         }
         else if(escape)
         {
-            if(IsStatusScreen && _movementOpen)_movementOpen=false;
+            if(IsStatusScreen && _movementOpen)CloseMovement();
             else if(IsStatusScreen && _populationCell>=0)_populationCell=-1;
             else if(_screen==Screen.Title)Exit(); else { _screen=Screen.Title; _dragging=false; }
         }
@@ -155,7 +155,7 @@ public partial class Game1 : Game
             else if(click && NetButton(3).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
             else if(click && NetButton(4).Contains(_pointer))_net.Turn(_setup,(4-_net.Rotation)%4);
             else if(click && !pan && !_net.IsAnimating && _net.ClickEdge()){}
-            else if(click && !pan && !_net.IsAnimating && _statusCell>=0)
+            else if(click && !pan && !_movementOpen && !_net.IsAnimating && _statusCell>=0)
             {
                 var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);var post=_setup.Nodes.At(_statusCell,point);
                 if(post!=null && post.Owner==_setup.PlayerSlot && post.Population.Land)
@@ -383,7 +383,9 @@ public partial class Game1 : Game
         string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地球の北＝＋Y / 北を上に";
         string orientation=north+" / 回転 "+(_net.Rotation*90)+"°";
         _ui.Text(orientation,new(991,203),Math.Min(.43f,500/_font.MeasureString(orientation).X),new(177,206,216));
-        _ui.Text("△：山頂 / 錨：港",new(1510,203),.43f,new(255,204,83));
+        _ui.Text("経番",new(1450,203),.38f,WorldCoordinates.LongitudeColor);
+        _ui.Text("緯番",new(1515,203),.38f,WorldCoordinates.LatitudeColor);
+        _ui.Text("△：山頂 / 錨：港",new(1590,203),.38f,new(255,204,83));
         var canvas=CanvasBounds();
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _spriteBatch.End();
@@ -414,6 +416,7 @@ public partial class Game1 : Game
         if(_populationCell>=0)DrawPopulationPanel();
         if(_movementOpen)DrawMovementPanel();
         DrawRouteLayerButtons();
+        DrawNodeTooltip();
     }
     private void DrawCastPreviewInfo()
     {

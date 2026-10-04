@@ -1,6 +1,7 @@
 namespace FolderVerse;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 public sealed partial class CubeNet
@@ -8,6 +9,21 @@ public sealed partial class CubeNet
     public bool ShowFlags {get;set;}=true;
     public bool ShowBatteries {get;set;}=true;
     public bool ShowRoutes {get;set;}
+    public HashSet<int> MovementTargets {get;}=new();
+    public int SelectedTarget {get;set;}=-1;
+    public Vector2 NodePosition(WorldSetup world,Node node,Rectangle panel)
+    {
+        var fit=Fit(panel);var face=Faces.First(f=>f.Face==world.Cells[node.Cell].Face);
+        return face.Project(world.Routes.Position(node.Cell,node.Center))*fit.Scale+fit.Origin;
+    }
+    public int HitNode(WorldSetup world,Rectangle panel,Point pointer,IEnumerable<int> candidates=null)
+    {
+        if(IsAnimating || !panel.Contains(pointer))return -1;
+        var fit=Fit(panel);float radius=MathHelper.Clamp(fit.Scale*.06f,4,10)+4;
+        var point=new Vector2(pointer.X,pointer.Y);
+        return (candidates??world.Nodes.All.Select(n=>n.Id)).Select(id=>(Id:id,Distance:Vector2.DistanceSquared(NodePosition(world,world.Nodes.All[id],panel),point)))
+            .Where(n=>n.Distance<=radius*radius).OrderBy(n=>n.Distance).ThenBy(n=>n.Id).Select(n=>n.Id).DefaultIfEmpty(-1).First();
+    }
     public Point MicroPoint(WorldSetup world,int cell,Rectangle panel,Point pointer)
     {
         var fit=Fit(panel);var face=Faces.First(f=>f.Face==world.Cells[cell].Face);
@@ -16,7 +32,7 @@ public sealed partial class CubeNet
         var physical=surface.Normal*normalDistance+face.Right*p.X-face.Up*p.Y;
         return new(Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.U)*10),0,9),Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.V)*10),0,9));
     }
-    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project)
+    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse)
     {
         foreach(var peak in world.Routes.Peaks(cell))
         {
@@ -45,6 +61,16 @@ public sealed partial class CubeNet
             {
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
                 float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);
+                if(MovementTargets.Contains(post.Id) && MathF.Sin(pulse*6)>=0)
+                {
+                    Disc(ui,at,radius+7,new Color(255,219,96));
+                    Disc(ui,at,radius+5,new Color(13,36,44));
+                }
+                if(SelectedTarget==post.Id)
+                {
+                    Disc(ui,at,radius+4,Color.White);
+                    Disc(ui,at,radius+2,new Color(13,36,44));
+                }
                 Disc(ui,at,radius+2,new Color(13,36,44));
                 Disc(ui,at,radius,world.OwnerColor(post.Owner));
             }

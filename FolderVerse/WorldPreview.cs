@@ -22,7 +22,7 @@ public sealed class WorldPreview : IDisposable
     public int Seed { get; private set; }
     public string Kind => ((Width > 1 ? 1 : 0) + (Height > 1 ? 1 : 0) + (Depth > 1 ? 1 : 0)) switch
     {
-        1 => "地棒", 2 => "地平面", _ => "地箱（地球）"
+        1 => "地棒", 2 => "地盤", _ => "地箱（地球）"
     };
 
     public WorldPreview(GraphicsDevice device)

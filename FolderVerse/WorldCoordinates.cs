@@ -5,6 +5,8 @@ using Microsoft.Xna.Framework;
 
 public static class WorldCoordinates
 {
+    public static readonly Color LongitudeColor=new(255,143,151),LatitudeColor=new(128,232,166);
+    public const float MapFontScale=.42f;
     // The +X/+Z vertical corner is the meridian. Eastward perimeter cells are positive.
     public static Point At(WorldSetup world,SurfaceCell cell)
     {

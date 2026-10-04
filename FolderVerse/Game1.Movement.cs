@@ -1,5 +1,6 @@
 namespace FolderVerse;
 using System;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -8,19 +9,57 @@ public partial class Game1
     private bool _movementOpen;
     private long _escort;
     private int _movementPage;
+    private bool _routesBeforeMovement;
+    private int _selectedMoveNode=-1;
     private const int MovesPerPage=5;
     private static readonly Rectangle MovementButton=new(328,1018,208,52);
     private static Rectangle MarchButton(int row)=>new(84,430+row*76,770,68);
     private static readonly Rectangle MovesPrevious=new(570,824,130,44),MovesNext=new(714,824,130,44);
+    private static readonly Rectangle ConfirmMoveButton=new(570,914,274,48);
+    private void OpenMovement()
+    {
+        _routesBeforeMovement=_net.ShowRoutes;_net.ShowRoutes=true;_movementOpen=true;
+        _populationCell=-1;_escort=Math.Min(_escort,AvailableEscort);_movementPage=0;_selectedMoveNode=-1;
+        _net.MovementTargets.Clear();
+        _net.MovementTargets.UnionWith(_setup.Routes.NodeChoices(_setup.PlayerSlot).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id));
+        _net.SelectedTarget=-1;
+    }
+    private void CloseMovement()
+    {
+        if(!_movementOpen)return;
+        _movementOpen=false;_net.ShowRoutes=_routesBeforeMovement;
+        _selectedMoveNode=-1;_net.SelectedTarget=-1;_net.MovementTargets.Clear();
+    }
+    private void SelectMoveNode(int node)
+    {
+        if(!_net.MovementTargets.Contains(node))return;
+        _selectedMoveNode=node;_net.SelectedTarget=node;
+        var choices=_setup.Routes.NodeChoices(_setup.PlayerSlot);
+        _movementPage=Array.FindIndex(choices,r=>_setup.Nodes.At(r.Target,r.Entry).Id==node)/MovesPerPage;
+    }
     private long AvailableEscort
     {
         get {var node=_setup.Nodes.Current(_setup.PlayerSlot);return node!=null && node.Owner==_setup.PlayerSlot?node.Population.People[0]:0;}
     }
     private bool MovementClick(Point pointer,KeyboardState keyboard)
     {
-        if(MovementButton.Contains(pointer)){_movementOpen=!_movementOpen;_populationCell=-1;_escort=Math.Min(_escort,AvailableEscort);_movementPage=0;return true;}
+        if(MovementButton.Contains(pointer)){if(_movementOpen)CloseMovement();else OpenMovement();return true;}
         if(!_movementOpen)return false;
-        if(new Rectangle(803,169,58,44).Contains(pointer)){_movementOpen=false;return true;}
+        if(new Rectangle(803,169,58,44).Contains(pointer)){CloseMovement();return true;}
+        if(PopulationTurnButton.Contains(pointer))return true;
+        if(ConfirmMoveButton.Contains(pointer))
+        {
+            if(_selectedMoveNode<0 || _setup.Routes.ToNode(_setup.PlayerSlot,_selectedMoveNode)==null)return true;
+            _setup.Campaign.Advance(_setup,_selectedMoveNode,_escort);_escort=Math.Min(_escort,AvailableEscort);
+            CloseMovement();_world.ShowSetup(_setup,true);
+            _net.SetCenter(_setup,_setup.Cells[_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
+            _populationCell=-1;return true;
+        }
+        if(NetPanel.Contains(pointer) && !keyboard.IsKeyDown(Keys.Space))
+        {
+            int node=_net.HitNode(_setup,NetPanel,pointer,_net.MovementTargets);
+            if(node>=0){SelectMoveNode(node);return true;}
+        }
         var choices=_setup.Routes.NodeChoices(_setup.PlayerSlot);int pages=Math.Max(1,(choices.Length+MovesPerPage-1)/MovesPerPage);
         if(MovesPrevious.Contains(pointer)){_movementPage=Math.Max(0,_movementPage-1);return true;}
         if(MovesNext.Contains(pointer)){_movementPage=Math.Min(pages-1,_movementPage+1);return true;}
@@ -32,11 +71,7 @@ public partial class Game1
         for(int row=0;row<MovesPerPage;row++)if(MarchButton(row).Contains(pointer))
         {
             int index=_movementPage*MovesPerPage+row;if(index>=choices.Length)return true;
-            var route=choices[index];int node=_setup.Nodes.At(route.Target,route.Entry).Id;
-            _setup.Campaign.Advance(_setup,node,_escort);_escort=Math.Min(_escort,AvailableEscort);_movementPage=0;
-            _world.ShowSetup(_setup,true);
-            _net.SetCenter(_setup,_setup.Cells[_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
-            _populationCell=-1;return true;
+            var route=choices[index];SelectMoveNode(_setup.Nodes.At(route.Target,route.Entry).Id);return true;
         }
         return new Rectangle(54,150,850,825).Contains(pointer);
     }
@@ -57,8 +92,8 @@ public partial class Game1
         {
             int index=_movementPage*MovesPerPage+row;if(index>=choices.Length)break;
             var route=choices[index];var node=_setup.Nodes.At(route.Target,route.Entry);bool own=node.Owner==ruler;
-            var rect=MarchButton(row);_ui.Button(rect,"",own?Accent:Muted);
-            string label=_setup.Routes.DirectionLabel(current,route)+"へ移動 / "+(node.Cell==current.Cell?"セル内":"隣接セル")+" / "+(own?"自国拠点":"他国拠点")+" / 守備 "+node.Population.People[0].ToString("N0")+" 人";
+            var rect=MarchButton(row);_ui.Button(rect,"",node.Id==_selectedMoveNode?Accent:Muted);
+            string label=(node.Id==_selectedMoveNode?"選択：":"")+_setup.Routes.DirectionLabel(current,route)+" / "+(node.Cell==current.Cell?"セル内":"隣接セル")+" / "+(own?"自国拠点":"他国拠点")+" / 守備 "+node.Population.People[0].ToString("N0")+" 人";
             _ui.Text(label,new(rect.X+16,rect.Y+5),Math.Min(.53f,738/_font.MeasureString(label).X),Cream);
             string name=_setup.Nodes.Label(node);
             _ui.Text(name,new(rect.X+16,rect.Y+35),Math.Min(.43f,738/_font.MeasureString(name).X),new(186,215,223));
@@ -66,7 +101,8 @@ public partial class Game1
         _ui.Text($"移動先 {choices.Length} 拠点 / {_movementPage+1}/{pages}",new(84,832),.53f,Cream);
         if(pages>1){_ui.Button(MovesPrevious,"←",_movementPage>0?Accent:Muted,.7f);_ui.Button(MovesNext,"→",_movementPage<pages-1?Accent:Muted,.7f);}
         _ui.Text("100人ずつ / Shift：1,000人 / Ctrl：10,000人",new(84,878),.49f,new(180,209,219));
-        string status=choices.Length==0?"交通路でつながる移動先がない":"交通路でつながる拠点へ１ターンで移動";
-        _ui.Text(status,new(84,924),.47f,new(180,209,219));
+        string status=choices.Length==0?"交通路でつながる移動先がない":_selectedMoveNode<0?"点滅する拠点をクリックして選択":$"選択：Node {_selectedMoveNode+1} / 確定で移動";
+        _ui.Text(status,new(84,926),Math.Min(.47f,465/_font.MeasureString(status).X),new(180,209,219));
+        _ui.Button(ConfirmMoveButton,"確定",_selectedMoveNode>=0?Accent:Muted,.7f);
     }
 }

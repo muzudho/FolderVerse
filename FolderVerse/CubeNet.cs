@@ -126,7 +126,7 @@ public sealed partial class CubeNet
                 var pa=face.Project(a)*fit.Scale+fit.Origin;var pb=face.Project(b)*fit.Scale+fit.Origin;
                 ui.Box(new((int)Math.Min(pa.X,pb.X)-thickness/2,(int)Math.Min(pa.Y,pb.Y)-thickness/2,Math.Max(thickness,(int)Math.Abs(pa.X-pb.X)),Math.Max(thickness,(int)Math.Abs(pa.Y-pb.Y))),color);
             }
-            DrawCellRoutes(ui,setup,cell.Id,p=>face.Project(p)*fit.Scale+fit.Origin);
+            DrawCellRoutes(ui,setup,cell.Id,p=>face.Project(p)*fit.Scale+fit.Origin,pulse);
             if(focused==cell.Id)
             {
                 ui.Box(new(rect.Left,rect.Top,rect.Width,3),Color.White);ui.Box(new(rect.Left,rect.Bottom-3,rect.Width,3),Color.White);
@@ -150,6 +150,7 @@ public sealed partial class CubeNet
             }
         }
         // Coordinates sit beyond exposed edges, never on top of terrain.
+        var coordinateBounds=new List<Rectangle>();
         foreach(var cell in setup.Cells)
         {
             var rect=CellBounds(cell,panel);var face=Faces.First(f=>f.Face==cell.Face);
@@ -164,8 +165,15 @@ public sealed partial class CubeNet
                 var away=Vector2.Normalize(midpoint-new Vector2(rect.Center.X,rect.Center.Y));
                 var outside=midpoint+away*16;
                 var coordinate=WorldCoordinates.At(setup,cell);
-                string label=cell.Face==2 || cell.Face==3?$"{coordinate.X},{coordinate.Y}":Math.Abs(Vector3.Dot(b-a,Vector3.Up))>.5f?coordinate.Y.ToString():coordinate.X.ToString();
-                ui.Center(label,new((int)outside.X-24,(int)outside.Y-8,48,16),0.27f,new Color(213,232,239));
+                bool latitude=Math.Abs(Vector3.Dot(b-a,Vector3.Up))>.5f;
+                bool pair=cell.Face==2 || cell.Face==3;
+                string label=pair?$"（{coordinate.X},{coordinate.Y}）":latitude?coordinate.Y.ToString():coordinate.X.ToString();
+                var size=ui.Measure(label,WorldCoordinates.MapFontScale);
+                var bounds=new Rectangle((int)(outside.X-size.X/2)-3,(int)(outside.Y-size.Y/2)-2,(int)Math.Ceiling(size.X)+6,(int)Math.Ceiling(size.Y)+4);
+                // Keep the font fixed when zooming out; omit colliding ticks instead of shrinking them.
+                if(coordinateBounds.Any(r=>r.Intersects(bounds)))continue;
+                coordinateBounds.Add(bounds);
+                ui.Center(label,new((int)outside.X-48,(int)outside.Y-11,96,22),WorldCoordinates.MapFontScale,pair?new Color(213,232,239):latitude?WorldCoordinates.LatitudeColor:WorldCoordinates.LongitudeColor);
             }
         }
         foreach(int ruler in Enumerable.Range(0,setup.ActiveCount).OrderBy(r=>r==setup.PlayerSlot?1:0))
@@ -177,7 +185,7 @@ public sealed partial class CubeNet
         if(ruler!=setup.PlayerSlot)
         {
             int x=(int)position.X-7,y=(int)position.Y-4;
-            var tint=Color.Lerp(setup.OwnerColor(ruler),Color.White,(MathF.Sin(pulse*4+ruler)+1)*.25f);
+            var tint=setup.OwnerColor(ruler);
             ui.Box(new(x-2,y-2,17,12),new Color(12,27,36));ui.Box(new(x,y,12,8),tint);ui.Box(new(x+12,y+2,2,4),tint);
             continue;
         }

@@ -10,7 +10,7 @@ public partial class Game1
         {
             if(i==0)_net.ShowFlags=!_net.ShowFlags;
             if(i==1)_net.ShowBatteries=!_net.ShowBatteries;
-            if(i==2)_net.ShowRoutes=!_net.ShowRoutes;
+            if(i==2 && !_movementOpen)_net.ShowRoutes=!_net.ShowRoutes;
             return true;
         }
         return false;
