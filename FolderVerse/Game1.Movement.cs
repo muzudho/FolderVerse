@@ -54,7 +54,7 @@ public partial class Game1
             _setup.Campaign.Advance(_setup,_selectedMoveNode,_escort);_escort=Math.Min(_escort,AvailableEscort);
             CloseMovement();_world.ShowSetup(_setup,true);
             _net.SetCenter(_setup,_setup.Cells[_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
-            _populationCell=-1;return true;
+            _populationCell=-1;OpenBattle();return true;
         }
         if(NetPanel.Contains(pointer) && !keyboard.IsKeyDown(Keys.Space))
         {
@@ -94,15 +94,15 @@ public partial class Game1
             int index=_movementPage*MovesPerPage+row;if(index>=choices.Length)break;
             var route=choices[index];var node=_setup.Nodes.At(route.Target,route.Entry);bool own=node.Owner==ruler;
             var rect=MarchButton(row);_ui.Button(rect,"",node.Id==_selectedMoveNode?Accent:Muted);
-            string label=(node.Id==_selectedMoveNode?"選択：":"")+_setup.Routes.DirectionLabel(current,route)+" / "+(node.Cell==current.Cell?"セル内":"隣接セル")+" / "+(own?"自国拠点":"他国拠点")+" / 守備 "+node.Population.People[0].ToString("N0")+" 人";
+            string label=(node.Id==_selectedMoveNode?"選択：":"")+_setup.Routes.DirectionLabel(current,route)+" / "+(node.Cell==current.Cell?"セル内":"隣接セル")+" / "+(own?"自国節点":"他国節点")+" / 守備 "+node.Population.People[0].ToString("N0")+" 人";
             _ui.Text(label,new(rect.X+16,rect.Y+5),Math.Min(.53f,738/_font.MeasureString(label).X),Cream);
             string name=_setup.Nodes.Label(node);
             _ui.Text(name,new(rect.X+16,rect.Y+35),Math.Min(.43f,738/_font.MeasureString(name).X),new(186,215,223));
         }
-        _ui.Text($"移動先 {choices.Length} 拠点 / {_movementPage+1}/{pages}",new(84,832),.53f,Cream);
+        _ui.Text($"移動先 {choices.Length} 節点 / {_movementPage+1}/{pages}",new(84,832),.53f,Cream);
         if(pages>1){_ui.Button(MovesPrevious,"←",_movementPage>0?Accent:Muted,.7f);_ui.Button(MovesNext,"→",_movementPage<pages-1?Accent:Muted,.7f);}
         _ui.Text("100人ずつ / Shift：1,000人 / Ctrl：10,000人",new(84,878),.49f,new(180,209,219));
-        string status=choices.Length==0?"交通路でつながる移動先がない":_selectedMoveNode<0?"点滅する拠点をクリックして選択":$"選択：Node {_selectedMoveNode+1} / 確定で移動";
+        string status=choices.Length==0?"交通路でつながる移動先がない":_selectedMoveNode<0?"点滅する節点をクリックして選択":$"選択：Node {_selectedMoveNode+1} / 確定で移動";
         _ui.Text(status,new(84,926),Math.Min(.47f,465/_font.MeasureString(status).X),new(180,209,219));
         _ui.Button(ConfirmMoveButton,"確定",_selectedMoveNode>=0?Accent:Muted,.7f);
     }

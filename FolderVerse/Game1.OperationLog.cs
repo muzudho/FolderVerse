@@ -14,7 +14,8 @@ public partial class Game1
     public string OperationLogPath=>_operations.FilePath;
     private object OperationState()=>new
     {
-        screen=_screen.ToString(),phase=IsStatusScreen?"Game":_screen==Screen.Title?"Title":"Setup",
+        screen=_screen.ToString(),phase=IsStatusScreen || _screen==Screen.Battle?"Game":_screen==Screen.Title?"Title":"Setup",
+        battleWave=_battleWave,battleAge=_battleAge,battleFocus=_battleFocus,battleCount=_setup.Campaign.Battles.Count,
         overlay=_seedDialog.IsOpen?"SeedDialog":_movementOpen?"Movement":_populationCell>=0?"Population":"None",
         view=_statusGlobe?"Globe":"Net",layer=_net.ShowRoutes?"Traffic":"Grid",flags=_net.ShowFlags,batteries=_net.ShowBatteries,
         worldSeed=_setup.WorldSeed,castSeed=_setup.CastSeed,placementSeed=_setup.PlacementSeed,
@@ -25,6 +26,12 @@ public partial class Game1
     };
     private string InputTarget(Point point)
     {
+        if(_screen==Screen.Battle)
+        {
+            if(BattleContinue.Contains(point))return "battle_continue";
+            foreach(var tile in _battleTiles)if(tile.Slot>=0 && tile.Bounds.Contains(point))return "battle_cell_"+tile.Slot;
+            return "battle_background";
+        }
         if(_seedDialog.IsOpen)return "seed_dialog";
         if(!IsStatusScreen)return _screen.ToString();
         if(MapViewButton.Contains(point))return "toggle_globe_net";

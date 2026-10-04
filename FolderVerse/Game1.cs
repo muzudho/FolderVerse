@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 public partial class Game1 : Game
 {
-    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, WorldStatus }
+    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, WorldStatus, Battle }
     private readonly GraphicsDeviceManager _graphics;
     private readonly Random _random=new();
     private readonly WorldSetup _setup=new();
@@ -104,6 +104,12 @@ public partial class Game1 : Game
         bool captureChord=keyboard.IsKeyDown(Keys.P) && (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
         if(active && captureChord && !previousChord)_screenshots.Request();
+        if(_screen==Screen.Battle)
+        {
+            if(click)foreach(var tile in _battleTiles)if(tile.Slot>=0 && tile.Bounds.Contains(_pointer))_battleFocus=tile.Slot;
+            UpdateBattle(elapsed,active && (click && BattleContinue.Contains(_pointer) || enter));
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
         if(_seedDialog.IsOpen)
         {
             int? result=null;
@@ -392,7 +398,7 @@ public partial class Game1 : Game
         string capitalLabel=_setup.TerritoryCounts[player]==0?"放浪者 / 自国なし":"首都　"+WorldCoordinates.Label(_setup,capital);
         _ui.Center(capitalLabel,new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
         int fully=System.Linq.Enumerable.Count(_setup.Cells,c=>_setup.Nodes.FullOwner(c.Id)==player);
-        _ui.Center("完全占領　"+fully+" cell / 拠点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==player),new(90,842,760,48),0.76f,Cream);
+        _ui.Center("完全占領　"+fully+" cell / 節点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==player),new(90,842,760,48),0.76f,Cream);
         _ui.Center("海の都市も、人が集まる地点の名前",new(90,900,760,44),0.50f,new(164,192,202));
         _ui.Center("ノルテ＝北 / スール＝南 / エステ＝東 / オエステ＝西",new(70,950,800,40),0.40f,new(164,192,202));
         _ui.Box(new(970,142,914,750),new(20,42,54));
@@ -431,7 +437,7 @@ public partial class Game1 : Game
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
-        _ui.Text(_statusGlobe?"左ドラッグ：回転 / 点滅する拠点で移動先を選択":"辺クリック：つなぎ替え / ホイール：拡縮 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
+        _ui.Text(_statusGlobe?"左ドラッグ：回転 / 点滅する節点で移動先を選択":"辺クリック：つなぎ替え / ホイール：拡縮 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
         _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
         _ui.Button(NetButton(2),"自分の国へ",Accent,0.52f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
         const string resetLabel="頭を上へ、腹を手前へ";
@@ -484,9 +490,10 @@ public partial class Game1 : Game
             _spriteBatch.Begin(transformMatrix:transform);
             _ui.Box(new(0,0,1920,1080),new(16,35,46));
             _spriteBatch.Draw(_titleLogo,new Rectangle(0,0,1920,1080),Color.White*0.14f);
-            if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
+            if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
             {
-            if(!IsStatusScreen)
+            if(_screen==Screen.Battle)DrawBattleGlobe(canvas,transform);
+            else if(!IsStatusScreen)
             {
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;
