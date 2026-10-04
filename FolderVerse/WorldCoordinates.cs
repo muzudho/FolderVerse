@@ -58,8 +58,7 @@ public static class WorldCoordinates
         return coordinates.Keys.ToDictionary(id=>id,id=>
         {
             bool longitude=!Interior(id,true),latitude=!Interior(id,false);
-            // A label must retain at least one coordinate, even at intersecting runs.
-            return (longitude,latitude || !longitude);
+            return (longitude,latitude);
         });
     }
 }

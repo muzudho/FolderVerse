@@ -33,6 +33,13 @@ sealed class GlobeCheck:Game1
         }
         Check(checkedOffsets>0,"Normals did not separate coordinates from the surface");
         Check(!globe.ProjectVisible(new(0,0,-setup.Depth/2f),Vector3.Forward,0,0,panel,out _,2f),"Raised back label visible");
+        var faceCells=setup.Cells.Where(c=>c.Face==0).ToArray();
+        var gridComponents=WorldCoordinates.GlobeLabelComponents(setup,faceCells.Select(c=>c.Id));
+        int minX=faceCells.Min(c=>c.X),maxX=faceCells.Max(c=>c.X),minY=faceCells.Min(c=>c.Y),maxY=faceCells.Max(c=>c.Y);
+        var interior=faceCells.Where(c=>c.X>minX && c.X<maxX && c.Y>minY && c.Y<maxY).ToArray();
+        Check(interior.Length>0 && interior.All(c=>!gridComponents[c.Id].Longitude && !gridComponents[c.Id].Latitude),"Both interior coordinates must be hidden");
+        Check(faceCells.Where(c=>(c.X==minX || c.X==maxX) && (c.Y==minY || c.Y==maxY))
+            .All(c=>gridComponents[c.Id].Longitude && gridComponents[c.Id].Latitude),"Corner endpoints must retain both coordinates");
         foreach(bool longitude in new[]{true,false})
         {
             var run=setup.Cells.Where(c=>c.Face==0)

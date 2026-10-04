@@ -50,9 +50,10 @@ public partial class Game1
         }
         // Use the actually visible labels so clipping and thinning create new endpoints.
         var components=WorldCoordinates.GlobeLabelComponents(_setup,labels.Select(l=>l.Cell));
-        for(int i=0;i<labels.Count;i++)
+        for(int i=labels.Count-1;i>=0;i--)
         {
             var label=labels[i];var shown=components[label.Cell];
+            if(!shown.Longitude && !shown.Latitude){labels.RemoveAt(i);continue;}
             if(!shown.Longitude)label.Longitude="";
             if(!shown.Latitude)label.Latitude="";
             float width=_ui.Measure(label.Longitude,scale).X+_ui.Measure(label.Latitude,scale).X+
