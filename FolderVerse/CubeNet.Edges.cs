@@ -79,7 +79,7 @@ public sealed partial class CubeNet
     }
     public void HoverEdge(Rectangle panel,Point pointer)
     {
-        HoveredFace=HoveredSide=-1;if(IsAnimating || !MapViewport(panel).Contains(pointer) || OnRuler(panel,pointer))return;
+        HoveredFace=HoveredSide=-1;if(IsAnimating || !MapViewport(panel).Contains(pointer))return;
         var labels=SeamLabels(panel);
         foreach(var label in labels)if(label.Bounds.Contains(pointer))
         {HoveredFace=label.Face;HoveredSide=label.Side;return;}

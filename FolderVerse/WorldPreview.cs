@@ -133,7 +133,7 @@ public sealed class WorldPreview : IDisposable
         }
     }
 
-    public void Draw(float yaw, float pitch,float glow=0)
+    public void Draw(float yaw, float pitch,float glow=0,bool markers=true)
     {
         _device.BlendState = BlendState.Opaque;
         _device.DepthStencilState = DepthStencilState.Default;
@@ -156,12 +156,25 @@ public sealed class WorldPreview : IDisposable
             foreach(var pass in _effect.CurrentTechnique.Passes){pass.Apply();_device.DrawPrimitives(PrimitiveType.TriangleList,0,_highlightCount);}
             _effect.DiffuseColor=Vector3.One;_effect.LightingEnabled=true;
         }
-        if(_markers != null)
+        if(_markers != null && markers)
         {
             _device.SetVertexBuffer(_markers); _effect.LightingEnabled=false;
             foreach(var pass in _effect.CurrentTechnique.Passes) { pass.Apply(); _device.DrawPrimitives(PrimitiveType.TriangleList,0,_markerCount); }
             _effect.LightingEnabled=true;
         }
+    }
+    public bool ProjectVisible(Vector3 point,Vector3 normal,float yaw,float pitch,Rectangle area,out Vector2 screen,float normalOffset=0)
+    {
+        var orientation=Orientation(yaw,pitch);
+        float radius=new Vector3(Width,Height,Depth).Length()*.5f+(_markers==null?0:.4f);
+        var camera=new Vector3(0,0,radius*3.3f);
+        var transformed=Vector3.Transform(point,orientation);
+        var facing=Vector3.TransformNormal(normal,orientation);
+        var view=Matrix.CreateLookAt(camera,Vector3.Zero,Vector3.Up);
+        var projection=Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(42),area.Width/(float)area.Height,.1f,100);
+        var viewport=new Viewport(area);var projected=viewport.Project(point+normal*normalOffset,projection,view,orientation);
+        screen=new(projected.X,projected.Y);
+        return Vector3.Dot(facing,camera-transformed)>0 && projected.Z>=0 && projected.Z<=1;
     }
     public void Dispose() { _vertices?.Dispose(); _markers?.Dispose();_highlight?.Dispose(); _effect.Dispose(); }
 }

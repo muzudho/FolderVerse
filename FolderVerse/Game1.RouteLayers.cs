@@ -4,10 +4,10 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private static Rectangle RouteLayerButton(int index)=>new(984+index*186,82,index==2?306:174,48);
-    private static readonly Rectangle RulerButton=new(1674,82,184,48);
+    private static readonly Rectangle MapViewButton=new(1674,82,184,48);
     private bool RouteLayerClick(Point pointer)
     {
-        if(RulerButton.Contains(pointer)){_net.ShowRulers=!_net.ShowRulers;return true;}
+        if(MapViewButton.Contains(pointer)){_statusGlobe=pointer.X<MapViewButton.Center.X;_dragging=false;_statusCell=-1;return true;}
         for(int i=0;i<3;i++)if(RouteLayerButton(i).Contains(pointer))
         {
             if(i==0)_net.ShowFlags=!_net.ShowFlags;
@@ -30,7 +30,12 @@ public partial class Game1
         _ui.Text("グリッド",new(mode.X+34,mode.Y+8),.57f,Cream);
         _ui.Box(new(mode.X+164,mode.Y+18,12,12),_net.ShowRoutes?new Color(255,234,124):new Color(26,41,50));
         _ui.Text("交通路",new(mode.X+184,mode.Y+8),.57f,Cream);
-        _ui.Button(RulerButton,"定規",_net.ShowRulers?Accent:Muted,.62f);
-        _ui.Box(new(RulerButton.X+12,RulerButton.Y+18,12,12),_net.ShowRulers?new Color(255,234,124):new Color(26,41,50));
+        _ui.Button(MapViewButton,"",Accent);
+        for(int i=0;i<2;i++)
+        {
+            int x=MapViewButton.X+i*92;
+            _ui.Box(new(x+5,MapViewButton.Y+19,10,10),(_statusGlobe==(i==0))?new Color(255,234,124):new Color(26,41,50));
+            _ui.Text(i==0?"地星儀":"展開図",new(x+19,MapViewButton.Y+13),.36f,Cream);
+        }
     }
 }

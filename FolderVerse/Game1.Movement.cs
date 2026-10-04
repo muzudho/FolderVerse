@@ -10,6 +10,7 @@ public partial class Game1
     private long _escort;
     private int _movementPage;
     private bool _routesBeforeMovement;
+    private bool _globeBeforeMovement;
     private int _selectedMoveNode=-1;
     private const int MovesPerPage=5;
     private static readonly Rectangle MovementButton=new(328,1018,208,52);
@@ -18,6 +19,7 @@ public partial class Game1
     private static readonly Rectangle ConfirmMoveButton=new(570,914,274,48);
     private void OpenMovement()
     {
+        _globeBeforeMovement=_statusGlobe;_statusGlobe=false;
         _routesBeforeMovement=_net.ShowRoutes;_net.ShowRoutes=true;_movementOpen=true;
         _populationCell=-1;_escort=Math.Min(_escort,AvailableEscort);_movementPage=0;_selectedMoveNode=-1;
         _net.MovementTargets.Clear();
@@ -27,7 +29,7 @@ public partial class Game1
     private void CloseMovement()
     {
         if(!_movementOpen)return;
-        _movementOpen=false;_net.ShowRoutes=_routesBeforeMovement;
+        _movementOpen=false;_net.ShowRoutes=_routesBeforeMovement;_statusGlobe=_globeBeforeMovement;
         _selectedMoveNode=-1;_net.SelectedTarget=-1;_net.MovementTargets.Clear();
     }
     private void SelectMoveNode(int node)
@@ -55,7 +57,7 @@ public partial class Game1
             _net.SetCenter(_setup,_setup.Cells[_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
             _populationCell=-1;return true;
         }
-        if(NetPanel.Contains(pointer) && !keyboard.IsKeyDown(Keys.Space))
+        if(!_statusGlobe && NetPanel.Contains(pointer) && !keyboard.IsKeyDown(Keys.Space))
         {
             int node=_net.HitNode(_setup,NetPanel,pointer,_net.MovementTargets);
             if(node>=0){SelectMoveNode(node);return true;}
