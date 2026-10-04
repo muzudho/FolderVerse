@@ -31,9 +31,14 @@ sealed class OperationCheck:Game1
         switch(frame)
         {
             case 0:
-                Click(new(1550,104));Check(net.ShowRoutes,"Traffic side did not select traffic");
-                Click(new(1550,104));Check(net.ShowRoutes,"Repeated traffic click toggled mode");
-                Click(new(1400,104));Check(!net.ShowRoutes,"Grid side did not select grid");break;
+                for(int i=0;i<8;i++)
+                {
+                    Click(new(1550,104));Check(net.ShowRoutes,"Repeated right-side click did not select traffic");
+                    Click(new(1550,104));Check(!net.ShowRoutes,"Repeated right-side click did not restore grid");
+                    Click(new(1400,104));Check(net.ShowRoutes,"Left-side click did not select traffic");
+                    Click(new(1509,104));Check(!net.ShowRoutes,"Center click did not restore grid");
+                }
+                break;
             case 1:
                 Click(new(410,1040));Check((bool)Get("_movementOpen") && net.ShowRoutes,"Movement did not open");
                 Click(new(1400,104));Check(!(bool)Get("_movementOpen") && !net.ShowRoutes && net.MovementTargets.Count==0,"Grid was silently ignored during movement");break;
@@ -60,7 +65,7 @@ sealed class OperationCheck:Game1
                     Check(events.Select(e=>e.GetProperty("sequence").GetInt64()).SequenceEqual(Enumerable.Range(1,events.Length).Select(i=>(long)i)),"Log order wrong");
                     var ends=events.Where(e=>e.GetProperty("kind").GetString()=="input_end").Select(e=>e.GetProperty("data")).ToArray();
                     Check(ends.Any(e=>e.GetProperty("outcome").GetString()=="movement_cancelled_for_grid"),"Grid cancel cause not recorded");
-                    Check(ends.Any(e=>e.GetProperty("outcome").GetString()=="already_selected"),"Already-selected result missing");
+                    Check(ends.Any(e=>e.GetProperty("outcome").GetString()=="layer_changed" && e.GetProperty("input").GetProperty("target").GetString()=="toggle_grid_traffic"),"Layer toggle result missing");
                     Check(ends.Any(e=>e.GetProperty("outcome").GetString()=="ignored_inactive_window"),"Inactive cause not recorded");
                     Check(ends.Any(e=>e.GetProperty("input").GetProperty("client").GetProperty("x").GetInt32()==1140 && e.GetProperty("input").GetProperty("canvas").GetProperty("x").GetInt32()==1710),"Raw/logical coordinates wrong");
                     Check(ends.All(e=>e.GetProperty("state").TryGetProperty("screen",out _) && e.GetProperty("state").TryGetProperty("worldSeed",out _)),"Screen or seed context missing");

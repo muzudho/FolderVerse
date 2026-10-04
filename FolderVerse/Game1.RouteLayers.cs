@@ -18,10 +18,10 @@ public partial class Game1
             if(i==1)_net.ShowBatteries=!_net.ShowBatteries;
             if(i==2)
             {
-                bool traffic=pointer.X>=RouteLayerButton(2).Center.X;
+                bool traffic=!_net.ShowRoutes;
                 bool cancel=!traffic && _movementOpen;
                 if(cancel)CloseMovement();
-                _inputOutcome=cancel?"movement_cancelled_for_grid":_net.ShowRoutes==traffic?"already_selected":"layer_changed";
+                _inputOutcome=cancel?"movement_cancelled_for_grid":"layer_changed";
                 _net.ShowRoutes=traffic;
             }
             return true;
