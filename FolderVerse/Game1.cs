@@ -419,6 +419,7 @@ public partial class Game1 : Game
             GraphicsDevice.Viewport=viewport;
             _spriteBatch.Begin(transformMatrix:transform);
             _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
+            DrawGlobeCellHover();
             DrawOrientationLegend(areas.Toy,areas.Legend,"方向のロボット");
             DrawStatusGlobeCoordinates();_spriteBatch.End();
         }

@@ -11,6 +11,22 @@ public partial class Game1
     private int _globePressedCell=-1;
     private Point _globePressPoint;
     private bool _globeCellDragged;
+    private void DrawGlobeCellHover()
+    {
+        int hovered=HitGlobeCell(_pointer);
+        if(hovered<0)return;
+        var cell=_setup.Cells[hovered];
+        var points=new Vector2[4];
+        for(int i=0;i<4;i++)_world.ProjectVisible(cell.Corners[i],cell.Normal,_yaw,_pitch,StatusGlobeArea,out points[i]);
+        for(int i=0;i<4;i++)
+        {
+            var a=points[i];var b=points[(i+1)%4];var delta=b-a;
+            if(delta.LengthSquared()<.01f)continue;
+            float angle=MathF.Atan2(delta.Y,delta.X);
+            _ui.Tile((a+b)/2,new(delta.Length(),5),angle,new Color(12,27,36));
+            _ui.Tile((a+b)/2,new(delta.Length(),2),angle,new Color(255,234,124));
+        }
+    }
     private int HitGlobeCell(Point pointer)
     {
         if(!StatusGlobeArea.Contains(pointer))return -1;
