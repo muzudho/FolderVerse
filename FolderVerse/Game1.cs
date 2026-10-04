@@ -146,6 +146,7 @@ public partial class Game1 : Game
                 else if(click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
                 else if(click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
                 Rotate(mouse,click && !action && _populationCell<0,active,NetPanel);
+                GlobeCellClick(mouse,click,active,action);
             }
             else
             {

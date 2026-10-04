@@ -111,7 +111,25 @@ sealed class GlobeCheck:Game1
                 Click(new(1730,935));Check((float)Get("_yaw")==0 && (float)Get("_pitch")==0,"Head/belly orientation reset failed");
                 Check(WorldPreview.Orientation(0,0)==Matrix.Identity,"Reset orientation is not head up and belly forward");break;
             case 4:Click(new(1810,104));Check(!(bool)Get("_statusGlobe"),"Net toggle failed");break;
-            case 5:Click(new(1710,104));var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();break;
+            case 5:
+                var clickArea=(Rectangle)typeof(Game1).GetProperty("StatusGlobeArea",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+                foreach(int faceId in Enumerable.Range(0,6))
+                {
+                    Set("_statusGlobe",true);
+                    var cell=setup.Cells.First(c=>c.Face==faceId);
+                    float cellYaw=-MathF.Atan2(cell.Normal.X,cell.Normal.Z),cellPitch=MathF.Asin(cell.Normal.Y);
+                    Set("_yaw",cellYaw);Set("_pitch",cellPitch);
+                    Check(globe.ProjectVisible(cell.Center,cell.Normal,cellYaw,cellPitch,clickArea,out var at),"Test cell not visible");
+                    var hit=(int)typeof(Game1).GetMethod("HitGlobeCell",Flags)!.Invoke(this,new object[]{at.ToPoint()})!;
+                    Check(hit==cell.Id,"Globe cell hit mismatch");
+                    Click(at.ToPoint());var clickedNet=(CubeNet)Get("_net");
+                    Check(!(bool)Get("_statusGlobe") && clickedNet.CenterFace==faceId,"Cell click did not open centered net");
+                    Check((float)Get("_yaw")==cellYaw && (float)Get("_pitch")==cellPitch,"Globe orientation was lost");
+                    var fit=clickedNet.Fit(new(1040,240,790,580));
+                    var center=fit.Origin+clickedNet.Faces[0].Project(cell.Center)*fit.Scale;
+                    Check(Vector2.Distance(center,new(1435,530))<.01f,"Clicked cell not centered");
+                }
+                Click(new(1710,104));var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();break;
             case 6:Console.WriteLine("PASS: globe retained during movement; traffic mode, rotation, port picking and conquest; confirm/cancel restore grid; coordinates, robot and small window.");Exit();break;
         }
     }

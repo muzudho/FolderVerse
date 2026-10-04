@@ -3,10 +3,66 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 public partial class Game1
 {
     private bool _statusGlobe;
+    private int _globePressedCell=-1;
+    private Point _globePressPoint;
+    private bool _globeCellDragged;
+    private int HitGlobeCell(Point pointer)
+    {
+        if(!StatusGlobeArea.Contains(pointer))return -1;
+        var p=new Vector2(pointer.X,pointer.Y);
+        foreach(var cell in _setup.Cells)
+        {
+            if(!_world.ProjectVisible(cell.Center,cell.Normal,_yaw,_pitch,StatusGlobeArea,out _))continue;
+            var corners=new Vector2[4];
+            for(int i=0;i<4;i++)_world.ProjectVisible(cell.Corners[i],cell.Normal,_yaw,_pitch,StatusGlobeArea,out corners[i]);
+            bool positive=false,negative=false;
+            for(int i=0;i<4;i++)
+            {
+                var a=corners[i];var b=corners[(i+1)%4];
+                float cross=(b.X-a.X)*(p.Y-a.Y)-(b.Y-a.Y)*(p.X-a.X);
+                positive|=cross>.01f;negative|=cross<-.01f;
+            }
+            if(!(positive && negative))return cell.Id;
+        }
+        return -1;
+    }
+    private void GlobeCellClick(MouseState mouse,bool click,bool active,bool action)
+    {
+        if(!active || action || _movementOpen || _populationCell>=0){_globePressedCell=-1;return;}
+        if(click)
+        {
+            _globePressedCell=HitGlobeCell(_pointer);_globePressPoint=_pointer;_globeCellDragged=false;
+        }
+        if(_globePressedCell<0)return;
+        if(Vector2.DistanceSquared(new(_pointer.X,_pointer.Y),new(_globePressPoint.X,_globePressPoint.Y))>36)_globeCellDragged=true;
+        if(mouse.LeftButton!=ButtonState.Released)return;
+        int selected=_globePressedCell;_globePressedCell=-1;
+        if(_globeCellDragged)return;
+        var cell=_setup.Cells[selected];
+        _dragging=_mapDragging=false;
+        _net.SetCenter(_setup,cell.Face);_net.ResetView();
+        // Choose the quarter turn whose screen axes best match the viewed face.
+        var face=_net.Faces[0];
+        _world.ProjectVisible(cell.Center,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var origin);
+        _world.ProjectVisible(cell.Center+face.Right*.25f,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var right);
+        _world.ProjectVisible(cell.Center+face.Up*.25f,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var up);
+        var r=right-origin;var u=up-origin;int rotation=0;float best=float.NegativeInfinity;
+        for(int i=0;i<4;i++)
+        {
+            float score=r.X-u.Y;
+            if(score>best){best=score;rotation=i;}
+            var old=r;r=u;u=-old;
+        }
+        for(int i=0;i<rotation;i++)_net.Turn(_setup,1);
+        var fit=_net.Fit(NetPanel);
+        _net.Drag(-_net.Faces[0].Project(cell.Center)*fit.Scale);
+        _statusGlobe=false;_statusCell=selected;_inputOutcome="globe_cell_opened_net";
+    }
     private static Rectangle StatusGlobeArea=>OrientationAreas(NetPanel,false).Globe;
     private Rectangle OrientationResetButton=>_statusGlobe?new(NetButton(3).X,912,343,50):NetButton(4);
     private void ResetStatusOrientation()
