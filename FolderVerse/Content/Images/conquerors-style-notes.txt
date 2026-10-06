@@ -1,0 +1,16 @@
+FolderVerse character illustration style reference
+Accepted illustration: conquerors-v23-toy-outline-render.png
+Keep originals and save future variants separately.
+20 portraits, 5 columns x 4 rows; preserve identities, ordering, costumes, toys and poses.
+Clothes: molded plastic thickness, soft color palette, bold black outer silhouette and fine interior lines; broad dark hard-edged cel shadows around half visible area, restrained gloss gradients on lit planes.
+Faces: light skin with white-sclera contrast, preserve darker skin identities. Narrow irises with fine ink rims. Large white circular upper-right catchlight and small lower-left catchlight. Fine curled upper lashes, shorter ultra-fine lower lashes and one outer-corner upward flick.
+Eye height assignments by row (N normal, S half-height slender, L approx 1.3x):
+N L S L S
+S L N S L
+S N S L N
+L N S L N
+Hair: thin ink bangs; pure-white horizontal highlight ribbons with aligned upper/lower arcs following spherical volume. Bang and hat cast shadows; chin-to-neck shadow with intentionally bright collars.
+Hair depth: only narrow boundary accents at overlaps behind neck, shoulders, arms or dark clothes. Original hair color dominates. Light hair uses pale atmospheric accents; dark hair near face uses nighttime dark tones and reflected light; distant dark hair against dark clothes uses narrow pale separation accents. Never fade whole rear hair or obscure long hair length.
+Toys: bold black outer silhouette only; interior forms defined by rendered shading, material colors, contact shadows and gloss rather than pen lines.
+
+Provisional selection (2026-10-06): conquerors-v29-original-clothes.png, copied to conquerors-provisional.png. Reverted v30 feminine uniforms because outfits became too similar. Preserve individual original costume designs. Illustrated girls and six mascot toys; other mechanical props photographic.
