@@ -1,5 +1,5 @@
 Add-Type -AssemblyName System.Drawing
-$sourceDir = Join-Path $PSScriptRoot '..\Portraits'
+$sourceDir = Join-Path $PSScriptRoot '..\v1-original'
 $edges = @(
  @(0,172,342,512,684,838,1024),@(0,171,342,513,684,854,1024),
  @(0,170,342,513,682,836,1024),@(0,171,341,512,682,853,1024),

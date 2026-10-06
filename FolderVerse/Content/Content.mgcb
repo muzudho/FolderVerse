@@ -29,86 +29,86 @@
 /processor:FontDescriptionProcessor
 /build:UiFont.spritefont
 
-#begin Images/Portraits/sheet-01.png
+#begin Images/Portraits/v1-original/sheet-01.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/sheet-01.png
-#begin Images/Portraits/sheet-02.png
+/build:Images/Portraits/v1-original/sheet-01.png
+#begin Images/Portraits/v1-original/sheet-02.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/sheet-02.png
-#begin Images/Portraits/sheet-03.png
+/build:Images/Portraits/v1-original/sheet-02.png
+#begin Images/Portraits/v1-original/sheet-03.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/sheet-03.png
-#begin Images/Portraits/sheet-04.png
+/build:Images/Portraits/v1-original/sheet-03.png
+#begin Images/Portraits/v1-original/sheet-04.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/sheet-04.png
-#begin Images/Portraits/sheet-05.png
+/build:Images/Portraits/v1-original/sheet-04.png
+#begin Images/Portraits/v1-original/sheet-05.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/sheet-05.png
-#begin Images/Portraits/sheet-06.png
+/build:Images/Portraits/v1-original/sheet-05.png
+#begin Images/Portraits/v1-original/sheet-06.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/sheet-06.png
-#begin Images/Portraits/sheet-07.png
+/build:Images/Portraits/v1-original/sheet-06.png
+#begin Images/Portraits/v1-original/sheet-07.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/sheet-07.png
-#begin Images/Portraits/sheet-08.png
+/build:Images/Portraits/v1-original/sheet-07.png
+#begin Images/Portraits/v1-original/sheet-08.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/sheet-08.png
-#begin Images/Portraits/sheet-09.png
+/build:Images/Portraits/v1-original/sheet-08.png
+#begin Images/Portraits/v1-original/sheet-09.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/sheet-09.png
-#begin Images/Portraits/sheet-10.png
+/build:Images/Portraits/v1-original/sheet-09.png
+#begin Images/Portraits/v1-original/sheet-10.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/sheet-10.png
+/build:Images/Portraits/v1-original/sheet-10.png
 
 #begin ToyCounterFont.spritefont
 /importer:FontDescriptionImporter
@@ -121,47 +121,183 @@
 /processorParam:PremultiplyAlpha=True
 /build:Images/title-logo.png
 
-#begin Images/Portraits/base-06-normalized.png
+#begin Images/Portraits/v1-original/base-06-normalized.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/base-06-normalized.png
+/build:Images/Portraits/v1-original/base-06-normalized.png
 
-#begin Images/Portraits/base-18-normalized.png
+#begin Images/Portraits/v1-original/base-18-normalized.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/base-18-normalized.png
+/build:Images/Portraits/v1-original/base-18-normalized.png
 
-#begin Images/Portraits/base-30-normalized.png
+#begin Images/Portraits/v1-original/base-30-normalized.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/base-30-normalized.png
+/build:Images/Portraits/v1-original/base-30-normalized.png
 
-#begin Images/Portraits/base-42-normalized.png
+#begin Images/Portraits/v1-original/base-42-normalized.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/base-42-normalized.png
+/build:Images/Portraits/v1-original/base-42-normalized.png
 
-#begin Images/Portraits/base-60-normalized.png
+#begin Images/Portraits/v1-original/base-60-normalized.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=False
 /processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
-/build:Images/Portraits/base-60-normalized.png
+/build:Images/Portraits/v1-original/base-60-normalized.png
+
+
+#begin Images/Portraits/v2-toy-style/sheet-01.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/sheet-01.png
+
+#begin Images/Portraits/v2-toy-style/sheet-02.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/sheet-02.png
+
+#begin Images/Portraits/v2-toy-style/sheet-03.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/sheet-03.png
+
+#begin Images/Portraits/v2-toy-style/sheet-04.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/sheet-04.png
+
+#begin Images/Portraits/v2-toy-style/sheet-05.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/sheet-05.png
+
+#begin Images/Portraits/v2-toy-style/sheet-06.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/sheet-06.png
+
+#begin Images/Portraits/v2-toy-style/sheet-07.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/sheet-07.png
+
+#begin Images/Portraits/v2-toy-style/sheet-08.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/sheet-08.png
+
+#begin Images/Portraits/v2-toy-style/sheet-09.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/sheet-09.png
+
+#begin Images/Portraits/v2-toy-style/sheet-10.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/sheet-10.png
+
+#begin Images/Portraits/v2-toy-style/base-06-normalized.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/base-06-normalized.png
+
+#begin Images/Portraits/v2-toy-style/base-18-normalized.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/base-18-normalized.png
+
+#begin Images/Portraits/v2-toy-style/base-30-normalized.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/base-30-normalized.png
+
+#begin Images/Portraits/v2-toy-style/base-42-normalized.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/base-42-normalized.png
+
+#begin Images/Portraits/v2-toy-style/base-60-normalized.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyEnabled=False
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Color
+/build:Images/Portraits/v2-toy-style/base-60-normalized.png

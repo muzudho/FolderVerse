@@ -12,8 +12,8 @@ public sealed class PortraitRenderer
     private readonly Dictionary<int,Texture2D> _normalized=new();
     public PortraitRenderer(ContentManager content)
     {
-        for(int i=0;i<10;i++)_sheets[i]=content.Load<Texture2D>("Images/Portraits/sheet-"+(i+1).ToString("00"));
-        foreach(int id in new[]{5,17,29,41,59})_normalized[id]=content.Load<Texture2D>("Images/Portraits/base-"+(id+1).ToString("00")+"-normalized");
+        for(int i=0;i<10;i++)_sheets[i]=content.Load<Texture2D>(PortraitAssets.ContentPath+"/sheet-"+(i+1).ToString("00"));
+        foreach(int id in new[]{5,17,29,41,59})_normalized[id]=content.Load<Texture2D>(PortraitAssets.ContentPath+"/base-"+(id+1).ToString("00")+"-normalized");
     }
     private static readonly int[][] RowEdges={
         new[]{0,172,342,512,684,838,1024},new[]{0,171,342,513,684,854,1024},

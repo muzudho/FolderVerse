@@ -1,14 +1,14 @@
-Portraits-v2 — 2026-10-06
+Portraits/v2-toy-style — 2026-10-06
 
-元画像は Portraits に保存したまま。このフォルダーは独立した新版です。
+元画像は ../v1-original に保存したまま。このフォルダーは独立した新版です。
 60キャラクター × 6差分 = 360枚。元と同じ tiles のファイル名とサイズ。
 sheet-01〜10 は生成された編集結果。base-*-normalized は新版タイルを3列2行に配置した互換用画像。
 manifest.json は元のキャラクター属性。tile-index.json は新版の切り出し座標と寸法。
-ゲーム側の参照先は変更していません。
+ゲーム側は active-version.txt で切り替え。現在は新版を表示。
 
 作り方：組み込み image_gen で元の6列6行シートを1枚ずつ編集。
-参照1：Portraits/sheet-XX.png（編集対象、構図・衣装・表情の基準）
-参照2：../conquerors-provisional.png（仮決めした画風の基準）
+参照1：../v1-original/sheet-XX.png（編集対象、構図・衣装・表情の基準）
+参照2：../../conquerors-provisional.png（仮決めした画風の基準）
 下記の共通指示に各シートのキャラクター特徴を追記して生成。
 生成後、split-tiles.ps1 で個別画像を切り出し、元の各タイルのサイズへ合わせる。
 AIによる編集のため、細部は完全なピクセル一致ではなく、同じ指示でも再生成結果は変わります。

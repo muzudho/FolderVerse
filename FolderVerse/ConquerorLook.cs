@@ -20,7 +20,7 @@ public readonly record struct ConquerorLook(int BaseId, int VariantId)
 public static class ConquerorCatalog
 {
     public const int BaseCount=60, VariantsPerBase=6;
-    public static readonly PortraitKeywords[] Keywords = System.Text.Json.JsonSerializer.Deserialize<PortraitKeywords[]>(System.IO.File.ReadAllText(System.IO.Path.Combine(System.AppContext.BaseDirectory,"Content","Images","Portraits","manifest.json")));
+    public static readonly PortraitKeywords[] Keywords = System.Text.Json.JsonSerializer.Deserialize<PortraitKeywords[]>(System.IO.File.ReadAllText(System.IO.Path.Combine(PortraitAssets.DirectoryPath,"manifest.json")));
     public static readonly string[] Personalities = { "勝ち気","インドアが好き","シャイ","高飛車","悪だくみ","おしとやか","大慌て","落ち着きがある","おっちょこちょい","人の話を聞かない","ネガティブ","怒っている","大笑い","ふつう" };
     public static readonly string[] Situations = { "ふつう","スパイ","交渉","呪文詠唱","戦闘","お茶","眠気","絶好調","風邪気味","風呂上り","宿題","徒競走中","食事中","落下中" };
     public static readonly string[] Themes={
