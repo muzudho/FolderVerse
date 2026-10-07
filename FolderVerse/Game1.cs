@@ -73,6 +73,7 @@ public partial class Game1 : Game
     private void LogImeState(string stage)=>_operations.Write("ime_state",new{stage,state=WindowsImeDiagnostics.ReadForeground(),visualStudio=WindowsImeDiagnostics.ReadVisualStudio()});
     protected override void LoadContent()
     {
+        _robotFactoryIcon=Content.Load<Texture2D>("Images/robot-factory-icon");
         _spriteBatch=new SpriteBatch(GraphicsDevice); _titleScreen=Content.Load<Texture2D>("Images/title-screen");
         _titleLogo=Content.Load<Texture2D>("Images/title-logo");
         _portraitRenderer=new PortraitRenderer(Content); _font=Content.Load<SpriteFont>("UiFont");
@@ -173,6 +174,7 @@ public partial class Game1 : Game
         else if(escape)
         {
             if(IsStatusScreen && _movementOpen)CloseMovement();
+            else if(IsStatusScreen && _populationCell>=0 && _nodeFactoryOpen)_nodeFactoryOpen=false;
             else if(IsStatusScreen && _populationCell>=0)_populationCell=-1;
             else if(_screen==Screen.Title)Exit(); else { _screen=Screen.Title; _dragging=false; }
         }
@@ -183,7 +185,7 @@ public partial class Game1 : Game
             if(_statusGlobe)
             {
                 _statusCell=-1;
-                bool action=click && (RouteLayerClick(_pointer) || MovementClick(_pointer,keyboard) || PopulationClick(_pointer,keyboard));
+                bool action=click && (RouteLayerClick(_pointer) || MovementClick(_pointer,keyboard) || NodeDialogClick(_pointer,keyboard));
                 if(!action && click && NetButton(0).Contains(_pointer))_yaw-=MathHelper.PiOver4;
                 else if(click && NetButton(1).Contains(_pointer))_yaw+=MathHelper.PiOver4;
                 else if(click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
@@ -207,7 +209,7 @@ public partial class Game1 : Game
             _net.HoverEdge(NetPanel,_pointer);
             if(click && RouteLayerClick(_pointer)){}
             else if(click && MovementClick(_pointer,keyboard)){}
-            else if(click && PopulationClick(_pointer,keyboard)){}
+            else if(click && NodeDialogClick(_pointer,keyboard)){}
             else if(click && NetButton(0).Contains(_pointer))_net.Turn(_setup,-1);
             else if(click && NetButton(1).Contains(_pointer))_net.Turn(_setup,1);
             else if(click && NetButton(2).Contains(_pointer))FocusCurrentNode();
@@ -218,7 +220,7 @@ public partial class Game1 : Game
             {
                 var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);var post=_setup.Nodes.At(_statusCell,point);
                 if(post!=null)
-                {_populationCell=_statusCell;_populationNode=post.Id;_movementOpen=false;}
+                {_populationCell=_statusCell;_populationNode=post.Id;_nodeFactoryOpen=false;_movementOpen=false;}
             }
             if(active)
             {
@@ -492,7 +494,7 @@ public partial class Game1 : Game
         _ui.Button(RobotQuickButton,"ロボット輸送計画",Accent,.47f);
         _ui.Button(PocketButton,"ポケット",Accent,.55f);
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(984,1037,870,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
-        if(_populationCell>=0)DrawPopulationPanel();
+        if(_populationCell>=0)DrawNodeDialog();
         if(_movementOpen)DrawMovementPanel();
         DrawRouteLayerButtons();
         DrawStatusMenu();

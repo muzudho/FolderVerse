@@ -32,7 +32,7 @@ sealed class RobotUiCheck:Game1
                 Click(100,250);Click(250,250);Click(400,250);Click(100,637);
                 Check(world.Robots.PendingEdits.Count==1,"Assembly queues before disposal completion");world.Robots.Advance((a,b)=>false,_=>0,1);
                 Check(world.Robots.Nodes[node.Id].Count==1 && world.Robots.Nodes[node.Id].Robots[0].CanFight,"UI assembly");
-                Click(440,575);Click(100,770);Check(world.Robots.Workshops[node.Id].Product==RobotParts.Head,"Factory UI");
+                Click(440,575);Check(world.Robots.Workshops[node.Id].Product==RobotParts.Head,"Factory retained until node settings changed");
                 Click(1760,322);Check(world.Robots.Transport.Plan(node.Id,0,RobotParts.Head).Sum(w=>w.Twentieths)==1,"5% transport editing");
                 Click(1540,322);Check(world.Robots.Transport.Priority(node.Id).Count>0,"Receiving priority UI");
             }
@@ -220,7 +220,7 @@ sealed class RobotUiCheck:Game1
                     var store=world.Robots.Nodes[node.Id];while(store.Count<12)store.Add(world.Robots.Create(store.Count%2,(RobotParts)(1+store.Count%7)));
                     Set("_populationCell",node.Cell);Set("_populationNode",node.Id);
                     var oldBirth=node.Population.BirthPercent;var oldConversion=node.Population.Conversion.ToArray();
-                    Call("PopulationClick",new Point(820,470),new Microsoft.Xna.Framework.Input.KeyboardState());
+                    Call("NodeDialogClick",new Point(820,470),new Microsoft.Xna.Framework.Input.KeyboardState());
                     Check(node.Population.BirthPercent==oldBirth && node.Population.Conversion.SequenceEqual(oldConversion),"Removed population controls do not mutate settings");
                 }
             }
@@ -232,9 +232,32 @@ sealed class RobotUiCheck:Game1
             if(frame==23)
             {
                 Check(world.Robots.Nodes[node.Id].Count==0,"Empty node inspection");
-                Call("PopulationClick",new Point(830,190),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Call("NodeDialogClick",new Point(830,190),new Microsoft.Xna.Framework.Input.KeyboardState());
                 Check((int)Get("_populationCell")==-1,"Node robot panel closes");
-                Console.WriteLine("PASS: robot/battle UI, node robot inspection 0/12 without population controls, compact pins, map zoom, pocket/transport shortcuts and result timer.");Exit();
+                Set("_populationCell",node.Cell);Set("_populationNode",node.Id);
+                Call("NodeDialogClick",new Point(150,910),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Check((bool)Get("_nodeFactoryOpen"),"Own node factory opens from tile");
+                world.Campaign.RobotBattles.Encounters.Clear();
+                Call("NodeDialogClick",new Point(700,370),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Call("NodeDialogClick",new Point(100,535),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Check(world.Robots.Workshops[node.Id].Product==RobotParts.Head,"Factory product plan applied: "+Get("_factoryPart")+" / "+world.Robots.Workshops[node.Id].Product+" / "+Get("_factoryMessage")+" / "+Get("_populationCell"));
+                int period=world.Robots.Workshops[node.Id].ProductionPeriod;
+                Call("NodeDialogClick",new Point(310,680),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Check(world.Robots.Workshops[node.Id].ProductionPeriod==period+1,"Factory period increases");
+                Call("NodeDialogClick",new Point(500,535),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Check(world.Robots.Workshops[node.Id].Paused,"Factory pause");
+            }
+            if(frame==24)
+            {
+                Call("NodeDialogClick",new Point(830,190),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Check(!(bool)Get("_nodeFactoryOpen") && (int)Get("_populationCell")>=0,"Factory close returns to node dialog");
+                int owner=node.Owner;node.Owner=1;world.Relations.SetSuperior(1,0);
+                Call("NodeDialogClick",new Point(150,910),new Microsoft.Xna.Framework.Input.KeyboardState());Check((bool)Get("_nodeFactoryOpen"),"Subordinate factory access");
+                Call("NodeDialogClick",new Point(830,190),new Microsoft.Xna.Framework.Input.KeyboardState());world.Relations.SetSuperior(1,-1);
+                Call("NodeDialogClick",new Point(150,910),new Microsoft.Xna.Framework.Input.KeyboardState());Check(!(bool)Get("_nodeFactoryOpen"),"Enemy factory disabled");
+                world.Relations.SetSuperior(0,1);Call("NodeDialogClick",new Point(150,910),new Microsoft.Xna.Framework.Input.KeyboardState());Check(!(bool)Get("_nodeFactoryOpen"),"Superior factory is not subordinate access");
+                world.Relations.SetSuperior(0,-1);node.Owner=owner;
+                Console.WriteLine("PASS: node/factory dialogs, product/period/pause, own/subordinate access, enemy/superior denial and robot/map/battle UI.");Exit();
             }
         }
         catch(Exception e){Console.Error.WriteLine(e);Environment.ExitCode=1;Exit();}

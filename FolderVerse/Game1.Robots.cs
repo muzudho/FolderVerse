@@ -53,10 +53,6 @@ public partial class Game1
         if(new Rectangle(498,615,210,48).Contains(_pointer))
         {if(_robotSelection.Count!=1 || _setup.Nodes.All[_robotNode].Owner!=player)return;if(!_setup.Robots.Workshops[_robotNode].HasDisposalFactory){_robotMessage="廃棄工場のある節点へ輸送してください";return;}if(_setup.Robots.PendingEdits.Any(e=>e.Ids.Contains(_robotSelection.Single())))throw new InvalidOperationException();_setup.Robots.Workshops[_robotNode].Dispose(store,_robotSelection.Single());_robotMessage="廃棄工期を開始しました";return;}
         var workshop=_setup.Robots.Workshops[_robotNode];bool factoryOwner=_setup.Nodes.All[_robotNode].Owner==player;
-        if(new Rectangle(54,750,280,48).Contains(_pointer) && factoryOwner){workshop.Configure(_robotPart,workshop.ProductionPeriod);_robotMessage="製造品を変更し、工期を開始しました";return;}
-        if(new Rectangle(348,750,200,48).Contains(_pointer) && factoryOwner){workshop.Paused=!workshop.Paused;return;}
-        if(new Rectangle(562,750,90,48).Contains(_pointer) && factoryOwner){workshop.Configure(workshop.Product,Math.Max(1,workshop.ProductionPeriod-1));return;}
-        if(new Rectangle(666,750,90,48).Contains(_pointer) && factoryOwner){workshop.Configure(workshop.Product,workshop.ProductionPeriod+1);return;}
         if(new Rectangle(770,750,74,48).Contains(_pointer) && factoryOwner && workshop.HasDisposalFactory){workshop.ConfigureDisposal(Math.Max(1,workshop.DisposalPeriod-1));return;}
         if(new Rectangle(856,750,74,48).Contains(_pointer) && factoryOwner && workshop.HasDisposalFactory){workshop.ConfigureDisposal(workshop.DisposalPeriod+1);return;}
         var routes=_setup.Routes.Neighbors(_setup.Nodes.All[_robotNode]);
@@ -96,7 +92,7 @@ public partial class Game1
     private void DrawRobots()
     {
         int player=_setup.PlayerSlot;var node=_setup.Nodes.All[_robotNode];var store=SelectedRobotStore;var workshop=_setup.Robots.Workshops[_robotNode];
-        _ui.Text("ロボット輸送計画 / 工場・配備",new(54,30),1f,Cream);
+        _ui.Text("ロボット輸送計画 / 配備",new(54,30),1f,Cream);
         _ui.Button(new(54,112,90,48),"←",Muted,.6f);_ui.Button(new(850,112,90,48),"→",Muted,.6f);
         string title=_setup.Nodes.Label(node);_ui.Center(title,new(154,112,686,48),Math.Min(.56f,670/_font.MeasureString(title).X),Cream);
         _ui.Text($"配備 {store.Count}/12 / 選択 {_robotSelection.Count} / 所有国 {node.Owner+1}",new(54,176),.49f,Cream);
@@ -112,10 +108,6 @@ public partial class Game1
         for(int mask=1;mask<=7;mask++)_ui.Button(new(54+(mask-1)*126,554,116,44),PartsLabel((RobotParts)mask),mask==(int)_robotPart?Accent:Muted,.45f);
         _ui.Button(new(54,615,210,48),"組み立て",Muted,.5f);_ui.Button(new(276,615,210,48),"選択部分へ分解",Muted,.46f);
         _ui.Button(new(498,615,210,48),"廃棄予約",Muted,.5f);
-        string status=$"製造：{PartsLabel(workshop.Product)} / 工期 {workshop.ProductionAge}/{workshop.ProductionPeriod} / {(!workshop.Manufacturing?"未設定":workshop.Waiting?"満杯待ち":workshop.Paused?"停止":"進行中")}";
-        _ui.Text(status,new(54,695),.53f,Cream);
-        _ui.Button(new(54,750,280,48),"選択パーツを製造",Muted,.48f);_ui.Button(new(348,750,200,48),workshop.Paused?"製造再開":"製造停止",Muted,.48f);
-        _ui.Button(new(562,750,90,48),"工期−",Muted,.42f);_ui.Button(new(666,750,90,48),"工期＋",Muted,.42f);
         if(workshop.HasDisposalFactory){_ui.Button(new(770,750,74,48),"廃−",Muted,.42f);_ui.Button(new(856,750,74,48),"廃＋",Muted,.42f);}
         _ui.Text(!workshop.HasDisposalFactory?"廃棄工場なし / 廃棄工場のある節点へ輸送":workshop.DisposalTarget==null?"廃棄工場あり / 廃棄予約なし":$"廃棄 ID {workshop.DisposalTarget} / {workshop.DisposalAge}/{workshop.DisposalPeriod}",new(54,821),.5f,Cream);
         DrawRobotRoutes();
