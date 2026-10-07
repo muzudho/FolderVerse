@@ -12,7 +12,7 @@ public partial class Game1
     private bool _routesBeforeMovement;
     private int _selectedMoveNode=-1;
     private const int MovesPerPage=5;
-    private static readonly Rectangle MovementButton=new(518,1018,160,52);
+    private static readonly Rectangle MovementButton=new(328,1018,208,52);
     private static Rectangle MarchButton(int row)=>new(84,430+row*76,770,68);
     private static readonly Rectangle MovesPrevious=new(570,824,130,44),MovesNext=new(714,824,130,44);
     private static readonly Rectangle ConfirmMoveButton=new(570,914,274,48);
@@ -45,7 +45,6 @@ public partial class Game1
     private bool MovementClick(Point pointer,KeyboardState keyboard)
     {
         if(PocketButton.Contains(pointer)){_statusMenuOpen=false;OpenPocket();return true;}
-        if(RobotQuickButton.Contains(pointer)){_statusMenuOpen=false;OpenRobots();return true;}
         if(MovementButton.Contains(pointer)){if(_movementOpen)CloseMovement();else OpenMovement();return true;}
         if(!_movementOpen)return false;
         if(new Rectangle(803,169,58,44).Contains(pointer)){CloseMovement();return true;}

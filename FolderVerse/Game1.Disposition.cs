@@ -22,8 +22,6 @@ public partial class Game1
         {CloseMovement();_statusMenuOpen=false;_screen=Screen.InactiveList;return true;}
         if(_statusMenuOpen && HierarchyMenuItem.Contains(point))
         {CloseMovement();_statusMenuOpen=false;_screen=Screen.Hierarchy;return true;}
-        if(_statusMenuOpen && RobotMenuItem.Contains(point))
-        {_statusMenuOpen=false;OpenRobots();return true;}
         _statusMenuOpen=false;return false;
     }
     private void DrawStatusMenu()
@@ -33,7 +31,6 @@ public partial class Game1
         {
             _ui.Button(InactiveMenuItem,"電池を引き抜いた征服者一覧",Muted,.5f);
             _ui.Button(HierarchyMenuItem,"征服者の関係ツリー",Muted,.5f);
-            _ui.Button(RobotMenuItem,"ロボット輸送計画",Muted,.5f);
         }
     }
     private void DispositionInput(bool click,bool escape)

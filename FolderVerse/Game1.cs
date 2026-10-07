@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 public partial class Game1 : Game
 {
-    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, WorldStatus, Battle, Disposition, InactiveList, Hierarchy, Robots, Pocket, Transport }
+    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, WorldStatus, Battle, Disposition, InactiveList, Hierarchy, Pocket, Transport }
     private readonly GraphicsDeviceManager _graphics;
     private readonly Random _random=new();
     private readonly WorldSetup _setup=new();
@@ -130,8 +130,6 @@ public partial class Game1 : Game
         {if(active)NodeAssemblyInput(mouse,click,escape);else _hangarDrag=null;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Pocket)
         {if(active)PocketInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(_screen==Screen.Robots)
-        {if(active)RobotInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Transport)
         {UpdateTransport(elapsed,active && (enter || click && BattleContinue.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Hierarchy)
@@ -498,7 +496,6 @@ public partial class Game1 : Game
         }
         _ui.Button(PopulationTurnButton,"次のターン",Accent,0.62f);
         _ui.Button(MovementButton,"移動",Accent,.65f);
-        _ui.Button(RobotQuickButton,"ロボット輸送計画",Accent,.47f);
         _ui.Button(PocketButton,"ポケット",Accent,.55f);
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(984,1037,870,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
         if(_populationCell>=0)DrawNodeDialog();
@@ -539,10 +536,10 @@ public partial class Game1 : Game
             _spriteBatch.Begin(transformMatrix:transform);
             _ui.Box(new(0,0,1920,1080),new(16,35,46));
             _spriteBatch.Draw(_titleLogo,new Rectangle(0,0,1920,1080),Color.White*0.14f);
-            if(_screen==Screen.Transport)DrawTransport();else if(_screen==Screen.Pocket)DrawPocket();else if(_screen==Screen.Robots)DrawRobots();else if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
+            if(_screen==Screen.Transport)DrawTransport();else if(_screen==Screen.Pocket)DrawPocket();else if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
             {
             if(_screen==Screen.Battle)DrawBattleGlobe(canvas,transform);
-            else if(!IsStatusScreen && _screen is not (Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Robots or Screen.Pocket or Screen.Transport))
+            else if(!IsStatusScreen && _screen is not (Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Pocket or Screen.Transport))
             {
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;

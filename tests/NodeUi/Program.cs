@@ -31,7 +31,7 @@ sealed class NodeUiCheck:Game1
         Check(source!=null,"No pagination fixture");world.ConquerorLocations[0]=source.Cell;world.ConquerorPoints[0]=source.Center;
         Set("_screen",Enum.Parse(typeof(Game1).GetField("_screen",Private)!.FieldType,"WorldStatus"));
         ((WorldPreview)Get("_world")).ShowSetup(world,true);net.SetCenter(world,world.Cells[source.Cell].Face);net.ShowRoutes=false;
-        Click(600,1044);Check(net.ShowRoutes && (bool)Get("_movementOpen") && net.MovementTargets.Count>5,"Temporary traffic display failed");
+        Click(430,1044);Check(net.ShowRoutes && (bool)Get("_movementOpen") && net.MovementTargets.Count>5,"Temporary traffic display failed");
         Click(700,936);Check(world.Population.Turn==0 && (bool)Get("_movementOpen"),"Unselected confirm advanced turn");
         var font=(SpriteFont)Get("_font");Check("地盤点滅経番緯番確定".All(font.Characters.Contains),"Font lacks new glyphs");
         target=net.MovementTargets.First(id=>{var p=net.NodePosition(world,world.Nodes.All[id],Panel).ToPoint();return net.HitNode(world,Panel,p,net.MovementTargets)==id;});
@@ -58,16 +58,16 @@ sealed class NodeUiCheck:Game1
                 while(Get("_screen").ToString()=="Disposition"){Set("_pointer",new Point(900,895));typeof(Game1).GetMethod("DispositionInput",Private)!.Invoke(this,new object[]{true,false});}
                 MapClick(new Point(20,1044));Check(Get("_screen").ToString()=="WorldStatus","Unused status margin changed screens");break;
             case 5:
-                Click(600,1044);Click(829,190);Check(!net.ShowRoutes && !(bool)Get("_movementOpen"),"Cancel X did not restore grid");
-                net.ShowRoutes=true;Click(600,1044);Click(600,1044);Check(net.ShowRoutes && !(bool)Get("_movementOpen"),"Cancel toggle lost previous traffic mode");break;
+                Click(430,1044);Click(829,190);Check(!net.ShowRoutes && !(bool)Get("_movementOpen"),"Cancel X did not restore grid");
+                net.ShowRoutes=true;Click(430,1044);Click(430,1044);Check(net.ShowRoutes && !(bool)Get("_movementOpen"),"Cancel toggle lost previous traffic mode");break;
             case 6:
-                Click(600,1044);Input(new Point(0,0),ButtonState.Released,Keys.Escape);Input(new Point(0,0),ButtonState.Released);
+                Click(430,1044);Input(new Point(0,0),ButtonState.Released,Keys.Escape);Input(new Point(0,0),ButtonState.Released);
                 Check(net.ShowRoutes && !(bool)Get("_movementOpen") && net.MovementTargets.Count==0,"Escape did not restore mode");break;
             case 7:
-                Click(600,1044);MapClick(new Point(1550,104));Check(!net.ShowRoutes && !(bool)Get("_movementOpen") && net.MovementTargets.Count==0,"Layer toggle did not cancel movement and restore grid");
-                Click(600,1044);Check(net.ShowRoutes && (bool)Get("_movementOpen"),"Movement did not reopen after layer toggle");
+                Click(430,1044);MapClick(new Point(1550,104));Check(!net.ShowRoutes && !(bool)Get("_movementOpen") && net.MovementTargets.Count==0,"Layer toggle did not cancel movement and restore grid");
+                Click(430,1044);Check(net.ShowRoutes && (bool)Get("_movementOpen"),"Movement did not reopen after layer toggle");
                 int turn=world.Population.Turn;MapClick(new Point(700,1044));Check(world.Population.Turn==turn,"Waiting changed candidates during selection");
-                Click(600,1044);net.ShowFlags=false;
+                Click(430,1044);net.ShowFlags=false;
                 enemy=world.Nodes.All.First(n=>Panel.Contains(net.NodePosition(world,n,Panel)) && Vector2.Distance(net.NodePosition(world,n,Panel),net.NodePosition(world,world.Nodes.Current(0),Panel))>60).Id;
                 world.ConquerorLocations[1]=world.Nodes.All[enemy].Cell;world.ConquerorPoints[1]=world.Nodes.All[enemy].Center;
                 var own=net.NodePosition(world,world.Nodes.Current(0),Panel);var other=net.NodePosition(world,world.Nodes.All[enemy],Panel);

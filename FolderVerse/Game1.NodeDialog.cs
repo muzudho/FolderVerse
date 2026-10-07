@@ -7,7 +7,7 @@ public partial class Game1
 {
     private int _populationCell=-1;
     private int _populationNode=-1;
-    private static readonly Rectangle PopulationTurnButton=new(690,1018,208,52);
+    private static readonly Rectangle PopulationTurnButton=new(548,1018,350,52);
     private bool NodeDialogClick(Point pointer,KeyboardState keyboard)
     {
         if(PopulationTurnButton.Contains(pointer)){_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);OpenBattle();return true;}

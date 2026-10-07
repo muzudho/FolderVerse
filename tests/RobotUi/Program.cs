@@ -13,7 +13,7 @@ sealed class RobotUiCheck:Game1
     static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
     void HangarMouse(int x,int y,Microsoft.Xna.Framework.Input.ButtonState button,bool active=true)
     {Call("HandleInput",new Microsoft.Xna.Framework.Input.MouseState(x,y,0,button,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released),new Microsoft.Xna.Framework.Input.KeyboardState(),new GameTime(),active);}
-    void Click(int x,int y){Set("_pointer",new Point(x,y));Call("RobotInput",true,false);}
+    void Click(int x,int y){Call("NodeDialogClick",new Point(x,y),new Microsoft.Xna.Framework.Input.KeyboardState());}
     protected override void LoadContent()
     {
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
@@ -22,7 +22,7 @@ sealed class RobotUiCheck:Game1
         world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);
         foreach(var parts in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})world.Robots.Nodes[node.Id].Add(world.Robots.Create(0,parts));
         world.Robots.Workshops[node.Id].Configure(RobotParts.Head,3);
-        ((WorldPreview)Get("_world")).ShowSetup(world,true);((CubeNet)Get("_net")).Home(world);Call("OpenRobots");
+        ((WorldPreview)Get("_world")).ShowSetup(world,true);((CubeNet)Get("_net")).Home(world);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_populationCell",node.Cell);Set("_populationNode",node.Id);Call("OpenNodeTransport");
     }
     protected override void Update(GameTime time)
     {
@@ -31,16 +31,22 @@ sealed class RobotUiCheck:Game1
         {
             if(frame==1)
             {
-                Click(100,250);Click(250,250);Click(400,250);Click(100,637);
+                world.Robots.QueueAssembly(node.Id,world.Robots.Nodes[node.Id].Robots.Select(r=>r.Id).ToArray());
                 Check(world.Robots.PendingEdits.Count==1,"Assembly queues before disposal completion");world.Robots.Advance((a,b)=>false,_=>0,1);
-                Check(world.Robots.Nodes[node.Id].Count==1 && world.Robots.Nodes[node.Id].Robots[0].CanFight,"UI assembly");
-                Click(440,575);Check(world.Robots.Workshops[node.Id].Product==RobotParts.Head,"Factory retained until node settings changed");
-                Click(1760,322);Check(world.Robots.Transport.Plan(node.Id,0,RobotParts.Head).Sum(w=>w.Twentieths)==1,"5% transport editing");
-                Click(1540,322);Check(world.Robots.Transport.Priority(node.Id).Count>0,"Receiving priority UI");
+                Check(world.Robots.Nodes[node.Id].Count==1 && world.Robots.Nodes[node.Id].Robots[0].CanFight,"Assembly fixture");
+                Click(700,345);Check(world.Robots.Workshops[node.Id].Product==RobotParts.Head,"Factory retained until node settings changed");
+                Click(780,477);Check(world.Robots.Transport.Plan(node.Id,0,RobotParts.Head).Sum(w=>w.Twentieths)==1,"5% transport editing");
+                Click(530,507);Check(world.Robots.Transport.Priority(node.Id).Count>0,"Receiving priority UI");
+                var complete=world.Robots.Nodes[node.Id].Robots.Single();
+                int neighbor=world.Nodes.At(world.Routes.Neighbors(node)[0].Target,world.Routes.Neighbors(node)[0].Entry).Id;
+                var encounter=new RobotEncounter{Id=999,Kind=BattleKind.Edge,Source=node.Id,Target=neighbor};
+                world.Campaign.RobotBattles.Encounters.Add(encounter);Click(200,785);
+                Check(world.Robots.Nodes[node.Id].Count==0 && encounter.Battles.SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Any(u=>u.Id==complete.Id),"Node transport reinforcement sends complete robots");
+                world.Campaign.RobotBattles.Encounters.Remove(encounter);world.Robots.Nodes[node.Id].Add(complete);
             }
             if(frame==2)
             {
-                Click(100,250);Click(330,637);world.Robots.Advance((a,b)=>false,_=>0,2);Check(world.Robots.Nodes[node.Id].Count==2,"UI split");Call("OpenPocket");Set("_pointer",new Point(1040,250));Call("PocketInput",true,false);Set("_pointer",new Point(1040,637));Call("PocketInput",true,false);
+                world.Robots.QueueSplit(node.Id,world.Robots.Nodes[node.Id].Robots[0].Id,RobotParts.Head);world.Robots.Advance((a,b)=>false,_=>0,2);Check(world.Robots.Nodes[node.Id].Count==2,"Split fixture");Call("OpenPocket");Set("_pointer",new Point(1040,250));Call("PocketInput",true,false);Set("_pointer",new Point(1040,637));Call("PocketInput",true,false);
                 Check(world.Robots.Retinues[0].Count==1,"Retinue transfer");Check(Get("_screen").ToString()=="Pocket","Separate pocket screen");
                 var id=world.Robots.Retinues[0].Robots[0].Id;
                 Set("_pointer",new Point(100,250));Call("PocketInput",true,false);Set("_pointer",new Point(100,637));Call("PocketInput",true,false);
@@ -93,7 +99,7 @@ sealed class RobotUiCheck:Game1
             }
             if(frame==7)
             {
-                Call("UpdateTransport",2d,true);Check(Get("_screen").ToString()=="WorldStatus","Transport returns to world");Call("OpenRobots");
+                Call("UpdateTransport",2d,true);Check(Get("_screen").ToString()=="WorldStatus","Transport returns to world");Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_populationCell",node.Cell);Set("_populationNode",node.Id);Call("OpenNodeTransport");
             }
             if(frame==8)
             {
@@ -134,6 +140,7 @@ sealed class RobotUiCheck:Game1
             if(frame==11){battle.FlagStanding=false;battle.Capture(BattlePhase.Receive);Set("_battleAge",.08*(battle.Frames.Count-1));}
             if(frame==12)
             {
+                Set("_nodeTransportOpen",false);Set("_populationCell",-1);
                 var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=1920;graphics.PreferredBackBufferHeight=1080;graphics.ApplyChanges();
                 world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);
                 for(int i=0;i<12;i++)world.Robots.Nodes[node.Id].Add(world.Robots.Create(i%2,(RobotParts)(1+i%7)));
@@ -181,7 +188,7 @@ sealed class RobotUiCheck:Game1
                 Set("_pointer",new Point(150,1040));Call("MovementClick",new Point(150,1040),new Microsoft.Xna.Framework.Input.KeyboardState());
                 Check(Get("_screen").ToString()=="Pocket" && world.Population.Turn==turn,"Main personal pocket shortcut");Call("PocketInput",false,true);
                 Set("_pointer",new Point(350,1040));Call("MovementClick",new Point(350,1040),new Microsoft.Xna.Framework.Input.KeyboardState());
-                Check(Get("_screen").ToString()=="Robots" && world.Population.Turn==turn,"Main robot transport shortcut opens settings without advancing world");Call("RobotInput",false,true);
+                Check((bool)Get("_movementOpen") && world.Population.Turn==turn,"Main movement fills removed transport shortcut");Call("CloseMovement");
                 world.Campaign.RobotBattles.Scenes.Clear();
                 for(int i=0;i<2;i++)
                 {
@@ -262,7 +269,7 @@ sealed class RobotUiCheck:Game1
                 node.Owner=1;Call("NodeDialogClick",new Point(400,910),new Microsoft.Xna.Framework.Input.KeyboardState());
                 Check((bool)Get("_nodeTransportOpen"),"Enemy-controlled node transport planning opens");
                 var route=world.Routes.Neighbors(node).First();int destination=world.Nodes.At(route.Target,route.Entry).Id;
-                world.Robots.Transport.SetPlan(node.Id,1,RobotParts.Complete,new[]{new TransportWeight(destination,7)});
+                Set("_nodeTransportPart",RobotParts.Complete);world.Robots.Transport.SetPlan(node.Id,1,RobotParts.Complete,new[]{new TransportWeight(destination,7)});
                 Call("NodeDialogClick",new Point(780,477),new Microsoft.Xna.Framework.Input.KeyboardState());
                 Check(world.Robots.Transport.Plan(node.Id,0,RobotParts.Complete).Single(w=>w.Target==destination).Twentieths==1,"Personal plan saved on enemy node");
                 Check(world.Robots.Transport.Plan(node.Id,1,RobotParts.Complete).Single().Twentieths==7,"Other conqueror plan preserved");

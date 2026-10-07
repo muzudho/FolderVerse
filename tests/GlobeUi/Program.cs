@@ -100,7 +100,7 @@ sealed class GlobeCheck:Game1
                 setup.Robots.Initialize(setup.Nodes.All.Length,setup.ActiveCount);
                 for(int i=0;i<3;i++)setup.Robots.Nodes[source.Id].Add(setup.Robots.Create(0,RobotParts.Complete));
                 Set("_yaw",-MathF.Atan2(setup.Cells[port.Cell].Normal.X,setup.Cells[port.Cell].Normal.Z));Set("_pitch",MathF.Asin(setup.Cells[port.Cell].Normal.Y));
-                Click(new(600,1040));Check((bool)Get("_statusGlobe") && (bool)Get("_movementOpen") && ((CubeNet)Get("_net")).ShowRoutes,"Globe movement switched view or did not open routes");
+                Click(new(410,1040));Check((bool)Get("_statusGlobe") && (bool)Get("_movementOpen") && ((CubeNet)Get("_net")).ShowRoutes,"Globe movement switched view or did not open routes");
                 Set("_escort",100L);
                 float yawBefore=(float)Get("_yaw");Input(new(1540,300),ButtonState.Pressed);Input(new(1550,305),ButtonState.Pressed);Input(new(1550,305),ButtonState.Released);
                 Check((float)Get("_yaw")!=yawBefore && (bool)Get("_statusGlobe"),"Globe cannot rotate during movement selection");
@@ -112,7 +112,7 @@ sealed class GlobeCheck:Game1
                 Check(!((CubeNet)Get("_net")).ShowRoutes,"Confirm did not restore grid mode");
                 while(Get("_screen").ToString()=="Battle")typeof(Game1).GetMethod("UpdateBattle",Flags)!.Invoke(this,new object[]{3d,true});
                 while(Get("_screen").ToString()=="Disposition"){Set("_pointer",new Point(900,895));typeof(Game1).GetMethod("DispositionInput",Flags)!.Invoke(this,new object[]{true,false});}
-                Click(new(600,1040));Click(new(830,190));Check((bool)Get("_statusGlobe") && !(bool)Get("_movementOpen") && !((CubeNet)Get("_net")).ShowRoutes,"Cancel changed globe or failed to restore grid");
+                Click(new(410,1040));Click(new(830,190));Check((bool)Get("_statusGlobe") && !(bool)Get("_movementOpen") && !((CubeNet)Get("_net")).ShowRoutes,"Cancel changed globe or failed to restore grid");
                 Click(new(1730,935));Check((float)Get("_yaw")==0 && (float)Get("_pitch")==0,"Head/belly orientation reset failed");
                 Check(WorldPreview.Orientation(0,0)==Matrix.Identity,"Reset orientation is not head up and belly forward");break;
             case 4:Click(new(1810,104));Check(!(bool)Get("_statusGlobe"),"Net toggle failed");break;
