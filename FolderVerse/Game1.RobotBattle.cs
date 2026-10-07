@@ -225,7 +225,7 @@ public partial class Game1
             // Ownership belongs to the departed individual even if its ID merged on arrival.
             int owner=_setup.Robots.Transport.LastOwners.GetValueOrDefault(shipment.RobotId);
             DrawRobotGlyph(new(350+(int)(1120*progress),y,36,55),owner,shipment.Parts);
-            _ui.Text(PartsLabel(shipment.Parts),new(720,y+58),.42f,Cream);
+            _ui.Text(PartsLabel(shipment.Parts)+(shipment.Disposal?" / 廃棄としての移送":" / ふつうの移送"),new(720,y+58),.42f,Cream);
         }
         _ui.Button(BattleContinue,_transportAge<2?"到着まで進む":(_transportPage+1)*8<transfers.Count?"続く輸送へ":"観戦へ",Accent,.6f);
     }

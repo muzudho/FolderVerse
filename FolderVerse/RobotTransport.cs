@@ -4,21 +4,22 @@ using System.Collections.Generic;
 using System.Linq;
 
 public sealed record TransportWeight(int Target,int Twentieths);
-public sealed record RobotShipment(int Source,int Target,long RobotId,RobotParts Parts);
+public sealed record RobotShipment(int Source,int Target,long RobotId,RobotParts Parts,bool Disposal=false);
 public sealed class RobotTransport
 {
-    private readonly Dictionary<(int Node,int Owner,RobotParts Parts),TransportWeight[]> _plans=new();
+    private readonly Dictionary<(int Node,int Owner,RobotParts Parts,bool Disposal),TransportWeight[]> _plans=new();
     private readonly Dictionary<int,int[]> _priorities=new();
     public IReadOnlyList<RobotShipment> LastTransfers {get;private set;}=Array.Empty<RobotShipment>();
     public Dictionary<long,int> LastOwners {get;}=new();
-    public IReadOnlyList<TransportWeight> Plan(int node,int owner,RobotParts parts)=>_plans.GetValueOrDefault((node,owner,parts),Array.Empty<TransportWeight>());
+    public IReadOnlyList<TransportWeight> Plan(int node,int owner,RobotParts parts,bool disposal=false)=>_plans.GetValueOrDefault((node,owner,parts,disposal),Array.Empty<TransportWeight>());
     public IReadOnlyList<int> Priority(int node)=>_priorities.GetValueOrDefault(node,Array.Empty<int>());
     public void Reset(){_plans.Clear();_priorities.Clear();LastTransfers=Array.Empty<RobotShipment>();LastOwners.Clear();}
-    public void SetPlan(int node,int owner,RobotParts parts,IEnumerable<TransportWeight> weights)
+    public void SetPlan(int node,int owner,RobotParts parts,IEnumerable<TransportWeight> weights,bool disposal=false)
     {
         RobotWorld.Validate(owner,parts);var values=weights.OrderBy(w=>w.Target).ToArray();
         if(node<0 || values.Any(w=>w.Target<0 || w.Target==node || w.Twentieths<0 || w.Twentieths>20) || values.Sum(w=>w.Twentieths)>20 || values.Select(w=>w.Target).Distinct().Count()!=values.Length)throw new ArgumentException("Invalid transport weights.");
-        _plans[(node,owner,parts)]=values;
+        if(values.Sum(w=>w.Twentieths)+Plan(node,owner,parts,!disposal).Sum(w=>w.Twentieths)>20)throw new ArgumentException("Combined normal/disposal transport exceeds 100%.");
+        _plans[(node,owner,parts,disposal)]=values;
     }
     public void SetPriority(int target,IEnumerable<int> sources)
     {var values=sources.ToArray();if(target<0 || values.Any(n=>n<0) || values.Distinct().Count()!=values.Length)throw new ArgumentException("Invalid receiving priority.");_priorities[target]=values;}
@@ -38,13 +39,15 @@ public sealed class RobotTransport
                 for(int mask=7;mask>=1;mask--)
                 {
                     if(((int)robot.Parts&mask)!=mask)continue;
-                    if(!_plans.TryGetValue((node,robot.Owner,(RobotParts)mask),out var plan))continue;
+                    var plan=Plan(node,robot.Owner,(RobotParts)mask).Select(w=>(Weight:w,Disposal:false))
+                        .Concat(Plan(node,robot.Owner,(RobotParts)mask,true).Select(w=>(Weight:w,Disposal:true))).ToArray();
+                    if(plan.Length==0){if(_plans.ContainsKey((node,robot.Owner,(RobotParts)mask,false)) || _plans.ContainsKey((node,robot.Owner,(RobotParts)mask,true)))break;continue;}
                     int roll=random.Next(20),sum=0;
-                    if(roll>=plan.Sum(w=>w.Twentieths))break; // Explicit stay must not fall through to a lower plan.
+                    if(roll>=plan.Sum(w=>w.Weight.Twentieths))break; // Explicit stay must not fall through to a lower plan.
                     foreach(var weight in plan)
                     {
-                        sum+=weight.Twentieths;if(roll>=sum)continue;
-                        if(weight.Target<world.Nodes.Length && connected(node,weight.Target) && locked?.Invoke(weight.Target)!=true && (canEnter?.Invoke(robot.Owner,weight.Target)??true))queue.Enqueue(new(node,weight.Target,robot.Id,(RobotParts)mask));
+                        sum+=weight.Weight.Twentieths;if(roll>=sum)continue;
+                        if(weight.Weight.Target<world.Nodes.Length && connected(node,weight.Weight.Target) && locked?.Invoke(weight.Weight.Target)!=true && (canEnter?.Invoke(robot.Owner,weight.Weight.Target)??true))queue.Enqueue(new(node,weight.Weight.Target,robot.Id,(RobotParts)mask,weight.Disposal));
                         break;
                     }
                 }
@@ -90,12 +93,12 @@ public sealed class RobotTransport
         {
             var source=stores[s.Source];var robot=source.Single(r=>r.Id==s.RobotId);source.Remove(robot);
             if(s.Parts!=robot.Parts){source.Add(robot with {Parts=robot.Parts^s.Parts});robot=robot with {Id=temporary--};}
-            cargo[s.RobotId]=robot with {Parts=s.Parts};
+            cargo[s.RobotId]=robot with {Parts=s.Parts,Disposal=robot.Disposal || s.Disposal};
         }
         foreach(var s in Ordered(active))
         {
             var robot=cargo[s.RobotId];var target=stores[s.Target];
-            var partner=target.Where(r=>r.Owner==robot.Owner && (r.Parts&robot.Parts)==0).OrderBy(r=>r.Id).FirstOrDefault();
+            var partner=target.Where(r=>!robot.Disposal && r.Id!=world.Workshops[s.Target].DisposalTarget && r.Owner==robot.Owner && r.Disposal==robot.Disposal && (r.Parts&robot.Parts)==0).OrderBy(r=>r.Id).FirstOrDefault();
             if(partner==null)target.Add(robot);
             else{target.Remove(partner);target.Add(partner with {Parts=partner.Parts|robot.Parts,Role=partner.Role==RobotRole.Captain || robot.Role==RobotRole.Captain?RobotRole.Captain:RobotRole.Soldier});}
         }
@@ -105,7 +108,7 @@ public sealed class RobotTransport
     {
         LastOwners.Clear();foreach(var s in accepted)LastOwners[s.RobotId]=world.Nodes[s.Source].Robots.Single(r=>r.Id==s.RobotId).Owner;
         var stores=Simulate(world,accepted,out var overflow);if(overflow.Count>0)throw new InvalidOperationException("Unresolved transport.");
-        for(int n=0;n<stores.Length;n++)world.Nodes[n].Replace(stores[n].Select(r=>r.Id<0?world.Create(r.Owner,r.Parts,r.Role):r).ToArray());
+        for(int n=0;n<stores.Length;n++)world.Nodes[n].Replace(stores[n].Select(r=>r.Id<0?world.Create(r.Owner,r.Parts,r.Role,r.Disposal):r).ToArray());
         LastTransfers=accepted.ToArray();world.Check();
     }
 }

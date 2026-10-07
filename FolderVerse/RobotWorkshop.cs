@@ -10,16 +10,28 @@ public sealed class RobotWorkshop
     public bool Manufacturing {get;private set;}
     public bool Paused {get;set;}
     public bool Waiting=>Manufacturing && ProductionAge>=ProductionPeriod;
-    public int DisposalPeriod {get;private set;}=3;
+    public int DisposalPeriod {get;private set;}
     public bool HasDisposalFactory {get;private set;}
     public int DisposalAge {get;private set;}
     public long? DisposalTarget {get;private set;}
     public void Configure(RobotParts product,int period)
     {RobotWorld.Validate(0,product);if(period<1)throw new ArgumentOutOfRangeException(nameof(period));Product=product;ProductionPeriod=period;ProductionAge=0;Manufacturing=true;}
-    public void Dispose(RobotStore store,long id,int? period=null)
-    {if(!HasDisposalFactory)throw new InvalidOperationException("This node has no disposal factory.");int duration=period??DisposalPeriod;if(duration<1 || !store.Robots.Any(r=>r.Id==id))throw new ArgumentException("Invalid disposal order.");DisposalTarget=id;DisposalAge=0;DisposalPeriod=duration;}
-    public void ConfigureDisposal(int period=3)
-    {if(period<1)throw new ArgumentOutOfRangeException(nameof(period));HasDisposalFactory=true;DisposalPeriod=period;DisposalAge=0;}
+    public void Dispose(RobotStore store,long id)
+    {if(DisposalTarget.HasValue)throw new InvalidOperationException("Disposal lane is busy.");if(!HasDisposalFactory)throw new InvalidOperationException("This node has no disposal factory.");int duration=DisposalTurns(store.Robots.Single(r=>r.Id==id).Parts);if(duration<1 || !store.Robots.Any(r=>r.Id==id))throw new ArgumentException("Invalid disposal order.");DisposalTarget=id;DisposalAge=0;DisposalPeriod=duration;}
+    public void ConfigureDisposal()
+    {HasDisposalFactory=true;}
+    private long[] _disposalOrder=Array.Empty<long>();
+    public System.Collections.Generic.IReadOnlyList<long> DisposalOrder=>_disposalOrder;
+    public void SetDisposalOrder(System.Collections.Generic.IEnumerable<long> ids)
+    {var order=ids.ToArray();if(order.Distinct().Count()!=order.Length)throw new ArgumentException("Duplicate disposal priority.");_disposalOrder=order;}
+    public static int DisposalTurns(RobotParts parts)=>((parts&RobotParts.Head)!=0?1:0)+((parts&RobotParts.Body)!=0?2:0)+((parts&RobotParts.Legs)!=0?2:0);
+    internal void StartDisposal(RobotStore store,Func<long,bool> reserved)
+    {
+        if(!HasDisposalFactory || DisposalTarget.HasValue)return;
+        int Rank(long id){int rank=Array.IndexOf(_disposalOrder,id);return rank<0?int.MaxValue:rank;}
+        var robot=store.Robots.Where(r=>r.Disposal && !reserved(r.Id)).OrderBy(r=>Rank(r.Id)).ThenBy(r=>r.Id).FirstOrDefault();
+        if(robot!=null)Dispose(store,robot.Id);
+    }
     internal void CompleteDisposal(RobotStore store)
     {
         if(DisposalTarget is not long id)return;

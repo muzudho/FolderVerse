@@ -7,9 +7,9 @@ using System.Linq;
 public enum RobotParts { Legs=1, Body=2, Head=4, Complete=7 }
 public enum RobotRole { Soldier, Captain }
 public sealed record RobotWorkshopEdit(int Node,long[] Ids,RobotParts? SplitPart);
-public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=RobotRole.Soldier)
+public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=RobotRole.Soldier,bool Disposal=false)
 {
-    public bool CanFight=>Parts==RobotParts.Complete;
+    public bool CanFight=>Parts==RobotParts.Complete && !Disposal;
 }
 public sealed class RobotStore
 {
@@ -47,8 +47,8 @@ public sealed class RobotWorld
     {
         if(owner<0 || owner>=20 || (int)parts<1 || (int)parts>7)throw new ArgumentOutOfRangeException();
     }
-    public Robot Create(int owner,RobotParts parts,RobotRole role=RobotRole.Soldier)
-    {Validate(owner,parts);return new(_nextId++,owner,parts,role);}
+    public Robot Create(int owner,RobotParts parts,RobotRole role=RobotRole.Soldier,bool disposal=false)
+    {Validate(owner,parts);return new(_nextId++,owner,parts,role,disposal);}
     public void Initialize(int nodeCount,int rulerCount)
     {
         _nextId=1;Nodes=Enumerable.Range(0,nodeCount).Select(_=>new RobotStore()).ToArray();
@@ -74,7 +74,7 @@ public sealed class RobotWorld
         var robots=selected.Select(id=>store.Robots.Single(r=>r.Id==id)).ToArray();var parts=(RobotParts)0;
         if(selected.Contains(Workshops[node].DisposalTarget??-1))throw new InvalidOperationException("Disposal target is reserved.");
         foreach(var robot in robots)
-        {if(robot.Owner!=robots[0].Owner || (parts&robot.Parts)!=0)throw new InvalidOperationException("Parts must be disjoint and have the same owner.");parts|=robot.Parts;}
+        {if(robot.Owner!=robots[0].Owner || robot.Disposal!=robots[0].Disposal || (parts&robot.Parts)!=0)throw new InvalidOperationException("Parts must be disjoint and have the same owner.");parts|=robot.Parts;}
         var merged=robots.OrderBy(r=>r.Id).First() with {Parts=parts,Role=robots.Any(r=>r.Role==RobotRole.Captain)?RobotRole.Captain:RobotRole.Soldier};
         store.Replace(store.Robots.Where(r=>!selected.Contains(r.Id)).Append(merged));return merged;
     }
@@ -83,12 +83,12 @@ public sealed class RobotWorld
         var store=Nodes[node];var robot=store.Robots.Single(r=>r.Id==id);Validate(robot.Owner,first);
         if(Workshops[node].DisposalTarget==id)throw new InvalidOperationException("Disposal target is reserved.");
         if((robot.Parts&first)!=first || first==robot.Parts || store.Count>=RobotStore.Capacity)throw new InvalidOperationException("Cannot split this robot.");
-        var remainder=Create(robot.Owner,robot.Parts^first);
+        var remainder=Create(robot.Owner,robot.Parts^first,disposal:robot.Disposal);
         store.Replace(store.Robots.Where(r=>r.Id!=id).Append(robot with {Parts=first}).Append(remainder));
     }
     public void Advance(Func<int,int,bool> connected,Func<int,int> owner,int seed,Func<int,bool> locked=null,Func<int,int,bool> canEnter=null)
     {
-        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].CompleteDisposal(Nodes[n]);
+        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));Workshops[n].CompleteDisposal(Nodes[n]);}
         WorkshopFailures.Clear();
         foreach(var edit in PendingEdits.ToArray())
         {
@@ -99,6 +99,7 @@ public sealed class RobotWorld
         }
         Transport.ResolvePlans(this,connected,seed,locked,canEnter);
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].CompleteProduction(this,n,owner(n));
+        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));
         Check();
     }
     public void Check()

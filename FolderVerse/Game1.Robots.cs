@@ -10,6 +10,7 @@ public partial class Game1
     private static readonly Rectangle RobotQuickButton=new(236,1018,270,52);
     private int _robotNode,_robotRoutePage;
     private int _robotReinforcementIndex;
+    private bool _robotTransportDisposal;
     private RobotParts _robotPart=RobotParts.Head;
     private readonly HashSet<long> _robotSelection=new();
     private string _robotMessage="";
@@ -41,6 +42,8 @@ public partial class Game1
             int index=Array.IndexOf(nodes,_robotNode),delta=_pointer.X<200?-1:1;
             _robotNode=nodes[(index+delta+nodes.Length)%nodes.Length];_robotSelection.Clear();_robotRoutePage=0;return;
         }
+        for(int i=0;i<store.Count;i++)if(new Rectangle(RobotCard(i).Right-36,RobotCard(i).Bottom-25,18,18).Contains(_pointer))
+        {ToggleRobotDisposal(_robotNode,store.Robots[i].Id);return;}
         for(int i=0;i<store.Count;i++)if(RobotCard(i).Contains(_pointer))
         {var robot=store.Robots[i];if(robot.Owner==player){if(!_robotSelection.Add(robot.Id))_robotSelection.Remove(robot.Id);}return;}
         bool locked=_setup.Campaign.RobotBattles.LockedNode(_robotNode);
@@ -50,11 +53,8 @@ public partial class Game1
         {_setup.Robots.QueueAssembly(_robotNode,_robotSelection);_robotSelection.Clear();_robotMessage="次の全体ターンに組み立てます";return;}
         if(new Rectangle(276,615,210,48).Contains(_pointer))
         {if(_robotSelection.Count!=1)return;_setup.Robots.QueueSplit(_robotNode,_robotSelection.Single(),_robotPart);_robotSelection.Clear();_robotMessage="次の全体ターンに分解します";return;}
-        if(new Rectangle(498,615,210,48).Contains(_pointer))
-        {if(_robotSelection.Count!=1 || _setup.Nodes.All[_robotNode].Owner!=player)return;if(!_setup.Robots.Workshops[_robotNode].HasDisposalFactory){_robotMessage="廃棄工場のある節点へ輸送してください";return;}if(_setup.Robots.PendingEdits.Any(e=>e.Ids.Contains(_robotSelection.Single())))throw new InvalidOperationException();_setup.Robots.Workshops[_robotNode].Dispose(store,_robotSelection.Single());_robotMessage="廃棄工期を開始しました";return;}
-        var workshop=_setup.Robots.Workshops[_robotNode];bool factoryOwner=_setup.Nodes.All[_robotNode].Owner==player;
-        if(new Rectangle(770,750,74,48).Contains(_pointer) && factoryOwner && workshop.HasDisposalFactory){workshop.ConfigureDisposal(Math.Max(1,workshop.DisposalPeriod-1));return;}
-        if(new Rectangle(856,750,74,48).Contains(_pointer) && factoryOwner && workshop.HasDisposalFactory){workshop.ConfigureDisposal(workshop.DisposalPeriod+1);return;}
+        if(new Rectangle(1400,166,210,42).Contains(_pointer)){_robotTransportDisposal=false;return;}
+        if(new Rectangle(1622,166,210,42).Contains(_pointer)){_robotTransportDisposal=true;return;}
         var routes=_setup.Routes.Neighbors(_setup.Nodes.All[_robotNode]);
         if(new Rectangle(1580,864,120,44).Contains(_pointer)){_robotRoutePage=Math.Max(0,_robotRoutePage-1);return;}
         if(new Rectangle(1714,864,120,44).Contains(_pointer)){_robotRoutePage=Math.Min(Math.Max(0,(routes.Length-1)/6),_robotRoutePage+1);return;}
@@ -62,16 +62,16 @@ public partial class Game1
         {
             int index=_robotRoutePage*6+row;if(index>=routes.Length)break;
             int target=_setup.Nodes.At(routes[index].Target,routes[index].Entry).Id;int y=270+row*94;
-            var weights=_setup.Robots.Transport.Plan(_robotNode,player,_robotPart).ToList();int weight=weights.FirstOrDefault(w=>w.Target==target)?.Twentieths??0;
+            var weights=_setup.Robots.Transport.Plan(_robotNode,player,_robotPart,_robotTransportDisposal).ToList();int weight=weights.FirstOrDefault(w=>w.Target==target)?.Twentieths??0;
             if(new Rectangle(1640,y+34,80,44).Contains(_pointer) || new Rectangle(1732,y+34,80,44).Contains(_pointer))
             {
                 int next=Math.Clamp(weight+(_pointer.X<1720?-1:1),0,20);weights.RemoveAll(w=>w.Target==target);if(next>0)weights.Add(new(target,next));
-                if(weights.Sum(w=>w.Twentieths)>20){_robotMessage="輸送率の合計は100％以内にしてください";return;}
-                _setup.Robots.Transport.SetPlan(_robotNode,player,_robotPart,weights);_robotMessage="輸送計画を更新しました";return;
+                if(weights.Sum(w=>w.Twentieths)+_setup.Robots.Transport.Plan(_robotNode,player,_robotPart,!_robotTransportDisposal).Sum(w=>w.Twentieths)>20){_robotMessage="輸送率の合計は100％以内にしてください";return;}
+                _setup.Robots.Transport.SetPlan(_robotNode,player,_robotPart,weights,_robotTransportDisposal);_robotMessage="輸送計画を更新しました";return;
             }
             if(new Rectangle(1500,y+34,126,44).Contains(_pointer))
             {
-                if(!factoryOwner){_robotMessage="自国の節点で受け入れ順位を設定してください";return;}
+                if(_setup.Nodes.All[_robotNode].Owner!=player){_robotMessage="自国の節点で受け入れ順位を設定してください";return;}
                 var order=_setup.Robots.Transport.Priority(_robotNode).Concat(routes.Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id)).Distinct().ToList();
                 order.Remove(target);order.Insert(0,target);_setup.Robots.Transport.SetPriority(_robotNode,order);_robotMessage="この節点からの受け入れを最優先にしました";return;
             }
@@ -102,14 +102,12 @@ public partial class Game1
             if(_robotSelection.Contains(robot.Id))_ui.Box(new(card.X,card.Y,card.Width,4),Cream);
             DrawRobotGlyph(new(card.X+42,card.Y+12,52,70),robot.Owner,robot.Parts,robot.Role==RobotRole.Captain);
             _ui.Center(PartsLabel(robot.Parts)+$" / #{robot.Owner+1}",new(card.X,card.Y+89,card.Width,28),.4f,Cream);
-            _ui.Center("ID "+robot.Id,new(card.X,card.Y+115,card.Width,24),.32f,Cream);
+            _ui.Center("ID "+robot.Id,new(card.X,card.Y+115,55,24),.27f,Cream);
+            DrawDisposalCheck(card,robot);
         }
         _ui.Text("自分の兵を選択 / 以下のパーツ種類は分解・製造・輸送に共通",new(54,520),.47f,Cream);
         for(int mask=1;mask<=7;mask++)_ui.Button(new(54+(mask-1)*126,554,116,44),PartsLabel((RobotParts)mask),mask==(int)_robotPart?Accent:Muted,.45f);
         _ui.Button(new(54,615,210,48),"組み立て",Muted,.5f);_ui.Button(new(276,615,210,48),"選択部分へ分解",Muted,.46f);
-        _ui.Button(new(498,615,210,48),"廃棄予約",Muted,.5f);
-        if(workshop.HasDisposalFactory){_ui.Button(new(770,750,74,48),"廃−",Muted,.42f);_ui.Button(new(856,750,74,48),"廃＋",Muted,.42f);}
-        _ui.Text(!workshop.HasDisposalFactory?"廃棄工場なし / 廃棄工場のある節点へ輸送":workshop.DisposalTarget==null?"廃棄工場あり / 廃棄予約なし":$"廃棄 ID {workshop.DisposalTarget} / {workshop.DisposalAge}/{workshop.DisposalPeriod}",new(54,821),.5f,Cream);
         DrawRobotRoutes();
         bool failed=_setup.Robots.WorkshopFailures.Any(f=>f.Node==_robotNode);
         _ui.Text(_setup.Campaign.RobotBattles.LockedNode(_robotNode)?"継戦中：工場・組立・輸送は停止しています":failed?"組立・分解予約の一部が失敗しました。容量・部品を確認してください":_robotMessage,new(54,936),.45f,Cream);
@@ -121,13 +119,16 @@ public partial class Game1
     {
         var routes=_setup.Routes.Neighbors(_setup.Nodes.All[_robotNode]);int player=_setup.PlayerSlot;
         _ui.Text("輸送計画 / "+PartsLabel(_robotPart),new(1000,168),.7f,Cream);
-        int total=_setup.Robots.Transport.Plan(_robotNode,player,_robotPart).Sum(w=>w.Twentieths);
-        _ui.Text($"合計 {total*5}% / 残り {(20-total)*5}% は留まる / １回５％ずつ",new(1000,214),.48f,Cream);
+        _ui.Button(new(1400,166,210,42),"ふつうの移送",_robotTransportDisposal?Muted:Accent,.35f);
+        _ui.Button(new(1622,166,210,42),"廃棄としての移送",_robotTransportDisposal?Accent:Muted,.32f);
+        int total=_setup.Robots.Transport.Plan(_robotNode,player,_robotPart,_robotTransportDisposal).Sum(w=>w.Twentieths);
+        int combined=total+_setup.Robots.Transport.Plan(_robotNode,player,_robotPart,!_robotTransportDisposal).Sum(w=>w.Twentieths);
+        _ui.Text($"選択中 {total*5}% / ふつう＋廃棄 {combined*5}% / 残り {(20-combined)*5}% は留まる",new(1000,214),.48f,Cream);
         for(int row=0;row<6;row++)
         {
             int index=_robotRoutePage*6+row;if(index>=routes.Length)break;var target=_setup.Nodes.At(routes[index].Target,routes[index].Entry);int y=270+row*94;
             string name=_setup.Nodes.Label(target);_ui.Text(name,new(1000,y),Math.Min(.45f,820/_font.MeasureString(name).X),_setup.OwnerColor(target.Owner));
-            int weight=_setup.Robots.Transport.Plan(_robotNode,player,_robotPart).FirstOrDefault(w=>w.Target==target.Id)?.Twentieths??0;
+            int weight=_setup.Robots.Transport.Plan(_robotNode,player,_robotPart,_robotTransportDisposal).FirstOrDefault(w=>w.Target==target.Id)?.Twentieths??0;
             _ui.Text($"輸送 {weight*5}% / 配備 {_setup.Robots.Nodes[target.Id].Count}/12",new(1000,y+44),.47f,Cream);
             _ui.Button(new(1500,y+34,126,44),"受入１位",Muted,.38f);_ui.Button(new(1640,y+34,80,44),"−",Muted,.5f);_ui.Button(new(1732,y+34,80,44),"＋",Muted,.5f);
         }

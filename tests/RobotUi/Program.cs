@@ -261,7 +261,7 @@ sealed class RobotUiCheck:Game1
                 Check((bool)Get("_nodeTransportOpen"),"Enemy-controlled node transport planning opens");
                 var route=world.Routes.Neighbors(node).First();int destination=world.Nodes.At(route.Target,route.Entry).Id;
                 world.Robots.Transport.SetPlan(node.Id,1,RobotParts.Complete,new[]{new TransportWeight(destination,7)});
-                Call("NodeDialogClick",new Point(780,425),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Call("NodeDialogClick",new Point(780,477),new Microsoft.Xna.Framework.Input.KeyboardState());
                 Check(world.Robots.Transport.Plan(node.Id,0,RobotParts.Complete).Single(w=>w.Target==destination).Twentieths==1,"Personal plan saved on enemy node");
                 Check(world.Robots.Transport.Plan(node.Id,1,RobotParts.Complete).Single().Twentieths==7,"Other conqueror plan preserved");
             }
@@ -275,7 +275,37 @@ sealed class RobotUiCheck:Game1
                 battle.AddArmy(0,node.Id,new[]{world.Robots.Create(0,RobotParts.Complete)},true);battle.AddArmy(1,node.Id,new[]{world.Robots.Create(1,RobotParts.Complete)},true);battle.Deploy();battle.Capture(BattlePhase.Place);
                 world.Campaign.RobotBattles.Scenes.Clear();world.Campaign.RobotBattles.Scenes.Add(battle);Call("OpenBattle");Set("_robotPlaying",false);
             }
-            if(frame==26){Console.WriteLine("PASS: node transport personal plans on enemy territory, factory access, terrain artwork/retreat borders and robot/map/battle UI.");Exit();}
+            if(frame==26)
+            {
+                world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);world.Campaign.RobotBattles.Encounters.Clear();node.Owner=0;
+                world.Robots.Workshops[node.Id].ConfigureDisposal();
+                world.Robots.Nodes[node.Id].Add(world.Robots.Create(0,RobotParts.Head));
+                world.Robots.Nodes[node.Id].Add(world.Robots.Create(0,RobotParts.Body,disposal:true));
+                world.Robots.Nodes[node.Id].Add(world.Robots.Create(0,RobotParts.Legs,disposal:true));
+                Set("_screen",Enum.Parse(typeof(Game1).GetField("_screen",Flags)!.FieldType,"WorldStatus"));Set("_populationCell",node.Cell);Set("_populationNode",node.Id);
+                Call("NodeDialogClick",new Point(237,440),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Check(world.Robots.Nodes[node.Id].Robots[0].Disposal,"Node disposal checkbox marks own robot");
+                Call("NodeDialogClick",new Point(650,910),new Microsoft.Xna.Framework.Input.KeyboardState());Check((bool)Get("_nodeDisposalOpen"),"Disposal icon opens queue");
+                Call("NodeDialogClick",new Point(430,355),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Check(world.Robots.Workshops[node.Id].DisposalOrder[0]==world.Robots.Nodes[node.Id].Robots[1].Id,"Queue arrow reorders flagged robots");
+                world.Robots.Advance((a,b)=>false,_=>0,1);
+                Check(world.Robots.Workshops[node.Id].DisposalTarget==world.Robots.Nodes[node.Id].Robots[1].Id,"Automatic lane follows UI priority");
+            }
+            if(frame==27)
+            {
+                Call("NodeDialogClick",new Point(830,190),new Microsoft.Xna.Framework.Input.KeyboardState());Check(!(bool)Get("_nodeDisposalOpen"),"Disposal close returns to node");
+                Call("NodeDialogClick",new Point(430,440),new Microsoft.Xna.Framework.Input.KeyboardState());Check(world.Robots.Nodes[node.Id].Robots[1].Disposal,"Busy lane flag cannot be removed");
+                Call("NodeDialogClick",new Point(400,910),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Call("NodeDialogClick",new Point(650,290),new Microsoft.Xna.Framework.Input.KeyboardState());Call("NodeDialogClick",new Point(700,345),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Call("NodeDialogClick",new Point(780,477),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Check(world.Robots.Transport.Plan(node.Id,0,RobotParts.Head,true).Sum(w=>w.Twentieths)==1 && world.Robots.Transport.Plan(node.Id,0,RobotParts.Head).Count==0,"UI disposal transfer plan separated from normal");
+            }
+            if(frame==28)
+            {
+                Call("NodeDialogClick",new Point(400,910),new Microsoft.Xna.Framework.Input.KeyboardState());Check(!(bool)Get("_nodeTransportOpen"),"Selected transport tile returns to node");
+                node.Owner=1;Call("NodeDialogClick",new Point(650,910),new Microsoft.Xna.Framework.Input.KeyboardState());Check(!(bool)Get("_nodeDisposalOpen"),"Enemy furnace controls disabled");
+                Console.WriteLine("PASS: disposal checkbox/queue/automatic lane, separate transport purposes, node/factory dialogs, terrain art, retreat borders and map/battle UI.");Exit();
+            }
         }
         catch(Exception e){Console.Error.WriteLine(e);Environment.ExitCode=1;Exit();}
     }
