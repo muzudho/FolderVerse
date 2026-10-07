@@ -203,7 +203,19 @@ sealed class RobotUiCheck:Game1
             {
                 int turn=world.Population.Turn;Call("RobotBattleInput",5.08d,false,false);
                 Check(Get("_screen").ToString()=="WorldStatus" && world.Population.Turn==turn,"Last scene auto-returns to world without advancing its turn");
-                Console.WriteLine("PASS: robot/battle UI, viewport-centered zoom, main transport shortcut and five-second result timer pause/resume/scene/world transitions.");Exit();
+                Set("_statusGlobe",false);var net=(CubeNet)Get("_net");net.Home(world);
+                var panel=new Rectangle(1040,240,790,580);net.Drag(new Vector2(panel.Center.X,panel.Center.Y)-net.NodePosition(world,node,panel));
+                var store=world.Robots.Nodes[node.Id];foreach(var robot in store.Robots.ToArray())store.Remove(robot.Id);
+                store.Add(world.Robots.Create(0,RobotParts.Head));
+            }
+            if(frame==20 || frame==21)
+            {
+                var net=(CubeNet)Get("_net");var badge=net.RobotBadges.Single(b=>b.Node==node.Id);
+                var at=net.NodePosition(world,node,new Rectangle(1040,240,790,580));
+                Check(badge.Bounds.Width==7 && badge.Bounds.Height==(frame==20?7:3),"Sparse pin bounds follow the visible parts rather than a dozen empty slots");
+                Check(Math.Abs(badge.Bounds.Center.X-at.X)<=1 && Math.Abs(at.Y-badge.Bounds.Bottom-(node.IsHarbor?12:6))<=1,"Visible pin centered immediately above its node");
+                if(frame==20){var store=world.Robots.Nodes[node.Id];store.Remove(store.Robots[0].Id);store.Add(world.Robots.Create(0,RobotParts.Legs));}
+                else{Console.WriteLine("PASS: robot/battle UI, compact pin alignment for full and sparse groups, viewport-centered zoom, pocket/transport shortcuts and battle result timer.");Exit();}
             }
         }
         catch(Exception e){Console.Error.WriteLine(e);Environment.ExitCode=1;Exit();}

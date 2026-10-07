@@ -13,6 +13,15 @@ public sealed partial class CubeNet
     public const float RobotDetailScale=400;
     // Alternating rows of 2, 3, 2, 3, 2 pins, as in the compact dozen arrangement.
     private static readonly Point[] RobotPinSlots={new(12,4),new(24,4),new(6,13),new(18,13),new(30,13),new(12,22),new(24,22),new(6,31),new(18,31),new(30,31),new(12,40),new(24,40)};
+    private static Rectangle RobotPinBounds(Point at,RobotParts parts)
+    {
+        Rectangle bounds=Rectangle.Empty;
+        void Include(Rectangle part)=>bounds=bounds==Rectangle.Empty?part:Rectangle.Union(bounds,part);
+        if((parts&RobotParts.Head)!=0)Include(new(at.X-3,at.Y-1,7,7));
+        if((parts&RobotParts.Body)!=0)Include(new(at.X-1,at.Y+5,2,6));
+        if((parts&RobotParts.Legs)!=0)Include(new(at.X-3,at.Y+10,7,3));
+        return bounds;
+    }
     private void DrawRobotLayer(UiPainter ui,WorldSetup world,Rectangle panel,Func<Node,Vector2?> project,float scale)
     {
         _robotBadges.Clear();
@@ -26,8 +35,16 @@ public sealed partial class CubeNet
             var store=world.Robots.Nodes[node.Id];if(store.Count==0)continue;
             var point=project(node);if(point==null || !panel.Contains(point.Value.ToPoint()))continue;
             var at=point.Value;
-            int width=detailed?100:38,height=detailed?104:56;
-            int gap=node.IsHarbor?24:16;
+            // Anchor the visible drawing, rather than an empty twelve-slot frame.
+            // Sparse groups consequently stay as close to their node as a full dozen.
+            Rectangle pinBounds=Rectangle.Empty;
+            if(!detailed)for(int slot=0;slot<store.Count;slot++)
+            {
+                var pin=RobotPinBounds(RobotPinSlots[slot],store.Robots[slot].Parts);
+                pinBounds=slot==0?pin:Rectangle.Union(pinBounds,pin);
+            }
+            int width=detailed?100:pinBounds.Width,height=detailed?104:pinBounds.Height;
+            int gap=detailed?(node.IsHarbor?24:16):(node.IsHarbor?12:6);
             var bounds=new Rectangle((int)at.X-width/2,(int)at.Y-gap-height,width,height);
             if(!panel.Contains(bounds) || occupied.Any(r=>r.Intersects(bounds)))continue;
             occupied.Add(bounds);_robotBadges.Add(new(node.Id,bounds,detailed));
@@ -42,7 +59,7 @@ public sealed partial class CubeNet
                 for(int slot=0;slot<store.Count;slot++)
                 {
                     var robot=store.Robots[slot];var offset=RobotPinSlots[slot];
-                    DrawRobotPin(ui,new(bounds.X+offset.X,bounds.Y+offset.Y),world.OwnerColor(robot.Owner),robot.Parts);
+                    DrawRobotPin(ui,new(bounds.X+offset.X-pinBounds.X,bounds.Y+offset.Y-pinBounds.Y),world.OwnerColor(robot.Owner),robot.Parts);
                 }
                 continue;
             }
