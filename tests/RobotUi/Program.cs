@@ -215,7 +215,26 @@ sealed class RobotUiCheck:Game1
                 Check(badge.Bounds.Width==7 && badge.Bounds.Height==(frame==20?7:3),"Sparse pin bounds follow the visible parts rather than a dozen empty slots");
                 Check(Math.Abs(badge.Bounds.Center.X-at.X)<=1 && Math.Abs(at.Y-badge.Bounds.Bottom-(node.IsHarbor?12:6))<=1,"Visible pin centered immediately above its node");
                 if(frame==20){var store=world.Robots.Nodes[node.Id];store.Remove(store.Robots[0].Id);store.Add(world.Robots.Create(0,RobotParts.Legs));}
-                else{Console.WriteLine("PASS: robot/battle UI, compact pin alignment for full and sparse groups, viewport-centered zoom, pocket/transport shortcuts and battle result timer.");Exit();}
+                else
+                {
+                    var store=world.Robots.Nodes[node.Id];while(store.Count<12)store.Add(world.Robots.Create(store.Count%2,(RobotParts)(1+store.Count%7)));
+                    Set("_populationCell",node.Cell);Set("_populationNode",node.Id);
+                    var oldBirth=node.Population.BirthPercent;var oldConversion=node.Population.Conversion.ToArray();
+                    Call("PopulationClick",new Point(820,470),new Microsoft.Xna.Framework.Input.KeyboardState());
+                    Check(node.Population.BirthPercent==oldBirth && node.Population.Conversion.SequenceEqual(oldConversion),"Removed population controls do not mutate settings");
+                }
+            }
+            if(frame==22)
+            {
+                Check(world.Robots.Nodes[node.Id].Count==12,"Node inspection renders a full dozen");
+                foreach(var robot in world.Robots.Nodes[node.Id].Robots.ToArray())world.Robots.Nodes[node.Id].Remove(robot.Id);
+            }
+            if(frame==23)
+            {
+                Check(world.Robots.Nodes[node.Id].Count==0,"Empty node inspection");
+                Call("PopulationClick",new Point(830,190),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Check((int)Get("_populationCell")==-1,"Node robot panel closes");
+                Console.WriteLine("PASS: robot/battle UI, node robot inspection 0/12 without population controls, compact pins, map zoom, pocket/transport shortcuts and result timer.");Exit();
             }
         }
         catch(Exception e){Console.Error.WriteLine(e);Environment.ExitCode=1;Exit();}

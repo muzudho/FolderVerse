@@ -217,8 +217,8 @@ public partial class Game1 : Game
             else if(click && !pan && !_movementOpen && !_net.IsAnimating && _statusCell>=0)
             {
                 var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);var post=_setup.Nodes.At(_statusCell,point);
-                if(post!=null && _setup.Relations.Allied(post.Owner,_setup.PlayerSlot) && post.Population.Land)
-                {_populationCell=_statusCell;_populationNode=post.Id;_populationRole=0;_movementOpen=false;}
+                if(post!=null)
+                {_populationCell=_statusCell;_populationNode=post.Id;_movementOpen=false;}
             }
             if(active)
             {
