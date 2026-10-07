@@ -14,10 +14,13 @@ public partial class Game1
     public string OperationLogPath=>_operations.FilePath;
     private object OperationState()=>new
     {
-        screen=_screen.ToString(),phase=IsStatusScreen || _screen is Screen.Battle or Screen.Disposition or Screen.InactiveList or Screen.Hierarchy?"Game":_screen==Screen.Title?"Title":"Setup",
+        screen=_screen.ToString(),phase=IsStatusScreen || _screen is Screen.Battle or Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Robots or Screen.Pocket or Screen.Transport?"Game":_screen==Screen.Title?"Title":"Setup",
         superiors=_setup.Relations.Superiors,
         party=_setup.Relations.Party(_setup),powered=_setup.Relations.Powered,released=_setup.Relations.Released,teams=_setup.Relations.Teams,pendingCaptives=_setup.Relations.Pending.ToArray(),submitted=_setup.Campaign.Submitted,menuOpen=_statusMenuOpen,
         battleWave=_battleWave,battleAge=_battleAge,battleFocus=_battleFocus,battleCount=_setup.Campaign.Battles.Count,
+        robotCombat=_setup.Campaign.UseRobotCombat,robotNode=_robotNode,pocketSelection=_pocketRobot,pocketFromNode=_pocketFromNode,pocketMessage=_pocketMessage,robotPart=(int)_robotPart,robotSelection=_robotSelection.OrderBy(id=>id).ToArray(),robotMessage=_robotMessage,
+        transports=_setup.Robots.Transport.LastTransfers.Count,robotPlaying=_robotPlaying,robotResultAge=_robotResultAge,
+        continuedBattles=_setup.Campaign.RobotBattles.Encounters.Where(e=>!e.Finished).Select(e=>new{e.Id,e.Source,e.Target,e.Kind,turns=e.Battles.Select(b=>b.Turn).ToArray()}).ToArray(),
         overlay=_seedDialog.IsOpen?"SeedDialog":_movementOpen?"Movement":_populationCell>=0?"Population":"None",
         view=_statusGlobe?"Globe":"Net",layer=_net.ShowRoutes?"Traffic":"Grid",flags=_net.ShowFlags,batteries=_net.ShowBatteries,
         worldSeed=_setup.WorldSeed,castSeed=_setup.CastSeed,placementSeed=_setup.PlacementSeed,
@@ -31,6 +34,9 @@ public partial class Game1
         if(_screen==Screen.Disposition)return "conqueror_disposition";
         if(_screen==Screen.InactiveList)return "inactive_conquerors";
         if(_screen==Screen.Hierarchy)return "conqueror_hierarchy";
+        if(_screen==Screen.Pocket)return "pocket";
+        if(_screen==Screen.Robots)return "robot_workshop";
+        if(_screen==Screen.Transport)return "robot_transport_playback";
         if(IsStatusScreen && StatusMenuButton.Contains(point))return "status_menu";
         if(IsStatusScreen && _statusMenuOpen && InactiveMenuItem.Contains(point))return "open_inactive_conquerors";
         if(IsStatusScreen && _statusMenuOpen && HierarchyMenuItem.Contains(point))return "open_conqueror_hierarchy";
@@ -47,6 +53,8 @@ public partial class Game1
         if(RouteLayerButton(0).Contains(point))return "toggle_flags";
         if(RouteLayerButton(1).Contains(point))return "toggle_batteries";
         if(MovementButton.Contains(point))return "movement";
+        if(PocketButton.Contains(point))return "open_pocket";
+        if(RobotQuickButton.Contains(point))return "open_robot_transport";
         if(_movementOpen && ConfirmMoveButton.Contains(point))return "confirm_move";
         if(OrientationResetButton.Contains(point))return "reset_orientation";
         if(PopulationTurnButton.Contains(point))return "next_turn";

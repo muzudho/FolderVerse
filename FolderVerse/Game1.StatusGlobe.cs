@@ -101,9 +101,27 @@ public partial class Game1
     }
     private void FocusStatusGlobe()
     {
-        var normal=_setup.Cells[_setup.ConquerorLocations[_setup.PlayerSlot]].Normal;
-        _yaw=-MathF.Atan2(normal.X,normal.Z);
-        _pitch=MathF.Asin(normal.Y);
+        var point=CurrentMapPosition();
+        _pitch=MathF.Atan2(point.Y,point.Z);
+        if(_pitch>MathHelper.PiOver2)_pitch-=MathHelper.Pi;
+        if(_pitch< -MathHelper.PiOver2)_pitch+=MathHelper.Pi;
+        var turned=Vector3.Transform(point,Matrix.CreateRotationX(_pitch));
+        _yaw=-MathF.Atan2(turned.X,turned.Z);
+        _dragging=_mapDragging=false;
+    }
+    private Vector3 CurrentMapPosition()
+    {
+        int player=_setup.PlayerSlot;var node=_setup.Nodes.Current(player);
+        return _setup.Routes.Position(node?.Cell??_setup.ConquerorLocations[player],node?.Center??_setup.ConquerorPoints[player]);
+    }
+    private void FocusCurrentNode()
+    {
+        int cell=_setup.Nodes.Current(_setup.PlayerSlot)?.Cell??_setup.ConquerorLocations[_setup.PlayerSlot];
+        _net.SetCenter(_setup,_setup.Cells[cell].Face);
+        var face=_net.Faces[0];var fit=_net.Fit(NetPanel);
+        var at=face.Project(CurrentMapPosition())*fit.Scale+fit.Origin;
+        _net.Drag(new Vector2(NetPanel.Center.X,NetPanel.Center.Y)-at);
+        _dragging=_mapDragging=false;
     }
     private void DrawStatusGlobeCoordinates()
     {

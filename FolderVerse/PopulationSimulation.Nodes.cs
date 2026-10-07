@@ -6,10 +6,10 @@ public sealed partial class PopulationSimulation
 {
     public bool CanMigrateNode(WorldSetup world,int id,int direction)
     {
-        var source=world.Nodes.All[id];if(!source.Population.Land)return false;
+        var source=world.Nodes.All[id];if(!source.Population.Land || world.Campaign.UseRobotCombat && world.Campaign.RobotBattles.LockedNode(id))return false;
         var route=world.Routes.Find(source.Cell,source.Center,direction,true);if(route==null)return false;
         var target=world.Nodes.At(route.Target,route.Entry);
-        return target!=null && target.Population.Land && world.Relations.Allied(source.Owner,target.Owner);
+        return target!=null && target.Population.Land && world.Relations.Allied(source.Owner,target.Owner) && !(world.Campaign.UseRobotCombat && world.Campaign.RobotBattles.LockedNode(target.Id));
     }
     public void AdjustNodeConversion(WorldSetup world,int id,int role,decimal delta)
     {
@@ -25,6 +25,7 @@ public sealed partial class PopulationSimulation
         var posts=world.Nodes.All;var staged=posts.Select(p=>(long[])p.Population.People.Clone()).ToArray();
         foreach(var post in posts)for(int role=0;role<2;role++)
         {
+            if(world.Campaign.UseRobotCombat && world.Campaign.RobotBattles.LockedNode(post.Id))continue;
             var p=post.Population;decimal rate=p.Conversion[role];long count=(long)decimal.Floor((rate>=0?p.People[2]:p.People[role])*Math.Abs(rate)/100);
             staged[post.Id][role]+=rate>=0?count:-count;staged[post.Id][2]+=rate>=0?-count:count;
         }
@@ -38,6 +39,7 @@ public sealed partial class PopulationSimulation
         }
         foreach(var post in posts)
         {
+            if(world.Campaign.UseRobotCombat && world.Campaign.RobotBattles.LockedNode(post.Id))continue;
             var p=post.Population;decimal births=result[post.Id][1]*p.BirthPercent/100+p.BirthRemainder;
             long count=(long)decimal.Floor(births);p.BirthRemainder=births-count;result[post.Id][2]+=count;p.People=result[post.Id];
         }

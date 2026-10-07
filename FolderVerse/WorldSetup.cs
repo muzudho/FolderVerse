@@ -12,6 +12,7 @@ public sealed class SeedRandom
     public SeedRandom(int seed) { _state = unchecked((uint)seed) ^ 0x9E3779B9u; }
     public uint Next() { _state = unchecked(_state * 1664525u + 1013904223u); uint x = _state; x ^= x >> 16; x = unchecked(x * 0x7FEB352Du); x ^= x >> 15; return x; }
     public int Next(int maximum) => (int)(Next() % (uint)maximum);
+    public SeedRandom Clone(){var copy=new SeedRandom(0);copy._state=_state;return copy;}
     public float Unit() => (Next() >> 8) / 16777216f;
     public void Shuffle<T>(T[] values) { for (int i = values.Length - 1; i > 0; i--) { int j = Next(i + 1); (values[i], values[j]) = (values[j], values[i]); } }
 }
@@ -50,6 +51,7 @@ public sealed class WorldSetup
     public int PlayerSlot { get; private set; } = -1;
     public PopulationSimulation Population {get;}=new();
     public ConquestCampaign Campaign {get;}=new();
+    public RobotWorld Robots {get;}=new();
     public ConquerorRelations Relations {get;}=new();
     public void SelectPlayer(int slot)
     {
@@ -131,8 +133,15 @@ public sealed class WorldSetup
         Routes.Initialize(this);
         ConquerorPoints=ConquerorLocations.Select(Routes.Start).ToArray();
         Nodes.Initialize(this);
+        Robots.Initialize(Nodes.All.Length,ActiveCount);
+        foreach(var node in Nodes.All.Where(n=>n.Owner>=0))
+        {
+            Robots.Workshops[node.Id].Configure((RobotParts)(1+new SeedRandom(seed^node.Id).Next(7)),3);
+            for(int i=0;i<3;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,RobotParts.Complete,i==1?RobotRole.Captain:RobotRole.Soldier));
+        }
         // Start at the Node centre.
         for(int ruler=0;ruler<ActiveCount;ruler++)ConquerorPoints[ruler]=Nodes.Current(ruler).Center;
+        for(int ruler=0;ruler<ActiveCount;ruler++)Robots.Workshops[Nodes.Current(ruler).Id].ConfigureDisposal();
         Routes.RefreshDisplay();
         Campaign.Reset();
     }

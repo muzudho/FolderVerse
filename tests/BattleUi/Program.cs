@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Input;
 
 static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 var world=new WorldSetup();world.SetWorld(0);world.SetCast(123);world.SetPlacement(456);world.SelectPlayer(0);
+world.Campaign.UseRobotCombat=false;
 void Clear()
 {
     world.Relations.Reset();world.SelectPlayer(0);
@@ -51,6 +52,7 @@ sealed class BattleCheck(BattleRecord[] fixtures):Game1
     {
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
         var w=(WorldSetup)Get("_setup");w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.SelectPlayer(0);
+        w.Campaign.UseRobotCombat=false; // These fixtures test the retained legacy scene renderer.
         ((WorldPreview)Get("_world")).ShowSetup(w,true);
         w.Population.Advance(w);
         typeof(Game1).GetField("_screen",Flags)!.SetValue(this,Enum.Parse(typeof(Game1).GetField("_screen",Flags)!.FieldType,"WorldStatus"));

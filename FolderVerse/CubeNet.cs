@@ -19,8 +19,8 @@ public sealed partial class CubeNet
     public void ZoomAt(Rectangle panel,Point pointer,int wheel)
     {
         var before=Fit(panel);float old=Zoom;
-        Zoom=MathHelper.Clamp(Zoom*MathF.Pow(1.2f,wheel/120f),0.5f,8);
-        var target=new Vector2(pointer.X,pointer.Y);
+        Zoom=MathHelper.Clamp(Zoom*MathF.Pow(1.2f,wheel/120f),0.5f,64);
+        var target=new Vector2(panel.Center.X,panel.Center.Y);
         Pan+=(target-before.Origin)*(1-Zoom/old);
     }
     public NetFace[] Faces { get; private set; }=Array.Empty<NetFace>();
@@ -93,11 +93,13 @@ public sealed partial class CubeNet
     }
     public void Draw(UiPainter ui,WorldSetup setup,Rectangle panel,int focused,float pulse)
     {
+        _robotBadges.Clear();
         if(IsAnimating){DrawAnimation(ui,setup,panel,pulse);return;}
         var fit=Fit(panel);var offset=WorldTerrain.Offset(setup.WorldSeed);
         foreach(var cell in setup.Cells)
         {
             var face=Faces.First(f=>f.Face==cell.Face);var rect=CellBounds(cell,panel);
+            if(!rect.Intersects(MapViewport(panel)))continue;
             const int detail=10;
             for(int y=0;y<detail;y++)for(int x=0;x<detail;x++)
             {
@@ -152,6 +154,7 @@ public sealed partial class CubeNet
         ui.Box(new(bx,by,25,16),battery);ui.Box(new(bx+25,by+4,4,8),battery);
         for(int i=0;i<3;i++)ui.Box(new(bx+3+i*7,by+3,5,10),new Color(35,112,70));
         }
+        DrawRobotLayer(ui,setup,panel,node=>NodePosition(setup,node,panel),fit.Scale);
         DrawHoveredEdge(ui,panel);
         DrawSeamLabels(ui,panel);
     }

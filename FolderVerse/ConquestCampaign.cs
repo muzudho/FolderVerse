@@ -6,19 +6,21 @@ using System.Linq;
 public sealed record March(int Ruler,int TargetNode,long Fighters);
 public sealed class ConquestCampaign
 {
+    public bool UseRobotCombat {get;set;}=true;
+    public RobotCampaign RobotBattles {get;}=new();
     public string Report {get;private set;}="";
     public List<BattleRecord> Battles {get;}=new();
     private readonly List<March> _partyOrders=new();
     private readonly HashSet<int> _submitted=new();
     public int[] Submitted=>_submitted.OrderBy(r=>r).ToArray();
-    public void Reset(){Report="";Battles.Clear();_partyOrders.Clear();_submitted.Clear();}
+    public void Reset(){Report="";Battles.Clear();_partyOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
     public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true)
     {
         Battles.Clear();
         var orders=new List<March>();
         if(targetNode>=0)
         {
-            if(world.Routes.ToNode(world.PlayerSlot,targetNode)==null){Report="交通路がつながっていないため移動できない";return;}
+            if(world.Routes.ToNode(world.PlayerSlot,targetNode)==null || UseRobotCombat && !RobotBattles.CanMarch(world,world.PlayerSlot,targetNode)){Report="交通路がない、または戦闘中のため移動できない";return;}
             orders.Add(new(world.PlayerSlot,targetNode,fighters));
         }
         if(enemies)
@@ -36,8 +38,8 @@ public sealed class ConquestCampaign
             {
                 if(world.Relations.Allied(ruler,world.Relations.Leader) || !world.Relations.CanAct(ruler))continue;
                 var home=world.Nodes.Current(ruler);
-                long army=home!=null && world.Relations.Allied(home.Owner,ruler)?home.Population.People[0]/2:0;
-                var move=world.Routes.NodeChoices(ruler).OrderBy(path=>
+                long army=UseRobotCombat?RobotBattles.Available(world,ruler):home!=null && world.Relations.Allied(home.Owner,ruler)?home.Population.People[0]/2:0;
+                var move=world.Routes.NodeChoices(ruler).Where(path=>!UseRobotCombat || RobotBattles.CanMarch(world,ruler,world.Nodes.At(path.Target,path.Entry).Id)).OrderBy(path=>
                 {
                     var target=world.Nodes.At(path.Target,path.Entry);
                     return world.TerritoryCounts[ruler]==0?random.Next(100):
@@ -51,6 +53,12 @@ public sealed class ConquestCampaign
     }
     public void Resolve(WorldSetup world,IReadOnlyList<March> orders)
     {
+        if(UseRobotCombat)
+        {
+            RobotBattles.Advance(world,orders);
+            Report=$"ロボット輸送 {world.Robots.Transport.LastTransfers.Count} / 観戦 {RobotBattles.Scenes.Count} / 継戦 {RobotBattles.Encounters.Count(e=>!e.Finished)}";
+            return;
+        }
         if(orders.Select(o=>o.Ruler).Distinct().Count()!=orders.Count)throw new ArgumentException("One march per ruler per turn.");
         foreach(var order in orders)if(order.Ruler<0 || order.Ruler>=world.ActiveCount || order.TargetNode<0 || order.TargetNode>=world.Nodes.All.Length || order.Fighters<0)throw new ArgumentOutOfRangeException(nameof(orders));
         if(orders.Any(o=>!world.Relations.CanAct(o.Ruler)))throw new InvalidOperationException("Inactive conqueror cannot march.");

@@ -9,6 +9,7 @@ static ConquerorLook Personality(int personality){var k=ConquerorCatalog.Keyword
 WorldSetup Create()
 {
     var w=new WorldSetup();w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.SelectPlayer(0);
+    w.Campaign.UseRobotCombat=false;
     foreach(var n in w.Nodes.All){Array.Clear(n.Population.People);Array.Clear(n.Population.Conversion);Array.Clear(n.Population.Migration);n.Population.BirthPercent=0;}
     for(int i=2;i<w.ActiveCount;i++)w.Relations.Released[i]=true;
     return w;
@@ -64,6 +65,7 @@ sealed class RelationsCheck:Game1
     protected override void LoadContent()
     {
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();w=(WorldSetup)Get("_setup");w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.SelectPlayer(0);
+        w.Campaign.UseRobotCombat=false;
         var k=ConquerorCatalog.Keywords.First(k=>k.Personality==13);w.Looks[1]=new(k.BaseId,k.VariantId);
         ((CubeNet)Get("_net")).Home(w);((WorldPreview)Get("_world")).ShowSetup(w,true);
         Set("_screen",Enum.Parse(typeof(Game1).GetField("_screen",Flags)!.FieldType,"WorldStatus"));w.Relations.Pending.Add(new(1,0,w.Nodes.Current(1).Id));Call("OpenDisposition");

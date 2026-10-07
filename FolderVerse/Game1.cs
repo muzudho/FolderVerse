@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 public partial class Game1 : Game
 {
-    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, WorldStatus, Battle, Disposition, InactiveList, Hierarchy }
+    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, WorldStatus, Battle, Disposition, InactiveList, Hierarchy, Robots, Pocket, Transport }
     private readonly GraphicsDeviceManager _graphics;
     private readonly Random _random=new();
     private readonly WorldSetup _setup=new();
@@ -47,12 +47,30 @@ public partial class Game1 : Game
     private bool IsRolling=>_screen is Screen.Rolling or Screen.CastRolling or Screen.PlacementRolling;
     private bool HasTerritories=>_screen is Screen.PlacementRolling or Screen.PlacementReview or Screen.Ready;
 
+    private static readonly object ImeBeforeGame;
+    private static readonly object[] ImeVisualStudioBeforeGame;
+    private bool _imeSessionClosed;
+    static Game1()
+    {
+        ImeBeforeGame=WindowsImeDiagnostics.ReadForeground();
+        ImeVisualStudioBeforeGame=WindowsImeDiagnostics.ReadVisualStudio();
+        // This runs before Game's constructor initializes SDL. Keep Windows' native IME UI
+        // instead of SDL2's UI-less TSF integration. The hint applies only to this process.
+        if(OperatingSystem.IsWindows())
+            Environment.SetEnvironmentVariable("SDL_IME_SHOW_UI","1",EnvironmentVariableTarget.Process);
+    }
     public Game1()
     {
         _graphics=new GraphicsDeviceManager(this) { PreferredBackBufferWidth=1920,PreferredBackBufferHeight=1080,PreferredDepthStencilFormat=DepthFormat.Depth24 };
         InactiveSleepTime=TimeSpan.Zero;
         Content.RootDirectory="Content"; Window.Title="Folder Verse"; Window.AllowUserResizing=true; IsMouseVisible=true;
+        _operations.Write("ime_state",new{stage="before_game",state=ImeBeforeGame,visualStudio=ImeVisualStudioBeforeGame});
+        LogImeState("game_created");
+        Activated+=(_,_)=>LogImeState("activated");
+        Deactivated+=(_,_)=>LogImeState("deactivated");
+        Exiting+=(_,_)=>LogImeState("exiting");
     }
+    private void LogImeState(string stage)=>_operations.Write("ime_state",new{stage,state=WindowsImeDiagnostics.ReadForeground(),visualStudio=WindowsImeDiagnostics.ReadVisualStudio()});
     protected override void LoadContent()
     {
         _spriteBatch=new SpriteBatch(GraphicsDevice); _titleScreen=Content.Load<Texture2D>("Images/title-screen");
@@ -104,6 +122,12 @@ public partial class Game1 : Game
         bool captureChord=keyboard.IsKeyDown(Keys.P) && (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
         if(active && captureChord && !previousChord)_screenshots.Request();
+        if(_screen==Screen.Pocket)
+        {if(active)PocketInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(_screen==Screen.Robots)
+        {if(active)RobotInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(_screen==Screen.Transport)
+        {UpdateTransport(elapsed,active && (enter || click && BattleContinue.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Hierarchy)
         {
             if(active && (escape || click && InactiveBack.Contains(_pointer)))_screen=Screen.WorldStatus;
@@ -118,6 +142,7 @@ public partial class Game1 : Game
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Battle)
         {
+            if(_setup.Campaign.UseRobotCombat){RobotBattleInput(elapsed,active && click,active && enter);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
             if(click)foreach(var tile in _battleTiles)if(tile.Slot>=0 && tile.Bounds.Contains(_pointer))_battleFocus=tile.Slot;
             UpdateBattle(elapsed,active && (click && BattleContinue.Contains(_pointer) || enter));
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
@@ -185,7 +210,7 @@ public partial class Game1 : Game
             else if(click && PopulationClick(_pointer,keyboard)){}
             else if(click && NetButton(0).Contains(_pointer))_net.Turn(_setup,-1);
             else if(click && NetButton(1).Contains(_pointer))_net.Turn(_setup,1);
-            else if(click && NetButton(2).Contains(_pointer))_net.Home(_setup);
+            else if(click && NetButton(2).Contains(_pointer))FocusCurrentNode();
             else if(click && NetButton(3).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
             else if(click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
             else if(click && !pan && !_net.IsAnimating && _net.ClickEdge()){}
@@ -449,9 +474,9 @@ public partial class Game1 : Game
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
-        _ui.Text(_statusGlobe?"左ドラッグ：回転 / 点滅する節点で移動先を選択":"辺クリック：つなぎ替え / ホイール：拡縮 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
+        _ui.Text(_statusGlobe?"左ドラッグ：回転 / ロボット数は節点の上に表示":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
         _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
-        _ui.Button(NetButton(2),"自分の国へ",Accent,0.52f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
+        _ui.Button(NetButton(2),"現在地へ移動",Accent,0.45f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
         const string resetLabel="頭を上へ、腹を手前へ";
         _ui.Button(OrientationResetButton,resetLabel,Muted,Math.Min(.52f,(OrientationResetButton.Width-16)/_font.MeasureString(resetLabel).X));
         if(_statusCell>=0)
@@ -462,8 +487,10 @@ public partial class Game1 : Game
             string pattern=_setup.Nodes.CellPattern(cell.Id);
             _ui.Center(pattern,new(970,1003,914,32),Math.Min(0.40f,880/_font.MeasureString(pattern).X),Cream);
         }
-        _ui.Button(PopulationTurnButton,_setup.Relations.Party(_setup).Length>1?"手下のターン":$"ターン {_setup.Population.Turn} → 次へ",Accent,0.62f);
+        _ui.Button(PopulationTurnButton,"次のターン",Accent,0.62f);
         _ui.Button(MovementButton,"移動",Accent,.65f);
+        _ui.Button(RobotQuickButton,"ロボット輸送計画",Accent,.47f);
+        _ui.Button(PocketButton,"ポケット",Accent,.55f);
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(984,1037,870,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
         if(_populationCell>=0)DrawPopulationPanel();
         if(_movementOpen)DrawMovementPanel();
@@ -503,10 +530,10 @@ public partial class Game1 : Game
             _spriteBatch.Begin(transformMatrix:transform);
             _ui.Box(new(0,0,1920,1080),new(16,35,46));
             _spriteBatch.Draw(_titleLogo,new Rectangle(0,0,1920,1080),Color.White*0.14f);
-            if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
+            if(_screen==Screen.Transport)DrawTransport();else if(_screen==Screen.Pocket)DrawPocket();else if(_screen==Screen.Robots)DrawRobots();else if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
             {
             if(_screen==Screen.Battle)DrawBattleGlobe(canvas,transform);
-            else if(!IsStatusScreen && _screen is not (Screen.Disposition or Screen.InactiveList or Screen.Hierarchy))
+            else if(!IsStatusScreen && _screen is not (Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Robots or Screen.Pocket or Screen.Transport))
             {
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;
@@ -542,5 +569,16 @@ public partial class Game1 : Game
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){DisposeScreenshotFeedback();_operations.Dispose();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void Dispose(bool disposing)
+    {
+        try{base.Dispose(disposing);}
+        finally
+        {
+            if(disposing && !_imeSessionClosed)
+            {
+                _imeSessionClosed=true;LogImeState("after_game_disposed");_operations.Dispose();
+            }
+        }
+    }
 }

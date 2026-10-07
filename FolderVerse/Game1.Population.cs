@@ -8,7 +8,7 @@ public partial class Game1
 {
     private int _populationCell=-1,_populationRole;
     private int _populationNode=-1;
-    private static readonly Rectangle PopulationTurnButton=new(548,1018,350,52);
+    private static readonly Rectangle PopulationTurnButton=new(690,1018,208,52);
     private static readonly string[] PopulationRoles={"戦闘員数","生産者数","残数"};
     private static readonly string[] PopulationDirections={"北","東","南","西"};
     private static Rectangle RoleButton(int role)=>new(84+role*264,326,250,94);
@@ -23,6 +23,7 @@ public partial class Game1
         if(_populationCell<0)return false;
         if(new Rectangle(803,169,58,44).Contains(pointer)){_populationCell=-1;return true;}
         var simulation=_setup.Population;var population=_setup.Nodes.All[_populationNode].Population;
+        if(_setup.Campaign.UseRobotCombat && _setup.Campaign.RobotBattles.LockedNode(_populationNode))return true;
         for(int role=0;role<3;role++)if(RoleButton(role).Contains(pointer)){_populationRole=role;return true;}
         for(int row=0;row<3;row++)foreach(bool plus in new[]{false,true})
         {

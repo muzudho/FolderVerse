@@ -15,6 +15,7 @@ public partial class Game1
     private static readonly Rectangle BattleContinue=new(1450,1020,410,50);
     private void OpenBattle()
     {
+        if(_setup.Campaign.UseRobotCombat){OpenRobotBattle();return;}
         _battleWaves=BattleSchedule.Create(_setup.Campaign.Battles);
         if(_battleWaves.Length==0){OpenDisposition();return;}
         _battleWave=0;_screen=Screen.Battle;_populationCell=-1;_dragging=false;
@@ -36,6 +37,7 @@ public partial class Game1
     }
     private void DrawBattleUi()
     {
+        if(_setup.Campaign.UseRobotCombat){DrawRobotBattle();return;}
         _ui.Text($"戦闘 / ターン {_setup.Population.Turn-1} → {_setup.Population.Turn} / {_battleWave+1}/{_battleWaves.Length}",new(54,25),.8f,Cream);
         // 7 × 5 calendar, each cell divided into 4 × 4 packing units.
         for(int x=0;x<=7;x++)_ui.Box(new(54+x*1806/7,112,1,900),new(58,78,100));
@@ -78,6 +80,7 @@ public partial class Game1
     }
     private void DrawBattleGlobe(Rectangle canvas,Matrix transform)
     {
+        if(_setup.Campaign.UseRobotCombat)return;
         var tile=_battleTiles.First(t=>t.Slot<0).Bounds;
         var area=new Rectangle(tile.X+8,tile.Y+35,tile.Width-16,tile.Height-65);
         var battle=_battleWaves[_battleWave][_battleFocus];

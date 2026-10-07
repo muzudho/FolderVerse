@@ -6,6 +6,7 @@ int maximum=0,total=0,local=0,crossFace=0,harbors=0;bool localBattle=false,remot
 for(int seed=0;seed<64;seed++)
 {
     var world=new WorldSetup();world.SetWorld(seed);world.SetCast(123);world.SetPlacement(456);world.SelectPlayer(0);
+    world.Campaign.UseRobotCombat=false; // Preserve the legacy population-combat regression fixture.
     var graph=world.Nodes.All.Select(world.Routes.Neighbors).ToArray();
     var ports=world.Nodes.All.Where(p=>p.IsHarbor).ToArray();harbors+=ports.Length;
     Check(ports.Select(p=>p.Name).Distinct().Count()==ports.Length,"Duplicate port name");

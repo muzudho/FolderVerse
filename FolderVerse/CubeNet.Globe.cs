@@ -11,6 +11,11 @@ public sealed partial class CubeNet
             Vector2 Project(Vector3 p){globe.ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var result);return result;}
             DrawCellRoutes(ui,setup,cell.Id,Project,pulse);
         }
+        DrawRobotLayer(ui,setup,panel,node=>
+        {
+            var cell=setup.Cells[node.Cell];
+            return globe.ProjectVisible(setup.Routes.Position(node.Cell,node.Center),cell.Normal,yaw,pitch,panel,out var at)?at:(Vector2?)null;
+        },0);
         if(!ShowBatteries)return;
         for(int ruler=0;ruler<setup.ActiveCount;ruler++)
         {

@@ -40,7 +40,7 @@ sealed class OperationCheck:Game1
                 }
                 break;
             case 1:
-                Click(new(410,1040));Check((bool)Get("_movementOpen") && net.ShowRoutes,"Movement did not open");
+                Click(new(600,1040));Check((bool)Get("_movementOpen") && net.ShowRoutes,"Movement did not open");
                 Click(new(1400,104));Check(!(bool)Get("_movementOpen") && !net.ShowRoutes && net.MovementTargets.Count==0,"Grid was silently ignored during movement");break;
             case 2:
                 for(int i=0;i<8;i++){Click(new(1710,104));Check((bool)Get("_statusGlobe"),"Globe switch ignored");Click(new(1810,104));Check(!(bool)Get("_statusGlobe"),"Net switch ignored");}
