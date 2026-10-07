@@ -25,7 +25,7 @@ public sealed class RobotTransport
     private int Rank(RobotShipment shipment)
     {int index=Array.IndexOf(_priorities.GetValueOrDefault(shipment.Target,Array.Empty<int>()),shipment.Source);return index<0?int.MaxValue:index;}
     private IEnumerable<RobotShipment> Ordered(IEnumerable<RobotShipment> shipments)=>shipments.OrderBy(s=>s.Target).ThenBy(Rank).ThenBy(s=>s.Source).ThenBy(s=>s.RobotId);
-    public void ResolvePlans(RobotWorld world,Func<int,int,bool> connected,int seed,Func<int,bool> locked=null)
+    public void ResolvePlans(RobotWorld world,Func<int,int,bool> connected,int seed,Func<int,bool> locked=null,Func<int,int,bool> canEnter=null)
     {
         var random=new SeedRandom(seed);var choices=new Dictionary<long,Queue<RobotShipment>>();
         for(int node=0;node<world.Nodes.Length;node++)
@@ -44,7 +44,7 @@ public sealed class RobotTransport
                     foreach(var weight in plan)
                     {
                         sum+=weight.Twentieths;if(roll>=sum)continue;
-                        if(weight.Target<world.Nodes.Length && connected(node,weight.Target) && locked?.Invoke(weight.Target)!=true)queue.Enqueue(new(node,weight.Target,robot.Id,(RobotParts)mask));
+                        if(weight.Target<world.Nodes.Length && connected(node,weight.Target) && locked?.Invoke(weight.Target)!=true && (canEnter?.Invoke(robot.Owner,weight.Target)??true))queue.Enqueue(new(node,weight.Target,robot.Id,(RobotParts)mask));
                         break;
                     }
                 }

@@ -86,7 +86,7 @@ public sealed class RobotWorld
         var remainder=Create(robot.Owner,robot.Parts^first);
         store.Replace(store.Robots.Where(r=>r.Id!=id).Append(robot with {Parts=first}).Append(remainder));
     }
-    public void Advance(Func<int,int,bool> connected,Func<int,int> owner,int seed,Func<int,bool> locked=null)
+    public void Advance(Func<int,int,bool> connected,Func<int,int> owner,int seed,Func<int,bool> locked=null,Func<int,int,bool> canEnter=null)
     {
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].CompleteDisposal(Nodes[n]);
         WorkshopFailures.Clear();
@@ -97,7 +97,7 @@ public sealed class RobotWorld
             catch(InvalidOperationException error){WorkshopFailures.Add((edit.Node,error.Message));}
             PendingEdits.Remove(edit);
         }
-        Transport.ResolvePlans(this,connected,seed,locked);
+        Transport.ResolvePlans(this,connected,seed,locked,canEnter);
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].CompleteProduction(this,n,owner(n));
         Check();
     }

@@ -257,8 +257,25 @@ sealed class RobotUiCheck:Game1
                 Call("NodeDialogClick",new Point(150,910),new Microsoft.Xna.Framework.Input.KeyboardState());Check(!(bool)Get("_nodeFactoryOpen"),"Enemy factory disabled");
                 world.Relations.SetSuperior(0,1);Call("NodeDialogClick",new Point(150,910),new Microsoft.Xna.Framework.Input.KeyboardState());Check(!(bool)Get("_nodeFactoryOpen"),"Superior factory is not subordinate access");
                 world.Relations.SetSuperior(0,-1);node.Owner=owner;
-                Console.WriteLine("PASS: node/factory dialogs, product/period/pause, own/subordinate access, enemy/superior denial and robot/map/battle UI.");Exit();
+                node.Owner=1;Call("NodeDialogClick",new Point(400,910),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Check((bool)Get("_nodeTransportOpen"),"Enemy-controlled node transport planning opens");
+                var route=world.Routes.Neighbors(node).First();int destination=world.Nodes.At(route.Target,route.Entry).Id;
+                world.Robots.Transport.SetPlan(node.Id,1,RobotParts.Complete,new[]{new TransportWeight(destination,7)});
+                Call("NodeDialogClick",new Point(780,425),new Microsoft.Xna.Framework.Input.KeyboardState());
+                Check(world.Robots.Transport.Plan(node.Id,0,RobotParts.Complete).Single(w=>w.Target==destination).Twentieths==1,"Personal plan saved on enemy node");
+                Check(world.Robots.Transport.Plan(node.Id,1,RobotParts.Complete).Single().Twentieths==7,"Other conqueror plan preserved");
             }
+            if(frame==25)
+            {
+                Call("NodeDialogClick",new Point(830,190),new Microsoft.Xna.Framework.Input.KeyboardState());Check(!(bool)Get("_nodeTransportOpen") && (int)Get("_populationCell")>=0,"Transport close returns to node");
+                Check(BattleObstacleArt.Style(false,false,.6f,0)==BattleObstacleStyle.Tree && BattleObstacleArt.Style(false,false,.54f,0)==BattleObstacleStyle.Rock && BattleObstacleArt.Style(false,false,.6f,.8f)==BattleObstacleStyle.Ice && BattleObstacleArt.Style(true,false,0,0)==BattleObstacleStyle.Reef && BattleObstacleArt.Style(true,true,0,0)==BattleObstacleStyle.Barrel,"Five terrain obstacle styles");
+                var board=new Rectangle(100,232,680,680);
+                for(int side=0;side<4;side++){var border=BattleObstacleArt.HomeBorder(side,board);Check(!board.Intersects(border),"Retreat border is outside the board");}
+                battle=new BattleState(1){TargetNode=node.Id,Defender=1,Kind=BattleKind.Node};battle.BuildTerrain(BattleTerrain.Fort);
+                battle.AddArmy(0,node.Id,new[]{world.Robots.Create(0,RobotParts.Complete)},true);battle.AddArmy(1,node.Id,new[]{world.Robots.Create(1,RobotParts.Complete)},true);battle.Deploy();battle.Capture(BattlePhase.Place);
+                world.Campaign.RobotBattles.Scenes.Clear();world.Campaign.RobotBattles.Scenes.Add(battle);Call("OpenBattle");Set("_robotPlaying",false);
+            }
+            if(frame==26){Console.WriteLine("PASS: node transport personal plans on enemy territory, factory access, terrain artwork/retreat borders and robot/map/battle UI.");Exit();}
         }
         catch(Exception e){Console.Error.WriteLine(e);Environment.ExitCode=1;Exit();}
     }
@@ -266,7 +283,14 @@ sealed class RobotUiCheck:Game1
     {
         try
         {
-            base.Draw(time);var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);
+            base.Draw(time);
+            if(frame==25)
+            {
+                var batch=(SpriteBatch)Get("_spriteBatch");batch.Begin();int index=0;
+                foreach(var style in Enum.GetValues<BattleObstacleStyle>())BattleObstacleArt.Draw((UiPainter)Get("_ui"),new Rectangle(1000+index++*100,650,66,66),style);
+                batch.End();
+            }
+            var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);
             using var texture=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);texture.SetData(pixels);
             using var output=File.Create(Path.Combine(AppContext.BaseDirectory,$"robot-ui-{frame}.png"));texture.SaveAsPng(output,texture.Width,texture.Height);frame++;
         }

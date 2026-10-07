@@ -53,7 +53,7 @@ public sealed class RobotCampaign
         {world.Robots.Nodes[reserve.Node].Add(reserve.Robot);Reserves.Remove(reserve);}
         // One global update: disposal, queued assembly/splits, simultaneous transport, shipment.
         world.Robots.Advance((a,b)=>!LockedEdge(a,b) && world.Routes.Neighbors(world.Nodes.All[a]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==b),
-            n=>world.Nodes.All[n].Owner,world.PlacementSeed^world.Population.Turn^0x61238,LockedNode);
+            n=>world.Nodes.All[n].Owner,world.PlacementSeed^world.Population.Turn^0x61238,LockedNode,(owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner));
         world.Population.Advance(world);
         var source=orders.ToDictionary(o=>o.Ruler,o=>world.Nodes.Current(o.Ruler).Id);
         var troops=new Dictionary<int,List<Robot>>();

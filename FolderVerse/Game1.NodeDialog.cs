@@ -12,6 +12,8 @@ public partial class Game1
     {
         if(PopulationTurnButton.Contains(pointer)){_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);OpenBattle();return true;}
         if(_populationCell<0)return false;
+        if(_nodeTransportOpen)return NodeTransportClick(pointer);
+        if(NodeTransportTile.Contains(pointer)){OpenNodeTransport();return true;}
         if(_nodeFactoryOpen)return NodeFactoryClick(pointer);
         if(NodeFactoryTile.Contains(pointer)){OpenNodeFactory();return true;}
         if(new Rectangle(803,169,58,44).Contains(pointer)){_populationCell=-1;return true;}
@@ -19,6 +21,7 @@ public partial class Game1
     }
     private void DrawNodeDialog()
     {
+        if(_nodeTransportOpen){DrawNodeTransport();return;}
         if(_nodeFactoryOpen){DrawNodeFactory();return;}
         var post=_setup.Nodes.All[_populationNode];var store=_setup.Robots.Nodes[post.Id];
         _ui.Box(new(64,162,850,825),new Color(3,13,20)*.8f);
@@ -36,7 +39,7 @@ public partial class Game1
             _ui.Center(PartsLabel(robot.Parts)+$" / #{robot.Owner+1}",new(card.X,card.Y+112,card.Width,30),.48f,Cream);
             _ui.Center("ID "+robot.Id,new(card.X,card.Y+148,card.Width,24),.35f,Cream);
         }
-        DrawNodeFactoryTile(false);
-        if(store.Count==0)_ui.Text("この節点にロボットはいません",new(360,908),.43f,Cream);
+        DrawNodeFactoryTile(false);DrawNodeTransportTile();
+        if(store.Count==0)_ui.Text("この節点にロボットはいません",new(592,908),.30f,Cream);
     }
 }

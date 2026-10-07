@@ -80,6 +80,8 @@ public partial class Game1
         _ui.Button(RobotBattlePrevious,"前の戦場",Muted,.5f);_ui.Button(RobotBattleNext,"次の戦場",Muted,.5f);
         _ui.Center($"{(battle.SplitBoard?"分割野戦":battle.Kind==BattleKind.Edge?"辺戦":"節戦")} / Node {battle.TargetNode+1} / {battle.Terrain} / 戦闘ターン {frame.Turn} / {PhaseLabel(frame.Phase)}",new(224,108,1450,48),.6f,Cream);
         const int left=100,top=232,size=68;
+        var terrainNode=_setup.Nodes.All[battle.TargetNode];var terrainCell=_setup.Cells[terrainNode.Cell];
+        float terrainHeight=WorldTerrain.Elevation(_setup.Routes.Position(terrainNode.Cell,terrainNode.Center),WorldTerrain.Offset(_setup.WorldSeed));
         for(int y=0;y<10;y++)for(int x=0;x<10;x++)
         {
             var r=new Rectangle(left+x*size,top+y*size,size-2,size-2);bool wall=battle.Walls.Contains(new(x,y));
@@ -88,14 +90,20 @@ public partial class Game1
                 // Sea obstacles are water; the walkable outer areas are decks and the central cross is a bridge.
                 bool bridge=x is 4 or 5 || y is 4 or 5;
                 _ui.Box(r,wall?new Color(28,69,101):bridge?new Color(162,121,73):new Color(107,79,55));
-                if(wall)_ui.Box(new(r.X+14,r.Y+30,36,3),new Color(65,125,155));
+                if(wall)BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(true,bridge,terrainHeight,terrainCell.Normal.Y));
                 else _ui.Box(new(r.X+4,r.Y+size-14,size-10,2),new Color(194,151,96));
             }
             else
             {
-                _ui.Box(r,wall?new Color(80,92,106):new Color(35,64,58));
-                if(wall)_ui.Center("壁",r,.4f,Cream);
+                _ui.Box(r,Math.Abs(terrainCell.Normal.Y)>.5f?new Color(161,192,203):terrainHeight<.55f?new Color(163,137,91):new Color(35,64,58));
+                if(wall)BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(false,false,terrainHeight,terrainCell.Normal.Y));
             }
+        }
+        foreach(var army in battle.Armies)
+        {
+            var border=BattleObstacleArt.HomeBorder(army.Side,new Rectangle(left,top,size*10,size*10));
+            _ui.Box(border,_setup.OwnerColor(army.Owner));
+            _ui.Center($"#{army.Owner+1} 退却",army.Side is 0 or 2?new Rectangle(border.X,border.Y+(army.Side==0?-52:10),border.Width,24):new Rectangle(army.Side==3?left-85:left+size*10+12,top+300,70,30),.32f,_setup.OwnerColor(army.Owner));
         }
         for(int i=0;i<10;i++)
         {_ui.Text(i.ToString(),new(left+i*size+25,top-32),.45f,Cream);_ui.Text(((char)('A'+i)).ToString(),new(left-30,top+i*size+18),.45f,Cream);}

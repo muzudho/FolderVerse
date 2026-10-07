@@ -73,6 +73,7 @@ public partial class Game1 : Game
     private void LogImeState(string stage)=>_operations.Write("ime_state",new{stage,state=WindowsImeDiagnostics.ReadForeground(),visualStudio=WindowsImeDiagnostics.ReadVisualStudio()});
     protected override void LoadContent()
     {
+        _robotTransportIcon=Content.Load<Texture2D>("Images/robot-transport-icon");
         _robotFactoryIcon=Content.Load<Texture2D>("Images/robot-factory-icon");
         _spriteBatch=new SpriteBatch(GraphicsDevice); _titleScreen=Content.Load<Texture2D>("Images/title-screen");
         _titleLogo=Content.Load<Texture2D>("Images/title-logo");
@@ -174,6 +175,7 @@ public partial class Game1 : Game
         else if(escape)
         {
             if(IsStatusScreen && _movementOpen)CloseMovement();
+            else if(IsStatusScreen && _populationCell>=0 && _nodeTransportOpen)_nodeTransportOpen=false;
             else if(IsStatusScreen && _populationCell>=0 && _nodeFactoryOpen)_nodeFactoryOpen=false;
             else if(IsStatusScreen && _populationCell>=0)_populationCell=-1;
             else if(_screen==Screen.Title)Exit(); else { _screen=Screen.Title; _dragging=false; }
@@ -220,7 +222,7 @@ public partial class Game1 : Game
             {
                 var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);var post=_setup.Nodes.At(_statusCell,point);
                 if(post!=null)
-                {_populationCell=_statusCell;_populationNode=post.Id;_nodeFactoryOpen=false;_movementOpen=false;}
+                {_populationCell=_statusCell;_populationNode=post.Id;_nodeFactoryOpen=false;_nodeTransportOpen=false;_movementOpen=false;}
             }
             if(active)
             {

@@ -53,3 +53,9 @@ for(int seed=0;seed<100;seed++)
     Check(Parts(world)==beforeParts && world.Nodes.All(s=>s.Count<=12),"Random partial transport conserves every owner's parts");world.Check();
 }
 Console.WriteLine("PASS: robot parts, capacity, assembly, split, factories, full exchange, receiving priorities, partial rollback, cascades and lower transport plans.");
+
+world=World();var planned=Add(world,0);world.Transport.SetPlan(0,0,RobotParts.Complete,new[]{new TransportWeight(1,20)});
+world.Advance((x,y)=>true,n=>n==1?1:0,44,null,(owner,target)=>target!=1);
+Check(world.Nodes[0].Robots.Any(r=>r.Id==planned.Id) && world.Nodes[1].Count==0 && world.Transport.Plan(0,0,RobotParts.Complete).Single().Twentieths==20,"Hostile destination holds robot and preserves future plan");
+world.Advance((x,y)=>true,n=>0,45,null,(owner,target)=>true);
+Check(world.Nodes[1].Robots.Any(r=>r.Id==planned.Id),"Saved plan executes when territory opens");

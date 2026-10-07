@@ -20,7 +20,7 @@ public partial class Game1
     {
         if(!CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;
         _factoryPart=_setup.Robots.Workshops[_populationNode].Product;
-        _factoryMessage="";_nodeFactoryOpen=true;
+        _factoryMessage="";_nodeTransportOpen=false;_nodeFactoryOpen=true;
     }
     private bool NodeFactoryClick(Point pointer)
     {
@@ -65,7 +65,7 @@ public partial class Game1
         _ui.Button(new(84,655,180,58),"工期−",Muted,.6f);_ui.Button(new(282,655,180,58),"工期＋",Muted,.6f);
         _ui.Text($"製造中：{PartsLabel(workshop.Product)} / {(!workshop.Manufacturing?"未設定":workshop.Waiting?"満杯待ち":workshop.Paused?"停止":"進行中")}",new(84,745),.55f,Cream);
         _ui.Text(_factoryMessage,new(84,813),.43f,Cream);
-        DrawNodeFactoryTile(true);
-        _ui.Text("× / Esc で節点へ戻る",new(360,908),.43f,Cream);
+        DrawNodeFactoryTile(true);DrawNodeTransportTile();
+        _ui.Text("× / Esc で節点へ戻る",new(592,908),.30f,Cream);
     }
 }
