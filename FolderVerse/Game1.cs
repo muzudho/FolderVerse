@@ -192,6 +192,16 @@ public partial class Game1 : Game
             if(_statusGlobe)
             {
                 _statusCell=-1;
+                if(active && NetPanel.Contains(_pointer))
+                {
+                    int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
+                    if(wheel!=0)
+                    {
+                        int selected=_movementOpen && _selectedMoveNode>=0?_selectedMoveNode:_globeSelectedNode;
+                        _world.GlobeAnchor=selected>=0?_setup.Routes.Position(_setup.Nodes.All[selected].Cell,_setup.Nodes.All[selected].Center):null;
+                        _world.GlobeZoom=MathHelper.Clamp(_world.GlobeZoom*MathF.Pow(1.2f,wheel/120f),.5f,16);
+                    }
+                }
                 bool action=click && (RouteLayerClick(_pointer) || MovementClick(_pointer,keyboard) || NodeDialogClick(_pointer,keyboard));
                 if(!action && click && NetButton(0).Contains(_pointer))_yaw-=MathHelper.PiOver4;
                 else if(click && NetButton(1).Contains(_pointer))_yaw+=MathHelper.PiOver4;
@@ -470,15 +480,18 @@ public partial class Game1 : Game
             var viewport=GraphicsDevice.Viewport;
             var areas=OrientationAreas(NetPanel,false);
             GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
-            _world.Draw(_yaw,_pitch,_animationTime,false);
+            _world.Draw(_yaw,_pitch,_animationTime,false,true);
+            _world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe);
             GraphicsDevice.Viewport=OrientationViewport(areas.Toy,canvas);
             _orientationToy.Draw(_yaw,_pitch);
             GraphicsDevice.Viewport=viewport;
-            _spriteBatch.Begin(transformMatrix:transform);
+            using var globeClip=new RasterizerState{ScissorTestEnable=true};
+            GraphicsDevice.ScissorRectangle=new(canvas.X+(int)(areas.Globe.X*canvas.Width/1920f),canvas.Y+(int)(areas.Globe.Y*canvas.Height/1080f),(int)(areas.Globe.Width*canvas.Width/1920f),(int)(areas.Globe.Height*canvas.Height/1080f));
+            _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
             _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
-            DrawGlobeCellHover();
-            DrawOrientationLegend(areas.Toy,areas.Legend,"方向のロボット");
-            DrawStatusGlobeCoordinates();_spriteBatch.End();
+            DrawGlobeCellHover();DrawStatusGlobeCoordinates();_spriteBatch.End();
+            _spriteBatch.Begin(transformMatrix:transform);
+            DrawOrientationLegend(areas.Toy,areas.Legend,"方向のロボット");_spriteBatch.End();
         }
         else using(var clipping=new RasterizerState{ScissorTestEnable=true})
         {
@@ -488,7 +501,7 @@ public partial class Game1 : Game
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
-        _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"左ドラッグ：回転 / ロボット数は節点の上に表示":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
+        _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"左ドラッグ：回転 / ホイール：拡縮 / 節点を選ぶと中心固定":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
         _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
         _ui.Button(NetButton(2),"現在地へ移動",Accent,0.45f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
         const string resetLabel="頭を上へ、腹を手前へ";

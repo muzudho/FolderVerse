@@ -16,6 +16,7 @@ sealed class GlobeCheck:Game1
     protected override void LoadContent()
     {
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
+        Check((bool)Get("_statusGlobe") && ((CubeNet)Get("_net")).ShowRoutes,"Default globe and traffic");Set("_statusGlobe",false);((CubeNet)Get("_net")).ShowRoutes=false;
         setup=(WorldSetup)Get("_setup");setup.SetWorld(0);setup.SetCast(123);setup.SetPlacement(456);setup.SelectPlayer(0);
         globe=(WorldPreview)Get("_world");globe.ShowSetup(setup,true);((CubeNet)Get("_net")).Home(setup);
         Set("_screen",Enum.Parse(typeof(Game1).GetField("_screen",Flags)!.FieldType,"WorldStatus"));
@@ -127,7 +128,11 @@ sealed class GlobeCheck:Game1
                     Check(globe.ProjectVisible(cell.Center,cell.Normal,cellYaw,cellPitch,clickArea,out var at),"Test cell not visible");
                     var hit=(int)typeof(Game1).GetMethod("HitGlobeCell",Flags)!.Invoke(this,new object[]{at.ToPoint()})!;
                     Check(hit==cell.Id,"Globe cell hit mismatch");
-                    Click(at.ToPoint());var clickedNet=(CubeNet)Get("_net");
+                    Set("_movementOpen",false);
+                    // Cell opening is tested away from node hit areas.
+                    var clickPoint=at.ToPoint();
+                    var candidate=cell.Center+cell.U*.22f+cell.V*.22f;globe.ProjectVisible(candidate,cell.Normal,cellYaw,cellPitch,clickArea,out var cellPoint);
+                    Click(cellPoint.ToPoint());var clickedNet=(CubeNet)Get("_net");
                     Check(!(bool)Get("_statusGlobe") && clickedNet.CenterFace==faceId,"Cell click did not open centered net");
                     Check((float)Get("_yaw")==cellYaw && (float)Get("_pitch")==cellPitch,"Globe orientation was lost");
                     var fit=clickedNet.Fit(new(1040,240,790,580));

@@ -7,7 +7,8 @@ using Microsoft.Xna.Framework.Input;
 
 public partial class Game1
 {
-    private bool _statusGlobe;
+    private bool _statusGlobe=true;
+    private int _globeSelectedNode=-1;
     private int _globePressedCell=-1;
     private Point _globePressPoint;
     private bool _globeCellDragged;
@@ -58,6 +59,9 @@ public partial class Game1
         if(Vector2.DistanceSquared(new(_pointer.X,_pointer.Y),new(_globePressPoint.X,_globePressPoint.Y))>36)_globeCellDragged=true;
         if(mouse.LeftButton!=ButtonState.Released)return;
         int selected=_globePressedCell;_globePressedCell=-1;
+        int selectedNode=HitGlobeNode(_pointer);
+        if(!_globeCellDragged && selectedNode>=0)
+        {_globeSelectedNode=selectedNode;var node=_setup.Nodes.All[selectedNode];_populationCell=node.Cell;_populationNode=node.Id;_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=_nodeAssemblyOpen=false;return;}
         if(_globeCellDragged)return;
         var cell=_setup.Cells[selected];
         _dragging=_mapDragging=false;
@@ -88,6 +92,8 @@ public partial class Game1
     private int HitGlobeNode(Point pointer,IEnumerable<int> candidates=null)
     {
         if(!StatusGlobeArea.Contains(pointer))return -1;
+        int badge=_net.HitRobotBadge(pointer);
+        if(badge>=0 && (candidates==null || candidates.Contains(badge)))return badge;
         int nearest=-1;float distance=float.PositiveInfinity;
         foreach(var node in (candidates??_setup.Nodes.All.Select(n=>n.Id)).Select(id=>_setup.Nodes.All[id]))
         {
@@ -101,6 +107,8 @@ public partial class Game1
     }
     private void FocusStatusGlobe()
     {
+        _globeSelectedNode=_setup.Nodes.Current(_setup.PlayerSlot)?.Id??-1;
+        _world.GlobeAnchor=null;
         var point=CurrentMapPosition();
         _pitch=MathF.Atan2(point.Y,point.Z);
         if(_pitch>MathHelper.PiOver2)_pitch-=MathHelper.Pi;

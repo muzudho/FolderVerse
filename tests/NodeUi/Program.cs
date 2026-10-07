@@ -21,6 +21,7 @@ sealed class NodeUiCheck:Game1
     protected override void LoadContent()
     {
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
+        Check((bool)Get("_statusGlobe") && ((CubeNet)Get("_net")).ShowRoutes,"Default globe and traffic");Set("_statusGlobe",false);((CubeNet)Get("_net")).ShowRoutes=false;
         world=(WorldSetup)Get("_setup");net=(CubeNet)Get("_net");Node source=null;
         world.Campaign.UseRobotCombat=false; // Keep the legacy immediate-movement UI regression fixture.
         for(int seed=0;seed<64 && source==null;seed++)

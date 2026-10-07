@@ -17,6 +17,7 @@ sealed class RobotUiCheck:Game1
     protected override void LoadContent()
     {
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
+        Check((bool)Get("_statusGlobe") && ((CubeNet)Get("_net")).ShowRoutes,"Default globe and traffic");Set("_statusGlobe",false);((CubeNet)Get("_net")).ShowRoutes=false;
         world=(WorldSetup)Get("_setup");world.SetWorld(0);world.SetCast(123);world.SetPlacement(456);world.SelectPlayer(0);node=world.Nodes.Current(0);
         var font=(SpriteFont)Get("_font");Check("頭胴脚製造廃棄満杯工期分割野戦説得転倒継戦増援組立輸送失敗剣を振り上げた".All(font.Characters.Contains),"New robot/battle font coverage");
         world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);
@@ -371,7 +372,31 @@ sealed class RobotUiCheck:Game1
             {
                 Check((float)Get("_mapTransitionAge")<0 && (bool)Get("_statusGlobe") && world.Population.Turn==0,"Assembly restores globe without advancing world");
                 Check((float)Get("_yaw")==.55f && (float)Get("_pitch")==.3f,"Assembly retains original globe orientation");
-                Console.WriteLine("PASS: five-hinge unfold/assembly, input blocking, resized animation and robot/node/map/battle UI.");Exit();
+                var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=1920;graphics.PreferredBackBufferHeight=1080;graphics.ApplyChanges();
+                Set("_populationCell",-1);Call("FocusStatusGlobe");
+                world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);
+                for(int i=0;i<12;i++)world.Robots.Nodes[node.Id].Add(world.Robots.Create(0,(RobotParts)(i%7+1)));
+                var selectedGlobe=(WorldPreview)Get("_world");
+                var selectedPanel=(Rectangle)typeof(Game1).GetProperty("StatusGlobeArea",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+                selectedGlobe.ProjectVisible(world.Routes.Position(node.Cell,node.Center),world.Cells[node.Cell].Normal,(float)Get("_yaw"),(float)Get("_pitch"),selectedPanel,out var selectedAt);
+                HangarMouse((int)selectedAt.X,(int)selectedAt.Y,Microsoft.Xna.Framework.Input.ButtonState.Pressed);HangarMouse((int)selectedAt.X,(int)selectedAt.Y,Microsoft.Xna.Framework.Input.ButtonState.Released);
+                Check((int)Get("_globeSelectedNode")==node.Id && (int)Get("_populationNode")==node.Id,"Globe node click selects and opens node dialog");
+                Set("_populationCell",-1);
+                Call("HandleInput",new Microsoft.Xna.Framework.Input.MouseState(1400,500,120,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released),new Microsoft.Xna.Framework.Input.KeyboardState(),new GameTime(),true);
+                Check(((WorldPreview)Get("_world")).GlobeZoom>1,"Globe wheel increases zoom");
+                var globe=(WorldPreview)Get("_world");var position=world.Routes.Position(node.Cell,node.Center);
+                var panel=(Rectangle)typeof(Game1).GetProperty("StatusGlobeArea",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+                globe.ProjectVisible(position,world.Cells[node.Cell].Normal,(float)Get("_yaw"),(float)Get("_pitch"),panel,out var at);
+                Check(Vector2.Distance(at,new Vector2(panel.Center.X,panel.Center.Y))<1,"Selected node anchors globe zoom at view center");
+                globe.GlobeZoom=4;
+            }
+            if(frame==46)
+            {
+                Check(((CubeNet)Get("_net")).RobotBadges.Any(b=>b.Node==node.Id),"Three-dimensional dozen pins have clickable projected bounds");
+                var globe=(WorldPreview)Get("_world");
+                Call("HandleInput",new Microsoft.Xna.Framework.Input.MouseState(1400,500,0,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released),new Microsoft.Xna.Framework.Input.KeyboardState(),new GameTime(),true);
+                Check(globe.GlobeZoom<4 && globe.GlobeAnchor.HasValue,"Globe zoom out retains selected anchor");
+                Console.WriteLine("PASS: default globe/traffic, 3D pins, selected-node wheel zoom, unfold/assembly and robot/node/map/battle UI.");Exit();
             }
         }
         catch(Exception e){Console.Error.WriteLine(e);Environment.ExitCode=1;Exit();}

@@ -18,6 +18,7 @@ sealed class OperationCheck:Game1
     protected override void LoadContent()
     {
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
+        Check((bool)Get("_statusGlobe") && ((CubeNet)Get("_net")).ShowRoutes,"Default globe and traffic");Set("_statusGlobe",false);((CubeNet)Get("_net")).ShowRoutes=false;
         // Logging before player selection must be safe, including Title and Setup.
         Input(new(0,0),ButtonState.Released);
         var setup=(WorldSetup)Get("_setup");setup.SetWorld(0);setup.SetCast(123);setup.SetPlacement(456);

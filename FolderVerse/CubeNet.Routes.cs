@@ -8,7 +8,7 @@ public sealed partial class CubeNet
 {
     public bool ShowFlags {get;set;}=true;
     public bool ShowBatteries {get;set;}=true;
-    public bool ShowRoutes {get;set;}
+    public bool ShowRoutes {get;set;}=true;
     public HashSet<int> MovementTargets {get;}=new();
     public int SelectedTarget {get;set;}=-1;
     public Vector2 NodePosition(WorldSetup world,Node node,Rectangle panel)

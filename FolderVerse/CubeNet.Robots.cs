@@ -9,6 +9,8 @@ public sealed partial class CubeNet
 {
     private readonly List<RobotMapBadge> _robotBadges=new();
     public IReadOnlyList<RobotMapBadge> RobotBadges=>_robotBadges;
+    public void ClearGlobeRobotBadges()=>_robotBadges.Clear();
+    public void AddGlobeRobotBadge(int node,Rectangle bounds)=>_robotBadges.Add(new(node,bounds,false));
     public int HitRobotBadge(Point pointer)=>_robotBadges.Where(b=>b.Bounds.Contains(pointer)).Select(b=>b.Node).DefaultIfEmpty(-1).First();
     public const float RobotDetailScale=400;
     // Alternating rows of 2, 3, 2, 3, 2 pins, as in the compact dozen arrangement.

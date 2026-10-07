@@ -82,7 +82,7 @@ public partial class Game1
         float radius=new Vector3(_setup.Width,_setup.Height,_setup.Depth).Length()*.5f+.4f;
         var area=StatusGlobeArea;var fit=_net.Fit(NetPanel);
         var view=Matrix.CreateLookAt(new(0,0,radius*3.3f),Vector3.Zero,Vector3.Up);
-        var projection=Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(42),area.Width/(float)area.Height,.1f,100);
+        var projection=Matrix.CreatePerspectiveFieldOfView(2*MathF.Atan(MathF.Tan(MathHelper.ToRadians(21))/_world.GlobeZoom),area.Width/(float)area.Height,.1f,100);
         var viewport=new Viewport(area);
         Vector3 Shape(int index,Vector3 point)
         {
@@ -94,7 +94,9 @@ public partial class Game1
         float scale=extent>0?Math.Min(fit.Scale,1/extent):fit.Scale;
         Vector3 Project(int index,Vector3 point)
         {
-            var shaped=Shape(index,point);var perspective=viewport.Project(shaped,projection,view,Matrix.Identity);
+            var shaped=Shape(index,point);
+            var anchor=Vector3.Transform(_world.GlobeAnchor??Vector3.Zero,WorldPreview.Orientation(_yaw,_pitch));
+            var perspective=viewport.Project(shaped-new Vector3(anchor.X,anchor.Y,0)*(1-align),projection,view,Matrix.Identity);
             var flat=faces[index].Project(point)*fit.Scale+fit.Origin;
             var fitted=new Vector2(NetPanel.Center.X+shaped.X*scale,NetPanel.Center.Y-shaped.Y*scale);
             var screen=Vector2.Lerp(new(perspective.X,perspective.Y),fitted,Ease(unfold*6));

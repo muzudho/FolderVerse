@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-public sealed class WorldPreview : IDisposable
+public sealed partial class WorldPreview : IDisposable
 {
     private readonly GraphicsDevice _device;
     private readonly BasicEffect _effect;
@@ -134,15 +134,15 @@ public sealed class WorldPreview : IDisposable
         }
     }
 
-    public void Draw(float yaw, float pitch,float glow=0,bool markers=true)
+    public void Draw(float yaw, float pitch,float glow=0,bool markers=true,bool globeView=false)
     {
         _device.BlendState = BlendState.Opaque;
         _device.DepthStencilState = DepthStencilState.Default;
         _device.RasterizerState = RasterizerState.CullNone;
-        _effect.World = Orientation(yaw,pitch);
+        _effect.World = globeView?GlobeOrientation(yaw,pitch):Orientation(yaw,pitch);
         float radius = new Vector3(Width, Height, Depth).Length() * 0.5f + (_markers == null ? 0 : 0.4f);
         _effect.View = Matrix.CreateLookAt(new Vector3(0, 0, radius * 3.3f), Vector3.Zero, Vector3.Up);
-        _effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(42), _device.Viewport.AspectRatio, 0.1f, 100);
+        _effect.Projection = Matrix.CreatePerspectiveFieldOfView(globeView?GlobeFieldOfView:MathHelper.ToRadians(42), _device.Viewport.AspectRatio, 0.1f, 100);
         _device.SetVertexBuffer(_vertices);
         foreach (var pass in _effect.CurrentTechnique.Passes)
         {
@@ -166,13 +166,13 @@ public sealed class WorldPreview : IDisposable
     }
     public bool ProjectVisible(Vector3 point,Vector3 normal,float yaw,float pitch,Rectangle area,out Vector2 screen,float normalOffset=0)
     {
-        var orientation=Orientation(yaw,pitch);
+        var orientation=GlobeOrientation(yaw,pitch);
         float radius=new Vector3(Width,Height,Depth).Length()*.5f+(_markers==null?0:.4f);
         var camera=new Vector3(0,0,radius*3.3f);
         var transformed=Vector3.Transform(point,orientation);
         var facing=Vector3.TransformNormal(normal,orientation);
         var view=Matrix.CreateLookAt(camera,Vector3.Zero,Vector3.Up);
-        var projection=Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(42),area.Width/(float)area.Height,.1f,100);
+        var projection=Matrix.CreatePerspectiveFieldOfView(GlobeFieldOfView,area.Width/(float)area.Height,.1f,100);
         var viewport=new Viewport(area);var projected=viewport.Project(point+normal*normalOffset,projection,view,orientation);
         screen=new(projected.X,projected.Y);
         return Vector3.Dot(facing,camera-transformed)>0 && projected.Z>=0 && projected.Z<=1;
