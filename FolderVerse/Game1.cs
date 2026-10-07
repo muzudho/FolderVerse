@@ -73,6 +73,7 @@ public partial class Game1 : Game
     private void LogImeState(string stage)=>_operations.Write("ime_state",new{stage,state=WindowsImeDiagnostics.ReadForeground(),visualStudio=WindowsImeDiagnostics.ReadVisualStudio()});
     protected override void LoadContent()
     {
+        _robotAssemblyIcon=Content.Load<Texture2D>("Images/robot-assembly-icon");
         _robotDisposalIcon=Content.Load<Texture2D>("Images/robot-disposal-icon");
         _robotTransportIcon=Content.Load<Texture2D>("Images/robot-transport-icon");
         _robotFactoryIcon=Content.Load<Texture2D>("Images/robot-factory-icon");
@@ -125,6 +126,8 @@ public partial class Game1 : Game
         bool captureChord=keyboard.IsKeyDown(Keys.P) && (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
         if(active && captureChord && !previousChord)_screenshots.Request();
+        if(IsStatusScreen && _populationCell>=0 && _nodeAssemblyOpen)
+        {if(active)NodeAssemblyInput(mouse,click,escape);else _hangarDrag=null;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Pocket)
         {if(active)PocketInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Robots)
@@ -224,7 +227,7 @@ public partial class Game1 : Game
             {
                 var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);var post=_setup.Nodes.At(_statusCell,point);
                 if(post!=null)
-                {_populationCell=_statusCell;_populationNode=post.Id;_nodeFactoryOpen=false;_nodeTransportOpen=false;_nodeDisposalOpen=false;_movementOpen=false;}
+                {_populationCell=_statusCell;_populationNode=post.Id;_nodeFactoryOpen=false;_nodeTransportOpen=false;_nodeDisposalOpen=false;_nodeAssemblyOpen=false;_movementOpen=false;}
             }
             if(active)
             {

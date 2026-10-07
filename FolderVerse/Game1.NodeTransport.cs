@@ -12,9 +12,9 @@ public partial class Game1
     private int _nodeTransportPage;
     private bool _nodeTransportDisposal;
     private string _nodeTransportMessage="";
-    private static readonly Rectangle NodeTransportTile=new(336,875,240,84);
+    private static readonly Rectangle NodeTransportTile=new(280,875,182,84);
     private void OpenNodeTransport()
-    {_nodeDisposalOpen=false;_nodeFactoryOpen=false;_nodeTransportOpen=true;_nodeTransportPage=0;_nodeTransportMessage="";}
+    {_nodeAssemblyOpen=false;_nodeDisposalOpen=false;_nodeFactoryOpen=false;_nodeTransportOpen=true;_nodeTransportPage=0;_nodeTransportMessage="";}
     private bool NodeTransportClick(Point pointer)
     {
         if(new Rectangle(803,169,58,44).Contains(pointer) || NodeTransportTile.Contains(pointer)){_nodeTransportOpen=false;return true;}
@@ -44,8 +44,8 @@ public partial class Game1
     private void DrawNodeTransportTile()
     {
         _ui.Box(NodeTransportTile,_nodeTransportOpen || NodeTransportTile.Contains(_pointer)?Accent:Muted);
-        _spriteBatch.Draw(_robotTransportIcon,new Rectangle(346,883,68,68),Color.White);
-        _ui.Center("ロボット輸送計画",new(418,885,150,60),.32f,Cream);
+        _spriteBatch.Draw(_robotTransportIcon,new Rectangle(290,891,52,52),Color.White);
+        _ui.Center("ロボット輸送計画",new(344,885,112,60),.24f,Cream);
         if(_nodeTransportOpen)_ui.Box(new(NodeTransportTile.X,NodeTransportTile.Y,NodeTransportTile.Width,4),Cream);
     }
     private void DrawNodeTransport()
@@ -73,6 +73,6 @@ public partial class Game1
         }
         _ui.Text(_nodeTransportMessage,new(84,810),.38f,Cream);
         _ui.Button(new(630,810,100,40),"←",Muted,.5f);_ui.Button(new(744,810,100,40),"→",Muted,.5f);
-        DrawNodeFactoryTile(false);DrawNodeTransportTile();DrawNodeDisposalTile();
+        DrawNodeFactoryTile(false);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
     }
 }

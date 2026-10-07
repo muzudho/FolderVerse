@@ -12,9 +12,11 @@ public partial class Game1
     {
         if(PopulationTurnButton.Contains(pointer)){_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);OpenBattle();return true;}
         if(_populationCell<0)return false;
+        if(NodeAssemblyTile.Contains(pointer)){if(_nodeAssemblyOpen)_nodeAssemblyOpen=false;else OpenNodeAssembly();return true;}
         if(NodeDisposalTile.Contains(pointer)){if(_nodeDisposalOpen)_nodeDisposalOpen=false;else OpenNodeDisposal();return true;}
         if(NodeTransportTile.Contains(pointer)){if(_nodeTransportOpen)_nodeTransportOpen=false;else OpenNodeTransport();return true;}
         if(NodeFactoryTile.Contains(pointer)){if(_nodeFactoryOpen)_nodeFactoryOpen=false;else OpenNodeFactory();return true;}
+        if(_nodeAssemblyOpen){if(new Rectangle(803,169,58,44).Contains(pointer))_nodeAssemblyOpen=false;return new Rectangle(54,150,850,825).Contains(pointer);}
         if(_nodeDisposalOpen)return NodeDisposalClick(pointer);
         if(_nodeTransportOpen)return NodeTransportClick(pointer);
         if(_nodeFactoryOpen)return NodeFactoryClick(pointer);
@@ -26,6 +28,7 @@ public partial class Game1
     }
     private void DrawNodeDialog()
     {
+        if(_nodeAssemblyOpen){DrawNodeAssembly();return;}
         if(_nodeDisposalOpen){DrawNodeDisposal();return;}
         if(_nodeTransportOpen){DrawNodeTransport();return;}
         if(_nodeFactoryOpen){DrawNodeFactory();return;}
@@ -46,7 +49,7 @@ public partial class Game1
             _ui.Center("ID "+robot.Id,new(card.X,card.Y+148,90,24),.35f,Cream);
             DrawDisposalCheck(card,robot);
         }
-        DrawNodeFactoryTile(false);DrawNodeTransportTile();DrawNodeDisposalTile();
+        DrawNodeFactoryTile(false);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
         if(store.Count==0)_ui.Text("この節点にロボットはいません",new(84,842),.25f,Cream);
     }
 }

@@ -34,7 +34,7 @@ public sealed class RobotStore
         _robots.Clear();_robots.AddRange(next);
     }
 }
-public sealed class RobotWorld
+public sealed partial class RobotWorld
 {
     private long _nextId=1;
     public RobotStore[] Nodes {get;private set;}=Array.Empty<RobotStore>();

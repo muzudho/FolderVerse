@@ -38,7 +38,7 @@ public sealed class RobotTransport
                 var queue=new Queue<RobotShipment>();
                 for(int mask=7;mask>=1;mask--)
                 {
-                    if(((int)robot.Parts&mask)!=mask)continue;
+                    if(((int)robot.Parts&mask)!=mask || world.Workshops[node].AutoAssemblyDisabled && (RobotParts)mask!=robot.Parts)continue;
                     var plan=Plan(node,robot.Owner,(RobotParts)mask).Select(w=>(Weight:w,Disposal:false))
                         .Concat(Plan(node,robot.Owner,(RobotParts)mask,true).Select(w=>(Weight:w,Disposal:true))).ToArray();
                     if(plan.Length==0){if(_plans.ContainsKey((node,robot.Owner,(RobotParts)mask,false)) || _plans.ContainsKey((node,robot.Owner,(RobotParts)mask,true)))break;continue;}
@@ -71,7 +71,7 @@ public sealed class RobotTransport
         {
             if(s.Source<0 || s.Source>=world.Nodes.Length || s.Target<0 || s.Target>=world.Nodes.Length || !connected(s.Source,s.Target) || s.Source==s.Target)throw new ArgumentException("Invalid transport route.");
             var robot=world.Nodes[s.Source].Robots.Single(r=>r.Id==s.RobotId);RobotWorld.Validate(robot.Owner,s.Parts);
-            if((robot.Parts&s.Parts)!=s.Parts || world.Workshops[s.Source].DisposalTarget==robot.Id)throw new ArgumentException("Unavailable parts.");
+            if((robot.Parts&s.Parts)!=s.Parts || world.Workshops[s.Source].DisposalTarget==robot.Id || world.Workshops[s.Source].AutoAssemblyDisabled && s.Parts!=robot.Parts)throw new ArgumentException("Unavailable parts.");
         }
         Commit(world,Select(world,orders));
     }
@@ -98,7 +98,7 @@ public sealed class RobotTransport
         foreach(var s in Ordered(active))
         {
             var robot=cargo[s.RobotId];var target=stores[s.Target];
-            var partner=target.Where(r=>!robot.Disposal && r.Id!=world.Workshops[s.Target].DisposalTarget && r.Owner==robot.Owner && r.Disposal==robot.Disposal && (r.Parts&robot.Parts)==0).OrderBy(r=>r.Id).FirstOrDefault();
+            var partner=target.Where(r=>!world.Workshops[s.Target].AutoAssemblyDisabled && !robot.Disposal && r.Id!=world.Workshops[s.Target].DisposalTarget && r.Owner==robot.Owner && r.Disposal==robot.Disposal && (r.Parts&robot.Parts)==0).OrderBy(r=>r.Id).FirstOrDefault();
             if(partner==null)target.Add(robot);
             else{target.Remove(partner);target.Add(partner with {Parts=partner.Parts|robot.Parts,Role=partner.Role==RobotRole.Captain || robot.Role==RobotRole.Captain?RobotRole.Captain:RobotRole.Soldier});}
         }

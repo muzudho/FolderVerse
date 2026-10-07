@@ -11,6 +11,8 @@ sealed class RobotUiCheck:Game1
     void Set(string name,object value)=>typeof(Game1).GetField(name,Flags)!.SetValue(this,value);
     void Call(string name,params object[] args)=>typeof(Game1).GetMethod(name,Flags)!.Invoke(this,args);
     static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
+    void HangarMouse(int x,int y,Microsoft.Xna.Framework.Input.ButtonState button,bool active=true)
+    {Call("HandleInput",new Microsoft.Xna.Framework.Input.MouseState(x,y,0,button,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released),new Microsoft.Xna.Framework.Input.KeyboardState(),new GameTime(),active);}
     void Click(int x,int y){Set("_pointer",new Point(x,y));Call("RobotInput",true,false);}
     protected override void LoadContent()
     {
@@ -304,7 +306,38 @@ sealed class RobotUiCheck:Game1
             {
                 Call("NodeDialogClick",new Point(400,910),new Microsoft.Xna.Framework.Input.KeyboardState());Check(!(bool)Get("_nodeTransportOpen"),"Selected transport tile returns to node");
                 node.Owner=1;Call("NodeDialogClick",new Point(650,910),new Microsoft.Xna.Framework.Input.KeyboardState());Check(!(bool)Get("_nodeDisposalOpen"),"Enemy furnace controls disabled");
-                Console.WriteLine("PASS: disposal checkbox/queue/automatic lane, separate transport purposes, node/factory dialogs, terrain art, retreat borders and map/battle UI.");Exit();
+                node.Owner=0;world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);
+                world.Robots.Nodes[node.Id].Add(world.Robots.Create(0,RobotParts.Complete));world.Robots.Nodes[node.Id].Add(world.Robots.Create(0,RobotParts.Head));
+                Call("NodeDialogClick",new Point(750,910),new Microsoft.Xna.Framework.Input.KeyboardState());Check((bool)Get("_nodeAssemblyOpen"),"Manual assembly tile opens hangar");
+                Set("_previousMouse",new Microsoft.Xna.Framework.Input.MouseState());HangarMouse(175,320,Microsoft.Xna.Framework.Input.ButtonState.Released);
+            }
+            if(frame==29)
+            {
+                HangarMouse(175,320,Microsoft.Xna.Framework.Input.ButtonState.Pressed);Check(Get("_hangarDrag")!=null,"Head starts dragging through real mouse input");
+            }
+            if(frame==30)
+            {
+                HangarMouse(550,330,Microsoft.Xna.Framework.Input.ButtonState.Released);
+                Check(world.Robots.Nodes[node.Id].Count==3 && world.Robots.Nodes[node.Id].Robots.Single(r=>r.Id==1).Parts==(RobotParts.Body|RobotParts.Legs),"Drop in empty hangar cell splits head");
+                var slots=(long?[])Get("_hangarSlots");Check(slots[2].HasValue,"Dropped part stays in chosen visual cell");
+                HangarMouse(565,320,Microsoft.Xna.Framework.Input.ButtonState.Pressed);HangarMouse(370,320,Microsoft.Xna.Framework.Input.ButtonState.Released);
+                Check(world.Robots.Nodes[node.Id].Count==3,"Invalid duplicate-part drop preserves robots");
+                HangarMouse(565,320,Microsoft.Xna.Framework.Input.ButtonState.Pressed);HangarMouse(565,320,Microsoft.Xna.Framework.Input.ButtonState.Pressed,false);Check(Get("_hangarDrag")==null,"Focus loss cancels drag");HangarMouse(565,320,Microsoft.Xna.Framework.Input.ButtonState.Released);
+                HangarMouse(565,320,Microsoft.Xna.Framework.Input.ButtonState.Pressed);HangarMouse(175,365,Microsoft.Xna.Framework.Input.ButtonState.Released);
+                Check(world.Robots.Nodes[node.Id].Count==2 && world.Robots.Nodes[node.Id].Robots.Single(r=>r.Id==1).Parts==RobotParts.Complete,"Drop onto complementary parts reassembles");
+                HangarMouse(370,320,Microsoft.Xna.Framework.Input.ButtonState.Pressed);HangarMouse(750,330,Microsoft.Xna.Framework.Input.ButtonState.Released);
+                var relocated=(long?[])Get("_hangarSlots");Check(relocated[1]==null && relocated[3]==2 && relocated.Where(id=>id.HasValue).Distinct().Count()==2,"Whole single-part move clears source cell without duplicating its ID");
+                HangarMouse(750,320,Microsoft.Xna.Framework.Input.ButtonState.Pressed);HangarMouse(370,330,Microsoft.Xna.Framework.Input.ButtonState.Released);
+                HangarMouse(450,255,Microsoft.Xna.Framework.Input.ButtonState.Pressed);HangarMouse(450,255,Microsoft.Xna.Framework.Input.ButtonState.Released);
+                Check(world.Robots.Workshops[node.Id].AutoAssemblyDisabled,"Automatic assembly override checkbox");
+            }
+            if(frame==31)
+            {
+                Check(world.Population.Turn==0,"Manual adjustment never advances the global turn");
+                Call("HandleInput",new Microsoft.Xna.Framework.Input.MouseState(),new Microsoft.Xna.Framework.Input.KeyboardState(Microsoft.Xna.Framework.Input.Keys.Escape),new GameTime(),true);
+                Check(!(bool)Get("_nodeAssemblyOpen") && (int)Get("_populationCell")>=0,"Escape returns from hangar to node");
+                node.Owner=1;Call("NodeDialogClick",new Point(750,910),new Microsoft.Xna.Framework.Input.KeyboardState());Check(!(bool)Get("_nodeAssemblyOpen"),"Enemy node manual controls disabled");node.Owner=0;
+                Console.WriteLine("PASS: real mouse part drag/drop, hover/ghost, invalid drops/focus loss, auto override and node/transport/scrap/map/battle UI.");Exit();
             }
         }
         catch(Exception e){Console.Error.WriteLine(e);Environment.ExitCode=1;Exit();}

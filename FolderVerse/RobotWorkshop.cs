@@ -9,6 +9,7 @@ public sealed class RobotWorkshop
     public int ProductionAge {get;private set;}
     public bool Manufacturing {get;private set;}
     public bool Paused {get;set;}
+    public bool AutoAssemblyDisabled {get;set;}
     public bool Waiting=>Manufacturing && ProductionAge>=ProductionPeriod;
     public int DisposalPeriod {get;private set;}
     public bool HasDisposalFactory {get;private set;}

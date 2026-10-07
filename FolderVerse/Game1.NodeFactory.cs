@@ -9,7 +9,7 @@ public partial class Game1
     private bool _nodeFactoryOpen;
     private RobotParts _factoryPart;
     private string _factoryMessage="";
-    private static readonly Rectangle NodeFactoryTile=new(84,875,240,84);
+    private static readonly Rectangle NodeFactoryTile=new(84,875,182,84);
     private bool CanManageNodeFactory(int owner)
     {
         for(int ruler=owner;ruler>=0;ruler=_setup.Relations.Superiors[ruler])
@@ -20,7 +20,7 @@ public partial class Game1
     {
         if(!CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;
         _factoryPart=_setup.Robots.Workshops[_populationNode].Product;
-        _factoryMessage="";_nodeDisposalOpen=false;_nodeTransportOpen=false;_nodeFactoryOpen=true;
+        _factoryMessage="";_nodeAssemblyOpen=false;_nodeDisposalOpen=false;_nodeTransportOpen=false;_nodeFactoryOpen=true;
     }
     private bool NodeFactoryClick(Point pointer)
     {
@@ -43,8 +43,8 @@ public partial class Game1
         bool enabled=CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
         _ui.Box(new(84,852,770,2),Muted);
         _ui.Box(NodeFactoryTile,active || enabled && NodeFactoryTile.Contains(_pointer)?Accent:Muted);
-        _spriteBatch.Draw(_robotFactoryIcon,new Rectangle(94,883,68,68),enabled?Color.White:Color.White*.35f);
-        _ui.Center("ロボット製造工場",new(166,885,150,60),.32f,enabled?Cream:Cream*.4f);
+        _spriteBatch.Draw(_robotFactoryIcon,new Rectangle(94,891,52,52),enabled?Color.White:Color.White*.35f);
+        _ui.Center("ロボット製造工場",new(148,885,112,60),.24f,enabled?Cream:Cream*.4f);
         if(active)_ui.Box(new(NodeFactoryTile.X,NodeFactoryTile.Y,NodeFactoryTile.Width,4),Cream);
     }
     private void DrawNodeFactory()
@@ -65,7 +65,7 @@ public partial class Game1
         _ui.Button(new(84,655,180,58),"工期−",Muted,.6f);_ui.Button(new(282,655,180,58),"工期＋",Muted,.6f);
         _ui.Text($"製造中：{PartsLabel(workshop.Product)} / {(!workshop.Manufacturing?"未設定":workshop.Waiting?"満杯待ち":workshop.Paused?"停止":"進行中")}",new(84,745),.55f,Cream);
         _ui.Text(_factoryMessage,new(84,813),.43f,Cream);
-        DrawNodeFactoryTile(true);DrawNodeTransportTile();DrawNodeDisposalTile();
+        DrawNodeFactoryTile(true);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
 
     }
 }
