@@ -22,6 +22,8 @@ public partial class Game1
         {CloseMovement();_statusMenuOpen=false;_screen=Screen.InactiveList;return true;}
         if(_statusMenuOpen && HierarchyMenuItem.Contains(point))
         {CloseMovement();_statusMenuOpen=false;_screen=Screen.Hierarchy;return true;}
+        if(_statusMenuOpen && EndingMenuItem.Contains(point)){StartEnding();return true;}
+        if(_statusMenuOpen && QuitMenuItem.Contains(point)){ReturnToTitle();return true;}
         _statusMenuOpen=false;return false;
     }
     private void DrawStatusMenu()
@@ -30,7 +32,9 @@ public partial class Game1
         if(_statusMenuOpen)
         {
             _ui.Button(InactiveMenuItem,"電池を引き抜いた征服者一覧",Muted,.5f);
-            _ui.Button(HierarchyMenuItem,"征服者の関係ツリー",Muted,.5f);
+            _ui.Button(HierarchyMenuItem,"征服者の関係図 / 暫定順位",Muted,.5f);
+            _ui.Button(EndingMenuItem,"ここでゲームをエンディングにする",Muted,.48f);
+            _ui.Button(QuitMenuItem,"ゲームを止めてタイトル画面に戻る",Muted,.48f);
         }
     }
     private void DispositionInput(bool click,bool escape)

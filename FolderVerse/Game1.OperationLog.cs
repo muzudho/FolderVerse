@@ -14,7 +14,7 @@ public partial class Game1
     public string OperationLogPath=>_operations.FilePath;
     private object OperationState()=>new
     {
-        screen=_screen.ToString(),phase=IsStatusScreen || _screen is Screen.Battle or Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Pocket or Screen.Transport?"Game":_screen==Screen.Title?"Title":"Setup",
+        screen=_screen.ToString(),phase=IsStatusScreen || _screen is Screen.Battle or Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Pocket or Screen.Transport or Screen.Ending?"Game":_screen==Screen.Title?"Title":"Setup",
         superiors=_setup.Relations.Superiors,
         party=_setup.Relations.Party(_setup),powered=_setup.Relations.Powered,released=_setup.Relations.Released,teams=_setup.Relations.Teams,pendingCaptives=_setup.Relations.Pending.ToArray(),submitted=_setup.Campaign.Submitted,menuOpen=_statusMenuOpen,
         battleWave=_battleWave,battleAge=_battleAge,battleFocus=_battleFocus,battleCount=_setup.Campaign.Battles.Count,
@@ -34,12 +34,15 @@ public partial class Game1
     {
         if(_screen==Screen.Disposition)return "conqueror_disposition";
         if(_screen==Screen.InactiveList)return "inactive_conquerors";
+        if(_screen==Screen.Ending)return "ending";
         if(_screen==Screen.Hierarchy)return "conqueror_hierarchy";
         if(_screen==Screen.Pocket)return "pocket";
         if(_screen==Screen.Transport)return "robot_transport_playback";
         if(IsStatusScreen && StatusMenuButton.Contains(point))return "status_menu";
         if(IsStatusScreen && _statusMenuOpen && InactiveMenuItem.Contains(point))return "open_inactive_conquerors";
         if(IsStatusScreen && _statusMenuOpen && HierarchyMenuItem.Contains(point))return "open_conqueror_hierarchy";
+        if(IsStatusScreen && _statusMenuOpen && EndingMenuItem.Contains(point))return "start_ending";
+        if(IsStatusScreen && _statusMenuOpen && QuitMenuItem.Contains(point))return "quit_to_title";
         if(_screen==Screen.Battle)
         {
             if(BattleContinue.Contains(point))return "battle_continue";

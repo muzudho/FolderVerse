@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 public partial class Game1 : Game
 {
-    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, WorldStatus, Battle, Disposition, InactiveList, Hierarchy, Pocket, Transport }
+    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, WorldStatus, Battle, Disposition, InactiveList, Hierarchy, Pocket, Transport, Ending }
     private readonly GraphicsDeviceManager _graphics;
     private readonly Random _random=new();
     private readonly WorldSetup _setup=new();
@@ -122,6 +122,8 @@ public partial class Game1 : Game
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds;
         _animationTime+=(float)elapsed;
         _net.UpdateAnimation((float)elapsed);
+        if(_screen==Screen.Ending)
+        {UpdateEnding(elapsed,active && (escape || enter || click && EndingReturn.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool transitioning=MapTransitionActive;UpdateMapTransition((float)elapsed);
         if(transitioning){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _screenshots.Update(gameTime.ElapsedGameTime.TotalSeconds);
@@ -556,10 +558,10 @@ public partial class Game1 : Game
             _spriteBatch.Begin(transformMatrix:transform);
             _ui.Box(new(0,0,1920,1080),new(16,35,46));
             _spriteBatch.Draw(_titleLogo,new Rectangle(0,0,1920,1080),Color.White*0.14f);
-            if(_screen==Screen.Transport)DrawTransport();else if(_screen==Screen.Pocket)DrawPocket();else if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
+            if(_screen==Screen.Ending)DrawEndingUi();else if(_screen==Screen.Transport)DrawTransport();else if(_screen==Screen.Pocket)DrawPocket();else if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
             {
             if(_screen==Screen.Battle)DrawBattleGlobe(canvas,transform);
-            else if(!IsStatusScreen && _screen is not (Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Pocket or Screen.Transport))
+            else if(!IsStatusScreen && _screen is not (Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Pocket or Screen.Transport or Screen.Ending))
             {
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;

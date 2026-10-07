@@ -82,6 +82,8 @@ public sealed class WorldSetup
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
         CastSeed=seed;
         var random=new SeedRandom(seed);
+        // Slot + 1 is the permanent creation number, displayed clockwise from the
+        // top-left portrait. Keep it independent of later territory/ranking changes.
         Portraits=new int[20]; Looks=new ConquerorLook[20];
         ColorIndices=Enumerable.Range(0,20).ToArray();random.Shuffle(ColorIndices);
         // Draw distinct completed portraits. A family can contain all six sisters.

@@ -52,6 +52,21 @@ tree.Relations.Pending.Add(new(2,0,tree.Nodes.Current(2).Id));tree.Relations.Cho
 Check(tree.Relations.Superiors[4]==1 && tree.Relations.Superiors[5]==4 && tree.Relations.Allied(0,5),"Battery removal did not promote immediate subordinates");
 Check(tree.Relations.Forest(tree).Select(e=>e.Ruler).Distinct().Count()==tree.ActiveCount,"Forest omitted or duplicated conquerors");
 Console.WriteLine("PASS: nested hierarchy, retained subtree recruitment, preorder control, cycle prevention and subordinate promotion.");
+var ranked=Create();
+foreach(var post in ranked.Nodes.All)post.Owner=-1;
+var completeCell=ranked.Cells.Where(c=>ranked.Nodes.InCell(c.Id).Count()>1).OrderBy(c=>ranked.Nodes.InCell(c.Id).Count()).First();foreach(var post in ranked.Nodes.InCell(completeCell.Id))post.Owner=4;
+foreach(var cell in ranked.Cells.Where(c=>c.Id!=completeCell.Id))foreach(var post in ranked.Nodes.InCell(cell.Id).Skip(1))post.Owner=7;
+var scores=ranked.Relations.ProvisionalRanking(ranked);
+Check(scores[0].Ruler==4 && scores.Single(e=>e.Ruler==7).Nodes>scores[0].Nodes,"Complete cells outrank more partially conquered nodes");
+Check(scores.Single(e=>e.Ruler==7).Rank==2,"Node counts break cell ties");
+Check(scores.Where(e=>e.Cells==0 && e.Nodes==0).Select(e=>e.Ruler).SequenceEqual(scores.Where(e=>e.Cells==0 && e.Nodes==0).Select(e=>e.Ruler).Order()),"Clockwise creation ID breaks both ties");
+var split=ranked.Nodes.InCell(completeCell.Id).First();split.Owner=5;ranked.Relations.SetSuperior(5,4);
+Check(ranked.Relations.ProvisionalRanking(ranked).Single(e=>e.Ruler==4).Cells==1,"Subordinate mixed ownership counts as a conquered cell");
+ranked.Relations.SetSuperior(2,1);ranked.Relations.SetSuperior(3,2);ranked.Relations.SetSuperior(6,4);
+var breadth=ranked.Relations.RankedForest(ranked);
+Check(breadth.Length==ranked.ActiveCount && breadth.Select(e=>e.Ruler).Distinct().Count()==ranked.ActiveCount,"Ranked tree has each ruler once");
+Check(breadth.Select(e=>e.Depth).SequenceEqual(breadth.Select(e=>e.Depth).Order()) && breadth.GroupBy(e=>e.Depth).All(g=>g.Select(e=>e.Rank).SequenceEqual(g.Select(e=>e.Rank).Order())),"Tree is breadth-first and each depth is sorted by provisional rank");
+Console.WriteLine("PASS: cell/node/clockwise rank ties, subordinate territory totals and ranked breadth-first tree.");
 using var game=new RelationsCheck();game.Run();
 sealed class RelationsCheck:Game1
 {
@@ -64,6 +79,9 @@ sealed class RelationsCheck:Game1
     static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
     protected override void LoadContent()
     {
+        var portraitCell=typeof(Game1).GetMethod("PortraitCell",BindingFlags.Static|BindingFlags.NonPublic)!;
+        Rectangle Slot(int id)=>(Rectangle)portraitCell.Invoke(null,new object[]{id})!;
+        Check(Slot(0).X<Slot(1).X && Slot(0).Y==Slot(6).Y && Slot(7).X==Slot(6).X && Slot(7).Y>Slot(6).Y && Slot(10).Y==Slot(16).Y && Slot(10).X>Slot(16).X && Slot(17).X==Slot(0).X,"Creation IDs go clockwise from top left");
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();w=(WorldSetup)Get("_setup");w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.SelectPlayer(0);
         w.Campaign.UseRobotCombat=false;
         var k=ConquerorCatalog.Keywords.First(k=>k.Personality==13);w.Looks[1]=new(k.BaseId,k.VariantId);
@@ -90,13 +108,26 @@ sealed class RelationsCheck:Game1
             case 8:Click(180,1040);Check(Get("_screen").ToString()=="WorldStatus","Hierarchy back failed");Click(1740,40);Click(1550,150);break;
             case 9:
                 Call("HandleInput",new MouseState(),new KeyboardState(Keys.Escape),new GameTime(),true);Check(Get("_screen").ToString()=="WorldStatus","Hierarchy Escape failed");
-                Console.WriteLine("PASS: disposition/list/turn control and hierarchy drawing/menu/back/Escape.");Exit();break;
+                foreach(var post in w.Nodes.InCell(w.Cells[0].Id))post.Owner=7;
+                Click(1740,40);Click(1550,200);
+                Check((int)Get("_endingWinner")==7,"Enemy provisional winner is used instead of the player");
+                Check(Get("_screen").ToString()=="Ending" && (int)Get("_endingWinner")==w.Relations.ProvisionalRanking(w)[0].Ruler,"Ending selects provisional first place");break;
+            case 10:Call("UpdateEnding",3d,false);Check(Get("_screen").ToString()=="Ending","Ending should play before returning");break;
+            case 11:
+                Call("UpdateEnding",7.1d,false);Check(Get("_screen").ToString()=="Title" && w.PlayerSlot==-1 && !w.Relations.Pending.Any() && w.Robots.Nodes.Length==0,"Ending timer resets game to title");
+                w.SetPlacement(456);w.SelectPlayer(0);((WorldPreview)Get("_world")).ShowSetup(w,true);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));break;
+            case 12:
+                Click(1740,40);Click(1550,260);Check(Get("_screen").ToString()=="Title" && w.PlayerSlot==-1 && (bool)Get("_statusGlobe") && ((CubeNet)Get("_net")).ShowRoutes,"Quit menu shares title cleanup and default view reset");
+                w.SetPlacement(456);w.SelectPlayer(0);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Click(1740,40);Click(1550,200);break;
+            case 13:
+                Call("HandleInput",new MouseState(),new KeyboardState(Keys.Enter),new GameTime(),true);Check(Get("_screen").ToString()=="Title" && w.PlayerSlot==-1,"Ending Enter shares title cleanup");
+                Console.WriteLine("PASS: ranked hierarchy, player highlight, ending winner/timer/Enter and menu quit cleanup.");Exit();break;
         }
     }
     protected override void Draw(GameTime time)
     {
         base.Draw(time);
-        if(frame<9)
+        if(frame<13)
         {
             var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
             using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);

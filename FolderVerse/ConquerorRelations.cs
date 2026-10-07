@@ -37,6 +37,38 @@ public sealed class ConquerorRelations
         foreach(int root in Enumerable.Range(0,world.ActiveCount).Where(r=>Superiors[r]<0).OrderBy(r=>r==Leader?0:1).ThenBy(r=>r))Visit(root,0);
         return result.ToArray();
     }
+    // Ruler slots are the permanent clockwise IDs assigned by SetCast / PortraitCell.
+    public (int Ruler,int Rank,int Cells,int Nodes)[] ProvisionalRanking(WorldSetup world)
+    {
+        bool InSubtree(int owner,int ruler)
+        {
+            if(owner<0 || owner>=world.ActiveCount)return false;
+            for(int current=owner;current>=0;current=Superiors[current])if(current==ruler)return true;
+            return false;
+        }
+        var scores=Enumerable.Range(0,world.ActiveCount).Select(ruler=>new
+        {
+            Ruler=ruler,
+            Cells=world.Cells.Count(cell=>world.Nodes.InCell(cell.Id).Any() && world.Nodes.InCell(cell.Id).All(node=>InSubtree(node.Owner,ruler))),
+            Nodes=world.Nodes.All.Count(node=>InSubtree(node.Owner,ruler))
+        }).OrderByDescending(r=>r.Cells).ThenByDescending(r=>r.Nodes).ThenBy(r=>r.Ruler).ToArray();
+        return scores.Select((r,index)=>(r.Ruler,index+1,r.Cells,r.Nodes)).ToArray();
+    }
+    public (int Ruler,int Depth,int Rank,int Cells,int Nodes)[] RankedForest(WorldSetup world)
+    {
+        var ranking=ProvisionalRanking(world).ToDictionary(r=>r.Ruler);
+        var result=new List<(int,int,int,int,int)>();
+        var level=Enumerable.Range(0,world.ActiveCount).Where(r=>Superiors[r]<0).ToArray();
+        int depth=0;
+        while(level.Length>0)
+        {
+            foreach(int ruler in level.OrderBy(r=>ranking[r].Rank))
+            {var score=ranking[ruler];result.Add((ruler,depth,score.Rank,score.Cells,score.Nodes));}
+            var parents=level.ToHashSet();
+            level=Enumerable.Range(0,world.ActiveCount).Where(r=>parents.Contains(Superiors[r])).ToArray();depth++;
+        }
+        return result.ToArray();
+    }
     public bool Allied(int a,int b)=>a>=0 && b>=0 && Root(a)==Root(b);
     public int[] Party(WorldSetup world)=>Leader<0?Array.Empty<int>():Forest(world).Where(r=>Powered[r.Ruler] && !Released[r.Ruler] && Allied(r.Ruler,Leader)).Select(r=>r.Ruler).ToArray();
     public bool CanAct(int ruler)=>Powered[ruler] && !Released[ruler] && !Pending.Any(p=>p.Ruler==ruler);
