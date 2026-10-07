@@ -344,7 +344,34 @@ sealed class RobotUiCheck:Game1
                 Call("HandleInput",new Microsoft.Xna.Framework.Input.MouseState(),new Microsoft.Xna.Framework.Input.KeyboardState(Microsoft.Xna.Framework.Input.Keys.Escape),new GameTime(),true);
                 Check(!(bool)Get("_nodeAssemblyOpen") && (int)Get("_populationCell")>=0,"Escape returns from hangar to node");
                 node.Owner=1;Call("NodeDialogClick",new Point(750,910),new Microsoft.Xna.Framework.Input.KeyboardState());Check(!(bool)Get("_nodeAssemblyOpen"),"Enemy node manual controls disabled");node.Owner=0;
-                Console.WriteLine("PASS: real mouse part drag/drop, hover/ghost, invalid drops/focus loss, auto override and node/transport/scrap/map/battle UI.");Exit();
+                Set("_populationCell",-1);Set("_statusGlobe",true);Set("_yaw",.55f);Set("_pitch",.3f);
+                Call("RouteLayerClick",new Point(1750,104));Check((float)Get("_mapTransitionAge")==0 && (bool)Get("_statusGlobe"),"Unfold begins without switching view immediately");
+                Call("HandleInput",new Microsoft.Xna.Framework.Input.MouseState(430,1040,0,Microsoft.Xna.Framework.Input.ButtonState.Pressed,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released),new Microsoft.Xna.Framework.Input.KeyboardState(),new GameTime(),true);
+                Check(!(bool)Get("_movementOpen"),"Transition blocks map and movement input");
+            }
+            if(frame>=32 && frame<=37)
+            {
+                Call("UpdateMapTransition",.61f);
+                if(frame<37)Check((float)Get("_mapTransitionAge")>=0 && (bool)Get("_statusGlobe"),"Unfold retains source view through five hinges");
+                else
+                {
+                    Check((float)Get("_mapTransitionAge")<0 && !(bool)Get("_statusGlobe"),"Unfold finishes in net");
+                    var net=(CubeNet)Get("_net");var fit=net.Fit(new(1040,240,790,580));
+                    var at=net.Faces[0].Project(world.Cells[(int)Get("_statusCell")].Center)*fit.Scale+fit.Origin;
+                    Check(Vector2.Distance(at,new Vector2(1435,530))<.01f && (int)Get("_mapSoundStep")==4,"Viewed cell centers and five crack stages complete");
+                }
+            }
+            if(frame==38)
+            {
+                Call("RouteLayerClick",new Point(1750,104));Check(!(bool)Get("_mapUnfold") && (float)Get("_mapTransitionAge")==0,"Assembly uses reverse transition");
+                var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();
+            }
+            if(frame>=39 && frame<=44)Call("UpdateMapTransition",.61f);
+            if(frame==45)
+            {
+                Check((float)Get("_mapTransitionAge")<0 && (bool)Get("_statusGlobe") && world.Population.Turn==0,"Assembly restores globe without advancing world");
+                Check((float)Get("_yaw")==.55f && (float)Get("_pitch")==.3f,"Assembly retains original globe orientation");
+                Console.WriteLine("PASS: five-hinge unfold/assembly, input blocking, resized animation and robot/node/map/battle UI.");Exit();
             }
         }
         catch(Exception e){Console.Error.WriteLine(e);Environment.ExitCode=1;Exit();}

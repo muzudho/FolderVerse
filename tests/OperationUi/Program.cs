@@ -14,7 +14,7 @@ sealed class OperationCheck:Game1
     void Set(string n,object v)=>typeof(Game1).GetField(n,Flags)!.SetValue(this,v);
     static void Check(bool value,string message){if(!value)throw new Exception(message);}
     void Input(Point p,ButtonState b,bool active=true,params Keys[] keys)=>typeof(Game1).GetMethod("HandleInput",Flags)!.Invoke(this,new object[]{new MouseState(p.X,p.Y,0,b,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(keys),new GameTime(),active});
-    void Click(Point p){Input(p,ButtonState.Released);Input(p,ButtonState.Pressed);Input(p,ButtonState.Released);}
+    void Click(Point p){Input(p,ButtonState.Released);Input(p,ButtonState.Pressed);Input(p,ButtonState.Released);if((float)Get("_mapTransitionAge")>=0)typeof(Game1).GetMethod("UpdateMapTransition",Flags)!.Invoke(this,new object[]{3.7f});}
     protected override void LoadContent()
     {
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();

@@ -122,6 +122,8 @@ public partial class Game1 : Game
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds;
         _animationTime+=(float)elapsed;
         _net.UpdateAnimation((float)elapsed);
+        bool transitioning=MapTransitionActive;UpdateMapTransition((float)elapsed);
+        if(transitioning){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _screenshots.Update(gameTime.ElapsedGameTime.TotalSeconds);
         bool captureChord=keyboard.IsKeyDown(Keys.P) && (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
@@ -458,7 +460,12 @@ public partial class Game1 : Game
         _spriteBatch.End();
         var oldScissor=GraphicsDevice.ScissorRectangle;
         GraphicsDevice.ScissorRectangle=new(canvas.X+(int)(990*canvas.Width/1920f),canvas.Y+(int)(226*canvas.Height/1080f),(int)(880*canvas.Width/1920f),(int)(598*canvas.Height/1080f));
-        if(_statusGlobe)
+        if(MapTransitionActive)
+        {
+            var viewport=GraphicsDevice.Viewport;GraphicsDevice.Viewport=new Viewport(canvas);
+            DrawMapTransition();GraphicsDevice.Viewport=viewport;
+        }
+        else if(_statusGlobe)
         {
             var viewport=GraphicsDevice.Viewport;
             var areas=OrientationAreas(NetPanel,false);
@@ -481,7 +488,7 @@ public partial class Game1 : Game
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
-        _ui.Text(_statusGlobe?"左ドラッグ：回転 / ロボット数は節点の上に表示":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
+        _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"左ドラッグ：回転 / ロボット数は節点の上に表示":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
         _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
         _ui.Button(NetButton(2),"現在地へ移動",Accent,0.45f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
         const string resetLabel="頭を上へ、腹を手前へ";
@@ -575,7 +582,7 @@ public partial class Game1 : Game
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         try{base.Dispose(disposing);}
