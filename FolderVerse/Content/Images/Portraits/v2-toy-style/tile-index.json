@@ -3893,11 +3893,11 @@
     "VariantId": 0,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 166,
+    "Height": 152,
     "SourceX": 2,
     "SourceY": 2,
     "SourceWidth": 252,
-    "SourceHeight": 166
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-55-2.png",
@@ -3905,11 +3905,11 @@
     "VariantId": 1,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 166,
+    "Height": 152,
     "SourceX": 258,
     "SourceY": 2,
     "SourceWidth": 252,
-    "SourceHeight": 166
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-55-3.png",
@@ -3917,11 +3917,11 @@
     "VariantId": 2,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 166,
+    "Height": 152,
     "SourceX": 514,
     "SourceY": 2,
     "SourceWidth": 252,
-    "SourceHeight": 166
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-55-4.png",
@@ -3929,11 +3929,11 @@
     "VariantId": 3,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 166,
+    "Height": 152,
     "SourceX": 770,
     "SourceY": 2,
     "SourceWidth": 252,
-    "SourceHeight": 166
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-55-5.png",
@@ -3941,11 +3941,11 @@
     "VariantId": 4,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 166,
+    "Height": 152,
     "SourceX": 1026,
     "SourceY": 2,
     "SourceWidth": 252,
-    "SourceHeight": 166
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-55-6.png",
@@ -3953,11 +3953,11 @@
     "VariantId": 5,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 166,
+    "Height": 152,
     "SourceX": 1282,
     "SourceY": 2,
     "SourceWidth": 252,
-    "SourceHeight": 166
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-56-1.png",
@@ -3965,11 +3965,11 @@
     "VariantId": 0,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 168,
+    "Height": 152,
     "SourceX": 2,
-    "SourceY": 172,
+    "SourceY": 158,
     "SourceWidth": 252,
-    "SourceHeight": 168
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-56-2.png",
@@ -3977,11 +3977,11 @@
     "VariantId": 1,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 168,
+    "Height": 152,
     "SourceX": 258,
-    "SourceY": 172,
+    "SourceY": 158,
     "SourceWidth": 252,
-    "SourceHeight": 168
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-56-3.png",
@@ -3989,11 +3989,11 @@
     "VariantId": 2,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 168,
+    "Height": 152,
     "SourceX": 514,
-    "SourceY": 172,
+    "SourceY": 158,
     "SourceWidth": 252,
-    "SourceHeight": 168
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-56-4.png",
@@ -4001,11 +4001,11 @@
     "VariantId": 3,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 168,
+    "Height": 152,
     "SourceX": 770,
-    "SourceY": 172,
+    "SourceY": 158,
     "SourceWidth": 252,
-    "SourceHeight": 168
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-56-5.png",
@@ -4013,11 +4013,11 @@
     "VariantId": 4,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 168,
+    "Height": 152,
     "SourceX": 1026,
-    "SourceY": 172,
+    "SourceY": 158,
     "SourceWidth": 252,
-    "SourceHeight": 168
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-56-6.png",
@@ -4025,11 +4025,11 @@
     "VariantId": 5,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 168,
+    "Height": 152,
     "SourceX": 1282,
-    "SourceY": 172,
+    "SourceY": 158,
     "SourceWidth": 252,
-    "SourceHeight": 168
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-57-1.png",
@@ -4037,11 +4037,11 @@
     "VariantId": 0,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 165,
+    "Height": 152,
     "SourceX": 2,
-    "SourceY": 344,
+    "SourceY": 314,
     "SourceWidth": 252,
-    "SourceHeight": 165
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-57-2.png",
@@ -4049,11 +4049,11 @@
     "VariantId": 1,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 165,
+    "Height": 152,
     "SourceX": 258,
-    "SourceY": 344,
+    "SourceY": 314,
     "SourceWidth": 252,
-    "SourceHeight": 165
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-57-3.png",
@@ -4061,11 +4061,11 @@
     "VariantId": 2,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 165,
+    "Height": 152,
     "SourceX": 514,
-    "SourceY": 344,
+    "SourceY": 314,
     "SourceWidth": 252,
-    "SourceHeight": 165
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-57-4.png",
@@ -4073,11 +4073,11 @@
     "VariantId": 3,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 165,
+    "Height": 152,
     "SourceX": 770,
-    "SourceY": 344,
+    "SourceY": 314,
     "SourceWidth": 252,
-    "SourceHeight": 165
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-57-5.png",
@@ -4085,11 +4085,11 @@
     "VariantId": 4,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 165,
+    "Height": 152,
     "SourceX": 1026,
-    "SourceY": 344,
+    "SourceY": 314,
     "SourceWidth": 252,
-    "SourceHeight": 165
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-57-6.png",
@@ -4097,11 +4097,11 @@
     "VariantId": 5,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 165,
+    "Height": 152,
     "SourceX": 1282,
-    "SourceY": 344,
+    "SourceY": 314,
     "SourceWidth": 252,
-    "SourceHeight": 165
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-58-1.png",
@@ -4109,11 +4109,11 @@
     "VariantId": 0,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 168,
+    "Height": 152,
     "SourceX": 2,
-    "SourceY": 513,
+    "SourceY": 470,
     "SourceWidth": 252,
-    "SourceHeight": 168
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-58-2.png",
@@ -4121,11 +4121,11 @@
     "VariantId": 1,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 168,
+    "Height": 152,
     "SourceX": 258,
-    "SourceY": 513,
+    "SourceY": 470,
     "SourceWidth": 252,
-    "SourceHeight": 168
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-58-3.png",
@@ -4133,11 +4133,11 @@
     "VariantId": 2,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 168,
+    "Height": 152,
     "SourceX": 514,
-    "SourceY": 513,
+    "SourceY": 470,
     "SourceWidth": 252,
-    "SourceHeight": 168
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-58-4.png",
@@ -4145,11 +4145,11 @@
     "VariantId": 3,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 168,
+    "Height": 152,
     "SourceX": 770,
-    "SourceY": 513,
+    "SourceY": 470,
     "SourceWidth": 252,
-    "SourceHeight": 168
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-58-5.png",
@@ -4157,11 +4157,11 @@
     "VariantId": 4,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 168,
+    "Height": 152,
     "SourceX": 1026,
-    "SourceY": 513,
+    "SourceY": 470,
     "SourceWidth": 252,
-    "SourceHeight": 168
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-58-6.png",
@@ -4169,11 +4169,11 @@
     "VariantId": 5,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 168,
+    "Height": 152,
     "SourceX": 1282,
-    "SourceY": 513,
+    "SourceY": 470,
     "SourceWidth": 252,
-    "SourceHeight": 168
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-59-1.png",
@@ -4183,7 +4183,7 @@
     "Width": 252,
     "Height": 152,
     "SourceX": 2,
-    "SourceY": 685,
+    "SourceY": 626,
     "SourceWidth": 252,
     "SourceHeight": 152
   },
@@ -4195,7 +4195,7 @@
     "Width": 252,
     "Height": 152,
     "SourceX": 258,
-    "SourceY": 685,
+    "SourceY": 626,
     "SourceWidth": 252,
     "SourceHeight": 152
   },
@@ -4207,7 +4207,7 @@
     "Width": 252,
     "Height": 152,
     "SourceX": 514,
-    "SourceY": 685,
+    "SourceY": 626,
     "SourceWidth": 252,
     "SourceHeight": 152
   },
@@ -4219,7 +4219,7 @@
     "Width": 252,
     "Height": 152,
     "SourceX": 770,
-    "SourceY": 685,
+    "SourceY": 626,
     "SourceWidth": 252,
     "SourceHeight": 152
   },
@@ -4231,7 +4231,7 @@
     "Width": 252,
     "Height": 152,
     "SourceX": 1026,
-    "SourceY": 685,
+    "SourceY": 626,
     "SourceWidth": 252,
     "SourceHeight": 152
   },
@@ -4243,7 +4243,7 @@
     "Width": 252,
     "Height": 152,
     "SourceX": 1282,
-    "SourceY": 685,
+    "SourceY": 626,
     "SourceWidth": 252,
     "SourceHeight": 152
   },
@@ -4253,11 +4253,11 @@
     "VariantId": 0,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 181,
+    "Height": 152,
     "SourceX": 2,
-    "SourceY": 841,
+    "SourceY": 782,
     "SourceWidth": 252,
-    "SourceHeight": 181
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-60-2.png",
@@ -4265,11 +4265,11 @@
     "VariantId": 1,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 181,
+    "Height": 152,
     "SourceX": 258,
-    "SourceY": 841,
+    "SourceY": 782,
     "SourceWidth": 252,
-    "SourceHeight": 181
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-60-3.png",
@@ -4277,11 +4277,11 @@
     "VariantId": 2,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 181,
+    "Height": 152,
     "SourceX": 514,
-    "SourceY": 841,
+    "SourceY": 782,
     "SourceWidth": 252,
-    "SourceHeight": 181
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-60-4.png",
@@ -4289,11 +4289,11 @@
     "VariantId": 3,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 181,
+    "Height": 152,
     "SourceX": 770,
-    "SourceY": 841,
+    "SourceY": 782,
     "SourceWidth": 252,
-    "SourceHeight": 181
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-60-5.png",
@@ -4301,11 +4301,11 @@
     "VariantId": 4,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 181,
+    "Height": 152,
     "SourceX": 1026,
-    "SourceY": 841,
+    "SourceY": 782,
     "SourceWidth": 252,
-    "SourceHeight": 181
+    "SourceHeight": 152
   },
   {
     "File": "tiles/character-60-6.png",
@@ -4313,10 +4313,10 @@
     "VariantId": 5,
     "Sheet": "sheet-10.png",
     "Width": 252,
-    "Height": 181,
+    "Height": 152,
     "SourceX": 1282,
-    "SourceY": 841,
+    "SourceY": 782,
     "SourceWidth": 252,
-    "SourceHeight": 181
+    "SourceHeight": 152
   }
 ]

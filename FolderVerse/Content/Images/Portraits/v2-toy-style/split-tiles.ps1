@@ -20,7 +20,7 @@ for ($s=1; $s -le 10; $s++) {
   $y=[int][Math]::Round($edges[$s-1][$row]*$sheet.Height/1024)+2
   $w=[int][Math]::Round(($col+1)*$sheet.Width/6)-$x-2
   $h=[int][Math]::Round($edges[$s-1][$row+1]*$sheet.Height/1024)-$y-2
-  if($s -eq 7){$y=$row*156+2;$h=152;$g.Dispose();$tile.Dispose();$tile=New-Object System.Drawing.Bitmap(252,152);$g=[System.Drawing.Graphics]::FromImage($tile)}
+  if($s -in @(7,10)){$y=$row*156+2;$h=152;$g.Dispose();$tile.Dispose();$tile=New-Object System.Drawing.Bitmap(252,152);$g=[System.Drawing.Graphics]::FromImage($tile)}
   $g.DrawImage($sheet,[System.Drawing.Rectangle]::new(0,0,$tile.Width,$tile.Height),[System.Drawing.Rectangle]::new($x,$y,$w,$h),[System.Drawing.GraphicsUnit]::Pixel)
   $tile.Save((Join-Path $PSScriptRoot "tiles\$name"),[System.Drawing.Imaging.ImageFormat]::Png)
   $records+= [pscustomobject]@{File="tiles/$name";BaseId=$id-1;VariantId=$col;Sheet=('sheet-{0:00}.png' -f $s);Width=$tile.Width;Height=$tile.Height;SourceX=$x;SourceY=$y;SourceWidth=$w;SourceHeight=$h}
@@ -39,7 +39,7 @@ foreach ($id in @(6,18,30,42,60)) {
   $tile=[System.Drawing.Bitmap]::FromFile((Join-Path $PSScriptRoot ('tiles\character-{0:00}-{1}.png' -f $id,($v+1))))
   $x=[int][Math]::Round(($v%3)*$atlas.Width/3)
   $y=[int][Math]::Round([Math]::Floor($v/3)*$atlas.Height/2)
-  if($id -eq 42){$g.DrawImage($tile,[System.Drawing.Rectangle]::new($x,$y,512,512),[System.Drawing.Rectangle]::new(50,0,152,152),[System.Drawing.GraphicsUnit]::Pixel)}
+  if($id -in @(42,60)){$g.DrawImage($tile,[System.Drawing.Rectangle]::new($x,$y,512,512),[System.Drawing.Rectangle]::new(50,0,152,152),[System.Drawing.GraphicsUnit]::Pixel)}
   else {$g.DrawImage($tile,[System.Drawing.Rectangle]::new($x,$y,[int]($atlas.Width/3),[int]($atlas.Height/2)))}
   $tile.Dispose()
  }

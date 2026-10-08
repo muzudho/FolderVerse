@@ -29,7 +29,7 @@ public sealed class PortraitRenderer
         int[] rows=RowEdges[look.BaseId/6];
         int top=rows[row]*height/1024;
         int bottom=rows[row+1]*height/1024;
-        if(look.BaseId/6==6 && PortraitAssets.Version=="v2-toy-style")
+        if((look.BaseId/6==6 || look.BaseId/6==9) && PortraitAssets.Version=="v2-toy-style")
         {
             top=row*height/6;bottom=(row+1)*height/6;
         }
