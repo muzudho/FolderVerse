@@ -13,3 +13,5 @@ active-version.txt の１行を v1-original または v2-toy-style に変更し�
 現在の初期設定は v2-toy-style。
 
 original-file-hashes.json は移動前の元ファイルの SHA256 一覧です。
+
+女の子ごとの番号付き画像履歴は characters/ に保存。運用は characters/README.txt を参照。過去の画像を上書きせず、add-character-version.ps1 で新しい版を追加します。
