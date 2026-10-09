@@ -9,12 +9,15 @@ if ($sources.Count -ne 60) { throw 'Expected 60 current basic source portraits.'
 $tileRoot = Join-Path $PSScriptRoot 'game-tiles'
 [IO.Directory]::CreateDirectory($tileRoot) | Out-Null
 $records = @()
+$overrides = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'selection-overrides.json') -Raw | ConvertFrom-Json
 foreach ($id in 1..60) {
     $source = @($sources | Where-Object CharacterId -eq $id)
     if ($source.Count -ne 1) { throw "Missing or duplicated character $id" }
     $file = 'character-{0:00}-1-balanced.png' -f $id
     $revision = 'character-{0:00}-1-balanced-v2.png' -f $id
     if (Test-Path -LiteralPath (Join-Path $PSScriptRoot $revision)) { $file = $revision }
+    $override = $overrides.PSObject.Properties[[string]$id]
+    if ($null -ne $override) { $file = [string]$override.Value }
     $path = Join-Path $PSScriptRoot $file
     $image = [Drawing.Bitmap]::FromFile($path)
     try {

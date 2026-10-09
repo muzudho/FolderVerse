@@ -80,14 +80,14 @@
   {
     "CharacterId": 7,
     "Variant": 1,
-    "File": "character-07-1-balanced.png",
+    "File": "character-07-1-traveler-v006.png",
     "Width": 1448,
     "Height": 1086,
-    "Sha256": "777CE72ACC0E7850E0FC0C3036249E759FBB8F8EE36C0D265EA575C3F49F17AF",
+    "Sha256": "462BA9CEE82A37A4DC4EC06BC654E76E26176B173DCB905642E8B618BC4B6B26",
     "OriginalFile": "../characters/character-07/character-07-1-v003-generated.png",
     "OriginalSha256": "B1AED015B20BB40FC899B21F78AA0780C906C6CBCA346AEEA53082500A3CF55B",
     "GameTile": "game-tiles/character-07-1.png",
-    "GameTileSha256": "480FF79AA4E9D819E59BAFDF36D26FC112036171B01F3FB95148A9EBE4B147C7",
+    "GameTileSha256": "DA2589135E58DFC068BE896BC1A824316C4050A529E26627B815CAD7B222C566",
     "Reviewed": true
   },
   {
