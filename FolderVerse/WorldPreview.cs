@@ -22,7 +22,7 @@ public sealed partial class WorldPreview : IDisposable
     public int Seed { get; private set; }
     public string Kind => ((Width > 1 ? 1 : 0) + (Height > 1 ? 1 : 0) + (Depth > 1 ? 1 : 0)) switch
     {
-        0 or 1 => "地棒", 2 => "地盤", _ => "地箱"
+        0 => "地賽", 1 => "地棒", 2 => "地盤", _ => "地箱"
     };
     public string GlobeName=>Kind+"儀";
     public static Matrix Orientation(float yaw,float pitch)=>Matrix.CreateRotationX(pitch)*Matrix.CreateRotationY(yaw);
@@ -38,8 +38,13 @@ public sealed partial class WorldPreview : IDisposable
 
     public void Generate(int width, int height, int depth, int seed)
     {
-        if (width < 1 || width > 5 || height < 1 || height > 5 || depth < 1 || depth > 5)
+        // Rods can reach nine cells and slabs seven, in any axis orientation.
+        if (width < 1 || width > 9)
             throw new ArgumentOutOfRangeException(nameof(width));
+        if (height < 1 || height > 9)
+            throw new ArgumentOutOfRangeException(nameof(height));
+        if (depth < 1 || depth > 9)
+            throw new ArgumentOutOfRangeException(nameof(depth));
         _highlight?.Dispose();_highlight=null;_highlightCount=0;HighlightedOwner=-1;
         Width = width; Height = height; Depth = depth; Seed = seed;
         _markers?.Dispose(); _markers = null; _markerCount = 0;

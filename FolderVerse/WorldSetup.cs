@@ -72,7 +72,18 @@ public sealed class WorldSetup
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
         WorldSeed = seed;
         var random = new SeedRandom(seed);
-        Width = random.Next(5) + 1; Height = random.Next(5) + 1; Depth = random.Next(5) + 1;
+        // Choose the shape first so its frequency is independent of size combinations.
+        // Dice : rod : slab : box = 1 : 2 : 4 : 8.
+        int shape = random.Next(15);
+        int[] dimensions = shape switch
+        {
+            0 => new[] { 1, 1, 1 },
+            < 3 => new[] { 1, 1, random.Next(8) + 2 },
+            < 7 => new[] { 1, random.Next(6) + 2, random.Next(6) + 2 },
+            _ => new[] { random.Next(4) + 2, random.Next(4) + 2, random.Next(4) + 2 }
+        };
+        random.Shuffle(dimensions);
+        Width = dimensions[0]; Height = dimensions[1]; Depth = dimensions[2];
         Cells = CreateCells(Width, Height, Depth);
         CityNames=WorldNames.Cities(Cells,seed);
         ClearPlacement();
