@@ -1,17 +1,20 @@
 女の子画像の版管理
 
-v1-original/   前回の元画像（画像データは変更せず保存）
-v2-toy-style/  仮決めした画風を反映した新版
+art-source/portraits/characters/：60人×6差分を、女の子別・差分別・版番号付きで保存する編集元。
+v1-original/：旧画風の元画像。
+v2-toy-style/：以前のシート形式の新版と、その修正前バックアップ。
+v3-standardized/：現在ゲームが使用する256x192の個別画像360枚。
 
-各版の sheet-01～10.png、base-*-normalized.png、manifest.json をゲームに同梱。
-tiles/ は60キャラ×6差分の個別画像。ゲームはシートから描画します。
+現在の設定：active-version.txt は v3-standardized。
+ゲームは360枚の個別画像を読み、表示枠に合わせて縦横比を保ってトリミングする。
+旧版に戻す場合は active-version.txt を v1-original または v2-toy-style に変更してビルド・再起動する。
 
-切り替え方法
-active-version.txt の１行を v1-original または v2-toy-style に変更し、ゲームを再起動。
-開発時は変更後にビルドして設定を出力先へコピーします。
-配布後は実行ファイルの隣の Content/Images/Portraits/active-version.txt を変更するだけで切り替えできます。
-現在の初期設定は v2-toy-style。
+画像の版番号とゲーム用セット名は別のもの。
+例：art-source/portraits/characters/character-60/character-60-2-v004.png は女の子60・差分2・第4版。
+同じ番号の -generated.png は大きな生成原本。過去の版を上書きしない。
+art-source/portraits/characters/catalog.json で最新版、寸法、SHA256、生成原本、変更内容を確認できる。
+v3-standardized/selected-versions.json はゲームへ採用した版の一覧。
 
-original-file-hashes.json は移動前の元ファイルの SHA256 一覧です。
-
-女の子ごとの番号付き画像履歴は characters/ に保存。運用は characters/README.txt を参照。過去の画像を上書きせず、add-character-version.ps1 で新しい版を追加します。
+次の描き足し・描き直しは save-generated-character.ps1 で登録し、生成原本と256x192版を保存する。
+すべての最新版が256x192なら export-standardized-portraits.ps1 でゲーム用セットを更新できる。
+詳しくは art-source/portraits/characters/README.txt と art-source/portraits/characters/standardization.txt を参照。

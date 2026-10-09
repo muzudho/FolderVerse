@@ -4,7 +4,8 @@ param(
  [Parameter(Mandatory)][ValidateRange(1,6)][int]$Variant,
  [Parameter(Mandatory)][string]$Source,
  [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Note,
- [string]$ArchiveRoot=(Join-Path $PSScriptRoot 'characters')
+ [string]$GeneratedOriginal,
+ [string]$ArchiveRoot=(Join-Path $PSScriptRoot '../../../../art-source/portraits/characters')
 )
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.Drawing
@@ -28,6 +29,15 @@ try {
  [IO.File]::Copy($sourcePath,$destination,$false)
  foreach($record in $history){$record.Current=$false}
  $records += [pscustomobject]@{CharacterId=$CharacterId;Variant=$Variant;Version=$version;File=$relative;Width=$width;Height=$height;Sha256=(Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash;Source=$sourcePath;Note=$Note;ArchivedAt=[DateTimeOffset]::UtcNow.ToOffset([TimeSpan]::FromHours(9)).ToString('yyyy-MM-ddTHH:mm:sszzz');Current=$true}
+ if($GeneratedOriginal){
+  $originalPath=(Resolve-Path -LiteralPath $GeneratedOriginal).Path
+  $relativeOriginal=[IO.Path]::GetRelativePath($ArchiveRoot,$originalPath).Replace('\','/')
+  $records[-1].Source=$relativeOriginal
+  $records[-1] | Add-Member OriginalFile $relativeOriginal
+  $records[-1] | Add-Member OriginalSha256 (Get-FileHash -LiteralPath $originalPath).Hash
+  $originalImage=[Drawing.Bitmap]::FromFile($originalPath)
+  try {$records[-1] | Add-Member OriginalWidth $originalImage.Width; $records[-1] | Add-Member OriginalHeight $originalImage.Height}finally{$originalImage.Dispose()}
+ }
  $pending=Join-Path $ArchiveRoot 'catalog.pending.json'
  $records | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $pending -Encoding utf8
  [IO.File]::Move($pending,$catalogPath,$true)

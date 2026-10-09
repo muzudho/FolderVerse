@@ -9,9 +9,16 @@ using Microsoft.Xna.Framework.Graphics;
 public sealed class PortraitRenderer
 {
     private readonly Texture2D[] _sheets=new Texture2D[10];
+    private readonly Texture2D[] _individual=new Texture2D[360];
     private readonly Dictionary<int,Texture2D> _normalized=new();
     public PortraitRenderer(ContentManager content)
     {
+        if(PortraitAssets.Version=="v3-standardized")
+        {
+            for(int id=0;id<60;id++)for(int variant=0;variant<6;variant++)
+                _individual[id*6+variant]=content.Load<Texture2D>(PortraitAssets.ContentPath+"/tiles/character-"+(id+1).ToString("00")+"-"+(variant+1));
+            return;
+        }
         for(int i=0;i<10;i++)_sheets[i]=content.Load<Texture2D>(PortraitAssets.ContentPath+"/sheet-"+(i+1).ToString("00"));
         foreach(int id in new[]{5,17,29,41,59})_normalized[id]=content.Load<Texture2D>(PortraitAssets.ContentPath+"/base-"+(id+1).ToString("00")+"-normalized");
     }
@@ -41,6 +48,13 @@ public sealed class PortraitRenderer
     {
         if(look.BaseId<0 || look.BaseId>=60 || look.VariantId<0 || look.VariantId>=6)
             throw new ArgumentOutOfRangeException(nameof(look));
+        if(PortraitAssets.Version=="v3-standardized")
+        {
+            var individual=_individual[look.BaseId*6+look.VariantId];
+            var crop=FitSource(new Rectangle(0,0,individual.Width,individual.Height),destination);
+            batch.Draw(individual,destination,crop,active?Color.White:new Color(115,115,115));
+            return;
+        }
         var texture=_sheets[look.BaseId/6];
         var source=SourceBounds(look,texture.Width,texture.Height);
         if(_normalized.TryGetValue(look.BaseId,out var replacement))

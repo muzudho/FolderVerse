@@ -13,8 +13,8 @@ public static class PortraitAssets
     {
         string path=Path.Combine(AppContext.BaseDirectory,"Content","Images","Portraits","active-version.txt");
         string version=File.ReadAllText(path).Trim();
-        if(version is not ("v1-original" or "v2-toy-style"))
-            throw new InvalidDataException("Portrait active-version.txt must contain v1-original or v2-toy-style.");
+        if(version is not ("v1-original" or "v2-toy-style" or "v3-standardized"))
+            throw new InvalidDataException("Portrait active-version.txt must contain v1-original, v2-toy-style or v3-standardized.");
         return version;
     }
 }
