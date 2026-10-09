@@ -354,7 +354,7 @@ public partial class Game1 : Game
             var rect=PortraitCell(slot);int portrait=_setup.Portraits[slot];Color color=_setup.OwnerColor(slot);
             bool active=slot<_setup.ActiveCount;
             _ui.Box(new(rect.X+2,rect.Y+2,rect.Width-4,rect.Height-4),active?color:new Color(57,69,77));
-            _portraitRenderer.Draw(_spriteBatch,_setup.Looks[slot],new Rectangle(rect.X+7,rect.Y+7,rect.Width-14,rect.Height-14),active);
+            _portraitRenderer.Draw(_spriteBatch,_setup.Looks[slot],new Rectangle(rect.X+7,rect.Y+7,rect.Width-14,rect.Height-14),active,forCreation:true);
             _ui.Box(new(rect.X+8,rect.Y+8,70,28),new Color(10,25,35,215));
             _ui.Text("#"+(slot+1).ToString("00"),new(rect.X+16,rect.Y+10),0.46f,active?color:Color.Gray);
             if(HasTerritories)

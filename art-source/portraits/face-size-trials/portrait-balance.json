@@ -1,0 +1,30 @@
+{
+  "purpose": "Conqueror creation portraits; domestic affairs portraits remain unchanged",
+  "ratio": "4:3",
+  "baseline": "character-XX-1-face-large-trial.png",
+  "face": "Circle approximating face; its inscribed square occupies about one sixth of frame area; adjust framing per pose",
+  "torsoAndArmsScale": 0.75,
+  "handsWristToFingertipsScale": 1.3,
+  "props": "Keep baseline size and natural grips",
+  "earsScaleFromBaseline": 1.4,
+  "earsPlacement": "Slightly posterior on curved skull, slightly raised; then shift vertically upward in image by approximately one earlobe height. Retain natural hair overlap and human/elf ear shape.",
+  "mainUpperIrisHighlight": "About twice baseline linear size, at diagonal upper iris contour; break a short section of iris outline. Clip strictly within eye opening; never overlap skin, lids or lashes.",
+  "headwearScale": 1.2,
+  "headwearScope": "Crown, hat or ribbon above upper lashes; scale around head attachment without changing face size",
+  "headwearCoveringRearSkull": "For hats covering the back of the head: enlarge front half approximately 1.2x, smoothly taper toward rear to original 1.0x. Keep rear skull coverage fitted to original head. Emphasize front to suggest smaller face without making the whole hat oversized.",
+  "signatureOrnament": "Enlarge one identifying headwear ornament approximately 1.5x relative to the previous trial: central crown gemstone, central ribbon clasp, or front hat badge. Keep neighboring ornaments at previous size.",
+  "latestTrials": [
+    "character-01-1-tiara-correct-center-trial.png",
+    "character-02-1-signature-ornament150-trial.png",
+    "character-03-1-signature-ornament150-trial.png"
+  ],
+  "notes": "Ratios are visual targets for generative edits, not exact measurements. Latest trials await user review; preserve previous versions. Do not automatically replace game assets.",
+  "tiaraSymmetry": "Use the tilted facial center axis shown by the user annotation, not screen vertical. The true central jewel is the viewer-right upper teardrop at approximately x950 y75 in the baseline 1448x1086 image. Enlarge that jewel about 1.5x, preserve its base position and restore original ornate tiara layout. The jewel at x760 y50 remains baseline size.",
+  "princessApprovedVersion": "character-01-1-tiara-correct-center-trial.png",
+  "princessApproval": "User fixed the previous correct-center version. Later gemstone-rhythm and round-ear-gem130 experiment is not adopted. Retain its file as an experiment only.",
+  "additionalTrials": [
+    "character-04-1-balanced-trial.png",
+    "character-05-1-balanced-trial.png",
+    "character-06-1-balanced-trial.png"
+  ]
+}

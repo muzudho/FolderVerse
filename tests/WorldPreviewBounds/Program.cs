@@ -18,6 +18,15 @@ sealed class PreviewBoundsCheck : Game
         using var preview = new WorldPreview(GraphicsDevice);
         var font = Content.Load<SpriteFont>("UiFont");
         using var batch = new SpriteBatch(GraphicsDevice);
+        var portraits = new PortraitRenderer(Content);
+        batch.Begin();
+        for(int id=0;id<60;id++)for(int variant=0;variant<6;variant++)
+        {
+            var look=new ConquerorLook(id,variant);
+            portraits.Draw(batch,look,new Rectangle(0,0,244,166),forCreation:true);
+            portraits.Draw(batch,look,new Rectangle(0,0,256,192));
+        }
+        batch.End();
         foreach (var size in new[] { (1,1,1), (9,1,1), (1,9,1), (1,1,9), (1,7,7), (7,1,7), (7,7,1), (5,5,5) })
         {
             preview.Generate(size.Item1, size.Item2, size.Item3, 0);
@@ -40,6 +49,7 @@ sealed class PreviewBoundsCheck : Game
         var world = new WorldSetup();
         for (int seed = 0; seed < 128; seed++) { world.SetWorld(seed); preview.ShowSetup(world, false); }
         Console.WriteLine("PASS: preview rendering and UI font drawing for all shape names, maxima and orientations, correct bounds exceptions, and 128 generated worlds.");
+        Console.WriteLine("PASS: all 360 creation portraits and all 360 domestic portraits loaded and drawn through their separate paths.");
         Exit();
     }
 }

@@ -1,0 +1,7 @@
+Tool: built-in imagegen
+Use case: identity-preserve portrait edits for conqueror creation, 4:3.
+Shared visual targets: face circle diameter about 2/3 frame height; compact torso/arms 0.75x, hands 1.3x, ears 1.4x slightly posterior and one earlobe upward. Upper iris highlights 2x, at diagonal iris contour, clipped within eye opening. Headwear 1.2x; rear-covering hats taper to original rear size. One identifying ornament 1.5x. Preserve identity, pose, props and style; frame individually.
+04: Pink-haired green-eyed star mage. Preserve monocle, star wand and gloved hands. Emphasize central star/gem on headband.
+05: Dark-skinned black-haired woman. Preserve closed-eye laugh; skip iris changes. Sunglasses stay atop head. Emphasize blue solar-panel hair accessory.
+06: Silver-haired elf radio operator. Preserve round glasses, headset, radio and map. Emphasize central diamond/laurel cap badge; cap front grows while rear stays fitted.
+Ratios are approximate visual targets. Trials await user review; source and current game assets remain preserved.

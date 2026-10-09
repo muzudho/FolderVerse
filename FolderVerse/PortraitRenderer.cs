@@ -10,9 +10,12 @@ public sealed class PortraitRenderer
 {
     private readonly Texture2D[] _sheets=new Texture2D[10];
     private readonly Texture2D[] _individual=new Texture2D[360];
+    private readonly Texture2D[] _creation=new Texture2D[360];
+    private readonly ContentManager _content;
     private readonly Dictionary<int,Texture2D> _normalized=new();
     public PortraitRenderer(ContentManager content)
     {
+        _content=content;
         if(PortraitAssets.Version=="v3-standardized")
         {
             for(int id=0;id<60;id++)for(int variant=0;variant<6;variant++)
@@ -44,13 +47,16 @@ public sealed class PortraitRenderer
         // Inset past separator pixels and avoid sampling adjacent portraits.
         return new(left+2,top+2,right-left-4,bottom-top-4);
     }
-    public void Draw(SpriteBatch batch,ConquerorLook look,Rectangle destination,bool active=true)
+    public void Draw(SpriteBatch batch,ConquerorLook look,Rectangle destination,bool active=true,bool forCreation=false)
     {
         if(look.BaseId<0 || look.BaseId>=60 || look.VariantId<0 || look.VariantId>=6)
             throw new ArgumentOutOfRangeException(nameof(look));
         if(PortraitAssets.Version=="v3-standardized")
         {
-            var individual=_individual[look.BaseId*6+look.VariantId];
+            int index=look.BaseId*6+look.VariantId;
+            var individual=forCreation
+                ? _creation[index] ??= _content.Load<Texture2D>("Images/Portraits/conqueror-creation/tiles/character-"+(look.BaseId+1).ToString("00")+"-"+(look.VariantId+1))
+                : _individual[index];
             var crop=FitSource(new Rectangle(0,0,individual.Width,individual.Height),destination);
             batch.Draw(individual,destination,crop,active?Color.White:new Color(115,115,115));
             return;
