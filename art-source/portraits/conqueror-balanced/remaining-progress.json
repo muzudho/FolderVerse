@@ -1,0 +1,766 @@
+{
+  "Total": 300,
+  "Completed": 95,
+  "Portraits": [
+    {
+      "CharacterId": 7,
+      "Variant": 2,
+      "File": "remaining-variants/character-07-2-balanced.png",
+      "Sha256": "6027310C4CCC0FCE05F8C2042CDF6587833401C2F29AAFC18F513976E15F0D38",
+      "Reviewed": true,
+      "Note": "屋外：緑色と金色装飾のマジックローブ"
+    },
+    {
+      "CharacterId": 7,
+      "Variant": 3,
+      "File": "remaining-variants/character-07-3-balanced.png",
+      "Sha256": "13F0952615580425A97656A5D70356E0032E715EB7A6A385AB78BA0D228F5CA5",
+      "Reviewed": true,
+      "Note": "室内魔法：ラフな服"
+    },
+    {
+      "CharacterId": 7,
+      "Variant": 4,
+      "File": "remaining-variants/character-07-4-balanced.png",
+      "Sha256": "CCF11A2EFBCB05B7771CEBBAC5B9947D63C636250237D153AF7F170D19B3E493",
+      "Reviewed": true,
+      "Note": "室内くつろぎ：ラフなシャツ"
+    },
+    {
+      "CharacterId": 7,
+      "Variant": 5,
+      "File": "remaining-variants/character-07-5-balanced.png",
+      "Sha256": "F0AEF4B5D9813462EE3F0CEA87C281D940521B48968D0F12CCAC3A0B9792D2A1",
+      "Reviewed": true,
+      "Note": "宮殿の正装：緑と金のローブ"
+    },
+    {
+      "CharacterId": 7,
+      "Variant": 6,
+      "File": "remaining-variants/character-07-6-balanced.png",
+      "Sha256": "C265C16AD42D2CA931677EFE79BC565E90590CA726838CF4DA219387F5A29B7C",
+      "Reviewed": true,
+      "Note": "屋外戦闘：緑と金のマジックローブ"
+    },
+    {
+      "CharacterId": 1,
+      "Variant": 2,
+      "File": "remaining-variants/character-01-2-balanced.png",
+      "Sha256": "488787747F458DD466CEED7CABF2B4D195629466072054C799375B224CD4A1A4",
+      "Reviewed": true,
+      "Note": "雪景色・ウインク・マグカップを維持"
+    },
+    {
+      "CharacterId": 1,
+      "Variant": 3,
+      "File": "remaining-variants/character-01-3-balanced.png",
+      "Sha256": "6095F843A96113EFDA72FA5C6F651CF99CBF86C008885186A02986FFA391141A",
+      "Reviewed": true,
+      "Note": "駆けるポーズ・ロボットを維持"
+    },
+    {
+      "CharacterId": 1,
+      "Variant": 4,
+      "File": "remaining-variants/character-01-4-balanced.png",
+      "Sha256": "5C65D09A72AB43E0149330A8C83E3E1CD118DE2D43137B3DC1C0673617D33CED",
+      "Reviewed": true,
+      "Note": "魔法の杖・モノクル復元"
+    },
+    {
+      "CharacterId": 1,
+      "Variant": 5,
+      "File": "remaining-variants/character-01-5-balanced.png",
+      "Sha256": "5388F3414A198892ADA004681D8BF17FB1AE40D8C894C0605C382E17D1D1CB11",
+      "Reviewed": true,
+      "Note": "ウインク・手を伸ばすポーズ・上半身構図"
+    },
+    {
+      "CharacterId": 1,
+      "Variant": 6,
+      "File": "remaining-variants/character-01-6-balanced.png",
+      "Sha256": "0EB7EABEB8E5970EF18CB3E6E4A522B42FCBE8624B73D414A5A2D66A06084C7A",
+      "Reviewed": true,
+      "Note": "ケーキと玉座・手を2本に整理"
+    },
+    {
+      "CharacterId": 2,
+      "Variant": 2,
+      "File": "remaining-variants/character-02-2-balanced.png",
+      "Sha256": "A106F9942B8CA47EE26DC1BFA87C4C3626EBDF275A7DFBCCC296C63165BA6F92",
+      "Reviewed": true,
+      "Note": "読書・静かにのポーズ・眼帯保持"
+    },
+    {
+      "CharacterId": 2,
+      "Variant": 3,
+      "File": "remaining-variants/character-02-3-balanced.png",
+      "Sha256": "9904AD1044527D2AC9D85DDBBC15AD43F29A005580C40BA0147342F2D07D8F96",
+      "Reviewed": true,
+      "Note": "地図・手指を5本に修正"
+    },
+    {
+      "CharacterId": 2,
+      "Variant": 4,
+      "File": "remaining-variants/character-02-4-balanced.png",
+      "Sha256": "111DB815D69B42B3D5BE409E55E53EF25C39B06948B642C9AA4B0B6CA352F290",
+      "Reviewed": true,
+      "Note": "雪景色・水筒の手指を修正"
+    },
+    {
+      "CharacterId": 2,
+      "Variant": 5,
+      "File": "remaining-variants/character-02-5-balanced.png",
+      "Sha256": "79BCF7E6D5B0214CF1C402DC551B4C745EF8C98AAE77F9C28B966EBD23884522",
+      "Reviewed": true,
+      "Note": "書斎・羽根ペン・振り向く姿を維持"
+    },
+    {
+      "CharacterId": 2,
+      "Variant": 6,
+      "File": "remaining-variants/character-02-6-balanced.png",
+      "Sha256": "43E1C71B610EA24801FBEEC971C30E4CB1333F7BB4D7870709BEEB3EF6EA9DB9",
+      "Reviewed": true,
+      "Note": "屋外・伸ばした手・眼帯とアヒル保持"
+    },
+    {
+      "CharacterId": 3,
+      "Variant": 2,
+      "File": "remaining-variants/character-03-2-balanced.png",
+      "Sha256": "D59657F8354EC4476C938C1ACB7AAD30DCC99101EE49BA5FD2930734B42DD89F",
+      "Reviewed": true,
+      "Note": "空中・驚き顔・蒸気機関車を維持"
+    },
+    {
+      "CharacterId": 3,
+      "Variant": 3,
+      "File": "remaining-variants/character-03-3-balanced.png",
+      "Sha256": "3F3782677D80AC01318308CE0AEF183278627DBABC31E79E332061A27951744C",
+      "Reviewed": true,
+      "Note": "冬・眠そうな表情・水筒と機関車保持"
+    },
+    {
+      "CharacterId": 3,
+      "Variant": 4,
+      "File": "remaining-variants/character-03-4-balanced.png",
+      "Sha256": "41256F55DEB2F6686411F47BB5A67ED5E0897DB15515D5454282F477F5D8CCA3",
+      "Reviewed": true,
+      "Note": "雪の駅・機関車・ベンチのポーズ保持"
+    },
+    {
+      "CharacterId": 3,
+      "Variant": 5,
+      "File": "remaining-variants/character-03-5-balanced.png",
+      "Sha256": "72B84A4FA15D7136420CACFD68674A3CB5302344BB6792247024F1A279737C73",
+      "Reviewed": true,
+      "Note": "カフェ・サンドイッチ・静かな表情保持"
+    },
+    {
+      "CharacterId": 3,
+      "Variant": 6,
+      "File": "remaining-variants/character-03-6-balanced.png",
+      "Sha256": "DBFA7520BD387F4ED6DEF33044EDEE1DA67704843AA9ACD9FAF62826344E4765",
+      "Reviewed": true,
+      "Note": "夜の駅・ウインク・元画像の黒手袋を保持"
+    },
+    {
+      "CharacterId": 4,
+      "Variant": 2,
+      "File": "remaining-variants/character-04-2-balanced.png",
+      "Sha256": "54ADD711CE37A82AF0793BB1652D56E407F26217083B239ABCFD01E4CF961966",
+      "Reviewed": true,
+      "Note": "室内・ナイトローブ・星ロボット保持"
+    },
+    {
+      "CharacterId": 4,
+      "Variant": 3,
+      "File": "remaining-variants/character-04-3-balanced.png",
+      "Sha256": "3FE75A504D65BFA596958EEFE841586655DEAD1E65F8BCF34E5D5655CBDF17FE",
+      "Reviewed": true,
+      "Note": "眠る表情・星のソファ・ロボット保持"
+    },
+    {
+      "CharacterId": 4,
+      "Variant": 4,
+      "File": "remaining-variants/character-04-4-balanced.png",
+      "Sha256": "77B896D16A6E6E456024F47796275A8B5CD06BEB76B1FB1AFBE6601861C059E7",
+      "Reviewed": true,
+      "Note": "読書・モノクル・ロボットの杖混入修正"
+    },
+    {
+      "CharacterId": 4,
+      "Variant": 5,
+      "File": "remaining-variants/character-04-5-balanced.png",
+      "Sha256": "B3690D5208B33402831253C08B9F6D48047A4E55035024BFBB12956E78462DDF",
+      "Reviewed": true,
+      "Note": "屋外・両手で杖・モノクル保持"
+    },
+    {
+      "CharacterId": 4,
+      "Variant": 6,
+      "File": "remaining-variants/character-04-6-balanced.png",
+      "Sha256": "6DD9654F1CC7419845B0FC736D3BE9B4BC7D8AA995E28E29186137CEB099A484",
+      "Reviewed": true,
+      "Note": "ピザ・ウインク・星の杖保持"
+    },
+    {
+      "CharacterId": 5,
+      "Variant": 2,
+      "File": "remaining-variants/character-05-2-balanced.png",
+      "Sha256": "B9CA54BA319211CB50DF25975E29D861A52D63B2B6A29E3EE168ED2D3217CE0D",
+      "Reviewed": true,
+      "Note": "空中・閉じ目の笑顔・余分な腕を修正"
+    },
+    {
+      "CharacterId": 5,
+      "Variant": 3,
+      "File": "remaining-variants/character-05-3-balanced.png",
+      "Sha256": "EF39B6349EA94F09BD42186F1623208DC93D2CA29EF02E8396E058603E9E3D62",
+      "Reviewed": true,
+      "Note": "閉じ目の笑顔・白手袋を伸ばすポーズ保持"
+    },
+    {
+      "CharacterId": 5,
+      "Variant": 4,
+      "File": "remaining-variants/character-05-4-balanced.png",
+      "Sha256": "996E3D7262149EA1646214FFC5AB82D1EFE9989B9896C191A59C509D593963D5",
+      "Reviewed": true,
+      "Note": "屋外・素手を伸ばすポーズ・顔を寄せ直し"
+    },
+    {
+      "CharacterId": 5,
+      "Variant": 5,
+      "File": "remaining-variants/character-05-5-balanced.png",
+      "Sha256": "8B54CC3341464CBF68346C75CD2B8AC0A7F419ED40562ED5F0FA6E6B1C1DF885",
+      "Reviewed": true,
+      "Note": "夜のフード・黒手袋・閉じ目を保持"
+    },
+    {
+      "CharacterId": 5,
+      "Variant": 6,
+      "File": "remaining-variants/character-05-6-balanced.png",
+      "Sha256": "2BBB0F8B3DA4F525A4BF3F182D2A1448D826E76CBA9B35612D3E1FDC52D0C480",
+      "Reviewed": true,
+      "Note": "眠る表情・ロボット・顔を寄せ直し"
+    },
+    {
+      "CharacterId": 6,
+      "Variant": 2,
+      "File": "remaining-variants/character-06-2-balanced.png",
+      "Sha256": "B3B1F12923165B3DB7E54735546658C1D592A1D11E9E4F746B5B48707063FF20",
+      "Reviewed": true,
+      "Note": "食事・ハンバーガー・眼鏡と無線機保持"
+    },
+    {
+      "CharacterId": 6,
+      "Variant": 3,
+      "File": "remaining-variants/character-06-3-balanced.png",
+      "Sha256": "7D3D58B06B0ADD98E1D84EFD9148198D9096E6762712D84C25A3013AB6B73B91",
+      "Reviewed": true,
+      "Note": "ベッドでゲーム・素手・顔を寄せ直し"
+    },
+    {
+      "CharacterId": 6,
+      "Variant": 4,
+      "File": "remaining-variants/character-06-4-balanced.png",
+      "Sha256": "AAF0E7691F339DCAA64E0DF645D33FC5438044CE95FBB160BF0A18945235C926",
+      "Reviewed": true,
+      "Note": "屋外基地・サングラスと素手保持"
+    },
+    {
+      "CharacterId": 6,
+      "Variant": 5,
+      "File": "remaining-variants/character-06-5-balanced.png",
+      "Sha256": "938E44BD2AF95FF6FA8ECE7115171F140FF8887D3E0AFA823A3820AF600BF2ED",
+      "Reviewed": true,
+      "Note": "書類の舞う書斎・驚き顔と眼鏡保持"
+    },
+    {
+      "CharacterId": 6,
+      "Variant": 6,
+      "File": "remaining-variants/character-06-6-balanced.png",
+      "Sha256": "21C457A50660C6F01FD799FC5F4B12FFC213B74CF317DFEB7099E963B2FB8B21",
+      "Reviewed": true,
+      "Note": "お茶・眼鏡・肩の無線機保持"
+    },
+    {
+      "CharacterId": 8,
+      "Variant": 2,
+      "File": "remaining-variants/character-08-2-balanced.png",
+      "Sha256": "3229BE14A22D27AC36E77548F81B269C6168E468F65A5422D84EB94EDDC3C1D9",
+      "Reviewed": true,
+      "Note": "書斎・青い魔法陣・驚き顔保持"
+    },
+    {
+      "CharacterId": 8,
+      "Variant": 3,
+      "File": "remaining-variants/character-08-3-balanced.png",
+      "Sha256": "142779CFFFE45B62A3E974C1F45181A8AE3EB42A44EA43CCCDB1FB1363F6F8D5",
+      "Reviewed": true,
+      "Note": "空中・驚き顔・黒手袋と浮く恐竜保持・出力寸法を1448x1086へ正規化"
+    },
+    {
+      "CharacterId": 8,
+      "Variant": 4,
+      "File": "remaining-variants/character-08-4-balanced.png",
+      "Sha256": "60C692A5E5BDE8E69CF2AF89B9250364F76888F1DB9C0E1F625916B7E01456D5",
+      "Reviewed": true,
+      "Note": "お茶を注ぐポーズ・閉じ目・素手保持"
+    },
+    {
+      "CharacterId": 8,
+      "Variant": 5,
+      "File": "remaining-variants/character-08-5-balanced.png",
+      "Sha256": "D609946C1276AF43C5809E922EC2D01DFA9615AFE2350E7EDBA52220EE5F3AEA",
+      "Reviewed": true,
+      "Note": "毛布・夜帽子・眼鏡とティッシュ保持"
+    },
+    {
+      "CharacterId": 8,
+      "Variant": 6,
+      "File": "remaining-variants/character-08-6-balanced.png",
+      "Sha256": "06743FC5294AC446E3F73257DBDE7B02DCA246EFB8562B980AF5D43EDA6A3190",
+      "Reviewed": true,
+      "Note": "宮殿の正装・白手袋と恐竜保持"
+    },
+    {
+      "CharacterId": 9,
+      "Variant": 2,
+      "File": "remaining-variants/character-09-2-balanced.png",
+      "Sha256": "B62F3AD0E01AACDAB2A24A6DB694935BD8A05E259309865A7B6280705D75D130",
+      "Reviewed": true,
+      "Note": "眼鏡・巻き髪・持ち物と差分の表情を維持。顔と手のバランスを調整、目視確認済み。"
+    },
+    {
+      "CharacterId": 9,
+      "Variant": 3,
+      "File": "remaining-variants/character-09-3-balanced.png",
+      "Sha256": "60D04CDE284BEBF4A451F8D62B0A8E643C2A38FCD6ACB6B9BCB809123DA4C954",
+      "Reviewed": true,
+      "Note": "眼鏡・巻き髪・持ち物と差分の表情を維持。顔と手のバランスを調整、目視確認済み。"
+    },
+    {
+      "CharacterId": 9,
+      "Variant": 4,
+      "File": "remaining-variants/character-09-4-balanced.png",
+      "Sha256": "0EDDDA8074CC10786F7476D19D98BE5C97BD73B154CDC6988E34C5E9B306B47F",
+      "Reviewed": true,
+      "Note": "巻き髪・眼鏡・飛行船模型と各表情を維持。顔と手を調整し余分な腕がないことを目視確認。"
+    },
+    {
+      "CharacterId": 9,
+      "Variant": 5,
+      "File": "remaining-variants/character-09-5-balanced.png",
+      "Sha256": "CE5E048B9FEDAE99A3ABB01D556A86691B3F446A8D72EC897C59E0ED2B7D7B59",
+      "Reviewed": true,
+      "Note": "巻き髪・眼鏡・飛行船模型と各表情を維持。顔と手を調整し余分な腕がないことを目視確認。"
+    },
+    {
+      "CharacterId": 9,
+      "Variant": 6,
+      "File": "remaining-variants/character-09-6-balanced.png",
+      "Sha256": "C0EF499DE288D896A9BD6548CA8EB3B05D2D8A12E2B2A8ED27915E32EE6B15A0",
+      "Reviewed": true,
+      "Note": "巻き髪・眼鏡・飛行船模型と各表情を維持。顔と手を調整し余分な腕がないことを目視確認。"
+    },
+    {
+      "CharacterId": 10,
+      "Variant": 2,
+      "File": "remaining-variants/character-10-2-balanced.png",
+      "Sha256": "7CA5A9352911CC6615A917E305E197151A6E5EF8DA414A1D06ED41B3143AF6D7",
+      "Reviewed": true,
+      "Note": "青髪・赤眼鏡・帽章と赤い車の相棒を維持。差分の表情・場面・手のポーズを目視確認。"
+    },
+    {
+      "CharacterId": 10,
+      "Variant": 3,
+      "File": "remaining-variants/character-10-3-balanced.png",
+      "Sha256": "5ED0D46E965CD7A3B7A45E54CAF4081969B71D8014AAC938EC92B824CF54971A",
+      "Reviewed": true,
+      "Note": "青髪・赤眼鏡・帽章と赤い車の相棒を維持。差分の表情・場面・手のポーズを目視確認。"
+    },
+    {
+      "CharacterId": 10,
+      "Variant": 4,
+      "File": "remaining-variants/character-10-4-balanced.png",
+      "Sha256": "38CAB9B2D5EBFFE8D95B58FE24B987652296967F139EC613AEAB3B69463523F6",
+      "Reviewed": true,
+      "Note": "青髪・赤眼鏡・帽章と赤い車の相棒を維持。差分の表情・場面・手のポーズを目視確認。"
+    },
+    {
+      "CharacterId": 10,
+      "Variant": 5,
+      "File": "remaining-variants/character-10-5-balanced.png",
+      "Sha256": "3CF3B93A0E704957C0486F4289EC157B935EC7F2C3C3ECA17F1E87BBEC41081E",
+      "Reviewed": true,
+      "Note": "青髪・赤眼鏡・車の相棒と各ポーズを維持。余分な手や重複した小物を目視確認。"
+    },
+    {
+      "CharacterId": 10,
+      "Variant": 6,
+      "File": "remaining-variants/character-10-6-balanced.png",
+      "Sha256": "2BB21274828AD983D7700EEFDEAC0D3FFE503D05897D70DB42AF616016C64EDD",
+      "Reviewed": true,
+      "Note": "青髪・赤眼鏡・車の相棒と各ポーズを維持。余分な手や重複した小物を目視確認。"
+    },
+    {
+      "CharacterId": 11,
+      "Variant": 2,
+      "File": "remaining-variants/character-11-2-balanced.png",
+      "Sha256": "C2FDFC07FF0C053FCA44EE4977DE527208830C7E13972DA5ACF480A518229A29",
+      "Reviewed": true,
+      "Note": "紫髪・銀眼鏡・魔女帽子・フクロウを維持。差分の表情と手、小物を確認済み。"
+    },
+    {
+      "CharacterId": 11,
+      "Variant": 3,
+      "File": "remaining-variants/character-11-3-balanced.png",
+      "Sha256": "C08E3A56DFDB54697C9CA3B1ED32B37108A1F39D25F25715144AE063D0463355",
+      "Reviewed": true,
+      "Note": "紫髪・銀眼鏡・魔女帽子・フクロウを維持。差分の表情と手、小物を確認済み。"
+    },
+    {
+      "CharacterId": 11,
+      "Variant": 4,
+      "File": "remaining-variants/character-11-4-balanced.png",
+      "Sha256": "F288223AF7409001C44712EB0F4D9FFFE8B6CAB5921261491697EC92FD41BD2C",
+      "Reviewed": true,
+      "Note": "紫髪・銀眼鏡・魔女帽子・フクロウを維持。差分の表情と手、小物を確認済み。"
+    },
+    {
+      "CharacterId": 11,
+      "Variant": 5,
+      "File": "remaining-variants/character-11-5-balanced.png",
+      "Sha256": "1727D9F501199F19FF8A4999262B123717B0DA7A83FFBCD6627640D4EED1A338",
+      "Reviewed": true,
+      "Note": "紫髪・帽子・フクロウと電池を維持。差分の眼鏡有無、手と小物を目視確認。"
+    },
+    {
+      "CharacterId": 11,
+      "Variant": 6,
+      "File": "remaining-variants/character-11-6-balanced.png",
+      "Sha256": "2C092F6BAF3B201A699EF119D2C39546142AFB69987877DCEB78DCEF40655DA3",
+      "Reviewed": true,
+      "Note": "紫髪・帽子・フクロウと電池を維持。差分の眼鏡有無、手と小物を目視確認。"
+    },
+    {
+      "CharacterId": 12,
+      "Variant": 2,
+      "File": "remaining-variants/character-12-2-balanced.png",
+      "Sha256": "CB6E39A923E2B47B72D0B61CFB7593964354F81B9147ADDF1272AA84EE283A55",
+      "Reviewed": true,
+      "Note": "水色髪・琥珀の瞳・提督帽子・青黄の潜水艦を維持。手と差分の表情を確認済み。"
+    },
+    {
+      "CharacterId": 12,
+      "Variant": 3,
+      "File": "remaining-variants/character-12-3-balanced.png",
+      "Sha256": "59D4B1E9E265E63408525DD590CE6FE242F911FFE87B1FA098425ABEB3B4BB8C",
+      "Reviewed": true,
+      "Note": "水色髪・琥珀の瞳・提督帽子・青黄の潜水艦を維持。手と差分の表情を確認済み。"
+    },
+    {
+      "CharacterId": 12,
+      "Variant": 4,
+      "File": "remaining-variants/character-12-4-balanced.png",
+      "Sha256": "48A17DE538130A944815751FB064634AD93F423A9EA867480F950C53E6913C04",
+      "Reviewed": true,
+      "Note": "水色髪・琥珀の瞳・提督帽子・青黄の潜水艦を維持。手と差分の表情を確認済み。 出力寸法を1448x1086へ正規化。"
+    },
+    {
+      "CharacterId": 12,
+      "Variant": 5,
+      "File": "remaining-variants/character-12-5-balanced.png",
+      "Sha256": "8A2457FEA09AE5F7D1CA848A2C82CA4A3548EF6EDB1A78EDA99CE8249FB57479",
+      "Reviewed": true,
+      "Note": "水色髪・琥珀の瞳・提督帽子と潜水艦を維持。場面・表情・手と電池を目視確認。"
+    },
+    {
+      "CharacterId": 12,
+      "Variant": 6,
+      "File": "remaining-variants/character-12-6-balanced.png",
+      "Sha256": "EE27917AAB61C7EFE8CF3264368013A301A82375578384399770D3930BA129E2",
+      "Reviewed": true,
+      "Note": "水色髪・琥珀の瞳・提督帽子と潜水艦を維持。場面・表情・手と電池を目視確認。"
+    },
+    {
+      "CharacterId": 13,
+      "Variant": 2,
+      "File": "remaining-variants/character-13-2-balanced.png",
+      "Sha256": "9873BD95738A780990CD92528F7ED166F4C606A9761411A930E4FA4414237A9B",
+      "Reviewed": true,
+      "Note": "茶の巻き髪・渦巻き眼鏡・帽子と差分の持ち物を維持。手とレンズ数を目視確認。"
+    },
+    {
+      "CharacterId": 13,
+      "Variant": 3,
+      "File": "remaining-variants/character-13-3-balanced.png",
+      "Sha256": "CDB255E6DF29217C35593BFFB0665519DCB93F30D56E851DE521DA79B415BDE4",
+      "Reviewed": true,
+      "Note": "茶の巻き髪・渦巻き眼鏡・帽子と差分の持ち物を維持。手とレンズ数を目視確認。"
+    },
+    {
+      "CharacterId": 13,
+      "Variant": 4,
+      "File": "remaining-variants/character-13-4-balanced.png",
+      "Sha256": "9F342E4DE17564B54354263A145C24545D5E19406B0EC2BACF939CA6EE9C9413",
+      "Reviewed": true,
+      "Note": "茶の巻き髪・渦巻き眼鏡・帽子と差分の持ち物を維持。手とレンズ数を目視確認。"
+    },
+    {
+      "CharacterId": 13,
+      "Variant": 5,
+      "File": "remaining-variants/character-13-5-balanced.png",
+      "Sha256": "C86B4B389FF7D3E07D41ED9C895D05A0057E5CD82556E1B39804A4C6FB3F7EDF",
+      "Reviewed": true,
+      "Note": "巻き髪・帽子・各眼鏡と道具を維持。手と電池を目視確認。"
+    },
+    {
+      "CharacterId": 13,
+      "Variant": 6,
+      "File": "remaining-variants/character-13-6-balanced.png",
+      "Sha256": "03629FC331A2AC5C41E0FDFA221128F29229AFE99341428DA65B9F7A10B2281D",
+      "Reviewed": true,
+      "Note": "巻き髪・帽子・各眼鏡と道具を維持。手と電池を目視確認。"
+    },
+    {
+      "CharacterId": 14,
+      "Variant": 2,
+      "File": "remaining-variants/character-14-2-balanced.png",
+      "Sha256": "220716604204BEFA3C406834E670081FA3EC7341719213B7FC1532E4BFD5E0DF",
+      "Reviewed": true,
+      "Note": "金の巻き髪・閉じた目・包帯眼帯・王冠を維持。手袋と各道具を目視確認。"
+    },
+    {
+      "CharacterId": 14,
+      "Variant": 3,
+      "File": "remaining-variants/character-14-3-balanced.png",
+      "Sha256": "9DFD089A05DA07624FDBF02B9E4E26D1CEC2781AFAA6FADB2A5748B639436903",
+      "Reviewed": true,
+      "Note": "金の巻き髪・閉じた目・包帯眼帯・王冠を維持。手袋と各道具を目視確認。"
+    },
+    {
+      "CharacterId": 14,
+      "Variant": 4,
+      "File": "remaining-variants/character-14-4-balanced.png",
+      "Sha256": "FC44EE3ACC11D2D151B5AF025E3C1509F8E8439533FDA0B5EFA1ADBB10100B6C",
+      "Reviewed": true,
+      "Note": "金の巻き髪・閉じた目・包帯眼帯・王冠を維持。手袋と各道具を目視確認。"
+    },
+    {
+      "CharacterId": 14,
+      "Variant": 5,
+      "File": "remaining-variants/character-14-5-balanced.png",
+      "Sha256": "0EFA2D9D59DBC46EFBCD1DB877291E98FA30EB390F9354775B13CD5120BC6938",
+      "Reviewed": true,
+      "Note": "巻き髪・王冠・閉じた目・包帯眼帯を維持。剣／杖と手のポーズを目視確認。"
+    },
+    {
+      "CharacterId": 14,
+      "Variant": 6,
+      "File": "remaining-variants/character-14-6-balanced.png",
+      "Sha256": "4A8CE9F1AE641982CDDC0C89062FCD9512AB12499C4185463124B29FB8C0D5F2",
+      "Reviewed": true,
+      "Note": "巻き髪・王冠・閉じた目・包帯眼帯を維持。剣／杖と手のポーズを目視確認。"
+    },
+    {
+      "CharacterId": 15,
+      "Variant": 2,
+      "File": "remaining-variants/character-15-2-balanced.png",
+      "Sha256": "1164A298DCAB72A341B9CF851CA9E1D95A79AA0583F6A676A882EA85B11D9669",
+      "Reviewed": true,
+      "Note": "黒髪・紫の瞳・黒眼帯と差分の帽子／手袋を維持。道具と手を目視確認。"
+    },
+    {
+      "CharacterId": 15,
+      "Variant": 3,
+      "File": "remaining-variants/character-15-3-balanced.png",
+      "Sha256": "AF2527BE3F7C61E416ED46CA161623DFFF6B537AEF0E33F341B15CEF77113083",
+      "Reviewed": true,
+      "Note": "黒髪・紫の瞳・黒眼帯と差分の帽子／手袋を維持。道具と手を目視確認。"
+    },
+    {
+      "CharacterId": 15,
+      "Variant": 4,
+      "File": "remaining-variants/character-15-4-balanced.png",
+      "Sha256": "44D43032C4C46D078445604B84D03A393C28E57151D24E11A6373FCD07D53508",
+      "Reviewed": true,
+      "Note": "黒髪・紫の瞳・黒眼帯と差分の帽子／手袋を維持。道具と手を目視確認。"
+    },
+    {
+      "CharacterId": 15,
+      "Variant": 5,
+      "File": "remaining-variants/character-15-5-balanced.png",
+      "Sha256": "77AFDD121BC8E949FE635057053200FBC119E3A53365D27E9C58F40AE4368352",
+      "Reviewed": true,
+      "Note": "黒髪・紫の瞳・黒眼帯と差分の表情／手袋を維持。手の指と道具を目視確認。"
+    },
+    {
+      "CharacterId": 15,
+      "Variant": 6,
+      "File": "remaining-variants/character-15-6-balanced.png",
+      "Sha256": "0694BB2AA2FA88EF52DFD6AEEC69D8917C5902BCD4F7D82390E7EC0C1198B247",
+      "Reviewed": true,
+      "Note": "黒髪・紫の瞳・黒眼帯と差分の表情／手袋を維持。手の指と道具を目視確認。"
+    },
+    {
+      "CharacterId": 16,
+      "Variant": 2,
+      "File": "remaining-variants/character-16-2-balanced.png",
+      "Sha256": "9EE0FED50A18FE3C5A682ADB654DAC4A29F6AD68F5A6B63CA789E1F09F1C66DD",
+      "Reviewed": true,
+      "Note": "橙の巻き髪・熊耳・王冠と差分の眼鏡有無を維持。手と持ち物を確認済み。"
+    },
+    {
+      "CharacterId": 16,
+      "Variant": 3,
+      "File": "remaining-variants/character-16-3-balanced.png",
+      "Sha256": "FF748D500006E2764628937780AD0D030C24DAF62051DEF7B0295EB699166AF9",
+      "Reviewed": true,
+      "Note": "橙の巻き髪・熊耳・王冠と差分の眼鏡有無を維持。手と持ち物を確認済み。"
+    },
+    {
+      "CharacterId": 16,
+      "Variant": 4,
+      "File": "remaining-variants/character-16-4-balanced.png",
+      "Sha256": "AAE2534E267C15CFCAF9ABB3D19C907EDEFCB31B18005A8F4A611C9975500CC2",
+      "Reviewed": true,
+      "Note": "橙の巻き髪・熊耳・王冠と差分の眼鏡有無を維持。手と持ち物を確認済み。"
+    },
+    {
+      "CharacterId": 16,
+      "Variant": 5,
+      "File": "remaining-variants/character-16-5-balanced.png",
+      "Sha256": "C2B452A9786C756ABA7672099E9BA7BD9C4C974A069F4C29391099386F135235",
+      "Reviewed": true,
+      "Note": "巻き髪・熊耳・眼鏡・王冠と各熊を維持。手と小物の重複を目視確認。"
+    },
+    {
+      "CharacterId": 16,
+      "Variant": 6,
+      "File": "remaining-variants/character-16-6-balanced.png",
+      "Sha256": "166F423EC2E773B4BDD6206967F4819EF8D5A0CDA043B07E0D3D2FF4C0A246E7",
+      "Reviewed": true,
+      "Note": "巻き髪・熊耳・眼鏡・王冠と各熊を維持。手と小物の重複を目視確認。"
+    },
+    {
+      "CharacterId": 17,
+      "Variant": 2,
+      "File": "remaining-variants/character-17-2-balanced.png",
+      "Sha256": "5B6727EC216D58AF3EB9A583569C894150733C05B4ED076E8B4DD4401C59A8C6",
+      "Reviewed": true,
+      "Note": "黒髪・眼帯・差分のサングラス／閉じた目を維持。手と星の道具を目視確認。"
+    },
+    {
+      "CharacterId": 17,
+      "Variant": 3,
+      "File": "remaining-variants/character-17-3-balanced.png",
+      "Sha256": "2C9D2BCCA5A79FADD74DA41845F011DD9488C0FA2EF723E75F52DF0158EE9F58",
+      "Reviewed": true,
+      "Note": "黒髪・眼帯・差分のサングラス／閉じた目を維持。手と星の道具を目視確認。"
+    },
+    {
+      "CharacterId": 17,
+      "Variant": 4,
+      "File": "remaining-variants/character-17-4-balanced.png",
+      "Sha256": "ECF1F2A49265B72AC92E7F494B2E6FE5581F4B601A43DC072E4AB2791273CB89",
+      "Reviewed": true,
+      "Note": "黒髪・眼帯・差分のサングラス／閉じた目を維持。手と星の道具を目視確認。"
+    },
+    {
+      "CharacterId": 17,
+      "Variant": 5,
+      "File": "remaining-variants/character-17-5-balanced.png",
+      "Sha256": "DBB435DCEC6D0124ED123ECCA8594C740C39D719EA56FB0815E16BC858131B1E",
+      "Reviewed": true,
+      "Note": "黒髪・黒眼帯・星の頭飾りと各ポーズを維持。手、電池／茶器を目視確認。"
+    },
+    {
+      "CharacterId": 17,
+      "Variant": 6,
+      "File": "remaining-variants/character-17-6-balanced.png",
+      "Sha256": "74CFACCFA0DAFE327716E5E199A18D4E71B962FAF740BC77D1A1781A21596E2A",
+      "Reviewed": true,
+      "Note": "黒髪・黒眼帯・星の頭飾りと各ポーズを維持。手、電池／茶器を目視確認。"
+    },
+    {
+      "CharacterId": 18,
+      "Variant": 2,
+      "File": "remaining-variants/character-18-2-balanced.png",
+      "Sha256": "3DF98F81B4B8E5C457A534A4AF8F5A335D8B13C12F8BF0FA68A9110DD4E3C551",
+      "Reviewed": true,
+      "Note": "金の巻き髪・青い眼鏡・帽子と各道具を維持。手と相棒／カメラを確認済み。"
+    },
+    {
+      "CharacterId": 18,
+      "Variant": 3,
+      "File": "remaining-variants/character-18-3-balanced.png",
+      "Sha256": "F60381F4C0FAAA7963C43EE8EDD99933E8945A38916215A50146B8E69F261F8D",
+      "Reviewed": true,
+      "Note": "金の巻き髪・青い眼鏡・帽子と各道具を維持。手と相棒／カメラを確認済み。"
+    },
+    {
+      "CharacterId": 18,
+      "Variant": 4,
+      "File": "remaining-variants/character-18-4-balanced.png",
+      "Sha256": "ECA930112C3A96499F01D0ADDEEDBD0BFA4E5ACC3A288DE361070E7396C65607",
+      "Reviewed": true,
+      "Note": "金の巻き髪・青い眼鏡・帽子と各道具を維持。手と相棒／カメラを確認済み。"
+    },
+    {
+      "CharacterId": 18,
+      "Variant": 5,
+      "File": "remaining-variants/character-18-5-balanced.png",
+      "Sha256": "529A783B3C84D23654DB8A68396B27D258A7A74D5564E78AE014322E0A61468A",
+      "Reviewed": true,
+      "Note": "巻き髪・青い眼鏡・帽子とカメラ／チェスを維持。手と道具を目視確認。 出力寸法を1448x1086へ正規化。"
+    },
+    {
+      "CharacterId": 18,
+      "Variant": 6,
+      "File": "remaining-variants/character-18-6-balanced.png",
+      "Sha256": "5397AA53AC6587700BEFAA77E005654AA016D3DB3F16311C58CBD8ED03B613C9",
+      "Reviewed": true,
+      "Note": "巻き髪・青い眼鏡・帽子とカメラ／チェスを維持。手と道具を目視確認。"
+    },
+    {
+      "CharacterId": 19,
+      "Variant": 2,
+      "File": "remaining-variants/character-19-2-balanced.png",
+      "Sha256": "255A13C37B49C4D6FC5CA0771FCE47DDA8A42B363E6884CD9E1C930A2E48D0E9",
+      "Reviewed": true,
+      "Note": "蝶の杖、紫の端末、眼鏡と微笑み、手と顔のバランス確認"
+    },
+    {
+      "CharacterId": 19,
+      "Variant": 3,
+      "File": "remaining-variants/character-19-3-balanced.png",
+      "Sha256": "E676BE861E10956A38B4B43CF459EB8E7FD145EAED78AAE8D2D3831A4BB456F6",
+      "Reviewed": true,
+      "Note": "食事の笑顔、丼と箸、端末と二本の腕を確認"
+    },
+    {
+      "CharacterId": 19,
+      "Variant": 4,
+      "File": "remaining-variants/character-19-4-balanced.png",
+      "Sha256": "5A3D9E1B75283698C1D1F3DE4866E5B2DF35B77FE57E557D2494B8BC4E081AFF",
+      "Reviewed": true,
+      "Note": "眠い目、頬杖、黒猫のぬいぐるみと端末、二本の腕を確認"
+    },
+    {
+      "CharacterId": 19,
+      "Variant": 5,
+      "File": "remaining-variants/character-19-5-balanced.png",
+      "Sha256": "EEBBECA222B322098572E39DF9BCB335E1799C8BD078B85C06DC2CAD57471186",
+      "Reviewed": true,
+      "Note": "振り返る肩と微笑み、蝶の杖と自然な握りを確認"
+    },
+    {
+      "CharacterId": 19,
+      "Variant": 6,
+      "File": "remaining-variants/character-19-6-balanced.png",
+      "Sha256": "CD4140A48FF6811FDC8D66AA54E6BB933A017828EBC08D2C889104B0F2298E07",
+      "Reviewed": true,
+      "Note": "白いフード室内着、伸ばした手の五指、端末を確認"
+    }
+  ]
+}
