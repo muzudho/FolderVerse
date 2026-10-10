@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private readonly CubeNet _propagationNet=new();
-    private static readonly Rectangle PropagationBattleBounds=new(100,232,680,680);
+    private static readonly Rectangle PropagationBattleBounds=new(40,40,1000,1000);
     private Vector2 PropagationBadgeCenter(int scene,Rectangle panel)
     {
         var battle=_robotScenes[scene];
@@ -73,8 +73,8 @@ public partial class Game1
             if(blend>0)DrawPropagationGrid(battle,badge,blend);
             if(blend<1)_counter.DrawNumber(_spriteBatch,i+1,badge,Color.White*(1-blend));
         }
-        _ui.Box(new(0,0,1920,85),new Color(16,35,46));
-        _ui.Text(movement?"伝播フェーズ":"戦場を切り替えています",new(54,24),.8f,Cream);
+        _ui.Box(new(1080,0,840,85),new Color(16,35,46));
+        _ui.Text(movement?"伝播フェーズ":"戦場を切り替えています",new(1120,24),.65f,Cream);
         _ui.Box(RobotResultBar,Muted);
         _ui.Box(new(RobotResultBar.X,RobotResultBar.Y,(int)(RobotResultBar.Width*progress),RobotResultBar.Height),Accent);
         _ui.Button(BattleContinue,movement?"戦闘へ進む":"戦場を切り替える",Accent,.55f);

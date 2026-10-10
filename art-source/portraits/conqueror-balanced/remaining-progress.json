@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 173,
+  "Completed": 177,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1385,6 +1385,38 @@
       "Sha256": "0C7E21DEE659D582079374D0C13D22DBE4262635E45CA51FD121C7B3B2C520C9",
       "Reviewed": true,
       "Note": "時計を持つ黒手袋、微笑む紫の目と無地眼帯、時計工房を保持。"
+    },
+    {
+      "CharacterId": 35,
+      "Variant": 5,
+      "File": "remaining-variants/character-35-5-balanced.png",
+      "Sha256": "1E3F3A5D46684520ECC7EE2A485AB5F0985FE51869DFD0A982516677AEDEED3B",
+      "Reviewed": true,
+      "Note": "振り返る裸肩と肩元の素手、紫の開眼と無地眼帯、金の星と天文背景を保持。"
+    },
+    {
+      "CharacterId": 35,
+      "Variant": 6,
+      "File": "remaining-variants/character-35-6-balanced.png",
+      "Sha256": "376085759C878CC34AD0FF3C5E7C02C18873FF87CBD96D289A721E10587C7715",
+      "Reviewed": true,
+      "Note": "黒のチェス駒の素手と頬元の手、開眼の微笑と無地眼帯、チェス盤を保持。"
+    },
+    {
+      "CharacterId": 36,
+      "Variant": 2,
+      "File": "remaining-variants/character-36-2-balanced.png",
+      "Sha256": "B041B78D4945E044D091AE2D5FF5F4DCBB80E1F87EE5D1BA792E71C79EBFF46F",
+      "Reviewed": true,
+      "Note": "白手袋で紅茶を混ぜる手と赤い玩具機関車、金眼鏡と開眼笑顔を保持。"
+    },
+    {
+      "CharacterId": 36,
+      "Variant": 3,
+      "File": "remaining-variants/character-36-3-balanced.png",
+      "Sha256": "55089DFD6CE6390EBCC821F6ED38F086691E9AF296D66E8DBE792AF22C7A3736",
+      "Reviewed": true,
+      "Note": "両黒手袋で地図を持つ開眼笑顔、青い雷章と舞う書類、図書室を保持。"
     }
   ]
 }

@@ -25,9 +25,9 @@ public partial class Game1
     private const double RobotFrameSeconds=.25;
     private int RobotFrameIndex(BattleState scene)
     {var slice=RobotSlice(_battleWave);return Math.Clamp(slice.Start+(int)Math.Floor(_battleAge/RobotFrameSeconds+1e-8),slice.Start,slice.End);}
-    private static readonly Rectangle RobotBattlePrevious=new(54,108,150,48),RobotBattleNext=new(1700,108,150,48);
-    private static readonly Rectangle RobotPause=new(1000,934,250,48),RobotStepBack=new(1264,934,250,48),RobotStepNext=new(1528,934,250,48);
-    private static readonly Rectangle RobotResultBar=new(54,1020,900,40),RobotResultPause=new(1000,1020,250,50);
+    private static readonly Rectangle RobotBattlePrevious=new(1120,154,350,48),RobotBattleNext=new(1490,154,350,48);
+    private static readonly Rectangle RobotPause=new(1120,934,230,48),RobotStepBack=new(1365,934,230,48),RobotStepNext=new(1610,934,230,48);
+    private static readonly Rectangle RobotResultBar=new(1120,990,720,20),RobotResultPause=new(1120,1020,270,50);
     private void OpenRobotBattle()
     {
         _robotScenes=_setup.Campaign.RobotBattles.Scenes.ToArray();_battleTiles=Array.Empty<CharacterTile>();_battleWave=0;_battleAge=0;_robotResultAge=0;_robotPlaying=true;
@@ -96,10 +96,11 @@ public partial class Game1
         if(_robotPendingFocus>=0){DrawPropagation(_robotPendingFocus,(float)(_robotResultAge/RobotResultSeconds),false);return;}
         var battle=_robotScenes[_battleWave];int frameIndex=RobotFrameIndex(battle);
         var frame=battle.Frames.Count==0?new BattleFrame(battle.Turn,BattlePhase.Result,Array.Empty<BattleUnitView>(),battle.FlagStanding,battle.LastFlagOwner):battle.Frames[frameIndex];
-        _ui.Text($"自動戦闘 / 全体ターン {_setup.Population.Turn} / 同時進行 {_robotRound+1}/{_robotPlayback.Rounds.Length} / 戦場 {_battleWave+1}/{_robotScenes.Length}",new(54,30),.75f,Cream);
+        _ui.Text($"自動戦闘 / 全体ターン {_setup.Population.Turn}",new(1120,24),.65f,Cream);
+        _ui.Text($"同時進行 {_robotRound+1}/{_robotPlayback.Rounds.Length} / 戦場 {_battleWave+1}/{_robotScenes.Length}",new(1120,68),.55f,Cream);
         _ui.Button(RobotBattlePrevious,"前の戦場",Muted,.5f);_ui.Button(RobotBattleNext,"次の戦場",Muted,.5f);
-        _ui.Center($"{(battle.SplitBoard?"分割野戦":battle.Kind==BattleKind.Edge?"辺戦":"節戦")} / Node {battle.TargetNode+1} / {battle.Terrain} / 戦闘ターン {frame.Turn} / {PhaseLabel(frame.Phase)}",new(224,108,1450,48),.6f,Cream);
-        const int left=100,top=232,size=68;
+        BattleInfo($"{(battle.SplitBoard?"分割野戦":battle.Kind==BattleKind.Edge?"辺戦":"節戦")} / Node {battle.TargetNode+1} / {battle.Terrain} / 戦闘ターン {frame.Turn} / {PhaseLabel(frame.Phase)}",112,.5f);
+        const int left=40,top=40,size=100;
         var terrainNode=_setup.Nodes.All[battle.TargetNode];var terrainCell=_setup.Cells[terrainNode.Cell];
         float terrainHeight=WorldTerrain.Elevation(_setup.Routes.Position(terrainNode.Cell,terrainNode.Center),WorldTerrain.Offset(_setup.WorldSeed));
         for(int y=0;y<10;y++)for(int x=0;x<10;x++)
@@ -123,22 +124,23 @@ public partial class Game1
         {
             var border=BattleObstacleArt.HomeBorder(army.Side,new Rectangle(left,top,size*10,size*10));
             _ui.Box(border,_setup.OwnerColor(army.Owner));
-            _ui.Center($"#{army.Owner+1} 退却",army.Side is 0 or 2?new Rectangle(border.X,border.Y+(army.Side==0?-52:10),border.Width,24):new Rectangle(army.Side==3?left-85:left+size*10+12,top+300,70,30),.32f,_setup.OwnerColor(army.Owner));
+            // Keep retreat markers inside the left 1080-pixel battlefield area.
+            _ui.Center($"#{army.Owner+1}",army.Side is 0 or 2?new Rectangle(border.X,border.Y+(army.Side==0?-28:8),border.Width,24):new Rectangle(army.Side==3?0:1042,top+450,36,30),.3f,_setup.OwnerColor(army.Owner));
         }
         for(int i=0;i<10;i++)
-        {_ui.Text(i.ToString(),new(left+i*size+25,top-32),.45f,Cream);_ui.Text(((char)('A'+i)).ToString(),new(left-30,top+i*size+18),.45f,Cream);}
+        {_ui.Text(i.ToString(),new(left+i*size+42,top-32),.45f,Cream);_ui.Text(((char)('A'+i)).ToString(),new(left-30,top+i*size+35),.45f,Cream);}
         if(battle.Kind==BattleKind.Node)
         {
             var f=new Rectangle(left+battle.Flag.X*size,top+battle.Flag.Y*size,size-2,size-2);
             foreach(var patch in BattlePieceArt.Flags[frame.FlagStanding?0:1])
             {
                 var b=patch.Bounds;var color=patch.Ink==0?_setup.OwnerColor(battle.Defender):patch.Ink==2?new Color(215,198,159):new Color(255,224,115);
-                _ui.Box(new(f.X+b.X*2,f.Y+b.Y,f.Width>b.Width*2?b.Width*2:f.Width,b.Height),color);
+                _ui.Box(new(f.X+b.X*size/34,f.Y+b.Y*size/68,Math.Min(f.Width,b.Width*size/34),Math.Max(1,b.Height*size/68)),color);
             }
         }
         foreach(var unit in frame.Units.Where(u=>!u.Retreated && BattleState.Inside(u.Position)))
         {
-            var r=new Rectangle(left+unit.Position.X*size+13,top+unit.Position.Y*size+5,42,58);
+            var r=new Rectangle(left+unit.Position.X*size+19,top+unit.Position.Y*size+7,62,85);
             int firstFall=unit.Fallen?battle.Frames.FindIndex(f=>f.Units.Any(u=>u.Id==unit.Id && u.Fallen)):-1;
             float opacity=unit.Fallen?Math.Clamp(1-(frameIndex-firstFall)/5f,0,1):1f;
             if(opacity<=0)continue;
@@ -206,22 +208,23 @@ public partial class Game1
         int armyIndex=0;
         foreach(var army in battle.Armies)
         {
-            var r=new Rectangle(1000,220+armyIndex++*142,830,128);_ui.Box(r,Muted);
+            var r=new Rectangle(1120,218+armyIndex++*142,720,128);_ui.Box(r,Muted);
             _portraitRenderer.Draw(_spriteBatch,_setup.Looks[army.Owner],new(r.X+8,r.Y+8,105,105));
             var alive=frame.Units.Where(u=>u.Owner==army.Owner && !u.Fallen && !u.Retreated).ToArray();
-            _ui.Text($"#{army.Owner+1} {_setup.ConquerorNames[army.Owner]} / 生存 {alive.Length}",new(r.X+130,r.Y+15),.59f,_setup.OwnerColor(army.Owner));
+            string armyTitle=$"#{army.Owner+1} {_setup.ConquerorNames[army.Owner]} / 生存 {alive.Length}";
+            _ui.Text(armyTitle,new(r.X+130,r.Y+15),Math.Min(.55f,580/_font.MeasureString(armyTitle).X),_setup.OwnerColor(army.Owner));
             _ui.Text($"短剣 {alive.Sum(u=>u.Daggers)} / 小銃 {alive.Sum(u=>u.Rifles)} / 盾 {alive.Sum(u=>u.Shields)}",new(r.X+130,r.Y+57),.49f,Cream);
             _ui.Text("帰還先 Node "+(army.HomeNode+1),new(r.X+130,r.Y+92),.4f,Cream);
         }
         string result=$"全 {_robotPlayback.Rounds[_robotRound].Length} 戦場で１戦闘ターンを同時進行 / 結果は最後に表示";
         var recent=battle.Events.LastOrDefault(e=>e.Turn==frame.Turn && e.Phase==frame.Phase && e.Unit!=0);
-        if(recent!=null)_ui.Text($"ID {recent.Unit} / {recent.Detail}",new(1000,786),.42f,Cream);
-        _ui.Text(result,new(1000,822),.55f,Cream);
-        _ui.Text("観戦中は駒を操作できません / 再生速度は戦闘結果に影響しません",new(1000,873),.41f,Cream);
+        if(recent!=null)BattleInfo($"ID {recent.Unit} / {recent.Detail}",794,.42f);
+        BattleInfo(result,833,.48f);
+        BattleInfo("観戦中は駒を操作できません / 再生速度は戦闘結果に影響しません",872,.41f);
         bool end=_battleAge>=RobotRoundEnd;
         _ui.Button(RobotPause,_robotPlaying?"一時停止":"再生",Muted,.5f);
         _ui.Button(RobotStepBack,"１フェーズ戻る",Muted,.46f);_ui.Button(RobotStepNext,"１フェーズ進む",Muted,.46f);
-        _ui.Text($"再生 {frameIndex+1}/{battle.Frames.Count} / 王冠：クイーン 高帽子：隊長 低帽子：兵",new(54,965),.48f,Cream);
+        BattleInfo($"再生 {frameIndex+1}/{battle.Frames.Count} / 王冠：クイーン 高帽子：隊長 低帽子：兵",901,.42f);
         if(_robotPendingFocus>=0)
         {
             _ui.Box(RobotResultBar,Muted);
@@ -232,6 +235,8 @@ public partial class Game1
         }
         _ui.Button(BattleContinue,_robotPendingFocus>=0?"戦場を切り替える":!end?"このターンを進める":"次の戦闘ターンへ",Accent,.55f);
     }
+    private void BattleInfo(string text,int y,float scale)
+        =>_ui.Text(text,new(1120,y),Math.Min(scale,720/_font.MeasureString(text).X),Cream);
     private void DrawRobotBattleSummary()
     {
         _ui.Text("全戦場の戦闘結果",new(54,30),.9f,Cream);
