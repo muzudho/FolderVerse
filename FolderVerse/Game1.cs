@@ -92,7 +92,7 @@ public partial class Game1 : Game
         _counter=new ToyCounterRenderer(Content.Load<SpriteFont>("ToyCounterFont"),_pixel);
         _ui=new UiPainter(_spriteBatch,_pixel,_font); _world=new WorldPreview(GraphicsDevice);
         _orientationToy=new ToyOrientationRenderer(GraphicsDevice);
-        LoadScreenshotFeedback();
+        LoadScreenshotFeedback();LoadCutInMobs();
     }
     private Rectangle CanvasBounds()
     {
@@ -610,7 +610,7 @@ public partial class Game1 : Game
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){_newspaperToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){DisposeCutInMobs();_newspaperToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         try{base.Dispose(disposing);}

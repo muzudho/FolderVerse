@@ -1,0 +1,101 @@
+[
+  {
+    "File": "base-01-v001.png",
+    "Width": 1024,
+    "Height": 1536,
+    "TransparentSamples": 19455,
+    "Opaque": 0,
+    "Partial": 5121,
+    "Sha256": "AAC408E9C86B26BC5A098379D26A2D35ED0E726EC64C18FE70414D7BB9609DEE"
+  },
+  {
+    "File": "base-02-v001.png",
+    "Width": 1024,
+    "Height": 1536,
+    "TransparentSamples": 19388,
+    "Opaque": 0,
+    "Partial": 5188,
+    "Sha256": "ACA55C451BEE78FD1FAB82D74148921873E67F91A163311509BA268D418DFEA6"
+  },
+  {
+    "File": "base-03-v001.png",
+    "Width": 1024,
+    "Height": 1536,
+    "TransparentSamples": 18598,
+    "Opaque": 0,
+    "Partial": 5978,
+    "Sha256": "D6677AA46BC83443D42C876D954B10EC69B8524F24579987DFD7C0D6BB57F1A7"
+  },
+  {
+    "File": "base-01-v002.png",
+    "Width": 1024,
+    "Height": 1536,
+    "Version": 2,
+    "Reviewed": true,
+    "Sha256": "5B02F85E9B7B31303B10E76BBE17FCBFA9087C4278AF0EE92A8732C40EED49AD"
+  },
+  {
+    "File": "base-02-v002.png",
+    "Width": 1024,
+    "Height": 1536,
+    "Version": 2,
+    "Reviewed": true,
+    "Sha256": "AFC9BD6A621BDEB7378228C7456DFD5DBB9C9EC35ADDCFD35C24E2CCC0DAFC12"
+  },
+  {
+    "File": "base-03-v002.png",
+    "Width": 1024,
+    "Height": 1536,
+    "Version": 2,
+    "Reviewed": true,
+    "Sha256": "8351B03A0D73976BFB4A7B214981BF5923F7E6592C6FB99C7BD9C19181768B34"
+  },
+  {
+    "File": "base-04-v001.png",
+    "Width": 1024,
+    "Height": 1536,
+    "Reviewed": true,
+    "Sha256": "9C753ADA1BB53F8832234F64F37F3D1297E8FDFED6EC4D8ED347946985C9F7EB",
+    "Note": "露出した額・目なしの影・休日のハッスル"
+  },
+  {
+    "File": "base-04-v002.png",
+    "Width": 1024,
+    "Height": 1536,
+    "Reviewed": true,
+    "Sha256": "C390701A65F9EF8A3164C8022B2B4FD7BC215386E730A26E4C0A8FC253005FEA",
+    "Note": "額から目元まで連続する柔らかな影"
+  },
+  {
+    "File": "base-01-v003-white-preview.png",
+    "Width": 1024,
+    "Height": 1536,
+    "Reviewed": true,
+    "Sha256": "F7756CB4CB262D05AA0E8099FB1B5CC862ADDDB7337AFAAA77C233FB2B0B51B5",
+    "Note": "横方向の髪ハイライト・人体外の影なし。白背景確認版、ゲーム用透過版は未完了"
+  },
+  {
+    "File": "base-02-v003-white-preview.png",
+    "Width": 1024,
+    "Height": 1536,
+    "Reviewed": true,
+    "Sha256": "F344D4487124EE3C84DAA3DB43BA6B0E0427ECF20D98DB0CC5951886BC9BBE17",
+    "Note": "横方向の髪ハイライト・人体外の影なし。白背景確認版、ゲーム用透過版は未完了"
+  },
+  {
+    "File": "base-03-v003-white-preview.png",
+    "Width": 1024,
+    "Height": 1536,
+    "Reviewed": true,
+    "Sha256": "0FA471A598DB050D36EC43BE50DFA20DA159BF6794CAE0F5C89FCF2F8AA20793",
+    "Note": "横方向の髪ハイライト・人体外の影なし。白背景確認版、ゲーム用透過版は未完了"
+  },
+  {
+    "File": "base-04-v003-white-preview.png",
+    "Width": 1024,
+    "Height": 1536,
+    "Reviewed": true,
+    "Sha256": "E28AC84C7A1EB81973720932802924625D6D4BAF19B03134CB56104449AEA118",
+    "Note": "横方向の髪ハイライト・人体外の影なし。白背景確認版、ゲーム用透過版は未完了"
+  }
+]
