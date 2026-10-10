@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 185,
+  "Completed": 188,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1481,6 +1481,30 @@
       "Sha256": "2B8977B66D2EE47CA3F9E4E5C2B43FE919A5FECA5F994BAA5794BD73F82FCFA2",
       "Reviewed": true,
       "Note": "船上・素手の五指・白手袋・サメロボットと電池を維持"
+    },
+    {
+      "CharacterId": 38,
+      "Variant": 2,
+      "File": "remaining-variants/character-38-2-balanced.png",
+      "Sha256": "5A77C7CA690D5A171E320D56F663C7463F66ECEFA0D469D3FBCBCD6D2C988F82",
+      "Reviewed": true,
+      "Note": "赤薔薇の劇場女王・眼帯・黒い兎ロボット・手招き"
+    },
+    {
+      "CharacterId": 38,
+      "Variant": 3,
+      "File": "remaining-variants/character-38-3-balanced.png",
+      "Sha256": "EA7CFB9EF74784394E904CA1B3EAE1657992F8A419F380F2DE7BFB63DC73E44F",
+      "Reviewed": true,
+      "Note": "閉眼で笑う薔薇女王・黒グローブ・誘う手のポーズ"
+    },
+    {
+      "CharacterId": 38,
+      "Variant": 4,
+      "File": "remaining-variants/character-38-4-balanced.png",
+      "Sha256": "06CC8834C60E44362FC34053E2CF844C792575E3B6BE52B7CA004299B6D45CE4",
+      "Reviewed": true,
+      "Note": "私的な晩餐・ケーキとワイングラス・黒グローブ・眼帯を維持"
     }
   ]
 }

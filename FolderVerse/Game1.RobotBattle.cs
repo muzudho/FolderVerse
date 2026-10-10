@@ -105,6 +105,7 @@ public partial class Game1
         _ui.Button(RobotBattlePrevious,"前の戦場",Muted,.5f);_ui.Button(RobotBattleNext,"次の戦場",Muted,.5f);
         BattleInfo($"{(battle.SplitBoard?"分割野戦":battle.Kind==BattleKind.Edge?"辺戦":"節戦")} / Node {battle.TargetNode+1} / {battle.Terrain} / 戦闘ターン {frame.Turn} / {PhaseLabel(frame.Phase)}",112,.5f);
         const int left=40,top=40,size=100;
+        _ui.Box(new(left,top,size*10,size*10),new Color(24,43,51));
         var terrainNode=_setup.Nodes.All[battle.TargetNode];var terrainCell=_setup.Cells[terrainNode.Cell];
         float terrainHeight=WorldTerrain.Elevation(_setup.Routes.Position(terrainNode.Cell,terrainNode.Center),WorldTerrain.Offset(_setup.WorldSeed));
         for(int y=0;y<10;y++)for(int x=0;x<10;x++)
@@ -124,6 +125,7 @@ public partial class Game1
                 if(wall)BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(false,false,terrainHeight,terrainCell.Normal.Y));
             }
         }
+        for(int line=0;line<=10;line++){_ui.Box(new(left+line*size,top,2,size*10),new Color(24,43,51));_ui.Box(new(left,top+line*size,size*10,2),new Color(24,43,51));}
         foreach(var army in battle.Armies)
         {
             var border=BattleObstacleArt.HomeBorder(army.Side,new Rectangle(left,top,size*10,size*10));

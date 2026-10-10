@@ -35,7 +35,7 @@ public partial class Game1
             if(_titleIdle<10)return false;
             _demoActive=true;_demoIntro=true;_demoAge=_demoStepAge=0;_demoSwing=0;
             _demoFinishStage=0;
-            _demoMapStage=_demoMapVisits=0;_demoMapAge=0;
+            _demoMapStage=_demoMapVisits=0;_demoMapAge=0;_demoDomesticStage=0;_demoDomesticAge=0;
             _demoCursor=new(2040,1140);IsMouseVisible=false;
             return true;
         }
@@ -75,6 +75,7 @@ public partial class Game1
         }
         _net.UpdateAnimation((float)elapsed);UpdateMapTransition((float)elapsed);
         if(_screen==Screen.WorldStatus && _demoMapVisits%3==0 && UpdateDemoMap(elapsed))return true;
+        if(_screen==Screen.WorldStatus)return UpdateDemoDomestic(elapsed);
         var dispositionPoint=_screen==Screen.Disposition?DispositionButton(DemoDispositionChoice()).Center:Point.Zero;
         var aim=_screen==Screen.Disposition?new Vector2(dispositionPoint.X,dispositionPoint.Y):_screen==Screen.WorldStatus?new Vector2(720,1040):_screen is Screen.Battle or Screen.Transport?new Vector2(1840,850):new Vector2(1580,790);
         if(_demoSwing<=0)_demoCursor=Vector2.Lerp(_demoCursor,aim,1-MathF.Exp(-(float)elapsed*2));

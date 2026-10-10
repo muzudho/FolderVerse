@@ -47,6 +47,7 @@ public sealed class WorldSetup
     public int[] TerritoryCounts { get; private set; } = new int[20];
     public string[] CityNames { get; private set; } = Array.Empty<string>();
     public string[] ConquerorNames { get; private set; } = Array.Empty<string>();
+    public string[] ConquerorFullNames { get; private set; } = Array.Empty<string>();
     public const string PoliticalSystem="独裁者";
     public int PlayerSlot { get; private set; } = -1;
     public PopulationSimulation Population {get;}=new();
@@ -99,9 +100,9 @@ public sealed class WorldSetup
         ColorIndices=Enumerable.Range(0,20).ToArray();random.Shuffle(ColorIndices);
         // Draw distinct completed portraits. A family can contain all six sisters.
         int familyBase=random.Next(ConquerorCatalog.BaseCount);
-        int familySize=random.Next(5)==0 ? 2+random.Next(5) : 0;
+        int familySize=2+random.Next(5);
         int[] variants=Enumerable.Range(0,6).ToArray();random.Shuffle(variants);
-        // Three out of four casts guarantee different bases; the remaining casts allow sisters.
+        // 75% have unique characters; 25% guarantee at least one family of distinct variants.
         bool distinctBases=random.Next(4)<3;
         int[] bases=Enumerable.Range(0,ConquerorCatalog.BaseCount).ToArray();random.Shuffle(bases);
         for(int slot=0;slot<20;slot++)
@@ -116,7 +117,7 @@ public sealed class WorldSetup
             } while(Array.IndexOf(Looks,look,0,slot)>=0);
             Looks[slot]=look;Portraits[slot]=look.BaseId;
         }
-        ConquerorNames=WorldNames.Conquerors(Looks,seed);
+        ConquerorFullNames=WorldNames.Conquerors(Looks,seed);ConquerorNames=WorldNames.ShortNames(ConquerorFullNames);
         ClearPlacement();
     }
     public void ClearPlacement() { PlayerSlot=-1; Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); ConquerorLocations=Array.Empty<int>(); TerritoryCounts = new int[20]; }

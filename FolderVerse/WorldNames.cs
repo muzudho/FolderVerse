@@ -6,6 +6,24 @@ using Microsoft.Xna.Framework;
 
 public static class WorldNames
 {
+    // Display names are independent of the preserved full name, and unique within a cast.
+    public static string[] ShortNames(string[] fullNames)
+    {
+        var used=new HashSet<string>();var result=new string[fullNames.Length];
+        for(int i=0;i<fullNames.Length;i++)
+        {
+            var parts=fullNames[i].Split('・');string given=parts[0];
+            string shortName=given.Length<=5?given:given[..5];
+            if(!used.Add(shortName))
+            {
+                var candidates=Enumerable.Range(0,given.Length-1).Select(start=>given.Substring(start,Math.Min(5,given.Length-start)))
+                    .Concat(parts.Skip(1).Select(last=>given[..2]+last[..Math.Min(3,last.Length)]));
+                shortName=candidates.FirstOrDefault(used.Add)??throw new InvalidOperationException("No unique short name available.");
+            }
+            result[i]=shortName;
+        }
+        return result;
+    }
     // Katakana readings are game-friendly approximations, combined as fictional place names.
     private static readonly string[] Prefix={"ノヴァ","ヴィクトリア","ミラコロ","アルト","バホ","ローザ","メーラ","ヴェッキオ","フォンス","リオ"};
     private static readonly string[] Settlement={"ポリス","シウダード","プラサ","ヴィル","タウン"};
@@ -54,13 +72,36 @@ public static class WorldNames
     }
     public static string[] Conquerors(ConquerorLook[] looks,int seed)
     {
-        string[] first={"リリア","エミリア","アリア","ルチア","セレナ","エレナ","ミリア","クララ","ヴィオラ","ソフィア","フローラ","イリス","レイナ","ノエル","ステラ","ローザ","フィオナ","ミレイ","シルヴィア","ルナ"};
-        string[] last={"ベル","アルメ","リーヴ","ミエル","ロゼ","ヴェール","ルーチェ","シエル","ノア","リュミ"};
-        var random=new SeedRandom(seed^0x15A96);var used=new HashSet<string>();var names=new string[looks.Length];
+        string[] first={
+            "リリア","エミリア","アリア","ルチア","セレナ","エレナ","ミリア","クララ","ヴィオラ","ソフィア","フローラ","イリス","レイナ","ノエル","ステラ","ローザ","フィオナ","ミレイ","シルヴィア","ルナ",
+            // Beauty, sincerity, purity, love and virtue: international words and name-like adaptations.
+            "ベラ","カリスタ","ジャミラ","インダー","ボニー","ビューティア","ヘルモサ","スンダリ",
+            "アレシア","ヴェリティ","アミナ","フィデリア","ヴェラ","トゥルーリア","シンセリア","サディカ",
+            "アグネス","カタリナ","サフィヤ","パヴィトラ","カンディダ","ピュリア","キャスティア","イノセンシア",
+            "アイメ","アモーラ","カリタス","プリヤ","ルバヴァ","ミラヴァ","フィリア","ハビーバ",
+            "アレテ","ユスティナ","グラシア","クレメンティア","コンコルディア","ハルモニア","ヴァーチュア","メルシア",
+            // Passion, dreams and hope.
+            "アルドリア","フェルヴィア","パシオナ","エンバー","イグニア","セラフィナ","フラミア","エンスージア",
+            "レヴェリア","ソーニャ","ユメリア","ソムニア","ドリーミア","ファンタジア","ヴィジョナ","オネイラ",
+            "エスペランサ","ナディア","アーシャ","アマル","ホープ","エルピダ","スペランツァ","ティクヴァ",
+            // Stars, sea and wind; indirect images such as dawn, pearl, breeze and wings.
+            "エステル","シタラ","タラ","セレン","アストリア","ヒカリア","オーロラ","ヌーラ",
+            "マリーナ","モアナ","デニズ","ネレイダ","ナミリア","ペルラ","コーラリア","タラッサ",
+            "アウラ","ゼフィラ","ブリサ","アネモナ","ヴェントリア","サバー","ソヨリア","アエリア",
+            // Other natural imagery broadens the palette without tying a nationality to a character.
+            "リーヴァ","ヴァイオレット","ジャスミン","ダリア","オリヴィア","サクラ","ネージュ","ニエヴェ",
+            "プルヴィア","レイン","アクア","アヴローラ","ソラリア","エストレヤ","マーレア","リュミエラ"
+        };
+        string[] last={"ベル","アルメ","リーヴ","ミエル","ロゼ","ヴェール","ルーチェ","シエル","ノア","リュミ","アウベ","ドーン","アルバ","オーレ","パール","ナクル","ロシェ","リヴェル","セレスト","アジュール","エトワル","ソレイユ","ブリーズ","ヴェント","マーレ","オンデ","ネーヴェ","フィオーレ","フルール","ヴェルデ","オリヴ","ローレル","アルモニ","グレイス","フェイス","アモル","スペス","ヴィータ","アニマ","コル","エラン","レーヴ","ソーニョ","ノヴァ","ルーメン","アストル","ティエラ","スーリヤ"};
+        // Fictional combinations: readings and adaptations are not literal translations in every language.
+        var random=new SeedRandom(seed^0x15A96);var used=new HashSet<string>();var usedFirst=new HashSet<string>();var names=new string[looks.Length];
         for(int i=0;i<names.Length;i++)
         {
             string name;
-            do{name=first[(looks[i].BaseId+random.Next(first.Length))%first.Length]+"・"+last[random.Next(last.Length)];}while(!used.Add(name));
+            string given;
+            do{given=first[(looks[i].BaseId+random.Next(first.Length))%first.Length];}while(usedFirst.Count<first.Length && usedFirst.Contains(given));
+            usedFirst.Add(given);
+            do{name=given+"・"+last[random.Next(last.Length)];}while(!used.Add(name));
             names[i]=name;
         }
         return names;
