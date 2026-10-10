@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 100,
+  "Completed": 103,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -801,6 +801,30 @@
       "Sha256": "6591FAAF216418E5D9AC8223182B950AF946A308D828E415518104BF6D923548",
       "Reviewed": true,
       "Note": "ティーポットとカップ、二本の腕だけの自然な支持、顔と耳と帽子を確認"
+    },
+    {
+      "CharacterId": 21,
+      "Variant": 2,
+      "File": "remaining-variants/character-21-2-balanced.png",
+      "Sha256": "29CD8CDC5D1E0C8869119E7DC5275300B65D28869E011BA819D8FE4BF2C4B439",
+      "Reviewed": true,
+      "Note": "白アザラシを抱く両腕、モノクル青瞳、白青寝具を確認"
+    },
+    {
+      "CharacterId": 21,
+      "Variant": 3,
+      "File": "remaining-variants/character-21-3-balanced.png",
+      "Sha256": "824E92C18C81C992F5F37DD869F6AE6DAFDED38BAB3F2BEFE5A2A0BC65124391",
+      "Reviewed": true,
+      "Note": "眠い片目とモノクルを調整する手、二本の腕と青端末を確認"
+    },
+    {
+      "CharacterId": 21,
+      "Variant": 4,
+      "File": "remaining-variants/character-21-4-balanced.png",
+      "Sha256": "63374E694DF2050CE5A2149700FBB193C45821C9F81134CB6F772E9B7D6F9D78",
+      "Reviewed": true,
+      "Note": "指差す手と氷晶の杖、モノクルと青端末を確認"
     }
   ]
 }
