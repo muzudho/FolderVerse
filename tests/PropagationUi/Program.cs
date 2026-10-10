@@ -25,13 +25,20 @@ sealed class PropagationCheck:Game1
     }
     protected override void Update(GameTime time)
     {
-        if(frame<5)typeof(Game1).GetField("_transportAge",Flags)!.SetValue(this,frame*.9d);
+        if(frame<5)typeof(Game1).GetField("_transportAge",Flags)!.SetValue(this,frame==4?4.99d:frame*.9d);
         if(frame==5)Call("UpdateTransport",5d,false);
         if(frame==5){Check(Get("_screen").ToString()=="Battle","Propagation did not auto-enter battle");Console.WriteLine("PASS: full-map propagation, marching battery/soldier, edge badge, zoom and automatic battle entry.");Exit();}
     }
     protected override void Draw(GameTime time)
     {
         base.Draw(time);
+        if(frame==4)
+        {
+            var at=(Vector2)Call("PropagationBadgeCenter",0,new Rectangle(40,100,1840,860));
+            Check(Vector2.Distance(at,new Vector2(440,572))<.1f,"Zoom badge does not align with battle center");
+            var net=(CubeNet)Get("_propagationNet");var panel=new Rectangle(40,100,1840,860);float zoomed=net.Fit(panel).Scale;net.FitAll(panel);
+            Check(Math.Abs(zoomed/net.Fit(panel).Scale-680f/30)<.01f,"Zoom badge does not match 680-pixel battle size");
+        }
         if(frame==2){var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);using var tex=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);tex.SetData(pixels);using var output=File.Create(Path.Combine(AppContext.BaseDirectory,"propagation.png"));tex.SaveAsPng(output,tex.Width,tex.Height);}
         frame++;
     }
