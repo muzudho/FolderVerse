@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 188,
+  "Completed": 190,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1505,6 +1505,22 @@
       "Sha256": "06CC8834C60E44362FC34053E2CF844C792575E3B6BE52B7CA004299B6D45CE4",
       "Reviewed": true,
       "Note": "私的な晩餐・ケーキとワイングラス・黒グローブ・眼帯を維持"
+    },
+    {
+      "CharacterId": 38,
+      "Variant": 5,
+      "File": "remaining-variants/character-38-5-balanced.png",
+      "Sha256": "6254AE7A5E8BA36D808B0B66DE8CA8BF5CD1133E0BCA18D3A7BDC8BD153A9D5D",
+      "Reviewed": true,
+      "Note": "眼帯と長い耳、黒手袋の筆記と頬杖、図書室を保持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 38,
+      "Variant": 6,
+      "File": "remaining-variants/character-38-6-balanced.png",
+      "Sha256": "EAD2B740792D71849B562D63546FF1B1D56A98610285DB35B9B3879309949682",
+      "Reviewed": true,
+      "Note": "眼帯・魔法書・薔薇の魔法陣と発動ポーズを保持。視覚確認済み。"
     }
   ]
 }

@@ -15,10 +15,16 @@ class CheckGame : Game1
   base.LoadContent();
   var mobs=(Texture2D[])Get("_cutInMobs");
   if(mobs.Length!=4)throw new Exception("Not all four mobs loaded");
-  foreach(var t in mobs)
+  int index=0; foreach(var t in mobs)
   {
+   using(var output=File.Create(Path.Combine(AppContext.BaseDirectory,$"mob-{++index}.png")))t.SaveAsPng(output,t.Width,t.Height);
    var pixels=new Color[t.Width*t.Height];t.GetData(pixels);
    if(pixels[0].A!=0 || pixels[^1].A!=0)throw new Exception("Backdrop remains");
+      if(index is 2 or 4)
+   {
+    var gap=index==2?new Vector2(.518f,.863f):new Vector2(.43f,.613f);
+    if(pixels[(int)(gap.Y*t.Height)*t.Width+(int)(gap.X*t.Width)].A!=0)throw new Exception("Closed leg gap remains");
+   }
    var center=pixels[(int)(t.Height*.45)*t.Width+t.Width/2];
    if(center.A!=255)throw new Exception("White clothing became transparent");
   }
@@ -37,7 +43,7 @@ class CheckGame : Game1
    batch.Begin();Call("DrawPhaseCutIn",100d+n*3);Call("DrawPhaseCutIn",100.6d+n*3);batch.End();
    var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);
    using var tex=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);tex.SetData(pixels);
-   using var o=File.Create(Path.Combine(AppContext.BaseDirectory,phase+".png"));tex.SaveAsPng(o,tex.Width,tex.Height);
+   using var o=File.Create(Path.Combine(AppContext.BaseDirectory,phase+"-large.png"));tex.SaveAsPng(o,tex.Width,tex.Height);
    n++;
   }
   Console.WriteLine("PASS: all three cut-ins rendered");Exit();
