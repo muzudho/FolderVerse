@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 105,
+  "Completed": 110,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -841,6 +841,46 @@
       "Sha256": "6848B15BC574E7C2F2D195286FE94E218386F9CF7668420953449D697437E0EE",
       "Reviewed": true,
       "Note": "閉じ目の笑顔、指差しとアザラシのフリッパー、端末を確認"
+    },
+    {
+      "CharacterId": 22,
+      "Variant": 2,
+      "File": "remaining-variants/character-22-2-balanced.png",
+      "Sha256": "57EF6B435C0F4DC1CB4C90D484EEACE8F4025EB66A864A025F9240E3BD0A3798",
+      "Reviewed": true,
+      "Note": "笑顔・黒眼帯・猿の玩具・両手の保持を確認"
+    },
+    {
+      "CharacterId": 22,
+      "Variant": 3,
+      "File": "remaining-variants/character-22-3-balanced.png",
+      "Sha256": "777544AB9F555B1A663B8447AE0BFCFAF6F61AB9A19400AC6D83CE1E4F3F39B0",
+      "Reviewed": true,
+      "Note": "眠る表情・腕・本・猿の玩具・眼帯を確認"
+    },
+    {
+      "CharacterId": 22,
+      "Variant": 4,
+      "File": "remaining-variants/character-22-4-balanced.png",
+      "Sha256": "006A23FA7C5E765358C6BF86D2E023704D15919A9188FBA4377FCDC78CE38AA8",
+      "Reviewed": true,
+      "Note": "恐竜の玩具・木製小物・両手・笑顔を確認"
+    },
+    {
+      "CharacterId": 22,
+      "Variant": 5,
+      "File": "remaining-variants/character-22-5-balanced.png",
+      "Sha256": "C6269D9C058CBCF9E18348CECB4960BE461C15A1A31EAB7DE6CF4640F30CF79E",
+      "Reviewed": true,
+      "Note": "白眼帯・食事・スプーンと器の保持・両手を確認"
+    },
+    {
+      "CharacterId": 22,
+      "Variant": 6,
+      "File": "remaining-variants/character-22-6-balanced.png",
+      "Sha256": "D9E04242E376B7791CFB885F9C56B7B8625EC133653E7B0DE8659136D3C8D9BA",
+      "Reviewed": true,
+      "Note": "蔓を握る手・開いた五指・笑顔と眼帯を確認"
     }
   ]
 }
