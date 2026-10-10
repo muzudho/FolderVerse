@@ -9,6 +9,7 @@ public partial class Game1
     private double _titleIdle,_demoAge,_demoStepAge;
     private bool _demoActive;
     private bool _demoIntro;
+    private int _demoFinishStage;
     private float _demoSwing;
     private float _demoStarsAge=-1;
     private Vector2 _demoClickPoint;
@@ -27,14 +28,14 @@ public partial class Game1
         {
             if(_screen!=Screen.Title){_titleIdle=0;return false;}
             if(click || enter || escape){_titleIdle=0;return false;}
-            if(active)_titleIdle+=elapsed;
+            _titleIdle+=elapsed;
             if(_titleIdle<10)return false;
             _demoActive=true;_demoIntro=true;_demoAge=_demoStepAge=0;_demoSwing=0;
+            _demoFinishStage=0;
             _demoCursor=new(2040,1140);IsMouseVisible=false;
             return true;
         }
         if(click && new Rectangle(0,0,1920,1080).Contains(_pointer) || escape){_demoFade=0;return true;}
-        if(!active)return true;
         _demoAge+=elapsed;_demoStepAge+=elapsed;_yaw+=(float)elapsed*.12f;
         if(_demoStarsAge>=0){_demoStarsAge+=(float)elapsed;if(_demoStarsAge>.65f)_demoStarsAge=-1;}
         float previousSwing=_demoSwing;
@@ -46,6 +47,26 @@ public partial class Game1
             _demoCursor=Vector2.Lerp(new(2040,1140),new(StartButton.Center.X,StartButton.Center.Y),t);
             if(_demoAge>=1.8 && _demoAge-elapsed<1.8)StartDemoClick();
             if(_demoAge>=2.2){_demoIntro=false;_demoStepAge=0;BeginRolling();}
+            return true;
+        }
+        if(_demoAge>20*60 && _screen==Screen.WorldStatus && _demoFinishStage==0)
+        {_demoFinishStage=1;_demoStepAge=0;}
+        if(_demoFinishStage>0)
+        {
+            var button=_demoFinishStage==1?StatusMenuButton:_demoFinishStage==2?EndingMenuItem:EndingReturn;
+            _demoCursor=Vector2.Lerp(_demoCursor,new(button.Center.X,button.Center.Y),1-MathF.Exp(-(float)elapsed*4));
+            if(_demoFinishStage==3)_endingAge+=elapsed;
+            double wait=_demoFinishStage==3?8:1;
+            if(_demoStepAge>=wait && _demoStepAge-elapsed<wait)
+            {_demoCursor=new(button.Center.X,button.Center.Y);StartDemoClick();}
+            if(_demoStepAge>=wait+.4)
+            {
+                _demoStepAge=0;
+                if(_demoFinishStage<=2)
+                {StatusMenuClick(button.Center);_demoFinishStage++;}
+                else
+                {_demoActive=false;_demoFinishStage=0;ReturnToTitle();_titleIdle=0;IsMouseVisible=true;}
+            }
             return true;
         }
         var aim=_screen==Screen.WorldStatus?new Vector2(720,1040):_screen is Screen.Battle or Screen.Transport?new Vector2(1840,850):new Vector2(1580,790);
