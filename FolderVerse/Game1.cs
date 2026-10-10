@@ -14,7 +14,7 @@ public partial class Game1 : Game
     private readonly SeedDialog _seedDialog=new();
     private readonly ScreenshotCapture _screenshots=new();
     private SpriteBatch _spriteBatch;
-    private Texture2D _titleScreen,_titleLogo,_pixel;
+    private Texture2D _titleScreen,_titleLogo,_pixel,_marginToys,_marginTrain,_marginRabbit,_marginBall,_marginStar;
     private PortraitRenderer _portraitRenderer;
     private SpriteFont _font;
     private UiPainter _ui;
@@ -78,6 +78,11 @@ public partial class Game1 : Game
         _robotTransportIcon=Content.Load<Texture2D>("Images/robot-transport-icon");
         _robotFactoryIcon=Content.Load<Texture2D>("Images/robot-factory-icon");
         _spriteBatch=new SpriteBatch(GraphicsDevice); _titleScreen=Content.Load<Texture2D>("Images/title-screen");
+        _marginToys=Content.Load<Texture2D>("Images/margin-toys");
+        _marginTrain=Content.Load<Texture2D>("Images/margin-train");
+        _marginRabbit=Content.Load<Texture2D>("Images/margin-rabbit");
+        _marginBall=Content.Load<Texture2D>("Images/margin-ball");
+        _marginStar=Content.Load<Texture2D>("Images/margin-star");
         _titleLogo=Content.Load<Texture2D>("Images/title-logo");
         _portraitRenderer=new PortraitRenderer(Content); _font=Content.Load<SpriteFont>("UiFont");
         _pixel=new Texture2D(GraphicsDevice,1,1); _pixel.SetData(new[]{Color.White});
@@ -550,10 +555,8 @@ public partial class Game1 : Game
     {
         GraphicsDevice.Clear(new Color(16,35,46)); var viewport=GraphicsDevice.Viewport; var canvas=CanvasBounds();
         if(canvas.Width<=0 || canvas.Height<=0){base.Draw(gameTime);return;}
-        float cover=Math.Max(viewport.Width/(float)_titleScreen.Width,viewport.Height/(float)_titleScreen.Height);
-        int bw=(int)Math.Ceiling(_titleScreen.Width*cover),bh=(int)Math.Ceiling(_titleScreen.Height*cover);
         _spriteBatch.Begin(samplerState:SamplerState.LinearClamp);
-        _spriteBatch.Draw(_titleScreen,new Rectangle((viewport.Width-bw)/2,(viewport.Height-bh)/2,bw,bh),new Color(65,75,85));
+        DrawWindowMargins(viewport.Width,viewport.Height,canvas);
         if(_screen==Screen.Title)_spriteBatch.Draw(_titleScreen,canvas,Color.White); _spriteBatch.End();
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         if(_screen!=Screen.Title)

@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 165,
+  "Completed": 166,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1321,6 +1321,14 @@
       "Sha256": "A539695E75CDA9F9633CBE1971F29A125386E3B06F1BFF26E7E6DFFA01B97444",
       "Reviewed": true,
       "Note": "驚きの詠唱、五指の素手と書籍を保持。第三の白手袋を除去しカメラ杖は浮遊。"
+    },
+    {
+      "CharacterId": 34,
+      "Variant": 2,
+      "File": "remaining-variants/character-34-2-balanced.png",
+      "Sha256": "359E22305D0BB089DDA0FFE86D74838DB062D928804BC325450EE29C95F4B3F1",
+      "Reviewed": true,
+      "Note": "閉じた目の笑顔、赤巻き髪と眼鏡、雪と金青ロボット抱擁を保持。"
     }
   ]
 }
