@@ -14,7 +14,7 @@ public partial class Game1 : Game
     private readonly SeedDialog _seedDialog=new();
     private readonly ScreenshotCapture _screenshots=new();
     private SpriteBatch _spriteBatch;
-    private Texture2D _titleScreen,_titleLogo,_pixel,_marginToys,_marginTrain,_marginRabbit,_marginBall,_marginStar;
+    private Texture2D _titleScreen,_titleLogo,_pixel,_marginToys,_marginTrain,_marginRabbit,_marginBall,_marginStar,_marginRainbow;
     private PortraitRenderer _portraitRenderer;
     private SpriteFont _font;
     private UiPainter _ui;
@@ -83,6 +83,7 @@ public partial class Game1 : Game
         _marginRabbit=Content.Load<Texture2D>("Images/margin-rabbit");
         _marginBall=Content.Load<Texture2D>("Images/margin-ball");
         _marginStar=Content.Load<Texture2D>("Images/margin-star");
+        _marginRainbow=Content.Load<Texture2D>("Images/margin-rainbow");
         _titleLogo=Content.Load<Texture2D>("Images/title-logo");
         _portraitRenderer=new PortraitRenderer(Content); _font=Content.Load<SpriteFont>("UiFont");
         _pixel=new Texture2D(GraphicsDevice,1,1); _pixel.SetData(new[]{Color.White});
@@ -126,6 +127,8 @@ public partial class Game1 : Game
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds;
         _animationTime+=(float)elapsed;
+        if(UpdateDemo(elapsed,active,click,escape,enter))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _net.UpdateAnimation((float)elapsed);
         if(_screen==Screen.Ending)
         {UpdateEnding(elapsed,active && (escape || enter || click && EndingReturn.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -600,6 +603,7 @@ public partial class Game1 : Game
             _spriteBatch.End();
         }
         DrawScreenshotFeedback(gameTime.TotalGameTime.TotalSeconds);
+        DrawDemoOverlay(transform);
         LogDisplayedScreen();
         base.Draw(gameTime);
     }

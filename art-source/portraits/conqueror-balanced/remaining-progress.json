@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 166,
+  "Completed": 167,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1329,6 +1329,14 @@
       "Sha256": "359E22305D0BB089DDA0FFE86D74838DB062D928804BC325450EE29C95F4B3F1",
       "Reviewed": true,
       "Note": "閉じた目の笑顔、赤巻き髪と眼鏡、雪と金青ロボット抱擁を保持。"
+    },
+    {
+      "CharacterId": 34,
+      "Variant": 3,
+      "File": "remaining-variants/character-34-3-balanced.png",
+      "Sha256": "2488630690F42348E16BBDFE56A66E6AC298081668C386EE0BCFD531B4DA96FA",
+      "Reviewed": true,
+      "Note": "静かな図書室の閉眼笑顔と口元の指、頭を支える手を保持。机上の第三の腕を除去。"
     }
   ]
 }

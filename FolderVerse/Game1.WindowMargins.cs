@@ -27,7 +27,7 @@ public partial class Game1
             int count=Math.Clamp(longSide/Math.Max(size*4,180),1,7);
             for(int i=0;i<count;i++)
             {
-                var toy=i%3==1?_marginBall:i%3==2?_marginStar:!vertical && shortSide<140?_marginTrain:_marginRabbit;
+                var toy=i%4==1?_marginBall:i%4==2?_marginStar:i%4==3?_marginRainbow:!vertical && shortSide<140?_marginTrain:_marginRabbit;
                 float aspect=toy.Width/(float)toy.Height;
                 int toyHeight=Math.Min(size,(int)((longSide/(float)(count+1)*.85f)/aspect));
                 int toyWidth=(int)(toyHeight*aspect);
