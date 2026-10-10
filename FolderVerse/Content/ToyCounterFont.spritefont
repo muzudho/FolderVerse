@@ -5,6 +5,9 @@
 <UseKerning>true</UseKerning><Style>Bold</Style>
 <CharacterRegions>
 <CharacterRegion><Start>0</Start><End>9</End></CharacterRegion>
+<CharacterRegion><Start>D</Start><End>E</End></CharacterRegion>
+<CharacterRegion><Start>M</Start><End>M</End></CharacterRegion>
+<CharacterRegion><Start>O</Start><End>O</End></CharacterRegion>
 <CharacterRegion><Start>c</Start><End>c</End></CharacterRegion>
 <CharacterRegion><Start>e</Start><End>e</End></CharacterRegion>
 <CharacterRegion><Start>l</Start><End>l</End></CharacterRegion>

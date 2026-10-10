@@ -16,6 +16,12 @@ public sealed class ToyCounterRenderer
         float scale=Math.Min((bounds.Height-6)/metrics.Height,(bounds.Width-4)/metrics.Width);
         Ink(batch,text,new Vector2(bounds.Center.X-metrics.Width*scale/2,bounds.Center.Y-metrics.Height*scale/2),scale,metrics.Top,color);
     }
+    public void DrawText(SpriteBatch batch,string text,Rectangle bounds,Color color)
+    {
+        var metrics=Metrics(text);
+        float scale=Math.Min(bounds.Height/metrics.Height,bounds.Width/metrics.Width);
+        Ink(batch,text,new(bounds.Center.X-metrics.Width*scale/2,bounds.Center.Y-metrics.Height*scale/2),scale,metrics.Top,color);
+    }
     private (float Top,float Height,float Width) Metrics(string text)
     {
         var glyphs=_font.GetGlyphs();float top=float.MaxValue,bottom=0;
@@ -31,7 +37,7 @@ public sealed class ToyCounterRenderer
     {
         var at=topLeft-new Vector2(0,top*scale);
         for(int x=-2;x<=2;x++)for(int y=-2;y<=2;y++)
-            if(x*x+y*y<=5)batch.DrawString(_font,text,at+new Vector2(x,y),new Color(8,18,29),0,Vector2.Zero,scale,SpriteEffects.None,0);
+            if(x*x+y*y<=5)batch.DrawString(_font,text,at+new Vector2(x,y),new Color(8,18,29)*(color.A/255f),0,Vector2.Zero,scale,SpriteEffects.None,0);
         batch.DrawString(_font,text,at,color,0,Vector2.Zero,scale,SpriteEffects.None,0);
     }
     public void Draw(SpriteBatch batch,int count,Rectangle portrait,Color color)

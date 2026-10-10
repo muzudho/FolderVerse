@@ -94,6 +94,7 @@ public sealed partial class CubeNet
             nearest=distance;HoveredFace=label.Face;HoveredSide=label.Side;
         }
     }
+    public bool CanClickEdge=>!IsAnimating && HoveredFace>=0 && AttachPlan(HoveredFace,HoveredSide,out _,out _)!=null;
     public bool ClickEdge()
     {
         if(IsAnimating || HoveredFace<0)return false;

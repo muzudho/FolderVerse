@@ -22,6 +22,20 @@ sealed class DemoCheck:Game1
         Check(transport,"Demo did not enter propagation");Check(battle,"Demo did not enter battle");
         double before=(double)Get("_demoAge");Tick(1,active:false);Check((double)Get("_demoAge")>before,"Inactive demo stopped");
         var screenField=typeof(Game1).GetField("_screen",Flags)!;
+        screenField.SetValue(this,Enum.Parse(screenField.FieldType,"WorldStatus"));
+        typeof(Game1).GetField("_demoMapVisits",Flags)!.SetValue(this,0);
+        typeof(Game1).GetField("_demoMapStage",Flags)!.SetValue(this,0);
+        typeof(Game1).GetField("_demoMapAge",Flags)!.SetValue(this,0d);
+        var net=(CubeNet)Get("_net");
+        bool sawGlobe=false,sawNet=false,sawEdgeAnimation=false;
+        for(int i=0;i<500;i++)
+        {
+            Tick(1d/18,active:false);
+            if(Get("_screen").ToString()!="WorldStatus")break;
+            sawGlobe|=(bool)Get("_statusGlobe");sawNet|=!(bool)Get("_statusGlobe");sawEdgeAnimation|=net.IsAnimating;
+        }
+        Check(sawGlobe && sawNet && sawEdgeAnimation,"Demo did not demonstrate globe/net and edge relocation");
+        Check((int)Get("_demoMapVisits")>0,$"Demo map explanation did not resume gameplay: stage={Get("_demoMapStage")} age={Get("_demoMapAge")} screen={Get("_screen")} step={Get("_demoStepAge")}");
         var world=(WorldSetup)Get("_setup");
         world.Relations.Pending.Clear();
         foreach(int personality in new[]{3,9,11,13})
@@ -47,7 +61,7 @@ sealed class DemoCheck:Game1
         Tick(8);Tick(.4);Check(Get("_screen").ToString()=="Title" && !(bool)Get("_demoActive"),"Ending return button did not end demo");
         Tick(10,active:false);Check((bool)Get("_demoActive"),"Inactive title did not restart demo loop");
         typeof(Game1).GetField("_pointer",Flags)!.SetValue(this,new Point(960,540));Tick(0,true);Check((float)Get("_demoFade")==0,"Click did not begin fade");Tick(.81);Check(Get("_screen").ToString()=="Title" && !(bool)Get("_demoActive"),"Demo did not return to title");Tick(.6);Check((float)Get("_demoFade")<0,"Fade did not finish");Tick(9);Check(!(bool)Get("_demoActive"),"Idle timer did not reset after demo");
-        Console.WriteLine("PASS: 10-second idle, click reset, automatic world/cast/placement/propagation/battle, demo click fade and title return.");Tick(1);checkedDemo=true;
+        Console.WriteLine("PASS: idle loop, globe/net switching, edge relocation at 18 FPS, refusal fallback, ending loop and demo label rendering.");Tick(1);Tick(1);checkedDemo=true;
     }
     protected override void Update(GameTime time){if(checkedDemo && drawn)Exit();}
     protected override void Draw(GameTime time)

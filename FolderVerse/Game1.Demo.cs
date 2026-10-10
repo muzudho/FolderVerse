@@ -10,6 +10,9 @@ public partial class Game1
     private bool _demoActive;
     private bool _demoIntro;
     private int _demoFinishStage;
+    private int _demoMapStage,_demoMapVisits;
+    private double _demoMapAge;
+    private Point _demoMapPoint;
     private float _demoSwing;
     private float _demoStarsAge=-1;
     private Vector2 _demoClickPoint;
@@ -32,6 +35,7 @@ public partial class Game1
             if(_titleIdle<10)return false;
             _demoActive=true;_demoIntro=true;_demoAge=_demoStepAge=0;_demoSwing=0;
             _demoFinishStage=0;
+            _demoMapStage=_demoMapVisits=0;_demoMapAge=0;
             _demoCursor=new(2040,1140);IsMouseVisible=false;
             return true;
         }
@@ -69,6 +73,8 @@ public partial class Game1
             }
             return true;
         }
+        _net.UpdateAnimation((float)elapsed);UpdateMapTransition((float)elapsed);
+        if(_screen==Screen.WorldStatus && _demoMapVisits%3==0 && UpdateDemoMap(elapsed))return true;
         var dispositionPoint=_screen==Screen.Disposition?DispositionButton(DemoDispositionChoice()).Center:Point.Zero;
         var aim=_screen==Screen.Disposition?new Vector2(dispositionPoint.X,dispositionPoint.Y):_screen==Screen.WorldStatus?new Vector2(720,1040):_screen is Screen.Battle or Screen.Transport?new Vector2(1840,850):new Vector2(1580,790);
         if(_demoSwing<=0)_demoCursor=Vector2.Lerp(_demoCursor,aim,1-MathF.Exp(-(float)elapsed*2));
@@ -93,6 +99,7 @@ public partial class Game1
             case Screen.PlayerSelect:_setup.SelectPlayer(0);_screen=Screen.PlayerReady;break;
             case Screen.PlayerReady:_net.Home(_setup);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;break;
             case Screen.WorldStatus:
+                _demoMapVisits++;_demoMapStage=0;_demoMapAge=0;
                 var home=_setup.Nodes.Current(_setup.PlayerSlot);
                 var path=home==null?null:_setup.Routes.Neighbors(home).FirstOrDefault(r=>_setup.Campaign.RobotBattles.CanMarch(_setup,_setup.PlayerSlot,_setup.Nodes.At(r.Target,r.Entry).Id));
                 int target=path==null?-1:_setup.Nodes.At(path.Target,path.Entry).Id;
@@ -104,6 +111,39 @@ public partial class Game1
         return true;
     }
     private int DemoDispositionChoice()=>_setup.Relations.Accepts(_setup,_setup.Relations.Pending[0].Ruler)?0:1;
+    private bool UpdateDemoMap(double elapsed)
+    {
+        if(_demoMapStage>=5)return false;
+        _demoStepAge=0;
+        if(MapTransitionActive || _net.IsAnimating)return true;
+        if(_demoMapStage==0)
+        {
+            _demoMapStage=1;_demoMapAge=0;
+            if(!_statusGlobe){_demoCursor=new(MapViewButton.Center.X,MapViewButton.Center.Y);StartDemoClick();StartMapTransition();}
+            return true;
+        }
+        if(_demoMapStage==2 && _demoMapAge==0)
+        {
+            _net.FitAll(NetPanel,1);
+            bool found=false;
+            foreach(var seam in _net.SeamLabels(NetPanel))
+            {
+                _net.HoverEdge(NetPanel,seam.Bounds.Center);
+                if(!_net.CanClickEdge)continue;
+                _demoMapPoint=seam.Bounds.Center;found=true;break;
+            }
+            if(!found){_demoMapStage=4;return true;}
+        }
+        var point=_demoMapStage==2?_demoMapPoint:MapViewButton.Center;
+        if(_demoSwing<=0)_demoCursor=Vector2.Lerp(_demoCursor,new(point.X,point.Y),1-MathF.Exp(-(float)elapsed*4));
+        _demoMapAge+=elapsed;
+        if(_demoMapAge<2)return true;
+        _demoMapAge=0;_demoCursor=new(point.X,point.Y);
+        if(_demoMapStage is 1 or 3){StartDemoClick();StartMapTransition();}
+        else if(_demoMapStage==2){_net.HoverEdge(NetPanel,point);StartDemoClick();_net.ClickEdge();}
+        _demoMapStage++;
+        return true;
+    }
     private void StartDemoClick(){_demoSwing=.4f;_demoClickPoint=_demoCursor;}
     private static Vector2 RotateDemoOffset(Vector2 offset,float angle)
         =>new(offset.X*MathF.Cos(angle)-offset.Y*MathF.Sin(angle),offset.X*MathF.Sin(angle)+offset.Y*MathF.Cos(angle));
@@ -113,8 +153,17 @@ public partial class Game1
         _spriteBatch.Begin(transformMatrix:transform);
         if(_demoActive)
         {
-            _ui.Box(new(20,20,390,40),new Color(16,35,46,220));
-            _ui.Text("DEMO / Click to return",new(32,25),.43f,Cream);
+            // Brief, bouncing letters with a long clear interval between appearances.
+            float labelTime=(float)(_demoAge%9);
+            if(labelTime<2.4f)
+            {
+                float fade=Math.Clamp(Math.Min(labelTime/.25f,(2.4f-labelTime)/.4f),0,1);
+                for(int i=0;i<4;i++)
+                {
+                    int jump=(int)(Math.Abs(MathF.Sin(labelTime*5-i*.5f))*16);
+                    _counter.DrawText(_spriteBatch,"DEMO"[i].ToString(),new(860+i*50,510-jump,46,48),(i%2==0?new Color(255,187,214):new Color(185,230,231))*fade);
+                }
+            }
             const float restAngle=-.28f;
             float swing=_demoSwing>0?MathF.Sin((1-_demoSwing/.4f)*MathHelper.Pi)*.42f:0;
             float scale=116f/_demoLollipop.Height;
