@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 103,
+  "Completed": 105,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -825,6 +825,22 @@
       "Sha256": "63374E694DF2050CE5A2149700FBB193C45821C9F81134CB6F772E9B7D6F9D78",
       "Reviewed": true,
       "Note": "指差す手と氷晶の杖、モノクルと青端末を確認"
+    },
+    {
+      "CharacterId": 21,
+      "Variant": 5,
+      "File": "remaining-variants/character-21-5-balanced.png",
+      "Sha256": "1B59BA0738F230DBB16C7F0557412F6F0D1F576BBE05901912FF3986A0FDA4DD",
+      "Reviewed": true,
+      "Note": "くつろぐ微笑み、白青寝具、モノクルと顔の比率を確認"
+    },
+    {
+      "CharacterId": 21,
+      "Variant": 6,
+      "File": "remaining-variants/character-21-6-balanced.png",
+      "Sha256": "6848B15BC574E7C2F2D195286FE94E218386F9CF7668420953449D697437E0EE",
+      "Reviewed": true,
+      "Note": "閉じ目の笑顔、指差しとアザラシのフリッパー、端末を確認"
     }
   ]
 }
