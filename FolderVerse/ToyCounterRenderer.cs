@@ -10,6 +10,12 @@ public sealed class ToyCounterRenderer
     private readonly SpriteFont _font;
     private readonly Texture2D _pixel;
     public ToyCounterRenderer(SpriteFont font,Texture2D pixel) { _font=font;_pixel=pixel; }
+    public void DrawNumber(SpriteBatch batch,int number,Rectangle bounds,Color color)
+    {
+        string text=number.ToString(System.Globalization.CultureInfo.InvariantCulture);var metrics=Metrics(text);
+        float scale=Math.Min((bounds.Height-6)/metrics.Height,(bounds.Width-4)/metrics.Width);
+        Ink(batch,text,new Vector2(bounds.Center.X-metrics.Width*scale/2,bounds.Center.Y-metrics.Height*scale/2),scale,metrics.Top,color);
+    }
     private (float Top,float Height,float Width) Metrics(string text)
     {
         var glyphs=_font.GetGlyphs();float top=float.MaxValue,bottom=0;

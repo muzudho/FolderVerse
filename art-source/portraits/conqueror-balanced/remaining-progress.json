@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 160,
+  "Completed": 165,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1281,6 +1281,46 @@
       "Sha256": "FEA3F18C9C0ED9DD4D5B08CF01FA86DB8B0E91B87D807E237455E1993DF6ED1D",
       "Reviewed": true,
       "Note": "渦瞳と眼鏡・手前黒手袋の五指・雪結晶端末を握る手・パンダロボットを確認"
+    },
+    {
+      "CharacterId": 33,
+      "Variant": 2,
+      "File": "remaining-variants/character-33-2-balanced.png",
+      "Sha256": "10AAFF13FB271FA25D990249098FE929CDB81B73CE05E3C592D3A35B71377D8E",
+      "Reviewed": true,
+      "Note": "赤眼・赤眼鏡・薔薇カメラ杖と髪を持つ両手を保持。顔と装飾バランス確認。"
+    },
+    {
+      "CharacterId": 33,
+      "Variant": 3,
+      "File": "remaining-variants/character-33-3-balanced.png",
+      "Sha256": "70417F601A25589F83E4134BC6F2E20FC500550238E99784EA6CCBE0D955346D",
+      "Reviewed": true,
+      "Note": "寝そべり執筆、赤眼鏡、薔薇書籍、ペンと両手を保持。余分な手なし。"
+    },
+    {
+      "CharacterId": 33,
+      "Variant": 4,
+      "File": "remaining-variants/character-33-4-balanced.png",
+      "Sha256": "61A21752957B0C79638829CAF703093EFA6ED215E39107ADFC74EAB895EF7283",
+      "Reviewed": true,
+      "Note": "元画像右端の第三の手を除去。薔薇杖とハンカチを持つ両手、赤眼鏡を保持。"
+    },
+    {
+      "CharacterId": 33,
+      "Variant": 5,
+      "File": "remaining-variants/character-33-5-balanced.png",
+      "Sha256": "514F61525533B1224CA2FEBA545C588D65CFBA30A1092C0E6D6F7ECB4A66509A",
+      "Reviewed": true,
+      "Note": "王冠と白い礼装・毛皮マント、赤眼鏡、読書を保持。余分な手なし。"
+    },
+    {
+      "CharacterId": 33,
+      "Variant": 6,
+      "File": "remaining-variants/character-33-6-balanced.png",
+      "Sha256": "A539695E75CDA9F9633CBE1971F29A125386E3B06F1BFF26E7E6DFFA01B97444",
+      "Reviewed": true,
+      "Note": "驚きの詠唱、五指の素手と書籍を保持。第三の白手袋を除去しカメラ杖は浮遊。"
     }
   ]
 }

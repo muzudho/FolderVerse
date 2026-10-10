@@ -13,12 +13,12 @@ public partial class Game1
     private int _robotPendingFocus=-1;
     private bool _robotPendingRound;
     private bool _robotSummary;
+    private bool _robotPendingSummary;
     private int _robotSummaryPage;
     private int[] RobotPriority=>RobotBattlePlayback.Priority(_robotScenes,_robotPlayback.Rounds[_robotRound],new[]{_setup.PlayerSlot});
     private RobotBattleSlice RobotSlice(int scene)=>_robotPlayback.Rounds[_robotRound].First(s=>s.Scene==scene);
     private double RobotRoundEnd=>_robotPlayback.Rounds[_robotRound].Max(s=>s.End-s.Start+1)*RobotFrameSeconds;
     private double _transportAge;
-    private int _transportPage;
     private double _robotResultAge;
     private const double RobotResultSeconds=5;
     private const double RobotFrameSeconds=.08;
@@ -30,20 +30,18 @@ public partial class Game1
     private void OpenRobotBattle()
     {
         _robotScenes=_setup.Campaign.RobotBattles.Scenes.ToArray();_battleTiles=Array.Empty<CharacterTile>();_battleWave=0;_battleAge=0;_robotResultAge=0;_robotPlaying=true;
-        _robotPlayback=new(_robotScenes);_robotRound=0;_robotSummaryPage=0;_robotPendingFocus=-1;_robotPendingRound=false;_robotSummary=_robotPlayback.Rounds.Length==0;
+        _robotPlayback=new(_robotScenes);_robotRound=0;_robotSummaryPage=0;_robotPendingFocus=-1;_robotPendingRound=false;_robotPendingSummary=false;_robotSummary=_robotPlayback.Rounds.Length==0;
         if(!_robotSummary)_battleWave=RobotPriority[0];
         _populationCell=-1;_dragging=false;
-        if(_setup.Robots.Transport.LastTransfers.Count>0){_screen=Screen.Transport;_transportAge=0;_transportPage=0;return;}
-        FinishTransport();
+        _statusGlobe=false;_net.ResetView();_net.CancelAnimation();
+        _screen=Screen.Transport;_transportAge=0;
     }
     private void FinishTransport()
     {if(_robotScenes.Length>0)_screen=Screen.Battle;else{_screen=Screen.WorldStatus;OpenDisposition();}}
     private void UpdateTransport(double elapsed,bool proceed)
     {
-        _transportAge=Math.Min(2,_transportAge+elapsed);
-        if(!proceed)return;
-        if(_transportAge<2){_transportAge=2;return;}
-        if((++_transportPage)*8<_setup.Robots.Transport.LastTransfers.Count)_transportAge=0;else FinishTransport();
+        _transportAge=Math.Min(5,_transportAge+elapsed);
+        if(proceed || _transportAge>=5)FinishTransport();
     }
     private void RobotBattleInput(double elapsed,bool click,bool enter)
     {
@@ -73,13 +71,13 @@ public partial class Game1
     }
     private void NextRobotScene()
     {
-        if(_robotRound+1>=_robotPlayback.Rounds.Length){_robotSummary=true;return;}
+        if(_robotRound+1>=_robotPlayback.Rounds.Length){_robotPendingSummary=true;_robotPendingFocus=_battleWave;_robotResultAge=0;return;}
         int next=RobotBattlePlayback.Priority(_robotScenes,_robotPlayback.Rounds[_robotRound+1],new[]{_setup.PlayerSlot})[0];
         if(next!=_battleWave){_robotPendingFocus=next;_robotPendingRound=true;_robotResultAge=0;return;}
         _robotRound++;_battleAge=0;
     }
     private void SwitchRobotFocus()
-    {if(_robotPendingRound){_robotRound++;_battleAge=0;}_battleWave=_robotPendingFocus;_robotPendingFocus=-1;_robotPendingRound=false;_robotResultAge=0;}
+    {if(_robotPendingSummary){_robotSummary=true;_robotPendingSummary=false;}if(_robotPendingRound){_robotRound++;_battleAge=0;}_battleWave=_robotPendingFocus;_robotPendingFocus=-1;_robotPendingRound=false;_robotResultAge=0;}
     private static string PhaseLabel(BattlePhase phase)=>phase switch
     {BattlePhase.Choose=>"行動選択",BattlePhase.Place=>"配置",BattlePhase.Rollback=>"巻き戻し",BattlePhase.Attack=>"攻撃",BattlePhase.Receive=>"被攻撃",BattlePhase.Consume=>"消費",BattlePhase.Fall=>"転倒",BattlePhase.Flag=>"旗更新",BattlePhase.Reinforce=>"増援",_=>"戦意・勝敗"};
     private void DrawSmokePuff(Vector2 center,float radius,float opacity)
@@ -94,6 +92,7 @@ public partial class Game1
     private void DrawRobotBattle()
     {
         if(_robotSummary){DrawRobotBattleSummary();return;}
+        if(_robotPendingFocus>=0){DrawPropagation(_robotPendingFocus,(float)(_robotResultAge/RobotResultSeconds),false);return;}
         var battle=_robotScenes[_battleWave];int frameIndex=RobotFrameIndex(battle);
         var frame=battle.Frames.Count==0?new BattleFrame(battle.Turn,BattlePhase.Result,Array.Empty<BattleUnitView>(),battle.FlagStanding,battle.LastFlagOwner):battle.Frames[frameIndex];
         _ui.Text($"自動戦闘 / 全体ターン {_setup.Population.Turn} / 同時進行 {_robotRound+1}/{_robotPlayback.Rounds.Length} / 戦場 {_battleWave+1}/{_robotScenes.Length}",new(54,30),.75f,Cream);
@@ -247,19 +246,6 @@ public partial class Game1
     }
     private void DrawTransport()
     {
-        var transfers=_setup.Robots.Transport.LastTransfers;float progress=(float)(_transportAge/2);
-        _ui.Text($"ロボット輸送 / 確定 {transfers.Count} 便 / {_transportPage+1}/{(transfers.Count+7)/8}",new(54,30),.9f,Cream);
-        _ui.Text("衝突を解決して成立した輸送を表示します",new(54,100),.55f,Cream);
-        for(int i=0;i<8;i++)
-        {
-            int index=_transportPage*8+i;if(index>=transfers.Count)break;var shipment=transfers[index];int y=185+i*97;
-            _ui.Text($"Node {shipment.Source+1}",new(80,y+16),.6f,Cream);_ui.Text($"Node {shipment.Target+1}",new(1600,y+16),.6f,Cream);
-            _ui.Box(new(350,y+44,1180,3),Muted);
-            // Ownership belongs to the departed individual even if its ID merged on arrival.
-            int owner=_setup.Robots.Transport.LastOwners.GetValueOrDefault(shipment.RobotId);
-            DrawRobotGlyph(new(350+(int)(1120*progress),y,36,55),owner,shipment.Parts);
-            _ui.Text(PartsLabel(shipment.Parts)+(shipment.Disposal?" / 廃棄としての移送":" / ふつうの移送"),new(720,y+58),.42f,Cream);
-        }
-        _ui.Button(BattleContinue,_transportAge<2?"到着まで進む":(_transportPage+1)*8<transfers.Count?"続く輸送へ":"観戦へ",Accent,.6f);
+        DrawPropagation(_robotScenes.Length>0?_battleWave:-1,(float)(_transportAge/5),true);
     }
 }

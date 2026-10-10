@@ -15,6 +15,13 @@ public sealed partial class CubeNet
     public float Zoom { get; private set; }=1;
     public Vector2 Pan { get; private set; }
     public void ResetView(){Zoom=1;Pan=Vector2.Zero;}
+    public void FitAll(Rectangle panel,float zoom=1)
+    {
+        float left=Faces.Min(f=>f.Center.X-f.Width/2),right=Faces.Max(f=>f.Center.X+f.Width/2);
+        float top=Faces.Min(f=>f.Center.Y-f.Height/2),bottom=Faces.Max(f=>f.Center.Y+f.Height/2);
+        ResetView();float scale=Math.Min(panel.Width/(right-left),panel.Height/(bottom-top))*.94f;
+        Zoom=scale/Fit(panel).Scale*zoom;Pan=-new Vector2((left+right)/2,(top+bottom)/2)*scale*zoom;
+    }
     public void Drag(Vector2 delta){Pan+=delta;}
     public void ZoomAt(Rectangle panel,Point pointer,int wheel)
     {

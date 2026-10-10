@@ -18,10 +18,11 @@ public sealed class RobotCampaign
     public BattleRules Rules {get;set;}=new();
     public List<RobotEncounter> Encounters {get;}=new();
     public List<BattleState> Scenes {get;}=new();
+    public List<(int Owner,int Source,int Target)> LastMarches {get;}=new();
     public List<(int Node,Robot Robot)> Reserves {get;}=new();
     public bool LockedNode(int node)=>Encounters.Any(e=>!e.Finished && e.Kind==BattleKind.Node && e.Target==node);
     public bool LockedEdge(int a,int b)=>Encounters.Any(e=>!e.Finished && e.Kind==BattleKind.Edge && (e.Source==a && e.Target==b || e.Source==b && e.Target==a));
-    public void Reset(){_nextBattle=1;Encounters.Clear();Scenes.Clear();Reserves.Clear();_retinueIds.Clear();}
+    public void Reset(){_nextBattle=1;Encounters.Clear();Scenes.Clear();LastMarches.Clear();Reserves.Clear();_retinueIds.Clear();}
     public int Available(WorldSetup world,int ruler)
     {
         var node=world.Nodes.Current(ruler);return node==null || LockedNode(node.Id)?0:world.Robots.Nodes[node.Id].Robots.Count(r=>r.Owner==ruler && r.CanFight && world.Robots.Workshops[node.Id].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)));
@@ -56,6 +57,7 @@ public sealed class RobotCampaign
             n=>world.Nodes.All[n].Owner,world.PlacementSeed^world.Population.Turn^0x61238,LockedNode,(owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner));
         world.Population.Advance(world);
         var source=orders.ToDictionary(o=>o.Ruler,o=>world.Nodes.Current(o.Ruler).Id);
+        LastMarches.Clear();LastMarches.AddRange(orders.Select(o=>(o.Ruler,source[o.Ruler],o.TargetNode)));
         var troops=new Dictionary<int,List<Robot>>();
         foreach(var o in orders)
         {
