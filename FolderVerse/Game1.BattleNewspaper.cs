@@ -52,6 +52,7 @@ public partial class Game1
             bool textOnly=biased && current>0;
             bool known=!textOnly && _newspaperPortraits.Draw(_spriteBatch,_setup.Looks[army.Owner],photo,profile.PhotoKind,profile.AllowFallback);
             if(!known && !textOnly){_ui.Box(photo,paper*.95f);_ui.Center("写真なし",photo,.4f,ink*.6f);}
+            DrawNewspaperToy(army.Owner,textOnly?new Vector2(r.Right-22,r.Bottom-25):new Vector2(photo.Right-8,photo.Bottom-8),textOnly?48:82);
             var alive=frame.Units.Where(u=>u.Owner==army.Owner && !u.Fallen && !u.Retreated).ToArray();
             int y=textOnly?r.Y+38:photo.Bottom+12;
             int spacing=biased?22:27;

@@ -605,11 +605,12 @@ public partial class Game1 : Game
             _spriteBatch.End();
         }
         DrawScreenshotFeedback(gameTime.TotalGameTime.TotalSeconds);
+        _spriteBatch.Begin(transformMatrix:transform);DrawPhaseCutIn(gameTime.TotalGameTime.TotalSeconds);_spriteBatch.End();
         DrawDemoOverlay(transform);
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){_newspaperToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         try{base.Dispose(disposing);}

@@ -6,7 +6,7 @@ using var game=new PropagationCheck();game.Run();
 sealed class PropagationCheck:Game1
 {
     const BindingFlags Flags=BindingFlags.Instance|BindingFlags.NonPublic;
-    int frame;
+    int frame; bool checkedNews;
     object Get(string name)=>typeof(Game1).GetField(name,Flags)!.GetValue(this)!;
     object Call(string name,params object[] args)=>typeof(Game1).GetMethod(name,Flags)!.Invoke(this,args)!;
     void Check(bool ok,string text){if(!ok)throw new Exception(text);}
@@ -34,8 +34,9 @@ sealed class PropagationCheck:Game1
         if(frame<5)typeof(Game1).GetField("_transportAge",Flags)!.SetValue(this,frame==4?4.99d:frame*.9d);
         if(frame==5)Call("UpdateTransport",5d,false);
         if(frame==5){Check(Get("_screen").ToString()=="Battle","Propagation did not auto-enter battle");}
-        if(frame==23)
+        if(frame==23 && !checkedNews)
         {
+            checkedNews=true;
             typeof(Game1).GetField("_robotPlaying",Flags)!.SetValue(this,false);
             typeof(Game1).GetField("_newspaperClock",Flags)!.SetValue(this,0d);
             typeof(Game1).GetField("_newspaperEdition",Flags)!.SetValue(this,0);
@@ -46,7 +47,10 @@ sealed class PropagationCheck:Game1
             var textures=(Dictionary<string,Texture2D>)renderer.GetType().GetField("_photos",Flags)!.GetValue(renderer)!;
             Check(textures.Count>0,"No newspaper photo loaded");
             foreach(var texture in textures.Values){var colors=new Color[texture.Width*texture.Height];texture.GetData(colors);Check(colors.All(c=>c.R==c.G && c.G==c.B),"Newspaper photo is not monochrome");}
-            Console.WriteLine("PASS: propagation, 2/3/4 columns, six fixed publishers, monochrome pixels, missing photos, automatic/manual newspaper switching.");Exit();
+            typeof(Game1).GetField("_robotSummary",Flags)!.SetValue(this,true);
+            typeof(Game1).GetField("_pointer",Flags)!.SetValue(this,new Point(100,1040));
+            Call("RobotBattleInput",0d,true,false);Check((int)Get("_newspaperEdition")==3,"Summary newspaper switch failed");
+            Console.WriteLine("PASS: propagation, 2/3/4 columns, six fixed publishers, monochrome pixels, missing photos, automatic/manual newspaper switching, results newspaper.");
         }
     }
     protected override void Draw(GameTime time)
@@ -57,6 +61,11 @@ sealed class PropagationCheck:Game1
             if(frame is 11 or 17){var scenes=(BattleState[])Get("_robotScenes");scenes[0].Armies.RemoveAt(scenes[0].Armies.Count-1);}
         }
         base.Draw(time);
+        if(frame==24){var colors=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(colors);using var t=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);t.SetData(colors);using var o=File.Create(Path.Combine(AppContext.BaseDirectory,"results-newspaper.png"));t.SaveAsPng(o,t.Width,t.Height);
+            var screen=typeof(Game1).GetField("_screen",Flags)!;var batch=(SpriteBatch)Get("_spriteBatch");
+            foreach(var phase in new[]{"WorldStatus","Transport","Battle"}){screen.SetValue(this,Enum.Parse(screen.FieldType,phase));batch.Begin();Call("DrawPhaseCutIn",100d+Array.IndexOf(new[]{"WorldStatus","Transport","Battle"},phase)*3);batch.End();Check((string)Get("_lastCutInPhase")==(phase=="WorldStatus"?"内政フェーズ":phase=="Transport"?"伝播フェーズ":"戦闘フェーズ"),"Missing phase cut-in");}
+            screen.SetValue(this,Enum.Parse(screen.FieldType,"WorldStatus"));batch.Begin();Call("DrawPhaseCutIn",110d);batch.End();
+            screen.SetValue(this,Enum.Parse(screen.FieldType,"Pocket"));batch.Begin();Call("DrawPhaseCutIn",111d);batch.End();screen.SetValue(this,Enum.Parse(screen.FieldType,"WorldStatus"));batch.Begin();Call("DrawPhaseCutIn",112d);batch.End();Check((double)Get("_cutInStarted")==110d,"Domestic cut-in repeated for auxiliary screen");Console.WriteLine("PASS: all three phase cut-ins and domestic once per phase.");Exit();}
         if(frame==4)
         {
             var at=(Vector2)Call("PropagationBadgeCenter",0,new Rectangle(40,100,1840,860));

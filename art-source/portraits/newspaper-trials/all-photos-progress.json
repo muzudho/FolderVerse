@@ -1,6 +1,6 @@
 {
   "Total": 240,
-  "Completed": 18,
+  "Completed": 19,
   "Photos": [
     {
       "CharacterId": 1,
@@ -144,6 +144,15 @@
       "Width": 1200,
       "Height": 1600,
       "Sha256": "3CF331ABC7E83D7CEE8D65499CEB3C4B50064E2372F6027E59690B9D1A38CD08",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 5,
+      "Kind": "formal",
+      "File": "character-05-formal-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "B3653147EED6D9C1B2CBC0715CDDDE6307007A79816667B3F0F0E815255B918F",
       "Reviewed": true
     },
     {
