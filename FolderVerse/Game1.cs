@@ -460,12 +460,15 @@ public partial class Game1 : Game
         _ui.Center("海の都市も、人が集まる地点の名前",new(90,900,760,44),0.50f,new(164,192,202));
         _ui.Center("ノルテ＝北 / スール＝南 / エステ＝東 / オエステ＝西",new(70,950,800,40),0.40f,new(164,192,202));
         _ui.Box(new(970,142,914,750),new(20,42,54));
-        _ui.Text(_statusGlobe?_world.GlobeName+" / 経番・緯番":_world.GlobeName+"の展開図 / "+CubeNet.FaceNames[_net.CenterFace]+" が中心",new(991,156),0.68f,Cream);
+        _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+CubeNet.FaceNames[_net.CenterFace]+" が中心",new(991,156),0.68f,Cream);
         string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地星の北＝＋Y / 北を上に";
         string orientation=north+" / 回転 "+(_net.Rotation*90)+"°";
-        _ui.Text(_statusGlobe?"左ドラッグで回転 / 経番・緯番":orientation,new(991,203),.43f,new(177,206,216));
+        _ui.Text(_statusGlobe?"左ドラッグで回転"+(_net.ShowMapSymbols?" / 経番・緯番":""):orientation,new(991,203),.43f,new(177,206,216));
+        if(_net.ShowMapSymbols)
+        {
         _ui.Text("経番",new(1450,203),.38f,WorldCoordinates.LongitudeColor);
         _ui.Text("緯番",new(1515,203),.38f,WorldCoordinates.LatitudeColor);
+        }
         _ui.Text("△：山頂 / 錨：港",new(1590,203),.38f,new(255,204,83));
         var canvas=CanvasBounds();
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);

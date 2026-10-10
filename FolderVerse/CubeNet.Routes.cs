@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 public sealed partial class CubeNet
 {
-    public bool ShowFlags {get;set;}=true;
+    public bool ShowMapSymbols {get;set;}=true;
     public bool ShowBatteries {get;set;}=true;
     public bool ShowRoutes {get;set;}=true;
     public HashSet<int> MovementTargets {get;}=new();
@@ -82,12 +82,7 @@ public sealed partial class CubeNet
         }
         if(!ShowRoutes)foreach(var post in world.Nodes.InCell(cell).Where(p=>p.IsHarbor))
             DrawHarbor(ui,project(world.Routes.Position(cell,post.Center)),12,world.OwnerColor(post.Owner));
-        if(ShowFlags)foreach(var post in world.Nodes.InCell(cell).Where(p=>!p.IsHarbor && p.Owner>=0))
-        {
-            var point=project(world.Routes.Position(cell,post.Center));
-            ui.Tile(point+new Vector2(0,-3),new Vector2(2,13),0,Color.White);
-            ui.Tile(point+new Vector2(4,-6),new Vector2(8,5),0,world.OwnerColor(post.Owner));
-        }
+
     }
     private static void DrawHarbor(UiPainter ui,Vector2 at,float radius,Color color)
     {

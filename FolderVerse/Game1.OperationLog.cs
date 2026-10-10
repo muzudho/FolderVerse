@@ -23,7 +23,7 @@ public partial class Game1
         continuedBattles=_setup.Campaign.RobotBattles.Encounters.Where(e=>!e.Finished).Select(e=>new{e.Id,e.Source,e.Target,e.Kind,turns=e.Battles.Select(b=>b.Turn).ToArray()}).ToArray(),
         nodeAssemblyOpen=_nodeAssemblyOpen,hangarDrag=_hangarDrag,hangarPart=(int)_hangarPart,hangarSlots=_hangarSlots,hangarMessage=_hangarMessage,nodeDisposalOpen=_nodeDisposalOpen,nodeDisposalMessage=_nodeDisposalMessage,nodeTransportDisposal=_nodeTransportDisposal,nodeTransportOpen=_nodeTransportOpen,nodeTransportPart=(int)_nodeTransportPart,nodeTransportMessage=_nodeTransportMessage,nodeFactoryOpen=_nodeFactoryOpen,factoryPart=(int)_factoryPart,factoryMessage=_factoryMessage,
         overlay=_seedDialog.IsOpen?"SeedDialog":_movementOpen?"Movement":_populationCell>=0?(_nodeAssemblyOpen?"RobotAssembly":_nodeDisposalOpen?"RobotDisposal":_nodeTransportOpen?"RobotTransport":_nodeFactoryOpen?"RobotFactory":"NodeDialog"):"None",
-        view=_statusGlobe?"Globe":"Net",layer=_net.ShowRoutes?"Traffic":"Grid",flags=_net.ShowFlags,batteries=_net.ShowBatteries,
+        view=_statusGlobe?"Globe":"Net",layer=_net.ShowRoutes?"Traffic":"Grid",mapSymbols=_net.ShowMapSymbols,batteries=_net.ShowBatteries,
         worldSeed=_setup.WorldSeed,castSeed=_setup.CastSeed,placementSeed=_setup.PlacementSeed,
         turn=_setup.Population.Turn,player=_setup.PlayerSlot,selectedMoveNode=_selectedMoveNode,escort=_escort,
         currentNode=_setup.PlayerSlot>=0 && _setup.PlayerSlot<_setup.ConquerorLocations.Length && _setup.PlayerSlot<_setup.ConquerorPoints.Length && _setup.Nodes.All.Length>0?_setup.Nodes.Current(_setup.PlayerSlot)?.Id:null,
@@ -53,7 +53,7 @@ public partial class Game1
         if(!IsStatusScreen)return _screen.ToString();
         if(MapViewButton.Contains(point))return "toggle_globe_net";
         if(RouteLayerButton(2).Contains(point))return "toggle_grid_traffic";
-        if(RouteLayerButton(0).Contains(point))return "toggle_flags";
+        if(RouteLayerButton(0).Contains(point))return "toggle_map_symbols";
         if(RouteLayerButton(1).Contains(point))return "toggle_batteries";
         if(MovementButton.Contains(point))return "movement";
         if(PocketButton.Contains(point))return "open_pocket";

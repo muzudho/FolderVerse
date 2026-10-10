@@ -17,12 +17,25 @@ sealed class GlobeCheck:Game1
     {
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
         Check((bool)Get("_statusGlobe") && ((CubeNet)Get("_net")).ShowRoutes,"Default globe and traffic");Set("_statusGlobe",false);((CubeNet)Get("_net")).ShowRoutes=false;
-        setup=(WorldSetup)Get("_setup");setup.SetWorld(0);setup.SetCast(123);setup.SetPlacement(456);setup.SelectPlayer(0);
+        setup=(WorldSetup)Get("_setup");for(int seed=0;;seed++){setup.SetWorld(seed);if(setup.Width>=3 && setup.Height>=3 && setup.Depth>=3)break;}setup.SetCast(123);setup.SetPlacement(456);setup.SelectPlayer(0);
         globe=(WorldPreview)Get("_world");globe.ShowSetup(setup,true);((CubeNet)Get("_net")).Home(setup);
         Set("_screen",Enum.Parse(typeof(Game1).GetField("_screen",Flags)!.FieldType,"WorldStatus"));
         Set("_yaw",0f);Set("_pitch",0f);
         Check(globe.ProjectVisible(new(0,0,setup.Depth/2f),Vector3.Backward,0,0,new(1040,240,790,580),out var center) && Vector2.Distance(center,new(1435,530))<1,"Front projection wrong");
         Check(!globe.ProjectVisible(new(0,0,-setup.Depth/2f),Vector3.Forward,0,0,new(1040,240,790,580),out _),"Back label visible");
+        foreach(int seed in Enumerable.Range(0,128))
+        {
+            var sample=new WorldSetup();sample.SetWorld(seed);
+            var edges=CubeNet.EquatorEdges(sample).ToArray();
+            Check(edges.Length>0,"Equator missing for seed "+seed);
+            foreach(var edge in edges)
+            {
+                int latitude=WorldCoordinates.At(sample,edge.Cell).Y;
+                Check(latitude is -1 or 0,"Equator touches wrong latitude");
+                Check(edge.Cell.Neighbors.Any(id=>WorldCoordinates.At(sample,sample.Cells[id]).Y==(latitude==0?-1:0) &&
+                    sample.Cells[id].Corners.Contains(edge.A) && sample.Cells[id].Corners.Contains(edge.B)),"Equator edge is not 0/-1 boundary");
+            }
+        }
         var panel=new Rectangle(1040,240,790,580);int checkedOffsets=0;
         foreach(var cell in setup.Cells)
         {
@@ -116,8 +129,17 @@ sealed class GlobeCheck:Game1
                 Click(new(410,1040));Click(new(830,190));Check((bool)Get("_statusGlobe") && !(bool)Get("_movementOpen") && !((CubeNet)Get("_net")).ShowRoutes,"Cancel changed globe or failed to restore grid");
                 Click(new(1730,935));Check((float)Get("_yaw")==0 && (float)Get("_pitch")==0,"Head/belly orientation reset failed");
                 Check(WorldPreview.Orientation(0,0)==Matrix.Identity,"Reset orientation is not head up and belly forward");break;
-            case 4:Click(new(1810,104));Check(!(bool)Get("_statusGlobe"),"Net toggle failed");break;
+            case 4:
+                Click(new(1020,104));Check(!((CubeNet)Get("_net")).ShowMapSymbols,"Map symbols did not turn off");break;
             case 5:
+                Click(new(1810,104));Check(!(bool)Get("_statusGlobe"),"Net toggle failed");
+                Check(!((CubeNet)Get("_net")).ShowMapSymbols,"Map symbols state lost on view switch");
+                Click(new(1020,104));Check(((CubeNet)Get("_net")).ShowMapSymbols,"Map symbols did not turn on");
+                ((CubeNet)Get("_net")).Home(setup);break;
+            case 6:
+                Click(new(1020,104));Check(!((CubeNet)Get("_net")).ShowMapSymbols,"Net symbols did not turn off");break;
+            case 7:
+                Click(new(1020,104));
                 var clickArea=(Rectangle)typeof(Game1).GetProperty("StatusGlobeArea",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
                 foreach(int faceId in Enumerable.Range(0,6))
                 {
@@ -131,7 +153,15 @@ sealed class GlobeCheck:Game1
                     Set("_movementOpen",false);
                     // Cell opening is tested away from node hit areas.
                     var clickPoint=at.ToPoint();
-                    var candidate=cell.Center+cell.U*.22f+cell.V*.22f;globe.ProjectVisible(candidate,cell.Normal,cellYaw,cellPitch,clickArea,out var cellPoint);
+                    Vector2 cellPoint=default;bool found=false;
+                    foreach(float u in new[]{-.35f,-.2f,0f,.2f,.35f})foreach(float v in new[]{-.35f,-.2f,0f,.2f,.35f})
+                    {
+                        globe.ProjectVisible(cell.Center+cell.U*u+cell.V*v,cell.Normal,cellYaw,cellPitch,clickArea,out var candidate);
+                        int node=(int)typeof(Game1).GetMethod("HitGlobeNode",Flags)!.Invoke(this,new object[]{candidate.ToPoint(),null})!;
+                        int cellHit=(int)typeof(Game1).GetMethod("HitGlobeCell",Flags)!.Invoke(this,new object[]{candidate.ToPoint()})!;
+                        if(!found && node<0 && cellHit==cell.Id){cellPoint=candidate;found=true;}
+                    }
+                    Check(found,"No empty cell point for opening net");
                     Click(cellPoint.ToPoint());var clickedNet=(CubeNet)Get("_net");
                     Check(!(bool)Get("_statusGlobe") && clickedNet.CenterFace==faceId,"Cell click did not open centered net");
                     Check((float)Get("_yaw")==cellYaw && (float)Get("_pitch")==cellPitch,"Globe orientation was lost");
@@ -140,7 +170,7 @@ sealed class GlobeCheck:Game1
                     Check(Vector2.Distance(center,new(1435,530))<.01f,"Clicked cell not centered");
                 }
                 Click(new(1710,104));var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();break;
-            case 6:Console.WriteLine("PASS: globe retained during movement; traffic mode, rotation, port picking and conquest; confirm/cancel restore grid; coordinates, robot and small window.");Exit();break;
+            case 8:Console.WriteLine("PASS: 128 world seeds, equator 0/-1 boundaries; globe/net shared map-symbol toggle, coordinates and equator rendering, movement and small window.");Exit();break;
         }
     }
     protected override void Draw(GameTime time)
@@ -151,8 +181,21 @@ sealed class GlobeCheck:Game1
             bool Has(Color c)=>Enumerable.Range(240,580).Any(y=>Enumerable.Range(1040,790).Any(x=>pixels[y*p.BackBufferWidth+x]==c));
             Check(Has(WorldCoordinates.LongitudeColor)&&Has(WorldCoordinates.LatitudeColor),"Projected coordinates missing");
             Check(Has(new Color(172,202,215)),"Normal lines missing");
+            Check(Has(CubeNet.EquatorColor),"Equator missing");
             var toy=new Rectangle(1601,359,221,265);
             Check(Enumerable.Range(toy.Top,toy.Height).Sum(y=>Enumerable.Range(toy.Left,toy.Width).Count(x=>pixels[y*p.BackBufferWidth+x]!=pixels[300*p.BackBufferWidth+1800]))>1000,"Direction robot missing");
+        }
+        if(frame is 5 or 6)
+        {
+            bool Has(Color c)=>Enumerable.Range(240,580).Any(y=>Enumerable.Range(1040,790).Any(x=>pixels[y*p.BackBufferWidth+x]==c));
+            Check(Has(CubeNet.EquatorColor)==(frame==5),"Net equator toggle rendering wrong");
+        }
+        if(frame==4)
+        {
+            var area=(Rectangle)typeof(Game1).GetProperty("StatusGlobeArea",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+            bool Has(Color c)=>Enumerable.Range(area.Top,area.Height).Any(y=>Enumerable.Range(area.Left,area.Width).Any(x=>pixels[y*p.BackBufferWidth+x]==c));
+            Check(!Has(CubeNet.EquatorColor),"Disabled equator still visible");
+            Check(!Has(new Color(172,202,215)),"Disabled coordinate normals still visible");
         }
         using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);
         using var output=File.Create(Path.Combine(AppContext.BaseDirectory,$"globe-ui-{frame}.png"));texture.SaveAsPng(output,p.BackBufferWidth,p.BackBufferHeight);frame++;

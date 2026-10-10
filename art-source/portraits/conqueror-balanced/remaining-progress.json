@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 110,
+  "Completed": 114,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -881,6 +881,38 @@
       "Sha256": "D9E04242E376B7791CFB885F9C56B7B8625EC133653E7B0DE8659136D3C8D9BA",
       "Reviewed": true,
       "Note": "蔓を握る手・開いた五指・笑顔と眼帯を確認"
+    },
+    {
+      "CharacterId": 23,
+      "Variant": 2,
+      "File": "remaining-variants/character-23-2-balanced.png",
+      "Sha256": "7DFA61C5A5CBE0A11EF316E62CA9BA3242E1ED2F1470F6C95D99B6F937EC0DF7",
+      "Reviewed": true,
+      "Note": "冬服・マフラー・白眼帯・カップ・兎ロボットの保持を確認"
+    },
+    {
+      "CharacterId": 23,
+      "Variant": 3,
+      "File": "remaining-variants/character-23-3-balanced.png",
+      "Sha256": "A0965DF47BCF5B19653A04CF853C45F5DBEF9AEBD7B7F69A9B1B01D39E2EBBD2",
+      "Reviewed": true,
+      "Note": "両閉じ目・眼帯なし・王笏・二本の腕と手を確認、欠落した赤端末を修復"
+    },
+    {
+      "CharacterId": 23,
+      "Variant": 4,
+      "File": "remaining-variants/character-23-4-balanced.png",
+      "Sha256": "4CBD42864DC732411E10FF109723AD03234C2A3B8FDA28E6F0DB0FA64EAE348B",
+      "Reviewed": true,
+      "Note": "指差し・赤い車・二本の黒手袋・白眼帯を確認、頭飾りを採用済み赤ハートへ修正"
+    },
+    {
+      "CharacterId": 23,
+      "Variant": 5,
+      "File": "remaining-variants/character-23-5-balanced.png",
+      "Sha256": "C8D521BDB5D520C974775CADDA1BE2851176B7DCB44F7BFE2C23D3745C19ABB9",
+      "Reviewed": true,
+      "Note": "両手を上げた笑顔・青い塗料・玩具・白眼帯・赤端末を確認"
     }
   ]
 }

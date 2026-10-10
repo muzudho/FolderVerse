@@ -14,7 +14,7 @@ public partial class Game1
         }
         for(int i=0;i<3;i++)if(RouteLayerButton(i).Contains(pointer))
         {
-            if(i==0)_net.ShowFlags=!_net.ShowFlags;
+            if(i==0)_net.ShowMapSymbols=!_net.ShowMapSymbols;
             if(i==1)_net.ShowBatteries=!_net.ShowBatteries;
             if(i==2)
             {
@@ -30,7 +30,7 @@ public partial class Game1
     }
     private void DrawRouteLayerButtons()
     {
-        string[] names={"旗","電池"};bool[] enabled={_net.ShowFlags,_net.ShowBatteries};
+        string[] names={"地図記号","電池"};bool[] enabled={_net.ShowMapSymbols,_net.ShowBatteries};
         for(int i=0;i<2;i++)
         {
             var r=RouteLayerButton(i);_ui.Button(r,names[i],enabled[i]?Accent:Muted,.62f);

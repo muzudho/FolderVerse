@@ -135,6 +135,11 @@ public sealed partial class CubeNet
                 ui.Box(new(rect.Left,rect.Top,3,rect.Height),Color.White);ui.Box(new(rect.Right-3,rect.Top,3,rect.Height),Color.White);
             }
         }
+        DrawMapSymbols(ui,setup,p=>
+        {
+            var face=Faces.First(f=>f.Face==p.Cell.Face);
+            return (face.Project(p.A)*fit.Scale+fit.Origin,face.Project(p.B)*fit.Scale+fit.Origin);
+        });
         foreach(int ruler in Enumerable.Range(0,setup.ActiveCount).OrderBy(r=>r==setup.PlayerSlot?1:0))
         {
         if(!ShowBatteries || !setup.Relations.Powered[ruler])continue;
