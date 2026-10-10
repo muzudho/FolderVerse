@@ -69,7 +69,8 @@ public partial class Game1
             }
             return true;
         }
-        var aim=_screen==Screen.WorldStatus?new Vector2(720,1040):_screen is Screen.Battle or Screen.Transport?new Vector2(1840,850):new Vector2(1580,790);
+        var dispositionPoint=_screen==Screen.Disposition?DispositionButton(DemoDispositionChoice()).Center:Point.Zero;
+        var aim=_screen==Screen.Disposition?new Vector2(dispositionPoint.X,dispositionPoint.Y):_screen==Screen.WorldStatus?new Vector2(720,1040):_screen is Screen.Battle or Screen.Transport?new Vector2(1840,850):new Vector2(1580,790);
         if(_demoSwing<=0)_demoCursor=Vector2.Lerp(_demoCursor,aim,1-MathF.Exp(-(float)elapsed*2));
         if(_screen==Screen.Transport){UpdateTransport(elapsed,false);_demoStepAge=0;return true;}
         if(_screen==Screen.Battle)
@@ -97,12 +98,12 @@ public partial class Game1
                 int target=path==null?-1:_setup.Nodes.At(path.Target,path.Entry).Id;
                 _setup.Campaign.Advance(_setup,target,target<0?0:_setup.Campaign.RobotBattles.Available(_setup,_setup.PlayerSlot));
                 _world.ShowSetup(_setup,true);OpenBattle();break;
-            case Screen.Disposition:DispositionInput(true,false);break;
+            case Screen.Disposition:_pointer=dispositionPoint;DispositionInput(true,false);break;
             default:BeginRolling();break;
         }
-        if(_screen==Screen.Disposition){_pointer=DispositionButton(0).Center;DispositionInput(true,false);}
         return true;
     }
+    private int DemoDispositionChoice()=>_setup.Relations.Accepts(_setup,_setup.Relations.Pending[0].Ruler)?0:1;
     private void StartDemoClick(){_demoSwing=.4f;_demoClickPoint=_demoCursor;}
     private static Vector2 RotateDemoOffset(Vector2 offset,float angle)
         =>new(offset.X*MathF.Cos(angle)-offset.Y*MathF.Sin(angle),offset.X*MathF.Sin(angle)+offset.Y*MathF.Cos(angle));

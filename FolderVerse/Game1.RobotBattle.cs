@@ -21,7 +21,8 @@ public partial class Game1
     private double _transportAge;
     private double _robotResultAge;
     private const double RobotResultSeconds=5;
-    private const double RobotFrameSeconds=.08;
+    // At 18 rendered frames/sec, each phase lasts at least four frames.
+    private const double RobotFrameSeconds=.25;
     private int RobotFrameIndex(BattleState scene)
     {var slice=RobotSlice(_battleWave);return Math.Clamp(slice.Start+(int)Math.Floor(_battleAge/RobotFrameSeconds+1e-8),slice.Start,slice.End);}
     private static readonly Rectangle RobotBattlePrevious=new(54,108,150,48),RobotBattleNext=new(1700,108,150,48);

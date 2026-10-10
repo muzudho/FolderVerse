@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 170,
+  "Completed": 173,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1361,6 +1361,30 @@
       "Sha256": "E821E56FB29B1C4E7023D45E5A11238F4BABD3B3FC06C361E6DF7252875573B2",
       "Reviewed": true,
       "Note": "閉眼笑顔、五指の素手と指差す黒手袋、金青ロボットと望遠鏡を保持。"
+    },
+    {
+      "CharacterId": 35,
+      "Variant": 2,
+      "File": "remaining-variants/character-35-2-balanced.png",
+      "Sha256": "F2622149D5FCAAEB16FBCC4A90FD5B884E43521C931742683F3D92F0DDD0A917",
+      "Reviewed": true,
+      "Note": "雪の城、青い猫と二本の腕、開いた紫の目と金模様の眼帯を保持。"
+    },
+    {
+      "CharacterId": 35,
+      "Variant": 3,
+      "File": "remaining-variants/character-35-3-balanced.png",
+      "Sha256": "8A21DAD526089B03183DD7B0D5DF93160C8D43BE6E19E2D97AFE515D981D5E78",
+      "Reviewed": true,
+      "Note": "閉眼の眠そうな読書、頬杖の素手と本の黒手袋、天文器具を保持。"
+    },
+    {
+      "CharacterId": 35,
+      "Variant": 4,
+      "File": "remaining-variants/character-35-4-balanced.png",
+      "Sha256": "0C7E21DEE659D582079374D0C13D22DBE4262635E45CA51FD121C7B3B2C520C9",
+      "Reviewed": true,
+      "Note": "時計を持つ黒手袋、微笑む紫の目と無地眼帯、時計工房を保持。"
     }
   ]
 }

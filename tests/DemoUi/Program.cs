@@ -22,6 +22,23 @@ sealed class DemoCheck:Game1
         Check(transport,"Demo did not enter propagation");Check(battle,"Demo did not enter battle");
         double before=(double)Get("_demoAge");Tick(1,active:false);Check((double)Get("_demoAge")>before,"Inactive demo stopped");
         var screenField=typeof(Game1).GetField("_screen",Flags)!;
+        var world=(WorldSetup)Get("_setup");
+        world.Relations.Pending.Clear();
+        foreach(int personality in new[]{3,9,11,13})
+        {
+            var keyword=ConquerorCatalog.Keywords.First(k=>k.Personality==personality);
+            world.Looks[1]=new(keyword.BaseId,keyword.VariantId);
+            world.Relations.Released[1]=false;world.Relations.SetSuperior(1,-1);
+            world.Relations.Pending.Add(new(1,0,world.Nodes.Current(1).Id));
+            screenField.SetValue(this,Enum.Parse(screenField.FieldType,"Disposition"));
+            typeof(Game1).GetField("_demoStepAge",Flags)!.SetValue(this,0d);
+            for(int frame=0;frame<55;frame++)Tick(1d/18,active:false);
+            Check(world.Relations.Pending.Count==0,"Demo repeatedly selected a refused recruitment");
+            Check(world.Relations.Accepts(world,1)?world.Relations.Superiors[1]==0:world.Relations.Released[1],"Demo disposition choice incorrect");
+        }
+        var phaseSeconds=(double)typeof(Game1).GetField("RobotFrameSeconds",BindingFlags.Static|BindingFlags.NonPublic)!.GetRawConstantValue()!;
+        var sampled=Enumerable.Range(0,27).Select(i=>(int)(i/18d/phaseSeconds)).ToArray();
+        Check(Enumerable.Range(0,6).All(phase=>sampled.Count(i=>i==phase)>=4),"18 FPS skips combat phases");
         screenField.SetValue(this,Enum.Parse(screenField.FieldType,"WorldStatus"));
         typeof(Game1).GetField("_demoAge",Flags)!.SetValue(this,1200d);
         Tick(.1,active:false);Check((int)Get("_demoFinishStage")==1,"20-minute ending route not started");
