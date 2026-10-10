@@ -15,6 +15,8 @@ sealed class DemoCheck:Game1
     {
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
         Tick(9);Check(!(bool)Get("_demoActive"),"Demo started too soon");Tick(0,true);Tick(9);Check(!(bool)Get("_demoActive"),"Click did not reset title timer");Tick(1);Check((bool)Get("_demoActive"),"Demo did not start at 10 seconds");
+        Check(Get("_screen").ToString()=="Title","Intro should remain on title");
+        Tick(1.8);Check((float)Get("_demoSwing")>0,"START click swing missing");Tick(.4);Check(Get("_screen").ToString()=="Rolling","START intro did not launch demo");
         bool transport=false,battle=false;
         for(int i=0;i<180;i++){Tick(1);transport|=Get("_screen").ToString()=="Transport";battle|=Get("_screen").ToString()=="Battle";}
         Check(transport,"Demo did not enter propagation");Check(battle,"Demo did not enter battle");

@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 167,
+  "Completed": 170,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1337,6 +1337,30 @@
       "Sha256": "2488630690F42348E16BBDFE56A66E6AC298081668C386EE0BCFD531B4DA96FA",
       "Reviewed": true,
       "Note": "静かな図書室の閉眼笑顔と口元の指、頭を支える手を保持。机上の第三の腕を除去。"
+    },
+    {
+      "CharacterId": 34,
+      "Variant": 4,
+      "File": "remaining-variants/character-34-4-balanced.png",
+      "Sha256": "EC2F6D26549FC9F777B5DDA87AD5F605496FE544540249D8C16F7255AA7C944C",
+      "Reviewed": true,
+      "Note": "閉眼の茶会、カップと皿の両手、金青ティーポットと菓子を保持。"
+    },
+    {
+      "CharacterId": 34,
+      "Variant": 5,
+      "File": "remaining-variants/character-34-5-balanced.png",
+      "Sha256": "16C1EEF5A183BDC9135F2C982D159FE39EDB6AAB996CA11D719329B95254F811",
+      "Reviewed": true,
+      "Note": "振り返りウインク、白手袋の筆記と地図板、赤髪と航海服を保持。"
+    },
+    {
+      "CharacterId": 34,
+      "Variant": 6,
+      "File": "remaining-variants/character-34-6-balanced.png",
+      "Sha256": "E821E56FB29B1C4E7023D45E5A11238F4BABD3B3FC06C361E6DF7252875573B2",
+      "Reviewed": true,
+      "Note": "閉眼笑顔、五指の素手と指差す黒手袋、金青ロボットと望遠鏡を保持。"
     }
   ]
 }
