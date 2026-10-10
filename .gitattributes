@@ -59,6 +59,7 @@
 #*.RTF   diff=astextplain
 *.png filter=lfs diff=lfs merge=lfs -text
 
+
 *.jpg filter=lfs diff=lfs merge=lfs -text
 *.jpeg filter=lfs diff=lfs merge=lfs -text
 *.gif filter=lfs diff=lfs merge=lfs -text
@@ -79,3 +80,6 @@
 *.fbx filter=lfs diff=lfs merge=lfs -text
 *.blend filter=lfs diff=lfs merge=lfs -text
 *.glb filter=lfs diff=lfs merge=lfs -text
+
+# Small README preview: available without downloading the game's LFS assets.
+docs/pub/images/conqueror-creation.jpg -filter -diff -merge -text
