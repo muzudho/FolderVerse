@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 114,
+  "Completed": 160,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -913,6 +913,374 @@
       "Sha256": "C8D521BDB5D520C974775CADDA1BE2851176B7DCB44F7BFE2C23D3745C19ABB9",
       "Reviewed": true,
       "Note": "両手を上げた笑顔・青い塗料・玩具・白眼帯・赤端末を確認"
+    },
+    {
+      "CharacterId": 23,
+      "Variant": 6,
+      "File": "remaining-variants/character-23-6-balanced.png",
+      "Sha256": "EE95D369FF1F2E28638B627F2B72D0FE2A5BAB6A28C84154181282484B44F281",
+      "Reviewed": true,
+      "Note": "白フード・尖り耳・白眼帯・開いた五指とマントを持つ手を確認"
+    },
+    {
+      "CharacterId": 24,
+      "Variant": 2,
+      "File": "remaining-variants/character-24-2-balanced.png",
+      "Sha256": "6E0E17395BDB3091DA901BE9D4146D755BDA0CAFA37E325265F78CE71CB0D08F",
+      "Reviewed": true,
+      "Note": "紅茶・赤眼鏡・白手袋・椅子の手・瞳内ハイライトを確認"
+    },
+    {
+      "CharacterId": 24,
+      "Variant": 3,
+      "File": "remaining-variants/character-24-3-balanced.png",
+      "Sha256": "5D617037964008C148018410489994927079396119B91C5E2552CCC9450741A1",
+      "Reviewed": true,
+      "Note": "走る姿勢・黒手袋の両拳・赤眼鏡・瞳内ハイライトを確認"
+    },
+    {
+      "CharacterId": 24,
+      "Variant": 4,
+      "File": "remaining-variants/character-24-4-balanced.png",
+      "Sha256": "0A4F8418B175D12D9400644BDB15614253DA0A3FC33DE42B98142150CEC58858",
+      "Reviewed": true,
+      "Note": "剣と柄の保持・黒手袋両手・王冠・赤眼鏡・瞳内ハイライトを確認"
+    },
+    {
+      "CharacterId": 24,
+      "Variant": 5,
+      "File": "remaining-variants/character-24-5-balanced.png",
+      "Sha256": "1D6A170AA8ACB289AA15741C5D9C6A1A052F87D419DCFCDF6B26B5A88E5F1621",
+      "Reviewed": true,
+      "Note": "振り返り・眼鏡なし・紫瞳とハイライト・肩の青端末・王冠を確認"
+    },
+    {
+      "CharacterId": 24,
+      "Variant": 6,
+      "File": "remaining-variants/character-24-6-balanced.png",
+      "Sha256": "25675879E98A2F0B2E9473FADBABE9F0844A9A50341769A8621DB7729B52E79B",
+      "Reviewed": true,
+      "Note": "閉じ目の笑顔・頬の滴・素手の五指・反対側の黒手袋と青端末を確認"
+    },
+    {
+      "CharacterId": 25,
+      "Variant": 2,
+      "File": "remaining-variants/character-25-2-balanced.png",
+      "Sha256": "971232536FD55E02F2DD90B20937615CF69B62BCAFF973645ADADD78A36AED11",
+      "Reviewed": true,
+      "Note": "白手袋の紅茶・機械オウム・赤端末・尖り耳・眼帯・琥珀瞳を確認"
+    },
+    {
+      "CharacterId": 25,
+      "Variant": 3,
+      "File": "remaining-variants/character-25-3-balanced.png",
+      "Sha256": "F37C4BCB6E94FED4C0368E70A69EB989B6718683D476CA39CCDBFB003F737763",
+      "Reviewed": true,
+      "Note": "ラーメン・金の箸・丼の保持・二本の素手・黒眼帯を確認"
+    },
+    {
+      "CharacterId": 25,
+      "Variant": 4,
+      "File": "remaining-variants/character-25-4-balanced.png",
+      "Sha256": "558E49A6F176D74A433A61A2D4AA96ABA758F8CF5720F55A7125C64C30E81F12",
+      "Reviewed": true,
+      "Note": "宝箱・舞う金貨・驚く表情・伸ばした五指・船の場面を確認"
+    },
+    {
+      "CharacterId": 25,
+      "Variant": 5,
+      "File": "remaining-variants/character-25-5-balanced.png",
+      "Sha256": "95E5CD4C74E50804AE2333F7487653F09F0A4AB24CC34A041BD185B897BA5CF7",
+      "Reviewed": true,
+      "Note": "振り返り・肩・黒眼帯・琥珀瞳・赤端末・夕景を確認"
+    },
+    {
+      "CharacterId": 25,
+      "Variant": 6,
+      "File": "remaining-variants/character-25-6-balanced.png",
+      "Sha256": "C3DCA89B71AB1CC3DE9B51AEDF0099D9A61581944B6C0977553C09D962B49DBD",
+      "Reviewed": true,
+      "Note": "眠る閉じ目・海賊パンダ・白手袋・黒眼帯・赤端末を確認"
+    },
+    {
+      "CharacterId": 26,
+      "Variant": 2,
+      "File": "remaining-variants/character-26-2-balanced.png",
+      "Sha256": "6EF698701492A57415A4134D9923C431612F1379C2A13C037EC73248A1367EF6",
+      "Reviewed": true,
+      "Note": "頬杖とペンの二本の手・本・パンダ・緑端末・眼鏡を確認、余分な第三の手を除去"
+    },
+    {
+      "CharacterId": 26,
+      "Variant": 3,
+      "File": "remaining-variants/character-26-3-balanced.png",
+      "Sha256": "A982ED3C787C9B3102B75D71DBFE26B4EA42A1394FAF29CE2927A24E7CC96D68",
+      "Reviewed": true,
+      "Note": "眠る閉じ目・眼鏡・パンダ・折りたたんだ腕と手・緑端末を確認"
+    },
+    {
+      "CharacterId": 26,
+      "Variant": 4,
+      "File": "remaining-variants/character-26-4-balanced.png",
+      "Sha256": "E2CBA46558023B55373379E96A75CF7E5D4A4329E69439C7A1A93BA3617D1CBA",
+      "Reviewed": true,
+      "Note": "ウインクと赤瞳・指差し・龍の玩具・赤端末・金貨を確認"
+    },
+    {
+      "CharacterId": 26,
+      "Variant": 5,
+      "File": "remaining-variants/character-26-5-balanced.png",
+      "Sha256": "586D32B9A260050209E8536F33DFB6EE47A5D4171E12A9069753F3C2141BB630",
+      "Reviewed": true,
+      "Note": "振り返る姿勢・眼鏡・琥珀瞳・開いた本と手・木製椅子を確認"
+    },
+    {
+      "CharacterId": 26,
+      "Variant": 6,
+      "File": "remaining-variants/character-26-6-balanced.png",
+      "Sha256": "A5321EB6D6B27C8F849C300B92642C67DF1D47E2C1E9216B298BA56009D937E6",
+      "Reviewed": true,
+      "Note": "閉じ目・眼鏡・手前の五本指・パンダの黒い手足・緑端末を確認"
+    },
+    {
+      "CharacterId": 27,
+      "Variant": 2,
+      "File": "remaining-variants/character-27-2-balanced.png",
+      "Sha256": "B5C09F85754FA851EE37166FFE09E76325948A52C42649CB4AF180E3C351B93C",
+      "Reviewed": true,
+      "Note": "差し出す五指・二段の菓子皿と支える手・パンダ・桃色端末・金モノクルを確認"
+    },
+    {
+      "CharacterId": 27,
+      "Variant": 3,
+      "File": "remaining-variants/character-27-3-balanced.png",
+      "Sha256": "ECDCA0308B286B3D96D4570221244BF92EB9FDA6DE154273B293873A1FD82960",
+      "Reviewed": true,
+      "Note": "跳ぶ姿勢・手前の白手袋五指・右モノクル・苺とチョコの風景・桃色端末を確認"
+    },
+    {
+      "CharacterId": 27,
+      "Variant": 4,
+      "File": "remaining-variants/character-27-4-balanced.png",
+      "Sha256": "6B70D126AC9C89534FCF45C96396712434AC088B4914D4B7F651B0AE1CD590FD",
+      "Reviewed": true,
+      "Note": "二本のフライパンと両手の握り・炎と野菜・右モノクル・紫瞳を確認"
+    },
+    {
+      "CharacterId": 27,
+      "Variant": 5,
+      "File": "remaining-variants/character-27-5-balanced.png",
+      "Sha256": "82C5E71D1F584705F60705F53E487C5A511C224DE297D73ABEDDF182107533A6",
+      "Reviewed": true,
+      "Note": "くつろぐ半閉じ瞳・両眼鏡・タオル・白いローブ・アヒルを抱く手・桃色端末を確認"
+    },
+    {
+      "CharacterId": 27,
+      "Variant": 6,
+      "File": "remaining-variants/character-27-6-balanced.png",
+      "Sha256": "AC9C2499F4DF186908976A2A68C4542FAF9E4A4977CB978952D1C7CFD2578264",
+      "Reviewed": true,
+      "Note": "お玉を握る手・赤と紫の異色瞳・右モノクル・菓子とハート・桃色端末を確認"
+    },
+    {
+      "CharacterId": 28,
+      "Variant": 2,
+      "File": "remaining-variants/character-28-2-balanced.png",
+      "Sha256": "9D3BE18D971FFE67B069E2CD9426F8F7A922542B7A1C2AE6A5A29980B9E799EA",
+      "Reviewed": true,
+      "Note": "黒猫・青端末・金の手甲と反対の素手・寝姿勢・琥珀瞳を確認"
+    },
+    {
+      "CharacterId": 28,
+      "Variant": 3,
+      "File": "remaining-variants/character-28-3-balanced.png",
+      "Sha256": "D0AF830D18CAF3EC4836CC3823F479600478D6D0377A801C04EDCE5078CF603B",
+      "Reviewed": true,
+      "Note": "半閉じの瞳・杖を握る素手・望遠鏡を持つ白手袋・青金の寝具を確認"
+    },
+    {
+      "CharacterId": 28,
+      "Variant": 4,
+      "File": "remaining-variants/character-28-4-balanced.png",
+      "Sha256": "3E29D64385E132F455301371058D0CB66506861E2F4D095F065DECAD9A5CC011",
+      "Reviewed": true,
+      "Note": "上げた腕・杖を握る手・開いた口・白い羽根と宮殿・青の頭飾りを確認"
+    },
+    {
+      "CharacterId": 28,
+      "Variant": 5,
+      "File": "remaining-variants/character-28-5-balanced.png",
+      "Sha256": "4C47A306F1B5E0AB73FFADDE25333089F7E54C99F1ECF271A9FF3A00523CCEEF",
+      "Reviewed": true,
+      "Note": "振り返る姿勢・本を持つ手・開いた本・琥珀色端末・髪の金装飾を確認"
+    },
+    {
+      "CharacterId": 28,
+      "Variant": 6,
+      "File": "remaining-variants/character-28-6-balanced.png",
+      "Sha256": "57BC1C6A8FCB82851DFC8969CFA4FC7506D4765D431B41F8376B788900A39F8A",
+      "Reviewed": true,
+      "Note": "葡萄の茎をつまむ手・金の杯・葡萄皿・半閉じ琥珀瞳・琥珀色端末を確認"
+    },
+    {
+      "CharacterId": 29,
+      "Variant": 2,
+      "File": "remaining-variants/character-29-2-balanced.png",
+      "Sha256": "CA7452EB2B6290E9282A38E53CB0C5B25FCDFE54C37ED654B1209C54CF6F051A",
+      "Reviewed": true,
+      "Note": "白い渦眼鏡・青ゴーグル・術具と魔法書の両手・青端末・青雷を確認"
+    },
+    {
+      "CharacterId": 29,
+      "Variant": 3,
+      "File": "remaining-variants/character-29-3-balanced.png",
+      "Sha256": "A821E6CB490A0C1EC4492523C3379D47BB61A4FE303F2A43E56D2A6D9BD462C4",
+      "Reviewed": true,
+      "Note": "笑う渦眼鏡・熊の手袋と抱いた熊・琥珀端末・毛皮と星の部屋を確認"
+    },
+    {
+      "CharacterId": 29,
+      "Variant": 4,
+      "File": "remaining-variants/character-29-4-balanced.png",
+      "Sha256": "01D55E701905ECB70F6F33412CF4DE019503FD056060789E1238AE7FDC88AFE4",
+      "Reviewed": true,
+      "Note": "封蝋付き封筒を持つ両手・渦眼鏡・二つの金属ゴーグル・琥珀端末を確認"
+    },
+    {
+      "CharacterId": 29,
+      "Variant": 5,
+      "File": "remaining-variants/character-29-5-balanced.png",
+      "Sha256": "884673E1ED03BABB54755AD91BFB288D8C3C38ADCC19652CC76AA844EB2222AD",
+      "Reviewed": true,
+      "Note": "振り返る雪道・黒手袋の五指・熊付きリュック・琥珀端末・渦眼鏡を確認"
+    },
+    {
+      "CharacterId": 29,
+      "Variant": 6,
+      "File": "remaining-variants/character-29-6-balanced.png",
+      "Sha256": "75F1CA3AE27DF179BE00D5A10C1C5E2E3A84852AEF99DA5DA5461B1C3B82B98C",
+      "Reviewed": true,
+      "Note": "困った表情・渦眼鏡・万年筆と本の両手・赤端末・積んだ本と紙屑を確認"
+    },
+    {
+      "CharacterId": 30,
+      "Variant": 2,
+      "File": "remaining-variants/character-30-2-balanced.png",
+      "Sha256": "11F8DC38B9C376AD2E85666873912A5E62C1CBE1A1A33ADB321F356C734C2D3C",
+      "Reviewed": true,
+      "Note": "閉じ目の笑顔・星眼帯・白手袋の宇宙船と腰の黒手袋・青端末を確認"
+    },
+    {
+      "CharacterId": 30,
+      "Variant": 3,
+      "File": "remaining-variants/character-30-3-balanced.png",
+      "Sha256": "AD7E1DD6B36EEDDE7FAB526E9999601494B736A2007F5C5B1BF2495DAE1D0EC5",
+      "Reviewed": true,
+      "Note": "白手袋の頬杖・星眼帯・青瞳・ホログラム地球儀と星図・青端末を確認"
+    },
+    {
+      "CharacterId": 30,
+      "Variant": 4,
+      "File": "remaining-variants/character-30-4-balanced.png",
+      "Sha256": "3ADB8F040F9422D9803CB4994DB0884F4CB948BFBAC509823C3645AE375BF6BB",
+      "Reviewed": true,
+      "Note": "両白手袋のハンバーガー・ポテトと飲料・星眼帯・青端末・室内を確認"
+    },
+    {
+      "CharacterId": 30,
+      "Variant": 5,
+      "File": "remaining-variants/character-30-5-balanced.png",
+      "Sha256": "725CB9C6629209DCE4FE9E290C23E9DCCB77054654F9845BBA44F968C8ECA294",
+      "Reviewed": true,
+      "Note": "振り返り・筆記具とノートの手・星図画面・星眼帯・青端末を確認"
+    },
+    {
+      "CharacterId": 30,
+      "Variant": 6,
+      "File": "remaining-variants/character-30-6-balanced.png",
+      "Sha256": "1FCBDC1123896FFC3EC68AAAE5177085434709E2A1F805894851D4E8C44F779E",
+      "Reviewed": true,
+      "Note": "手前の素手五指・半閉じ青瞳と星眼帯・肩のロボット・青端末・星空魔法を確認"
+    },
+    {
+      "CharacterId": 31,
+      "Variant": 2,
+      "File": "remaining-variants/character-31-2-balanced.png",
+      "Sha256": "0814FCBC6C706AC4D8CA72E20B316A327A0960A2D70AAD6D2C3E650BB2F24B39",
+      "Reviewed": true,
+      "Note": "ラクダを抱く両素手・鞍の青雷印・青瞳と黒眼帯・白紺の衣装・丸い耳を確認"
+    },
+    {
+      "CharacterId": 31,
+      "Variant": 3,
+      "File": "remaining-variants/character-31-3-balanced.png",
+      "Sha256": "004ACB7965D4D30C86B45C4F413DB946AE65F28083332978FAF8459CA86AB419",
+      "Reviewed": true,
+      "Note": "驚く表情・上げた両手の五指・三日月飾り・黒眼帯と青瞳・クッションを確認"
+    },
+    {
+      "CharacterId": 31,
+      "Variant": 4,
+      "File": "remaining-variants/character-31-4-balanced.png",
+      "Sha256": "BCE737D2E00BCE6B117EEBFF69B2D055DD11B1CB5C255E4794F11486B9E8A020",
+      "Reviewed": true,
+      "Note": "頭の後ろへ曲げた腕・二本の軸を握る手・青宝石の杖・歯の笑顔と黒眼帯を確認"
+    },
+    {
+      "CharacterId": 31,
+      "Variant": 5,
+      "File": "remaining-variants/character-31-5-balanced.png",
+      "Sha256": "24673B6AD94607E5FC7AC65D21C04B838A8A2859EA6065D9B69DD7AA8315589C",
+      "Reviewed": true,
+      "Note": "振り返る笑顔・赤青の衣装・白いヴェール・黒眼帯・宮殿景色を確認"
+    },
+    {
+      "CharacterId": 31,
+      "Variant": 6,
+      "File": "remaining-variants/character-31-6-balanced.png",
+      "Sha256": "1BC2BDB2429689F683952AEE34B8AEFBE95AD2CF810652BE327DA87B2308AE6A",
+      "Reviewed": true,
+      "Note": "スプーンを握る素手・白い食事皿・青端末・黒眼帯・くつろぐ宮殿を確認"
+    },
+    {
+      "CharacterId": 32,
+      "Variant": 2,
+      "File": "remaining-variants/character-32-2-balanced.png",
+      "Sha256": "5E76B0519A0EDC0B30DC49486B0C29FAE1FCFC625ECF5B21169ED71DDB46CA51",
+      "Reviewed": true,
+      "Note": "通常の青瞳と眼鏡・ロボットを指す白手袋と支える手・肩の小鳥・冬帽子を確認"
+    },
+    {
+      "CharacterId": 32,
+      "Variant": 3,
+      "File": "remaining-variants/character-32-3-balanced.png",
+      "Sha256": "B572D853240F432AD6C56C4ED54E9F6CE8C16742EB9A02994073BBD8861624F7",
+      "Reviewed": true,
+      "Note": "地図を指す両黒手袋・通常の青瞳・大型ペンと地図・眼鏡とポニーテールを確認"
+    },
+    {
+      "CharacterId": 32,
+      "Variant": 4,
+      "File": "remaining-variants/character-32-4-balanced.png",
+      "Sha256": "8EB671207F3A929BFD527632A5CB74FB127A9F8092D1D910F832FB6997D3811C",
+      "Reviewed": true,
+      "Note": "ウインク・ペンギンを撫でる素手と支える白手袋の二本の腕・二つの青端末・雪景色を確認"
+    },
+    {
+      "CharacterId": 32,
+      "Variant": 5,
+      "File": "remaining-variants/character-32-5-balanced.png",
+      "Sha256": "E7A11BC813A51893DEA42920DA2AD01A864A3CE277CF107191BD1ACA20AE8FB3",
+      "Reviewed": true,
+      "Note": "振り返り・通常青瞳と眼鏡・クリップボードの黒手袋・雪の城壁と荷箱を確認"
+    },
+    {
+      "CharacterId": 32,
+      "Variant": 6,
+      "File": "remaining-variants/character-32-6-balanced.png",
+      "Sha256": "FEA3F18C9C0ED9DD4D5B08CF01FA86DB8B0E91B87D807E237455E1993DF6ED1D",
+      "Reviewed": true,
+      "Note": "渦瞳と眼鏡・手前黒手袋の五指・雪結晶端末を握る手・パンダロボットを確認"
     }
   ]
 }

@@ -718,5 +718,565 @@
     "SourceSha256": "5397AA53AC6587700BEFAA77E005654AA016D3DB3F16311C58CBD8ED03B613C9",
     "GameTile": "character-18-6.png",
     "GameTileSha256": "2851B0323B93385438E82D5AE5C8AB5302BD67C60E14FE98B84C0CDAA6BADF13"
+  },
+  {
+    "CharacterId": 19,
+    "Variant": 2,
+    "Source": "remaining-variants/character-19-2-balanced.png",
+    "SourceSha256": "255A13C37B49C4D6FC5CA0771FCE47DDA8A42B363E6884CD9E1C930A2E48D0E9",
+    "GameTile": "character-19-2.png",
+    "GameTileSha256": "688FB9CB42034267CECA30C144183FAE0E08AF4C8AB22DEA61640ADDE19EECD3"
+  },
+  {
+    "CharacterId": 19,
+    "Variant": 3,
+    "Source": "remaining-variants/character-19-3-balanced.png",
+    "SourceSha256": "E676BE861E10956A38B4B43CF459EB8E7FD145EAED78AAE8D2D3831A4BB456F6",
+    "GameTile": "character-19-3.png",
+    "GameTileSha256": "85C4649658C1F99587E7B799E40B545B0DB8956CDCE7B6E6832F5D0B03249858"
+  },
+  {
+    "CharacterId": 19,
+    "Variant": 4,
+    "Source": "remaining-variants/character-19-4-balanced.png",
+    "SourceSha256": "5A3D9E1B75283698C1D1F3DE4866E5B2DF35B77FE57E557D2494B8BC4E081AFF",
+    "GameTile": "character-19-4.png",
+    "GameTileSha256": "FC5085A2F650611EE2C99C316027E9D89EF9B06663B84E6B50332B63D8251E67"
+  },
+  {
+    "CharacterId": 19,
+    "Variant": 5,
+    "Source": "remaining-variants/character-19-5-balanced.png",
+    "SourceSha256": "EEBBECA222B322098572E39DF9BCB335E1799C8BD078B85C06DC2CAD57471186",
+    "GameTile": "character-19-5.png",
+    "GameTileSha256": "68A7D9EECBE5D985FC596DAED0EA459059D50859AF7D4D3C7CF8F31D8FD6229B"
+  },
+  {
+    "CharacterId": 19,
+    "Variant": 6,
+    "Source": "remaining-variants/character-19-6-balanced.png",
+    "SourceSha256": "CD4140A48FF6811FDC8D66AA54E6BB933A017828EBC08D2C889104B0F2298E07",
+    "GameTile": "character-19-6.png",
+    "GameTileSha256": "CE7E76C08B8A1ECE6F2CF549CABFF6B688D641E4F997E2AB97776DC0B57F218C"
+  },
+  {
+    "CharacterId": 20,
+    "Variant": 2,
+    "Source": "remaining-variants/character-20-2-balanced.png",
+    "SourceSha256": "D8CAA01BAB92B058D03DBA24529F660A4C53A17437E71EAD1B5DFE036893B74B",
+    "GameTile": "character-20-2.png",
+    "GameTileSha256": "11E9B1CA9263F1E406DAC4DF5BF95BC14791426009931E10456A85C64129D0C6"
+  },
+  {
+    "CharacterId": 20,
+    "Variant": 3,
+    "Source": "remaining-variants/character-20-3-balanced.png",
+    "SourceSha256": "3FE2807D2010A4E063397F5A1ADDD12F17ADDF2D574149446E93652D14210833",
+    "GameTile": "character-20-3.png",
+    "GameTileSha256": "4C0199EE3B196DBD08DC8BCCDA354C9BFDBCABA3E5E4B5F7BDC84F0A772D35E5"
+  },
+  {
+    "CharacterId": 20,
+    "Variant": 4,
+    "Source": "remaining-variants/character-20-4-balanced.png",
+    "SourceSha256": "0D026A36DB21E0B7CCB9CFED956D1966D49C0F902802BBCEBBAA6ABE31B36CCF",
+    "GameTile": "character-20-4.png",
+    "GameTileSha256": "6AB81BAA96E2AC1731E2E1570139AFF426142821BDF97CA5AF3EF1086A1DD942"
+  },
+  {
+    "CharacterId": 20,
+    "Variant": 5,
+    "Source": "remaining-variants/character-20-5-balanced.png",
+    "SourceSha256": "E19DA8395DD9C62D3DF33B02A7B4DE3F435D0D2FF137466506555C17E4F07DAF",
+    "GameTile": "character-20-5.png",
+    "GameTileSha256": "DC13D61F076D7401DFAF33E6CB24581205300AA74D2845C4BD8DA3AF5090E779"
+  },
+  {
+    "CharacterId": 20,
+    "Variant": 6,
+    "Source": "remaining-variants/character-20-6-balanced.png",
+    "SourceSha256": "6591FAAF216418E5D9AC8223182B950AF946A308D828E415518104BF6D923548",
+    "GameTile": "character-20-6.png",
+    "GameTileSha256": "14904755BA7B0863631066B515263A5E1619B172CE1525ADF911CF743F42BDC2"
+  },
+  {
+    "CharacterId": 21,
+    "Variant": 2,
+    "Source": "remaining-variants/character-21-2-balanced.png",
+    "SourceSha256": "29CD8CDC5D1E0C8869119E7DC5275300B65D28869E011BA819D8FE4BF2C4B439",
+    "GameTile": "character-21-2.png",
+    "GameTileSha256": "A63100F58D4B46903A9C84D1D78409CEB05F50B1488986E6FD1D9575AE3634B6"
+  },
+  {
+    "CharacterId": 21,
+    "Variant": 3,
+    "Source": "remaining-variants/character-21-3-balanced.png",
+    "SourceSha256": "824E92C18C81C992F5F37DD869F6AE6DAFDED38BAB3F2BEFE5A2A0BC65124391",
+    "GameTile": "character-21-3.png",
+    "GameTileSha256": "31C213220622C26C6889E5646C13F5FA0D735084308496E734D5731191BE1750"
+  },
+  {
+    "CharacterId": 21,
+    "Variant": 4,
+    "Source": "remaining-variants/character-21-4-balanced.png",
+    "SourceSha256": "63374E694DF2050CE5A2149700FBB193C45821C9F81134CB6F772E9B7D6F9D78",
+    "GameTile": "character-21-4.png",
+    "GameTileSha256": "6F541DD4FB727B6DBEFCA3E9238170A0F3B30A25D03C0AEDD38F84156D785DB3"
+  },
+  {
+    "CharacterId": 21,
+    "Variant": 5,
+    "Source": "remaining-variants/character-21-5-balanced.png",
+    "SourceSha256": "1B59BA0738F230DBB16C7F0557412F6F0D1F576BBE05901912FF3986A0FDA4DD",
+    "GameTile": "character-21-5.png",
+    "GameTileSha256": "A834F1FBE272FF32C3418B0A5B1A3057334964B00A3AB94E737F0D67ED088AF8"
+  },
+  {
+    "CharacterId": 21,
+    "Variant": 6,
+    "Source": "remaining-variants/character-21-6-balanced.png",
+    "SourceSha256": "6848B15BC574E7C2F2D195286FE94E218386F9CF7668420953449D697437E0EE",
+    "GameTile": "character-21-6.png",
+    "GameTileSha256": "87AA8237EEFB727E54B7785899B4DC23940CE634CC8AA68D08EFADFC05D6883E"
+  },
+  {
+    "CharacterId": 22,
+    "Variant": 2,
+    "Source": "remaining-variants/character-22-2-balanced.png",
+    "SourceSha256": "57EF6B435C0F4DC1CB4C90D484EEACE8F4025EB66A864A025F9240E3BD0A3798",
+    "GameTile": "character-22-2.png",
+    "GameTileSha256": "DA07AA0E4CFEDBB9E54F16D879B363A4AF366A93F68D538DB93B48748E38B4DC"
+  },
+  {
+    "CharacterId": 22,
+    "Variant": 3,
+    "Source": "remaining-variants/character-22-3-balanced.png",
+    "SourceSha256": "777544AB9F555B1A663B8447AE0BFCFAF6F61AB9A19400AC6D83CE1E4F3F39B0",
+    "GameTile": "character-22-3.png",
+    "GameTileSha256": "B4C70A15D6CD7C1FAAB9BF06D06E6D71FA456F71CFFAED365092CC86A12C1945"
+  },
+  {
+    "CharacterId": 22,
+    "Variant": 4,
+    "Source": "remaining-variants/character-22-4-balanced.png",
+    "SourceSha256": "006A23FA7C5E765358C6BF86D2E023704D15919A9188FBA4377FCDC78CE38AA8",
+    "GameTile": "character-22-4.png",
+    "GameTileSha256": "D10CA398EC25391FD04C1489C2F42E264E7792D95AD8A2823809C339170E60A8"
+  },
+  {
+    "CharacterId": 22,
+    "Variant": 5,
+    "Source": "remaining-variants/character-22-5-balanced.png",
+    "SourceSha256": "C6269D9C058CBCF9E18348CECB4960BE461C15A1A31EAB7DE6CF4640F30CF79E",
+    "GameTile": "character-22-5.png",
+    "GameTileSha256": "29C9D3AD8F0177A0F1B176400A7747491C6CA31DAB51436573D7170D0B912786"
+  },
+  {
+    "CharacterId": 22,
+    "Variant": 6,
+    "Source": "remaining-variants/character-22-6-balanced.png",
+    "SourceSha256": "D9E04242E376B7791CFB885F9C56B7B8625EC133653E7B0DE8659136D3C8D9BA",
+    "GameTile": "character-22-6.png",
+    "GameTileSha256": "CD37C5789FFC27568D34BC4F9875F28A258E9A4D3F1CA352C73A98385E412ABD"
+  },
+  {
+    "CharacterId": 23,
+    "Variant": 2,
+    "Source": "remaining-variants/character-23-2-balanced.png",
+    "SourceSha256": "7DFA61C5A5CBE0A11EF316E62CA9BA3242E1ED2F1470F6C95D99B6F937EC0DF7",
+    "GameTile": "character-23-2.png",
+    "GameTileSha256": "1159712DAFB40E7CA6254B934C9A71F97AF491F491A41B5BFF1C53C988B55D0D"
+  },
+  {
+    "CharacterId": 23,
+    "Variant": 3,
+    "Source": "remaining-variants/character-23-3-balanced.png",
+    "SourceSha256": "A0965DF47BCF5B19653A04CF853C45F5DBEF9AEBD7B7F69A9B1B01D39E2EBBD2",
+    "GameTile": "character-23-3.png",
+    "GameTileSha256": "95F34A88BABAF250DB007A91AF6153BFA1B4D4292224E1DAA4947E49B123D494"
+  },
+  {
+    "CharacterId": 23,
+    "Variant": 4,
+    "Source": "remaining-variants/character-23-4-balanced.png",
+    "SourceSha256": "4CBD42864DC732411E10FF109723AD03234C2A3B8FDA28E6F0DB0FA64EAE348B",
+    "GameTile": "character-23-4.png",
+    "GameTileSha256": "38B4ED55A3EE355ED34CFF13317E05D47482AABE2C37906E7893B76A4BFECD20"
+  },
+  {
+    "CharacterId": 23,
+    "Variant": 5,
+    "Source": "remaining-variants/character-23-5-balanced.png",
+    "SourceSha256": "C8D521BDB5D520C974775CADDA1BE2851176B7DCB44F7BFE2C23D3745C19ABB9",
+    "GameTile": "character-23-5.png",
+    "GameTileSha256": "9CEE39C8401D908D25F8EB4EF87C52A9A06D0DC28F33BC9782E9167466D98247"
+  },
+  {
+    "CharacterId": 23,
+    "Variant": 6,
+    "Source": "remaining-variants/character-23-6-balanced.png",
+    "SourceSha256": "EE95D369FF1F2E28638B627F2B72D0FE2A5BAB6A28C84154181282484B44F281",
+    "GameTile": "character-23-6.png",
+    "GameTileSha256": "6D6BB7C7DA3E3C04389A156BCDC3970D0C81C8F9F0FDD4DCA8EE06AAB58A8917"
+  },
+  {
+    "CharacterId": 24,
+    "Variant": 2,
+    "Source": "remaining-variants/character-24-2-balanced.png",
+    "SourceSha256": "6E0E17395BDB3091DA901BE9D4146D755BDA0CAFA37E325265F78CE71CB0D08F",
+    "GameTile": "character-24-2.png",
+    "GameTileSha256": "A93E68D9987E15C55DC41E71094A35ABE0543CC8428B17292A1154F2141A2E66"
+  },
+  {
+    "CharacterId": 24,
+    "Variant": 3,
+    "Source": "remaining-variants/character-24-3-balanced.png",
+    "SourceSha256": "5D617037964008C148018410489994927079396119B91C5E2552CCC9450741A1",
+    "GameTile": "character-24-3.png",
+    "GameTileSha256": "5E13E8CAF1548DE8A6A98AE7FE6D8180AB838EF224BF585FC71241935BA0CDC5"
+  },
+  {
+    "CharacterId": 24,
+    "Variant": 4,
+    "Source": "remaining-variants/character-24-4-balanced.png",
+    "SourceSha256": "0A4F8418B175D12D9400644BDB15614253DA0A3FC33DE42B98142150CEC58858",
+    "GameTile": "character-24-4.png",
+    "GameTileSha256": "0F7532B0696C16E6C0857CD7FF6573245A8D86D17195C0F0462F76C4CA6B68AC"
+  },
+  {
+    "CharacterId": 24,
+    "Variant": 5,
+    "Source": "remaining-variants/character-24-5-balanced.png",
+    "SourceSha256": "1D6A170AA8ACB289AA15741C5D9C6A1A052F87D419DCFCDF6B26B5A88E5F1621",
+    "GameTile": "character-24-5.png",
+    "GameTileSha256": "2B3DDA5679FA66E7BFDD74078A30B9F41CC8F96E82A3F35FE3B1D826AD13FD17"
+  },
+  {
+    "CharacterId": 24,
+    "Variant": 6,
+    "Source": "remaining-variants/character-24-6-balanced.png",
+    "SourceSha256": "25675879E98A2F0B2E9473FADBABE9F0844A9A50341769A8621DB7729B52E79B",
+    "GameTile": "character-24-6.png",
+    "GameTileSha256": "81F3EB59A72503FBB9CAB90194601E0D611DC9A31A5600D06752713BF5F4FEBB"
+  },
+  {
+    "CharacterId": 25,
+    "Variant": 2,
+    "Source": "remaining-variants/character-25-2-balanced.png",
+    "SourceSha256": "971232536FD55E02F2DD90B20937615CF69B62BCAFF973645ADADD78A36AED11",
+    "GameTile": "character-25-2.png",
+    "GameTileSha256": "B6A727DAA796CF2D2609FD7B4D4461497F585DC5F48204892B8CD89C565095AB"
+  },
+  {
+    "CharacterId": 25,
+    "Variant": 3,
+    "Source": "remaining-variants/character-25-3-balanced.png",
+    "SourceSha256": "F37C4BCB6E94FED4C0368E70A69EB989B6718683D476CA39CCDBFB003F737763",
+    "GameTile": "character-25-3.png",
+    "GameTileSha256": "E94952CD07FCAC5CFD1CF529FF5303778360F5D508FB8C3779518DA7980ACB11"
+  },
+  {
+    "CharacterId": 25,
+    "Variant": 4,
+    "Source": "remaining-variants/character-25-4-balanced.png",
+    "SourceSha256": "558E49A6F176D74A433A61A2D4AA96ABA758F8CF5720F55A7125C64C30E81F12",
+    "GameTile": "character-25-4.png",
+    "GameTileSha256": "E2D38B896F5359AE692F2094697C96A16A1316B216FADBE4E873986EC6A128B4"
+  },
+  {
+    "CharacterId": 25,
+    "Variant": 5,
+    "Source": "remaining-variants/character-25-5-balanced.png",
+    "SourceSha256": "95E5CD4C74E50804AE2333F7487653F09F0A4AB24CC34A041BD185B897BA5CF7",
+    "GameTile": "character-25-5.png",
+    "GameTileSha256": "EBF4A901CFDC809BED25EB2549A748D0FA1A6008F043440015F1A8104C0A1FF9"
+  },
+  {
+    "CharacterId": 25,
+    "Variant": 6,
+    "Source": "remaining-variants/character-25-6-balanced.png",
+    "SourceSha256": "C3DCA89B71AB1CC3DE9B51AEDF0099D9A61581944B6C0977553C09D962B49DBD",
+    "GameTile": "character-25-6.png",
+    "GameTileSha256": "CE161DDB924BB0F43AABA896D23901FD8A162650651A39C7DFB6D59E5C2781B4"
+  },
+  {
+    "CharacterId": 26,
+    "Variant": 2,
+    "Source": "remaining-variants/character-26-2-balanced.png",
+    "SourceSha256": "6EF698701492A57415A4134D9923C431612F1379C2A13C037EC73248A1367EF6",
+    "GameTile": "character-26-2.png",
+    "GameTileSha256": "51CDAD34566057B533E4B8BB28A4738FE3EC7E6B4E381FBEB3659FD611C96BE6"
+  },
+  {
+    "CharacterId": 26,
+    "Variant": 3,
+    "Source": "remaining-variants/character-26-3-balanced.png",
+    "SourceSha256": "A982ED3C787C9B3102B75D71DBFE26B4EA42A1394FAF29CE2927A24E7CC96D68",
+    "GameTile": "character-26-3.png",
+    "GameTileSha256": "0AF0D2DC81723BDB7B5F34154F4BC9B42FF5D2E05C6ABD1A833A2F53FBB94609"
+  },
+  {
+    "CharacterId": 26,
+    "Variant": 4,
+    "Source": "remaining-variants/character-26-4-balanced.png",
+    "SourceSha256": "E2CBA46558023B55373379E96A75CF7E5D4A4329E69439C7A1A93BA3617D1CBA",
+    "GameTile": "character-26-4.png",
+    "GameTileSha256": "0F4BEDB99C61A100D6F1B4A676B021503820283836660B0038D28101E6C44238"
+  },
+  {
+    "CharacterId": 26,
+    "Variant": 5,
+    "Source": "remaining-variants/character-26-5-balanced.png",
+    "SourceSha256": "586D32B9A260050209E8536F33DFB6EE47A5D4171E12A9069753F3C2141BB630",
+    "GameTile": "character-26-5.png",
+    "GameTileSha256": "1F17D59CBF1CA97CFFFBE887D9399D3BDA040617A7C50DD048EA0013E80328B4"
+  },
+  {
+    "CharacterId": 26,
+    "Variant": 6,
+    "Source": "remaining-variants/character-26-6-balanced.png",
+    "SourceSha256": "A5321EB6D6B27C8F849C300B92642C67DF1D47E2C1E9216B298BA56009D937E6",
+    "GameTile": "character-26-6.png",
+    "GameTileSha256": "12622B1B0D15D87BB705F4843D07BD176643CD731FC17C7495E620AACC609E4D"
+  },
+  {
+    "CharacterId": 27,
+    "Variant": 2,
+    "Source": "remaining-variants/character-27-2-balanced.png",
+    "SourceSha256": "B5C09F85754FA851EE37166FFE09E76325948A52C42649CB4AF180E3C351B93C",
+    "GameTile": "character-27-2.png",
+    "GameTileSha256": "B7DEDDF9614EBF3953A61D3793797F1AC1E020491661E166AF72364C567979CF"
+  },
+  {
+    "CharacterId": 27,
+    "Variant": 3,
+    "Source": "remaining-variants/character-27-3-balanced.png",
+    "SourceSha256": "ECDCA0308B286B3D96D4570221244BF92EB9FDA6DE154273B293873A1FD82960",
+    "GameTile": "character-27-3.png",
+    "GameTileSha256": "23BF8C03ABEBF141361DD5744BEF19FAD0C0C76166AEE6E1E09C2BEEDE1B90ED"
+  },
+  {
+    "CharacterId": 27,
+    "Variant": 4,
+    "Source": "remaining-variants/character-27-4-balanced.png",
+    "SourceSha256": "6B70D126AC9C89534FCF45C96396712434AC088B4914D4B7F651B0AE1CD590FD",
+    "GameTile": "character-27-4.png",
+    "GameTileSha256": "C1C2D8C97617785A4B7E145709867979AB12FE3C27A5E2F85D78522606DD7B22"
+  },
+  {
+    "CharacterId": 27,
+    "Variant": 5,
+    "Source": "remaining-variants/character-27-5-balanced.png",
+    "SourceSha256": "82C5E71D1F584705F60705F53E487C5A511C224DE297D73ABEDDF182107533A6",
+    "GameTile": "character-27-5.png",
+    "GameTileSha256": "F4AB2A51E43A17782FCDE4F0C184C3CDB942C740C8028ACB31F7139F32C74CE0"
+  },
+  {
+    "CharacterId": 27,
+    "Variant": 6,
+    "Source": "remaining-variants/character-27-6-balanced.png",
+    "SourceSha256": "AC9C2499F4DF186908976A2A68C4542FAF9E4A4977CB978952D1C7CFD2578264",
+    "GameTile": "character-27-6.png",
+    "GameTileSha256": "F817D3E3C4E70CA34BE1D4A670B5E902C7758A14EFCBF4A20F98084FA40C05EE"
+  },
+  {
+    "CharacterId": 28,
+    "Variant": 2,
+    "Source": "remaining-variants/character-28-2-balanced.png",
+    "SourceSha256": "9D3BE18D971FFE67B069E2CD9426F8F7A922542B7A1C2AE6A5A29980B9E799EA",
+    "GameTile": "character-28-2.png",
+    "GameTileSha256": "7090F7ACB930C33F052CC3D9D7BFE02F829EF324AF795F022467268D6B63DBF2"
+  },
+  {
+    "CharacterId": 28,
+    "Variant": 3,
+    "Source": "remaining-variants/character-28-3-balanced.png",
+    "SourceSha256": "D0AF830D18CAF3EC4836CC3823F479600478D6D0377A801C04EDCE5078CF603B",
+    "GameTile": "character-28-3.png",
+    "GameTileSha256": "88069460CB0E05F11B66C72DCDF8CBF344ED06AACE2AD1B557BD32DE78C1FCEA"
+  },
+  {
+    "CharacterId": 28,
+    "Variant": 4,
+    "Source": "remaining-variants/character-28-4-balanced.png",
+    "SourceSha256": "3E29D64385E132F455301371058D0CB66506861E2F4D095F065DECAD9A5CC011",
+    "GameTile": "character-28-4.png",
+    "GameTileSha256": "43061D7B89242877AA8233CC603A7FCCF9F2F54BCC9811474737FC9813DB4917"
+  },
+  {
+    "CharacterId": 28,
+    "Variant": 5,
+    "Source": "remaining-variants/character-28-5-balanced.png",
+    "SourceSha256": "4C47A306F1B5E0AB73FFADDE25333089F7E54C99F1ECF271A9FF3A00523CCEEF",
+    "GameTile": "character-28-5.png",
+    "GameTileSha256": "E48F97B56A4FE6A990232D78A7EB94BA502E9D4303BB210E30BBB7C5DAD63F94"
+  },
+  {
+    "CharacterId": 28,
+    "Variant": 6,
+    "Source": "remaining-variants/character-28-6-balanced.png",
+    "SourceSha256": "57BC1C6A8FCB82851DFC8969CFA4FC7506D4765D431B41F8376B788900A39F8A",
+    "GameTile": "character-28-6.png",
+    "GameTileSha256": "8014908145862CFB98A62874F052A27D65607A351E7224D756D88F971EA2B92C"
+  },
+  {
+    "CharacterId": 29,
+    "Variant": 2,
+    "Source": "remaining-variants/character-29-2-balanced.png",
+    "SourceSha256": "CA7452EB2B6290E9282A38E53CB0C5B25FCDFE54C37ED654B1209C54CF6F051A",
+    "GameTile": "character-29-2.png",
+    "GameTileSha256": "5A14474A83F0DDD503B02F3A58977A5330C8232D7E9CB7DAFD85635089442E83"
+  },
+  {
+    "CharacterId": 29,
+    "Variant": 3,
+    "Source": "remaining-variants/character-29-3-balanced.png",
+    "SourceSha256": "A821E6CB490A0C1EC4492523C3379D47BB61A4FE303F2A43E56D2A6D9BD462C4",
+    "GameTile": "character-29-3.png",
+    "GameTileSha256": "0E7F9DA78060495F67D54C82A7619F4705B1DD435503E1993197CBDD60293EB1"
+  },
+  {
+    "CharacterId": 29,
+    "Variant": 4,
+    "Source": "remaining-variants/character-29-4-balanced.png",
+    "SourceSha256": "01D55E701905ECB70F6F33412CF4DE019503FD056060789E1238AE7FDC88AFE4",
+    "GameTile": "character-29-4.png",
+    "GameTileSha256": "1D0E89BB07540FB5BDE1988EABDEE44C6E0224FBA152ACFEE10553A7E8A349AC"
+  },
+  {
+    "CharacterId": 29,
+    "Variant": 5,
+    "Source": "remaining-variants/character-29-5-balanced.png",
+    "SourceSha256": "884673E1ED03BABB54755AD91BFB288D8C3C38ADCC19652CC76AA844EB2222AD",
+    "GameTile": "character-29-5.png",
+    "GameTileSha256": "8225EF2586CB3AC97BDE889F0F802A38FF4AD4215271AE508CBFA7102C328D46"
+  },
+  {
+    "CharacterId": 29,
+    "Variant": 6,
+    "Source": "remaining-variants/character-29-6-balanced.png",
+    "SourceSha256": "75F1CA3AE27DF179BE00D5A10C1C5E2E3A84852AEF99DA5DA5461B1C3B82B98C",
+    "GameTile": "character-29-6.png",
+    "GameTileSha256": "017C5D80DDCB859937E4129F5711B4C13424DED4C196A035A5C23FB7854C1D5F"
+  },
+  {
+    "CharacterId": 30,
+    "Variant": 2,
+    "Source": "remaining-variants/character-30-2-balanced.png",
+    "SourceSha256": "11F8DC38B9C376AD2E85666873912A5E62C1CBE1A1A33ADB321F356C734C2D3C",
+    "GameTile": "character-30-2.png",
+    "GameTileSha256": "40BEC90470F3D057A5F01E76A507C82490A2E530F741988D6F278E17919AFA40"
+  },
+  {
+    "CharacterId": 30,
+    "Variant": 3,
+    "Source": "remaining-variants/character-30-3-balanced.png",
+    "SourceSha256": "AD7E1DD6B36EEDDE7FAB526E9999601494B736A2007F5C5B1BF2495DAE1D0EC5",
+    "GameTile": "character-30-3.png",
+    "GameTileSha256": "6FF96040653313E81898CC9A8A35FB926A66E727F5FDC5BE32BA0CC8EC9CA08C"
+  },
+  {
+    "CharacterId": 30,
+    "Variant": 4,
+    "Source": "remaining-variants/character-30-4-balanced.png",
+    "SourceSha256": "3ADB8F040F9422D9803CB4994DB0884F4CB948BFBAC509823C3645AE375BF6BB",
+    "GameTile": "character-30-4.png",
+    "GameTileSha256": "3F9B9900F3D6D9A9D01CAC102D129B1A8A25B42E45CA507B0F0C0DC3FEB3D37A"
+  },
+  {
+    "CharacterId": 30,
+    "Variant": 5,
+    "Source": "remaining-variants/character-30-5-balanced.png",
+    "SourceSha256": "725CB9C6629209DCE4FE9E290C23E9DCCB77054654F9845BBA44F968C8ECA294",
+    "GameTile": "character-30-5.png",
+    "GameTileSha256": "9251116FB6ADFBCE5514E06708BF3199CCF81D3A60F4E8C2FD8B503163ABDBF7"
+  },
+  {
+    "CharacterId": 30,
+    "Variant": 6,
+    "Source": "remaining-variants/character-30-6-balanced.png",
+    "SourceSha256": "1FCBDC1123896FFC3EC68AAAE5177085434709E2A1F805894851D4E8C44F779E",
+    "GameTile": "character-30-6.png",
+    "GameTileSha256": "5D886F22827CA8433502DE0D6F29CF0859B0D8BCDD4D4ECF6D3697F2658016D2"
+  },
+  {
+    "CharacterId": 31,
+    "Variant": 2,
+    "Source": "remaining-variants/character-31-2-balanced.png",
+    "SourceSha256": "0814FCBC6C706AC4D8CA72E20B316A327A0960A2D70AAD6D2C3E650BB2F24B39",
+    "GameTile": "character-31-2.png",
+    "GameTileSha256": "BADEC0814B62AEF005B17F9B12324AB1DCFCF31A8E3CA1A0BFE1DA8174CDF666"
+  },
+  {
+    "CharacterId": 31,
+    "Variant": 3,
+    "Source": "remaining-variants/character-31-3-balanced.png",
+    "SourceSha256": "004ACB7965D4D30C86B45C4F413DB946AE65F28083332978FAF8459CA86AB419",
+    "GameTile": "character-31-3.png",
+    "GameTileSha256": "1DC6FB617ADD7FD07910C923F37A6FF502AA7CBB13FC5E75F009B1ACA525B9B1"
+  },
+  {
+    "CharacterId": 31,
+    "Variant": 4,
+    "Source": "remaining-variants/character-31-4-balanced.png",
+    "SourceSha256": "BCE737D2E00BCE6B117EEBFF69B2D055DD11B1CB5C255E4794F11486B9E8A020",
+    "GameTile": "character-31-4.png",
+    "GameTileSha256": "E2C0FB91AF975BC1FBD172762988FA6256DD8AA084FB753BAE2AB0291AC0C199"
+  },
+  {
+    "CharacterId": 31,
+    "Variant": 5,
+    "Source": "remaining-variants/character-31-5-balanced.png",
+    "SourceSha256": "24673B6AD94607E5FC7AC65D21C04B838A8A2859EA6065D9B69DD7AA8315589C",
+    "GameTile": "character-31-5.png",
+    "GameTileSha256": "8085C91FAEF473076041F443ED0751ED7F86445D182962CEAC819928D43199BE"
+  },
+  {
+    "CharacterId": 31,
+    "Variant": 6,
+    "Source": "remaining-variants/character-31-6-balanced.png",
+    "SourceSha256": "1BC2BDB2429689F683952AEE34B8AEFBE95AD2CF810652BE327DA87B2308AE6A",
+    "GameTile": "character-31-6.png",
+    "GameTileSha256": "CBA291B3FE8DABAF123C35EBFC77E40CE5048CC13D99E772ECEABD5FC5AED4CA"
+  },
+  {
+    "CharacterId": 32,
+    "Variant": 2,
+    "Source": "remaining-variants/character-32-2-balanced.png",
+    "SourceSha256": "5E76B0519A0EDC0B30DC49486B0C29FAE1FCFC625ECF5B21169ED71DDB46CA51",
+    "GameTile": "character-32-2.png",
+    "GameTileSha256": "F1DF97CAECD75981624679F24EE6AFDB8686D9875C89C3945E1159D8BEF5C227"
+  },
+  {
+    "CharacterId": 32,
+    "Variant": 3,
+    "Source": "remaining-variants/character-32-3-balanced.png",
+    "SourceSha256": "B572D853240F432AD6C56C4ED54E9F6CE8C16742EB9A02994073BBD8861624F7",
+    "GameTile": "character-32-3.png",
+    "GameTileSha256": "746DD86A2795CC32117C9F47D66247685442272D0FE526CAC1009980E62A1AA3"
+  },
+  {
+    "CharacterId": 32,
+    "Variant": 4,
+    "Source": "remaining-variants/character-32-4-balanced.png",
+    "SourceSha256": "8EB671207F3A929BFD527632A5CB74FB127A9F8092D1D910F832FB6997D3811C",
+    "GameTile": "character-32-4.png",
+    "GameTileSha256": "9CEAEB7ED4BF506B2CAB9EAAD64CC70397CB98289833757A7152DFD782256CAC"
+  },
+  {
+    "CharacterId": 32,
+    "Variant": 5,
+    "Source": "remaining-variants/character-32-5-balanced.png",
+    "SourceSha256": "E7A11BC813A51893DEA42920DA2AD01A864A3CE277CF107191BD1ACA20AE8FB3",
+    "GameTile": "character-32-5.png",
+    "GameTileSha256": "E56DDF3D3698AA77E1E6D1672E895EBC04B4F841CCCFC22FC020012B5AB4E3AC"
+  },
+  {
+    "CharacterId": 32,
+    "Variant": 6,
+    "Source": "remaining-variants/character-32-6-balanced.png",
+    "SourceSha256": "FEA3F18C9C0ED9DD4D5B08CF01FA86DB8B0E91B87D807E237455E1993DF6ED1D",
+    "GameTile": "character-32-6.png",
+    "GameTileSha256": "99F5F25E263007E82E74A8857770E840FD7AF282B9555B4BD2E46CCD42AE71CE"
   }
 ]
