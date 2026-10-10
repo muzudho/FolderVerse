@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 183,
+  "Completed": 185,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1465,6 +1465,22 @@
       "Sha256": "4AF8EC60092CDF774ACE0B72A167D1CAA37FBFDD67F097FDE586FEA839E581A9",
       "Reviewed": true,
       "Note": "書斎・ペンギンロボット・地図・カップ・白手袋のポーズを維持"
+    },
+    {
+      "CharacterId": 37,
+      "Variant": 5,
+      "File": "remaining-variants/character-37-5-balanced.png",
+      "Sha256": "0260A2459B3FF0DF20DAE02A4E529954F8B8B6005EC4498A3110891CDF0D013A",
+      "Reviewed": true,
+      "Note": "白い帽子・頬に当てる白手袋・肩の黄色い羽付きロボットを保持"
+    },
+    {
+      "CharacterId": 37,
+      "Variant": 6,
+      "File": "remaining-variants/character-37-6-balanced.png",
+      "Sha256": "2B8977B66D2EE47CA3F9E4E5C2B43FE919A5FECA5F994BAA5794BD73F82FCFA2",
+      "Reviewed": true,
+      "Note": "船上・素手の五指・白手袋・サメロボットと電池を維持"
     }
   ]
 }

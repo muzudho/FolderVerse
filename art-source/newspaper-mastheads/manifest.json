@@ -1,0 +1,44 @@
+[
+  {
+    "Index": 0,
+    "File": "masthead-0.png",
+    "Sha256": "F7D7C350F8DD6C5A3D8B69D71395D5EFFA90EB8F44DD273DE7F4184CC34305C1",
+    "Prompt": "masthead-0-prompt.txt",
+    "Reviewed": true
+  },
+  {
+    "Index": 1,
+    "File": "masthead-1.png",
+    "Sha256": "D41532A571909E80A4C2696EFF39B9A48B521F375FB825701A479470647E0408",
+    "Prompt": "masthead-1-prompt.txt",
+    "Reviewed": true
+  },
+  {
+    "Index": 2,
+    "File": "masthead-2.png",
+    "Sha256": "D6CECEE30C3D0BAD9FC44BAC3F95D42C58D95DD4E32118129CF1E2E7F48E7C92",
+    "Prompt": "masthead-2-prompt.txt",
+    "Reviewed": true
+  },
+  {
+    "Index": 3,
+    "File": "masthead-3.png",
+    "Sha256": "6B55D4854168258514CAA7F79766E31F762213999CF02BC9184AD6E65E2679B1",
+    "Prompt": "masthead-3-prompt.txt",
+    "Reviewed": true
+  },
+  {
+    "Index": 4,
+    "File": "masthead-4.png",
+    "Sha256": "89B5520A13F509B9CCADD0F014207943E137615296B724F05CB817399A23595F",
+    "Prompt": "masthead-4-prompt.txt",
+    "Reviewed": true
+  },
+  {
+    "Index": 5,
+    "File": "masthead-5.png",
+    "Sha256": "54D7F2374B18E388359E98C57153FD5413C22494C1DDA214B0792DC7C303A52A",
+    "Prompt": "masthead-5-prompt.txt",
+    "Reviewed": true
+  }
+]

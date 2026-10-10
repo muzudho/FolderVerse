@@ -33,5 +33,6 @@
     <None Update="Content/Images/Portraits/v3-standardized/selected-versions.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Portraits/active-version.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Portraits/newspaper/*.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Content/Images/Newspapers/*.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

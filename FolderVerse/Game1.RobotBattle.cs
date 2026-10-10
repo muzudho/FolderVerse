@@ -48,8 +48,8 @@ public partial class Game1
     {
         _newspaperClock+=elapsed;
         if(click && !_robotSummary && _robotPendingFocus<0 && NewspaperSwitch.Contains(_pointer))
-        {_newspaperEdition=(_newspaperEdition+1)%3;_newspaperClock=0;return;}
-        if(_newspaperClock>=10){_newspaperEdition=(_newspaperEdition+1)%3;_newspaperClock=0;}
+        {_newspaperEdition=(_newspaperEdition+1)%NewspaperProfiles.All.Length;_newspaperClock=0;return;}
+        if(_newspaperClock>=10){_newspaperEdition=(_newspaperEdition+1)%NewspaperProfiles.All.Length;_newspaperClock=0;}
         if(_robotScenes.Length==0){_screen=Screen.WorldStatus;return;}
         if(_robotSummary)
         {if(click && RobotBattlePrevious.Contains(_pointer))_robotSummaryPage=Math.Max(0,_robotSummaryPage-1);

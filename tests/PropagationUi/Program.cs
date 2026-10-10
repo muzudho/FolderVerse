@@ -34,7 +34,7 @@ sealed class PropagationCheck:Game1
         if(frame<5)typeof(Game1).GetField("_transportAge",Flags)!.SetValue(this,frame==4?4.99d:frame*.9d);
         if(frame==5)Call("UpdateTransport",5d,false);
         if(frame==5){Check(Get("_screen").ToString()=="Battle","Propagation did not auto-enter battle");}
-        if(frame==14)
+        if(frame==23)
         {
             typeof(Game1).GetField("_robotPlaying",Flags)!.SetValue(this,false);
             typeof(Game1).GetField("_newspaperClock",Flags)!.SetValue(this,0d);
@@ -46,15 +46,15 @@ sealed class PropagationCheck:Game1
             var textures=(Dictionary<string,Texture2D>)renderer.GetType().GetField("_photos",Flags)!.GetValue(renderer)!;
             Check(textures.Count>0,"No newspaper photo loaded");
             foreach(var texture in textures.Values){var colors=new Color[texture.Width*texture.Height];texture.GetData(colors);Check(colors.All(c=>c.R==c.G && c.G==c.B),"Newspaper photo is not monochrome");}
-            Console.WriteLine("PASS: propagation, 2/3/4 columns, three editions, monochrome pixels, missing photos, automatic/manual newspaper switching.");Exit();
+            Console.WriteLine("PASS: propagation, 2/3/4 columns, six fixed publishers, monochrome pixels, missing photos, automatic/manual newspaper switching.");Exit();
         }
     }
     protected override void Draw(GameTime time)
     {
-        if(frame>=5 && frame<14)
+        if(frame>=5 && frame<23)
         {
-            typeof(Game1).GetField("_newspaperEdition",Flags)!.SetValue(this,(frame-5)%3);
-            if(frame is 8 or 11){var scenes=(BattleState[])Get("_robotScenes");scenes[0].Armies.RemoveAt(scenes[0].Armies.Count-1);}
+            typeof(Game1).GetField("_newspaperEdition",Flags)!.SetValue(this,(frame-5)%NewspaperProfiles.All.Length);
+            if(frame is 11 or 17){var scenes=(BattleState[])Get("_robotScenes");scenes[0].Armies.RemoveAt(scenes[0].Armies.Count-1);}
         }
         base.Draw(time);
         if(frame==4)
@@ -64,7 +64,7 @@ sealed class PropagationCheck:Game1
             var net=(CubeNet)Get("_propagationNet");var panel=new Rectangle(40,100,1840,860);float zoomed=net.Fit(panel).Scale;net.FitAll(panel);
             Check(Math.Abs(zoomed/net.Fit(panel).Scale-1000f/30)<.01f,"Zoom badge does not match 1000-pixel battle size");
         }
-        if(frame==2 || frame>=5 && frame<14){var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);using var tex=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);tex.SetData(pixels);using var output=File.Create(Path.Combine(AppContext.BaseDirectory,frame>=5?$"newspaper-{4-(frame-5)/3}-{(frame-5)%3}.png":"propagation.png"));tex.SaveAsPng(output,tex.Width,tex.Height);}
+        if(frame==2 || frame>=5 && frame<23){var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);using var tex=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);tex.SetData(pixels);using var output=File.Create(Path.Combine(AppContext.BaseDirectory,frame>=5?$"newspaper-{4-(frame-5)/NewspaperProfiles.All.Length}-{(frame-5)%NewspaperProfiles.All.Length}.png":"propagation.png"));tex.SaveAsPng(output,tex.Width,tex.Height);}
         frame++;
     }
 }
