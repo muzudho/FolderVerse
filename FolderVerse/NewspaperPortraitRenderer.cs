@@ -11,7 +11,6 @@ public sealed class NewspaperPortraitRenderer : IDisposable
 {
     private readonly ContentManager _content;
     private readonly Dictionary<string,Texture2D> _photos=new();
-    private static readonly string[] Kinds={"formal","paparazzi","friends","id"};
     public NewspaperPortraitRenderer(ContentManager content)=>_content=content;
     public bool Draw(SpriteBatch batch,ConquerorLook look,Rectangle destination,string kind="formal",bool allowFallback=true)
     {

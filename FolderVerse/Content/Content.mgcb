@@ -7600,3 +7600,8 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Color
 /build:Images/demo-lollipop.png
+
+#begin NewspaperTitleFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/build:NewspaperTitleFont.spritefont

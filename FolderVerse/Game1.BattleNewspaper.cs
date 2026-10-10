@@ -2,12 +2,14 @@ namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 public partial class Game1
 {
     private NewspaperPortraitRenderer _newspaperPortraits;
     private double _newspaperClock;
     private int _newspaperEdition;
+    private SpriteFont _newspaperTitleFont;
     private static readonly Rectangle NewspaperSwitch=new(1128,750,704,28);
     internal static Rectangle NewspaperColumn(int index,int count)
     {
@@ -29,7 +31,10 @@ public partial class Game1
         for(int i=0;i<57;i++)_ui.Box(new(1106,214+i*10,748,1),ink*.035f);
         _ui.Box(new(1478,211,2,566),ink*.08f);_ui.Box(new(1480,211,2,566),Color.White*.12f);
         string title=_newspaperEdition switch{0=>"THE CAMPAIGN HERALD",1=>"THE LOCAL GAZETTE",_=>"WORLD OBSERVER"};
-        _ui.Center(title,new(1148,226,664,45),.70f,ink);
+        _newspaperTitleFont??=Content.Load<SpriteFont>("NewspaperTitleFont");
+        float titleScale=Math.Min(.85f,650/_newspaperTitleFont.MeasureString(title).X);
+        var titleSize=_newspaperTitleFont.MeasureString(title)*titleScale;
+        _spriteBatch.DrawString(_newspaperTitleFont,title,new Vector2(1480-titleSize.X/2,226),ink,0,Vector2.Zero,titleScale,SpriteEffects.None,0);
         for(int side=0;side<2;side++)for(int j=0;j<3;j++)
             _ui.Tile(new(1130+side*700,240+j*8),new(7-j,7-j),MathHelper.PiOver4,ink*.7f);
         _ui.Box(new(1120,281,720,2),ink);_ui.Box(new(1120,286,720,1),ink);

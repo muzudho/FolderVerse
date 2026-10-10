@@ -34,7 +34,20 @@ sealed class PropagationCheck:Game1
         if(frame<5)typeof(Game1).GetField("_transportAge",Flags)!.SetValue(this,frame==4?4.99d:frame*.9d);
         if(frame==5)Call("UpdateTransport",5d,false);
         if(frame==5){Check(Get("_screen").ToString()=="Battle","Propagation did not auto-enter battle");}
-        if(frame==14){Console.WriteLine("PASS: propagation and newspaper: 2/3/4 participants, three editions, monochrome portraits, missing photos.");Exit();}
+        if(frame==14)
+        {
+            typeof(Game1).GetField("_robotPlaying",Flags)!.SetValue(this,false);
+            typeof(Game1).GetField("_newspaperClock",Flags)!.SetValue(this,0d);
+            typeof(Game1).GetField("_newspaperEdition",Flags)!.SetValue(this,0);
+            Call("RobotBattleInput",10d,false,false);Check((int)Get("_newspaperEdition")==1,"Automatic newspaper switch failed");
+            typeof(Game1).GetField("_pointer",Flags)!.SetValue(this,new Point(1200,760));
+            Call("RobotBattleInput",0d,true,false);Check((int)Get("_newspaperEdition")==2,"Manual newspaper switch failed");
+            var renderer=Get("_newspaperPortraits");
+            var textures=(Dictionary<string,Texture2D>)renderer.GetType().GetField("_photos",Flags)!.GetValue(renderer)!;
+            Check(textures.Count>0,"No newspaper photo loaded");
+            foreach(var texture in textures.Values){var colors=new Color[texture.Width*texture.Height];texture.GetData(colors);Check(colors.All(c=>c.R==c.G && c.G==c.B),"Newspaper photo is not monochrome");}
+            Console.WriteLine("PASS: propagation, 2/3/4 columns, three editions, monochrome pixels, missing photos, automatic/manual newspaper switching.");Exit();
+        }
     }
     protected override void Draw(GameTime time)
     {
