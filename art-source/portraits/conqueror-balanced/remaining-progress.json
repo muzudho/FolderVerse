@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 95,
+  "Completed": 100,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -761,6 +761,46 @@
       "Sha256": "CD4140A48FF6811FDC8D66AA54E6BB933A017828EBC08D2C889104B0F2298E07",
       "Reviewed": true,
       "Note": "白いフード室内着、伸ばした手の五指、端末を確認"
+    },
+    {
+      "CharacterId": 20,
+      "Variant": 2,
+      "File": "remaining-variants/character-20-2-balanced.png",
+      "Sha256": "D8CAA01BAB92B058D03DBA24529F660A4C53A17437E71EAD1B5DFE036893B74B",
+      "Reviewed": true,
+      "Note": "白髪赤眼鏡エルフ、二本のドラムスティックと両手、太鼓と端末を確認"
+    },
+    {
+      "CharacterId": 20,
+      "Variant": 3,
+      "File": "remaining-variants/character-20-3-balanced.png",
+      "Sha256": "3FE2807D2010A4E063397F5A1ADDD12F17ADDF2D574149446E93652D14210833",
+      "Reviewed": true,
+      "Note": "バトンと伸ばした手の五指、赤い端末、動きのある笑顔を確認"
+    },
+    {
+      "CharacterId": 20,
+      "Variant": 4,
+      "File": "remaining-variants/character-20-4-balanced.png",
+      "Sha256": "0D026A36DB21E0B7CCB9CFED956D1966D49C0F902802BBCEBBAA6ABE31B36CCF",
+      "Reviewed": true,
+      "Note": "サンドイッチと手、穏やかな表情、図書室と赤端末を確認"
+    },
+    {
+      "CharacterId": 20,
+      "Variant": 5,
+      "File": "remaining-variants/character-20-5-balanced.png",
+      "Sha256": "E19DA8395DD9C62D3DF33B02A7B4DE3F435D0D2FF137466506555C17E4F07DAF",
+      "Reviewed": true,
+      "Note": "閉じた目と大笑い、バトンと太鼓、二本の腕を確認"
+    },
+    {
+      "CharacterId": 20,
+      "Variant": 6,
+      "File": "remaining-variants/character-20-6-balanced.png",
+      "Sha256": "6591FAAF216418E5D9AC8223182B950AF946A308D828E415518104BF6D923548",
+      "Reviewed": true,
+      "Note": "ティーポットとカップ、二本の腕だけの自然な支持、顔と耳と帽子を確認"
     }
   ]
 }

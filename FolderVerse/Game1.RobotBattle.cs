@@ -8,18 +8,30 @@ public partial class Game1
 {
     private BattleState[] _robotScenes=Array.Empty<BattleState>();
     private bool _robotPlaying=true;
+    private RobotBattlePlayback _robotPlayback=new(Array.Empty<BattleState>());
+    private int _robotRound;
+    private int _robotPendingFocus=-1;
+    private bool _robotPendingRound;
+    private bool _robotSummary;
+    private int _robotSummaryPage;
+    private int[] RobotPriority=>RobotBattlePlayback.Priority(_robotScenes,_robotPlayback.Rounds[_robotRound],new[]{_setup.PlayerSlot});
+    private RobotBattleSlice RobotSlice(int scene)=>_robotPlayback.Rounds[_robotRound].First(s=>s.Scene==scene);
+    private double RobotRoundEnd=>_robotPlayback.Rounds[_robotRound].Max(s=>s.End-s.Start+1)*RobotFrameSeconds;
     private double _transportAge;
     private int _transportPage;
     private double _robotResultAge;
     private const double RobotResultSeconds=5;
     private const double RobotFrameSeconds=.08;
-    private int RobotFrameIndex(BattleState scene)=>Math.Clamp((int)Math.Floor(_battleAge/RobotFrameSeconds+1e-8),0,Math.Max(0,scene.Frames.Count-1));
+    private int RobotFrameIndex(BattleState scene)
+    {var slice=RobotSlice(_battleWave);return Math.Clamp(slice.Start+(int)Math.Floor(_battleAge/RobotFrameSeconds+1e-8),slice.Start,slice.End);}
     private static readonly Rectangle RobotBattlePrevious=new(54,108,150,48),RobotBattleNext=new(1700,108,150,48);
     private static readonly Rectangle RobotPause=new(1000,934,250,48),RobotStepBack=new(1264,934,250,48),RobotStepNext=new(1528,934,250,48);
     private static readonly Rectangle RobotResultBar=new(54,1020,900,40),RobotResultPause=new(1000,1020,250,50);
     private void OpenRobotBattle()
     {
         _robotScenes=_setup.Campaign.RobotBattles.Scenes.ToArray();_battleTiles=Array.Empty<CharacterTile>();_battleWave=0;_battleAge=0;_robotResultAge=0;_robotPlaying=true;
+        _robotPlayback=new(_robotScenes);_robotRound=0;_robotSummaryPage=0;_robotPendingFocus=-1;_robotPendingRound=false;_robotSummary=_robotPlayback.Rounds.Length==0;
+        if(!_robotSummary)_battleWave=RobotPriority[0];
         _populationCell=-1;_dragging=false;
         if(_setup.Robots.Transport.LastTransfers.Count>0){_screen=Screen.Transport;_transportAge=0;_transportPage=0;return;}
         FinishTransport();
@@ -36,31 +48,38 @@ public partial class Game1
     private void RobotBattleInput(double elapsed,bool click,bool enter)
     {
         if(_robotScenes.Length==0){_screen=Screen.WorldStatus;return;}
-        var scene=_robotScenes[_battleWave];double end=Math.Max(0,scene.Frames.Count-1)*RobotFrameSeconds;
+        if(_robotSummary)
+        {if(click && RobotBattlePrevious.Contains(_pointer))_robotSummaryPage=Math.Max(0,_robotSummaryPage-1);
+         if(click && RobotBattleNext.Contains(_pointer))_robotSummaryPage=Math.Min((_robotScenes.Length-1)/66,_robotSummaryPage+1);
+         if(enter || click && BattleContinue.Contains(_pointer)){_screen=Screen.WorldStatus;_world.ShowSetup(_setup,true);OpenDisposition();}return;}
+        var scene=_robotScenes[_battleWave];double end=RobotRoundEnd;
         if(click && (RobotBattlePrevious.Contains(_pointer) || RobotBattleNext.Contains(_pointer)))
-        {_battleWave=Math.Clamp(_battleWave+(RobotBattlePrevious.Contains(_pointer)?-1:1),0,_robotScenes.Length-1);_battleAge=0;_robotResultAge=0;return;}
-        if(click && (_battleAge<end && RobotPause.Contains(_pointer) || _battleAge>=end && RobotResultPause.Contains(_pointer))){_robotPlaying=!_robotPlaying;return;}
+        {if(_robotPendingFocus>=0)return;var priority=RobotPriority;int at=Array.IndexOf(priority,_battleWave);int next=priority[Math.Clamp(at+(RobotBattlePrevious.Contains(_pointer)?-1:1),0,priority.Length-1)];if(next!=_battleWave){_robotPendingFocus=next;_robotPendingRound=false;_robotResultAge=0;}return;}
+        if(click && (RobotPause.Contains(_pointer) || RobotResultPause.Contains(_pointer))){_robotPlaying=!_robotPlaying;return;}
         if(click && (RobotStepBack.Contains(_pointer) || RobotStepNext.Contains(_pointer)))
-        {_robotPlaying=false;_robotResultAge=0;int step=RobotStepBack.Contains(_pointer)?-1:1;_battleAge=Math.Clamp(RobotFrameIndex(scene)+step,0,Math.Max(0,scene.Frames.Count-1))*RobotFrameSeconds;return;}
+        {if(_robotPendingFocus>=0)return;_robotPlaying=false;int step=RobotStepBack.Contains(_pointer)?-1:1;_battleAge=Math.Clamp(_battleAge+step*RobotFrameSeconds,0,end);return;}
         if(enter || click && BattleContinue.Contains(_pointer))
         {
-            if(_battleAge<end){_battleAge=end;_robotResultAge=0;return;}
+            if(_robotPendingFocus>=0){SwitchRobotFocus();return;}
+            if(_battleAge<end){_battleAge=end;return;}
             NextRobotScene();return;
         }
         if(_robotPlaying)
         {
-            double remaining=Math.Max(0,end-_battleAge);
+            if(_robotPendingFocus>=0){_robotResultAge=Math.Min(RobotResultSeconds,_robotResultAge+elapsed);if(_robotResultAge>=RobotResultSeconds)SwitchRobotFocus();return;}
             _battleAge=Math.Min(end,_battleAge+elapsed);
-            if(_battleAge>=end)_robotResultAge=Math.Min(RobotResultSeconds,_robotResultAge+Math.Max(0,elapsed-remaining));
-            if(_robotResultAge>=RobotResultSeconds)NextRobotScene();
+            if(_battleAge>=end)NextRobotScene();
         }
     }
     private void NextRobotScene()
     {
-        _robotResultAge=0;
-        if(++_battleWave<_robotScenes.Length){_battleAge=0;_robotPlaying=true;}
-        else{_screen=Screen.WorldStatus;_world.ShowSetup(_setup,true);OpenDisposition();}
+        if(_robotRound+1>=_robotPlayback.Rounds.Length){_robotSummary=true;return;}
+        int next=RobotBattlePlayback.Priority(_robotScenes,_robotPlayback.Rounds[_robotRound+1],new[]{_setup.PlayerSlot})[0];
+        if(next!=_battleWave){_robotPendingFocus=next;_robotPendingRound=true;_robotResultAge=0;return;}
+        _robotRound++;_battleAge=0;
     }
+    private void SwitchRobotFocus()
+    {if(_robotPendingRound){_robotRound++;_battleAge=0;}_battleWave=_robotPendingFocus;_robotPendingFocus=-1;_robotPendingRound=false;_robotResultAge=0;}
     private static string PhaseLabel(BattlePhase phase)=>phase switch
     {BattlePhase.Choose=>"行動選択",BattlePhase.Place=>"配置",BattlePhase.Rollback=>"巻き戻し",BattlePhase.Attack=>"攻撃",BattlePhase.Receive=>"被攻撃",BattlePhase.Consume=>"消費",BattlePhase.Fall=>"転倒",BattlePhase.Flag=>"旗更新",BattlePhase.Reinforce=>"増援",_=>"戦意・勝敗"};
     private void DrawSmokePuff(Vector2 center,float radius,float opacity)
@@ -74,9 +93,10 @@ public partial class Game1
     }
     private void DrawRobotBattle()
     {
+        if(_robotSummary){DrawRobotBattleSummary();return;}
         var battle=_robotScenes[_battleWave];int frameIndex=RobotFrameIndex(battle);
         var frame=battle.Frames.Count==0?new BattleFrame(battle.Turn,BattlePhase.Result,Array.Empty<BattleUnitView>(),battle.FlagStanding,battle.LastFlagOwner):battle.Frames[frameIndex];
-        _ui.Text($"自動戦闘 / 全体ターン {_setup.Population.Turn} / 観戦 {_battleWave+1}/{_robotScenes.Length}",new(54,30),.85f,Cream);
+        _ui.Text($"自動戦闘 / 全体ターン {_setup.Population.Turn} / 同時進行 {_robotRound+1}/{_robotPlayback.Rounds.Length} / 戦場 {_battleWave+1}/{_robotScenes.Length}",new(54,30),.75f,Cream);
         _ui.Button(RobotBattlePrevious,"前の戦場",Muted,.5f);_ui.Button(RobotBattleNext,"次の戦場",Muted,.5f);
         _ui.Center($"{(battle.SplitBoard?"分割野戦":battle.Kind==BattleKind.Edge?"辺戦":"節戦")} / Node {battle.TargetNode+1} / {battle.Terrain} / 戦闘ターン {frame.Turn} / {PhaseLabel(frame.Phase)}",new(224,108,1450,48),.6f,Cream);
         const int left=100,top=232,size=68;
@@ -142,7 +162,7 @@ public partial class Game1
         {
             var from=new Vector2(left+attack.From.X*size+size/2,top+attack.From.Y*size+size/2);
             var to=new Vector2(left+attack.To.X*size+size/2,top+attack.To.Y*size+size/2);var delta=to-from;
-            float fraction=(float)Math.Clamp(_battleAge/RobotFrameSeconds-frameIndex,0,1);
+            float fraction=(float)Math.Clamp(_battleAge/RobotFrameSeconds-(frameIndex-RobotSlice(_battleWave).Start),0,1);
             if(!_robotPlaying)fraction=.5f;
             float progress=((frame.Phase==BattlePhase.Receive?1:0)+fraction)/2;
             if(attack.Weapon==BattleWeapon.Rifle)
@@ -193,24 +213,37 @@ public partial class Game1
             _ui.Text($"短剣 {alive.Sum(u=>u.Daggers)} / 小銃 {alive.Sum(u=>u.Rifles)} / 盾 {alive.Sum(u=>u.Shields)}",new(r.X+130,r.Y+57),.49f,Cream);
             _ui.Text("帰還先 Node "+(army.HomeNode+1),new(r.X+130,r.Y+92),.4f,Cream);
         }
-        string result=battle.Finished?battle.Winner<0?"終戦 / 勝者なし":$"終戦 / 勝者 #{battle.Winner+1}":$"継戦 / 次の全体ターンへ / 戦意なし {battle.NoWillCount}/{battle.Rules.NoWillTurns}";
+        string result=$"全 {_robotPlayback.Rounds[_robotRound].Length} 戦場で１戦闘ターンを同時進行 / 結果は最後に表示";
         var recent=battle.Events.LastOrDefault(e=>e.Turn==frame.Turn && e.Phase==frame.Phase && e.Unit!=0);
         if(recent!=null)_ui.Text($"ID {recent.Unit} / {recent.Detail}",new(1000,786),.42f,Cream);
         _ui.Text(result,new(1000,822),.55f,Cream);
         _ui.Text("観戦中は駒を操作できません / 再生速度は戦闘結果に影響しません",new(1000,873),.41f,Cream);
-        bool end=frameIndex>=battle.Frames.Count-1;
-        if(!end)_ui.Button(RobotPause,_robotPlaying?"一時停止":"再生",Muted,.5f);
+        bool end=_battleAge>=RobotRoundEnd;
+        _ui.Button(RobotPause,_robotPlaying?"一時停止":"再生",Muted,.5f);
         _ui.Button(RobotStepBack,"１フェーズ戻る",Muted,.46f);_ui.Button(RobotStepNext,"１フェーズ進む",Muted,.46f);
         _ui.Text($"再生 {frameIndex+1}/{battle.Frames.Count} / 王冠：クイーン 高帽子：隊長 低帽子：兵",new(54,965),.48f,Cream);
-        if(end)
+        if(_robotPendingFocus>=0)
         {
             _ui.Box(RobotResultBar,Muted);
             int width=(int)(RobotResultBar.Width*_robotResultAge/RobotResultSeconds);
             if(width>0)_ui.Box(new(RobotResultBar.X,RobotResultBar.Y,width,RobotResultBar.Height),Accent);
-            _ui.Center($"{(_robotPlaying?"自動で進む":"一時停止")} / {RobotResultSeconds-_robotResultAge:0.0} 秒",RobotResultBar,.45f,Cream);
+            _ui.Center($"戦場 {_robotPendingFocus+1} へ切替 / {RobotResultSeconds-_robotResultAge:0.0} 秒",RobotResultBar,.45f,Cream);
             _ui.Button(RobotResultPause,_robotPlaying?"一時停止":"再開",Muted,.5f);
         }
-        _ui.Button(BattleContinue,!end?"結果まで進む":_battleWave+1<_robotScenes.Length?"続く戦場へ":"世界へ戻る",Accent,.55f);
+        _ui.Button(BattleContinue,_robotPendingFocus>=0?"戦場を切り替える":!end?"このターンを進める":"次の戦闘ターンへ",Accent,.55f);
+    }
+    private void DrawRobotBattleSummary()
+    {
+        _ui.Text("全戦場の戦闘結果",new(54,30),.9f,Cream);
+        _ui.Text("今回の戦闘進行が完了しました / 継戦中の戦場は次の全体ターンへ",new(54,105),.55f,Cream);
+        if(_robotScenes.Length>66){_ui.Button(RobotBattlePrevious,"前へ",Muted,.5f);_ui.Button(RobotBattleNext,"次へ",Muted,.5f);}
+        for(int at=0;at<66 && _robotSummaryPage*66+at<_robotScenes.Length;at++)
+        {
+            int i=_robotSummaryPage*66+at;var b=_robotScenes[i];int column=at/22,row=at%22;
+            string outcome=!b.Finished?"継戦":b.Winner<0?"勝者なし":$"勝者 #{b.Winner+1}";
+            _ui.Text($"戦場 {i+1} / Node {b.TargetNode+1} / {outcome}",new(54+column*600,180+row*35),.48f,Cream);
+        }
+        _ui.Button(BattleContinue,"世界へ戻る",Accent,.55f);
     }
     private void DrawTransport()
     {

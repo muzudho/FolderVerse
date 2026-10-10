@@ -75,13 +75,14 @@ sealed class RobotUiCheck:Game1
             {
                 int turn=world.Population.Turn;Set("_pointer",new Point(1100,950));Call("RobotBattleInput",0d,true,false);Check(!(bool)Get("_robotPlaying"),"Pause");
                 Set("_pointer",new Point(1600,950));Call("RobotBattleInput",0d,true,false);Check((double)Get("_battleAge")>0 && world.Population.Turn==turn,"Phase stepping does not advance world");
-                for(int i=2;i<battle.Frames.Count;i++)
+                int roundFrames=battle.Frames.Count(f=>f.Turn==battle.Frames[0].Turn);
+                for(int i=2;i<roundFrames;i++)
                 {
                     Call("RobotBattleInput",0d,true,false);
                     Check((int)typeof(Game1).GetMethod("RobotFrameIndex",Flags)!.Invoke(this,new object[]{battle})! == i,"Each phase advances exactly once");
                 }
                 Set("_pointer",new Point(1300,950));
-                for(int i=battle.Frames.Count-2;i>=0;i--)
+                for(int i=roundFrames-2;i>=0;i--)
                 {
                     Call("RobotBattleInput",0d,true,false);
                     Check((int)typeof(Game1).GetMethod("RobotFrameIndex",Flags)!.Invoke(this,new object[]{battle})! == i,"Each phase reverses exactly once");
@@ -90,6 +91,8 @@ sealed class RobotUiCheck:Game1
             }
             if(frame==5)
             {
+                Set("_robotPlaying",true);for(int i=0;i<10;i++)Call("RobotBattleInput",1d,false,false);
+                Check((bool)Get("_robotSummary") && Get("_screen").ToString()=="Battle","All turns end in aggregate results");
                 Call("RobotBattleInput",0d,false,true);Check(Get("_screen").ToString()=="WorldStatus","Robot battle returns to world");
                 world.Campaign.RobotBattles.Scenes.Clear();var robot=world.Robots.Nodes[node.Id].Robots.Single();var route=world.Routes.Neighbors(node)[0];int target=world.Nodes.At(route.Target,route.Entry).Id;
                 world.Robots.Transport.Resolve(world.Robots,new[]{new RobotShipment(node.Id,target,robot.Id,robot.Parts)},(a,b)=>true);Call("OpenBattle");Check(Get("_screen").ToString()=="Transport","Transport playback");Call("UpdateTransport",1d,false);
@@ -196,11 +199,11 @@ sealed class RobotUiCheck:Game1
                     var result=new BattleState(20+i){Kind=BattleKind.Node,TargetNode=node.Id,Defender=0,Finished=true,Winner=0};
                     result.Capture(BattlePhase.Choose);result.Capture(BattlePhase.Result);world.Campaign.RobotBattles.Scenes.Add(result);
                 }
-                Call("OpenBattle");Set("_battleAge",.08);Set("_pointer",Point.Zero);
+                Call("OpenBattle");Set("_pointer",new Point(1750,125));Call("RobotBattleInput",0d,true,false);Set("_pointer",Point.Zero);
             }
             if(frame==17)
             {
-                Call("RobotBattleInput",4.9d,false,false);Check((int)Get("_battleWave")==0 && Math.Abs((double)Get("_robotResultAge")-4.9)<.0001,"Result waits five seconds");
+                Call("RobotBattleInput",4.9d,false,false);Check((int)Get("_battleWave")==0 && Math.Abs((double)Get("_robotResultAge")-4.9)<.0001,"Battlefield switch waits five seconds");
                 Set("_pointer",new Point(1100,1040));Call("RobotBattleInput",.2d,true,false);Check(!(bool)Get("_robotPlaying") && (int)Get("_battleWave")==0,"Result pause prevents expiry on the click");
             }
             if(frame==18)
@@ -212,7 +215,24 @@ sealed class RobotUiCheck:Game1
             if(frame==19)
             {
                 int turn=world.Population.Turn;Call("RobotBattleInput",5.08d,false,false);
-                Check(Get("_screen").ToString()=="WorldStatus" && world.Population.Turn==turn,"Last scene auto-returns to world without advancing its turn");
+                Check((bool)Get("_robotSummary") && Get("_screen").ToString()=="Battle" && world.Population.Turn==turn,"Shared round ends in aggregate results without per-scene waits");
+                var summaryBatch=(SpriteBatch)Get("_spriteBatch");summaryBatch.Begin();Call("DrawRobotBattleSummary");summaryBatch.End();
+                Call("RobotBattleInput",0d,false,true);
+                world.Campaign.RobotBattles.Scenes.Clear();
+                for(int i=0;i<2;i++)
+                {
+                    var shared=new BattleState(80+i){Id=80+i,TargetNode=node.Id};
+                    shared.Armies.Add(new(){Owner=i});shared.Units.Add(new(){Id=80+i,Owner=i,Role=BattleRole.Queen,Position=new Point(2,2)});
+                    shared.Turn=1;shared.Capture(BattlePhase.Choose);shared.Capture(BattlePhase.Result);
+                    if(i==1){shared.Turn=2;shared.Capture(BattlePhase.Choose);shared.Capture(BattlePhase.Result);}
+                    world.Campaign.RobotBattles.Scenes.Add(shared);
+                }
+                Call("OpenBattle");Set("_pointer",Point.Zero);Call("RobotBattleInput",.16d,false,false);
+                Check((int)Get("_robotPendingFocus")==1 && (int)Get("_robotRound")==0,"Ended player board schedules next round's focus");
+                Call("RobotBattleInput",5d,false,false);
+                Check((int)Get("_battleWave")==1 && (int)Get("_robotRound")==1 && (double)Get("_battleAge")==0,"Five-second automatic focus switch enters shared next turn");
+                Call("RobotBattleInput",.16d,false,false);Check((bool)Get("_robotSummary") && world.Population.Turn==turn,"All boards finish before summary, without changing world turn");
+                Call("RobotBattleInput",0d,false,true);
                 Set("_statusGlobe",false);var net=(CubeNet)Get("_net");net.Home(world);
                 var panel=new Rectangle(1040,240,790,580);net.Drag(new Vector2(panel.Center.X,panel.Center.Y)-net.NodePosition(world,node,panel));
                 var store=world.Robots.Nodes[node.Id];foreach(var robot in store.Robots.ToArray())store.Remove(robot.Id);
