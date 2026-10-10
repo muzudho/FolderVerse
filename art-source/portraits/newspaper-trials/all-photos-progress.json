@@ -1,0 +1,141 @@
+{
+  "Total": 240,
+  "Completed": 15,
+  "Photos": [
+    {
+      "CharacterId": 1,
+      "Kind": "formal",
+      "File": "character-01-newspaper-v002.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "5C3A5FBFFC2D52E346E6400DA7EF28205DDBC1649E7ED22731BAD96348B27845",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 2,
+      "Kind": "formal",
+      "File": "character-02-formal-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "87625823E1C7036ED2A280E6A80557CECAC4F60C8AC213F5FE2C8060520F0DCD",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 2,
+      "Kind": "paparazzi",
+      "File": "character-02-paparazzi-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "D3C906FDFD9E0B88DC9934AF88FB9B81FFCD417946BC436A5433DAC2EAA5712C",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 2,
+      "Kind": "friends",
+      "File": "character-02-friends-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "5E2565648C42D167C4A9D9E6B70DBC27FB7E4A24544F7161FF952BBEB23B2119",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 2,
+      "Kind": "id",
+      "File": "character-02-id-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "292672D9C606EB98914FD73A35D99A543BF44DDF4DE6EDDFA217706863F5B555",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 3,
+      "Kind": "formal",
+      "File": "character-03-formal-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "3AE8F36F50EEF69451406F2DAB8E3784F56CADF68DB20959A2CF52838BD11D83",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 3,
+      "Kind": "paparazzi",
+      "File": "character-03-paparazzi-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "65D51528F2373BAD7F72179199D262D49D15C5BE2BDB0E568FDCBB46AB473653",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 3,
+      "Kind": "friends",
+      "File": "character-03-friends-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "608C1281E764144933FBAA60EEFB77229102DD45C2F4BBAF1D7EBE92B50864A7",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 3,
+      "Kind": "id",
+      "File": "character-03-id-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "CB235B703CF6210BCB2BC5E26692177D6484C30C2B30874C06963188EBC36AE7",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 4,
+      "Kind": "formal",
+      "File": "character-04-formal-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "6FD3A49786454AC79E9732385A3A1313F5CFFC4FCDED03CFD499C86E0094DAE9",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 4,
+      "Kind": "paparazzi",
+      "File": "character-04-paparazzi-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "18E4D979B4AE93849E708A191B34ADD4554A964B9DE3AF60AC4801FE72F6CC18",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 4,
+      "Kind": "friends",
+      "File": "character-04-friends-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "CA1E618B195FED531E88B63C06DDAB91FD1736C50D396B6B9AEF6A6037F33D18",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 4,
+      "Kind": "id",
+      "File": "character-04-id-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "3CF331ABC7E83D7CEE8D65499CEB3C4B50064E2372F6027E59690B9D1A38CD08",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 7,
+      "Kind": "formal",
+      "File": "character-07-newspaper-v002.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "686F97ADFA6F46AA6C7BFB0F541F419436B657A39A3E1A60186F994C0A66638E",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 36,
+      "Kind": "formal",
+      "File": "character-36-newspaper-v002.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "C34A0FD24E83006486573457D1CA2554F828A54AB7794C16B655CD6A325FCA35",
+      "Reviewed": true
+    }
+  ]
+}

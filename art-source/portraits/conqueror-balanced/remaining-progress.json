@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 177,
+  "Completed": 183,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1417,6 +1417,54 @@
       "Sha256": "55089DFD6CE6390EBCC821F6ED38F086691E9AF296D66E8DBE792AF22C7A3736",
       "Reviewed": true,
       "Note": "両黒手袋で地図を持つ開眼笑顔、青い雷章と舞う書類、図書室を保持。"
+    },
+    {
+      "CharacterId": 36,
+      "Variant": 4,
+      "File": "remaining-variants/character-36-4-balanced.png",
+      "Sha256": "26E1A01F84A5518DDFAA4E51B838823FCACD2CE12A90BF561C1A8B45AB3EA500",
+      "Reviewed": true,
+      "Note": "金の紅茶カップと白手袋、ウインクと眼鏡、城の椅子と炎帽章を保持。"
+    },
+    {
+      "CharacterId": 36,
+      "Variant": 5,
+      "File": "remaining-variants/character-36-5-balanced.png",
+      "Sha256": "E0F00B05B361450CDA01C3369751F60431588614AFDEC3B02F31BCB01888DC6D",
+      "Reviewed": true,
+      "Note": "振り返る制服背面と赤い巻き髪、白手袋の青い本、城のバルコニーを保持。"
+    },
+    {
+      "CharacterId": 36,
+      "Variant": 6,
+      "File": "remaining-variants/character-36-6-balanced.png",
+      "Sha256": "72464E8F4537A7F26F13DF356F0963DA40AE6A48B0EE64BF02AB3A78F059CEEE",
+      "Reviewed": true,
+      "Note": "ウインク、素手の五指と白手袋のロボット抱擁、赤い雷電池を保持。"
+    },
+    {
+      "CharacterId": 37,
+      "Variant": 2,
+      "File": "remaining-variants/character-37-2-balanced.png",
+      "Sha256": "AE608E9DDEDC1486EEF56DC3196C71620F55257CE026D694118344E5CF5ECAA7",
+      "Reviewed": true,
+      "Note": "港・ウインク・青い水のロボット・白手袋を維持"
+    },
+    {
+      "CharacterId": 37,
+      "Variant": 3,
+      "File": "remaining-variants/character-37-3-balanced.png",
+      "Sha256": "B28043020074EE3D53A3AF13EBAD3FDF92539CE1E55933986D636C5DD7860E77",
+      "Reviewed": true,
+      "Note": "書斎・白手袋を唇に当てるポーズ・静かな表情・包帯を維持"
+    },
+    {
+      "CharacterId": 37,
+      "Variant": 4,
+      "File": "remaining-variants/character-37-4-balanced.png",
+      "Sha256": "4AF8EC60092CDF774ACE0B72A167D1CAA37FBFDD67F097FDE586FEA839E581A9",
+      "Reviewed": true,
+      "Note": "書斎・ペンギンロボット・地図・カップ・白手袋のポーズを維持"
     }
   ]
 }

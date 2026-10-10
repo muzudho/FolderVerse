@@ -1,23 +1,32 @@
 [
   {
     "CharacterId": 1,
-    "File": "character-01-newspaper-v001.png",
-    "Sha256": "77BFB1FDF4E44B4C92454926A3B6C7D16EA46CC7DE47D3D7B28A3B48D8B7BC24",
+    "File": "character-01-newspaper-v002.png",
+    "Sha256": "5C3A5FBFFC2D52E346E6400DA7EF28205DDBC1649E7ED22731BAD96348B27845",
     "Reviewed": true,
-    "RuntimeAdopted": false
+    "RuntimeAdopted": false,
+    "OriginalFile": "character-01-newspaper-v001.png",
+    "Width": 1200,
+    "Height": 1600
   },
   {
     "CharacterId": 7,
-    "File": "character-07-newspaper-v001.png",
-    "Sha256": "5A3DDCCB56C7A609219121D4C6E7D9E159B16FF334452E3099FF0F52B5BD8273",
+    "File": "character-07-newspaper-v002.png",
+    "Sha256": "686F97ADFA6F46AA6C7BFB0F541F419436B657A39A3E1A60186F994C0A66638E",
     "Reviewed": true,
-    "RuntimeAdopted": false
+    "RuntimeAdopted": false,
+    "OriginalFile": "character-07-newspaper-v001.png",
+    "Width": 1200,
+    "Height": 1600
   },
   {
     "CharacterId": 36,
-    "File": "character-36-newspaper-v001.png",
-    "Sha256": "A85BE44CC2654F8C5228AFEEFCFA38DED822B3534FDDB77A7E3089559C166F5C",
+    "File": "character-36-newspaper-v002.png",
+    "Sha256": "C34A0FD24E83006486573457D1CA2554F828A54AB7794C16B655CD6A325FCA35",
     "Reviewed": true,
-    "RuntimeAdopted": false
+    "RuntimeAdopted": false,
+    "OriginalFile": "character-36-newspaper-v001.png",
+    "Width": 1200,
+    "Height": 1600
   }
 ]
