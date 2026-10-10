@@ -206,15 +206,21 @@ public partial class Game1
             }
         }
         int armyIndex=0;
+        var paper=new Color(238,225,199);var ink=new Color(58,49,42);
+        _ui.Box(new(1104,210,752,576),paper);
+        for(int line=0;line<42;line++)_ui.Box(new(1106,214+line*13,748,1),new Color(130,111,83)*.045f);
         foreach(var army in battle.Armies)
         {
-            var r=new Rectangle(1120,218+armyIndex++*142,720,128);_ui.Box(r,Muted);
+            var r=new Rectangle(1120,218+armyIndex++*142,720,128);
+            _ui.Box(new(r.X,r.Y+126,r.Width,1),ink*.4f);
+            _ui.Box(new(r.X+119,r.Y+8,1,108),ink*.25f);
             _portraitRenderer.Draw(_spriteBatch,_setup.Looks[army.Owner],new(r.X+8,r.Y+8,105,105));
             var alive=frame.Units.Where(u=>u.Owner==army.Owner && !u.Fallen && !u.Retreated).ToArray();
             string armyTitle=$"#{army.Owner+1} {_setup.ConquerorNames[army.Owner]} / 生存 {alive.Length}";
-            _ui.Text(armyTitle,new(r.X+130,r.Y+15),Math.Min(.55f,580/_font.MeasureString(armyTitle).X),_setup.OwnerColor(army.Owner));
-            _ui.Text($"短剣 {alive.Sum(u=>u.Daggers)} / 小銃 {alive.Sum(u=>u.Rifles)} / 盾 {alive.Sum(u=>u.Shields)}",new(r.X+130,r.Y+57),.49f,Cream);
-            _ui.Text("帰還先 Node "+(army.HomeNode+1),new(r.X+130,r.Y+92),.4f,Cream);
+            _ui.Box(new(r.X+130,r.Y+17,4,24),_setup.OwnerColor(army.Owner));
+            _ui.Text(armyTitle,new(r.X+140,r.Y+15),Math.Min(.55f,570/_font.MeasureString(armyTitle).X),ink);
+            _ui.Text($"短剣 {alive.Sum(u=>u.Daggers)} / 小銃 {alive.Sum(u=>u.Rifles)} / 盾 {alive.Sum(u=>u.Shields)}",new(r.X+130,r.Y+57),.49f,ink);
+            _ui.Text("帰還先 Node "+(army.HomeNode+1),new(r.X+130,r.Y+92),.4f,ink);
         }
         string result=$"全 {_robotPlayback.Rounds[_robotRound].Length} 戦場で１戦闘ターンを同時進行 / 結果は最後に表示";
         var recent=battle.Events.LastOrDefault(e=>e.Turn==frame.Turn && e.Phase==frame.Phase && e.Unit!=0);
