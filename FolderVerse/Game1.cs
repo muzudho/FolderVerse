@@ -450,6 +450,9 @@ public partial class Game1 : Game
         _ui.Text("世界征服状況",new(54,22),1.1f,Cream);
         int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
         var image=new Rectangle(212,220,518,360);
+        if(!System.Linq.Enumerable.Any(_setup.Nodes.All,node=>node.Owner==player))DrawReignWantedPoster(player);
+        else
+        {
         // Raised ceremonial frame: layered gilt bevels, corners and a crest.
         _ui.Box(new(188,203,570,412),new Color(4,14,23,180));
         Color[] gold={new(100,58,18),new(235,177,64),new(255,231,152),new(127,76,21),new(239,192,85)};
@@ -461,6 +464,7 @@ public partial class Game1 : Game
         }
         _ui.Box(new(330,165,282,42),new(125,78,28));
         _ui.Center("★ 世界征服者 ★",new(330,165,282,42),0.65f,new(255,227,132));
+        }
         _ui.Box(new(210,633,520,62),new(27,46,55));
         string formalName="征服者　"+_setup.ConquerorFullNames[player];
         _ui.Center(formalName,new(90,641,760,56),Math.Min(0.88f,740f/_font.MeasureString(formalName).X),Cream);
@@ -614,7 +618,7 @@ public partial class Game1 : Game
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){DisposeCutInMobs();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){DisposeCutInMobs();_newspaperRustle?.Dispose();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         try{base.Dispose(disposing);}

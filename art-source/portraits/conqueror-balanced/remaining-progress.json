@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 210,
+  "Completed": 213,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1681,6 +1681,30 @@
       "Sha256": "D8EDEA1824ABD6A473839FE5BCEA0D16650125DB433449AF758839499BF91958",
       "Reviewed": true,
       "Note": "閉眼笑顔、素手五指、豹と首輪の黄色電池保持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 43,
+      "Variant": 2,
+      "File": "remaining-variants/character-43-2-balanced.png",
+      "Sha256": "3616DD2036D8107AA50C1B548CA99A033A50F34DAB2E16FAF792F889F918BE9B",
+      "Reviewed": true,
+      "Note": "大きな顔、白手袋のカップと受け皿、青電池、帽子徽章を保持"
+    },
+    {
+      "CharacterId": 43,
+      "Variant": 3,
+      "File": "remaining-variants/character-43-3-balanced.png",
+      "Sha256": "3CAA31B68DF013688CD9F67F78586C1467DF256218F453488CD976C27F0F3FE6",
+      "Reviewed": true,
+      "Note": "くつろぎの笑顔、白手袋のカップ、赤電池、ティーセットを保持"
+    },
+    {
+      "CharacterId": 43,
+      "Variant": 4,
+      "File": "remaining-variants/character-43-4-balanced.png",
+      "Sha256": "6A71FE16AB9110F3F581AD07CFF517FB6C50C4667C1D2E790CA12485EC6CA27D",
+      "Reviewed": true,
+      "Note": "ウインクとシャカの素手、ペンギンと青電池、リボン徽章を保持"
     }
   ]
 }

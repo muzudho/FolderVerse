@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,10 +46,10 @@ public partial class Game1
     }
     private void RobotBattleInput(double elapsed,bool click,bool enter)
     {
-        _newspaperClock+=elapsed;
-        if(click && (_robotSummary?SummaryNewspaperSwitch.Contains(_pointer):_robotPendingFocus<0 && NewspaperSwitch.Contains(_pointer)))
-        {_newspaperEdition=(_newspaperEdition+1)%NewspaperProfiles.All.Length;_newspaperClock=0;return;}
-        if(_newspaperClock>=10){_newspaperEdition=(_newspaperEdition+1)%NewspaperProfiles.All.Length;_newspaperClock=0;}
+        _newspaperClock+=elapsed;_newspaperSlideAge+=elapsed;
+        if(click && (_robotSummary?SummaryNewspaperSwitch.Contains(_pointer):NewspaperSwitch.Contains(_pointer)))
+        {SwitchNewspaper();return;}
+        if(_newspaperClock>=10)SwitchNewspaper();
         if(_robotScenes.Length==0){_screen=Screen.WorldStatus;return;}
         if(_robotSummary)
         {if(click && RobotBattlePrevious.Contains(_pointer))_robotSummaryPage=Math.Max(0,_robotSummaryPage-1);
@@ -97,7 +97,17 @@ public partial class Game1
     private void DrawRobotBattle()
     {
         if(_robotSummary){DrawRobotBattleSummary();return;}
-        if(_robotPendingFocus>=0){DrawPropagation(_robotPendingFocus,(float)(_robotResultAge/RobotResultSeconds),false);return;}
+        if(_robotPendingFocus>=0)
+        {
+            var previous=_robotScenes[_battleWave];
+            bool decided=previous.Finished && (previous.Frames.Count==0 || RobotFrameIndex(previous)==previous.Frames.Count-1);
+            if(!decided || _robotResultAge>=RobotResultSeconds*.6)
+            {
+                DrawPropagation(_robotPendingFocus,(float)(decided?(_robotResultAge/RobotResultSeconds-.6)/.4:_robotResultAge/RobotResultSeconds),false);
+                if(decided)DrawBattleNewspaper(previous,previous.Frames.Count==0?new BattleFrame(previous.Turn,BattlePhase.Result,Array.Empty<BattleUnitView>(),previous.FlagStanding,previous.LastFlagOwner):previous.Frames[^1]);
+                return;
+            }
+        }
         var battle=_robotScenes[_battleWave];int frameIndex=RobotFrameIndex(battle);
         var frame=battle.Frames.Count==0?new BattleFrame(battle.Turn,BattlePhase.Result,Array.Empty<BattleUnitView>(),battle.FlagStanding,battle.LastFlagOwner):battle.Frames[frameIndex];
         _ui.Text($"自動戦闘 / 全体ターン {_setup.Population.Turn}",new(1120,24),.65f,Cream);

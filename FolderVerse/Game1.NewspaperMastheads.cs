@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.IO;
 using Microsoft.Xna.Framework;
@@ -10,6 +10,7 @@ public partial class Game1
     private readonly Rectangle[] _mastheadBounds=new Rectangle[NewspaperProfiles.All.Length];
     private void DrawNewspaperMasthead(int edition,Rectangle area)
     {
+        if(NewspaperProfiles.All[edition].Wanted){_ui.Center("WANTED",area,.95f,new Color(112,42,34));return;}
         if(_mastheads[edition]==null)
         {
             string path=Path.Combine(AppContext.BaseDirectory,"Content","Images","Newspapers","masthead-"+edition+".png");
