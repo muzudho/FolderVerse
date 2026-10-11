@@ -8,6 +8,9 @@ public partial class Game1
 {
     private static readonly Rectangle RateDialogArea=new(1100,190,800,820);
     private static readonly Vector2 RatePieCenter=new(1500,600);
+    private static readonly Rectangle RateZeroButton=new(1476,362,48,46);
+    private static readonly Rectangle RateMinusButton=new(1408,362,58,46);
+    private static readonly Rectangle RatePlusButton=new(1534,362,58,46);
     private static readonly int[] RateDivisions={8,9,10,12};
     private readonly Dictionary<int,Texture2D> _ratePieIcons=new();
     private static string RateLabel(int degrees)=>$"{degrees*100/360f:0.#}% ({degrees}°)";
@@ -56,6 +59,16 @@ public partial class Game1
         Number(parts[0],new(face.X+face.Width*.28f,face.Y+face.Height*.25f));
         Number(parts[1],new(face.X+face.Width*.72f,face.Y+face.Height*.75f));
     }
+    private void DrawRateStepButton(Rectangle rect,bool positive,bool enabled)
+    {
+        var color=enabled?(rect.Contains(_pointer)?Color.White:new Color(134,219,216)):Muted;
+        for(int y=0;y<rect.Height;y++)
+        {
+            int inset=(int)(Math.Abs(y-rect.Height/2f)/(rect.Height/2f)*rect.Width*.45f);
+            _ui.Box(new(rect.X+(positive?0:inset),rect.Y+y,rect.Width-inset,1),color);
+        }
+        _ui.Center(positive?"+1":"-1",new(rect.X+(positive?-5:5),rect.Y,rect.Width,rect.Height),.48f,new Color(23,31,37));
+    }
     private Texture2D RatePieIcon(int degrees,int divisions)
     {
         if(_ratePieIcons.TryGetValue(degrees*100+divisions,out var icon))return icon;
@@ -72,9 +85,9 @@ public partial class Game1
     }
     private void RatePieClick(Point p)
     {
-        if(new Rectangle(1130,270,125,40).Contains(p))SetDestinationRate(_rateTarget,0);
-        if(new Rectangle(1270,270,60,40).Contains(p))SetDestinationRate(_rateTarget,Rate(_rateTarget)-1);
-        if(new Rectangle(1340,270,60,40).Contains(p))SetDestinationRate(_rateTarget,Rate(_rateTarget)+1);
+        if(RateZeroButton.Contains(p))SetDestinationRate(_rateTarget,0);
+        if(RateMinusButton.Contains(p))SetDestinationRate(_rateTarget,Rate(_rateTarget)-1);
+        if(RatePlusButton.Contains(p))SetDestinationRate(_rateTarget,Rate(_rateTarget)+1);
         if(Vector2.Distance(new Vector2(p.X,p.Y),RatePieCenter)<=110)SetDestinationRate(_rateTarget,PointerDegrees(p));
         for(int row=0;row<4;row++)for(int col=0;col<RateDivisions[row];col++)
         {
@@ -113,9 +126,9 @@ public partial class Game1
         _ui.Box(new((int)edge.X-7,(int)edge.Y-7,14,14),Cream);
         _ui.Text("円の境界を動かして１度ずつ設定",new(1130,920),.42f,Cream);
         _ui.Text($"設定可能 0° - {maximum}°",new(1130,245),.4f,Cream);
-        _ui.Button(new(1130,270,125,40),"クリアー",Accent,.42f);
-        _ui.Button(new(1270,270,60,40),"-1",Accent,.5f);
-        _ui.Button(new(1340,270,60,40),"+1",value<maximum?Accent:Muted,.5f);
+        _ui.Button(RateZeroButton,"0",value==0?new Color(255,174,110):new Color(255,221,91),.65f);
+        DrawRateStepButton(RateMinusButton,false,value>0);
+        DrawRateStepButton(RatePlusButton,true,value<maximum);
         _ui.Button(new(1670,270,160,36),"受入１位",CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner)?Accent:Muted,.4f);
         for(int row=0;row<4;row++)for(int col=0;col<RateDivisions[row];col++)
         {

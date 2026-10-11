@@ -30,7 +30,7 @@ public partial class Game1
         if(NodeFactoryTile.Contains(pointer)){OpenNodeFactory();return true;}
         if(new Rectangle(84,270,374,46).Contains(pointer)){_nodeTransportDisposal=false;return true;}
         if(new Rectangle(480,270,374,46).Contains(pointer)){_nodeTransportDisposal=true;return true;}
-        for(int mask=1;mask<=7;mask++)if(new Rectangle(84+(mask-1)%4*196,322+(mask-1)/4*56,182,46).Contains(pointer))
+        for(int mask=1;mask<=7;mask++)if(TransportPartButton(mask).Contains(pointer))
         {_nodeTransportPart=(RobotParts)mask;return true;}
         var routes=_setup.Routes.Neighbors(_setup.Nodes.All[_populationNode]);
         var encounters=NodeReinforcementChoices;
@@ -60,11 +60,11 @@ public partial class Game1
         string label=_setup.Nodes.Label(node);_ui.Text(label,new(84,230),Math.Min(.45f,770/_font.MeasureString(label).X),Cream);
         _ui.Button(new(84,270,374,46),"ふつうの移送",_nodeTransportDisposal?Muted:Accent,.5f);
         _ui.Button(new(480,270,374,46),"廃棄としての移送",_nodeTransportDisposal?Accent:Muted,.5f);
-        for(int mask=1;mask<=7;mask++)_ui.Button(new(84+(mask-1)%4*196,322+(mask-1)/4*56,182,46),PartsLabel((RobotParts)mask),_nodeTransportPart==(RobotParts)mask?Accent:Muted,.48f);
+        DrawTransportPartButtons();
         int total=_setup.Robots.Transport.Plan(node.Id,_setup.PlayerSlot,_nodeTransportPart,_nodeTransportDisposal).Sum(w=>w.Degrees);
         int combined=total+_setup.Robots.Transport.Plan(node.Id,_setup.PlayerSlot,_nodeTransportPart,!_nodeTransportDisposal).Sum(w=>w.Degrees);
-        _ui.Text($"選択中 {RateLabel(total)} / ふつう＋廃棄 {RateLabel(combined)} / 残り {RateLabel(360-combined)} は留まる",new(84,437),.43f,Cream);
-        _ui.Text("地図上の移送先と割合をクリック",new(84,490),.65f,Cream);
+        _ui.Text($"選択中 {RateLabel(total)} / ふつう＋廃棄 {RateLabel(combined)} / 残り {RateLabel(360-combined)} は留まる",new(84,600),.43f,Cream);
+        _ui.Text("地図上の移送先と割合をクリック",new(84,650),.65f,Cream);
         var encounters=NodeReinforcementChoices;
         string reinforcement=encounters.Length==0?"増援先の継戦なし":$"継戦 #{encounters[Math.Clamp(_nodeReinforcementIndex,0,encounters.Length-1)].Id} へ完成体を増援";
         _ui.Button(new(84,770,526,34),reinforcement,encounters.Length>0 && node.Owner==_setup.PlayerSlot?Accent:Muted,.38f);

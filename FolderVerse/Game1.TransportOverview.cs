@@ -22,6 +22,19 @@ public partial class Game1
     private bool _transportOverview;
     private bool _transportRoutesBefore;
     private static readonly Rectangle TransportOverviewButton=new(424,1018,214,52);
+    private static Rectangle TransportPartButton(int mask)=>new(84+(mask-1)%4*196,322+(mask-1)/4*136,182,96);
+    private void DrawTransportPartButtons()
+    {
+        for(int mask=1;mask<=7;mask++)
+        {
+            var parts=(RobotParts)mask;var rect=TransportPartButton(mask);
+            _ui.Box(rect,_nodeTransportPart==parts?Accent:rect.Contains(_pointer)?new Color(75,116,130):Muted);
+            DrawRobotGlyph(new(rect.Center.X-27,rect.Y+6,54,84),_setup.PlayerSlot,parts);
+            if(_nodeTransportPart==parts)_ui.Box(new(rect.X,rect.Y,rect.Width,3),Cream);
+            string amount=_populationNode<0?"輸出 --%":$"輸出 {_setup.Robots.Transport.Plan(_populationNode,_setup.PlayerSlot,parts,_nodeTransportDisposal).Sum(w=>w.Degrees)*100/360f:0.#}%";
+            _ui.Center(amount,new(rect.X,rect.Bottom+3,rect.Width,30),.48f,Cream);
+        }
+    }
     private readonly List<(Rectangle Bounds,int Source,int Target,Vector2 Start,Vector2 End)> _transportRouteHits=new();
 
     private static bool TransportArrowHit(Point p,Vector2 start,Vector2 end)
@@ -63,7 +76,7 @@ public partial class Game1
         if(new Rectangle(803,169,58,44).Contains(p)){CloseTransportOverview();return true;}
         if(new Rectangle(84,270,374,46).Contains(p)){_nodeTransportDisposal=false;return true;}
         if(new Rectangle(480,270,374,46).Contains(p)){_nodeTransportDisposal=true;return true;}
-        for(int mask=1;mask<=7;mask++)if(new Rectangle(84+(mask-1)%4*196,322+(mask-1)/4*56,182,46).Contains(p)){_nodeTransportPart=(RobotParts)mask;return true;}
+        for(int mask=1;mask<=7;mask++)if(TransportPartButton(mask).Contains(p)){_nodeTransportPart=(RobotParts)mask;return true;}
         foreach(var hit in _transportRouteHits.AsEnumerable().Reverse())if(hit.Bounds.Contains(p) || Vector2.Distance(hit.Start,hit.End)>1 && TransportArrowHit(p,hit.Start,hit.End))
         {_populationNode=hit.Source;_rateTarget=hit.Target;return true;}
         if(NetPanel.Contains(p))
@@ -80,11 +93,10 @@ public partial class Game1
         _ui.Button(new(803,169,58,44),"×",Muted,.7f);
         _ui.Button(new(84,270,374,46),"ふつうの移送",_nodeTransportDisposal?Muted:Accent,.5f);
         _ui.Button(new(480,270,374,46),"廃棄としての移送",_nodeTransportDisposal?Accent:Muted,.5f);
-        for(int mask=1;mask<=7;mask++)_ui.Button(new(84+(mask-1)%4*196,322+(mask-1)/4*56,182,46),PartsLabel((RobotParts)mask),_nodeTransportPart==(RobotParts)mask?Accent:Muted,.48f);
-        _ui.Text("地図上の移送先と割合をクリック",new(84,490),.65f,Cream);
-        _ui.Text("5% / 8.3% / 16.7% / 25%",new(84,550),.6f,Cream);
-        _ui.Text("ふつう＋廃棄 / 残りは留まる",new(84,610),.5f,Cream);
-        if(_populationNode>=0)_ui.Text(_setup.Nodes.Label(_setup.Nodes.All[_populationNode]),new(84,700),.43f,Cream);
+        DrawTransportPartButtons();
+        _ui.Text("地図上の移送先と割合をクリック",new(84,630),.65f,Cream);
+        _ui.Text("ふつう＋廃棄 / 残りは留まる",new(84,680),.5f,Cream);
+        if(_populationNode>=0)_ui.Text(_setup.Nodes.Label(_setup.Nodes.All[_populationNode]),new(84,740),.43f,Cream);
     }
     private void DrawTransportOverviewMap()
     {

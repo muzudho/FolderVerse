@@ -217,9 +217,9 @@ public partial class Game1 : Game
                 }
                 bool action=click && (TransportOverviewClick(_pointer) || RouteLayerClick(_pointer) || MovementClick(_pointer,keyboard) || NodeDialogClick(_pointer,keyboard));
                 if(!action && click && NetButton(0).Contains(_pointer))_yaw-=MathHelper.PiOver4;
-                else if(click && NetButton(1).Contains(_pointer))_yaw+=MathHelper.PiOver4;
-                else if(click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
-                else if(click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
+                else if(!action && click && NetButton(1).Contains(_pointer))_yaw+=MathHelper.PiOver4;
+                else if(!action && click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
+                else if(!action && click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
                 Rotate(mouse,click && !action && _populationCell<0,active,NetPanel);
                 GlobeCellClick(mouse,click,active,action);
             }

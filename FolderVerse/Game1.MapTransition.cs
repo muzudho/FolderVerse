@@ -67,16 +67,34 @@ public partial class Game1
         float progress=MathHelper.Clamp(_mapTransitionAge/MapTransitionDuration,0,1);
         float unfold=_mapUnfold?progress:1-progress;
         float Ease(float t){t=MathHelper.Clamp(t,0,1);return t*t*(3-2*t);}
-        // The back face opens first, staying attached to the right face until its turn.
-        int[] order={5,2,3,4,1};var pose=new Matrix[6];pose[0]=Matrix.Identity;
+        // Derive hinges from the current net, including faces rearranged by edge clicks.
+        var faces=_net.Faces;
+        var parent=Enumerable.Repeat(-1,6).ToArray();var traversal=new List<int>{0};
+        for(int n=0;n<traversal.Count;n++)
+        {
+            int a=traversal[n];
+            for(int b=1;b<6;b++)
+            {
+                if(parent[b]>=0 || Math.Abs(Vector3.Dot(CubeNet.Normals[faces[a].Face],CubeNet.Normals[faces[b].Face]))>.1f)continue;
+                var delta=faces[b].Center-faces[a].Center;
+                bool joined=Math.Abs(delta.Y)<.001f && Math.Abs(Math.Abs(delta.X)-(faces[a].Width+faces[b].Width)/2)<.001f ||
+                    Math.Abs(delta.X)<.001f && Math.Abs(Math.Abs(delta.Y)-(faces[a].Height+faces[b].Height)/2)<.001f;
+                if(joined){parent[b]=a;traversal.Add(b);}
+            }
+        }
+        int[] order=traversal.Skip(1).Reverse().ToArray();var pose=new Matrix[6];pose[0]=Matrix.Identity;
         float Angle(int index)=>MathHelper.PiOver2*(1-Ease(unfold*6-Array.IndexOf(order,index)));
-        var faces=_net.Faces;float w=faces[0].Width,h=faces[0].Height,d=faces[1].Width;
+        var rootNormal=CubeNet.Normals[faces[0].Face];
+        float d=Math.Abs(rootNormal.X)*_setup.Width+Math.Abs(rootNormal.Y)*_setup.Height+Math.Abs(rootNormal.Z)*_setup.Depth;
         Matrix Hinge(Vector3 pivot,Matrix rotation)=>Matrix.CreateTranslation(-pivot)*rotation*Matrix.CreateTranslation(pivot);
-        pose[1]=Hinge(new(w/2,0,0),Matrix.CreateRotationY(Angle(1)));
-        pose[2]=Hinge(new(-w/2,0,0),Matrix.CreateRotationY(-Angle(2)));
-        pose[3]=Hinge(new(0,h/2,0),Matrix.CreateRotationX(-Angle(3)));
-        pose[4]=Hinge(new(0,-h/2,0),Matrix.CreateRotationX(Angle(4)));
-        pose[5]=Hinge(new(w/2+d,0,0),Matrix.CreateRotationY(Angle(5)))*pose[1];
+        foreach(int index in traversal.Skip(1))
+        {
+            var anchor=faces[parent[index]];var delta=faces[index].Center-anchor.Center;
+            var outward=Vector2.Normalize(delta);
+            var pivot=anchor.Center+new Vector2(outward.X*anchor.Width/2,outward.Y*anchor.Height/2);
+            var axis=Vector3.Cross(Vector3.UnitZ,new Vector3(outward.X,-outward.Y,0));
+            pose[index]=Hinge(new(pivot.X,-pivot.Y,0),Matrix.CreateFromAxisAngle(axis,Angle(index)))*pose[parent[index]];
+        }
         float align=Ease(unfold*6-5);
         var rotation=Matrix.CreateFromQuaternion(Quaternion.Slerp(_mapOrientation,Quaternion.Identity,align));
         float radius=new Vector3(_setup.Width,_setup.Height,_setup.Depth).Length()*.5f+.4f;
