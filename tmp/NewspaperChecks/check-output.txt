@@ -1,3 +1,4 @@
 PASS: 0/29/30/49/50/89/90/100 percent, victory, biased retreat, allied victory
 PASS: opening, edge clash, >2x superiority, 10% advantage, balance; no final-state spoiler
+PASS: published headline frozen, next issue refreshed, elimination stamp at 90%, no future elimination spoiler
 PASS: partisan, objective and WANTED newspapers rendered, including headline glyphs

@@ -27,8 +27,16 @@ public partial class Game1
         _ui.Tile(center+horizontal,new(width,2),angle,red);_ui.Tile(center-horizontal,new(width,2),angle,red);
         _ui.Tile(center+vertical,new(2,height),angle,red);_ui.Tile(center-vertical,new(2,height),angle,red);
     }
-    private void DrawBattleNewspaperSheet(BattleState battle,BattleFrame frame)
+    private void DrawArmyEliminatedStamp(Rectangle photo)
     {
+        var red=new Color(162,34,38)*.82f;
+        var center=new Vector2(photo.Center.X,photo.Center.Y);
+        float length=Math.Min(photo.Width,photo.Height)*.78f;
+        _ui.Tile(center,new(length,10),MathHelper.PiOver4,red);
+        _ui.Tile(center,new(length,10),-MathHelper.PiOver4,red);
+    }    private void DrawBattleNewspaperSheet(NewspaperIssue issue)
+    {
+        var battle=issue.Battle;
         var paper=new Color(238,225,199);var ink=new Color(58,49,42);
         _ui.Box(new(1109,217,752,571),new Color(8,18,25)*.4f);
         _ui.Box(new(1104,210,752,570),paper);
@@ -47,10 +55,9 @@ public partial class Game1
         int patron=_newspaperEdition==0?(battle.Armies.FirstOrDefault(a=>a.Owner==_setup.PlayerSlot)?.Owner??battle.Armies[0].Owner):battle.Defender;
         if(patron<0 || patron>=_setup.Looks.Length)patron=battle.Armies[0].Owner;
         string affiliation=profile.FavorsArmy?$"#{patron+1} 陣営 / {profile.Label}":$"Node {battle.TargetNode+1} / {profile.Label}";
-        _ui.Center($"{affiliation} / 第 {_setup.Population.Turn} 号",new(1128,293,704,24),.35f,ink);
+        _ui.Center($"{affiliation} / 第 {issue.Turn} 号",new(1128,293,704,24),.35f,ink);
         _newspaperPortraits??=new NewspaperPortraitRenderer(Content);
-        bool resolved=battle.Finished && (battle.Frames.Count==0 || ReferenceEquals(frame,battle.Frames[^1]));
-        string headline=NewspaperBattleOutcome.Headline(battle,frame,_setup.ConquerorNames,patron,profile.FavorsArmy,resolved);
+        string headline=issue.Headline;
         _ui.Center(headline,new(1128,325,704,62),Math.Min(1.05f,690/_font.MeasureString(headline).X),ink);
         _ui.Box(new(1128,391,704,2),ink);
         int index=0;
@@ -60,7 +67,7 @@ public partial class Game1
             int current=index++;
             var r=biased?(current==0?new Rectangle(1128,402,398,330):new Rectangle(1548,402+(current-1)*104,284,100)):NewspaperColumn(current,battle.Armies.Count);
             if(index>1)_ui.Box(new(r.X-9,r.Y,1,r.Height),ink*.35f);
-            string name=_setup.ConquerorNames[army.Owner];
+            string name=issue.Names[army.Owner];
             _ui.Center(name,new(r.X,r.Y,r.Width,32),Math.Min(.48f,r.Width/_font.MeasureString(name).X),ink);
             int photoWidth=Math.Min(biased?168:164,r.Width-8),photoHeight=photoWidth*4/3;
             var photo=new Rectangle(r.Center.X-photoWidth/2,r.Y+41,photoWidth,photoHeight);
@@ -68,6 +75,7 @@ public partial class Game1
             bool known=!textOnly && _newspaperPortraits.Draw(_spriteBatch,_setup.Looks[army.Owner],photo,profile.PhotoKind,profile.AllowFallback);
             if(!known && !textOnly){_ui.Box(photo,paper*.95f);_ui.Center("写真なし",photo,.4f,ink*.6f);}
             if(profile.Wanted && !textOnly){_ui.Box(new(photo.X-5,photo.Y-5,photo.Width+10,2),ink*.5f);_ui.Box(new(photo.X-5,photo.Bottom+3,photo.Width+10,2),ink*.5f);DrawWantedStamp(photo);}
+            if(known && issue.Eliminated.Contains(army.Owner))DrawArmyEliminatedStamp(photo);
             DrawNewspaperToy(army.Owner,NewspaperToyPosition(army.Owner,r,photo,textOnly),textOnly?48:82);
         }
         _ui.Box(NewspaperSwitch,ink*.07f);

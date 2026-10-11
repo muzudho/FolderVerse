@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 213,
+  "Completed": 216,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1705,6 +1705,30 @@
       "Sha256": "6A71FE16AB9110F3F581AD07CFF517FB6C50C4667C1D2E790CA12485EC6CA27D",
       "Reviewed": true,
       "Note": "ウインクとシャカの素手、ペンギンと青電池、リボン徽章を保持"
+    },
+    {
+      "CharacterId": 43,
+      "Variant": 5,
+      "File": "remaining-variants/character-43-5-balanced.png",
+      "Sha256": "9EC7AB480CC38A7A9D0471D88106E7E8C4DF4FE240BCBF2BD66DB639DAFE79D2",
+      "Reviewed": true,
+      "Note": "Current v003; writing pose, black gloves, pen/book, enlarged face and ears retained"
+    },
+    {
+      "CharacterId": 43,
+      "Variant": 6,
+      "File": "remaining-variants/character-43-6-balanced.png",
+      "Sha256": "47547F417279E179FBBFC668AD187C88172A51CBD1B027797E4661C0C4A8EDAD",
+      "Reviewed": true,
+      "Note": "Current v003; pasta offering, bare hands, red battery/headphones retained"
+    },
+    {
+      "CharacterId": 44,
+      "Variant": 2,
+      "File": "remaining-variants/character-44-2-balanced.png",
+      "Sha256": "B20A48299EB5F6F489BCCDBEFB2C05A9B25CDCE395802594B2351DB7608B6906",
+      "Reviewed": true,
+      "Note": "Current v003; silver hair, half-lidded magenta eyes, horns, mug, robot, red battery and blanket retained"
     }
   ]
 }

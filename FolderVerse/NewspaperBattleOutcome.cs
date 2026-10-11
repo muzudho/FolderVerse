@@ -14,7 +14,14 @@ public static class NewspaperBattleOutcome
         if(lost*10>=total*3)return "全滅……";
         return favorsArmy?"突然の転進":"退却……";
     }
-    public static string Headline(BattleState battle,BattleFrame frame,string[] names,int patron,bool biased,bool resolved)
+    public static bool Eliminated(BattleState battle,BattleFrame frame,int owner,bool resolved)
+    {
+        if(resolved && battle.Winner>=0 && battle.Allied(owner,battle.Winner))return false;
+        var units=battle.Units.Concat(battle.Armies.SelectMany(a=>a.Waiting)).Where(u=>u.Owner==owner && u.Role!=BattleRole.Queen).DistinctBy(u=>u.Id).ToArray();
+        int total=units.Length;
+        int lost=resolved?units.Count(u=>u.Fallen):frame.Units.Count(u=>u.Owner==owner && u.Role!=BattleRole.Queen && u.Fallen);
+        return total>0 && lost*10>=total*9;
+    }    public static string Headline(BattleState battle,BattleFrame frame,string[] names,int patron,bool biased,bool resolved)
     {
         string Country(int owner)=>names[owner]+"国";
         if(resolved)

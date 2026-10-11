@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,15 +11,15 @@ public partial class Game1
     private Vector2 PropagationBadgeCenter(int scene,Rectangle panel)
     {
         var battle=_robotScenes[scene];
-        var at=_propagationNet.NodePosition(_setup,_setup.Nodes.All[battle.TargetNode],panel);
-        if(battle.Kind==BattleKind.Edge)at=(at+_propagationNet.NodePosition(_setup,_setup.Nodes.All[battle.SourceNode],panel))/2;
+        var at=_propagationNet.AnimatedNodePosition(_setup,_setup.Nodes.All[battle.TargetNode],panel);
+        if(battle.Kind==BattleKind.Edge)at=(at+_propagationNet.AnimatedNodePosition(_setup,_setup.Nodes.All[battle.SourceNode],panel))/2;
         int offset=_robotScenes.Take(scene).Count(b=>b.TargetNode==battle.TargetNode && b.SourceNode==battle.SourceNode);
         return at+new Vector2(offset*34,-32);
     }
     private void DrawPropagation(int focus,float progress,bool movement)
     {
         var panel=new Rectangle(40,100,1840,860);
-        _propagationNet.SetCenter(_setup,_net.CenterFace);
+        if(_propagationNet.Faces.Length==0)_propagationNet.SetCenter(_setup,_net.CenterFace);
         _propagationNet.FitAll(panel);
         _propagationNet.ShowBatteries=false;
         _propagationNet.ShowMapSymbols=_net.ShowMapSymbols;
@@ -40,17 +40,17 @@ public partial class Game1
             _propagationNet.Drag(destination-after);
         }
         _propagationNet.Draw(_ui,_setup,panel,-1,_animationTime);
-        Vector2 NodeAt(int id)=>_propagationNet.NodePosition(_setup,_setup.Nodes.All[id],panel);
-        float travel=movement?MathHelper.SmoothStep(0,1,Math.Clamp(progress/.6f,0,1)):1;
+        Vector2 NodeAt(int id)=>_propagationNet.AnimatedNodePosition(_setup,_setup.Nodes.All[id],panel);
+
         foreach(var shipment in movement?_setup.Robots.Transport.LastTransfers:Array.Empty<RobotShipment>())
         {
-            var at=Vector2.Lerp(NodeAt(shipment.Source),NodeAt(shipment.Target),travel);
+            var at=Vector2.Lerp(NodeAt(shipment.Source),NodeAt(shipment.Target),PropagationTravel(shipment.Source,shipment.Target));
             int owner=_setup.Robots.Transport.LastOwners.GetValueOrDefault(shipment.RobotId);
             DrawRobotGlyph(new((int)at.X-12,(int)at.Y-32,24,36),owner,shipment.Parts);
         }
         foreach(var march in movement?_setup.Campaign.RobotBattles.LastMarches:Enumerable.Empty<(int Owner,int Source,int Target)>())
         {
-            var at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),travel);
+            var at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),PropagationTravel(march.Source,march.Target));
             DrawToySoldier(new((int)at.X-10,(int)at.Y-30,20,30),_setup.OwnerColor(march.Owner),false);
         }
         for(int owner=0;owner<_setup.ActiveCount;owner++)
@@ -59,7 +59,7 @@ public partial class Game1
             var node=_setup.Nodes.Current(owner);if(node==null)continue;
             var at=NodeAt(node.Id);
             var march=_setup.Campaign.RobotBattles.LastMarches.FirstOrDefault(m=>m.Owner==owner);
-            if(movement && _setup.Campaign.RobotBattles.LastMarches.Any(m=>m.Owner==owner))at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),travel);
+            if(movement && _setup.Campaign.RobotBattles.LastMarches.Any(m=>m.Owner==owner))at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),PropagationTravel(march.Source,march.Target));
             _ui.Box(new((int)at.X-12,(int)at.Y-9,24,16),_setup.OwnerColor(owner));
             _ui.Box(new((int)at.X+12,(int)at.Y-5,4,8),Cream);
         }
@@ -76,7 +76,7 @@ public partial class Game1
 
         _ui.Box(RobotResultBar,Muted);
         _ui.Box(new(RobotResultBar.X,RobotResultBar.Y,(int)(RobotResultBar.Width*progress),RobotResultBar.Height),Accent);
-        _ui.Button(BattleContinue,movement?"戦闘へ進む":"戦場を切り替える",Accent,.55f);
+        if(!movement)_ui.Button(BattleContinue,"戦場を切り替える",Accent,.55f);
         if(!movement)_ui.Button(RobotResultPause,_robotPlaying?"一時停止":"再開",Muted,.5f);
     }
     private void DrawPropagationGrid(BattleState battle,Rectangle bounds,float opacity)

@@ -47,10 +47,23 @@ class CheckGame:Game1
  {
   foreach(int edition in new[]{0,3,6})
   {
-   GraphicsDevice.Clear(new Color(24,43,51));Set("_newspaperEdition",edition);var batch=(SpriteBatch)Get("_spriteBatch");batch.Begin();Set("_newspaperSlideAge",edition==6?.35:1.0);Set("_newspaperPrevious",0);Call("DrawBattleNewspaper",battle,frame);batch.End();
+   GraphicsDevice.Clear(new Color(24,43,51));Set("_newspaperIssue",null);Set("_newspaperEdition",edition);var batch=(SpriteBatch)Get("_spriteBatch");batch.Begin();Set("_newspaperSlideAge",edition==6?.35:1.0);Set("_newspaperPrevious",0);Call("DrawBattleNewspaper",battle,frame);batch.End();
    var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);
    using var texture=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);texture.SetData(pixels);using var output=File.Create(Path.Combine(AppContext.BaseDirectory,$"edition-{edition}.png"));texture.SaveAsPng(output,texture.Width,texture.Height);
   }
+  Set("_newspaperIssue",null);Set("_newspaperSlideAge",1.0);Set("_newspaperEdition",0);
+  var first=new BattleFrame(0,BattlePhase.Place,Array.Empty<BattleUnitView>(),true,0);battle.Frames.Insert(0,first);
+  var sb=(SpriteBatch)Get("_spriteBatch");sb.Begin();Call("DrawBattleNewspaper",battle,first);sb.End();
+  var issue=Get("_newspaperIssue");var headline=issue.GetType().GetProperty("Headline")!.GetValue(issue);
+  sb.Begin();Call("DrawBattleNewspaper",battle,frame);sb.End();
+  if(!ReferenceEquals(issue,Get("_newspaperIssue")) || !Equals(headline,issue.GetType().GetProperty("Headline")!.GetValue(issue)))throw new Exception("Published text changed");
+  for(int i=0;i<10;i++)battle.Units.First(u=>u.Owner==0 && u.Id==i).Fallen=i<9;
+  if(!NewspaperBattleOutcome.Eliminated(battle,frame,0,true) || NewspaperBattleOutcome.Eliminated(battle,first,0,false))throw new Exception("Elimination spoiler or threshold");
+  Set("_newspaperPreviousIssue",issue);Set("_newspaperIssue",null);Set("_newspaperSlideAge",.35);
+  sb.Begin();Call("DrawBattleNewspaper",battle,frame);sb.End();
+  var refreshed=Get("_newspaperIssue");if(ReferenceEquals(issue,refreshed))throw new Exception("Next issue not refreshed");
+  if(!((System.Collections.Generic.HashSet<int>)refreshed.GetType().GetProperty("Eliminated")!.GetValue(refreshed)!).Contains(0))throw new Exception("Cross stamp missing");
+  Console.WriteLine("PASS: published headline frozen, next issue refreshed, elimination stamp at 90%, no future elimination spoiler");
   Console.WriteLine("PASS: partisan, objective and WANTED newspapers rendered, including headline glyphs");Exit();
  }
 }

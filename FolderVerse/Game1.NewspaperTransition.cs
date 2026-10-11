@@ -1,11 +1,15 @@
 ﻿namespace FolderVerse;
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Audio;
 
 public partial class Game1
 {
+    private sealed record NewspaperIssue(BattleState Battle,int Edition,int Turn,string Headline,string[] Names,HashSet<int> Eliminated);
+    private NewspaperIssue _newspaperIssue,_newspaperPreviousIssue;
     private int _newspaperPrevious;
     private double _newspaperSlideAge=1;
     private const double NewspaperSlideSeconds=.75;
@@ -13,6 +17,7 @@ public partial class Game1
     private void SwitchNewspaper()
     {
         if(_newspaperSlideAge<NewspaperSlideSeconds)return;
+        _newspaperPreviousIssue=_newspaperIssue;_newspaperIssue=null;
         _newspaperPrevious=_newspaperEdition;
         _newspaperEdition=(_newspaperEdition+1)%NewspaperProfiles.All.Length;
         _newspaperClock=0;_newspaperSlideAge=0;
@@ -35,7 +40,18 @@ public partial class Game1
     }
     private void DrawBattleNewspaper(BattleState battle,BattleFrame frame)
     {
-        if(_newspaperSlideAge>=NewspaperSlideSeconds){DrawBattleNewspaperSheet(battle,frame);return;}
+        if(_newspaperIssue==null || !ReferenceEquals(_newspaperIssue.Battle,battle))
+        {
+            if(_newspaperIssue!=null){_newspaperPreviousIssue=_newspaperIssue;_newspaperSlideAge=0;_newspaperClock=0;}
+            var profile=NewspaperProfiles.All[_newspaperEdition];
+            int patron=_newspaperEdition==0?(battle.Armies.FirstOrDefault(a=>a.Owner==_setup.PlayerSlot)?.Owner??battle.Armies[0].Owner):battle.Defender;
+            if(patron<0 || patron>=_setup.Looks.Length)patron=battle.Armies[0].Owner;
+            bool resolved=battle.Finished && (battle.Frames.Count==0 || ReferenceEquals(frame,battle.Frames[^1]));
+            var names=(string[])_setup.ConquerorNames.Clone();
+            var eliminated=battle.Armies.Where(a=>NewspaperBattleOutcome.Eliminated(battle,frame,a.Owner,resolved)).Select(a=>a.Owner).ToHashSet();
+            _newspaperIssue=new(battle,_newspaperEdition,_setup.Population.Turn,NewspaperBattleOutcome.Headline(battle,frame,names,patron,profile.FavorsArmy,resolved),names,eliminated);
+        }
+        if(_newspaperSlideAge>=NewspaperSlideSeconds || _newspaperPreviousIssue==null){DrawBattleNewspaperSheet(_newspaperIssue);return;}
         var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         var oldScissor=GraphicsDevice.ScissorRectangle;
         _spriteBatch.End();
@@ -45,10 +61,11 @@ public partial class Game1
         int current=_newspaperEdition;
         for(int sheet=0;sheet<2;sheet++)
         {
-            _newspaperEdition=sheet==0?_newspaperPrevious:current;
+            var issue=sheet==0?_newspaperPreviousIssue:_newspaperIssue;
+            _newspaperEdition=issue.Edition;
             float offset=(sheet==0?t:t-1)*590;
             _spriteBatch.Begin(transformMatrix:Matrix.CreateTranslation(0,offset,0)*transform,rasterizerState:clip);
-            DrawBattleNewspaperSheet(battle,frame);_spriteBatch.End();
+            DrawBattleNewspaperSheet(issue);_spriteBatch.End();
         }
         _newspaperEdition=current;GraphicsDevice.ScissorRectangle=oldScissor;
         _spriteBatch.Begin(transformMatrix:transform);

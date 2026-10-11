@@ -30,19 +30,21 @@ public partial class Game1
     private static readonly Rectangle RobotResultBar=new(1120,990,720,20),RobotResultPause=new(1120,1020,270,50);
     private void OpenRobotBattle()
     {
+        _newspaperIssue=_newspaperPreviousIssue=null;_newspaperSlideAge=1;_newspaperClock=0;
         _robotScenes=_setup.Campaign.RobotBattles.Scenes.ToArray();_battleTiles=Array.Empty<CharacterTile>();_battleWave=0;_battleAge=0;_robotResultAge=0;_robotPlaying=true;
         _robotPlayback=new(_robotScenes);_robotRound=0;_robotSummaryPage=0;_robotPendingFocus=-1;_robotPendingRound=false;_robotPendingSummary=false;_robotSummary=_robotPlayback.Rounds.Length==0;
         if(!_robotSummary)_battleWave=RobotPriority[0];
         _populationCell=-1;_dragging=false;
         _statusGlobe=false;_net.ResetView();_net.CancelAnimation();
-        _screen=Screen.Transport;_transportAge=0;
+        _screen=Screen.Transport;_transportAge=0;BeginPropagation();
     }
     private void FinishTransport()
     {if(_robotScenes.Length>0)_screen=Screen.Battle;else{_screen=Screen.WorldStatus;OpenDisposition();}}
     private void UpdateTransport(double elapsed,bool proceed)
     {
-        _transportAge=Math.Min(5,_transportAge+elapsed);
-        if(proceed || _transportAge>=5)FinishTransport();
+        if(!PropagationComplete){UpdatePropagationMovement(elapsed);return;}
+        _transportAge=Math.Min(2,_transportAge+elapsed);
+        if(_transportAge>=2)FinishTransport();
     }
     private void RobotBattleInput(double elapsed,bool click,bool enter)
     {
@@ -266,6 +268,6 @@ public partial class Game1
     }
     private void DrawTransport()
     {
-        DrawPropagation(_robotScenes.Length>0?_battleWave:-1,(float)(_transportAge/5),true);
+        DrawPropagation(_robotScenes.Length>0?_battleWave:-1,PropagationComplete?.6f+.4f*(float)(_transportAge/2):.6f*_propagationTravel.Values.DefaultIfEmpty(0).Average(),true);
     }
 }
