@@ -17,7 +17,7 @@ public partial class Game1
     private void BeginLandConquest()
     {
         _landOrder=_setup.LandOrder();_landTurn=0;_landAge=0;_landSelection.Clear();_landDrag=null;
-        _screen=Screen.LandConquest;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.ShowSetup(_setup,false);
+        _screen=Screen.LandConquest;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.ShowLandConquest(_setup);
     }
     private int[] AutomaticLand(int ruler)
     {
@@ -35,7 +35,7 @@ public partial class Game1
     }
     private void ConfirmLand()
     {
-        _setup.ClaimLand(LandRuler,_landSelection.ToArray());_landSelection.Clear();_landAge=0;
+        _setup.ClaimLand(LandRuler,_landSelection.ToArray());_world.ShowLandConquest(_setup);_landSelection.Clear();_landAge=0;
         if(++_landTurn==_landOrder.Length){_screen=Screen.Fortune;return;}
     }
     private void UpdateLandSetup(double elapsed,MouseState mouse,bool active,bool click,bool enter)
