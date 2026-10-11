@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 
 using System;
 using Microsoft.Xna.Framework;
@@ -125,6 +125,7 @@ public partial class Game1 : Game
     {
         _pointer=CanvasPoint(mouse); _ui.Pointer=_pointer;
         bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
+        UpdateRateDrag(mouse,active,click);
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds;
@@ -481,6 +482,7 @@ public partial class Game1 : Game
         _ui.Text("緯番",new(1515,203),.38f,WorldCoordinates.LatitudeColor);
         }
         _ui.Text("△：山頂 / 錨：港",new(1590,203),.38f,new(255,204,83));
+        PrepareDestinationMap();
         var canvas=CanvasBounds();
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _spriteBatch.End();
@@ -497,7 +499,7 @@ public partial class Game1 : Game
             var areas=OrientationAreas(NetPanel,false);
             GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
             _world.Draw(_yaw,_pitch,_animationTime,false,true);
-            _world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe);
+            if(!DestinationOperation)_world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe);
             GraphicsDevice.Viewport=OrientationViewport(areas.Toy,canvas);
             _orientationToy.Draw(_yaw,_pitch);
             GraphicsDevice.Viewport=viewport;
@@ -515,6 +517,7 @@ public partial class Game1 : Game
             _net.Draw(_ui,_setup,NetPanel,_statusCell,_animationTime);_spriteBatch.End();
         }
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
+        DrawDestinationMap();
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
         _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"左ドラッグ：回転 / ホイール：拡縮 / 節点を選ぶと中心固定":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));

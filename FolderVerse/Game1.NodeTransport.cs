@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -9,7 +9,6 @@ public partial class Game1
     private Texture2D _robotTransportIcon;
     private bool _nodeTransportOpen;
     private RobotParts _nodeTransportPart=RobotParts.Complete;
-    private int _nodeTransportPage;
     private bool _nodeTransportDisposal;
     private int _nodeReinforcementIndex;
     private RobotEncounter[] NodeReinforcementChoices
@@ -24,7 +23,7 @@ public partial class Game1
     private string _nodeTransportMessage="";
     private static readonly Rectangle NodeTransportTile=new(280,875,182,84);
     private void OpenNodeTransport()
-    {_nodeAssemblyOpen=false;_nodeDisposalOpen=false;_nodeFactoryOpen=false;_nodeTransportOpen=true;_nodeTransportPage=0;_nodeReinforcementIndex=0;_nodeTransportMessage="";}
+    {_nodeAssemblyOpen=false;_nodeDisposalOpen=false;_nodeFactoryOpen=false;_nodeTransportOpen=true;_rateTarget=-1;_nodeReinforcementIndex=0;_nodeTransportMessage="";}
     private bool NodeTransportClick(Point pointer)
     {
         if(new Rectangle(803,169,58,44).Contains(pointer) || NodeTransportTile.Contains(pointer)){_nodeTransportOpen=false;return true;}
@@ -46,31 +45,7 @@ public partial class Game1
             }
             return true;
         }
-        if(new Rectangle(630,810,100,40).Contains(pointer)){_nodeTransportPage=Math.Max(0,_nodeTransportPage-1);return true;}
-        if(new Rectangle(744,810,100,40).Contains(pointer)){_nodeTransportPage=Math.Min(Math.Max(0,(routes.Length-1)/4),_nodeTransportPage+1);return true;}
-        for(int row=0;row<4;row++)
-        {
-            int index=_nodeTransportPage*4+row;if(index>=routes.Length)break;int y=462+row*78;
-            bool minus=new Rectangle(630,y,100,42).Contains(pointer),plus=new Rectangle(744,y,100,42).Contains(pointer);
-            int target=_setup.Nodes.At(routes[index].Target,routes[index].Entry).Id;
-            if(new Rectangle(480,y+30,130,34).Contains(pointer))
-            {
-                if(CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))
-                {
-                    var order=_setup.Robots.Transport.Priority(_populationNode).Concat(routes.Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id)).Distinct().ToList();
-                    order.Remove(target);order.Insert(0,target);_setup.Robots.Transport.SetPriority(_populationNode,order);
-                    _nodeTransportMessage="受け入れ順位を保存しました";
-                }
-                return true;
-            }
-            if(!minus && !plus)continue;
-            var weights=_setup.Robots.Transport.Plan(_populationNode,_setup.PlayerSlot,_nodeTransportPart,_nodeTransportDisposal).ToList();
-            int value=Math.Clamp((weights.FirstOrDefault(w=>w.Target==target)?.Twentieths??0)+(plus?1:-1),0,20);
-            weights.RemoveAll(w=>w.Target==target);if(value>0)weights.Add(new(target,value));
-            if(weights.Sum(w=>w.Twentieths)+_setup.Robots.Transport.Plan(_populationNode,_setup.PlayerSlot,_nodeTransportPart,!_nodeTransportDisposal).Sum(w=>w.Twentieths)>20){_nodeTransportMessage="輸送率の合計は100％以内にしてください";return true;}
-            _setup.Robots.Transport.SetPlan(_populationNode,_setup.PlayerSlot,_nodeTransportPart,weights,_nodeTransportDisposal);
-            _nodeTransportMessage="自分の輸送計画を保存しました";return true;
-        }
+        if(DestinationMapClick(pointer))return true;
         return new Rectangle(54,150,850,825).Contains(pointer);
     }
     private void DrawNodeTransportTile()
@@ -93,25 +68,12 @@ public partial class Game1
         int total=_setup.Robots.Transport.Plan(node.Id,_setup.PlayerSlot,_nodeTransportPart,_nodeTransportDisposal).Sum(w=>w.Twentieths)*5;
         int combined=total+_setup.Robots.Transport.Plan(node.Id,_setup.PlayerSlot,_nodeTransportPart,!_nodeTransportDisposal).Sum(w=>w.Twentieths)*5;
         _ui.Text($"選択中 {total}% / ふつう＋廃棄 {combined}% / 残り {100-combined}% は留まる",new(84,437),.43f,Cream);
-        for(int row=0;row<4;row++)
-        {
-            int index=_nodeTransportPage*4+row;if(index>=routes.Length)break;int y=462+row*78;
-            var target=_setup.Nodes.At(routes[index].Target,routes[index].Entry);string name=_setup.Nodes.Label(target);
-            _ui.Text(name,new(84,y),Math.Min(.37f,530/_font.MeasureString(name).X),Cream);
-            int rate=(_setup.Robots.Transport.Plan(node.Id,_setup.PlayerSlot,_nodeTransportPart,_nodeTransportDisposal).FirstOrDefault(w=>w.Target==target.Id)?.Twentieths??0)*5;
-            bool enemy=target.Owner>=0 && !_setup.Relations.Allied(target.Owner,_setup.PlayerSlot);
-            _ui.Text($"{rate}% / {(enemy?"敵国：計画のみ":"輸送可能")}",new(84,y+29),.43f,Cream);
-            bool manage=CanManageNodeFactory(node.Owner);
-            bool first=_setup.Robots.Transport.Priority(node.Id).FirstOrDefault(-1)==target.Id;
-            _ui.Button(new(480,y+30,130,34),"受入１位",manage?(first?Accent:Muted):new Color(45,56,65),.36f);
-            _ui.Button(new(630,y,100,42),"−",Muted,.5f);_ui.Button(new(744,y,100,42),"＋",Muted,.5f);
-        }
+        _ui.Text("地図上の移送先と割合をクリック",new(84,490),.65f,Cream);
         var encounters=NodeReinforcementChoices;
         string reinforcement=encounters.Length==0?"増援先の継戦なし":$"継戦 #{encounters[Math.Clamp(_nodeReinforcementIndex,0,encounters.Length-1)].Id} へ完成体を増援";
         _ui.Button(new(84,770,526,34),reinforcement,encounters.Length>0 && node.Owner==_setup.PlayerSlot?Accent:Muted,.38f);
         _ui.Button(new(630,770,100,34),"←",Muted,.4f);_ui.Button(new(744,770,100,34),"→",Muted,.4f);
         _ui.Text(_nodeTransportMessage,new(84,810),.38f,Cream);
-        _ui.Button(new(630,810,100,40),"←",Muted,.5f);_ui.Button(new(744,810,100,40),"→",Muted,.5f);
         DrawNodeFactoryTile(false);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
     }
 }

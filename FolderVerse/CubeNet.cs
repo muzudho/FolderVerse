@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -166,7 +166,7 @@ public sealed partial class CubeNet
         ui.Box(new(bx,by,25,16),battery);ui.Box(new(bx+25,by+4,4,8),battery);
         for(int i=0;i<3;i++)ui.Box(new(bx+3+i*7,by+3,5,10),new Color(35,112,70));
         }
-        DrawRobotLayer(ui,setup,panel,node=>NodePosition(setup,node,panel),fit.Scale);
+        if(VisibleOperationNodes==null)DrawRobotLayer(ui,setup,panel,node=>NodePosition(setup,node,panel),fit.Scale);
         DrawHoveredEdge(ui,panel);
         DrawSeamLabels(ui,panel);
     }

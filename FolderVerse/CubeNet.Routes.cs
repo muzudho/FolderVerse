@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 
 public sealed partial class CubeNet
 {
+    public HashSet<int> VisibleOperationNodes {get;set;}
     public bool ShowMapSymbols {get;set;}=true;
     public bool ShowBatteries {get;set;}=true;
     public bool ShowRoutes {get;set;}=true;
@@ -57,7 +58,7 @@ public sealed partial class CubeNet
                     ui.Tile((a+b)/2,new Vector2(delta.Length()+1,2),MathF.Atan2(delta.Y,delta.X),color);
                 }
             }
-            foreach(var post in world.Nodes.InCell(cell))
+            foreach(var post in world.Nodes.InCell(cell).Where(n=>VisibleOperationNodes==null || VisibleOperationNodes.Contains(n.Id)))
             {
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
                 float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);
@@ -80,7 +81,7 @@ public sealed partial class CubeNet
                 }
             }
         }
-        if(!ShowRoutes)foreach(var post in world.Nodes.InCell(cell).Where(p=>p.IsHarbor))
+        if(!ShowRoutes)foreach(var post in world.Nodes.InCell(cell).Where(p=>p.IsHarbor && (VisibleOperationNodes==null || VisibleOperationNodes.Contains(p.Id))))
             DrawHarbor(ui,project(world.Routes.Position(cell,post.Center)),12,world.OwnerColor(post.Owner));
 
     }

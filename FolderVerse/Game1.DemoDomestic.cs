@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -9,17 +9,18 @@ public partial class Game1
     private int _demoDomesticStage;
     private double _demoDomesticAge;
     private int _demoSourceSlot=-1,_demoEmptySlot=-1;
+    private Point DemoDestinationPoint()=>DestinationNodes().Select(DestinationBadge).FirstOrDefault(r=>r!=Rectangle.Empty).Center;
     private bool UpdateDemoDomestic(double elapsed)
     {
         _demoStepAge=0;
         Point target=_demoDomesticStage switch
         {
-            0=>new(480,260),1=>NodeTransportTile.Center,2=>new(794,483),3=>NodeAssemblyTile.Center,
+            0=>new(480,260),1=>NodeTransportTile.Center,2=>DemoDestinationPoint(),3=>NodeAssemblyTile.Center,
             4=>_demoSourceSlot<0?new(480,540):HangarPartBounds(_demoSourceSlot,1).Center,
             5=>_demoEmptySlot<0?new(480,540):HangarCell(_demoEmptySlot).Center,
             6=>_demoEmptySlot<0?new(480,540):HangarPartBounds(_demoEmptySlot,1).Center,
             7=>_demoSourceSlot<0?new(480,540):HangarCell(_demoSourceSlot).Center,
-            8=>new(832,190),9=>MovementButton.Center,10=>MarchButton(0).Center,
+            8=>new(832,190),9=>MovementButton.Center,10=>DemoDestinationPoint(),
             11=>new(402,366),_=>ConfirmMoveButton.Center
         };
         if(_demoSwing<=0)_demoCursor=Vector2.Lerp(_demoCursor,new(target.X,target.Y),1-MathF.Exp(-(float)elapsed*4));
@@ -34,8 +35,8 @@ public partial class Game1
                 _populationNode=node.Id;_populationCell=node.Cell;_nodeAssemblyOpen=_nodeTransportOpen=_nodeDisposalOpen=_nodeFactoryOpen=false;break;
             case 1:OpenNodeTransport();break;
             case 2:
-                // Use the ordinary +5% control; the plan is retained for subsequent turns.
-                NodeTransportClick(target);break;
+                DestinationMapClick(target);
+                if(_rateTarget>=0)SetDestinationRate(_rateTarget,Rate(_rateTarget)+1);break;
             case 3:
                 OpenNodeAssembly();
                 _demoSourceSlot=Enumerable.Range(0,12).FirstOrDefault(i=>_hangarSlots[i].HasValue && _setup.Robots.Nodes[_populationNode].Robots.Any(r=>r.Id==_hangarSlots[i] && r.Parts==RobotParts.Complete && CanMoveHangarRobot(r)),-1);
