@@ -268,15 +268,11 @@ sealed class RobotUiCheck:Game1
                 Call("NodeDialogClick",new Point(150,910),new Microsoft.Xna.Framework.Input.KeyboardState());
                 Check((bool)Get("_nodeFactoryOpen"),"Own node factory opens from tile");
                 world.Campaign.RobotBattles.Encounters.Clear();
-                Call("NodeDialogClick",new Point(700,370),new Microsoft.Xna.Framework.Input.KeyboardState());
-                Call("NodeDialogClick",new Point(100,535),new Microsoft.Xna.Framework.Input.KeyboardState());
-                Check(world.Robots.Workshops[node.Id].Product==RobotParts.Head,"Factory product plan applied: "+Get("_factoryPart")+" / "+world.Robots.Workshops[node.Id].Product+" / "+Get("_factoryMessage")+" / "+Get("_populationCell"));
-                int period=world.Robots.Workshops[node.Id].ProductionPeriod;
-                Call("NodeDialogClick",new Point(310,680),new Microsoft.Xna.Framework.Input.KeyboardState());
-                Check(world.Robots.Workshops[node.Id].ProductionPeriod==period+1,"Factory period increases");
-                Call("NodeDialogClick",new Point(500,535),new Microsoft.Xna.Framework.Input.KeyboardState());
-                Check(world.Robots.Workshops[node.Id].Paused,"Factory pause");
-            }
+                Click(100,370);var factory=world.Robots.Workshops[node.Id];
+                Check(factory.SelectedPlan==0 && factory.Product==factory.Plans[0].Product,"Factory posted plan selected");
+                Click(200,570);Click(260,660);Click(780,770);
+                Check(factory.RestEvery==3 && factory.RestTurns==4 && factory.ReservedSlots==12,"Factory policy selectors");
+                Click(500,438);Check(!factory.Manufacturing && factory.SelectedPlan==3,"Factory no production plan");            }
             if(frame==24)
             {
                 Call("NodeDialogClick",new Point(830,190),new Microsoft.Xna.Framework.Input.KeyboardState());
@@ -439,3 +435,4 @@ sealed class RobotUiCheck:Game1
         catch(Exception e){Console.Error.WriteLine(e);Environment.ExitCode=1;Exit();}
     }
 }
+

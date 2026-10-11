@@ -89,14 +89,14 @@ public partial class Game1
         string hover="頭・胴・脚をつかんで、格納庫のセルへドラッグ＆ドロップ";
         for(int slot=0;slot<12;slot++)
         {
-            var cell=HangarCell(slot);_ui.Box(cell,Muted);
+            var cell=HangarCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);bool owned=occupant==null || CanManageNodeFactory(occupant.Owner);_ui.Box(cell,owned?Muted:new Color(9,19,26));
             if(_hangarDrag.HasValue && cell.Contains(_pointer))_ui.Box(new(cell.X,cell.Y,cell.Width,3),Cream);
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);if(robot==null)continue;
             DrawRobotGlyph(new(cell.X+57,cell.Y+12,68,102),robot.Owner,robot.Parts,robot.Role==RobotRole.Captain);
             for(int row=0;row<3;row++)
             {
                 var bounds=HangarPartBounds(slot,row);var part=HangarPart(row);
-                if(!bounds.Contains(_pointer) || (robot.Parts&part)==0)continue;
+                if(!CanMoveHangarRobot(robot) || !bounds.Contains(_pointer) || (robot.Parts&part)==0)continue;
                 hoveringPart=true;
                 bool movable=CanMoveHangarRobot(robot);
                 var color=movable?Cream:new Color(145,156,166);
@@ -116,3 +116,4 @@ public partial class Game1
         }
     }
 }
+

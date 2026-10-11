@@ -1,6 +1,6 @@
 {
   "Total": 480,
-  "Completed": 98,
+  "Completed": 99,
   "Photos": [
     {
       "CharacterId": 1,
@@ -765,6 +765,15 @@
       "Width": 1200,
       "Height": 1600,
       "Sha256": "CB5D71C9307DFCB9AD8F256AA7D2779187B074518036709CD4BDF914B72B7E22",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 11,
+      "Kind": "coin",
+      "File": "character-11-coin-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "206F8530A6470FA8C925D336354A1BCE9059862FE5AD7EC45BF14BEE1B087538",
       "Reviewed": true
     },
     {

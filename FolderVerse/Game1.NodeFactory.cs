@@ -28,15 +28,13 @@ public partial class Game1
         if(!CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return true;
         if(_setup.Campaign.RobotBattles.LockedNode(_populationNode)){_factoryMessage="継戦中は製造計画を変更できません";return true;}
         var workshop=_setup.Robots.Workshops[_populationNode];
-        for(int mask=1;mask<=7;mask++)if(new Rectangle(84+(mask-1)%4*196,350+(mask-1)/4*64,182,52).Contains(pointer))
-        {_factoryPart=(RobotParts)mask;return true;}
-        if(new Rectangle(84,510,360,58).Contains(pointer))
-        {workshop.Configure(_factoryPart,workshop.ProductionPeriod);_factoryMessage="製造計画を更新し、工期を開始しました";}
-        else if(new Rectangle(462,510,360,58).Contains(pointer))workshop.Paused=!workshop.Paused;
-        else if(new Rectangle(84,655,180,58).Contains(pointer))workshop.Configure(workshop.Product,Math.Max(1,workshop.ProductionPeriod-1));
-        else if(new Rectangle(282,655,180,58).Contains(pointer))workshop.Configure(workshop.Product,workshop.ProductionPeriod+1);
-        else if(NodeFactoryTile.Contains(pointer))_nodeFactoryOpen=false;
-        return new Rectangle(54,150,850,825).Contains(pointer);
+        for(int i=0;i<4;i++)if(FactoryPlanButton(i).Contains(pointer)){workshop.SelectPlan(i);_factoryMessage="製造プランを選択しました";return true;}
+        for(int i=1;i<=9;i++){
+            if(FactoryNumberButton(i-1,550).Contains(pointer)){workshop.SetRest(i,workshop.RestTurns);return true;}
+            if(FactoryNumberButton(i-1,640).Contains(pointer)){workshop.SetRest(workshop.RestEvery,i);return true;}
+        }
+        for(int i=0;i<=12;i++)if(FactoryNumberButton(i,750).Contains(pointer)){workshop.SetReservedSlots(i);return true;}
+        if(NodeFactoryTile.Contains(pointer))_nodeFactoryOpen=false;        return new Rectangle(54,150,850,825).Contains(pointer);
     }
     private void DrawNodeFactoryTile(bool active)
     {
@@ -47,6 +45,8 @@ public partial class Game1
         _ui.Center("ロボット製造工場",new(148,885,112,60),.24f,enabled?Cream:Cream*.4f);
         if(active)_ui.Box(new(NodeFactoryTile.X,NodeFactoryTile.Y,NodeFactoryTile.Width,4),Cream);
     }
+    private static Rectangle FactoryPlanButton(int i)=>new(84+i%2*386,340+i/2*68,372,58);
+    private static Rectangle FactoryNumberButton(int i,int y)=>new(84+i*58,y,52,48);
     private void DrawNodeFactory()
     {
         var node=_setup.Nodes.All[_populationNode];var workshop=_setup.Robots.Workshops[node.Id];
@@ -57,15 +57,23 @@ public partial class Game1
         _ui.Button(new(803,169,58,44),"×",Muted,.7f);
         string label=_setup.Nodes.Label(node);
         _ui.Text(label,new(84,245),Math.Min(.5f,770/_font.MeasureString(label).X),Cream);
-        _ui.Text("製造計画 / 製造するパーツを選択",new(84,302),.6f,Cream);
-        for(int mask=1;mask<=7;mask++)_ui.Button(new(84+(mask-1)%4*196,350+(mask-1)/4*64,182,52),PartsLabel((RobotParts)mask),_factoryPart==(RobotParts)mask?Accent:Muted,.5f);
-        _ui.Button(new(84,510,360,58),"製造計画を適用",Accent,.55f);
-        _ui.Button(new(462,510,360,58),workshop.Paused?"製造再開":"製造停止",Muted,.55f);
-        _ui.Text($"工期 {workshop.ProductionPeriod} ターン / 進捗 {workshop.ProductionAge}/{workshop.ProductionPeriod}",new(84,602),.65f,Cream);
-        _ui.Button(new(84,655,180,58),"工期−",Muted,.6f);_ui.Button(new(282,655,180,58),"工期＋",Muted,.6f);
-        _ui.Text($"製造中：{PartsLabel(workshop.Product)} / {(!workshop.Manufacturing?"未設定":workshop.Waiting?"満杯待ち":workshop.Paused?"停止":"進行中")}",new(84,745),.55f,Cream);
-        _ui.Text(_factoryMessage,new(84,813),.43f,Cream);
-        DrawNodeFactoryTile(true);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
+        _ui.Text("工期 / この節点の製造プラン",new(84,300),.55f,Cream);
+        for(int i=0;i<4;i++){
+            string plan=i==3?"製造しない":$"{workshop.Plans[i].Turns}ターン毎に {PartsLabel(workshop.Plans[i].Product)}";
+            _ui.Button(FactoryPlanButton(i),plan,workshop.SelectedPlan==i?Accent:Muted,.43f);
+        }
+        _ui.Text($"休業計画 / {workshop.RestEvery}回製造毎に {workshop.RestTurns}ターン休業",new(84,495),.5f,Cream);
+        _ui.Text("製造回数",new(84,525),.34f,Cream);
+        _ui.Text("休業ターン",new(84,615),.34f,Cream);
+        for(int i=1;i<=9;i++){
+            _ui.Button(FactoryNumberButton(i-1,550),i.ToString(),workshop.RestEvery==i?Accent:Muted,.5f);
+            _ui.Button(FactoryNumberButton(i-1,640),i.ToString(),workshop.RestTurns==i?Accent:Muted,.5f);
+        }
+        _ui.Text($"製造数 / 格納庫は必ず {workshop.ReservedSlots}個空ける",new(84,705),.5f,Cream);
+        for(int i=0;i<=12;i++)_ui.Button(FactoryNumberButton(i,750),i.ToString(),workshop.ReservedSlots==i?Accent:Muted,.46f);
+        string status=!workshop.Manufacturing?"製造しない":workshop.RestRemaining>0?$"休業 あと{workshop.RestRemaining}ターン":workshop.Waiting?"空き枠待ち":$"製造 {workshop.ProductionAge}/{workshop.ProductionPeriod}ターン";
+        _ui.Text(status,new(84,814),.42f,Cream);        DrawNodeFactoryTile(true);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
 
     }
 }
+

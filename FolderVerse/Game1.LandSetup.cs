@@ -84,9 +84,9 @@ public partial class Game1
         if(_screen==Screen.Fortune){_ui.Text("空から届く運命のロボット",new(60,230),.75f,Color.White);_ui.Text("配備・工場・廃炉・輸送計画を抽選中",new(60,300),.45f,Cream);return;}
         _ui.Text(_setup.ConquerorNames[LandRuler]+" の土地選択",new(60,220),.7f,Color.White);
         _ui.Text("選択 "+_landSelection.Count+" / 権利 "+_setup.TerritoryRights[LandRuler]+" セル",new(60,310),.65f,_landSelection.Count>_setup.TerritoryRights[LandRuler]?Color.Orange:Cream);
-        _ui.Text("多い権利の国から順に獲得",new(60,390),.45f,Color.White);
-        _ui.Text("左ドラッグ：範囲を反転\n右ドラッグ：星を回す\nホイール：拡大・縮小\n飛び地も選択できます",new(60,470),.48f,Color.White);
-        _ui.Text("地形と交通路だけで土地を選ぼう",new(60,690),.42f,Cream);
+        _portraitRenderer.Draw(_spriteBatch,_setup.Looks[LandRuler],new Rectangle(60,370,450,300),true,forCreation:true);
+        _ui.Text("左ドラッグ：範囲を反転\n右ドラッグ：星を回す\nホイール：拡大・縮小\n飛び地も選択できます",new(60,685),.38f,Color.White);
+        _ui.Text("地形と交通路だけで土地を選ぼう",new(60,805),.32f,Cream);
         _ui.Button(LandConfirm,LandRuler==_setup.PlayerSlot?"この土地を獲得":"他国が土地を選択中",LandRuler==_setup.PlayerSlot && _landSelection.Count==_setup.TerritoryRights[LandRuler]?Accent:Muted,.65f);
     }
     private void DrawLandSetupGlobe(Rectangle canvas,Matrix transform,Viewport viewport)
@@ -117,3 +117,4 @@ public partial class Game1
     }
     private void LandLine(Vector2 a,Vector2 b,Color color,float width){var d=b-a;_spriteBatch.Draw(_pixel,a,null,color,MathF.Atan2(d.Y,d.X),Vector2.Zero,new Vector2(d.Length(),width),SpriteEffects.None,0);}
 }
+

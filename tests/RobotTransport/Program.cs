@@ -109,4 +109,16 @@ world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(1,120),new
 Check(world.Transport.Plan(0,0,RobotParts.Head).Sum(w=>w.Degrees)==121,"Exact one-third and one-degree allocation");
 world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(1,239)},true);
 Reject(()=>world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(1,240)},true));
-Check(world.Transport.Plan(0,0,RobotParts.Head,true).Single().Degrees==239,"Rejected combined overflow preserves previous plan");
+Check(world.Transport.Plan(0,0,RobotParts.Head,true).Single().Degrees==239,"Rejected combined overflow preserves previous plan");world=World();var planFactory=world.Workshops[0];planFactory.SelectPlan(0);planFactory.SetRest(2,3);planFactory.SetReservedSlots(10);
+for(int turn=0;turn<4;turn++)world.Advance((a,b)=>true,_=>0,turn);
+Check(world.Nodes[0].Count==2 && planFactory.RestRemaining==3,"Two products start three-turn holiday");
+for(int turn=4;turn<7;turn++)world.Advance((a,b)=>true,_=>0,turn);
+Check(planFactory.RestRemaining==0 && planFactory.ProductionAge==0,"Holiday consumes exactly three full turns");
+for(int turn=7;turn<11;turn++)world.Advance((a,b)=>true,_=>0,turn);
+Check(world.Nodes[0].Count==2 && planFactory.Waiting,"Reserve ten slots limits stock to two");
+world.Nodes[0].Remove(world.Nodes[0].Robots.First().Id);world.Advance((a,b)=>true,_=>0,11);Check(world.Nodes[0].Count==2,"Freed capacity resumes waiting production");
+planFactory.SelectPlan(3);int stopped=world.Nodes[0].Count;world.Advance((a,b)=>true,_=>0,12);Check(!planFactory.Manufacturing && world.Nodes[0].Count==stopped,"No production plan stops factory");
+planFactory.SelectPlan(1);planFactory.SetReservedSlots(12);for(int turn=13;turn<20;turn++)world.Advance((a,b)=>true,_=>0,turn);Check(world.Nodes[0].Count==stopped,"Twelve empty slots forbids production");
+Reject(()=>planFactory.SetRest(0,1));Reject(()=>planFactory.SetRest(1,10));Reject(()=>planFactory.SetReservedSlots(13));
+var same=new RobotWorkshop();planFactory.GeneratePlans(123);same.GeneratePlans(123);Check(planFactory.Plans.SequenceEqual(same.Plans),"Seeded plans stable");same.GeneratePlans(456);Check(!planFactory.Plans.SequenceEqual(same.Plans),"Nodes have different plans");
+Console.WriteLine("PASS: fixed plans, rest cadence, reserve slots and stopped production");

@@ -82,3 +82,4 @@ No.9 の確定デザイン v008 を参照して history / coin / election の3�
 2026-10-12 heartbeat: No.10 election/idol and No.11 history visually reviewed and saved. Election upright clean confident portrait; idol two pompoms; history chair portrait with full hat margin corrected by image edit. Originals,1200x1600 and final prompts preserved. Photos98/480 verified and 300x400 game imports updated. Variants244/300; next variant No49-6. Next photo No11 coin/election/idol. No commit/push.
 
 2026-10-12 heartbeat: No.49 variant6 and No.50 variants2/3 saved with final prompts and visual review; variants247/300. Photos98/480 unchanged. Next photo batch No.11 coin/election/idol; next variant No.50 variant4. Original generated images retained; no commit or push.
+2026-10-12: No11 coin reviewed and saved; photos99/480 imported. Election draft has cropped hat and remains unapproved; fix margins next. Idol pending. Variants247/300 nextNo50-4. User UI changes in progress.

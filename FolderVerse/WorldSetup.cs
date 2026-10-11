@@ -150,7 +150,7 @@ public sealed partial class WorldSetup
         Robots.Initialize(Nodes.All.Length,ActiveCount);
         foreach(var node in Nodes.All.Where(n=>n.Owner>=0))
         {
-            Robots.Workshops[node.Id].Configure((RobotParts)(1+new SeedRandom(seed^node.Id).Next(7)),3);
+            Robots.Workshops[node.Id].GeneratePlans(seed^node.Id*7919);Robots.Workshops[node.Id].SelectPlan(new SeedRandom(seed^node.Id).Next(3));
             for(int i=0;i<3;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,RobotParts.Complete,i==1?RobotRole.Captain:RobotRole.Soldier));
         }
         // Start at the Node centre.
@@ -189,3 +189,4 @@ public sealed partial class WorldSetup
         return cells.ToArray();
     }
 }
+
