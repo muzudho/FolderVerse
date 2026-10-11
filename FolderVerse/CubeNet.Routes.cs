@@ -87,8 +87,6 @@ public sealed partial class CubeNet
                 }
             }
         }
-        if(!ShowRoutes)foreach(var post in world.Nodes.InCell(cell).Where(p=>p.IsHarbor && (VisibleOperationNodes==null || VisibleOperationNodes.Contains(p.Id))))
-            DrawHarbor(ui,project(world.Routes.Position(cell,post.Center)),12,world.OwnerColor(post.Owner));
 
     }
     private static void DrawHarbor(UiPainter ui,Vector2 at,float radius,Color color)
@@ -118,3 +116,5 @@ public sealed partial class CubeNet
         }
     }
 }
+
+

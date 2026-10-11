@@ -144,7 +144,7 @@ public sealed class RobotCampaign
             var state=NewState(world,e);
             if(sizes.Count>1){state.SplitBoard=true;state.Kind=BattleKind.Edge;state.Defender=-1;state.BuildTerrain(world.Nodes.All[target].Terrain==TravelTerrain.Sea?BattleTerrain.Sea:BattleTerrain.Field);}
             foreach(var a in sorted.Skip(offset).Take(size))state.AddArmy(a.Owner,a.Home,a.Robots,a.Queen);
-            state.Deploy();e.Battles.Add(state);offset+=size;
+            state.ChooseLayout();state.Deploy();e.Battles.Add(state);offset+=size;
         }
         return e;
     }
@@ -159,7 +159,7 @@ public sealed class RobotCampaign
         var state=e.Battles.FirstOrDefault(b=>b.Armies.Any(a=>a.Owner==owner));
         if(state==null)
         {
-            state=e.Battles.FirstOrDefault(b=>!b.Finished && b.Armies.Count<4);
+            state=e.Battles.FirstOrDefault(b=>!b.Finished && b.Armies.Count<b.EntryCapacity);
             if(state==null){state=NewState(world,e);e.Battles.Add(state);}
             state.AddArmy(owner,home,robots,queen);return;
         }
@@ -298,3 +298,4 @@ public sealed class RobotCampaign
         if(all.Select(r=>r.Id).Distinct().Count()!=all.Length)throw new InvalidOperationException("Robot duplicated between world and battlefield.");
     }
 }
+

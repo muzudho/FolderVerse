@@ -69,3 +69,14 @@ for(int seed=0;seed<10;seed++)
 }
 Console.WriteLine($"Combat sweep: {cases} encounters, mean {turns/(double)cases:F2} turns, max {longest}, no winner {undecided}.");
 Console.WriteLine("PASS: simultaneous combat, weapon examples, walls, movement rollback, flags, no-will outcomes, reinforcements and 1–12 / four-army deployment.");
+for(int pattern=1;pattern<=4;pattern++)for(int rotation=0;rotation<4;rotation++){
+var arena=new BattleState(1);arena.BuildLayout(pattern,rotation);
+Check(arena.Walkable(arena.Flag),"Flag blocked");
+foreach(int side in arena.EntrySides)Check(arena.Region(side).Count(arena.Walkable)>=12,"Deployment capacity");
+var reachable=new HashSet<Point>{arena.Flag};var queue=new Queue<Point>();queue.Enqueue(arena.Flag);
+while(queue.TryDequeue(out var p))foreach(var delta in new[]{new Point(0,1),new Point(0,-1),new Point(1,0),new Point(-1,0)})if(arena.Walkable(p+delta) && reachable.Add(p+delta))queue.Enqueue(p+delta);
+Check(reachable.Count==100-arena.Walls.Count,"Disconnected arena");
+Check(arena.EntryCapacity==(pattern==1?2:pattern==2?3:4),"Entrance capacity");
+}
+Console.WriteLine("PASS: rotated arenas, twelve-unit deployment capacity and connected entrances");
+

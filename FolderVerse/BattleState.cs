@@ -40,7 +40,7 @@ public sealed class BattleArmy
     public Queue<BattleUnit> Waiting {get;}=new();
     public Dictionary<int,List<Point[]>> Patterns {get;}=new();
 }
-public sealed class BattleState
+public sealed partial class BattleState
 {
     public int Id,SourceNode,TargetNode,Defender=-1,Turn,NoWillCount;
     public BattleKind Kind;
@@ -68,8 +68,8 @@ public sealed class BattleState
     public void AddArmy(int owner,int home,IEnumerable<Robot> robots,bool queen=false)
     {
         if(owner<0 || owner>=20 || home<0)throw new ArgumentOutOfRangeException();
-        if(Armies.Count>=4 || Armies.Any(a=>a.Owner==owner))throw new InvalidOperationException("Battle supports distinct armies, at most four.");
-        int side=Armies.Count==1?2:Enumerable.Range(0,4).First(i=>!Armies.Any(a=>a.Side==i));
+        if(Armies.Count>=EntryCapacity || Armies.Any(a=>a.Owner==owner))throw new InvalidOperationException("Battle supports distinct armies, at most four.");
+        int side=Armies.Count==1 && EntrySides.Contains(2) && !Armies.Any(a=>a.Side==2)?2:EntrySides.First(i=>!Armies.Any(a=>a.Side==i));
         var army=new BattleArmy{Owner=owner,HomeNode=home,Side=side,InvadingQueen=queen};
         Armies.Add(army);int index=0;
         foreach(var robot in robots.OrderBy(r=>r.Id))
@@ -87,7 +87,7 @@ public sealed class BattleState
         orderby distance[side],Math.Abs((side%2==0?x:y)-4.5),y,x select new Point(x,y);
     public void Deploy(int initial=12)
     {
-        for(int i=0;i<Armies.Count;i++)Armies[i].Side=Armies.Count==2 && i==1?2:i;
+        for(int i=0;i<Armies.Count;i++)Armies[i].Side=EntrySides.SequenceEqual(new[]{0,1,2,3}) && Armies.Count==2 && i==1?2:EntrySides[i];
         foreach(var army in Armies)
         {
             foreach(var unit in army.Waiting)unit.Facing=Inward(army.Side);
@@ -160,3 +160,6 @@ public sealed class BattleState
         if(all.Select(u=>u.Id).Distinct().Count()!=all.Length || all.Any(u=>u.Daggers<0 || u.Rifles<0 || u.Shields<0))throw new InvalidOperationException("Invalid battle units.");
     }
 }
+
+
+

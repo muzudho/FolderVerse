@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 245,
+  "Completed": 247,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1961,6 +1961,22 @@
       "Sha256": "BB7F9008E37F1ABD3FE8FE919D808F543BA3E8A62AAF989C45CE97DBC315D9C5",
       "Reviewed": true,
       "Note": "Closed-eye joyous reaching pose, panda and green battery preserved; reviewed"
+    },
+    {
+      "CharacterId": 50,
+      "Variant": 2,
+      "File": "remaining-variants/character-50-2-balanced.png",
+      "Sha256": "949CC117F10A66EEFE78F647A0E4FF9A581D1083E860CC8E0D6CEB5891C0B9E7",
+      "Reviewed": true,
+      "Note": "書斎での筆記。手・ペン・本・パンダ・青い電池を視覚確認済み。"
+    },
+    {
+      "CharacterId": 50,
+      "Variant": 3,
+      "File": "remaining-variants/character-50-3-balanced.png",
+      "Sha256": "6712B3B99375F508C68000E27901D2B4BBFC8EBF6B4C132BD5E5B179BB323953",
+      "Reviewed": true,
+      "Note": "思索する表情と顎の手、本上の手、青いペン、肩の電池を視覚確認済み。"
     }
   ]
 }
