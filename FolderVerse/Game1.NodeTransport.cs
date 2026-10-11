@@ -23,7 +23,7 @@ public partial class Game1
     private string _nodeTransportMessage="";
     private static readonly Rectangle NodeTransportTile=new(280,875,182,84);
     private void OpenNodeTransport()
-    {_nodeAssemblyOpen=false;_nodeDisposalOpen=false;_nodeFactoryOpen=false;_nodeTransportOpen=true;_rateTarget=-1;_nodeReinforcementIndex=0;_nodeTransportMessage="";}
+    {_nodeAssemblyOpen=false;_nodeDisposalOpen=false;_nodeFactoryOpen=false;_nodeTransportOpen=true;_rateTarget=-1;_nodeReinforcementIndex=0;_nodeTransportMessage="";FitDestinationView();}
     private bool NodeTransportClick(Point pointer)
     {
         if(new Rectangle(803,169,58,44).Contains(pointer) || NodeTransportTile.Contains(pointer)){_nodeTransportOpen=false;return true;}

@@ -17,6 +17,45 @@ public partial class Game1
     private bool DestinationOperation=>_movementOpen || (_nodeTransportOpen && _populationCell>=0);
     private int OperationSource=>_movementOpen?(_setup.Nodes.Current(_setup.PlayerSlot)?.Id??-1):_populationNode;
     private int[] DestinationNodes()=>_movementOpen?_net.MovementTargets.ToArray():_setup.Routes.Neighbors(_setup.Nodes.All[_populationNode]).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id).Distinct().ToArray();
+    private void FitDestinationView()
+    {
+        if(!DestinationOperation || OperationSource<0)return;
+        var ids=DestinationNodes().Append(OperationSource).Distinct().ToArray();
+        var source=_setup.Nodes.All[OperationSource];
+        var anchor=_setup.Routes.Position(source.Cell,source.Center);
+        _dragging=_mapDragging=false;
+        if(_statusGlobe)
+        {
+            _pitch=MathF.Atan2(anchor.Y,anchor.Z);
+            if(_pitch>MathHelper.PiOver2)_pitch-=MathHelper.Pi;
+            if(_pitch< -MathHelper.PiOver2)_pitch+=MathHelper.Pi;
+            var turned=Vector3.Transform(anchor,Matrix.CreateRotationX(_pitch));
+            _yaw=-MathF.Atan2(turned.X,turned.Z);
+            _world.GlobeAnchor=anchor;
+            _world.GlobeZoom=1;
+            bool Fits(float zoom)
+            {
+                _world.GlobeZoom=zoom;
+                var area=StatusGlobeArea;area.Inflate(-48,-60);
+                return ids.All(id=>OperationPosition(id,out var at) && area.Contains(at.ToPoint()));
+            }
+            // A globe cannot show nodes on its hidden surface: use the net in that case.
+            if(ids.All(id=>OperationPosition(id,out _)))
+            {
+                float low=.05f,high=16;
+                for(int i=0;i<24;i++){float mid=(low+high)/2;if(Fits(mid))low=mid;else high=mid;}
+                _world.GlobeZoom=low;return;
+            }
+            _statusGlobe=false;
+        }
+        _net.SetCenter(_setup,_setup.Cells[source.Cell].Face);
+        _net.ResetView();
+        var origin=_net.NodePosition(_setup,source,NetPanel);
+        float x=1,y=1;
+        foreach(int id in ids){var delta=_net.NodePosition(_setup,_setup.Nodes.All[id],NetPanel)-origin;x=Math.Max(x,Math.Abs(delta.X));y=Math.Max(y,Math.Abs(delta.Y));}
+        float zoom=Math.Min((NetPanel.Width/2f-48)/x,(NetPanel.Height/2f-60)/y);
+        _net.FitNodesAtSource(_setup,source,NetPanel,Math.Min(zoom,64));
+    }
     private void PrepareDestinationMap()
     {
         _net.VisibleOperationNodes=DestinationOperation?new HashSet<int>(DestinationNodes().Append(OperationSource)):null;

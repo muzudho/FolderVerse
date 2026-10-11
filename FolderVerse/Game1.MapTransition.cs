@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -60,7 +60,7 @@ public partial class Game1
             try{_mapCrack?.Play(.65f,0,0);}catch(NoAudioHardwareException error){RecordFailure(error,"map_audio_play");}
         }
         if(progress<1)return;
-        _statusGlobe=!_mapUnfold;_mapTransitionAge=-1;_inputOutcome="view_changed";
+        _statusGlobe=!_mapUnfold;_mapTransitionAge=-1;FitDestinationView();_inputOutcome="view_changed";
     }
     private void DrawMapTransition()
     {

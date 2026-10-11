@@ -20,6 +20,7 @@ public partial class Game1
         _net.MovementTargets.Clear();
         _net.MovementTargets.UnionWith(_setup.Routes.NodeChoices(_setup.PlayerSlot).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id));
         _net.SelectedTarget=-1;
+        FitDestinationView();
     }
     private void CloseMovement()
     {

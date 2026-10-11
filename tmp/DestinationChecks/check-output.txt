@@ -1,0 +1,2 @@
+PASS: 200 source/shape/view combinations; every destination visible, source centered
+PASS: seven editions of scattered markers rendered

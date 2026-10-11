@@ -22,6 +22,12 @@ public sealed partial class CubeNet
         ResetView();float scale=Math.Min(panel.Width/(right-left),panel.Height/(bottom-top))*.94f;
         Zoom=scale/Fit(panel).Scale*zoom;Pan=-new Vector2((left+right)/2,(top+bottom)/2)*scale*zoom;
     }
+    public void FitNodesAtSource(WorldSetup setup,Node source,Rectangle panel,float zoom)
+    {
+        ResetView();Zoom=zoom;
+        var at=NodePosition(setup,source,panel);
+        Pan=new Vector2(panel.Center.X,panel.Center.Y)-at;
+    }
     public void Drag(Vector2 delta){Pan+=delta;}
     public void ZoomAt(Rectangle panel,Point pointer,int wheel)
     {
