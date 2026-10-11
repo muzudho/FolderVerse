@@ -544,7 +544,7 @@ public partial class Game1 : Game
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(984,1037,870,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
         if(_populationCell>=0)DrawNodeDialog();
         if(_movementOpen)DrawMovementPanel();
-        _ui.Button(TransportOverviewButton,"ロボット輸送",_transportOverview?Accent:Muted,.45f);
+        DrawTransportOverviewButton();
         if(_transportOverview){DrawTransportOverviewPanel();if(_rateTarget>=0)DrawRatePieDialog();}
         DrawRouteLayerButtons();
         DrawStatusMenu();

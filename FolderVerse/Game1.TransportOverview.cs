@@ -6,15 +6,16 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private Microsoft.Xna.Framework.Graphics.SpriteFont _transportHudFont;
-    private static float TransportTriangleSize(int degrees)=>degrees<18?8:degrees<30?12:degrees<60?17:degrees<90?23:30;
+    private static float TransportTriangleSize(int degrees)=>30f+90f*Math.Clamp(degrees/360f,0,1);
     private Rectangle TransportHud(string text,Vector2 center,Color color)
     {
         _transportHudFont??=Content.Load<Microsoft.Xna.Framework.Graphics.SpriteFont>("ToyCounterFont");
         float scale=36f/_transportHudFont.LineSpacing/(CanvasBounds().Height/1080f);
         var size=_transportHudFont.MeasureString(text)*scale;var at=center-size/2;
-        // A light outline separates the letters from the map without covering it with a panel.
-        foreach(var offset in new[]{new Vector2(-1,-1),new Vector2(1,-1),new Vector2(-1,1),new Vector2(1,1)})
-            _spriteBatch.DrawString(_transportHudFont,text,at+offset,new Color(60,66,77),0,Vector2.Zero,scale,Microsoft.Xna.Framework.Graphics.SpriteEffects.None,0);
+        // Keep the white outline two physical pixels wide at every window size.
+        float outline=2f/(CanvasBounds().Height/1080f);
+        foreach(var offset in new[]{new Vector2(-1,-1),new Vector2(0,-1),new Vector2(1,-1),new Vector2(-1,0),new Vector2(1,0),new Vector2(-1,1),new Vector2(0,1),new Vector2(1,1)})
+            _spriteBatch.DrawString(_transportHudFont,text,at+offset*outline,Color.White,0,Vector2.Zero,scale,Microsoft.Xna.Framework.Graphics.SpriteEffects.None,0);
         _spriteBatch.DrawString(_transportHudFont,text,at,color,0,Vector2.Zero,scale,Microsoft.Xna.Framework.Graphics.SpriteEffects.None,0);
         return new Rectangle((int)at.X,(int)at.Y,(int)size.X,(int)size.Y);
     }
@@ -25,6 +26,19 @@ public partial class Game1
 
     private static bool TransportArrowHit(Point p,Vector2 start,Vector2 end)
     {var delta=end-start;float t=Math.Clamp(Vector2.Dot(new Vector2(p.X,p.Y)-start,delta)/delta.LengthSquared(),0,1);return Vector2.Distance(new Vector2(p.X,p.Y),start+delta*t)<6;}
+    private void DrawTransportOverviewButton()
+    {
+        var rect=TransportOverviewButton;
+        if(_transportOverview)
+        {
+            _ui.Box(rect,new Color(46,54,62));
+            _ui.Center("ロボット輸送",new(rect.X+27,rect.Y,rect.Width-27,rect.Height),.45f,new Color(155,164,172));
+        }
+        else _ui.Button(rect,"ロボット輸送",Accent,.45f);
+        var lamp=new Rectangle(rect.X+10,rect.Center.Y-7,14,14);
+        _ui.Box(lamp,new Color(17,28,34));
+        _ui.Box(new(lamp.X+2,lamp.Y+2,10,10),_transportOverview?new Color(255,234,124):new Color(67,83,92));
+    }
     private void OpenTransportOverview()
     {
         CloseMovement();_populationCell=-1;_nodeTransportOpen=false;_rateTarget=-1;
@@ -38,7 +52,7 @@ public partial class Game1
     }
     private bool TransportOverviewClick(Point p)
     {
-        if(TransportOverviewButton.Contains(p)){if(_transportOverview)CloseTransportOverview();else OpenTransportOverview();return true;}
+        if(TransportOverviewButton.Contains(p)){if(!_transportOverview)OpenTransportOverview();return true;}
         if(!_transportOverview)return false;
         if(_rateTarget>=0){if(RateDialogArea.Contains(p))RatePieClick(p);else _rateTarget=-1;return true;}
         if(new Rectangle(803,169,58,44).Contains(p)){CloseTransportOverview();return true;}
@@ -78,7 +92,11 @@ public partial class Game1
             foreach(var r in _setup.Routes.Neighbors(node))
             {
                 var target=_setup.Nodes.At(r.Target,r.Entry);
-                if(target.Id==node.Id || !OperationPosition(target.Id,out var to))continue;
+                if(target.Id==node.Id)continue;
+                // A destination outside the zoomed viewport still determines the outgoing direction.
+                Vector2 to;
+                if(!_statusGlobe)to=_net.NodePosition(_setup,target,NetPanel);
+                else if(!OperationPosition(target.Id,out to))continue;
                 float physical=Vector3.Distance(_setup.Routes.Position(node.Cell,node.Center),_setup.Routes.Position(target.Cell,target.Center));
                 if(physical>.00001f)routes.Add((node.Id,target.Id,from,to,physical));
             }
@@ -89,7 +107,9 @@ public partial class Game1
             var delta=route.To-route.From;float distance=delta.Length();if(distance<1)continue;
             var direction=delta/distance;var normal=new Vector2(-direction.Y,direction.X);
             float size=TransportTriangleSize(degrees);
-            var start=route.From+direction*18+normal*5;
+            // Leave a full node-marker diameter between the marker and triangle base.
+            float nodeRadius=nodes[route.Source].IsHarbor?20:12;
+            var start=route.From+direction*(nodeRadius*3);
             var end=start+direction*size;
             var source=nodes[route.Source];
             var position=_setup.Routes.Position(source.Cell,source.Center);
@@ -99,14 +119,8 @@ public partial class Game1
             for(int i=0;i<(int)size;i++)
                 _ui.Tile(start+direction*i,new Vector2(1.5f,size*(1-i/size)),MathF.Atan2(direction.Y,direction.X),color);
             var label=end+normal*15;
-            var rect=TransportHud($"{degrees*100/360f:0.#}%",label,degrees<18?new Color(180,184,194):color);
+            var rect=degrees>0?TransportHud($"{degrees*100/360f:0.#}%",label,degrees<18?new Color(180,184,194):color):Rectangle.Empty;
             _transportRouteHits.Add((rect,route.Source,route.Target,start,end));
-        }
-        foreach(var node in nodes)
-        {
-            if(!OperationPosition(node.Id,out var at))continue;
-            int used=_setup.Robots.Transport.Plan(node.Id,_setup.PlayerSlot,_nodeTransportPart,false).Sum(w=>w.Degrees)+_setup.Robots.Transport.Plan(node.Id,_setup.PlayerSlot,_nodeTransportPart,true).Sum(w=>w.Degrees);
-            TransportHud($"{(360-used)*100/360f:0.#}%",at-new Vector2(0,25),Cream);
         }
     }
 }

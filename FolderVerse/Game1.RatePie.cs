@@ -7,12 +7,24 @@ using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
     private static readonly Rectangle RateDialogArea=new(1100,190,800,820);
-    private static readonly Vector2 RatePieCenter=new(1260,365);
+    private static readonly Vector2 RatePieCenter=new(1500,600);
     private static readonly int[] RateDivisions={8,9,10,12};
     private readonly Dictionary<int,Texture2D> _ratePieIcons=new();
     private static string RateLabel(int degrees)=>$"{degrees*100/360f:0.#}% ({degrees}°)";
     private static int PointerDegrees(Point p)=>(int)Math.Round((Math.Atan2(p.X-RatePieCenter.X,RatePieCenter.Y-p.Y)+Math.PI*2)%(Math.PI*2)*180/Math.PI);
-    private static Rectangle RatePresetBounds(int row,int column)=>new(1120+column*63,560+row*105,59,82);
+    private static Rectangle RatePresetBounds(int row,int column)
+    {
+        float angle=(column+1)*MathHelper.TwoPi/RateDivisions[row];
+        var at=RatePieCenter+new Vector2(MathF.Sin(angle),-MathF.Cos(angle))*(155+row*48);
+        return new((int)at.X-28,(int)at.Y-26,56,52);
+    }
+    private static bool RatePresetUnique(int row,int column)
+    {
+        int degree=(column+1)*360/RateDivisions[row];
+        for(int earlier=0;earlier<row;earlier++)
+            if(degree*RateDivisions[earlier]%360==0)return false;
+        return true;
+    }
     private static string RateFraction(int numerator,int denominator)
     {
         int a=numerator,b=denominator;while(b!=0){int t=a%b;a=b;b=t;}
@@ -34,16 +46,16 @@ public partial class Game1
     }
     private void RatePieClick(Point p)
     {
-        if(new Rectangle(1430,270,125,40).Contains(p))SetDestinationRate(_rateTarget,0);
-        if(new Rectangle(1430,325,60,40).Contains(p))SetDestinationRate(_rateTarget,Rate(_rateTarget)-1);
-        if(new Rectangle(1500,325,60,40).Contains(p))SetDestinationRate(_rateTarget,Rate(_rateTarget)+1);
+        if(new Rectangle(1130,270,125,40).Contains(p))SetDestinationRate(_rateTarget,0);
+        if(new Rectangle(1270,270,60,40).Contains(p))SetDestinationRate(_rateTarget,Rate(_rateTarget)-1);
+        if(new Rectangle(1340,270,60,40).Contains(p))SetDestinationRate(_rateTarget,Rate(_rateTarget)+1);
         if(Vector2.Distance(new Vector2(p.X,p.Y),RatePieCenter)<=110)SetDestinationRate(_rateTarget,PointerDegrees(p));
         for(int row=0;row<4;row++)for(int col=0;col<RateDivisions[row];col++)
         {
             int degrees=(col+1)*360/RateDivisions[row];
-            if(RatePresetBounds(row,col).Contains(p) && degrees<=RateMaximum(_rateTarget))SetDestinationRate(_rateTarget,degrees);
+            if(RatePresetUnique(row,col) && RatePresetBounds(row,col).Contains(p) && degrees<=RateMaximum(_rateTarget))SetDestinationRate(_rateTarget,degrees);
         }
-        if(new Rectangle(1430,450,160,36).Contains(p) && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))
+        if(new Rectangle(1670,270,160,36).Contains(p) && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))
         {var order=_setup.Robots.Transport.Priority(_populationNode).Concat(DestinationNodes()).Distinct().ToList();order.Remove(_rateTarget);order.Insert(0,_rateTarget);_setup.Robots.Transport.SetPriority(_populationNode,order);}
         if(new Rectangle(1740,950,130,40).Contains(p))_rateTarget=-1;
     }
@@ -73,19 +85,19 @@ public partial class Game1
         }
         float radians=value*MathF.PI/180;Vector2 edge=RatePieCenter+new Vector2(MathF.Sin(radians),-MathF.Cos(radians))*110;
         _ui.Box(new((int)edge.X-7,(int)edge.Y-7,14,14),Cream);
-        _ui.Text("円の境界を動かして１度ずつ設定",new(1130,500),.42f,Cream);
-        _ui.Text($"設定可能 0° - {maximum}°",new(1430,390),.45f,Cream);
-        _ui.Text("明るい扇形：選択中",new(1430,410),.4f,Accent);
-        _ui.Button(new(1430,270,125,40),"クリアー",Accent,.42f);
-        _ui.Button(new(1430,325,60,40),"-1",Accent,.5f);
-        _ui.Button(new(1500,325,60,40),"+1",value<maximum?Accent:Muted,.5f);
-        _ui.Button(new(1430,450,160,36),"受入１位",CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner)?Accent:Muted,.4f);
+        _ui.Text("円の境界を動かして１度ずつ設定",new(1130,920),.42f,Cream);
+        _ui.Text($"設定可能 0° - {maximum}°",new(1130,245),.4f,Cream);
+        _ui.Button(new(1130,270,125,40),"クリアー",Accent,.42f);
+        _ui.Button(new(1270,270,60,40),"-1",Accent,.5f);
+        _ui.Button(new(1340,270,60,40),"+1",value<maximum?Accent:Muted,.5f);
+        _ui.Button(new(1670,270,160,36),"受入１位",CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner)?Accent:Muted,.4f);
         for(int row=0;row<4;row++)for(int col=0;col<RateDivisions[row];col++)
         {
+            if(!RatePresetUnique(row,col))continue;
             int degree=(col+1)*360/RateDivisions[row];var rect=RatePresetBounds(row,col);bool enabled=degree<=maximum;
             _ui.Box(rect,degree==value?new Color(90,103,110):new Color(27,47,60));
-            _ui.Batch.Draw(RatePieIcon(degree,RateDivisions[row]),new Rectangle(rect.X+5,rect.Y+3,48,48),enabled?Color.White:new Color(85,85,85));
-            _ui.Center(RateFraction(col+1,RateDivisions[row]),new(rect.X,rect.Y+51,rect.Width,25),.4f,enabled?Cream:Muted);
+            _ui.Batch.Draw(RatePieIcon(degree,RateDivisions[row]),new Rectangle(rect.X+15,rect.Y+2,26,26),enabled?Color.White:new Color(85,85,85));
+            _ui.Center(RateFraction(col+1,RateDivisions[row]),new(rect.X,rect.Y+28,rect.Width,24),.4f,enabled?Cream:Muted);
         }
         _ui.Text("他の移送先の配分は維持。残りは現在の節点に留まる",new(1130,965),.36f,Cream);
         _ui.Button(new(1740,950,130,40),"閉じる",Accent,.45f);

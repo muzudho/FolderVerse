@@ -1,6 +1,6 @@
 {
   "Total": 480,
-  "Completed": 89,
+  "Completed": 92,
   "Photos": [
     {
       "CharacterId": 1,
@@ -612,6 +612,33 @@
       "Width": 1200,
       "Height": 1600,
       "Sha256": "8147BE8A13E35587B3081F1C3273B8E1C2387ECB1C51397DD00BD3233F71DA94",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 9,
+      "Kind": "history",
+      "File": "character-09-history-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "87011FFBC0F93F4A1DD0C23F647500E6CB7A4E332FCF3032400399FE1D614C6B",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 9,
+      "Kind": "coin",
+      "File": "character-09-coin-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "CD313FA375510CEA71DF5158686BD9C57B4DBFC7E4EFDFB677D5F4D984919C8A",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 9,
+      "Kind": "election",
+      "File": "character-09-election-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "C3705EBB10CAC60718DB190ED87BBAE7A7FE11E437664C2FC9E22AE35D6E3902",
       "Reviewed": true
     },
     {
