@@ -83,7 +83,7 @@ public partial class Game1
         _ui.Box(new(1170,510,RateMaximum(_rateTarget)*25,8),Accent);
         for(int i=0;i<=20;i++)_ui.Box(new(1170+i*25,506,2,i%5==0?22:13),i<=RateMaximum(_rateTarget)?Cream:Muted);
         _ui.Box(new(1163+Rate(_rateTarget)*25,496,16,30),Color.White);
-        _ui.Text($"0% ～ {RateMaximum(_rateTarget)*5}%",new(1150,555),.4f,Cream);
+        _ui.Text($"0% - {RateMaximum(_rateTarget)*5}%",new(1150,555),.4f,Cream);
         _ui.Button(new(1400,550,160,32),"受入１位",CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner)?Accent:Muted,.36f);
         _ui.Button(new(1580,550,110,32),"閉じる",Accent,.4f);
     }
