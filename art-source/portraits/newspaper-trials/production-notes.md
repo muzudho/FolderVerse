@@ -83,3 +83,6 @@ No.9 の確定デザイン v008 を参照して history / coin / election の3�
 
 2026-10-12 heartbeat: No.49 variant6 and No.50 variants2/3 saved with final prompts and visual review; variants247/300. Photos98/480 unchanged. Next photo batch No.11 coin/election/idol; next variant No.50 variant4. Original generated images retained; no commit or push.
 2026-10-12: No11 coin reviewed and saved; photos99/480 imported. Election draft has cropped hat and remains unapproved; fix margins next. Idol pending. Variants247/300 nextNo50-4. User UI changes in progress.
+2026-10-12 heartbeat: No50 variants4/5/6 visually reviewed and saved with final prompts. Variants250/300 verified SHA256 and4:3 gallery updated. Photos99/480. Next variant No51-2; next photos No11 election (correct cropped-hat draft) and idol then No12 history. Original assets preserved; no commit/push.
+
+2026-10-12 heartbeat: No11 election and idol, No12 history visually reviewed and saved with originals and final prompts; corrected cropped hats before adoption. Photos 102/480; variants 250/300. Next alternating run: No51 variant2 onward; next photo No12 coin, election, idol. No commits or pushes.

@@ -54,7 +54,7 @@ public partial class Game1
             _populationCell=-1;OpenBattle();return true;
         }
         foreach(int id in DestinationNodes())if(DestinationBadge(id).Contains(pointer)){SelectMoveNode(id);return true;}
-        if(NetPanel.Contains(pointer) && !keyboard.IsKeyDown(Keys.Space))
+        if(NetPanel.Contains(pointer))
         {
             int node=_statusGlobe?HitGlobeNode(pointer,_net.MovementTargets):_net.HitNode(_setup,NetPanel,pointer,_net.MovementTargets);
             if(node>=0){SelectMoveNode(node);return true;}
@@ -86,3 +86,4 @@ public partial class Game1
         _ui.Button(ConfirmMoveButton,"確定",_selectedMoveNode>=0?Accent:Muted,.7f);
     }
 }
+

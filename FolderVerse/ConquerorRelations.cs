@@ -70,7 +70,8 @@ public sealed class ConquerorRelations
         return result.ToArray();
     }
     public bool Allied(int a,int b)=>a>=0 && b>=0 && Root(a)==Root(b);
-    public int[] Party(WorldSetup world)=>Leader<0?Array.Empty<int>():Forest(world).Where(r=>Powered[r.Ruler] && !Released[r.Ruler] && Allied(r.Ruler,Leader)).Select(r=>r.Ruler).ToArray();
+    public bool Controls(int ruler){if(ruler<0 || Leader<0)return false;for(int steps=0;steps<20 && ruler>=0;steps++,ruler=Superiors[ruler])if(ruler==Leader)return true;return false;}
+    public int[] Party(WorldSetup world)=>Leader<0?Array.Empty<int>():Forest(world).Where(r=>CanAct(r.Ruler) && Controls(r.Ruler)).Select(r=>r.Ruler).ToArray();
     public bool CanAct(int ruler)=>Powered[ruler] && !Released[ruler] && !Pending.Any(p=>p.Ruler==ruler);
     public bool Accepts(WorldSetup world,int ruler)=>world.Looks[ruler].Keywords.Personality is not (3 or 9 or 11);
     public void Capture(WorldSetup world,int ruler,int victor,int node)
@@ -111,3 +112,4 @@ public sealed class ConquerorRelations
         Pending.Add(captive);Message="電池を入れた / 処遇を選んでください";return captive;
     }
 }
+

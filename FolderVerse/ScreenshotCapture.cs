@@ -34,8 +34,9 @@ public sealed class ScreenshotCapture
             var pixels=new Color[checked(width*height)];
             device.GetBackBufferData(pixels);
             using var texture=new Texture2D(device,width,height);texture.SetData(pixels);
-            var folder=OutputDirectory();Directory.CreateDirectory(folder);
-            var stamp=DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(9)).ToString("yyyyMMdd_HHmmss_fff");
+            var now=DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(9));
+            var folder=Path.Combine(OutputDirectory(),now.ToString("yyyy-MM"));Directory.CreateDirectory(folder);
+            var stamp=now.ToString("yyyyMMdd_HHmmss_fff");
             var path=Path.Combine(folder,"FolderVerse_"+stamp+"_"+Guid.NewGuid().ToString("N")[..6]+".png");
             using(var output=new FileStream(path,FileMode.CreateNew,FileAccess.Write))texture.SaveAsPng(output,width,height);
             LastSavedPath=path;Message="Screenshot saved: "+Path.GetFileName(path);MessageSeconds=3;
@@ -46,3 +47,4 @@ public sealed class ScreenshotCapture
         return false;
     }
 }
+

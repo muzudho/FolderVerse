@@ -13,6 +13,7 @@ public sealed partial class WorldPreview
     };
 
     public bool CountryColors {get;set;}
+    public bool ControlledCountryColors {get;set;}
     public void ShowLandConquest(WorldSetup setup,bool exclusive=false)
     {
         Generate(setup.Width,setup.Height,setup.Depth,setup.WorldSeed);
@@ -25,6 +26,7 @@ public sealed partial class WorldPreview
             var b=a+cell.U/10;var c=b+cell.V/10;var d=a+cell.V/10;
             float height=WorldTerrain.Elevation((a+c)/2,offset);
             int owner=exclusive?setup.Nodes.FullOwner(cell.Id):setup.Owners[cell.Id];
+            if(exclusive && ControlledCountryColors && !setup.Relations.Controls(owner))owner=-1;
             var color=owner<0?WorldTerrain.ColorAt(height,cell.Normal):LandTerritoryColor(setup.OwnerColor(owner),WorldTerrain.Kind(height));
             if(x==0 || y==0)color=Color.Lerp(color,new Color(17,47,62),.18f);
             foreach(var point in new[]{a,b,c,a,c,d})mesh.Add(new(point,color,cell.Normal));
@@ -34,3 +36,4 @@ public sealed partial class WorldPreview
         _vertices.SetData(mesh.ToArray());_primitiveCount=mesh.Count/3;
     }
 }
+

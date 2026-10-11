@@ -7,7 +7,7 @@ public partial class Game1
 {
     private Texture2D _robotFactoryIcon;
     private bool _nodeFactoryOpen;
-    private RobotParts _factoryPart;
+    private int _factoryDropDown=-1;
     private string _factoryMessage="";
     private static readonly Rectangle NodeFactoryTile=new(84,875,182,84);
     private bool CanManageNodeFactory(int owner)
@@ -19,7 +19,7 @@ public partial class Game1
     private void OpenNodeFactory()
     {
         if(!CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;
-        _factoryPart=_setup.Robots.Workshops[_populationNode].Product;
+        _factoryDropDown=-1;
         _factoryMessage="";_nodeAssemblyOpen=false;_nodeDisposalOpen=false;_nodeTransportOpen=false;_nodeFactoryOpen=true;
     }
     private bool NodeFactoryClick(Point pointer)
@@ -28,13 +28,17 @@ public partial class Game1
         if(!CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return true;
         if(_setup.Campaign.RobotBattles.LockedNode(_populationNode)){_factoryMessage="継戦中は製造計画を変更できません";return true;}
         var workshop=_setup.Robots.Workshops[_populationNode];
-        for(int i=0;i<4;i++)if(FactoryPlanButton(i).Contains(pointer)){workshop.SelectPlan(i);_factoryMessage="製造プランを選択しました";return true;}
-        for(int i=1;i<=9;i++){
-            if(FactoryNumberButton(i-1,550).Contains(pointer)){workshop.SetRest(i,workshop.RestTurns);return true;}
-            if(FactoryNumberButton(i-1,640).Contains(pointer)){workshop.SetRest(workshop.RestEvery,i);return true;}
+
+        if(_factoryDropDown>=0){int field=_factoryDropDown;_factoryDropDown=-1;int count=field==2?13:9;
+            for(int i=0;i<count;i++)if(FactoryDropOption(field,i).Contains(pointer)){
+                if(field==0)workshop.SetRest(i+1,workshop.RestTurns);
+                if(field==1)workshop.SetRest(workshop.RestEvery,i+1);
+                if(field==2)workshop.SetReservedSlots(i);
+                return true;
+            }return true;
         }
-        for(int i=0;i<=12;i++)if(FactoryNumberButton(i,750).Contains(pointer)){workshop.SetReservedSlots(i);return true;}
-        if(NodeFactoryTile.Contains(pointer))_nodeFactoryOpen=false;        return new Rectangle(54,150,850,825).Contains(pointer);
+        for(int i=0;i<4;i++)if(FactoryPlanButton(i).Contains(pointer)){workshop.SelectPlan(i);_factoryMessage="製造プランを選択しました";return true;}
+        for(int i=0;i<3;i++)if(FactoryDropButton(i).Contains(pointer)){_factoryDropDown=i;return true;}        if(NodeFactoryTile.Contains(pointer))_nodeFactoryOpen=false;        return new Rectangle(54,150,850,825).Contains(pointer);
     }
     private void DrawNodeFactoryTile(bool active)
     {
@@ -45,8 +49,9 @@ public partial class Game1
         _ui.Center("ロボット製造工場",new(148,885,112,60),.24f,enabled?Cream:Cream*.4f);
         if(active)_ui.Box(new(NodeFactoryTile.X,NodeFactoryTile.Y,NodeFactoryTile.Width,4),Cream);
     }
-    private static Rectangle FactoryPlanButton(int i)=>new(84+i%2*386,340+i/2*68,372,58);
-    private static Rectangle FactoryNumberButton(int i,int y)=>new(84+i*58,y,52,48);
+    private static Rectangle FactoryPlanButton(int i)=>new(84+i*196,340,182,146);
+    private static Rectangle FactoryDropButton(int field)=>field switch{0=>new(250,550,120,48),1=>new(460,550,120,48),_=>new(420,650,120,48)};
+    private static Rectangle FactoryDropOption(int field,int index){var button=FactoryDropButton(field);int count=field==2?13:9;return new(button.X,button.Y-count*30+index*30,button.Width,30);}
     private void DrawNodeFactory()
     {
         var node=_setup.Nodes.All[_populationNode];var workshop=_setup.Robots.Workshops[node.Id];
@@ -59,21 +64,25 @@ public partial class Game1
         _ui.Text(label,new(84,245),Math.Min(.5f,770/_font.MeasureString(label).X),Cream);
         _ui.Text("工期 / この節点の製造プラン",new(84,300),.55f,Cream);
         for(int i=0;i<4;i++){
-            string plan=i==3?"製造しない":$"{workshop.Plans[i].Turns}ターン毎に {PartsLabel(workshop.Plans[i].Product)}";
-            _ui.Button(FactoryPlanButton(i),plan,workshop.SelectedPlan==i?Accent:Muted,.43f);
+            var rect=FactoryPlanButton(i);_ui.Box(rect,workshop.SelectedPlan==i?Accent:Muted);
+            if(i==3)_ui.Center("製造しない",rect,.48f,Cream);
+            else {
+                DrawRobotGlyph(new(rect.X+55,rect.Y+10,72,88),node.Owner,workshop.Plans[i].Product);
+                _ui.Center($"{workshop.Plans[i].Turns}ターン毎に製造",new(rect.X,rect.Bottom-40,rect.Width,30),.38f,Cream);
+            }
         }
-        _ui.Text($"休業計画 / {workshop.RestEvery}回製造毎に {workshop.RestTurns}ターン休業",new(84,495),.5f,Cream);
-        _ui.Text("製造回数",new(84,525),.34f,Cream);
-        _ui.Text("休業ターン",new(84,615),.34f,Cream);
-        for(int i=1;i<=9;i++){
-            _ui.Button(FactoryNumberButton(i-1,550),i.ToString(),workshop.RestEvery==i?Accent:Muted,.5f);
-            _ui.Button(FactoryNumberButton(i-1,640),i.ToString(),workshop.RestTurns==i?Accent:Muted,.5f);
-        }
-        _ui.Text($"製造数 / 格納庫は必ず {workshop.ReservedSlots}個空ける",new(84,705),.5f,Cream);
-        for(int i=0;i<=12;i++)_ui.Button(FactoryNumberButton(i,750),i.ToString(),workshop.ReservedSlots==i?Accent:Muted,.46f);
-        string status=!workshop.Manufacturing?"製造しない":workshop.RestRemaining>0?$"休業 あと{workshop.RestRemaining}ターン":workshop.Waiting?"空き枠待ち":$"製造 {workshop.ProductionAge}/{workshop.ProductionPeriod}ターン";
+        _ui.Text("休業計画",new(84,515),.55f,Cream);
+        _ui.Text("製造",new(180,561),.43f,Cream);_ui.Text("回毎に",new(378,561),.43f,Cream);_ui.Text("ターン休業",new(590,561),.43f,Cream);
+        _ui.Button(FactoryDropButton(0),workshop.RestEvery+"  v",Accent,.55f);
+        _ui.Button(FactoryDropButton(1),workshop.RestTurns+"  v",Accent,.55f);
+        _ui.Text("製造数",new(84,615),.55f,Cream);
+        _ui.Text("格納庫は必ず",new(180,661),.43f,Cream);_ui.Text("個空ける",new(552,661),.43f,Cream);
+        _ui.Button(FactoryDropButton(2),workshop.ReservedSlots+"  v",Accent,.55f);        string status=!workshop.Manufacturing?"製造しない":workshop.RestRemaining>0?$"休業 あと{workshop.RestRemaining}ターン":workshop.Waiting?"空き枠待ち":$"製造 {workshop.ProductionAge}/{workshop.ProductionPeriod}ターン";
         _ui.Text(status,new(84,814),.42f,Cream);        DrawNodeFactoryTile(true);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
+        if(_factoryDropDown>=0){int field=_factoryDropDown,count=field==2?13:9;for(int i=0;i<count;i++)_ui.Button(FactoryDropOption(field,i),(field==2?i:i+1).ToString(),Muted,.42f);}
 
     }
 }
+
+
 

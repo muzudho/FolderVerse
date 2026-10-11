@@ -203,6 +203,7 @@ public partial class Game1 : Game
         { if((click && StartButton.Contains(_pointer)) || enter)BeginRolling(); }
         else if(IsStatusScreen)
         {
+            if(click && SwitchControlledRuler(_pointer))return;
             if(_statusGlobe)
             {
                 _statusCell=-1;
@@ -226,10 +227,10 @@ public partial class Game1 : Game
             }
             else
             {
-            bool pan=active && keyboard.IsKeyDown(Keys.Space);
-            if(!pan || mouse.LeftButton!=ButtonState.Pressed)_mapDragging=false;
-            if(pan && click && NetPanel.Contains(_pointer))_mapDragging=true;
-            if(_mapDragging && _previousMouse.LeftButton==ButtonState.Pressed)
+            bool pan=active && mouse.RightButton==ButtonState.Pressed;
+            if(!pan)_mapDragging=false;
+            if(pan && _previousMouse.RightButton!=ButtonState.Pressed && NetPanel.Contains(_pointer))_mapDragging=true;
+            if(_mapDragging && _previousMouse.RightButton==ButtonState.Pressed)
             {var old=CanvasPoint(_previousMouse);_net.Drag(new Vector2(_pointer.X-old.X,_pointer.Y-old.Y));}
             if(active && NetPanel.Contains(_pointer))
             {
@@ -464,9 +465,10 @@ public partial class Game1 : Game
         {
             _spriteBatch.Draw(_pixel,new Vector2(corner.X,corner.Y),null,color,MathHelper.PiOver4,new Vector2(0.5f),new Vector2(22),SpriteEffects.None,0);
         }
-        _ui.Box(new(330,165,282,42),new(125,78,28));
-        _ui.Center("★ 世界征服者 ★",new(330,165,282,42),0.65f,new(255,227,132));
+        if(_setup.Relations.Superiors[player]<0){_ui.Box(new(330,165,282,42),new(125,78,28));
+        _ui.Center("★ 世界征服者 ★",new(330,165,282,42),0.65f,new(255,227,132));}
         }
+        DrawControlledRuler();
         _ui.Box(new(210,633,520,62),new(27,46,55));
         string formalName="征服者　"+_setup.ConquerorFullNames[player];
         _ui.Center(formalName,new(90,641,760,56),Math.Min(0.88f,740f/_font.MeasureString(formalName).X),Cream);
@@ -526,7 +528,7 @@ public partial class Game1 : Game
         DrawDestinationMap();
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
-        _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"右ドラッグ：回転 / ホイール：拡縮 / 節点を選ぶと中心固定":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
+        _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"右ドラッグ：回転 / ホイール：拡縮 / 節点を選ぶと中心固定":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / 右ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
         _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
         _ui.Button(NetButton(2),"現在地へ移動",Accent,0.45f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
         const string resetLabel="頭を上へ、腹を手前へ";
@@ -636,3 +638,6 @@ public partial class Game1 : Game
         }
     }
 }
+
+
+

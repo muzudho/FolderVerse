@@ -10,9 +10,11 @@ public sealed partial class CubeNet
     public bool ShowMapSymbols {get;set;}=true;
     public bool ShowBatteries {get;set;}=true;
     public bool ShowCountryColors {get;set;}
+    public bool ControlledCountryColors {get;set;}
     public Color TerrainColor(WorldSetup world,int cell,float height)
     {
         int owner=ShowCountryColors?world.Nodes.FullOwner(cell):-1;
+        if(ControlledCountryColors && !world.Relations.Controls(owner))owner=-1;
         return owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal):WorldPreview.LandTerritoryColor(world.OwnerColor(owner),WorldTerrain.Kind(height));
     }
     public bool ShowRoutes {get;set;}=true;
@@ -116,5 +118,6 @@ public sealed partial class CubeNet
         }
     }
 }
+
 
 

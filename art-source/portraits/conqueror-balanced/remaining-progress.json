@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 247,
+  "Completed": 250,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1977,6 +1977,30 @@
       "Sha256": "6712B3B99375F508C68000E27901D2B4BBFC8EBF6B4C132BD5E5B179BB323953",
       "Reviewed": true,
       "Note": "思索する表情と顎の手、本上の手、青いペン、肩の電池を視覚確認済み。"
+    },
+    {
+      "CharacterId": 50,
+      "Variant": 4,
+      "File": "remaining-variants/character-50-4-balanced.png",
+      "Sha256": "EB36D127DD16685C85AAAAA776B46B96B2F5C20C8DCF2C96E4970BB14D8D2B3F",
+      "Reviewed": true,
+      "Note": "白いフードとローブ、手と肩の電池、穏やかな表情を確認済み。"
+    },
+    {
+      "CharacterId": 50,
+      "Variant": 5,
+      "File": "remaining-variants/character-50-5-balanced.png",
+      "Sha256": "2553438F4CA36A1328F54EA7787BF5B4109D957BD6E73589FD7D14852F103708",
+      "Reviewed": true,
+      "Note": "振り返り、肩の電池、甲冑、祭りの背景と人物特徴を確認済み。"
+    },
+    {
+      "CharacterId": 50,
+      "Variant": 6,
+      "File": "remaining-variants/character-50-6-balanced.png",
+      "Sha256": "196BE2D1697B23E315206794494350EBF4B717339D2FE5F94408AF82181C747C",
+      "Reviewed": true,
+      "Note": "手の五指と両腕、開口笑顔、肩の電池と宝飾を確認済み。"
     }
   ]
 }

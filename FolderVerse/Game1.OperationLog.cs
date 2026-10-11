@@ -21,7 +21,7 @@ public partial class Game1
         robotCombat=_setup.Campaign.UseRobotCombat,pocketSelection=_pocketRobot,pocketFromNode=_pocketFromNode,pocketMessage=_pocketMessage,
         transports=_setup.Robots.Transport.LastTransfers.Count,robotPlaying=_robotPlaying,robotResultAge=_robotResultAge,
         continuedBattles=_setup.Campaign.RobotBattles.Encounters.Where(e=>!e.Finished).Select(e=>new{e.Id,e.Source,e.Target,e.Kind,turns=e.Battles.Select(b=>b.Turn).ToArray()}).ToArray(),
-        nodeAssemblyOpen=_nodeAssemblyOpen,hangarDrag=_hangarDrag,hangarPart=(int)_hangarPart,hangarSlots=_hangarSlots,hangarMessage=_hangarMessage,nodeDisposalOpen=_nodeDisposalOpen,nodeDisposalMessage=_nodeDisposalMessage,nodeTransportDisposal=_nodeTransportDisposal,nodeTransportOpen=_nodeTransportOpen,nodeTransportPart=(int)_nodeTransportPart,nodeTransportMessage=_nodeTransportMessage,nodeFactoryOpen=_nodeFactoryOpen,factoryPart=(int)_factoryPart,factoryMessage=_factoryMessage,
+        nodeAssemblyOpen=_nodeAssemblyOpen,hangarDrag=_hangarDrag,hangarPart=(int)_hangarPart,hangarSlots=_hangarSlots,hangarMessage=_hangarMessage,nodeDisposalOpen=_nodeDisposalOpen,nodeDisposalMessage=_nodeDisposalMessage,nodeTransportDisposal=_nodeTransportDisposal,nodeTransportOpen=_nodeTransportOpen,nodeTransportPart=(int)_nodeTransportPart,nodeTransportMessage=_nodeTransportMessage,nodeFactoryOpen=_nodeFactoryOpen,factoryPart=(int)(_populationNode>=0?_setup.Robots.Workshops[_populationNode].Product:RobotParts.Head),factoryMessage=_factoryMessage,
         overlay=_seedDialog.IsOpen?"SeedDialog":_movementOpen?"Movement":_populationCell>=0?(_nodeAssemblyOpen?"RobotAssembly":_nodeDisposalOpen?"RobotDisposal":_nodeTransportOpen?"RobotTransport":_nodeFactoryOpen?"RobotFactory":"NodeDialog"):"None",
         view=_statusGlobe?"Globe":"Net",layer=_net.ShowRoutes?"Traffic":"Grid",mapSymbols=_net.ShowMapSymbols,batteries=_net.ShowBatteries,
         worldSeed=_setup.WorldSeed,castSeed=_setup.CastSeed,placementSeed=_setup.PlacementSeed,
@@ -104,3 +104,4 @@ public partial class Game1
         _operations.Write("screen_displayed",new{state=OperationState(),window=new{width=window.BackBufferWidth,height=window.BackBufferHeight}});
     }
 }
+

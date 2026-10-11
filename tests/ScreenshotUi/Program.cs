@@ -28,7 +28,7 @@ sealed class ScreenshotCheck:Game1
         if(frame==0)baseline=pixels;
         if(frame==1)
         {
-            firstPath=capture.LastSavedPath;Check(File.Exists(firstPath),"PNG not saved");
+            firstPath=capture.LastSavedPath;Check(File.Exists(firstPath),"PNG not saved");Check(Path.GetFileName(Path.GetDirectoryName(firstPath))==DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(9)).ToString("yyyy-MM"),"Monthly screenshot folder");
             using var stream=File.OpenRead(firstPath);using var saved=Texture2D.FromStream(GraphicsDevice,stream);
             var savedPixels=new Color[pixels.Length];saved.GetData(savedPixels);
             Check(savedPixels.SequenceEqual(baseline),"Saved PNG includes feedback or changed frame");
@@ -46,3 +46,4 @@ sealed class ScreenshotCheck:Game1
         frame++;
     }
 }
+

@@ -46,3 +46,10 @@ for(int t=0;t<120;t++){w.Campaign.Resolve(w,Array.Empty<March>());w.Campaign.Rob
 Console.WriteLine("PASS: independent population, neutral acquisition, robot marches, continuity, domestic locks, reinforcement, blocked edges, lost homes, four seeded campaigns and six-country split/merge.");
 }
 catch(Exception error){Console.Error.WriteLine(error);Environment.ExitCode=1;}
+{
+var controlled=new WorldSetup();controlled.SetWorld(1);controlled.SetCast(123);controlled.SetPlacement(456);controlled.SelectPlayer(0);controlled.Relations.SetSuperior(1,0);controlled.Relations.SetSuperior(2,1);
+int before=controlled.Population.Turn;controlled.Campaign.Advance(controlled,-1,0);if(controlled.PlayerSlot==0 || controlled.Population.Turn!=before)throw new Exception("Subordinate turn skipped");
+controlled.Campaign.Advance(controlled,-1,0);if(controlled.Population.Turn!=before)throw new Exception("Party committed too early");
+controlled.Campaign.Advance(controlled,-1,0);if(controlled.PlayerSlot!=0 || controlled.Population.Turn!=before+1)throw new Exception("Party turn commit failed");
+Console.WriteLine("PASS: leader and nested subordinate actions commit one shared turn");
+}
