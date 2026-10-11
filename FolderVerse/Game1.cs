@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 public partial class Game1 : Game
 {
-    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, WorldStatus, Battle, Disposition, InactiveList, Hierarchy, Pocket, Transport, Ending }
+    private enum Screen { Title, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, LandConquest, Fortune, WorldStatus, Battle, Disposition, InactiveList, Hierarchy, Pocket, Transport, Ending }
     private readonly GraphicsDeviceManager _graphics;
     private readonly Random _random=new();
     private readonly WorldSetup _setup=new();
@@ -108,7 +108,7 @@ public partial class Game1 : Game
     private void BeginRolling() { _screen=Screen.Rolling; _rollTime=0; _dragging=false; SetWorldSeed(_random.Next()); }
     private void BeginCast() { _screen=Screen.CastRolling; _rollTime=0; _dragging=false; _setup.SetCast(_random.Next()); _world.ShowSetup(_setup,false); }
     private void BeginPlacement() { _screen=Screen.PlacementRolling; _rollTime=0; _dragging=false; SetPlacementSeed(_random.Next()); }
-    private void SetPlacementSeed(int seed) { _setup.SetPlacement(seed); _world.ShowSetup(_setup,true); }
+    private void SetPlacementSeed(int seed) { _setup.SetTerritoryRights(seed); _world.ShowSetup(_setup,false); }
     private void ApplySeed(int seed)
     {
         switch(_seedDialog.Purpose)
@@ -132,6 +132,7 @@ public partial class Game1 : Game
         _animationTime+=(float)elapsed;
         if(UpdateDemo(elapsed,active,click,escape,enter))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(_screen is Screen.LandConquest or Screen.Fortune){UpdateLandSetup(elapsed,mouse,active,click,enter);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _net.UpdateAnimation((float)elapsed);
         if(_screen==Screen.Ending)
         {UpdateEnding(elapsed,active && (escape || enter || click && EndingReturn.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -267,7 +268,7 @@ public partial class Game1 : Game
             _hoveredSlot=active && _screen==Screen.PlayerSelect?HitSelection(_pointer):-1;
             if(click && CastBack.Contains(_pointer)){_screen=Screen.Ready;_hoveredSlot=-1;_world.HighlightOwner(_setup,-1);}
             else if(click && _screen==Screen.PlayerReady && CastRetry.Contains(_pointer)){_screen=Screen.PlayerSelect;}
-            else if(_screen==Screen.PlayerReady && ((click && StatusProceed.Contains(_pointer)) || enter)){_net.Home(_setup);_statusCell=-1;_populationCell=-1;_screen=Screen.WorldStatus;}
+            else if(_screen==Screen.PlayerReady && ((click && StatusProceed.Contains(_pointer)) || enter)){BeginLandConquest();}
             else if(click && _hoveredSlot>=0){_setup.SelectPlayer(_hoveredSlot);_screen=Screen.PlayerReady;_hoveredSlot=-1;}
             if(IsSelectionScreen)
             {
@@ -375,7 +376,7 @@ public partial class Game1 : Game
         }
         _ui.Button(CastBack,"世界へ戻る",Muted,0.48f);
         _ui.Button(CastRetry,_screen is Screen.CastRolling or Screen.CastReview?"人物を再抽選":"配置を再抽選",Muted,0.48f);
-        string action=IsRolling?"STOP":_screen==Screen.CastReview?"登場人物を確定 / 初期配置へ":_screen==Screen.PlacementReview?"初期配置を確定":"初期配置を確定済み";
+        string action=IsRolling?"STOP":_screen==Screen.CastReview?"登場人物を確定 / セル権利へ":_screen==Screen.PlacementReview?"セル権利を確定":"セル権利を確定済み";
         _ui.Button(CastAction,_screen==Screen.Ready?"世界征服者を選択":action,Accent,0.57f);
         _ui.Button(SeedButton(0),"世界 SEED "+_setup.WorldSeed,Muted,0.36f);
         _ui.Button(SeedButton(1),"人物 SEED "+_setup.CastSeed,Muted,0.36f);
@@ -440,7 +441,7 @@ public partial class Game1 : Game
         _ui.Center(_world.GlobeName+" / 左ドラッグで回転",new(globe.X,globe.Bottom-35,globe.Width,30),0.46f,Cream);
         if(_hoveredSlot>=0)DrawSelectionTile(_selectionTiles[_hoveredSlot],true);
         _ui.Button(CastBack,"配置を確認",Muted,0.48f);
-        if(_screen==Screen.PlayerReady){_ui.Button(CastRetry,"選び直す",Accent,0.48f);_ui.Button(StatusProceed,"世界征服状況へ",Accent,0.57f);}
+        if(_screen==Screen.PlayerReady){_ui.Button(CastRetry,"選び直す",Accent,0.48f);_ui.Button(StatusProceed,"土地征服へ",Accent,0.57f);}
         int focus=_screen==Screen.PlayerReady?_setup.PlayerSlot:_hoveredSlot;
         string detail=focus<0?"顔にカーソルを合わせて選択":
             (_screen==Screen.PlayerReady?"あなたは ":"")+"#"+(focus+1).ToString("00")+" "+ConquerorCatalog.Themes[_setup.Looks[focus].BaseId];
@@ -554,7 +555,7 @@ public partial class Game1 : Game
     {
         _ui.Box(new(CastPreview.X+18,CastPreview.Y+12,CastPreview.Width-36,48),new Color(12,32,44,220));
         _ui.Center($"{_setup.Width} x {_setup.Height} x {_setup.Depth} / {_setup.Cells.Length} セル / {_setup.ActiveCount} 人",new(CastPreview.X,CastPreview.Y+12,CastPreview.Width,48),0.72f,Cream);
-        string stage=_screen switch { Screen.CastRolling=>"登場人物を抽選中",Screen.CastReview=>"登場人物を確認",Screen.PlacementRolling=>"初期配置を抽選中",Screen.PlacementReview=>"初期配置を確認",_=>"初期配置を確定済み" };
+        string stage=_screen switch { Screen.CastRolling=>"登場人物を抽選中",Screen.CastReview=>"登場人物を確認",Screen.PlacementRolling=>"セル権利を抽選中",Screen.PlacementReview=>"セル権利を確認",_=>"セル権利を確定済み" };
         string detail=stage+" / 左ドラッグで回転";
         for(int slot=0;slot<20;slot++) if(PortraitCell(slot).Contains(_pointer))
         {
@@ -580,9 +581,10 @@ public partial class Game1 : Game
             _spriteBatch.Begin(transformMatrix:transform);
             _ui.Box(new(0,0,1920,1080),new(16,35,46));
             _spriteBatch.Draw(_titleLogo,new Rectangle(0,0,1920,1080),Color.White*0.14f);
-            if(_screen==Screen.Ending)DrawEndingUi();else if(_screen==Screen.Transport)DrawTransport();else if(_screen==Screen.Pocket)DrawPocket();else if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
+            if(_screen is Screen.LandConquest or Screen.Fortune)DrawLandSetupUi();else if(_screen==Screen.Ending)DrawEndingUi();else if(_screen==Screen.Transport)DrawTransport();else if(_screen==Screen.Pocket)DrawPocket();else if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
             {
-            if(_screen==Screen.Battle){if(!_setup.Campaign.UseRobotCombat || _robotPendingFocus<0)DrawBattleGlobe(canvas,transform);}
+            if(_screen is Screen.LandConquest or Screen.Fortune)DrawLandSetupGlobe(canvas,transform,viewport);
+            else if(_screen==Screen.Battle){if(!_setup.Campaign.UseRobotCombat || _robotPendingFocus<0)DrawBattleGlobe(canvas,transform);}
             else if(!IsStatusScreen && _screen is not (Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Pocket or Screen.Transport or Screen.Ending))
             {
             var globe=SelectionGlobe;

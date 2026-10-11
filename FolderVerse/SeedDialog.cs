@@ -87,7 +87,7 @@ public sealed class SeedDialog
     {
         ui.Box(new Rectangle(0,0,1920,1080),new Color(0,0,0,190));
         ui.Box(new Rectangle(640,170,650,805),new Color(32,59,77));
-        string title=Purpose switch { Target.World=>"世界 SEED", Target.Cast=>"登場人物 SEED", _=>"初期配置 SEED" };
+        string title=Purpose switch { Target.World=>"世界 SEED", Target.Cast=>"登場人物 SEED", _=>"セル権利 SEED" };
         ui.Text(title,new Vector2(685,210),0.9f,new Color(255,232,184));
         ui.Box(new Rectangle(685,300,560,100),new Color(11,29,41));
         ui.Center(Value.Length==0 ? "_" : Value,new Rectangle(700,310,530,80),1.1f,Color.White);

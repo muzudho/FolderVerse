@@ -117,6 +117,8 @@ public sealed partial class WorldPreview : IDisposable
             var points=cell.Corners;var lift=cell.Normal*0.008f;var color=setup.OwnerColor(owner);
             foreach(int index in new[]{0,1,2,0,2,3})mesh.Add(new(points[index]+lift,color,cell.Normal));
         }
+        // During rights selection, no land belongs to the hovered ruler yet.
+        if(mesh.Count==0)return;
         _highlight=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
         _highlight.SetData(mesh.ToArray());_highlightCount=mesh.Count/3;
     }

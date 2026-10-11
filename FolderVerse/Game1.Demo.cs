@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -74,6 +74,7 @@ public partial class Game1
             }
             return true;
         }
+        if(_screen is Screen.LandConquest or Screen.Fortune){UpdateLandSetup(elapsed,default,false,false,false);return true;}
         TickSlots(elapsed);
         _net.UpdateAnimation((float)elapsed);UpdateMapTransition((float)elapsed);
         if(_screen==Screen.WorldStatus && _demoMapVisits%3==0 && UpdateDemoMap(elapsed))return true;
@@ -102,7 +103,7 @@ public partial class Game1
             case Screen.PlacementRolling:_screen=Screen.PlacementReview;break;
             case Screen.PlacementReview:BeginSelection();break;
             case Screen.PlayerSelect:_setup.SelectPlayer(0);_screen=Screen.PlayerReady;break;
-            case Screen.PlayerReady:_net.Home(_setup);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;break;
+            case Screen.PlayerReady:BeginLandConquest();break;
             case Screen.WorldStatus:
                 _demoMapVisits++;_demoMapStage=0;_demoMapAge=0;
                 var home=_setup.Nodes.Current(_setup.PlayerSlot);

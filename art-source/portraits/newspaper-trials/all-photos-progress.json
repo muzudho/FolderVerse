@@ -1,6 +1,6 @@
 {
   "Total": 480,
-  "Completed": 92,
+  "Completed": 98,
   "Photos": [
     {
       "CharacterId": 1,
@@ -642,6 +642,15 @@
       "Reviewed": true
     },
     {
+      "CharacterId": 9,
+      "Kind": "idol",
+      "File": "character-09-idol-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "B774B25FD12726322DAFC4A42B6F89E1B4D6B78F2B3DF8755FFD1670D870CFF0",
+      "Reviewed": true
+    },
+    {
       "CharacterId": 10,
       "Kind": "formal",
       "File": "character-10-formal-v001.png",
@@ -678,6 +687,42 @@
       "Reviewed": true
     },
     {
+      "CharacterId": 10,
+      "Kind": "history",
+      "File": "character-10-history-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "22F0D956B56C9F5B8B8A3E4D478FF379B03C314CD5E12046DB65D96B3D8FFF37",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 10,
+      "Kind": "coin",
+      "File": "character-10-coin-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "BEE6C4125C43BCC7E5C09FB0C80E5620315A9BAEFCBE3D1DB6BBF3EEF27D4F23",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 10,
+      "Kind": "election",
+      "File": "character-10-election-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "BDDC16FA163D9001AEDF761CB83FD36DC8708D23C4429BFE8D6CB9A8F42FA179",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 10,
+      "Kind": "idol",
+      "File": "character-10-idol-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "0D5EA0E7485F9110BBB341CFD7503D9CA41B2D85C62B23C67AB62B823B8199C8",
+      "Reviewed": true
+    },
+    {
       "CharacterId": 11,
       "Kind": "formal",
       "File": "character-11-formal-v001.png",
@@ -711,6 +756,15 @@
       "Width": 1200,
       "Height": 1600,
       "Sha256": "857811D0E898E2EADB6ADE0F0193F5B55004A0ABFDC61EB6B7A11216FD1FE036",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 11,
+      "Kind": "history",
+      "File": "character-11-history-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "CB5D71C9307DFCB9AD8F256AA7D2779187B074518036709CD4BDF914B72B7E22",
       "Reviewed": true
     },
     {

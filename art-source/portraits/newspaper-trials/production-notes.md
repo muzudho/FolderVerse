@@ -77,3 +77,6 @@ No.9ユーザーフィックス承認: 最新正式参照 characters/character-0
 
 ## 2026-10-11 22:46 heartbeat
 No.9 の確定デザイン v008 を参照して history / coin / election の3枚を制作・視覚確認。1200×1600版、原画、最終プロンプトを保存し、SHA256検証と300×400ゲーム用取り込み完了。写真92/480、差分238/300。No.9の既存4種類は保持。次回は差分No.48-5から、次の写真回はNo.9 idolから再開。コミット・プッシュなし。
+
+2026-10-11 23:47 heartbeat: No9 idol（確定v008参照、耳の見切れを再編集で解消）、No10 history（帽子の見切れを再編集で解消）、coin を視覚確認し保存。原画・1200x1600・最終プロンプト保持。写真95/480検証・300x400ゲーム取り込み完了。差分241/300。次回差分No49-3、次の写真回No10 election/idolから再開。既存写真保持。コミット・プッシュなし。
+2026-10-12 heartbeat: No.10 election/idol and No.11 history visually reviewed and saved. Election upright clean confident portrait; idol two pompoms; history chair portrait with full hat margin corrected by image edit. Originals,1200x1600 and final prompts preserved. Photos98/480 verified and 300x400 game imports updated. Variants244/300; next variant No49-6. Next photo No11 coin/election/idol. No commit/push.

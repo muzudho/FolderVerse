@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 241,
+  "Completed": 244,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1929,6 +1929,30 @@
       "Sha256": "BEEC6ACE673CAD70035E0C0A3C7037DAFA0062FBFCB3529FC25DE2461C81A0D2",
       "Reviewed": true,
       "Note": "閉じ目の笑顔、パンダ菓子、緑電池、両手のカップ保持確認"
+    },
+    {
+      "CharacterId": 49,
+      "Variant": 3,
+      "File": "remaining-variants/character-49-3-balanced.png",
+      "Sha256": "097E2D5460A186F9F4E8A70CC9B59FB2B1D69D657DFAB6A9B4EECC504A797D16",
+      "Reviewed": true,
+      "Note": "紫魔法球・手指・肩パンダ緑電池確認"
+    },
+    {
+      "CharacterId": 49,
+      "Variant": 4,
+      "File": "remaining-variants/character-49-4-balanced.png",
+      "Sha256": "1621FF78C5EA0CE1821FB78BF5A22FF459850AFBB0CC62D6ED7FBC4031F60E92",
+      "Reviewed": true,
+      "Note": "読書・筆・本を持つ手・緑電池確認"
+    },
+    {
+      "CharacterId": 49,
+      "Variant": 5,
+      "File": "remaining-variants/character-49-5-balanced.png",
+      "Sha256": "86AD74580397EBDC5AF4AD2C555B0CA5E1FD20692456FD9405B6F6FD815B4845",
+      "Reviewed": true,
+      "Note": "振り返り・流れる黒髪・パンダ緑電池維持、余分な手なし"
     }
   ]
 }

@@ -26,7 +26,7 @@ public sealed class SurfaceCell
     public Vector3[] Corners => new[] { Origin, Origin + U, Origin + U + V, Origin + V };
 }
 
-public sealed class WorldSetup
+public sealed partial class WorldSetup
 {
     public int WorldSeed { get; private set; }
     public int CastSeed { get; private set; }
@@ -120,7 +120,7 @@ public sealed class WorldSetup
         ConquerorFullNames=WorldNames.Conquerors(Looks,seed);ConquerorNames=WorldNames.ShortNames(ConquerorFullNames);
         ClearPlacement();
     }
-    public void ClearPlacement() { PlayerSlot=-1; Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); ConquerorLocations=Array.Empty<int>(); TerritoryCounts = new int[20]; }
+    public void ClearPlacement() { LandPending=false;TerritoryRights=new int[20]; PlayerSlot=-1; Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); ConquerorLocations=Array.Empty<int>(); TerritoryCounts = new int[20]; }
     public void SetPlacement(int seed)
     {
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
