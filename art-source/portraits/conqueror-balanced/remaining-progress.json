@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 238,
+  "Completed": 241,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1905,6 +1905,30 @@
       "Sha256": "D6080FACF8DFF65470DA930E9DE5A0B6809B02F4C561E401EF69EABF167649F7",
       "Reviewed": true,
       "Note": "Visual review passed; original scene/expression, amber eyes, black hair, elf ears, glasses and celestial ornaments retained."
+    },
+    {
+      "CharacterId": 48,
+      "Variant": 5,
+      "File": "remaining-variants/character-48-5-balanced.png",
+      "Sha256": "B632784AD0DB3960037054D3E77FE5410B759F3006FB5271BF52D979F82B3827",
+      "Reviewed": true,
+      "Note": "書斎・羽根ペン・赤電池維持、両手確認済み"
+    },
+    {
+      "CharacterId": 48,
+      "Variant": 6,
+      "File": "remaining-variants/character-48-6-balanced.png",
+      "Sha256": "7C9F1DE75BF582E1B3FC573123F37ABFB64163FCC5B9EC1ECE6DD8C5274FDC1A",
+      "Reviewed": true,
+      "Note": "天球儀杖と動的ポーズ維持、両手確認"
+    },
+    {
+      "CharacterId": 49,
+      "Variant": 2,
+      "File": "remaining-variants/character-49-2-balanced.png",
+      "Sha256": "BEEC6ACE673CAD70035E0C0A3C7037DAFA0062FBFCB3529FC25DE2461C81A0D2",
+      "Reviewed": true,
+      "Note": "閉じ目の笑顔、パンダ菓子、緑電池、両手のカップ保持確認"
     }
   ]
 }

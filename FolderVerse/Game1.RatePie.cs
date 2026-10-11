@@ -16,7 +16,7 @@ public partial class Game1
     {
         float angle=(column+1)*MathHelper.TwoPi/RateDivisions[row];
         var at=RatePieCenter+new Vector2(MathF.Sin(angle),-MathF.Cos(angle))*(155+row*48);
-        return new((int)at.X-28,(int)at.Y-26,56,52);
+        return new((int)at.X-24,(int)at.Y-23,48,46);
     }
     private static bool RatePresetUnique(int row,int column)
     {
@@ -29,6 +29,32 @@ public partial class Game1
     {
         int a=numerator,b=denominator;while(b!=0){int t=a%b;a=b;b=t;}
         return $"{numerator/a}/{denominator/a}";
+    }
+    private void DrawRateFractionButton(Rectangle rect,string fraction,bool enabled,bool selected)
+    {
+        bool hover=enabled && rect.Contains(_pointer);
+        _ui.Box(new(rect.X+2,rect.Y+4,rect.Width,rect.Height),new Color(8,20,29));
+        _ui.Box(rect,selected?new Color(255,154,103):hover?Color.White:new Color(91,180,199));
+        var face=new Rectangle(rect.X+3,rect.Y+3,rect.Width-6,rect.Height-6);
+        var white=enabled?new Color(255,253,241):new Color(138,146,150);
+        var yellow=enabled?new Color(255,221,91):new Color(151,147,119);
+        _ui.Box(face,yellow);
+        for(int y=0;y<face.Height;y++)
+        {
+            int width=(int)(face.Width*(1-y/(float)face.Height));
+            _ui.Box(new(face.X,face.Y+y,width,1),white);
+            _ui.Box(new(face.X+width-1,face.Y+y,2,1),new Color(75,83,87));
+        }
+        _transportHudFont??=Content.Load<SpriteFont>("ToyCounterFont");
+        float scale=25f/_transportHudFont.LineSpacing;
+        void Number(string text,Vector2 center)
+        {
+            var size=_transportHudFont.MeasureString(text)*scale;
+            _ui.Batch.DrawString(_transportHudFont,text,center-size/2,new Color(23,31,37),0,Vector2.Zero,scale,SpriteEffects.None,0);
+        }
+        var parts=fraction.Split('/');
+        Number(parts[0],new(face.X+face.Width*.28f,face.Y+face.Height*.25f));
+        Number(parts[1],new(face.X+face.Width*.72f,face.Y+face.Height*.75f));
     }
     private Texture2D RatePieIcon(int degrees,int divisions)
     {
@@ -95,9 +121,7 @@ public partial class Game1
         {
             if(!RatePresetUnique(row,col))continue;
             int degree=(col+1)*360/RateDivisions[row];var rect=RatePresetBounds(row,col);bool enabled=degree<=maximum;
-            _ui.Box(rect,degree==value?new Color(90,103,110):new Color(27,47,60));
-            _ui.Batch.Draw(RatePieIcon(degree,RateDivisions[row]),new Rectangle(rect.X+15,rect.Y+2,26,26),enabled?Color.White:new Color(85,85,85));
-            _ui.Center(RateFraction(col+1,RateDivisions[row]),new(rect.X,rect.Y+28,rect.Width,24),.4f,enabled?Cream:Muted);
+            DrawRateFractionButton(rect,RateFraction(col+1,RateDivisions[row]),enabled,degree==value);
         }
         _ui.Text("他の移送先の配分は維持。残りは現在の節点に留まる",new(1130,965),.36f,Cream);
         _ui.Button(new(1740,950,130,40),"閉じる",Accent,.45f);

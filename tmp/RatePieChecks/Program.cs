@@ -27,7 +27,7 @@ class CheckGame:Game1
   if(count!=31)throw new Exception("Preset count");
   Call("SetDestinationRate",target,120);
   var method=typeof(Game1).GetMethod("TransportTriangleSize",BindingFlags.Static|BindingFlags.NonPublic)!;
-  foreach(var pair in new[]{(0,30f),(120,60f),(180,75f),(360,120f)})
+  foreach(var pair in new[]{(0,15f),(120,50f),(180,67.5f),(360,120f)})
     if(Math.Abs((float)method.Invoke(null,new object[]{pair.Item1})!-pair.Item2)>.0001f)throw new Exception("Arrow threshold");
   Call("OpenTransportOverview");if(!(bool)Get("_transportOverview") || (int)Get("_populationCell")>=0)throw new Exception("Ruler transport entry");
   Set("_populationNode",source.Id);Set("_rateTarget",target);Call("SetDestinationRate",target,120);
@@ -44,3 +44,4 @@ class CheckGame:Game1
   using var output=File.Create(Path.Combine(AppContext.BaseDirectory,"rate-pie.png"));tex.SaveAsPng(output,tex.Width,tex.Height);Exit();
  }
 }
+
