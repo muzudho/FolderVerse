@@ -512,14 +512,14 @@ public partial class Game1 : Game
             GraphicsDevice.ScissorRectangle=new(canvas.X+(int)(areas.Globe.X*canvas.Width/1920f),canvas.Y+(int)(areas.Globe.Y*canvas.Height/1080f),(int)(areas.Globe.Width*canvas.Width/1920f),(int)(areas.Globe.Height*canvas.Height/1080f));
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
             _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
-            DrawGlobeCellHover();DrawStatusGlobeCoordinates();_spriteBatch.End();
+            if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();_spriteBatch.End();
             _spriteBatch.Begin(transformMatrix:transform);
             DrawOrientationLegend(areas.Toy,areas.Legend,"方向のロボット");_spriteBatch.End();
         }
         else using(var clipping=new RasterizerState{ScissorTestEnable=true})
         {
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clipping);
-            _net.Draw(_ui,_setup,NetPanel,_statusCell,_animationTime);_spriteBatch.End();
+            _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:_statusCell,_animationTime);_spriteBatch.End();
         }
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         DrawDestinationMap();

@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private Microsoft.Xna.Framework.Graphics.SpriteFont _transportHudFont;
-    private static float TransportTriangleSize(int degrees)=>30f+90f*Math.Clamp(degrees/360f,0,1);
+    private static float TransportTriangleSize(int degrees)=>15f+105f*Math.Clamp(degrees/360f,0,1);
     private Rectangle TransportHud(string text,Vector2 center,Color color)
     {
         _transportHudFont??=Content.Load<Microsoft.Xna.Framework.Graphics.SpriteFont>("ToyCounterFont");
@@ -25,7 +25,12 @@ public partial class Game1
     private readonly List<(Rectangle Bounds,int Source,int Target,Vector2 Start,Vector2 End)> _transportRouteHits=new();
 
     private static bool TransportArrowHit(Point p,Vector2 start,Vector2 end)
-    {var delta=end-start;float t=Math.Clamp(Vector2.Dot(new Vector2(p.X,p.Y)-start,delta)/delta.LengthSquared(),0,1);return Vector2.Distance(new Vector2(p.X,p.Y),start+delta*t)<6;}
+    {
+        var delta=end-start;float size=delta.Length();if(size<1)return false;
+        var direction=delta/size;var relative=new Vector2(p.X,p.Y)-start;
+        float along=Vector2.Dot(relative,direction),across=Math.Abs(Vector2.Dot(relative,new Vector2(-direction.Y,direction.X)));
+        return along>=-3 && along<=size+3 && across<=(size<=15?size/2:size*(1-Math.Clamp(along/size,0,1))/2)+3;
+    }
     private void DrawTransportOverviewButton()
     {
         var rect=TransportOverviewButton;
@@ -115,9 +120,22 @@ public partial class Game1
             var position=_setup.Routes.Position(source.Cell,source.Center);
             float height=WorldTerrain.Elevation(position,WorldTerrain.Offset(_setup.WorldSeed));
             var color=degrees<18?new Color(150,155,164):height<.52f?new Color(111,228,255):height>=WorldTerrain.MountainHeight?new Color(255,163,70):new Color(255,230,140);
-            // Filled triangle, aligned to the outgoing traffic route, no thin shaft.
-            for(int i=0;i<(int)size;i++)
-                _ui.Tile(start+direction*i,new Vector2(1.5f,size*(1-i/size)),MathF.Atan2(direction.Y,direction.X),color);
+            bool hovered=_rateTarget<0 && TransportArrowHit(_pointer,start,end);
+            float angle=MathF.Atan2(direction.Y,direction.X);
+            if(hovered)color=Color.Lerp(color,Color.White,.35f);
+            if(degrees==0)
+            {
+                if(hovered)_ui.Tile((start+end)/2,new Vector2(size+6),angle,Color.White);
+                _ui.Tile((start+end)/2,new Vector2(size),angle,color);
+            }
+            else
+            {
+                // Match the hover outline to the full triangle rather than a thin center line.
+                if(hovered)for(int i=-3;i<(int)size+3;i++)
+                    _ui.Tile(start+direction*i,new Vector2(1.5f,size*(1-Math.Clamp(i/size,0,1))+6),angle,Color.White);
+                for(int i=0;i<(int)size;i++)
+                    _ui.Tile(start+direction*i,new Vector2(1.5f,size*(1-i/size)),angle,color);
+            }
             var label=end+normal*15;
             var rect=degrees>0?TransportHud($"{degrees*100/360f:0.#}%",label,degrees<18?new Color(180,184,194):color):Rectangle.Empty;
             _transportRouteHits.Add((rect,route.Source,route.Target,start,end));
