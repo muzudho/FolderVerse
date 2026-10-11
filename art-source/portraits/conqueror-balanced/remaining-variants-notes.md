@@ -97,3 +97,15 @@ No.9仕様変更: ../characters/character-09/redesign-black-rabbit/design-spec.m
 No.9最新追記（ユーザー修正優先）: ゴーグル廃止を撤回。黒耳とつば無しバックレスキャップを保持し、その上に飛行士のゴーグル。髪は肩までの大きな束の赤橙ストレート。赤縁眼鏡も併用。参照 characters/character-09/redesign-black-rabbit/character-09-black-rabbit-design-v002.png。旧見本v001と原画保持、最終プロンプト保存済み。
 
 No.9最新仕様v003: No.7白兎＋緑に対して黒兎＋赤。吊り上がった目尻と眉、姉御風の威勢良い笑顔、柔らかい肩までの髪と横へ散る前髪。豪華な金飾り付き赤ローブ。赤縁眼鏡と帽子上ゴーグル併用。最新参照 characters/character-09/redesign-black-rabbit/character-09-black-rabbit-design-v003.png と design-spec.md。
+
+No.9最新見本v004: 耳の前の毛束を幅広・頬までに短縮して外へ跳ねさせる。後ろ髪は肩まで。赤縁眼鏡と強い目元を強調。characters/character-09/redesign-black-rabbit/design-spec.md と character-09-black-rabbit-design-v004.png を今後の制作で優先。原画・最終プロンプト保存、視覚確認済み。
+
+No.9最新優先見本v005: 前側の頬の毛束は耳の下側まで短縮。後ろ髪は肩にかからない短い柔らかなボブ。前髪を増やし柔らかいカーブ。characters/character-09/redesign-black-rabbit/design-spec.md と character-09-black-rabbit-design-v005.png を優先。原画・最終プロンプト保存、視覚確認済み。
+
+No.9最新優先見本v006: バックレスキャップの後ろから束ねた髪をふわっと多く出す。高い位置で短くまとめて肩には触れない。前側の短い毛束・柔らかい前髪を維持。characters/character-09/redesign-black-rabbit/design-spec.md と character-09-black-rabbit-design-v006.png を優先。原画・最終プロンプト保存、視覚確認済み。
+
+No.9最新優先見本v007: 高いアップ髪を廃止し後頭部下側に重み・毛量を集める。短く柔らかく束ねた後ろ髪は肩に触れず、黒兎耳の輪郭と分離。characters/character-09/redesign-black-rabbit/design-spec.md と character-09-black-rabbit-design-v007.png を優先。原画・最終プロンプト保存、視覚確認済み。
+
+No.9ユーザーフィックス承認: 最新正式参照 characters/character-09/redesign-black-rabbit/character-09-black-rabbit-design-v008.png。approved-design.json / design-spec.md保存。球形の帽子と前髪→耳で締まる→大きなカール束が横へ広がりあごの側面にかかる形を維持。後頭部下側に毛量、肩に触れず兎耳と分離。今後No.9全シリーズの制作でこの承認デザインを優先する。旧画像は保存、ゲーム未置換。
+
+20:06 JST batch interrupted by No.9 approval: No.47 v3 saved/reviewed; 232/300. Next No.47 v4. Photos83/480 next No.7 election/idol. No.9 fixed approved design v008. No commit/push.

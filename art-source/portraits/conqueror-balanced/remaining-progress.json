@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 231,
+  "Completed": 232,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1849,6 +1849,14 @@
       "Sha256": "47FC612AFCD0913C6D0E6D345E7DC78648F334A60DFC0919C34ECBAB707A549C",
       "Reviewed": true,
       "Note": "くつろぎ：ウインク・猫と兎のぬいぐるみ・紫電池を保持"
+    },
+    {
+      "CharacterId": 47,
+      "Variant": 3,
+      "File": "remaining-variants/character-47-3-balanced.png",
+      "Sha256": "329AF57CF8A1CA13DA76B688FC33A22F95C7267DCD870C1908DE1ECAD901708C",
+      "Reviewed": true,
+      "Note": "製菓：閉眼笑顔・赤電池・猫と楽器風小物・ケーキ保持"
     }
   ]
 }

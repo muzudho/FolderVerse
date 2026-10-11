@@ -1,0 +1,10 @@
+{
+  "CharacterId": 9,
+  "Status": "Fixed",
+  "ApprovedDate": "2026-10-11",
+  "File": "character-09-black-rabbit-design-v008.png",
+  "Sha256": "020807F666343B47E349E5FF187D53EFB79FAD936366482E78A4333E3605212F",
+  "Spec": "design-spec.md",
+  "Prompt": "character-09-black-rabbit-design-v008-prompt.txt",
+  "RuntimeAdopted": false
+}
