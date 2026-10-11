@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 216,
+  "Completed": 228,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1729,6 +1729,102 @@
       "Sha256": "B20A48299EB5F6F489BCCDBEFB2C05A9B25CDCE395802594B2351DB7608B6906",
       "Reviewed": true,
       "Note": "Current v003; silver hair, half-lidded magenta eyes, horns, mug, robot, red battery and blanket retained"
+    },
+    {
+      "CharacterId": 44,
+      "Variant": 3,
+      "File": "remaining-variants/character-44-3-balanced.png",
+      "Sha256": "6D04FF5DB311DC672C6083F9F2FEA1865AEB91A50DF1B48B5A6F0D65A150AA16",
+      "Reviewed": true,
+      "Note": "Current v003; visually reviewed; identity, scene and adopted balance preserved."
+    },
+    {
+      "CharacterId": 44,
+      "Variant": 4,
+      "File": "remaining-variants/character-44-4-balanced.png",
+      "Sha256": "48062732E50448C85B364AB922FD3ACEAEC9CA0C79785CBEA4F8CCAEFFEEF397",
+      "Reviewed": true,
+      "Note": "Current v003; visually reviewed; identity, scene and adopted balance preserved."
+    },
+    {
+      "CharacterId": 44,
+      "Variant": 5,
+      "File": "remaining-variants/character-44-5-balanced.png",
+      "Sha256": "CC88DE5A93A07EFA6C650688DE84EB98F7A4E48834BF7A0CD9A260DBADE5AD1C",
+      "Reviewed": true,
+      "Note": "Current v003; visually reviewed; identity, scene and adopted balance preserved."
+    },
+    {
+      "CharacterId": 44,
+      "Variant": 6,
+      "File": "remaining-variants/character-44-6-balanced.png",
+      "Sha256": "00C26DB38F8BCB05BBA77CE1124FEAB47AE0076D9C6BCF1EA19027C828FEA975",
+      "Reviewed": true,
+      "Note": "Current v003; visually reviewed; scene identity props and adopted balance preserved."
+    },
+    {
+      "CharacterId": 45,
+      "Variant": 2,
+      "File": "remaining-variants/character-45-2-balanced.png",
+      "Sha256": "C971201CB7E02350EFE8456571F900416C170683B685D898660E2C189F4997CF",
+      "Reviewed": true,
+      "Note": "Current v003; visually reviewed; scene identity props and adopted balance preserved."
+    },
+    {
+      "CharacterId": 45,
+      "Variant": 3,
+      "File": "remaining-variants/character-45-3-balanced.png",
+      "Sha256": "BBEAE4F28F708BC0B1C50824F6DF24ADE41B158ACA6C5C064490D6618F9473DE",
+      "Reviewed": true,
+      "Note": "Current v003; visually reviewed; scene identity props and adopted balance preserved."
+    },
+    {
+      "CharacterId": 45,
+      "Variant": 4,
+      "File": "remaining-variants/character-45-4-balanced.png",
+      "Sha256": "0F2BA9695AAC0C6B0E6A390E25CC2E19F4BB87A7AB191299E10937837CB218F7",
+      "Reviewed": true,
+      "Note": "Current v003; visually reviewed; target eye patch side, expression, pose, props and scene preserved."
+    },
+    {
+      "CharacterId": 45,
+      "Variant": 5,
+      "File": "remaining-variants/character-45-5-balanced.png",
+      "Sha256": "23E2C215DF4DDA5D11FC3D5B368C58B7C93572CCAB786656C663431802C59DCE",
+      "Reviewed": true,
+      "Note": "Current v003; visually reviewed; target eye patch side, expression, pose, props and scene preserved."
+    },
+    {
+      "CharacterId": 45,
+      "Variant": 6,
+      "File": "remaining-variants/character-45-6-balanced.png",
+      "Sha256": "3627DEB88BB5F0299780490D5DA25F3E93A64290F0D664EFB8D641FFA428984B",
+      "Reviewed": true,
+      "Note": "Current v003; visually reviewed; target eye patch side, expression, pose, props and scene preserved."
+    },
+    {
+      "CharacterId": 46,
+      "Variant": 2,
+      "File": "remaining-variants/character-46-2-balanced.png",
+      "Sha256": "A738BF4BF01203649EBF441BD2F7FC6EF0C21607C49B83DC6BD241BECC0FE9D0",
+      "Reviewed": true,
+      "Note": "Current v003; visually reviewed; variant expression, eye patch presence, props and scene preserved."
+    },
+    {
+      "CharacterId": 46,
+      "Variant": 3,
+      "File": "remaining-variants/character-46-3-balanced.png",
+      "Sha256": "E8E4F2705C6D9DF47BB25607313ACF36EFA018EA3E062603026E5835E5B41BD4",
+      "Reviewed": true,
+      "Note": "Current v003; visually reviewed; variant expression, eye patch presence, props and scene preserved."
+    },
+    {
+      "CharacterId": 46,
+      "Variant": 4,
+      "File": "remaining-variants/character-46-4-balanced.png",
+      "Sha256": "E156EBF38E405D489973E7C68519769269C4136857A4E21404F3E21411A4CE02",
+      "Reviewed": true,
+      "Note": "Current v003; visually reviewed; variant expression, eye patch presence, props and scene preserved."
     }
   ]
 }
