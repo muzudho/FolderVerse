@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 228,
+  "Completed": 231,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1825,6 +1825,30 @@
       "Sha256": "E156EBF38E405D489973E7C68519769269C4136857A4E21404F3E21411A4CE02",
       "Reviewed": true,
       "Note": "Current v003; visually reviewed; variant expression, eye patch presence, props and scene preserved."
+    },
+    {
+      "CharacterId": 46,
+      "Variant": 5,
+      "File": "remaining-variants/character-46-5-balanced.png",
+      "Sha256": "46D67BE4D6106F93ED0B3849DA3C9C229E5B64F9230DA2095686DE48074B43B0",
+      "Reviewed": true,
+      "Note": "書斎：振り向き、黒金ペン・赤電池を保持"
+    },
+    {
+      "CharacterId": 46,
+      "Variant": 6,
+      "File": "remaining-variants/character-46-6-balanced.png",
+      "Sha256": "B4EB2D0CB7432E71237B35FCA80A0F46D69A410B8C8FAC90A242F0BD3849E7F3",
+      "Reviewed": true,
+      "Note": "チェス：白眼帯・伸ばした手・琥珀電池を保持"
+    },
+    {
+      "CharacterId": 47,
+      "Variant": 2,
+      "File": "remaining-variants/character-47-2-balanced.png",
+      "Sha256": "47FC612AFCD0913C6D0E6D345E7DC78648F334A60DFC0919C34ECBAB707A549C",
+      "Reviewed": true,
+      "Note": "くつろぎ：ウインク・猫と兎のぬいぐるみ・紫電池を保持"
     }
   ]
 }

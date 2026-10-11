@@ -341,7 +341,7 @@ public partial class Game1 : Game
     private void DrawWorldUi()
     {
         _ui.Box(PreviewArea,new(23,49,64));
-        _ui.Text("FOLDER VERSE / 世界作成",new(100,60),1.05f,Cream);
+        _ui.Text("FOLDER VERSE / 星抽選フェーズ",new(100,60),1.05f,Cream);
         _ui.Text(_screen==Screen.Rolling?"抽選中 / STOP で確認":"確認 / 左ドラッグで回転",new(100,140),0.7f,new(170,206,216));
         Parameter("Width",_world.Width,270); Parameter("Height",_world.Height,405); Parameter("Depth",_world.Depth,540);
         _ui.Text(_world.Kind,new(1360,685),0.85f,new(255,221,145));
@@ -358,7 +358,7 @@ public partial class Game1 : Game
     }
     private void DrawCastUi()
     {
-        _ui.Text("世界征服者作成",new(54,22),1.1f,Cream);
+        _ui.Text("世界征服者世代抽選フェーズ",new(54,22),1.1f,Cream);
         _ui.Box(CastPreview,new(23,49,64));
         for(int slot=0;slot<20;slot++)
         {

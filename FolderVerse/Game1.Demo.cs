@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -10,6 +10,7 @@ public partial class Game1
     private bool _demoActive;
     private bool _demoIntro;
     private int _demoFinishStage;
+    private int _demoWorldRoll,_demoCastRoll;
     private int _demoMapStage,_demoMapVisits;
     private double _demoMapAge;
     private Point _demoMapPoint;
@@ -34,7 +35,7 @@ public partial class Game1
             _titleIdle+=elapsed;
             if(_titleIdle<10)return false;
             _demoActive=true;_demoIntro=true;_demoAge=_demoStepAge=0;_demoSwing=0;
-            _demoFinishStage=0;
+            _demoFinishStage=0;_demoWorldRoll=_demoCastRoll=0;
             _demoMapStage=_demoMapVisits=0;_demoMapAge=0;_demoDomesticStage=0;_demoDomesticAge=0;
             _demoCursor=new(2040,1140);IsMouseVisible=false;
             return true;
@@ -69,15 +70,18 @@ public partial class Game1
                 if(_demoFinishStage<=2)
                 {StatusMenuClick(button.Center);_demoFinishStage++;}
                 else
-                {_demoActive=false;_demoFinishStage=0;ReturnToTitle();_titleIdle=0;IsMouseVisible=true;}
+                {_demoActive=false;_demoFinishStage=0;_demoWorldRoll=_demoCastRoll=0;ReturnToTitle();_titleIdle=0;IsMouseVisible=true;}
             }
             return true;
         }
+        TickSlots(elapsed);
         _net.UpdateAnimation((float)elapsed);UpdateMapTransition((float)elapsed);
         if(_screen==Screen.WorldStatus && _demoMapVisits%3==0 && UpdateDemoMap(elapsed))return true;
         if(_screen==Screen.WorldStatus)return UpdateDemoDomestic(elapsed);
         var dispositionPoint=_screen==Screen.Disposition?DispositionButton(DemoDispositionChoice()).Center:Point.Zero;
         var aim=_screen==Screen.Disposition?new Vector2(dispositionPoint.X,dispositionPoint.Y):_screen==Screen.WorldStatus?new Vector2(720,1040):_screen is Screen.Battle or Screen.Transport?new Vector2(1840,850):new Vector2(1580,790);
+        if(_screen is Screen.Rolling or Screen.Review)aim=new((_screen==Screen.Review && _demoWorldRoll<3?RetryButton:ActionButton).Center.X,(_screen==Screen.Review && _demoWorldRoll<3?RetryButton:ActionButton).Center.Y);
+        else if(_screen is Screen.CastRolling or Screen.CastReview)aim=new((_screen==Screen.CastReview && _demoCastRoll<3?CastRetry:CastAction).Center.X,(_screen==Screen.CastReview && _demoCastRoll<3?CastRetry:CastAction).Center.Y);
         if(_demoSwing<=0)_demoCursor=Vector2.Lerp(_demoCursor,aim,1-MathF.Exp(-(float)elapsed*2));
         if(_screen==Screen.Transport){UpdateTransport(elapsed,false);_demoStepAge=0;return true;}
         if(_screen==Screen.Battle)
@@ -91,10 +95,10 @@ public partial class Game1
         StartDemoClick();
         switch(_screen)
         {
-            case Screen.Rolling:_screen=Screen.Review;break;
-            case Screen.Review:BeginCast();break;
-            case Screen.CastRolling:_screen=Screen.CastReview;break;
-            case Screen.CastReview:BeginPlacement();break;
+            case Screen.Rolling:_demoWorldRoll++;_screen=Screen.Review;break;
+            case Screen.Review:if(_demoWorldRoll<3)BeginRolling();else BeginCast();break;
+            case Screen.CastRolling:_demoCastRoll++;_screen=Screen.CastReview;break;
+            case Screen.CastReview:if(_demoCastRoll<3)BeginCast();else BeginPlacement();break;
             case Screen.PlacementRolling:_screen=Screen.PlacementReview;break;
             case Screen.PlacementReview:BeginSelection();break;
             case Screen.PlayerSelect:_setup.SelectPlayer(0);_screen=Screen.PlayerReady;break;
