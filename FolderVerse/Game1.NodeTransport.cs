@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -65,9 +65,9 @@ public partial class Game1
         _ui.Button(new(84,270,374,46),"ふつうの移送",_nodeTransportDisposal?Muted:Accent,.5f);
         _ui.Button(new(480,270,374,46),"廃棄としての移送",_nodeTransportDisposal?Accent:Muted,.5f);
         for(int mask=1;mask<=7;mask++)_ui.Button(new(84+(mask-1)%4*196,322+(mask-1)/4*56,182,46),PartsLabel((RobotParts)mask),_nodeTransportPart==(RobotParts)mask?Accent:Muted,.48f);
-        int total=_setup.Robots.Transport.Plan(node.Id,_setup.PlayerSlot,_nodeTransportPart,_nodeTransportDisposal).Sum(w=>w.Twentieths)*5;
-        int combined=total+_setup.Robots.Transport.Plan(node.Id,_setup.PlayerSlot,_nodeTransportPart,!_nodeTransportDisposal).Sum(w=>w.Twentieths)*5;
-        _ui.Text($"選択中 {total}% / ふつう＋廃棄 {combined}% / 残り {100-combined}% は留まる",new(84,437),.43f,Cream);
+        int total=_setup.Robots.Transport.Plan(node.Id,_setup.PlayerSlot,_nodeTransportPart,_nodeTransportDisposal).Sum(w=>w.Degrees);
+        int combined=total+_setup.Robots.Transport.Plan(node.Id,_setup.PlayerSlot,_nodeTransportPart,!_nodeTransportDisposal).Sum(w=>w.Degrees);
+        _ui.Text($"選択中 {RateLabel(total)} / ふつう＋廃棄 {RateLabel(combined)} / 残り {RateLabel(360-combined)} は留まる",new(84,437),.43f,Cream);
         _ui.Text("地図上の移送先と割合をクリック",new(84,490),.65f,Cream);
         var encounters=NodeReinforcementChoices;
         string reinforcement=encounters.Length==0?"増援先の継戦なし":$"継戦 #{encounters[Math.Clamp(_nodeReinforcementIndex,0,encounters.Length-1)].Id} へ完成体を増援";

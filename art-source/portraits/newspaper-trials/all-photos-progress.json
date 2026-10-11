@@ -1,6 +1,6 @@
 {
   "Total": 480,
-  "Completed": 83,
+  "Completed": 89,
   "Photos": [
     {
       "CharacterId": 1,
@@ -489,6 +489,24 @@
       "Reviewed": true
     },
     {
+      "CharacterId": 7,
+      "Kind": "election",
+      "File": "character-07-election-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "98D93AA87DD9BEC0F2AFDBEBA0EB8C88C1283B75C4FE2837CC28EF92A8E46E36",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 7,
+      "Kind": "idol",
+      "File": "character-07-idol-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "1C89B36F34812ED5F2DF47522DC205A20736B57FB52468BE03A152FF8F8EC1A1",
+      "Reviewed": true
+    },
+    {
       "CharacterId": 8,
       "Kind": "formal",
       "File": "character-08-formal-v001.png",
@@ -522,6 +540,42 @@
       "Width": 1200,
       "Height": 1600,
       "Sha256": "DDE714F7C09DCF36F3EDAC53D38DDF9914A91B35B1CA1906BE3572986FCF1034",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 8,
+      "Kind": "history",
+      "File": "character-08-history-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "AB5F85F6C49F909BAEE46ABC10C920B4BD17CB9A6BC946F06BC1B4FD74932343",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 8,
+      "Kind": "coin",
+      "File": "character-08-coin-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "14001A8119C5F3F9B9AEE9CD5DDFFB5F9F2399540375B49ED4A435F57E51DB34",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 8,
+      "Kind": "election",
+      "File": "character-08-election-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "DF0ED15912B5C3D3D04C3441D507A59B2C900F3535DDB358458540E31640EEE0",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 8,
+      "Kind": "idol",
+      "File": "character-08-idol-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "C7DC10CEFC43A49935A6394096E0ABD663247F82B6D2681B74919CC6C12F2CA8",
       "Reviewed": true
     },
     {

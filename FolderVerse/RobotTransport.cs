@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public sealed record TransportWeight(int Target,int Twentieths);
+public sealed record TransportWeight(int Target,int Degrees);
 public sealed record RobotShipment(int Source,int Target,long RobotId,RobotParts Parts,bool Disposal=false);
 public sealed class RobotTransport
 {
@@ -17,8 +17,8 @@ public sealed class RobotTransport
     public void SetPlan(int node,int owner,RobotParts parts,IEnumerable<TransportWeight> weights,bool disposal=false)
     {
         RobotWorld.Validate(owner,parts);var values=weights.OrderBy(w=>w.Target).ToArray();
-        if(node<0 || values.Any(w=>w.Target<0 || w.Target==node || w.Twentieths<0 || w.Twentieths>20) || values.Sum(w=>w.Twentieths)>20 || values.Select(w=>w.Target).Distinct().Count()!=values.Length)throw new ArgumentException("Invalid transport weights.");
-        if(values.Sum(w=>w.Twentieths)+Plan(node,owner,parts,!disposal).Sum(w=>w.Twentieths)>20)throw new ArgumentException("Combined normal/disposal transport exceeds 100%.");
+        if(node<0 || values.Any(w=>w.Target<0 || w.Target==node || w.Degrees<0 || w.Degrees>360) || values.Sum(w=>w.Degrees)>360 || values.Select(w=>w.Target).Distinct().Count()!=values.Length)throw new ArgumentException("Invalid transport weights.");
+        if(values.Sum(w=>w.Degrees)+Plan(node,owner,parts,!disposal).Sum(w=>w.Degrees)>360)throw new ArgumentException("Combined normal/disposal transport exceeds 100%.");
         _plans[(node,owner,parts,disposal)]=values;
     }
     public void SetPriority(int target,IEnumerable<int> sources)
@@ -42,11 +42,11 @@ public sealed class RobotTransport
                     var plan=Plan(node,robot.Owner,(RobotParts)mask).Select(w=>(Weight:w,Disposal:false))
                         .Concat(Plan(node,robot.Owner,(RobotParts)mask,true).Select(w=>(Weight:w,Disposal:true))).ToArray();
                     if(plan.Length==0){if(_plans.ContainsKey((node,robot.Owner,(RobotParts)mask,false)) || _plans.ContainsKey((node,robot.Owner,(RobotParts)mask,true)))break;continue;}
-                    int roll=random.Next(20),sum=0;
-                    if(roll>=plan.Sum(w=>w.Weight.Twentieths))break; // Explicit stay must not fall through to a lower plan.
+                    int roll=random.Next(360),sum=0;
+                    if(roll>=plan.Sum(w=>w.Weight.Degrees))break; // Explicit stay must not fall through to a lower plan.
                     foreach(var weight in plan)
                     {
-                        sum+=weight.Weight.Twentieths;if(roll>=sum)continue;
+                        sum+=weight.Weight.Degrees;if(roll>=sum)continue;
                         if(weight.Weight.Target<world.Nodes.Length && connected(node,weight.Weight.Target) && locked?.Invoke(weight.Weight.Target)!=true && (canEnter?.Invoke(robot.Owner,weight.Weight.Target)??true))queue.Enqueue(new(node,weight.Weight.Target,robot.Id,(RobotParts)mask,weight.Disposal));
                         break;
                     }

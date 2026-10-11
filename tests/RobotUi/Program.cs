@@ -36,7 +36,7 @@ sealed class RobotUiCheck:Game1
                 Check(world.Robots.PendingEdits.Count==1,"Assembly queues before disposal completion");world.Robots.Advance((a,b)=>false,_=>0,1);
                 Check(world.Robots.Nodes[node.Id].Count==1 && world.Robots.Nodes[node.Id].Robots[0].CanFight,"Assembly fixture");
                 Click(700,345);Check(world.Robots.Workshops[node.Id].Product==RobotParts.Head,"Factory retained until node settings changed");
-                Click(780,477);Check(world.Robots.Transport.Plan(node.Id,0,RobotParts.Head).Sum(w=>w.Twentieths)==1,"5% transport editing");
+                Click(780,477);Check(world.Robots.Transport.Plan(node.Id,0,RobotParts.Head).Sum(w=>w.Degrees)==1,"5% transport editing");
                 Click(530,507);Check(world.Robots.Transport.Priority(node.Id).Count>0,"Receiving priority UI");
                 var complete=world.Robots.Nodes[node.Id].Robots.Single();
                 int neighbor=world.Nodes.At(world.Routes.Neighbors(node)[0].Target,world.Routes.Neighbors(node)[0].Entry).Id;
@@ -290,10 +290,10 @@ sealed class RobotUiCheck:Game1
                 node.Owner=1;Call("NodeDialogClick",new Point(400,910),new Microsoft.Xna.Framework.Input.KeyboardState());
                 Check((bool)Get("_nodeTransportOpen"),"Enemy-controlled node transport planning opens");
                 var route=world.Routes.Neighbors(node).First();int destination=world.Nodes.At(route.Target,route.Entry).Id;
-                Set("_nodeTransportPart",RobotParts.Complete);world.Robots.Transport.SetPlan(node.Id,1,RobotParts.Complete,new[]{new TransportWeight(destination,7)});
+                Set("_nodeTransportPart",RobotParts.Complete);world.Robots.Transport.SetPlan(node.Id,1,RobotParts.Complete,new[]{new TransportWeight(destination,126)});
                 Call("NodeDialogClick",new Point(780,477),new Microsoft.Xna.Framework.Input.KeyboardState());
-                Check(world.Robots.Transport.Plan(node.Id,0,RobotParts.Complete).Single(w=>w.Target==destination).Twentieths==1,"Personal plan saved on enemy node");
-                Check(world.Robots.Transport.Plan(node.Id,1,RobotParts.Complete).Single().Twentieths==7,"Other conqueror plan preserved");
+                Check(world.Robots.Transport.Plan(node.Id,0,RobotParts.Complete).Single(w=>w.Target==destination).Degrees==1,"Personal plan saved on enemy node");
+                Check(world.Robots.Transport.Plan(node.Id,1,RobotParts.Complete).Single().Degrees==126,"Other conqueror plan preserved");
             }
             if(frame==25)
             {
@@ -328,7 +328,7 @@ sealed class RobotUiCheck:Game1
                 Call("NodeDialogClick",new Point(400,910),new Microsoft.Xna.Framework.Input.KeyboardState());
                 Call("NodeDialogClick",new Point(650,290),new Microsoft.Xna.Framework.Input.KeyboardState());Call("NodeDialogClick",new Point(700,345),new Microsoft.Xna.Framework.Input.KeyboardState());
                 Call("NodeDialogClick",new Point(780,477),new Microsoft.Xna.Framework.Input.KeyboardState());
-                Check(world.Robots.Transport.Plan(node.Id,0,RobotParts.Head,true).Sum(w=>w.Twentieths)==1 && world.Robots.Transport.Plan(node.Id,0,RobotParts.Head).Count==0,"UI disposal transfer plan separated from normal");
+                Check(world.Robots.Transport.Plan(node.Id,0,RobotParts.Head,true).Sum(w=>w.Degrees)==1 && world.Robots.Transport.Plan(node.Id,0,RobotParts.Head).Count==0,"UI disposal transfer plan separated from normal");
             }
             if(frame==28)
             {

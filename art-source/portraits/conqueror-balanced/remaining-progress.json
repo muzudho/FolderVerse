@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 232,
+  "Completed": 235,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1857,6 +1857,30 @@
       "Sha256": "329AF57CF8A1CA13DA76B688FC33A22F95C7267DCD870C1908DE1ECAD901708C",
       "Reviewed": true,
       "Note": "製菓：閉眼笑顔・赤電池・猫と楽器風小物・ケーキ保持"
+    },
+    {
+      "CharacterId": 47,
+      "Variant": 4,
+      "File": "remaining-variants/character-47-4-balanced.png",
+      "Sha256": "1A588A906CFC6B9B0C6E49AE4001E473D33A759F9CE26FDA5DFA2AC6BD1345A2",
+      "Reviewed": true,
+      "Note": "ケーキ砲：戦闘姿勢・赤電池・白手袋を保持"
+    },
+    {
+      "CharacterId": 47,
+      "Variant": 5,
+      "File": "remaining-variants/character-47-5-balanced.png",
+      "Sha256": "B277D03B5D696A12A2F5DFE0740033950D9EC8A2EBF6F0851A546524F5C17347",
+      "Reviewed": true,
+      "Note": "書斎の居眠り：閉眼・組んだ腕・本と琥珀電池"
+    },
+    {
+      "CharacterId": 47,
+      "Variant": 6,
+      "File": "remaining-variants/character-47-6-balanced.png",
+      "Sha256": "45EFFB62AD8ED929395DF84EE3592E002D8EDFA96BE8358622A0961FEDE2DC42",
+      "Reviewed": true,
+      "Note": "喫茶：黒フォークと苺ケーキ・皿・赤電池"
     }
   ]
 }

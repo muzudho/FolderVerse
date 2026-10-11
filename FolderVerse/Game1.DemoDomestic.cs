@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -36,7 +36,7 @@ public partial class Game1
             case 1:OpenNodeTransport();break;
             case 2:
                 DestinationMapClick(target);
-                if(_rateTarget>=0)SetDestinationRate(_rateTarget,Rate(_rateTarget)+1);break;
+                if(_rateTarget>=0)SetDestinationRate(_rateTarget,Rate(_rateTarget)+30);break;
             case 3:
                 OpenNodeAssembly();
                 _demoSourceSlot=Enumerable.Range(0,12).FirstOrDefault(i=>_hangarSlots[i].HasValue && _setup.Robots.Nodes[_populationNode].Robots.Any(r=>r.Id==_hangarSlots[i] && r.Parts==RobotParts.Complete && CanMoveHangarRobot(r)),-1);

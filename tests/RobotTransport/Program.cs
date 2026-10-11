@@ -30,10 +30,10 @@ world=World();Fill(world,0);Fill(world,1);Fill(world,2);var x=world.Nodes[0].Rob
 world.Transport.Resolve(world,new[]{new RobotShipment(0,1,x.Id,x.Parts),new RobotShipment(1,2,y.Id,y.Parts)},(s,t)=>true);
 Check(world.Transport.LastTransfers.Count==0 && world.Nodes[0].Robots.Contains(x) && world.Nodes[1].Robots.Contains(y),"Cascading rollback");
 world=World();partial=Add(world,0,5);Fill(world,1);Add(world,2,3);Fill(world,2,11);
-world.Transport.SetPlan(0,0,(RobotParts)5,new[]{new TransportWeight(1,20)});world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(2,20)});
+world.Transport.SetPlan(0,0,(RobotParts)5,new[]{new TransportWeight(1,360)});world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(2,360)});
 world.Transport.ResolvePlans(world,(s,t)=>true,42);Check(world.Transport.LastTransfers.Single().Parts==RobotParts.Head && world.Nodes[0].Robots.Single().Parts==RobotParts.Legs,"Lower plan after failed complete route");
-Reject(()=>world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(1,21)}));world.Check();
-world=World();partial=Add(world,0,5);world.Transport.SetPlan(0,0,(RobotParts)5,Array.Empty<TransportWeight>());world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(1,20)});
+Reject(()=>world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(1,361)}));world.Check();
+world=World();partial=Add(world,0,5);world.Transport.SetPlan(0,0,(RobotParts)5,Array.Empty<TransportWeight>());world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(1,360)});
 world.Transport.ResolvePlans(world,(s,t)=>true,1);Check(world.Transport.LastTransfers.Count==0 && world.Nodes[0].Robots.Single()==partial,"Explicit stay does not select lower plan");
 for(int seed=0;seed<100;seed++)
 {
@@ -54,9 +54,9 @@ for(int seed=0;seed<100;seed++)
 }
 Console.WriteLine("PASS: robot parts, capacity, assembly, split, factories, full exchange, receiving priorities, partial rollback, cascades and lower transport plans.");
 
-world=World();var planned=Add(world,0);world.Transport.SetPlan(0,0,RobotParts.Complete,new[]{new TransportWeight(1,20)});
+world=World();var planned=Add(world,0);world.Transport.SetPlan(0,0,RobotParts.Complete,new[]{new TransportWeight(1,360)});
 world.Advance((x,y)=>true,n=>n==1?1:0,44,null,(owner,target)=>target!=1);
-Check(world.Nodes[0].Robots.Any(r=>r.Id==planned.Id) && world.Nodes[1].Count==0 && world.Transport.Plan(0,0,RobotParts.Complete).Single().Twentieths==20,"Hostile destination holds robot and preserves future plan");
+Check(world.Nodes[0].Robots.Any(r=>r.Id==planned.Id) && world.Nodes[1].Count==0 && world.Transport.Plan(0,0,RobotParts.Complete).Single().Degrees==360,"Hostile destination holds robot and preserves future plan");
 world.Advance((x,y)=>true,n=>0,45,null,(owner,target)=>true);
 Check(world.Nodes[1].Robots.Any(r=>r.Id==planned.Id),"Saved plan executes when territory opens");
 
@@ -73,7 +73,7 @@ world.Advance((x,y)=>true,_=>0,1);Check(world.Workshops[0].DisposalTarget==slow.
 world.Advance((x,y)=>true,_=>0,2);Check(world.Workshops[0].DisposalTarget==quick.Id && world.Workshops[0].DisposalAge==0 && world.Nodes[0].Count==1,"Next lane starts without an extra tick");
 world.Advance((x,y)=>true,_=>0,3);Check(world.Nodes[0].Count==0,"Queued head completes in one tick");
 world=World();var shipped=Add(world,0,4);var normalLeg=Add(world,1,1);world.Workshops[1].ConfigureDisposal();
-world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(1,20)},true);
+world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(1,360)},true);
 Reject(()=>world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(1,1)}));
 world.Advance((x,y)=>true,_=>0,1);Check(world.Nodes[1].Count==2 && world.Nodes[1].Robots.Single(r=>r.Id==shipped.Id).Disposal && world.Workshops[1].DisposalTarget==shipped.Id && world.Workshops[1].DisposalAge==0,"Scrap shipment flags cargo without merging normal robot and automatically enters lane");
 world.Advance((x,y)=>true,_=>0,2);Check(world.Nodes[1].Count==1 && world.Nodes[1].Robots[0].Id==normalLeg.Id,"Only flagged cargo is scrapped");
@@ -95,11 +95,18 @@ Check(world.Nodes[0].Count==2 && world.Nodes[0].Robots.Single(r=>r.Id==manual.Id
 world.MovePart(0,movedHead,RobotParts.Head,manual.Id);Check(world.Nodes[0].Count==1 && world.Nodes[0].Robots[0].Id==manual.Id && world.Nodes[0].Robots[0].Parts==RobotParts.Complete,"Manual drop reassembles preserving target identity");
 var duplicateHead=Add(world,0,4);Reject(()=>world.MovePart(0,manual.Id,RobotParts.Head,duplicateHead.Id));Check(world.Nodes[0].Count==2 && world.Nodes[0].Robots.Single(r=>r.Id==manual.Id).Parts==RobotParts.Complete,"Duplicate drop is atomic");
 world.QueueSplit(0,manual.Id,RobotParts.Head);Reject(()=>world.MovePart(0,manual.Id,RobotParts.Head,null));world.PendingEdits.Clear();
-world.Workshops[0].AutoAssemblyDisabled=true;world.Transport.SetPlan(0,0,RobotParts.Body,new[]{new TransportWeight(1,20)});
+world.Workshops[0].AutoAssemblyDisabled=true;world.Transport.SetPlan(0,0,RobotParts.Body,new[]{new TransportWeight(1,360)});
 world.Advance((x,y)=>true,_=>0,1);Check(world.Nodes[0].Robots.Any(r=>r.Id==manual.Id && r.Parts==RobotParts.Complete) && world.Nodes[1].Count==0,"Auto disabled blocks partial-plan disassembly");
-world.Transport.SetPlan(0,0,RobotParts.Complete,new[]{new TransportWeight(1,20)});world.Advance((x,y)=>true,_=>0,2);Check(world.Nodes[1].Robots.Any(r=>r.Id==manual.Id),"Whole-robot transport still works when auto disabled");
+world.Transport.SetPlan(0,0,RobotParts.Complete,new[]{new TransportWeight(1,360)});world.Advance((x,y)=>true,_=>0,2);Check(world.Nodes[1].Robots.Any(r=>r.Id==manual.Id),"Whole-robot transport still works when auto disabled");
 world=World();var incoming=Add(world,0,4);var resident=Add(world,1,3);world.Workshops[1].AutoAssemblyDisabled=true;
 world.Transport.Resolve(world,new[]{new RobotShipment(0,1,incoming.Id,RobotParts.Head)},(x,y)=>true);Check(world.Nodes[1].Count==2,"Auto-disabled destination keeps complementary parts separate");
 world.Workshops[1].AutoAssemblyDisabled=false;var normalHead=Add(world,0,4);world.Transport.Resolve(world,new[]{new RobotShipment(0,1,normalHead.Id,RobotParts.Head)},(x,y)=>true);Check(world.Nodes[1].Robots.Single(r=>r.Id==resident.Id).Parts==RobotParts.Complete,"Re-enabled destination restores automatic arrival assembly");
 world=World();Fill(world,0);Reject(()=>world.MovePart(0,world.Nodes[0].Robots[0].Id,RobotParts.Head,null));Check(world.Nodes[0].Count==12,"Full hangar rejects split without losing part");
 Console.WriteLine("PASS: manual part movement, atomic invalid drops, reservations/capacity and node automatic assembly override.");
+
+world=World();
+world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(1,120),new TransportWeight(2,1)});
+Check(world.Transport.Plan(0,0,RobotParts.Head).Sum(w=>w.Degrees)==121,"Exact one-third and one-degree allocation");
+world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(1,239)},true);
+Reject(()=>world.Transport.SetPlan(0,0,RobotParts.Head,new[]{new TransportWeight(1,240)},true));
+Check(world.Transport.Plan(0,0,RobotParts.Head,true).Single().Degrees==239,"Rejected combined overflow preserves previous plan");

@@ -71,3 +71,6 @@ No.9最新優先見本v006: バックレスキャップの後ろから束ねた�
 No.9最新優先見本v007: 高いアップ髪を廃止し後頭部下側に重み・毛量を集める。短く柔らかく束ねた後ろ髪は肩に触れず、黒兎耳の輪郭と分離。characters/character-09/redesign-black-rabbit/design-spec.md と character-09-black-rabbit-design-v007.png を優先。原画・最終プロンプト保存、視覚確認済み。
 
 No.9ユーザーフィックス承認: 最新正式参照 characters/character-09/redesign-black-rabbit/character-09-black-rabbit-design-v008.png。approved-design.json / design-spec.md保存。球形の帽子と前髪→耳で締まる→大きなカール束が横へ広がりあごの側面にかかる形を維持。後頭部下側に毛量、肩に触れず兎耳と分離。今後No.9全シリーズの制作でこの承認デザインを優先する。旧画像は保存、ゲーム未置換。
+
+2026-10-11 20:36 JST batch: No.7 election/idol and No.8 history generated and visually reviewed. No.7 blonde curls closed eyes white rabbit/elf ears brass blue goggles green/gold; No.8 black bob blue eyes silver round glasses gold laurels. Raw,1200x1600,prompts saved;86/480 verified and game imported. Next photos No.8 coin/election/idol. Next variants No.47 v4;232/300. No.9 fixed approved reference v008. No commit/push.
+2026-10-11 21:48 JST batch: No.8 coin/election/idol visually reviewed and saved. Black bob, blue eyes, silver round glasses, gold laurel identity preserved. Originals, 1200x1600 and prompts saved; photo progress and 300x400 game imports verified. Next photos No.9 approved design v008 (old four photos retained, pending replacement); next variants No.48 v2. Variants 235/300, photos 89/480. No commit/push.
