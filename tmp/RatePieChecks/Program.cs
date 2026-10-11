@@ -26,12 +26,19 @@ class CheckGame:Game1
   }
   if(count!=40)throw new Exception("Preset count");
   Call("SetDestinationRate",target,120);
-  Console.WriteLine("PASS: 40 buttons, all fractions and 120-degree allocation");
+  var method=typeof(Game1).GetMethod("TransportTriangleSize",BindingFlags.Static|BindingFlags.NonPublic)!;
+  foreach(var pair in new[]{(0,8f),(17,8f),(18,12f),(29,12f),(30,17f),(59,17f),(60,23f),(89,23f),(90,30f),(360,30f)})
+    if(Math.Abs((float)method.Invoke(null,new object[]{pair.Item1})!-pair.Item2)>.0001f)throw new Exception("Arrow threshold");
+  Call("OpenTransportOverview");if(!(bool)Get("_transportOverview") || (int)Get("_populationCell")>=0)throw new Exception("Ruler transport entry");
+  Set("_populationNode",source.Id);Set("_rateTarget",target);Call("SetDestinationRate",target,120);
+  Call("RatePieClick",new Point(1800,970));if(!(bool)Get("_transportOverview") || (int)Get("_rateTarget")>=0)throw new Exception("Dialog close lost overview");
+  Call("CloseTransportOverview");
+  Console.WriteLine("PASS: fractions, arrow thresholds, ruler mode and continuing after dialog close");
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t)
  {
-  GraphicsDevice.Clear(new Color(238,225,199));var batch=(SpriteBatch)Get("_spriteBatch");batch.Begin();Call("DrawRatePieDialog");batch.End();
+  GraphicsDevice.Clear(new Color(238,225,199));var batch=(SpriteBatch)Get("_spriteBatch");batch.Begin();Call("OpenTransportOverview");Set("_statusGlobe",false);((CubeNet)Get("_net")).SetCenter((WorldSetup)Get("_setup"),0);Call("PrepareDestinationMap");((CubeNet)Get("_net")).Draw((UiPainter)Get("_ui"),(WorldSetup)Get("_setup"),new Rectangle(1040,240,790,580),-1,0);Call("DrawTransportOverviewMap");Call("DrawTransportOverviewPanel");batch.End();
   var colors=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(colors);
   using var tex=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);tex.SetData(colors);
   using var output=File.Create(Path.Combine(AppContext.BaseDirectory,"rate-pie.png"));tex.SaveAsPng(output,tex.Width,tex.Height);Exit();

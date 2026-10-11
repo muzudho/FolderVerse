@@ -50,10 +50,6 @@ public partial class Game1
     }
     private void DrawNodeTransportTile()
     {
-        _ui.Box(NodeTransportTile,_nodeTransportOpen || NodeTransportTile.Contains(_pointer)?Accent:Muted);
-        _spriteBatch.Draw(_robotTransportIcon,new Rectangle(290,891,52,52),Color.White);
-        _ui.Center("ロボット輸送計画",new(344,885,112,60),.24f,Cream);
-        if(_nodeTransportOpen)_ui.Box(new(NodeTransportTile.X,NodeTransportTile.Y,NodeTransportTile.Width,4),Cream);
     }
     private void DrawNodeTransport()
     {

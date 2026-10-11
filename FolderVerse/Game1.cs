@@ -215,7 +215,7 @@ public partial class Game1 : Game
                         _world.GlobeZoom=MathHelper.Clamp(_world.GlobeZoom*MathF.Pow(1.2f,wheel/120f),.5f,16);
                     }
                 }
-                bool action=click && (RouteLayerClick(_pointer) || MovementClick(_pointer,keyboard) || NodeDialogClick(_pointer,keyboard));
+                bool action=click && (TransportOverviewClick(_pointer) || RouteLayerClick(_pointer) || MovementClick(_pointer,keyboard) || NodeDialogClick(_pointer,keyboard));
                 if(!action && click && NetButton(0).Contains(_pointer))_yaw-=MathHelper.PiOver4;
                 else if(click && NetButton(1).Contains(_pointer))_yaw+=MathHelper.PiOver4;
                 else if(click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
@@ -237,7 +237,8 @@ public partial class Game1 : Game
             }
             _statusCell=_net.IsAnimating?-1:_net.Hit(_setup,NetPanel,_pointer);
             _net.HoverEdge(NetPanel,_pointer);
-            if(click && RouteLayerClick(_pointer)){}
+            if(click && TransportOverviewClick(_pointer)){}
+            else if(click && RouteLayerClick(_pointer)){}
             else if(click && MovementClick(_pointer,keyboard)){}
             else if(click && NodeDialogClick(_pointer,keyboard)){}
             else if(click && NetButton(0).Contains(_pointer))_net.Turn(_setup,-1);
@@ -543,6 +544,8 @@ public partial class Game1 : Game
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(984,1037,870,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
         if(_populationCell>=0)DrawNodeDialog();
         if(_movementOpen)DrawMovementPanel();
+        _ui.Button(TransportOverviewButton,"ロボット輸送",_transportOverview?Accent:Muted,.45f);
+        if(_transportOverview){DrawTransportOverviewPanel();if(_rateTarget>=0)DrawRatePieDialog();}
         DrawRouteLayerButtons();
         DrawStatusMenu();
         DrawNodeTooltip();

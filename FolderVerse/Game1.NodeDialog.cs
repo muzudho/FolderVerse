@@ -7,14 +7,14 @@ public partial class Game1
 {
     private int _populationCell=-1;
     private int _populationNode=-1;
-    private static readonly Rectangle PopulationTurnButton=new(548,1018,350,52);
+    private static readonly Rectangle PopulationTurnButton=new(648,1018,250,52);
     private bool NodeDialogClick(Point pointer,KeyboardState keyboard)
     {
-        if(PopulationTurnButton.Contains(pointer)){_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);OpenBattle();return true;}
+        if(PopulationTurnButton.Contains(pointer)){if(_transportOverview)CloseTransportOverview();_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);OpenBattle();return true;}
         if(_populationCell<0)return false;
         if(NodeAssemblyTile.Contains(pointer)){if(_nodeAssemblyOpen)_nodeAssemblyOpen=false;else OpenNodeAssembly();return true;}
         if(NodeDisposalTile.Contains(pointer)){if(_nodeDisposalOpen)_nodeDisposalOpen=false;else OpenNodeDisposal();return true;}
-        if(NodeTransportTile.Contains(pointer)){if(_nodeTransportOpen)_nodeTransportOpen=false;else OpenNodeTransport();return true;}
+
         if(NodeFactoryTile.Contains(pointer)){if(_nodeFactoryOpen)_nodeFactoryOpen=false;else OpenNodeFactory();return true;}
         if(_nodeAssemblyOpen){if(new Rectangle(803,169,58,44).Contains(pointer))_nodeAssemblyOpen=false;return new Rectangle(54,150,850,825).Contains(pointer);}
         if(_nodeDisposalOpen)return NodeDisposalClick(pointer);

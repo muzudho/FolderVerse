@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 235,
+  "Completed": 238,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1881,6 +1881,30 @@
       "Sha256": "45EFFB62AD8ED929395DF84EE3592E002D8EDFA96BE8358622A0961FEDE2DC42",
       "Reviewed": true,
       "Note": "喫茶：黒フォークと苺ケーキ・皿・赤電池"
+    },
+    {
+      "CharacterId": 48,
+      "Variant": 2,
+      "File": "remaining-variants/character-48-2-balanced.png",
+      "Sha256": "8AC115E0F20B5F792FD238E8574B832587BF14DEA185F85CE1E10A4AD1698D64",
+      "Reviewed": true,
+      "Note": "Visual review passed; original scene/expression, amber eyes, black hair, elf ears, glasses and celestial ornaments retained."
+    },
+    {
+      "CharacterId": 48,
+      "Variant": 3,
+      "File": "remaining-variants/character-48-3-balanced.png",
+      "Sha256": "098B8EBD32CF11F45E2642D097C2B10D19FF55C8E7A3E2637A845393AD71275C",
+      "Reviewed": true,
+      "Note": "Visual review passed; original scene/expression, amber eyes, black hair, elf ears, glasses and celestial ornaments retained."
+    },
+    {
+      "CharacterId": 48,
+      "Variant": 4,
+      "File": "remaining-variants/character-48-4-balanced.png",
+      "Sha256": "D6080FACF8DFF65470DA930E9DE5A0B6809B02F4C561E401EF69EABF167649F7",
+      "Reviewed": true,
+      "Note": "Visual review passed; original scene/expression, amber eyes, black hair, elf ears, glasses and celestial ornaments retained."
     }
   ]
 }

@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -10,10 +10,11 @@ public partial class Game1
     private long _escort;
     private bool _routesBeforeMovement;
     private int _selectedMoveNode=-1;
-    private static readonly Rectangle MovementButton=new(328,1018,208,52);
+    private static readonly Rectangle MovementButton=new(254,1018,160,52);
     private static readonly Rectangle ConfirmMoveButton=new(570,914,274,48);
     private void OpenMovement()
     {
+        if(_transportOverview)CloseTransportOverview();
         _dragging=false;
         _routesBeforeMovement=_net.ShowRoutes;_net.ShowRoutes=true;_movementOpen=true;
         _populationCell=-1;_escort=Math.Min(_escort,AvailableEscort);_selectedMoveNode=-1;

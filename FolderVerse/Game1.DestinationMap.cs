@@ -10,7 +10,7 @@ public partial class Game1
     private bool _rateDragging;
     private void UpdateRateDrag(MouseState mouse,bool active,bool click)
     {
-        if(!active || !DestinationOperation || _rateTarget<0 || mouse.LeftButton!=ButtonState.Pressed){_rateDragging=false;return;}
+        if(!active || !(DestinationOperation || _transportOverview) || _rateTarget<0 || mouse.LeftButton!=ButtonState.Pressed){_rateDragging=false;return;}
         if(click && Vector2.Distance(new Vector2(_pointer.X,_pointer.Y),RatePieCenter)<=110)_rateDragging=true;
         if(_rateDragging)SetDestinationRate(_rateTarget,PointerDegrees(_pointer));
     }
@@ -58,7 +58,7 @@ public partial class Game1
     }
     private void PrepareDestinationMap()
     {
-        _net.VisibleOperationNodes=DestinationOperation?new HashSet<int>(DestinationNodes().Append(OperationSource)):null;
+        _net.VisibleOperationNodes=!_transportOverview && DestinationOperation?new HashSet<int>(DestinationNodes().Append(OperationSource)):null;
     }
     private bool OperationPosition(int id,out Vector2 at)
     {
@@ -92,6 +92,7 @@ public partial class Game1
     }
     private void DrawDestinationMap()
     {
+        if(_transportOverview){DrawTransportOverviewMap();return;}
         if(!DestinationOperation){_rateTarget=-1;return;}
         foreach(int id in DestinationNodes().Append(OperationSource).Distinct())
         {
