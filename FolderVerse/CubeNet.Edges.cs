@@ -133,12 +133,12 @@ public sealed partial class CubeNet
             for(int y=0;y<detail;y++)for(int x=0;x<detail;x++)
             {
                 var p=cell.Origin+cell.U*((x+.5f)/detail)+cell.V*((y+.5f)/detail);float elevation=WorldTerrain.Elevation(p,offset);
-                var color=WorldTerrain.ColorAt(elevation,cell.Normal);
-                var post=world.Nodes.At(cell.Id,new Point(x,y));if(!ShowRoutes && post!=null)color=Color.Lerp(color,world.OwnerColor(post.Owner),post.Owner==world.PlayerSlot?.4f:.16f);
+                var color=TerrainColor(world,cell.Id,elevation);
+                var post=world.Nodes.At(cell.Id,new Point(x,y));
                 ui.Tile(Project(p),new Vector2(fit.Scale/detail+1),moving?angle:0,color);
             }
             var corners=cell.Corners;
-            for(int edge=0;!ShowRoutes && edge<4;edge++)
+            for(int edge=0;ShowCountryColors && edge<4;edge++)
             {
                 var neighbor=cell.Neighbors.First(id=>world.Cells[id].Corners.Contains(corners[edge]) && world.Cells[id].Corners.Contains(corners[(edge+1)%4]));
                 int owner=world.Nodes.FullOwner(cell.Id);

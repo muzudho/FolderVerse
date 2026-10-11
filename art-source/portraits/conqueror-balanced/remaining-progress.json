@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 244,
+  "Completed": 245,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1953,6 +1953,14 @@
       "Sha256": "86AD74580397EBDC5AF4AD2C555B0CA5E1FD20692456FD9405B6F6FD815B4845",
       "Reviewed": true,
       "Note": "振り返り・流れる黒髪・パンダ緑電池維持、余分な手なし"
+    },
+    {
+      "CharacterId": 49,
+      "Variant": 6,
+      "File": "remaining-variants/character-49-6-balanced.png",
+      "Sha256": "BB7F9008E37F1ABD3FE8FE919D808F543BA3E8A62AAF989C45CE97DBC315D9C5",
+      "Reviewed": true,
+      "Note": "Closed-eye joyous reaching pose, panda and green battery preserved; reviewed"
     }
   ]
 }

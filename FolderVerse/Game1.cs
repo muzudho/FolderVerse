@@ -330,9 +330,9 @@ public partial class Game1 : Game
     }
     private void Rotate(MouseState mouse,bool click,bool active,Rectangle area)
     {
-        if(click && area.Contains(_pointer))_dragging=true;
-        if(!active || mouse.LeftButton==ButtonState.Released)_dragging=false;
-        if(_dragging && !click)
+        if(active && mouse.RightButton==ButtonState.Pressed && _previousMouse.RightButton==ButtonState.Released && area.Contains(_pointer))_dragging=true;
+        if(!active || mouse.RightButton==ButtonState.Released)_dragging=false;
+        if(_dragging && _previousMouse.RightButton==ButtonState.Pressed)
         { var old=CanvasPoint(_previousMouse); _yaw+=(_pointer.X-old.X)*0.008f; _pitch=MathHelper.Clamp(_pitch+(_pointer.Y-old.Y)*0.008f,-MathHelper.PiOver2,MathHelper.PiOver2); }
     }
     private void Parameter(string label,int value,int y)
@@ -344,7 +344,7 @@ public partial class Game1 : Game
     {
         _ui.Box(PreviewArea,new(23,49,64));
         _ui.Text("FOLDER VERSE / 星抽選フェーズ",new(100,60),1.05f,Cream);
-        _ui.Text(_screen==Screen.Rolling?"抽選中 / STOP で確認":"確認 / 左ドラッグで回転",new(100,140),0.7f,new(170,206,216));
+        _ui.Text(_screen==Screen.Rolling?"抽選中 / STOP で確認":"確認 / 右ドラッグで回転",new(100,140),0.7f,new(170,206,216));
         Parameter("Width",_world.Width,270); Parameter("Height",_world.Height,405); Parameter("Depth",_world.Depth,540);
         _ui.Text(_world.Kind,new(1360,685),0.85f,new(255,221,145));
         _ui.Button(ActionButton,_screen==Screen.Rolling?"STOP":"この世界を確定",Accent,0.75f);
@@ -438,7 +438,7 @@ public partial class Game1 : Game
         var globe=SelectionGlobe;
         _ui.Box(globe,new Color(74,111,128));
         _ui.Box(new(globe.X+4,globe.Y+4,globe.Width-8,globe.Height-8),new Color(23,49,64));
-        _ui.Center(_world.GlobeName+" / 左ドラッグで回転",new(globe.X,globe.Bottom-35,globe.Width,30),0.46f,Cream);
+        _ui.Center(_world.GlobeName+" / 右ドラッグで回転",new(globe.X,globe.Bottom-35,globe.Width,30),0.46f,Cream);
         if(_hoveredSlot>=0)DrawSelectionTile(_selectionTiles[_hoveredSlot],true);
         _ui.Button(CastBack,"配置を確認",Muted,0.48f);
         if(_screen==Screen.PlayerReady){_ui.Button(CastRetry,"選び直す",Accent,0.48f);_ui.Button(StatusProceed,"土地征服へ",Accent,0.57f);}
@@ -481,7 +481,7 @@ public partial class Game1 : Game
         _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+CubeNet.FaceNames[_net.CenterFace]+" が中心",new(991,156),0.68f,Cream);
         string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地星の北＝＋Y / 北を上に";
         string orientation=north+" / 回転 "+(_net.Rotation*90)+"°";
-        _ui.Text(_statusGlobe?"左ドラッグで回転"+(_net.ShowMapSymbols?" / 経番・緯番":""):orientation,new(991,203),.43f,new(177,206,216));
+        _ui.Text(_statusGlobe?"右ドラッグで回転"+(_net.ShowMapSymbols?" / 経番・緯番":""):orientation,new(991,203),.43f,new(177,206,216));
         if(_net.ShowMapSymbols)
         {
         _ui.Text("経番",new(1450,203),.38f,WorldCoordinates.LongitudeColor);
@@ -526,7 +526,7 @@ public partial class Game1 : Game
         DrawDestinationMap();
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
-        _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"左ドラッグ：回転 / ホイール：拡縮 / 節点を選ぶと中心固定":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
+        _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"右ドラッグ：回転 / ホイール：拡縮 / 節点を選ぶと中心固定":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / スペース＋ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
         _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
         _ui.Button(NetButton(2),"現在地へ移動",Accent,0.45f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
         const string resetLabel="頭を上へ、腹を手前へ";
@@ -556,7 +556,7 @@ public partial class Game1 : Game
         _ui.Box(new(CastPreview.X+18,CastPreview.Y+12,CastPreview.Width-36,48),new Color(12,32,44,220));
         _ui.Center($"{_setup.Width} x {_setup.Height} x {_setup.Depth} / {_setup.Cells.Length} セル / {_setup.ActiveCount} 人",new(CastPreview.X,CastPreview.Y+12,CastPreview.Width,48),0.72f,Cream);
         string stage=_screen switch { Screen.CastRolling=>"登場人物を抽選中",Screen.CastReview=>"登場人物を確認",Screen.PlacementRolling=>"セル権利を抽選中",Screen.PlacementReview=>"セル権利を確認",_=>"セル権利を確定済み" };
-        string detail=stage+" / 左ドラッグで回転";
+        string detail=stage+" / 右ドラッグで回転";
         for(int slot=0;slot<20;slot++) if(PortraitCell(slot).Contains(_pointer))
         {
             var look=_setup.Looks[slot];int sisters=0;

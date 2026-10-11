@@ -66,7 +66,8 @@ public sealed partial class WorldPreview : IDisposable
 
     public void ShowSetup(WorldSetup setup, bool territories)
     {
-        Generate(setup.Width, setup.Height, setup.Depth, setup.WorldSeed);
+        if(CountryColors && territories)ShowLandConquest(setup,true);
+        else Generate(setup.Width, setup.Height, setup.Depth, setup.WorldSeed);
         if (!territories || setup.Owners.Length == 0) return;
         var mesh = new List<VertexPositionColorNormal>();
         void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, Vector3 normal)

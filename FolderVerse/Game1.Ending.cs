@@ -22,7 +22,7 @@ public partial class Game1
         _nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=_nodeAssemblyOpen=false;
         _hangarDrag=null;_dragging=_mapDragging=false;_globePressedCell=-1;
         _mapTransitionAge=-1;_net.CancelAnimation();_net.ResetView();
-        _statusGlobe=true;_net.ShowRoutes=true;_world.GlobeZoom=1;_world.GlobeAnchor=null;
+        _statusGlobe=true;_net.ShowRoutes=true;_net.ShowCountryColors=false;_world.CountryColors=false;_mapLayerListOpen=false;_world.GlobeZoom=1;_world.GlobeAnchor=null;
         _robotPlaying=false;_endingWinner=-1;_endingAge=0;
         _setup.Campaign.Reset();_setup.Relations.Reset();_setup.Robots.Initialize(0,0);_setup.ClearPlacement();
         _screen=Screen.Title;_inputOutcome="game_ended_to_title";

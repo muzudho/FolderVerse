@@ -9,6 +9,12 @@ public sealed partial class CubeNet
     public HashSet<int> VisibleOperationNodes {get;set;}
     public bool ShowMapSymbols {get;set;}=true;
     public bool ShowBatteries {get;set;}=true;
+    public bool ShowCountryColors {get;set;}
+    public Color TerrainColor(WorldSetup world,int cell,float height)
+    {
+        int owner=ShowCountryColors?world.Nodes.FullOwner(cell):-1;
+        return owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal):WorldPreview.LandTerritoryColor(world.OwnerColor(owner),WorldTerrain.Kind(height));
+    }
     public bool ShowRoutes {get;set;}=true;
     public HashSet<int> MovementTargets {get;}=new();
     public int SelectedTarget {get;set;}=-1;

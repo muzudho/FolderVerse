@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -141,9 +141,9 @@ public partial class Game1
                 for(int y=0;y<detail;y++)for(int x=0;x<detail;x++)
                 {
                     var a=cell.Origin+cell.U*(x/(float)detail)+cell.V*(y/(float)detail);var b=a+cell.U/detail;var c=b+cell.V/detail;var e=a+cell.V/detail;
-                    var color=WorldTerrain.ColorAt(WorldTerrain.Elevation((a+c)/2,terrain),cell.Normal);
+                    var color=_net.TerrainColor(_setup,cell.Id,WorldTerrain.Elevation((a+c)/2,terrain));
                     var post=_setup.Nodes.At(cell.Id,new Point(x,y));
-                    if(!_net.ShowRoutes && post!=null)color=Color.Lerp(color,_setup.OwnerColor(post.Owner),post.Owner==_setup.PlayerSlot?.4f:.16f);
+                    
                     foreach(var p in new[]{a,b,c,a,c,e})vertices.Add(new(Project(index,p),color));
                 }
             }

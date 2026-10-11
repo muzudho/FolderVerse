@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -121,14 +121,14 @@ public sealed partial class CubeNet
                 var a=face.Project(p);int px=(int)(fit.Origin.X+a.X*fit.Scale),py=(int)(fit.Origin.Y+a.Y*fit.Scale);
                 int size=(int)Math.Ceiling(fit.Scale/detail)+1;
                 float elevation=WorldTerrain.Elevation(p,offset);
-                Color terrain=WorldTerrain.ColorAt(elevation,cell.Normal);
+                Color terrain=TerrainColor(setup,cell.Id,elevation);
                 var post=setup.Nodes.At(cell.Id,new Point(x,y));
-                if(!ShowRoutes && post!=null)terrain=Color.Lerp(terrain,setup.OwnerColor(post.Owner),post.Owner==setup.PlayerSlot?.4f:.16f);
+                
                 ui.Box(new(px-size/2,py-size/2,size,size),terrain);
             }
             int owner=setup.Nodes.FullOwner(cell.Id);Color color=owner<0?new Color(170,181,191):setup.OwnerColor(owner);
             int thickness=owner==setup.PlayerSlot?3:2;
-            foreach(int edge in ShowRoutes?Enumerable.Empty<int>():Enumerable.Range(0,4))
+            foreach(int edge in !ShowCountryColors?Enumerable.Empty<int>():Enumerable.Range(0,4))
             {
                 var a=cell.Corners[edge];var b=cell.Corners[(edge+1)%4];
                 if(!ShowRoutes)
