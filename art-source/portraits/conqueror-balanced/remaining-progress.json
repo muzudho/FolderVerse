@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 209,
+  "Completed": 210,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1673,6 +1673,14 @@
       "Sha256": "9597685ED8F2274E5DC4A786EA093564608A64486E6557A3A6DBF3B82EF5DA4C",
       "Reviewed": true,
       "Note": "閉眼笑顔、素手の太陽杖と金魔法、豹柄を保持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 42,
+      "Variant": 6,
+      "File": "remaining-variants/character-42-6-balanced.png",
+      "Sha256": "D8EDEA1824ABD6A473839FE5BCEA0D16650125DB433449AF758839499BF91958",
+      "Reviewed": true,
+      "Note": "閉眼笑顔、素手五指、豹と首輪の黄色電池保持。視覚確認済み。"
     }
   ]
 }

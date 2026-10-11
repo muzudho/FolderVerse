@@ -461,7 +461,8 @@ public partial class Game1 : Game
         _ui.Box(new(330,165,282,42),new(125,78,28));
         _ui.Center("★ 世界征服者 ★",new(330,165,282,42),0.65f,new(255,227,132));
         _ui.Box(new(210,633,520,62),new(27,46,55));
-        _ui.Center("征服者　"+_setup.ConquerorNames[player],new(90,641,760,56),0.88f,Cream);
+        string formalName="征服者　"+_setup.ConquerorFullNames[player];
+        _ui.Center(formalName,new(90,641,760,56),Math.Min(0.88f,740f/_font.MeasureString(formalName).X),Cream);
         _ui.Center(_setup.TerritoryCounts[player]>0?"政治体制　"+WorldSetup.PoliticalSystem:"放浪者",new(90,710,760,45),0.7f,new(181,204,211));
         string capitalLabel=_setup.TerritoryCounts[player]==0?"放浪者 / 自国なし":"首都　"+WorldCoordinates.Label(_setup,capital);
         _ui.Center(capitalLabel,new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
