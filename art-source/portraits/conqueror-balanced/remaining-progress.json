@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 190,
+  "Completed": 209,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -1521,6 +1521,158 @@
       "Sha256": "EAD2B740792D71849B562D63546FF1B1D56A98610285DB35B9B3879309949682",
       "Reviewed": true,
       "Note": "眼帯・魔法書・薔薇の魔法陣と発動ポーズを保持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 39,
+      "Variant": 2,
+      "File": "remaining-variants/character-39-2-balanced.png",
+      "Sha256": "F01AE59869520B32E5327F0D4E288D8E3BCE4A4964F3680C458956A3EBF50B0B",
+      "Reviewed": true,
+      "Note": "雪景色、眼鏡、金髪の三つ編み、白手袋と熊ロボットを保持。熊の丸い耳を修正・視覚確認済み。"
+    },
+    {
+      "CharacterId": 39,
+      "Variant": 3,
+      "File": "remaining-variants/character-39-3-balanced.png",
+      "Sha256": "C6245FAC14618A790A77BDBDA4BD3BAD685E5663575087A114CE5E6CC3590D33",
+      "Reviewed": true,
+      "Note": "雪の城の欄干、黒手袋のくつろぎと青電池、眼鏡・三つ編みを維持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 39,
+      "Variant": 4,
+      "File": "remaining-variants/character-39-4-balanced.png",
+      "Sha256": "2E3D877D4EB77678CBF0BF409244D04633207292CD222DBE8C0C46D65B32B416",
+      "Reviewed": true,
+      "Note": "船の甲板、素手と黒手袋の重なり、熊ロボットと地図を保持。顔サイズ再調整・視覚確認済み。"
+    },
+    {
+      "CharacterId": 39,
+      "Variant": 5,
+      "File": "remaining-variants/character-39-5-balanced.png",
+      "Sha256": "1B1936EBCFC8F724369A74A1F6186F2D6B9CE14F3218328FA3863787DEFBDCC4",
+      "Reviewed": true,
+      "Note": "星の魔法書、白手袋、青電池と天球儀を保持。余分な黒手袋を除去し視覚確認。"
+    },
+    {
+      "CharacterId": 39,
+      "Variant": 6,
+      "File": "remaining-variants/character-39-6-balanced.png",
+      "Sha256": "FEC1C0DE73D59C12BB5D202752C4A47BF0925D6E336698637A9A17E193808005",
+      "Reviewed": true,
+      "Note": "青ベレー帽と素手で金の熊ロボットを抱く姿、眼鏡・三つ編みを維持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 40,
+      "Variant": 2,
+      "File": "remaining-variants/character-40-2-balanced.png",
+      "Sha256": "BB8881AE94B3EB9B6515C9A1E91FF5BA0369F0063A9022A0185CB4A03BC27A15",
+      "Reviewed": true,
+      "Note": "二本の角、眼帯、黒手袋と黄色いアヒルロボットを保持。余分な中央角を除去し視覚確認。"
+    },
+    {
+      "CharacterId": 40,
+      "Variant": 3,
+      "File": "remaining-variants/character-40-3-balanced.png",
+      "Sha256": "FC7B322607B47880460470920FA017930AC80AC4A7B121C428D4BE8FD103974D",
+      "Reviewed": true,
+      "Note": "二本の角・眼帯、黒手袋でハート柄ゲーム機を持つ姿と寝室を保持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 40,
+      "Variant": 4,
+      "File": "remaining-variants/character-40-4-balanced.png",
+      "Sha256": "D5E9DCB68391D84E18CC25CB9AA3048EC9188666A7995D4CCBC3D8153FC92BB5",
+      "Reviewed": true,
+      "Note": "白手袋の王笏と赤電池、笑顔、二本角を保持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 40,
+      "Variant": 5,
+      "File": "remaining-variants/character-40-5-balanced.png",
+      "Sha256": "0CF5716C665D38C560D943C37455D0AE99398A30BB15E4C3416855102572E81C",
+      "Reviewed": true,
+      "Note": "振り返り、肩の玩具砲と白毛皮、赤電池を保持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 40,
+      "Variant": 6,
+      "File": "remaining-variants/character-40-6-balanced.png",
+      "Sha256": "F23966B4550A625F8833BDB1C7C857D411FA2EF0F060CEF499FB8F0C6308F163",
+      "Reviewed": true,
+      "Note": "白手袋で抱く桃色兎ロボット、白スカーフ、二本角と眼帯を保持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 41,
+      "Variant": 2,
+      "File": "remaining-variants/character-41-2-balanced.png",
+      "Sha256": "423DD73B48A621DA9EB5D1544239A9972171F18005E8270A991513DE516C0D78",
+      "Reviewed": true,
+      "Note": "顔を再拡大、白手袋の青い本・赤電池・雪景色を保持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 41,
+      "Variant": 3,
+      "File": "remaining-variants/character-41-3-balanced.png",
+      "Sha256": "D3CB184D6D7B048D76C20D1D1EFFB5C1759F171B791D9DAAFD80F667705D3DC8",
+      "Reviewed": true,
+      "Note": "ウインク、白手袋、青白ペンギンロボットと青電池保持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 41,
+      "Variant": 4,
+      "File": "remaining-variants/character-41-4-balanced.png",
+      "Sha256": "319409C70F9D8EED83D566CA5F58C8F538B668349D036FB99CEC7ED9E4385390",
+      "Reviewed": true,
+      "Note": "黒手袋の金装飾ティーカップ、赤電池、室内の寛ぎを保持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 41,
+      "Variant": 5,
+      "File": "remaining-variants/character-41-5-balanced.png",
+      "Sha256": "CACFE9486985AA6E227D5DC8BBBBD190EF534984E3D2A5773B4996D8542741A9",
+      "Reviewed": true,
+      "Note": "眼鏡、白手袋の食器とチキン、クリスマス晩餐を保持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 41,
+      "Variant": 6,
+      "File": "remaining-variants/character-41-6-balanced.png",
+      "Sha256": "102593CB21447C9A1BE49FF28037A4D8AA09CD56D0D7533B60E612D8B6416B86",
+      "Reviewed": true,
+      "Note": "眼鏡と黒手袋の差し出す手、雪と赤電池保持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 42,
+      "Variant": 2,
+      "File": "remaining-variants/character-42-2-balanced.png",
+      "Sha256": "BB53A3D54E2518387E523B43C46E83FE214E45C7BC43ADEB8322F42F063F66D6",
+      "Reviewed": true,
+      "Note": "閉眼笑顔と白手袋、黒猫ロボット、黄色雷表示を保持。顔を再拡大。視覚確認済み。"
+    },
+    {
+      "CharacterId": 42,
+      "Variant": 3,
+      "File": "remaining-variants/character-42-3-balanced.png",
+      "Sha256": "7106502C5CEA6B92BB58B4A762A5D7F3A99330224C140785BF85904C51F0B865",
+      "Reviewed": true,
+      "Note": "閉眼笑顔・差し出す素手五指・金魔法・電池保持、顔を再拡大。視覚確認済み。"
+    },
+    {
+      "CharacterId": 42,
+      "Variant": 4,
+      "File": "remaining-variants/character-42-4-balanced.png",
+      "Sha256": "30E804B6FD9CF2093857F87A0B480BAB541F97CEF8DD266A6298EF77C8DEEDE0",
+      "Reviewed": true,
+      "Note": "閉眼笑顔、素手のグラス、豹と黄色電池を保持。視覚確認済み。"
+    },
+    {
+      "CharacterId": 42,
+      "Variant": 5,
+      "File": "remaining-variants/character-42-5-balanced.png",
+      "Sha256": "9597685ED8F2274E5DC4A786EA093564608A64486E6557A3A6DBF3B82EF5DA4C",
+      "Reviewed": true,
+      "Note": "閉眼笑顔、素手の太陽杖と金魔法、豹柄を保持。視覚確認済み。"
     }
   ]
 }
