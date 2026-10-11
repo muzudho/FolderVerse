@@ -53,3 +53,11 @@ No.13 idol先行例を制作・視覚確認。学園祭の舞台でポンポン�
 2026-10-11 16:34 JST以降：No.4 history/coin/election/idolの4枚を生成・視覚確認。桃色カール長髪・緑眼・人間耳・本人左目の金モノクル・星のヘッドバンドを保持。椅子の端正な肖像、厳密な右向き横顔、整えた髪の前向き選挙肖像、星杖でファンへ手を振るアイドル写真。原画・1200×1600・最終プロンプト保存。73/480の寸法・存在・SHA256を検証し比較HTMLと300×400ゲーム版更新。次写真No.5 history/coin/election/idol。次交互実行No.45差分4 Current v003、差分222/300。コミット・プッシュなし。
 2026-10-11 17:34 JST以降：No.5 history/coin/election/idolの4枚を生成・視覚確認。褐色肌・黒い波髪・閉眼・人間耳・金ゴーグル・青ソーラーパネルを保持。椅子の落ち着いた肖像、厳密な右向き横顔、整えた髪と健康的な選挙肖像、青白金ポンポンの閉眼笑顔チア。原画・1200×1600・最終プロンプト保存。77/480の存在・寸法・SHA256を検証、比較HTMLと300×400ゲーム版更新。次写真No.6 history/coin/election/idol。次交互実行No.46差分2 Current確認、差分225/300。コミット・プッシュなし。
 2026-10-11 18:34 JST以降：No.6 history/coin/election/idolの4枚を生成・視覚確認。銀白波髪・青眼・金丸眼鏡・エルフ耳・緑制帽の菱形徽章を保持。椅子の真面目な肖像、左向き真横の横顔、整髪された前向き選挙肖像、緑白金ポンポンのチア写真。原画・1200×1600・最終プロンプト保存。81/480の存在・寸法・SHA256を検証、比較HTMLと300×400ゲーム版更新。次写真No.7 history/coin/election/idol。次交互実行No.46差分5 Current確認、差分228/300。コミット・プッシュなし。
+
+No.9仕様変更: ../characters/character-09/redesign-black-rabbit/design-spec.md を優先。黒兎・つば無しバックレスキャップ・黒ベスト・赤チェックミニスカート・黒スパッツ・赤縁眼鏡・金コンパスローズ。ゴーグル廃止。新全身見本保存済み。旧写真4枚は保持、描き直し対象。
+
+No.9最新追記（ユーザー修正優先）: ゴーグル廃止を撤回。黒耳とつば無しバックレスキャップを保持し、その上に飛行士のゴーグル。髪は肩までの大きな束の赤橙ストレート。赤縁眼鏡も併用。参照 characters/character-09/redesign-black-rabbit/character-09-black-rabbit-design-v002.png。旧見本v001と原画保持、最終プロンプト保存済み。
+
+No.9最新仕様v003: No.7白兎＋緑に対して黒兎＋赤。吊り上がった目尻と眉、姉御風の威勢良い笑顔、柔らかい肩までの髪と横へ散る前髪。豪華な金飾り付き赤ローブ。赤縁眼鏡と帽子上ゴーグル併用。最新参照 characters/character-09/redesign-black-rabbit/character-09-black-rabbit-design-v003.png と design-spec.md。
+
+2026-10-11 19:35 JST batch interrupted by No.9 design update: No.7 history/coin saved and reviewed, 83/480. Next photos No.7 election/idol. Next variants No.47 v3; 231/300. No.9 latest design v003 takes precedence. No commit/push.

@@ -91,3 +91,9 @@ No.2は海賊ではない。黒髪・赤リボン・金の花飾り・左眼の�
 2026-10-11 18:04 JST以降：No.46差分2・3・4を生成・視覚確認保存。228/300。黒髪双団子・琥珀眼・エルフ耳保持。差分2は元通り眼帯と金龍置物、差分3は両眼と黄色アヒル・青電池、差分4は半眼と王笏・赤電池・龍玉座保持。次差分No.46差分5 Current確認。次交互実行は写真No.6 history/coin/election/idol、写真77/480。コミット・プッシュなし。
 
 2026-10-11 19:05 JST batch: No.46 v5/v6 and No.47 v2 visually reviewed and saved. 231/300. Next variant: No.47 v3. Photos 81/480; next alternating batch No.7 history/coin/election/idol. Original and domestic images preserved; no commit/push.
+
+No.9仕様変更: ../characters/character-09/redesign-black-rabbit/design-spec.md を参照。黒兎衣装見本保存。旧6枚は保持、描き直し対象。
+
+No.9最新追記（ユーザー修正優先）: ゴーグル廃止を撤回。黒耳とつば無しバックレスキャップを保持し、その上に飛行士のゴーグル。髪は肩までの大きな束の赤橙ストレート。赤縁眼鏡も併用。参照 characters/character-09/redesign-black-rabbit/character-09-black-rabbit-design-v002.png。旧見本v001と原画保持、最終プロンプト保存済み。
+
+No.9最新仕様v003: No.7白兎＋緑に対して黒兎＋赤。吊り上がった目尻と眉、姉御風の威勢良い笑顔、柔らかい肩までの髪と横へ散る前髪。豪華な金飾り付き赤ローブ。赤縁眼鏡と帽子上ゴーグル併用。最新参照 characters/character-09/redesign-black-rabbit/character-09-black-rabbit-design-v003.png と design-spec.md。
