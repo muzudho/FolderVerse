@@ -139,7 +139,7 @@ public partial class Game1 : Game
             if(active)SupervisorDialogInput(click,escape,keyboard);
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
-        if(UpdateDemo(elapsed,active,click,escape,enter))
+        if(UpdateDemo(elapsed,active,click,escape,enter,gameTime.TotalGameTime.TotalSeconds))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen is Screen.LandConquest or Screen.Fortune){UpdateLandSetup(elapsed,mouse,active,click,enter);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _net.UpdateAnimation((float)elapsed);
@@ -156,7 +156,7 @@ public partial class Game1 : Game
         if(_screen==Screen.Pocket)
         {if(active)PocketInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Transport)
-        {UpdateTransport(elapsed,active && (enter || click && BattleContinue.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        {UpdateTransport(elapsed,active && (enter || click && BattleContinue.Contains(_pointer)),gameTime.TotalGameTime.TotalSeconds);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Hierarchy)
         {
             if(active && (escape || click && InactiveBack.Contains(_pointer)))_screen=Screen.WorldStatus;
@@ -528,7 +528,6 @@ public partial class Game1 : Game
         {
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clipping);
             _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:_statusCell,_animationTime);_spriteBatch.End();
-            DrawOrientationOverlay(NetPanel,canvas,transform);
         }
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         DrawDestinationMap();

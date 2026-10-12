@@ -41,8 +41,12 @@ public partial class Game1
     }
     private void FinishTransport()
     {if(_robotScenes.Length>0)_screen=Screen.Battle;else{_screen=Screen.WorldStatus;OpenDisposition();}}
-    private void UpdateTransport(double elapsed,bool proceed)
+    private void UpdateTransport(double elapsed,bool proceed,double now)
     {
+        // Wait for Draw to register the card, then advance only time after it ends.
+        if(_lastCutInPhase!="伝播フェーズ")return;
+        elapsed=Math.Min(elapsed,Math.Max(0,now-_cutInStarted-PhaseCutInSeconds));
+        if(elapsed<=0)return;
         if(!PropagationComplete){UpdatePropagationMovement(elapsed);return;}
         _transportAge=Math.Min(2,_transportAge+elapsed);
         if(_transportAge>=2)FinishTransport();

@@ -19,7 +19,7 @@ public partial class Game1
     private Vector2 _demoClickPoint;
     private float _demoFade=-1;
     private Vector2 _demoCursor=new(960,540);
-    private bool UpdateDemo(double elapsed,bool active,bool click,bool escape,bool enter)
+    private bool UpdateDemo(double elapsed,bool active,bool click,bool escape,bool enter,double now)
     {
         if(_demoFade>=0)
         {
@@ -84,7 +84,7 @@ public partial class Game1
         if(_screen is Screen.Rolling or Screen.Review)aim=new((_screen==Screen.Review && _demoWorldRoll<3?RetryButton:ActionButton).Center.X,(_screen==Screen.Review && _demoWorldRoll<3?RetryButton:ActionButton).Center.Y);
         else if(_screen is Screen.CastRolling or Screen.CastReview)aim=new((_screen==Screen.CastReview && _demoCastRoll<3?CastRetry:CastAction).Center.X,(_screen==Screen.CastReview && _demoCastRoll<3?CastRetry:CastAction).Center.Y);
         if(_demoSwing<=0)_demoCursor=Vector2.Lerp(_demoCursor,aim,1-MathF.Exp(-(float)elapsed*2));
-        if(_screen==Screen.Transport){UpdateTransport(elapsed,false);_demoStepAge=0;return true;}
+        if(_screen==Screen.Transport){UpdateTransport(elapsed,false,now);_demoStepAge=0;return true;}
         if(_screen==Screen.Battle)
         {
             if(_robotSummary){if(_demoStepAge>3){RobotBattleInput(0,false,true);_demoStepAge=0;}}
