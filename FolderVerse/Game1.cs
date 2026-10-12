@@ -539,7 +539,8 @@ public partial class Game1 : Game
             string pattern=_setup.Nodes.CellPattern(cell.Id);
             _ui.Center(pattern,new(970,1003,914,32),Math.Min(0.40f,880/_font.MeasureString(pattern).X),Cream);
         }
-        _ui.Button(PopulationTurnButton,"次のターン",Accent,0.62f);
+                _ui.Button(PopulationTurnButton,"ターン終了",Accent,0.7f);
+        _ui.Button(WarButton,"開戦",Accent,.65f);
         _ui.Button(MovementButton,"移動",Accent,.65f);
         _ui.Button(PocketButton,"ポケット",Accent,.55f);
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(984,1037,870,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);

@@ -53,6 +53,7 @@ public partial class Game1
             default:
                 if(_selectedMoveNode>=0)MovementClick(target,new KeyboardState());
                 else{CloseMovement();_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);OpenBattle();}
+                if(_selectedMoveNode<0 && _setup.Campaign.PlannedOrders.Count>0)EndPlannedTurn();
                 _demoDomesticStage=0;_demoMapVisits++;_demoMapStage=0;_demoMapAge=0;return true;
         }
         _demoDomesticStage++;return true;

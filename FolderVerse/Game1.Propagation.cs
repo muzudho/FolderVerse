@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,8 +58,8 @@ public partial class Game1
             if(!_setup.Relations.Powered[owner])continue;
             var node=_setup.Nodes.Current(owner);if(node==null)continue;
             var at=NodeAt(node.Id);
-            var march=_setup.Campaign.RobotBattles.LastMarches.FirstOrDefault(m=>m.Owner==owner);
-            if(movement && _setup.Campaign.RobotBattles.LastMarches.Any(m=>m.Owner==owner))at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),PropagationTravel(march.Source,march.Target));
+            var march=_setup.Campaign.RobotBattles.LastQueenMarches.FirstOrDefault(m=>m.Owner==owner);
+            if(movement && _setup.Campaign.RobotBattles.LastQueenMarches.Any(m=>m.Owner==owner))at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),PropagationTravel(march.Source,march.Target));
             _ui.Box(new((int)at.X-12,(int)at.Y-9,24,16),_setup.OwnerColor(owner));
             _ui.Box(new((int)at.X+12,(int)at.Y-5,4,8),Cream);
         }

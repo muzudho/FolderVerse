@@ -53,3 +53,23 @@ controlled.Campaign.Advance(controlled,-1,0);if(controlled.Population.Turn!=befo
 controlled.Campaign.Advance(controlled,-1,0);if(controlled.PlayerSlot!=0 || controlled.Population.Turn!=before+1)throw new Exception("Party turn commit failed");
 Console.WriteLine("PASS: leader and nested subordinate actions commit one shared turn");
 }
+{
+    var world=new WorldSetup();world.SetWorld(2);world.SetCast(123);world.SetPlacement(456);world.SelectPlayer(0);
+    world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);
+    var target=world.Nodes.All.First(n=>world.Routes.Neighbors(n).Select(r=>world.Nodes.At(r.Target,r.Entry).Id).Distinct().Count()>=3);
+    var homes=world.Routes.Neighbors(target).Select(r=>world.Nodes.At(r.Target,r.Entry)).DistinctBy(n=>n.Id).Take(3).ToArray();
+    target.Owner=1;foreach(var home in homes){home.Owner=0;for(int i=0;i<3;i++)world.Robots.Nodes[home.Id].Add(world.Robots.Create(0,RobotParts.Complete));}
+    world.ConquerorLocations[0]=homes[0].Cell;world.ConquerorPoints[0]=homes[0].Center;
+    for(int i=0;i<3;i++)world.Robots.Nodes[target.Id].Add(world.Robots.Create(1,RobotParts.Complete));
+    world.Campaign.RobotBattles.Rules=new(){SegmentTurns=1,NoWillTurns=1000,PersuasionPercent=0};
+    int turn=world.Population.Turn;
+    foreach(var home in homes)world.Campaign.Plan(new(0,target.Id,2,home.Id,false));
+    if(world.Population.Turn!=turn || homes.Any(h=>world.Robots.Nodes[h.Id].Count!=3))throw new Exception("Planning changed world");
+    world.Campaign.Advance(world,-1,0,false);
+    var encounter=world.Campaign.RobotBattles.Encounters.Single();
+    var soldiers=encounter.Battles.SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Where(u=>u.Owner==0).ToArray();
+    if(soldiers.Length!=6 || soldiers.Any(u=>u.Role==BattleRole.Queen))throw new Exception("Multi-source node invasion lost robots or sent queen");
+    if(world.Nodes.Current(0).Id!=homes[0].Id || world.Population.Turn!=turn+1)throw new Exception("Node attack moved queen or advanced multiple turns");
+    world.Campaign.RobotBattles.Check(world);
+    Console.WriteLine("PASS: planning is inert; three sources merge six soldiers; node invasion leaves conqueror at home; one end-turn commit");
+}

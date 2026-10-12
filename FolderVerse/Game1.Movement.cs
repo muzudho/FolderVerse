@@ -10,16 +10,17 @@ public partial class Game1
     private long _escort;
     private bool _routesBeforeMovement;
     private int _selectedMoveNode=-1;
-    private static readonly Rectangle MovementButton=new(254,1018,160,52);
+    private static readonly Rectangle MovementButton=new(204,1018,110,52);
     private static readonly Rectangle ConfirmMoveButton=new(570,914,274,48);
     private void OpenMovement()
     {
+        _warPlanning=false;
         if(_transportOverview)CloseTransportOverview();
         _dragging=false;
         _routesBeforeMovement=_net.ShowRoutes;_net.ShowRoutes=true;_movementOpen=true;
         _populationCell=-1;_escort=Math.Min(_escort,AvailableEscort);_selectedMoveNode=-1;
         _net.MovementTargets.Clear();
-        _net.MovementTargets.UnionWith(_setup.Routes.NodeChoices(_setup.PlayerSlot).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id));
+        _net.MovementTargets.UnionWith(_setup.Routes.NodeChoices(_setup.PlayerSlot).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id).Where(id=>_setup.Nodes.All[id].Owner>=0 && _setup.Relations.Allied(_setup.PlayerSlot,_setup.Nodes.All[id].Owner) && _setup.Campaign.RobotBattles.CanMarch(_setup,_setup.PlayerSlot,id)));
         _net.SelectedTarget=-1;
         FitDestinationView();
     }
@@ -32,7 +33,7 @@ public partial class Game1
     private void SelectMoveNode(int node)
     {
         if(!_net.MovementTargets.Contains(node))return;
-        _selectedMoveNode=node;_net.SelectedTarget=node;
+        _selectedMoveNode=node;_net.SelectedTarget=node;if(_warPlanning)BuildInvasionSources(node);
     }
     private long AvailableEscort
     {
@@ -40,6 +41,9 @@ public partial class Game1
     }
     private bool MovementClick(Point pointer,KeyboardState keyboard)
     {
+        if(PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
+        if(WarButton.Contains(pointer)){OpenWarPlanning();return true;}
+        if(_warPlanning && _movementOpen && InvasionClick(pointer))return true;
         if(PocketButton.Contains(pointer)){_statusMenuOpen=false;OpenPocket();return true;}
         if(MovementButton.Contains(pointer)){if(_movementOpen)CloseMovement();else OpenMovement();return true;}
         if(!_movementOpen)return false;
@@ -48,10 +52,8 @@ public partial class Game1
         if(ConfirmMoveButton.Contains(pointer))
         {
             if(_selectedMoveNode<0 || _setup.Routes.ToNode(_setup.PlayerSlot,_selectedMoveNode)==null)return true;
-            _setup.Campaign.Advance(_setup,_selectedMoveNode,_escort);_escort=Math.Min(_escort,AvailableEscort);
-            CloseMovement();_world.ShowSetup(_setup,true);
-            _net.SetCenter(_setup,_setup.Cells[_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
-            _populationCell=-1;OpenBattle();return true;
+            _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id));
+            CloseMovement();return true;
         }
         foreach(int id in DestinationNodes())if(DestinationBadge(id).Contains(pointer)){SelectMoveNode(id);return true;}
         if(NetPanel.Contains(pointer))
@@ -69,6 +71,7 @@ public partial class Game1
     }
     private void DrawMovementPanel()
     {
+        if(_warPlanning){DrawInvasionPanel();return;}
         int ruler=_setup.PlayerSlot;var current=_setup.Nodes.Current(ruler);
         _escort=Math.Min(_escort,AvailableEscort);
         var choices=_setup.Routes.NodeChoices(ruler);
@@ -76,14 +79,14 @@ public partial class Game1
         _ui.Text("征服者の移動",new(84,177),.9f,Cream);_ui.Button(new(803,169,58,44),"×",Muted,.7f);
         string city="現在地　"+(current==null?_setup.Routes.LocationLabel(ruler):_setup.Nodes.Label(current));
         _ui.Text(city,new(84,240),Math.Min(.6f,760/_font.MeasureString(city).X),Cream);
-        _ui.Text(_setup.Campaign.UseRobotCombat?$"同行する完成体　{_escort} / {AvailableEscort} 体":$"同行する戦闘員　{_escort:N0} / {AvailableEscort:N0} 人",new(84,289),.72f,Color.White);
-        _ui.Button(new(84,339,94,60),"−",Muted,.8f);_ui.Button(new(190,339,94,60),"＋",Muted,.8f);
-        _ui.Button(new(305,339,200,60),"全員",Muted,.7f);_ui.Button(new(519,339,200,60),"０人",Muted,.7f);
+        _ui.Text("征服者とポケットのロボットが同行",new(84,289),.62f,Color.White);
+
+
         _ui.Text("地図上の明るい節点を選んでください",new(84,470),.65f,Cream);
-        _ui.Text(_setup.Campaign.UseRobotCombat?"１体ずつ / 直属の完成体と征服者は同行 / 継戦中は移動制限":"100人ずつ / Shift：1,000人 / Ctrl：10,000人",new(84,878),.49f,new(180,209,219));
-        string status=choices.Length==0?"交通路でつながる移動先がない":_selectedMoveNode<0?"点滅する節点をクリックして選択":$"選択：Node {_selectedMoveNode+1} / 確定で移動";
+        _ui.Text("自国・手下の節点へ移動 / ターン終了で実行",new(84,878),.49f,new(180,209,219));
+        string status=choices.Length==0?"交通路でつながる移動先がない":_selectedMoveNode<0?"点滅する節点をクリックして選択":$"選択：Node {_selectedMoveNode+1} / ターン終了で移動";
         _ui.Text(status,new(84,926),Math.Min(.47f,465/_font.MeasureString(status).X),new(180,209,219));
-        _ui.Button(ConfirmMoveButton,"確定",_selectedMoveNode>=0?Accent:Muted,.7f);
+        _ui.Button(ConfirmMoveButton,"移動を予約",_selectedMoveNode>=0?Accent:Muted,.7f);
     }
 }
 
