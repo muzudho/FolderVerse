@@ -38,6 +38,7 @@ public partial class Game1
         return chosen.ToArray();
     }
     private Quaternion _landStartOrientation;
+    private Quaternion _fortuneStartOrientation;
     private void OrderAutomaticLandFaces()
     {
         var faces=_automaticLandRectangles.GroupBy(r=>_setup.Cells[r[0]].Face).ToArray();
@@ -66,7 +67,7 @@ public partial class Game1
     private void ConfirmLand()
     {
         _setup.ClaimLand(LandRuler,_landSelection.ToArray());_world.ShowLandConquest(_setup);_landSelection.Clear();_landAge=0;_automaticLand=Array.Empty<int>();
-        if(++_landTurn==_landOrder.Length){_screen=Screen.Fortune;_world.GlobeAnchor=null;_world.GlobeZoom=1;return;}
+        if(++_landTurn==_landOrder.Length){_fortuneStartOrientation=Quaternion.CreateFromRotationMatrix(_world.ViewOrientation(_yaw,_pitch));_screen=Screen.Fortune;_world.GlobeAnchor=null;_world.GlobeZoom=1;return;}
     }
     private void UpdateLandSetup(double elapsed,MouseState mouse,bool active,bool click,bool enter)
     {
@@ -74,10 +75,19 @@ public partial class Game1
         _landAge+=elapsed;
         if(_screen==Screen.Fortune)
         {
-            // Slow, continuous rotation from the final land-selection view.
-            var orientation=_world.ViewOrientation(_yaw,_pitch);
-            var drift=Quaternion.CreateFromAxisAngle(Vector3.Normalize(new Vector3(.18f,1,.08f)),(float)elapsed*.14f);
-            _world.ManualOrientation=Quaternion.Normalize(Quaternion.CreateFromRotationMatrix(orientation*Matrix.CreateFromQuaternion(drift)));
+            // Visit all six face normals, then gracefully return to the starting pose.
+            var tour=new[]{_fortuneStartOrientation,
+                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,0)),
+                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(-MathHelper.PiOver2,0)),
+                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,MathHelper.PiOver2)),
+                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(MathHelper.Pi,0)),
+                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(MathHelper.PiOver2,0)),
+                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,-MathHelper.PiOver2)),
+                _fortuneStartOrientation};
+            float progress=(float)Math.Clamp(_landAge/5,0,1)*(tour.Length-1);
+            int segment=Math.Min((int)progress,tour.Length-2);
+            float blend=MathHelper.SmoothStep(0,1,progress-segment);
+            _world.ManualOrientation=Quaternion.Slerp(tour[segment],tour[segment+1],blend);
             if(_landAge>=5){_setup.CompleteLand(_random.Next());_world.ShowSetup(_setup,true);_net.Home(_setup);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;}
             return;
         }
