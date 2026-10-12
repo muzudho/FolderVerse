@@ -516,21 +516,19 @@ public partial class Game1 : Game
             GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
             _world.Draw(_yaw,_pitch,_animationTime,false,true);
             if(!DestinationOperation)_world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe);
-            GraphicsDevice.Viewport=OrientationViewport(areas.Toy,canvas);
-            _orientationToy.Draw(_yaw,_pitch,_world.ViewOrientation(_yaw,_pitch));
             GraphicsDevice.Viewport=viewport;
             using var globeClip=new RasterizerState{ScissorTestEnable=true};
             GraphicsDevice.ScissorRectangle=new(canvas.X+(int)(areas.Globe.X*canvas.Width/1920f),canvas.Y+(int)(areas.Globe.Y*canvas.Height/1080f),(int)(areas.Globe.Width*canvas.Width/1920f),(int)(areas.Globe.Height*canvas.Height/1080f));
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
             _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
             if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();_spriteBatch.End();
-            _spriteBatch.Begin(transformMatrix:transform);
-            DrawOrientationLegend(areas.Toy,areas.Legend,"方向のロボット");_spriteBatch.End();
+            DrawOrientationOverlay(NetPanel,canvas,transform);
         }
         else using(var clipping=new RasterizerState{ScissorTestEnable=true})
         {
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clipping);
             _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:_statusCell,_animationTime);_spriteBatch.End();
+            DrawOrientationOverlay(NetPanel,canvas,transform);
         }
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         DrawDestinationMap();
@@ -607,9 +605,7 @@ public partial class Game1 : Game
             var areas=OrientationAreas(area,IsCastScreen && !IsSelectionScreen);
             GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
             _world.Draw(_yaw,_pitch,_animationTime); GraphicsDevice.Viewport=viewport;
-            GraphicsDevice.Viewport=OrientationViewport(areas.Toy,canvas);
-            _orientationToy.Draw(_yaw,_pitch,_world.ViewOrientation(_yaw,_pitch));GraphicsDevice.Viewport=viewport;
-            _spriteBatch.Begin(transformMatrix:transform);DrawOrientationLegend(areas.Toy,areas.Legend);_spriteBatch.End();
+            DrawOrientationOverlay(areas.Globe,canvas,transform);
             if(IsCastScreen && !IsSelectionScreen) { _spriteBatch.Begin(transformMatrix:transform); DrawCastPreviewInfo(); _spriteBatch.End(); }
             if(IsSelectionScreen && _hoveredSlot>=0){_spriteBatch.Begin(transformMatrix:transform);DrawSelectionTile(_selectionTiles[_hoveredSlot],true);_spriteBatch.End();}
             }

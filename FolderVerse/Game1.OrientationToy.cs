@@ -8,22 +8,31 @@ public partial class Game1
     private static (Rectangle Globe,Rectangle Toy,Rectangle Legend) OrientationAreas(Rectangle area,bool cast)
     {
         if(cast)area=new(area.X,area.Y+64,area.Width,area.Height-64);
-        int width=Math.Min(310,(int)(area.Width*.28f));
-        int legendHeight=width<180?66:90,titleHeight=width<180?22:32;
-        int height=Math.Min((int)(width*1.2f),area.Height-legendHeight-titleHeight-8);
-        int x=area.Right-width-8,y=area.Center.Y-(height+legendHeight+titleHeight)/2+titleHeight;
-        return (new(area.X,area.Y,area.Width-width-20,area.Height),new(x,y,width,height),new(x,y+height,width,legendHeight));
+        int width=Math.Min(190,Math.Min(area.Width/3,area.Height/3));
+        var toy=new Rectangle(area.Right-width-12,area.Y+12,width,width);
+        return (area,toy,new Rectangle(toy.X,toy.Bottom-26,toy.Width,26));
     }
     private static Viewport OrientationViewport(Rectangle area,Rectangle canvas)=>new(
         canvas.X+(int)(area.X*canvas.Width/1920f),canvas.Y+(int)(area.Y*canvas.Height/1080f),
         Math.Max(1,(int)(area.Width*canvas.Width/1920f)),Math.Max(1,(int)(area.Height*canvas.Height/1080f)));
-    private void DrawOrientationLegend(Rectangle toy,Rectangle legend,string title="向きの人形")
+    private void DrawOrientationLegend(Rectangle toy,Rectangle legend,string title="方向のロボット")
     {
-        bool compact=toy.Width<180;float scale=compact?.30f:.43f;
-        _ui.Center(title,new(toy.X,toy.Y-(compact?22:32),toy.Width,compact?22:32),scale,Cream);
-        string[] labels={"碗 +X","箸 -X","頭 +Y","足 -Y","腹 +Z","背 -Z"};
-        Color[] colors={WorldCoordinates.LongitudeColor,WorldCoordinates.LatitudeColor,new(132,191,255)};
-        for(int i=0;i<labels.Length;i++)
-            _ui.Center(labels[i],new(legend.X+i%2*legend.Width/2,legend.Y+i/2*legend.Height/3,legend.Width/2,legend.Height/3),scale,colors[i/2]);
+        _ui.Center("方向のロボット",legend,.32f,Cream);
+    }
+    private void DrawOrientationOverlay(Rectangle area,Rectangle canvas,Matrix transform)
+    {
+        var areas=OrientationAreas(area,false);var toy=areas.Toy;
+        _spriteBatch.Begin(transformMatrix:transform);
+        int radius=toy.Width/2;
+        for(int y=-radius;y<=radius;y++){
+            int half=(int)MathF.Sqrt(radius*radius-y*y);
+            _ui.Box(new(toy.Center.X-half,toy.Center.Y+y,half*2+1,1),new Color(26,51,65,235));
+        }
+        _spriteBatch.End();
+        var viewport=GraphicsDevice.Viewport;
+        GraphicsDevice.Viewport=OrientationViewport(new(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30),canvas);
+        _orientationToy.Draw(_yaw,_pitch,_world.ViewOrientation(_yaw,_pitch));
+        GraphicsDevice.Viewport=viewport;
+        _spriteBatch.Begin(transformMatrix:transform);DrawOrientationLegend(toy,areas.Legend);_spriteBatch.End();
     }
 }

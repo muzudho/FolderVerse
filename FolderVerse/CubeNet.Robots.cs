@@ -30,7 +30,7 @@ public sealed partial class CubeNet
     {
         _robotBadges.Clear();
         if(!world.Campaign.UseRobotCombat)return;
-        bool detailed=scale>=RobotDetailScale;
+        bool detailed=true;
         var occupied=new List<Rectangle>();
         // Give the current node first choice of space, then populated nodes in stable ID order.
         int current=world.Nodes.Current(world.PlayerSlot)?.Id??-1;
@@ -47,7 +47,7 @@ public sealed partial class CubeNet
                 var pin=RobotPinBounds(RobotPinSlots[slot],store.Robots[slot].Parts);
                 pinBounds=slot==0?pin:Rectangle.Union(pinBounds,pin);
             }
-            int width=detailed?100:pinBounds.Width,height=detailed?104:pinBounds.Height;
+            int width=detailed?90:pinBounds.Width,height=detailed?160:pinBounds.Height;
             int gap=detailed?(node.IsHarbor?24:16):(node.IsHarbor?12:6);
             var bounds=new Rectangle((int)at.X-width/2,(int)at.Y-gap-height,width,height);
             if(!panel.Contains(bounds) || occupied.Any(r=>r.Intersects(bounds)))continue;
@@ -68,10 +68,11 @@ public sealed partial class CubeNet
             }
             for(int slot=0;slot<12;slot++)
             {
-                var card=new Rectangle(bounds.X+5+(slot%4)*23,bounds.Y+13+(slot/4)*28,21,25);
+                var card=new Rectangle(bounds.X+3+(slot%3)*29,bounds.Y+4+(slot/3)*39,26,36);
                 if(slot>=store.Count)continue;
                 var robot=store.Robots[slot];
-                DrawMapRobot(ui,new(card.X+3,card.Y+1,15,21),world.OwnerColor(robot.Owner),robot.Parts);
+                foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
+                    if((robot.Parts&part)!=0)DrawMapRobot(ui,new(card.X,card.Y,24,36),world.OwnerColor(robot.Origin(part)),part);
             }
         }
     }
@@ -79,7 +80,7 @@ public sealed partial class CubeNet
     {
         DrawMapRobot(ui,new(at.X-5,at.Y-1,10,15),color,parts);
     }
-    private void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts)
+    public void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts)
     {
         _mapRobotTexture ??= LoadMapRobot(ui.Batch.GraphicsDevice);
         var tint=Color.Lerp(Color.White,color,.48f);

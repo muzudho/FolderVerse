@@ -46,7 +46,7 @@ public partial class Game1
         {
             var at=Vector2.Lerp(NodeAt(shipment.Source),NodeAt(shipment.Target),PropagationTravel(shipment.Source,shipment.Target));
             int owner=_setup.Robots.Transport.LastOwners.GetValueOrDefault(shipment.RobotId);
-            DrawRobotGlyph(new((int)at.X-12,(int)at.Y-32,24,36),owner,shipment.Parts);
+            _net.DrawMapRobot(_ui,new((int)at.X-12,(int)at.Y-32,24,36),_setup.OwnerColor(owner),shipment.Parts);
         }
         foreach(var march in movement?_setup.Campaign.RobotBattles.LastMarches:Enumerable.Empty<(int Owner,int Source,int Target)>())
         {
@@ -63,7 +63,7 @@ public partial class Game1
             _ui.Box(new((int)at.X-12,(int)at.Y-9,24,16),_setup.OwnerColor(owner));
             _ui.Box(new((int)at.X+12,(int)at.Y-5,4,8),Cream);
         }
-        foreach(int i in Enumerable.Range(0,_robotScenes.Length).OrderBy(i=>i==target?1:0))
+        foreach(int i in (movement && !PropagationComplete?Enumerable.Empty<int>():Enumerable.Range(0,_robotScenes.Length)).OrderBy(i=>i==target?1:0))
         {
             var battle=_robotScenes[i];var at=PropagationBadgeCenter(i,panel);
             int side=(int)MathF.Round(30*magnification);
