@@ -63,7 +63,7 @@ public partial class Game1
             _ui.Box(new((int)at.X-12,(int)at.Y-9,24,16),_setup.OwnerColor(owner));
             _ui.Box(new((int)at.X+12,(int)at.Y-5,4,8),Cream);
         }
-        foreach(int i in (movement && !PropagationComplete?Enumerable.Empty<int>():Enumerable.Range(0,_robotScenes.Length)).OrderBy(i=>i==target?1:0))
+        foreach(int i in Enumerable.Range(0,_robotScenes.Length).Where(i=>!movement || PropagationBattleArrived(_robotScenes[i])).OrderBy(i=>i==target?1:0))
         {
             var battle=_robotScenes[i];var at=PropagationBadgeCenter(i,panel);
             int side=(int)MathF.Round(30*magnification);
@@ -78,6 +78,15 @@ public partial class Game1
         _ui.Box(new(RobotResultBar.X,RobotResultBar.Y,(int)(RobotResultBar.Width*progress),RobotResultBar.Height),Accent);
         if(!movement)_ui.Button(BattleContinue,"戦場を切り替える",Accent,.55f);
         if(!movement)_ui.Button(RobotResultPause,_robotPlaying?"一時停止":"再開",Muted,.5f);
+    }
+    private bool PropagationBattleArrived(BattleState battle)
+    {
+        var marches=_setup.Campaign.RobotBattles.LastMarches.Where(m=>
+            battle.Kind==BattleKind.Edge
+                ? (m.Source==battle.SourceNode && m.Target==battle.TargetNode) || (m.Source==battle.TargetNode && m.Target==battle.SourceNode)
+                : m.Target==battle.TargetNode && battle.Armies.Any(a=>a.Owner==m.Owner));
+        // Reveal this battlefield as soon as its first attacking force arrives.
+        return !marches.Any() || marches.Any(m=>PropagationTravel(m.Source,m.Target)>=1);
     }
     private void DrawPropagationGrid(BattleState battle,Rectangle bounds,float opacity)
     {

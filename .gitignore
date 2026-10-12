@@ -367,3 +367,6 @@ FodyWeavers.xsd
 # Keep development diaries under version control.
 !/docs/dev/log/
 !/docs/dev/log/**
+
+# Local backups of replaced portrait game tiles
+/art-source/portraits/conqueror-balanced/pre-balanced-game-tiles/

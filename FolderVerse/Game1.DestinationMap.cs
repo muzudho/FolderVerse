@@ -20,7 +20,7 @@ public partial class Game1
     private void FitDestinationView()
     {
         if(!DestinationOperation || OperationSource<0)return;
-        var ids=DestinationNodes().Append(OperationSource).Distinct().ToArray();
+        var ids=VisibleDestinationNodes().ToArray();
         var source=_setup.Nodes.All[OperationSource];
         var anchor=_setup.Routes.Position(source.Cell,source.Center);
         _dragging=_mapDragging=false;
@@ -58,7 +58,18 @@ public partial class Game1
     }
     private void PrepareDestinationMap()
     {
-        _net.VisibleOperationNodes=!_transportOverview && DestinationOperation?new HashSet<int>(DestinationNodes().Append(OperationSource)):null;
+        _net.VisibleOperationNodes=!_transportOverview && DestinationOperation?VisibleDestinationNodes():null;
+    }
+    private HashSet<int> VisibleDestinationNodes()
+    {
+        var targets=new HashSet<int>(DestinationNodes());
+        var visible=new HashSet<int>(targets);
+        if(OperationSource>=0)visible.Add(OperationSource);
+        if(_movementOpen && _warPlanning)
+            foreach(var node in _setup.Nodes.All.Where(n=>n.Owner>=0 && _setup.Relations.Controls(n.Owner)))
+                if(_setup.Routes.Neighbors(node).Any(route=>targets.Contains(_setup.Nodes.At(route.Target,route.Entry).Id)))
+                    visible.Add(node.Id);
+        return visible;
     }
     private bool OperationPosition(int id,out Vector2 at)
     {
