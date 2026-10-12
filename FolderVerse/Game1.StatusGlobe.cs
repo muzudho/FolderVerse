@@ -61,7 +61,7 @@ public partial class Game1
         int selected=_globePressedCell;_globePressedCell=-1;
         int selectedNode=HitGlobeNode(_pointer);
         if(!_globeCellDragged && selectedNode>=0)
-        {_globeSelectedNode=selectedNode;var node=_setup.Nodes.All[selectedNode];_populationCell=node.Cell;_populationNode=node.Id;_inspectedNode=node.Id;_nodeAutomationDrop=false;_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=_nodeAssemblyOpen=false;return;}
+        {_globeSelectedNode=selectedNode;var node=_setup.Nodes.All[selectedNode];_populationCell=node.Cell;_populationNode=node.Id;_inspectedNode=node.Id;_supervisorDialog=0;_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=_nodeAssemblyOpen=false;return;}
         if(_globeCellDragged)return;
         var cell=_setup.Cells[selected];
         _dragging=_mapDragging=false;

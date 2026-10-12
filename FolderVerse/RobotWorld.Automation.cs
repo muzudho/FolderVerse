@@ -3,6 +3,17 @@ using System;
 using System.Linq;
 public sealed partial class RobotWorld
 {
+    private int _domesticPreparedTurn=-1;
+    public void PrepareDomestic(int turn,Func<int,int,bool> connected,Func<int,int> owner,Func<int,bool> locked=null)
+    {
+        if(_domesticPreparedTurn==turn)return;
+        bool elapsed=_domesticPreparedTurn>=0;
+        _domesticPreparedTurn=turn;
+        for(int n=0;n<Nodes.Length;n++){
+            if(elapsed)Workshops[n].AdvanceSupervisorLeave();
+            if(owner(n)>=0 && locked?.Invoke(n)!=true)AdjustNode(n,owner(n),connected,locked,owner);
+        }
+    }
     public void AdjustNode(int node,int owner,Func<int,int,bool> connected,Func<int,bool> locked=null,Func<int,int> nodeOwner=null)
     {
         var workshop=Workshops[node];if(workshop.Automation==NodeAutomation.Manual)return;

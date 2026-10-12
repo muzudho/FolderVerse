@@ -48,7 +48,7 @@ public partial class Game1
                 NodeAssemblyInput(new MouseState(target.X,target.Y,0,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),false,false);break;
             case 8:_nodeAssemblyOpen=false;OpenNodeFactory();break;
             case 9:if(_nodeFactoryOpen){_factoryPlanLine=0;_factoryLine=0;}break;
-            case 10:if(_nodeFactoryOpen){_setup.Robots.AdjustNode(_populationNode,_setup.PlayerSlot,(a,b)=>_setup.Routes.Neighbors(_setup.Nodes.All[a]).Any(r=>_setup.Nodes.At(r.Target,r.Entry).Id==b));_factoryPlanLine=-1;}break;
+            case 10:if(_nodeFactoryOpen){_factoryPlanLine=-1;}break;
             case 11:_nodeFactoryOpen=false;_populationCell=-1;break;
             case 12:OpenMovement();break;
             case 13:MovementClick(target,new KeyboardState());break;

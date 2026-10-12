@@ -63,7 +63,7 @@ public sealed partial class RobotWorld
     {Validate(owner,parts);return new(_nextId++,owner,parts,role,disposal);}
     public void Initialize(int nodeCount,int rulerCount)
     {
-        Training=Enumerable.Range(0,rulerCount).Select(_=>new RobotTraining()).ToArray();_nextId=1;Nodes=Enumerable.Range(0,nodeCount).Select(_=>new RobotStore()).ToArray();
+        _domesticPreparedTurn=-1;Training=Enumerable.Range(0,rulerCount).Select(_=>new RobotTraining()).ToArray();_nextId=1;Nodes=Enumerable.Range(0,nodeCount).Select(_=>new RobotStore()).ToArray();
         Retinues=Enumerable.Range(0,rulerCount).Select(_=>new RobotStore()).ToArray();
         Workshops=Enumerable.Range(0,nodeCount).Select(_=>new RobotWorkshop()).ToArray();Transport.Reset();PendingEdits.Clear();WorkshopFailures.Clear();
     }
@@ -100,7 +100,6 @@ public sealed partial class RobotWorld
     }
     public void Advance(Func<int,int,bool> connected,Func<int,int> owner,int seed,Func<int,bool> locked=null,Func<int,int,bool> canEnter=null)
     {
-        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true && owner(n)>=0)AdjustNode(n,owner(n),connected,locked,owner);
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));Workshops[n].CompleteDisposal(Nodes[n]);}
         WorkshopFailures.Clear();
         foreach(var edit in PendingEdits.ToArray())

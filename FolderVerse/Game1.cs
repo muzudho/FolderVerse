@@ -1,3 +1,4 @@
+using System.Linq;
 namespace FolderVerse;
 
 using System;
@@ -132,6 +133,12 @@ public partial class Game1 : Game
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds;
         _animationTime+=(float)elapsed;
+        if(IsStatusScreen && _setup.Robots.Nodes.Length>0)
+            _setup.Robots.PrepareDomestic(_setup.Population.Turn,(a,b)=>!_setup.Campaign.RobotBattles.LockedEdge(a,b) && _setup.Routes.Neighbors(_setup.Nodes.All[a]).Any(r=>_setup.Nodes.At(r.Target,r.Entry).Id==b),n=>_setup.Nodes.All[n].Owner,_setup.Campaign.RobotBattles.LockedNode);
+        if(IsStatusScreen && _supervisorDialog!=0){
+            if(active)SupervisorDialogInput(click,escape,keyboard);
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
         if(UpdateDemo(elapsed,active,click,escape,enter))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen is Screen.LandConquest or Screen.Fortune){UpdateLandSetup(elapsed,mouse,active,click,enter);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -256,7 +263,7 @@ public partial class Game1 : Game
             {
                 var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);var post=_setup.Nodes.At(_statusCell,point);
                 if(post!=null)
-                {_populationCell=_statusCell;_populationNode=post.Id;_inspectedNode=post.Id;_nodeAutomationDrop=false;_nodeFactoryOpen=false;_nodeTransportOpen=false;_nodeDisposalOpen=false;_nodeAssemblyOpen=false;_movementOpen=false;}
+                {_populationCell=_statusCell;_populationNode=post.Id;_inspectedNode=post.Id;_supervisorDialog=0;_nodeFactoryOpen=false;_nodeTransportOpen=false;_nodeDisposalOpen=false;_nodeAssemblyOpen=false;_movementOpen=false;}
             }
             if(active)
             {
@@ -556,7 +563,7 @@ public partial class Game1 : Game
         if(_transportOverview){DrawTransportOverviewPanel();if(_rateTarget>=0)DrawRatePieDialog();}
         DrawRouteLayerButtons();
         DrawStatusMenu();
-        DrawNodeTooltip();
+        if(_supervisorDialog==0)DrawNodeTooltip();
         DrawTraining();
     }
     private void DrawCastPreviewInfo()

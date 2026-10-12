@@ -18,3 +18,17 @@ f.Automation=NodeAutomation.Auto;f.SelectPlan(3);w.AdjustNode(0,0,(a,b)=>true,no
 var mixed=w.Create(0,RobotParts.Complete).Materialize() with{BodyOrigin=1,LegsOrigin=1};foreach(var r in w.Nodes[0].Robots.ToArray())w.Nodes[0].Remove(r.Id);w.Nodes[0].Add(mixed);w.Nodes[0].Add(mixed with{Id=100});
 w.AdjustNode(0,0,(a,b)=>true,nodeOwner:n=>0);Check(w.Transport.Plan(0,0,RobotParts.Complete).Count==0,"Pure training blocks mixed transport");w.Training[0].DeploymentPolicy=3;w.AdjustNode(0,0,(a,b)=>true,nodeOwner:n=>0);Check(w.Transport.Plan(0,0,RobotParts.Complete).Sum(x=>x.Degrees)>0,"Local deployment admits mixed soldiers");
 Console.WriteLine("PASS: manual preservation, gentle convergence and bounds, auto factory, nation filter and training.");
+var vacation=new RobotWorld();vacation.Initialize(2,1);
+var manager=vacation.Workshops[0];manager.Automation=NodeAutomation.Auto;
+vacation.PrepareDomestic(0,(a,b)=>true,n=>0);
+manager.GiveSupervisorLeave(2,NodeAutomation.Gentle);manager.SetReservedSlots(7);
+vacation.PrepareDomestic(0,(a,b)=>true,n=>0);
+Check(manager.SupervisorLeaveRemaining==2 && manager.ReservedSlots==7,"Same domestic turn does not count vacation twice");
+vacation.PrepareDomestic(1,(a,b)=>true,n=>0);
+Check(manager.SupervisorLeaveRemaining==1 && manager.Automation==NodeAutomation.Manual && manager.ReservedSlots==7,"Vacation freezes policy changes");
+vacation.PrepareDomestic(2,(a,b)=>true,n=>0);
+Check(manager.SupervisorLeaveRemaining==0 && manager.Automation==NodeAutomation.Gentle,"Returns under chosen policy before domestic input");
+manager.GiveSupervisorLeave(99,NodeAutomation.Auto);manager.RecallSupervisor(NodeAutomation.Gentle);
+Check(manager.SupervisorLeaveRemaining==0 && manager.Automation==NodeAutomation.Gentle,"Immediate recall selects handover");
+foreach(int bad in new[]{0,100}){bool rejected=false;try{manager.GiveSupervisorLeave(bad,NodeAutomation.Auto);}catch(ArgumentOutOfRangeException){rejected=true;}Check(rejected,"Only 1 to 99 turns allowed");}
+Console.WriteLine("PASS: vacation countdown, recall, return policy, turn idempotence and duration bounds.");

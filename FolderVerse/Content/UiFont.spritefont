@@ -10,6 +10,16 @@
 <CharacterRegion><Start>町</Start><End>町</End></CharacterRegion>
 <CharacterRegion><Start>病</Start><End>病</End></CharacterRegion>
 <CharacterRegion><Start>院</Start><End>院</End></CharacterRegion>
+<CharacterRegion><Start>暇</Start><End>暇</End></CharacterRegion>
+<CharacterRegion><Start>与</Start><End>与</End></CharacterRegion>
+<CharacterRegion><Start>復</Start><End>復</End></CharacterRegion>
+<CharacterRegion><Start>針</Start><End>針</End></CharacterRegion>
+<CharacterRegion><Start>何</Start><End>何</End></CharacterRegion>
+<CharacterRegion><Start>呼</Start><End>呼</End></CharacterRegion>
+<CharacterRegion><Start>働</Start><End>働</End></CharacterRegion>
+<CharacterRegion><Start>？</Start><End>？</End></CharacterRegion>
+<CharacterRegion><Start>～</Start><End>～</End></CharacterRegion>
+<CharacterRegion><Start>仕</Start><End>仕</End></CharacterRegion>
 </CharacterRegions></Asset></XnaContent>
 
 

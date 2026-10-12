@@ -11,6 +11,22 @@ public sealed partial class RobotWorkshop
     public bool Manufacturing {get;private set;}
     public bool Paused {get;set;}
     public NodeAutomation Automation {get;set;}=NodeAutomation.Manual;
+    public int SupervisorLeaveRemaining {get;private set;}
+    public NodeAutomation SupervisorReturnPolicy {get;private set;}=NodeAutomation.Gentle;
+    public void GiveSupervisorLeave(int turns,NodeAutomation returnPolicy)
+    {
+        if(turns<1 || turns>99 || returnPolicy==NodeAutomation.Manual)throw new ArgumentOutOfRangeException();
+        SupervisorLeaveRemaining=turns;SupervisorReturnPolicy=returnPolicy;Automation=NodeAutomation.Manual;
+    }
+    public void RecallSupervisor(NodeAutomation policy)
+    {
+        if(policy==NodeAutomation.Manual)throw new ArgumentOutOfRangeException(nameof(policy));
+        SupervisorLeaveRemaining=0;SupervisorReturnPolicy=policy;Automation=policy;
+    }
+    internal void AdvanceSupervisorLeave()
+    {
+        if(SupervisorLeaveRemaining>0 && --SupervisorLeaveRemaining==0)Automation=SupervisorReturnPolicy;
+    }
     public bool AutoAssemblyDisabled {get;set;}
     public bool Waiting=>Manufacturing && ProductionAge>=ProductionPeriod;
     public int DisposalPeriod {get;private set;}
