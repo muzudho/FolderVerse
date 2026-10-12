@@ -103,7 +103,7 @@ public partial class Game1
         {
             var previous=_robotScenes[_battleWave];
             bool decided=previous.Finished && (previous.Frames.Count==0 || RobotFrameIndex(previous)==previous.Frames.Count-1);
-            if(!decided || _robotResultAge>=RobotResultSeconds*.6)
+            if(!decided)
             {
                 DrawPropagation(_robotPendingFocus,(float)(decided?(_robotResultAge/RobotResultSeconds-.6)/.4:_robotResultAge/RobotResultSeconds),false);
                 if(decided)DrawBattleNewspaper(previous,previous.Frames.Count==0?new BattleFrame(previous.Turn,BattlePhase.Result,Array.Empty<BattleUnitView>(),previous.FlagStanding,previous.LastFlagOwner):previous.Frames[^1]);
@@ -202,6 +202,32 @@ public partial class Game1
             }
             bool salute=unit.Role==BattleRole.Captain && !unit.Fallen && frame.Phase is BattlePhase.Place or BattlePhase.Rollback && battle.Events.Any(e=>e.Turn==frame.Turn && e.Unit==unit.Id && e.Detail=="隊形成 / 剣を振り上げた");
             if(salute)_ui.Tile(new(r.Right+7,r.Y+3),new(4,28),-.35f,new Color(255,225,125));
+            if(_robotPendingFocus<0 && !_robotPendingSummary && !unit.Fallen && !unit.Retreated && frame.Phase is BattlePhase.Receive or BattlePhase.Consume &&
+                battle.Events.Any(e=>e.Turn==frame.Turn && e.Unit==unit.Id && e.Detail=="盾で防いだ")){
+                var forward=BattleState.Forward(unit.Facing);var normal=new Vector2(forward.X,forward.Y);
+                var center=new Vector2(r.Center.X,r.Center.Y)+normal*38;var tangent=new Vector2(-normal.Y,normal.X);
+                // The barrier sits on the defended front, perpendicular to the incoming hit.
+                _ui.Tile(center,new(48,9),MathF.Atan2(tangent.Y,tangent.X),new Color(125,221,255));
+                _ui.Tile(center+normal*5,new(36,4),MathF.Atan2(tangent.Y,tangent.X),Color.White);
+                for(int spark=0;spark<5;spark++){
+                    float offset=(spark-2)*12;var at=center+tangent*offset+normal*(8+MathF.Sin(_animationTime*16+spark)*5);
+                    _ui.Tile(at,new(8,3),MathF.Atan2(normal.Y,normal.X),new Color(255,238,143));
+                }
+                _ui.Center("盾",new(r.X-4,r.Y-28,70,26),.52f,Color.White);
+            }
+            if((_robotPendingFocus>=0 || _robotPendingSummary) && battle.Finished && battle.Winner>=0 &&
+                frameIndex==battle.Frames.Count-1 && !unit.Fallen && !unit.Retreated && battle.Allied(unit.Owner,battle.Winner)){
+                var front=BattleState.Forward(unit.Facing);var direction=new Vector2(front.X,front.Y);
+                var mouth=new Vector2(r.Center.X,r.Y+24);float angle=MathF.Atan2(direction.Y,direction.X);
+                // Trumpet held to the mouth, bell pointing toward the unit's front.
+                _ui.Tile(mouth+direction*24,new(40,7),angle,new Color(255,210,85));
+                _ui.Tile(mouth+direction*43,new(12,24),angle,new Color(255,231,145));
+                for(int ray=0;ray<3;ray++){
+                    var at=mouth+direction*(55+ray*10);var side=new Vector2(-direction.Y,direction.X);
+                    _ui.Tile(at+side*MathF.Sin(_animationTime*8+ray)*7,new(4,13),angle,new Color(255,240,170));
+                }
+                _ui.Tile(new(r.X-6,r.Y+10),new(7,30),-.55f,new Color(255,222,180));
+            }
         }
         if(frame.Phase is BattlePhase.Attack or BattlePhase.Receive)
         foreach(var attack in battle.Attacks.Where(a=>a.Turn==frame.Turn))

@@ -2,7 +2,7 @@ using FolderVerse;
 using Microsoft.Xna.Framework;
 static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 BattleState Board(BattleKind kind=BattleKind.Edge,int noWill=10){var b=new BattleState(42,new(){NoWillTurns=noWill,PersuasionPercent=0}){Kind=kind,Defender=1};b.Armies.Add(new(){Owner=0,Side=0});b.Armies.Add(new(){Owner=1,Side=2});return b;}
-BattleUnit Unit(BattleState b,long id,int owner,int x,int y,BattleFacing facing){var u=new BattleUnit{Id=id,Owner=owner,Position=new(x,y),Facing=facing};b.Units.Add(u);return u;}
+BattleUnit Unit(BattleState b,long id,int owner,int x,int y,BattleFacing facing){var u=new BattleUnit{Id=id,Owner=owner,Position=new(x,y),Facing=facing,Shields=4,Rifles=3};b.Units.Add(u);return u;}
 void Turn(BattleState b,params (BattleUnit Unit,BattleWeapon Weapon,Point Step,BattleFacing? Facing)[] actions)
 {
     var orders=b.Units.Where(u=>u.Active).ToDictionary(u=>u.Id,u=>new BattleAction(Point.Zero,u.Facing));
@@ -38,7 +38,7 @@ for(int count=1;count<=12;count++)
     state.BuildTerrain(BattleTerrain.Sea);state.Deploy();state.Check();Check(state.Units.Count+state.Armies.Sum(ar=>ar.Waiting.Count)==4*(count+1),"Deployment preserves units");
 }
 b=new BattleState(42,new(){PersuasionPercent=100,PersuasionRadius=4}){Kind=BattleKind.Edge};b.Armies.Add(new(){Owner=0,Side=0});b.Armies.Add(new(){Owner=1,Side=2});a=Unit(b,-1,0,3,3,BattleFacing.East);a.Role=BattleRole.Queen;a.Daggers=0;a.Rifles=0;c=Unit(b,1,1,4,3,BattleFacing.North);c.Robot=new(1,1,RobotParts.Complete);Turn(b);Check(c.Owner==0 && c.Robot.Owner==0,"Persuasion changes individual ownership");
-b=Board();a=Unit(b,1,0,5,5,BattleFacing.South);a.Daggers=0;a.Rifles=0;c=Unit(b,2,1,8,8,BattleFacing.North);
+b=Board();a=Unit(b,1,0,5,5,BattleFacing.South);a.Daggers=0;a.Rifles=0;a.Shields=0;c=Unit(b,2,1,8,8,BattleFacing.North);
 for(int t=0;t<8 && !b.Finished;t++){var action=BattleAi.Choose(b,a);BattleTurnResolver.Advance(b,new Dictionary<long,BattleAction>{{a.Id,action},{c.Id,new(Point.Zero,c.Facing)}});}
 Check(a.Retreating && a.Retreated,"Exhausted soldier follows retreat to home edge");
 b=Board();a=Unit(b,-1,0,3,3,BattleFacing.South);a.Role=BattleRole.Queen;a.Daggers=0;a.Rifles=0;c=Unit(b,1,1,3,6,BattleFacing.North);
@@ -112,3 +112,15 @@ Check(withdrawal[^1].Units.All(u=>u.Retreated || u.Fallen),"Both armies must vis
 Check(withdrawal.SelectMany(f=>f.Units).Any(u=>u.Owner==0 && !BattleState.Inside(u.Position)) && withdrawal.SelectMany(f=>f.Units).Any(u=>u.Owner==1 && !BattleState.Inside(u.Position)),"Both armies cross the board boundary");
 Check(b.Frames[^1].Units.All(u=>u.Retreated || u.Fallen) && c.Active,"Replay withdrawal must preserve victorious garrison");
 Console.WriteLine("PASS: morale judgment shows both armies withdrawing outside before result, preserving garrison");
+
+b=Board();a=Unit(b,1,0,4,4,BattleFacing.North);c=Unit(b,2,0,4,3,BattleFacing.South);Unit(b,3,1,9,9,BattleFacing.North);
+a.Shields=a.Daggers=a.Rifles=0;
+BattleTurnResolver.Advance(b);
+Check(a.Retreating && a.Position==new Point(4,3) && c.Position!=new Point(4,3),"Ally clears retreat path");
+Check(b.Units.Where(u=>u.Active).Select(u=>u.Position).Distinct().Count()==b.Units.Count(u=>u.Active),"Yielding has no overlap");
+b=Board();a=Unit(b,1,0,4,4,BattleFacing.North);c=Unit(b,2,0,3,4,BattleFacing.North);c.Role=BattleRole.Queen;Unit(b,3,1,9,9,BattleFacing.North);
+a.Shields=a.Daggers=a.Rifles=0;
+BattleAi.Choose(b,a);Check(!a.Retreating,"Leader retains exhausted final soldier");
+c.Role=BattleRole.Soldier;c.Shields=1;c.Daggers=c.Rifles=0;BattleAi.Choose(b,a);Check(a.Retreating,"Shield-equipped soldier replaces exhausted soldier");
+BattleAi.Choose(b,c);Check(!c.Retreating,"Shield-only soldier stays");
+Console.WriteLine("PASS: depleted soldier conditions and allied path clearing.");

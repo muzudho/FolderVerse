@@ -17,6 +17,7 @@ public static class BattleTurnResolver
             var action=actions[unit.Id];
             if(Math.Abs(action.Step.X)+Math.Abs(action.Step.Y)>1 || (int)action.Facing<0 || (int)action.Facing>3 || !Enum.IsDefined(action.Weapon) || action.Weapon==BattleWeapon.Dagger && unit.Daggers==0 || action.Weapon==BattleWeapon.Rifle && unit.Rifles==0 || unit.Role==BattleRole.Queen && action.Weapon!=BattleWeapon.None)throw new ArgumentException("Invalid battle action.");
         }
+        BattleRetreat.ClearPaths(battle,units,actions);
         battle.Turn++;battle.Events.Add(new(battle.Turn,BattlePhase.Choose,0,"全軍行動確定"));
         battle.Capture(BattlePhase.Choose);
         var origin=units.ToDictionary(u=>u.Id,u=>u.Position);var positions=units.ToDictionary(u=>u.Id,u=>u.Position+actions[u.Id].Step);
@@ -81,7 +82,7 @@ public static class BattleTurnResolver
             {
                 int dagger=Math.Min(u.Shields,h.Dagger);u.Shields-=dagger;h.Dagger-=dagger;
                 int rifle=Math.Min(u.Shields,h.Rifle);u.Shields-=rifle;h.Rifle-=rifle;
-                if(dagger+rifle>0 && h.HostileHit)will=true;
+                if(dagger+rifle>0){battle.Events.Add(new(battle.Turn,BattlePhase.Consume,u.Id,"盾で防いだ"));if(h.HostileHit)will=true;}
             }
             battle.Events.Add(new(battle.Turn,BattlePhase.Consume,u.Id,$"短剣 {u.Daggers} / 小銃 {u.Rifles} / 盾 {u.Shields}"));
         }

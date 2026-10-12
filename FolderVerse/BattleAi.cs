@@ -14,11 +14,10 @@ public static class BattleAi
         var army=battle.Army(unit.Owner);var enemy=enemies.FirstOrDefault();
         bool armed=unit.Daggers>0 || unit.Rifles>0;
         if(unit.Role==BattleRole.Captain && !battle.Units.Any(u=>u.Active && u.Owner==unit.Owner && u.Role==BattleRole.Soldier && (u.Daggers>0 || u.Rifles>0)) && !army.Waiting.Any(u=>u.Role==BattleRole.Soldier))unit.Retreating=true;
-        if(!armed && unit.Role==BattleRole.Soldier)
-        {
-            var flagStep=battle.Kind==BattleKind.Node?Path(battle,unit,battle.Flag):null;
-            if(battle.Kind!=BattleKind.Node || battle.Allied(unit.Owner,battle.Defender) && battle.FlagStanding || flagStep==null)unit.Retreating=true;
-        }
+        if(unit.Role==BattleRole.Soldier && unit.Daggers==0 && unit.Rifles==0 && unit.Shields==0 &&
+            (!battle.Units.Any(u=>u.Active && u.Owner==unit.Owner && u.Role is BattleRole.Captain or BattleRole.Queen) ||
+             battle.Units.Any(u=>u.Active && u.Owner==unit.Owner && u.Role==BattleRole.Soldier && (u.Daggers>0 || u.Rifles>0 || u.Shields>0))))
+            unit.Retreating=true;
         if(unit.Retreating)
         {
             var exit=army.Side switch{0=>new Point(unit.Position.X,-1),1=>new Point(10,unit.Position.Y),2=>new Point(unit.Position.X,10),_=>new Point(-1,unit.Position.Y)};
