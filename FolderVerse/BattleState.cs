@@ -36,6 +36,8 @@ public sealed class BattleUnit
 public sealed class BattleArmy
 {
     public int Owner,HomeNode,Side,Limit=12;
+    public int NoWillCount;
+    public bool Withdrawing;
     public bool InvadingQueen;
     public Queue<BattleUnit> Waiting {get;}=new();
     public Dictionary<int,List<Point[]>> Patterns {get;}=new();
@@ -117,6 +119,7 @@ public sealed partial class BattleState
     {
         var states=previous.OrderBy(b=>b.Id).ToArray();if(states.Length==0)return;
         Turn=states.Max(b=>b.Turn);NoWillCount=states.Min(b=>b.NoWillCount);Random=states[0].Random.Clone();
+        foreach(var army in Armies){var prior=states.SelectMany(b=>b.Armies).Where(a=>a.Owner==army.Owner).ToArray();if(prior.Length>0){army.NoWillCount=prior.Min(a=>a.NoWillCount);army.Withdrawing=prior.All(a=>a.Withdrawing);}}
         var flag=states.Where(b=>b.Kind==BattleKind.Node && !b.SplitBoard).OrderByDescending(b=>b.Turn).FirstOrDefault();
         if(flag!=null){FlagStanding=flag.FlagStanding;LastFlagOwner=flag.LastFlagOwner;}
     }
@@ -125,7 +128,7 @@ public sealed partial class BattleState
         bool entered=false;
         foreach(var army in Armies.OrderBy(a=>a.Owner))
         {
-            if(army.Waiting.Count==0 || Units.Count(u=>u.Active && u.Owner==army.Owner)>=army.Limit)continue;
+            if(army.Withdrawing || army.Waiting.Count==0 || Units.Count(u=>u.Active && u.Owner==army.Owner)>=army.Limit)continue;
             var cells=Region(army.Side).Where(p=>army.Side switch{0=>p.Y==0,1=>p.X==9,2=>p.Y==9,_=>p.X==0});
             var free=cells.Where(Walkable).Where(p=>!Units.Any(u=>u.Active && u.Position==p)).Select(p=>(Point?)p).FirstOrDefault();
             if(free==null)continue;

@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 
 public partial class Game1
 {
+    private readonly Dictionary<(int Battle,long Unit),float> _fallFadeStarted=new();
     private BattleState[] _robotScenes=Array.Empty<BattleState>();
     private bool _robotPlaying=true;
     private RobotBattlePlayback _robotPlayback=new(Array.Empty<BattleState>());
@@ -31,7 +32,7 @@ public partial class Game1
     private void OpenRobotBattle()
     {
         _newspaperIssue=_newspaperPreviousIssue=null;_newspaperSlideAge=1;_newspaperClock=0;
-        _robotScenes=_setup.Campaign.RobotBattles.Scenes.ToArray();_battleTiles=Array.Empty<CharacterTile>();_battleWave=0;_battleAge=0;_robotResultAge=0;_robotPlaying=true;
+        _fallFadeStarted.Clear();_robotScenes=_setup.Campaign.RobotBattles.Scenes.ToArray();_battleTiles=Array.Empty<CharacterTile>();_battleWave=0;_battleAge=0;_robotResultAge=0;_robotPlaying=true;
         _robotPlayback=new(_robotScenes);_robotRound=0;_robotSummaryPage=0;_robotPendingFocus=-1;_robotPendingRound=false;_robotPendingSummary=false;_robotSummary=_robotPlayback.Rounds.Length==0;
         if(!_robotSummary)_battleWave=RobotPriority[0];
         _populationCell=-1;_dragging=false;
@@ -185,7 +186,12 @@ public partial class Game1
             if(unit.Retreated){var last=battle.Frames.Take(firstExit).LastOrDefault(f=>f.Units.Any(u=>u.Id==unit.Id && !u.Retreated));var prior=last?.Units.FirstOrDefault(u=>u.Id==unit.Id);if(prior!=null){var from=new Vector2(left+prior.Position.X*size+19,top+prior.Position.Y*size+7);var exit=battle.Frames[firstExit].Units.First(u=>u.Id==unit.Id);var direction=Vector2.Normalize(new Vector2(exit.Position.X-prior.Position.X,exit.Position.Y-prior.Position.Y));pos=Vector2.Lerp(from,from+direction*70,Math.Clamp(exitAge*2,0,1));}}
             var r=new Rectangle((int)pos.X,(int)pos.Y,62,85);
             int firstFall=unit.Fallen?battle.Frames.FindIndex(f=>f.Units.Any(u=>u.Id==unit.Id && u.Fallen)):-1;
-            float opacity=unit.Fallen?Math.Clamp(1-(frameIndex-firstFall)/5f,0,1):1f;
+            float opacity=1f;
+            var fadeKey=(battle.Id,unit.Id);
+            if(unit.Fallen){
+                if(!_fallFadeStarted.TryGetValue(fadeKey,out float started)){started=_animationTime;_fallFadeStarted[fadeKey]=started;}
+                opacity=Math.Clamp(1-(_animationTime-started)/1.25f,0,1);
+            }else _fallFadeStarted.Remove(fadeKey);
             if(unit.Retreated)opacity*=Math.Clamp(1-exitAge,0,1);
             if(opacity<=0)continue;
             foreach(var patch in BattlePieceArt.Pieces[BattlePieceArt.Index(unit.Role,unit.Facing)])
@@ -213,12 +219,11 @@ public partial class Game1
                     float offset=(spark-2)*12;var at=center+tangent*offset+normal*(8+MathF.Sin(_animationTime*16+spark)*5);
                     _ui.Tile(at,new(8,3),MathF.Atan2(normal.Y,normal.X),new Color(255,238,143));
                 }
-                _ui.Center("盾",new(r.X-4,r.Y-28,70,26),.52f,Color.White);
             }
             if((_robotPendingFocus>=0 || _robotPendingSummary) && battle.Finished && battle.Winner>=0 &&
                 frameIndex==battle.Frames.Count-1 && !unit.Fallen && !unit.Retreated && battle.Allied(unit.Owner,battle.Winner)){
                 var front=BattleState.Forward(unit.Facing);var direction=new Vector2(front.X,front.Y);
-                var mouth=new Vector2(r.Center.X,r.Y+24);float angle=MathF.Atan2(direction.Y,direction.X);
+                var mouth=new Vector2(r.Center.X,r.Y+28);float angle=MathF.Atan2(direction.Y,direction.X);
                 // Trumpet held to the mouth, bell pointing toward the unit's front.
                 _ui.Tile(mouth+direction*24,new(40,7),angle,new Color(255,210,85));
                 _ui.Tile(mouth+direction*43,new(12,24),angle,new Color(255,231,145));
