@@ -87,7 +87,7 @@ public partial class Game1
         if(_screen==Screen.Transport){UpdateTransport(elapsed,false,now);_demoStepAge=0;return true;}
         if(_screen==Screen.Battle)
         {
-            if(_robotSummary){if(_demoStepAge>3){RobotBattleInput(0,false,true);_demoStepAge=0;}}
+            if(_robotSummary)UpdateAutomaticSummary(elapsed,true);
             else{RobotBattleInput(elapsed,false,false);_demoStepAge=0;}
             return true;
         }

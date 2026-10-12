@@ -28,8 +28,8 @@ public partial class Game1
                 break;
             case Screen.Transport:UpdateTransport(elapsed,false,now);_autoStepAge=0;break;
             case Screen.Battle:
-                if(_robotSummary){if(_autoStepAge>=3){RobotBattleInput(0,false,true);_autoStepAge=0;}}
-                else{RobotBattleInput(elapsed,false,false);_autoStepAge=0;}
+                if(_robotSummary)UpdateAutomaticSummary(elapsed,false);
+                else{_robotPlaying=true;RobotBattleInput(elapsed,false,false);_autoStepAge=0;}
                 break;
             case Screen.Disposition:
                 if(_autoStepAge>=2){_pointer=DispositionButton(DemoDispositionChoice()).Center;DispositionInput(true,false);_autoStepAge=0;}

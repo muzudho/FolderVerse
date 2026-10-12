@@ -33,7 +33,7 @@ public partial class Game1
     {
         _newspaperIssue=_newspaperPreviousIssue=null;_newspaperSlideAge=1;_newspaperClock=0;
         _fallFadeStarted.Clear();_robotScenes=_setup.Campaign.RobotBattles.Scenes.ToArray();_battleTiles=Array.Empty<CharacterTile>();_battleWave=0;_battleAge=0;_robotResultAge=0;_robotPlaying=true;
-        _robotPlayback=new(_robotScenes);_robotRound=0;_robotSummaryPage=0;_robotPendingFocus=-1;_robotPendingRound=false;_robotPendingSummary=false;_robotSummary=_robotPlayback.Rounds.Length==0;
+        _robotPlayback=new(_robotScenes);_robotRound=0;_robotSummaryPage=0;_summaryReadAge=0;_summaryReadPapers=0;_robotPendingFocus=-1;_robotPendingRound=false;_robotPendingSummary=false;_robotSummary=_robotPlayback.Rounds.Length==0;
         if(!_robotSummary)_battleWave=RobotPriority[0];
         _populationCell=-1;_dragging=false;
         _statusGlobe=false;_net.ResetView();_net.CancelAnimation();
@@ -54,13 +54,14 @@ public partial class Game1
     private void RobotBattleInput(double elapsed,bool click,bool enter)
     {
         _newspaperClock+=elapsed;_newspaperSlideAge+=elapsed;
+        if(click && _robotSummary && SelectSummaryPaper())return;
         if(click && (_robotSummary?SummaryNewspaperSwitch.Contains(_pointer):NewspaperSwitch.Contains(_pointer)))
         {SwitchNewspaper();return;}
-        if(_newspaperClock>=10)SwitchNewspaper();
+        if(!_robotSummary && _newspaperClock>=10)SwitchNewspaper();
         if(_robotScenes.Length==0){_screen=Screen.WorldStatus;return;}
         if(_robotSummary)
         {if(click && RobotBattlePrevious.Contains(_pointer))_robotSummaryPage=Math.Max(0,_robotSummaryPage-1);
-         if(click && RobotBattleNext.Contains(_pointer))_robotSummaryPage=Math.Min((_robotScenes.Length-1)/66,_robotSummaryPage+1);
+         if(click && RobotBattleNext.Contains(_pointer))_robotSummaryPage=Math.Min(Math.Max(0,(_robotScenes.Length-1)/6),_robotSummaryPage+1);
          if(enter || click && BattleContinue.Contains(_pointer)){_screen=Screen.WorldStatus;_world.ShowSetup(_setup,true);OpenDisposition();}return;}
         var scene=_robotScenes[_battleWave];double end=RobotRoundEnd;
         if(click && (RobotBattlePrevious.Contains(_pointer) || RobotBattleNext.Contains(_pointer)))
@@ -306,27 +307,6 @@ public partial class Game1
     }
     private void BattleInfo(string text,int y,float scale)
         =>_ui.Text(text,new(1120,y),Math.Min(scale,720/_font.MeasureString(text).X),Cream);
-    private void DrawRobotBattleSummary()
-    {
-        var paper=new Color(238,225,199);var ink=new Color(58,49,42);
-        _ui.Box(new(48,28,1830,952),new Color(8,18,25)*.4f);_ui.Box(new(40,20,1830,952),paper);
-        for(int edge=0;edge<183;edge++){_ui.Box(new(40+edge*10,17+edge%4,10,4),paper);_ui.Box(new(40+edge*10,970,10,2+edge%5),paper);}
-        for(int line=0;line<95;line++)_ui.Box(new(44,25+line*10,1822,1),ink*.035f);
-        DrawNewspaperMasthead(_newspaperEdition,new Rectangle(470,28,980,80));
-        _ui.Box(new(54,119,1798,2),ink);_ui.Center("全戦場の戦闘結果",new(54,124,1000,42),.7f,ink);
-        _ui.Text("今回の戦闘進行が完了しました / 継戦中の戦場は次の全体ターンへ",new(54,173),.45f,ink);
-        if(_robotScenes.Length>66){_ui.Button(RobotBattlePrevious,"前へ",Muted,.5f);_ui.Button(RobotBattleNext,"次へ",Muted,.5f);}
-        for(int at=0;at<66 && _robotSummaryPage*66+at<_robotScenes.Length;at++)
-        {
-            int i=_robotSummaryPage*66+at;var b=_robotScenes[i];int column=at/22,row=at%22;
-            if(column>0)_ui.Box(new(40+column*600,222,1,732),ink*.2f);
-            DrawNewspaperToy(b.Winner,new Vector2(73+column*600,235+row*33),34);
-            string outcome=!b.Finished?"継戦":b.Winner<0?"勝者なし":$"勝者 #{b.Winner+1}";
-            _ui.Text($"戦場 {i+1} / Node {b.TargetNode+1} / {outcome}",new(94+column*600,224+row*33),.43f,ink);
-        }
-        _ui.Button(SummaryNewspaperSwitch,"新聞を切り替える",Muted,.5f);
-        _ui.Button(BattleContinue,"世界へ戻る",Accent,.55f);
-    }
     private void DrawTransport()
     {
         DrawPropagation(_robotScenes.Length>0?_battleWave:-1,PropagationComplete?.6f+.4f*(float)(_transportAge/2):.6f*_propagationTravel.Values.DefaultIfEmpty(0).Average(),true);
