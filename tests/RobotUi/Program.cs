@@ -181,7 +181,7 @@ sealed class RobotUiCheck:Game1
                 {
                     var target=world.Nodes.All.First(n=>world.Cells[n.Cell].Face==face);
                     world.ConquerorLocations[0]=target.Cell;world.ConquerorPoints[0]=target.Center;Call("FocusStatusGlobe");
-                    Check(globe.ProjectVisible(world.Routes.Position(target.Cell,target.Center),world.Cells[target.Cell].Normal,(float)Get("_yaw"),(float)Get("_pitch"),area,out var projected) && Vector2.Distance(projected,new Vector2(area.Center.X,area.Center.Y))<1,"Globe centers current node on every face");
+                    Check(globe.ProjectVisible(world.Routes.Position(target.Cell,target.Center),world.Cells[target.Cell].Normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),area,out var projected) && Vector2.Distance(projected,new Vector2(area.Center.X,area.Center.Y))<1,"Globe centers current node on every face");
                 }
                 world.ConquerorLocations[0]=node.Cell;world.ConquerorPoints[0]=node.Center;Call("FocusStatusGlobe");
             }
@@ -361,7 +361,7 @@ sealed class RobotUiCheck:Game1
                 Call("HandleInput",new Microsoft.Xna.Framework.Input.MouseState(),new Microsoft.Xna.Framework.Input.KeyboardState(Microsoft.Xna.Framework.Input.Keys.Escape),new GameTime(),true);
                 Check(!(bool)Get("_nodeAssemblyOpen") && (int)Get("_populationCell")>=0,"Escape returns from hangar to node");
                 node.Owner=1;Call("NodeDialogClick",new Point(750,910),new Microsoft.Xna.Framework.Input.KeyboardState());Check(!(bool)Get("_nodeAssemblyOpen"),"Enemy node manual controls disabled");node.Owner=0;
-                Set("_populationCell",-1);Set("_statusGlobe",true);Set("_yaw",.55f);Set("_pitch",.3f);
+                Set("_populationCell",-1);Set("_statusGlobe",true);Set("_yawAngle",.55f);Set("_pitchAngle",.3f);
                 Call("RouteLayerClick",new Point(1750,104));Check((float)Get("_mapTransitionAge")==0 && (bool)Get("_statusGlobe"),"Unfold begins without switching view immediately");
                 Call("HandleInput",new Microsoft.Xna.Framework.Input.MouseState(430,1040,0,Microsoft.Xna.Framework.Input.ButtonState.Pressed,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released),new Microsoft.Xna.Framework.Input.KeyboardState(),new GameTime(),true);
                 Check(!(bool)Get("_movementOpen"),"Transition blocks map and movement input");
@@ -387,14 +387,14 @@ sealed class RobotUiCheck:Game1
             if(frame==45)
             {
                 Check((float)Get("_mapTransitionAge")<0 && (bool)Get("_statusGlobe") && world.Population.Turn==0,"Assembly restores globe without advancing world");
-                Check((float)Get("_yaw")==.55f && (float)Get("_pitch")==.3f,"Assembly retains original globe orientation");
+                Check((float)Get("_yawAngle")==.55f && (float)Get("_pitchAngle")==.3f,"Assembly retains original globe orientation");
                 var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=1920;graphics.PreferredBackBufferHeight=1080;graphics.ApplyChanges();
                 Set("_populationCell",-1);Call("FocusStatusGlobe");
                 world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);
                 for(int i=0;i<12;i++)world.Robots.Nodes[node.Id].Add(world.Robots.Create(0,(RobotParts)(i%7+1)));
                 var selectedGlobe=(WorldPreview)Get("_world");
                 var selectedPanel=(Rectangle)typeof(Game1).GetProperty("StatusGlobeArea",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
-                selectedGlobe.ProjectVisible(world.Routes.Position(node.Cell,node.Center),world.Cells[node.Cell].Normal,(float)Get("_yaw"),(float)Get("_pitch"),selectedPanel,out var selectedAt);
+                selectedGlobe.ProjectVisible(world.Routes.Position(node.Cell,node.Center),world.Cells[node.Cell].Normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),selectedPanel,out var selectedAt);
                 HangarMouse((int)selectedAt.X,(int)selectedAt.Y,Microsoft.Xna.Framework.Input.ButtonState.Pressed);HangarMouse((int)selectedAt.X,(int)selectedAt.Y,Microsoft.Xna.Framework.Input.ButtonState.Released);
                 Check((int)Get("_globeSelectedNode")==node.Id && (int)Get("_populationNode")==node.Id,"Globe node click selects and opens node dialog");
                 Set("_populationCell",-1);
@@ -402,7 +402,7 @@ sealed class RobotUiCheck:Game1
                 Check(((WorldPreview)Get("_world")).GlobeZoom>1,"Globe wheel increases zoom");
                 var globe=(WorldPreview)Get("_world");var position=world.Routes.Position(node.Cell,node.Center);
                 var panel=(Rectangle)typeof(Game1).GetProperty("StatusGlobeArea",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
-                globe.ProjectVisible(position,world.Cells[node.Cell].Normal,(float)Get("_yaw"),(float)Get("_pitch"),panel,out var at);
+                globe.ProjectVisible(position,world.Cells[node.Cell].Normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),panel,out var at);
                 Check(Vector2.Distance(at,new Vector2(panel.Center.X,panel.Center.Y))<1,"Selected node anchors globe zoom at view center");
                 globe.GlobeZoom=4;
             }

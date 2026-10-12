@@ -20,7 +20,7 @@ sealed class GlobeCheck:Game1
         setup=(WorldSetup)Get("_setup");for(int seed=0;;seed++){setup.SetWorld(seed);if(setup.Width>=3 && setup.Height>=3 && setup.Depth>=3)break;}setup.SetCast(123);setup.SetPlacement(456);setup.SelectPlayer(0);
         globe=(WorldPreview)Get("_world");globe.ShowSetup(setup,true);((CubeNet)Get("_net")).Home(setup);
         Set("_screen",Enum.Parse(typeof(Game1).GetField("_screen",Flags)!.FieldType,"WorldStatus"));
-        Set("_yaw",0f);Set("_pitch",0f);
+        Set("_yawAngle",0f);Set("_pitchAngle",0f);
         Check(globe.ProjectVisible(new(0,0,setup.Depth/2f),Vector3.Backward,0,0,new(1040,240,790,580),out var center) && Vector2.Distance(center,new(1435,530))<1,"Front projection wrong");
         Check(!globe.ProjectVisible(new(0,0,-setup.Depth/2f),Vector3.Forward,0,0,new(1040,240,790,580),out _),"Back label visible");
         foreach(int seed in Enumerable.Range(0,128))
@@ -102,8 +102,8 @@ sealed class GlobeCheck:Game1
         {
             case 0:Click(new(1710,104));Check((bool)Get("_statusGlobe"),"Globe toggle failed");break;
             case 1:
-                float yaw=(float)Get("_yaw");Input(new(1400,500),ButtonState.Pressed);Input(new(1460,530),ButtonState.Pressed);Input(new(1460,530),ButtonState.Released);
-                Check((float)Get("_yaw")!=yaw,"Globe drag failed");break;
+                float yaw=(float)Get("_yawAngle");Input(new(1400,500),ButtonState.Pressed);Input(new(1460,530),ButtonState.Pressed);Input(new(1460,530),ButtonState.Released);
+                Check((float)Get("_yawAngle")!=yaw,"Globe drag failed");break;
             case 2:
                 var port=setup.Nodes.All.First(p=>p.IsHarbor);portTarget=port.Id;
                 var route=setup.Routes.Neighbors(port).First();var source=setup.Nodes.At(route.Target,route.Entry);
@@ -113,13 +113,13 @@ sealed class GlobeCheck:Game1
                 // Population is independent of escorts in the normal robot mode.
                 setup.Robots.Initialize(setup.Nodes.All.Length,setup.ActiveCount);
                 for(int i=0;i<3;i++)setup.Robots.Nodes[source.Id].Add(setup.Robots.Create(0,RobotParts.Complete));
-                Set("_yaw",-MathF.Atan2(setup.Cells[port.Cell].Normal.X,setup.Cells[port.Cell].Normal.Z));Set("_pitch",MathF.Asin(setup.Cells[port.Cell].Normal.Y));
+                Set("_yawAngle",-MathF.Atan2(setup.Cells[port.Cell].Normal.X,setup.Cells[port.Cell].Normal.Z));Set("_pitchAngle",MathF.Asin(setup.Cells[port.Cell].Normal.Y));
                 Click(new(410,1040));Check((bool)Get("_statusGlobe") && (bool)Get("_movementOpen") && ((CubeNet)Get("_net")).ShowRoutes,"Globe movement switched view or did not open routes");
                 Set("_escort",100L);
-                float yawBefore=(float)Get("_yaw");Input(new(1540,300),ButtonState.Pressed);Input(new(1550,305),ButtonState.Pressed);Input(new(1550,305),ButtonState.Released);
-                Check((float)Get("_yaw")!=yawBefore && (bool)Get("_statusGlobe"),"Globe cannot rotate during movement selection");
+                float yawBefore=(float)Get("_yawAngle");Input(new(1540,300),ButtonState.Pressed);Input(new(1550,305),ButtonState.Pressed);Input(new(1550,305),ButtonState.Released);
+                Check((float)Get("_yawAngle")!=yawBefore && (bool)Get("_statusGlobe"),"Globe cannot rotate during movement selection");
                 var area=(Rectangle)typeof(Game1).GetProperty("StatusGlobeArea",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
-                Check(globe.ProjectVisible(setup.Routes.Position(port.Cell,port.Center),setup.Cells[port.Cell].Normal,(float)Get("_yaw"),(float)Get("_pitch"),area,out var target),"Port target not visible");
+                Check(globe.ProjectVisible(setup.Routes.Position(port.Cell,port.Center),setup.Cells[port.Cell].Normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),area,out var target),"Port target not visible");
                 Click(target.ToPoint());Check((int)Get("_selectedMoveNode")==portTarget && setup.Nodes.Current(0).Id==source.Id,"Globe click did not select port or moved before confirm");break;
             case 3:
                 Click(new(700,935));Check((bool)Get("_statusGlobe") && !(bool)Get("_movementOpen") && setup.Nodes.Current(0).Id==portTarget && setup.Nodes.All[portTarget].Owner==0,"Globe port confirm or conquest failed");
@@ -127,7 +127,7 @@ sealed class GlobeCheck:Game1
                 while(Get("_screen").ToString()=="Battle")typeof(Game1).GetMethod("UpdateBattle",Flags)!.Invoke(this,new object[]{3d,true});
                 while(Get("_screen").ToString()=="Disposition"){Set("_pointer",new Point(900,895));typeof(Game1).GetMethod("DispositionInput",Flags)!.Invoke(this,new object[]{true,false});}
                 Click(new(410,1040));Click(new(830,190));Check((bool)Get("_statusGlobe") && !(bool)Get("_movementOpen") && !((CubeNet)Get("_net")).ShowRoutes,"Cancel changed globe or failed to restore grid");
-                Click(new(1730,935));Check((float)Get("_yaw")==0 && (float)Get("_pitch")==0,"Head/belly orientation reset failed");
+                Click(new(1730,935));Check((float)Get("_yawAngle")==0 && (float)Get("_pitchAngle")==0,"Head/belly orientation reset failed");
                 Check(WorldPreview.Orientation(0,0)==Matrix.Identity,"Reset orientation is not head up and belly forward");break;
             case 4:
                 Click(new(1020,104));Check(!((CubeNet)Get("_net")).ShowMapSymbols,"Map symbols did not turn off");break;
@@ -146,7 +146,7 @@ sealed class GlobeCheck:Game1
                     Set("_statusGlobe",true);
                     var cell=setup.Cells.First(c=>c.Face==faceId);
                     float cellYaw=-MathF.Atan2(cell.Normal.X,cell.Normal.Z),cellPitch=MathF.Asin(cell.Normal.Y);
-                    Set("_yaw",cellYaw);Set("_pitch",cellPitch);
+                    Set("_yawAngle",cellYaw);Set("_pitchAngle",cellPitch);
                     Check(globe.ProjectVisible(cell.Center,cell.Normal,cellYaw,cellPitch,clickArea,out var at),"Test cell not visible");
                     var hit=(int)typeof(Game1).GetMethod("HitGlobeCell",Flags)!.Invoke(this,new object[]{at.ToPoint()})!;
                     Check(hit==cell.Id,"Globe cell hit mismatch");
@@ -164,7 +164,7 @@ sealed class GlobeCheck:Game1
                     Check(found,"No empty cell point for opening net");
                     Click(cellPoint.ToPoint());var clickedNet=(CubeNet)Get("_net");
                     Check(!(bool)Get("_statusGlobe") && clickedNet.CenterFace==faceId,"Cell click did not open centered net");
-                    Check((float)Get("_yaw")==cellYaw && (float)Get("_pitch")==cellPitch,"Globe orientation was lost");
+                    Check((float)Get("_yawAngle")==cellYaw && (float)Get("_pitchAngle")==cellPitch,"Globe orientation was lost");
                     var fit=clickedNet.Fit(new(1040,240,790,580));
                     var center=fit.Origin+clickedNet.Faces[0].Project(cell.Center)*fit.Scale;
                     Check(Vector2.Distance(center,new(1435,530))<.01f,"Clicked cell not centered");

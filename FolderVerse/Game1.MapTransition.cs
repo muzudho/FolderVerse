@@ -23,13 +23,13 @@ public partial class Game1
         if(_mapUnfold)
         {
             int selected=HitGlobeCell(new Point(StatusGlobeArea.Center.X,StatusGlobeArea.Center.Y));
-            if(selected<0)selected=_setup.Cells.OrderByDescending(c=>Vector3.Transform(c.Center,WorldPreview.Orientation(_yaw,_pitch)).Z).First().Id;
+            if(selected<0)selected=_setup.Cells.OrderByDescending(c=>Vector3.Transform(c.Center,_world.ViewOrientation(_yaw,_pitch)).Z).First().Id;
             _statusCell=selected;_net.SetCenter(_setup,_setup.Cells[selected].Face);_net.ResetView();
             _net.Drag(-_net.Faces[0].Project(_setup.Cells[selected].Center)*_net.Fit(NetPanel).Scale);
         }
         var face=_net.Faces[0];var normal=CubeNet.Normals[face.Face];
         var basis=new Matrix(face.Right.X,face.Right.Y,face.Right.Z,0,face.Up.X,face.Up.Y,face.Up.Z,0,normal.X,normal.Y,normal.Z,0,0,0,0,1);
-        _mapOrientation=Quaternion.CreateFromRotationMatrix(basis*WorldPreview.Orientation(_yaw,_pitch));
+        _mapOrientation=Quaternion.CreateFromRotationMatrix(basis*_world.ViewOrientation(_yaw,_pitch));
         _mapTransitionAge=0;_mapSoundStep=-1;_dragging=_mapDragging=false;_globePressedCell=-1;
         _mapEffect??=new BasicEffect(GraphicsDevice){VertexColorEnabled=true};
         if(_mapCrack==null)
@@ -113,7 +113,7 @@ public partial class Game1
         Vector3 Project(int index,Vector3 point)
         {
             var shaped=Shape(index,point);
-            var anchor=Vector3.Transform(_world.GlobeAnchor??Vector3.Zero,WorldPreview.Orientation(_yaw,_pitch));
+            var anchor=Vector3.Transform(_world.GlobeAnchor??Vector3.Zero,_world.ViewOrientation(_yaw,_pitch));
             var perspective=viewport.Project(shaped-new Vector3(anchor.X,anchor.Y,0)*(1-align),projection,view,Matrix.Identity);
             var flat=faces[index].Project(point)*fit.Scale+fit.Origin;
             var fitted=new Vector2(NetPanel.Center.X+shaped.X*scale,NetPanel.Center.Y-shaped.Y*scale);

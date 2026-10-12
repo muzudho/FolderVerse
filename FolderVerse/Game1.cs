@@ -27,7 +27,9 @@ public partial class Game1 : Game
     private KeyboardState _previousKeyboard;
     private Point _pointer;
     private double _rollTime;
-    private float _yaw=-0.55f,_pitch=0.3f;
+    private float _yawAngle=-0.55f,_pitchAngle=0.3f;
+    private float _yaw {get=>_yawAngle;set{_yawAngle=value;if(_world!=null)_world.ManualOrientation=null;}}
+    private float _pitch {get=>_pitchAngle;set{_pitchAngle=value;if(_world!=null)_world.ManualOrientation=null;}}
     private bool _dragging;
     private bool _mapDragging;
     private CharacterTile[] _selectionTiles=Array.Empty<CharacterTile>();
@@ -334,7 +336,7 @@ public partial class Game1 : Game
         if(active && mouse.RightButton==ButtonState.Pressed && _previousMouse.RightButton==ButtonState.Released && area.Contains(_pointer))_dragging=true;
         if(!active || mouse.RightButton==ButtonState.Released)_dragging=false;
         if(_dragging && _previousMouse.RightButton==ButtonState.Pressed)
-        { var old=CanvasPoint(_previousMouse); _yaw+=(_pointer.X-old.X)*0.008f; _pitch=MathHelper.Clamp(_pitch+(_pointer.Y-old.Y)*0.008f,-MathHelper.PiOver2,MathHelper.PiOver2); }
+        { var old=CanvasPoint(_previousMouse);var orientation=Quaternion.CreateFromRotationMatrix(_world.ViewOrientation(_yaw,_pitch));_world.ManualOrientation=Arcball.Drag(orientation,old,_pointer,area); }
     }
     private void Parameter(string label,int value,int y)
     {
@@ -507,7 +509,7 @@ public partial class Game1 : Game
             _world.Draw(_yaw,_pitch,_animationTime,false,true);
             if(!DestinationOperation)_world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe);
             GraphicsDevice.Viewport=OrientationViewport(areas.Toy,canvas);
-            _orientationToy.Draw(_yaw,_pitch);
+            _orientationToy.Draw(_yaw,_pitch,_world.ViewOrientation(_yaw,_pitch));
             GraphicsDevice.Viewport=viewport;
             using var globeClip=new RasterizerState{ScissorTestEnable=true};
             GraphicsDevice.ScissorRectangle=new(canvas.X+(int)(areas.Globe.X*canvas.Width/1920f),canvas.Y+(int)(areas.Globe.Y*canvas.Height/1080f),(int)(areas.Globe.Width*canvas.Width/1920f),(int)(areas.Globe.Height*canvas.Height/1080f));
@@ -594,7 +596,7 @@ public partial class Game1 : Game
             GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
             _world.Draw(_yaw,_pitch,_animationTime); GraphicsDevice.Viewport=viewport;
             GraphicsDevice.Viewport=OrientationViewport(areas.Toy,canvas);
-            _orientationToy.Draw(_yaw,_pitch);GraphicsDevice.Viewport=viewport;
+            _orientationToy.Draw(_yaw,_pitch,_world.ViewOrientation(_yaw,_pitch));GraphicsDevice.Viewport=viewport;
             _spriteBatch.Begin(transformMatrix:transform);DrawOrientationLegend(areas.Toy,areas.Legend);_spriteBatch.End();
             if(IsCastScreen && !IsSelectionScreen) { _spriteBatch.Begin(transformMatrix:transform); DrawCastPreviewInfo(); _spriteBatch.End(); }
             if(IsSelectionScreen && _hoveredSlot>=0){_spriteBatch.Begin(transformMatrix:transform);DrawSelectionTile(_selectionTiles[_hoveredSlot],true);_spriteBatch.End();}

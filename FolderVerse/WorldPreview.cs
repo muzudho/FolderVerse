@@ -25,6 +25,8 @@ public sealed partial class WorldPreview : IDisposable
         0 => "地賽", 1 => "地棒", 2 => "地盤", _ => "地箱"
     };
     public string GlobeName=>Kind+"儀";
+    public Quaternion? ManualOrientation {get;set;}
+    public Matrix ViewOrientation(float yaw,float pitch)=>ManualOrientation.HasValue?Matrix.CreateFromQuaternion(ManualOrientation.Value):Orientation(yaw,pitch);
     public static Matrix Orientation(float yaw,float pitch)=>Matrix.CreateRotationX(pitch)*Matrix.CreateRotationY(yaw);
 
     public WorldPreview(GraphicsDevice device)
@@ -147,7 +149,7 @@ public sealed partial class WorldPreview : IDisposable
         _device.BlendState = BlendState.Opaque;
         _device.DepthStencilState = DepthStencilState.Default;
         _device.RasterizerState = RasterizerState.CullNone;
-        _effect.World = globeView?GlobeOrientation(yaw,pitch):Orientation(yaw,pitch);
+        _effect.World = globeView?GlobeOrientation(yaw,pitch):ViewOrientation(yaw,pitch);
         float radius = new Vector3(Width, Height, Depth).Length() * 0.5f + (_markers == null ? 0 : 0.4f);
         _effect.View = Matrix.CreateLookAt(new Vector3(0, 0, radius * 3.3f), Vector3.Zero, Vector3.Up);
         _effect.Projection = Matrix.CreatePerspectiveFieldOfView(globeView?GlobeFieldOfView:MathHelper.ToRadians(42), _device.Viewport.AspectRatio, 0.1f, 100);

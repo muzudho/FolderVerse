@@ -12,7 +12,7 @@ public sealed partial class WorldPreview
     private float GlobeFieldOfView=>2*MathF.Atan(MathF.Tan(MathHelper.ToRadians(21))/GlobeZoom);
     private Matrix GlobeOrientation(float yaw,float pitch)
     {
-        var rotation=Orientation(yaw,pitch);
+        var rotation=ViewOrientation(yaw,pitch);
         var anchor=Vector3.Transform(GlobeAnchor??Vector3.Zero,rotation);
         return rotation*Matrix.CreateTranslation(-anchor.X,-anchor.Y,0);
     }

@@ -37,6 +37,7 @@ public partial class Game1
         }
         return chosen.ToArray();
     }
+    private Quaternion _landStartOrientation;
     private void OrderAutomaticLandFaces()
     {
         var faces=_automaticLandRectangles.GroupBy(r=>_setup.Cells[r[0]].Face).ToArray();
@@ -79,24 +80,23 @@ public partial class Game1
         if(LandRuler!=_setup.PlayerSlot || _demoActive)
         {
             if(_automaticLand.Length==0)
-            {_automaticLand=AutomaticLand(LandRuler);_automaticLandRectangles=LandSelectionPlan.Rectangles(_automaticLand.Select(id=>_setup.Cells[id]));OrderAutomaticLandFaces();_automaticLandIndex=0;_landAge=0;_landStartYaw=_yaw;_landStartPitch=_pitch;_world.GlobeAnchor=null;_world.GlobeZoom=1;}
+            {_automaticLand=AutomaticLand(LandRuler);_automaticLandRectangles=LandSelectionPlan.Rectangles(_automaticLand.Select(id=>_setup.Cells[id]));OrderAutomaticLandFaces();_automaticLandIndex=0;_landAge=0;_landStartOrientation=Quaternion.CreateFromRotationMatrix(_world.ViewOrientation(_yaw,_pitch));_landStartYaw=_yaw;_landStartPitch=_pitch;_world.GlobeAnchor=null;_world.GlobeZoom=1;}
             var normal=_setup.Cells[_automaticLandRectangles[_automaticLandIndex][0]].Normal;
             float pitch=MathF.Atan2(normal.Y,MathF.Sqrt(normal.X*normal.X+normal.Z*normal.Z));
             var turned=Vector3.Transform(normal,Matrix.CreateRotationX(pitch));
             float yaw=-MathF.Atan2(turned.X,turned.Z);
             float t=MathHelper.SmoothStep(0,1,(float)Math.Clamp(_landAge/.6,0,1));
-            _yaw=_landStartYaw+MathHelper.WrapAngle(yaw-_landStartYaw)*t;_pitch=MathHelper.Lerp(_landStartPitch,pitch,t);
+            _yawAngle=_landStartYaw+MathHelper.WrapAngle(yaw-_landStartYaw)*t;_pitchAngle=MathHelper.Lerp(_landStartPitch,pitch,t);_world.ManualOrientation=Quaternion.Slerp(_landStartOrientation,Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(yaw,pitch)),t);
             if(_landAge>=.6)_landSelection.UnionWith(_automaticLandRectangles[_automaticLandIndex]);
             if(_landAge>=.9)
             {
                 if(++_automaticLandIndex==_automaticLandRectangles.Length){ConfirmLand();return;}
-                _landStartYaw=_yaw;_landStartPitch=_pitch;_landAge=0;
+                _landStartOrientation=Quaternion.CreateFromRotationMatrix(_world.ViewOrientation(_yaw,_pitch));_landStartYaw=_yaw;_landStartPitch=_pitch;_landAge=0;
             }
             return;
         }
         if(!active){_landDrag=null;return;}
-        if(mouse.RightButton==ButtonState.Pressed && _previousMouse.RightButton==ButtonState.Pressed)
-        {_yaw+=(mouse.X-_previousMouse.X)*.007f;_pitch=MathHelper.Clamp(_pitch+(mouse.Y-_previousMouse.Y)*.007f,-1.5f,1.5f);}
+        Rotate(mouse,click,active,LandGlobeArea);
         int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
         if(wheel!=0)_world.GlobeZoom=MathHelper.Clamp(_world.GlobeZoom*MathF.Pow(1.2f,wheel/120f),.5f,8);
         if(click && LandGlobeArea.Contains(_pointer))_landDrag=_pointer;

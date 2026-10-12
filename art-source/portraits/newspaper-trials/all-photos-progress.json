@@ -1,6 +1,6 @@
 {
   "Total": 480,
-  "Completed": 151,
+  "Completed": 153,
   "Photos": [
     {
       "CharacterId": 1,
@@ -1350,6 +1350,24 @@
       "Width": 1200,
       "Height": 1600,
       "Sha256": "BED02D51DC68BDB19359A75EC89CD47724583A1D06F56120145312AA6FFD6FFC",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 19,
+      "Kind": "election",
+      "File": "character-19-election-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "0ABAF0339A1A55E2FC685A31A9BA4D0B3CBEAE12E1E450947E34C025CC6E2D61",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 19,
+      "Kind": "idol",
+      "File": "character-19-idol-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "EEE7F6979D168A75825B6BE695CBC16DD3CA002B48059CCFC0E96116AC322E11",
       "Reviewed": true
     },
     {

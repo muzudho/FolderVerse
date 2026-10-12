@@ -14,7 +14,7 @@ sealed class ToyCheck:Game1
     void Set(string name,object value)=>typeof(Game1).GetField(name,Private)!.SetValue(this,value);
     void Screen(string name)=>Set("_screen",Enum.Parse(typeof(Game1).GetField("_screen",Private)!.FieldType,name));
     static void Check(bool result,string message){if(!result)throw new Exception(message);}
-    void Input(int x,int y,ButtonState button,double elapsed=0)=>typeof(Game1).GetMethod("HandleInput",Private)!.Invoke(this,new object[]{new MouseState(x,y,0,button,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.Zero,TimeSpan.FromSeconds(elapsed)),true});
+    void Input(int x,int y,ButtonState button,double elapsed=0)=>typeof(Game1).GetMethod("HandleInput",Private)!.Invoke(this,new object[]{new MouseState(x,y,0,button,ButtonState.Released,button,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.Zero,TimeSpan.FromSeconds(elapsed)),true});
     protected override void LoadContent()
     {
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
@@ -24,7 +24,7 @@ sealed class ToyCheck:Game1
         world.Generate(1,3,4,0);Check(world.GlobeName=="地盤儀","Slab name");
         world.Generate(2,3,4,0);Check(world.GlobeName=="地箱儀","Box name");
         setup.SetWorld(0);setup.SetCast(123);setup.SetPlacement(456);world.ShowSetup(setup,false);
-        Screen("Review");Set("_yaw",0f);Set("_pitch",0f);
+        Screen("Review");Set("_yawAngle",0f);Set("_pitchAngle",0f);
         var font=(SpriteFont)Get("_font");Check("地棒儀地盤儀地箱儀碗箸頭足腹背向きの人形".All(font.Characters.Contains),"Missing orientation glyphs");
     }
     protected override void Update(GameTime time)
@@ -34,11 +34,11 @@ sealed class ToyCheck:Game1
         {
             case 1:
                 Input(400,400,ButtonState.Released);Input(400,400,ButtonState.Pressed);Input(470,440,ButtonState.Pressed);Input(470,440,ButtonState.Released);
-                Check(Math.Abs((float)Get("_yaw")-.56f)<.001f && Math.Abs((float)Get("_pitch")-.32f)<.001f,"Globe drag failed");break;
-            case 2:Set("_yaw",MathF.PI);Set("_pitch",0f);break;
+                Check(world.ManualOrientation.HasValue && MathF.Abs(Quaternion.Dot(world.ManualOrientation.Value,Quaternion.Identity))<.9999f,"Arcball drag failed");break;
+            case 2:world.ManualOrientation=null;Set("_yawAngle",MathF.PI);Set("_pitchAngle",0f);break;
             case 3:
-                world.ShowSetup(setup,true);Screen("PlacementReview");Set("_yaw",-.6f);Set("_pitch",.25f);
-                float yaw=(float)Get("_yaw");Input(0,0,ButtonState.Released,.5);Check((float)Get("_yaw")>yaw,"Auto rotation failed");break;
+                world.ShowSetup(setup,true);Screen("PlacementReview");Set("_yawAngle",-.6f);Set("_pitchAngle",.25f);
+                float yaw=(float)Get("_yawAngle");Input(0,0,ButtonState.Released,.5);Check((float)Get("_yawAngle")>yaw,"Auto rotation failed");break;
             case 4:
                 typeof(Game1).GetMethod("BeginSelection",Private)!.Invoke(this,null);Input(0,0,ButtonState.Released,.2);break;
             case 5:

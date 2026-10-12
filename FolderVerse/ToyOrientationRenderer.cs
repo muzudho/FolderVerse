@@ -83,10 +83,10 @@ public sealed class ToyOrientationRenderer:IDisposable
         foreach(float x in new[]{-.91f,-.78f})Box(new(x,.19f,.13f),new(.045f,.72f,.045f),gold);
         _mesh=new VertexBuffer(device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);_mesh.SetData(mesh.ToArray());_primitives=mesh.Count/3;
     }
-    public void Draw(float yaw,float pitch)
+    public void Draw(float yaw,float pitch,Matrix? orientation=null)
     {
         _device.BlendState=BlendState.Opaque;_device.DepthStencilState=DepthStencilState.Default;_device.RasterizerState=RasterizerState.CullNone;
-        _effect.World=WorldPreview.Orientation(yaw,pitch);
+        _effect.World=orientation??WorldPreview.Orientation(yaw,pitch);
         _effect.View=Matrix.CreateLookAt(new Vector3(0,.18f,6),new Vector3(0,.18f,0),Vector3.Up);
         float aspect=_device.Viewport.AspectRatio,height=Math.Max(3.7f,3.4f/aspect);
         _effect.Projection=Matrix.CreateOrthographic(height*aspect,height,.1f,100);
