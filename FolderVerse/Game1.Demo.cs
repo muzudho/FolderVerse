@@ -155,6 +155,7 @@ public partial class Game1
         =>new(offset.X*MathF.Cos(angle)-offset.Y*MathF.Sin(angle),offset.X*MathF.Sin(angle)+offset.Y*MathF.Cos(angle));
     private void DrawDemoOverlay(Matrix transform)
     {
+        if(_autoPlay){DrawAutoLabel(transform);return;}
         if(!_demoActive && _demoFade<0)return;
         _spriteBatch.Begin(transformMatrix:transform);
         if(_demoActive)

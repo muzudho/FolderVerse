@@ -18,10 +18,11 @@ public sealed class ConquestCampaign
     public void Plan(March order){_partyOrders.RemoveAll(o=>o.Ruler==order.Ruler && (o.SourceNode==order.SourceNode || order.Queen && o.Queen));_plannedOrders.RemoveAll(o=>o.Ruler==order.Ruler && (o.SourceNode==order.SourceNode || order.Queen && o.Queen));_plannedOrders.Add(order);Report=$"予約 { _plannedOrders.Count} 件 / ターン終了で実行";}
     public int[] Submitted=>_submitted.OrderBy(r=>r).ToArray();
     public void Reset(){Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
-    public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true)
+    public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false)
     {
         Battles.Clear();
         var orders=_plannedOrders.Where(o=>o.Ruler==world.PlayerSlot || !o.Queen).ToList();
+        if(automaticAll){orders.AddRange(_partyOrders);_partyOrders.Clear();_submitted.Clear();}
         if(targetNode>=0)
         {
             if(world.Routes.ToNode(world.PlayerSlot,targetNode)==null || UseRobotCombat && !RobotBattles.CanMarch(world,world.PlayerSlot,targetNode)){Report="交通路がない、または戦闘中のため移動できない";return;}
@@ -31,7 +32,7 @@ public sealed class ConquestCampaign
         if(enemies)
         {
             var party=world.Relations.Party(world);
-            if(party.Length>1)
+            if(party.Length>1 && !automaticAll)
             {
                 _submitted.Add(world.PlayerSlot);_partyOrders.AddRange(orders);
                 int next=party.FirstOrDefault(r=>!_submitted.Contains(r),-1);
@@ -41,7 +42,7 @@ public sealed class ConquestCampaign
             var random=new SeedRandom(world.PlacementSeed^world.Population.Turn^0x57421);
             for(int ruler=0;ruler<world.ActiveCount;ruler++)
             {
-                if(world.Relations.Allied(ruler,world.Relations.Leader) || !world.Relations.CanAct(ruler))continue;
+                if(!automaticAll && world.Relations.Allied(ruler,world.Relations.Leader) || !world.Relations.CanAct(ruler))continue;
                 var home=world.Nodes.Current(ruler);
                 long army=UseRobotCombat?RobotBattles.Available(world,ruler):home!=null && world.Relations.Allied(home.Owner,ruler)?home.Population.People[0]/2:0;
                 var move=world.Routes.NodeChoices(ruler).Where(path=>!UseRobotCombat || RobotBattles.CanMarch(world,ruler,world.Nodes.At(path.Target,path.Entry).Id)).OrderBy(path=>
@@ -51,7 +52,7 @@ public sealed class ConquestCampaign
                         home==null || home.Owner!=ruler?(target.Owner==ruler?0:100):
                         target.Owner!=ruler && target.Population.People[0]<army?0:50+random.Next(50);
                 }).FirstOrDefault();
-                                if(move!=null)
+                                if(move!=null && !orders.Any(o=>o.Ruler==ruler && (o.Queen || o.SourceNode==home?.Id)))
                 {
                     int target=world.Nodes.At(move.Target,move.Entry).Id;
                     bool nodeAttack=home?.Owner==ruler && world.Nodes.All[target].Owner>=0 && !world.Relations.Allied(ruler,world.Nodes.All[target].Owner);
