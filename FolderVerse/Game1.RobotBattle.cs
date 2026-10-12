@@ -127,7 +127,10 @@ public partial class Game1
             {
                 bool log=battle.SeaLogs.Contains(new(x,y));
                 _ui.Box(r,new Color(28,88,125));
-                if(wall)BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(true,false,terrainHeight,terrainCell.Normal.Y));
+                if(wall)
+                {
+                    if(!battle.SeaClearWater.Contains(new(x,y)))BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(true,false,terrainHeight,terrainCell.Normal.Y));
+                }
                 else if(log)
                 {
                     bool horizontal=battle.SeaLogs.Contains(new(x-1,y)) || battle.SeaLogs.Contains(new(x+1,y));

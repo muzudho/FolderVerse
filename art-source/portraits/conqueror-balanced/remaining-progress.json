@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 277,
+  "Completed": 280,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -2217,6 +2217,30 @@
       "Sha256": "AC5A67D0DA95C4230FEA32D4E2011F064CCF0AFA99D79612AD542B82FE6D9E0D",
       "Reviewed": true,
       "Note": "Reviewed wink monocle stew pot spoon black battery two gloves."
+    },
+    {
+      "CharacterId": 56,
+      "Variant": 4,
+      "File": "remaining-variants/character-56-4-balanced.png",
+      "Sha256": "B4FF06E5E7225712AEDE4E5FF705B5FDCA8024FFDBE79D0CC89EED74515E2588",
+      "Reviewed": true,
+      "Note": "雪山ベンチ・団子串・パンダと青電池・穏やかな口元を維持"
+    },
+    {
+      "CharacterId": 56,
+      "Variant": 5,
+      "File": "remaining-variants/character-56-5-balanced.png",
+      "Sha256": "E335A412FECF0490EB17DD0CE461FD982D6AF49766D2545FB96AC043F628EE7B",
+      "Reviewed": true,
+      "Note": "山岳休憩の振り向き笑顔・大リュック・パンダと青電池を維持"
+    },
+    {
+      "CharacterId": 56,
+      "Variant": 6,
+      "File": "remaining-variants/character-56-6-balanced.png",
+      "Sha256": "22FC05F354B79F2EB4A85383DB8299E04F409F929697A40150AF6D5DFB18719C",
+      "Reviewed": true,
+      "Note": "ウインク笑顔・開いた天文書・手を伸ばす五指・雪城を維持"
     }
   ]
 }

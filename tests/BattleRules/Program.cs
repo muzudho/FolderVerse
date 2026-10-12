@@ -91,4 +91,16 @@ for(int pattern=0;pattern<2;pattern++)for(int rotation=0;rotation<4;rotation++)
     Check(reachable.Count==100-sea.Walls.Count,"Disconnected ships");
     Check(sea.Walls.Count>=20,"Too little open water");
 }
-Console.WriteLine("PASS: rotated ship decks, narrow logs, connected ships and twelve-unit entry areas");
+Console.WriteLine("PASS: rotated ship decks, narrow logs, connected ships and twelve-unit entry areas");for(int armies=2;armies<=4;armies++)for(int pattern=0;pattern<(armies==2?2:1);pattern++)for(int rotation=0;rotation<4;rotation++)
+{
+    var sea=new BattleState(42){Kind=BattleKind.Node,Defender=1};
+    for(int owner=0;owner<armies;owner++)sea.Armies.Add(new(){Owner=owner,Side=owner});
+    sea.BuildSeaLayout(pattern,rotation);sea.Deploy();
+    Check(sea.Region(sea.Army(1).Side).Contains(sea.Flag) && !sea.SeaLogs.Contains(sea.Flag),"Flag outside defending deck");
+    var reached=new HashSet<Point>{sea.Flag};var pending=new Queue<Point>();pending.Enqueue(sea.Flag);
+    while(pending.TryDequeue(out var tile))foreach(var step in new[]{new Point(0,1),new Point(0,-1),new Point(1,0),new Point(-1,0)})
+        if(sea.Walkable(tile+step) && reached.Add(tile+step))pending.Enqueue(tile+step);
+    Check(reached.Count==100-sea.Walls.Count,"Isolated walkable sea cell");
+    Check(sea.SeaClearWater.Count>0,"Missing clear sailing lanes");
+}
+Console.WriteLine("PASS: all 2–4 ship rotations connected; flags on defending decks and clear forward/backward lanes");

@@ -104,6 +104,7 @@ public sealed partial class BattleState
                 var unit=army.Waiting.Dequeue();unit.Position=p;Units.Add(unit);
             }
         }
+        if(Terrain==BattleTerrain.Sea)PlaceSeaFlag();
         Check();
     }
     public Point[] DefaultPattern(int side,int count)

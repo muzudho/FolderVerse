@@ -6,9 +6,10 @@ using Microsoft.Xna.Framework;
 public sealed partial class BattleState
 {
     public HashSet<Point> SeaLogs {get;}=new();
+    public HashSet<Point> SeaClearWater {get;}=new();
     public void BuildSeaLayout(int pattern,int rotation=0)
     {
-        Terrain=BattleTerrain.Sea;Walls.Clear();SeaLogs.Clear();
+        Terrain=BattleTerrain.Sea;Walls.Clear();SeaLogs.Clear();SeaClearWater.Clear();
         rotation=((rotation%4)+4)%4;
         Point Rotate(Point p){for(int i=0;i<rotation;i++)p=new(9-p.Y,p.X);return p;}
         var deck=new HashSet<Point>();
@@ -22,12 +23,18 @@ public sealed partial class BattleState
                 for(int x=first;x<=last;x++){deck.Add(Rotate(new(x,y)));deck.Add(Rotate(new(9-x,y)));}
             }
             SeaLogs.Add(Rotate(new(4,4)));SeaLogs.Add(Rotate(new(5,4)));
+            // Both ships run vertically: their complete forward/backward lanes stay open water.
+            for(int y=0;y<10;y++)for(int x=0;x<10;x++)
+                if(x<=3 || x>=6)SeaClearWater.Add(Rotate(new(x,y)));
         }
         else
         {
             LayoutName="船首衝突・丸太渡り";
             int[] sides=Armies.Count is >0 and <=2?new[]{0,2}:Armies.Count==3?new[]{0,1,2}:new[]{0,1,2,3};
             EntrySides=sides.Select(s=>(s+rotation)%4).ToArray();
+            foreach(int side in EntrySides)
+                for(int y=0;y<10;y++)for(int x=2;x<=7;x++)
+                {var p=new Point(x,y);for(int i=0;i<side;i++)p=new(9-p.Y,p.X);SeaClearWater.Add(p);}
             foreach(int side in EntrySides)
                 for(int y=0;y<4;y++)for(int x=0;x<10;x++)
                 {
@@ -40,6 +47,15 @@ public sealed partial class BattleState
         }
         for(int y=0;y<10;y++)for(int x=0;x<10;x++)
             if(!deck.Contains(new(x,y)) && !SeaLogs.Contains(new(x,y)))Walls.Add(new(x,y));
-        Flag=SeaLogs.OrderBy(p=>p.Y).ThenBy(p=>p.X).First();
+        Flag=deck.OrderBy(p=>p.Y).ThenBy(p=>Math.Abs(p.X-4)).First();
+    }
+    private void PlaceSeaFlag()
+    {
+        var defender=Armies.FirstOrDefault(a=>a.Owner==Defender)??Armies.FirstOrDefault();
+        if(defender==null)return;
+        Flag=Region(defender.Side).Where(Walkable).Where(p=>!SeaLogs.Contains(p))
+            .OrderBy(p=>Math.Abs((defender.Side%2==0?p.X:p.Y)-4.5))
+            .ThenBy(p=>defender.Side switch{0=>Math.Abs(p.Y-1),1=>Math.Abs(p.X-8),2=>Math.Abs(p.Y-8),_=>Math.Abs(p.X-1)})
+            .First();
     }
 }
