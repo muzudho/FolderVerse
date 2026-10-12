@@ -14,7 +14,7 @@ public partial class Game1
     private RobotParts _hangarPart;
     private int _hangarSource;
     private string _hangarMessage="";
-    private static readonly Rectangle NodeAssemblyTile=new(672,875,182,84),HangarAutoCheck=new(84,240,770,42);
+    private static readonly Rectangle NodeAssemblyTile=new(560,169,230,60),HangarAutoCheck=new(84,240,770,42);
     private static Rectangle HangarCell(int slot)=>new(84+slot%4*196,300+slot/4*182,182,174);
     private static RobotParts HangarPart(int row)=>row==0?RobotParts.Head:row==1?RobotParts.Body:RobotParts.Legs;
     private static Rectangle HangarPartBounds(int slot,int row)
@@ -73,16 +73,14 @@ public partial class Game1
     {
         bool enabled=CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
         _ui.Box(NodeAssemblyTile,_nodeAssemblyOpen || enabled && NodeAssemblyTile.Contains(_pointer)?Accent:Muted);
-        _spriteBatch.Draw(_robotAssemblyIcon,new Rectangle(682,891,52,52),enabled?Color.White:Color.White*.35f);
-        _ui.Center("ロボット組み立て",new(736,887,112,30),.24f,enabled?Cream:Cream*.4f);
-        _ui.Center("・分解",new(736,917,112,26),.28f,enabled?Cream:Cream*.4f);
+        _ui.Center("ロボット組立・分解",NodeAssemblyTile,.36f,enabled?Cream:Cream*.4f);
         if(_nodeAssemblyOpen)_ui.Box(new(NodeAssemblyTile.X,NodeAssemblyTile.Y,NodeAssemblyTile.Width,4),Cream);
     }
     private void DrawNodeAssembly()
     {
         var workshop=_setup.Robots.Workshops[_populationNode];var store=_setup.Robots.Nodes[_populationNode];
         _ui.Box(new(54,150,850,825),new(27,49,62));
-        _ui.Text("ロボット組み立て・分解 / 手動での再調整",new(84,178),.62f,Cream);
+
         _ui.Button(new(803,169,58,44),"×",Muted,.7f);
         _ui.Button(HangarAutoCheck,(workshop.AutoAssemblyDisabled?"✓ ":"□ ")+"自動での組み立て・分解を行わない",workshop.AutoAssemblyDisabled?Accent:Muted,.48f);
         bool hoveringPart=false;

@@ -9,7 +9,7 @@ public partial class Game1
     private Texture2D _robotDisposalIcon;
     private bool _nodeDisposalOpen;
     private string _nodeDisposalMessage="";
-    private static readonly Rectangle NodeDisposalTile=new(476,875,182,84);
+    private static readonly Rectangle NodeDisposalTile=new(322,169,230,60);
     private Robot[] DisposalCandidates()
     {
         var workshop=_setup.Robots.Workshops[_populationNode];
@@ -41,15 +41,14 @@ public partial class Game1
     {
         bool enabled=CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
         _ui.Box(NodeDisposalTile,_nodeDisposalOpen || enabled && NodeDisposalTile.Contains(_pointer)?Accent:Muted);
-        _spriteBatch.Draw(_robotDisposalIcon,new Rectangle(486,891,52,52),enabled?Color.White:Color.White*.35f);
-        _ui.Center("ロボット廃棄計画",new(540,885,112,60),.24f,enabled?Cream:Cream*.4f);
+        _ui.Center("ロボット廃棄計画",NodeDisposalTile,.38f,enabled?Cream:Cream*.4f);
         if(_nodeDisposalOpen)_ui.Box(new(NodeDisposalTile.X,NodeDisposalTile.Y,NodeDisposalTile.Width,4),Cream);
     }
     private void DrawNodeDisposal()
     {
         var node=_setup.Nodes.All[_populationNode];var workshop=_setup.Robots.Workshops[node.Id];var robots=DisposalCandidates();
         _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Box(new(54,150,850,6),_setup.OwnerColor(node.Owner));
-        _ui.Text("ロボット廃棄計画",new(84,178),.8f,Cream);_ui.Button(new(803,169,58,44),"×",Muted,.7f);
+        _ui.Button(new(803,169,58,44),"×",Muted,.7f);
         string status=!workshop.HasDisposalFactory?"この節点に廃棄炉はありません":workshop.DisposalTarget is long id?$"レーン使用中 ID {id} / {workshop.DisposalAge}/{workshop.DisposalPeriod} 全体ターン":"レーンは空いています / 廃棄フラグ付きの個体が自動で入ります";
         _ui.Text(status,new(84,244),.43f,Cream);
         _ui.Text("頭１・胴２・脚２ターン / 組み合わせは合計 / ↑↓で順番を変更",new(84,288),.42f,Cream);

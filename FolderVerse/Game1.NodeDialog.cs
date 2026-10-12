@@ -37,7 +37,7 @@ public partial class Game1
         _ui.Box(new(54,150,850,825),new(27,49,62));
         _ui.Box(new(54,150,850,6),_setup.OwnerColor(post.Owner));
         string city=_setup.Nodes.Label(post)+" / "+_setup.Nodes.Pattern(post);
-        _ui.Text(city,new(84,178),Math.Min(.7f,690/_font.MeasureString(city).X),Cream);
+
         _ui.Button(new(803,169,58,44),"×",Muted,.7f);
         _ui.Text($"節点のロボット {store.Count}/12",new(84,235),.65f,Cream);
         for(int slot=0;slot<12;slot++)
