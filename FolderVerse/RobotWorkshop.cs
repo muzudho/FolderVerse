@@ -42,10 +42,14 @@ public sealed partial class RobotWorkshop
     }
     internal void CompleteProduction(RobotWorld world,int node,int owner)
     {
+        foreach(var line in ProductionLines){line.CompleteSingleProduction(world,node,owner,ReservedSlots);}
+    }
+    private void CompleteSingleProduction(RobotWorld world,int node,int owner,int reservedSlots)
+    {
         if(!Manufacturing || Paused || owner<0)return;
         if(RestEnabled && RestRemaining>0){RestRemaining--;return;}
         ProductionAge=Math.Min(ProductionPeriod,ProductionAge+1);
-        if(!Waiting || world.Nodes[node].Count>=RobotStore.Capacity-ReservedSlots)return;
+        if(!Waiting || world.Nodes[node].Count>=RobotStore.Capacity-reservedSlots)return;
         world.Nodes[node].Add(world.Create(owner,Product));ProductionAge=0;
         if(RestEnabled && ++ProducedSinceRest>=RestEvery){ProducedSinceRest=0;RestRemaining=RestTurns;}
     }

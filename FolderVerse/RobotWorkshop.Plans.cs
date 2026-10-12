@@ -2,6 +2,17 @@ namespace FolderVerse;
 public sealed record ProductionPlan(RobotParts Product,int Turns);
 public sealed partial class RobotWorkshop
 {
+    public RobotWorkshop[] ProductionLines {get;private set;}
+    public RobotWorkshop(){ProductionLines=new[]{this};}
+    public void GenerateLines(int seed)
+    {
+        var random=new SeedRandom(seed);int count=random.Next(4);
+        ProductionLines=new RobotWorkshop[count];
+        for(int i=0;i<count;i++){
+            var line=i==0?this:new RobotWorkshop();ProductionLines[i]=line;
+            line.GeneratePlans(seed^((i+1)*7919));line.SelectPlan(random.Next(4));line.SetRest(1+random.Next(9),1+random.Next(9));
+        }
+    }
     public ProductionPlan[] Plans {get;private set;}={new(RobotParts.Head,2),new(RobotParts.Body,2),new(RobotParts.Head|RobotParts.Body,3)};
     public int SelectedPlan {get;private set;}=-1;
     public int RestEvery {get;private set;}=1;

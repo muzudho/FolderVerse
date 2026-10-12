@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 295,
+  "Completed": 298,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -2361,6 +2361,30 @@
       "Sha256": "EB5AB11AD796FA39F9255B5FB4E9558CEB3FDC97C88F3B99992F396DD7FF6272",
       "Reviewed": true,
       "Note": "Visually reviewed: original expression eye-cover pose props battery color and scene retained; face hands ears balanced."
+    },
+    {
+      "CharacterId": 60,
+      "Variant": 2,
+      "File": "remaining-variants/character-60-2-balanced.png",
+      "Sha256": "7EF06660B83555EE7C3574071801EA6A720BE5A1E819765CFB398DAFAE903D5E",
+      "Reviewed": true,
+      "Note": "Visually reviewed: opaque spiral glasses preserved, face hands ears balanced, original tools props expressions and workshop retained."
+    },
+    {
+      "CharacterId": 60,
+      "Variant": 3,
+      "File": "remaining-variants/character-60-3-balanced.png",
+      "Sha256": "D0302057827CB197929F5353A0C2186938AD3B3BEE68CA50BE17F9847980F0B7",
+      "Reviewed": true,
+      "Note": "Visually reviewed: opaque spiral glasses preserved, face hands ears balanced, original tools props expressions and workshop retained."
+    },
+    {
+      "CharacterId": 60,
+      "Variant": 4,
+      "File": "remaining-variants/character-60-4-balanced.png",
+      "Sha256": "B33E827CEFEC04CBBFFFA836792C7E6657459474A7571C998A5ACB970FC47B70",
+      "Reviewed": true,
+      "Note": "Visually reviewed: opaque spiral glasses preserved, face hands ears balanced, original tools props expressions and workshop retained."
     }
   ]
 }

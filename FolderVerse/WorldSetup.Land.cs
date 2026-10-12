@@ -39,7 +39,7 @@ public sealed partial class WorldSetup
         Robots.Initialize(Nodes.All.Length,ActiveCount);var random=new SeedRandom(fortuneSeed);
         foreach(var node in Nodes.All.Where(n=>n.Owner>=0))
         {
-            Robots.Workshops[node.Id].GeneratePlans(fortuneSeed^node.Id*7919);Robots.Workshops[node.Id].SelectPlan(random.Next(4));Robots.Workshops[node.Id].SetRest(1+random.Next(9),1+random.Next(9));
+            Robots.Workshops[node.Id].GenerateLines(fortuneSeed^node.Id*7919);
             if(random.Next(5)==0)Robots.Workshops[node.Id].ConfigureDisposal();
             int count=1+random.Next(8);
             for(int i=0;i<count;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,(RobotParts)(1+random.Next(7)),i==0?RobotRole.Captain:RobotRole.Soldier));
