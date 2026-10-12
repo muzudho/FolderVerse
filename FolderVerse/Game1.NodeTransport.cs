@@ -27,7 +27,7 @@ public partial class Game1
     private bool NodeTransportClick(Point pointer)
     {
         if(new Rectangle(803,169,58,44).Contains(pointer) || NodeTransportTile.Contains(pointer)){_nodeTransportOpen=false;return true;}
-        if(NodeFactoryTile.Contains(pointer)){OpenNodeFactory();return true;}
+        if(_setup.Robots.Workshops[_populationNode].ProductionLines.Length>0 && NodeFactoryTile.Contains(pointer)){OpenNodeFactory();return true;}
         if(new Rectangle(84,270,374,46).Contains(pointer)){_nodeTransportDisposal=false;return true;}
         if(new Rectangle(480,270,374,46).Contains(pointer)){_nodeTransportDisposal=true;return true;}
         for(int mask=1;mask<=7;mask++)if(TransportPartButton(mask).Contains(pointer))

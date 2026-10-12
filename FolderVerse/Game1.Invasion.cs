@@ -25,7 +25,7 @@ public partial class Game1
                 int target=_setup.Nodes.At(route.Target,route.Entry).Id;
                 if(_setup.Campaign.RobotBattles.CanMarch(_setup,ruler,target) && EnemyTarget(target))_net.MovementTargets.Add(target);
             }
-        _invasionSources.Clear();_invasionPage=0;FitDestinationView();
+        _invasionSources.Clear();_invasionPage=0;if(_statusGlobe)FitDestinationView();
     }
     private bool CanPlanRuler(int ruler)=>ruler>=0 && _setup.Relations.Controls(ruler) && _setup.Relations.Powered[ruler] && !_setup.Relations.Pending.Any(p=>p.Ruler==ruler);
     private bool EnemyTarget(int id)=>_setup.Nodes.All[id].Owner<0 || !_setup.Relations.Allied(_setup.PlayerSlot,_setup.Nodes.All[id].Owner);

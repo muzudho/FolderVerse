@@ -180,9 +180,9 @@ public partial class Game1
             if(unit.Retreated && BattleState.Inside(unit.Position))continue;
             int firstExit=unit.Retreated?battle.Frames.FindIndex(f=>f.Units.Any(u=>u.Id==unit.Id && u.Retreated)):-1;
             if(unit.Retreated && (firstExit<0 || frameIndex-firstExit>5))continue;
-            float exitAge=unit.Retreated?(frameIndex-firstExit+(float)Math.Clamp(_battleAge/RobotFrameSeconds-Math.Floor(_battleAge/RobotFrameSeconds),0,1))/5f:0;
+            float exitAge=unit.Retreated?(float)(RobotBattlePlayback.FramePosition(RobotSlice(_battleWave),_battleAge,RobotFrameSeconds)-firstExit)/5f:0;
             var pos=new Vector2(left+unit.Position.X*size+19,top+unit.Position.Y*size+7);
-            if(unit.Retreated){var last=battle.Frames.Take(firstExit).LastOrDefault(f=>f.Units.Any(u=>u.Id==unit.Id && !u.Retreated));var prior=last?.Units.FirstOrDefault(u=>u.Id==unit.Id);if(prior!=null){var from=new Vector2(left+prior.Position.X*size+19,top+prior.Position.Y*size+7);var direction=Vector2.Normalize(pos-from);pos=Vector2.Lerp(from,from+direction*70,Math.Clamp(exitAge*2,0,1));}}
+            if(unit.Retreated){var last=battle.Frames.Take(firstExit).LastOrDefault(f=>f.Units.Any(u=>u.Id==unit.Id && !u.Retreated));var prior=last?.Units.FirstOrDefault(u=>u.Id==unit.Id);if(prior!=null){var from=new Vector2(left+prior.Position.X*size+19,top+prior.Position.Y*size+7);var exit=battle.Frames[firstExit].Units.First(u=>u.Id==unit.Id);var direction=Vector2.Normalize(new Vector2(exit.Position.X-prior.Position.X,exit.Position.Y-prior.Position.Y));pos=Vector2.Lerp(from,from+direction*70,Math.Clamp(exitAge*2,0,1));}}
             var r=new Rectangle((int)pos.X,(int)pos.Y,62,85);
             int firstFall=unit.Fallen?battle.Frames.FindIndex(f=>f.Units.Any(u=>u.Id==unit.Id && u.Fallen)):-1;
             float opacity=unit.Fallen?Math.Clamp(1-(frameIndex-firstFall)/5f,0,1):1f;

@@ -22,3 +22,5 @@ var tieReplay=new RobotBattlePlayback(ties);
 Check(RobotBattlePlayback.Priority(ties,tieReplay.Rounds[0],Array.Empty<int>()).SequenceEqual(new[]{1,0,3,2}),"Queen tie uses queen owner, ordinary tie uses minimum army owner");
 Check(new RobotBattlePlayback(Array.Empty<BattleState>()).Rounds.Length==0,"Empty battle list");
 Console.WriteLine("PASS: shared turns, finished-board removal, multiplayer-ready player order, queen priority and piece-count tie breakers.");
+
+var held=new RobotBattleSlice(0,10,16);double previous=0;for(int i=0;i<100;i++){double current=RobotBattlePlayback.FramePosition(held,i*.03,.25);if(current<previous || current>17)throw new Exception("Retreat time oscillated");previous=current;}if(previous!=17)throw new Exception("Final frame failed to hold");

@@ -1,6 +1,6 @@
 {
   "Total": 480,
-  "Completed": 148,
+  "Completed": 151,
   "Photos": [
     {
       "CharacterId": 1,
@@ -1323,6 +1323,33 @@
       "Width": 1200,
       "Height": 1600,
       "Sha256": "97F141258B258F9A124FF384D193F3278518CA7956C76FE68D753BE2B44AED46",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 19,
+      "Kind": "id",
+      "File": "character-19-id-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "601A1920F1C25CB587BF06876935B45E0AAA4474C202BE65640F6CAF04C7A66C",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 19,
+      "Kind": "history",
+      "File": "character-19-history-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "EA0553545F762769D13E190263FA98361CBA8860FFE02E642E41D76F1621D913",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 19,
+      "Kind": "coin",
+      "File": "character-19-coin-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "BED02D51DC68BDB19359A75EC89CD47724583A1D06F56120145312AA6FFD6FFC",
       "Reviewed": true
     },
     {

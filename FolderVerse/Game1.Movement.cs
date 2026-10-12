@@ -22,7 +22,7 @@ public partial class Game1
         _net.MovementTargets.Clear();
         _net.MovementTargets.UnionWith(_setup.Routes.NodeChoices(_setup.PlayerSlot).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id).Where(id=>_setup.Nodes.All[id].Owner>=0 && _setup.Relations.Allied(_setup.PlayerSlot,_setup.Nodes.All[id].Owner) && _setup.Campaign.RobotBattles.CanMarch(_setup,_setup.PlayerSlot,id)));
         _net.SelectedTarget=-1;
-        FitDestinationView();
+        if(_statusGlobe)FitDestinationView();
     }
     private void CloseMovement()
     {

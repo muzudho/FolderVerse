@@ -8,6 +8,7 @@ public sealed record RobotBattleSlice(int Scene,int Start,int End);
 public sealed class RobotBattlePlayback
 {
     public RobotBattleSlice[][] Rounds {get;}
+    public static double FramePosition(RobotBattleSlice slice,double age,double seconds)=>Math.Clamp(slice.Start+age/seconds,slice.Start,slice.End+1);
     public RobotBattlePlayback(IReadOnlyList<BattleState> scenes)
     {
         var turns=scenes.Select(b=>b.Frames.Select((f,i)=>(Frame:f,Index:i))

@@ -23,7 +23,7 @@ class CheckGame:Game1
         int turn=world.Population.Turn;Call("SelectMoveNode",neighbors[0].Id);
         Call("MovementClick",new Point(600,930),new KeyboardState());
         if(world.Population.Turn!=turn || world.Nodes.Current(0).Id!=home.Id || world.Campaign.PlannedOrders.Count!=1)throw new Exception("Movement committed before end turn");
-        Call("OpenWarPlanning");
+        net.Drag(new Vector2(123,-77));net.ZoomAt(new Rectangle(0,0,960,900),new Point(350,450),240);var pan=net.Pan;var zoom=net.Zoom;Set("_statusGlobe",false);Call("OpenWarPlanning");if(net.Pan!=pan || net.Zoom!=zoom)throw new Exception("War mode changed net view");
         if(!net.MovementTargets.Contains(neighbors[1].Id) || net.MovementTargets.Contains(neighbors[0].Id))throw new Exception("Invasion target filter failed");
         Call("SelectMoveNode",neighbors[1].Id);
     }

@@ -15,7 +15,7 @@ public partial class Game1
         if(NodeAssemblyTile.Contains(pointer)){if(_nodeAssemblyOpen)_nodeAssemblyOpen=false;else OpenNodeAssembly();return true;}
         if(NodeDisposalTile.Contains(pointer)){if(_nodeDisposalOpen)_nodeDisposalOpen=false;else OpenNodeDisposal();return true;}
 
-        if(NodeFactoryTile.Contains(pointer)){if(_nodeFactoryOpen)_nodeFactoryOpen=false;else OpenNodeFactory();return true;}
+        if(_setup.Robots.Workshops[_populationNode].ProductionLines.Length>0 && NodeFactoryTile.Contains(pointer)){if(_nodeFactoryOpen)_nodeFactoryOpen=false;else OpenNodeFactory();return true;}
         if(_nodeAssemblyOpen){if(new Rectangle(803,169,58,44).Contains(pointer))_nodeAssemblyOpen=false;return new Rectangle(54,150,850,825).Contains(pointer);}
         if(_nodeDisposalOpen)return NodeDisposalClick(pointer);
         if(_nodeTransportOpen)return NodeTransportClick(pointer);
