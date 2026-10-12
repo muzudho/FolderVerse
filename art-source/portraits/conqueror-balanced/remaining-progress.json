@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 283,
+  "Completed": 295,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -2265,6 +2265,102 @@
       "Sha256": "A2EF4A569B7C0FEBAC8163F13A3A2AFD3A1FEA288ED2AEB9FA7BD315705DEB5C",
       "Reviewed": true,
       "Note": "Reviewed staff casting owl purple battery two hands"
+    },
+    {
+      "CharacterId": 57,
+      "Variant": 5,
+      "File": "remaining-variants/character-57-5-balanced.png",
+      "Sha256": "80BD255D4CA40B0AEBDF2D1D9BD0A8765309AFED804210DBFAAA9FDB824F0969",
+      "Reviewed": true,
+      "Note": "Reviewed reclining scroll library two hands"
+    },
+    {
+      "CharacterId": 57,
+      "Variant": 6,
+      "File": "remaining-variants/character-57-6-balanced.png",
+      "Sha256": "38E4C5133960FF9A98D05C6714DB3A03DFDE3AFAE2545F55C8CC2664C2F4CE28",
+      "Reviewed": true,
+      "Note": "Reviewed both open eyes nose bandage dagger purple battery"
+    },
+    {
+      "CharacterId": 58,
+      "Variant": 2,
+      "File": "remaining-variants/character-58-2-balanced.png",
+      "Sha256": "D0A2C0AF713ADE6EE0B0D2BAB1FBF92057244D635B6E63393CDF6F4A3C7BDE3C",
+      "Reviewed": true,
+      "Note": "Reviewed toy speedboat two white gloves red battery"
+    },
+    {
+      "CharacterId": 58,
+      "Variant": 3,
+      "File": "remaining-variants/character-58-3-balanced.png",
+      "Sha256": "DE208090D90DF44345C53C797B3A9937F91F5800812F789FD1EA0D0F9C42C92A",
+      "Reviewed": true,
+      "Note": "Visually reviewed: balanced face ears hands; original expression pose and signature props retained."
+    },
+    {
+      "CharacterId": 58,
+      "Variant": 4,
+      "File": "remaining-variants/character-58-4-balanced.png",
+      "Sha256": "F10DAC3F9E48CDF28F8BB731A851A0CA46EA42489248835B2F85871F04667A98",
+      "Reviewed": true,
+      "Note": "Visually reviewed: balanced face ears hands; original expression pose and signature props retained."
+    },
+    {
+      "CharacterId": 58,
+      "Variant": 5,
+      "File": "remaining-variants/character-58-5-balanced.png",
+      "Sha256": "0C253F69BD1DDD4ABCF47F77C2C9A5C9AE562CA99043D3C53CD188E5EB4D2FB6",
+      "Reviewed": true,
+      "Note": "Visually reviewed: balanced face ears hands; original expression pose and signature props retained."
+    },
+    {
+      "CharacterId": 58,
+      "Variant": 6,
+      "File": "remaining-variants/character-58-6-balanced.png",
+      "Sha256": "F3DFD39664600A8C9C1E2FB4E24E5108CE2FED27637E94D23CE1A46BC9BD2A3A",
+      "Reviewed": true,
+      "Note": "Visually reviewed: expression pose scene props retained; balanced face hands ears; no extra limbs."
+    },
+    {
+      "CharacterId": 59,
+      "Variant": 2,
+      "File": "remaining-variants/character-59-2-balanced.png",
+      "Sha256": "B0A2C67D5127AC54DEA290FD492F1AE826FA935E735F33BBED3DC059311330B7",
+      "Reviewed": true,
+      "Note": "Visually reviewed: expression pose scene props retained; balanced face hands ears; no extra limbs."
+    },
+    {
+      "CharacterId": 59,
+      "Variant": 3,
+      "File": "remaining-variants/character-59-3-balanced.png",
+      "Sha256": "F62FD3403AD7DCDE381EB0C24BEB4D0EB2C0EC81119E26A440CD2E3B331DA00E",
+      "Reviewed": true,
+      "Note": "Visually reviewed: expression pose scene props retained; balanced face hands ears; no extra limbs."
+    },
+    {
+      "CharacterId": 59,
+      "Variant": 4,
+      "File": "remaining-variants/character-59-4-balanced.png",
+      "Sha256": "B3E816B16F4A737DD14709D540D40AE4F3A5B3E1320B398462C6BAE5FAF3EFF5",
+      "Reviewed": true,
+      "Note": "Visually reviewed: original expression eye-cover pose props battery color and scene retained; face hands ears balanced."
+    },
+    {
+      "CharacterId": 59,
+      "Variant": 5,
+      "File": "remaining-variants/character-59-5-balanced.png",
+      "Sha256": "2035217BC6B4F22D5D38DE9159CECDCA68CB457DA631828652A5E7A0B5E18ED3",
+      "Reviewed": true,
+      "Note": "Visually reviewed: original expression eye-cover pose props battery color and scene retained; face hands ears balanced."
+    },
+    {
+      "CharacterId": 59,
+      "Variant": 6,
+      "File": "remaining-variants/character-59-6-balanced.png",
+      "Sha256": "EB5AB11AD796FA39F9255B5FB4E9558CEB3FDC97C88F3B99992F396DD7FF6272",
+      "Reviewed": true,
+      "Note": "Visually reviewed: original expression eye-cover pose props battery color and scene retained; face hands ears balanced."
     }
   ]
 }
