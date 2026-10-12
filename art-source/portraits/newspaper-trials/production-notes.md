@@ -1,4 +1,4 @@
-﻿# 全60人の写真制作
+# 全60人の写真制作
 
 2026-10-11依頼。60人それぞれ formal（式典・整った肖像）、paparazzi（街や潜伏中の横顔など無造作な写真）、friends（家族・友人の不意打ち、隙がある表情）、id（真正面・無表情・無地背景）の4枚。計240枚。カラー1200×1600。顔を大きく、縦長・横長の耳もなるべく収める。同一人物の髪・瞳・肌・種族・識別パーツを維持。横長の元ゲーム画像を単にトリミングして済ませない。
 
@@ -158,3 +158,5 @@ No.9 の確定デザイン v008 を参照して history / coin / election の3�
 2026-10-12 21:04 JST heartbeat: No20 formal/paparazzi/friends visually reviewed; cap cropping corrected all three. Silver braid red glasses violet eyes pointed ears military cap retained. Originals prompts1200x1600 saved SHA256 verified/imported156/480. Variants300/300 complete. NextNo20 id/history/coin. Automation active no commits/pushes.
 
 2026-10-12 21:34 JST heartbeat interrupted by mixed robot implementation: No20 id/history visually reviewed saved originals prompts and1200x1600; verified/imported158/480. NextNo20 coin/election/idol. Variants300/300 complete; automation active no commits/pushes.
+
+2026-10-12 22:04 JST heartbeat: No20 coin/election/idol visually reviewed, full cap framing corrected, originals and final prompts retained; 1200x1600 SHA256 verified and imported. Photos 161/480. Variants 300/300 complete. Next No21 formal/paparazzi/friends. Automation active; no commits or pushes.

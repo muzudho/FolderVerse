@@ -6,7 +6,7 @@ public sealed partial class RobotWorkshop
     public RobotWorkshop(){ProductionLines=new[]{this};}
     public void GenerateLines(int seed)
     {
-        var random=new SeedRandom(seed);int count=random.Next(4);
+        Automation=NodeAutomation.Gentle;var random=new SeedRandom(seed);int count=random.Next(4);
         ProductionLines=new RobotWorkshop[count];
         for(int i=0;i<count;i++){
             var line=i==0?this:new RobotWorkshop();ProductionLines[i]=line;

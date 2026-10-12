@@ -100,6 +100,7 @@ public sealed partial class RobotWorld
     }
     public void Advance(Func<int,int,bool> connected,Func<int,int> owner,int seed,Func<int,bool> locked=null,Func<int,int,bool> canEnter=null)
     {
+        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true && owner(n)>=0)AdjustNode(n,owner(n),connected,locked,owner);
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));Workshops[n].CompleteDisposal(Nodes[n]);}
         WorkshopFailures.Clear();
         foreach(var edit in PendingEdits.ToArray())

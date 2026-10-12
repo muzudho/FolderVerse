@@ -1,0 +1,100 @@
+[
+  {
+    "kind": "construction",
+    "role": "工事現場監督",
+    "file": "construction-v001.png",
+    "sha256": "EAF7451DDF3812D69504D17A6427F6B83BDE5057D65071CA1325FD71B27F793D",
+    "reviewed": true
+  },
+  {
+    "kind": "mayor",
+    "role": "市長",
+    "file": "mayor-v001.png",
+    "sha256": "8D0A3AC7CA944E5116FC580DAB9BA1BE94742CF9FFFB5338DB424B539DB2C162",
+    "reviewed": true
+  },
+  {
+    "kind": "town",
+    "role": "町長",
+    "file": "town-v001.png",
+    "sha256": "9F85A8444F5D62FF5086102A6D2FA952AF269544C1C7514AE5B4FD3866A4F1D3",
+    "reviewed": true
+  },
+  {
+    "kind": "village",
+    "role": "村長",
+    "file": "village-v001.png",
+    "sha256": "C28E5527EBF410954002927FFE17E34F5DBB404D2E5E37B654366623FCFE2465",
+    "reviewed": true
+  },
+  {
+    "kind": "harbor",
+    "role": "港湾監督",
+    "file": "harbor-v001.png",
+    "sha256": "E0A09F14BC2BD76FB812F75B3011A286C6134DFA79B47B3D08D7CB2C8D155FB7",
+    "reviewed": true
+  },
+  {
+    "kind": "captain",
+    "role": "船長",
+    "file": "captain-v001.png",
+    "sha256": "A1A0C6308E43ABB3D1C8C5C7AC2C724DE39FF45F4BE7EF7D8869192732AE4EC9",
+    "reviewed": true
+  },
+  {
+    "kind": "admiral",
+    "role": "艦長",
+    "file": "admiral-v001.png",
+    "sha256": "E5F069A220E084EA2F98E7E822DB6DD18378BC283066718A9FFBB59743CE712B",
+    "reviewed": true
+  },
+  {
+    "kind": "pirate",
+    "role": "海賊",
+    "file": "pirate-v001.png",
+    "sha256": "3763AC56B9826A732E75876CD57007648F794A53CC53A77C0C39F09303583F65",
+    "reviewed": true
+  },
+  {
+    "kind": "polar",
+    "role": "極地探検隊長",
+    "file": "polar-v001.png",
+    "sha256": "409F37C784750B6F1C879142E54CDC15A9FF9A4D8AD722A7AB33789C86A3DCF3",
+    "reviewed": true
+  },
+  {
+    "kind": "abbess",
+    "role": "修道院長",
+    "file": "abbess-v001.png",
+    "sha256": "4E5E3C2CD327A2386A4B4EF959807966316F9DA8F19A314C698978264BF767BB",
+    "reviewed": true
+  },
+  {
+    "kind": "hospital",
+    "role": "病院長",
+    "file": "hospital-v001.png",
+    "sha256": "CAE2EC9F5725888471DB847F8C25E17966FBA2DAA9FE1863E94E69C29B3AB899",
+    "reviewed": true
+  },
+  {
+    "kind": "class",
+    "role": "学級委員長",
+    "file": "class-v001.png",
+    "sha256": "D509E57CA90A1429F8C5E60E9EA695258F164D60611B8923A56CE9621498580F",
+    "reviewed": true
+  },
+  {
+    "kind": "nursery",
+    "role": "保母",
+    "file": "nursery-v001.png",
+    "sha256": "A60FF6374903AA43741AF72C3E086BA298B1D383B781CEFB0A44D20B3C327F50",
+    "reviewed": true
+  },
+  {
+    "kind": "shop",
+    "role": "店長",
+    "file": "shop-v001.png",
+    "sha256": "F671EDA51680D74AF1A58D8FB07E8005169A190E86586334CEE5BC74B67373D8",
+    "reviewed": true
+  }
+]

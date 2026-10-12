@@ -12,7 +12,7 @@ public partial class Game1
         var party=_setup.Relations.Party(_setup).Where(r=>!_setup.Campaign.Submitted.Contains(r)).ToArray();
         if(party.Length<2)return true;
         int index=System.Array.IndexOf(party,_setup.PlayerSlot);_setup.SelectPlayer(party[(index+direction+party.Length)%party.Length]);
-        _selectedMoveNode=-1;_populationCell=_populationNode=-1;FocusCurrentNode();_world.ShowSetup(_setup,true);return true;
+        _inspectedNode=-1;_selectedMoveNode=-1;_populationCell=_populationNode=-1;FocusCurrentNode();_world.ShowSetup(_setup,true);return true;
     }
     private void DrawControlledRuler()
     {

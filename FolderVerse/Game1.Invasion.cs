@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 public partial class Game1
 {
-    private static readonly Rectangle WarButton=new(324,1018,110,52);
+    private static readonly Rectangle WarButton=new(474,1018,110,52);
     private bool _warPlanning;
     private sealed class InvasionSource {public int Owner,Node,Count;public bool Queen,CanQueen,CanNode;}
     private readonly List<InvasionSource> _invasionSources=new();

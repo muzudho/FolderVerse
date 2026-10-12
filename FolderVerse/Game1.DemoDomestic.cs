@@ -20,8 +20,8 @@ public partial class Game1
             5=>_demoEmptySlot<0?new(480,540):HangarCell(_demoEmptySlot).Center,
             6=>_demoEmptySlot<0?new(480,540):HangarPartBounds(_demoEmptySlot,1).Center,
             7=>_demoSourceSlot<0?new(480,540):HangarCell(_demoSourceSlot).Center,
-            8=>new(832,190),9=>MovementButton.Center,10=>DemoDestinationPoint(),
-            11=>new(402,366),_=>ConfirmMoveButton.Center
+            8=>NodeFactoryTile.Center,9=>FactoryRobotButton(0,3).Center,10=>FactoryPlanButton(0).Center,11=>new(832,190),12=>MovementButton.Center,13=>DemoDestinationPoint(),
+            14=>new(402,366),_=>ConfirmMoveButton.Center
         };
         if(_demoSwing<=0)_demoCursor=Vector2.Lerp(_demoCursor,new(target.X,target.Y),1-MathF.Exp(-(float)elapsed*4));
         if(_hangarDrag.HasValue)_pointer=new((int)_demoCursor.X,(int)_demoCursor.Y);
@@ -31,7 +31,7 @@ public partial class Game1
         {
             case 0:
                 var node=_setup.Nodes.All.FirstOrDefault(n=>n.Owner==_setup.PlayerSlot && !_setup.Campaign.RobotBattles.LockedNode(n.Id));
-                if(node==null){_demoDomesticStage=9;return true;}
+                if(node==null){_demoDomesticStage=12;return true;}
                 _populationNode=node.Id;_populationCell=node.Cell;_nodeAssemblyOpen=_nodeTransportOpen=_nodeDisposalOpen=_nodeFactoryOpen=false;break;
             case 1:OpenNodeTransport();break;
             case 2:
@@ -46,10 +46,13 @@ public partial class Game1
             case 5:case 7:
                 _previousMouse=new MouseState(target.X,target.Y,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
                 NodeAssemblyInput(new MouseState(target.X,target.Y,0,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),false,false);break;
-            case 8:_nodeAssemblyOpen=false;_populationCell=-1;break;
-            case 9:OpenMovement();break;
-            case 10:MovementClick(target,new KeyboardState());break;
-            case 11:MovementClick(target,new KeyboardState());break;
+            case 8:_nodeAssemblyOpen=false;OpenNodeFactory();break;
+            case 9:if(_nodeFactoryOpen){_factoryPlanLine=0;_factoryLine=0;}break;
+            case 10:if(_nodeFactoryOpen){_setup.Robots.AdjustNode(_populationNode,_setup.PlayerSlot,(a,b)=>_setup.Routes.Neighbors(_setup.Nodes.All[a]).Any(r=>_setup.Nodes.At(r.Target,r.Entry).Id==b));_factoryPlanLine=-1;}break;
+            case 11:_nodeFactoryOpen=false;_populationCell=-1;break;
+            case 12:OpenMovement();break;
+            case 13:MovementClick(target,new KeyboardState());break;
+            case 14:MovementClick(target,new KeyboardState());break;
             default:
                 if(_selectedMoveNode>=0)MovementClick(target,new KeyboardState());
                 else{CloseMovement();_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);OpenBattle();}

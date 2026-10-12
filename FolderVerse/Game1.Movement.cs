@@ -10,7 +10,7 @@ public partial class Game1
     private long _escort;
     private bool _routesBeforeMovement;
     private int _selectedMoveNode=-1;
-    private static readonly Rectangle MovementButton=new(204,1018,110,52);
+    private static readonly Rectangle MovementButton=new(354,1018,110,52);
     private static readonly Rectangle ConfirmMoveButton=new(570,914,274,48);
     private void OpenMovement()
     {

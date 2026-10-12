@@ -21,7 +21,7 @@ public partial class Game1
     }
     private bool _transportOverview;
     private bool _transportRoutesBefore;
-    private static readonly Rectangle TransportOverviewButton=new(444,1018,210,52);
+    private static readonly Rectangle TransportOverviewButton=new(594,1018,210,52);
     private static Rectangle TransportPartButton(int mask)=>new(84+(mask-1)%4*196,322+(mask-1)/4*136,182,96);
     private void DrawTransportPartButtons()
     {

@@ -2,6 +2,7 @@ namespace FolderVerse;
 using System;
 using System.Linq;
 
+public enum NodeAutomation { Auto, Gentle, Manual }
 public sealed partial class RobotWorkshop
 {
     public RobotParts Product {get;private set;}=RobotParts.Complete;
@@ -9,6 +10,7 @@ public sealed partial class RobotWorkshop
     public int ProductionAge {get;private set;}
     public bool Manufacturing {get;private set;}
     public bool Paused {get;set;}
+    public NodeAutomation Automation {get;set;}=NodeAutomation.Manual;
     public bool AutoAssemblyDisabled {get;set;}
     public bool Waiting=>Manufacturing && ProductionAge>=ProductionPeriod;
     public int DisposalPeriod {get;private set;}

@@ -4,11 +4,11 @@ public partial class Game1
 {
     private bool _trainingOpen;
     private int _trainingDrop=-1;
-    private static readonly Rectangle TrainingButton=new(750,710,140,52),TrainingClose=new(1340,220,58,44);
+    private static readonly Rectangle TrainingButton=new(204,1018,140,52),TrainingClose=new(1340,220,58,44);
     private static Rectangle TrainingField(int field)=>new(480,360+field*190,900,64);
     private static Rectangle TrainingOption(int field,int option)=>new(480,424+field*190+option*48,900,48);
     private static readonly string[] AssemblyLabels={"自国のパーツのみ","自国のパーツが２／３以上","自国のパーツが１／３以上","現場に任せる"};
-    private static readonly string[] DeploymentLabels={"自国のパーツのみのロボット","自国のパーツが多いロボットから","自国のパーツが少ないロボットから"};
+    private static readonly string[] DeploymentLabels={"自国のパーツのみのロボット","自国のパーツが多いロボットから","自国のパーツが少ないロボットから","現地に任せる"};
     private bool TrainingInput(Point point,bool click,bool escape)
     {
         if(!_trainingOpen){if(click && _populationCell<0 && !_movementOpen && !_transportOverview && TrainingButton.Contains(point)){_trainingOpen=true;_trainingDrop=-1;return true;}return false;}

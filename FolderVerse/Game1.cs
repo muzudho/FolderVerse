@@ -256,7 +256,7 @@ public partial class Game1 : Game
             {
                 var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);var post=_setup.Nodes.At(_statusCell,point);
                 if(post!=null)
-                {_populationCell=_statusCell;_populationNode=post.Id;_nodeFactoryOpen=false;_nodeTransportOpen=false;_nodeDisposalOpen=false;_nodeAssemblyOpen=false;_movementOpen=false;}
+                {_populationCell=_statusCell;_populationNode=post.Id;_inspectedNode=post.Id;_nodeAutomationDrop=false;_nodeFactoryOpen=false;_nodeTransportOpen=false;_nodeDisposalOpen=false;_nodeAssemblyOpen=false;_movementOpen=false;}
             }
             if(active)
             {
@@ -456,24 +456,24 @@ public partial class Game1 : Game
         _ui.Text("世界征服状況",new(54,22),1.1f,Cream);
         int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
         var image=new Rectangle(212,220,518,360);
-        if(!System.Linq.Enumerable.Any(_setup.Nodes.All,node=>node.Owner==player))DrawReignWantedPoster(player);
+        if(!InspectingSupervisor && !System.Linq.Enumerable.Any(_setup.Nodes.All,node=>node.Owner==player))DrawReignWantedPoster(player);
         else
         {
         // Raised ceremonial frame: layered gilt bevels, corners and a crest.
         _ui.Box(new(188,203,570,412),new Color(4,14,23,180));
         Color[] gold={new(100,58,18),new(235,177,64),new(255,231,152),new(127,76,21),new(239,192,85)};
         for(int i=0;i<gold.Length;i++){int margin=24-i*4;_ui.Box(new(image.X-margin,image.Y-margin,image.Width+margin*2,image.Height+margin*2),gold[i]);}
-        _portraitRenderer.Draw(_spriteBatch,_setup.Looks[player],image);
+        if(InspectingSupervisor)DrawSupervisor(image,_setup.Nodes.All[_inspectedNode].Owner);else _portraitRenderer.Draw(_spriteBatch,_setup.Looks[player],image);
         foreach(var corner in new[]{new Point(image.Left-14,image.Top-14),new Point(image.Right+14,image.Top-14),new Point(image.Left-14,image.Bottom+14),new Point(image.Right+14,image.Bottom+14)})
         {
             _spriteBatch.Draw(_pixel,new Vector2(corner.X,corner.Y),null,color,MathHelper.PiOver4,new Vector2(0.5f),new Vector2(22),SpriteEffects.None,0);
         }
-        if(_setup.Relations.Superiors[player]<0){_ui.Box(new(330,165,282,42),new(125,78,28));
+        if(!InspectingSupervisor && _setup.Relations.Superiors[player]<0){_ui.Box(new(330,165,282,42),new(125,78,28));
         _ui.Center("★ 世界征服者 ★",new(330,165,282,42),0.65f,new(255,227,132));}
         }
-        DrawControlledRuler();
+        if(InspectingSupervisor)DrawSupervisorSuperior();else DrawControlledRuler();
         _ui.Box(new(210,633,520,62),new(27,46,55));
-        string formalName="征服者　"+_setup.ConquerorFullNames[player];
+        string formalName=InspectingSupervisor?NodeSupervisors.Labels[NodeSupervisors.For(_setup.Nodes.All[_inspectedNode],_setup.Cells[_setup.Nodes.All[_inspectedNode].Cell].Face)]:"征服者　"+_setup.ConquerorFullNames[player];
         _ui.Center(formalName,new(90,641,760,56),Math.Min(0.88f,740f/_font.MeasureString(formalName).X),Cream);
         _ui.Center(_setup.TerritoryCounts[player]>0?"政治体制　"+WorldSetup.PoliticalSystem:"放浪者",new(90,710,760,45),0.7f,new(181,204,211));
         string capitalLabel=_setup.TerritoryCounts[player]==0?"放浪者 / 自国なし":"首都　"+WorldCoordinates.Label(_setup,capital);
@@ -546,8 +546,11 @@ public partial class Game1 : Game
         _ui.Button(WarButton,"開戦",Accent,.65f);
         _ui.Button(MovementButton,"移動",Accent,.65f);
         _ui.Button(PocketButton,"ポケット",Accent,.55f);
-        if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(984,1037,870,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
-        if(_populationCell>=0)DrawNodeDialog();
+        if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(1064,1037,800,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
+        if(_populationCell>=0){
+            if(SupervisorNodePanel){_spriteBatch.End();_spriteBatch.Begin(transformMatrix:Matrix.CreateTranslation(920,40,0)*transform);var pointer=_ui.Pointer;_ui.Pointer=new(pointer.X-920,pointer.Y-40);DrawNodeDialog();DrawNodeAutomation();_ui.Pointer=pointer;_spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);}
+            else{DrawNodeDialog();DrawNodeAutomation();}
+        }
         if(_movementOpen)DrawMovementPanel();
         DrawTransportOverviewButton();
         if(_transportOverview){DrawTransportOverviewPanel();if(_rateTarget>=0)DrawRatePieDialog();}
@@ -628,7 +631,7 @@ public partial class Game1 : Game
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){_net.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();_newspaperRustle?.Dispose();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){_net.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         try{base.Dispose(disposing);}

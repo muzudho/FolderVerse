@@ -32,6 +32,7 @@ public partial class Game1
     }
     private void NodeAssemblyInput(MouseState mouse,bool click,bool escape)
     {
+        if(click && NodeAutomationClick(_pointer)){_hangarDrag=null;return;}
         if(escape){if(_hangarDrag.HasValue)_hangarDrag=null;else _nodeAssemblyOpen=false;return;}
         if(click && (NodeFactoryTile.Contains(_pointer) || NodeTransportTile.Contains(_pointer) || NodeDisposalTile.Contains(_pointer) || NodeAssemblyTile.Contains(_pointer)))
         {_hangarDrag=null;NodeDialogClick(_pointer,new KeyboardState());return;}
