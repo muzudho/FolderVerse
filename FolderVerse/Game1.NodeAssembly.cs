@@ -19,13 +19,12 @@ public partial class Game1
     private static RobotParts HangarPart(int row)=>row==0?RobotParts.Head:row==1?RobotParts.Body:RobotParts.Legs;
     private static Rectangle HangarPartBounds(int slot,int row)
     {var cell=HangarCell(slot);return new(cell.X+56,cell.Y+10+row*38,70,36);}
-    private bool CanMoveHangarRobot(Robot robot)=>CanManageNodeFactory(robot.Owner) &&
-        !_setup.Campaign.RobotBattles.LockedNode(_populationNode) &&
-        _setup.Robots.Workshops[_populationNode].DisposalTarget!=robot.Id &&
-        !_setup.Robots.PendingEdits.Any(e=>e.Ids.Contains(robot.Id));
+    private bool CanOpenHangar=>_setup.Nodes.All[_populationNode].Owner<0 || CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
+    private bool CanMoveHangarRobot(Robot robot)=>CanOpenHangar && !_setup.Campaign.RobotBattles.LockedNode(_populationNode) && _setup.Robots.Workshops[_populationNode].DisposalTarget!=robot.Id && !_setup.Robots.PendingEdits.Any(e=>e.Ids.Contains(robot.Id));
+    private bool CanMoveHangarPart(Robot robot,RobotParts part)=>CanMoveHangarRobot(robot) && (_setup.Nodes.All[_populationNode].Owner>=0 || robot.Origin(part)==_setup.PlayerSlot);
     private void OpenNodeAssembly()
     {
-        if(!CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;
+        if(!CanOpenHangar)return;
         _nodeAssemblyOpen=true;_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;
         _hangarDrag=null;_hangarMessage="";Array.Clear(_hangarSlots);
         var robots=_setup.Robots.Nodes[_populationNode].Robots;
@@ -49,8 +48,8 @@ public partial class Game1
             for(int slot=0;slot<12;slot++)
             {
                 var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);if(robot==null || !CanMoveHangarRobot(robot))continue;
-                for(int row=0;row<3;row++)if(HangarPartBounds(slot,row).Contains(_pointer) && (robot.Parts&HangarPart(row))!=0)
-                {_hangarDrag=robot.Id;_hangarPart=HangarPart(row);_hangarSource=slot;_hangarMessage="空きセルか、同じ所有国のパーツが重複しないセルへドロップ";return;}
+                for(int row=0;row<3;row++)if(HangarPartBounds(slot,row).Contains(_pointer) && (robot.Parts&HangarPart(row))!=0 && CanMoveHangarPart(robot,HangarPart(row)))
+                {_hangarDrag=robot.Id;_hangarPart=HangarPart(row);_hangarSource=slot;_hangarMessage="空きセルか、パーツが重複しないセルへドロップ";return;}
             }
         }
         if(!_hangarDrag.HasValue || mouse.LeftButton!=ButtonState.Released || _previousMouse.LeftButton!=ButtonState.Pressed)return;
@@ -61,8 +60,8 @@ public partial class Game1
         {
             var robot=store.Robots.Single(r=>r.Id==source);
             var target=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[destination]);
-            if(!CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) || !CanMoveHangarRobot(robot) || target!=null && !CanMoveHangarRobot(target))throw new InvalidOperationException();
-            long id=_setup.Robots.MovePart(_populationNode,source,_hangarPart,_hangarSlots[destination]);
+            if(!CanMoveHangarPart(robot,_hangarPart) || target!=null && !CanMoveHangarRobot(target))throw new InvalidOperationException();
+            long id=_setup.Robots.MovePart(_populationNode,source,_hangarPart,_hangarSlots[destination],_setup.PlayerSlot);
             if(destination!=_hangarSource && (id==source || !store.Robots.Any(r=>r.Id==source)))_hangarSlots[_hangarSource]=null;
             _hangarSlots[destination]=id;_hangarMessage="手動でパーツの配置を調整しました";
         }
@@ -71,7 +70,7 @@ public partial class Game1
     }
     private void DrawNodeAssemblyTile()
     {
-        bool enabled=CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
+        bool enabled=CanOpenHangar;
         _ui.Box(NodeAssemblyTile,_nodeAssemblyOpen || enabled && NodeAssemblyTile.Contains(_pointer)?Accent:Muted);
         _ui.Center("ロボット組立・分解",NodeAssemblyTile,.36f,enabled?Cream:Cream*.4f);
         if(_nodeAssemblyOpen)_ui.Box(new(NodeAssemblyTile.X,NodeAssemblyTile.Y,NodeAssemblyTile.Width,4),Cream);
@@ -87,14 +86,14 @@ public partial class Game1
         string hover="頭・胴・脚をつかんで、格納庫のセルへドラッグ＆ドロップ";
         for(int slot=0;slot<12;slot++)
         {
-            var cell=HangarCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);bool owned=occupant==null || CanManageNodeFactory(occupant.Owner);_ui.Box(cell,owned?Muted:new Color(9,19,26));
+            var cell=HangarCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);bool owned=occupant==null || CanMoveHangarRobot(occupant);_ui.Box(cell,owned?Muted:new Color(9,19,26));
             if(_hangarDrag.HasValue && cell.Contains(_pointer))_ui.Box(new(cell.X,cell.Y,cell.Width,3),Cream);
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);if(robot==null)continue;
-            DrawRobotGlyph(new(cell.X+57,cell.Y+12,68,102),robot.Owner,robot.Parts,robot.Role==RobotRole.Captain,whiteOutline:true);
+            foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(new(cell.X+57,cell.Y+12,68,102),robot.Origin(part),part,robot.Role==RobotRole.Captain,whiteOutline:true);
             for(int row=0;row<3;row++)
             {
                 var bounds=HangarPartBounds(slot,row);var part=HangarPart(row);
-                if(!CanMoveHangarRobot(robot) || !bounds.Contains(_pointer) || (robot.Parts&part)==0)continue;
+                if(!CanMoveHangarPart(robot,part) || !bounds.Contains(_pointer) || (robot.Parts&part)==0)continue;
                 hoveringPart=true;
                 bool movable=CanMoveHangarRobot(robot);
                 var color=movable?Cream:new Color(145,156,166);
@@ -110,7 +109,7 @@ public partial class Game1
         if(_hangarDrag.HasValue)
         {
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarDrag);if(robot!=null)
-            {_ui.Box(new(_pointer.X+12,_pointer.Y+12,56,74),new Color(25,45,57));DrawRobotGlyph(new(_pointer.X+18,_pointer.Y+16,44,62),robot.Owner,_hangarPart,whiteOutline:true);}
+            {_ui.Box(new(_pointer.X+12,_pointer.Y+12,56,74),new Color(25,45,57));DrawRobotGlyph(new(_pointer.X+18,_pointer.Y+16,44,62),robot.Origin(_hangarPart),_hangarPart,whiteOutline:true);}
         }
     }
 }

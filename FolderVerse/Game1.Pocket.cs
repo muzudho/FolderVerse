@@ -57,7 +57,7 @@ public partial class Game1
             {
                 var card=PocketCard(i,fromNode);_ui.Box(card,Muted);if(i>=store.Count)continue;var robot=store.Robots[i];
                 if(_pocketRobot==robot.Id && _pocketFromNode==fromNode)_ui.Box(new(card.X,card.Y,card.Width,4),Cream);
-                DrawRobotGlyph(new(card.X+42,card.Y+12,52,70),robot.Owner,robot.Parts,robot.Role==RobotRole.Captain,whiteOutline:true);
+                DrawRobotGlyph(new(card.X+42,card.Y+12,52,70),robot,whiteOutline:true);
                 _ui.Center(PartsLabel(robot.Parts)+$" / #{robot.Owner+1}",new(card.X,card.Y+89,card.Width,28),.4f,Cream);
                 _ui.Center("ID "+robot.Id,new(card.X,card.Y+115,card.Width,24),.32f,Cream);
             }

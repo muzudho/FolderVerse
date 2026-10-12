@@ -1,0 +1,16 @@
+using FolderVerse;
+void Check(bool ok,string message){if(!ok)throw new Exception(message);}
+var w=new RobotWorld();w.Initialize(2,3);
+var head=w.Create(0,RobotParts.Head);var body=w.Create(1,RobotParts.Body);var legs=w.Create(2,RobotParts.Legs);
+w.Nodes[0].Add(head);w.Nodes[0].Add(body);w.Nodes[0].Add(legs);
+var mixed=w.Assemble(0,new[]{head.Id,body.Id,legs.Id},0);
+Check(mixed.Owner==0 && mixed.NativeParts(0)==1 && mixed.Origin(RobotParts.Body)==1 && mixed.Origin(RobotParts.Legs)==2,"Mixed origins and affiliation");
+var battle=new BattleState(1,new BattleRules());battle.AddArmy(0,0,new[]{mixed});var unit=battle.Armies[0].Waiting.Peek();Check(unit.Daggers==1 && unit.Rifles==1 && unit.Shields==1,"One third equipment");
+w.Split(0,mixed.Id,RobotParts.Head);Check(w.Nodes[0].Robots.Single(r=>r.Parts==(RobotParts.Body|RobotParts.Legs)).Origin(RobotParts.Body)==1,"Split retains origin");
+var foreign=w.Nodes[0].Robots.Single(r=>r.Parts==(RobotParts.Body|RobotParts.Legs));w.MovePart(0,foreign.Id,RobotParts.Body,head.Id,0);
+Check(w.Nodes[0].Robots.Single(r=>r.Id==head.Id).Origin(RobotParts.Body)==1,"Manual transfer retains origin");
+var pure=w.Create(0,RobotParts.Complete);var two=pure.Materialize() with{LegsOrigin=1};
+foreach(var pair in new[]{(pure,3,4),(two,2,2)}){var b=new BattleState(1,new BattleRules());b.AddArmy(0,0,new[]{pair.Item1});var u=b.Armies[0].Waiting.Peek();Check(u.Shields==pair.Item2 && u.Daggers==pair.Item2 && u.Rifles==pair.Item3,"Equipment by native ratio");}
+var policy=w.Training[0];Check(!policy.Eligible(mixed),"Pure deployment filter");policy.DeploymentPolicy=1;Check(policy.Order(new[]{mixed,pure,two}).First()==pure,"Native-first order");policy.DeploymentPolicy=2;Check(policy.Order(new[]{pure,mixed,two}).First()==mixed,"Mixed-first order");Check(w.Training[1].DeploymentPolicy==0,"Subordinate training independent");
+var auto=new RobotWorld();auto.Initialize(1,2);auto.Nodes[0].Add(auto.Create(0,RobotParts.Head));auto.Nodes[0].Add(auto.Create(1,RobotParts.Body|RobotParts.Legs));auto.Advance((a,b)=>true,n=>0,1);Check(auto.Nodes[0].Count==2,"Pure assembly policy");auto.Training[0].AssemblyPolicy=2;auto.Advance((a,b)=>true,n=>0,2);Check(auto.Nodes[0].Count==1 && auto.Nodes[0].Robots[0].Owner==0 && auto.Nodes[0].Robots[0].NativeParts(0)==1,"Mixed automatic assembly");
+var shipping=new RobotWorld();shipping.Initialize(2,3);var cargo=shipping.Create(0,RobotParts.Complete).Materialize() with {BodyOrigin=1,LegsOrigin=2};shipping.Nodes[0].Add(cargo);shipping.Workshops[1].AutoAssemblyDisabled=true;shipping.Transport.Resolve(shipping,new[]{new RobotShipment(0,1,cargo.Id,RobotParts.Body)},(a,b)=>true);Check(shipping.Nodes[1].Robots.Single().Origin(RobotParts.Body)==1,"Partial transport preserves origin");w.Check();auto.Check();shipping.Check();Console.WriteLine("PASS: mixed origins, split/transfer, equipment, deployment priorities, independent training and automatic assembly.");

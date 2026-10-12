@@ -160,6 +160,7 @@ public partial class Game1 : Game
             if(active)DispositionInput(click,escape);
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
+        if(IsStatusScreen && TrainingInput(_pointer,active && click,active && escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && click && StatusMenuClick(_pointer))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Battle)
@@ -553,6 +554,7 @@ public partial class Game1 : Game
         DrawRouteLayerButtons();
         DrawStatusMenu();
         DrawNodeTooltip();
+        DrawTraining();
     }
     private void DrawCastPreviewInfo()
     {

@@ -117,9 +117,9 @@ public sealed class RobotTransport
         foreach(var s in Ordered(active))
         {
             var robot=cargo[s.RobotId];var target=stores[s.Target];
-            var partner=target.Where(r=>!world.Workshops[s.Target].AutoAssemblyDisabled && !robot.Disposal && r.Id!=world.Workshops[s.Target].DisposalTarget && r.Owner==robot.Owner && r.Disposal==robot.Disposal && (r.Parts&robot.Parts)==0).OrderBy(r=>r.Id).FirstOrDefault();
+            var partner=target.Where(r=>!world.Workshops[s.Target].AutoAssemblyDisabled && !robot.Disposal && r.Id!=world.Workshops[s.Target].DisposalTarget && r.Owner==robot.Owner && r.Disposal==robot.Disposal && (r.Parts&robot.Parts)==0 && ((r.Parts|robot.Parts)!=RobotParts.Complete || r.Merge(robot,r.Owner).NativeParts(r.Owner)>=world.Training[r.Owner].RequiredNative)).OrderBy(r=>r.Id).FirstOrDefault();
             if(partner==null)target.Add(robot);
-            else{target.Remove(partner);target.Add(partner with {Parts=partner.Parts|robot.Parts,Role=partner.Role==RobotRole.Captain || robot.Role==RobotRole.Captain?RobotRole.Captain:RobotRole.Soldier});}
+            else{target.Remove(partner);target.Add(partner.Merge(robot,partner.Owner) with {Role=partner.Role==RobotRole.Captain || robot.Role==RobotRole.Captain?RobotRole.Captain:RobotRole.Soldier});}
         }
         overflow=Enumerable.Range(0,stores.Length).Where(n=>stores[n].Count>RobotStore.Capacity).ToList();return stores;
     }
@@ -127,7 +127,7 @@ public sealed class RobotTransport
     {
         LastOwners.Clear();foreach(var s in accepted)LastOwners[s.RobotId]=world.Nodes[s.Source].Robots.Single(r=>r.Id==s.RobotId).Owner;
         var stores=Simulate(world,accepted,out var overflow);if(overflow.Count>0)throw new InvalidOperationException("Unresolved transport.");
-        for(int n=0;n<stores.Length;n++)world.Nodes[n].Replace(stores[n].Select(r=>r.Id<0?world.Create(r.Owner,r.Parts,r.Role,r.Disposal):r).ToArray());
+        for(int n=0;n<stores.Length;n++)world.Nodes[n].Replace(stores[n].Select(r=>r.Id<0?r.Materialize() with {Id=world.Create(r.Owner,r.Parts,r.Role,r.Disposal).Id}:r).ToArray());
         LastTransfers=accepted.ToArray();world.Check();
     }
 }

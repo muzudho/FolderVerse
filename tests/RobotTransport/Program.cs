@@ -9,8 +9,8 @@ for(int mask=1;mask<=7;mask++)Check(world.Create(0,(RobotParts)mask).CanFight==(
 Reject(()=>world.Create(0,0));Reject(()=>world.Create(20,RobotParts.Head));Fill(world,0);Reject(()=>Add(world,0));
 world.Retinues[0].Add(world.Create(0,RobotParts.Complete));Check(world.Retinues[0].Count==1,"Independent retinue capacity");
 world=World();var h=Add(world,0,4);var b=Add(world,0,2);var l=Add(world,0,1);var merged=world.Assemble(0,new[]{h.Id,b.Id,l.Id});Check(world.Nodes[0].Count==1 && merged.CanFight,"Assembly");
-world.Split(0,merged.Id,RobotParts.Head);Check(world.Nodes[0].Count==2,"Split");var foreign=Add(world,0,2,1);Reject(()=>world.Assemble(0,new[]{merged.Id,foreign.Id}));
-world=World();Add(world,0,4);Fill(world,0,11);var splitAfterDisposal=world.Nodes[0].Robots.Last();Reject(()=>world.Workshops[0].Dispose(world.Nodes[0],world.Nodes[0].Robots.First().Id));world.Workshops[0].ConfigureDisposal();world.Workshops[0].Dispose(world.Nodes[0],world.Nodes[0].Robots.First().Id);world.QueueSplit(0,splitAfterDisposal.Id,RobotParts.Head);
+world.Split(0,merged.Id,RobotParts.Head);Check(world.Nodes[0].Count==2,"Split");var foreign=Add(world,0,2,1);var mixedAssembly=world.Assemble(0,new[]{merged.Id,foreign.Id});Check(mixedAssembly.Origin(RobotParts.Body)==1,"Foreign assembly retains origin");
+world=World();Add(world,0,4);Fill(world,0,11);var splitAfterDisposal=world.Nodes[0].Robots.Last();Reject(()=>world.Workshops[0].Dispose(world.Nodes[0],world.Nodes[0].Robots.First().Id));world.Workshops[0].ConfigureDisposal();world.Workshops[0].Dispose(world.Nodes[0],world.Nodes[0].Robots.First().Id);world.QueueSplit(0,splitAfterDisposal.Id,RobotParts.Head);world.Workshops[0].AutoAssemblyDisabled=true;
 world.Advance((a,b)=>true,_=>0,1);Check(world.Nodes[0].Count==12 && world.Nodes[0].Robots.Single(r=>r.Id==splitAfterDisposal.Id).Parts==RobotParts.Head,"Disposal frees capacity before queued split");
 world=World();Add(world,0,4);Fill(world,0,11);var workshop=world.Workshops[0];workshop.Configure(RobotParts.Head,3);
 for(int i=0;i<8;i++)world.Advance((a,b)=>true,_=>0,i);Check(workshop.Waiting && workshop.ProductionAge==3,"Full factory holds one finished product");

@@ -55,7 +55,7 @@ public partial class Game1
         for(int i=0;i<robots.Length;i++)
         {
             int x=84+i/6*388,y=340+i%6*78;var robot=robots[i];_ui.Box(new(x,y,374,68),Muted);
-            DrawRobotGlyph(new(x+12,y+7,32,48),robot.Owner,robot.Parts);
+            DrawRobotGlyph(new(x+12,y+7,32,48),robot);
             _ui.Text($"{i+1}. ID {robot.Id} / {PartsLabel(robot.Parts)}",new(x+58,y+9),.38f,Cream);
             _ui.Text($"{RobotWorkshop.DisposalTurns(robot.Parts)} 全体ターン",new(x+58,y+36),.34f,Cream);
             _ui.Button(new(x+274,y+8,42,42),"↑",Muted,.45f);_ui.Button(new(x+324,y+8,42,42),"↓",Muted,.45f);
