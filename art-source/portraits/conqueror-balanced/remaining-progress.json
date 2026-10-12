@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 280,
+  "Completed": 283,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -2241,6 +2241,30 @@
       "Sha256": "22FC05F354B79F2EB4A85383DB8299E04F409F929697A40150AF6D5DFB18719C",
       "Reviewed": true,
       "Note": "ウインク笑顔・開いた天文書・手を伸ばす五指・雪城を維持"
+    },
+    {
+      "CharacterId": 57,
+      "Variant": 2,
+      "File": "remaining-variants/character-57-2-balanced.png",
+      "Sha256": "EEFCDD74C6F4560B75ECB66CC376AEBF98A125FC4462806AA4549FFD507D79BF",
+      "Reviewed": true,
+      "Note": "Reviewed book stack owl purple battery library"
+    },
+    {
+      "CharacterId": 57,
+      "Variant": 3,
+      "File": "remaining-variants/character-57-3-balanced.png",
+      "Sha256": "49D08C511B13CCA27F235537E6104A536D572732F84A5869C69BB3DA8DE33F42",
+      "Reviewed": true,
+      "Note": "Reviewed hot cup scarf owl blue battery snow"
+    },
+    {
+      "CharacterId": 57,
+      "Variant": 4,
+      "File": "remaining-variants/character-57-4-balanced.png",
+      "Sha256": "A2EF4A569B7C0FEBAC8163F13A3A2AFD3A1FEA288ED2AEB9FA7BD315705DEB5C",
+      "Reviewed": true,
+      "Note": "Reviewed staff casting owl purple battery two hands"
     }
   ]
 }
