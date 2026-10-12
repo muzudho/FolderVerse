@@ -80,3 +80,15 @@ Check(arena.EntryCapacity==(pattern==1?2:pattern==2?3:4),"Entrance capacity");
 }
 Console.WriteLine("PASS: rotated arenas, twelve-unit deployment capacity and connected entrances");
 
+for(int pattern=0;pattern<2;pattern++)for(int rotation=0;rotation<4;rotation++)
+{
+    var sea=new BattleState(17);sea.BuildSeaLayout(pattern,rotation);
+    Check(sea.SeaLogs.Count>0 && sea.SeaLogs.All(sea.Walkable),"Missing walkable logs");
+    foreach(int side in sea.EntrySides)Check(sea.Region(side).Count(sea.Walkable)>=12,"Sea deployment capacity");
+    var reachable=new HashSet<Point>{sea.Flag};var queue=new Queue<Point>();queue.Enqueue(sea.Flag);
+    while(queue.TryDequeue(out var p))foreach(var seaStep in new[]{new Point(0,1),new Point(0,-1),new Point(1,0),new Point(-1,0)})
+        if(sea.Walkable(p+seaStep) && reachable.Add(p+seaStep))queue.Enqueue(p+seaStep);
+    Check(reachable.Count==100-sea.Walls.Count,"Disconnected ships");
+    Check(sea.Walls.Count>=20,"Too little open water");
+}
+Console.WriteLine("PASS: rotated ship decks, narrow logs, connected ships and twelve-unit entry areas");

@@ -141,15 +141,7 @@ public sealed partial class BattleState
             foreach(int x in new[]{2,3,6,7})Walls.Add(new(x,3));
             Flag=new(5,2);
         }
-        if(terrain==BattleTerrain.Sea)
-        {
-            for(int y=0;y<10;y++)for(int x=0;x<10;x++)
-            {
-                bool bridge=x is 4 or 5 || y is 4 or 5;
-                bool ship=(y<3 && x is >=2 and <=7)||(y>6 && x is >=2 and <=7)||(x<3 && y is >=2 and <=7)||(x>6 && y is >=2 and <=7);
-                if(!bridge && !ship)Walls.Add(new(x,y));
-            }
-        }
+        if(terrain==BattleTerrain.Sea)BuildSeaLayout(0);
     }
     public void Check()
     {

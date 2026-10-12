@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -125,12 +125,28 @@ public partial class Game1
             var r=new Rectangle(left+x*size,top+y*size,size-2,size-2);bool wall=battle.Walls.Contains(new(x,y));
             if(battle.Terrain==BattleTerrain.Sea)
             {
-                // Sea obstacles are water; the walkable outer areas are decks and the central cross is a bridge.
-                bool bridge=x is 4 or 5 || y is 4 or 5;
-                _ui.Box(r,wall?new Color(28,69,101):bridge?new Color(162,121,73):new Color(107,79,55));
-                if(wall)BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(true,bridge,terrainHeight,terrainCell.Normal.Y));
-                else _ui.Box(new(r.X+4,r.Y+size-14,size-10,2),new Color(194,151,96));
-            }
+                bool log=battle.SeaLogs.Contains(new(x,y));
+                _ui.Box(r,new Color(28,88,125));
+                if(wall)BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(true,false,terrainHeight,terrainCell.Normal.Y));
+                else if(log)
+                {
+                    bool horizontal=battle.SeaLogs.Contains(new(x-1,y)) || battle.SeaLogs.Contains(new(x+1,y));
+                    var timber=horizontal?new Rectangle(r.X,r.Y+28,r.Width,44):new Rectangle(r.X+28,r.Y,44,r.Height);
+                    _ui.Box(timber,new Color(151,101,52));
+                    for(int stripe=0;stripe<3;stripe++)
+                        _ui.Box(horizontal?new(timber.X,timber.Y+8+stripe*12,timber.Width,3):new(timber.X+8+stripe*12,timber.Y,3,timber.Height),new Color(212,165,91));
+                    _ui.Box(horizontal?new(timber.X+16,timber.Y,5,timber.Height):new(timber.X,timber.Y+16,timber.Width,5),new Color(91,61,35));
+                }
+                else
+                {
+                    // Sloping hull edges distinguish the deck from a rectangular land tile.
+                    for(int sy=0;sy<r.Height;sy+=2)
+                    {
+                        int inset=(int)(12*Math.Abs(sy-r.Height/2f)/(r.Height/2f));
+                        _ui.Box(new(r.X+inset,r.Y+sy,r.Width-inset*2,2),new Color(112,75,47));
+                    }
+                    for(int plank=1;plank<5;plank++)_ui.Box(new(r.X+12,r.Y+plank*18,r.Width-24,2),new Color(193,145,88));
+                }            }
             else
             {
                 _ui.Box(r,Math.Abs(terrainCell.Normal.Y)>.5f?new Color(161,192,203):terrainHeight<.55f?new Color(163,137,91):new Color(35,64,58));

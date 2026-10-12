@@ -29,7 +29,7 @@ public sealed partial class BattleState
     }
     public void ChooseLayout()
     {
-        if(Terrain==BattleTerrain.Sea)return;
+        if(Terrain==BattleTerrain.Sea){BuildSeaLayout(Armies.Count<=2?Random.Next(2):0,Random.Next(4));return;}
         // Restrict narrow arenas to armies that fit their entrances.
         int[] patterns=Armies.Count<=2?new[]{0,1,2,3,4}:Armies.Count==3?new[]{0,2,3,4}:new[]{0,3,4};
         int pattern=patterns[Random.Next(patterns.Length)];
