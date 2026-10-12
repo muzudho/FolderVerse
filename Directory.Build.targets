@@ -1,0 +1,7 @@
+<Project>
+  <!-- The solution contains only the game project. Clean its test copies too. -->
+  <Target Name="CleanTestContentCopies" AfterTargets="Clean"
+          Condition="'$(MSBuildProjectName)' == 'FolderVerse' and '$(OS)' == 'Windows_NT'">
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)scripts\clean-test-content.ps1&quot;" />
+  </Target>
+</Project>
