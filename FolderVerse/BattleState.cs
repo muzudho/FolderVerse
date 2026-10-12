@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 public enum BattleFacing { North,East,South,West }
 public enum BattleWeapon { None,Dagger,Rifle }
 public enum BattleRole { Soldier,Captain,Queen }
-public enum BattlePhase { Choose,Place,Rollback,Attack,Receive,Consume,Fall,Flag,Reinforce,Result }
+public enum BattlePhase { Choose,Place,Rollback,Attack,Receive,Consume,Fall,Flag,Reinforce,Result,Retreat }
 public enum BattleTerrain { Field,Sea,Fort }
 public sealed record BattleAction(Point Step,BattleFacing Facing,BattleWeapon Weapon=BattleWeapon.None);
 public sealed record BattleEvent(int Turn,BattlePhase Phase,long Unit,string Detail);
@@ -112,7 +112,7 @@ public sealed partial class BattleState
         var north=new[]{new Point(4,1),new Point(4,0),new Point(5,1),new Point(3,1),new Point(6,1),new Point(2,1),new Point(7,1),new Point(3,2),new Point(4,2),new Point(5,2),new Point(6,2),new Point(5,0)};
         return north.Take(count).Select(p=>side switch{0=>p,1=>new Point(9-p.Y,p.X),2=>new Point(9-p.X,9-p.Y),_=>new Point(p.Y,9-p.X)}).ToArray();
     }
-    public void Capture(BattlePhase phase)=>Frames.Add(new(Turn,phase,Units.Select(u=>new BattleUnitView(u.Id,u.Owner,u.Role,u.Position,u.Facing,u.Daggers,u.Rifles,u.Shields,u.Fallen,u.Retreated)).ToArray(),FlagStanding,LastFlagOwner));
+    public void Capture(BattlePhase phase)=>Frames.Add(new(Turn,phase,phase==BattlePhase.Result && Finished && Frames.LastOrDefault()?.Phase==BattlePhase.Retreat?Frames[^1].Units:Units.Select(u=>new BattleUnitView(u.Id,u.Owner,u.Role,u.Position,u.Facing,u.Daggers,u.Rifles,u.Shields,u.Fallen,u.Retreated)).ToArray(),FlagStanding,LastFlagOwner));
     public void InheritHistory(IEnumerable<BattleState> previous)
     {
         var states=previous.OrderBy(b=>b.Id).ToArray();if(states.Length==0)return;

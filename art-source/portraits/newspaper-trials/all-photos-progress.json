@@ -1,6 +1,6 @@
 {
   "Total": 480,
-  "Completed": 130,
+  "Completed": 133,
   "Photos": [
     {
       "CharacterId": 1,
@@ -1161,6 +1161,33 @@
       "Width": 1200,
       "Height": 1600,
       "Sha256": "7923F8117455AF93EC6F7AC3F202FDA8F9D33494AE2F2DC9BC0AFE8896A2D26A",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 17,
+      "Kind": "paparazzi",
+      "File": "character-17-paparazzi-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "0F33F420F066043827363199B28C46D2A1ED0E891124BEDA8C9274F828A0FC1A",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 17,
+      "Kind": "friends",
+      "File": "character-17-friends-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "A406D4B7EF81F7DA027C57E15C49B61EDC2A2089E45C5978CA1C9CC962C4F688",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 17,
+      "Kind": "id",
+      "File": "character-17-id-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "BEAB302EA7D57574A9B21D94F4FC85264ECA7BE65ED5928444F48D7BE51BDB41",
       "Reviewed": true
     },
     {

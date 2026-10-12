@@ -104,3 +104,11 @@ Console.WriteLine("PASS: rotated ship decks, narrow logs, connected ships and tw
     Check(sea.SeaClearWater.Count>0,"Missing clear sailing lanes");
 }
 Console.WriteLine("PASS: all 2–4 ship rotations connected; flags on defending decks and clear forward/backward lanes");
+b=Board(BattleKind.Node,1);a=Unit(b,101,0,4,4,BattleFacing.North);c=Unit(b,102,1,7,7,BattleFacing.South);
+Turn(b);
+var withdrawal=b.Frames.Where(f=>f.Phase==BattlePhase.Retreat).ToArray();
+Check(b.Finished && b.Winner==1 && withdrawal.Length>5,"Judgment must include withdrawal turns");
+Check(withdrawal[^1].Units.All(u=>u.Retreated || u.Fallen),"Both armies must visibly leave");
+Check(withdrawal.SelectMany(f=>f.Units).Any(u=>u.Owner==0 && !BattleState.Inside(u.Position)) && withdrawal.SelectMany(f=>f.Units).Any(u=>u.Owner==1 && !BattleState.Inside(u.Position)),"Both armies cross the board boundary");
+Check(b.Frames[^1].Units.All(u=>u.Retreated || u.Fallen) && c.Active,"Replay withdrawal must preserve victorious garrison");
+Console.WriteLine("PASS: morale judgment shows both armies withdrawing outside before result, preserving garrison");

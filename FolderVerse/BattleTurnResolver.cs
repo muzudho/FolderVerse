@@ -120,6 +120,44 @@ public static class BattleTurnResolver
             }
         }
     }
+    // Judgment is already fixed. Replay every deployed survivor leaving the board,
+    // without changing the victorious garrison or split-board survivor bookkeeping.
+    private static void ShowWithdrawal(BattleState battle)
+    {
+        var views=battle.Units.Select(u=>new BattleUnitView(u.Id,u.Owner,u.Role,u.Position,u.Facing,u.Daggers,u.Rifles,u.Shields,u.Fallen,u.Retreated)).ToArray();
+        var steps=new[]{new Point(0,-1),new Point(1,0),new Point(0,1),new Point(-1,0)};
+        battle.Events.Add(new(battle.Turn,BattlePhase.Retreat,0,"戦意喪失 / 全軍撤退 / 判定確定"));
+        while(views.Any(u=>!u.Fallen && !u.Retreated))
+        {
+            battle.Turn++;
+            for(int i=0;i<views.Length;i++)
+            {
+                var u=views[i];if(u.Fallen || u.Retreated)continue;
+                var queue=new Queue<Point>();queue.Enqueue(u.Position);
+                var first=new Dictionary<Point,Point>{{u.Position,Point.Zero}};Point? move=null;
+                // Prefer the home edge; congestion may use another reachable edge.
+                for(int pass=0;pass<2 && move==null;pass++)
+                {
+                    queue.Clear();queue.Enqueue(u.Position);first.Clear();first[u.Position]=Point.Zero;
+                    while(queue.TryDequeue(out var p) && move==null)
+                    foreach(var step in steps)
+                    {
+                        var next=p+step;if(first.ContainsKey(next))continue;
+                        if(!BattleState.Inside(next))
+                        {if(pass==0 && !BattleState.HomeExit(next,battle.Army(u.Owner).Side))continue;move=p==u.Position?step:first[p];break;}
+                        if(!battle.Walkable(next) || views.Any(v=>v.Id!=u.Id && !v.Fallen && !v.Retreated && v.Position==next))continue;
+                        first[next]=p==u.Position?step:first[p];queue.Enqueue(next);
+                    }
+                }
+                if(move==null)continue;
+                var at=u.Position+move.Value;
+                views[i]=u with {Position=at,Facing=BattleAi.Face(move.Value),Retreated=!BattleState.Inside(at)};
+            }
+            battle.Frames.Add(new(battle.Turn,BattlePhase.Retreat,views.ToArray(),battle.FlagStanding,battle.LastFlagOwner));
+        }
+        // Give the final departing pieces time to fade before the result screen.
+        for(int i=0;i<5;i++)battle.Frames.Add(new(battle.Turn,BattlePhase.Retreat,views.ToArray(),battle.FlagStanding,battle.LastFlagOwner));
+    }
     public static void Finish(BattleState battle)
     {
         var remaining=battle.Armies.Where(a=>battle.Units.Any(u=>u.Active && u.Owner==a.Owner) || a.Waiting.Count>0).Select(a=>a.Owner).ToArray();
@@ -131,6 +169,7 @@ public static class BattleTurnResolver
             battle.Finished=true;
             battle.Winner=battle.Kind==BattleKind.Edge?-1:battle.FlagStanding?battle.Defender:
                 battle.Units.Any(u=>u.Active && u.Owner==battle.LastFlagOwner)?battle.LastFlagOwner:-1;
+            ShowWithdrawal(battle);
             foreach(var u in battle.Units.Where(u=>u.Active && u.Owner!=battle.Winner))u.Retreated=true;
             foreach(var army in battle.Armies.Where(a=>a.Owner!=battle.Winner))while(army.Waiting.TryDequeue(out var unit)){unit.Retreated=true;battle.Units.Add(unit);}
         }

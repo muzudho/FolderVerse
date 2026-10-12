@@ -55,7 +55,7 @@ public partial class Game1
             _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id));
             CloseMovement();return true;
         }
-        foreach(int id in DestinationNodes())if(DestinationBadge(id).Contains(pointer)){SelectMoveNode(id);return true;}
+
         if(NetPanel.Contains(pointer))
         {
             int node=_statusGlobe?HitGlobeNode(pointer,_net.MovementTargets):_net.HitNode(_setup,NetPanel,pointer,_net.MovementTargets);

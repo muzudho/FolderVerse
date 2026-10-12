@@ -86,7 +86,7 @@ public partial class Game1
     private void SwitchRobotFocus()
     {if(_robotPendingSummary){_robotSummary=true;_robotPendingSummary=false;}if(_robotPendingRound){_robotRound++;_battleAge=0;}_battleWave=_robotPendingFocus;_robotPendingFocus=-1;_robotPendingRound=false;_robotResultAge=0;}
     private static string PhaseLabel(BattlePhase phase)=>phase switch
-    {BattlePhase.Choose=>"行動選択",BattlePhase.Place=>"配置",BattlePhase.Rollback=>"巻き戻し",BattlePhase.Attack=>"攻撃",BattlePhase.Receive=>"被攻撃",BattlePhase.Consume=>"消費",BattlePhase.Fall=>"転倒",BattlePhase.Flag=>"旗更新",BattlePhase.Reinforce=>"増援",_=>"戦意・勝敗"};
+    {BattlePhase.Choose=>"行動選択",BattlePhase.Place=>"配置",BattlePhase.Rollback=>"巻き戻し",BattlePhase.Attack=>"攻撃",BattlePhase.Receive=>"被攻撃",BattlePhase.Consume=>"消費",BattlePhase.Fall=>"転倒",BattlePhase.Flag=>"旗更新",BattlePhase.Reinforce=>"増援",BattlePhase.Retreat=>"戦意喪失 / 全軍撤退",_=>"戦意・勝敗"};
     private void DrawSmokePuff(Vector2 center,float radius,float opacity)
     {
         int extent=(int)Math.Ceiling(radius);
@@ -175,11 +175,18 @@ public partial class Game1
                 _ui.Box(new(f.X+b.X*size/34,f.Y+b.Y*size/68,Math.Min(f.Width,b.Width*size/34),Math.Max(1,b.Height*size/68)),color);
             }
         }
-        foreach(var unit in frame.Units.Where(u=>!u.Retreated && BattleState.Inside(u.Position)))
+        foreach(var unit in frame.Units)
         {
-            var r=new Rectangle(left+unit.Position.X*size+19,top+unit.Position.Y*size+7,62,85);
+            if(unit.Retreated && BattleState.Inside(unit.Position))continue;
+            int firstExit=unit.Retreated?battle.Frames.FindIndex(f=>f.Units.Any(u=>u.Id==unit.Id && u.Retreated)):-1;
+            if(unit.Retreated && (firstExit<0 || frameIndex-firstExit>5))continue;
+            float exitAge=unit.Retreated?(frameIndex-firstExit+(float)Math.Clamp(_battleAge/RobotFrameSeconds-Math.Floor(_battleAge/RobotFrameSeconds),0,1))/5f:0;
+            var pos=new Vector2(left+unit.Position.X*size+19,top+unit.Position.Y*size+7);
+            if(unit.Retreated){var last=battle.Frames.Take(firstExit).LastOrDefault(f=>f.Units.Any(u=>u.Id==unit.Id && !u.Retreated));var prior=last?.Units.FirstOrDefault(u=>u.Id==unit.Id);if(prior!=null){var from=new Vector2(left+prior.Position.X*size+19,top+prior.Position.Y*size+7);var direction=Vector2.Normalize(pos-from);pos=Vector2.Lerp(from,from+direction*70,Math.Clamp(exitAge*2,0,1));}}
+            var r=new Rectangle((int)pos.X,(int)pos.Y,62,85);
             int firstFall=unit.Fallen?battle.Frames.FindIndex(f=>f.Units.Any(u=>u.Id==unit.Id && u.Fallen)):-1;
             float opacity=unit.Fallen?Math.Clamp(1-(frameIndex-firstFall)/5f,0,1):1f;
+            if(unit.Retreated)opacity*=Math.Clamp(1-exitAge,0,1);
             if(opacity<=0)continue;
             foreach(var patch in BattlePieceArt.Pieces[BattlePieceArt.Index(unit.Role,unit.Facing)])
             {

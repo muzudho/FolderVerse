@@ -92,6 +92,7 @@ public partial class Game1
     {
         if(_transportOverview){DrawTransportOverviewMap();return;}
         if(!DestinationOperation){_rateTarget=-1;return;}
+        if(_movementOpen)return; // Nodes already provide destination highlighting and hit testing.
         foreach(int id in DestinationNodes().Append(OperationSource).Distinct())
         {
             if(id<0 || !OperationPosition(id,out var at))continue;
