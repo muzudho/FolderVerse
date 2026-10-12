@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 250,
+  "Completed": 275,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -2001,6 +2001,206 @@
       "Sha256": "196BE2D1697B23E315206794494350EBF4B717339D2FE5F94408AF82181C747C",
       "Reviewed": true,
       "Note": "手の五指と両腕、開口笑顔、肩の電池と宝飾を確認済み。"
+    },
+    {
+      "CharacterId": 51,
+      "Variant": 2,
+      "File": "remaining-variants/character-51-2-balanced.png",
+      "Sha256": "9EC6E8B8C8B8A6E8E84E54B4DD55B1899580E7C6270387CE8BB81B736039C1E4",
+      "Reviewed": true,
+      "Note": "赤金の枕でくつろぐ笑顔・白眼帯・紫瞳・ラクダと電池保持"
+    },
+    {
+      "CharacterId": 51,
+      "Variant": 3,
+      "File": "remaining-variants/character-51-3-balanced.png",
+      "Sha256": "AED9A6E62B35FC894495C646E135DDC4EDCF1F7D6D27A29E817693454CFC60A2",
+      "Reviewed": true,
+      "Note": "白金の外套・両手でラクダと電池を抱く笑顔保持"
+    },
+    {
+      "CharacterId": 51,
+      "Variant": 4,
+      "File": "remaining-variants/character-51-4-balanced.png",
+      "Sha256": "A2BC2FCA0BF27A0AA13D860C16A381EDAA60CF367063A1C04BB0367C7D8D7CF2",
+      "Reviewed": true,
+      "Note": "斜めにくつろぐ姿・香水瓶と両手・白眼帯保持"
+    },
+    {
+      "CharacterId": 51,
+      "Variant": 5,
+      "File": "remaining-variants/character-51-5-balanced.png",
+      "Sha256": "56616A868FBE31500F0264A44D9FE2E3F16018158B8F056CC6E5A8E18F5E2E69",
+      "Reviewed": true,
+      "Note": "白金外套・赤金帽子・ラクダ電池・穏やかな笑顔保持"
+    },
+    {
+      "CharacterId": 51,
+      "Variant": 6,
+      "File": "remaining-variants/character-51-6-balanced.png",
+      "Sha256": "64476F489E0BE13332F8F389333E66198BE905582653295CC8B39D870B8F0BE4",
+      "Reviewed": true,
+      "Note": "手を伸ばす姿・金小物保持・眼帯上の余分な瞳を修正"
+    },
+    {
+      "CharacterId": 52,
+      "Variant": 2,
+      "File": "remaining-variants/character-52-2-balanced.png",
+      "Sha256": "C876DB6616C1FCEE43D3F1D92630F037E2079B93A9A4BD7C84D72139CD6C8B8E",
+      "Reviewed": true,
+      "Note": "赤眼鏡・双眼鏡を持つ両黒グローブ・ペンギン電池・雪のバルコニー保持"
+    },
+    {
+      "CharacterId": 52,
+      "Variant": 3,
+      "File": "remaining-variants/character-52-3-balanced.png",
+      "Sha256": "349152BA99622B64A359DD3DA16B54AA674D8EB5C603406BBDD34AB5910839F4",
+      "Reviewed": true,
+      "Note": "氷魔法・両手を伸ばす姿・赤眼鏡・ペンギン電池保持"
+    },
+    {
+      "CharacterId": 52,
+      "Variant": 4,
+      "File": "remaining-variants/character-52-4-balanced.png",
+      "Sha256": "6460506A96B92E9E08DB598FD3D4DDF33D59AB82D810E1E9325ABB5A42DFAAA0",
+      "Reviewed": true,
+      "Note": "ハンバーガー・左右異色瞳・赤眼鏡・ペンギン電池・くつろぐ姿保持"
+    },
+    {
+      "CharacterId": 52,
+      "Variant": 5,
+      "File": "remaining-variants/character-52-5-balanced.png",
+      "Sha256": "37301800E97E6C62745D0F15E28BEA05553D1A09FDCAD5B03B2C1004299CB146",
+      "Reviewed": true,
+      "Note": "閉眼・赤眼鏡・両白グローブでペンギン電池を抱く姿保持"
+    },
+    {
+      "CharacterId": 52,
+      "Variant": 6,
+      "File": "remaining-variants/character-52-6-balanced.png",
+      "Sha256": "F4E6F6EFFBB3654EF31603C73E5D56B048D71DE46B4D356B55CEB1D5E069D21D",
+      "Reviewed": true,
+      "Note": "Reaching fivefinger glove, penguin battery and snow magic preserved"
+    },
+    {
+      "CharacterId": 53,
+      "Variant": 2,
+      "File": "remaining-variants/character-53-2-balanced.png",
+      "Sha256": "CD82DE7DDC2B7775E2A82C871EBD096A7593E912940A4C67BD3003B4DB0562CA",
+      "Reviewed": true,
+      "Note": "Bamboo cylinders and battery preserved; extra third hand corrected"
+    },
+    {
+      "CharacterId": 53,
+      "Variant": 3,
+      "File": "remaining-variants/character-53-3-balanced.png",
+      "Sha256": "0DA6546914295F0DBB1C0B290E42C310875FAAAF9A87FE55AB517629D357763C",
+      "Reviewed": true,
+      "Note": "Wink monocle reaching fivefinger palm and bamboo telescope retained"
+    },
+    {
+      "CharacterId": 53,
+      "Variant": 4,
+      "File": "remaining-variants/character-53-4-balanced.png",
+      "Sha256": "ED4D9AB3320020643725179B34144DE2E7C3CD104EBC7D195261A43E414AFCAB",
+      "Reviewed": true,
+      "Note": "Reclining wink cheekrub whiteglove panda battery preserved"
+    },
+    {
+      "CharacterId": 53,
+      "Variant": 5,
+      "File": "remaining-variants/character-53-5-balanced.png",
+      "Sha256": "BDE0B20196430B6763D5BA2EC73F8AE18E2953D87A41F9D9ED41CB90E3A56470",
+      "Reviewed": true,
+      "Note": "Lookingback conicalhat glasses telescope blackglove retained"
+    },
+    {
+      "CharacterId": 53,
+      "Variant": 6,
+      "File": "remaining-variants/character-53-6-balanced.png",
+      "Sha256": "153E5AF2AF5BC6FFE382F53D879FE79079FAC7E5447787BD769C8EDFAE002EFF",
+      "Reviewed": true,
+      "Note": "Reaching fivefinger hand monocle battery talisman bamboo scene retained"
+    },
+    {
+      "CharacterId": 54,
+      "Variant": 2,
+      "File": "remaining-variants/character-54-2-balanced.png",
+      "Sha256": "B097A3B2E4785FB86C43FAA85B784BFD28FBFEE1D1C9065011716DC42687D14F",
+      "Reviewed": true,
+      "Note": "Flying reaching fist biplane battery ballooncity preserved"
+    },
+    {
+      "CharacterId": 54,
+      "Variant": 3,
+      "File": "remaining-variants/character-54-3-balanced.png",
+      "Sha256": "40B2B025A6362A1DE362F2EE64CCE97E5F863654F06E228D3514401119BBCEFA",
+      "Reviewed": true,
+      "Note": "Closedeye hamburger barehands fries drink andbattery preserved"
+    },
+    {
+      "CharacterId": 54,
+      "Variant": 4,
+      "File": "remaining-variants/character-54-4-balanced.png",
+      "Sha256": "5E0868C2CEB741A101D8FA2163315B5C3DC09EDDA97998AE106716FEE97754AD",
+      "Reviewed": true,
+      "Note": "Startled spillingtea whitegloves redbattery winterterrace preserved"
+    },
+    {
+      "CharacterId": 54,
+      "Variant": 5,
+      "File": "remaining-variants/character-54-5-balanced.png",
+      "Sha256": "C18B517B6865432FDF3E4E03720991F6799B4214DA718FC3B5655142BE905AEF",
+      "Reviewed": true,
+      "Note": "Reviewed: cozy wink hugging teddy, red battery, two gloved hands."
+    },
+    {
+      "CharacterId": 54,
+      "Variant": 6,
+      "File": "remaining-variants/character-54-6-balanced.png",
+      "Sha256": "1DA4FF8B3A8F9F677DD4BFF2307E3108CAFAF70C80DC9CE1FDFE165D2CED40C9",
+      "Reviewed": true,
+      "Note": "Reviewed telescope, five-finger reaching palm, confident smile."
+    },
+    {
+      "CharacterId": 55,
+      "Variant": 2,
+      "File": "remaining-variants/character-55-2-balanced.png",
+      "Sha256": "1D5ABEE603469FA8C0BFB2CC7A08410E9A30E5908629FD73698D05A3DE534144",
+      "Reviewed": true,
+      "Note": "Reviewed laughing closed eyes, toy locomotive, red battery, two white gloved hands."
+    },
+    {
+      "CharacterId": 55,
+      "Variant": 3,
+      "File": "remaining-variants/character-55-3-balanced.png",
+      "Sha256": "03DA61FBD17C69CEF1D5C89AA22F27400C752EA9E619E9B64A4AEA5D588954B2",
+      "Reviewed": true,
+      "Note": "Reviewed closed eyes, cheek spell gesture, open book and battery."
+    },
+    {
+      "CharacterId": 55,
+      "Variant": 4,
+      "File": "remaining-variants/character-55-4-balanced.png",
+      "Sha256": "EFBFC3E0058FDFE7B0E41B4219E6BBEB40FECB49CF8C3D0B084E901CFCDEC211",
+      "Reviewed": true,
+      "Note": "Reviewed peaceful cheek rest, white gloves, intact toy locomotive."
+    },
+    {
+      "CharacterId": 55,
+      "Variant": 5,
+      "File": "remaining-variants/character-55-5-balanced.png",
+      "Sha256": "D09928CB5ACE948B99D50A6562F1CB98D33FA640659B4F7EE9404107DF7F53AF",
+      "Reviewed": true,
+      "Note": "Reviewed festive sideways smile, small decorated train, two gloves."
+    },
+    {
+      "CharacterId": 55,
+      "Variant": 6,
+      "File": "remaining-variants/character-55-6-balanced.png",
+      "Sha256": "7004367DB24E45AA46964813859D29F62F8EB3B15C07325FFD626C6B5B627865",
+      "Reviewed": true,
+      "Note": "Reviewed closed-eye tea party spoon fork train cake two hands."
     }
   ]
 }

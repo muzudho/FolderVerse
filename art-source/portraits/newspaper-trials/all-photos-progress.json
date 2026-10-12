@@ -1,6 +1,6 @@
 {
   "Total": 480,
-  "Completed": 102,
+  "Completed": 126,
   "Photos": [
     {
       "CharacterId": 1,
@@ -840,6 +840,33 @@
       "Reviewed": true
     },
     {
+      "CharacterId": 12,
+      "Kind": "coin",
+      "File": "character-12-coin-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "8988A1F327C31D444E9B3C328CAE524F2BB9FB7191BCBE57F3B8A560AD464333",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 12,
+      "Kind": "election",
+      "File": "character-12-election-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "179C920896A760AA77DD8A91994EAD17E702FF67A21AE8B6EBF84C69347FB133",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 12,
+      "Kind": "idol",
+      "File": "character-12-idol-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "6C8777651732449E702280489B194926658D8D941C30BB6DCFF2AD3528D0D94B",
+      "Reviewed": true
+    },
+    {
       "CharacterId": 13,
       "Kind": "formal",
       "File": "character-13-formal-v001.png",
@@ -909,6 +936,195 @@
       "Width": 1200,
       "Height": 1600,
       "Sha256": "EA20BADB14494BC87A5B1DF1287B8D79D53655C6F5BD88BDA668BC994A6FBC72",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 14,
+      "Kind": "formal",
+      "File": "character-14-formal-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "1282616B22FE07366E3E1E68A74A6C7EEB9BB56EA2C722F97EF1AFBE59A92347",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 14,
+      "Kind": "paparazzi",
+      "File": "character-14-paparazzi-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "B6A523EF25310BAC394CB834DBAA1CD75BD831276F62959F1A9CCC435E989264",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 14,
+      "Kind": "friends",
+      "File": "character-14-friends-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "BBF61E2B0B4A80248A89A855904122FDA37A071575835237D985339DCE5A2C2F",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 14,
+      "Kind": "id",
+      "File": "character-14-id-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "B5BEC9EA246EE05E77E414345E62FF6B7F0C7371734A339B675760CE5F358C77",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 14,
+      "Kind": "history",
+      "File": "character-14-history-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "A6D5C2A3B329A74B6FE4A7F3E34129DCB474F660A5DA430DA6B8C1CDB7FB3275",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 14,
+      "Kind": "coin",
+      "File": "character-14-coin-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "6A4171F1BC79EA3792E46DB8C4DD57A847B0322BB6CEC32EDA13B3750B17677E",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 14,
+      "Kind": "election",
+      "File": "character-14-election-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "22399F25F38B87F132FAB1308E5CBCA10B2415E616099F7908228797AFCA0F47",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 14,
+      "Kind": "idol",
+      "File": "character-14-idol-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "FB35E76564D94F408A3EBD340E927D47D0029CAA3D4AFA6588C17CA6FC5C5B9A",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 15,
+      "Kind": "formal",
+      "File": "character-15-formal-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "17EBDF8B037D3C8A1AF198AD479670662A11C551F7FDE7F94ECAC6120CE5D7E1",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 15,
+      "Kind": "paparazzi",
+      "File": "character-15-paparazzi-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "0D96298CA3A5B06766E70B716C0D23A8E1A581E0EF59B74ECD58A64293975B9C",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 15,
+      "Kind": "friends",
+      "File": "character-15-friends-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "8ED7B4D451D5558810B4BB119E441507C8DCFC583F757C271D5E682A1B806B2F",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 15,
+      "Kind": "id",
+      "File": "character-15-id-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "0D3058579C6C65AD608A940D0485D0F70162E4492B9C1367CFC08FA9E53341DC",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 15,
+      "Kind": "history",
+      "File": "character-15-history-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "4BA0084D2047A67BEC081F89D9898A23AD0395D43F1C3BF390FDF931D771FAEA",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 15,
+      "Kind": "coin",
+      "File": "character-15-coin-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "B205A1DA728139F5BB3838015C2EFC46AF1FBA34B0BB97EAD395A2CF6A3C8A0C",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 15,
+      "Kind": "election",
+      "File": "character-15-election-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "DB1F3E79298C55AAAC3FC70FA14244DD770C1F2FE9899BC4177D93350A74A6D2",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 15,
+      "Kind": "idol",
+      "File": "character-15-idol-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "DF1478DA466DD1B261E9272007F348C033EEA7779B804863D5484B8516D0A3D5",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 16,
+      "Kind": "formal",
+      "File": "character-16-formal-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "DEFF8B54E935B8EAAFA41BAFCE818542DF892ED719FE83CE5597352347206085",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 16,
+      "Kind": "paparazzi",
+      "File": "character-16-paparazzi-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "4E23ACA9FE05261800D7DBDEC8D5DED6D4CC4E6C363B4CF36D35254DDC62FD42",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 16,
+      "Kind": "friends",
+      "File": "character-16-friends-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "1E4D2277C6C413B426B9A4B564D5EF5964B3F804E3A7248EC58AF74DF58275BA",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 16,
+      "Kind": "id",
+      "File": "character-16-id-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "E45CB884413DEB1C17328FE22B2AAABB8A4A34E35FB0ECA838CDB432D953B2A1",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 16,
+      "Kind": "history",
+      "File": "character-16-history-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "9382F4144804A5E51FD07281A19524CBD83E2450DD53447D289DAB8C8FEC250A",
       "Reviewed": true
     },
     {
