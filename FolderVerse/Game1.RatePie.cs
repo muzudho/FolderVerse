@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
+    private readonly System.Diagnostics.Stopwatch _rateBlink=System.Diagnostics.Stopwatch.StartNew();
     private static readonly Rectangle RateDialogArea=new(1100,190,800,820);
     private static readonly Vector2 RatePieCenter=new(1500,600);
     private static readonly Rectangle RateZeroButton=new(1476,362,48,46);
@@ -109,7 +110,7 @@ public partial class Game1
             foreach(var w in _setup.Robots.Transport.Plan(_populationNode,_setup.PlayerSlot,_nodeTransportPart,disposal))
                 if(disposal!=_nodeTransportDisposal || w.Target!=_rateTarget)
                     segments.Add((w.Degrees,disposal?new Color(155,106,147):new Color(92+(w.Target*37)%100,130,170)));
-        segments.Add((maximum-value,new Color(56,73,86)));
+        segments.Add((360-segments.Sum(s=>s.Degrees),new Color(56,73,86)));
         // One small scanline run per sector; no new graphics resources per frame.
         for(int y=-110;y<=110;y+=2)
         {
@@ -123,7 +124,24 @@ public partial class Game1
             }
         }
         float radians=value*MathF.PI/180;Vector2 edge=RatePieCenter+new Vector2(MathF.Sin(radians),-MathF.Cos(radians))*110;
-        _ui.Box(new((int)edge.X-7,(int)edge.Y-7,14,14),Cream);
+        _ui.Box(new((int)edge.X-7,(int)edge.Y-7,14,14),new Color(255,231,54));
+        // Pulse the selected sector boundary, including its two radial edges.
+        float pulse=.45f+.55f*(.5f+.5f*MathF.Sin((float)_rateBlink.Elapsed.TotalSeconds*MathHelper.TwoPi));
+        var outline=new Color(255,231,54)*pulse;
+        void Line(Vector2 a,Vector2 b)
+        {
+            var delta=b-a;
+            _ui.Tile((a+b)/2,new Vector2(delta.Length()+1,4),MathF.Atan2(delta.Y,delta.X),outline);
+        }
+        if(value>0)
+        {
+            if(value<360){Line(RatePieCenter,RatePieCenter+new Vector2(0,-110));Line(RatePieCenter,edge);}
+            for(int degree=0;degree<value;degree+=2)
+            {
+                float a=degree*MathF.PI/180,b=Math.Min(value,degree+2)*MathF.PI/180;
+                Line(RatePieCenter+new Vector2(MathF.Sin(a),-MathF.Cos(a))*110,RatePieCenter+new Vector2(MathF.Sin(b),-MathF.Cos(b))*110);
+            }
+        }
         _ui.Text("円の境界を動かして１度ずつ設定",new(1130,920),.42f,Cream);
         _ui.Text($"設定可能 0° - {maximum}°",new(1130,245),.4f,Cream);
         _ui.Button(RateZeroButton,"0",value==0?new Color(255,174,110):new Color(255,221,91),.65f);

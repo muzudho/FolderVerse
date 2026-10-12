@@ -21,6 +21,25 @@ public sealed class RobotTransport
         if(values.Sum(w=>w.Degrees)+Plan(node,owner,parts,!disposal).Sum(w=>w.Degrees)>360)throw new ArgumentException("Combined normal/disposal transport exceeds 100%.");
         _plans[(node,owner,parts,disposal)]=values;
     }
+    public void SetBalancedRate(int node,int owner,RobotParts parts,int target,int degrees,bool disposal=false)
+    {
+        RobotWorld.Validate(owner,parts);
+        if(node<0 || target<0 || target==node)throw new ArgumentException("Invalid transport target.");
+        degrees=Math.Clamp(degrees,0,360);
+        var others=new[]{false,true}.SelectMany(d=>Plan(node,owner,parts,d)
+            .Where(w=>d!=disposal || w.Target!=target).Select(w=>(Disposal:d,Weight:w))).ToArray();
+        int total=others.Sum(w=>w.Weight.Degrees),budget=Math.Min(total,360-degrees);
+        var scaled=others.Select(w=>total==0?0:(int)((long)w.Weight.Degrees*budget/total)).ToArray();
+        int remainder=budget-scaled.Sum();
+        foreach(int i in Enumerable.Range(0,others.Length).OrderByDescending(i=>total==0?0:(long)others[i].Weight.Degrees*budget%total).ThenBy(i=>i).Take(remainder))scaled[i]++;
+        foreach(bool d in new[]{false,true})
+        {
+            var weights=others.Select((w,i)=>(w,i)).Where(x=>x.w.Disposal==d && scaled[x.i]>0)
+                .Select(x=>new TransportWeight(x.w.Weight.Target,scaled[x.i])).ToList();
+            if(d==disposal && degrees>0)weights.Add(new(target,degrees));
+            _plans[(node,owner,parts,d)]=weights.OrderBy(w=>w.Target).ToArray();
+        }
+    }
     public void SetPriority(int target,IEnumerable<int> sources)
     {var values=sources.ToArray();if(target<0 || values.Any(n=>n<0) || values.Distinct().Count()!=values.Length)throw new ArgumentException("Invalid receiving priority.");_priorities[target]=values;}
     private int Rank(RobotShipment shipment)

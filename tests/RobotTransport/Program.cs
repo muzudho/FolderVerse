@@ -122,3 +122,16 @@ planFactory.SelectPlan(1);planFactory.SetReservedSlots(12);for(int turn=13;turn<
 Reject(()=>planFactory.SetRest(0,1));Reject(()=>planFactory.SetRest(1,10));Reject(()=>planFactory.SetReservedSlots(13));
 var same=new RobotWorkshop();planFactory.GeneratePlans(123);same.GeneratePlans(123);Check(planFactory.Plans.SequenceEqual(same.Plans),"Seeded plans stable");same.GeneratePlans(456);Check(!planFactory.Plans.SequenceEqual(same.Plans),"Nodes have different plans");
 Console.WriteLine("PASS: fixed plans, rest cadence, reserve slots and stopped production");
+var balanced=new RobotTransport();
+balanced.SetPlan(0,0,RobotParts.Complete,new[]{new TransportWeight(1,144),new TransportWeight(2,108),new TransportWeight(3,72)});
+balanced.SetBalancedRate(0,0,RobotParts.Complete,1,216);
+Check(balanced.Plan(0,0,RobotParts.Complete).Select(w=>w.Degrees).SequenceEqual(new[]{216,86,58}),"Auto balance proportional 60%,24%,16% with degree rounding");
+balanced.SetBalancedRate(0,0,RobotParts.Complete,1,360);
+Check(balanced.Plan(0,0,RobotParts.Complete).Single().Degrees==360,"Full allocation clears other routes");
+balanced.SetBalancedRate(0,0,RobotParts.Complete,1,0);
+Check(balanced.Plan(0,0,RobotParts.Complete).Count==0,"Clearing restores stay");
+balanced.SetPlan(0,0,RobotParts.Complete,new[]{new TransportWeight(2,180)});
+balanced.SetPlan(0,0,RobotParts.Complete,new[]{new TransportWeight(3,180)},true);
+balanced.SetBalancedRate(0,0,RobotParts.Complete,1,120);
+Check(balanced.Plan(0,0,RobotParts.Complete).Sum(w=>w.Degrees)==240 && balanced.Plan(0,0,RobotParts.Complete,true).Single().Degrees==120,"Normal and disposal share proportional budget");
+Console.WriteLine("PASS: proportional auto balancer, rounding, full and zero allocation, disposal budget");

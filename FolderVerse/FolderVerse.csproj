@@ -35,5 +35,6 @@
     <None Update="Content/Images/Portraits/newspaper/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Mobs/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Newspapers/*.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Content/Images/robot-map-toy-v001.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

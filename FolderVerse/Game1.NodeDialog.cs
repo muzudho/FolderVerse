@@ -44,7 +44,7 @@ public partial class Game1
         {
             var card=new Rectangle(84+slot%4*196,282+slot/4*186,182,176);
             _ui.Box(card,Muted);if(slot>=store.Count)continue;var robot=store.Robots[slot];
-            DrawRobotGlyph(new(card.X+57,card.Y+12,68,90),robot.Owner,robot.Parts,robot.Role==RobotRole.Captain);
+            DrawRobotGlyph(new(card.X+57,card.Y+12,68,90),robot.Owner,robot.Parts,robot.Role==RobotRole.Captain,whiteOutline:true);
             _ui.Center(PartsLabel(robot.Parts)+$" / #{robot.Owner+1}",new(card.X,card.Y+112,card.Width,30),.48f,Cream);
             _ui.Center("ID "+robot.Id,new(card.X,card.Y+148,90,24),.35f,Cream);
             DrawDisposalCheck(card,robot);

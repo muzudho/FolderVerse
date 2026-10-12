@@ -49,7 +49,7 @@ public sealed partial class WorldPreview
                 int row=slot<2?0:slot<5?1:slot<7?2:slot<10?3:4;
                 int first=new[]{0,2,5,7,10}[row];int count=row%2==0?2:3;
                 float u=(slot-first-(count-1)/2f)*.07f,v=(row-2)*.065f;
-                var robot=robots[slot];var tint=setup.OwnerColor(robot.Owner);
+                var robot=robots[slot];var tint=Color.Lerp(setup.OwnerColor(robot.Owner),new Color(255,245,224),.3f);
                 if((robot.Parts&RobotParts.Legs)!=0)Box(u,v,.012f,.055f,.018f,.016f,tint);
                 if((robot.Parts&RobotParts.Body)!=0)Box(u,v,.03f,.014f,.014f,.085f,tint);
                 if((robot.Parts&RobotParts.Head)!=0)

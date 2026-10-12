@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 275,
+  "Completed": 277,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -2201,6 +2201,22 @@
       "Sha256": "7004367DB24E45AA46964813859D29F62F8EB3B15C07325FFD626C6B5B627865",
       "Reviewed": true,
       "Note": "Reviewed closed-eye tea party spoon fork train cake two hands."
+    },
+    {
+      "CharacterId": 56,
+      "Variant": 2,
+      "File": "remaining-variants/character-56-2-balanced.png",
+      "Sha256": "66D12867C8BC79FDB77C9CDB5A8FECC229483E4E101EBB1F18214798CB908614",
+      "Reviewed": true,
+      "Note": "Reviewed soft smile panda blue battery terrace magic circle."
+    },
+    {
+      "CharacterId": 56,
+      "Variant": 3,
+      "File": "remaining-variants/character-56-3-balanced.png",
+      "Sha256": "AC5A67D0DA95C4230FEA32D4E2011F064CCF0AFA99D79612AD542B82FE6D9E0D",
+      "Reviewed": true,
+      "Note": "Reviewed wink monocle stew pot spoon black battery two gloves."
     }
   ]
 }

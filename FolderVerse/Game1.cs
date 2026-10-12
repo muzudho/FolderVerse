@@ -477,8 +477,6 @@ public partial class Game1 : Game
         _ui.Center(capitalLabel,new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
         int fully=System.Linq.Enumerable.Count(_setup.Cells,c=>_setup.Nodes.FullOwner(c.Id)==player);
         _ui.Center("完全占領　"+fully+" cell / 節点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==player),new(90,842,760,48),0.76f,Cream);
-        _ui.Center("海の都市も、人が集まる地点の名前",new(90,900,760,44),0.50f,new(164,192,202));
-        _ui.Center("ノルテ＝北 / スール＝南 / エステ＝東 / オエステ＝西",new(70,950,800,40),0.40f,new(164,192,202));
         _ui.Box(new(970,142,914,750),new(20,42,54));
         _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+CubeNet.FaceNames[_net.CenterFace]+" が中心",new(991,156),0.68f,Cream);
         string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地星の北＝＋Y / 北を上に";
@@ -625,7 +623,7 @@ public partial class Game1 : Game
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();_newspaperRustle?.Dispose();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){_net.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();_newspaperRustle?.Dispose();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         try{base.Dispose(disposing);}

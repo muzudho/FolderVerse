@@ -72,12 +72,10 @@ public partial class Game1
         return new((int)at.X-32,(int)at.Y-42,64,34);
     }
     private int Rate(int id)=>_setup.Robots.Transport.Plan(_populationNode,_setup.PlayerSlot,_nodeTransportPart,_nodeTransportDisposal).FirstOrDefault(w=>w.Target==id)?.Degrees??0;
-    private int RateMaximum(int id)=>Math.Max(0,360-_setup.Robots.Transport.Plan(_populationNode,_setup.PlayerSlot,_nodeTransportPart,_nodeTransportDisposal).Where(w=>w.Target!=id).Sum(w=>w.Degrees)-_setup.Robots.Transport.Plan(_populationNode,_setup.PlayerSlot,_nodeTransportPart,!_nodeTransportDisposal).Sum(w=>w.Degrees));
+    private int RateMaximum(int id)=>360;
     private void SetDestinationRate(int id,int value)
     {
-        var weights=_setup.Robots.Transport.Plan(_populationNode,_setup.PlayerSlot,_nodeTransportPart,_nodeTransportDisposal).Where(w=>w.Target!=id).ToList();
-        value=Math.Clamp(value,0,RateMaximum(id));if(value>0)weights.Add(new(id,value));
-        _setup.Robots.Transport.SetPlan(_populationNode,_setup.PlayerSlot,_nodeTransportPart,weights,_nodeTransportDisposal);
+        _setup.Robots.Transport.SetBalancedRate(_populationNode,_setup.PlayerSlot,_nodeTransportPart,id,value,_nodeTransportDisposal);
     }
     private bool DestinationMapClick(Point pointer)
     {

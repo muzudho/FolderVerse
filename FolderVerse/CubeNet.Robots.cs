@@ -2,6 +2,8 @@ namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 
 public sealed record RobotMapBadge(int Node,Rectangle Bounds,bool Detailed);
@@ -52,7 +54,6 @@ public sealed partial class CubeNet
             occupied.Add(bounds);_robotBadges.Add(new(node.Id,bounds,detailed));
             if(detailed)
             {
-                ui.Box(bounds,new Color(10,25,34,240));
                 ui.Box(new(bounds.X,bounds.Y,bounds.Width,2),world.OwnerColor(node.Owner));
             }
             ui.Box(new((int)at.X-1,bounds.Bottom,2,gap),new Color(208,219,223));
@@ -68,34 +69,37 @@ public sealed partial class CubeNet
             for(int slot=0;slot<12;slot++)
             {
                 var card=new Rectangle(bounds.X+5+(slot%4)*23,bounds.Y+13+(slot/4)*28,21,25);
-                ui.Box(card,new Color(44,62,73));
                 if(slot>=store.Count)continue;
                 var robot=store.Robots[slot];
                 DrawMapRobot(ui,new(card.X+3,card.Y+1,15,21),world.OwnerColor(robot.Owner),robot.Parts);
             }
         }
     }
-    private static void DrawRobotPin(UiPainter ui,Point at,Color color,RobotParts parts)
+    private void DrawRobotPin(UiPainter ui,Point at,Color color,RobotParts parts)
     {
-        if((parts&RobotParts.Head)!=0)Disc(ui,new(at.X,at.Y+2),2.5f,color);
-        if((parts&RobotParts.Body)!=0)ui.Box(new(at.X-1,at.Y+5,2,6),color);
-        if((parts&RobotParts.Legs)!=0)
+        DrawMapRobot(ui,new(at.X-5,at.Y-1,10,15),color,parts);
+    }
+    private void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts)
+    {
+        _mapRobotTexture ??= LoadMapRobot(ui.Batch.GraphicsDevice);
+        var tint=Color.Lerp(Color.White,color,.48f);
+        for(int part=0;part<3;part++)
         {
-            ui.Box(new(at.X-1,at.Y+10,2,3),color);
-            ui.Box(new(at.X-3,at.Y+12,7,1),color);
+            if((parts&(RobotParts)(4>>part))==0)continue;
+            int top=_mapRobotTexture.Height*part/3,bottom=_mapRobotTexture.Height*(part+1)/3;
+            var source=new Rectangle(0,top,_mapRobotTexture.Width,bottom-top);
+            int y=r.Y+r.Height*part/3,next=r.Y+r.Height*(part+1)/3;
+            ui.Batch.Draw(_mapRobotTexture,new Rectangle(r.X,y,r.Width,Math.Max(1,next-y)),source,tint);
         }
     }
-    private static void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts)
+    private Texture2D _mapRobotTexture;
+    public void DisposeRobotTexture(){_mapRobotTexture?.Dispose();_mapRobotTexture=null;}
+    private static Texture2D LoadMapRobot(GraphicsDevice device)
     {
-        void Box(int x,int y,int width,int height,Color tint)=>ui.Box(new(r.X+x*r.Width/9,r.Y+y*r.Height/13,Math.Max(1,width*r.Width/9),Math.Max(1,height*r.Height/13)),tint);
-        if((parts&RobotParts.Head)!=0)
-        {
-            Box(2,0,5,4,new Color(255,227,189));Box(1,0,7,2,color);
-        }
-        if((parts&RobotParts.Body)!=0)Box(1,5,7,4,color);
-        if((parts&RobotParts.Legs)!=0)
-        {
-            Box(1,10,3,3,color);Box(5,10,3,3,color);
-        }
+        using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","robot-map-toy-v001.png"));
+        var texture=Texture2D.FromStream(device,stream);
+        var pixels=new Color[texture.Width*texture.Height];texture.GetData(pixels);
+        for(int i=0;i<pixels.Length;i++){var c=pixels[i];pixels[i]=new Color(c.R*c.A/255,c.G*c.A/255,c.B*c.A/255,(int)c.A);}
+        texture.SetData(pixels);return texture;
     }
 }

@@ -92,7 +92,7 @@ public partial class Game1
             var cell=HangarCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);bool owned=occupant==null || CanManageNodeFactory(occupant.Owner);_ui.Box(cell,owned?Muted:new Color(9,19,26));
             if(_hangarDrag.HasValue && cell.Contains(_pointer))_ui.Box(new(cell.X,cell.Y,cell.Width,3),Cream);
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);if(robot==null)continue;
-            DrawRobotGlyph(new(cell.X+57,cell.Y+12,68,102),robot.Owner,robot.Parts,robot.Role==RobotRole.Captain);
+            DrawRobotGlyph(new(cell.X+57,cell.Y+12,68,102),robot.Owner,robot.Parts,robot.Role==RobotRole.Captain,whiteOutline:true);
             for(int row=0;row<3;row++)
             {
                 var bounds=HangarPartBounds(slot,row);var part=HangarPart(row);
@@ -112,7 +112,7 @@ public partial class Game1
         if(_hangarDrag.HasValue)
         {
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarDrag);if(robot!=null)
-            {_ui.Box(new(_pointer.X+12,_pointer.Y+12,56,74),new Color(25,45,57));DrawRobotGlyph(new(_pointer.X+18,_pointer.Y+16,44,62),robot.Owner,_hangarPart);}
+            {_ui.Box(new(_pointer.X+12,_pointer.Y+12,56,74),new Color(25,45,57));DrawRobotGlyph(new(_pointer.X+18,_pointer.Y+16,44,62),robot.Owner,_hangarPart,whiteOutline:true);}
         }
     }
 }

@@ -13,10 +13,14 @@ public partial class Game1
     private int _landTurn;
     private double _landAge;
     private Point? _landDrag;
+    private int[] _automaticLand=Array.Empty<int>();
+    private int _automaticLandIndex;
+    private int[][] _automaticLandRectangles=Array.Empty<int[]>();
+    private float _landStartYaw,_landStartPitch;
     private int LandRuler=>_landOrder[_landTurn];
     private void BeginLandConquest()
     {
-        _landOrder=_setup.LandOrder();_landTurn=0;_landAge=0;_landSelection.Clear();_landDrag=null;
+        _landOrder=_setup.LandOrder();_landTurn=0;_landAge=0;_landSelection.Clear();_landDrag=null;_automaticLand=Array.Empty<int>();
         _screen=Screen.LandConquest;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.ShowLandConquest(_setup);
     }
     private int[] AutomaticLand(int ruler)
@@ -33,9 +37,34 @@ public partial class Game1
         }
         return chosen.ToArray();
     }
+    private void OrderAutomaticLandFaces()
+    {
+        var faces=_automaticLandRectangles.GroupBy(r=>_setup.Cells[r[0]].Face).ToArray();
+        int[] best=null;float bestCost=float.MaxValue;
+        (float Yaw,float Pitch) Angles(int index)
+        {
+            var normal=_setup.Cells[faces[index].First()[0]].Normal;
+            float pitch=MathF.Atan2(normal.Y,MathF.Sqrt(normal.X*normal.X+normal.Z*normal.Z));
+            var turned=Vector3.Transform(normal,Matrix.CreateRotationX(pitch));
+            return (-MathF.Atan2(turned.X,turned.Z),pitch);
+        }
+        void Search(List<int> order,float yaw,float pitch,float cost)
+        {
+            if(cost>=bestCost)return;
+            if(order.Count==faces.Length){bestCost=cost;best=order.ToArray();return;}
+            for(int i=0;i<faces.Length;i++)if(!order.Contains(i))
+            {
+                var a=Angles(i);order.Add(i);
+                Search(order,a.Yaw,a.Pitch,cost+MathF.Abs(MathHelper.WrapAngle(a.Yaw-yaw))+MathF.Abs(a.Pitch-pitch));
+                order.RemoveAt(order.Count-1);
+            }
+        }
+        Search(new(),_yaw,_pitch,0);
+        _automaticLandRectangles=best.SelectMany(i=>faces[i]).ToArray();
+    }
     private void ConfirmLand()
     {
-        _setup.ClaimLand(LandRuler,_landSelection.ToArray());_world.ShowLandConquest(_setup);_landSelection.Clear();_landAge=0;
+        _setup.ClaimLand(LandRuler,_landSelection.ToArray());_world.ShowLandConquest(_setup);_landSelection.Clear();_landAge=0;_automaticLand=Array.Empty<int>();
         if(++_landTurn==_landOrder.Length){_screen=Screen.Fortune;return;}
     }
     private void UpdateLandSetup(double elapsed,MouseState mouse,bool active,bool click,bool enter)
@@ -49,8 +78,21 @@ public partial class Game1
         }
         if(LandRuler!=_setup.PlayerSlot || _demoActive)
         {
-            if(_landSelection.Count==0 && _landAge>.5)foreach(int id in AutomaticLand(LandRuler))_landSelection.Add(id);
-            if(_landAge>1.6)ConfirmLand();return;
+            if(_automaticLand.Length==0)
+            {_automaticLand=AutomaticLand(LandRuler);_automaticLandRectangles=LandSelectionPlan.Rectangles(_automaticLand.Select(id=>_setup.Cells[id]));OrderAutomaticLandFaces();_automaticLandIndex=0;_landAge=0;_landStartYaw=_yaw;_landStartPitch=_pitch;_world.GlobeAnchor=null;_world.GlobeZoom=1;}
+            var normal=_setup.Cells[_automaticLandRectangles[_automaticLandIndex][0]].Normal;
+            float pitch=MathF.Atan2(normal.Y,MathF.Sqrt(normal.X*normal.X+normal.Z*normal.Z));
+            var turned=Vector3.Transform(normal,Matrix.CreateRotationX(pitch));
+            float yaw=-MathF.Atan2(turned.X,turned.Z);
+            float t=MathHelper.SmoothStep(0,1,(float)Math.Clamp(_landAge/.6,0,1));
+            _yaw=_landStartYaw+MathHelper.WrapAngle(yaw-_landStartYaw)*t;_pitch=MathHelper.Lerp(_landStartPitch,pitch,t);
+            if(_landAge>=.6)_landSelection.UnionWith(_automaticLandRectangles[_automaticLandIndex]);
+            if(_landAge>=.9)
+            {
+                if(++_automaticLandIndex==_automaticLandRectangles.Length){ConfirmLand();return;}
+                _landStartYaw=_yaw;_landStartPitch=_pitch;_landAge=0;
+            }
+            return;
         }
         if(!active){_landDrag=null;return;}
         if(mouse.RightButton==ButtonState.Pressed && _previousMouse.RightButton==ButtonState.Pressed)
