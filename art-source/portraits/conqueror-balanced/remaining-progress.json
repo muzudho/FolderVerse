@@ -1,6 +1,6 @@
 {
   "Total": 300,
-  "Completed": 298,
+  "Completed": 300,
   "Portraits": [
     {
       "CharacterId": 7,
@@ -2385,6 +2385,22 @@
       "Sha256": "B33E827CEFEC04CBBFFFA836792C7E6657459474A7571C998A5ACB970FC47B70",
       "Reviewed": true,
       "Note": "Visually reviewed: opaque spiral glasses preserved, face hands ears balanced, original tools props expressions and workshop retained."
+    },
+    {
+      "CharacterId": 60,
+      "Variant": 5,
+      "File": "remaining-variants/character-60-5-balanced.png",
+      "Sha256": "CC5567948C395F93F6A8EB971323E6906A2D035375FE8088D85FAD3D6E4ED0E7",
+      "Reviewed": true,
+      "Note": "Visually reviewed: opaque spiral glasses, enlarged face ears hands, original pose books or robot and workshop preserved."
+    },
+    {
+      "CharacterId": 60,
+      "Variant": 6,
+      "File": "remaining-variants/character-60-6-balanced.png",
+      "Sha256": "1D88ABF1AA238D91B92BC072D3A96E9215B4F0CF9DD3CCFC99255E1F246F78F4",
+      "Reviewed": true,
+      "Note": "Visually reviewed: opaque spiral glasses, enlarged face ears hands, original pose books or robot and workshop preserved."
     }
   ]
 }
