@@ -1,4 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
-  <ItemGroup><Reference Include="FolderVerse"><HintPath>../../FolderVerse/obj/Debug/net9.0/FolderVerse.dll</HintPath></Reference><PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.*" /></ItemGroup>
+  <ItemGroup><Reference Include="FolderVerse"><HintPath>../../FolderVerse/obj/Debug/net9.0/FolderVerse.dll</HintPath></Reference><PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.*" /><PackageReference Include="StationeryUI.MonoGame" Version="0.3.0" /></ItemGroup>
 </Project>

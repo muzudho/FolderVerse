@@ -20,6 +20,6 @@
 <CharacterRegion><Start>？</Start><End>？</End></CharacterRegion>
 <CharacterRegion><Start>～</Start><End>～</End></CharacterRegion>
 <CharacterRegion><Start>仕</Start><End>仕</End></CharacterRegion>
-</CharacterRegions></Asset></XnaContent>
+<CharacterRegion><Start>掲</Start><End>掲</End></CharacterRegion><CharacterRegion><Start>注</Start><End>注</End></CharacterRegion><CharacterRegion><Start>載</Start><End>載</End></CharacterRegion></CharacterRegions></Asset></XnaContent>
 
 
