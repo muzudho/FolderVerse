@@ -234,3 +234,29 @@ No.9 の確定デザイン v008 を参照して history / coin / election の3�
 
 2026-10-13 JST heartbeat: No34 history/coin/election visually reviewed saved. Seated portrait full cap corrected, strict left profile far lens removed full cap corrected, bright election full cap corrected. Copper hair amberred eyes redgold glasses hat goggles elf ears compass jewelry fur coat retained. Originals final prompts dimensions SHA256 verified comparison game import updated at272/480. Next No34 idol No35 formal/paparazzi. Variants300/300 complete. Automation active; no commits or pushes.
 `r`n2026-10-13 JST: No34 idol saved and verified game import273/480. Next No35 formal/paparazzi/friends. Newspaper implementation requested; image automation remains active.
+
+2026-10-14: No.35 formal / paparazzi / friends を視覚確認して原画・最終プロンプト・1200x1600版を保存。帽子全体が収まるよう修正。次回は No.35 id / history / coin。
+
+2026-10-14: No.35 id / history / coin を視覚確認・保存。帽子全体を収める構図へ修正、眼帯と紫の髪・瞳を保持。原画・最終プロンプト・寸法・SHA256検証、ゲーム取り込み279/480。次回 No.35 election / idol、No.36 formal。
+
+2026-10-14: No.35 election / idol、No.36 formal を視覚確認・保存。帽子全体の構図修正済み、人物の髪・眼帯／眼鏡・装飾保持。原画・最終プロンプト・寸法・SHA256検証、ゲーム取り込み282/480。No.35全8種類完了。次回 No.36 paparazzi / friends / id。
+
+訂正: 今回の検証済み総数は281/480。No.36 formal は既存採用済み character-36-newspaper-v002.png が優先されるため、今回作成の character-36-formal-v001.png は追加候補として原画・プロンプトとともに保持し、採用画像を置換しない。次回は進捗の未完了項目を確認して No.36 paparazzi / friends / id を制作。
+
+2026-10-14: No.36 paparazzi / friends / id を視覚確認・保存。friendsとidは帽子が収まる構図へ修正。赤髪・赤い瞳・金眼鏡・炎章・制服を保持。原画と最終プロンプト保存、寸法・SHA256検証、ゲーム取り込み284/480。次回 No.36 history / coin / election。
+
+2026-10-14: No.36 history / coin / election を視覚確認・保存。帽子の余白を修正、coinは遠側レンズを除去、electionは目を開けた前向きな表情へ修正。原画と最終プロンプト保存、寸法・SHA256検証、ゲーム取り込み287/480。次回 No.36 idol、No.37の未完了写真を進捗で確認。
+
+2026-10-14: No.36 idol、No.37 formal / paparazzi を視覚確認・保存。帽子と手の余白を修正、No.37の青髪・金瞳・斜め白包帯・エルフ耳・海軍装飾を保持。原画と最終プロンプト保存、寸法・SHA256検証、ゲーム取り込み290/480。No.36全8種類完了。次回 No.37 friends / id / history。
+
+2026-10-14: No.37 friends / id / history を視覚確認・保存。帽子全体の余白を修正し、青髪・金瞳・斜め白包帯・エルフ耳・海軍装飾を保持。原画と最終プロンプト保存、寸法・SHA256検証、ゲーム取り込み293/480。次回 No.37 coin / election / idol。
+
+2026-10-14: No.37 coin / election / idol を視覚確認・保存。帽子と指先が収まる構図へ修正。青髪・金瞳・白包帯・エルフ耳・海軍装飾保持。原画と最終プロンプト保存、寸法・SHA256検証、ゲーム取り込み296/480。No.37全8種類完了。次回 No.38の未完了項目を進捗で確認して制作。
+
+2026-10-14: No.38 formal / paparazzi / friends を視覚確認・保存。friendsは頭飾りが全て収まるよう2回構図修正。マゼンタ髪・赤瞳・左眼の薔薇眼帯・エルフ耳・薔薇宝石装飾・白手袋を保持。原画・最終プロンプト保存、寸法・SHA256検証、ゲーム取り込み299/480。次回 No.38 id / history / coin。
+
+2026-10-14: No.38 id / history / coin を視覚確認・保存。頭飾り全体が収まる構図へ修正。マゼンタ髪・赤瞳・左眼の薔薇眼帯・エルフ耳・薔薇宝石装飾保持。原画・最終プロンプト保存、寸法・SHA256検証、ゲーム取り込み302/480。次回 No.38 election / idol、No.39未完了項目を確認。
+
+2026-10-14: No.38 election / idol、No.39 formal を視覚確認・保存。冠・指先・羽飾りが収まる構図へ修正。No.39は金髪二つ編み・青瞳・金眼鏡・羽付き百合章帽子・腕の電池を保持。原画・最終プロンプト保存、寸法・SHA256検証、ゲーム取り込み305/480。No.38全8種類完了。次回 No.39 paparazzi / friends / id。
+
+2026-10-14: No.39 paparazzi / friends / id を視覚確認・保存。帽子と羽飾り全体が収まる構図へ修正。金髪二つ編み・青瞳・金眼鏡・百合章・腕の電池保持。原画・最終プロンプト保存、寸法・SHA256検証、ゲーム取り込み308/480。次回 No.39 history / coin / election。
