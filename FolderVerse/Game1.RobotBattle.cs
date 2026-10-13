@@ -15,7 +15,7 @@ public partial class Game1
     private bool _robotPendingRound;
     private bool _robotSummary;
     private bool _robotPendingSummary;
-    private int _robotSummaryPage;
+
     private int[] RobotPriority=>RobotBattlePlayback.Priority(_robotScenes,_robotPlayback.Rounds[_robotRound],new[]{_setup.PlayerSlot});
     private RobotBattleSlice RobotSlice(int scene)=>_robotPlayback.Rounds[_robotRound].First(s=>s.Scene==scene);
     private double RobotRoundEnd=>_robotPlayback.Rounds[_robotRound].Max(s=>s.End-s.Start+1)*RobotFrameSeconds;
@@ -33,7 +33,7 @@ public partial class Game1
     {
         _newspaperIssue=_newspaperPreviousIssue=null;_newspaperSlideAge=1;_newspaperClock=0;
         _fallFadeStarted.Clear();_robotScenes=_setup.Campaign.RobotBattles.Scenes.ToArray();_battleTiles=Array.Empty<CharacterTile>();_battleWave=0;_battleAge=0;_robotResultAge=0;_robotPlaying=true;
-        _robotPlayback=new(_robotScenes);_robotRound=0;_robotSummaryPage=0;_summaryReadAge=0;_summaryReadPapers=0;_robotPendingFocus=-1;_robotPendingRound=false;_robotPendingSummary=false;_robotSummary=_robotPlayback.Rounds.Length==0;
+        _robotPlayback=new(_robotScenes);_robotRound=0;_summaryReadAge=0;_summaryReadPapers=0;_robotPendingFocus=-1;_robotPendingRound=false;_robotPendingSummary=false;_robotSummary=_robotPlayback.Rounds.Length==0;
         if(!_robotSummary)_battleWave=RobotPriority[0];
         _populationCell=-1;_dragging=false;
         _statusGlobe=false;_net.ResetView();_net.CancelAnimation();
@@ -60,8 +60,8 @@ public partial class Game1
         if(!_robotSummary && _newspaperClock>=10)SwitchNewspaper();
         if(_robotScenes.Length==0){_screen=Screen.WorldStatus;return;}
         if(_robotSummary)
-        {if(click && RobotBattlePrevious.Contains(_pointer))_robotSummaryPage=Math.Max(0,_robotSummaryPage-1);
-         if(click && RobotBattleNext.Contains(_pointer))_robotSummaryPage=Math.Min(Math.Max(0,(_robotScenes.Length-1)/6),_robotSummaryPage+1);
+        {
+         
          if(enter || click && BattleContinue.Contains(_pointer)){_screen=Screen.WorldStatus;_world.ShowSetup(_setup,true);OpenDisposition();}return;}
         var scene=_robotScenes[_battleWave];double end=RobotRoundEnd;
         if(click && (RobotBattlePrevious.Contains(_pointer) || RobotBattleNext.Contains(_pointer)))

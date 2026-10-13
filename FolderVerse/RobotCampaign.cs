@@ -158,6 +158,7 @@ public sealed class RobotCampaign
     private BattleState NewState(WorldSetup world,RobotEncounter e)
     {
         var state=new BattleState(world.PlacementSeed^e.Id^_nextBattle,Rules){Id=_nextBattle++,Kind=e.Kind,SourceNode=e.Source,TargetNode=e.Target,Defender=e.Defender,Allied=world.Relations.Allied};
+        foreach(var rank in world.Relations.ProvisionalRanking(world))state.NewspaperRanks[rank.Ruler]=rank.Rank;
         state.BuildTerrain(world.Nodes.All[e.Target].Terrain==TravelTerrain.Sea?BattleTerrain.Sea:e.Kind==BattleKind.Node?BattleTerrain.Fort:BattleTerrain.Field);return state;
     }
     private void AddReinforcement(WorldSetup world,RobotEncounter e,int owner,int home,List<Robot> robots,bool queen)

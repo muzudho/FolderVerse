@@ -59,6 +59,7 @@ public sealed partial class BattleState
     public Point Flag=new(5,5);
     public bool FlagStanding=true,Finished;
     public int LastFlagOwner=-1,Winner=-1;
+    public Dictionary<int,int> NewspaperRanks {get;}=new();
     public Func<int,int,bool> Allied {get;set;}=(a,b)=>a==b;
     public BattleState(int seed,BattleRules rules=null)
     {Rules=rules??new();if(Rules.NoWillTurns<1 || Rules.SegmentTurns<1 || Rules.PersuasionRadius<0 || Rules.PersuasionPercent<0 || Rules.PersuasionPercent>100)throw new ArgumentException("Invalid battle rules.");Random=new(seed);}

@@ -1,6 +1,6 @@
 {
   "Total": 480,
-  "Completed": 269,
+  "Completed": 273,
   "Photos": [
     {
       "CharacterId": 1,
@@ -2412,6 +2412,42 @@
       "Width": 1200,
       "Height": 1600,
       "Sha256": "FBA6A2027AD38625CF00D528A03976980A51FB1E259E8A1CF9731E0CEAFC87B4",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 34,
+      "Kind": "history",
+      "File": "character-34-history-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "D2AEE1AF7735AA12D7ABEC29D077B135C0C2BD6747096998324875C214A019A3",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 34,
+      "Kind": "coin",
+      "File": "character-34-coin-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "7A7B0CDBA2465A9EC1D74C3626B3D67B2E10FCB31FEF705F3BEAF93652DD8B8E",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 34,
+      "Kind": "election",
+      "File": "character-34-election-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "65F5CE506B6BD5C45C76A2D4774D3BE099EFCFCF823EFECA6023A45A53F40167",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 34,
+      "Kind": "idol",
+      "File": "character-34-idol-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "167BBD7392D5C6D2BDC357E1B886A9BC197D681A5CCD1ECF12DE93C431120A79",
       "Reviewed": true
     },
     {

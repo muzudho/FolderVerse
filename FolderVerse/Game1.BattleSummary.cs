@@ -20,9 +20,8 @@ public partial class Game1
         _summaryReadAge+=elapsed;_newspaperSlideAge+=elapsed;
         if(_summaryReadAge<6)return;
         _summaryReadAge=0;
-        int pages=Math.Max(1,(_robotScenes.Length+5)/6);
-        if(_robotSummaryPage+1<pages){_robotSummaryPage++;return;}
-        _robotSummaryPage=0;
+        
+        
         if(++_summaryReadPapers<(demo?3:1)){SwitchNewspaper();return;}
         RobotBattleInput(0,false,true);
     }
@@ -34,12 +33,13 @@ public partial class Game1
         _ui.Box(new(40,20,1830,986),paper);
         DrawNewspaperMasthead(_newspaperEdition,new(470,28,980,80));
         _ui.Box(new(54,119,1798,3),ink);
-        _ui.Center("全戦場の戦闘結果",new(54,124,1000,42),.7f,ink);
-        _ui.Text(profile.Label+" / "+(_robotSummaryPage+1)+" / "+Math.Max(1,(_robotScenes.Length+5)/6),new(54,175),.5f,ink);
-        if(_robotScenes.Length>6){_ui.Button(RobotBattlePrevious,"前へ",Muted,.5f);_ui.Button(RobotBattleNext,"次へ",Muted,.5f);}
+        _ui.Center("今号の戦況 / 注目の戦闘",new(54,124,1000,42),.7f,ink);
+        var selected=NewspaperSelection.Select(_robotScenes,_newspaperEdition,_setup.PlayerSlot,9);
+        _ui.Text(profile.Label+$" / 全 {_robotScenes.Length} 戦場 / 掲載 {selected.Length} 件",new(54,175),.5f,ink);
+        
         _newspaperPortraits??=new NewspaperPortraitRenderer(Content);
-        for(int at=0;at<6 && _robotSummaryPage*6+at<_robotScenes.Length;at++){
-            int i=_robotSummaryPage*6+at;var b=_robotScenes[i];
+        for(int at=0;at<Math.Min(3,selected.Length);at++){
+            int i=selected[at];var b=_robotScenes[i];
             int x=62+(at%3)*598,y=226+(at/3)*332;
             _ui.Box(new(x,y,576,312),ink*.06f);
             string name=b.Winner>=0?_setup.ConquerorNames[b.Winner]+"国":"勝者なし";
@@ -61,6 +61,11 @@ public partial class Game1
                 row++;
             }
         }
+        for(int at=3;at<selected.Length;at++){var b=_robotScenes[selected[at]];string winner=b.Winner>=0?_setup.ConquerorNames[b.Winner]+"国":"勝者なし";
+            _ui.Text($"戦況短信 / 戦場 {selected[at]+1}：{(!b.Finished?"継戦":winner+" 勝利")}",new(72,570+(at-3)*42),.46f,ink);
+        }
+        int omitted=_robotScenes.Length-selected.Length;
+        _ui.Text($"戦況短信：その他 {omitted} 戦場 / 終結 {_robotScenes.Count(b=>b.Finished)} / 継戦 {_robotScenes.Count(b=>!b.Finished)}",new(62,895),.38f,ink);
         // A horizontal shelf of miniature papers is also the publisher selector.
         for(int i=0;i<NewspaperProfiles.All.Length;i++){
             var r=SummaryPaperCard(i);_ui.Box(r,i==_newspaperEdition?Accent:ink*.13f);
