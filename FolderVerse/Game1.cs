@@ -518,12 +518,12 @@ public partial class Game1 : Game
             var areas=OrientationAreas(NetPanel,false);
             GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
             _world.Draw(_yaw,_pitch,_animationTime,false,true);
-            if(!DestinationOperation)_world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe);
+            _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; if(!DestinationOperation)_world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe);
             GraphicsDevice.Viewport=viewport;
             using var globeClip=new RasterizerState{ScissorTestEnable=true};
             GraphicsDevice.ScissorRectangle=new(canvas.X+(int)(areas.Globe.X*canvas.Width/1920f),canvas.Y+(int)(areas.Globe.Y*canvas.Height/1080f),(int)(areas.Globe.Width*canvas.Width/1920f),(int)(areas.Globe.Height*canvas.Height/1080f));
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
-            _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
+            _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
             if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();_spriteBatch.End();
             DrawOrientationOverlay(NetPanel,canvas,transform);
         }

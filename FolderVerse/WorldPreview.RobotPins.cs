@@ -31,7 +31,7 @@ public sealed partial class WorldPreview
             var center=setup.Routes.Position(node.Cell,node.Center);
             if(robots.Count==0 || !ProjectVisible(center,cell.Normal,yaw,pitch,panel,out var screen) || !panel.Contains(screen.ToPoint()))continue;
             Rectangle bounds=Rectangle.Empty;
-            Vector3 Point(float u,float v,float height)=>center+cell.U*u+cell.V*v+cell.Normal*height;
+            float hoverScale=net.ShowRoutes && net.HoveredNode==node.Id?2:1; Vector3 Point(float u,float v,float height)=>center+(cell.U*u+cell.V*v+cell.Normal*height)*hoverScale;
             void Track(Vector3 p)
             {
                 ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var at);

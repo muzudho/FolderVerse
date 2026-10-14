@@ -71,15 +71,15 @@ public sealed partial class CubeNet
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
                 float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);
                 if(post.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
-                if(MovementTargets.Contains(post.Id) && MathF.Sin(pulse*6)>=0)
+                if(HoveredNode==post.Id)radius*=2; if(MovementTargets.Contains(post.Id) && MathF.Sin(pulse*6)>=0)
                 {
                     Disc(ui,at,radius+7,new Color(255,219,96));
                     Disc(ui,at,radius+5,new Color(13,36,44));
                 }
                 if(SelectedTarget==post.Id || HoveredNode==post.Id)
                 {
-                    Disc(ui,at,radius+4,Color.White);
-                    Disc(ui,at,radius+2,new Color(13,36,44));
+                    Disc(ui,at,radius*1.5f+3,Color.White);
+                    Disc(ui,at,radius*1.5f,new Color(13,36,44));
                 }
                 if(post.IsHarbor)DrawHarbor(ui,at,radius,world.OwnerColor(post.Owner));
                 else
