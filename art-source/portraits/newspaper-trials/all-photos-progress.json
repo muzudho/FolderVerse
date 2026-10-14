@@ -1,6 +1,6 @@
 {
   "Total": 480,
-  "Completed": 370,
+  "Completed": 372,
   "Photos": [
     {
       "CharacterId": 1,
@@ -3330,6 +3330,24 @@
       "Width": 1200,
       "Height": 1600,
       "Sha256": "672D244486CC9A328CE54662F8D831A59630574F505DCCA0F40D025DA4DD785A",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 47,
+      "Kind": "friends",
+      "File": "character-47-friends-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "82A97DEC9728BC1E7E16FBDD2046A1CDA0EE2C0CD4E3F32713BC6CD21D6D77AF",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 47,
+      "Kind": "id",
+      "File": "character-47-id-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "80CC11BA060AACE3B5316C269018576B6DDE3C054DE97FB4B8182F6DBD7D6710",
       "Reviewed": true
     }
   ]

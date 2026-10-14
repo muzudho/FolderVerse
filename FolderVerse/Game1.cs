@@ -38,7 +38,7 @@ public partial class Game1 : Game
     private float _animationTime;
     private readonly CubeNet _net=new();
     private int _statusCell=-1;
-    private static readonly Rectangle NetPanel=new(1040,240,790,580),StatusProceed=new(518,1020,480,50);
+    private Rectangle NetPanel=>new((int)MathHelper.Lerp(40,1040,_domesticSlide),(int)MathHelper.Lerp(142,240,_domesticSlide),(int)MathHelper.Lerp(1840,790,_domesticSlide),(int)MathHelper.Lerp(820,580,_domesticSlide)); private static readonly Rectangle StatusProceed=new(518,1020,480,50);
     private static Rectangle NetButton(int i)=>new(984+i*177,912,166,50);
     private bool IsStatusScreen=>_screen==Screen.WorldStatus;
     private Rectangle SelectionGlobe=>_selectionTiles.Length==0?Rectangle.Empty:_selectionTiles[^1].Bounds;
@@ -131,7 +131,7 @@ public partial class Game1 : Game
         UpdateRateDrag(mouse,active,click);
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
-        double elapsed=gameTime.ElapsedGameTime.TotalSeconds;
+        double elapsed=gameTime.ElapsedGameTime.TotalSeconds; _domesticSlide=MathHelper.Lerp(_domesticSlide,DomesticPanelOpen?1:0,Math.Min(1,(float)elapsed*12));
         _animationTime+=(float)elapsed;
         if(IsStatusScreen && _setup.Robots.Nodes.Length>0)
             _setup.Robots.PrepareDomestic(_setup.Population.Turn,(a,b)=>!_setup.Campaign.RobotBattles.LockedEdge(a,b) && _setup.Routes.Neighbors(_setup.Nodes.All[a]).Any(r=>_setup.Nodes.At(r.Target,r.Entry).Id==b),n=>_setup.Nodes.All[n].Owner,_setup.Campaign.RobotBattles.LockedNode);
@@ -215,7 +215,7 @@ public partial class Game1 : Game
         { if((click && StartButton.Contains(_pointer)) || enter)BeginRolling(); }
         else if(IsStatusScreen)
         {
-            if(click && SwitchControlledRuler(_pointer))return;
+            if(click && DomesticViewClick(_pointer))return; if(click && _reignView && SwitchControlledRuler(_pointer))return;
             if(_statusGlobe)
             {
                 _statusCell=-1;
@@ -266,7 +266,7 @@ public partial class Game1 : Game
                 if(!_net.ShowRoutes)_selectedMapCell=_statusCell;
                 var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);int hit=_net.ShowRoutes?_net.HitNode(_setup,NetPanel,_pointer):-1;var post=hit>=0?_setup.Nodes.All[hit]:null;
                 if(post!=null)
-                {_populationCell=_statusCell;_populationNode=post.Id;_inspectedNode=post.Id;_supervisorDialog=0;_nodeFactoryOpen=false;_nodeTransportOpen=false;_nodeDisposalOpen=false;_nodeAssemblyOpen=false;_movementOpen=false;}
+                {_reignView=false; _populationCell=_statusCell;_populationNode=post.Id;_inspectedNode=post.Id;_supervisorDialog=0;_nodeFactoryOpen=false;_nodeTransportOpen=false;_nodeDisposalOpen=false;_nodeAssemblyOpen=false;_movementOpen=false;}
             }
             if(active)
             {
@@ -465,7 +465,7 @@ public partial class Game1 : Game
     {
         _ui.Text("世界征服状況",new(54,22),1.1f,Cream);
         int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
-        var image=new Rectangle(212,220,518,360);
+        if(_reignView || _populationCell>=0){ var image=new Rectangle(212,220,518,360);
         if(!InspectingSupervisor && !System.Linq.Enumerable.Any(_setup.Nodes.All,node=>node.Owner==player))DrawReignWantedPoster(player);
         else
         {
@@ -490,7 +490,7 @@ public partial class Game1 : Game
         _ui.Center(capitalLabel,new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
         int fully=System.Linq.Enumerable.Count(_setup.Cells,c=>_setup.Nodes.FullOwner(c.Id)==player);
         _ui.Center("完全占領　"+fully+" cell / 節点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==player),new(90,842,760,48),0.76f,Cream);
-        _ui.Box(new(970,142,914,750),new(20,42,54));
+        } _ui.Box(new(NetPanel.X-20,142,NetPanel.Width+40,750),new(20,42,54));
         _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+CubeNet.FaceNames[_net.CenterFace]+" が中心",new(991,156),0.68f,Cream);
         string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地星の北＝＋Y / 北を上に";
         string orientation=north+" / 回転 "+(_net.Rotation*90)+"°";
@@ -506,7 +506,7 @@ public partial class Game1 : Game
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _spriteBatch.End();
         var oldScissor=GraphicsDevice.ScissorRectangle;
-        GraphicsDevice.ScissorRectangle=new(canvas.X+(int)(990*canvas.Width/1920f),canvas.Y+(int)(226*canvas.Height/1080f),(int)(880*canvas.Width/1920f),(int)(598*canvas.Height/1080f));
+        GraphicsDevice.ScissorRectangle=new(canvas.X+(int)(NetPanel.X*canvas.Width/1920f),canvas.Y+(int)(NetPanel.Y*canvas.Height/1080f),(int)(NetPanel.Width*canvas.Width/1920f),(int)(NetPanel.Height*canvas.Height/1080f));
         if(MapTransitionActive)
         {
             var viewport=GraphicsDevice.Viewport;GraphicsDevice.Viewport=new Viewport(canvas);
@@ -533,7 +533,7 @@ public partial class Game1 : Game
             _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:(_statusCell>=0?_statusCell:_selectedMapCell),_animationTime);_spriteBatch.End();
         }
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
-        DrawDestinationMap();
+        DrawDomesticPortrait(); DrawDestinationMap();
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
         _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"右ドラッグ：回転 / ホイール：拡縮 / 節点を選ぶと中心固定":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / 右ドラッグ：移動",new(991,865),0.37f,new(177,206,216));

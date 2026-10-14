@@ -92,8 +92,8 @@ public partial class Game1
         }
         _ui.Button(new(650,800,180,54),"キャンセル",Muted,.55f);
     }
-    private bool SupervisorNodePanel=>InspectingSupervisor && _populationCell>=0 && !_nodeFactoryOpen && !_nodeAssemblyOpen && !_nodeDisposalOpen && !_nodeTransportOpen;
-    private bool InspectingSupervisor=>_inspectedNode>=0 && _inspectedNode<_setup.Nodes.All.Length && !Enumerable.Range(0,_setup.ActiveCount).Any(r=>_setup.Nodes.Current(r)?.Id==_inspectedNode);
+    private bool SupervisorNodePanel=>false;
+    private bool InspectingSupervisor=>_populationCell>=0 && _inspectedNode>=0 && _inspectedNode<_setup.Nodes.All.Length;
     private void DrawSupervisor(Rectangle image,int owner)
     {
         int kind=NodeSupervisors.For(_setup.Nodes.All[_inspectedNode],_setup.Cells[_setup.Nodes.All[_inspectedNode].Cell].Face);

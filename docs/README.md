@@ -15,3 +15,5 @@
 - [実装計画](dev/plan/)
 - [個人用の設定と仕様](【むずでょ個人用】/)：利用者が管理する原本。
 - [征服者作成用画像の採用記録](../art-source/portraits/conqueror-balanced/README.md)
+
+- [内政地図ビュー](ref/内政地図ビュー.md) / [実装記録](dev/内政地図ビュー.md)
