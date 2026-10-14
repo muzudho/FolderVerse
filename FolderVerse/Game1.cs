@@ -215,7 +215,7 @@ public partial class Game1 : Game
         { if((click && StartButton.Contains(_pointer)) || enter)BeginRolling(); }
         else if(IsStatusScreen)
         {
-            if(click && DomesticViewClick(_pointer))return; if(click && _reignView && SwitchControlledRuler(_pointer))return;
+            if(click && DomesticViewClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;} if(click && _reignView && SwitchControlledRuler(_pointer))return;
             if(_statusGlobe)
             {
                 _statusCell=-1;
@@ -549,7 +549,7 @@ public partial class Game1 : Game
             string pattern=_setup.Nodes.CellPattern(cell.Id);
             _ui.Center(pattern,new(970,1003,914,32),Math.Min(0.40f,880/_font.MeasureString(pattern).X),Cream);
         }
-                _ui.Button(PopulationTurnButton,"ターン終了",Accent,0.7f);
+                if(!_reignView)_ui.Button(PopulationTurnButton,"ターン終了",Accent,0.7f);
         if(_reignView){_ui.Button(WarButton,"開戦",Accent,.65f);
         _ui.Button(MovementButton,"移動",Accent,.65f);
         _ui.Button(PocketButton,"ポケット",Accent,.55f);}

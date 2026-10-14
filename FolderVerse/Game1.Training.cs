@@ -4,14 +4,14 @@ public partial class Game1
 {
     private bool _trainingOpen;
     private int _trainingDrop=-1;
-    private static readonly Rectangle TrainingButton=new(204,1018,140,52),TrainingClose=new(1340,220,58,44);
+    private static readonly Rectangle TrainingButton=new(54,930,140,52),TrainingClose=new(1340,220,58,44);
     private static Rectangle TrainingField(int field)=>new(480,360+field*190,900,64);
     private static Rectangle TrainingOption(int field,int option)=>new(480,424+field*190+option*48,900,48);
     private static readonly string[] AssemblyLabels={"自国のパーツのみ","自国のパーツが２／３以上","自国のパーツが１／３以上","現場に任せる"};
     private static readonly string[] DeploymentLabels={"自国のパーツのみのロボット","自国のパーツが多いロボットから","自国のパーツが少ないロボットから","現地に任せる"};
     private bool TrainingInput(Point point,bool click,bool escape)
     {
-        if(!_trainingOpen){if(click && _populationCell<0 && !_movementOpen && !_transportOverview && TrainingButton.Contains(point)){_trainingOpen=true;_trainingDrop=-1;return true;}return false;}
+        if(!_trainingOpen){if(click && _reignView && _populationCell<0 && !_movementOpen && !_transportOverview && TrainingButton.Contains(point)){_trainingOpen=true;_trainingDrop=-1;return true;}return false;}
         if(escape || click && TrainingClose.Contains(point)){_trainingOpen=false;_trainingDrop=-1;return true;}
         if(!click)return true;
         var policy=_setup.Robots.Training[_setup.PlayerSlot];
@@ -21,7 +21,7 @@ public partial class Game1
     }
     private void DrawTraining()
     {
-        _ui.Button(TrainingButton,"調練",Accent,.6f);
+        if(!_reignView)return; _ui.Button(TrainingButton,"調練",Accent,.6f);
         if(!_trainingOpen)return;
         var policy=_setup.Robots.Training[_setup.PlayerSlot];
         _ui.Box(new(420,200,1020,680),new(27,49,62));_ui.Text("調練 / 征服者直属",new(460,240),.8f,Cream);_ui.Button(TrainingClose,"×",Muted,.7f);

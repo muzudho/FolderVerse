@@ -1,6 +1,6 @@
 {
   "Total": 480,
-  "Completed": 374,
+  "Completed": 380,
   "Photos": [
     {
       "CharacterId": 1,
@@ -3352,6 +3352,15 @@
     },
     {
       "CharacterId": 47,
+      "Kind": "history",
+      "File": "character-47-history-v002.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "D93871886F46D2DCC5116777492471931E610A343AFE70B08C4D5DF62F2A986E",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 47,
       "Kind": "coin",
       "File": "character-47-coin-v001.png",
       "Width": 1200,
@@ -3366,6 +3375,51 @@
       "Width": 1200,
       "Height": 1600,
       "Sha256": "5038220B3864C20B3FE910A869C13FA3E83170A1850676B0AFDC966E1AA6E0D6",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 47,
+      "Kind": "idol",
+      "File": "character-47-idol-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "E7E84C0DD44EE82CDB74DD2274761ACC783E6ADF2F4163AEB6014FD423EFAB3C",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 48,
+      "Kind": "formal",
+      "File": "character-48-formal-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "0132FC44247CFEF9038C7522B628D8F70D3E1E2917610F1306A47304D9DE8200",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 48,
+      "Kind": "paparazzi",
+      "File": "character-48-paparazzi-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "FAC58813D70D8A3C32C1F00F368EEB50E9658B24391658224765471431296C2D",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 48,
+      "Kind": "friends",
+      "File": "character-48-friends-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "5DE5812A065DDC25F1E18D45B6883CD639B339E3479F7D724E92242956A1137B",
+      "Reviewed": true
+    },
+    {
+      "CharacterId": 48,
+      "Kind": "id",
+      "File": "character-48-id-v001.png",
+      "Width": 1200,
+      "Height": 1600,
+      "Sha256": "CCF73EE1C83F94C1100D2460F5060F98CF636632F422FCE2C532DB0764126BDF",
       "Reviewed": true
     }
   ]

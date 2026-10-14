@@ -21,7 +21,7 @@ public partial class Game1
     }
     private bool _transportOverview;
     private bool _transportRoutesBefore;
-    private static readonly Rectangle TransportOverviewButton=new(594,1018,210,52);
+    private static readonly Rectangle TransportOverviewButton=new(204,930,210,52);
     private static Rectangle TransportPartButton(int mask)=>new(84+(mask-1)%4*196,322+(mask-1)/4*136,182,96);
     private void DrawTransportPartButtons()
     {
@@ -46,7 +46,7 @@ public partial class Game1
     }
     private void DrawTransportOverviewButton()
     {
-        var rect=TransportOverviewButton;
+        if(!_reignView)return; var rect=TransportOverviewButton;
         if(_transportOverview)
         {
             _ui.Box(rect,new Color(46,54,62));
@@ -70,7 +70,7 @@ public partial class Game1
     }
     private bool TransportOverviewClick(Point p)
     {
-        if(TransportOverviewButton.Contains(p)){if(!_transportOverview)OpenTransportOverview();return true;}
+        if(_reignView && TransportOverviewButton.Contains(p)){if(!_transportOverview)OpenTransportOverview();return true;}
         if(!_transportOverview)return false;
         if(_rateTarget>=0){if(RateDialogArea.Contains(p))RatePieClick(p);else _rateTarget=-1;return true;}
         if(new Rectangle(803,169,58,44).Contains(p)){CloseTransportOverview();return true;}

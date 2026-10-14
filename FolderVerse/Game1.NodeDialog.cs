@@ -7,10 +7,10 @@ public partial class Game1
 {
     private int _populationCell=-1;
     private int _populationNode=-1;
-    private static readonly Rectangle PopulationTurnButton=new(54,1006,242,64);
+    private static readonly Rectangle PopulationTurnButton=new(310,1006,242,64);
     private bool NodeDialogClick(Point pointer,KeyboardState keyboard)
     {
-        if(PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
+        if(!_reignView && PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
         if(SupervisorNodePanel){pointer.X-=920;pointer.Y-=40;}
         if(NodeAutomationClick(pointer))return true;
         if(_populationCell<0)return false;

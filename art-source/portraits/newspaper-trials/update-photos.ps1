@@ -1,10 +1,11 @@
-﻿param([switch]$ImportGame)
+param([switch]$ImportGame)
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.Drawing
 $items=@()
 foreach($id in 1..60){foreach($kind in @('formal','paparazzi','friends','id','history','coin','election','idol')){
     $stem='character-{0:D2}-{1}-v001' -f $id,$kind
     $file="$stem.png"
+    if($id -eq 47 -and $kind -eq "history"){$file="character-47-history-v002.png"}
     if($kind -eq 'formal' -and $id -in @(1,7,36)){$file='character-{0:D2}-newspaper-v002.png' -f $id}
     $source=Join-Path $PSScriptRoot $file
     if(!(Test-Path -LiteralPath $source)){continue}

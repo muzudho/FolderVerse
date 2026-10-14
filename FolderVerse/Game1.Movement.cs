@@ -41,14 +41,14 @@ public partial class Game1
     }
     private bool MovementClick(Point pointer,KeyboardState keyboard)
     {
-        if(PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
+        if(!_reignView && PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
         if(_reignView && WarButton.Contains(pointer)){OpenWarPlanning();return true;}
         if(_warPlanning && _movementOpen && InvasionClick(pointer))return true;
         if(_reignView && PocketButton.Contains(pointer)){_statusMenuOpen=false;OpenPocket();return true;}
         if(_reignView && MovementButton.Contains(pointer)){if(_movementOpen)CloseMovement();else OpenMovement();return true;}
         if(!_movementOpen)return false;
         if(new Rectangle(803,169,58,44).Contains(pointer)){CloseMovement();return true;}
-        if(PopulationTurnButton.Contains(pointer))return true;
+        if(!_reignView && PopulationTurnButton.Contains(pointer))return true;
         if(ConfirmMoveButton.Contains(pointer))
         {
             if(_selectedMoveNode<0 || _setup.Routes.ToNode(_setup.PlayerSlot,_selectedMoveNode)==null)return true;
