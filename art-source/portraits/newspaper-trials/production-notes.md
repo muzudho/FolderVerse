@@ -302,3 +302,5 @@ No.9 の確定デザイン v008 を参照して history / coin / election の3�
 2026-10-14: No.46 coin 保存・検証・ゲーム取り込み済み366/480。ユーザーの選択モード設計相談へ移行。次回No.46 election / idol から再開。
 
 2026-10-14: No.47 formal / paparazzi 保存。370/480。friends 生成候補 exec-d807c8cd-44a5-4029-b58e-aa9671f02543.png は帽子上端が切れているため未採用、次回修正して保存。
+
+2026-10-14: No.47 history-v002（3:4修正版）、coin、election 保存・視覚確認・SHA256/サイズ検証・ゲーム取り込み375/480。history-v001 は比率不適合の原画のみ保持し未採用。次回No.47 idol、No.48未完了分。

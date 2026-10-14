@@ -7,13 +7,13 @@ public partial class Game1
     private bool _reignView;
     private float _domesticSlide;
     private bool DomesticPanelOpen=>_reignView || _populationCell>=0;
-    private static readonly Rectangle ReignPortrait=new(56,700,240,240);
+    private static readonly Rectangle ReignPortrait=new(56,700,240,240); private static readonly Rectangle StrategyToggle=new(54,952,242,48);
     private bool DomesticViewClick(Point p)
     {
-        if(Vector2.DistanceSquared(new(p.X,p.Y),new(ReignPortrait.Center.X,ReignPortrait.Center.Y))<=120*120){
-            _reignView=!_reignView;_populationCell=_populationNode=_inspectedNode=-1;return true;
+        if(StrategyToggle.Contains(p)){
+            if(_movementOpen)CloseMovement(); _reignView=!_reignView;_populationCell=_populationNode=_inspectedNode=-1;return true;
         }
-        if(_reignView && new Rectangle(803,169,58,44).Contains(p)){_reignView=false;return true;}
+        
         return false;
     }
     private void DrawDomesticPortrait()
@@ -33,7 +33,7 @@ public partial class Game1
             }
         }
         GraphicsDevice.ScissorRectangle=old;_spriteBatch.Begin(transformMatrix:transform);
-        if(ReignPortrait.Contains(_pointer))_ui.Text("君臨ビュー",new(r.X,r.Bottom+8),.5f,Cream);
-        if(_reignView)_ui.Button(new(803,169,58,44),"×",Muted,.7f);
+        _ui.Button(StrategyToggle,"全体作戦",_reignView?Accent:Muted,.6f); _ui.Box(new(StrategyToggle.X+12,StrategyToggle.Y+15,18,18),Cream); _ui.Box(new(StrategyToggle.X+15,StrategyToggle.Y+18,12,12),_reignView?Accent:new Color(27,49,62));
+        
     }
 }

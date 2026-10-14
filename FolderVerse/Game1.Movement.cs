@@ -10,7 +10,7 @@ public partial class Game1
     private long _escort;
     private bool _routesBeforeMovement;
     private int _selectedMoveNode=-1;
-    private static readonly Rectangle MovementButton=new(354,1018,110,52);
+    private static readonly Rectangle MovementButton=new(504,1018,110,52);
     private static readonly Rectangle ConfirmMoveButton=new(570,914,274,48);
     private void OpenMovement()
     {
@@ -42,10 +42,10 @@ public partial class Game1
     private bool MovementClick(Point pointer,KeyboardState keyboard)
     {
         if(PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
-        if(WarButton.Contains(pointer)){OpenWarPlanning();return true;}
+        if(_reignView && WarButton.Contains(pointer)){OpenWarPlanning();return true;}
         if(_warPlanning && _movementOpen && InvasionClick(pointer))return true;
-        if(PocketButton.Contains(pointer)){_statusMenuOpen=false;OpenPocket();return true;}
-        if(MovementButton.Contains(pointer)){if(_movementOpen)CloseMovement();else OpenMovement();return true;}
+        if(_reignView && PocketButton.Contains(pointer)){_statusMenuOpen=false;OpenPocket();return true;}
+        if(_reignView && MovementButton.Contains(pointer)){if(_movementOpen)CloseMovement();else OpenMovement();return true;}
         if(!_movementOpen)return false;
         if(new Rectangle(803,169,58,44).Contains(pointer)){CloseMovement();return true;}
         if(PopulationTurnButton.Contains(pointer))return true;
