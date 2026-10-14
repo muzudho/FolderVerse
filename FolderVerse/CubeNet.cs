@@ -142,7 +142,7 @@ public sealed partial class CubeNet
                 ui.Box(new((int)Math.Min(pa.X,pb.X)-thickness/2,(int)Math.Min(pa.Y,pb.Y)-thickness/2,Math.Max(thickness,(int)Math.Abs(pa.X-pb.X)),Math.Max(thickness,(int)Math.Abs(pa.Y-pb.Y))),color);
             }
             DrawCellRoutes(ui,setup,cell.Id,p=>face.Project(p)*fit.Scale+fit.Origin,pulse);
-            if(focused==cell.Id)
+            if(!ShowRoutes && focused==cell.Id)
             {
                 ui.Box(new(rect.Left,rect.Top,rect.Width,3),Color.White);ui.Box(new(rect.Left,rect.Bottom-3,rect.Width,3),Color.White);
                 ui.Box(new(rect.Left,rect.Top,3,rect.Height),Color.White);ui.Box(new(rect.Right-3,rect.Top,3,rect.Height),Color.White);

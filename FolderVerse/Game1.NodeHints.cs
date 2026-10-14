@@ -6,7 +6,7 @@ public partial class Game1
 {
     private void DrawNodeTooltip()
     {
-        int id=_net.HitRobotBadge(_pointer);
+        if(!_net.ShowRoutes)return; int id=_net.HitRobotBadge(_pointer);
         if(id<0)id=_statusGlobe?HitGlobeNode(_pointer):_net.HitNode(_setup,NetPanel,_pointer);if(id<0)return;
         var node=_setup.Nodes.All[id];string name=_setup.Nodes.Label(node);
         float scale=Math.Min(.52f,620/_font.MeasureString(name).X);

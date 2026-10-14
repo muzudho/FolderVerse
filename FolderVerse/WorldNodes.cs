@@ -90,7 +90,7 @@ public sealed class WorldNodes
     }
     public int FullOwner(int cell)
     {
-        var owners=InCell(cell).Select(p=>p.Owner).Distinct().ToArray();return owners.Length==1?owners[0]:-1;
+        var owners=InCell(cell).Select(p=>p.Owner<0?-1:_world.Relations.Root(p.Owner)).Distinct().ToArray();return owners.Length==1?owners[0]:-1;
     }
     public string Pattern(Node p)
     {

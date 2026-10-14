@@ -250,7 +250,7 @@ public partial class Game1 : Game
                 if(wheel!=0)_net.ZoomAt(NetPanel,_pointer,wheel);
             }
             _statusCell=_net.IsAnimating?-1:_net.Hit(_setup,NetPanel,_pointer);
-            _net.HoverEdge(NetPanel,_pointer);
+            _net.HoveredNode=_net.ShowRoutes?_net.HitNode(_setup,NetPanel,_pointer):-1; _net.HoverEdge(NetPanel,_pointer);
             if(click && TransportOverviewClick(_pointer)){}
             else if(click && RouteLayerClick(_pointer)){}
             else if(click && MovementClick(_pointer,keyboard)){}
@@ -263,7 +263,8 @@ public partial class Game1 : Game
             else if(click && !pan && !_net.IsAnimating && _net.ClickEdge()){}
             else if(click && !pan && !_movementOpen && !_net.IsAnimating && _statusCell>=0)
             {
-                var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);var post=_setup.Nodes.At(_statusCell,point);
+                if(!_net.ShowRoutes)_selectedMapCell=_statusCell;
+                var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);int hit=_net.ShowRoutes?_net.HitNode(_setup,NetPanel,_pointer):-1;var post=hit>=0?_setup.Nodes.All[hit]:null;
                 if(post!=null)
                 {_populationCell=_statusCell;_populationNode=post.Id;_inspectedNode=post.Id;_supervisorDialog=0;_nodeFactoryOpen=false;_nodeTransportOpen=false;_nodeDisposalOpen=false;_nodeAssemblyOpen=false;_movementOpen=false;}
             }
@@ -529,7 +530,7 @@ public partial class Game1 : Game
         else using(var clipping=new RasterizerState{ScissorTestEnable=true})
         {
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clipping);
-            _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:_statusCell,_animationTime);_spriteBatch.End();
+            _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:(_statusCell>=0?_statusCell:_selectedMapCell),_animationTime);_spriteBatch.End();
         }
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         DrawDestinationMap();

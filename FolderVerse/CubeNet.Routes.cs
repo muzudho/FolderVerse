@@ -17,7 +17,7 @@ public sealed partial class CubeNet
         if(ControlledCountryColors && !world.Relations.Controls(owner))owner=-1;
         return owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal):WorldPreview.LandTerritoryColor(world.OwnerColor(owner),WorldTerrain.Kind(height));
     }
-    public bool ShowRoutes {get;set;}=true;
+    public bool ShowRoutes {get;set;}=true; public int HoveredNode {get;set;}=-1;
     public HashSet<int> MovementTargets {get;}=new();
     public int SelectedTarget {get;set;}=-1;
     public Vector2 NodePosition(WorldSetup world,Node node,Rectangle panel)
@@ -76,7 +76,7 @@ public sealed partial class CubeNet
                     Disc(ui,at,radius+7,new Color(255,219,96));
                     Disc(ui,at,radius+5,new Color(13,36,44));
                 }
-                if(SelectedTarget==post.Id)
+                if(SelectedTarget==post.Id || HoveredNode==post.Id)
                 {
                     Disc(ui,at,radius+4,Color.White);
                     Disc(ui,at,radius+2,new Color(13,36,44));

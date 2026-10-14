@@ -14,7 +14,7 @@ public partial class Game1
     private bool _globeCellDragged;
     private void DrawGlobeCellHover()
     {
-        int hovered=HitGlobeCell(_pointer);
+        if(_net.ShowRoutes){int id=HitGlobeNode(_pointer);if(id>=0){var n=_setup.Nodes.All[id];var c=_setup.Cells[n.Cell];if(_world.ProjectVisible(_setup.Routes.Position(n.Cell,n.Center),c.Normal,_yaw,_pitch,StatusGlobeArea,out var at)){_ui.Box(new((int)at.X-14,(int)at.Y-14,28,3),Color.White);_ui.Box(new((int)at.X-14,(int)at.Y+11,28,3),Color.White);}}return;} int hovered=HitGlobeCell(_pointer);
         if(hovered<0)return;
         var cell=_setup.Cells[hovered];
         var points=new Vector2[4];
@@ -59,10 +59,10 @@ public partial class Game1
         if(Vector2.DistanceSquared(new(_pointer.X,_pointer.Y),new(_globePressPoint.X,_globePressPoint.Y))>36)_globeCellDragged=true;
         if(mouse.LeftButton!=ButtonState.Released)return;
         int selected=_globePressedCell;_globePressedCell=-1;
-        int selectedNode=HitGlobeNode(_pointer);
+        int selectedNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1;
         if(!_globeCellDragged && selectedNode>=0)
         {_globeSelectedNode=selectedNode;var node=_setup.Nodes.All[selectedNode];_populationCell=node.Cell;_populationNode=node.Id;_inspectedNode=node.Id;_supervisorDialog=0;_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=_nodeAssemblyOpen=false;return;}
-        if(_globeCellDragged)return;
+        if(_globeCellDragged || _net.ShowRoutes)return;
         var cell=_setup.Cells[selected];
         _dragging=_mapDragging=false;
         _net.SetCenter(_setup,cell.Face);_net.ResetView();
