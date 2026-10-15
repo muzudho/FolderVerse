@@ -73,3 +73,77 @@ Console.WriteLine("PASS: leader and nested subordinate actions commit one shared
     world.Campaign.RobotBattles.Check(world);
     Console.WriteLine("PASS: planning is inert; three sources merge six soldiers; node invasion leaves conqueror at home; one end-turn commit");
 }
+{
+    void Assert(bool ok,string message){if(!ok)throw new Exception(message);}
+    WorldSetup Setup(){var x=new WorldSetup();x.SetWorld(2);x.SetCast(123);x.SetPlacement(456);x.SelectPlayer(0);x.Robots.Initialize(x.Nodes.All.Length,x.ActiveCount);return x;}
+    var x=Setup();var home=x.Nodes.All.First(n=>x.Routes.Neighbors(n).Length>0);var route=x.Routes.Neighbors(home)[0];var target=x.Nodes.At(route.Target,route.Entry);
+    home.Owner=0;target.Owner=1;x.ConquerorLocations[0]=home.Cell;x.ConquerorPoints[0]=home.Center;
+    for(int i=0;i<12;i++)x.Robots.Nodes[home.Id].Add(x.Robots.Create(0,RobotParts.Complete));
+    for(int i=0;i<11;i++)x.Robots.Nodes[target.Id].Add(x.Robots.Create(0,RobotParts.Body));
+    var defender=x.Robots.Create(1,RobotParts.Complete);x.Robots.Nodes[target.Id].Add(defender);
+    var campaign=x.Campaign.RobotBattles;campaign.Rules=new(){SegmentTurns=1,NoWillTurns=1000,PersuasionPercent=0};
+    var original=x.Robots.Nodes.SelectMany(s=>s.Robots).Select(r=>r.Id).Order().ToArray();
+    campaign.Advance(x,new[]{new March(0,target.Id,2,home.Id,false)});
+    Assert(x.Robots.Nodes[home.Id].ReservedReturns==2 && !x.Robots.Nodes[home.Id].HasSpace,"Departed robots reserve their exact home slots");
+    bool blocked=false;try{x.Robots.Nodes[home.Id].Add(x.Robots.Create(0,RobotParts.Head));}catch(InvalidOperationException){blocked=true;}Assert(blocked,"Return slots cannot be filled");
+    x.Robots.Workshops[home.Id].Configure(RobotParts.Head,1);
+    x.Robots.Advance((a,b)=>false,n=>x.Nodes.All[n].Owner,1,campaign.LockedNode);
+    Assert(x.Robots.Nodes[home.Id].Count==10 && x.Robots.Workshops[home.Id].Waiting,"Production waits for reserved return slots");
+    var cargo=x.Robots.Nodes[target.Id].Robots.First();
+    x.Robots.Transport.Resolve(x.Robots,new[]{new RobotShipment(target.Id,home.Id,cargo.Id,cargo.Parts)},(a,b)=>true);
+    Assert(x.Robots.Nodes[home.Id].Count==10 && x.Robots.Nodes[target.Id].Robots.Any(r=>r.Id==cargo.Id),"Transport cannot consume return slots");
+    x.Robots.Workshops[home.Id].Paused=true;
+    var encounter=campaign.Encounters.Single();var board=encounter.Battles.Single();
+    foreach(var army in board.Armies)while(army.Waiting.TryDequeue(out var u))board.Units.Add(u);
+    foreach(var u in board.Units)if(u.Owner==1)u.Fallen=true;
+    board.Winner=0;board.Finished=true;
+    campaign.Advance(x,Array.Empty<March>());
+    var stored=x.Robots.Nodes.Concat(x.Robots.Retinues).SelectMany(s=>s.Robots).ToArray();
+    Assert(stored.Select(r=>r.Id).Order().SequenceEqual(original),"Battle preserves all robot IDs including defeated robots");
+    var damaged=stored.Single(r=>r.Id==defender.Id);
+    Assert(new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Count(damaged.IsDamaged)==1 && damaged.Origin(RobotParts.Head)==1,"Fallen robot damages one part without rewriting country");
+    Assert(x.Robots.Nodes[home.Id].Count==12 && x.Robots.Nodes[target.Id].Count==12,"Full destination swaps without overflow");
+    Assert(x.Robots.Nodes[home.Id].Robots.Count(r=>r.Parts==RobotParts.Body)==2,"Swap brings native-part residents home first");
+    Assert(x.Robots.Nodes.All(s=>s.ReservedReturns==0),"Completed battle releases all return reservations");campaign.Check(x);
+    // Multiple sources of the same country must not collapse into one army home.
+    x=Setup();target=x.Nodes.All.First(n=>x.Routes.Neighbors(n).Select(r=>x.Nodes.At(r.Target,r.Entry).Id).Distinct().Count()>=2);
+    var sources=x.Routes.Neighbors(target).Select(r=>x.Nodes.At(r.Target,r.Entry)).DistinctBy(n=>n.Id).Take(2).ToArray();target.Owner=1;
+    foreach(var n in sources){n.Owner=0;x.Robots.Nodes[n.Id].Add(x.Robots.Create(0,RobotParts.Complete));}
+    x.Robots.Nodes[target.Id].Add(x.Robots.Create(1,RobotParts.Complete));campaign=x.Campaign.RobotBattles;campaign.Rules=new(){SegmentTurns=1,NoWillTurns=1000,PersuasionPercent=0};
+    var homes=sources.ToDictionary(n=>x.Robots.Nodes[n.Id].Robots.Single().Id,n=>n.Id);
+    campaign.Advance(x,sources.Select(n=>new March(0,target.Id,1,n.Id,false)).ToArray());board=campaign.Encounters.Single().Battles.Single();
+    foreach(var army in board.Armies)while(army.Waiting.TryDequeue(out var u))board.Units.Add(u);
+    foreach(var u in board.Units.Where(u=>u.Owner==0))u.Retreated=true;
+    board.Winner=1;board.Finished=true;campaign.Advance(x,Array.Empty<March>());
+    foreach(var h in homes)Assert(x.Robots.Nodes[h.Value].Robots.Any(r=>r.Id==h.Key && r.DamagedParts==0),"Retreat returns intact to individual source");campaign.Check(x);
+    Console.WriteLine("PASS: return-slot reservations, no battle disposal, one-part damage, full-hangar native-priority swaps, individual multi-source retreats.");
+}
+
+{
+    void Assert(bool ok,string message){if(!ok)throw new Exception(message);}
+    var x=new WorldSetup();x.SetWorld(2);x.SetCast(123);x.SetPlacement(456);x.SelectPlayer(0);x.Robots.Initialize(x.Nodes.All.Length,x.ActiveCount);
+    var home=x.Nodes.All.First(n=>x.Routes.Neighbors(n).Length>0);var route=x.Routes.Neighbors(home)[0];var target=x.Nodes.At(route.Target,route.Entry);
+    home.Owner=0;target.Owner=1;x.ConquerorLocations[0]=home.Cell;x.ConquerorPoints[0]=home.Center;
+    var pocket=x.Robots.Create(0,RobotParts.Complete).Materialize() with {BodyOrigin=1,LegsOrigin=1,DamagedParts=RobotParts.Body};
+    x.Robots.Retinues[0].Add(pocket);x.Robots.Nodes[target.Id].Add(x.Robots.Create(1,RobotParts.Complete));
+    x.Robots.Training[0].DeploymentPolicy=2;
+    var campaign=x.Campaign.RobotBattles;campaign.Rules=new(){SegmentTurns=1,NoWillTurns=1000,PersuasionPercent=0};
+    campaign.Advance(x,new[]{new March(0,target.Id,0)});
+    var board=campaign.Encounters.Single().Battles.Single();
+    foreach(var army in board.Armies)while(army.Waiting.TryDequeue(out var u))board.Units.Add(u);
+    foreach(var u in board.Units.Where(u=>u.Owner==0)){if(u.Robot!=null)u.Fallen=true;else u.Retreated=true;}
+    // Force the next random sample to hit the already damaged body (head/body/legs).
+    while(board.Random.Clone().Next(3)!=1)board.Random.Next(3);
+    board.Winner=1;board.Finished=true;campaign.Advance(x,Array.Empty<March>());
+    var returned=x.Robots.Retinues[0].Robots.Single();
+    Assert(returned.Id==pocket.Id && returned.DamagedParts==RobotParts.Body && returned.NativeParts(0)==1,"Repeated damaged-part hit adds no damage and pocket robot returns to pocket");
+    Assert(x.Robots.Retinues[0].ReservedReturns==0,"Pocket return reservation released");campaign.Check(x);
+    campaign.Advance(x,new[]{new March(0,target.Id,0)});board=campaign.Encounters.Single(e=>!e.Finished).Battles.Single();
+    foreach(var army in board.Armies)while(army.Waiting.TryDequeue(out var u))board.Units.Add(u);
+    foreach(var u in board.Units.Where(u=>u.Owner==0)){if(u.Robot!=null)u.Fallen=true;else u.Retreated=true;}
+    while(board.Random.Clone().Next(3)!=0)board.Random.Next(3);
+    board.Winner=1;board.Finished=true;campaign.Advance(x,Array.Empty<March>());
+    returned=x.Robots.Retinues[0].Robots.Single();
+    Assert(returned.Id==pocket.Id && !returned.CanFight && returned.NativeParts(0)==0 && returned.Origin(RobotParts.Head)==0,"Last native part damage disables combat without disposing robot");campaign.Check(x);
+    Console.WriteLine("PASS: already-damaged hit, exact pocket return, last-native-part combat disable without disposal.");
+}

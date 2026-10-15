@@ -90,7 +90,7 @@ public partial class Game1
             var cell=HangarCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);bool owned=occupant==null || CanMoveHangarRobot(occupant);_ui.Box(cell,owned?Muted:new Color(9,19,26));
             if(_hangarDrag.HasValue && cell.Contains(_pointer))_ui.Box(new(cell.X,cell.Y,cell.Width,3),Cream);
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);if(robot==null)continue;
-            foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(new(cell.X+57,cell.Y+12,68,102),robot.Affiliation(part),part,robot.Role==RobotRole.Captain,whiteOutline:true);
+            foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(new(cell.X+57,cell.Y+12,68,102),robot.Origin(part),part,robot.Role==RobotRole.Captain,whiteOutline:true,damaged:robot.IsDamaged(part));
             for(int row=0;row<3;row++)
             {
                 var bounds=HangarPartBounds(slot,row);var part=HangarPart(row);
@@ -100,17 +100,17 @@ public partial class Game1
                 var color=movable?Cream:new Color(145,156,166);
                 _ui.Box(new(bounds.X,bounds.Y,bounds.Width,2),color);_ui.Box(new(bounds.X,bounds.Bottom-2,bounds.Width,2),color);
                 _ui.Box(new(bounds.X,bounds.Y,2,bounds.Height),color);_ui.Box(new(bounds.Right-2,bounds.Y,2,bounds.Height),color);
-                hover=movable?$"{PartsLabel(part)}をドラッグ＆ドロップして再配置":"この個体は処理中・予約中、または操作できない所有国です";
+                hover=movable?$"{PartsLabel(part)}{(robot.IsDamaged(part)?"（損傷・未所属扱い）":"")}をドラッグ＆ドロップして再配置":"この個体は処理中・予約中、または操作できない所有国です";
             }
             _ui.Center(PartsLabel(robot.Parts)+$" / #{robot.Owner+1}",new(cell.X,cell.Y+126,cell.Width,24),.4f,Cream);
-            _ui.Center("ID "+robot.Id+(robot.Disposal?" / 廃棄":""),new(cell.X,cell.Y+148,cell.Width,22),.29f,Cream);
+            _ui.Center("ID "+robot.Id+(robot.Disposal?" / 廃棄":"")+(robot.DamagedParts!=0?" / 損傷":""),new(cell.X,cell.Y+148,cell.Width,22),.29f,Cream);
         }
         _ui.Text(_hangarMessage.Length>0 && !hoveringPart?_hangarMessage:hover,new(84,838),.32f,Cream);
         DrawNodeFactoryTile(false);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
         if(_hangarDrag.HasValue)
         {
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarDrag);if(robot!=null)
-            {_ui.Box(new(_pointer.X+12,_pointer.Y+12,56,74),new Color(25,45,57));DrawRobotGlyph(new(_pointer.X+18,_pointer.Y+16,44,62),robot.Affiliation(_hangarPart),_hangarPart,whiteOutline:true);}
+            {_ui.Box(new(_pointer.X+12,_pointer.Y+12,56,74),new Color(25,45,57));DrawRobotGlyph(new(_pointer.X+18,_pointer.Y+16,44,62),robot.Origin(_hangarPart),_hangarPart,whiteOutline:true,damaged:robot.IsDamaged(_hangarPart));}
         }
     }
 }

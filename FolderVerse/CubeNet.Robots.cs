@@ -54,16 +54,16 @@ public sealed partial class CubeNet
                     if((robot.Parts&part)==0)continue;
                     // Each present part touches the next, including head + legs.
                     var full=new Rectangle(card.X,card.Y+row*12-(part==RobotParts.Head?0:part==RobotParts.Body?12:24),24,36); if(ShowRoutes && HoveredNode==node.Id)full=new(bounds.Center.X+(full.X-bounds.Center.X)*2,bounds.Bottom+(full.Y-bounds.Bottom)*2,full.Width*2,full.Height*2);
-                    DrawMapRobot(ui,full,world.OwnerColor(robot.Affiliation(part)),part);
+                    DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part));
                     row++;
                 }
             }
         }
     }
-    public void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts)
+    public void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts,bool damaged=false)
     {
         _mapRobotTexture ??= LoadMapRobot(ui.Batch.GraphicsDevice);
-        var tint=Color.Lerp(Color.White,color,.48f);
+        var tint=damaged?new Color(136,137,127):Color.Lerp(Color.White,color,.48f);
         for(int part=0;part<3;part++)
         {
             if((parts&(RobotParts)(4>>part))==0)continue;

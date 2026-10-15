@@ -32,10 +32,16 @@ public sealed class RobotStore
     private readonly List<Robot> _robots=new();
     public IReadOnlyList<Robot> Robots=>_robots;
     public int Count=>_robots.Count;
+    private readonly HashSet<long> _returnReservations=new();
+    public int ReservedReturns=>_returnReservations.Count;
+    public int StorageLimit=>Capacity-ReservedReturns;
+    public bool HasSpace=>Count<StorageLimit;
+    internal Robot Depart(long id){var robot=Remove(id);_returnReservations.Add(id);return robot;}
+    internal void ReleaseReturn(long id)=>_returnReservations.Remove(id);
     public void Add(Robot robot)
     {
         RobotWorld.Validate(robot.Owner,robot.Parts);
-        if(Count>=Capacity || _robots.Any(r=>r.Id==robot.Id))throw new InvalidOperationException("Robot store is full or ID is duplicated.");
+        if(Count>=StorageLimit || _robots.Any(r=>r.Id==robot.Id))throw new InvalidOperationException("Robot store is full or ID is duplicated.");
         _robots.Add(robot);
     }
     public Robot Remove(long id)
@@ -45,7 +51,7 @@ public sealed class RobotStore
     internal void Replace(IEnumerable<Robot> robots)
     {
         var next=robots.ToArray();
-        if(next.Length>Capacity || next.Select(r=>r.Id).Distinct().Count()!=next.Length)throw new InvalidOperationException("Invalid robot store.");
+        if(next.Length>StorageLimit || next.Select(r=>r.Id).Distinct().Count()!=next.Length)throw new InvalidOperationException("Invalid robot store.");
         _robots.Clear();_robots.AddRange(next);
     }
 }
@@ -98,7 +104,7 @@ public sealed partial class RobotWorld
     {
         var store=Nodes[node];var robot=store.Robots.Single(r=>r.Id==id);Validate(robot.Owner,first);
         if(Workshops[node].DisposalTarget==id)throw new InvalidOperationException("Disposal target is reserved.");
-        if((robot.Parts&first)!=first || first==robot.Parts || store.Count>=RobotStore.Capacity)throw new InvalidOperationException("Cannot split this robot.");
+        if((robot.Parts&first)!=first || first==robot.Parts || !store.HasSpace)throw new InvalidOperationException("Cannot split this robot.");
         var remainder=robot.Materialize() with {Id=Create(robot.Owner,robot.Parts^first,disposal:robot.Disposal).Id,Parts=robot.Parts^first,DamagedParts=robot.DamagedParts&(robot.Parts^first)};
         store.Replace(store.Robots.Where(r=>r.Id!=id).Append(robot with {Parts=first,DamagedParts=robot.DamagedParts&first}).Append(remainder));
     }
@@ -139,6 +145,7 @@ public sealed partial class RobotWorld
     {
         var all=Nodes.Concat(Retinues).SelectMany(s=>s.Robots).ToArray();
         if(all.Select(r=>r.Id).Distinct().Count()!=all.Length)throw new InvalidOperationException("Robot has multiple locations.");
+        foreach(var store in Nodes.Concat(Retinues))if(store.Count>store.StorageLimit)throw new InvalidOperationException("Hangar return capacity exceeded.");
         foreach(var robot in all)Validate(robot.Owner,robot.Parts);
     }
 }

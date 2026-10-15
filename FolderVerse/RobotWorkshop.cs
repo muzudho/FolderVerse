@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 
@@ -67,7 +67,7 @@ public sealed partial class RobotWorkshop
         if(!Manufacturing || Paused || owner<0)return;
         if(RestEnabled && RestRemaining>0){RestRemaining--;return;}
         ProductionAge=Math.Min(ProductionPeriod,ProductionAge+1);
-        if(!Waiting || world.Nodes[node].Count>=RobotStore.Capacity-reservedSlots)return;
+        if(!Waiting || world.Nodes[node].Count>=world.Nodes[node].StorageLimit-reservedSlots)return;
         world.Nodes[node].Add(world.Create(owner,Product));ProductionAge=0;
         if(RestEnabled && ++ProducedSinceRest>=RestEvery){ProducedSinceRest=0;RestRemaining=RestTurns;}
     }

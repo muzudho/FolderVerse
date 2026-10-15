@@ -16,7 +16,7 @@ public sealed partial class RobotWorld
         var target=targetId.HasValue?store.Robots.Single(r=>r.Id==targetId.Value):null;
         if(target!=null && (target.Disposal!=source.Disposal || (target.Parts&part)!=0))throw new InvalidOperationException("Incompatible target.");
         var remaining=source.Parts^part;
-        if(target==null && remaining!=0 && store.Count>=RobotStore.Capacity)throw new InvalidOperationException("Hangar is full.");
+        if(target==null && remaining!=0 && !store.HasSpace)throw new InvalidOperationException("Hangar is full.");
         var destination=target!=null?target.Merge(source with {Parts=part,DamagedParts=source.DamagedParts&part},owner??target.Owner):
             remaining==0?source.Materialize():source.Materialize() with {Id=Create(source.Owner,part,disposal:source.Disposal).Id,Parts=part,DamagedParts=source.DamagedParts&part};
         if(owner.HasValue && destination.NativeParts(owner.Value)>0)destination=destination.Materialize() with {Owner=owner.Value};

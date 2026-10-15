@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System.Linq;
 using Microsoft.Xna.Framework;
 
@@ -34,7 +34,7 @@ public partial class Game1
         var source=_pocketFromNode?deployed:pocket;var destination=_pocketFromNode?pocket:deployed;
         long id=_pocketRobot.Value;
         if(_setup.Campaign.RobotBattles.LockedNode(node)){_pocketMessage="継戦中の節点では配備を変更できません";return;}
-        if(destination.Count>=12){_pocketMessage="移動先の12枠が満杯です";return;}
+        if(!destination.HasSpace){_pocketMessage="移動先が満杯です（出撃中の帰還予約を含む）";return;}
         if(_pocketFromNode && (_setup.Robots.Workshops[node].DisposalTarget==id || _setup.Robots.PendingEdits.Any(e=>e.Ids.Contains(id))))
         {_pocketMessage="組立・分解・廃棄を予約したロボットは移せません";return;}
         if(!source.Robots.Any(r=>r.Id==id && r.Owner==player)){_pocketRobot=null;return;}
