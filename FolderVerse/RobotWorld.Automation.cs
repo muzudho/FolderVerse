@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 public sealed partial class RobotWorld
@@ -20,7 +20,7 @@ public sealed partial class RobotWorld
         bool gentle=workshop.Automation==NodeAutomation.Gentle,changed=false;
         var stock=Nodes[node].Robots.Where(r=>!r.Disposal).ToArray();
         var counts=new int[3];var parts=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs};
-        for(int i=0;i<3;i++)counts[i]=stock.Count(r=>(r.Parts&parts[i])!=0 && r.Origin(parts[i])==owner);
+        for(int i=0;i<3;i++)counts[i]=stock.Count(r=>(r.Parts&parts[i])!=0 && r.Affiliation(parts[i])==owner);
         // Prefer plans that fill missing native parts. Available plans differ per line/node.
         foreach(var line in workshop.ProductionLines){
             int best=Enumerable.Range(0,line.Plans.Length).OrderByDescending(i=>parts.Select((p,j)=>(p,j)).Where(x=>(line.Plans[i].Product&x.p)!=0).Sum(x=>12-counts[x.j])).ThenBy(i=>line.Plans[i].Turns).First();

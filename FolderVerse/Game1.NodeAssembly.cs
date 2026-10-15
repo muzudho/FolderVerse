@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -21,7 +21,7 @@ public partial class Game1
     {var cell=HangarCell(slot);return new(cell.X+56,cell.Y+10+row*38,70,36);}
     private bool CanOpenHangar=>_setup.Nodes.All[_populationNode].Owner<0 || CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
     private bool CanMoveHangarRobot(Robot robot)=>CanOpenHangar && !_setup.Campaign.RobotBattles.LockedNode(_populationNode) && _setup.Robots.Workshops[_populationNode].DisposalTarget!=robot.Id && !_setup.Robots.PendingEdits.Any(e=>e.Ids.Contains(robot.Id));
-    private bool CanMoveHangarPart(Robot robot,RobotParts part)=>CanMoveHangarRobot(robot) && (_setup.Nodes.All[_populationNode].Owner>=0 || robot.Origin(part)==_setup.PlayerSlot);
+    private bool CanMoveHangarPart(Robot robot,RobotParts part)=>CanMoveHangarRobot(robot) && (_setup.Nodes.All[_populationNode].Owner>=0 || robot.Affiliation(part)==_setup.PlayerSlot);
     private void OpenNodeAssembly()
     {
         if(!CanOpenHangar)return;
@@ -90,7 +90,7 @@ public partial class Game1
             var cell=HangarCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);bool owned=occupant==null || CanMoveHangarRobot(occupant);_ui.Box(cell,owned?Muted:new Color(9,19,26));
             if(_hangarDrag.HasValue && cell.Contains(_pointer))_ui.Box(new(cell.X,cell.Y,cell.Width,3),Cream);
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);if(robot==null)continue;
-            foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(new(cell.X+57,cell.Y+12,68,102),robot.Origin(part),part,robot.Role==RobotRole.Captain,whiteOutline:true);
+            foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(new(cell.X+57,cell.Y+12,68,102),robot.Affiliation(part),part,robot.Role==RobotRole.Captain,whiteOutline:true);
             for(int row=0;row<3;row++)
             {
                 var bounds=HangarPartBounds(slot,row);var part=HangarPart(row);
@@ -110,7 +110,7 @@ public partial class Game1
         if(_hangarDrag.HasValue)
         {
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarDrag);if(robot!=null)
-            {_ui.Box(new(_pointer.X+12,_pointer.Y+12,56,74),new Color(25,45,57));DrawRobotGlyph(new(_pointer.X+18,_pointer.Y+16,44,62),robot.Origin(_hangarPart),_hangarPart,whiteOutline:true);}
+            {_ui.Box(new(_pointer.X+12,_pointer.Y+12,56,74),new Color(25,45,57));DrawRobotGlyph(new(_pointer.X+18,_pointer.Y+16,44,62),robot.Affiliation(_hangarPart),_hangarPart,whiteOutline:true);}
         }
     }
 }

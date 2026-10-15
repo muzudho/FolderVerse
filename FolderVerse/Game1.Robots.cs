@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using Microsoft.Xna.Framework;
 
 public partial class Game1
@@ -6,7 +6,7 @@ public partial class Game1
     private static Rectangle RobotCard(int index)=>new(54+index%6*149,220+index/6*153,137,141);
     private static string PartsLabel(RobotParts parts)=>((parts&RobotParts.Head)!=0?"頭":"")+((parts&RobotParts.Body)!=0?"胴":"")+((parts&RobotParts.Legs)!=0?"脚":"");
     private void DrawRobotGlyph(Rectangle r,Robot robot,bool whiteOutline=false)
-    {foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(r,robot.Origin(part),part,robot.Role==RobotRole.Captain,whiteOutline:whiteOutline);}
+    {foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(r,robot.Affiliation(part),part,robot.Role==RobotRole.Captain,whiteOutline:whiteOutline);}
     private void DrawRobotGlyph(Rectangle r,int owner,RobotParts parts,bool captain=false,float opacity=1,bool whiteOutline=false)
     {
         var color=_setup.OwnerColor(owner)*opacity;

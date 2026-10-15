@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,7 +54,7 @@ public sealed partial class CubeNet
                     if((robot.Parts&part)==0)continue;
                     // Each present part touches the next, including head + legs.
                     var full=new Rectangle(card.X,card.Y+row*12-(part==RobotParts.Head?0:part==RobotParts.Body?12:24),24,36); if(ShowRoutes && HoveredNode==node.Id)full=new(bounds.Center.X+(full.X-bounds.Center.X)*2,bounds.Bottom+(full.Y-bounds.Bottom)*2,full.Width*2,full.Height*2);
-                    DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part);
+                    DrawMapRobot(ui,full,world.OwnerColor(robot.Affiliation(part)),part);
                     row++;
                 }
             }

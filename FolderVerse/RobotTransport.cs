@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -111,8 +111,8 @@ public sealed class RobotTransport
         foreach(var s in active)
         {
             var source=stores[s.Source];var robot=source.Single(r=>r.Id==s.RobotId);source.Remove(robot);
-            if(s.Parts!=robot.Parts){source.Add(robot with {Parts=robot.Parts^s.Parts});robot=robot with {Id=temporary--};}
-            cargo[s.RobotId]=robot with {Parts=s.Parts,Disposal=robot.Disposal || s.Disposal};
+            if(s.Parts!=robot.Parts){source.Add(robot with {Parts=robot.Parts^s.Parts,DamagedParts=robot.DamagedParts&(robot.Parts^s.Parts)});robot=robot with {Id=temporary--};}
+            cargo[s.RobotId]=robot with {Parts=s.Parts,DamagedParts=robot.DamagedParts&s.Parts,Disposal=robot.Disposal || s.Disposal};
         }
         foreach(var s in Ordered(active))
         {
