@@ -35,20 +35,26 @@ sealed class CheckGame:Game1
             int seed=Enumerable.Range(0,100000).First(s=>IndustryCycle.CreateWheel(s,1)[IndustryCycle.SectorAt(new SeedRandom(s^7919^0x45123).Next(100),IndustryCycle.CreateWheel(s,1))].Turns==result);w.Industry.Roll(seed);
             Call("BeginIndustry");Set("_industryAge",0d);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();Save("industry-spin");
             var initial=Pixels();int clock=w.Robots.IndustryTurn;
-            Call("UpdateIndustry",.39,false);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();
+            Call("UpdateIndustry",1.49,false);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();
             Check(initial.SequenceEqual(Pixels()) && w.Robots.IndustryTurn==clock,"Initially no numbers, wheel stationary");
             Call("UpdateIndustry",.02,false);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();
-            Check(!initial.SequenceEqual(Pixels()),"First number appears after 0.4 seconds");
+            Check(!initial.SequenceEqual(Pixels()),"First number appears after 1.5 seconds");
             for(int i=1;i<=w.Industry.Wheel.Count;i++){
-                Set("_industryAge",i*.4);Check((int)typeof(Game1).GetProperty("IndustryVisibleLabels",F)!.GetValue(this)! ==i,"Clockwise reveal count");
+                Set("_industryAge",1.5+(i-1)*.4);Check((int)typeof(Game1).GetProperty("IndustryVisibleLabels",F)!.GetValue(this)! ==i,"Clockwise reveal count");
             }
+            double last=1.5+(w.Industry.Wheel.Count-1)*.4;
+            double spin=(double)typeof(Game1).GetProperty("IndustryReadSeconds",F)!.GetValue(this)!;
+            Check(Math.Abs(spin-last-1.5)<.00001,"Last number remains visible for 1.5 seconds before spinning");
+            Set("_industryAge",last);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();var allNumbers=Pixels();
+            Call("UpdateIndustry",1.49,false);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();Check(allNumbers.SequenceEqual(Pixels()),"Final reading interval stays still");
+            Call("UpdateIndustry",.02,false);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();Check(!allNumbers.SequenceEqual(Pixels()),"Spin starts after final reading interval");
             Call("UpdateIndustry",6d,false);int industry=w.Robots.IndustryTurn;Call("UpdateIndustry",.1,false);Check(w.Robots.IndustryTurn==industry,"Repeated draw/update must not produce twice");
             GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();Save("industry-"+result);
             if(result==0)Check(Get("_industryPrayer")!=null,"Prayer mob on fumble");if(result==40)Check(Get("_industrySurprise")!=null,"Surprised mob on jackpot");
             Call("UpdateIndustry",0d,true);Check(Get("_screen").ToString()=="WorldStatus","Continue to domestic");
         }
         var node=w.Nodes.Current(0);var factory=w.Robots.Workshops[node.Id];for(int seed=0;factory.ProductionLines.Length!=3;seed++)factory.GenerateLines(seed);
-        Set("_populationNode",node.Id);Set("_populationCell",node.Cell);Set("_factoryPlanLine",0);factory.SelectPlan(4);
+        Set("_domesticSlide",1f);Set("_populationNode",node.Id);Set("_populationCell",node.Cell);Set("_factoryPlanLine",0);factory.SelectPlan(4);
         GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawNodeFactory");batch.End();Save("cheap-production-plans");
         var option=(Rectangle)typeof(Game1).GetMethod("FactoryPlanButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{6})!;
         Call("NodeFactoryClick",option.Center);Check(factory.SelectedPlan==6 && factory.CheapProduct,"Cheap option can be selected from actual menu");

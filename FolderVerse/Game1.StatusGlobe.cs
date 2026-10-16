@@ -61,7 +61,7 @@ public partial class Game1
         int selected=_globePressedCell;_globePressedCell=-1;
         int selectedNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1;
         if(!_globeCellDragged && selectedNode>=0)
-        {_reignView=false; _globeSelectedNode=selectedNode; _world.GlobeAnchor=_setup.Routes.Position(_setup.Nodes.All[selectedNode].Cell,_setup.Nodes.All[selectedNode].Center);var node=_setup.Nodes.All[selectedNode];_populationCell=node.Cell;_populationNode=node.Id;_inspectedNode=node.Id;_supervisorDialog=0;_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=_nodeAssemblyOpen=false;return;}
+        {_globeSelectedNode=selectedNode; _world.GlobeAnchor=_setup.Routes.Position(_setup.Nodes.All[selectedNode].Cell,_setup.Nodes.All[selectedNode].Center);OpenNodeInspector(selectedNode);return;}
         if(_globeCellDragged || _net.ShowRoutes)return;
         var cell=_setup.Cells[selected];
         _dragging=_mapDragging=false;
@@ -84,7 +84,7 @@ public partial class Game1
         _statusGlobe=false;_statusCell=selected;_inputOutcome="globe_cell_opened_net";
     }
     private Rectangle StatusGlobeArea=>OrientationAreas(NetPanel,false).Globe;
-    private Rectangle OrientationResetButton=>_statusGlobe?new(NetButton(3).X,912,343,50):NetButton(4);
+    private Rectangle OrientationResetButton=>_statusGlobe?new(NetButton(3).X,NetButton(3).Y,343,50):NetButton(4);
     private void ResetStatusOrientation()
     {
         _yaw=_pitch=0;_dragging=false;_net.SetCenter(_setup,4);

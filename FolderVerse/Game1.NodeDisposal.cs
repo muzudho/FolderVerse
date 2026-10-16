@@ -23,7 +23,7 @@ public partial class Game1
     }
     private bool NodeDisposalClick(Point pointer)
     {
-        if(new Rectangle(803,169,58,44).Contains(pointer) || NodeDisposalTile.Contains(pointer)){_nodeDisposalOpen=false;return true;}
+        if(NodeDisposalTile.Contains(pointer)){_nodeDisposalOpen=false;return true;}
         if(!CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return true;
         var robots=DisposalCandidates();
         for(int i=0;i<robots.Length;i++)
@@ -48,7 +48,7 @@ public partial class Game1
     {
         var node=_setup.Nodes.All[_populationNode];var workshop=_setup.Robots.Workshops[node.Id];var robots=DisposalCandidates();
         _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Box(new(54,150,850,6),_setup.OwnerColor(node.Owner));
-        _ui.Button(new(803,169,58,44),"×",Muted,.7f);
+
         string status=!workshop.HasDisposalFactory?"この節点に廃棄炉はありません":workshop.DisposalTarget is long id?$"レーン使用中 ID {id} / {workshop.DisposalAge}/{workshop.DisposalPeriod} 産業ターン":"レーンは空いています / 廃棄フラグ付きの個体が自動で入ります";
         _ui.Text(status,new(84,244),.43f,Cream);
         _ui.Text("頭１・胴２・脚２産業ターン / 組み合わせは合計 / ↑↓で順番を変更",new(84,288),.42f,Cream);

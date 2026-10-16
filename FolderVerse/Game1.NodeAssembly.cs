@@ -31,11 +31,15 @@ public partial class Game1
     }
     private void NodeAssemblyInput(MouseState mouse,bool click,bool escape)
     {
+        var original=_pointer;_pointer.X-=NodeInspectorOffset;
+        try{NodeAssemblyLocalInput(mouse,click,escape);}finally{_pointer=original;}
+    }
+    private void NodeAssemblyLocalInput(MouseState mouse,bool click,bool escape)
+    {
         if(click && NodeAutomationClick(_pointer)){_hangarDrag=null;return;}
-        if(escape){if(_hangarDrag.HasValue)_hangarDrag=null;else{_nodeAssemblyOpen=false;_populationCell=-1;}return;}
+        if(escape){if(_hangarDrag.HasValue)_hangarDrag=null;else CloseNodeInspector();return;}
         if(click && (NodeFactoryTile.Contains(_pointer) || NodeTransportTile.Contains(_pointer) || NodeDisposalTile.Contains(_pointer) || NodeAssemblyTile.Contains(_pointer)))
-        {_hangarDrag=null;NodeDialogClick(_pointer,new KeyboardState());return;}
-        if(click && new Rectangle(803,169,58,44).Contains(_pointer)){_hangarDrag=null;_nodeAssemblyOpen=false;_populationCell=-1;return;}
+        {_hangarDrag=null;NodeDialogClick(new Point(_pointer.X+NodeInspectorOffset,_pointer.Y),new KeyboardState());return;}
         if(click && HangarAutoCheck.Contains(_pointer))
         {
             if(CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) && !_setup.Campaign.RobotBattles.LockedNode(_populationNode))
@@ -85,7 +89,7 @@ public partial class Game1
         var workshop=_setup.Robots.Workshops[_populationNode];var store=_setup.Robots.Nodes[_populationNode];
         _ui.Box(new(54,150,850,825),new(27,49,62));
 
-        _ui.Button(new(803,169,58,44),"×",Muted,.7f);
+
         _ui.Button(HangarAutoCheck,(workshop.AutoAssemblyDisabled?"✓ ":"□ ")+"自動での組み立て・分解を行わない",workshop.AutoAssemblyDisabled?Accent:Muted,.48f);
         bool hoveringPart=false;
         string hover="頭・胴・脚をつかんで、格納庫のセルへドラッグ＆ドロップ";

@@ -13,8 +13,9 @@ public partial class Game1
     private bool _industryApplied;
     private const double IndustrySpinSeconds=4.5;
     private const double IndustryRevealSeconds=.4;
-    private double IndustryReadSeconds=>_setup.Industry.Wheel.Count*IndustryRevealSeconds;
-    private int IndustryVisibleLabels=>Math.Min(_setup.Industry.Wheel.Count,(int)(_industryAge/IndustryRevealSeconds+1e-8));
+    private const double IndustryLeadSeconds=1.5,IndustryTailSeconds=1.5;
+    private double IndustryReadSeconds=>IndustryLeadSeconds+Math.Max(0,_setup.Industry.Wheel.Count-1)*IndustryRevealSeconds+IndustryTailSeconds;
+    private int IndustryVisibleLabels=>_industryAge<IndustryLeadSeconds?0:Math.Min(_setup.Industry.Wheel.Count,1+(int)((_industryAge-IndustryLeadSeconds)/IndustryRevealSeconds+1e-8));
     private double IndustryStopSeconds=>IndustryReadSeconds+IndustrySpinSeconds;
     private static readonly Rectangle IndustryContinue=new(1230,935,590,80);
     private void BeginIndustry()

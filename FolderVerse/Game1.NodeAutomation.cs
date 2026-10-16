@@ -45,7 +45,7 @@ public partial class Game1
     private void SupervisorDialogInput(bool click,bool escape,Microsoft.Xna.Framework.Input.KeyboardState keyboard)
     {
         if(escape){_supervisorDialog=0;return;}
-        var p=_pointer;if(SupervisorNodePanel){p.X-=920;p.Y-=40;}
+        var p=_pointer;p.X-=NodeInspectorOffset;if(SupervisorNodePanel){p.X-=920;p.Y-=40;}
         if(click && new Rectangle(650,800,180,54).Contains(p)){_supervisorDialog=0;return;}
         var w=_setup.Robots.Workshops[_supervisorDialogNode];
         if(!CanManageNodeFactory(_setup.Nodes.All[_supervisorDialogNode].Owner) || _setup.Campaign.RobotBattles.LockedNode(_supervisorDialogNode)){_supervisorDialog=0;return;}

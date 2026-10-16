@@ -26,7 +26,7 @@ public partial class Game1
     {_nodeAssemblyOpen=false;_nodeDisposalOpen=false;_nodeFactoryOpen=false;_nodeTransportOpen=true;_rateTarget=-1;_nodeReinforcementIndex=0;_nodeTransportMessage="";FitDestinationView();}
     private bool NodeTransportClick(Point pointer)
     {
-        if(new Rectangle(803,169,58,44).Contains(pointer) || NodeTransportTile.Contains(pointer)){_nodeTransportOpen=false;return true;}
+        if(NodeTransportTile.Contains(pointer)){_nodeTransportOpen=false;return true;}
         if(_setup.Robots.Workshops[_populationNode].ProductionLines.Length>0 && NodeFactoryTile.Contains(pointer)){OpenNodeFactory();return true;}
         if(new Rectangle(84,270,374,46).Contains(pointer)){_nodeTransportDisposal=false;return true;}
         if(new Rectangle(480,270,374,46).Contains(pointer)){_nodeTransportDisposal=true;return true;}
@@ -56,7 +56,7 @@ public partial class Game1
         var node=_setup.Nodes.All[_populationNode];var routes=_setup.Routes.Neighbors(node);
         _ui.Box(new(54,150,850,825),new(27,49,62));
         _ui.Box(new(54,150,850,6),_setup.OwnerColor(node.Owner));
-        _ui.Text("ロボット輸送計画",new(84,178),.8f,Cream);_ui.Button(new(803,169,58,44),"×",Muted,.7f);
+        _ui.Text("ロボット輸送計画",new(84,178),.8f,Cream);
         string label=_setup.Nodes.Label(node);_ui.Text(label,new(84,230),Math.Min(.45f,770/_font.MeasureString(label).X),Cream);
         _ui.Button(new(84,270,374,46),"ふつうの移送",_nodeTransportDisposal?Muted:Accent,.5f);
         _ui.Button(new(480,270,374,46),"廃棄としての移送",_nodeTransportDisposal?Accent:Muted,.5f);

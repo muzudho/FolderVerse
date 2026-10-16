@@ -9,11 +9,12 @@ public partial class Game1
     private readonly Dictionary<(int Battle,long Unit),float> _fallFadeStarted=new();
     private BattleState[] _robotScenes=Array.Empty<BattleState>();
     private bool _robotPlaying=true;
-    private const double BattlePartsHoldSeconds=.7,BattleForeignFadeSeconds=1,BattlePieceFadeSeconds=1;
-    private double _battleIntroAge=BattlePartsHoldSeconds+BattleForeignFadeSeconds+BattlePieceFadeSeconds;
-    private bool BattleIntroActive=>_battleIntroAge<BattlePartsHoldSeconds+BattleForeignFadeSeconds+BattlePieceFadeSeconds;
-    private float BattlePieceOpacity=>BattleIntroActive?(float)Math.Clamp((_battleIntroAge-BattlePartsHoldSeconds-BattleForeignFadeSeconds)/BattlePieceFadeSeconds,0,1):1;
+    private const double BattlePartsHoldSeconds=0,BattleForeignFadeSeconds=1.5,BattleNativeHoldSeconds=2,BattlePieceFadeSeconds=1.5,BattleBoardRevealSeconds=1.5;
+    private double _battleIntroAge=BattlePartsHoldSeconds+BattleForeignFadeSeconds+BattleNativeHoldSeconds+BattlePieceFadeSeconds+BattleBoardRevealSeconds;
+    private bool BattleIntroActive=>_battleIntroAge<BattlePartsHoldSeconds+BattleForeignFadeSeconds+BattleNativeHoldSeconds+BattlePieceFadeSeconds+BattleBoardRevealSeconds;
+    private float BattlePieceOpacity=>BattleIntroActive?(float)Math.Clamp((_battleIntroAge-BattlePartsHoldSeconds-BattleForeignFadeSeconds-BattleNativeHoldSeconds)/BattlePieceFadeSeconds,0,1):1;
     private float BattlePartOpacity(bool native)=>!BattleIntroActive?0:native?1-BattlePieceOpacity:(float)Math.Clamp(1-(_battleIntroAge-BattlePartsHoldSeconds)/BattleForeignFadeSeconds,0,1);
+    private float BattleBoardDim=>BattleIntroActive?1-(float)Math.Clamp((_battleIntroAge-BattlePartsHoldSeconds-BattleForeignFadeSeconds-BattleNativeHoldSeconds-BattlePieceFadeSeconds)/BattleBoardRevealSeconds,0,1):0;
     private RobotBattlePlayback _robotPlayback=new(Array.Empty<BattleState>());
     private int _robotRound;
     private int _robotPendingFocus=-1;
@@ -58,7 +59,7 @@ public partial class Game1
     }
     private void RobotBattleInput(double elapsed,bool click,bool enter)
     {
-        if(BattleIntroActive && !_robotSummary){_battleIntroAge=Math.Min(BattlePartsHoldSeconds+BattleForeignFadeSeconds+BattlePieceFadeSeconds,_battleIntroAge+elapsed);return;}
+        if(BattleIntroActive && !_robotSummary){_battleIntroAge=Math.Min(BattlePartsHoldSeconds+BattleForeignFadeSeconds+BattleNativeHoldSeconds+BattlePieceFadeSeconds+BattleBoardRevealSeconds,_battleIntroAge+elapsed);return;}
         _newspaperClock+=elapsed;_newspaperSlideAge+=elapsed;
         if(click && _robotSummary && SelectSummaryPaper())return;
         if(click && (_robotSummary?SummaryNewspaperSwitch.Contains(_pointer):NewspaperSwitch.Contains(_pointer)))
@@ -67,7 +68,7 @@ public partial class Game1
         if(_robotScenes.Length==0){BeginIndustry();return;}
         if(_robotSummary)
         {
-         
+
          if(enter || click && BattleContinue.Contains(_pointer)){BeginIndustry();}return;}
         var scene=_robotScenes[_battleWave];double end=RobotRoundEnd;
         if(click && (RobotBattlePrevious.Contains(_pointer) || RobotBattleNext.Contains(_pointer)))
@@ -186,6 +187,10 @@ public partial class Game1
                 var b=patch.Bounds;var color=patch.Ink==0?_setup.OwnerColor(battle.Defender):patch.Ink==2?new Color(215,198,159):new Color(255,224,115);
                 _ui.Box(new(f.X+b.X*size/34,f.Y+b.Y*size/68,Math.Min(f.Width,b.Width*size/34),Math.Max(1,b.Height*size/68)),color);
             }
+        }
+        if(BattleIntroActive){
+            float dim=BattleBoardDim;
+            _ui.Box(new(left,top,size*10,size*10),new Color(105,110,116)*(dim*.9f));
         }
         foreach(var unit in frame.Units)
         {

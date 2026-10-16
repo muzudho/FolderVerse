@@ -24,7 +24,6 @@ public partial class Game1
     private Rectangle FactoryDropOption(int field,int index){var r=FactoryDropButton(field);int count=field==2?13:9;return new(r.X,r.Y-count*30+index*30,r.Width,30);}
     private bool NodeFactoryClick(Point pointer)
     {
-        if(new Rectangle(803,169,58,44).Contains(pointer)){_nodeFactoryOpen=false;return true;}
         var factory=_setup.Robots.Workshops[_populationNode];
         if(!CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return true;
         if(_setup.Campaign.RobotBattles.LockedNode(_populationNode)){_factoryMessage="継戦中は製造計画を変更できません";return true;}
@@ -47,7 +46,7 @@ public partial class Game1
     {
         var node=_setup.Nodes.All[_populationNode];var factory=_setup.Robots.Workshops[node.Id];
         _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Box(new(54,150,850,6),_setup.OwnerColor(node.Owner));
-        _ui.Button(new(803,169,58,44),"×",Muted,.7f);
+
 
         int savedLine=_factoryLine;
         if(factory.ProductionLines.Length==0)_ui.Center("製造しない",new(84,330,770,250),.65f,Cream);

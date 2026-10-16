@@ -38,8 +38,8 @@ public partial class Game1 : Game
     private float _animationTime;
     private readonly CubeNet _net=new();
     private int _statusCell=-1;
-    private Rectangle NetPanel=>new((int)MathHelper.Lerp(40,1040,_domesticSlide),(int)MathHelper.Lerp(142,240,_domesticSlide),(int)MathHelper.Lerp(1840,790,_domesticSlide),(int)MathHelper.Lerp(820,580,_domesticSlide)); private static readonly Rectangle StatusProceed=new(518,1020,480,50);
-    private static Rectangle NetButton(int i)=>new(984+i*177,912,166,50);
+    private Rectangle NetPanel=>new((int)MathHelper.Lerp(40,_populationCell>=0?1000:1040,_domesticSlide),_populationCell>=0?142:(int)MathHelper.Lerp(142,240,_domesticSlide),(int)MathHelper.Lerp(1840,_populationCell>=0?880:790,_domesticSlide),_populationCell>=0?820:(int)MathHelper.Lerp(820,580,_domesticSlide)); private static readonly Rectangle StatusProceed=new(518,1020,480,50);
+    private Rectangle NetButton(int i)=>new(984+i*177,_populationCell>=0?990:912,166,50);
     private bool IsStatusScreen=>_screen==Screen.WorldStatus;
     private Rectangle SelectionGlobe=>_selectionTiles.Length==0?Rectangle.Empty:_selectionTiles[^1].Bounds;
     private bool IsSelectionScreen=>_screen is Screen.PlayerSelect or Screen.PlayerReady;
@@ -131,7 +131,7 @@ public partial class Game1 : Game
         UpdateRateDrag(mouse,active,click);
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
-        double elapsed=gameTime.ElapsedGameTime.TotalSeconds; _domesticSlide=MathHelper.Lerp(_domesticSlide,DomesticPanelOpen?1:0,Math.Min(1,(float)elapsed*12));
+        double elapsed=gameTime.ElapsedGameTime.TotalSeconds; UpdateDomesticSlide((float)elapsed);
         _animationTime+=(float)elapsed;
         if(IsStatusScreen && _setup.Robots.Nodes.Length>0)
             _setup.Robots.PrepareDomestic(_setup.Population.Turn,(a,b)=>!_setup.Campaign.RobotBattles.LockedEdge(a,b) && _setup.Routes.Neighbors(_setup.Nodes.All[a]).Any(r=>_setup.Nodes.At(r.Target,r.Entry).Id==b),n=>_setup.Nodes.All[n].Owner,_setup.Campaign.RobotBattles.LockedNode);
@@ -153,7 +153,8 @@ public partial class Game1 : Game
         bool captureChord=keyboard.IsKeyDown(Keys.P) && (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
         if(active && captureChord && !previousChord)_screenshots.Request();
-        if(IsStatusScreen && _populationCell>=0 && _nodeAssemblyOpen)
+        if(IsStatusScreen && active && click && DomesticViewClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && _populationCell>=0 && _nodeAssemblyOpen && (NodeInspectorBounds.Contains(_pointer) || _hangarDrag.HasValue || escape))
         {if(active)NodeAssemblyInput(mouse,click,escape);else _hangarDrag=null;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Pocket)
         {if(active)PocketInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -270,7 +271,7 @@ public partial class Game1 : Game
                 if(!_net.ShowRoutes)_selectedMapCell=_statusCell;
                 var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);int hit=_net.ShowRoutes?_net.HitNode(_setup,NetPanel,_pointer):-1;var post=hit>=0?_setup.Nodes.All[hit]:null;
                 if(post!=null)
-                {_reignView=false; _populationCell=_statusCell;_populationNode=post.Id;_inspectedNode=post.Id;_supervisorDialog=0;_nodeFactoryOpen=false;_nodeTransportOpen=false;_nodeDisposalOpen=false;_nodeAssemblyOpen=false;_movementOpen=false;}
+                {OpenNodeInspector(post.Id);}
             }
             if(active)
             {
@@ -471,7 +472,7 @@ public partial class Game1 : Game
     {
         _ui.Text("世界征服状況",new(54,22),1.1f,Cream);
         int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
-        if(_reignView || _populationCell>=0){ var image=new Rectangle(212,220,518,360);
+        if(_reignView){ var image=new Rectangle(212,220,518,360);
         if(!InspectingSupervisor && !System.Linq.Enumerable.Any(_setup.Nodes.All,node=>node.Owner==player))DrawReignWantedPoster(player);
         else
         {
@@ -541,13 +542,13 @@ public partial class Game1 : Game
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         DrawDomesticPortrait(); DrawDestinationMap();
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
-        _ui.Text(location,new(991,831),Math.Min(0.48f,870/_font.MeasureString(location).X),Cream);
-        _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"右ドラッグ：回転 / ホイール：拡縮 / 節点を選ぶと中心固定":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / 右ドラッグ：移動",new(991,865),0.37f,new(177,206,216));
+        _ui.Text(location,new(_populationCell>=0?1276:991,_populationCell>=0?770:831),Math.Min(0.48f,(_populationCell>=0?600:870)/_font.MeasureString(location).X),Cream);
+        _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"右ドラッグ：回転 / ホイール：拡縮 / 節点を選ぶと中心固定":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / 右ドラッグ：移動",new(_populationCell>=0?1276:991,_populationCell>=0?810:865),_populationCell>=0?.27f:0.37f,new(177,206,216));
         _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
         _ui.Button(NetButton(2),"現在地へ移動",Accent,0.45f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
         const string resetLabel="頭を上へ、腹を手前へ";
         _ui.Button(OrientationResetButton,resetLabel,Muted,Math.Min(.52f,(OrientationResetButton.Width-16)/_font.MeasureString(resetLabel).X));
-        if(_statusCell>=0)
+        if(_statusCell>=0 && _populationCell<0)
         {
             var cell=_setup.Cells[_statusCell];int owner=_setup.Owners[cell.Id];
             string label=WorldCoordinates.Label(_setup,cell.Id)+" / "+(_setup.Nodes.FullOwner(cell.Id)<0?"未占領（部分占拠）":"完全占領")+" / "+_setup.Nodes.Shares(cell.Id);
@@ -555,14 +556,19 @@ public partial class Game1 : Game
             string pattern=_setup.Nodes.CellPattern(cell.Id);
             _ui.Center(pattern,new(970,1003,914,32),Math.Min(0.40f,880/_font.MeasureString(pattern).X),Cream);
         }
-                if(!_reignView)_ui.Button(PopulationTurnButton,"ターン終了",Accent,0.7f);
+                if(!_reignView && _populationCell<0)_ui.Button(PopulationTurnButton,"ターン終了",Accent,0.7f);
         if(_reignView){_ui.Button(WarButton,"開戦予約",Accent,.65f);
         _ui.Button(MovementButton,"移動",Accent,.65f);
         _ui.Button(PocketButton,"ポケット",Accent,.55f);}
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(1064,1037,800,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
         if(_populationCell>=0){
             if(SupervisorNodePanel){_spriteBatch.End();_spriteBatch.Begin(transformMatrix:Matrix.CreateTranslation(920,40,0)*transform);var pointer=_ui.Pointer;_ui.Pointer=new(pointer.X-920,pointer.Y-40);DrawNodeDialog();DrawNodeAutomation();_ui.Pointer=pointer;_spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);}
-            else{DrawNodeDialog();DrawNodeAutomation();}
+            else{
+                _spriteBatch.End();_spriteBatch.Begin(transformMatrix:Matrix.CreateTranslation(NodeInspectorOffset,0,0)*transform);
+                var pointer=_ui.Pointer;var originalPointer=_pointer;_pointer.X-=NodeInspectorOffset;_ui.Pointer=new(pointer.X-NodeInspectorOffset,pointer.Y);
+                DrawNodeDialog();DrawNodeAutomation();_ui.Pointer=pointer;_pointer=originalPointer;
+                _spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);
+            }
         }
         if(_movementOpen)DrawMovementPanel();
         DrawTransportOverviewButton();

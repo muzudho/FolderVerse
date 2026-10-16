@@ -15,14 +15,13 @@ public sealed partial class CubeNet
     public void AddGlobeRobotBadge(int node,Rectangle bounds)=>_robotBadges.Add(new(node,bounds,false));
     public int HitRobotBadge(Point pointer)=>_robotBadges.Where(b=>b.Bounds.Contains(pointer)).Select(b=>b.Node).DefaultIfEmpty(-1).First();
     public const float RobotDetailScale=400;
-    // Hexagonal packing, filled from the center outward.
-    private static readonly Point[] RobotHexSlots=(from q in Enumerable.Range(-2,5)
-        from r in Enumerable.Range(-2,5)
-        where Math.Max(Math.Abs(q),Math.Max(Math.Abs(r),Math.Abs(q+r)))<=2
-        let x=q*28+r*14
-        let y=r*38
-        orderby Math.Max(Math.Abs(q),Math.Max(Math.Abs(r),Math.Abs(q+r))),x*x+y*y,Math.Atan2(y,x)
-        select new Point(x,y)).Take(12).ToArray();
+    // Even spacing around the node keeps its center and connected roads visible.
+    public static Vector2 RobotRingSlot(int index,int count)
+    {
+        float angle=-MathHelper.PiOver2+index*MathHelper.TwoPi/Math.Max(1,count);
+        float radius=Math.Max(48,count*30/MathHelper.TwoPi);
+        return new Vector2(MathF.Cos(angle),MathF.Sin(angle))*radius;
+    }
     private static int MapPartCount(RobotParts parts)=>
         ((parts&RobotParts.Head)!=0?1:0)+((parts&RobotParts.Body)!=0?1:0)+((parts&RobotParts.Legs)!=0?1:0);
     private void DrawRobotLayer(UiPainter ui,WorldSetup world,Rectangle panel,Func<Node,Vector2?> project,float scale)
@@ -31,29 +30,28 @@ public sealed partial class CubeNet
         if(!world.Campaign.UseRobotCombat)return;
         var occupied=new List<Rectangle>();
         int current=world.Nodes.Current(world.PlayerSlot)?.Id??-1;
-        foreach(var node in world.Nodes.All.OrderBy(n=>n.Id==current?0:1).ThenBy(n=>n.Id))
+        foreach(var node in world.Nodes.All.OrderBy(n=>n.Id==HoveredNode?0:n.Id==current?1:2).ThenBy(n=>n.Id))
         {
             var robots=world.Robots.Nodes[node.Id].Robots.OrderByDescending(r=>MapPartCount(r.Parts)).ToArray();
             if(robots.Length==0)continue;
             var point=project(node);if(point==null || !panel.Contains(point.Value.ToPoint()))continue;
-            var cards=robots.Select((robot,i)=>new Rectangle(RobotHexSlots[i].X-12,RobotHexSlots[i].Y-MapPartCount(robot.Parts)*6,24,MapPartCount(robot.Parts)*12)).ToArray();
-            var local=cards.Aggregate(Rectangle.Union);
-            int gap=node.IsHarbor?24:16;
-            var at=point.Value;
-            var origin=new Point((int)at.X-local.Center.X,(int)at.Y-gap-local.Bottom);
-            var bounds=new Rectangle(local.X+origin.X,local.Y+origin.Y,local.Width,local.Height);
+            var at=point.Value;float zoom=ShowRoutes && HoveredNode==node.Id?2:1;
+            var cards=robots.Select((robot,i)=>{
+                var offset=RobotRingSlot(i,robots.Length)*zoom;
+                return new Rectangle((int)(at.X+offset.X-12*zoom),(int)(at.Y+offset.Y-MapPartCount(robot.Parts)*6*zoom),(int)(24*zoom),(int)(MapPartCount(robot.Parts)*12*zoom));
+            }).ToArray();
+            var bounds=cards.Aggregate(Rectangle.Union);
             if(!panel.Contains(bounds) || occupied.Any(r=>r.Intersects(bounds)))continue;
             occupied.Add(bounds);_robotBadges.Add(new(node.Id,bounds,true));
-            ui.Box(new((int)at.X-1,bounds.Bottom,2,gap),new Color(208,219,223));
             for(int i=0;i<robots.Length;i++)
             {
-                var robot=robots[i];var card=cards[i];card.Offset(origin);
+                var robot=robots[i];var card=cards[i];
                 int row=0;
                 foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
                 {
                     if((robot.Parts&part)==0)continue;
                     // Each present part touches the next, including head + legs.
-                    var full=new Rectangle(card.X,card.Y+row*12-(part==RobotParts.Head?0:part==RobotParts.Body?12:24),24,36); if(ShowRoutes && HoveredNode==node.Id)full=new(bounds.Center.X+(full.X-bounds.Center.X)*2,bounds.Bottom+(full.Y-bounds.Bottom)*2,full.Width*2,full.Height*2);
+                    var full=new Rectangle(card.X,card.Y+(int)((row*12-(part==RobotParts.Head?0:part==RobotParts.Body?12:24))*zoom),(int)(24*zoom),(int)(36*zoom));
                     DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part));
                     row++;
                 }

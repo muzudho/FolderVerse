@@ -10,8 +10,11 @@ public partial class Game1
     private static readonly Rectangle PopulationTurnButton=new(310,1006,242,64);
     private bool NodeDialogClick(Point pointer,KeyboardState keyboard)
     {
-        if(!_reignView && PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
+        if(!_reignView && _populationCell<0 && PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
         if(SupervisorNodePanel){pointer.X-=920;pointer.Y-=40;}
+        pointer.X-=NodeInspectorOffset;
+        if(_populationCell>=0 && !NodeInspectorBounds.Contains(new Point(pointer.X+NodeInspectorOffset,pointer.Y)))return false;
+        if(_nodeFactoryOpen && (_factoryDropDown>=0 || _factoryPlanLine>=0))return NodeFactoryClick(pointer);
         if(NodeAutomationClick(pointer))return true;
         if(_populationCell<0)return false;
         if(!_nodeAssemblyOpen && !_nodeFactoryOpen && !_nodeTransportOpen && !_nodeDisposalOpen)OpenNodeAssembly();
@@ -20,15 +23,15 @@ public partial class Game1
         if(NodeTransportTile.Contains(pointer)){if(_nodeTransportOpen)_nodeTransportOpen=false;else OpenNodeTransport();return true;}
 
         if(_setup.Robots.Workshops[_populationNode].ProductionLines.Length>0 && NodeFactoryTile.Contains(pointer)){if(_nodeFactoryOpen)_nodeFactoryOpen=false;else OpenNodeFactory();return true;}
-        if(_nodeAssemblyOpen){if(new Rectangle(803,169,58,44).Contains(pointer)){_nodeAssemblyOpen=false;_populationCell=-1;}return new Rectangle(54,150,850,825).Contains(pointer);}
+        if(_nodeAssemblyOpen)return new Rectangle(54,150,850,825).Contains(pointer);
         if(_nodeDisposalOpen)return NodeDisposalClick(pointer);
         if(_nodeTransportOpen)return NodeTransportClick(pointer);
         if(_nodeFactoryOpen)return NodeFactoryClick(pointer);
-        if(new Rectangle(803,169,58,44).Contains(pointer)){_populationCell=-1;return true;}
         return new Rectangle(54,150,850,825).Contains(pointer);
     }
     private void DrawNodeDialog()
     {
+        _ui.Text("節点インスペクター / "+_setup.Nodes.Label(_setup.Nodes.All[_populationNode]),new(54,112),.5f,Cream);
         if(!_nodeAssemblyOpen && !_nodeFactoryOpen && !_nodeTransportOpen && !_nodeDisposalOpen)OpenNodeAssembly();
         if(_nodeAssemblyOpen){DrawNodeAssembly();return;}
         if(_nodeDisposalOpen){DrawNodeDisposal();return;}
