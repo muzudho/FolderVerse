@@ -11,9 +11,9 @@ public sealed partial class CubeNet
 {
     private readonly List<RobotMapBadge> _robotBadges=new();
     public IReadOnlyList<RobotMapBadge> RobotBadges=>_robotBadges;
-    public void ClearGlobeRobotBadges()=>_robotBadges.Clear();
+    public void ClearGlobeRobotBadges(){_badgePanel=null;_robotBadges.Clear();}
     public void AddGlobeRobotBadge(int node,Rectangle bounds)=>_robotBadges.Add(new(node,bounds,false));
-    public int HitRobotBadge(Point pointer)=>_robotBadges.Where(b=>b.Bounds.Contains(pointer)).Select(b=>b.Node).DefaultIfEmpty(-1).First();
+    public int HitRobotBadge(Point pointer){if(_badgePanel.HasValue)pointer=UnrotateScreen(pointer,_badgePanel.Value);return _robotBadges.Where(b=>b.Bounds.Contains(pointer)).Select(b=>b.Node).DefaultIfEmpty(-1).First();}
     public const float RobotDetailScale=400;
     // Even spacing around the node keeps its center and connected roads visible.
     public static Vector2 RobotRingSlot(int index,int count)

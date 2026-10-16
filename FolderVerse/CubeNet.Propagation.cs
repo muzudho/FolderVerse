@@ -41,6 +41,6 @@ public sealed partial class CubeNet
         var face=_animationFrom.First(f=>f.Face==world.Cells[node.Cell].Face);
         var point=face.Project(world.Routes.Position(node.Cell,node.Center));
         if(_movingFaces.Contains(face.Face))point=Vector2.Lerp(_oldPivot,_newPivot,eased)+new Vector2(0,-MathF.Sin(t*MathF.PI)*.65f)+RotatePoint(point-_oldPivot,angle);
-        return point*scale+origin;
+        return RotateScreen(point*scale+origin,panel);
     }
 }

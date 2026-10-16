@@ -20,13 +20,15 @@ public partial class Game1
     {
         if(MapTransitionActive)return;
         _mapUnfold=_statusGlobe;
+        _net.CancelAnimation();
         if(_mapUnfold)
         {
             int selected=HitGlobeCell(new Point(StatusGlobeArea.Center.X,StatusGlobeArea.Center.Y));
             if(selected<0)selected=_setup.Cells.OrderByDescending(c=>Vector3.Transform(c.Center,_world.ViewOrientation(_yaw,_pitch)).Z).First().Id;
             _statusCell=selected;_net.SetCenter(_setup,_setup.Cells[selected].Face);_net.ResetView();
-            _net.Drag(-_net.Faces[0].Project(_setup.Cells[selected].Center)*_net.Fit(NetPanel).Scale);
+            _net.Drag(Vector2.TransformNormal(-_net.Faces[0].Project(_setup.Cells[selected].Center)*_net.Fit(NetPanel).Scale,Matrix.CreateRotationZ(_net.ScreenAngle)));
         }
+        if(_mapUnfold && DestinationOperation){_statusGlobe=false;FitDestinationView();_statusGlobe=true;}
         var face=_net.Faces[0];var normal=CubeNet.Normals[face.Face];
         var basis=new Matrix(face.Right.X,face.Right.Y,face.Right.Z,0,face.Up.X,face.Up.Y,face.Up.Z,0,normal.X,normal.Y,normal.Z,0,0,0,0,1);
         _mapOrientation=Quaternion.CreateFromRotationMatrix(basis*_world.ViewOrientation(_yaw,_pitch));
@@ -60,7 +62,7 @@ public partial class Game1
             try{_mapCrack?.Play(.65f,0,0);}catch(NoAudioHardwareException error){RecordFailure(error,"map_audio_play");}
         }
         if(progress<1)return;
-        _statusGlobe=!_mapUnfold;_mapTransitionAge=-1;FitDestinationView();_inputOutcome="view_changed";
+        _statusGlobe=!_mapUnfold;_mapTransitionAge=-1;_inputOutcome="view_changed";
     }
     private void DrawMapTransition()
     {
@@ -115,7 +117,7 @@ public partial class Game1
             var shaped=Shape(index,point);
             var anchor=Vector3.Transform(_world.GlobeAnchor??Vector3.Zero,_world.ViewOrientation(_yaw,_pitch));
             var perspective=viewport.Project(shaped-new Vector3(anchor.X,anchor.Y,0)*(1-align),projection,view,Matrix.Identity);
-            var flat=faces[index].Project(point)*fit.Scale+fit.Origin;
+            var flat=_net.RotateScreen(faces[index].Project(point)*fit.Scale+fit.Origin,NetPanel);
             var fitted=new Vector2(NetPanel.Center.X+shaped.X*scale,NetPanel.Center.Y-shaped.Y*scale);
             var screen=Vector2.Lerp(new(perspective.X,perspective.Y),fitted,Ease(unfold*6));
             screen=Vector2.Lerp(screen,flat,align);
@@ -141,7 +143,8 @@ public partial class Game1
                 for(int y=0;y<detail;y++)for(int x=0;x<detail;x++)
                 {
                     var a=cell.Origin+cell.U*(x/(float)detail)+cell.V*(y/(float)detail);var b=a+cell.U/detail;var c=b+cell.V/detail;var e=a+cell.V/detail;
-                    var color=_net.TerrainColor(_setup,cell.Id,WorldTerrain.Elevation((a+c)/2,terrain));
+                    var faceNormal=Vector3.TransformNormal(Vector3.UnitZ,pose[index]*rotation);
+                    var color=faceNormal.Z<0?new Color(115,119,125):_net.TerrainColor(_setup,cell.Id,WorldTerrain.Elevation((a+c)/2,terrain));
                     var post=_setup.Nodes.At(cell.Id,new Point(x,y));
                     
                     foreach(var p in new[]{a,b,c,a,c,e})vertices.Add(new(Project(index,p),color));

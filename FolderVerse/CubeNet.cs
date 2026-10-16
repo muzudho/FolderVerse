@@ -26,9 +26,9 @@ public sealed partial class CubeNet
     {
         ResetView();Zoom=zoom;
         var at=NodePosition(setup,source,panel);
-        Pan=new Vector2(panel.Center.X,panel.Center.Y)-at;
+        Pan=RotatePoint(new Vector2(panel.Center.X,panel.Center.Y)-at,-ScreenAngle);
     }
-    public void Drag(Vector2 delta){Pan+=delta;}
+    public void Drag(Vector2 delta){Pan+=RotatePoint(delta,-ScreenAngle);}
     public void SetFitCamera(Rectangle panel,float scale,Vector2 pan)
     {Zoom=1;float baseScale=Fit(panel).Scale;Zoom=scale/baseScale;Pan=pan;}
     public void ZoomAt(Rectangle panel,Point pointer,int wheel)
@@ -47,7 +47,7 @@ public sealed partial class CubeNet
         ResetView();
         int capitalFace=setup.Cells[setup.TerritoryCounts[setup.PlayerSlot]==0?setup.ConquerorLocations[setup.PlayerSlot]:setup.Capitals[setup.PlayerSlot]].Face;
         CenterFace=Enumerable.Range(0,6).OrderByDescending(f=>setup.Cells.Count(c=>c.Face==f && setup.Owners[c.Id]==setup.PlayerSlot)).ThenBy(f=>f==capitalFace?0:1).ThenBy(f=>f).First();
-        Rotation=0;Build(setup);
+        Rotation=0;ScreenAngle=0;Build(setup);
     }
     public void SetCenter(WorldSetup setup,int face){CancelAnimation();CenterFace=face;Rotation=0;Build(setup);}
     public void Turn(WorldSetup setup,int direction){CancelAnimation();Rotation=(Rotation+direction+4)%4;Build(setup);}
@@ -92,7 +92,7 @@ public sealed partial class CubeNet
     public int Hit(WorldSetup setup,Rectangle panel,Point point)
     {
         if(!panel.Contains(point))return -1;
-        foreach(var cell in setup.Cells)if(CellBounds(cell,panel).Contains(point))return cell.Id;
+        foreach(var cell in setup.Cells)if(CellBounds(cell,panel).Contains(UnrotateScreen(point,panel)))return cell.Id;
         return -1;
     }
     public static string Seam(int a,int b)
@@ -108,13 +108,18 @@ public sealed partial class CubeNet
     }
     public void Draw(UiPainter ui,WorldSetup setup,Rectangle panel,int focused,float pulse)
     {
+        _drawing=true;_badgePanel=panel;
+        try{DrawUnrotated(ui,setup,panel,focused,pulse);}finally{_drawing=false;}
+    }
+    private void DrawUnrotated(UiPainter ui,WorldSetup setup,Rectangle panel,int focused,float pulse)
+    {
         _robotBadges.Clear();
         if(IsAnimating){DrawAnimation(ui,setup,panel,pulse);return;}
         var fit=Fit(panel);var offset=WorldTerrain.Offset(setup.WorldSeed);
         foreach(var cell in setup.Cells)
         {
             var face=Faces.First(f=>f.Face==cell.Face);var rect=CellBounds(cell,panel);
-            if(!rect.Intersects(MapViewport(panel)))continue;
+            if(ScreenAngle==0 && !rect.Intersects(MapViewport(panel)))continue;
             const int detail=10;
             for(int y=0;y<detail;y++)for(int x=0;x<detail;x++)
             {

@@ -151,6 +151,9 @@ public partial class Game1 : Game
         _net.UpdateAnimation((float)elapsed);
         if(_screen==Screen.Ending)
         {UpdateEnding(elapsed,active && (escape || enter || click && EndingReturn.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        bool rotating=OrientationRotating;UpdateOrientationRotation((float)elapsed);
+        if(rotating){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && active && click && OrientationControlClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool transitioning=MapTransitionActive;UpdateMapTransition((float)elapsed);
         if(transitioning){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _screenshots.Update(gameTime.ElapsedGameTime.TotalSeconds);
@@ -239,9 +242,7 @@ public partial class Game1 : Game
                     }
                 }
                 bool action=click && (TransportOverviewClick(_pointer) || RouteLayerClick(_pointer) || MovementClick(_pointer,keyboard) || NodeDialogClick(_pointer,keyboard));
-                if(!action && click && NetButton(0).Contains(_pointer))_yaw-=MathHelper.PiOver4;
-                else if(!action && click && NetButton(1).Contains(_pointer))_yaw+=MathHelper.PiOver4;
-                else if(!action && click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
+                if(!action && click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
                 else if(!action && click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
                 Rotate(mouse,click && !action && _populationCell<0,active,NetPanel);
                 GlobeCellClick(mouse,click,active,action);
@@ -264,8 +265,6 @@ public partial class Game1 : Game
             else if(click && RouteLayerClick(_pointer)){}
             else if(click && MovementClick(_pointer,keyboard)){}
             else if(click && NodeDialogClick(_pointer,keyboard)){}
-            else if(click && NetButton(0).Contains(_pointer))_net.Turn(_setup,-1);
-            else if(click && NetButton(1).Contains(_pointer))_net.Turn(_setup,1);
             else if(click && NetButton(2).Contains(_pointer))FocusCurrentNode();
             else if(click && NetButton(3).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
             else if(click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
@@ -506,7 +505,7 @@ public partial class Game1 : Game
         }); _ui.Box(new(NetPanel.X-20,142,NetPanel.Width+40,750),new(20,42,54));
         _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+CubeNet.FaceNames[_net.CenterFace]+" が中心",new(991,156),0.68f,Cream);
         string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地星の北＝＋Y / 北を上に";
-        string orientation=north+" / 回転 "+(_net.Rotation*90)+"°";
+        string orientation=north+" / 回転 "+((int)MathF.Round((_net.Rotation*90+MathHelper.ToDegrees(_net.ScreenAngle))%360+360)%360)+"°";
         _ui.Text(_statusGlobe?"右ドラッグで回転"+(_net.ShowMapSymbols?" / 経番・緯番":""):orientation,new(991,203),.43f,new(177,206,216));
         if(_net.ShowMapSymbols)
         {
@@ -542,15 +541,16 @@ public partial class Game1 : Game
         }
         else using(var clipping=new RasterizerState{ScissorTestEnable=true})
         {
-            _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clipping);
-            _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:(_statusCell>=0?_statusCell:_selectedMapCell),_animationTime);_spriteBatch.End();
+            _spriteBatch.Begin(transformMatrix:_net.ScreenTransform(NetPanel)*transform,rasterizerState:clipping);
+            var mapPointer=_ui.Pointer;_ui.Pointer=_net.UnrotateScreen(_pointer,NetPanel);
+            _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:(_statusCell>=0?_statusCell:_selectedMapCell),_animationTime);_ui.Pointer=mapPointer;_spriteBatch.End();
         }
+        if(!_statusGlobe && !MapTransitionActive)DrawOrientationOverlay(NetPanel,canvas,transform);
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         DrawDestinationMap();DrawContinuationBadges(); DrawDomesticPortrait();
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(InspectorVisible?1276:991,InspectorVisible?770:831),Math.Min(0.48f,(InspectorVisible?600:870)/_font.MeasureString(location).X),Cream);
         _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"右ドラッグ：回転 / ホイール：拡縮 / 節点を選ぶと中心固定":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / 右ドラッグ：移動",new(InspectorVisible?1276:991,InspectorVisible?810:865),InspectorVisible?.27f:0.37f,new(177,206,216));
-        _ui.Button(NetButton(0),"左へ回転",Muted,0.52f);_ui.Button(NetButton(1),"右へ回転",Muted,0.52f);
         _ui.Button(NetButton(2),"現在地へ移動",Accent,0.45f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
         const string resetLabel="頭を上へ、腹を手前へ";
         _ui.Button(OrientationResetButton,resetLabel,Muted,Math.Min(.52f,(OrientationResetButton.Width-16)/_font.MeasureString(resetLabel).X));

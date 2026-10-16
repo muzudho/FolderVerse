@@ -80,14 +80,14 @@ public partial class Game1
         }
         for(int i=0;i<rotation;i++)_net.Turn(_setup,1);
         var fit=_net.Fit(NetPanel);
-        _net.Drag(-_net.Faces[0].Project(cell.Center)*fit.Scale);
+        _net.Drag(Vector2.TransformNormal(-_net.Faces[0].Project(cell.Center)*fit.Scale,Matrix.CreateRotationZ(_net.ScreenAngle)));
         _statusGlobe=false;_statusCell=selected;_inputOutcome="globe_cell_opened_net";
     }
     private Rectangle StatusGlobeArea=>OrientationAreas(NetPanel,false).Globe;
     private Rectangle OrientationResetButton=>_statusGlobe?new(NetButton(3).X,NetButton(3).Y,343,50):NetButton(4);
     private void ResetStatusOrientation()
     {
-        _yaw=_pitch=0;_dragging=false;_net.SetCenter(_setup,4);
+        _yaw=_pitch=0;_net.ScreenAngle=0;_dragging=false;_net.SetCenter(_setup,4);
     }
     private int HitGlobeNode(Point pointer,IEnumerable<int> candidates=null)
     {
@@ -108,7 +108,7 @@ public partial class Game1
     private void FocusStatusGlobe()
     {
         _globeSelectedNode=_setup.Nodes.Current(_setup.PlayerSlot)?.Id??-1;
-        _world.GlobeAnchor=null;
+        _world.GlobeAnchor=CurrentMapPosition();
         var point=CurrentMapPosition();
         _pitch=MathF.Atan2(point.Y,point.Z);
         if(_pitch>MathHelper.PiOver2)_pitch-=MathHelper.Pi;
@@ -128,7 +128,7 @@ public partial class Game1
         _net.SetCenter(_setup,_setup.Cells[cell].Face);
         var face=_net.Faces[0];var fit=_net.Fit(NetPanel);
         var at=face.Project(CurrentMapPosition())*fit.Scale+fit.Origin;
-        _net.Drag(new Vector2(NetPanel.Center.X,NetPanel.Center.Y)-at);
+        _net.Drag(new Vector2(NetPanel.Center.X,NetPanel.Center.Y)-_net.RotateScreen(at,NetPanel));
         _dragging=_mapDragging=false;
     }
     private void DrawStatusGlobeCoordinates()

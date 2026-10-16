@@ -24,7 +24,8 @@ public sealed partial class CubeNet
     public Vector2 NodePosition(WorldSetup world,Node node,Rectangle panel)
     {
         var fit=Fit(panel);var face=Faces.First(f=>f.Face==world.Cells[node.Cell].Face);
-        return face.Project(world.Routes.Position(node.Cell,node.Center))*fit.Scale+fit.Origin;
+        var at=face.Project(world.Routes.Position(node.Cell,node.Center))*fit.Scale+fit.Origin;
+        return _drawing?at:RotateScreen(at,panel);
     }
     public int HitNode(WorldSetup world,Rectangle panel,Point pointer,IEnumerable<int> candidates=null)
     {
@@ -37,6 +38,7 @@ public sealed partial class CubeNet
     public Point MicroPoint(WorldSetup world,int cell,Rectangle panel,Point pointer)
     {
         var fit=Fit(panel);var face=Faces.First(f=>f.Face==world.Cells[cell].Face);
+        pointer=UnrotateScreen(pointer,panel);
         var p=(new Vector2(pointer.X,pointer.Y)-fit.Origin)/fit.Scale-face.Center;
         var surface=world.Cells[cell];float normalDistance=Vector3.Dot(surface.Origin,surface.Normal);
         var physical=surface.Normal*normalDistance+face.Right*p.X-face.Up*p.Y;

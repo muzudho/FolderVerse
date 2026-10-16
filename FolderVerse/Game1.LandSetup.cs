@@ -89,7 +89,7 @@ public partial class Game1
             int segment=Math.Min((int)progress,tour.Length-2);
             float blend=MathHelper.SmoothStep(0,1,progress-segment);
             _world.ManualOrientation=Quaternion.Slerp(tour[segment],tour[segment+1],blend);
-            if(_landAge>=5){_setup.CompleteLand(_random.Next());_world.ShowSetup(_setup,true);_net.Home(_setup);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;}
+            if(_landAge>=5){_setup.CompleteLand(_random.Next());_world.ShowSetup(_setup,true);_net.Home(_setup);_statusGlobe=true;FocusStatusGlobe();_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;}
             return;
         }
         if(!LandHumanTurn || _demoActive)
