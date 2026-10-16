@@ -17,7 +17,7 @@ sealed class CheckGame:Game1
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();w=(WorldSetup)Get("_setup");
         w.SetWorld(1);w.SetCast(2);w.SetPlacement(3);w.SelectPlayer(0);
         w.Industry.Queue(1);Call("FinishTransport");Check(Get("_screen").ToString()=="Industry","No-battle round still enters industry");
-        var font=(SpriteFont)Get("_font");foreach(string text in new[]{"さあ、産業の時間です！　あなたは何台のロボットを製造できるかなー？","数年に一度の当たり年だあ！？　大穴当てたみなさん、今だ、大チャーンス！","ロボット不足のみなさん、ざんねんでした～！　工場はストップだー！　祈ってくださーい。持てる者が襲ってきまーす！","正規・安いパーツ / 産業ターン累計"}){Check(text.All(c=>font.Characters.Contains(c)),"Missing font glyph: "+text);font.MeasureString(text);}
+        var font=(SpriteFont)Get("_font");foreach(string text in new[]{"さあ、産業の時間です！　あなたは何台のロボットを製造できるかなー？","数年に一度の当たり年だあ！？　大穴当てたみなさん、今だ、大チャーンス！","ロボット不足の征服者のみなさん、ざんねんでした～！　工場はストップだー！　次は製造できるように、祈ってくださーい！","正規・安いパーツ / 産業ターン累計"}){Check(text.All(c=>font.Characters.Contains(c)),"Missing font glyph: "+text);font.MeasureString(text);}
     }
     protected override void Update(GameTime time){}
     void Save(string name)

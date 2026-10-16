@@ -2,6 +2,7 @@ using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
+using Microsoft.Xna.Framework.Input;
 using var game=new ThemeGame();game.Run();
 sealed class ThemeGame:Game1{
  const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;
@@ -19,12 +20,19 @@ sealed class ThemeGame:Game1{
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"Review"));Check((Color)Prop("Accent")==new Color(45,135,142),"World setup keeps green");
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
   var glyph=typeof(Game1).GetMethods(F).Single(m=>m.Name=="DrawRobotGlyph" && m.GetParameters().Length==8);
-  foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}){
-   var robot=w.Robots.Create(0,RobotParts.Complete);Set("_hangarPart",part);Set("_pointer",new Point(500,500));GraphicsDevice.Clear(bg);batch.Begin();
-   glyph.Invoke(this,new object[]{new Rectangle(100,100,68,102),0,part,false,1f,true,false,false});Call("DrawHangarDrag",robot);batch.End();var pixels=Pixels();
-   Rectangle Bounds(int x0,int y0,int x1,int y1){var points=new List<Point>();for(int y=y0;y<y1;y++)for(int x=x0;x<x1;x++)if(pixels[y*pp.BackBufferWidth+x]!=bg)points.Add(new(x,y));return new(points.Min(p=>p.X),points.Min(p=>p.Y),points.Max(p=>p.X)-points.Min(p=>p.X)+1,points.Max(p=>p.Y)-points.Min(p=>p.Y)+1);}
-   var source=Bounds(80,80,200,240);var drag=Bounds(500,490,620,640);Check(source.Size==drag.Size,"Drag preserves source dimensions for "+part);Check(pixels[512*pp.BackBufferWidth+516]==bg,"No background rectangle behind drag");
-   using var dragImage=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);dragImage.SetData(pixels);using var dragFile=File.Create(Path.Combine(AppContext.BaseDirectory,$"drag-{part}.png"));dragImage.SaveAsPng(dragFile,dragImage.Width,dragImage.Height);
+  var node=w.Nodes.All.First(n=>n.Owner==0);Set("_populationNode",node.Id);Set("_populationCell",node.Cell);
+  var store=w.Robots.Nodes[node.Id];foreach(var existing in store.Robots.ToArray())store.Remove(existing.Id);var robot=w.Robots.Create(0,RobotParts.Complete);store.Add(robot);
+  var pressed=new MouseState(0,0,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
+  foreach(float slide in new[]{1f,.75f})foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})foreach(int grabX in new[]{22,45}){
+   Set("_domesticSlide",slide);Call("OpenNodeAssembly");int row=part==RobotParts.Head?0:part==RobotParts.Body?1:2;
+   int panelOffset=(int)Prop("NodeInspectorOffset");var press=new Point(140+grabX,310+row*38+12);
+   Set("_pointer",new Point(press.X+panelOffset,press.Y));Call("NodeAssemblyInput",pressed,true,false);
+   Check((long?)Get("_hangarDrag")==robot.Id,"Actual press starts drag for "+part);
+   foreach(var delta in new[]{Point.Zero,new Point(350,120)}){
+    Set("_pointer",press+delta);GraphicsDevice.Clear(bg);batch.Begin();Call("DrawHangarDrag",robot);batch.End();var actual=Pixels();
+    GraphicsDevice.Clear(bg);batch.Begin();glyph.Invoke(this,new object[]{new Rectangle(141+delta.X,312+delta.Y,68,102),0,part,false,1f,true,false,false});batch.End();var expected=Pixels();
+    Check(actual.SequenceEqual(expected),"Grabbed pixel and transparent equal-size glyph stay aligned: "+part+" / "+slide+" / "+grabX+" / "+delta);
+   }
   }
   var ui=(UiPainter)Get("_ui");Set("_pointer",Point.Zero);ui.Pointer=Point.Zero;
   for(int owner=0;owner<w.ActiveCount;owner++){
@@ -34,6 +42,6 @@ sealed class ThemeGame:Game1{
    if(owner is 0 or 12){using var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);tex.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"theme-{owner}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);}
   }
   Check(UiPainter.ContrastInk(Color.White)==new Color(12,18,24) && UiPainter.ContrastInk(Color.Black)==Color.White,"Bright and dark themes choose readable text");
-  Console.WriteLine("PASS: transparent equal-size drag for all parts, setup color, all country button fills, text and icon contrast.");Exit();
+  Console.WriteLine("PASS: actual mouse grabs and pixel-perfect drag at two panel positions for all parts, setup color, all country button fills, text and icon contrast.");Exit();
  }
 }

@@ -13,9 +13,12 @@ public partial class Game1
     private long? _hangarDrag;
     private RobotParts _hangarPart;
     private int _hangarSource;
+    private Point _hangarGrabOffset;
     private string _hangarMessage="";
     private static readonly Rectangle NodeAssemblyTile=new(560,169,230,60),HangarAutoCheck=new(84,240,770,42);
     private static Rectangle HangarCell(int slot)=>new(84+slot%4*196,300+slot/4*182,182,174);
+    private static Rectangle HangarRobotBounds(int slot)
+    {var cell=HangarCell(slot);return new(cell.X+57,cell.Y+12,68,102);}
     private static RobotParts HangarPart(int row)=>row==0?RobotParts.Head:row==1?RobotParts.Body:RobotParts.Legs;
     private static Rectangle HangarPartBounds(int slot,int row)
     {var cell=HangarCell(slot);return new(cell.X+56,cell.Y+10+row*38,70,36);}
@@ -56,7 +59,7 @@ public partial class Game1
                 var cell=HangarCell(slot);
                 if(new Rectangle(cell.Right-36,cell.Bottom-25,18,18).Contains(_pointer)){ToggleRobotDisposal(_populationNode,robot.Id);return;}
                 for(int row=0;row<3;row++)if(HangarPartBounds(slot,row).Contains(_pointer) && (robot.Parts&HangarPart(row))!=0 && CanMoveHangarPart(robot,HangarPart(row)))
-                {_hangarDrag=robot.Id;_hangarPart=HangarPart(row);_hangarSource=slot;_hangarMessage="同じパーツがあるセルへドロップすると交換";return;}
+                {_hangarDrag=robot.Id;_hangarPart=HangarPart(row);_hangarSource=slot;_hangarGrabOffset=_pointer-HangarRobotBounds(slot).Location;_hangarMessage="同じパーツがあるセルへドロップすると交換";return;}
             }
         }
         if(!_hangarDrag.HasValue || mouse.LeftButton!=ButtonState.Released || _previousMouse.LeftButton!=ButtonState.Pressed)return;
@@ -98,7 +101,7 @@ public partial class Game1
             var cell=HangarCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);bool owned=occupant==null || CanMoveHangarRobot(occupant);_ui.Box(cell,owned?Muted:new Color(9,19,26));
             if(_hangarDrag.HasValue && cell.Contains(_pointer))_ui.Box(new(cell.X,cell.Y,cell.Width,3),ControlEdge);
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);if(robot==null)continue;
-            foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(new(cell.X+57,cell.Y+12,68,102),robot.Origin(part),part,robot.Role==RobotRole.Captain,whiteOutline:true,damaged:robot.IsDamaged(part),cheap:robot.IsCheap(part));
+            foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(HangarRobotBounds(slot),robot.Origin(part),part,robot.Role==RobotRole.Captain,whiteOutline:true,damaged:robot.IsDamaged(part),cheap:robot.IsCheap(part));
             for(int row=0;row<3;row++)
             {
                 var bounds=HangarPartBounds(slot,row);var part=HangarPart(row);
@@ -124,9 +127,8 @@ public partial class Game1
     }
     private void DrawHangarDrag(Robot robot)
     {
-        int row=_hangarPart==RobotParts.Head?0:_hangarPart==RobotParts.Body?1:2;
-        int partOffset=row==0?0:row==1?34:76;
-        DrawRobotGlyph(new(_pointer.X+18,_pointer.Y+16-partOffset,68,102),robot.Origin(_hangarPart),_hangarPart,robot.Role==RobotRole.Captain,whiteOutline:true,damaged:robot.IsDamaged(_hangarPart),cheap:robot.IsCheap(_hangarPart));
+        var origin=_pointer-_hangarGrabOffset;
+        DrawRobotGlyph(new(origin.X,origin.Y,68,102),robot.Origin(_hangarPart),_hangarPart,robot.Role==RobotRole.Captain,whiteOutline:true,damaged:robot.IsDamaged(_hangarPart),cheap:robot.IsCheap(_hangarPart));
     }
     private void SyncHangarSlots()
     {

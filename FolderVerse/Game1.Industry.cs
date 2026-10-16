@@ -51,7 +51,7 @@ public partial class Game1
         else if(stopped && _setup.Industry.Jackpot)mob=_industrySurprise??=LoadIndustryMob("surprised");
         if(mob!=null)_spriteBatch.Draw(mob,new Rectangle(50,250,480,720),Color.White);
         string[] lines=!stopped?new[]{"さあ、産業の時間です！","あなたは何台のロボットを製造できるかなー？"}:
-            result==0?new[]{"ロボット不足のみなさん、ざんねんでした～！","工場はストップだー！　祈ってくださーい。","持てる者が襲ってきまーす！"}:
+            result==0?new[]{"ロボット不足の征服者のみなさん、ざんねんでした～！","工場はストップだー！","次は製造できるように、祈ってくださーい！"}:
             _setup.Industry.Jackpot?new[]{"数年に一度の当たり年だあ！？","大穴当てたみなさん、今だ、大チャーンス！"}:
             new[]{"さあ、工場を動かしましょう！",$"{result}産業ターン進みました！"};
         _ui.Box(new(565,130,1290,205),Cream);_ui.Tile(new(558,270),new(36,36),MathHelper.PiOver4,Cream);
