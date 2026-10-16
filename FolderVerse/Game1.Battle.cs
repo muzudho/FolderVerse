@@ -18,7 +18,7 @@ public partial class Game1
         if(_setup.Campaign.AwaitingPlayers){_screen=Screen.WorldStatus;_reignView=false;_populationCell=_populationNode=_inspectedNode=-1;FocusCurrentNode();return;}
         if(_setup.Campaign.UseRobotCombat){OpenRobotBattle();return;}
         _battleWaves=BattleSchedule.Create(_setup.Campaign.Battles);
-        if(_battleWaves.Length==0){OpenDisposition();return;}
+        if(_battleWaves.Length==0){BeginIndustry();return;}
         _battleWave=0;_screen=Screen.Battle;_populationCell=-1;_dragging=false;
         BeginBattleWave();
     }
@@ -34,7 +34,7 @@ public partial class Game1
         if(!proceed)return;
         if(_battleAge<BattleSeconds){_battleAge=BattleSeconds;return;}
         if(++_battleWave<_battleWaves.Length)BeginBattleWave();
-        else{_screen=Screen.WorldStatus;_battleTiles=Array.Empty<CharacterTile>();OpenDisposition();}
+        else{_battleTiles=Array.Empty<CharacterTile>();BeginIndustry();}
     }
     private void DrawBattleUi()
     {

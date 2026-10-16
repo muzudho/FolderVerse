@@ -40,7 +40,7 @@ public partial class Game1
         _screen=Screen.Transport;_transportAge=0;BeginPropagation();
     }
     private void FinishTransport()
-    {if(_robotScenes.Length>0)_screen=Screen.Battle;else{_screen=Screen.WorldStatus;OpenDisposition();}}
+    {if(_robotScenes.Length>0)_screen=Screen.Battle;else BeginIndustry();}
     private void UpdateTransport(double elapsed,bool proceed,double now)
     {
         // Wait for Draw to register the card, then advance only time after it ends.
@@ -58,11 +58,11 @@ public partial class Game1
         if(click && (_robotSummary?SummaryNewspaperSwitch.Contains(_pointer):NewspaperSwitch.Contains(_pointer)))
         {SwitchNewspaper();return;}
         if(!_robotSummary && _newspaperClock>=10)SwitchNewspaper();
-        if(_robotScenes.Length==0){_screen=Screen.WorldStatus;return;}
+        if(_robotScenes.Length==0){BeginIndustry();return;}
         if(_robotSummary)
         {
          
-         if(enter || click && BattleContinue.Contains(_pointer)){_screen=Screen.WorldStatus;_world.ShowSetup(_setup,true);OpenDisposition();}return;}
+         if(enter || click && BattleContinue.Contains(_pointer)){BeginIndustry();}return;}
         var scene=_robotScenes[_battleWave];double end=RobotRoundEnd;
         if(click && (RobotBattlePrevious.Contains(_pointer) || RobotBattleNext.Contains(_pointer)))
         {if(_robotPendingFocus>=0)return;var priority=RobotPriority;int at=Array.IndexOf(priority,_battleWave);int next=priority[Math.Clamp(at+(RobotBattlePrevious.Contains(_pointer)?-1:1),0,priority.Length-1)];if(next!=_battleWave){_robotPendingFocus=next;_robotPendingRound=false;_robotResultAge=0;}return;}
@@ -199,11 +199,23 @@ public partial class Game1
             }else _fallFadeStarted.Remove(fadeKey);
             if(unit.Retreated)opacity*=Math.Clamp(1-exitAge,0,1);
             if(opacity<=0)continue;
+            var physical=unit.Role==BattleRole.Queen?null:battle.Units.Concat(battle.Armies.SelectMany(a=>a.Waiting)).FirstOrDefault(u=>u.Id==unit.Id)?.Robot;
             foreach(var patch in BattlePieceArt.Pieces[BattlePieceArt.Index(unit.Role,unit.Facing)])
             {
                 var b=patch.Bounds;
                 var color=patch.Ink switch{0=>_setup.OwnerColor(unit.Owner),1=>new Color(255,222,180),2=>new Color(19,25,34),3=>new Color(255,224,115),4=>new Color(116,62,38),_=>new Color(249,135,149)};
-                _ui.Box(new(r.X+b.X*r.Width/32,r.Y+b.Y*r.Height/48,Math.Max(1,b.Width*r.Width/32),Math.Max(1,b.Height*r.Height/48)),color*opacity);
+                var area=new Rectangle(r.X+b.X*r.Width/32,r.Y+b.Y*r.Height/48,Math.Max(1,b.Width*r.Width/32),Math.Max(1,b.Height*r.Height/48));
+                var part=b.Y<26?RobotParts.Head:b.Y<37?RobotParts.Body:RobotParts.Legs;
+                if(physical!=null && patch.Ink==0)
+                {
+                    color=physical.IsDamaged(part)?new Color(136,137,127):_setup.OwnerColor(physical.Origin(part));
+                    if(physical.IsCheap(part))
+                    {
+                        for(int row=0;row<area.Height;row++)_ui.Box(new(area.X,area.Y+row,area.Width,1),((area.Y+row)%6<3?color:physical.IsDamaged(part)?new Color(165,162,146):Cream)*opacity);
+                        continue;
+                    }
+                }
+                _ui.Box(area,color*opacity);
             }
             if(unit.Role==BattleRole.Queen)
             {

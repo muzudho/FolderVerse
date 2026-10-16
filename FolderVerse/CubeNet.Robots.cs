@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,13 +54,13 @@ public sealed partial class CubeNet
                     if((robot.Parts&part)==0)continue;
                     // Each present part touches the next, including head + legs.
                     var full=new Rectangle(card.X,card.Y+row*12-(part==RobotParts.Head?0:part==RobotParts.Body?12:24),24,36); if(ShowRoutes && HoveredNode==node.Id)full=new(bounds.Center.X+(full.X-bounds.Center.X)*2,bounds.Bottom+(full.Y-bounds.Bottom)*2,full.Width*2,full.Height*2);
-                    DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part));
+                    DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part));
                     row++;
                 }
             }
         }
     }
-    public void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts,bool damaged=false)
+    public void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts,bool damaged=false,bool cheap=false)
     {
         _mapRobotTexture ??= LoadMapRobot(ui.Batch.GraphicsDevice);
         var tint=damaged?new Color(136,137,127):Color.Lerp(Color.White,color,.48f);
@@ -70,7 +70,12 @@ public sealed partial class CubeNet
             int top=_mapRobotTexture.Height*part/3,bottom=_mapRobotTexture.Height*(part+1)/3;
             var source=new Rectangle(0,top,_mapRobotTexture.Width,bottom-top);
             int y=r.Y+r.Height*part/3,next=r.Y+r.Height*(part+1)/3;
-            ui.Batch.Draw(_mapRobotTexture,new Rectangle(r.X,y,r.Width,Math.Max(1,next-y)),source,tint);
+            if(!cheap)ui.Batch.Draw(_mapRobotTexture,new Rectangle(r.X,y,r.Width,Math.Max(1,next-y)),source,tint);
+            else for(int row=y;row<next;row++)
+            {
+                int sy=top+(row-y)*(bottom-top)/Math.Max(1,next-y);
+                ui.Batch.Draw(_mapRobotTexture,new Rectangle(r.X,row,r.Width,1),new Rectangle(0,sy,source.Width,1),(row-y)%4<2?tint:damaged?new Color(165,162,146):Color.White);
+            }
         }
     }
     private Texture2D _mapRobotTexture;

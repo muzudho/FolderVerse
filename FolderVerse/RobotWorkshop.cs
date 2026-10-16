@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 
@@ -34,7 +34,7 @@ public sealed partial class RobotWorkshop
     public int DisposalAge {get;private set;}
     public long? DisposalTarget {get;private set;}
     public void Configure(RobotParts product,int period)
-    {RobotWorld.Validate(0,product);if(period<1)throw new ArgumentOutOfRangeException(nameof(period));Product=product;ProductionPeriod=period;ProductionAge=0;Manufacturing=true;SelectedPlan=-1;RestEnabled=false;RestRemaining=ProducedSinceRest=0;}
+    {RobotWorld.Validate(0,product);if(period<1)throw new ArgumentOutOfRangeException(nameof(period));Product=product;CheapProduct=false;ProductionPeriod=period;ProductionAge=0;Manufacturing=true;SelectedPlan=-1;RestEnabled=false;RestRemaining=ProducedSinceRest=0;}
     public void Dispose(RobotStore store,long id)
     {if(DisposalTarget.HasValue)throw new InvalidOperationException("Disposal lane is busy.");if(!HasDisposalFactory)throw new InvalidOperationException("This node has no disposal factory.");int duration=DisposalTurns(store.Robots.Single(r=>r.Id==id).Parts);if(duration<1 || !store.Robots.Any(r=>r.Id==id))throw new ArgumentException("Invalid disposal order.");DisposalTarget=id;DisposalAge=0;DisposalPeriod=duration;}
     public void ConfigureDisposal()
@@ -68,7 +68,7 @@ public sealed partial class RobotWorkshop
         if(RestEnabled && RestRemaining>0){RestRemaining--;return;}
         ProductionAge=Math.Min(ProductionPeriod,ProductionAge+1);
         if(!Waiting || world.Nodes[node].Count>=world.Nodes[node].StorageLimit-reservedSlots)return;
-        world.Nodes[node].Add(world.Create(owner,Product));ProductionAge=0;
+        var robot=world.Create(owner,Product);world.Nodes[node].Add(CheapProduct?robot with {CheapParts=Product}:robot);ProductionAge=0;
         if(RestEnabled && ++ProducedSinceRest>=RestEvery){ProducedSinceRest=0;RestRemaining=RestTurns;}
     }
 }

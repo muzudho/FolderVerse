@@ -20,7 +20,7 @@ public partial class Game1
         if(_setup.Campaign.UseRobotCombat)
         {
             var robots=_setup.Robots.Nodes[id].Robots;
-            for(int i=0;i<robots.Count;i++)DrawRobotGlyph(new(x+14+i*22,y+height-38,16,26),robots[i].Owner,robots[i].Parts,robots[i].Role==RobotRole.Captain);
+            for(int i=0;i<robots.Count;i++)DrawRobotGlyph(new(x+14+i*22,y+height-38,16,26),robots[i]);
             _ui.Text(robots.Count+"/12",new(x+width-70,y+height-34),.38f,Cream);
         }
     }

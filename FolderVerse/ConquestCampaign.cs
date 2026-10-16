@@ -119,6 +119,7 @@ public sealed class ConquestCampaign
             forces[order.Ruler]=army;
         }
         world.Population.Advance(world);
+        world.Industry.Queue(world.Population.Turn);
         int conquests=0;
         foreach(var entry in arrivals.OrderBy(e=>e.Key))
         {

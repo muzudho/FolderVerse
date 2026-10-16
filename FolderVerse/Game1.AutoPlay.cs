@@ -20,6 +20,7 @@ public partial class Game1
         _net.UpdateAnimation((float)elapsed);UpdateMapTransition((float)elapsed);
         switch(_screen)
         {
+            case Screen.Industry:UpdateIndustry(elapsed,false);break;
             case Screen.WorldStatus:
                 if(_autoStepAge<2)return true;
                 _autoStepAge=0;

@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,21 +10,26 @@ public sealed record RobotWorkshopEdit(int Node,long[] Ids,RobotParts? SplitPart
 public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=RobotRole.Soldier,bool Disposal=false)
 {
     public RobotParts DamagedParts {get;init;}=0;
+    public RobotParts CheapParts {get;init;}=0;
+    public bool IsCheap(RobotParts part)=>(Parts&part)!=0 && (CheapParts&part)!=0;
     public bool IsDamaged(RobotParts part)=>(Parts&part)!=0 && (DamagedParts&part)!=0;
     // Origin retains the country even while damage makes a part unaffiliated.
-    public int Affiliation(RobotParts part)=>(Parts&part)==0 || IsDamaged(part)?-1:Origin(part);
+    public int Affiliation(RobotParts part)=>(Parts&part)==0 || IsDamaged(part) || IsCheap(part)?-1:Origin(part);
     public int HeadOrigin {get;init;}=-1;
     public int BodyOrigin {get;init;}=-1;
     public int LegsOrigin {get;init;}=-1;
     public int Origin(RobotParts part)=>part switch{RobotParts.Head=>HeadOrigin<0?Owner:HeadOrigin,RobotParts.Body=>BodyOrigin<0?Owner:BodyOrigin,_=>LegsOrigin<0?Owner:LegsOrigin};
     public int NativeParts(int owner)=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Count(p=>(Parts&p)!=0 && owner>=0 && Affiliation(p)==owner);
-    public Robot Materialize()=>this with {HeadOrigin=Origin(RobotParts.Head),BodyOrigin=Origin(RobotParts.Body),LegsOrigin=Origin(RobotParts.Legs),DamagedParts=DamagedParts&Parts};
+    public int RegularNativeParts(int owner)=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Count(p=>(Parts&p)!=0 && !IsCheap(p) && Origin(p)==owner);
+    public int AssemblyCredit(int owner)=>NativeParts(owner)>0?NativeParts(owner):RegularNativeParts(owner)>0 && (CheapParts&Parts&~DamagedParts)!=0?1:0;
+    public int CombatParts(int owner)=>Math.Max(NativeParts(owner),CanFight?1:0);
+    public Robot Materialize()=>this with {HeadOrigin=Origin(RobotParts.Head),BodyOrigin=Origin(RobotParts.Body),LegsOrigin=Origin(RobotParts.Legs),DamagedParts=DamagedParts&Parts,CheapParts=CheapParts&Parts};
     public Robot Merge(Robot other,int owner)
     {
-        var result=Materialize() with {Parts=Parts|other.Parts,DamagedParts=(DamagedParts&Parts&~other.Parts)|(other.DamagedParts&other.Parts),HeadOrigin=(other.Parts&RobotParts.Head)!=0?other.Origin(RobotParts.Head):Origin(RobotParts.Head),BodyOrigin=(other.Parts&RobotParts.Body)!=0?other.Origin(RobotParts.Body):Origin(RobotParts.Body),LegsOrigin=(other.Parts&RobotParts.Legs)!=0?other.Origin(RobotParts.Legs):Origin(RobotParts.Legs)};
-        return result with {Owner=result.NativeParts(owner)>0?owner:Owner};
+        var result=Materialize() with {Parts=Parts|other.Parts,DamagedParts=(DamagedParts&Parts&~other.Parts)|(other.DamagedParts&other.Parts),CheapParts=(CheapParts&Parts&~other.Parts)|(other.CheapParts&other.Parts),HeadOrigin=(other.Parts&RobotParts.Head)!=0?other.Origin(RobotParts.Head):Origin(RobotParts.Head),BodyOrigin=(other.Parts&RobotParts.Body)!=0?other.Origin(RobotParts.Body):Origin(RobotParts.Body),LegsOrigin=(other.Parts&RobotParts.Legs)!=0?other.Origin(RobotParts.Legs):Origin(RobotParts.Legs)};
+        return result with {Owner=result.AssemblyCredit(owner)>0?owner:Owner};
     }
-    public bool CanFight=>Parts==RobotParts.Complete && !Disposal && NativeParts(Owner)>0;
+    public bool CanFight=>Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
 }
 public sealed class RobotStore
 {
@@ -73,6 +78,7 @@ public sealed partial class RobotWorld
     {Validate(owner,parts);return new(_nextId++,owner,parts,role,disposal);}
     public void Initialize(int nodeCount,int rulerCount)
     {
+        IndustryTurn=0;
         _domesticPreparedTurn=-1;Training=Enumerable.Range(0,rulerCount).Select(_=>new RobotTraining()).ToArray();_nextId=1;Nodes=Enumerable.Range(0,nodeCount).Select(_=>new RobotStore()).ToArray();
         Retinues=Enumerable.Range(0,rulerCount).Select(_=>new RobotStore()).ToArray();
         Workshops=Enumerable.Range(0,nodeCount).Select(_=>new RobotWorkshop()).ToArray();Transport.Reset();PendingEdits.Clear();WorkshopFailures.Clear();
@@ -105,12 +111,19 @@ public sealed partial class RobotWorld
         var store=Nodes[node];var robot=store.Robots.Single(r=>r.Id==id);Validate(robot.Owner,first);
         if(Workshops[node].DisposalTarget==id)throw new InvalidOperationException("Disposal target is reserved.");
         if((robot.Parts&first)!=first || first==robot.Parts || !store.HasSpace)throw new InvalidOperationException("Cannot split this robot.");
-        var remainder=robot.Materialize() with {Id=Create(robot.Owner,robot.Parts^first,disposal:robot.Disposal).Id,Parts=robot.Parts^first,DamagedParts=robot.DamagedParts&(robot.Parts^first)};
-        store.Replace(store.Robots.Where(r=>r.Id!=id).Append(robot with {Parts=first,DamagedParts=robot.DamagedParts&first}).Append(remainder));
+        var remainder=robot.Materialize() with {Id=Create(robot.Owner,robot.Parts^first,disposal:robot.Disposal).Id,Parts=robot.Parts^first,DamagedParts=robot.DamagedParts&(robot.Parts^first),CheapParts=robot.CheapParts&(robot.Parts^first)};
+        store.Replace(store.Robots.Where(r=>r.Id!=id).Append(robot with {Parts=first,DamagedParts=robot.DamagedParts&first,CheapParts=robot.CheapParts&first}).Append(remainder));
     }
-    public void Advance(Func<int,int,bool> connected,Func<int,int> owner,int seed,Func<int,bool> locked=null,Func<int,int,bool> canEnter=null)
+    public int IndustryTurn {get;private set;}
+    public void AdvanceIndustry(Func<int,int> owner,Func<int,bool> locked=null)
     {
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));Workshops[n].CompleteDisposal(Nodes[n]);}
+        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].CompleteProduction(this,n,owner(n));Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));if(owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));}
+        IndustryTurn++;Check();
+    }
+    public void Advance(Func<int,int,bool> connected,Func<int,int> owner,int seed,Func<int,bool> locked=null,Func<int,int,bool> canEnter=null,bool industry=true)
+    {
+        if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));Workshops[n].CompleteDisposal(Nodes[n]);}
         WorkshopFailures.Clear();
         foreach(var edit in PendingEdits.ToArray())
         {
@@ -120,10 +133,10 @@ public sealed partial class RobotWorld
             PendingEdits.Remove(edit);
         }
         Transport.ResolvePlans(this,connected,seed,locked,canEnter);
-        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].CompleteProduction(this,n,owner(n));
-        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));
+        if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].CompleteProduction(this,n,owner(n));
+        if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true && owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));
-        Check();
+        if(industry)IndustryTurn++;Check();
     }
     private void AutoAssemble(int node,int owner)
     {
@@ -134,8 +147,8 @@ public sealed partial class RobotWorld
             for(int a=0;a<parts.Length && selection==null;a++)for(int b=a+1;b<parts.Length && selection==null;b++){
                 if((parts[a].Parts&parts[b].Parts)!=0)continue;
                 var merged=parts[a].Merge(parts[b],owner);
-                if(merged.Parts==RobotParts.Complete && merged.NativeParts(owner)>=policy.RequiredNative){selection=new[]{parts[a].Id,parts[b].Id};break;}
-                for(int c=b+1;c<parts.Length;c++)if((merged.Parts&parts[c].Parts)==0){var complete=merged.Merge(parts[c],owner);if(complete.Parts==RobotParts.Complete && complete.NativeParts(owner)>=policy.RequiredNative){selection=new[]{parts[a].Id,parts[b].Id,parts[c].Id};break;}}
+                if(merged.Parts==RobotParts.Complete && merged.AssemblyCredit(owner)>=policy.RequiredNative){selection=new[]{parts[a].Id,parts[b].Id};break;}
+                for(int c=b+1;c<parts.Length;c++)if((merged.Parts&parts[c].Parts)==0){var complete=merged.Merge(parts[c],owner);if(complete.Parts==RobotParts.Complete && complete.AssemblyCredit(owner)>=policy.RequiredNative){selection=new[]{parts[a].Id,parts[b].Id,parts[c].Id};break;}}
             }
             if(selection==null)return;
             Assemble(node,selection,owner);

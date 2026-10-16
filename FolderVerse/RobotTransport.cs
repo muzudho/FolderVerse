@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -111,13 +111,13 @@ public sealed class RobotTransport
         foreach(var s in active)
         {
             var source=stores[s.Source];var robot=source.Single(r=>r.Id==s.RobotId);source.Remove(robot);
-            if(s.Parts!=robot.Parts){source.Add(robot with {Parts=robot.Parts^s.Parts,DamagedParts=robot.DamagedParts&(robot.Parts^s.Parts)});robot=robot with {Id=temporary--};}
-            cargo[s.RobotId]=robot with {Parts=s.Parts,DamagedParts=robot.DamagedParts&s.Parts,Disposal=robot.Disposal || s.Disposal};
+            if(s.Parts!=robot.Parts){source.Add(robot with {Parts=robot.Parts^s.Parts,DamagedParts=robot.DamagedParts&(robot.Parts^s.Parts),CheapParts=robot.CheapParts&(robot.Parts^s.Parts)});robot=robot with {Id=temporary--};}
+            cargo[s.RobotId]=robot with {Parts=s.Parts,DamagedParts=robot.DamagedParts&s.Parts,CheapParts=robot.CheapParts&s.Parts,Disposal=robot.Disposal || s.Disposal};
         }
         foreach(var s in Ordered(active))
         {
             var robot=cargo[s.RobotId];var target=stores[s.Target];
-            var partner=target.Where(r=>!world.Workshops[s.Target].AutoAssemblyDisabled && !robot.Disposal && r.Id!=world.Workshops[s.Target].DisposalTarget && r.Owner==robot.Owner && r.Disposal==robot.Disposal && (r.Parts&robot.Parts)==0 && ((r.Parts|robot.Parts)!=RobotParts.Complete || r.Merge(robot,r.Owner).NativeParts(r.Owner)>=world.Training[r.Owner].RequiredNative)).OrderBy(r=>r.Id).FirstOrDefault();
+            var partner=target.Where(r=>!world.Workshops[s.Target].AutoAssemblyDisabled && !robot.Disposal && r.Id!=world.Workshops[s.Target].DisposalTarget && r.Owner==robot.Owner && r.Disposal==robot.Disposal && (r.Parts&robot.Parts)==0 && ((r.Parts|robot.Parts)!=RobotParts.Complete || r.Merge(robot,r.Owner).AssemblyCredit(r.Owner)>=world.Training[r.Owner].RequiredNative)).OrderBy(r=>r.Id).FirstOrDefault();
             if(partner==null)target.Add(robot);
             else{target.Remove(partner);target.Add(partner.Merge(robot,partner.Owner) with {Role=partner.Role==RobotRole.Captain || robot.Role==RobotRole.Captain?RobotRole.Captain:RobotRole.Soldier});}
         }

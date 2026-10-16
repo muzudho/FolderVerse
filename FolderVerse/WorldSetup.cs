@@ -71,6 +71,7 @@ public sealed partial class WorldSetup
     public PopulationSimulation Population {get;}=new();
     public ConquestCampaign Campaign {get;}=new();
     public RobotWorld Robots {get;}=new();
+    public IndustryCycle Industry {get;}=new();
     public ConquerorRelations Relations {get;}=new();
     public void SelectPlayer(int slot)
     {
@@ -88,6 +89,7 @@ public sealed partial class WorldSetup
     public Color OwnerColor(int slot) => slot<0?new Color(155,169,180):Colors[ColorIndices[slot]];
     public void SetWorld(int seed)
     {
+        Industry.Reset();
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
         WorldSeed = seed;
         var random = new SeedRandom(seed);

@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 
@@ -17,11 +17,11 @@ public sealed partial class RobotWorld
         if(target!=null && (target.Disposal!=source.Disposal || (target.Parts&part)!=0))throw new InvalidOperationException("Incompatible target.");
         var remaining=source.Parts^part;
         if(target==null && remaining!=0 && !store.HasSpace)throw new InvalidOperationException("Hangar is full.");
-        var destination=target!=null?target.Merge(source with {Parts=part,DamagedParts=source.DamagedParts&part},owner??target.Owner):
-            remaining==0?source.Materialize():source.Materialize() with {Id=Create(source.Owner,part,disposal:source.Disposal).Id,Parts=part,DamagedParts=source.DamagedParts&part};
-        if(owner.HasValue && destination.NativeParts(owner.Value)>0)destination=destination.Materialize() with {Owner=owner.Value};
+        var destination=target!=null?target.Merge(source with {Parts=part,DamagedParts=source.DamagedParts&part,CheapParts=source.CheapParts&part},owner??target.Owner):
+            remaining==0?source.Materialize():source.Materialize() with {Id=Create(source.Owner,part,disposal:source.Disposal).Id,Parts=part,DamagedParts=source.DamagedParts&part,CheapParts=source.CheapParts&part};
+        if(owner.HasValue && destination.AssemblyCredit(owner.Value)>0)destination=destination.Materialize() with {Owner=owner.Value};
         var next=store.Robots.Where(r=>r.Id!=sourceId && r.Id!=targetId).ToList();
-        if(remaining!=0)next.Add(source with {Parts=remaining,DamagedParts=source.DamagedParts&remaining});
+        if(remaining!=0)next.Add(source with {Parts=remaining,DamagedParts=source.DamagedParts&remaining,CheapParts=source.CheapParts&remaining});
         next.Add(destination);store.Replace(next);Check();return destination.Id;
     }
 }

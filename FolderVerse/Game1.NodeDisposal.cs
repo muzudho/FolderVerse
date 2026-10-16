@@ -49,15 +49,15 @@ public partial class Game1
         var node=_setup.Nodes.All[_populationNode];var workshop=_setup.Robots.Workshops[node.Id];var robots=DisposalCandidates();
         _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Box(new(54,150,850,6),_setup.OwnerColor(node.Owner));
         _ui.Button(new(803,169,58,44),"×",Muted,.7f);
-        string status=!workshop.HasDisposalFactory?"この節点に廃棄炉はありません":workshop.DisposalTarget is long id?$"レーン使用中 ID {id} / {workshop.DisposalAge}/{workshop.DisposalPeriod} 全体ターン":"レーンは空いています / 廃棄フラグ付きの個体が自動で入ります";
+        string status=!workshop.HasDisposalFactory?"この節点に廃棄炉はありません":workshop.DisposalTarget is long id?$"レーン使用中 ID {id} / {workshop.DisposalAge}/{workshop.DisposalPeriod} 産業ターン":"レーンは空いています / 廃棄フラグ付きの個体が自動で入ります";
         _ui.Text(status,new(84,244),.43f,Cream);
-        _ui.Text("頭１・胴２・脚２ターン / 組み合わせは合計 / ↑↓で順番を変更",new(84,288),.42f,Cream);
+        _ui.Text("頭１・胴２・脚２産業ターン / 組み合わせは合計 / ↑↓で順番を変更",new(84,288),.42f,Cream);
         for(int i=0;i<robots.Length;i++)
         {
             int x=84+i/6*388,y=340+i%6*78;var robot=robots[i];_ui.Box(new(x,y,374,68),Muted);
             DrawRobotGlyph(new(x+12,y+7,32,48),robot);
             _ui.Text($"{i+1}. ID {robot.Id} / {PartsLabel(robot.Parts)}",new(x+58,y+9),.38f,Cream);
-            _ui.Text($"{RobotWorkshop.DisposalTurns(robot.Parts)} 全体ターン",new(x+58,y+36),.34f,Cream);
+            _ui.Text($"{RobotWorkshop.DisposalTurns(robot.Parts)} 産業ターン",new(x+58,y+36),.34f,Cream);
             _ui.Button(new(x+274,y+8,42,42),"↑",Muted,.45f);_ui.Button(new(x+324,y+8,42,42),"↓",Muted,.45f);
         }
         if(robots.Length==0)_ui.Text("廃棄待ちのロボットはいません",new(84,355),.5f,Cream);

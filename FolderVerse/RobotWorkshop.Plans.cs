@@ -1,5 +1,5 @@
 namespace FolderVerse;
-public sealed record ProductionPlan(RobotParts Product,int Turns);
+public sealed record ProductionPlan(RobotParts Product,int Turns,bool Cheap=false);
 public sealed partial class RobotWorkshop
 {
     public RobotWorkshop[] ProductionLines {get;private set;}
@@ -10,11 +10,18 @@ public sealed partial class RobotWorkshop
         ProductionLines=new RobotWorkshop[count];
         for(int i=0;i<count;i++){
             var line=i==0?this:new RobotWorkshop();ProductionLines[i]=line;
-            line.GeneratePlans(seed^((i+1)*7919));line.SelectPlan(random.Next(4));line.SetRest(1+random.Next(9),1+random.Next(9));
+            line.GeneratePlans(seed^((i+1)*7919));line.SelectPlan(random.Next(7));line.SetRest(1+random.Next(9),1+random.Next(9));
         }
     }
     public ProductionPlan[] Plans {get;private set;}={new(RobotParts.Head,2),new(RobotParts.Body,2),new(RobotParts.Head|RobotParts.Body,3)};
     public int SelectedPlan {get;private set;}=-1;
+    public bool CheapProduct {get;private set;}
+    public ProductionPlan PlanAt(int index)
+    {
+        if(index<0 || index>6 || index==3)throw new System.ArgumentOutOfRangeException(nameof(index));
+        var regular=Plans[index<3?index:index-4];
+        return index<3?regular:regular with {Turns=System.Math.Max(1,regular.Turns/2),Cheap=true};
+    }
     public int RestEvery {get;private set;}=1;
     public int RestTurns {get;private set;}=1;
     public int RestRemaining {get;private set;}
@@ -29,11 +36,11 @@ public sealed partial class RobotWorkshop
     }
     public void SelectPlan(int index)
     {
-        if(index<0 || index>3)throw new System.ArgumentOutOfRangeException(nameof(index));
+        if(index<0 || index>6)throw new System.ArgumentOutOfRangeException(nameof(index));
         if(SelectedPlan==index)return;
         SelectedPlan=index;Paused=false;RestRemaining=ProducedSinceRest=0;
         if(index==3){Manufacturing=false;ProductionAge=0;Paused=false;return;}
-        Configure(Plans[index].Product,Plans[index].Turns);SelectedPlan=index;RestEnabled=true;
+        var plan=PlanAt(index);Configure(plan.Product,plan.Turns);CheapProduct=plan.Cheap;SelectedPlan=index;RestEnabled=true;
     }
     public void SetRest(int every,int turns)
     {

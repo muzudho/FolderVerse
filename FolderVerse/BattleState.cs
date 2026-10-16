@@ -78,7 +78,7 @@ public sealed partial class BattleState
         foreach(var robot in robots.OrderBy(r=>r.Id))
         {
             if(!robot.CanFight || robot.Owner!=owner)throw new ArgumentException("Only complete owned robots may enter battle.");
-            army.Waiting.Enqueue(new(){Id=robot.Id,Owner=owner,Robot=robot,Daggers=robot.NativeParts(owner),Shields=robot.NativeParts(owner),Rifles=robot.NativeParts(owner)==3?4:robot.NativeParts(owner),Role=index++==1?BattleRole.Captain:BattleRole.Soldier,Facing=Inward(army.Side)});
+            army.Waiting.Enqueue(new(){Id=robot.Id,Owner=owner,Robot=robot,Daggers=robot.CombatParts(owner),Shields=robot.CombatParts(owner),Rifles=robot.NativeParts(owner)==3?4:robot.CombatParts(owner),Role=index++==1?BattleRole.Captain:BattleRole.Soldier,Facing=Inward(army.Side)});
         }
         if(queen)army.Waiting.Enqueue(new(){Id=-(owner+1),Owner=owner,Role=BattleRole.Queen,Facing=Inward(army.Side),Daggers=0,Rifles=0});
     }
