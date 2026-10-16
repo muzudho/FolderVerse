@@ -33,7 +33,7 @@ public partial class Game1
     private void SelectMoveNode(int node)
     {
         if(!_net.MovementTargets.Contains(node))return;
-        _selectedMoveNode=node;_net.SelectedTarget=node;if(_warPlanning)BuildInvasionSources(node);
+        _withdrawalEncounter=-1;_selectedMoveNode=node;_net.SelectedTarget=node;if(_warPlanning)BuildInvasionSources(node);
     }
     private long AvailableEscort
     {
@@ -42,8 +42,9 @@ public partial class Game1
     private bool MovementClick(Point pointer,KeyboardState keyboard)
     {
         if(!InspectorVisible && PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
+        if(SelectContinuation(pointer))return true;
         bool onMap=NetPanel.Contains(pointer);if(!onMap)pointer.X-=NodeInspectorOffset;
-        if(_warPlanning && _movementOpen && InvasionClick(pointer))return true;
+        if(_warPlanning && _movementOpen && !onMap && InvasionClick(pointer))return true;
         if(_reignView && PocketButton.Contains(pointer)){_statusMenuOpen=false;OpenPocket();return true;}
         if(_reignView && MovementButton.Contains(pointer)){if(_movementOpen)CloseMovement();else OpenMovement();return true;}
         if(!_movementOpen)return false;

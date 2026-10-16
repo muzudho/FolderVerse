@@ -17,7 +17,8 @@ public sealed partial class CubeNet
         if(ControlledCountryColors && !world.Relations.Controls(owner))owner=-1;
         return owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal):WorldPreview.LandTerritoryColor(world.OwnerColor(owner),WorldTerrain.Kind(height));
     }
-    public bool ShowRoutes {get;set;}=true; public int HoveredNode {get;set;}=-1;
+    public bool ShowRoutes {get;set;}=true; public int HoveredNode {get;set;}=-1; public int InspectedNode {get;set;}=-1;
+    public bool EmphasizedNode(int id)=>HoveredNode==id || InspectedNode==id;
     public HashSet<int> MovementTargets {get;}=new();
     public int SelectedTarget {get;set;}=-1;
     public Vector2 NodePosition(WorldSetup world,Node node,Rectangle panel)
@@ -71,12 +72,12 @@ public sealed partial class CubeNet
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
                 float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);
                 if(post.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
-                if(HoveredNode==post.Id)radius*=2; if(MovementTargets.Contains(post.Id) && MathF.Sin(pulse*6)>=0)
+                if(EmphasizedNode(post.Id))radius*=2; if(MovementTargets.Contains(post.Id) && MathF.Sin(pulse*6)>=0)
                 {
                     Disc(ui,at,radius+7,new Color(255,219,96));
                     Disc(ui,at,radius+5,new Color(13,36,44));
                 }
-                if(SelectedTarget==post.Id || HoveredNode==post.Id)
+                if(SelectedTarget==post.Id || EmphasizedNode(post.Id))
                 {
                     Disc(ui,at,radius*1.5f+3,Color.White);
                     Disc(ui,at,radius*1.5f,new Color(13,36,44));

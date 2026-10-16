@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 public partial class Game1
 {
-    private static readonly Rectangle WarButton=new(566,1006,200,64);
+    private Rectangle WarButton=>new(566,1006,200,64);
     private bool _warPlanning;
     private sealed class InvasionSource {public int Owner,Node,Count;public bool Queen,CanQueen,CanNode;}
     private readonly List<InvasionSource> _invasionSources=new();
     private int _invasionPage;
     private void OpenWarPlanning()
     {
-        CloseMovement();OpenMovement();_warPlanning=true;_net.MovementTargets.Clear();
+        _withdrawalEncounter=-1;CloseMovement();OpenMovement();_warPlanning=true;_net.MovementTargets.Clear();
         foreach(var node in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner)))
             foreach(var route in _setup.Routes.Neighbors(node))
             {
@@ -50,6 +50,7 @@ public partial class Game1
     private static Rectangle InvasionRow(int index)=>new(84,300+index*72,760,66);
     private bool InvasionClick(Point p)
     {
+        if(SelectedWithdrawal!=null)return WithdrawalClick(p) || new Rectangle(54,150,850,825).Contains(p);
         if(new Rectangle(84,850,110,42).Contains(p)){_invasionPage=Math.Max(0,_invasionPage-1);return true;}
         if(new Rectangle(210,850,110,42).Contains(p)){_invasionPage=Math.Min(Math.Max(0,(_invasionSources.Count-1)/7),_invasionPage+1);return true;}
         if(ConfirmMoveButton.Contains(p)){ReserveInvasion();return true;}
@@ -73,6 +74,7 @@ public partial class Game1
     }
     private void EndPlannedTurn()
     {
+        SaveDomesticCamera();
         if(_movementOpen && _selectedMoveNode>=0)
         {if(_warPlanning)ReserveInvasion();else _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id));}
         CloseMovement();if(_transportOverview)CloseTransportOverview();
@@ -82,6 +84,7 @@ public partial class Game1
     {
         _ui.Box(new(54,150,850,825),new Color(27,49,62));
         _ui.Text("開戦・増援の予約",new(84,177),.8f,Cream);
+        if(SelectedWithdrawal!=null){DrawWithdrawal();return;}
         _ui.Text(_selectedMoveNode<0?"明るい敵節点を選んでください":$"侵攻先：Node {_selectedMoveNode+1}",new(84,245),.6f,Cream);
         for(int i=0;i<7;i++)
         {

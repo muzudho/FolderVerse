@@ -17,7 +17,7 @@ public sealed record BattleAttack(int Turn,long Attacker,long? Target,Point From
 public sealed class BattleRules
 {
     public int NoWillTurns {get;init;}=10;
-    public int SegmentTurns {get;init;}=100;
+    public int SegmentTurns {get;init;}=200;
     public int PersuasionRadius {get;init;}=4;
     public int PersuasionPercent {get;init;}=5;
 }

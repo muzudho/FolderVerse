@@ -15,7 +15,7 @@ public partial class Game1
     private static readonly Rectangle BattleContinue=new(1450,1020,410,50);
     private void OpenBattle()
     {
-        if(_setup.Campaign.AwaitingPlayers){_screen=Screen.WorldStatus;_reignView=false;_populationCell=_populationNode=_inspectedNode=-1;FocusCurrentNode();return;}
+        if(_setup.Campaign.AwaitingPlayers){_screen=Screen.WorldStatus;_reignView=false;_populationCell=_populationNode=_inspectedNode=-1;RestoreDomesticCamera();return;}
         if(_setup.Campaign.UseRobotCombat){OpenRobotBattle();return;}
         _battleWaves=BattleSchedule.Create(_setup.Campaign.Battles);
         if(_battleWaves.Length==0){BeginIndustry();return;}

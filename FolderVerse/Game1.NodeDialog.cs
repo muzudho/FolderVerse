@@ -7,7 +7,7 @@ public partial class Game1
 {
     private int _populationCell=-1;
     private int _populationNode=-1;
-    private static readonly Rectangle PopulationTurnButton=new(310,1006,242,64);
+    private Rectangle PopulationTurnButton=>new(310,974,242,96);
     private bool NodeDialogClick(Point pointer,KeyboardState keyboard)
     {
         if(!InspectorVisible && PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
@@ -31,7 +31,8 @@ public partial class Game1
     }
     private void DrawNodeDialog()
     {
-        _ui.Text("節点インスペクター / "+_setup.Nodes.Label(_setup.Nodes.All[_populationNode]),new(54,112),.5f,Cream);
+        var heading="節点インスペクター / "+_setup.Nodes.Label(_setup.Nodes.All[_populationNode]);
+        _ui.Text(heading,new(54,112),Math.Min(.5f,850/_font.MeasureString(heading).X),Cream);
         if(!_nodeAssemblyOpen && !_nodeFactoryOpen && !_nodeTransportOpen && !_nodeDisposalOpen)OpenNodeAssembly();
         if(_nodeAssemblyOpen){DrawNodeAssembly();return;}
         if(_nodeDisposalOpen){DrawNodeDisposal();return;}

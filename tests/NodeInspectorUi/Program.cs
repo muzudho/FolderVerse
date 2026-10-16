@@ -31,7 +31,7 @@ sealed class InspectorGame:Game1{
   var close=(Rectangle)Prop("InspectorClose");Check(close.X==912,"Handle sits on inspector right edge");Call("DomesticViewClick",close.Center);Call("UpdateDomesticSlide",.2f);
   Check((int)Get("_populationCell")>=0 && (float)Get("_domesticSlide")==.5f,"Closing keeps panel while sliding");Call("UpdateDomesticSlide",.2f);Check((int)Get("_populationCell")==-1,"Closing clears inspector only when offscreen");
   foreach(string launcher in new[]{"StrategyToggle","WarButton","TransportOverviewButton"}){
-   var launchButton=(Rectangle)typeof(Game1).GetField(launcher,BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+   var launchButton=(Rectangle)Prop(launcher);
    Check((bool)Call("DomesticViewClick",launchButton.Center),"Large map launcher works: "+launcher);
    Check((bool)Prop("InspectorVisible"),"All inspector types are visible");Call("UpdateDomesticSlide",.2f);Check((float)Get("_domesticSlide")==.5f,"All panels share slide");
    if(launcher=="WarButton"){
@@ -45,6 +45,20 @@ sealed class InspectorGame:Game1{
   }
   int foreign=w.Nodes.All.First(n=>n.Owner>=0 && n.Owner!=0 && !(bool)Call("CanManageNodeFactory",n.Owner)).Id;
   foreignNode=foreign;Call("OpenNodeInspector",foreign);Check(!(bool)Prop("CanOpenHangar"),"Foreign node is read only");Call("OpenNodeFactory");Check(!(bool)Get("_nodeFactoryOpen"),"Foreign factory cannot be edited");Call("CloseNodeInspector");Call("UpdateDomesticSlide",1f);
+  var net=(CubeNet)Get("_net");var world=(WorldPreview)Get("_world");net.Turn(w,1);
+  bool attached=false;foreach(var face in net.Faces.ToArray()){
+   for(int side=0;side<4;side++)if(net.AnimateAttachment(face.Face,side)){net.UpdateAnimation(1);attached=true;break;}
+   if(attached)break;
+  }
+  Check(attached,"Use a rearranged face layout for camera roundtrip");net.Drag(new Vector2(37,-49));net.ZoomAt((Rectangle)Prop("NetPanel"),new Point(1200,500),240);
+  foreach(bool globe in new[]{false,true}){
+   var view=net.CaptureView();Set("_statusGlobe",globe);Set("_yawAngle",.7f);Set("_pitchAngle",-.3f);world.GlobeZoom=2.5f;world.GlobeAnchor=new Vector3(1,2,3);world.ManualOrientation=Quaternion.CreateFromYawPitchRoll(.4f,.2f,.1f);
+   var orientation=world.ManualOrientation;Call("SaveDomesticCamera");net.Home(w);Set("_statusGlobe",!globe);world.ManualOrientation=null;world.GlobeZoom=1;world.GlobeAnchor=null;
+   Call("RestoreDomesticCamera");var restored=net.CaptureView();
+   Check(restored.Faces.SequenceEqual(view.Faces) && restored.Pan==view.Pan && restored.Zoom==view.Zoom && restored.Rotation==view.Rotation,"Net connections, rotation, zoom and pan restored");
+   Check((bool)Get("_statusGlobe")==globe && world.ManualOrientation==orientation && world.GlobeZoom==2.5f && world.GlobeAnchor==new Vector3(1,2,3),"Globe camera and selected view restored");
+  }
+  Check(((Rectangle)Prop("PopulationTurnButton")).Height==96,"Turn-end button is 1.5 times taller");
   for(int count=1;count<=12;count++)for(int i=0;i<count;i++)Check(CubeNet.RobotRingSlot(i,count).Length()>=47.99f,"Robots surround node with clear center");
  }
  protected override void Update(GameTime t){}
@@ -56,6 +70,20 @@ sealed class InspectorGame:Game1{
    int borderX=(int)((176+(kind=="map"?0:960*slide)+125)*pp.BackBufferWidth/1920f),borderY=(int)(820*pp.BackBufferHeight/1080f);
    Check(pixels[borderY*pp.BackBufferWidth+borderX]==w.OwnerColor(w.PlayerSlot),"Portrait border displays current country color: "+kind);
    using var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);tex.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"inspector-{kind}-{slide:0.0}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);
+  }
+  foreach(var kind in new[]{BattleKind.Node,BattleKind.Edge}){
+   Call("ResetInspector");var net=(CubeNet)Get("_net");net.Home(w);net.ResetView();
+   int target=w.Routes.Neighbors(w.Nodes.All[node]).Select(r=>w.Nodes.At(r.Target,r.Entry).Id).First();
+   var e=new RobotEncounter{Id=900+(int)kind,Kind=kind,Source=node,Target=target};var state=new BattleState(4);state.Armies.Add(new(){Owner=0});state.Units.Add(new(){Id=1,Owner=0,Position=new(1,1)});e.Battles.Add(state);w.Campaign.RobotBattles.Encounters.Add(e);
+   Call("OpenWarPlanning");Set("_domesticSlide",1f);Call("FitDestinationView");var badge=(Rectangle)Call("ContinuationBadge",e);Check(!badge.IsEmpty,"Continuation badge visible for "+kind);
+   Call("MovementClick",badge.Center,new KeyboardState());Check((int)Get("_withdrawalEncounter")==e.Id,"Click selects continuation battlefield");
+   Call("MovementClick",new Point(400,380),new KeyboardState());Check(e.WithdrawalOwners.Contains(0),"Withdrawal button reserves controlled army");Call("MovementClick",new Point(400,380),new KeyboardState());Check(e.WithdrawalOwners.Count==0,"Withdrawal reservation cancel works");
+   GraphicsDevice.Clear(Color.Black);batch.Begin();Call("DrawStatusUi");batch.End();
+   var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);tex.SetData(pixels);using var output=File.Create(Path.Combine(AppContext.BaseDirectory,$"withdrawal-{kind}.png"));tex.SaveAsPng(output,tex.Width,tex.Height);w.Campaign.RobotBattles.Encounters.Remove(e);
+  }
+  Call("ResetInspector");Call("OpenStrategyInspector");Set("_domesticSlide",1f);Set("_trainingOpen",true);GraphicsDevice.Clear(Color.Black);batch.Begin();Call("DrawStatusUi");batch.End();
+  {
+   var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);Check(pixels[(int)(205*pp.BackBufferHeight/1080f)*pp.BackBufferWidth+(int)(920*pp.BackBufferWidth/1920f)]==new Color(27,49,62),"Training dialog covers inspector handles");
   }
   Console.WriteLine("PASS: repeat menu priority, map input, continuous selection, linked slide/close, portrait position, robot ring and panel rendering.");Exit();
  }

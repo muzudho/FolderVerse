@@ -10,6 +10,7 @@ public sealed class RobotEncounter
     public List<BattleState> Battles {get;}=new();
     public Dictionary<int,int> LostHomes {get;}=new();
     public bool Finished;
+    public HashSet<int> WithdrawalOwners {get;}=new();
     public HashSet<long> IncomingWinners {get;}=new();
 }
 public sealed class RobotCampaign
@@ -52,6 +53,12 @@ public sealed class RobotCampaign
         =>source<0 || source>=world.Nodes.All.Length || LockedNode(source)?0:world.Robots.Nodes[source].Robots.Count(r=>r.Owner==owner && world.Robots.Training[owner].Eligible(r) && world.Robots.Workshops[source].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)));
     public bool CanAttackFrom(WorldSetup world,int owner,int source,int target)
         =>source>=0 && source<world.Nodes.All.Length && target>=0 && target<world.Nodes.All.Length && world.Nodes.All[source].Owner==owner && !LockedNode(source) && !LockedEdge(source,target) && world.Routes.Neighbors(world.Nodes.All[source]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==target);
+    public void RequestWithdrawal(WorldSetup world,int encounterId,int owner,bool requested=true)
+    {
+        var encounter=Encounters.Single(e=>e.Id==encounterId && !e.Finished);
+        if(owner<0 || owner>=world.ActiveCount || !world.Relations.Controls(owner) || !encounter.Battles.Any(b=>b.Armies.Any(a=>a.Owner==owner)))throw new InvalidOperationException("Cannot withdraw this army.");
+        if(requested)encounter.WithdrawalOwners.Add(owner);else encounter.WithdrawalOwners.Remove(owner);
+    }
     public void SendReinforcement(WorldSetup world,int owner,int source,int encounterId)
     {
         var encounter=Encounters.Single(e=>e.Id==encounterId && !e.Finished);
@@ -196,6 +203,12 @@ public sealed class RobotCampaign
     private void RunSegment(WorldSetup world,RobotEncounter e)
     {
         foreach(var state in e.Battles){state.Events.Clear();state.Frames.Clear();state.Attacks.Clear();}
+        foreach(var state in e.Battles)foreach(var army in state.Armies.Where(a=>e.WithdrawalOwners.Contains(a.Owner))){
+            army.Withdrawing=true;
+            foreach(var unit in state.Units.Where(u=>u.Owner==army.Owner && u.Active))unit.Retreating=true;
+            while(army.Waiting.TryDequeue(out var unit)){unit.Retreated=true;state.Units.Add(unit);}
+        }
+        e.WithdrawalOwners.Clear();
         int budget=Rules.SegmentTurns;
         while(budget>0)
         {

@@ -471,6 +471,7 @@ public partial class Game1 : Game
     private void DrawStatusUi()
     {
         _ui.Text("世界征服状況",new(54,22),1.1f,Cream);
+        _net.InspectedNode=_populationCell>=0?_populationNode:-1;
         int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
         if(_reignView)DrawInspector(()=>{
         _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Text("全体作戦",new(54,112),.65f,Cream);var image=new Rectangle(212,220,518,360);
@@ -541,7 +542,7 @@ public partial class Game1 : Game
             _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:(_statusCell>=0?_statusCell:_selectedMapCell),_animationTime);_spriteBatch.End();
         }
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
-        DrawDestinationMap(); DrawDomesticPortrait();
+        DrawDestinationMap();DrawContinuationBadges(); DrawDomesticPortrait();
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(InspectorVisible?1276:991,InspectorVisible?770:831),Math.Min(0.48f,(InspectorVisible?600:870)/_font.MeasureString(location).X),Cream);
         _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"右ドラッグ：回転 / ホイール：拡縮 / 節点を選ぶと中心固定":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / 右ドラッグ：移動",new(InspectorVisible?1276:991,InspectorVisible?810:865),InspectorVisible?.27f:0.37f,new(177,206,216));
@@ -557,8 +558,8 @@ public partial class Game1 : Game
             string pattern=_setup.Nodes.CellPattern(cell.Id);
             _ui.Center(pattern,new(970,1003,914,32),Math.Min(0.40f,880/_font.MeasureString(pattern).X),Cream);
         }
-                if(!InspectorVisible)_ui.Button(PopulationTurnButton,"ターン終了",Accent,0.7f);
-        if(!InspectorVisible)_ui.Button(WarButton,"開戦予約",Accent,.55f);
+
+
         if(_reignView)DrawInspector(()=>{
         _ui.Button(MovementButton,"移動",Accent,.65f);
         _ui.Button(PocketButton,"ポケット",Accent,.55f);});
@@ -568,12 +569,12 @@ public partial class Game1 : Game
             else DrawInspector(()=>{DrawNodeDialog();DrawNodeAutomation();});
         }
         if(_movementOpen)DrawInspector(DrawMovementPanel);
-        DrawTransportOverviewButton();
+
         if(_transportOverview){DrawInspector(DrawTransportOverviewPanel);if(_rateTarget>=0)DrawRatePieDialog();}
         DrawRouteLayerButtons();
         DrawStatusMenu();
         if(_supervisorDialog==0)DrawNodeTooltip();
-        DrawTraining();DrawInspectorHandle();
+        DrawInspectorHandle();DrawTraining();
     }
     private void DrawCastPreviewInfo()
     {

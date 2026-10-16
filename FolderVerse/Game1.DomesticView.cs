@@ -25,7 +25,13 @@ public partial class Game1
         try{draw();}finally{_pointer=pointer;_ui.Pointer=hover;_spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);}
     }
     private void DrawInspectorHandle(){
-        if(!InspectorVisible)return;var r=InspectorHandle;
+        if(!InspectorVisible){
+            _ui.Button(StrategyToggle,"全体作戦",Accent,.6f);
+            _ui.Button(WarButton,"開戦予約",Accent,.55f);
+            _ui.Button(TransportOverviewButton,"ロボット輸送",Accent,.5f);
+            _ui.Button(PopulationTurnButton,"ターン終了",Accent,.8f);return;
+        }
+        var r=InspectorHandle;
         _ui.Box(new(r.X+4,r.Y+5,r.Width,r.Height),new Color(5,17,28));_ui.Box(r,_setup.OwnerColor(_setup.PlayerSlot));
         _ui.Button(InspectorClose,"×",Muted,.75f);
         for(int y=r.Y+90;y<r.Bottom-16;y+=12)_ui.Box(new(r.X+18,y,r.Width-36,4),new Color(30,48,58));
@@ -41,15 +47,16 @@ public partial class Game1
         _domesticSlide=target>_domesticSlide?Math.Min(target,_domesticSlide+elapsed/.4f):Math.Max(target,_domesticSlide-elapsed/.4f);
         if(_nodeInspectorClosing && _domesticSlide==0)ResetInspector();
     }
-    private static readonly Rectangle ReignPortrait=new(56,700,240,240); private static readonly Rectangle StrategyToggle=new(54,1006,242,64);
+    private static readonly Rectangle ReignPortrait=new(56,700,240,240); private Rectangle StrategyToggle=>new(54,1006,242,64);
     private bool DomesticViewClick(Point p)
     {
+        if(_trainingOpen || _supervisorDialog>0)return false;
         if(InspectorVisible && InspectorClose.Contains(p)){CloseNodeInspector();return true;}
-        if(InspectorVisible && InspectorHandle.Contains(p))return true;
-        if(InspectorVisible)return false;
-        if(StrategyToggle.Contains(p)){OpenStrategyInspector();return true;}
-        if(WarButton.Contains(p)){OpenWarPlanning();return true;}
-        if(TransportOverviewButton.Contains(p)){OpenTransportOverview();return true;}
+        if(InspectorVisible)return InspectorHandle.Contains(p);
+        if(StrategyToggle.Contains(p)){if(_reignView)CloseNodeInspector();else OpenStrategyInspector();return true;}
+        if(WarButton.Contains(p)){if(_movementOpen && _warPlanning)CloseNodeInspector();else{ResetInspector();OpenWarPlanning();}return true;}
+        if(TransportOverviewButton.Contains(p)){if(_transportOverview)CloseNodeInspector();else{ResetInspector();OpenTransportOverview();}return true;}
+        if(PopulationTurnButton.Contains(p)){EndPlannedTurn();return true;}
 
         return false;
     }
@@ -70,8 +77,7 @@ public partial class Game1
             }
         }
         GraphicsDevice.ScissorRectangle=old;_spriteBatch.Begin(transformMatrix:transform);
-        if(InspectorVisible)return;
-        _ui.Button(StrategyToggle,"全体作戦",Accent,.6f);
+
 
     }
 }

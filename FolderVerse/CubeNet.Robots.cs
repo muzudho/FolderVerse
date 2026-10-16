@@ -30,12 +30,12 @@ public sealed partial class CubeNet
         if(!world.Campaign.UseRobotCombat)return;
         var occupied=new List<Rectangle>();
         int current=world.Nodes.Current(world.PlayerSlot)?.Id??-1;
-        foreach(var node in world.Nodes.All.OrderBy(n=>n.Id==HoveredNode?0:n.Id==current?1:2).ThenBy(n=>n.Id))
+        foreach(var node in world.Nodes.All.OrderBy(n=>EmphasizedNode(n.Id)?0:n.Id==current?1:2).ThenBy(n=>n.Id))
         {
             var robots=world.Robots.Nodes[node.Id].Robots.OrderByDescending(r=>MapPartCount(r.Parts)).ToArray();
             if(robots.Length==0)continue;
             var point=project(node);if(point==null || !panel.Contains(point.Value.ToPoint()))continue;
-            var at=point.Value;float zoom=ShowRoutes && HoveredNode==node.Id?2:1;
+            var at=point.Value;float zoom=ShowRoutes && EmphasizedNode(node.Id)?2:1;
             var cards=robots.Select((robot,i)=>{
                 var offset=RobotRingSlot(i,robots.Length)*zoom;
                 return new Rectangle((int)(at.X+offset.X-12*zoom),(int)(at.Y+offset.Y-MapPartCount(robot.Parts)*6*zoom),(int)(24*zoom),(int)(MapPartCount(robot.Parts)*12*zoom));

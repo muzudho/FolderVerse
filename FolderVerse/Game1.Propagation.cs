@@ -29,6 +29,8 @@ public partial class Game1
         if(_robotPendingSummary)zoom=Math.Max(0,1-progress/.2f);
         zoom=MathHelper.SmoothStep(0,1,zoom);
         int target=progress<.2f && !movement?_battleWave:focus;
+        float boardBlend=movement && focus>=0 && PropagationComplete?Math.Clamp((float)(_transportAge/.5),0,1):-1;
+        if(boardBlend>=0)zoom=MathHelper.SmoothStep(0,1,Math.Clamp((float)((_transportAge-.5)/1.5),0,1));
         float magnification=MathHelper.Lerp(1,PropagationBattleBounds.Width/30f,zoom);
         if(target>=0 && zoom>0)
         {
@@ -69,8 +71,8 @@ public partial class Game1
             int side=(int)MathF.Round(30*magnification);
             var badge=new Rectangle((int)MathF.Round(at.X-side/2f),(int)MathF.Round(at.Y-side/2f),side,side);
             _ui.Box(badge,i==focus?Accent:new Color(228,154,180));
-            float blend=i==target?Math.Clamp((zoom-.45f)/.55f,0,1):0;
-            if(blend>0)DrawPropagationGrid(battle,badge,blend);
+            float blend=i==target?(boardBlend>=0?boardBlend:Math.Clamp((zoom-.45f)/.55f,0,1)):0;
+            if(blend>0){DrawPropagationGrid(battle,badge,blend);if(movement && i==target)_ui.Box(badge,new Color(105,110,116)*(blend*.9f));}
             if(blend<1)_counter.DrawNumber(_spriteBatch,i+1,badge,Color.White*(1-blend));
         }
 

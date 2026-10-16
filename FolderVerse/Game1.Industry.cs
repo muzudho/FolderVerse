@@ -20,7 +20,7 @@ public partial class Game1
     private static readonly Rectangle IndustryContinue=new(1230,935,590,80);
     private void BeginIndustry()
     {
-        if(!_setup.Industry.Pending){_screen=Screen.WorldStatus;OpenDisposition();return;}
+        if(!_setup.Industry.Pending){_screen=Screen.WorldStatus;RestoreDomesticCamera();OpenDisposition();return;}
         _setup.Industry.Roll(_setup.PlacementSeed^_setup.FortuneSeed);
         int before=0;for(int i=0;i<_setup.Industry.SelectedSector;i++)before+=_setup.Industry.Wheel[i].Percent;
         _industryStartAngle=-MathHelper.PiOver2;
@@ -34,7 +34,7 @@ public partial class Game1
         if(_industryAge<IndustryStopSeconds)return;
         if(!_industryApplied){_setup.Industry.Apply(_setup);_industryApplied=true;_world.ShowSetup(_setup,true);}
         if(!proceed && (!(_demoActive || _autoPlay) || _industryAge<IndustryStopSeconds+5))return;
-        _screen=Screen.WorldStatus;_world.ShowSetup(_setup,true);OpenDisposition();
+        _screen=Screen.WorldStatus;_world.ShowSetup(_setup,true);RestoreDomesticCamera();OpenDisposition();
     }
     private Texture2D LoadIndustryMob(string name)
     {
