@@ -21,7 +21,7 @@ public partial class Game1
     }
     private bool _transportOverview;
     private bool _transportRoutesBefore;
-    private static readonly Rectangle TransportOverviewButton=new(204,930,210,52);
+    private static readonly Rectangle TransportOverviewButton=new(780,1006,210,64);
     private static Rectangle TransportPartButton(int mask)=>new(84+(mask-1)%4*196,322+(mask-1)/4*136,182,96);
     private void DrawTransportPartButtons()
     {
@@ -46,20 +46,12 @@ public partial class Game1
     }
     private void DrawTransportOverviewButton()
     {
-        if(!_reignView)return; var rect=TransportOverviewButton;
-        if(_transportOverview)
-        {
-            _ui.Box(rect,new Color(46,54,62));
-            _ui.Center("ロボット輸送",new(rect.X+27,rect.Y,rect.Width-27,rect.Height),.45f,new Color(155,164,172));
-        }
-        else _ui.Button(rect,"ロボット輸送",Accent,.45f);
-        var lamp=new Rectangle(rect.X+10,rect.Center.Y-7,14,14);
-        _ui.Box(lamp,new Color(17,28,34));
-        _ui.Box(new(lamp.X+2,lamp.Y+2,10,10),_transportOverview?new Color(255,234,124):new Color(67,83,92));
+        if(InspectorVisible)return; var rect=TransportOverviewButton;
+        _ui.Button(rect,"ロボット輸送",Accent,.5f);
     }
     private void OpenTransportOverview()
     {
-        CloseMovement();_populationCell=-1;_nodeTransportOpen=false;_rateTarget=-1;
+        _nodeInspectorClosing=false;_reignView=false;CloseMovement();_populationCell=-1;_nodeTransportOpen=false;_rateTarget=-1;
         _transportRoutesBefore=_net.ShowRoutes;_net.ShowRoutes=true;_transportOverview=true;
         _net.VisibleOperationNodes=null;
     }
@@ -70,16 +62,16 @@ public partial class Game1
     }
     private bool TransportOverviewClick(Point p)
     {
-        if(_reignView && TransportOverviewButton.Contains(p)){if(!_transportOverview)OpenTransportOverview();return true;}
+        if(!InspectorVisible && TransportOverviewButton.Contains(p)){OpenTransportOverview();return true;}
         if(!_transportOverview)return false;
         if(_rateTarget>=0){if(RateDialogArea.Contains(p))RatePieClick(p);else _rateTarget=-1;return true;}
-        if(new Rectangle(803,169,58,44).Contains(p)){CloseTransportOverview();return true;}
+        bool onMap=NetPanel.Contains(p);if(!onMap)p.X-=NodeInspectorOffset;
         if(new Rectangle(84,270,374,46).Contains(p)){_nodeTransportDisposal=false;return true;}
         if(new Rectangle(480,270,374,46).Contains(p)){_nodeTransportDisposal=true;return true;}
         for(int mask=1;mask<=7;mask++)if(TransportPartButton(mask).Contains(p)){_nodeTransportPart=(RobotParts)mask;return true;}
-        foreach(var hit in _transportRouteHits.AsEnumerable().Reverse())if(hit.Bounds.Contains(p) || Vector2.Distance(hit.Start,hit.End)>1 && TransportArrowHit(p,hit.Start,hit.End))
+        if(onMap)foreach(var hit in _transportRouteHits.AsEnumerable().Reverse())if(hit.Bounds.Contains(p) || Vector2.Distance(hit.Start,hit.End)>1 && TransportArrowHit(p,hit.Start,hit.End))
         {_populationNode=hit.Source;_rateTarget=hit.Target;return true;}
-        if(NetPanel.Contains(p))
+        if(onMap)
         {
             int id=_statusGlobe?HitGlobeNode(p,_setup.Nodes.All.Select(n=>n.Id)):_net.HitNode(_setup,NetPanel,p,_setup.Nodes.All.Select(n=>n.Id));
             if(id>=0){_populationNode=id;return true;}
@@ -90,7 +82,7 @@ public partial class Game1
     {
         _ui.Box(new(54,150,850,825),new Color(27,49,62));
         _ui.Text("ロボット輸送計画",new(84,178),.8f,Cream);
-        _ui.Button(new(803,169,58,44),"×",Muted,.7f);
+
         _ui.Button(new(84,270,374,46),"ふつうの移送",_nodeTransportDisposal?Muted:Accent,.5f);
         _ui.Button(new(480,270,374,46),"廃棄としての移送",_nodeTransportDisposal?Accent:Muted,.5f);
         DrawTransportPartButtons();

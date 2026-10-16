@@ -10,7 +10,7 @@ public partial class Game1
     private static readonly Rectangle PopulationTurnButton=new(310,1006,242,64);
     private bool NodeDialogClick(Point pointer,KeyboardState keyboard)
     {
-        if(!_reignView && _populationCell<0 && PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
+        if(!InspectorVisible && PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
         if(SupervisorNodePanel){pointer.X-=920;pointer.Y-=40;}
         pointer.X-=NodeInspectorOffset;
         if(_populationCell>=0 && !NodeInspectorBounds.Contains(new Point(pointer.X+NodeInspectorOffset,pointer.Y)))return false;

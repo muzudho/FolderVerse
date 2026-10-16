@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 public partial class Game1
 {
-    private static readonly Rectangle WarButton=new(624,1018,110,52);
+    private static readonly Rectangle WarButton=new(566,1006,200,64);
     private bool _warPlanning;
     private sealed class InvasionSource {public int Owner,Node,Count;public bool Queen,CanQueen,CanNode;}
     private readonly List<InvasionSource> _invasionSources=new();
@@ -81,7 +81,7 @@ public partial class Game1
     private void DrawInvasionPanel()
     {
         _ui.Box(new(54,150,850,825),new Color(27,49,62));
-        _ui.Text("開戦・増援の予約",new(84,177),.8f,Cream);_ui.Button(new(803,169,58,44),"×",Muted,.7f);
+        _ui.Text("開戦・増援の予約",new(84,177),.8f,Cream);
         _ui.Text(_selectedMoveNode<0?"明るい敵節点を選んでください":$"侵攻先：Node {_selectedMoveNode+1}",new(84,245),.6f,Cream);
         for(int i=0;i<7;i++)
         {

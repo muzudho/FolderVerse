@@ -14,7 +14,7 @@ public partial class Game1
     private static readonly Rectangle ConfirmMoveButton=new(570,914,274,48);
     private void OpenMovement()
     {
-        _warPlanning=false;
+        _nodeInspectorClosing=false;_reignView=false;_warPlanning=false;
         if(_transportOverview)CloseTransportOverview();
         _dragging=false;
         _routesBeforeMovement=_net.ShowRoutes;_net.ShowRoutes=true;_movementOpen=true;
@@ -41,14 +41,13 @@ public partial class Game1
     }
     private bool MovementClick(Point pointer,KeyboardState keyboard)
     {
-        if(!_reignView && PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
-        if(_reignView && WarButton.Contains(pointer)){OpenWarPlanning();return true;}
+        if(!InspectorVisible && PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
+        bool onMap=NetPanel.Contains(pointer);if(!onMap)pointer.X-=NodeInspectorOffset;
         if(_warPlanning && _movementOpen && InvasionClick(pointer))return true;
         if(_reignView && PocketButton.Contains(pointer)){_statusMenuOpen=false;OpenPocket();return true;}
         if(_reignView && MovementButton.Contains(pointer)){if(_movementOpen)CloseMovement();else OpenMovement();return true;}
         if(!_movementOpen)return false;
-        if(new Rectangle(803,169,58,44).Contains(pointer)){CloseMovement();return true;}
-        if(!_reignView && PopulationTurnButton.Contains(pointer))return true;
+        if(!InspectorVisible && PopulationTurnButton.Contains(pointer))return true;
         if(ConfirmMoveButton.Contains(pointer))
         {
             if(_selectedMoveNode<0 || _setup.Routes.ToNode(_setup.PlayerSlot,_selectedMoveNode)==null)return true;
@@ -56,7 +55,7 @@ public partial class Game1
             CloseMovement();return true;
         }
 
-        if(NetPanel.Contains(pointer))
+        if(onMap)
         {
             int node=_statusGlobe?HitGlobeNode(pointer,_net.MovementTargets):_net.HitNode(_setup,NetPanel,pointer,_net.MovementTargets);
             if(node>=0){SelectMoveNode(node);return true;}
@@ -76,7 +75,7 @@ public partial class Game1
         _escort=Math.Min(_escort,AvailableEscort);
         var choices=_setup.Routes.NodeChoices(ruler);
         _ui.Box(new(54,150,850,825),new(27,49,62));
-        _ui.Text("征服者の移動",new(84,177),.9f,Cream);_ui.Button(new(803,169,58,44),"×",Muted,.7f);
+        _ui.Text("征服者の移動",new(84,177),.9f,Cream);
         string city="現在地　"+(current==null?_setup.Routes.LocationLabel(ruler):_setup.Nodes.Label(current));
         _ui.Text(city,new(84,240),Math.Min(.6f,760/_font.MeasureString(city).X),Cream);
         _ui.Text("征服者とポケットのロボットが同行",new(84,289),.62f,Color.White);

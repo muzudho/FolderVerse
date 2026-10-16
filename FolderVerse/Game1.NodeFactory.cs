@@ -86,7 +86,8 @@ public partial class Game1
     {
         if(_setup.Robots.Workshops[_populationNode].ProductionLines.Length==0)return;
         bool enabled=CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
-        _ui.Button(NodeFactoryTile,"ロボット製造工場",active || enabled && NodeFactoryTile.Contains(_pointer)?Accent:Muted,.38f);
+        _ui.Box(NodeFactoryTile,active || enabled && NodeFactoryTile.Contains(_pointer)?Accent:Muted);
+        _ui.Center("ロボット製造工場",NodeFactoryTile,.38f,enabled?Cream:Cream*.4f);
         if(active)_ui.Box(new(NodeFactoryTile.X,NodeFactoryTile.Y,NodeFactoryTile.Width,4),Cream);
     }
 }
