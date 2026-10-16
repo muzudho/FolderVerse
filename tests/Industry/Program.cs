@@ -3,7 +3,7 @@ using System.Text.Json;
 static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 Check(IndustryCycle.Sectors.Sum(s=>s.Percent)==100,"Wheel probability");
 Check(IndustryCycle.Sectors.Sum(s=>s.Percent*s.Turns)==400,"Expected four industry turns");
-Check(IndustryCycle.Sectors.Where(s=>s.Turns==0).Sum(s=>s.Percent)==5,"Fumble 5 percent");
+Check(IndustryCycle.Sectors.Where(s=>s.Turns==0).Sum(s=>s.Percent)==4,"Fumble 4 percent");
 Check(IndustryCycle.Sectors.Where(s=>s.Turns==40).Sum(s=>s.Percent)==1,"Jackpot 1 percent");
 Check(Enumerable.Range(0,100).Select(IndustryCycle.SectorAt).GroupBy(i=>i).All(g=>g.Count()==IndustryCycle.Sectors[g.Key].Percent),"Every ticket matches visible sector area");
 var robots=new RobotWorld();robots.Initialize(2,2);robots.Workshops[0].AutoAssemblyDisabled=true;
@@ -34,7 +34,7 @@ Check(w.Industry.Pending && w.Robots.IndustryTurn==0,"Global combat queues indus
 foreach(int wanted in new[]{0,1,40})
 {
     w.Industry.Reset();w.Industry.Queue(w.Population.Turn);
-    int seed=Enumerable.Range(0,100000).First(s=>IndustryCycle.Sectors[IndustryCycle.SectorAt(new SeedRandom(s^w.Population.Turn*7919^0x45123).Next(100))].Turns==wanted);
+    int seed=Enumerable.Range(0,100000).First(s=>IndustryCycle.CreateWheel(s,w.Population.Turn)[IndustryCycle.SectorAt(new SeedRandom(s^w.Population.Turn*7919^0x45123).Next(100),IndustryCycle.CreateWheel(s,w.Population.Turn))].Turns==wanted);
     w.Industry.Roll(seed);int before=w.Robots.IndustryTurn;int turn=w.Population.Turn;
     Check(w.Industry.Apply(w) && !w.Industry.Apply(w),"Exactly once application");
     Check(w.Robots.IndustryTurn==before+wanted && w.Population.Turn==turn,"Independent industrial clock, including zero and forty");w.Robots.Check();

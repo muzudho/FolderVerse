@@ -14,7 +14,15 @@ public sealed partial class RobotWorld
         bool Reserved(long id)=>Workshops[node].DisposalTarget==id || PendingEdits.Any(e=>e.Ids.Contains(id));
         if(Reserved(sourceId) || targetId.HasValue && Reserved(targetId.Value))throw new InvalidOperationException("Robot is reserved.");
         var target=targetId.HasValue?store.Robots.Single(r=>r.Id==targetId.Value):null;
-        if(target!=null && (target.Disposal!=source.Disposal || (target.Parts&part)!=0))throw new InvalidOperationException("Incompatible target.");
+        if(target!=null && target.Disposal!=source.Disposal)throw new InvalidOperationException("Incompatible target.");
+        if(target!=null && (target.Parts&part)!=0)
+        {
+            Robot Slice(Robot robot)=>robot.Materialize() with {Parts=part,DamagedParts=robot.DamagedParts&part,CheapParts=robot.CheapParts&part};
+            var exchangedSource=source.Merge(Slice(target),owner??source.Owner);
+            var exchangedTarget=target.Merge(Slice(source),owner??target.Owner);
+            store.Replace(store.Robots.Select(r=>r.Id==sourceId?exchangedSource:r.Id==target.Id?exchangedTarget:r));
+            Check();return target.Id;
+        }
         var remaining=source.Parts^part;
         if(target==null && remaining!=0 && !store.HasSpace)throw new InvalidOperationException("Hangar is full.");
         var destination=target!=null?target.Merge(source with {Parts=part,DamagedParts=source.DamagedParts&part,CheapParts=source.CheapParts&part},owner??target.Owner):

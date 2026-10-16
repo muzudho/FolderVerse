@@ -93,7 +93,7 @@ world.Advance((x,y)=>false,_=>0,1);Check(world.Nodes[0].Count==2 && world.Worksh
 world=World();var manual=Add(world,0,7);long movedHead=world.MovePart(0,manual.Id,RobotParts.Head,null);
 Check(world.Nodes[0].Count==2 && world.Nodes[0].Robots.Single(r=>r.Id==manual.Id).Parts==(RobotParts.Body|RobotParts.Legs) && world.Nodes[0].Robots.Single(r=>r.Id==movedHead).Parts==RobotParts.Head,"Manual drag splits exactly one part");
 world.MovePart(0,movedHead,RobotParts.Head,manual.Id);Check(world.Nodes[0].Count==1 && world.Nodes[0].Robots[0].Id==manual.Id && world.Nodes[0].Robots[0].Parts==RobotParts.Complete,"Manual drop reassembles preserving target identity");
-var duplicateHead=Add(world,0,4);Reject(()=>world.MovePart(0,manual.Id,RobotParts.Head,duplicateHead.Id));Check(world.Nodes[0].Count==2 && world.Nodes[0].Robots.Single(r=>r.Id==manual.Id).Parts==RobotParts.Complete,"Duplicate drop is atomic");
+var duplicateHead=Add(world,0,4);world.MovePart(0,manual.Id,RobotParts.Head,duplicateHead.Id);Check(world.Nodes[0].Count==2 && world.Nodes[0].Robots.Single(r=>r.Id==manual.Id).Parts==RobotParts.Complete,"Duplicate drop exchanges matching parts atomically");
 world.QueueSplit(0,manual.Id,RobotParts.Head);Reject(()=>world.MovePart(0,manual.Id,RobotParts.Head,null));world.PendingEdits.Clear();
 world.Workshops[0].AutoAssemblyDisabled=true;world.Transport.SetPlan(0,0,RobotParts.Body,new[]{new TransportWeight(1,360)});
 world.Advance((x,y)=>true,_=>0,1);Check(world.Nodes[0].Robots.Any(r=>r.Id==manual.Id && r.Parts==RobotParts.Complete) && world.Nodes[1].Count==0,"Auto disabled blocks partial-plan disassembly");

@@ -36,10 +36,10 @@ public partial class Game1
         if(_setupHost!=null)_spriteBatch.Draw(_setupHost,new Rectangle(100,180,500,750),Color.White);
         _ui.Box(new(680,130,1180,230),Cream);
         _ui.Tile(new(675,240),new(45,45),MathHelper.PiOver4,Cream);
-        _ui.Text("さあ、みなさん＜画面＞の前に集まってください。",new(730,155),.65f,Muted);
-        _ui.Text("準備はよろしいですか？",new(730,205),.65f,Muted);
-        _ui.Text("このゲームをお遊びになる＜大きなお子様＞の",new(730,255),.65f,Muted);
-        _ui.Text("人数を選んでください。",new(730,305),.65f,Muted);
+        const string greeting="さあ、＜大きなお子様＞のみなさん＜画面＞の前に集まってください。";
+        _ui.Text(greeting,new(730,155),Math.Min(.65f,1080/_font.MeasureString(greeting).X),Muted);
+        _ui.Text("準備はよろしいですか？",new(730,225),.65f,Muted);
+        _ui.Text("このゲームをお遊びになる人数を選んでください。",new(730,300),.65f,Muted);
         for(int i=0;i<GameLimits.MaxPlayers;i++)_ui.Button(PlayerCountOption(i),(i+1).ToString(),_requestedPlayers==i+1?Accent:Muted,.65f);
         _ui.Center($"＜{_requestedPlayers}人＞ / 推定プレイ時間は{MetaTime(_requestedPlayers)}です。",new(690,800,1160,55),.7f,Cream);
         _ui.Button(PlayerCountConfirm,"よろしいですか？　この人数で遊ぶ",Accent,.65f);

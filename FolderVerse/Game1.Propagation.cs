@@ -18,9 +18,9 @@ public partial class Game1
     }
     private void DrawPropagation(int focus,float progress,bool movement)
     {
-        var panel=new Rectangle(40,100,1840,860);
+        var panel=PropagationMapPanel;
         if(_propagationNet.Faces.Length==0)_propagationNet.SetCenter(_setup,_net.CenterFace);
-        _propagationNet.FitAll(panel);
+        if(movement && _propagationCentering)ApplyPropagationCentering();else _propagationNet.FitAll(panel);
         _propagationNet.ShowBatteries=false;
         _propagationNet.ShowMapSymbols=_net.ShowMapSymbols;
         // Return from the previous board first; zoom into the next only at the end.
@@ -30,7 +30,7 @@ public partial class Game1
         zoom=MathHelper.SmoothStep(0,1,zoom);
         int target=progress<.2f && !movement?_battleWave:focus;
         float magnification=MathHelper.Lerp(1,PropagationBattleBounds.Width/30f,zoom);
-        if(target>=0)
+        if(target>=0 && zoom>0)
         {
             var before=PropagationBadgeCenter(target,panel);
             _propagationNet.FitAll(panel,magnification);

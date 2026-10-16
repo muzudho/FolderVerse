@@ -556,7 +556,7 @@ public partial class Game1 : Game
             _ui.Center(pattern,new(970,1003,914,32),Math.Min(0.40f,880/_font.MeasureString(pattern).X),Cream);
         }
                 if(!_reignView)_ui.Button(PopulationTurnButton,"ターン終了",Accent,0.7f);
-        if(_reignView){_ui.Button(WarButton,"開戦",Accent,.65f);
+        if(_reignView){_ui.Button(WarButton,"開戦予約",Accent,.65f);
         _ui.Button(MovementButton,"移動",Accent,.65f);
         _ui.Button(PocketButton,"ポケット",Accent,.55f);}
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(1064,1037,800,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);

@@ -29,6 +29,8 @@ public sealed partial class CubeNet
         Pan=new Vector2(panel.Center.X,panel.Center.Y)-at;
     }
     public void Drag(Vector2 delta){Pan+=delta;}
+    public void SetFitCamera(Rectangle panel,float scale,Vector2 pan)
+    {Zoom=1;float baseScale=Fit(panel).Scale;Zoom=scale/baseScale;Pan=pan;}
     public void ZoomAt(Rectangle panel,Point pointer,int wheel)
     {
         var before=Fit(panel);float old=Zoom;
