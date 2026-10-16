@@ -10,6 +10,7 @@ public sealed class UiPainter
     private readonly Texture2D _pixel;
     private readonly SpriteFont _font;
     public Point Pointer { get; set; }
+    public Func<bool> AdaptiveText {get;set;}=()=>false;
     public UiPainter(SpriteBatch batch, Texture2D pixel, SpriteFont font) { Batch=batch; _pixel=pixel; _font=font; }
     public void Box(Rectangle rect, Color color) => Batch.Draw(_pixel,rect,color);
     public void Tile(Vector2 center,Vector2 size,float rotation,Color color)=>Batch.Draw(_pixel,center,null,color,rotation,new Vector2(.5f),size,SpriteEffects.None,0);
@@ -38,10 +39,16 @@ public sealed class UiPainter
         var size=_font.MeasureString(text)*scale;
         Text(text,new Vector2(rect.Center.X-size.X/2,rect.Center.Y-size.Y/2),scale,color);
     }
+    public static Color ContrastInk(Color background)
+    {
+        static double Linear(byte value){double c=value/255d;return c<=.04045?c/12.92:Math.Pow((c+.055)/1.055,2.4);}
+        double luminance=.2126*Linear(background.R)+.7152*Linear(background.G)+.0722*Linear(background.B);
+        return (luminance+.05)/.05>=1.05/(luminance+.05)?new Color(12,18,24):Color.White;
+    }
     public void Button(Rectangle rect,string label,Color color,float scale=0.7f)
     {
         if(rect.Contains(Pointer)) color=Color.Lerp(color,Color.White,0.14f);
-        Box(new Rectangle(rect.X,rect.Y+4,rect.Width,rect.Height),new Color(7,23,35)); Box(rect,color); Center(label,rect,scale,Color.White);
+        Box(new Rectangle(rect.X,rect.Y+4,rect.Width,rect.Height),new Color(7,23,35)); Box(rect,color); Center(label,rect,scale,AdaptiveText()?ContrastInk(color):Color.White);
     }
 }
 

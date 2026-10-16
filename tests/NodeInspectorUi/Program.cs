@@ -15,7 +15,7 @@ sealed class InspectorGame:Game1{
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
   w=(WorldSetup)Get("_setup");w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);((WorldPreview)Get("_world")).ShowSetup(w,true);
-  ((CubeNet)Get("_net")).Home(w);node=w.Nodes.Current(0).Id;Call("OpenNodeInspector",node);
+  Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));((CubeNet)Get("_net")).Home(w);node=w.Nodes.Current(0).Id;Call("OpenNodeInspector",node);
   Check((int)Prop("NodeInspectorOffset")==-960,"Panel begins outside left edge");Call("UpdateDomesticSlide",.2f);
   Check((float)Get("_domesticSlide")==.5f && (int)Prop("NodeInspectorOffset")==-480,"Shared half transition");
   var map=(Rectangle)Prop("NetPanel");Check(map.X==520 && map.Right==1880 && map.Y==142 && map.Height==820,"Map ratio changes horizontally with panel");

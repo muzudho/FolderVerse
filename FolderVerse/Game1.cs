@@ -43,7 +43,11 @@ public partial class Game1 : Game
     private bool IsStatusScreen=>_screen==Screen.WorldStatus;
     private Rectangle SelectionGlobe=>_selectionTiles.Length==0?Rectangle.Empty:_selectionTiles[^1].Bounds;
     private bool IsSelectionScreen=>_screen is Screen.PlayerSelect or Screen.PlayerReady;
-    private static readonly Color Accent=new(45,135,142),Muted=new(58,78,100),Cream=new(255,232,184);
+    private static readonly Color DefaultAccent=new(45,135,142),Muted=new(58,78,100),Cream=new(255,232,184);
+    private bool DomesticTheme=>_screen is Screen.WorldStatus or Screen.Pocket or Screen.Hierarchy or Screen.InactiveList or Screen.Disposition;
+    private Color Accent=>DomesticTheme?_setup.OwnerColor(_setup.PlayerSlot):DefaultAccent;
+    private Color SelectionInk=>UiPainter.ContrastInk(Accent);
+    private Color ControlEdge=>DomesticTheme?Color.Lerp(Accent,Color.White,.45f):Color.White;
     private static readonly Rectangle StartButton=new(740,884,440,106),ActionButton=new(1360,750,400,90),RetryButton=new(1360,860,400,80),BackButton=new(100,960,320,65),PreviewArea=new(130,240,1120,680),WorldSeedButton=new(520,960,730,65);
     private static readonly Rectangle CastPreview=new(312,292,1296,540),CastBack=new(54,1020,200,50),CastRetry=new(266,1020,240,50),CastAction=new(518,1020,480,50);
     private static Rectangle SeedButton(int index)=>new(1010+index*286,1020,274,50);
@@ -93,7 +97,7 @@ public partial class Game1 : Game
         _portraitRenderer=new PortraitRenderer(Content); _font=Content.Load<SpriteFont>("UiFont");
         _pixel=new Texture2D(GraphicsDevice,1,1); _pixel.SetData(new[]{Color.White});
         _counter=new ToyCounterRenderer(Content.Load<SpriteFont>("ToyCounterFont"),_pixel);
-        _ui=new UiPainter(_spriteBatch,_pixel,_font); _world=new WorldPreview(GraphicsDevice);
+        _ui=new UiPainter(_spriteBatch,_pixel,_font){AdaptiveText=()=>DomesticTheme}; _world=new WorldPreview(GraphicsDevice);
         _orientationToy=new ToyOrientationRenderer(GraphicsDevice);
         LoadScreenshotFeedback();LoadCutInMobs();LoadSetupHost();
     }

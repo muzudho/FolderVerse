@@ -41,7 +41,7 @@ public partial class Game1
     {
         bool enabled=CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
         _ui.Box(NodeDisposalTile,_nodeDisposalOpen || enabled && NodeDisposalTile.Contains(_pointer)?Accent:Muted);
-        _ui.Center("ロボット廃棄計画",NodeDisposalTile,.38f,enabled?Cream:Cream*.4f);
+        _ui.Center("ロボット廃棄計画",NodeDisposalTile,.38f,enabled?(_nodeDisposalOpen || NodeDisposalTile.Contains(_pointer)?SelectionInk:Cream):Cream*.4f);
         if(_nodeDisposalOpen)_ui.Box(new(NodeDisposalTile.X,NodeDisposalTile.Y,NodeDisposalTile.Width,4),Cream);
     }
     private void DrawNodeDisposal()
@@ -74,7 +74,7 @@ public partial class Game1
     {
         var box=new Rectangle(card.Right-36,card.Bottom-25,18,18);
         _ui.Box(box,robot.Disposal?Accent:new Color(25,40,51));
-        if(robot.Disposal)_ui.Center("✓",box,.35f,Cream);
+        if(robot.Disposal)_ui.Center("✓",box,.35f,SelectionInk);
         _ui.Text("廃棄",new(card.Right-84,card.Bottom-25),.3f,Cream);
     }
 }

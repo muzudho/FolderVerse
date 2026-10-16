@@ -15,7 +15,7 @@ public partial class Game1
         color*=opacity;
         if(whiteOutline)
         {
-            void Outline(Rectangle bounds){bounds.Inflate(2,2);_ui.Box(bounds,Color.White*opacity);}
+            void Outline(Rectangle bounds){bounds.Inflate(2,2);_ui.Box(bounds,ControlEdge*opacity);}
             if((parts&RobotParts.Head)!=0)
             {
                 Outline(new(r.X+r.Width/4,r.Y,r.Width/2,r.Height/4));
