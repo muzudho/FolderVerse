@@ -8,25 +8,26 @@ public sealed record Captive(int Ruler,int Victor,int Node);
 public sealed class ConquerorRelations
 {
     public int Leader=-1;
-    public int[] Superiors {get;}=Enumerable.Repeat(-1,20).ToArray();
-    public int[] Teams=>Enumerable.Range(0,20).Select(Root).ToArray();
-    public bool[] Powered {get;}=Enumerable.Repeat(true,20).ToArray();
-    public bool[] Released {get;}=new bool[20];
+    private const int Capacity=GameLimits.MaxConquerors;
+    public int[] Superiors {get;}=Enumerable.Repeat(-1,Capacity).ToArray();
+    public int[] Teams=>Enumerable.Range(0,Capacity).Select(Root).ToArray();
+    public bool[] Powered {get;}=Enumerable.Repeat(true,Capacity).ToArray();
+    public bool[] Released {get;}=new bool[Capacity];
     public List<Captive> Pending {get;}=new();
     public string Message {get;private set;}="";
     public void Reset()
     {
         Leader=-1;Pending.Clear();Message="";
-        for(int i=0;i<20;i++){Superiors[i]=-1;Powered[i]=true;Released[i]=false;}
+        for(int i=0;i<Capacity;i++){Superiors[i]=-1;Powered[i]=true;Released[i]=false;}
     }
     public int Root(int ruler)
     {
-        for(int steps=0;steps<20;steps++){if(Superiors[ruler]<0)return ruler;ruler=Superiors[ruler];}
+        for(int steps=0;steps<Capacity;steps++){if(Superiors[ruler]<0)return ruler;ruler=Superiors[ruler];}
         throw new InvalidOperationException("Conqueror hierarchy contains a cycle.");
     }
     public bool SetSuperior(int ruler,int superior)
     {
-        if(ruler<0 || ruler>=20 || superior< -1 || superior>=20)throw new ArgumentOutOfRangeException();
+        if(ruler<0 || ruler>=Capacity || superior< -1 || superior>=Capacity)throw new ArgumentOutOfRangeException();
         for(int parent=superior;parent>=0;parent=Superiors[parent])if(parent==ruler)return false;
         Superiors[ruler]=superior;return true;
     }
@@ -70,16 +71,16 @@ public sealed class ConquerorRelations
         return result.ToArray();
     }
     public bool Allied(int a,int b)=>a>=0 && b>=0 && Root(a)==Root(b);
-    public bool Controls(int ruler){if(ruler<0 || Leader<0)return false;for(int steps=0;steps<20 && ruler>=0;steps++,ruler=Superiors[ruler])if(ruler==Leader)return true;return false;}
-    public int[] Party(WorldSetup world)=>Leader<0?Array.Empty<int>():Forest(world).Where(r=>CanAct(r.Ruler) && Controls(r.Ruler)).Select(r=>r.Ruler).ToArray();
+    public bool Controls(int ruler){if(ruler<0 || Leader<0)return false;for(int steps=0;steps<Capacity && ruler>=0;steps++,ruler=Superiors[ruler])if(ruler==Leader)return true;return false;}
+    public int[] Party(WorldSetup world)=>Leader<0?Array.Empty<int>():Forest(world).Where(r=>CanAct(r.Ruler) && Controls(r.Ruler) && (!world.HumanPlayers.Contains(r.Ruler) || r.Ruler==Leader)).Select(r=>r.Ruler).ToArray();
     public bool CanAct(int ruler)=>Powered[ruler] && !Released[ruler] && !Pending.Any(p=>p.Ruler==ruler);
     public bool Accepts(WorldSetup world,int ruler)=>world.Looks[ruler].Keywords.Personality is not (3 or 9 or 11);
     public void Capture(WorldSetup world,int ruler,int victor,int node)
     {
         if(ruler==victor || Allied(ruler,victor) || !Powered[ruler] || Released[ruler])return;
-        if(Allied(victor,Leader))
+        if(Allied(victor,Leader) || world.HumanPlayers.Any(h=>Allied(victor,h)))
         {if(!Pending.Any(p=>p.Ruler==ruler)){Pending.Add(new(ruler,victor,node));Message="処遇を選んでください";}}
-        else if(!Allied(ruler,Leader))Released[ruler]=true;
+        else if(!Allied(ruler,Leader) && !world.HumanPlayers.Any(h=>Allied(ruler,h)))Released[ruler]=true;
     }
     public bool Choose(WorldSetup world,Captive captive,DefeatedChoice choice)
     {
@@ -96,7 +97,7 @@ public sealed class ConquerorRelations
         else
         {
             int former=Superiors[ruler];
-            for(int child=0;child<20;child++)if(Superiors[child]==ruler)SetSuperior(child,former);
+            for(int child=0;child<Capacity;child++)if(Superiors[child]==ruler)SetSuperior(child,former);
             SetSuperior(ruler,-1);Powered[ruler]=false;Released[ruler]=true;
             foreach(var node in world.Nodes.All.Where(n=>n.Owner==ruler))
             {node.Owner=-1;Array.Clear(node.Population.Migration);}

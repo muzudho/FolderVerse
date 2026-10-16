@@ -548,6 +548,17 @@
       "Height": 1536,
       "Sha256": "903A6E0F8B404C4BCFDF208A6A95C3761A3EE449565E464E1D5B4978A03C8CDB",
       "Source": "C:\\Users\\muzud\\.codex\\generated_images\\01a12072-c083-7721-a773-20603b454b4c\\exec-4f3df30a-0444-455c-8c3b-4d3a92671cbc.png"
+    },
+    {
+      "Index": 50,
+      "Name": "お願いする女の子",
+      "Stem": "pose-51-requesting-v001",
+      "Pose": "Previously generated praying pose with straight fingers and palms together. Preserve the requested original unchanged; original includes an exterior halo.",
+      "Completed": true,
+      "Width": 1024,
+      "Height": 1536,
+      "Sha256": "B79E9958AF1EB5350D1BACA8AEE74ED0FB64FBB614A89316281F0A606745C2D6",
+      "Source": "C:/Users/muzud/.codex/generated_images/01a12072-c083-7721-a773-20603b454b4c/exec-87455bbb-dbde-444c-aaeb-7044ffe724dd.png"
     }
   ]
 }

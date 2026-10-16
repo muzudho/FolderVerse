@@ -10,7 +10,7 @@ public sealed partial class WorldSetup
     {
         if(seed<0)throw new ArgumentOutOfRangeException(nameof(seed));
         PlacementSeed=seed;PlayerSlot=-1;Relations.Reset();
-        var random=new SeedRandom(seed);TerritoryRights=new int[20];
+        var random=new SeedRandom(seed);TerritoryRights=new int[CastCount];
         for(int i=0;i<ActiveCount;i++)TerritoryRights[i]=1;
         var order=Enumerable.Range(0,ActiveCount).OrderBy(_=>random.Next(1000000)).ToArray();
         // Rank-weighted rights preserve both large nations and one-cell hard starts.
@@ -33,7 +33,7 @@ public sealed partial class WorldSetup
         if(!LandPending || Owners.Any(o=>o<0))throw new InvalidOperationException("Land claims are incomplete");
         if(fortuneSeed<0)throw new ArgumentOutOfRangeException(nameof(fortuneSeed));
         FortuneSeed=fortuneSeed;
-        TerritoryCounts=Enumerable.Range(0,20).Select(o=>Owners.Count(v=>v==o)).ToArray();
+        TerritoryCounts=Enumerable.Range(0,CastCount).Select(o=>Owners.Count(v=>v==o)).ToArray();
         Capitals=Enumerable.Range(0,ActiveCount).Select(o=>Array.IndexOf(Owners,o)).ToArray();ConquerorLocations=(int[])Capitals.Clone();
         Population.Initialize(this);Routes.Initialize(this);ConquerorPoints=ConquerorLocations.Select(Routes.Start).ToArray();Nodes.Initialize(this);
         Robots.Initialize(Nodes.All.Length,ActiveCount);var random=new SeedRandom(fortuneSeed);

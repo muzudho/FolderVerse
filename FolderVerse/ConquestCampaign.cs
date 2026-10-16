@@ -17,11 +17,12 @@ public sealed class ConquestCampaign
     public void CancelSource(int owner,int source){_plannedOrders.RemoveAll(o=>o.Ruler==owner && o.SourceNode==source);_partyOrders.RemoveAll(o=>o.Ruler==owner && o.SourceNode==source);}
     public void Plan(March order){_partyOrders.RemoveAll(o=>o.Ruler==order.Ruler && (o.SourceNode==order.SourceNode || order.Queen && o.Queen));_plannedOrders.RemoveAll(o=>o.Ruler==order.Ruler && (o.SourceNode==order.SourceNode || order.Queen && o.Queen));_plannedOrders.Add(order);Report=$"予約 { _plannedOrders.Count} 件 / ターン終了で実行";}
     public int[] Submitted=>_submitted.OrderBy(r=>r).ToArray();
+    public bool AwaitingPlayers=>_submitted.Count>0;
     public void Reset(){Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
     public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false)
     {
         Battles.Clear();
-        var orders=_plannedOrders.Where(o=>o.Ruler==world.PlayerSlot || !o.Queen).ToList();
+        var orders=_plannedOrders.Where(o=>automaticAll || o.Ruler==world.PlayerSlot || world.HumanPlayers.Count==0 && !o.Queen).ToList();
         if(automaticAll){orders.AddRange(_partyOrders);_partyOrders.Clear();_submitted.Clear();}
         if(targetNode>=0)
         {
@@ -31,18 +32,18 @@ public sealed class ConquestCampaign
         _plannedOrders.RemoveAll(o=>orders.Contains(o));
         if(enemies)
         {
-            var party=world.Relations.Party(world);
+            var party=world.ManualRulers();
             if(party.Length>1 && !automaticAll)
             {
                 _submitted.Add(world.PlayerSlot);_partyOrders.AddRange(orders);
                 int next=party.FirstOrDefault(r=>!_submitted.Contains(r),-1);
-                if(next>=0){world.SelectPlayer(next);Report="手下の行動を選択 / 全員の行動後にターン確定";return;}
-                orders=_partyOrders.ToList();_partyOrders.Clear();_submitted.Clear();world.SelectPlayer(world.Relations.Leader);
+                if(next>=0){world.SelectTurnRuler(next);Report="次の担当の行動を選択 / 全員の行動後にターン確定";return;}
+                orders=_partyOrders.ToList();_partyOrders.Clear();_submitted.Clear();world.SelectTurnRuler(party[0]);
             }
             var random=new SeedRandom(world.PlacementSeed^world.Population.Turn^0x57421);
             for(int ruler=0;ruler<world.ActiveCount;ruler++)
             {
-                if(!automaticAll && world.Relations.Allied(ruler,world.Relations.Leader) || !world.Relations.CanAct(ruler))continue;
+                if(!automaticAll && world.ManualRulers().Contains(ruler) || !world.Relations.CanAct(ruler))continue;
                 var home=world.Nodes.Current(ruler);
                 long army=UseRobotCombat?RobotBattles.Available(world,ruler):home!=null && world.Relations.Allied(home.Owner,ruler)?home.Population.People[0]/2:0;
                 var move=world.Routes.NodeChoices(ruler).Where(path=>!UseRobotCombat || RobotBattles.CanMarch(world,ruler,world.Nodes.At(path.Target,path.Entry).Id)).OrderBy(path=>

@@ -49,6 +49,24 @@ public sealed partial class WorldSetup
     public string[] ConquerorNames { get; private set; } = Array.Empty<string>();
     public string[] ConquerorFullNames { get; private set; } = Array.Empty<string>();
     public const string PoliticalSystem="独裁者";
+    public int PlayerCount {get;private set;}=1;
+    public const int CastCount=GameLimits.MaxConquerors;
+    public List<int> HumanPlayers {get;}=new();
+    public void SetPlayerCount(int count)
+    {
+        if(count<1 || count>GameLimits.MaxPlayers)throw new ArgumentOutOfRangeException(nameof(count));
+        PlayerCount=count;HumanPlayers.Clear();
+    }
+    public int[] ManualRulers()=>HumanPlayers.Count==0?Relations.Party(this):
+        Enumerable.Range(0,ActiveCount).Where(r=>Relations.CanAct(r) &&
+            HumanPlayers.Any(h=>r==h || !HumanPlayers.Contains(r) && Relations.Root(r)==h))
+            .OrderBy(r=>HumanPlayers.FindIndex(h=>r==h || Relations.Root(r)==h)).ThenBy(r=>r).ToArray();
+    public void SelectTurnRuler(int ruler)
+    {
+        if(HumanPlayers.Count==0){SelectPlayer(ruler);return;}
+        int leader=HumanPlayers.Contains(ruler)?ruler:HumanPlayers.FirstOrDefault(h=>Relations.Root(ruler)==h,ruler);
+        Relations.Leader=leader;SelectPlayer(ruler);Relations.Leader=leader;
+    }
     public int PlayerSlot { get; private set; } = -1;
     public PopulationSimulation Population {get;}=new();
     public ConquestCampaign Campaign {get;}=new();
@@ -60,7 +78,7 @@ public sealed partial class WorldSetup
         PlayerSlot=slot;
         if(Relations.Party(this).Length<=1)Relations.Leader=slot;
     }
-    public int ActiveCount => Math.Min(20, Cells.Length);
+    public int ActiveCount => Math.Min(CastCount, Cells.Length);
     public static readonly Color[] Colors = {
         new(239,88,97), new(66,171,235), new(247,194,63), new(76,195,139), new(178,117,239),
         new(245,139,63), new(238,121,186), new(53,200,205), new(166,207,64), new(121,153,249),
@@ -83,6 +101,8 @@ public sealed partial class WorldSetup
             < 7 => new[] { 1, random.Next(6) + 2, random.Next(6) + 2 },
             _ => new[] { random.Next(4) + 2, random.Next(4) + 2, random.Next(4) + 2 }
         };
+        if(2*(dimensions[0]*dimensions[1]+dimensions[1]*dimensions[2]+dimensions[2]*dimensions[0])<PlayerCount)
+            dimensions=new[]{4,4,4};
         random.Shuffle(dimensions);
         Width = dimensions[0]; Height = dimensions[1]; Depth = dimensions[2];
         Cells = CreateCells(Width, Height, Depth);
@@ -96,8 +116,8 @@ public sealed partial class WorldSetup
         var random=new SeedRandom(seed);
         // Slot + 1 is the permanent creation number, displayed clockwise from the
         // top-left portrait. Keep it independent of later territory/ranking changes.
-        Portraits=new int[20]; Looks=new ConquerorLook[20];
-        ColorIndices=Enumerable.Range(0,20).ToArray();random.Shuffle(ColorIndices);
+        Portraits=new int[CastCount]; Looks=new ConquerorLook[CastCount];
+        ColorIndices=Enumerable.Range(0,CastCount).ToArray();random.Shuffle(ColorIndices);
         // Draw distinct completed portraits. A family can contain all six sisters.
         int familyBase=random.Next(ConquerorCatalog.BaseCount);
         int familySize=2+random.Next(5);
@@ -105,7 +125,7 @@ public sealed partial class WorldSetup
         // 75% have unique characters; 25% guarantee at least one family of distinct variants.
         bool distinctBases=random.Next(4)<3;
         int[] bases=Enumerable.Range(0,ConquerorCatalog.BaseCount).ToArray();random.Shuffle(bases);
-        for(int slot=0;slot<20;slot++)
+        for(int slot=0;slot<CastCount;slot++)
         {
             ConquerorLook look;
             do
@@ -120,7 +140,7 @@ public sealed partial class WorldSetup
         ConquerorFullNames=WorldNames.Conquerors(Looks,seed);ConquerorNames=WorldNames.ShortNames(ConquerorFullNames);
         ClearPlacement();
     }
-    public void ClearPlacement() { LandPending=false;TerritoryRights=new int[20]; PlayerSlot=-1; Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); ConquerorLocations=Array.Empty<int>(); TerritoryCounts = new int[20]; }
+    public void ClearPlacement() { LandPending=false;TerritoryRights=new int[CastCount]; PlayerSlot=-1; Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); ConquerorLocations=Array.Empty<int>(); TerritoryCounts = new int[CastCount]; }
     public void SetPlacement(int seed)
     {
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
@@ -131,7 +151,7 @@ public sealed partial class WorldSetup
         int[] order = Enumerable.Range(0, Cells.Length).ToArray(); random.Shuffle(order);
         Owners = Enumerable.Repeat(-1, Cells.Length).ToArray(); Capitals = order.Take(ActiveCount).ToArray();
         ConquerorLocations=(int[])Capitals.Clone();
-        TerritoryCounts = new int[20];
+        TerritoryCounts = new int[CastCount];
         var frontier = new List<(int Owner, int Cell)>();
         for(int owner = 0; owner < ActiveCount; owner++)
         { Owners[Capitals[owner]] = owner; TerritoryCounts[owner] = 1; foreach(int n in Cells[Capitals[owner]].Neighbors) frontier.Add((owner,n)); }

@@ -17,3 +17,5 @@
 - [征服者作成用画像の採用記録](../art-source/portraits/conqueror-balanced/README.md)
 
 - [内政地図ビュー](ref/内政地図ビュー.md) / [実装記録](dev/内政地図ビュー.md)
+
+- [人数確認フェーズ・メタワード表記](ref/人数確認フェーズ.md)

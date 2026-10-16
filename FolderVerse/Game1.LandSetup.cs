@@ -18,6 +18,7 @@ public partial class Game1
     private int[][] _automaticLandRectangles=Array.Empty<int[]>();
     private float _landStartYaw,_landStartPitch;
     private int LandRuler=>_landOrder[_landTurn];
+    private bool LandHumanTurn=>_setup.HumanPlayers.Count==0?LandRuler==_setup.PlayerSlot:_setup.HumanPlayers.Contains(LandRuler);
     private void BeginLandConquest()
     {
         _landOrder=_setup.LandOrder();_landTurn=0;_landAge=0;_landSelection.Clear();_landDrag=null;_automaticLand=Array.Empty<int>();
@@ -91,7 +92,7 @@ public partial class Game1
             if(_landAge>=5){_setup.CompleteLand(_random.Next());_world.ShowSetup(_setup,true);_net.Home(_setup);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;}
             return;
         }
-        if(LandRuler!=_setup.PlayerSlot || _demoActive)
+        if(!LandHumanTurn || _demoActive)
         {
             if(_automaticLand.Length==0)
             {_automaticLand=AutomaticLand(LandRuler);_automaticLandRectangles=LandSelectionPlan.Rectangles(_automaticLand.Select(id=>_setup.Cells[id]));OrderAutomaticLandFaces();_automaticLandIndex=0;_landAge=0;_landStartOrientation=Quaternion.CreateFromRotationMatrix(_world.ViewOrientation(_yaw,_pitch));_landStartYaw=_yaw;_landStartPitch=_pitch;_world.GlobeAnchor=null;_world.GlobeZoom=1;}
@@ -143,7 +144,7 @@ public partial class Game1
         _portraitRenderer.Draw(_spriteBatch,_setup.Looks[LandRuler],new Rectangle(60,370,450,300),true,forCreation:true);
         _ui.Text("左ドラッグ：範囲を反転\n右ドラッグ：星を回す\nホイール：拡大・縮小\n飛び地も選択できます",new(60,685),.38f,Color.White);
         _ui.Text("地形と交通路だけで土地を選ぼう",new(60,805),.32f,Cream);
-        _ui.Button(LandConfirm,LandRuler==_setup.PlayerSlot?"この土地を獲得":"他国が土地を選択中",LandRuler==_setup.PlayerSlot && _landSelection.Count==_setup.TerritoryRights[LandRuler]?Accent:Muted,.65f);
+        _ui.Button(LandConfirm,LandHumanTurn?"この土地を獲得":"他国が土地を選択中",LandHumanTurn && _landSelection.Count==_setup.TerritoryRights[LandRuler]?Accent:Muted,.65f);
     }
     private void DrawLandSetupGlobe(Rectangle canvas,Matrix transform,Viewport viewport)
     {

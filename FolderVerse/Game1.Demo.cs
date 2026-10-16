@@ -51,7 +51,7 @@ public partial class Game1
             float t=MathHelper.SmoothStep(0,1,(float)Math.Clamp(_demoAge/1.8,0,1));
             _demoCursor=Vector2.Lerp(new(2040,1140),new(StartButton.Center.X,StartButton.Center.Y),t);
             if(_demoAge>=1.8 && _demoAge-elapsed<1.8)StartDemoClick();
-            if(_demoAge>=2.2){_demoIntro=false;_demoStepAge=0;BeginRolling();}
+            if(_demoAge>=2.2){_demoIntro=false;_demoStepAge=0;_setup.SetPlayerCount(1);BeginPlayerCount();}
             return true;
         }
         if(_demoAge>20*60 && _screen==Screen.WorldStatus && _demoFinishStage==0)
@@ -96,6 +96,7 @@ public partial class Game1
         StartDemoClick();
         switch(_screen)
         {
+            case Screen.PlayerCount:_setup.SetPlayerCount(1);BeginRolling();break;
             case Screen.Rolling:_demoWorldRoll++;_screen=Screen.Review;break;
             case Screen.Review:if(_demoWorldRoll<3)BeginRolling();else BeginCast();break;
             case Screen.CastRolling:_demoCastRoll++;_screen=Screen.CastReview;break;
@@ -103,7 +104,7 @@ public partial class Game1
             case Screen.PlacementRolling:_screen=Screen.PlacementReview;break;
             case Screen.PlacementReview:BeginSelection();break;
             case Screen.PlayerSelect:_setup.SelectPlayer(0);_screen=Screen.PlayerReady;break;
-            case Screen.PlayerReady:BeginLandConquest();break;
+            case Screen.PlayerReady:ConfirmHumanSelection();break;
             case Screen.WorldStatus:
                 _demoMapVisits++;_demoMapStage=0;_demoMapAge=0;
                 var home=_setup.Nodes.Current(_setup.PlayerSlot);

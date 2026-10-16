@@ -159,6 +159,7 @@ public partial class Game1
 
     private void DisposeCutInMobs()
     {
+        _setupHost?.Dispose();_setupHost=null;_turnChime?.Dispose();_turnChime=null;
         foreach (var texture in _cutInMobs) texture.Dispose();
         _cutInMobs = Array.Empty<Texture2D>();
     }
