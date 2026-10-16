@@ -10,8 +10,9 @@ public partial class Game1
     {foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(r,robot.Origin(part),part,robot.Role==RobotRole.Captain,whiteOutline:whiteOutline,damaged:robot.IsDamaged(part),cheap:robot.IsCheap(part));}
     private void DrawRobotGlyph(Rectangle r,int owner,RobotParts parts,bool captain=false,float opacity=1,bool whiteOutline=false,bool damaged=false,bool cheap=false)
     {
-        var color=_setup.OwnerColor(owner)*opacity;
+        var color=_setup.OwnerColor(owner);
         if(damaged)color=Color.Lerp(color,new Color(116,119,116),.8f);
+        color*=opacity;
         if(whiteOutline)
         {
             void Outline(Rectangle bounds){bounds.Inflate(2,2);_ui.Box(bounds,Color.White*opacity);}

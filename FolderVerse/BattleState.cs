@@ -65,6 +65,7 @@ public sealed partial class BattleState
     {Rules=rules??new();if(Rules.NoWillTurns<1 || Rules.SegmentTurns<1 || Rules.PersuasionRadius<0 || Rules.PersuasionPercent<0 || Rules.PersuasionPercent>100)throw new ArgumentException("Invalid battle rules.");Random=new(seed);}
     public static Point Forward(BattleFacing facing)=>facing switch{BattleFacing.North=>new(0,-1),BattleFacing.East=>new(1,0),BattleFacing.South=>new(0,1),_=>new(-1,0)};
     public static bool Inside(Point p)=>p.X>=0 && p.X<10 && p.Y>=0 && p.Y<10;
+    public bool BlocksShot(Point p)=>!Inside(p) || Walls.Contains(p) && !(Terrain==BattleTerrain.Sea && SeaClearWater.Contains(p));
     public bool Walkable(Point p)=>Inside(p) && !Walls.Contains(p);
     public static bool HomeExit(Point p,int side)=>side switch{0=>p.Y<0,1=>p.X>=10,2=>p.Y>=10,_=>p.X<0};
     public BattleArmy Army(int owner)=>Armies.Single(a=>a.Owner==owner);

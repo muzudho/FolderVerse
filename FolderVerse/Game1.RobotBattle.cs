@@ -9,6 +9,11 @@ public partial class Game1
     private readonly Dictionary<(int Battle,long Unit),float> _fallFadeStarted=new();
     private BattleState[] _robotScenes=Array.Empty<BattleState>();
     private bool _robotPlaying=true;
+    private const double BattlePartsHoldSeconds=.7,BattleForeignFadeSeconds=1,BattlePieceFadeSeconds=1;
+    private double _battleIntroAge=BattlePartsHoldSeconds+BattleForeignFadeSeconds+BattlePieceFadeSeconds;
+    private bool BattleIntroActive=>_battleIntroAge<BattlePartsHoldSeconds+BattleForeignFadeSeconds+BattlePieceFadeSeconds;
+    private float BattlePieceOpacity=>BattleIntroActive?(float)Math.Clamp((_battleIntroAge-BattlePartsHoldSeconds-BattleForeignFadeSeconds)/BattlePieceFadeSeconds,0,1):1;
+    private float BattlePartOpacity(bool native)=>!BattleIntroActive?0:native?1-BattlePieceOpacity:(float)Math.Clamp(1-(_battleIntroAge-BattlePartsHoldSeconds)/BattleForeignFadeSeconds,0,1);
     private RobotBattlePlayback _robotPlayback=new(Array.Empty<BattleState>());
     private int _robotRound;
     private int _robotPendingFocus=-1;
@@ -40,7 +45,7 @@ public partial class Game1
         _screen=Screen.Transport;_transportAge=0;BeginPropagation();
     }
     private void FinishTransport()
-    {if(_robotScenes.Length>0)_screen=Screen.Battle;else BeginIndustry();}
+    {if(_robotScenes.Length>0){_screen=Screen.Battle;_battleIntroAge=0;}else BeginIndustry();}
     private void UpdateTransport(double elapsed,bool proceed,double now)
     {
         // Wait for Draw to register the card, then advance only time after it ends.
@@ -53,6 +58,7 @@ public partial class Game1
     }
     private void RobotBattleInput(double elapsed,bool click,bool enter)
     {
+        if(BattleIntroActive && !_robotSummary){_battleIntroAge=Math.Min(BattlePartsHoldSeconds+BattleForeignFadeSeconds+BattlePieceFadeSeconds,_battleIntroAge+elapsed);return;}
         _newspaperClock+=elapsed;_newspaperSlideAge+=elapsed;
         if(click && _robotSummary && SelectSummaryPaper())return;
         if(click && (_robotSummary?SummaryNewspaperSwitch.Contains(_pointer):NewspaperSwitch.Contains(_pointer)))
@@ -200,6 +206,12 @@ public partial class Game1
             if(unit.Retreated)opacity*=Math.Clamp(1-exitAge,0,1);
             if(opacity<=0)continue;
             var physical=unit.Role==BattleRole.Queen?null:battle.Units.Concat(battle.Armies.SelectMany(a=>a.Waiting)).FirstOrDefault(u=>u.Id==unit.Id)?.Robot;
+            if(physical!=null && BattleIntroActive)
+                foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
+                    if((physical.Parts&part)!=0)
+                        DrawRobotGlyph(r,physical.Origin(part),part,physical.Role==RobotRole.Captain,
+                            opacity*BattlePartOpacity(physical.Affiliation(part)==unit.Owner),damaged:physical.IsDamaged(part),cheap:physical.IsCheap(part));
+            float pieceOpacity=opacity*(physical==null?1:BattlePieceOpacity);
             foreach(var patch in BattlePieceArt.Pieces[BattlePieceArt.Index(unit.Role,unit.Facing)])
             {
                 var b=patch.Bounds;
@@ -211,11 +223,11 @@ public partial class Game1
                     color=physical.IsDamaged(part)?new Color(136,137,127):_setup.OwnerColor(physical.Origin(part));
                     if(physical.IsCheap(part))
                     {
-                        for(int row=0;row<area.Height;row++)_ui.Box(new(area.X,area.Y+row,area.Width,1),((area.Y+row)%6<3?color:physical.IsDamaged(part)?new Color(165,162,146):Cream)*opacity);
+                        for(int row=0;row<area.Height;row++)_ui.Box(new(area.X,area.Y+row,area.Width,1),((area.Y+row)%6<3?color:physical.IsDamaged(part)?new Color(165,162,146):Cream)*pieceOpacity);
                         continue;
                     }
                 }
-                _ui.Box(area,color*opacity);
+                _ui.Box(area,color*pieceOpacity);
             }
             if(unit.Role==BattleRole.Queen)
             {

@@ -25,7 +25,7 @@ public sealed partial class BattleState
             SeaLogs.Add(Rotate(new(4,4)));SeaLogs.Add(Rotate(new(5,4)));
             // Both ships run vertically: their complete forward/backward lanes stay open water.
             for(int y=0;y<10;y++)for(int x=0;x<10;x++)
-                if(x<=3 || x>=6)SeaClearWater.Add(Rotate(new(x,y)));
+                if(!new[]{new Point(4,1),new Point(5,7),new Point(4,8)}.Contains(new Point(x,y)))SeaClearWater.Add(Rotate(new(x,y)));
         }
         else
         {

@@ -35,10 +35,13 @@ sealed class CheckGame:Game1
             int seed=Enumerable.Range(0,100000).First(s=>IndustryCycle.CreateWheel(s,1)[IndustryCycle.SectorAt(new SeedRandom(s^7919^0x45123).Next(100),IndustryCycle.CreateWheel(s,1))].Turns==result);w.Industry.Roll(seed);
             Call("BeginIndustry");Set("_industryAge",0d);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();Save("industry-spin");
             var initial=Pixels();int clock=w.Robots.IndustryTurn;
-            Call("UpdateIndustry",1.39,false);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();
-            Check(initial.SequenceEqual(Pixels()) && w.Robots.IndustryTurn==clock,"Wheel stays still for reading time");
-            Call("UpdateIndustry",.12,false);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();
-            Check(!initial.SequenceEqual(Pixels()),"Wheel begins rotating after reading time");
+            Call("UpdateIndustry",.39,false);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();
+            Check(initial.SequenceEqual(Pixels()) && w.Robots.IndustryTurn==clock,"Initially no numbers, wheel stationary");
+            Call("UpdateIndustry",.02,false);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();
+            Check(!initial.SequenceEqual(Pixels()),"First number appears after 0.4 seconds");
+            for(int i=1;i<=w.Industry.Wheel.Count;i++){
+                Set("_industryAge",i*.4);Check((int)typeof(Game1).GetProperty("IndustryVisibleLabels",F)!.GetValue(this)! ==i,"Clockwise reveal count");
+            }
             Call("UpdateIndustry",6d,false);int industry=w.Robots.IndustryTurn;Call("UpdateIndustry",.1,false);Check(w.Robots.IndustryTurn==industry,"Repeated draw/update must not produce twice");
             GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();Save("industry-"+result);
             if(result==0)Check(Get("_industryPrayer")!=null,"Prayer mob on fumble");if(result==40)Check(Get("_industrySurprise")!=null,"Surprised mob on jackpot");
@@ -67,7 +70,7 @@ sealed class CheckGame:Game1
         GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawNodeDialog");batch.End();Save("unified-node-dialog");
         foreach(string mode in new[]{"_autoPlay","_demoActive"})
         {
-            w.Industry.Reset();w.Industry.Queue(1);Set(mode,true);Call("BeginIndustry");Call("UpdateIndustry",12d,false);
+            w.Industry.Reset();w.Industry.Queue(1);Set(mode,true);Call("BeginIndustry");Call("UpdateIndustry",20d,false);
             Check(Get("_screen").ToString()=="WorldStatus","Industry automatically proceeds during "+mode);Set(mode,false);
         }
         Console.WriteLine("PASS: industry entry without battle, font, wheel/result screens, prayer/surprise mobs, exactly-once application, return and cheap factory menu.");Exit();

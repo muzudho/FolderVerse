@@ -8,7 +8,7 @@ public sealed class IndustryCycle
 {
     // Duplicate values keep the wheel irregular; total probability 100, expectation 4.
     public static readonly IndustrySector[] Sectors={new(1,1),new(1,20),new(13,10),new(0,2),new(7,15),new(2,7),new(40,1),new(0,2),new(3,12),new(1,22),new(4,8)};
-    public IReadOnlyList<IndustrySector> Wheel {get;private set;}=Sectors;
+    public IReadOnlyList<IndustrySector> Wheel {get;private set;}=MergeAdjacent(Sectors);
     public bool Jackpot=>SelectedSector>=0 && Result==Wheel.Max(s=>s.Turns);
     public static IndustrySector[] CreateWheel(int seed,int round)
     {
@@ -22,15 +22,25 @@ public sealed class IndustryCycle
             if(twos<1 || ones<25)continue;
             int split=1+random.Next(ones-1);
             var sectors=new[]{new IndustrySector(0,2),new(0,2),new(1,split),new(1,ones-split),new(2,twos),new(a,wa),new(b,wb),new(c,wc),new(jackpot,1)};
-            random.Shuffle(sectors);return sectors;
+            random.Shuffle(sectors);return MergeAdjacent(sectors);
         }
-        return (IndustrySector[])Sectors.Clone();
+        return MergeAdjacent(Sectors);
+    }
+    public static IndustrySector[] MergeAdjacent(IEnumerable<IndustrySector> sectors)
+    {
+        var merged=new List<IndustrySector>();
+        foreach(var sector in sectors)
+            if(merged.Count>0 && merged[^1].Turns==sector.Turns)merged[^1]=merged[^1] with {Percent=merged[^1].Percent+sector.Percent};
+            else merged.Add(sector);
+        if(merged.Count>1 && merged[0].Turns==merged[^1].Turns)
+        {merged[0]=merged[0] with {Percent=merged[0].Percent+merged[^1].Percent};merged.RemoveAt(merged.Count-1);}
+        return merged.ToArray();
     }
     public bool Pending {get;private set;}
     public int Round {get;private set;}
     public int SelectedSector {get;private set;}=-1;
     public int Result=>SelectedSector<0?-1:Wheel[SelectedSector].Turns;
-    public void Reset(){Pending=false;Round=0;SelectedSector=-1;Wheel=Sectors;}
+    public void Reset(){Pending=false;Round=0;SelectedSector=-1;Wheel=MergeAdjacent(Sectors);}
     public void Queue(int round){if(round<=Round)return;Round=round;Pending=true;SelectedSector=-1;}
     public static int SectorAt(int ticket)=>SectorAt(ticket,Sectors);
     public static int SectorAt(int ticket,IReadOnlyList<IndustrySector> wheel)

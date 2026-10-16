@@ -5,6 +5,7 @@ var signatures=new HashSet<string>();
 for(int seed=0;seed<1000;seed++)
 {
     var wheel=IndustryCycle.CreateWheel(seed,seed%31+1);signatures.Add(JsonSerializer.Serialize(wheel));
+    Check(wheel.Count()==1 || Enumerable.Range(0,wheel.Length).All(i=>wheel[i].Turns!=wheel[(i+1)%wheel.Length].Turns),"Adjacent values including seam are merged");
     Check(wheel.All(s=>s.Percent>0) && wheel.Sum(s=>s.Percent)==100,"Valid dynamic areas");
     Check(wheel.Sum(s=>s.Percent*s.Turns)==400,"Every wheel retains expectation four");
     Check(wheel.Where(s=>s.Turns==0).Sum(s=>s.Percent)==4,"Every wheel retains fumble four percent");

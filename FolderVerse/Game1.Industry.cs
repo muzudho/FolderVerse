@@ -12,8 +12,10 @@ public partial class Game1
     private float _industryStartAngle,_industryStopAngle;
     private bool _industryApplied;
     private const double IndustrySpinSeconds=4.5;
-    private const double IndustryReadSeconds=1.4;
-    private const double IndustryStopSeconds=IndustryReadSeconds+IndustrySpinSeconds;
+    private const double IndustryRevealSeconds=.4;
+    private double IndustryReadSeconds=>_setup.Industry.Wheel.Count*IndustryRevealSeconds;
+    private int IndustryVisibleLabels=>Math.Min(_setup.Industry.Wheel.Count,(int)(_industryAge/IndustryRevealSeconds+1e-8));
+    private double IndustryStopSeconds=>IndustryReadSeconds+IndustrySpinSeconds;
     private static readonly Rectangle IndustryContinue=new(1230,935,590,80);
     private void BeginIndustry()
     {
@@ -71,7 +73,7 @@ public partial class Game1
             }
             float middle=start+sector.Percent/200f*MathHelper.TwoPi;
             var label=center+new Vector2(MathF.Cos(middle),MathF.Sin(middle))*(sector.Percent<=2?radius*.94f:radius*.7f);
-            labels.Add((sector.Turns.ToString(),label));
+            if(i<IndustryVisibleLabels)labels.Add((sector.Turns.ToString(),label));
             cumulative+=sector.Percent;
         }
         foreach(var label in labels)_ui.Center(label.Text,new((int)label.At.X-23,(int)label.At.Y-18,46,36),.65f,new Color(19,38,49));
