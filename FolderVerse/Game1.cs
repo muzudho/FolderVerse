@@ -507,7 +507,7 @@ public partial class Game1 : Game
         string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地星の北＝＋Y / 北を上に";
         string orientation=north+" / 回転 "+((int)MathF.Round((_net.Rotation*90+MathHelper.ToDegrees(_net.ScreenAngle))%360+360)%360)+"°";
         _ui.Text(_statusGlobe?"右ドラッグで回転"+(_net.ShowMapSymbols?" / 経番・緯番":""):orientation,new(991,203),.43f,new(177,206,216));
-        if(_net.ShowMapSymbols)
+        if(_statusGlobe && _net.ShowMapSymbols)
         {
         _ui.Text("経番",new(1450,203),.38f,WorldCoordinates.LongitudeColor);
         _ui.Text("緯番",new(1515,203),.38f,WorldCoordinates.LatitudeColor);

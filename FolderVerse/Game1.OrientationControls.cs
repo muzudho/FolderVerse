@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using Microsoft.Xna.Framework;
 public partial class Game1
@@ -27,10 +27,10 @@ public partial class Game1
         float r=toy.Width/2f+23;var c=new Vector2(toy.Center.X,toy.Center.Y);
         Vector2 p;
         if(OrientationGlobe){
-            p=axis switch{0=>c+new Vector2(r,sign>0?-17:17),1=>c+new Vector2(sign*17,-r),_=>c+new Vector2(r*.7071f,-r*.7071f)+new Vector2(sign*12,sign*12)};
+            p=axis switch{0=>c+new Vector2(r,sign>0?-17:17),1=>c+new Vector2(sign*17,-r),_=>c+new Vector2(r*.7071f,-r*.7071f)+new Vector2(sign*18,sign*18)};
         }else{
-            float a=sign>0?-MathHelper.PiOver4:-3*MathHelper.PiOver4;
-            p=c+new Vector2(MathF.Cos(a),MathF.Sin(a))*toy.Width*.39f;
+            float a=sign>0?MathHelper.PiOver4:3*MathHelper.PiOver4;
+            p=c+new Vector2(MathF.Cos(a),MathF.Sin(a))*r;
         }
         return new((int)p.X-14,(int)p.Y-14,28,28);
     }
@@ -38,7 +38,7 @@ public partial class Game1
     {
         if(MapTransitionActive || OrientationRotating)return false;
         var toy=OrientationToyArea;
-        if(OrientationResetButton.Contains(pointer)){_automaticBoostAge=-1;ResetStatusOrientation();return true;}
+        if(OrientationResetButton.Contains(pointer)){_automaticBoostAge=-1;if(OrientationGlobe)ResetStatusOrientation();else _net.ScreenAngle=-MathHelper.ToRadians(_net.Rotation*90);return true;}
         for(int axis=OrientationGlobe?0:2;axis<3;axis++)foreach(int sign in new[]{-1,1})
         {
             if(!AxisButton(toy,axis,sign).Contains(pointer))continue;
@@ -80,22 +80,25 @@ public partial class Game1
     }
     private void DrawOrientationControls(Rectangle toy)
     {
-        var c=new Vector2(toy.Center.X,toy.Center.Y);float r=toy.Width*.39f;
+        var c=new Vector2(toy.Center.X,toy.Center.Y);float r=toy.Width/2f+23;
         void Line(Vector2 a,Vector2 b,Color color){var d=b-a;_ui.Tile((a+b)/2,new(d.Length(),2),MathF.Atan2(d.Y,d.X),color);}
         void Arrow(Vector2 p,Vector2 direction,Color color){var side=new Vector2(-direction.Y,direction.X);Line(p,p-direction*9+side*5,color);Line(p,p-direction*9-side*5,color);}
         if(OrientationGlobe){
             float rim=toy.Width/2f,tip=rim+23;
-            foreach(int axis in new[]{0,1,2}){
-                var d=axis==0?Vector2.UnitX:axis==1?-Vector2.UnitY:Vector2.Normalize(new Vector2(1,-1));
+            foreach(int axis in new[]{0,1}){
+                var d=axis==0?Vector2.UnitX:-Vector2.UnitY;
                 Line(c+d*(rim+2),c+d*(tip+17),AxisColors[axis]);
-                _ui.Text(axis==0?"X":axis==1?"Y":"Z",c+d*(tip+21)-new Vector2(5,7),.3f,AxisColors[axis]);
+                _ui.Text(axis==0?"X":"Y",c+d*(tip+21)-new Vector2(5,7),.3f,AxisColors[axis]);
             }
+            var dot=c+Vector2.Normalize(new Vector2(1,-1))*r;
+            for(int y=-4;y<4;y++){float half=MathF.Sqrt(16-(y+.5f)*(y+.5f));_ui.Box(new((int)MathF.Ceiling(dot.X-half),(int)dot.Y+y,(int)(2*half),1),AxisColors[2]);}
         }else{
         var blue=AxisColors[2];
         // Separate arcs show both directions, with each arrow ending at its sign button.
         foreach(int sign in new[]{-1,1}){
-            float end=sign==1?-MathHelper.PiOver4:-3*MathHelper.PiOver4;
-            float start=end-sign*MathHelper.Pi*.72f;
+            float end=sign==1?MathHelper.PiOver4:-5*MathHelper.PiOver4;
+            float start=-MathHelper.PiOver2+sign*.25f;
+            end-=sign*.18f;
             Vector2 At(float a)=>c+new Vector2(MathF.Cos(a),MathF.Sin(a))*r;
             for(int i=0;i<32;i++)Line(At(MathHelper.Lerp(start,end,i/32f)),At(MathHelper.Lerp(start,end,(i+1)/32f)),blue);
             var tip=At(end-sign*.23f);Arrow(tip,new Vector2(-MathF.Sin(end-sign*.23f),MathF.Cos(end-sign*.23f))*sign,blue);
@@ -103,7 +106,11 @@ public partial class Game1
         }
         for(int axis=OrientationGlobe?0:2;axis<3;axis++)foreach(int sign in new[]{-1,1})
             _ui.Button(AxisButton(toy,axis,sign),sign>0?"+":"－",AxisColors[axis],.52f);
-        _ui.Button(OrientationResetButton,"正",Muted,.5f);
-        if(OrientationResetButton.Contains(_pointer))_ui.Text("頭を上へ、腹を手前へ",new Vector2(toy.Center.X-130,toy.Bottom+66),.3f,Cream);
+        var reset=OrientationResetButton;
+        _ui.Button(reset,OrientationGlobe?"":"0",OrientationGlobe?Muted:AxisColors[2],.5f);
+        if(OrientationGlobe){
+            for(int axis=0;axis<3;axis++){_ui.Text("0",new(reset.X+8+axis*25,reset.Y+4),.5f,AxisColors[axis]);if(axis<2)_ui.Text(",",new(reset.X+23+axis*25,reset.Y+4),.5f,Cream);}
+        }
+        if(OrientationGlobe && OrientationResetButton.Contains(_pointer))_ui.Text("頭を上へ、腹を手前へ",new Vector2(toy.Center.X-130,toy.Bottom+66),.3f,Cream);
     }
 }

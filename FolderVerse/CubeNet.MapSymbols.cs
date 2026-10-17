@@ -25,7 +25,7 @@ public sealed partial class CubeNet
     private void DrawMapSymbols(UiPainter ui,WorldSetup world,
         Func<(SurfaceCell Cell,Vector3 A,Vector3 B),(Vector2 A,Vector2 B)?> project)
     {
-        if(!ShowMapSymbols)return;
+        if(!ShowEquator)return;
         foreach(var edge in EquatorEdges(world))
         {
             var projected=project(edge);if(projected is not { } line)continue;

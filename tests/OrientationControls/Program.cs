@@ -52,8 +52,21 @@ sealed class RotationGame:Game1{
    Check(Math.Abs((finalYaw-previous)-.3f)<.0001f,"Normal speed resumes");
   }
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
-  var reset=(Rectangle)Prop("OrientationResetButton");Check(reset.Size==new Point(28,28) && reset.Top>((Rectangle)Prop("OrientationToyArea")).Bottom,"Small reset below circle");
+  var reset=(Rectangle)Prop("OrientationResetButton");Check(reset.Size==new Point(84,28) && reset.Top>((Rectangle)Prop("OrientationToyArea")).Bottom,"Small reset below circle");
   Call("OrientationControlClick",reset.Center);Check(world.ViewOrientation(0,0)==Matrix.Identity,"Compact reset restores orientation");
+  Rectangle Layer(int i)=>(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{i})!;
+  net.ShowMapSymbols=net.ShowEquator=true;
+  Call("RouteLayerClick",Layer(0).Center);Check(!net.ShowMapSymbols && net.ShowEquator,"Coordinates independent from equator");
+  Call("RouteLayerClick",Layer(4).Center);Check(!net.ShowMapSymbols && !net.ShowEquator,"Equator independent from coordinates");
+  Set("_statusGlobe",false);net.ShowMapSymbols=true;
+  Check(!(bool)Call("MapOverlayAvailable",0),"Net coordinate toggle disabled");Call("RouteLayerClick",Layer(0).Center);Check(net.ShowMapSymbols,"Disabled click preserves coordinate setting");
+  var netReset=(Rectangle)Prop("OrientationResetButton");var netToy=(Rectangle)Prop("OrientationToyArea");
+  Check(netReset.Width==28 && netReset.Center.X==netToy.Center.X && netReset.Bottom<netToy.Top,"Net zero at 12 o'clock outside circle");
+  var before=net.CaptureView();net.ScreenAngle=.5f;Call("OrientationControlClick",netReset.Center);
+  Check(net.ScreenAngle==0 && net.Faces.SequenceEqual(before.Faces) && net.Pan==before.Pan && net.Zoom==before.Zoom,"Net zero preserves layout and camera");
+  foreach(int sign in new[]{-1,1})Check(Vector2.Distance(((Rectangle)Call("AxisButton",netToy,2,sign)).Center.ToVector2(),netToy.Center.ToVector2())>netToy.Width/2+20,"Net buttons outside circle");
+  Set("_statusGlobe",true);net.ShowEquator=true;Call("FocusStatusGlobe");
+
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
@@ -64,12 +77,23 @@ sealed class RotationGame:Game1{
   if(frame>=2 && frame<=8)Set("_mapTransitionAge",(frame-2)*.6f);
   if(frame>=9 && frame<=15)Set("_mapTransitionAge",(frame-9)*.6f);
   if(frame==16){Call("UpdateMapTransition",.1f);Check((bool)Get("_statusGlobe"),"Fold completes");Call("StartMapTransition");Set("_mapOrientation",Quaternion.CreateFromAxisAngle(Vector3.UnitX,MathHelper.Pi));Set("_mapTransitionAge",2.4f);}
-  if(frame>=17){Set("_mapTransitionAge",-1f);Set("_screen",Enum.Parse(Get("_screen").GetType(),frame==17?"Rolling":"CastReview"));base.Draw(t);}
+  if(frame>=17){
+   Set("_mapTransitionAge",-1f);Set("_screen",Enum.Parse(Get("_screen").GetType(),frame==17?"Rolling":frame==18?"CastReview":"WorldStatus"));
+   if(frame>=19){Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);Set("_statusGlobe",frame>=21);net.ShowMapSymbols=frame!=21;net.ShowEquator=frame is 19 or 21;}
+   base.Draw(t);
+  }
   else{GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawStatusUi");batch.End();}
   var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
   using var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);tex.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"rotation-{frame}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);
   if(frame==16)Check(pixels.Count(c=>c==new Color(115,119,125))>100,"Back faces render in solid gray");
-  if(frame++>=18){Console.WriteLine("PASS: current-location centering, all six 30-degree globe controls, animation midpoint, full net circle, rotated hit tests, saved rotation, transition rendering, smooth automatic speed pulses and compact reset.");Exit();}
+  if(frame>=19){
+   Rectangle Layer(int i)=>(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{i})!;
+   Color Lamp(int i){var r=Layer(i);int x=(r.X+12)*pp.BackBufferWidth/1920,y=(r.Y+21)*pp.BackBufferHeight/1080;return pixels[y*pp.BackBufferWidth+x];}
+   Check(Lamp(0)==(frame<21?new Color(105,108,113):net.ShowMapSymbols?new Color(114,255,143):new Color(38,65,48)),"Coordinates lamp distinguishes disabled/on/off");
+   Check(Lamp(4)==(net.ShowEquator?new Color(114,255,143):new Color(38,65,48)),"Equator lamp independent");
+   Check(pixels.Any(c=>c==CubeNet.EquatorColor)==net.ShowEquator,"Equator renders independently from coordinates");
+  }
+  if(frame++>=22){Console.WriteLine("PASS: current-location centering, all six 30-degree globe controls, animation midpoint, full net circle, rotated hit tests, saved rotation, transition rendering, smooth automatic speed pulses and compact reset.");Exit();}
  }
 }
 
