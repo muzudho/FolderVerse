@@ -11,6 +11,7 @@ public partial class Game1
     private bool NodeDialogClick(Point pointer,KeyboardState keyboard)
     {
         if(!InspectorVisible && PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
+        if(_populationCell<0 || _populationNode<0 || _populationNode>=_setup.Nodes.All.Length || _populationNode>=_setup.Robots.Workshops.Length)return false;
         if(SupervisorNodePanel){pointer.X-=920;pointer.Y-=40;}
         pointer.X-=NodeInspectorOffset;
         if(_populationCell>=0 && !NodeInspectorBounds.Contains(new Point(pointer.X+NodeInspectorOffset,pointer.Y)))return false;

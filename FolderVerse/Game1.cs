@@ -11,7 +11,7 @@ public partial class Game1 : Game
     private enum Screen { Title, PlayerCount, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, LandConquest, Fortune, WorldStatus, Battle, Industry, Disposition, InactiveList, Hierarchy, Pocket, Transport, Ending }
     private readonly GraphicsDeviceManager _graphics;
     private readonly Random _random=new();
-    private readonly WorldSetup _setup=new();
+    private WorldSetup _setup=new();
     private readonly SeedDialog _seedDialog=new();
     private readonly ScreenshotCapture _screenshots=new();
     private SpriteBatch _spriteBatch;
@@ -99,7 +99,7 @@ public partial class Game1 : Game
         _counter=new ToyCounterRenderer(Content.Load<SpriteFont>("ToyCounterFont"),_pixel);
         _ui=new UiPainter(_spriteBatch,_pixel,_font){AdaptiveText=()=>DomesticTheme}; _world=new WorldPreview(GraphicsDevice);
         _orientationToy=new ToyOrientationRenderer(GraphicsDevice);
-        LoadScreenshotFeedback();LoadCutInMobs();LoadSetupHost();
+        LoadScreenshotFeedback();LoadCutInMobs();LoadSetupHost();CheckAutoSave();
     }
     private Rectangle CanvasBounds()
     {
@@ -223,7 +223,7 @@ public partial class Game1 : Game
             else if(_screen==Screen.Title)Exit(); else { _screen=Screen.Title; _dragging=false; }
         }
         else if(_screen==Screen.Title)
-        { if((click && StartButton.Contains(_pointer)) || enter)BeginPlayerCount(); }
+        { if(click && _hasAutoSave && NewGameWithSaveButton.Contains(_pointer))BeginPlayerCount();else if((click && StartButton.Contains(_pointer)) || enter){if(_hasAutoSave)ResumeAutoSave();else BeginPlayerCount();} }
         else if(_screen==Screen.PlayerCount)
         {if(click && BackButton.Contains(_pointer))_screen=Screen.Title;else PlayerCountInput(click,enter,keyboard);}
         else if(IsStatusScreen)
@@ -605,6 +605,7 @@ public partial class Game1 : Game
         DrawWindowMargins(viewport.Width,viewport.Height,canvas);
         if(_screen==Screen.Title)_spriteBatch.Draw(_titleScreen,canvas,Color.White); _spriteBatch.End();
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
+        if(_screen==Screen.Title && _hasAutoSave){_spriteBatch.Begin(transformMatrix:transform);DrawResumeTitle();_spriteBatch.End();}
         if(_screen!=Screen.Title)
         {
             _spriteBatch.Begin(transformMatrix:transform);
@@ -636,6 +637,11 @@ public partial class Game1 : Game
             _ui.Box(new(430,18,1440,55),new Color(8,24,34,230));
             _ui.Center(_screenshots.Message,new(440,18,1420,55),0.4f,Color.White);
             _spriteBatch.End();
+        }
+        if(_autoSaveError.Length>0 && _screen!=Screen.Title){
+            _spriteBatch.Begin(transformMatrix:transform);
+            _ui.Box(new(430,18,1000,55),new Color(8,24,34,230));
+            _ui.Center(_autoSaveError,new(440,18,980,55),.45f,new Color(255,150,140));_spriteBatch.End();
         }
         if(_operations.Error!=null)
         {

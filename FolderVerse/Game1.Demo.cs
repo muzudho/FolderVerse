@@ -30,7 +30,7 @@ public partial class Game1
         }
         if(!_demoActive)
         {
-            if(_screen!=Screen.Title){_titleIdle=0;return false;}
+            if(_screen!=Screen.Title || _hasAutoSave){_titleIdle=0;return false;}
             if(click || enter || escape){_titleIdle=0;return false;}
             _titleIdle+=elapsed;
             if(_titleIdle<10)return false;

@@ -26,10 +26,10 @@ public partial class Game1
         _statusGlobe=true;_net.ShowRoutes=true;_net.ShowRobots=_net.ShowOtherCountries=true;_net.ShowCountryColors=false;_net.ControlledCountryColors=_world.ControlledCountryColors=false;_world.CountryColors=false;_mapLayerListOpen=_trafficLayerListOpen=false;_world.GlobeZoom=1;_world.GlobeAnchor=null;
         _robotPlaying=false;_endingWinner=-1;_endingAge=0;
         _setup.Campaign.Reset();_setup.Relations.Reset();_setup.Robots.Initialize(0,0);_setup.ClearPlacement();
-        _screen=Screen.Title;_inputOutcome="game_ended_to_title";
+        CheckAutoSave();_screen=Screen.Title;_inputOutcome="game_ended_to_title";
     }
     private void UpdateEnding(double elapsed,bool finish)
-    {_endingAge+=elapsed;if(finish || _endingAge>=10)ReturnToTitle();}
+    {_endingAge+=elapsed;if(finish || _endingAge>=10){DeleteCompletedAutoSave();ReturnToTitle();}}
     private void DrawEndingUi()
     {
         var color=_setup.OwnerColor(_endingWinner);
