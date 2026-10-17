@@ -314,12 +314,15 @@ public partial class Game1
                 }
             }
         }
+        // Draw counters after attack/shield effects so the remaining supplies stay readable.
+        foreach(var unit in frame.Units)
+            DrawBattleSupplies(unit,left+unit.Position.X*size+(size-72)/2,top+(unit.Position.Y+1)*size-12,BattlePieceOpacity);
         DrawBattleNewspaper(battle,frame);
         string result=$"全 {_robotPlayback.Rounds[_robotRound].Length} 戦場で１戦闘ターンを同時進行 / 結果は最後に表示";
         var recent=battle.Events.LastOrDefault(e=>e.Turn==frame.Turn && e.Phase==frame.Phase && e.Unit!=0);
         if(recent!=null)BattleInfo($"ID {recent.Unit} / {recent.Detail}",794,.42f);
         BattleInfo(result,833,.48f);
-        BattleInfo("観戦中は駒を操作できません / 再生速度は戦闘結果に影響しません",872,.41f);
+        BattleInfo("足元は左から盾・短剣・弾の残数 / 再生速度は戦闘結果に影響しません",872,.41f);
         bool end=_battleAge>=RobotRoundEnd;
         _ui.Button(RobotPause,_robotPlaying?"一時停止":"再生",Muted,.5f);
         _ui.Button(RobotStepBack,"１フェーズ戻る",Muted,.46f);_ui.Button(RobotStepNext,"１フェーズ進む",Muted,.46f);

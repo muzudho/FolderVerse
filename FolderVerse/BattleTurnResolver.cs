@@ -111,6 +111,11 @@ public static class BattleTurnResolver
             bool defender=battle.Kind==BattleKind.Node && battle.Allied(army.Owner,battle.Defender);
             bool active=willing.Any(o=>battle.Allied(o,army.Owner)) ||
                 battle.Events.Any(e=>e.Turn==battle.Turn && e.Phase==BattlePhase.Reinforce && battle.Units.Any(u=>u.Id==e.Unit && battle.Allied(u.Owner,army.Owner)));
+            // The nation that toppled the flag keeps its will once its troops vacate the flag square.
+            bool secured=battle.Kind==BattleKind.Node && !battle.FlagStanding && battle.LastFlagOwner==army.Owner &&
+                battle.Units.Any(u=>u.Active && u.Owner==army.Owner && u.Position!=battle.Flag) &&
+                !battle.Units.Any(u=>u.Active && u.Owner==army.Owner && u.Position==battle.Flag);
+            active|=secured;
             army.NoWillCount=defender?(battle.FlagStanding?0:army.NoWillCount+1):active?0:army.NoWillCount+1;
             if(army.NoWillCount<battle.Rules.NoWillTurns)continue;
             army.Withdrawing=true;

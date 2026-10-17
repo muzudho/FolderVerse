@@ -14,6 +14,7 @@ sealed class EffectsGame:Game1{
   battle=new BattleState(1){TargetNode=w.Nodes.Current(0).Id,Defender=0,Kind=BattleKind.Edge};
   battle.Armies.Add(new(){Owner=0,Side=0});
   for(int i=0;i<4;i++){var u=new BattleUnit{Id=i+1,Owner=0,Position=new Point(3+i,4),Facing=(BattleFacing)i};battle.Units.Add(u);battle.Events.Add(new(1,BattlePhase.Consume,u.Id,"盾で防いだ"));}
+  battle.Units[0].Shields=2;battle.Units[0].Daggers=1;battle.Units[0].Rifles=0;
   battle.Turn=1;battle.Capture(BattlePhase.Consume);
   Set("_robotScenes",new[]{battle});Set("_robotPlayback",new RobotBattlePlayback(new[]{battle}));Set("_robotPlaying",false);
  }

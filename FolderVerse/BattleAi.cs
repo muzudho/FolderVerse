@@ -23,6 +23,11 @@ public static class BattleAi
             var exit=army.Side switch{0=>new Point(unit.Position.X,-1),1=>new Point(10,unit.Position.Y),2=>new Point(unit.Position.X,10),_=>new Point(-1,unit.Position.Y)};
             var step=Path(battle,unit,exit)??new Point(0,0);return new(step,Face(exit-unit.Position));
         }
+        // Attackers vacate a fallen flag before attacking, guarding or forming up.
+        if(AvoidFlag(battle,unit) && unit.Position==battle.Flag){
+            var exits=Steps.Where(s=>Free(battle,unit,unit.Position+s)).OrderByDescending(s=>enemy==null?0:Distance(unit.Position+s,enemy.Position)).ToArray();
+            if(exits.Length>0)return new(exits[0],enemy==null?unit.Facing:Face(enemy.Position-unit.Position));
+        }
         if(enemy!=null && unit.Role!=BattleRole.Queen && armed)
         {
             var delta=enemy.Position-unit.Position;var facing=Face(delta);int distance=Distance(enemy.Position,unit.Position);
@@ -58,7 +63,7 @@ public static class BattleAi
         if(battle.Kind==BattleKind.Node)
         {
             bool defending=battle.Allied(unit.Owner,battle.Defender);
-            if(!defending || !battle.FlagStanding || enemies.Any(e=>Distance(e.Position,battle.Flag)<=2))objective=battle.Flag;
+            if(defending?(!battle.FlagStanding || enemies.Any(e=>Distance(e.Position,battle.Flag)<=2)):battle.FlagStanding)objective=battle.Flag;
         }
         if(enemy==null || Distance(enemy.Position,unit.Position)>4)
         {
@@ -85,14 +90,15 @@ public static class BattleAi
         }
         return null;
     }
-    private static bool Free(BattleState battle,BattleUnit unit,Point p)=>battle.Walkable(p) && !battle.Units.Any(u=>u.Active && u.Id!=unit.Id && u.Position==p);
+    private static bool AvoidFlag(BattleState battle,BattleUnit unit)=>battle.Kind==BattleKind.Node && !battle.FlagStanding && !battle.Allied(unit.Owner,battle.Defender);
+    private static bool Free(BattleState battle,BattleUnit unit,Point p)=>battle.Walkable(p) && !(AvoidFlag(battle,unit) && p==battle.Flag) && !battle.Units.Any(u=>u.Active && u.Id!=unit.Id && u.Position==p);
     public static Point? Path(BattleState battle,BattleUnit unit,Point target)
     {
         if(unit.Position==target)return Point.Zero;
         var queue=new Queue<Point>();queue.Enqueue(unit.Position);var first=new Dictionary<Point,Point>{{unit.Position,Point.Zero}};
         while(queue.TryDequeue(out var current))foreach(var step in Steps.OrderBy(s=>Distance(current+s,target)))
         {
-            var next=current+step;if(first.ContainsKey(next))continue;
+            var next=current+step;if(first.ContainsKey(next) || AvoidFlag(battle,unit) && next==battle.Flag)continue;
             if(!Free(battle,unit,next) && !(next==target && (!BattleState.Inside(target) && unit.Retreating || battle.Units.Any(u=>u.Active && u.Position==target && !battle.Allied(u.Owner,unit.Owner)))))continue;
             first[next]=current==unit.Position?step:first[current];if(next==target)return first[next];queue.Enqueue(next);
         }

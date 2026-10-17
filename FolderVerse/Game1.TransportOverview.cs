@@ -54,12 +54,12 @@ public partial class Game1
         bool onMap=MapViewBounds.Contains(p);if(!_transportOverview && !onMap)return false;if(!onMap)p.X-=NodeInspectorOffset;
         if(!onMap && TransportInstructionsClick(p))return true;
         if(onMap)foreach(var hit in _transportRouteHits.AsEnumerable().Reverse())if(hit.Bounds.Contains(p) || Vector2.Distance(hit.Start,hit.End)>1 && TransportArrowHit(p,hit.Start,hit.End))
-        {_populationNode=hit.Source;_transportPage=0;_rateTarget=-1;_transportEditor=0;return true;}
+        {_populationNode=hit.Source;PrepareTransportInstructions();_transportPage=0;_rateTarget=-1;_transportEditor=0;return true;}
         if(onMap && !_transportOverview)return false;
         if(onMap)
         {
             int id=_statusGlobe?HitGlobeNode(p,_setup.Nodes.All.Select(n=>n.Id)):_net.HitNode(_setup,NetPanel,p,_setup.Nodes.All.Select(n=>n.Id));
-            if(id>=0){_populationNode=id;_transportPage=0;_rateTarget=-1;return true;}
+            if(id>=0){_populationNode=id;PrepareTransportInstructions();_transportPage=0;_rateTarget=-1;return true;}
         }
         return new Rectangle(54,150,850,825).Contains(p);
     }

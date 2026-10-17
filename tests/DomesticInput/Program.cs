@@ -24,7 +24,7 @@ sealed class InputGame:Game1{
   var world=(WorldPreview)Get("_world");world.ShowSetup(setup,true);var net=(CubeNet)Get("_net");net.Home(setup);
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_statusGlobe",false);
   int source=setup.Nodes.Current(0).Id;Open(source);Call("FocusCurrentNode");
-  Click(new(200,280));Click(new(540,770));
+  Click(new(540,770));
   Check((bool)Get("_transportDestinationPicking"),"Real input enters destination mode");
   Click(new(740,810));Check(!(bool)Get("_transportDestinationPicking") && setup.Robots.Transport.Instructions(source,0).Count==0,"Cancel exits picker and removes unfinished new order");
   Click(new(540,770));Input(default,keys:new[]{Keys.Escape});Input(default);
@@ -43,6 +43,18 @@ sealed class InputGame:Game1{
   }
   Open(source);Click(new(540,770));Click(((Rectangle)Prop("InspectorClose")).Center);Input(default,dt:.5);
   Check(setup.Robots.Transport.Instructions(source,0).Count==1,"Closing picker discards only pending draft");
+  // Replay the reported flow: Add, then immediately edit the visible row controls.
+  Open(source);Click(new(604,765));Check((bool)Get("_transportDestinationPicking"),"Add starts destination picking");
+  Click(new(590,442));Check((int)Get("_transportEditor")==1 && !(bool)Get("_transportDestinationPicking"),"New row parts remain clickable during destination picking");
+  Input(default,keys:new[]{Keys.Escape});Input(default);
+  Set("_transportEditNumber",2);Click(new(250,471));Click(new(550,471));Check((int)Get("_transportEditor")==2,"Quantity can replace destination picker");Input(default,keys:new[]{Keys.Escape});Input(default);
+  Click(new(250,471));Click(new(160,431));Check((int)Get("_rateTarget")==2,"Adoption pie can replace destination picker");Input(default,keys:new[]{Keys.Escape});Input(default);
+  Click(new(250,471));Click(new(269,435));Check(!(bool)Get("_transportDestinationPicking"),"Purpose control works during destination picking");
+  Click(new(250,471));Click(new(839,438));Check(setup.Robots.Transport.Instructions(source,0).Count==1,"Delete control works during destination picking");
+  // Exact coordinates from the report on a first, newly added row.
+  foreach(var existing in setup.Robots.Transport.Instructions(source,0).ToArray())setup.Robots.Transport.DeleteInstruction(source,0,existing.Number);
+  Click(new(604,765));Click(new(590,336));Check((int)Get("_transportEditor")==1,"Reported first-row click opens parts without choosing destination first");
+  Click(((Rectangle)Prop("InspectorClose")).Center);Input(default,dt:.5);Check(setup.Robots.Transport.Instructions(source,0).Count==1,"Field edits retain the new instruction when inspector closes");
   // Actual player handoff restores independent settings and both projection cameras.
   Call("ResetInspector");Set("_domesticSlide",0f);Set("_statusGlobe",false);
   net.ShowBatteries=net.ShowEquator=net.ShowRobots=net.ShowOtherCountries=net.ShowMapSymbols=net.ShowRoutes=false;net.ShowCountryColors=true;
@@ -64,7 +76,7 @@ sealed class InputGame:Game1{
   var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();
   Open(source);Click(new(250,365));Click(new(740,810));Check(!(bool)Get("_transportDestinationPicking"),"Scaled-window cancel hit testing");Click(new(550,325));Click(((Rectangle)Prop("InspectorClose")).Center);Input(default,dt:.5);Check(!(bool)Prop("InspectorVisible"),"Scaled-window modal close hit testing");
   Call("BeginPlayerCount");setup.SelectPlayer(0);Call("RestoreDomesticCamera");Check(net.ShowBatteries && world.GlobeZoom==1,"New game clears old player preferences");
-  Console.WriteLine("PASS: real input destination confirm/cancel/Escape, quantity keyboard, all modal close buttons, draft rollback, independent player cameras/layers, actual turn handoff and subordinate switching, temporary-layer isolation, small-window input and new-game reset.");Exit();
+  Console.WriteLine("PASS: reported Add-to-field clicks, picker-to-parts/quantity/pie/purpose/delete transitions, real input destination confirm/cancel/Escape, quantity keyboard, all modal close buttons, draft rollback, independent player cameras/layers, actual turn handoff and subordinate switching, temporary-layer isolation, small-window input and new-game reset.");Exit();
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){}
