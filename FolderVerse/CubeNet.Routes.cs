@@ -21,7 +21,8 @@ public sealed partial class CubeNet
         return owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal):WorldPreview.LandTerritoryColor(world.OwnerColor(owner),WorldTerrain.Kind(height));
     }
     public bool ShowRoutes {get;set;}=true; public int HoveredNode {get;set;}=-1; public int InspectedNode {get;set;}=-1;
-    public bool NodeVisible(WorldSetup world,Node node)=>ShowOtherCountries || node.Owner<0 || world.Relations.Controls(node.Owner);
+    public bool RevealMovementTargets {get;set;}
+    public bool NodeVisible(WorldSetup world,Node node)=>ShowOtherCountries || node.Owner<0 || world.Relations.Controls(node.Owner) || RevealMovementTargets && MovementTargets.Contains(node.Id);
     public bool EmphasizedNode(int id)=>HoveredNode==id || InspectedNode==id;
     public HashSet<int> MovementTargets {get;}=new();
     public int SelectedTarget {get;set;}=-1;

@@ -56,6 +56,28 @@ sealed class InputGame:Game1{
   foreach(var existing in setup.Robots.Transport.Instructions(source,0).ToArray())setup.Robots.Transport.DeleteInstruction(source,0,existing.Number);
   Click(new(604,765));Click(new(590,336));Check((int)Get("_transportEditor")==1,"Reported first-row click opens parts without choosing destination first");
   Click(((Rectangle)Prop("InspectorClose")).Center);Input(default,dt:.5);Check(setup.Robots.Transport.Instructions(source,0).Count==1,"Field edits retain the new instruction when inspector closes");
+  // Other-country visibility is overridden only for actual war-planning targets.
+  Call("ResetInspector");Set("_domesticSlide",0f);net.ShowOtherCountries=false;
+  foreach(var owned in setup.Nodes.All.Where(n=>n.Owner==0)){
+   var store=setup.Robots.Nodes[owned.Id];if(store.Count>=store.StorageLimit)store.Remove(store.Robots[0].Id);store.Add(setup.Robots.Create(0,RobotParts.Complete));
+  }
+  Call("OpenWarPlanning");Call("PrepareDestinationMap");
+  int enemyTarget=net.MovementTargets.First(id=>setup.Nodes.All[id].Owner>0 && !setup.Relations.Controls(setup.Nodes.All[id].Owner));
+  var enemyNode=setup.Nodes.All[enemyTarget];
+  Check(!net.ShowOtherCountries && net.NodeVisible(setup,enemyNode),"Attackable foreign node visible with Other Countries off");
+  foreach(var hidden in setup.Nodes.All.Where(n=>n.Owner>0 && !setup.Relations.Controls(n.Owner) && !net.MovementTargets.Contains(n.Id)))Check(!net.NodeVisible(setup,hidden),"Non-target foreign nodes remain hidden");
+  net.SetCenter(setup,setup.Cells[enemyNode.Cell].Face);net.FitNodesAtSource(setup,enemyNode,(Rectangle)Prop("NetPanel"),1);
+  var enemyAt=net.NodePosition(setup,enemyNode,(Rectangle)Prop("NetPanel")).ToPoint();
+  Check(net.HitNode(setup,(Rectangle)Prop("NetPanel"),enemyAt,new[]{enemyTarget})==enemyTarget,"Net hit test includes revealed attack target");
+  Call("MovementClick",enemyAt,new KeyboardState());Check((int)Get("_selectedMoveNode")==enemyTarget,"Revealed foreign target can be selected for invasion");
+  Set("_statusGlobe",true);
+  // Find a view orientation that exposes this target, then verify the globe hit path too.
+  bool globeHit=false;foreach(float yaw in new[]{0f,MathHelper.PiOver2,MathHelper.Pi,-MathHelper.PiOver2})foreach(float pitch in new[]{0f,MathHelper.PiOver2,-MathHelper.PiOver2}){
+   world.ManualOrientation=null;Set("_yawAngle",yaw);Set("_pitchAngle",pitch);world.GlobeAnchor=null;world.GlobeZoom=1;
+   var cell=setup.Cells[enemyNode.Cell];if(world.ProjectVisible(setup.Routes.Position(enemyNode.Cell,enemyNode.Center),cell.Normal,yaw,pitch,(Rectangle)Prop("MapViewBounds"),out var at) && (int)Call("HitGlobeNode",at.ToPoint(),new[]{enemyTarget})==enemyTarget)globeHit=true;
+  }
+  Check(globeHit,"Globe hit test includes revealed attack target");
+  Call("CloseMovement");Check(!net.NodeVisible(setup,enemyNode) && !net.ShowOtherCountries,"Closing invasion restores foreign node hiding without changing preference");Call("OpenMovement");Check(!net.NodeVisible(setup,enemyNode),"Normal movement does not reveal foreign attack targets");Call("ResetInspector");
   // Actual player handoff restores independent settings and both projection cameras.
   Call("ResetInspector");Set("_domesticSlide",0f);Set("_statusGlobe",false);
   net.ShowBatteries=net.ShowEquator=net.ShowRobots=net.ShowOtherCountries=net.ShowMapSymbols=net.ShowRoutes=false;net.ShowCountryColors=true;
@@ -77,7 +99,7 @@ sealed class InputGame:Game1{
   var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();
   Open(source);Click(new(250,365));Click(new(740,810));Check(!(bool)Get("_transportDestinationPicking"),"Scaled-window cancel hit testing");Click(new(550,325));Click(((Rectangle)Prop("InspectorClose")).Center);Input(default,dt:.5);Check(!(bool)Prop("InspectorVisible"),"Scaled-window modal close hit testing");
   Call("BeginPlayerCount");setup.SelectPlayer(0);Call("RestoreDomesticCamera");Check(net.ShowBatteries && world.GlobeZoom==1,"New game clears old player preferences");
-  Console.WriteLine("PASS: reported Add-to-field clicks, picker-to-parts/quantity/pie/purpose/delete transitions, real input destination confirm/cancel/Escape, quantity keyboard, all modal close buttons, draft rollback, independent player cameras/layers, actual turn handoff and subordinate switching, temporary-layer isolation, small-window input and new-game reset.");Exit();
+  Console.WriteLine("PASS: foreign war targets visible/selectable in net and globe with Other Countries off, reset after planning, reported Add-to-field clicks, picker-to-parts/quantity/pie/purpose/delete transitions, real input destination confirm/cancel/Escape, quantity keyboard, all modal close buttons, draft rollback, independent player cameras/layers, actual turn handoff and subordinate switching, temporary-layer isolation, small-window input and new-game reset.");Exit();
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){}

@@ -12,7 +12,7 @@ public partial class Game1
     private int _invasionPage;
     private void OpenWarPlanning()
     {
-        _withdrawalEncounter=-1;CloseMovement();OpenMovementWithFit(false);_warPlanning=true;_net.MovementTargets.Clear();
+        _withdrawalEncounter=-1;CloseMovement();OpenMovementWithFit(false);_warPlanning=true;_net.RevealMovementTargets=true;_net.MovementTargets.Clear();
         foreach(var node in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner)))
             foreach(var route in _setup.Routes.Neighbors(node))
             {

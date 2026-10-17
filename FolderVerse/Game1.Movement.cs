@@ -15,7 +15,7 @@ public partial class Game1
     private void OpenMovement()=>OpenMovementWithFit(true);
     private void OpenMovementWithFit(bool fit)
     {
-        _nodeInspectorClosing=false;_reignView=false;_warPlanning=false;
+        _nodeInspectorClosing=false;_reignView=false;_warPlanning=false;_net.RevealMovementTargets=false;
         if(_transportOverview)CloseTransportOverview();
         _dragging=false;
         _routesBeforeMovement=_net.ShowRoutes;_net.ShowRoutes=true;_movementOpen=true;
@@ -27,6 +27,7 @@ public partial class Game1
     }
     private void CloseMovement()
     {
+        _net.RevealMovementTargets=false;
         if(!_movementOpen)return;
         _movementOpen=false;_net.ShowRoutes=_routesBeforeMovement;
         _selectedMoveNode=-1;_net.SelectedTarget=-1;_net.MovementTargets.Clear();

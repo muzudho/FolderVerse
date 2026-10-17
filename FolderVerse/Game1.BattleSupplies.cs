@@ -13,7 +13,7 @@ public partial class Game1
         if(unit.Fallen || unit.Retreated)return;
         int[] counts={unit.Shields,unit.Daggers,unit.Rifles};
         Color[] colors={new(125,221,255),new(230,235,240),new(255,210,85)};
-        _ui.Box(new(x-3,y-3,78,16),new Color(12,22,30)*(.9f*opacity));
+        _ui.Box(new(x-3,y-3,78,16),Color.Black*(.45f*opacity));
         for(int i=0;i<3;i++){
             int left=x+i*25;
             for(int row=0;row<8;row++)for(int col=0;col<8;col++)
