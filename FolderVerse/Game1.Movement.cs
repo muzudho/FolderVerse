@@ -10,9 +10,10 @@ public partial class Game1
     private long _escort;
     private bool _routesBeforeMovement;
     private int _selectedMoveNode=-1;
-    private static readonly Rectangle MovementButton=new(504,1018,110,52);
+    private static readonly Rectangle MovementButton=new(504,1018,160,52);
     private static readonly Rectangle ConfirmMoveButton=new(570,914,274,48);
-    private void OpenMovement()
+    private void OpenMovement()=>OpenMovementWithFit(true);
+    private void OpenMovementWithFit(bool fit)
     {
         _nodeInspectorClosing=false;_reignView=false;_warPlanning=false;
         if(_transportOverview)CloseTransportOverview();
@@ -22,7 +23,7 @@ public partial class Game1
         _net.MovementTargets.Clear();
         _net.MovementTargets.UnionWith(_setup.Routes.NodeChoices(_setup.PlayerSlot).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id).Where(id=>_setup.Nodes.All[id].Owner>=0 && _setup.Relations.Allied(_setup.PlayerSlot,_setup.Nodes.All[id].Owner) && _setup.Campaign.RobotBattles.CanMarch(_setup,_setup.PlayerSlot,id)));
         _net.SelectedTarget=-1;
-        if(_statusGlobe)FitDestinationView();
+        if(fit && _statusGlobe)FitDestinationView();
     }
     private void CloseMovement()
     {
@@ -43,7 +44,7 @@ public partial class Game1
     {
         if(!InspectorVisible && PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
         if(SelectContinuation(pointer))return true;
-        bool onMap=NetPanel.Contains(pointer);if(!onMap)pointer.X-=NodeInspectorOffset;
+        bool onMap=MapViewBounds.Contains(pointer);if(!onMap)pointer.X-=NodeInspectorOffset;
         if(_warPlanning && _movementOpen && !onMap && InvasionClick(pointer))return true;
         if(_reignView && PocketButton.Contains(pointer)){_statusMenuOpen=false;OpenPocket();return true;}
         if(_reignView && MovementButton.Contains(pointer)){if(_movementOpen)CloseMovement();else OpenMovement();return true;}

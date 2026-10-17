@@ -21,7 +21,7 @@ public sealed partial class CubeNet
         if(!ShowBatteries)return;
         for(int ruler=0;ruler<setup.ActiveCount;ruler++)
         {
-            if(!setup.Relations.Powered[ruler])continue;
+            if(!setup.Relations.Powered[ruler] || !ShowOtherCountries && !setup.Relations.Controls(ruler))continue;
             var cell=setup.Cells[setup.ConquerorLocations[ruler]];
             if(!globe.ProjectVisible(setup.Routes.Position(cell.Id,setup.ConquerorPoints[ruler]),cell.Normal,yaw,pitch,panel,out var at))continue;
             bool own=ruler==setup.PlayerSlot;int width=own?25:12,height=own?16:8;

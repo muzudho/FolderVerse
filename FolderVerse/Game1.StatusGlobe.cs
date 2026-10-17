@@ -30,7 +30,7 @@ public partial class Game1
     }
     private int HitGlobeCell(Point pointer)
     {
-        if(!StatusGlobeArea.Contains(pointer))return -1;
+        if(!MapViewBounds.Contains(pointer))return -1;
         var p=new Vector2(pointer.X,pointer.Y);
         foreach(var cell in _setup.Cells)
         {
@@ -91,7 +91,7 @@ public partial class Game1
     }
     private int HitGlobeNode(Point pointer,IEnumerable<int> candidates=null)
     {
-        if(!StatusGlobeArea.Contains(pointer))return -1;
+        if(!MapViewBounds.Contains(pointer))return -1;
         int badge=_net.HitRobotBadge(pointer);
         if(badge>=0 && (candidates==null || candidates.Contains(badge)))return badge;
         int nearest=-1;float distance=float.PositiveInfinity;
@@ -107,6 +107,7 @@ public partial class Game1
     }
     private void FocusStatusGlobe()
     {
+        _domesticMapLeft=55+480*_domesticSlide;
         _globeSelectedNode=_setup.Nodes.Current(_setup.PlayerSlot)?.Id??-1;
         _world.GlobeAnchor=CurrentMapPosition();
         var point=CurrentMapPosition();
@@ -124,6 +125,7 @@ public partial class Game1
     }
     private void FocusCurrentNode()
     {
+        _domesticMapLeft=55+480*_domesticSlide;
         int cell=_setup.Nodes.Current(_setup.PlayerSlot)?.Cell??_setup.ConquerorLocations[_setup.PlayerSlot];
         _net.SetCenter(_setup,_setup.Cells[cell].Face);
         var face=_net.Faces[0];var fit=_net.Fit(NetPanel);

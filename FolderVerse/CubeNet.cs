@@ -162,7 +162,7 @@ public sealed partial class CubeNet
         });
         foreach(int ruler in Enumerable.Range(0,setup.ActiveCount).OrderBy(r=>r==setup.PlayerSlot?1:0))
         {
-        if(!ShowBatteries || !setup.Relations.Powered[ruler])continue;
+        if(!ShowBatteries || !setup.Relations.Powered[ruler] || !ShowOtherCountries && !setup.Relations.Controls(ruler))continue;
         var location=CellBounds(setup.Cells[setup.ConquerorLocations[ruler]],panel);
         var currentFace=Faces.First(f=>f.Face==setup.Cells[setup.ConquerorLocations[ruler]].Face);
         var position=currentFace.Project(setup.Routes.Position(setup.ConquerorLocations[ruler],setup.ConquerorPoints[ruler]))*fit.Scale+fit.Origin;
@@ -179,7 +179,7 @@ public sealed partial class CubeNet
         ui.Box(new(bx,by,25,16),battery);ui.Box(new(bx+25,by+4,4,8),battery);
         for(int i=0;i<3;i++)ui.Box(new(bx+3+i*7,by+3,5,10),new Color(35,112,70));
         }
-        if(VisibleOperationNodes==null)DrawRobotLayer(ui,setup,panel,node=>NodePosition(setup,node,panel),fit.Scale);
+        DrawRobotLayer(ui,setup,panel,node=>NodePosition(setup,node,panel),fit.Scale);
         DrawHoveredEdge(ui,panel);
         DrawSeamLabels(ui,panel);
     }

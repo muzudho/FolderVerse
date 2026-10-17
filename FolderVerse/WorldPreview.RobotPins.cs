@@ -18,7 +18,7 @@ public sealed partial class WorldPreview
     }
     public void DrawRobotPins(WorldSetup setup,CubeNet net,float yaw,float pitch,Rectangle panel)
     {
-        net.ClearGlobeRobotBadges();if(!setup.Campaign.UseRobotCombat)return;
+        net.ClearGlobeRobotBadges();if(!net.ShowRobots || !setup.Campaign.UseRobotCombat)return;
         var mesh=new List<VertexPositionColorNormal>();
         void Triangle(Vector3 a,Vector3 b,Vector3 c,Color tint)
         {
@@ -27,7 +27,7 @@ public sealed partial class WorldPreview
         }
         foreach(var node in setup.Nodes.All)
         {
-            var cell=setup.Cells[node.Cell];var robots=setup.Robots.Nodes[node.Id].Robots;
+            var cell=setup.Cells[node.Cell];var robots=setup.Robots.Nodes[node.Id].Robots.Where(r=>net.ShowOtherCountries || setup.Relations.Controls(r.Owner)).ToList();
             var center=setup.Routes.Position(node.Cell,node.Center);
             if(robots.Count==0 || !ProjectVisible(center,cell.Normal,yaw,pitch,panel,out var screen) || !panel.Contains(screen.ToPoint()))continue;
             Rectangle bounds=Rectangle.Empty;

@@ -38,7 +38,7 @@ public partial class Game1 : Game
     private float _animationTime;
     private readonly CubeNet _net=new();
     private int _statusCell=-1;
-    private Rectangle NetPanel=>new((int)MathHelper.Lerp(40,1000,_domesticSlide),142,(int)MathHelper.Lerp(1840,880,_domesticSlide),820); private static readonly Rectangle StatusProceed=new(518,1020,480,50);
+    private Rectangle MapViewBounds=>new((int)MathHelper.Lerp(40,1000,_domesticSlide),142,(int)MathHelper.Lerp(1840,880,_domesticSlide),820); private static readonly Rectangle StatusProceed=new(518,1020,480,50);
     private Rectangle NetButton(int i)=>new(984+i*177,InspectorVisible?990:912,166,50);
     private bool IsStatusScreen=>_screen==Screen.WorldStatus;
     private Rectangle SelectionGlobe=>_selectionTiles.Length==0?Rectangle.Empty:_selectionTiles[^1].Bounds;
@@ -153,7 +153,7 @@ public partial class Game1 : Game
         {UpdateEnding(elapsed,active && (escape || enter || click && EndingReturn.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool rotating=OrientationRotating;UpdateOrientationRotation((float)elapsed);
         if(rotating){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(OrientationControlsVisible && !_seedDialog.IsOpen && active && click && OrientationControlClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(OrientationControlsVisible && !_seedDialog.IsOpen && active && click && OrientationControlClick(_pointer)){if(AutomaticOrientation)AdvanceAutomaticOrientation((float)elapsed);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool transitioning=MapTransitionActive;UpdateMapTransition((float)elapsed);
         if(transitioning){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _screenshots.Update(gameTime.ElapsedGameTime.TotalSeconds);
@@ -231,7 +231,7 @@ public partial class Game1 : Game
             if(_statusGlobe)
             {
                 _statusCell=-1;
-                if(active && NetPanel.Contains(_pointer))
+                if(active && MapViewBounds.Contains(_pointer))
                 {
                     int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
                     if(wheel!=0)
@@ -251,10 +251,10 @@ public partial class Game1 : Game
             {
             bool pan=active && mouse.RightButton==ButtonState.Pressed;
             if(!pan)_mapDragging=false;
-            if(pan && _previousMouse.RightButton!=ButtonState.Pressed && NetPanel.Contains(_pointer))_mapDragging=true;
+            if(pan && _previousMouse.RightButton!=ButtonState.Pressed && MapViewBounds.Contains(_pointer))_mapDragging=true;
             if(_mapDragging && _previousMouse.RightButton==ButtonState.Pressed)
             {var old=CanvasPoint(_previousMouse);_net.Drag(new Vector2(_pointer.X-old.X,_pointer.Y-old.Y));}
-            if(active && NetPanel.Contains(_pointer))
+            if(active && MapViewBounds.Contains(_pointer))
             {
                 int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
                 if(wheel!=0)_net.ZoomAt(NetPanel,_pointer,wheel);
@@ -502,7 +502,7 @@ public partial class Game1 : Game
         _ui.Center(capitalLabel,new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
         int fully=System.Linq.Enumerable.Count(_setup.Cells,c=>_setup.Nodes.FullOwner(c.Id)==player);
         _ui.Center("完全占領　"+fully+" cell / 節点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==player),new(90,842,760,48),0.76f,Cream);
-        }); _ui.Box(new(NetPanel.X-20,142,NetPanel.Width+40,750),new(20,42,54));
+        }); _ui.Box(new(MapViewBounds.X-20,142,MapViewBounds.Width+40,750),new(20,42,54));
         _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+CubeNet.FaceNames[_net.CenterFace]+" が中心",new(991,156),0.68f,Cream);
         string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地星の北＝＋Y / 北を上に";
         string orientation=north+" / 回転 "+((int)MathF.Round((_net.Rotation*90+MathHelper.ToDegrees(_net.ScreenAngle))%360+360)%360)+"°";
@@ -518,7 +518,7 @@ public partial class Game1 : Game
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _spriteBatch.End();
         var oldScissor=GraphicsDevice.ScissorRectangle;
-        GraphicsDevice.ScissorRectangle=new(canvas.X+(int)(NetPanel.X*canvas.Width/1920f),canvas.Y+(int)(NetPanel.Y*canvas.Height/1080f),(int)(NetPanel.Width*canvas.Width/1920f),(int)(NetPanel.Height*canvas.Height/1080f));
+        GraphicsDevice.ScissorRectangle=OrientationClip(canvas);
         if(MapTransitionActive)
         {
             var viewport=GraphicsDevice.Viewport;GraphicsDevice.Viewport=new Viewport(canvas);
@@ -530,14 +530,14 @@ public partial class Game1 : Game
             var areas=OrientationAreas(NetPanel,false);
             GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
             _world.Draw(_yaw,_pitch,_animationTime,false,true);
-            _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; if(!DestinationOperation)_world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe);
+            _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; _world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe);
             GraphicsDevice.Viewport=viewport;
             using var globeClip=new RasterizerState{ScissorTestEnable=true};
-            GraphicsDevice.ScissorRectangle=new(canvas.X+(int)(areas.Globe.X*canvas.Width/1920f),canvas.Y+(int)(areas.Globe.Y*canvas.Height/1080f),(int)(areas.Globe.Width*canvas.Width/1920f),(int)(areas.Globe.Height*canvas.Height/1080f));
+            GraphicsDevice.ScissorRectangle=OrientationClip(canvas);
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
             if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();_spriteBatch.End();
-            DrawOrientationOverlay(NetPanel,canvas,transform);
+            DrawOrientationOverlay(MapViewBounds,canvas,transform);
         }
         else using(var clipping=new RasterizerState{ScissorTestEnable=true})
         {
@@ -545,7 +545,7 @@ public partial class Game1 : Game
             var mapPointer=_ui.Pointer;_ui.Pointer=_net.UnrotateScreen(_pointer,NetPanel);
             _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:(_statusCell>=0?_statusCell:_selectedMapCell),_animationTime);_ui.Pointer=mapPointer;_spriteBatch.End();
         }
-        if(!_statusGlobe && !MapTransitionActive)DrawOrientationOverlay(NetPanel,canvas,transform);
+        if(!_statusGlobe && !MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         DrawDestinationMap();DrawContinuationBadges(); DrawDomesticPortrait();
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
@@ -563,7 +563,7 @@ public partial class Game1 : Game
 
 
         if(_reignView)DrawInspector(()=>{
-        _ui.Button(MovementButton,"移動",Accent,.65f);
+        _ui.Button(MovementButton,"移動予約",Accent,.55f);
         _ui.Button(PocketButton,"ポケット",Accent,.55f);});
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(1064,1037,800,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
         if(_populationCell>=0){

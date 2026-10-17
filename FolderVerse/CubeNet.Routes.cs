@@ -9,6 +9,8 @@ public sealed partial class CubeNet
     public HashSet<int> VisibleOperationNodes {get;set;}
     public bool ShowMapSymbols {get;set;}=true;
     public bool ShowEquator {get;set;}=true;
+    public bool ShowRobots {get;set;}=true;
+    public bool ShowOtherCountries {get;set;}=true;
     public bool ShowBatteries {get;set;}=true;
     public bool ShowCountryColors {get;set;}
     public bool ControlledCountryColors {get;set;}

@@ -74,7 +74,7 @@ public partial class Game1
     private bool OperationPosition(int id,out Vector2 at)
     {
         var n=_setup.Nodes.All[id];
-        if(!_statusGlobe){at=_net.NodePosition(_setup,n,NetPanel);return NetPanel.Contains(at.ToPoint());}
+        if(!_statusGlobe){at=_net.NodePosition(_setup,n,NetPanel);return MapViewBounds.Contains(at.ToPoint());}
         return _world.ProjectVisible(_setup.Routes.Position(n.Cell,n.Center),_setup.Cells[n.Cell].Normal,_yaw,_pitch,StatusGlobeArea,out at);
     }
     private Rectangle DestinationBadge(int id)

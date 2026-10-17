@@ -4,7 +4,7 @@ public partial class Game1
 {
     private bool _trainingOpen;
     private int _trainingDrop=-1;
-    private static readonly Rectangle TrainingButton=new(54,930,140,52),TrainingClose=new(1340,220,58,44);
+    private static readonly Rectangle TrainingButton=new(674,1018,140,52),TrainingClose=new(1340,220,58,44);
     private static Rectangle TrainingField(int field)=>new(480,360+field*190,900,64);
     private static Rectangle TrainingOption(int field,int option)=>new(480,424+field*190+option*48,900,48);
     private static readonly string[] AssemblyLabels={"自国のパーツのみ","自国のパーツが２／３以上","自国のパーツが１／３以上","現場に任せる"};

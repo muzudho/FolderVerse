@@ -12,7 +12,7 @@ public partial class Game1
     private bool OrientationControlsVisible=>IsStatusScreen || _screen>=Screen.Rolling && _screen<=Screen.PlayerReady;
     private Rectangle OrientationControlArea {
         get {
-            if(IsStatusScreen)return NetPanel;
+            if(IsStatusScreen)return MapViewBounds;
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;
             return OrientationAreas(area,IsCastScreen && !IsSelectionScreen).Globe;
@@ -21,13 +21,15 @@ public partial class Game1
     private Rectangle OrientationToyArea=>OrientationAreas(OrientationControlArea,false).Toy;
     private float _automaticBoostAge=-1;
     private int _automaticBoostAxis,_automaticBoostSign;
+    private readonly System.Collections.Generic.Queue<(int Axis,int Sign)> _automaticBoostQueue=new();
+    private const float AutomaticBoostSeconds=3;
     private bool AutomaticOrientation=>!IsStatusScreen && (IsRolling || IsSelectionScreen || IsCastScreen) && !_dragging;
     private Rectangle AxisButton(Rectangle toy,int axis,int sign)
     {
         float r=toy.Width/2f+23;var c=new Vector2(toy.Center.X,toy.Center.Y);
         Vector2 p;
         if(OrientationGlobe){
-            p=axis switch{0=>c+new Vector2(r,sign>0?-17:17),1=>c+new Vector2(sign*17,-r),_=>c+new Vector2(r*.7071f,-r*.7071f)+new Vector2(sign*18,sign*18)};
+            p=axis switch{0=>c+new Vector2(r,sign>0?17:-17),1=>c+new Vector2(sign*17,-r),_=>c+new Vector2(r*.7071f,-r*.7071f)+new Vector2(sign*18,sign*18)};
         }else{
             float a=sign>0?MathHelper.PiOver4:3*MathHelper.PiOver4;
             p=c+new Vector2(MathF.Cos(a),MathF.Sin(a))*r;
@@ -38,11 +40,11 @@ public partial class Game1
     {
         if(MapTransitionActive || OrientationRotating)return false;
         var toy=OrientationToyArea;
-        if(OrientationResetButton.Contains(pointer)){_automaticBoostAge=-1;if(OrientationGlobe)ResetStatusOrientation();else _net.ScreenAngle=-MathHelper.ToRadians(_net.Rotation*90);return true;}
+        if(OrientationResetButton.Contains(pointer)){_automaticBoostAge=-1;_automaticBoostQueue.Clear();if(OrientationGlobe)ResetStatusOrientation();else _net.ScreenAngle=-MathHelper.ToRadians(_net.Rotation*90);return true;}
         for(int axis=OrientationGlobe?0:2;axis<3;axis++)foreach(int sign in new[]{-1,1})
         {
             if(!AxisButton(toy,axis,sign).Contains(pointer))continue;
-            if(AutomaticOrientation){if(_automaticBoostAge>=0)return true;_automaticBoostAge=0;_automaticBoostAxis=axis;_automaticBoostSign=sign;return true;}
+            if(AutomaticOrientation){if(_automaticBoostAge>=0){_automaticBoostQueue.Enqueue((axis,sign));return true;}_automaticBoostAge=0;_automaticBoostAxis=axis;_automaticBoostSign=sign;return true;}
             _rotationGlobe=OrientationGlobe;_orientationAge=0;_dragging=_mapDragging=false;_globePressedCell=-1;
             if(OrientationGlobe){
                 _orientationFrom=Quaternion.CreateFromRotationMatrix(_world.ViewOrientation(_yaw,_pitch));
@@ -61,17 +63,17 @@ public partial class Game1
         orientation*=Matrix.CreateRotationY(angle);
         if(_automaticBoostAge>=0){
             // Integral of a smooth velocity pulse: exactly 30 degrees, then the normal speed.
-            float Ease(float t){t=MathHelper.Clamp(t/4f,0,1);return t*t*(3-2*t);}
+            float Ease(float t){t=MathHelper.Clamp(t/AutomaticBoostSeconds,0,1);return t*t*(3-2*t);}
             float extra=(Ease(_automaticBoostAge+elapsed)-Ease(_automaticBoostAge))*MathHelper.ToRadians(30)*_automaticBoostSign;
             var axis=_automaticBoostAxis==0?Vector3.UnitX:_automaticBoostAxis==1?Vector3.UnitY:Vector3.UnitZ;
             orientation*=Matrix.CreateFromAxisAngle(axis,extra*(_automaticBoostAxis==2?-1:1));
-            _automaticBoostAge+=elapsed;if(_automaticBoostAge>=4)_automaticBoostAge=-1;
+            _automaticBoostAge+=elapsed;if(_automaticBoostAge>=AutomaticBoostSeconds){_automaticBoostAge=-1;if(_automaticBoostQueue.Count>0){var next=_automaticBoostQueue.Dequeue();_automaticBoostAxis=next.Axis;_automaticBoostSign=next.Sign;_automaticBoostAge=0;}}
         }
         _world.ManualOrientation=Quaternion.Normalize(Quaternion.CreateFromRotationMatrix(orientation));
     }
     private void UpdateOrientationRotation(float elapsed)
     {
-        if(!AutomaticOrientation)_automaticBoostAge=-1;
+        if(!AutomaticOrientation){_automaticBoostAge=-1;_automaticBoostQueue.Clear();}
         if(!OrientationRotating)return;
         _orientationAge+=elapsed;float t=MathHelper.Clamp(_orientationAge/.4f,0,1);t=t*t*(3-2*t);
         if(_rotationGlobe)_world.ManualOrientation=Quaternion.Slerp(_orientationFrom,_orientationTo,t);
@@ -106,6 +108,7 @@ public partial class Game1
         }
         for(int axis=OrientationGlobe?0:2;axis<3;axis++)foreach(int sign in new[]{-1,1})
             _ui.Button(AxisButton(toy,axis,sign),sign>0?"+":"－",AxisColors[axis],.52f);
+        if(_automaticBoostAge>=0){float t=MathHelper.Clamp(_automaticBoostAge/AutomaticBoostSeconds,0,1);int degrees=(int)MathF.Round(30*t*t*(3-2*t));_ui.Text("XYZ"[_automaticBoostAxis]+(_automaticBoostSign>0?" +":" -")+degrees+" / 30°",new(toy.Center.X-65,toy.Bottom+48),.3f,AxisColors[_automaticBoostAxis]);}
         var reset=OrientationResetButton;
         _ui.Button(reset,OrientationGlobe?"":"0",OrientationGlobe?Muted:AxisColors[2],.5f);
         if(OrientationGlobe){

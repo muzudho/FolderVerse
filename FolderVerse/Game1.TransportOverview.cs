@@ -65,7 +65,7 @@ public partial class Game1
         if(!InspectorVisible && TransportOverviewButton.Contains(p)){OpenTransportOverview();return true;}
         if(!_transportOverview)return false;
         if(_rateTarget>=0){if(RateDialogArea.Contains(p))RatePieClick(p);else _rateTarget=-1;return true;}
-        bool onMap=NetPanel.Contains(p);if(!onMap)p.X-=NodeInspectorOffset;
+        bool onMap=MapViewBounds.Contains(p);if(!onMap)p.X-=NodeInspectorOffset;
         if(new Rectangle(84,270,374,46).Contains(p)){_nodeTransportDisposal=false;return true;}
         if(new Rectangle(480,270,374,46).Contains(p)){_nodeTransportDisposal=true;return true;}
         for(int mask=1;mask<=7;mask++)if(TransportPartButton(mask).Contains(p)){_nodeTransportPart=(RobotParts)mask;return true;}

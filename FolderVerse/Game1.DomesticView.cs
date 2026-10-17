@@ -4,6 +4,22 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
+    private Rectangle OrientationClip(Rectangle canvas)=>new(canvas.X+(int)(MapViewBounds.X*canvas.Width/1920f),canvas.Y+(int)(MapViewBounds.Y*canvas.Height/1080f),(int)(MapViewBounds.Width*canvas.Width/1920f),(int)(MapViewBounds.Height*canvas.Height/1080f));
+    private float _domesticMapLeft=55;
+    private float MeasureDomesticMapLeft(){
+        var basis=new Rectangle(40,142,1840,820);float left=float.PositiveInfinity;
+        if(_setup.Cells.Length==0 || _net.Faces.Length==0)return 55;
+        if(_statusGlobe){
+            foreach(var cell in _setup.Cells)foreach(var p in cell.Corners)
+                if(_world.ProjectVisible(p,cell.Normal,_yaw,_pitch,basis,out var at))left=Math.Min(left,at.X);
+        }else{
+            var fit=_net.Fit(basis);
+            foreach(var face in _net.Faces)foreach(var cell in _setup.Cells)if(cell.Face==face.Face)foreach(var p in cell.Corners)
+                left=Math.Min(left,_net.RotateScreen(face.Project(p)*fit.Scale+fit.Origin,basis).X);
+        }
+        return float.IsFinite(left)?Math.Max(55,left):55;
+    }
+    private Rectangle NetPanel=>new(40+(int)Math.Max(0,MapViewBounds.Left+15-_domesticMapLeft),142,1840,820);
     private bool _reignView;
     private float _domesticSlide;
     private bool _nodeInspectorClosing;
@@ -44,6 +60,7 @@ public partial class Game1
     private void CloseNodeInspector(){_nodeInspectorClosing=true;_trainingOpen=false;_hangarDrag=null;_supervisorDialog=0;}
     private void UpdateDomesticSlide(float elapsed){
         float target=DomesticPanelOpen?1:0;
+        if(_domesticSlide==0)_domesticMapLeft=MeasureDomesticMapLeft();
         _domesticSlide=target>_domesticSlide?Math.Min(target,_domesticSlide+elapsed/.4f):Math.Max(target,_domesticSlide-elapsed/.4f);
         if(_nodeInspectorClosing && _domesticSlide==0)ResetInspector();
     }

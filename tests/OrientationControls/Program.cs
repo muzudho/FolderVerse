@@ -54,7 +54,18 @@ sealed class RotationGame:Game1{
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
   var reset=(Rectangle)Prop("OrientationResetButton");Check(reset.Size==new Point(84,28) && reset.Top>((Rectangle)Prop("OrientationToyArea")).Bottom,"Small reset below circle");
   Call("OrientationControlClick",reset.Center);Check(world.ViewOrientation(0,0)==Matrix.Identity,"Compact reset restores orientation");
+  Set("_screen",Enum.Parse(Get("_screen").GetType(),"Rolling"));Set("_yawAngle",0f);Set("_pitchAngle",0f);world.ManualOrientation=null;
+  var queueToy=(Rectangle)Prop("OrientationToyArea");var queuedButton=(Rectangle)Call("AxisButton",queueToy,1,1);
+  Call("OrientationControlClick",queuedButton.Center);Call("OrientationControlClick",queuedButton.Center);
+  for(int i=0;i<70;i++)Call("AdvanceAutomaticOrientation",.1f);
+  Check(Math.Abs(Quaternion.Dot(world.ManualOrientation!.Value,Quaternion.CreateFromAxisAngle(Vector3.UnitY,2.1f+MathHelper.ToRadians(60))))>.99999f,"Two clicks queue two complete 30-degree pulses");
+  Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
+  var xPlus=(Rectangle)Call("AxisButton",(Rectangle)Prop("OrientationToyArea"),0,1);var xMinus=(Rectangle)Call("AxisButton",(Rectangle)Prop("OrientationToyArea"),0,-1);Check(xPlus.Y>xMinus.Y,"Only X button positions swapped");
   Rectangle Layer(int i)=>(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{i})!;
+  Call("RouteLayerClick",Layer(5).Center);Check(!net.ShowRobots,"Robot display off");Call("RouteLayerClick",Layer(5).Center);Check(net.ShowRobots,"Robot display on");
+  Call("RouteLayerClick",Layer(6).Center);Check(!net.ShowOtherCountries && net.ControlledCountryColors && world.ControlledCountryColors,"Other country toggle controls both color renderers");
+  foreach(var c in w.Cells){int owner=w.Nodes.FullOwner(c.Id);if(owner>=0 && !w.Relations.Controls(owner))Check(net.TerrainColor(w,c.Id,.6f)==WorldTerrain.ColorAt(.6f,c.Normal),"Foreign color hidden");}
+  Call("RouteLayerClick",Layer(6).Center);Check(net.ShowOtherCountries && !net.ControlledCountryColors && !world.ControlledCountryColors,"Foreign colors restored");
   net.ShowMapSymbols=net.ShowEquator=true;
   Call("RouteLayerClick",Layer(0).Center);Check(!net.ShowMapSymbols && net.ShowEquator,"Coordinates independent from equator");
   Call("RouteLayerClick",Layer(4).Center);Check(!net.ShowMapSymbols && !net.ShowEquator,"Equator independent from coordinates");
@@ -80,6 +91,7 @@ sealed class RotationGame:Game1{
   if(frame>=17){
    Set("_mapTransitionAge",-1f);Set("_screen",Enum.Parse(Get("_screen").GetType(),frame==17?"Rolling":frame==18?"CastReview":"WorldStatus"));
    if(frame>=19){Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);Set("_statusGlobe",frame>=21);net.ShowMapSymbols=frame!=21;net.ShowEquator=frame is 19 or 21;}
+   if(frame>=23){Set("_statusGlobe",frame>=25);net.ShowRobots=frame is 24 or 26;if(frame==26){var other=(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{6})!;Call("RouteLayerClick",other.Center);}}
    base.Draw(t);
   }
   else{GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawStatusUi");batch.End();}
@@ -89,11 +101,13 @@ sealed class RotationGame:Game1{
   if(frame>=19){
    Rectangle Layer(int i)=>(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{i})!;
    Color Lamp(int i){var r=Layer(i);int x=(r.X+12)*pp.BackBufferWidth/1920,y=(r.Y+21)*pp.BackBufferHeight/1080;return pixels[y*pp.BackBufferWidth+x];}
-   Check(Lamp(0)==(frame<21?new Color(105,108,113):net.ShowMapSymbols?new Color(114,255,143):new Color(38,65,48)),"Coordinates lamp distinguishes disabled/on/off");
+   Check(Lamp(0)==(!(bool)Get("_statusGlobe")?new Color(105,108,113):net.ShowMapSymbols?new Color(114,255,143):new Color(38,65,48)),"Coordinates lamp distinguishes disabled/on/off");
    Check(Lamp(4)==(net.ShowEquator?new Color(114,255,143):new Color(38,65,48)),"Equator lamp independent");
    Check(pixels.Any(c=>c==CubeNet.EquatorColor)==net.ShowEquator,"Equator renders independently from coordinates");
   }
-  if(frame++>=22){Console.WriteLine("PASS: current-location centering, all six 30-degree globe controls, animation midpoint, full net circle, rotated hit tests, saved rotation, transition rendering, smooth automatic speed pulses and compact reset.");Exit();}
+  if(frame>=23)Check(net.ShowRobots || net.RobotBadges.Count==0,"Hidden robots leave no hit areas in either view");
+  if(frame==26)foreach(var badge in net.RobotBadges)Check(w.Robots.Nodes[badge.Node].Robots.Any(r=>w.Relations.Controls(r.Owner)),"Other-country toggle filters robot badges");
+  if(frame++>=26){Console.WriteLine("PASS: current-location centering, all six 30-degree globe controls, animation midpoint, full net circle, rotated hit tests, saved rotation, transition rendering, smooth automatic speed pulses and compact reset.");Exit();}
  }
 }
 

@@ -1,4 +1,4 @@
-using FolderVerse;
+﻿using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -15,10 +15,23 @@ sealed class InspectorGame:Game1{
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
   w=(WorldSetup)Get("_setup");w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);((WorldPreview)Get("_world")).ShowSetup(w,true);
-  Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));((CubeNet)Get("_net")).Home(w);node=w.Nodes.Current(0).Id;Call("OpenNodeInspector",node);
+  Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));((CubeNet)Get("_net")).Home(w);node=w.Nodes.Current(0).Id;
+  foreach(bool globe in new[]{false,true}){
+   Call("ResetInspector");Set("_domesticSlide",0f);Set("_statusGlobe",globe);Call("FocusStatusGlobe");
+   var cameraNet=(CubeNet)Get("_net");var cameraWorld=(WorldPreview)Get("_world");var cameraPanel=(Rectangle)Prop("NetPanel");
+   float scale=cameraNet.Fit(cameraPanel).Scale,zoom=cameraWorld.GlobeZoom;var orientation=cameraWorld.ManualOrientation;
+   Call("OpenWarPlanning");Check((bool)Get("_statusGlobe")==globe && cameraWorld.GlobeZoom==zoom && cameraWorld.ManualOrientation==orientation,"War planning preserves view and globe camera");
+   foreach(float dt in new[]{.1f,.1f,.2f}){
+    Call("UpdateDomesticSlide",dt);var projection=(Rectangle)Prop("NetPanel");
+    Check(projection.Width==1840 && Math.Abs(cameraNet.Fit(projection).Scale-scale)<.001f && cameraWorld.GlobeZoom==zoom,"Inspector slides without shrinking globe, net or nodes");
+   }
+   var viewport=(Rectangle)Prop("MapViewBounds");float baseLeft=(float)Get("_domesticMapLeft");
+   Check(Math.Abs(baseLeft+((Rectangle)Prop("NetPanel")).X-40-viewport.Left-15)<1.1f,"Map waits then slides with 15-pixel left padding");
+  }
+  Call("ResetInspector");Set("_domesticSlide",0f);Set("_statusGlobe",true);Call("OpenNodeInspector",node);
   Check((int)Prop("NodeInspectorOffset")==-960,"Panel begins outside left edge");Call("UpdateDomesticSlide",.2f);
   Check((float)Get("_domesticSlide")==.5f && (int)Prop("NodeInspectorOffset")==-480,"Shared half transition");
-  var map=(Rectangle)Prop("NetPanel");Check(map.X==520 && map.Right==1880 && map.Y==142 && map.Height==820,"Map ratio changes horizontally with panel");
+  var map=(Rectangle)Prop("MapViewBounds");Check(map.X==520 && map.Right==1880 && map.Y==142 && map.Height==820,"Map ratio changes horizontally with panel");
   Call("UpdateDomesticSlide",.2f);Check((float)Get("_domesticSlide")==1,"Panel enters fully");
   var factory=w.Robots.Workshops[node];for(int seed=0;factory.ProductionLines.Length==0;seed++)factory.GenerateLines(seed);Call("OpenNodeFactory");
   Set("_factoryLine",0);var button=(Rectangle)Call("FactoryDropButton",0);Call("NodeDialogClick",button.Center,new KeyboardState());

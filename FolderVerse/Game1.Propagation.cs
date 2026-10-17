@@ -24,6 +24,7 @@ public partial class Game1
         _propagationNet.ShowBatteries=false;
         _propagationNet.ShowMapSymbols=_net.ShowMapSymbols;
         _propagationNet.ShowEquator=_net.ShowEquator;
+        _propagationNet.ShowRobots=_net.ShowRobots;_propagationNet.ShowOtherCountries=_net.ShowOtherCountries;
         // Return from the previous board first; zoom into the next only at the end.
         float zoom=movement?Math.Clamp((progress-.6f)/.4f,0,1):
             progress<.2f?1-progress/.2f:Math.Clamp((progress-.8f)/.2f,0,1);

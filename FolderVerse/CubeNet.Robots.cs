@@ -27,12 +27,12 @@ public sealed partial class CubeNet
     private void DrawRobotLayer(UiPainter ui,WorldSetup world,Rectangle panel,Func<Node,Vector2?> project,float scale)
     {
         _robotBadges.Clear();
-        if(!world.Campaign.UseRobotCombat)return;
+        if(!ShowRobots || !world.Campaign.UseRobotCombat)return;
         var occupied=new List<Rectangle>();
         int current=world.Nodes.Current(world.PlayerSlot)?.Id??-1;
         foreach(var node in world.Nodes.All.OrderBy(n=>EmphasizedNode(n.Id)?0:n.Id==current?1:2).ThenBy(n=>n.Id))
         {
-            var robots=world.Robots.Nodes[node.Id].Robots.OrderByDescending(r=>MapPartCount(r.Parts)).ToArray();
+            var robots=world.Robots.Nodes[node.Id].Robots.Where(r=>ShowOtherCountries || world.Relations.Controls(r.Owner)).OrderByDescending(r=>MapPartCount(r.Parts)).ToArray();
             if(robots.Length==0)continue;
             var point=project(node);if(point==null || !panel.Contains(point.Value.ToPoint()))continue;
             var at=point.Value;float zoom=ShowRoutes && EmphasizedNode(node.Id)?2:1;
