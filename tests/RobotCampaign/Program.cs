@@ -147,3 +147,33 @@ Console.WriteLine("PASS: leader and nested subordinate actions commit one shared
     Assert(returned.Id==pocket.Id && !returned.CanFight && returned.NativeParts(0)==0 && returned.Origin(RobotParts.Head)==0,"Last native part damage disables combat without disposing robot");campaign.Check(x);
     Console.WriteLine("PASS: already-damaged hit, exact pocket return, last-native-part combat disable without disposal.");
 }
+
+// Battery proxies must not consume a real node's hangar or overwrite its order.
+{
+    var world=new WorldSetup();world.SetWorld(2);world.SetCast(123);world.SetPlacement(456);world.SelectPlayer(0);
+    world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);
+    var home=world.Nodes.All.First(n=>world.Routes.Neighbors(n).Length>0);
+    var route=world.Routes.Neighbors(home)[0];var target=world.Nodes.At(route.Target,route.Entry);
+    home.Owner=0;target.Owner=1;
+    world.ConquerorLocations[0]=home.Cell;world.ConquerorPoints[0]=home.Center;
+    world.ConquerorLocations[1]=target.Cell;world.ConquerorPoints[1]=target.Center;
+    for(int i=0;i<3;i++)world.Robots.Nodes[home.Id].Add(world.Robots.Create(0,RobotParts.Complete));
+    var pocket=world.Robots.Create(0,RobotParts.Complete);world.Robots.Retinues[0].Add(pocket);
+    world.Robots.Nodes[target.Id].Add(world.Robots.Create(1,RobotParts.Complete));
+    int nodes=world.Nodes.All.Length,cell=world.ConquerorLocations[0];
+    world.Campaign.Plan(new(0,target.Id,2,home.Id,false));
+    world.Campaign.Plan(new(0,target.Id,0,home.Id,true,true));
+    if(world.Campaign.PlannedOrders.Count!=2)throw new Exception("Battery overwrote hangar reservation");
+    world.Campaign.RobotBattles.Rules=new(){SegmentTurns=1,NoWillTurns=1000,PersuasionPercent=0};
+    world.Campaign.Resolve(world,world.Campaign.PlannedOrders.Append(new March(1,home.Id,1,target.Id,false)).ToArray());
+    var edge=world.Campaign.RobotBattles.Encounters.First(e=>e.Kind==BattleKind.Edge);
+    var units=edge.Battles.SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting)));
+    if(units.Count(u=>u.Owner==0 && u.Robot!=null)!=3 || units.Count(u=>u.Owner==0 && u.Role==BattleRole.Queen)!=1)
+        throw new Exception("Battery and hangar did not share edge encounter");
+    if(world.Robots.Nodes[home.Id].Count!=1 || world.Robots.Retinues[0].Count!=0 || world.Nodes.All.Length!=nodes || world.ConquerorLocations[0]!=cell)
+        throw new Exception("Proxy changed physical location or used wrong troop store");
+    world.Campaign.RobotBattles.Check(world);
+    world.Campaign.CancelReservation(0,home.Id,true,target.Id);
+    if(world.Campaign.PlannedOrders.Count!=1 || world.Campaign.PlannedOrders[0].Queen)throw new Exception("Battery cancellation removed hangar order");
+    Console.WriteLine("PASS: independent battery/hangar reservations, shared edge encounter, pocket-only troops and physical node invariants");
+}

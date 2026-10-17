@@ -59,6 +59,7 @@ public partial class Game1
         if(Vector2.DistanceSquared(new(_pointer.X,_pointer.Y),new(_globePressPoint.X,_globePressPoint.Y))>36)_globeCellDragged=true;
         if(mouse.LeftButton!=ButtonState.Released)return;
         int selected=_globePressedCell;_globePressedCell=-1;
+        if(!_globeCellDragged && BatteryClick(_pointer))return;
         int selectedNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1;
         if(!_globeCellDragged && selectedNode>=0)
         {_globeSelectedNode=selectedNode; _world.GlobeAnchor=_setup.Routes.Position(_setup.Nodes.All[selectedNode].Cell,_setup.Nodes.All[selectedNode].Center);OpenNodeInspector(selectedNode);return;}

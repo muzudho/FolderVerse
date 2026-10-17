@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public sealed record March(int Ruler,int TargetNode,long Fighters,int SourceNode=-1,bool Queen=true);
+public sealed record March(int Ruler,int TargetNode,long Fighters,int SourceNode=-1,bool Queen=true,bool PocketOnly=false);
 public sealed class ConquestCampaign
 {
     public bool UseRobotCombat {get;set;}=true;
@@ -15,7 +15,12 @@ public sealed class ConquestCampaign
     private readonly List<March> _plannedOrders=new();
     public IReadOnlyList<March> PlannedOrders=>_plannedOrders.Concat(_partyOrders).ToArray();
     public void CancelSource(int owner,int source){_plannedOrders.RemoveAll(o=>o.Ruler==owner && o.SourceNode==source);_partyOrders.RemoveAll(o=>o.Ruler==owner && o.SourceNode==source);}
-    public void Plan(March order){_partyOrders.RemoveAll(o=>o.Ruler==order.Ruler && (o.SourceNode==order.SourceNode || order.Queen && o.Queen));_plannedOrders.RemoveAll(o=>o.Ruler==order.Ruler && (o.SourceNode==order.SourceNode || order.Queen && o.Queen));_plannedOrders.Add(order);Report=$"予約 { _plannedOrders.Count} 件 / ターン終了で実行";}
+    public void CancelReservation(int owner,int source,bool queen,int target)
+    {
+        bool Matches(March o)=>o.Ruler==owner && o.Queen==queen && o.TargetNode==target && (queen || o.SourceNode==source);
+        _plannedOrders.RemoveAll(o=>Matches(o));_partyOrders.RemoveAll(o=>Matches(o));
+    }
+    public void Plan(March order){_partyOrders.RemoveAll(o=>o.Ruler==order.Ruler && (!o.Queen && !order.Queen && o.SourceNode==order.SourceNode || order.Queen && o.Queen));_plannedOrders.RemoveAll(o=>o.Ruler==order.Ruler && (!o.Queen && !order.Queen && o.SourceNode==order.SourceNode || order.Queen && o.Queen));_plannedOrders.Add(order);Report=$"予約 { _plannedOrders.Count} 件 / ターン終了で実行";}
     public int[] Submitted=>_submitted.OrderBy(r=>r).ToArray();
     public bool AwaitingPlayers=>_submitted.Count>0;
     public void Reset(){Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}

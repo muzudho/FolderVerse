@@ -160,25 +160,10 @@ public sealed partial class CubeNet
             var face=Faces.First(f=>f.Face==p.Cell.Face);
             return (face.Project(p.A)*fit.Scale+fit.Origin,face.Project(p.B)*fit.Scale+fit.Origin);
         });
-        foreach(int ruler in Enumerable.Range(0,setup.ActiveCount).OrderBy(r=>r==setup.PlayerSlot?1:0))
-        {
-        if(!ShowBatteries || !setup.Relations.Powered[ruler] || !ShowOtherCountries && !setup.Relations.Controls(ruler))continue;
-        var location=CellBounds(setup.Cells[setup.ConquerorLocations[ruler]],panel);
-        var currentFace=Faces.First(f=>f.Face==setup.Cells[setup.ConquerorLocations[ruler]].Face);
-        var position=currentFace.Project(setup.Routes.Position(setup.ConquerorLocations[ruler],setup.ConquerorPoints[ruler]))*fit.Scale+fit.Origin;
-        if(ruler!=setup.PlayerSlot)
-        {
-            int x=(int)position.X-7,y=(int)position.Y-4;
-            var tint=setup.OwnerColor(ruler);
-            ui.Box(new(x-2,y-2,17,12),new Color(12,27,36));ui.Box(new(x,y,12,8),tint);ui.Box(new(x+12,y+2,2,4),tint);
-            continue;
-        }
-        int bx=(int)position.X-13,by=(int)position.Y-8;
-        var battery=Color.Lerp(new Color(255,240,119),Color.White,(MathF.Sin(pulse*4)+1)/2);
-        ui.Box(new(bx-3,by-3,32,22),new Color(12,27,36));
-        ui.Box(new(bx,by,25,16),battery);ui.Box(new(bx+25,by+4,4,8),battery);
-        for(int i=0;i<3;i++)ui.Box(new(bx+3+i*7,by+3,5,10),new Color(35,112,70));
-        }
+        DrawBatteries(ui,setup,panel,ruler=>{
+            var face=Faces.First(f=>f.Face==setup.Cells[setup.ConquerorLocations[ruler]].Face);
+            return face.Project(setup.Routes.Position(setup.ConquerorLocations[ruler],setup.ConquerorPoints[ruler]))*fit.Scale+fit.Origin;
+        },pulse);
         DrawRobotLayer(ui,setup,panel,node=>NodePosition(setup,node,panel),fit.Scale);
         DrawHoveredEdge(ui,panel);
         DrawSeamLabels(ui,panel);

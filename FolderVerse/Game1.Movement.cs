@@ -54,7 +54,7 @@ public partial class Game1
         if(ConfirmMoveButton.Contains(pointer))
         {
             if(_selectedMoveNode<0 || _setup.Routes.ToNode(_setup.PlayerSlot,_selectedMoveNode)==null)return true;
-            _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id));
+            _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id,true,true));
             CloseMovement();return true;
         }
 

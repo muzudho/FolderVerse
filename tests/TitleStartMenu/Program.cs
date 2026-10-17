@@ -55,16 +55,27 @@ sealed class MenuGame:Game1{
   Check((string)label.GetValue(this)! =="開戦予約（なし）","No invasion reservation label");
   Call("OpenWarPlanning");var targets=((CubeNet)Get("_net")).MovementTargets;
   Check(tutorial.Population.Turn==0 && targets.Count>0,"War planning has reachable enemy targets before the first turn ends");
-  int invasionTarget=targets.First();Set("_selectedMoveNode",invasionTarget);Call("BuildInvasionSources",invasionTarget);
+  int invasionTarget=targets.First(t=>tutorial.Campaign.RobotBattles.CanMarch(tutorial,0,t) && tutorial.Campaign.RobotBattles.CanAttackFrom(tutorial,0,tutorial.Nodes.Current(0).Id,t));Set("_selectedMoveNode",invasionTarget);Call("BuildInvasionSources",invasionTarget);
+  var rows=((System.Collections.IEnumerable)Get("_invasionSources")).Cast<object>().ToArray();
+  var queenField=rows[0].GetType().GetField("Queen")!;var nodeField=rows[0].GetType().GetField("Node")!;
+  Check(rows.Any(r=>(bool)queenField.GetValue(r)!) && rows.Where(r=>(bool)queenField.GetValue(r)!).All(r=>rows.Any(n=>!(bool)queenField.GetValue(n)! && (int)nodeField.GetValue(n)! ==(int)nodeField.GetValue(r)!)),"Battery and actual node have separate source rows");
   var targetLabel=(string)typeof(Game1).GetProperty("InvasionTargetLabel",F)!.GetValue(this)!;
   Check(targetLabel=="侵攻先："+tutorial.Nodes.DisplayName(tutorial.Nodes.All[invasionTarget]) && !targetLabel.Contains("Node "),"Invasion target uses human-readable node name without numeric ID");
   Call("InvasionClick",new Point(794,332));Call("ReserveInvasion");
   Check(tutorial.Campaign.PlannedOrders.Count==1 && tutorial.Campaign.PlannedOrders[0].Fighters==1 && (string)label.GetValue(this)! =="開戦予約（1件）","First-turn plus button reserves a soldier and updates label");
   var order=tutorial.Campaign.PlannedOrders[0];tutorial.Campaign.Plan(order);Check((string)label.GetValue(this)! =="開戦予約（1件）","Replacing same reservation does not double count");
+  Call("OpenWarPlanning");Call("SelectMoveNode",invasionTarget);
+  rows=((System.Collections.IEnumerable)Get("_invasionSources")).Cast<object>().ToArray();
+  int batteryRow=Array.FindIndex(rows,r=>(bool)queenField.GetValue(r)!);
+  Set("_invasionPage",batteryRow/7);Call("InvasionClick",new Point(430,320+batteryRow%7*72));Call("ReserveInvasion");
+  Check(tutorial.Campaign.PlannedOrders.Count==2 && tutorial.Campaign.PlannedOrders.Single(o=>o.Queen).PocketOnly,"Battery button reserves only pocket alongside hangar");
+  Call("OpenWarPlanning");Call("SelectMoveNode",invasionTarget);Set("_invasionPage",batteryRow/7);Call("InvasionClick",new Point(430,320+batteryRow%7*72));Call("ReserveInvasion");
+  Check(tutorial.Campaign.PlannedOrders.Count==1 && !tutorial.Campaign.PlannedOrders[0].Queen,"Deselecting battery preserves hangar reservation");
   int subordinate=tutorial.Nodes.All[invasionTarget].Owner%5+1;tutorial.Relations.SetSuperior(subordinate,0);int subordinateSource=tutorial.Nodes.Current(subordinate).Id;
   tutorial.Campaign.Plan(new(subordinate,invasionTarget,1,subordinateSource,false));Check((string)label.GetValue(this)! =="開戦予約（1件）","Coordinated sources attacking one destination count once");
   int secondTarget=tutorial.Nodes.All.First(n=>n.Owner!=0 && n.Owner!=subordinate && n.Id!=invasionTarget).Id;
   tutorial.Campaign.Plan(new(subordinate,secondTarget,1,subordinateSource,false));Check((string)label.GetValue(this)! =="開戦予約（2件）","Different enemy destinations count as separate reservations");
+  tutorial.Campaign.CancelSource(subordinate,subordinateSource);
   tutorial.Campaign.Plan(new(subordinate,order.SourceNode,0,subordinateSource,true));Check((string)label.GetValue(this)! =="開戦予約（1件）","Friendly movement does not count as invasion");
   tutorial.Campaign.CancelSource(subordinate,subordinateSource);
   tutorial.Campaign.CancelSource(order.Ruler,order.SourceNode);Check((string)label.GetValue(this)! =="開戦予約（なし）","Cancel returns label to none");
@@ -115,6 +126,7 @@ sealed class MenuGame:Game1{
  protected override void Draw(GameTime t){
   if(frame==5){Call("BeginTutorialStepOne");Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);}
   if(frame==6){var w=(WorldSetup)Get("_setup");var pair=w.Nodes.All.Where(n=>n.Owner==0).SelectMany(n=>w.Routes.Neighbors(n).Select(r=>(Source:n.Id,Target:w.Nodes.At(r.Target,r.Entry).Id))).First(p=>w.Nodes.All[p.Target].Owner!=0);w.Campaign.Plan(new(0,pair.Target,1,pair.Source,false));}
+  if(frame==8){Call("CloseNodeInspector");Call("OpenWarPlanning");var w=(WorldSetup)Get("_setup");int target=((CubeNet)Get("_net")).MovementTargets.First(t=>w.Campaign.RobotBattles.CanMarch(w,0,t) && w.Campaign.RobotBattles.CanAttackFrom(w,0,w.Nodes.Current(0).Id,t));Call("SelectMoveNode",target);Call("UpdateDomesticSlide",1f);}
   if(frame==7){var w=(WorldSetup)Get("_setup");int n=w.Nodes.Current(0).Id;Call("OpenNodeInspector",n);Call("UpdateDomesticSlide",1f);}
 
   if(frame==1)Set("_hasAutoSave",false);
@@ -125,6 +137,6 @@ sealed class MenuGame:Game1{
   var canvas=(Rectangle)Call("CanvasBounds");int sx=canvas.X+780*canvas.Width/1920,sy=canvas.Y+940*canvas.Height/1080;var buttonPixel=pixels[sy*pp.BackBufferWidth+sx];
   if(frame<4)Check(frame==3?buttonPixel.B>buttonPixel.R:buttonPixel.R>buttonPixel.B,"Start button is drawn only while the paper menu is closed");
   using var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);tex.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"start-menu-{frame}.png")))tex.SaveAsPng(file,tex.Width,tex.Height);
-  if(frame++==7){Call("DeleteCompletedAutoSave");Exit();}
+  if(frame++==8){Call("DeleteCompletedAutoSave");Exit();}
  }
 }

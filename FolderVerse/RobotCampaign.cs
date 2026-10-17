@@ -73,7 +73,7 @@ public sealed class RobotCampaign
     }
     public void Advance(WorldSetup world,IReadOnlyList<March> orders)
     {
-        if(orders.Where(o=>o.Queen).GroupBy(o=>o.Ruler).Any(g=>g.Count()>1) || orders.GroupBy(o=>(o.Ruler,Source(world,o))).Any(g=>g.Count()>1))throw new ArgumentException("Duplicate source or conqueror order.");
+        if(orders.Where(o=>o.Queen).GroupBy(o=>o.Ruler).Any(g=>g.Count()>1) || orders.GroupBy(o=>(o.Ruler,Source(world,o),o.Queen)).Any(g=>g.Count()>1))throw new ArgumentException("Duplicate source or conqueror order.");
         foreach(var o in orders)if(o.Ruler<0 || o.Ruler>=world.ActiveCount || !world.Relations.Powered[o.Ruler] || world.Relations.Pending.Any(p=>p.Ruler==o.Ruler) || o.Fighters<0 || o.Queen && o.SourceNode>=0 && o.SourceNode!=world.Nodes.Current(o.Ruler)?.Id || !(o.Queen?CanMarch(world,o.Ruler,o.TargetNode):CanAttackFrom(world,o.Ruler,o.SourceNode,o.TargetNode)))throw new ArgumentException("Invalid robot march.");
         Scenes.Clear();Encounters.RemoveAll(e=>e.Finished);
         foreach(var reserve in Reserves.ToArray())if(!LockedNode(reserve.Node) && world.Robots.Nodes[reserve.Node].HasSpace)
@@ -85,7 +85,7 @@ public sealed class RobotCampaign
         foreach(var o in orders)
         {
             var store=world.Robots.Nodes[source[o]];
-            var selected=world.Robots.Training[o.Ruler].Order(store.Robots.Where(r=>r.Owner==o.Ruler && world.Robots.Training[o.Ruler].Eligible(r) && world.Robots.Workshops[source[o]].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).Take((int)Math.Min(12,o.Fighters)).ToArray();
+            var selected=world.Robots.Training[o.Ruler].Order(store.Robots.Where(r=>!o.PocketOnly && r.Owner==o.Ruler && world.Robots.Training[o.Ruler].Eligible(r) && world.Robots.Workshops[source[o]].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).Take((int)Math.Min(12,o.Fighters)).ToArray();
             foreach(var r in selected)Depart(world,source[o],r);
             troops[o]=selected.ToList();
             // Direct retinue travels with its conqueror and is excluded from transport plans.
@@ -102,9 +102,12 @@ public sealed class RobotCampaign
             if(stopped.Contains(first))continue;
             var second=orders.Where(o=>o.Ruler>first.Ruler && !stopped.Contains(o) && source[o]==first.TargetNode && o.TargetNode==source[first] && !world.Relations.Allied(first.Ruler,o.Ruler)).OrderBy(o=>o.Ruler).FirstOrDefault();
             if(second==null)continue;
-            var e=CreateEncounter(world,BattleKind.Edge,source[first],first.TargetNode,-1,
-                new[]{(first.Ruler,source[first],troops[first],first.Queen),(second.Ruler,source[second],troops[second],second.Queen)});
-            Encounters.Add(e);stopped.Add(first);stopped.Add(second);
+            // Both source kinds travelling the same edge share the encounter.
+            var crossing=orders.Where(o=>!stopped.Contains(o) &&
+                (source[o]==source[first] && o.TargetNode==first.TargetNode || source[o]==first.TargetNode && o.TargetNode==source[first])).ToArray();
+            var armies=crossing.GroupBy(o=>(o.Ruler,Home:source[o])).Select(g=>(g.Key.Ruler,g.Key.Home,g.SelectMany(o=>troops[o]).ToList(),g.Any(o=>o.Queen))).ToArray();
+            var e=CreateEncounter(world,BattleKind.Edge,source[first],first.TargetNode,-1,armies);
+            Encounters.Add(e);foreach(var o in crossing)stopped.Add(o);
         }
         foreach(var group in orders.Where(o=>!stopped.Contains(o)).GroupBy(o=>o.TargetNode).OrderBy(g=>g.Key))
         {

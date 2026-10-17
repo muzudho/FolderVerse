@@ -244,7 +244,7 @@ public partial class Game1 : Game
                         _world.GlobeZoom=MathHelper.Clamp(_world.GlobeZoom*MathF.Pow(1.2f,wheel/120f),.5f,16);
                     }
                 }
-                bool action=click && (TransportOverviewClick(_pointer) || RouteLayerClick(_pointer) || MovementClick(_pointer,keyboard) || NodeDialogClick(_pointer,keyboard));
+                bool action=click && (TransportOverviewClick(_pointer) || RouteLayerClick(_pointer) || BatteryClick(_pointer) || MovementClick(_pointer,keyboard) || NodeDialogClick(_pointer,keyboard));
                 if(!action && click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
                 else if(!action && click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
                 Rotate(mouse,click && !action && _populationCell<0,active,NetPanel);
@@ -263,9 +263,11 @@ public partial class Game1 : Game
                 if(wheel!=0)_net.ZoomAt(NetPanel,_pointer,wheel);
             }
             _statusCell=_net.IsAnimating?-1:_net.Hit(_setup,NetPanel,_pointer);
+            _net.HoveredBattery=_net.HitBattery(_pointer);
             _net.HoveredNode=_net.ShowRoutes?_net.HitNode(_setup,NetPanel,_pointer):-1; _net.HoverEdge(NetPanel,_pointer);
             if(click && TransportOverviewClick(_pointer)){}
             else if(click && RouteLayerClick(_pointer)){}
+            else if(click && BatteryClick(_pointer)){}
             else if(click && MovementClick(_pointer,keyboard)){}
             else if(click && NodeDialogClick(_pointer,keyboard)){}
             else if(click && NetButton(2).Contains(_pointer))FocusCurrentNode();
@@ -533,6 +535,7 @@ public partial class Game1 : Game
             var areas=OrientationAreas(NetPanel,false);
             GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
             _world.Draw(_yaw,_pitch,_animationTime,false,true);
+            _net.HoveredBattery=_net.HitBattery(_pointer);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; _world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe);
             GraphicsDevice.Viewport=viewport;
             using var globeClip=new RasterizerState{ScissorTestEnable=true};
