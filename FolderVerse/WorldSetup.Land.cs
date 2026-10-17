@@ -39,10 +39,14 @@ public sealed partial class WorldSetup
         Robots.Initialize(Nodes.All.Length,ActiveCount);var random=new SeedRandom(fortuneSeed);
         foreach(var node in Nodes.All.Where(n=>n.Owner>=0))
         {
-            Robots.Workshops[node.Id].GenerateLines(fortuneSeed^node.Id*7919);
+            if(TutorialStep==1)Robots.Workshops[node.Id].RemoveProductionLines();else Robots.Workshops[node.Id].GenerateLines(fortuneSeed^node.Id*7919);
             if(random.Next(5)==0)Robots.Workshops[node.Id].ConfigureDisposal();
-            int count=1+random.Next(8);
-            for(int i=0;i<count;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,(RobotParts)(1+random.Next(7)),i==0?RobotRole.Captain:RobotRole.Soldier));
+            if(TutorialStep==1){
+                for(int i=0;i<4;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,RobotParts.Complete,RobotRole.Soldier));
+            }else{
+                int count=1+random.Next(8);
+                for(int i=0;i<count;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,(RobotParts)(1+random.Next(7)),i==0?RobotRole.Captain:RobotRole.Soldier));
+            }
             foreach(var parts in Enumerable.Range(1,7).Select(i=>(RobotParts)i))
             {
                 var targets=Routes.Neighbors(node).Select(r=>Nodes.At(r.Target,r.Entry).Id).Where(id=>id!=node.Id).Distinct().ToArray();

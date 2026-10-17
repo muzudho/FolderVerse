@@ -9,8 +9,9 @@ public partial class Game1
     private int _factoryDropDown=-1,_factoryLine,_factoryPlanLine=-1;
     private string _factoryMessage="";
     private static readonly Rectangle NodeFactoryTile=new(84,169,230,60);
+    private bool NodeFactoriesAllowed=>_setup.TutorialStep!=1;
     private bool CanManageNodeFactory(int owner){for(int r=owner;r>=0;r=_setup.Relations.Superiors[r])if(r==_setup.PlayerSlot)return true;return false;}
-    private void OpenNodeFactory(){if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length)return;if(_setup.Robots.Workshops[_populationNode].ProductionLines.Length==0 || !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;}
+    private void OpenNodeFactory(){if(!NodeFactoriesAllowed)return;if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length)return;if(_setup.Robots.Workshops[_populationNode].ProductionLines.Length==0 || !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;}
     private static Rectangle FactoryRobotButton(int line,int period)=>new(160+(Math.Min(5,Math.Max(1,period))-1)*72,254+line*220,72,88);
     private static Rectangle FactoryRobotArrow(int line,int period){var r=FactoryRobotButton(line,period);return new(r.Right+2,r.Y+30,24,28);}
     private static Rectangle FactoryPlanButton(int i)=>new(94+(i<4?i:i-4)*194,510+(i<4?0:155),180,144);
@@ -24,6 +25,7 @@ public partial class Game1
     private Rectangle FactoryDropOption(int field,int index){var r=FactoryDropButton(field);int count=field==2?13:9;return new(r.X,r.Y-count*30+index*30,r.Width,30);}
     private bool NodeFactoryClick(Point pointer)
     {
+        if(!NodeFactoriesAllowed){_nodeFactoryOpen=false;_factoryDropDown=_factoryPlanLine=-1;return false;}
         if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length || _populationNode>=_setup.Nodes.All.Length){_nodeFactoryOpen=false;_factoryDropDown=_factoryPlanLine=-1;return false;}
         var factory=_setup.Robots.Workshops[_populationNode];
         if(_factoryLine<0 || _factoryLine>=factory.ProductionLines.Length){_factoryLine=0;_factoryDropDown=-1;}
@@ -47,6 +49,7 @@ public partial class Game1
     {var r=FactoryDropButton(field);_ui.Button(r,(field==0?"× ":field==1?"休 ":"")+value,Accent,.48f);for(int row=0;row<8;row++)_ui.Box(new(r.Right-23+row,r.Center.Y-3+row,16-row*2,1),SelectionInk);}
     private void DrawNodeFactory()
     {
+        if(!NodeFactoriesAllowed){_nodeFactoryOpen=false;return;}
         var node=_setup.Nodes.All[_populationNode];var factory=_setup.Robots.Workshops[node.Id];
         _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Box(new(54,150,850,6),_setup.OwnerColor(node.Owner));
 
@@ -87,6 +90,7 @@ public partial class Game1
     }
     private void DrawNodeFactoryTile(bool active)
     {
+        if(!NodeFactoriesAllowed)return;
         if(_setup.Robots.Workshops[_populationNode].ProductionLines.Length==0)return;
         bool enabled=CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
         _ui.Box(NodeFactoryTile,active || enabled && NodeFactoryTile.Contains(_pointer)?Accent:Muted);

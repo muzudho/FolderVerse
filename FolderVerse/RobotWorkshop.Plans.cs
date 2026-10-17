@@ -4,6 +4,7 @@ public sealed partial class RobotWorkshop
 {
     public RobotWorkshop[] ProductionLines {get;private set;}
     public RobotWorkshop(){ProductionLines=new[]{this};}
+    internal void RemoveProductionLines(){ProductionLines=System.Array.Empty<RobotWorkshop>();Manufacturing=false;ProductionAge=0;}
     public void GenerateLines(int seed)
     {
         Automation=NodeAutomation.Gentle;var random=new SeedRandom(seed);int count=random.Next(4);

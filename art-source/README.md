@@ -1,5 +1,11 @@
 # Source artwork and Git LFS
 
+## 制作物一覧（HTML）
+
+[制作物一覧の目次をブラウザーで開く](index.html)
+
+征服者の基本画像・差分・顔写真帳、モブの素体・ポーズ・職種、新聞題字の一覧へ進めます。
+
 `portraits/characters/` contains the portrait editing archive: generated originals,
 versioned edits, catalog, prompts and previews. Runtime portraits remain in
 `FolderVerse/Content/Images/Portraits/v*/` (including the selectable older editions).

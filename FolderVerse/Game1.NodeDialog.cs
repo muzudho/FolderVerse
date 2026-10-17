@@ -23,7 +23,7 @@ public partial class Game1
         if(NodeDisposalTile.Contains(pointer)){if(_nodeDisposalOpen)_nodeDisposalOpen=false;else OpenNodeDisposal();return true;}
         if(NodeTransportTile.Contains(pointer)){if(_nodeTransportOpen)_nodeTransportOpen=false;else OpenNodeTransport();return true;}
 
-        if(_setup.Robots.Workshops[_populationNode].ProductionLines.Length>0 && NodeFactoryTile.Contains(pointer)){if(_nodeFactoryOpen)_nodeFactoryOpen=false;else OpenNodeFactory();return true;}
+        if(NodeFactoriesAllowed && _setup.Robots.Workshops[_populationNode].ProductionLines.Length>0 && NodeFactoryTile.Contains(pointer)){if(_nodeFactoryOpen)_nodeFactoryOpen=false;else OpenNodeFactory();return true;}
         if(_nodeAssemblyOpen)return new Rectangle(54,150,850,825).Contains(pointer);
         if(_nodeDisposalOpen)return NodeDisposalClick(pointer);
         if(_nodeTransportOpen)return NodeTransportClick(pointer);

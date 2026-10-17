@@ -25,7 +25,7 @@ public partial class Game1
     private bool NodeTransportClick(Point pointer)
     {
         if(NodeTransportTile.Contains(pointer)){_nodeTransportOpen=false;return true;}
-        if(_setup.Robots.Workshops[_populationNode].ProductionLines.Length>0 && NodeFactoryTile.Contains(pointer)){OpenNodeFactory();return true;}
+        if(NodeFactoriesAllowed && _setup.Robots.Workshops[_populationNode].ProductionLines.Length>0 && NodeFactoryTile.Contains(pointer)){OpenNodeFactory();return true;}
         if(TransportInstructionsClick(pointer))return true;
         var routes=_setup.Routes.Neighbors(_setup.Nodes.All[_populationNode]);
         var encounters=NodeReinforcementChoices;

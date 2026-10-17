@@ -7,6 +7,9 @@ public partial class Game1
 {
     private Rectangle WarButton=>new(566,1006,200,64);
     private bool _warPlanning;
+    // A coordinated attack from several sources to one destination is one reservation.
+    private int WarReservationCount=>_setup.Campaign.PlannedOrders.Where(o=>CanPlanRuler(o.Ruler) && (o.Queen || o.Fighters>0) && EnemyTarget(o.TargetNode)).Select(o=>o.TargetNode).Distinct().Count();
+    private string WarReservationLabel=>WarReservationCount==0?"開戦予約（なし）":$"開戦予約（{WarReservationCount}件）";
     private sealed class InvasionSource {public int Owner,Node,Count;public bool Queen,CanQueen,CanNode;}
     private readonly List<InvasionSource> _invasionSources=new();
     private int _invasionPage;

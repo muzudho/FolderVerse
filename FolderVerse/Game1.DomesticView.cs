@@ -46,7 +46,7 @@ public partial class Game1
     private void DrawInspectorHandle(){
         if(!InspectorVisible){
             _ui.Button(StrategyToggle,"全体作戦",Accent,.6f);
-            _ui.Button(WarButton,"開戦予約",Accent,.55f);
+            var warLabel=WarReservationLabel;_ui.Button(WarButton,warLabel,Accent,Math.Min(.55f,(WarButton.Width-12)/_font.MeasureString(warLabel).X));
             _ui.Button(TransportOverviewButton,"ロボット輸送計画",Accent,.5f);
             _ui.Button(PopulationTurnButton,"ターン終了",Accent,.8f);return;
         }
