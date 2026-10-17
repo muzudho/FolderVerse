@@ -9,7 +9,7 @@ public partial class Game1
     {
         if(cast)area=new(area.X,area.Y+64,area.Width,area.Height-64);
         int width=Math.Min(190,Math.Min(area.Width/3,area.Height/3));
-        var toy=new Rectangle(area.Right-width-12,area.Y+100,width,width);
+        var toy=new Rectangle(area.Right-width-65,area.Y+130,width,width);
         return (area,toy,new Rectangle(toy.X,toy.Bottom-26,toy.Width,26));
     }
     private static Viewport OrientationViewport(Rectangle area,Rectangle canvas)=>new(
@@ -29,7 +29,7 @@ public partial class Game1
             _ui.Box(new(toy.Center.X-half,toy.Center.Y+y,half*2+1,1),new Color(26,51,65,235));
         }
         _spriteBatch.End();
-        if(_statusGlobe){
+        if(OrientationGlobe){
         var viewport=GraphicsDevice.Viewport;
         GraphicsDevice.Viewport=OrientationViewport(new(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30),canvas);
         _orientationToy.Draw(_yaw,_pitch,_world.ViewOrientation(_yaw,_pitch));

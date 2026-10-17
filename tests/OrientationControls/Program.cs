@@ -1,4 +1,4 @@
-using FolderVerse;
+﻿using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
@@ -37,6 +37,23 @@ sealed class RotationGame:Game1{
   Check(Math.Abs(net.ScreenAngle-MathHelper.TwoPi)<.00001f,"12 steps complete a circle");
   net.ScreenAngle=.5235988f;var saved=net.CaptureView();net.Home(w);net.RestoreView(saved);Check(net.ScreenAngle==saved.ScreenAngle,"Net angle restored");
   Set("_statusGlobe",true);Call("FocusStatusGlobe");
+  foreach(int sign in new[]{-1,1}){
+   Set("_screen",Enum.Parse(Get("_screen").GetType(),"Rolling"));Set("_yawAngle",0f);Set("_pitchAngle",0f);world.ManualOrientation=null;
+   var autoToy=(Rectangle)Prop("OrientationToyArea");
+   Check((bool)Call("OrientationControlClick",((Rectangle)Call("AxisButton",autoToy,1,sign)).Center),"Automatic speed button consumed");
+   Check(!(bool)Prop("OrientationRotating"),"Automatic rotation continues instead of pausing");
+   float previous=0;
+   for(int i=0;i<40;i++){
+    Call("AdvanceAutomaticOrientation",.1f);var matrix=world.ViewOrientation(0,0);float yaw=MathF.Atan2(-matrix.M13,matrix.M11);
+    float speed=(yaw-previous)/.1f;Check(sign>0?speed>=.2999f:speed>0 && speed<=.3001f,"Smooth acceleration/deceleration preserves direction");previous=yaw;
+   }
+   Check(Math.Abs(previous-(1.2f+sign*MathHelper.ToRadians(30)))<.0001f,"Speed pulse adds/subtracts exactly 30 degrees");
+   Call("AdvanceAutomaticOrientation",1f);var final=world.ViewOrientation(0,0);float finalYaw=MathF.Atan2(-final.M13,final.M11);
+   Check(Math.Abs((finalYaw-previous)-.3f)<.0001f,"Normal speed resumes");
+  }
+  Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
+  var reset=(Rectangle)Prop("OrientationResetButton");Check(reset.Size==new Point(28,28) && reset.Top>((Rectangle)Prop("OrientationToyArea")).Bottom,"Small reset below circle");
+  Call("OrientationControlClick",reset.Center);Check(world.ViewOrientation(0,0)==Matrix.Identity,"Compact reset restores orientation");
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
@@ -47,11 +64,12 @@ sealed class RotationGame:Game1{
   if(frame>=2 && frame<=8)Set("_mapTransitionAge",(frame-2)*.6f);
   if(frame>=9 && frame<=15)Set("_mapTransitionAge",(frame-9)*.6f);
   if(frame==16){Call("UpdateMapTransition",.1f);Check((bool)Get("_statusGlobe"),"Fold completes");Call("StartMapTransition");Set("_mapOrientation",Quaternion.CreateFromAxisAngle(Vector3.UnitX,MathHelper.Pi));Set("_mapTransitionAge",2.4f);}
-  GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawStatusUi");batch.End();
+  if(frame>=17){Set("_mapTransitionAge",-1f);Set("_screen",Enum.Parse(Get("_screen").GetType(),frame==17?"Rolling":"CastReview"));base.Draw(t);}
+  else{GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawStatusUi");batch.End();}
   var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
   using var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);tex.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"rotation-{frame}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);
   if(frame==16)Check(pixels.Count(c=>c==new Color(115,119,125))>100,"Back faces render in solid gray");
-  if(frame++>=16){Console.WriteLine("PASS: current-location centering, all six 30-degree globe controls, animation midpoint, full net circle, rotated hit tests, saved rotation, transition rendering.");Exit();}
+  if(frame++>=18){Console.WriteLine("PASS: current-location centering, all six 30-degree globe controls, animation midpoint, full net circle, rotated hit tests, saved rotation, transition rendering, smooth automatic speed pulses and compact reset.");Exit();}
  }
 }
 

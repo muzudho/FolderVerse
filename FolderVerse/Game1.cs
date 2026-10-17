@@ -153,7 +153,7 @@ public partial class Game1 : Game
         {UpdateEnding(elapsed,active && (escape || enter || click && EndingReturn.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool rotating=OrientationRotating;UpdateOrientationRotation((float)elapsed);
         if(rotating){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(IsStatusScreen && active && click && OrientationControlClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(OrientationControlsVisible && !_seedDialog.IsOpen && active && click && OrientationControlClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool transitioning=MapTransitionActive;UpdateMapTransition((float)elapsed);
         if(transitioning){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _screenshots.Update(gameTime.ElapsedGameTime.TotalSeconds);
@@ -295,7 +295,7 @@ public partial class Game1 : Game
             if(IsSelectionScreen)
             {
                 Rotate(mouse,click,active,SelectionGlobe);
-                if(!_dragging)_yaw+=(float)elapsed*0.3f;
+                if(!_dragging)AdvanceAutomaticOrientation((float)elapsed);
                 if(_hoveredSlot>=0)_previewOwner=_hoveredSlot;
                 _world.HighlightOwner(_setup,_screen==Screen.PlayerReady?_setup.PlayerSlot:_previewOwner);
             }
@@ -348,7 +348,7 @@ public partial class Game1 : Game
                 else SetPlacementSeed(_random.Next());
             }
         }
-        if(IsRolling || (IsCastScreen && !_dragging))_yaw+=(float)elapsed*0.3f;
+        if(IsRolling || (IsCastScreen && !_dragging))AdvanceAutomaticOrientation((float)elapsed);
     }
     private void Rotate(MouseState mouse,bool click,bool active,Rectangle area)
     {
@@ -552,8 +552,6 @@ public partial class Game1 : Game
         _ui.Text(location,new(InspectorVisible?1276:991,InspectorVisible?770:831),Math.Min(0.48f,(InspectorVisible?600:870)/_font.MeasureString(location).X),Cream);
         _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"右ドラッグ：回転 / ホイール：拡縮 / 節点を選ぶと中心固定":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / 右ドラッグ：移動",new(InspectorVisible?1276:991,InspectorVisible?810:865),InspectorVisible?.27f:0.37f,new(177,206,216));
         _ui.Button(NetButton(2),"現在地へ移動",Accent,0.45f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
-        const string resetLabel="頭を上へ、腹を手前へ";
-        _ui.Button(OrientationResetButton,resetLabel,Muted,Math.Min(.52f,(OrientationResetButton.Width-16)/_font.MeasureString(resetLabel).X));
         if(_statusCell>=0 && !InspectorVisible)
         {
             var cell=_setup.Cells[_statusCell];int owner=_setup.Owners[cell.Id];

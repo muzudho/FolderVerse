@@ -8,34 +8,70 @@ public partial class Game1
     private bool _rotationGlobe;
     private bool OrientationRotating=>_orientationAge>=0;
     private static readonly Color[] AxisColors={new(244,91,91),new(89,216,126),new(95,156,255)};
+    private bool OrientationGlobe=>!IsStatusScreen || _statusGlobe;
+    private bool OrientationControlsVisible=>IsStatusScreen || _screen>=Screen.Rolling && _screen<=Screen.PlayerReady;
+    private Rectangle OrientationControlArea {
+        get {
+            if(IsStatusScreen)return NetPanel;
+            var globe=SelectionGlobe;
+            var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;
+            return OrientationAreas(area,IsCastScreen && !IsSelectionScreen).Globe;
+        }
+    }
+    private Rectangle OrientationToyArea=>OrientationAreas(OrientationControlArea,false).Toy;
+    private float _automaticBoostAge=-1;
+    private int _automaticBoostAxis,_automaticBoostSign;
+    private bool AutomaticOrientation=>!IsStatusScreen && (IsRolling || IsSelectionScreen || IsCastScreen) && !_dragging;
     private Rectangle AxisButton(Rectangle toy,int axis,int sign)
     {
-        float r=toy.Width*.39f;var c=new Vector2(toy.Center.X,toy.Center.Y);
-        var p=axis switch{0=>c+new Vector2(sign*r,0),1=>c+new Vector2(0,-sign*r),_=>c+new Vector2(sign*r*.7071f,-r*.7071f)};
+        float r=toy.Width/2f+23;var c=new Vector2(toy.Center.X,toy.Center.Y);
+        Vector2 p;
+        if(OrientationGlobe){
+            p=axis switch{0=>c+new Vector2(r,sign>0?-17:17),1=>c+new Vector2(sign*17,-r),_=>c+new Vector2(r*.7071f,-r*.7071f)+new Vector2(sign*12,sign*12)};
+        }else{
+            float a=sign>0?-MathHelper.PiOver4:-3*MathHelper.PiOver4;
+            p=c+new Vector2(MathF.Cos(a),MathF.Sin(a))*toy.Width*.39f;
+        }
         return new((int)p.X-14,(int)p.Y-14,28,28);
     }
     private bool OrientationControlClick(Point pointer)
     {
         if(MapTransitionActive || OrientationRotating)return false;
-        var toy=OrientationAreas(NetPanel,false).Toy;
-        if(!toy.Contains(pointer))return false;
-        for(int axis=_statusGlobe?0:2;axis<3;axis++)foreach(int sign in new[]{-1,1})
+        var toy=OrientationToyArea;
+        if(OrientationResetButton.Contains(pointer)){_automaticBoostAge=-1;ResetStatusOrientation();return true;}
+        for(int axis=OrientationGlobe?0:2;axis<3;axis++)foreach(int sign in new[]{-1,1})
         {
             if(!AxisButton(toy,axis,sign).Contains(pointer))continue;
-            _rotationGlobe=_statusGlobe;_orientationAge=0;_dragging=_mapDragging=false;_globePressedCell=-1;
-            if(_statusGlobe){
+            if(AutomaticOrientation){if(_automaticBoostAge>=0)return true;_automaticBoostAge=0;_automaticBoostAxis=axis;_automaticBoostSign=sign;return true;}
+            _rotationGlobe=OrientationGlobe;_orientationAge=0;_dragging=_mapDragging=false;_globePressedCell=-1;
+            if(OrientationGlobe){
                 _orientationFrom=Quaternion.CreateFromRotationMatrix(_world.ViewOrientation(_yaw,_pitch));
                 var vector=axis==0?Vector3.UnitX:axis==1?Vector3.UnitY:Vector3.UnitZ;
-                // Screen axes originate at the front of the direction sphere; +Z turns clockwise.
                 float angle=MathHelper.ToRadians(30)*sign*(axis==2?-1:1);
                 _orientationTo=Quaternion.CreateFromRotationMatrix(Matrix.CreateFromQuaternion(_orientationFrom)*Matrix.CreateFromAxisAngle(vector,angle));
             }else{_rotationFrom=_net.ScreenAngle;_rotationTo=_rotationFrom+MathHelper.ToRadians(30)*sign;}
             return true;
         }
-        return true;
+        return toy.Contains(pointer);
+    }
+    private void AdvanceAutomaticOrientation(float elapsed)
+    {
+        var orientation=_world.ViewOrientation(_yaw,_pitch);
+        float angle=elapsed*.3f;_yawAngle+=angle;
+        orientation*=Matrix.CreateRotationY(angle);
+        if(_automaticBoostAge>=0){
+            // Integral of a smooth velocity pulse: exactly 30 degrees, then the normal speed.
+            float Ease(float t){t=MathHelper.Clamp(t/4f,0,1);return t*t*(3-2*t);}
+            float extra=(Ease(_automaticBoostAge+elapsed)-Ease(_automaticBoostAge))*MathHelper.ToRadians(30)*_automaticBoostSign;
+            var axis=_automaticBoostAxis==0?Vector3.UnitX:_automaticBoostAxis==1?Vector3.UnitY:Vector3.UnitZ;
+            orientation*=Matrix.CreateFromAxisAngle(axis,extra*(_automaticBoostAxis==2?-1:1));
+            _automaticBoostAge+=elapsed;if(_automaticBoostAge>=4)_automaticBoostAge=-1;
+        }
+        _world.ManualOrientation=Quaternion.Normalize(Quaternion.CreateFromRotationMatrix(orientation));
     }
     private void UpdateOrientationRotation(float elapsed)
     {
+        if(!AutomaticOrientation)_automaticBoostAge=-1;
         if(!OrientationRotating)return;
         _orientationAge+=elapsed;float t=MathHelper.Clamp(_orientationAge/.4f,0,1);t=t*t*(3-2*t);
         if(_rotationGlobe)_world.ManualOrientation=Quaternion.Slerp(_orientationFrom,_orientationTo,t);
@@ -47,13 +83,14 @@ public partial class Game1
         var c=new Vector2(toy.Center.X,toy.Center.Y);float r=toy.Width*.39f;
         void Line(Vector2 a,Vector2 b,Color color){var d=b-a;_ui.Tile((a+b)/2,new(d.Length(),2),MathF.Atan2(d.Y,d.X),color);}
         void Arrow(Vector2 p,Vector2 direction,Color color){var side=new Vector2(-direction.Y,direction.X);Line(p,p-direction*9+side*5,color);Line(p,p-direction*9-side*5,color);}
-        // The two great circles through the front project to a cross; the third is the rim.
-        if(_statusGlobe)for(int axis=0;axis<2;axis++){
-            var d=axis==0?Vector2.UnitX:-Vector2.UnitY;var color=AxisColors[axis];
-            Line(c-d*r,c+d*r,color);Arrow(c+d*(r-19),d,color);Arrow(c-d*(r-19),-d,color);
-        }
-        if(_statusGlobe){_ui.Text("X",c+new Vector2(r-28,-23),.3f,AxisColors[0]);_ui.Text("Y",c+new Vector2(18,-r+14),.3f,AxisColors[1]);}
-        _ui.Text("Z",c+new Vector2(-r*.72f,r*.48f),.3f,AxisColors[2]);
+        if(OrientationGlobe){
+            float rim=toy.Width/2f,tip=rim+23;
+            foreach(int axis in new[]{0,1,2}){
+                var d=axis==0?Vector2.UnitX:axis==1?-Vector2.UnitY:Vector2.Normalize(new Vector2(1,-1));
+                Line(c+d*(rim+2),c+d*(tip+17),AxisColors[axis]);
+                _ui.Text(axis==0?"X":axis==1?"Y":"Z",c+d*(tip+21)-new Vector2(5,7),.3f,AxisColors[axis]);
+            }
+        }else{
         var blue=AxisColors[2];
         // Separate arcs show both directions, with each arrow ending at its sign button.
         foreach(int sign in new[]{-1,1}){
@@ -63,7 +100,10 @@ public partial class Game1
             for(int i=0;i<32;i++)Line(At(MathHelper.Lerp(start,end,i/32f)),At(MathHelper.Lerp(start,end,(i+1)/32f)),blue);
             var tip=At(end-sign*.23f);Arrow(tip,new Vector2(-MathF.Sin(end-sign*.23f),MathF.Cos(end-sign*.23f))*sign,blue);
         }
-        for(int axis=_statusGlobe?0:2;axis<3;axis++)foreach(int sign in new[]{-1,1})
+        }
+        for(int axis=OrientationGlobe?0:2;axis<3;axis++)foreach(int sign in new[]{-1,1})
             _ui.Button(AxisButton(toy,axis,sign),sign>0?"+":"－",AxisColors[axis],.52f);
+        _ui.Button(OrientationResetButton,"正",Muted,.5f);
+        if(OrientationResetButton.Contains(_pointer))_ui.Text("頭を上へ、腹を手前へ",new Vector2(toy.Center.X-130,toy.Bottom+66),.3f,Cream);
     }
 }
