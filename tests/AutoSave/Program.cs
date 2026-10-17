@@ -42,11 +42,11 @@ sealed class SaveGame:Game1{
   net.ShowBatteries=false;net.ShowOtherCountries=false;world.GlobeZoom=2.5f;world.ManualOrientation=Quaternion.CreateFromYawPitchRoll(.1f,.2f,.3f);
   Call("AutoSaveDomestic");Check(File.Exists(path) && (bool)Get("_hasAutoSave"),"Initial domestic boundary saves");var bytes=File.ReadAllBytes(path);Call("AutoSaveDomestic");Check(bytes.SequenceEqual(File.ReadAllBytes(path)),"Same global turn does not rewrite autosave");
   Call("ReturnToTitle");Check(File.Exists(path) && (bool)Get("_hasAutoSave"),"Ordinary quit retains save and Resume availability");
-  Input(960,930);Input(960,930,ButtonState.Pressed);Input(960,930);Check(Get("_screen").ToString()=="WorldStatus" && !net.ShowBatteries && !net.ShowOtherCountries && world.GlobeZoom==2.5f,"Title Resume restores campaign and per-player view");w=(WorldSetup)Get("_setup");Check(w.Nodes.Current(0).Id==source,"Resume reconstructs current node");
+  Input(960,930);Input(960,930,ButtonState.Pressed);Input(960,930);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Start opens the paper menu without resuming immediately");Input(960,580);Input(960,580,ButtonState.Pressed);Input(960,580);Check(Get("_screen").ToString()=="WorldStatus" && !net.ShowBatteries && !net.ShowOtherCountries && world.GlobeZoom==2.5f,"Title Resume restores campaign and per-player view");w=(WorldSetup)Get("_setup");Check(w.Nodes.Current(0).Id==source,"Resume reconstructs current node");
   w.Population.Advance(w);Call("RestoreDomesticCamera");Check((int)Get("_lastAutoSaveTurn")==1 && !bytes.SequenceEqual(File.ReadAllBytes(path)) && Directory.GetFiles(Path.GetDirectoryName(path)!).Length==1,"Next global turn replaces one save slot atomically");
   var good=File.ReadAllBytes(path);File.WriteAllText(path,"broken");Call("ReturnToTitle");Check(!(bool)Call("ResumeAutoSave") && Get("_screen").ToString()=="Title" && File.ReadAllText(path)=="broken","Corrupt save fails safely without deleting it");File.WriteAllBytes(path,good);Check((bool)Call("ResumeAutoSave"),"Good save still resumes");
   Call("StartEnding");Check(File.Exists(path),"Save remains while ending is on screen");Call("UpdateEnding",10d,false);Check(!File.Exists(path) && !(bool)Get("_hasAutoSave") && Get("_screen").ToString()=="Title","Completing ending removes autosave and restores fresh start");
-  File.WriteAllBytes(path,good);Call("CheckAutoSave");
+  File.WriteAllBytes(path,good);Call("CheckAutoSave");Call("OpenTitleStartMenu");
   Console.WriteLine("PASS: factory crash regression, atomic single-slot turn save, title resume, camera/preferences, corrupt-file recovery and ending deletion.");
  }
  protected override void Update(GameTime t){}

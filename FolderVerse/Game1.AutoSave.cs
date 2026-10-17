@@ -14,7 +14,6 @@ public partial class Game1
     private int _lastAutoSaveTurn=-1;
     private bool _hasAutoSave;
     private string _autoSaveError="";
-    private static Rectangle NewGameWithSaveButton=>new(740,1000,440,60);
     private void CheckAutoSave(){_hasAutoSave=_autoSaveEnabled && File.Exists(_autoSavePath);}
     private void AutoSaveDomestic(){
         if(!_autoSaveEnabled || _demoActive || !IsStatusScreen || _setup.PlayerSlot<0 || _lastAutoSaveTurn==_setup.Population.Turn)return;
@@ -40,17 +39,11 @@ public partial class Game1
             _battleAge=0;_notifiedTurn=(-1,-1);_screen=Screen.WorldStatus;
             _world.ShowSetup(_setup,true);_lastAutoSaveTurn=_setup.Population.Turn;RestoreDomesticCamera();OpenDisposition();
             _autoSaveError="";_operations.Write("autosave_resumed",new{turn=_lastAutoSaveTurn});return true;
-        }catch(Exception error){_screen=Screen.Title;_autoSaveError="再開できません。新しく始めるを選べます。";RecordFailure(error,"autosave_read");return false;}
+        }catch(Exception error){_screen=Screen.Title;_autoSaveError="続きからを開始できません。最初からを選べます。";RecordFailure(error,"autosave_read");return false;}
     }
     private void DeleteCompletedAutoSave(){
         if(!_autoSaveEnabled || _demoActive)return;
         try{File.Delete(_autoSavePath);_hasAutoSave=false;_lastAutoSaveTurn=-1;_operations.Write("autosave_deleted",new{reason="ending_completed"});}
         catch(Exception error){RecordFailure(error,"autosave_delete");}
-    }
-    private void DrawResumeTitle(){
-        if(!_hasAutoSave)return;
-        _ui.Button(StartButton,"再開",DefaultAccent,.9f);
-        _ui.Button(NewGameWithSaveButton,"新しく始める",Muted,.55f);
-        if(_autoSaveError.Length>0)_ui.Text(_autoSaveError,new(580,820),.45f,Cream);
     }
 }
