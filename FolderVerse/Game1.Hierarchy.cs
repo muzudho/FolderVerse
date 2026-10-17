@@ -9,7 +9,7 @@ public partial class Game1
     private void DrawHierarchyUi()
     {
         _ui.Text("征服者の関係図 / 暫定順位",new(54,25),.9f,Cream);
-        _ui.Text("征服セル数 → 征服節点数 → 作成番号 / 自分と配下の合計 / 各段を順位順に表示",new(54,78),.43f,new(178,210,219));
+        _ui.Text($"征服セル数 → 参加登録番号 / 自分と配下の合計 / 点数 = セル数 × {ConquerorRelations.RankingScale(_setup.ActiveCount)} - 参加登録番号",new(54,78),.43f,new(178,210,219));
         var forest=_setup.Relations.RankedForest(_setup);
         var positions=new Dictionary<int,Rectangle>();
         int levels=forest.Max(e=>e.Depth)+1;
@@ -35,16 +35,17 @@ public partial class Game1
             _ui.Box(box,own?new Color(255,226,124):new Color(58,78,100));
             var inset=new Rectangle(box.X+3,box.Y+3,box.Width-6,box.Height-6);_ui.Box(inset,own?Accent:new Color(27,49,62));
             _ui.Box(new(box.X+3,box.Y+3,4,box.Height-6),_setup.OwnerColor(ruler));
-            float textScale=Math.Min(.5f,(box.Width-12)/_font.MeasureString($"{entry.Rank}位 #00").X);
+            float textScale=Math.Min(.5f,(box.Width-12)/_font.MeasureString($"{entry.Rank}位 Entry 00").X);
             if(height<65)
             {
-                _ui.Center($"{entry.Rank}位 #{ruler+1:00}"+(own?" 自分":""),inset,Math.Min(textScale,.34f),Cream);continue;
+                _ui.Center($"{entry.Rank}位 Entry {ConquerorRelations.EntryNumber(ruler+1,_setup.ActiveCount)}"+(own?" 自分":""),inset,Math.Min(textScale,.34f),Cream);continue;
             }
-            _ui.Center($"{entry.Rank}位 #{ruler+1:00}"+(own?" 自分":""),new(box.X+5,box.Y+5,box.Width-10,27),Math.Min(textScale,(box.Width-12)/_font.MeasureString($"{entry.Rank}位 #{ruler+1:00}"+(own?" 自分":"")).X),Cream);
+            _ui.Center($"{entry.Rank}位 Entry {ConquerorRelations.EntryNumber(ruler+1,_setup.ActiveCount)}"+(own?" 自分":""),new(box.X+5,box.Y+5,box.Width-10,27),Math.Min(textScale,(box.Width-12)/_font.MeasureString($"{entry.Rank}位 Entry {ConquerorRelations.EntryNumber(ruler+1,_setup.ActiveCount)}"+(own?" 自分":"")).X),Cream);
             int size=Math.Min(62,height-62);_portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new(box.Center.X-size/2,box.Y+32,size,size),_setup.Relations.Powered[ruler]);
             var name=_setup.ConquerorNames[ruler];
             _ui.Center(name,new(box.X+6,box.Bottom-33,box.Width-12,16),Math.Min(.32f,(box.Width-12)/_font.MeasureString(name).X),Cream);
-            _ui.Center($"{entry.Cells} セル / {entry.Nodes} 節点"+(!_setup.Relations.Powered[ruler]?" / 電池なし":""),new(box.X+6,box.Bottom-17,box.Width-12,16),Math.Min(.3f,(box.Width-12)/_font.MeasureString($"{entry.Cells} セル / {entry.Nodes} 節点 / 電池なし").X),Cream);
+            string result=$"{entry.Cells} cells . Entry {ConquerorRelations.EntryNumber(ruler+1,_setup.ActiveCount)} / {ConquerorRelations.RankingScore(entry.Cells,ruler+1,_setup.ActiveCount)} points";
+            _ui.Center(result,new(box.X+6,box.Bottom-17,box.Width-12,16),Math.Min(.3f,(box.Width-12)/_font.MeasureString(result).X),Cream);
         }
         _ui.Button(InactiveBack,"ゲームへ戻る",Muted,.58f);
     }

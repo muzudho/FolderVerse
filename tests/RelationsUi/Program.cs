@@ -58,7 +58,9 @@ var completeCell=ranked.Cells.Where(c=>ranked.Nodes.InCell(c.Id).Count()>1).Orde
 foreach(var cell in ranked.Cells.Where(c=>c.Id!=completeCell.Id))foreach(var post in ranked.Nodes.InCell(cell.Id).Skip(1))post.Owner=7;
 var scores=ranked.Relations.ProvisionalRanking(ranked);
 Check(scores[0].Ruler==4 && scores.Single(e=>e.Ruler==7).Nodes>scores[0].Nodes,"Complete cells outrank more partially conquered nodes");
-Check(scores.Single(e=>e.Ruler==7).Rank==2,"Node counts break cell ties");
+Check(scores.Single(e=>e.Ruler==0).Rank==2 && scores.Single(e=>e.Ruler==7).Rank>scores.Single(e=>e.Ruler==0).Rank,"Entry number breaks cell ties even with fewer nodes");
+Check(ConquerorRelations.RankingScore(13,3,99)==1297 && ConquerorRelations.RankingScore(1,99,99)>ConquerorRelations.RankingScore(0,1,99),"Score encodes cells before entry number");
+Check(ConquerorRelations.RankingScale(100)==1000 && ConquerorRelations.EntryNumber(3,100)=="003" && ConquerorRelations.RankingScore(1,100,100)>ConquerorRelations.RankingScore(0,1,100),"Entry precision expands at 100 participants");
 Check(scores.Where(e=>e.Cells==0 && e.Nodes==0).Select(e=>e.Ruler).SequenceEqual(scores.Where(e=>e.Cells==0 && e.Nodes==0).Select(e=>e.Ruler).Order()),"Clockwise creation ID breaks both ties");
 var split=ranked.Nodes.InCell(completeCell.Id).First();split.Owner=5;ranked.Relations.SetSuperior(5,4);
 Check(ranked.Relations.ProvisionalRanking(ranked).Single(e=>e.Ruler==4).Cells==1,"Subordinate mixed ownership counts as a conquered cell");
@@ -66,7 +68,7 @@ ranked.Relations.SetSuperior(2,1);ranked.Relations.SetSuperior(3,2);ranked.Relat
 var breadth=ranked.Relations.RankedForest(ranked);
 Check(breadth.Length==ranked.ActiveCount && breadth.Select(e=>e.Ruler).Distinct().Count()==ranked.ActiveCount,"Ranked tree has each ruler once");
 Check(breadth.Select(e=>e.Depth).SequenceEqual(breadth.Select(e=>e.Depth).Order()) && breadth.GroupBy(e=>e.Depth).All(g=>g.Select(e=>e.Rank).SequenceEqual(g.Select(e=>e.Rank).Order())),"Tree is breadth-first and each depth is sorted by provisional rank");
-Console.WriteLine("PASS: cell/node/clockwise rank ties, subordinate territory totals and ranked breadth-first tree.");
+Console.WriteLine("PASS: cell/entry rank ties, subordinate territory totals and ranked breadth-first tree.");
 using var game=new RelationsCheck();game.Run();
 sealed class RelationsCheck:Game1
 {
@@ -82,7 +84,7 @@ sealed class RelationsCheck:Game1
         var portraitCell=typeof(Game1).GetMethod("PortraitCell",BindingFlags.Static|BindingFlags.NonPublic)!;
         Rectangle Slot(int id)=>(Rectangle)portraitCell.Invoke(null,new object[]{id})!;
         Check(Slot(0).X<Slot(1).X && Slot(0).Y==Slot(6).Y && Slot(7).X==Slot(6).X && Slot(7).Y>Slot(6).Y && Slot(10).Y==Slot(16).Y && Slot(10).X>Slot(16).X && Slot(17).X==Slot(0).X,"Creation IDs go clockwise from top left");
-        Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();w=(WorldSetup)Get("_setup");w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.SelectPlayer(0);
+        Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_conquestOverviewEnabled",false);w=(WorldSetup)Get("_setup");w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.SelectPlayer(0);
         w.Campaign.UseRobotCombat=false;
         var k=ConquerorCatalog.Keywords.First(k=>k.Personality==13);w.Looks[1]=new(k.BaseId,k.VariantId);
         ((CubeNet)Get("_net")).Home(w);((WorldPreview)Get("_world")).ShowSetup(w,true);
@@ -95,7 +97,7 @@ sealed class RelationsCheck:Game1
         {
             case 1:Click(1350,895);Check(!w.Relations.Powered[1] && Get("_screen").ToString()=="WorldStatus","Battery removal UI failed");Click(1740,40);Click(1550,95);Check(Get("_screen").ToString()=="InactiveList","Menu did not open inactive list");break;
             case 2:Click(220,270);Check(w.Relations.Powered[1] && Get("_screen").ToString()=="Disposition","Reinsertion UI failed");break;
-            case 3:Click(550,895);Check(w.Relations.Allied(0,1) && Get("_screen").ToString()=="InactiveList","Recruit UI failed");Click(180,1040);Check(Get("_screen").ToString()=="WorldStatus","List back failed");Click(700,1040);Check(w.PlayerSlot==1 && w.Population.Turn==0,"Ally-turn button did not switch control");break;
+            case 3:Click(550,895);Check(w.Relations.Allied(0,1) && Get("_screen").ToString()=="InactiveList","Recruit UI failed");Click(180,1040);Check(Get("_screen").ToString()=="WorldStatus","List back failed");Call("EndPlannedTurn");Check(w.PlayerSlot==1 && w.Population.Turn==0,"Turn submission did not hand control to subordinate");break;
             case 4:
                 var k=ConquerorCatalog.Keywords.First(k=>k.Personality==9);w.Looks[2]=new(k.BaseId,k.VariantId);
                 var captive=new Captive(2,0,w.Nodes.Current(2).Id);w.Relations.Pending.Add(captive);w.Relations.Choose(w,captive,DefeatedChoice.RemoveBattery);
@@ -111,7 +113,8 @@ sealed class RelationsCheck:Game1
                 foreach(var post in w.Nodes.InCell(w.Cells[0].Id))post.Owner=7;
                 Click(1740,40);Click(1550,200);
                 Check((int)Get("_endingWinner")==7,"Enemy provisional winner is used instead of the player");
-                Check(Get("_screen").ToString()=="Ending" && (int)Get("_endingWinner")==w.Relations.ProvisionalRanking(w)[0].Ruler,"Ending selects provisional first place");break;
+                Check(Get("_screen").ToString()=="Ending" && (int)Get("_endingWinner")==w.Relations.ProvisionalRanking(w)[0].Ruler,"Ending selects provisional first place");
+                var winner=w.Relations.ProvisionalRanking(w)[0];Check((int)Get("_endingScore")==ConquerorRelations.RankingScore(winner.Cells,winner.Ruler+1,w.ActiveCount),"Ending displays the same cell-entry score as ranking");break;
             case 10:Call("UpdateEnding",3d,false);Check(Get("_screen").ToString()=="Ending","Ending should play before returning");break;
             case 11:
                 Call("UpdateEnding",7.1d,false);Check(Get("_screen").ToString()=="Title" && w.PlayerSlot==-1 && !w.Relations.Pending.Any() && w.Robots.Nodes.Length==0,"Ending timer resets game to title");

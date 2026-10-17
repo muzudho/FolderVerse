@@ -10,6 +10,8 @@ public partial class Game1
     private int _conquestOverviewTurn=-1,_conquestStage,_conquestCard;
     private double _conquestAge;
     private bool _conquestOverview;
+    private ConquestTally _conquestTally;
+    private int _conquestPainted;
     private ConquestPresentation _conquestPresentation;
     private WorldPreview _conquestGlobe;
     private ConquestMusic _conquestMusic;
@@ -19,7 +21,7 @@ public partial class Game1
     private Quaternion _conquestFrom=Quaternion.Identity,_conquestTo=Quaternion.Identity;
     private static Rectangle ConquestGlobeArea=>new(360,60,1500,950);
     private ConquestPresentation.Card ConquestCard=>_conquestPresentation.Cards[_conquestCard];
-    private double ConquestCardSeconds=>ConquestCard.Reminder?.8:Math.Max(3.2,ConquestCard.Faces.Length*2.6);
+    private double ConquestCardSeconds=>ConquestCard.Reminder?.8:_conquestTally.Duration;
     private void BeginConquestOverview(){
         if(!_conquestOverviewEnabled || _demoActive || _autoPlay || _conquestOverviewTurn==_setup.Population.Turn)return;
         _conquestOverviewTurn=_setup.Population.Turn;_conquestPresentation=new(_setup);_conquestCard=0;_conquestStage=0;_conquestAge=0;_conquestOverview=true;
@@ -33,6 +35,8 @@ public partial class Game1
     }
     private void SetConquestCard(){
         _conquestEnvironment=ConquestPresentation.Environment(_setup,ConquestCard.Ruler);
+        _conquestTally=new(_setup,ConquestCard);_conquestPainted=0;
+        _conquestGlobe.PresentationCells=ConquestCard.Reminder?null:new();
         _conquestGlobe.PresentationOwner=ConquestCard.Ruler;_conquestGlobe.ShowLandConquest(_setup,true);
         _conquestFrom=_conquestGlobe.ManualOrientation??_conquestFrom;
     }
@@ -45,16 +49,22 @@ public partial class Game1
         _conquestOverview=false;_conquestMusic?.Dispose();_conquestMusic=null;
     }
     private void UpdateConquestOverview(double elapsed,bool skip){
-        if(skip && _conquestStage<5){_conquestStage=5;_conquestAge=0;_conquestGlobe.PresentationOwner=null;_conquestGlobe.ShowLandConquest(_setup,true);}
+        if(skip && _conquestStage<5){_conquestStage=5;_conquestAge=0;_conquestGlobe.PresentationCells=null;_conquestGlobe.PresentationOwner=null;_conquestGlobe.ShowLandConquest(_setup,true);}
         _conquestAge+=Math.Min(elapsed,.25);
         double duration=_conquestStage switch{0 or 2 or 6 or 8=>.65,1 or 3 or 5 or 7=>1.5,4=>ConquestCardSeconds,_=>0};
         if(_conquestStage==4){
+            if(!ConquestCard.Reminder){
+                int painted=_conquestTally.Painted(_setup,_conquestAge);
+                if(painted!=_conquestPainted){_conquestPainted=painted;_conquestGlobe.PresentationCells=_conquestTally.Cells.Take(painted).ToHashSet();_conquestGlobe.ShowLandConquest(_setup,true);}
+            }
             var faces=ConquestCard.Faces;
             if(faces.Length>0){
-                double segment=ConquestCard.Reminder?0:_conquestAge/2.6;int index=Math.Min(faces.Length-1,(int)segment);
+                int index=0;
+                if(!ConquestCard.Reminder)for(int i=1;i<faces.Length;i++)if(_conquestAge>=_conquestTally.FaceStarts[i])index=i;
+                double faceAge=ConquestCard.Reminder?_conquestAge:_conquestAge-_conquestTally.FaceStarts[index];
                 _conquestTo=ConquestFace(_setup.Cells.First(c=>c.Face==faces[index]).Normal);
                 var from=index==0?_conquestFrom:ConquestFace(_setup.Cells.First(c=>c.Face==faces[index-1]).Normal);
-                float blend=MathHelper.SmoothStep(0,1,(float)Math.Min(1,(ConquestCard.Reminder?_conquestAge/.7:segment-index)/.65));
+                float blend=MathHelper.SmoothStep(0,1,(float)Math.Min(1,faceAge/(ConquestCard.Reminder?.7:.9)));
                 float turn=(float)Math.Sin(_conquestAge*.65)*.20f+.12f;
                 _conquestGlobe.ManualOrientation=Quaternion.CreateFromRotationMatrix(Matrix.CreateFromQuaternion(Quaternion.Slerp(from,_conquestTo,blend))*Matrix.CreateRotationY(turn)*Matrix.CreateRotationX(.12f));
             }
@@ -62,7 +72,7 @@ public partial class Game1
         if(_conquestAge>=duration){
             _conquestAge=0;
             if(_conquestStage==4 && ++_conquestCard<_conquestPresentation.Cards.Length)SetConquestCard();
-            else{_conquestStage++;if(_conquestStage==5){_conquestCard=Math.Min(_conquestCard,_conquestPresentation.Cards.Length-1);_conquestGlobe.PresentationOwner=null;_conquestGlobe.ShowLandConquest(_setup,true);}
+            else{_conquestStage++;if(_conquestStage==5){_conquestCard=Math.Min(_conquestCard,_conquestPresentation.Cards.Length-1);_conquestGlobe.PresentationCells=null;_conquestGlobe.PresentationOwner=null;_conquestGlobe.ShowLandConquest(_setup,true);}
                 if(_conquestStage is 2 or 6 or 8)PlayCurtain();if(_conquestStage>8){FinishConquestOverview();return;}}
         }
         if(_conquestStage is >=2 and <=6 && !_conquestAudioUnavailable){
@@ -76,6 +86,7 @@ public partial class Game1
         GraphicsDevice.Clear(Color.Black);
         if(_conquestStage is >=3 and <=6){
             GraphicsDevice.Viewport=OrientationViewport(ConquestGlobeArea,canvas);_conquestGlobe.Draw(0,0,0,false,true);GraphicsDevice.Viewport=viewport;
+            DrawConquestOrientation(canvas,transform,viewport);
         }
         _spriteBatch.Begin(transformMatrix:transform);
         if(_conquestStage==4){
@@ -93,12 +104,7 @@ public partial class Game1
                     _ui.Text("現在地",at+new Vector2(18,-16),.32f,Cream);
                 }
             }
-            _ui.Box(new(55,170,405,535),new Color(25,34,46));_ui.Box(new(55,170,10,535),color);
-            _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new(105,200,300,300),_setup.Relations.Powered[ruler]);
-            _ui.Center($"暫定{ConquestCard.Rank}位　{_setup.ConquerorNames[ruler]}",new(70,515,375,65),.55f,Cream);
-            _ui.Center($"Depth {ConquestCard.Depth}"+(ConquestCard.Reminder?" / ボス":""),new(70,585,375,40),.45f,Cream);
-            int player=_setup.HumanPlayers.IndexOf(ruler);if(player>=0)_ui.Center($"＜プレイヤー{player+1}＞",new(70,640,375,45),.55f,new Color(255,224,120));
-            _ui.Tile(new(460,550),new(35,35),MathHelper.PiOver4,new Color(25,34,46));
+            DrawConquestTally();
         }
         if(_conquestStage is 3 or 5)_ui.Box(new(0,0,1920,1080),Color.Black*(float)Math.Clamp(1-_conquestAge/1.5,0,1));
         if(_conquestStage<3 || _conquestStage>=6){

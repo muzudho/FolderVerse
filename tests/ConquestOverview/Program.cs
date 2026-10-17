@@ -20,11 +20,25 @@ sealed class OverviewGame:Game1{
   int child=Array.FindIndex(p.Cards,c=>c.Ruler==3 && !c.Reminder);Check(p.Cards[child-2].Ruler==0 && p.Cards[child-1].Ruler==2 && p.Cards[child-1].Reminder,"Ancestors recalled root first");
   Check(ConquestPresentation.OwnCells(world,0).All(c=>ConquestPresentation.ExactCellOwner(world,c)==0) && ConquestPresentation.OwnCells(world,0).Length==1,"No subordinate land included");
   foreach(var c in main){var tour=ConquestPresentation.FaceTour(world,c.Ruler);Check(tour.Distinct().Count()==tour.Length && tour.Length==1,"Only owned faces toured on dice world");var env=ConquestPresentation.Environment(world,c.Ruler);Check(env.X>=0 && env.X<=1 && env.Y>=0 && env.Y<=1 && env.Z>=0 && env.Z<=1,"Terrain weights bounded");}
+  var tally=new ConquestTally(world,p.Cards.First(c=>c.Ruler==0 && !c.Reminder));
+  Check(tally.Cells.Length==1 && tally.TotalCells==3,"Tally separates direct cells and full subtree total");
+  Check(tally.Painted(world,1.17)==0 && tally.Painted(world,1.18)==1 && tally.Counted(world,tally.CountEnd)==3,"One painted cell increments counter, then descendants contribute");
+  Check(Math.Abs(tally.ConvertStart-tally.CountEnd-1.5)<1e-8,"Entry portrait holds for 1.5 seconds before conversion");
+  for(int i=0;i<=tally.TotalCells;i++)Check(tally.RemainingCells(tally.ConvertStart+i*.10)==tally.TotalCells-i && tally.Score(tally.ConvertStart+i*.10)==i*100,"Each consumed cell contributes exactly 100 points");
+  Check(tally.RemainingEntry(tally.EntryConvertEnd)==0 && tally.Score(tally.EntryConvertEnd)==299 && Math.Abs(tally.Duration-tally.RankStart-4)<1e-8,"Entry subtracts one and ranking stays four seconds");
+  var entryThree=new ConquestTally(world,p.Cards.First(c=>c.Ruler==2 && !c.Reminder));
+  for(int i=0;i<=3;i++)Check(entryThree.RemainingEntry(entryThree.CellConvertEnd+i*.06)==3-i && entryThree.Score(entryThree.CellConvertEnd+i*.06)==entryThree.TotalCells*100-i,"Each Entry unit subtracts exactly one point");
   var multi=new WorldSetup();multi.SetWorld(123);multi.SetCast(456);multi.SetPlacement(789);
   foreach(var n in multi.Nodes.All)n.Owner=0;
   var tourAll=ConquestPresentation.FaceTour(multi,0);Check(tourAll.Length==6,"All six owned faces included once");
   double length=0;int prev=4;foreach(int f in tourAll){length+=Math.Acos(Math.Clamp(Vector3.Dot(multi.Cells.First(c=>c.Face==prev).Normal,multi.Cells.First(c=>c.Face==f).Normal),-1,1));prev=f;}
   Check(Math.Abs(length-5*Math.PI/2)<.0001,"Six-face tour uses shortest five quarter turns from starting face");
+  var paintedTour=new ConquestTally(multi,new ConquestPresentation(multi).Cards.First(c=>c.Ruler==0 && !c.Reminder));
+  for(double age=0;age<paintedTour.TourSeconds;age+=.01)Check(paintedTour.Painted(multi,age)<=paintedTour.Cells.Length,"Multi-face reveal remains bounded");
+  Check(paintedTour.Painted(multi,paintedTour.TourSeconds)==paintedTour.Cells.Length,"All faces finish painting");
+  foreach(var n in multi.Nodes.All)n.Owner=-1;
+  var emptyTally=new ConquestTally(multi,new ConquestPresentation(multi).Cards.First(c=>c.Ruler==0 && !c.Reminder));
+  Check(emptyTally.TotalCells==0 && emptyTally.Score(emptyTally.EntryConvertEnd)==-1,"Zero-cell entry produces negative score without skipping registration penalty");
   owners=(int[])world.Owners.Clone();originalWorld=Get("_world");var net=(CubeNet)Get("_net");net.ShowBatteries=false;batteries=net.ShowBatteries;
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("RestoreDomesticCamera");batteries=net.ShowBatteries;
   Check((bool)Get("_conquestOverview"),"First domestic boundary starts presentation");
@@ -36,13 +50,20 @@ sealed class OverviewGame:Game1{
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
-  if(frame==0)for(int i=0;i<7;i++)Call("UpdateConquestOverview",.25d,false);
-  if(frame==1){Set("_conquestStage",1);Set("_conquestAge",.5d);}
-  if(frame==2){Set("_conquestStage",4);Set("_conquestAge",0d);}
+  var tally=(ConquestTally)Get("_conquestTally");
+  Set("_conquestStage",frame==1?1:4);
+  Set("_conquestAge",frame switch{0=>1.18,1=>.5,2=>tally.CountEnd+.75,3=>tally.ConvertStart+.1,4 or 5=>tally.RankStart+2,_=>0d});
+  if(frame!=1)Call("UpdateConquestOverview",0d,false);
+  if(frame==5){var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
   base.Draw(t);var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
   using(var texture=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight)){texture.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"conquest-{frame}.png"));texture.SaveAsPng(file,texture.Width,texture.Height);}
-  if(frame++<2)return;
-  int guard=0;while((bool)Get("_conquestOverview") && guard++<2500)Call("UpdateConquestOverview",.25d,false);
+  if(frame++<5)return;
+  int guard=0;while((bool)Get("_conquestOverview") && guard++<2500){
+   Call("UpdateConquestOverview",.25d,false);
+   if((int)Get("_conquestStage")==4){var card=((ConquestPresentation)Get("_conquestPresentation")).Cards[(int)Get("_conquestCard")];
+    if(!card.Reminder){var globe=(WorldPreview)Get("_conquestGlobe");var timeline=(ConquestTally)Get("_conquestTally");int visible=timeline.Painted(world,(double)Get("_conquestAge"));
+     Check(globe.PresentationCells.SetEquals(timeline.Cells.Take(visible)),"Rendered paint mask matches live counter and excludes subordinate cells");}}
+  }
   Check(guard<2500,"All introductions and closing transition finish");Check(owners.SequenceEqual(world.Owners) && ReferenceEquals(originalWorld,Get("_world")) && ((CubeNet)Get("_net")).ShowBatteries==batteries,"Presentation preserves game and player view");
   Call("RestoreDomesticCamera");Check(!(bool)Get("_conquestOverview"),"Same turn handoff does not repeat presentation");
   world.Population.Advance(world);Call("RestoreDomesticCamera");Check((bool)Get("_conquestOverview"),"New global turn starts presentation again");Call("UpdateConquestOverview",.1d,true);Check((int)Get("_conquestStage")==5,"Enter/Escape skip follows closing transition");
@@ -51,7 +72,7 @@ sealed class OverviewGame:Game1{
   Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");
   Call("HandleInput",new MouseState(),new KeyboardState(Keys.Enter),new GameTime(TimeSpan.FromSeconds(10),TimeSpan.FromSeconds(.01)),true);
   Check((int)Get("_conquestStage")==5,"Real Enter input skips presentation before domestic input");
-  Call("ReturnToTitle");Check(!(bool)Get("_conquestOverview") && (int)Get("_conquestOverviewTurn")==-1,"Title resets presentation and audio");Console.WriteLine("PASS: BFS ranking, ancestor recalls, exact owner cells, terrain mix, curtain timing, full playback, skip, and preserved game/view state.");Exit();
+  Call("ReturnToTitle");Check(!(bool)Get("_conquestOverview") && (int)Get("_conquestOverviewTurn")==-1,"Title resets presentation and audio");Console.WriteLine("PASS: cell-to-score timeline, entry countdown, four-second ranking tree, BFS ranking, ancestor recalls, exact owner cells, terrain mix, curtain timing, full playback, skip, and preserved game/view state.");Exit();
  }
 }
 

@@ -13,6 +13,7 @@ public sealed partial class WorldPreview
     };
 
     public int? PresentationOwner {get;set;}
+    public HashSet<int> PresentationCells {get;set;}
     public bool CountryColors {get;set;}
     public bool ControlledCountryColors {get;set;}
     public void ShowLandConquest(WorldSetup setup,bool exclusive=false)
@@ -20,18 +21,19 @@ public sealed partial class WorldPreview
         Generate(setup.Width,setup.Height,setup.Depth,setup.WorldSeed);
         var mesh=new List<VertexPositionColorNormal>();
         var offset=WorldTerrain.Offset(setup.WorldSeed);
-        foreach(var cell in setup.Cells)
+        foreach(var cell in setup.Cells){
+            int owner=PresentationOwner.HasValue?ConquestPresentation.ExactCellOwner(setup,cell.Id):exclusive?setup.Nodes.FullOwner(cell.Id):setup.Owners[cell.Id];
+            if(PresentationOwner.HasValue && (owner!=PresentationOwner.Value || PresentationCells!=null && !PresentationCells.Contains(cell.Id)))owner=-1;
+            if(exclusive && ControlledCountryColors && !setup.Relations.Controls(owner))owner=-1;
         for(int y=0;y<10;y++)for(int x=0;x<10;x++)
         {
             var a=cell.Origin+cell.U*(x/10f)+cell.V*(y/10f);
             var b=a+cell.U/10;var c=b+cell.V/10;var d=a+cell.V/10;
             float height=WorldTerrain.Elevation((a+c)/2,offset);
-            int owner=PresentationOwner.HasValue?ConquestPresentation.ExactCellOwner(setup,cell.Id):exclusive?setup.Nodes.FullOwner(cell.Id):setup.Owners[cell.Id];
-            if(PresentationOwner.HasValue && owner!=PresentationOwner.Value)owner=-1;
-            if(exclusive && ControlledCountryColors && !setup.Relations.Controls(owner))owner=-1;
             var color=owner<0?WorldTerrain.ColorAt(height,cell.Normal):LandTerritoryColor(setup.OwnerColor(owner),WorldTerrain.Kind(height));
             if(x==0 || y==0)color=Color.Lerp(color,new Color(17,47,62),.18f);
             foreach(var point in new[]{a,b,c,a,c,d})mesh.Add(new(point,color,cell.Normal));
+        }
         }
         _vertices.Dispose();
         _vertices=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
