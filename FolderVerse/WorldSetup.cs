@@ -142,6 +142,18 @@ public sealed partial class WorldSetup
         ConquerorFullNames=WorldNames.Conquerors(Looks,seed);ConquerorNames=WorldNames.ShortNames(ConquerorFullNames);
         ClearPlacement();
     }
+    // Tutorial uses the normal world/terrain and cast systems, with a smaller preset.
+    public void PrepareTutorialStepOne(int worldSeed,int castSeed,int placementSeed)
+    {
+        SetPlayerCount(1);
+        while(true){SetWorld(worldSeed);if(Width==1 && Height==1 && Depth==1)break;worldSeed=worldSeed==int.MaxValue?0:worldSeed+1;}
+        SetCast(castSeed);
+        for(int i=0;i<6;i++){Portraits[i]=i;Looks[i]=new(i,0);}
+        ConquerorFullNames=WorldNames.Conquerors(Looks,castSeed);ConquerorNames=WorldNames.ShortNames(ConquerorFullNames);
+        SetTerritoryRights(placementSeed);
+        var cells=Enumerable.Range(0,Cells.Length).ToArray();new SeedRandom(placementSeed).Shuffle(cells);
+        for(int i=0;i<ActiveCount;i++)ClaimLand(i,new[]{cells[i]});
+    }
     public void ClearPlacement() { LandPending=false;TerritoryRights=new int[CastCount]; PlayerSlot=-1; Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); ConquerorLocations=Array.Empty<int>(); TerritoryCounts = new int[CastCount]; }
     public void SetPlacement(int seed)
     {

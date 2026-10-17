@@ -22,7 +22,15 @@ sealed class MenuGame:Game1{
   Click(960,930);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title" && (int)Get("_titleMenuSelection")==2,"Start opens menu without save, New Game selected");
   Check(!(bool)Call("UpdateDemo",11d,true,false,false,false,11d),"Idle demo cannot steal open menu");
   Click(960,517);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Hidden Continue row is inert without save");
-  Click(960,417);Check(Get("_screen").ToString()=="Title","Reserved How to Play row is inert");
+  Click(960,417);Check((bool)Get("_tutorialMenuOpen"),"How to Play opens tutorial guide");
+  Check(!(bool)Call("UpdateDemo",11d,true,false,false,false,11d),"Tutorial guide pauses demo");
+  Click(1100,640);Check((bool)Get("_tutorialMenuOpen"),"Unimplemented steps are disabled");
+  Click(1100,550);var tutorial=(WorldSetup)Get("_setup");
+  Check(Get("_screen").ToString()=="WorldStatus" && tutorial.PlayerCount==1 && tutorial.HumanPlayers.SequenceEqual(new[]{0}) && tutorial.PlayerSlot==0,"Step one reaches domestic as No.1");
+  Check(tutorial.Width==1 && tutorial.Height==1 && tutorial.Depth==1 && tutorial.ActiveCount==6 && tutorial.Portraits.Take(6).SequenceEqual(Enumerable.Range(0,6)) && tutorial.Looks.Take(6).All(l=>l.VariantId==0),"Dice world and original No.1 through No.6 cast");
+  Check(!tutorial.LandPending && tutorial.Owners.Distinct().Count()==6 && tutorial.Robots.Nodes.Length==tutorial.Nodes.All.Length && File.Exists(path),"Normal randomized land, economy, robots and autosave initialized");
+  tutorial.Robots.Check();Call("ReturnToTitle");File.Delete(path);Call("CheckAutoSave");Click(960,930);
+  Click(960,417);Key(Keys.Escape);Check(!(bool)Get("_tutorialMenuOpen") && (bool)Get("_titleMenuOpen"),"Guide Escape returns to start menu");
   Key(Keys.Escape);Check(!(bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Escape dismisses menu instead of exiting app");
   Key(Keys.Enter);Check((bool)Get("_titleMenuOpen"),"Enter opens menu");Click(100,500);Check(!(bool)Get("_titleMenuOpen"),"Outside click dismisses menu");
   Click(960,930);Click(960,350);Check((bool)Get("_titleMenuOpen"),"Blank paper has no hidden close button");Key(Keys.Escape);
@@ -33,17 +41,18 @@ sealed class MenuGame:Game1{
   Click(960,930);Click(960,517);Check(Get("_screen").ToString()=="WorldStatus","Continue hit testing works at 960x540");Call("ReturnToTitle");
   graphics.PreferredBackBufferWidth=1920;graphics.PreferredBackBufferHeight=1080;graphics.ApplyChanges();
   var savedBytes=File.ReadAllBytes(path);File.WriteAllText(path,"broken");Click(960,930);Click(960,517);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Resume failure retains usable paper menu");Click(960,617);Check(Get("_screen").ToString()=="PlayerCount" && File.ReadAllText(path)=="broken","New Game remains available without deleting unreadable save");File.WriteAllBytes(path,savedBytes);Set("_autoSaveError","");Set("_screen",Enum.Parse(Get("_screen").GetType(),"Title"));Call("OpenTitleStartMenu");
-  Console.WriteLine("PASS: Start modal, reserved tutorial slot, save-dependent Continue, New Game, keyboard navigation, text-only paper, Escape/outside, demo pause and small-window hit testing.");
+  Console.WriteLine("PASS: Start modal, tutorial guide and step-one preset, save-dependent Continue, New Game, keyboard navigation, text-only paper, Escape/outside, demo pause and small-window hit testing.");
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
   if(frame==1)Set("_hasAutoSave",false);
   if(frame==2){Set("_hasAutoSave",true);var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
   if(frame==3)Set("_titleMenuOpen",false);
+  if(frame==4){Set("_titleMenuOpen",true);Set("_tutorialMenuOpen",true);}
   base.Draw(t);var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
   var canvas=(Rectangle)Call("CanvasBounds");int sx=canvas.X+780*canvas.Width/1920,sy=canvas.Y+940*canvas.Height/1080;var buttonPixel=pixels[sy*pp.BackBufferWidth+sx];
-  Check(frame==3?buttonPixel.B>buttonPixel.R:buttonPixel.R>buttonPixel.B,"Start button is drawn only while the paper menu is closed");
+  if(frame<4)Check(frame==3?buttonPixel.B>buttonPixel.R:buttonPixel.R>buttonPixel.B,"Start button is drawn only while the paper menu is closed");
   using var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);tex.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"start-menu-{frame}.png")))tex.SaveAsPng(file,tex.Width,tex.Height);
-  if(frame++==3){Call("DeleteCompletedAutoSave");Exit();}
+  if(frame++==4){Call("DeleteCompletedAutoSave");Exit();}
  }
 }
