@@ -30,6 +30,7 @@ public partial class Game1
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
     private void ResetInspector(){
+        _transportEditor=0;_transportDestinationPicking=false;_transportNewInstruction=false;_rateTarget=-1;
         if(_movementOpen)CloseMovement();if(_transportOverview)CloseTransportOverview();
         _reignView=false;_populationCell=_populationNode=_inspectedNode=-1;_nodeInspectorClosing=false;_trainingOpen=false;_hangarDrag=null;_supervisorDialog=0;
     }

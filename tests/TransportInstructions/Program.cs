@@ -1,0 +1,72 @@
+using FolderVerse;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using System.Reflection;
+void Check(bool ok,string message){if(!ok)throw new Exception(message);}
+RobotWorld World(){var w=new RobotWorld();w.Initialize(3,20);return w;}
+Robot Add(RobotWorld w,int node,RobotParts parts=RobotParts.Complete,bool cheap=false){var r=w.Create(0,parts);if(cheap)r=r with{CheapParts=parts};w.Nodes[node].Add(r);return r;}
+TransportInstruction Rule(RobotWorld w,int target,int variants,int limit=1,bool cheap=false,bool disposal=false){var r=w.Transport.AddInstruction(0,0,target);w.Transport.ConfigureInstruction(0,0,r.Number,target,variants,cheap,disposal,limit);return r;}
+var w=World();Add(w,0);w.Transport.UseInstructions(0,0);w.Transport.SetPlan(0,0,RobotParts.Complete,new[]{new TransportWeight(1,360)});w.Transport.ResolvePlans(w,(a,b)=>true,1);Check(w.Nodes[0].Count==1,"Zero concrete orders overrides legacy and stays");
+w=World();for(int i=0;i<3;i++)Add(w,0);var quota=Rule(w,1,1<<(int)RobotParts.Head,2);w.Transport.ResolvePlans(w,(a,b)=>true,2);Check(quota.Sent==2 && quota.Complete && w.Transport.LastTransfers.Count==2 && w.Transport.LastTransfers.All(s=>s.Parts==RobotParts.Head),"Quota counts successful selected combinations only");w.Transport.ResolvePlans(w,(a,b)=>true,3);Check(w.Transport.LastTransfers.Count==0 && quota.Sent==2,"Completed orders stop");w.Check();
+w=World();Add(w,0);for(int i=0;i<12;i++)Add(w,1);var blocked=Rule(w,1,1<<7);var fallback=Rule(w,2,1<<4);w.Transport.SetInstructionRate(0,0,blocked.Number,359);w.Transport.ResolvePlans(w,(a,b)=>true,9);Check(blocked.Sent==0 && fallback.Sent==1 && w.Transport.LastTransfers.Single().Target==2,"Full receiver rerolls feasible order, rejected orders do not progress");
+w=World();Add(w,0,RobotParts.Head);var unavailable=Rule(w,1,1<<4);var valid=Rule(w,2,1<<4);w.Transport.SetInstructionRate(0,0,unavailable.Number,359);w.Transport.ResolvePlans(w,(a,b)=>b!=1,4);Check(valid.Sent==1 && unavailable.Sent==0,"Only connected executable orders enter weighted choice");
+w=World();var mixed=Add(w,0);w.Nodes[0].Remove(mixed.Id);w.Nodes[0].Add(mixed with{CheapParts=RobotParts.Head,DamagedParts=RobotParts.Head});var cheap=Rule(w,1,1<<4,1,true,true);w.Transport.ResolvePlans(w,(a,b)=>true,5);Check(cheap.Sent==1 && w.Nodes[1].Robots.Single().CheapParts==RobotParts.Head && w.Nodes[1].Robots.Single().Disposal,"Cheap subset and disposal preserved, damage is not a quality filter");Check(w.Transport.AverageParts(0,1,true)==.2 && w.Transport.AverageParts(0,1,false)==0,"Separate disposal flow with five-turn zero padding");for(int i=0;i<5;i++)w.Transport.ResolvePlans(w,(a,b)=>true,10+i);Check(w.Transport.AverageParts(0,1,true)==0,"Zero-flow turns age old transfers out");
+w=World();for(int i=0;i<3;i++)Add(w,0);Rule(w,1,1<<7,3);w.Transport.ResolvePlans(w,(a,b)=>true,7);Check(w.Transport.AverageParts(0,1,false)==1.8,"Whole robots count as three component parts in history");
+w=World();Add(w,0);var multi=Rule(w,1,(1<<6)|(1<<4));w.Transport.ResolvePlans(w,(a,b)=>true,8);Check(w.Transport.LastTransfers.Single().Parts==(RobotParts)6,"Alternatives choose one eligible combination rather than union");
+w=World();Add(w,0);w.Workshops[0].AutoAssemblyDisabled=true;Rule(w,1,1<<4);w.Transport.ResolvePlans(w,(a,b)=>true,8);Check(w.Transport.LastTransfers.Count==0,"Assembly-disabled source does not dismantle robots");
+w=World();for(int i=0;i<16;i++)Rule(w,1,1<<7);Check(w.Transport.Instructions(0,0).Count==16 && w.Transport.Instructions(0,0).Sum(r=>r.Degrees)==360,"Sixteen sectors sum to 360");bool rejected=false;try{Rule(w,1,1<<7);}catch(InvalidOperationException){rejected=true;}Check(rejected,"Seventeenth instruction rejected");w.Transport.SetInstructionRate(0,0,8,137);Check(w.Transport.Instructions(0,0).Single(r=>r.Number==8).Degrees==137 && w.Transport.Instructions(0,0).Sum(r=>r.Degrees)==360,"One-degree allocation preserves complete pie");w.Transport.DeleteInstruction(0,0,8);Check(w.Transport.Instructions(0,0).Sum(r=>r.Degrees)==360 && w.Transport.Instructions(0,0).All(r=>r.Number!=8),"Deletion rebalances without renumbering");
+w=World();for(int i=0;i<12;i++){Add(w,0);Add(w,1);}var leftRule=Rule(w,1,1<<7,12);var rightRule=w.Transport.AddInstruction(1,0,0);w.Transport.ConfigureInstruction(1,0,rightRule.Number,0,1<<7,false,false,12);w.Transport.ResolvePlans(w,(a,b)=>true,99);Check(w.Transport.LastTransfers.Count==24 && leftRule.Sent==12 && rightRule.Sent==12,"Concrete instructions support simultaneous full-store exchange");
+var history=w.Transport.AverageParts(0,1,false);w.AdvanceIndustry(n=>0);Check(w.Transport.AverageParts(0,1,false)==history,"Industry clock does not age global transport history");
+int first=0;for(int seed=0;seed<1000;seed++){w=World();Add(w,0);var a=Rule(w,1,1<<7);Rule(w,2,1<<7);w.Transport.SetInstructionRate(0,0,a.Number,270);w.Transport.ResolvePlans(w,(x,y)=>true,seed);if(w.Transport.LastTransfers.Single().Target==1)first++;}Check(first>700 && first<800,"Adoption probability tracks 75/25 weights");
+Check(new[]{0d,.1,9,9.1,18,18.1,27,27.1}.Select(RobotTransport.FlowBand).SequenceEqual(new[]{0,1,1,2,2,3,3,4}),"Five arrow bands cover fractional averages without gaps");
+Console.WriteLine("PASS: quotas, executable-weight rerolls, quality/subset/disposal, history clock and zero padding, 16 rules, degree normalization and sampling.");
+using var game=new InstructionsGame();game.Run();
+sealed class InstructionsGame:Game1{
+ const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;
+ object Get(string n)=>typeof(Game1).GetField(n,F)!.GetValue(this)!;
+ object Prop(string n)=>typeof(Game1).GetProperty(n,F)!.GetValue(this)!;
+ void Set(string n,object v)=>typeof(Game1).GetField(n,F)!.SetValue(this,v);
+ object Call(string n,params object[] a)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,a)!;
+ void Check(bool ok,string m){if(!ok)throw new Exception(m);}
+ WorldSetup setup=null!;int source,target;int frame;
+ protected override void LoadContent(){
+  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();setup=(WorldSetup)Get("_setup");setup.SetWorld(123);setup.SetCast(456);setup.SetPlacement(789);setup.SelectPlayer(0);
+  ((WorldPreview)Get("_world")).ShowSetup(setup,true);var net=(CubeNet)Get("_net");net.Home(setup);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_statusGlobe",false);Call("OpenTransportOverview");source=setup.Nodes.Current(0).Id;Set("_populationNode",source);Call("UpdateDomesticSlide",.4f);Call("FocusCurrentNode");
+  var adjacent=(int[])Call("TransportAdjacent");target=adjacent.First(id=>((Rectangle)Prop("MapViewBounds")).Contains(net.NodePosition(setup,setup.Nodes.All[id],(Rectangle)Prop("NetPanel")).ToPoint()));
+  var transport=setup.Robots.Transport;
+  var foreign=setup.Nodes.All.First(n=>n.Owner>0 && !(bool)Call("CanManageNodeFactory",n.Owner));var foreignStore=setup.Robots.Nodes[foreign.Id];if(foreignStore.Count>=foreignStore.StorageLimit)foreignStore.Remove(foreignStore.Robots[0].Id);foreignStore.Add(setup.Robots.Create(0,RobotParts.Head));
+  Set("_populationNode",foreign.Id);Check((bool)Prop("CanEditTransport") && (int)Prop("TransportOwner")==0,"Own robots on foreign nodes keep personal transport permissions");Call("TransportInstructionsClick",new Point(200,280));Check(transport.HasInstructions(foreign.Id,0) && !transport.HasInstructions(foreign.Id,foreign.Owner),"Personal instructions do not replace another country's instructions");Set("_populationNode",source);
+  transport.UseInstructions(source,setup.Nodes.All[source].Owner);
+  var one=transport.AddInstruction(source,0,target);transport.ConfigureInstruction(source,0,one.Number,target,1<<4,false,false,2);
+  Call("TransportInstructionsClick",new Point(550,365));Call("TransportQuantityPress","7");Call("TransportQuantityPress","OK");Check(one.Limit==7,"Quantity keypad edits quota");
+  Call("TransportInstructionsClick",new Point(550,325));Check((int)Get("_transportEditor")==1,"Parts opens multiple-select editor");
+  var variant=(Rectangle)typeof(Game1).GetMethod("TransportVariantButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{0})!;
+  Set("_pointer",variant.Center);Call("TransportModalInput",default(MouseState),new KeyboardState(),true,false,true);Check((one.Variants&(1<<7))!=0 && (one.Variants&(1<<4))!=0,"Multiple alternatives stay selected");Call("TransportModalInput",default(MouseState),new KeyboardState(),false,true,true);
+  Call("TransportInstructionsClick",new Point(250,365));Check((bool)Get("_transportDestinationPicking"),"Destination opens modal map mode");
+  var destination=net.NodePosition(setup,setup.Nodes.All[target],(Rectangle)Prop("NetPanel")).ToPoint();Set("_pointer",destination);Call("TransportModalInput",default(MouseState),new KeyboardState(),true,false,true);Check(!(bool)Get("_transportDestinationPicking") && one.Target==target,"Map chooses adjacent target");
+  for(int i=1;i<16;i++)transport.AddInstruction(source,0,target);
+  Call("TransportInstructionsClick",new Point(160,325));Check((int)Get("_rateTarget")==1,"Percent opens instruction pie by number");Call("SetDestinationRate",1,137);Check(one.Degrees==137 && transport.Instructions(source,0).Sum(r=>r.Degrees)==360,"Pie editing changes adoption, not flow");Set("_rateTarget",-1);
+  Call("TransportInstructionsClick",new Point(300,770));Check((int)Get("_transportPage")==1,"Four-row pagination");Set("_transportPage",0);
+  // Robot id/quality/damage do not affect actual-flow marks; record one delivered complete robot.
+  foreach(var r in setup.Robots.Nodes[source].Robots.ToArray())setup.Robots.Nodes[source].Remove(r.Id);foreach(var r in setup.Robots.Nodes[target].Robots.ToArray())setup.Robots.Nodes[target].Remove(r.Id);var robot=setup.Robots.Create(0,RobotParts.Complete);setup.Robots.Nodes[source].Add(robot);transport.ConfigureInstruction(source,0,1,target,1<<7,false,false,1);transport.SetInstructionRate(source,0,1,360);transport.ResolvePlans(setup.Robots,(a,b)=>true,42);
+ }
+ protected override void Update(GameTime t){}
+ protected override void Draw(GameTime t){
+  Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);
+  if(frame==1)Set("_transportPage",3);
+  if(frame==2){Set("_transportPage",0);Set("_transportEditNumber",1);Set("_transportEditor",1);}
+  if(frame==3){Set("_transportEditor",2);Set("_transportQuantity","12");}
+  if(frame==4){Set("_transportEditor",0);setup.Robots.Transport.SetInstructionRate(source,0,1,137);Set("_rateTarget",1);}
+  if(frame==5){Set("_rateTarget",-1);Set("_transportDestinationPicking",true);}
+  if(frame==6){Set("_transportDestinationPicking",false);Call("CloseTransportOverview");Call("OpenNodeInspector",source);Call("OpenNodeTransport");}
+  if(frame==7){var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();}
+  base.Draw(t);var pp=GraphicsDevice.PresentationParameters;var colors=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(colors);
+  using var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);tex.SetData(colors);using var output=File.Create(Path.Combine(AppContext.BaseDirectory,$"instructions-{frame}.png"));tex.SaveAsPng(output,tex.Width,tex.Height);
+  if(frame==0){var hits=(List<(Rectangle Bounds,int Source,int Target,Vector2 Start,Vector2 End)>)Get("_transportRouteHits");var hit=hits.First(h=>h.Source==source);var p=((hit.Start+hit.End)/2).ToPoint();Call("TransportOverviewClick",p);Check((int)Get("_populationNode")==source && (int)Get("_rateTarget")==-1,"Throughput arrow opens source plan rather than rate pie");}
+  if(frame++>=7){
+   var owner=setup.Nodes.All[source].Owner;foreach(var rule in setup.Robots.Transport.Instructions(source,owner).ToArray())setup.Robots.Transport.DeleteInstruction(source,owner,rule.Number);
+   Set("_demoDomesticStage",2);Set("_demoDomesticAge",0d);Call("UpdateDemoDomestic",1.81d);Check(setup.Robots.Transport.Instructions(source,owner).Single().Limit==2,"Demo creates a concrete two-unit instruction");
+   Console.WriteLine("PASS: shared instruction UI, quantity keypad, alternatives, adjacent modal picking, adoption pie, 16 orders, pages, throughput arrows and small-window rendering.");Exit();}
+ }
+}

@@ -95,22 +95,15 @@ public partial class Game1
             int degrees=(col+1)*360/RateDivisions[row];
             if(RatePresetUnique(row,col) && RatePresetBounds(row,col).Contains(p) && degrees<=RateMaximum(_rateTarget))SetDestinationRate(_rateTarget,degrees);
         }
-        if(new Rectangle(1670,270,160,36).Contains(p) && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))
-        {var order=_setup.Robots.Transport.Priority(_populationNode).Concat(DestinationNodes()).Distinct().ToList();order.Remove(_rateTarget);order.Insert(0,_rateTarget);_setup.Robots.Transport.SetPriority(_populationNode,order);}
         if(new Rectangle(1740,950,130,40).Contains(p))_rateTarget=-1;
     }
     private void DrawRatePieDialog()
     {
         int value=Rate(_rateTarget),maximum=RateMaximum(_rateTarget);
         _ui.Box(RateDialogArea,new Color(18,35,48));
-        _ui.Text($"移送割合  {RateLabel(value)}",new(1130,210),.65f,Cream);
-        // Selected destination, other reserved routes, and stay share one complete circle.
-        var segments=new List<(int Degrees,Color Color)>{(value,Accent)};
-        foreach(bool disposal in new[]{false,true})
-            foreach(var w in _setup.Robots.Transport.Plan(_populationNode,_setup.PlayerSlot,_nodeTransportPart,disposal))
-                if(disposal!=_nodeTransportDisposal || w.Target!=_rateTarget)
-                    segments.Add((w.Degrees,disposal?new Color(155,106,147):new Color(92+(w.Target*37)%100,130,170)));
-        segments.Add((360-segments.Sum(s=>s.Degrees),new Color(56,73,86)));
+        _ui.Text($"指示 #{_rateTarget} の採用率  {RateLabel(value)}",new(1130,210),.65f,Cream);
+        var segments=new List<(int Degrees,Color Color,int Number)>{(value,Accent,_rateTarget)};
+        foreach(var rule in TransportRules.Where(r=>r.Number!=_rateTarget))segments.Add((rule.Degrees,new Color(80+(rule.Number*37)%120,110+(rule.Number*17)%100,150),rule.Number));
         // One small scanline run per sector; no new graphics resources per frame.
         for(int y=-110;y<=110;y+=2)
         {
@@ -122,6 +115,16 @@ public partial class Game1
                 if(x==-extent){previous=color;continue;}
                 if(color!=previous){_ui.Box(new((int)RatePieCenter.X+start,(int)RatePieCenter.Y+y,x-start,2),previous);start=x;previous=color;}
             }
+        }
+        // Tiny 1-degree sectors cannot fit a readable label; the color key retains every number.
+        for(int i=0;i<segments.Count;i++){var seg=segments[i];var r=new Rectangle(1130+i%8*92,275+i/8*21,88,19);_ui.Box(new(r.X,r.Y+4,7,10),seg.Color);_ui.Text("#"+seg.Number+" "+(seg.Degrees*100/360f).ToString("0.#")+"%",new(r.X+10,r.Y),.28f,Cream);}
+        float sectorStart=0;var labels=new List<Rectangle>();
+        for(int i=0;i<segments.Count;i++){
+            var seg=segments[i];
+            if(seg.Degrees>=9){float a=(sectorStart+seg.Degrees/2f)*MathHelper.Pi/180;float radius=i%2==0?62:88;
+                var at=RatePieCenter+new Vector2(MathF.Sin(a),-MathF.Cos(a))*radius;var box=new Rectangle((int)at.X-14,(int)at.Y-10,28,20);
+                if(!labels.Any(r=>r.Intersects(box))){labels.Add(box);_ui.Box(box,new Color(18,35,48));_ui.Center("#"+seg.Number,box,.3f,Cream);}
+            }sectorStart+=seg.Degrees;
         }
         float radians=value*MathF.PI/180;Vector2 edge=RatePieCenter+new Vector2(MathF.Sin(radians),-MathF.Cos(radians))*110;
         _ui.Box(new((int)edge.X-7,(int)edge.Y-7,14,14),new Color(255,231,54));
@@ -145,16 +148,15 @@ public partial class Game1
         _ui.Text("円の境界を動かして１度ずつ設定",new(1130,920),.42f,Cream);
         _ui.Text($"設定可能 0° - {maximum}°",new(1130,245),.4f,Cream);
         _ui.Button(RateZeroButton,"0",value==0?new Color(255,174,110):new Color(255,221,91),.65f);
-        DrawRateStepButton(RateMinusButton,false,value>0);
-        DrawRateStepButton(RatePlusButton,true,value<maximum);
-        _ui.Button(new(1670,270,160,36),"受入１位",CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner)?Accent:Muted,.4f);
+        DrawRateStepButton(RateMinusButton,false,value>0 && TransportRules.Count>1);
+        DrawRateStepButton(RatePlusButton,true,value<maximum && TransportRules.Count>1);
         for(int row=0;row<4;row++)for(int col=0;col<RateDivisions[row];col++)
         {
             if(!RatePresetUnique(row,col))continue;
             int degree=(col+1)*360/RateDivisions[row];var rect=RatePresetBounds(row,col);bool enabled=degree<=maximum;
             DrawRateFractionButton(rect,RateFraction(col+1,RateDivisions[row]),enabled,degree==value);
         }
-        _ui.Text("他の移送先の配分は維持。残りは現在の節点に留まる",new(1130,965),.36f,Cream);
+        _ui.Text("合計100%。実行できる指示から選択。完了分は採用しない。",new(1130,965),.36f,Cream);
         _ui.Button(new(1740,950,130,40),"閉じる",Accent,.45f);
     }
 }

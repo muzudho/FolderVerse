@@ -79,14 +79,14 @@ public partial class Game1
     }
     private Rectangle DestinationBadge(int id)
     {
-        if(!OperationPosition(id,out var at))return Rectangle.Empty;
+        if(!_net.NodeVisible(_setup,_setup.Nodes.All[id]) || !OperationPosition(id,out var at))return Rectangle.Empty;
         return new((int)at.X-32,(int)at.Y-42,64,34);
     }
-    private int Rate(int id)=>_setup.Robots.Transport.Plan(_populationNode,_setup.PlayerSlot,_nodeTransportPart,_nodeTransportDisposal).FirstOrDefault(w=>w.Target==id)?.Degrees??0;
+    private int Rate(int id)=>TransportRules.FirstOrDefault(r=>r.Number==id)?.Degrees??0;
     private int RateMaximum(int id)=>360;
     private void SetDestinationRate(int id,int value)
     {
-        _setup.Robots.Transport.SetBalancedRate(_populationNode,_setup.PlayerSlot,_nodeTransportPart,id,value,_nodeTransportDisposal);
+        if(CanEditTransport && TransportRules.Any(r=>r.Number==id))_setup.Robots.Transport.SetInstructionRate(_populationNode,TransportOwner,id,value);
     }
     private bool DestinationMapClick(Point pointer)
     {
@@ -95,31 +95,20 @@ public partial class Game1
             if(RateDialogArea.Contains(pointer)){RatePieClick(pointer);return true;}
             _rateTarget=-1;return true;
         }
-        foreach(int id in DestinationNodes())if(DestinationBadge(id).Contains(pointer)){_rateTarget=id;return true;}
-        int hit=_statusGlobe?HitGlobeNode(pointer,DestinationNodes()):_net.HitNode(_setup,NetPanel,pointer,DestinationNodes());
-        if(hit>=0){_rateTarget=hit;return true;}return false;
+        return false;
+    }
+    private void DrawTransportDestinationChoice()
+    {
+        if(!_transportDestinationPicking)return;
+        _ui.Text("隣接する節点を地図で選択 / Escで取消",new(991,900),.45f,Cream);
+        foreach(int id in TransportAdjacent())if(_net.NodeVisible(_setup,_setup.Nodes.All[id]) && OperationPosition(id,out var at) && MapViewBounds.Contains(at.ToPoint())){
+            var r=new Rectangle((int)at.X-23,(int)at.Y-23,46,46);var c=new Color(255,239,130);
+            _ui.Box(new(r.X,r.Y,r.Width,2),c);_ui.Box(new(r.X,r.Bottom-2,r.Width,2),c);_ui.Box(new(r.X,r.Y,2,r.Height),c);_ui.Box(new(r.Right-2,r.Y,2,r.Height),c);
+        }
     }
     private void DrawDestinationMap()
     {
-        if(_transportOverview){DrawTransportOverviewMap();return;}
-        if(!DestinationOperation){_rateTarget=-1;return;}
-        if(_movementOpen)return; // Nodes already provide destination highlighting and hit testing.
-        foreach(int id in DestinationNodes().Append(OperationSource).Distinct())
-        {
-            if(id<0 || !OperationPosition(id,out var at))continue;
-            bool source=id==OperationSource;
-            var badge=DestinationBadge(id);
-            string text=source?"現在": "→";
-            if(_nodeTransportOpen && !_movementOpen)
-            {
-                int remain=360-_setup.Robots.Transport.Plan(_populationNode,_setup.PlayerSlot,_nodeTransportPart,false).Sum(w=>w.Degrees)-_setup.Robots.Transport.Plan(_populationNode,_setup.PlayerSlot,_nodeTransportPart,true).Sum(w=>w.Degrees);
-                text=$"{(source?remain:Rate(id))*100/360f:0.#}%";
-            }
-            if(source){_ui.Box(badge,new Color(25,42,52));_ui.Center(text,badge,.65f,Cream);}
-            else _ui.Button(badge,text,id==_selectedMoveNode?Accent:new Color(190,140,56),.65f);
-            _ui.Box(new((int)at.X-5,(int)at.Y-5,10,10),source?Cream:Accent);
-        }
-        if(!_nodeTransportOpen || _rateTarget<0)return;
-        DrawRatePieDialog();
+        if(_transportOverview || _nodeTransportOpen){DrawTransportOverviewMap();DrawTransportDestinationChoice();if(_nodeTransportOpen && _rateTarget>=0)DrawRatePieDialog();return;}
+        _rateTarget=-1;
     }
 }

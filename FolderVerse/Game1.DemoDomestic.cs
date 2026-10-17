@@ -35,8 +35,7 @@ public partial class Game1
                 _populationNode=node.Id;_populationCell=node.Cell;_nodeAssemblyOpen=_nodeTransportOpen=_nodeDisposalOpen=_nodeFactoryOpen=false;break;
             case 1:OpenNodeTransport();break;
             case 2:
-                DestinationMapClick(target);
-                if(_rateTarget>=0)SetDestinationRate(_rateTarget,Rate(_rateTarget)+30);break;
+                if(CanEditTransport){var destinations=TransportAdjacent();if(destinations.Length>0){_setup.Robots.Transport.UseInstructions(_populationNode,TransportOwner);if(TransportRules.Count<16){var rule=_setup.Robots.Transport.AddInstruction(_populationNode,TransportOwner,destinations[0]);ConfigureTransport(rule,limit:2);}}}break;
             case 3:
                 OpenNodeAssembly();
                 _demoSourceSlot=Enumerable.Range(0,12).FirstOrDefault(i=>_hangarSlots[i].HasValue && _setup.Robots.Nodes[_populationNode].Robots.Any(r=>r.Id==_hangarSlots[i] && r.Parts==RobotParts.Complete && CanMoveHangarRobot(r)),-1);

@@ -21,6 +21,7 @@ public sealed partial class CubeNet
         return owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal):WorldPreview.LandTerritoryColor(world.OwnerColor(owner),WorldTerrain.Kind(height));
     }
     public bool ShowRoutes {get;set;}=true; public int HoveredNode {get;set;}=-1; public int InspectedNode {get;set;}=-1;
+    public bool NodeVisible(WorldSetup world,Node node)=>ShowOtherCountries || node.Owner<0 || world.Relations.Controls(node.Owner);
     public bool EmphasizedNode(int id)=>HoveredNode==id || InspectedNode==id;
     public HashSet<int> MovementTargets {get;}=new();
     public int SelectedTarget {get;set;}=-1;
@@ -35,7 +36,7 @@ public sealed partial class CubeNet
         if(IsAnimating || !panel.Contains(pointer))return -1;
         var fit=Fit(panel);float radius=MathHelper.Clamp(fit.Scale*.06f,4,10)+4;
         var point=new Vector2(pointer.X,pointer.Y);
-        return (candidates??world.Nodes.All.Select(n=>n.Id)).Select(id=>(Id:id,Distance:Vector2.DistanceSquared(NodePosition(world,world.Nodes.All[id],panel),point)))
+        return (candidates??world.Nodes.All.Select(n=>n.Id)).Where(id=>NodeVisible(world,world.Nodes.All[id])).Select(id=>(Id:id,Distance:Vector2.DistanceSquared(NodePosition(world,world.Nodes.All[id],panel),point)))
             .Where(n=>n.Distance<=MathF.Pow(world.Nodes.All[n.Id].IsHarbor?Math.Max(radius,22):radius,2)).OrderBy(n=>n.Distance).ThenBy(n=>n.Id).Select(n=>n.Id).DefaultIfEmpty(-1).First();
     }
     public Point MicroPoint(WorldSetup world,int cell,Rectangle panel,Point pointer)
@@ -72,7 +73,7 @@ public sealed partial class CubeNet
                     ui.Tile((a+b)/2,new Vector2(delta.Length()+1,2),MathF.Atan2(delta.Y,delta.X),color);
                 }
             }
-            foreach(var post in world.Nodes.InCell(cell).Where(n=>VisibleOperationNodes==null || VisibleOperationNodes.Contains(n.Id)))
+            foreach(var post in world.Nodes.InCell(cell).Where(n=>NodeVisible(world,n) && (VisibleOperationNodes==null || VisibleOperationNodes.Contains(n.Id))))
             {
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
                 float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);

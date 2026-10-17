@@ -93,9 +93,9 @@ public partial class Game1
     {
         if(!MapViewBounds.Contains(pointer))return -1;
         int badge=_net.HitRobotBadge(pointer);
-        if(badge>=0 && (candidates==null || candidates.Contains(badge)))return badge;
+        if(badge>=0 && _net.NodeVisible(_setup,_setup.Nodes.All[badge]) && (candidates==null || candidates.Contains(badge)))return badge;
         int nearest=-1;float distance=float.PositiveInfinity;
-        foreach(var node in (candidates??_setup.Nodes.All.Select(n=>n.Id)).Select(id=>_setup.Nodes.All[id]))
+        foreach(var node in (candidates??_setup.Nodes.All.Select(n=>n.Id)).Select(id=>_setup.Nodes.All[id]).Where(n=>_net.NodeVisible(_setup,n)))
         {
             var cell=_setup.Cells[node.Cell];
             if(!_world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center),cell.Normal,_yaw,_pitch,StatusGlobeArea,out var at))continue;

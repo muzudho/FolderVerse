@@ -6,7 +6,6 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private Microsoft.Xna.Framework.Graphics.SpriteFont _transportHudFont;
-    private static float TransportTriangleSize(int degrees)=>15f+105f*Math.Clamp(degrees/360f,0,1);
     private Rectangle TransportHud(string text,Vector2 center,Color color)
     {
         _transportHudFont??=Content.Load<Microsoft.Xna.Framework.Graphics.SpriteFont>("ToyCounterFont");
@@ -22,19 +21,6 @@ public partial class Game1
     private bool _transportOverview;
     private bool _transportRoutesBefore;
     private Rectangle TransportOverviewButton=>new(780,1006,210,64);
-    private static Rectangle TransportPartButton(int mask)=>new(84+(mask-1)%4*196,322+(mask-1)/4*136,182,96);
-    private void DrawTransportPartButtons()
-    {
-        for(int mask=1;mask<=7;mask++)
-        {
-            var parts=(RobotParts)mask;var rect=TransportPartButton(mask);
-            _ui.Box(rect,_nodeTransportPart==parts?Accent:rect.Contains(_pointer)?new Color(75,116,130):Muted);
-            DrawRobotGlyph(new(rect.Center.X-27,rect.Y+6,54,84),_setup.PlayerSlot,parts);
-            if(_nodeTransportPart==parts)_ui.Box(new(rect.X,rect.Y,rect.Width,3),Cream);
-            string amount=_populationNode<0?"輸出 --%":$"輸出 {_setup.Robots.Transport.Plan(_populationNode,_setup.PlayerSlot,parts,_nodeTransportDisposal).Sum(w=>w.Degrees)*100/360f:0.#}%";
-            _ui.Center(amount,new(rect.X,rect.Bottom+3,rect.Width,30),.48f,Cream);
-        }
-    }
     private readonly List<(Rectangle Bounds,int Source,int Target,Vector2 Start,Vector2 End)> _transportRouteHits=new();
 
     private static bool TransportArrowHit(Point p,Vector2 start,Vector2 end)
@@ -42,7 +28,8 @@ public partial class Game1
         var delta=end-start;float size=delta.Length();if(size<1)return false;
         var direction=delta/size;var relative=new Vector2(p.X,p.Y)-start;
         float along=Vector2.Dot(relative,direction),across=Math.Abs(Vector2.Dot(relative,new Vector2(-direction.Y,direction.X)));
-        return along>=-3 && along<=size+3 && across<=(size<=15?size/2:size*(1-Math.Clamp(along/size,0,1))/2)+3;
+        float halfWidth=size<=10?5:size<=24?6:size<=40?7.5f:size<=58?9:10.5f;
+        return along>=-3 && along<=size+3 && across<=halfWidth*(size<=10?1:1-Math.Clamp(along/size,0,1))+3;
     }
     private void DrawTransportOverviewButton()
     {
@@ -53,7 +40,7 @@ public partial class Game1
     {
         _nodeInspectorClosing=false;_reignView=false;CloseMovement();_populationCell=-1;_nodeTransportOpen=false;_rateTarget=-1;
         _transportRoutesBefore=_net.ShowRoutes;_net.ShowRoutes=true;_transportOverview=true;
-        _net.VisibleOperationNodes=null;
+        _net.VisibleOperationNodes=null;_transportPage=0;_transportEditor=0;_transportDestinationPicking=false;
     }
     private void CloseTransportOverview()
     {
@@ -63,18 +50,16 @@ public partial class Game1
     private bool TransportOverviewClick(Point p)
     {
         if(!InspectorVisible && TransportOverviewButton.Contains(p)){OpenTransportOverview();return true;}
-        if(!_transportOverview)return false;
-        if(_rateTarget>=0){if(RateDialogArea.Contains(p))RatePieClick(p);else _rateTarget=-1;return true;}
-        bool onMap=MapViewBounds.Contains(p);if(!onMap)p.X-=NodeInspectorOffset;
-        if(new Rectangle(84,270,374,46).Contains(p)){_nodeTransportDisposal=false;return true;}
-        if(new Rectangle(480,270,374,46).Contains(p)){_nodeTransportDisposal=true;return true;}
-        for(int mask=1;mask<=7;mask++)if(TransportPartButton(mask).Contains(p)){_nodeTransportPart=(RobotParts)mask;return true;}
+        if(!_transportOverview && !_nodeTransportOpen)return false;
+        bool onMap=MapViewBounds.Contains(p);if(!_transportOverview && !onMap)return false;if(!onMap)p.X-=NodeInspectorOffset;
+        if(!onMap && TransportInstructionsClick(p))return true;
         if(onMap)foreach(var hit in _transportRouteHits.AsEnumerable().Reverse())if(hit.Bounds.Contains(p) || Vector2.Distance(hit.Start,hit.End)>1 && TransportArrowHit(p,hit.Start,hit.End))
-        {_populationNode=hit.Source;_rateTarget=hit.Target;return true;}
+        {_populationNode=hit.Source;_transportPage=0;_rateTarget=-1;_transportEditor=0;return true;}
+        if(onMap && !_transportOverview)return false;
         if(onMap)
         {
             int id=_statusGlobe?HitGlobeNode(p,_setup.Nodes.All.Select(n=>n.Id)):_net.HitNode(_setup,NetPanel,p,_setup.Nodes.All.Select(n=>n.Id));
-            if(id>=0){_populationNode=id;return true;}
+            if(id>=0){_populationNode=id;_transportPage=0;_rateTarget=-1;return true;}
         }
         return new Rectangle(54,150,850,825).Contains(p);
     }
@@ -83,12 +68,9 @@ public partial class Game1
         _ui.Box(new(54,150,850,825),new Color(27,49,62));
         _ui.Text("ロボット輸送計画",new(84,178),.8f,Cream);
 
-        _ui.Button(new(84,270,374,46),"ふつうの移送",_nodeTransportDisposal?Muted:Accent,.5f);
-        _ui.Button(new(480,270,374,46),"廃棄としての移送",_nodeTransportDisposal?Accent:Muted,.5f);
-        DrawTransportPartButtons();
-        _ui.Text("地図上の移送先と割合をクリック",new(84,630),.65f,Cream);
-        _ui.Text("ふつう＋廃棄 / 残りは留まる",new(84,680),.5f,Cream);
-        if(_populationNode>=0)_ui.Text(_setup.Nodes.Label(_setup.Nodes.All[_populationNode]),new(84,740),.43f,Cream);
+        if(_populationNode<0){_ui.Text("地図から輸送元の節点を選択",new(84,270),.6f,Cream);return;}
+        string label=_setup.Nodes.Label(_setup.Nodes.All[_populationNode]);_ui.Text(label,new(84,230),Math.Min(.43f,770/_font.MeasureString(label).X),Cream);
+        DrawTransportInstructions();
     }
     private void DrawTransportOverviewMap()
     {
@@ -97,6 +79,7 @@ public partial class Game1
         var routes=new List<(int Source,int Target,Vector2 From,Vector2 To,float WorldLength)>();
         foreach(var node in nodes)
         {
+            if(_nodeTransportOpen && !_transportOverview && node.Id!=_populationNode)continue;
             if(!OperationPosition(node.Id,out var from))continue;
             foreach(var r in _setup.Routes.Neighbors(node))
             {
@@ -112,37 +95,22 @@ public partial class Game1
         }
         foreach(var route in routes)
         {
-            int degrees=_setup.Robots.Transport.Plan(route.Source,_setup.PlayerSlot,_nodeTransportPart,_nodeTransportDisposal).FirstOrDefault(w=>w.Target==route.Target)?.Degrees??0;
+            if(!_net.NodeVisible(_setup,nodes[route.Source]) || !_net.NodeVisible(_setup,nodes[route.Target]))continue;
             var delta=route.To-route.From;float distance=delta.Length();if(distance<1)continue;
             var direction=delta/distance;var normal=new Vector2(-direction.Y,direction.X);
-            float size=TransportTriangleSize(degrees);
-            // Leave a full node-marker diameter between the marker and triangle base.
-            float nodeRadius=nodes[route.Source].IsHarbor?20:12;
-            var start=route.From+direction*(nodeRadius*3);
-            var end=start+direction*size;
-            var source=nodes[route.Source];
-            var position=_setup.Routes.Position(source.Cell,source.Center);
-            float height=WorldTerrain.Elevation(position,WorldTerrain.Offset(_setup.WorldSeed));
-            var color=degrees<18?new Color(150,155,164):height<.52f?new Color(111,228,255):height>=WorldTerrain.MountainHeight?new Color(255,163,70):new Color(255,230,140);
-            bool hovered=_rateTarget<0 && TransportArrowHit(_pointer,start,end);
-            float angle=MathF.Atan2(direction.Y,direction.X);
-            if(hovered)color=Color.Lerp(color,Color.White,.35f);
-            if(degrees==0)
-            {
-                if(hovered)_ui.Tile((start+end)/2,new Vector2(size+6),angle,Color.White);
-                _ui.Tile((start+end)/2,new Vector2(size),angle,color);
+            foreach(bool disposal in new[]{false,true}){
+                double mean=_setup.Robots.Transport.AverageParts(route.Source,route.Target,disposal);int band=RobotTransport.FlowBand(mean);
+                if(band==0 && route.Source!=_populationNode)continue;
+                float size=band==0?10:band==1?24:band==2?40:band==3?58:78;
+                var start=route.From+direction*(nodes[route.Source].IsHarbor?60:36)+normal*(disposal?16:-16);var end=start+direction*size;
+                bool hovered=TransportArrowHit(_pointer,start,end);float angle=MathF.Atan2(direction.Y,direction.X);
+                var color=band==0?new Color(145,150,157):disposal?new Color(226,54,65):new Color(14,17,22);
+                if(band==0){var at=(start+end)/2;_ui.Box(new((int)at.X-5,(int)at.Y-5,10,10),Color.White);_ui.Box(new((int)at.X-4,(int)at.Y-4,8,8),color);}
+                else for(int i=0;i<(int)size;i++){float width=(9+band*3)*(1-i/size);_ui.Tile(start+direction*i,new Vector2(2,width+4),angle,Color.White);_ui.Tile(start+direction*i,new Vector2(1.5f,width),angle,color);}
+                var bounds=new Rectangle((int)Math.Min(start.X,end.X)-12,(int)Math.Min(start.Y,end.Y)-12,(int)Math.Abs(end.X-start.X)+24,(int)Math.Abs(end.Y-start.Y)+24);
+                _transportRouteHits.Add((Rectangle.Empty,route.Source,route.Target,start,end));
+                if(hovered)_ui.Text((disposal?"廃棄用 ":"納品物 ")+mean.ToString("0.##")+"個 / 全体ターン（５ターン平均）",new(991,900),.38f,Cream);
             }
-            else
-            {
-                // Match the hover outline to the full triangle rather than a thin center line.
-                if(hovered)for(int i=-3;i<(int)size+3;i++)
-                    _ui.Tile(start+direction*i,new Vector2(1.5f,size*(1-Math.Clamp(i/size,0,1))+6),angle,Color.White);
-                for(int i=0;i<(int)size;i++)
-                    _ui.Tile(start+direction*i,new Vector2(1.5f,size*(1-i/size)),angle,color);
-            }
-            var label=end+normal*15;
-            var rect=degrees>0?TransportHud($"{degrees*100/360f:0.#}%",label,degrees<18?new Color(180,184,194):color):Rectangle.Empty;
-            _transportRouteHits.Add((rect,route.Source,route.Target,start,end));
         }
     }
 }

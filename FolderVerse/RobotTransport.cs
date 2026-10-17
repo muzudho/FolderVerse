@@ -5,7 +5,7 @@ using System.Linq;
 
 public sealed record TransportWeight(int Target,int Degrees);
 public sealed record RobotShipment(int Source,int Target,long RobotId,RobotParts Parts,bool Disposal=false);
-public sealed class RobotTransport
+public sealed partial class RobotTransport
 {
     private readonly Dictionary<(int Node,int Owner,RobotParts Parts,bool Disposal),TransportWeight[]> _plans=new();
     private readonly Dictionary<int,int[]> _priorities=new();
@@ -13,7 +13,7 @@ public sealed class RobotTransport
     public Dictionary<long,int> LastOwners {get;}=new();
     public IReadOnlyList<TransportWeight> Plan(int node,int owner,RobotParts parts,bool disposal=false)=>_plans.GetValueOrDefault((node,owner,parts,disposal),Array.Empty<TransportWeight>());
     public IReadOnlyList<int> Priority(int node)=>_priorities.GetValueOrDefault(node,Array.Empty<int>());
-    public void Reset(){_plans.Clear();_priorities.Clear();LastTransfers=Array.Empty<RobotShipment>();LastOwners.Clear();}
+    public void Reset(){_plans.Clear();_priorities.Clear();LastTransfers=Array.Empty<RobotShipment>();LastOwners.Clear();ResetInstructions();}
     public void SetPlan(int node,int owner,RobotParts parts,IEnumerable<TransportWeight> weights,bool disposal=false)
     {
         RobotWorld.Validate(owner,parts);var values=weights.OrderBy(w=>w.Target).ToArray();
@@ -55,6 +55,7 @@ public sealed class RobotTransport
             {
                 if(world.Workshops[node].DisposalTarget==robot.Id)continue;
                 var queue=new Queue<RobotShipment>();
+                if(HasInstructions(node,robot.Owner))continue;
                 for(int mask=7;mask>=1;mask--)
                 {
                     if(((int)robot.Parts&mask)!=mask || world.Workshops[node].AutoAssemblyDisabled && (RobotParts)mask!=robot.Parts)continue;
@@ -73,13 +74,25 @@ public sealed class RobotTransport
                 if(queue.Count>0)choices[robot.Id]=queue;
             }
         }
+        var instructionChoices=BuildInstructionChoices(world,connected,random,locked,canEnter);
+        var instructionOf=new Dictionary<long,TransportInstruction>();
         var active=choices.Values.Select(q=>q.Dequeue()).ToList();
+        RobotShipment NextInstruction(long id){
+            if(!instructionChoices.TryGetValue(id,out var candidates))return null;
+            while(candidates.Count>0){var next=candidates.Dequeue();if(next.Instruction.Sent+instructionOf.Values.Count(r=>ReferenceEquals(r,next.Instruction))>=next.Instruction.Limit)continue;instructionOf[id]=next.Instruction;return next.Shipment;}
+            return null;
+        }
+        foreach(long id in instructionChoices.Keys){var next=NextInstruction(id);if(next!=null)active.Add(next);}
         while(true)
         {
             var accepted=Select(world,active);var rejected=active.Where(s=>!accepted.Contains(s)).ToArray();
-            if(rejected.Length==0){Commit(world,accepted);return;}
+            if(rejected.Length==0){Commit(world,accepted);foreach(var shipment in accepted)if(instructionOf.TryGetValue(shipment.RobotId,out var instruction))instruction.Sent++;FinishTransportTurn();return;}
             active=accepted.ToList();
-            foreach(var shipment in rejected)if(choices[shipment.RobotId].TryDequeue(out var next))active.Add(next);
+            foreach(var shipment in rejected){
+                instructionOf.Remove(shipment.RobotId);
+                if(choices.TryGetValue(shipment.RobotId,out var oldChoices)){if(oldChoices.TryDequeue(out var next))active.Add(next);}
+                else {var next=NextInstruction(shipment.RobotId);if(next!=null)active.Add(next);}
+            }
         }
     }
     public void Resolve(RobotWorld world,IEnumerable<RobotShipment> shipments,Func<int,int,bool> connected)
@@ -125,6 +138,7 @@ public sealed class RobotTransport
     }
     private void Commit(RobotWorld world,List<RobotShipment> accepted)
     {
+        RecordTransportFlow(world,accepted);
         LastOwners.Clear();foreach(var s in accepted)LastOwners[s.RobotId]=world.Nodes[s.Source].Robots.Single(r=>r.Id==s.RobotId).Owner;
         var stores=Simulate(world,accepted,out var overflow);if(overflow.Count>0)throw new InvalidOperationException("Unresolved transport.");
         for(int n=0;n<stores.Length;n++)world.Nodes[n].Replace(stores[n].Select(r=>r.Id<0?r.Materialize() with {Id=world.Create(r.Owner,r.Parts,r.Role,r.Disposal).Id}:r).ToArray());

@@ -64,6 +64,14 @@ sealed class RotationGame:Game1{
   Rectangle Layer(int i)=>(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{i})!;
   Call("RouteLayerClick",Layer(5).Center);Check(!net.ShowRobots,"Robot display off");Call("RouteLayerClick",Layer(5).Center);Check(net.ShowRobots,"Robot display on");
   Call("RouteLayerClick",Layer(6).Center);Check(!net.ShowOtherCountries && net.ControlledCountryColors && world.ControlledCountryColors,"Other country toggle controls both color renderers");
+  var visiblePanel=(Rectangle)Prop("NetPanel");
+  foreach(var post in w.Nodes.All.Where(n=>n.Owner>=0 && !w.Relations.Controls(n.Owner))){
+   Check(!net.NodeVisible(w,post),"Foreign node hidden");var hiddenAt=net.NodePosition(w,post,visiblePanel);
+   if(visiblePanel.Contains(hiddenAt.ToPoint()))Check(net.HitNode(w,visiblePanel,hiddenAt.ToPoint(),new[]{post.Id})==-1,"Foreign node cannot be clicked in net");
+   if(world.ProjectVisible(w.Routes.Position(post.Cell,post.Center),w.Cells[post.Cell].Normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),visiblePanel,out var globeAt))Check((int)Call("HitGlobeNode",globeAt.ToPoint(),new[]{post.Id})==-1,"Foreign node cannot be clicked on globe");
+  }
+  Check(w.Nodes.All.Where(n=>n.Owner<0 || w.Relations.Controls(n.Owner)).All(n=>net.NodeVisible(w,n)),"Own, subordinate and unowned nodes stay visible");
+
   foreach(var c in w.Cells){int owner=w.Nodes.FullOwner(c.Id);if(owner>=0 && !w.Relations.Controls(owner))Check(net.TerrainColor(w,c.Id,.6f)==WorldTerrain.ColorAt(.6f,c.Normal),"Foreign color hidden");}
   Call("RouteLayerClick",Layer(6).Center);Check(net.ShowOtherCountries && !net.ControlledCountryColors && !world.ControlledCountryColors,"Foreign colors restored");
   net.ShowMapSymbols=net.ShowEquator=true;
