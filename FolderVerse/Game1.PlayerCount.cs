@@ -22,7 +22,7 @@ public partial class Game1
         return minutes<60?$"{minutes}分":minutes%60==0?$"{minutes/60}時間":$"{minutes/60}時間{minutes%60}分";
     }
     private static string MetaTime(int players)=>"＜"+string.Concat(EstimatedPlayTime(players).Select(c=>c>='0' && c<='9'?(char)('０'+c-'0'):c))+"＞";
-    private void BeginPlayerCount(){_domesticNetView=null;_requestedPlayers=1;_notifiedTurn=(-1,-1);_screen=Screen.PlayerCount;}
+    private void BeginPlayerCount(){_domesticViews.Clear();_requestedPlayers=1;_notifiedTurn=(-1,-1);_screen=Screen.PlayerCount;}
     private void PlayerCountInput(bool click,bool enter,KeyboardState keys)
     {
         if(keys.IsKeyDown(Keys.Left) && _previousKeyboard.IsKeyUp(Keys.Left))_requestedPlayers=Math.Max(1,_requestedPlayers-1);

@@ -74,7 +74,7 @@ public partial class Game1
     }
     private void EndPlannedTurn()
     {
-        SaveDomesticCamera();
+        SaveDomesticCamera();CancelTransportModal();
         if(_movementOpen && _selectedMoveNode>=0)
         {if(_warPlanning)ReserveInvasion();else _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id));}
         CloseMovement();if(_transportOverview)CloseTransportOverview();

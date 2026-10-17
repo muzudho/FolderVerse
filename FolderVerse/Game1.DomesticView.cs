@@ -30,7 +30,7 @@ public partial class Game1
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
     private void ResetInspector(){
-        _transportEditor=0;_transportDestinationPicking=false;_transportNewInstruction=false;_rateTarget=-1;
+        CancelTransportModal();
         if(_movementOpen)CloseMovement();if(_transportOverview)CloseTransportOverview();
         _reignView=false;_populationCell=_populationNode=_inspectedNode=-1;_nodeInspectorClosing=false;_trainingOpen=false;_hangarDrag=null;_supervisorDialog=0;
     }
@@ -45,7 +45,7 @@ public partial class Game1
         if(!InspectorVisible){
             _ui.Button(StrategyToggle,"全体作戦",Accent,.6f);
             _ui.Button(WarButton,"開戦予約",Accent,.55f);
-            _ui.Button(TransportOverviewButton,"ロボット輸送",Accent,.5f);
+            _ui.Button(TransportOverviewButton,"ロボット輸送計画",Accent,.5f);
             _ui.Button(PopulationTurnButton,"ターン終了",Accent,.8f);return;
         }
         var r=InspectorHandle;

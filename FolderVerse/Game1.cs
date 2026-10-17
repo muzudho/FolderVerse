@@ -228,7 +228,7 @@ public partial class Game1 : Game
         {if(click && BackButton.Contains(_pointer))_screen=Screen.Title;else PlayerCountInput(click,enter,keyboard);}
         else if(IsStatusScreen)
         {
-            if(click && DomesticViewClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;} if(click && _reignView && SwitchControlledRuler(new Point(_pointer.X-NodeInspectorOffset,_pointer.Y)))return;
+            if(click && DomesticViewClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;} if(click && _reignView && SwitchControlledRuler(new Point(_pointer.X-NodeInspectorOffset,_pointer.Y))){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
             if(_statusGlobe)
             {
                 _statusCell=-1;

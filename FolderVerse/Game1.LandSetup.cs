@@ -21,7 +21,7 @@ public partial class Game1
     private bool LandHumanTurn=>_setup.HumanPlayers.Count==0?LandRuler==_setup.PlayerSlot:_setup.HumanPlayers.Contains(LandRuler);
     private void BeginLandConquest()
     {
-        _landOrder=_setup.LandOrder();_landTurn=0;_landAge=0;_landSelection.Clear();_landDrag=null;_automaticLand=Array.Empty<int>();
+        _domesticViews.Clear();_landOrder=_setup.LandOrder();_landTurn=0;_landAge=0;_landSelection.Clear();_landDrag=null;_automaticLand=Array.Empty<int>();
         _screen=Screen.LandConquest;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.ShowLandConquest(_setup);
     }
     private int[] AutomaticLand(int ruler)
@@ -89,7 +89,7 @@ public partial class Game1
             int segment=Math.Min((int)progress,tour.Length-2);
             float blend=MathHelper.SmoothStep(0,1,progress-segment);
             _world.ManualOrientation=Quaternion.Slerp(tour[segment],tour[segment+1],blend);
-            if(_landAge>=5){_setup.CompleteLand(_random.Next());_world.ShowSetup(_setup,true);_net.Home(_setup);_statusGlobe=true;FocusStatusGlobe();_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;}
+            if(_landAge>=5){_setup.CompleteLand(_random.Next());_world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();}
             return;
         }
         if(!LandHumanTurn || _demoActive)

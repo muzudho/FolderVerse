@@ -73,7 +73,10 @@ public partial class Game1
         _ui.Button(new(84,752,170,36),"前へ",Muted,.4f);_ui.Button(new(264,752,170,36),"次へ",Muted,.4f);
         _ui.Button(new(444,752,220,36),"指示を追加 "+TransportRules.Count+" / 16",TransportRules.Count<16 && CanEditTransport?Accent:Muted,.4f);
         _ui.Button(new(674,752,174,36),"完了分を再開",Muted,.4f);
-        _ui.Text("実行できる指示から採用 / 採用率の合計100%",new(84,798),.35f,Cream);
+        if(_transportDestinationPicking){
+            _ui.Text("地図の隣接節点を選択してください",new(84,798),.4f,Cream);
+            _ui.Button(TransportPickCancel,"取消",Accent,.45f);
+        }else _ui.Text("実行できる指示から採用 / 採用率の合計100%",new(84,798),.35f,Cream);
         if(_transportEditor!=0)DrawTransportEditor();
     }
     private static Rectangle TransportVariantButton(int i)=>new(104+i%4*182,370+i/4*130,172,116);
@@ -98,13 +101,24 @@ public partial class Game1
         else if(key=="<"){if(_transportQuantity.Length>0)_transportQuantity=_transportQuantity[..^1];_transportQuantityReplace=false;}
         else if(key.Length==1 && char.IsDigit(key[0])){if(_transportQuantityReplace){_transportQuantity="";_transportQuantityReplace=false;}if(_transportQuantity.Length<4)_transportQuantity+=key;}
     }
+    private static Rectangle TransportPickCancel=>new(674,798,174,36);
+    private void CancelTransportModal()
+    {
+        if(_transportDestinationPicking && _transportNewInstruction && _populationNode>=0)
+            _setup.Robots.Transport.DeleteInstruction(_populationNode,TransportOwner,_transportEditNumber);
+        _transportNewInstruction=false;_transportEditor=0;_transportDestinationPicking=false;_rateTarget=-1;_rateDragging=false;
+        _dragging=_mapDragging=false;
+    }
     private bool TransportModalInput(MouseState mouse,KeyboardState keyboard,bool click,bool escape,bool active)
     {
-        if(!(_transportOverview || _nodeTransportOpen) || _populationNode<0)return false;
+        if(!IsStatusScreen || !(_transportOverview || _nodeTransportOpen) || _populationNode<0)return false;
         if(_transportEditor==0 && !_transportDestinationPicking && _rateTarget<0)return false;
         if(!active)return true;
-        if(!CanEditTransport){_transportEditor=0;_transportDestinationPicking=false;_rateTarget=-1;return true;}
-        if(escape){if(_transportDestinationPicking && _transportNewInstruction)_setup.Robots.Transport.DeleteInstruction(_populationNode,TransportOwner,_transportEditNumber);_transportNewInstruction=false;_transportEditor=0;_transportDestinationPicking=false;_rateTarget=-1;_rateDragging=false;return true;}
+        // The shared close control must remain available inside every editor.
+        if(click && InspectorClose.Contains(_pointer)){CancelTransportModal();CloseNodeInspector();return true;}
+        if(escape || !CanEditTransport || EditingTransport==null){CancelTransportModal();return true;}
+        var local=_pointer;local.X-=NodeInspectorOffset;
+        if(_transportDestinationPicking && click && TransportPickCancel.Contains(local)){CancelTransportModal();return true;}
         if(_rateTarget>=0){if(click){if(RateDialogArea.Contains(_pointer))RatePieClick(_pointer);else _rateTarget=-1;}return true;}
         var p=_pointer;p.X-=NodeInspectorOffset;
         if(_transportEditor==1){

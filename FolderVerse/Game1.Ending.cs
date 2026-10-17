@@ -17,6 +17,7 @@ public partial class Game1
     }
     private void ReturnToTitle()
     {
+        CancelTransportModal();_domesticViews.Clear();
         CloseMovement();_statusMenuOpen=false;_dispositionReturnList=false;
         _populationCell=_populationNode=_statusCell=_globeSelectedNode=-1;
         _nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=_nodeAssemblyOpen=false;
