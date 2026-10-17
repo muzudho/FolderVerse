@@ -13,3 +13,7 @@ No.7は旅人デザインの `character-07-1-traveler-v006.png` をユーザー�
 共通の目安は `../face-size-trials/portrait-balance.json`、今回の共通編集指示は `../face-size-trials/all-60-balance-prompt.txt` に記録しています。倍率は生成時の視覚的な目安であり、厳密な実測値ではありません。閉じた目・眼帯・渦巻き眼鏡などは各キャラクターの特徴を優先しています。
 
 `package.ps1` は採用画像の4:3検証、SHA256記録、縮小版と一覧の書き出しを再実行します。生成原本は変更しません。
+
+No.39の新しい全身原画案（バルキリー姿の家庭教師、犬の玩具）は [比較ページ](../characters/character-39/redesign-valkyrie-tutor/index.html) に保存。2026-10-17制作。デザイン確認用で、ゲーム用画像は未差し替え。
+
+2026-10-18：No.39のキャラクターは全身原画v020でユーザーが完成・承認。今後の人物デザイン・プロポーションは [design-spec.md](../characters/character-39/redesign-valkyrie-tutor/design-spec.md) のFIXED / APPROVED指定を優先。背景遠景化のv021は別案として比較ページに保存。ゲーム画像は未差し替え。
