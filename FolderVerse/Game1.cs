@@ -85,7 +85,7 @@ public partial class Game1 : Game
         _robotDisposalIcon=Content.Load<Texture2D>("Images/robot-disposal-icon");
         _robotTransportIcon=Content.Load<Texture2D>("Images/robot-transport-icon");
         _robotFactoryIcon=Content.Load<Texture2D>("Images/robot-factory-icon");
-        _spriteBatch=new SpriteBatch(GraphicsDevice); _titleScreen=Content.Load<Texture2D>("Images/title-screen");
+        _spriteBatch=new SpriteBatch(GraphicsDevice); _titleScreen=Content.Load<Texture2D>("Images/title-background-v002");
         _marginToys=Content.Load<Texture2D>("Images/margin-toys");
         _marginTrain=Content.Load<Texture2D>("Images/margin-train");
         _marginRabbit=Content.Load<Texture2D>("Images/margin-rabbit");
@@ -99,7 +99,7 @@ public partial class Game1 : Game
         _counter=new ToyCounterRenderer(Content.Load<SpriteFont>("ToyCounterFont"),_pixel);
         _ui=new UiPainter(_spriteBatch,_pixel,_font){AdaptiveText=()=>DomesticTheme}; _world=new WorldPreview(GraphicsDevice);
         _orientationToy=new ToyOrientationRenderer(GraphicsDevice);
-        LoadScreenshotFeedback();LoadCutInMobs();LoadSetupHost();CheckAutoSave();_titleStartPaper=Content.Load<Texture2D>("Images/title-start-paper-v001");
+        LoadScreenshotFeedback();LoadCutInMobs();LoadSetupHost();CheckAutoSave();LoadTitleStartAssets();
     }
     private Rectangle CanvasBounds()
     {

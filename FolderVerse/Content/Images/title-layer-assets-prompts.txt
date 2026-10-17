@@ -1,0 +1,16 @@
+Built-in image_gen editing. Original assets are retained.
+
+Asset: title-background-v002.png
+Reference: title-screen.png
+Transparent background: false
+Edit this exact supplied title image. Remove ONLY the large navy capsule START button at lower center and the small PRESS ENTER lettering underneath it. Inpaint that entire button/caption area with a natural continuation of the pale wooden tabletop and existing light/shadow. Preserve the title typography, globe, all toys, framing, colors and lighting everywhere else exactly. Keep the same 1920x1080 landscape composition. Do not add objects, text, buttons, graphics or borders. Deliver the complete opaque title background with no start button and no PRESS ENTER caption.
+
+Asset: title-start-button-v001.png
+Reference: title-screen.png
+Transparent background: true
+Extract only the navy rounded capsule START button from the supplied title image as an isolated transparent-background game UI asset. Preserve its original pill silhouette, beveled edge, navy blue shading, warm cream START lettering, and subtle shadow. Exclude the PRESS ENTER caption and all tabletop, scenery, globe, toys and other text. Place the button horizontally straight and centered, large and tightly framed with small transparent margins. The button itself has approximately 4:1 width to height. Do not redesign the lettering or button. Genuine alpha transparency outside the button and its soft shadow.
+
+Asset: title-start-paper-v002.png
+Reference: title-start-paper-v001.png
+Transparent background: true
+Edit this exact supplied transparent notepad paper asset. Keep the same paper silhouette, fibrous torn edges, folded bottom corners, ivory paper grain, lighting, alpha transparency and blank center. Remove every other horizontal pale blue ruled line, so that there are about half as many lines and spacing between remaining lines is doubled. Keep remaining lines faint. This paper will be displayed at half its former linear size, so the doubled ruling spacing should remain comfortable. No text, marks, icons, objects, borders or other additions. Preserve the transparent background.
