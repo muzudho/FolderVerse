@@ -53,6 +53,11 @@ sealed class MenuGame:Game1{
   tutorial.Campaign.CancelSource(order.Ruler,order.SourceNode);Check((string)label.GetValue(this)! =="開戦予約（なし）","Cancel returns label to none");
   tutorial.Robots.Check();Call("ReturnToTitle");Check((bool)Call("ResumeAutoSave"),"Tutorial save resumes");
   tutorial=(WorldSetup)Get("_setup");Check(tutorial.TutorialStep==1 && tutorial.Robots.Nodes.All(n=>n.Count==4),"Resume preserves step restrictions and initial stock");
+  tutorial.Population.Advance(tutorial);tutorial.Industry.Queue(tutorial.Population.Turn);int beforeIndustry=tutorial.Robots.IndustryTurn;
+  Call("BeginIndustry");Check(Get("_screen").ToString()=="WorldStatus" && !tutorial.Industry.Pending && tutorial.Population.Turn==1,"Step one skips industrial screen and reaches a stable domestic boundary without extra global turns");
+  Check(tutorial.Robots.IndustryTurn==beforeIndustry+tutorial.Industry.Result,"Silent industrial processing retains disposal and assembly timing");
+  var nameMethod=typeof(Game1).GetMethod("MedallionName",BindingFlags.NonPublic|BindingFlags.Static)!;
+  Check((string)nameMethod.Invoke(null,new object[]{"エミリア・アルメ"})! =="エミリア アルメ" && (string)nameMethod.Invoke(null,new object[]{"エミリア　 アルメ"})! =="エミリア アルメ","Medallion keeps full name with one separating space");
   int tutorialNode=tutorial.Nodes.Current(0).Id;Call("OpenNodeInspector",tutorialNode);
   // Even a legacy/injected production line cannot bypass the tutorial entry restriction.
   for(int seed=0;tutorial.Robots.Workshops[tutorialNode].ProductionLines.Length==0;seed++)tutorial.Robots.Workshops[tutorialNode].GenerateLines(seed);
@@ -65,13 +70,13 @@ sealed class MenuGame:Game1{
   Key(Keys.Enter);Check((bool)Get("_titleMenuOpen"),"Enter opens menu");Click(100,500);Check(!(bool)Get("_titleMenuOpen"),"Outside click dismisses menu");
   Click(960,930);Click(960,350);Check((bool)Get("_titleMenuOpen"),"Blank paper has no hidden close button");Key(Keys.Escape);
   Click(960,930);Click(960,617);Check(Get("_screen").ToString()=="PlayerCount","New Game opens existing player-count flow");
-  var w=(WorldSetup)Get("_setup");w.SetWorld(123);Check(w.TutorialStep==0,"Normal world clears tutorial restrictions");w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("AutoSaveDomestic");Call("ReturnToTitle");
+  var w=(WorldSetup)Get("_setup");w.SetWorld(123);Check(w.TutorialStep==0,"Normal world clears tutorial restrictions");w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);w.Industry.Queue(1);Call("BeginIndustry");Check(Get("_screen").ToString()=="Industry" && w.Industry.Pending,"Normal play retains industrial roulette");w.Industry.Reset();Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("AutoSaveDomestic");Call("ReturnToTitle");
   Click(960,930);Check((int)Get("_titleMenuSelection")==1,"Continue is initial selection with save");Key(Keys.Down);Check((int)Get("_titleMenuSelection")==2,"Arrow key selects New Game");Key(Keys.Up);Check((int)Get("_titleMenuSelection")==1,"Arrow key returns to Continue");Input(new(960,617));Input(new(960,617),keys:new[]{Keys.Up});Input(new(960,617));Check((int)Get("_titleMenuSelection")==1,"Stationary mouse cannot override keyboard selection");Key(Keys.Enter);Check(Get("_screen").ToString()=="WorldStatus","Keyboard Continue restores game");Call("ReturnToTitle");
   var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();
   Click(960,930);Click(960,517);Check(Get("_screen").ToString()=="WorldStatus","Continue hit testing works at 960x540");Call("ReturnToTitle");
   graphics.PreferredBackBufferWidth=1920;graphics.PreferredBackBufferHeight=1080;graphics.ApplyChanges();
   var savedBytes=File.ReadAllBytes(path);File.WriteAllText(path,"broken");Click(960,930);Click(960,517);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Resume failure retains usable paper menu");Click(960,617);Check(Get("_screen").ToString()=="PlayerCount" && File.ReadAllText(path)=="broken","New Game remains available without deleting unreadable save");File.WriteAllBytes(path,savedBytes);Set("_autoSaveError","");Set("_screen",Enum.Parse(Get("_screen").GetType(),"Title"));Call("OpenTitleStartMenu");
-  Console.WriteLine("PASS: Start modal, tutorial guide, four-soldier preset, saved factory restrictions and war reservation counts, save-dependent Continue, New Game, keyboard navigation, text-only paper, Escape/outside, demo pause and small-window hit testing.");
+  Console.WriteLine("PASS: Start modal, tutorial guide, four-soldier preset, saved factory restrictions, skipped tutorial industry, medallion full names and war reservation counts, save-dependent Continue, New Game, keyboard navigation, text-only paper, Escape/outside, demo pause and small-window hit testing.");
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){

@@ -83,7 +83,7 @@ public partial class Game1
     private void DrawDomesticPortrait()
     {
         var r=ReignPortrait;if(InspectorVisible)r.Offset((int)(960*_domesticSlide),0);var center=new Vector2(r.Center.X,r.Center.Y);
-        for(int y=-130;y<=130;y++){int half=(int)MathF.Sqrt(130*130-y*y);_ui.Box(new(r.Center.X-half,r.Center.Y+y,half*2+1,1),_setup.OwnerColor(_setup.PlayerSlot));}
+        DrawPortraitMedallion(center,_setup.OwnerColor(_setup.PlayerSlot));
         var image=new Rectangle(r.X,r.Y,r.Width,r.Height);
         // Clip the portrait to a circular silhouette using horizontal scissor strips.
         var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
@@ -97,6 +97,7 @@ public partial class Game1
             }
         }
         GraphicsDevice.ScissorRectangle=old;_spriteBatch.Begin(transformMatrix:transform);
+        DrawPortraitMedallionName(center,_setup.ConquerorFullNames[_setup.PlayerSlot],_setup.OwnerColor(_setup.PlayerSlot));
 
 
     }

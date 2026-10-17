@@ -10,6 +10,21 @@ sealed class EffectsGame:Game1{
  int frame;BattleState battle=null!;
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
+  var batch=(SpriteBatch)Get("_spriteBatch");var draw=typeof(Game1).GetMethod("DrawBattleSupplies",F)!;
+  Color[] Supplies(BattleUnitView unit){
+   var previous=GraphicsDevice.Viewport;using var target=new RenderTarget2D(GraphicsDevice,120,40);GraphicsDevice.SetRenderTarget(target);GraphicsDevice.Clear(Color.Transparent);
+   batch.Begin(samplerState:SamplerState.PointClamp);draw.Invoke(this,new object[]{unit,6,10,1f});batch.End();GraphicsDevice.SetRenderTarget(null);GraphicsDevice.Viewport=previous;
+   var pixels=new Color[120*40];target.GetData(pixels);return pixels;
+  }
+  void Check(bool ok,string message){if(!ok)throw new Exception(message);}
+  var empty=new BattleUnitView(1,0,BattleRole.Soldier,Point.Zero,BattleFacing.North,0,0,0,false,false);
+  Check(Supplies(empty).All(p=>p.A==0),"Zero supplies hide icons, numbers and background");
+  var shield=Supplies(empty with {Shields=2});var rifle=Supplies(empty with {Rifles=3});
+  Check(shield.Any(p=>p.A>0) && rifle.Any(p=>p.A>0) && !shield.SequenceEqual(rifle),"Nonzero shield and rifle each retain their own icon");
+  Check(!shield.Where((p,i)=>i%120>=35).Any(p=>p.A>0) && !rifle.Where((p,i)=>i%120>=35).Any(p=>p.A>0),"Zero slots leave neither number nor icon nor trailing background");
+  var mixed=Supplies(empty with {Shields=2,Daggers=1});Check(!mixed.Where((p,i)=>i%120>=60).Any(p=>p.A>0),"Mixed counters compact remaining nonzero equipment");
+  Check(Supplies(empty with {Shields=2,Fallen=true}).All(p=>p.A==0) && Supplies(empty with {Rifles=3,Retreated=true}).All(p=>p.A==0),"Fallen and retreated counters remain hidden");
+  Console.WriteLine("PASS: zero equipment icons/numbers/background hidden, nonzero supplies retained and compacted.");
   var w=(WorldSetup)Get("_setup");w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);
   battle=new BattleState(1){TargetNode=w.Nodes.Current(0).Id,Defender=0,Kind=BattleKind.Edge};
   battle.Armies.Add(new(){Owner=0,Side=0});

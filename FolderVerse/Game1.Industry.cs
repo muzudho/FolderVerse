@@ -20,6 +20,10 @@ public partial class Game1
     private static readonly Rectangle IndustryContinue=new(1230,935,590,80);
     private void BeginIndustry()
     {
+        // Step one omits the roulette screen; disposal/assembly still receive their normal processing.
+        if(_setup.TutorialStep==1 && _setup.Industry.Pending){
+            _setup.Industry.Roll(_setup.PlacementSeed^_setup.FortuneSeed);_setup.Industry.Apply(_setup);_industryApplied=true;_world.ShowSetup(_setup,true);
+        }
         if(!_setup.Industry.Pending){_screen=Screen.WorldStatus;RestoreDomesticCamera();OpenDisposition();return;}
         _setup.Industry.Roll(_setup.PlacementSeed^_setup.FortuneSeed);
         int before=0;for(int i=0;i<_setup.Industry.SelectedSector;i++)before+=_setup.Industry.Wheel[i].Percent;
