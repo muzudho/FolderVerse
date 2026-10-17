@@ -27,6 +27,7 @@
 #begin UiFont.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Color
 /build:UiFont.spritefont
 
 #begin Images/Portraits/v1-original/sheet-01.png

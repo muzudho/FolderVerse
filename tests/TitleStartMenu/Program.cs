@@ -75,15 +75,20 @@ sealed class MenuGame:Game1{
   Check((string)nameMethod.Invoke(null,new object[]{"エミリア・アルメ"})! =="エミリア アルメ" && (string)nameMethod.Invoke(null,new object[]{"エミリア　 アルメ"})! =="エミリア アルメ","Medallion keeps full name with one separating space");
   var font=(SpriteFont)Get("_font");
   var layout=((string Glyph,Vector2 At,float Rotation,Vector2 Origin)[])Call("MedallionNameLayout",Vector2.Zero,"エミリア・アルメ");
-  Check(layout.All(l=>Math.Abs(l.At.Length()-132)<.001),"Medallion engraving radius is inset by two pixels");
+  Check(layout.All(l=>Math.Abs(l.At.Length()-130)<.001),"Medallion engraving radius is inset by two pixels");
   for(int i=1;i<layout.Length;i++){
-   float bounds=(font.MeasureString(layout[i-1].Glyph).X+font.MeasureString(layout[i].Glyph).X)*(.36f*1.2f)/(2*132);
+   float bounds=(font.MeasureString(layout[i-1].Glyph).X+font.MeasureString(layout[i].Glyph).X)*(.36f*1.2f)/(2*130);
    Check(Math.Abs(layout[i].Rotation-layout[i-1].Rotation-bounds-MathHelper.ToRadians(5))<.0001,"Every character has exactly five degrees of additional spacing");
   }
-  float firstEdge=layout[0].Rotation-font.MeasureString(layout[0].Glyph).X*(.36f*1.2f)/(2*132),lastEdge=layout[^1].Rotation+font.MeasureString(layout[^1].Glyph).X*(.36f*1.2f)/(2*132);
+  float firstEdge=layout[0].Rotation-font.MeasureString(layout[0].Glyph).X*(.36f*1.2f)/(2*130),lastEdge=layout[^1].Rotation+font.MeasureString(layout[^1].Glyph).X*(.36f*1.2f)/(2*130);
   Check(Math.Abs(firstEdge+lastEdge)<.0001,"Curved full name is centered at twelve o'clock");
   float band=(float)typeof(Game1).GetField("MedallionBandWidth",BindingFlags.NonPublic|BindingFlags.Static)!.GetRawConstantValue()!;
   Check(Math.Abs(band-26.4f)<.0001,"Engraving band is 1.2 times its previous width");
+  var engraving=(Texture2D)Call("MedallionLetterTexture","ミ",new Color(239,88,97));var engraved=new Color[engraving.Width*engraving.Height];engraving.GetData(engraved);
+  var originalBounds=font.GetGlyphs()['ミ'].BoundsInTexture;var original=new Color[originalBounds.Width*originalBounds.Height];font.Texture.GetData(0,originalBounds,original,0,original.Length);
+  Check(engraved.Count(c=>c.A>0)>original.Count(c=>c.A>0),"Extra-bold engraving thickens the actual glyph silhouette");
+  Check(engraved.Any(c=>c.A>245 && c.R+c.G+c.B<150) && engraved.Any(c=>c.A>245 && c.R+c.G+c.B>600),"Deboss glyph contains a dark inset wall and a bright opposite inner edge");
+  Check(ReferenceEquals(engraving,Call("MedallionLetterTexture","ミ",new Color(239,88,97))),"Deboss textures are cached rather than rebuilt per frame");
   int tutorialNode=tutorial.Nodes.Current(0).Id;Call("OpenNodeInspector",tutorialNode);
   // Even a legacy/injected production line cannot bypass the tutorial entry restriction.
   for(int seed=0;tutorial.Robots.Workshops[tutorialNode].ProductionLines.Length==0;seed++)tutorial.Robots.Workshops[tutorialNode].GenerateLines(seed);
@@ -102,7 +107,7 @@ sealed class MenuGame:Game1{
   Click(960,930);Click(960,517);Check(Get("_screen").ToString()=="WorldStatus","Continue hit testing works at 960x540");Call("ReturnToTitle");
   graphics.PreferredBackBufferWidth=1920;graphics.PreferredBackBufferHeight=1080;graphics.ApplyChanges();
   var savedBytes=File.ReadAllBytes(path);File.WriteAllText(path,"broken");Click(960,930);Click(960,517);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Resume failure retains usable paper menu");Click(960,617);Check(Get("_screen").ToString()=="PlayerCount" && File.ReadAllText(path)=="broken","New Game remains available without deleting unreadable save");File.WriteAllBytes(path,savedBytes);Set("_autoSaveError","");Set("_screen",Enum.Parse(Get("_screen").GetType(),"Title"));Call("OpenTitleStartMenu");
-  Console.WriteLine("PASS: Start modal, tutorial guide, four-soldier preset, saved factory restrictions, skipped tutorial industry, medallion full names and war reservation counts, save-dependent Continue, New Game, keyboard navigation, text-only paper, Escape/outside, demo pause and small-window hit testing.");
+  Console.WriteLine("PASS: Start modal, tutorial guide, four-soldier preset, saved factory restrictions, skipped tutorial industry, extra-bold deboss medallion names and war reservation counts, save-dependent Continue, New Game, keyboard navigation, text-only paper, Escape/outside, demo pause and small-window hit testing.");
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){

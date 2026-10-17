@@ -10,6 +10,7 @@ public partial class Game1
     private int _conquestOverviewTurn=-1,_conquestStage,_conquestCard;
     private double _conquestAge;
     private bool _conquestOverview;
+    private float _conquestExitOpacity;
     private ConquestTally _conquestTally;
     private int _conquestPainted;
     private ConquestPresentation _conquestPresentation;
@@ -24,7 +25,7 @@ public partial class Game1
     private double ConquestCardSeconds=>ConquestCard.Reminder?.8:_conquestTally.Duration;
     private void BeginConquestOverview(){
         if(!_conquestOverviewEnabled || _demoActive || _autoPlay || _conquestOverviewTurn==_setup.Population.Turn)return;
-        _conquestOverviewTurn=_setup.Population.Turn;_conquestPresentation=new(_setup);_conquestCard=0;_conquestStage=0;_conquestAge=0;_conquestOverview=true;
+        _conquestOverviewTurn=_setup.Population.Turn;_conquestPresentation=new(_setup);_conquestCard=0;_conquestStage=0;_conquestAge=0;_conquestOverview=true;_conquestExitOpacity=1;
         _conquestGlobe??=new WorldPreview(GraphicsDevice);_conquestGlobe.ManualOrientation=null;_conquestGlobe.GlobeAnchor=null;_conquestGlobe.GlobeZoom=1;
         _conquestFrom=Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,0));SetConquestCard();PlayCurtain();
     }
@@ -49,7 +50,7 @@ public partial class Game1
         _conquestOverview=false;_conquestMusic?.Dispose();_conquestMusic=null;
     }
     private void UpdateConquestOverview(double elapsed,bool skip){
-        if(skip && _conquestStage<5){_conquestStage=5;_conquestAge=0;_conquestGlobe.PresentationCells=null;_conquestGlobe.PresentationOwner=null;_conquestGlobe.ShowLandConquest(_setup,true);}
+        if(skip && _conquestStage<5){_conquestExitOpacity=_conquestStage==3?(float)Math.Clamp(_conquestAge/1.5,0,1):_conquestStage==4?1:0;_conquestStage=5;_conquestAge=0;}
         _conquestAge+=Math.Min(elapsed,.25);
         double duration=_conquestStage switch{0 or 2 or 6 or 8=>.65,1 or 3 or 5 or 7=>1.5,4=>ConquestCardSeconds,_=>0};
         if(_conquestStage==4){
@@ -72,10 +73,10 @@ public partial class Game1
         if(_conquestAge>=duration){
             _conquestAge=0;
             if(_conquestStage==4 && ++_conquestCard<_conquestPresentation.Cards.Length)SetConquestCard();
-            else{_conquestStage++;if(_conquestStage==5){_conquestCard=Math.Min(_conquestCard,_conquestPresentation.Cards.Length-1);_conquestGlobe.PresentationCells=null;_conquestGlobe.PresentationOwner=null;_conquestGlobe.ShowLandConquest(_setup,true);}
+            else{_conquestStage++;if(_conquestStage==5){_conquestCard=Math.Min(_conquestCard,_conquestPresentation.Cards.Length-1);}
                 if(_conquestStage is 2 or 6 or 8)PlayCurtain();if(_conquestStage>8){FinishConquestOverview();return;}}
         }
-        if(_conquestStage is >=2 and <=6 && !_conquestAudioUnavailable){
+        if(_conquestStage is >=2 and <=6 && !_conquestAudioUnavailable && (_conquestStage<5 || _conquestMusic!=null)){
             try{_conquestMusic??=new();var env=_conquestEnvironment;
                 float volume=_conquestStage==5?(float)(1-_conquestAge/1.5):_conquestStage==6?0:Math.Min(1,(float)(_conquestStage==2?_conquestAge/.65:1));
                 _conquestMusic.Update(env,.36f*volume);
@@ -84,7 +85,7 @@ public partial class Game1
     }
     private void DrawConquestOverview(Rectangle canvas,Matrix transform,Viewport viewport){
         GraphicsDevice.Clear(Color.Black);
-        if(_conquestStage is >=3 and <=6){
+        if(_conquestStage is 3 or 4 || _conquestStage==5 && _conquestExitOpacity>0){
             GraphicsDevice.Viewport=OrientationViewport(ConquestGlobeArea,canvas);_conquestGlobe.Draw(0,0,0,false,true);GraphicsDevice.Viewport=viewport;
             DrawConquestOrientation(canvas,transform,viewport);
         }
@@ -106,7 +107,7 @@ public partial class Game1
             }
             DrawConquestTally();
         }
-        if(_conquestStage is 3 or 5)_ui.Box(new(0,0,1920,1080),Color.Black*(float)Math.Clamp(1-_conquestAge/1.5,0,1));
+        if(_conquestStage is 3 or 5)_ui.Box(new(0,0,1920,1080),Color.Black*(float)Math.Clamp(_conquestStage==3?1-_conquestAge/1.5:1-_conquestExitOpacity*(1-_conquestAge/1.5),0,1));
         if(_conquestStage<3 || _conquestStage>=6){
             float cover=_conquestStage switch{0=>(float)(_conquestAge/.65),1 or 7=>1,2 or 8=>1-(float)(_conquestAge/.65),6=>(float)(_conquestAge/.65),_=>0};
             DrawConquestCurtain(MathHelper.SmoothStep(0,1,Math.Clamp(cover,0,1)));
