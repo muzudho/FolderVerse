@@ -41,7 +41,8 @@ sealed class InputGame:Game1{
    Check(!(bool)Prop("InspectorVisible") && !(bool)Get("_transportDestinationPicking") && (int)Get("_transportEditor")==0 && (int)Get("_rateTarget")==-1,"Shared X closes from every transport modal");
    Check(setup.Robots.Transport.Instructions(source,0).Count==1,"Closing existing editor preserves order");
   }
-  Open(source);Click(new(540,770));Click(((Rectangle)Prop("InspectorClose")).Center);Input(default,dt:.5);
+  int beforeDraft=setup.Robots.Transport.Instructions(source,0).Single().Degrees;Open(source);Click(new(540,770));Click(((Rectangle)Prop("InspectorClose")).Center);Input(default,dt:.5);
+  Check(setup.Robots.Transport.Instructions(source,0).Single().Degrees==beforeDraft,"Canceling new draft restores existing rates and rest");
   Check(setup.Robots.Transport.Instructions(source,0).Count==1,"Closing picker discards only pending draft");
   // Replay the reported flow: Add, then immediately edit the visible row controls.
   Open(source);Click(new(604,765));Check((bool)Get("_transportDestinationPicking"),"Add starts destination picking");

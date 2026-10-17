@@ -26,6 +26,7 @@ public sealed partial class RobotTransport
     private readonly Dictionary<(int Source,int Target,bool Disposal),int> _pendingFlow=new();
     public bool HasInstructions(int node,int owner)=>_instructions.ContainsKey((node,owner));
     public IReadOnlyList<TransportInstruction> Instructions(int node,int owner)=>_instructions.TryGetValue((node,owner),out var list)?list.AsReadOnly():Array.Empty<TransportInstruction>();
+    public int RestDegrees(int node,int owner)=>Math.Max(0,360-Instructions(node,owner).Sum(r=>r.Degrees));
     public void UseInstructions(int node,int owner){RobotWorld.Validate(owner,RobotParts.Head);if(node<0)throw new ArgumentOutOfRangeException(nameof(node));_instructions.TryAdd((node,owner),new());}
     // Player-facing instructions select individual parts; the legacy combination API remains available to AI.
     public static int SinglePartVariants(int alternatives)
@@ -67,7 +68,7 @@ public sealed partial class RobotTransport
         int number=Enumerable.Range(1,16).First(n=>list.All(r=>r.Number!=n));
         int share=360/(list.Count+1);var rule=new TransportInstruction{Number=number,Target=target,Degrees=0};list.Add(rule);list.Sort((a,b)=>a.Number.CompareTo(b.Number));SetInstructionRate(node,owner,number,share);return rule;
     }
-    public void DeleteInstruction(int node,int owner,int number){if(!_instructions.TryGetValue((node,owner),out var list))return;list.RemoveAll(r=>r.Number==number);NormalizeInstructions(list);}
+    public void DeleteInstruction(int node,int owner,int number){if(!_instructions.TryGetValue((node,owner),out var list))return;list.RemoveAll(r=>r.Number==number);}
     public void ConfigureInstruction(int node,int owner,int number,int target,int variants,bool cheap,bool disposal,int limit)
     {
         if(target<0 || target==node || (variants&~254)!=0 || variants==0 || limit<1 || limit>9999)throw new ArgumentException("Invalid instruction.");
@@ -76,21 +77,18 @@ public sealed partial class RobotTransport
         rule.QualityParts=null;rule.Target=target;rule.Variants=variants;rule.Cheap=cheap;rule.Disposal=disposal;rule.Limit=limit;if(changed)rule.Sent=0;
     }
     public void RestartInstruction(int node,int owner,int number)=>Instructions(node,owner).Single(r=>r.Number==number).Sent=0;
-    private static void NormalizeInstructions(List<TransportInstruction> rules)
-    {
-        if(rules.Count==0)return;int sum=rules.Sum(r=>r.Degrees);
-        var values=rules.Select(r=>sum==0?360/rules.Count:(int)((long)r.Degrees*360/sum)).ToArray();
-        int left=360-values.Sum();foreach(int i in Enumerable.Range(0,rules.Count).OrderByDescending(i=>sum==0?0:(long)rules[i].Degrees*360%sum).ThenBy(i=>i).Take(left))values[i]++;
-        for(int i=0;i<rules.Count;i++)rules[i].Degrees=values[i];
-    }
     public void SetInstructionRate(int node,int owner,int number,int degrees)
     {
         var rules=_instructions[(node,owner)];var selected=rules.Single(r=>r.Number==number);
-        if(rules.Count==1){selected.Degrees=360;return;}
-        degrees=Math.Clamp(degrees,0,360);var others=rules.Where(r=>r!=selected).ToArray();int sum=others.Sum(r=>r.Degrees),budget=360-degrees;
-        var values=others.Select(r=>sum==0?budget/others.Length:(int)((long)r.Degrees*budget/sum)).ToArray();
-        foreach(int i in Enumerable.Range(0,others.Length).OrderByDescending(i=>sum==0?0:(long)others[i].Degrees*budget%sum).ThenBy(i=>i).Take(budget-values.Sum()))values[i]++;
-        selected.Degrees=degrees;for(int i=0;i<others.Length;i++)others[i].Degrees=values[i];
+        degrees=Math.Clamp(degrees,0,360);var others=rules.Where(r=>r!=selected).ToArray();
+        int sum=others.Sum(r=>r.Degrees),budget=360-degrees;
+        // Decreases go to the fixed rest sector. Increases consume rest before shrinking other orders.
+        if(sum>budget){
+            var values=others.Select(r=>(int)((long)r.Degrees*budget/sum)).ToArray();
+            foreach(int i in Enumerable.Range(0,others.Length).OrderByDescending(i=>(long)others[i].Degrees*budget%sum).ThenBy(i=>i).Take(budget-values.Sum()))values[i]++;
+            for(int i=0;i<others.Length;i++)others[i].Degrees=values[i];
+        }
+        selected.Degrees=degrees;
     }
     private sealed record InstructionChoice(RobotShipment Shipment,TransportInstruction Instruction);
     private Dictionary<long,Queue<InstructionChoice>> BuildInstructionChoices(RobotWorld world,Func<int,int,bool> connected,SeedRandom random,Func<int,bool> locked,Func<int,int,bool> canEnter)
@@ -109,7 +107,7 @@ public sealed partial class RobotTransport
                 }
                 var queue=new Queue<InstructionChoice>();
                 // Weighted sampling without replacement permits rerolling if the receiver cannot fit.
-                while(options.Count>0){int roll=random.Next(options.Sum(o=>o.Instruction.Degrees)),sum=0;var chosen=options.First(o=>{sum+=o.Instruction.Degrees;return roll<sum;});queue.Enqueue(chosen);options.Remove(chosen);}
+                while(options.Count>0){int rest=RestDegrees(node,robot.Owner);int roll=random.Next(rest+options.Sum(o=>o.Instruction.Degrees)),sum=0;if(roll<rest)break;roll-=rest;var chosen=options.First(o=>{sum+=o.Instruction.Degrees;return roll<sum;});queue.Enqueue(chosen);options.Remove(chosen);}
                 if(queue.Count>0)result[robot.Id]=queue;
             }
         }

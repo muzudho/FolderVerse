@@ -104,6 +104,7 @@ public partial class Game1
         _ui.Text($"指示 #{_rateTarget} の採用率  {RateLabel(value)}",new(1130,210),.65f,Cream);
         var segments=new List<(int Degrees,Color Color,int Number)>{(value,Accent,_rateTarget)};
         foreach(var rule in TransportRules.Where(r=>r.Number!=_rateTarget))segments.Add((rule.Degrees,new Color(80+(rule.Number*37)%120,110+(rule.Number*17)%100,150),rule.Number));
+        segments.Add((_setup.Robots.Transport.RestDegrees(_populationNode,TransportOwner),new Color(105,115,125),0));
         // One small scanline run per sector; no new graphics resources per frame.
         for(int y=-110;y<=110;y+=2)
         {
@@ -117,7 +118,7 @@ public partial class Game1
             }
         }
         // Tiny 1-degree sectors cannot fit a readable label; the color key retains every number.
-        for(int i=0;i<segments.Count;i++){var seg=segments[i];var r=new Rectangle(1130+i%8*92,275+i/8*21,88,19);_ui.Box(new(r.X,r.Y+4,7,10),seg.Color);_ui.Text("#"+seg.Number+" "+(seg.Degrees*100/360f).ToString("0.#")+"%",new(r.X+10,r.Y),.28f,Cream);}
+        for(int i=0;i<segments.Count;i++){var seg=segments[i];var r=seg.Number==0?new Rectangle(1130,322,190,22):new Rectangle(1130+i%8*92,275+i/8*21,88,19);_ui.Box(new(r.X,r.Y+4,7,10),seg.Color);_ui.Text((seg.Number==0?"#0 休憩":"#"+seg.Number)+" "+(seg.Degrees*100/360f).ToString("0.#")+"%",new(r.X+10,r.Y),.28f,Cream);}
         float sectorStart=0;var labels=new List<Rectangle>();
         for(int i=0;i<segments.Count;i++){
             var seg=segments[i];
@@ -148,15 +149,15 @@ public partial class Game1
         _ui.Text("円の境界を動かして１度ずつ設定",new(1130,920),.42f,Cream);
         _ui.Text($"設定可能 0° - {maximum}°",new(1130,245),.4f,Cream);
         _ui.Button(RateZeroButton,"0",value==0?new Color(255,174,110):new Color(255,221,91),.65f);
-        DrawRateStepButton(RateMinusButton,false,value>0 && TransportRules.Count>1);
-        DrawRateStepButton(RatePlusButton,true,value<maximum && TransportRules.Count>1);
+        DrawRateStepButton(RateMinusButton,false,value>0);
+        DrawRateStepButton(RatePlusButton,true,value<maximum);
         for(int row=0;row<4;row++)for(int col=0;col<RateDivisions[row];col++)
         {
             if(!RatePresetUnique(row,col))continue;
             int degree=(col+1)*360/RateDivisions[row];var rect=RatePresetBounds(row,col);bool enabled=degree<=maximum;
             DrawRateFractionButton(rect,RateFraction(col+1,RateDivisions[row]),enabled,degree==value);
         }
-        _ui.Text("合計100%。実行できる指示から選択。完了分は採用しない。",new(1130,965),.36f,Cream);
+        _ui.Text("合計100%。#0休憩は残りの割合。編集不可。",new(1130,965),.36f,Cream);
         _ui.Button(new(1740,950,130,40),"閉じる",Accent,.45f);
     }
 }

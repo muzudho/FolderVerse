@@ -8,6 +8,7 @@ public partial class Game1
 {
     private int _transportPage,_transportEditor,_transportEditNumber; // editor: 1 variants, 2 quantity
     private bool _transportDestinationPicking,_transportNewInstruction;
+    private Dictionary<int,int> _transportDraftRates;
     private string _transportQuantity="1";
     private bool _transportQuantityReplace;
     private int TransportOwner=>_populationNode>=0 && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner)?_setup.Nodes.All[_populationNode].Owner:_setup.PlayerSlot;
@@ -44,14 +45,16 @@ public partial class Game1
         }
         if(new Rectangle(84,752,170,36).Contains(p))_transportPage=Math.Max(0,_transportPage-1);
         if(new Rectangle(264,752,170,36).Contains(p))_transportPage=Math.Min(Math.Max(0,(TransportRules.Count-1)/4),_transportPage+1);
-        if(new Rectangle(444,752,220,36).Contains(p) && TransportRules.Count<16){var targets=TransportAdjacent();if(targets.Length>0){var rule=transport.AddInstruction(_populationNode,TransportOwner,targets[0]);ConfigureTransport(rule,choices:7);_transportEditNumber=rule.Number;_transportPage=TransportRules.ToList().FindIndex(r=>r.Number==rule.Number)/4;_transportDestinationPicking=true;_transportNewInstruction=true;}}
+        if(new Rectangle(444,752,220,36).Contains(p) && TransportRules.Count<16){var targets=TransportAdjacent();if(targets.Length>0){_transportDraftRates=TransportRules.ToDictionary(r=>r.Number,r=>r.Degrees);var rule=transport.AddInstruction(_populationNode,TransportOwner,targets[0]);ConfigureTransport(rule,choices:7);_transportEditNumber=rule.Number;_transportPage=TransportRules.ToList().FindIndex(r=>r.Number==rule.Number)/4;_transportDestinationPicking=true;_transportNewInstruction=true;}}
         if(new Rectangle(674,752,174,36).Contains(p))foreach(var rule in page.Where(r=>r.Complete))transport.RestartInstruction(_populationNode,TransportOwner,rule.Number);
         return new Rectangle(54,150,850,680).Contains(p);
     }
     private void DrawTransportInstructions()
     {
         if(_populationNode<0)return;
-        _ui.Text("指示 "+TransportRules.Count+" / 16",new(84,270),.45f,Cream);
+        int rest=_populationNode<0?360:_setup.Robots.Transport.RestDegrees(_populationNode,TransportOwner);
+        _ui.Text("#0  "+(rest*100/360f).ToString("0.#")+"%  休憩",new(84,270),.45f,new Color(170,180,190));
+        _ui.Text("指示 "+TransportRules.Count+" / 16",new(650,270),.4f,Cream);
         if(!CanEditTransport)_ui.Text("他国の輸送計画は閲覧のみ",new(84,800),.4f,Cream);
         var page=TransportRules.Skip(_transportPage*4).Take(4).ToArray();
         for(int row=0;row<page.Length;row++){
@@ -79,7 +82,7 @@ public partial class Game1
         if(_transportDestinationPicking){
             _ui.Text("隣接節点を選択 / 他のボタンも操作できます",new(84,798),.35f,Cream);
             _ui.Button(TransportPickCancel,"取消",Accent,.45f);
-        }else _ui.Text("実行できる指示から採用 / 採用率の合計100%",new(84,798),.35f,Cream);
+        }else _ui.Text("休憩と実行できる指示から採用 / 合計100%",new(84,798),.35f,Cream);
         if(_transportEditor!=0)DrawTransportEditor();
     }
     private static Rectangle TransportVariantButton(int i)=>new(104+i%3*244,370+i/3*136,224,124);
@@ -107,8 +110,12 @@ public partial class Game1
     private static Rectangle TransportPickCancel=>new(674,798,174,36);
     private void CancelTransportModal()
     {
-        if(_transportDestinationPicking && _transportNewInstruction && _populationNode>=0)
+        if(_transportDestinationPicking && _transportNewInstruction && _populationNode>=0){
             _setup.Robots.Transport.DeleteInstruction(_populationNode,TransportOwner,_transportEditNumber);
+            if(_transportDraftRates!=null)foreach(var entry in _transportDraftRates)
+                if(TransportRules.Any(r=>r.Number==entry.Key))_setup.Robots.Transport.SetInstructionRate(_populationNode,TransportOwner,entry.Key,entry.Value);
+        }
+        _transportDraftRates=null;
         _transportNewInstruction=false;_transportEditor=0;_transportDestinationPicking=false;_rateTarget=-1;_rateDragging=false;
         _dragging=_mapDragging=false;
     }
