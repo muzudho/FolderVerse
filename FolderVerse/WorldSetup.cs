@@ -147,7 +147,7 @@ public sealed partial class WorldSetup
     public void PrepareTutorialStepOne(int worldSeed,int castSeed,int placementSeed)
     {
         SetPlayerCount(1);
-        while(true){SetWorld(worldSeed);if(Width==1 && Height==1 && Depth==1)break;worldSeed=worldSeed==int.MaxValue?0:worldSeed+1;}
+        while(true){SetWorld(worldSeed);if(Width==1 && Height==1 && Depth==1 && WorldTerrain.HasSeaAndLand(Cells,WorldSeed))break;worldSeed=worldSeed==int.MaxValue?0:worldSeed+1;}
         SetCast(castSeed);
         for(int i=0;i<6;i++){Portraits[i]=i;Looks[i]=new(i,0);}
         ConquerorFullNames=WorldNames.Conquerors(Looks,castSeed);ConquerorNames=WorldNames.ShortNames(ConquerorFullNames);

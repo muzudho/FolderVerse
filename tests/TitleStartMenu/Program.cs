@@ -32,8 +32,23 @@ sealed class MenuGame:Game1{
   Check(tutorial.TutorialStep==1 && tutorial.Nodes.All.All(n=>tutorial.Robots.Nodes[n.Id].Count==4 && tutorial.Robots.Nodes[n.Id].Robots.All(r=>r.Role==RobotRole.Soldier && r.Parts==RobotParts.Complete && r.CanFight && r.Owner==n.Owner)),"Every tutorial hangar starts with four complete soldiers");
   for(int seed=0;seed<10;seed++){
    var sample=new WorldSetup();sample.PrepareTutorialStepOne(seed,456,789);sample.CompleteLand(seed+100);sample.SelectPlayer(0);
+   Check(WorldTerrain.HasSeaAndLand(sample.Cells,sample.WorldSeed),"Tutorial rerolls until it has both sea and land cells");
    Check(sample.Nodes.All.All(n=>sample.Robots.Nodes[n.Id].Count==4 && sample.Campaign.RobotBattles.AvailableFrom(sample,n.Owner,n.Id)==4),"Random terrain keeps four immediately deployable soldiers at every node");
    Check(sample.Nodes.All.Where(n=>n.Owner==0).Any(n=>sample.Routes.Neighbors(n).Any(r=>sample.Nodes.At(r.Target,r.Entry).Owner!=0)),"Random tutorial terrain always has a first-turn attack route");
+  }
+  int allSeaSeed=-1,allLandSeed=-1;var cube=WorldSetup.CreateCells(1,1,1);
+  for(int seed=0;seed<10000 && (allSeaSeed<0 || allLandSeed<0);seed++){
+   if(new SeedRandom(seed).Next(15)!=0)continue;
+   bool sea=false,land=false;var offset=WorldTerrain.Offset(seed);
+   foreach(var cell in cube)for(int y=0;y<10;y++)for(int x=0;x<10;x++){
+    if(WorldTerrain.Kind(WorldTerrain.Elevation(cell.Origin+cell.U*((x+.5f)/10)+cell.V*((y+.5f)/10),offset))==TerrainKind.Sea)sea=true;else land=true;
+   }
+   if(!land)allSeaSeed=seed;if(!sea)allLandSeed=seed;
+  }
+  Check(allSeaSeed>=0 && allLandSeed>=0,"Normal random worlds can contain all-sea and all-land dice planets");
+  foreach(int seed in new[]{allSeaSeed,allLandSeed}){
+   var sample=new WorldSetup();sample.SetWorld(seed);Check(!WorldTerrain.HasSeaAndLand(sample.Cells,sample.WorldSeed),"Extreme terrain fixture is unchanged in normal play");
+   sample.PrepareTutorialStepOne(seed,456,789);Check(sample.WorldSeed!=seed && WorldTerrain.HasSeaAndLand(sample.Cells,sample.WorldSeed),"Tutorial rejects both extreme starting worlds");
   }
   Check(tutorial.Robots.Workshops.All(w=>w.ProductionLines.Length==0),"Tutorial has no manufacturing lines for humans or AI");
   var label=typeof(Game1).GetProperty("WarReservationLabel",F)!;
@@ -58,6 +73,17 @@ sealed class MenuGame:Game1{
   Check(tutorial.Robots.IndustryTurn==beforeIndustry+tutorial.Industry.Result,"Silent industrial processing retains disposal and assembly timing");
   var nameMethod=typeof(Game1).GetMethod("MedallionName",BindingFlags.NonPublic|BindingFlags.Static)!;
   Check((string)nameMethod.Invoke(null,new object[]{"エミリア・アルメ"})! =="エミリア アルメ" && (string)nameMethod.Invoke(null,new object[]{"エミリア　 アルメ"})! =="エミリア アルメ","Medallion keeps full name with one separating space");
+  var font=(SpriteFont)Get("_font");
+  var layout=((string Glyph,Vector2 At,float Rotation,Vector2 Origin)[])Call("MedallionNameLayout",Vector2.Zero,"エミリア・アルメ");
+  Check(layout.All(l=>Math.Abs(l.At.Length()-132)<.001),"Medallion engraving radius is inset by two pixels");
+  for(int i=1;i<layout.Length;i++){
+   float bounds=(font.MeasureString(layout[i-1].Glyph).X+font.MeasureString(layout[i].Glyph).X)*(.36f*1.2f)/(2*132);
+   Check(Math.Abs(layout[i].Rotation-layout[i-1].Rotation-bounds-MathHelper.ToRadians(5))<.0001,"Every character has exactly five degrees of additional spacing");
+  }
+  float firstEdge=layout[0].Rotation-font.MeasureString(layout[0].Glyph).X*(.36f*1.2f)/(2*132),lastEdge=layout[^1].Rotation+font.MeasureString(layout[^1].Glyph).X*(.36f*1.2f)/(2*132);
+  Check(Math.Abs(firstEdge+lastEdge)<.0001,"Curved full name is centered at twelve o'clock");
+  float band=(float)typeof(Game1).GetField("MedallionBandWidth",BindingFlags.NonPublic|BindingFlags.Static)!.GetRawConstantValue()!;
+  Check(Math.Abs(band-26.4f)<.0001,"Engraving band is 1.2 times its previous width");
   int tutorialNode=tutorial.Nodes.Current(0).Id;Call("OpenNodeInspector",tutorialNode);
   // Even a legacy/injected production line cannot bypass the tutorial entry restriction.
   for(int seed=0;tutorial.Robots.Workshops[tutorialNode].ProductionLines.Length==0;seed++)tutorial.Robots.Workshops[tutorialNode].GenerateLines(seed);

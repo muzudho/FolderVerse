@@ -32,6 +32,13 @@ public static class WorldTerrain
         int best=0;for(int i=1;i<counts.Length;i++)if(counts[i]>counts[best])best=i;
         return (TerrainKind)best;
     }
+    // Tutorial variety uses the same majority terrain classification as cells in the game.
+    public static bool HasSeaAndLand(SurfaceCell[] cells,int seed)
+    {
+        bool sea=false,land=false;var offset=Offset(seed);
+        foreach(var cell in cells){if(CellKind(cell,offset)==TerrainKind.Sea)sea=true;else land=true;if(sea && land)return true;}
+        return false;
+    }
     private static float Noise(Vector3 p)
     {
         int x = (int)MathF.Floor(p.X), y = (int)MathF.Floor(p.Y), z = (int)MathF.Floor(p.Z);

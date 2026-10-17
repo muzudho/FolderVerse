@@ -84,14 +84,14 @@ public partial class Game1
     {
         var r=ReignPortrait;if(InspectorVisible)r.Offset((int)(960*_domesticSlide),0);var center=new Vector2(r.Center.X,r.Center.Y);
         DrawPortraitMedallion(center,_setup.OwnerColor(_setup.PlayerSlot));
-        var image=new Rectangle(r.X,r.Y,r.Width,r.Height);
+        var image=new Rectangle((int)(center.X-MedallionPortraitRadius),(int)(center.Y-MedallionPortraitRadius),(int)(MedallionPortraitRadius*2),(int)(MedallionPortraitRadius*2));
         // Clip the portrait to a circular silhouette using horizontal scissor strips.
         var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _spriteBatch.End();var old=GraphicsDevice.ScissorRectangle;
         using(var clip=new RasterizerState{ScissorTestEnable=true}){
-            for(int y=-120;y<120;y+=4){
-                int half=(int)MathF.Sqrt(120*120-y*y);
-                GraphicsDevice.ScissorRectangle=new(canvas.X+(int)((r.Center.X-half)*canvas.Width/1920f),canvas.Y+(int)((r.Center.Y+y)*canvas.Height/1080f),Math.Max(1,(int)(half*2*canvas.Width/1920f)),Math.Max(1,(int)(4*canvas.Height/1080f)));
+            for(int y=-(int)MedallionPortraitRadius;y<(int)MedallionPortraitRadius;y+=2){
+                int half=(int)MathF.Sqrt(Math.Max(0,MedallionPortraitRadius*MedallionPortraitRadius-y*y));
+                GraphicsDevice.ScissorRectangle=new(canvas.X+(int)((r.Center.X-half)*canvas.Width/1920f),canvas.Y+(int)((r.Center.Y+y)*canvas.Height/1080f),Math.Max(1,(int)(half*2*canvas.Width/1920f)),Math.Max(1,(int)(2*canvas.Height/1080f)));
                 _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
                 _portraitRenderer.Draw(_spriteBatch,_setup.Looks[_setup.PlayerSlot],image);_spriteBatch.End();
             }
