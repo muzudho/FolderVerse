@@ -19,7 +19,7 @@ sealed class InputGame:Game1{
  void Click(Point p){Input(p);Input(p,ButtonState.Pressed);Input(p);}
  void Open(int source){Call("ResetInspector");Set("_domesticSlide",0f);Click(((Rectangle)Prop("TransportOverviewButton")).Center);Input(new Point(0,0),dt:.4);Set("_populationNode",source);}
  protected override void LoadContent(){
-  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
+  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_conquestOverviewEnabled",false);
   var setup=(WorldSetup)Get("_setup");setup.SetWorld(123);setup.SetCast(456);setup.SetPlacement(789);setup.SelectPlayer(0);
   var world=(WorldPreview)Get("_world");world.ShowSetup(setup,true);var net=(CubeNet)Get("_net");net.Home(setup);
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_statusGlobe",false);

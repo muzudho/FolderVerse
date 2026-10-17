@@ -18,7 +18,7 @@ sealed class MenuGame:Game1{
  void Key(Keys key){Input(default,keys:new[]{key});Input(default);}
  string path=Path.Combine(AppContext.BaseDirectory,"menu-save-test","autosave.json.gz");int frame;
  protected override void LoadContent(){
-  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_autoSavePath",path);Set("_autoSaveEnabled",true);if(File.Exists(path))File.Delete(path);Call("CheckAutoSave");
+  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_conquestOverviewEnabled",false);Set("_autoSavePath",path);Set("_autoSaveEnabled",true);if(File.Exists(path))File.Delete(path);Call("CheckAutoSave");
   Click(960,930);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title" && (int)Get("_titleMenuSelection")==2,"Start opens menu without save, New Game selected");
   Check(!(bool)Call("UpdateDemo",11d,true,false,false,false,11d),"Idle demo cannot steal open menu");
   Click(960,517);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Hidden Continue row is inert without save");

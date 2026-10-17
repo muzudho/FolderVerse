@@ -12,6 +12,7 @@ public sealed partial class WorldPreview
         _=>Color.Lerp(Color.Lerp(nation,new Color(190,190,180),.22f),new Color(250,247,240),.32f)
     };
 
+    public int? PresentationOwner {get;set;}
     public bool CountryColors {get;set;}
     public bool ControlledCountryColors {get;set;}
     public void ShowLandConquest(WorldSetup setup,bool exclusive=false)
@@ -25,7 +26,8 @@ public sealed partial class WorldPreview
             var a=cell.Origin+cell.U*(x/10f)+cell.V*(y/10f);
             var b=a+cell.U/10;var c=b+cell.V/10;var d=a+cell.V/10;
             float height=WorldTerrain.Elevation((a+c)/2,offset);
-            int owner=exclusive?setup.Nodes.FullOwner(cell.Id):setup.Owners[cell.Id];
+            int owner=PresentationOwner.HasValue?ConquestPresentation.ExactCellOwner(setup,cell.Id):exclusive?setup.Nodes.FullOwner(cell.Id):setup.Owners[cell.Id];
+            if(PresentationOwner.HasValue && owner!=PresentationOwner.Value)owner=-1;
             if(exclusive && ControlledCountryColors && !setup.Relations.Controls(owner))owner=-1;
             var color=owner<0?WorldTerrain.ColorAt(height,cell.Normal):LandTerritoryColor(setup.OwnerColor(owner),WorldTerrain.Kind(height));
             if(x==0 || y==0)color=Color.Lerp(color,new Color(17,47,62),.18f);

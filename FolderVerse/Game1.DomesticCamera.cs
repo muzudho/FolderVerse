@@ -15,7 +15,7 @@ public partial class Game1{
    _net.ShowMapSymbols,_net.ShowEquator,_net.ShowRobots,_net.ShowOtherCountries,_net.ShowBatteries,routes,_net.ShowCountryColors);
  }
  private void RestoreDomesticCamera(){
-  ResetInspector();_domesticSlide=0;RestorePlayerView();AutoSaveDomestic();
+  ResetInspector();_domesticSlide=0;RestorePlayerView();AutoSaveDomestic();BeginConquestOverview();
  }
  private void RestorePlayerView(){
   _orientationAge=-1;_mapTransitionAge=-1;_dragging=_mapDragging=false;

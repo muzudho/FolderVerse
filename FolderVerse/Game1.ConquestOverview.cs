@@ -1,0 +1,120 @@
+namespace FolderVerse;
+using System;
+using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Graphics;
+public partial class Game1
+{
+    private bool _conquestOverviewEnabled=true;
+    private int _conquestOverviewTurn=-1,_conquestStage,_conquestCard;
+    private double _conquestAge;
+    private bool _conquestOverview;
+    private ConquestPresentation _conquestPresentation;
+    private WorldPreview _conquestGlobe;
+    private ConquestMusic _conquestMusic;
+    private SoundEffect _curtainSound;
+    private bool _conquestAudioUnavailable;
+    private Vector3 _conquestEnvironment;
+    private Quaternion _conquestFrom=Quaternion.Identity,_conquestTo=Quaternion.Identity;
+    private static Rectangle ConquestGlobeArea=>new(360,60,1500,950);
+    private ConquestPresentation.Card ConquestCard=>_conquestPresentation.Cards[_conquestCard];
+    private double ConquestCardSeconds=>ConquestCard.Reminder?.8:Math.Max(3.2,ConquestCard.Faces.Length*2.6);
+    private void BeginConquestOverview(){
+        if(!_conquestOverviewEnabled || _demoActive || _autoPlay || _conquestOverviewTurn==_setup.Population.Turn)return;
+        _conquestOverviewTurn=_setup.Population.Turn;_conquestPresentation=new(_setup);_conquestCard=0;_conquestStage=0;_conquestAge=0;_conquestOverview=true;
+        _conquestGlobe??=new WorldPreview(GraphicsDevice);_conquestGlobe.ManualOrientation=null;_conquestGlobe.GlobeAnchor=null;_conquestGlobe.GlobeZoom=1;
+        _conquestFrom=Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,0));SetConquestCard();PlayCurtain();
+    }
+    private void PlayCurtain(){
+        if(_conquestAudioUnavailable)return;
+        try{_curtainSound??=ConquestMusic.Curtain();_curtainSound.Play(.55f,0,0);}
+        catch(NoAudioHardwareException e){_conquestAudioUnavailable=true;RecordFailure(e,"conquest_audio");}
+    }
+    private void SetConquestCard(){
+        _conquestEnvironment=ConquestPresentation.Environment(_setup,ConquestCard.Ruler);
+        _conquestGlobe.PresentationOwner=ConquestCard.Ruler;_conquestGlobe.ShowLandConquest(_setup,true);
+        _conquestFrom=_conquestGlobe.ManualOrientation??_conquestFrom;
+    }
+    private static Quaternion ConquestFace(Vector3 normal){
+        float pitch=MathF.Atan2(normal.Y,MathF.Sqrt(normal.X*normal.X+normal.Z*normal.Z));
+        var v=Vector3.Transform(normal,Matrix.CreateRotationX(pitch));
+        return Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(-MathF.Atan2(v.X,v.Z),pitch));
+    }
+    private void FinishConquestOverview(){
+        _conquestOverview=false;_conquestMusic?.Dispose();_conquestMusic=null;
+    }
+    private void UpdateConquestOverview(double elapsed,bool skip){
+        if(skip && _conquestStage<5){_conquestStage=5;_conquestAge=0;_conquestGlobe.PresentationOwner=null;_conquestGlobe.ShowLandConquest(_setup,true);}
+        _conquestAge+=Math.Min(elapsed,.25);
+        double duration=_conquestStage switch{0 or 2 or 6 or 8=>.65,1 or 3 or 5 or 7=>1.5,4=>ConquestCardSeconds,_=>0};
+        if(_conquestStage==4){
+            var faces=ConquestCard.Faces;
+            if(faces.Length>0){
+                double segment=ConquestCard.Reminder?0:_conquestAge/2.6;int index=Math.Min(faces.Length-1,(int)segment);
+                _conquestTo=ConquestFace(_setup.Cells.First(c=>c.Face==faces[index]).Normal);
+                var from=index==0?_conquestFrom:ConquestFace(_setup.Cells.First(c=>c.Face==faces[index-1]).Normal);
+                float blend=MathHelper.SmoothStep(0,1,(float)Math.Min(1,(ConquestCard.Reminder?_conquestAge/.7:segment-index)/.65));
+                float turn=(float)Math.Sin(_conquestAge*.65)*.20f+.12f;
+                _conquestGlobe.ManualOrientation=Quaternion.CreateFromRotationMatrix(Matrix.CreateFromQuaternion(Quaternion.Slerp(from,_conquestTo,blend))*Matrix.CreateRotationY(turn)*Matrix.CreateRotationX(.12f));
+            }
+        }
+        if(_conquestAge>=duration){
+            _conquestAge=0;
+            if(_conquestStage==4 && ++_conquestCard<_conquestPresentation.Cards.Length)SetConquestCard();
+            else{_conquestStage++;if(_conquestStage==5){_conquestCard=Math.Min(_conquestCard,_conquestPresentation.Cards.Length-1);_conquestGlobe.PresentationOwner=null;_conquestGlobe.ShowLandConquest(_setup,true);}
+                if(_conquestStage is 2 or 6 or 8)PlayCurtain();if(_conquestStage>8){FinishConquestOverview();return;}}
+        }
+        if(_conquestStage is >=2 and <=6 && !_conquestAudioUnavailable){
+            try{_conquestMusic??=new();var env=_conquestEnvironment;
+                float volume=_conquestStage==5?(float)(1-_conquestAge/1.5):_conquestStage==6?0:Math.Min(1,(float)(_conquestStage==2?_conquestAge/.65:1));
+                _conquestMusic.Update(env,.36f*volume);
+            }catch(NoAudioHardwareException e){_conquestAudioUnavailable=true;RecordFailure(e,"conquest_music");}
+        }
+    }
+    private void DrawConquestOverview(Rectangle canvas,Matrix transform,Viewport viewport){
+        GraphicsDevice.Clear(Color.Black);
+        if(_conquestStage is >=3 and <=6){
+            GraphicsDevice.Viewport=OrientationViewport(ConquestGlobeArea,canvas);_conquestGlobe.Draw(0,0,0,false,true);GraphicsDevice.Viewport=viewport;
+        }
+        _spriteBatch.Begin(transformMatrix:transform);
+        if(_conquestStage==4){
+            int ruler=ConquestCard.Ruler;var color=_setup.OwnerColor(ruler);
+            foreach(var node in _setup.Nodes.All.Where(n=>n.Owner==ruler)){
+                var cell=_setup.Cells[node.Cell];if(!_conquestGlobe.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center),cell.Normal,0,0,ConquestGlobeArea,out var pos,.03f))continue;
+                _ui.Box(new((int)pos.X-6,(int)pos.Y-6,12,12),Color.Black*.7f);_ui.Box(new((int)pos.X-5,(int)pos.Y-5,10,10),Color.White);_ui.Box(new((int)pos.X-3,(int)pos.Y-3,6,6),color);
+            }
+            if(ruler<_setup.ConquerorLocations.Length){
+                int location=_setup.ConquerorLocations[ruler];var cell=_setup.Cells[location];
+                if(_conquestGlobe.ProjectVisible(_setup.Routes.Position(location,_setup.ConquerorPoints[ruler]),cell.Normal,0,0,ConquestGlobeArea,out var at,.055f)){
+                    _ui.Tile(at,new(21,21),MathHelper.PiOver4,Color.Black*.7f);
+                    _ui.Tile(at,new(16,16),MathHelper.PiOver4,new Color(255,229,120));
+                    _ui.Box(new((int)at.X+12,(int)at.Y-20,94,34),Color.Black*.65f);
+                    _ui.Text("現在地",at+new Vector2(18,-16),.32f,Cream);
+                }
+            }
+            _ui.Box(new(55,170,405,535),new Color(25,34,46));_ui.Box(new(55,170,10,535),color);
+            _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new(105,200,300,300),_setup.Relations.Powered[ruler]);
+            _ui.Center($"暫定{ConquestCard.Rank}位　{_setup.ConquerorNames[ruler]}",new(70,515,375,65),.55f,Cream);
+            _ui.Center($"Depth {ConquestCard.Depth}"+(ConquestCard.Reminder?" / ボス":""),new(70,585,375,40),.45f,Cream);
+            int player=_setup.HumanPlayers.IndexOf(ruler);if(player>=0)_ui.Center($"＜プレイヤー{player+1}＞",new(70,640,375,45),.55f,new Color(255,224,120));
+            _ui.Tile(new(460,550),new(35,35),MathHelper.PiOver4,new Color(25,34,46));
+        }
+        if(_conquestStage is 3 or 5)_ui.Box(new(0,0,1920,1080),Color.Black*(float)Math.Clamp(1-_conquestAge/1.5,0,1));
+        if(_conquestStage<3 || _conquestStage>=6){
+            float cover=_conquestStage switch{0=>(float)(_conquestAge/.65),1 or 7=>1,2 or 8=>1-(float)(_conquestAge/.65),6=>(float)(_conquestAge/.65),_=>0};
+            DrawConquestCurtain(MathHelper.SmoothStep(0,1,Math.Clamp(cover,0,1)));
+        }
+        _ui.Text("世界征服状況フェーズ",new(55,35),.7f,Cream);
+        _ui.Center($"全体ターン {_setup.Population.Turn} / 征服者 {_setup.ActiveCount}人 / 敵 {Enumerable.Range(0,_setup.ActiveCount).Count(r=>!_setup.Relations.Allied(r,_setup.PlayerSlot))}人",new(580,35,950,45),.5f,Cream);
+        _ui.Text("Enter / Esc : 内政へ",new(1470,1020),.4f,Cream);
+        _spriteBatch.End();
+    }
+    private void DrawConquestCurtain(float cover){
+        int width=(int)(960*cover);
+        for(int side=0;side<2;side++)for(int x=0;x<width;x+=8){
+            float fold=.55f+.45f*MathF.Pow((MathF.Cos(x*.065f)+1)*.5f,2);var color=new Color((int)(145*fold),(int)(15*fold),(int)(32*fold));
+            _ui.Box(new(side==0?x:1920-x-8,0,Math.Min(8,width-x),1080),color);
+        }
+    }
+}

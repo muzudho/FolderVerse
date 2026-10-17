@@ -34,7 +34,7 @@ sealed class SaveGame:Game1{
  string path=Path.Combine(AppContext.BaseDirectory,"autosave-test","autosave.json.gz");
  void Input(int x,int y,ButtonState b=ButtonState.Released,double dt=0){Call("HandleInput",new MouseState(x,y,0,b,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.Zero,TimeSpan.FromSeconds(dt)),true);}
  protected override void LoadContent(){
-  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_autoSavePath",path);Set("_autoSaveEnabled",true);if(File.Exists(path))File.Delete(path);
+  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_conquestOverviewEnabled",false);Set("_autoSavePath",path);Set("_autoSaveEnabled",true);if(File.Exists(path))File.Delete(path);
   var w=(WorldSetup)Get("_setup");w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);var net=(CubeNet)Get("_net");var world=(WorldPreview)Get("_world");world.ShowSetup(w,true);net.Home(w);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
   int source=w.Nodes.Current(0).Id;var factory=w.Robots.Workshops[source];for(int seed=0;factory.ProductionLines.Length==0;seed++)factory.GenerateLines(seed);
   Call("OpenNodeInspector",source);Call("OpenNodeFactory");Set("_factoryDropDown",0);Call("CloseNodeInspector");Call("UpdateDomesticSlide",1f);Check(!(bool)Get("_nodeFactoryOpen") && (int)Get("_factoryDropDown")==-1,"Closing clears stale factory modal");
