@@ -51,8 +51,8 @@ sealed class OverviewGame:Game1{
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
   var tally=(ConquestTally)Get("_conquestTally");
-  Set("_conquestStage",frame switch{1=>1,6 or 7 or 8=>5,9 or 10=>6,11 or 12=>3,_=>4});
-  Set("_conquestAge",frame switch{0=>1.18,1=>.5,2=>tally.CountEnd+.75,3=>tally.ConvertStart+.1,4 or 5=>tally.RankStart+2,6=>0d,7=>.75d,8=>1.49999d,9=>0d,10=>.3d,11=>0d,12=>1.49d,_=>0d});
+  Set("_conquestStage",frame switch{1=>1,6 or 7 or 8=>5,9 or 10=>6,11 or 12=>3,13=>8,_=>4});
+  Set("_conquestAge",frame switch{0=>1.18,1=>.5,2=>tally.CountEnd+.75,3=>tally.ConvertStart+.1,4 or 5=>tally.RankStart+2,6=>0d,7=>.75d,8=>1.49999d,9=>0d,10=>.3d,11=>0d,12=>1.49d,13=>0d,_=>0d});
   if(frame!=1 && frame<6)Call("UpdateConquestOverview",0d,false);
   if(frame==5){var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
   base.Draw(t);var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
@@ -65,7 +65,8 @@ sealed class OverviewGame:Game1{
   if(frame is 9 or 10)Check(brightness==0,"Globe remains absent while closing curtain starts and moves");
   if(frame==11)Check(brightness==0,"Intro still starts completely black");
   if(frame==12)Check(brightness>exitMiddle,"Intro still fades in correctly");
-  if(frame++<12)return;
+  if(frame is 1 or 13)Check(pixels.All(c=>c.R>c.G*3 && c.R>c.B*2),"Closed curtain covers every HUD/header/footer pixel on entry and return to domestic");
+  if(frame++<13)return;
   Call("FinishConquestOverview");Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");
   int guard=0;while((bool)Get("_conquestOverview") && guard++<2500){
    Call("UpdateConquestOverview",.25d,false);

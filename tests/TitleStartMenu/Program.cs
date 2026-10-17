@@ -56,6 +56,8 @@ sealed class MenuGame:Game1{
   Call("OpenWarPlanning");var targets=((CubeNet)Get("_net")).MovementTargets;
   Check(tutorial.Population.Turn==0 && targets.Count>0,"War planning has reachable enemy targets before the first turn ends");
   int invasionTarget=targets.First();Set("_selectedMoveNode",invasionTarget);Call("BuildInvasionSources",invasionTarget);
+  var targetLabel=(string)typeof(Game1).GetProperty("InvasionTargetLabel",F)!.GetValue(this)!;
+  Check(targetLabel=="侵攻先："+tutorial.Nodes.DisplayName(tutorial.Nodes.All[invasionTarget]) && !targetLabel.Contains("Node "),"Invasion target uses human-readable node name without numeric ID");
   Call("InvasionClick",new Point(794,332));Call("ReserveInvasion");
   Check(tutorial.Campaign.PlannedOrders.Count==1 && tutorial.Campaign.PlannedOrders[0].Fighters==1 && (string)label.GetValue(this)! =="開戦予約（1件）","First-turn plus button reserves a soldier and updates label");
   var order=tutorial.Campaign.PlannedOrders[0];tutorial.Campaign.Plan(order);Check((string)label.GetValue(this)! =="開戦予約（1件）","Replacing same reservation does not double count");
@@ -75,12 +77,12 @@ sealed class MenuGame:Game1{
   Check((string)nameMethod.Invoke(null,new object[]{"エミリア・アルメ"})! =="エミリア アルメ" && (string)nameMethod.Invoke(null,new object[]{"エミリア　 アルメ"})! =="エミリア アルメ","Medallion keeps full name with one separating space");
   var font=(SpriteFont)Get("_font");
   var layout=((string Glyph,Vector2 At,float Rotation,Vector2 Origin)[])Call("MedallionNameLayout",Vector2.Zero,"エミリア・アルメ");
-  Check(layout.All(l=>Math.Abs(l.At.Length()-130)<.001),"Medallion engraving radius is inset by two pixels");
+  Check(layout.All(l=>Math.Abs(l.At.Length()-132)<.001),"Medallion engraving radius moves outward by two pixels");
   for(int i=1;i<layout.Length;i++){
-   float bounds=(font.MeasureString(layout[i-1].Glyph).X+font.MeasureString(layout[i].Glyph).X)*(.36f*1.2f)/(2*130);
+   float bounds=(font.MeasureString(layout[i-1].Glyph).X+font.MeasureString(layout[i].Glyph).X)*(.36f*1.2f)/(2*132);
    Check(Math.Abs(layout[i].Rotation-layout[i-1].Rotation-bounds-MathHelper.ToRadians(5))<.0001,"Every character has exactly five degrees of additional spacing");
   }
-  float firstEdge=layout[0].Rotation-font.MeasureString(layout[0].Glyph).X*(.36f*1.2f)/(2*130),lastEdge=layout[^1].Rotation+font.MeasureString(layout[^1].Glyph).X*(.36f*1.2f)/(2*130);
+  float firstEdge=layout[0].Rotation-font.MeasureString(layout[0].Glyph).X*(.36f*1.2f)/(2*132),lastEdge=layout[^1].Rotation+font.MeasureString(layout[^1].Glyph).X*(.36f*1.2f)/(2*132);
   Check(Math.Abs(firstEdge+lastEdge)<.0001,"Curved full name is centered at twelve o'clock");
   float band=(float)typeof(Game1).GetField("MedallionBandWidth",BindingFlags.NonPublic|BindingFlags.Static)!.GetRawConstantValue()!;
   Check(Math.Abs(band-26.4f)<.0001,"Engraving band is 1.2 times its previous width");

@@ -9,7 +9,7 @@ public partial class Game1
 {
     private Texture2D _medallionRing;
     private Color _medallionColor;
-    private const float MedallionNameRadius=130; // Lettering inset another 2 px; the metal ring stays in place.
+    private const float MedallionNameRadius=132; // Lettering moved outward by 2 px; the metal ring stays in place.
     private const float MedallionBandWidth=22*1.2f;
     private const float MedallionBandInner=132-MedallionBandWidth/2;
     private const float MedallionBandOuter=132+MedallionBandWidth/2;

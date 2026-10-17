@@ -83,12 +83,13 @@ public partial class Game1
         CloseMovement();if(_transportOverview)CloseTransportOverview();
         _setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);_populationCell=-1;OpenBattle();
     }
+    private string InvasionTargetLabel=>_selectedMoveNode<0?"明るい敵節点を選んでください":"侵攻先："+_setup.Nodes.DisplayName(_setup.Nodes.All[_selectedMoveNode]);
     private void DrawInvasionPanel()
     {
         _ui.Box(new(54,150,850,825),new Color(27,49,62));
         _ui.Text("開戦・増援の予約",new(84,177),.8f,Cream);
         if(SelectedWithdrawal!=null){DrawWithdrawal();return;}
-        _ui.Text(_selectedMoveNode<0?"明るい敵節点を選んでください":$"侵攻先：Node {_selectedMoveNode+1}",new(84,245),.6f,Cream);
+        var targetLabel=InvasionTargetLabel;_ui.Text(targetLabel,new(84,245),Math.Min(.6f,760/_font.MeasureString(targetLabel).X),Cream);
         for(int i=0;i<7;i++)
         {
             int index=_invasionPage*7+i;if(index>=_invasionSources.Count)break;
