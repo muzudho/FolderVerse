@@ -1,0 +1,57 @@
+{
+  "character": 39,
+  "date": "2026-10-18",
+  "method": "Built-in image_gen style edit",
+  "status": "COMPARISON_ONLY_NOT_ADOPTED",
+  "specification": "../../../../../docs/AIエージェント向け指示書/グラフィック/キャラクターグラフィック_作品統一感_仕様.md",
+  "images": [
+    {
+      "id": 1,
+      "before": "../character-39-1-v008-generated.png",
+      "after": "character-39-1-style-v001.png",
+      "width": 1448,
+      "height": 1086,
+      "sha256": "9f7b4ed4bc4e292e587dfada41e322009d15a151e25adb19cf04535c778739a6"
+    },
+    {
+      "id": 2,
+      "before": "../character-39-2-v007-generated.png",
+      "after": "character-39-2-style-v001.png",
+      "width": 1448,
+      "height": 1086,
+      "sha256": "6ac26b7448590057f71814793d50dce0a2cbee0f1077ebf60b791074a297713a"
+    },
+    {
+      "id": 3,
+      "before": "../character-39-3-v007-generated.png",
+      "after": "character-39-3-style-v001.png",
+      "width": 1448,
+      "height": 1086,
+      "sha256": "1aee70c74421f0da0bade5b8cb83095563e63dc8002153bb536531ba548c2553"
+    },
+    {
+      "id": 4,
+      "before": "../character-39-4-v005-generated.png",
+      "after": "character-39-4-style-v001.png",
+      "width": 1448,
+      "height": 1086,
+      "sha256": "0aab78a3e521270d7e6f6a38e864e8d06c22d62894843dd721937e9ec5cf6b16"
+    },
+    {
+      "id": 5,
+      "before": "../character-39-5-v005-generated.png",
+      "after": "character-39-5-style-v001.png",
+      "width": 1448,
+      "height": 1086,
+      "sha256": "73816808d664bed20c882b2c9014ec605796800a729eb7a33f052640020996a5"
+    },
+    {
+      "id": 6,
+      "before": "../character-39-6-v005-generated.png",
+      "after": "character-39-6-style-v001.png",
+      "width": 1448,
+      "height": 1086,
+      "sha256": "2d7be411211984f14222e4c3fad185bbbf69f9928805af840402c56925535941"
+    }
+  ]
+}
