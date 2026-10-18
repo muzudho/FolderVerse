@@ -1,0 +1,27 @@
+{
+  "CharacterId": 40,
+  "Method": "built-in image_gen",
+  "Standard": "v017-approved-20261018",
+  "Images": [
+    {
+      "Id": 1,
+      "Source": "character-40-normal-1-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "477511709ab6e32aec082a376688d75013875e8c0753ba1f585dca20b0a6cb2d",
+      "Prompt": "character-40-normal-1-prompt.txt",
+      "Status": "generated-reviewed-not-adopted"
+    },
+    {
+      "Id": 2,
+      "Source": "character-40-normal-2-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "9cd0537167175700f2eb869edf0e2ee7d9d48e33c18211c3484cccabcda00154",
+      "Prompt": "character-40-normal-2-prompt.txt",
+      "Status": "generated-reviewed-not-adopted"
+    }
+  ],
+  "Next": "normal-3",
+  "GameAdopted": false
+}
