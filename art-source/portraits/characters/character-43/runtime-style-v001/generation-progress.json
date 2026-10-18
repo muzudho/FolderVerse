@@ -1,0 +1,230 @@
+{
+  "CharacterId": 43,
+  "Method": "built-in image_gen",
+  "Standard": "v017-approved-20261018",
+  "Images": [
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Source": "character-43-normal-1-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "A6E12685C1B8647CDF61874172025053547F4D5CBC82B5183314EAD1C04A549D",
+      "Prompt": "character-43-normal-1-prompt.txt",
+      "AdditionalPrompts": [
+        "character-43-normal-1-framing-prompt.txt"
+      ],
+      "References": [
+        "conqueror-balanced/character-43-1-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Source": "character-43-normal-2-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "E63662E56D974D0483F1DC3FE8212BA974218D9275BD6AFC5C84ECA9BA874E24",
+      "Prompt": "character-43-normal-2-prompt.txt",
+      "AdditionalPrompts": [
+        "character-43-normal-2-framing-prompt.txt"
+      ],
+      "References": [
+        "conqueror-balanced/remaining-variants/character-43-2-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Source": "character-43-normal-3-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "6D4AD55BCFB907744DA1862B8593A0A068C61EE03E4A2F4441F7F2063A625793",
+      "Prompt": "character-43-normal-3-prompt.txt",
+      "AdditionalPrompts": [],
+      "References": [
+        "conqueror-balanced/remaining-variants/character-43-3-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Source": "character-43-normal-4-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "24D6E1AC967ADDD56C2D4BD1B3B1A43C02D489B61E341F5AB1333E8C35E5E032",
+      "Prompt": "character-43-normal-4-prompt.txt",
+      "AdditionalPrompts": [
+        "character-43-normal-4-framing-prompt.txt"
+      ],
+      "References": [
+        "conqueror-balanced/remaining-variants/character-43-4-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Source": "character-43-normal-5-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "F1BABDB5189F62301AA04F7F884C596F14772A6AF4177A1B627BA90165D685B0",
+      "Prompt": "character-43-normal-5-prompt.txt",
+      "AdditionalPrompts": [
+        "character-43-normal-5-framing-prompt.txt",
+        "character-43-normal-5-face-prompt.txt"
+      ],
+      "References": [
+        "conqueror-balanced/remaining-variants/character-43-5-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Source": "character-43-normal-6-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "F1BF97C2C5E6B36C7483217ABBB8A13CEEA36108DFF99F77CE6FAD7E8BAFEA91",
+      "Prompt": "character-43-normal-6-prompt.txt",
+      "AdditionalPrompts": [
+        "character-43-normal-6-framing-prompt.txt"
+      ],
+      "References": [
+        "conqueror-balanced/remaining-variants/character-43-6-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Source": "character-43-formal-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "333E82CFE2D38C59AED0DDFF39DA6B8AF8C225FD7ECC77AA7D54DBE585D1E34B",
+      "Prompt": "character-43-formal-prompt.txt",
+      "AdditionalPrompts": [],
+      "References": [
+        "newspaper-trials/character-43-formal-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Source": "character-43-election-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "E7D264708384F3FB567D23A470BE1F3ADCF0B6AA3A7C5DE87CD801509A5C6FCF",
+      "Prompt": "character-43-election-prompt.txt",
+      "AdditionalPrompts": [],
+      "References": [
+        "newspaper-trials/character-43-election-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Source": "character-43-friends-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "64A00FD4B40DAA02B321EF1F72864A690B111FDEEABF8397310233432834538D",
+      "Prompt": "character-43-friends-prompt.txt",
+      "AdditionalPrompts": [],
+      "References": [
+        "newspaper-trials/character-43-friends-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Source": "character-43-history-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "F38D29274D7C5FC573B6482435ACABDC2B342685CC5FA0DB17B65C6711797C2A",
+      "Prompt": "character-43-history-prompt.txt",
+      "AdditionalPrompts": [],
+      "References": [
+        "newspaper-trials/character-43-history-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Source": "character-43-id-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "DCC97120224A6A4B7F1D0E08EFA0F95EA590858C94C003510F99688EBAC592D0",
+      "Prompt": "character-43-id-prompt.txt",
+      "AdditionalPrompts": [],
+      "References": [
+        "newspaper-trials/character-43-id-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Source": "character-43-idol-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "D9CFA6E85D0177EDAACE2B143FAC05C82A841956A3CECCB632BA1AD657C70B23",
+      "Prompt": "character-43-idol-prompt.txt",
+      "AdditionalPrompts": [],
+      "References": [
+        "newspaper-trials/character-43-idol-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Source": "character-43-paparazzi-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "19E9B8C9DE628F8F4B8A581A527B7EA89A344C4161EDC0042DBF1B9F539F37DB",
+      "Prompt": "character-43-paparazzi-prompt.txt",
+      "AdditionalPrompts": [],
+      "References": [
+        "newspaper-trials/character-43-paparazzi-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Source": "character-43-coin-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "E48AB083803C351FA9663D6AFCB651E2F727423C8AC6B69637B31C03911DE499",
+      "Prompt": "character-43-coin-prompt.txt",
+      "AdditionalPrompts": [],
+      "References": [
+        "newspaper-trials/character-43-coin-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    }
+  ],
+  "Next": "No.44 normal-1",
+  "GameAdopted": true
+}

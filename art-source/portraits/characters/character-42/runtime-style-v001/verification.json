@@ -1,0 +1,17 @@
+{
+  "CharacterId": 42,
+  "Build": "dotnet build FolderVerse/FolderVerse.csproj --no-restore -v:q",
+  "BuildSucceeded": true,
+  "Warnings": 0,
+  "Errors": 0,
+  "RuntimeDestinations": 20,
+  "NewspaperSize": "300x400",
+  "NormalSize": "256x192",
+  "NewspaperOutputPngHashesMatched": 8,
+  "CompiledNormalPremultipliedTexturePixelBuffersMatched": 12,
+  "CatalogCurrentEntries": 360,
+  "OtherCharactersUnchanged": true,
+  "VisualReview": "14 originals; 6 normal previews; 8 grayscale newspaper previews",
+  "Limitations": "normal-4/5 faces occupy less of frame; precise iris highlight contact and local rear-hair effects vary; cropped views do not validate knee/foot proportions.",
+  "Next": "No.43 normal-1"
+}

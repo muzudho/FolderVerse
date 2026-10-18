@@ -1,0 +1,118 @@
+[
+  {
+    "i": 1,
+    "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-8630eda5-a1c4-4d96-9568-d1470690a2a4.png",
+    "p": "Use case: identity-preserve / precise-object-edit. Input1 current No44 portrait EDIT TARGET. Input2 v017 BODY proportions ONLY, no princess identity/costume.\nPreserve adult elf identity: silver-white long waves, silver round glasses, pointed ears, TWO black horns gold rings, exact current eye color/expression, navywhitegold clothes, star/compass decorations, exact current props. No new costume. Exact4:3 color.\nImprove portrait readability with LARGE face and expressive large hands, SHORT neck chin close to collar as v017. Preserve hair WHITE transverse highlight bands around head sphere; fine facial lines, stronger outer clothing/prop contours, dark cel-shadow planes; local pale cool depth behind shoulder hair only. Eye main upper round white highlight touches iris edge and tiny opposite dot clipped inside eyes. Do not add open iris to closed eyes.\nDo not just zoom entire character out. Keep full headgear WITH visible background above, adjust composition and body proportions for large face. No watermark/text.\nTargeted correction: face is too small relative to body and tall mitre. Enlarge head SPHERE/face/ears/glasses/hair by about25% anchored at chin, relative to torso, keep neck short. Preserve full tall whiteblackgold mitre silhouette/design but its height relative to face must not increase. Place highest hat tip inside top margin. Keep five-finger reaching bare hand, penguin and whiteblack blue-screen robot. Warm library and smiling magenta eyes.",
+    "extra": [
+      {
+        "suffix": "b",
+        "p": "Use case: precise-object-edit. Keep exact current enlarged face size, hands, props, clothes and all details. Same4:3. Reframe by TRANSLATING THE ENTIRE COMPOSITION DOWN about150pixels, revealing matching library ABOVE; allow lower torso and lower foreground to leave bottom frame. DO NOT ZOOM OUT OR SHRINK FACE. Reconstruct missing pointed top of whiteblackgold mitre ABOVE her head, full tip with visible background above. Do not change hat design, horns, face or pose. All five reaching fingers remain in frame by moving hand upward slightly if needed."
+      },
+      {
+        "suffix": "c",
+        "p": "Use case: precise-object-edit. KEEP exact current whole hat and face size/position, horns, glasses, magenta eyes and library. Correct ONLY outstretched bare hand at lower right: lift wrist/hand upward toward shoulder by about120px so all FIVE fingertips fully inside image. Bend elbow naturally. Do not zoom or move head. Penguin and robot remain held by other hand, keep pose and clothes.4:3."
+      }
+    ],
+    "trials": [
+      {
+        "suffix": "first",
+        "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-d699708d-a5ec-41d0-bd04-ec6fd7fc6f1c.png"
+      },
+      {
+        "suffix": "second",
+        "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-25639dc4-3e47-46eb-a9a1-280308c696f0.png"
+      }
+    ]
+  },
+  {
+    "i": 2,
+    "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-547dfc16-599a-4d58-a248-42edfbe9bf09.png",
+    "p": "Use case: identity-preserve / precise-object-edit. Input1 current No44 portrait EDIT TARGET. Input2 v017 BODY proportions ONLY, no princess identity/costume.\nPreserve adult elf identity: silver-white long waves, silver round glasses, pointed ears, TWO black horns gold rings, exact current eye color/expression, navywhitegold clothes, star/compass decorations, exact current props. No new costume. Exact4:3 color.\nImprove portrait readability with LARGE face and expressive large hands, SHORT neck chin close to collar as v017. Preserve hair WHITE transverse highlight bands around head sphere; fine facial lines, stronger outer clothing/prop contours, dark cel-shadow planes; local pale cool depth behind shoulder hair only. Eye main upper round white highlight touches iris edge and tiny opposite dot clipped inside eyes. Do not add open iris to closed eyes.\nDo not just zoom entire character out. Keep full headgear WITH visible background above, adjust composition and body proportions for large face. No watermark/text.\nTarget2: face too small. Enlarge head sphere face glasses ears hair about25% relative torso, keeping chin near fur collar; retain full mitre and horns without increasing hat height relative to face. Frame tighter waist-up, lower blanket may leave frame; hands on white mug and red battery visible. Sleepy MAGENTA eyes closed lips. Keep animal robot behind shoulder, tartan blanket. Hat tip must remain inside canvas. Face more important than extra background.",
+    "extra": [
+      {
+        "suffix": "b",
+        "p": "Use case: precise-object-edit. Keep current LARGE elf face, sleepy magenta eyes, silver glasses, hair, hands and white mug, toy robot, red battery, blanket EXACT size/pose. Correct only enormous mitre framing: keep WHITEBLACKGOLD pointed mitre and gold star/compass decorations but fit its COMPLETE pointed top inside current canvas; make upper hat about20% shorter vertically above hairline, retaining pointed mitre silhouette. Both black horns stay. Add background above highest tip. NO zoom out or shrink face, no new costume. Same4:3."
+      }
+    ],
+    "trials": [
+      {
+        "suffix": "first",
+        "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-e162a1a7-e679-4c4c-85ad-0b99f6ef3012.png"
+      },
+      {
+        "suffix": "second",
+        "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-547dfc16-599a-4d58-a248-42edfbe9bf09.png"
+      }
+    ]
+  },
+  {
+    "i": 3,
+    "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-02749e9a-1508-4a01-b632-32f352279af1.png",
+    "p": "Use case: identity-preserve / precise-object-edit. Input1 current No44 portrait EDIT TARGET. Input2 v017 BODY proportions ONLY, no princess identity/costume.\nPreserve adult elf identity: silver-white long waves, silver round glasses, pointed ears, TWO black horns gold rings, exact current eye color/expression, navywhitegold clothes, star/compass decorations, exact current props. No new costume. Exact4:3 color.\nImprove portrait readability with LARGE face and expressive large hands, SHORT neck chin close to collar as v017. Preserve hair WHITE transverse highlight bands around head sphere; fine facial lines, stronger outer clothing/prop contours, dark cel-shadow planes; local pale cool depth behind shoulder hair only. Eye main upper round white highlight touches iris edge and tiny opposite dot clipped inside eyes. Do not add open iris to closed eyes.\nDo not just zoom entire character out. Keep full headgear WITH visible background above, adjust composition and body proportions for large face. No watermark/text.\nFraming repair of map portrait. Keep current LARGE face and two pointing BARE hands, MAGENTA eyes, map and RED battery. Complete the pointed whiteblackgold mitre top inside frame with background margin. Fit upper hat height within available top area without enlarging it; retain star/compass crest and two horns. Translate character slightly DOWN and raise pointing hands/map slightly so both fingers visible, allow bottom map to leave frame. DO NOT zoom out/shrink face.",
+    "extra": [
+      {
+        "suffix": "b",
+        "p": "Use case: precise-object-edit. Change ONLY scholar mitre above hairline: make its upper portion 25% shorter vertically, reconstruct complete pointed TOP with background margin inside canvas. Retain whiteblackgold panels and compass/star ornament. Keep SAME face/head sphere SIZE and position, magenta eyes silver glasses, horns and hair, two bare pointing hands/map and red battery. No zoom or reframing of whole image.4:3."
+      },
+      {
+        "suffix": "c",
+        "p": "Use case: precise-object-edit. Zoom OUT original map portrait to85%, extend matching room background above. Reconstruct COMPLETE TALL POINTED whiteblackgold scholar mitre top and two black horns, full top with clear background margin. Keep exact elf face magenta eyes silverglasses hair, both BARE index fingers pointing on map, red battery and navywhitegold uniform. Retain tall mitre silhouette, NOT low cap.4:3 color. No other changes."
+      }
+    ],
+    "trials": [
+      {
+        "suffix": "first",
+        "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-91e46f46-5b58-402b-bf55-eff4ab090d07.png"
+      },
+      {
+        "suffix": "second",
+        "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-3ef90b55-c7ca-4649-a99b-b56188a7a897.png"
+      }
+    ]
+  },
+  {
+    "i": 4,
+    "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-f0c5d59b-3b32-4a96-87b1-f840f4cf6bc5.png",
+    "p": "Use case: identity-preserve / precise-object-edit. Input1 current No44 portrait EDIT TARGET. Input2 v017 BODY proportions ONLY, no princess identity/costume.\nPreserve adult elf identity: silver-white long waves, silver round glasses, pointed ears, TWO black horns gold rings, exact current eye color/expression, navywhitegold clothes, star/compass decorations, exact current props. No new costume. Exact4:3 color.\nImprove portrait readability with LARGE face and expressive large hands, SHORT neck chin close to collar as v017. Preserve hair WHITE transverse highlight bands around head sphere; fine facial lines, stronger outer clothing/prop contours, dark cel-shadow planes; local pale cool depth behind shoulder hair only. Eye main upper round white highlight touches iris edge and tiny opposite dot clipped inside eyes. Do not add open iris to closed eyes.\nDo not just zoom entire character out. Keep full headgear WITH visible background above, adjust composition and body proportions for large face. No watermark/text.\nTarget4: keep laughing narrowed MAGENTA eyes and open mouth, white navy gold animal robot plush, checker wrap, green battery. Reframe entire existing composition at90% and extend background at TOP only so COMPLETE tall whiteblackgold mitre and both black horns inside visible margin. Preserve tall pointed mitre identity, do NOT replace with low circlet. Face should stay large, no excessive extra background.",
+    "extra": [
+      {
+        "suffix": "b",
+        "p": "Zoom out this picture to80% with matching room background around it. Reconstruct the complete TOP of tall pointed white/navy/gold mitre and both black horns; nothing clipped at top. Keep same elf face, magenta narrowed eyes, silver hair/glasses, toy plush, green battery and pose. Landscape4:3. Full hat visible with background above."
+      }
+    ],
+    "trials": [
+      {
+        "suffix": "first",
+        "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-bbd4f2b8-439c-43f0-b902-3c032e5b0b4c.png"
+      },
+      {
+        "suffix": "second",
+        "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-f0c5d59b-3b32-4a96-87b1-f840f4cf6bc5.png"
+      }
+    ]
+  },
+  {
+    "i": 5,
+    "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-c216501b-2348-4494-9a58-39c918b52e88.png",
+    "p": "Use case: precise-object-edit. Preserve adult elf blue-violet eyes, silver glasses, long white hair, exact broad navy-white-gold multipoint cap, both horns, face expression, clothes and WHITE gloved hands. Zoom OUT whole composition to85%, extend matching palace backdrop. Show FULL upper cap and all its points/decorations inside frame with visible background margin. Both white hands fully readable. No change to eye color, hat type or costume.4:3 color.",
+    "extra": [],
+    "trials": [
+      {
+        "suffix": "first",
+        "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-c216501b-2348-4494-9a58-39c918b52e88.png"
+      }
+    ]
+  },
+  {
+    "i": 6,
+    "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-b843e5f0-4233-4bff-bd9d-650989ebad09.png",
+    "p": "Use case: precise-object-edit. Preserve adult elf face with magenta narrowed eyes, silver glasses, white updo/waves, two black horns, ornate gold tiara, opaque white bath wrap fully covering chest/torso, bare shoulders/arms, foam roses and small bath robot. Zoom picture out to88% with matching marble room background. Reconstruct whole BLACK HORN tips and gold tiara fully inside top margin. No nudity, no new costume, no mitre. Keep face large short neck, exact4:3 color.",
+    "extra": [],
+    "trials": [
+      {
+        "suffix": "first",
+        "src": "C:\\Users\\muzud\\.codex\\generated_images\\01a1470c-a2ba-7161-b65f-de6cd2956aba\\exec-b843e5f0-4233-4bff-bd9d-650989ebad09.png"
+      }
+    ]
+  }
+]

@@ -1,0 +1,197 @@
+{
+  "CharacterId": 45,
+  "AdoptedAt": "2026-10-19",
+  "Standard": "v017-approved-20261018",
+  "Method": "Built-in image_gen, visual references and written proportion rules; latest shared style; long black hair, one ruby-red eye, white cloth eye bandage, pointed elf ears, black-gold pirate hat and red-black-gold costume and scene-specific props; not rendered from the 3D prototype",
+  "Backup": "backup/",
+  "Images": [
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-1-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-1.png",
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "6F8FF5EE30F9860706DAC0B9FDFD4661174CA7ECC9ADA733DCD39ECAC1FDA0CB",
+      "OriginalSha256": "6F1294A5A3978458B9EEBC8E9A5D17CE80D69E4A172A46AD13236449E4439456",
+      "Targets": [
+        "v3-standardized/tiles/character-45-1.png",
+        "conqueror-creation/tiles/character-45-1.png"
+      ]
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-2-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-2.png",
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "E436A8124F2C8E408F2AA3018DB9461DFA5282C278DF9AA629F63E028E014272",
+      "OriginalSha256": "1B42AB250BFEB58965C977608725C81929801CDE07F8C41A4A5BDBC0DA014CA1",
+      "Targets": [
+        "v3-standardized/tiles/character-45-2.png",
+        "conqueror-creation/tiles/character-45-2.png"
+      ]
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-3-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-3.png",
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "EA3DD82EEF407B6DC01D83A18C67E5872893826F4073AC7BE14A1F3397FEAF42",
+      "OriginalSha256": "ECD39B2481BC00298A67248569EE9CF7E7F04274F010E39EAC67DC79583B288E",
+      "Targets": [
+        "v3-standardized/tiles/character-45-3.png",
+        "conqueror-creation/tiles/character-45-3.png"
+      ]
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-4-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-4.png",
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "6B1A8A867053C8CD786B3B8293C1652A3A5FE91DE8C5BCB733CB990B6A82E4E1",
+      "OriginalSha256": "9EC9589D4346E74CEA141DCFAAC5F566675B75208C864A2B71BB39C8462FAFBC",
+      "Targets": [
+        "v3-standardized/tiles/character-45-4.png",
+        "conqueror-creation/tiles/character-45-4.png"
+      ]
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-5-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-5.png",
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "28417FB9B61325913143F564ADFCE7521DFF61B31A3BF1954CBD3A5CD5843C9F",
+      "OriginalSha256": "18AF9FF3B5FE6BCCFB5B231468157A514C1CB01BF7B1449E8FD03E628AFD2905",
+      "Targets": [
+        "v3-standardized/tiles/character-45-5.png",
+        "conqueror-creation/tiles/character-45-5.png"
+      ]
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-6-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-6.png",
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "89843630D9C6DC46E6D3E114D5D814E8C0A3401217ED4CC0810D14411DF9FF9D",
+      "OriginalSha256": "FE36E2E80BBDA03301C50390E59733D5BDE62A9E6277DA8AB29806660A3CB3AD",
+      "Targets": [
+        "v3-standardized/tiles/character-45-6.png",
+        "conqueror-creation/tiles/character-45-6.png"
+      ]
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-formal-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-formal.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "5F5E3E7550131C801BC3EA0B4BECD917CDC9B7F0E4561F04782D50241F2F3684",
+      "OriginalSha256": "71FD377DC33759DA0DB0CADADBDDF55385AF113BF28B490191819F8C3B1F0D87",
+      "Targets": [
+        "newspaper/character-45-formal.png"
+      ]
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-election-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-election.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "0BFB3C96F3CE7AD5D779081A12B613F50510037B5ABDB952927C2821FC3E2A70",
+      "OriginalSha256": "7C530C0F6201D145CB6422D5226A69F6D56E27A669B4B4B7B6746A5F57A60678",
+      "Targets": [
+        "newspaper/character-45-election.png"
+      ]
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-friends-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-friends.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "7E1B13F47A62772D86014ADF35EBED3D7D97EE7847292445B3D207B1A88C389C",
+      "OriginalSha256": "E111601F088617708048A802799F3E8374F25F04DDC92575C571799E0DE76760",
+      "Targets": [
+        "newspaper/character-45-friends.png"
+      ]
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-history-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-history.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "BC7369249D0609ED358366A750F0A5501076088B5C71AC14D1781F4669629B80",
+      "OriginalSha256": "876827F194F0078A9F8CBD4AF543058F12CC96B99F7F927E5D9B0D8070E25624",
+      "Targets": [
+        "newspaper/character-45-history.png"
+      ]
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-id-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-id.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "C9DA3E553E44D05FE1D1D74E0E59200E8AF7371A7B7FBC925E9660EF8066F26D",
+      "OriginalSha256": "200BA645ADC4B7D01C1B156C369F25C4FDD085468C1DD55AB1EAB636253B5E25",
+      "Targets": [
+        "newspaper/character-45-id.png"
+      ]
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-idol-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-idol.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "7A8C715D11F708F74B97D781DE455B3F9C1C7D3CAD25ADAEDD2F2F9DE26AF91E",
+      "OriginalSha256": "3DEDB4BA5930B50F43ECDC3AC87798E2878C17AAFA131E07980A5E37A4589E26",
+      "Targets": [
+        "newspaper/character-45-idol.png"
+      ]
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-paparazzi-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-paparazzi.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "77DFFFF1F669985EF5712DDF5B079FC54103E7548C858947CBF05FA611473D82",
+      "OriginalSha256": "97266B7461C8A08D187379AFCE2D926FAB9EFFB24A2D1852D8B94DCA5180EC7C",
+      "Targets": [
+        "newspaper/character-45-paparazzi.png"
+      ]
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-coin-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-coin.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "CF24D7BFA7E4C268C2B4ED64688E81E937DE475F098DF9CE351903EB34393640",
+      "OriginalSha256": "9A8EC8489B1E46F41E14ADB88125C517CD5FBB1E49227A32F1F14127D620D5E7",
+      "Targets": [
+        "newspaper/character-45-coin.png"
+      ]
+    }
+  ]
+}

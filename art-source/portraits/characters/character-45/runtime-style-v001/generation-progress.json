@@ -1,0 +1,192 @@
+{
+  "CharacterId": 45,
+  "UpdatedAt": "2026-10-19 07:01 JST",
+  "Method": "built-in image_gen",
+  "Standard": "v017-approved-20261018",
+  "GameAdopted": true,
+  "Next": "character-46-normal-1",
+  "Images": [
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-1-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-1.png",
+      "Prompt": "character-45-normal-1-prompt.txt",
+      "References": [
+        "conqueror-balanced/character-45-1-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "6F8FF5EE30F9860706DAC0B9FDFD4661174CA7ECC9ADA733DCD39ECAC1FDA0CB",
+      "Status": "generated-visually-reviewed-game-adopted-output-verified"
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-2-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-2.png",
+      "Prompt": "character-45-normal-2-prompt.txt",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-45-2-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "E436A8124F2C8E408F2AA3018DB9461DFA5282C278DF9AA629F63E028E014272",
+      "Status": "generated-visually-reviewed-game-adopted-output-verified"
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-3-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-3.png",
+      "Prompt": "character-45-normal-3-prompt.txt",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-45-3-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "EA3DD82EEF407B6DC01D83A18C67E5872893826F4073AC7BE14A1F3397FEAF42",
+      "Status": "generated-visually-reviewed-game-adopted-output-verified"
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-4-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-4.png",
+      "Prompt": "character-45-normal-4-prompt.txt",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-45-4-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "6B1A8A867053C8CD786B3B8293C1652A3A5FE91DE8C5BCB733CB990B6A82E4E1",
+      "Status": "generated-visually-reviewed-game-adopted-output-verified"
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-5-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-5.png",
+      "Prompt": "character-45-normal-5-prompt.txt",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-45-5-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "28417FB9B61325913143F564ADFCE7521DFF61B31A3BF1954CBD3A5CD5843C9F",
+      "Status": "generated-visually-reviewed-game-adopted-output-verified"
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-6-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-normal-6.png",
+      "Prompt": "character-45-normal-6-prompt.txt",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-45-6-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "89843630D9C6DC46E6D3E114D5D814E8C0A3401217ED4CC0810D14411DF9FF9D",
+      "Status": "generated-visually-reviewed-game-adopted-output-verified"
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-formal-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-formal.png",
+      "Prompt": "character-45-formal-prompt.txt",
+      "References": [
+        "newspaper-trials/character-45-formal-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "5F5E3E7550131C801BC3EA0B4BECD917CDC9B7F0E4561F04782D50241F2F3684",
+      "Status": "generated-visually-reviewed-game-adopted-output-verified"
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-election-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-election.png",
+      "Prompt": "character-45-election-prompt.txt",
+      "References": [
+        "newspaper-trials/character-45-election-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "0BFB3C96F3CE7AD5D779081A12B613F50510037B5ABDB952927C2821FC3E2A70",
+      "Status": "generated-visually-reviewed-game-adopted-output-verified"
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-friends-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-friends.png",
+      "Prompt": "character-45-friends-prompt.txt",
+      "References": [
+        "newspaper-trials/character-45-friends-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "7E1B13F47A62772D86014ADF35EBED3D7D97EE7847292445B3D207B1A88C389C",
+      "Status": "generated-visually-reviewed-game-adopted-output-verified"
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-history-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-history.png",
+      "Prompt": "character-45-history-prompt.txt",
+      "References": [
+        "newspaper-trials/character-45-history-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "BC7369249D0609ED358366A750F0A5501076088B5C71AC14D1781F4669629B80",
+      "Status": "generated-visually-reviewed-game-adopted-output-verified"
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-id-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-id.png",
+      "Prompt": "character-45-id-prompt.txt",
+      "References": [
+        "newspaper-trials/character-45-id-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "C9DA3E553E44D05FE1D1D74E0E59200E8AF7371A7B7FBC925E9660EF8066F26D",
+      "Status": "generated-visually-reviewed-game-adopted-output-verified"
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-idol-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-idol.png",
+      "Prompt": "character-45-idol-prompt.txt",
+      "References": [
+        "newspaper-trials/character-45-idol-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "7A8C715D11F708F74B97D781DE455B3F9C1C7D3CAD25ADAEDD2F2F9DE26AF91E",
+      "Status": "generated-visually-reviewed-game-adopted-output-verified"
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-paparazzi-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-paparazzi.png",
+      "Prompt": "character-45-paparazzi-prompt.txt",
+      "References": [
+        "newspaper-trials/character-45-paparazzi-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "77DFFFF1F669985EF5712DDF5B079FC54103E7548C858947CBF05FA611473D82",
+      "Status": "generated-visually-reviewed-game-adopted-output-verified"
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-coin-generated.png",
+      "Tile": "art-source/portraits/characters/character-45/runtime-style-v001/character-45-coin.png",
+      "Prompt": "character-45-coin-prompt.txt",
+      "References": [
+        "newspaper-trials/character-45-coin-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "CF24D7BFA7E4C268C2B4ED64688E81E937DE475F098DF9CE351903EB34393640",
+      "Status": "generated-visually-reviewed-game-adopted-output-verified"
+    }
+  ]
+}

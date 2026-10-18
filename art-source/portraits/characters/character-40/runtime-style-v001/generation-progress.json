@@ -5,23 +5,201 @@
   "Images": [
     {
       "Id": 1,
+      "Kind": "normal",
       "Source": "character-40-normal-1-generated.png",
       "Width": 1448,
       "Height": 1086,
       "Sha256": "477511709ab6e32aec082a376688d75013875e8c0753ba1f585dca20b0a6cb2d",
       "Prompt": "character-40-normal-1-prompt.txt",
-      "Status": "generated-reviewed-not-adopted"
+      "References": [
+        "conqueror-balanced/character-40-1-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
     },
     {
       "Id": 2,
+      "Kind": "normal",
       "Source": "character-40-normal-2-generated.png",
       "Width": 1448,
       "Height": 1086,
       "Sha256": "9cd0537167175700f2eb869edf0e2ee7d9d48e33c18211c3484cccabcda00154",
       "Prompt": "character-40-normal-2-prompt.txt",
-      "Status": "generated-reviewed-not-adopted"
+      "References": [
+        "conqueror-balanced/remaining-variants/character-40-2-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Source": "character-40-normal-3-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "fee85aa929154cdee6c05c36447f4079a740e70d3ee546685c0a777f409e05c7",
+      "Prompt": "character-40-normal-3-prompt.txt",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-40-3-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Source": "character-40-normal-4-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "a0d1a17160ef2a7056931047e228d9544bfc85ecf26a9952e9801f901c82e1db",
+      "Prompt": "character-40-normal-4-prompt.txt",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-40-4-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Source": "character-40-normal-5-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "beeb8d67dc4e7a8e5f0054be540853d7ab87a8421252361b22f372ef855816f9",
+      "Prompt": "character-40-normal-5-prompt.txt",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-40-5-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Source": "character-40-normal-6-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "5b5017c7ce5e951d7f1a425e2b3476b5f6470d68b250d22172831d8653aba8c9",
+      "Prompt": "character-40-normal-6-prompt.txt",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-40-6-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Source": "character-40-formal-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "68376f13ec42ba71292967ff7be7e412ac125a8477b8beb613fa981d4f15a820",
+      "Prompt": "character-40-formal-prompt.txt",
+      "References": [
+        "newspaper-trials/character-40-formal-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Source": "character-40-election-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "970bdc58ec6c5a2898261c5760838a8724a185d0cd7b74b036894b1574386977",
+      "Prompt": "character-40-election-prompt.txt",
+      "References": [
+        "newspaper-trials/character-40-election-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Source": "character-40-friends-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "0981c285a6c836dd584cde726999278808b77884074bf47d7bae41a4d0316532",
+      "Prompt": "character-40-friends-prompt.txt",
+      "References": [
+        "newspaper-trials/character-40-friends-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Source": "character-40-history-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "c916ebef997f358be6507128a2dc82031f9ab3dc8243f9bbb6a9b53447628272",
+      "Prompt": "character-40-history-prompt.txt",
+      "References": [
+        "newspaper-trials/character-40-history-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Source": "character-40-id-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "616f5cc70ea772a98e8b0b8f5fe0b1f4784e6501b8babda2fa51292d46509bad",
+      "Prompt": "character-40-id-prompt.txt",
+      "References": [
+        "newspaper-trials/character-40-id-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Source": "character-40-idol-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "fb38b8b02d7c16a9e40722d71b6eb2c2be0273117ea3026f2c7a1b8af926eeef",
+      "Prompt": "character-40-idol-prompt.txt",
+      "References": [
+        "newspaper-trials/character-40-idol-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Source": "character-40-paparazzi-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "7cb09945bc1ee1b3ebb79071d28a516de6d086c532d0e339093e0d3fd24fbbe3",
+      "Prompt": "character-40-paparazzi-prompt.txt",
+      "References": [
+        "newspaper-trials/character-40-paparazzi-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Source": "character-40-coin-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "434711124f56aa7a3f4f2d177831c847dc8011ea2cae5157ee965d7713da6901",
+      "Prompt": "character-40-coin-prompt.txt",
+      "References": [
+        "newspaper-trials/character-40-coin-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-adopted"
     }
   ],
-  "Next": "normal-3",
-  "GameAdopted": false
+  "Next": "character-41 normal-1",
+  "GameAdopted": true
 }

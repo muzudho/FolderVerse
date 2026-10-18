@@ -1,0 +1,17 @@
+{
+  "CharacterId": 43,
+  "Build": "dotnet build FolderVerse/FolderVerse.csproj --no-restore -v:q",
+  "BuildSucceeded": true,
+  "Warnings": 0,
+  "Errors": 0,
+  "RuntimeDestinations": 20,
+  "NormalSize": "256x192",
+  "NewspaperSize": "300x400",
+  "NewspaperOutputPngHashesMatched": 8,
+  "CompiledNormalPremultipliedTexturePixelBuffersMatched": 12,
+  "CatalogCurrentEntries": 360,
+  "OtherCharactersUnchanged": true,
+  "VisualReview": "14 originals; 6 normal previews; repaired normal-5; 8 grayscale newspaper previews; 6 simulated circular crops matching FitSource square central 192x192 crop",
+  "Limitations": "Some hat/ear edges clipped in circle as existing renderer crops; normal-6 face occupies less frame; precise iris highlight contact and local rear-hair effects vary; knees/feet not visible.",
+  "Next": "No.44 normal-1"
+}

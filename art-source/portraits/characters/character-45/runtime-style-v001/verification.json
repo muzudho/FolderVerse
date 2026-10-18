@@ -1,0 +1,34 @@
+{
+  "CharacterId": 45,
+  "VerifiedAt": "2026-10-19 07:01 JST",
+  "NormalImages": 6,
+  "NewspaperImages": 8,
+  "RuntimeTargetsMatched": 20,
+  "CompiledNormalTexturesPixelMatched": 12,
+  "NewspaperOutputHashesMatched": 8,
+  "Build": {
+    "Command": "dotnet build FolderVerse/FolderVerse.csproj --no-restore -v:q",
+    "ExitCode": 0,
+    "Warnings": 0,
+    "Errors": 0
+  },
+  "Other59CatalogAndSelectionsPreserved": true,
+  "ComparisonStaticLinksChecked": 71,
+  "OriginalRuntimeBackups": 20,
+  "VisualQA": [
+    "normal-qa.png",
+    "circle-review.png",
+    "newspaper-grayscale-review.png"
+  ],
+  "Limitations": [
+    "Normal3/4/5 smaller faces after framing correction",
+    "Circular face crop clips portions of hat/ear/hand outer edges",
+    "Formal and paparazzi hat top margins narrow",
+    "Hair bands sometimes pale pink rather than white; iris-highlight contact varies",
+    "Coin profile neck visibly longer than frontal views",
+    "Newspaper formal/id reveal more lower costume than old crop; not approved new character-design settings"
+  ],
+  "GameStopped": false,
+  "Committed": false,
+  "Pushed": false
+}

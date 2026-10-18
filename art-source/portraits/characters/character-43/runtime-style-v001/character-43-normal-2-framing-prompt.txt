@@ -1,0 +1,1 @@
+Use case: precise-object-edit. Framing correction ONLY. Keep this exact elf mage face, silver glasses, hands, clothes, colors, tea and cake. Scale entire composition down to 85% centered on same 4:3 canvas; extend library background. Show ALL of rounded red cap top, no part touching top boundary. Add background margin above cap. Do not enlarge face after zooming out.

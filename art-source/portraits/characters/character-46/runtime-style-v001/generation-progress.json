@@ -1,0 +1,92 @@
+{
+  "CharacterId": 46,
+  "Method": "built-in image_gen",
+  "Standard": "v017-approved-20261018",
+  "Images": [
+    {
+      "Id": 1,
+      "Source": "character-46-normal-1-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "74364e5ec74472f8cb74e26001d9a8c7ed46adf120a82ef58c264e49eb014d40",
+      "Prompt": "character-46-normal-1-prompt.txt",
+      "References": [
+        "conqueror-balanced/character-46-1-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-not-adopted"
+    },
+    {
+      "Id": 2,
+      "Source": "character-46-normal-2-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "bf4c2c98197976fdcaee676af24a5ef9f96cce0893508a1d2fb3d20043f728b4",
+      "Prompt": "character-46-normal-2-prompt.txt",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-46-2-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-not-adopted"
+    },
+    {
+      "Id": 3,
+      "Source": "character-46-normal-3-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "afa356eebfb62775c7446e84504e95bf84ab922ad0b9fb2b681b770027de8431",
+      "Prompt": "character-46-normal-3-prompt.txt",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-46-3-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-not-adopted"
+    },
+    {
+      "Id": 4,
+      "Source": "character-46-normal-4-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "f4c6bb94f42c1e0c57501841ecfb86ad2822ba486bdf092315f997f14e5fa00e",
+      "Prompt": "character-46-normal-4-prompt.txt",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-46-4-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-not-adopted"
+    },
+    {
+      "Id": 5,
+      "Source": "character-46-normal-5-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "3bbd5e4572bade03ecbd6dd5b182f4bec720e8cb9b89b1e739062123970c94cf",
+      "Prompt": "character-46-normal-5-prompt.txt",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-46-5-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-not-adopted"
+    },
+    {
+      "Id": 6,
+      "Source": "character-46-normal-6-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "b844cdaaa416bb404f8f13b52c91cf66b5828d591942a66a0d27dcb482cf40ed",
+      "Prompt": "character-46-normal-6-prompt.txt",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-46-6-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Status": "generated-reviewed-not-adopted"
+    }
+  ],
+  "Next": "normal-4-face-occupancy-review-and-newspaper-formal",
+  "GameAdopted": false,
+  "Limitations": [
+    "normal4 face small after framing correction; review before adoption",
+    "circular crop and newspaper grayscale not checked",
+    "hair bands pink rather than white in places"
+  ]
+}

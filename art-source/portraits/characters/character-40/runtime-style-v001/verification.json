@@ -1,0 +1,15 @@
+{
+  "CharacterId": 40,
+  "Build": "dotnet build FolderVerse/FolderVerse.csproj --no-restore -v:q",
+  "BuildSucceeded": true,
+  "Warnings": 0,
+  "Errors": 0,
+  "RuntimeDestinations": 20,
+  "NewspaperOutputPngHashesMatched": 8,
+  "CompiledNormalTexturePixelBuffersMatched": 12,
+  "CatalogCurrentEntries": 360,
+  "OtherCharactersUnchanged": true,
+  "VisualReview": "14 originals and game-size previews; 8 grayscale newspaper previews",
+  "Limitations": "Iris highlight outline contact and local rear-hair effect vary; lower-leg proportions not assessable in cropped poses.",
+  "Next": "No.41 normal-1"
+}

@@ -1,0 +1,17 @@
+{
+  "CharacterId": 44,
+  "Build": "dotnet build FolderVerse/FolderVerse.csproj --no-restore -v:q",
+  "BuildSucceeded": true,
+  "Warnings": 0,
+  "Errors": 0,
+  "RuntimeDestinations": 20,
+  "NormalSize": "256x192",
+  "NewspaperSize": "300x400",
+  "NewspaperOutputPngHashesMatched": 8,
+  "CompiledNormalPremultipliedTexturePixelBuffersMatched": 12,
+  "CatalogCurrentEntries": 360,
+  "OtherCharactersUnchanged": true,
+  "VisualReview": "14 originals, 6 normal previews, 8 grayscale newspaper previews, 6 simulated circular crops based on central192x192 FitSource crop",
+  "Limitations": "Some tall headgear tips have tiny/tangent top margins; circular frame cuts headgear/ear/hand edges. Normal-3/4 and newspaper formal/history faces occupy less frame. Coin neck reads longer in profile. Exact iris highlight contact, local rear-hair separation and cel-shadow conformity vary. Knees/feet outside frame.",
+  "Next": "No.45 normal-1"
+}
