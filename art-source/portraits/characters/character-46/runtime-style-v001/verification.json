@@ -1,0 +1,33 @@
+{
+  "CharacterId": 46,
+  "VerifiedAt": "2026-10-19 08:01 JST",
+  "NormalImages": 6,
+  "NewspaperImages": 8,
+  "RuntimeTargetsMatched": 20,
+  "CompiledNormalTexturesPixelMatched": 12,
+  "NewspaperOutputHashesMatched": 8,
+  "Build": {
+    "Command": "dotnet build FolderVerse/FolderVerse.csproj --no-restore -v:q",
+    "ExitCode": 0,
+    "Warnings": 0,
+    "Errors": 0
+  },
+  "Other59CatalogAndSelectionsUnchanged": true,
+  "GalleryLinksChecked": 71,
+  "OriginalRuntimeBackups": 20,
+  "VisualQA": [
+    "normal-qa.png",
+    "circle-review.png",
+    "newspaper-grayscale-review.png"
+  ],
+  "Limitations": [
+    "Circular crop clips some hair/ear/hand/prop outer edges",
+    "Hair bands pale pink rather than white in places; iris-highlight rim contact varies",
+    "Several newspaper hair top margins narrow",
+    "Profile neck remains longer than frontal views",
+    "Normal2 torso relatively prominent after framing correction; not new design approval"
+  ],
+  "GameStopped": false,
+  "Committed": false,
+  "Pushed": false
+}

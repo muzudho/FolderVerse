@@ -1,92 +1,206 @@
 {
   "CharacterId": 46,
+  "UpdatedAt": "2026-10-19 08:01 JST",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018",
+  "GameAdopted": true,
+  "Next": "character-47-normal-1",
   "Images": [
     {
       "Id": 1,
-      "Source": "character-46-normal-1-generated.png",
-      "Width": 1448,
-      "Height": 1086,
-      "Sha256": "74364e5ec74472f8cb74e26001d9a8c7ed46adf120a82ef58c264e49eb014d40",
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-normal-1-generated.png",
+      "Tile": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-normal-1.png",
       "Prompt": "character-46-normal-1-prompt.txt",
+      "AdditionalPrompt": null,
       "References": [
         "conqueror-balanced/character-46-1-balanced.png",
         "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
       ],
-      "Status": "generated-reviewed-not-adopted"
+      "Sha256": "3A21FEF0362FD3FFA0149681921E39AD097229060D2D093C53C27FEF07A0B134",
+      "Status": "generated-visually-reviewed-adopted-output-verified"
     },
     {
       "Id": 2,
-      "Source": "character-46-normal-2-generated.png",
-      "Width": 1448,
-      "Height": 1086,
-      "Sha256": "bf4c2c98197976fdcaee676af24a5ef9f96cce0893508a1d2fb3d20043f728b4",
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-normal-2-generated.png",
+      "Tile": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-normal-2.png",
       "Prompt": "character-46-normal-2-prompt.txt",
+      "AdditionalPrompt": null,
       "References": [
         "conqueror-balanced/remaining-variants/character-46-2-balanced.png",
         "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
       ],
-      "Status": "generated-reviewed-not-adopted"
+      "Sha256": "50336DDB5039C6FB9CBA1DF4D32F8E5B37043FF8FEA7C1B27E97A8D6D30BE032",
+      "Status": "generated-visually-reviewed-adopted-output-verified"
     },
     {
       "Id": 3,
-      "Source": "character-46-normal-3-generated.png",
-      "Width": 1448,
-      "Height": 1086,
-      "Sha256": "afa356eebfb62775c7446e84504e95bf84ab922ad0b9fb2b681b770027de8431",
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-normal-3-generated.png",
+      "Tile": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-normal-3.png",
       "Prompt": "character-46-normal-3-prompt.txt",
+      "AdditionalPrompt": null,
       "References": [
         "conqueror-balanced/remaining-variants/character-46-3-balanced.png",
         "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
       ],
-      "Status": "generated-reviewed-not-adopted"
+      "Sha256": "DFA3C3F2CE1C969D4DB6F82497E243E5E26629B2C8B6B8F7EE6C839C61A31A87",
+      "Status": "generated-visually-reviewed-adopted-output-verified"
     },
     {
       "Id": 4,
-      "Source": "character-46-normal-4-generated.png",
-      "Width": 1448,
-      "Height": 1086,
-      "Sha256": "f4c6bb94f42c1e0c57501841ecfb86ad2822ba486bdf092315f997f14e5fa00e",
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-normal-4-generated.png",
+      "Tile": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-normal-4.png",
       "Prompt": "character-46-normal-4-prompt.txt",
+      "AdditionalPrompt": "character-46-normal-4-close-prompt.txt",
       "References": [
         "conqueror-balanced/remaining-variants/character-46-4-balanced.png",
         "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
       ],
-      "Status": "generated-reviewed-not-adopted"
+      "Sha256": "B6CD2FD9B7E6F9A03CDF0BD0C16D3CB04D8A4AB4A273D268A49A775E19C43E6D",
+      "Status": "generated-visually-reviewed-adopted-output-verified"
     },
     {
       "Id": 5,
-      "Source": "character-46-normal-5-generated.png",
-      "Width": 1448,
-      "Height": 1086,
-      "Sha256": "3bbd5e4572bade03ecbd6dd5b182f4bec720e8cb9b89b1e739062123970c94cf",
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-normal-5-generated.png",
+      "Tile": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-normal-5.png",
       "Prompt": "character-46-normal-5-prompt.txt",
+      "AdditionalPrompt": null,
       "References": [
         "conqueror-balanced/remaining-variants/character-46-5-balanced.png",
         "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
       ],
-      "Status": "generated-reviewed-not-adopted"
+      "Sha256": "E6A0981995DA05EFDAF6555A2293B01F1482B3D3863A1A4D7EFAE0B828CE0647",
+      "Status": "generated-visually-reviewed-adopted-output-verified"
     },
     {
       "Id": 6,
-      "Source": "character-46-normal-6-generated.png",
-      "Width": 1448,
-      "Height": 1086,
-      "Sha256": "b844cdaaa416bb404f8f13b52c91cf66b5828d591942a66a0d27dcb482cf40ed",
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-normal-6-generated.png",
+      "Tile": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-normal-6.png",
       "Prompt": "character-46-normal-6-prompt.txt",
+      "AdditionalPrompt": null,
       "References": [
         "conqueror-balanced/remaining-variants/character-46-6-balanced.png",
         "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
       ],
-      "Status": "generated-reviewed-not-adopted"
+      "Sha256": "95DC59E4DF14D897C076DC1669A321F15443E6DF2C60EEFDF08943415E20BFD0",
+      "Status": "generated-visually-reviewed-adopted-output-verified"
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-formal-generated.png",
+      "Tile": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-formal.png",
+      "Prompt": "character-46-formal-prompt.txt",
+      "AdditionalPrompt": null,
+      "References": [
+        "newspaper-trials/character-46-formal-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "7C59725C832DF6A2648350BAF122A42DD12FF3FB3C90359A57EC9E5387E45D08",
+      "Status": "generated-visually-reviewed-adopted-output-verified"
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-election-generated.png",
+      "Tile": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-election.png",
+      "Prompt": "character-46-election-prompt.txt",
+      "AdditionalPrompt": null,
+      "References": [
+        "newspaper-trials/character-46-election-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "F6C35A55B4F4D1038698C5A6CA5EAB00B8E6EFF101B12E0B40C2C1275A1D8599",
+      "Status": "generated-visually-reviewed-adopted-output-verified"
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-friends-generated.png",
+      "Tile": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-friends.png",
+      "Prompt": "character-46-friends-prompt.txt",
+      "AdditionalPrompt": null,
+      "References": [
+        "newspaper-trials/character-46-friends-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "B86D195733C95F967C08EBF6FF2FC25F54AF43C6D2951ABE5EBD61DDE9AC11EE",
+      "Status": "generated-visually-reviewed-adopted-output-verified"
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-history-generated.png",
+      "Tile": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-history.png",
+      "Prompt": "character-46-history-prompt.txt",
+      "AdditionalPrompt": null,
+      "References": [
+        "newspaper-trials/character-46-history-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "8CBFBFDD83C06A94C7834BF44D272EED491A4EB6A26496A989A77FD9D4E0892E",
+      "Status": "generated-visually-reviewed-adopted-output-verified"
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-id-generated.png",
+      "Tile": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-id.png",
+      "Prompt": "character-46-id-prompt.txt",
+      "AdditionalPrompt": null,
+      "References": [
+        "newspaper-trials/character-46-id-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "1FC4C6CDB1349C1AA31B15031EED473573E7961A7D3297F1CC328C9C54467B92",
+      "Status": "generated-visually-reviewed-adopted-output-verified"
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-idol-generated.png",
+      "Tile": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-idol.png",
+      "Prompt": "character-46-idol-prompt.txt",
+      "AdditionalPrompt": null,
+      "References": [
+        "newspaper-trials/character-46-idol-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "274320371ABF2F390C49B2709CD0866D14F1584A764F49D3817C7B001214F0D5",
+      "Status": "generated-visually-reviewed-adopted-output-verified"
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-paparazzi-generated.png",
+      "Tile": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-paparazzi.png",
+      "Prompt": "character-46-paparazzi-prompt.txt",
+      "AdditionalPrompt": null,
+      "References": [
+        "newspaper-trials/character-46-paparazzi-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "98536047FE69F938B17796A44796DCC3F958E961800946201EA83FDC1F01734A",
+      "Status": "generated-visually-reviewed-adopted-output-verified"
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-coin-generated.png",
+      "Tile": "art-source/portraits/characters/character-46/runtime-style-v001/character-46-coin.png",
+      "Prompt": "character-46-coin-prompt.txt",
+      "AdditionalPrompt": null,
+      "References": [
+        "newspaper-trials/character-46-coin-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Sha256": "CB52DFD54FE792B32C8B27566E76B4E43996D991DB4A036E9E7729B38F13BB54",
+      "Status": "generated-visually-reviewed-adopted-output-verified"
     }
-  ],
-  "Next": "normal-4-face-occupancy-review-and-newspaper-formal",
-  "GameAdopted": false,
-  "Limitations": [
-    "normal4 face small after framing correction; review before adoption",
-    "circular crop and newspaper grayscale not checked",
-    "hair bands pink rather than white in places"
   ]
 }
