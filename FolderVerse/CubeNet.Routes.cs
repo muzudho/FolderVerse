@@ -21,8 +21,10 @@ public sealed partial class CubeNet
         return owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal):WorldPreview.LandTerritoryColor(world.OwnerColor(owner),WorldTerrain.Kind(height));
     }
     public bool ShowRoutes {get;set;}=true; public int HoveredNode {get;set;}=-1; public int InspectedNode {get;set;}=-1;
+    public bool AttackTargetMarkers {get;set;}
+    public HashSet<int> VisibleOperationBatteries {get;set;}
     public bool RevealMovementTargets {get;set;}
-    public bool NodeVisible(WorldSetup world,Node node)=>ShowOtherCountries || node.Owner<0 || world.Relations.Controls(node.Owner) || RevealMovementTargets && MovementTargets.Contains(node.Id);
+    public bool NodeVisible(WorldSetup world,Node node)=>(VisibleOperationNodes==null || VisibleOperationNodes.Contains(node.Id)) && (ShowOtherCountries || node.Owner<0 || world.Relations.Controls(node.Owner) || RevealMovementTargets && MovementTargets.Contains(node.Id));
     public bool EmphasizedNode(int id)=>HoveredNode==id || InspectedNode==id;
     public HashSet<int> MovementTargets {get;}=new();
     public int SelectedTarget {get;set;}=-1;
@@ -88,6 +90,15 @@ public sealed partial class CubeNet
                 {
                     Disc(ui,at,radius*1.5f+3,Color.White);
                     Disc(ui,at,radius*1.5f,new Color(13,36,44));
+                }
+                if(AttackTargetMarkers && SelectedTarget==post.Id)
+                {
+                    float size=radius*(1.3f+.25f*MathF.Sin(pulse*5));
+                    if(post.IsHarbor)DrawHarbor(ui,at,radius,world.OwnerColor(post.Owner));
+                    var center=post.IsHarbor?at+new Vector2(radius*.8f,-radius*.8f):at;
+                    foreach(float angle in new[]{MathHelper.PiOver4,-MathHelper.PiOver4})
+                    {ui.Tile(center,new Vector2(size*2.5f,7),angle,new Color(13,36,44));ui.Tile(center,new Vector2(size*2.5f,3),angle,new Color(255,224,110));}
+                    continue;
                 }
                 if(post.IsHarbor)DrawHarbor(ui,at,radius,world.OwnerColor(post.Owner));
                 else

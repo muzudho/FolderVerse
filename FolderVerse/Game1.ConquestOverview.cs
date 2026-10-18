@@ -20,12 +20,13 @@ public partial class Game1
     private bool _conquestAudioUnavailable;
     private Vector3 _conquestEnvironment;
     private Quaternion _conquestFrom=Quaternion.Identity,_conquestTo=Quaternion.Identity;
-    private static Rectangle ConquestGlobeArea=>new(360,60,1500,950);
+    private Rectangle ConquestGlobeArea=>ConquestMosaicVisible?ConquestMosaicBounds(_conquestTiles.Single(t=>t.Slot<0)):new(360,60,1500,950);
     private ConquestPresentation.Card ConquestCard=>_conquestPresentation.Cards[_conquestCard];
     private double ConquestCardSeconds=>ConquestCard.Reminder?.8:_conquestTally.Duration;
     private void BeginConquestOverview(){
         if(!_conquestOverviewEnabled || _demoActive || _autoPlay || _conquestOverviewTurn==_setup.Population.Turn)return;
         _conquestOverviewTurn=_setup.Population.Turn;_conquestPresentation=new(_setup);_conquestCard=0;_conquestStage=0;_conquestAge=0;_conquestOverview=true;_conquestExitOpacity=1;
+        _conquestTiles=CharacterSelectionLayout.CreateOverview(_setup.Relations.ProvisionalRanking(_setup).OrderBy(r=>r.Ruler).Select(r=>r.Cells).ToArray());
         _conquestGlobe??=new WorldPreview(GraphicsDevice);_conquestGlobe.ManualOrientation=null;_conquestGlobe.GlobeAnchor=null;_conquestGlobe.GlobeZoom=1;
         _conquestFrom=Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,0));SetConquestCard();PlayCurtain();
     }
@@ -105,6 +106,7 @@ public partial class Game1
                     _ui.Text("現在地",at+new Vector2(18,-16),.32f,Cream);
                 }
             }
+            if(ConquestMosaicVisible)DrawConquestMosaic();
             DrawConquestTally();
         }
         if(_conquestStage is 3 or 5)_ui.Box(new(0,0,1920,1080),Color.Black*(float)Math.Clamp(_conquestStage==3?1-_conquestAge/1.5:1-_conquestExitOpacity*(1-_conquestAge/1.5),0,1));

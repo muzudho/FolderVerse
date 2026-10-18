@@ -37,6 +37,7 @@ public partial class Game1
     private static readonly Rectangle RobotResultBar=new(1120,990,720,20),RobotResultPause=new(1120,1020,270,50);
     private void OpenRobotBattle()
     {
+        CheckTutorialAttackAchievement();
         _newspaperIssue=_newspaperPreviousIssue=null;_newspaperSlideAge=1;_newspaperClock=0;
         _fallFadeStarted.Clear();_robotScenes=_setup.Campaign.RobotBattles.Scenes.ToArray();_battleTiles=Array.Empty<CharacterTile>();_battleWave=0;_battleAge=0;_robotResultAge=0;_robotPlaying=true;
         _robotPlayback=new(_robotScenes);_robotRound=0;_summaryReadAge=0;_summaryReadPapers=0;_robotPendingFocus=-1;_robotPendingRound=false;_robotPendingSummary=false;_robotSummary=_robotPlayback.Rounds.Length==0;
@@ -99,7 +100,7 @@ public partial class Game1
     private void SwitchRobotFocus()
     {if(_robotPendingSummary){_robotSummary=true;_robotPendingSummary=false;}if(_robotPendingRound){_robotRound++;_battleAge=0;}_battleWave=_robotPendingFocus;_robotPendingFocus=-1;_robotPendingRound=false;_robotResultAge=0;}
     private static string PhaseLabel(BattlePhase phase)=>phase switch
-    {BattlePhase.Choose=>"行動選択",BattlePhase.Place=>"配置",BattlePhase.Rollback=>"巻き戻し",BattlePhase.Attack=>"攻撃",BattlePhase.Receive=>"被攻撃",BattlePhase.Consume=>"消費",BattlePhase.Fall=>"転倒",BattlePhase.Flag=>"旗更新",BattlePhase.Reinforce=>"増援",BattlePhase.Retreat=>"戦意喪失 / 全軍撤退",_=>"戦意・勝敗"};
+    {BattlePhase.Persuade=>"説得中",BattlePhase.Converted=>"説得の結果",BattlePhase.Choose=>"行動選択",BattlePhase.Place=>"配置",BattlePhase.Rollback=>"巻き戻し",BattlePhase.Attack=>"攻撃",BattlePhase.Receive=>"被攻撃",BattlePhase.Consume=>"消費",BattlePhase.Fall=>"転倒",BattlePhase.Flag=>"旗更新",BattlePhase.Reinforce=>"増援",BattlePhase.Retreat=>"戦意喪失 / 全軍撤退",_=>"戦意・勝敗"};
     private void DrawSmokePuff(Vector2 center,float radius,float opacity)
     {
         int extent=(int)Math.Ceiling(radius);
@@ -192,6 +193,7 @@ public partial class Game1
             float dim=BattleBoardDim;
             _ui.Box(new(left,top,size*10,size*10),new Color(105,110,116)*(dim*.9f));
         }
+        DrawPersuasionRange(battle,frame,left,top,size);
         foreach(var unit in frame.Units)
         {
             if(unit.Retreated && BattleState.Inside(unit.Position))continue;
@@ -314,15 +316,28 @@ public partial class Game1
                 }
             }
         }
+        DrawPersuasionEffects(battle,frame,left,top,size);
         // Draw counters after attack/shield effects so the remaining supplies stay readable.
         foreach(var unit in frame.Units)
             DrawBattleSupplies(unit,left+unit.Position.X*size+(size-72)/2,top+(unit.Position.Y+1)*size-12,BattlePieceOpacity);
         DrawBattleNewspaper(battle,frame);
         string result=$"全 {_robotPlayback.Rounds[_robotRound].Length} 戦場で１戦闘ターンを同時進行 / 結果は最後に表示";
         var recent=battle.Events.LastOrDefault(e=>e.Turn==frame.Turn && e.Phase==frame.Phase && e.Unit!=0);
-        if(recent!=null)BattleInfo($"ID {recent.Unit} / {recent.Detail}",794,.42f);
-        BattleInfo(result,833,.48f);
-        BattleInfo("足元は左から盾・短剣・弾の残数 / 再生速度は戦闘結果に影響しません",872,.41f);
+        if(battle.Kind==BattleKind.Node && !battle.SplitBoard)DrawBattleFlagCountdown(battle,frame);
+        else if(recent!=null)BattleInfo($"ID {recent.Unit} / {recent.Detail}",794,.42f);
+        if(battle.Kind==BattleKind.Node && !battle.SplitBoard){
+            BattleInfo(frame.Units.Any(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated)?$"説得：上下左右{battle.Rules.PersuasionRadius}マス以内 / {battle.Rules.PersuasionPercent}％ / 壁越し有効":"足元は左から盾・短剣・弾の残数",872,.4f);
+        }
+        else if(frame.Units.Any(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated))
+        {
+            BattleInfo($"説得：上下左右に{battle.Rules.PersuasionRadius}マス以内 / １体ごと{battle.Rules.PersuasionPercent}％",833,.44f);
+            BattleInfo("距離による低下なし・壁越しも有効 / 説得中は範囲を色枠で表示",872,.4f);
+        }
+        else
+        {
+            BattleInfo(result,833,.48f);
+            BattleInfo("足元は左から盾・短剣・弾の残数 / 再生速度は戦闘結果に影響しません",872,.41f);
+        }
         bool end=_battleAge>=RobotRoundEnd;
         _ui.Button(RobotPause,_robotPlaying?"一時停止":"再生",Muted,.5f);
         _ui.Button(RobotStepBack,"１フェーズ戻る",Muted,.46f);_ui.Button(RobotStepNext,"１フェーズ進む",Muted,.46f);

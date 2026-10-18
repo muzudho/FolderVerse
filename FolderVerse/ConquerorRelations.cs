@@ -40,7 +40,7 @@ public sealed class ConquerorRelations
     }
     public static int RankingScale(int participants){int scale=100;while(participants>=scale)scale=checked(scale*10);return scale;}
     public static string EntryNumber(int entry,int participants)=>entry.ToString(new string('0',(RankingScale(participants)-1).ToString().Length));
-    public static int RankingScore(int cells,int entry,int participants)=>checked(cells*RankingScale(participants)-entry);
+    public static int RankingScore(int cells,int entry,int participants)=>checked(cells*RankingScale(participants)+entry);
     // Ruler slots are the permanent clockwise IDs assigned by SetCast / PortraitCell.
     public (int Ruler,int Rank,int Cells,int Nodes)[] ProvisionalRanking(WorldSetup world)
     {

@@ -19,24 +19,32 @@ public partial class Game1
         int ruler=ConquestCard.Ruler;var color=_setup.OwnerColor(ruler);var tally=_conquestTally;
         bool reminder=ConquestCard.Reminder,identity=reminder || _conquestAge>=tally.CountEnd;
         bool conversion=!reminder && _conquestAge>=tally.ConvertStart,rank=!reminder && _conquestAge>=tally.RankStart;
-        _ui.Box(new(55,170,405,535),new Color(25,34,46));_ui.Box(new(55,170,10,535),color);
+        _ui.Box(new(55,170,405,590),new Color(25,34,46));_ui.Box(new(55,170,10,590),color);
         if(identity){
             _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new(125,195,260,260),_setup.Relations.Powered[ruler]);
             _ui.Center(_setup.ConquerorNames[ruler],new(70,462,375,45),.55f,Cream);
         }
-        int cells=conversion?tally.RemainingCells(_conquestAge):reminder?tally.TotalCells:tally.Counted(_setup,_conquestAge);
-        int entry=conversion?tally.RemainingEntry(_conquestAge):tally.Entry;
+        int cells=reminder || conversion?tally.TotalCells:tally.Counted(_setup,_conquestAge);
+        int entry=tally.Entry;
         if(rank){cells=tally.TotalCells;entry=tally.Entry;}
-        string counter=CellCounter(cells)+(identity?$" . Entry {ConquerorRelations.EntryNumber(entry,_setup.ActiveCount)}":"");
-        _ui.Center(counter,new(70,515,375,45),.53f,Cream);
+        string counter=CellCounter(cells);
+        if(!conversion)_ui.Center(counter,new(70,515,375,45),.53f,Cream);
         if(!reminder && _conquestAge>=tally.TourSeconds && _conquestAge<tally.CountEnd){
             _ui.Center($"手下 +{Math.Max(0,cells-tally.Cells.Length)} cells",new(70,570,375,35),.42f,new Color(171,214,222));
         }
         if(conversion){
-            _ui.Center($"{tally.Score(_conquestAge)} points",new(70,565,375,50),.8f,new Color(255,224,120));
-            if(_conquestAge>=tally.EntryConvertEnd && !rank)_ui.Center($"{CellCounter(tally.TotalCells)} . Entry {ConquerorRelations.EntryNumber(tally.Entry,_setup.ActiveCount)}",new(70,615,375,28),.32f,new Color(171,214,222));
-        }
-        if(rank)_ui.Center($"暫定{ConquestCard.Rank}位",new(70,650,375,48),.68f,Cream);
+            _ui.Center(tally.Score(_conquestAge).ToString(),new(72,510,365,52),.85f,new Color(255,224,120));
+            _ui.Text("points",new(300,558),.34f,Cream);
+            _ui.Center("Entry No.",new(340,593,105,26),.29f,Cream);
+            _ui.Center("=",new(70,622,35,42),.55f,Cream);
+            _ui.Center(cells.ToString(),new(110,622,70,42),.55f,Cream);
+            _ui.Center("×",new(190,622,40,42),.55f,Cream);
+            _ui.Center(tally.Scale.ToString(),new(230,622,90,42),.55f,Cream);
+            _ui.Center("+",new(320,622,40,42),.55f,Cream);
+            _ui.Center(entry.ToString(),new(360,622,70,42),.55f,Cream);
+            _ui.Center("cells",new(110,663,70,25),.29f,Cream);
+        }else if(identity)_ui.Center($"Entry No. {entry}",new(70,615,375,30),.4f,Cream);
+        if(rank)_ui.Center($"暫定{ConquestCard.Rank}位",new(70,701,375,48),.68f,Cream);
         else if(reminder)_ui.Center("ボス",new(70,575,375,45),.55f,Cream);
         int player=_setup.HumanPlayers.IndexOf(ruler);
         if(identity && player>=0)_ui.Center($"＜プレイヤー{player+1}＞",new(70,125,375,40),.5f,new Color(255,224,120));
@@ -48,10 +56,10 @@ public partial class Game1
         var ranking=_setup.Relations.ProvisionalRanking(_setup).ToDictionary(r=>r.Ruler,r=>r.Rank);
         while(queue.Count>0){var item=queue.Dequeue();entries.Add(item);foreach(int child in Enumerable.Range(0,_setup.ActiveCount).Where(r=>_setup.Relations.Superiors[r]==item.Ruler).OrderBy(r=>ranking[r]))queue.Enqueue((child,item.Depth+1));}
         if(entries.Count<2)return;
-        int depth=entries.Max(e=>e.Depth),stride=Math.Min(95,255/Math.Max(1,depth)),size=Math.Clamp(stride-8,32,68);
-        var positions=new Dictionary<int,Vector2>{{root,new(257,700)}};
+        int depth=entries.Max(e=>e.Depth),stride=Math.Min(95,185/Math.Max(1,depth)),size=Math.Clamp(stride-8,32,68);
+        var positions=new Dictionary<int,Vector2>{{root,new(257,755)}};
         foreach(var level in entries.Skip(1).GroupBy(e=>e.Depth)){
-            var group=level.ToArray();for(int i=0;i<group.Length;i++)positions[group[i].Ruler]=new(70+(i+.5f)*375/group.Length,710+level.Key*stride);
+            var group=level.ToArray();for(int i=0;i<group.Length;i++)positions[group[i].Ruler]=new(70+(i+.5f)*375/group.Length,765+level.Key*stride);
         }
         for(int i=1;i<entries.Count;i++){
             float alpha=Math.Clamp((float)(age-i*.10)/.35f,0,1);if(alpha<=0)continue;

@@ -57,5 +57,5 @@
     "Path": "proportion-mannequin-v001/index.html",
     "Scope": "v017正面の体格を参考にした分割メッシュの簡易素体。奥行きは仮定、骨組み・変形対応・衣装・完成顔は未実装。"
   },
-  "Character39Adoption": "characters/character-39/runtime-v017/adoption.json"
+  "Character39Adoption": "characters/character-39/runtime-design-v001/adoption.json"
 }

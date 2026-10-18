@@ -58,10 +58,10 @@ var completeCell=ranked.Cells.Where(c=>ranked.Nodes.InCell(c.Id).Count()>1).Orde
 foreach(var cell in ranked.Cells.Where(c=>c.Id!=completeCell.Id))foreach(var post in ranked.Nodes.InCell(cell.Id).Skip(1))post.Owner=7;
 var scores=ranked.Relations.ProvisionalRanking(ranked);
 Check(scores[0].Ruler==4 && scores.Single(e=>e.Ruler==7).Nodes>scores[0].Nodes,"Complete cells outrank more partially conquered nodes");
-Check(scores.Single(e=>e.Ruler==0).Rank==2 && scores.Single(e=>e.Ruler==7).Rank>scores.Single(e=>e.Ruler==0).Rank,"Entry number breaks cell ties even with fewer nodes");
-Check(ConquerorRelations.RankingScore(13,3,99)==1297 && ConquerorRelations.RankingScore(1,99,99)>ConquerorRelations.RankingScore(0,1,99),"Score encodes cells before entry number");
+Check(scores.Single(e=>e.Ruler==7).Rank<scores.Single(e=>e.Ruler==0).Rank,"Entry number breaks cell ties even with fewer nodes");
+Check(ConquerorRelations.RankingScore(13,3,99)==1303 && ConquerorRelations.RankingScore(1,99,99)>ConquerorRelations.RankingScore(0,1,99),"Score encodes cells before entry number");
 Check(ConquerorRelations.RankingScale(100)==1000 && ConquerorRelations.EntryNumber(3,100)=="003" && ConquerorRelations.RankingScore(1,100,100)>ConquerorRelations.RankingScore(0,1,100),"Entry precision expands at 100 participants");
-Check(scores.Where(e=>e.Cells==0 && e.Nodes==0).Select(e=>e.Ruler).SequenceEqual(scores.Where(e=>e.Cells==0 && e.Nodes==0).Select(e=>e.Ruler).Order()),"Clockwise creation ID breaks both ties");
+Check(scores.Where(e=>e.Cells==0 && e.Nodes==0).Select(e=>e.Ruler).SequenceEqual(scores.Where(e=>e.Cells==0 && e.Nodes==0).Select(e=>e.Ruler).OrderDescending()),"Later registration ID breaks both ties");
 var split=ranked.Nodes.InCell(completeCell.Id).First();split.Owner=5;ranked.Relations.SetSuperior(5,4);
 Check(ranked.Relations.ProvisionalRanking(ranked).Single(e=>e.Ruler==4).Cells==1,"Subordinate mixed ownership counts as a conquered cell");
 ranked.Relations.SetSuperior(2,1);ranked.Relations.SetSuperior(3,2);ranked.Relations.SetSuperior(6,4);

@@ -59,16 +59,21 @@ public partial class Game1
     private void PrepareDestinationMap()
     {
         _net.VisibleOperationNodes=!_transportOverview && DestinationOperation?VisibleDestinationNodes():null;
+        _net.VisibleOperationBatteries=_movementOpen && _warPlanning?Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler).Where(r=>_net.MovementTargets.Any(t=>(_selectedMoveNode<0 || t==_selectedMoveNode) && _setup.Campaign.RobotBattles.CanMarch(_setup,r,t))).ToHashSet():null;
     }
     private HashSet<int> VisibleDestinationNodes()
     {
+        if(_movementOpen && _warPlanning)
+        {
+            var choices=_selectedMoveNode>=0?new[]{_selectedMoveNode}:DestinationNodes();
+            var participants=new HashSet<int>(choices);
+            foreach(var n in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner)))
+                if(choices.Any(t=>_setup.Campaign.RobotBattles.CanAttackFrom(_setup,n.Owner,n.Id,t)))participants.Add(n.Id);
+            return participants;
+        }
         var targets=new HashSet<int>(DestinationNodes());
         var visible=new HashSet<int>(targets);
         if(OperationSource>=0)visible.Add(OperationSource);
-        if(_movementOpen && _warPlanning)
-            foreach(var node in _setup.Nodes.All.Where(n=>n.Owner>=0 && _setup.Relations.Controls(n.Owner)))
-                if(_setup.Routes.Neighbors(node).Any(route=>targets.Contains(_setup.Nodes.At(route.Target,route.Entry).Id)))
-                    visible.Add(node.Id);
         return visible;
     }
     private bool OperationPosition(int id,out Vector2 at)

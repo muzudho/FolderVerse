@@ -16,7 +16,7 @@ sealed class OverviewGame:Game1{
   world=(WorldSetup)Get("_setup");world.PrepareTutorialStepOne(123,456,789);world.CompleteLand(90);world.SelectPlayer(0);world.HumanPlayers.Add(0);
   world.Relations.SetSuperior(2,0);world.Relations.SetSuperior(3,2);
   var p=new ConquestPresentation(world);var main=p.Cards.Where(c=>!c.Reminder).ToArray();
-  Check(main.Select(c=>c.Ruler).SequenceEqual(world.Relations.RankedForest(world).Select(e=>e.Ruler)),"Breadth first ranked main introductions");
+  Check(main.Select(c=>c.Ruler).SequenceEqual(world.Relations.ProvisionalRanking(world).OrderByDescending(e=>e.Rank).Select(e=>e.Ruler)),"Lowest rank first main introductions");
   int child=Array.FindIndex(p.Cards,c=>c.Ruler==3 && !c.Reminder);Check(p.Cards[child-2].Ruler==0 && p.Cards[child-1].Ruler==2 && p.Cards[child-1].Reminder,"Ancestors recalled root first");
   Check(ConquestPresentation.OwnCells(world,0).All(c=>ConquestPresentation.ExactCellOwner(world,c)==0) && ConquestPresentation.OwnCells(world,0).Length==1,"No subordinate land included");
   foreach(var c in main){var tour=ConquestPresentation.FaceTour(world,c.Ruler);Check(tour.Distinct().Count()==tour.Length && tour.Length==1,"Only owned faces toured on dice world");var env=ConquestPresentation.Environment(world,c.Ruler);Check(env.X>=0 && env.X<=1 && env.Y>=0 && env.Y<=1 && env.Z>=0 && env.Z<=1,"Terrain weights bounded");}
@@ -24,10 +24,8 @@ sealed class OverviewGame:Game1{
   Check(tally.Cells.Length==1 && tally.TotalCells==3,"Tally separates direct cells and full subtree total");
   Check(tally.Painted(world,1.17)==0 && tally.Painted(world,1.18)==1 && tally.Counted(world,tally.CountEnd)==3,"One painted cell increments counter, then descendants contribute");
   Check(Math.Abs(tally.ConvertStart-tally.CountEnd-1.5)<1e-8,"Entry portrait holds for 1.5 seconds before conversion");
-  for(int i=0;i<=tally.TotalCells;i++)Check(tally.RemainingCells(tally.ConvertStart+i*.10)==tally.TotalCells-i && tally.Score(tally.ConvertStart+i*.10)==i*100,"Each consumed cell contributes exactly 100 points");
-  Check(tally.RemainingEntry(tally.EntryConvertEnd)==0 && tally.Score(tally.EntryConvertEnd)==299 && Math.Abs(tally.Duration-tally.RankStart-4)<1e-8,"Entry subtracts one and ranking stays four seconds");
-  var entryThree=new ConquestTally(world,p.Cards.First(c=>c.Ruler==2 && !c.Reminder));
-  for(int i=0;i<=3;i++)Check(entryThree.RemainingEntry(entryThree.CellConvertEnd+i*.06)==3-i && entryThree.Score(entryThree.CellConvertEnd+i*.06)==entryThree.TotalCells*100-i,"Each Entry unit subtracts exactly one point");
+  Check(tally.Score(tally.ConvertStart)==301 && Math.Abs(tally.Duration-tally.RankStart-4)<1e-8,"Static arithmetic score and four-second rank");
+  Check(ConquerorRelations.RankingScore(10,9,6)==1009,"Ten cells plus Entry nine is 1009");
   var multi=new WorldSetup();multi.SetWorld(123);multi.SetCast(456);multi.SetPlacement(789);
   foreach(var n in multi.Nodes.All)n.Owner=0;
   var tourAll=ConquestPresentation.FaceTour(multi,0);Check(tourAll.Length==6,"All six owned faces included once");
@@ -38,7 +36,7 @@ sealed class OverviewGame:Game1{
   Check(paintedTour.Painted(multi,paintedTour.TourSeconds)==paintedTour.Cells.Length,"All faces finish painting");
   foreach(var n in multi.Nodes.All)n.Owner=-1;
   var emptyTally=new ConquestTally(multi,new ConquestPresentation(multi).Cards.First(c=>c.Ruler==0 && !c.Reminder));
-  Check(emptyTally.TotalCells==0 && emptyTally.Score(emptyTally.EntryConvertEnd)==-1,"Zero-cell entry produces negative score without skipping registration penalty");
+  Check(emptyTally.TotalCells==0 && emptyTally.Score(emptyTally.ConvertStart)==1,"Zero cells retain positive entry points");
   owners=(int[])world.Owners.Clone();originalWorld=Get("_world");var net=(CubeNet)Get("_net");net.ShowBatteries=false;batteries=net.ShowBatteries;
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("RestoreDomesticCamera");batteries=net.ShowBatteries;
   Check((bool)Get("_conquestOverview"),"First domestic boundary starts presentation");
@@ -85,7 +83,7 @@ sealed class OverviewGame:Game1{
   Check((float)Get("_conquestExitOpacity")==0 && Get("_conquestMusic")==null,"Skip before intro never reveals a globe or starts new music");
   Call("FinishConquestOverview");Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");Set("_conquestStage",3);Set("_conquestAge",.6d);Call("UpdateConquestOverview",0d,true);
   Check(Math.Abs((float)Get("_conquestExitOpacity")-.4f)<.0001,"Skip during fade-in preserves current opacity without a bright flash");
-  Call("ReturnToTitle");Check(!(bool)Get("_conquestOverview") && (int)Get("_conquestOverviewTurn")==-1,"Title resets presentation and audio");Console.WriteLine("PASS: monotonic outro fade, no globe reappearance behind curtain, preserved intro fade, cell-to-score timeline, entry countdown, four-second ranking tree, BFS ranking, ancestor recalls, exact owner cells, terrain mix, curtain timing, full playback, skip, and preserved game/view state.");Exit();
+  Call("ReturnToTitle");Check(!(bool)Get("_conquestOverview") && (int)Get("_conquestOverviewTurn")==-1,"Title resets presentation and audio");Console.WriteLine("PASS: monotonic outro fade, no globe reappearance behind curtain, preserved intro fade, cell paint and static addition formula, lower-rank-first introductions, area portraits, four-second ranking tree, ancestor recalls, exact owner cells, terrain mix, curtain timing, full playback, skip, and preserved game/view state.");Exit();
  }
 }
 

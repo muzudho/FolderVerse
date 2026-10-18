@@ -95,28 +95,33 @@ public static class BattleTurnResolver
             if(h.HostileHit)willing.Add(u.Owner);
         }
         battle.Capture(BattlePhase.Fall);
+        if(battle.Units.Any(u=>u.Active && u.Role==BattleRole.Queen))
+            for(int hold=0;hold<2;hold++)battle.Capture(BattlePhase.Persuade);
         Persuade(battle);
+        if(battle.Persuasions.Any(p=>p.Turn==battle.Turn))
+            for(int hold=0;hold<(battle.Persuasions.Any(p=>p.Turn==battle.Turn && p.Success)?4:1);hold++)battle.Capture(BattlePhase.Converted);
         if(battle.Kind==BattleKind.Node)
         {
+            bool wasStanding=battle.FlagStanding;
             var occupant=battle.Units.FirstOrDefault(u=>u.Active && u.Position==battle.Flag);
             if(occupant!=null)
             {
-                if(occupant.Owner==battle.Defender && !battle.FlagStanding){battle.FlagStanding=true;battle.Events.Add(new(battle.Turn,BattlePhase.Flag,occupant.Id,"旗を立てた"));}
+                if(battle.Allied(occupant.Owner,battle.Defender) && !battle.FlagStanding){battle.FlagStanding=true;battle.Events.Add(new(battle.Turn,BattlePhase.Flag,occupant.Id,"旗を立てた"));}
                 else if(!battle.Allied(occupant.Owner,battle.Defender) && battle.FlagStanding){battle.FlagStanding=false;battle.LastFlagOwner=occupant.Owner;willing.Add(occupant.Owner);battle.Events.Add(new(battle.Turn,BattlePhase.Flag,occupant.Id,"旗を倒した"));}
             }
+            battle.FlagDefenseTurns=battle.FlagStanding?(wasStanding?battle.FlagDefenseTurns+1:0):0;
+            battle.FlagCaptureTurns=!battle.FlagStanding?(!wasStanding?battle.FlagCaptureTurns+1:0):0;
         }
         battle.Capture(BattlePhase.Flag);
+        if(FlagVictory(battle)){battle.Capture(BattlePhase.Result);battle.Check();return;}
         battle.Reinforce();
         foreach(var army in battle.Armies.Where(a=>!a.Withdrawing)){
             bool defender=battle.Kind==BattleKind.Node && battle.Allied(army.Owner,battle.Defender);
             bool active=willing.Any(o=>battle.Allied(o,army.Owner)) ||
                 battle.Events.Any(e=>e.Turn==battle.Turn && e.Phase==BattlePhase.Reinforce && battle.Units.Any(u=>u.Id==e.Unit && battle.Allied(u.Owner,army.Owner)));
-            // The nation that toppled the flag keeps its will once its troops vacate the flag square.
-            bool secured=battle.Kind==BattleKind.Node && !battle.FlagStanding && battle.LastFlagOwner==army.Owner &&
-                battle.Units.Any(u=>u.Active && u.Owner==army.Owner && u.Position!=battle.Flag) &&
-                !battle.Units.Any(u=>u.Active && u.Owner==army.Owner && u.Position==battle.Flag);
-            active|=secured;
-            army.NoWillCount=defender?(battle.FlagStanding?0:army.NoWillCount+1):active?0:army.NoWillCount+1;
+            // Holding the fallen flag no longer forces evacuation or loss of will.
+            active|=battle.Kind==BattleKind.Node && !battle.FlagStanding && battle.Allied(battle.LastFlagOwner,army.Owner);
+            army.NoWillCount=defender?0:active?0:army.NoWillCount+1;
             if(army.NoWillCount<battle.Rules.NoWillTurns)continue;
             army.Withdrawing=true;
             foreach(var u in battle.Units.Where(u=>u.Active && u.Owner==army.Owner))u.Retreating=true;
@@ -126,16 +131,34 @@ public static class BattleTurnResolver
         battle.NoWillCount=battle.Armies.Where(a=>!a.Withdrawing).Select(a=>a.NoWillCount).DefaultIfEmpty(0).Max();
         battle.Capture(BattlePhase.Reinforce);Finish(battle);battle.Capture(BattlePhase.Result);battle.Check();
     }
+    private static bool FlagVictory(BattleState battle)
+    {
+        if(battle.Kind!=BattleKind.Node || battle.SplitBoard)return false;
+        bool defended=battle.FlagStanding && battle.FlagDefenseTurns>=battle.Rules.FlagDefenseTurns;
+        bool captured=!battle.FlagStanding && battle.FlagCaptureTurns>=battle.Rules.FlagCaptureTurns;
+        if(!defended && !captured)return false;
+        // A departed captor cannot receive territory; a surviving ally of that captor may finish capture.
+        int captor=battle.Armies.Where(a=>!a.Withdrawing && !battle.Allied(a.Owner,battle.Defender) && battle.Allied(a.Owner,battle.LastFlagOwner) &&
+            (battle.Units.Any(u=>u.Active && u.Owner==a.Owner) || a.Waiting.Count>0))
+            .OrderBy(a=>battle.Allied(a.Owner,battle.LastFlagOwner)?0:1).ThenBy(a=>a.Owner).Select(a=>a.Owner).DefaultIfEmpty(-1).First();
+        battle.Winner=defended?battle.Defender:captor;battle.Finished=true;
+        battle.Events.Add(new(battle.Turn,BattlePhase.Result,0,defended?"旗の防衛成功":"旗の奪取成功 / 守備側降伏"));
+        return true;
+    }
     private static void Persuade(BattleState battle)
     {
         foreach(var queen in battle.Units.Where(u=>u.Active && u.Role==BattleRole.Queen).OrderBy(u=>u.Id))
         {
             foreach(var enemy in battle.Units.Where(u=>u.Active && u.Role!=BattleRole.Queen && !battle.Allied(u.Owner,queen.Owner)).OrderBy(u=>u.Id).ToArray())
             {
-                if(Math.Abs(enemy.Position.X-queen.Position.X)+Math.Abs(enemy.Position.Y-queen.Position.Y)>battle.Rules.PersuasionRadius || battle.Random.Next(100)>=battle.Rules.PersuasionPercent)continue;
-                if(battle.Units.Count(u=>u.Active && u.Owner==queen.Owner)>=battle.Army(queen.Owner).Limit)continue;
+                if(Math.Abs(enemy.Position.X-queen.Position.X)+Math.Abs(enemy.Position.Y-queen.Position.Y)>battle.Rules.PersuasionRadius)continue;
+                bool success=battle.Random.Next(100)<battle.Rules.PersuasionPercent;
+                success&=battle.Units.Count(u=>u.Active && u.Owner==queen.Owner)<battle.Army(queen.Owner).Limit;
+                battle.Persuasions.Add(new(battle.Turn,queen.Id,enemy.Id,queen.Owner,enemy.Owner,queen.Position,enemy.Position,success));
+                battle.Events.Add(new(battle.Turn,BattlePhase.Persuade,queen.Id,"説得中"));
+                if(!success)continue;
                 enemy.Owner=queen.Owner;if(enemy.Robot!=null)enemy.Robot=enemy.Robot with {Owner=queen.Owner};enemy.Retreating=false;
-                battle.Events.Add(new(battle.Turn,BattlePhase.Receive,enemy.Id,"説得"));
+                battle.Events.Add(new(battle.Turn,BattlePhase.Converted,enemy.Id,"説得"));
             }
         }
     }

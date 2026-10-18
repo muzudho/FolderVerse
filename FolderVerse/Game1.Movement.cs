@@ -27,6 +27,7 @@ public partial class Game1
     }
     private void CloseMovement()
     {
+        _invasionPicker=-1;_net.AttackTargetMarkers=false;_net.VisibleOperationNodes=null;_net.VisibleOperationBatteries=null;
         _net.RevealMovementTargets=false;
         if(!_movementOpen)return;
         _movementOpen=false;_net.ShowRoutes=_routesBeforeMovement;

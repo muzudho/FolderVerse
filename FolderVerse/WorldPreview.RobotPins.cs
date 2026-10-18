@@ -27,6 +27,7 @@ public sealed partial class WorldPreview
         }
         foreach(var node in setup.Nodes.All)
         {
+            if(!net.NodeVisible(setup,node))continue;
             var cell=setup.Cells[node.Cell];var robots=setup.Robots.Nodes[node.Id].Robots.Where(r=>net.ShowOtherCountries || setup.Relations.Controls(r.Owner)).ToList();
             var center=setup.Routes.Position(node.Cell,node.Center);
             if(robots.Count==0 || !ProjectVisible(center,cell.Normal,yaw,pitch,panel,out var screen) || !panel.Contains(screen.ToPoint()))continue;

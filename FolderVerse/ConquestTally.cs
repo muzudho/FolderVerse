@@ -11,9 +11,7 @@ public sealed class ConquestTally
     public double TourSeconds {get;}
     public double CountEnd=>TourSeconds+Math.Max(0,TotalCells-Cells.Length)*.18;
     public double ConvertStart=>CountEnd+1.5;
-    public double CellConvertEnd=>ConvertStart+TotalCells*.10;
-    public double EntryConvertEnd=>CellConvertEnd+Entry*.06;
-    public double RankStart=>EntryConvertEnd+.5;
+    public double RankStart=>ConvertStart+.5;
     public double Duration=>RankStart+4;
     public ConquestTally(WorldSetup w,ConquestPresentation.Card card){
         Faces=card.Faces;Entry=card.Ruler+1;Scale=ConquerorRelations.RankingScale(w.ActiveCount);
@@ -32,7 +30,5 @@ public sealed class ConquestTally
         return count;
     }
     public int Counted(WorldSetup w,double age)=>Math.Min(TotalCells,Painted(w,age)+(int)Math.Floor(Math.Max(0,age-TourSeconds)/.18+1e-7));
-    public int RemainingCells(double age)=>TotalCells-Math.Clamp((int)Math.Floor(Math.Max(0,age-ConvertStart)/.10+1e-7),0,TotalCells);
-    public int RemainingEntry(double age)=>Entry-Math.Clamp((int)Math.Floor(Math.Max(0,age-CellConvertEnd)/.06+1e-7),0,Entry);
-    public int Score(double age)=>(TotalCells-RemainingCells(age))*Scale-(Entry-RemainingEntry(age));
+    public int Score(double age)=>checked(TotalCells*Scale+Entry);
 }

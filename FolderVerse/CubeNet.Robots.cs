@@ -32,6 +32,7 @@ public sealed partial class CubeNet
         int current=world.Nodes.Current(world.PlayerSlot)?.Id??-1;
         foreach(var node in world.Nodes.All.OrderBy(n=>EmphasizedNode(n.Id)?0:n.Id==current?1:2).ThenBy(n=>n.Id))
         {
+            if(!NodeVisible(world,node))continue;
             var robots=world.Robots.Nodes[node.Id].Robots.Where(r=>ShowOtherCountries || world.Relations.Controls(r.Owner)).OrderByDescending(r=>MapPartCount(r.Parts)).ToArray();
             if(robots.Length==0)continue;
             var point=project(node);if(point==null || !panel.Contains(point.Value.ToPoint()))continue;

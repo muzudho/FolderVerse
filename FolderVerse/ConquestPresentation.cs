@@ -30,7 +30,7 @@ public sealed class ConquestPresentation
     public ConquestPresentation(WorldSetup w){
         var forest=w.Relations.RankedForest(w);var byId=forest.ToDictionary(e=>e.Ruler);var cards=new List<Card>();int lastFace=4;
         void Add(int r,bool reminder){var e=byId[r];var faces=FaceTour(w,r,lastFace);cards.Add(new(r,e.Rank,e.Depth+1,reminder,faces));if(faces.Length>0)lastFace=faces[^1];}
-        foreach(var entry in forest){
+        foreach(var entry in forest.OrderByDescending(e=>e.Rank)){
             var parents=new Stack<int>();for(int r=w.Relations.Superiors[entry.Ruler];r>=0;r=w.Relations.Superiors[r])parents.Push(r);
             foreach(int r in parents)Add(r,true);Add(entry.Ruler,false);
         }

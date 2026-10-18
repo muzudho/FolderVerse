@@ -27,6 +27,8 @@ public static class CharacterSelectionLayout
         int[] sides=counts.Take(activeCount).Select(n=>Math.Clamp((int)Math.Sqrt((double)(Columns*Rows-64)*n/total),1,Rows)).Append(8).ToArray();
         return Pack(sides,counts.Take(activeCount).Select(n=>(double)n).Append(double.MaxValue).ToArray(),activeCount);
     }
+    // Zero-cell rulers retain a minimal selectable portrait; positive areas use subtree cell totals.
+    public static CharacterTile[] CreateOverview(int[] counts)=>Create(counts.Select(n=>Math.Max(1,n)).ToArray(),counts.Length);
     public static CharacterTile[] CreateBattles(long[] strengths)
     {
         if(strengths.Length<1 || strengths.Length>10 || strengths.Any(n=>n<=0))throw new ArgumentException("Battle layout requires 1 to 10 battles.");

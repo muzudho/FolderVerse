@@ -24,6 +24,7 @@ public sealed partial class CubeNet
         _batteries.Clear();if(!ShowBatteries)return;
         foreach(int ruler in Enumerable.Range(0,world.ActiveCount))
         {
+            if(VisibleOperationBatteries!=null && !VisibleOperationBatteries.Contains(ruler))continue;
             if(!world.Relations.Powered[ruler] || !ShowOtherCountries && !world.Relations.Controls(ruler))continue;
             var origin=project(ruler);if(origin==null)continue;
             var at=origin.Value+BatteryOffset(world,ruler);if(!panel.Contains(at.ToPoint()))continue;

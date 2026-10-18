@@ -99,7 +99,7 @@ public partial class Game1 : Game
         _counter=new ToyCounterRenderer(Content.Load<SpriteFont>("ToyCounterFont"),_pixel);
         _ui=new UiPainter(_spriteBatch,_pixel,_font){AdaptiveText=()=>DomesticTheme}; _world=new WorldPreview(GraphicsDevice);
         _orientationToy=new ToyOrientationRenderer(GraphicsDevice);
-        LoadScreenshotFeedback();LoadCutInMobs();LoadSetupHost();LoadTutorialHost();CheckAutoSave();LoadTitleStartAssets();
+        LoadScreenshotFeedback();LoadCutInMobs();LoadSetupHost();LoadTutorialHost();CheckAutoSave();LoadTutorialAchievements();LoadTitleStartAssets();
     }
     private Rectangle CanvasBounds()
     {
@@ -135,9 +135,15 @@ public partial class Game1 : Game
         UpdateRateDrag(mouse,active,click);
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
+        if(IsStatusScreen && _invasionPicker>=0)
+        {if(active)InvasionPickerInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds; UpdateDomesticSlide((float)elapsed);
         _animationTime+=(float)elapsed;
         if(_conquestOverview){UpdateConquestOverview(elapsed,enter || escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(_tutorialAttackGuide){
+            if(active && (click || enter || escape))_tutorialAttackGuide=false;
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
         if(IsStatusScreen && _setup.Robots.Nodes.Length>0)
             _setup.Robots.PrepareDomestic(_setup.Population.Turn,(a,b)=>!_setup.Campaign.RobotBattles.LockedEdge(a,b) && _setup.Routes.Neighbors(_setup.Nodes.All[a]).Any(r=>_setup.Nodes.At(r.Target,r.Entry).Id==b),n=>_setup.Nodes.All[n].Owner,_setup.Campaign.RobotBattles.LockedNode);
         if(IsStatusScreen && _supervisorDialog!=0){
@@ -582,7 +588,7 @@ public partial class Game1 : Game
         DrawRouteLayerButtons();
         DrawStatusMenu();
         if(_supervisorDialog==0)DrawNodeTooltip();
-        DrawInspectorHandle();DrawTraining();
+        DrawInspectorHandle();DrawTraining();DrawInvasionPicker();
     }
     private void DrawCastPreviewInfo()
     {
@@ -657,8 +663,9 @@ public partial class Game1 : Game
             _spriteBatch.End();
         }
         DrawScreenshotFeedback(gameTime.TotalGameTime.TotalSeconds);
-        _spriteBatch.Begin(transformMatrix:transform);if(!_conquestOverview)DrawPhaseCutIn(gameTime.TotalGameTime.TotalSeconds);_spriteBatch.End();
+        _spriteBatch.Begin(transformMatrix:transform);if(!_conquestOverview)DrawTutorialGoal();if(!_conquestOverview)DrawPhaseCutIn(gameTime.TotalGameTime.TotalSeconds);_spriteBatch.End();
         DrawDemoOverlay(transform);
+        if(_tutorialAttackGuide){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAttackGuide();_spriteBatch.End();}
         if(_conquestOverview){_spriteBatch.Begin(transformMatrix:transform);DrawConquestCurtain(1-MathHelper.SmoothStep(0,1,(float)(_conquestAge/.65)));_spriteBatch.End();}
         LogDisplayedScreen();
         base.Draw(gameTime);

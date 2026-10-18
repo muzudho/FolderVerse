@@ -17,7 +17,7 @@ public partial class Game1
     }
     private void ReturnToTitle()
     {
-        FinishConquestOverview();_conquestOverviewTurn=-1;_tutorialMenuOpen=false;
+        FinishConquestOverview();_conquestOverviewTurn=-1;_tutorialMenuOpen=false;_tutorialAttackGuide=false;_tutorialAttackAchieved=false;
         _titleMenuOpen=false;CancelTransportModal();_domesticViews.Clear();
         CloseMovement();_statusMenuOpen=false;_dispositionReturnList=false;
         _populationCell=_populationNode=_statusCell=_globeSelectedNode=-1;

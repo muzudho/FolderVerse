@@ -51,6 +51,12 @@ public sealed class RobotCampaign
     private static int Source(WorldSetup world,March order)=>order.SourceNode>=0?order.SourceNode:world.Nodes.Current(order.Ruler).Id;
     public int AvailableFrom(WorldSetup world,int owner,int source)
         =>source<0 || source>=world.Nodes.All.Length || LockedNode(source)?0:world.Robots.Nodes[source].Robots.Count(r=>r.Owner==owner && world.Robots.Training[owner].Eligible(r) && world.Robots.Workshops[source].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)));
+    public Robot[] SelectableRobots(WorldSetup world,int owner,int source,bool pocket)
+    {
+        if(owner<0 || owner>=world.ActiveCount || source<0 || source>=world.Nodes.All.Length || LockedNode(source))return Array.Empty<Robot>();
+        var store=pocket?world.Robots.Retinues[owner]:world.Robots.Nodes[source];
+        return store.Robots.Where(r=>r.Owner==owner && world.Robots.Training[owner].Eligible(r) && (pocket || world.Robots.Workshops[source].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).ToArray();
+    }
     public bool CanAttackFrom(WorldSetup world,int owner,int source,int target)
         =>source>=0 && source<world.Nodes.All.Length && target>=0 && target<world.Nodes.All.Length && world.Nodes.All[source].Owner==owner && !LockedNode(source) && !LockedEdge(source,target) && world.Routes.Neighbors(world.Nodes.All[source]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==target);
     public void RequestWithdrawal(WorldSetup world,int encounterId,int owner,bool requested=true)
@@ -73,8 +79,14 @@ public sealed class RobotCampaign
     }
     public void Advance(WorldSetup world,IReadOnlyList<March> orders)
     {
-        if(orders.Where(o=>o.Queen).GroupBy(o=>o.Ruler).Any(g=>g.Count()>1) || orders.GroupBy(o=>(o.Ruler,Source(world,o),o.Queen)).Any(g=>g.Count()>1))throw new ArgumentException("Duplicate source or conqueror order.");
-        foreach(var o in orders)if(o.Ruler<0 || o.Ruler>=world.ActiveCount || !world.Relations.Powered[o.Ruler] || world.Relations.Pending.Any(p=>p.Ruler==o.Ruler) || o.Fighters<0 || o.Queen && o.SourceNode>=0 && o.SourceNode!=world.Nodes.Current(o.Ruler)?.Id || !(o.Queen?CanMarch(world,o.Ruler,o.TargetNode):CanAttackFrom(world,o.Ruler,o.SourceNode,o.TargetNode)))throw new ArgumentException("Invalid robot march.");
+        if(orders.Where(o=>o.Queen).GroupBy(o=>o.Ruler).Any(g=>g.Count()>1) || orders.GroupBy(o=>(o.Ruler,Source(world,o),Pocket:o.Queen || o.PocketOnly)).Any(g=>g.Count()>1))throw new ArgumentException("Duplicate source or conqueror order.");
+        foreach(var o in orders)if(o.Ruler<0 || o.Ruler>=world.ActiveCount || !world.Relations.Powered[o.Ruler] || world.Relations.Pending.Any(p=>p.Ruler==o.Ruler) || o.Fighters<0 || (o.Queen || o.PocketOnly) && o.SourceNode>=0 && o.SourceNode!=world.Nodes.Current(o.Ruler)?.Id || !((o.Queen || o.PocketOnly)?CanMarch(world,o.Ruler,o.TargetNode):CanAttackFrom(world,o.Ruler,o.SourceNode,o.TargetNode)))throw new ArgumentException("Invalid robot march.");
+        // Validate every explicit selection before any stores or encounters are mutated.
+        foreach(var o in orders.Where(o=>o.RobotIds!=null))
+        {
+            var available=SelectableRobots(world,o.Ruler,Source(world,o),o.PocketOnly);
+            if(o.RobotIds.Length>12 || o.RobotIds.Distinct().Count()!=o.RobotIds.Length || o.Fighters!=o.RobotIds.Length || o.RobotIds.Any(id=>!available.Any(r=>r.Id==id)))throw new ArgumentException("Reserved robot selection is no longer available.");
+        }
         Scenes.Clear();Encounters.RemoveAll(e=>e.Finished);
         foreach(var reserve in Reserves.ToArray())if(!LockedNode(reserve.Node) && world.Robots.Nodes[reserve.Node].HasSpace)
         {world.Robots.Nodes[reserve.Node].Add(reserve.Robot);Reserves.Remove(reserve);}
@@ -85,11 +97,11 @@ public sealed class RobotCampaign
         foreach(var o in orders)
         {
             var store=world.Robots.Nodes[source[o]];
-            var selected=world.Robots.Training[o.Ruler].Order(store.Robots.Where(r=>!o.PocketOnly && r.Owner==o.Ruler && world.Robots.Training[o.Ruler].Eligible(r) && world.Robots.Workshops[source[o]].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).Take((int)Math.Min(12,o.Fighters)).ToArray();
-            foreach(var r in selected)Depart(world,source[o],r);
+            var selected=o.RobotIds!=null?SelectableRobots(world,o.Ruler,source[o],o.PocketOnly).Where(r=>o.RobotIds.Contains(r.Id)).ToArray():world.Robots.Training[o.Ruler].Order(store.Robots.Where(r=>!o.PocketOnly && r.Owner==o.Ruler && world.Robots.Training[o.Ruler].Eligible(r) && world.Robots.Workshops[source[o]].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).Take((int)Math.Min(12,o.Fighters)).ToArray();
+            foreach(var r in selected)Depart(world,source[o],r,o.PocketOnly);
             troops[o]=selected.ToList();
             // Direct retinue travels with its conqueror and is excluded from transport plans.
-            foreach(var r in world.Robots.Retinues[o.Ruler].Robots.Where(r=>o.Queen && world.Robots.Training[o.Ruler].Eligible(r)).ToArray()){Depart(world,source[o],r,true);troops[o].Add(r);}
+            foreach(var r in world.Robots.Retinues[o.Ruler].Robots.Where(r=>o.RobotIds==null && o.Queen && world.Robots.Training[o.Ruler].Eligible(r)).ToArray()){Depart(world,source[o],r,true);troops[o].Add(r);}
         }
         // One global update: disposal, queued assembly/splits, simultaneous transport, shipment.
         world.Robots.Advance((a,b)=>!LockedEdge(a,b) && world.Routes.Neighbors(world.Nodes.All[a]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==b),
@@ -205,7 +217,7 @@ public sealed class RobotCampaign
     }
     private void RunSegment(WorldSetup world,RobotEncounter e)
     {
-        foreach(var state in e.Battles){state.Events.Clear();state.Frames.Clear();state.Attacks.Clear();}
+        foreach(var state in e.Battles){state.Events.Clear();state.Frames.Clear();state.Attacks.Clear();state.Persuasions.Clear();}
         foreach(var state in e.Battles)foreach(var army in state.Armies.Where(a=>e.WithdrawalOwners.Contains(a.Owner))){
             army.Withdrawing=true;
             foreach(var unit in state.Units.Where(u=>u.Owner==army.Owner && u.Active))unit.Retreating=true;

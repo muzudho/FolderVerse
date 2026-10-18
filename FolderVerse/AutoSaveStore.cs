@@ -38,7 +38,7 @@ public static class AutoSaveStore
         .Where(f=>!typeof(Delegate).IsAssignableFrom(f.FieldType)).OrderBy(f=>f.Name,StringComparer.Ordinal).ToArray();
     // Turn-boundary saves need combat state, not thousands of already-played animation frames.
     private static object SavedField(object owner,FieldInfo field){
-        bool playback=owner is BattleState && new[]{"<Frames>k__BackingField","<Events>k__BackingField","<Attacks>k__BackingField"}.Contains(field.Name) ||
+        bool playback=owner is BattleState && new[]{"<Frames>k__BackingField","<Events>k__BackingField","<Attacks>k__BackingField","<Persuasions>k__BackingField"}.Contains(field.Name) ||
             owner is RobotCampaign && field.Name=="<Scenes>k__BackingField";
         return playback?Activator.CreateInstance(field.FieldType):field.GetValue(owner);
     }
@@ -81,7 +81,16 @@ public static class AutoSaveStore
             else if(value is IDictionary dictionary){for(int n=0;n<entry.Items.Count;n+=2)dictionary.Add(Read(entry.Items[n]),Read(entry.Items[n+1]));}
             else if(Collection(type)){var add=type.GetMethod(type.GetGenericTypeDefinition()==typeof(Queue<>)?"Enqueue":"Add");foreach(int id in entry.Items)add.Invoke(value,new[]{Read(id)});}
             else foreach(var field in Fields(type)){
-                if(!entry.Fields.TryGetValue(field.Name,out int id))throw new InvalidDataException("Autosave field is missing: "+field.Name);
+                if(!entry.Fields.TryGetValue(field.Name,out int id)){
+                    // Defaults for fields introduced after older turn-boundary saves.
+                    if(type==typeof(BattleRules) && field.Name=="<FlagCaptureTurns>k__BackingField"){field.SetValue(value,10);continue;}
+                    if(type==typeof(BattleRules) && field.Name=="<FlagDefenseTurns>k__BackingField"){field.SetValue(value,50);continue;}
+                    if((type==typeof(BattleState) && (field.Name=="FlagCaptureTurns" || field.Name=="FlagDefenseTurns")) ||
+                       (type==typeof(BattleFrame) && (field.Name=="<FlagCaptureTurns>k__BackingField" || field.Name=="<FlagDefenseTurns>k__BackingField")))continue;
+                    if(type==typeof(March) && field.Name=="<RobotIds>k__BackingField")continue;
+                    if(type==typeof(BattleState) && field.Name=="<Persuasions>k__BackingField"){field.SetValue(value,new List<BattlePersuasion>());continue;}
+                    throw new InvalidDataException("Autosave field is missing: "+field.Name);
+                }
                 field.SetValue(value,Read(id));
             }
         }
