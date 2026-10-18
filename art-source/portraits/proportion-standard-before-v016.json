@@ -1,0 +1,29 @@
+{
+  "Name": "むずでょ監修プロポーション",
+  "Status": "APPROVED",
+  "ApprovedAt": "2026-10-18",
+  "CanonicalImage": "characters/character-01/proportion-study/character-01-vitruvian-hands120-v011.png",
+  "StandingReference": "characters/character-01/proportion-study/character-01-standing-lower090-v010.png",
+  "ApproximateRatios": {
+    "CrownToCrotch_CrotchToSoles": "7:8",
+    "CrotchToKnee_KneeToAnkle_AnkleToSoles": "4:5:2"
+  },
+  "Hands": "手首から先をv010に対して約1.2倍にしたv011の見た目を基準。新しい生成で重ねて1.2倍にしない。",
+  "Projection": "望遠風・平行投影に近い正面。腕と脚を開いた大の字と到達範囲を示す円。",
+  "Priority": "整数比は目測近似。承認画像の頭・胴・腕・脚・手の相対的な大きさを優先し、円に合わせて腕を引き伸ばさない。",
+  "Application": "キャラクターの顔・髪・衣装と、共通のプロポーション参照を分けて使用。",
+  "Runtime": "設定・確認画。ゲーム画像への取り込みは未実施。",
+  "FootMeasurement": "No.39のような厚底靴では、外底でなく靴の中の足裏を身体の足底位置として判定する。靴底の付加高さは別扱い（2026-10-18ユーザー指定）。",
+  "PortraitReadabilityRefinement": {
+    "Status": "HEAD_NECK_HAND_APPEARANCE_APPROVED",
+    "ApprovedAt": "2026-10-18",
+    "ApprovedImages": [
+      "characters/character-01/matched-no39-scenes/character-01-scene-1-v004-hands130.png",
+      "characters/character-01/matched-no39-scenes/character-01-scene-2-v004-hands130.png",
+      "characters/character-01/matched-no39-scenes/character-01-scene-3-v004-hands130.png"
+    ],
+    "Rule": "ゲーム画面で顔を識別しやすくするため、頭頂と鎖骨を固定し、首を約半分にして余った長さを頭部拡大に充てる。承認されたv002の頭部比率を優先。",
+    "Priority": "首元の露出や解剖学的な自然さよりも、顔と手の視認・キャラクター識別性を優先する。",
+    "CurrentRule": "v004の顔の大きさ・詰まった首元・手の存在感をユーザー承認。鎖骨は古い位置へ戻さない。手は拡大前v002比約1.3倍の見た目を転用し、生成ごとに再乗算しない。新しい全身正面図は承認待ち。"
+  }
+}

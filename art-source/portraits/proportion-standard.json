@@ -1,0 +1,61 @@
+{
+  "Name": "むずでょ監修プロポーション",
+  "Status": "APPROVED",
+  "ApprovedAt": "2026-10-18",
+  "CanonicalImage": "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+  "StandingReference": "characters/character-01/proportion-study/character-01-standing-lower090-v010.png",
+  "ApproximateRatios": {
+    "Method": "目測および横展開用の推奨初期値。厳密な画像測定ではない。",
+    "HeadTopToChin_ChinToCrotch_CrotchToSoles": "約4:7:12（足・靴・開脚によって変動）",
+    "CrotchToKnee_KneeToAnkle": "膝を約1個分上げたv017を優先。旧1:1指定は廃止。股〜膝を短く、膝〜くるぶしを長くする。",
+    "WholeHeightInHeads": "約5.5〜6頭身。冠・靴底を除く基準で調整。"
+  },
+  "Hands": "最新v017の手をそのまま転用。元ポートレートv002比約1.3倍を経た形。生成時にさらに1.3倍を掛けない。",
+  "Projection": "望遠風・平行投影に近い正面。腕と脚を開いた大の字と到達範囲を示す円。",
+  "Priority": "ゲーム画面での顔・手・足の視認と識別性を優先。正確な三次元形状より承認済みv017の見た目を優先。幾何学的な円への配置は横展開のガイドで、v017の円との厳密一致を意味しない。",
+  "Application": "キャラクターの顔・髪・衣装と、共通のプロポーション参照を分けて使用。",
+  "Runtime": "No.39の通常6種（内政・征服者作成）と新聞8種へv017参照の画像を採用（2026-10-18）。No.1の試作画像・3D素体自体はゲーム未採用。",
+  "FootMeasurement": "No.39のような厚底靴では、外底でなく靴の中の足裏を身体の足底位置として判定する。靴底の付加高さは別扱い（2026-10-18ユーザー指定）。",
+  "PortraitReadabilityRefinement": {
+    "Status": "HEAD_NECK_HAND_APPEARANCE_APPROVED",
+    "ApprovedAt": "2026-10-18",
+    "ApprovedImages": [
+      "characters/character-01/matched-no39-scenes/character-01-scene-1-v004-hands130.png",
+      "characters/character-01/matched-no39-scenes/character-01-scene-2-v004-hands130.png",
+      "characters/character-01/matched-no39-scenes/character-01-scene-3-v004-hands130.png"
+    ],
+    "Rule": "ゲーム画面で顔を識別しやすくするため、頭頂と鎖骨を固定し、首を約半分にして余った長さを頭部拡大に充てる。承認されたv002の頭部比率を優先。",
+    "Priority": "首元の露出や解剖学的な自然さよりも、顔と手の視認・キャラクター識別性を優先する。",
+    "CurrentRule": "ポートレートv004の識別性を承認後、全身v016を最新共通基準として承認。過去の倍率を累積させず、最新画像の見た目を転用する。 その後、膝を大きめに上げたv017を最新の全身基準として承認。v018ではなくv017を使用する。"
+  },
+  "PreviousCanonicalImage": "characters/character-01/proportion-study/character-01-vitruvian-v016.png",
+  "Version": "v017-approved-20261018",
+  "StandingReferenceRole": "旧版の直立姿勢参照。頭部・手・足の寸法は最新v017を優先。",
+  "Feet": "v014から足首より先・靴を約1.2倍にしたv017の見た目を転用。足首と手首は装飾袖口を除いた実際の関節幅をほぼ同じに。",
+  "TransferGuide": {
+    "Origin": "股の中央を円の中心O。頭頂は冠・髪の盛り・耳飾りを除いた頭蓋上端。半径R=Oから頭頂。",
+    "CircleAnchors": "頭頂、両手首、両くるぶしの中心。手先・靴先は円の外。母指球を使う場合は別版として全キャラで統一し、手首基準と混在させない。",
+    "Angles": {
+      "ArmsAboveHorizontal": "約20度（15〜25度で調整）",
+      "LegsIncludedAngle": "約65度（60〜70度）。股中央から各くるぶしへの線は下向き垂直から約32〜35度。"
+    },
+    "Face": "頭頂〜顎先の中間付近に上睫。耳の縦範囲は上睫〜上唇付近。顎は襟元の直上に置き、首を見せるために鎖骨を下げない。",
+    "Navel": "股中心から上へ約0.25〜0.30R。衣装で隠れた推定点で、ベルトや飾りの位置と混同しない。",
+    "Knees": "v016より膝頭約1個分上げたv017の配置を優先。股〜膝より膝〜くるぶしが長い。旧1:1は廃止。承認画像の見た目を横展開し、膝の装飾だけでなく関節位置を上げる。",
+    "Waist": "正面の胴体肩幅（ファー等を除く）の約0.5〜0.6。骨盤付近の腰幅の約0.55〜0.65を初期目安とする。細すぎる場合は承認画像を優先。",
+    "HandsFeet": "頭長Hに対し手首〜中指先約0.7〜0.8H、くるぶし〜爪先約0.8〜1.0Hを初期値。向き・手指の開き・靴を考慮しv017の見た目で確認。",
+    "Ornament": {
+      "FrontCenterScale": 1.5,
+      "SideRearScale": 1,
+      "Rule": "頭部球体の前方・正中線付近の装飾を最大1.5倍。左右端・後方へ連続的に1倍へ戻す。顔や頭蓋本体は再拡大しない。",
+      "Status": "中央1.5倍は追加の作画指示。最新v017の画像は以前の中央1.1倍指定を経た画像。"
+    },
+    "GuidePage": "proportion-standard.html"
+  },
+  "Prototype3D": {
+    "Status": "EXPERIMENTAL_NOT_APPROVED",
+    "Path": "proportion-mannequin-v001/index.html",
+    "Scope": "v017正面の体格を参考にした分割メッシュの簡易素体。奥行きは仮定、骨組み・変形対応・衣装・完成顔は未実装。"
+  },
+  "Character39Adoption": "characters/character-39/runtime-v017/adoption.json"
+}

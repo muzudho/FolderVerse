@@ -1,0 +1,10 @@
+Draw this SAME ADULT royal princess No.01 in a precise full-body PROPORTION STUDY, using these two target ratios together:
+ANATOMICAL HEAD CROWN to CROTCH : CROTCH to BOTTOM OF SHOE SOLES = 3 : 4.
+CROTCH to KNEE JOINT : KNEE JOINT to ANKLE BONE : ANKLE BONE to BOTTOM OF SHOE SOLES = 5 : 6 : 2.
+Head crown excludes the gold crown accessory. Crotch means the actual junction where the legs divide, NOT waistband/navel. Knee is anatomical joint center, ankle means ankle bone rather than trouser cuff. Shoe heel height is included in ankle-to-ground distance.
+
+Useful exact vertical layout on a 1024x1536 portrait canvas: anatomical scalp crown y=100; crotch y=640; both knee centers y=917; both ankle bones y=1249; both shoe soles y=1360. This gives upper/lower lengths 540:720=3:4, and lower lengths 277:332:111 approximately 5:6:2. Gold crown rises above scalp but stays in frame. Adjust anatomy and pose to match these ratios, not just decorative seams. Keep mature adult face and natural adult anatomy, not childlike. Do not falsely place knee patches away from actual knees.
+
+Use the same tailored white/navy gold-embroidered SHORT RIDING JACKET and opaque fitted navy RIDING TROUSERS, visible waistband/inseam junction and clearly located knee patches. Short red gold-embroidered mantle with white fur stays behind torso and hips, no dress/skirt or cloak covering leg landmarks. Same low-cut white/gold/blue shoes, white gloves, golden voluminous curls, sapphire eyes, jeweled gold crown, blue diamond earrings, friendly raised index-finger gesture at chest, other hand holds white/blue cute ROBOT TOY with luminous cyan face and lightning-mark battery.
+
+Perfect upright frontal relaxed standing pose, level head/hips, both straight legs parallel at the same depth, no crossed legs or leaning, no perspective shortening. Long-distance TELEPHOTO / near-orthographic level projection. Both soles on one common ground baseline, whole crown and shoes visible with margins. Quiet distant blue-roof castle courtyard, low-contrast softened background, detailed polished anime rendering matching reference. No dimension lines, labels, text, watermark or extra limbs.

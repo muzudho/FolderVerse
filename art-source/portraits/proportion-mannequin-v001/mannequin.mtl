@@ -1,0 +1,138 @@
+newmtl opaque_unitard_torso
+Kd 0.49 0.59 0.7
+
+newmtl pelvis
+Kd 0.49 0.59 0.7
+
+newmtl short_neck
+Kd 0.65 0.72 0.79
+
+newmtl head
+Kd 0.65 0.72 0.79
+
+newmtl right_ear
+Kd 0.65 0.72 0.79
+
+newmtl right_eye_marker
+Kd 0.15 0.25 0.35
+
+newmtl right_shoulder
+Kd 0.65 0.72 0.79
+
+newmtl right_upper_arm
+Kd 0.55 0.64 0.74
+
+newmtl right_forearm
+Kd 0.55 0.64 0.74
+
+newmtl right_wrist
+Kd 0.65 0.72 0.79
+
+newmtl right_palm
+Kd 0.7 0.76 0.81
+
+newmtl right_finger_0
+Kd 0.7 0.76 0.81
+
+newmtl right_fingertip_0
+Kd 0.7 0.76 0.81
+
+newmtl right_finger_1
+Kd 0.7 0.76 0.81
+
+newmtl right_fingertip_1
+Kd 0.7 0.76 0.81
+
+newmtl right_finger_2
+Kd 0.7 0.76 0.81
+
+newmtl right_fingertip_2
+Kd 0.7 0.76 0.81
+
+newmtl right_finger_3
+Kd 0.7 0.76 0.81
+
+newmtl right_fingertip_3
+Kd 0.7 0.76 0.81
+
+newmtl right_thumb
+Kd 0.7 0.76 0.81
+
+newmtl right_thigh
+Kd 0.55 0.64 0.74
+
+newmtl right_knee
+Kd 0.65 0.72 0.79
+
+newmtl right_shin
+Kd 0.55 0.64 0.74
+
+newmtl right_ankle
+Kd 0.65 0.72 0.79
+
+newmtl right_foot
+Kd 0.7 0.76 0.81
+
+newmtl left_ear
+Kd 0.65 0.72 0.79
+
+newmtl left_eye_marker
+Kd 0.15 0.25 0.35
+
+newmtl left_shoulder
+Kd 0.65 0.72 0.79
+
+newmtl left_upper_arm
+Kd 0.55 0.64 0.74
+
+newmtl left_forearm
+Kd 0.55 0.64 0.74
+
+newmtl left_wrist
+Kd 0.65 0.72 0.79
+
+newmtl left_palm
+Kd 0.7 0.76 0.81
+
+newmtl left_finger_0
+Kd 0.7 0.76 0.81
+
+newmtl left_fingertip_0
+Kd 0.7 0.76 0.81
+
+newmtl left_finger_1
+Kd 0.7 0.76 0.81
+
+newmtl left_fingertip_1
+Kd 0.7 0.76 0.81
+
+newmtl left_finger_2
+Kd 0.7 0.76 0.81
+
+newmtl left_fingertip_2
+Kd 0.7 0.76 0.81
+
+newmtl left_finger_3
+Kd 0.7 0.76 0.81
+
+newmtl left_fingertip_3
+Kd 0.7 0.76 0.81
+
+newmtl left_thumb
+Kd 0.7 0.76 0.81
+
+newmtl left_thigh
+Kd 0.55 0.64 0.74
+
+newmtl left_knee
+Kd 0.65 0.72 0.79
+
+newmtl left_shin
+Kd 0.55 0.64 0.74
+
+newmtl left_ankle
+Kd 0.65 0.72 0.79
+
+newmtl left_foot
+Kd 0.7 0.76 0.81
+

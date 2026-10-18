@@ -1,0 +1,197 @@
+{
+  "CharacterId": 39,
+  "AdoptedAt": "2026-10-18",
+  "Standard": "v017-approved-20261018",
+  "Method": "Built-in image_gen, visual references and written proportion rules; not rendered from the 3D prototype",
+  "Backup": "backup/",
+  "Images": [
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-39/character-39-1-v008-generated.png",
+      "Tile": "art-source/portraits/characters/character-39/character-39-1-v008.png",
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "B0583A2061219776AD466E5C7FFB0C2FA4CC6EBE44337E7DFDF284B7D8606182",
+      "OriginalSha256": "FF4E0D4FAF3C92BFDA0CA1AAE5E8E18A29D23A13C258F95014630B04DCBD2663",
+      "Targets": [
+        "v3-standardized/tiles/character-39-1.png",
+        "conqueror-creation/tiles/character-39-1.png"
+      ]
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-39/character-39-2-v007-generated.png",
+      "Tile": "art-source/portraits/characters/character-39/character-39-2-v007.png",
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "02BB3C579BCEF44CB576142E93BA8B855D08A253AC067FB80860ED727703765A",
+      "OriginalSha256": "F289B8FA33334DD746EB88A8BF7AC0B78084B2FC8DD4AF866DD554EBFAC5270E",
+      "Targets": [
+        "v3-standardized/tiles/character-39-2.png",
+        "conqueror-creation/tiles/character-39-2.png"
+      ]
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-39/character-39-3-v007-generated.png",
+      "Tile": "art-source/portraits/characters/character-39/character-39-3-v007.png",
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "C8C5DDB3CCEC590B02C6B20A4BAFB066328DCBC926B9D433C6EEDB90C1120422",
+      "OriginalSha256": "2796DAFF47E7913D264B3405212C173E69A42BE7959B0535DD459E8DAECCDD99",
+      "Targets": [
+        "v3-standardized/tiles/character-39-3.png",
+        "conqueror-creation/tiles/character-39-3.png"
+      ]
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-39/character-39-4-v005-generated.png",
+      "Tile": "art-source/portraits/characters/character-39/character-39-4-v005.png",
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "38246E84895D580F3DFA00236D721C0FD5CEB99ABFBA2E6D6C097181B42E7204",
+      "OriginalSha256": "5776467096DC9315FFD5EDBE08A11A68984D5F868186D4EA059DEC89828DFA18",
+      "Targets": [
+        "v3-standardized/tiles/character-39-4.png",
+        "conqueror-creation/tiles/character-39-4.png"
+      ]
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-39/character-39-5-v005-generated.png",
+      "Tile": "art-source/portraits/characters/character-39/character-39-5-v005.png",
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "CA336B74EFDC82E57210D28B7FA024E30709FFD030A5C5B5E3F0A462F372A158",
+      "OriginalSha256": "548726028D9D39752FBA4A2F5D3B02C9DA73AFC4F74778A17279153D1AB6FD54",
+      "Targets": [
+        "v3-standardized/tiles/character-39-5.png",
+        "conqueror-creation/tiles/character-39-5.png"
+      ]
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-39/character-39-6-v005-generated.png",
+      "Tile": "art-source/portraits/characters/character-39/character-39-6-v005.png",
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "747BCF1EE8EBBB364561D931671A67F91E7332C972606FA83FCEA6BD803A7298",
+      "OriginalSha256": "08FFB78FE8C6EE2657AD9BF95088EBBCC5921B9EF0CBFB6B92B556A2077E408A",
+      "Targets": [
+        "v3-standardized/tiles/character-39-6.png",
+        "conqueror-creation/tiles/character-39-6.png"
+      ]
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/newspaper-trials/character-39-formal-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-39/runtime-v017/newspaper-formal.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "56219FFCC3AB74899F6ECA3F69A31FF76A1D53D0EA86952AB32CB40DB9419ACF",
+      "OriginalSha256": "2678103B48BA809BF2556C1DE1A92846842490940D5C021FB9165D6A7749A2CA",
+      "Targets": [
+        "newspaper/character-39-formal.png"
+      ]
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/newspaper-trials/character-39-election-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-39/runtime-v017/newspaper-election.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "A923FE2C95CE42A5DBB24E09ED6C329ACACE79D9E7001C4916B5B5C94D643645",
+      "OriginalSha256": "65C26BECFA7202B5401CCF7855560FBBC393F9AA7A79578518D5B7CEDA6B5E29",
+      "Targets": [
+        "newspaper/character-39-election.png"
+      ]
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/newspaper-trials/character-39-friends-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-39/runtime-v017/newspaper-friends.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "950407A7186A4AFDE17034C934834C0ADC5B2B6A355FBA24025B7B95456601C8",
+      "OriginalSha256": "3BC7508F2F054E9698AB67606538C630B117B619F60AE3A2BEA22ABB80F3CA87",
+      "Targets": [
+        "newspaper/character-39-friends.png"
+      ]
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/newspaper-trials/character-39-history-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-39/runtime-v017/newspaper-history.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "B0C47FC0652823C28B65DA09B8156DB3D668F93CF341D90041BD2CC7C1F6B812",
+      "OriginalSha256": "3074E49B4C0EF1CF8CE873581EF9BFB5A779B28FD45932204A3B4FB2D9B62A51",
+      "Targets": [
+        "newspaper/character-39-history.png"
+      ]
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/newspaper-trials/character-39-id-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-39/runtime-v017/newspaper-id.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "FC7C0CE186DE1096510BCCEA1C36086AAC613F44AF07D3B86D88FF10E4E4D746",
+      "OriginalSha256": "7FCAE5A951FFB252E3264B80E7A01E86DDF491F2C01D75FA2464010E11D885ED",
+      "Targets": [
+        "newspaper/character-39-id.png"
+      ]
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/newspaper-trials/character-39-idol-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-39/runtime-v017/newspaper-idol.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "1B04F1B2216A84EE93FFBCBBE09595DFB58677F78FE351941BA1E1576B183688",
+      "OriginalSha256": "566D74B9CA2C63211EE4692865D2FD09F614BAB1E867929B00239AE16F776BC4",
+      "Targets": [
+        "newspaper/character-39-idol.png"
+      ]
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/newspaper-trials/character-39-paparazzi-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-39/runtime-v017/newspaper-paparazzi.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "5B2C3042DE7611094D07B43E9A44021880D024E402059568328BDF59B9E49C67",
+      "OriginalSha256": "7E8ECA1F0F4AB9F973881720DB6C09944C8EEA692BB5AE40073195CC9CF1FFA5",
+      "Targets": [
+        "newspaper/character-39-paparazzi.png"
+      ]
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/newspaper-trials/character-39-coin-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-39/runtime-v017/newspaper-coin.png",
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "7DE1B91D4555842475E71E0493FA7FF46B7207977049FB890C5BCB0B4C4AA1D2",
+      "OriginalSha256": "1CC1031BC606EB8B9A855ED06160AB24DDE87EEF47806AF4FCC762A173A0B597",
+      "Targets": [
+        "newspaper/character-39-coin.png"
+      ]
+    }
+  ]
+}

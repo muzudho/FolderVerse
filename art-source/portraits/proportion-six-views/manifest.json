@@ -1,0 +1,132 @@
+{
+  "standard": "むずでょ監修プロポーション",
+  "note": "生成による設定補完案。厳密な三次元投影ではなく、画角・形状の差は要確認。左右は本人基準。No.39の体格は厚底を除く素足の底で測る。",
+  "sets": [
+    {
+      "id": "no01-riding",
+      "name": "No.1 王女・乗馬服",
+      "views": [
+        {
+          "direction": "front",
+          "label": "正面図",
+          "file": "../characters/character-01/proportion-study/character-01-vitruvian-hands120-v011.png",
+          "exists": true
+        },
+        {
+          "direction": "back",
+          "label": "背面図",
+          "file": "no01-riding-back-v001.png",
+          "exists": true
+        },
+        {
+          "direction": "top",
+          "label": "平面図（上から）",
+          "file": "no01-riding-top-v002.png",
+          "exists": true
+        },
+        {
+          "direction": "bottom",
+          "label": "下面図（下から）",
+          "file": "no01-riding-bottom-v003.png",
+          "exists": true
+        },
+        {
+          "direction": "right",
+          "label": "右側面図",
+          "file": "no01-riding-right-v001.png",
+          "exists": true
+        },
+        {
+          "direction": "left",
+          "label": "左側面図",
+          "file": "no01-riding-left-v001.png",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "no01-skirt",
+      "name": "No.1 王女・原画のスカート",
+      "views": [
+        {
+          "direction": "front",
+          "label": "正面図",
+          "file": "no01-skirt-front-v001.png",
+          "exists": true
+        },
+        {
+          "direction": "back",
+          "label": "背面図",
+          "file": "no01-skirt-back-v001.png",
+          "exists": true
+        },
+        {
+          "direction": "top",
+          "label": "平面図（上から）",
+          "file": "no01-skirt-top-v001.png",
+          "exists": true
+        },
+        {
+          "direction": "bottom",
+          "label": "下面図（下から）",
+          "file": "no01-skirt-bottom-v001.png",
+          "exists": true
+        },
+        {
+          "direction": "right",
+          "label": "右側面図",
+          "file": "no01-skirt-right-v001.png",
+          "exists": true
+        },
+        {
+          "direction": "left",
+          "label": "左側面図",
+          "file": "no01-skirt-left-v001.png",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "no39",
+      "name": "No.39 バルキリー家庭教師",
+      "views": [
+        {
+          "direction": "front",
+          "label": "正面図",
+          "file": "../characters/character-39/redesign-valkyrie-tutor/character-39-vitruvian-v031.png",
+          "exists": true
+        },
+        {
+          "direction": "back",
+          "label": "背面図",
+          "file": "no39-back-v003.png",
+          "exists": true
+        },
+        {
+          "direction": "top",
+          "label": "平面図（上から）",
+          "file": "no39-top-v001.png",
+          "exists": true
+        },
+        {
+          "direction": "bottom",
+          "label": "下面図（下から）",
+          "file": "no39-bottom-v001.png",
+          "exists": true
+        },
+        {
+          "direction": "right",
+          "label": "右側面図",
+          "file": "no39-right-v001.png",
+          "exists": true
+        },
+        {
+          "direction": "left",
+          "label": "左側面図",
+          "file": "no39-left-v001.png",
+          "exists": true
+        }
+      ]
+    }
+  ]
+}

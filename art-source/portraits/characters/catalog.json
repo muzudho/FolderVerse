@@ -10298,7 +10298,7 @@
   {
     "CharacterId": 1,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-01/character-01-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10315,7 +10315,7 @@
   {
     "CharacterId": 42,
     "Variant": 1,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-42/character-42-1-v004.png",
     "Width": 256,
     "Height": 192,
@@ -10332,7 +10332,7 @@
   {
     "CharacterId": 60,
     "Variant": 1,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-60/character-60-1-v004.png",
     "Width": 256,
     "Height": 192,
@@ -10349,7 +10349,7 @@
   {
     "CharacterId": 1,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-01/character-01-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10366,7 +10366,7 @@
   {
     "CharacterId": 1,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-01/character-01-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10383,7 +10383,7 @@
   {
     "CharacterId": 1,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-01/character-01-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10400,7 +10400,7 @@
   {
     "CharacterId": 1,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-01/character-01-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10417,7 +10417,7 @@
   {
     "CharacterId": 1,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-01/character-01-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10434,7 +10434,7 @@
   {
     "CharacterId": 2,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-02/character-02-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10451,7 +10451,7 @@
   {
     "CharacterId": 2,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-02/character-02-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10468,7 +10468,7 @@
   {
     "CharacterId": 2,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-02/character-02-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10485,7 +10485,7 @@
   {
     "CharacterId": 2,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-02/character-02-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10502,7 +10502,7 @@
   {
     "CharacterId": 2,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-02/character-02-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10519,7 +10519,7 @@
   {
     "CharacterId": 2,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-02/character-02-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10536,7 +10536,7 @@
   {
     "CharacterId": 3,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-03/character-03-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10553,7 +10553,7 @@
   {
     "CharacterId": 3,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-03/character-03-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10570,7 +10570,7 @@
   {
     "CharacterId": 3,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-03/character-03-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10587,7 +10587,7 @@
   {
     "CharacterId": 3,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-03/character-03-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10604,7 +10604,7 @@
   {
     "CharacterId": 3,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-03/character-03-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10621,7 +10621,7 @@
   {
     "CharacterId": 3,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-03/character-03-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10638,7 +10638,7 @@
   {
     "CharacterId": 4,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-04/character-04-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10655,7 +10655,7 @@
   {
     "CharacterId": 4,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-04/character-04-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10672,7 +10672,7 @@
   {
     "CharacterId": 4,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-04/character-04-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10689,7 +10689,7 @@
   {
     "CharacterId": 4,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-04/character-04-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10706,7 +10706,7 @@
   {
     "CharacterId": 4,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-04/character-04-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10723,7 +10723,7 @@
   {
     "CharacterId": 4,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-04/character-04-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10740,7 +10740,7 @@
   {
     "CharacterId": 5,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-05/character-05-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10757,7 +10757,7 @@
   {
     "CharacterId": 5,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-05/character-05-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10774,7 +10774,7 @@
   {
     "CharacterId": 5,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-05/character-05-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10791,7 +10791,7 @@
   {
     "CharacterId": 5,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-05/character-05-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10808,7 +10808,7 @@
   {
     "CharacterId": 5,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-05/character-05-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10825,7 +10825,7 @@
   {
     "CharacterId": 5,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-05/character-05-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10842,7 +10842,7 @@
   {
     "CharacterId": 6,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-06/character-06-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10859,7 +10859,7 @@
   {
     "CharacterId": 6,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-06/character-06-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10876,7 +10876,7 @@
   {
     "CharacterId": 6,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-06/character-06-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10893,7 +10893,7 @@
   {
     "CharacterId": 6,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-06/character-06-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10910,7 +10910,7 @@
   {
     "CharacterId": 6,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-06/character-06-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10927,7 +10927,7 @@
   {
     "CharacterId": 6,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-06/character-06-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10944,7 +10944,7 @@
   {
     "CharacterId": 7,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-07/character-07-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10961,7 +10961,7 @@
   {
     "CharacterId": 7,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-07/character-07-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10978,7 +10978,7 @@
   {
     "CharacterId": 7,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-07/character-07-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -10995,7 +10995,7 @@
   {
     "CharacterId": 7,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-07/character-07-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11012,7 +11012,7 @@
   {
     "CharacterId": 7,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-07/character-07-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11029,7 +11029,7 @@
   {
     "CharacterId": 8,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-08/character-08-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11046,7 +11046,7 @@
   {
     "CharacterId": 8,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-08/character-08-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11063,7 +11063,7 @@
   {
     "CharacterId": 8,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-08/character-08-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11080,7 +11080,7 @@
   {
     "CharacterId": 8,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-08/character-08-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11097,7 +11097,7 @@
   {
     "CharacterId": 8,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-08/character-08-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11114,7 +11114,7 @@
   {
     "CharacterId": 9,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-09/character-09-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11131,7 +11131,7 @@
   {
     "CharacterId": 9,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-09/character-09-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11148,7 +11148,7 @@
   {
     "CharacterId": 9,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-09/character-09-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11165,7 +11165,7 @@
   {
     "CharacterId": 9,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-09/character-09-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11182,7 +11182,7 @@
   {
     "CharacterId": 7,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-07/character-07-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11199,7 +11199,7 @@
   {
     "CharacterId": 9,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-09/character-09-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11216,7 +11216,7 @@
   {
     "CharacterId": 10,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-10/character-10-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11233,7 +11233,7 @@
   {
     "CharacterId": 10,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-10/character-10-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11250,7 +11250,7 @@
   {
     "CharacterId": 10,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-10/character-10-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11267,7 +11267,7 @@
   {
     "CharacterId": 10,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-10/character-10-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11284,7 +11284,7 @@
   {
     "CharacterId": 10,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-10/character-10-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11301,7 +11301,7 @@
   {
     "CharacterId": 10,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-10/character-10-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11318,7 +11318,7 @@
   {
     "CharacterId": 11,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-11/character-11-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11335,7 +11335,7 @@
   {
     "CharacterId": 11,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-11/character-11-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11352,7 +11352,7 @@
   {
     "CharacterId": 11,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-11/character-11-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11369,7 +11369,7 @@
   {
     "CharacterId": 11,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-11/character-11-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11386,7 +11386,7 @@
   {
     "CharacterId": 11,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-11/character-11-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11403,7 +11403,7 @@
   {
     "CharacterId": 8,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-08/character-08-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11420,7 +11420,7 @@
   {
     "CharacterId": 9,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-09/character-09-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11437,7 +11437,7 @@
   {
     "CharacterId": 12,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-12/character-12-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11454,7 +11454,7 @@
   {
     "CharacterId": 12,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-12/character-12-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11471,7 +11471,7 @@
   {
     "CharacterId": 12,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-12/character-12-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11488,7 +11488,7 @@
   {
     "CharacterId": 12,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-12/character-12-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11505,7 +11505,7 @@
   {
     "CharacterId": 12,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-12/character-12-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11522,7 +11522,7 @@
   {
     "CharacterId": 12,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-12/character-12-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11539,7 +11539,7 @@
   {
     "CharacterId": 13,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-13/character-13-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11556,7 +11556,7 @@
   {
     "CharacterId": 13,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-13/character-13-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11573,7 +11573,7 @@
   {
     "CharacterId": 13,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-13/character-13-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11590,7 +11590,7 @@
   {
     "CharacterId": 13,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-13/character-13-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11607,7 +11607,7 @@
   {
     "CharacterId": 13,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-13/character-13-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11624,7 +11624,7 @@
   {
     "CharacterId": 11,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-11/character-11-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11641,7 +11641,7 @@
   {
     "CharacterId": 13,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-13/character-13-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11658,7 +11658,7 @@
   {
     "CharacterId": 14,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-14/character-14-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11675,7 +11675,7 @@
   {
     "CharacterId": 14,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-14/character-14-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11692,7 +11692,7 @@
   {
     "CharacterId": 14,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-14/character-14-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11709,7 +11709,7 @@
   {
     "CharacterId": 14,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-14/character-14-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11726,7 +11726,7 @@
   {
     "CharacterId": 14,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-14/character-14-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11743,7 +11743,7 @@
   {
     "CharacterId": 14,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-14/character-14-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11760,7 +11760,7 @@
   {
     "CharacterId": 15,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-15/character-15-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11777,7 +11777,7 @@
   {
     "CharacterId": 15,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-15/character-15-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11794,7 +11794,7 @@
   {
     "CharacterId": 15,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-15/character-15-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11811,7 +11811,7 @@
   {
     "CharacterId": 16,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-16/character-16-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11828,7 +11828,7 @@
   {
     "CharacterId": 16,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-16/character-16-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11845,7 +11845,7 @@
   {
     "CharacterId": 16,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-16/character-16-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11862,7 +11862,7 @@
   {
     "CharacterId": 16,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-16/character-16-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11879,7 +11879,7 @@
   {
     "CharacterId": 16,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-16/character-16-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11896,7 +11896,7 @@
   {
     "CharacterId": 17,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-17/character-17-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11913,7 +11913,7 @@
   {
     "CharacterId": 17,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-17/character-17-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11930,7 +11930,7 @@
   {
     "CharacterId": 17,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-17/character-17-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11947,7 +11947,7 @@
   {
     "CharacterId": 17,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-17/character-17-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11964,7 +11964,7 @@
   {
     "CharacterId": 17,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-17/character-17-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11981,7 +11981,7 @@
   {
     "CharacterId": 17,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-17/character-17-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -11998,7 +11998,7 @@
   {
     "CharacterId": 18,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-18/character-18-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12015,7 +12015,7 @@
   {
     "CharacterId": 18,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-18/character-18-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12032,7 +12032,7 @@
   {
     "CharacterId": 18,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-18/character-18-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12049,7 +12049,7 @@
   {
     "CharacterId": 18,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-18/character-18-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12066,7 +12066,7 @@
   {
     "CharacterId": 15,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-15/character-15-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12083,7 +12083,7 @@
   {
     "CharacterId": 15,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-15/character-15-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12100,7 +12100,7 @@
   {
     "CharacterId": 15,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-15/character-15-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12117,7 +12117,7 @@
   {
     "CharacterId": 16,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-16/character-16-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12134,7 +12134,7 @@
   {
     "CharacterId": 18,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-18/character-18-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12151,7 +12151,7 @@
   {
     "CharacterId": 19,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-19/character-19-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12168,7 +12168,7 @@
   {
     "CharacterId": 19,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-19/character-19-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12185,7 +12185,7 @@
   {
     "CharacterId": 19,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-19/character-19-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12202,7 +12202,7 @@
   {
     "CharacterId": 19,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-19/character-19-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12219,7 +12219,7 @@
   {
     "CharacterId": 19,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-19/character-19-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12236,7 +12236,7 @@
   {
     "CharacterId": 19,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-19/character-19-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12253,7 +12253,7 @@
   {
     "CharacterId": 20,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-20/character-20-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12270,7 +12270,7 @@
   {
     "CharacterId": 20,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-20/character-20-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12287,7 +12287,7 @@
   {
     "CharacterId": 20,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-20/character-20-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12304,7 +12304,7 @@
   {
     "CharacterId": 20,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-20/character-20-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12321,7 +12321,7 @@
   {
     "CharacterId": 20,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-20/character-20-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12338,7 +12338,7 @@
   {
     "CharacterId": 18,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-18/character-18-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12355,7 +12355,7 @@
   {
     "CharacterId": 20,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-20/character-20-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12372,7 +12372,7 @@
   {
     "CharacterId": 21,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-21/character-21-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12389,7 +12389,7 @@
   {
     "CharacterId": 21,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-21/character-21-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12406,7 +12406,7 @@
   {
     "CharacterId": 21,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-21/character-21-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12423,7 +12423,7 @@
   {
     "CharacterId": 21,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-21/character-21-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12440,7 +12440,7 @@
   {
     "CharacterId": 21,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-21/character-21-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12457,7 +12457,7 @@
   {
     "CharacterId": 22,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-22/character-22-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12474,7 +12474,7 @@
   {
     "CharacterId": 22,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-22/character-22-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12491,7 +12491,7 @@
   {
     "CharacterId": 22,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-22/character-22-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12508,7 +12508,7 @@
   {
     "CharacterId": 22,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-22/character-22-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12525,7 +12525,7 @@
   {
     "CharacterId": 22,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-22/character-22-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12542,7 +12542,7 @@
   {
     "CharacterId": 22,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-22/character-22-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12559,7 +12559,7 @@
   {
     "CharacterId": 23,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-23/character-23-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12576,7 +12576,7 @@
   {
     "CharacterId": 23,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-23/character-23-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12593,7 +12593,7 @@
   {
     "CharacterId": 23,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-23/character-23-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12610,7 +12610,7 @@
   {
     "CharacterId": 21,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-21/character-21-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12627,7 +12627,7 @@
   {
     "CharacterId": 23,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-23/character-23-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12644,7 +12644,7 @@
   {
     "CharacterId": 23,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-23/character-23-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12661,7 +12661,7 @@
   {
     "CharacterId": 24,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-24/character-24-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12678,7 +12678,7 @@
   {
     "CharacterId": 24,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-24/character-24-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12695,7 +12695,7 @@
   {
     "CharacterId": 24,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-24/character-24-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12712,7 +12712,7 @@
   {
     "CharacterId": 24,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-24/character-24-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12729,7 +12729,7 @@
   {
     "CharacterId": 24,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-24/character-24-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12746,7 +12746,7 @@
   {
     "CharacterId": 24,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-24/character-24-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12763,7 +12763,7 @@
   {
     "CharacterId": 25,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-25/character-25-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12780,7 +12780,7 @@
   {
     "CharacterId": 25,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-25/character-25-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12797,7 +12797,7 @@
   {
     "CharacterId": 25,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-25/character-25-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12814,7 +12814,7 @@
   {
     "CharacterId": 25,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-25/character-25-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12831,7 +12831,7 @@
   {
     "CharacterId": 25,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-25/character-25-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12848,7 +12848,7 @@
   {
     "CharacterId": 23,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-23/character-23-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12865,7 +12865,7 @@
   {
     "CharacterId": 25,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-25/character-25-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12882,7 +12882,7 @@
   {
     "CharacterId": 26,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-26/character-26-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12899,7 +12899,7 @@
   {
     "CharacterId": 26,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-26/character-26-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12916,7 +12916,7 @@
   {
     "CharacterId": 26,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-26/character-26-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12933,7 +12933,7 @@
   {
     "CharacterId": 26,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-26/character-26-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12950,7 +12950,7 @@
   {
     "CharacterId": 26,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-26/character-26-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12967,7 +12967,7 @@
   {
     "CharacterId": 26,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-26/character-26-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -12984,7 +12984,7 @@
   {
     "CharacterId": 27,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-27/character-27-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13001,7 +13001,7 @@
   {
     "CharacterId": 27,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-27/character-27-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13018,7 +13018,7 @@
   {
     "CharacterId": 27,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-27/character-27-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13035,7 +13035,7 @@
   {
     "CharacterId": 27,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-27/character-27-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13052,7 +13052,7 @@
   {
     "CharacterId": 27,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-27/character-27-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13069,7 +13069,7 @@
   {
     "CharacterId": 27,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-27/character-27-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13086,7 +13086,7 @@
   {
     "CharacterId": 28,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-28/character-28-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13103,7 +13103,7 @@
   {
     "CharacterId": 28,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-28/character-28-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13120,7 +13120,7 @@
   {
     "CharacterId": 28,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-28/character-28-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13137,7 +13137,7 @@
   {
     "CharacterId": 28,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-28/character-28-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13154,7 +13154,7 @@
   {
     "CharacterId": 28,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-28/character-28-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13171,7 +13171,7 @@
   {
     "CharacterId": 28,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-28/character-28-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13188,7 +13188,7 @@
   {
     "CharacterId": 29,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-29/character-29-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13205,7 +13205,7 @@
   {
     "CharacterId": 29,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-29/character-29-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13222,7 +13222,7 @@
   {
     "CharacterId": 29,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-29/character-29-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13239,7 +13239,7 @@
   {
     "CharacterId": 29,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-29/character-29-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13256,7 +13256,7 @@
   {
     "CharacterId": 29,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-29/character-29-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13273,7 +13273,7 @@
   {
     "CharacterId": 29,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-29/character-29-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13290,7 +13290,7 @@
   {
     "CharacterId": 30,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-30/character-30-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13307,7 +13307,7 @@
   {
     "CharacterId": 30,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-30/character-30-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13324,7 +13324,7 @@
   {
     "CharacterId": 30,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-30/character-30-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13341,7 +13341,7 @@
   {
     "CharacterId": 30,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-30/character-30-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13358,7 +13358,7 @@
   {
     "CharacterId": 30,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-30/character-30-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13375,7 +13375,7 @@
   {
     "CharacterId": 30,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-30/character-30-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13392,7 +13392,7 @@
   {
     "CharacterId": 31,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-31/character-31-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13409,7 +13409,7 @@
   {
     "CharacterId": 31,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-31/character-31-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13426,7 +13426,7 @@
   {
     "CharacterId": 31,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-31/character-31-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13443,7 +13443,7 @@
   {
     "CharacterId": 31,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-31/character-31-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13460,7 +13460,7 @@
   {
     "CharacterId": 31,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-31/character-31-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13477,7 +13477,7 @@
   {
     "CharacterId": 32,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-32/character-32-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13494,7 +13494,7 @@
   {
     "CharacterId": 32,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-32/character-32-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13511,7 +13511,7 @@
   {
     "CharacterId": 32,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-32/character-32-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13528,7 +13528,7 @@
   {
     "CharacterId": 32,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-32/character-32-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13545,7 +13545,7 @@
   {
     "CharacterId": 32,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-32/character-32-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13562,7 +13562,7 @@
   {
     "CharacterId": 32,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-32/character-32-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13579,7 +13579,7 @@
   {
     "CharacterId": 33,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-33/character-33-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13596,7 +13596,7 @@
   {
     "CharacterId": 33,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-33/character-33-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13613,7 +13613,7 @@
   {
     "CharacterId": 33,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-33/character-33-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13630,7 +13630,7 @@
   {
     "CharacterId": 33,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-33/character-33-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13647,7 +13647,7 @@
   {
     "CharacterId": 33,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-33/character-33-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13664,7 +13664,7 @@
   {
     "CharacterId": 34,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-34/character-34-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13681,7 +13681,7 @@
   {
     "CharacterId": 34,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-34/character-34-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13698,7 +13698,7 @@
   {
     "CharacterId": 34,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-34/character-34-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13715,7 +13715,7 @@
   {
     "CharacterId": 34,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-34/character-34-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13732,7 +13732,7 @@
   {
     "CharacterId": 34,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-34/character-34-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13749,7 +13749,7 @@
   {
     "CharacterId": 34,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-34/character-34-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13766,7 +13766,7 @@
   {
     "CharacterId": 31,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-31/character-31-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13783,7 +13783,7 @@
   {
     "CharacterId": 35,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-35/character-35-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13800,7 +13800,7 @@
   {
     "CharacterId": 35,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-35/character-35-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13817,7 +13817,7 @@
   {
     "CharacterId": 35,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-35/character-35-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13834,7 +13834,7 @@
   {
     "CharacterId": 35,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-35/character-35-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13851,7 +13851,7 @@
   {
     "CharacterId": 35,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-35/character-35-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13868,7 +13868,7 @@
   {
     "CharacterId": 36,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-36/character-36-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13885,7 +13885,7 @@
   {
     "CharacterId": 35,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-35/character-35-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13902,7 +13902,7 @@
   {
     "CharacterId": 36,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-36/character-36-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13919,7 +13919,7 @@
   {
     "CharacterId": 36,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-36/character-36-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13936,7 +13936,7 @@
   {
     "CharacterId": 36,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-36/character-36-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13953,7 +13953,7 @@
   {
     "CharacterId": 36,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-36/character-36-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13970,7 +13970,7 @@
   {
     "CharacterId": 36,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-36/character-36-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -13987,7 +13987,7 @@
   {
     "CharacterId": 37,
     "Variant": 2,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-37/character-37-2-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14004,7 +14004,7 @@
   {
     "CharacterId": 37,
     "Variant": 4,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-37/character-37-4-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14021,7 +14021,7 @@
   {
     "CharacterId": 37,
     "Variant": 3,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-37/character-37-3-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14038,7 +14038,7 @@
   {
     "CharacterId": 38,
     "Variant": 1,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-38/character-38-1-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14055,7 +14055,7 @@
   {
     "CharacterId": 33,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-33/character-33-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14072,7 +14072,7 @@
   {
     "CharacterId": 37,
     "Variant": 6,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-37/character-37-6-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14089,7 +14089,7 @@
   {
     "CharacterId": 38,
     "Variant": 2,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-38/character-38-2-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14106,7 +14106,7 @@
   {
     "CharacterId": 38,
     "Variant": 3,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-38/character-38-3-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14123,7 +14123,7 @@
   {
     "CharacterId": 38,
     "Variant": 4,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-38/character-38-4-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14140,7 +14140,7 @@
   {
     "CharacterId": 38,
     "Variant": 5,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-38/character-38-5-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14157,7 +14157,7 @@
   {
     "CharacterId": 38,
     "Variant": 6,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-38/character-38-6-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14174,7 +14174,7 @@
   {
     "CharacterId": 39,
     "Variant": 1,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-39/character-39-1-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14182,7 +14182,7 @@
     "Source": "character-39/character-39-1-v004-generated.png",
     "Note": "4:3描き足し。組み込みimage_genの出力を縦横比維持で256x192へ縮小。生成原本：character-39-1-v004-generated.png",
     "ArchivedAt": "2026-10-08T23:42:49+09:00",
-    "Current": true,
+    "Current": false,
     "OriginalWidth": 1448,
     "OriginalHeight": 1086,
     "OriginalFile": "character-39/character-39-1-v004-generated.png",
@@ -14191,7 +14191,7 @@
   {
     "CharacterId": 39,
     "Variant": 2,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-39/character-39-2-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14199,7 +14199,7 @@
     "Source": "character-39/character-39-2-v004-generated.png",
     "Note": "4:3描き足し。組み込みimage_genの出力を縦横比維持で256x192へ縮小。生成原本：character-39-2-v004-generated.png",
     "ArchivedAt": "2026-10-08T23:43:47+09:00",
-    "Current": true,
+    "Current": false,
     "OriginalWidth": 1448,
     "OriginalHeight": 1086,
     "OriginalFile": "character-39/character-39-2-v004-generated.png",
@@ -14208,7 +14208,7 @@
   {
     "CharacterId": 39,
     "Variant": 3,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-39/character-39-3-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14216,7 +14216,7 @@
     "Source": "character-39/character-39-3-v004-generated.png",
     "Note": "4:3描き足し。組み込みimage_genの出力を縦横比維持で256x192へ縮小。生成原本：character-39-3-v004-generated.png",
     "ArchivedAt": "2026-10-08T23:44:46+09:00",
-    "Current": true,
+    "Current": false,
     "OriginalWidth": 1448,
     "OriginalHeight": 1086,
     "OriginalFile": "character-39/character-39-3-v004-generated.png",
@@ -14225,7 +14225,7 @@
   {
     "CharacterId": 39,
     "Variant": 4,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-39/character-39-4-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14233,7 +14233,7 @@
     "Source": "character-39/character-39-4-v004-generated.png",
     "Note": "4:3描き足し。組み込みimage_genの出力を縦横比維持で256x192へ縮小。生成原本：character-39-4-v004-generated.png",
     "ArchivedAt": "2026-10-08T23:44:56+09:00",
-    "Current": true,
+    "Current": false,
     "OriginalWidth": 1448,
     "OriginalHeight": 1086,
     "OriginalFile": "character-39/character-39-4-v004-generated.png",
@@ -14242,7 +14242,7 @@
   {
     "CharacterId": 39,
     "Variant": 5,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-39/character-39-5-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14250,7 +14250,7 @@
     "Source": "character-39/character-39-5-v004-generated.png",
     "Note": "4:3描き足し。組み込みimage_genの出力を縦横比維持で256x192へ縮小。生成原本：character-39-5-v004-generated.png",
     "ArchivedAt": "2026-10-08T23:45:26+09:00",
-    "Current": true,
+    "Current": false,
     "OriginalWidth": 1448,
     "OriginalHeight": 1086,
     "OriginalFile": "character-39/character-39-5-v004-generated.png",
@@ -14259,7 +14259,7 @@
   {
     "CharacterId": 40,
     "Variant": 1,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-40/character-40-1-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14276,7 +14276,7 @@
   {
     "CharacterId": 40,
     "Variant": 4,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-40/character-40-4-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14293,7 +14293,7 @@
   {
     "CharacterId": 40,
     "Variant": 3,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-40/character-40-3-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14310,7 +14310,7 @@
   {
     "CharacterId": 40,
     "Variant": 5,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-40/character-40-5-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14327,7 +14327,7 @@
   {
     "CharacterId": 40,
     "Variant": 6,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-40/character-40-6-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14344,7 +14344,7 @@
   {
     "CharacterId": 41,
     "Variant": 1,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-41/character-41-1-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14361,7 +14361,7 @@
   {
     "CharacterId": 41,
     "Variant": 2,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-41/character-41-2-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14378,7 +14378,7 @@
   {
     "CharacterId": 41,
     "Variant": 3,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-41/character-41-3-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14395,7 +14395,7 @@
   {
     "CharacterId": 41,
     "Variant": 4,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-41/character-41-4-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14412,7 +14412,7 @@
   {
     "CharacterId": 41,
     "Variant": 5,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-41/character-41-5-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14429,7 +14429,7 @@
   {
     "CharacterId": 41,
     "Variant": 6,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-41/character-41-6-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14446,7 +14446,7 @@
   {
     "CharacterId": 42,
     "Variant": 2,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-42/character-42-2-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14463,7 +14463,7 @@
   {
     "CharacterId": 42,
     "Variant": 3,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-42/character-42-3-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14480,7 +14480,7 @@
   {
     "CharacterId": 42,
     "Variant": 4,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-42/character-42-4-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14497,7 +14497,7 @@
   {
     "CharacterId": 37,
     "Variant": 1,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-37/character-37-1-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14514,7 +14514,7 @@
   {
     "CharacterId": 37,
     "Variant": 5,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-37/character-37-5-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14531,7 +14531,7 @@
   {
     "CharacterId": 42,
     "Variant": 5,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-42/character-42-5-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14548,7 +14548,7 @@
   {
     "CharacterId": 42,
     "Variant": 6,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-42/character-42-6-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14565,7 +14565,7 @@
   {
     "CharacterId": 43,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-43/character-43-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14582,7 +14582,7 @@
   {
     "CharacterId": 43,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-43/character-43-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14599,7 +14599,7 @@
   {
     "CharacterId": 43,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-43/character-43-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14616,7 +14616,7 @@
   {
     "CharacterId": 43,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-43/character-43-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14633,7 +14633,7 @@
   {
     "CharacterId": 43,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-43/character-43-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14650,7 +14650,7 @@
   {
     "CharacterId": 39,
     "Variant": 6,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-39/character-39-6-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14658,7 +14658,7 @@
     "Source": "character-39/character-39-6-v004-generated.png",
     "Note": "4:3描き足し。組み込みimage_genの出力を縦横比維持で256x192へ縮小。生成原本：character-39-6-v004-generated.png",
     "ArchivedAt": "2026-10-08T23:56:02+09:00",
-    "Current": true,
+    "Current": false,
     "OriginalWidth": 1448,
     "OriginalHeight": 1086,
     "OriginalFile": "character-39/character-39-6-v004-generated.png",
@@ -14667,7 +14667,7 @@
   {
     "CharacterId": 40,
     "Variant": 2,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-40/character-40-2-v004.png",
     "Width": 256,
     "Height": 192,
@@ -14684,7 +14684,7 @@
   {
     "CharacterId": 44,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-44/character-44-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14701,7 +14701,7 @@
   {
     "CharacterId": 44,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-44/character-44-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14718,7 +14718,7 @@
   {
     "CharacterId": 44,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-44/character-44-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14735,7 +14735,7 @@
   {
     "CharacterId": 44,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-44/character-44-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14752,7 +14752,7 @@
   {
     "CharacterId": 45,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-45/character-45-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14769,7 +14769,7 @@
   {
     "CharacterId": 45,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-45/character-45-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14786,7 +14786,7 @@
   {
     "CharacterId": 45,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-45/character-45-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14803,7 +14803,7 @@
   {
     "CharacterId": 45,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-45/character-45-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14820,7 +14820,7 @@
   {
     "CharacterId": 45,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-45/character-45-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14837,7 +14837,7 @@
   {
     "CharacterId": 45,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-45/character-45-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14854,7 +14854,7 @@
   {
     "CharacterId": 46,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-46/character-46-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14871,7 +14871,7 @@
   {
     "CharacterId": 46,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-46/character-46-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14888,7 +14888,7 @@
   {
     "CharacterId": 46,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-46/character-46-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14905,7 +14905,7 @@
   {
     "CharacterId": 46,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-46/character-46-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14922,7 +14922,7 @@
   {
     "CharacterId": 47,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-47/character-47-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14939,7 +14939,7 @@
   {
     "CharacterId": 46,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-46/character-46-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14956,7 +14956,7 @@
   {
     "CharacterId": 47,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-47/character-47-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14973,7 +14973,7 @@
   {
     "CharacterId": 47,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-47/character-47-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -14990,7 +14990,7 @@
   {
     "CharacterId": 47,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-47/character-47-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15007,7 +15007,7 @@
   {
     "CharacterId": 47,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-47/character-47-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15024,7 +15024,7 @@
   {
     "CharacterId": 47,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-47/character-47-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15041,7 +15041,7 @@
   {
     "CharacterId": 48,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-48/character-48-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15058,7 +15058,7 @@
   {
     "CharacterId": 48,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-48/character-48-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15075,7 +15075,7 @@
   {
     "CharacterId": 48,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-48/character-48-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15092,7 +15092,7 @@
   {
     "CharacterId": 49,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-49/character-49-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15109,7 +15109,7 @@
   {
     "CharacterId": 48,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-48/character-48-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15126,7 +15126,7 @@
   {
     "CharacterId": 43,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-43/character-43-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15143,7 +15143,7 @@
   {
     "CharacterId": 44,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-44/character-44-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15160,7 +15160,7 @@
   {
     "CharacterId": 44,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-44/character-44-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15177,7 +15177,7 @@
   {
     "CharacterId": 49,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-49/character-49-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15194,7 +15194,7 @@
   {
     "CharacterId": 48,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-48/character-48-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15211,7 +15211,7 @@
   {
     "CharacterId": 49,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-49/character-49-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15228,7 +15228,7 @@
   {
     "CharacterId": 49,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-49/character-49-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15245,7 +15245,7 @@
   {
     "CharacterId": 49,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-49/character-49-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15262,7 +15262,7 @@
   {
     "CharacterId": 49,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-49/character-49-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15279,7 +15279,7 @@
   {
     "CharacterId": 50,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-50/character-50-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15296,7 +15296,7 @@
   {
     "CharacterId": 50,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-50/character-50-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15313,7 +15313,7 @@
   {
     "CharacterId": 50,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-50/character-50-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15330,7 +15330,7 @@
   {
     "CharacterId": 50,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-50/character-50-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15347,7 +15347,7 @@
   {
     "CharacterId": 50,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-50/character-50-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15364,7 +15364,7 @@
   {
     "CharacterId": 50,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-50/character-50-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15381,7 +15381,7 @@
   {
     "CharacterId": 51,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-51/character-51-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15398,7 +15398,7 @@
   {
     "CharacterId": 51,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-51/character-51-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15415,7 +15415,7 @@
   {
     "CharacterId": 46,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-46/character-46-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15432,7 +15432,7 @@
   {
     "CharacterId": 51,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-51/character-51-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15449,7 +15449,7 @@
   {
     "CharacterId": 51,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-51/character-51-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15466,7 +15466,7 @@
   {
     "CharacterId": 52,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-52/character-52-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15483,7 +15483,7 @@
   {
     "CharacterId": 52,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-52/character-52-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15500,7 +15500,7 @@
   {
     "CharacterId": 52,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-52/character-52-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15517,7 +15517,7 @@
   {
     "CharacterId": 52,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-52/character-52-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15534,7 +15534,7 @@
   {
     "CharacterId": 52,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-52/character-52-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15551,7 +15551,7 @@
   {
     "CharacterId": 52,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-52/character-52-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15568,7 +15568,7 @@
   {
     "CharacterId": 53,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-53/character-53-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15585,7 +15585,7 @@
   {
     "CharacterId": 53,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-53/character-53-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15602,7 +15602,7 @@
   {
     "CharacterId": 53,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-53/character-53-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15619,7 +15619,7 @@
   {
     "CharacterId": 53,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-53/character-53-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15636,7 +15636,7 @@
   {
     "CharacterId": 53,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-53/character-53-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15653,7 +15653,7 @@
   {
     "CharacterId": 53,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-53/character-53-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15670,7 +15670,7 @@
   {
     "CharacterId": 48,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-48/character-48-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15687,7 +15687,7 @@
   {
     "CharacterId": 54,
     "Variant": 1,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-54/character-54-1-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15704,7 +15704,7 @@
   {
     "CharacterId": 54,
     "Variant": 2,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-54/character-54-2-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15721,7 +15721,7 @@
   {
     "CharacterId": 54,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-54/character-54-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15738,7 +15738,7 @@
   {
     "CharacterId": 54,
     "Variant": 4,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-54/character-54-4-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15755,7 +15755,7 @@
   {
     "CharacterId": 54,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-54/character-54-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15772,7 +15772,7 @@
   {
     "CharacterId": 54,
     "Variant": 6,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-54/character-54-6-v003.png",
     "Width": 256,
     "Height": 192,
@@ -15789,7 +15789,7 @@
   {
     "CharacterId": 55,
     "Variant": 1,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-55/character-55-1-v004.png",
     "Width": 256,
     "Height": 192,
@@ -15806,7 +15806,7 @@
   {
     "CharacterId": 55,
     "Variant": 2,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-55/character-55-2-v004.png",
     "Width": 256,
     "Height": 192,
@@ -15823,7 +15823,7 @@
   {
     "CharacterId": 55,
     "Variant": 3,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-55/character-55-3-v004.png",
     "Width": 256,
     "Height": 192,
@@ -15840,7 +15840,7 @@
   {
     "CharacterId": 55,
     "Variant": 4,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-55/character-55-4-v004.png",
     "Width": 256,
     "Height": 192,
@@ -15857,7 +15857,7 @@
   {
     "CharacterId": 55,
     "Variant": 5,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-55/character-55-5-v004.png",
     "Width": 256,
     "Height": 192,
@@ -15874,7 +15874,7 @@
   {
     "CharacterId": 55,
     "Variant": 6,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-55/character-55-6-v004.png",
     "Width": 256,
     "Height": 192,
@@ -15891,7 +15891,7 @@
   {
     "CharacterId": 56,
     "Variant": 1,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-56/character-56-1-v004.png",
     "Width": 256,
     "Height": 192,
@@ -15908,7 +15908,7 @@
   {
     "CharacterId": 56,
     "Variant": 2,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-56/character-56-2-v004.png",
     "Width": 256,
     "Height": 192,
@@ -15925,7 +15925,7 @@
   {
     "CharacterId": 56,
     "Variant": 3,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-56/character-56-3-v004.png",
     "Width": 256,
     "Height": 192,
@@ -15942,7 +15942,7 @@
   {
     "CharacterId": 56,
     "Variant": 4,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-56/character-56-4-v004.png",
     "Width": 256,
     "Height": 192,
@@ -15959,7 +15959,7 @@
   {
     "CharacterId": 56,
     "Variant": 5,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-56/character-56-5-v004.png",
     "Width": 256,
     "Height": 192,
@@ -15976,7 +15976,7 @@
   {
     "CharacterId": 56,
     "Variant": 6,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-56/character-56-6-v004.png",
     "Width": 256,
     "Height": 192,
@@ -15993,7 +15993,7 @@
   {
     "CharacterId": 51,
     "Variant": 3,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-51/character-51-3-v003.png",
     "Width": 256,
     "Height": 192,
@@ -16010,7 +16010,7 @@
   {
     "CharacterId": 51,
     "Variant": 5,
-    "Version": 3.0,
+    "Version": 3,
     "File": "character-51/character-51-5-v003.png",
     "Width": 256,
     "Height": 192,
@@ -16027,7 +16027,7 @@
   {
     "CharacterId": 57,
     "Variant": 1,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-57/character-57-1-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16044,7 +16044,7 @@
   {
     "CharacterId": 57,
     "Variant": 2,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-57/character-57-2-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16061,7 +16061,7 @@
   {
     "CharacterId": 57,
     "Variant": 3,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-57/character-57-3-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16078,7 +16078,7 @@
   {
     "CharacterId": 57,
     "Variant": 4,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-57/character-57-4-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16095,7 +16095,7 @@
   {
     "CharacterId": 57,
     "Variant": 5,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-57/character-57-5-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16112,7 +16112,7 @@
   {
     "CharacterId": 57,
     "Variant": 6,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-57/character-57-6-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16129,7 +16129,7 @@
   {
     "CharacterId": 58,
     "Variant": 1,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-58/character-58-1-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16146,7 +16146,7 @@
   {
     "CharacterId": 58,
     "Variant": 2,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-58/character-58-2-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16163,7 +16163,7 @@
   {
     "CharacterId": 58,
     "Variant": 3,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-58/character-58-3-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16180,7 +16180,7 @@
   {
     "CharacterId": 58,
     "Variant": 4,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-58/character-58-4-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16197,7 +16197,7 @@
   {
     "CharacterId": 58,
     "Variant": 5,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-58/character-58-5-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16214,7 +16214,7 @@
   {
     "CharacterId": 58,
     "Variant": 6,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-58/character-58-6-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16231,7 +16231,7 @@
   {
     "CharacterId": 59,
     "Variant": 1,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-59/character-59-1-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16248,7 +16248,7 @@
   {
     "CharacterId": 59,
     "Variant": 2,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-59/character-59-2-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16265,7 +16265,7 @@
   {
     "CharacterId": 59,
     "Variant": 3,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-59/character-59-3-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16282,7 +16282,7 @@
   {
     "CharacterId": 59,
     "Variant": 4,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-59/character-59-4-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16299,7 +16299,7 @@
   {
     "CharacterId": 59,
     "Variant": 5,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-59/character-59-5-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16316,7 +16316,7 @@
   {
     "CharacterId": 59,
     "Variant": 6,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-59/character-59-6-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16333,7 +16333,7 @@
   {
     "CharacterId": 60,
     "Variant": 2,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-60/character-60-2-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16350,7 +16350,7 @@
   {
     "CharacterId": 60,
     "Variant": 3,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-60/character-60-3-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16367,7 +16367,7 @@
   {
     "CharacterId": 60,
     "Variant": 4,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-60/character-60-4-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16384,7 +16384,7 @@
   {
     "CharacterId": 60,
     "Variant": 5,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-60/character-60-5-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16401,7 +16401,7 @@
   {
     "CharacterId": 60,
     "Variant": 6,
-    "Version": 4.0,
+    "Version": 4,
     "File": "character-60/character-60-6-v004.png",
     "Width": 256,
     "Height": 192,
@@ -16414,5 +16414,107 @@
     "OriginalHeight": 1086,
     "OriginalFile": "character-60/character-60-6-v004-generated.png",
     "OriginalSha256": "A9DADE96C10461AD7702C29C4B4881712F1D30A6F58648D14CEE59C4249CE69F"
+  },
+  {
+    "CharacterId": 39,
+    "Variant": 1,
+    "Version": 8,
+    "File": "character-39/character-39-1-v008.png",
+    "Width": 256,
+    "Height": 192,
+    "Sha256": "B0583A2061219776AD466E5C7FFB0C2FA4CC6EBE44337E7DFDF284B7D8606182",
+    "Source": "character-39/character-39-1-v008-generated.png",
+    "Note": "No.39 バルキリー家庭教師・最新むずでょ監修プロポーションv017。内蔵image_genによる個別生成。3Dモデルからの直接レンダリングではない。",
+    "ArchivedAt": "2026-10-18",
+    "Current": true,
+    "OriginalWidth": 1448,
+    "OriginalHeight": 1086,
+    "OriginalFile": "character-39/character-39-1-v008-generated.png",
+    "OriginalSha256": "FF4E0D4FAF3C92BFDA0CA1AAE5E8E18A29D23A13C258F95014630B04DCBD2663"
+  },
+  {
+    "CharacterId": 39,
+    "Variant": 2,
+    "Version": 7,
+    "File": "character-39/character-39-2-v007.png",
+    "Width": 256,
+    "Height": 192,
+    "Sha256": "02BB3C579BCEF44CB576142E93BA8B855D08A253AC067FB80860ED727703765A",
+    "Source": "character-39/character-39-2-v007-generated.png",
+    "Note": "No.39 バルキリー家庭教師・最新むずでょ監修プロポーションv017。内蔵image_genによる個別生成。3Dモデルからの直接レンダリングではない。",
+    "ArchivedAt": "2026-10-18",
+    "Current": true,
+    "OriginalWidth": 1448,
+    "OriginalHeight": 1086,
+    "OriginalFile": "character-39/character-39-2-v007-generated.png",
+    "OriginalSha256": "F289B8FA33334DD746EB88A8BF7AC0B78084B2FC8DD4AF866DD554EBFAC5270E"
+  },
+  {
+    "CharacterId": 39,
+    "Variant": 3,
+    "Version": 7,
+    "File": "character-39/character-39-3-v007.png",
+    "Width": 256,
+    "Height": 192,
+    "Sha256": "C8C5DDB3CCEC590B02C6B20A4BAFB066328DCBC926B9D433C6EEDB90C1120422",
+    "Source": "character-39/character-39-3-v007-generated.png",
+    "Note": "No.39 バルキリー家庭教師・最新むずでょ監修プロポーションv017。内蔵image_genによる個別生成。3Dモデルからの直接レンダリングではない。",
+    "ArchivedAt": "2026-10-18",
+    "Current": true,
+    "OriginalWidth": 1448,
+    "OriginalHeight": 1086,
+    "OriginalFile": "character-39/character-39-3-v007-generated.png",
+    "OriginalSha256": "2796DAFF47E7913D264B3405212C173E69A42BE7959B0535DD459E8DAECCDD99"
+  },
+  {
+    "CharacterId": 39,
+    "Variant": 4,
+    "Version": 5,
+    "File": "character-39/character-39-4-v005.png",
+    "Width": 256,
+    "Height": 192,
+    "Sha256": "38246E84895D580F3DFA00236D721C0FD5CEB99ABFBA2E6D6C097181B42E7204",
+    "Source": "character-39/character-39-4-v005-generated.png",
+    "Note": "No.39 バルキリー家庭教師・最新むずでょ監修プロポーションv017。内蔵image_genによる個別生成。3Dモデルからの直接レンダリングではない。",
+    "ArchivedAt": "2026-10-18",
+    "Current": true,
+    "OriginalWidth": 1448,
+    "OriginalHeight": 1086,
+    "OriginalFile": "character-39/character-39-4-v005-generated.png",
+    "OriginalSha256": "5776467096DC9315FFD5EDBE08A11A68984D5F868186D4EA059DEC89828DFA18"
+  },
+  {
+    "CharacterId": 39,
+    "Variant": 5,
+    "Version": 5,
+    "File": "character-39/character-39-5-v005.png",
+    "Width": 256,
+    "Height": 192,
+    "Sha256": "CA336B74EFDC82E57210D28B7FA024E30709FFD030A5C5B5E3F0A462F372A158",
+    "Source": "character-39/character-39-5-v005-generated.png",
+    "Note": "No.39 バルキリー家庭教師・最新むずでょ監修プロポーションv017。内蔵image_genによる個別生成。3Dモデルからの直接レンダリングではない。",
+    "ArchivedAt": "2026-10-18",
+    "Current": true,
+    "OriginalWidth": 1448,
+    "OriginalHeight": 1086,
+    "OriginalFile": "character-39/character-39-5-v005-generated.png",
+    "OriginalSha256": "548726028D9D39752FBA4A2F5D3B02C9DA73AFC4F74778A17279153D1AB6FD54"
+  },
+  {
+    "CharacterId": 39,
+    "Variant": 6,
+    "Version": 5,
+    "File": "character-39/character-39-6-v005.png",
+    "Width": 256,
+    "Height": 192,
+    "Sha256": "747BCF1EE8EBBB364561D931671A67F91E7332C972606FA83FCEA6BD803A7298",
+    "Source": "character-39/character-39-6-v005-generated.png",
+    "Note": "No.39 バルキリー家庭教師・最新むずでょ監修プロポーションv017。内蔵image_genによる個別生成。3Dモデルからの直接レンダリングではない。",
+    "ArchivedAt": "2026-10-18",
+    "Current": true,
+    "OriginalWidth": 1448,
+    "OriginalHeight": 1086,
+    "OriginalFile": "character-39/character-39-6-v005-generated.png",
+    "OriginalSha256": "08FFB78FE8C6EE2657AD9BF95088EBBCC5921B9EF0CBFB6B92B556A2077E408A"
   }
 ]
