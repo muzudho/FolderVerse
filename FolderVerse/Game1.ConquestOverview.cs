@@ -20,12 +20,13 @@ public partial class Game1
     private bool _conquestAudioUnavailable;
     private Vector3 _conquestEnvironment;
     private Quaternion _conquestFrom=Quaternion.Identity,_conquestTo=Quaternion.Identity;
-    private Rectangle ConquestGlobeArea=>ConquestMosaicVisible?ConquestMosaicBounds(_conquestTiles.Single(t=>t.Slot<0)):new(360,60,1500,950);
+    private static Rectangle ConquestGlobeArea{get{var r=ConquestMapSpace;return new(r.X+8,r.Y+28,r.Width-16,r.Height-36);}}
     private ConquestPresentation.Card ConquestCard=>_conquestPresentation.Cards[_conquestCard];
     private double ConquestCardSeconds=>ConquestCard.Reminder?.8:_conquestTally.Duration;
     private void BeginConquestOverview(){
         if(!_conquestOverviewEnabled || _demoActive || _autoPlay || _conquestOverviewTurn==_setup.Population.Turn)return;
         _conquestOverviewTurn=_setup.Population.Turn;_conquestPresentation=new(_setup);_conquestCard=0;_conquestStage=0;_conquestAge=0;_conquestOverview=true;_conquestExitOpacity=1;
+        _conquestRevealed.Clear();
         _conquestTiles=CharacterSelectionLayout.CreateOverview(_setup.Relations.ProvisionalRanking(_setup).OrderBy(r=>r.Ruler).Select(r=>r.Cells).ToArray());
         _conquestGlobe??=new WorldPreview(GraphicsDevice);_conquestGlobe.ManualOrientation=null;_conquestGlobe.GlobeAnchor=null;_conquestGlobe.GlobeZoom=1;
         _conquestFrom=Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,0));SetConquestCard();PlayCurtain();
@@ -56,6 +57,7 @@ public partial class Game1
         double duration=_conquestStage switch{0 or 2 or 6 or 8=>.65,1 or 3 or 5 or 7=>1.5,4=>ConquestCardSeconds,_=>0};
         if(_conquestStage==4){
             if(!ConquestCard.Reminder){
+                if(_conquestAge>=_conquestTally.FaceStart)_conquestRevealed.Add(ConquestCard.Ruler);
                 int painted=_conquestTally.Painted(_setup,_conquestAge);
                 if(painted!=_conquestPainted){_conquestPainted=painted;_conquestGlobe.PresentationCells=_conquestTally.Cells.Take(painted).ToHashSet();_conquestGlobe.ShowLandConquest(_setup,true);}
             }
@@ -86,6 +88,7 @@ public partial class Game1
     }
     private void DrawConquestOverview(Rectangle canvas,Matrix transform,Viewport viewport){
         GraphicsDevice.Clear(Color.Black);
+        if(_conquestStage is 3 or 4 or 5){_spriteBatch.Begin(transformMatrix:transform);DrawConquestMosaic();_spriteBatch.End();}
         if(_conquestStage is 3 or 4 || _conquestStage==5 && _conquestExitOpacity>0){
             GraphicsDevice.Viewport=OrientationViewport(ConquestGlobeArea,canvas);_conquestGlobe.Draw(0,0,0,false,true);GraphicsDevice.Viewport=viewport;
             DrawConquestOrientation(canvas,transform,viewport);
@@ -106,9 +109,9 @@ public partial class Game1
                     _ui.Text("現在地",at+new Vector2(18,-16),.32f,Cream);
                 }
             }
-            if(ConquestMosaicVisible)DrawConquestMosaic();
-            DrawConquestTally();
+
         }
+        if(_conquestStage is 3 or 4 or 5)DrawConquestTally();
         if(_conquestStage is 3 or 5)_ui.Box(new(0,0,1920,1080),Color.Black*(float)Math.Clamp(_conquestStage==3?1-_conquestAge/1.5:1-_conquestExitOpacity*(1-_conquestAge/1.5),0,1));
         _ui.Text("世界征服状況フェーズ",new(55,35),.7f,Cream);
         _ui.Center($"全体ターン {_setup.Population.Turn} / 征服者 {_setup.ActiveCount}人 / 敵 {Enumerable.Range(0,_setup.ActiveCount).Count(r=>!_setup.Relations.Allied(r,_setup.PlayerSlot))}人",new(580,35,950,45),.5f,Cream);

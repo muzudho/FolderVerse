@@ -10,9 +10,13 @@ public sealed class ConquestTally
     public readonly double[] FaceStarts,FaceDurations;
     public double TourSeconds {get;}
     public double CountEnd=>TourSeconds+Math.Max(0,TotalCells-Cells.Length)*.18;
-    public double ConvertStart=>CountEnd+1.5;
-    public double RankStart=>ConvertStart+.5;
-    public double Duration=>RankStart+4;
+    public double CellsStart=>CountEnd;
+    public double EntryStart=>CellsStart+1;
+    public double ScoreStart=>EntryStart+1;
+    public double ConvertStart=>ScoreStart;
+    public double RankStart=>ScoreStart+1;
+    public double FaceStart=>RankStart+.7;
+    public double Duration=>FaceStart+4;
     public ConquestTally(WorldSetup w,ConquestPresentation.Card card){
         Faces=card.Faces;Entry=card.Ruler+1;Scale=ConquerorRelations.RankingScale(w.ActiveCount);
         TotalCells=w.Relations.ProvisionalRanking(w).Single(r=>r.Ruler==card.Ruler).Cells;

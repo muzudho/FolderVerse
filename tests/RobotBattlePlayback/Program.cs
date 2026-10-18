@@ -24,3 +24,8 @@ Check(new RobotBattlePlayback(Array.Empty<BattleState>()).Rounds.Length==0,"Empt
 Console.WriteLine("PASS: shared turns, finished-board removal, multiplayer-ready player order, queen priority and piece-count tie breakers.");
 
 var held=new RobotBattleSlice(0,10,16);double previous=0;for(int i=0;i<100;i++){double current=RobotBattlePlayback.FramePosition(held,i*.03,.25);if(current<previous || current>17)throw new Exception("Retreat time oscillated");previous=current;}if(previous!=17)throw new Exception("Final frame failed to hold");
+
+var waiting=Scene(20,new[]{3,7},Array.Empty<int>(),1,1);waiting.Units[0].Owner=7;waiting.Frames.Clear();waiting.Capture(BattlePhase.Choose);
+var other=Scene(21,new[]{0,8},new[]{0},20,1);var pendingScenes=new[]{other,waiting};var pendingReplay=new RobotBattlePlayback(pendingScenes);
+Check(RobotBattlePlayback.Priority(pendingScenes,pendingReplay.Rounds[0],new[]{3,0})[0]==1,"Player one is first even when her army is waiting rather than visible in the first frame");
+Console.WriteLine("PASS: permanent player-one priority includes participating armies without a currently visible unit.");

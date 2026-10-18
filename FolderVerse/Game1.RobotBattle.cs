@@ -22,7 +22,8 @@ public partial class Game1
     private bool _robotSummary;
     private bool _robotPendingSummary;
 
-    private int[] RobotPriority=>RobotBattlePlayback.Priority(_robotScenes,_robotPlayback.Rounds[_robotRound],new[]{_setup.PlayerSlot});
+    private int[] BattlePlayers=>_setup.HumanPlayers.Count>0?_setup.HumanPlayers.ToArray():new[]{_setup.PlayerSlot};
+    private int[] RobotPriority=>RobotBattlePlayback.Priority(_robotScenes,_robotPlayback.Rounds[_robotRound],BattlePlayers);
     private RobotBattleSlice RobotSlice(int scene)=>_robotPlayback.Rounds[_robotRound].First(s=>s.Scene==scene);
     private double RobotRoundEnd=>_robotPlayback.Rounds[_robotRound].Max(s=>s.End-s.Start+1)*RobotFrameSeconds;
     private double _transportAge;
@@ -37,11 +38,11 @@ public partial class Game1
     private static readonly Rectangle RobotResultBar=new(1120,990,720,20),RobotResultPause=new(1120,1020,270,50);
     private void OpenRobotBattle()
     {
-        CheckTutorialAttackAchievement();
+        QueueTutorialAttackAchievement();
         _newspaperIssue=_newspaperPreviousIssue=null;_newspaperSlideAge=1;_newspaperClock=0;
         _fallFadeStarted.Clear();_robotScenes=_setup.Campaign.RobotBattles.Scenes.ToArray();_battleTiles=Array.Empty<CharacterTile>();_battleWave=0;_battleAge=0;_robotResultAge=0;_robotPlaying=true;
         _robotPlayback=new(_robotScenes);_robotRound=0;_summaryReadAge=0;_summaryReadPapers=0;_robotPendingFocus=-1;_robotPendingRound=false;_robotPendingSummary=false;_robotSummary=_robotPlayback.Rounds.Length==0;
-        if(!_robotSummary)_battleWave=RobotPriority[0];
+        if(!_robotSummary){var priority=RobotPriority;_battleWave=_tutorialAttackPending?priority.FirstOrDefault(i=>TutorialAchievements.AttackedScene(_setup,_robotScenes[i]),priority[0]):priority[0];}
         _populationCell=-1;_dragging=false;
         _statusGlobe=false;_net.ResetView();_net.CancelAnimation();
         _screen=Screen.Transport;_transportAge=0;BeginPropagation();
@@ -60,7 +61,12 @@ public partial class Game1
     }
     private void RobotBattleInput(double elapsed,bool click,bool enter)
     {
-        if(BattleIntroActive && !_robotSummary){_battleIntroAge=Math.Min(BattlePartsHoldSeconds+BattleForeignFadeSeconds+BattleNativeHoldSeconds+BattlePieceFadeSeconds+BattleBoardRevealSeconds,_battleIntroAge+elapsed);return;}
+        if(_tutorialAchievementAge>=0){UpdateTutorialAchievementCutIn(elapsed);return;}
+        if(BattleIntroActive && !_robotSummary){
+            _battleIntroAge=Math.Min(BattlePartsHoldSeconds+BattleForeignFadeSeconds+BattleNativeHoldSeconds+BattlePieceFadeSeconds+BattleBoardRevealSeconds,_battleIntroAge+elapsed);
+            if(!BattleIntroActive)RevealTutorialAttackAchievement();
+            return;
+        }
         _newspaperClock+=elapsed;_newspaperSlideAge+=elapsed;
         if(click && _robotSummary && SelectSummaryPaper())return;
         if(click && (_robotSummary?SummaryNewspaperSwitch.Contains(_pointer):NewspaperSwitch.Contains(_pointer)))

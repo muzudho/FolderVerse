@@ -140,10 +140,12 @@ public partial class Game1 : Game
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds; UpdateDomesticSlide((float)elapsed);
         _animationTime+=(float)elapsed;
         if(_conquestOverview){UpdateConquestOverview(elapsed,enter || escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        UpdateTutorialStartGuide(gameTime.TotalGameTime.TotalSeconds);
         if(_tutorialAttackGuide){
             if(active && (click || enter || escape))_tutorialAttackGuide=false;
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
+        if(TutorialMessageInput(active && click,active && escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _setup.Robots.Nodes.Length>0)
             _setup.Robots.PrepareDomestic(_setup.Population.Turn,(a,b)=>!_setup.Campaign.RobotBattles.LockedEdge(a,b) && _setup.Routes.Neighbors(_setup.Nodes.All[a]).Any(r=>_setup.Nodes.At(r.Target,r.Entry).Id==b),n=>_setup.Nodes.All[n].Owner,_setup.Campaign.RobotBattles.LockedNode);
         if(IsStatusScreen && _supervisorDialog!=0){
@@ -665,7 +667,9 @@ public partial class Game1 : Game
         DrawScreenshotFeedback(gameTime.TotalGameTime.TotalSeconds);
         _spriteBatch.Begin(transformMatrix:transform);if(!_conquestOverview)DrawTutorialGoal();if(!_conquestOverview)DrawPhaseCutIn(gameTime.TotalGameTime.TotalSeconds);_spriteBatch.End();
         DrawDemoOverlay(transform);
+        if(TutorialReviewAvailable){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialMessages();_spriteBatch.End();}
         if(_tutorialAttackGuide){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAttackGuide();_spriteBatch.End();}
+        if(_screen==Screen.Battle && _tutorialAchievementAge>=0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAchievementCutIn();_spriteBatch.End();}
         if(_conquestOverview){_spriteBatch.Begin(transformMatrix:transform);DrawConquestCurtain(1-MathHelper.SmoothStep(0,1,(float)(_conquestAge/.65)));_spriteBatch.End();}
         LogDisplayedScreen();
         base.Draw(gameTime);

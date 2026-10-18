@@ -14,3 +14,5 @@ dotnet run --project tests/InvasionPlanning -- --ui
 2026-10-18検証：上記の両モード、RobotCampaign、RobotBattlePlayback、AutoSave、BattleFlagSuppliesが成功。画面も目視し、新聞の裏に隠れていた説得説明を下の説明欄へ修正した。
 
 後続の2026-10-18更新で旗のルール自体を変更した。現在の検証範囲と、広範囲BattleRulesで確認した既存の辺戦長期化は [更新記録](../../docs/dev/2026-10-18-conquest-flags-tutorial.md) を参照。
+
+追加検証：実績は変身前に授与されず終了時に保存、通知は3.5秒で自動退場し再通知しない。内政開始の案内は１度だけ。メッセージ一覧の開く・選ぶ・閉じる操作は実績を変えない。`--ui` はこれらのカットインと一覧も描画する。

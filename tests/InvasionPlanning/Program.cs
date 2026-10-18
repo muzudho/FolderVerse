@@ -103,7 +103,34 @@ Console.WriteLine("PASS: selected IDs, independent pocket/queen, solo queen, inv
     Check(!TutorialAchievements.Attacked(w),"Planning alone does not earn a medal");
     Check(!Gate(),"An attack reservation permits tutorial end turn");
     w.Campaign.Resolve(w,w.Campaign.PlannedOrders.ToArray());
-    Check(TutorialAchievements.Attacked(w),"Actual attack battle earns the tutorial medal");
+    Check(TutorialAchievements.Attacked(w),"Actual attack battle qualifies for the tutorial medal");
+    var medalPath=Path.Combine(AppContext.BaseDirectory,"intro-medals-"+Guid.NewGuid()+".json");
+    try{
+        var medals=new TutorialAchievements(medalPath);
+        void Set(string n,object value)=>typeof(Game1).GetField(n,f)!.SetValue(g,value);
+        object Get(string n)=>typeof(Game1).GetField(n,f)!.GetValue(g)!;
+        void Call(string n,params object[] a)=>typeof(Game1).GetMethod(n,f)!.Invoke(g,a);
+        Set("_autoSaveEnabled",true);Set("_tutorialAchievements",medals);Set("_robotScenes",w.Campaign.RobotBattles.Scenes.ToArray());
+        Set("_battleWave",w.Campaign.RobotBattles.Scenes.FindIndex(b=>TutorialAchievements.AttackedScene(w,b)));
+        Call("QueueTutorialAttackAchievement");Check(!medals.Has(TutorialAchievements.FirstAttack),"No medal during transport or before transformation");
+        Set("_battleIntroAge",6.49d);Call("RobotBattleInput",.005d,false,false);Check(!medals.Has(TutorialAchievements.FirstAttack),"No medal while intro remains active");
+        Call("RobotBattleInput",.02d,false,false);Check(medals.Has(TutorialAchievements.FirstAttack) && (double)Get("_tutorialAchievementAge")==0,"Intro completion persists medal and starts cut-in");
+        Call("RobotBattleInput",.5d,true,true);Check((double)Get("_tutorialAchievementAge")==.5 && (double)Get("_battleAge")==0,"Click/Enter do not skip toast or advance hidden combat");
+        Call("RobotBattleInput",3d,false,false);Check((double)Get("_tutorialAchievementAge")==-1,"Cut-in disappears after 3.5 seconds without input");
+        Call("QueueTutorialAttackAchievement");Check(!(bool)Get("_tutorialAttackPending"),"Unlocked medal is not announced again");
+    }finally{File.Delete(medalPath);}
+
+    void SetGuide(string n,object value)=>typeof(Game1).GetField(n,f)!.SetValue(g,value);
+    object GetGuide(string n)=>typeof(Game1).GetField(n,f)!.GetValue(g)!;
+    object CallGuide(string n,params object[] a)=>typeof(Game1).GetMethod(n,f)!.Invoke(g,a)!;
+    SetGuide("_screen",Enum.Parse(typeof(Game1).GetField("_screen",f)!.FieldType,"WorldStatus"));
+    SetGuide("_tutorialAttackAchieved",false);SetGuide("_tutorialAchievements",null!);SetGuide("_lastCutInPhase","内政フェーズ");SetGuide("_cutInStarted",100d);
+    CallGuide("UpdateTutorialStartGuide",101d);Check(!(bool)GetGuide("_tutorialIntroShown"),"Wait until domestic phase cut-in finishes before automatic tutorial guide");
+    CallGuide("UpdateTutorialStartGuide",102d);Check((bool)GetGuide("_tutorialAttackGuide") && (int)GetGuide("_tutorialGuideMessage")==0,"Automatic start guide tells user to press war reservation");
+    SetGuide("_tutorialAttackGuide",false);CallGuide("UpdateTutorialStartGuide",110d);Check(!(bool)GetGuide("_tutorialAttackGuide"),"Automatic start guide appears only once per run");
+    SetGuide("_tutorialAchievementAge",-1d);SetGuide("_pointer",new Point(1500,40));CallGuide("TutorialMessageInput",true,false);Check((bool)GetGuide("_tutorialMessagesOpen"),"Review button opens message list");
+    SetGuide("_pointer",new Point(450,550));CallGuide("TutorialMessageInput",true,false);Check((int)GetGuide("_tutorialMessageSelection")==2,"Review list selects achievement message without awarding it");
+    CallGuide("TutorialMessageInput",false,true);Check(!(bool)GetGuide("_tutorialMessagesOpen") && !(bool)GetGuide("_tutorialAttackAchieved"),"Closing reader does not grant achievement");
     typeof(Game1).GetField("_tutorialAttackAchieved",f)!.SetValue(g,true);w.Campaign.Reset();Check(!Gate(),"Completed step permits peaceful end turns");
     w.Campaign.RobotBattles.LastMarches.Clear();Check(!TutorialAchievements.Attacked(w),"Defending an existing scene does not count as attack");
 }

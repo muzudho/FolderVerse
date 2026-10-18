@@ -44,12 +44,18 @@ sealed class InvasionUiCheck:Game1
             if(frame==9)Set("_tutorialAttackAchieved",true);
             if(frame==10){var medals=new TutorialAchievements(Path.Combine(AppContext.BaseDirectory,"tutorial-ui-medals.json"));medals.Award(TutorialAchievements.FirstAttack);Set("_tutorialAchievements",medals);Screen("Title");Set("_tutorialMenuOpen",true);}
             if(frame==11){Set("_pointer",new Point(1100,1000));Call("TutorialMenuInput",true,false,false,new Microsoft.Xna.Framework.Input.KeyboardState());if(((TutorialAchievements)Get("_tutorialAchievements")).Has(TutorialAchievements.FirstAttack))throw new Exception("Clear medal button failed");}
+            if(frame==12){Set("_tutorialMenuOpen",false);Screen("Battle");Set("_tutorialAchievementAge",1d);}
+            if(frame==13){Call("RobotBattleInput",3d,false,false);if((double)Get("_tutorialAchievementAge")!=-1)throw new Exception("Achievement cut-in did not expire automatically");}
+            if(frame==14){Screen("WorldStatus");Set("_tutorialAttackAchieved",false);Set("_tutorialAchievements",null!);Set("_tutorialIntroShown",false);Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",0d);Call("UpdateTutorialStartGuide",10d);}
+            if(frame==15){Set("_tutorialAttackGuide",false);Set("_pointer",new Point(1500,40));Call("TutorialMessageInput",true,false);}
+            if(frame==16){Set("_pointer",new Point(450,550));Call("TutorialMessageInput",true,false);}
+            if(frame==17)Call("TutorialMessageInput",false,true);
             Set("_lastCutInPhase",frame>=3?"戦闘フェーズ":"内政フェーズ");Set("_cutInPhase","");Set("_animationTime",frame*.2f);
             base.Draw(time);
             var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);
             using var image=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);image.SetData(pixels);
             using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"invasion-ui-{frame}.png"));image.SaveAsPng(file,image.Width,image.Height);
-            if(++frame==12){File.Delete(Path.Combine(AppContext.BaseDirectory,"tutorial-ui-medals.json"));Console.WriteLine("PASS: rendered target selection, pulsing target, robot modal, persuasion range and conversion success, tutorial guide, medal clear button and flag countdown");Exit();}
+            if(++frame==18){File.Delete(Path.Combine(AppContext.BaseDirectory,"tutorial-ui-medals.json"));Console.WriteLine("PASS: rendered target selection, pulsing target, robot modal, persuasion range and conversion success, tutorial guide, medal clear button, flag countdown and timed achievement cut-in");Exit();}
         }
         catch(Exception e){Console.Error.WriteLine(e);Environment.ExitCode=1;Exit();}
     }

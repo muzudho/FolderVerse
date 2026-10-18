@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
-    private static Rectangle ConquestRobotWindow=>new(1625,120,180,180);
+    private static Rectangle ConquestRobotWindow=>new(478,145,76,76);
     private void DrawConquestOrientation(Rectangle canvas,Matrix transform,Viewport viewport){
         var toy=ConquestRobotWindow;int radius=toy.Width/2;
         _spriteBatch.Begin(transformMatrix:transform);
@@ -14,59 +14,53 @@ public partial class Game1
         _spriteBatch.End();GraphicsDevice.Viewport=OrientationViewport(new(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30),canvas);
         _orientationToy.Draw(0,0,_conquestGlobe.ViewOrientation(0,0));GraphicsDevice.Viewport=viewport;
     }
-    private static string CellCounter(int count)=>$"{count} "+(count==1?"cell":"cells");
+
+    private void DrawConquestNumber(Rectangle r,int value,bool reveal){
+        _ui.Box(r,new Color(111,140,157));_ui.Box(new(r.X+2,r.Y+2,r.Width-4,r.Height-4),new Color(40,56,71));
+        if(!reveal){for(int i=0;i<4;i++)_ui.Box(new(r.X+10+i*(r.Width-20)/4,r.Center.Y-10,Math.Max(4,(r.Width-28)/4),20),new Color(8,16,24));return;}
+        string text=value.ToString();var size=_font.MeasureString(text);float scale=Math.Min(.85f,Math.Min((r.Width-18)/size.X,(r.Height-12)/size.Y));
+        _ui.Text(text,new(r.Right-10-size.X*scale,r.Center.Y-size.Y*scale/2),scale,Cream);
+    }
     private void DrawConquestTally(){
-        int ruler=ConquestCard.Ruler;var color=_setup.OwnerColor(ruler);var tally=_conquestTally;
-        bool reminder=ConquestCard.Reminder,identity=reminder || _conquestAge>=tally.CountEnd;
-        bool conversion=!reminder && _conquestAge>=tally.ConvertStart,rank=!reminder && _conquestAge>=tally.RankStart;
-        _ui.Box(new(55,170,405,590),new Color(25,34,46));_ui.Box(new(55,170,10,590),color);
-        if(identity){
-            _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new(125,195,260,260),_setup.Relations.Powered[ruler]);
-            _ui.Center(_setup.ConquerorNames[ruler],new(70,462,375,45),.55f,Cream);
+        var tally=_conquestTally;var panel=ConquestFormulaSpace;int x=panel.X,y=panel.Y,ruler=ConquestCard.Ruler;
+        double age=_conquestStage==3?0:_conquestStage==5?tally.Duration:_conquestAge;
+        bool main=!ConquestCard.Reminder,cells=main && age>=tally.CellsStart,entry=main && age>=tally.EntryStart;
+        bool score=main && age>=tally.ScoreStart,rank=main && age>=tally.RankStart;
+        _ui.Box(new(x,y,4,panel.Height),_setup.OwnerColor(ruler));
+        var cellsBox=new Rectangle(x+30,y+65,130,62);var entryBox=new Rectangle(x+350,y+65,140,62);
+        var pointsBox=new Rectangle(x+45,y+225,190,62);var rankBox=new Rectangle(x+308,y+225,175,62);
+        _ui.Center("Entry No.",new(entryBox.X,y+30,entryBox.Width,28),.38f,Cream);
+        DrawConquestNumber(cellsBox,tally.TotalCells,cells);DrawConquestNumber(entryBox,tally.Entry,entry);
+        _ui.Center($"× {tally.Scale} +",new(x+170,y+65,170,62),.63f,Cream);
+        _ui.Center("cells",new(cellsBox.X,y+135,cellsBox.Width,28),.38f,Cream);
+        _ui.Center("暫定",new(rankBox.X,y+188,rankBox.Width,30),.45f,Cream);
+        _ui.Center("=",new(x+5,y+225,35,62),.75f,Cream);
+        DrawConquestNumber(pointsBox,tally.Score(age),score);DrawConquestNumber(rankBox,ConquestCard.Rank,rank);
+        _ui.Center("points",new(pointsBox.X,y+298,pointsBox.Width,30),.38f,Cream);
+        _ui.Text("位",new(rankBox.Right-35,y+298),.4f,Cream);
+        if(entry || ConquestCard.Reminder){
+            string name=(ConquestCard.Reminder?"ボス：":"")+_setup.ConquerorNames[ruler];var map=ConquestMapSpace;
+            _ui.Text(name,new(map.X+10,map.Y+4),Math.Min(.38f,(map.Width-95)/_font.MeasureString(name).X),_setup.OwnerColor(ruler));
+            int player=_setup.HumanPlayers.IndexOf(ruler);
+            if(player>=0)_ui.Center($"＜プレイヤー{player+1}＞",new(map.X+8,map.Bottom-27,map.Width-16,25),.38f,new Color(255,224,120));
         }
-        int cells=reminder || conversion?tally.TotalCells:tally.Counted(_setup,_conquestAge);
-        int entry=tally.Entry;
-        if(rank){cells=tally.TotalCells;entry=tally.Entry;}
-        string counter=CellCounter(cells);
-        if(!conversion)_ui.Center(counter,new(70,515,375,45),.53f,Cream);
-        if(!reminder && _conquestAge>=tally.TourSeconds && _conquestAge<tally.CountEnd){
-            _ui.Center($"手下 +{Math.Max(0,cells-tally.Cells.Length)} cells",new(70,570,375,35),.42f,new Color(171,214,222));
-        }
-        if(conversion){
-            _ui.Center(tally.Score(_conquestAge).ToString(),new(72,510,365,52),.85f,new Color(255,224,120));
-            _ui.Text("points",new(300,558),.34f,Cream);
-            _ui.Center("Entry No.",new(340,593,105,26),.29f,Cream);
-            _ui.Center("=",new(70,622,35,42),.55f,Cream);
-            _ui.Center(cells.ToString(),new(110,622,70,42),.55f,Cream);
-            _ui.Center("×",new(190,622,40,42),.55f,Cream);
-            _ui.Center(tally.Scale.ToString(),new(230,622,90,42),.55f,Cream);
-            _ui.Center("+",new(320,622,40,42),.55f,Cream);
-            _ui.Center(entry.ToString(),new(360,622,70,42),.55f,Cream);
-            _ui.Center("cells",new(110,663,70,25),.29f,Cream);
-        }else if(identity)_ui.Center($"Entry No. {entry}",new(70,615,375,30),.4f,Cream);
-        if(rank)_ui.Center($"暫定{ConquestCard.Rank}位",new(70,701,375,48),.68f,Cream);
-        else if(reminder)_ui.Center("ボス",new(70,575,375,45),.55f,Cream);
-        int player=_setup.HumanPlayers.IndexOf(ruler);
-        if(identity && player>=0)_ui.Center($"＜プレイヤー{player+1}＞",new(70,125,375,40),.5f,new Color(255,224,120));
-        _ui.Tile(new(460,550),new(35,35),MathHelper.PiOver4,new Color(25,34,46));
-        if(rank)DrawConquestSubtree(ruler,_conquestAge-tally.RankStart);
+        if(main && age>=tally.FaceStart)DrawConquestSubtree(ruler,age-tally.FaceStart);
     }
     private void DrawConquestSubtree(int root,double age){
-        var entries=new List<(int Ruler,int Depth)>();var queue=new Queue<(int Ruler,int Depth)>();queue.Enqueue((root,0));
+        var area=ConquestTreeSpace;var entries=new List<(int Ruler,int Depth)>();var queue=new Queue<(int Ruler,int Depth)>();queue.Enqueue((root,0));
         var ranking=_setup.Relations.ProvisionalRanking(_setup).ToDictionary(r=>r.Ruler,r=>r.Rank);
-        while(queue.Count>0){var item=queue.Dequeue();entries.Add(item);foreach(int child in Enumerable.Range(0,_setup.ActiveCount).Where(r=>_setup.Relations.Superiors[r]==item.Ruler).OrderBy(r=>ranking[r]))queue.Enqueue((child,item.Depth+1));}
+        while(queue.TryDequeue(out var item)){entries.Add(item);foreach(int child in Enumerable.Range(0,_setup.ActiveCount).Where(r=>_setup.Relations.Superiors[r]==item.Ruler).OrderBy(r=>ranking[r]))queue.Enqueue((child,item.Depth+1));}
         if(entries.Count<2)return;
-        int depth=entries.Max(e=>e.Depth),stride=Math.Min(95,185/Math.Max(1,depth)),size=Math.Clamp(stride-8,32,68);
-        var positions=new Dictionary<int,Vector2>{{root,new(257,755)}};
+        int depth=entries.Max(e=>e.Depth),stride=Math.Min(65,130/Math.Max(1,depth)),size=Math.Clamp(stride-6,10,44);
+        var positions=new Dictionary<int,Vector2>{{root,new(area.Center.X,area.Y+22)}};
         foreach(var level in entries.Skip(1).GroupBy(e=>e.Depth)){
-            var group=level.ToArray();for(int i=0;i<group.Length;i++)positions[group[i].Ruler]=new(70+(i+.5f)*375/group.Length,765+level.Key*stride);
+            var group=level.ToArray();for(int i=0;i<group.Length;i++)positions[group[i].Ruler]=new(area.X+(i+.5f)*area.Width/group.Length,area.Y+22+level.Key*stride);
         }
         for(int i=1;i<entries.Count;i++){
             float alpha=Math.Clamp((float)(age-i*.10)/.35f,0,1);if(alpha<=0)continue;
             int ruler=entries[i].Ruler;var at=positions[ruler];var parent=positions[_setup.Relations.Superiors[ruler]];var delta=at-parent;
             _ui.Tile((at+parent)/2,new(delta.Length(),2),MathF.Atan2(delta.Y,delta.X),_setup.OwnerColor(ruler)*alpha);
-            var box=new Rectangle((int)at.X-size/2,(int)at.Y-size/2,size,size);_ui.Box(new(box.X-3,box.Y-3,size+6,size+6),_setup.OwnerColor(ruler)*alpha);
-            // The portrait renderer has no opacity parameter: reveal each face after its connector arrives.
+            var box=new Rectangle((int)at.X-size/2,(int)at.Y-size/2,size,size);_ui.Box(new(box.X-2,box.Y-2,size+4,size+4),_setup.OwnerColor(ruler)*alpha);
             if(alpha>.5f)_portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],box,_setup.Relations.Powered[ruler]);
         }
     }
