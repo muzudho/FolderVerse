@@ -9,6 +9,8 @@ public sealed class ConquestPresentation
 {
     public sealed record Card(int Ruler,int Rank,int Depth,bool Reminder,int[] Faces);
     public Card[] Cards {get;}
+    public static bool Detailed(WorldSetup w,int ruler,int rank)=>rank<=3 ||
+        (w.HumanPlayers.Count>0?w.HumanPlayers.Contains(ruler):ruler==w.Relations.Leader);
     public static int ExactCellOwner(WorldSetup w,int cell){var owners=w.Nodes.InCell(cell).Select(n=>n.Owner).Distinct().ToArray();return owners.Length==1?owners[0]:-1;}
     public static int[] OwnCells(WorldSetup w,int ruler)=>w.Cells.Where(c=>ExactCellOwner(w,c.Id)==ruler).Select(c=>c.Id).ToArray();
     public static int[] FaceTour(WorldSetup w,int ruler,int startFace=4){
@@ -32,7 +34,8 @@ public sealed class ConquestPresentation
         void Add(int r,bool reminder){var e=byId[r];var faces=FaceTour(w,r,lastFace);cards.Add(new(r,e.Rank,e.Depth+1,reminder,faces));if(faces.Length>0)lastFace=faces[^1];}
         foreach(var entry in forest.OrderByDescending(e=>e.Rank)){
             var parents=new Stack<int>();for(int r=w.Relations.Superiors[entry.Ruler];r>=0;r=w.Relations.Superiors[r])parents.Push(r);
-            foreach(int r in parents)Add(r,true);Add(entry.Ruler,false);
+            if(Detailed(w,entry.Ruler,entry.Rank))foreach(int r in parents)Add(r,true);
+            Add(entry.Ruler,false);
         }
         Cards=cards.ToArray();
     }

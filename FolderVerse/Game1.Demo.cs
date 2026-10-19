@@ -30,7 +30,7 @@ public partial class Game1
         }
         if(!_demoActive)
         {
-            if(_screen!=Screen.Title || _hasAutoSave || _titleMenuOpen){_titleIdle=0;return false;}
+            if(_screen!=Screen.Title || _titleMenuOpen){_titleIdle=0;return false;}
             if(click || enter || escape){_titleIdle=0;return false;}
             _titleIdle+=elapsed;
             if(_titleIdle<10)return false;
@@ -41,6 +41,8 @@ public partial class Game1
             return true;
         }
         if(click && new Rectangle(0,0,1920,1080).Contains(_pointer) || escape){_demoFade=0;return true;}
+        // Let every global turn's overview finish before resuming scripted actions.
+        if(_conquestOverview){UpdateConquestOverview(elapsed,false);return true;}
         _demoAge+=elapsed;_demoStepAge+=elapsed;_yaw+=(float)elapsed*.12f;
         if(_demoStarsAge>=0){_demoStarsAge+=(float)elapsed;if(_demoStarsAge>.65f)_demoStarsAge=-1;}
         float previousSwing=_demoSwing;

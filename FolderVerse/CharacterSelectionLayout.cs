@@ -1,6 +1,7 @@
 namespace FolderVerse;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 public readonly record struct CharacterTile(int Slot,int X,int Y,int Side)
@@ -16,6 +17,11 @@ public readonly record struct CharacterTile(int Slot,int X,int Y,int Side)
         }
     }
 }
+public readonly record struct OverviewTile(int Slot,int X,int Y,int Width,int Height)
+{
+    public Rectangle Bounds=>new(54+X*1806/28,112+Y*900/20,
+        (X+Width)*1806/28-X*1806/28,(Y+Height)*900/20-Y*900/20);
+}
 public static class CharacterSelectionLayout
 {
     public const int Columns=28,Rows=20;
@@ -28,26 +34,54 @@ public static class CharacterSelectionLayout
         return Pack(sides,counts.Take(activeCount).Select(n=>(double)n).Append(double.MaxValue).ToArray(),activeCount);
     }
     // Zero-cell rulers retain a minimal selectable portrait; positive areas use subtree cell totals.
-    public static CharacterTile[] CreateOverview(int[] counts){
+    public static OverviewTile[] CreateOverview(int[] counts){
         if(counts.Length<1 || counts.Length>20 || counts.Any(n=>n<0))throw new ArgumentException("Invalid overview counts.");
-        var weights=counts.Select(n=>(double)Math.Max(1,n)).ToArray();double total=weights.Sum();
-        var sides=weights.Select(n=>Math.Clamp((int)Math.Sqrt(20*20*n/total),1,20)).ToArray();
-        // Left two calendar columns remain fixed: map 2x2, formula 2x2, hierarchy 2x1.
-        while(true){
-            var used=new bool[Columns,Rows];for(int y=0;y<Rows;y++)for(int x=0;x<8;x++)used[x,y]=true;
-            var tiles=new CharacterTile[counts.Length];bool fits=true;
-            foreach(int slot in Enumerable.Range(0,counts.Length).OrderByDescending(i=>sides[i]).ThenByDescending(i=>weights[i]).ThenBy(i=>i)){
-                int side=sides[slot];bool placed=false;
-                for(int y=0;y<=Rows-side && !placed;y++)for(int x=8;x<=Columns-side && !placed;x++){
-                    bool empty=true;for(int dy=0;dy<side && empty;dy++)for(int dx=0;dx<side;dx++)if(used[x+dx,y+dy]){empty=false;break;}
-                    if(!empty)continue;
-                    tiles[slot]=new(slot,x,y,side);for(int dy=0;dy<side;dy++)for(int dx=0;dx<side;dx++)used[x+dx,y+dy]=true;placed=true;
-                }
-                if(!placed){fits=false;break;}
+        var ranked=Enumerable.Range(0,counts.Length).OrderByDescending(i=>counts[i]).ThenByDescending(i=>i).ToArray();
+        var weights=ranked.Select(i=>(double)Math.Max(1,counts[i])).ToArray();double total=weights.Sum();
+        var targets=weights.Select(w=>4+(400-4*counts.Length)*w/total).ToArray();
+        // Partition the entire 20x20 portrait region into rows of rectangles. Search integer
+        // row heights while balancing area against cropping, preserving rank by area and position.
+        var memo=new Dictionary<(int Start,int Height,int Limit),(double Cost,int Count,int RowHeight,int[] Widths)>();
+        int[] Widths(int start,int count){
+            double sum=weights.Skip(start).Take(count).Sum();
+            var ideal=weights.Skip(start).Take(count).Select(w=>2+(20-2*count)*w/sum).ToArray();
+            var widths=ideal.Select(w=>(int)w).ToArray();
+            for(int spare=20-widths.Sum();spare>0;spare--){
+                int next=Enumerable.Range(0,count).Where(i=>i==0 || widths[i]<widths[i-1]).OrderByDescending(i=>ideal[i]-widths[i]).ThenBy(i=>i).First();
+                widths[next]++;
             }
-            if(fits)return tiles;
-            int largest=Enumerable.Range(0,counts.Length).OrderByDescending(i=>sides[i]).ThenBy(i=>weights[i]).First();sides[largest]--;
+            return widths;
         }
+        double Solve(int start,int height,int limit){
+            if(start==counts.Length)return height==0?0:double.PositiveInfinity;
+            if(height<2)return double.PositiveInfinity;
+            var key=(start,height,limit);if(memo.TryGetValue(key,out var cached))return cached.Cost;
+            var best=(Cost:double.PositiveInfinity,Count:0,RowHeight:0,Widths:Array.Empty<int>());
+            for(int count=1;count<=Math.Min(10,counts.Length-start);count++){
+                var widths=Widths(start,count);
+                for(int h=2;h<=height;h++){
+                    if(widths[0]*h>limit)continue;
+                    double cost=0;
+                    for(int i=0;i<count;i++){
+                        double area=widths[i]*h,target=targets[start+i],ratio=widths[i]*1806d/28/(h*45);
+                        double aspect=Math.Max(ratio,1/ratio);
+                        cost+=Math.Pow((area-target)/Math.Max(10,target),2)+.15*Math.Pow(Math.Log(ratio),2)+10*Math.Pow(Math.Max(0,aspect-3),2);
+                    }
+                    cost+=Solve(start+count,height-h,widths[^1]*h);
+                    if(cost<best.Cost)best=(cost,count,h,widths);
+                }
+            }
+            memo[key]=best;return best.Cost;
+        }
+        Solve(0,20,400);
+        var tiles=new OverviewTile[counts.Length];int start=0,y=0,limit=400;
+        while(start<counts.Length){
+            var row=memo[(start,20-y,limit)];int x=8;
+            if(row.Count==0)throw new InvalidOperationException("Portrait layout could not fill the calendar.");
+            for(int i=0;i<row.Count;i++){int slot=ranked[start+i];tiles[slot]=new(slot,x,y,row.Widths[i],row.RowHeight);x+=row.Widths[i];}
+            start+=row.Count;y+=row.RowHeight;limit=row.Widths[^1]*row.RowHeight;
+        }
+        return tiles;
     }
     public static CharacterTile[] CreateBattles(long[] strengths)
     {
