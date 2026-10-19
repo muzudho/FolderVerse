@@ -24,7 +24,7 @@ public partial class Game1
     private ConquestPresentation.Card ConquestCard=>_conquestPresentation.Cards[_conquestCard];
     private double ConquestCardSeconds=>ConquestCard.Reminder?.8:_conquestTally.Duration;
     private void BeginConquestOverview(){
-        if(!_conquestOverviewEnabled || _demoActive || _autoPlay || _conquestOverviewTurn==_setup.Population.Turn)return;
+        if(!_conquestOverviewEnabled || _autoPlay || _conquestOverviewTurn==_setup.Population.Turn)return;
         _conquestOverviewTurn=_setup.Population.Turn;_conquestPresentation=new(_setup);_conquestCard=0;_conquestStage=0;_conquestAge=0;_conquestOverview=true;_conquestExitOpacity=1;
         _conquestRevealed.Clear();
         _conquestTiles=CharacterSelectionLayout.CreateOverview(_setup.Relations.ProvisionalRanking(_setup).OrderBy(r=>r.Ruler).Select(r=>r.Cells).ToArray());
@@ -37,11 +37,14 @@ public partial class Game1
         catch(NoAudioHardwareException e){_conquestAudioUnavailable=true;RecordFailure(e,"conquest_audio");}
     }
     private void SetConquestCard(){
-        _conquestEnvironment=ConquestPresentation.Environment(_setup,ConquestCard.Ruler);
-        _conquestTally=new(_setup,ConquestCard);_conquestPainted=0;
-        _conquestGlobe.PresentationCells=ConquestCard.Reminder?null:new();
+        _conquestTally=new(_setup,ConquestCard,!ConquestCard.Reminder && !ConquestPresentation.Detailed(_setup,ConquestCard.Ruler,ConquestCard.Rank));
+        if(!_conquestTally.Compact)_conquestEnvironment=ConquestPresentation.Environment(_setup,ConquestCard.Ruler);
+        _conquestPainted=_conquestTally.Compact?_conquestTally.Cells.Length:0;
+        if(_conquestTally.Compact)_conquestRevealed.Add(ConquestCard.Ruler);
+        _conquestGlobe.PresentationCells=ConquestCard.Reminder?null:_conquestTally.Cells.Take(_conquestPainted).ToHashSet();
         _conquestGlobe.PresentationOwner=ConquestCard.Ruler;_conquestGlobe.ShowLandConquest(_setup,true);
         _conquestFrom=_conquestGlobe.ManualOrientation??_conquestFrom;
+        if(_conquestTally.Compact && ConquestCard.Faces.Length>0)_conquestGlobe.ManualOrientation=ConquestFace(_setup.Cells.First(c=>c.Face==ConquestCard.Faces[0]).Normal);
     }
     private static Quaternion ConquestFace(Vector3 normal){
         float pitch=MathF.Atan2(normal.Y,MathF.Sqrt(normal.X*normal.X+normal.Z*normal.Z));
@@ -64,20 +67,22 @@ public partial class Game1
             var faces=ConquestCard.Faces;
             if(faces.Length>0){
                 int index=0;
-                if(!ConquestCard.Reminder)for(int i=1;i<faces.Length;i++)if(_conquestAge>=_conquestTally.FaceStarts[i])index=i;
+                if(!ConquestCard.Reminder && !_conquestTally.Compact)for(int i=1;i<faces.Length;i++)if(_conquestAge>=_conquestTally.FaceStarts[i])index=i;
                 double faceAge=ConquestCard.Reminder?_conquestAge:_conquestAge-_conquestTally.FaceStarts[index];
                 _conquestTo=ConquestFace(_setup.Cells.First(c=>c.Face==faces[index]).Normal);
                 var from=index==0?_conquestFrom:ConquestFace(_setup.Cells.First(c=>c.Face==faces[index-1]).Normal);
-                float blend=MathHelper.SmoothStep(0,1,(float)Math.Min(1,faceAge/(ConquestCard.Reminder?.7:.9)));
+                float blend=_conquestTally.Compact?1:MathHelper.SmoothStep(0,1,(float)Math.Min(1,faceAge/(ConquestCard.Reminder?.7:.9)));
                 float turn=(float)Math.Sin(_conquestAge*.65)*.20f+.12f;
                 _conquestGlobe.ManualOrientation=Quaternion.CreateFromRotationMatrix(Matrix.CreateFromQuaternion(Quaternion.Slerp(from,_conquestTo,blend))*Matrix.CreateRotationY(turn)*Matrix.CreateRotationX(.12f));
             }
         }
-        if(_conquestAge>=duration){
-            _conquestAge=0;
+        while(_conquestAge>=duration){
+            // Carry sub-frame time across short cards so their combined duration stays five seconds.
+            _conquestAge-=duration;
             if(_conquestStage==4 && ++_conquestCard<_conquestPresentation.Cards.Length)SetConquestCard();
-            else{_conquestStage++;if(_conquestStage==5){_conquestCard=Math.Min(_conquestCard,_conquestPresentation.Cards.Length-1);}
+            else{_conquestAge=0;_conquestStage++;if(_conquestStage==5){_conquestCard=Math.Min(_conquestCard,_conquestPresentation.Cards.Length-1);}
                 if(_conquestStage is 2 or 6 or 8)PlayCurtain();if(_conquestStage>8){FinishConquestOverview();return;}}
+            duration=_conquestStage switch{0 or 2 or 6 or 8=>.65,1 or 3 or 5 or 7=>1.5,4=>ConquestCardSeconds,_=>0};
         }
         if(_conquestStage is >=2 and <=6 && !_conquestAudioUnavailable && (_conquestStage<5 || _conquestMusic!=null)){
             try{_conquestMusic??=new();var env=_conquestEnvironment;

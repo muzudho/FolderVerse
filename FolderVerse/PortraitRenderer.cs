@@ -47,7 +47,7 @@ public sealed class PortraitRenderer
         // Inset past separator pixels and avoid sampling adjacent portraits.
         return new(left+2,top+2,right-left-4,bottom-top-4);
     }
-    public void Draw(SpriteBatch batch,ConquerorLook look,Rectangle destination,bool active=true,bool forCreation=false)
+    public void Draw(SpriteBatch batch,ConquerorLook look,Rectangle destination,bool active=true,bool forCreation=false,Vector2? focalPoint=null)
     {
         if(look.BaseId<0 || look.BaseId>=60 || look.VariantId<0 || look.VariantId>=6)
             throw new ArgumentOutOfRangeException(nameof(look));
@@ -57,7 +57,7 @@ public sealed class PortraitRenderer
             var individual=forCreation
                 ? _creation[index] ??= _content.Load<Texture2D>("Images/Portraits/conqueror-creation/tiles/character-"+(look.BaseId+1).ToString("00")+"-"+(look.VariantId+1))
                 : _individual[index];
-            var crop=FitSource(new Rectangle(0,0,individual.Width,individual.Height),destination);
+            var crop=FitSource(new Rectangle(0,0,individual.Width,individual.Height),destination,focalPoint);
             batch.Draw(individual,destination,crop,active?Color.White:new Color(115,115,115));
             return;
         }
@@ -67,7 +67,7 @@ public sealed class PortraitRenderer
         {
             texture=replacement;source=NormalizedSourceBounds(look.VariantId,texture.Width,texture.Height);
         }
-        source=FitSource(source,destination);
+        source=FitSource(source,destination,focalPoint);
         batch.Draw(texture,destination,source,active?Color.White:new Color(115,115,115));
     }
     public static Rectangle NormalizedSourceBounds(int variant,int width,int height)
@@ -76,18 +76,20 @@ public sealed class PortraitRenderer
         int left=col*width/3,right=(col+1)*width/3,top=row*height/2,bottom=(row+1)*height/2;
         return new(left+3,top+3,right-left-6,bottom-top-6);
     }
-    public static Rectangle FitSource(Rectangle source,Rectangle destination)
+    public static Rectangle FitSource(Rectangle source,Rectangle destination,Vector2? focalPoint=null)
     {
         // Crop to fill the frame with uniform scaling; never flatten a face to fit a different aspect ratio.
         if(destination.Width<=0 || destination.Height<=0)return source;
         float ratio=destination.Width/(float)destination.Height;
         if(source.Width/(float)source.Height>ratio)
         {
-            int width=Math.Max(1,(int)MathF.Round(source.Height*ratio));source.X+=(source.Width-width)/2;source.Width=width;
+            int width=Math.Max(1,(int)MathF.Round(source.Height*ratio));
+            source.X+=focalPoint.HasValue?Math.Clamp((int)MathF.Round(source.Width*focalPoint.Value.X-width/2f),0,source.Width-width):(source.Width-width)/2;source.Width=width;
         }
         else
         {
-            int height=Math.Max(1,(int)MathF.Round(source.Width/ratio));source.Y+=(source.Height-height)/3;source.Height=height;
+            int height=Math.Max(1,(int)MathF.Round(source.Width/ratio));
+            source.Y+=focalPoint.HasValue?Math.Clamp((int)MathF.Round(source.Height*focalPoint.Value.Y-height/2f),0,source.Height-height):(source.Height-height)/3;source.Height=height;
         }
         return source;
     }

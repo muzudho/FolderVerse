@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 public partial class Game1
 {
-    private CharacterTile[] _conquestTiles=Array.Empty<CharacterTile>();
+    private OverviewTile[] _conquestTiles=Array.Empty<OverviewTile>();
     private readonly HashSet<int> _conquestRevealed=new();
     private static Rectangle ConquestGridBounds(int x,int y,int w,int h)=>new(54+x*1806/28,112+y*900/20,(x+w)*1806/28-x*1806/28,(y+h)*900/20-y*900/20);
     private static Rectangle ConquestMapSpace=>ConquestGridBounds(0,0,8,8);
@@ -22,10 +22,10 @@ public partial class Game1
             int ruler=tile.Slot;var r=tile.Bounds;bool focus=ruler==ConquestCard.Ruler;
             _ui.Box(r,focus?new Color(255,228,140):_setup.OwnerColor(ruler));
             var image=new Rectangle(r.X+4,r.Y+4,Math.Max(1,r.Width-8),Math.Max(1,r.Height-8));
-            _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],image,_setup.Relations.Powered[ruler]);
+            _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],image,_setup.Relations.Powered[ruler],focalPoint:new Vector2(.5f,.3f));
             if(!focus)_ui.Box(image,Color.Black*.25f);
             _counter.Draw(_spriteBatch,ranking[ruler].Cells,image,_setup.OwnerColor(ruler));
-            string label=$"{ranking[ruler].Rank}位 / Entry {ruler+1}";
+            string label=$"{ranking[ruler].Rank}位 / {_setup.ConquerorNames[ruler]}";
             _ui.Box(new(r.X+4,r.Y+4,r.Width-8,25),Color.Black*.7f);
             _ui.Center(label,new(r.X+4,r.Y+4,r.Width-8,25),Math.Min(.35f,(r.Width-12)/_font.MeasureString(label).X),Cream);
         }

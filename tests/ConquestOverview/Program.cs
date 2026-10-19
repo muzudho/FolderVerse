@@ -15,9 +15,19 @@ sealed class OverviewGame:Game1{
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
   world=(WorldSetup)Get("_setup");world.PrepareTutorialStepOne(123,456,789);world.CompleteLand(90);world.SelectPlayer(0);world.HumanPlayers.Add(0);
   world.Relations.SetSuperior(2,0);world.Relations.SetSuperior(3,2);
+  world.HumanPlayers.Add(3);
   var p=new ConquestPresentation(world);var main=p.Cards.Where(c=>!c.Reminder).ToArray();
   Check(main.Select(c=>c.Ruler).SequenceEqual(world.Relations.ProvisionalRanking(world).OrderByDescending(e=>e.Rank).Select(e=>e.Ruler)),"Lowest rank first main introductions");
   int child=Array.FindIndex(p.Cards,c=>c.Ruler==3 && !c.Reminder);Check(p.Cards[child-2].Ruler==0 && p.Cards[child-1].Ruler==2 && p.Cards[child-1].Reminder,"Ancestors recalled root first");
+  world.HumanPlayers.Remove(3);
+  Check(ConquestPresentation.Detailed(world,0,6) && ConquestPresentation.Detailed(world,5,3) && !ConquestPresentation.Detailed(world,2,4),"Only human identities and top three keep detailed animation; controlled subordinates are compact");
+  var compactCard=new ConquestPresentation.Card(3,6,3,false,ConquestPresentation.FaceTour(world,3));
+  var compact=new ConquestTally(world,compactCard,true);
+  int compactCount=world.Relations.ProvisionalRanking(world).Count(r=>!ConquestPresentation.Detailed(world,r.Ruler,r.Rank));
+  Check(Math.Abs(compact.Duration*compactCount-5)<1e-9 && Math.Abs(ConquestTally.CompactSeconds(59)*59-5)<1e-9 && ConquestTally.CompactSeconds(0)==0,"Compact group shares five seconds, including 59 rulers and no compact rulers");
+  Check(compact.CellsStart==0 && compact.EntryStart==0 && compact.ScoreStart==0 && compact.RankStart==0 && compact.FaceStart==0 && compact.Painted(world,0)==compact.Cells.Length,"Compact introduction reveals all results and painted land instantly");
+  var compactPresentation=new ConquestPresentation(world);int compactIndex=Array.FindIndex(compactPresentation.Cards,c=>c.Ruler==3 && !c.Reminder);
+  if(compactPresentation.Cards[compactIndex].Rank>3)Check(compactIndex==0 || !compactPresentation.Cards[compactIndex-1].Reminder,"Compact introduction has no extra ancestor reminders");
   Check(ConquestPresentation.OwnCells(world,0).All(c=>ConquestPresentation.ExactCellOwner(world,c)==0) && ConquestPresentation.OwnCells(world,0).Length==1,"No subordinate land included");
   foreach(var c in main){var tour=ConquestPresentation.FaceTour(world,c.Ruler);Check(tour.Distinct().Count()==tour.Length && tour.Length==1,"Only owned faces toured on dice world");var env=ConquestPresentation.Environment(world,c.Ruler);Check(env.X>=0 && env.X<=1 && env.Y>=0 && env.Y<=1 && env.Z>=0 && env.Z<=1,"Terrain weights bounded");}
   var tally=new ConquestTally(world,p.Cards.First(c=>c.Ruler==0 && !c.Reminder));
@@ -37,9 +47,21 @@ sealed class OverviewGame:Game1{
   foreach(var n in multi.Nodes.All)n.Owner=-1;
   var emptyTally=new ConquestTally(multi,new ConquestPresentation(multi).Cards.First(c=>c.Ruler==0 && !c.Reminder));
   Check(emptyTally.TotalCells==0 && emptyTally.Score(emptyTally.ConvertStart)==1,"Zero cells retain positive entry points");
-  foreach(var counts in new[]{new[]{0},new[]{1,1,1,1,1,1},Enumerable.Range(0,20).Select(i=>i==0?1000:i).ToArray()}){
-   var tiles=CharacterSelectionLayout.CreateOverview(counts);Check(tiles.Length==counts.Length && tiles.All(t=>t.X>=8 && t.X+t.Side<=28 && t.Y+t.Side<=20 && t.Side>=1),"Portrait layout avoids fixed left two calendar columns");
+  foreach(var counts in new[]{new[]{0},new int[6],new[]{0,1,0,1,0,1},new[]{1,1,1,1,1,1},Enumerable.Range(0,20).Select(i=>i==0?1000:i).ToArray()}){
+   var tiles=CharacterSelectionLayout.CreateOverview(counts);Check(tiles.Length==counts.Length && tiles.All(t=>t.X>=8 && t.X+t.Width<=28 && t.Y+t.Height<=20 && t.Width>=2 && t.Height>=2),"Portrait layout avoids fixed left two calendar columns");
    foreach(var a in tiles)foreach(var b in tiles.Where(b=>b.Slot>a.Slot))Check(!a.Bounds.Intersects(b.Bounds),"Overview portraits never overlap");
+   Check(tiles.Sum(t=>t.Width*t.Height)==400,"Rectangles fill every available calendar cell");
+   foreach(var tile in tiles){var source=new Rectangle(0,0,256,192);var crop=PortraitRenderer.FitSource(source,tile.Bounds,new Vector2(.5f,.3f));
+    Check(source.Contains(crop) && Math.Abs(crop.Width/(double)crop.Height-tile.Bounds.Width/(double)tile.Bounds.Height)<.04,"Portrait crop stays inside source and preserves aspect ratio");}
+   var ranked=Enumerable.Range(0,counts.Length).OrderByDescending(i=>counts[i]).ThenByDescending(i=>i).ToArray();
+   Check(tiles[ranked[0]].X==8 && tiles[ranked[0]].Y==0,"Highest rank takes top left portrait space");
+   for(int i=1;i<ranked.Length;i++)Check(tiles[ranked[i-1]].Width*tiles[ranked[i-1]].Height>=tiles[ranked[i]].Width*tiles[ranked[i]].Height,"Lower ranks never receive larger tiles");
+   var equal=CharacterSelectionLayout.CreateOverview(new int[counts.Length]);
+   Check(equal[^1].X==8 && equal[^1].Y==0 && equal[^1].Width*equal[^1].Height>=equal[0].Width*equal[0].Height,"Zero-cell tie follows Entry ranking for placement and shrinking");
+  }
+  for(int population=1;population<=20;population++){
+   var counts=Enumerable.Range(0,population).Select(i=>(i*37+population)%113).ToArray();var tiles=CharacterSelectionLayout.CreateOverview(counts);
+   Check(tiles.Sum(t=>t.Width*t.Height)==400 && tiles.All(t=>t.Width>=2 && t.Height>=2),"All supported populations fill the calendar with readable minimum frames");
   }
   owners=(int[])world.Owners.Clone();originalWorld=Get("_world");var net=(CubeNet)Get("_net");net.ShowBatteries=false;batteries=net.ShowBatteries;
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("RestoreDomesticCamera");batteries=net.ShowBatteries;
@@ -70,6 +92,11 @@ sealed class OverviewGame:Game1{
   if(frame==11)Check(brightness==0,"Intro still starts completely black");
   if(frame==12)Check(brightness>exitMiddle,"Intro still fades in correctly");
   if(frame is 1 or 13)Check(pixels.All(c=>c.R>c.G*3 && c.R>c.B*2),"Closed curtain covers every HUD/header/footer pixel on entry and return to domestic");
+  if(frame==19){
+   foreach(int ruler in Enumerable.Range(0,world.ActiveCount))((HashSet<int>)Get("_conquestRevealed")).Add(ruler);
+   base.Draw(t);var full=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(full);
+   using var texture=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);texture.SetData(full);using var output=File.Create(Path.Combine(AppContext.BaseDirectory,"conquest-rectangles.png"));texture.SaveAsPng(output,texture.Width,texture.Height);
+  }
   if(frame++<19)return;
   Call("FinishConquestOverview");Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");
   int guard=0;while((bool)Get("_conquestOverview") && guard++<2500){
@@ -89,7 +116,34 @@ sealed class OverviewGame:Game1{
   Check((float)Get("_conquestExitOpacity")==0 && Get("_conquestMusic")==null,"Skip before intro never reveals a globe or starts new music");
   Call("FinishConquestOverview");Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");Set("_conquestStage",3);Set("_conquestAge",.6d);Call("UpdateConquestOverview",0d,true);
   Check(Math.Abs((float)Get("_conquestExitOpacity")-.4f)<.0001,"Skip during fade-in preserves current opacity without a bright flash");
-  Call("ReturnToTitle");Check(!(bool)Get("_conquestOverview") && (int)Get("_conquestOverviewTurn")==-1,"Title resets presentation and audio");Console.WriteLine("PASS: monotonic outro fade, no globe reappearance behind curtain, preserved intro fade, cell paint and static addition formula, lower-rank-first introductions, area portraits, four-second ranking tree, ancestor recalls, exact owner cells, terrain mix, curtain timing, full playback, skip, and preserved game/view state.");Exit();
+  Call("ReturnToTitle");Check(!(bool)Get("_conquestOverview") && (int)Get("_conquestOverviewTurn")==-1,"Title resets presentation and audio");
+  Set("_titleMenuSelection",2);Call("TitleStartMenuInput",false,true,false,new KeyboardState(),true);
+  Check(Get("_screen").ToString()=="PlayerCount","New game title action begins normal setup");
+  world.SetWorld(123);world.SetCast(456);world.SetTerritoryRights(789);world.SelectPlayer(0);world.HumanPlayers.Add(0);
+  foreach(int ruler in world.LandOrder())world.ClaimLand(ruler,world.Cells.Where(c=>world.Owners[c.Id]<0).Take(world.TerritoryRights[ruler]).Select(c=>c.Id).ToArray());
+  Set("_screen",Enum.Parse(Get("_screen").GetType(),"Fortune"));Set("_landAge",5d);
+  Call("UpdateLandSetup",0d,new MouseState(),true,false,false);
+  Check(world.TutorialStep==0 && (bool)Get("_conquestOverview"),"Normal new game enters conquest overview after fortune without tutorial mode");
+  Call("FinishConquestOverview");
+  Set("_demoActive",true);Set("_demoIntro",false);
+  for(int turn=0;turn<2;turn++){
+   world.Population.Advance(world);Call("RestoreDomesticCamera");
+   Check((bool)Get("_conquestOverview"),"Demo starts overview on each new global turn");
+   double stepAge=(double)Get("_demoStepAge");int ticks=0;var introduced=new HashSet<int>();
+   while((bool)Get("_conquestOverview") && ticks++<10000){
+    if((int)Get("_conquestStage")==4){var cards=((ConquestPresentation)Get("_conquestPresentation")).Cards;var card=cards[(int)Get("_conquestCard")];if(!card.Reminder)introduced.Add(card.Ruler);}
+    Call("HandleInput",new MouseState(),new KeyboardState(),new GameTime(TimeSpan.FromSeconds(ticks*.25),TimeSpan.FromSeconds(.25)),true);
+   }
+   Check(ticks<10000 && introduced.Count==world.ActiveCount,"Demo naturally finishes every ruler's introduction without skipping");
+   Check((double)Get("_demoStepAge")==stepAge,"Scripted demo actions pause during overview");
+   Call("RestoreDomesticCamera");Check(!(bool)Get("_conquestOverview"),"Demo does not repeat overview within the same global turn");
+  }
+  world.Population.Advance(world);Call("RestoreDomesticCamera");
+  Call("HandleInput",new MouseState(),new KeyboardState(Keys.Escape),new GameTime(TimeSpan.Zero,TimeSpan.FromSeconds(.01)),true);
+  Check((float)Get("_demoFade")==0,"Escape exits demo during overview");
+  Call("UpdateDemo",.81d,true,false,false,false,0d);
+  Check(!(bool)Get("_demoActive") && !(bool)Get("_conquestOverview") && Get("_screen").ToString()=="Title","Demo exit clears overview and returns to title");
+  Console.WriteLine("PASS: normal new game conquest overview, monotonic outro fade, no globe reappearance behind curtain, preserved intro fade, cell paint and static addition formula, lower-rank-first introductions, area portraits, four-second ranking tree, ancestor recalls, exact owner cells, terrain mix, curtain timing, full playback, skip, and preserved game/view state.");Exit();
  }
 }
 
