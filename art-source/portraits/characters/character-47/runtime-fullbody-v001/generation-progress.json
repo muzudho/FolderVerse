@@ -1,6 +1,6 @@
 {
   "CharacterId": 47,
-  "UpdatedAt": "2026-10-19 22:03 JST",
+  "UpdatedAt": "2026-10-19 22:33 JST",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018 with20261019 uncropped fullbody instruction",
   "GameAdopted": false,
@@ -744,5 +744,13 @@
     "RuntimeChanged": false
   },
   "IdentityChecklist": "identity-scene-checklist.md",
-  "IdentityVisualReview": "identity-visual-review-20261019-2103.json"
+  "IdentityVisualReview": "identity-visual-review-20261019-2103.json",
+  "StagingV002": {
+    "Manifest": "staging-v002/manifest.json",
+    "Comparison": "staging-review-v002.html",
+    "PreparationScript": "prepare-staging-v002.cjs",
+    "TechnicalPreflightPassed": true,
+    "RuntimeChanged": false,
+    "BodyQAPassed": false
+  }
 }
