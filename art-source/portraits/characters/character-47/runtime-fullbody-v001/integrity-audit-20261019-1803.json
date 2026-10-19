@@ -1,0 +1,345 @@
+{
+  "CheckedAt": "2026-10-19 18:03 JST",
+  "OriginalRuntimeCount": 20,
+  "RuntimeUnchanged": true,
+  "MasterCount": 14,
+  "MastersUnchanged": true,
+  "CropBoundsAndAspectPassed": true,
+  "Runtime": [
+    {
+      "Path": "conqueror-creation/tiles/character-47-1.png",
+      "BackupSha256": "c4cd43c9dbc08d14167059cd834ed10847f3b4507ac0226c37f8376f0b95876c",
+      "CurrentSha256": "c4cd43c9dbc08d14167059cd834ed10847f3b4507ac0226c37f8376f0b95876c",
+      "Unchanged": true
+    },
+    {
+      "Path": "conqueror-creation/tiles/character-47-2.png",
+      "BackupSha256": "b521bcc65290a5f5575f86641e6f9c6b1b7f95d3ff6439c237d60c44dc13f37d",
+      "CurrentSha256": "b521bcc65290a5f5575f86641e6f9c6b1b7f95d3ff6439c237d60c44dc13f37d",
+      "Unchanged": true
+    },
+    {
+      "Path": "conqueror-creation/tiles/character-47-3.png",
+      "BackupSha256": "1711126ca87c35dbc95c618c2408486815c8452b505823767b58d917fb07e82b",
+      "CurrentSha256": "1711126ca87c35dbc95c618c2408486815c8452b505823767b58d917fb07e82b",
+      "Unchanged": true
+    },
+    {
+      "Path": "conqueror-creation/tiles/character-47-4.png",
+      "BackupSha256": "3638f912c2f612ecca9d01b6051a85a3d71aaf00ac1e4809afa0b29aa4255be6",
+      "CurrentSha256": "3638f912c2f612ecca9d01b6051a85a3d71aaf00ac1e4809afa0b29aa4255be6",
+      "Unchanged": true
+    },
+    {
+      "Path": "conqueror-creation/tiles/character-47-5.png",
+      "BackupSha256": "9a00b09ba66afec943c2b7713712ec51c1f6b19209d820cf0a4fa47e3dbb69b1",
+      "CurrentSha256": "9a00b09ba66afec943c2b7713712ec51c1f6b19209d820cf0a4fa47e3dbb69b1",
+      "Unchanged": true
+    },
+    {
+      "Path": "conqueror-creation/tiles/character-47-6.png",
+      "BackupSha256": "6e9a421b22019deb0d1d29f52fd1398f50508a5ce7344056703b7b2fb73acaf6",
+      "CurrentSha256": "6e9a421b22019deb0d1d29f52fd1398f50508a5ce7344056703b7b2fb73acaf6",
+      "Unchanged": true
+    },
+    {
+      "Path": "newspaper/character-47-coin.png",
+      "BackupSha256": "2d4004aecae2b696fc26ded92178b9eb35aeb1272e72bc9049e6360651d258c1",
+      "CurrentSha256": "2d4004aecae2b696fc26ded92178b9eb35aeb1272e72bc9049e6360651d258c1",
+      "Unchanged": true
+    },
+    {
+      "Path": "newspaper/character-47-election.png",
+      "BackupSha256": "38383c3b158798492b77965bd8682d3491e279a851e3b982141df0ee4958984c",
+      "CurrentSha256": "38383c3b158798492b77965bd8682d3491e279a851e3b982141df0ee4958984c",
+      "Unchanged": true
+    },
+    {
+      "Path": "newspaper/character-47-formal.png",
+      "BackupSha256": "ed984424ac8b2cd33378a2dc4ffb75f653a984d2422a420ea419425a78874f4e",
+      "CurrentSha256": "ed984424ac8b2cd33378a2dc4ffb75f653a984d2422a420ea419425a78874f4e",
+      "Unchanged": true
+    },
+    {
+      "Path": "newspaper/character-47-friends.png",
+      "BackupSha256": "c8736870017dca251fab0344d877e704a2f733445262560aa173e79244c10d3c",
+      "CurrentSha256": "c8736870017dca251fab0344d877e704a2f733445262560aa173e79244c10d3c",
+      "Unchanged": true
+    },
+    {
+      "Path": "newspaper/character-47-history.png",
+      "BackupSha256": "f3899cb7190c3f2db630218eef0219c27e9098560c6b5bafd246b2f963ffc498",
+      "CurrentSha256": "f3899cb7190c3f2db630218eef0219c27e9098560c6b5bafd246b2f963ffc498",
+      "Unchanged": true
+    },
+    {
+      "Path": "newspaper/character-47-id.png",
+      "BackupSha256": "ce231096b93adf3da3bacdd0b4854718246039fb519aefa06fc38dc850f63dd1",
+      "CurrentSha256": "ce231096b93adf3da3bacdd0b4854718246039fb519aefa06fc38dc850f63dd1",
+      "Unchanged": true
+    },
+    {
+      "Path": "newspaper/character-47-idol.png",
+      "BackupSha256": "fc1de3d482ee3c81ed3ab40b5efe73015a2c9c8aba0472cfb98a6bfdddf96da3",
+      "CurrentSha256": "fc1de3d482ee3c81ed3ab40b5efe73015a2c9c8aba0472cfb98a6bfdddf96da3",
+      "Unchanged": true
+    },
+    {
+      "Path": "newspaper/character-47-paparazzi.png",
+      "BackupSha256": "e05dd49129ceb288406505798e785f499dbb903bc8ea4c5be15c53f1dff6de97",
+      "CurrentSha256": "e05dd49129ceb288406505798e785f499dbb903bc8ea4c5be15c53f1dff6de97",
+      "Unchanged": true
+    },
+    {
+      "Path": "v3-standardized/tiles/character-47-1.png",
+      "BackupSha256": "e0f4f57d0d27c2d0be44c5ed01c30e08d13b894dc04671b50cbc629dce8858ed",
+      "CurrentSha256": "e0f4f57d0d27c2d0be44c5ed01c30e08d13b894dc04671b50cbc629dce8858ed",
+      "Unchanged": true
+    },
+    {
+      "Path": "v3-standardized/tiles/character-47-2.png",
+      "BackupSha256": "631bb52e63b0de387b32d5b0ee5f30dad6ec55c678c6cf13d8797dd539e5aa37",
+      "CurrentSha256": "631bb52e63b0de387b32d5b0ee5f30dad6ec55c678c6cf13d8797dd539e5aa37",
+      "Unchanged": true
+    },
+    {
+      "Path": "v3-standardized/tiles/character-47-3.png",
+      "BackupSha256": "52ae65066caa94b779110a6799e705c4ff35ff3a8cb4b643305bbe56407f752c",
+      "CurrentSha256": "52ae65066caa94b779110a6799e705c4ff35ff3a8cb4b643305bbe56407f752c",
+      "Unchanged": true
+    },
+    {
+      "Path": "v3-standardized/tiles/character-47-4.png",
+      "BackupSha256": "b1e53e61fae1adb7a047379492ab5215fb273adc3738417333c4bbb384289a9c",
+      "CurrentSha256": "b1e53e61fae1adb7a047379492ab5215fb273adc3738417333c4bbb384289a9c",
+      "Unchanged": true
+    },
+    {
+      "Path": "v3-standardized/tiles/character-47-5.png",
+      "BackupSha256": "90ff76589f5df2329ff55a5a66a35b2eb835d13d5a14520f7e737d0dec0fd164",
+      "CurrentSha256": "90ff76589f5df2329ff55a5a66a35b2eb835d13d5a14520f7e737d0dec0fd164",
+      "Unchanged": true
+    },
+    {
+      "Path": "v3-standardized/tiles/character-47-6.png",
+      "BackupSha256": "f769e00ec1a171c42dfbf054399c26f38f1610d03b60fed8eda08dc67bd8bcb3",
+      "CurrentSha256": "f769e00ec1a171c42dfbf054399c26f38f1610d03b60fed8eda08dc67bd8bcb3",
+      "Unchanged": true
+    }
+  ],
+  "Masters": [
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Source": "character-47-normal-1-headtrial-generated.png",
+      "RecordedSha256": "084db75900bc4a0cd2c922ce84960f2233f43d80aacbd1a29128c2a49f57e8a3",
+      "CurrentSha256": "084db75900bc4a0cd2c922ce84960f2233f43d80aacbd1a29128c2a49f57e8a3",
+      "Unchanged": true
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Source": "character-47-normal-2-generated.png",
+      "RecordedSha256": "e00bcbf22c19825404a37484766ddba352fee91ca98142c723d3271eea86f40c",
+      "CurrentSha256": "e00bcbf22c19825404a37484766ddba352fee91ca98142c723d3271eea86f40c",
+      "Unchanged": true
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Source": "character-47-normal-3-generated.png",
+      "RecordedSha256": "ad5df6c0f5900a7bcc5a9110a342493501b012cda7c28a910959543cd0398d0d",
+      "CurrentSha256": "ad5df6c0f5900a7bcc5a9110a342493501b012cda7c28a910959543cd0398d0d",
+      "Unchanged": true
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Source": "character-47-normal-4-generated.png",
+      "RecordedSha256": "539632f803392d8b049b5d827aef7615d1abd22be0961748603d39e49f79b795",
+      "CurrentSha256": "539632f803392d8b049b5d827aef7615d1abd22be0961748603d39e49f79b795",
+      "Unchanged": true
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Source": "character-47-normal-5-generated.png",
+      "RecordedSha256": "145984a16ba3cbfd0843b5e0b03fef678747be1c9244d2100bc207e888faa196",
+      "CurrentSha256": "145984a16ba3cbfd0843b5e0b03fef678747be1c9244d2100bc207e888faa196",
+      "Unchanged": true
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Source": "character-47-normal-6-generated.png",
+      "RecordedSha256": "ce189789a7a1492e00c4cba889aa8a0f211b25d85ce4d64ea15f25e16f2aaab0",
+      "CurrentSha256": "ce189789a7a1492e00c4cba889aa8a0f211b25d85ce4d64ea15f25e16f2aaab0",
+      "Unchanged": true
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Source": "character-47-formal-proportion-trial-generated.png",
+      "RecordedSha256": "050f3c215143da9a169e745841fbf0d6d10df65fd9192456000ab18c34c953d8",
+      "CurrentSha256": "050f3c215143da9a169e745841fbf0d6d10df65fd9192456000ab18c34c953d8",
+      "Unchanged": true
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Source": "character-47-election-fullbody-v001-generated.png",
+      "RecordedSha256": "fa4f4f4eae861c2de3e20a61ac6c558ca0004964a4d29b191facc0ed0e0fb170",
+      "CurrentSha256": "fa4f4f4eae861c2de3e20a61ac6c558ca0004964a4d29b191facc0ed0e0fb170",
+      "Unchanged": true
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Source": "character-47-friends-fullbody-v001-generated.png",
+      "RecordedSha256": "dcba487f7773723d620f259d24034c7445e3cc37bef2d3f8ad0580fd9a8eb2e4",
+      "CurrentSha256": "dcba487f7773723d620f259d24034c7445e3cc37bef2d3f8ad0580fd9a8eb2e4",
+      "Unchanged": true
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Source": "character-47-history-fullbody-v001-generated.png",
+      "RecordedSha256": "4ab7cf821b0ece7a4f6aed02272ce3a2f0129718d36664151feb57846046a18d",
+      "CurrentSha256": "4ab7cf821b0ece7a4f6aed02272ce3a2f0129718d36664151feb57846046a18d",
+      "Unchanged": true
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Source": "character-47-id-fullbody-v001-generated.png",
+      "RecordedSha256": "1e9b46c3159287a54dbad39b85bbb18a2e176611e036fddb11b8360f85047eff",
+      "CurrentSha256": "1e9b46c3159287a54dbad39b85bbb18a2e176611e036fddb11b8360f85047eff",
+      "Unchanged": true
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Source": "character-47-idol-fullbody-v001-generated.png",
+      "RecordedSha256": "d2ddaa6cde636055e2df95ef4ca5ffc4793655656ccbc7d8f1b68afd5e5eb675",
+      "CurrentSha256": "d2ddaa6cde636055e2df95ef4ca5ffc4793655656ccbc7d8f1b68afd5e5eb675",
+      "Unchanged": true
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Source": "character-47-paparazzi-fullbody-v001-generated.png",
+      "RecordedSha256": "a68b6799a9067ac30970a703cb1df27440e359a944c1e6ad10949a3dceadbbc3",
+      "CurrentSha256": "a68b6799a9067ac30970a703cb1df27440e359a944c1e6ad10949a3dceadbbc3",
+      "Unchanged": true
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Source": "character-47-coin-fullbody-v001-generated.png",
+      "RecordedSha256": "a456258e4d0d902fa4aa9e9534b150b09ab326865723ee99dbaaac64824f2108",
+      "CurrentSha256": "a456258e4d0d902fa4aa9e9534b150b09ab326865723ee99dbaaac64824f2108",
+      "Unchanged": true
+    }
+  ],
+  "Crops": [
+    {
+      "Set": "normal-crops-v002.json",
+      "Id": 1,
+      "Source": "character-47-normal-1-headtrial-generated.png",
+      "Inside": true,
+      "AspectCorrect": true
+    },
+    {
+      "Set": "normal-crops-v002.json",
+      "Id": 2,
+      "Source": "character-47-normal-2-generated.png",
+      "Inside": true,
+      "AspectCorrect": true
+    },
+    {
+      "Set": "normal-crops-v002.json",
+      "Id": 3,
+      "Source": "character-47-normal-3-generated.png",
+      "Inside": true,
+      "AspectCorrect": true
+    },
+    {
+      "Set": "normal-crops-v002.json",
+      "Id": 4,
+      "Source": "character-47-normal-4-generated.png",
+      "Inside": true,
+      "AspectCorrect": true
+    },
+    {
+      "Set": "normal-crops-v002.json",
+      "Id": 5,
+      "Source": "character-47-normal-5-generated.png",
+      "Inside": true,
+      "AspectCorrect": true
+    },
+    {
+      "Set": "normal-crops-v002.json",
+      "Id": 6,
+      "Source": "character-47-normal-6-generated.png",
+      "Inside": true,
+      "AspectCorrect": true
+    },
+    {
+      "Set": "newspaper-crops-v002.json",
+      "Id": "formal",
+      "Source": "character-47-formal-moderate-v003-generated.png",
+      "Inside": true,
+      "AspectCorrect": true
+    },
+    {
+      "Set": "newspaper-crops-v002.json",
+      "Id": "election",
+      "Source": "character-47-election-fullbody-v001-generated.png",
+      "Inside": true,
+      "AspectCorrect": true
+    },
+    {
+      "Set": "newspaper-crops-v002.json",
+      "Id": "friends",
+      "Source": "character-47-friends-fullbody-v001-generated.png",
+      "Inside": true,
+      "AspectCorrect": true
+    },
+    {
+      "Set": "newspaper-crops-v002.json",
+      "Id": "history",
+      "Source": "character-47-history-fullbody-v001-generated.png",
+      "Inside": true,
+      "AspectCorrect": true
+    },
+    {
+      "Set": "newspaper-crops-v002.json",
+      "Id": "id",
+      "Source": "character-47-id-fullbody-v001-generated.png",
+      "Inside": true,
+      "AspectCorrect": true
+    },
+    {
+      "Set": "newspaper-crops-v002.json",
+      "Id": "idol",
+      "Source": "character-47-idol-fullbody-v001-generated.png",
+      "Inside": true,
+      "AspectCorrect": true
+    },
+    {
+      "Set": "newspaper-crops-v002.json",
+      "Id": "paparazzi",
+      "Source": "character-47-paparazzi-fullbody-v001-generated.png",
+      "Inside": true,
+      "AspectCorrect": true
+    },
+    {
+      "Set": "newspaper-crops-v002.json",
+      "Id": "coin",
+      "Source": "character-47-coin-fullbody-v001-generated.png",
+      "Inside": true,
+      "AspectCorrect": true
+    }
+  ],
+  "Note": "Integrity and geometry audit only. Does not certify bodily proportions or artistic quality. Formal latest trial hashes stored in Trials separately."
+}

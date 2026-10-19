@@ -1,0 +1,49 @@
+{
+  "Status": "candidate-not-adopted",
+  "CoordinateSpace": "source pixels; original masters unchanged",
+  "Images": [
+    {
+      "Id": 1,
+      "X": 100,
+      "Y": 0,
+      "Width": 880,
+      "Height": 660
+    },
+    {
+      "Id": 2,
+      "X": 140,
+      "Y": 120,
+      "Width": 840,
+      "Height": 630
+    },
+    {
+      "Id": 3,
+      "X": 130,
+      "Y": 100,
+      "Width": 880,
+      "Height": 660
+    },
+    {
+      "Id": 4,
+      "X": 120,
+      "Y": 150,
+      "Width": 848,
+      "Height": 636
+    },
+    {
+      "Id": 5,
+      "X": 170,
+      "Y": 160,
+      "Width": 832,
+      "Height": 624
+    },
+    {
+      "Id": 6,
+      "X": 220,
+      "Y": 150,
+      "Width": 704,
+      "Height": 528,
+      "Source": "character-47-normal-6-framing-v002-generated.png"
+    }
+  ]
+}

@@ -1,0 +1,748 @@
+{
+  "CharacterId": 47,
+  "UpdatedAt": "2026-10-19 22:03 JST",
+  "Method": "built-in image_gen",
+  "Standard": "v017-approved-20261018 with20261019 uncropped fullbody instruction",
+  "GameAdopted": false,
+  "Next": "resolve anatomical body/formal QA and remaining visual differences; adoption build distribution",
+  "Images": [
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Source": "character-47-normal-1-headtrial-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "084db75900bc4a0cd2c922ce84960f2233f43d80aacbd1a29128c2a49f57e8a3",
+      "References": [
+        "conqueror-balanced/character-47-1-balanced.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-47-normal-1-prompt.txt",
+        "character-47-normal-1-repair-prompt.txt",
+        "character-47-normal-1-headtrial-prompt.txt"
+      ],
+      "Status": "fullbody-trial-reviewed-not-adopted",
+      "Limitations": [
+        "skull crown hidden under toque and tilted pose prevent exact head-count confirmation",
+        "lower costume not visible in source is provisional completion",
+        "game crops, circular/grayscale QA not yet made"
+      ],
+      "CropPreview": {
+        "WholeFit": "qa-normal-v001/normal-1-1.png",
+        "TopCrop": "qa-normal-v001/normal-1-2.png",
+        "Circle": "qa-normal-v001/normal-1-3.png",
+        "Rect": {
+          "X": 0,
+          "Y": 0,
+          "Width": 1086,
+          "Height": 815
+        },
+        "Status": "diagnostic-only-not-selected"
+      },
+      "RefinedCropPreview": {
+        "Rect": {
+          "Id": 1,
+          "X": 100,
+          "Y": 0,
+          "Width": 880,
+          "Height": 660
+        },
+        "Tile": "qa-normal-v002/normal-1-2.png",
+        "Circle": "qa-normal-v002/normal-1-3.png",
+        "Status": "visually-reviewed-candidate-not-adopted"
+      }
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Source": "character-47-normal-2-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "e00bcbf22c19825404a37484766ddba352fee91ca98142c723d3271eea86f40c",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-47-2-balanced.png",
+        "characters/character-47/runtime-fullbody-v001/character-47-normal-1-headtrial-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-47-normal-2-prompt.txt",
+        "character-47-normal-2-repair-prompt.txt"
+      ],
+      "Status": "fullbody-trial-reviewed-not-adopted",
+      "Limitations": [
+        "Seated pose obscures exact body head-count",
+        "lower costume continued from trial normal1; not newly user-approved",
+        "cropping/grayscale/runtime checks outstanding"
+      ],
+      "CropPreview": {
+        "WholeFit": "qa-normal-v001/normal-2-1.png",
+        "TopCrop": "qa-normal-v001/normal-2-2.png",
+        "Circle": "qa-normal-v001/normal-2-3.png",
+        "Rect": {
+          "X": 0,
+          "Y": 0,
+          "Width": 1086,
+          "Height": 815
+        },
+        "Status": "diagnostic-only-not-selected"
+      },
+      "RefinedCropPreview": {
+        "Rect": {
+          "Id": 2,
+          "X": 140,
+          "Y": 120,
+          "Width": 840,
+          "Height": 630
+        },
+        "Tile": "qa-normal-v002/normal-2-2.png",
+        "Circle": "qa-normal-v002/normal-2-3.png",
+        "Status": "visually-reviewed-candidate-not-adopted"
+      }
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Source": "character-47-normal-3-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "ad5df6c0f5900a7bcc5a9110a342493501b012cda7c28a910959543cd0398d0d",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-47-3-balanced.png",
+        "characters/character-47/runtime-fullbody-v001/character-47-normal-1-headtrial-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-47-normal-3-prompt.txt",
+        "character-47-normal-3-repair-prompt.txt"
+      ],
+      "Status": "fullbody-trial-reviewed-not-adopted",
+      "Limitations": [
+        "Seated pose obscures exact body head-count",
+        "lower costume continued from trial normal1; not newly user-approved",
+        "cropping/grayscale/runtime checks outstanding"
+      ],
+      "CropPreview": {
+        "WholeFit": "qa-normal-v001/normal-3-1.png",
+        "TopCrop": "qa-normal-v001/normal-3-2.png",
+        "Circle": "qa-normal-v001/normal-3-3.png",
+        "Rect": {
+          "X": 0,
+          "Y": 0,
+          "Width": 1086,
+          "Height": 815
+        },
+        "Status": "diagnostic-only-not-selected"
+      },
+      "RefinedCropPreview": {
+        "Rect": {
+          "Id": 3,
+          "X": 130,
+          "Y": 100,
+          "Width": 880,
+          "Height": 660
+        },
+        "Tile": "qa-normal-v002/normal-3-2.png",
+        "Circle": "qa-normal-v002/normal-3-3.png",
+        "Status": "visually-reviewed-candidate-not-adopted"
+      }
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Source": "character-47-normal-4-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "539632f803392d8b049b5d827aef7615d1abd22be0961748603d39e49f79b795",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-47-4-balanced.png",
+        "characters/character-47/runtime-fullbody-v001/character-47-normal-1-headtrial-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-47-normal-4-prompt.txt",
+        "character-47-normal-4-repair-prompt.txt"
+      ],
+      "Status": "fullbody-trial-reviewed-not-adopted",
+      "Limitations": [
+        "headcount not strictly measured; seated/hidden joints",
+        "lower costume continued from unapproved trial",
+        "normal6 topmargin narrow",
+        "game crops grayscale and runtime checks pending"
+      ],
+      "CropPreview": {
+        "WholeFit": "qa-normal-v001/normal-4-1.png",
+        "TopCrop": "qa-normal-v001/normal-4-2.png",
+        "Circle": "qa-normal-v001/normal-4-3.png",
+        "Rect": {
+          "X": 0,
+          "Y": 0,
+          "Width": 1086,
+          "Height": 815
+        },
+        "Status": "diagnostic-only-not-selected"
+      },
+      "RefinedCropPreview": {
+        "Rect": {
+          "Id": 4,
+          "X": 120,
+          "Y": 150,
+          "Width": 848,
+          "Height": 636
+        },
+        "Tile": "qa-normal-v002/normal-4-2.png",
+        "Circle": "qa-normal-v002/normal-4-3.png",
+        "Status": "visually-reviewed-candidate-not-adopted"
+      }
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Source": "character-47-normal-5-generated.png",
+      "Width": 1086,
+      "Height": 1449,
+      "Sha256": "145984a16ba3cbfd0843b5e0b03fef678747be1c9244d2100bc207e888faa196",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-47-5-balanced.png",
+        "characters/character-47/runtime-fullbody-v001/character-47-normal-1-headtrial-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-47-normal-5-prompt.txt",
+        "character-47-normal-5-repair-prompt.txt"
+      ],
+      "Status": "fullbody-trial-reviewed-not-adopted",
+      "Limitations": [
+        "headcount not strictly measured; seated/hidden joints",
+        "lower costume continued from unapproved trial",
+        "normal6 topmargin narrow",
+        "game crops grayscale and runtime checks pending"
+      ],
+      "CropPreview": {
+        "WholeFit": "qa-normal-v001/normal-5-1.png",
+        "TopCrop": "qa-normal-v001/normal-5-2.png",
+        "Circle": "qa-normal-v001/normal-5-3.png",
+        "Rect": {
+          "X": 0,
+          "Y": 0,
+          "Width": 1086,
+          "Height": 815
+        },
+        "Status": "diagnostic-only-not-selected"
+      },
+      "RefinedCropPreview": {
+        "Rect": {
+          "Id": 5,
+          "X": 170,
+          "Y": 160,
+          "Width": 832,
+          "Height": 624
+        },
+        "Tile": "qa-normal-v002/normal-5-2.png",
+        "Circle": "qa-normal-v002/normal-5-3.png",
+        "Status": "visually-reviewed-candidate-not-adopted"
+      }
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Source": "character-47-normal-6-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "ce189789a7a1492e00c4cba889aa8a0f211b25d85ce4d64ea15f25e16f2aaab0",
+      "References": [
+        "conqueror-balanced/remaining-variants/character-47-6-balanced.png",
+        "characters/character-47/runtime-fullbody-v001/character-47-normal-1-headtrial-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-47-normal-6-prompt.txt"
+      ],
+      "Status": "fullbody-trial-reviewed-not-adopted",
+      "Limitations": [
+        "headcount not strictly measured; seated/hidden joints",
+        "lower costume continued from unapproved trial",
+        "normal6 topmargin narrow",
+        "game crops grayscale and runtime checks pending"
+      ],
+      "CropPreview": {
+        "WholeFit": "qa-normal-v001/normal-6-1.png",
+        "TopCrop": "qa-normal-v001/normal-6-2.png",
+        "Circle": "qa-normal-v001/normal-6-3.png",
+        "Rect": {
+          "X": 0,
+          "Y": 0,
+          "Width": 1086,
+          "Height": 815
+        },
+        "Status": "diagnostic-only-not-selected"
+      },
+      "RefinedCropPreview": {
+        "Rect": {
+          "Id": 6,
+          "X": 200,
+          "Y": 0,
+          "Width": 784,
+          "Height": 588
+        },
+        "Tile": "qa-normal-v002/normal-6-2.png",
+        "Circle": "qa-normal-v002/normal-6-3.png",
+        "Status": "visually-reviewed-candidate-not-adopted"
+      },
+      "Trials": [
+        {
+          "Source": "character-47-normal-6-framing-v002-generated.png",
+          "Width": 1086,
+          "Height": 1448,
+          "Sha256": "1883d121769b6422ffe52864a526a37f4f86b942b58b66844ae4114e874bad6b",
+          "Prompt": "character-47-normal-6-framing-v002-prompt.txt",
+          "References": [
+            "character-47-normal-6-generated.png"
+          ],
+          "Status": "margin-improved-and-crop-reviewed-not-adopted",
+          "Review": "Hat and shoe margins visibly improved, allbody maintained. Open smile/eyes, whitegloves, fork cake plate and redbattery retained. Fine subject changes remain; exact anatomical ratio preservation not established.",
+          "Crop": "qa-normal-v003/normal-6-2.png",
+          "CropParameters": "normal-crops-v003.json"
+        }
+      ]
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Source": "character-47-formal-proportion-trial-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "050f3c215143da9a169e745841fbf0d6d10df65fd9192456000ab18c34c953d8",
+      "References": [
+        "newspaper-trials/character-47-formal-v001-generated.png",
+        "characters/character-47/runtime-fullbody-v001/character-47-normal-1-headtrial-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-47-formal-prompt.txt",
+        "character-47-formal-proportion-trial-prompt.txt"
+      ],
+      "Status": "user-measured-4.5-heads-not-adopted",
+      "Limitations": [
+        "User says second trial headcount too low; prior assistant too-high assessment withdrawn",
+        "Second trial topmargin insufficient",
+        "User measured first formal 6.1 heads and second formal 4.5 heads; sole landmark is the anatomical heel bottom inside the shoe, excluding the shoe heel and sole. Raw point coordinates not supplied."
+      ],
+      "Trials": [
+        {
+          "Source": "character-47-formal-moderate-v003-generated.png",
+          "Width": 1086,
+          "Height": 1448,
+          "Sha256": "a463cc2da0e97a267e40a9573bf0ac56fab451dab620ed59e1a4d80981ac66a4",
+          "Prompt": "character-47-formal-moderate-v003-prompt.txt",
+          "References": [
+            "character-47-formal-stage1-generated.png",
+            "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+          ],
+          "Status": "visually-reviewed-unmeasured-topmargin-insufficient-not-adopted",
+          "Review": "Whole hat and both shoes retained, identity and folded white-gloved hands retained. Target5.8 heads requested, not measured. Hat top margin below requested5%; do not treat as fulfilled. Fine highlights/cel edges vary; lower outfit remains provisional."
+        },
+        {
+          "Source": "character-47-formal-framing-v004-generated.png",
+          "Width": 1086,
+          "Height": 1448,
+          "Sha256": "f0898316ec5ff0cd4cd9e735e7cc6f5f934c7e86a70aec423cd88e6d594dbb45",
+          "Prompt": "character-47-formal-framing-v004-prompt.txt",
+          "References": [
+            "character-47-formal-moderate-v003-generated.png"
+          ],
+          "Status": "framing-margin-improved-body-drift-unmeasured-not-adopted",
+          "Review": "Hat, tails and shoes all inside with generous top/bottom margins. Identity preserved overall. Face/torso relationship changed despite framing-only request; cannot assert identical proportion or target headcount. Fine hairstyle and costume details drift. No game adoption."
+        },
+        {
+          "Source": "character-47-formal-v005-generated.png",
+          "Prompt": "character-47-formal-v005-prompt.txt",
+          "References": [
+            "character-47-formal-moderate-v003-generated.png",
+            "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+          ],
+          "Sha256": "7e630907000a42adae429219f1de7e8ad1bde53b8ae6205b82d566312ad41376",
+          "Review": "Whole hat, costume tails and both shoes visible. Glasses, pink curls, white gloves folded at waist and closed smile preserved. Upper margin remains small despite requested 5%. No anatomical headcount claim: skull crown hidden by toque. Background simplified relative v003. Candidate not adopted."
+        }
+      ],
+      "CropCandidate": {
+        "Id": "formal",
+        "Source": "character-47-formal-moderate-v003-generated.png",
+        "X": 230,
+        "Y": 0,
+        "Width": 660,
+        "Height": 880
+      }
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Source": "character-47-election-fullbody-v001-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "fa4f4f4eae861c2de3e20a61ac6c558ca0004964a4d29b191facc0ed0e0fb170",
+      "References": [
+        "newspaper-trials/character-47-election-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "characters/character-47/runtime-fullbody-v001/character-47-formal-framing-v004-generated.png"
+      ],
+      "Prompts": [
+        "character-47-election-fullbody-v001-prompt.txt"
+      ],
+      "Status": "fullbody-reviewed-color-gray-preview-not-adopted",
+      "Previews": [
+        "character-47-election-fullbody-v001-preview-color.png",
+        "character-47-election-fullbody-v001-preview-gray.png"
+      ],
+      "Limitations": [
+        "Headcount not measured: crown and anatomical heel hidden; no exact compliance claim",
+        "Top margin narrower than requested9percent although hat uncut",
+        "Lower dress/shoes provisional continuation not user approved",
+        "300x400 fullbody grayscale preserves silhouette, glasses and facial direction but small eye/hand details need game-use crop QA",
+        "Not game adopted; no runtime replacement or build"
+      ],
+      "CropCandidate": {
+        "Id": "election",
+        "Source": "character-47-election-fullbody-v001-generated.png",
+        "X": 230,
+        "Y": 0,
+        "Width": 660,
+        "Height": 880
+      }
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Source": "character-47-friends-fullbody-v001-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "dcba487f7773723d620f259d24034c7445e3cc37bef2d3f8ad0580fd9a8eb2e4",
+      "References": [
+        "newspaper-trials/character-47-friends-v001-generated.png",
+        "characters/character-47/runtime-fullbody-v001/character-47-election-fullbody-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-47-friends-fullbody-v001-prompt.txt"
+      ],
+      "Status": "fullbody-reviewed-color-gray-preview-not-adopted",
+      "Previews": [
+        "character-47-friends-fullbody-v001-preview-color.png",
+        "character-47-friends-fullbody-v001-preview-gray.png"
+      ],
+      "Limitations": [
+        "Anatomical skull crown and heel hidden; headcount not measured",
+        "Top margin below requested10percent; full hat remains uncut",
+        "Lower outfit continued from provisional trial",
+        "Standing fullbody continuation of previously cropped tea scene; foreground table absent to expose legs",
+        "300x400 grayscale cup/laugh/silhouette readable but eye and hand details small; actual runtime crop/QA outstanding",
+        "Shared style details vary; no exact uniformity claim; not adopted"
+      ],
+      "CropCandidate": {
+        "Id": "friends",
+        "Source": "character-47-friends-fullbody-v001-generated.png",
+        "X": 230,
+        "Y": 0,
+        "Width": 660,
+        "Height": 880
+      }
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Source": "character-47-history-fullbody-v001-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "4ab7cf821b0ece7a4f6aed02272ce3a2f0129718d36664151feb57846046a18d",
+      "References": [
+        "newspaper-trials/character-47-history-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "characters/character-47/runtime-fullbody-v001/character-47-election-fullbody-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-47-history-fullbody-v001-prompt.txt"
+      ],
+      "Status": "fullbody-reviewed-color-gray-preview-not-adopted",
+      "Previews": [
+        "character-47-history-fullbody-v001-preview-color.png",
+        "character-47-history-fullbody-v001-preview-gray.png"
+      ],
+      "Limitations": [
+        "Seated pose: screen-height ratio not standing headcount; bodily proportions not measured",
+        "Top/bottom margins below requested10percent but whole hat/garment/chair/shoes retained",
+        "Lower outfit provisional continuation; small costume/eye/hair-rendering differences remain",
+        "300x400 grayscale silhouette and folded hands recognizable; exact facial detail/crop QA remains",
+        "Game adoption and build/distribution not performed"
+      ],
+      "CropCandidate": {
+        "Id": "history",
+        "Source": "character-47-history-fullbody-v001-generated.png",
+        "X": 230,
+        "Y": 0,
+        "Width": 660,
+        "Height": 880
+      }
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Source": "character-47-id-fullbody-v001-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "1e9b46c3159287a54dbad39b85bbb18a2e176611e036fddb11b8360f85047eff",
+      "References": [
+        "newspaper-trials/character-47-id-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "characters/character-47/runtime-fullbody-v001/character-47-election-fullbody-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-47-id-fullbody-v001-prompt.txt"
+      ],
+      "Status": "fullbody-reviewed-color-gray-preview-not-adopted",
+      "Previews": [
+        "character-47-id-fullbody-v001-preview-color.png",
+        "character-47-id-fullbody-v001-preview-gray.png"
+      ],
+      "Limitations": [
+        "Skullcrown and anatomical heel inside shoe hidden; headcount unmeasured",
+        "Top margin below requested10percent though hat remains inside",
+        "Lower costume provisional; style fine details vary",
+        "300x400 fullbody grayscale face/hand detail small; runtime crop QA pending",
+        "Not game adopted; build and distribution not performed"
+      ],
+      "CropCandidate": {
+        "Id": "id",
+        "Source": "character-47-id-fullbody-v001-generated.png",
+        "X": 230,
+        "Y": 0,
+        "Width": 660,
+        "Height": 880
+      }
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Source": "character-47-idol-fullbody-v001-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "d2ddaa6cde636055e2df95ef4ca5ffc4793655656ccbc7d8f1b68afd5e5eb675",
+      "References": [
+        "newspaper-trials/character-47-idol-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "characters/character-47/runtime-fullbody-v001/character-47-election-fullbody-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-47-idol-fullbody-v001-prompt.txt"
+      ],
+      "Status": "fullbody-reviewed-color-gray-preview-not-adopted",
+      "Previews": [
+        "character-47-idol-fullbody-v001-preview-color.png",
+        "character-47-idol-fullbody-v001-preview-gray.png"
+      ],
+      "Limitations": [
+        "Headcount unmeasured; tilted/dancing bent legs and hidden crown/heel",
+        "Top/bottom margins below requested10percent but whole hat waving fingers tails shoes remain inside",
+        "Lower costume provisional; fine style details vary",
+        "300x400 grayscale stage highlights compete with hand/hair silhouette, facial details small; crop and background QA pending",
+        "Not game adopted or build/distribution verified"
+      ],
+      "CropCandidate": {
+        "Id": "idol",
+        "Source": "character-47-idol-fullbody-v001-generated.png",
+        "X": 230,
+        "Y": 0,
+        "Width": 660,
+        "Height": 880
+      },
+      "RefinedCropCandidate": {
+        "Id": "idol",
+        "Source": "character-47-idol-fullbody-v001-generated.png",
+        "X": 100,
+        "Y": 0,
+        "Width": 840,
+        "Height": 1120
+      },
+      "Trials": [
+        {
+          "Source": "character-47-idol-background-v002-generated.png",
+          "Sha256": "f87b7e13b7bbeb383ba8b29f03efb3f0ab10f3887473de8c441afb8b713d6d64",
+          "Width": 1086,
+          "Height": 1448,
+          "Prompt": "character-47-idol-background-v002-prompt.txt",
+          "References": [
+            "character-47-idol-fullbody-v001-generated.png"
+          ],
+          "Status": "background-separation-improved-reviewed-not-adopted",
+          "Review": "Darkened quieter stage improves grayscale face/hair/hand silhouette. Overall pose/framing retained visually; pixel-identical subject preservation not asserted, fine costume/hair differences remain. Body review and top margin unresolved.",
+          "Crop": "qa-newspaper-v003/idol-color.png",
+          "Gray": "qa-newspaper-v003/idol-gray.png"
+        }
+      ]
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Source": "character-47-paparazzi-fullbody-v001-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "a68b6799a9067ac30970a703cb1df27440e359a944c1e6ad10949a3dceadbbc3",
+      "References": [
+        "newspaper-trials/character-47-paparazzi-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "characters/character-47/runtime-fullbody-v001/character-47-election-fullbody-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-47-paparazzi-fullbody-v001-prompt.txt"
+      ],
+      "Status": "fullbody-reviewed-color-gray-preview-not-adopted",
+      "Previews": [
+        "character-47-paparazzi-fullbody-v001-preview-color.png",
+        "character-47-paparazzi-fullbody-v001-preview-gray.png"
+      ],
+      "Limitations": [
+        "Headcount unmeasured, hidden skull crown/anatomical heel and turned pose",
+        "Top/bottom margins below requested10percent though entire hat tails shoes retained",
+        "Lower costume provisional continuation; style fine detail varies",
+        "300x400 grayscale busy street competes with hair silhouette; face and pastrybag details small, crop QA pending",
+        "Not game adopted; build/distribution pending"
+      ],
+      "CropCandidate": {
+        "Id": "paparazzi",
+        "Source": "character-47-paparazzi-fullbody-v001-generated.png",
+        "X": 200,
+        "Y": 0,
+        "Width": 720,
+        "Height": 960
+      },
+      "Trials": [
+        {
+          "Source": "character-47-paparazzi-background-v002-generated.png",
+          "Sha256": "67f917b1dc906561cd1116723912755882c68064d1962de6e5ed00237a54a608",
+          "Width": 1086,
+          "Height": 1448,
+          "Prompt": "character-47-paparazzi-background-v002-prompt.txt",
+          "References": [
+            "character-47-paparazzi-fullbody-v001-generated.png"
+          ],
+          "Status": "background-detail-reduced-reviewed-not-adopted",
+          "Review": "Street simplified and hair/hand outline clearer at300x400 grayscale; upper right hair against bright sky still limited contrast. Overall body/pose retained visually, pixel identical preservation not asserted. Body and margins unresolved.",
+          "Crop": "qa-newspaper-v004/paparazzi-color.png",
+          "Gray": "qa-newspaper-v004/paparazzi-gray.png"
+        }
+      ]
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Source": "character-47-coin-fullbody-v001-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "a456258e4d0d902fa4aa9e9534b150b09ab326865723ee99dbaaac64824f2108",
+      "References": [
+        "newspaper-trials/character-47-coin-v001-generated.png",
+        "characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "characters/character-47/runtime-fullbody-v001/character-47-election-fullbody-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-47-coin-fullbody-v001-prompt.txt"
+      ],
+      "Status": "fullbody-reviewed-color-gray-preview-not-adopted",
+      "Previews": [
+        "character-47-coin-fullbody-v001-preview-color.png",
+        "character-47-coin-fullbody-v001-preview-gray.png"
+      ],
+      "Limitations": [
+        "Skullcrown and anatomical heel occluded; headcount not measured",
+        "Head right profile retained; torso/shoes slightly turned so strict whole-body90degree unmet",
+        "Top/bottom margins below requested10percent but hat tails shoes remain inside",
+        "Lower costume provisional continuation; gray preview shows profile and whisk but facial detail small",
+        "Game adoption build/distribution pending"
+      ],
+      "CropCandidate": {
+        "Id": "coin",
+        "Source": "character-47-coin-fullbody-v001-generated.png",
+        "X": 230,
+        "Y": 0,
+        "Width": 660,
+        "Height": 880
+      },
+      "Trials": [
+        {
+          "Source": "character-47-coin-side-v002-generated.png",
+          "Prompt": "character-47-coin-side-v002-prompt.txt",
+          "References": [
+            "character-47-coin-fullbody-v001-generated.png"
+          ],
+          "Sha256": "67a551dc7659e462fefa4ca1d0e46ef6ae1874de6e5c4e98e870ca829d4a6660",
+          "Review": "Face and torso now right profile; footwear still slightly three-quarter. Entire hat and footwear inside frame. Exact anatomical headcount not established. Candidate only; runtime unchanged.",
+          "Preview": "qa-newspaper-v005/coin-gray.png"
+        }
+      ]
+    }
+  ],
+  "OriginalRuntimeBackups": 20,
+  "UserReportedHeadcounts": {
+    "FirstFormal": 6.1,
+    "SecondFormal": 4.5,
+    "FootLandmark": "靴の中にある人体の踵の底。靴のヒール・外底・厚底は含めない。",
+    "Source": "2026-10-19 利用者による測定報告",
+    "RawMeasurementPointsAvailable": false
+  },
+  "CandidateCoverage": {
+    "Normal": 6,
+    "Newspaper": 8,
+    "GameAdopted": false,
+    "Note": "All14 scenes have candidates, not all approved or QA-passed. Formal multiple trial selection pending."
+  },
+  "RuntimeCropQA": {
+    "Page": "qa-normal-v001.html",
+    "Script": "qa-normal-v001.ps1",
+    "Status": "reviewed-diagnostic-not-adopted",
+    "Dimensions": [
+      256,
+      192
+    ],
+    "Circle": "central192px diagnostic only, not exact runtime mask",
+    "Review": "Wholebody fit too small face/hands. Top crop improves recognition but face remains smaller than old; scene-specific crop refinement needed, especially3/5 table,4 weapon overlap,6 hat margin.",
+    "RefinedPage": "qa-normal-v002.html",
+    "RefinedScript": "qa-normal-v002.ps1",
+    "CropParameters": "normal-crops-v002.json",
+    "RefinedReview": "Scene crops improve face/hands/props vs v001;2/3/5 revised to preserve hat. Normal6 original top margin narrow. Diagnostic circle only; runtime and body QA outstanding."
+  },
+  "NewspaperCropQA": {
+    "Page": "qa-newspaper-v001.html",
+    "Parameters": "newspaper-crops-v001.json",
+    "Script": "qa-newspaper-v001.ps1",
+    "Status": "visually-reviewed-not-adopted",
+    "Review": "Faces, glasses and props clearer than fullbody300x400;idol extended hand clipped;paparazzi background/hair separation pending;formalv003 comparison only",
+    "RefinedPage": "qa-newspaper-v002.html",
+    "RefinedParameters": "newspaper-crops-v002.json",
+    "RefinedReview": "idol crop expanded to x100 y0 w840 h1120; both hands/fingertips inside. Face smaller, stage-light competition persists. Other crops unchanged.",
+    "BackgroundRepairPage": "idol-background-comparison.html",
+    "PaparazziRepairPage": "paparazzi-background-comparison.html"
+  },
+  "IntegrityAudit": {
+    "Report": "integrity-audit-20261019-1803.json",
+    "Runtime20Unchanged": true,
+    "Recorded14MastersUnchanged": true,
+    "CropBoundsAspectPassed": true
+  },
+  "ProportionReview": {
+    "Status": "landmark-calibration-requested",
+    "UserReportedFirstFormal": 6.1,
+    "UserReportedSecondFormal": 4.5,
+    "FootLandmark": "人体の踵の底。靴のヒール・外底は除外",
+    "Missing": "User measurement point coordinates, especially occluded skull crown; asked via async input",
+    "Note": "Do not invent exact measurement or treat candidate creation/crop QA as body-proportion approval."
+  },
+  "Staging": {
+    "Manifest": "staging-v001/manifest.json",
+    "Review": "staging-review.html",
+    "Count": 20,
+    "Status": "STAGED_NOT_ADOPTED",
+    "BodyQAPassed": false,
+    "RuntimeChanged": false
+  },
+  "IdentityChecklist": "identity-scene-checklist.md",
+  "IdentityVisualReview": "identity-visual-review-20261019-2103.json"
+}

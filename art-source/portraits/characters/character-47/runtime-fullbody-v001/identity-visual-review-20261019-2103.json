@@ -1,0 +1,85 @@
+{
+  "CheckedAt": "2026-10-19 21:03 JST",
+  "Method": "Visual review of normalv003 contact and newspaperv004 grayscale contact, plus full-resolution normal2/3/5",
+  "Status": "MAJOR_FEATURES_REVIEWED_NOT_FINAL_APPROVAL",
+  "BodyQAPassed": false,
+  "RuntimeAdopted": false,
+  "Images": [
+    {
+      "Kind": "normal",
+      "Id": 1,
+      "Observation": "両目・笑顔・白手袋・泡立て器・赤電池を縮小候補で確認"
+    },
+    {
+      "Kind": "normal",
+      "Id": 2,
+      "Observation": "原画で画面右の閉じ目／左の開眼・両手裸手・ウサギ／冠の猫・紫電池を確認。玩具の細部は生成差が残る"
+    },
+    {
+      "Kind": "normal",
+      "Id": 3,
+      "Observation": "原画で両目閉じ・笑い口・左裸手／右白手袋・赤電池・本と白クマ・製菓道具を確認"
+    },
+    {
+      "Kind": "normal",
+      "Id": 4,
+      "Observation": "笑顔・白手袋・菓子砲・赤電池を縮小候補で確認。砲と顔の近接あり"
+    },
+    {
+      "Kind": "normal",
+      "Id": 5,
+      "Observation": "原画で両目閉じ・裸手の腕枕・本・橙電池・ペン・茶を確認"
+    },
+    {
+      "Kind": "normal",
+      "Id": 6,
+      "Observation": "余白修正版の縮小候補で両目笑顔・両手白手袋・フォークとケーキ皿・赤電池を確認"
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "formal",
+      "Observation": "閉じた笑顔・重ねた白手袋を白黒候補で確認。v003の選定は未確定"
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "election",
+      "Observation": "前を見る両目・閉じた笑顔・象牙背景の用途を確認"
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "friends",
+      "Observation": "細めた目の笑顔・白手袋のカップを確認。旧前景テーブルを省いた全身化は記録済み"
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "history",
+      "Observation": "閉じ口・椅子・膝で重ねた手袋・茶背景を確認"
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "id",
+      "Observation": "正面無表情・両目・眼鏡を確認"
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "idol",
+      "Observation": "背景修正版の笑顔・手振り両手指先を確認"
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "paparazzi",
+      "Observation": "背景修正版の振り返り・少し開いた口・紙袋を確認"
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "coin",
+      "Observation": "右横顔・近側眼鏡・泡立て器を確認。胴と靴の厳密90度は未達"
+    }
+  ],
+  "Limitations": [
+    "Not pixel-identical preservation; toy/ornament details vary",
+    "No invented exact anatomical headcount; landmark calibration/formal choice unresolved",
+    "Scene-wide framing and shared-style fine quality still need final selection",
+    "No runtime build/distribution verification"
+  ]
+}
