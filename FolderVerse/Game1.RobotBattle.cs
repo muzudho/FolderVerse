@@ -218,7 +218,7 @@ public partial class Game1
             }else _fallFadeStarted.Remove(fadeKey);
             if(unit.Retreated)opacity*=Math.Clamp(1-exitAge,0,1);
             if(opacity<=0)continue;
-            var physical=unit.Role==BattleRole.Queen?null:battle.Units.Concat(battle.Armies.SelectMany(a=>a.Waiting)).FirstOrDefault(u=>u.Id==unit.Id)?.Robot;
+            var physical=unit.Role==BattleRole.Queen?null:unit.Robot??battle.Units.Concat(battle.Armies.SelectMany(a=>a.Waiting)).FirstOrDefault(u=>u.Id==unit.Id)?.Robot;
             if(physical!=null && BattleIntroActive)
                 foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
                     if((physical.Parts&part)!=0)

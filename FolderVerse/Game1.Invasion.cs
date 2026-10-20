@@ -99,6 +99,9 @@ public partial class Game1
         if(_selectedMoveNode<0)return;
         foreach(var row in _invasionSources)
         {
+            // Materialize old count-only reservations before splitting this store across targets.
+            foreach(var old in _setup.Campaign.PlannedOrders.Where(o=>o.Ruler==row.Owner && o.SourceNode==row.Node && (o.Queen || o.PocketOnly)==row.Queen && o.RobotIds==null).ToArray())
+                _setup.Campaign.Plan(old with {RobotIds=InvasionRobots(row).Take((int)old.Fighters).Select(r=>r.Id).ToArray()});
             _setup.Campaign.CancelReservation(row.Owner,row.Node,row.Queen,_selectedMoveNode);
             if(row.Robots.Count>0 || row.Queen && row.Selected)
                 _setup.Campaign.Plan(new(row.Owner,_selectedMoveNode,row.Robots.Count,row.Node,row.Queen && row.Selected,row.Queen,row.Robots.OrderBy(id=>id).ToArray()));

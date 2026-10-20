@@ -4,7 +4,7 @@ using System.Reflection;
 static void Check(bool ok,string m){if(!ok)throw new Exception(m);}
 Check(new BattleRules().SegmentTurns==200,"Default segment 200");
 var w=new WorldSetup();w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);
-var c=w.Campaign.RobotBattles;c.Rules=new(){SegmentTurns=200,NoWillTurns=100000,PersuasionPercent=0};
+var c=w.Campaign.RobotBattles;c.Rules=new(){SegmentTurns=200,NoWillTurns=100000,FlagDefenseTurns=100000,FlagCaptureTurns=100000,PersuasionPercent=0};
 var b=new BattleState(5,c.Rules){Kind=BattleKind.Node,Defender=1};b.Armies.Add(new(){Owner=0,HomeNode=w.Nodes.Current(0).Id,Side=0});b.Armies.Add(new(){Owner=1,HomeNode=w.Nodes.Current(1).Id,Side=2});
 b.Units.Add(new(){Id=-1,Owner=0,Role=BattleRole.Queen,Position=new(1,1),Daggers=0,Rifles=0});b.Units.Add(new(){Id=-2,Owner=1,Role=BattleRole.Queen,Position=new(8,8),Daggers=0,Rifles=0});
 var e=new RobotEncounter{Id=123,Kind=BattleKind.Node,Target=w.Nodes.Current(1).Id};e.Battles.Add(b);c.Encounters.Add(e);

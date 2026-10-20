@@ -20,12 +20,29 @@ public sealed class ConquestCampaign
         bool Matches(March o)=>o.Ruler==owner && (o.Queen || o.PocketOnly)==queen && o.TargetNode==target && (queen || o.SourceNode==source);
         _plannedOrders.RemoveAll(o=>Matches(o));_partyOrders.RemoveAll(o=>Matches(o));
     }
-    public void Plan(March order){order=order with {RobotIds=order.RobotIds?.ToArray()};_partyOrders.RemoveAll(o=>o.Ruler==order.Ruler && (!(o.Queen || o.PocketOnly) && !(order.Queen || order.PocketOnly) && o.SourceNode==order.SourceNode || (order.Queen || order.PocketOnly) && (o.Queen || o.PocketOnly)));_plannedOrders.RemoveAll(o=>o.Ruler==order.Ruler && (!(o.Queen || o.PocketOnly) && !(order.Queen || order.PocketOnly) && o.SourceNode==order.SourceNode || (order.Queen || order.PocketOnly) && (o.Queen || o.PocketOnly)));_plannedOrders.Add(order);Report=$"予約 { _plannedOrders.Count} 件 / ターン終了で実行";}
+    public void Plan(March order)
+    {
+        order=order with {RobotIds=order.RobotIds?.ToArray()};
+        bool SameStore(March o)=>o.Ruler==order.Ruler && (o.Queen || o.PocketOnly)==(order.Queen || order.PocketOnly) && ((order.Queen || order.PocketOnly) || o.SourceNode==order.SourceNode);
+        void Update(List<March> orders)
+        {
+            for(int i=orders.Count-1;i>=0;i--)
+            {
+                var prior=orders[i];if(!SameStore(prior))continue;
+                if(prior.TargetNode==order.TargetNode || order.RobotIds==null || prior.RobotIds==null){orders.RemoveAt(i);continue;}
+                var remaining=prior.RobotIds.Except(order.RobotIds).ToArray();
+                prior=prior with {RobotIds=remaining,Fighters=remaining.Length,Queen=prior.Queen && !order.Queen};
+                if(remaining.Length==0 && !prior.Queen)orders.RemoveAt(i);else orders[i]=prior;
+            }
+        }
+        Update(_partyOrders);Update(_plannedOrders);_plannedOrders.Add(order);Report=$"予約 {_plannedOrders.Count} 件 / ターン終了で実行";
+    }
     public int[] Submitted=>_submitted.OrderBy(r=>r).ToArray();
     public bool AwaitingPlayers=>_submitted.Count>0;
     public void Reset(){Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
     public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false)
     {
+        world.Robots.PersuadeAtHome(world);
         Battles.Clear();
         var orders=_plannedOrders.Where(o=>automaticAll || o.Ruler==world.PlayerSlot || world.HumanPlayers.Count==0 && !o.Queen).ToList();
         if(automaticAll){orders.AddRange(_partyOrders);_partyOrders.Clear();_submitted.Clear();}

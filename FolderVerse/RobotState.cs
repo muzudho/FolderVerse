@@ -11,6 +11,18 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
 {
     public RobotParts DamagedParts {get;init;}=0;
     public RobotParts CheapParts {get;init;}=0;
+    public int LastBattlePersuasionTurn {get;init;}=-1;
+    public int LastDomesticPersuasionTurn {get;init;}=-1;
+    public RobotParts PersuadableParts(int owner)=>Parts&~DamagedParts &
+        ((Origin(RobotParts.Head)!=owner?RobotParts.Head:0)|(Origin(RobotParts.Body)!=owner?RobotParts.Body:0)|(Origin(RobotParts.Legs)!=owner?RobotParts.Legs:0));
+    public Robot Persuaded(int owner,RobotParts parts,bool changeOwner)
+    {
+        var robot=Materialize();parts&=Parts&~DamagedParts;
+        return robot with {Owner=changeOwner?owner:Owner,
+            HeadOrigin=(parts&RobotParts.Head)!=0?owner:robot.HeadOrigin,
+            BodyOrigin=(parts&RobotParts.Body)!=0?owner:robot.BodyOrigin,
+            LegsOrigin=(parts&RobotParts.Legs)!=0?owner:robot.LegsOrigin};
+    }
     public bool IsCheap(RobotParts part)=>(Parts&part)!=0 && (CheapParts&part)!=0;
     public bool IsDamaged(RobotParts part)=>(Parts&part)!=0 && (DamagedParts&part)!=0;
     // Origin retains the country even while damage makes a part unaffiliated.
@@ -26,7 +38,7 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
     public Robot Materialize()=>this with {HeadOrigin=Origin(RobotParts.Head),BodyOrigin=Origin(RobotParts.Body),LegsOrigin=Origin(RobotParts.Legs),DamagedParts=DamagedParts&Parts,CheapParts=CheapParts&Parts};
     public Robot Merge(Robot other,int owner)
     {
-        var result=Materialize() with {Parts=Parts|other.Parts,DamagedParts=(DamagedParts&Parts&~other.Parts)|(other.DamagedParts&other.Parts),CheapParts=(CheapParts&Parts&~other.Parts)|(other.CheapParts&other.Parts),HeadOrigin=(other.Parts&RobotParts.Head)!=0?other.Origin(RobotParts.Head):Origin(RobotParts.Head),BodyOrigin=(other.Parts&RobotParts.Body)!=0?other.Origin(RobotParts.Body):Origin(RobotParts.Body),LegsOrigin=(other.Parts&RobotParts.Legs)!=0?other.Origin(RobotParts.Legs):Origin(RobotParts.Legs)};
+        var result=Materialize() with {Parts=Parts|other.Parts,LastBattlePersuasionTurn=Math.Max(LastBattlePersuasionTurn,other.LastBattlePersuasionTurn),LastDomesticPersuasionTurn=Math.Max(LastDomesticPersuasionTurn,other.LastDomesticPersuasionTurn),DamagedParts=(DamagedParts&Parts&~other.Parts)|(other.DamagedParts&other.Parts),CheapParts=(CheapParts&Parts&~other.Parts)|(other.CheapParts&other.Parts),HeadOrigin=(other.Parts&RobotParts.Head)!=0?other.Origin(RobotParts.Head):Origin(RobotParts.Head),BodyOrigin=(other.Parts&RobotParts.Body)!=0?other.Origin(RobotParts.Body):Origin(RobotParts.Body),LegsOrigin=(other.Parts&RobotParts.Legs)!=0?other.Origin(RobotParts.Legs):Origin(RobotParts.Legs)};
         return result with {Owner=result.AssemblyCredit(owner)>0?owner:Owner};
     }
     public bool CanFight=>Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
@@ -78,7 +90,7 @@ public sealed partial class RobotWorld
     {Validate(owner,parts);return new(_nextId++,owner,parts,role,disposal);}
     public void Initialize(int nodeCount,int rulerCount)
     {
-        IndustryTurn=0;
+        IndustryTurn=0;DomesticPersuasionTurns.Clear();
         _domesticPreparedTurn=-1;Training=Enumerable.Range(0,rulerCount).Select(_=>new RobotTraining()).ToArray();_nextId=1;Nodes=Enumerable.Range(0,nodeCount).Select(_=>new RobotStore()).ToArray();
         Retinues=Enumerable.Range(0,rulerCount).Select(_=>new RobotStore()).ToArray();
         Workshops=Enumerable.Range(0,nodeCount).Select(_=>new RobotWorkshop()).ToArray();Transport.Reset();PendingEdits.Clear();WorkshopFailures.Clear();

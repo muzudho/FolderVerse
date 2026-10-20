@@ -28,6 +28,9 @@ public partial class Game1
         worldSeed=_setup.WorldSeed,castSeed=_setup.CastSeed,placementSeed=_setup.PlacementSeed,
         turn=_setup.Population.Turn,player=_setup.PlayerSlot,selectedMoveNode=_selectedMoveNode,escort=_escort,
         currentNode=_setup.PlayerSlot>=0 && _setup.PlayerSlot<_setup.ConquerorLocations.Length && _setup.PlayerSlot<_setup.ConquerorPoints.Length && _setup.Nodes.All.Length>0?_setup.Nodes.Current(_setup.PlayerSlot)?.Id:null,
+        plannedOrders=_setup.Campaign.PlannedOrders.ToArray(),warPlanning=_warPlanning,
+        invasionSources=_invasionSources.Select(s=>new{s.Owner,s.Node,s.Queen,s.Selected,robots=s.Robots.OrderBy(id=>id).ToArray()}).ToArray(),
+        homePersuasionActive=_homePersuasionActive,homePersuasionAge=_homePersuasionAge,
         focusedCell=_statusCell,populationNode=_populationNode,centerFace=_net.CenterFace,rotation=_net.Rotation,
         yaw=_yaw,pitch=_pitch,zoom=_net.Zoom,pan=new{x=_net.Pan.X,y=_net.Pan.Y},dragging=_dragging,mapDragging=_mapDragging
     };

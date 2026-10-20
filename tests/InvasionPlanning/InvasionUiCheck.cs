@@ -37,7 +37,7 @@ sealed class InvasionUiCheck:Game1
             {
                 Set("_invasionPicker",-1);
                 var b=new BattleState(42,new(){PersuasionPercent=100}){Id=100,TargetNode=target.Id,Kind=BattleKind.Edge};b.Armies.Add(new(){Owner=0,Side=0});b.Armies.Add(new(){Owner=1,Side=2});
-                b.Units.Add(new(){Id=-1,Owner=0,Role=BattleRole.Queen,Position=new(3,4),Daggers=0,Rifles=0});b.Units.Add(new(){Id=999,Owner=1,Position=new(5,4)});
+                b.Units.Add(new(){Id=-1,Owner=0,Role=BattleRole.Queen,Position=new(3,4),Daggers=0,Rifles=0});b.Units.Add(new(){Id=999,Owner=1,Position=new(5,4),Robot=new(999,1,RobotParts.Complete){DamagedParts=RobotParts.Body}});
                 b.Capture(BattlePhase.Persuade);typeof(BattleTurnResolver).GetMethod("Persuade",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{b});b.Capture(BattlePhase.Converted);
                 Set("_robotScenes",new[]{b});Set("_robotPlayback",new RobotBattlePlayback(new[]{b}));Set("_robotPlaying",false);Set("_battleAge",0d);Screen("Battle");
             }
@@ -55,12 +55,25 @@ sealed class InvasionUiCheck:Game1
             if(frame==15){Set("_tutorialAttackGuide",false);Set("_pointer",new Point(1500,40));Call("TutorialMessageInput",true,false);}
             if(frame==16){Set("_pointer",new Point(450,550));Call("TutorialMessageInput",true,false);}
             if(frame==17)Call("TutorialMessageInput",false,true);
+            if(frame==18)
+            {
+                Screen("WorldStatus");Set("_tutorialAttackGuide",false);Set("_conquestOverview",false);
+                Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",0d);
+                world.Campaign.RobotBattles.Rules=new(){PersuasionPercent=100};
+                world.Robots.Nodes[home.Id].Add(world.Robots.Create(1,RobotParts.Complete) with {DamagedParts=RobotParts.Body,CheapParts=RobotParts.Legs});
+                Call("PrepareHomePersuasion");Call("UpdateHomePersuasion",.5d,false,100d);Set("_domesticSlide",1f);
+                if(!(bool)Get("_homePersuasionActive"))throw new Exception("Domestic persuasion did not open automatically");
+            }
+            if(frame==19)Set("_homePersuasionAge",2.5d);
+            if(frame==20)Set("_homePersuasionAge",4.5d);
+            if(frame==21){Set("_homePersuasion",((List<DomesticPersuasion>)Get("_homePersuasion")).Where(e=>e.Before.Owner==e.Ruler).ToList());Set("_homePersuasionAge",5d);}
+            if(frame==22){Call("UpdateHomePersuasion",4d,false,100d);if((bool)Get("_homePersuasionActive"))throw new Exception("Domestic persuasion did not finish");}
             Set("_lastCutInPhase",frame>=3?"戦闘フェーズ":"内政フェーズ");Set("_cutInPhase","");Set("_animationTime",frame*.2f);
             base.Draw(time);
             var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);
             using var image=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);image.SetData(pixels);
             using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"invasion-ui-{frame}.png"));image.SaveAsPng(file,image.Width,image.Height);
-            if(++frame==18){File.Delete(Path.Combine(AppContext.BaseDirectory,"tutorial-ui-medals.json"));Console.WriteLine("PASS: rendered target selection, pulsing target, robot modal, persuasion range and conversion success, tutorial guide, medal clear button, flag countdown and timed achievement cut-in");Exit();}
+            if(++frame==23){File.Delete(Path.Combine(AppContext.BaseDirectory,"tutorial-ui-medals.json"));Console.WriteLine("PASS: rendered invasion, battle recoloring, domestic call, robot chatter, recruitment success and own-part success");Exit();}
         }
         catch(Exception e){Console.Error.WriteLine(e);Environment.ExitCode=1;Exit();}
     }

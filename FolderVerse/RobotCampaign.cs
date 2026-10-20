@@ -18,16 +18,19 @@ public sealed class RobotCampaign
     private int _nextBattle=1;
     private readonly HashSet<long> _retinueIds=new();
     private readonly Dictionary<long,(RobotStore Store,int Node)> _homes=new();
+    private readonly Dictionary<long,int> _homeOwners=new();
     private void Depart(WorldSetup world,int node,Robot robot,bool pocket=false)
     {
         var store=pocket?world.Robots.Retinues[robot.Owner]:world.Robots.Nodes[node];
-        store.Depart(robot.Id);_homes.Add(robot.Id,(store,node));
+        store.Depart(robot.Id);_homes.Add(robot.Id,(store,node));_homeOwners[robot.Id]=robot.Owner;
         if(pocket)_retinueIds.Add(robot.Id);
     }
     private (RobotStore Store,int Node) ReleaseHome(WorldSetup world,Robot robot,int fallback)
     {
         if(!_homes.Remove(robot.Id,out var home))return (world.Robots.Nodes[fallback],fallback);
-        home.Store.ReleaseReturn(robot.Id);return home;
+        home.Store.ReleaseReturn(robot.Id);
+        if(_homeOwners.Remove(robot.Id,out int owner) && owner!=robot.Owner)return (world.Robots.Nodes[fallback],fallback);
+        return home;
     }
     public BattleRules Rules {get;set;}=new();
     public List<RobotEncounter> Encounters {get;}=new();
@@ -37,7 +40,7 @@ public sealed class RobotCampaign
     public List<(int Node,Robot Robot)> Reserves {get;}=new();
     public bool LockedNode(int node)=>Encounters.Any(e=>!e.Finished && e.Kind==BattleKind.Node && e.Target==node);
     public bool LockedEdge(int a,int b)=>Encounters.Any(e=>!e.Finished && e.Kind==BattleKind.Edge && (e.Source==a && e.Target==b || e.Source==b && e.Target==a));
-    public void Reset(){_nextBattle=1;Encounters.Clear();Scenes.Clear();LastMarches.Clear();LastQueenMarches.Clear();Reserves.Clear();foreach(var h in _homes)h.Value.Store.ReleaseReturn(h.Key);_homes.Clear();_retinueIds.Clear();}
+    public void Reset(){_nextBattle=1;Encounters.Clear();Scenes.Clear();LastMarches.Clear();LastQueenMarches.Clear();Reserves.Clear();foreach(var h in _homes)h.Value.Store.ReleaseReturn(h.Key);_homes.Clear();_homeOwners.Clear();_retinueIds.Clear();}
     public int Available(WorldSetup world,int ruler)
     {
         var node=world.Nodes.Current(ruler);return node==null || LockedNode(node.Id)?0:world.Robots.Nodes[node.Id].Robots.Count(r=>r.Owner==ruler && world.Robots.Training[ruler].Eligible(r) && world.Robots.Workshops[node.Id].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)));
@@ -79,7 +82,9 @@ public sealed class RobotCampaign
     }
     public void Advance(WorldSetup world,IReadOnlyList<March> orders)
     {
-        if(orders.Where(o=>o.Queen).GroupBy(o=>o.Ruler).Any(g=>g.Count()>1) || orders.GroupBy(o=>(o.Ruler,Source(world,o),Pocket:o.Queen || o.PocketOnly)).Any(g=>g.Count()>1))throw new ArgumentException("Duplicate source or conqueror order.");
+        if(orders.Where(o=>o.Queen).GroupBy(o=>o.Ruler).Any(g=>g.Count()>1) || orders.GroupBy(o=>(o.Ruler,Source(world,o),Pocket:o.Queen || o.PocketOnly)).Any(g=>g.Count()>1 && (g.Any(o=>o.RobotIds==null) || g.GroupBy(o=>o.TargetNode).Any(t=>t.Count()>1))))throw new ArgumentException("Duplicate target, ambiguous legacy selection or conqueror order.");
+        var reservedIds=orders.Where(o=>o.RobotIds!=null).SelectMany(o=>o.RobotIds).ToArray();
+        if(reservedIds.Distinct().Count()!=reservedIds.Length)throw new ArgumentException("A robot can have only one destination.");
         foreach(var o in orders)if(o.Ruler<0 || o.Ruler>=world.ActiveCount || !world.Relations.Powered[o.Ruler] || world.Relations.Pending.Any(p=>p.Ruler==o.Ruler) || o.Fighters<0 || (o.Queen || o.PocketOnly) && o.SourceNode>=0 && o.SourceNode!=world.Nodes.Current(o.Ruler)?.Id || !((o.Queen || o.PocketOnly)?CanMarch(world,o.Ruler,o.TargetNode):CanAttackFrom(world,o.Ruler,o.SourceNode,o.TargetNode)))throw new ArgumentException("Invalid robot march.");
         // Validate every explicit selection before any stores or encounters are mutated.
         foreach(var o in orders.Where(o=>o.RobotIds!=null))
@@ -196,7 +201,7 @@ public sealed class RobotCampaign
     }
     private BattleState NewState(WorldSetup world,RobotEncounter e)
     {
-        var state=new BattleState(world.PlacementSeed^e.Id^_nextBattle,Rules){Id=_nextBattle++,Kind=e.Kind,SourceNode=e.Source,TargetNode=e.Target,Defender=e.Defender,Allied=world.Relations.Allied};
+        var state=new BattleState(world.PlacementSeed^e.Id^_nextBattle,Rules){Id=_nextBattle++,GlobalTurn=world.Population.Turn,Kind=e.Kind,SourceNode=e.Source,TargetNode=e.Target,Defender=e.Defender,Allied=world.Relations.Allied};
         foreach(var rank in world.Relations.ProvisionalRanking(world))state.NewspaperRanks[rank.Ruler]=rank.Rank;
         state.BuildTerrain(world.Nodes.All[e.Target].Terrain==TravelTerrain.Sea?BattleTerrain.Sea:e.Kind==BattleKind.Node?BattleTerrain.Fort:BattleTerrain.Field);return state;
     }
@@ -217,7 +222,7 @@ public sealed class RobotCampaign
     }
     private void RunSegment(WorldSetup world,RobotEncounter e)
     {
-        foreach(var state in e.Battles){state.Events.Clear();state.Frames.Clear();state.Attacks.Clear();state.Persuasions.Clear();}
+        foreach(var state in e.Battles){if(state.GlobalTurn!=world.Population.Turn)state.PersuadedUnits.Clear();state.GlobalTurn=world.Population.Turn;state.Events.Clear();state.Frames.Clear();state.Attacks.Clear();state.Persuasions.Clear();}
         foreach(var state in e.Battles)foreach(var army in state.Armies.Where(a=>e.WithdrawalOwners.Contains(a.Owner))){
             army.Withdrawing=true;
             foreach(var unit in state.Units.Where(u=>u.Owner==army.Owner && u.Active))unit.Retreating=true;
@@ -357,7 +362,7 @@ public sealed class RobotCampaign
     private void ReturnHome(WorldSetup world,Robot robot,int fallback)
     {
         var home=ReleaseHome(world,robot,fallback);_retinueIds.Remove(robot.Id);
-        if(!home.Store.HasSpace)throw new InvalidOperationException("Reserved return slot was consumed.");
+        if(!home.Store.HasSpace){Reserves.Add((home.Node,robot));return;}
         home.Store.Add(robot);
     }
     private void PlaceWinner(WorldSetup world,int target,Robot robot,int fallback,HashSet<long> staying=null)

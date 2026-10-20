@@ -149,15 +149,23 @@ public static class BattleTurnResolver
     {
         foreach(var queen in battle.Units.Where(u=>u.Active && u.Role==BattleRole.Queen).OrderBy(u=>u.Id))
         {
-            foreach(var enemy in battle.Units.Where(u=>u.Active && u.Role!=BattleRole.Queen && !battle.Allied(u.Owner,queen.Owner)).OrderBy(u=>u.Id).ToArray())
+            foreach(var enemy in battle.Units.Where(u=>u.Active && u.Role!=BattleRole.Queen &&
+                (u.Owner==queen.Owner?u.Robot!=null && u.Robot.PersuadableParts(queen.Owner)!=0:!battle.Allied(u.Owner,queen.Owner))).OrderBy(u=>u.Id).ToArray())
             {
+                if(enemy.Robot!=null?enemy.Robot.LastBattlePersuasionTurn==battle.GlobalTurn:battle.PersuadedUnits.Contains(enemy.Id))continue;
                 if(Math.Abs(enemy.Position.X-queen.Position.X)+Math.Abs(enemy.Position.Y-queen.Position.Y)>battle.Rules.PersuasionRadius)continue;
+                bool own=enemy.Owner==queen.Owner;
+                var parts=enemy.Robot?.PersuadableParts(queen.Owner)??RobotParts.Complete;
+                if(parts==0)continue;
                 bool success=battle.Random.Next(100)<battle.Rules.PersuasionPercent;
-                success&=battle.Units.Count(u=>u.Active && u.Owner==queen.Owner)<battle.Army(queen.Owner).Limit;
+                success&=own || battle.Units.Count(u=>u.Active && u.Owner==queen.Owner)<battle.Army(queen.Owner).Limit;
                 battle.Persuasions.Add(new(battle.Turn,queen.Id,enemy.Id,queen.Owner,enemy.Owner,queen.Position,enemy.Position,success));
                 battle.Events.Add(new(battle.Turn,BattlePhase.Persuade,queen.Id,"説得中"));
                 if(!success)continue;
-                enemy.Owner=queen.Owner;if(enemy.Robot!=null)enemy.Robot=enemy.Robot with {Owner=queen.Owner};enemy.Retreating=false;
+                if(own)parts=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.First(p=>(parts&p)!=0);
+                enemy.Owner=queen.Owner;
+                if(enemy.Robot!=null)enemy.Robot=enemy.Robot.Persuaded(queen.Owner,parts,true) with {LastBattlePersuasionTurn=battle.GlobalTurn};
+                battle.PersuadedUnits.Add(enemy.Id);enemy.Retreating=false;
                 battle.Events.Add(new(battle.Turn,BattlePhase.Converted,enemy.Id,"説得"));
             }
         }

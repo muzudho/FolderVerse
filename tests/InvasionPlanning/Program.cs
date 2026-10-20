@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 if(args.Contains("--ui")){using var game=new InvasionUiCheck();game.Run();return;}
+PersuasionChecks.Run();
 
 static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 static (WorldSetup World,Node Home,Node Target) Fixture()

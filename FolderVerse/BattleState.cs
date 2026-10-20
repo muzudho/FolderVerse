@@ -11,7 +11,7 @@ public enum BattlePhase { Choose,Place,Rollback,Attack,Receive,Consume,Fall,Flag
 public enum BattleTerrain { Field,Sea,Fort }
 public sealed record BattleAction(Point Step,BattleFacing Facing,BattleWeapon Weapon=BattleWeapon.None);
 public sealed record BattleEvent(int Turn,BattlePhase Phase,long Unit,string Detail);
-public sealed record BattleUnitView(long Id,int Owner,BattleRole Role,Point Position,BattleFacing Facing,int Daggers,int Rifles,int Shields,bool Fallen,bool Retreated);
+public sealed record BattleUnitView(long Id,int Owner,BattleRole Role,Point Position,BattleFacing Facing,int Daggers,int Rifles,int Shields,bool Fallen,bool Retreated,Robot Robot=null);
 public sealed record BattleFrame(int Turn,BattlePhase Phase,BattleUnitView[] Units,bool FlagStanding,int LastFlagOwner,int FlagDefenseTurns=0,int FlagCaptureTurns=0);
 public sealed record BattlePersuasion(int Turn,long Queen,long Target,int Owner,int PreviousOwner,Point From,Point To,bool Success);
 public sealed record BattleAttack(int Turn,long Attacker,long? Target,Point From,Point To,BattleWeapon Weapon);
@@ -60,6 +60,8 @@ public sealed partial class BattleState
     public List<BattleFrame> Frames {get;}=new();
     public List<BattleAttack> Attacks {get;}=new();
     public List<BattlePersuasion> Persuasions {get;}=new();
+    public int GlobalTurn;
+    public HashSet<long> PersuadedUnits {get;}=new();
     public Point Flag=new(5,5);
     public bool FlagStanding=true,Finished;
     public int LastFlagOwner=-1,Winner=-1;
@@ -121,11 +123,12 @@ public sealed partial class BattleState
         var north=new[]{new Point(4,1),new Point(4,0),new Point(5,1),new Point(3,1),new Point(6,1),new Point(2,1),new Point(7,1),new Point(3,2),new Point(4,2),new Point(5,2),new Point(6,2),new Point(5,0)};
         return north.Take(count).Select(p=>side switch{0=>p,1=>new Point(9-p.Y,p.X),2=>new Point(9-p.X,9-p.Y),_=>new Point(p.Y,9-p.X)}).ToArray();
     }
-    public void Capture(BattlePhase phase)=>Frames.Add(new(Turn,phase,phase==BattlePhase.Result && Finished && Frames.LastOrDefault()?.Phase==BattlePhase.Retreat?Frames[^1].Units:Units.Select(u=>new BattleUnitView(u.Id,u.Owner,u.Role,u.Position,u.Facing,u.Daggers,u.Rifles,u.Shields,u.Fallen,u.Retreated)).ToArray(),FlagStanding,LastFlagOwner,FlagDefenseTurns,FlagCaptureTurns));
+    public void Capture(BattlePhase phase)=>Frames.Add(new(Turn,phase,phase==BattlePhase.Result && Finished && Frames.LastOrDefault()?.Phase==BattlePhase.Retreat?Frames[^1].Units:Units.Select(u=>new BattleUnitView(u.Id,u.Owner,u.Role,u.Position,u.Facing,u.Daggers,u.Rifles,u.Shields,u.Fallen,u.Retreated,u.Robot)).ToArray(),FlagStanding,LastFlagOwner,FlagDefenseTurns,FlagCaptureTurns));
     public void InheritHistory(IEnumerable<BattleState> previous)
     {
         var states=previous.OrderBy(b=>b.Id).ToArray();if(states.Length==0)return;
         Turn=states.Max(b=>b.Turn);NoWillCount=states.Min(b=>b.NoWillCount);Random=states[0].Random.Clone();
+        GlobalTurn=states.Max(b=>b.GlobalTurn);PersuadedUnits.UnionWith(states.Where(b=>b.GlobalTurn==GlobalTurn).SelectMany(b=>b.PersuadedUnits));
         foreach(var army in Armies){var prior=states.SelectMany(b=>b.Armies).Where(a=>a.Owner==army.Owner).ToArray();if(prior.Length>0){army.NoWillCount=prior.Min(a=>a.NoWillCount);army.Withdrawing=prior.All(a=>a.Withdrawing);}}
         var flag=states.Where(b=>b.Kind==BattleKind.Node && !b.SplitBoard).OrderByDescending(b=>b.Turn).FirstOrDefault();
         if(flag!=null){FlagStanding=flag.FlagStanding;LastFlagOwner=flag.LastFlagOwner;FlagDefenseTurns=flag.FlagDefenseTurns;FlagCaptureTurns=flag.FlagCaptureTurns;}
