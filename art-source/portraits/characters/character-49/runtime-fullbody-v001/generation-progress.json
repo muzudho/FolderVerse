@@ -1,6 +1,6 @@
 {
   "CharacterId": 49,
-  "UpdatedAt": "2026-10-20T20:04:00+09:00",
+  "UpdatedAt": "2026-10-20T21:34:00+09:00",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018",
   "GameAdopted": false,
@@ -9,28 +9,66 @@
     {
       "Id": 1,
       "Kind": "normal",
-      "Status": "generated-fullbody-review-pending-not-adopted",
+      "Status": "head-proportion-improved-visually-reviewed-not-adopted",
       "References": [
         "art-source/portraits/characters/character-49/character-49-1-v003-generated.png",
         "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
       ],
       "Prompts": [
         "character-49-normal-1-v001-prompt.txt",
-        "character-49-normal-1-v002-prompt.txt"
+        "character-49-normal-1-v002-prompt.txt",
+        "character-49-normal-1-v003-prompt.txt",
+        "character-49-normal-1-v004-prompt.txt"
       ],
       "Trials": [
         {
           "Status": "generation-failed-no-output",
           "Failure": "Built-in image_gen HTTP400 moderation_blocked at output stage, category sexual. No output saved. No alternate API used.",
           "Prompt": "character-49-normal-1-v001-prompt.txt"
+        },
+        {
+          "Source": "character-49-normal-1-v002-generated.png",
+          "Sha256": "db30f7cfbca83bfb33e84a46c2698413a3c621e1abd1acf873c1b3a0b5c7a622",
+          "Review": "Adult elf panda identity retained: red glasses amber eyes black straight bangs, white panda hood/black ears, red black white gold clothing, knots/bells, bare hands with panda staff and green lightning battery panda. Closed small smile and lantern palace retained. Both shoes and hood within master; upper staff ornament very close to top and extreme left hair near boundary, requested5%margin not achieved. Long legs/hidden skull mean exact5.5-6head ratio not established; proportions need comparison. Opaque leg covering differs from original exposed thigh break and shoe design is provisional. No runtime crop/adoption yet."
+        },
+        {
+          "Source": "character-49-normal-1-v003-generated.png",
+          "Sha256": "5d8815a4a1ecd210ab4588f83730d81ac5cb99f45a68b9c39bfc7097c01471c9",
+          "Review": "Entire staff finial/hood/hair/hem/both shoes visibly inside master with improved margins. Identity, closed smile, glasses, eyes, panda toys and green battery preserved. Requested15percent shortening not established: head also smaller and body remains elongated, not accepted as5.5-6head compliant. 256x192 diagnostic face/hands/pandas visible, top staff ornament cropped in diagnostic only; full master retained. Provisional opaque legwear/shoes not canon. Runtime unchanged."
         }
       ],
-      "Source": "character-49-normal-1-v002-generated.png",
+      "Source": "character-49-normal-1-v004-generated.png",
       "Width": 1024,
       "Height": 1536,
-      "Sha256": "db30f7cfbca83bfb33e84a46c2698413a3c621e1abd1acf873c1b3a0b5c7a622",
-      "Review": "Adult elf panda identity retained: red glasses amber eyes black straight bangs, white panda hood/black ears, red black white gold clothing, knots/bells, bare hands with panda staff and green lightning battery panda. Closed small smile and lantern palace retained. Both shoes and hood within master; upper staff ornament very close to top and extreme left hair near boundary, requested5%margin not achieved. Long legs/hidden skull mean exact5.5-6head ratio not established; proportions need comparison. Opaque leg covering differs from original exposed thigh break and shoe design is provisional. No runtime crop/adoption yet."
+      "Sha256": "b2d0d010891fbb47116c307e3c48bf12965a3b0085bb49240d26f2d7c4fa05fa",
+      "Review": "Head visibly enlarged relative to v003 while collar/feet remain visually near prior positions; face readability improved. Hood/ears/staff/hair/hem/both shoes inside master. Red glasses/amber eyes/black bangs/panda toys/green battery/closed smile preserved. Exact head25percent not measured. Estimated skull top hidden near155-175, chin near365, anatomical heel near1360-1390 => rough5.6-6.4heads range, not exact certification. 256x192 diagnostic hood/staff finial/face/bare hands/toys readable; opaque leg covering and shoes remain provisional differences from original. Runtime unchanged.",
+      "Preview": {
+        "File": "normal-1-v004-preview.png",
+        "Crop": {
+          "X": 150,
+          "Y": 90,
+          "Width": 720,
+          "Height": 540
+        },
+        "Status": "diagnostic-visually-reviewed-not-selected"
+      }
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Status": "generated-framing-review-pending-not-adopted",
+      "Source": "character-49-normal-2-v001-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "3aeb9a94fde69d37b92c10ccce3c399d99889a9a76c4c113efc6aef59625a066",
+      "References": [
+        "art-source/portraits/characters/character-49/character-49-2-v003-generated.png"
+      ],
+      "Prompts": [
+        "character-49-normal-2-v001-prompt.txt"
+      ],
+      "Review": "Closed happy eyes, red glasses, closed smile, panda hood, black bangs and long braided sections, white gloved cup hand and other gloved hand by green battery panda, tea/pastries/sofa warm room preserved. Both shoes visible. Hood right ear touches top, trailing robe meets right edge: fullbody margins failed. Seated/crossleg ratio not measured, legs long and face small relative to scene. Opaque legwear/shoes/lower garment completion provisional. No runtime adoption."
     }
   ],
-  "Next": "Review normal1 proportions/framing and256x192 crop, then inspect original normal2 scene. Remaining13 not generated."
+  "Next": "Normal2 fix hood top and right hem margin, improve face scale; then normal3 source inspection. Remaining12 scenes ungenerated."
 }
