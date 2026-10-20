@@ -47,7 +47,7 @@ public partial class Game1
         if(!InspectorVisible){
             _ui.Button(StrategyToggle,"全体作戦",Accent,.6f);
             var warLabel=WarReservationLabel;_ui.Button(WarButton,warLabel,Accent,Math.Min(.55f,(WarButton.Width-12)/_font.MeasureString(warLabel).X));
-            _ui.Button(TransportOverviewButton,"ロボット輸送計画",Accent,.5f);
+            if(NodeTransportAllowed)_ui.Button(TransportOverviewButton,"ロボット輸送計画",Accent,.5f);
             _ui.Button(PopulationTurnButton,"ターン終了",Accent,.8f);return;
         }
         var r=InspectorHandle;
@@ -75,7 +75,7 @@ public partial class Game1
         if(InspectorVisible)return InspectorHandle.Contains(p);
         if(StrategyToggle.Contains(p)){if(_reignView)CloseNodeInspector();else OpenStrategyInspector();return true;}
         if(WarButton.Contains(p)){if(_movementOpen && _warPlanning)CloseNodeInspector();else{ResetInspector();OpenWarPlanning();}return true;}
-        if(TransportOverviewButton.Contains(p)){if(_transportOverview)CloseNodeInspector();else{ResetInspector();OpenTransportOverview();}return true;}
+        if(NodeTransportAllowed && TransportOverviewButton.Contains(p)){if(_transportOverview)CloseNodeInspector();else{ResetInspector();OpenTransportOverview();}return true;}
         if(PopulationTurnButton.Contains(p)){EndPlannedTurn();return true;}
 
         return false;

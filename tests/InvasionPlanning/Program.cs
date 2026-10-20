@@ -69,6 +69,16 @@ foreach(bool queen in new[]{false,true})
     var row=rows[battery]!;Check(((HashSet<long>)row.GetType().GetField("Robots")!.GetValue(row)!).SetEquals(new[]{r.Id}) && (bool)row.GetType().GetField("Selected")!.GetValue(row)!,"Picker applies robot and independent queen choice");
     Call("OpenInvasionPicker",battery);Field("_pointer").SetValue(g,new Point(400,350));Call("InvasionPickerInput",true,false);Call("InvasionPickerInput",false,true);
     Check(((HashSet<long>)row.GetType().GetField("Robots")!.GetValue(row)!).Contains(r.Id),"Escape discards draft edits and closes dialog");
+    Field("_selectedMoveNode").SetValue(g,target.Id);
+    var partial=w.Robots.Create(0,RobotParts.Head);w.Robots.Retinues[0].Add(partial);
+    Check(((Robot[])Call("InvasionPreviewRobots",row)).Select(x=>x.Id).SequenceEqual(new[]{r.Id}),"Inline preview only includes complete robots");
+    var selected=(HashSet<long>)row.GetType().GetField("Robots")!.GetValue(row)!;
+    Call("InvasionClick",new Point(110,345+battery*77));Check(!selected.Contains(r.Id),"Inline robot click deselects without a modal");
+    Call("InvasionClick",new Point(110,345+battery*77));Check(selected.Contains(r.Id),"Inline robot click selects without a modal");
+    w.Campaign.Plan(new(0,home.Id,1,home.Id,false,true,new[]{r.Id}));
+    Check((bool)Call("ReservedElsewhere",row,r),"Other-target pocket reservation is marked");
+    w.Campaign.Plan(new(0,target.Id,1,home.Id,false,true,new[]{r.Id}));
+    Check(!(bool)Call("ReservedElsewhere",row,r),"Current target is not marked as another reservation");
 }
 // Distance uses taxicab geometry; successful conversion has separate before/after frames.
 {
@@ -97,6 +107,7 @@ Console.WriteLine("PASS: selected IDs, independent pocket/queen, solo queen, inv
     Check(!TutorialAchievements.Attacked(w),"Fresh tutorial has no attack achievement");
     var g=(Game1)RuntimeHelpers.GetUninitializedObject(typeof(Game1));const BindingFlags f=BindingFlags.NonPublic|BindingFlags.Instance;
     typeof(Game1).GetField("_setup",f)!.SetValue(g,w);
+    Check(!(bool)typeof(Game1).GetProperty("NodeTransportAllowed",f)!.GetValue(g)!,"Step one hides and disables transport planning entry");
     bool Gate()=>(bool)typeof(Game1).GetMethod("ShowTutorialAttackGuideIfRequired",f)!.Invoke(g,null)!;
     Check(Gate(),"Unachieved tutorial with no reservation shows guide and blocks end turn");
     w.Campaign.Plan(new(0,target.Id,1,home.Id,false,false,new[]{robot.Id}));

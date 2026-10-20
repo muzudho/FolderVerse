@@ -18,6 +18,11 @@ sealed class InvasionUiCheck:Game1
         world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);
         home=world.Nodes.Current(0);home.Owner=0;var route=world.Routes.Neighbors(home)[0];target=world.Nodes.At(route.Target,route.Entry);target.Owner=1;
         foreach(var store in new[]{world.Robots.Nodes[home.Id],world.Robots.Retinues[0]})for(int i=0;i<5;i++)store.Add(world.Robots.Create(0,RobotParts.Complete));
+        var hangar=world.Robots.Nodes[home.Id];var samples=hangar.Robots.ToArray();
+        foreach(var r in samples)hangar.Remove(r.Id);
+        foreach(var r in samples.Select((r,i)=>i==1?r with {BodyOrigin=1}:i==2?r with {DamagedParts=RobotParts.Body}:i==3?r with {CheapParts=RobotParts.Complete}:r))hangar.Add(r);
+        world.Campaign.Plan(new(0,target.Id,1,home.Id,false,false,new[]{samples[0].Id}));
+        world.Campaign.Plan(new(0,home.Id,1,home.Id,false,true,new[]{world.Robots.Retinues[0].Robots[0].Id}));
         ((WorldPreview)Get("_world")).ShowSetup(world,true);((CubeNet)Get("_net")).Home(world);
         Set("_statusGlobe",false);Screen("WorldStatus");Call("OpenWarPlanning");Set("_domesticSlide",1f);
     }
