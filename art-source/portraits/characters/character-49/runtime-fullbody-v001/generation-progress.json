@@ -1,6 +1,6 @@
 {
   "CharacterId": 49,
-  "UpdatedAt": "2026-10-20T22:34:00+09:00",
+  "UpdatedAt": "2026-10-21T06:34:00+09:00",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018",
   "GameAdopted": false,
@@ -90,19 +90,342 @@
     {
       "Id": 3,
       "Kind": "normal",
-      "Status": "generated-framing-review-pending-not-adopted",
-      "Source": "character-49-normal-3-v001-generated.png",
+      "Status": "framing-improved-visually-reviewed-not-adopted",
+      "Source": "character-49-normal-3-v002-generated.png",
       "Width": 1448,
       "Height": 1086,
-      "Sha256": "e19e0346b6836067a942209b78d97497798e6277202ab638af71c76a7331ff08",
+      "Sha256": "ce1df43608de223e1525e33cd470f471738ed4b6b6b39f88de623fe931cd74fb",
       "References": [
         "art-source/portraits/characters/character-49/character-49-3-v003-generated.png"
       ],
       "Prompts": [
-        "character-49-normal-3-v001-prompt.txt"
+        "character-49-normal-3-v001-prompt.txt",
+        "character-49-normal-3-v002-prompt.txt"
       ],
-      "Review": "Stern closed mouth/amber eyes/red glasses/panda hood/black bangs retained. Bare upward palm with purple star circle, other bare hand on seat, green lightning battery panda by shoulder and separate red chest battery preserved. Both shoes visible. Right hood ear touches top; outer robe partly hidden by foreground furniture and side cushions, full hem not cleanly assessable. Exact seated anatomy ratio unmeasured. Generated leg covering has thigh break unlike requested opaque whole coverage; no added erotic emphasis. Lower shoes/robe provisional. Runtime unchanged."
+      "Review": "Both hood ears clear of top; outer robe hem now visible around floor away from foreground furniture, both shoes inside. Stern closed mouth/red glasses/amber eyes, bare purple star-sigil palm and resting bare hand, shoulder green battery panda and red chest battery preserved. Black bangs white transverse reflection retained. Diagnostic256x192 face/hand/magic/batteries readable, resting hand partly below crop and face small; final crop audit pending. Seated exact anatomy headcount unmeasured. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-49-normal-3-v001-generated.png",
+          "Sha256": "e19e0346b6836067a942209b78d97497798e6277202ab638af71c76a7331ff08",
+          "Review": "Stern closed mouth/amber eyes/red glasses/panda hood/black bangs retained. Bare upward palm with purple star circle, other bare hand on seat, green lightning battery panda by shoulder and separate red chest battery preserved. Both shoes visible. Right hood ear touches top; outer robe partly hidden by foreground furniture and side cushions, full hem not cleanly assessable. Exact seated anatomy ratio unmeasured. Generated leg covering has thigh break unlike requested opaque whole coverage; no added erotic emphasis. Lower shoes/robe provisional. Runtime unchanged."
+        }
+      ],
+      "Preview": {
+        "File": "normal-3-v002-preview.png",
+        "Crop": {
+          "X": 360,
+          "Y": 30,
+          "Width": 720,
+          "Height": 540
+        },
+        "Status": "diagnostic-visually-reviewed-not-selected"
+      }
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Status": "framing-improved-visually-reviewed-not-adopted",
+      "Source": "character-49-normal-4-v002-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "cf1d515a62821647d68ca0dd3611e0f33d4d1d6fcceaab1fa565c4c7dfb97a13",
+      "References": [
+        "art-source/portraits/characters/character-49/character-49-4-v003-generated.png"
+      ],
+      "Prompts": [
+        "character-49-normal-4-v001-prompt.txt",
+        "character-49-normal-4-v002-prompt.txt"
+      ],
+      "Review": "Hood ears now clear above, all hair/hem/both shoes inside master. Feet less dominant, camera appears less low but exact telephoto projection not established. Closed smile/amber eyes/red glasses, bare raised talisman hand and bare openbook-support hand, green battery panda and library retained. Book larger/open wider than original.256x192 face hands talisman book panda/battery readable. Seated exact5.5-6head anatomy unmeasured. Opaque legwear request not fully met at thigh; original break retained. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-49-normal-4-v001-generated.png",
+          "Sha256": "e2e7ad5b9310989521187b66d72fdb88d414ab9f9c23cb847d2a26d9dc7be208",
+          "Review": "Closed small smile/red glasses/amber eyes/panda hood/black bangs retained. Raised bare hand brown talisman red tassel and open blue gold spellbook supported by other bare hand, shoulder panda green battery retained, purple sparks/library armillary. Full hem and both shoes visible; hood right ear extremely close to top,5percentmargin not achieved. Camera remains lower than desired and legs prominent/long; exact anatomy ratio unmeasured. Original thigh break retained unlike requested opaque covering. Shoe completion provisional. Runtime unchanged."
+        }
+      ],
+      "Preview": {
+        "File": "normal-4-v002-preview.png",
+        "Crop": {
+          "X": 380,
+          "Y": 10,
+          "Width": 720,
+          "Height": 540
+        },
+        "Status": "diagnostic-visually-reviewed-not-selected"
+      }
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Status": "framing-improved-visually-reviewed-not-adopted",
+      "Source": "character-49-normal-5-v002-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "d37ce10ae761c6640e762115593b70d61e9f939814761fda054ea814e5b23a6f",
+      "References": [
+        "art-source/portraits/characters/character-49/character-49-5-v003-generated.png"
+      ],
+      "Prompts": [
+        "character-49-normal-5-v001-prompt.txt",
+        "character-49-normal-5-v002-prompt.txt"
+      ],
+      "Review": "Entire hood/ears clear of top, all flowing hair/ribbons/tassels/robe hem and both shoes fit with visible margins. Looking-back closed smile/red glasses/amber eyes/black bangs, panda green lightning battery plus red rounded device preserved. Hands hidden as original.256x192 face/toy/devices readable but hair/ribbons cropped separately from full master and face small. Exact turning-pose anatomical headcount unmeasured; lower shoes/legwear provisional. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-49-normal-5-v001-generated.png",
+          "Sha256": "2613be2304d5167fa51aae9664a289c94db308d969fe048b0d7ac2c5ead42184",
+          "Review": "Looking-back closed smile/red glasses/amber eyes/panda hood/black blunt bangs and leftflowing hair, redblackwhitegold coat and ribbons preserved. Panda with green lightning battery and separate red rounded device retained, hands hidden like original. Both shoes/full hem visible. Hood top clipped by upper edge, right tassel near edge, requested5percent margins failed. Exact anatomy headcount unmeasured in turning stance. Lowerleg covering/shoes newly completed provisional. Runtime unchanged."
+        }
+      ],
+      "Preview": {
+        "File": "normal-5-v002-preview.png",
+        "Crop": {
+          "X": 420,
+          "Y": 80,
+          "Width": 720,
+          "Height": 540
+        },
+        "Status": "diagnostic-visually-reviewed-not-selected"
+      }
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Status": "fullbody-candidate-visually-reviewed-not-adopted",
+      "Source": "character-49-normal-6-v001-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "19589e0542bc021c862fd9b9e640b8e22f8a18d059a09e3d5275895155851755",
+      "References": [
+        "art-source/portraits/characters/character-49/character-49-6-v003-generated.png"
+      ],
+      "Prompts": [
+        "character-49-normal-6-v001-prompt.txt"
+      ],
+      "Review": "Closed happy eyes/open laughing mouth, red glasses, bare reaching palm and other arm holding panda preserved. Green lightning battery and separate red device retained. Entire robe hem, hair and both shoes visible; hood top margin small. Seated perspective has prominent legs; anatomical heel-based headcount unmeasured and requires final audit. Lower footwear completed provisionally. Runtime unchanged.",
+      "Preview": {
+        "File": "normal-6-v001-preview.png",
+        "Crop": {
+          "X": 350,
+          "Y": 0,
+          "Width": 800,
+          "Height": 600
+        },
+        "Status": "diagnostic-visually-reviewed-not-selected"
+      }
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Status": "framing-and-grayscale-reviewed-not-adopted",
+      "Source": "character-49-formal-v005-generated.png",
+      "Width": 1024,
+      "Height": 1536,
+      "Sha256": "95b69b6bee64c080f51cb8f34e990a2d158aa944c1b2b80c181d77d59b9fe618",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-49-formal-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-49-formal-v001-prompt.txt",
+        "character-49-formal-v002-prompt.txt",
+        "character-49-formal-v003-prompt.txt",
+        "character-49-formal-v004-prompt.txt",
+        "character-49-formal-v005-prompt.txt"
+      ],
+      "Review": "Full hood ears/hair/robe hem/both shoes have clear background margins. Large face maintained compared to elongated v002. Inferred skull crown y180-195/chin380/anatomical heel1290-1310 gives roughly5.5-6.1 heads, uncertain under hood and head tilt; approximate guide only. Grayscale300x400 face/glasses/eyes/hands/fur separation readable. Lower robe/shoes provisional. Runtime unchanged pending complete character set.",
+      "Trials": [
+        {
+          "Source": "character-49-formal-v001-generated.png",
+          "Review": "Entire formal figure fits but elongated body relative to head, rejected for adoption."
+        },
+        {
+          "Source": "character-49-formal-v002-generated.png",
+          "Sha256": "d257fa79bf6644a10602e4f100aa9a4c5fe2fe78abfaca59a90681ee4e510fd7",
+          "Review": "Identity, formal costume, red glasses, closed small smile, full hood/hair/hem/shoes retained. v001 visibly elongated; targeted v002 failed to substantially shorten body/enlarge head. Approximate inferred skull crown y95-110, chin y290, anatomical heel about y1420 gives about 6.8-7.4 heads; uncertain under hood/robe but clearly not established 5.5-6. Not adopted. Lower garment/shoes provisional."
+        },
+        {
+          "Source": "character-49-formal-v003-generated.png",
+          "Sha256": "8c929234bd51720dd0dc5313157907d98656f4d098bee70ef951e408cb2f08ba",
+          "Review": "Recomposed with explicit anatomical canvas landmarks, but still elongated small head. Full frame preserved."
+        },
+        {
+          "Source": "character-49-formal-v004-generated.png",
+          "Sha256": "aa1162c43c20473cf55e9a5cfae4dc46c8a6dedc0995c511908ab061c8f25583",
+          "Review": "v004 head/face clearly enlarged relative to body. Formal identity preserved, both shoes and robe hems in frame. Hood upper ear meets top edge without safe margin. Approx inferred skull crown y100-120, chin y360, anatomical heel y1430: about 5.1-5.5 heads, uncertain under hood and head tilt, not certified compliance. 300x400 face/red glasses/eyes/clasped hands readable. Lower robe/shoes provisional. Needs margin repair and final anatomical audit; runtime unchanged."
+        }
+      ],
+      "Preview": {
+        "File": "formal-v005-preview.png",
+        "Grayscale": "formal-v005-preview-gray.png",
+        "Crop": {
+          "X": 280,
+          "Y": 85,
+          "Width": 480,
+          "Height": 640
+        },
+        "Status": "grayscale-visually-reviewed-color-file-created"
+      }
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Status": "head-enlarged-grayscale-reviewed-final-audit-pending-not-adopted",
+      "Source": "character-49-election-v003-generated.png",
+      "Width": 1024,
+      "Height": 1536,
+      "Sha256": "e8d07f709ffa50ddc4866475d6ad2cbb01db0f04b2a66211f2cfaf5f81e6f5af",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-49-election-v001-generated.png",
+        "art-source/portraits/characters/character-49/runtime-fullbody-v001/character-49-formal-v005-generated.png"
+      ],
+      "Prompts": [
+        "character-49-election-v001-prompt.txt",
+        "character-49-election-v002-prompt.txt",
+        "character-49-election-v003-prompt.txt"
+      ],
+      "Review": "Actual head clearly larger than v002, short neck. Complete hood/hair/robe/both shoes within frame; upper margin narrow (~13px), not5percent requested. Original studio identity preserved. Head tilt/hood obscure skull; inferred skull y120-145, chin380, anatomical heel1360-1380 suggests roughly4.8-5.7 heads with axis/hidden-crown uncertainty, not certified5.5-6. 300x400 grayscale face/glasses/eyes/clasped hands readable. Lower robe/shoes provisional. Final headcount/framing audit pending; runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-49-election-v001-generated.png",
+          "Review": "Fullbody rendered with original studio identity but small head/elongated body, needed ratio correction."
+        },
+        {
+          "Source": "character-49-election-v002-generated.png",
+          "Sha256": "71b51db125d70649bdf57ebb527226310fbc978e8e7bb3f5d08ee8b730dbc2fe",
+          "Review": "Plain red studio backdrop, closed small confident smile, red glasses amber eyes black bangs/longhair panda hood gold earrings whitefur redblackwhitegold robes preserved. Full hood/hair/hem/shoes clear margins. Targeted head enlargement mostly shifted framing; anatomical skull about y145-165/chin335/heel1360-1380 suggests6.4-7.1 heads (uncertain under hood), still too tall, not adopted. Lower robe/shoes provisional. Newspaper crop/grayscale not yet checked."
+        }
+      ],
+      "Preview": {
+        "File": "election-v003-preview.png",
+        "Grayscale": "election-v003-preview-gray.png",
+        "Crop": {
+          "X": 250,
+          "Y": 0,
+          "Width": 570,
+          "Height": 760
+        },
+        "Status": "grayscale-visually-reviewed-color-created"
+      }
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Status": "fullbody-visually-reviewed-crop-audit-pending-not-adopted",
+      "Source": "character-49-friends-v002-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "417fa16ad097d0d5297c2335b672e349838fd4d2b57c315c7e6d5d43acd7a252",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-49-friends-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-49-friends-v001-prompt.txt",
+        "character-49-friends-v002-prompt.txt"
+      ],
+      "Review": "Happy open mouth/open amber eyes/red glasses/panda hood/long black hair, two bare hands hugging flower-head panda with green battery and cozy teahouse preserved. v002 fullhood/bothshoes/robehem fit, left hair tips narrow margin. Black gold embroidered opaque legwear restored after v001 invented barelegs. Perspective still leg-prominent, seated anatomical headcount unmeasured. Lower shoes/garment provisional. Newspaper crop/grayscale pending, runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-49-friends-v001-generated.png",
+          "Review": "Fullbody candidate preserves face/toy but left hair/right hem clip and invented exposed legs; superseded byv002."
+        }
+      ],
+      "Preview": {
+        "File": "friends-v002-preview.png",
+        "Grayscale": "friends-v002-preview-gray.png",
+        "Crop": {
+          "X": 315,
+          "Y": 95,
+          "Width": 450,
+          "Height": 600
+        },
+        "Status": "grayscale-visually-reviewed-face-hands-panda-battery-readable"
+      }
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Status": "fullbody-grayscale-reviewed-final-audit-pending-not-adopted",
+      "Source": "character-49-history-v001-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "6eb867cb70cf62d01707be003009981b1699984299abe3da30aee50a75ac0432",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-49-history-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-49-history-v001-prompt.txt"
+      ],
+      "Review": "Serious closed lips/open amber eyes/redglasses/panda hood/longblackhair, bare hands on lap, carved wooden chair and plain brown studio preserved. Full hood/hair/hem/bothshoes within frame, top margin narrow. Seated anatomical headcount obscured under robe, unmeasured; compactness final audit pending. Lower robe/shoes provisional. Grayscale300x400 face/glasses/hands/fur readable. Runtime unchanged.",
+      "Preview": {
+        "File": "history-v001-preview.png",
+        "Grayscale": "history-v001-preview-gray.png",
+        "Crop": {
+          "X": 280,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Status": "grayscale-visually-reviewed"
+      }
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Status": "head-enlarged-grayscale-reviewed-final-audit-pending-not-adopted",
+      "Source": "character-49-id-v003-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "37ab8d4410ae0e8be0459e5d695459ff12c440713abac19844f2202c101653dc",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-49-id-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-49-id-v001-prompt.txt",
+        "character-49-id-v002-prompt.txt",
+        "character-49-id-v003-prompt.txt"
+      ],
+      "Review": "Head clearly enlarged relativebody. Frontal neutral closedmouth redglasses amber eyes panda hood blackhair and graybackground preserved. Entirehood/hem/bothshoes fit but topmargin narrow. Inferred actual skull y105-130/chin370/anatomicalheel1370-1390 implies4.8-5.4 heads, uncertain hoodcrown; final5.5-6 audit required. 300x400grayscale eyes/glasses/face/fur readable. Lower outfit/shoes provisional. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-49-id-v001-generated.png",
+          "Review": "Fullbody frontal identity preserved but elongated body/small head, superseded byv002."
+        },
+        {
+          "Source": "character-49-id-v002-generated.png",
+          "Sha256": "623ff6beb9b9872c5651fe8ca2eb2b7eae9d66510137ee543433809007e937e0",
+          "Review": "Frontal neutral unsmiling closed lips symmetric shoulders/direct gaze plain gray background preserved. Redglasses amber eyes panda hood blackbangs longhair pointedears redblackwhitegold furtrim robe retained. Fullhood/hem/shoes insideframe but topmargin narrow. v002 head modestly enlarged; requested40percent not measured/not achieved literally. Inferred crown y95-115 chin300 heel1360-1390 yields roughly6.2-6.9 heads, needs final correction. Crop/grayscale pending. Lower garment/shoes provisional. Runtime unchanged."
+        }
+      ],
+      "Preview": {
+        "File": "id-v003-preview.png",
+        "Grayscale": "id-v003-preview-gray.png",
+        "Crop": {
+          "X": 270,
+          "Y": 0,
+          "Width": 540,
+          "Height": 720
+        },
+        "Status": "grayscale-visually-reviewed"
+      }
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Status": "fullbody-visually-reviewed-framing-and-proportion-audit-needed-not-adopted",
+      "Source": "character-49-idol-v001-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "de622179c4ebe951e17d047ed54fd7cd3ababaeaf47b727232e14970f026cd10",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-49-idol-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-49-idol-v001-prompt.txt"
+      ],
+      "Review": "Open happy smile/open amber eyes/red glasses/panda hood/longhair and exactly2barehands each holding1redgoldpompom retained. Fullhood/shoes/costumehem inside, flowing hair near both lateral edges. Stage lighting/confetti retained. Body appears longlegged/smallhead; headcount unmeasured in dynamic lean, requires correction/audit. Black thighhigh legwear/shoes provisional. Newspaper crop/grayscale pending. Runtime unchanged."
     }
   ],
-  "Next": "Normal3 hood top margin/whole hem framing and256x192 diagnostic, then normal4 scene inspection. Remaining11 ungenerated."
+  "Next": "Idol head/body ratio and side hair margins repair,300x400 grayscale; remaining paparazzi/coin2 scenes. Fullset final audit and20runtime adoption/build pending."
 }
