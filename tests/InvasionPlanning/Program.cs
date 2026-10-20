@@ -79,6 +79,19 @@ foreach(bool queen in new[]{false,true})
     Check((bool)Call("ReservedElsewhere",row,r),"Other-target pocket reservation is marked");
     w.Campaign.Plan(new(0,target.Id,1,home.Id,false,true,new[]{r.Id}));
     Check(!(bool)Call("ReservedElsewhere",row,r),"Current target is not marked as another reservation");
+    var net=new CubeNet();Field("_net").SetValue(g,net);
+    Field("_movementOpen").SetValue(g,true);Field("_warPlanning").SetValue(g,true);
+    net.MovementTargets.Add(target.Id);net.MovementTargets.Add(home.Id);net.SelectedTarget=target.Id;
+    net.AttackTargetMarkers=true;net.RevealMovementTargets=true;
+    Call("InvasionClick",new Point(700,935));
+    Check(w.Campaign.PlannedOrders.Single().TargetNode==target.Id,"Confirm saves the selected reservation");
+    Check((bool)Field("_movementOpen").GetValue(g)! && (bool)Field("_warPlanning").GetValue(g)! && net.AttackTargetMarkers && net.RevealMovementTargets,"Confirm keeps war mode and target markers active");
+    Check((int)Field("_selectedMoveNode").GetValue(g)! ==-1 && net.SelectedTarget==-1 && rows.Count==0 && (int)Field("_invasionPicker").GetValue(g)! ==-1,"Confirm resets target, source rows and picker");
+    Call("SelectMoveNode",home.Id);
+    Check((int)Field("_selectedMoveNode").GetValue(g)! ==home.Id && w.Campaign.PlannedOrders.Single().TargetNode==target.Id,"Next target can be selected while the saved reservation remains");
+    Call("CloseNodeInspector");Call("UpdateDomesticSlide",1f);
+    Check(!(bool)Field("_movementOpen").GetValue(g)! && !net.AttackTargetMarkers && net.MovementTargets.Count==0,"Closing the inspector exits war mode");
+    Check(w.Campaign.PlannedOrders.Single().TargetNode==target.Id,"Closing preserves confirmed reservations");
 }
 // Distance uses taxicab geometry; successful conversion has separate before/after frames.
 {

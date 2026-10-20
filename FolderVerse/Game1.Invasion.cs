@@ -78,7 +78,7 @@ public partial class Game1
         if(SelectedWithdrawal!=null)return WithdrawalClick(p) || new Rectangle(54,150,850,825).Contains(p);
         if(new Rectangle(84,850,110,42).Contains(p)){_invasionPage=Math.Max(0,_invasionPage-1);return true;}
         if(new Rectangle(210,850,110,42).Contains(p)){_invasionPage=Math.Min(Math.Max(0,(_invasionSources.Count-1)/7),_invasionPage+1);return true;}
-        if(new Rectangle(570,850,274,42).Contains(p)){_selectedMoveNode=-1;_net.SelectedTarget=-1;_invasionSources.Clear();return true;}
+        if(new Rectangle(570,850,274,42).Contains(p)){ResetInvasionTarget();return true;}
         if(ConfirmMoveButton.Contains(p)){ReserveInvasion();return true;}
         for(int i=0;i<7;i++)
         {
@@ -103,7 +103,13 @@ public partial class Game1
             if(row.Robots.Count>0 || row.Queen && row.Selected)
                 _setup.Campaign.Plan(new(row.Owner,_selectedMoveNode,row.Robots.Count,row.Node,row.Queen && row.Selected,row.Queen,row.Robots.OrderBy(id=>id).ToArray()));
         }
-        CloseMovement();
+        ResetInvasionTarget();
+    }
+    private void ResetInvasionTarget()
+    {
+        _selectedMoveNode=-1;_net.SelectedTarget=-1;_withdrawalEncounter=-1;
+        _invasionSources.Clear();_invasionPage=0;_invasionPicker=-1;
+        _invasionDraft.Clear();_invasionQueenDraft=false;
     }
     private void EndPlannedTurn()
     {
