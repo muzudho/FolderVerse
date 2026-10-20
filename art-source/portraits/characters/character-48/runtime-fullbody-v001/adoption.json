@@ -1,0 +1,358 @@
+{
+  "CharacterId": 48,
+  "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
+  "AppliedAt": "2026-10-20 19:04 JST",
+  "WholeCharacterComplete": true,
+  "Images": [
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-formal-v005-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-formal.png",
+      "Crop": {
+        "Width": 561,
+        "Y": 40,
+        "Height": 748,
+        "X": 280
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "d6cb78e67fc9adc774a1430f843fa52cd99f12e95dbad62935b2844da323c129",
+      "Targets": [
+        "newspaper/character-48-formal.png"
+      ],
+      "OriginalSha256": "00cbeccfc7afdff3be565fd080b9759d3547b7fe03a06989322cc04a102b8001",
+      "Prompts": [
+        "character-48-formal-v001-prompt.txt",
+        "character-48-formal-v002-prompt.txt",
+        "character-48-formal-v003-prompt.txt",
+        "character-48-formal-v004-prompt.txt",
+        "character-48-formal-v005-prompt.txt"
+      ]
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-election-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-election.png",
+      "Crop": {
+        "Width": 561,
+        "Y": 0,
+        "Height": 748,
+        "X": 280
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "bbb187b9e3d00fec462fdc0603cef52a5c8e1df29b26b851bcbb3a3b662e4f21",
+      "Targets": [
+        "newspaper/character-48-election.png"
+      ],
+      "OriginalSha256": "7dd1d6316f5fe3cbc19dbc48140dd94e98dfd67e1c7e0668ecd33a40b4630a46",
+      "Prompts": [
+        "character-48-election-v001-prompt.txt",
+        "character-48-election-v002-prompt.txt"
+      ]
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-friends-v003-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-friends.png",
+      "Crop": {
+        "Width": 561,
+        "Y": 230,
+        "Height": 748,
+        "X": 270
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "8dedebc5a006baf1489dbfd6d86d6663aeaca51bec64d2480bee75127bd168f9",
+      "Targets": [
+        "newspaper/character-48-friends.png"
+      ],
+      "OriginalSha256": "394abba9380fa49f4a32785bd74d7894fa0ecfc3fbd081e5976bf143c13091c2",
+      "Prompts": [
+        "character-48-friends-v001-prompt.txt",
+        "character-48-friends-v002-prompt.txt",
+        "character-48-friends-v003-prompt.txt"
+      ]
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-history-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-history.png",
+      "Crop": {
+        "Width": 561,
+        "Y": 0,
+        "Height": 748,
+        "X": 310
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "a6c8e17ebaa6abfe8c2a194f1661da6cc40903309564e4e29c131cb433fdbd45",
+      "Targets": [
+        "newspaper/character-48-history.png"
+      ],
+      "OriginalSha256": "3677c11cd4f676cfb5219fd7e3d94ede0588ed568ce7f58852ef3d8cd62ec809",
+      "Prompts": [
+        "character-48-history-v001-prompt.txt",
+        "character-48-history-v002-prompt.txt"
+      ]
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-id-v003-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-id.png",
+      "Crop": {
+        "Width": 561,
+        "Y": 0,
+        "Height": 748,
+        "X": 260
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "438d65d720464ab60842609d6397b82e82491eb21eff637a120b549eeeb44032",
+      "Targets": [
+        "newspaper/character-48-id.png"
+      ],
+      "OriginalSha256": "9d978d38d7de739ed8ad450ef112893f42985c3b1b6a4dc6fea4f6e14e67c344",
+      "Prompts": [
+        "character-48-id-v001-prompt.txt",
+        "character-48-id-v002-prompt.txt",
+        "character-48-id-v003-prompt.txt"
+      ]
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-idol-v003-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-idol.png",
+      "Crop": {
+        "Width": 900,
+        "Y": 0,
+        "Height": 1200,
+        "X": 120
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "37934a461da43d889fdf5c94d73a8c020dd178b4a2829787d69d6e785b047f69",
+      "Targets": [
+        "newspaper/character-48-idol.png"
+      ],
+      "OriginalSha256": "a85e9b6f0cee45cf78f9891403edb23aa44e196b442ec4683e1a13122d79b610",
+      "Prompts": [
+        "character-48-idol-v001-prompt.txt",
+        "character-48-idol-v002-prompt.txt",
+        "character-48-idol-v003-prompt.txt"
+      ]
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-paparazzi-v003-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-paparazzi.png",
+      "Crop": {
+        "Width": 660,
+        "Y": 120,
+        "Height": 880,
+        "X": 240
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "5182b299bf86c95a8e45986f761dfdb20bfdc536e2a0f7bf76874c18ca5d0838",
+      "Targets": [
+        "newspaper/character-48-paparazzi.png"
+      ],
+      "OriginalSha256": "be512aefd44e8c14d23a0493d2dcb99ce3f9f93376a8e272a758c4effb456f91",
+      "Prompts": [
+        "character-48-paparazzi-v001-prompt.txt",
+        "character-48-paparazzi-v002-prompt.txt",
+        "character-48-paparazzi-v003-prompt.txt"
+      ]
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-coin-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-coin.png",
+      "Crop": {
+        "Width": 510,
+        "Y": 0,
+        "Height": 680,
+        "X": 305
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "e5dfdf8c80764cde9c4e7aaa41a490b3ad5da263497b0615fa4bbcc47d86c1f9",
+      "Targets": [
+        "newspaper/character-48-coin.png"
+      ],
+      "OriginalSha256": "b0ed74d17e7cbed581c34f9837e555e48966139f33a1735ac51ff2da64c62edd",
+      "Prompts": [
+        "character-48-coin-v001-prompt.txt",
+        "character-48-coin-v002-prompt.txt"
+      ]
+    },
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-normal-1-v003-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/normal-1.png",
+      "Crop": {
+        "Width": 640,
+        "Y": 160,
+        "Height": 480,
+        "X": 260
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "4BA77B344EB95E21843F39E110EB9BC631AA771B3DA7ED44EFCB640EB288D0A3",
+      "Targets": [
+        "v3-standardized/tiles/character-48-1.png",
+        "conqueror-creation/tiles/character-48-1.png"
+      ],
+      "OriginalSha256": "e78ad895d85cd5fdd1d21c0dbf56157b95a0b7c15737cc9e75ca1d3db3f90d4f",
+      "Prompts": [
+        "character-48-normal-1-v001-prompt.txt",
+        "character-48-normal-1-v002-prompt.txt",
+        "character-48-normal-1-v003-prompt.txt"
+      ]
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-normal-2-v004-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/normal-2.png",
+      "Crop": {
+        "Width": 720,
+        "Y": 0,
+        "Height": 540,
+        "X": 240
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "D9E5043BA7DD0E35D9E1586C99C3C4A3AE2244D9761768C666A5F9379C37FF12",
+      "Targets": [
+        "v3-standardized/tiles/character-48-2.png",
+        "conqueror-creation/tiles/character-48-2.png"
+      ],
+      "OriginalSha256": "7549739137ecb52dea1b8f2bec8b6531df54877130e71ab1417ab542b0f78cfc",
+      "Prompts": [
+        "character-48-normal-2-v001-prompt.txt",
+        "character-48-normal-2-v002-prompt.txt",
+        "character-48-normal-2-v003-prompt.txt",
+        "character-48-normal-2-v004-prompt.txt"
+      ]
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-normal-3-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/normal-3.png",
+      "Crop": {
+        "Width": 720,
+        "Y": 0,
+        "Height": 540,
+        "X": 200
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "9032DF6C3BE5417315B85BE8D13546CC378CC95A64EB786BF7177CA04856B6AB",
+      "Targets": [
+        "v3-standardized/tiles/character-48-3.png",
+        "conqueror-creation/tiles/character-48-3.png"
+      ],
+      "OriginalSha256": "cdb0e47a4109ceba92e6b58efe8fde26458421929b3a8a51b633b24210de1880",
+      "Prompts": [
+        "character-48-normal-3-v001-prompt.txt",
+        "character-48-normal-3-v002-prompt.txt"
+      ]
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-normal-4-v003-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/normal-4.png",
+      "Crop": {
+        "Width": 840,
+        "Y": 0,
+        "Height": 630,
+        "X": 220
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "D78A2D5D8E40165B673149124FA7C224E2BA6CABACD3403061BF11E2039522AD",
+      "Targets": [
+        "v3-standardized/tiles/character-48-4.png",
+        "conqueror-creation/tiles/character-48-4.png"
+      ],
+      "OriginalSha256": "5afd4a3aa72e5a0dc050622992264a9ce7e87dced5486ce11a61f202d8987b6b",
+      "Prompts": [
+        "character-48-normal-4-v001-prompt.txt",
+        "character-48-normal-4-v002-prompt.txt",
+        "character-48-normal-4-v003-prompt.txt"
+      ]
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-normal-5-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/normal-5.png",
+      "Crop": {
+        "Width": 704,
+        "Y": 50,
+        "Height": 528,
+        "X": 220
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "D74CDA9DF1DBD7C73594AB71432030AA8611677AF48C6FEA9BEF80322FFFB676",
+      "Targets": [
+        "v3-standardized/tiles/character-48-5.png",
+        "conqueror-creation/tiles/character-48-5.png"
+      ],
+      "OriginalSha256": "b0c30f0ea839ab25dfa687f7c0069ae2c71d6d99e2639c8391f00f6e61491003",
+      "Prompts": [
+        "character-48-normal-5-v001-prompt.txt",
+        "character-48-normal-5-v002-prompt.txt"
+      ]
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-normal-6-v003-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/normal-6.png",
+      "Crop": {
+        "Width": 768,
+        "Y": 80,
+        "Height": 576,
+        "X": 280
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "7536D5F82F37063E3795C807239678F30D4C611DAA4DABD66AA9B21F0EA32022",
+      "Targets": [
+        "v3-standardized/tiles/character-48-6.png",
+        "conqueror-creation/tiles/character-48-6.png"
+      ],
+      "OriginalSha256": "e3414a85f2c746f0f6ad5ef5ed5845bf2891d0f891307a847016ecd3981c04d5",
+      "Prompts": [
+        "character-48-normal-6-v001-prompt.txt",
+        "character-48-normal-6-v002-prompt.txt",
+        "character-48-normal-6-v003-prompt.txt"
+      ]
+    }
+  ],
+  "Limitations": "Full-body masters retained; anatomical head ratios under robes and bent poses remain estimates, not exact measured compliance. Runtime UI not exercised. Tiny side margins on some masters, busy backgrounds in action scenes.",
+  "Build": {
+    "ExitCode": 0,
+    "Warnings": 0,
+    "Errors": 0
+  },
+  "Distribution": {
+    "NormalCompiledTextureBuffersVerified": 12,
+    "NewspaperPngVerified": 8
+  }
+}

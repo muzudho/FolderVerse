@@ -19,7 +19,7 @@ for(const old of previous.Images){
  if(r.Crop.X<0||r.Crop.Y<0||r.Crop.X+r.Crop.Width>raw.readUInt32BE(16)||r.Crop.Y+r.Crop.Height>raw.readUInt32BE(20))throw Error('Crop outside master');
  if(Math.abs(r.Crop.Width/r.Crop.Height-r.Width/r.Height)>.002)throw Error('Aspect distortion');
  r.MasterSha256=hash(master);r.Sha256=hash(tile);r.RuntimeBeforeSha256=hash(runtime);r.BackupSha256=hash(backup);
- if(r.RuntimeBeforeSha256!==r.BackupSha256)throw Error('Runtime changed since backup: '+r.Target+'; do not overwrite');
+ if(r.RuntimeBeforeSha256!==r.BackupSha256){const af=path.join(dir,'adoption-partial.json');const adopted=fs.existsSync(af)?read(af).Images:[];if(!adopted.some(x=>x.Targets.includes(r.Target)&&x.Sha256.toLowerCase()===r.RuntimeBeforeSha256))throw Error('Runtime changed since backup: '+r.Target+'; do not overwrite');r.AlreadyApplied=true;}
  r.Distribution=r.Kind==='normal'?'MGCB Texture -> XNB':'PNG CopyToOutputDirectory PreserveNewest';
  if(r.Kind==='normal'&&!mgcb.includes('/build:Images/Portraits/'+r.Target))throw Error('MGCB registration missing');
  if(r.Kind==='newspaper'&&!project.includes('Content/Images/Portraits/newspaper/*.png'))throw Error('PNG copy rule missing');

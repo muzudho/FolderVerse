@@ -1,0 +1,569 @@
+{
+  "CharacterId": 48,
+  "UpdatedAt": "2026-10-20T19:04:00+09:00",
+  "Method": "built-in image_gen",
+  "Standard": "v017-approved-20261018",
+  "GameAdopted": true,
+  "Backup": "backup-manifest.json",
+  "Next": "No.48 adoption complete. Next unfinished person No.49; preserve earlier No40-46 fullbody followup obligation.",
+  "Images": [
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Status": "adopted-build-distribution-verified",
+      "Source": "character-48-normal-1-v003-generated.png",
+      "Sha256": "2a19fa133f80fcce4651024e341e4417730330acdaa661f8048bf83d7ab865a0",
+      "References": [
+        "art-source/portraits/conqueror-balanced/character-48-1-balanced.png",
+        "art-source/portraits/characters/character-48/character-48-1-v003-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-id-v003-generated.png"
+      ],
+      "Prompts": [
+        "character-48-normal-1-v001-prompt.txt",
+        "character-48-normal-1-v002-prompt.txt",
+        "character-48-normal-1-v003-prompt.txt"
+      ],
+      "Trials": [
+        "character-48-normal-1-v001-generated.png",
+        {
+          "Source": "character-48-normal-1-v002-generated.png",
+          "Review": "Black long hair, amber eyes, thin gold glasses, pointed ears, blue-gold headpiece, bare tea hands, orange-lightning battery and both shoes retained. v002 fixes headpiece clipping. Rightmost robe edge still meets frame; tiny details vary. Lower robe/shoes newly completed, not individually approved. Seated anatomy headcount not exact. Common hair transverse white band weaker than desired."
+        }
+      ],
+      "Preview": {
+        "File": "normal-1-v003-preview.png",
+        "Crop": {
+          "X": 260,
+          "Y": 160,
+          "Width": 640,
+          "Height": 480
+        },
+        "Status": "visually-reviewed-not-adopted"
+      },
+      "Review": "v003 clear white transverse hair reflection, open smile goldglasses amber eyes pointedears, barehands cup/saucer, orange battery retained. Headwear hair bothshoes inside master; right robe no longer cut but extremely close to edge, less than requested5%. Seated anatomy exact headcount not measurable. 256x192 face/hands/cup/battery visible; crop cuts peripheral hair separately from full master. Lower outfit completion not independently approved."
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Status": "adopted-build-distribution-verified",
+      "Source": "character-48-normal-2-v004-generated.png",
+      "Sha256": "f20d3fb5eb00ae2262e0a698653d04d24b55b46728fa2158b34d5b5d209695cf",
+      "References": [
+        "art-source/portraits/conqueror-balanced/remaining-variants/character-48-2-balanced.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-id-v003-generated.png"
+      ],
+      "Prompts": [
+        "character-48-normal-2-v001-prompt.txt",
+        "character-48-normal-2-v002-prompt.txt",
+        "character-48-normal-2-v003-prompt.txt",
+        "character-48-normal-2-v004-prompt.txt"
+      ],
+      "Trials": [
+        {
+          "Source": "character-48-normal-2-v001-generated.png",
+          "Sha256": "2c266a9f3502e5e0d5f3ba0ed61617c21be2811507284d863516fff70c4d168e",
+          "Review": "Headwear margin small and one shoe hidden; kept as earlier version."
+        },
+        {
+          "Source": "character-48-normal-2-v002-generated.png",
+          "Review": "v002 includes whole headpiece, staff, both shoes and robe hem inside frame. Amber eyes, thin gold glasses, pointed ears, black long hair, bluewhitegold robes, fingerless gloves and armillary sphere retained. Black-hair white transverse band still weak; robe conceals anatomy so exact headcount and knee placement not confirmed. Body appears long under robe, needs proportion review; no conformity claim. Lower costume/shoes are completion, not individually approved."
+        },
+        {
+          "Source": "character-48-normal-2-v003-generated.png",
+          "Review": "Open smile goldglasses amber eyes pointedears bluegold bowheadwear and two blackfingerless gloves gripping armillarystaff retained. Full highestheadwear sphere staff hem bothshoes inside; robe side margins less than requested5%. Face/head appears larger but exact skullheel ratio and hidden knees not measured. White transverse reflection still weak and pink/purple, failed clearwhite transfer from idv003. 256x192 face gloves sphere visible; busy background remains. Lowerrobe/shoes provisional. Runtime unchanged."
+        }
+      ],
+      "Preview": {
+        "File": "normal-2-v004-preview.png",
+        "Crop": {
+          "X": 300,
+          "Y": 60,
+          "Width": 640,
+          "Height": 480
+        },
+        "Status": "visually-reviewed-not-adopted"
+      },
+      "Review": "Hair-only v004 strengthens WHITE reflection across tilted bangs with strand breaks. Goldglasses amber eyes open smile pointedears bluegoldbow, blackfingerless gloves armillarystaff and fullbody framing visually retained. 256x192 face gloves sphere and lightband visible. Outer robe side margins small; hidden anatomical heel/skull/knees not exactly measured. Not user approval; runtime unchanged."
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Status": "adopted-build-distribution-verified",
+      "Source": "character-48-normal-3-v002-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "20cfb1309c36428fc8ebbc7c9ae26bb102edf49385d49952d87200bd57cfb086",
+      "References": [
+        "art-source/portraits/conqueror-balanced/remaining-variants/character-48-3-balanced.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-48-normal-3-v001-prompt.txt",
+        "character-48-normal-3-v002-prompt.txt"
+      ],
+      "Preview": {
+        "File": "normal-3-v002-preview.png",
+        "Crop": {
+          "X": 200,
+          "Y": 0,
+          "Width": 720,
+          "Height": 540
+        },
+        "Status": "visually-reviewed-not-adopted"
+      },
+      "Review": "White transverse reflection brighter across bangs. Stern closedlips narrowed amber eyes goldglasses pointedears STARcrown not bow, blackuniform whitegoldcape bluechestbrooch barehands retained. Full crown/hair/bothshoes present; cape tails extremely near sideedges, requested3% margin not achieved. Body unchanged visually, exact anatomy not measured. 256x192 stern face and crown readable. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-48-normal-3-v001-generated.png",
+          "Review": "Full crown, both shoes, hair and cape inside frame. Stern closed mouth, angled brows/narrow amber eyes, gold glasses and pointed ears retained. Correct star crown instead of bow headwear, black scholarly uniform and whitegold cape, round blue brooch retained. Background books/candles/armillary sphere remain. Hands/lower uniform/shoes newly completed from hidden source; not separately user-approved. Transverse hair highlight exists but remains pale purple rather than clearly white; needs style QA. Exact anatomical ratio not measured; visual proportion reference only. Very small outer cape side margins."
+        }
+      ]
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Status": "adopted-build-distribution-verified",
+      "Source": "character-48-normal-4-v003-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "c5643ae9d56e8eb440b49cc6a97409f04d8afa7e41489745e911fd1285409603",
+      "References": [
+        "art-source/portraits/conqueror-balanced/remaining-variants/character-48-4-balanced.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-48-normal-4-v001-prompt.txt",
+        "character-48-normal-4-v002-prompt.txt",
+        "character-48-normal-4-v003-prompt.txt"
+      ],
+      "Preview": {
+        "File": "normal-4-v003-preview.png",
+        "Crop": {
+          "X": 220,
+          "Y": 0,
+          "Width": 840,
+          "Height": 630
+        },
+        "Status": "visually-reviewed-not-adopted"
+      },
+      "Review": "Hair-only v003 makes white transverse reflected cores clearer across tilted bangs. Open smile amber eyes goldglasses pointedears headwear two barepalms floating blueorb/goldrings and fullbody framing retained visually. 256x192 orb/palms visible face small, final crop pending. Headwear hair hem bothshoes inside; exact hidden anatomy unmeasured, not user approval. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-48-normal-4-v001-generated.png",
+          "Review": "Two bare hands, screen-left raised open palm and screen-right palm under blue glowing orbital sphere with goldrings; open smile retained. Black longhair amber eyes goldglasses pointedears bluewhitegold robe and headwear retained. Both shoes and robe inside image; highest ornament margin very small, not requested8%. White transverse band remains weak. Output face small when preserving both palms and sphere; crop needs further selection. Body anatomy hidden by long robe, exact headcount not measured. Lower robes/shoes completed, not individually approved."
+        },
+        {
+          "Source": "character-48-normal-4-v002-generated.png",
+          "Review": "Full highestheadwear has more top room, allhair robe hem bothshoes and blue orbital sphere inside. Open smile amber eyes goldglasses pointedears two barehands leftforwardpalm rightuppalm retained. Hair transverse reflection still pale pink/purple and weak; requested clearwhite not achieved. 256x192 hands sphere visible but face small; crop needs selection. Anatomy concealed by robe exact headcount unmeasured. Runtime unchanged."
+        }
+      ]
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Status": "adopted-build-distribution-verified",
+      "Source": "character-48-normal-5-v002-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "4dfd0c442ab1349363c34e135d591f88383b20556400bd9d17764a4cee84347f",
+      "References": [
+        "art-source/portraits/conqueror-balanced/remaining-variants/character-48-5-balanced.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-48-normal-5-v001-prompt.txt",
+        "character-48-normal-5-v002-prompt.txt"
+      ],
+      "Preview": {
+        "File": "normal-5-v002-preview.png",
+        "Crop": {
+          "X": 220,
+          "Y": 50,
+          "Width": 704,
+          "Height": 528
+        },
+        "Status": "visually-reviewed-not-adopted"
+      },
+      "Review": "White reflection brighter across tilted blackbangs. Calm smallopen smile amber eyes goldglasses pointedears bluegoldheadwear bare writinghand whitequill openbook restingotherhand redbattery retained. Headwear bothshoes visible; outer robe partly occluded by desk/foreground as prior. 256x192 face quill hands battery readable. Seated anatomy not measured standing headcount. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-48-normal-5-v001-generated.png",
+          "Review": "Calm slightly open smile, gold glasses amber eyes pointed ears blackhair bluegold headpiece/robes preserved. Screen-right bare hand writes with white quill on open book; screen-left bare hand rests; RED battery retained. Highest headwear and both shoes visible with margins. Right outer robe/train partly occluded by foreground deskleg rather than clearly delineated, requires framing review. White transverse hair band still weak. Seated anatomy not exact measurable standing headcount. Lower costume/shoes newly completed, not separately approved."
+        }
+      ]
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Status": "adopted-build-distribution-verified",
+      "Source": "character-48-normal-6-v003-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "8e510c1ce52563ede8f28c1998182099bc17ea5eea3efdd068e654735653db73",
+      "References": [
+        "art-source/portraits/conqueror-balanced/remaining-variants/character-48-6-balanced.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-48-normal-6-v001-prompt.txt",
+        "character-48-normal-6-v002-prompt.txt",
+        "character-48-normal-6-v003-prompt.txt"
+      ],
+      "Trials": [
+        {
+          "Source": "character-48-normal-6-v001-generated.png",
+          "Review": "Left sleeve and upper-right sphere touched edges; reframed in v002."
+        },
+        {
+          "Source": "character-48-normal-6-v002-generated.png",
+          "Review": "v002 contains full headwear, both shoes, full gold armillary sphere and staff and flowing robe inside frame. Open determined smile, amber eyes gold glasses pointedears blackhair bluewhitegold costume, bare hand thrusting staff and other hand gripping robe retained. Luminous blue core retained. White transverse hair band remains weak and bright background competes with hair. Crop contains staff sphere and face but face smaller than old runtime. Body/knee proportions obscured by robe; no measured headcount conformity claimed. Lower outfit/shoes completion not independently approved."
+        }
+      ],
+      "Preview": {
+        "File": "normal-6-v003-preview.png",
+        "Crop": {
+          "X": 280,
+          "Y": 80,
+          "Width": 768,
+          "Height": 576
+        },
+        "Status": "visually-reviewed-not-adopted"
+      },
+      "Review": "White transverse reflection brighter across bangs, plus white wave reflections on backhair. Determined open smile amber eyes goldglasses pointedears bowheadwear BARE forwardhand thruststaff goldarmillary bluecore otherBAREhand grippingrobe retained. Full headwear hair robe shoes staff endpoints inside master. 256x192 face hand sphere visible but busy background and smallface remain for crop selection. Hidden anatomical headcount not measured. Runtime unchanged."
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Status": "adopted-build-distribution-verified",
+      "Source": "character-48-formal-v005-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "6c692d1aef3a4b4e6e6e318525dedca8239db088b16031372e486058ebfa2883",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-48-formal-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-id-v003-generated.png"
+      ],
+      "Prompts": [
+        "character-48-formal-v001-prompt.txt",
+        "character-48-formal-v002-prompt.txt",
+        "character-48-formal-v003-prompt.txt",
+        "character-48-formal-v004-prompt.txt",
+        "character-48-formal-v005-prompt.txt"
+      ],
+      "Trials": [
+        {
+          "Source": "character-48-formal-v001-generated.png",
+          "Sha256": "45f69d556d25f908fd9b4504ee8988db2f91feefbd37a97d15c472c5db344223",
+          "Review": "Tall appearance under longrobe; requested compact correction."
+        },
+        {
+          "Source": "character-48-formal-v002-generated.png",
+          "Review": "Highest headpiece, both shoe soles and hems visible. Closed dignified smile, amber eyes goldglasses pointedears blackwaves bluewhitegold garments retained. Folded barehands and lowerrobe/shoes are completion. Grayscale face/hair/costume distinguishable. v002 requested 20% chin-to-heel compression but achieved amount not established; still looks tall. White transverse hairband weak. Body fit not passed; exact skull crown hidden; no numerical conformity claim."
+        },
+        {
+          "Source": "character-48-formal-v003-generated.png",
+          "Review": "Gentle closedsmile camera gaze threequarter torso foldedbarehands headwear glasses amber eyes pointedears robe bothshoes retained. Wholemaster fits with smallmargins. Body/head requested transfer not clearly achieved, still tall; exact hidden anatomy unmeasured. Hairband remains paleviolet rather than white, targeted hair edit needed. 300x400 grayscale face/hands legible. Runtime unchanged."
+        },
+        {
+          "Source": "character-48-formal-v004-generated.png",
+          "Review": "Head somewhat larger visually, pose closedgentlesmile goldglasses amber eyes pointedears headwear robes foldedbarehands bothshoes preserved. Requested25%head/15%body change not measured; still tall underrobe. Fullmaster fits but margins small. Whitehairband remains weak (unchanged this edit). Preview currently v003 not v004; final crop pending. Runtime unchanged."
+        }
+      ],
+      "Preview": {
+        "File": "formal-v005-preview-color.png",
+        "Grayscale": "formal-v005-preview-gray.png",
+        "Crop": {
+          "X": 230,
+          "Y": 40,
+          "Width": 660,
+          "Height": 880
+        },
+        "Status": "visually-reviewed-not-adopted"
+      },
+      "Review": "White transverse hair reflection now clear, broken by strands. v004 proportions and formal identity gentleclosed smile foldedbarehands goldglasses amber eyes pointedears headwear robe shoes retained visually. 300x400 grayscale face/hands/reflection readable. Wholemaster fits but margins small. Headcount still uncertain due hidden skull/heel and tiltedhead; no exact conformity claim. Runtime unchanged."
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Status": "adopted-build-distribution-verified",
+      "Source": "character-48-election-v002-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "f9461dc36a41be829466a2fe5d36cebc3ee781e421f9d9dc5d47e41b199f53a2",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-48-election-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-48-election-v001-prompt.txt",
+        "character-48-election-v002-prompt.txt"
+      ],
+      "Preview": {
+        "File": "election-v002-preview-color.png",
+        "Grayscale": "election-v002-preview-gray.png",
+        "Crop": {
+          "X": 230,
+          "Y": 0,
+          "Width": 660,
+          "Height": 880
+        },
+        "Status": "visually-reviewed-not-adopted"
+      },
+      "Review": "Clear white transverse reflection on blackbangs. Open confident smile frontal pose amber eyes goldglasses pointedears bluegoldbow foldedbarehands robe paleBLUEbackground retained. Wholehat hair hems bothshoes in master but margins small. 300x400 grayscale face hands reflection visible. Body unchanged this edit; hidden anatomical headcount/knees unconfirmed. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-48-election-v001-generated.png",
+          "Review": "Front-facing open confident smile, thin gold glasses amber eyes pointed ears black waves bluegold headpiece whiteblueblackgold outfit retained; plain lightblue background no prop/text. Both shoe soles and full headwear/hem inside frame but top/bottom margin less than requested8%. Folded barehands and lower outfit/shoes newly completed not individually approved. Grayscale face/hair/outfit readable. White transverse hairband weak; longrobe hides anatomy and exact body ratio unmeasured, final body/style QA remains."
+        }
+      ]
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Status": "adopted-build-distribution-verified",
+      "Source": "character-48-friends-v003-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "4c361ea2573d6be9c73651018112e9fb2918fe6c23468c68a64d6bac9251b303",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-48-friends-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-48-friends-v001-prompt.txt",
+        "character-48-friends-v002-prompt.txt",
+        "character-48-friends-v003-prompt.txt"
+      ],
+      "Preview": {
+        "File": "friends-v003-preview-color.png",
+        "Grayscale": "friends-v003-preview-gray.png",
+        "Crop": {
+          "X": 220,
+          "Y": 230,
+          "Width": 660,
+          "Height": 880
+        },
+        "Status": "visually-reviewed-diagnostic-not-selected"
+      },
+      "Review": "v003 camera pulled back: entire headwear, long hair, robe train and both shoes visibly inside master. Right train now has a narrow visible floor margin; requested 6% not achieved but edge clipping resolved. Laughing open mouth, narrowed amber eyes, gold glasses, pointed ears, bow, cup hand and knee hand, crossed seated legs preserved. White hair reflection retained. Grayscale 300x400 face and both hands readable, smaller than earlier crop; final runtime crop still to select. Seated headcount not measured. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-48-friends-v001-generated.png",
+          "Sha256": "f3b42f6dc66095061790a5f80e8e02adc7bc1c9b818b17f54452db4d27fc638c",
+          "Review": "Relaxed open laugh narrowed amber eyes, thin goldglasses pointedears blackhair bluegold bowheadwear whiteblueblackgoldrobes retained. Screen-left barehand holds teacup belowface; other barehand rests on knee. Cozy teahouse teapot/cake/tart side table. Full headpiece and both shoes visible, but screen-right garment/train extends to frame edge; full garment framing not passed. White transverse hairband weak. Grayscale face/cup readable. Lower seated pose and shoes completed not separately approved; exact anatomical standing headcount not measured."
+        },
+        {
+          "Source": "character-48-friends-v002-generated.png",
+          "Sha256": "180e695a93d7af350482204f3fecc2998de0af5baea8eba3550e3e0e88635985",
+          "Review": "Open laughing smile, gold glasses, pointed ears, black waves, blue gold bow, bare cup hand and other hand on knee, seated crossed legs, tea table retained. White transverse hair reflection clearer and grayscale face/hands readable. Both shoes inside master, but right robe still contacts frame edge: requested margin not achieved. Seated anatomical headcount unconfirmed. Runtime unchanged."
+        }
+      ]
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Status": "adopted-build-distribution-verified",
+      "Source": "character-48-history-v002-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "25b0aaeff165687e7f0583ba60e942ca445f5d6c7669bb67e406fcca50fefee2",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-48-history-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-48-history-v001-prompt.txt",
+        "character-48-history-v002-prompt.txt"
+      ],
+      "Preview": {
+        "File": "history-v002-preview-color.png",
+        "Grayscale": "history-v002-preview-gray.png",
+        "Crop": {
+          "X": 260,
+          "Y": 0,
+          "Width": 660,
+          "Height": 880
+        },
+        "Status": "visually-reviewed-diagnostic-not-selected"
+      },
+      "Review": "White transverse reflection now clear across black bangs, local back hair separation retained. Sober closed mouth, amber eyes, gold round glasses, pointed ears, geometric blue gold bow, overlapped bare hands, carved chair, threequarter seated posture and plain brown background visually preserved. Full headwear, hair, hem and both shoes inside master; side margins small. Grayscale300x400 face/hands readable. Seated anatomical headcount unmeasured. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-48-history-v001-generated.png",
+          "Sha256": "a07fb696be2f44c6934ea1eadc504d84cea942c55f82f40743f7e71ac73d5003",
+          "Review": "Neutral serious closedlips, goldglasses amber eyes pointedears blackwaves bluegold headpiece whiteblueblackgoldrobes retained. Carved wooden chair threequarter torso, overlapped barehands onlap, brown studio background. Whole headwear, hems and both shoes inside frame; margins smaller than specified8%. Grayscale face and cloth separate from brownbackdrop. Hair transverseband remains pale violet rather than clearwhite. Longrobe conceals knee anatomy; exact headcount not established. Lowerrobe/shoes completion not independently approved."
+        }
+      ]
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Status": "adopted-build-distribution-verified",
+      "Source": "character-48-id-v003-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "9b81de7f63c202e32843b369fa93b9289e14c2f51c8b28b6f1ddc3c808519424",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-48-id-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-48-id-v001-prompt.txt",
+        "character-48-id-v002-prompt.txt",
+        "character-48-id-v003-prompt.txt"
+      ],
+      "Preview": {
+        "File": "id-v003-preview-color.png",
+        "Grayscale": "id-v003-preview-gray.png",
+        "Crop": {
+          "X": 210,
+          "Y": 0,
+          "Width": 660,
+          "Height": 880
+        },
+        "Status": "visually-reviewed-not-adopted"
+      },
+      "Review": "v003 preserves v002 body and identity visually and clearly strengthens white transverse light reflection across blackbangs, broken by hairstrands not an added accessory. Full headpiece/hem/bothshoes inside master. 300x400 grayscale face/glasses and highlight legible. Body ratio remains rough visual estimate from v002, not exact or new approval; top/bottom margins small. Diagnostic crop trims sidehair only; fullmaster untouched. Other13 scenes still require QA.",
+      "Trials": [
+        {
+          "Source": "character-48-id-v001-generated.png",
+          "Review": "Strict frontal level gaze neutral closed mouth, amber eyes fine goldglasses pointedears blackwaves blueblackgold headpiece and whiteblueblackgold robes retained. Gray background no props, barehands sides completed. Full highest headpiece/hem and both shoe soles inside frame; margins less than requested8%. White transverse hairband remains muted purple; exact anatomical headcount/knee placement under robe unconfirmed, tall appearance still needs body QA. Grayscale face clear. Lower robe/shoes/hands completion not separately approved."
+        },
+        {
+          "Source": "character-48-id-v002-generated.png",
+          "Review": "v002 enlarges head relative to body; frontal neutral closedmouth, amber eyes goldglasses pointedears bowheadwear robe barehands and bothshoes retained. Rough visual skulltop y110-125/chin y330-340/anatomicalheel inside shoes y1340-1360 gives approx5.4-6.1heads, uncertain hidden skull/heel, not exact measurement or user approval. Hair white transverse band still weak. Fullmaster fits but top/bottom margin less than requested. Prior preview still v001, not v002."
+        }
+      ]
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Status": "adopted-build-distribution-verified",
+      "Source": "character-48-idol-v003-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "b5c798019dd6f381272e6834c97cea87b73dd237f0304b2b5250705f29ad3a59",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-48-idol-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-48-idol-v001-prompt.txt",
+        "character-48-idol-v002-prompt.txt",
+        "character-48-idol-v003-prompt.txt"
+      ],
+      "Preview": {
+        "File": "idol-v003-preview-color.png",
+        "Grayscale": "idol-v003-preview-gray.png",
+        "Crop": {
+          "X": 120,
+          "Y": 0,
+          "Width": 900,
+          "Height": 1200
+        },
+        "Status": "visually-reviewed-diagnostic-not-selected"
+      },
+      "Review": "v003 bright white transverse curved reflection now clear across black bangs. Long robe covering thighs/knees, open smile, amber eyes, gold glasses, pointed ears, bow, bare hands with two pompoms, lifted leg dance and stage visually preserved. Full headwear/hair/pompoms/hem/both shoes inside master, narrow margins. Grayscale face/hands visible but small in busy backdrop; final tighter runtime crop remains. Bent-leg anatomical headcount unmeasured; lower costume completion provisional. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-48-idol-v001-generated.png",
+          "Sha256": "f3527029ea641aed5362e48503394c8991384d49fc3fa86e3f55b0f00f9810d6",
+          "Review": "Open cheerful smile, two bare hands with bluegold pompoms, goldglasses amber eyes pointedears blackhair bluegold headwear retained. Full headpiece, pompoms, garment and both shoes inside master. White hair transverse band remains weak; bright confetti/stage texture competes in grayscale and diagnostic face is small. Lower dance costume became short-front/high-slit, a provisional completion requiring costume QA, not approved. Dancing pose prevents exact standing headcount measurement. Game unchanged."
+        },
+        {
+          "Source": "character-48-idol-v002-generated.png",
+          "Sha256": "9ed07d9764baf9e9446b3769e0a114f4bfc520b91da2ea89a98fb72154ab9bbd",
+          "Review": "Long white blue black gold robe now covers thighs and knees in lifted-leg dance. Open smile, gold round glasses, amber eyes, elf ears, bow, black waves, two pompoms held by bare hands and stage retained. Full headwear/pompoms/robe/both shoes inside master, margins narrow. White transverse hair reflection remains weak purple: requested hair fix not achieved. Grayscale face and hands visible but small amid busy background, final crop must improve. Bent-leg anatomy not measured; lower garment completion provisional. Runtime unchanged."
+        }
+      ]
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Status": "adopted-build-distribution-verified",
+      "Source": "character-48-paparazzi-v003-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "922f6d9ce7a6f339c99dd88242e9503ce1534a1938da9913454b18fd88b7ac81",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-48-paparazzi-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-48-paparazzi-v001-prompt.txt",
+        "character-48-paparazzi-v002-prompt.txt",
+        "character-48-paparazzi-v003-prompt.txt"
+      ],
+      "Trials": [
+        {
+          "Source": "character-48-paparazzi-v001-generated.png",
+          "Review": "Headwear nearly touches top; tall body. Preserved before v002."
+        },
+        {
+          "Source": "character-48-paparazzi-v002-generated.png",
+          "Sha256": "c40706da585b723de9037b22f1b50d33eb7b6249b0f6565a25a24f861a86b078",
+          "Review": "Surprised partedlips, sideways gaze, barehand adjusting goldroundglasses, black windblown hair, pointedears, bluegold bowheadwear and bluewhiteblackgold longrobe retained. v002 gives clear top margin and full hem/both shoes inside master. White transverse highlight improved but partly looks like a separate pale strip; needs hair QA. Requested20% body shortening not confirmed, head also became smaller; 5.5–6 head anatomy not established under robe. Grayscale face and hand legible; diagnostic crop trims peripheral hair, separate from preserved full master. Lower costume/shoes/lowered hand completed not independently approved. Runtime unchanged."
+        }
+      ],
+      "Preview": {
+        "File": "paparazzi-v003-preview-color.png",
+        "Grayscale": "paparazzi-v003-preview-gray.png",
+        "Crop": {
+          "X": 240,
+          "Y": 120,
+          "Width": 660,
+          "Height": 880
+        },
+        "Status": "visually-reviewed-diagnostic-not-selected"
+      },
+      "Review": "False pale headband removed; black bangs now have strand-broken white transverse reflection, narrower than other candidates. Surprised parted lips, sideways amber gaze, gold round glasses and bare temple hand, lowered bare hand, elf ears, bow, windblown black waves, robe and garden preserved. Entire headwear/hair/hem/both shoes fit master with visible margins. Grayscale face/gesture readable. Tall body and hidden anatomical heel/skull/knee dimensions not measured; this edit does not establish exact5.5-6heads. Runtime unchanged."
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Status": "adopted-build-distribution-verified",
+      "Source": "character-48-coin-v002-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "c872f69c573a3daf59a6f0abf337b85a41e494d563c20fc4907c6e15eebee2de",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-48-coin-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-48-coin-v001-prompt.txt",
+        "character-48-coin-v002-prompt.txt"
+      ],
+      "Preview": {
+        "File": "coin-v002-preview-color.png",
+        "Grayscale": "coin-v002-preview-gray.png",
+        "Crop": {
+          "X": 260,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Status": "visually-reviewed-diagnostic-not-selected"
+      },
+      "Review": "Left-facing one-eye profile preserved and torso more side-on, but not geometrically verified orthographic90degrees. Both offset shoes now distinct inside frame; entire bow/hair/hem fit with small margins. White transverse bang reflection improved. Closed mouth, amber eye, gold glasses, elf ear, bow/gems, black waves and robe/plain grey background retained. Grayscale profile readable. Tall body/hidden skull and anatomical heel ratio unmeasured, exact5.5-6heads not established. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-48-coin-v001-generated.png",
+          "Sha256": "c7c488f8bcadac0b3937c0ddc46e7d0fcbabb6d528fb2405e9fff60c2d376382",
+          "Review": "Left-facing profile oneeye, closedlips, goldglasses pointedear blackwaves bluegold bowheadwear and whiteblueblackgold longrobe retained. Entire headwear/hair/hem and visible shoe inside frame but margins small; far shoe occluded, torso has slight threequarter appearance rather than strict90degree, tall body and exact hidden anatomy not established. White transverse hairband weak. Grayscale profile separates clearly. Lower costume/hands/shoes completion provisional. Runtime unchanged."
+        }
+      ]
+    }
+  ],
+  "ReferencePathBase": "repository root for References unless explicitly stated",
+  "RuntimeCropAudit": {
+    "ContactSheet": "final-crop-audit-v001.png",
+    "Page": "final-crop-audit.html",
+    "Manifest": "qa-runtime-v001/crops.json",
+    "Status": "revised14-crops-visually-reviewed"
+  },
+  "NewspaperGameAdopted": true
+}

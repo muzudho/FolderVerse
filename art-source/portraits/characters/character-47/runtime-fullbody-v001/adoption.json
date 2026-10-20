@@ -1,0 +1,364 @@
+{
+  "CharacterId": 47,
+  "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
+  "AppliedAt": "2026-10-20 00:03 JST",
+  "WholeCharacterComplete": true,
+  "Images": [
+    {
+      "Kind": "normal",
+      "Id": 1,
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-normal-1-headtrial-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-normal-v003/normal-1-2.png",
+      "Crop": {
+        "X": 100,
+        "Y": 0,
+        "Width": 880,
+        "Height": 660
+      },
+      "Sha256": "DF3855F7257E74AED9EC0F4A3A2321F07C93F4DD3EE1092BB9BF53C12506ED6C",
+      "OriginalSha256": "084DB75900BC4A0CD2C922CE84960F2233F43D80AACBD1A29128C2A49F57E8A3",
+      "Targets": [
+        "v3-standardized/tiles/character-47-1.png",
+        "conqueror-creation/tiles/character-47-1.png"
+      ],
+      "Width": 256,
+      "Height": 192,
+      "Prompts": [
+        "character-47-normal-1-prompt.txt",
+        "character-47-normal-1-repair-prompt.txt",
+        "character-47-normal-1-headtrial-prompt.txt"
+      ]
+    },
+    {
+      "Kind": "normal",
+      "Id": 2,
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-normal-2-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-normal-v003/normal-2-2.png",
+      "Crop": {
+        "X": 140,
+        "Y": 120,
+        "Width": 840,
+        "Height": 630
+      },
+      "Sha256": "6DDC4FE3C8FA6EF200466EE35B3DC85D430C6AC5C153C192625B06E830923BA4",
+      "OriginalSha256": "E00BCBF22C19825404A37484766DDBA352FEE91CA98142C723D3271EEA86F40C",
+      "Targets": [
+        "v3-standardized/tiles/character-47-2.png",
+        "conqueror-creation/tiles/character-47-2.png"
+      ],
+      "Width": 256,
+      "Height": 192,
+      "Prompts": [
+        "character-47-normal-2-prompt.txt",
+        "character-47-normal-2-repair-prompt.txt"
+      ]
+    },
+    {
+      "Kind": "normal",
+      "Id": 3,
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-normal-3-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-normal-v003/normal-3-2.png",
+      "Crop": {
+        "X": 130,
+        "Y": 100,
+        "Width": 880,
+        "Height": 660
+      },
+      "Sha256": "4F941D8A29D3A27C07CAD0A78FB9C07127E2964055A7B0DE9D3452527B0AD314",
+      "OriginalSha256": "AD5DF6C0F5900A7BCC5A9110A342493501B012CDA7C28A910959543CD0398D0D",
+      "Targets": [
+        "v3-standardized/tiles/character-47-3.png",
+        "conqueror-creation/tiles/character-47-3.png"
+      ],
+      "Width": 256,
+      "Height": 192,
+      "Prompts": [
+        "character-47-normal-3-prompt.txt",
+        "character-47-normal-3-repair-prompt.txt"
+      ]
+    },
+    {
+      "Kind": "normal",
+      "Id": 4,
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-normal-4-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-normal-v003/normal-4-2.png",
+      "Crop": {
+        "X": 120,
+        "Y": 150,
+        "Width": 848,
+        "Height": 636
+      },
+      "Sha256": "9D0344F5B0911B8AB7717EBA5EBC6EDEBF00D4A1F8686111C7E1F15852367F29",
+      "OriginalSha256": "539632F803392D8B049B5D827AEF7615D1ABD22BE0961748603D39E49F79B795",
+      "Targets": [
+        "v3-standardized/tiles/character-47-4.png",
+        "conqueror-creation/tiles/character-47-4.png"
+      ],
+      "Width": 256,
+      "Height": 192,
+      "Prompts": [
+        "character-47-normal-4-prompt.txt",
+        "character-47-normal-4-repair-prompt.txt"
+      ]
+    },
+    {
+      "Kind": "normal",
+      "Id": 5,
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-normal-5-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-normal-v003/normal-5-2.png",
+      "Crop": {
+        "X": 170,
+        "Y": 160,
+        "Width": 832,
+        "Height": 624
+      },
+      "Sha256": "1315A00E6CB066E2C8E7D431D41F877C8A900EF7AECAEE0DD8345125CBBDD2E7",
+      "OriginalSha256": "145984A16BA3CBFD0843B5E0B03FEF678747BE1C9244D2100BC207E888FAA196",
+      "Targets": [
+        "v3-standardized/tiles/character-47-5.png",
+        "conqueror-creation/tiles/character-47-5.png"
+      ],
+      "Width": 256,
+      "Height": 192,
+      "Prompts": [
+        "character-47-normal-5-prompt.txt",
+        "character-47-normal-5-repair-prompt.txt"
+      ]
+    },
+    {
+      "Kind": "normal",
+      "Id": 6,
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-normal-6-framing-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-normal-v003/normal-6-2.png",
+      "Crop": {
+        "X": 220,
+        "Y": 150,
+        "Width": 704,
+        "Height": 528
+      },
+      "Sha256": "C7FB7ADCF16E8844575957CB4DC8E4EFDF36D7A061987502F193281C1C5A0CD7",
+      "OriginalSha256": "1883D121769B6422FFE52864A526A37F4F86B942B58B66844AE4114E874BAD6B",
+      "Targets": [
+        "v3-standardized/tiles/character-47-6.png",
+        "conqueror-creation/tiles/character-47-6.png"
+      ],
+      "Width": 256,
+      "Height": 192,
+      "Prompts": [
+        "character-47-normal-6-prompt.txt",
+        "character-47-normal-6-framing-v002-prompt.txt"
+      ]
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "formal",
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-formal-v005-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-newspaper-v008/formal-color.png",
+      "Crop": {
+        "X": 230,
+        "Y": 0,
+        "Width": 660,
+        "Height": 880
+      },
+      "Sha256": "989074435F5BD039EC433EDAF31B32D33E19CE3641139EDA16C00F00FC357261",
+      "OriginalSha256": "7E630907000A42ADAE429219F1DE7E8AD1BDE53B8AE6205B82D566312AD41376",
+      "Targets": [
+        "newspaper/character-47-formal.png"
+      ],
+      "Width": 300,
+      "Height": 400,
+      "Prompts": [
+        "character-47-formal-prompt.txt",
+        "character-47-formal-proportion-trial-prompt.txt",
+        "character-47-formal-moderate-v003-prompt.txt",
+        "character-47-formal-framing-v004-prompt.txt",
+        "character-47-formal-v005-prompt.txt"
+      ]
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "election",
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-election-fullbody-v001-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-newspaper-v008/election-color.png",
+      "Crop": {
+        "X": 230,
+        "Y": 0,
+        "Width": 660,
+        "Height": 880
+      },
+      "Sha256": "A379619E1CFD3E0DF482E74C3A5F0B0E3CD01337D2449739FDA5E1242182F03C",
+      "OriginalSha256": "FA4F4F4EAE861C2DE3E20A61AC6C558CA0004964A4D29B191FACC0ED0E0FB170",
+      "Targets": [
+        "newspaper/character-47-election.png"
+      ],
+      "Width": 300,
+      "Height": 400,
+      "Prompts": [
+        "character-47-election-fullbody-v001-prompt.txt"
+      ]
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "friends",
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-friends-fullbody-v001-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-newspaper-v008/friends-color.png",
+      "Crop": {
+        "X": 230,
+        "Y": 0,
+        "Width": 660,
+        "Height": 880
+      },
+      "Sha256": "8D1871F66E5424DA8870C26D56A8979841F9A634AF8673B6A2D4ADCB57CF0557",
+      "OriginalSha256": "DCBA487F7773723D620F259D24034C7445E3CC37BEF2D3F8AD0580FD9A8EB2E4",
+      "Targets": [
+        "newspaper/character-47-friends.png"
+      ],
+      "Width": 300,
+      "Height": 400,
+      "Prompts": [
+        "character-47-friends-fullbody-v001-prompt.txt"
+      ]
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "history",
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-history-fullbody-v001-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-newspaper-v008/history-color.png",
+      "Crop": {
+        "X": 230,
+        "Y": 0,
+        "Width": 660,
+        "Height": 880
+      },
+      "Sha256": "8D42942025B707607F860872FD3126DAF1199F4A90FDE796FB891A8C794AD918",
+      "OriginalSha256": "4AB7CF821B0ECE7A4F6AED02272CE3A2F0129718D36664151FEB57846046A18D",
+      "Targets": [
+        "newspaper/character-47-history.png"
+      ],
+      "Width": 300,
+      "Height": 400,
+      "Prompts": [
+        "character-47-history-fullbody-v001-prompt.txt"
+      ]
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "id",
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-id-framing-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-newspaper-v008/id-color.png",
+      "Crop": {
+        "X": 230,
+        "Y": 50,
+        "Width": 660,
+        "Height": 880
+      },
+      "Sha256": "B04AA5CFC678A958E8A9883EA853AC3740854F901DE261B6531D2C77B2775A26",
+      "OriginalSha256": "94596DF24BD0E52752A4302128CC33386738C029E0982F2E5262C4671F772B3D",
+      "Targets": [
+        "newspaper/character-47-id.png"
+      ],
+      "Width": 300,
+      "Height": 400,
+      "Prompts": [
+        "character-47-id-fullbody-v001-prompt.txt",
+        "character-47-id-framing-v002-prompt.txt"
+      ]
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "idol",
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-idol-framing-v003-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-newspaper-v008/idol-color.png",
+      "Crop": {
+        "X": 150,
+        "Y": 40,
+        "Width": 792,
+        "Height": 1056
+      },
+      "Sha256": "D984DAECC1DB1AD561AE21AEC7DB7932A3A6A5376955EB69E287B67CE6CA9DFE",
+      "OriginalSha256": "ADF6B838BF0BED20A84DFEDBB237CDA0B96CEEBAB8A2FDEE00270110FF04E4D0",
+      "Targets": [
+        "newspaper/character-47-idol.png"
+      ],
+      "Width": 300,
+      "Height": 400,
+      "Prompts": [
+        "character-47-idol-fullbody-v001-prompt.txt",
+        "character-47-idol-background-v002-prompt.txt",
+        "character-47-idol-framing-v003-prompt.txt"
+      ]
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "paparazzi",
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-paparazzi-background-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-newspaper-v008/paparazzi-color.png",
+      "Crop": {
+        "X": 200,
+        "Y": 0,
+        "Width": 720,
+        "Height": 960
+      },
+      "Sha256": "4788D39489F2BFABDA1356FED3E7C441360F8162BA18FAD66D93DA08B764FF5B",
+      "OriginalSha256": "67F917B1DC906561CD1116723912755882C68064D1962DE6E5ED00237A54A608",
+      "Targets": [
+        "newspaper/character-47-paparazzi.png"
+      ],
+      "Width": 300,
+      "Height": 400,
+      "Prompts": [
+        "character-47-paparazzi-fullbody-v001-prompt.txt",
+        "character-47-paparazzi-background-v002-prompt.txt"
+      ]
+    },
+    {
+      "Kind": "newspaper",
+      "Id": "coin",
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-coin-side-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-newspaper-v008/coin-color.png",
+      "Crop": {
+        "X": 230,
+        "Y": 0,
+        "Width": 660,
+        "Height": 880
+      },
+      "Sha256": "B0BBFEDD3524F2AB51AECC1104E8DA432FEB3A312406221E9424022A482BFE79",
+      "OriginalSha256": "67A551DC7659E462FEFA4CA1D0E46EF6AE1874DE6E5C4E98E870CA829D4A6660",
+      "Targets": [
+        "newspaper/character-47-coin.png"
+      ],
+      "Width": 300,
+      "Height": 400,
+      "Prompts": [
+        "character-47-coin-fullbody-v001-prompt.txt",
+        "character-47-coin-side-v002-prompt.txt"
+      ]
+    }
+  ],
+  "Remaining": null,
+  "Build": {
+    "Command": "dotnet build FolderVerse/FolderVerse.csproj --no-restore -v:q",
+    "ExitCode": 0,
+    "Warnings": 0,
+    "Errors": 0
+  },
+  "Distribution": {
+    "VerifiedCompiledTextures": 12,
+    "VerifiedNewspaperPngs": 8,
+    "Method": "Normal: XNB premultiplied RGBA pixel comparison. Newspaper: SHA256 exact file match.",
+    "Output": "FolderVerse/bin/Debug/net9.0/Content/Images/Portraits",
+    "GameLaunched": false
+  },
+  "Review": {
+    "Normal1to5": "Fullbody and 256x192/circle diagnostic reviewed 2026-10-19 23:33 JST; hat through shoe tips included in masters; facial expressions, glove differences, props and battery colors checked.",
+    "Limitations": [
+      "Exact anatomical headcount not asserted for hidden crowns and bent/seated poses",
+      "Small costume/toy detail variation remains; lower costume completion not separately user-approved",
+      "Circle preview is a diagnostic, not live-game UI verification",
+      "Coin master shoes retain slight three-quarter angle; runtime crop uses right-facing head/torso. Paparazzi upper hair retains locally low contrast against sky."
+    ],
+    "Newspaper": "All 8 fullbody masters reviewed; formal v005 selected over v003 for cleaner background, ID v002 and idol v003 framing repaired; grayscale output v008 reviewed. Hat/head anatomy estimates not presented as measured values."
+  },
+  "CompletedAt": "2026-10-20 00:03 JST",
+  "GenerationProgress": "generation-progress.json"
+}
