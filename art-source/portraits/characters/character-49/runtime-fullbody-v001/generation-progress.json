@@ -1,6 +1,6 @@
 {
   "CharacterId": 49,
-  "UpdatedAt": "2026-10-20T21:34:00+09:00",
+  "UpdatedAt": "2026-10-20T22:34:00+09:00",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018",
   "GameAdopted": false,
@@ -56,19 +56,53 @@
     {
       "Id": 2,
       "Kind": "normal",
-      "Status": "generated-framing-review-pending-not-adopted",
-      "Source": "character-49-normal-2-v001-generated.png",
+      "Status": "framing-improved-visually-reviewed-not-adopted",
+      "Source": "character-49-normal-2-v002-generated.png",
       "Width": 1448,
       "Height": 1086,
-      "Sha256": "3aeb9a94fde69d37b92c10ccce3c399d99889a9a76c4c113efc6aef59625a066",
+      "Sha256": "2a890ff9b66df54ce3e4a251179c8fdb9cc7a1f04b68af0a2e693b5e45119924",
       "References": [
         "art-source/portraits/characters/character-49/character-49-2-v003-generated.png"
       ],
       "Prompts": [
-        "character-49-normal-2-v001-prompt.txt"
+        "character-49-normal-2-v001-prompt.txt",
+        "character-49-normal-2-v002-prompt.txt"
       ],
-      "Review": "Closed happy eyes, red glasses, closed smile, panda hood, black bangs and long braided sections, white gloved cup hand and other gloved hand by green battery panda, tea/pastries/sofa warm room preserved. Both shoes visible. Hood right ear touches top, trailing robe meets right edge: fullbody margins failed. Seated/crossleg ratio not measured, legs long and face small relative to scene. Opaque legwear/shoes/lower garment completion provisional. No runtime adoption."
+      "Review": "Both hood ears now clear of top and entire right trailing robe ends inside image with narrow margin, less than requested5%. Both shoes visible. Closed happy eyes and mouth, red glasses, panda hood/black hair braided sections, white gloved cup hand and other glove, panda/green battery and tea room retained. 256x192 hood/face/hands/cup/panda/battery readable, face small relative to scene. Seated anatomical head ratio unmeasured, opaque lower legwear and shoes provisional. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-49-normal-2-v001-generated.png",
+          "Sha256": "3aeb9a94fde69d37b92c10ccce3c399d99889a9a76c4c113efc6aef59625a066",
+          "Review": "Closed happy eyes, red glasses, closed smile, panda hood, black bangs and long braided sections, white gloved cup hand and other gloved hand by green battery panda, tea/pastries/sofa warm room preserved. Both shoes visible. Hood right ear touches top, trailing robe meets right edge: fullbody margins failed. Seated/crossleg ratio not measured, legs long and face small relative to scene. Opaque legwear/shoes/lower garment completion provisional. No runtime adoption."
+        }
+      ],
+      "Preview": {
+        "File": "normal-2-v002-preview.png",
+        "Crop": {
+          "X": 380,
+          "Y": 40,
+          "Width": 720,
+          "Height": 540
+        },
+        "Status": "diagnostic-visually-reviewed-not-selected"
+      }
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Status": "generated-framing-review-pending-not-adopted",
+      "Source": "character-49-normal-3-v001-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "e19e0346b6836067a942209b78d97497798e6277202ab638af71c76a7331ff08",
+      "References": [
+        "art-source/portraits/characters/character-49/character-49-3-v003-generated.png"
+      ],
+      "Prompts": [
+        "character-49-normal-3-v001-prompt.txt"
+      ],
+      "Review": "Stern closed mouth/amber eyes/red glasses/panda hood/black bangs retained. Bare upward palm with purple star circle, other bare hand on seat, green lightning battery panda by shoulder and separate red chest battery preserved. Both shoes visible. Right hood ear touches top; outer robe partly hidden by foreground furniture and side cushions, full hem not cleanly assessable. Exact seated anatomy ratio unmeasured. Generated leg covering has thigh break unlike requested opaque whole coverage; no added erotic emphasis. Lower shoes/robe provisional. Runtime unchanged."
     }
   ],
-  "Next": "Normal2 fix hood top and right hem margin, improve face scale; then normal3 source inspection. Remaining12 scenes ungenerated."
+  "Next": "Normal3 hood top margin/whole hem framing and256x192 diagnostic, then normal4 scene inspection. Remaining11 ungenerated."
 }
