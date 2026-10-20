@@ -1,10 +1,10 @@
 {
   "CharacterId": 47,
-  "UpdatedAt": "2026-10-19 22:33 JST",
+  "UpdatedAt": "2026-10-20 00:03 JST",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018 with20261019 uncropped fullbody instruction",
-  "GameAdopted": false,
-  "Next": "resolve anatomical body/formal QA and remaining visual differences; adoption build distribution",
+  "GameAdopted": true,
+  "Next": "No.47 complete. Continue No.48 next run.",
   "Images": [
     {
       "Id": 1,
@@ -22,7 +22,7 @@
         "character-47-normal-1-repair-prompt.txt",
         "character-47-normal-1-headtrial-prompt.txt"
       ],
-      "Status": "fullbody-trial-reviewed-not-adopted",
+      "Status": "adopted-build-distribution-verified",
       "Limitations": [
         "skull crown hidden under toque and tilted pose prevent exact head-count confirmation",
         "lower costume not visible in source is provisional completion",
@@ -51,7 +51,9 @@
         "Tile": "qa-normal-v002/normal-1-2.png",
         "Circle": "qa-normal-v002/normal-1-3.png",
         "Status": "visually-reviewed-candidate-not-adopted"
-      }
+      },
+      "Adoption": "adoption.json",
+      "AdoptedSource": "character-47-normal-1-headtrial-generated.png"
     },
     {
       "Id": 2,
@@ -69,7 +71,7 @@
         "character-47-normal-2-prompt.txt",
         "character-47-normal-2-repair-prompt.txt"
       ],
-      "Status": "fullbody-trial-reviewed-not-adopted",
+      "Status": "adopted-build-distribution-verified",
       "Limitations": [
         "Seated pose obscures exact body head-count",
         "lower costume continued from trial normal1; not newly user-approved",
@@ -98,7 +100,9 @@
         "Tile": "qa-normal-v002/normal-2-2.png",
         "Circle": "qa-normal-v002/normal-2-3.png",
         "Status": "visually-reviewed-candidate-not-adopted"
-      }
+      },
+      "Adoption": "adoption.json",
+      "AdoptedSource": "character-47-normal-2-generated.png"
     },
     {
       "Id": 3,
@@ -116,7 +120,7 @@
         "character-47-normal-3-prompt.txt",
         "character-47-normal-3-repair-prompt.txt"
       ],
-      "Status": "fullbody-trial-reviewed-not-adopted",
+      "Status": "adopted-build-distribution-verified",
       "Limitations": [
         "Seated pose obscures exact body head-count",
         "lower costume continued from trial normal1; not newly user-approved",
@@ -145,7 +149,9 @@
         "Tile": "qa-normal-v002/normal-3-2.png",
         "Circle": "qa-normal-v002/normal-3-3.png",
         "Status": "visually-reviewed-candidate-not-adopted"
-      }
+      },
+      "Adoption": "adoption.json",
+      "AdoptedSource": "character-47-normal-3-generated.png"
     },
     {
       "Id": 4,
@@ -163,7 +169,7 @@
         "character-47-normal-4-prompt.txt",
         "character-47-normal-4-repair-prompt.txt"
       ],
-      "Status": "fullbody-trial-reviewed-not-adopted",
+      "Status": "adopted-build-distribution-verified",
       "Limitations": [
         "headcount not strictly measured; seated/hidden joints",
         "lower costume continued from unapproved trial",
@@ -193,7 +199,9 @@
         "Tile": "qa-normal-v002/normal-4-2.png",
         "Circle": "qa-normal-v002/normal-4-3.png",
         "Status": "visually-reviewed-candidate-not-adopted"
-      }
+      },
+      "Adoption": "adoption.json",
+      "AdoptedSource": "character-47-normal-4-generated.png"
     },
     {
       "Id": 5,
@@ -211,7 +219,7 @@
         "character-47-normal-5-prompt.txt",
         "character-47-normal-5-repair-prompt.txt"
       ],
-      "Status": "fullbody-trial-reviewed-not-adopted",
+      "Status": "adopted-build-distribution-verified",
       "Limitations": [
         "headcount not strictly measured; seated/hidden joints",
         "lower costume continued from unapproved trial",
@@ -241,7 +249,9 @@
         "Tile": "qa-normal-v002/normal-5-2.png",
         "Circle": "qa-normal-v002/normal-5-3.png",
         "Status": "visually-reviewed-candidate-not-adopted"
-      }
+      },
+      "Adoption": "adoption.json",
+      "AdoptedSource": "character-47-normal-5-generated.png"
     },
     {
       "Id": 6,
@@ -258,7 +268,7 @@
       "Prompts": [
         "character-47-normal-6-prompt.txt"
       ],
-      "Status": "fullbody-trial-reviewed-not-adopted",
+      "Status": "adopted-build-distribution-verified",
       "Limitations": [
         "headcount not strictly measured; seated/hidden joints",
         "lower costume continued from unapproved trial",
@@ -304,7 +314,9 @@
           "Crop": "qa-normal-v003/normal-6-2.png",
           "CropParameters": "normal-crops-v003.json"
         }
-      ]
+      ],
+      "Adoption": "adoption.json",
+      "AdoptedSource": "character-47-normal-6-framing-v002-generated.png"
     },
     {
       "Id": "formal",
@@ -322,7 +334,7 @@
         "character-47-formal-prompt.txt",
         "character-47-formal-proportion-trial-prompt.txt"
       ],
-      "Status": "user-measured-4.5-heads-not-adopted",
+      "Status": "adopted-build-distribution-verified",
       "Limitations": [
         "User says second trial headcount too low; prior assistant too-high assessment withdrawn",
         "Second trial topmargin insufficient",
@@ -372,7 +384,9 @@
         "Y": 0,
         "Width": 660,
         "Height": 880
-      }
+      },
+      "AdoptedSource": "character-47-formal-v005-generated.png",
+      "Adoption": "adoption.json"
     },
     {
       "Id": "election",
@@ -389,7 +403,7 @@
       "Prompts": [
         "character-47-election-fullbody-v001-prompt.txt"
       ],
-      "Status": "fullbody-reviewed-color-gray-preview-not-adopted",
+      "Status": "adopted-build-distribution-verified",
       "Previews": [
         "character-47-election-fullbody-v001-preview-color.png",
         "character-47-election-fullbody-v001-preview-gray.png"
@@ -408,7 +422,9 @@
         "Y": 0,
         "Width": 660,
         "Height": 880
-      }
+      },
+      "AdoptedSource": "character-47-election-fullbody-v001-generated.png",
+      "Adoption": "adoption.json"
     },
     {
       "Id": "friends",
@@ -425,7 +441,7 @@
       "Prompts": [
         "character-47-friends-fullbody-v001-prompt.txt"
       ],
-      "Status": "fullbody-reviewed-color-gray-preview-not-adopted",
+      "Status": "adopted-build-distribution-verified",
       "Previews": [
         "character-47-friends-fullbody-v001-preview-color.png",
         "character-47-friends-fullbody-v001-preview-gray.png"
@@ -445,7 +461,9 @@
         "Y": 0,
         "Width": 660,
         "Height": 880
-      }
+      },
+      "AdoptedSource": "character-47-friends-fullbody-v001-generated.png",
+      "Adoption": "adoption.json"
     },
     {
       "Id": "history",
@@ -462,7 +480,7 @@
       "Prompts": [
         "character-47-history-fullbody-v001-prompt.txt"
       ],
-      "Status": "fullbody-reviewed-color-gray-preview-not-adopted",
+      "Status": "adopted-build-distribution-verified",
       "Previews": [
         "character-47-history-fullbody-v001-preview-color.png",
         "character-47-history-fullbody-v001-preview-gray.png"
@@ -481,7 +499,9 @@
         "Y": 0,
         "Width": 660,
         "Height": 880
-      }
+      },
+      "AdoptedSource": "character-47-history-fullbody-v001-generated.png",
+      "Adoption": "adoption.json"
     },
     {
       "Id": "id",
@@ -498,7 +518,7 @@
       "Prompts": [
         "character-47-id-fullbody-v001-prompt.txt"
       ],
-      "Status": "fullbody-reviewed-color-gray-preview-not-adopted",
+      "Status": "adopted-build-distribution-verified",
       "Previews": [
         "character-47-id-fullbody-v001-preview-color.png",
         "character-47-id-fullbody-v001-preview-gray.png"
@@ -517,7 +537,21 @@
         "Y": 0,
         "Width": 660,
         "Height": 880
-      }
+      },
+      "Trials": [
+        {
+          "Source": "character-47-id-framing-v002-generated.png",
+          "Prompt": "character-47-id-framing-v002-prompt.txt",
+          "References": [
+            "character-47-id-fullbody-v001-generated.png"
+          ],
+          "Sha256": "94596DF24BD0E52752A4302128CC33386738C029E0982F2E5262C4671F772B3D",
+          "Review": "Full hat and both shoes inside frame with visible surrounding background; neutral/front ID or dancing/open hands idol retained. Anatomy not exactly measured.",
+          "Preview": "qa-newspaper-v008/id-gray.png"
+        }
+      ],
+      "AdoptedSource": "character-47-id-framing-v002-generated.png",
+      "Adoption": "adoption.json"
     },
     {
       "Id": "idol",
@@ -534,7 +568,7 @@
       "Prompts": [
         "character-47-idol-fullbody-v001-prompt.txt"
       ],
-      "Status": "fullbody-reviewed-color-gray-preview-not-adopted",
+      "Status": "adopted-build-distribution-verified",
       "Previews": [
         "character-47-idol-fullbody-v001-preview-color.png",
         "character-47-idol-fullbody-v001-preview-gray.png"
@@ -576,8 +610,20 @@
           "Review": "Darkened quieter stage improves grayscale face/hair/hand silhouette. Overall pose/framing retained visually; pixel-identical subject preservation not asserted, fine costume/hair differences remain. Body review and top margin unresolved.",
           "Crop": "qa-newspaper-v003/idol-color.png",
           "Gray": "qa-newspaper-v003/idol-gray.png"
+        },
+        {
+          "Source": "character-47-idol-framing-v003-generated.png",
+          "Prompt": "character-47-idol-framing-v003-prompt.txt",
+          "References": [
+            "character-47-idol-background-v002-generated.png"
+          ],
+          "Sha256": "ADF6B838BF0BED20A84DFEDBB237CDA0B96CEEBAB8A2FDEE00270110FF04E4D0",
+          "Review": "Full hat and both shoes inside frame with visible surrounding background; neutral/front ID or dancing/open hands idol retained. Anatomy not exactly measured.",
+          "Preview": "qa-newspaper-v008/idol-gray.png"
         }
-      ]
+      ],
+      "AdoptedSource": "character-47-idol-framing-v003-generated.png",
+      "Adoption": "adoption.json"
     },
     {
       "Id": "paparazzi",
@@ -594,7 +640,7 @@
       "Prompts": [
         "character-47-paparazzi-fullbody-v001-prompt.txt"
       ],
-      "Status": "fullbody-reviewed-color-gray-preview-not-adopted",
+      "Status": "adopted-build-distribution-verified",
       "Previews": [
         "character-47-paparazzi-fullbody-v001-preview-color.png",
         "character-47-paparazzi-fullbody-v001-preview-gray.png"
@@ -629,7 +675,9 @@
           "Crop": "qa-newspaper-v004/paparazzi-color.png",
           "Gray": "qa-newspaper-v004/paparazzi-gray.png"
         }
-      ]
+      ],
+      "AdoptedSource": "character-47-paparazzi-background-v002-generated.png",
+      "Adoption": "adoption.json"
     },
     {
       "Id": "coin",
@@ -646,7 +694,7 @@
       "Prompts": [
         "character-47-coin-fullbody-v001-prompt.txt"
       ],
-      "Status": "fullbody-reviewed-color-gray-preview-not-adopted",
+      "Status": "adopted-build-distribution-verified",
       "Previews": [
         "character-47-coin-fullbody-v001-preview-color.png",
         "character-47-coin-fullbody-v001-preview-gray.png"
@@ -677,7 +725,9 @@
           "Review": "Face and torso now right profile; footwear still slightly three-quarter. Entire hat and footwear inside frame. Exact anatomical headcount not established. Candidate only; runtime unchanged.",
           "Preview": "qa-newspaper-v005/coin-gray.png"
         }
-      ]
+      ],
+      "AdoptedSource": "character-47-coin-side-v002-generated.png",
+      "Adoption": "adoption.json"
     }
   ],
   "OriginalRuntimeBackups": 20,
@@ -750,7 +800,10 @@
     "Comparison": "staging-review-v002.html",
     "PreparationScript": "prepare-staging-v002.cjs",
     "TechnicalPreflightPassed": true,
-    "RuntimeChanged": false,
-    "BodyQAPassed": false
-  }
+    "RuntimeChanged": true,
+    "BodyQAPassed": false,
+    "Note": "Only normal6 applied; other 18 targets staged only. Historical staging manifest records pre-application state."
+  },
+  "PartiallyGameAdopted": false,
+  "Adoption": "adoption.json"
 }

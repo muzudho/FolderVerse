@@ -1,0 +1,198 @@
+[
+  {
+    "Id": 1,
+    "Kind": "normal",
+    "Source": "character-48-normal-1-v003-generated.png",
+    "Tile": "qa-runtime-v001/normal-1.png",
+    "Crop": {
+      "Width": 640,
+      "Y": 160,
+      "Height": 480,
+      "X": 260
+    },
+    "Width": 256,
+    "Height": 192
+  },
+  {
+    "Id": 2,
+    "Kind": "normal",
+    "Source": "character-48-normal-2-v004-generated.png",
+    "Tile": "qa-runtime-v001/normal-2.png",
+    "Crop": {
+      "Width": 720,
+      "Y": 0,
+      "Height": 540,
+      "X": 240
+    },
+    "Width": 256,
+    "Height": 192
+  },
+  {
+    "Id": 3,
+    "Kind": "normal",
+    "Source": "character-48-normal-3-v002-generated.png",
+    "Tile": "qa-runtime-v001/normal-3.png",
+    "Crop": {
+      "Width": 720,
+      "Y": 0,
+      "Height": 540,
+      "X": 200
+    },
+    "Width": 256,
+    "Height": 192
+  },
+  {
+    "Id": 4,
+    "Kind": "normal",
+    "Source": "character-48-normal-4-v003-generated.png",
+    "Tile": "qa-runtime-v001/normal-4.png",
+    "Crop": {
+      "Width": 840,
+      "Y": 0,
+      "Height": 630,
+      "X": 220
+    },
+    "Width": 256,
+    "Height": 192
+  },
+  {
+    "Id": 5,
+    "Kind": "normal",
+    "Source": "character-48-normal-5-v002-generated.png",
+    "Tile": "qa-runtime-v001/normal-5.png",
+    "Crop": {
+      "Width": 704,
+      "Y": 50,
+      "Height": 528,
+      "X": 220
+    },
+    "Width": 256,
+    "Height": 192
+  },
+  {
+    "Id": 6,
+    "Kind": "normal",
+    "Source": "character-48-normal-6-v003-generated.png",
+    "Tile": "qa-runtime-v001/normal-6.png",
+    "Crop": {
+      "Width": 768,
+      "Y": 80,
+      "Height": 576,
+      "X": 280
+    },
+    "Width": 256,
+    "Height": 192
+  },
+  {
+    "Id": "formal",
+    "Kind": "newspaper",
+    "Source": "character-48-formal-v005-generated.png",
+    "Tile": "qa-runtime-v001/newspaper-formal.png",
+    "Crop": {
+      "Width": 561,
+      "Y": 40,
+      "Height": 748,
+      "X": 280
+    },
+    "Width": 300,
+    "Height": 400
+  },
+  {
+    "Id": "election",
+    "Kind": "newspaper",
+    "Source": "character-48-election-v002-generated.png",
+    "Tile": "qa-runtime-v001/newspaper-election.png",
+    "Crop": {
+      "Width": 561,
+      "Y": 0,
+      "Height": 748,
+      "X": 280
+    },
+    "Width": 300,
+    "Height": 400
+  },
+  {
+    "Id": "friends",
+    "Kind": "newspaper",
+    "Source": "character-48-friends-v003-generated.png",
+    "Tile": "qa-runtime-v001/newspaper-friends.png",
+    "Crop": {
+      "Width": 561,
+      "Y": 230,
+      "Height": 748,
+      "X": 270
+    },
+    "Width": 300,
+    "Height": 400
+  },
+  {
+    "Id": "history",
+    "Kind": "newspaper",
+    "Source": "character-48-history-v002-generated.png",
+    "Tile": "qa-runtime-v001/newspaper-history.png",
+    "Crop": {
+      "Width": 561,
+      "Y": 0,
+      "Height": 748,
+      "X": 310
+    },
+    "Width": 300,
+    "Height": 400
+  },
+  {
+    "Id": "id",
+    "Kind": "newspaper",
+    "Source": "character-48-id-v003-generated.png",
+    "Tile": "qa-runtime-v001/newspaper-id.png",
+    "Crop": {
+      "Width": 561,
+      "Y": 0,
+      "Height": 748,
+      "X": 260
+    },
+    "Width": 300,
+    "Height": 400
+  },
+  {
+    "Id": "idol",
+    "Kind": "newspaper",
+    "Source": "character-48-idol-v003-generated.png",
+    "Tile": "qa-runtime-v001/newspaper-idol.png",
+    "Crop": {
+      "Width": 900,
+      "Y": 0,
+      "Height": 1200,
+      "X": 120
+    },
+    "Width": 300,
+    "Height": 400
+  },
+  {
+    "Id": "paparazzi",
+    "Kind": "newspaper",
+    "Source": "character-48-paparazzi-v003-generated.png",
+    "Tile": "qa-runtime-v001/newspaper-paparazzi.png",
+    "Crop": {
+      "Width": 660,
+      "Y": 120,
+      "Height": 880,
+      "X": 240
+    },
+    "Width": 300,
+    "Height": 400
+  },
+  {
+    "Id": "coin",
+    "Kind": "newspaper",
+    "Source": "character-48-coin-v002-generated.png",
+    "Tile": "qa-runtime-v001/newspaper-coin.png",
+    "Crop": {
+      "Width": 510,
+      "Y": 0,
+      "Height": 680,
+      "X": 305
+    },
+    "Width": 300,
+    "Height": 400
+  }
+]

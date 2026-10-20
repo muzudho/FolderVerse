@@ -1,0 +1,149 @@
+{
+  "CharacterId": 47,
+  "Status": "NORMAL6_ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
+  "AppliedAt": "2026-10-19 23:33 JST",
+  "WholeCharacterComplete": false,
+  "Images": [
+    {
+      "Kind": "normal",
+      "Id": 1,
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-normal-1-headtrial-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-normal-v003/normal-1-2.png",
+      "Crop": {
+        "X": 100,
+        "Y": 0,
+        "Width": 880,
+        "Height": 660
+      },
+      "Sha256": "DF3855F7257E74AED9EC0F4A3A2321F07C93F4DD3EE1092BB9BF53C12506ED6C",
+      "OriginalSha256": "084DB75900BC4A0CD2C922CE84960F2233F43D80AACBD1A29128C2A49F57E8A3",
+      "Targets": [
+        "v3-standardized/tiles/character-47-1.png",
+        "conqueror-creation/tiles/character-47-1.png"
+      ],
+      "Width": 256,
+      "Height": 192
+    },
+    {
+      "Kind": "normal",
+      "Id": 2,
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-normal-2-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-normal-v003/normal-2-2.png",
+      "Crop": {
+        "X": 140,
+        "Y": 120,
+        "Width": 840,
+        "Height": 630
+      },
+      "Sha256": "6DDC4FE3C8FA6EF200466EE35B3DC85D430C6AC5C153C192625B06E830923BA4",
+      "OriginalSha256": "E00BCBF22C19825404A37484766DDBA352FEE91CA98142C723D3271EEA86F40C",
+      "Targets": [
+        "v3-standardized/tiles/character-47-2.png",
+        "conqueror-creation/tiles/character-47-2.png"
+      ],
+      "Width": 256,
+      "Height": 192
+    },
+    {
+      "Kind": "normal",
+      "Id": 3,
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-normal-3-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-normal-v003/normal-3-2.png",
+      "Crop": {
+        "X": 130,
+        "Y": 100,
+        "Width": 880,
+        "Height": 660
+      },
+      "Sha256": "4F941D8A29D3A27C07CAD0A78FB9C07127E2964055A7B0DE9D3452527B0AD314",
+      "OriginalSha256": "AD5DF6C0F5900A7BCC5A9110A342493501B012CDA7C28A910959543CD0398D0D",
+      "Targets": [
+        "v3-standardized/tiles/character-47-3.png",
+        "conqueror-creation/tiles/character-47-3.png"
+      ],
+      "Width": 256,
+      "Height": 192
+    },
+    {
+      "Kind": "normal",
+      "Id": 4,
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-normal-4-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-normal-v003/normal-4-2.png",
+      "Crop": {
+        "X": 120,
+        "Y": 150,
+        "Width": 848,
+        "Height": 636
+      },
+      "Sha256": "9D0344F5B0911B8AB7717EBA5EBC6EDEBF00D4A1F8686111C7E1F15852367F29",
+      "OriginalSha256": "539632F803392D8B049B5D827AEF7615D1ABD22BE0961748603D39E49F79B795",
+      "Targets": [
+        "v3-standardized/tiles/character-47-4.png",
+        "conqueror-creation/tiles/character-47-4.png"
+      ],
+      "Width": 256,
+      "Height": 192
+    },
+    {
+      "Kind": "normal",
+      "Id": 5,
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-normal-5-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-normal-v003/normal-5-2.png",
+      "Crop": {
+        "X": 170,
+        "Y": 160,
+        "Width": 832,
+        "Height": 624
+      },
+      "Sha256": "1315A00E6CB066E2C8E7D431D41F877C8A900EF7AECAEE0DD8345125CBBDD2E7",
+      "OriginalSha256": "145984A16BA3CBFD0843B5E0B03FEF678747BE1C9244D2100BC207E888FAA196",
+      "Targets": [
+        "v3-standardized/tiles/character-47-5.png",
+        "conqueror-creation/tiles/character-47-5.png"
+      ],
+      "Width": 256,
+      "Height": 192
+    },
+    {
+      "Kind": "normal",
+      "Id": 6,
+      "Source": "art-source/portraits/characters/character-47/runtime-fullbody-v001/character-47-normal-6-framing-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-47/runtime-fullbody-v001/qa-normal-v003/normal-6-2.png",
+      "Crop": {
+        "X": 220,
+        "Y": 150,
+        "Width": 704,
+        "Height": 528
+      },
+      "Sha256": "C7FB7ADCF16E8844575957CB4DC8E4EFDF36D7A061987502F193281C1C5A0CD7",
+      "OriginalSha256": "1883D121769B6422FFE52864A526A37F4F86B942B58B66844AE4114E874BAD6B",
+      "Targets": [
+        "v3-standardized/tiles/character-47-6.png",
+        "conqueror-creation/tiles/character-47-6.png"
+      ],
+      "Width": 256,
+      "Height": 192
+    }
+  ],
+  "Remaining": "newspaper 8; final QA then adoption/build/distribution",
+  "Build": {
+    "Command": "dotnet build FolderVerse/FolderVerse.csproj --no-restore -v:q",
+    "ExitCode": 0,
+    "Warnings": 0,
+    "Errors": 0
+  },
+  "Distribution": {
+    "VerifiedCompiledTextures": 12,
+    "Method": "Compare final XNB RGBA buffer with PNG premultiplied-alpha pixels",
+    "Output": "FolderVerse/bin/Debug/net9.0/Content/Images/Portraits",
+    "GameLaunched": false
+  },
+  "Review": {
+    "Normal1to5": "Fullbody and 256x192/circle diagnostic reviewed 2026-10-19 23:33 JST; hat through shoe tips included in masters; facial expressions, glove differences, props and battery colors checked.",
+    "Limitations": [
+      "Exact anatomical headcount not asserted for hidden crowns and bent/seated poses",
+      "Small costume/toy detail variation remains; lower costume completion not separately user-approved",
+      "Circle preview is a diagnostic, not live-game UI verification"
+    ]
+  }
+}

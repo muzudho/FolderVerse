@@ -1,0 +1,70 @@
+{
+  "Status": "candidate-not-adopted",
+  "FormalChoice": "v003 for crop comparison only; body review not passed",
+  "Images": [
+    {
+      "Id": "formal",
+      "Source": "character-47-formal-v005-generated.png",
+      "X": 230,
+      "Y": 0,
+      "Width": 660,
+      "Height": 880
+    },
+    {
+      "Id": "election",
+      "Source": "character-47-election-fullbody-v001-generated.png",
+      "X": 230,
+      "Y": 0,
+      "Width": 660,
+      "Height": 880
+    },
+    {
+      "Id": "friends",
+      "Source": "character-47-friends-fullbody-v001-generated.png",
+      "X": 230,
+      "Y": 0,
+      "Width": 660,
+      "Height": 880
+    },
+    {
+      "Id": "history",
+      "Source": "character-47-history-fullbody-v001-generated.png",
+      "X": 230,
+      "Y": 0,
+      "Width": 660,
+      "Height": 880
+    },
+    {
+      "Id": "id",
+      "Source": "character-47-id-framing-v002-generated.png",
+      "X": 230,
+      "Y": 50,
+      "Width": 660,
+      "Height": 880
+    },
+    {
+      "Id": "idol",
+      "Source": "character-47-idol-background-v002-generated.png",
+      "X": 100,
+      "Y": 0,
+      "Width": 840,
+      "Height": 1120
+    },
+    {
+      "Id": "paparazzi",
+      "Source": "character-47-paparazzi-background-v002-generated.png",
+      "X": 200,
+      "Y": 0,
+      "Width": 720,
+      "Height": 960
+    },
+    {
+      "Id": "coin",
+      "Source": "character-47-coin-side-v002-generated.png",
+      "X": 230,
+      "Y": 0,
+      "Width": 660,
+      "Height": 880
+    }
+  ]
+}

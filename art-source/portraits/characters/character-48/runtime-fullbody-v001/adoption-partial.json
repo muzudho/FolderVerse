@@ -1,0 +1,208 @@
+{
+  "CharacterId": 48,
+  "Status": "PARTIAL_NEWSPAPER_ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
+  "AppliedAt": "2026-10-20 18:34 JST",
+  "WholeCharacterComplete": false,
+  "Images": [
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-formal-v005-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-formal.png",
+      "Crop": {
+        "Width": 561,
+        "Y": 40,
+        "Height": 748,
+        "X": 280
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "d6cb78e67fc9adc774a1430f843fa52cd99f12e95dbad62935b2844da323c129",
+      "Targets": [
+        "newspaper/character-48-formal.png"
+      ],
+      "OriginalSha256": "00cbeccfc7afdff3be565fd080b9759d3547b7fe03a06989322cc04a102b8001",
+      "Prompts": [
+        "character-48-formal-v001-prompt.txt",
+        "character-48-formal-v002-prompt.txt",
+        "character-48-formal-v003-prompt.txt",
+        "character-48-formal-v004-prompt.txt",
+        "character-48-formal-v005-prompt.txt"
+      ]
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-election-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-election.png",
+      "Crop": {
+        "Width": 561,
+        "Y": 0,
+        "Height": 748,
+        "X": 280
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "bbb187b9e3d00fec462fdc0603cef52a5c8e1df29b26b851bcbb3a3b662e4f21",
+      "Targets": [
+        "newspaper/character-48-election.png"
+      ],
+      "OriginalSha256": "7dd1d6316f5fe3cbc19dbc48140dd94e98dfd67e1c7e0668ecd33a40b4630a46",
+      "Prompts": [
+        "character-48-election-v001-prompt.txt",
+        "character-48-election-v002-prompt.txt"
+      ]
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-friends-v003-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-friends.png",
+      "Crop": {
+        "Width": 561,
+        "Y": 230,
+        "Height": 748,
+        "X": 270
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "8dedebc5a006baf1489dbfd6d86d6663aeaca51bec64d2480bee75127bd168f9",
+      "Targets": [
+        "newspaper/character-48-friends.png"
+      ],
+      "OriginalSha256": "394abba9380fa49f4a32785bd74d7894fa0ecfc3fbd081e5976bf143c13091c2",
+      "Prompts": [
+        "character-48-friends-v001-prompt.txt",
+        "character-48-friends-v002-prompt.txt",
+        "character-48-friends-v003-prompt.txt"
+      ]
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-history-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-history.png",
+      "Crop": {
+        "Width": 561,
+        "Y": 0,
+        "Height": 748,
+        "X": 310
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "a6c8e17ebaa6abfe8c2a194f1661da6cc40903309564e4e29c131cb433fdbd45",
+      "Targets": [
+        "newspaper/character-48-history.png"
+      ],
+      "OriginalSha256": "3677c11cd4f676cfb5219fd7e3d94ede0588ed568ce7f58852ef3d8cd62ec809",
+      "Prompts": [
+        "character-48-history-v001-prompt.txt",
+        "character-48-history-v002-prompt.txt"
+      ]
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-id-v003-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-id.png",
+      "Crop": {
+        "Width": 561,
+        "Y": 0,
+        "Height": 748,
+        "X": 260
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "438d65d720464ab60842609d6397b82e82491eb21eff637a120b549eeeb44032",
+      "Targets": [
+        "newspaper/character-48-id.png"
+      ],
+      "OriginalSha256": "9d978d38d7de739ed8ad450ef112893f42985c3b1b6a4dc6fea4f6e14e67c344",
+      "Prompts": [
+        "character-48-id-v001-prompt.txt",
+        "character-48-id-v002-prompt.txt",
+        "character-48-id-v003-prompt.txt"
+      ]
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-idol-v003-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-idol.png",
+      "Crop": {
+        "Width": 900,
+        "Y": 0,
+        "Height": 1200,
+        "X": 120
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "37934a461da43d889fdf5c94d73a8c020dd178b4a2829787d69d6e785b047f69",
+      "Targets": [
+        "newspaper/character-48-idol.png"
+      ],
+      "OriginalSha256": "a85e9b6f0cee45cf78f9891403edb23aa44e196b442ec4683e1a13122d79b610",
+      "Prompts": [
+        "character-48-idol-v001-prompt.txt",
+        "character-48-idol-v002-prompt.txt",
+        "character-48-idol-v003-prompt.txt"
+      ]
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-paparazzi-v003-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-paparazzi.png",
+      "Crop": {
+        "Width": 660,
+        "Y": 120,
+        "Height": 880,
+        "X": 240
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "5182b299bf86c95a8e45986f761dfdb20bfdc536e2a0f7bf76874c18ca5d0838",
+      "Targets": [
+        "newspaper/character-48-paparazzi.png"
+      ],
+      "OriginalSha256": "be512aefd44e8c14d23a0493d2dcb99ce3f9f93376a8e272a758c4effb456f91",
+      "Prompts": [
+        "character-48-paparazzi-v001-prompt.txt",
+        "character-48-paparazzi-v002-prompt.txt",
+        "character-48-paparazzi-v003-prompt.txt"
+      ]
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Source": "art-source/portraits/characters/character-48/runtime-fullbody-v001/character-48-coin-v002-generated.png",
+      "Tile": "art-source/portraits/characters/character-48/runtime-fullbody-v001/qa-runtime-v001/newspaper-coin.png",
+      "Crop": {
+        "Width": 510,
+        "Y": 0,
+        "Height": 680,
+        "X": 305
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "e5dfdf8c80764cde9c4e7aaa41a490b3ad5da263497b0615fa4bbcc47d86c1f9",
+      "Targets": [
+        "newspaper/character-48-coin.png"
+      ],
+      "OriginalSha256": "b0ed74d17e7cbed581c34f9837e555e48966139f33a1735ac51ff2da64c62edd",
+      "Prompts": [
+        "character-48-coin-v001-prompt.txt",
+        "character-48-coin-v002-prompt.txt"
+      ]
+    }
+  ],
+  "Limitations": "Full masters preserved. Exact anatomical head ratios not established. Normal12targets and metadata remain unchanged. Runtime UI not tested.",
+  "Build": {
+    "ExitCode": 0,
+    "Warnings": 0,
+    "Errors": 0
+  },
+  "Distribution": {
+    "NewspaperPngVerified": 8
+  }
+}
