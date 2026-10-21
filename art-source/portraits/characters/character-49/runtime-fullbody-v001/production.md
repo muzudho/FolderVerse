@@ -123,3 +123,121 @@
 - 帽子・裾・両靴は原画内。左右に流れる髪は余白が小さく、脚が長めに見える。動的姿勢の頭身修正・余白・新聞白黒診断を次工程へ。下部衣装と靴は補完案。
 - 原画・実プロンプト・SHA・比較保存。ゲーム未採用・ビルド未実施。比較：characters/character-49/runtime-fullbody-v001/idol-v001-comparison.html。
 - 次回：idol比率・余白・診断。新聞未生成はpaparazzi／coin2場面、全候補監査と20枚採用が残る。
+
+### 2026-10-21 07:04 JST — No.49 idol余白修正・白黒診断
+- 内蔵image_genでv002生成。全フード・左右の髪・衣装裾・両靴を原画内で確認。顔・両手各1ポンポン・舞台を保持。頭部比率の変化は小幅、屈曲姿勢の人体頭身は最終監査待ち。
+- 300×400白黒で顔・目・手・ポンポンを確認。ポンポンの密度が高く端は診断で一部切れるため最終切り出し未選定。原画・実プロンプト・SHA・比較保存。ゲーム未採用・ビルド未実施。
+- 比較：characters/character-49/runtime-fullbody-v001/idol-v002-comparison.html。次回：paparazzi、coinの未生成2場面、全候補監査と20枚採用。
+
+### 2026-10-21 07:34 JST — No.49 paparazzi全身化
+- 本人原画確認。右を見る物思いの閉じ口、肩の花付きパンダと緑電池、夕暮れ提灯市場を保持。旧プロンプトの任意扱いより実際の肩パンダを優先。
+- 内蔵image_genでv001、比率／余白修正試行v002を生成。v002は帽子・髪・裾・両靴に余白。比率変更は小幅でまだ長身、歩行姿勢の人体頭身は最終監査待ち。新聞白黒診断は次工程。
+- 原画・実プロンプト・SHA・比較保存。ゲーム未採用・ビルド未実施。比較：characters/character-49/runtime-fullbody-v001/paparazzi-v002-comparison.html。
+- 次回：paparazzi診断・比率監査、新聞coin未生成1場面。全候補最終監査と20枚採用が残る。
+
+### 2026-10-21 08:04 JST — No.49 coin全身化・paparazzi白黒確認
+- paparazzi300×400白黒で横顔・眼鏡・肩パンダと電池の識別を確認。
+- coin本人原画の左90度横顔・片目・閉じ口・横眼鏡・暖灰色背景を確認し内蔵image_genで全身v001生成。帽子・髪・裾・両靴が原画内。頭が小さく身体が長いため比率修正と白黒診断は次工程。
+- 原画・実プロンプト・SHA・比較保存。ゲーム未採用・ビルド未実施。比較：characters/character-49/runtime-fullbody-v001/coin-v001-comparison.html。
+- 通常6＋新聞8の全14場面に候補が揃った。次回coin比率修正、全14場面の人体比率・余白・切り出し監査、20枚採用・ビルド・配布確認。
+
+### 2026-10-21 08:34 JST — No.49 coin頭部比率修正試行
+- 内蔵image_genでv002、v003を生成。v002は変化小幅、v003は頭部が明確に大きくなったが参考推定約4.2〜4.6頭身で拡大が強い。帽子内頭蓋推定で不確実だが指定適合とはしない。次回は中間の頭部比率に調整。
+- 全帽子・髪・裾・靴は原画内、上余白小さめ。300×400白黒で左横顔・眼鏡・耳とファーを確認。原画・実プロンプト・SHA・比較保存。ゲーム未採用・ビルド未実施。
+- 比較：characters/character-49/runtime-fullbody-v001/coin-v003-comparison.html。次回coin中間比率、14場面の最終監査、20枚採用・ビルド・配布確認。
+
+### 2026-10-21 09:04 JST — No.49 coin中間比率試行・全体監査一覧
+- 内蔵image_genでcoin v004生成。v003から頭部を縮め、全帽子・髪・裾・両靴の余白は改善した。ただし縮小が強く再び長身に見え、指定倍率を達成値と扱わない。原画・実プロンプト・SHA保存、未採用。
+- 全14原画の最新版・既知課題を一覧化：characters/character-49/runtime-fullbody-v001/all14-master-audit.html。次回は各画像の解剖学的目印を固定して比率確認し、推定値の揺れを減らす。座位は画像縦長を直接頭身換算しない。
+- ゲーム未変更、ビルド未実施。coin含む比率課題と最終切り出し監査後、20枚の採用・ビルド・配布確認へ進む。
+
+### 2026-10-21 09:34 JST — No.49 coin v005人体目印を固定
+- 内蔵image_genでv004から小幅な頭部調整v005生成。横顔・意匠を保持、全帽子・髪・裾・靴の余白を目視確認。
+- 帽子内の頭蓋上端(x485,y125)、顎(x423,y333)、靴内の人体踵(x510,y1300)を参考仮置きし、縦目安約5.65頭身。頭蓋位置は約15pxなど不確実性あり、実測確定や利用者承認ではない。帽子上端・靴外ヒールとは区別。
+- 目印確認HTML：characters/character-49/runtime-fullbody-v001/coin-v005-measurement.html。原画・実プロンプト・SHA保存。新聞プレビューはv003のままなので更新が次工程。ゲーム未変更・ビルド未実施。
+- 次回：coin v005新聞診断、全14場面の固定目印・余白・切り出し監査と20枚採用・ビルド・配布。
+
+### 2026-10-21 10:04 JST — No.49 全14場面のゲームサイズ横並び監査
+- 通常6枚256×192・新聞8枚300×400白黒の一覧画像を作成し目視比較。coinプレビューを最新版v005へ更新し、横顔・眼鏡・耳を確認。原画は変更していない。
+- 通常5は相対的に顔が小さかったため別切り出し(560,80,560,420)を生成、顔・赤眼鏡・パンダ緑電池／赤装置の識別性が改善。髪の端は切り出し外だが全身原画を保持。
+- アイドルの新聞は背景・ポンポンが密集し、最終切り出し追加調整が必要。全身人体比率の課題も未解決のためゲーム未採用・ビルド未実施。新規imagegen呼び出しなし、既存原画の診断変換のみ。
+- 一覧：characters/character-49/runtime-fullbody-v001/runtime-audit-v001.html。次回は全身比率の未解決場面とidol切り出しを解決後、20枚採用・カタログ・ビルド・配布確認。
+
+### 2026-10-21 10:34 JST
+- No.49 paparazzi: built-in image_gen v003 trial saved with exact prompt; fullbody and identity visually preserved. Requested head enlargement did not visibly occur, so not adopted; v002 candidate and game files unchanged.
+- Next: resolve anatomical proportions, refine idol crop, then runtime adoption/build verification.
+
+### 2026-10-21 11:04 JST — No.49 paparazzi head adjustment
+- Built-in image_gen v004/v005 with saved actual prompts and SHA. v004 change insufficient; v005 visibly enlarges face/head, closed thoughtful mouth and scene identity retained.
+- Full hood/hair/robe/shoes remain inside master; hood top margin narrow. Ratio potentially slightly low (rough5.0–5.5 from uncertain hidden skull/heel), not certified or approved. Next assess intermediate scale and margins.
+- Newspaper300x400 grayscale preview visually reviewed: face/glasses/panda readable. Original masters preserved; runtime/catalog untouched, no build/adoption claimed.
+- Comparison: characters/character-49/runtime-fullbody-v001/paparazzi-v005-comparison.html. Idol crop and remaining anatomy audits still pending.
+
+### 2026-10-21 11:34 JST — No.49 paparazzi framing trial
+- Built-in image_gen v006 saved with prompt and SHA; full hood, hair, hems and both shoes visually confirmed. Top margin improved, but head reduction exceeded intended result and elongated appearance returned; not adopted. v005 candidate retained.
+- Next compare fixed anatomical landmarks on v005/v006 rather than repeat unverified percentage changes. Runtime/catalog unchanged; build not run because no runtime adoption.
+
+### 2026-10-21 12:04 JST — No.49 fixed landmark audit
+- Saved paparazzi-landmarks-v001.json/html with explicit inferred anatomical crown/chin/inside-shoe heel coordinates. v005 y100/330/1320 => verticalguide5.30; v006 y250/410/1290 =>6.50. Hidden skull/heel ±15px and walking/perspective uncertainty mean neither is a certified standing headcount.
+- Comparison confirms intermediate correction should start from v005; avoid repeated blind enlargement/reduction. No imagegen call this run; masters and game files unchanged. Next modest v005 head adjustment with margin, then idol crop/remaining anatomy and20runtime adoption.
+
+### 2026-10-21 12:34 JST — No.49 paparazzi v007
+- Built-in image_gen v005-based modest adjustment attempted, prompt/source/SHA saved. Fullbody margins preserved, but requested5percent change produced much larger head reduction. Visually rejected as proportion correction; v005 retained. Runtime/catalog unchanged.
+- Avoid further identical percentage-only edits. Next advance independent idol crop/readability and other master audits before choosing another proportion correction strategy. No49 still incomplete.
+
+### 2026-10-21 13:04 JST — No.49 idol newspaper crop selected
+- Compared3 crops at actual300x400 grayscale. Selected middle: x240,y40,w750,h1000; whole hood, glasses/open smile, both gripping hands and two pompoms readable. Peripheral pom strands/lowerbody cropped only in diagnostic, fullbody master untouched.
+- Saved color/gray3variants and comparisonPNG/HTML. No new generation; deterministic crop/resize/diagnosticgrayscale only. Game adoption not yet performed because remaining master anatomy unresolved.
+- Next: remaining anatomy corrections, then20runtime/catalog/build/distribution verification.
+
+### 2026-10-21 13:34 JST — No.49 frontal ID anatomy trial
+- Built-in image_gen IDv004 fromv003, fullbody/neutral frontal expression/identity retained. Body/head ratio moved too far toward elongatedbody; headsize also reduced, despite preservation request. Not selected; v003 retained. Prompt/ref/SHA saved.
+- Comparison id-v004-comparison.html. Runtime/catalog unchanged; no build because no adoption. Next intermediate anatomy correction, remaining master audit and20runtimeadoption.
+
+### 2026-10-21 14:04 JST — No.49 ID intermediate headscale
+- Built-in image_gen IDv005 fromv004: head visibly enlarged, intermediate between earlier extremes. Fullhood/hair/hem/shoes and frontal neutral expression/identity retained. Exact5.5-6 not certified; inferred hidden crown120/chin350/insideheel1340 gives reference5.30 with uncertainty.
+- Actual300x400 grayscale visually checked: glasses/eyes/hood readable. Color/gray previews, actualprompt/SHA and comparison id-v005-comparison.html saved. Candidate source updatedv005, runtime/catalog unchanged.
+- Next remaining anatomy corrections and20runtimeadoption/build/distribution verification.
+
+### 2026-10-21 14:34 JST — No.49 all14 currentmaster audit
+- Refreshed all14-master-audit-v002.png/html using current candidate sources, including IDv005/paparazziv005/coinv005. Wholemaster contact sheet visually inspected; each image has scene-specific MasterAudit note in generation-progress.json.
+- All14 major hood/hair/hem/shoe extents remain inside master; narrow top margins flagged individually. Standing ID/paparazzi/election anatomy prioritized. Seated/dynamic bounding-box height must not be treated as standing headcount; limb-based assessment remains.
+- No imagegen this run, runtime/catalog unchanged. Next standing anatomy corrections followed by pose-aware seated review and20runtimeadoption/build/distribution.
+
+### 2026-10-21 15:04 JST — No.49 election candidatev004
+- Built-in image_gen using sameperson formalv005 body/pose and electionv003 redbackdrop reference; saved actualprompt/ref/SHA. Fullhood/hair/hem/shoes and hopefulclosedsmile/claspedhands preserved. Head less oversized thanv003; inferred verticalguide about5.47 (hidden skull/tilt uncertain, not exact certification).
+- Newspaper300x400 grayscale face/glasses/hands visually readable; color/gray previews and election-v004-comparison.html saved. Candidate updatedv004; runtime/catalog unchanged.
+- Next remaining ID/paparazzi anatomy, seated review and20runtimeadoption/build/distribution.
+
+### 2026-10-21 15:34 JST — No.49 six seatedpose review
+- Full-resolution manual review normal2/3/4/6, friends/history. Checked jointcontinuity, seatedsupport, foreshortening, shortneck and sceneprops; did not use vertical seatedboundingbox as standingheadcount.
+- Retain normal4/6/friends/history as posecandidates (not exact numerical certification). Normal2/3 comparatively smallhead/readability remain correction priorities. Each image PoseReview saved; seated-pose-review-v001.html links fullmasters.
+- No generation/runtime mutation this run. Next normal2/3 headreadability and ID/paparazzi anatomy, then20runtimeadoption/catalog/build/distribution.
+
+### 2026-10-21 16:04 JST — No.49 normal2 face/framing improved
+- Built-in image_gen v003 enlargedface but hood touchedtop; v004 reframing restored clear margins keeping largerhead. Fullhood/hair/train/bothshoes, closedeyes/closedsmile, bothwhitegloves/cup/pandagreenbattery retained.
+- Actual256x192 preview crop330,140,720,540 visually checked; face/glasses/hood/cup/gloves/panda/battery readable. Sources/prompts/SHA/comparison saved; candidate updatedv004, runtime/catalog unchanged.
+- Next normal3 readability then remainingstandinganatomy and20runtimeadoption/build/distribution.
+
+### 2026-10-21 16:34 JST — No.49 normal3 headreadability
+- Built-in image_gen v003 visibly enlargedface while preserving stern closedmouth/openeyes, bare magicpalm purplestarsigil, restingbarehand, green shoulderbattery and separate redchestbattery. Fullhood/hair/robehem/bothshoes inside; shortneck/crossedlegs coherent. Actualprompt/ref/SHA saved.
+- Wide256x192 crop300,0,960,720 reviewed: bothhands and magic/hood/batteries visible; face smaller than a closecrop, finalbalance comparison remains. Fullmaster retained; candidate updatedv003, runtime/catalog unchanged.
+- Next close/widecrop decision then remaining ID/paparazzi decisions and20runtimeadoption/build/distribution.
+
+### 2026-10-21 17:04 JST — No.49 runtime20 staging
+- Prepared staged-runtime-v001: normal6x2sets + newspaper8 =20 colorPNGs. Verified expected256x192/300x400 dimensions,14sourceSHA and all20currentruntime hashes against originalbackupmanifest; no user/runtime changes detected.
+- runtime-staging-v001.json records master/crop/stagedSHA/previousSHA and target mapping; runtime-staging-v001.html shows candidates. Staging is NOT gameadoption; livefiles/catalog/balanced untouched.
+- Next resolve ID/paparazzi anatomy and normal3close/widecrop, refresh affected stagedfiles, then metadata/catalog/adoption/build/distribution.
+
+### 2026-10-21 17:34 JST — No.49 normal3 finalcrop decision
+- Actual256x192 comparison3crops:960x720/800x600/880x660. Selected960x720 at300,0 to retain wholehood/magicpalm/sigil/restinghand/green+redbatteries; closer variants cut restinghand. Face/glasses/sternexpression distinguishable.
+- Both staged normal3targets already match selectedpreviewSHA; cropdecision markedfinal in stagingmanifest. Fullbody master and livegame unchanged. Comparison normal-3-crop-v004-comparison.html saved.
+- Remaining ID/paparazzi anatomy decisions before20targetadoption/catalog/build/distribution. No newimagegen thisrun.
+
+### 2026-10-21 18:04 JST — No.49 IDv006 local edit trial
+- Built-in image_gen local7percent head reduction requested fromv005, but output head reduction visibly much stronger. Fullbody/frontalneutral identity retained; body/head balance rejected. Actualprompt/ref/SHA and id-v006-comparison.html saved.
+- v005 candidate and20stagedruntime files unchanged. Need alternate reference-based correction rather than further identical percentage-only edits. Livegame/catalog unchanged, no adoption/build claimed.
+
+### 2026-10-21 18:34 JST — No.49 ID directproportionreference trial
+- Built-in image_gen v007 with IDv005 identity/costume and v017bodyreference separated in actualprompt. Fullbody/frontalneutral preserved, but closedcollar chestpanel became openneckline and robe opened at thighs: costume invariants failed, rejected. Source/ref/prompt/SHA/comparison saved.
+- v005 candidate and20stagedruntime unchanged; no livegame/catalog changes or build. Next sameperson electionv004 proportions with strict closedcollar invariants, then paparazzi and adoption.
