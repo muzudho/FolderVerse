@@ -1,6 +1,6 @@
 {
   "CharacterId": 49,
-  "UpdatedAt": "2026-10-21T06:34:00+09:00",
+  "UpdatedAt": "2026-10-21T20:04:00+09:00",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018",
   "GameAdopted": false,
@@ -51,32 +51,73 @@
           "Height": 540
         },
         "Status": "diagnostic-visually-reviewed-not-selected"
+      },
+      "MasterAudit": {
+        "At": "2026-10-21T14:34:00+09:00",
+        "Scope": "Fullmaster contact sheet visually inspected; not detailed anatomical certification",
+        "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
+        "Note": "Standing: whole staff/hood/hem/shoes fit; final inferred skull/heel comparison needed.",
+        "RuntimeAdopted": false
       }
     },
     {
       "Id": 2,
       "Kind": "normal",
-      "Status": "framing-improved-visually-reviewed-not-adopted",
-      "Source": "character-49-normal-2-v002-generated.png",
+      "Status": "head-readability-and-framing-improved-visually-reviewed-not-adopted",
+      "Source": "character-49-normal-2-v004-generated.png",
       "Width": 1448,
       "Height": 1086,
-      "Sha256": "2a890ff9b66df54ce3e4a251179c8fdb9cc7a1f04b68af0a2e693b5e45119924",
+      "Sha256": "27309da9b38ad3c7f4304df2a751f7a37cd734e423e4a45c441c05559eea9420",
       "References": [
         "art-source/portraits/characters/character-49/character-49-2-v003-generated.png"
       ],
       "Prompts": [
         "character-49-normal-2-v001-prompt.txt",
-        "character-49-normal-2-v002-prompt.txt"
+        "character-49-normal-2-v002-prompt.txt",
+        "character-49-normal-2-v003-prompt.txt",
+        "character-49-normal-2-v004-prompt.txt"
       ],
-      "Review": "Both hood ears now clear of top and entire right trailing robe ends inside image with narrow margin, less than requested5%. Both shoes visible. Closed happy eyes and mouth, red glasses, panda hood/black hair braided sections, white gloved cup hand and other glove, panda/green battery and tea room retained. 256x192 hood/face/hands/cup/panda/battery readable, face small relative to scene. Seated anatomical head ratio unmeasured, opaque lower legwear and shoes provisional. Runtime unchanged.",
+      "Review": "v003 enlargedhead; v004 reframed retaining larger head/body relation. Closedhappyeyes/closedsmile/redglasses/pandahood/blackbraids, BOTHwhitegloves, cup, panda greenbattery and teascene retained. Fullhood/hair/robe train/bothshoes within frame, clear top/right margins. Crossedlegs coherent; exact standing headcount not claimed from seatedpose. Actual256x192 face/glasses/hood/cup/gloves/pandagreenbattery readable. Runtime unchanged.",
       "Trials": [
         {
           "Source": "character-49-normal-2-v001-generated.png",
           "Sha256": "3aeb9a94fde69d37b92c10ccce3c399d99889a9a76c4c113efc6aef59625a066",
           "Review": "Closed happy eyes, red glasses, closed smile, panda hood, black bangs and long braided sections, white gloved cup hand and other gloved hand by green battery panda, tea/pastries/sofa warm room preserved. Both shoes visible. Hood right ear touches top, trailing robe meets right edge: fullbody margins failed. Seated/crossleg ratio not measured, legs long and face small relative to scene. Opaque legwear/shoes/lower garment completion provisional. No runtime adoption."
+        },
+        {
+          "Source": "character-49-normal-2-v002-generated.png",
+          "Sha256": "2a890ff9b66df54ce3e4a251179c8fdb9cc7a1f04b68af0a2e693b5e45119924",
+          "Review": "Both hood ears now clear of top and entire right trailing robe ends inside image with narrow margin, less than requested5%. Both shoes visible. Closed happy eyes and mouth, red glasses, panda hood/black hair braided sections, white gloved cup hand and other glove, panda/green battery and tea room retained. 256x192 hood/face/hands/cup/panda/battery readable, face small relative to scene. Seated anatomical head ratio unmeasured, opaque lower legwear and shoes provisional. Runtime unchanged."
+        },
+        {
+          "Source": "character-49-normal-2-v003-generated.png",
+          "Sha256": "53aacb2b5f11f3cf229bbe762afa616fb05557bad2ecb443dec6c77ef1db73c3",
+          "Review": "Head/face visibly enlarged, closedeyes/whitegloves/cup preserved; hood upper ear touches boundary, supersededbyv004."
         }
       ],
       "Preview": {
+        "File": "normal-2-v004-preview.png",
+        "Crop": {
+          "X": 330,
+          "Y": 140,
+          "Width": 720,
+          "Height": 540
+        },
+        "Status": "visually-reviewed-candidate-not-adopted"
+      },
+      "MasterAudit": {
+        "At": "2026-10-21T14:34:00+09:00",
+        "Scope": "Fullmaster contact sheet visually inspected; not detailed anatomical certification",
+        "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
+        "Note": "Seated crossed legs: wholehood/hem/shoes fit; do not use vertical seated height as headcount.",
+        "RuntimeAdopted": false
+      },
+      "PoseReview": {
+        "At": "2026-10-21T16:04:00+09:00",
+        "Decision": "retain-updated-pose-candidate",
+        "Note": "Enlargedface/readability correction and fullbody margins achieved visually; no seated vertical headcount certification."
+      },
+      "PreviousPreview": {
         "File": "normal-2-v002-preview.png",
         "Crop": {
           "X": 380,
@@ -90,27 +131,56 @@
     {
       "Id": 3,
       "Kind": "normal",
-      "Status": "framing-improved-visually-reviewed-not-adopted",
-      "Source": "character-49-normal-3-v002-generated.png",
+      "Status": "head-readability-improved-fullbody-reviewed-not-adopted",
+      "Source": "character-49-normal-3-v003-generated.png",
       "Width": 1448,
       "Height": 1086,
-      "Sha256": "ce1df43608de223e1525e33cd470f471738ed4b6b6b39f88de623fe931cd74fb",
+      "Sha256": "e9f594cef29ff91b8b4c3679aef1ee7dced5c01fa198d97c919bceecaa329ea2",
       "References": [
         "art-source/portraits/characters/character-49/character-49-3-v003-generated.png"
       ],
       "Prompts": [
         "character-49-normal-3-v001-prompt.txt",
-        "character-49-normal-3-v002-prompt.txt"
+        "character-49-normal-3-v002-prompt.txt",
+        "character-49-normal-3-v003-prompt.txt"
       ],
-      "Review": "Both hood ears clear of top; outer robe hem now visible around floor away from foreground furniture, both shoes inside. Stern closed mouth/red glasses/amber eyes, bare purple star-sigil palm and resting bare hand, shoulder green battery panda and red chest battery preserved. Black bangs white transverse reflection retained. Diagnostic256x192 face/hand/magic/batteries readable, resting hand partly below crop and face small; final crop audit pending. Seated exact anatomy headcount unmeasured. Runtime unchanged.",
+      "Review": "Head/face visibly enlarged vs v002, stern closedmouth/openambereyes/redglasses retained. Bare magicpalm purple circularstarsigil and bare restinghand, shoulderpanda greenbattery and separate redchestbattery retained. Allhood/hair/robehem/bothshoes inside with narrow but nonzero topmargin. Crossedlegs connect coherently, no numerical standing headcount inferred. Actual256x192 wide crop includes both hands/magic/hood/batteries, face readable but smaller than closer previous crop; finalcrop balance remains. Runtime unchanged.",
       "Trials": [
         {
           "Source": "character-49-normal-3-v001-generated.png",
           "Sha256": "e19e0346b6836067a942209b78d97497798e6277202ab638af71c76a7331ff08",
           "Review": "Stern closed mouth/amber eyes/red glasses/panda hood/black bangs retained. Bare upward palm with purple star circle, other bare hand on seat, green lightning battery panda by shoulder and separate red chest battery preserved. Both shoes visible. Right hood ear touches top; outer robe partly hidden by foreground furniture and side cushions, full hem not cleanly assessable. Exact seated anatomy ratio unmeasured. Generated leg covering has thigh break unlike requested opaque whole coverage; no added erotic emphasis. Lower shoes/robe provisional. Runtime unchanged."
+        },
+        {
+          "Source": "character-49-normal-3-v002-generated.png",
+          "Sha256": "ce1df43608de223e1525e33cd470f471738ed4b6b6b39f88de623fe931cd74fb",
+          "Review": "Both hood ears clear of top; outer robe hem now visible around floor away from foreground furniture, both shoes inside. Stern closed mouth/red glasses/amber eyes, bare purple star-sigil palm and resting bare hand, shoulder green battery panda and red chest battery preserved. Black bangs white transverse reflection retained. Diagnostic256x192 face/hand/magic/batteries readable, resting hand partly below crop and face small; final crop audit pending. Seated exact anatomy headcount unmeasured. Runtime unchanged."
         }
       ],
       "Preview": {
+        "File": "normal-3-v003-preview.png",
+        "Crop": {
+          "X": 300,
+          "Y": 0,
+          "Width": 960,
+          "Height": 720
+        },
+        "Status": "final-crop-selected-visually-reviewed-not-adopted",
+        "SelectionReason": "Actual256x192 comparison of960x720,800x600,880x660 crops: retain960x720 at300,0. Entirehood, magicpalm/sigil, shoulderpanda/greenbattery, separate redbattery and restinghand all visible. Closer crops enlargeface but truncate restinghand atbottom; rejected. Face expression/redglasses remain distinguishable in selected crop."
+      },
+      "MasterAudit": {
+        "At": "2026-10-21T14:34:00+09:00",
+        "Scope": "Fullmaster contact sheet visually inspected; not detailed anatomical certification",
+        "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
+        "Note": "Seated crossedlegs: fullhood/hem/shoes fit; magic palm and separate batteries retained; check pose-aware limb proportions.",
+        "RuntimeAdopted": false
+      },
+      "PoseReview": {
+        "At": "2026-10-21T16:34:00+09:00",
+        "Decision": "retain-updated-pose-candidate",
+        "Note": "Visible head enlargement, fullbody preserved. Widecrop retains bothhands but face smaller; finalcrop comparison needed."
+      },
+      "PreviousPreview": {
         "File": "normal-3-v002-preview.png",
         "Crop": {
           "X": 360,
@@ -153,6 +223,19 @@
           "Height": 540
         },
         "Status": "diagnostic-visually-reviewed-not-selected"
+      },
+      "MasterAudit": {
+        "At": "2026-10-21T14:34:00+09:00",
+        "Scope": "Fullmaster contact sheet visually inspected; not detailed anatomical certification",
+        "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
+        "Note": "Seated: wholehood/book/talisman/hem/shoes fit; pose-aware anatomy review remains.",
+        "RuntimeAdopted": false
+      },
+      "PoseReview": {
+        "At": "2026-10-21T15:34:00+09:00",
+        "Method": "Full-resolution manual visual review of joint continuity, foreshortening, head/torso/limb balance; no vertical bounding-box headcount",
+        "Decision": "retain-pose-candidate",
+        "Note": "Crossedknees and shins coherent with perspective; shortneck, readable head, raised barehand/talisman and bookhand preserved. No obvious extra limbs or detached joints. Not exact5.5-6 measurement."
       }
     },
     {
@@ -179,6 +262,16 @@
         }
       ],
       "Preview": {
+        "File": "normal-5-v002-preview-close.png",
+        "Crop": {
+          "X": 560,
+          "Y": 80,
+          "Width": 560,
+          "Height": 420
+        },
+        "Status": "closer-crop-visually-reviewed-face-panda-devices-readable-not-adopted"
+      },
+      "PreviousPreview": {
         "File": "normal-5-v002-preview.png",
         "Crop": {
           "X": 420,
@@ -187,6 +280,13 @@
           "Height": 540
         },
         "Status": "diagnostic-visually-reviewed-not-selected"
+      },
+      "MasterAudit": {
+        "At": "2026-10-21T14:34:00+09:00",
+        "Scope": "Fullmaster contact sheet visually inspected; not detailed anatomical certification",
+        "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
+        "Note": "Turned stance: fullhood/flowinghair/hem/shoes fit; smallface in fullmaster, closer runtime crop already improves recognition.",
+        "RuntimeAdopted": false
       }
     },
     {
@@ -213,6 +313,19 @@
           "Height": 600
         },
         "Status": "diagnostic-visually-reviewed-not-selected"
+      },
+      "MasterAudit": {
+        "At": "2026-10-21T14:34:00+09:00",
+        "Scope": "Fullmaster contact sheet visually inspected; not detailed anatomical certification",
+        "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
+        "Note": "Seated foreshortened reaching hand: fullhood/shoes fit, top margin narrow; vertical headcount invalid.",
+        "RuntimeAdopted": false
+      },
+      "PoseReview": {
+        "At": "2026-10-21T15:34:00+09:00",
+        "Method": "Full-resolution manual visual review of joint continuity, foreshortening, head/torso/limb balance; no vertical bounding-box headcount",
+        "Decision": "retain-pose-candidate",
+        "Note": "Reaching barehand enlarged by foreshortening; closedeyes/openlaugh/panda/greenbattery/reddevice retained. Knees/shins connect and front shoes enlarge consistently with lowcamera perspective. Hood top margin narrow; no raw vertical headcount."
       }
     },
     {
@@ -266,16 +379,23 @@
           "Height": 640
         },
         "Status": "grayscale-visually-reviewed-color-file-created"
+      },
+      "MasterAudit": {
+        "At": "2026-10-21T14:34:00+09:00",
+        "Scope": "Fullmaster contact sheet visually inspected; not detailed anatomical certification",
+        "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
+        "Note": "Standing: fullhood/hem/shoes fit; representative proportion candidate, final landmark review needed.",
+        "RuntimeAdopted": false
       }
     },
     {
       "Id": "election",
       "Kind": "newspaper",
-      "Status": "head-enlarged-grayscale-reviewed-final-audit-pending-not-adopted",
-      "Source": "character-49-election-v003-generated.png",
+      "Status": "fullbody-intermediate-proportion-candidate-reviewed-not-adopted",
+      "Source": "character-49-election-v004-generated.png",
       "Width": 1024,
       "Height": 1536,
-      "Sha256": "e8d07f709ffa50ddc4866475d6ad2cbb01db0f04b2a66211f2cfaf5f81e6f5af",
+      "Sha256": "d6c74b27c0e252a198290b128ec2ca8e19e507530161755d22413a6040fa274c",
       "References": [
         "art-source/portraits/newspaper-trials/character-49-election-v001-generated.png",
         "art-source/portraits/characters/character-49/runtime-fullbody-v001/character-49-formal-v005-generated.png"
@@ -283,9 +403,10 @@
       "Prompts": [
         "character-49-election-v001-prompt.txt",
         "character-49-election-v002-prompt.txt",
-        "character-49-election-v003-prompt.txt"
+        "character-49-election-v003-prompt.txt",
+        "character-49-election-v004-prompt.txt"
       ],
-      "Review": "Actual head clearly larger than v002, short neck. Complete hood/hair/robe/both shoes within frame; upper margin narrow (~13px), not5percent requested. Original studio identity preserved. Head tilt/hood obscure skull; inferred skull y120-145, chin380, anatomical heel1360-1380 suggests roughly4.8-5.7 heads with axis/hidden-crown uncertainty, not certified5.5-6. 300x400 grayscale face/glasses/eyes/clasped hands readable. Lower robe/shoes provisional. Final headcount/framing audit pending; runtime unchanged.",
+      "Review": "Using sameperson formal body as edit target and election scene as redbackground reference: fullhood/hair/hem/bothshoes, claspedbarehands, hopefulclosedsmile/redglasses/identity preserved. Head less oversized thanv003. Approximate inferred crown125/chin340/insideheel1300 =>5.47 verticalguide, tiltedhead and hidden skull uncertain; not exact certification. Hood topmargin narrow~15px. Newspaper300x400 grayscale face/glasses/claspedhands readable. Runtime unchanged.",
       "Trials": [
         {
           "Source": "character-49-election-v001-generated.png",
@@ -295,9 +416,36 @@
           "Source": "character-49-election-v002-generated.png",
           "Sha256": "71b51db125d70649bdf57ebb527226310fbc978e8e7bb3f5d08ee8b730dbc2fe",
           "Review": "Plain red studio backdrop, closed small confident smile, red glasses amber eyes black bangs/longhair panda hood gold earrings whitefur redblackwhitegold robes preserved. Full hood/hair/hem/shoes clear margins. Targeted head enlargement mostly shifted framing; anatomical skull about y145-165/chin335/heel1360-1380 suggests6.4-7.1 heads (uncertain under hood), still too tall, not adopted. Lower robe/shoes provisional. Newspaper crop/grayscale not yet checked."
+        },
+        {
+          "Source": "character-49-election-v003-generated.png",
+          "Sha256": "e8d07f709ffa50ddc4866475d6ad2cbb01db0f04b2a66211f2cfaf5f81e6f5af",
+          "Review": "Actual head clearly larger than v002, short neck. Complete hood/hair/robe/both shoes within frame; upper margin narrow (~13px), not5percent requested. Original studio identity preserved. Head tilt/hood obscure skull; inferred skull y120-145, chin380, anatomical heel1360-1380 suggests roughly4.8-5.7 heads with axis/hidden-crown uncertainty, not certified5.5-6. 300x400 grayscale face/glasses/eyes/clasped hands readable. Lower robe/shoes provisional. Final headcount/framing audit pending; runtime unchanged."
         }
       ],
       "Preview": {
+        "File": "election-v004-preview.png",
+        "Grayscale": "election-v004-preview-gray.png",
+        "Crop": {
+          "X": 250,
+          "Y": 0,
+          "Width": 570,
+          "Height": 760
+        },
+        "Status": "visually-reviewed-candidate-not-adopted"
+      },
+      "MasterAudit": {
+        "At": "2026-10-21T14:34:00+09:00",
+        "Scope": "Fullmaster contact sheet visually inspected; not detailed anatomical certification",
+        "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
+        "Note": "Standing tilted head: fullhood/hem/shoes fit, top margin narrow; possible oversized head, compareformal.",
+        "RuntimeAdopted": false
+      },
+      "GenerationReferences": [
+        "character-49-formal-v005-generated.png",
+        "character-49-election-v003-generated.png"
+      ],
+      "PreviousPreview": {
         "File": "election-v003-preview.png",
         "Grayscale": "election-v003-preview-gray.png",
         "Crop": {
@@ -341,6 +489,19 @@
           "Height": 600
         },
         "Status": "grayscale-visually-reviewed-face-hands-panda-battery-readable"
+      },
+      "MasterAudit": {
+        "At": "2026-10-21T14:34:00+09:00",
+        "Scope": "Fullmaster contact sheet visually inspected; not detailed anatomical certification",
+        "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
+        "Note": "Seated tilted head: fullhood/hem/shoes fit, foreground legs prominent; pose-aware limb review.",
+        "RuntimeAdopted": false
+      },
+      "PoseReview": {
+        "At": "2026-10-21T15:34:00+09:00",
+        "Method": "Full-resolution manual visual review of joint continuity, foreshortening, head/torso/limb balance; no vertical bounding-box headcount",
+        "Decision": "retain-pose-candidate",
+        "Note": "Both barearms wrap panda coherently, knees together and shins connect to shoes. Head tilt/shortneck retained, perspective foreground shoes larger. Fullbody extent preserved; no exact standingheight inference."
       }
     },
     {
@@ -368,25 +529,44 @@
           "Height": 800
         },
         "Status": "grayscale-visually-reviewed"
+      },
+      "MasterAudit": {
+        "At": "2026-10-21T14:34:00+09:00",
+        "Scope": "Fullmaster contact sheet visually inspected; not detailed anatomical certification",
+        "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
+        "Note": "Seated: fullhood/hem/shoes fit; leg anatomy hidden by longrobe, cannot certify headcount from bounding box.",
+        "RuntimeAdopted": false
+      },
+      "PoseReview": {
+        "At": "2026-10-21T15:34:00+09:00",
+        "Method": "Full-resolution manual visual review of joint continuity, foreshortening, head/torso/limb balance; no vertical bounding-box headcount",
+        "Decision": "retain-pose-candidate",
+        "Note": "Serious closedmouth, barehands onlap, chair contact and hidden bentknees under robe plausible. Shoe-covered feet emerge at hem, fullhood/hem/shoes fit. Covered hips/thighs prohibit exact limbmeasurement; no visible anatomy defect requiring regeneration."
       }
     },
     {
       "Id": "id",
       "Kind": "newspaper",
-      "Status": "head-enlarged-grayscale-reviewed-final-audit-pending-not-adopted",
-      "Source": "character-49-id-v003-generated.png",
+      "Status": "proportion-and-grayscale-reviewed-candidate-not-adopted",
+      "Source": "character-49-id-v009-generated.png",
       "Width": 1086,
       "Height": 1448,
-      "Sha256": "37ab8d4410ae0e8be0459e5d695459ff12c440713abac19844f2202c101653dc",
+      "Sha256": "d5d43b64de09f484b8abb956a98be35183a94af1811bcdef95fe0681ea05f0ab",
       "References": [
         "art-source/portraits/newspaper-trials/character-49-id-v001-generated.png"
       ],
       "Prompts": [
         "character-49-id-v001-prompt.txt",
         "character-49-id-v002-prompt.txt",
-        "character-49-id-v003-prompt.txt"
+        "character-49-id-v003-prompt.txt",
+        "character-49-id-v004-prompt.txt",
+        "character-49-id-v005-prompt.txt",
+        "character-49-id-v006-prompt.txt",
+        "character-49-id-v007-prompt.txt",
+        "character-49-id-v008-prompt.txt",
+        "character-49-id-v009-prompt.txt"
       ],
-      "Review": "Head clearly enlarged relativebody. Frontal neutral closedmouth redglasses amber eyes panda hood blackhair and graybackground preserved. Entirehood/hem/bothshoes fit but topmargin narrow. Inferred actual skull y105-130/chin370/anatomicalheel1370-1390 implies4.8-5.4 heads, uncertain hoodcrown; final5.5-6 audit required. 300x400grayscale eyes/glasses/face/fur readable. Lower outfit/shoes provisional. Runtime unchanged.",
+      "Review": "Explicit layout v009: fullhood/hair/hem/shoes fit, closed collar opaque chest panel retained, frontal level neutral face preserved. Head intermediate visually; inferred skull crown y105, chin318, human heel inside boot y1330 =>5.75 heads. Hood hides crown, estimate ±15px, not exact/user certification. 300x400 grayscale face/glasses/hood/collar readable. Selected candidate, runtime not adopted.",
       "Trials": [
         {
           "Source": "character-49-id-v001-generated.png",
@@ -396,9 +576,68 @@
           "Source": "character-49-id-v002-generated.png",
           "Sha256": "623ff6beb9b9872c5651fe8ca2eb2b7eae9d66510137ee543433809007e937e0",
           "Review": "Frontal neutral unsmiling closed lips symmetric shoulders/direct gaze plain gray background preserved. Redglasses amber eyes panda hood blackbangs longhair pointedears redblackwhitegold furtrim robe retained. Fullhood/hem/shoes insideframe but topmargin narrow. v002 head modestly enlarged; requested40percent not measured/not achieved literally. Inferred crown y95-115 chin300 heel1360-1390 yields roughly6.2-6.9 heads, needs final correction. Crop/grayscale pending. Lower garment/shoes provisional. Runtime unchanged."
+        },
+        {
+          "Source": "character-49-id-v004-generated.png",
+          "Sha256": "cde1ecf0bd63e118ec29acf006a736e38c9e78ba9c4b0d4a6197847fb8ba81b1",
+          "Prompt": "character-49-id-v004-prompt.txt",
+          "References": [
+            "character-49-id-v003-generated.png"
+          ],
+          "Review": "Fullhood/hair/robehem/bothshoes, level frontal gaze, neutral closedmouth/redglasses/identity retained. Body length change stronger than intended and head reduced despite request to preserve headsize; elongated appearance, not selected. Approximate inferred crown y95 chin273 insideheel1340 gives verticalguide~7.0, hidden anatomy uncertain. v003 remains candidate; runtime unchanged."
+        },
+        {
+          "Source": "character-49-id-v003-generated.png",
+          "Sha256": "37ab8d4410ae0e8be0459e5d695459ff12c440713abac19844f2202c101653dc",
+          "Review": "Head clearly enlarged relativebody. Frontal neutral closedmouth redglasses amber eyes panda hood blackhair and graybackground preserved. Entirehood/hem/bothshoes fit but topmargin narrow. Inferred actual skull y105-130/chin370/anatomicalheel1370-1390 implies4.8-5.4 heads, uncertain hoodcrown; final5.5-6 audit required. 300x400grayscale eyes/glasses/face/fur readable. Lower outfit/shoes provisional. Runtime unchanged."
+        },
+        {
+          "Source": "character-49-id-v006-generated.png",
+          "Sha256": "a471499a10f32620a27ac3fd29ade256c896d3a3867b70df5639f0c1dd447c33",
+          "Prompt": "character-49-id-v006-prompt.txt",
+          "References": [
+            "character-49-id-v005-generated.png"
+          ],
+          "Review": "Fullhood/hair/robehem/bothshoes and frontalneutral identity retained. Requested7percent head reduction produced visibly much stronger change, narrowface/smallhead and elongatedbody; not selected. v005 remains candidate and staging unchanged. Do not infer requestpercentage as achieved measurement."
+        },
+        {
+          "Source": "character-49-id-v007-generated.png",
+          "Sha256": "18bdd61e787d7930ba81bd4be7214aefb3a7368ac402e13c58d211bc9106eed7",
+          "Prompt": "character-49-id-v007-prompt.txt",
+          "References": [
+            "character-49-id-v005-generated.png",
+            "../character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+          ],
+          "Review": "Reference-separated redraw retained fullbody/frontalneutral/graybackground/redglasses/pandahood, but changed closedcollar chestpanel to openneckline and opened robe at thighs. Costume invariants failed; rejected. Body still elongated/smallhead. v005 candidate and staging unchanged."
+        },
+        {
+          "Source": "character-49-id-v008-generated.png",
+          "Sha256": "e43d320db3d3edcf18fc613fac77e184cf115c36e8f202f100b6e34b5bbc9cce",
+          "Prompt": "character-49-id-v008-prompt.txt",
+          "References": [
+            "character-49-id-v005-generated.png",
+            "character-49-id-v004-generated.png"
+          ],
+          "Review": "Same-person midpoint request preserved closed high collar, opaque chest panel, neutral frontal expression, hood/hem/shoes within frame. Visually head again close to smaller v004 rather than desired intermediate; not selected. No exact anatomical measurement certified. Current v005 candidate and all runtime files unchanged."
+        },
+        {
+          "Source": "character-49-id-v005-generated.png",
+          "Review": "v005 visibly enlarges head fromv004, frontal level directgaze, neutral closedmouth, redglasses/amber eyes/panda hood/Chinese costume preserved. Entirehood/hair/hem/shoes inside, topmargin narrow. Intermediate betweenv003/v004; inferred crown aroundy120 chin350 insideheel1340 gives5.30 verticalguide; hidden skull +/-15px means about5.0-5.6, not certified5.5-6. Newspaper300x400 grayscale eyes/glasses/hood readable. Runtime unchanged.",
+          "Sha256": "8081f438d3b3e3d0372379d0dbacc12210178060065cd55bf0659a55aee58314"
         }
       ],
       "Preview": {
+        "File": "id-v009-preview.png",
+        "Grayscale": "id-v009-preview-gray.png",
+        "Crop": {
+          "X": 270,
+          "Y": 0,
+          "Width": 540,
+          "Height": 720
+        },
+        "Status": "grayscale-visually-reviewed"
+      },
+      "PreviousPreview": {
         "File": "id-v003-preview.png",
         "Grayscale": "id-v003-preview-gray.png",
         "Crop": {
@@ -408,24 +647,287 @@
           "Height": 720
         },
         "Status": "grayscale-visually-reviewed"
+      },
+      "MasterAudit": {
+        "At": "2026-10-21T14:34:00+09:00",
+        "Scope": "Fullmaster contact sheet visually inspected; not detailed anatomical certification",
+        "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
+        "Note": "Frontal: v005 visibly largerhead thanv004; inferred ratio still slightly low/uncertain; priority intermediate adjustment.",
+        "RuntimeAdopted": false
+      },
+      "AnatomicalGuide": {
+        "Method": "Manual inferred landmarks under hood and inside shoe",
+        "SkullCrown": {
+          "X": 540,
+          "Y": 105
+        },
+        "Chin": {
+          "X": 540,
+          "Y": 318
+        },
+        "AnatomicalHeel": {
+          "X": 500,
+          "Y": 1330
+        },
+        "VerticalHeadCount": 5.75,
+        "Uncertainty": "Skull under hood approx15px; excludes hood ears and external shoe soles"
       }
     },
     {
       "Id": "idol",
       "Kind": "newspaper",
-      "Status": "fullbody-visually-reviewed-framing-and-proportion-audit-needed-not-adopted",
-      "Source": "character-49-idol-v001-generated.png",
+      "Status": "framing-and-grayscale-reviewed-final-proportion-audit-pending-not-adopted",
+      "Source": "character-49-idol-v002-generated.png",
       "Width": 1086,
       "Height": 1448,
-      "Sha256": "de622179c4ebe951e17d047ed54fd7cd3ababaeaf47b727232e14970f026cd10",
+      "Sha256": "b4d41301159c8203b0f47427e6d5be9f1c3f6648120e983db238df03bbe1c33e",
       "References": [
         "art-source/portraits/newspaper-trials/character-49-idol-v001-generated.png"
       ],
       "Prompts": [
-        "character-49-idol-v001-prompt.txt"
+        "character-49-idol-v001-prompt.txt",
+        "character-49-idol-v002-prompt.txt"
       ],
-      "Review": "Open happy smile/open amber eyes/red glasses/panda hood/longhair and exactly2barehands each holding1redgoldpompom retained. Fullhood/shoes/costumehem inside, flowing hair near both lateral edges. Stage lighting/confetti retained. Body appears longlegged/smallhead; headcount unmeasured in dynamic lean, requires correction/audit. Black thighhigh legwear/shoes provisional. Newspaper crop/grayscale pending. Runtime unchanged."
+      "Review": "Full hood, hairtips, costumehem and bothshoes inframe with clearer margins. Open happy smile, redglasses, two barehands holdingtwo redgoldpompoms and stage preserved. Head/body change modest; leaning bentlegs prevent reliable vertical headcount, anatomical audit pending. 300x400 grayscale face/eyes/hands readable, pompoms busy and edges partly cropped in diagnostic, final crop not selected. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-49-idol-v001-generated.png",
+          "Sha256": "de622179c4ebe951e17d047ed54fd7cd3ababaeaf47b727232e14970f026cd10",
+          "Review": "Open happy smile/open amber eyes/red glasses/panda hood/longhair and exactly2barehands each holding1redgoldpompom retained. Fullhood/shoes/costumehem inside, flowing hair near both lateral edges. Stage lighting/confetti retained. Body appears longlegged/smallhead; headcount unmeasured in dynamic lean, requires correction/audit. Black thighhigh legwear/shoes provisional. Newspaper crop/grayscale pending. Runtime unchanged."
+        }
+      ],
+      "Preview": {
+        "File": "idol-crop-v003-2.png",
+        "Grayscale": "idol-crop-v003-2-gray.png",
+        "Crop": {
+          "X": 240,
+          "Y": 40,
+          "Width": 750,
+          "Height": 1000
+        },
+        "Status": "crop-selected-visually-reviewed-runtime-not-adopted",
+        "Review": "Compared3 crops at actual300x400 grayscale. Middle balances larger readable glasses/eyes/open smile, entire panda hood, both gripping hands and identifiable two pompoms. Outer pom strands and lower body cropped only in runtime candidate, fullbody master unchanged. Busy background still visible but face and hands separated by light skin/white fur. Third enlarges face further but cuts more pom edges; first face smaller."
+      },
+      "PreviousPreview": {
+        "File": "idol-v002-preview.png",
+        "Grayscale": "idol-v002-preview-gray.png",
+        "Crop": {
+          "X": 220,
+          "Y": 40,
+          "Width": 780,
+          "Height": 1040
+        },
+        "Status": "grayscale-visually-reviewed-not-selected"
+      },
+      "MasterAudit": {
+        "At": "2026-10-21T14:34:00+09:00",
+        "Scope": "Fullmaster contact sheet visually inspected; not detailed anatomical certification",
+        "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
+        "Note": "Dynamic knees/lean: fullhood/hair/costume/shoes fit; newspaper crop selected; pose-aware anatomy review remains.",
+        "RuntimeAdopted": false
+      }
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Status": "fullbody-grayscale-reviewed-candidate-not-adopted",
+      "Source": "character-49-paparazzi-v008-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "371df0a9525c4aea15e53541161b7fb07cd4db8bd2e2c3c5c5b63deabb812a64",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-49-paparazzi-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-49-paparazzi-v001-prompt.txt",
+        "character-49-paparazzi-v002-prompt.txt",
+        "character-49-paparazzi-v004-prompt.txt",
+        "character-49-paparazzi-v005-prompt.txt",
+        "character-49-paparazzi-v006-prompt.txt",
+        "character-49-paparazzi-v007-prompt.txt",
+        "character-49-paparazzi-v008-prompt.txt"
+      ],
+      "Review": "v008 same-person IDv009 proportion reference: head modestly reduced vsv005 without very small-head drift ofv006/7. Rightward thoughtful closedmouth, red glasses, shoulder flowerpanda greenbattery, robe and walking market retained. Entirehood/hem/shoes fit though topmargin remains narrow ~13px. Inferred crown95 chin300 humanheel1330 gives approx6.0heads; hidden skull and walkingperspective prevent exact certification. 300x400 grayscale face/panda/greenbattery silhouette readable. Selected candidate; final all14 audit/adoption required.",
+      "Trials": [
+        {
+          "Source": "character-49-paparazzi-v001-generated.png",
+          "Review": "Fullbody character and shoulderpanda preserved, elongatedbody/smallhead, superseded byv002."
+        },
+        {
+          "Source": "character-49-paparazzi-v003-generated.png",
+          "Sha256": "06cc7ff86eb8521c78d9a8029878ac5f125fb858605a58e65180b7e3f85cd827",
+          "Prompt": "character-49-paparazzi-v003-prompt.txt",
+          "Review": "Visually inspected: full hood, hair, hems, both shoes, red glasses, shoulder panda and lantern street retained. Requested22percent head enlargement not visibly achieved; nearly unchanged proportions. Do not select as proportion correction. v002 remains current candidate. Runtime unchanged."
+        },
+        {
+          "Source": "character-49-paparazzi-v002-generated.png",
+          "Sha256": "0e10bf3c2ed49d95b798b9dad071d073a45ed023cbc573e685790ba27443ee4a",
+          "Review": "Rightlooking thoughtful closedmouth/redglasses amber eyes panda hood longblackhair, shoulder flowerpanda withgreenbattery and dusk lanternmarket retained. Fullhood/hair/robehem/bothshoes have margins inv002. Ratio edit mostly reframing, head/body still tall; anatomicalheadcount not verified in walkingpose. Loweroutfit/shoes provisional. Crop/grayscale pending. Runtime unchanged."
+        },
+        {
+          "Source": "character-49-paparazzi-v004-generated.png",
+          "Sha256": "c885c7c8cd0a8fd4c7b5734d5dec3c38bb0e20c347d55202d91b225db5d2d7d1",
+          "Prompt": "character-49-paparazzi-v004-prompt.txt",
+          "Review": "Fullbody identity retained; proportion change insufficient; mouth slightly open. Superseded by v005."
+        },
+        {
+          "Source": "character-49-paparazzi-v006-generated.png",
+          "Sha256": "c2cae362bd51315b27fc32f1cff37c29c996f6746396b012eba18f01501f15f1",
+          "Prompt": "character-49-paparazzi-v006-prompt.txt",
+          "References": [
+            "character-49-paparazzi-v005-generated.png"
+          ],
+          "Review": "Visually inspected: fullhood/hair/robehem/both shoes and identity preserved; top margin substantially improved. Head reduction stronger than requested and body again appears elongated. No exact numeric ratio certified. Not selected; v005 remains candidate. Runtime unchanged."
+        },
+        {
+          "Source": "character-49-paparazzi-v007-generated.png",
+          "Sha256": "d3042b4b935a5a85a3c3165054b04a993e958eb99f9352fcb03569db62275605",
+          "Prompt": "character-49-paparazzi-v007-prompt.txt",
+          "References": [
+            "character-49-paparazzi-v005-generated.png"
+          ],
+          "Review": "Fullbody, hood top margin, hair, hem, bothshoes, redglasses, shoulderpanda and scene visually retained. Requested5percent reduction not achieved faithfully: head/hood substantially reduced, body again elongated. Do not select as proportion correction; v005 remains candidate. Runtime unchanged."
+        },
+        {
+          "Source": "character-49-paparazzi-v005-generated.png",
+          "Sha256": "bfb41bc5a5e9a7aff7f0323c5a2a7332326c37844f98cdd8bb931db718458f51",
+          "Review": "v005 visibly enlarges head/face/hood compared to v002/v004. Red glasses, amber eyes, pointed ears, closed thoughtful mouth, shoulder panda/green battery, Chinese costume and dusk market retained. Full hood/hair/hem/both shoes inside; hood top margin very narrow ~10px. Head may now be slightly large: inferred crown hidden under hood abouty85-110, chin near330, anatomical front heel inside shoe near1320; approximate vertical range5.0-5.5, walking pose and hidden skull uncertain. Do not certify5.5-6 or user approval. Newspaper300x400 grayscale reviewed: face/glasses/panda readable, hands partly below diagnostic crop only. Runtime unchanged."
+        }
+      ],
+      "Preview": {
+        "File": "paparazzi-v008-preview.png",
+        "Grayscale": "paparazzi-v008-preview-gray.png",
+        "Crop": {
+          "X": 270,
+          "Y": 0,
+          "Width": 570,
+          "Height": 760
+        },
+        "Status": "grayscale-visually-reviewed"
+      },
+      "PreviousPreview": {
+        "File": "paparazzi-v002-preview.png",
+        "Grayscale": "paparazzi-v002-preview-gray.png",
+        "Crop": {
+          "X": 285,
+          "Y": 55,
+          "Width": 480,
+          "Height": 640
+        },
+        "Status": "grayscale-visually-reviewed-face-panda-battery-readable"
+      },
+      "MeasurementAudit": {
+        "File": "paparazzi-landmarks-v001.json",
+        "Comparison": "paparazzi-landmarks-v001.html",
+        "Status": "manual-inferred-not-certified"
+      },
+      "MasterAudit": {
+        "At": "2026-10-21T14:34:00+09:00",
+        "Scope": "Fullmaster contact sheet visually inspected; not detailed anatomical certification",
+        "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
+        "Note": "Walking: fullhood/hem/shoes fit but top margin narrow; pinned guide suggests headlargev005; priority correction.",
+        "RuntimeAdopted": false
+      },
+      "AnatomicalGuide": {
+        "Method": "Inferred skull under hood and humanheel inside boot; walking perspective",
+        "SkullCrown": {
+          "X": 565,
+          "Y": 95
+        },
+        "Chin": {
+          "X": 622,
+          "Y": 300
+        },
+        "AnatomicalHeel": {
+          "X": 650,
+          "Y": 1330
+        },
+        "VerticalHeadCount": 6.02,
+        "Uncertainty": "Crown approx15px; perspective additional uncertainty; not exact/user approval"
+      }
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Status": "intermediate-scale-reviewed-crop-audit-pending-not-adopted",
+      "Source": "character-49-coin-v005-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "27ecc8c820a8df79250e3665f94e6a915bef0cb06b27aaa12a289fdd264b3234",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-49-coin-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-49-coin-v001-prompt.txt",
+        "character-49-coin-v002-prompt.txt",
+        "character-49-coin-v003-prompt.txt",
+        "character-49-coin-v004-prompt.txt",
+        "character-49-coin-v005-prompt.txt"
+      ],
+      "Review": "v005 modesthead increase fromv004, fullhood/hair/hem/shoes have margins. Leftprofile oneeye/redglasses/closedmouth preserved. Pinned inferred skull crown nearx485 y125, chinx423 y333, anatomical rearheel inside shoe nearx510 y1300. Vertical guide(1300-125)/(333-125)=5.65heads, uncertainty skull underhood ~15px. Approximate5.5-6 compatible, not exact groundtruth. Original fullmaster retained, newspaper crop needs update fromv003. Runtime unchanged.",
+      "Trials": [
+        {
+          "Source": "character-49-coin-v001-generated.png",
+          "Sha256": "68ba24568fef9e1a06b3005722b256c076bb623c5b62d61f22e538c9234101f5",
+          "Review": "Left true sideprofile/oneeye redglasses closedmouth/panda hood longhair and warmgray studio preserved. No floating farlens evident. Fullhood/hair/robehem/bothshoes inframe. Actualhead appears small/elongatedbody; ratio correction required before adoption. Lowerrobe/shoes provisional. Crop/grayscale pending. Runtime unchanged."
+        },
+        {
+          "Source": "character-49-coin-v002-generated.png",
+          "Review": "40percent head enlargement request produced only small visual change; still elongatedbody."
+        },
+        {
+          "Source": "character-49-coin-v003-generated.png",
+          "Sha256": "440c1ad1ae1b2998b4c7a50401b2314d74f81992d1b424ec641b93cd31eebd40",
+          "Review": "v003 head clearly enlarged, true leftprofile oneeye/redglasses/closedmouth preserved. Entirehood/hair/hem/shoes insideframe, topmargin narrow. Head now possibly too large: inferred skull abouty120-150/chin415/heel1350-1370 gives roughly4.2-4.6heads, uncertain hood skull. Need intermediate scale rather than another enlargement. Grayscale300x400 sideface/glasses/ear/fur readable. Runtime unchanged."
+        },
+        {
+          "Source": "character-49-coin-v004-generated.png",
+          "Sha256": "588b590bb204f164e59654cba6b4d6ef8bd54667061983561481d21230c52733",
+          "Review": "Head reduced fromv003 and clear margins fullhood/hair/hem/bothshoes. Leftprofile oneeye/redglasses/closedmouth maintained. Head reduction stronger than intended, body looks tall again; numeric prompt scaling unreliable. Need pinned anatomical measurement comparison rather than guessed ratios; not adopted. Existing preview refers previousv003."
+        }
+      ],
+      "Preview": {
+        "File": "coin-v005-preview.png",
+        "Grayscale": "coin-v005-preview-gray.png",
+        "Crop": {
+          "X": 290,
+          "Y": 20,
+          "Width": 450,
+          "Height": 600
+        },
+        "Status": "grayscale-visually-reviewed-profile-readable"
+      },
+      "AnatomicalGuide": {
+        "Method": "Manually inferred anatomical landmarks; hood and shoe hide actual boundaries; guide only",
+        "SkullCrown": {
+          "X": 485,
+          "Y": 125
+        },
+        "Chin": {
+          "X": 423,
+          "Y": 333
+        },
+        "AnatomicalHeel": {
+          "X": 510,
+          "Y": 1300
+        },
+        "VerticalHeadCount": 5.65,
+        "Uncertainty": "Skull crown approximately15px, heel inside shoe approximate; do not use hat top or external shoe heel"
+      },
+      "MasterAudit": {
+        "At": "2026-10-21T14:34:00+09:00",
+        "Scope": "Fullmaster contact sheet visually inspected; not detailed anatomical certification",
+        "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
+        "Note": "Profile: fullhood/hem/shoes fit; pinned estimated5.65 guide compatible, retain candidate.",
+        "RuntimeAdopted": false
+      }
     }
   ],
-  "Next": "Idol head/body ratio and side hair margins repair,300x400 grayscale; remaining paparazzi/coin2 scenes. Fullset final audit and20runtime adoption/build pending."
+  "Next": "No49 IDv009 and paparazziv008 selected candidates. Next final14 master/runtime review, verify20live hashes against backup, adopt20, update catalog/selection/balanced/adoption, build and distribution. No livegame changes yet.",
+  "RuntimeStaging": {
+    "File": "runtime-staging-v001.json",
+    "Count": 20,
+    "Status": "STAGED_NOT_ADOPTED",
+    "PreviousRuntimeHashesVerified": true
+  }
 }

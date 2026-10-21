@@ -1,0 +1,32 @@
+{
+  "Status": "INFERRED_NOT_APPROVED",
+  "Method": "Manual visual estimates. Anatomical skull crown under hood, chin, near front heel inside shoe. Vertical guide only; walking pose and perspective add unquantified error. Not standing height certification.",
+  "Rows": [
+    {
+      "Version": "v005",
+      "Crown": 100,
+      "Chin": 330,
+      "Heel": 1320,
+      "CrownUncertainty": 15,
+      "HeelUncertainty": 15,
+      "VerticalGuide": 5.3,
+      "Range": [
+        4.98,
+        5.67
+      ]
+    },
+    {
+      "Version": "v006",
+      "Crown": 250,
+      "Chin": 410,
+      "Heel": 1290,
+      "CrownUncertainty": 15,
+      "HeelUncertainty": 15,
+      "VerticalGuide": 6.5,
+      "Range": [
+        5.94,
+        7.17
+      ]
+    }
+  ]
+}
