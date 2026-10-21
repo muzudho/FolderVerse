@@ -20,6 +20,7 @@ public partial class Game1
     private static readonly Rectangle IndustryContinue=new(1230,935,590,80);
     private void BeginIndustry()
     {
+        StopBattleMusic();
         // Step one omits the roulette screen; disposal/assembly still receive their normal processing.
         if(_setup.TutorialStep==1 && _setup.Industry.Pending){
             _setup.Industry.Roll(_setup.PlacementSeed^_setup.FortuneSeed);_setup.Industry.Apply(_setup);_industryApplied=true;_world.ShowSetup(_setup,true);

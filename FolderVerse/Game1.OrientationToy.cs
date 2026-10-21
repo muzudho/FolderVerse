@@ -31,7 +31,7 @@ public partial class Game1
         _spriteBatch.End();
         var viewport=GraphicsDevice.Viewport;
         GraphicsDevice.Viewport=OrientationViewport(new(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30),canvas);
-        _orientationToy.Draw(_yaw,_pitch,OrientationGlobe?_world.ViewOrientation(_yaw,_pitch):_net.BellyOrientation);
+        _orientationToy.Draw(_yaw,_pitch,OrientationGlobe?(IsStatusScreen?_world.DisplayOrientation(_yaw,_pitch):_world.ViewOrientation(_yaw,_pitch)):_net.BellyOrientation);
         GraphicsDevice.Viewport=viewport;
         _spriteBatch.Begin(transformMatrix:transform);
         DrawOrientationControls(toy);

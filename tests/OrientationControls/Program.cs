@@ -15,10 +15,29 @@ sealed class RotationGame:Game1{
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
   w=(WorldSetup)Get("_setup");w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);
   world=(WorldPreview)Get("_world");world.ShowSetup(w,true);net=(CubeNet)Get("_net");net.Home(w);
+  var baseOrientation=world.ManualOrientation;
+  var rockA=Game1.GlobeCradle(0);var rockB=Game1.GlobeCradle(3);
+  Check(rockA!=Matrix.Identity && rockA!=rockB && Math.Abs(rockA.Determinant()-1)<.0001,"Slow cradle is an initial three-dimensional rotation and preserves shape");
+  world.GlobeRock=rockB;Check(world.DisplayOrientation(0,0)==world.ViewOrientation(0,0)*rockB && world.ManualOrientation==baseOrientation,"Cradle does not overwrite saved manual orientation");world.GlobeRock=Matrix.Identity;
+  var occupied=w.Nodes.All.Where(n=>w.Robots.Nodes[n.Id].Robots.Count>0).Take(2).Select(n=>n.Id).ToArray();
+  Check(occupied.Length==2,"Visibility fixture has two occupied nodes");
+  using(var target=new RenderTarget2D(GraphicsDevice,1920,1080)){
+   var previous=GraphicsDevice.GetRenderTargets();GraphicsDevice.SetRenderTarget(target);var batch=(SpriteBatch)Get("_spriteBatch");
+   var drawLayer=typeof(CubeNet).GetMethod("DrawRobotLayer",BindingFlags.NonPublic|BindingFlags.Instance)!;
+   foreach(var robotAt in new[]{new Vector2(300,300),new Vector2(300,104)}){
+    batch.Begin();drawLayer.Invoke(net,new object[]{Get("_ui"),w,new Rectangle(100,100,400,400),(Func<Node,Vector2?>)(n=>occupied.Contains(n.Id)?robotAt:null),1f});batch.End();
+    Check(net.RobotBadges.Select(b=>b.Node).Distinct().Count()==2,"Overlapping robot groups and partially clipped edge groups both remain visible");
+   }
+   GraphicsDevice.SetRenderTargets(previous);net.ClearGlobeRobotBadges();
+  }
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_statusGlobe",true);Call("FocusStatusGlobe");
   var panel=(Rectangle)Prop("NetPanel");var node=w.Nodes.Current(0);var position=w.Routes.Position(node.Cell,node.Center);
   Check(world.ProjectVisible(position,w.Cells[node.Cell].Normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),panel,out var at),"Current location visible");
   Check(Vector2.Distance(at,new Vector2(panel.Center.X,panel.Center.Y))<.01f,"Current location centered");
+  var cameraBeforeRock=world.ManualOrientation;Call("UpdateGlobeRock",.5d);
+  Check(world.GlobeRock!=Matrix.Identity && world.ManualOrientation==cameraBeforeRock,"Idle globe rocks without modifying the user's camera");
+  Check(world.ProjectVisible(position,w.Cells[node.Cell].Normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),panel,out var rockedAt) && (int)Call("HitGlobeNode",rockedAt.ToPoint(),new[]{node.Id})==node.Id,"Rocked globe's projected nodes remain clickable");
+  Set("_statusGlobe",false);Call("UpdateGlobeRock",.1d);Check(world.GlobeRock==Matrix.Identity,"Rocking stops in unfolded view");Set("_statusGlobe",true);
   var toy=((ValueTuple<Rectangle,Rectangle,Rectangle>)typeof(Game1).GetMethod("OrientationAreas",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{panel,false})!).Item2;
   foreach(int axis in new[]{0,1,2})foreach(int sign in new[]{-1,1}){
    var from=Quaternion.CreateFromRotationMatrix(world.ViewOrientation((float)Get("_yawAngle"),(float)Get("_pitchAngle")));
@@ -118,6 +137,7 @@ sealed class RotationGame:Game1{
    Set("_mapTransitionAge",-1f);Set("_screen",Enum.Parse(Get("_screen").GetType(),frame==17?"Rolling":frame==18?"CastReview":"WorldStatus"));
    if(frame>=19){Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);Set("_statusGlobe",frame>=21);net.ShowMapSymbols=frame!=21;net.ShowEquator=frame is 19 or 21;}
    if(frame>=23){Set("_statusGlobe",frame>=25);net.ShowRobots=frame is 24 or 26;if(frame==24)net.ScreenAngle=MathHelper.Pi;if(frame==26){var other=(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{6})!;Call("RouteLayerClick",other.Center);}}
+   world.GlobeRock=frame is 21 or 22?Game1.GlobeCradle((frame-21)*4):Matrix.Identity;
    base.Draw(t);
   }
   else{GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawStatusUi");batch.End();}
@@ -132,7 +152,7 @@ sealed class RotationGame:Game1{
    Check(pixels.Any(c=>c==CubeNet.EquatorColor)==net.ShowEquator,"Equator renders independently from coordinates");
   }
   if(frame>=23)Check(net.ShowRobots || net.RobotBadges.Count==0,"Hidden robots leave no hit areas in either view");
-  if(frame is 24 or 26)foreach(var badge in net.RobotBadges){Check(badge.Detailed,"Both maps use the detailed robot display");Check(net.HitRobotBadge(badge.Bounds.Center)==badge.Node,"Upright robot badge hit area matches screen coordinates after net rotation and on globe");}
+  if(frame is 24 or 26)foreach(var badge in net.RobotBadges){Check(badge.Detailed,"Both maps use the detailed robot display");int expected=net.RobotBadges.Last(b=>b.Bounds.Contains(badge.Bounds.Center)).Node;Check(net.HitRobotBadge(badge.Bounds.Center)==expected,"Upright overlapping robot badges select the topmost group in screen coordinates on both maps");}
   if(frame==26)foreach(var badge in net.RobotBadges)Check(w.Robots.Nodes[badge.Node].Robots.Any(r=>w.Relations.Controls(r.Owner)),"Other-country toggle filters robot badges");
   if(frame++>=26){Console.WriteLine("PASS: current-location centering, all six 30-degree globe controls, animation midpoint, full net circle, rotated hit tests, saved rotation, transition rendering, smooth automatic speed pulses and compact reset.");Exit();}
  }

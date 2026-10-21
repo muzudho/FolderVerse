@@ -27,6 +27,8 @@ public sealed partial class WorldPreview : IDisposable
     public string GlobeName=>Kind+"儀";
     public Quaternion? ManualOrientation {get;set;}
     public Matrix ViewOrientation(float yaw,float pitch)=>ManualOrientation.HasValue?Matrix.CreateFromQuaternion(ManualOrientation.Value):Orientation(yaw,pitch);
+    public Matrix GlobeRock {get;set;}=Matrix.Identity;
+    public Matrix DisplayOrientation(float yaw,float pitch)=>ViewOrientation(yaw,pitch)*GlobeRock;
     public static Matrix Orientation(float yaw,float pitch)=>Matrix.CreateRotationX(pitch)*Matrix.CreateRotationY(yaw);
 
     public WorldPreview(GraphicsDevice device)

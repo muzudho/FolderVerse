@@ -127,7 +127,7 @@ public partial class Game1 : Game
         _rollTime=0; _dragging=false;
     }
     protected override void Update(GameTime gameTime)
-    { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive); base.Update(gameTime); }
+    { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive); UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);UpdateBattleMusic(IsActive);base.Update(gameTime); }
     private void HandleInputCore(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
     {
         _pointer=CanvasPoint(mouse); _ui.Pointer=_pointer;
@@ -687,6 +687,7 @@ public partial class Game1 : Game
     protected override void UnloadContent(){_net.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();_medallionRing?.Dispose();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
+        if(disposing)StopBattleMusic();
         try{base.Dispose(disposing);}
         finally
         {

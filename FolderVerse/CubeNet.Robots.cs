@@ -13,7 +13,7 @@ public sealed partial class CubeNet
     public IReadOnlyList<RobotMapBadge> RobotBadges=>_robotBadges;
     public void ClearGlobeRobotBadges(){_badgePanel=null;_robotBadges.Clear();}
     public void AddGlobeRobotBadge(int node,Rectangle bounds)=>_robotBadges.Add(new(node,bounds,false));
-    public int HitRobotBadge(Point pointer){if(_badgePanel.HasValue)pointer=UnrotateScreen(pointer,_badgePanel.Value);return _robotBadges.Where(b=>b.Bounds.Contains(pointer)).Select(b=>b.Node).DefaultIfEmpty(-1).First();}
+    public int HitRobotBadge(Point pointer){if(_badgePanel.HasValue)pointer=UnrotateScreen(pointer,_badgePanel.Value);return _robotBadges.AsEnumerable().Reverse().Where(b=>b.Bounds.Contains(pointer)).Select(b=>b.Node).DefaultIfEmpty(-1).First();}
     public const float RobotDetailScale=400;
     public void DrawMapObjects(UiPainter ui,WorldSetup world,Rectangle panel,float pulse)
     {
@@ -44,22 +44,21 @@ public sealed partial class CubeNet
     {
         _robotBadges.Clear();
         if(!ShowRobots || !world.Campaign.UseRobotCombat)return;
-        var occupied=new List<Rectangle>();
         int current=world.Nodes.Current(world.PlayerSlot)?.Id??-1;
-        foreach(var node in world.Nodes.All.OrderBy(n=>EmphasizedNode(n.Id)?0:n.Id==current?1:2).ThenBy(n=>n.Id))
+        foreach(var node in world.Nodes.All.OrderBy(n=>EmphasizedNode(n.Id)?2:n.Id==current?1:0).ThenBy(n=>n.Id))
         {
             if(!NodeVisible(world,node))continue;
             var robots=world.Robots.Nodes[node.Id].Robots.Where(r=>ShowOtherCountries || world.Relations.Controls(r.Owner)).OrderByDescending(r=>MapPartCount(r.Parts)).ToArray();
             if(robots.Length==0)continue;
-            var point=project(node);if(point==null || !panel.Contains(point.Value.ToPoint()))continue;
+            var point=project(node);if(point==null)continue;
             var at=point.Value;float zoom=ShowRoutes && EmphasizedNode(node.Id)?2:1;
             var cards=robots.Select((robot,i)=>{
                 var offset=RobotRingSlot(i,robots.Length)*zoom;
                 return new Rectangle((int)(at.X+offset.X-12*zoom),(int)(at.Y+offset.Y-MapPartCount(robot.Parts)*6*zoom),(int)(24*zoom),(int)(MapPartCount(robot.Parts)*12*zoom));
             }).ToArray();
             var bounds=cards.Aggregate(Rectangle.Union);
-            if(!panel.Contains(bounds) || occupied.Any(r=>r.Intersects(bounds)))continue;
-            occupied.Add(bounds);_robotBadges.Add(new(node.Id,bounds,true));
+            if(!MapViewport(panel).Intersects(bounds))continue;
+            _robotBadges.Add(new(node.Id,bounds,true));
             for(int i=0;i<robots.Length;i++)
             {
                 var robot=robots[i];var card=cards[i];

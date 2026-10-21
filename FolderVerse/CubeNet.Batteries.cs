@@ -27,9 +27,10 @@ public sealed partial class CubeNet
             if(VisibleOperationBatteries!=null && !VisibleOperationBatteries.Contains(ruler))continue;
             if(!world.Relations.Powered[ruler] || !ShowOtherCountries && !world.Relations.Controls(ruler))continue;
             var origin=project(ruler);if(origin==null)continue;
-            var at=origin.Value+BatteryOffset(world,ruler);if(!panel.Contains(at.ToPoint()))continue;
+            var at=origin.Value+BatteryOffset(world,ruler);
             bool hover=HoveredBattery==ruler;int zoom=hover?2:1,width=25*zoom,height=16*zoom;
             var box=new Rectangle((int)at.X-width/2,(int)at.Y-height/2,width,height);
+            if(!MapViewport(panel).Intersects(box))continue;
             var hit=box;hit.Inflate(6,6);_batteries.Add((ruler,hit));
             var delta=at-origin.Value;ui.Tile((at+origin.Value)/2,new(delta.Length(),1),MathF.Atan2(delta.Y,delta.X),world.OwnerColor(ruler)*.65f);
             ui.Box(hit,new Color(12,27,36));ui.Box(box,world.OwnerColor(ruler));

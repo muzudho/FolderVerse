@@ -24,14 +24,14 @@ public partial class Game1
         if(_mapUnfold)
         {
             int selected=HitGlobeCell(new Point(StatusGlobeArea.Center.X,StatusGlobeArea.Center.Y));
-            if(selected<0)selected=_setup.Cells.OrderByDescending(c=>Vector3.Transform(c.Center,_world.ViewOrientation(_yaw,_pitch)).Z).First().Id;
+            if(selected<0)selected=_setup.Cells.OrderByDescending(c=>Vector3.Transform(c.Center,_world.DisplayOrientation(_yaw,_pitch)).Z).First().Id;
             _statusCell=selected;_net.SetCenter(_setup,_setup.Cells[selected].Face);_net.ResetView();
             _net.Drag(Vector2.TransformNormal(-_net.Faces[0].Project(_setup.Cells[selected].Center)*_net.Fit(NetPanel).Scale,Matrix.CreateRotationZ(_net.ScreenAngle)));
         }
         if(_mapUnfold && DestinationOperation){_statusGlobe=false;FitDestinationView();_statusGlobe=true;}
         var face=_net.Faces[0];var normal=CubeNet.Normals[face.Face];
         var basis=new Matrix(face.Right.X,face.Right.Y,face.Right.Z,0,face.Up.X,face.Up.Y,face.Up.Z,0,normal.X,normal.Y,normal.Z,0,0,0,0,1);
-        _mapOrientation=Quaternion.CreateFromRotationMatrix(basis*_world.ViewOrientation(_yaw,_pitch));
+        _mapOrientation=Quaternion.CreateFromRotationMatrix(basis*_world.DisplayOrientation(_yaw,_pitch));
         _mapTransitionAge=0;_mapSoundStep=-1;_dragging=_mapDragging=false;_globePressedCell=-1;
         _mapEffect??=new BasicEffect(GraphicsDevice){VertexColorEnabled=true};
         if(_mapCrack==null)
