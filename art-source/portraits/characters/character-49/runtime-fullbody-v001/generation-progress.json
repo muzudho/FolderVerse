@@ -1,15 +1,15 @@
 {
   "CharacterId": 49,
-  "UpdatedAt": "2026-10-21T20:04:00+09:00",
+  "UpdatedAt": "2026-10-21T20:34:00+09:00",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018",
-  "GameAdopted": false,
+  "GameAdopted": true,
   "Backup": "backup-manifest.json",
   "Images": [
     {
       "Id": 1,
       "Kind": "normal",
-      "Status": "head-proportion-improved-visually-reviewed-not-adopted",
+      "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
       "References": [
         "art-source/portraits/characters/character-49/character-49-1-v003-generated.png",
         "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
@@ -58,12 +58,13 @@
         "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
         "Note": "Standing: whole staff/hood/hem/shoes fit; final inferred skull/heel comparison needed.",
         "RuntimeAdopted": false
-      }
+      },
+      "RuntimeAdopted": true
     },
     {
       "Id": 2,
       "Kind": "normal",
-      "Status": "head-readability-and-framing-improved-visually-reviewed-not-adopted",
+      "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
       "Source": "character-49-normal-2-v004-generated.png",
       "Width": 1448,
       "Height": 1086,
@@ -126,12 +127,13 @@
           "Height": 540
         },
         "Status": "diagnostic-visually-reviewed-not-selected"
-      }
+      },
+      "RuntimeAdopted": true
     },
     {
       "Id": 3,
       "Kind": "normal",
-      "Status": "head-readability-improved-fullbody-reviewed-not-adopted",
+      "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
       "Source": "character-49-normal-3-v003-generated.png",
       "Width": 1448,
       "Height": 1086,
@@ -189,12 +191,13 @@
           "Height": 540
         },
         "Status": "diagnostic-visually-reviewed-not-selected"
-      }
+      },
+      "RuntimeAdopted": true
     },
     {
       "Id": 4,
       "Kind": "normal",
-      "Status": "framing-improved-visually-reviewed-not-adopted",
+      "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
       "Source": "character-49-normal-4-v002-generated.png",
       "Width": 1448,
       "Height": 1086,
@@ -236,12 +239,13 @@
         "Method": "Full-resolution manual visual review of joint continuity, foreshortening, head/torso/limb balance; no vertical bounding-box headcount",
         "Decision": "retain-pose-candidate",
         "Note": "Crossedknees and shins coherent with perspective; shortneck, readable head, raised barehand/talisman and bookhand preserved. No obvious extra limbs or detached joints. Not exact5.5-6 measurement."
-      }
+      },
+      "RuntimeAdopted": true
     },
     {
       "Id": 5,
       "Kind": "normal",
-      "Status": "framing-improved-visually-reviewed-not-adopted",
+      "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
       "Source": "character-49-normal-5-v002-generated.png",
       "Width": 1448,
       "Height": 1086,
@@ -287,12 +291,13 @@
         "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
         "Note": "Turned stance: fullhood/flowinghair/hem/shoes fit; smallface in fullmaster, closer runtime crop already improves recognition.",
         "RuntimeAdopted": false
-      }
+      },
+      "RuntimeAdopted": true
     },
     {
       "Id": 6,
       "Kind": "normal",
-      "Status": "fullbody-candidate-visually-reviewed-not-adopted",
+      "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
       "Source": "character-49-normal-6-v001-generated.png",
       "Width": 1448,
       "Height": 1086,
@@ -326,12 +331,13 @@
         "Method": "Full-resolution manual visual review of joint continuity, foreshortening, head/torso/limb balance; no vertical bounding-box headcount",
         "Decision": "retain-pose-candidate",
         "Note": "Reaching barehand enlarged by foreshortening; closedeyes/openlaugh/panda/greenbattery/reddevice retained. Knees/shins connect and front shoes enlarge consistently with lowcamera perspective. Hood top margin narrow; no raw vertical headcount."
-      }
+      },
+      "RuntimeAdopted": true
     },
     {
       "Id": "formal",
       "Kind": "newspaper",
-      "Status": "framing-and-grayscale-reviewed-not-adopted",
+      "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
       "Source": "character-49-formal-v005-generated.png",
       "Width": 1024,
       "Height": 1536,
@@ -386,12 +392,13 @@
         "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
         "Note": "Standing: fullhood/hem/shoes fit; representative proportion candidate, final landmark review needed.",
         "RuntimeAdopted": false
-      }
+      },
+      "RuntimeAdopted": true
     },
     {
       "Id": "election",
       "Kind": "newspaper",
-      "Status": "fullbody-intermediate-proportion-candidate-reviewed-not-adopted",
+      "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
       "Source": "character-49-election-v004-generated.png",
       "Width": 1024,
       "Height": 1536,
@@ -455,12 +462,13 @@
           "Height": 760
         },
         "Status": "grayscale-visually-reviewed-color-created"
-      }
+      },
+      "RuntimeAdopted": true
     },
     {
       "Id": "friends",
       "Kind": "newspaper",
-      "Status": "fullbody-visually-reviewed-crop-audit-pending-not-adopted",
+      "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
       "Source": "character-49-friends-v002-generated.png",
       "Width": 1086,
       "Height": 1448,
@@ -502,12 +510,13 @@
         "Method": "Full-resolution manual visual review of joint continuity, foreshortening, head/torso/limb balance; no vertical bounding-box headcount",
         "Decision": "retain-pose-candidate",
         "Note": "Both barearms wrap panda coherently, knees together and shins connect to shoes. Head tilt/shortneck retained, perspective foreground shoes larger. Fullbody extent preserved; no exact standingheight inference."
-      }
+      },
+      "RuntimeAdopted": true
     },
     {
       "Id": "history",
       "Kind": "newspaper",
-      "Status": "fullbody-grayscale-reviewed-final-audit-pending-not-adopted",
+      "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
       "Source": "character-49-history-v001-generated.png",
       "Width": 1086,
       "Height": 1448,
@@ -542,12 +551,13 @@
         "Method": "Full-resolution manual visual review of joint continuity, foreshortening, head/torso/limb balance; no vertical bounding-box headcount",
         "Decision": "retain-pose-candidate",
         "Note": "Serious closedmouth, barehands onlap, chair contact and hidden bentknees under robe plausible. Shoe-covered feet emerge at hem, fullhood/hem/shoes fit. Covered hips/thighs prohibit exact limbmeasurement; no visible anatomy defect requiring regeneration."
-      }
+      },
+      "RuntimeAdopted": true
     },
     {
       "Id": "id",
       "Kind": "newspaper",
-      "Status": "proportion-and-grayscale-reviewed-candidate-not-adopted",
+      "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
       "Source": "character-49-id-v009-generated.png",
       "Width": 1086,
       "Height": 1448,
@@ -671,12 +681,13 @@
         },
         "VerticalHeadCount": 5.75,
         "Uncertainty": "Skull under hood approx15px; excludes hood ears and external shoe soles"
-      }
+      },
+      "RuntimeAdopted": true
     },
     {
       "Id": "idol",
       "Kind": "newspaper",
-      "Status": "framing-and-grayscale-reviewed-final-proportion-audit-pending-not-adopted",
+      "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
       "Source": "character-49-idol-v002-generated.png",
       "Width": 1086,
       "Height": 1448,
@@ -725,12 +736,13 @@
         "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
         "Note": "Dynamic knees/lean: fullhood/hair/costume/shoes fit; newspaper crop selected; pose-aware anatomy review remains.",
         "RuntimeAdopted": false
-      }
+      },
+      "RuntimeAdopted": true
     },
     {
       "Id": "paparazzi",
       "Kind": "newspaper",
-      "Status": "fullbody-grayscale-reviewed-candidate-not-adopted",
+      "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
       "Source": "character-49-paparazzi-v008-generated.png",
       "Width": 1086,
       "Height": 1448,
@@ -844,12 +856,13 @@
         },
         "VerticalHeadCount": 6.02,
         "Uncertainty": "Crown approx15px; perspective additional uncertainty; not exact/user approval"
-      }
+      },
+      "RuntimeAdopted": true
     },
     {
       "Id": "coin",
       "Kind": "newspaper",
-      "Status": "intermediate-scale-reviewed-crop-audit-pending-not-adopted",
+      "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
       "Source": "character-49-coin-v005-generated.png",
       "Width": 1086,
       "Height": 1448,
@@ -920,10 +933,11 @@
         "FullBodyFraming": "all major extremities inside; individual margin cautions in note",
         "Note": "Profile: fullhood/hem/shoes fit; pinned estimated5.65 guide compatible, retain candidate.",
         "RuntimeAdopted": false
-      }
+      },
+      "RuntimeAdopted": true
     }
   ],
-  "Next": "No49 IDv009 and paparazziv008 selected candidates. Next final14 master/runtime review, verify20live hashes against backup, adopt20, update catalog/selection/balanced/adoption, build and distribution. No livegame changes yet.",
+  "Next": "No49 complete14fullmasters/20runtime, metadata/build/distribution verified. Next No50. No40-46 older adoption fullbody followup remains separate recorded requirement.",
   "RuntimeStaging": {
     "File": "runtime-staging-v001.json",
     "Count": 20,

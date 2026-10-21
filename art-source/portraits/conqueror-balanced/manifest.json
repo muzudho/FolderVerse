@@ -634,14 +634,14 @@
     {
       "CharacterId": 49,
       "Variant": 1,
-      "File": "character-49-1-balanced.png",
-      "Width": 1448,
-      "Height": 1086,
-      "Sha256": "282A77B0E97B2DF3B193A90E58AF2ED6C8D7F02E84434DB05CF06746FF8AE1B1",
-      "OriginalFile": "../characters/character-49/character-49-1-v003-generated.png",
-      "OriginalSha256": "E26B98486C8455B23B5394A9C9E462ACD9861094EF31FE50D2B8C5E0618E446C",
+      "File": "character-49-1-fullbody-v001.png",
+      "Width": 1024,
+      "Height": 1536,
+      "Sha256": "B2D0D010891FBB47116C307E3C48BF12965A3B0085BB49240D26F2D7C4FA05FA",
+      "OriginalFile": "../characters/character-49/runtime-fullbody-v001/character-49-normal-1-v004-generated.png",
+      "OriginalSha256": "B2D0D010891FBB47116C307E3C48BF12965A3B0085BB49240D26F2D7C4FA05FA",
       "GameTile": "game-tiles/character-49-1.png",
-      "GameTileSha256": "292DF7468256DD1498B6CB6E43BFFD381E8CFFFF021A876C3EB415EB73283B4B",
+      "GameTileSha256": "4122BF1FB29B94A4C07ED08E8269FD6BF8E6ED4658E180C344E96097191A7C42",
       "Reviewed": true
     },
     {

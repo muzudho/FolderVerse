@@ -1,0 +1,173 @@
+{
+  "CharacterId": 50,
+  "UpdatedAt": "2026-10-22T00:04:00+09:00",
+  "Method": "built-in image_gen",
+  "Standard": "v017-approved-20261018",
+  "GameAdopted": false,
+  "Backup": "backup-manifest.json",
+  "Images": [
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Source": "character-50-normal-1-v002-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "74851eb15c263248f2cb7ec7d5469da04c45054cc94e5a34b43977232475c43d",
+      "References": [
+        "art-source/portraits/characters/character-50/character-50-1-v003-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-50-normal-1-v001-prompt.txt",
+        "character-50-normal-1-v002-prompt.txt"
+      ],
+      "Status": "fullbody-framing-runtime-preview-reviewed-not-adopted",
+      "Review": "v002 pulledback framing: entire hair ornaments/curls/ribbons/coathem/reachingglove/bothshoes visible with margins. Silverglasses blueeyes open surprisedmouth, bluewhitegold outfit and blackyellowlightningbattery retained. Dynamic tilted foreshortened pose: exact anatomical headcount not certified. Lowerclothing/shoes provisional. 256x192 crop face/glove/battery/staffhead readable; master retained.",
+      "Trials": [
+        {
+          "Source": "character-50-normal-1-v001-generated.png",
+          "Sha256": "0db3008d6a2f566da5e4295f669c7f4bd2c325cbd09243114e0df605af688f4c",
+          "Review": "Identity, open surprise expression, silverglasses, blueeyes, reachingwhiteglove, bluewhitegold outfit and blackyellowbattery retained. Shoes and lowerrobe added visibly; headhair/ornament touches/cuts topedge: fullbody requirement not met. Need pullback framing before candidate selection. Dynamicforeshortening prevents exactheadcount. Lowerclothes/shoes provisional."
+        }
+      ],
+      "Preview": {
+        "File": "normal-1-v002-preview.png",
+        "Crop": {
+          "X": 480,
+          "Y": 40,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Status": "visually-reviewed-face-hand-battery-readable"
+      }
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Source": "character-50-normal-2-v001-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "43190397ce2cca4d4d19fe673fe1b4e59be190d652f99427a90b74ff70d54805",
+      "References": [
+        "art-source/portraits/characters/character-50/character-50-2-v003-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-50-normal-2-v001-prompt.txt"
+      ],
+      "Status": "fullbody-runtime-preview-reviewed-not-adopted",
+      "Review": "Fullhair/headornament/coathem/bothshoes visible withinframe. Openhappy eyes/mouth, silverglasses, blondecurls, bluewhitegold uniform, whitegloved bluepen writingopenbook, panda greenleaf and blueyellowlightningbattery/library retained. Seated crossedlegs coherent visually; anatomy underdesk/foreshortening not exactheadcount certified. Otherhand supportshead, loweroutfit/shoes provisional. 256x192 face/pen/book/panda/battery readable; face somewhatsmall, finalcomparativeaudit pending.",
+      "Preview": {
+        "File": "normal-2-v001-preview.png",
+        "Crop": {
+          "X": 450,
+          "Y": 20,
+          "Width": 800,
+          "Height": 600
+        },
+        "Width": 256,
+        "Height": 192,
+        "Status": "visually-reviewed"
+      }
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Status": "generation-failed-output-moderation-not-adopted",
+      "References": [
+        "art-source/portraits/characters/character-50/character-50-3-v003-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-50-normal-3-v001-prompt.txt"
+      ],
+      "Failure": {
+        "Tool": "built-in image_gen",
+        "Http": 400,
+        "Code": "moderation_blocked",
+        "Stage": "output",
+        "Category": "sexual",
+        "RequestId": "de353d53-55c1-433e-bad8-47341f4d1c8e",
+        "OutputSaved": false
+      },
+      "Review": "Original visually inspected: closed thoughtful smile openblueeyes silverglasses blonde curls, black fingerless gloves bareindexchin, otherhand onopenbook, blackyellow chestbattery, navygoldsofa warm library. No generated output available, no visual review/adoption."
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Source": "character-50-normal-4-v002-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "c6c7e5025a3efaa29d1a71c74f265f8db0044c8177e274775961cbddb81d2eea",
+      "References": [
+        "art-source/portraits/characters/character-50/character-50-4-v003-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-50-normal-4-v001-prompt.txt",
+        "character-50-normal-4-v002-prompt.txt"
+      ],
+      "Status": "fullbody-framing-runtime-preview-reviewed-not-adopted",
+      "Review": "Pulledback v002 completehoodtop with ~100px background above, allhair/robehem/bothslippers insideframe. Gentleclosed smile openblueeyes silverglasses pointedears whitehoodrobe longsleepdress barehands lapel/lap and upperarmyellowbattery preserved. Original loweroutfit extended/provisional. 256x192 crop hood/face/bothhands/battery readable. Seated covered anatomy no exactheadcount certification. Candidate not runtime adopted.",
+      "Trials": [
+        {
+          "Source": "character-50-normal-4-v001-generated.png",
+          "Sha256": "ab068abc0d89978657c3ec9107cab0cabd37575836db544fc5ae60786079d291",
+          "Review": "Gentle closedsmile openblueeyes silverglasses blondehair pointedears white fluffyhood robe barehands lapel/lap blackyellow upperarmbattery snowflakecushions snowywindow retained. Long opaque sleepdress/slippers provisional lowercompletion; original innerdress extended and more covered. Bothslippers/robehem visible but hoodtop touches/cuts topedge. Need pullback before selection/cropreview; no runtime adoption. Seated/clothed anatomy not exactcertified."
+        }
+      ],
+      "Preview": {
+        "File": "normal-4-v002-preview.png",
+        "Crop": {
+          "X": 440,
+          "Y": 90,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Status": "visually-reviewed-face-hands-battery"
+      }
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Source": "character-50-normal-5-v002-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "488967f605b5db2961179d7d8c562c4feec6b9d588f32c38971b643951e83708",
+      "References": [
+        "art-source/portraits/characters/character-50/character-50-5-v003-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+      ],
+      "Prompts": [
+        "character-50-normal-5-v001-prompt.txt",
+        "character-50-normal-5-v002-prompt.txt"
+      ],
+      "Status": "fullbody-framing-reviewed-proportion-audit-pending-not-adopted",
+      "Review": "v001 topornament cropped; v002 pullsback completehair/ornament/hem/bothshoes with margins. Lookingback closedsmile blueeyes silverglasses, blondehair bluewhitegold costume goldshoulderarmor/wristbracer, blackyellow upperbackbattery, balloons/checkeredflags retained. Body appears tall relativehead; anatomical proportion audit/correction pending, do not certify5.5-6. Lowerclothes/shoes provisional. 256x192 face/glasses/shoulderarmor/battery readable; relaxedhand belowcrop.",
+      "Trials": [
+        {
+          "Source": "character-50-normal-5-v001-generated.png",
+          "Sha256": "3559332a54569de4a1d8893c2b916a5dca2c312cc4fd5cdf3dc4564df62f28f5",
+          "Review": "Tophair/ornament cut, framing rejected."
+        }
+      ],
+      "Preview": {
+        "File": "normal-5-v002-preview.png",
+        "Crop": {
+          "X": 500,
+          "Y": 110,
+          "Width": 560,
+          "Height": 420
+        },
+        "Width": 256,
+        "Height": 192,
+        "Status": "visually-reviewed"
+      }
+    }
+  ],
+  "Next": "Normal5v002 framing fixed, body looks tall: headproportion audit pending. Next inspect/generate normal6 or correctnormal5. Normal3 moderation failure unresolved;news8 unmade. No runtime changes."
+}
