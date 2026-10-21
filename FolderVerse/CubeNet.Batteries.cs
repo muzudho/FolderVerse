@@ -7,6 +7,8 @@ public sealed partial class CubeNet
 {
     private readonly List<(int Ruler,Rectangle Bounds)> _batteries=new();
     public int HoveredBattery {get;set;}=-1;
+    public void ClearGlobeBatteries()=>_batteries.Clear();
+    public void AddGlobeBatteryBadge(int ruler,Rectangle bounds)=>_batteries.Add((ruler,bounds));
     // Screen-space proxy only: no node, territory or physical location is added.
     public static Vector2 BatteryOffset(WorldSetup world,int ruler)
     {

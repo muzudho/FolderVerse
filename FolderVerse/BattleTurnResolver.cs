@@ -32,17 +32,20 @@ public static class BattleTurnResolver
         battle.Events.Add(new(battle.Turn,BattlePhase.Place,0,"仮配置"));
         foreach(var u in units)u.Position=positions[u.Id];battle.Capture(BattlePhase.Place);
         foreach(var a in units)foreach(var b in units.Where(b=>b.Id>a.Id))
-            if(!battle.Allied(a.Owner,b.Owner) && positions[a.Id]==origin[b.Id] && positions[b.Id]==origin[a.Id]){blocked.Add(a.Id);blocked.Add(b.Id);}
+            if(!a.Retreating && !b.Retreating && !battle.Allied(a.Owner,b.Owner) && positions[a.Id]==origin[b.Id] && positions[b.Id]==origin[a.Id]){blocked.Add(a.Id);blocked.Add(b.Id);}
         while(true)
         {
             foreach(var id in blocked)positions[id]=origin[id];
-            var collisions=units.Where(u=>BattleState.Inside(positions[u.Id])).GroupBy(u=>positions[u.Id]).Where(g=>g.Count()>1).SelectMany(g=>g).ToArray();
+            var collisions=units.Where(u=>!u.Retreating && BattleState.Inside(positions[u.Id])).GroupBy(u=>positions[u.Id]).Where(g=>g.Count()>1).SelectMany(g=>g).ToArray();
             bool added=false;foreach(var u in collisions)added|=blocked.Add(u.Id);if(!added)break;
         }
         foreach(var u in units)
         {
             u.Position=positions[u.Id];if(!BattleState.Inside(u.Position))u.Retreated=true;
             battle.Events.Add(new(battle.Turn,blocked.Contains(u.Id)?BattlePhase.Rollback:BattlePhase.Place,u.Id,$"{u.Position.X},{u.Position.Y} / {u.Facing}"));
+        }
+        foreach(var u in units.Where(u=>u.Active && u.ResumeAfterRetreatOverlap))if(!units.Any(other=>other.Active && other.Id!=u.Id && !other.Retreating && other.Position==u.Position)){
+            u.ResumeAfterRetreatOverlap=false;if(!battle.Army(u.Owner).Withdrawing)u.Retreating=false;
         }
         foreach(var captain in units.Where(u=>u.Active && u.Role==BattleRole.Captain))
         {
@@ -121,6 +124,9 @@ public static class BattleTurnResolver
                 battle.Events.Any(e=>e.Turn==battle.Turn && e.Phase==BattlePhase.Reinforce && battle.Units.Any(u=>u.Id==e.Unit && battle.Allied(u.Owner,army.Owner)));
             // Holding the fallen flag no longer forces evacuation or loss of will.
             active|=battle.Kind==BattleKind.Node && !battle.FlagStanding && battle.Allied(battle.LastFlagOwner,army.Owner);
+            active|=battle.Kind==BattleKind.Node && battle.FlagStanding && !defender &&
+                !battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (a.Waiting.Count>0 || battle.Units.Any(u=>u.Active && u.Owner==a.Owner))) &&
+                units.Any(u=>u.Active && !u.Retreating && u.Owner==army.Owner && origin.ContainsKey(u.Id) && u.Position!=origin[u.Id]);
             army.NoWillCount=defender?0:active?0:army.NoWillCount+1;
             if(army.NoWillCount<battle.Rules.NoWillTurns)continue;
             army.Withdrawing=true;
@@ -134,13 +140,14 @@ public static class BattleTurnResolver
     private static bool FlagVictory(BattleState battle)
     {
         if(battle.Kind!=BattleKind.Node || battle.SplitBoard)return false;
-        bool defended=battle.FlagStanding && battle.FlagDefenseTurns>=battle.Rules.FlagDefenseTurns;
+        bool defended=battle.FlagStanding && battle.FlagDefenseTurns>=battle.Rules.FlagDefenseTurns && battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (a.Waiting.Count>0 || battle.Units.Any(u=>u.Active && u.Owner==a.Owner)));
         bool captured=!battle.FlagStanding && battle.FlagCaptureTurns>=battle.Rules.FlagCaptureTurns;
-        if(!defended && !captured)return false;
         // A departed captor cannot receive territory; a surviving ally of that captor may finish capture.
         int captor=battle.Armies.Where(a=>!a.Withdrawing && !battle.Allied(a.Owner,battle.Defender) && battle.Allied(a.Owner,battle.LastFlagOwner) &&
             (battle.Units.Any(u=>u.Active && u.Owner==a.Owner) || a.Waiting.Count>0))
             .OrderBy(a=>battle.Allied(a.Owner,battle.LastFlagOwner)?0:1).ThenBy(a=>a.Owner).Select(a=>a.Owner).DefaultIfEmpty(-1).First();
+        bool cleared=!battle.FlagStanding && captor>=0 && !battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (a.Waiting.Count>0 || battle.Units.Any(u=>u.Active && u.Owner==a.Owner)));
+        if(!defended && !captured && !cleared)return false;
         battle.Winner=defended?battle.Defender:captor;battle.Finished=true;
         battle.Events.Add(new(battle.Turn,BattlePhase.Result,0,defended?"旗の防衛成功":"旗の奪取成功 / 守備側降伏"));
         return true;
@@ -165,7 +172,9 @@ public static class BattleTurnResolver
                 if(own)parts=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.First(p=>(parts&p)!=0);
                 enemy.Owner=queen.Owner;
                 if(enemy.Robot!=null)enemy.Robot=enemy.Robot.Persuaded(queen.Owner,parts,true) with {LastBattlePersuasionTurn=battle.GlobalTurn};
-                battle.PersuadedUnits.Add(enemy.Id);enemy.Retreating=false;
+                battle.PersuadedUnits.Add(enemy.Id);
+                bool overlap=battle.Units.Any(u=>u.Active && u.Id!=enemy.Id && !u.Retreating && u.Position==enemy.Position);
+                enemy.Retreating=overlap;enemy.ResumeAfterRetreatOverlap=overlap;
                 battle.Events.Add(new(battle.Turn,BattlePhase.Converted,enemy.Id,"説得"));
             }
         }
@@ -176,7 +185,10 @@ public static class BattleTurnResolver
         var remaining=battle.Armies.Where(a=>!a.Withdrawing && (battle.Units.Any(u=>u.Active && u.Owner==a.Owner) || a.Waiting.Count>0)).Select(a=>a.Owner).ToArray();
         if(remaining.Length==0){battle.Finished=true;battle.Winner=-1;}
         else if(remaining.All(o=>battle.Allied(o,remaining[0])))
-        {battle.Finished=true;battle.Winner=battle.Kind==BattleKind.Node && battle.FlagStanding && remaining.Contains(battle.Defender)?battle.Defender:remaining[0];}
+        {
+            if(battle.Kind==BattleKind.Node && !battle.SplitBoard && battle.FlagStanding && !battle.Allied(remaining[0],battle.Defender))return;
+            battle.Finished=true;battle.Winner=battle.Kind==BattleKind.Node && battle.FlagStanding && remaining.Contains(battle.Defender)?battle.Defender:remaining[0];
+        }
         if(battle.Finished)battle.Events.Add(new(battle.Turn,BattlePhase.Result,0,$"勝者 {battle.Winner}"));
     }
 }

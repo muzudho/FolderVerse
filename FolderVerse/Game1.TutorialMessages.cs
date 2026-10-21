@@ -5,17 +5,23 @@ public partial class Game1
 {
     private bool _tutorialIntroShown,_tutorialMessagesOpen;
     private int _tutorialMessageSelection,_tutorialGuideMessage=1;
-    private static readonly string[] TutorialMessageTitles={"内政開始の案内","開戦予約の案内","開戦の実績解除"};
+    private static readonly string[] TutorialMessageTitles={"内政開始の案内","開戦予約の案内","開戦の実績解除","ステップ１の完了"};
     private static readonly string[][] TutorialMessageLines={
         new[]{"さあ、戦争の始め方を覚えましょう！","［開戦予約］ボタンを押してください！"},
         new[]{"待った～！　ステップ１では、戦争の始め方を覚えてみましょう！","まず［開戦予約］ボタンを押して出撃を予約してから、","［ターン終了］ボタンを押してください！"},
-        new[]{"［開戦］を実績解除しました！"}
+        new[]{"［開戦］を実績解除しました！"},
+        new[]{"遊び方　ステップ１　は完了です。","右上の＜システムメニュー＞ボタンから、","［ここでゲームをエンディングにする］メニューを選んでくださーい！"}
     };
     private bool TutorialReviewAvailable=>_setup.TutorialStep==1 && _screen!=Screen.Title && _screen!=Screen.PlayerCount;
-    private Rectangle TutorialReviewButton=>_screen==Screen.Battle?new(55,1046,400,30):new(1445,20,195,48);
+    private Rectangle TutorialReviewButton=>_screen==Screen.Battle?new(55,1046,400,30):new(1110,20,380,48);
     private static Rectangle TutorialMessageRow(int i)=>new(400,315+i*100,360,75);
     private static Rectangle TutorialMessageClose=>new(1150,800,360,60);
     private void UpdateTutorialStartGuide(double now){
+        if(_setup.TutorialStep==1 && _setup.TutorialCompletionPending && !_setup.TutorialCompletionShown && IsStatusScreen && !_conquestOverview && !_autoPlay && !_demoActive &&
+            _lastCutInPhase=="内政フェーズ" && now-_cutInStarted>=PhaseCutInSeconds){
+            _setup.TutorialCompletionPending=false;_setup.TutorialCompletionShown=true;
+            _tutorialGuideMessage=3;_tutorialAttackGuide=true;_tutorialGuideStarted=_animationTime;return;
+        }
         if(_tutorialIntroShown || !TutorialAttackRequired || !IsStatusScreen || _autoPlay || _demoActive ||
             _lastCutInPhase!="内政フェーズ" || now-_cutInStarted<PhaseCutInSeconds)return;
         _tutorialIntroShown=true;_tutorialGuideMessage=0;_tutorialAttackGuide=true;_tutorialGuideStarted=_animationTime;

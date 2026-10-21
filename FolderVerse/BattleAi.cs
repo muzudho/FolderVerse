@@ -13,6 +13,9 @@ public static class BattleAi
         var enemies=battle.Units.Where(u=>u.Active && !battle.Allied(u.Owner,unit.Owner)).OrderBy(u=>Distance(u.Position,unit.Position)).ThenBy(u=>u.Id).ToArray();
         var army=battle.Army(unit.Owner);var enemy=enemies.FirstOrDefault();
         bool armed=unit.Daggers>0 || unit.Rifles>0;
+        bool securingFlag=battle.Kind==BattleKind.Node && !battle.SplitBoard && battle.FlagStanding && !battle.Allied(unit.Owner,battle.Defender) &&
+            !battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (a.Waiting.Count>0 || battle.Units.Any(u=>u.Active && u.Owner==a.Owner)));
+        if(securingFlag && !unit.Retreating && !army.Withdrawing)return new(Path(battle,unit,battle.Flag)??Point.Zero,Face(battle.Flag-unit.Position));
         if(unit.Role==BattleRole.Captain && !battle.Units.Any(u=>u.Active && u.Owner==unit.Owner && u.Role==BattleRole.Soldier && (u.Daggers>0 || u.Rifles>0)) && !army.Waiting.Any(u=>u.Role==BattleRole.Soldier))unit.Retreating=true;
         if(unit.Role==BattleRole.Soldier && unit.Daggers==0 && unit.Rifles==0 && unit.Shields==0 &&
             (!battle.Units.Any(u=>u.Active && u.Owner==unit.Owner && u.Role is BattleRole.Captain or BattleRole.Queen) ||
@@ -85,7 +88,7 @@ public static class BattleAi
         }
         return null;
     }
-    private static bool Free(BattleState battle,BattleUnit unit,Point p)=>battle.Walkable(p) && !battle.Units.Any(u=>u.Active && u.Id!=unit.Id && u.Position==p);
+    private static bool Free(BattleState battle,BattleUnit unit,Point p)=>battle.Walkable(p) && (unit.Retreating || !battle.Units.Any(u=>u.Active && !u.Retreating && u.Id!=unit.Id && u.Position==p));
     public static Point? Path(BattleState battle,BattleUnit unit,Point target)
     {
         if(unit.Position==target)return Point.Zero;

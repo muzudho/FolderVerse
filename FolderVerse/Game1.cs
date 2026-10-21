@@ -127,7 +127,7 @@ public partial class Game1 : Game
         _rollTime=0; _dragging=false;
     }
     protected override void Update(GameTime gameTime)
-    { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive); UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);UpdateBattleMusic(IsActive);base.Update(gameTime); }
+    { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive);UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds); UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);base.Update(gameTime); }
     private void HandleInputCore(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
     {
         _pointer=CanvasPoint(mouse); _ui.Pointer=_pointer;
@@ -146,7 +146,7 @@ public partial class Game1 : Game
         }
         UpdateTutorialStartGuide(gameTime.TotalGameTime.TotalSeconds);
         if(_tutorialAttackGuide){
-            if(active && (click || enter || escape))_tutorialAttackGuide=false;
+            if(active && (click || enter || escape)){_tutorialAttackGuide=false;if(_tutorialGuideMessage==3){_lastAutoSaveTurn=-1;AutoSaveDomestic();}}
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(TutorialMessageInput(active && click,active && escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -192,7 +192,7 @@ public partial class Game1 : Game
         }
         if(_screen is Screen.Disposition or Screen.InactiveList)
         {
-            if(active)DispositionInput(click,escape);
+            if(active)DispositionInput(click || enter,escape);
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(IsStatusScreen && TrainingInput(_pointer,active && click,active && escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -551,12 +551,12 @@ public partial class Game1 : Game
             _world.Draw(_yaw,_pitch,_animationTime,false,true);
             _net.HoveredBattery=_net.HitBattery(_pointer);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1;
+            _world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe);
             GraphicsDevice.Viewport=viewport;
             using var globeClip=new RasterizerState{ScissorTestEnable=true};
             GraphicsDevice.ScissorRectangle=OrientationClip(canvas);
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
-            _net.DrawGlobeRobots(_ui,_setup,_world,areas.Globe,_yaw,_pitch);
             if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();_spriteBatch.End();
             DrawOrientationOverlay(MapViewBounds,canvas,transform);
         }
@@ -687,7 +687,7 @@ public partial class Game1 : Game
     protected override void UnloadContent(){_net.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();_medallionRing?.Dispose();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
-        if(disposing)StopBattleMusic();
+        if(disposing){StopBattleMusic();DisposeTitleMusic();}
         try{base.Dispose(disposing);}
         finally
         {

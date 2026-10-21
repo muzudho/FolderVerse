@@ -18,9 +18,5 @@ public sealed partial class CubeNet
             globe.ProjectVisible(p.B,p.Cell.Normal,yaw,pitch,panel,out var b);
             return (a,b);
         });
-        DrawBatteries(ui,setup,panel,ruler=>{
-            var cell=setup.Cells[setup.ConquerorLocations[ruler]];
-            return globe.ProjectVisible(setup.Routes.Position(cell.Id,setup.ConquerorPoints[ruler]),cell.Normal,yaw,pitch,panel,out var at)?at:null;
-        },pulse);
     }
 }

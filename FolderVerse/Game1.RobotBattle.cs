@@ -38,6 +38,7 @@ public partial class Game1
     private static readonly Rectangle RobotResultBar=new(1120,990,720,20),RobotResultPause=new(1120,1020,270,50);
     private void OpenRobotBattle()
     {
+        _newspaperMusicMood=(NewspaperMusicMood)(_setup.Population.Turn%4);
         QueueTutorialAttackAchievement();
         _newspaperIssue=_newspaperPreviousIssue=null;_newspaperSlideAge=1;_newspaperClock=0;
         _fallFadeStarted.Clear();_robotScenes=_setup.Campaign.RobotBattles.Scenes.ToArray();_battleTiles=Array.Empty<CharacterTile>();_battleWave=0;_battleAge=0;_robotResultAge=0;_robotPlaying=true;
@@ -68,6 +69,7 @@ public partial class Game1
             return;
         }
         _newspaperClock+=elapsed;_newspaperSlideAge+=elapsed;
+        if(click && _robotSummary && NewspaperMusicButton.Contains(_pointer)){_newspaperMusicMood=(NewspaperMusicMood)(((int)_newspaperMusicMood+1)%4);return;}
         if(click && _robotSummary && SelectSummaryPaper())return;
         if(click && (_robotSummary?SummaryNewspaperSwitch.Contains(_pointer):NewspaperSwitch.Contains(_pointer)))
         {SwitchNewspaper();return;}

@@ -62,7 +62,7 @@ for(int seed=0;seed<10;seed++)
     var state=new BattleState(seed){Kind=terrain==BattleTerrain.Fort?BattleKind.Node:BattleKind.Edge,Defender=0};
     for(int owner=0;owner<armyCount;owner++)state.AddArmy(owner,owner,Enumerable.Range(0,robotCount).Select(i=>new Robot(1+owner*12+i,owner,RobotParts.Complete)),queens);
     state.BuildTerrain(terrain);state.Deploy();
-    for(int t=0;t<1000 && !state.Finished;t++)BattleTurnResolver.Advance(state);
+    for(int t=0;t<1000 && !state.Finished;t++)try{BattleTurnResolver.Advance(state);}catch(Exception error){throw new Exception($"{terrain}, {armyCount} armies, {robotCount} robots, queens={queens}, seed={seed}, turn={state.Turn}; duplicates={string.Join(';',state.Units.Where(u=>u.Active).GroupBy(u=>u.Position).Where(g=>g.Count()>1).SelectMany(g=>g).Select(u=>$"id={u.Id} owner={u.Owner} pos={u.Position} retreat={u.Retreating}"))}",error);}
     Check(state.Finished,$"Combat terminates: {terrain}, {armyCount} armies, {robotCount} robots, queen={queens}, seed={seed}");
     Check(state.Units.Count+state.Armies.Sum(ar=>ar.Waiting.Count)==armyCount*(robotCount+(queens?1:0)),"Sweep preserves every individual including fallen and retreated units");
     cases++;turns+=state.Turn;longest=Math.Max(longest,state.Turn);if(state.Winner<0)undecided++;
@@ -106,18 +106,18 @@ Console.WriteLine("PASS: rotated ship decks, narrow logs, connected ships and tw
 Console.WriteLine("PASS: all 2–4 ship rotations connected; flags on defending decks and clear forward/backward lanes");
 b=Board(BattleKind.Node,1);a=Unit(b,101,0,4,4,BattleFacing.North);c=Unit(b,102,1,7,7,BattleFacing.South);
 Turn(b);
-var withdrawal=b.Frames.Where(f=>f.Phase==BattlePhase.Retreat).ToArray();
-Check(b.Finished && b.Winner==1 && withdrawal.Length>5,"Judgment must include withdrawal turns");
-Check(withdrawal[^1].Units.All(u=>u.Retreated || u.Fallen),"Both armies must visibly leave");
-Check(withdrawal.SelectMany(f=>f.Units).Any(u=>u.Owner==0 && !BattleState.Inside(u.Position)) && withdrawal.SelectMany(f=>f.Units).Any(u=>u.Owner==1 && !BattleState.Inside(u.Position)),"Both armies cross the board boundary");
-Check(b.Frames[^1].Units.All(u=>u.Retreated || u.Fallen) && c.Active,"Replay withdrawal must preserve victorious garrison");
-Console.WriteLine("PASS: morale judgment shows both armies withdrawing outside before result, preserving garrison");
+Check(!b.Finished && a.Retreating && c.Active,"Judgment waits for retreat rather than removing pieces instantly");
+for(int i=0;i<20 && !b.Finished;i++)Turn(b);
+Check(b.Finished && b.Winner==1 && a.Retreated,"Judgment completes after the retreating force crosses its home edge");
+Check(b.Frames.SelectMany(f=>f.Units).Any(u=>u.Owner==0 && !BattleState.Inside(u.Position)),"Replay contains actual exit movement");
+Check(c.Active && c.Position==new Point(7,7),"Victorious garrison remains on its node");
+Console.WriteLine("PASS: morale judgment waits for physical retreat and preserves the victorious garrison");
 
 b=Board();a=Unit(b,1,0,4,4,BattleFacing.North);c=Unit(b,2,0,4,3,BattleFacing.South);Unit(b,3,1,9,9,BattleFacing.North);
-a.Shields=a.Daggers=a.Rifles=0;
-BattleTurnResolver.Advance(b);
-Check(a.Retreating && a.Position==new Point(4,3) && c.Position!=new Point(4,3),"Ally clears retreat path");
-Check(b.Units.Where(u=>u.Active).Select(u=>u.Position).Distinct().Count()==b.Units.Count(u=>u.Active),"Yielding has no overlap");
+a.Shields=a.Daggers=a.Rifles=0;a.Retreating=true;
+BattleTurnResolver.Advance(b,new Dictionary<long,BattleAction>{{a.Id,new(Point.Zero,BattleFacing.North)},{c.Id,new(Point.Zero,BattleFacing.South)}});
+Check(a.Retreating && a.Position==new Point(4,3) && c.Position==new Point(4,3),"Retreater passes through a stationary ally");
+Check(b.Units.Where(u=>u.Active && !u.Retreating).Select(u=>u.Position).Distinct().Count()==b.Units.Count(u=>u.Active && !u.Retreating),"Non-retreating units still cannot overlap");
 b=Board();a=Unit(b,1,0,4,4,BattleFacing.North);c=Unit(b,2,0,3,4,BattleFacing.North);c.Role=BattleRole.Queen;Unit(b,3,1,9,9,BattleFacing.North);
 a.Shields=a.Daggers=a.Rifles=0;
 BattleAi.Choose(b,a);Check(!a.Retreating,"Leader retains exhausted final soldier");

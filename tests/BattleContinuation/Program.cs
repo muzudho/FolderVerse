@@ -13,7 +13,23 @@ Run();Check(b.Turn==200 && !e.Finished && !b.Finished,"Nondecisive repetition re
 c.RequestWithdrawal(w,e.Id,0);Check(!b.Army(0).Withdrawing && e.WithdrawalOwners.Contains(0),"Reservation does not instantly remove units");c.RequestWithdrawal(w,e.Id,0,false);Check(e.WithdrawalOwners.Count==0,"Reservation can be canceled");
 try{c.RequestWithdrawal(w,e.Id,1);throw new Exception("Enemy withdrawal allowed");}catch(InvalidOperationException){}
 c.Rules=new(){SegmentTurns=1};c.RequestWithdrawal(w,e.Id,0);Run();Check(b.Army(0).Withdrawing && b.Units.Single(u=>u.Owner==0).Retreating,"Withdrawal begins at next segment start");Check(e.WithdrawalOwners.Count==0,"Reservation consumed once");
-var shot=new BattleState(1,new(){NoWillTurns=10000,PersuasionPercent=0});shot.Armies.Add(new(){Owner=0,Side=0,Withdrawing=true});shot.Armies.Add(new(){Owner=1,Side=2});
+var shot=new BattleState(1,new(){NoWillTurns=10000,PersuasionPercent=0}){Kind=BattleKind.Edge};shot.Armies.Add(new(){Owner=0,Side=0,Withdrawing=true});shot.Armies.Add(new(){Owner=1,Side=2});
 var runner=new BattleUnit{Id=1,Owner=0,Position=new(4,4),Shields=0};var gunner=new BattleUnit{Id=2,Owner=1,Position=new(4,7),Facing=BattleFacing.North};shot.Units.Add(runner);shot.Units.Add(gunner);
-BattleTurnResolver.Advance(shot);Check(runner.Retreating && shot.Attacks.Any(a=>a.Target==runner.Id) && runner.Fallen,"Retreating robot can be shot while leaving");
+BattleTurnResolver.Advance(shot);Check(runner.Retreating && shot.Attacks.Any(a=>a.Target==runner.Id) && runner.Fallen,$"Retreating robot can be shot while leaving: runner={runner.Position}, retreating={runner.Retreating}, fallen={runner.Fallen}, attacks={string.Join(';',shot.Attacks)}");
 Console.WriteLine("PASS: 200-turn continuation, cumulative state, withdrawal authorization, reservation/cancellation, next-segment retreat and incoming fire.");
+var crossing=new BattleState(7,new(){NoWillTurns=10000,PersuasionPercent=0});crossing.Armies.Add(new(){Owner=0,Side=0,Withdrawing=true});crossing.Armies.Add(new(){Owner=1,Side=2,Withdrawing=true});
+BattleUnit north=new(){Id=1,Owner=0,Position=new(4,4)},south=new(){Id=2,Owner=1,Position=new(4,3)};crossing.Units.Add(north);crossing.Units.Add(south);
+BattleTurnResolver.Advance(crossing);Check(north.Position==new Point(4,3) && south.Position==new Point(4,4),"Retreating enemies pass through a head-on swap");
+for(int i=0;i<20 && !crossing.Finished;i++)BattleTurnResolver.Advance(crossing);Check(north.Retreated && south.Retreated && crossing.Finished,"Opposing retreaters both reach their home exits without deadlock");
+var ghost=new BattleState(9,new(){NoWillTurns=10000,PersuasionPercent=0});ghost.Armies.Add(new(){Owner=0,Side=0,Withdrawing=true});ghost.Armies.Add(new(){Owner=1,Side=2});
+BattleUnit runner2=new(){Id=1,Owner=0,Position=new(4,4)},blocker=new(){Id=2,Owner=1,Position=new(4,3)};ghost.Units.Add(runner2);ghost.Units.Add(blocker);
+BattleTurnResolver.Advance(ghost,new Dictionary<long,BattleAction>{{1,new(Point.Zero,BattleFacing.North)},{2,new(Point.Zero,BattleFacing.South)}});
+Check(runner2.Position==blocker.Position && runner2.Retreating,"Retreater can share a stationary enemy cell temporarily");ghost.Check();
+ghost.Walls.Add(new(4,2));for(int i=0;i<20 && !runner2.Retreated;i++)BattleTurnResolver.Advance(ghost,new Dictionary<long,BattleAction>{{1,new(Point.Zero,BattleFacing.North)},{2,new(Point.Zero,BattleFacing.South)}});Check(runner2.Retreated,"Retreater goes around walls after passing the blocker");
+Console.WriteLine("PASS: retreat swaps, shared enemy cells, wall detours and finite exit; incoming fire remains effective.");
+var conversion=new BattleState(11,new(){NoWillTurns=10000,PersuasionPercent=100,PersuasionRadius=4}){Kind=BattleKind.Edge};conversion.Armies.Add(new(){Owner=0,Side=0});conversion.Armies.Add(new(){Owner=1,Side=2});conversion.Armies.Add(new(){Owner=2,Side=1});
+var converted=new BattleUnit{Id=1,Owner=1,Position=new(4,4),Retreating=true,Shields=1};conversion.Units.Add(converted);conversion.Units.Add(new(){Id=2,Owner=1,Position=new(4,5),Shields=1});conversion.Units.Add(new(){Id=3,Owner=0,Role=BattleRole.Queen,Position=new(3,5)});conversion.Units.Add(new(){Id=4,Owner=2,Position=new(9,9)});
+var holds=conversion.Units.ToDictionary(u=>u.Id,u=>new BattleAction(Point.Zero,BattleFacing.North));BattleTurnResolver.Advance(conversion,holds);
+Check(converted.Owner==0 && converted.ResumeAfterRetreatOverlap && converted.Retreating,"Persuaded retreater stays passable while sharing a solid cell");conversion.Check();
+BattleTurnResolver.Advance(conversion,holds);Check(!converted.ResumeAfterRetreatOverlap && !converted.Retreating,"Persuaded retreater returns to normal after clearing overlap");conversion.Check();
+Console.WriteLine("PASS: persuasion during a shared retreat cell clears safely before normal movement resumes.");

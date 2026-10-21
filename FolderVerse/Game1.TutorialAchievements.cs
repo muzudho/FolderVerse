@@ -41,6 +41,7 @@ public partial class Game1
     private void CheckTutorialAttackAchievement(){
         if(!TutorialAchievements.Attacked(_setup))return;
         _tutorialAttackAchieved=true;
+        if(_setup.TutorialStep==1 && !_setup.TutorialCompletionShown)_setup.TutorialCompletionPending=true;
         if(!_autoSaveEnabled)return;
         try{if(_tutorialAchievements==null)LoadTutorialAchievements();_tutorialAchievements?.Award(TutorialAchievements.FirstAttack);}
         catch(Exception e){_tutorialAchievementError="勲章の保存に失敗しました";RecordFailure(e,"achievement_write");}
@@ -70,9 +71,9 @@ public partial class Game1
     }
     private void DrawTutorialGoal(){
         if(_setup.TutorialStep!=1 || (!IsStatusScreen && _screen!=Screen.Transport))return;
-        string text=_tutorialAttackAchieved?"勲章獲得！ ステップ１：攻撃側として戦闘に参加しました":"ステップ１：開戦しましょう / 攻撃側として戦闘に参加すると勲章獲得";
-        _ui.Box(new(700,20,720,48),new Color(14,26,39,235));
-        _ui.Center(text,new(710,20,660,48),.3f,_tutorialAttackAchieved?new Color(255,220,115):Cream);
-        if(_tutorialAttackAchieved)DrawTutorialMedal(new(1390,40));
+        string text=_tutorialAttackAchieved?"勲章獲得！ ステップ１：開戦":"ステップ１：開戦しましょう";
+        _ui.Box(new(700,20,400,48),new Color(14,26,39,235));
+        _ui.Center(text,new(710,20,330,48),.3f,_tutorialAttackAchieved?new Color(255,220,115):Cream);
+        if(_tutorialAttackAchieved)DrawTutorialMedal(new(1070,40));
     }
 }

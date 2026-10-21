@@ -12,7 +12,7 @@ public sealed partial class CubeNet
     private readonly List<RobotMapBadge> _robotBadges=new();
     public IReadOnlyList<RobotMapBadge> RobotBadges=>_robotBadges;
     public void ClearGlobeRobotBadges(){_badgePanel=null;_robotBadges.Clear();}
-    public void AddGlobeRobotBadge(int node,Rectangle bounds)=>_robotBadges.Add(new(node,bounds,false));
+    public void AddGlobeRobotBadge(int node,Rectangle bounds)=>_robotBadges.Add(new(node,bounds,true));
     public int HitRobotBadge(Point pointer){if(_badgePanel.HasValue)pointer=UnrotateScreen(pointer,_badgePanel.Value);return _robotBadges.AsEnumerable().Reverse().Where(b=>b.Bounds.Contains(pointer)).Select(b=>b.Node).DefaultIfEmpty(-1).First();}
     public const float RobotDetailScale=400;
     public void DrawMapObjects(UiPainter ui,WorldSetup world,Rectangle panel,float pulse)

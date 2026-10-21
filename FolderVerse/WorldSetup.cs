@@ -50,6 +50,7 @@ public sealed partial class WorldSetup
     public string[] ConquerorFullNames { get; private set; } = Array.Empty<string>();
     public const string PoliticalSystem="独裁者";
     public int TutorialStep {get;private set;}
+    public bool TutorialCompletionPending,TutorialCompletionShown;
     public int PlayerCount {get;private set;}=1;
     public const int CastCount=GameLimits.MaxConquerors;
     public List<int> HumanPlayers {get;}=new();
@@ -90,7 +91,7 @@ public sealed partial class WorldSetup
     public Color OwnerColor(int slot) => slot<0?new Color(155,169,180):Colors[ColorIndices[slot]];
     public void SetWorld(int seed)
     {
-        TutorialStep=0;Industry.Reset();
+        TutorialStep=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
         WorldSeed = seed;
         var random = new SeedRandom(seed);
@@ -154,7 +155,7 @@ public sealed partial class WorldSetup
         SetTerritoryRights(placementSeed);
         var cells=Enumerable.Range(0,Cells.Length).ToArray();new SeedRandom(placementSeed).Shuffle(cells);
         for(int i=0;i<ActiveCount;i++)ClaimLand(i,new[]{cells[i]});
-        TutorialStep=1;
+        TutorialStep=1;TutorialCompletionPending=TutorialCompletionShown=false;
     }
     public void ClearPlacement() { LandPending=false;TerritoryRights=new int[CastCount]; PlayerSlot=-1; Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); ConquerorLocations=Array.Empty<int>(); TerritoryCounts = new int[CastCount]; }
     public void SetPlacement(int seed)

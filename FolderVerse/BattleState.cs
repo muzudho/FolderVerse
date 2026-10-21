@@ -33,6 +33,7 @@ public sealed class BattleUnit
     public BattleFacing Facing;
     public int Daggers=3,Rifles=4,Shields=3;
     public bool Fallen,Retreated,Retreating;
+    public bool ResumeAfterRetreatOverlap;
     public bool Active=>!Fallen && !Retreated;
     public Robot Robot;
 }
@@ -161,7 +162,8 @@ public sealed partial class BattleState
     {
         if(Armies.Count>4 || Armies.Select(a=>a.Owner).Distinct().Count()!=Armies.Count || Armies.Select(a=>a.Side).Distinct().Count()!=Armies.Count || Armies.Any(a=>a.Owner<0 || a.Owner>=20 || a.Side<0 || a.Side>3 || a.Limit<1 || a.Limit>12))throw new InvalidOperationException("Invalid battle armies.");
         var active=Units.Where(u=>u.Active).ToArray();
-        if(active.Any(u=>!Walkable(u.Position)) || active.Select(u=>u.Position).Distinct().Count()!=active.Length)throw new InvalidOperationException("Battle occupancy is invalid.");
+        var solid=active.Where(u=>!u.Retreating).ToArray();
+        if(active.Any(u=>!Walkable(u.Position)) || solid.Select(u=>u.Position).Distinct().Count()!=solid.Length)throw new InvalidOperationException("Battle occupancy is invalid.");
         var all=Units.Concat(Armies.SelectMany(a=>a.Waiting)).ToArray();
         if(all.Select(u=>u.Id).Distinct().Count()!=all.Length || all.Any(u=>u.Daggers<0 || u.Rifles<0 || u.Shields<0))throw new InvalidOperationException("Invalid battle units.");
     }

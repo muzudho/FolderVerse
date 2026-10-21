@@ -43,3 +43,22 @@ using(var output=new BinaryWriter(File.Create(path))){
 }
 Console.WriteLine("PASS: all 12 replay-based moods, no future-result leak, allies, stalemate, distinct audible PCM, unclipped mixing and smooth tempo transitions.");
 Console.WriteLine(path);
+var newsSignatures=new HashSet<string>();using var newsPcm=new MemoryStream();var reader=new NewspaperMusicScore(NewspaperMusicMood.BusyMorning);
+foreach(var mood in Enum.GetValues<NewspaperMusicMood>()){
+ reader.Mood=mood;var clip=reader.Render(NewspaperMusicScore.Rate*6);newsPcm.Write(clip);newsSignatures.Add(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(clip)));
+ long energy=0;for(int i=0;i<clip.Length;i+=2){int value=(short)(clip[i]|clip[i+1]<<8);energy+=(long)value*value;Check(Math.Abs(value)<32000,"Newspaper music does not clip");}Check(energy/clip.Length>10000,"Every newspaper theme is audible");
+}
+Check(newsSignatures.Count==4,"Four distinct newspaper themes");
+using(var output=new BinaryWriter(File.Create(Path.Combine(AppContext.BaseDirectory,"newspaper-music-4-states.wav")))){
+ output.Write("RIFF"u8);output.Write((int)newsPcm.Length+36);output.Write("WAVEfmt "u8);output.Write(16);output.Write((short)1);output.Write((short)1);output.Write(NewspaperMusicScore.Rate);output.Write(NewspaperMusicScore.Rate*2);output.Write((short)2);output.Write((short)16);output.Write("data"u8);output.Write((int)newsPcm.Length);output.Write(newsPcm.ToArray());
+}
+Console.WriteLine("PASS: four newspaper atmospheres, continuous rendering, audible unclipped PCM and preview WAV.");
+var longRead=new NewspaperMusicScore(NewspaperMusicMood.SleepingNight);for(int second=0;second<120;second++)longRead.Render(NewspaperMusicScore.Rate);Check(longRead.CompletedLoops>=1,"Newspaper music repeats even through a two-minute reading session");
+var afterLoop=longRead.Render();Check(afterLoop.Any(v=>v!=0),"Newspaper music stays audible after its loop boundary");
+var titlePath=Path.Combine(AppContext.BaseDirectory,"Content","Music","folder-verse.wav");var title=File.ReadAllBytes(titlePath);
+Check(System.Text.Encoding.ASCII.GetString(title,0,4)=="RIFF" && BitConverter.ToInt16(title,22)==2 && BitConverter.ToInt32(title,24)==22050,"Static title music is playable stereo PCM WAV");
+Check(Math.Abs((title.Length-44)/(22050d*4)-90)<.01,"Title theme is ninety seconds");
+long titleEnergy=0;int titlePeak=0;for(int i=44;i<title.Length;i+=2){int v=BitConverter.ToInt16(title,i);titleEnergy+=(long)v*v;titlePeak=Math.Max(titlePeak,Math.Abs(v));}
+Check(titlePeak<32000 && titleEnergy/((title.Length-44)/2)>100000,"Title track is audible without clipped samples");
+Check(Math.Abs(BitConverter.ToInt16(title,44)-BitConverter.ToInt16(title,title.Length-4))<500,"Title loop boundary has no abrupt amplitude jump");
+Console.WriteLine("PASS: two-minute newspaper looping and static title WAV format, duration, audio energy, headroom and loop join.");

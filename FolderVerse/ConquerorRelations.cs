@@ -115,5 +115,11 @@ public sealed class ConquerorRelations
         var captive=new Captive(ruler,world.PlayerSlot,world.Nodes.Current(ruler).Id);
         Pending.Add(captive);Message="電池を入れた / 処遇を選んでください";return captive;
     }
+    public void RestoreBattery(WorldSetup world,int ruler)
+    {
+        if(ruler<0 || ruler>=world.ActiveCount || Powered[ruler])throw new InvalidOperationException("Ruler is not batteryless.");
+        Powered[ruler]=true;Released[ruler]=false;SetSuperior(ruler,-1);Pending.RemoveAll(c=>c.Ruler==ruler);
+        Message="電池を戻した / 独立した征服者として復活";
+    }
 }
 

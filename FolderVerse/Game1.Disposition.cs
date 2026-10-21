@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private bool _statusMenuOpen,_dispositionReturnList;
-    private static readonly Rectangle StatusMenuButton=new(1660,20,198,46),InactiveMenuItem=new(1320,70,538,52),InactiveBack=new(54,1020,270,50);
+    private static readonly Rectangle StatusMenuButton=new(1510,20,348,46),InactiveMenuItem=new(1320,70,538,52),InactiveBack=new(54,1020,270,50);
     private static readonly Rectangle HierarchyMenuItem=new(1320,126,538,52);
     private static Rectangle DispositionButton(int index)=>new(380+index*400,860,370,70);
     private static Rectangle InactiveCard(int index)=>new(54+index%5*362,140+index/5*214,346,198);
@@ -29,10 +29,10 @@ public partial class Game1
     }
     private void DrawStatusMenu()
     {
-        _ui.Button(StatusMenuButton,"メニュー",Muted,.52f);
+        _ui.Button(StatusMenuButton,"＜システムメニュー＞",Muted,.52f);
         if(_statusMenuOpen)
         {
-            _ui.Button(InactiveMenuItem,"電池を引き抜いた征服者一覧",Muted,.5f);
+            _ui.Button(InactiveMenuItem,"電池を戻す",Muted,.5f);
             _ui.Button(HierarchyMenuItem,"征服者の関係図 / 暫定順位",Muted,.5f);
             _ui.Button(EndingMenuItem,"ここでゲームをエンディングにする",Muted,.48f);
             _ui.Button(QuitMenuItem,"ゲームを止めてタイトル画面に戻る",Muted,.48f);
@@ -41,15 +41,16 @@ public partial class Game1
     }
     private void DispositionInput(bool click,bool escape)
     {
+        if(_dispositionScene!=null){if(click && _dispositionSceneAge>=1.2 || escape && _dispositionSceneAge>=1.2)FinishDispositionScene();return;}
         if(_screen==Screen.InactiveList)
         {
-            if(escape || click && InactiveBack.Contains(_pointer)){_screen=Screen.WorldStatus;return;}
+            if(escape || click && InactiveBack.Contains(_pointer)){_screen=Screen.WorldStatus;AutoSaveDomestic();return;}
             if(!click)return;
             var rulers=Enumerable.Range(0,_setup.ActiveCount).Where(r=>!_setup.Relations.Powered[r]).ToArray();
             for(int i=0;i<rulers.Length;i++)if(InsertBatteryButton(i).Contains(_pointer))
             {
-                var captive=_setup.Relations.InsertBattery(_setup,rulers[i]);
-                _operations.Write("battery_inserted",new{captive});_dispositionReturnList=true;OpenDisposition();return;
+                _setup.Relations.RestoreBattery(_setup,rulers[i]);
+                _operations.Write("battery_restored",new{ruler=rulers[i]});_lastAutoSaveTurn=-1;_world.ShowSetup(_setup,true);return;
             }
             return;
         }
@@ -62,6 +63,7 @@ public partial class Game1
             _operations.Write("conqueror_disposition",new{pending,choice=choice.ToString(),accepted});
             if(!accepted)return;
             _world.ShowSetup(_setup,true);
+            if(choice is DefeatedChoice.RemoveBattery or DefeatedChoice.Recruit){_dispositionScene=pending;_dispositionSceneChoice=choice;_dispositionSceneAge=0;return;}
             if(_setup.Relations.Pending.Count>0)return;
             _screen=_dispositionReturnList?Screen.InactiveList:Screen.WorldStatus;_dispositionReturnList=false;
             return;
@@ -69,6 +71,7 @@ public partial class Game1
     }
     private void DrawDispositionUi()
     {
+        if(_dispositionScene!=null){DrawDispositionScene();return;}
         var captive=_setup.Relations.Pending[0];bool accepts=_setup.Relations.Accepts(_setup,captive.Ruler);
         _ui.Text("征服者の処遇",new(54,30),1f,Cream);
         _ui.Center(_setup.Nodes.Label(_setup.Nodes.All[captive.Node]),new(160,110,1600,45),.58f,Cream);
@@ -86,7 +89,8 @@ public partial class Game1
     }
     private void DrawInactiveUi()
     {
-        _ui.Text("電池を引き抜いた征服者一覧",new(54,30),.85f,Cream);
+        _ui.Text("電池を戻す / 特別措置",new(54,30),.85f,Cream);
+        _ui.Text("独立した征服者としてゲームに復活します。失った領地は戻りません。",new(54,85),.45f,Cream);
         var rulers=Enumerable.Range(0,_setup.ActiveCount).Where(r=>!_setup.Relations.Powered[r]).ToArray();
         if(rulers.Length==0)_ui.Center("電池を引き抜いた征服者はいない",new(200,400,1520,80),.8f,Cream);
         for(int i=0;i<rulers.Length;i++)
@@ -94,7 +98,7 @@ public partial class Game1
             int ruler=rulers[i];var r=InactiveCard(i);_ui.Box(r,new(27,49,62));
             _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new(r.X+8,r.Y+8,130,160),false);
             _ui.Center(_setup.ConquerorNames[ruler],new(r.X+145,r.Y+14,190,70),Math.Min(.48f,185/_font.MeasureString(_setup.ConquerorNames[ruler]).X),Cream);
-            _ui.Button(InsertBatteryButton(i),"電池を入れる",Accent,.49f);
+            _ui.Button(InsertBatteryButton(i),"電池を戻す",Accent,.49f);
             _ui.Text("Node "+(_setup.Nodes.Current(ruler).Id+1),new(r.X+10,r.Bottom-27),.38f,Cream);
         }
         _ui.Button(InactiveBack,"ゲームへ戻る",Muted,.58f);

@@ -75,6 +75,7 @@ public partial class Game1
             _ui.Box(new(sheet.X+8,sheet.Bottom-5,sheet.Width-16,1),ink*.4f);
         }
         _ui.Button(SummaryNewspaperSwitch,"新聞を切り替える",Muted,.5f);
+        _ui.Button(NewspaperMusicButton,"BGM："+NewspaperMusicScore.Labels[(int)_newspaperMusicMood],Muted,.5f);
         _ui.Button(BattleContinue,"世界へ戻る",Accent,.55f);
     }
 }
