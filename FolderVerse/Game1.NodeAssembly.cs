@@ -22,9 +22,24 @@ public partial class Game1
     private static RobotParts HangarPart(int row)=>row==0?RobotParts.Head:row==1?RobotParts.Body:RobotParts.Legs;
     private static Rectangle HangarPartBounds(int slot,int row)
     {var cell=HangarCell(slot);return new(cell.X+56,cell.Y+10+row*38,70,36);}
-    private bool CanOpenHangar=>_setup.Nodes.All[_populationNode].Owner<0 || CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
+    private bool VisitingForeignHangar=>_setup.Nodes.All[_populationNode].Owner>=0 && !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) &&
+        _setup.Relations.CanAct(_setup.PlayerSlot) && _setup.Nodes.Current(_setup.PlayerSlot)?.Id==_populationNode;
+    private bool CanOpenHangar=>_setup.Nodes.All[_populationNode].Owner<0 || CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) || VisitingForeignHangar;
     private bool CanMoveHangarRobot(Robot robot)=>CanOpenHangar && !_setup.Campaign.RobotBattles.LockedNode(_populationNode) && _setup.Robots.Workshops[_populationNode].DisposalTarget!=robot.Id && !_setup.Robots.PendingEdits.Any(e=>e.Ids.Contains(robot.Id));
-    private bool CanMoveHangarPart(Robot robot,RobotParts part)=>CanMoveHangarRobot(robot) && (_setup.Nodes.All[_populationNode].Owner>=0 || robot.Affiliation(part)==_setup.PlayerSlot);
+    private bool CanMoveHangarPart(Robot robot,RobotParts part)=>CanMoveHangarRobot(robot) &&
+        (CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) || (robot.Parts&part)!=0 && robot.Origin(part)==_setup.PlayerSlot);
+    private bool HangarPlaceEnabled(Robot target,RobotParts part)
+    {
+        if(!CanOpenHangar || _setup.Campaign.RobotBattles.LockedNode(_populationNode) || target!=null && !CanMoveHangarRobot(target))return false;
+        if(target!=null && (target.Parts&part)!=0 && !CanMoveHangarPart(target,part))return false;
+        if(_hangarDrag.HasValue)
+        {
+            var source=_setup.Robots.Nodes[_populationNode].Robots.FirstOrDefault(r=>r.Id==_hangarDrag);
+            if(source==null || !CanMoveHangarPart(source,_hangarPart) || part!=_hangarPart || target!=null && source.Disposal!=target.Disposal)return false;
+            if(target==null && source.Parts!=part && !_setup.Robots.Nodes[_populationNode].HasSpace)return false;
+        }
+        return true;
+    }
     private void OpenNodeAssembly()
     {
         _nodeAssemblyOpen=true;_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;
@@ -57,7 +72,7 @@ public partial class Game1
             {
                 var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);if(robot==null || !CanMoveHangarRobot(robot))continue;
                 var cell=HangarCell(slot);
-                if(new Rectangle(cell.Right-36,cell.Bottom-25,18,18).Contains(_pointer)){ToggleRobotDisposal(_populationNode,robot.Id);return;}
+                if(new Rectangle(cell.Right-36,cell.Bottom-25,18,18).Contains(_pointer)){if(!VisitingForeignHangar)ToggleRobotDisposal(_populationNode,robot.Id);return;}
                 for(int row=0;row<3;row++)if(HangarPartBounds(slot,row).Contains(_pointer) && (robot.Parts&HangarPart(row))!=0 && CanMoveHangarPart(robot,HangarPart(row)))
                 {_hangarDrag=robot.Id;_hangarPart=HangarPart(row);_hangarSource=slot;_hangarGrabOffset=_pointer-HangarRobotBounds(slot).Location;_hangarMessage="同じパーツがあるセルへドロップすると交換";return;}
             }
@@ -93,15 +108,28 @@ public partial class Game1
         _ui.Box(new(54,150,850,825),new(27,49,62));
 
 
-        _ui.Button(HangarAutoCheck,(workshop.AutoAssemblyDisabled?"✓ ":"□ ")+"自動での組み立て・分解を行わない",workshop.AutoAssemblyDisabled?Accent:Muted,.48f);
+        bool manage=CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
+        _ui.Button(HangarAutoCheck,manage?(workshop.AutoAssemblyDisabled?"✓ ":"□ ")+"自動での組み立て・分解を行わない":"他国の自動組立設定は変更できません",manage && workshop.AutoAssemblyDisabled?Accent:Muted,.48f);
         bool hoveringPart=false;
-        string hover=CanOpenHangar?"頭・胴・脚をつかんで、格納庫のセルへドラッグ＆ドロップ":"他国の節点：閲覧のみ / 組立・製造計画は自国・手下の節点で変更できます";
+        string hover=VisitingForeignHangar?"滞在中：自国パーツ同士の交換・空き部位への移動ができます":CanOpenHangar?"頭・胴・脚をつかんで、格納庫のセルへドラッグ＆ドロップ":"他国の節点：自分の征服者がいる節点では自国パーツを動かせます";
         for(int slot=0;slot<12;slot++)
         {
-            var cell=HangarCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);bool owned=occupant==null || CanMoveHangarRobot(occupant);_ui.Box(cell,owned?Muted:new Color(9,19,26));
-            if(_hangarDrag.HasValue && cell.Contains(_pointer))_ui.Box(new(cell.X,cell.Y,cell.Width,3),ControlEdge);
+            var cell=HangarCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
+            _ui.Box(cell,new Color(18,35,46));
+            for(int row=0;row<3;row++)
+            {
+                var bounds=HangarPartBounds(slot,row);var part=HangarPart(row);bool enabled=HangarPlaceEnabled(occupant,part);
+                _ui.Box(bounds,enabled?new Color(48,78,94):new Color(9,19,26));
+                if(enabled)
+                {
+                    var edge=_hangarDrag.HasValue && cell.Contains(_pointer)?ControlEdge:ControlEdge*.4f;
+                    _ui.Box(new(bounds.X,bounds.Y,bounds.Width,2),edge);_ui.Box(new(bounds.X,bounds.Bottom-2,bounds.Width,2),edge);
+                    _ui.Box(new(bounds.X,bounds.Y,2,bounds.Height),edge);_ui.Box(new(bounds.Right-2,bounds.Y,2,bounds.Height),edge);
+                    if(occupant==null || (occupant.Parts&part)==0)_ui.Center("＋",bounds,.35f,Cream*.65f);
+                }
+            }
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);if(robot==null)continue;robot=HomePersuasionRobot(robot);
-            foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(HangarRobotBounds(slot),robot.Origin(part),part,robot.Role==RobotRole.Captain,whiteOutline:true,damaged:robot.IsDamaged(part),cheap:robot.IsCheap(part));
+            foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(HangarRobotBounds(slot),robot.Origin(part),part,robot.Role==RobotRole.Captain,opacity:HangarPlaceEnabled(occupant,part)?1:.22f,whiteOutline:true,damaged:robot.IsDamaged(part),cheap:robot.IsCheap(part));
             for(int row=0;row<3;row++)
             {
                 var bounds=HangarPartBounds(slot,row);var part=HangarPart(row);
@@ -115,9 +143,10 @@ public partial class Game1
             }
             _ui.Center(PartsLabel(robot.Parts)+$" / #{robot.Owner+1}",new(cell.X,cell.Y+126,cell.Width,24),.4f,Cream);
             _ui.Center("ID "+robot.Id+(robot.DamagedParts!=0?" / 損傷":""),new(cell.X,cell.Y+148,90,22),.27f,Cream);
-            DrawDisposalCheck(cell,robot);
+            if(!VisitingForeignHangar)DrawDisposalCheck(cell,robot);
         }
         _ui.Text(_hangarMessage.Length>0 && !hoveringPart?_hangarMessage:hover,new(84,838),.32f,Cream);
+        if(VisitingForeignHangar)_ui.Text("明るい枠：空き部位・自国製パーツ / 暗い部位：操作できません",new(84,882),.32f,Cream);
         DrawNodeFactoryTile(false);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
         if(_hangarDrag.HasValue)
         {

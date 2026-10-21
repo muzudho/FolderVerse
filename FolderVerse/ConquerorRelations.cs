@@ -76,11 +76,11 @@ public sealed class ConquerorRelations
     public bool Allied(int a,int b)=>a>=0 && b>=0 && Root(a)==Root(b);
     public bool Controls(int ruler){if(ruler<0 || Leader<0)return false;for(int steps=0;steps<Capacity && ruler>=0;steps++,ruler=Superiors[ruler])if(ruler==Leader)return true;return false;}
     public int[] Party(WorldSetup world)=>Leader<0?Array.Empty<int>():Forest(world).Where(r=>CanAct(r.Ruler) && Controls(r.Ruler) && (!world.HumanPlayers.Contains(r.Ruler) || r.Ruler==Leader)).Select(r=>r.Ruler).ToArray();
-    public bool CanAct(int ruler)=>Powered[ruler] && !Released[ruler] && !Pending.Any(p=>p.Ruler==ruler);
+    public bool CanAct(int ruler)=>Powered[ruler] && !Pending.Any(p=>p.Ruler==ruler);
     public bool Accepts(WorldSetup world,int ruler)=>world.Looks[ruler].Keywords.Personality is not (3 or 9 or 11);
     public void Capture(WorldSetup world,int ruler,int victor,int node)
     {
-        if(ruler==victor || Allied(ruler,victor) || !Powered[ruler] || Released[ruler])return;
+        if(ruler==victor || Allied(ruler,victor) || !Powered[ruler])return;
         if(Allied(victor,Leader) || world.HumanPlayers.Any(h=>Allied(victor,h)))
         {if(!Pending.Any(p=>p.Ruler==ruler)){Pending.Add(new(ruler,victor,node));Message="処遇を選んでください";}}
         else if(!Allied(ruler,Leader) && !world.HumanPlayers.Any(h=>Allied(ruler,h)))Released[ruler]=true;

@@ -12,6 +12,12 @@ public static class BattleAi
     {
         var enemies=battle.Units.Where(u=>u.Active && !battle.Allied(u.Owner,unit.Owner)).OrderBy(u=>Distance(u.Position,unit.Position)).ThenBy(u=>u.Id).ToArray();
         var army=battle.Army(unit.Owner);var enemy=enemies.FirstOrDefault();
+        if(army.Wanderer && army.WandererPolicy==WandererPolicy.Persuade && !army.Withdrawing)
+        {
+            var queen=battle.Units.FirstOrDefault(u=>u.Owner==unit.Owner && u.Role==BattleRole.Queen && u.Active);
+            bool danger=queen==null && !army.Waiting.Any(u=>u.Role==BattleRole.Queen) || queen!=null && enemies.Any(u=>(u.Daggers>0 && Distance(u.Position,queen.Position)<=2) || (u.Rifles>0 && Distance(u.Position,queen.Position)<=3));
+            if(danger){army.Withdrawing=true;foreach(var friend in battle.Units.Where(u=>u.Owner==unit.Owner && u.Active))friend.Retreating=true;while(army.Waiting.TryDequeue(out var waiting)){waiting.Retreated=true;battle.Units.Add(waiting);}}
+        }
         bool armed=unit.Daggers>0 || unit.Rifles>0;
         bool securingFlag=battle.Kind==BattleKind.Node && !battle.SplitBoard && battle.FlagStanding && !battle.Allied(unit.Owner,battle.Defender) &&
             !battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (a.Waiting.Count>0 || battle.Units.Any(u=>u.Active && u.Owner==a.Owner)));

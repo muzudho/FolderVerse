@@ -8,11 +8,11 @@ public partial class Game1
     private Rectangle WarButton=>new(566,1006,200,64);
     private bool _warPlanning;
     // A coordinated attack from several sources to one destination is one reservation.
-    private int WarReservationCount=>_setup.Campaign.PlannedOrders.Where(o=>CanPlanRuler(o.Ruler) && (o.Queen || o.Fighters>0) && EnemyTarget(o.TargetNode)).Select(o=>o.TargetNode).Distinct().Count();
+    private int WarReservationCount=>_setup.Campaign.PlannedOrders.Where(o=>!o.Peaceful && CanPlanRuler(o.Ruler) && (o.Queen || o.Fighters>0) && EnemyTarget(o.TargetNode)).Select(o=>o.TargetNode).Distinct().Count();
     private string WarReservationLabel=>WarReservationCount==0?"開戦予約（なし）":$"開戦予約（{WarReservationCount}件）";
     private void DrawWarReservationMarkers()
     {
-        foreach(int id in _setup.Campaign.PlannedOrders.Where(o=>CanPlanRuler(o.Ruler) && (o.Queen || o.Fighters>0) && EnemyTarget(o.TargetNode)).Select(o=>o.TargetNode).Distinct())
+        foreach(int id in _setup.Campaign.PlannedOrders.Where(o=>!o.Peaceful && CanPlanRuler(o.Ruler) && (o.Queen || o.Fighters>0) && EnemyTarget(o.TargetNode)).Select(o=>o.TargetNode).Distinct())
         {
             if(!_net.NodeVisible(_setup,_setup.Nodes.All[id]) || !OperationPosition(id,out var at))continue;
             var badge=new Rectangle((int)at.X-57,(int)at.Y-65,114,25);
@@ -65,7 +65,7 @@ public partial class Game1
         }
         foreach(var row in _invasionSources)
         {
-            var order=_setup.Campaign.PlannedOrders.FirstOrDefault(o=>o.Ruler==row.Owner && o.TargetNode==target && (o.Queen || o.PocketOnly)==row.Queen && (o.SourceNode==row.Node || o.Queen && _setup.Nodes.Current(o.Ruler)?.Id==row.Node));
+            var order=_setup.Campaign.PlannedOrders.FirstOrDefault(o=>!o.Peaceful && o.Ruler==row.Owner && o.TargetNode==target && (o.Queen || o.PocketOnly)==row.Queen && (o.SourceNode==row.Node || o.Queen && _setup.Nodes.Current(o.Ruler)?.Id==row.Node));
             if(order!=null){row.Selected=order.Queen;var available=InvasionRobots(row);row.Robots.UnionWith((order.RobotIds??available.Take(row.Queen?available.Length:(int)order.Fighters).Select(r=>r.Id).ToArray()).Where(id=>available.Any(r=>r.Id==id)));row.Count=row.Robots.Count;}
         }
     }

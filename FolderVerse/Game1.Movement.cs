@@ -21,7 +21,8 @@ public partial class Game1
         _routesBeforeMovement=_net.ShowRoutes;_net.ShowRoutes=true;_movementOpen=true;
         _populationCell=-1;_escort=Math.Min(_escort,AvailableEscort);_selectedMoveNode=-1;
         _net.MovementTargets.Clear();
-        _net.MovementTargets.UnionWith(_setup.Routes.NodeChoices(_setup.PlayerSlot).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id).Where(id=>_setup.Nodes.All[id].Owner>=0 && _setup.Relations.Allied(_setup.PlayerSlot,_setup.Nodes.All[id].Owner) && _setup.Campaign.RobotBattles.CanMarch(_setup,_setup.PlayerSlot,id)));
+        _net.RevealMovementTargets=true;
+        _net.MovementTargets.UnionWith(_setup.Routes.NodeChoices(_setup.PlayerSlot).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id).Where(id=>_setup.Campaign.RobotBattles.CanMarch(_setup,_setup.PlayerSlot,id)));
         _net.SelectedTarget=-1;
         if(fit && _statusGlobe)FitDestinationView();
     }
@@ -55,7 +56,7 @@ public partial class Game1
         if(ConfirmMoveButton.Contains(pointer))
         {
             if(_selectedMoveNode<0 || _setup.Routes.ToNode(_setup.PlayerSlot,_selectedMoveNode)==null)return true;
-            _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id,true,true));
+            _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id,true,true,Peaceful:true));
             CloseMovement();return true;
         }
 
@@ -86,7 +87,7 @@ public partial class Game1
 
 
         _ui.Text("地図上の明るい節点を選んでください",new(84,470),.65f,Cream);
-        _ui.Text("自国・手下の節点へ移動 / ターン終了で実行",new(84,878),.49f,new(180,209,219));
+        _ui.Text("他国の節点にも移動できます / ターン終了で実行",new(84,878),.49f,new(180,209,219));
         string status=choices.Length==0?"交通路でつながる移動先がない":_selectedMoveNode<0?"点滅する節点をクリックして選択":$"選択：Node {_selectedMoveNode+1} / ターン終了で移動";
         _ui.Text(status,new(84,926),Math.Min(.47f,465/_font.MeasureString(status).X),new(180,209,219));
         _ui.Button(ConfirmMoveButton,"移動を予約",_selectedMoveNode>=0?Accent:Muted,.7f);

@@ -364,6 +364,9 @@ FodyWeavers.xsd
 # Local game screenshots
 /Screenshots/
 
+# Local executable builds and visual regression captures
+/tmp/current-checks/
+
 # Keep development diaries under version control.
 !/docs/dev/log/
 !/docs/dev/log/**

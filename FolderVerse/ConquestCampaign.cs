@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public sealed record March(int Ruler,int TargetNode,long Fighters,int SourceNode=-1,bool Queen=true,bool PocketOnly=false,long[] RobotIds=null);
+public sealed record March(int Ruler,int TargetNode,long Fighters,int SourceNode=-1,bool Queen=true,bool PocketOnly=false,long[] RobotIds=null,bool Peaceful=false);
 public sealed class ConquestCampaign
 {
     public bool UseRobotCombat {get;set;}=true;
@@ -79,7 +79,7 @@ public sealed class ConquestCampaign
                 {
                     int target=world.Nodes.At(move.Target,move.Entry).Id;
                     bool nodeAttack=home?.Owner==ruler && world.Nodes.All[target].Owner>=0 && !world.Relations.Allied(ruler,world.Nodes.All[target].Owner);
-                    orders.Add(nodeAttack?new(ruler,target,army,home.Id,false):new(ruler,target,0));
+                    orders.Add(nodeAttack?new(ruler,target,army,home.Id,false):world.Nodes.All[target].Owner<0 && world.TerritoryCounts[ruler]>0?new(ruler,target,0):new(ruler,target,0,PocketOnly:true,Peaceful:true));
                 }
                 if(UseRobotCombat)
                 foreach(var node in world.Nodes.All.Where(n=>n.Owner==ruler && !orders.Any(o=>o.Ruler==ruler && (o.SourceNode==n.Id || o.Queen && home?.Id==n.Id))))

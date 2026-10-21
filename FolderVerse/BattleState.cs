@@ -43,6 +43,8 @@ public sealed class BattleArmy
     public int NoWillCount;
     public bool Withdrawing;
     public bool InvadingQueen;
+    public bool Wanderer;
+    public WandererPolicy WandererPolicy;
     public Queue<BattleUnit> Waiting {get;}=new();
     public Dictionary<int,List<Point[]>> Patterns {get;}=new();
 }

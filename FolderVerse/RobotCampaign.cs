@@ -12,6 +12,7 @@ public sealed class RobotEncounter
     public bool Finished;
     public HashSet<int> WithdrawalOwners {get;}=new();
     public HashSet<long> IncomingWinners {get;}=new();
+    public HashSet<long> ReturnedWanderers {get;}=new();
 }
 public sealed class RobotCampaign
 {
@@ -82,6 +83,7 @@ public sealed class RobotCampaign
     }
     public void Advance(WorldSetup world,IReadOnlyList<March> orders)
     {
+        if(orders.Any(o=>o.Peaceful && (!o.Queen || !o.PocketOnly || o.Fighters!=0 || o.RobotIds?.Length>0)))throw new ArgumentException("A peaceful visit carries only the queen and her pocket.");
         if(orders.Where(o=>o.Queen).GroupBy(o=>o.Ruler).Any(g=>g.Count()>1) || orders.GroupBy(o=>(o.Ruler,Source(world,o),Pocket:o.Queen || o.PocketOnly)).Any(g=>g.Count()>1 && (g.Any(o=>o.RobotIds==null) || g.GroupBy(o=>o.TargetNode).Any(t=>t.Count()>1))))throw new ArgumentException("Duplicate target, ambiguous legacy selection or conqueror order.");
         var reservedIds=orders.Where(o=>o.RobotIds!=null).SelectMany(o=>o.RobotIds).ToArray();
         if(reservedIds.Distinct().Count()!=reservedIds.Length)throw new ArgumentException("A robot can have only one destination.");
@@ -114,6 +116,13 @@ public sealed class RobotCampaign
         world.Population.Advance(world);
         world.Industry.Queue(world.Population.Turn);
         var stopped=new HashSet<March>();
+        // Visits carry the queen and her pocket without claiming land or starting a war.
+        foreach(var visit in orders.Where(o=>o.Peaceful))
+        {
+            foreach(var robot in troops[visit])ReturnHome(world,robot,source[visit]);
+            Move(world,visit.Ruler,visit.TargetNode);stopped.Add(visit);
+            if(world.TutorialStep==2 && visit.Ruler==0 && source[visit]!=visit.TargetNode)world.TutorialMoved=true;
+        }
         foreach(var first in orders.OrderBy(o=>o.Ruler))
         {
             if(stopped.Contains(first))continue;
@@ -159,7 +168,8 @@ public sealed class RobotCampaign
             var encounter=Encounters.FirstOrDefault(e=>!e.Finished && e.Kind==BattleKind.Node && e.Target==reserve.Node);
             if(encounter!=null){AddReinforcement(world,encounter,reserve.Robot.Owner,reserve.Node,new(){reserve.Robot},false);Reserves.Remove(reserve);}
         }
-        foreach(var encounter in Encounters.Where(e=>!e.Finished).ToArray())RunSegment(world,encounter);
+        foreach(var encounter in Encounters.Where(e=>!e.Finished).ToArray())
+        {JoinWanderers(world,encounter);RunSegment(world,encounter);ReturnRetreatedWanderers(world,encounter);}
         // A node battle later in the same global turn may remove an earlier edge battle's home.
         bool changed;
         do
@@ -198,6 +208,29 @@ public sealed class RobotCampaign
             state.ChooseLayout();state.Deploy();e.Battles.Add(state);offset+=size;
         }
         return e;
+    }
+    private void JoinWanderers(WorldSetup world,RobotEncounter encounter)
+    {
+        if(encounter.Kind!=BattleKind.Node)return;
+        foreach(int owner in Enumerable.Range(0,world.ActiveCount))
+        {
+            if(!world.Relations.CanAct(owner) || world.TerritoryCounts[owner]!=0 || world.Nodes.Current(owner)?.Id!=encounter.Target ||
+                Encounters.Where(e=>!e.Finished).Any(e=>e.Battles.SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Any(u=>u.Owner==owner && u.Role==BattleRole.Queen && (e==encounter || u.Active))))continue;
+            var robots=world.Robots.Retinues[owner].Robots.Where(world.Robots.Training[owner].Eligible).ToList();
+            foreach(var robot in robots)Depart(world,encounter.Target,robot,true);
+            AddReinforcement(world,encounter,owner,encounter.Target,robots,true);
+            var state=encounter.Battles.First(b=>b.Armies.Any(a=>a.Owner==owner));var army=state.Army(owner);
+            army.Wanderer=true;var policy=world.ManualRulers().Contains(owner)?world.WandererPolicyFor(owner):WandererPolicy.Random;
+            army.WandererPolicy=policy==WandererPolicy.Random?(WandererPolicy)state.Random.Next(3):policy;
+            if(army.WandererPolicy==WandererPolicy.Retreat)encounter.WithdrawalOwners.Add(owner);
+        }
+        PrepareSplitBoards(encounter);
+    }
+    private static void PrepareSplitBoards(RobotEncounter encounter)
+    {
+        if(encounter.Battles.Count<=1)return;
+        // A partial board cannot decide ownership of a node shared by other boards.
+        foreach(var state in encounter.Battles){state.SplitBoard=true;state.Kind=BattleKind.Edge;state.Defender=-1;}
     }
     private BattleState NewState(WorldSetup world,RobotEncounter e)
     {
@@ -274,12 +307,13 @@ public sealed class RobotCampaign
             foreach(var g in groups.Skip(i).Take(4))
             {
                 var previous=old.SelectMany(b=>b.Armies).First(a=>a.Owner==g.Key);
-                var army=new BattleArmy{Owner=g.Key,HomeNode=previous.HomeNode,Side=state.Armies.Count,Limit=previous.Limit};
+                var army=new BattleArmy{Owner=g.Key,HomeNode=previous.HomeNode,Side=state.Armies.Count,Limit=previous.Limit,Wanderer=previous.Wanderer,WandererPolicy=previous.WandererPolicy,Withdrawing=previous.Withdrawing};
                 if(state.Armies.Count==1)army.Side=2;state.Armies.Add(army);
                 foreach(var unit in g.OrderBy(u=>u.Role==BattleRole.Queen?1:0).ThenBy(u=>u.Id))army.Waiting.Enqueue(unit);
             }
             state.Deploy();e.Battles.Add(state);
         }
+        PrepareSplitBoards(e);
         // Failed/retreated individuals are returned now; active survivors are only in the new boards.
         foreach(var state in old)ReturnUnits(world,e,state,state.Units.Where(u=>u.Fallen || u.Retreated));
         return true;
@@ -324,19 +358,35 @@ public sealed class RobotCampaign
                     var prior=survivors.FirstOrDefault(u=>u.Id==unit.Id);if(prior==null)continue;
                     unit.Daggers=prior.Daggers;unit.Rifles=prior.Rifles;unit.Shields=prior.Shields;unit.Role=prior.Role;
                 }
-                Encounters.Add(continuation);RunSegment(world,continuation);
+                Encounters.Add(continuation);JoinWanderers(world,continuation);RunSegment(world,continuation);ReturnRetreatedWanderers(world,continuation);
             }
+        }
+    }
+    private void ReturnRetreatedWanderers(WorldSetup world,RobotEncounter encounter)
+    {
+        if(encounter.Finished)return;
+        foreach(var state in encounter.Battles)
+        {
+            var escaped=state.Units.Where(u=>u.Retreated && state.Army(u.Owner).Wanderer && !encounter.ReturnedWanderers.Contains(u.Id)).ToArray();
+            ReturnUnits(world,encounter,state,escaped);
+            foreach(var unit in escaped)encounter.ReturnedWanderers.Add(unit.Id);
         }
     }
     private void ReturnUnits(WorldSetup world,RobotEncounter e,BattleState state,IEnumerable<BattleUnit> units)
     {
         foreach(var unit in units.OrderBy(u=>u.Active && state.Winner>=0 && world.Relations.Allied(u.Owner,state.Winner)?1:0).ThenBy(u=>u.Id))
         {
+            if(e.ReturnedWanderers.Contains(unit.Id))continue;
             var army=state.Army(unit.Owner);int home=army.HomeNode;
             if(unit.Role==BattleRole.Queen)
             {
                 if(unit.Fallen){int victor=e.LostHomes.GetValueOrDefault(unit.Owner,state.Winner);if(victor>=0)world.Relations.Capture(world,unit.Owner,victor,e.Target);continue;}
                 int location=e.Kind==BattleKind.Node && state.Winner>=0 && world.Relations.Allied(unit.Owner,state.Winner)?e.Target:home;
+                if(army.Wanderer && unit.Retreated && location==e.Target)
+                {
+                    var escape=world.Routes.Neighbors(world.Nodes.All[e.Target]).Select(r=>world.Nodes.At(r.Target,r.Entry)).Where(n=>n.Id!=e.Target).OrderBy(n=>LockedNode(n.Id) || LockedEdge(e.Target,n.Id)?1:0).ThenBy(n=>n.Id).FirstOrDefault();
+                    if(escape!=null)location=escape.Id;
+                }
                 Move(world,unit.Owner,location);continue;
             }
             if(unit.Robot==null)continue;
@@ -381,7 +431,7 @@ public sealed class RobotCampaign
     {
         world.Robots.Check();
         var stored=world.Robots.Nodes.Concat(world.Robots.Retinues).SelectMany(s=>s.Robots);
-        var fighting=Encounters.Where(e=>!e.Finished).SelectMany(e=>e.Battles).SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Where(u=>u.Robot!=null).Select(u=>u.Robot);
+        var fighting=Encounters.Where(e=>!e.Finished).SelectMany(e=>e.Battles.SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Where(u=>u.Robot!=null && !e.ReturnedWanderers.Contains(u.Id))).Select(u=>u.Robot);
         var all=stored.Concat(fighting).Concat(Reserves.Select(r=>r.Robot)).ToArray();
         if(all.Select(r=>r.Id).Distinct().Count()!=all.Length)throw new InvalidOperationException("Robot duplicated between world and battlefield.");
     }

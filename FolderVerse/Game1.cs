@@ -144,9 +144,10 @@ public partial class Game1 : Game
             else UpdateConquestOverview(elapsed,enter || escape || click && ConquestSkipButton.Contains(_pointer));
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
+        if(WandererPolicyInput(active && click,active && escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         UpdateTutorialStartGuide(gameTime.TotalGameTime.TotalSeconds);
         if(_tutorialAttackGuide){
-            if(active && (click || enter || escape)){_tutorialAttackGuide=false;if(_tutorialGuideMessage==3){_lastAutoSaveTurn=-1;AutoSaveDomestic();}}
+            if(active && (click || enter || escape)){_tutorialAttackGuide=false;if(_tutorialGuideMessage is 3 or >=5){_lastAutoSaveTurn=-1;AutoSaveDomestic();}}
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(TutorialMessageInput(active && click,active && escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -496,7 +497,7 @@ public partial class Game1 : Game
         _net.InspectedNode=_populationCell>=0?_populationNode:-1;
         int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
         if(_reignView)DrawInspector(()=>{
-        _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Text("全体作戦",new(54,112),.65f,Cream);var image=new Rectangle(212,220,518,360);
+        _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Text("世界征服計画",new(54,112),.65f,Cream);var image=new Rectangle(212,220,518,360);
         if(!InspectingSupervisor && !System.Linq.Enumerable.Any(_setup.Nodes.All,node=>node.Owner==player))DrawReignWantedPoster(player);
         else
         {
@@ -521,6 +522,7 @@ public partial class Game1 : Game
         _ui.Center(capitalLabel,new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
         int fully=System.Linq.Enumerable.Count(_setup.Cells,c=>_setup.Nodes.FullOwner(c.Id)==player);
         _ui.Center("完全占領　"+fully+" cell / 節点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==player),new(90,842,760,48),0.76f,Cream);
+        DrawWandererPolicy();
         }); _ui.Box(new(MapViewBounds.X-20,142,MapViewBounds.Width+40,750),new(20,42,54));
         _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+CubeNet.FaceNames[_net.CenterFace]+" が中心",new(991,156),0.68f,Cream);
         string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地星の北＝＋Y / 北を上に";
@@ -679,6 +681,7 @@ public partial class Game1 : Game
         if(_homePersuasionActive){_spriteBatch.Begin(transformMatrix:transform);DrawHomePersuasion();_spriteBatch.End();}
         if(TutorialReviewAvailable){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialMessages();_spriteBatch.End();}
         if(_tutorialAttackGuide){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAttackGuide();_spriteBatch.End();}
+        if(_wandererPolicyOpen){_spriteBatch.Begin(transformMatrix:transform);DrawWandererPolicyDialog();_spriteBatch.End();}
         if(_screen==Screen.Battle && _tutorialAchievementAge>=0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAchievementCutIn();_spriteBatch.End();}
         if(_conquestOverview){_spriteBatch.Begin(transformMatrix:transform);DrawConquestCurtain(1-MathHelper.SmoothStep(0,1,(float)(_conquestAge/.65)));_spriteBatch.End();}
         LogDisplayedScreen();

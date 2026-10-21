@@ -89,6 +89,11 @@ public static class AutoSaveStore
                     if(type==typeof(BattleState) && field.Name=="<PersuadedUnits>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
                     if(type==typeof(BattleUnitView) && field.Name=="<Robot>k__BackingField")continue;
                     // Defaults for fields introduced after older turn-boundary saves.
+                    if(type==typeof(RobotEncounter) && field.Name=="<ReturnedWanderers>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
+                    if(type==typeof(WorldSetup) && field.Name=="WandererPolicies"){field.SetValue(value,new WandererPolicy[WorldSetup.CastCount]);continue;}
+                    if(type==typeof(WorldSetup) && new[]{"_presetCastCount","TutorialPocketed","TutorialMoved","TutorialPocketNoticeShown","TutorialMoveNoticeShown"}.Contains(field.Name))continue;
+                    if(type==typeof(March) && field.Name=="<Peaceful>k__BackingField")continue;
+                    if(type==typeof(BattleArmy) && (field.Name=="Wanderer" || field.Name=="WandererPolicy"))continue;
                     if(type==typeof(BattleRules) && field.Name=="<FlagCaptureTurns>k__BackingField"){field.SetValue(value,10);continue;}
                     if(type==typeof(BattleRules) && field.Name=="<FlagDefenseTurns>k__BackingField"){field.SetValue(value,50);continue;}
                     if((type==typeof(BattleState) && (field.Name=="FlagCaptureTurns" || field.Name=="FlagDefenseTurns")) ||

@@ -39,6 +39,7 @@ public partial class Game1
         {_pocketMessage="組立・分解・廃棄を予約したロボットは移せません";return;}
         if(!source.Robots.Any(r=>r.Id==id && r.Owner==player)){_pocketRobot=null;return;}
         destination.Add(source.Remove(id));_pocketRobot=null;
+        if(_pocketFromNode && _setup.TutorialStep==2 && player==0)_setup.TutorialPocketed=true;
         _pocketMessage=_pocketFromNode?"自分のポケットに入れました":"現在地の節点へ配備しました";
     }
     private void DrawPocket()

@@ -51,6 +51,8 @@ public sealed partial class WorldSetup
     public const string PoliticalSystem="独裁者";
     public int TutorialStep {get;private set;}
     public bool TutorialCompletionPending,TutorialCompletionShown;
+    public bool TutorialPocketed,TutorialMoved,TutorialPocketNoticeShown,TutorialMoveNoticeShown;
+    private int _presetCastCount;
     public int PlayerCount {get;private set;}=1;
     public const int CastCount=GameLimits.MaxConquerors;
     public List<int> HumanPlayers {get;}=new();
@@ -81,7 +83,7 @@ public sealed partial class WorldSetup
         PlayerSlot=slot;
         if(Relations.Party(this).Length<=1)Relations.Leader=slot;
     }
-    public int ActiveCount => Math.Min(CastCount, Cells.Length);
+    public int ActiveCount => Math.Min(_presetCastCount>0?_presetCastCount:CastCount, Cells.Length);
     public static readonly Color[] Colors = {
         new(239,88,97), new(66,171,235), new(247,194,63), new(76,195,139), new(178,117,239),
         new(245,139,63), new(238,121,186), new(53,200,205), new(166,207,64), new(121,153,249),
@@ -91,7 +93,9 @@ public sealed partial class WorldSetup
     public Color OwnerColor(int slot) => slot<0?new Color(155,169,180):Colors[ColorIndices[slot]];
     public void SetWorld(int seed)
     {
-        TutorialStep=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();
+        TutorialStep=0;_presetCastCount=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();
+        TutorialPocketed=TutorialMoved=TutorialPocketNoticeShown=TutorialMoveNoticeShown=false;
+        WandererPolicies=new WandererPolicy[CastCount];
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
         WorldSeed = seed;
         var random = new SeedRandom(seed);

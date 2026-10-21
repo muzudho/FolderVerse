@@ -47,7 +47,7 @@ public partial class Game1
         catch(Exception e){_tutorialAchievementError="勲章の保存に失敗しました";RecordFailure(e,"achievement_write");}
     }
     private bool TutorialAttackRequired=>_setup.TutorialStep==1 && !_tutorialAttackAchieved && _tutorialAchievements?.Has(TutorialAchievements.FirstAttack)!=true;
-    private bool TutorialHasAttackReservation=>_setup.Campaign.PlannedOrders.Any(o=>o.Ruler==0 && (o.Queen || o.Fighters>0) &&
+    private bool TutorialHasAttackReservation=>_setup.Campaign.PlannedOrders.Any(o=>!o.Peaceful && o.Ruler==0 && (o.Queen || o.Fighters>0) &&
         _setup.Nodes.All[o.TargetNode].Owner>=0 && !_setup.Relations.Allied(0,_setup.Nodes.All[o.TargetNode].Owner));
     private bool ShowTutorialAttackGuideIfRequired(){
         if(!TutorialAttackRequired || TutorialHasAttackReservation)return false;
@@ -70,6 +70,11 @@ public partial class Game1
         _ui.Tile(center,new(21,21),MathHelper.PiOver4,new Color(255,235,151));
     }
     private void DrawTutorialGoal(){
+        if(_setup.TutorialStep==2 && (IsStatusScreen || _screen==Screen.Transport))
+        {
+            _ui.Box(new(700,20,400,48),new Color(14,26,39,235));
+            _ui.Center($"ステップ２　ポケット {(_setup.TutorialPocketed?"✓":"□")}　移動 {(_setup.TutorialMoved?"✓":"□")}",new(710,20,380,48),.3f,Cream);return;
+        }
         if(_setup.TutorialStep!=1 || (!IsStatusScreen && _screen!=Screen.Transport))return;
         string text=_tutorialAttackAchieved?"勲章獲得！ ステップ１：開戦":"ステップ１：開戦しましょう";
         _ui.Box(new(700,20,400,48),new Color(14,26,39,235));
