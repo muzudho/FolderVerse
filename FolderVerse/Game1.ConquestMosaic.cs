@@ -24,7 +24,16 @@ public partial class Game1
             var image=new Rectangle(r.X+4,r.Y+4,Math.Max(1,r.Width-8),Math.Max(1,r.Height-8));
             _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],image,_setup.Relations.Powered[ruler],focalPoint:new Vector2(.5f,.3f));
             if(!focus)_ui.Box(image,Color.Black*.25f);
-            _counter.Draw(_spriteBatch,ranking[ruler].Cells,image,_setup.OwnerColor(ruler));
+            int subordinateCells=ranking[ruler].Cells-ConquestPresentation.OwnCells(_setup,ruler).Length;
+            var counterArea=image;
+            if(subordinateCells>0)counterArea.Height=Math.Max(1,counterArea.Height-25);
+            _counter.Draw(_spriteBatch,ranking[ruler].Cells,counterArea,_setup.OwnerColor(ruler));
+            if(subordinateCells>0){
+                string detail=$"（内、手下 {subordinateCells} cells）";
+                var detailArea=new Rectangle(image.X,image.Bottom-25,image.Width,25);
+                _ui.Box(detailArea,Color.Black*.7f);
+                _ui.Center(detail,detailArea,Math.Min(.30f,(image.Width-8)/_font.MeasureString(detail).X),Cream);
+            }
             string label=$"{ranking[ruler].Rank}位 / {_setup.ConquerorNames[ruler]}";
             _ui.Box(new(r.X+4,r.Y+4,r.Width-8,25),Color.Black*.7f);
             _ui.Center(label,new(r.X+4,r.Y+4,r.Width-8,25),Math.Min(.35f,(r.Width-12)/_font.MeasureString(label).X),Cream);

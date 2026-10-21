@@ -1,4 +1,26 @@
 <Project>
+  <!-- MonoGame's tool-restore Exec otherwise decodes UTF-8 dotnet messages using
+       Visual Studio's OEM code page. Preserve the upstream restore/stamp flow,
+       but use UTF-8 for both the child console and captured output. -->
+  <Target Name="_RestoreMGCBTool"
+          Condition="'$(AutoRestoreMGCBTool)' == 'true' And '$(DesignTimeBuild)' != 'true'"
+          BeforeTargets="CollectPackageReferences"
+          DependsOnTargets="_CollectDotnetToolConfigFiles"
+          Inputs="$(MSBuildProjectFullPath);$(MSBuildThisFileFullPath);@(_DotnetToolConfigFiles);$(ProjectAssetsFile)"
+          Outputs="$(IntermediateOutputPath)mgcb.tool.restore">
+    <Exec Condition="'$(DotnetCommand)' != ''"
+          Command="&quot;$(DotnetCommand)&quot; tool restore"
+          WorkingDirectory="$(MSBuildProjectDirectory)"
+          UseUtf8Encoding="Always" StdOutEncoding="utf-8" StdErrEncoding="utf-8"
+          ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_MGCBToolRestoreExitCode" />
+    </Exec>
+    <MakeDir Directories="$(IntermediateOutputPath)" Condition="!Exists('$(IntermediateOutputPath)')" />
+    <Touch Files="$(IntermediateOutputPath)mgcb.tool.restore" AlwaysCreate="true" Condition="'$(_MGCBToolRestoreExitCode)' == '0'" />
+    <ItemGroup>
+      <FileWrites Include="$(IntermediateOutputPath)mgcb.tool.restore" />
+    </ItemGroup>
+  </Target>
   <!-- The solution contains only the game project. Clean its test copies too. -->
   <Target Name="CleanTestContentCopies" AfterTargets="Clean"
           Condition="'$(MSBuildProjectName)' == 'FolderVerse' and '$(OS)' == 'Windows_NT'">

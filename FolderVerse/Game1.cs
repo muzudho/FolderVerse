@@ -141,7 +141,7 @@ public partial class Game1 : Game
         _animationTime+=(float)elapsed;
         if(_conquestOverview){
             if(_demoActive)UpdateDemo(elapsed,active,click,escape,enter,gameTime.TotalGameTime.TotalSeconds);
-            else UpdateConquestOverview(elapsed,enter || escape);
+            else UpdateConquestOverview(elapsed,enter || escape || click && ConquestSkipButton.Contains(_pointer));
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         UpdateTutorialStartGuide(gameTime.TotalGameTime.TotalSeconds);
@@ -550,12 +550,13 @@ public partial class Game1 : Game
             GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
             _world.Draw(_yaw,_pitch,_animationTime,false,true);
             _net.HoveredBattery=_net.HitBattery(_pointer);
-            _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; _world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe);
+            _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1;
             GraphicsDevice.Viewport=viewport;
             using var globeClip=new RasterizerState{ScissorTestEnable=true};
             GraphicsDevice.ScissorRectangle=OrientationClip(canvas);
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
+            _net.DrawGlobeRobots(_ui,_setup,_world,areas.Globe,_yaw,_pitch);
             if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();_spriteBatch.End();
             DrawOrientationOverlay(MapViewBounds,canvas,transform);
         }
@@ -563,7 +564,9 @@ public partial class Game1 : Game
         {
             _spriteBatch.Begin(transformMatrix:_net.ScreenTransform(NetPanel)*transform,rasterizerState:clipping);
             var mapPointer=_ui.Pointer;_ui.Pointer=_net.UnrotateScreen(_pointer,NetPanel);
-            _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:(_statusCell>=0?_statusCell:_selectedMapCell),_animationTime);_ui.Pointer=mapPointer;_spriteBatch.End();
+            _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:(_statusCell>=0?_statusCell:_selectedMapCell),_animationTime,false);_ui.Pointer=mapPointer;_spriteBatch.End();
+            _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clipping);
+            _net.DrawMapObjects(_ui,_setup,NetPanel,_animationTime);_spriteBatch.End();
         }
         if(!_statusGlobe && !MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);

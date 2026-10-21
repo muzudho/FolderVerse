@@ -106,10 +106,11 @@ public sealed partial class CubeNet
         }
         return "";
     }
-    public void Draw(UiPainter ui,WorldSetup setup,Rectangle panel,int focused,float pulse)
+    public void Draw(UiPainter ui,WorldSetup setup,Rectangle panel,int focused,float pulse,bool objects=true)
     {
         _drawing=true;_badgePanel=panel;
         try{DrawUnrotated(ui,setup,panel,focused,pulse);}finally{_drawing=false;}
+        if(objects)DrawMapObjects(ui,setup,panel,pulse);
     }
     private void DrawUnrotated(UiPainter ui,WorldSetup setup,Rectangle panel,int focused,float pulse)
     {
@@ -148,7 +149,7 @@ public sealed partial class CubeNet
                 var pa=face.Project(a)*fit.Scale+fit.Origin;var pb=face.Project(b)*fit.Scale+fit.Origin;
                 ui.Box(new((int)Math.Min(pa.X,pb.X)-thickness/2,(int)Math.Min(pa.Y,pb.Y)-thickness/2,Math.Max(thickness,(int)Math.Abs(pa.X-pb.X)),Math.Max(thickness,(int)Math.Abs(pa.Y-pb.Y))),color);
             }
-            DrawCellRoutes(ui,setup,cell.Id,p=>face.Project(p)*fit.Scale+fit.Origin,pulse);
+            DrawCellRoutes(ui,setup,cell.Id,p=>face.Project(p)*fit.Scale+fit.Origin,pulse,false);
             if(!ShowRoutes && focused==cell.Id)
             {
                 ui.Box(new(rect.Left,rect.Top,rect.Width,3),Color.White);ui.Box(new(rect.Left,rect.Bottom-3,rect.Width,3),Color.White);
@@ -160,11 +161,6 @@ public sealed partial class CubeNet
             var face=Faces.First(f=>f.Face==p.Cell.Face);
             return (face.Project(p.A)*fit.Scale+fit.Origin,face.Project(p.B)*fit.Scale+fit.Origin);
         });
-        DrawBatteries(ui,setup,panel,ruler=>{
-            var face=Faces.First(f=>f.Face==setup.Cells[setup.ConquerorLocations[ruler]].Face);
-            return face.Project(setup.Routes.Position(setup.ConquerorLocations[ruler],setup.ConquerorPoints[ruler]))*fit.Scale+fit.Origin;
-        },pulse);
-        DrawRobotLayer(ui,setup,panel,node=>NodePosition(setup,node,panel),fit.Scale);
         DrawHoveredEdge(ui,panel);
         DrawSeamLabels(ui,panel);
     }

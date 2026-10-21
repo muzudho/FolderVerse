@@ -32,6 +32,7 @@ sealed class OverviewGame:Game1{
   foreach(var c in main){var tour=ConquestPresentation.FaceTour(world,c.Ruler);Check(tour.Distinct().Count()==tour.Length && tour.Length==1,"Only owned faces toured on dice world");var env=ConquestPresentation.Environment(world,c.Ruler);Check(env.X>=0 && env.X<=1 && env.Y>=0 && env.Y<=1 && env.Z>=0 && env.Z<=1,"Terrain weights bounded");}
   var tally=new ConquestTally(world,p.Cards.First(c=>c.Ruler==0 && !c.Reminder));
   Check(tally.Cells.Length==1 && tally.TotalCells==3,"Tally separates direct cells and full subtree total");
+  Check(tally.SubordinateCells==2,"Subordinate breakdown includes descendants without counting their land twice");
   Check(tally.Painted(world,1.17)==0 && tally.Painted(world,1.18)==1 && tally.Counted(world,tally.CountEnd)==3,"One painted cell increments counter, then descendants contribute");
   Check(tally.CellsStart<tally.EntryStart && tally.EntryStart<tally.ScoreStart && tally.ScoreStart<tally.RankStart && tally.RankStart<tally.FaceStart,"Cells, entry, points, rank and portrait reveal in order");
   Check(tally.Score(tally.ConvertStart)==301 && Math.Abs(tally.Duration-tally.FaceStart-4)<1e-8,"Static arithmetic score and four-second rank");
@@ -47,6 +48,21 @@ sealed class OverviewGame:Game1{
   foreach(var n in multi.Nodes.All)n.Owner=-1;
   var emptyTally=new ConquestTally(multi,new ConquestPresentation(multi).Cards.First(c=>c.Ruler==0 && !c.Reminder));
   Check(emptyTally.TotalCells==0 && emptyTally.Score(emptyTally.ConvertStart)==1,"Zero cells retain positive entry points");
+  multi.HumanPlayers.Add(0);
+  var emptyRanking=multi.Relations.ProvisionalRanking(multi);
+  Check(emptyRanking.All(r=>!ConquestPresentation.Detailed(multi,r.Ruler,r.Rank)),"Zero-cell rulers including top three and human players use compact introductions");
+  var emptyPresentation=new ConquestPresentation(multi);
+  Check(emptyPresentation.Cards.All(c=>!c.Reminder),"Zero-cell introductions omit ancestor reminders");
+  var emptyCompact=new ConquestTally(multi,emptyPresentation.Cards.First(c=>c.Ruler==0),true);
+  Check(emptyCompact.CellsStart==0 && emptyCompact.RankStart==0 && Math.Abs(emptyCompact.Duration*multi.ActiveCount-5)<1e-9,"Zero-cell results reveal instantly and share the compact group's five seconds");
+  int batteryless=multi.ActiveCount-1;multi.Relations.Powered[batteryless]=false;
+  var batterylessRanking=multi.Relations.ProvisionalRanking(multi);
+  Check(batterylessRanking[^1].Ruler==batteryless,"Batteryless ruler ranks below every powered zero-cell ruler despite highest entry number");
+  var batterylessCard=new ConquestPresentation(multi).Cards.Single(c=>c.Ruler==batteryless && !c.Reminder);
+  var batterylessTally=new ConquestTally(multi,batterylessCard,true);
+  Check(!batterylessTally.Powered && batterylessTally.Score(0)==-100+batteryless+1 && batterylessTally.Score(0)==ConquerorRelations.RankingScore(0,batteryless+1,multi.ActiveCount,false),"Batteryless tally uses minus 100 plus Entry consistently with ranking");
+  var rankedTiles=CharacterSelectionLayout.CreateOverview(new int[multi.ActiveCount],batterylessRanking.OrderBy(r=>r.Ruler).Select(r=>r.Rank).ToArray());
+  Check(rankedTiles[batterylessRanking[0].Ruler].X==8 && rankedTiles[batterylessRanking[0].Ruler].Y==0,"Portrait placement respects battery penalty ranking");
   foreach(var counts in new[]{new[]{0},new int[6],new[]{0,1,0,1,0,1},new[]{1,1,1,1,1,1},Enumerable.Range(0,20).Select(i=>i==0?1000:i).ToArray()}){
    var tiles=CharacterSelectionLayout.CreateOverview(counts);Check(tiles.Length==counts.Length && tiles.All(t=>t.X>=8 && t.X+t.Width<=28 && t.Y+t.Height<=20 && t.Width>=2 && t.Height>=2),"Portrait layout avoids fixed left two calendar columns");
    foreach(var a in tiles)foreach(var b in tiles.Where(b=>b.Slot>a.Slot))Check(!a.Bounds.Intersects(b.Bounds),"Overview portraits never overlap");
@@ -96,6 +112,15 @@ sealed class OverviewGame:Game1{
    foreach(int ruler in Enumerable.Range(0,world.ActiveCount))((HashSet<int>)Get("_conquestRevealed")).Add(ruler);
    base.Draw(t);var full=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(full);
    using var texture=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);texture.SetData(full);using var output=File.Create(Path.Combine(AppContext.BaseDirectory,"conquest-rectangles.png"));texture.SaveAsPng(output,texture.Width,texture.Height);
+   var savedTally=Get("_conquestTally");var savedPresentation=Get("_conquestPresentation");int savedCard=(int)Get("_conquestCard");var savedTiles=Get("_conquestTiles");
+   var nodeOwners=world.Nodes.All.Select(n=>n.Owner).ToArray();int savedSuperior=world.Relations.Superiors[2];
+   foreach(var n in world.Nodes.All.Where(n=>n.Owner==0))n.Owner=-1;world.Relations.SetSuperior(2,-1);world.Relations.Powered[0]=false;
+   var noBatteryPresentation=new ConquestPresentation(world);Set("_conquestPresentation",noBatteryPresentation);Set("_conquestCard",Array.FindIndex(noBatteryPresentation.Cards,c=>c.Ruler==0 && !c.Reminder));
+   Set("_conquestTally",new ConquestTally(world,noBatteryPresentation.Cards[(int)Get("_conquestCard")],true));
+   var noBatteryRanking=world.Relations.ProvisionalRanking(world).OrderBy(r=>r.Ruler).ToArray();Set("_conquestTiles",CharacterSelectionLayout.CreateOverview(noBatteryRanking.Select(r=>r.Cells).ToArray(),noBatteryRanking.Select(r=>r.Rank).ToArray()));
+   base.Draw(t);GraphicsDevice.GetBackBufferData(full);texture.SetData(full);using var batterylessOutput=File.Create(Path.Combine(AppContext.BaseDirectory,"conquest-batteryless.png"));texture.SaveAsPng(batterylessOutput,texture.Width,texture.Height);
+   for(int i=0;i<nodeOwners.Length;i++)world.Nodes.All[i].Owner=nodeOwners[i];world.Relations.SetSuperior(2,savedSuperior);world.Relations.Powered[0]=true;
+   Set("_conquestTally",savedTally);Set("_conquestPresentation",savedPresentation);Set("_conquestCard",savedCard);Set("_conquestTiles",savedTiles);
   }
   if(frame++<19)return;
   Call("FinishConquestOverview");Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");
@@ -116,6 +141,14 @@ sealed class OverviewGame:Game1{
   Check((float)Get("_conquestExitOpacity")==0 && Get("_conquestMusic")==null,"Skip before intro never reveals a globe or starts new music");
   Call("FinishConquestOverview");Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");Set("_conquestStage",3);Set("_conquestAge",.6d);Call("UpdateConquestOverview",0d,true);
   Check(Math.Abs((float)Get("_conquestExitOpacity")-.4f)<.0001,"Skip during fade-in preserves current opacity without a bright flash");
+  Call("FinishConquestOverview");Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");Set("_conquestStage",4);
+  var skipButton=(Rectangle)typeof(Game1).GetProperty("ConquestSkipButton",BindingFlags.NonPublic|BindingFlags.Static)!.GetValue(null)!;
+  var skipCanvas=(Rectangle)Call("CanvasBounds");
+  int skipX=skipCanvas.X+skipButton.Center.X*skipCanvas.Width/1920,skipY=skipCanvas.Y+skipButton.Center.Y*skipCanvas.Height/1080;
+  Call("HandleInput",new MouseState(skipX,skipY,0,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.FromSeconds(11),TimeSpan.Zero),true);
+  Check((int)Get("_conquestStage")==4,"Hovering skip button leaves presentation running");
+  Call("HandleInput",new MouseState(skipX,skipY,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.FromSeconds(11),TimeSpan.Zero),true);
+  Check((int)Get("_conquestStage")==5 && (float)Get("_conquestExitOpacity")==1,"Mouse skip button follows the same closing transition as Enter at scaled resolution");
   Call("ReturnToTitle");Check(!(bool)Get("_conquestOverview") && (int)Get("_conquestOverviewTurn")==-1,"Title resets presentation and audio");
   Set("_titleMenuSelection",2);Call("TitleStartMenuInput",false,true,false,new KeyboardState(),true);
   Check(Get("_screen").ToString()=="PlayerCount","New game title action begins normal setup");

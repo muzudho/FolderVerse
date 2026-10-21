@@ -147,14 +147,7 @@ public sealed partial class CubeNet
                 var a=Project(corners[edge]);var b=Project(corners[(edge+1)%4]);var delta=b-a;
                 ui.Tile((a+b)/2,new Vector2(delta.Length(),2),MathF.Atan2(delta.Y,delta.X),owner<0?new Color(170,181,191):world.OwnerColor(owner));
             }
-            DrawCellRoutes(ui,world,cell.Id,Project,pulse);
-            foreach(int ruler in Enumerable.Range(0,world.ActiveCount).Where(r=>ShowBatteries && world.Relations.Powered[r] && world.ConquerorLocations[r]==cell.Id).OrderBy(r=>r==world.PlayerSlot?1:0))
-            {
-                var at=Project(world.Routes.Position(cell.Id,world.ConquerorPoints[ruler]))+BatteryOffset(world,ruler);float turn=moving?angle:0;
-                var tint=ruler==world.PlayerSlot?Color.Lerp(new Color(255,240,119),Color.White,(MathF.Sin(pulse*4)+1)/2):world.OwnerColor(ruler);
-                ui.Tile(at,new Vector2(ruler==world.PlayerSlot?29:17,14),turn,new Color(12,27,36));
-                ui.Tile(at,new Vector2(ruler==world.PlayerSlot?25:13,10),turn,tint);
-            }
+            DrawCellRoutes(ui,world,cell.Id,Project,pulse,false);
         }
     }
 }

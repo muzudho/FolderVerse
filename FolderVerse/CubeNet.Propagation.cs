@@ -33,13 +33,15 @@ public sealed partial class CubeNet
     public bool AnimateAttachment(int face,int side)
     {HoveredFace=face;HoveredSide=side;return ClickEdge();}
     public Vector2 AnimatedNodePosition(WorldSetup world,Node node,Rectangle panel)
+        =>AnimatedSurfacePosition(node.Cell,world.Routes.Position(node.Cell,node.Center),world,panel);
+    private Vector2 AnimatedSurfacePosition(int cell,Vector3 position,WorldSetup world,Rectangle panel)
     {
-        if(!IsAnimating)return NodePosition(world,node,panel);
+        if(!IsAnimating){var f=Faces.First(f=>f.Face==world.Cells[cell].Face);var fitNow=Fit(panel);return RotateScreen(f.Project(position)*fitNow.Scale+fitNow.Origin,panel);}
         float t=_animationProgress,eased=t*t*(3-2*t),angle=_animationAngle*eased;
         var fit=Fit(panel);var current=Faces;Faces=_animationTo;var targetFit=Fit(panel);Faces=current;
         var scale=MathHelper.Lerp(fit.Scale,targetFit.Scale,eased);var origin=Vector2.Lerp(fit.Origin,targetFit.Origin,eased);
-        var face=_animationFrom.First(f=>f.Face==world.Cells[node.Cell].Face);
-        var point=face.Project(world.Routes.Position(node.Cell,node.Center));
+        var face=_animationFrom.First(f=>f.Face==world.Cells[cell].Face);
+        var point=face.Project(position);
         if(_movingFaces.Contains(face.Face))point=Vector2.Lerp(_oldPivot,_newPivot,eased)+new Vector2(0,-MathF.Sin(t*MathF.PI)*.65f)+RotatePoint(point-_oldPivot,angle);
         return RotateScreen(point*scale+origin,panel);
     }

@@ -51,7 +51,7 @@ public sealed partial class CubeNet
         var physical=surface.Normal*normalDistance+face.Right*p.X-face.Up*p.Y;
         return new(Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.U)*10),0,9),Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.V)*10),0,9));
     }
-    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse)
+    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true)
     {
         foreach(var peak in world.Routes.Peaks(cell))
         {
@@ -76,6 +76,11 @@ public sealed partial class CubeNet
                     ui.Tile((a+b)/2,new Vector2(delta.Length()+1,2),MathF.Atan2(delta.Y,delta.X),color);
                 }
             }
+            if(drawNodes)DrawNodeMarkers(ui,world,cell,project,pulse);
+        }
+    }
+    private void DrawNodeMarkers(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse)
+    {
             foreach(var post in world.Nodes.InCell(cell).Where(n=>NodeVisible(world,n) && (VisibleOperationNodes==null || VisibleOperationNodes.Contains(n.Id))))
             {
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
@@ -107,8 +112,6 @@ public sealed partial class CubeNet
                     Disc(ui,at,radius,world.OwnerColor(post.Owner));
                 }
             }
-        }
-
     }
     private static void DrawHarbor(UiPainter ui,Vector2 at,float radius,Color color)
     {

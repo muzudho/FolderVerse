@@ -11,6 +11,7 @@ public partial class Game1
     private static readonly string[] DeploymentLabels={"自国のパーツのみのロボット","自国のパーツが多いロボットから","自国のパーツが少ないロボットから","現地に任せる"};
     private bool TrainingInput(Point point,bool click,bool escape)
     {
+        if(_setup.TutorialStep==1){_trainingOpen=false;_trainingDrop=-1;return false;}
         if(!_trainingOpen){if(click && _reignView && _populationCell<0 && !_movementOpen && !_transportOverview && TrainingButton.Contains(new Point(point.X-NodeInspectorOffset,point.Y))){_trainingOpen=true;_trainingDrop=-1;return true;}return false;}
         if(escape || click && TrainingClose.Contains(point)){_trainingOpen=false;_trainingDrop=-1;return true;}
         if(!click)return true;
@@ -21,7 +22,7 @@ public partial class Game1
     }
     private void DrawTraining()
     {
-        if(!_reignView)return; DrawInspector(()=>_ui.Button(TrainingButton,"調練",Accent,.6f));
+        if(_setup.TutorialStep==1 || !_reignView)return; DrawInspector(()=>_ui.Button(TrainingButton,"調練",Accent,.6f));
         if(!_trainingOpen)return;
         var policy=_setup.Robots.Training[_setup.PlayerSlot];
         _ui.Box(new(420,200,1020,680),new(27,49,62));_ui.Text("調練 / 征服者直属",new(460,240),.8f,Cream);_ui.Button(TrainingClose,"×",Muted,.7f);

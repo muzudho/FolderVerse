@@ -9,8 +9,9 @@ public sealed class ConquestPresentation
 {
     public sealed record Card(int Ruler,int Rank,int Depth,bool Reminder,int[] Faces);
     public Card[] Cards {get;}
-    public static bool Detailed(WorldSetup w,int ruler,int rank)=>rank<=3 ||
-        (w.HumanPlayers.Count>0?w.HumanPlayers.Contains(ruler):ruler==w.Relations.Leader);
+    public static bool Detailed(WorldSetup w,int ruler,int rank)=>
+        (rank<=3 || (w.HumanPlayers.Count>0?w.HumanPlayers.Contains(ruler):ruler==w.Relations.Leader)) &&
+        w.Relations.ProvisionalRanking(w).Single(r=>r.Ruler==ruler).Cells>0;
     public static int ExactCellOwner(WorldSetup w,int cell){var owners=w.Nodes.InCell(cell).Select(n=>n.Owner).Distinct().ToArray();return owners.Length==1?owners[0]:-1;}
     public static int[] OwnCells(WorldSetup w,int ruler)=>w.Cells.Where(c=>ExactCellOwner(w,c.Id)==ruler).Select(c=>c.Id).ToArray();
     public static int[] FaceTour(WorldSetup w,int ruler,int startFace=4){

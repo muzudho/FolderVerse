@@ -28,6 +28,24 @@ sealed class RotationGame:Game1{
    Check(Math.Abs(angle-MathHelper.ToRadians(30))<.001f,"Exactly 30 degrees on each axis and sign");
   }
   Set("_statusGlobe",false);
+  var originalNet=net.CaptureView();int movingBelly=0;
+  var bellyNodes=w.Nodes.All.Where(n=>w.Cells[n.Cell].Face==4).Take(2).ToArray();
+  var bellyDirection=w.Routes.Position(bellyNodes[1].Cell,bellyNodes[1].Center)-w.Routes.Position(bellyNodes[0].Cell,bellyNodes[0].Center);
+  for(int center=0;center<6;center++){
+   net.SetCenter(w,center);net.ScreenAngle=.37f;var layout=net.CaptureView();
+   for(int face=0;face<6;face++)for(int side=0;side<4;side++){
+    net.RestoreView(layout);if(!net.AnimateAttachment(face,side))continue;
+    var start=net.BellyOrientation;
+    for(int sample=0;sample<=4;sample++){
+     var a=net.AnimatedNodePosition(w,bellyNodes[0],panel);var b=net.AnimatedNodePosition(w,bellyNodes[1],panel);
+     var direction=Vector3.TransformNormal(bellyDirection,net.BellyOrientation);
+     Check(Vector2.Distance(Vector2.Normalize(b-a),Vector2.Normalize(new Vector2(direction.X,-direction.Y)))<.001f,"Robot belly matches animated belly face and screen rotation throughout attachment");
+     if(sample<4)net.UpdateAnimation(.85f/4);
+    }
+    if(Vector3.Distance(Vector3.TransformNormal(Vector3.UnitX,start),Vector3.TransformNormal(Vector3.UnitX,net.BellyOrientation))>.1f)movingBelly++;
+   }
+  }
+  Check(movingBelly>0,"Attachment tests exercise rotating belly faces");net.RestoreView(originalNet);
   for(int i=0;i<12;i++){
    Call("OrientationControlClick",((Rectangle)Call("AxisButton",toy,2,1)).Center);Call("UpdateOrientationRotation",.4f);
    var point=net.NodePosition(w,node,panel);Check(net.HitNode(w,panel,point.ToPoint())==node.Id,"Rotated node hit");
@@ -99,7 +117,7 @@ sealed class RotationGame:Game1{
   if(frame>=17){
    Set("_mapTransitionAge",-1f);Set("_screen",Enum.Parse(Get("_screen").GetType(),frame==17?"Rolling":frame==18?"CastReview":"WorldStatus"));
    if(frame>=19){Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);Set("_statusGlobe",frame>=21);net.ShowMapSymbols=frame!=21;net.ShowEquator=frame is 19 or 21;}
-   if(frame>=23){Set("_statusGlobe",frame>=25);net.ShowRobots=frame is 24 or 26;if(frame==26){var other=(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{6})!;Call("RouteLayerClick",other.Center);}}
+   if(frame>=23){Set("_statusGlobe",frame>=25);net.ShowRobots=frame is 24 or 26;if(frame==24)net.ScreenAngle=MathHelper.Pi;if(frame==26){var other=(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{6})!;Call("RouteLayerClick",other.Center);}}
    base.Draw(t);
   }
   else{GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawStatusUi");batch.End();}
@@ -114,6 +132,7 @@ sealed class RotationGame:Game1{
    Check(pixels.Any(c=>c==CubeNet.EquatorColor)==net.ShowEquator,"Equator renders independently from coordinates");
   }
   if(frame>=23)Check(net.ShowRobots || net.RobotBadges.Count==0,"Hidden robots leave no hit areas in either view");
+  if(frame is 24 or 26)foreach(var badge in net.RobotBadges){Check(badge.Detailed,"Both maps use the detailed robot display");Check(net.HitRobotBadge(badge.Bounds.Center)==badge.Node,"Upright robot badge hit area matches screen coordinates after net rotation and on globe");}
   if(frame==26)foreach(var badge in net.RobotBadges)Check(w.Robots.Nodes[badge.Node].Robots.Any(r=>w.Relations.Controls(r.Owner)),"Other-country toggle filters robot badges");
   if(frame++>=26){Console.WriteLine("PASS: current-location centering, all six 30-degree globe controls, animation midpoint, full net circle, rotated hit tests, saved rotation, transition rendering, smooth automatic speed pulses and compact reset.");Exit();}
  }

@@ -29,12 +29,10 @@ public partial class Game1
             _ui.Box(new(toy.Center.X-half,toy.Center.Y+y,half*2+1,1),new Color(26,51,65,235));
         }
         _spriteBatch.End();
-        if(OrientationGlobe){
         var viewport=GraphicsDevice.Viewport;
         GraphicsDevice.Viewport=OrientationViewport(new(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30),canvas);
-        _orientationToy.Draw(_yaw,_pitch,_world.ViewOrientation(_yaw,_pitch));
+        _orientationToy.Draw(_yaw,_pitch,OrientationGlobe?_world.ViewOrientation(_yaw,_pitch):_net.BellyOrientation);
         GraphicsDevice.Viewport=viewport;
-        }
         _spriteBatch.Begin(transformMatrix:transform);
         DrawOrientationControls(toy);
         _spriteBatch.End();

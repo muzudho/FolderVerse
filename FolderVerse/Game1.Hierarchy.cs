@@ -9,7 +9,7 @@ public partial class Game1
     private void DrawHierarchyUi()
     {
         _ui.Text("征服者の関係図 / 暫定順位",new(54,25),.9f,Cream);
-        _ui.Text($"征服セル数 → 参加登録番号 / 自分と配下の合計 / 点数 = セル数 × {ConquerorRelations.RankingScale(_setup.ActiveCount)} - 参加登録番号",new(54,78),.43f,new(178,210,219));
+        _ui.Text($"自分と配下の合計 / 点数 = セル数 × {ConquerorRelations.RankingScale(_setup.ActiveCount)} + Entry No. / 電池無し = -100 + Entry No.",new(54,78),.43f,new(178,210,219));
         var forest=_setup.Relations.RankedForest(_setup);
         var positions=new Dictionary<int,Rectangle>();
         int levels=forest.Max(e=>e.Depth)+1;
@@ -44,7 +44,7 @@ public partial class Game1
             int size=Math.Min(62,height-62);_portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new(box.Center.X-size/2,box.Y+32,size,size),_setup.Relations.Powered[ruler]);
             var name=_setup.ConquerorNames[ruler];
             _ui.Center(name,new(box.X+6,box.Bottom-33,box.Width-12,16),Math.Min(.32f,(box.Width-12)/_font.MeasureString(name).X),Cream);
-            string result=$"{entry.Cells} cells . Entry {ConquerorRelations.EntryNumber(ruler+1,_setup.ActiveCount)} / {ConquerorRelations.RankingScore(entry.Cells,ruler+1,_setup.ActiveCount)} points";
+            string result=$"{(_setup.Relations.Powered[ruler]?$"{entry.Cells} cells":"電池無し -100 pts")} . Entry {ConquerorRelations.EntryNumber(ruler+1,_setup.ActiveCount)} / {ConquerorRelations.RankingScore(entry.Cells,ruler+1,_setup.ActiveCount,_setup.Relations.Powered[ruler])} points";
             _ui.Center(result,new(box.X+6,box.Bottom-17,box.Width-12,16),Math.Min(.3f,(box.Width-12)/_font.MeasureString(result).X),Cream);
         }
         _ui.Button(InactiveBack,"ゲームへ戻る",Muted,.58f);

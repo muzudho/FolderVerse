@@ -54,7 +54,7 @@ public partial class Game1
         }
         foreach(var march in movement?_setup.Campaign.RobotBattles.LastMarches:Enumerable.Empty<(int Owner,int Source,int Target)>())
         {
-            var at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),PropagationTravel(march.Source,march.Target));
+            var at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),PropagationMarchTravel(march.Owner,march.Source,march.Target));
             DrawToySoldier(new((int)at.X-10,(int)at.Y-30,20,30),_setup.OwnerColor(march.Owner),false);
         }
         for(int owner=0;owner<_setup.ActiveCount;owner++)
@@ -63,7 +63,7 @@ public partial class Game1
             var node=_setup.Nodes.Current(owner);if(node==null)continue;
             var at=NodeAt(node.Id);
             var march=_setup.Campaign.RobotBattles.LastQueenMarches.FirstOrDefault(m=>m.Owner==owner);
-            if(movement && _setup.Campaign.RobotBattles.LastQueenMarches.Any(m=>m.Owner==owner))at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),PropagationTravel(march.Source,march.Target));
+            if(movement && _setup.Campaign.RobotBattles.LastQueenMarches.Any(m=>m.Owner==owner))at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),PropagationMarchTravel(march.Owner,march.Source,march.Target));
             _ui.Box(new((int)at.X-12,(int)at.Y-9,24,16),_setup.OwnerColor(owner));
             _ui.Box(new((int)at.X+12,(int)at.Y-5,4,8),Cream);
         }

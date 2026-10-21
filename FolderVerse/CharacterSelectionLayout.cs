@@ -34,9 +34,9 @@ public static class CharacterSelectionLayout
         return Pack(sides,counts.Take(activeCount).Select(n=>(double)n).Append(double.MaxValue).ToArray(),activeCount);
     }
     // Zero-cell rulers retain a minimal selectable portrait; positive areas use subtree cell totals.
-    public static OverviewTile[] CreateOverview(int[] counts){
+    public static OverviewTile[] CreateOverview(int[] counts,int[] ranks=null){
         if(counts.Length<1 || counts.Length>20 || counts.Any(n=>n<0))throw new ArgumentException("Invalid overview counts.");
-        var ranked=Enumerable.Range(0,counts.Length).OrderByDescending(i=>counts[i]).ThenByDescending(i=>i).ToArray();
+        var ranked=ranks==null?Enumerable.Range(0,counts.Length).OrderByDescending(i=>counts[i]).ThenByDescending(i=>i).ToArray():Enumerable.Range(0,counts.Length).OrderBy(i=>ranks[i]).ToArray();
         var weights=ranked.Select(i=>(double)Math.Max(1,counts[i])).ToArray();double total=weights.Sum();
         var targets=weights.Select(w=>4+(400-4*counts.Length)*w/total).ToArray();
         // Partition the entire 20x20 portrait region into rows of rectangles. Search integer

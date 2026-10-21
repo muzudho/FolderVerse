@@ -19,6 +19,7 @@ sealed class PropagationCheck:Game1
         var a=w.Nodes.All.First(n=>w.Routes.Neighbors(n).Length>0);
         var r=w.Routes.Neighbors(a)[0];var b=w.Nodes.At(r.Target,r.Entry);
         w.Campaign.RobotBattles.LastMarches.Add((0,a.Id,b.Id));
+        w.Campaign.RobotBattles.LastMarches.Add((1,b.Id,a.Id));
         var battle=new BattleState(1){SourceNode=a.Id,TargetNode=b.Id,Kind=BattleKind.Edge};
         for(int owner=0;owner<4;owner++)
         {
@@ -27,12 +28,23 @@ sealed class PropagationCheck:Game1
         }
         battle.Capture(BattlePhase.Choose);battle.Capture(BattlePhase.Result);
         w.Campaign.RobotBattles.Scenes.Add(battle);Call("OpenRobotBattle");
+        var travel=(Dictionary<(int Source,int Target),float>)Get("_propagationTravel");
+        foreach(float progress in new[]{0f,.5f,1f}){
+            travel[(a.Id,b.Id)]=travel[(b.Id,a.Id)]=progress;
+            float outbound=(float)Call("PropagationMarchTravel",0,a.Id,b.Id),inbound=(float)Call("PropagationMarchTravel",1,b.Id,a.Id);
+            Check(Math.Abs(outbound-progress*.5f)<.0001f && Math.Abs(inbound-progress*.5f)<.0001f,"Opposing edge forces advance to halfway and stop instead of crossing");
+            Check((bool)Call("PropagationBattleArrived",battle)==(progress==1),"Edge battle appears when forces reach the midpoint");
+            Check(Math.Abs((float)Call("PropagationMarchTravel",99,a.Id,b.Id)-progress)<.0001f,"Unrelated forces keep their full route");
+        }
+        travel[(a.Id,b.Id)]=travel[(b.Id,a.Id)]=0;
+        Console.WriteLine("PASS: opposing edge marches stop at midpoint, unrelated routes finish at their node, battlefield arrival timing.");
         Check(Get("_screen").ToString()=="Transport","Missing propagation before battle");
     }
     protected override void Update(GameTime time)
     {
         if(frame<5)typeof(Game1).GetField("_transportAge",Flags)!.SetValue(this,frame==4?4.99d:frame*.9d);
-        if(frame==5)Call("UpdateTransport",5d,false);
+        if(frame<5)Call("UpdatePropagationMovement",frame==4?20d:.9d);
+        if(frame==5)Call("UpdateTransport",5d,false,100d);
         if(frame==5){Check(Get("_screen").ToString()=="Battle","Propagation did not auto-enter battle");}
         if(frame==23 && !checkedNews)
         {
@@ -78,6 +90,7 @@ sealed class PropagationCheck:Game1
             Check(Vector2.Distance(at,new Vector2(540,540))<.1f,"Zoom badge does not align with battle center");
             var net=(CubeNet)Get("_propagationNet");var panel=new Rectangle(40,100,1840,860);float zoomed=net.Fit(panel).Scale;net.FitAll(panel);
             Check(Math.Abs(zoomed/net.Fit(panel).Scale-1000f/30)<.01f,"Zoom badge does not match 1000-pixel battle size");
+            if(Environment.GetCommandLineArgs().Contains("--movement-only")){Console.WriteLine("PASS: propagation playback reaches midpoint battlefield and zooms to its center.");Exit();return;}
         }
         if(frame==2 || frame>=5 && frame<23){var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);using var tex=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);tex.SetData(pixels);using var output=File.Create(Path.Combine(AppContext.BaseDirectory,frame>=5?$"newspaper-{4-(frame-5)/NewspaperProfiles.All.Length}-{(frame-5)%NewspaperProfiles.All.Length}.png":"propagation.png"));tex.SaveAsPng(output,tex.Width,tex.Height);}
         frame++;

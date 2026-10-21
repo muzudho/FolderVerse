@@ -15,6 +15,22 @@ public sealed partial class CubeNet
     public void AddGlobeRobotBadge(int node,Rectangle bounds)=>_robotBadges.Add(new(node,bounds,false));
     public int HitRobotBadge(Point pointer){if(_badgePanel.HasValue)pointer=UnrotateScreen(pointer,_badgePanel.Value);return _robotBadges.Where(b=>b.Bounds.Contains(pointer)).Select(b=>b.Node).DefaultIfEmpty(-1).First();}
     public const float RobotDetailScale=400;
+    public void DrawMapObjects(UiPainter ui,WorldSetup world,Rectangle panel,float pulse)
+    {
+        _badgePanel=null;
+        if(ShowRoutes)foreach(var cell in world.Cells)
+            DrawNodeMarkers(ui,world,cell.Id,p=>AnimatedSurfacePosition(cell.Id,p,world,panel),pulse);
+        DrawBatteries(ui,world,panel,r=>AnimatedSurfacePosition(world.ConquerorLocations[r],world.Routes.Position(world.ConquerorLocations[r],world.ConquerorPoints[r]),world,panel),pulse);
+        DrawRobotLayer(ui,world,panel,n=>AnimatedNodePosition(world,n,panel),Fit(panel).Scale);
+    }
+    public void DrawGlobeRobots(UiPainter ui,WorldSetup world,WorldPreview globe,Rectangle panel,float yaw,float pitch)
+    {
+        _badgePanel=null;
+        DrawRobotLayer(ui,world,panel,n=>{
+            var cell=world.Cells[n.Cell];
+            return globe.ProjectVisible(world.Routes.Position(n.Cell,n.Center),cell.Normal,yaw,pitch,panel,out var at)?at:null;
+        },1);
+    }
     // Even spacing around the node keeps its center and connected roads visible.
     public static Vector2 RobotRingSlot(int index,int count)
     {

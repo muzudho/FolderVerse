@@ -21,13 +21,15 @@ public partial class Game1
     private Vector3 _conquestEnvironment;
     private Quaternion _conquestFrom=Quaternion.Identity,_conquestTo=Quaternion.Identity;
     private static Rectangle ConquestGlobeArea{get{var r=ConquestMapSpace;return new(r.X+8,r.Y+28,r.Width-16,r.Height-36);}}
+    private static Rectangle ConquestSkipButton=>new(1680,1018,190,48);
     private ConquestPresentation.Card ConquestCard=>_conquestPresentation.Cards[_conquestCard];
     private double ConquestCardSeconds=>ConquestCard.Reminder?.8:_conquestTally.Duration;
     private void BeginConquestOverview(){
         if(!_conquestOverviewEnabled || _autoPlay || _conquestOverviewTurn==_setup.Population.Turn)return;
         _conquestOverviewTurn=_setup.Population.Turn;_conquestPresentation=new(_setup);_conquestCard=0;_conquestStage=0;_conquestAge=0;_conquestOverview=true;_conquestExitOpacity=1;
         _conquestRevealed.Clear();
-        _conquestTiles=CharacterSelectionLayout.CreateOverview(_setup.Relations.ProvisionalRanking(_setup).OrderBy(r=>r.Ruler).Select(r=>r.Cells).ToArray());
+        var ranking=_setup.Relations.ProvisionalRanking(_setup).OrderBy(r=>r.Ruler).ToArray();
+        _conquestTiles=CharacterSelectionLayout.CreateOverview(ranking.Select(r=>r.Cells).ToArray(),ranking.Select(r=>r.Rank).ToArray());
         _conquestGlobe??=new WorldPreview(GraphicsDevice);_conquestGlobe.ManualOrientation=null;_conquestGlobe.GlobeAnchor=null;_conquestGlobe.GlobeZoom=1;
         _conquestFrom=Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,0));SetConquestCard();PlayCurtain();
     }
@@ -120,7 +122,8 @@ public partial class Game1
         if(_conquestStage is 3 or 5)_ui.Box(new(0,0,1920,1080),Color.Black*(float)Math.Clamp(_conquestStage==3?1-_conquestAge/1.5:1-_conquestExitOpacity*(1-_conquestAge/1.5),0,1));
         _ui.Text("世界征服状況フェーズ",new(55,35),.7f,Cream);
         _ui.Center($"全体ターン {_setup.Population.Turn} / 征服者 {_setup.ActiveCount}人 / 敵 {Enumerable.Range(0,_setup.ActiveCount).Count(r=>!_setup.Relations.Allied(r,_setup.PlayerSlot))}人",new(580,35,950,45),.5f,Cream);
-        _ui.Text("Enter / Esc : 内政へ",new(1470,1020),.4f,Cream);
+        _ui.Text("Enter / Esc : 内政へ",new(1260,1020),.4f,Cream);
+        if(!_demoActive && _conquestStage<5)_ui.Button(ConquestSkipButton,"スキップ",Accent,.55f);
         if(_conquestStage<3 || _conquestStage>=6){
             float cover=_conquestStage switch{0=>(float)(_conquestAge/.65),1 or 7=>1,2 or 8=>1-(float)(_conquestAge/.65),6=>(float)(_conquestAge/.65),_=>0};
             DrawConquestCurtain(MathHelper.SmoothStep(0,1,Math.Clamp(cover,0,1)));

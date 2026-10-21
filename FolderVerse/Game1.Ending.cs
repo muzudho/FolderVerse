@@ -11,7 +11,7 @@ public partial class Game1
     private void StartEnding()
     {
         var winner=_setup.Relations.ProvisionalRanking(_setup)[0];
-        _endingWinner=winner.Ruler;_endingScore=ConquerorRelations.RankingScore(winner.Cells,winner.Ruler+1,_setup.ActiveCount);_endingCells=winner.Cells;_endingAge=0;
+        _endingWinner=winner.Ruler;_endingScore=ConquerorRelations.RankingScore(winner.Cells,winner.Ruler+1,_setup.ActiveCount,_setup.Relations.Powered[winner.Ruler]);_endingCells=winner.Cells;_endingAge=0;
         CloseMovement();_statusMenuOpen=false;_populationCell=-1;_mapTransitionAge=-1;_screen=Screen.Ending;
         _operations.Write("ending_started",new{winner=_endingWinner,cells=_endingCells,score=_endingScore,turn=_setup.Population.Turn});
     }

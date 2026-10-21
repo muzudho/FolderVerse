@@ -78,4 +78,7 @@ public partial class Game1
     }
     private float PropagationTravel(int source,int target)
         =>Microsoft.Xna.Framework.MathHelper.SmoothStep(0,1,_propagationTravel.GetValueOrDefault((source,target),1));
+    private float PropagationMarchTravel(int owner,int source,int target)=>PropagationTravel(source,target)*
+        (_robotScenes.Any(b=>b.Kind==BattleKind.Edge && b.Armies.Any(a=>a.Owner==owner) &&
+            (b.SourceNode==source && b.TargetNode==target || b.SourceNode==target && b.TargetNode==source))?.5f:1);
 }

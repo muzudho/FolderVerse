@@ -30,9 +30,17 @@ public partial class Game1
         var cellsBox=new Rectangle(x+30,y+65,130,62);var entryBox=new Rectangle(x+350,y+65,140,62);
         var pointsBox=new Rectangle(x+45,y+225,190,62);var rankBox=new Rectangle(x+308,y+225,175,62);
         _ui.Center("Entry No.",new(entryBox.X,y+30,entryBox.Width,28),.38f,Cream);
-        DrawConquestNumber(cellsBox,tally.TotalCells,cells);DrawConquestNumber(entryBox,tally.Entry,entry);
-        _ui.Center($"× {tally.Scale} +",new(x+170,y+65,170,62),.63f,Cream);
-        _ui.Center("cells",new(cellsBox.X,y+135,cellsBox.Width,28),.38f,Cream);
+        DrawConquestNumber(entryBox,tally.Entry,entry);
+        if(tally.Powered){
+            DrawConquestNumber(cellsBox,tally.TotalCells,cells);
+            _ui.Center($"× {tally.Scale} +",new(x+170,y+65,170,62),.63f,Cream);
+            _ui.Center("cells",new(cellsBox.X,y+135,cellsBox.Width,28),.38f,Cream);
+        }else if(cells){
+            _ui.Center("電池無し -100 pts",new(x+15,y+65,290,62),.43f,Cream);
+            _ui.Center("+",new(x+305,y+65,35,62),.63f,Cream);
+        }
+        if(cells && tally.SubordinateCells>0)
+            _ui.Center($"（内、手下 {tally.SubordinateCells} cells）",new(x+15,y+165,290,25),.30f,Cream);
         _ui.Center("暫定",new(rankBox.X,y+188,rankBox.Width,30),.45f,Cream);
         _ui.Center("=",new(x+5,y+225,35,62),.75f,Cream);
         DrawConquestNumber(pointsBox,tally.Score(age),score);DrawConquestNumber(rankBox,ConquestCard.Rank,rank);
