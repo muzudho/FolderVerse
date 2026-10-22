@@ -1,6 +1,6 @@
 {
   "CharacterId": 50,
-  "UpdatedAt": "2026-10-22T21:35:00+09:00",
+  "UpdatedAt": "2026-10-22T22:05:00+09:00",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018",
   "GameAdopted": false,
@@ -9,22 +9,25 @@
     {
       "Id": 1,
       "Kind": "normal",
-      "Source": "character-50-normal-1-v003-generated.png",
+      "Source": "character-50-normal-1-v004-generated.png",
       "Width": 1448,
       "Height": 1086,
-      "Sha256": "fa70cf125e6ac58b0a0fc713ce2ae96ea46fce91249226c2e7301254f136f925",
+      "Sha256": "9434e69785e82e3aa1ee4b4fa559f3b68263631a25b4b0426c2bf85a35b716c1",
       "References": [
         "art-source/portraits/characters/character-50/character-50-1-v003-generated.png",
         "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
-        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-normal-1-v002-generated.png"
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-normal-1-v002-generated.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/normal-1-eye-detail-v001-generated.png"
       ],
       "Prompts": [
         "character-50-normal-1-v001-prompt.txt",
         "character-50-normal-1-v002-prompt.txt",
-        "character-50-normal-1-v003-prompt.txt"
+        "character-50-normal-1-v003-prompt.txt",
+        "normal-1-eye-detail-v001-prompt.txt",
+        "character-50-normal-1-v004-prompt.txt"
       ],
-      "Status": "local-depth-improved-fullbody-runtime-preview-reviewed-not-adopted",
-      "Review": "v003 pale coolblue/lavender recessed hair planes near ear/neck/shoulder visible, golden foreground curls retained. Smallopen surprisedmouth blueeyes silverglasses hairornament costume armor battery reachingwhitegloved palm staffhead dynamic bentlegs palace retained. Wholehair/ornament/hem/bothshoes insideframe. Slightpaint/jewelry changes. 256x192 face/palm/battery/staffhead readable. Dynamic proportion/final style comparison pending.",
+      "Status": "eye-highlight-improved-preview-circle-reviewed-staged-not-adopted",
+      "Review": "v004 iris upper-right main/lower-left supplementary highlights improved; supplemental partly touches pale reflection. Surprise mouth glasses costume battery staffhead forward glove dynamic fullbody hem/both shoes preserved with minor jewelry/line differences. 256x192 and simulated circle face/battery/staffhead readable; outer palm cropped by circle as before. Not actual game UI verification.",
       "Trials": [
         {
           "Source": "character-50-normal-1-v001-generated.png",
@@ -58,10 +61,16 @@
           ],
           "Status": "IMPROVED_CANDIDATE_NOT_STAGED",
           "Review": "主白点が上右へ移動し、左下補助点を確認。ただし補助は淡青反射に接する。驚き口/眼鏡/青眼/金髪/衣装/電池/杖先/前掌/全身両靴保持。256x192で顔/掌/電池/杖先判別。装飾や衣装線の微差あり。"
+        },
+        {
+          "Source": "character-50-normal-1-v003-generated.png",
+          "Sha256": "fa70cf125e6ac58b0a0fc713ce2ae96ea46fce91249226c2e7301254f136f925",
+          "Review": "v003 pale coolblue/lavender recessed hair planes near ear/neck/shoulder visible, golden foreground curls retained. Smallopen surprisedmouth blueeyes silverglasses hairornament costume armor battery reachingwhitegloved palm staffhead dynamic bentlegs palace retained. Wholehair/ornament/hem/bothshoes insideframe. Slightpaint/jewelry changes. 256x192 face/palm/battery/staffhead readable. Dynamic proportion/final style comparison pending.",
+          "Status": "PREVIOUS_SELECTED_PRESERVED"
         }
       ],
       "Preview": {
-        "File": "normal-1-v003-preview.png",
+        "File": "normal-1-v004-preview.png",
         "Crop": {
           "X": 480,
           "Y": 40,
@@ -91,20 +100,20 @@
         "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
       },
       "FaceFrameReview": {
-        "Status": "FACE_READABLE_CIRCULAR_SIMULATION",
-        "Evidence": "audit-domestic-circle-v001.png",
-        "SourceCrop": {
+        "Status": "SIMULATED_CIRCLE_REVIEWED",
+        "Evidence": "normal-1-v004-circle.png",
+        "Crop": {
           "X": 32,
           "Y": 0,
           "Width": 192,
           "Height": 192
         },
-        "Note": "PortraitRenderer.FitSourceの正方形中央切出しを再現。円周は滑らかな楕円マスクの近似で実ゲーム2pxシザー帯とは差あり。通常2の机右端電池は円外、顔/パンダ主要部/ペン本は判別。通常1/6掌の外端も円で切れるが顔/電池を保持。"
+        "Note": "228px smooth circle approximation, not exact scissor strips or actual UI test. Face/glasses/battery/staffhead inside; outer palm partly outside."
       },
       "EyeAudit20261022": {
-        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
-        "Source": "character-50-normal-1-v003-generated.png",
-        "Evidence": "audit-current-eyes-v001.png",
+        "Status": "IMPROVED_REVIEWED",
+        "Source": "character-50-normal-1-v004-generated.png",
+        "Evidence": "normal-1-eye-review-v004.png",
         "CropRecord": "audit-current-eyes-v001-crops.json",
         "Finding": "上側主白点と小点を判別。小点は主に上側へ並び、反対斜め下の独立した補助円は不明瞭。",
         "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
@@ -113,7 +122,7 @@
         "Source": "character-50-normal-1-v004-generated.png",
         "Preview": "normal-1-v004-preview.png",
         "Evidence": "normal-1-eye-review-v004.png",
-        "Status": "IMPROVED_CANDIDATE_NOT_STAGED"
+        "Status": "SELECTED_STAGED_V017_NOT_GAME_ADOPTED"
       }
     },
     {
@@ -1245,5 +1254,5 @@
       }
     }
   ],
-  "Next": "Normal1 v004 iris-highlight candidate fullbody/eyes/256x192 reviewed. Supplemental small white touches pale reflection; not perfect compliance. Next circular face-frame check then stage verified candidate after v016 hash verification and backup. Then normal2 eye edit. idv005 selected; game0/20."
+  "Next": "Normal1 v004 circle reviewed, selected and staged both domestic/creation; manifest v017 20 hashes verified. Next normal2 eye-detail isolated edit then fullbody transfer preserving white gloves bluepen openbook panda and desk battery. idv005 selected; remaining12 scenes eye refinement pending; game0/20 adoption/build/distribution pending."
 }
