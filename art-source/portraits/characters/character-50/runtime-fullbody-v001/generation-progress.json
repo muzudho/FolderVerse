@@ -1,0 +1,1040 @@
+{
+  "CharacterId": 50,
+  "UpdatedAt": "2026-10-22T18:35:00+09:00",
+  "Method": "built-in image_gen",
+  "Standard": "v017-approved-20261018",
+  "GameAdopted": false,
+  "Backup": "backup-manifest.json",
+  "Images": [
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Source": "character-50-normal-1-v003-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "fa70cf125e6ac58b0a0fc713ce2ae96ea46fce91249226c2e7301254f136f925",
+      "References": [
+        "art-source/portraits/characters/character-50/character-50-1-v003-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-normal-1-v002-generated.png"
+      ],
+      "Prompts": [
+        "character-50-normal-1-v001-prompt.txt",
+        "character-50-normal-1-v002-prompt.txt",
+        "character-50-normal-1-v003-prompt.txt"
+      ],
+      "Status": "local-depth-improved-fullbody-runtime-preview-reviewed-not-adopted",
+      "Review": "v003 pale coolblue/lavender recessed hair planes near ear/neck/shoulder visible, golden foreground curls retained. Smallopen surprisedmouth blueeyes silverglasses hairornament costume armor battery reachingwhitegloved palm staffhead dynamic bentlegs palace retained. Wholehair/ornament/hem/bothshoes insideframe. Slightpaint/jewelry changes. 256x192 face/palm/battery/staffhead readable. Dynamic proportion/final style comparison pending.",
+      "Trials": [
+        {
+          "Source": "character-50-normal-1-v001-generated.png",
+          "Sha256": "0db3008d6a2f566da5e4295f669c7f4bd2c325cbd09243114e0df605af688f4c",
+          "Review": "Identity, open surprise expression, silverglasses, blueeyes, reachingwhiteglove, bluewhitegold outfit and blackyellowbattery retained. Shoes and lowerrobe added visibly; headhair/ornament touches/cuts topedge: fullbody requirement not met. Need pullback framing before candidate selection. Dynamicforeshortening prevents exactheadcount. Lowerclothes/shoes provisional."
+        },
+        {
+          "Source": "character-50-normal-1-v002-generated.png",
+          "Sha256": "74851eb15c263248f2cb7ec7d5469da04c45054cc94e5a34b43977232475c43d",
+          "Review": "v002 pulledback framing: entire hair ornaments/curls/ribbons/coathem/reachingglove/bothshoes visible with margins. Silverglasses blueeyes open surprisedmouth, bluewhitegold outfit and blackyellowlightningbattery retained. Dynamic tilted foreshortened pose: exact anatomical headcount not certified. Lowerclothing/shoes provisional. 256x192 crop face/glove/battery/staffhead readable; master retained."
+        }
+      ],
+      "Preview": {
+        "File": "normal-1-v003-preview.png",
+        "Crop": {
+          "X": 480,
+          "Y": 40,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Status": "visually-reviewed-face-hand-battery-readable"
+      },
+      "Audit20261022": {
+        "Status": "contact-sheet-review-not-final-approval",
+        "Note": "動的な前伸ばし掌・顔・電池を判別。曲げ脚のため直立縦頭身を適用しない。"
+      },
+      "StyleAudit": {
+        "Status": "LOCAL_DEPTH_IMPROVED_FINAL_REVIEW_PENDING",
+        "Evidence": "character-50-normal-1-v003-generated.png",
+        "Findings": "首肩後ろ髪に局所冷色。金髪/手前の掌/電池/杖先/全身保持。最終体格/画風比較待ち。"
+      },
+      "FinalComparison": {
+        "Status": "OVERVIEW_REVIEWED_DETAIL_AND_FACE_FRAME_PENDING",
+        "Evidence": [
+          "audit-14-masters-v002.png",
+          "audit-14-previews-v002.png"
+        ],
+        "Finding": "前伸ばし掌/顔/電池/杖先を判別。動的脚のため縦代理比を確定頭身にしない。",
+        "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      },
+      "FaceFrameReview": {
+        "Status": "FACE_READABLE_CIRCULAR_SIMULATION",
+        "Evidence": "audit-domestic-circle-v001.png",
+        "SourceCrop": {
+          "X": 32,
+          "Y": 0,
+          "Width": 192,
+          "Height": 192
+        },
+        "Note": "PortraitRenderer.FitSourceの正方形中央切出しを再現。円周は滑らかな楕円マスクの近似で実ゲーム2pxシザー帯とは差あり。通常2の机右端電池は円外、顔/パンダ主要部/ペン本は判別。通常1/6掌の外端も円で切れるが顔/電池を保持。"
+      }
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Source": "character-50-normal-2-v003-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "e9bcd6a5bc3427e3ea98a4dd57289b49a5fa157381c1750ddfab72643199aa68",
+      "References": [
+        "art-source/portraits/characters/character-50/character-50-2-v003-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-normal-2-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-50-normal-2-v001-prompt.txt",
+        "character-50-normal-2-v002-prompt.txt",
+        "character-50-normal-2-v003-prompt.txt"
+      ],
+      "Status": "local-depth-improved-fullbody-runtime-preview-reviewed-not-adopted",
+      "Review": "v003 fromv001 restricts cool accents to small recessed collar/shoulder contacts; lower chairside curls remain golden unlike rejectedv002. Openhappy mouth blueeyes silverglasses goldbluehairband whitegloved BLUEPEN writing OPENBOOK otherhand head PANDAgreenleaf BLUEyellowbattery library retained. Wholehair/ornament/hem/bothshoes fit. Minorpaint/jewelry variations. 256x192 face/pen/book/panda/battery readable; face relativelysmall to include props. Seatedproportion/finalstyle comparison pending.",
+      "Preview": {
+        "File": "normal-2-v003-preview.png",
+        "Crop": {
+          "X": 450,
+          "Y": 20,
+          "Width": 800,
+          "Height": 600
+        },
+        "Width": 256,
+        "Height": 192,
+        "Status": "visually-reviewed"
+      },
+      "Audit20261022": {
+        "Status": "contact-sheet-review-not-final-approval",
+        "Note": "顔/ペン/本/パンダ/電池を判別。机下の股関節は隠れ、座位の骨格ガイド必要。"
+      },
+      "StyleAudit": {
+        "Status": "LOCAL_DEPTH_IMPROVED_FINAL_REVIEW_PENDING",
+        "Evidence": "character-50-normal-2-v003-generated.png",
+        "Findings": "v002の広範囲冷色を避け元v001から小範囲再修正。首襟/肩甲付近へ小さな冷色、下髪は金髪維持。最終体格/画風比較待ち。"
+      },
+      "Trials": [
+        {
+          "Source": "character-50-normal-2-v002-generated.png",
+          "Sha256": "020198814af9e1bc1c51d14735c043d6d11f1c8238489a35e79f43dd91b4585e",
+          "Prompt": "character-50-normal-2-v002-prompt.txt",
+          "Reference": "character-50-normal-2-v001-generated.png",
+          "Preview": "normal-2-v002-preview.png",
+          "Status": "NOT_SELECTED_EFFECT_TOO_BROAD",
+          "Review": "Wholehair/ornament/hem/bothshoes and openhappy mouth silverglasses bluepen openbook whitegloves panda greenleaf BLUEyellowbattery library retained;256x192 readable. Coolblue/lavender planes spread through curls behind head and down lowerhair beside chair/desk, exceeding small neck/shoulder/upperarm boundary target. Keep v001 selected; retry narrower region using original v001, not accumulate edit."
+        },
+        {
+          "Source": "character-50-normal-2-v001-generated.png",
+          "Sha256": "43190397ce2cca4d4d19fe673fe1b4e59be190d652f99427a90b74ff70d54805",
+          "Review": "Fullhair/headornament/coathem/bothshoes visible withinframe. Openhappy eyes/mouth, silverglasses, blondecurls, bluewhitegold uniform, whitegloved bluepen writingopenbook, panda greenleaf and blueyellowlightningbattery/library retained. Seated crossedlegs coherent visually; anatomy underdesk/foreshortening not exactheadcount certified. Otherhand supportshead, loweroutfit/shoes provisional. 256x192 face/pen/book/panda/battery readable; face somewhatsmall, finalcomparativeaudit pending."
+        }
+      ],
+      "FinalComparison": {
+        "Status": "OVERVIEW_REVIEWED_DETAIL_AND_FACE_FRAME_PENDING",
+        "Evidence": [
+          "audit-14-masters-v002.png",
+          "audit-14-previews-v002.png"
+        ],
+        "Finding": "顔は他通常より小さめだがペン/本/パンダ/電池を同時判別。机下の骨格は隠れる。",
+        "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      },
+      "FaceFrameReview": {
+        "Status": "FACE_READABLE_CIRCULAR_SIMULATION",
+        "Evidence": "audit-domestic-circle-v001.png",
+        "SourceCrop": {
+          "X": 32,
+          "Y": 0,
+          "Width": 192,
+          "Height": 192
+        },
+        "Note": "PortraitRenderer.FitSourceの正方形中央切出しを再現。円周は滑らかな楕円マスクの近似で実ゲーム2pxシザー帯とは差あり。通常2の机右端電池は円外、顔/パンダ主要部/ペン本は判別。通常1/6掌の外端も円で切れるが顔/電池を保持。"
+      }
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Status": "local-depth-improved-fullbody-runtime-preview-reviewed-not-adopted",
+      "References": [
+        "art-source/portraits/characters/character-50/character-50-3-v003-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-normal-3-v003-generated.png"
+      ],
+      "Prompts": [
+        "character-50-normal-3-v001-prompt.txt",
+        "character-50-normal-3-v002-prompt.txt",
+        "character-50-normal-3-v003-prompt.txt",
+        "character-50-normal-3-v004-prompt.txt"
+      ],
+      "Review": "v004 tiny coolblue/lavender recessed slivers at neck/collar/shoulder contacts visible, golden lower/foreground curls retained. Thoughtful closed smile blueeyes silverglasses hairornaments outfit battery BLACKGOLD FINGERLESSgloves bareindexchin otherhand OPENBOOK sofa library retained. Wholehair/ornament/hem/bothshoes fit. Small originalstyle upperthighgap remains; this edit does not resolve it. Minorpaint/jewelry changes. 256x192 face/chinhand/book/battery readable. Finalstyle/seatedproportion comparison pending.",
+      "PreviousFailures": [
+        {
+          "Failure": {
+            "Tool": "built-in image_gen",
+            "Http": 400,
+            "Code": "moderation_blocked",
+            "Stage": "output",
+            "Category": "sexual",
+            "RequestId": "de353d53-55c1-433e-bad8-47341f4d1c8e",
+            "OutputSaved": false
+          },
+          "Review": "Original visually inspected: closed thoughtful smile openblueeyes silverglasses blonde curls, black fingerless gloves bareindexchin, otherhand onopenbook, blackyellow chestbattery, navygoldsofa warm library. No generated output available, no visual review/adoption.",
+          "Prompt": "character-50-normal-3-v001-prompt.txt"
+        }
+      ],
+      "Source": "character-50-normal-3-v004-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "f498ad49002ea71bfefd4c9b38690dd1c78a04483105f9c53ef7c82f8e00497f",
+      "Trials": [
+        {
+          "Source": "character-50-normal-3-v002-generated.png",
+          "Sha256": "254059cbe9755746e31cb81d46fc211618b24b4ab77eb58d90bc73b5ba0a6640",
+          "Review": "Generated successfully but top hair/ornament clipped."
+        },
+        {
+          "Source": "character-50-normal-3-v003-generated.png",
+          "Sha256": "ac6a76922ea28b27971d96bcb4d8ab5263bb58529cceb295f37837463968b70e",
+          "Review": "Builtin generation successful. v003 pulledback fullhair/ornaments/curls/hem/bothshoes withinframe. Thoughtful closedsmile openblueeyes silverglasses blondehair pointedears outfit shoulderarmor blackyellowbattery blackgoldfingerless gloves bareindexchin otherhand openbook navygoldsofa warm library preserved. Whitelegwear upper continuation instruction not fully achieved: small original-style thighgap remains, record accurately. Seated proportions not exactcertified, allscene style/anatomy audit pending. 256x192 face/hand/book/battery readable."
+        }
+      ],
+      "Preview": {
+        "File": "normal-3-v004-preview.png",
+        "Crop": {
+          "X": 440,
+          "Y": 130,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Status": "visually-reviewed"
+      },
+      "Audit20261022": {
+        "Status": "contact-sheet-review-not-final-approval",
+        "Note": "顎の指/黒手袋/本/電池を判別。座位ガイド必要。"
+      },
+      "StyleAudit": {
+        "Status": "LOCAL_DEPTH_IMPROVED_FINAL_REVIEW_PENDING",
+        "Evidence": "character-50-normal-3-v004-generated.png",
+        "Findings": "首襟/肩甲の交差部へ小範囲冷色、下髪金色維持。顎の指/黒指なし手袋/本/全身保持。最終体格/画風比較待ち。"
+      },
+      "FinalComparison": {
+        "Status": "OVERVIEW_REVIEWED_DETAIL_AND_FACE_FRAME_PENDING",
+        "Evidence": [
+          "audit-14-masters-v002.png",
+          "audit-14-previews-v002.png"
+        ],
+        "Finding": "顔/顎の指/黒手袋/本/電池を判別。上腿の小さな既存隙間は残る。",
+        "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      },
+      "FaceFrameReview": {
+        "Status": "FACE_READABLE_CIRCULAR_SIMULATION",
+        "Evidence": "audit-domestic-circle-v001.png",
+        "SourceCrop": {
+          "X": 32,
+          "Y": 0,
+          "Width": 192,
+          "Height": 192
+        },
+        "Note": "PortraitRenderer.FitSourceの正方形中央切出しを再現。円周は滑らかな楕円マスクの近似で実ゲーム2pxシザー帯とは差あり。通常2の机右端電池は円外、顔/パンダ主要部/ペン本は判別。通常1/6掌の外端も円で切れるが顔/電池を保持。"
+      }
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Source": "character-50-normal-4-v003-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "8011a1868b0228f0b4af5f327fec224a0e3cf7ac6c08b2e7bff5eac150f3536f",
+      "References": [
+        "art-source/portraits/characters/character-50/character-50-4-v003-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-normal-4-v002-generated.png"
+      ],
+      "Prompts": [
+        "character-50-normal-4-v001-prompt.txt",
+        "character-50-normal-4-v002-prompt.txt",
+        "character-50-normal-4-v003-prompt.txt"
+      ],
+      "Status": "local-depth-improved-fullbody-runtime-preview-reviewed-not-adopted",
+      "Review": "v003 small coolblue/lavender recessed hair slivers at neck/robe shoulder contacts visible; foreground/lower golden curls retained. Gentleclosed smile blueeyes silverglasses pointedears earrings WHITE fluffyhoodrobe longsleepdress BAREhands lapel/lap blackyellow UPPERARMbattery snowflakecushions snowywindow retained. Entirehoodtop/hair/robehem/bothslippers fit. Slightpainting variations. 256x192 hood/face/hands/battery readable. Finalstyle/coveredseatedproportion comparison pending.",
+      "Trials": [
+        {
+          "Source": "character-50-normal-4-v001-generated.png",
+          "Sha256": "ab068abc0d89978657c3ec9107cab0cabd37575836db544fc5ae60786079d291",
+          "Review": "Gentle closedsmile openblueeyes silverglasses blondehair pointedears white fluffyhood robe barehands lapel/lap blackyellow upperarmbattery snowflakecushions snowywindow retained. Long opaque sleepdress/slippers provisional lowercompletion; original innerdress extended and more covered. Bothslippers/robehem visible but hoodtop touches/cuts topedge. Need pullback before selection/cropreview; no runtime adoption. Seated/clothed anatomy not exactcertified."
+        },
+        {
+          "Source": "character-50-normal-4-v002-generated.png",
+          "Sha256": "c6c7e5025a3efaa29d1a71c74f265f8db0044c8177e274775961cbddb81d2eea",
+          "Review": "Pulledback v002 completehoodtop with ~100px background above, allhair/robehem/bothslippers insideframe. Gentleclosed smile openblueeyes silverglasses pointedears whitehoodrobe longsleepdress barehands lapel/lap and upperarmyellowbattery preserved. Original loweroutfit extended/provisional. 256x192 crop hood/face/bothhands/battery readable. Seated covered anatomy no exactheadcount certification. Candidate not runtime adopted."
+        }
+      ],
+      "Preview": {
+        "File": "normal-4-v003-preview.png",
+        "Crop": {
+          "X": 440,
+          "Y": 90,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Status": "visually-reviewed-face-hands-battery"
+      },
+      "Audit20261022": {
+        "Status": "contact-sheet-review-not-final-approval",
+        "Note": "フード/顔/素手/上腕電池を判別。ローブ下の脚は推定困難。"
+      },
+      "StyleAudit": {
+        "Status": "LOCAL_DEPTH_IMPROVED_FINAL_REVIEW_PENDING",
+        "Evidence": "character-50-normal-4-v003-generated.png",
+        "Findings": "首/ローブ肩との髪交差部へ小範囲冷色。前景・下髪金色と白フード/素手/上腕電池/全身保持。最終比較待ち。"
+      },
+      "FinalComparison": {
+        "Status": "OVERVIEW_REVIEWED_DETAIL_AND_FACE_FRAME_PENDING",
+        "Evidence": [
+          "audit-14-masters-v002.png",
+          "audit-14-previews-v002.png"
+        ],
+        "Finding": "白フード/素手/上腕電池を判別。長いローブで脚関節は隠れる。",
+        "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      },
+      "FaceFrameReview": {
+        "Status": "FACE_READABLE_CIRCULAR_SIMULATION",
+        "Evidence": "audit-domestic-circle-v001.png",
+        "SourceCrop": {
+          "X": 32,
+          "Y": 0,
+          "Width": 192,
+          "Height": 192
+        },
+        "Note": "PortraitRenderer.FitSourceの正方形中央切出しを再現。円周は滑らかな楕円マスクの近似で実ゲーム2pxシザー帯とは差あり。通常2の机右端電池は円外、顔/パンダ主要部/ペン本は判別。通常1/6掌の外端も円で切れるが顔/電池を保持。"
+      }
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Source": "character-50-normal-5-v004-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "4b89d9c106cd11a481bf54fac78f518ca7ce362484f1b9952ef54bab719f4bae",
+      "References": [
+        "art-source/portraits/characters/character-50/character-50-5-v003-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-normal-5-v003-generated.png"
+      ],
+      "Prompts": [
+        "character-50-normal-5-v001-prompt.txt",
+        "character-50-normal-5-v002-prompt.txt",
+        "character-50-normal-5-v003-prompt.txt",
+        "character-50-normal-5-v004-prompt.txt"
+      ],
+      "Status": "local-depth-improved-fullbody-runtime-preview-reviewed-not-adopted",
+      "Review": "v004 small coolblue/lavender recessed hair contacts at backneck/shoulder armor visible, golden outer/lower curls retained. Lookingback closedsmile blueeyes silverglasses goldblueornaments costume layeredgoldshoulderarmor goldblackbracer upperbackbattery checkeredflags balloons retained. Entirehair/ornament/hem/bothshoes fit. Slightpaintchanges. 256x192 face/glasses/armor/battery readable. Final proportion/style comparison pending.",
+      "Trials": [
+        {
+          "Source": "character-50-normal-5-v001-generated.png",
+          "Sha256": "3559332a54569de4a1d8893c2b916a5dca2c312cc4fd5cdf3dc4564df62f28f5",
+          "Review": "Tophair/ornament cut, framing rejected."
+        },
+        {
+          "Source": "character-50-normal-5-v002-generated.png",
+          "Sha256": "488967f605b5db2961179d7d8c562c4feec6b9d588f32c38971b643951e83708",
+          "Review": "v001 topornament cropped; v002 pullsback completehair/ornament/hem/bothshoes with margins. Lookingback closedsmile blueeyes silverglasses, blondehair bluewhitegold costume goldshoulderarmor/wristbracer, blackyellow upperbackbattery, balloons/checkeredflags retained. Body appears tall relativehead; anatomical proportion audit/correction pending, do not certify5.5-6. Lowerclothes/shoes provisional. 256x192 face/glasses/shoulderarmor/battery readable; relaxedhand belowcrop."
+        },
+        {
+          "Source": "character-50-normal-5-v003-generated.png",
+          "Sha256": "7ad10bd5f73bb0b7c39e38283581399084286e17410429eea952dddcd48f24d5",
+          "Review": "v003 head visibly enlarged relativebody vsv002, shortneck maintained, turningclosed smile blueeyes silverglasses goldshoulderarmor wristbracer blackyellowupperbackbattery retained. Entirehair/ornament/hem/bothshoes fit with sky margin ~60px. Manual anatomicalcrown underhair and tiltedchin ambiguous: no exactheadcount certified; prompt coordinates not achieved literally. Body/head balance improved visually, finalallsceneaudit pending. 256x192 face/glasses/armor/battery readable. Loweroutfit provisional."
+        }
+      ],
+      "Preview": {
+        "File": "normal-5-v004-preview.png",
+        "Crop": {
+          "X": 500,
+          "Y": 50,
+          "Width": 560,
+          "Height": 420
+        },
+        "Width": 256,
+        "Height": 192,
+        "Status": "visually-reviewed-face-armor-battery"
+      },
+      "Audit20261022": {
+        "Status": "contact-sheet-review-not-final-approval",
+        "Note": "振り返り顔/肩甲/上背電池を判別。傾いた頭蓋と踵の別途ガイド必要。"
+      },
+      "StyleAudit": {
+        "Status": "LOCAL_DEPTH_IMPROVED_FINAL_REVIEW_PENDING",
+        "Evidence": "character-50-normal-5-v004-generated.png",
+        "Findings": "首後ろ/肩甲の交差部へ小範囲冷色、金髪維持。振り返り/肩甲/上背電池/全身保持。最終比較待ち。"
+      },
+      "FinalComparison": {
+        "Status": "OVERVIEW_REVIEWED_DETAIL_AND_FACE_FRAME_PENDING",
+        "Evidence": [
+          "audit-14-masters-v002.png",
+          "audit-14-previews-v002.png"
+        ],
+        "Finding": "振り返り顔/肩甲/上背電池を判別。傾きのある頭を縦比のみで認定しない。",
+        "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      },
+      "FaceFrameReview": {
+        "Status": "FACE_READABLE_CIRCULAR_SIMULATION",
+        "Evidence": "audit-domestic-circle-v001.png",
+        "SourceCrop": {
+          "X": 32,
+          "Y": 0,
+          "Width": 192,
+          "Height": 192
+        },
+        "Note": "PortraitRenderer.FitSourceの正方形中央切出しを再現。円周は滑らかな楕円マスクの近似で実ゲーム2pxシザー帯とは差あり。通常2の机右端電池は円外、顔/パンダ主要部/ペン本は判別。通常1/6掌の外端も円で切れるが顔/電池を保持。"
+      }
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Source": "character-50-normal-6-v003-generated.png",
+      "Width": 1448,
+      "Height": 1086,
+      "Sha256": "bd19133df38c00c2b9c10863016ade3939416b64580bf73e359a9a737111cd43",
+      "References": [
+        "art-source/portraits/characters/character-50/character-50-6-v003-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-normal-6-v002-generated.png"
+      ],
+      "Prompts": [
+        "character-50-normal-6-v001-prompt.txt",
+        "character-50-normal-6-v002-prompt.txt",
+        "character-50-normal-6-v003-prompt.txt"
+      ],
+      "Status": "local-depth-improved-fullbody-runtime-preview-reviewed-not-adopted",
+      "Review": "v003 coolblue/lavender recessed neck/shoulder hair contacts visible, foreground/lower golden curls retained. Openexcitedsmile blueeyes silverglasses ornaments costume armor battery reachingwhitegloved palm oppositewhiteglovedarmback dynamicbentlegs palace petals retained. Entirehair/ornament/hem/bothshoes fit. Slightpaintvariations. 256x192 face/bothhands/battery readable. Finalstyle/dynamicproportion comparison pending.",
+      "Trials": [
+        {
+          "Source": "character-50-normal-6-v001-generated.png",
+          "Sha256": "3d2cfab5f4f2c35a4e4b0e994dd0b9565a0138d717aa3519c96e727519ff1cba",
+          "Review": "Tophair atedge, framing corrected inv002."
+        },
+        {
+          "Source": "character-50-normal-6-v002-generated.png",
+          "Sha256": "ab98951c7461fb8867075e75c6b8ac40d99631633b7982fe8b2d89693cee31a3",
+          "Review": "v001 top hair touchededge, v002 pullback completehair/ornaments/bothwhiteglovedhands/hem/bothshoes with margins. Openexcitedmouth/openblueeyes silverglasses, blondecurls bluewhitegold uniform goldarmor chains gems blackyellowbattery retained, palacewhitepetals. Dynamic bentknees and perspective: exactheadcount not certified; bodybalance finalaudit pending. 256x192 face/reachingpalm/backhand/battery readable. Lowerclothing/shoes provisional."
+        }
+      ],
+      "Preview": {
+        "File": "normal-6-v003-preview.png",
+        "Crop": {
+          "X": 430,
+          "Y": 90,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Status": "visually-reviewed-face-bothhands-battery"
+      },
+      "Audit20261022": {
+        "Status": "contact-sheet-review-not-final-approval",
+        "Note": "笑顔/前伸ばし掌/後ろ手/電池を判別。動的遠近のため縦比のみで判定しない。"
+      },
+      "StyleAudit": {
+        "Status": "LOCAL_DEPTH_IMPROVED_FINAL_REVIEW_PENDING",
+        "Evidence": "character-50-normal-6-v003-generated.png",
+        "Findings": "首肩交差部へ冷色、金髪維持。笑顔/手前掌/後ろ腕/電池/全身保持。最終比較待ち。"
+      },
+      "FinalComparison": {
+        "Status": "OVERVIEW_REVIEWED_DETAIL_AND_FACE_FRAME_PENDING",
+        "Evidence": [
+          "audit-14-masters-v002.png",
+          "audit-14-previews-v002.png"
+        ],
+        "Finding": "笑顔/両掌/電池を判別。動的遠近のある脚。",
+        "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      },
+      "FaceFrameReview": {
+        "Status": "FACE_READABLE_CIRCULAR_SIMULATION",
+        "Evidence": "audit-domestic-circle-v001.png",
+        "SourceCrop": {
+          "X": 32,
+          "Y": 0,
+          "Width": 192,
+          "Height": 192
+        },
+        "Note": "PortraitRenderer.FitSourceの正方形中央切出しを再現。円周は滑らかな楕円マスクの近似で実ゲーム2pxシザー帯とは差あり。通常2の机右端電池は円外、顔/パンダ主要部/ペン本は判別。通常1/6掌の外端も円で切れるが顔/電池を保持。"
+      }
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Source": "character-50-formal-v004-generated.png",
+      "Width": 1024,
+      "Height": 1536,
+      "Sha256": "cde2e7e05754693b30e36ea629323418fff79904353dd91d8d1531f4f7453c37",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-50-formal-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-formal-v003-generated.png"
+      ],
+      "Prompts": [
+        "character-50-formal-v001-prompt.txt",
+        "character-50-formal-v002-prompt.txt",
+        "character-50-formal-v003-prompt.txt",
+        "character-50-formal-v004-prompt.txt"
+      ],
+      "Status": "local-depth-improved-fullbody-grayscale-reviewed-not-adopted",
+      "Review": "v004 adds pale blue/lavender recessed hair boundary planes at neck/shoulder/upperarm overlaps, golden foreground curls retained. Tilted closed smile blueeyes silverglasses laurel diamonds highcollar costume chains gems chestbattery claspedwhitegloves palace banners and fullhair/hem/bothshoes retained. Fine jewelry/paint varies slightly. 300x400 grayscale face/glasses/battery readable, hands partly cropped as before. Localdepth improved; final overall style/proportion comparison remains.",
+      "Preview": {
+        "File": "formal-v004-preview.png",
+        "Grayscale": "formal-v004-preview-gray.png",
+        "Crop": {
+          "X": 270,
+          "Y": 40,
+          "Width": 480,
+          "Height": 640
+        },
+        "Width": 300,
+        "Height": 400,
+        "Status": "grayscale-visually-reviewed"
+      },
+      "Trials": [
+        {
+          "Source": "character-50-formal-v002-generated.png",
+          "Sha256": "6e045429b1cd5a80f27379db13f9a7798ed399d3fbfe9c3c64ee33ac2ade4110",
+          "Prompt": "character-50-formal-v002-prompt.txt",
+          "References": [
+            "character-50-formal-v001-generated.png"
+          ],
+          "Review": "Explicit head/heel layout requested. Output retained fullbody identity costume but head/body change too small, still elongated. Requested coordinates not achieved. Not selected, v001 remains reference candidate; proportion correction unresolved."
+        },
+        {
+          "Source": "character-50-formal-v001-generated.png",
+          "Sha256": "6a4b63d49c1962a497b3d564d4b6a9d3bed5ef8a6424f9d730fde9f88ac1b758",
+          "Review": "Wholelaurelhairornament/ringlets/coathem/shoes withinframe. Gentleclosedsmile slighttilt blueeyes silverglasses goldblue laureldiamondornaments/earrings highcollar bluewhitegold formalcostume blackyellowbattery preserved. Body visibly elongated relativehead, needheadproportion correction before adoption. Whitegloved claspedhands andloweroutfit are provisional originaloutsideframe. 300x400 grayscale face/glasses/earrings/collar/battery readable."
+        },
+        {
+          "Source": "character-50-formal-v003-generated.png",
+          "Sha256": "87dd765585bccdf1f4dc9efd0a61a8bdbabf97ee05ec58972f67a9a18ee8f2c3",
+          "Review": "v003 modest headsize increase and shortneck vs v001, retains silverglasses blueeyes blonde ringlets laurelgems earrings closed smile highcollar coatdress chestbattery claspedwhitegloves. Fullhair/hem/shoes insideframe. Inferred crown underhair around(520,95),chin(510,315),humanheelinside rearshoe(470,1400): verticalguide approx5.93, tiltedhead/hidden skull/heel +/-15px uncertain, not exactcertification. 300x400 grayscale face/glasses/collar/battery readable. Candidate finalallsceneaudit pending, lowercompletion provisional."
+        }
+      ],
+      "AnatomicalGuide": {
+        "Method": "Manual inferred skull underhair, tiltedchin and humanheel inside rearshoe; guide only",
+        "SkullCrown": {
+          "X": 520,
+          "Y": 95
+        },
+        "Chin": {
+          "X": 510,
+          "Y": 315
+        },
+        "AnatomicalHeel": {
+          "X": 470,
+          "Y": 1400
+        },
+        "VerticalHeadCount": 5.93,
+        "Uncertainty": "Approx15px skull/heel; tilt; not user approval"
+      },
+      "Audit20261022": {
+        "Status": "contact-sheet-review-not-final-approval",
+        "Note": "顔/眼鏡/襟/電池を白黒判別。既存推定5.93ガイドは誤差付き。"
+      },
+      "StyleAudit": {
+        "Status": "LOCAL_DEPTH_IMPROVED_FINAL_REVIEW_PENDING",
+        "Evidence": "character-50-formal-v004-generated.png",
+        "Findings": "首肩・上腕と重なる後ろ髪に淡い局所青紫を目視。前景金髪/全身/本人特徴保持。最終体格・瞳・セル影比較待ち。"
+      },
+      "FinalComparison": {
+        "Status": "OVERVIEW_REVIEWED_DETAIL_AND_FACE_FRAME_PENDING",
+        "Evidence": [
+          "audit-14-masters-v002.png",
+          "audit-14-previews-v002.png"
+        ],
+        "Finding": "白黒で顔/眼鏡/電池を判別、手は一部切出し外。",
+        "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      }
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Source": "character-50-election-v003-generated.png",
+      "Width": 1024,
+      "Height": 1536,
+      "Sha256": "5dc57a75d31672eac3534791474efabf891673f5e7266a6db3cebbcd5ab377a2",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-50-election-v001-generated.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-formal-v003-generated.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-election-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-50-election-v001-prompt.txt",
+        "character-50-election-v002-prompt.txt",
+        "character-50-election-v003-prompt.txt"
+      ],
+      "Status": "local-depth-improved-fullbody-grayscale-reviewed-not-adopted",
+      "Review": "v003 local pale blue/lavender recessed curl boundaries behind neck, shoulders and upperarms visible; golden foreground curls and all lengths retained. Tilted closed smile blueeyes silverglasses laurel diamonds highcollar costume battery whitegloved claspedhands bluebackground and whole ornament/hem/both shoes retained. Small jewelry/paint changes, not pixel-identical. 300x400 grayscale face/glasses/battery/hands readable. This edit addresses localdepth, not a successful proportion correction; final comparison remains.",
+      "Preview": {
+        "File": "election-v003-preview.png",
+        "Grayscale": "election-v003-preview-gray.png",
+        "Crop": {
+          "X": 260,
+          "Y": 0,
+          "Width": 510,
+          "Height": 680
+        },
+        "Width": 300,
+        "Height": 400,
+        "Status": "grayscale-visually-reviewed"
+      },
+      "Trials": [
+        {
+          "Source": "character-50-election-v002-generated.png",
+          "Sha256": "9ba67c52888009102731bb5f51cbe5e0515903ea0f9576e45f42aaedeb59ff17",
+          "Prompt": "character-50-election-v002-prompt.txt",
+          "Review": "Fullbody and identity retained but head/body proportion change too small to resolve correction. Not selected; v001 remains candidate. Do not claim requested ratio achieved."
+        },
+        {
+          "Source": "character-50-election-v001-generated.png",
+          "Sha256": "3ddaeb8830cf54922c63737deb4df15e151f501a8635189d8433a7fbab3ce8da",
+          "Review": "Entire hair/laurel/curls/hem/both shoes within frame. Open blue eyes silver glasses closed smile tilted head goldblue laurel/earrings high collar bluewhitegold costume chest blackyellow battery and plain lightblue background retained. Whitegloved claspedhands/lower costume provisional sameperson continuation. Head appears slightly small relativebody; final proportion audit required, no exact headcount certification. 300x400 grayscale face/glasses/collar/battery readable; wrist partly cropped in preview, master complete."
+        }
+      ],
+      "Audit20261022": {
+        "Status": "contact-sheet-review-not-final-approval",
+        "Note": "顔/眼鏡/電池を白黒判別。頭が小さく見える記録あり、v002微差。髪を除く頭蓋と踵の再測定を先に行う。"
+      },
+      "StyleAudit": {
+        "Status": "LOCAL_DEPTH_IMPROVED_FINAL_REVIEW_PENDING",
+        "Evidence": "character-50-election-v003-generated.png",
+        "Findings": "首肩・上腕の後ろ髪境界に局所冷色を目視。前景金髪/全身保持。最終体格・瞳・セル影比較待ち。"
+      },
+      "FinalComparison": {
+        "Status": "OVERVIEW_REVIEWED_DETAIL_AND_FACE_FRAME_PENDING",
+        "Evidence": [
+          "audit-14-masters-v002.png",
+          "audit-14-previews-v002.png"
+        ],
+        "Finding": "白黒で顔/眼鏡/電池を判別。体格v002修正未達の履歴は残し、成功扱いにしない。",
+        "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      }
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Source": "character-50-friends-v002-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "908acb5c46aa42f007176fca640000e6523e81bc0d27cd79a2a9f9247a5ca464",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-50-friends-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-friends-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-50-friends-v001-prompt.txt",
+        "character-50-friends-v002-prompt.txt"
+      ],
+      "Status": "local-depth-improved-fullbody-grayscale-reviewed-not-adopted",
+      "Review": "v002 narrow pale cool blue/lavender backhair planes near neck/shoulders/upperarms visible. Golden foreground curls all lengths retained. Open happy mouth blueeyes silverglasses pointedears laurel earrings costume battery both whitegloved hands teacup seated crossedlegs garden cakes retained. Whole ornament/hem/bothshoes inside. Small paint/jewelry changes occur. 300x400 grayscale face/glasses/teacup/bothhands/battery readable. Seated proportions and final style comparison pending.",
+      "Preview": {
+        "File": "friends-v002-preview.png",
+        "Grayscale": "friends-v002-preview-gray.png",
+        "Crop": {
+          "X": 300,
+          "Y": 40,
+          "Width": 480,
+          "Height": 640
+        },
+        "Width": 300,
+        "Height": 400,
+        "Status": "grayscale-visually-reviewed"
+      },
+      "Audit20261022": {
+        "Status": "contact-sheet-review-not-final-approval",
+        "Note": "顔/白手袋/カップ/電池を白黒判別。座位膝下が長く見え骨格ガイド必要。"
+      },
+      "StyleAudit": {
+        "Status": "LOCAL_DEPTH_IMPROVED_FINAL_REVIEW_PENDING",
+        "Evidence": "character-50-friends-v002-generated.png",
+        "Findings": "首肩・上腕の後ろ髪へ局所冷色。前景金髪/全身/本人表情・茶器を保持。最終体格/画風比較待ち。"
+      },
+      "Trials": [
+        {
+          "Source": "character-50-friends-v001-generated.png",
+          "Sha256": "8572274442f8d4074b0e603d0924e4bbd752ef05af020a91576c9f6514a527a4",
+          "Review": "Entire laurel/hair curls/coathem/both shoes within margins. Happy open smile openblueeyes silverglasses pointedears bluewhitegold costume chestbattery and both whitegloved hands holding goldwhite teacup retained. Garden palace flowers tea cakes/berries retained. Chair/seated lowerbody opaque whitelegwear/shoes provisional continuation. Bent seated anatomy no exact headcount certification; final allscene proportion/style audit pending. 300x400 grayscale face/glasses/cup/both hands/battery readable."
+        }
+      ],
+      "FinalComparison": {
+        "Status": "OVERVIEW_REVIEWED_DETAIL_AND_FACE_FRAME_PENDING",
+        "Evidence": [
+          "audit-14-masters-v002.png",
+          "audit-14-previews-v002.png"
+        ],
+        "Finding": "白黒で開いた笑い口/両手/茶器/電池を判別。座位。",
+        "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      }
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Source": "character-50-history-v003-generated.png",
+      "Width": 1024,
+      "Height": 1536,
+      "Sha256": "1ae12b892d3bff3af5357a02b12ba680f6664419359fe5834bd1b307972fcd15",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-50-history-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-history-v002-generated.png"
+      ],
+      "Prompts": [
+        "character-50-history-v001-prompt.txt",
+        "character-50-history-v002-prompt.txt",
+        "character-50-history-v003-prompt.txt"
+      ],
+      "Trials": [
+        {
+          "Source": "character-50-history-v001-generated.png",
+          "Sha256": "a11eac7aeb40cf1a21d903940418d25611f1177cc65698e250a8d6aaaf284ea4",
+          "Review": "Both lateral gown train edges cropped, framing rejected."
+        },
+        {
+          "Source": "character-50-history-v002-generated.png",
+          "Sha256": "680bcef52ddf85fb5f2020c6431f3697ea1034ac11e471c2e4361eafb7129d52",
+          "Review": "v002 pullsback entire hair/laurel/curls/train/hem/both shoes inside frame; lateral train margins narrow but visible. Calm closedneutral mouth openblueeyes silverglasses pointedears bluewhitegold highcollar gown goldblue jewels chestbattery whitegloved layeredhands onlap carved chair brown studio retained. Lowercostume legwear/shoes provisional. Seated anatomy not exact headcount certified; final proportion/style audit pending. 300x400 grayscale face/glasses/battery/bothhands readable."
+        }
+      ],
+      "Status": "local-depth-improved-fullbody-grayscale-reviewed-not-adopted",
+      "Review": "v003 pale coolblue/lavender local backhair planes near neck/shoulders/upperarms visible; foreground golden curls all lengths retained. Calm closedmouth blueeyes silverglasses laurel diamonds costume battery both whitegloved layeredhands lap carvedwoodchair brownstudio retained. Entire ornament/hair/lateraltrain/hem/bothshoes insideframe, lateralmargin narrow. Slight paint/jewelry changes. 300x400 grayscale face/glasses/battery/hands readable. Seated proportion/final style comparison pending.",
+      "Preview": {
+        "File": "history-v003-preview.png",
+        "Grayscale": "history-v003-preview-gray.png",
+        "Crop": {
+          "X": 300,
+          "Y": 200,
+          "Width": 420,
+          "Height": 560
+        },
+        "Width": 300,
+        "Height": 400,
+        "Status": "grayscale-visually-reviewed"
+      },
+      "Audit20261022": {
+        "Status": "contact-sheet-review-not-final-approval",
+        "Note": "顔/白手袋/電池を白黒判別。左右裾は画面内、座位ガイド必要。"
+      },
+      "StyleAudit": {
+        "Status": "LOCAL_DEPTH_IMPROVED_FINAL_REVIEW_PENDING",
+        "Evidence": "character-50-history-v003-generated.png",
+        "Findings": "首肩・上腕と後ろ髪の境界に局所青紫。前景金髪・全身・膝上の白手袋保持。最終体格/画風比較待ち。"
+      },
+      "FinalComparison": {
+        "Status": "OVERVIEW_REVIEWED_DETAIL_AND_FACE_FRAME_PENDING",
+        "Evidence": [
+          "audit-14-masters-v002.png",
+          "audit-14-previews-v002.png"
+        ],
+        "Finding": "白黒で顔/重ねた手/電池を判別。左右裾は全身原画内。",
+        "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      }
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Source": "character-50-id-v002-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "a31c4a11fdc572570e2b213ce07886198567bdcc6f0920c3666dd7f25a90aaeb",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-50-id-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-id-v001-generated.png"
+      ],
+      "Prompts": [
+        "character-50-id-v001-prompt.txt",
+        "character-50-id-v002-prompt.txt"
+      ],
+      "Status": "fullbody-grayscale-reviewed-not-adopted",
+      "Review": "v002 adds visible pale blue/lavender recessed hair boundaries near ears, neck, shoulders and upperarms; golden foreground curls retained. Frontal neutral closedmouth blueeyes silverglasses laurel earrings costume battery whitegloves and wholehair/hem/bothshoes retained. Small costume/jewelry painting changes also occur; not pixel-identical. 300x400 grayscale face/glasses/battery/hands readable. Full style/proportion comparative review remains; not adopted.",
+      "Preview": {
+        "File": "id-v002-preview.png",
+        "Grayscale": "id-v002-preview-gray.png",
+        "Crop": {
+          "X": 280,
+          "Y": 0,
+          "Width": 540,
+          "Height": 720
+        },
+        "Width": 300,
+        "Height": 400,
+        "Status": "grayscale-visually-reviewed"
+      },
+      "Audit20261022": {
+        "Status": "contact-sheet-review-not-final-approval",
+        "Note": "正面顔/眼鏡/電池を白黒判別。正面のため頭蓋/顎/踵ガイドの第一対象。"
+      },
+      "AnatomicalGuideReview": {
+        "File": "anatomical-guides-v001.json",
+        "Id": "id",
+        "Source": "character-50-id-v001-generated.png",
+        "Width": 1086,
+        "Height": 1448,
+        "Crown": {
+          "X": 540,
+          "Y": 65,
+          "Uncertainty": 20
+        },
+        "Chin": {
+          "X": 540,
+          "Y": 298,
+          "Uncertainty": 6
+        },
+        "Heel": {
+          "X": 580,
+          "Y": 1330,
+          "Uncertainty": 20
+        },
+        "Note": "Front pose: skull hidden by hair/laurel; heel inside boot near rear foot joint, not toe bottom. Approx5.43, broad uncertainty roughly4.8-6.2. No automatic enlargement justified.",
+        "VerticalProxy": 5.43,
+        "Status": "MANUAL_INFERRED_NOT_CERTIFIED"
+      },
+      "StyleAudit": {
+        "Status": "LOCAL_DEPTH_IMPROVED_FINAL_REVIEW_PENDING",
+        "Evidence": "character-50-id-v002-generated.png",
+        "Findings": "首肩・上腕の後ろ髪境界に局所青紫を目視。前景金髪と全身保持。瞳・線・影・体格の最終比較は未完了。"
+      },
+      "Trials": [
+        {
+          "Source": "character-50-id-v001-generated.png",
+          "Sha256": "b04197a5a5911b73ca1b255699a621805c783a66475dd1dc89bc1a919fd56cfb",
+          "Review": "Front neutral closedmouth openblueeyes silverglasses laurel centralgem pointedears longblondecurls bluewhitegold highcollar outfit chestbattery preserved; plainlightgray studio. Fullhair/ornament/hem/fingers/bothshoes insideframe. Whitegloved joinedhands and loweroutfit opaque whitelegwear/shoes provisional originaloutsideframe. Shortneck largehead visually coherent; hidden skull/heel no exact measurement, final allscene proportion/style audit pending. 300x400 grayscale face/glasses/collar/battery readable; hands partly cropped in preview master complete."
+        }
+      ],
+      "FinalComparison": {
+        "Status": "OVERVIEW_REVIEWED_DETAIL_AND_FACE_FRAME_PENDING",
+        "Evidence": [
+          "audit-14-masters-v002.png",
+          "audit-14-previews-v002.png"
+        ],
+        "Finding": "正面顔/眼鏡/電池/手を白黒判別。全身の頭が相対的に大きいが頭蓋推定誤差を含む。",
+        "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      },
+      "EyeDetailReview": {
+        "Status": "SUPPLEMENT_HIGHLIGHT_NOT_CLEARLY_ROUND",
+        "Evidence": "audit-id-eyes-v001.png",
+        "Finding": "青い縦楕円虹彩/白目/細い眼鏡/主白点は判別。反対斜め下の補助白点は明確な小円として分離せず青白い反射へ連続。輪郭接触も全条件適合とは認定しない。"
+      }
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Source": "character-50-idol-v003-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "60d06667fa3200d0bdf987ed24f98fc23267d0300ce1f6a9521ef93ec6a4e972",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-50-idol-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-idol-v002-generated.png"
+      ],
+      "Prompts": [
+        "character-50-idol-v001-prompt.txt",
+        "character-50-idol-v002-prompt.txt",
+        "character-50-idol-v003-prompt.txt"
+      ],
+      "Trials": [
+        {
+          "Source": "character-50-idol-v001-generated.png",
+          "Sha256": "aebc0d3c3ebd237e1823095baadd72bb3a1865a406aa8cb4ba0980b2f57abf2a",
+          "Review": "Lateral attachedribbons cropped; framing rejected. Whitelegwear uppergaps unintended."
+        },
+        {
+          "Source": "character-50-idol-v002-generated.png",
+          "Sha256": "512e98604827ef269b343bc80a2e2aeac0a397899106cdc7d4dcc6608e51bdc1",
+          "Review": "v002 fullhair/laurel/coathem/attached ribbons/both pompoms/both shoes withinframe. Happy openmouth silverglasses openblueeyes blonde curls pointedears bluewhitegold outfit chestbattery whitegloved bothhands holding bluegoldpompoms retained. Whitelegwear continuous at thighs visually; loweroutfit provisional. Dynamic bentpose exactheadcount not certified; final proportion/style audit pending. 300x400 grayscale face/pompoms/both hands/battery readable, face smaller to include props."
+        }
+      ],
+      "Status": "local-depth-improved-fullbody-grayscale-reviewed-not-adopted",
+      "Review": "v003 pale coolblue/lavender recessed backhair planes near neck/shoulders/upperarms visible; golden foreground curls preserved. Open happy mouth blueeyes silverglasses laurel diamonds costume battery BOTH whitegloved hands TWO pompoms ribbons continuouswhitelegwear and whole ornament/hem/bothshoes retained. Small paint/jewelry variations. 300x400 grayscale face/bothhands/pompoms/battery readable; outside prop tips cropped in runtimepreview, master complete. Dynamic proportion/final style comparison pending.",
+      "Preview": {
+        "File": "idol-v004-preview.png",
+        "Grayscale": "idol-v004-preview-gray.png",
+        "Crop": {
+          "X": 220,
+          "Y": 90,
+          "Width": 660,
+          "Height": 880
+        },
+        "Width": 300,
+        "Height": 400,
+        "Status": "grayscale-visually-reviewed-face-larger"
+      },
+      "Audit20261022": {
+        "Status": "contact-sheet-review-not-final-approval",
+        "Note": "顔が他新聞より小さい。切出しv003で約9%拡大、両手/ポンポン主要部/電池を保持。原画不変。"
+      },
+      "StyleAudit": {
+        "Status": "LOCAL_DEPTH_IMPROVED_FINAL_REVIEW_PENDING",
+        "Evidence": "character-50-idol-v003-generated.png",
+        "Findings": "首肩・上腕と重なる後ろ髪に局所冷色。金髪・両手ポンポン・全身保持。最終体格/画風比較待ち。"
+      },
+      "FinalComparison": {
+        "Status": "OVERVIEW_REVIEWED_DETAIL_AND_FACE_FRAME_PENDING",
+        "Evidence": [
+          "audit-14-masters-v002.png",
+          "audit-14-previews-v002.png"
+        ],
+        "Finding": "白黒で笑顔/両手ポンポン/電池を判別。小物を含め顔は相対的小さい。",
+        "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      }
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Source": "character-50-paparazzi-v003-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Sha256": "54d75c62ce4a08e30eea6c20e6ee0aa281c9c85277f6a4d2124b3bb72124df9b",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-50-paparazzi-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-paparazzi-v002-generated.png"
+      ],
+      "Prompts": [
+        "character-50-paparazzi-v001-prompt.txt",
+        "character-50-paparazzi-v002-prompt.txt",
+        "character-50-paparazzi-v003-prompt.txt"
+      ],
+      "Status": "local-depth-improved-fullbody-grayscale-reviewed-not-adopted",
+      "Review": "v003 local pale coolblue/lavender recessed hair planes behind neck/shoulder/upperarms visible; foreground golden curls retained. Right-looking smallopenmouth blueeyes silverglasses laurel earrings costume battery bothwhiteglovedhands twilightpalace retained. Wholeornament/hair/hem/bothshoes inside topmargin narrow. Slightpaint/jewelry variations. 300x400 grayscale face/glasses/battery readable; hands outsidecrop as before. Final style/proportion comparison pending.",
+      "Preview": {
+        "File": "paparazzi-v003-preview.png",
+        "Grayscale": "paparazzi-v003-preview-gray.png",
+        "Crop": {
+          "X": 260,
+          "Y": 0,
+          "Width": 540,
+          "Height": 720
+        },
+        "Width": 300,
+        "Height": 400,
+        "Status": "grayscale-visually-reviewed"
+      },
+      "Trials": [
+        {
+          "Source": "character-50-paparazzi-v001-generated.png",
+          "Sha256": "9a05402cceeae09c25f9e0c4730a912eeef22a49e480545e8a3be5ba964a403e",
+          "Review": "Whole hair/laurel/curls/hem/bothhands/shoes fit, topmargin narrow but visible. Smallopen surprisedmouth lookingright openblueeyes silverglasses blonde curls pointedears laurel bluewhitegold highcollar outfit chestbattery twilightpalace lamps retained. Whitegloves/relaxedarms loweroutfit/whitelegwear shoes provisional. Head looks relativelysmall vs tallbody, final proportion correction/audit needed, not exactheadcount certified. 300x400 grayscale face/glasses/battery/collar readable; hands outsidepreview mastercomplete."
+        },
+        {
+          "Source": "character-50-paparazzi-v002-generated.png",
+          "Sha256": "6079d5544710d0a86cf5b2984deb548b36f5fccafa285eb4dd1a28c668392bbe",
+          "Review": "v002 head visibly larger vs v001, jaw/collar close shortneck, preserves rightlooking smallopenmouth blueeyes silverglasses laurel curls outfit battery whitegloves twilightpalace. Entire hair/ornament/hem/hands/bothshoes fit topmargin narrow. Approx inferred skullcrown55 chin300 humanheel1310 implies vertical5.12 but tiltedhead/perspective uncertain; do not certify target from prompt. Need final anatomical guide/allscene audit before adoption; lowercompletion provisional. 300x400 grayscale face/glasses/battery readable."
+        }
+      ],
+      "Audit20261022": {
+        "Status": "contact-sheet-review-not-final-approval",
+        "Note": "v002頭部が大きくなった。前回縦比5.12を傾き無補正のまま適合値にしない。"
+      },
+      "StyleAudit": {
+        "Status": "LOCAL_DEPTH_IMPROVED_FINAL_REVIEW_PENDING",
+        "Evidence": "character-50-paparazzi-v003-generated.png",
+        "Findings": "首肩・上腕後ろ髪へ局所冷色。前景金髪/右向き驚き顔/全身保持。最終体格/画風比較待ち。"
+      },
+      "FinalComparison": {
+        "Status": "OVERVIEW_REVIEWED_DETAIL_AND_FACE_FRAME_PENDING",
+        "Evidence": [
+          "audit-14-masters-v002.png",
+          "audit-14-previews-v002.png"
+        ],
+        "Finding": "右向きの驚き口/眼鏡/電池を白黒判別。",
+        "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      }
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Source": "character-50-coin-v004-generated.png",
+      "Width": 1024,
+      "Height": 1536,
+      "Sha256": "86444014a89fbfe834f0048de1107f9297d6f96938bc2b7c097e3062ec356bfb",
+      "References": [
+        "art-source/portraits/newspaper-trials/character-50-coin-v001-generated.png",
+        "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-coin-v003-generated.png"
+      ],
+      "Prompts": [
+        "character-50-coin-v001-prompt.txt",
+        "character-50-coin-v002-prompt.txt",
+        "character-50-coin-v003-prompt.txt",
+        "character-50-coin-v004-prompt.txt"
+      ],
+      "Status": "local-depth-improved-fullbody-grayscale-reviewed-not-adopted",
+      "Review": "v004 pale coolblue/lavender recessed hair planes behind ear/neck/shoulder/upperarm visible; golden foreground longcurls retained. Leftprofile closedmouth blueeye silverglasses laurel diamonds costume battery joinedwhitegloves graystudio and wholeornament/hem/bothshoes retained. Head not visibly enlarged vs v003; old manualguide refers v003 not this edit. Cool treatment also extends along inner curl/costume border toward waist; not wholehair tint. Slightpaint/jewelry changes. 300x400 grayscale face/glasses/battery/hands readable. Final style/proportion comparison pending.",
+      "Preview": {
+        "File": "coin-v004-preview.png",
+        "Grayscale": "coin-v004-preview-gray.png",
+        "Crop": {
+          "X": 200,
+          "Y": 20,
+          "Width": 570,
+          "Height": 760
+        },
+        "Width": 300,
+        "Height": 400,
+        "Status": "grayscale-visually-reviewed"
+      },
+      "Trials": [
+        {
+          "Source": "character-50-coin-v001-generated.png",
+          "Sha256": "fa90fafb998011a852a10bbb3e74035b370e1e3409a66d9a2d93c3e70ea16504",
+          "Review": "Leftprofile closedneutralmouth visibleopenblueeye silverglasses blonde curls pointedear laurel diamond earrings bluewhitegold highcollar costume chestbattery plainwarmgray studio retained. Whole ornament/curls/hem/whiteglovedhands/bothshoes fit. Hands/lowercostume legwear/shoes provisional originaloutsideframe. Neck visibly longer than shortneck target, needs final correction/audit; no exactheadcount certified. 300x400 grayscale profile/glasses/earring/battery/hands readable."
+        },
+        {
+          "Source": "character-50-coin-v002-generated.png",
+          "Sha256": "cee83347f5f5d30381b7ee3e7079de161e4b89607fc6d981746bab760087d1ae",
+          "Review": "v002 visible neck exposure substantially reduced: jaw near collar, retains leftprofile closedmouth blueeye silverglasses laurel blondecurls outfit chestbattery hands graystudio. Whole ornament/curls/hem/bothshoes fit. Shoulder/collar raised somewhat as well as facechange, requested fixedshoulder not literally achieved. Head visually larger/shortneck improved. Hidden skull and humanheel inference not exact headcount certified; final allscene audit pending. 300x400 grayscale face/glasses/earrings/battery/hands readable. Lowercompletion provisional."
+        },
+        {
+          "Source": "character-50-coin-v003-generated.png",
+          "Sha256": "45c0fe75af9272ecce59156b42f7e3626d8d518847d3dbe3faf34a48d1b554dd",
+          "Review": "v003 head visibly reduced vs v002, short neck maintained, same leftprofile silverglasses blueeye closedmouth laurel diamond earrings blondecurls highcollar costume chestbattery whiteglovedhands graystudio. Fullornament/curls/hem/shoes fit. Body/shoulders also changed slightly despite holdfixed instruction. Manual inferred skullY95 chin310 heel1375 gives verticalproxy5.95; skull hidden underhair uncertainty +/-25, not exactcertification. 300x400 grayscale face/glasses/earrings/battery/hands readable. Lowercompletion provisional; final styleaudit pending."
+        }
+      ],
+      "Audit20261022": {
+        "Status": "contact-sheet-review-not-final-approval",
+        "Note": "首元修正済、横顔/眼鏡/電池/手を白黒判別。側面頭蓋/踵ガイドの第二対象。"
+      },
+      "AnatomicalGuideReview": {
+        "Status": "MANUAL_INFERRED_NOT_CERTIFIED",
+        "Source": "character-50-coin-v003-generated.png",
+        "CrownY": 95,
+        "ChinY": 310,
+        "HeelY": 1375,
+        "VerticalProxy": 5.95,
+        "Uncertainty": "Skull hidden hair +/-25px, heel +/-20; profile not orthographic; old v001 guidehtml documents v002 only"
+      },
+      "StyleAudit": {
+        "Status": "LOCAL_DEPTH_IMPROVED_FINAL_REVIEW_PENDING",
+        "Evidence": "character-50-coin-v004-generated.png",
+        "Findings": "耳後ろ/首肩・上腕に冷色境界、衣装内縁沿い腰付近にも続く。全体染色なし、前景金髪/横顔/全身保持。最終比較待ち。"
+      },
+      "FinalComparison": {
+        "Status": "OVERVIEW_REVIEWED_DETAIL_AND_FACE_FRAME_PENDING",
+        "Evidence": [
+          "audit-14-masters-v002.png",
+          "audit-14-previews-v002.png"
+        ],
+        "Finding": "左横顔/眼鏡/電池/手を白黒判別。旧ガイドは旧原画対象。",
+        "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      }
+    }
+  ],
+  "Next": "Circular normal6 face readability simulation done. Concrete remaining id supplementary iris whitecircle not distinct; use built-inimagegen small iris-only correction representative preserving fullbody then compare other13 eye details. Do not redo hair/proportions without concrete evidence. Runtime0/20 stagedv015 unchanged."
+}
