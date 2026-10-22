@@ -40,7 +40,7 @@ public partial class Game1
     {
         if(MapTransitionActive || OrientationRotating)return false;
         var toy=OrientationToyArea;
-        if(OrientationResetButton.Contains(pointer)){_automaticBoostAge=-1;_automaticBoostQueue.Clear();if(OrientationGlobe)ResetStatusOrientation();else _net.ScreenAngle=-MathHelper.ToRadians(_net.Rotation*90);return true;}
+        if(OrientationResetButton.Contains(pointer)){_automaticBoostAge=-1;_automaticBoostQueue.Clear();if(OrientationGlobe)ResetStatusOrientation();else {_net.ScreenAngle=-MathHelper.ToRadians(_net.Rotation*90);RecordTutorialMapRotation(2);}return true;}
         for(int axis=OrientationGlobe?0:2;axis<3;axis++)foreach(int sign in new[]{-1,1})
         {
             if(!AxisButton(toy,axis,sign).Contains(pointer))continue;
@@ -51,7 +51,7 @@ public partial class Game1
                 var vector=axis==0?Vector3.UnitX:axis==1?Vector3.UnitY:Vector3.UnitZ;
                 float angle=MathHelper.ToRadians(30)*sign*(axis==2?-1:1);
                 _orientationTo=Quaternion.CreateFromRotationMatrix(Matrix.CreateFromQuaternion(_orientationFrom)*Matrix.CreateFromAxisAngle(vector,angle));
-            }else{_rotationFrom=_net.ScreenAngle;_rotationTo=_rotationFrom+MathHelper.ToRadians(30)*sign;}
+            }else{_rotationFrom=_net.ScreenAngle;_rotationTo=_rotationFrom+MathHelper.ToRadians(30)*sign;RecordTutorialMapRotation(sign>0?1:4);}
             return true;
         }
         return toy.Contains(pointer);

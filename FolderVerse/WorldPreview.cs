@@ -40,8 +40,10 @@ public sealed partial class WorldPreview : IDisposable
         _effect.SpecularColor = new Vector3(0.12f);
     }
 
-    public void Generate(int width, int height, int depth, int seed)
+    private int _polarAxis=1;
+    public void Generate(int width, int height, int depth, int seed,int polarAxis=1)
     {
+        _polarAxis=polarAxis;
         // Rods can reach nine cells and slabs seven, in any axis orientation.
         if (width < 1 || width > 9)
             throw new ArgumentOutOfRangeException(nameof(width));
@@ -71,7 +73,7 @@ public sealed partial class WorldPreview : IDisposable
     public void ShowSetup(WorldSetup setup, bool territories)
     {
         if(CountryColors && territories)ShowLandConquest(setup,true);
-        else Generate(setup.Width, setup.Height, setup.Depth, setup.WorldSeed);
+        else Generate(setup.Width, setup.Height, setup.Depth, setup.WorldSeed,setup.PolarAxis);
         if (!territories || setup.Owners.Length == 0) return;
         var mesh = new List<VertexPositionColorNormal>();
         void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, Vector3 normal)
@@ -127,7 +129,7 @@ public sealed partial class WorldPreview : IDisposable
         _highlight=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
         _highlight.SetData(mesh.ToArray());_highlightCount=mesh.Count/3;
     }
-    private static void AddFace(List<VertexPositionColorNormal> mesh, Vector3 origin, Vector3 u, Vector3 v, Vector3 normal, int unitsU, int unitsV, Vector3 offset)
+    private void AddFace(List<VertexPositionColorNormal> mesh, Vector3 origin, Vector3 u, Vector3 v, Vector3 normal, int unitsU, int unitsV, Vector3 offset)
     {
         const int detail = 10;
         int countU = unitsU * detail, countV = unitsV * detail;
@@ -139,7 +141,7 @@ public sealed partial class WorldPreview : IDisposable
             var c = b + v / countV;
             var d = a + v / countV;
             var center = (a + c) * 0.5f;
-            Color color=WorldTerrain.ColorAt(WorldTerrain.Elevation(center,offset),normal);
+            Color color=WorldTerrain.ColorAt(WorldTerrain.Elevation(center,offset),normal,_polarAxis);
             if (x % detail == 0 || y % detail == 0) color = Color.Lerp(color, new Color(17, 47, 62), 0.3f);
             mesh.Add(new(a, color, normal)); mesh.Add(new(b, color, normal)); mesh.Add(new(c, color, normal));
             mesh.Add(new(a, color, normal)); mesh.Add(new(c, color, normal)); mesh.Add(new(d, color, normal));

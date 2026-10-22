@@ -24,6 +24,7 @@ public partial class Game1
         }
         if(enter || click && TutorialStep(0).Contains(_pointer))BeginTutorialStepOne();
         else if(click && TutorialStep(1).Contains(_pointer))BeginTutorialStepTwo();
+        else if(click && TutorialStep(2).Contains(_pointer))BeginTutorialStepThree();
     }
     private void BeginTutorialStepOne(){
         _tutorialAttackAchieved=false;_tutorialAttackGuide=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;
@@ -46,6 +47,7 @@ public partial class Game1
         for(int i=0;i<5;i++){
             if(i==0)_ui.Button(TutorialStep(i),(_tutorialAchievements?.Has(TutorialAchievements.FirstAttack)==true?"ステップ１：開戦しましょう　勲章獲得済み":"ステップ１：開戦しましょう"),Accent,.55f);
             else if(i==1)_ui.Button(TutorialStep(i),"ステップ２：ロボットをポケットに入れて移動しよう",Accent,.46f);
+            else if(i==2)_ui.Button(TutorialStep(i),"ステップ３：地図を使おう",Accent,.55f);
             else _ui.Center($"ステップ{i+1}　（準備中）",TutorialStep(i),.6f,new Color(140,145,150));
         }
         if(_tutorialAchievements?.Has(TutorialAchievements.FirstAttack)==true)DrawTutorialMedal(new(1770,550));

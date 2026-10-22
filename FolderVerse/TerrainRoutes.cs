@@ -82,7 +82,7 @@ public sealed partial class TerrainRoutes
     public RouteStep ForRuler(int ruler,int direction)=>Find(_world.ConquerorLocations[ruler],_world.ConquerorPoints[ruler],direction,false,true);
     public string PointName(int cell,Point p)
     {
-        var c=_world.Cells[cell];var up=Math.Abs(c.Normal.Y)>.5f?(c.Normal.Y>0?Vector3.Backward:Vector3.Forward):Vector3.Up;
+        var c=_world.Cells[cell];var up=_world.IsPolarFace(c.Face)?(Vector3.Dot(c.Normal,_world.North)>0?Vector3.Backward:Vector3.Forward):_world.North;
         var delta=Position(cell,p)-c.Center;float n=Vector3.Dot(delta,up),e=Vector3.Dot(delta,Vector3.Cross(up,c.Normal));
         string name=(n>.16f?"北":n<-.16f?"南":"")+(e>.16f?"東":e<-.16f?"西":"");
         return name.Length==0?"中央":name+"側";

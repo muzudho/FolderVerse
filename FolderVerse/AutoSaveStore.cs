@@ -71,17 +71,19 @@ public static class AutoSaveStore
             else values[i]=RuntimeHelpers.GetUninitializedObject(type);
         }
         object At(int id)=>id==-1?null:id>=0 && id<values.Length?values[id]:throw new InvalidDataException("Invalid save reference.");
-        // Struct keys must be populated before insertion into hash-based collections.
+        // Value keys, including reference records, need their fields before hashing.
         var populated=new bool[values.Length];
         void Populate(int i){
             if(populated[i])return;populated[i]=true;var entry=doc.Objects[i];var type=types[i];var value=values[i];
             if(Scalar(type))return;
             object Read(int id){if(id>=0 && types[id].IsValueType)Populate(id);return At(id);}
             if(value is Array array){int flat=0;foreach(int id in entry.Items){int n=flat++;var index=new int[array.Rank];for(int d=array.Rank-1;d>=0;d--){index[d]=n%array.GetLength(d);n/=array.GetLength(d);}array.SetValue(Read(id),index);}}
-            else if(value is IDictionary dictionary){for(int n=0;n<entry.Items.Count;n+=2)dictionary.Add(Read(entry.Items[n]),Read(entry.Items[n+1]));}
-            else if(Collection(type)){var add=type.GetMethod(type.GetGenericTypeDefinition()==typeof(Queue<>)?"Enqueue":"Add");foreach(int id in entry.Items)add.Invoke(value,new[]{Read(id)});}
+            else if(value is IDictionary dictionary){for(int n=0;n<entry.Items.Count;n+=2){int key=entry.Items[n];if(key>=0)Populate(key);dictionary.Add(Read(key),Read(entry.Items[n+1]));}}
+            else if(Collection(type)){var generic=type.GetGenericTypeDefinition();var add=type.GetMethod(generic==typeof(Queue<>)?"Enqueue":"Add");foreach(int id in entry.Items){if(generic==typeof(HashSet<>) && id>=0)Populate(id);add.Invoke(value,new[]{Read(id)});}}
             else foreach(var field in Fields(type)){
                 if(!entry.Fields.TryGetValue(field.Name,out int id)){
+                    if(type==typeof(WorldSetup) && field.Name=="PolarAxis"){field.SetValue(value,1);continue;}
+                    if(type==typeof(WorldSetup) && new[]{"TutorialMapStage","TutorialMapRotations","TutorialMapNotices","TutorialMapEdgeChanged"}.Contains(field.Name))continue;
                     if(type==typeof(WorldSetup) && field.Name=="<Lessons>k__BackingField"){field.SetValue(value,new BattleLessons());continue;}
                     if(type==typeof(BattleState) && field.Name=="Lessons"){field.SetValue(value,new BattleLesson[WorldSetup.CastCount]);continue;}
                     if(type==typeof(BattleUnit) && field.Name=="WitnessedLessons")continue;

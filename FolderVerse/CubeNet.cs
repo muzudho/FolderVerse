@@ -59,7 +59,7 @@ public sealed partial class CubeNet
     }
     private void Build(WorldSetup setup)
     {
-        Vector3 n=Normals[CenterFace],up=Math.Abs(n.Y)>0.5f?(n.Y>0?Vector3.Backward:Vector3.Forward):Vector3.Up;
+        Vector3 n=Normals[CenterFace],up=setup.IsPolarFace(CenterFace)?(Vector3.Dot(n,setup.North)>0?Vector3.Backward:Vector3.Forward):setup.North;
         Vector3 right=Vector3.Cross(up,n);
         for(int i=0;i<Rotation;i++){var old=right;right=up;up=-old;}
         var dimensions=new Vector3(setup.Width,setup.Height,setup.Depth);

@@ -11,26 +11,27 @@ public static class WorldCoordinates
     // The -X/+Z (chopsticks/belly) corner is the meridian. Belly-side columns are positive.
     public static Point At(WorldSetup world,SurfaceCell cell)
     {
-        int w=world.Width,d=world.Depth,h=world.Height,p=2*(w+d);
-        int x=(int)MathF.Floor(cell.Center.X+w/2f),z=(int)MathF.Floor(cell.Center.Z+d/2f);
+        int w=world.PolarAxis==0?world.Height:world.Width,d=world.Depth,h=world.PolarAxis==0?world.Width:world.Height,p=2*(w+d);
+        var center=world.Geographic(cell.Center);int face=world.GeographicFace(cell.Face);
+        int x=(int)MathF.Floor(center.X+w/2f),z=(int)MathF.Floor(center.Z+d/2f);
         int longitude,latitude;
-        if(cell.Face==2 || cell.Face==3)
+        if(face==2 || face==3)
         {
             int ring=Math.Min(Math.Min(x,w-1-x),Math.Min(z,d-1-z));
             var rim=world.Cells.Where(c=>c.Face==cell.Face).Select(c=>new {
-                Cell=c,X=(int)MathF.Floor(c.Center.X+w/2f),Z=(int)MathF.Floor(c.Center.Z+d/2f)})
+                Cell=c,X=(int)MathF.Floor(world.Geographic(c.Center).X+w/2f),Z=(int)MathF.Floor(world.Geographic(c.Center).Z+d/2f)})
                 .Where(c=>Math.Min(Math.Min(c.X,w-1-c.X),Math.Min(c.Z,d-1-c.Z))==ring)
                 .OrderBy(c=>c.X==w-1-ring?0:c.Z==ring?1:c.X==ring?2:3)
                 .ThenBy(c=>c.X==w-1-ring?-c.Z:c.Z==ring?-c.X:c.X==ring?c.Z:c.X).ToArray();
             int start=Array.FindIndex(rim,c=>c.X==ring && c.Z==d-1-ring);
             int index=Array.FindIndex(rim,c=>c.Cell.Id==cell.Id);
             longitude=((index-start+rim.Length)%rim.Length)*p/rim.Length;
-            latitude=cell.Face==2?h-h/2+ring:-h/2-1-ring;
+            latitude=face==2?h-h/2+ring:-h/2-1-ring;
         }
         else
         {
-            longitude=((cell.Face switch {0=>d-1-z,5=>d+w-1-x,1=>d+w+z,_=>2*d+w+x})+w)%p;
-            latitude=(int)MathF.Floor(cell.Center.Y+h/2f)-h/2;
+            longitude=((face switch {0=>d-1-z,5=>d+w-1-x,1=>d+w+z,_=>2*d+w+x})+w)%p;
+            latitude=(int)MathF.Floor(center.Y+h/2f)-h/2;
         }
         if(longitude>=p/2)longitude-=p;
         return new(longitude,latitude);
@@ -64,7 +65,7 @@ public static class WorldCoordinates
     public static Dictionary<int,(bool Longitude,bool Latitude)> GlobeScreenLabelComponents(WorldSetup world,IReadOnlyDictionary<int,Vector2> positions)
     {
         var result=GlobeLabelComponents(world,positions.Keys);
-        var sideCells=positions.Keys.Where(id=>world.Cells[id].Face is not (2 or 3))
+        var sideCells=positions.Keys.Where(id=>!world.IsPolarFace(world.Cells[id].Face))
             .Select(id=>(Id:id,Face:world.Cells[id].Face,Coordinate:At(world,world.Cells[id]))).ToArray();
         foreach(var cell in sideCells)result[cell.Id]=(false,false);
         foreach(var column in sideCells.GroupBy(c=>(c.Face,c.Coordinate.X)))

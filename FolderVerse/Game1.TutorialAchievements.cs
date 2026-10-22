@@ -70,6 +70,10 @@ public partial class Game1
         _ui.Tile(center,new(21,21),MathHelper.PiOver4,new Color(255,235,151));
     }
     private void DrawTutorialGoal(){
+        if(_setup.TutorialStep==3 && (IsStatusScreen || _screen==Screen.Transport)){
+            _ui.Box(new(700,20,400,48),new Color(14,26,39,235));
+            _ui.Center(_setup.TutorialMapStage<4?$"ステップ３　地図を使おう {_setup.TutorialMapStage+1}/4":"ステップ３　地図の続きは準備中",new(710,20,380,48),.3f,Cream);return;
+        }
         if(_setup.TutorialStep==2 && (IsStatusScreen || _screen==Screen.Transport))
         {
             _ui.Box(new(700,20,400,48),new Color(14,26,39,235));

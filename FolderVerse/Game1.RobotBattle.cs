@@ -154,7 +154,7 @@ public partial class Game1
                 _ui.Box(r,new Color(28,88,125));
                 if(wall)
                 {
-                    if(!battle.SeaClearWater.Contains(new(x,y)))BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(true,false,terrainHeight,terrainCell.Normal.Y));
+                    if(!battle.SeaClearWater.Contains(new(x,y)))BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(true,false,terrainHeight,_setup.Geographic(terrainCell.Normal).Y));
                 }
                 else if(log)
                 {
@@ -177,8 +177,8 @@ public partial class Game1
                 }            }
             else
             {
-                _ui.Box(r,Math.Abs(terrainCell.Normal.Y)>.5f?new Color(161,192,203):terrainHeight<.55f?new Color(163,137,91):new Color(35,64,58));
-                if(wall)BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(false,false,terrainHeight,terrainCell.Normal.Y));
+                _ui.Box(r,Math.Abs(_setup.Geographic(terrainCell.Normal).Y)>.5f?new Color(161,192,203):terrainHeight<.55f?new Color(163,137,91):new Color(35,64,58));
+                if(wall)BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(false,false,terrainHeight,_setup.Geographic(terrainCell.Normal).Y));
             }
         }
         for(int line=0;line<=10;line++){_ui.Box(new(left+line*size,top,2,size*10),new Color(24,43,51));_ui.Box(new(left,top+line*size,size*10,2),new Color(24,43,51));}

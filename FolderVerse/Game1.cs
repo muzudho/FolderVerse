@@ -292,7 +292,7 @@ public partial class Game1 : Game
             else if(click && NetButton(2).Contains(_pointer))FocusCurrentNode();
             else if(click && NetButton(3).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
             else if(click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
-            else if(click && !pan && !_net.IsAnimating && _net.ClickEdge()){}
+            else if(click && !pan && !_net.IsAnimating && _net.ClickEdge()){RecordTutorialMapEdge();}
             else if(click && !pan && !_movementOpen && !_net.IsAnimating && _statusCell>=0)
             {
                 if(!_net.ShowRoutes)_selectedMapCell=_statusCell;
@@ -529,8 +529,9 @@ public partial class Game1 : Game
         DrawWandererPolicy();
         if(!InspectingSupervisor)_ui.Button(LessonCatalogButton,"戦訓カード",Muted,.45f);
         }); _ui.Box(new(MapViewBounds.X-20,142,MapViewBounds.Width+40,750),new(20,42,54));
-        _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+CubeNet.FaceNames[_net.CenterFace]+" が中心",new(991,156),0.68f,Cream);
-        string north=_net.CenterFace==2?"北極面：上は＋Zの基準経線":_net.CenterFace==3?"南極面：上は－Zの基準経線":"地星の北＝＋Y / 北を上に";
+        _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+_setup.FaceName(_net.CenterFace)+" が中心",new(991,156),0.68f,Cream);
+        int geographicFace=_setup.GeographicFace(_net.CenterFace);
+        string north=geographicFace==2?"北極面：上は＋Zの基準経線":geographicFace==3?"南極面：上は－Zの基準経線":_setup.PolarAxis==0?"地星の北＝＋X（碗）/ 箸と碗が極":"地星の北＝＋Y / 北を上に";
         string orientation=north+" / 回転 "+((int)MathF.Round((_net.Rotation*90+MathHelper.ToDegrees(_net.ScreenAngle))%360+360)%360)+"°";
         _ui.Text(_statusGlobe?"右ドラッグで回転"+(_net.ShowMapSymbols?" / 経番・緯番":""):orientation,new(991,203),.43f,new(177,206,216));
         if(_statusGlobe && _net.ShowMapSymbols)
