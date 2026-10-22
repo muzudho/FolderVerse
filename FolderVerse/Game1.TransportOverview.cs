@@ -18,6 +18,7 @@ public partial class Game1
         _spriteBatch.DrawString(_transportHudFont,text,at,color,0,Vector2.Zero,scale,Microsoft.Xna.Framework.Graphics.SpriteEffects.None,0);
         return new Rectangle((int)at.X,(int)at.Y,(int)size.X,(int)size.Y);
     }
+    private bool TransportOverviewAllowed=>NodeTransportAllowed && _setup.TutorialStep!=2;
     private bool NodeTransportAllowed=>_setup.TutorialStep!=1;
     private bool _transportOverview;
     private bool _transportRoutesBefore;
@@ -34,7 +35,7 @@ public partial class Game1
     }
     private void DrawTransportOverviewButton()
     {
-        if(!NodeTransportAllowed || InspectorVisible)return; var rect=TransportOverviewButton;
+        if(!TransportOverviewAllowed || InspectorVisible)return; var rect=TransportOverviewButton;
         _ui.Button(rect,"ロボット輸送計画",Accent,.5f);
     }
     private void OpenTransportOverview()
@@ -50,7 +51,7 @@ public partial class Game1
     }
     private bool TransportOverviewClick(Point p)
     {
-        if(NodeTransportAllowed && !InspectorVisible && TransportOverviewButton.Contains(p)){OpenTransportOverview();return true;}
+        if(TransportOverviewAllowed && !InspectorVisible && TransportOverviewButton.Contains(p)){OpenTransportOverview();return true;}
         if(!_transportOverview && !_nodeTransportOpen)return false;
         bool onMap=MapViewBounds.Contains(p);if(!_transportOverview && !onMap)return false;if(!onMap)p.X-=NodeInspectorOffset;
         if(!onMap && TransportInstructionsClick(p))return true;

@@ -51,7 +51,6 @@ public sealed class NewspaperMusic:IDisposable
     public NewspaperMusic(NewspaperMusicMood mood){_score=new(mood);}
     public void Update(NewspaperMusicMood mood,bool active){
         _score.Mood=mood;_stream.Volume=.42f;
-        if(!active){if(_stream.State==SoundState.Playing)_stream.Pause();return;}
         while(_stream.PendingBufferCount<2)_stream.SubmitBuffer(_score.Render());
         if(_stream.State==SoundState.Paused)_stream.Resume();else if(_stream.State!=SoundState.Playing)_stream.Play();
     }

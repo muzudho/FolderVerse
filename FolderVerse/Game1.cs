@@ -636,7 +636,7 @@ public partial class Game1 : Game
         DrawWindowMargins(viewport.Width,viewport.Height,canvas);
         if(_screen==Screen.Title)_spriteBatch.Draw(_titleScreen,canvas,Color.White); _spriteBatch.End();
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
-        if(_conquestOverview && _conquestStage<8){DrawConquestOverview(canvas,transform,viewport);if(_demoActive)DrawDemoOverlay(transform);base.Draw(gameTime);return;}
+        if(_conquestOverview && _conquestStage<8){DrawConquestOverview(canvas,transform,viewport);if(_demoActive)DrawDemoOverlay(transform);DrawFullscreenCursor();base.Draw(gameTime);return;}
         if(_screen==Screen.Title){_spriteBatch.Begin(transformMatrix:transform);DrawTitleStartMenu();_spriteBatch.End();}
         if(_screen!=Screen.Title)
         {
@@ -691,6 +691,7 @@ public partial class Game1 : Game
         if(_wandererPolicyOpen){_spriteBatch.Begin(transformMatrix:transform);DrawWandererPolicyDialog();_spriteBatch.End();}
         if(_screen==Screen.Battle && _tutorialAchievementAge>=0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAchievementCutIn();_spriteBatch.End();}
         if(_conquestOverview){_spriteBatch.Begin(transformMatrix:transform);DrawConquestCurtain(1-MathHelper.SmoothStep(0,1,(float)(_conquestAge/.65)));_spriteBatch.End();}
+        DrawFullscreenCursor();
         LogDisplayedScreen();
         base.Draw(gameTime);
     }

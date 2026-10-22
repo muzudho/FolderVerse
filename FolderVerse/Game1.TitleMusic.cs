@@ -12,7 +12,6 @@ public partial class Game1
         if(_titleMusicUnavailable)return;
         try{
             if(_titleTheme==null){using var input=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Music","folder-verse.wav"));_titleTheme=SoundEffect.FromStream(input);_titleThemeInstance=_titleTheme.CreateInstance();_titleThemeInstance.IsLooped=true;_titleThemeInstance.Volume=.45f;}
-            if(!active){if(_titleThemeInstance.State==SoundState.Playing)_titleThemeInstance.Pause();return;}
             if(_titleThemeInstance.State==SoundState.Paused)_titleThemeInstance.Resume();else if(_titleThemeInstance.State!=SoundState.Playing)_titleThemeInstance.Play();
         }catch(NoAudioHardwareException error){_titleMusicUnavailable=true;RecordFailure(error,"title_music");}
     }

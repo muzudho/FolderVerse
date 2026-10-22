@@ -31,6 +31,8 @@ sealed class PlanGame:Game1
   Check(targets.Any(id=>!(bool)Call("OperationPosition",new object[]{id,Vector2.Zero})),"Fixture includes a destination on the hidden globe surface");
   Check((bool)Get("_statusGlobe"),"Hidden destinations do not automatically unfold peaceful movement");Call("CloseMovement");
   Set("_statusGlobe",false);Call("OpenMovement");Check(!(bool)Get("_statusGlobe"),"Opening movement also preserves an already selected net");Call("CloseMovement");
+  Check(!(bool)typeof(Game1).GetProperty("TransportOverviewAllowed",F)!.GetValue(this)!,"Step two hides the large-map transport overview button");
+  Check(!(bool)Call("TransportOverviewClick",new Point(850,1035)) && !(bool)Get("_transportOverview"),"Hidden transport button cannot open its panel");
   // Exercise actual pocket input, rather than setting its achievement flag.
   Call("OpenPocket");var card=(Rectangle)typeof(Game1).GetMethod("PocketCard",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{3,true})!;
   Check(w.Robots.Nodes[w.Nodes.Current(0).Id].Robots[3].Owner==0,"Own robot on foreign node");Set("_pointer",card.Center);Call("PocketInput",true,false);Set("_pointer",new Point(1100,630));Call("PocketInput",true,false);

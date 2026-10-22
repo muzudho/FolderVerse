@@ -76,7 +76,6 @@ public sealed class BattleMusic:IDisposable
     public BattleMusic(BattleMusicMood mood){_score=new(mood);}
     public void Update(BattleMusicMood mood,bool active){
         _score.SetMood(mood);_stream.Volume=.38f;
-        if(!active){if(_stream.State==SoundState.Playing)_stream.Pause();return;}
         while(_stream.PendingBufferCount<2)_stream.SubmitBuffer(_score.Render());
         if(_stream.State==SoundState.Paused)_stream.Resume();else if(_stream.State!=SoundState.Playing)_stream.Play();
     }
