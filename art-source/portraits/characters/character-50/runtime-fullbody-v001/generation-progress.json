@@ -1,6 +1,6 @@
 {
   "CharacterId": 50,
-  "UpdatedAt": "2026-10-22T18:35:00+09:00",
+  "UpdatedAt": "2026-10-22T20:35:00+09:00",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018",
   "GameAdopted": false,
@@ -747,24 +747,29 @@
     {
       "Id": "id",
       "Kind": "newspaper",
-      "Source": "character-50-id-v002-generated.png",
+      "Source": "character-50-id-v005-generated.png",
       "Width": 1086,
       "Height": 1448,
-      "Sha256": "a31c4a11fdc572570e2b213ce07886198567bdcc6f0920c3666dd7f25a90aaeb",
+      "Sha256": "be00652d7e56cb519f517b299fbccdfc04830810f22aa71376038d64521ddaef",
       "References": [
         "art-source/portraits/newspaper-trials/character-50-id-v001-generated.png",
         "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
-        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-id-v001-generated.png"
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-id-v001-generated.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-id-v005-generated.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-id-eye-detail-v002-generated.png"
       ],
       "Prompts": [
         "character-50-id-v001-prompt.txt",
-        "character-50-id-v002-prompt.txt"
+        "character-50-id-v002-prompt.txt",
+        "character-50-id-eye-detail-v001-prompt.txt",
+        "character-50-id-eye-detail-v002-prompt.txt",
+        "character-50-id-v005-prompt.txt"
       ],
-      "Status": "fullbody-grayscale-reviewed-not-adopted",
-      "Review": "v002 adds visible pale blue/lavender recessed hair boundaries near ears, neck, shoulders and upperarms; golden foreground curls retained. Frontal neutral closedmouth blueeyes silverglasses laurel earrings costume battery whitegloves and wholehair/hem/bothshoes retained. Small costume/jewelry painting changes also occur; not pixel-identical. 300x400 grayscale face/glasses/battery/hands readable. Full style/proportion comparative review remains; not adopted.",
+      "Status": "eye-highlight-improved-preview-reviewed-staged-not-adopted",
+      "Review": "v005 fullbody/identity retained; upper-right main and lower-left supplemental white highlights clearer; small supplemental partly touches blue reflection, not exact style certification. Color/grayscale 300x400 face/glasses/laurel/battery/hands readable. Fullbody hair/hem/both shoes retained. Staged v016, not game adopted.",
       "Preview": {
-        "File": "id-v002-preview.png",
-        "Grayscale": "id-v002-preview-gray.png",
+        "File": "id-v005-preview.png",
+        "Grayscale": "id-v005-preview-gray.png",
         "Crop": {
           "X": 280,
           "Y": 0,
@@ -773,7 +778,7 @@
         },
         "Width": 300,
         "Height": 400,
-        "Status": "grayscale-visually-reviewed"
+        "Status": "COLOR_AND_GRAYSCALE_REVIEWED"
       },
       "Audit20261022": {
         "Status": "contact-sheet-review-not-final-approval",
@@ -814,6 +819,59 @@
           "Source": "character-50-id-v001-generated.png",
           "Sha256": "b04197a5a5911b73ca1b255699a621805c783a66475dd1dc89bc1a919fd56cfb",
           "Review": "Front neutral closedmouth openblueeyes silverglasses laurel centralgem pointedears longblondecurls bluewhitegold highcollar outfit chestbattery preserved; plainlightgray studio. Fullhair/ornament/hem/fingers/bothshoes insideframe. Whitegloved joinedhands and loweroutfit opaque whitelegwear/shoes provisional originaloutsideframe. Shortneck largehead visually coherent; hidden skull/heel no exact measurement, final allscene proportion/style audit pending. 300x400 grayscale face/glasses/collar/battery readable; hands partly cropped in preview master complete."
+        },
+        {
+          "Source": "character-50-id-v003-generated.png",
+          "Sha256": "668f0dad7536bf4e13429f4539668e67af8eef615346b08a9c2437778810ee2d",
+          "Prompt": "character-50-id-v003-prompt.txt",
+          "Reference": "character-50-id-v002-generated.png",
+          "Method": "built-in image_gen",
+          "Review": "虹彩内白点だけの修正を依頼。全身・顔立ち・眼鏡・衣装を保持したが、左下補助白点は反射から独立した小円と明確に確認できず未達。v002を選択維持。",
+          "Evidence": "audit-id-eyes-v002.png",
+          "Status": "NOT_SELECTED_HIGHLIGHT_EDIT_NOT_CONFIRMED"
+        },
+        {
+          "Source": "character-50-id-v004-generated.png",
+          "Sha256": "8e4f584356c911877de319899c715cc6b1376499796a735a44fc1a21cff36219",
+          "Prompt": "character-50-id-v004-prompt.txt",
+          "References": [
+            "character-50-id-v002-generated.png",
+            "audit-id-eyes-v001.png"
+          ],
+          "Method": "built-in image_gen",
+          "Evidence": "audit-id-eyes-v003.png",
+          "Status": "NOT_SELECTED_HIGHLIGHT_EDIT_NOT_CONFIRMED",
+          "Review": "拡大参照併用でも左下補助白点は独立した白円として確認できず。全身構図保持。選択v002維持。"
+        },
+        {
+          "Source": "character-50-id-eye-detail-v001-generated.png",
+          "Sha256": "7f9d84558589d513ccd701a61abfba53c06eff0e0e7a90c1a4585ae74e120a26",
+          "Prompt": "character-50-id-eye-detail-v001-prompt.txt",
+          "Method": "built-in image_gen",
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "大小白円分離成功だが黒い縁が付いた。"
+        },
+        {
+          "Source": "character-50-id-eye-detail-v002-generated.png",
+          "Sha256": "bdf97d554663754109c3f28da086461fdc65d5f51c7eed49ff9231e60e61b6c6",
+          "Prompt": "character-50-id-eye-detail-v002-prompt.txt",
+          "Method": "built-in image_gen",
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "黒縁除去、大小白点分離。顔周辺の微細描写も変化。"
+        },
+        {
+          "Source": "character-50-id-v005-generated.png",
+          "Sha256": "be00652d7e56cb519f517b299fbccdfc04830810f22aa71376038d64521ddaef",
+          "Prompt": "character-50-id-v005-prompt.txt",
+          "Method": "built-in image_gen",
+          "Status": "IMPROVED_CANDIDATE_NOT_STAGED",
+          "Review": "全身/顔/眼鏡/電池/手/裾/両靴保持。上右主白点と左下補助点を確認、300x400で顔/装飾/電池判別。補助点は小さく一部反射に接する。完全一致は認定せず改善候補。"
+        },
+        {
+          "Source": "character-50-id-v002-generated.png",
+          "Sha256": "a31c4a11fdc572570e2b213ce07886198567bdcc6f0920c3666dd7f25a90aaeb",
+          "Review": "v002 adds visible pale blue/lavender recessed hair boundaries near ears, neck, shoulders and upperarms; golden foreground curls retained. Frontal neutral closedmouth blueeyes silverglasses laurel earrings costume battery whitegloves and wholehair/hem/bothshoes retained. Small costume/jewelry painting changes also occur; not pixel-identical. 300x400 grayscale face/glasses/battery/hands readable. Full style/proportion comparative review remains; not adopted.",
+          "Status": "PREVIOUS_SELECTED_PRESERVED"
         }
       ],
       "FinalComparison": {
@@ -829,6 +887,16 @@
         "Status": "SUPPLEMENT_HIGHLIGHT_NOT_CLEARLY_ROUND",
         "Evidence": "audit-id-eyes-v001.png",
         "Finding": "青い縦楕円虹彩/白目/細い眼鏡/主白点は判別。反対斜め下の補助白点は明確な小円として分離せず青白い反射へ連続。輪郭接触も全条件適合とは認定しない。"
+      },
+      "EyeDetailCandidate": {
+        "Source": "character-50-id-v005-generated.png",
+        "Preview": "id-v005-preview.png",
+        "Evidence": "audit-id-eyes-v004.png",
+        "Status": "SELECTED_STAGED_V016_NOT_GAME_ADOPTED",
+        "References": [
+          "character-50-id-v002-generated.png",
+          "character-50-id-eye-detail-v002-generated.png"
+        ]
       }
     },
     {
@@ -1036,5 +1104,5 @@
       }
     }
   ],
-  "Next": "Circular normal6 face readability simulation done. Concrete remaining id supplementary iris whitecircle not distinct; use built-inimagegen small iris-only correction representative preserving fullbody then compare other13 eye details. Do not redo hair/proportions without concrete evidence. Runtime0/20 stagedv015 unchanged."
+  "Next": "id v005 color+grayscale reviewed and staged v016; 20 staging hashes verified. Next inspect remaining13 eye details and record concrete findings; then adoption catalog selection build distribution verification. No blanket hair/proportion regeneration. Game0/20."
 }
