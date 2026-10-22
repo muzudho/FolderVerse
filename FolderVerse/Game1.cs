@@ -603,7 +603,7 @@ public partial class Game1 : Game
         if(_movementOpen)DrawInspector(DrawMovementPanel);
 
         if(_transportOverview){DrawInspector(DrawTransportOverviewPanel);if(_rateTarget>=0)DrawRatePieDialog();}
-        DrawRouteLayerButtons();
+        DrawWandererLocation();DrawRouteLayerButtons();
         DrawStatusMenu();
         if(_supervisorDialog==0)DrawNodeTooltip();
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();

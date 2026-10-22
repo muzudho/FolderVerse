@@ -34,7 +34,7 @@ public partial class Game1
         }
         _homePersuasionAge+=elapsed;
         if(_homePersuasionAge>=8 || _homePersuasionAge>=5 && proceed)
-        {_homePersuasionActive=false;_homePersuasion.Clear();return true;}
+        {_homePersuasionActive=false;_homePersuasion.Clear();ResetInspector();_domesticSlide=0;return true;}
         return true;
     }
     private Robot HomePersuasionRobot(Robot robot)
