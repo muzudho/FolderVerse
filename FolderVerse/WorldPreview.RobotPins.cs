@@ -53,18 +53,20 @@ public sealed partial class WorldPreview
             {
                 float angle=-MathHelper.PiOver2+slot*MathHelper.TwoPi/robots.Count,radius=Math.Max(.18f,robots.Count*.12f/MathHelper.TwoPi);
                 float u=MathF.Cos(angle)*radius,v=MathF.Sin(angle)*radius,z=.008f;var robot=robots[slot];
+                void RobotBox(float x,float y,float height,float width,float depth,float extent,Color tint)=>
+                    Box(u+(x-u)*.5f,v+(y-v)*.5f,.008f+(height-.008f)*.5f,width*.5f,depth*.5f,extent*.5f,tint);
                 void Part(RobotParts part,float x,float y,float height,float width,float depth,float extent){
                     var tint=robot.IsDamaged(part)?new Color(136,137,127):Color.Lerp(Color.White,setup.OwnerColor(robot.Origin(part)),.48f);
-                    Box(x,y,height,width,depth,extent,tint);
-                    if(robot.IsCheap(part))Box(x,y,height+extent*.4f,width*1.02f,depth*1.02f,extent*.16f,Color.White);
+                    RobotBox(x,y,height,width,depth,extent,tint);
+                    if(robot.IsCheap(part))RobotBox(x,y,height+extent*.4f,width*1.02f,depth*1.02f,extent*.16f,Color.White);
                 }
                 if((robot.Parts&RobotParts.Legs)!=0){foreach(float side in new[]{-1f,1f})Part(RobotParts.Legs,u+side*.027f,v,z,.038f,.065f,.09f);z+=.1f;}
                 if((robot.Parts&RobotParts.Body)!=0){Part(RobotParts.Body,u,v,z,.10f,.065f,.11f);foreach(float side in new[]{-1f,1f})Part(RobotParts.Body,u+side*.068f,v,z+.01f,.026f,.045f,.09f);z+=.12f;}
                 if((robot.Parts&RobotParts.Head)!=0)
                 {
                     Part(RobotParts.Head,u,v,z,.115f,.08f,.09f);
-                    foreach(float side in new[]{-1f,1f})Box(u+side*.025f,v+.043f,z+.05f,.018f,.009f,.018f,new(25,41,49));
-                    Box(u,v+.044f,z+.023f,.04f,.008f,.009f,new(230,102,60));Box(u,v,z+.09f,.01f,.01f,.025f,new(83,112,122));
+                    foreach(float side in new[]{-1f,1f})RobotBox(u+side*.025f,v+.043f,z+.05f,.018f,.009f,.018f,new(25,41,49));
+                    RobotBox(u,v+.044f,z+.023f,.04f,.008f,.009f,new(230,102,60));RobotBox(u,v,z+.09f,.01f,.01f,.025f,new(83,112,122));
                 }
             }
             if(robots.Count>0 && bounds.Intersects(panel))net.AddGlobeRobotBadge(node.Id,bounds);

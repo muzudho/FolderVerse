@@ -11,7 +11,7 @@ public partial class Game1
     private void DrawPhaseCutIn(double now)
     {
         // Auxiliary menus and battlefield changes retain the current campaign phase.
-        string phase=_screen==Screen.Transport?"伝播フェーズ":_screen==Screen.Battle?"戦闘フェーズ":_screen==Screen.BattleResearch?"戦闘研究フェーズ":_screen==Screen.WorldStatus?"内政フェーズ":"";
+        string phase=_screen==Screen.Transport?"伝播フェーズ":_screen==Screen.Battle?"戦闘フェーズ":_screen==Screen.BattleResearch && System.Array.Exists(_lessonPickups,p=>p)?"戦闘研究フェーズ":_screen==Screen.WorldStatus?"内政フェーズ":"";
         if(_screen==Screen.Title){_lastCutInPhase="";_cutInPhase="";return;}
         if(phase!="" && phase!=_lastCutInPhase){_lastCutInPhase=phase;_cutInPhase=phase;_cutInStarted=now;ChooseCutInMob();}
         double age=now-_cutInStarted;if(age<0 || age>=PhaseCutInSeconds || _cutInPhase=="")return;

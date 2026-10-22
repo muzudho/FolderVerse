@@ -21,8 +21,8 @@ public partial class Game1
     private void BeginIndustry()
     {
         StopBattleMusic();
-        // Step one omits the roulette screen; disposal/assembly still receive their normal processing.
-        if(_setup.TutorialStep==1 && _setup.Industry.Pending){
+        // Both introductory steps omit the roulette screen, retaining the normal industry processing.
+        if(_setup.TutorialStep is 1 or 2 && _setup.Industry.Pending){
             _setup.Industry.Roll(_setup.PlacementSeed^_setup.FortuneSeed);_setup.Industry.Apply(_setup);_industryApplied=true;_world.ShowSetup(_setup,true);
         }
         if(!_setup.Industry.Pending){_screen=Screen.WorldStatus;RestoreDomesticCamera();OpenDisposition();return;}

@@ -202,6 +202,7 @@ public partial class Game1
             _ui.Box(new(left,top,size*10,size*10),new Color(105,110,116)*(dim*.9f));
         }
         DrawPersuasionRange(battle,frame,left,top,size);
+        float impactProgress=BattleAttackArt.ImpactProgress(battle,frameIndex,_robotPlaying?RobotBattlePlayback.FramePosition(RobotSlice(_battleWave),_battleAge,RobotFrameSeconds):frameIndex+.5);
         foreach(var unit in frame.Units)
         {
             if(unit.Retreated && BattleState.Inside(unit.Position))continue;
@@ -209,6 +210,7 @@ public partial class Game1
             if(unit.Retreated && (firstExit<0 || frameIndex-firstExit>5))continue;
             float exitAge=unit.Retreated?(float)(RobotBattlePlayback.FramePosition(RobotSlice(_battleWave),_battleAge,RobotFrameSeconds)-firstExit)/5f:0;
             var pos=new Vector2(left+unit.Position.X*size+19,top+unit.Position.Y*size+7);
+            pos+=BattleAttackArt.Recoil(battle,frame.Turn,unit.Id,impactProgress);
             if(unit.Retreated){var last=battle.Frames.Take(firstExit).LastOrDefault(f=>f.Units.Any(u=>u.Id==unit.Id && !u.Retreated));var prior=last?.Units.FirstOrDefault(u=>u.Id==unit.Id);if(prior!=null && BattleState.Inside(prior.Position)){var from=new Vector2(left+prior.Position.X*size+19,top+prior.Position.Y*size+7);var exit=battle.Frames[firstExit].Units.First(u=>u.Id==unit.Id);var step=BattleState.Forward(prior.Facing);var delta=new Vector2(exit.Position.X-prior.Position.X,exit.Position.Y-prior.Position.Y);var direction=delta.LengthSquared()>0?Vector2.Normalize(delta):new Vector2(step.X,step.Y);pos=Vector2.Lerp(from,from+direction*70,Math.Clamp(exitAge*2,0,1));}}
             var r=new Rectangle((int)pos.X,(int)pos.Y,62,85);
             int firstFall=unit.Fallen?battle.Frames.FindIndex(f=>f.Units.Any(u=>u.Id==unit.Id && u.Fallen)):-1;
@@ -323,6 +325,21 @@ public partial class Game1
                     _ui.Tile(impact,new(11,11),MathHelper.PiOver4,Color.White);
                 }
             }
+        }
+        if(impactProgress>=0 && !BattleIntroActive)
+        foreach(var attack in battle.Attacks.Where(a=>a.Turn==frame.Turn && a.Weapon==BattleWeapon.Dagger && a.Target!=null))
+        {
+            var incoming=new Vector2(attack.From.X-attack.To.X,attack.From.Y-attack.To.Y);
+            if(incoming.LengthSquared()==0)continue;
+            incoming.Normalize();var tangent=new Vector2(-incoming.Y,incoming.X);
+            var center=new Vector2(left+attack.To.X*size+50,top+attack.To.Y*size+49)+incoming*27+BattleAttackArt.Recoil(battle,frame.Turn,attack.Target.Value,impactProgress);
+            float pulse=MathF.Sin(impactProgress*MathHelper.Pi),spread=9+pulse*13;
+            for(int ray=0;ray<8;ray++){
+                float angle=ray*MathHelper.TwoPi/8;var direction=new Vector2(MathF.Cos(angle),MathF.Sin(angle));
+                _ui.Tile(center+direction*spread,new(14,4),angle,new Color(255,194,75)*(.45f+pulse*.55f));
+            }
+            _ui.Tile(center,new(17,17),MathHelper.PiOver4,new Color(255,246,199));
+            _ui.Tile(center+tangent*4,new(5,26),MathF.Atan2(incoming.Y,incoming.X),Color.White);
         }
         DrawPersuasionEffects(battle,frame,left,top,size);
         // Draw counters after attack/shield effects so the remaining supplies stay readable.

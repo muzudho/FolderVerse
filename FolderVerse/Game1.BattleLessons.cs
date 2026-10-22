@@ -6,20 +6,30 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private LessonAward[] _lessonAwards=Array.Empty<LessonAward>();
+    private bool[] _lessonPickups=Array.Empty<bool>();
+    private bool LessonPickedUp=>_lessonPage<_lessonPickups.Length && _lessonPickups[_lessonPage];
     private int _lessonPage;
     private double _lessonAge;
     private static readonly Rectangle LessonCatalogButton=new(770,230,120,64);
     private static readonly Rectangle LessonContinue=new(1370,974,440,64),LessonBack=new(90,974,440,64);
     private void BeginBattleResearch()
     {
-        StopBattleMusic();_lessonAwards=_setup.Lessons.Research();_lessonPage=0;_lessonAge=0;_screen=Screen.BattleResearch;
+        StopBattleMusic();
+        var seen=_setup.Lessons.Owned.Aggregate(BattleLesson.None,(a,b)=>a|b);
+        _lessonAwards=_setup.Lessons.Research();_lessonPickups=new bool[_lessonAwards.Length];
+        for(int i=0;i<_lessonAwards.Length;i++){var lesson=_lessonAwards[i].Lesson;_lessonPickups[i]=(seen&lesson)==0;seen|=lesson;}
+        _lessonPage=0;_lessonAge=0;_screen=Screen.BattleResearch;
     }
     private void UpdateBattleResearch(double elapsed,bool proceed)
     {
         _lessonAge+=elapsed;
-        if(_lessonAge<1.8 || !proceed && _lessonAge<7)return;
-        if(++_lessonPage>=Math.Max(1,_lessonAwards.Length)){BeginIndustry();return;}
-        _lessonAge=0;
+        while(true){
+            double duration=LessonPickedUp?7:.4;
+            bool skip=LessonPickedUp && proceed && _lessonAge>=1.8;
+            if(!skip && _lessonAge+1e-8<duration)return;
+            _lessonAge=skip?0:Math.Max(0,_lessonAge-duration);proceed=false;
+            if(++_lessonPage>=Math.Max(1,_lessonAwards.Length)){BeginIndustry();return;}
+        }
     }
     private void LessonText(string text,Rectangle box,float scale,Color color)=>_ui.Center(text,box,Math.Min(scale,(box.Width-28)/_font.MeasureString(text).X),color);
     private void DrawLessonCard(BattleLesson lesson,Rectangle box,bool owned,float reveal=1)
@@ -65,9 +75,9 @@ public partial class Game1
             _ui.Center("失敗を目撃したロボットが、転倒せず帰還すると研究できます",new(180,555,1560,70),.55f,Cream);
         }else{
             var award=_lessonAwards[_lessonPage];
-            float t=MathHelper.SmoothStep(0,1,(float)Math.Clamp((_lessonAge-.35)/.8,0,1));
+            float t=LessonPickedUp?MathHelper.SmoothStep(0,1,(float)Math.Clamp((_lessonAge-.35)/.8,0,1)):1;
             DrawLessonCard(award.Lesson,new(110,180+(int)((1-t)*70),760,710),true,t);
-            _ui.Center("新しい戦訓カードを取得！",new(950,285,850,90),.95f,new(255,220,128));
+            _ui.Center(LessonPickedUp?"新しい戦訓カードを取得！":"戦訓カードを取得！",new(950,285,850,90),.95f,new(255,220,128));
             LessonText(_setup.ConquerorNames[award.Owner],new(950,420,850,100),1.1f,_setup.OwnerColor(award.Owner));
             _ui.Center("生き残ったロボットの経験を、国の戦訓へ",new(950,555,850,70),.56f,Cream);
             _ui.Center($"{_lessonPage+1} / {_lessonAwards.Length}",new(950,710,850,60),.65f,Cream);

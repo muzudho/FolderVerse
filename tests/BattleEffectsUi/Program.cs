@@ -34,13 +34,32 @@ sealed class EffectsGame:Game1{
   Set("_robotScenes",new[]{battle});Set("_robotPlayback",new RobotBattlePlayback(new[]{battle}));Set("_robotPlaying",false);
  }
  protected override void Update(GameTime t){}
+ void DaggerScene(){
+  battle=new BattleState(43,new(){PersuasionPercent=0});battle.Armies.Add(new(){Owner=0,Side=0});battle.Armies.Add(new(){Owner=1,Side=2});
+  var orders=new Dictionary<long,BattleAction>();
+  for(int i=0;i<4;i++){
+   var cell=new Point(i%2==0?2:6,i<2?2:6);var direction=BattleState.Forward((BattleFacing)i);
+   var target=new BattleUnit{Id=100+i,Owner=0,Position=cell,Facing=BattleFacing.North};var attacker=new BattleUnit{Id=200+i,Owner=1,Position=cell+direction,Facing=(BattleFacing)((i+2)%4)};
+   battle.Units.Add(target);battle.Units.Add(attacker);orders[target.Id]=new(Point.Zero,target.Facing);orders[attacker.Id]=new(Point.Zero,attacker.Facing,BattleWeapon.Dagger);
+  }
+  BattleTurnResolver.Advance(battle,orders);
+  for(int i=0;i<4;i++){
+   var recoil=BattleAttackArt.Recoil(battle,battle.Turn,100+i,.5f);var toward=BattleState.Forward((BattleFacing)i);
+   if(recoil.X*toward.X+recoil.Y*toward.Y>=0 || Math.Abs(recoil.Length()-14)>.01)throw new Exception("Dagger recoil must move away from the incoming direction");
+  }
+  if(BattleAttackArt.Recoil(battle,battle.Turn,999,.5f)!=Vector2.Zero || BattleAttackArt.Recoil(battle,battle.Turn,100,0)!=Vector2.Zero || BattleAttackArt.Recoil(battle,battle.Turn,100,-1)!=Vector2.Zero)throw new Exception("No recoil before impact or for a missed target");
+  Set("_robotScenes",new[]{battle});Set("_robotPlayback",new RobotBattlePlayback(new[]{battle}));Set("_robotPendingFocus",-1);
+ }
  protected override void Draw(GameTime t){
   if(frame==1){battle.Finished=true;battle.Winner=0;Set("_robotPendingFocus",0);Set("_robotResultAge",4d);}
+  if(frame==2)DaggerScene();
+  if(frame>=2){var phase=frame==2?BattlePhase.Receive:frame==3?BattlePhase.Consume:BattlePhase.Fall;int index=battle.Frames.FindIndex(f=>f.Phase==phase);Set("_battleAge",index*.25);if(BattleAttackArt.ImpactProgress(battle,index,index+.5)<0)throw new Exception("Impact feedback spans receiving, consumption and fall");}
   GraphicsDevice.Clear(Color.Black);var batch=(SpriteBatch)Get("_spriteBatch");batch.Begin();
   typeof(Game1).GetMethod("DrawRobotBattle",F)!.Invoke(this,null);batch.End();
+  if(frame>=2)for(int i=0;i<4;i++)if(battle.Units.Single(u=>u.Id==100+i).Position!=new Point(i%2==0?2:6,i<2?2:6))throw new Exception("Visual hitback must not move the battle cell");
   var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
   using var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);tex.SetData(pixels);
-  using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,frame==0?"shield.png":"victory.png")))tex.SaveAsPng(file,tex.Width,tex.Height);
-  if(++frame==2){Console.WriteLine("PASS: shields in all four facings and victory during the fifth second render.");Exit();}
+  using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,frame==0?"shield.png":frame==1?"victory.png":$"dagger-{frame}.png")))tex.SaveAsPng(file,tex.Width,tex.Height);
+  if(++frame==5){Console.WriteLine("PASS: shields, victory and directional dagger impacts/recoil in all four directions across receive/consume/fall render without moving board cells.");Exit();}
  }
 }
