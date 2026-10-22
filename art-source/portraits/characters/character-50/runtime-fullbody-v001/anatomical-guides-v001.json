@@ -1,0 +1,54 @@
+{
+  "Date": "2026-10-22T09:04:00+09:00",
+  "Method": "Manual visual inference on fullresolution images; annotations never modify master. Proxy only, hair/pose/footwear uncertainty explicitly shown.",
+  "Guides": [
+    {
+      "Id": "id",
+      "Source": "character-50-id-v001-generated.png",
+      "Width": 1086,
+      "Height": 1448,
+      "Crown": {
+        "X": 540,
+        "Y": 65,
+        "Uncertainty": 20
+      },
+      "Chin": {
+        "X": 540,
+        "Y": 298,
+        "Uncertainty": 6
+      },
+      "Heel": {
+        "X": 580,
+        "Y": 1330,
+        "Uncertainty": 20
+      },
+      "Note": "Front pose: skull hidden by hair/laurel; heel inside boot near rear foot joint, not toe bottom. Approx5.43, broad uncertainty roughly4.8-6.2. No automatic enlargement justified.",
+      "VerticalProxy": 5.43,
+      "Status": "MANUAL_INFERRED_NOT_CERTIFIED"
+    },
+    {
+      "Id": "coin",
+      "Source": "character-50-coin-v002-generated.png",
+      "Width": 1024,
+      "Height": 1536,
+      "Crown": {
+        "X": 465,
+        "Y": 100,
+        "Uncertainty": 30
+      },
+      "Chin": {
+        "X": 345,
+        "Y": 373,
+        "Uncertainty": 8
+      },
+      "Heel": {
+        "X": 570,
+        "Y": 1400,
+        "Uncertainty": 25
+      },
+      "Note": "Profile skull hidden under large hair volume; crown-chin vector tilted. Vertical proxy approx4.76; Euclideanhead approx298 gives4.36, not corrected bodylength. Head may now be too large; do not keep enlarging. Prior neck correction cannot imply final proportion approval.",
+      "VerticalProxy": 4.76,
+      "Status": "MANUAL_INFERRED_NOT_CERTIFIED"
+    }
+  ]
+}
