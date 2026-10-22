@@ -1,0 +1,142 @@
+[
+  {
+    "Source": "character-50-normal-1-v003-generated.png",
+    "Crop": {
+      "Y": 102,
+      "Height": 150,
+      "Width": 225,
+      "X": 710
+    },
+    "Id": 1
+  },
+  {
+    "Source": "character-50-normal-2-v003-generated.png",
+    "Crop": {
+      "Y": 89,
+      "Height": 178,
+      "Width": 266,
+      "X": 622
+    },
+    "Id": 2
+  },
+  {
+    "Source": "character-50-normal-3-v004-generated.png",
+    "Crop": {
+      "Y": 180,
+      "Height": 150,
+      "Width": 225,
+      "X": 602
+    },
+    "Id": 3
+  },
+  {
+    "Source": "character-50-normal-4-v003-generated.png",
+    "Crop": {
+      "Y": 152,
+      "Height": 150,
+      "Width": 225,
+      "X": 602
+    },
+    "Id": 4
+  },
+  {
+    "Source": "character-50-normal-5-v004-generated.png",
+    "Crop": {
+      "Y": 138,
+      "Height": 131,
+      "Width": 197,
+      "X": 730
+    },
+    "Id": 5
+  },
+  {
+    "Source": "character-50-normal-6-v003-generated.png",
+    "Crop": {
+      "Y": 140,
+      "Height": 150,
+      "Width": 225,
+      "X": 592
+    },
+    "Id": 6
+  },
+  {
+    "Source": "character-50-formal-v004-generated.png",
+    "Crop": {
+      "Y": 176,
+      "Height": 139,
+      "Width": 208,
+      "X": 446
+    },
+    "Id": "formal"
+  },
+  {
+    "Source": "character-50-election-v003-generated.png",
+    "Crop": {
+      "Y": 110,
+      "Height": 148,
+      "Width": 221,
+      "X": 430
+    },
+    "Id": "election"
+  },
+  {
+    "Source": "character-50-friends-v002-generated.png",
+    "Crop": {
+      "Y": 176,
+      "Height": 139,
+      "Width": 208,
+      "X": 484
+    },
+    "Id": "friends"
+  },
+  {
+    "Source": "character-50-history-v003-generated.png",
+    "Crop": {
+      "Y": 291,
+      "Height": 122,
+      "Width": 182,
+      "X": 447
+    },
+    "Id": "history"
+  },
+  {
+    "Source": "character-50-id-v005-generated.png",
+    "Crop": {
+      "Y": 108,
+      "Height": 157,
+      "Width": 234,
+      "X": 442
+    },
+    "Id": "id"
+  },
+  {
+    "Source": "character-50-idol-v003-generated.png",
+    "Crop": {
+      "Y": 200,
+      "Height": 191,
+      "Width": 286,
+      "X": 440
+    },
+    "Id": "idol"
+  },
+  {
+    "Source": "character-50-paparazzi-v003-generated.png",
+    "Crop": {
+      "Y": 126,
+      "Height": 157,
+      "Width": 234,
+      "X": 458
+    },
+    "Id": "paparazzi"
+  },
+  {
+    "Source": "character-50-coin-v004-generated.png",
+    "Crop": {
+      "Y": 134,
+      "Height": 165,
+      "Width": 247,
+      "X": 314
+    },
+    "Id": "coin"
+  }
+]

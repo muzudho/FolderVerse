@@ -1,6 +1,6 @@
 {
   "CharacterId": 50,
-  "UpdatedAt": "2026-10-22T20:35:00+09:00",
+  "UpdatedAt": "2026-10-22T21:35:00+09:00",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018",
   "GameAdopted": false,
@@ -35,6 +35,29 @@
           "Source": "character-50-normal-1-v002-generated.png",
           "Sha256": "74851eb15c263248f2cb7ec7d5469da04c45054cc94e5a34b43977232475c43d",
           "Review": "v002 pulledback framing: entire hair ornaments/curls/ribbons/coathem/reachingglove/bothshoes visible with margins. Silverglasses blueeyes open surprisedmouth, bluewhitegold outfit and blackyellowlightningbattery retained. Dynamic tilted foreshortened pose: exact anatomical headcount not certified. Lowerclothing/shoes provisional. 256x192 crop face/glove/battery/staffhead readable; master retained."
+        },
+        {
+          "Source": "normal-1-eye-detail-v001-generated.png",
+          "Sha256": "b41f55c3f67164283a3f8457ce73b4373ff1c54e8b0a2443b9801d2550f7dc44",
+          "Prompt": "normal-1-eye-detail-v001-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "normal-1-eye-input-v001.png"
+          ],
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "大小の白円が反対位置へ分離、黒縁なし。傾いた顔/驚き口/眼鏡保持。"
+        },
+        {
+          "Source": "character-50-normal-1-v004-generated.png",
+          "Sha256": "9434e69785e82e3aa1ee4b4fa559f3b68263631a25b4b0426c2bf85a35b716c1",
+          "Prompt": "character-50-normal-1-v004-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "character-50-normal-1-v003-generated.png",
+            "normal-1-eye-detail-v001-generated.png"
+          ],
+          "Status": "IMPROVED_CANDIDATE_NOT_STAGED",
+          "Review": "主白点が上右へ移動し、左下補助点を確認。ただし補助は淡青反射に接する。驚き口/眼鏡/青眼/金髪/衣装/電池/杖先/前掌/全身両靴保持。256x192で顔/掌/電池/杖先判別。装飾や衣装線の微差あり。"
         }
       ],
       "Preview": {
@@ -77,6 +100,20 @@
           "Height": 192
         },
         "Note": "PortraitRenderer.FitSourceの正方形中央切出しを再現。円周は滑らかな楕円マスクの近似で実ゲーム2pxシザー帯とは差あり。通常2の机右端電池は円外、顔/パンダ主要部/ペン本は判別。通常1/6掌の外端も円で切れるが顔/電池を保持。"
+      },
+      "EyeAudit20261022": {
+        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
+        "Source": "character-50-normal-1-v003-generated.png",
+        "Evidence": "audit-current-eyes-v001.png",
+        "CropRecord": "audit-current-eyes-v001-crops.json",
+        "Finding": "上側主白点と小点を判別。小点は主に上側へ並び、反対斜め下の独立した補助円は不明瞭。",
+        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
+      },
+      "EyeDetailCandidate": {
+        "Source": "character-50-normal-1-v004-generated.png",
+        "Preview": "normal-1-v004-preview.png",
+        "Evidence": "normal-1-eye-review-v004.png",
+        "Status": "IMPROVED_CANDIDATE_NOT_STAGED"
       }
     },
     {
@@ -154,6 +191,14 @@
           "Height": 192
         },
         "Note": "PortraitRenderer.FitSourceの正方形中央切出しを再現。円周は滑らかな楕円マスクの近似で実ゲーム2pxシザー帯とは差あり。通常2の机右端電池は円外、顔/パンダ主要部/ペン本は判別。通常1/6掌の外端も円で切れるが顔/電池を保持。"
+      },
+      "EyeAudit20261022": {
+        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
+        "Source": "character-50-normal-2-v003-generated.png",
+        "Evidence": "audit-current-eyes-v001.png",
+        "CropRecord": "audit-current-eyes-v001-crops.json",
+        "Finding": "上側複数白点。下側が広い淡青反射へ連続し、補助円の分離は不明瞭。",
+        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       }
     },
     {
@@ -243,6 +288,14 @@
           "Height": 192
         },
         "Note": "PortraitRenderer.FitSourceの正方形中央切出しを再現。円周は滑らかな楕円マスクの近似で実ゲーム2pxシザー帯とは差あり。通常2の机右端電池は円外、顔/パンダ主要部/ペン本は判別。通常1/6掌の外端も円で切れるが顔/電池を保持。"
+      },
+      "EyeAudit20261022": {
+        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
+        "Source": "character-50-normal-3-v004-generated.png",
+        "Evidence": "audit-current-eyes-v001.png",
+        "CropRecord": "audit-current-eyes-v001-crops.json",
+        "Finding": "上側主白点あり。下側淡青反射が広く独立補助円は不明瞭。黒手袋の顎指と穏やかな目つき保持。",
+        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       }
     },
     {
@@ -316,6 +369,14 @@
           "Height": 192
         },
         "Note": "PortraitRenderer.FitSourceの正方形中央切出しを再現。円周は滑らかな楕円マスクの近似で実ゲーム2pxシザー帯とは差あり。通常2の机右端電池は円外、顔/パンダ主要部/ペン本は判別。通常1/6掌の外端も円で切れるが顔/電池を保持。"
+      },
+      "EyeAudit20261022": {
+        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
+        "Source": "character-50-normal-4-v003-generated.png",
+        "Evidence": "audit-current-eyes-v001.png",
+        "CropRecord": "audit-current-eyes-v001-crops.json",
+        "Finding": "上側白点あり。下側反射と補助円の区別不明瞭。フード/眼鏡/穏やかな目つき保持。",
+        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       }
     },
     {
@@ -395,6 +456,14 @@
           "Height": 192
         },
         "Note": "PortraitRenderer.FitSourceの正方形中央切出しを再現。円周は滑らかな楕円マスクの近似で実ゲーム2pxシザー帯とは差あり。通常2の机右端電池は円外、顔/パンダ主要部/ペン本は判別。通常1/6掌の外端も円で切れるが顔/電池を保持。"
+      },
+      "EyeAudit20261022": {
+        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
+        "Source": "character-50-normal-5-v004-generated.png",
+        "Evidence": "audit-current-eyes-v001.png",
+        "CropRecord": "audit-current-eyes-v001-crops.json",
+        "Finding": "上側に大小の白点。反対斜め下の小円は反射へ溶ける。振り返り表情保持。",
+        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       }
     },
     {
@@ -468,6 +537,14 @@
           "Height": 192
         },
         "Note": "PortraitRenderer.FitSourceの正方形中央切出しを再現。円周は滑らかな楕円マスクの近似で実ゲーム2pxシザー帯とは差あり。通常2の机右端電池は円外、顔/パンダ主要部/ペン本は判別。通常1/6掌の外端も円で切れるが顔/電池を保持。"
+      },
+      "EyeAudit20261022": {
+        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
+        "Source": "character-50-normal-6-v003-generated.png",
+        "Evidence": "audit-current-eyes-v001.png",
+        "CropRecord": "audit-current-eyes-v001-crops.json",
+        "Finding": "上側白点と下側反射。補助円分離不明瞭。開いた笑顔保持。",
+        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       }
     },
     {
@@ -558,6 +635,14 @@
         ],
         "Finding": "白黒で顔/眼鏡/電池を判別、手は一部切出し外。",
         "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      },
+      "EyeAudit20261022": {
+        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
+        "Source": "character-50-formal-v004-generated.png",
+        "Evidence": "audit-current-eyes-v001.png",
+        "CropRecord": "audit-current-eyes-v001-crops.json",
+        "Finding": "上側に大小の明瞭な白円が並ぶ。反対斜め下の独立小円は不明瞭。",
+        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       }
     },
     {
@@ -622,6 +707,14 @@
         ],
         "Finding": "白黒で顔/眼鏡/電池を判別。体格v002修正未達の履歴は残し、成功扱いにしない。",
         "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      },
+      "EyeAudit20261022": {
+        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
+        "Source": "character-50-election-v003-generated.png",
+        "Evidence": "audit-current-eyes-v001.png",
+        "CropRecord": "audit-current-eyes-v001-crops.json",
+        "Finding": "主白点は上縁付近。下反射が広く補助円分離は不明瞭。",
+        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       }
     },
     {
@@ -679,6 +772,14 @@
         ],
         "Finding": "白黒で開いた笑い口/両手/茶器/電池を判別。座位。",
         "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      },
+      "EyeAudit20261022": {
+        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
+        "Source": "character-50-friends-v002-generated.png",
+        "Evidence": "audit-current-eyes-v001.png",
+        "CropRecord": "audit-current-eyes-v001-crops.json",
+        "Finding": "上側主白点と小点。下側反射に補助円が溶ける。笑い口保持。",
+        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       }
     },
     {
@@ -742,6 +843,14 @@
         ],
         "Finding": "白黒で顔/重ねた手/電池を判別。左右裾は全身原画内。",
         "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      },
+      "EyeAudit20261022": {
+        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
+        "Source": "character-50-history-v003-generated.png",
+        "Evidence": "audit-current-eyes-v001.png",
+        "CropRecord": "audit-current-eyes-v001-crops.json",
+        "Finding": "上側主白点は小さめ。下側淡青反射と補助円の分離不明瞭。落ち着いた目つき保持。",
+        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       }
     },
     {
@@ -897,6 +1006,14 @@
           "character-50-id-v002-generated.png",
           "character-50-id-eye-detail-v002-generated.png"
         ]
+      },
+      "EyeAudit20261022": {
+        "Status": "IMPROVED_REVIEWED",
+        "Source": "character-50-id-v005-generated.png",
+        "Evidence": "audit-current-eyes-v001.png",
+        "CropRecord": "audit-current-eyes-v001-crops.json",
+        "Finding": "v005で上右主白点/左下補助点が改善。補助の一部は反射へ接する。既存個別拡大・白黒確認記録参照。",
+        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       }
     },
     {
@@ -960,6 +1077,14 @@
         ],
         "Finding": "白黒で笑顔/両手ポンポン/電池を判別。小物を含め顔は相対的小さい。",
         "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      },
+      "EyeAudit20261022": {
+        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
+        "Source": "character-50-idol-v003-generated.png",
+        "Evidence": "audit-current-eyes-v001.png",
+        "CropRecord": "audit-current-eyes-v001-crops.json",
+        "Finding": "上側大小白点が並ぶ。反対斜め下補助円の独立は不明瞭。傾き/笑い口保持。",
+        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       }
     },
     {
@@ -1023,6 +1148,14 @@
         ],
         "Finding": "右向きの驚き口/眼鏡/電池を白黒判別。",
         "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      },
+      "EyeAudit20261022": {
+        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
+        "Source": "character-50-paparazzi-v003-generated.png",
+        "Evidence": "audit-current-eyes-v001.png",
+        "CropRecord": "audit-current-eyes-v001-crops.json",
+        "Finding": "上下に光点はあるが下側が反射と接する。斜め顔・驚き口保持。",
+        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       }
     },
     {
@@ -1101,8 +1234,16 @@
         ],
         "Finding": "左横顔/眼鏡/電池/手を白黒判別。旧ガイドは旧原画対象。",
         "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
+      },
+      "EyeAudit20261022": {
+        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
+        "Source": "character-50-coin-v004-generated.png",
+        "Evidence": "audit-current-eyes-v001.png",
+        "CropRecord": "audit-current-eyes-v001-crops.json",
+        "Finding": "可視の細い横顔虹彩を眼鏡つるが横切る。上白点/下側反射あり、独立小円の確認は難しい。隠れた目へ虹彩追加しない。",
+        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       }
     }
   ],
-  "Next": "id v005 color+grayscale reviewed and staged v016; 20 staging hashes verified. Next inspect remaining13 eye details and record concrete findings; then adoption catalog selection build distribution verification. No blanket hair/proportion regeneration. Game0/20."
+  "Next": "Normal1 v004 iris-highlight candidate fullbody/eyes/256x192 reviewed. Supplemental small white touches pale reflection; not perfect compliance. Next circular face-frame check then stage verified candidate after v016 hash verification and backup. Then normal2 eye edit. idv005 selected; game0/20."
 }
