@@ -118,7 +118,7 @@ public partial class Game1
     {
         SaveDomesticCamera();CancelTransportModal();
         if(_movementOpen && _selectedMoveNode>=0)
-        {if(_warPlanning)ReserveInvasion();else _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id,true,true));}
+        {if(_warPlanning)ReserveInvasion();else _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id,true,true,Peaceful:true));}
         if(ShowTutorialAttackGuideIfRequired())return;
         CloseMovement();if(_transportOverview)CloseTransportOverview();
         _setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);_populationCell=-1;OpenBattle();

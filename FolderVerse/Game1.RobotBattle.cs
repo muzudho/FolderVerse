@@ -25,14 +25,16 @@ public partial class Game1
     private int[] BattlePlayers=>_setup.HumanPlayers.Count>0?_setup.HumanPlayers.ToArray():new[]{_setup.PlayerSlot};
     private int[] RobotPriority=>RobotBattlePlayback.Priority(_robotScenes,_robotPlayback.Rounds[_robotRound],BattlePlayers);
     private RobotBattleSlice RobotSlice(int scene)=>_robotPlayback.Rounds[_robotRound].First(s=>s.Scene==scene);
-    private double RobotRoundEnd=>_robotPlayback.Rounds[_robotRound].Max(s=>s.End-s.Start+1)*RobotFrameSeconds;
+    private double RobotSeconds(int scene)=>RobotBattlePlayback.SecondsPerFrame(_robotScenes[scene],RobotSlice(scene),RobotFrameSeconds);
+    private bool RobotMovementRound=>_robotPlayback.Rounds[_robotRound].All(s=>RobotBattlePlayback.MovementOnly(_robotScenes[s.Scene],s));
+    private double RobotRoundEnd=>_robotPlayback.Rounds[_robotRound].Max(s=>(s.End-s.Start+1)*RobotSeconds(s.Scene));
     private double _transportAge;
     private double _robotResultAge;
     private const double RobotResultSeconds=5;
     // At 18 rendered frames/sec, each phase lasts at least four frames.
     private const double RobotFrameSeconds=.25;
     private int RobotFrameIndex(BattleState scene)
-    {var slice=RobotSlice(_battleWave);return Math.Clamp(slice.Start+(int)Math.Floor(_battleAge/RobotFrameSeconds+1e-8),slice.Start,slice.End);}
+    {var slice=RobotSlice(_battleWave);return Math.Clamp(slice.Start+(int)Math.Floor(_battleAge/RobotSeconds(_battleWave)+1e-8),slice.Start,slice.End);}
     private static readonly Rectangle RobotBattlePrevious=new(1120,154,350,48),RobotBattleNext=new(1490,154,350,48);
     private static readonly Rectangle RobotPause=new(1120,934,230,48),RobotStepBack=new(1365,934,230,48),RobotStepNext=new(1610,934,230,48);
     private static readonly Rectangle RobotResultBar=new(1120,990,720,20),RobotResultPause=new(1120,1020,270,50);
@@ -84,7 +86,7 @@ public partial class Game1
         {if(_robotPendingFocus>=0)return;var priority=RobotPriority;int at=Array.IndexOf(priority,_battleWave);int next=priority[Math.Clamp(at+(RobotBattlePrevious.Contains(_pointer)?-1:1),0,priority.Length-1)];if(next!=_battleWave){_robotPendingFocus=next;_robotPendingRound=false;_robotResultAge=0;}return;}
         if(click && (RobotPause.Contains(_pointer) || RobotResultPause.Contains(_pointer))){_robotPlaying=!_robotPlaying;return;}
         if(click && (RobotStepBack.Contains(_pointer) || RobotStepNext.Contains(_pointer)))
-        {if(_robotPendingFocus>=0)return;_robotPlaying=false;int step=RobotStepBack.Contains(_pointer)?-1:1;_battleAge=Math.Clamp(_battleAge+step*RobotFrameSeconds,0,end);return;}
+        {if(_robotPendingFocus>=0)return;_robotPlaying=false;int step=RobotStepBack.Contains(_pointer)?-1:1;_battleAge=Math.Clamp(_battleAge+step*RobotSeconds(_battleWave),0,end);return;}
         if(enter || click && BattleContinue.Contains(_pointer))
         {
             if(_robotPendingFocus>=0){SwitchRobotFocus();return;}
@@ -102,6 +104,7 @@ public partial class Game1
     {
         if(_robotRound+1>=_robotPlayback.Rounds.Length){_robotPendingSummary=true;_robotPendingFocus=_battleWave;_robotResultAge=0;return;}
         int next=RobotBattlePlayback.Priority(_robotScenes,_robotPlayback.Rounds[_robotRound+1],new[]{_setup.PlayerSlot})[0];
+        if(RobotMovementRound){_robotRound++;_battleAge=0;_battleWave=next;return;}
         if(next!=_battleWave){_robotPendingFocus=next;_robotPendingRound=true;_robotResultAge=0;return;}
         _robotRound++;_battleAge=0;
     }
@@ -202,13 +205,13 @@ public partial class Game1
             _ui.Box(new(left,top,size*10,size*10),new Color(105,110,116)*(dim*.9f));
         }
         DrawPersuasionRange(battle,frame,left,top,size);
-        float impactProgress=BattleAttackArt.ImpactProgress(battle,frameIndex,_robotPlaying?RobotBattlePlayback.FramePosition(RobotSlice(_battleWave),_battleAge,RobotFrameSeconds):frameIndex+.5);
+        float impactProgress=BattleAttackArt.ImpactProgress(battle,frameIndex,_robotPlaying?RobotBattlePlayback.FramePosition(RobotSlice(_battleWave),_battleAge,RobotSeconds(_battleWave)):frameIndex+.5);
         foreach(var unit in frame.Units)
         {
             if(unit.Retreated && BattleState.Inside(unit.Position))continue;
             int firstExit=unit.Retreated?battle.Frames.FindIndex(f=>f.Units.Any(u=>u.Id==unit.Id && u.Retreated)):-1;
             if(unit.Retreated && (firstExit<0 || frameIndex-firstExit>5))continue;
-            float exitAge=unit.Retreated?(float)(RobotBattlePlayback.FramePosition(RobotSlice(_battleWave),_battleAge,RobotFrameSeconds)-firstExit)/5f:0;
+            float exitAge=unit.Retreated?(float)(RobotBattlePlayback.FramePosition(RobotSlice(_battleWave),_battleAge,RobotSeconds(_battleWave))-firstExit)/5f:0;
             var pos=new Vector2(left+unit.Position.X*size+19,top+unit.Position.Y*size+7);
             pos+=BattleAttackArt.Recoil(battle,frame.Turn,unit.Id,impactProgress);
             if(unit.Retreated){var last=battle.Frames.Take(firstExit).LastOrDefault(f=>f.Units.Any(u=>u.Id==unit.Id && !u.Retreated));var prior=last?.Units.FirstOrDefault(u=>u.Id==unit.Id);if(prior!=null && BattleState.Inside(prior.Position)){var from=new Vector2(left+prior.Position.X*size+19,top+prior.Position.Y*size+7);var exit=battle.Frames[firstExit].Units.First(u=>u.Id==unit.Id);var step=BattleState.Forward(prior.Facing);var delta=new Vector2(exit.Position.X-prior.Position.X,exit.Position.Y-prior.Position.Y);var direction=delta.LengthSquared()>0?Vector2.Normalize(delta):new Vector2(step.X,step.Y);pos=Vector2.Lerp(from,from+direction*70,Math.Clamp(exitAge*2,0,1));}}
@@ -285,7 +288,7 @@ public partial class Game1
         {
             var from=new Vector2(left+attack.From.X*size+size/2,top+attack.From.Y*size+size/2);
             var to=new Vector2(left+attack.To.X*size+size/2,top+attack.To.Y*size+size/2);var delta=to-from;
-            float fraction=(float)Math.Clamp(_battleAge/RobotFrameSeconds-(frameIndex-RobotSlice(_battleWave).Start),0,1);
+            float fraction=(float)Math.Clamp(_battleAge/RobotSeconds(_battleWave)-(frameIndex-RobotSlice(_battleWave).Start),0,1);
             if(!_robotPlaying)fraction=.5f;
             float progress=((frame.Phase==BattlePhase.Receive?1:0)+fraction)/2;
             if(attack.Weapon==BattleWeapon.Rifle)

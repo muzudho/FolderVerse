@@ -9,6 +9,14 @@ public sealed class RobotBattlePlayback
 {
     public RobotBattleSlice[][] Rounds {get;}
     public static double FramePosition(RobotBattleSlice slice,double age,double seconds)=>Math.Clamp(slice.Start+age/seconds,slice.Start,slice.End+1);
+    public static bool MovementOnly(BattleState scene,RobotBattleSlice slice)
+    {
+        int turn=scene.Frames[slice.Start].Turn;
+        return !scene.Attacks.Any(a=>a.Turn==turn) && !scene.Persuasions.Any(p=>p.Turn==turn) &&
+            !scene.Events.Any(e=>e.Turn==turn && e.Phase is BattlePhase.Fall or BattlePhase.Flag or BattlePhase.Retreat or BattlePhase.Converted) &&
+            !(scene.Finished && slice.End==scene.Frames.Count-1);
+    }
+    public static double SecondsPerFrame(BattleState scene,RobotBattleSlice slice,double normal=.25)=>MovementOnly(scene,slice)?.4/(slice.End-slice.Start+1):normal;
     public RobotBattlePlayback(IReadOnlyList<BattleState> scenes)
     {
         var turns=scenes.Select(b=>b.Frames.Select((f,i)=>(Frame:f,Index:i))

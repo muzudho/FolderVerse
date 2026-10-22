@@ -47,7 +47,12 @@ public sealed class PortraitRenderer
         // Inset past separator pixels and avoid sampling adjacent portraits.
         return new(left+2,top+2,right-left-4,bottom-top-4);
     }
-    public void Draw(SpriteBatch batch,ConquerorLook look,Rectangle destination,bool active=true,bool forCreation=false,Vector2? focalPoint=null)
+    public static Rectangle FaceSource(Rectangle source)
+    {
+        int side=Math.Max(1,(int)(Math.Min(source.Width,source.Height)*.48f));
+        return new(source.Center.X-side/2,source.Y+Math.Max(0,(int)(source.Height*.27f)-side/2),side,side);
+    }
+    public void Draw(SpriteBatch batch,ConquerorLook look,Rectangle destination,bool active=true,bool forCreation=false,Vector2? focalPoint=null,bool faceOnly=false)
     {
         if(look.BaseId<0 || look.BaseId>=60 || look.VariantId<0 || look.VariantId>=6)
             throw new ArgumentOutOfRangeException(nameof(look));
@@ -57,7 +62,8 @@ public sealed class PortraitRenderer
             var individual=forCreation
                 ? _creation[index] ??= _content.Load<Texture2D>("Images/Portraits/conqueror-creation/tiles/character-"+(look.BaseId+1).ToString("00")+"-"+(look.VariantId+1))
                 : _individual[index];
-            var crop=FitSource(new Rectangle(0,0,individual.Width,individual.Height),destination,focalPoint);
+            var sourceArea=new Rectangle(0,0,individual.Width,individual.Height);
+            var crop=FitSource(faceOnly?FaceSource(sourceArea):sourceArea,destination,focalPoint);
             batch.Draw(individual,destination,crop,active?Color.White:new Color(115,115,115));
             return;
         }
@@ -67,7 +73,7 @@ public sealed class PortraitRenderer
         {
             texture=replacement;source=NormalizedSourceBounds(look.VariantId,texture.Width,texture.Height);
         }
-        source=FitSource(source,destination,focalPoint);
+        source=FitSource(faceOnly?FaceSource(source):source,destination,focalPoint);
         batch.Draw(texture,destination,source,active?Color.White:new Color(115,115,115));
     }
     public static Rectangle NormalizedSourceBounds(int variant,int width,int height)

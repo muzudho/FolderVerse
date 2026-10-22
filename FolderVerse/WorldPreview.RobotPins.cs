@@ -16,7 +16,8 @@ public sealed partial class WorldPreview
         var anchor=Vector3.Transform(GlobeAnchor??Vector3.Zero,rotation);
         return rotation*Matrix.CreateTranslation(-anchor.X,-anchor.Y,0);
     }
-    public void DrawRobotPins(WorldSetup setup,CubeNet net,float yaw,float pitch,Rectangle panel)
+    public static float BatteryTilt(double seconds,int ruler)=>(float)((Math.Sin(seconds*MathHelper.TwoPi/8+ruler*.7)+1)*MathHelper.PiOver4);
+    public void DrawRobotPins(WorldSetup setup,CubeNet net,float yaw,float pitch,Rectangle panel,double seconds=0)
     {
         net.ClearGlobeRobotBadges();net.ClearGlobeBatteries();
         if(!setup.Campaign.UseRobotCombat)return;
@@ -42,10 +43,15 @@ public sealed partial class WorldPreview
                 ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var at);
                 var box=new Rectangle((int)at.X-2,(int)at.Y-2,5,5);bounds=bounds==Rectangle.Empty?box:Rectangle.Union(bounds,box);
             }
+            float batteryTilt=0,batteryV=0;
             void Box(float u,float v,float z,float width,float depth,float height,Color color)
             {
                 var corners=new Vector3[8];
-                for(int i=0;i<8;i++){corners[i]=Point(u+((i&1)==0?-1:1)*width/2,v+((i&2)==0?-1:1)*depth/2,z+((i&4)==0?0:height));Track(corners[i]);}
+                for(int i=0;i<8;i++){
+                    float x=u+((i&1)==0?-1:1)*width/2,y=v+((i&2)==0?-1:1)*depth/2,h=z+((i&4)==0?0:height);
+                    if(batteryTilt!=0){float local=y-batteryV,up=h-.005f;y=batteryV+local*MathF.Cos(batteryTilt)-up*MathF.Sin(batteryTilt);h=.005f+local*MathF.Sin(batteryTilt)+up*MathF.Cos(batteryTilt)+.04f*MathF.Sin(batteryTilt);}
+                    corners[i]=Point(x,y,h);Track(corners[i]);
+                }
                 int[][] quads={new[]{0,1,3,2},new[]{4,6,7,5},new[]{0,4,5,1},new[]{2,3,7,6},new[]{0,2,6,4},new[]{1,5,7,3}};
                 foreach(var q in quads){Triangle(corners[q[0]],corners[q[1]],corners[q[2]],color);Triangle(corners[q[0]],corners[q[2]],corners[q[3]],color);}
             }
@@ -74,9 +80,11 @@ public sealed partial class WorldPreview
                 bounds=Rectangle.Empty;var point=setup.Routes.Position(setup.ConquerorLocations[ruler],setup.ConquerorPoints[ruler]);
                 var delta=point-center;int batterySlot=Enumerable.Range(0,ruler).Count(r=>setup.Relations.Powered[r] && setup.Nodes.Current(r)?.Id==node.Id);
                 float u=Vector3.Dot(delta,cell.U)+.32f,v=Vector3.Dot(delta,cell.V)+batterySlot*.13f;
+                batteryV=v;batteryTilt=BatteryTilt(seconds,ruler);
                 Box(u,v,.005f,.09f,.07f,.18f,setup.OwnerColor(ruler));Box(u,v,.185f,.035f,.035f,.018f,new(240,216,147));
                 for(int i=0;i<3;i++)Box(u,v+.038f,.025f+i*.05f,.06f,.009f,.035f,new(45,112,70));
                 if(bounds.Intersects(panel))net.AddGlobeBatteryBadge(ruler,bounds);
+                batteryTilt=0;
             }
         }
         if(mesh.Count==0)return;

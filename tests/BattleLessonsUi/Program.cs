@@ -12,6 +12,7 @@ sealed class LessonGame:Game1
  Point CatalogPoint=>((Rectangle)typeof(Game1).GetField("LessonCatalogButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!).Center;
  void Screen(string name)=>Set("_screen",Enum.Parse(Get("_screen").GetType(),name));
  static void Check(bool ok,string text){if(!ok)throw new Exception(text);}
+ void Tutorial(int step)=>typeof(WorldSetup).GetProperty("TutorialStep")!.SetValue(world,step);
  void CheckPacing(){
   world.Lessons.Pending.AddRange(new[]{new LessonAward(0,BattleLesson.FlagCourtesy),new LessonAward(1,BattleLesson.FlagCourtesy),new LessonAward(2,BattleLesson.RetreatBackwards)});
   Call("BeginBattleResearch");Check(((bool[])Get("_lessonPickups")).SequenceEqual(new[]{true,false,true}),"One pickup per globally new type, including simultaneous country awards");
@@ -20,8 +21,9 @@ sealed class LessonGame:Game1
   Call("UpdateBattleResearch",.4d,false);Check((int)Get("_lessonPage")==2,"Second globally new type is also picked up");
   var saved=AutoSaveStore.Restore<BattleLessons>(AutoSaveStore.Capture(world.Lessons));Check(saved.Owned[0]==BattleLesson.FlagCourtesy,"Global appearance history survives country-card saves");
   world.Lessons.Pending.Add(new(2,BattleLesson.FlagCourtesy));Call("BeginBattleResearch");Check(((bool[])Get("_lessonPickups")).All(p=>!p),"Later country gets no repeated pickup");Call("UpdateBattleResearch",.4d,false);Check(Get("_screen").ToString()!="BattleResearch","Later award completes at 0.4 seconds");
-  Call("BeginBattleResearch");Call("UpdateBattleResearch",.4d,false);Check(Get("_screen").ToString()!="BattleResearch","Empty research also completes at 0.4 seconds");
-  world.Lessons.Reset();Console.WriteLine("PASS: global first-type pickups, seven-second reading, simultaneous duplicates, exact 0.4-second repeats/empty results and persisted history.");
+  Call("BeginBattleResearch");Check(Get("_screen").ToString()!="BattleResearch","Normal game omits empty research entirely");
+  Tutorial(2);Call("BeginBattleResearch");Call("UpdateBattleResearch",1.99d,true);Check(Get("_screen").ToString()=="BattleResearch","Tutorial empty notice holds for two seconds even on input");Call("UpdateBattleResearch",.01d,false);Check(Get("_screen").ToString()!="BattleResearch","Tutorial empty notice finishes at exactly two seconds");Tutorial(0);
+  world.Lessons.Reset();Console.WriteLine("PASS: global first-type pickups, seven-second reading, simultaneous duplicates, 0.4-second repeats, omitted normal empty results and two-second tutorial notices and persisted history.");
  }
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();world=(WorldSetup)Get("_setup");world.SetWorld(123);world.SetCast(456);world.SetPlacement(789);world.SelectPlayer(0);world.HumanPlayers.Add(0);
@@ -38,7 +40,7 @@ sealed class LessonGame:Game1
   if(frame==3){Call("UpdateBattleResearch",0d,true);Check(Get("_screen").ToString()!="BattleResearch","Last card proceeds to industry/domestic");Screen("WorldStatus");Call("OpenStrategyInspector");Set("_domesticSlide",1f);Set("_lastCutInPhase","内政フェーズ");}
   if(frame==4){Check((bool)Call("DomesticViewClick",CatalogPoint),"World plan card button handles click");Check(Get("_screen").ToString()=="LessonCatalog","Button opens catalogue");}
   if(frame==5){Call("HandleInputCore",new Microsoft.Xna.Framework.Input.MouseState(),new Microsoft.Xna.Framework.Input.KeyboardState(Microsoft.Xna.Framework.Input.Keys.Escape),new GameTime(TimeSpan.FromSeconds(20),TimeSpan.FromSeconds(.02)),true);Check(Get("_screen").ToString()=="WorldStatus","Esc returns catalogue to world plan");Call("DomesticViewClick",CatalogPoint);world.SelectPlayer(1);world.Lessons.Owned[1]=BattleLesson.FireDiscipline;}
-  if(frame==6){Screen("Battle");Set("_robotSummary",true);Call("RobotBattleInput",0d,false,true);Check(Get("_screen").ToString()=="BattleResearch" && ((LessonAward[])Get("_lessonAwards")).Length==0,"No duplicate awards next research");Set("_lessonAge",3d);Set("_lastCutInPhase","戦闘研究フェーズ");}
+  if(frame==6){Tutorial(2);Screen("Battle");Set("_robotSummary",true);Call("RobotBattleInput",0d,false,true);Check(Get("_screen").ToString()=="BattleResearch" && ((LessonAward[])Get("_lessonAwards")).Length==0,"No duplicate awards next research");Set("_lessonAge",1d);Set("_lastCutInPhase","戦闘研究フェーズ");}
   if(frame==7){Call("UpdateBattleResearch",8d,false);Check(Get("_screen").ToString()!="BattleResearch","Research auto advances in demo/autoplay");Screen("WorldStatus");world.Relations.SetSuperior(1,0);Call("OpenStrategyInspector");Set("_domesticSlide",1f);Set("_lastCutInPhase","内政フェーズ");Call("FocusStatusGlobe");((WorldPreview)Get("_world")).GlobeZoom=2;}
   if(frame==8){world.Lessons.Pending.Add(new(2,BattleLesson.FlagCourtesy));Call("BeginBattleResearch");Set("_lessonAge",.2d);Check(((bool[])Get("_lessonPickups")).All(p=>!p),"Repeated card renders fully visible with no pickup animation");}
   if(frame==9){Call("UpdateBattleResearch",.2d,false);Check(Get("_screen").ToString()!="BattleResearch","Visible repeat completes at 0.4 seconds");Screen("WorldStatus");Call("ResetInspector");Set("_domesticSlide",0f);Set("_lastCutInPhase","内政フェーズ");Call("FocusStatusGlobe");}

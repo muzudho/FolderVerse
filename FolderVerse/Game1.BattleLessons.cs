@@ -19,12 +19,13 @@ public partial class Game1
         _lessonAwards=_setup.Lessons.Research();_lessonPickups=new bool[_lessonAwards.Length];
         for(int i=0;i<_lessonAwards.Length;i++){var lesson=_lessonAwards[i].Lesson;_lessonPickups[i]=(seen&lesson)==0;seen|=lesson;}
         _lessonPage=0;_lessonAge=0;_screen=Screen.BattleResearch;
+        if(_lessonAwards.Length==0 && _setup.TutorialStep==0)BeginIndustry();
     }
     private void UpdateBattleResearch(double elapsed,bool proceed)
     {
         _lessonAge+=elapsed;
         while(true){
-            double duration=LessonPickedUp?7:.4;
+            double duration=_lessonAwards.Length==0?2:LessonPickedUp?7:.4;
             bool skip=LessonPickedUp && proceed && _lessonAge>=1.8;
             if(!skip && _lessonAge+1e-8<duration)return;
             _lessonAge=skip?0:Math.Max(0,_lessonAge-duration);proceed=false;

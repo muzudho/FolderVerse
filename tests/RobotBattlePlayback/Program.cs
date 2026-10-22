@@ -29,3 +29,10 @@ var waiting=Scene(20,new[]{3,7},Array.Empty<int>(),1,1);waiting.Units[0].Owner=7
 var other=Scene(21,new[]{0,8},new[]{0},20,1);var pendingScenes=new[]{other,waiting};var pendingReplay=new RobotBattlePlayback(pendingScenes);
 Check(RobotBattlePlayback.Priority(pendingScenes,pendingReplay.Rounds[0],new[]{3,0})[0]==1,"Player one is first even when her army is waiting rather than visible in the first frame");
 Console.WriteLine("PASS: permanent player-one priority includes participating armies without a currently visible unit.");
+var quiet=Scene(50,new[]{0,1},Array.Empty<int>(),2,2);var slices=new RobotBattlePlayback(new[]{quiet}).Rounds;
+var quietSlice=slices[0][0];Check(RobotBattlePlayback.MovementOnly(quiet,quietSlice) && Math.Abs(RobotBattlePlayback.SecondsPerFrame(quiet,quietSlice)*(quietSlice.End-quietSlice.Start+1)-.4)<1e-8,"Entire movement-only turn lasts 0.4 seconds");
+quiet.Attacks.Add(new(1,5000,null,new(0,0),new(1,0),BattleWeapon.Rifle));Check(!RobotBattlePlayback.MovementOnly(quiet,quietSlice) && RobotBattlePlayback.SecondsPerFrame(quiet,quietSlice)==.25,"Missed attacks still retain full animation speed");quiet.Attacks.Clear();
+foreach(var phase in new[]{BattlePhase.Flag,BattlePhase.Fall,BattlePhase.Retreat,BattlePhase.Converted}){quiet.Events.Add(new(1,phase,0,"meaningful"));Check(!RobotBattlePlayback.MovementOnly(quiet,quietSlice),"Meaningful phase remains readable "+phase);quiet.Events.Clear();}
+quiet.Persuasions.Add(new(1,-1,5000,0,1,new(0,0),new(1,0),false));Check(!RobotBattlePlayback.MovementOnly(quiet,quietSlice),"Even failed persuasion retains reading time");quiet.Persuasions.Clear();quiet.Finished=true;
+Check(RobotBattlePlayback.MovementOnly(quiet,quietSlice) && !RobotBattlePlayback.MovementOnly(quiet,slices[1][0]),"Final result retains time while earlier quiet turns accelerate");
+Console.WriteLine("PASS: 0.4-second movement turn, attacks including misses, persuasion, flag/fall/withdrawal/conversion and final-result exclusions.");
