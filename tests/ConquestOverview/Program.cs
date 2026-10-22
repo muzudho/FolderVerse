@@ -35,7 +35,8 @@ sealed class OverviewGame:Game1{
   Check(tally.SubordinateCells==2,"Subordinate breakdown includes descendants without counting their land twice");
   Check(tally.Painted(world,1.17)==0 && tally.Painted(world,1.18)==1 && tally.Counted(world,tally.CountEnd)==3,"One painted cell increments counter, then descendants contribute");
   Check(tally.CellsStart<tally.EntryStart && tally.EntryStart<tally.ScoreStart && tally.ScoreStart<tally.RankStart && tally.RankStart<tally.FaceStart,"Cells, entry, points, rank and portrait reveal in order");
-  Check(tally.Score(tally.ConvertStart)==301 && Math.Abs(tally.Duration-tally.FaceStart-4)<1e-8,"Static arithmetic score and four-second rank");
+  Check(tally.Score(tally.ConvertStart)==301 && tally.Duration>=tally.FaceStart+4,"Static arithmetic score and at least four-second rank");
+  Check(tally.CellsStart<tally.TourSeconds && tally.Duration<tally.CountEnd+7.7,"Calculation begins during globe tour and shortens the presentation");
   Check(ConquerorRelations.RankingScore(10,9,6)==1009,"Ten cells plus Entry nine is 1009");
   var multi=new WorldSetup();multi.SetWorld(123);multi.SetCast(456);multi.SetPlacement(789);
   foreach(var n in multi.Nodes.All)n.Owner=0;
@@ -45,6 +46,7 @@ sealed class OverviewGame:Game1{
   var paintedTour=new ConquestTally(multi,new ConquestPresentation(multi).Cards.First(c=>c.Ruler==0 && !c.Reminder));
   for(double age=0;age<paintedTour.TourSeconds;age+=.01)Check(paintedTour.Painted(multi,age)<=paintedTour.Cells.Length,"Multi-face reveal remains bounded");
   Check(paintedTour.Painted(multi,paintedTour.TourSeconds)==paintedTour.Cells.Length,"All faces finish painting");
+  Check(paintedTour.ScoreStart<paintedTour.TourSeconds && paintedTour.Duration>=paintedTour.CountEnd && paintedTour.Duration>=paintedTour.FaceStart+4 && paintedTour.Duration<paintedTour.CountEnd+7.7,"Multi-face tour overlaps score calculation, finishes all paint, and preserves result reading time");
   foreach(var n in multi.Nodes.All)n.Owner=-1;
   var emptyTally=new ConquestTally(multi,new ConquestPresentation(multi).Cards.First(c=>c.Ruler==0 && !c.Reminder));
   Check(emptyTally.TotalCells==0 && emptyTally.Score(emptyTally.ConvertStart)==1,"Zero cells retain positive entry points");

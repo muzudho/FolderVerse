@@ -8,7 +8,7 @@ public partial class Game1
     private bool WandererLocationVisible(out Vector2 at)
     {
         at=Vector2.Zero;int ruler=_setup.PlayerSlot;
-        if(ruler<0 || !_setup.Relations.Powered[ruler] || _setup.TerritoryCounts[ruler]>0 || MapTransitionActive || _net.IsAnimating)return false;
+        if(ruler<0 || !_setup.Relations.Powered[ruler] || MapTransitionActive || _net.IsAnimating)return false;
         var node=_setup.Nodes.Current(ruler);if(node==null)return false;
         if(_statusGlobe){
             if(!_world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center),_setup.Cells[node.Cell].Normal,_yaw,_pitch,StatusGlobeArea,out at))return false;
@@ -19,7 +19,7 @@ public partial class Game1
     {
         if(!WandererLocationVisible(out var at)){
             int ruler=_setup.PlayerSlot;
-            if(ruler>=0 && _setup.Relations.Powered[ruler] && _setup.TerritoryCounts[ruler]==0 && !MapTransitionActive && !_net.IsAnimating){
+            if(ruler>=0 && _setup.Relations.Powered[ruler] && !MapTransitionActive && !_net.IsAnimating){
                 var hint=new Rectangle(MapViewBounds.X+16,MapViewBounds.Y+105,480,38);
                 _ui.Box(hint,new(12,31,43));_ui.Center("現在地は画面外 / 現在地へ移動 で表示",hint,.42f,Cream);
             }

@@ -13,7 +13,7 @@ public sealed class ConquestTally
     public bool Compact {get;}
     public double TourSeconds {get;}
     public double CountEnd=>Compact?0:TourSeconds+Math.Max(0,TotalCells-Cells.Length)*.18;
-    public double CellsStart=>CountEnd;
+    public double CellsStart=>Compact?0:.35;
     public double EntryStart=>Compact?0:CellsStart+1;
     public double ScoreStart=>Compact?0:EntryStart+1;
     public double ConvertStart=>ScoreStart;
@@ -21,7 +21,7 @@ public sealed class ConquestTally
     public double FaceStart=>Compact?0:RankStart+.7;
     private readonly double _compactSeconds;
     public static double CompactSeconds(int count)=>count>0?5d/count:0;
-    public double Duration=>Compact?_compactSeconds:FaceStart+4;
+    public double Duration=>Compact?_compactSeconds:Math.Max(CountEnd,FaceStart+4);
     public ConquestTally(WorldSetup w,ConquestPresentation.Card card,bool compact=false){
         Compact=compact;
         Powered=w.Relations.Powered[card.Ruler];

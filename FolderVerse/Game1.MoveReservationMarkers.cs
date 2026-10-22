@@ -5,6 +5,14 @@ using Microsoft.Xna.Framework;
 
 public partial class Game1
 {
+    private bool HasMoveReservation()=>_setup.Campaign.PlannedOrders.Any(o=>o.Peaceful && CanPlanRuler(o.Ruler));
+    private void DrawMoveReservationButton()
+    {
+        _ui.Button(MovementButton,"   移動予約",Accent,.48f);
+        var lamp=new Rectangle(MovementButton.X+10,MovementButton.Center.Y-8,16,16);
+        _ui.Box(new(lamp.X-2,lamp.Y-2,20,20),new Color(10,28,35));
+        _ui.Box(lamp,HasMoveReservation()?new Color(139,255,158):new Color(64,79,83));
+    }
     private int[] MoveReservationTargets()=>_setup.Campaign.PlannedOrders.Where(o=>o.Peaceful && o.Queen && CanPlanRuler(o.Ruler)).Select(o=>o.TargetNode)
         .Concat(_movementOpen && !_warPlanning && _selectedMoveNode>=0?new[]{_selectedMoveNode}:Array.Empty<int>()).Distinct().ToArray();
     // The sword is above the node; the bus is below and to its right.
