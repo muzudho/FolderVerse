@@ -76,6 +76,7 @@ public sealed partial class WorldSetup
     public ConquestCampaign Campaign {get;}=new();
     public RobotWorld Robots {get;}=new();
     public IndustryCycle Industry {get;}=new();
+    public BattleLessons Lessons {get;}=new();
     public ConquerorRelations Relations {get;}=new();
     public void SelectPlayer(int slot)
     {
@@ -93,7 +94,7 @@ public sealed partial class WorldSetup
     public Color OwnerColor(int slot) => slot<0?new Color(155,169,180):Colors[ColorIndices[slot]];
     public void SetWorld(int seed)
     {
-        TutorialStep=0;_presetCastCount=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();
+        TutorialStep=0;_presetCastCount=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();Lessons.Reset();
         TutorialPocketed=TutorialMoved=TutorialPocketNoticeShown=TutorialMoveNoticeShown=false;
         WandererPolicies=new WandererPolicy[CastCount];
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
@@ -167,6 +168,7 @@ public sealed partial class WorldSetup
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
         PlayerSlot=-1;
         Relations.Reset();
+        Lessons.Reset();
         PlacementSeed = seed;
         var random = new SeedRandom(seed);
         int[] order = Enumerable.Range(0, Cells.Length).ToArray(); random.Shuffle(order);

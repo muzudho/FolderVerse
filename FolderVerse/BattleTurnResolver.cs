@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 public static class BattleTurnResolver
 {
-    private sealed class Hits {public int Dagger,Rifle,Side;public bool DaggerHit,HostileHit;}
+    private sealed class Hits {public int Dagger,Rifle,Side;public bool DaggerHit,HostileHit,RetreatBackShot;}
     public static void Advance(BattleState battle,IReadOnlyDictionary<long,BattleAction> orders=null)
     {
         if(battle.Finished)return;
@@ -19,9 +19,11 @@ public static class BattleTurnResolver
             if(Math.Abs(action.Step.X)+Math.Abs(action.Step.Y)>1 || (int)action.Facing<0 || (int)action.Facing>3 || !Enum.IsDefined(action.Weapon) || action.Weapon==BattleWeapon.Dagger && unit.Daggers==0 || action.Weapon==BattleWeapon.Rifle && unit.Rifles==0 || unit.Role==BattleRole.Queen && action.Weapon!=BattleWeapon.None)throw new ArgumentException("Invalid battle action.");
         }
         BattleRetreat.ClearPaths(battle,units,actions);
+        BattleLessons.Apply(battle,units,actions);
         battle.Turn++;battle.Events.Add(new(battle.Turn,BattlePhase.Choose,0,"全軍行動確定"));
         battle.Capture(BattlePhase.Choose);
         var origin=units.ToDictionary(u=>u.Id,u=>u.Position);var positions=units.ToDictionary(u=>u.Id,u=>u.Position+actions[u.Id].Step);
+        var flagEntrants=units.Where(u=>!u.Retreating && u.Role!=BattleRole.Queen && !battle.Allied(u.Owner,battle.Defender) && u.Position!=battle.Flag && positions[u.Id]==battle.Flag).ToArray();
         var blocked=new HashSet<long>();
         foreach(var u in units)
         {
@@ -44,6 +46,7 @@ public static class BattleTurnResolver
             u.Position=positions[u.Id];if(!BattleState.Inside(u.Position))u.Retreated=true;
             battle.Events.Add(new(battle.Turn,blocked.Contains(u.Id)?BattlePhase.Rollback:BattlePhase.Place,u.Id,$"{u.Position.X},{u.Position.Y} / {u.Facing}"));
         }
+        if(battle.Kind==BattleKind.Node && flagEntrants.Length>=2 && flagEntrants.All(u=>blocked.Contains(u.Id) && u.Position!=battle.Flag))BattleLessons.Witness(battle,BattleLesson.FlagCourtesy);
         foreach(var u in units.Where(u=>u.Active && u.ResumeAfterRetreatOverlap))if(!units.Any(other=>other.Active && other.Id!=u.Id && !other.Retreating && other.Position==u.Position)){
             u.ResumeAfterRetreatOverlap=false;if(!battle.Army(u.Owner).Withdrawing)u.Retreating=false;
         }
@@ -68,9 +71,11 @@ public static class BattleTurnResolver
             }
             battle.Attacks.Add(new(battle.Turn,attacker.Id,target?.Id,attacker.Position,end,weapon));
             if(target==null)continue;
+            if(battle.Allied(attacker.Owner,target.Owner))BattleLessons.Witness(battle,BattleLesson.FireDiscipline);
             hits[target.Id].HostileHit|=!battle.Allied(attacker.Owner,target.Owner);
             if(weapon==BattleWeapon.Dagger)hits[attacker.Id].DaggerHit=true;
             var front=BattleState.Forward(target.Facing);var delta=attacker.Position-target.Position;bool frontal=front.X!=0?delta.Y==0 && Math.Sign(delta.X)==front.X:delta.X==0 && Math.Sign(delta.Y)==front.Y;
+            if(weapon==BattleWeapon.Rifle && target.Retreating && delta.X*front.X+delta.Y*front.Y<0)hits[target.Id].RetreatBackShot=true;
             if(!frontal)hits[target.Id].Side++;
             else if(weapon==BattleWeapon.Dagger){if(actions[target.Id].Weapon!=BattleWeapon.Dagger)hits[target.Id].Dagger++;}
             else hits[target.Id].Rifle++;
@@ -91,6 +96,7 @@ public static class BattleTurnResolver
             battle.Events.Add(new(battle.Turn,BattlePhase.Consume,u.Id,$"短剣 {u.Daggers} / 小銃 {u.Rifles} / 盾 {u.Shields}"));
         }
         battle.Capture(BattlePhase.Consume);
+        if(units.Any(u=>u.Active && hits[u.Id].RetreatBackShot && hits[u.Id].Dagger+hits[u.Id].Rifle+hits[u.Id].Side>0))BattleLessons.Witness(battle,BattleLesson.RetreatBackwards);
         foreach(var u in units.Where(u=>u.Active))
         {
             var h=hits[u.Id];if(h.Dagger+h.Rifle+h.Side==0)continue;

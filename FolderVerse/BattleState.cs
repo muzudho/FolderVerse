@@ -34,6 +34,7 @@ public sealed class BattleUnit
     public int Daggers=3,Rifles=4,Shields=3;
     public bool Fallen,Retreated,Retreating;
     public bool ResumeAfterRetreatOverlap;
+    public BattleLesson WitnessedLessons;
     public bool Active=>!Fallen && !Retreated;
     public Robot Robot;
 }
@@ -64,6 +65,7 @@ public sealed partial class BattleState
     public List<BattleAttack> Attacks {get;}=new();
     public List<BattlePersuasion> Persuasions {get;}=new();
     public int GlobalTurn;
+    public BattleLesson[] Lessons=new BattleLesson[WorldSetup.CastCount];
     public HashSet<long> PersuadedUnits {get;}=new();
     public Point Flag=new(5,5);
     public bool FlagStanding=true,Finished;

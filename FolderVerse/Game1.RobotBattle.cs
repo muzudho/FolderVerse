@@ -49,7 +49,7 @@ public partial class Game1
         _screen=Screen.Transport;_transportAge=0;BeginPropagation();
     }
     private void FinishTransport()
-    {if(_robotScenes.Length>0){_screen=Screen.Battle;_battleIntroAge=0;}else BeginIndustry();}
+    {if(_robotScenes.Length>0){_screen=Screen.Battle;_battleIntroAge=0;}else if(_setup.Lessons.Pending.Count>0)BeginBattleResearch();else BeginIndustry();}
     private void UpdateTransport(double elapsed,bool proceed,double now)
     {
         // Wait for Draw to register the card, then advance only time after it ends.
@@ -78,7 +78,7 @@ public partial class Game1
         if(_robotSummary)
         {
 
-         if(enter || click && BattleContinue.Contains(_pointer)){BeginIndustry();}return;}
+         if(enter || click && BattleContinue.Contains(_pointer)){BeginBattleResearch();}return;}
         var scene=_robotScenes[_battleWave];double end=RobotRoundEnd;
         if(click && (RobotBattlePrevious.Contains(_pointer) || RobotBattleNext.Contains(_pointer)))
         {if(_robotPendingFocus>=0)return;var priority=RobotPriority;int at=Array.IndexOf(priority,_battleWave);int next=priority[Math.Clamp(at+(RobotBattlePrevious.Contains(_pointer)?-1:1),0,priority.Length-1)];if(next!=_battleWave){_robotPendingFocus=next;_robotPendingRound=false;_robotResultAge=0;}return;}

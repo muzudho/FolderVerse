@@ -235,6 +235,7 @@ public sealed class RobotCampaign
     private BattleState NewState(WorldSetup world,RobotEncounter e)
     {
         var state=new BattleState(world.PlacementSeed^e.Id^_nextBattle,Rules){Id=_nextBattle++,GlobalTurn=world.Population.Turn,Kind=e.Kind,SourceNode=e.Source,TargetNode=e.Target,Defender=e.Defender,Allied=world.Relations.Allied};
+        state.Lessons=(BattleLesson[])world.Lessons.Owned.Clone();
         foreach(var rank in world.Relations.ProvisionalRanking(world))state.NewspaperRanks[rank.Ruler]=rank.Rank;
         state.BuildTerrain(world.Nodes.All[e.Target].Terrain==TravelTerrain.Sea?BattleTerrain.Sea:e.Kind==BattleKind.Node?BattleTerrain.Fort:BattleTerrain.Field);return state;
     }
@@ -255,7 +256,7 @@ public sealed class RobotCampaign
     }
     private void RunSegment(WorldSetup world,RobotEncounter e)
     {
-        foreach(var state in e.Battles){if(state.GlobalTurn!=world.Population.Turn)state.PersuadedUnits.Clear();state.GlobalTurn=world.Population.Turn;state.Events.Clear();state.Frames.Clear();state.Attacks.Clear();state.Persuasions.Clear();}
+        foreach(var state in e.Battles){state.Lessons=(BattleLesson[])world.Lessons.Owned.Clone();if(state.GlobalTurn!=world.Population.Turn)state.PersuadedUnits.Clear();state.GlobalTurn=world.Population.Turn;state.Events.Clear();state.Frames.Clear();state.Attacks.Clear();state.Persuasions.Clear();}
         foreach(var state in e.Battles)foreach(var army in state.Armies.Where(a=>e.WithdrawalOwners.Contains(a.Owner))){
             army.Withdrawing=true;
             foreach(var unit in state.Units.Where(u=>u.Owner==army.Owner && u.Active))unit.Retreating=true;
@@ -377,6 +378,7 @@ public sealed class RobotCampaign
         foreach(var unit in units.OrderBy(u=>u.Active && state.Winner>=0 && world.Relations.Allied(u.Owner,state.Winner)?1:0).ThenBy(u=>u.Id))
         {
             if(e.ReturnedWanderers.Contains(unit.Id))continue;
+            world.Lessons.BringHome(unit);
             var army=state.Army(unit.Owner);int home=army.HomeNode;
             if(unit.Role==BattleRole.Queen)
             {

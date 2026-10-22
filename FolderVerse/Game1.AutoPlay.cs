@@ -21,6 +21,7 @@ public partial class Game1
         switch(_screen)
         {
             case Screen.Industry:UpdateIndustry(elapsed,false);break;
+            case Screen.BattleResearch:UpdateBattleResearch(elapsed,false);break;
             case Screen.WorldStatus:
                 if(_autoStepAge<2)return true;
                 _autoStepAge=0;

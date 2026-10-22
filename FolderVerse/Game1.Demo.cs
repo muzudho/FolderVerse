@@ -57,6 +57,7 @@ public partial class Game1
             return true;
         }
         if(_screen==Screen.Industry){UpdateIndustry(elapsed,false);_demoStepAge=0;return true;}
+        if(_screen==Screen.BattleResearch){UpdateBattleResearch(elapsed,false);_demoStepAge=0;return true;}
         if(_demoAge>20*60 && _screen==Screen.WorldStatus && _demoFinishStage==0)
         {_demoFinishStage=1;_demoStepAge=0;}
         if(_demoFinishStage>0)

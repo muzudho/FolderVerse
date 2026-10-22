@@ -72,6 +72,7 @@ public partial class Game1
     private bool DomesticViewClick(Point p)
     {
         if(_trainingOpen || _supervisorDialog>0)return false;
+        if(_reignView && !InspectingSupervisor && LessonCatalogButton.Contains(new Point(p.X-NodeInspectorOffset,p.Y))){_screen=Screen.LessonCatalog;return true;}
         if(WandererPolicyClick(p))return true;
         if(InspectorVisible && InspectorClose.Contains(p)){CloseNodeInspector();return true;}
         if(InspectorVisible)return InspectorHandle.Contains(p);

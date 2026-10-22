@@ -21,7 +21,10 @@ public static class BattleRetreat
                 if(!battle.Walkable(next))continue;
                 first[next]=current==unit.Position?step:first[current];queue.Enqueue(next);
             }
-            var delta=move??Point.Zero;actions[unit.Id]=new(delta,delta==Point.Zero?unit.Facing:BattleAi.Face(delta),BattleWeapon.None);
+            var delta=move??Point.Zero;
+            var facing=delta==Point.Zero?unit.Facing:BattleAi.Face(delta);
+            if(delta!=Point.Zero && BattleLessons.Has(battle,unit,BattleLesson.RetreatBackwards))facing=(BattleFacing)(((int)facing+2)%4);
+            actions[unit.Id]=new(delta,facing,BattleWeapon.None);
         }
     }
 }
