@@ -20,7 +20,7 @@ sealed class OverviewGame:Game1{
   Check(main.Select(c=>c.Ruler).SequenceEqual(world.Relations.ProvisionalRanking(world).OrderByDescending(e=>e.Rank).Select(e=>e.Ruler)),"Lowest rank first main introductions");
   int child=Array.FindIndex(p.Cards,c=>c.Ruler==3 && !c.Reminder);Check(p.Cards[child-2].Ruler==0 && p.Cards[child-1].Ruler==2 && p.Cards[child-1].Reminder,"Ancestors recalled root first");
   world.HumanPlayers.Remove(3);
-  Check(ConquestPresentation.Detailed(world,0,6) && ConquestPresentation.Detailed(world,5,3) && !ConquestPresentation.Detailed(world,2,4),"Only human identities and top three keep detailed animation; controlled subordinates are compact");
+  Check(ConquestPresentation.Detailed(world,0,6) && ConquestPresentation.Detailed(world,5,2) && !ConquestPresentation.Detailed(world,5,3) && !ConquestPresentation.Detailed(world,2,4),"Only human identities and top two keep detailed animation; controlled subordinates are compact");
   var compactCard=new ConquestPresentation.Card(3,6,3,false,ConquestPresentation.FaceTour(world,3));
   var compact=new ConquestTally(world,compactCard,true);
   int compactCount=world.Relations.ProvisionalRanking(world).Count(r=>!ConquestPresentation.Detailed(world,r.Ruler,r.Rank));

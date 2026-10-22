@@ -10,11 +10,12 @@ void Turn(BattleState b,params (BattleUnit Unit,BattleWeapon Weapon,Point Step,B
 }
 var b=Board();var a=Unit(b,1,0,4,4,BattleFacing.South);var c=Unit(b,2,1,4,5,BattleFacing.North);
 Turn(b,(a,BattleWeapon.Dagger,Point.Zero,null),(c,BattleWeapon.Dagger,Point.Zero,null));Check(a.Daggers==2 && c.Daggers==2 && a.Shields==4 && c.Shields==4 && !a.Fallen && !c.Fallen,"Dagger clash");
+Check(b.Attacks.All(hit=>!BattleAttackArt.CausesDaggerFall(b,hit)) && BattleAttackArt.Recoil(b,b.Turn,a.Id,.5f)==Vector2.Zero && BattleAttackArt.Recoil(b,b.Turn,c.Id,.5f)==Vector2.Zero,"Successful dagger defense has neither hit marks nor recoil");
 Check(BattleAttackArt.Clashes(b.Attacks[0],b.Attacks[1]),"Frontal dagger hit records produce clash art");
 Check(!BattleAttackArt.Clashes(b.Attacks[0],b.Attacks[1] with {Weapon=BattleWeapon.Rifle}),"Rifle cannot produce dagger sparks");
 Check(!BattleAttackArt.Clashes(b.Attacks[0],b.Attacks[1] with {Turn=2}),"Different turn attacks do not clash");
 Check(!BattleAttackArt.Clashes(b.Attacks[0],b.Attacks[1] with {Target=null}),"Missed dagger does not clash");
-b=Board();a=Unit(b,1,0,4,4,BattleFacing.South);c=Unit(b,2,1,4,5,BattleFacing.North);Turn(b,(a,BattleWeapon.Dagger,Point.Zero,null));Check(a.Daggers==2 && c.Shields==3 && !c.Fallen,"Passive shield");
+b=Board();a=Unit(b,1,0,4,4,BattleFacing.South);c=Unit(b,2,1,4,5,BattleFacing.North);Turn(b,(a,BattleWeapon.Dagger,Point.Zero,null));Check(a.Daggers==2 && c.Shields==3 && !c.Fallen,"Passive shield");Check(!BattleAttackArt.CausesDaggerFall(b,b.Attacks[0]) && BattleAttackArt.Recoil(b,b.Turn,c.Id,.5f)==Vector2.Zero,"Shield success has no hit mark or hitback");
 b=Board();a=Unit(b,1,0,4,4,BattleFacing.South);c=Unit(b,2,1,4,5,BattleFacing.North);c.Shields=0;Turn(b,(a,BattleWeapon.Dagger,Point.Zero,null));Check(c.Fallen,"No shield dagger");
 b=Board();a=Unit(b,1,0,4,4,BattleFacing.South);c=Unit(b,2,1,4,5,BattleFacing.North);Turn(b,(a,BattleWeapon.Dagger,Point.Zero,null),(c,BattleWeapon.Rifle,Point.Zero,null));Check(c.Fallen && !a.Fallen && a.Daggers==2 && c.Rifles==2 && c.Shields==4,"Adjacent dagger vs rifle");
 b=Board();a=Unit(b,1,0,4,4,BattleFacing.South);c=Unit(b,2,1,4,5,BattleFacing.North);Turn(b,(a,BattleWeapon.Rifle,Point.Zero,null),(c,BattleWeapon.Rifle,Point.Zero,null));Check(!a.Fallen && !c.Fallen && a.Rifles==2 && c.Rifles==2,"Adjacent rifles jump");
@@ -124,3 +125,9 @@ BattleAi.Choose(b,a);Check(!a.Retreating,"Leader retains exhausted final soldier
 c.Role=BattleRole.Soldier;c.Shields=1;c.Daggers=c.Rifles=0;BattleAi.Choose(b,a);Check(a.Retreating,"Shield-equipped soldier replaces exhausted soldier");
 BattleAi.Choose(b,c);Check(!c.Retreating,"Shield-only soldier stays");
 Console.WriteLine("PASS: depleted soldier conditions and allied path clearing.");
+
+foreach(bool clashing in new[]{false,true}){
+ var mixedBoard=Board();var daggerAttacker=Unit(mixedBoard,90001,0,4,4,BattleFacing.South);var mixedTarget=Unit(mixedBoard,90002,1,4,5,BattleFacing.North);var sideSniper=Unit(mixedBoard,90003,0,1,5,BattleFacing.East);
+ Turn(mixedBoard,(daggerAttacker,BattleWeapon.Dagger,Point.Zero,null),(mixedTarget,clashing?BattleWeapon.Dagger:BattleWeapon.None,Point.Zero,null),(sideSniper,BattleWeapon.Rifle,Point.Zero,null));
+ Check(mixedTarget.Fallen && !BattleAttackArt.CausesDaggerFall(mixedBoard,mixedBoard.Attacks.First(hit=>hit.Attacker==daggerAttacker.Id)) && BattleAttackArt.Recoil(mixedBoard,mixedBoard.Turn,mixedTarget.Id,.5f)==Vector2.Zero,"A simultaneous rifle fall must not give a defended dagger false hit feedback");
+}

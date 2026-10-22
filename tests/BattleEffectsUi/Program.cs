@@ -39,7 +39,7 @@ sealed class EffectsGame:Game1{
   var orders=new Dictionary<long,BattleAction>();
   for(int i=0;i<4;i++){
    var cell=new Point(i%2==0?2:6,i<2?2:6);var direction=BattleState.Forward((BattleFacing)i);
-   var target=new BattleUnit{Id=100+i,Owner=0,Position=cell,Facing=BattleFacing.North};var attacker=new BattleUnit{Id=200+i,Owner=1,Position=cell+direction,Facing=(BattleFacing)((i+2)%4)};
+   var target=new BattleUnit{Id=100+i,Owner=0,Position=cell,Facing=BattleFacing.North,Shields=0};var attacker=new BattleUnit{Id=200+i,Owner=1,Position=cell+direction,Facing=(BattleFacing)((i+2)%4)};
    battle.Units.Add(target);battle.Units.Add(attacker);orders[target.Id]=new(Point.Zero,target.Facing);orders[attacker.Id]=new(Point.Zero,attacker.Facing,BattleWeapon.Dagger);
   }
   BattleTurnResolver.Advance(battle,orders);

@@ -35,7 +35,7 @@ public static class BattleAi
         if(enemy!=null && unit.Role!=BattleRole.Queen && armed)
         {
             var delta=enemy.Position-unit.Position;var facing=Face(delta);int distance=Distance(enemy.Position,unit.Position);
-            if(distance==1 && unit.Daggers>0)return new(Point.Zero,facing,BattleWeapon.Dagger);
+            if(distance==1 && unit.Daggers>0)return BattleLessons.AvoidSideDagger(battle,unit,new(Point.Zero,facing,BattleWeapon.Dagger));
             bool aligned=delta.X==0 || delta.Y==0;
             if(aligned && distance>=2 && unit.Rifles>0 && FirstTarget(battle,unit,facing)==enemy)
             {

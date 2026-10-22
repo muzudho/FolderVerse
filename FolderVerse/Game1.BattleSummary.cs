@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private double _summaryReadAge;
+    private const double SummaryReadSeconds=6;
     private int _summaryReadPapers;
     private static Rectangle SummaryPaperCard(int i)=>new(54+i*226,916,216,78);
     private bool SelectSummaryPaper()
@@ -18,7 +19,7 @@ public partial class Game1
     {
         // The reading clock belongs to the result screen, independently of battle playback.
         _summaryReadAge+=elapsed;_newspaperSlideAge+=elapsed;
-        if(_summaryReadAge<6)return;
+        if(_summaryReadAge+1e-8<SummaryReadSeconds)return;
         _summaryReadAge=0;
         
         
@@ -77,5 +78,6 @@ public partial class Game1
         _ui.Button(SummaryNewspaperSwitch,"新聞を切り替える",Muted,.5f);
         _ui.Button(NewspaperMusicButton,"BGM："+NewspaperMusicScore.Labels[(int)_newspaperMusicMood],Muted,.5f);
         _ui.Button(BattleContinue,"世界へ戻る",Accent,.55f);
+        DrawPhaseTimer(new(54,1000,1758,10),_summaryReadAge,SummaryReadSeconds);
     }
 }

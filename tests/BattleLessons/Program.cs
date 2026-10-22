@@ -60,3 +60,19 @@ world.Lessons.Research();world.Lessons.Pending.Add(new(0,BattleLesson.RetreatBac
 foreach(var o in save.Objects)if(o.Fields!=null){o.Fields.Remove("<Lessons>k__BackingField");o.Fields.Remove("WitnessedLessons");o.Fields.Remove("Lessons");}
 load=AutoSaveStore.Restore<WorldSetup>(save);Check(load.Lessons.Owned.All(x=>x==0) && load.Lessons.Pending.Count==0,"Old saves default to no cards");
 Console.WriteLine("PASS: flag rollback and priority, per-country effects, failed/backward retreat, friendly fire and adjacent lanes, late entry into shots, survivor delivery, pending/owned saves and legacy defaults.");
+
+foreach(bool trained in new[]{false,true}){
+ var sideBoard=Board();var victim=Unit(sideBoard,20001,0,5,5,BattleFacing.North);var sideGun=Unit(sideBoard,20002,1,5,1,BattleFacing.South);var knife=Unit(sideBoard,20003,1,6,5,BattleFacing.West);knife.Rifles=0;var witness=Unit(sideBoard,20004,0,0,8);if(trained)sideBoard.Lessons[0]=BattleLesson.LeaveFiringLine;
+ Turn(sideBoard,(victim,Point.Zero,BattleFacing.East,BattleWeapon.Dagger),(sideGun,Point.Zero,BattleFacing.South,BattleWeapon.Rifle));
+ if(trained)Check(!victim.Fallen && victim.Position==new Point(4,5) && victim.Facing==BattleFacing.North && !sideBoard.Attacks.Any(a=>a.Attacker==victim.Id),"Learned robot leaves firing line before sideways dagger attack");
+ else{Check(victim.Fallen && (witness.WitnessedLessons&BattleLesson.LeaveFiringLine)!=0 && (sideGun.WitnessedLessons&BattleLesson.LeaveFiringLine)!=0,"Sideways dagger under frontal rifle qualifies both armies' witnesses");var lessons=new BattleLessons();lessons.BringHome(victim);Check(lessons.Pending.Count==0,"Fallen victim does not teach");lessons.BringHome(witness);Check(lessons.Research().Any(a=>a.Lesson==BattleLesson.LeaveFiringLine),"Surviving witness brings home lesson four");var fourthRestored=AutoSaveStore.Restore<BattleLessons>(AutoSaveStore.Capture(lessons));Check((fourthRestored.Owned[0]&BattleLesson.LeaveFiringLine)!=0,"Fourth card survives save");}
+}
+foreach(bool rear in new[]{false,true}){
+ var sideBoard=Board();var victim=Unit(sideBoard,21001,0,5,5,rear?BattleFacing.South:BattleFacing.North);var sideGun=Unit(sideBoard,21002,1,5,1,BattleFacing.South);var knife=Unit(sideBoard,21003,1,6,5);var witness=Unit(sideBoard,21004,0,0,8);
+ Turn(sideBoard,(victim,Point.Zero,rear?BattleFacing.East:BattleFacing.North,rear?BattleWeapon.Dagger:BattleWeapon.None),(sideGun,Point.Zero,BattleFacing.South,BattleWeapon.Rifle));Check((witness.WitnessedLessons&BattleLesson.LeaveFiringLine)==0,"Rear exposure or no dagger is excluded from lesson four");
+}
+var trapped=Board();var trappedUnit=Unit(trapped,22001,0,5,5,BattleFacing.North);Unit(trapped,22002,1,5,1,BattleFacing.South);Unit(trapped,22003,1,6,5);Unit(trapped,22004,0,4,5);trapped.Lessons[0]=BattleLesson.LeaveFiringLine;var safe=BattleAi.Choose(trapped,trappedUnit);Check(safe.Step==Point.Zero && safe.Weapon==BattleWeapon.None && safe.Facing==BattleFacing.North,"No escape: keep frontal shield instead of sideways dagger");
+Console.WriteLine("PASS: fourth lesson actual sideways hit, rear/no-dagger exclusions, both armies, survivor/save, sidestep and blocked escape.");
+
+var delayed=Board();var delayedVictim=Unit(delayed,23001,0,5,5,BattleFacing.North);var delayedGun=Unit(delayed,23002,1,5,1,BattleFacing.South);var delayedKnife=Unit(delayed,23003,1,6,5);delayedKnife.Rifles=0;var delayedWitness=Unit(delayed,23004,0,0,8);
+Turn(delayed,(delayedVictim,Point.Zero,BattleFacing.East,BattleWeapon.Dagger));Check((delayedWitness.WitnessedLessons&BattleLesson.LeaveFiringLine)==0,"Merely swinging in a line without an actual rifle hit does not award lesson four");

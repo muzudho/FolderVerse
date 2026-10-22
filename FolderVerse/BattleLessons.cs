@@ -5,14 +5,15 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 
 [Flags]
-public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4 }
+public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8 }
 public sealed record LessonAward(int Owner,BattleLesson Lesson);
 public sealed class BattleLessons
 {
-    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline};
+    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine};
     public static string Title(BattleLesson lesson)=>lesson switch {
         BattleLesson.FlagCourtesy=>"戦訓#1 旗でお見合い",
         BattleLesson.RetreatBackwards=>"戦訓#2 撤退したら背中を撃たれた",
+        BattleLesson.LeaveFiringLine=>"戦訓#4 射線にいるのに横向いて短剣振ってしまって撃たれた",
         _=>"戦訓#3 射線上の仲間を撃った"};
     public BattleLesson[] Owned {get;}=new BattleLesson[WorldSetup.CastCount];
     public List<LessonAward> Pending {get;}=new();
@@ -53,6 +54,7 @@ public sealed class BattleLessons
     }
     public static void Apply(BattleState battle,BattleUnit[] units,Dictionary<long,BattleAction> actions)
     {
+        foreach(var unit in units)actions[unit.Id]=AvoidSideDagger(battle,unit,actions[unit.Id]);
         foreach(var unit in units)if(actions[unit.Id].Weapon==BattleWeapon.Rifle && Has(battle,unit,BattleLesson.FireDiscipline) && !SafeShot(battle,unit,actions[unit.Id].Facing))actions[unit.Id]=actions[unit.Id] with {Weapon=BattleWeapon.None};
         if(battle.Kind!=BattleKind.Node)return;
         var entrants=units.Where(u=>!u.Retreating && u.Position!=battle.Flag && u.Position+actions[u.Id].Step==battle.Flag).ToArray();
@@ -63,5 +65,31 @@ public sealed class BattleLessons
             var first=friends.OrderBy(Priority).ThenBy(u=>u.Id).FirstOrDefault();
             if(first!=null && first.Id!=unit.Id)actions[unit.Id]=actions[unit.Id] with {Step=Point.Zero};
         }
+    }
+    public static bool SideDaggerExposed(BattleState battle,BattleUnit unit,BattleAction action,BattleUnit shooter)
+    {
+        if(action.Weapon!=BattleWeapon.Dagger || shooter.Rifles<=0 || battle.Allied(unit.Owner,shooter.Owner) || BattleAi.FirstTarget(battle,shooter,shooter.Facing)!=unit)return false;
+        var toward=BattleState.Forward(unit.Facing);var delta=shooter.Position-unit.Position;
+        var swing=BattleState.Forward(action.Facing);
+        return toward.X*delta.X+toward.Y*delta.Y>0 && swing.X*delta.X+swing.Y*delta.Y==0;
+    }
+    public static BattleAction AvoidSideDagger(BattleState battle,BattleUnit unit,BattleAction action)
+    {
+        if(!Has(battle,unit,BattleLesson.LeaveFiringLine) || unit.Retreating || action.Weapon!=BattleWeapon.Dagger)return action;
+        var threats=battle.Units.Where(e=>e.Active && SideDaggerExposed(battle,unit,action,e)).ToArray();
+        if(threats.Length==0)return action;
+        var face=BattleAi.Face(threats[0].Position-unit.Position);
+        var forward=BattleState.Forward(face);var side=new Point(-forward.Y,forward.X);
+        bool InLine(Point p,BattleUnit e){
+            var f=BattleState.Forward(e.Facing);var d=p-e.Position;int distance=d.X*f.X+d.Y*f.Y;
+            if(distance<2 || d.X*f.Y!=d.Y*f.X)return false;
+            for(int i=1;i<distance;i++){var q=e.Position+new Point(f.X*i,f.Y*i);if(battle.BlocksShot(q) || i>1 && battle.Units.Any(u=>u.Active && u.Id!=unit.Id && u.Position==q))return false;}
+            return true;
+        }
+        foreach(var step in new[]{side,new Point(-side.X,-side.Y)}){
+            var p=unit.Position+step;
+            if(battle.Walkable(p) && !battle.Units.Any(u=>u.Active && u.Id!=unit.Id && u.Position==p) && !battle.Units.Any(e=>e.Active && e.Rifles>0 && !battle.Allied(e.Owner,unit.Owner) && InLine(p,e)))return new(step,face);
+        }
+        return new(Point.Zero,face);
     }
 }

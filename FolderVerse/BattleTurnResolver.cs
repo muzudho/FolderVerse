@@ -20,6 +20,7 @@ public static class BattleTurnResolver
         }
         BattleRetreat.ClearPaths(battle,units,actions);
         BattleLessons.Apply(battle,units,actions);
+        var sideDaggerExposures=units.SelectMany(u=>units.Where(e=>BattleLessons.SideDaggerExposed(battle,u,actions[u.Id],e)).Select(e=>(Shooter:e.Id,Target:u.Id))).ToHashSet();
         battle.Turn++;battle.Events.Add(new(battle.Turn,BattlePhase.Choose,0,"全軍行動確定"));
         battle.Capture(BattlePhase.Choose);
         var origin=units.ToDictionary(u=>u.Id,u=>u.Position);var positions=units.ToDictionary(u=>u.Id,u=>u.Position+actions[u.Id].Step);
@@ -71,6 +72,7 @@ public static class BattleTurnResolver
             }
             battle.Attacks.Add(new(battle.Turn,attacker.Id,target?.Id,attacker.Position,end,weapon));
             if(target==null)continue;
+            if(weapon==BattleWeapon.Rifle && sideDaggerExposures.Contains((attacker.Id,target.Id)))BattleLessons.Witness(battle,BattleLesson.LeaveFiringLine);
             if(battle.Allied(attacker.Owner,target.Owner))BattleLessons.Witness(battle,BattleLesson.FireDiscipline);
             hits[target.Id].HostileHit|=!battle.Allied(attacker.Owner,target.Owner);
             if(weapon==BattleWeapon.Dagger)hits[attacker.Id].DaggerHit=true;

@@ -8,7 +8,8 @@ using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
     private Texture2D _industrySurprise,_industryPrayer;
-    private double _industryAge;
+    private double _industryAge,_industryIdleAge;
+    private const double IndustryIdleSeconds=5;
     private float _industryStartAngle,_industryStopAngle;
     private bool _industryApplied;
     private const double IndustrySpinSeconds=4.5;
@@ -30,15 +31,16 @@ public partial class Game1
         int before=0;for(int i=0;i<_setup.Industry.SelectedSector;i++)before+=_setup.Industry.Wheel[i].Percent;
         _industryStartAngle=-MathHelper.PiOver2;
         _industryStopAngle=_industryStartAngle+MathHelper.TwoPi*5-(before+_setup.Industry.Wheel[_setup.Industry.SelectedSector].Percent*.5f)/100*MathHelper.TwoPi;
-        _industryAge=0;_industryApplied=false;_screen=Screen.Industry;
+        _industryAge=_industryIdleAge=0;_industryApplied=false;_screen=Screen.Industry;
         _populationCell=_populationNode=-1;_reignView=false;
     }
     private void UpdateIndustry(double elapsed,bool proceed)
     {
-        _industryAge+=elapsed;
+        double before=_industryAge;_industryAge+=elapsed;
+        _industryIdleAge+=Math.Max(0,_industryAge-IndustryStopSeconds)-Math.Max(0,before-IndustryStopSeconds);
         if(_industryAge<IndustryStopSeconds)return;
         if(!_industryApplied){_setup.Industry.Apply(_setup);_industryApplied=true;_world.ShowSetup(_setup,true);}
-        if(!proceed && (!(_demoActive || _autoPlay) || _industryAge<IndustryStopSeconds+5))return;
+        if(!proceed && _industryIdleAge+1e-8<IndustryIdleSeconds)return;
         _screen=Screen.WorldStatus;_world.ShowSetup(_setup,true);RestoreDomesticCamera();OpenDisposition();
     }
     private Texture2D LoadIndustryMob(string name)
@@ -46,6 +48,18 @@ public partial class Game1
         using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Setup",name+".png"));
         var texture=Texture2D.FromStream(GraphicsDevice,stream);var pixels=new Color[texture.Width*texture.Height];texture.GetData(pixels);
         RemoveMobBackdrop(pixels,texture.Width,texture.Height,new(-1,-1));texture.SetData(pixels);return texture;
+    }
+    private static Color[] IndustryColors(IReadOnlyList<IndustrySector> wheel)
+    {
+        var palette=new[]{new Color(80,181,176),new Color(219,140,175),new Color(123,155,222),new Color(164,194,98)};
+        var colors=new Color[wheel.Count];int max=System.Linq.Enumerable.Max(wheel,s=>s.Turns);
+        for(int i=0;i<wheel.Count;i++){
+            var color=wheel[i].Turns==0?new Color(126,139,158):wheel[i].Turns==max?new Color(248,194,58):palette[i%2];
+            bool Conflict(Color c)=>i>0 && colors[i-1]==c || i==wheel.Count-1 && i>0 && colors[0]==c;
+            if(Conflict(color))foreach(var alternative in palette)if(!Conflict(alternative)){color=alternative;break;}
+            colors[i]=color;
+        }
+        return colors;
     }
     private void DrawIndustry()
     {
@@ -66,10 +80,11 @@ public partial class Game1
         float angle=MathHelper.Lerp(_industryStartAngle,_industryStopAngle,1-MathF.Pow(1-progress,4));
         float cumulative=0;
         var labels=new List<(string Text,Vector2 At)>();
+        var colors=IndustryColors(_setup.Industry.Wheel);
         for(int i=0;i<_setup.Industry.Wheel.Count;i++)
         {
             var sector=_setup.Industry.Wheel[i];float start=angle+cumulative/100*MathHelper.TwoPi;
-            var color=sector.Turns==0?new Color(126,139,158):sector.Turns==System.Linq.Enumerable.Max(_setup.Industry.Wheel,s=>s.Turns)?new Color(248,194,58):i%2==0?new Color(80,181,176):new Color(219,140,175);
+            var color=colors[i];
             if(stopped && i==_setup.Industry.SelectedSector)color=Color.Lerp(color,Color.White,.25f);
             int steps=sector.Percent*5;
             for(int k=0;k<=steps;k++)
@@ -86,6 +101,6 @@ public partial class Game1
         for(int y=0;y<28;y++)_ui.Box(new((int)center.X-28+y,(int)(center.Y-radius)-35+y,56-y*2,1),Cream);
         _ui.Center(stopped?$"{result} 産業ターン":_industryAge<IndustryReadSeconds?"ルーレットを見てみよう":"ルーレット回転中",new(800,890,740,45),.8f,Cream);
         _ui.Text($"全体ターン {_setup.Population.Turn} / 産業ターン累計 {_setup.Robots.IndustryTurn}",new(565,1000),.5f,Cream);
-        if(stopped)_ui.Button(IndustryContinue,"次の内政へ",Accent,.7f);
+        if(stopped){_ui.Button(IndustryContinue,"次の内政へ",Accent,.7f);DrawPhaseTimer(new(565,1050,1255,12),_industryIdleAge,IndustryIdleSeconds);}
     }
 }

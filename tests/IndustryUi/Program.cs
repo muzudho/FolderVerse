@@ -17,6 +17,16 @@ sealed class CheckGame:Game1
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();w=(WorldSetup)Get("_setup");
         w.SetWorld(1);w.SetCast(2);w.SetPlacement(3);w.SelectPlayer(0);
         w.Industry.Queue(1);Call("FinishTransport");Check(Get("_screen").ToString()=="Industry","No-battle round still enters industry");
+        for(int seed=0;seed<1000;seed++){
+            var wheel=IndustryCycle.CreateWheel(seed,1);var colors=(Color[])typeof(Game1).GetMethod("IndustryColors",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{wheel})!;
+            for(int i=0;i<colors.Length;i++)Check(colors[i]!=colors[(i+1)%colors.Length],"Adjacent roulette colors differ including last/first seam");
+        }
+        var score=new IndustryMusicScore();var pcm=score.Render(IndustryMusicScore.Rate*16);double energy=0;int peak=0;
+        for(int i=0;i<pcm.Length;i+=2){int sample=(short)(pcm[i]|pcm[i+1]<<8);energy+=(double)sample*sample;peak=Math.Max(peak,Math.Abs(sample));}
+        Check(energy/(pcm.Length/2)>100000 && peak<30000 && score.CompletedLoops==1,"Original industry tune is audible, unclipped and loops");
+        var whole=new IndustryMusicScore().Render(4410);var chunked=new IndustryMusicScore();Check(whole.SequenceEqual(chunked.Render().Concat(chunked.Render())),"Industry audio stream is continuous across buffers");
+        using(var wav=new BinaryWriter(File.Create(Path.Combine(AppContext.BaseDirectory,"industry-theme.wav")))){wav.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));wav.Write(36+pcm.Length);wav.Write(System.Text.Encoding.ASCII.GetBytes("WAVEfmt "));wav.Write(16);wav.Write((short)1);wav.Write((short)1);wav.Write(IndustryMusicScore.Rate);wav.Write(IndustryMusicScore.Rate*2);wav.Write((short)2);wav.Write((short)16);wav.Write(System.Text.Encoding.ASCII.GetBytes("data"));wav.Write(pcm.Length);wav.Write(pcm);}
+        Call("UpdateIndustryMusic");if(!(bool)Get("_industryMusicUnavailable")){var music=Get("_industryMusic");var stream=(Microsoft.Xna.Framework.Audio.DynamicSoundEffectInstance)typeof(IndustryMusic).GetField("_stream",F)!.GetValue(music)!;Check(stream.State==Microsoft.Xna.Framework.Audio.SoundState.Playing && stream.PendingBufferCount>0,"Industry BGM streams while roulette is displayed");}
         var font=(SpriteFont)Get("_font");foreach(string text in new[]{"さあ、産業の時間です！　あなたは何台のロボットを製造できるかなー？","数年に一度の当たり年だあ！？　大穴当てたみなさん、今だ、大チャーンス！","ロボット不足の征服者のみなさん、ざんねんでした～！　工場はストップだー！　次は製造できるように、祈ってくださーい！","正規・安いパーツ / 産業ターン累計"}){Check(text.All(c=>font.Characters.Contains(c)),"Missing font glyph: "+text);font.MeasureString(text);}
     }
     protected override void Update(GameTime time){}
@@ -51,7 +61,9 @@ sealed class CheckGame:Game1
             Call("UpdateIndustry",6d,false);int industry=w.Robots.IndustryTurn;Call("UpdateIndustry",.1,false);Check(w.Robots.IndustryTurn==industry,"Repeated draw/update must not produce twice");
             GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();Save("industry-"+result);
             if(result==0)Check(Get("_industryPrayer")!=null,"Prayer mob on fumble");if(result==40)Check(Get("_industrySurprise")!=null,"Surprised mob on jackpot");
-            Call("UpdateIndustry",0d,true);Check(Get("_screen").ToString()=="WorldStatus","Continue to domestic");
+            Set("_industryIdleAge",4.99d);Call("UpdateIndustry",0d,false);Check(Get("_screen").ToString()=="Industry","Result waits until five idle seconds");
+            Set("_previousKeyboard",new KeyboardState());Call("HandleInputCore",new MouseState(),new KeyboardState(Keys.Space),new GameTime(TimeSpan.FromSeconds(20),TimeSpan.Zero),true);Check((double)Get("_industryIdleAge")==0 && Get("_screen").ToString()=="Industry","Keyboard activity resets industry timer without skipping result");
+            Call("UpdateIndustry",4.99d,false);Check(Get("_screen").ToString()=="Industry","Result remains before timeout");Call("UpdateIndustry",.01d,false);Check(Get("_screen").ToString()=="WorldStatus","Idle result automatically proceeds at five seconds");Call("UpdateIndustryMusic");Check(Get("_industryMusic")==null,"Leaving industry disposes its BGM");
         }
         var node=w.Nodes.Current(0);var factory=w.Robots.Workshops[node.Id];for(int seed=0;factory.ProductionLines.Length!=3;seed++)factory.GenerateLines(seed);
         Set("_domesticSlide",1f);Set("_populationNode",node.Id);Set("_populationCell",node.Cell);Set("_factoryPlanLine",0);factory.SelectPlan(4);
