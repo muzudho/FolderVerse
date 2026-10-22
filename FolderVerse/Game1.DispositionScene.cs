@@ -25,7 +25,7 @@ public partial class Game1
             var portrait=new Rectangle(x,320,500,500);_ui.Box(new(x-5,315,510,510),_setup.OwnerColor(ruler));
             _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],portrait,!removal || side==0 || _dispositionSceneAge<1.2);
             _ui.Center(_setup.ConquerorNames[ruler],new(x,840,500,48),.6f,Cream);
-            string line=removal?(side==0?"これでお前は＜ゲーム＞から脱落なのさ！":"やーん、抜かないでーっ"):
+            string line=removal?(side==0?"玩具から電池を抜きまーす。　これであなたは＜ゲーム＞から脱落ですね！":"やーん、抜かないでーっ"):
                 side==0?"期待しているわ。世界征服を手伝ってね。":_setup.ConquerorNames[ruler]+"でーす。これから、よろしくお願いしまーす！";
             DispositionBubble(new(x-180,170,860,115),line);
         }
