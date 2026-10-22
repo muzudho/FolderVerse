@@ -26,6 +26,11 @@ sealed class PlanGame:Game1
   Set("_conquestOverviewEnabled",false);((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);Call("FocusStatusGlobe");
   Screen("WorldStatus");Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",90d);Guide(4);Set("_tutorialAttackGuide",false);
   Call("OpenMovementWithFit",false);var targets=((CubeNet)Get("_net")).MovementTargets;Check(targets.Any(n=>w.Nodes.All[n].Owner!=0),"Foreign movement targets selectable");Call("CloseMovement");
+  Set("_statusGlobe",true);Call("OpenMovement");Check((bool)Get("_statusGlobe"),"Opening movement preserves globe view");
+  targets.UnionWith(w.Nodes.All.Select(n=>n.Id));Call("FitDestinationView");
+  Check(targets.Any(id=>!(bool)Call("OperationPosition",new object[]{id,Vector2.Zero})),"Fixture includes a destination on the hidden globe surface");
+  Check((bool)Get("_statusGlobe"),"Hidden destinations do not automatically unfold peaceful movement");Call("CloseMovement");
+  Set("_statusGlobe",false);Call("OpenMovement");Check(!(bool)Get("_statusGlobe"),"Opening movement also preserves an already selected net");Call("CloseMovement");
   // Exercise actual pocket input, rather than setting its achievement flag.
   Call("OpenPocket");var card=(Rectangle)typeof(Game1).GetMethod("PocketCard",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{3,true})!;
   Check(w.Robots.Nodes[w.Nodes.Current(0).Id].Robots[3].Owner==0,"Own robot on foreign node");Set("_pointer",card.Center);Call("PocketInput",true,false);Set("_pointer",new Point(1100,630));Call("PocketInput",true,false);

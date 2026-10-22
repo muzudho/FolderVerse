@@ -39,13 +39,14 @@ public partial class Game1
                 var area=StatusGlobeArea;area.Inflate(-48,-60);
                 return ids.All(id=>OperationPosition(id,out var at) && area.Contains(at.ToPoint()));
             }
-            // A globe cannot show nodes on its hidden surface: use the net in that case.
+            // Fit visible destinations when possible; peaceful movement keeps the chosen globe view.
             if(ids.All(id=>OperationPosition(id,out _)))
             {
                 float low=.05f,high=16;
                 for(int i=0;i<24;i++){float mid=(low+high)/2;if(Fits(mid))low=mid;else high=mid;}
                 _world.GlobeZoom=low;return;
             }
+            if(_movementOpen && !_warPlanning)return;
             _statusGlobe=false;
         }
         _net.SetCenter(_setup,_setup.Cells[source.Cell].Face);
