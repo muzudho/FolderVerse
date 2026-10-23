@@ -1,6 +1,6 @@
 {
   "CharacterId": 50,
-  "UpdatedAt": "2026-10-24T02:05:00+09:00",
+  "UpdatedAt": "2026-10-24T02:35:00+09:00",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018",
   "GameAdopted": false,
@@ -2565,6 +2565,34 @@
           "Method": "built-in image_gen",
           "Status": "DETAIL_STUDY_NOT_RUNTIME_NOT_COMPLIANT",
           "Review": "顔単体v003でも主白円が虹彩右縁から白目へまたがり、細い円周縁も残る。下小白円は分離しているが適合未達。左横顔/閉じ口/青眼/銀眼鏡つる/金髪/月桂/耳飾り保持、隠れた目追加なし。未適合見本は全身へ反映しない。"
+        },
+        {
+          "Source": "character-50-coin-v009-generated.png",
+          "Width": 1024,
+          "Height": 1536,
+          "Sha256": "e21347332c663915d8080d14179d1addf88ec740b14e8b28d455da670724d82b",
+          "Prompt": "character-50-coin-v009-prompt.txt",
+          "References": [
+            "character-50-coin-v004-generated.png",
+            "coin-face-detail-v003-generated.png",
+            "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Review": "仕様4.2に沿い白点は目の開口内と再指定して全身v009生成。全身では上白点が小さくなり下小白円は淡青反射に消失し、不採用。左横顔/閉じ口/銀眼鏡つる/金髪/月桂/菱耳飾り/青白金衣装/電池/重ね白手袋/暖灰背景/全身裾両靴保持。300x400白黒で本人/眼鏡/電池/手を判別。体格は近似で厳密頭身未認定。",
+          "Evidence": "coin-eye-review-v009.png",
+          "Preview": {
+            "File": "coin-v009-preview.png",
+            "Grayscale": "coin-v009-grayscale.png",
+            "Crop": {
+              "X": 200,
+              "Y": 20,
+              "Width": 570,
+              "Height": 760
+            },
+            "Width": 300,
+            "Height": 400
+          }
         }
       ],
       "Audit20261022": {
@@ -2621,7 +2649,7 @@
       }
     }
   ],
-  "Next": "No50 coin face-detail v003 failed iris-contained main highlight and outline removal; no fullbody transfer. Selected coin v004, staged v026, Game0/20 unchanged. Stop identical face-dot correction loops. Remaining normal6/paparazzi/coin: next reassess whole composition and facial readability using current comparison rather than another identical micro-edit; adoption/build/distribution pending.",
+  "Next": "No50 coin fullbody v009 failed lower highlight transfer; selectedv004/stagedv026/Game0/20 unchanged. Corrected overstrict iris-contained rule: eye-opening clipping is actual requirement. Next evaluate normal6 face study against actual 4.2 criteria and attempt a fullbody composition with more readable face only if distinct from failed transfers. No identical coin micro-edit loops. Remaining normal6/paparazzi/coin; adoption/build/distribution pending.",
   "CurrentSelectionAudit": {
     "Report": "current-selection-audit-v003.md",
     "Review": "current-selection-review-v003.html",
@@ -2636,5 +2664,10 @@
       "paparazzi",
       "coin"
     ]
+  },
+  "HighlightEvaluationCorrection": {
+    "At": "2026-10-24T02:35:00+09:00",
+    "Source": "作品統一感仕様4.2",
+    "Finding": "過去の「白点が白目へかかるだけで未達」という判定は仕様にない過剰制約。仕様4.2は虹彩輪郭への接触と目の開口内トリミングを要求する。白目への重なり単独は不採用理由にしない。旧試作の大小分離/目の開口外へのはみ出し/縁の視認性を個別評価する。過去ログは履歴として残す。"
   }
 }
