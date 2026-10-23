@@ -112,7 +112,7 @@ public sealed class RobotCampaign
         }
         // One global update: disposal, queued assembly/splits, simultaneous transport, shipment.
         world.Robots.Advance((a,b)=>!LockedEdge(a,b) && world.Routes.Neighbors(world.Nodes.All[a]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==b),
-            n=>world.Nodes.All[n].Owner,world.PlacementSeed^world.Population.Turn^0x61238,LockedNode,(owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner),industry:false);
+            n=>world.Nodes.All[n].Owner,world.PlacementSeed^world.Population.Turn^0x61238,LockedNode,(owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner),industry:false,directLocked:n=>LockedNode(n) || orders.Any(o=>!o.Peaceful && o.TargetNode==n && !world.Relations.Allied(o.Ruler,world.Nodes.All[n].Owner)));
         world.Population.Advance(world);
         world.Industry.Queue(world.Population.Turn);
         var stopped=new HashSet<March>();

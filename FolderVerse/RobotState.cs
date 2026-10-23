@@ -82,6 +82,7 @@ public sealed partial class RobotWorld
     public RobotStore[] Retinues {get;private set;}=Array.Empty<RobotStore>();
     public RobotWorkshop[] Workshops {get;private set;}=Array.Empty<RobotWorkshop>();
     public RobotTransport Transport {get;}=new();
+    public RobotDirectDelivery DirectDelivery {get;private set;}=new();
     public RobotTraining[] Training {get;private set;}=Array.Empty<RobotTraining>();
     public List<RobotWorkshopEdit> PendingEdits {get;}=new();
     public List<(int Node,string Message)> WorkshopFailures {get;}=new();
@@ -93,7 +94,7 @@ public sealed partial class RobotWorld
     {Validate(owner,parts);return new(_nextId++,owner,parts,role,disposal);}
     public void Initialize(int nodeCount,int rulerCount)
     {
-        Reservations=null;ReservationSource=null;IndustryTurn=0;DomesticPersuasionTurns.Clear();
+        DirectDelivery=new();Reservations=null;ReservationSource=null;IndustryTurn=0;DomesticPersuasionTurns.Clear();
         _domesticPreparedTurn=-1;Training=Enumerable.Range(0,rulerCount).Select(_=>new RobotTraining()).ToArray();_nextId=1;Nodes=Enumerable.Range(0,nodeCount).Select(_=>new RobotStore()).ToArray();
         Retinues=Enumerable.Range(0,rulerCount).Select(_=>new RobotStore()).ToArray();
         Workshops=Enumerable.Range(0,nodeCount).Select(_=>new RobotWorkshop()).ToArray();Transport.Reset();PendingEdits.Clear();WorkshopFailures.Clear();
@@ -137,7 +138,7 @@ public sealed partial class RobotWorld
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].CompleteProduction(this,n,owner(n));Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));if(owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));}
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)SyncWorkers(n);IndustryTurn++;Check();
     }
-    public void Advance(Func<int,int,bool> connected,Func<int,int> owner,int seed,Func<int,bool> locked=null,Func<int,int,bool> canEnter=null,bool industry=true)
+    public void Advance(Func<int,int,bool> connected,Func<int,int> owner,int seed,Func<int,bool> locked=null,Func<int,int,bool> canEnter=null,bool industry=true,Func<int,bool> directLocked=null)
     {
         if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));Workshops[n].CompleteDisposal(Nodes[n]);}
         WorkshopFailures.Clear();
@@ -148,7 +149,8 @@ public sealed partial class RobotWorld
             try{if(edit.SplitPart is RobotParts part)Split(edit.Node,edit.Ids.Single(),part);else Assemble(edit.Node,edit.Ids,edit.Owner);}
             catch(InvalidOperationException error){WorkshopFailures.Add((edit.Node,error.Message));}
         }
-        // Transport chooses from the assembled stock, without reserving parts during domestic play.
+        DirectDelivery.Resolve(this,connected,directLocked??locked,canEnter);
+        // Long-term transport chooses the stock remaining after direct deliveries and assembly.
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true && owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));
         Transport.ResolvePlans(this,connected,seed,locked,canEnter);
         if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].CompleteProduction(this,n,owner(n));

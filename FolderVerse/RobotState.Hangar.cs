@@ -11,7 +11,7 @@ public sealed partial class RobotWorld
         var store=Nodes[node];var source=store.Robots.Single(r=>r.Id==sourceId);
         if((source.Parts&part)==0)throw new InvalidOperationException("Part is absent.");
         if(targetId==sourceId)return sourceId;
-        bool Reserved(long id)=>AssemblyLocked(node,store.Robots.Single(r=>r.Id==id));
+        bool Reserved(long id)=>PartLocked(node,store.Robots.Single(r=>r.Id==id),part);
         if(Reserved(sourceId) || targetId.HasValue && Reserved(targetId.Value))throw new InvalidOperationException("Robot is reserved.");
         var target=targetId.HasValue?store.Robots.Single(r=>r.Id==targetId.Value):null;
         if(target!=null && target.Disposal!=source.Disposal)throw new InvalidOperationException("Incompatible target.");
@@ -24,6 +24,7 @@ public sealed partial class RobotWorld
             Check();return target.Id;
         }
         var remaining=source.Parts^part;
+        if(remaining==0 && DirectDelivery.LockedParts(node,sourceId)!=0)throw new InvalidOperationException("Arrival anchor must remain in its hangar.");
         if(target==null && remaining!=0 && !store.HasSpace)throw new InvalidOperationException("Hangar is full.");
         var destination=target!=null?target.Merge(source with {Parts=part,DamagedParts=source.DamagedParts&part,CheapParts=source.CheapParts&part},owner??target.Owner):
             remaining==0?source.Materialize():source.Materialize() with {Id=Create(source.Owner,part,disposal:source.Disposal).Id,Parts=part,DamagedParts=source.DamagedParts&part,CheapParts=source.CheapParts&part};

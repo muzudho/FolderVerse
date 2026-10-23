@@ -8,9 +8,11 @@ public sealed partial class RobotWorld
     public ConquestCampaign Reservations {get;set;}
     public Func<int,int> ReservationSource;
     public bool MarchReserved(int node,Robot robot)=>Reservations?.PlannedOrders.Any(o=>!o.PocketOnly && o.Ruler==robot.Owner && (o.SourceNode>=0?o.SourceNode:ReservationSource?.Invoke(o.Ruler)??node)==node && (o.RobotIds?.Contains(robot.Id)??Training[o.Ruler].Order(Nodes[node].Robots.Where(r=>r.Owner==o.Ruler && Training[r.Owner].Eligible(r) && !r.Stationed)).Take((int)Math.Min(12,o.Fighters)).Any(r=>r.Id==robot.Id)))==true;
-    public bool AssemblyLocked(int node,Robot robot)=>robot.Disposal || robot.Stationed || Workshops[node].DisposalTarget==robot.Id || PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) || MarchReserved(node,robot);
-    public bool CanShip(int node,Robot robot)=>!robot.Stationed && Workshops[node].DisposalTarget!=robot.Id && !PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) && !MarchReserved(node,robot);
-    private bool ReservationBusy(int node,long id)=>Reservations?.RobotBattles.LockedNode(node)==true || Workshops[node].DisposalTarget==id || PendingEdits.Any(e=>e.Ids.Contains(id));
+    public bool BaseAssemblyLocked(int node,Robot robot)=>robot.Disposal || robot.Stationed || Workshops[node].DisposalTarget==robot.Id || PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) || MarchReserved(node,robot);
+    public bool AssemblyLocked(int node,Robot robot)=>BaseAssemblyLocked(node,robot) || DirectDelivery.LockedParts(node,robot.Id)!=0;
+    public bool PartLocked(int node,Robot robot,RobotParts part)=>BaseAssemblyLocked(node,robot) || (DirectDelivery.LockedParts(node,robot.Id)&part)!=0;
+    public bool CanShip(int node,Robot robot)=>!robot.Stationed && Workshops[node].DisposalTarget!=robot.Id && !PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) && !MarchReserved(node,robot) && DirectDelivery.LockedParts(node,robot.Id)==0;
+    private bool ReservationBusy(int node,long id)=>Reservations?.RobotBattles.LockedNode(node)==true || Workshops[node].DisposalTarget==id || PendingEdits.Any(e=>e.Ids.Contains(id)) || DirectDelivery.LockedParts(node,id)!=0;
     private Robot WithoutRole(Robot robot)=>robot with {Disposal=false,DefenseOnly=false,FactoryWorker=false};
     public bool CanReserveSortie(int node,Robot robot)=>!ReservationBusy(node,robot.Id) && Training[robot.Owner].Eligible(WithoutRole(robot));
     private void RemoveMarchReservation(int node,Robot robot)
