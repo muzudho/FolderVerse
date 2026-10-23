@@ -140,6 +140,10 @@ public partial class Game1 : Game
         UpdateRateDrag(mouse,active,click);
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
+        if(_autoPlay && (click || escape)){
+            _autoPlay=false;_autoStepAge=_autoDomesticAge=0;_autoDomesticStage=0;_hangarDrag=null;
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
         if(IsStatusScreen && _invasionPicker>=0)
         {if(active)InvasionPickerInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds; UpdateDomesticSlide((float)elapsed);

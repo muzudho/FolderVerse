@@ -87,8 +87,8 @@ Check(world.Nodes[1].Count==2 && world.Nodes[1].Robots.Single(r=>r.Id==activeBod
 world.Advance((x,y)=>false,_=>0,2,null);Check(world.Workshops[1].DisposalTarget==arrivingHead.Id && world.Workshops[1].DisposalAge==0,"Arrival waits for lane to empty");
 world.Advance((x,y)=>false,_=>0,3,_=>true);Check(world.Workshops[1].DisposalAge==0 && world.Nodes[1].Count==1,"Battle lock pauses scrap lane");
 world.Advance((x,y)=>false,_=>0,4);Check(world.Nodes[1].Count==0,"Lane resumes after lock");
-world=World();var reservedScrap=world.Create(0,RobotParts.Complete,disposal:true);world.Nodes[0].Add(reservedScrap);world.Workshops[0].ConfigureDisposal();world.QueueSplit(0,reservedScrap.Id,RobotParts.Head);
-world.Advance((x,y)=>false,_=>0,1);Check(world.Nodes[0].Count==2 && world.Workshops[0].DisposalAge==0,"Reserved split runs before automatic lane selection");
+world=World();var reservedScrap=world.Create(0,RobotParts.Complete,disposal:true);world.Nodes[0].Add(reservedScrap);world.Workshops[0].ConfigureDisposal();Reject(()=>world.QueueSplit(0,reservedScrap.Id,RobotParts.Head));
+world.Advance((x,y)=>false,_=>0,1);Check(world.Nodes[0].Count==1 && world.Workshops[0].DisposalTarget==reservedScrap.Id,"Disposal reservation blocks split before automatic lane selection");
 
 world=World();var manual=Add(world,0,7);long movedHead=world.MovePart(0,manual.Id,RobotParts.Head,null);
 Check(world.Nodes[0].Count==2 && world.Nodes[0].Robots.Single(r=>r.Id==manual.Id).Parts==(RobotParts.Body|RobotParts.Legs) && world.Nodes[0].Robots.Single(r=>r.Id==movedHead).Parts==RobotParts.Head,"Manual drag splits exactly one part");

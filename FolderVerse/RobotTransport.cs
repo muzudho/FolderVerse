@@ -53,7 +53,7 @@ public sealed partial class RobotTransport
             if(locked?.Invoke(node)==true)continue;
             foreach(var robot in world.Nodes[node].Robots.OrderBy(r=>r.Id))
             {
-                if(world.Workshops[node].DisposalTarget==robot.Id)continue;
+                if(!world.CanShip(node,robot))continue;
                 var queue=new Queue<RobotShipment>();
                 if(HasInstructions(node,robot.Owner))continue;
                 for(int mask=7;mask>=1;mask--)
@@ -103,7 +103,7 @@ public sealed partial class RobotTransport
         {
             if(s.Source<0 || s.Source>=world.Nodes.Length || s.Target<0 || s.Target>=world.Nodes.Length || !connected(s.Source,s.Target) || s.Source==s.Target)throw new ArgumentException("Invalid transport route.");
             var robot=world.Nodes[s.Source].Robots.Single(r=>r.Id==s.RobotId);RobotWorld.Validate(robot.Owner,s.Parts);
-            if((robot.Parts&s.Parts)!=s.Parts || world.Workshops[s.Source].DisposalTarget==robot.Id || world.Workshops[s.Source].AutoAssemblyDisabled && s.Parts!=robot.Parts)throw new ArgumentException("Unavailable parts.");
+            if((robot.Parts&s.Parts)!=s.Parts || !world.CanShip(s.Source,robot) || world.Workshops[s.Source].AutoAssemblyDisabled && s.Parts!=robot.Parts)throw new ArgumentException("Unavailable parts.");
         }
         Commit(world,Select(world,orders));
     }
@@ -130,7 +130,7 @@ public sealed partial class RobotTransport
         foreach(var s in Ordered(active))
         {
             var robot=cargo[s.RobotId];var target=stores[s.Target];
-            var partner=target.Where(r=>!world.Workshops[s.Target].AutoAssemblyDisabled && !robot.Disposal && r.Id!=world.Workshops[s.Target].DisposalTarget && r.Owner==robot.Owner && r.Disposal==robot.Disposal && (r.Parts&robot.Parts)==0 && ((r.Parts|robot.Parts)!=RobotParts.Complete || r.Merge(robot,r.Owner).AssemblyCredit(r.Owner)>=world.Training[r.Owner].RequiredNative)).OrderBy(r=>r.Id).FirstOrDefault();
+            var partner=target.Where(r=>!world.Workshops[s.Target].AutoAssemblyDisabled && !robot.Disposal && !world.AssemblyLocked(s.Target,r) && r.Owner==robot.Owner && r.Disposal==robot.Disposal && (r.Parts&robot.Parts)==0 && ((r.Parts|robot.Parts)!=RobotParts.Complete || r.Merge(robot,r.Owner).AssemblyCredit(r.Owner)>=world.Training[r.Owner].RequiredNative)).OrderBy(r=>r.Id).FirstOrDefault();
             if(partner==null)target.Add(robot);
             else{target.Remove(partner);target.Add(partner.Merge(robot,partner.Owner) with {Role=partner.Role==RobotRole.Captain || robot.Role==RobotRole.Captain?RobotRole.Captain:RobotRole.Soldier});}
         }

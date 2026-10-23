@@ -94,6 +94,10 @@ public static class AutoSaveStore
                     if(type==typeof(BattleState) && field.Name=="<PersuadedUnits>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
                     if(type==typeof(BattleUnitView) && field.Name=="<Robot>k__BackingField")continue;
                     // Defaults for fields introduced after older turn-boundary saves.
+                    if(type==typeof(Robot) && new[]{"<DefenseOnly>k__BackingField","<FactoryWorker>k__BackingField"}.Contains(field.Name))continue;
+                    if(type==typeof(RobotWorkshop) && new[]{"_baseLineCount","_lineLimit","_workerLines"}.Contains(field.Name))continue;
+                    if(type==typeof(RobotWorld) && field.Name=="<Reservations>k__BackingField")continue;
+                    if(type.Name=="DomesticViewState" && new[]{"<GlobePan>k__BackingField","<GlobeDragSlide>k__BackingField","<NetDragRotate>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(RobotEncounter) && field.Name=="<ReturnedWanderers>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
                     if(type==typeof(WorldSetup) && field.Name=="WandererPolicies"){field.SetValue(value,new WandererPolicy[WorldSetup.CastCount]);continue;}
                     if(type==typeof(WorldSetup) && new[]{"_presetCastCount","TutorialPocketed","TutorialMoved","TutorialPocketNoticeShown","TutorialMoveNoticeShown"}.Contains(field.Name))continue;

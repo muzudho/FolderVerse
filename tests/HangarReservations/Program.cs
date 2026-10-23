@@ -1,0 +1,37 @@
+using FolderVerse;
+static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
+static void Locked(Action action){try{action();}catch(InvalidOperationException){return;}catch(ArgumentException){return;}throw new Exception("Reserved operation succeeded");}
+var robots=new RobotWorld();robots.Initialize(3,2);var shop=robots.Workshops[0];
+for(int seed=0;shop.ProductionLines.Length!=1;seed++)shop.GenerateLines(seed);
+var a=robots.Create(0,RobotParts.Complete);var b=robots.Create(0,RobotParts.Complete);var c=robots.Create(0,RobotParts.Complete);
+foreach(var r in new[]{a,b,c})robots.Nodes[0].Add(r);
+Check(robots.ToggleReservation(0,a.Id,HangarReservation.Defense),"Defense reservation");
+a=robots.Nodes[0].Robots.Single(r=>r.Id==a.Id);
+Check(a.CanFight && robots.AssemblyLocked(0,a) && !robots.CanShip(0,a),"Defense can fight but stays locked at home");
+Locked(()=>robots.Split(0,a.Id,RobotParts.Head));Locked(()=>robots.MovePart(0,a.Id,RobotParts.Head,null));Locked(()=>robots.Transport.Resolve(robots,new[]{new RobotShipment(0,1,a.Id,a.Parts)},(_,_)=>true));
+shop.ConfigureDisposal();Locked(()=>shop.Dispose(robots.Nodes[0],a.Id));Check(!robots.ToggleReservation(0,a.Id,HangarReservation.Disposal),"Defense blocks disposal reservation");
+Check(robots.ToggleReservation(0,b.Id,HangarReservation.Worker) && shop.ProductionLines.Length==2 && shop.BaseLineCount==1 && shop.WorkerAt(1)==b.Id,"Worker opens one distinguishable lane");
+Check(robots.ToggleReservation(0,c.Id,HangarReservation.Worker) && shop.ProductionLines.Length==3,"Second worker opens third lane");
+var d=robots.Create(0,RobotParts.Complete);robots.Nodes[0].Add(d);Check(!robots.ToggleReservation(0,d.Id,HangarReservation.Worker),"Three lane cap");
+var retained=shop.ProductionLines[2];Check(robots.ToggleReservation(0,b.Id,HangarReservation.Worker) && shop.ProductionLines.Length==2 && ReferenceEquals(retained,shop.ProductionLines[1]),"Removing one worker closes only its lane");
+var before=shop.ProductionLines[0];var restored=AutoSaveStore.Restore<RobotWorld>(AutoSaveStore.Capture(robots));Check(restored.Nodes[0].Robots.Single(r=>r.Id==a.Id).DefenseOnly && restored.Nodes[0].Robots.Single(r=>r.Id==c.Id).FactoryWorker && restored.Workshops[0].WorkerAt(1)==c.Id,"Reservations and worker lanes persist");
+Check(robots.ToggleReservation(0,a.Id,HangarReservation.Defense),"Click again unlocks defender");
+Check(robots.ToggleReservation(0,a.Id,HangarReservation.Disposal),"Disposal reservation");Locked(()=>robots.QueueSplit(0,a.Id,RobotParts.Head));Check(robots.ToggleReservation(0,a.Id,HangarReservation.Disposal),"Disposal cancellation");
+a=robots.Nodes[0].Robots.Single(r=>r.Id==a.Id);var rule=robots.Transport.AddInstruction(0,0,1);robots.Transport.ConfigurePartChoices(0,0,rule.Number,1,1,false,1);robots.Transport.SetInstructionRate(0,0,rule.Number,360);
+Check(robots.AssemblyLocked(0,a) && !robots.ToggleReservation(0,a.Id,HangarReservation.Defense),"Transport reservation locks assembly and conflicting roles");Locked(()=>robots.Split(0,a.Id,RobotParts.Head));robots.Transport.DeleteInstruction(0,0,rule.Number);Check(!robots.AssemblyLocked(0,a),"Deleting transport reservation unlocks assembly");
+robots.Reservations=new ConquestCampaign();robots.Reservations.Plan(new(0,1,1,0,false,RobotIds:new[]{a.Id}));Check(robots.AssemblyLocked(0,a) && !robots.CanShip(0,a),"Sortie reservation locks assembly and transport");robots.Reservations.CancelSource(0,0);Check(!robots.AssemblyLocked(0,a),"Sortie cancellation unlocks");
+shop.LimitLines(1);robots.SyncWorkers(0);Check(shop.ProductionLines.Length==1 && !robots.Nodes[0].Robots.Any(r=>r.FactoryWorker) && !robots.ToggleReservation(0,a.Id,HangarReservation.Worker),"Sea cap releases surplus workers and disallows second lane");
+var empty=robots.Workshops[1];empty.LimitLines(1);for(int seed=0;empty.ProductionLines.Length!=0;seed++)empty.GenerateLines(seed);var seaWorker=robots.Create(0,RobotParts.Complete);robots.Nodes[1].Add(seaWorker);Check(robots.ToggleReservation(1,seaWorker.Id,HangarReservation.Worker) && empty.ProductionLines.Length==1 && empty.BaseLineCount==0,"Sea with zero permanent lanes can staff one lane");
+var incomplete=robots.Create(0,RobotParts.Head);robots.Nodes[2].Add(incomplete);Check(!robots.ToggleReservation(2,incomplete.Id,HangarReservation.Worker) && !robots.ToggleReservation(2,incomplete.Id,HangarReservation.Defense),"Incomplete robots cannot staff or defend");
+var world=new WorldSetup();world.SetWorld(0);world.SetCast(123);world.SetPlacement(456);world.SelectPlayer(0);
+Check(world.Nodes.All.Where(n=>n.Terrain==TravelTerrain.Sea).All(n=>world.Robots.Workshops[n.Id].ProductionLines.Length<=1 && world.Robots.Workshops[n.Id].LineLimit==1),"All generated sea factories capped");
+var source=world.Nodes.All.First(n=>world.Routes.Neighbors(n).Any());var target=world.Nodes.At(world.Routes.Neighbors(source)[0].Target,world.Routes.Neighbors(source)[0].Entry);source.Owner=0;target.Owner=1;world.Relations.Reset();
+world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);world.Robots.ConfigureFactories(world);
+var attacker=world.Robots.Create(0,RobotParts.Complete);var defender=world.Robots.Create(1,RobotParts.Complete) with {DefenseOnly=true};world.Robots.Nodes[source.Id].Add(attacker);world.Robots.Nodes[target.Id].Add(defender);
+Check(world.Campaign.RobotBattles.AvailableFrom(world,1,target.Id)==0,"Defender cannot attack");world.Campaign.RobotBattles.Rules=new(){SegmentTurns=1};
+world.Campaign.RobotBattles.Advance(world,new[]{new March(0,target.Id,1,source.Id,false,RobotIds:new[]{attacker.Id})});
+Check(world.Campaign.RobotBattles.Scenes.Any(s=>s.Units.Any(u=>u.Robot?.Id==defender.Id)),"Defense-only robot enters battle when its node is attacked");
+var legacy=AutoSaveStore.Capture(robots);foreach(var entry in legacy.Objects)if(entry.Fields!=null)foreach(string field in new[]{"<DefenseOnly>k__BackingField","<FactoryWorker>k__BackingField","_baseLineCount","_lineLimit","_workerLines","<Reservations>k__BackingField"})entry.Fields.Remove(field);
+var old=AutoSaveStore.Restore<RobotWorld>(legacy);Check(old.Nodes.All(s=>s.Robots.All(r=>!r.Stationed)),"Old saves default to no new reservations");
+var lane=empty.ProductionLines[0];lane.Configure(RobotParts.Head,1);robots.AdvanceIndustry(_=>0);Check(robots.Nodes[1].Robots.Any(r=>r.Parts==RobotParts.Head),"Staffed lane actually manufactures");
+Console.WriteLine("PASS: reservation locks/cancellation, defense deployment, transport/sortie conflicts, worker lanes and preserved identities, sea limits, eligibility and saves.");

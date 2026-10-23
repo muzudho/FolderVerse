@@ -65,7 +65,7 @@ sealed class CheckGame:Game1
             Set("_previousKeyboard",new KeyboardState());Call("HandleInputCore",new MouseState(),new KeyboardState(Keys.Space),new GameTime(TimeSpan.FromSeconds(20),TimeSpan.Zero),true);Check((double)Get("_industryIdleAge")==0 && Get("_screen").ToString()=="Industry","Keyboard activity resets industry timer without skipping result");
             Call("UpdateIndustry",4.99d,false);Check(Get("_screen").ToString()=="Industry","Result remains before timeout");Call("UpdateIndustry",.01d,false);Check(Get("_screen").ToString()=="WorldStatus","Idle result automatically proceeds at five seconds");Call("UpdateIndustryMusic");Check(Get("_industryMusic")==null,"Leaving industry disposes its BGM");
         }
-        var node=w.Nodes.Current(0);var factory=w.Robots.Workshops[node.Id];for(int seed=0;factory.ProductionLines.Length!=3;seed++)factory.GenerateLines(seed);
+        var node=w.Nodes.Current(0);var factory=w.Robots.Workshops[node.Id];factory.LimitLines(3);for(int seed=0;factory.ProductionLines.Length!=3;seed++)factory.GenerateLines(seed);
         Set("_domesticSlide",1f);Set("_populationNode",node.Id);Set("_populationCell",node.Cell);Set("_factoryPlanLine",0);factory.SelectPlan(4);
         GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawNodeFactory");batch.End();Save("cheap-production-plans");
         var option=(Rectangle)typeof(Game1).GetMethod("FactoryPlanButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{6})!;

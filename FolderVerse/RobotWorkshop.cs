@@ -36,7 +36,7 @@ public sealed partial class RobotWorkshop
     public void Configure(RobotParts product,int period)
     {RobotWorld.Validate(0,product);if(period<1)throw new ArgumentOutOfRangeException(nameof(period));Product=product;CheapProduct=false;ProductionPeriod=period;ProductionAge=0;Manufacturing=true;SelectedPlan=-1;RestEnabled=false;RestRemaining=ProducedSinceRest=0;}
     public void Dispose(RobotStore store,long id)
-    {if(DisposalTarget.HasValue)throw new InvalidOperationException("Disposal lane is busy.");if(!HasDisposalFactory)throw new InvalidOperationException("This node has no disposal factory.");int duration=DisposalTurns(store.Robots.Single(r=>r.Id==id).Parts);if(duration<1 || !store.Robots.Any(r=>r.Id==id))throw new ArgumentException("Invalid disposal order.");DisposalTarget=id;DisposalAge=0;DisposalPeriod=duration;}
+    {if(store.Robots.Single(r=>r.Id==id).Stationed)throw new InvalidOperationException("Stationed robot is locked.");if(DisposalTarget.HasValue)throw new InvalidOperationException("Disposal lane is busy.");if(!HasDisposalFactory)throw new InvalidOperationException("This node has no disposal factory.");int duration=DisposalTurns(store.Robots.Single(r=>r.Id==id).Parts);if(duration<1 || !store.Robots.Any(r=>r.Id==id))throw new ArgumentException("Invalid disposal order.");DisposalTarget=id;DisposalAge=0;DisposalPeriod=duration;}
     public void ConfigureDisposal()
     {HasDisposalFactory=true;}
     private long[] _disposalOrder=Array.Empty<long>();
@@ -48,7 +48,7 @@ public sealed partial class RobotWorkshop
     {
         if(!HasDisposalFactory || DisposalTarget.HasValue)return;
         int Rank(long id){int rank=Array.IndexOf(_disposalOrder,id);return rank<0?int.MaxValue:rank;}
-        var robot=store.Robots.Where(r=>r.Disposal && !reserved(r.Id)).OrderBy(r=>Rank(r.Id)).ThenBy(r=>r.Id).FirstOrDefault();
+        var robot=store.Robots.Where(r=>r.Disposal && !r.Stationed && !reserved(r.Id)).OrderBy(r=>Rank(r.Id)).ThenBy(r=>r.Id).FirstOrDefault();
         if(robot!=null)Dispose(store,robot.Id);
     }
     internal void CompleteDisposal(RobotStore store)

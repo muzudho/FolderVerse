@@ -9,6 +9,7 @@ public partial class Game1
     private int _demoDomesticStage;
     private double _demoDomesticAge;
     private int _demoSourceSlot=-1,_demoEmptySlot=-1;
+    private long[] _demoAssemblySelection;
     private Point DemoDestinationPoint()=>DestinationNodes().Select(DestinationBadge).FirstOrDefault(r=>r!=Rectangle.Empty).Center;
     private bool UpdateDemoDomestic(double elapsed)
     {
@@ -30,21 +31,25 @@ public partial class Game1
         switch(_demoDomesticStage)
         {
             case 0:
-                var node=_setup.Nodes.All.FirstOrDefault(n=>n.Owner==_setup.PlayerSlot && !_setup.Campaign.RobotBattles.LockedNode(n.Id));
+                var node=_setup.Nodes.All.Where(n=>n.Owner==_setup.PlayerSlot && !_setup.Campaign.RobotBattles.LockedNode(n.Id)).OrderByDescending(n=>_setup.Robots.AssemblySelection(n.Id,_setup.PlayerSlot,true)!=null).FirstOrDefault();
                 if(node==null){_demoDomesticStage=12;return true;}
                 _populationNode=node.Id;_populationCell=node.Cell;_nodeAssemblyOpen=_nodeTransportOpen=_nodeDisposalOpen=_nodeFactoryOpen=false;break;
             case 1:OpenNodeTransport();break;
             case 2:
-                if(CanEditTransport){var destinations=TransportAdjacent();if(destinations.Length>0){_setup.Robots.Transport.UseInstructions(_populationNode,TransportOwner);if(TransportRules.Count<16){var rule=_setup.Robots.Transport.AddInstruction(_populationNode,TransportOwner,destinations[0]);ConfigureTransport(rule,limit:2);}}}break;
+                break; // Show the real transport plan; do not invent demonstration-only orders.
             case 3:
                 OpenNodeAssembly();
-                _demoSourceSlot=Enumerable.Range(0,12).FirstOrDefault(i=>_hangarSlots[i].HasValue && _setup.Robots.Nodes[_populationNode].Robots.Any(r=>r.Id==_hangarSlots[i] && r.Parts==RobotParts.Complete && CanMoveHangarRobot(r)),-1);
-                _demoEmptySlot=Array.FindIndex(_hangarSlots,id=>!id.HasValue);
-                if(_demoSourceSlot<0 || _demoEmptySlot<0)_demoDomesticStage=7;break;
-            case 4:case 6:NodeAssemblyInput(new MouseState(target.X,target.Y,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),true,false);break;
-            case 5:case 7:
-                _previousMouse=new MouseState(target.X,target.Y,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
-                NodeAssemblyInput(new MouseState(target.X,target.Y,0,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),false,false);break;
+                _demoAssemblySelection=_setup.Robots.AssemblySelection(_populationNode,_setup.PlayerSlot,true);
+                if(_demoAssemblySelection==null){_demoDomesticStage=7;break;}
+                _demoSourceSlot=Array.FindIndex(_hangarSlots,id=>id==_demoAssemblySelection[1]);
+                _demoEmptySlot=Array.FindIndex(_hangarSlots,id=>id==_demoAssemblySelection[0]);break;
+            case 4:
+                _hangarMessage="出撃条件を満たす組み合わせを組み立てます";break;
+            case 5:
+                if(_demoAssemblySelection!=null && _demoAssemblySelection.All(id=>_setup.Robots.Nodes[_populationNode].Robots.Any(r=>r.Id==id && !_setup.Robots.AssemblyLocked(_populationNode,r)))){
+                    _setup.Robots.Assemble(_populationNode,_demoAssemblySelection,_setup.PlayerSlot);SyncHangarSlots();_hangarMessage="出撃できるロボットを組み立てました";
+                }
+                _demoAssemblySelection=null;_demoDomesticStage=7;break;
             case 8:_nodeAssemblyOpen=false;OpenNodeFactory();break;
             case 9:if(_nodeFactoryOpen){_factoryPlanLine=0;_factoryLine=0;}break;
             case 10:if(_nodeFactoryOpen){_factoryPlanLine=-1;}break;

@@ -11,7 +11,7 @@ public partial class Game1
     private static Rectangle PocketTransferButton(bool fromNode)=>new(fromNode?1000:54,615,300,48);
     private bool PocketRobotSelectable(Robot robot,bool fromNode)=>robot.Owner==_setup.PlayerSlot &&
         !_setup.Campaign.RobotBattles.LockedNode(_setup.Nodes.Current(_setup.PlayerSlot).Id) &&
-        (!fromNode || _setup.Robots.Workshops[_setup.Nodes.Current(_setup.PlayerSlot).Id].DisposalTarget!=robot.Id && !_setup.Robots.PendingEdits.Any(e=>e.Ids.Contains(robot.Id)));
+        (!fromNode || !_setup.Robots.AssemblyLocked(_setup.Nodes.Current(_setup.PlayerSlot).Id,robot));
     private bool PocketTransferEnabled(bool fromNode)
     {
         if(!_pocketRobot.HasValue || _pocketFromNode!=fromNode)return false;
@@ -53,7 +53,7 @@ public partial class Game1
         long id=_pocketRobot.Value;
         if(_setup.Campaign.RobotBattles.LockedNode(node)){_pocketMessage="継戦中の節点では配備を変更できません";return;}
         if(!destination.HasSpace){_pocketMessage="移動先が満杯です（出撃中の帰還予約を含む）";return;}
-        if(_pocketFromNode && (_setup.Robots.Workshops[node].DisposalTarget==id || _setup.Robots.PendingEdits.Any(e=>e.Ids.Contains(id))))
+        if(_pocketFromNode && !PocketRobotSelectable(source.Robots.Single(r=>r.Id==id),true))
         {_pocketMessage="組立・分解・廃棄を予約したロボットは移せません";return;}
         if(!source.Robots.Any(r=>r.Id==id && r.Owner==player)){_pocketRobot=null;return;}
         destination.Add(source.Remove(id));_pocketRobot=null;

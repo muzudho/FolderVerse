@@ -25,6 +25,12 @@ public sealed partial class RobotTransport
     private readonly Queue<Dictionary<(int Source,int Target,bool Disposal),int>> _flowTurns=new();
     private readonly Dictionary<(int Source,int Target,bool Disposal),int> _pendingFlow=new();
     public bool HasInstructions(int node,int owner)=>_instructions.ContainsKey((node,owner));
+    public bool Reserves(int node,Robot robot)
+    {
+        if(robot.Stationed)return false;
+        if(HasInstructions(node,robot.Owner))return Instructions(node,robot.Owner).Any(rule=>!rule.Complete && rule.Degrees>0 && (!robot.Disposal || rule.Disposal) && Enumerable.Range(1,7).Any(m=>(rule.Variants&(1<<m))!=0 && ((int)robot.Parts&m)==m && (rule.QualityParts is int choices?(choices&ChoiceBit(m,(robot.CheapParts&(RobotParts)m)!=0))!=0:rule.Cheap?(robot.CheapParts&(RobotParts)m)==(RobotParts)m:(robot.CheapParts&(RobotParts)m)==0)));
+        return Enumerable.Range(1,7).Any(m=>((int)robot.Parts&m)==m && (Plan(node,robot.Owner,(RobotParts)m).Any(w=>w.Degrees>0) || Plan(node,robot.Owner,(RobotParts)m,true).Any(w=>w.Degrees>0)));
+    }
     public IReadOnlyList<TransportInstruction> Instructions(int node,int owner)=>_instructions.TryGetValue((node,owner),out var list)?list.AsReadOnly():Array.Empty<TransportInstruction>();
     public int RestDegrees(int node,int owner)=>Math.Max(0,360-Instructions(node,owner).Sum(r=>r.Degrees));
     public void UseInstructions(int node,int owner){RobotWorld.Validate(owner,RobotParts.Head);if(node<0)throw new ArgumentOutOfRangeException(nameof(node));_instructions.TryAdd((node,owner),new());}
@@ -97,7 +103,7 @@ public sealed partial class RobotTransport
         for(int node=0;node<world.Nodes.Length;node++){
             if(locked?.Invoke(node)==true)continue;
             foreach(var robot in world.Nodes[node].Robots.OrderBy(r=>r.Id)){
-                if(world.Workshops[node].DisposalTarget==robot.Id || world.PendingEdits.Any(e=>e.Ids.Contains(robot.Id)))continue;
+                if(!world.CanShip(node,robot))continue;
                 var options=new List<InstructionChoice>();
                 foreach(var rule in Instructions(node,robot.Owner)){
                     if(rule.Complete || rule.Degrees==0 || rule.Target>=world.Nodes.Length || !connected(node,rule.Target) || locked?.Invoke(rule.Target)==true || !(canEnter?.Invoke(robot.Owner,rule.Target)??true) || robot.Disposal && !rule.Disposal)continue;

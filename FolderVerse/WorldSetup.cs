@@ -197,6 +197,7 @@ public sealed partial class WorldSetup
             Robots.Workshops[node.Id].GenerateLines(seed^node.Id*7919);
             for(int i=0;i<3;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,RobotParts.Complete,i==1?RobotRole.Captain:RobotRole.Soldier));
         }
+        Robots.ConfigureFactories(this);
         // Start at the Node centre.
         for(int ruler=0;ruler<ActiveCount;ruler++)ConquerorPoints[ruler]=Nodes.Current(ruler).Center;
         for(int ruler=0;ruler<ActiveCount;ruler++)Robots.Workshops[Nodes.Current(ruler).Id].ConfigureDisposal();
