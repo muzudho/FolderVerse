@@ -1,0 +1,1 @@
+Use case: precise-object-edit. Remove ONLY thin dark outlines around all FOUR white iris highlight circles in input1. Leave plain solid white circles at identical positions/sizes. Keep exact face eyes silverglasses closed smile headtilt ears blondhair laurel earrings collar battery background unchanged. No added white dots or other edits.

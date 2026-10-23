@@ -1,6 +1,6 @@
 {
   "CharacterId": 50,
-  "UpdatedAt": "2026-10-23T06:35:00+09:00",
+  "UpdatedAt": "2026-10-23T22:05:00+09:00",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018",
   "GameAdopted": false,
@@ -261,7 +261,9 @@
         "character-50-normal-3-v001-prompt.txt",
         "character-50-normal-3-v002-prompt.txt",
         "character-50-normal-3-v003-prompt.txt",
-        "character-50-normal-3-v004-prompt.txt"
+        "character-50-normal-3-v004-prompt.txt",
+        "normal-3-face-detail-v002-prompt.txt",
+        "character-50-normal-3-v014-prompt.txt"
       ],
       "Review": "v004 tiny coolblue/lavender recessed slivers at neck/collar/shoulder contacts visible, golden lower/foreground curls retained. Thoughtful closed smile blueeyes silverglasses hairornaments outfit battery BLACKGOLD FINGERLESSgloves bareindexchin otherhand OPENBOOK sofa library retained. Wholehair/ornament/hem/bothshoes fit. Small originalstyle upperthighgap remains; this edit does not resolve it. Minorpaint/jewelry changes. 256x192 face/chinhand/book/battery readable. Finalstyle/seatedproportion comparison pending.",
       "PreviousFailures": [
@@ -279,10 +281,10 @@
           "Prompt": "character-50-normal-3-v001-prompt.txt"
         }
       ],
-      "Source": "character-50-normal-3-v004-generated.png",
+      "Source": "character-50-normal-3-v014-generated.png",
       "Width": 1448,
       "Height": 1086,
-      "Sha256": "f498ad49002ea71bfefd4c9b38690dd1c78a04483105f9c53ef7c82f8e00497f",
+      "Sha256": "4d9ca57e6b9a53d95500affa1d4e96022a892ec7d4669fc0a25476b314ed81b3",
       "Trials": [
         {
           "Source": "character-50-normal-3-v002-generated.png",
@@ -329,19 +331,171 @@
           "Evidence": "normal-3-eye-review-v006.png",
           "Status": "NOT_SELECTED_SUPPLEMENT_CIRCLE_STILL_UNCLEAR",
           "Review": "右側の目の主白点は明るくなったが、左下の独立した補助白円は両目で明確に確認できず。全身/元表情/黒金指なし手袋/顎指/本/電池/裾両靴保持。選択v004維持。"
+        },
+        {
+          "Source": "character-50-normal-3-v007-generated.png",
+          "Sha256": "28ccca93993f08931b983f8498ba98194cfbb45edd4cbe3089603e3bb235fec3",
+          "Prompt": "character-50-normal-3-v007-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "character-50-normal-3-v004-generated.png"
+          ],
+          "Width": 1448,
+          "Height": 1086,
+          "RequestedResolution": "3072x2304 if supported",
+          "Status": "NOT_SELECTED_RESOLUTION_AND_HIGHLIGHTS_UNCHANGED",
+          "Evidence": "normal-3-eye-review-v007.png",
+          "Review": "指定3072x2304に対し実出力1448x1086。上光点/下反射のまま、独立下左小円の明瞭な改善なし。不採用。閉じ笑顔/眼鏡/裸顎指/黒指なし手袋保持。"
+        },
+        {
+          "Source": "character-50-normal-3-v008-generated.png",
+          "Width": 1448,
+          "Height": 1086,
+          "Sha256": "beb880768e5ff0f457537840bbfa4c230590b088eeba9fa2db546db835532581",
+          "Prompt": "character-50-normal-3-v008-prompt.txt",
+          "References": [
+            "normal-3-fullbody-input-3072-v001.png"
+          ],
+          "Status": "ENLARGED_INPUT_RESOLUTION_INEFFECTIVE_NOT_SELECTED",
+          "Review": "3072x2304拡大入力でも実出力1448x1086。主白点は明瞭だが下左小白円は淡い反射に混じり未確認。全身・眼鏡・顎指・本を保持。選択v004維持。",
+          "Evidence": "normal-3-eye-review-v008.png"
+        },
+        {
+          "Source": "character-50-normal-3-v009-generated.png",
+          "Width": 1448,
+          "Height": 1086,
+          "Sha256": "25a17cbb46861b302789d2ac659186114587e7823e877d8a7da025c85b1de995",
+          "References": [
+            "character-50-normal-3-v004-generated.png",
+            "normal-3-eye-detail-v001-generated.png"
+          ],
+          "Prompt": "character-50-normal-3-v009-prompt.txt",
+          "Status": "NOT_SELECTED_HIGHLIGHT_PAIR_NOT_PRESERVED",
+          "Review": "合成で下左小点は明るくなったが上右主白円が消え、不採用。",
+          "Evidence": "normal-3-eye-review-v009.png"
+        },
+        {
+          "Source": "character-50-normal-3-v010-generated.png",
+          "Width": 1448,
+          "Height": 1086,
+          "Sha256": "f1f72f01afee7e92f69e48e4662d56e2d0a0c25a5e1f1ae97733ca2f80cdcb17",
+          "References": [
+            "character-50-normal-3-v009-generated.png"
+          ],
+          "Prompt": "character-50-normal-3-v010-prompt.txt",
+          "Status": "NOT_SELECTED_HIGHLIGHT_PAIR_NOT_PRESERVED",
+          "Review": "主白円は戻ったが下左小円が淡い反射へ混じり、大小2円の同時保持未達。不採用。",
+          "Evidence": "normal-3-eye-review-v010.png"
+        },
+        {
+          "Source": "normal-3-face-detail-v001-generated.png",
+          "Sha256": "3c44f7ec446ec90894ab83b06364d5e75c471ab4e767346b5bc1f8c812c90fef",
+          "References": [
+            "normal-3-face-input-v001.png"
+          ],
+          "InputCrop": {
+            "X": 560,
+            "Y": 120,
+            "Width": 320,
+            "Height": 320
+          },
+          "Prompt": "normal-3-face-detail-v001-prompt.txt",
+          "Status": "SUPPORTING_FACE_REFERENCE_ONLY_NOT_FULLBODY",
+          "Review": "顔参照で大小の白円が分離、補助円に薄い暗縁。顔角度/閉じ笑顔/眼鏡/顎指保持。全身原画の代替ではない。"
+        },
+        {
+          "Source": "character-50-normal-3-v011-generated.png",
+          "Width": 1448,
+          "Height": 1086,
+          "Sha256": "3a9a4044fa1cda22278511785480a9769c1c60c8d9546e1b0b5e67aedd9c58cc",
+          "References": [
+            "character-50-normal-3-v004-generated.png",
+            "normal-3-face-detail-v001-generated.png"
+          ],
+          "Prompt": "character-50-normal-3-v011-prompt.txt",
+          "Status": "NOT_SELECTED_FACE_TRANSFER_HIGHLIGHTS_LOST",
+          "Review": "全身反映では主白円が小さく、下左小円は淡い反射へ混じる。全身/眼鏡/顎指/本保持。選択v004維持。",
+          "Evidence": "normal-3-eye-review-v011.png"
+        },
+        {
+          "Source": "character-50-normal-3-v012-generated.png",
+          "Width": 1448,
+          "Height": 1086,
+          "Sha256": "05ef736f2ea9168a4344e33328650ddb90e886bd82268baece137fdac015bda9",
+          "Prompt": "character-50-normal-3-v012-prompt.txt",
+          "References": [
+            "character-50-normal-3-v004-generated.png",
+            "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+          ],
+          "Status": "WHOLE_SCENE_REDRAW_REVIEWED_NOT_SELECTED",
+          "Review": "全身再描画で顔/靴が大きく、短い首・全身余白・本人小物保持。閉じ笑顔、黒指なし手袋/裸顎指/本/電池あり。瞳主白点が虹彩上中央寄り、下小円は反射と混じり未達。座位の厳密頭身は認定しない。",
+          "Evidence": [
+            "normal-3-eye-review-v012.png",
+            "normal-3-v012-preview.png"
+          ],
+          "Preview": {
+            "File": "normal-3-v012-preview.png",
+            "Width": 256,
+            "Height": 192,
+            "Crop": {
+              "X": 440,
+              "Y": 70,
+              "Width": 640,
+              "Height": 480
+            },
+            "Status": "REVIEW_ONLY_NOT_STAGED"
+          }
+        },
+        {
+          "Source": "character-50-normal-3-v013-generated.png",
+          "Width": 1448,
+          "Height": 1086,
+          "Sha256": "4bd4b5808c7062cb43f37dbaf931e8f2fcf4ea37dba50d0e1db05fa1c9dd3c1c",
+          "Prompt": "character-50-normal-3-v013-prompt.txt",
+          "References": [
+            "character-50-normal-3-v012-generated.png"
+          ],
+          "Status": "NOT_SELECTED_MAIN_IMPROVED_SUPPLEMENT_UNRESOLVED",
+          "Review": "上右主円が大きく明瞭になったが、下左小円が反射へ混じり未確認。全身/閉じ笑顔/眼鏡/裸顎指/黒指なし手袋/本/電池保持。256x192で本人判別可能。選択v004維持。",
+          "Evidence": [
+            "normal-3-eye-review-v013.png",
+            "normal-3-v013-preview.png"
+          ]
+        },
+        {
+          "Source": "normal-3-face-detail-v002-generated.png",
+          "Sha256": "c9f237712d03a8b763b6371265bcbd987aae7dfc4bdc7520301e4fb3ea249d41",
+          "Prompt": "normal-3-face-detail-v002-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "normal-3-face-input-v001.png"
+          ],
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "両眼の上右大白円/下左小白円を分離、肌へのはみ出しなし。本人表情/眼鏡/指保持。"
+        },
+        {
+          "Source": "character-50-normal-3-v014-generated.png",
+          "Sha256": "4d9ca57e6b9a53d95500affa1d4e96022a892ec7d4669fc0a25476b314ed81b3",
+          "Prompt": "character-50-normal-3-v014-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "character-50-normal-3-v004-generated.png",
+            "normal-3-face-detail-v002-generated.png"
+          ],
+          "Status": "SELECTED_STAGED_NOT_ADOPTED",
+          "Review": "顔単体v002では両眼の大小白円が独立。全身v014でも下左の小白点と上右主白点が改善、下小点は淡反射へ接する。完全適合未認定。閉じ笑顔/眼鏡/顎の裸指と黒指なし手袋/本/電池/ソファ/全身裾両靴を保持。256x192で本人と指/本を判別。",
+          "Evidence": "normal-3-eye-review-v014.png"
         }
       ],
       "Preview": {
-        "File": "normal-3-v004-preview.png",
-        "Crop": {
-          "X": 440,
-          "Y": 130,
-          "Width": 640,
-          "Height": 480
-        },
+        "File": "normal-3-v014-preview.png",
+        "CropX": 440,
+        "CropY": 130,
+        "CropWidth": 640,
+        "CropHeight": 480,
         "Width": 256,
         "Height": 192,
-        "Status": "visually-reviewed"
+        "Status": "VISUALLY_REVIEWED_NOT_GAME_ADOPTED"
       },
       "Audit20261022": {
         "Status": "contact-sheet-review-not-final-approval",
@@ -381,10 +535,9 @@
         "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       },
       "EyeTransferAttempt": {
-        "Source": "character-50-normal-3-v006-generated.png",
-        "Evidence": "normal-3-eye-review-v006.png",
-        "Status": "DEFERRED_AFTER_TWO_INEFFECTIVE_FULLBODY_TRANSFERS",
-        "Next": "Do not repeat same transfer. Continue normal4, revisit normal3 with different crop-first composition strategy after other scenes."
+        "Source": "character-50-normal-3-v014-generated.png",
+        "Status": "IMPROVED_STAGED_NOT_EXACT_CERTIFIED",
+        "Evidence": "normal-3-eye-review-v014.png"
       }
     },
     {
@@ -503,10 +656,10 @@
     {
       "Id": 5,
       "Kind": "normal",
-      "Source": "character-50-normal-5-v004-generated.png",
+      "Source": "character-50-normal-5-v009-generated.png",
       "Width": 1448,
       "Height": 1086,
-      "Sha256": "4b89d9c106cd11a481bf54fac78f518ca7ce362484f1b9952ef54bab719f4bae",
+      "Sha256": "852f629ff69f6178216ffdfa7e019f6e323c7b3c83b777435e05d442a0d9cb3b",
       "References": [
         "art-source/portraits/characters/character-50/character-50-5-v003-generated.png",
         "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
@@ -516,7 +669,10 @@
         "character-50-normal-5-v001-prompt.txt",
         "character-50-normal-5-v002-prompt.txt",
         "character-50-normal-5-v003-prompt.txt",
-        "character-50-normal-5-v004-prompt.txt"
+        "character-50-normal-5-v004-prompt.txt",
+        "normal-5-face-detail-v001-prompt.txt",
+        "normal-5-face-detail-v002-prompt.txt",
+        "character-50-normal-5-v009-prompt.txt"
       ],
       "Status": "local-depth-improved-fullbody-runtime-preview-reviewed-not-adopted",
       "Review": "v004 small coolblue/lavender recessed hair contacts at backneck/shoulder armor visible, golden outer/lower curls retained. Lookingback closedsmile blueeyes silverglasses goldblueornaments costume layeredgoldshoulderarmor goldblackbracer upperbackbattery checkeredflags balloons retained. Entirehair/ornament/hem/bothshoes fit. Slightpaintchanges. 256x192 face/glasses/armor/battery readable. Final proportion/style comparison pending.",
@@ -582,19 +738,108 @@
           "Evidence": "normal-5-eye-review-v006.png",
           "Status": "NOT_SELECTED_NO_CLEAR_HIGHLIGHT_IMPROVEMENT",
           "Review": "本人/表情/眼鏡/肩甲/上背電池/旗/裾両靴保持。しかし補助白円の位置と分離は旧版から明確に改善せず、描写もやや軟化。不採用。"
+        },
+        {
+          "Source": "character-50-normal-5-v007-generated.png",
+          "Width": 1448,
+          "Height": 1086,
+          "Sha256": "48a11ce0e8e9f8c57dd53df0f4bdceacd671abd58cc7837df5f55dbfe7f417b6",
+          "Prompt": "character-50-normal-5-v007-prompt.txt",
+          "References": [
+            "character-50-normal-5-v004-generated.png",
+            "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+          ],
+          "Status": "WHOLE_SCENE_REDRAW_NOT_SELECTED",
+          "Review": "振り返り/閉じ笑顔/眼鏡/金肩甲黒縁/腕甲/電池/チェッカー旗/気球/全身保持。瞳小円が上側に残り下左小円が分離しない。256x192旧切出しでは頭飾り上端が切れるため採用候補化時は切出し要変更。",
+          "Evidence": [
+            "normal-5-eye-review-v007.png",
+            "normal-5-v007-preview.png"
+          ],
+          "Preview": {
+            "File": "normal-5-v007-preview.png",
+            "Crop": {
+              "X": 500,
+              "Y": 50,
+              "Width": 560,
+              "Height": 420
+            },
+            "Width": 256,
+            "Height": 192,
+            "Status": "REVIEW_ONLY_HEAD_ORNAMENT_CLIPPED"
+          }
+        },
+        {
+          "Source": "character-50-normal-5-v008-generated.png",
+          "Width": 1448,
+          "Height": 1086,
+          "Sha256": "9068873f739327e8efae351c593418bebee2ed9c98ce869033c46b8efdcd01d9",
+          "Prompt": "character-50-normal-5-v008-prompt.txt",
+          "References": [
+            "character-50-normal-5-v007-generated.png"
+          ],
+          "Status": "NOT_SELECTED_SUPPLEMENT_MERGED_INTO_REFLECTION",
+          "Review": "上右主白円改善。下左補助円は水色反射へ融合、独立した白円として未確認。全身/本人/振り返り/鎧/電池/旗/気球保持。再切出しで頭飾り上余白確保、256x192で眼鏡/顔/電池判別。",
+          "Evidence": [
+            "normal-5-eye-review-v008.png",
+            "normal-5-v008-preview.png"
+          ],
+          "Preview": {
+            "File": "normal-5-v008-preview.png",
+            "Crop": {
+              "X": 490,
+              "Y": 0,
+              "Width": 640,
+              "Height": 480
+            },
+            "Width": 256,
+            "Height": 192,
+            "Status": "REVIEW_ONLY_NOT_STAGED"
+          }
+        },
+        {
+          "Source": "normal-5-face-detail-v001-generated.png",
+          "Sha256": "4832b085e35c6dac012a8ae831ad2dff303c5c0df01fba35c5577d2ce1cecbb7",
+          "Prompt": "normal-5-face-detail-v001-prompt.txt",
+          "References": [
+            "normal-5-face-input-v001.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "大小白円分離、黒縁あり。"
+        },
+        {
+          "Source": "normal-5-face-detail-v002-generated.png",
+          "Sha256": "41ead0f4a646fe6d9af00d8f6aa916889410e0a595f99b779905d966ae792636",
+          "Prompt": "normal-5-face-detail-v002-prompt.txt",
+          "References": [
+            "normal-5-face-detail-v001-generated.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "黒縁除去、本人保持。"
+        },
+        {
+          "Source": "character-50-normal-5-v009-generated.png",
+          "Sha256": "852f629ff69f6178216ffdfa7e019f6e323c7b3c83b777435e05d442a0d9cb3b",
+          "Prompt": "character-50-normal-5-v009-prompt.txt",
+          "References": [
+            "character-50-normal-5-v004-generated.png",
+            "normal-5-face-detail-v002-generated.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "SELECTED_STAGED_NOT_ADOPTED",
+          "Review": "顔v001で大小白円分離するが黒縁、v002で黒縁除去。全身v009は両眼上右主白点/下左小点改善、下小点は淡青反射に接し完全適合未認定。振り返り閉じ笑顔/眼鏡/肩甲黒縁/背電池/鎖/腕甲/チェック旗/気球/全身裾両靴保持。256x192で顔/眼鏡/電池/肩甲を判別、頭飾りも枠内。"
         }
       ],
       "Preview": {
-        "File": "normal-5-v004-preview.png",
-        "Crop": {
-          "X": 500,
-          "Y": 50,
-          "Width": 560,
-          "Height": 420
-        },
+        "File": "normal-5-v009-preview.png",
+        "CropX": 490,
+        "CropY": 0,
+        "CropWidth": 640,
+        "CropHeight": 480,
         "Width": 256,
         "Height": 192,
-        "Status": "visually-reviewed-face-armor-battery"
+        "Status": "VISUALLY_REVIEWED_NOT_GAME_ADOPTED"
       },
       "Audit20261022": {
         "Status": "contact-sheet-review-not-final-approval",
@@ -634,10 +879,21 @@
         "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       },
       "EyeTransferAttempt": {
-        "Source": "character-50-normal-5-v006-generated.png",
-        "Evidence": "normal-5-eye-review-v006.png",
-        "Status": "DEFERRED_AFTER_TWO_INEFFECTIVE_TRANSFERS",
-        "Next": "Continue normal6; revisit normal5 later using different strategy, not repeated same transfer."
+        "Source": "character-50-normal-5-v009-generated.png",
+        "Status": "IMPROVED_STAGED_NOT_EXACT_CERTIFIED",
+        "Evidence": "normal-5-eye-review-v009.png"
+      },
+      "FaceInput": {
+        "File": "normal-5-face-input-v001.png",
+        "Source": "character-50-normal-5-v004-generated.png",
+        "Crop": {
+          "X": 660,
+          "Y": 65,
+          "Width": 320,
+          "Height": 320
+        },
+        "Width": 1024,
+        "Height": 1024
       }
     },
     {
@@ -705,6 +961,98 @@
           "Evidence": "normal-6-eye-review-v005.png",
           "Status": "NOT_SELECTED_OVERSIZED_MAIN_HIGHLIGHT",
           "Review": "画像右の高い位置の目で主白点が虹彩上半分を占めるほど過大化し、上睫毛境界と重なる。小補助点の独立も不明瞭。不採用。改善済み左目、笑顔、眼鏡、衣装、電池、白手袋、全身構図は保持。"
+        },
+        {
+          "Source": "character-50-normal-6-v006-generated.png",
+          "Width": 1448,
+          "Height": 1086,
+          "Sha256": "dbd25b019b998d3778671a00e75c462fdaff52024b8c38db9d959a5bb4c991e0",
+          "Prompt": "character-50-normal-6-v006-prompt.txt",
+          "References": [
+            "character-50-normal-6-v003-generated.png",
+            "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+          ],
+          "Status": "WHOLE_SCENE_REDRAW_NOT_SELECTED",
+          "Review": "全身/大笑い口/銀眼鏡/前方白掌/反対腕後方/電池/青旗花弁保持。主白点が中央〜左上寄り、下左小白円が淡い反射へ混じり未達。前手は256x192切出し左端にかかるので次工程で調整必要。動的姿勢の厳密頭身未認定。",
+          "Evidence": [
+            "normal-6-eye-review-v006.png",
+            "normal-6-v006-preview.png"
+          ],
+          "Preview": {
+            "File": "normal-6-v006-preview.png",
+            "Crop": {
+              "X": 400,
+              "Y": 0,
+              "Width": 720,
+              "Height": 540
+            },
+            "Width": 256,
+            "Height": 192,
+            "Status": "REVIEW_ONLY_NOT_STAGED"
+          }
+        },
+        {
+          "Source": "character-50-normal-6-v007-generated.png",
+          "Width": 1448,
+          "Height": 1086,
+          "Sha256": "331bd33fa667298fd147b11ea2c4cddaca868d9f83daafbe8c7cae8ea6f8b6b8",
+          "Prompt": "character-50-normal-6-v007-prompt.txt",
+          "References": [
+            "character-50-normal-6-v006-generated.png"
+          ],
+          "Status": "NOT_SELECTED_MAIN_OVERSIZED_SUPPLEMENT_UNRESOLVED",
+          "Review": "主白円が過大で上睫毛に重なる。下左小円は反射と分離せず不採用。全身/笑顔/眼鏡/前白掌/後腕/電池保持。再切出し350,0,800,600で前掌を収めた。",
+          "Evidence": [
+            "normal-6-eye-review-v007.png",
+            "normal-6-v007-preview.png"
+          ],
+          "Preview": {
+            "File": "normal-6-v007-preview.png",
+            "Crop": {
+              "X": 350,
+              "Y": 0,
+              "Width": 800,
+              "Height": 600
+            },
+            "Width": 256,
+            "Height": 192,
+            "Status": "REVIEW_ONLY_NOT_STAGED"
+          }
+        },
+        {
+          "Source": "normal-6-face-detail-v001-generated.png",
+          "Sha256": "23584dae9c73972db64af2a19d0d2ed19daeab6399494e8bed3665b30a1c14c5",
+          "Prompt": "normal-6-face-detail-v001-prompt.txt",
+          "References": [
+            "normal-6-face-input-v001.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "両眼の大小白円分離、本人の開いた笑顔/銀眼鏡/白手袋前掌保持。"
+        },
+        {
+          "Source": "character-50-normal-6-v008-generated.png",
+          "Sha256": "e89332708f7db0bb0a391656040d036f122d35a85a8122abf1573239889de554",
+          "Prompt": "character-50-normal-6-v008-prompt.txt",
+          "References": [
+            "character-50-normal-6-v003-generated.png",
+            "normal-6-face-detail-v001-generated.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Review": "顔単体v001は大小白円を両眼で分離。全身v008へ反映すると上白点縮小・下点が淡青反射へ混じり消失、改善未達で不採用。開いた笑顔/眼鏡/白手袋前掌と後腕/電池/衣装/全身裾両靴保持。256x192で顔/前掌/電池判別。選択v003維持。",
+          "Evidence": "normal-6-eye-review-v008.png",
+          "Preview": {
+            "File": "normal-6-v008-preview.png",
+            "Crop": {
+              "X": 350,
+              "Y": 0,
+              "Width": 800,
+              "Height": 600
+            },
+            "Width": 256,
+            "Height": 192
+          }
         }
       ],
       "Preview": {
@@ -757,10 +1105,21 @@
         "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       },
       "EyeTransferAttempt": {
-        "Source": "character-50-normal-6-v005-generated.png",
-        "Evidence": "normal-6-eye-review-v005.png",
-        "Status": "DEFERRED_AFTER_TWO_FULLBODY_TRANSFERS",
-        "Review": "画像右の高い位置の目で主白点が虹彩上半分を占めるほど過大化し、上睫毛境界と重なる。小補助点の独立も不明瞭。不採用。改善済み左目、笑顔、眼鏡、衣装、電池、白手袋、全身構図は保持。"
+        "Source": "character-50-normal-6-v008-generated.png",
+        "Status": "FACE_DETAIL_SUCCEEDED_FULLBODY_TRANSFER_FAILED",
+        "Evidence": "normal-6-eye-review-v008.png"
+      },
+      "FaceInput": {
+        "File": "normal-6-face-input-v001.png",
+        "Source": "character-50-normal-6-v003-generated.png",
+        "Crop": {
+          "X": 570,
+          "Y": 95,
+          "Width": 280,
+          "Height": 280
+        },
+        "Width": 1024,
+        "Height": 1024
       }
     },
     {
@@ -984,6 +1343,99 @@
           "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
           "Review": "画像左の主白点は改善、両眼の下左小点は反射へ混じり明瞭な分離未達。右主点も弱い。不採用、選択v003維持。",
           "Evidence": "election-eye-review-v005.png"
+        },
+        {
+          "Source": "character-50-election-v006-generated.png",
+          "Width": 1024,
+          "Height": 1536,
+          "Sha256": "848d372de80ad13159dbd7df947b59fc6111ddb2cb7eb9bf3e3ee905840ce117",
+          "Prompt": "character-50-election-v006-prompt.txt",
+          "References": [
+            "character-50-election-v003-generated.png",
+            "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+          ],
+          "Status": "WHOLE_SCENE_REDRAW_NOT_SELECTED",
+          "Review": "全身/月桂飾り/眼鏡/閉じ笑顔/傾き/高襟/電池/白手袋保持。瞳白点2個がともに上側、下左小円未達。300x400白黒で顔/眼鏡/電池/手を判別。",
+          "Evidence": [
+            "election-eye-review-v006.png",
+            "election-v006-grayscale.png"
+          ],
+          "Preview": {
+            "File": "election-v006-preview.png",
+            "Grayscale": "election-v006-grayscale.png",
+            "Crop": {
+              "X": 260,
+              "Y": 0,
+              "Width": 510,
+              "Height": 680
+            },
+            "Width": 300,
+            "Height": 400,
+            "Status": "REVIEW_ONLY_NOT_STAGED"
+          }
+        },
+        {
+          "Source": "character-50-election-v007-generated.png",
+          "Width": 1024,
+          "Height": 1536,
+          "Sha256": "20df3f9295ba4a0c88980e43156f7521b784265fa1b2a77513a5803acec5592e",
+          "Prompt": "character-50-election-v007-prompt.txt",
+          "References": [
+            "character-50-election-v006-generated.png"
+          ],
+          "Status": "NOT_SELECTED_HIGHLIGHTS_REMAIN_UPPER",
+          "Review": "白点2個とも上側のまま、下左小円未達。全身/月桂/眼鏡/閉じ笑顔/傾き/高襟/電池/白手袋保持。300x400白黒で本人判別。",
+          "Evidence": [
+            "election-eye-review-v007.png",
+            "election-v007-grayscale.png"
+          ],
+          "Preview": {
+            "File": "election-v007-preview.png",
+            "Grayscale": "election-v007-grayscale.png",
+            "Crop": {
+              "X": 260,
+              "Y": 0,
+              "Width": 510,
+              "Height": 680
+            },
+            "Width": 300,
+            "Height": 400,
+            "Status": "REVIEW_ONLY_NOT_STAGED"
+          }
+        },
+        {
+          "Source": "election-face-detail-v001-generated.png",
+          "Sha256": "c595bb23cc02c0e66d4def6b52add622427c91c9055e18d2e42d22a71e85a4c7",
+          "Prompt": "election-face-detail-v001-prompt.txt",
+          "References": [
+            "election-face-input-v001.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "大小白円分離、黒縁あり。"
+        },
+        {
+          "Source": "election-face-detail-v002-generated.png",
+          "Sha256": "5e9ae0f282f2c76cbf66910d4354062ed7f2095f482647607260366ca533b27c",
+          "Prompt": "election-face-detail-v002-prompt.txt",
+          "References": [
+            "election-face-detail-v001-generated.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "黒縁除去、本人表情保持。"
+        },
+        {
+          "Source": "character-50-election-v008-generated.png",
+          "Sha256": "8ac25e36282c674273fb7f6bb10dab8b7c84839c661bf17d4eeb55bcb9cdb295",
+          "Prompt": "character-50-election-v008-prompt.txt",
+          "References": [
+            "character-50-election-v003-generated.png",
+            "election-face-detail-v002-generated.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Review": "顔単体v001で大小白円分離、黒縁をv002で除去。全身v008では画像左眼の下小円が広い淡青反射に消失、右眼下点も淡く接触し未達、不採用。閉じ笑顔/傾き/眼鏡/月桂/耳飾り/高襟/電池/白手袋/全身裾両靴保持。300x400白黒で顔/眼鏡/電池/手判別。選択v003維持。"
         }
       ],
       "Audit20261022": {
@@ -1013,9 +1465,21 @@
         "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       },
       "EyeTransferAttempt": {
-        "Source": "character-50-election-v005-generated.png",
-        "Status": "DEFERRED_AFTER_TWO_FULLBODY_TRANSFERS",
-        "Evidence": "election-eye-review-v005.png"
+        "Source": "character-50-election-v008-generated.png",
+        "Status": "FACE_DETAIL_SUCCEEDED_FULLBODY_TRANSFER_FAILED",
+        "Evidence": "election-eye-review-v008.png"
+      },
+      "FaceInput": {
+        "File": "election-face-input-v001.png",
+        "Source": "character-50-election-v003-generated.png",
+        "Crop": {
+          "X": 360,
+          "Y": 25,
+          "Width": 320,
+          "Height": 320
+        },
+        "Width": 1024,
+        "Height": 1024
       }
     },
     {
@@ -1127,10 +1591,10 @@
     {
       "Id": "history",
       "Kind": "newspaper",
-      "Source": "character-50-history-v003-generated.png",
+      "Source": "character-50-history-v008-generated.png",
       "Width": 1024,
       "Height": 1536,
-      "Sha256": "1ae12b892d3bff3af5357a02b12ba680f6664419359fe5834bd1b307972fcd15",
+      "Sha256": "42c6606c3495f321bfd801600e652276af1c3bd201f61f9c84b7b7dc726bb0e1",
       "References": [
         "art-source/portraits/newspaper-trials/character-50-history-v001-generated.png",
         "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
@@ -1139,7 +1603,9 @@
       "Prompts": [
         "character-50-history-v001-prompt.txt",
         "character-50-history-v002-prompt.txt",
-        "character-50-history-v003-prompt.txt"
+        "character-50-history-v003-prompt.txt",
+        "history-face-detail-v001-prompt.txt",
+        "character-50-history-v008-prompt.txt"
       ],
       "Trials": [
         {
@@ -1163,22 +1629,128 @@
           "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
           "Evidence": "history-eye-review-v004.png",
           "Review": "上側光点は残るが、反対斜め下の独立した小補助円は両眼で確認できず修正未達。不採用。閉じた落ち着いた口/眼鏡/青眼を保持。選択v003維持。"
+        },
+        {
+          "Source": "history-eye-detail-v001-generated.png",
+          "Sha256": "cf3b94c3be41033853f168dcb6664246f437b276cf7364865b719ff72bffab3a",
+          "Prompt": "history-eye-detail-v001-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "history-eye-input-v001.png"
+          ],
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "下左小白円を追加したが主点は上左に残る。細い暗縁もあり完全適合ではない。",
+          "Evidence": "history-eye-detail-v001-generated.png"
+        },
+        {
+          "Source": "character-50-history-v005-generated.png",
+          "Sha256": "16e17c72ecd8b70d7a942871de89d6a1ae93400069b473beed71ab998d80b154",
+          "Prompt": "character-50-history-v005-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "character-50-history-v003-generated.png",
+            "history-eye-detail-v001-generated.png"
+          ],
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Review": "全身では上側白点が残り、下左の独立小円は両眼で不明瞭。指示した主点右上移動も未達。不採用、選択v003維持。閉じ口/眼鏡/本人顔保持。",
+          "Evidence": "history-eye-review-v005.png"
+        },
+        {
+          "Source": "character-50-history-v006-generated.png",
+          "Width": 1024,
+          "Height": 1536,
+          "Sha256": "66550cfdf5344f4dade3b9c5618bdb99abff7f0d653a61f0493dc5b4229d3235",
+          "Prompt": "character-50-history-v006-prompt.txt",
+          "References": [
+            "character-50-history-v003-generated.png",
+            "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+          ],
+          "Status": "WHOLE_SCENE_REDRAW_NOT_SELECTED",
+          "Review": "座位/木彫椅子/膝上白手袋/閉じ口/眼鏡/電池/全身と裾靴保持。虹彩主白点は左上寄り、下小円未分離。300x400白黒で顔/眼鏡/電池/手判別。座位厳密頭身未認定。",
+          "Evidence": [
+            "history-eye-review-v006.png",
+            "history-v006-grayscale.png"
+          ],
+          "Preview": {
+            "File": "history-v006-preview.png",
+            "Grayscale": "history-v006-grayscale.png",
+            "Crop": {
+              "X": 300,
+              "Y": 140,
+              "Width": 450,
+              "Height": 600
+            },
+            "Width": 300,
+            "Height": 400,
+            "Status": "REVIEW_ONLY_NOT_STAGED"
+          }
+        },
+        {
+          "Source": "character-50-history-v007-generated.png",
+          "Width": 1024,
+          "Height": 1536,
+          "Sha256": "2dfed5d3d3c473644f28e91b773c23ab44371214a587fe333cb1b1cc1e99bf6a",
+          "Prompt": "character-50-history-v007-prompt.txt",
+          "References": [
+            "character-50-history-v006-generated.png"
+          ],
+          "Status": "NOT_SELECTED_HIGHLIGHT_PAIR_UNRESOLVED",
+          "Review": "主白点左上寄り、補助点も上側、下左小円未分離。座位/椅子/膝上白手袋/閉じ口/眼鏡/電池/全身裾靴保持。300x400白黒で顔/眼鏡/電池/手判別。",
+          "Evidence": [
+            "history-eye-review-v007.png",
+            "history-v007-grayscale.png"
+          ],
+          "Preview": {
+            "File": "history-v007-preview.png",
+            "Grayscale": "history-v007-grayscale.png",
+            "Crop": {
+              "X": 300,
+              "Y": 140,
+              "Width": 450,
+              "Height": 600
+            },
+            "Width": 300,
+            "Height": 400,
+            "Status": "REVIEW_ONLY_NOT_STAGED"
+          }
+        },
+        {
+          "Source": "history-face-detail-v001-generated.png",
+          "Sha256": "86efa347507a05fe1b0fc0fbb6ecf15f62b13737861806f0ae59f7d1efd04630",
+          "Prompt": "history-face-detail-v001-prompt.txt",
+          "References": [
+            "history-face-input-v001.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "大小白円分離、閉じ口保持。"
+        },
+        {
+          "Source": "character-50-history-v008-generated.png",
+          "Sha256": "42c6606c3495f321bfd801600e652276af1c3bd201f61f9c84b7b7dc726bb0e1",
+          "Prompt": "character-50-history-v008-prompt.txt",
+          "References": [
+            "character-50-history-v003-generated.png",
+            "history-face-detail-v001-generated.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "SELECTED_STAGED_NOT_ADOPTED",
+          "Review": "顔単体v001では両眼の上右大白円/下左小白円を分離。全身v008でも主白円と下左小点が改善。小点は淡青反射へ接し完全適合未認定。落ち着いた閉じ口/眼鏡/月桂/金髪/電池/膝上白手袋/木彫椅子/全身長裾両靴保持。300x400白黒で顔/眼鏡/電池/手判別。座位厳密頭身未認定。",
+          "Evidence": "history-eye-review-v008.png"
         }
       ],
       "Status": "local-depth-improved-fullbody-grayscale-reviewed-not-adopted",
       "Review": "v003 pale coolblue/lavender local backhair planes near neck/shoulders/upperarms visible; foreground golden curls all lengths retained. Calm closedmouth blueeyes silverglasses laurel diamonds costume battery both whitegloved layeredhands lap carvedwoodchair brownstudio retained. Entire ornament/hair/lateraltrain/hem/bothshoes insideframe, lateralmargin narrow. Slight paint/jewelry changes. 300x400 grayscale face/glasses/battery/hands readable. Seated proportion/final style comparison pending.",
       "Preview": {
-        "File": "history-v003-preview.png",
-        "Grayscale": "history-v003-preview-gray.png",
-        "Crop": {
-          "X": 300,
-          "Y": 200,
-          "Width": 420,
-          "Height": 560
-        },
+        "File": "history-v008-preview.png",
+        "Grayscale": "history-v008-grayscale.png",
+        "CropX": 300,
+        "CropY": 200,
+        "CropWidth": 420,
+        "CropHeight": 560,
         "Width": 300,
         "Height": 400,
-        "Status": "grayscale-visually-reviewed"
+        "Status": "VISUALLY_REVIEWED_NOT_GAME_ADOPTED"
       },
       "Audit20261022": {
         "Status": "contact-sheet-review-not-final-approval",
@@ -1207,9 +1779,21 @@
         "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
       },
       "EyeTransferAttempt": {
-        "Source": "character-50-history-v004-generated.png",
-        "Status": "DIRECT_FULLBODY_EDIT_INEFFECTIVE",
-        "Evidence": "history-eye-review-v004.png"
+        "Source": "character-50-history-v008-generated.png",
+        "Status": "IMPROVED_STAGED_NOT_EXACT_CERTIFIED",
+        "Evidence": "history-eye-review-v008.png"
+      },
+      "FaceInput": {
+        "File": "history-face-input-v001.png",
+        "Source": "character-50-history-v003-generated.png",
+        "Crop": {
+          "X": 375,
+          "Y": 215,
+          "Width": 270,
+          "Height": 270
+        },
+        "Width": 1024,
+        "Height": 1024
       }
     },
     {
@@ -1378,19 +1962,22 @@
     {
       "Id": "idol",
       "Kind": "newspaper",
-      "Source": "character-50-idol-v003-generated.png",
+      "Source": "character-50-idol-v005-generated.png",
       "Width": 1086,
       "Height": 1448,
-      "Sha256": "60d06667fa3200d0bdf987ed24f98fc23267d0300ce1f6a9521ef93ec6a4e972",
+      "Sha256": "13780c4ffd11b8cbdfd77bbf5806797a86acd644d95bac21f9e2478b4cb86f4f",
       "References": [
         "art-source/portraits/newspaper-trials/character-50-idol-v001-generated.png",
         "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
-        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-idol-v002-generated.png"
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/character-50-idol-v002-generated.png",
+        "art-source/portraits/characters/character-50/runtime-fullbody-v001/idol-eye-detail-v001-generated.png"
       ],
       "Prompts": [
         "character-50-idol-v001-prompt.txt",
         "character-50-idol-v002-prompt.txt",
-        "character-50-idol-v003-prompt.txt"
+        "character-50-idol-v003-prompt.txt",
+        "idol-eye-detail-v001-prompt.txt",
+        "character-50-idol-v005-prompt.txt"
       ],
       "Trials": [
         {
@@ -1402,13 +1989,48 @@
           "Source": "character-50-idol-v002-generated.png",
           "Sha256": "512e98604827ef269b343bc80a2e2aeac0a397899106cdc7d4dcc6608e51bdc1",
           "Review": "v002 fullhair/laurel/coathem/attached ribbons/both pompoms/both shoes withinframe. Happy openmouth silverglasses openblueeyes blonde curls pointedears bluewhitegold outfit chestbattery whitegloved bothhands holding bluegoldpompoms retained. Whitelegwear continuous at thighs visually; loweroutfit provisional. Dynamic bentpose exactheadcount not certified; final proportion/style audit pending. 300x400 grayscale face/pompoms/both hands/battery readable, face smaller to include props."
+        },
+        {
+          "Source": "character-50-idol-v004-generated.png",
+          "Sha256": "a09261bd6566f1e657e5b4a03e02f8068cee2d71ac8902f2e807a37e8888286d",
+          "Prompt": "character-50-idol-v004-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "character-50-idol-v003-generated.png"
+          ],
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Evidence": "idol-eye-review-v004.png",
+          "Review": "主白点は上右へ明瞭化したが大きく、反対下左の独立した小補助円を確認できず未達。不採用。開いた笑い口/眼鏡/青瞳を保持。選択v003維持。"
+        },
+        {
+          "Source": "idol-eye-detail-v001-generated.png",
+          "Sha256": "c32108e1c449352488477382382176245db6f2c0d13f0c06c1c1250b7c2339b0",
+          "Prompt": "idol-eye-detail-v001-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "idol-eye-input-v001.png"
+          ],
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "大小白円を反対位置へ分離、黒縁なし。"
+        },
+        {
+          "Source": "character-50-idol-v005-generated.png",
+          "Sha256": "13780c4ffd11b8cbdfd77bbf5806797a86acd644d95bac21f9e2478b4cb86f4f",
+          "Prompt": "character-50-idol-v005-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "character-50-idol-v003-generated.png",
+            "idol-eye-detail-v001-generated.png"
+          ],
+          "Status": "IMPROVED_REVIEWED_STAGED_NOT_ADOPTED",
+          "Review": "両眼の上右主白点/下左小点が改善。小点は淡反射に接し完全適合未認定。笑顔/眼鏡/両白手袋と2ポンポン/電池/衣装/リボン/全身裾両靴保持。300x400白黒で顔/手/ポンポン/電池判別。"
         }
       ],
-      "Status": "local-depth-improved-fullbody-grayscale-reviewed-not-adopted",
-      "Review": "v003 pale coolblue/lavender recessed backhair planes near neck/shoulders/upperarms visible; golden foreground curls preserved. Open happy mouth blueeyes silverglasses laurel diamonds costume battery BOTH whitegloved hands TWO pompoms ribbons continuouswhitelegwear and whole ornament/hem/bothshoes retained. Small paint/jewelry variations. 300x400 grayscale face/bothhands/pompoms/battery readable; outside prop tips cropped in runtimepreview, master complete. Dynamic proportion/final style comparison pending.",
+      "Status": "eye-highlight-improved-preview-reviewed-staged-not-adopted",
+      "Review": "両眼の上右主白点/下左小点が改善。小点は淡反射に接し完全適合未認定。笑顔/眼鏡/両白手袋と2ポンポン/電池/衣装/リボン/全身裾両靴保持。300x400白黒で顔/手/ポンポン/電池判別。",
       "Preview": {
-        "File": "idol-v004-preview.png",
-        "Grayscale": "idol-v004-preview-gray.png",
+        "File": "idol-v005-preview.png",
+        "Grayscale": "idol-v005-grayscale.png",
         "Crop": {
           "X": 220,
           "Y": 90,
@@ -1417,7 +2039,7 @@
         },
         "Width": 300,
         "Height": 400,
-        "Status": "grayscale-visually-reviewed-face-larger"
+        "Status": "grayscale-visually-reviewed"
       },
       "Audit20261022": {
         "Status": "contact-sheet-review-not-final-approval",
@@ -1438,12 +2060,15 @@
         "Fullbody": "全身一覧で頭飾り/裾/両靴を確認。細い毛先の原寸確認は個別履歴参照。"
       },
       "EyeAudit20261022": {
-        "Status": "SUPPLEMENT_POSITION_OR_SEPARATION_NEEDS_REFINEMENT",
-        "Source": "character-50-idol-v003-generated.png",
-        "Evidence": "audit-current-eyes-v001.png",
-        "CropRecord": "audit-current-eyes-v001-crops.json",
-        "Finding": "上側大小白点が並ぶ。反対斜め下補助円の独立は不明瞭。傾き/笑い口保持。",
-        "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
+        "Status": "IMPROVED_REVIEWED",
+        "Source": "character-50-idol-v005-generated.png",
+        "Evidence": "idol-eye-review-v005.png",
+        "Finding": "両眼の上右主白点/下左小点が改善。小点は淡反射に接し完全適合未認定。笑顔/眼鏡/両白手袋と2ポンポン/電池/衣装/リボン/全身裾両靴保持。300x400白黒で顔/手/ポンポン/電池判別。"
+      },
+      "EyeTransferAttempt": {
+        "Source": "character-50-idol-v005-generated.png",
+        "Status": "IMPROVED_REVIEWED",
+        "Evidence": "idol-eye-review-v005.png"
       }
     },
     {
@@ -1488,6 +2113,138 @@
           "Source": "character-50-paparazzi-v002-generated.png",
           "Sha256": "6079d5544710d0a86cf5b2984deb548b36f5fccafa285eb4dd1a28c668392bbe",
           "Review": "v002 head visibly larger vs v001, jaw/collar close shortneck, preserves rightlooking smallopenmouth blueeyes silverglasses laurel curls outfit battery whitegloves twilightpalace. Entire hair/ornament/hem/hands/bothshoes fit topmargin narrow. Approx inferred skullcrown55 chin300 humanheel1310 implies vertical5.12 but tiltedhead/perspective uncertain; do not certify target from prompt. Need final anatomical guide/allscene audit before adoption; lowercompletion provisional. 300x400 grayscale face/glasses/battery readable."
+        },
+        {
+          "Source": "character-50-paparazzi-v004-generated.png",
+          "Sha256": "3adb4e941e7b428641b6625fdbc5b80a36389085ac7d030774296f1d2bd2485f",
+          "Prompt": "character-50-paparazzi-v004-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "character-50-paparazzi-v003-generated.png"
+          ],
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Evidence": "paparazzi-eye-review-v004.png",
+          "Review": "上側白点/下側の広い明反射はあるが、独立した下左小補助円は両眼で確認できず未達。不採用。右を見る青眼/銀眼鏡/小さい開き口を保持。選択v003維持。"
+        },
+        {
+          "Source": "paparazzi-eye-detail-v001-generated.png",
+          "Sha256": "ce7139a99e87d4b69ea6e3bebd2814f28d9f34a0a3c59bbdbae60113fe6d9be9",
+          "Prompt": "paparazzi-eye-detail-v001-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "paparazzi-eye-input-v001.png"
+          ],
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "大小白円を反対位置へ分離したが細い暗縁がある。全身転送時除去を指示。",
+          "Evidence": "paparazzi-eye-detail-v001-generated.png"
+        },
+        {
+          "Source": "character-50-paparazzi-v005-generated.png",
+          "Sha256": "1d095f96be4f0285452e7da34f5bc40f91b811d9e47d5b2fc391002cfe5f916f",
+          "Prompt": "character-50-paparazzi-v005-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "character-50-paparazzi-v003-generated.png",
+            "paparazzi-eye-detail-v001-generated.png"
+          ],
+          "Status": "NOT_SELECTED_WHITE_DOT_OUTSIDE_EYE",
+          "Review": "画像左目の外側の肌/目尻付近へ余分な白円が出現。右目も上白点が増え、小補助円分離は未達。不採用。右向き視線/小さい開き口/眼鏡保持。",
+          "Evidence": "paparazzi-eye-review-v005.png"
+        },
+        {
+          "Source": "character-50-paparazzi-v006-generated.png",
+          "Width": 1086,
+          "Height": 1448,
+          "Sha256": "e0dbcc6f15c26ec040755b559611cc72c74ccdd468c5363eb645b77ee4a6fe34",
+          "Prompt": "character-50-paparazzi-v006-prompt.txt",
+          "References": [
+            "character-50-paparazzi-v003-generated.png",
+            "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+          ],
+          "Status": "WHOLE_SCENE_REDRAW_NOT_SELECTED",
+          "Review": "右向き斜め顔/小開口驚き/眼鏡/月桂/電池/白手袋/夕暮れ/全身保持。下小円は青白反射に混じり未確認、上白点も複数。300x400白黒で顔/眼鏡/電池判別、手は切出し外。",
+          "Evidence": [
+            "paparazzi-eye-review-v006.png",
+            "paparazzi-v006-grayscale.png"
+          ],
+          "Preview": {
+            "File": "paparazzi-v006-preview.png",
+            "Grayscale": "paparazzi-v006-grayscale.png",
+            "Crop": {
+              "X": 260,
+              "Y": 0,
+              "Width": 540,
+              "Height": 720
+            },
+            "Width": 300,
+            "Height": 400,
+            "Status": "REVIEW_ONLY_NOT_STAGED"
+          }
+        },
+        {
+          "Source": "character-50-paparazzi-v007-generated.png",
+          "Width": 1086,
+          "Height": 1448,
+          "Sha256": "ba497cd9c19e90185566177575c4775eaa60adc578d1df9e8acb52a87f5b634c",
+          "Prompt": "character-50-paparazzi-v007-prompt.txt",
+          "References": [
+            "character-50-paparazzi-v006-generated.png"
+          ],
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNRESOLVED",
+          "Review": "下左小円が青白反射へ混じり未確認、主点小さい。肌への余分な独立白円は見られない。右向き驚き/眼鏡/電池/白手袋/全身保持、新聞白黒で本人判別。",
+          "Evidence": [
+            "paparazzi-eye-review-v007.png",
+            "paparazzi-v007-grayscale.png"
+          ],
+          "Preview": {
+            "File": "paparazzi-v007-preview.png",
+            "Grayscale": "paparazzi-v007-grayscale.png",
+            "Crop": {
+              "X": 260,
+              "Y": 0,
+              "Width": 540,
+              "Height": 720
+            },
+            "Width": 300,
+            "Height": 400,
+            "Status": "REVIEW_ONLY_NOT_STAGED"
+          }
+        },
+        {
+          "Source": "paparazzi-face-detail-v001-generated.png",
+          "Sha256": "6126170a29c058aeb4295087a2eb6541426a482fb5aafdf67d38df95204d9b93",
+          "Prompt": "paparazzi-face-detail-v001-prompt.txt",
+          "References": [
+            "paparazzi-face-input-v001.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "大小白円分離、下小円は白目へまたがり未適合。"
+        },
+        {
+          "Source": "character-50-paparazzi-v008-generated.png",
+          "Sha256": "22b7ad8d814f7860a2cda4f7eeca30738cb8f17a466708aa5169785a04cbe69e",
+          "Prompt": "character-50-paparazzi-v008-prompt.txt",
+          "References": [
+            "character-50-paparazzi-v003-generated.png",
+            "paparazzi-face-detail-v001-generated.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Review": "顔単体は大小白円を分離するが下小円が白目へまたがる。全身v008で虹彩内指定した結果、下点が広い淡青反射へ混じり独立白円未確認、主点も小さく不採用。右向き驚き小開口/眼鏡/月桂/金髪/電池/白手袋/夕暮れ/全身裾両靴保持。肌への余分な白円なし。300x400白黒で顔/眼鏡/電池判別、手は切出し外。選択v003維持。",
+          "Evidence": "paparazzi-eye-review-v008.png",
+          "Preview": {
+            "File": "paparazzi-v008-preview.png",
+            "Grayscale": "paparazzi-v008-grayscale.png",
+            "Crop": {
+              "X": 260,
+              "Y": 0,
+              "Width": 540,
+              "Height": 720
+            },
+            "Width": 300,
+            "Height": 400
+          }
         }
       ],
       "Audit20261022": {
@@ -1515,6 +2272,23 @@
         "CropRecord": "audit-current-eyes-v001-crops.json",
         "Finding": "上下に光点はあるが下側が反射と接する。斜め顔・驚き口保持。",
         "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
+      },
+      "EyeTransferAttempt": {
+        "Source": "character-50-paparazzi-v008-generated.png",
+        "Status": "DEFERRED_FACE_TRANSFER_UNRESOLVED",
+        "Evidence": "paparazzi-eye-review-v008.png"
+      },
+      "FaceInput": {
+        "File": "paparazzi-face-input-v001.png",
+        "Source": "character-50-paparazzi-v003-generated.png",
+        "Crop": {
+          "X": 410,
+          "Y": 50,
+          "Width": 320,
+          "Height": 320
+        },
+        "Width": 1024,
+        "Height": 1024
       }
     },
     {
@@ -1565,6 +2339,82 @@
           "Source": "character-50-coin-v003-generated.png",
           "Sha256": "45c0fe75af9272ecce59156b42f7e3626d8d518847d3dbe3faf34a48d1b554dd",
           "Review": "v003 head visibly reduced vs v002, short neck maintained, same leftprofile silverglasses blueeye closedmouth laurel diamond earrings blondecurls highcollar costume chestbattery whiteglovedhands graystudio. Fullornament/curls/hem/shoes fit. Body/shoulders also changed slightly despite holdfixed instruction. Manual inferred skullY95 chin310 heel1375 gives verticalproxy5.95; skull hidden underhair uncertainty +/-25, not exactcertification. 300x400 grayscale face/glasses/earrings/battery/hands readable. Lowercompletion provisional; final styleaudit pending."
+        },
+        {
+          "Source": "character-50-coin-v005-generated.png",
+          "Sha256": "1680b5d03a8f55776478f9b287c8656647d9d757b2c6fa692412d80184e4b56a",
+          "Prompt": "character-50-coin-v005-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "character-50-coin-v004-generated.png"
+          ],
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Evidence": "coin-eye-review-v005.png",
+          "Review": "可視虹彩を眼鏡つるが横切る構造を保持。上白点は小さく、下側は広い明反射のままで独立小円を確認できず未達。不採用。左横顔/閉じ口/青眼を保持、隠れた目追加なし。選択v004維持。"
+        },
+        {
+          "Source": "coin-eye-detail-v001-generated.png",
+          "Sha256": "b8d06bb77e9ada30441b9dce59e16beb7cec2c723f0524211b8c6b47d77a9a92",
+          "Prompt": "coin-eye-detail-v001-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "coin-eye-input-v001.png"
+          ],
+          "Status": "DETAIL_STUDY_NOT_RUNTIME",
+          "Review": "下小円を追加、主白円は虹彩外の白目にまたがるため未適合。全身転送時に虹彩内へ収めるよう指示。",
+          "Evidence": "coin-eye-detail-v001-generated.png"
+        },
+        {
+          "Source": "character-50-coin-v006-generated.png",
+          "Sha256": "0c1a247031ef680d0245d5b6a0cd80ada2d84aca12d58730ae1875153611aa0c",
+          "Prompt": "character-50-coin-v006-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "character-50-coin-v004-generated.png",
+            "coin-eye-detail-v001-generated.png"
+          ],
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Review": "全身では下補助点が明反射に混じり独立円不明瞭、主点も小さく改善未達。不採用、選択v004維持。眼鏡つる/左横顔/閉じ口保持。",
+          "Evidence": "coin-eye-review-v006.png"
+        },
+        {
+          "Source": "character-50-coin-v007-generated.png",
+          "Sha256": "ed22935713ad43cfce622a65fe7cb26e66ea69c24e308ad91a84eb191290a53d",
+          "Prompt": "character-50-coin-v007-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "character-50-coin-v004-generated.png",
+            "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+          ],
+          "Width": 1024,
+          "Height": 1536,
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Evidence": "coin-eye-review-v007.png",
+          "Review": "左横顔/閉じ口/眼鏡つるの虹彩前への重なり/月桂/金髪/衣装/電池/白手袋/全身裾両靴を保持。上白点が小さく下左小円は淡青反射から分離せず未達、不採用。300x400白黒で顔/眼鏡/電池/手を判別。選択v004維持。",
+          "Preview": {
+            "File": "coin-v007-preview.png",
+            "Grayscale": "coin-v007-grayscale.png",
+            "CropX": 200,
+            "CropY": 20,
+            "CropWidth": 570,
+            "CropHeight": 760,
+            "Width": 300,
+            "Height": 400
+          }
+        },
+        {
+          "Source": "character-50-coin-v008-generated.png",
+          "Sha256": "410fa02b22407c5c971c54c5962c96077f06cfcd4a322df2d416ab1f12042a20",
+          "Prompt": "character-50-coin-v008-prompt.txt",
+          "Method": "built-in image_gen",
+          "References": [
+            "character-50-coin-v007-generated.png"
+          ],
+          "Width": 1024,
+          "Height": 1536,
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Evidence": "coin-eye-review-v008.png",
+          "Review": "全身と左横顔/眼鏡つる/閉じ口/髪/衣装/電池/白手袋を保持。下左は大きい淡青の反射塊で独立した小白円でなく、上主点も小さい。未達で不採用。選択coin v004維持。"
         }
       ],
       "Audit20261022": {
@@ -1601,8 +2451,13 @@
         "CropRecord": "audit-current-eyes-v001-crops.json",
         "Finding": "可視の細い横顔虹彩を眼鏡つるが横切る。上白点/下側反射あり、独立小円の確認は難しい。隠れた目へ虹彩追加しない。",
         "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
+      },
+      "EyeTransferAttempt": {
+        "Source": "character-50-coin-v008-generated.png",
+        "Status": "SECOND_PASS_ENDED_UNRESOLVED",
+        "Evidence": "coin-eye-review-v008.png"
       }
     }
   ],
-  "Next": "History directv004 ineffective. Next scene-specific eye detail from selectedv003, one transfer. Keep historyv003/stagedv021. Normal3/5/6/election deferred unresolved. Game0/20."
+  "Next": "No50 paparazziv008 face transfer unresolved; selectedv003. Next coin own face detail then one fullbody transfer preserving LEFT profile/glasses temple occlusion/closedmouth, no hidden eye. Stagedv025/Game0/20 unchanged, remaining4 normal6/election/paparazzi/coin."
 }

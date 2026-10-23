@@ -1,0 +1,1 @@
+Use case: precise-object-edit. Input1 edit target face detail. Remove ONLY thin dark outlines around the FOUR white iris highlight circles. They must be solid plain WHITE discs with no ink border. Keep sizes positions and all face, eyes, silverglasses, lookingback closedsmile, hair, shoulder armor, battery and background unchanged. No added highlights, no other changes.
