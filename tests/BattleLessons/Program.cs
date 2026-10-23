@@ -61,6 +61,18 @@ foreach(var o in save.Objects)if(o.Fields!=null){o.Fields.Remove("<Lessons>k__Ba
 load=AutoSaveStore.Restore<WorldSetup>(save);Check(load.Lessons.Owned.All(x=>x==0) && load.Lessons.Pending.Count==0,"Old saves default to no cards");
 Console.WriteLine("PASS: flag rollback and priority, per-country effects, failed/backward retreat, friendly fire and adjacent lanes, late entry into shots, survivor delivery, pending/owned saves and legacy defaults.");
 
+// Lesson five relaxes only the skipped adjacent cell, with a forward-facing shield bearer.
+b=Board();gun=Unit(b,51001,0,3,5,BattleFacing.East);friend=Unit(b,51002,0,4,5,BattleFacing.East);friend.Shields=3;enemy=Unit(b,51003,1,8,5,BattleFacing.West);
+b.Lessons[0]=BattleLesson.FireDiscipline;
+Turn(b,(gun,Point.Zero,BattleFacing.East,BattleWeapon.Rifle));
+Check(b.Attacks.Count==0 && (gun.WitnessedLessons&BattleLesson.ShieldSupport)!=0,"Withheld supporting shot teaches lesson five");
+b.Lessons[0]|=BattleLesson.ShieldSupport;
+Check(BattleLessons.SafeShot(b,gun,BattleFacing.East),"Trained shooter can skip adjacent shield bearer");
+Turn(b,(gun,Point.Zero,BattleFacing.East,BattleWeapon.Rifle));
+Check(b.Attacks.Any(a=>a.Attacker==gun.Id && a.Target==enemy.Id) && !friend.Fallen,"Support shot reaches enemy beyond shield bearer");
+friend.Position=new(5,5);Check(!BattleLessons.SafeShot(b,gun,BattleFacing.East),"Friend two cells ahead still blocks");
+friend.Position=new(4,5);friend.Shields=0;Check(!BattleLessons.SafeShot(b,gun,BattleFacing.East),"Adjacent friend without shield remains protected by discipline");
+
 foreach(bool trained in new[]{false,true}){
  var sideBoard=Board();var victim=Unit(sideBoard,20001,0,5,5,BattleFacing.North);var sideGun=Unit(sideBoard,20002,1,5,1,BattleFacing.South);var knife=Unit(sideBoard,20003,1,6,5,BattleFacing.West);knife.Rifles=0;var witness=Unit(sideBoard,20004,0,0,8);if(trained)sideBoard.Lessons[0]=BattleLesson.LeaveFiringLine;
  Turn(sideBoard,(victim,Point.Zero,BattleFacing.East,BattleWeapon.Dagger),(sideGun,Point.Zero,BattleFacing.South,BattleWeapon.Rifle));

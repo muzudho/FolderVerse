@@ -20,7 +20,7 @@ public partial class Game1
         if(field==2)return new(420,926,110,44);
         var line=_setup.Robots.Workshops[_populationNode].ProductionLines[_factoryLine];
         int period=Math.Min(5,line.Manufacturing?line.ProductionPeriod:1),rest=Math.Min(4,line.RestTurns),y=250+_factoryLine*220;
-        return field==0?new(160+period*72/2-55,y+155,110,44):new(160+period*72+rest*72/2-55,y+155,110,44);
+        return field==0?new(160+period*72/2-34,y+155,68,44):new(160+period*72+rest*72/2-34,y+155,68,44);
     }
     private Rectangle FactoryDropOption(int field,int index){var r=FactoryDropButton(field);int count=field==2?13:9;return new(r.X,r.Y-count*30+index*30,r.Width,30);}
     private bool NodeFactoryClick(Point pointer)
