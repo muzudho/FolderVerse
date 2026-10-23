@@ -14,6 +14,13 @@ public sealed class ConquestCampaign
     private readonly HashSet<int> _submitted=new();
     private readonly List<March> _plannedOrders=new();
     public IReadOnlyList<March> PlannedOrders=>_plannedOrders.Concat(_partyOrders).ToArray();
+    internal void RewriteReservations(Func<March,March> rewrite)
+    {
+        foreach(var orders in new[]{_plannedOrders,_partyOrders})for(int i=orders.Count-1;i>=0;i--){
+            var next=rewrite(orders[i]);if(next==null)orders.RemoveAt(i);else orders[i]=next;
+        }
+        Report=PlannedOrders.Count>0?$"予約 {PlannedOrders.Count} 件 / ターン終了で実行":"";
+    }
     public void CancelSource(int owner,int source){_plannedOrders.RemoveAll(o=>o.Ruler==owner && o.SourceNode==source);_partyOrders.RemoveAll(o=>o.Ruler==owner && o.SourceNode==source);}
     public void CancelReservation(int owner,int source,bool queen,int target)
     {

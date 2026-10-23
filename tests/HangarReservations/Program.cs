@@ -9,7 +9,7 @@ Check(robots.ToggleReservation(0,a.Id,HangarReservation.Defense),"Defense reserv
 a=robots.Nodes[0].Robots.Single(r=>r.Id==a.Id);
 Check(a.CanFight && robots.AssemblyLocked(0,a) && !robots.CanShip(0,a),"Defense can fight but stays locked at home");
 Locked(()=>robots.Split(0,a.Id,RobotParts.Head));Locked(()=>robots.MovePart(0,a.Id,RobotParts.Head,null));Locked(()=>robots.Transport.Resolve(robots,new[]{new RobotShipment(0,1,a.Id,a.Parts)},(_,_)=>true));
-shop.ConfigureDisposal();Locked(()=>shop.Dispose(robots.Nodes[0],a.Id));Check(!robots.ToggleReservation(0,a.Id,HangarReservation.Disposal),"Defense blocks disposal reservation");
+shop.ConfigureDisposal();Locked(()=>shop.Dispose(robots.Nodes[0],a.Id));Check(robots.ToggleReservation(0,a.Id,HangarReservation.Disposal),"Defense reservation is overwritten by disposal");Check(robots.ToggleReservation(0,a.Id,HangarReservation.Defense),"Disposal is overwritten by defense after checking clean eligibility");
 Check(robots.ToggleReservation(0,b.Id,HangarReservation.Worker) && shop.ProductionLines.Length==2 && shop.BaseLineCount==1 && shop.WorkerAt(1)==b.Id,"Worker opens one distinguishable lane");
 Check(robots.ToggleReservation(0,c.Id,HangarReservation.Worker) && shop.ProductionLines.Length==3,"Second worker opens third lane");
 var d=robots.Create(0,RobotParts.Complete);robots.Nodes[0].Add(d);Check(!robots.ToggleReservation(0,d.Id,HangarReservation.Worker),"Three lane cap");
@@ -38,3 +38,22 @@ Console.WriteLine("PASS: reservation locks/cancellation, defense deployment, tra
 var shipping=new RobotWorld();shipping.Initialize(2,1);var head=shipping.Create(0,RobotParts.Head);var body=shipping.Create(0,RobotParts.Body|RobotParts.Legs);shipping.Nodes[0].Add(head);shipping.Nodes[0].Add(body);shipping.Transport.SetPlan(0,0,RobotParts.Complete,new[]{new TransportWeight(1,360)});
 shipping.Advance((x,y)=>x!=y,_=>0,1,industry:false);Check(shipping.Nodes[0].Count==0 && shipping.Nodes[1].Robots.Single().CanFight,"Automatically assemble before selecting complete-robot transport");
 Console.WriteLine("PASS: transport plans remain intact, do not lock parts, and ship from assembled stock.");
+// Validate first, then replace exactly one role and its old sortie membership.
+var roles=new RobotWorld();roles.Initialize(1,1);var factory=roles.Workshops[0];for(int seed=0;factory.ProductionLines.Length!=1;seed++)factory.GenerateLines(seed);
+var roleRobot=roles.Create(0,RobotParts.Complete);var partner=roles.Create(0,RobotParts.Complete);roles.Nodes[0].Add(roleRobot);roles.Nodes[0].Add(partner);
+foreach(var from in new[]{HangarReservation.Disposal,HangarReservation.Defense,HangarReservation.Worker})foreach(var to in new[]{HangarReservation.Disposal,HangarReservation.Defense,HangarReservation.Worker}){
+ roles.Nodes[0].Remove(roleRobot.Id);roles.Nodes[0].Add(roleRobot);roles.SyncWorkers(0);
+ Check(roles.ToggleReservation(0,roleRobot.Id,from) && roles.ToggleReservation(0,roleRobot.Id,to),"Role overwrite accepted");var current=roles.Nodes[0].Robots.Single(r=>r.Id==roleRobot.Id);
+ Check((current.Disposal?1:0)+(current.DefenseOnly?1:0)+(current.FactoryWorker?1:0)==(from==to?0:1),"Only the chosen role remains; same role cancels");
+}
+roles.Nodes[0].Remove(roleRobot.Id);roles.Nodes[0].Add(roleRobot with {DefenseOnly=true});roles.SyncWorkers(0);factory.LimitLines(1);
+Check(!roles.ToggleReservation(0,roleRobot.Id,HangarReservation.Worker) && roles.Nodes[0].Robots.Single(r=>r.Id==roleRobot.Id).DefenseOnly,"Full factory rejects overwrite and retains defender");factory.LimitLines(3);
+roles.Nodes[0].Remove(roleRobot.Id);roles.Nodes[0].Add(roleRobot with {Parts=RobotParts.Head,Disposal=true});Check(!roles.ToggleReservation(0,roleRobot.Id,HangarReservation.Defense) && roles.Nodes[0].Robots.Single(r=>r.Id==roleRobot.Id).Disposal,"Ineligible overwrite retains disposal reservation");
+roles.Nodes[0].Remove(roleRobot.Id);roles.Nodes[0].Add(roleRobot);roles.Reservations=new ConquestCampaign();roles.Reservations.Plan(new(0,1,2,0,false,RobotIds:new[]{roleRobot.Id,partner.Id}));
+Check(roles.ToggleReservation(0,roleRobot.Id,HangarReservation.Worker) && roles.Reservations.PlannedOrders.Single().RobotIds!.SequenceEqual(new[]{partner.Id}) && roles.Reservations.PlannedOrders.Single().Fighters==1,"Worker overwrite removes only this robot from sortie plan");
+Check(roles.PrepareSortieReservation(0,new[]{roleRobot.Id}) && !roles.Nodes[0].Robots.Single(r=>r.Id==roleRobot.Id).Stationed && factory.ProductionLines.Length==1,"Sortie selection closes assigned worker lane");
+roles.Reservations.CancelSource(0,0);roles.Reservations.Plan(new(0,1,2,0,false));Check(roles.ToggleReservation(0,roleRobot.Id,HangarReservation.Defense) && roles.Reservations.PlannedOrders.Single().RobotIds!.SequenceEqual(new[]{partner.Id}),"Legacy count-only sortie materializes other robots before overwrite");
+roles.Reservations.CancelSource(0,0);roles.Reservations.Plan(new(0,1,1,0,true,RobotIds:new[]{partner.Id}));Check(roles.ToggleReservation(0,partner.Id,HangarReservation.Disposal) && roles.Reservations.PlannedOrders.Single().Queen && roles.Reservations.PlannedOrders.Single().Fighters==0,"Keep queen participation when last selected robot changes roles");
+factory.ConfigureDisposal();factory.Dispose(roles.Nodes[0],partner.Id);Check(!roles.ToggleReservation(0,partner.Id,HangarReservation.Defense) && roles.Nodes[0].Robots.Single(r=>r.Id==partner.Id).Disposal,"Active disposal cannot be overwritten");
+roles.Reservations.RobotBattles.Encounters.Add(new(){Kind=BattleKind.Node,Target=0});Check(!roles.ToggleReservation(0,roleRobot.Id,HangarReservation.Disposal),"Ongoing node battle blocks overwrite");
+Console.WriteLine("PASS: all role replacements, same-role cancellation, failed replacement preservation, sortie membership/queen preservation and worker closure, active-work and battle locks.");

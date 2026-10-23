@@ -21,7 +21,7 @@ class Checks:Game1{
   for(int i=0;i<4;i++)w.Robots.Nodes[node.Id].Add(w.Robots.Create(0,RobotParts.Complete));first=w.Robots.Nodes[node.Id].Robots[0].Id;second=w.Robots.Nodes[node.Id].Robots[1].Id;
   ((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);Screen("WorldStatus");Call("OpenNodeInspector",node.Id);Call("UpdateDomesticSlide",1f);
   Click(Button(1));Click(Cell(0).Center);Click(Cell(1).Center);Check(w.Robots.Nodes[node.Id].Robots.Take(2).All(r=>r.DefenseOnly),"Reservation tool stays active for successive robots");Click(Cell(0).Center);Check(!w.Robots.Nodes[node.Id].Robots[0].DefenseOnly,"Second click cancels reservation");
-  Click(Button(2));Click(Cell(0).Center);Check(factory.ProductionLines.Length==2 && factory.WorkerAt(1)==first,"Worker tool creates identifiable lane");Click(Button(0));Click(Cell(2).Center);Check(w.Robots.Nodes[node.Id].Robots[2].Disposal,"Disposal tool reserves whole card");
+  Click(Button(2));Click(Cell(0).Center);Check(factory.ProductionLines.Length==2 && factory.WorkerAt(1)==first,"Worker tool creates identifiable lane");Click(Cell(1).Center);Check(factory.ProductionLines.Length==3 && w.Robots.Nodes[node.Id].Robots[1].FactoryWorker,"Worker tool overwrites defender");Click(Button(1));Click(Cell(1).Center);Check(factory.ProductionLines.Length==2 && w.Robots.Nodes[node.Id].Robots[1].DefenseOnly,"Defense tool overwrites worker and closes only its lane");Click(Button(0));Click(Cell(2).Center);Check(w.Robots.Nodes[node.Id].Robots[2].Disposal,"Disposal tool reserves whole card");
   Check(!(bool)Call("CanMoveHangarRobot",w.Robots.Nodes[node.Id].Robots[0]) && !(bool)Call("CanMoveHangarRobot",w.Robots.Nodes[node.Id].Robots[1]) && !(bool)Call("CanMoveHangarRobot",w.Robots.Nodes[node.Id].Robots[2]),"All reservation kinds lock manual assembly");
   // Exercise the real input entry point, including cut-ins and modal branches.
   foreach(string screen in new[]{"Transport","Battle","Industry","BattleResearch","WorldStatus"})foreach(bool escape in new[]{false,true}){
@@ -34,15 +34,20 @@ class Checks:Game1{
   var materialNode=w.Nodes.All.First(n=>n.Id!=node.Id && n.Terrain!=TravelTerrain.Sea);materialNode.Owner=0;var head=w.Robots.Create(0,RobotParts.Head);var rest=w.Robots.Create(0,RobotParts.Body|RobotParts.Legs);w.Robots.Nodes[materialNode.Id].Add(head);w.Robots.Nodes[materialNode.Id].Add(rest);
   Set("_demoDomesticStage",0);Call("UpdateDemoDomestic",1.8d);Set("_demoDomesticStage",3);Call("UpdateDemoDomestic",1.8d);Call("UpdateDemoDomestic",1.8d);Call("UpdateDemoDomestic",1.8d);
   Check(w.Robots.Nodes[materialNode.Id].Robots.Count==1 && w.Robots.Training[0].Eligible(w.Robots.Nodes[materialNode.Id].Robots[0]),"Demo builds actual deployable robot instead of splitting and restoring");
+  var rows=(System.Collections.IList)Get("_invasionSources");rows.Clear();var sourceType=typeof(Game1).GetNestedType("InvasionSource",F)!;var source=Activator.CreateInstance(sourceType,true)!;sourceType.GetField("Owner")!.SetValue(source,0);sourceType.GetField("Node")!.SetValue(source,node.Id);sourceType.GetField("Robots")!.SetValue(source,new HashSet<long>{first});rows.Add(source);var route=w.Routes.Neighbors(node)[0];Set("_selectedMoveNode",w.Nodes.At(route.Target,route.Entry).Id);Call("ReserveInvasion");
+  Check(!w.Robots.Nodes[node.Id].Robots.Single(r=>r.Id==first).Stationed && w.Campaign.PlannedOrders.Any(o=>o.RobotIds?.Contains(first)==true),"Confirming sortie replaces worker reservation");
+  Check(w.Robots.ToggleReservation(node.Id,first,HangarReservation.Worker) && !w.Campaign.PlannedOrders.Any(o=>o.RobotIds?.Contains(first)==true),"Worker overwrite removes robot from sortie plan");
   Call("OpenNodeInspector",node.Id);Call("UpdateDomesticSlide",1f);
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
+  if(frame==0){Click(Button(1));Set("_pointer",new Point(Cell(0).X+90,Cell(0).Y+25));}
   if(frame==1)Call("OpenNodeFactory");
   if(frame==2){w.Robots.Workshops[node.Id].LimitLines(1);w.Robots.SyncWorkers(node.Id);}
   if(frame==3){Screen("WorldStatus");Call("StartAutoPlay");Call("UpdateAutoDomestic",2d);Check((bool)Get("_nodeAssemblyOpen"),"AUTO shows hangar");Call("UpdateAutoDomestic",2d);Check((bool)Get("_nodeTransportOpen"),"AUTO shows transport plan");}
   if(frame==4){Call("UpdateAutoDomestic",2d);Call("UpdateAutoDomestic",2d);Call("UpdateAutoDomestic",2d);}
   base.Draw(t);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"reservation-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);
+  if(frame==0){Color At(int x,int y)=>pixels[(y*p.BackBufferHeight/1080)*p.BackBufferWidth+x*p.BackBufferWidth/1920];Check(At(Cell(0).X+1,Cell(0).Y+50)==(Color)typeof(Game1).GetProperty("ControlEdge",F)!.GetValue(this)!,"Reservation hover highlights entire cell");Check(At(Cell(0).X+57,Cell(0).Y+11)==new Color(9,19,26),"Reservation hover leaves part border inactive");}
   if(frame++==4){Console.WriteLine("PASS: continuous reservation tools and cancellation, locked parts, worker/sea factory rendering, AUTO phase-independent stop and domestic tour, and productive Demo assembly.");Exit();}
  }
 }
