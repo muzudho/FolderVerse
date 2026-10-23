@@ -30,6 +30,7 @@ public partial class Game1
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
     private void ResetInspector(){
+        CloseDirectDelivery();
         _wandererPolicyOpen=false;
         CancelTransportModal();
         _nodeAssemblyOpen=_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;
@@ -48,7 +49,7 @@ public partial class Game1
         if(!InspectorVisible){
             _ui.Button(StrategyToggle,"世界征服計画",Accent,.45f);
             var warLabel=WarReservationLabel;_ui.Button(WarButton,warLabel,Accent,Math.Min(.55f,(WarButton.Width-12)/_font.MeasureString(warLabel).X));
-            if(TransportOverviewAllowed)_ui.Button(TransportOverviewButton,"ロボット輸送長期計画",Accent,.5f);
+            if(TransportOverviewAllowed){_ui.Button(TransportOverviewButton,"ロボット輸送長期計画",Accent,.42f);_ui.Button(DirectDeliveryButton,"ロボットパーツ直接便",_directMap?Cream:Accent,.45f);}
             _ui.Button(PopulationTurnButton,"ターン終了",Accent,.8f);return;
         }
         var r=InspectorHandle;
@@ -72,6 +73,7 @@ public partial class Game1
     private bool DomesticViewClick(Point p)
     {
         if(_trainingOpen || _supervisorDialog>0)return false;
+        if(TransportOverviewAllowed && !InspectorVisible && DirectDeliveryButton.Contains(p)){if(_directMap)CloseDirectDelivery();else OpenDirectMap();return true;}
         if(_reignView && !InspectingSupervisor && LessonCatalogButton.Contains(new Point(p.X-NodeInspectorOffset,p.Y))){_screen=Screen.LessonCatalog;return true;}
         if(WandererPolicyClick(p))return true;
         if(InspectorVisible && InspectorClose.Contains(p)){CloseNodeInspector();return true;}

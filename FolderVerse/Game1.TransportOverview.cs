@@ -36,7 +36,7 @@ public partial class Game1
     private void DrawTransportOverviewButton()
     {
         if(!TransportOverviewAllowed || InspectorVisible)return; var rect=TransportOverviewButton;
-        _ui.Button(rect,"ロボット輸送長期計画",Accent,.5f);
+        _ui.Button(rect,"ロボット輸送長期計画",Accent,.42f);
     }
     private void OpenTransportOverview()
     {

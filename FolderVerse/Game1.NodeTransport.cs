@@ -51,7 +51,7 @@ public partial class Game1
         var node=_setup.Nodes.All[_populationNode];var routes=_setup.Routes.Neighbors(node);
         _ui.Box(new(54,150,850,825),new(27,49,62));
         _ui.Box(new(54,150,850,6),_setup.OwnerColor(node.Owner));
-        string label="輸送計画 / "+_setup.Nodes.Label(node);_ui.Text(label,new(84,230),Math.Min(.45f,770/_font.MeasureString(label).X),Cream);
+        string label="輸送長期計画 / "+_setup.Nodes.Label(node);_ui.Text(label,new(84,230),Math.Min(.45f,770/_font.MeasureString(label).X),Cream);
         DrawTransportInstructions();
         var encounters=NodeReinforcementChoices;
         string reinforcement=encounters.Length==0?"増援先の継戦なし":$"継戦 #{encounters[Math.Clamp(_nodeReinforcementIndex,0,encounters.Length-1)].Id} へ完成体を増援";

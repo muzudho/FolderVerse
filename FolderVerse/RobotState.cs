@@ -149,10 +149,13 @@ public sealed partial class RobotWorld
             try{if(edit.SplitPart is RobotParts part)Split(edit.Node,edit.Ids.Single(),part);else Assemble(edit.Node,edit.Ids,edit.Owner);}
             catch(InvalidOperationException error){WorkshopFailures.Add((edit.Node,error.Message));}
         }
-        DirectDelivery.Resolve(this,connected,directLocked??locked,canEnter);
+        var arrivals=DirectDelivery.Resolve(this,connected,directLocked??locked,canEnter);
         // Long-term transport chooses the stock remaining after direct deliveries and assembly.
-        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true && owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));
-        Transport.ResolvePlans(this,connected,seed,locked,canEnter);
+        _arrivalLocked=id=>arrivals.Contains(id);
+        try{
+            for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true && owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));
+            Transport.ResolvePlans(this,connected,seed,locked,canEnter);
+        }finally{_arrivalLocked=null;}
         if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].CompleteProduction(this,n,owner(n));
         if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true && owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));
