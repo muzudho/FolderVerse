@@ -112,7 +112,7 @@ public partial class Game1 : Game
         return new((int)((mouse.X-b.X)*1920f/b.Width),(int)((mouse.Y-b.Y)*1080f/b.Height));
     }
     private void SetWorldSeed(int seed) { _setup.SetWorld(seed); _world.ShowSetup(_setup,false); }
-    private void BeginRolling() { _screen=Screen.Rolling; _rollTime=0; _dragging=false; SetWorldSeed(_random.Next()); }
+    private void BeginRolling() { _screen=Screen.Rolling; _rollTime=0; _dragging=false;_world.GlobePan=Vector2.Zero; SetWorldSeed(_random.Next()); }
     private void BeginCast() { _screen=Screen.CastRolling; _rollTime=0; _dragging=false; _setup.SetCast(_random.Next()); _world.ShowSetup(_setup,false); }
     private void BeginPlacement() { _screen=Screen.PlacementRolling; _rollTime=0; _dragging=false; SetPlacementSeed(_random.Next()); }
     private void SetPlacementSeed(int seed) { _setup.SetTerritoryRights(seed); _world.ShowSetup(_setup,false); }
@@ -163,6 +163,10 @@ public partial class Game1 : Game
         if(IsStatusScreen && _supervisorDialog!=0){
             if(active)SupervisorDialogInput(click,escape,keyboard);
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
+        if(IsStatusScreen && active && !MapTransitionActive && !OrientationRotating){
+            if(_mapDragListOpen && escape){_mapDragListOpen=false;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+            if(click && MapDragClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         }
         if(TransportModalInput(mouse,keyboard,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateAutoPlay(elapsed,click,escape,gameTime.TotalGameTime.TotalSeconds))
@@ -241,7 +245,8 @@ public partial class Game1 : Game
         else if(_screen==Screen.Title && _titleMenuOpen){TitleStartMenuInput(click,enter,escape,keyboard,active);}
         else if(escape)
         {
-            if(IsStatusScreen && _movementOpen)CloseMovement();
+            if(IsStatusScreen && _mapDragListOpen)_mapDragListOpen=false;
+            else if(IsStatusScreen && _movementOpen)CloseMovement();
             else if(IsStatusScreen && _populationCell>=0 && _nodeDisposalOpen)_nodeDisposalOpen=false;
             else if(IsStatusScreen && _populationCell>=0 && _nodeTransportOpen)_nodeTransportOpen=false;
             else if(IsStatusScreen && _populationCell>=0 && _nodeFactoryOpen)_nodeFactoryOpen=false;
@@ -271,16 +276,13 @@ public partial class Game1 : Game
                 bool action=click && (TransportOverviewClick(_pointer) || RouteLayerClick(_pointer) || BatteryClick(_pointer) || MovementClick(_pointer,keyboard) || NodeDialogClick(_pointer,keyboard));
                 if(!action && click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
                 else if(!action && click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
-                Rotate(mouse,click && !action && _populationCell<0,active,NetPanel);
+                DragStatusMap(mouse,active);
                 GlobeCellClick(mouse,click,active,action);
             }
             else
             {
             bool pan=active && mouse.RightButton==ButtonState.Pressed;
-            if(!pan)_mapDragging=false;
-            if(pan && _previousMouse.RightButton!=ButtonState.Pressed && MapViewBounds.Contains(_pointer))_mapDragging=true;
-            if(_mapDragging && _previousMouse.RightButton==ButtonState.Pressed)
-            {var old=CanvasPoint(_previousMouse);_net.Drag(new Vector2(_pointer.X-old.X,_pointer.Y-old.Y));}
+            DragStatusMap(mouse,active);
             if(active && MapViewBounds.Contains(_pointer))
             {
                 int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
@@ -538,7 +540,7 @@ public partial class Game1 : Game
         int geographicFace=_setup.GeographicFace(_net.CenterFace);
         string north=geographicFace==2?"北極面：上は＋Zの基準経線":geographicFace==3?"南極面：上は－Zの基準経線":_setup.PolarAxis==0?"地星の北＝＋X（碗）/ 箸と碗が極":"地星の北＝＋Y / 北を上に";
         string orientation=north+" / 回転 "+((int)MathF.Round((_net.Rotation*90+MathHelper.ToDegrees(_net.ScreenAngle))%360+360)%360)+"°";
-        _ui.Text(_statusGlobe?"右ドラッグで回転"+(_net.ShowMapSymbols?" / 経番・緯番":""):orientation,new(991,203),.43f,new(177,206,216));
+        _ui.Text(_statusGlobe?MapDragName+(_net.ShowMapSymbols?" / 経番・緯番":""):orientation,new(991,203),.43f,new(177,206,216));
         if(_statusGlobe && _net.ShowMapSymbols)
         {
         _ui.Text("経番",new(1450,203),.38f,WorldCoordinates.LongitudeColor);
@@ -586,7 +588,7 @@ public partial class Game1 : Game
         DrawDestinationMap();DrawContinuationBadges();DrawWarReservationMarkers();DrawMoveReservationMarkers(); DrawDomesticPortrait();
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(InspectorVisible?1276:991,InspectorVisible?770:831),Math.Min(0.48f,(InspectorVisible?600:870)/_font.MeasureString(location).X),Cream);
-        _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):_statusGlobe?"右ドラッグ：回転 / ホイール：拡縮 / 節点を選ぶと中心固定":"ホイール：拡縮（最大64倍）/ 拡大で12枠 / 右ドラッグ：移動",new(InspectorVisible?1276:991,InspectorVisible?810:865),InspectorVisible?.27f:0.37f,new(177,206,216));
+        _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):"右ドラッグ："+(MapDragSlide?"スライド":"回転")+" / ホイール：拡縮",new(InspectorVisible?1276:991,InspectorVisible?810:865),InspectorVisible?.27f:0.37f,new(177,206,216));
         _ui.Button(NetButton(2),"現在地へ移動",Accent,0.45f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
         if(_statusCell>=0 && !InspectorVisible)
         {

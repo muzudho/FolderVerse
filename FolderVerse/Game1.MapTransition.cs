@@ -19,6 +19,7 @@ public partial class Game1
     private void StartMapTransition()
     {
         if(MapTransitionActive)return;
+        _mapDragListOpen=false;
         _mapUnfold=_statusGlobe;
         _net.CancelAnimation();
         if(_mapUnfold)
@@ -117,6 +118,7 @@ public partial class Game1
             var shaped=Shape(index,point);
             var anchor=Vector3.Transform(_world.GlobeAnchor??Vector3.Zero,_world.ViewOrientation(_yaw,_pitch));
             var perspective=viewport.Project(shaped-new Vector3(anchor.X,anchor.Y,0)*(1-align),projection,view,Matrix.Identity);
+            perspective.X+=_world.GlobePan.X*area.Width*(1-align);perspective.Y+=_world.GlobePan.Y*area.Height*(1-align);
             var flat=_net.RotateScreen(faces[index].Project(point)*fit.Scale+fit.Origin,NetPanel);
             var fitted=new Vector2(NetPanel.Center.X+shaped.X*scale,NetPanel.Center.Y-shaped.Y*scale);
             var screen=Vector2.Lerp(new(perspective.X,perspective.Y),fitted,Ease(unfold*6));

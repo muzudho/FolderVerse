@@ -150,10 +150,11 @@ public partial class Game1
             foreach(var key in keyboard.GetPressedKeys())if(!_previousKeyboard.IsKeyDown(key)){if(key>=Keys.D0 && key<=Keys.D9)TransportQuantityPress(((int)key-(int)Keys.D0).ToString());else if(key>=Keys.NumPad0 && key<=Keys.NumPad9)TransportQuantityPress(((int)key-(int)Keys.NumPad0).ToString());else if(key==Keys.Back)TransportQuantityPress("<");else if(key==Keys.Enter)TransportQuantityPress("OK");}return true;
         }
         // Destination selection is modal, while retaining camera drag/zoom to reach adjacent nodes.
+        DragStatusMap(mouse,active);
         if(MapViewBounds.Contains(_pointer)){
             int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
-            if(_statusGlobe){if(wheel!=0)_world.GlobeZoom=MathHelper.Clamp(_world.GlobeZoom*MathF.Pow(1.2f,wheel/120f),.5f,16);Rotate(mouse,false,active,MapViewBounds);}
-            else {if(wheel!=0)_net.ZoomAt(NetPanel,_pointer,wheel);if(mouse.RightButton==ButtonState.Pressed && _previousMouse.RightButton==ButtonState.Pressed){var old=CanvasPoint(_previousMouse);_net.Drag(new(_pointer.X-old.X,_pointer.Y-old.Y));}}
+            if(_statusGlobe){if(wheel!=0)_world.GlobeZoom=MathHelper.Clamp(_world.GlobeZoom*MathF.Pow(1.2f,wheel/120f),.5f,16);}
+            else if(wheel!=0)_net.ZoomAt(NetPanel,_pointer,wheel);
             if(click){var targets=TransportAdjacent();int id=_statusGlobe?HitGlobeNode(_pointer,targets):_net.HitNode(_setup,NetPanel,_pointer,targets);if(id>=0 && EditingTransport!=null){ConfigureTransport(EditingTransport,target:id);_transportNewInstruction=false;_transportDestinationPicking=false;}}
         }
         return true;
