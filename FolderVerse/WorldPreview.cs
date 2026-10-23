@@ -156,7 +156,7 @@ public sealed partial class WorldPreview : IDisposable
         _effect.World = globeView?GlobeOrientation(yaw,pitch):ViewOrientation(yaw,pitch);
         float radius = new Vector3(Width, Height, Depth).Length() * 0.5f + (_markers == null ? 0 : 0.4f);
         _effect.View = Matrix.CreateLookAt(new Vector3(0, 0, radius * 3.3f), Vector3.Zero, Vector3.Up);
-        _effect.Projection = Matrix.CreatePerspectiveFieldOfView(globeView?GlobeFieldOfView:MathHelper.ToRadians(42), _device.Viewport.AspectRatio, 0.1f, 100);
+        _effect.Projection = globeView?GlobeProjection(_device.Viewport.AspectRatio):Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(42), _device.Viewport.AspectRatio, 0.1f, 100);
         _device.SetVertexBuffer(_vertices);
         foreach (var pass in _effect.CurrentTechnique.Passes)
         {
@@ -186,7 +186,7 @@ public sealed partial class WorldPreview : IDisposable
         var transformed=Vector3.Transform(point,orientation);
         var facing=Vector3.TransformNormal(normal,orientation);
         var view=Matrix.CreateLookAt(camera,Vector3.Zero,Vector3.Up);
-        var projection=Matrix.CreatePerspectiveFieldOfView(GlobeFieldOfView,area.Width/(float)area.Height,.1f,100);
+        var projection=GlobeProjection(area.Width/(float)area.Height);
         var viewport=new Viewport(area);var projected=viewport.Project(point+normal*normalOffset,projection,view,orientation);
         screen=new(projected.X,projected.Y);
         return Vector3.Dot(facing,camera-transformed)>0 && projected.Z>=0 && projected.Z<=1;

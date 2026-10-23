@@ -67,8 +67,8 @@ public partial class Game1
     private void ToggleRobotDisposal(int node,long id)
     {
         var store=_setup.Robots.Nodes[node];var robot=store.Robots.Single(r=>r.Id==id);
-        if(robot.Owner!=_setup.PlayerSlot || _setup.Campaign.RobotBattles.LockedNode(node) || _setup.Robots.Workshops[node].DisposalTarget==id || _setup.Robots.PendingEdits.Any(e=>e.Ids.Contains(id)))return;
-        store.Replace(store.Robots.Select(r=>r.Id==id?r with {Disposal=!r.Disposal}:r).ToArray());
+        if(!CanManageNodeFactory(robot.Owner) || _setup.Campaign.RobotBattles.LockedNode(node))return;
+        _setup.Robots.ToggleReservation(node,id,HangarReservation.Disposal);
     }
     private void DrawDisposalCheck(Rectangle card,Robot robot)
     {

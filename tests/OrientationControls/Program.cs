@@ -122,12 +122,35 @@ sealed class RotationGame:Game1{
   Check(net.ScreenAngle==0 && net.Faces.SequenceEqual(before.Faces) && net.Pan==before.Pan && net.Zoom==before.Zoom,"Net zero preserves layout and camera");
   foreach(int sign in new[]{-1,1})Check(Vector2.Distance(((Rectangle)Call("AxisButton",netToy,2,sign)).Center.ToVector2(),netToy.Center.ToVector2())>netToy.Width/2+20,"Net buttons outside circle");
   Set("_statusGlobe",true);net.ShowEquator=true;Call("FocusStatusGlobe");
+  Check(!(bool)Prop("MapDragSlide"),"Globe defaults to rotation");
+  var dragButton=(Rectangle)typeof(Game1).GetField("MapDragButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  void SelectDrag(int index){Call("RouteLayerClick",dragButton.Center);Call("RouteLayerClick",((Rectangle)typeof(Game1).GetMethod("MapDragOption",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{index})!).Center);}
+  void Drag(int dx,int dy){
+   var canvas=(Rectangle)Call("CanvasBounds");var start=((Rectangle)Prop("MapViewBounds")).Center;
+   Microsoft.Xna.Framework.Input.MouseState Mouse(Point p)=>new(canvas.X+(int)Math.Round(p.X*canvas.Width/1920d),canvas.Y+(int)Math.Round(p.Y*canvas.Height/1080d),0,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Pressed,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released);
+   Set("_previousMouse",new Microsoft.Xna.Framework.Input.MouseState());Set("_pointer",start);Call("DragStatusMap",Mouse(start),true);
+   Set("_previousMouse",Mouse(start));Set("_pointer",new Point(start.X+dx,start.Y+dy));Call("DragStatusMap",Mouse(new(start.X+dx,start.Y+dy)),true);
+   Call("DragStatusMap",new Microsoft.Xna.Framework.Input.MouseState(),true);
+  }
+  var orientationBefore=world.ManualOrientation;Drag(40,15);Check(world.ManualOrientation!=orientationBefore && world.GlobePan==Vector2.Zero,"Globe rotation changes orientation only");
+  SelectDrag(1);Check((bool)Prop("MapDragSlide"),"Globe slide selected");
+  var area=(Rectangle)Prop("StatusGlobeArea");var current=w.Nodes.Current(0);var cell=w.Cells[current.Cell];var p=w.Routes.Position(current.Cell,current.Center);
+  world.ProjectVisible(p,cell.Normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),area,out var oldAt);orientationBefore=world.ManualOrientation;
+  Drag(45,20);world.ProjectVisible(p,cell.Normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),area,out var movedAt);
+  Check(world.ManualOrientation==orientationBefore && Vector2.Distance(movedAt-oldAt,new(45,20))<2,"Globe slide moves projection by mouse delta without rotating");
+  Check((int)Call("HitGlobeNode",movedAt.ToPoint(),new[]{current.Id})==current.Id,"Slid globe node stays clickable");
+  Set("_statusGlobe",false);Check((bool)Prop("MapDragSlide"),"Net defaults to slide independently");var panBefore=net.Pan;var angleBefore=net.ScreenAngle;Drag(35,15);Check(net.Pan!=panBefore && net.ScreenAngle==angleBefore,"Net slide changes pan only");
+  SelectDrag(0);panBefore=net.Pan;Drag(40,0);Check(net.ScreenAngle!=angleBefore && net.Pan==panBefore,"Net rotation changes angle only");
+  Set("_statusGlobe",true);Check((bool)Prop("MapDragSlide"),"Globe remembers slide across view switches");SelectDrag(0);Set("_statusGlobe",false);Check(!(bool)Prop("MapDragSlide"),"Net remembers rotation across view switches");SelectDrag(1);
+  Set("_statusGlobe",true);Call("FocusStatusGlobe");Check(world.GlobePan==Vector2.Zero,"Current-location centering resets globe slide");net.ScreenAngle=0;net.ResetView();
+  Console.WriteLine("PASS: independent right-drag defaults, all four drag modes, projected translation and clickable slid nodes.");
 
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
   var batch=(SpriteBatch)Get("_spriteBatch");
-  if(frame==1)Set("_statusGlobe",false);
+  if(frame==0)Set("_mapDragListOpen",true);
+  if(frame==1){Set("_statusGlobe",false);Set("_mapDragListOpen",true);}
   if(frame==2){Set("_statusGlobe",true);Call("StartMapTransition");}
   if(frame==9){Call("UpdateMapTransition",.1f);Check(!(bool)Get("_statusGlobe"),"Unfold completes");Call("StartMapTransition");}
   if(frame>=2 && frame<=8)Set("_mapTransitionAge",(frame-2)*.6f);

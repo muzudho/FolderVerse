@@ -108,6 +108,7 @@ public partial class Game1
     }
     private void FocusStatusGlobe()
     {
+        _world.GlobePan=Vector2.Zero;
         _domesticMapLeft=55+480*_domesticSlide;
         _globeSelectedNode=_setup.Nodes.Current(_setup.PlayerSlot)?.Id??-1;
         _world.GlobeAnchor=CurrentMapPosition();

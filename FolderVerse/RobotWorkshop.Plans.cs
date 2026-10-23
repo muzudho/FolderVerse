@@ -1,14 +1,28 @@
 namespace FolderVerse;
+using System.Linq;
 public sealed record ProductionPlan(RobotParts Product,int Turns,bool Cheap=false);
 public sealed partial class RobotWorkshop
 {
+    private int? _baseLineCount;
+    private int _lineLimit;
+    private System.Collections.Generic.Dictionary<long,RobotWorkshop> _workerLines;
+    public int LineLimit=>_lineLimit==0?3:_lineLimit;
+    public int BaseLineCount=>_baseLineCount??ProductionLines.Length;
+    public long? WorkerAt(int line)=>line<BaseLineCount?null:_workerLines?.Keys.OrderBy(id=>id).Skip(line-BaseLineCount).Select(id=>(long?)id).FirstOrDefault();
+    public void LimitLines(int limit){_lineLimit=limit;_baseLineCount=System.Math.Min(BaseLineCount,limit);ProductionLines=ProductionLines.Take(_baseLineCount.Value).ToArray();}
+    internal void SetWorkers(long[] ids){
+        _baseLineCount??=ProductionLines.Length;_workerLines??=new();
+        foreach(long id in _workerLines.Keys.Where(id=>!ids.Contains(id)).ToArray())_workerLines.Remove(id);
+        foreach(long id in ids)if(!_workerLines.ContainsKey(id)){var line=new RobotWorkshop();line.GeneratePlans(unchecked((int)id*7919));line.SelectPlan(0);_workerLines[id]=line;}
+        ProductionLines=ProductionLines.Take(BaseLineCount).Concat(_workerLines.OrderBy(p=>p.Key).Select(p=>p.Value)).Take(LineLimit).ToArray();
+    }
     public RobotWorkshop[] ProductionLines {get;private set;}
     public RobotWorkshop(){ProductionLines=new[]{this};}
-    internal void RemoveProductionLines(){ProductionLines=System.Array.Empty<RobotWorkshop>();Manufacturing=false;ProductionAge=0;}
+    internal void RemoveProductionLines(){ProductionLines=System.Array.Empty<RobotWorkshop>();_baseLineCount=0;_workerLines=null;Manufacturing=false;ProductionAge=0;}
     public void GenerateLines(int seed)
     {
         Automation=NodeAutomation.Gentle;var random=new SeedRandom(seed);int count=random.Next(4);
-        ProductionLines=new RobotWorkshop[count];
+        count=System.Math.Min(count,LineLimit);_baseLineCount=count;_workerLines=null;ProductionLines=new RobotWorkshop[count];
         for(int i=0;i<count;i++){
             var line=i==0?this:new RobotWorkshop();ProductionLines[i]=line;
             line.GeneratePlans(seed^((i+1)*7919));line.SelectPlan(random.Next(7));line.SetRest(1+random.Next(9),1+random.Next(9));

@@ -11,7 +11,7 @@ public sealed partial class RobotWorld
         var store=Nodes[node];var source=store.Robots.Single(r=>r.Id==sourceId);
         if((source.Parts&part)==0)throw new InvalidOperationException("Part is absent.");
         if(targetId==sourceId)return sourceId;
-        bool Reserved(long id)=>Workshops[node].DisposalTarget==id || PendingEdits.Any(e=>e.Ids.Contains(id));
+        bool Reserved(long id)=>AssemblyLocked(node,store.Robots.Single(r=>r.Id==id));
         if(Reserved(sourceId) || targetId.HasValue && Reserved(targetId.Value))throw new InvalidOperationException("Robot is reserved.");
         var target=targetId.HasValue?store.Robots.Single(r=>r.Id==targetId.Value):null;
         if(target!=null && target.Disposal!=source.Disposal)throw new InvalidOperationException("Incompatible target.");

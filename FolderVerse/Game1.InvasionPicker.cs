@@ -9,7 +9,7 @@ public partial class Game1
     private int _invasionPicker=-1;
     private readonly HashSet<long> _invasionDraft=new();
     private bool _invasionQueenDraft;
-    private Robot[] InvasionRobots(InvasionSource row)=>_setup.Campaign.RobotBattles.SelectableRobots(_setup,row.Owner,row.Node,row.Queen);
+    private Robot[] InvasionRobots(InvasionSource row)=>row.Queen?_setup.Campaign.RobotBattles.SelectableRobots(_setup,row.Owner,row.Node,true):_setup.Robots.Nodes[row.Node].Robots.Where(r=>r.Owner==row.Owner && _setup.Robots.CanReserveSortie(row.Node,r)).ToArray();
     private static Rectangle InvasionRobotCard(int i)=>new(350+i%6*200,320+i/6*170,185,155);
     private static readonly Rectangle InvasionPickerDone=new(1290,795,250,55),InvasionPickerCancel=new(1010,795,250,55),InvasionQueenToggle=new(380,705,520,55);
     private void OpenInvasionPicker(int index)
@@ -37,13 +37,13 @@ public partial class Game1
         var row=_invasionSources[_invasionPicker];var robots=InvasionRobots(row);
         _ui.Box(new(0,0,1920,1080),new Color(0,0,0,175));_ui.Box(new(310,185,1300,720),new Color(27,49,62));
         _ui.Text(row.Queen?"ポケットから出撃するロボットを選択":"格納庫から出撃するロボットを選択",new(350,215),.7f,Cream);
-        _ui.Text("クリックで選択・解除 / 選ばなかったロボットは残ります",new(350,270),.47f,Cream);
+        _ui.Text("出撃予約の確定で元の役割を上書き / 未選択は変更しません",new(350,270),.47f,Cream);
         for(int i=0;i<robots.Length;i++)
         {
             var r=InvasionRobotCard(i);var robot=robots[i];bool selected=_invasionDraft.Contains(robot.Id);
             _ui.Box(r,selected?Accent:Muted);DrawRobotGlyph(new(r.X+65,r.Y+8,55,75),robot,whiteOutline:true);
             _ui.Center($"ID {robot.Id} / {PartsLabel(robot.Parts)}",new(r.X,r.Y+90,r.Width,28),.38f,Cream);
-            _ui.Center(selected?"選択中":"待機",new(r.X,r.Y+122,r.Width,26),.4f,Cream);
+            _ui.Center(selected?"選択中":robot.FactoryWorker?"工場作業員":robot.DefenseOnly?"守備専用":robot.Disposal?"廃棄予約":"待機",new(r.X,r.Y+122,r.Width,26),.4f,Cream);
         }
         if(robots.Length==0)_ui.Text("出撃できるロボットはいません",new(380,375),.6f,Cream);
         if(row.Queen)_ui.Button(InvasionQueenToggle,_invasionQueenDraft?"クイーン：参加（移動も予約）":"クイーン：参加しない",_invasionQueenDraft?Accent:Muted,.5f);

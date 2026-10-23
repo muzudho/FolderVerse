@@ -5,15 +5,16 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 
 [Flags]
-public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8 }
+public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8,ShieldSupport=16 }
 public sealed record LessonAward(int Owner,BattleLesson Lesson);
 public sealed class BattleLessons
 {
-    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine};
+    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine,BattleLesson.ShieldSupport};
     public static string Title(BattleLesson lesson)=>lesson switch {
         BattleLesson.FlagCourtesy=>"戦訓#1 旗でお見合い",
         BattleLesson.RetreatBackwards=>"戦訓#2 撤退したら背中を撃たれた",
         BattleLesson.LeaveFiringLine=>"戦訓#4 射線にいるのに横向いて短剣振ってしまって撃たれた",
+        BattleLesson.ShieldSupport=>"戦訓#5 前に盾持った仲間がいるのに後ろのやつが撃たない",
         _=>"戦訓#3 射線上の仲間を撃った"};
     public BattleLesson[] Owned {get;}=new BattleLesson[WorldSetup.CastCount];
     public List<LessonAward> Pending {get;}=new();
@@ -46,14 +47,16 @@ public sealed class BattleLessons
             bool visible=true;
             for(int i=1;i<=along;i++)if(battle.BlocksShot(shooter.Position+new Point(forward.X*i,forward.Y*i))){visible=false;break;}
             if(!visible)continue;
-            if(side==0)return false;
+            if(side==0){if(along==1 && ShieldInFront(battle,shooter,facing) && Has(battle,shooter,BattleLesson.ShieldSupport))continue;return false;}
             var look=BattleState.Forward(friend.Facing);
             if(Math.Abs(side)==1 && (look.X*lateral.X+look.Y*lateral.Y)*side<0)return false;
         }
         return true;
     }
+    public static bool ShieldInFront(BattleState battle,BattleUnit shooter,BattleFacing facing)=>battle.Units.Any(u=>u.Active && battle.Allied(u.Owner,shooter.Owner) && u.Position==shooter.Position+BattleState.Forward(facing) && u.Shields>0 && u.Facing==facing);
     public static void Apply(BattleState battle,BattleUnit[] units,Dictionary<long,BattleAction> actions)
     {
+        if(units.Any(u=>actions[u.Id].Weapon==BattleWeapon.Rifle && Has(battle,u,BattleLesson.FireDiscipline) && !Has(battle,u,BattleLesson.ShieldSupport) && ShieldInFront(battle,u,actions[u.Id].Facing) && BattleAi.FirstTarget(battle,u,actions[u.Id].Facing) is {} target && !battle.Allied(u.Owner,target.Owner)))Witness(battle,BattleLesson.ShieldSupport);
         foreach(var unit in units)actions[unit.Id]=AvoidSideDagger(battle,unit,actions[unit.Id]);
         foreach(var unit in units)if(actions[unit.Id].Weapon==BattleWeapon.Rifle && Has(battle,unit,BattleLesson.FireDiscipline) && !SafeShot(battle,unit,actions[unit.Id].Facing))actions[unit.Id]=actions[unit.Id] with {Weapon=BattleWeapon.None};
         if(battle.Kind!=BattleKind.Node)return;

@@ -26,8 +26,8 @@ public partial class Game1
     private int[] RobotPriority=>RobotBattlePlayback.Priority(_robotScenes,_robotPlayback.Rounds[_robotRound],BattlePlayers);
     private RobotBattleSlice RobotSlice(int scene)=>_robotPlayback.Rounds[_robotRound].First(s=>s.Scene==scene);
     private double RobotSeconds(int scene)=>RobotBattlePlayback.SecondsPerFrame(_robotScenes[scene],RobotSlice(scene),RobotFrameSeconds);
-    private bool RobotMovementRound=>_robotPlayback.Rounds[_robotRound].All(s=>RobotBattlePlayback.MovementOnly(_robotScenes[s.Scene],s));
-    private double RobotRoundEnd=>_robotPlayback.Rounds[_robotRound].Max(s=>(s.End-s.Start+1)*RobotSeconds(s.Scene));
+    private bool RobotMovementRound=>RobotBattlePlayback.MovementOnly(_robotScenes[_battleWave],RobotSlice(_battleWave));
+    private double RobotRoundEnd=>(RobotSlice(_battleWave).End-RobotSlice(_battleWave).Start+1)*RobotSeconds(_battleWave);
     private double _transportAge;
     private double _robotResultAge;
     private const double RobotResultSeconds=5;
@@ -296,6 +296,10 @@ public partial class Game1
             {
                 if(delta.Length()<2*size)continue; // A wall or board edge before the second square stops the shot.
                 var launch=from+Vector2.Normalize(delta)*(2*size);
+                var forward=Vector2.Normalize(delta);float rifleAngle=MathF.Atan2(delta.Y,delta.X);
+                _ui.Tile(from+forward*size,new(92,14),rifleAngle,new Color(24,30,36));
+                _ui.Tile(from+forward*(size-25),new(35,10),rifleAngle,new Color(139,91,52));
+                _ui.Tile(from+forward*(size+19),new(47,6),rifleAngle,new Color(188,204,210));
                 float burst=Math.Clamp(progress/.3f,0,1);
                 for(int puff=0;puff<7;puff++)
                 {

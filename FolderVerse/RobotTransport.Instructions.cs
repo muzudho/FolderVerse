@@ -97,7 +97,7 @@ public sealed partial class RobotTransport
         for(int node=0;node<world.Nodes.Length;node++){
             if(locked?.Invoke(node)==true)continue;
             foreach(var robot in world.Nodes[node].Robots.OrderBy(r=>r.Id)){
-                if(world.Workshops[node].DisposalTarget==robot.Id || world.PendingEdits.Any(e=>e.Ids.Contains(robot.Id)))continue;
+                if(!world.CanShip(node,robot))continue;
                 var options=new List<InstructionChoice>();
                 foreach(var rule in Instructions(node,robot.Owner)){
                     if(rule.Complete || rule.Degrees==0 || rule.Target>=world.Nodes.Length || !connected(node,rule.Target) || locked?.Invoke(rule.Target)==true || !(canEnter?.Invoke(robot.Owner,rule.Target)??true) || robot.Disposal && !rule.Disposal)continue;

@@ -28,6 +28,6 @@ public sealed partial class WorldSetup
             Robots.Nodes[node.Id].Add(Robots.Create(0,RobotParts.Complete));
         }
         for(int ruler=0;ruler<7;ruler++)ConquerorPoints[ruler]=Nodes.Current(ruler).Center;
-        Nodes.Recount();Routes.RefreshDisplay();Campaign.Reset();TutorialStep=2;LandPending=false;
+        Robots.ConfigureFactories(this);Nodes.Recount();Routes.RefreshDisplay();Campaign.Reset();TutorialStep=2;LandPending=false;
     }
 }

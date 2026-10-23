@@ -26,6 +26,7 @@ public partial class Game1
         _dragging=_mapDragging=false;
         if(_statusGlobe)
         {
+            _world.GlobePan=Vector2.Zero;
             _pitch=MathF.Atan2(anchor.Y,anchor.Z);
             if(_pitch>MathHelper.PiOver2)_pitch-=MathHelper.Pi;
             if(_pitch< -MathHelper.PiOver2)_pitch+=MathHelper.Pi;

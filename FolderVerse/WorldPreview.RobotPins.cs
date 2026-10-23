@@ -9,6 +9,13 @@ public sealed partial class WorldPreview
 {
     public float GlobeZoom {get;set;}=1;
     public Vector3? GlobeAnchor {get;set;}
+    public Vector2 GlobePan {get;set;}
+    private Matrix GlobeProjection(float aspect)
+    {
+        var projection=Matrix.CreatePerspectiveFieldOfView(GlobeFieldOfView,aspect,.1f,100);
+        projection.M31-=GlobePan.X*2;projection.M32+=GlobePan.Y*2;
+        return projection;
+    }
     private float GlobeFieldOfView=>2*MathF.Atan(MathF.Tan(MathHelper.ToRadians(21))/GlobeZoom);
     private Matrix GlobeOrientation(float yaw,float pitch)
     {

@@ -36,7 +36,7 @@ public sealed partial class WorldSetup
         TerritoryCounts=Enumerable.Range(0,CastCount).Select(o=>Owners.Count(v=>v==o)).ToArray();
         Capitals=Enumerable.Range(0,ActiveCount).Select(o=>Array.IndexOf(Owners,o)).ToArray();ConquerorLocations=(int[])Capitals.Clone();
         Population.Initialize(this);Routes.Initialize(this);ConquerorPoints=ConquerorLocations.Select(Routes.Start).ToArray();Nodes.Initialize(this);
-        Robots.Initialize(Nodes.All.Length,ActiveCount);var random=new SeedRandom(fortuneSeed);
+        Robots.Initialize(Nodes.All.Length,ActiveCount);Robots.ConfigureFactories(this);var random=new SeedRandom(fortuneSeed);
         foreach(var node in Nodes.All.Where(n=>n.Owner>=0))
         {
             if(TutorialStep==1)Robots.Workshops[node.Id].RemoveProductionLines();else Robots.Workshops[node.Id].GenerateLines(fortuneSeed^node.Id*7919);

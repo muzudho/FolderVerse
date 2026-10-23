@@ -10,6 +10,7 @@ public sealed partial class RobotWorld
         bool elapsed=_domesticPreparedTurn>=0;
         _domesticPreparedTurn=turn;
         for(int n=0;n<Nodes.Length;n++){
+            if(locked?.Invoke(n)!=true)SyncWorkers(n);
             if(elapsed)Workshops[n].AdvanceSupervisorLeave();
             if(owner(n)>=0 && locked?.Invoke(n)!=true)AdjustNode(n,owner(n),connected,locked,owner);
         }

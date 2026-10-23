@@ -34,7 +34,7 @@ public partial class Game1
             foreach(var battle in next.Campaign.RobotBattles.Encounters.SelectMany(e=>e.Battles).Concat(next.Campaign.RobotBattles.Scenes).Distinct()){
                 battle.Allied=next.Relations.Allied;battle.Check();
             }
-            ResetInspector();_setup=next;_tutorialAttackGuide=false;_tutorialAttackAchieved=next.TutorialStep==1 && _tutorialAchievements?.Has(TutorialAchievements.FirstAttack)==true;_domesticViews.Clear();foreach(var view in saved.Views)_domesticViews.Add(view.Key,view.Value);
+            next.Robots.ConfigureFactories(next);ResetInspector();_setup=next;_tutorialAttackGuide=false;_tutorialAttackAchieved=next.TutorialStep==1 && _tutorialAchievements?.Has(TutorialAchievements.FirstAttack)==true;_domesticViews.Clear();foreach(var view in saved.Views)_domesticViews.Add(view.Key,view.Value);
             if(_tutorialAttackAchieved && !next.TutorialCompletionShown)next.TutorialCompletionPending=true;
             if(next.TutorialStep==3 && next.TutorialMapStage<4)next.TutorialMapNotices&=~(1<<next.TutorialMapStage);
             _autoPlay=_demoActive=false;_statusMenuOpen=false;_robotPlaying=false;_robotPendingFocus=-1;_robotPendingSummary=false;
