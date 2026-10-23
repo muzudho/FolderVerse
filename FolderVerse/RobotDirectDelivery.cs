@@ -13,6 +13,13 @@ public sealed class RobotDirectDelivery
     public List<DirectPartOrder> Orders {get;}=new();
     public RobotParts LockedParts(int node,long id)=>Orders.Where(o=>o.Source==node && o.RobotId==id || o.Target==node && o.TargetRobotId==id).Aggregate((RobotParts)0,(mask,o)=>mask|o.Part);
     public bool Cancel(long number)=>Orders.RemoveAll(o=>o.Number==number)>0;
+    public void ReserveParts(WorldSetup setup,int source,int target,long id,RobotParts parts,long? targetId,int slot)
+    {
+        if(parts==0 || (parts&~RobotParts.Complete)!=0)throw new InvalidOperationException("Select physical parts.");
+        long start=_next;
+        try{foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((parts&part)!=0)Reserve(setup,source,target,id,part,targetId,slot);}
+        catch{Orders.RemoveAll(o=>o.Number>=start);_next=start;throw;}
+    }
     public DirectPartOrder Reserve(WorldSetup setup,int source,int target,long id,RobotParts part,long? targetId,int slot)
     {
         var world=setup.Robots;var battles=setup.Campaign.RobotBattles;

@@ -144,6 +144,24 @@ sealed class RotationGame:Game1{
   Set("_statusGlobe",true);Check((bool)Prop("MapDragSlide"),"Globe remembers slide across view switches");SelectDrag(0);Set("_statusGlobe",false);Check(!(bool)Prop("MapDragSlide"),"Net remembers rotation across view switches");SelectDrag(1);
   Set("_statusGlobe",true);Call("FocusStatusGlobe");Check(world.GlobePan==Vector2.Zero,"Current-location centering resets globe slide");net.ScreenAngle=0;net.ResetView();
   Console.WriteLine("PASS: independent right-drag defaults, all four drag modes, projected translation and clickable slid nodes.");
+  foreach(bool globe in new[]{true,false}){
+   Set("_statusGlobe",globe);net.ScreenAngle=.6f;
+   var handle=(Rectangle)Prop("OrientationToyArea");var start=handle.Center;
+   var pan=world.GlobePan;var rotation=world.ManualOrientation;var angle=net.ScreenAngle;
+   var nodeAt=net.NodePosition(w,node,panel);
+   Microsoft.Xna.Framework.Input.MouseState Mouse(Point at,bool held)=>new(at.X,at.Y,0,held?Microsoft.Xna.Framework.Input.ButtonState.Pressed:Microsoft.Xna.Framework.Input.ButtonState.Released,0,0,0,0);
+   Set("_pointer",start);Check((bool)Call("DragOrientationRobot",Mouse(start,true),true,true),"Robot captures left press");
+   var end=start+new Point(42,18);Set("_previousMouse",Mouse(start,true));Set("_pointer",end);
+   Check((bool)Call("DragOrientationRobot",Mouse(end,true),true,false),"Robot captures motion");
+   Check(globe?Vector2.Distance(world.GlobePan-pan,new Vector2(42f/panel.Width,18f/panel.Height))<.001f:Vector2.Distance(net.NodePosition(w,node,panel)-nodeAt,new(42,18))<.01f,"Robot slide follows screen delta in both views");
+   Check(world.ManualOrientation==rotation && net.ScreenAngle==angle,"Robot drag preserves rotation");
+   Check((Vector2)Get("_orientationDragOffset")!=Vector2.Zero,"Robot visibly follows drag");
+   var globePan=world.GlobePan;var netPan=net.Pan;
+   Call("DragOrientationRobot",Mouse(end,false),true,false);
+   Check((Vector2)Get("_orientationDragOffset")==Vector2.Zero && !(bool)Get("_orientationDragging") && world.GlobePan==globePan && net.Pan==netPan,"Release returns only robot to center");
+  }
+  Set("_statusGlobe",true);Call("FocusStatusGlobe");net.ScreenAngle=0;net.ResetView();
+  Console.WriteLine("PASS: direction robot left drag pans both views, preserves rotation and springs back without moving the map.");
 
  }
  protected override void Update(GameTime t){}

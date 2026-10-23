@@ -2,9 +2,38 @@ namespace FolderVerse;
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 public partial class Game1
 {
+    private bool _orientationDragging;
+    private Vector2 _orientationDragOffset;
+    private bool DragOrientationRobot(MouseState mouse,bool active,bool click)
+    {
+        if(!IsStatusScreen || MapTransitionActive || OrientationRotating || _net.IsAnimating || _seedDialog.IsOpen){
+            _orientationDragging=false;_orientationDragOffset=Vector2.Zero;return false;
+        }
+        var toy=OrientationToyArea;
+        if(!_orientationDragging){
+            // Keep the surrounding rotation and reset buttons separate from the drag handle.
+            var handle=new Rectangle(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30);
+            if(!click || !handle.Contains(_pointer))return false;
+            _orientationDragging=true;_orientationDragOffset=Vector2.Zero;
+            _dragging=_mapDragging=false;_globePressedCell=-1;
+            return true;
+        }
+        if(!active || mouse.LeftButton!=ButtonState.Pressed){
+            _orientationDragging=false;_orientationDragOffset=Vector2.Zero;return true;
+        }
+        var old=CanvasPoint(_previousMouse);var delta=new Vector2(_pointer.X-old.X,_pointer.Y-old.Y);
+        if(_statusGlobe)_world.GlobePan+=new Vector2(delta.X/StatusGlobeArea.Width,delta.Y/StatusGlobeArea.Height);
+        else _net.Drag(delta);
+        _orientationDragOffset+=delta;
+        // The handle stays inside its small window even during a long map slide.
+        float limit=toy.Width*.15f;
+        if(_orientationDragOffset.LengthSquared()>limit*limit)_orientationDragOffset=Vector2.Normalize(_orientationDragOffset)*limit;
+        return true;
+    }
     private static (Rectangle Globe,Rectangle Toy,Rectangle Legend) OrientationAreas(Rectangle area,bool cast)
     {
         if(cast)area=new(area.X,area.Y+64,area.Width,area.Height-64);
@@ -30,7 +59,7 @@ public partial class Game1
         }
         _spriteBatch.End();
         var viewport=GraphicsDevice.Viewport;
-        GraphicsDevice.Viewport=OrientationViewport(new(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30),canvas);
+        GraphicsDevice.Viewport=OrientationViewport(new(toy.X+16+(int)_orientationDragOffset.X,toy.Y+4+(int)_orientationDragOffset.Y,toy.Width-32,toy.Height-30),canvas);
         _orientationToy.Draw(_yaw,_pitch,OrientationGlobe?(IsStatusScreen?_world.DisplayOrientation(_yaw,_pitch):_world.ViewOrientation(_yaw,_pitch)):_net.BellyOrientation);
         GraphicsDevice.Viewport=viewport;
         _spriteBatch.Begin(transformMatrix:transform);

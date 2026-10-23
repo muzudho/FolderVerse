@@ -20,12 +20,14 @@ public partial class Game1
         var node=_setup.Nodes.All[id];string name=_setup.Nodes.Label(node);
         float scale=Math.Min(.42f,620/_font.MeasureString(name).X);
         var size=_font.MeasureString(name)*scale;
-        int width=Math.Max(300,(int)Math.Ceiling(size.X)+28),height=_setup.Campaign.UseRobotCombat?72:46;
+        string landmark="目印："+NodeLandmarks.At(_setup,id).Description;
+        int width=Math.Max(Math.Max(300,(int)Math.Ceiling(size.X)+28),(int)(_font.MeasureString(landmark).X*.36f)+28),height=_setup.Campaign.UseRobotCombat?96:70;
         int x=500,y=4;
         _ui.Box(new(x+3,y+3,width,height),new Color(3,13,20));
         _ui.Box(new(x,y,width,height),new Color(27,49,62));
         _ui.Box(new(x,y,width,3),_setup.OwnerColor(node.Owner));
         _ui.Text(name,new(x+14,y+11),scale,Cream);
+        _ui.Text(landmark,new(x+14,y+37),.36f,Cream);
         if(_setup.Campaign.UseRobotCombat)
         {
             var robots=_setup.Robots.Nodes[id].Robots;

@@ -114,7 +114,10 @@ public static class AutoSaveStore
                     if(type==typeof(BattleState) && field.Name=="<Persuasions>k__BackingField"){field.SetValue(value,new List<BattlePersuasion>());continue;}
                     throw new InvalidDataException("Autosave field is missing: "+field.Name);
                 }
-                field.SetValue(value,Read(id));
+                var restored=Read(id);
+                // Apply the shorter standard segment to campaigns saved with the old default.
+                if(type==typeof(BattleRules) && field.Name=="<SegmentTurns>k__BackingField" && restored is int turns && turns==200)restored=100;
+                field.SetValue(value,restored);
             }
         }
         for(int i=0;i<values.Length;i++)Populate(i);

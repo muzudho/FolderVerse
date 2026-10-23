@@ -24,12 +24,21 @@ class Checks:Game1{
   var ghost=Part(1,0,0).Center;Set("_pointer",ghost);Call("DirectPairInput",Mouse(ghost,ButtonState.Pressed),true,false);Check(w.Robots.DirectDelivery.Orders.Count==0,"Click arrival ghost cancels");
   Drag(0,0,0,1,0);Drag(0,1,1,1,1);Check(w.Robots.DirectDelivery.Orders.Count==2,"Independent parts can use different destination cells");
   var doc=AutoSaveStore.Capture(w);Check(AutoSaveStore.Restore<WorldSetup>(doc).Robots.DirectDelivery.Orders.Count==2,"UI reservations are saved");
-  Set("_pointer",new Point(1800,1000));
+  foreach(var order in w.Robots.DirectDelivery.Orders.ToArray())w.Robots.DirectDelivery.Cancel(order.Number);
+  var body=w.Robots.Nodes[a].Robots.Single(r=>(r.Parts&RobotParts.Body)!=0);w.Robots.MovePart(a,body.Id,RobotParts.Body,original,0);Call("OpenDirectPair",a,b);
+  void Whole(int fromSlot,int toSide,int toSlot){var from=Cell(0,fromSlot).Location+new Point(16,145);Set("_pointer",from);Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);var to=Cell(toSide,toSlot).Center;Set("_previousMouse",Mouse(from,ButtonState.Pressed));Set("_pointer",to);Call("DirectPairInput",Mouse(to,ButtonState.Released),false,false);}
+  Whole(0,0,2);Check(((long?[][])Get("_directSlots"))[0][2]==original && w.Robots.Nodes[a].Robots.Single().Parts==RobotParts.Complete,"Cell drag within pane repositions complete robot");
+  Whole(2,1,0);Check(w.Robots.DirectDelivery.Orders.Count==0 && w.Robots.Nodes[a].Robots.Single().Parts==RobotParts.Complete,"Whole robot conflicting with destination leaves no partial reservations");
+  Whole(2,1,1);Check(w.Robots.DirectDelivery.Orders.Count==3 && w.Robots.DirectDelivery.LockedParts(a,original)==RobotParts.Complete,"Whole cell cross-pane drag reserves head body and legs together");
+  Set("_pointer",Part(0,2,0).Center);Check((RobotParts)Call("DirectHoverPart",0,2)==RobotParts.Head,"Part hover selects only head");
+  Set("_pointer",Cell(0,2).Location+new Point(16,145));Check((RobotParts)Call("DirectHoverPart",0,2)==0,"Cell margin hover selects whole cell");
+  Set("_pointer",Part(0,2,0).Center);
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
   if(frame==1){Set("_directPairOpen",false);}
   if(frame==2){var hit=((System.Collections.IList)Get("_directTrucks"))[0]!;var bounds=(Rectangle)hit.GetType().GetField("Item1")!.GetValue(hit)!;Call("DirectMapClick",bounds.Center);Check((bool)Get("_directPairOpen"),"Clicking truck opens pair inspector");}
+  if(frame==3)Set("_pointer",Cell(1,1).Location+new Point(16,145));
   base.Draw(t);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var tex=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);tex.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"direct-{frame}.png")))tex.SaveAsPng(file,tex.Width,tex.Height);
   if(frame==1){var hits=(System.Collections.IList)Get("_directTrucks");Check(hits.Count>0,"Visible adjacent edge has a truck");}
   if(frame++==3){Console.WriteLine("PASS: edge trucks, two hangars, cross-pane reservations, same-pane part edits, ghost cancellation, multiple destinations, saved reservations and rendering.");Exit();}

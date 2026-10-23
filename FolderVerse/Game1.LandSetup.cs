@@ -165,6 +165,7 @@ public partial class Game1
                 for(int i=1;i<curve.Length;i++)
                     if(_world.ProjectVisible(curve[i-1],c.Normal,_yaw,_pitch,LandGlobeArea,out var a) && _world.ProjectVisible(curve[i],c.Normal,_yaw,_pitch,LandGlobeArea,out var b))LandLine(a,b,new Color(230,200,145),1);
             }
+            _net.DrawLandmarks(_ui,_setup,c.Id,p=>_world.ProjectVisible(p,c.Normal,_yaw,_pitch,LandGlobeArea,out var at)?at:null,_animationTime,false);
             foreach(var node in _setup.Nodes.InCell(c.Id).Where(n=>n.IsHarbor))
                 if(_world.ProjectVisible(_setup.Routes.Position(c.Id,node.Center),c.Normal,_yaw,_pitch,LandGlobeArea,out var h))_ui.Box(new((int)h.X-3,(int)h.Y-3,6,6),Cream);        }
         if(_landDrag.HasValue){var a=_landDrag.Value;var b=_pointer;LandLine(new(a.X,a.Y),new(b.X,a.Y),Color.White,2);LandLine(new(b.X,a.Y),new(b.X,b.Y),Color.White,2);LandLine(new(b.X,b.Y),new(a.X,b.Y),Color.White,2);LandLine(new(a.X,b.Y),new(a.X,a.Y),Color.White,2);}
