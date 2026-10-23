@@ -1,6 +1,6 @@
 {
   "CharacterId": 50,
-  "UpdatedAt": "2026-10-24T02:35:00+09:00",
+  "UpdatedAt": "2026-10-24T03:05:00+09:00",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018",
   "GameAdopted": false,
@@ -1126,6 +1126,47 @@
           "Status": "NOT_SELECTED_PUPILS_AND_SUPPLEMENT_LOST",
           "Review": "瞳孔と下左小白円の復元指示にもほぼ変化せず、平坦な青虹彩が残る。不採用。眼部拡大目視、全身目視は前段v011のみ。",
           "Evidence": "normal-6-eye-review-v012.png"
+        },
+        {
+          "Source": "character-50-normal-6-v013-generated.png",
+          "Width": 1024,
+          "Height": 1536,
+          "Sha256": "7f64ad7d997ea685f445d04564f113fb0fb681dd8bb8ec658dd722a27a334064",
+          "Prompt": "character-50-normal-6-v013-prompt.txt",
+          "References": [
+            "character-50-normal-6-v003-generated.png",
+            "normal-6-face-detail-v001-generated.png",
+            "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "NOT_SELECTED_RIBBONS_CLIPPED",
+          "Review": "縦構図v013では顔を大きくしたが左右リボン切れ。余白拡張v014では髪飾り/長髪/リボン裾/両靴が画内に収まり、開いた笑顔/銀眼鏡/前掌と後腕の白手袋/電池/宮殿花びらを保持。上主白点は明瞭になったが下小白円は広い淡青反射へ消失し、別の小点も上寄りで未達。256x192で顔/前掌/電池判別。動的姿勢の厳密頭身未認定。選択v003維持。"
+        },
+        {
+          "Source": "character-50-normal-6-v014-generated.png",
+          "Width": 1024,
+          "Height": 1536,
+          "Sha256": "b3ef96be5a449db68d0b5fb1c21c37a097d08c956609f3a5e613fa434b8ca465",
+          "Prompt": "character-50-normal-6-v014-prompt.txt",
+          "References": [
+            "character-50-normal-6-v013-generated.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Review": "縦構図v013では顔を大きくしたが左右リボン切れ。余白拡張v014では髪飾り/長髪/リボン裾/両靴が画内に収まり、開いた笑顔/銀眼鏡/前掌と後腕の白手袋/電池/宮殿花びらを保持。上主白点は明瞭になったが下小白円は広い淡青反射へ消失し、別の小点も上寄りで未達。256x192で顔/前掌/電池判別。動的姿勢の厳密頭身未認定。選択v003維持。",
+          "Evidence": "normal-6-eye-review-v014.png",
+          "Preview": {
+            "File": "normal-6-v014-preview.png",
+            "Crop": {
+              "X": 170,
+              "Y": 140,
+              "Width": 720,
+              "Height": 540
+            },
+            "Width": 256,
+            "Height": 192,
+            "Status": "REVIEW_ONLY_NOT_STAGED"
+          }
         }
       ],
       "Preview": {
@@ -2649,7 +2690,7 @@
       }
     }
   ],
-  "Next": "No50 coin fullbody v009 failed lower highlight transfer; selectedv004/stagedv026/Game0/20 unchanged. Corrected overstrict iris-contained rule: eye-opening clipping is actual requirement. Next evaluate normal6 face study against actual 4.2 criteria and attempt a fullbody composition with more readable face only if distinct from failed transfers. No identical coin micro-edit loops. Remaining normal6/paparazzi/coin; adoption/build/distribution pending.",
+  "Next": "No50 normal6 tall composition v013/v014: margins recovered but lower highlights not transferred; selected v003/stagedv026/Game0/20 unchanged. Stop further identical iris redraw/face transfers across remaining3. Next prepare adoption-readiness checklist and verify original backups/live hashes/build path separately while documenting unresolved normal6/paparazzi/coin; do not mark adopted or silently waive style requirements.",
   "CurrentSelectionAudit": {
     "Report": "current-selection-audit-v003.md",
     "Review": "current-selection-review-v003.html",
