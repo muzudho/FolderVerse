@@ -1,0 +1,382 @@
+{
+  "CharacterId": 50,
+  "Status": "STAGED_NOT_ADOPTED",
+  "Count": 20,
+  "Images": [
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Source": "character-50-normal-1-v004-generated.png",
+      "SourceSha256": "9434e69785e82e3aa1ee4b4fa559f3b68263631a25b4b0426c2bf85a35b716c1",
+      "File": "staged/domestic/character-50-1.png",
+      "Sha256": "15d65db34b9d1096f43195cb0d704da7ef0d01b17a57cd9a1253bf39416acea3",
+      "Crop": {
+        "X": 480,
+        "Y": 40,
+        "Width": 640,
+        "Height": 480
+      },
+      "Width": 256,
+      "Height": 192,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Source": "character-50-normal-1-v004-generated.png",
+      "SourceSha256": "9434e69785e82e3aa1ee4b4fa559f3b68263631a25b4b0426c2bf85a35b716c1",
+      "File": "staged/conqueror-creation/character-50-1.png",
+      "Sha256": "15d65db34b9d1096f43195cb0d704da7ef0d01b17a57cd9a1253bf39416acea3",
+      "Crop": {
+        "X": 480,
+        "Y": 40,
+        "Width": 640,
+        "Height": 480
+      },
+      "Width": 256,
+      "Height": 192,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Source": "character-50-normal-2-v004-generated.png",
+      "SourceSha256": "d6a35057209edc850740ac2e74f0c2a5ca2aeeb68402a56475fad897c8f20acf",
+      "File": "staged/domestic/character-50-2.png",
+      "Sha256": "9847fd30fb9c333c17c8e679111b68b88d718be1c5797a36ee2b6267c7ec22af",
+      "Crop": {
+        "X": 450,
+        "Y": 20,
+        "Width": 800,
+        "Height": 600
+      },
+      "Width": 256,
+      "Height": 192,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Source": "character-50-normal-2-v004-generated.png",
+      "SourceSha256": "d6a35057209edc850740ac2e74f0c2a5ca2aeeb68402a56475fad897c8f20acf",
+      "File": "staged/conqueror-creation/character-50-2.png",
+      "Sha256": "9847fd30fb9c333c17c8e679111b68b88d718be1c5797a36ee2b6267c7ec22af",
+      "Crop": {
+        "X": 450,
+        "Y": 20,
+        "Width": 800,
+        "Height": 600
+      },
+      "Width": 256,
+      "Height": 192,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Source": "character-50-normal-3-v014-generated.png",
+      "SourceSha256": "4d9ca57e6b9a53d95500affa1d4e96022a892ec7d4669fc0a25476b314ed81b3",
+      "File": "staged/domestic/character-50-3.png",
+      "Sha256": "cfb366028d5b4226723b11c93845874bfd84b3546dddfe21daf054e550fc75a1",
+      "Crop": {
+        "X": 440,
+        "Y": 130,
+        "Width": 640,
+        "Height": 480
+      },
+      "Width": 256,
+      "Height": 192,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Source": "character-50-normal-3-v014-generated.png",
+      "SourceSha256": "4d9ca57e6b9a53d95500affa1d4e96022a892ec7d4669fc0a25476b314ed81b3",
+      "File": "staged/conqueror-creation/character-50-3.png",
+      "Sha256": "cfb366028d5b4226723b11c93845874bfd84b3546dddfe21daf054e550fc75a1",
+      "Crop": {
+        "X": 440,
+        "Y": 130,
+        "Width": 640,
+        "Height": 480
+      },
+      "Width": 256,
+      "Height": 192,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Source": "character-50-normal-4-v004-generated.png",
+      "SourceSha256": "07708485c8ca528f9c6d22be914a8e54086095d3d69df3c4c0ccb8300e80ee32",
+      "File": "staged/domestic/character-50-4.png",
+      "Sha256": "76cb3a8c1302782cae99f9270b0c2503bf9c3cd62b097539e68aa9dedf9d8889",
+      "Crop": {
+        "X": 440,
+        "Y": 90,
+        "Width": 640,
+        "Height": 480
+      },
+      "Width": 256,
+      "Height": 192,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Source": "character-50-normal-4-v004-generated.png",
+      "SourceSha256": "07708485c8ca528f9c6d22be914a8e54086095d3d69df3c4c0ccb8300e80ee32",
+      "File": "staged/conqueror-creation/character-50-4.png",
+      "Sha256": "76cb3a8c1302782cae99f9270b0c2503bf9c3cd62b097539e68aa9dedf9d8889",
+      "Crop": {
+        "X": 440,
+        "Y": 90,
+        "Width": 640,
+        "Height": 480
+      },
+      "Width": 256,
+      "Height": 192,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Source": "character-50-normal-5-v009-generated.png",
+      "SourceSha256": "852f629ff69f6178216ffdfa7e019f6e323c7b3c83b777435e05d442a0d9cb3b",
+      "File": "staged/domestic/character-50-5.png",
+      "Sha256": "104a29a40ff559e03fa99fab8b17c839987552d7ba8e73b883b087cc84e321b0",
+      "Crop": {
+        "X": 490,
+        "Y": 0,
+        "Width": 640,
+        "Height": 480
+      },
+      "Width": 256,
+      "Height": 192,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Source": "character-50-normal-5-v009-generated.png",
+      "SourceSha256": "852f629ff69f6178216ffdfa7e019f6e323c7b3c83b777435e05d442a0d9cb3b",
+      "File": "staged/conqueror-creation/character-50-5.png",
+      "Sha256": "104a29a40ff559e03fa99fab8b17c839987552d7ba8e73b883b087cc84e321b0",
+      "Crop": {
+        "X": 490,
+        "Y": 0,
+        "Width": 640,
+        "Height": 480
+      },
+      "Width": 256,
+      "Height": 192,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Source": "character-50-normal-6-v003-generated.png",
+      "SourceSha256": "bd19133df38c00c2b9c10863016ade3939416b64580bf73e359a9a737111cd43",
+      "File": "staged/domestic/character-50-6.png",
+      "Sha256": "b3dfb0c539bb026ed4f939698ff4644a19c02ad74d04fab48f63c07bfaf5d37a",
+      "Crop": {
+        "X": 430,
+        "Y": 90,
+        "Width": 640,
+        "Height": 480
+      },
+      "Width": 256,
+      "Height": 192,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Source": "character-50-normal-6-v003-generated.png",
+      "SourceSha256": "bd19133df38c00c2b9c10863016ade3939416b64580bf73e359a9a737111cd43",
+      "File": "staged/conqueror-creation/character-50-6.png",
+      "Sha256": "b3dfb0c539bb026ed4f939698ff4644a19c02ad74d04fab48f63c07bfaf5d37a",
+      "Crop": {
+        "X": 430,
+        "Y": 90,
+        "Width": 640,
+        "Height": 480
+      },
+      "Width": 256,
+      "Height": 192,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Source": "character-50-formal-v006-generated.png",
+      "SourceSha256": "acf59ce70a92e300a619f9bd9a0f4255c7fc14c42e8a684a0e4efad88bff4094",
+      "File": "staged/newspaper/character-50-formal.png",
+      "Sha256": "cdaaede79f64675df196df0885ef3036f45b73fefc03bd64bb682a56b951722f",
+      "Crop": {
+        "X": 270,
+        "Y": 40,
+        "Width": 480,
+        "Height": 640
+      },
+      "Width": 300,
+      "Height": 400,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Source": "character-50-election-v009-generated.png",
+      "SourceSha256": "ebc993c72dfdb758d1c928eb0c9846e83e8dd32e3969ee807bf0e77765d3c3e4",
+      "File": "staged/newspaper/character-50-election.png",
+      "Sha256": "1b0d1f6baa8ef4967e6b0699373952e55fd6e436ec7c7aeac07c11ccfa0ee793",
+      "Crop": {
+        "X": 250,
+        "Y": 0,
+        "Width": 540,
+        "Height": 720
+      },
+      "Width": 300,
+      "Height": 400,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Source": "character-50-friends-v004-generated.png",
+      "SourceSha256": "29c89018cbac710f8de98ab8e5f41ce27b4f8e1c40b3abf3973079dac9bf0f50",
+      "File": "staged/newspaper/character-50-friends.png",
+      "Sha256": "567715d4c05207cab0007fb95f8cfeb010c905a2ea154765a618e6ebccf2e42a",
+      "Crop": {
+        "X": 300,
+        "Y": 40,
+        "Width": 480,
+        "Height": 640
+      },
+      "Width": 300,
+      "Height": 400,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Source": "character-50-history-v008-generated.png",
+      "SourceSha256": "42c6606c3495f321bfd801600e652276af1c3bd201f61f9c84b7b7dc726bb0e1",
+      "File": "staged/newspaper/character-50-history.png",
+      "Sha256": "d8e1d0070b0c80270d2eccfac22fc2d10f7987a92508d5fa6508f0f3745ca541",
+      "Crop": {
+        "X": 300,
+        "Y": 200,
+        "Width": 420,
+        "Height": 560
+      },
+      "Width": 300,
+      "Height": 400,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Source": "character-50-id-v005-generated.png",
+      "SourceSha256": "be00652d7e56cb519f517b299fbccdfc04830810f22aa71376038d64521ddaef",
+      "File": "staged/newspaper/character-50-id.png",
+      "Sha256": "68be055dd284c64b05698fa7daf09c42b5bb105a59c11d3fda64f08a6a714631",
+      "Crop": {
+        "X": 280,
+        "Y": 0,
+        "Width": 540,
+        "Height": 720
+      },
+      "Width": 300,
+      "Height": 400,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Source": "character-50-idol-v005-generated.png",
+      "SourceSha256": "13780c4ffd11b8cbdfd77bbf5806797a86acd644d95bac21f9e2478b4cb86f4f",
+      "File": "staged/newspaper/character-50-idol.png",
+      "Sha256": "100bc09c96a4d6aa46fee8c3bad3da3eead05a69d3fcd156b54953f7727f70d9",
+      "Crop": {
+        "X": 220,
+        "Y": 90,
+        "Width": 660,
+        "Height": 880
+      },
+      "Width": 300,
+      "Height": 400,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Source": "character-50-paparazzi-v003-generated.png",
+      "SourceSha256": "54d75c62ce4a08e30eea6c20e6ee0aa281c9c85277f6a4d2124b3bb72124df9b",
+      "File": "staged/newspaper/character-50-paparazzi.png",
+      "Sha256": "e8bf419f93b8b27a9605753cc8cc8037e80ce4c591e48ceddc16e607e2dde0f0",
+      "Crop": {
+        "X": 260,
+        "Y": 0,
+        "Width": 540,
+        "Height": 720
+      },
+      "Width": 300,
+      "Height": 400,
+      "Status": "STAGED_NOT_ADOPTED"
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Source": "character-50-coin-v004-generated.png",
+      "SourceSha256": "86444014a89fbfe834f0048de1107f9297d6f96938bc2b7c097e3062ec356bfb",
+      "File": "staged/newspaper/character-50-coin.png",
+      "Sha256": "08cf6d30c08b20ab8ea44012756294d709a09e5c3275ca4e06148971380dbbb1",
+      "Crop": {
+        "X": 200,
+        "Y": 20,
+        "Width": 570,
+        "Height": 760
+      },
+      "Width": 300,
+      "Height": 400,
+      "Status": "STAGED_NOT_ADOPTED"
+    }
+  ],
+  "UpdatedAt": "2026-10-24T01:05:00+09:00",
+  "PreviousManifest": "staged-manifest-v025.json",
+  "PreviousIdTile": "staged-history-v015/newspaper/character-50-id.png",
+  "PreviousElectionTile": "staged-history-v002/newspaper/character-50-election.png",
+  "PreviousFormalTile": "staged-history-v003/newspaper/character-50-formal.png",
+  "PreviousFriendsTile": "staged-history-v004/newspaper/character-50-friends.png",
+  "PreviousHistoryTile": "staged-history-v005/newspaper/character-50-history.png",
+  "PreviousIdolTile": "staged-history-v006/newspaper/character-50-idol.png",
+  "PreviousPaparazziTile": "staged-history-v007/newspaper/character-50-paparazzi.png",
+  "PreviousCoinTile": "staged-history-v008/newspaper/character-50-coin.png",
+  "PreviousNormal1Tiles": [
+    "staged-history-v016/domestic/character-50-1.png",
+    "staged-history-v016/conqueror-creation/character-50-1.png"
+  ],
+  "PreviousNormal2Tiles": [
+    "staged-history-v017/domestic/character-50-2.png",
+    "staged-history-v017/conqueror-creation/character-50-2.png"
+  ],
+  "PreviousNormal3Tiles": [
+    "staged-history-v011/domestic/character-50-3.png",
+    "staged-history-v011/conqueror-creation/character-50-3.png"
+  ],
+  "PreviousNormal4Tiles": [
+    "staged-history-v018/domestic/character-50-4.png",
+    "staged-history-v018/conqueror-creation/character-50-4.png"
+  ],
+  "PreviousNormal5Tiles": [
+    "staged-history-v013/domestic/character-50-5.png",
+    "staged-history-v013/conqueror-creation/character-50-5.png"
+  ],
+  "PreviousNormal6Tiles": [
+    "staged-history-v014/domestic/character-50-6.png",
+    "staged-history-v014/conqueror-creation/character-50-6.png"
+  ],
+  "Note": "Election v009 highlights improved, lower supplementary touches pale reflection, not exact compliance certified. Not game adopted."
+}
