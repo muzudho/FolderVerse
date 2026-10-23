@@ -7,6 +7,9 @@ public sealed record TransportWeight(int Target,int Degrees);
 public sealed record RobotShipment(int Source,int Target,long RobotId,RobotParts Parts,bool Disposal=false);
 public sealed partial class RobotTransport
 {
+    private RobotShipment[] _directTransfers=Array.Empty<RobotShipment>();
+    private Dictionary<long,int> _directOwners=new();
+    internal void RecordDirectTransfers(RobotWorld world,RobotShipment[] shipments){_directTransfers=shipments;_directOwners=shipments.GroupBy(s=>s.RobotId).ToDictionary(g=>g.Key,g=>world.Nodes[g.First().Source].Robots.Single(r=>r.Id==g.Key).Owner);RecordTransportFlow(world,shipments);}
     private readonly Dictionary<(int Node,int Owner,RobotParts Parts,bool Disposal),TransportWeight[]> _plans=new();
     private readonly Dictionary<int,int[]> _priorities=new();
     public IReadOnlyList<RobotShipment> LastTransfers {get;private set;}=Array.Empty<RobotShipment>();
@@ -139,9 +142,9 @@ public sealed partial class RobotTransport
     private void Commit(RobotWorld world,List<RobotShipment> accepted)
     {
         RecordTransportFlow(world,accepted);
-        LastOwners.Clear();foreach(var s in accepted)LastOwners[s.RobotId]=world.Nodes[s.Source].Robots.Single(r=>r.Id==s.RobotId).Owner;
+        LastOwners.Clear();foreach(var owner in _directOwners)LastOwners[owner.Key]=owner.Value;foreach(var s in accepted)LastOwners[s.RobotId]=world.Nodes[s.Source].Robots.Single(r=>r.Id==s.RobotId).Owner;
         var stores=Simulate(world,accepted,out var overflow);if(overflow.Count>0)throw new InvalidOperationException("Unresolved transport.");
         for(int n=0;n<stores.Length;n++)world.Nodes[n].Replace(stores[n].Select(r=>r.Id<0?r.Materialize() with {Id=world.Create(r.Owner,r.Parts,r.Role,r.Disposal).Id}:r).ToArray());
-        LastTransfers=accepted.ToArray();world.Check();
+        LastTransfers=_directTransfers.Concat(accepted).ToArray();_directTransfers=Array.Empty<RobotShipment>();_directOwners.Clear();world.Check();
     }
 }

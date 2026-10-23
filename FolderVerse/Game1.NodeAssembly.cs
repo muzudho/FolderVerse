@@ -30,11 +30,11 @@ public partial class Game1
         _setup.Relations.CanAct(_setup.PlayerSlot) && _setup.Nodes.Current(_setup.PlayerSlot)?.Id==_populationNode;
     private bool CanOpenHangar=>_setup.Nodes.All[_populationNode].Owner<0 || CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) || VisitingForeignHangar;
     private bool CanMoveHangarRobot(Robot robot)=>CanOpenHangar && !_setup.Campaign.RobotBattles.LockedNode(_populationNode) && !_setup.Robots.AssemblyLocked(_populationNode,robot);
-    private bool CanMoveHangarPart(Robot robot,RobotParts part)=>CanMoveHangarRobot(robot) &&
+    private bool CanMoveHangarPart(Robot robot,RobotParts part)=>CanOpenHangar && !_setup.Campaign.RobotBattles.LockedNode(_populationNode) && !_setup.Robots.PartLocked(_populationNode,robot,part) &&
         (CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) || (robot.Parts&part)!=0 && robot.Origin(part)==_setup.PlayerSlot);
     private bool HangarPlaceEnabled(Robot target,RobotParts part)
     {
-        if(!CanOpenHangar || _setup.Campaign.RobotBattles.LockedNode(_populationNode) || target!=null && !CanMoveHangarRobot(target))return false;
+        if(!CanOpenHangar || _setup.Campaign.RobotBattles.LockedNode(_populationNode) || target!=null && !CanMoveHangarPart(target,part))return false;
         if(target!=null && (target.Parts&part)!=0 && !CanMoveHangarPart(target,part))return false;
         if(_hangarDrag.HasValue)
         {
@@ -81,7 +81,7 @@ public partial class Game1
                 if(_hangarReservation!=HangarReservation.None && cell.Contains(_pointer)){
                     _hangarMessage=HangarReservationEnabled(robot) && _setup.Robots.ToggleReservation(_populationNode,robot.Id,_hangarReservation)?"予約を切り替えました / 続けて個体を選択できます":"処理中・出撃条件・空きレーン数を確認してください";return;
                 }
-                if(!CanMoveHangarRobot(robot))continue;
+                if(!CanOpenHangar || _setup.Campaign.RobotBattles.LockedNode(_populationNode))continue;
                 for(int row=0;row<3;row++)if(HangarPartBounds(slot,row).Contains(_pointer) && (robot.Parts&HangarPart(row))!=0 && CanMoveHangarPart(robot,HangarPart(row)))
                 {_hangarDrag=robot.Id;_hangarPart=HangarPart(row);_hangarSource=slot;_hangarGrabOffset=_pointer-HangarRobotBounds(slot).Location;_hangarMessage="同じパーツがあるセルへドロップすると交換";return;}
             }
@@ -94,7 +94,7 @@ public partial class Game1
         {
             var robot=store.Robots.Single(r=>r.Id==source);
             var target=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[destination]);
-            if(!CanMoveHangarPart(robot,_hangarPart) || target!=null && !CanMoveHangarRobot(target))throw new InvalidOperationException();
+            if(!CanMoveHangarPart(robot,_hangarPart) || target!=null && !CanMoveHangarPart(target,_hangarPart))throw new InvalidOperationException();
             if(target!=null && (target.Parts&_hangarPart)!=0 && !CanMoveHangarPart(target,_hangarPart))throw new InvalidOperationException();
             long id=_setup.Robots.MovePart(_populationNode,source,_hangarPart,_hangarSlots[destination],_setup.PlayerSlot);
             if(destination!=_hangarSource && (id==source || !store.Robots.Any(r=>r.Id==source)))_hangarSlots[_hangarSource]=null;
@@ -148,7 +148,7 @@ public partial class Game1
                 var bounds=HangarPartBounds(slot,row);var part=HangarPart(row);
                 if(!CanMoveHangarPart(robot,part) || !bounds.Contains(_pointer) || (robot.Parts&part)==0)continue;
                 hoveringPart=true;
-                bool movable=CanMoveHangarRobot(robot);
+                bool movable=CanMoveHangarPart(robot,part);
                 var color=movable?ControlEdge:new Color(145,156,166);
                 _ui.Box(new(bounds.X,bounds.Y,bounds.Width,2),color);_ui.Box(new(bounds.X,bounds.Bottom-2,bounds.Width,2),color);
                 _ui.Box(new(bounds.X,bounds.Y,2,bounds.Height),color);_ui.Box(new(bounds.Right-2,bounds.Y,2,bounds.Height),color);

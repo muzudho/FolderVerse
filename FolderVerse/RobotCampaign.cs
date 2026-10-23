@@ -44,7 +44,7 @@ public sealed class RobotCampaign
     public void Reset(){_nextBattle=1;Encounters.Clear();Scenes.Clear();LastMarches.Clear();LastQueenMarches.Clear();Reserves.Clear();foreach(var h in _homes)h.Value.Store.ReleaseReturn(h.Key);_homes.Clear();_homeOwners.Clear();_retinueIds.Clear();}
     public int Available(WorldSetup world,int ruler)
     {
-        var node=world.Nodes.Current(ruler);return node==null || LockedNode(node.Id)?0:world.Robots.Nodes[node.Id].Robots.Count(r=>r.Owner==ruler && world.Robots.Training[ruler].Eligible(r) && !r.Stationed && world.Robots.Workshops[node.Id].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)));
+        var node=world.Nodes.Current(ruler);return node==null || LockedNode(node.Id)?0:world.Robots.Nodes[node.Id].Robots.Count(r=>r.Owner==ruler && world.Robots.Training[ruler].Eligible(r) && !r.Stationed && world.Robots.DirectDelivery.LockedParts(node.Id,r.Id)==0 && world.Robots.Workshops[node.Id].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)));
     }
     public bool CanMarch(WorldSetup world,int ruler,int target)
     {
@@ -54,12 +54,12 @@ public sealed class RobotCampaign
     }
     private static int Source(WorldSetup world,March order)=>order.SourceNode>=0?order.SourceNode:world.Nodes.Current(order.Ruler).Id;
     public int AvailableFrom(WorldSetup world,int owner,int source)
-        =>source<0 || source>=world.Nodes.All.Length || LockedNode(source)?0:world.Robots.Nodes[source].Robots.Count(r=>r.Owner==owner && world.Robots.Training[owner].Eligible(r) && !r.Stationed && world.Robots.Workshops[source].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)));
+        =>source<0 || source>=world.Nodes.All.Length || LockedNode(source)?0:world.Robots.Nodes[source].Robots.Count(r=>r.Owner==owner && world.Robots.Training[owner].Eligible(r) && !r.Stationed && world.Robots.DirectDelivery.LockedParts(source,r.Id)==0 && world.Robots.Workshops[source].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)));
     public Robot[] SelectableRobots(WorldSetup world,int owner,int source,bool pocket)
     {
         if(owner<0 || owner>=world.ActiveCount || source<0 || source>=world.Nodes.All.Length || LockedNode(source))return Array.Empty<Robot>();
         var store=pocket?world.Robots.Retinues[owner]:world.Robots.Nodes[source];
-        return store.Robots.Where(r=>r.Owner==owner && world.Robots.Training[owner].Eligible(r) && !r.Stationed && (pocket || world.Robots.Workshops[source].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).ToArray();
+        return store.Robots.Where(r=>r.Owner==owner && world.Robots.Training[owner].Eligible(r) && !r.Stationed && world.Robots.DirectDelivery.LockedParts(source,r.Id)==0 && (pocket || world.Robots.Workshops[source].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).ToArray();
     }
     public bool CanAttackFrom(WorldSetup world,int owner,int source,int target)
         =>source>=0 && source<world.Nodes.All.Length && target>=0 && target<world.Nodes.All.Length && world.Nodes.All[source].Owner==owner && !LockedNode(source) && !LockedEdge(source,target) && world.Routes.Neighbors(world.Nodes.All[source]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==target);
@@ -76,7 +76,7 @@ public sealed class RobotCampaign
         bool reachable=encounter.Kind==BattleKind.Edge?source==encounter.Source || source==encounter.Target:
             world.Routes.Neighbors(world.Nodes.All[source]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==encounter.Target) && !LockedEdge(source,encounter.Target);
         if(!reachable)throw new InvalidOperationException("Reinforcement cannot reach battlefield.");
-        var robots=world.Robots.Training[owner].Order(world.Robots.Nodes[source].Robots.Where(r=>r.Owner==owner && world.Robots.Training[owner].Eligible(r) && !r.Stationed && world.Robots.Workshops[source].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).ToList();
+        var robots=world.Robots.Training[owner].Order(world.Robots.Nodes[source].Robots.Where(r=>r.Owner==owner && world.Robots.Training[owner].Eligible(r) && !r.Stationed && world.Robots.DirectDelivery.LockedParts(source,r.Id)==0 && world.Robots.Workshops[source].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).ToList();
         if(robots.Count==0)throw new InvalidOperationException("No complete robots are available for reinforcement.");
         foreach(var robot in robots)Depart(world,source,robot);
         AddReinforcement(world,encounter,owner,source,robots,false);Check(world);
@@ -104,7 +104,7 @@ public sealed class RobotCampaign
         foreach(var o in orders)
         {
             var store=world.Robots.Nodes[source[o]];
-            var selected=o.RobotIds!=null?SelectableRobots(world,o.Ruler,source[o],o.PocketOnly).Where(r=>o.RobotIds.Contains(r.Id)).ToArray():world.Robots.Training[o.Ruler].Order(store.Robots.Where(r=>!o.PocketOnly && r.Owner==o.Ruler && world.Robots.Training[o.Ruler].Eligible(r) && !r.Stationed && world.Robots.Workshops[source[o]].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).Take((int)Math.Min(12,o.Fighters)).ToArray();
+            var selected=o.RobotIds!=null?SelectableRobots(world,o.Ruler,source[o],o.PocketOnly).Where(r=>o.RobotIds.Contains(r.Id)).ToArray():world.Robots.Training[o.Ruler].Order(store.Robots.Where(r=>!o.PocketOnly && r.Owner==o.Ruler && world.Robots.Training[o.Ruler].Eligible(r) && !r.Stationed && world.Robots.DirectDelivery.LockedParts(source[o],r.Id)==0 && world.Robots.Workshops[source[o]].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).Take((int)Math.Min(12,o.Fighters)).ToArray();
             foreach(var r in selected)Depart(world,source[o],r,o.PocketOnly);
             troops[o]=selected.ToList();
             // Direct retinue travels with its conqueror and is excluded from transport plans.
@@ -112,7 +112,7 @@ public sealed class RobotCampaign
         }
         // One global update: disposal, queued assembly/splits, simultaneous transport, shipment.
         world.Robots.Advance((a,b)=>!LockedEdge(a,b) && world.Routes.Neighbors(world.Nodes.All[a]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==b),
-            n=>world.Nodes.All[n].Owner,world.PlacementSeed^world.Population.Turn^0x61238,LockedNode,(owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner),industry:false);
+            n=>world.Nodes.All[n].Owner,world.PlacementSeed^world.Population.Turn^0x61238,LockedNode,(owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner),industry:false,directLocked:n=>LockedNode(n) || orders.Any(o=>!o.Peaceful && o.TargetNode==n && !world.Relations.Allied(o.Ruler,world.Nodes.All[n].Owner)));
         world.Population.Advance(world);
         world.Industry.Queue(world.Population.Turn);
         var stopped=new HashSet<March>();

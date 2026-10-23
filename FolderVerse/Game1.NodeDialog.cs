@@ -32,7 +32,7 @@ public partial class Game1
     }
     private void DrawNodeDialog()
     {
-        var heading="節点インスペクター / "+_setup.Nodes.Label(_setup.Nodes.All[_populationNode]);
+        var heading="節点インスペクター / "+NodeLandmarks.Label(_setup,_setup.Nodes.All[_populationNode]);
         _ui.Text(heading,new(54,112),Math.Min(.5f,850/_font.MeasureString(heading).X),Cream);
         if(!_nodeAssemblyOpen && !_nodeFactoryOpen && !_nodeTransportOpen && !_nodeDisposalOpen)OpenNodeAssembly();
         if(_nodeAssemblyOpen){DrawNodeAssembly();return;}

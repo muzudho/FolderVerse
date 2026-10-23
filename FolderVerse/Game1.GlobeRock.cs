@@ -14,7 +14,7 @@ public partial class Game1
         bool visible=IsStatusScreen && _statusGlobe && !_conquestOverview && !MapTransitionActive;
         if(!visible){_world.GlobeRock=Matrix.Identity;_globeRockStrength=0;return;}
         _globeRockAge+=elapsed;
-        float target=_dragging || _mapDragging || OrientationRotating?0:1;
+        float target=_dragging || _mapDragging || _orientationDragging || OrientationRotating?0:1;
         _globeRockStrength=MathHelper.Lerp(_globeRockStrength,target,1-(float)Math.Exp(-Math.Max(0,elapsed)*4));
         _world.GlobeRock=GlobeCradle(_globeRockAge,_globeRockStrength);
     }

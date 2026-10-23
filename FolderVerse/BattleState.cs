@@ -20,7 +20,7 @@ public sealed class BattleRules
     public int NoWillTurns {get;init;}=10;
     public int FlagCaptureTurns {get;init;}=10;
     public int FlagDefenseTurns {get;init;}=50;
-    public int SegmentTurns {get;init;}=200;
+    public int SegmentTurns {get;init;}=100;
     public int PersuasionRadius {get;init;}=4;
     public int PersuasionPercent {get;init;}=5;
 }

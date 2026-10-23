@@ -81,6 +81,7 @@ public sealed partial class CubeNet
     }
     private void DrawNodeMarkers(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse)
     {
+            DrawLandmarks(ui,world,cell,p=>project(p),pulse);
             foreach(var post in world.Nodes.InCell(cell).Where(n=>NodeVisible(world,n) && (VisibleOperationNodes==null || VisibleOperationNodes.Contains(n.Id))))
             {
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
