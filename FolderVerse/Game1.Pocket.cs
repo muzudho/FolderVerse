@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System.Linq;
 using Microsoft.Xna.Framework;
 
@@ -65,7 +65,7 @@ public partial class Game1
         int player=_setup.PlayerSlot;var node=_setup.Nodes.Current(player);
         _ui.Text("自分のポケット",new(54,30),1f,Cream);
         _ui.Text("ポケットのロボットは自分と一緒に移動します",new(54,112),.55f,Cream);
-        _ui.Text("通常のロボット輸送計画の対象にはなりません",new(54,160),.5f,Cream);
+        _ui.Text("通常のロボット輸送長期計画の対象にはなりません",new(54,160),.5f,Cream);
         string label="現在地："+_setup.Nodes.Label(node);
         _ui.Text(label,new(1000,112),System.Math.Min(.5f,830/_font.MeasureString(label).X),Cream);
         foreach(bool fromNode in new[]{false,true})

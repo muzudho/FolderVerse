@@ -36,7 +36,7 @@ public partial class Game1
     private void DrawTransportOverviewButton()
     {
         if(!TransportOverviewAllowed || InspectorVisible)return; var rect=TransportOverviewButton;
-        _ui.Button(rect,"ロボット輸送計画",Accent,.5f);
+        _ui.Button(rect,"ロボット輸送長期計画",Accent,.5f);
     }
     private void OpenTransportOverview()
     {
@@ -68,7 +68,7 @@ public partial class Game1
     private void DrawTransportOverviewPanel()
     {
         _ui.Box(new(54,150,850,825),new Color(27,49,62));
-        _ui.Text("ロボット輸送計画",new(84,178),.8f,Cream);
+        _ui.Text("ロボット輸送長期計画",new(84,178),.8f,Cream);
 
         if(_populationNode<0){_ui.Text("地図から輸送元の節点を選択",new(84,270),.6f,Cream);return;}
         string label=_setup.Nodes.Label(_setup.Nodes.All[_populationNode]);_ui.Text(label,new(84,230),Math.Min(.43f,770/_font.MeasureString(label).X),Cream);

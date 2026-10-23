@@ -48,7 +48,7 @@ public partial class Game1
         if(!InspectorVisible){
             _ui.Button(StrategyToggle,"世界征服計画",Accent,.45f);
             var warLabel=WarReservationLabel;_ui.Button(WarButton,warLabel,Accent,Math.Min(.55f,(WarButton.Width-12)/_font.MeasureString(warLabel).X));
-            if(TransportOverviewAllowed)_ui.Button(TransportOverviewButton,"ロボット輸送計画",Accent,.5f);
+            if(TransportOverviewAllowed)_ui.Button(TransportOverviewButton,"ロボット輸送長期計画",Accent,.5f);
             _ui.Button(PopulationTurnButton,"ターン終了",Accent,.8f);return;
         }
         var r=InspectorHandle;
