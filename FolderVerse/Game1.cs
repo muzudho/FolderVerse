@@ -274,12 +274,7 @@ public partial class Game1 : Game
                 if(active && MapViewBounds.Contains(_pointer))
                 {
                     int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
-                    if(wheel!=0)
-                    {
-                        int selected=_movementOpen && _selectedMoveNode>=0?_selectedMoveNode:_globeSelectedNode;
-                        _world.GlobeAnchor=selected>=0?_setup.Routes.Position(_setup.Nodes.All[selected].Cell,_setup.Nodes.All[selected].Center):null;
-                        _world.GlobeZoom=MathHelper.Clamp(_world.GlobeZoom*MathF.Pow(1.2f,wheel/120f),.5f,16);
-                    }
+                    ZoomSelectedPoint(wheel);
                 }
                 bool action=click && (TransportOverviewClick(_pointer) || RouteLayerClick(_pointer) || BatteryClick(_pointer) || MovementClick(_pointer,keyboard) || NodeDialogClick(_pointer,keyboard));
                 if(!action && click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
@@ -294,7 +289,7 @@ public partial class Game1 : Game
             if(active && MapViewBounds.Contains(_pointer))
             {
                 int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
-                if(wheel!=0)_net.ZoomAt(NetPanel,_pointer,wheel);
+                ZoomSelectedPoint(wheel);
             }
             _statusCell=_net.IsAnimating?-1:_net.Hit(_setup,NetPanel,_pointer);
             _net.HoveredBattery=_net.HitBattery(_pointer);

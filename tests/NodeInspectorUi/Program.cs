@@ -78,7 +78,22 @@ sealed class InspectorGame:Game1{
    var closedGlobePanel=(Rectangle)Prop("StatusGlobeArea");globeWorld.ProjectVisible(point,normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),closedGlobePanel,out var closedGlobeStart);
    Call("UpdateDomesticSlide",.45f);globeWorld.ProjectVisible(point,normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),closedGlobePanel,out var closedGlobeEnd);
    Check(Math.Abs(closedGlobeEnd.X-((Rectangle)Prop("MapViewBounds")).Center.X)<.01f && Math.Abs(closedGlobeEnd.Y-closedGlobeStart.Y)<.01f && globeWorld.GlobeZoom==globeZoom,"Globe recenters selected node on X after inspector closes");
-   Console.WriteLine("PASS: net and globe slide with the inspector, then smoothly center the selected node on X after opening/closing; Y, scale and orientation are preserved.");Exit();return;
+   foreach(bool globe in new[]{false,true}){
+    Call("ResetInspector");Set("_statusGlobe",globe);Call("QueueInspectorCenter",node);
+    if(globe){Call("FocusStatusGlobe");globeWorld.GlobePan+=new Vector2(.12f,-.08f);}
+    else{fixedNet.ScreenAngle=.61f;fixedNet.Drag(new Vector2(83,-57));}
+    var savedOrientation=globeWorld.ManualOrientation;float savedAngle=fixedNet.ScreenAngle;var savedAnchor=globeWorld.GlobeAnchor;
+    Vector2 SelectedAt(){
+     if(!globe)return fixedNet.NodePosition(w,w.Nodes.All[node],(Rectangle)Prop("NetPanel"));
+     Check(globeWorld.ProjectVisible(point,normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),(Rectangle)Prop("StatusGlobeArea"),out var at),"Selected globe point remains front facing");return at;
+    }
+    foreach(int wheel in new[]{120,-120,960,-960,12000,120,-24000,-120}){
+     var beforeZoom=SelectedAt();Call("ZoomSelectedPoint",wheel);var afterZoom=SelectedAt();
+     Check(Vector2.Distance(beforeZoom,afterZoom)<.02f,"Wheel zoom pins selected point at the same screen X and Y, including zoom limits");
+     Check(globeWorld.ManualOrientation==savedOrientation && globeWorld.GlobeAnchor==savedAnchor && fixedNet.ScreenAngle==savedAngle,"Pinned zoom preserves orientation and globe anchor");
+    }
+   }
+   Console.WriteLine("PASS: two-stage horizontal inspector slides preserve Y/scale; globe and rotated net wheel zoom pin selected points through zoom limits.");Exit();return;
   }
   Call("ResetInspector");Set("_domesticSlide",0f);Set("_statusGlobe",true);Call("OpenNodeInspector",node);
   Check((int)Prop("NodeInspectorOffset")==-960,"Panel begins outside left edge");Call("UpdateDomesticSlide",.2f);

@@ -153,8 +153,7 @@ public partial class Game1
         DragStatusMap(mouse,active);
         if(MapViewBounds.Contains(_pointer)){
             int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
-            if(_statusGlobe){if(wheel!=0)_world.GlobeZoom=MathHelper.Clamp(_world.GlobeZoom*MathF.Pow(1.2f,wheel/120f),.5f,16);}
-            else if(wheel!=0)_net.ZoomAt(NetPanel,_pointer,wheel);
+            ZoomSelectedPoint(wheel);
             if(click){var targets=TransportAdjacent();int id=_statusGlobe?HitGlobeNode(_pointer,targets):_net.HitNode(_setup,NetPanel,_pointer,targets);if(id>=0 && EditingTransport!=null){ConfigureTransport(EditingTransport,target:id);_transportNewInstruction=false;_transportDestinationPicking=false;}}
         }
         return true;
