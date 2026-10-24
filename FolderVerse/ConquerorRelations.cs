@@ -96,7 +96,7 @@ public sealed class ConquerorRelations
             if(!SetSuperior(ruler,captive.Victor)){Message="上下関係が循環するため手下にできない";return false;}
             Released[ruler]=false;Message="手下になった";
         }
-        else if(choice==DefeatedChoice.Release){SetSuperior(ruler,-1);Released[ruler]=true;Message="その節点に留まっている";}
+        else if(choice==DefeatedChoice.Release){SetSuperior(ruler,-1);Released[ruler]=true;Message="その地点に留まっている";}
         else
         {
             int former=Superiors[ruler];

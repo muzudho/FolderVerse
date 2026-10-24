@@ -48,7 +48,7 @@ public partial class Game1
         {
             var b=_battleWaves[_battleWave][tile.Slot];var r=tile.Bounds;
             _ui.Box(new(r.X+3,r.Y+3,r.Width-6,r.Height-6),new(27,49,62));
-            string title=b.Kind==BattleKind.Edge?$"辺戦 / Node {b.SourceNode+1} → {b.TargetNode+1}":$"節戦 / Node {b.TargetNode+1}";
+            string title=b.Kind==BattleKind.Edge?$"辺戦 / Point {b.SourceNode+1} → {b.TargetNode+1}":$"節戦 / Point {b.TargetNode+1}";
             _ui.Center(title,new(r.X+8,r.Y+6,r.Width-16,26),Math.Min(.46f,(r.Width-16)/_font.MeasureString(title).X),Cream);
             int side=Math.Max(24,Math.Min((r.Width-30)/3,(r.Height-90)/2));
             for(int army=0;army<2;army++)

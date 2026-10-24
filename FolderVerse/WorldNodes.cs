@@ -82,12 +82,12 @@ public sealed class WorldNodes
             if(_world.TerritoryCounts[ruler]>0 && !InCell(_world.Capitals[ruler]).Any(p=>p.Owner==ruler))
                 _world.Capitals[ruler]=All.Where(p=>p.Owner==ruler).OrderByDescending(p=>p.Population.Total).ThenBy(p=>p.Id).First().Cell;
     }
-    public string Label(Node p)=>DisplayName(p)+$" [Node {p.Id+1}]";
+    public string Label(Node p)=>DisplayName(p)+$" [Point {p.Id+1}]";
     public string DisplayName(Node p)
     {
         var coordinate=WorldCoordinates.At(_world,_world.Cells[p.Cell]);
         string name=p.IsHarbor?p.Name+$"（{coordinate.X},{coordinate.Y}）":WorldCoordinates.Label(_world,p.Cell);
-        return name+" / "+(p.IsHarbor?"海港":TerrainRoutes.TerrainName(p.Terrain))+"節点・"+_world.Routes.PointName(p.Cell,p.Center);
+        return name+" / "+(p.IsHarbor?"海港":TerrainRoutes.TerrainName(p.Terrain))+"地点・"+_world.Routes.PointName(p.Cell,p.Center);
     }
     public int FullOwner(int cell)
     {

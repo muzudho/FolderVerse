@@ -67,7 +67,7 @@ public partial class Game1
             _ui.Button(partsField,variants,Muted,Math.Min(.4f,408/Math.Max(1,_font.MeasureString(variants).X)));
             _ui.Button(InstructionField(row,6),"×",Muted,.5f);
             string target=_setup.Nodes.Label(_setup.Nodes.All[rule.Target]);
-            string compact=System.Text.RegularExpressions.Regex.Replace(target.Split(" [Node")[0],@"[（(]-?\d+,-?\d+[）)]","");
+            string compact=System.Text.RegularExpressions.Regex.Replace(target.Split(" [Point")[0],@"[（(]-?\d+,-?\d+[）)]","");
             while(_font.MeasureString(compact).X*.4f>342 && compact.Length>1)compact=compact[..^2]+"…";
             _ui.Button(InstructionField(row,4),compact,Muted,.4f);
             if(InstructionField(row,4).Contains(_pointer))_ui.Text(target,new(84,820),Math.Min(.4f,770/Math.Max(1,_font.MeasureString(target).X)),Cream);
@@ -75,12 +75,12 @@ public partial class Game1
             _ui.Text("個送ったら終了。",new(610,y+47),.4f,Cream);
             _ui.Text("いずれか１つ / "+rule.Sent+" / "+rule.Limit+(rule.Complete?" 完了":""),new(110,y+80),.3f,rule.Complete?new Color(121,235,161):Cream);
         }
-        if(page.Length==0)_ui.Text("指示０個：この節点に留まります。",new(84,330),.5f,Cream);
+        if(page.Length==0)_ui.Text("指示０個：この地点に留まります。",new(84,330),.5f,Cream);
         _ui.Button(new(84,752,170,36),"前へ",Muted,.4f);_ui.Button(new(264,752,170,36),"次へ",Muted,.4f);
         _ui.Button(new(444,752,220,36),"指示を追加 "+TransportRules.Count+" / 16",TransportRules.Count<16 && CanEditTransport?Accent:Muted,.4f);
         _ui.Button(new(674,752,174,36),"完了分を再開",Muted,.4f);
         if(_transportDestinationPicking){
-            _ui.Text("隣接節点を選択 / 他のボタンも操作できます",new(84,798),.35f,Cream);
+            _ui.Text("隣接地点を選択 / 他のボタンも操作できます",new(84,798),.35f,Cream);
             _ui.Button(TransportPickCancel,"取消",Accent,.45f);
         }else _ui.Text("休憩と実行できる指示から採用 / 合計100%",new(84,798),.35f,Cream);
         if(_transportEditor!=0)DrawTransportEditor();

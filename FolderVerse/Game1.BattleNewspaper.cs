@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -54,7 +54,7 @@ public partial class Game1
         _ui.Box(new(1120,281,720,2),ink);_ui.Box(new(1120,286,720,1),ink);
         int patron=_newspaperEdition==0?(battle.Armies.FirstOrDefault(a=>a.Owner==_setup.PlayerSlot)?.Owner??battle.Armies[0].Owner):battle.Defender;
         if(patron<0 || patron>=_setup.Looks.Length)patron=battle.Armies[0].Owner;
-        string affiliation=profile.FavorsArmy?$"#{patron+1} 陣営 / {profile.Label}":$"Node {battle.TargetNode+1} / {profile.Label}";
+        string affiliation=profile.FavorsArmy?$"#{patron+1} 陣営 / {profile.Label}":$"Point {battle.TargetNode+1} / {profile.Label}";
         _ui.Center($"{affiliation} / 第 {issue.Turn} 号",new(1128,293,704,24),.35f,ink);
         _newspaperPortraits??=new NewspaperPortraitRenderer(Content);
         string headline=issue.Headline;

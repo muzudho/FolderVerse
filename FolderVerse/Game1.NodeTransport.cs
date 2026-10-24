@@ -36,7 +36,7 @@ public partial class Game1
             if(encounters.Length>0)
             {
                 try{_setup.Campaign.RobotBattles.SendReinforcement(_setup,_setup.PlayerSlot,_populationNode,encounters[Math.Clamp(_nodeReinforcementIndex,0,encounters.Length-1)].Id);_nodeTransportMessage="完成体を継戦へ増援に送りました";}
-                catch(InvalidOperationException){_nodeTransportMessage="自国の節点・完成体・戦場への経路を確認してください";}
+                catch(InvalidOperationException){_nodeTransportMessage="自国の地点・完成体・戦場への経路を確認してください";}
             }
             return true;
         }

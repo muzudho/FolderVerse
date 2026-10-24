@@ -186,8 +186,8 @@ public sealed class ConquestCampaign
         }
         world.Nodes.Recount();
         string result=orders.Any(o=>o.Ruler==world.PlayerSlot)?
-            world.TerritoryCounts[world.PlayerSlot]==0?"あなたは放浪者":world.Nodes.Current(world.PlayerSlot)?.Owner==world.PlayerSlot?"あなたの現在地は自国節点":"あなたの現在地は他国節点":"あなたは待機";
+            world.TerritoryCounts[world.PlayerSlot]==0?"あなたは放浪者":world.Nodes.Current(world.PlayerSlot)?.Owner==world.PlayerSlot?"あなたの現在地は自国地点":"あなたの現在地は他国地点":"あなたは待機";
         int cellsWon=world.Cells.Count(c=>world.Nodes.FullOwner(c.Id)>=0 && world.Nodes.FullOwner(c.Id)!=previousFull[c.Id]);
-        Report=$"{result} / 戦闘 {Battles.Count} 件 / 節点確保 {conquests} / セル征服 {cellsWon}";
+        Report=$"{result} / 戦闘 {Battles.Count} 件 / 地点確保 {conquests} / セル征服 {cellsWon}";
     }
 }

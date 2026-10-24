@@ -86,9 +86,9 @@ public partial class Game1
         _ui.Text("征服者とポケットのロボットが同行",new(84,289),.62f,Color.White);
 
 
-        _ui.Text("地図上の明るい節点を選んでください",new(84,470),.65f,Cream);
-        _ui.Text("他国の節点にも移動できます / ターン終了で実行",new(84,878),.49f,new(180,209,219));
-        string status=choices.Length==0?"交通路でつながる移動先がない":_selectedMoveNode<0?"点滅する節点をクリックして選択":$"選択：Node {_selectedMoveNode+1} / ターン終了で移動";
+        _ui.Text("地図上の明るい地点を選んでください",new(84,470),.65f,Cream);
+        _ui.Text("他国の地点にも移動できます / ターン終了で実行",new(84,878),.49f,new(180,209,219));
+        string status=choices.Length==0?"交通路でつながる移動先がない":_selectedMoveNode<0?"点滅する地点をクリックして選択":$"選択：Point {_selectedMoveNode+1} / ターン終了で移動";
         _ui.Text(status,new(84,926),Math.Min(.47f,465/_font.MeasureString(status).X),new(180,209,219));
         _ui.Button(ConfirmMoveButton,"移動を予約",_selectedMoveNode>=0?Accent:Muted,.7f);
     }

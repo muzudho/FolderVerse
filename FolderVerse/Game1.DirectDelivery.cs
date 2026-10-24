@@ -26,6 +26,7 @@ public partial class Game1
         return 0;
     }
     private bool DirectNodeAllowed(int node)=>node>=0 && CanManageNodeFactory(_setup.Nodes.All[node].Owner);
+    private bool InspectorDirectTrucks=>_populationCell>=0 && _populationNode>=0 && !_nodeInspectorClosing;
     private void CloseDirectDelivery(){if(_directMap)_net.ShowRoutes=_directRoutesBefore;_directMap=_directPairOpen=false;_directDrag=null;_directTrucks.Clear();}
     private void OpenDirectMap(){ResetInspector();_directRoutesBefore=_net.ShowRoutes;_net.ShowRoutes=true;_directMap=true;_directMessage="";}
     private void OpenDirectPair(int a,int b){
@@ -36,16 +37,17 @@ public partial class Game1
         foreach(var robot in robots)if(!_directSlots[side].Contains(robot.Id)){int slot=Enumerable.Range(0,12).FirstOrDefault(i=>!_directSlots[side][i].HasValue && !_setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==_directNodes[side] && o.TargetRobotId==null && o.TargetSlot==i),-1);if(slot<0)slot=Array.FindIndex(_directSlots[side],id=>!id.HasValue);if(slot>=0)_directSlots[side][slot]=robot.Id;}
     }}
     private bool DirectMapClick(Point p){
-        if(!_directMap)return false;
-        if(DirectDeliveryButton.Contains(p)){CloseDirectDelivery();return true;}
+        if((!_directMap && !InspectorDirectTrucks) || _directPairOpen || MapTransitionActive)return false;
+        if(_directMap && DirectDeliveryButton.Contains(p)){CloseDirectDelivery();return true;}
         if(MapViewButton.Contains(p) || !MapViewBounds.Contains(p))return false;
-        var hit=_directTrucks.Where(t=>t.Bounds.Contains(p)).OrderBy(t=>Vector2.DistanceSquared(t.Bounds.Center.ToVector2(),p.ToVector2())).FirstOrDefault();if(hit.Bounds!=Rectangle.Empty)OpenDirectPair(hit.A,hit.B);return true;
+        var hit=_directTrucks.Where(t=>t.Bounds.Contains(p)).OrderBy(t=>Vector2.DistanceSquared(t.Bounds.Center.ToVector2(),p.ToVector2())).FirstOrDefault();if(hit.Bounds!=Rectangle.Empty){OpenDirectPair(hit.A,hit.B);return true;}return _directMap;
     }
     private void DrawDirectTrucks(){
-        _directTrucks.Clear();if(!_directMap || _directPairOpen || MapTransitionActive)return;
+        _directTrucks.Clear();if((!_directMap && !InspectorDirectTrucks) || _directPairOpen || MapTransitionActive)return;
         foreach(var node in _setup.Nodes.All.Where(n=>DirectNodeAllowed(n.Id))){
             if(!OperationPosition(node.Id,out var a))continue;
             foreach(var route in _setup.Routes.Neighbors(node)){var next=_setup.Nodes.At(route.Target,route.Entry);if(node.Id>=next.Id || !DirectNodeAllowed(next.Id) || !OperationPosition(next.Id,out var b))continue;
+                if(!_directMap && node.Id!=_populationNode && next.Id!=_populationNode)continue;
                 var at=(a+b)/2;if(!MapViewBounds.Contains(at.ToPoint()))continue;
                 var bounds=new Rectangle((int)at.X-22,(int)at.Y-17,44,34);bool enabled=!_setup.Campaign.RobotBattles.LockedNode(node.Id) && !_setup.Campaign.RobotBattles.LockedNode(next.Id) && !_setup.Campaign.RobotBattles.LockedEdge(node.Id,next.Id);
                 var color=enabled?(bounds.Contains(_pointer)?Cream:Accent):Muted;var delta=b-a;_ui.Tile(at,new(delta.Length(),2),MathF.Atan2(delta.Y,delta.X),color*.4f);
@@ -54,7 +56,6 @@ public partial class Game1
                 if(enabled)_directTrucks.Add((bounds,node.Id,next.Id));
             }
         }
-        _ui.Text("トラックを選択：両端の格納庫",new(991,245),.4f,Cream);_ui.Text("直送便はターン終了時に輸送",new(991,275),.35f,Cream);
     }
     private void DirectPairInput(MouseState mouse,bool click,bool escape){
         if(escape || click && DirectPairBack.Contains(_pointer)){_directPairOpen=false;_directDrag=null;return;}

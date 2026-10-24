@@ -121,7 +121,7 @@ public partial class Game1
         _ui.Button(HangarAutoCheck,manage?(workshop.AutoAssemblyDisabled?"✓ ":"□ ")+"自動での組み立て・分解を行わない":"他国の自動組立設定は変更できません",manage && workshop.AutoAssemblyDisabled?Accent:Muted,.48f);
         bool hoveringPart=false;
         bool reservationMode=_hangarReservation!=HangarReservation.None;
-        string hover=VisitingForeignHangar?"滞在中：自国パーツ同士の交換・空き部位への移動ができます":CanOpenHangar?"頭・胴・脚をつかんで、格納庫のセルへドラッグ＆ドロップ":"他国の節点：自分の征服者がいる節点では自国パーツを動かせます";
+        string hover=VisitingForeignHangar?"滞在中：自国パーツ同士の交換・空き部位への移動ができます":CanOpenHangar?"頭・胴・脚をつかんで、格納庫のセルへドラッグ＆ドロップ":"他国の地点：自分の征服者がいる地点では自国パーツを動かせます";
         if(reservationMode)hover="セルをクリック：予約を上書き / 同じ予約は解除 / 続けて選択できます";
         for(int slot=0;slot<12;slot++)
         {

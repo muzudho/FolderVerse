@@ -46,7 +46,7 @@ public partial class Game1
             string name=b.Winner>=0?_setup.ConquerorNames[b.Winner]+"国":"勝者なし";
             string outcome=!b.Finished?"継戦":name+" / 勝利！";
             _ui.Center(outcome,new(x+8,y+6,560,42),Math.Min(.64f,550/Math.Max(1,_font.MeasureString(outcome).X)),ink);
-            _ui.Text($"戦場 {i+1} / 節点 {b.TargetNode+1}",new(x+12,y+55),.46f,ink);
+            _ui.Text($"戦場 {i+1} / 地点 {b.TargetNode+1}",new(x+12,y+55),.46f,ink);
             var photo=new Rectangle(x+12,y+95,138,184);
             if(b.Winner>=0){
                 if(!_newspaperPortraits.Draw(_spriteBatch,_setup.Looks[b.Winner],photo,profile.PhotoKind,profile.AllowFallback))DrawNewspaperToy(b.Winner,new(photo.Center.X,photo.Center.Y),100);
