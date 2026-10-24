@@ -62,7 +62,7 @@ public partial class Game1
         if(!_globeCellDragged && BatteryClick(_pointer))return;
         int selectedNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1;
         if(!_globeCellDragged && selectedNode>=0)
-        {_globeSelectedNode=selectedNode; _world.GlobeAnchor=_setup.Routes.Position(_setup.Nodes.All[selectedNode].Cell,_setup.Nodes.All[selectedNode].Center);OpenNodeInspector(selectedNode);return;}
+        {_globeSelectedNode=selectedNode;OpenNodeInspector(selectedNode);return;}
         if(_globeCellDragged || _net.ShowRoutes)return;
         var cell=_setup.Cells[selected];
         _dragging=_mapDragging=false;
@@ -127,7 +127,6 @@ public partial class Game1
     }
     private void FocusCurrentNode()
     {
-        _inspectorNetPanel=null;
         _domesticMapLeft=55+480*_domesticSlide;
         int cell=_setup.Nodes.Current(_setup.PlayerSlot)?.Cell??_setup.ConquerorLocations[_setup.PlayerSlot];
         _net.SetCenter(_setup,_setup.Cells[cell].Face);

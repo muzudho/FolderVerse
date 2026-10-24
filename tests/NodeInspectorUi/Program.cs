@@ -33,13 +33,52 @@ sealed class InspectorGame:Game1{
   Call("OpenNodeInspector",node);
   foreach(float dt in new[]{.1f,.1f,.2f}){
    Call("UpdateDomesticSlide",dt);
-   Check((Rectangle)Prop("NetPanel")==fixedPanel && fixedNet.NodePosition(w,w.Nodes.All[node],(Rectangle)Prop("NetPanel"))==fixedPosition,"Opening a net node preserves its screen position throughout the inspector slide");
+   var slidingPanel=(Rectangle)Prop("NetPanel");var slidingPosition=fixedNet.NodePosition(w,w.Nodes.All[node],slidingPanel);
+   Check(slidingPanel.Y==fixedPanel.Y && slidingPanel.Size==fixedPanel.Size && Math.Abs(slidingPosition.Y-fixedPosition.Y)<.001f && Math.Abs(slidingPosition.X-fixedPosition.X-(slidingPanel.X-fixedPanel.X))<.001f,"Opening a net node slides only on X without scaling or centering");
   }
+  var openedNetPanel=(Rectangle)Prop("NetPanel");Check(openedNetPanel.X>fixedPanel.X,"Net slides right when inspector opens");
+  var netStart=fixedNet.NodePosition(w,w.Nodes.All[node],openedNetPanel);float netZoom=fixedNet.Zoom;
+  int netCenter=((Rectangle)Prop("MapViewBounds")).Center.X;
+  Call("UpdateDomesticSlide",.225f);var netHalf=fixedNet.NodePosition(w,w.Nodes.All[node],(Rectangle)Prop("NetPanel"));
+  Check(Math.Abs(netHalf.X-(netStart.X+netCenter)/2)<.01f && Math.Abs(netHalf.Y-netStart.Y)<.01f,"Net recenters smoothly on X only after inspector opens");
+  Call("UpdateDomesticSlide",.225f);var netEnd=fixedNet.NodePosition(w,w.Nodes.All[node],(Rectangle)Prop("NetPanel"));
+  Check(Math.Abs(netEnd.X-netCenter)<.01f && Math.Abs(netEnd.Y-netStart.Y)<.01f && fixedNet.Zoom==netZoom,"Net selection reaches horizontal center without changing zoom or Y");
   Call("OpenNodeInspector",w.Nodes.All.First(n=>n.Id!=node).Id);
-  Check((Rectangle)Prop("NetPanel")==fixedPanel,"Selecting another net node does not recenter");
-  Call("CloseNodeInspector");Call("UpdateDomesticSlide",.2f);Check((Rectangle)Prop("NetPanel")==fixedPanel,"Closing retains the net position during animation");Call("UpdateDomesticSlide",.2f);
+  Check((Rectangle)Prop("NetPanel")==openedNetPanel,"Selecting another net node does not recenter");
+  Call("CloseNodeInspector");Call("UpdateDomesticSlide",.2f);Check(((Rectangle)Prop("NetPanel")).X<openedNetPanel.X && ((Rectangle)Prop("NetPanel")).Y==fixedPanel.Y,"Closing slides the net left without changing Y");Call("UpdateDomesticSlide",.2f);
+  int closedNode=w.Nodes.All.First(n=>n.Id!=node).Id;var closedNetStart=fixedNet.NodePosition(w,w.Nodes.All[closedNode],(Rectangle)Prop("NetPanel"));
+  Call("UpdateDomesticSlide",.45f);var closedNetEnd=fixedNet.NodePosition(w,w.Nodes.All[closedNode],(Rectangle)Prop("NetPanel"));
+  Check(Math.Abs(closedNetEnd.X-((Rectangle)Prop("MapViewBounds")).Center.X)<.01f && Math.Abs(closedNetEnd.Y-closedNetStart.Y)<.01f && fixedNet.Zoom==netZoom,"Net recenters selected node on X after inspector closes");
   if(Environment.GetCommandLineArgs().Contains("--camera-only")){
-   Console.WriteLine("PASS: net node opening, switching and closing preserve screen coordinates; other inspector camera transitions retain their behavior.");Exit();return;
+   Set("_statusGlobe",true);Call("FocusStatusGlobe");
+   var globeWorld=(WorldPreview)Get("_world");var globePanel=(Rectangle)Prop("StatusGlobeArea");
+   globeWorld.GlobeAnchor=globeWorld.GlobeAnchor.GetValueOrDefault()+new Vector3(.13f,.07f,0);
+   globeWorld.GlobePan=new Vector2(.03f,-.02f);
+   var anchor=globeWorld.GlobeAnchor;var globePan=globeWorld.GlobePan;var globeZoom=globeWorld.GlobeZoom;var globeOrientation=globeWorld.ManualOrientation;
+   var point=w.Routes.Position(w.Nodes.All[node].Cell,w.Nodes.All[node].Center);var normal=w.Cells[w.Nodes.All[node].Cell].Normal;
+   Check(globeWorld.ProjectVisible(point,normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),globePanel,out var globeAt),"Globe click fixture visible");
+   Set("_pointer",globeAt.ToPoint());Call("GlobeCellClick",new MouseState(),true,true,false);
+   Check((int)Get("_populationNode")==node,"Actual globe click opens the node inspector");
+   foreach(float dt in new[]{.1f,.1f,.2f}){
+    Call("UpdateDomesticSlide",dt);
+    var slidingGlobe=(Rectangle)Prop("StatusGlobeArea");
+    Check(slidingGlobe.Y==globePanel.Y && slidingGlobe.Size==globePanel.Size && globeWorld.GlobeAnchor==anchor && globeWorld.GlobePan==globePan && globeWorld.GlobeZoom==globeZoom && globeWorld.ManualOrientation==globeOrientation,"Globe node click preserves Y, size, anchor, pan, zoom and orientation");
+    Check(globeWorld.ProjectVisible(point,normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),slidingGlobe,out var current) && Math.Abs(current.Y-globeAt.Y)<.001f && Math.Abs(current.X-globeAt.X-(slidingGlobe.X-globePanel.X))<.001f,"Globe slides only horizontally without centering on the clicked node");
+   }
+   var openedGlobePanel=(Rectangle)Prop("StatusGlobeArea");Check(openedGlobePanel.X>globePanel.X,"Globe slides right when inspector opens");
+   globeWorld.ProjectVisible(point,normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),openedGlobePanel,out var globeStart);
+   int globeCenter=((Rectangle)Prop("MapViewBounds")).Center.X;
+   Call("UpdateDomesticSlide",.225f);globeWorld.ProjectVisible(point,normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),openedGlobePanel,out var globeHalf);
+   Check(Math.Abs(globeHalf.X-(globeStart.X+globeCenter)/2)<.01f && Math.Abs(globeHalf.Y-globeStart.Y)<.01f,"Globe recenters smoothly on X only after inspector opens");
+   Call("UpdateDomesticSlide",.225f);globeWorld.ProjectVisible(point,normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),openedGlobePanel,out var globeEnd);
+   Check(Math.Abs(globeEnd.X-globeCenter)<.01f && Math.Abs(globeEnd.Y-globeStart.Y)<.01f && globeWorld.GlobeZoom==globeZoom && globeWorld.ManualOrientation==globeOrientation && globeWorld.GlobeAnchor==anchor,"Globe horizontal recenter preserves Y, zoom, orientation and anchor");
+   Call("OpenNodeInspector",w.Nodes.All.First(n=>n.Id!=node).Id);Check((Rectangle)Prop("StatusGlobeArea")==openedGlobePanel,"Switching globe nodes does not recenter");
+   Call("OpenNodeInspector",node);
+   Call("CloseNodeInspector");Call("UpdateDomesticSlide",.2f);Check(((Rectangle)Prop("StatusGlobeArea")).X<openedGlobePanel.X && ((Rectangle)Prop("StatusGlobeArea")).Y==globePanel.Y,"Closing slides globe left without changing Y");Call("UpdateDomesticSlide",.2f);
+   var closedGlobePanel=(Rectangle)Prop("StatusGlobeArea");globeWorld.ProjectVisible(point,normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),closedGlobePanel,out var closedGlobeStart);
+   Call("UpdateDomesticSlide",.45f);globeWorld.ProjectVisible(point,normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),closedGlobePanel,out var closedGlobeEnd);
+   Check(Math.Abs(closedGlobeEnd.X-((Rectangle)Prop("MapViewBounds")).Center.X)<.01f && Math.Abs(closedGlobeEnd.Y-closedGlobeStart.Y)<.01f && globeWorld.GlobeZoom==globeZoom,"Globe recenters selected node on X after inspector closes");
+   Console.WriteLine("PASS: net and globe slide with the inspector, then smoothly center the selected node on X after opening/closing; Y, scale and orientation are preserved.");Exit();return;
   }
   Call("ResetInspector");Set("_domesticSlide",0f);Set("_statusGlobe",true);Call("OpenNodeInspector",node);
   Check((int)Prop("NodeInspectorOffset")==-960,"Panel begins outside left edge");Call("UpdateDomesticSlide",.2f);

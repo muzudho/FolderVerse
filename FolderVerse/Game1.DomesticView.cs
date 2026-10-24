@@ -19,8 +19,7 @@ public partial class Game1
         }
         return float.IsFinite(left)?Math.Max(55,left):55;
     }
-    private Rectangle? _inspectorNetPanel;
-    private Rectangle NetPanel=>!_statusGlobe && _inspectorNetPanel.HasValue?_inspectorNetPanel.Value:new(40+(int)Math.Max(0,MapViewBounds.Left+15-_domesticMapLeft),142,1840,820);
+    private Rectangle NetPanel=>new(40+(int)Math.Max(0,MapViewBounds.Left+15-_domesticMapLeft),142,1840,820);
     private bool _reignView;
     private float _domesticSlide;
     private bool _nodeInspectorClosing;
@@ -31,7 +30,7 @@ public partial class Game1
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
     private void ResetInspector(){
-        _inspectorNetPanel=null;
+        QueueInspectorCenter(-1);
         CloseDirectDelivery();
         _wandererPolicyOpen=false;
         CancelTransportModal();
@@ -60,18 +59,19 @@ public partial class Game1
         for(int y=r.Y+90;y<r.Bottom-16;y+=12)_ui.Box(new(r.X+18,y,r.Width-36,4),new Color(30,48,58));
     }
     private void OpenNodeInspector(int id){
-        var netPanel=NetPanel;
         ResetInspector();var node=_setup.Nodes.All[id];_nodeInspectorClosing=false;_reignView=false;
-        if(!_statusGlobe)_inspectorNetPanel=netPanel;
         _populationCell=node.Cell;_populationNode=_inspectedNode=id;_supervisorDialog=0;_hangarDrag=null;_rateTarget=-1;
         _nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;_movementOpen=false;OpenNodeAssembly();
+        QueueInspectorCenter(id);
     }
-    private void CloseNodeInspector(){_nodeInspectorClosing=true;_trainingOpen=false;_hangarDrag=null;_supervisorDialog=0;}
+    private void CloseNodeInspector(){QueueInspectorCenter(_populationNode);_nodeInspectorClosing=true;_trainingOpen=false;_hangarDrag=null;_supervisorDialog=0;}
     private void UpdateDomesticSlide(float elapsed){
         float target=DomesticPanelOpen?1:0;
+        bool layoutSettled=_domesticSlide==target;
         if(_domesticSlide==0)_domesticMapLeft=MeasureDomesticMapLeft();
         _domesticSlide=target>_domesticSlide?Math.Min(target,_domesticSlide+elapsed/.4f):Math.Max(target,_domesticSlide-elapsed/.4f);
-        if(_nodeInspectorClosing && _domesticSlide==0)ResetInspector();
+        if(_nodeInspectorClosing && _domesticSlide==0){var node=_inspectorCenterNode;ResetInspector();QueueInspectorCenter(node);}
+        if(layoutSettled)UpdateInspectorCenter(elapsed);
     }
     private static readonly Rectangle ReignPortrait=new(56,700,240,240); private Rectangle StrategyToggle=>new(54,1006,242,64);
     private bool DomesticViewClick(Point p)
