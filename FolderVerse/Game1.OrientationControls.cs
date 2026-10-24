@@ -9,10 +9,11 @@ public partial class Game1
     private bool OrientationRotating=>_orientationAge>=0;
     private static readonly Color[] AxisColors={new(244,91,91),new(89,216,126),new(95,156,255)};
     private bool OrientationGlobe=>!IsStatusScreen || _statusGlobe;
-    private bool OrientationControlsVisible=>!IsRolling && (IsStatusScreen || _screen>=Screen.Rolling && _screen<=Screen.PlayerReady);
+    private bool OrientationControlsVisible=>!IsRolling && (IsStatusScreen || _screen==Screen.LandConquest || _screen>=Screen.Rolling && _screen<=Screen.PlayerReady);
     private Rectangle OrientationControlArea {
         get {
             if(IsStatusScreen)return MapViewBounds;
+            if(_screen==Screen.LandConquest)return LandGlobeArea;
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;
             return OrientationAreas(area,IsCastScreen && !IsSelectionScreen).Globe;
@@ -23,7 +24,7 @@ public partial class Game1
     private int _automaticBoostAxis,_automaticBoostSign;
     private readonly System.Collections.Generic.Queue<(int Axis,int Sign)> _automaticBoostQueue=new();
     private const float AutomaticBoostSeconds=3;
-    private bool AutomaticOrientation=>!IsStatusScreen && (IsRolling || IsSelectionScreen || IsCastScreen) && !_dragging;
+    private bool AutomaticOrientation=>!IsStatusScreen && _screen<=Screen.PlayerReady && (IsRolling || IsSelectionScreen || IsCastScreen) && !_dragging;
     private Rectangle AxisButton(Rectangle toy,int axis,int sign)
     {
         float r=toy.Width/2f+23;var c=new Vector2(toy.Center.X,toy.Center.Y);

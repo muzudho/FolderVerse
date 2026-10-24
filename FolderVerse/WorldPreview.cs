@@ -148,7 +148,7 @@ public sealed partial class WorldPreview : IDisposable
         }
     }
 
-    public void Draw(float yaw, float pitch,float glow=0,bool markers=true,bool globeView=false)
+    public void Draw(float yaw, float pitch,float glow=0,bool markers=true,bool globeView=false,Rectangle? globeFrame=null)
     {
         _device.BlendState = BlendState.Opaque;
         _device.DepthStencilState = DepthStencilState.Default;
@@ -157,6 +157,13 @@ public sealed partial class WorldPreview : IDisposable
         float radius = new Vector3(Width, Height, Depth).Length() * 0.5f + (_markers == null ? 0 : 0.4f);
         _effect.View = Matrix.CreateLookAt(new Vector3(0, 0, radius * 3.3f), Vector3.Zero, Vector3.Up);
         _effect.Projection = globeView?GlobeProjection(_device.Viewport.AspectRatio):Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(42), _device.Viewport.AspectRatio, 0.1f, 100);
+        if(globeView && globeFrame.HasValue){
+            // Preserve the original framing while allowing geometry outside it to fill the viewport.
+            var f=globeFrame.Value;var v=_device.Viewport;
+            _effect.Projection=GlobeProjection(f.Width/(float)f.Height)
+                *Matrix.CreateScale(f.Width/(float)v.Width,f.Height/(float)v.Height,1)
+                *Matrix.CreateTranslation((f.Center.X-v.X)*2f/v.Width-1,1-(f.Center.Y-v.Y)*2f/v.Height,0);
+        }
         _device.SetVertexBuffer(_vertices);
         foreach (var pass in _effect.CurrentTechnique.Passes)
         {

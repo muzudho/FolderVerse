@@ -92,6 +92,9 @@ public partial class Game1
             if(_landAge>=5){_setup.CompleteLand(_random.Next());_world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();}
             return;
         }
+        bool rotating=OrientationRotating;UpdateOrientationRotation((float)elapsed);
+        if(rotating)return;
+        if(active && click && OrientationControlClick(_pointer)){_landDrag=null;return;}
         if(!LandHumanTurn || _demoActive)
         {
             if(_automaticLand.Length==0)
@@ -148,7 +151,9 @@ public partial class Game1
     }
     private void DrawLandSetupGlobe(Rectangle canvas,Matrix transform,Viewport viewport)
     {
-        GraphicsDevice.Viewport=OrientationViewport(LandGlobeArea,canvas);_world.Draw(_yaw,_pitch,_animationTime,false,true);GraphicsDevice.Viewport=viewport;
+        var frame=OrientationViewport(LandGlobeArea,canvas);
+        GraphicsDevice.Viewport=new Viewport(canvas);
+        _world.Draw(_yaw,_pitch,_animationTime,false,true,new Rectangle(frame.X,frame.Y,frame.Width,frame.Height));GraphicsDevice.Viewport=viewport;
         _spriteBatch.Begin(transformMatrix:transform);
         foreach(var c in _setup.Cells)
         {
@@ -171,7 +176,9 @@ public partial class Game1
         if(_landDrag.HasValue){var a=_landDrag.Value;var b=_pointer;LandLine(new(a.X,a.Y),new(b.X,a.Y),Color.White,2);LandLine(new(b.X,a.Y),new(b.X,b.Y),Color.White,2);LandLine(new(b.X,b.Y),new(a.X,b.Y),Color.White,2);LandLine(new(a.X,b.Y),new(a.X,a.Y),Color.White,2);}
         if(_screen==Screen.Fortune)
             for(int i=0;i<90;i++){float t=(float)((_landAge+i*.071)%1.8/1.8);float x=MathHelper.Lerp(650+(i*173%1100),1080+i*47%310,t);float y=MathHelper.Lerp(-100,460+i*31%200,t);DrawRobotGlyph(new Rectangle((int)x,(int)y,26,46),i%20,(RobotParts)(1+i%7),false,1-t*.3f);}
+        DrawLandSetupUi();
         _spriteBatch.End();
+        if(_screen==Screen.LandConquest)DrawOrientationOverlay(LandGlobeArea,canvas,transform);
     }
     private void LandLine(Vector2 a,Vector2 b,Color color,float width){var d=b-a;_spriteBatch.Draw(_pixel,a,null,color,MathF.Atan2(d.Y,d.X),Vector2.Zero,new Vector2(d.Length(),width),SpriteEffects.None,0);}
 }

@@ -49,7 +49,12 @@ public partial class Game1
         }
         _ui.Box(new(0,0,1920,1080),Color.Black*.3f);
         DrawRulebookPaper(TitleMenuPaper);
-        _ui.Center("FOLDER VERSE",new(790,336,340,28),.36f,TitleMenuInk);
+        var heading=new Rectangle(790,336,340,34);
+        // Expand the printed strokes in every direction for an extra-bold heading.
+        for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+            var impression=heading;impression.Offset(x,y);
+            _ui.Center("スタートメニュー",impression,.6f,RulebookRose);
+        }
         void Item(int slot,string text){
             var r=TitleMenuItem(slot);
             bool highlighted=r.Contains(_pointer) || _titleMenuKeyboardFocus && _titleMenuSelection==slot;
