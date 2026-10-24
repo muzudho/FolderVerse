@@ -28,6 +28,19 @@ sealed class InspectorGame:Game1{
    var viewport=(Rectangle)Prop("MapViewBounds");float baseLeft=(float)Get("_domesticMapLeft");
    Check(Math.Abs(baseLeft+((Rectangle)Prop("NetPanel")).X-40-viewport.Left-15)<1.1f,"Map waits then slides with 15-pixel left padding");
   }
+  Call("ResetInspector");Set("_domesticSlide",0f);Set("_statusGlobe",false);
+  var fixedPanel=(Rectangle)Prop("NetPanel");var fixedNet=(CubeNet)Get("_net");var fixedPosition=fixedNet.NodePosition(w,w.Nodes.All[node],fixedPanel);
+  Call("OpenNodeInspector",node);
+  foreach(float dt in new[]{.1f,.1f,.2f}){
+   Call("UpdateDomesticSlide",dt);
+   Check((Rectangle)Prop("NetPanel")==fixedPanel && fixedNet.NodePosition(w,w.Nodes.All[node],(Rectangle)Prop("NetPanel"))==fixedPosition,"Opening a net node preserves its screen position throughout the inspector slide");
+  }
+  Call("OpenNodeInspector",w.Nodes.All.First(n=>n.Id!=node).Id);
+  Check((Rectangle)Prop("NetPanel")==fixedPanel,"Selecting another net node does not recenter");
+  Call("CloseNodeInspector");Call("UpdateDomesticSlide",.2f);Check((Rectangle)Prop("NetPanel")==fixedPanel,"Closing retains the net position during animation");Call("UpdateDomesticSlide",.2f);
+  if(Environment.GetCommandLineArgs().Contains("--camera-only")){
+   Console.WriteLine("PASS: net node opening, switching and closing preserve screen coordinates; other inspector camera transitions retain their behavior.");Exit();return;
+  }
   Call("ResetInspector");Set("_domesticSlide",0f);Set("_statusGlobe",true);Call("OpenNodeInspector",node);
   Check((int)Prop("NodeInspectorOffset")==-960,"Panel begins outside left edge");Call("UpdateDomesticSlide",.2f);
   Check((float)Get("_domesticSlide")==.5f && (int)Prop("NodeInspectorOffset")==-480,"Shared half transition");

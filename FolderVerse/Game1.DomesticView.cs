@@ -19,7 +19,8 @@ public partial class Game1
         }
         return float.IsFinite(left)?Math.Max(55,left):55;
     }
-    private Rectangle NetPanel=>new(40+(int)Math.Max(0,MapViewBounds.Left+15-_domesticMapLeft),142,1840,820);
+    private Rectangle? _inspectorNetPanel;
+    private Rectangle NetPanel=>!_statusGlobe && _inspectorNetPanel.HasValue?_inspectorNetPanel.Value:new(40+(int)Math.Max(0,MapViewBounds.Left+15-_domesticMapLeft),142,1840,820);
     private bool _reignView;
     private float _domesticSlide;
     private bool _nodeInspectorClosing;
@@ -30,6 +31,7 @@ public partial class Game1
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
     private void ResetInspector(){
+        _inspectorNetPanel=null;
         CloseDirectDelivery();
         _wandererPolicyOpen=false;
         CancelTransportModal();
@@ -58,7 +60,9 @@ public partial class Game1
         for(int y=r.Y+90;y<r.Bottom-16;y+=12)_ui.Box(new(r.X+18,y,r.Width-36,4),new Color(30,48,58));
     }
     private void OpenNodeInspector(int id){
+        var netPanel=NetPanel;
         ResetInspector();var node=_setup.Nodes.All[id];_nodeInspectorClosing=false;_reignView=false;
+        if(!_statusGlobe)_inspectorNetPanel=netPanel;
         _populationCell=node.Cell;_populationNode=_inspectedNode=id;_supervisorDialog=0;_hangarDrag=null;_rateTarget=-1;
         _nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;_movementOpen=false;OpenNodeAssembly();
     }

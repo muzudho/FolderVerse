@@ -127,6 +127,7 @@ public partial class Game1
     }
     private void FocusCurrentNode()
     {
+        _inspectorNetPanel=null;
         _domesticMapLeft=55+480*_domesticSlide;
         int cell=_setup.Nodes.Current(_setup.PlayerSlot)?.Cell??_setup.ConquerorLocations[_setup.PlayerSlot];
         _net.SetCenter(_setup,_setup.Cells[cell].Face);
