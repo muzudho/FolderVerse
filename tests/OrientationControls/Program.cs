@@ -74,8 +74,20 @@ sealed class RotationGame:Game1{
   Check(Math.Abs(net.ScreenAngle-MathHelper.TwoPi)<.00001f,"12 steps complete a circle");
   net.ScreenAngle=.5235988f;var saved=net.CaptureView();net.Home(w);net.RestoreView(saved);Check(net.ScreenAngle==saved.ScreenAngle,"Net angle restored");
   Set("_statusGlobe",true);Call("FocusStatusGlobe");
+  foreach(var screen in new[]{"Rolling","CastRolling","PlacementRolling"}){
+   Set("_screen",Enum.Parse(Get("_screen").GetType(),screen));
+   Check(!(bool)Prop("OrientationControlsVisible"),"Slot previews hide orientation controls");
+   var previewToy=(Rectangle)Prop("OrientationToyArea");var previewOrientation=world.ManualOrientation;
+   foreach(int axis in new[]{0,1,2})foreach(int sign in new[]{-1,1})
+    Check(!(bool)Call("OrientationControlClick",((Rectangle)Call("AxisButton",previewToy,axis,sign)).Center),"Hidden axis buttons ignore clicks");
+   Check(!(bool)Call("OrientationControlClick",((Rectangle)Prop("OrientationResetButton")).Center) && world.ManualOrientation==previewOrientation,"Hidden reset ignores clicks");
+  }
+  foreach(var screen in new[]{"Review","CastReview","PlacementReview","WorldStatus"}){
+   Set("_screen",Enum.Parse(Get("_screen").GetType(),screen));
+   Check((bool)Prop("OrientationControlsVisible"),"Controls return after the slot stops");
+  }
   foreach(int sign in new[]{-1,1}){
-   Set("_screen",Enum.Parse(Get("_screen").GetType(),"Rolling"));Set("_yawAngle",0f);Set("_pitchAngle",0f);world.ManualOrientation=null;
+   Set("_screen",Enum.Parse(Get("_screen").GetType(),"CastReview"));Set("_yawAngle",0f);Set("_pitchAngle",0f);world.ManualOrientation=null;
    var autoToy=(Rectangle)Prop("OrientationToyArea");
    Check((bool)Call("OrientationControlClick",((Rectangle)Call("AxisButton",autoToy,1,sign)).Center),"Automatic speed button consumed");
    Check(!(bool)Prop("OrientationRotating"),"Automatic rotation continues instead of pausing");
@@ -91,7 +103,7 @@ sealed class RotationGame:Game1{
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
   var reset=(Rectangle)Prop("OrientationResetButton");Check(reset.Size==new Point(84,28) && reset.Top>((Rectangle)Prop("OrientationToyArea")).Bottom,"Small reset below circle");
   Call("OrientationControlClick",reset.Center);Check(world.ViewOrientation(0,0)==Matrix.Identity,"Compact reset restores orientation");
-  Set("_screen",Enum.Parse(Get("_screen").GetType(),"Rolling"));Set("_yawAngle",0f);Set("_pitchAngle",0f);world.ManualOrientation=null;
+  Set("_screen",Enum.Parse(Get("_screen").GetType(),"CastReview"));Set("_yawAngle",0f);Set("_pitchAngle",0f);world.ManualOrientation=null;
   var queueToy=(Rectangle)Prop("OrientationToyArea");var queuedButton=(Rectangle)Call("AxisButton",queueToy,1,1);
   Call("OrientationControlClick",queuedButton.Center);Call("OrientationControlClick",queuedButton.Center);
   for(int i=0;i<70;i++)Call("AdvanceAutomaticOrientation",.1f);
