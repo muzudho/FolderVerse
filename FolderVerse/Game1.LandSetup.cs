@@ -143,7 +143,7 @@ public partial class Game1
         _ui.Text(_screen==Screen.Fortune?"運否天賦フェーズ":"土地征服フェーズ",new(60,70),1.1f,Cream);
         if(_screen==Screen.Fortune){_ui.Text("空から届く運命のロボット",new(60,230),.75f,Color.White);_ui.Text("配備・工場・廃炉・輸送計画を抽選中",new(60,300),.45f,Cream);return;}
         _ui.Text(_setup.ConquerorNames[LandRuler]+" の土地選択",new(60,220),.7f,Color.White);
-        _ui.Text("選択 "+_landSelection.Count+" / 権利 "+_setup.TerritoryRights[LandRuler]+" セル",new(60,310),.65f,_landSelection.Count>_setup.TerritoryRights[LandRuler]?Color.Orange:Cream);
+        _ui.Text("選択 "+_landSelection.Count+" / 権利 "+_setup.TerritoryRights[LandRuler]+" 区画",new(60,310),.65f,_landSelection.Count>_setup.TerritoryRights[LandRuler]?Color.Orange:Cream);
         _portraitRenderer.Draw(_spriteBatch,_setup.Looks[LandRuler],new Rectangle(60,370,450,300),true,forCreation:true);
         _ui.Text("左ドラッグ：範囲を反転\n右ドラッグ：星を回す\nホイール：拡大・縮小\n飛び地も選択できます",new(60,685),.38f,Color.White);
         _ui.Text("地形と交通路だけで土地を選ぼう",new(60,805),.32f,Cream);

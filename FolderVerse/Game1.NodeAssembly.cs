@@ -83,7 +83,7 @@ public partial class Game1
                 }
                 if(!CanOpenHangar || _setup.Campaign.RobotBattles.LockedNode(_populationNode))continue;
                 for(int row=0;row<3;row++)if(HangarPartBounds(slot,row).Contains(_pointer) && (robot.Parts&HangarPart(row))!=0 && CanMoveHangarPart(robot,HangarPart(row)))
-                {_hangarDrag=robot.Id;_hangarPart=HangarPart(row);_hangarSource=slot;_hangarGrabOffset=_pointer-HangarRobotBounds(slot).Location;_hangarMessage="同じパーツがあるセルへドロップすると交換";return;}
+                {_hangarDrag=robot.Id;_hangarPart=HangarPart(row);_hangarSource=slot;_hangarGrabOffset=_pointer-HangarRobotBounds(slot).Location;_hangarMessage="同じパーツがある区画へドロップすると交換";return;}
             }
         }
         if(!_hangarDrag.HasValue || mouse.LeftButton!=ButtonState.Released || _previousMouse.LeftButton!=ButtonState.Pressed)return;
@@ -121,8 +121,8 @@ public partial class Game1
         _ui.Button(HangarAutoCheck,manage?(workshop.AutoAssemblyDisabled?"✓ ":"□ ")+"自動での組み立て・分解を行わない":"他国の自動組立設定は変更できません",manage && workshop.AutoAssemblyDisabled?Accent:Muted,.48f);
         bool hoveringPart=false;
         bool reservationMode=_hangarReservation!=HangarReservation.None;
-        string hover=VisitingForeignHangar?"滞在中：自国パーツ同士の交換・空き部位への移動ができます":CanOpenHangar?"頭・胴・脚をつかんで、格納庫のセルへドラッグ＆ドロップ":"他国の地点：自分の征服者がいる地点では自国パーツを動かせます";
-        if(reservationMode)hover="セルをクリック：予約を上書き / 同じ予約は解除 / 続けて選択できます";
+        string hover=VisitingForeignHangar?"滞在中：自国パーツ同士の交換・空き部位への移動ができます":CanOpenHangar?"頭・胴・脚をつかんで、格納庫の区画へドラッグ＆ドロップ":"他国の地点：自分の征服者がいる地点では自国パーツを動かせます";
+        if(reservationMode)hover="区画をクリック：予約を上書き / 同じ予約は解除 / 続けて選択できます";
         for(int slot=0;slot<12;slot++)
         {
             var cell=HangarCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);

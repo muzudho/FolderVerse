@@ -72,10 +72,10 @@ public partial class Game1
             LessonText("射線と、その両隣を確認",new(box.X+30,box.Y+360,box.Width-60,42),.52f,ink);
         }
         string[] lines=lesson switch {
-            BattleLesson.FlagCourtesy=>new[]{"旗への同時侵入で、巻き戻された。","仲間と譲り合い、北・東・南・西の順で","１体だけが旗セルに入る。"},
+            BattleLesson.FlagCourtesy=>new[]{"旗への同時侵入で、巻き戻された。","仲間と譲り合い、北・東・南・西の順で","１体だけが旗区画に入る。"},
             BattleLesson.RetreatBackwards=>new[]{"撤退中、背中を撃たれて転倒した。","撤退方向と逆を向いて移動する。","正面の盾で身を守る機会を残す。"},
             BattleLesson.LeaveFiringLine=>new[]{"正面の射線で横向きに短剣を振り、被弾。","まず射線から外れて、横の敵を攻撃。","逃げ場がなければ、正面を向いて待つ。"},
-            BattleLesson.ShieldSupport=>new[]{"盾を持つ仲間の後ろで射撃を見送った。","すぐ前で同じ方向を向く盾持ちは越せる。","２セル目以降の仲間には引き続き注意。"},
+            BattleLesson.ShieldSupport=>new[]{"盾を持つ仲間の後ろで射撃を見送った。","すぐ前で同じ方向を向く盾持ちは越せる。","２区画目以降の仲間には引き続き注意。"},
             _=>new[]{"仲間に攻撃が命中した。","射線に仲間がいれば小銃を撃たない。","両隣から射線を向く仲間にも注意。"}};
         for(int i=0;i<lines.Length;i++)LessonText(lines[i],new(box.X+24,box.Y+423+i*43,box.Width-48,40),.48f,ink);
         LessonText(owned?"取得済み / 自国の兵隊ロボットに適用":"未取得 / 生き残った目撃者が持ち帰る",new(box.X+24,box.Bottom-73,box.Width-48,45),.46f,owned?accent:ink);

@@ -69,7 +69,7 @@ public partial class Game1
         for(int side=0;side<2;side++)for(int slot=0;slot<12;slot++)if(DirectCell(side,slot).Contains(_pointer)){
             int node=_directNodes[side];var robot=_setup.Robots.Nodes[node].Robots.FirstOrDefault(r=>r.Id==_directSlots[side][slot]);
             if(robot!=null && CanManageNodeFactory(robot.Owner) && !_setup.Campaign.RobotBattles.LockedNode(node) && !_setup.Robots.AssemblyLocked(node,robot))_directDrag=(side,robot.Id,(RobotParts)0);
-            else _directMessage="そのセルは操作できません / パーツ単位での操作を確認してください";
+            else _directMessage="その区画は操作できません / パーツ単位での操作を確認してください";
             return;
         }}
         if(!_directDrag.HasValue || mouse.LeftButton!=ButtonState.Released || _previousMouse.LeftButton!=ButtonState.Pressed)return;
@@ -84,7 +84,7 @@ public partial class Game1
     }
     private void DrawDirectPair(){
         SyncDirectSlots();_ui.Box(new(0,0,1920,1080),new Color(14,29,40));_ui.Button(DirectPairBack,"← トラックの地図へ",Muted,.5f);_ui.Center("ロボットパーツ直送便 / ターン終了時に輸送",new(340,20,1490,70),.8f,Cream);
-        _ui.Center("パーツをドラッグ：部位ごと / セルをドラッグ：まとめて / 予約パーツをクリック：取消",new(340,84,1490,24),.35f,Cream);
+        _ui.Center("パーツをドラッグ：部位ごと / 区画をドラッグ：まとめて / 予約パーツをクリック：取消",new(340,84,1490,24),.35f,Cream);
         for(int side=0;side<2;side++){
             int node=_directNodes[side];var store=_setup.Robots.Nodes[node];_ui.Box(new(40+side*960,110,860,805),new Color(27,49,62));string label=_setup.Nodes.Label(_setup.Nodes.All[node]);
             DrawDirectNodePreview(side,node);

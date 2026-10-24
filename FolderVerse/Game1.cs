@@ -432,7 +432,7 @@ public partial class Game1 : Game
         }
         _ui.Button(CastBack,"世界へ戻る",Muted,0.48f);
         _ui.Button(CastRetry,_screen is Screen.CastRolling or Screen.CastReview?"人物を再抽選":"配置を再抽選",Muted,0.48f);
-        string action=IsRolling?"STOP":_screen==Screen.CastReview?"登場人物を確定 / セル権利へ":_screen==Screen.PlacementReview?"セル権利を確定":"セル権利を確定済み";
+        string action=IsRolling?"STOP":_screen==Screen.CastReview?"登場人物を確定 / 区画権利へ":_screen==Screen.PlacementReview?"区画権利を確定":"区画権利を確定済み";
         _ui.Button(CastAction,_screen==Screen.Ready?"世界征服者を選択":action,Accent,0.57f);
         _ui.Button(SeedButton(0),"世界 SEED "+_setup.WorldSeed,Muted,0.36f);
         _ui.Button(SeedButton(1),"人物 SEED "+_setup.CastSeed,Muted,0.36f);
@@ -535,7 +535,7 @@ public partial class Game1 : Game
         string capitalLabel=_setup.TerritoryCounts[player]==0?"放浪者 / 自国なし":"首都　"+WorldCoordinates.Label(_setup,capital);
         _ui.Center(capitalLabel,new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
         int fully=System.Linq.Enumerable.Count(_setup.Cells,c=>_setup.Nodes.FullOwner(c.Id)==player);
-        _ui.Center("完全占領　"+fully+" cell / 地点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==player),new(90,842,760,48),0.76f,Cream);
+        _ui.Center("完全占領　"+fully+" sector / 地点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==player),new(90,842,760,48),0.76f,Cream);
         DrawWandererPolicy();
         if(!InspectingSupervisor)_ui.Button(LessonCatalogButton,"戦訓カード",Muted,.45f);
         }); _ui.Box(new(MapViewBounds.X-20,142,MapViewBounds.Width+40,750),new(20,42,54));
@@ -623,8 +623,8 @@ public partial class Game1 : Game
     private void DrawCastPreviewInfo()
     {
         _ui.Box(new(CastPreview.X+18,CastPreview.Y+12,CastPreview.Width-36,48),new Color(12,32,44,220));
-        _ui.Center($"{_setup.Width} x {_setup.Height} x {_setup.Depth} / {_setup.Cells.Length} セル / {_setup.ActiveCount} 人",new(CastPreview.X,CastPreview.Y+12,CastPreview.Width,48),0.72f,Cream);
-        string stage=_screen switch { Screen.CastRolling=>"登場人物を抽選中",Screen.CastReview=>"登場人物を確認",Screen.PlacementRolling=>"セル権利を抽選中",Screen.PlacementReview=>"セル権利を確認",_=>"セル権利を確定済み" };
+        _ui.Center($"{_setup.Width} x {_setup.Height} x {_setup.Depth} / {_setup.Cells.Length} 区画 / {_setup.ActiveCount} 人",new(CastPreview.X,CastPreview.Y+12,CastPreview.Width,48),0.72f,Cream);
+        string stage=_screen switch { Screen.CastRolling=>"登場人物を抽選中",Screen.CastReview=>"登場人物を確認",Screen.PlacementRolling=>"区画権利を抽選中",Screen.PlacementReview=>"区画権利を確認",_=>"区画権利を確定済み" };
         string detail=stage+" / 右ドラッグで回転";
         for(int slot=0;slot<WorldSetup.CastCount;slot++) if(PortraitCell(slot).Contains(_pointer))
         {
