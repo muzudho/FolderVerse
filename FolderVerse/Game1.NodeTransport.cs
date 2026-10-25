@@ -58,6 +58,6 @@ public partial class Game1
         _ui.Button(new(84,840,526,34),reinforcement,encounters.Length>0 && node.Owner==_setup.PlayerSlot?Accent:Muted,.38f);
         _ui.Button(new(630,840,100,34),"←",Muted,.4f);_ui.Button(new(744,840,100,34),"→",Muted,.4f);
         _ui.Text(_nodeTransportMessage,new(84,810),.38f,Cream);
-        DrawNodeFactoryTile(false);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
+        DrawNodeTabs();
     }
 }

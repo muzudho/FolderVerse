@@ -30,6 +30,7 @@ public partial class Game1
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
     private void ResetInspector(){
+        _nodeOfficeOpen=false;
         _regionCell=-1;
         QueueInspectorCenter(-1);
         CloseDirectDelivery();
@@ -62,7 +63,7 @@ public partial class Game1
     private void OpenNodeInspector(int id){
         ResetInspector();var node=_setup.Nodes.All[id];_nodeInspectorClosing=false;_reignView=false;
         _populationCell=node.Cell;_populationNode=_inspectedNode=id;_supervisorDialog=0;_hangarDrag=null;_rateTarget=-1;
-        _nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;_movementOpen=false;OpenNodeAssembly();
+        _nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;_movementOpen=false;RestoreNodeTab();
         QueueInspectorCenter(id);
     }
     private void CloseNodeInspector(){QueueInspectorCenter(_regionCell>=0?_inspectedNode:_populationNode);_nodeInspectorClosing=true;_trainingOpen=false;_hangarDrag=null;_supervisorDialog=0;}

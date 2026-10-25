@@ -39,7 +39,7 @@ public partial class Game1
         var image=new Rectangle(229,286,500,326);
         _ui.Box(new(image.X-6,image.Y-6,image.Width+12,image.Height+12),color);
         DrawSupervisor(image,node.Owner);
-        _ui.Center("地域監督 / "+SupervisorRole(node.Id),new(84,628,780,45),.64f,Cream);
+        _ui.Center("地域監督",new(84,628,780,45),.64f,Cream);
         string owner=node.Owner<0?"未征服":_setup.ConquerorNames[node.Owner]+"の配下";
         _ui.Center(owner+" / 担当地点："+_setup.Nodes.DisplayName(node),new(84,678,780,28),Math.Min(.38f,760/Math.Max(1,_font.MeasureString(owner+" / 担当地点："+_setup.Nodes.DisplayName(node)).X)),Cream);
         _ui.Text("区画内の担当地点を選択",new(84,713),.38f,Cream);

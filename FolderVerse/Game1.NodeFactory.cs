@@ -9,10 +9,10 @@ public partial class Game1
     private bool _nodeFactoryOpen;
     private int _factoryDropDown=-1,_factoryLine,_factoryPlanLine=-1;
     private string _factoryMessage="";
-    private static readonly Rectangle NodeFactoryTile=new(84,169,230,60);
+    private static readonly Rectangle NodeFactoryTile=new(282,169,190,60);
     private bool NodeFactoriesAllowed=>_setup.TutorialStep!=1;
     private bool CanManageNodeFactory(int owner){for(int r=owner;r>=0;r=_setup.Relations.Superiors[r])if(r==_setup.PlayerSlot)return true;return false;}
-    private void OpenNodeFactory(){if(!NodeFactoriesAllowed)return;if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length)return;if(_setup.Robots.Workshops[_populationNode].ProductionLines.Length==0 || !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;}
+    private void OpenNodeFactory(){if(!NodeFactoriesAllowed)return;if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length)return;if(_setup.Robots.Workshops[_populationNode].ProductionLines.Length==0 || !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;_nodeOfficeOpen=false;_lastNodeTab=1;}
     private static Rectangle FactoryRobotButton(int line,int period)=>new(160+(Math.Min(5,Math.Max(1,period))-1)*72,254+line*220,72,88);
     private static Rectangle FactoryRobotArrow(int line,int period){var r=FactoryRobotButton(line,period);return new(r.Right+2,r.Y+30,24,28);}
     private static Rectangle FactoryPlanButton(int i)=>new(94+(i<4?i:i-4)*194,510+(i<4?0:155),180,144);
@@ -86,7 +86,7 @@ public partial class Game1
         }
         _factoryLine=savedLine;
         _ui.Text("格納庫は必ず",new(180,888),.43f,Cream);FactoryDrop(2,factory.ReservedSlots);_ui.Text("個空ける",new(552,888),.43f,Cream);
-        DrawNodeFactoryTile(true);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
+        DrawNodeTabs();
         if(_factoryPlanLine>=0){var line=factory.ProductionLines[_factoryPlanLine];_ui.Box(new(84,455,790,370),new(22,40,54));_ui.Text($"生産ライン {_factoryPlanLine+1} / 正規・安いパーツ",new(160,469),.45f,Cream);for(int i=0;i<7;i++){var r=FactoryPlanButton(i);_ui.Box(r,line.SelectedPlan==i?Accent:Muted);if(i==3)_ui.Center("製造しない",r,.42f,line.SelectedPlan==i?SelectionInk:Cream);else{var plan=line.PlanAt(i);DrawRobotGlyph(new(r.X+54,r.Y+8,72,88),node.Owner,plan.Product,cheap:plan.Cheap);_ui.Center($"{(plan.Cheap?"安い":"正規")} / {plan.Turns}産業ターン",new(r.X,r.Bottom-36,r.Width,28),.32f,line.SelectedPlan==i?SelectionInk:Cream);}}}
         if(_factoryDropDown>=0)for(int i=0;i<(_factoryDropDown==2?13:9);i++)_ui.Button(FactoryDropOption(_factoryDropDown,i),(_factoryDropDown==2?i:i+1).ToString(),Muted,.42f);
     }

@@ -15,7 +15,7 @@ public partial class Game1
     private int _hangarSource;
     private Point _hangarGrabOffset;
     private string _hangarMessage="";
-    private static readonly Rectangle NodeAssemblyTile=new(560,169,230,60),HangarAutoCheck=new(84,240,770,42);
+    private static readonly Rectangle NodeAssemblyTile=new(678,169,190,60),HangarAutoCheck=new(84,240,770,42);
     private HangarReservation _hangarReservation;
     private static readonly Rectangle HangarAssemblyButton=new(84,860,182,42);
     private static Rectangle HangarReservationButton(int i)=>new(280+i*196,860,182,42);
@@ -46,6 +46,7 @@ public partial class Game1
     }
     private void OpenNodeAssembly()
     {
+        _nodeOfficeOpen=false;_lastNodeTab=3;
         _nodeAssemblyOpen=true;_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;
         _hangarDrag=null;_hangarReservation=HangarReservation.None;_hangarMessage="";Array.Clear(_hangarSlots);
         var robots=_setup.Robots.Nodes[_populationNode].Robots;
@@ -62,7 +63,7 @@ public partial class Game1
         if(escape){if(_hangarDrag.HasValue)_hangarDrag=null;else CloseNodeInspector();return;}
         if(click && HangarAssemblyButton.Contains(_pointer)){_hangarReservation=HangarReservation.None;_hangarDrag=null;_hangarMessage="";return;}
         if(click && !VisitingForeignHangar && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))for(int i=0;i<3;i++)if(HangarReservationButton(i).Contains(_pointer)){var kind=(HangarReservation)(i+1);_hangarReservation=_hangarReservation==kind?HangarReservation.None:kind;_hangarDrag=null;return;}
-        if(click && (NodeFactoryTile.Contains(_pointer) || NodeTransportTile.Contains(_pointer) || NodeDisposalTile.Contains(_pointer) || NodeAssemblyTile.Contains(_pointer)))
+        if(click && (NodeOfficeTile.Contains(_pointer) || NodeFactoryTile.Contains(_pointer) || NodeTransportTile.Contains(_pointer) || NodeDisposalTile.Contains(_pointer) || NodeAssemblyTile.Contains(_pointer)))
         {_hangarDrag=null;NodeDialogClick(new Point(_pointer.X+NodeInspectorOffset,_pointer.Y),new KeyboardState());return;}
         if(click && HangarAutoCheck.Contains(_pointer))
         {
@@ -163,7 +164,7 @@ public partial class Game1
         _ui.Text(_hangarMessage.Length>0 && !hoveringPart?_hangarMessage:hover,new(84,838),.32f,Cream);
         _ui.Button(HangarAssemblyButton,"組み立て・分解",!reservationMode?Accent:Muted,.42f);
         if(!VisitingForeignHangar){string[] labels={"廃棄予約","守備専用予約","工場作業員予約"};for(int i=0;i<3;i++)_ui.Button(HangarReservationButton(i),labels[i],_hangarReservation==(HangarReservation)(i+1)?Accent:Muted,.36f);}
-        DrawNodeFactoryTile(false);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
+        DrawNodeTabs();
         if(_hangarDrag.HasValue)
         {
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarDrag);if(robot!=null)

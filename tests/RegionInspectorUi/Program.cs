@@ -29,7 +29,22 @@ sealed class RegionChecks:Game1{
   Call("SupervisorDialogInput",false,true,new KeyboardState());Check((int)Get("_supervisorDialog")==0,"Escape dismisses supervisor dialog");
   int foreign=Enumerable.Range(1,w.ActiveCount-1).First(n=>!w.Relations.Controls(n));w.Nodes.All[representative].Owner=foreign;
   Call("NodeAutomationClick",new Point(200,940));Check((int)Get("_supervisorDialog")==0,"Foreign regional supervisor remains read only");w.Nodes.All[representative].Owner=0;
-  Call("OpenNodeInspector",node);Check((int)Get("_regionCell")==-1 && (int)Get("_populationNode")==node && (bool)Get("_nodeAssemblyOpen"),"Point selection retains the hangar inspector");
+  Call("OpenNodeInspector",node);Check((int)Get("_regionCell")==-1 && (int)Get("_populationNode")==node && (bool)Get("_nodeOfficeOpen"),"Point selection initially opens the office");
+  Check(!(bool)Get("_nodeAssemblyOpen"),"Office does not overlap the hangar");
+  var assemblyTab=(Rectangle)typeof(Game1).GetField("NodeAssemblyTile",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  Call("NodeDialogClick",assemblyTab.Center,new KeyboardState());Check((bool)Get("_nodeAssemblyOpen"),"Hangar tab opens");
+  Call("OpenNodeInspector",representative);Check((bool)Get("_nodeAssemblyOpen"),"Another point remembers the hangar tab");
+  var officeTab=(Rectangle)typeof(Game1).GetField("NodeOfficeTile",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  Call("NodeDialogClick",officeTab.Center,new KeyboardState());Check((bool)Get("_nodeOfficeOpen"),"Office tab reopens supervisor");
+  Call("CloseNodeInspector");Call("UpdateDomesticSlide",.4f);Call("OpenNodeInspector",node);Check((bool)Get("_nodeOfficeOpen"),"Office tab is retained across closing and reopening");
+  Call("UpdateDomesticSlide",.4f);
+  var factory=w.Robots.Workshops[node];for(int seed=0;factory.ProductionLines.Length==0;seed++)factory.GenerateLines(seed);
+  foreach(var tab in new[]{("NodeFactoryTile","_nodeFactoryOpen"),("NodeDisposalTile","_nodeDisposalOpen")}){
+   var bounds=(Rectangle)typeof(Game1).GetField(tab.Item1,BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+   Call("NodeDialogClick",bounds.Center,new KeyboardState());Check((bool)Get(tab.Item2) && !(bool)Get("_nodeOfficeOpen"),"Factory/disposal tab opens without overlapping office");
+   Call("OpenNodeInspector",node);Check((bool)Get(tab.Item2),"Factory/disposal tab is remembered on reopening");
+  }
+  Call("OpenNodeOffice");
   Call("OpenRegionInspector",cell);Call("UpdateDomesticSlide",1f);
  }
  protected override void Update(GameTime t){}
@@ -44,9 +59,10 @@ sealed class RegionChecks:Game1{
    Call("HandleInput",mouse,new KeyboardState(),new GameTime(),true);
    Check((int)Get("_regionCell")==chosen.Id && !(bool)Get("_statusGlobe"),"Actual unfolded-map region click opens its inspector and preserves view mode");Call("UpdateDomesticSlide",.4f);
   }
-  if(frame==2){var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();}
+  if(frame==2){Call("OpenNodeInspector",node);Call("UpdateDomesticSlide",.4f);}
+  if(frame==3){var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();}
   base.Draw(t);var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
   using(var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight)){tex.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"region-{frame}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);}
-  if(frame++==2){Call("CloseNodeInspector");Call("UpdateDomesticSlide",.4f);Check((int)Get("_regionCell")==-1 && !(bool)Prop("InspectorVisible"),"Close clears region inspector");Console.WriteLine("PASS: globe region click, distinct point/region inspectors, supervisor selection, permission checks, dialogs, close and full/half-size rendering.");Exit();}
+  if(frame++==3){Call("CloseNodeInspector");Call("UpdateDomesticSlide",.4f);Check((int)Get("_regionCell")==-1 && !(bool)Prop("InspectorVisible"),"Close clears inspector");Console.WriteLine("PASS: region/point supervisors, office default, four-tab navigation and memory, permission checks, dialogs and full/half-size rendering.");Exit();}
  }
 }

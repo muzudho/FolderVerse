@@ -71,7 +71,7 @@ public partial class Game1
     private void DrawNodeAutomation()
     {
         if(AutomationNode<0)return;
-        var w=_setup.Robots.Workshops[AutomationNode];string role=SupervisorRole(AutomationNode);
+        var w=_setup.Robots.Workshops[AutomationNode];string role=_regionCell>=0?"地域監督":"地点監督";
         string leave=w.Automation==NodeAutomation.Manual?"休暇中の"+role+"をすぐ呼び戻す":role+"に休暇を与える";
         bool allowed=CanManageNodeFactory(_setup.Nodes.All[AutomationNode].Owner) && !_setup.Campaign.RobotBattles.LockedNode(AutomationNode);
         void Button(Rectangle r,string label,Color tint){_ui.Button(r,label,tint,Math.Min(.53f,(r.Width-20)/_ui.Measure(label,1).X));}

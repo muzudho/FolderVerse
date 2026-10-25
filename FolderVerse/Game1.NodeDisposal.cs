@@ -9,7 +9,7 @@ public partial class Game1
     private Texture2D _robotDisposalIcon;
     private bool _nodeDisposalOpen;
     private string _nodeDisposalMessage="";
-    private static readonly Rectangle NodeDisposalTile=new(322,169,230,60);
+    private static readonly Rectangle NodeDisposalTile=new(480,169,190,60);
     private Robot[] DisposalCandidates()
     {
         var workshop=_setup.Robots.Workshops[_populationNode];
@@ -19,6 +19,7 @@ public partial class Game1
     private void OpenNodeDisposal()
     {
         if(!CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;
+        _nodeOfficeOpen=false;_lastNodeTab=2;
         _nodeAssemblyOpen=false;_nodeDisposalOpen=true;_nodeFactoryOpen=_nodeTransportOpen=false;_nodeDisposalMessage="";
     }
     private bool NodeDisposalClick(Point pointer)
@@ -62,7 +63,7 @@ public partial class Game1
         }
         if(robots.Length==0)_ui.Text("廃棄待ちのロボットはいません",new(84,355),.5f,Cream);
         _ui.Text(_nodeDisposalMessage,new(84,819),.4f,Cream);
-        DrawNodeFactoryTile(false);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
+        DrawNodeTabs();
     }
     private void ToggleRobotDisposal(int node,long id)
     {
