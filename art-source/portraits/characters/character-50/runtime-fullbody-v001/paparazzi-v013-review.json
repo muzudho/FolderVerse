@@ -1,0 +1,16 @@
+{
+  "At": "2026-10-25T07:09:19.099Z",
+  "Source": "character-50-paparazzi-v013-generated.png",
+  "Sha256": "01f90d9aaea2b0d7376622dfbf3a4527a47a1bf2c2ff17f1da4932a7cb1f4b4c",
+  "Prompt": "paparazzi-v013-prompt.txt",
+  "References": [
+    "character-50-paparazzi-v012-generated.png"
+  ],
+  "Evidence": [
+    "paparazzi-eye-review-v013.png",
+    "paparazzi-v013-preview.png"
+  ],
+  "Status": "LOWER_RIM_NOT_CLEARLY_RESTORED_NOT_SELECTED",
+  "Finding": "上白丸/銀眼鏡/青瞳/驚き口/本人衣装電池/全身両靴を保持。下白反射が輪郭へ近接する箇所はv012から明瞭な改善なし。独立小円分離を要求した判定ではなく、下虹彩輪郭を切らない条件の未達。",
+  "GameAdopted": false
+}

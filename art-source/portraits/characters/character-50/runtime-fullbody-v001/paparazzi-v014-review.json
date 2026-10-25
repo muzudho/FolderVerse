@@ -1,0 +1,17 @@
+{
+  "At": "2026-10-25T08:08:51.668Z",
+  "Source": "character-50-paparazzi-v014-generated.png",
+  "Sha256": "b2711f2586c60f8d396d3d5775cd2f406c24d54112de4d71f6b2da2f1ce39977",
+  "Prompt": "paparazzi-v014-prompt.txt",
+  "References": [
+    "character-50-paparazzi-v012-generated.png",
+    "paparazzi-face-detail-v002-generated.png"
+  ],
+  "Evidence": [
+    "paparazzi-eye-review-v014.png",
+    "paparazzi-v014-preview.png"
+  ],
+  "Finding": "顔v002は下青輪郭が連続し白反射を内部へ収める表現を目視。これを全身v014へ反映生成。眼部と300x400保存。全身と白黒の最終採否確認は未完了。",
+  "Status": "FULLBODY_TRANSFER_SAVED_FINAL_REVIEW_PENDING",
+  "GameAdopted": false
+}

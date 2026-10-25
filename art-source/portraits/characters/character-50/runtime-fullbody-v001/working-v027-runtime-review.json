@@ -1,0 +1,11 @@
+{
+  "At": "2026-10-25T05:08:48.950Z",
+  "Evidence": "working-v027-runtime-review.png",
+  "Manifest": "staged-manifest-v027.json",
+  "VerifiedOutputHashes": 20,
+  "VerifiedDistinctSources": 14,
+  "Finding": "最新14候補を256x192/300x400の実出力サイズで並べて目視。全場面で顔/銀眼鏡/髪・固有衣装/電池と主要持ち物を判別。normal2ペン/パンダ/本、normal3顎指/本、normal4フード/素手、friends茶器、idol両ポンポン保持。これは瞳輪郭接触の原寸認定ではない。",
+  "StaleEvidence": "audit-current-eyes-v001.png/cropsはnormal1〜5および複数新聞が旧原画。最新14候補の適合根拠に流用しない。",
+  "Pending": "残り11原画の最新条件での眼部原寸再評価は未完了。最新原画から座標を取り直す。",
+  "GameAdopted": false
+}

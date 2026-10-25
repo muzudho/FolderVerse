@@ -1,0 +1,18 @@
+{
+  "At": "2026-10-25T09:09:06.003Z",
+  "Source": "character-50-coin-v016-generated.png",
+  "Sha256": "d26ac1d2df8f4634ef742cfb16a17433dd3f2f01b9fb8de06e8491a18c563c1f",
+  "Prompt": "coin-v016-prompt.txt",
+  "References": [
+    "character-50-coin-v014-generated.png"
+  ],
+  "Evidence": [
+    "coin-eye-review-v016.png",
+    "coin-v016-preview.png",
+    "coin-v016-gray.png"
+  ],
+  "Status": "REVIEWED_NOT_SELECTED_UPPER_ROUND_HIGHLIGHT_UNMET",
+  "Finding": "全身/眼部/300x400白黒を目視。本人横顔・銀つるの連続・衣装電池/重ね手袋/頭飾り裾両靴保持、白黒でも顔髪衣装電池を判別。上白部分は白目へつながる角状の切れ込みで、大きい丸い主ハイライトとして読めない。下白反射は青い下輪郭内。v016は置換選択しない。",
+  "GameAdopted": false,
+  "FinalReviewedAt": "2026-10-25T09:38:08.020Z"
+}

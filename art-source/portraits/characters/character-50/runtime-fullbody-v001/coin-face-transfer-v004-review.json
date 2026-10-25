@@ -1,0 +1,26 @@
+{
+  "At": "2026-10-25T03:39:58.664Z",
+  "Records": [
+    {
+      "File": "coin-face-detail-v004-generated.png",
+      "Prompt": "coin-face-detail-v004-prompt.txt",
+      "Reference": [
+        "coin-face-input-v001.png"
+      ],
+      "Finding": "顔拡大で右上白丸の虹彩境界接触と銀つるの連続を両立。下反射と下虹彩輪郭保持。局所試作で全身採用ではない。",
+      "Sha256": "743c06d5a7b157418f115bffcb8adf7b1419a9704778719915c95d58191a8425"
+    },
+    {
+      "File": "character-50-coin-v014-generated.png",
+      "Prompt": "coin-v014-prompt.txt",
+      "Reference": [
+        "character-50-coin-v004-generated.png",
+        "coin-face-detail-v004-generated.png"
+      ],
+      "Finding": "本人横顔/銀つる/衣装/全身両靴保持。顔拡大からの反映後は上白丸が小さく戻った。現選択を置換しない。",
+      "Sha256": "ff618cec5a306d18ac625e95ea746426cf83c9b162425fb1632527094368f092"
+    }
+  ],
+  "Evidence": "coin-eye-review-v014.png",
+  "GameAdopted": false
+}

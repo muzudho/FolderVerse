@@ -1,0 +1,19 @@
+{
+  "At": "2026-10-25T00:38:04.474Z",
+  "Source": "character-50-normal-6-v017-generated.png",
+  "Sha256": "5c0b3fe66dad046efd676602f45bdee729cfaf7484aea4472fb20f263132ae22",
+  "Width": 1447,
+  "Height": 1087,
+  "References": [
+    "character-50-normal-6-v003-generated.png"
+  ],
+  "Prompt": "normal-6-v017-prompt.txt",
+  "Engine": "builtin image_gen",
+  "Status": "IMPROVED_CANDIDATE_UPPER_RIM_CONTACT_PARTIAL_NOT_ADOPTED",
+  "Finding": "両眼の右上白丸が拡大。画面右眼は白目とつながるが、画面左眼の主白丸は虹彩内寄りで輪郭との同化が弱い。下側は淡い水色白反射のU形で、最新指示により独立小円の未分離のみを不採用理由にしない。下虹彩輪郭保持。肌や睫毛への白丸はみ出しなし。全身・本人設定・両靴・前掌後腕・電池・宮殿保持。厳密な動的頭身は未認定。",
+  "Evidence": [
+    "normal-6-eye-review-v017.png",
+    "normal-6-v017-preview.png"
+  ],
+  "GameAdopted": false
+}

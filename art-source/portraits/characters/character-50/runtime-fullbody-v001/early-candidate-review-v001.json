@@ -1,0 +1,83 @@
+{
+  "At": "2026-10-24T06:35:00+09:00",
+  "Rows": [
+    {
+      "Source": "character-50-normal-6-v004-generated.png",
+      "Sha256": "1b6c7b3faad8e7763f7e18b9cb53bdb0ece02109c0eff660b8fa4503926f0014",
+      "Evidence": "normal-6-eye-review-v004.png",
+      "Review": "片眼の下白点はあるが反射に接し、反対眼は小円未確認。",
+      "Status": "NOT_SELECTED"
+    },
+    {
+      "Source": "character-50-normal-6-v005-generated.png",
+      "Sha256": "67374c01446eb018ac17bdd5590f5a8d2c6a345f59b29699b38277039674f6e8",
+      "Evidence": "normal-6-eye-review-v005.png",
+      "Review": "片眼主点が大きく睫毛付近へ拡大。下小円は未分離。",
+      "Status": "NOT_SELECTED"
+    },
+    {
+      "Source": "character-50-normal-6-v006-generated.png",
+      "Sha256": "dbd25b019b998d3778671a00e75c462fdaff52024b8c38db9d959a5bb4c991e0",
+      "Evidence": "normal-6-eye-review-v006.png",
+      "Review": "主点/反射はあるが下小円を明瞭に読めない。",
+      "Status": "NOT_SELECTED"
+    },
+    {
+      "Source": "character-50-normal-6-v007-generated.png",
+      "Sha256": "331bd33fa667298fd147b11ea2c4cddaca868d9f83daafbe8c7cae8ea6f8b6b8",
+      "Evidence": "normal-6-eye-review-v007.png",
+      "Review": "大白円が瞼付近へ拡大し下小円未分離。",
+      "Status": "NOT_SELECTED"
+    },
+    {
+      "Source": "character-50-paparazzi-v004-generated.png",
+      "Sha256": "3adb4e941e7b428641b6625fdbc5b80a36389085ac7d030774296f1d2bd2485f",
+      "Evidence": "paparazzi-eye-review-v004.png",
+      "Review": "主点小、下反射広く小円未分離。",
+      "Status": "NOT_SELECTED"
+    },
+    {
+      "Source": "character-50-paparazzi-v005-generated.png",
+      "Sha256": "1d095f96be4f0285452e7da34f5bc40f91b811d9e47d5b2fc391002cfe5f916f",
+      "Evidence": "paparazzi-eye-review-v005.png",
+      "Review": "片眼外側の肌に余分な白円あり。不採用維持。",
+      "Status": "NOT_SELECTED"
+    },
+    {
+      "Source": "character-50-paparazzi-v006-generated.png",
+      "Sha256": "e0dbcc6f15c26ec040755b559611cc72c74ccdd468c5363eb645b77ee4a6fe34",
+      "Evidence": "paparazzi-eye-review-v006.png",
+      "Review": "主点小、下反射と小点が混ざる。",
+      "Status": "NOT_SELECTED"
+    },
+    {
+      "Source": "character-50-paparazzi-v007-generated.png",
+      "Sha256": "ba497cd9c19e90185566177575c4775eaa60adc578d1df9e8acb52a87f5b634c",
+      "Evidence": "paparazzi-eye-review-v007.png",
+      "Review": "v006同様、両眼下小円未分離。",
+      "Status": "NOT_SELECTED"
+    },
+    {
+      "Source": "character-50-coin-v005-generated.png",
+      "Sha256": "1680b5d03a8f55776478f9b287c8656647d9d757b2c6fa692412d80184e4b56a",
+      "Evidence": "coin-eye-review-v005.png",
+      "Review": "上点小、下側は大きい水色反射。",
+      "Status": "NOT_SELECTED"
+    },
+    {
+      "Source": "character-50-coin-v006-generated.png",
+      "Sha256": "0c1a247031ef680d0245d5b6a0cd80ada2d84aca12d58730ae1875153611aa0c",
+      "Evidence": "coin-eye-review-v006.png",
+      "Review": "上点小、下側は大きい水色反射。",
+      "Status": "NOT_SELECTED"
+    },
+    {
+      "Source": "character-50-coin-v007-generated.png",
+      "Sha256": "ed22935713ad43cfce622a65fe7cb26e66ea69c24e308ad91a84eb191290a53d",
+      "Evidence": "coin-eye-review-v007.png",
+      "Review": "上点小、下側は大きい水色反射。",
+      "Status": "NOT_SELECTED"
+    }
+  ],
+  "Decision": "NO_NEW_SELECTION"
+}

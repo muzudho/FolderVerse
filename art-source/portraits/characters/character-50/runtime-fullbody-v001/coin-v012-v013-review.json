@@ -1,0 +1,22 @@
+{
+  "At": "2026-10-25T02:39:07.347Z",
+  "Trials": [
+    {
+      "Source": "character-50-coin-v012-generated.png",
+      "Sha256": "0b9b5021d7b580342063cd90f9319cf314ada31406d4f7a98448cf30caa0edcb",
+      "Prompt": "coin-v012-prompt.txt",
+      "Reference": "character-50-coin-v004-generated.png",
+      "Status": "NOT_SELECTED_NOT_ADOPTED",
+      "Finding": "白円が白目へ大きく拡大し眼鏡つるを覆った。本人全身保持だが不採用。"
+    },
+    {
+      "Source": "character-50-coin-v013-generated.png",
+      "Sha256": "80c4e51fb701901b62589ac4bc2e919278538513ee130719b2a7f467f147bbfd",
+      "Prompt": "coin-v013-prompt.txt",
+      "Reference": "character-50-coin-v012-generated.png",
+      "Status": "NOT_SELECTED_NOT_ADOPTED",
+      "Finding": "白円を縮小して眼鏡つるを復元する編集。全身保持。上白円と眼鏡つるの原寸最終評価が必要。"
+    }
+  ],
+  "GameAdopted": false
+}

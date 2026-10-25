@@ -1,0 +1,55 @@
+{
+  "At": "2026-10-25T03:07:49.932Z",
+  "Rule": "2026-10-25ユーザー明示の上下白丸条件",
+  "Evidence": "coin-candidates-review-v002.png",
+  "Note": "比較一覧は位置・形状比較用に枠へ収めている。厳密な白円径の計測には使わない。原寸眼部と既存全身確認を併用。",
+  "Images": [
+    {
+      "File": "character-50-coin-v005-generated.png",
+      "Sha256": "1680b5d03a8f55776478f9b287c8656647d9d757b2c6fa692412d80184e4b56a",
+      "Verdict": "眼鏡つる保持、上白点小さく輪郭接触不十分、置換選択なし"
+    },
+    {
+      "File": "character-50-coin-v006-generated.png",
+      "Sha256": "0c1a247031ef680d0245d5b6a0cd80ada2d84aca12d58730ae1875153611aa0c",
+      "Verdict": "眼鏡つる保持、上白点小さく輪郭接触不十分、置換選択なし"
+    },
+    {
+      "File": "character-50-coin-v007-generated.png",
+      "Sha256": "ed22935713ad43cfce622a65fe7cb26e66ea69c24e308ad91a84eb191290a53d",
+      "Verdict": "眼鏡つる保持、上白点小さく輪郭接触不十分、置換選択なし"
+    },
+    {
+      "File": "character-50-coin-v008-generated.png",
+      "Sha256": "410fa02b22407c5c971c54c5962c96077f06cfcd4a322df2d416ab1f12042a20",
+      "Verdict": "眼鏡つる保持、上白点小さく輪郭接触不十分、置換選択なし"
+    },
+    {
+      "File": "character-50-coin-v009-generated.png",
+      "Sha256": "e21347332c663915d8080d14179d1addf88ec740b14e8b28d455da670724d82b",
+      "Verdict": "眼鏡つる保持、上白点小さく輪郭接触不十分、置換選択なし"
+    },
+    {
+      "File": "character-50-coin-v010-generated.png",
+      "Sha256": "f29cff6f7bc96a91673761bc64ed8e24eed597cd114c457feb3acd14d9c8f3a5",
+      "Verdict": "眼鏡つる保持、上白点小さく輪郭接触不十分、置換選択なし"
+    },
+    {
+      "File": "character-50-coin-v011-generated.png",
+      "Sha256": "e2cab5172499f91dc6829a7bb5991c0e68a914e1916e63dcb3196f1aa37bbff7",
+      "Verdict": "眼鏡つる保持、上白点小さく輪郭接触不十分、置換選択なし"
+    },
+    {
+      "File": "character-50-coin-v012-generated.png",
+      "Sha256": "0b9b5021d7b580342063cd90f9319cf314ada31406d4f7a98448cf30caa0edcb",
+      "Verdict": "白丸が白目に偏り眼鏡つる欠損、不採用"
+    },
+    {
+      "File": "character-50-coin-v013-generated.png",
+      "Sha256": "80c4e51fb701901b62589ac4bc2e919278538513ee130719b2a7f467f147bbfd",
+      "Verdict": "白丸が白目に偏り眼鏡つる欠損、不採用"
+    }
+  ],
+  "Decision": "v012/v013不採用確定、現選択v004維持。旧小白円分離問題ではなく主ハイライトと眼鏡つるの重なりが未達。",
+  "GameAdopted": false
+}

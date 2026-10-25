@@ -1,0 +1,15 @@
+{
+  "At": "2026-10-25T09:09:06.003Z",
+  "Source": "character-50-coin-v016-generated.png",
+  "Sha256": "d26ac1d2df8f4634ef742cfb16a17433dd3f2f01b9fb8de06e8491a18c563c1f",
+  "Prompt": "coin-v016-prompt.txt",
+  "References": [
+    "character-50-coin-v014-generated.png"
+  ],
+  "Evidence": [
+    "coin-eye-review-v016.png"
+  ],
+  "Status": "EYE_REVIEWED_FINAL_WHOLEBODY_RUNTIME_REVIEW_PENDING",
+  "Finding": "v014上白切れ込みを丸い円弧へ整える編集。銀眼鏡つると下反射/青下輪郭を維持する指示。眼部拡大保存。全身/300x400白黒の最終採否判定は未完了。",
+  "GameAdopted": false
+}

@@ -1,0 +1,25 @@
+{
+  "At": "2026-10-25T10:09:25.386Z",
+  "Source": "character-50-coin-v017-generated.png",
+  "Sha256": "112dc1459876744ef122aa13325a8ad751729e3cb7be3bf2b656223752f386e8",
+  "Prompt": "coin-v017-prompt.txt",
+  "References": [
+    "character-50-coin-v004-generated.png",
+    "coin-face-detail-v004-generated.png"
+  ],
+  "Region": {
+    "X": 290,
+    "Y": 100,
+    "Width": 300,
+    "Height": 300
+  },
+  "Evidence": [
+    "coin-eye-review-v017.png",
+    "coin-v017-preview.png",
+    "coin-v017-gray.png"
+  ],
+  "Status": "REVIEWED_NOT_SELECTED_ROUND_GLINT_TRANSFER_FAILED",
+  "Finding": "全身・300x400カラー/白黒で本人の横顔/眼鏡つる/金髪/衣装電池/両手/裾両靴を保持し識別可能。座標合成後も上白部分は角状切れ込みになり、顔v004の丸い主白点が保たれないため非選択。下反射と青下輪郭は保持。",
+  "GameAdopted": false,
+  "FinalReviewedAt": "2026-10-25T10:38:04.705Z"
+}

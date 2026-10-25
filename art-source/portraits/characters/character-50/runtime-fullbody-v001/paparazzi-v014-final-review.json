@@ -1,0 +1,13 @@
+{
+  "At": "2026-10-25T08:37:49.447Z",
+  "Source": "character-50-paparazzi-v014-generated.png",
+  "Sha256": "b2711f2586c60f8d396d3d5775cd2f406c24d54112de4d71f6b2da2f1ce39977",
+  "Evidence": [
+    "paparazzi-eye-review-v014.png",
+    "paparazzi-v014-preview.png",
+    "paparazzi-v014-gray.png"
+  ],
+  "Decision": "v014を作業選択。下白反射を青い下縁が囲み、v012で切れていた下輪郭の連続を改善。上右大白丸と白目接触保持。",
+  "Finding": "銀眼鏡/右向き斜め顔/小さな開いた驚き口/金髪/衣装電池/白手袋/全身裾と両靴保持。300x400白黒で顔・髪・服・電池判別。全体の厳密頭身数値は未認定。",
+  "GameAdopted": false
+}

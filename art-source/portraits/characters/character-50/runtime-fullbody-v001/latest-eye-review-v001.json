@@ -1,0 +1,95 @@
+{
+  "At": "2026-10-25T05:37:55.926Z",
+  "Rule": "2026-10-25明示指示",
+  "Evidence": "latest-eye-review-v001.png",
+  "Crops": "latest-eye-crops-v001.json",
+  "Scope": "v027最新原画14枚を直接切り出し全眼部を一覧目視。旧座標を開始点に再使用し全枠に眼部が入ることを目視確認。",
+  "Limit": "一覧は枠に合わせた拡縮で縦横比が元画像と違う。白丸の真円度や数値径の認定には使わない。原寸個別レビューが必要な箇所は残す。",
+  "Images": [
+    {
+      "Id": 1,
+      "Source": "character-50-normal-1-v004-generated.png",
+      "Finding": "上右白丸・下左白点/淡反射と銀眼鏡を確認。上下差あり。主円と白目の境界接触の強さは眼によって差がある。",
+      "Status": "REVIEWED_NO_AUTOMATIC_ADOPTION"
+    },
+    {
+      "Id": 2,
+      "Source": "character-50-normal-2-v004-generated.png",
+      "Finding": "上右白丸・下左白点/淡反射と銀眼鏡を確認。上下差あり。主円と白目の境界接触の強さは眼によって差がある。",
+      "Status": "REVIEWED_NO_AUTOMATIC_ADOPTION"
+    },
+    {
+      "Id": 3,
+      "Source": "character-50-normal-3-v014-generated.png",
+      "Finding": "細めの目を保持。上右白丸/下白反射あり、下輪郭保持。目を大きくせず接触のみ細部確認。",
+      "Status": "REVIEWED_NO_AUTOMATIC_ADOPTION"
+    },
+    {
+      "Id": 4,
+      "Source": "character-50-normal-4-v004-generated.png",
+      "Finding": "細めの目を保持。上右白丸/下白反射あり、下輪郭保持。目を大きくせず接触のみ細部確認。",
+      "Status": "REVIEWED_NO_AUTOMATIC_ADOPTION"
+    },
+    {
+      "Id": 5,
+      "Source": "character-50-normal-5-v009-generated.png",
+      "Finding": "上右白丸・下左白点/淡反射と銀眼鏡を確認。上下差あり。主円と白目の境界接触の強さは眼によって差がある。",
+      "Status": "REVIEWED_NO_AUTOMATIC_ADOPTION"
+    },
+    {
+      "Id": 6,
+      "Source": "character-50-normal-6-v017-generated.png",
+      "Finding": "上白丸が大きい。画面左眼で白目接触が弱い、画面右眼では接触。",
+      "Status": "REVIEWED_NO_AUTOMATIC_ADOPTION"
+    },
+    {
+      "Id": "formal",
+      "Source": "character-50-formal-v006-generated.png",
+      "Finding": "上右白丸・下左白点/淡反射と銀眼鏡を確認。上下差あり。主円と白目の境界接触の強さは眼によって差がある。",
+      "Status": "REVIEWED_NO_AUTOMATIC_ADOPTION"
+    },
+    {
+      "Id": "election",
+      "Source": "character-50-election-v009-generated.png",
+      "Finding": "上右白丸・下左白点/淡反射と銀眼鏡を確認。上下差あり。主円と白目の境界接触の強さは眼によって差がある。",
+      "Status": "REVIEWED_NO_AUTOMATIC_ADOPTION"
+    },
+    {
+      "Id": "friends",
+      "Source": "character-50-friends-v004-generated.png",
+      "Finding": "上右白丸・下左白点/淡反射と銀眼鏡を確認。上下差あり。主円と白目の境界接触の強さは眼によって差がある。",
+      "Status": "REVIEWED_NO_AUTOMATIC_ADOPTION"
+    },
+    {
+      "Id": "history",
+      "Source": "character-50-history-v008-generated.png",
+      "Finding": "上右白丸・下左白点/淡反射と銀眼鏡を確認。上下差あり。主円と白目の境界接触の強さは眼によって差がある。",
+      "Status": "REVIEWED_NO_AUTOMATIC_ADOPTION"
+    },
+    {
+      "Id": "id",
+      "Source": "character-50-id-v005-generated.png",
+      "Finding": "上右白丸・下左白点/淡反射と銀眼鏡を確認。上下差あり。主円と白目の境界接触の強さは眼によって差がある。",
+      "Status": "REVIEWED_NO_AUTOMATIC_ADOPTION"
+    },
+    {
+      "Id": "idol",
+      "Source": "character-50-idol-v005-generated.png",
+      "Finding": "上右白丸・下左白点/淡反射と銀眼鏡を確認。上下差あり。主円と白目の境界接触の強さは眼によって差がある。",
+      "Status": "REVIEWED_NO_AUTOMATIC_ADOPTION"
+    },
+    {
+      "Id": "paparazzi",
+      "Source": "character-50-paparazzi-v012-generated.png",
+      "Finding": "大きい上白丸と白目接触を判別。下反射が下輪郭へ近接し一部薄い。",
+      "Status": "REVIEWED_NO_AUTOMATIC_ADOPTION"
+    },
+    {
+      "Id": "coin",
+      "Source": "character-50-coin-v004-generated.png",
+      "Finding": "銀つる保持。上白点が小さく未達。",
+      "Status": "REVIEWED_NO_AUTOMATIC_ADOPTION"
+    }
+  ],
+  "GameAdopted": false
+}

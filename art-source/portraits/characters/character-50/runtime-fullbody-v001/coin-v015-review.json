@@ -1,0 +1,19 @@
+{
+  "At": "2026-10-25T04:09:01.173Z",
+  "Source": "character-50-coin-v015-generated.png",
+  "Sha256": "769e2c0c1bb8f01d0778236d699c2b9024736242ae7a0527f8c7ab5dc1a9a9f8",
+  "Prompt": "coin-v015-prompt.txt",
+  "References": [
+    "coin-face-detail-v004-generated.png",
+    "character-50-coin-v004-generated.png"
+  ],
+  "Width": 1024,
+  "Height": 1536,
+  "Finding": "縦全身再構成。頭飾り/裾/両靴は画内、本人の横顔/眼鏡/衣装/電池/重ねた手保持。上白ハイライトは小さく、顔試作の大白丸の再現に至らない。再構成で頭部比率を含む体格が変化、厳密適合は未認定。",
+  "Evidence": [
+    "coin-eye-review-v015.png",
+    "coin-v015-preview.png"
+  ],
+  "Status": "RECOMPOSED_FULLBODY_NOT_SELECTED",
+  "GameAdopted": false
+}

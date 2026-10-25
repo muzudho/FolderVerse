@@ -1,0 +1,19 @@
+{
+  "At": "2026-10-25T02:09:06.590Z",
+  "Source": "character-50-coin-v011-generated.png",
+  "Sha256": "e2cab5172499f91dc6829a7bb5991c0e68a914e1916e63dcb3196f1aa37bbff7",
+  "References": [
+    "character-50-coin-v004-generated.png"
+  ],
+  "Prompt": "coin-v011-prompt.txt",
+  "Width": 1024,
+  "Height": 1536,
+  "Status": "UPPER_HIGHLIGHT_REMAINED_SMALL_NOT_SELECTED",
+  "Evidence": [
+    "coin-eye-review-v011.png",
+    "coin-v011-preview.png",
+    "coin-v011-gray.png"
+  ],
+  "Finding": "右上白丸が小さいままで白目との同化は未達。下白反射は青い下輪郭内。銀眼鏡つる/左横顔/閉じ口/本人衣装/電池/両靴と全身を保持。300x400白黒で顔・髪・衣装・電池・手を判別。",
+  "GameAdopted": false
+}

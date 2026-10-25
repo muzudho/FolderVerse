@@ -1,0 +1,19 @@
+{
+  "At": "2026-10-25T07:39:19.720Z",
+  "Source": "paparazzi-face-detail-v002-generated.png",
+  "Sha256": "8ddb05e21fd9368cbd55f86ec4743761205d78cabb491a1ae020f918316d90e7",
+  "Prompt": "paparazzi-face-detail-v002-prompt.txt",
+  "Reference": "paparazzi-face-input-v002.png",
+  "InputCrop": {
+    "Source": "character-50-paparazzi-v012-generated.png",
+    "X": 440,
+    "Y": 100,
+    "Width": 300,
+    "Height": 300,
+    "OutputWidth": 1024,
+    "OutputHeight": 1024
+  },
+  "Finding": "下白反射を虹彩内へ収める顔拡大の局所試作。上白丸と本人表情/眼鏡保持。全身へ反映・ゲームサイズ評価は未実施。",
+  "Status": "FACE_STUDY_SAVED_NOT_FULLBODY_NOT_ADOPTED",
+  "GameAdopted": false
+}
