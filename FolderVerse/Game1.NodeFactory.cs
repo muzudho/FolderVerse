@@ -23,7 +23,7 @@ public partial class Game1
         int period=Math.Min(5,line.Manufacturing?line.ProductionPeriod:1),rest=Math.Min(4,line.RestTurns),y=284+_factoryLine*200;
         return field==0?new(160+period*72/2-34,y+155,68,44):new(160+period*72+rest*72/2-34,y+155,68,44);
     }
-    private Rectangle FactoryDropOption(int field,int index){var r=FactoryDropButton(field);int count=field==2?13:9;return new(r.X,r.Y-count*30+index*30,r.Width,30);}
+    private Rectangle FactoryDropOption(int field,int index){var r=FactoryDropButton(field);int count=field==2?13:9;int top=Math.Max(260,r.Y-count*30);return new(r.X,top+index*30,r.Width,30);}
     private bool NodeFactoryClick(Point pointer)
     {
         if(!NodeFactoriesAllowed){_nodeFactoryOpen=false;_factoryDropDown=_factoryPlanLine=-1;return false;}

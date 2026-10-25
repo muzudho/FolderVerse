@@ -14,7 +14,14 @@ Set("_factoryLine",0); for(int period=1;period<=5;period++){factory.ProductionLi
 Call("NodeFactoryClick",((Rectangle)Call("FactoryDropButton",0)).Center);Call("NodeFactoryClick",((Rectangle)Call("FactoryDropOption",0,2)).Center);
 Call("NodeFactoryClick",((Rectangle)Call("FactoryDropButton",1)).Center);Call("NodeFactoryClick",((Rectangle)Call("FactoryDropOption",1,3)).Center);
 Call("NodeFactoryClick",((Rectangle)Call("FactoryDropButton",2)).Center);Call("NodeFactoryClick",((Rectangle)Call("FactoryDropOption",2,12)).Center);
-if(factory.SelectedPlan!=0 || factory.RestEvery!=3 || factory.RestTurns!=4 || factory.ReservedSlots!=12)throw new Exception("Factory selection failed");}
+if(factory.SelectedPlan!=0 || factory.RestEvery!=3 || factory.RestTurns!=4 || factory.ReservedSlots!=12)throw new Exception("Factory selection failed");
+Call("OpenNodeInspector",node.Id);Set("_domesticSlide",1f);Call("OpenNodeFactory");Set("_factoryLine",0);
+Call("NodeFactoryClick",((Rectangle)Call("FactoryDropButton",1)).Center);
+var firstRest=(Rectangle)Call("FactoryDropOption",1,0);
+if((bool)Call("DomesticViewClick",firstRest.Center))throw new Exception("Folder header intercepted rest option one");
+Call("NodeDialogClick",firstRest.Center,new Microsoft.Xna.Framework.Input.KeyboardState());
+if((int)Get("_factoryDropDown")!=-1 || factory.ProductionLines[0].RestTurns!=1 || (bool)Get("_inspectorFoldersOpen"))throw new Exception("Rest option one did not apply through inspector routing");
+}
 protected override void Update(GameTime t){}
 protected override void Draw(GameTime t){base.Draw(t);if(frame++==1){var saved=((ScreenshotCapture)Get("_screenshots")).LastSavedPath;if(!File.Exists(saved) || Path.GetFileName(Path.GetDirectoryName(saved))!=DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(9)).ToString("yyyy-MM"))throw new Exception("Screenshot month folder failed");Call("OpenNodeAssembly");var store=world.Robots.Nodes[node.Id];if(store.Count>0)store.Remove(store.Robots[0].Id);var foreign=world.Robots.Create(1,RobotParts.Complete);store.Add(foreign);Call("OpenNodeAssembly");if(!(bool)Call("CanMoveHangarRobot",foreign))throw new Exception("Captured parts in own hangar disabled");node.Owner=1;if((bool)Call("CanMoveHangarPart",foreign,RobotParts.Head))throw new Exception("Foreign part enabled");world.Relations.SetSuperior(1,0);if(!(bool)Call("CanMoveHangarRobot",foreign))throw new Exception("Subordinate robot disabled");world.Relations.SetSuperior(1,-1);node.Owner=0;Set("_pointer",new Point(160,320));}
 if(frame==4){Console.WriteLine("PASS: factory plan/rest/capacity controls, foreign/subordinate robot permissions and screen rendering");Exit();}}

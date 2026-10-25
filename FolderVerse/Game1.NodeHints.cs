@@ -9,7 +9,8 @@ public partial class Game1
         if(_inspectorFoldersOpen)return;
         if(_directPairOpen || !MapViewBounds.Contains(_pointer))return;
         if(_directTrucks.Exists(t=>t.Bounds.Contains(_pointer))){
-            DrawRulebookHint("トラック","ロボットパーツの直送便です。両端の地点間でロボットパーツを移動できます。");return;
+            var delivery=_directTrucks.Find(t=>t.Bounds.Contains(_pointer));
+            DrawRulebookHint(DirectSeaRoute(delivery.A,delivery.B)?"小型フェリー":"トラック","ロボットパーツの直送便です。予約したパーツを伝播フェーズで配送します。");return;
         }
         int battery=_net.HitBattery(_pointer);
         if(battery>=0)
