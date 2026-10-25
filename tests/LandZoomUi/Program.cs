@@ -54,6 +54,22 @@ sealed class ZoomChecks:Game1{
   Call("UpdateLandSetup",0d,new MouseState(),true,true,false);
   Check(world.ManualOrientation==null && (float)Get("_yawAngle")==0 && (float)Get("_pitchAngle")==0,"Land reset returns to default orientation");
   Check(((System.Collections.ICollection)Get("_landOrder")).Count>0 && ((System.Collections.IEnumerable)Get("_landSelection")).Cast<int>().Count()==0,"Rotation controls do not select land");
+  w.SetTerritoryRights(3);w.SelectPlayer(0);Call("BeginLandConquest");
+  var others=w.LandOrder().Where(r=>r!=0).ToArray();
+  Set("_landOrder",new[]{others[0],0}.Concat(others.Skip(1)).ToArray());
+  var skip=(Rectangle)typeof(Game1).GetField("LandSkipOthers",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  Set("_pointer",skip.Center);Call("UpdateLandSetup",0d,new MouseState(),true,true,false);
+  Check((bool)Get("_skipOtherLandTurns") && (int)Get("_landTurn")==1,"Skip button immediately stops at human turn");
+  Check(w.Owners.Count(o=>o==others[0])==w.TerritoryRights[others[0]] && !w.Owners.Contains(0),"Skipping claims exact CPU rights and leaves human choice untouched");
+  var selection=(HashSet<int>)Get("_landSelection");selection.UnionWith(w.Cells.Where(c=>w.Owners[c.Id]<0).Take(w.TerritoryRights[0]).Select(c=>c.Id));Call("ConfirmLand");
+  Call("UpdateLandSetup",0d,new MouseState(),false,false,false);
+  Check(Get("_screen").ToString()=="Fortune" && w.Owners.All(o=>o>=0),"Skip completes remaining CPU turns and advances to fortune");
+  w.SetTerritoryRights(3);w.SelectPlayer(0);w.HumanPlayers.Clear();w.HumanPlayers.Add(0);w.HumanPlayers.Add(others[1]);Call("BeginLandConquest");
+  Set("_landOrder",new[]{others[0],others[1],0}.Concat(others.Skip(2)).ToArray());
+  Set("_pointer",skip.Center);Call("UpdateLandSetup",0d,new MouseState(),true,true,false);
+  Check((int)Get("_landTurn")==1 && !w.Owners.Contains(others[1]),"Multiplayer skip preserves the next human turn");
+  w.HumanPlayers.Clear();w.SetTerritoryRights(3);w.SelectPlayer(0);Call("BeginLandConquest");
+  Check(!(bool)Get("_skipOtherLandTurns"),"New land phase resets skip preference");
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){

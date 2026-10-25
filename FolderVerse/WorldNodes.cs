@@ -87,8 +87,9 @@ public sealed class WorldNodes
     {
         var coordinate=WorldCoordinates.At(_world,_world.Cells[p.Cell]);
         string name=p.IsHarbor?p.Name+$"（{coordinate.X},{coordinate.Y}）":WorldCoordinates.Label(_world,p.Cell);
-        return name+" / "+(p.IsHarbor?"海港":TerrainRoutes.TerrainName(p.Terrain))+"地点・"+_world.Routes.PointName(p.Cell,p.Center);
+        return name+" / "+Description(p);
     }
+    public string Description(Node p)=>(p.IsHarbor?"海港":TerrainRoutes.TerrainName(p.Terrain))+"地点・"+_world.Routes.PointName(p.Cell,p.Center);
     public int FullOwner(int cell)
     {
         var owners=InCell(cell).Select(p=>p.Owner<0?-1:_world.Relations.Root(p.Owner)).Distinct().ToArray();return owners.Length==1?owners[0]:-1;

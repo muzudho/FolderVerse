@@ -5,8 +5,9 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private bool _nodeOfficeOpen;
+    private string NodeOfficeName=>_populationNode>=0 && _setup.Routes.Land(_setup.Nodes.All[_populationNode].Cell,_setup.Nodes.All[_populationNode].Center)?"地点庁舎":"地点監督船";
     private int _lastNodeTab;
-    private static readonly Rectangle NodeOfficeTile=new(84,169,190,60);
+    private static readonly Rectangle NodeOfficeTile=new(84,210,190,40);
     private void OpenNodeOffice(){_nodeOfficeOpen=true;_nodeAssemblyOpen=_nodeFactoryOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_hangarDrag=null;_factoryDropDown=_factoryPlanLine=-1;_lastNodeTab=0;}
     private void RestoreNodeTab(){
         int tab=_lastNodeTab;OpenNodeOffice();
@@ -15,7 +16,7 @@ public partial class Game1
     }
     private void DrawNodeTabs(){
         var areas=new[]{NodeOfficeTile,NodeFactoryTile,NodeDisposalTile,NodeAssemblyTile};
-        string[] labels={"役所","ロボット製造工場","ロボット廃棄計画","ロボット格納庫"};
+        string[] labels={NodeOfficeName,"ロボット製造工場","ロボット廃棄計画","ロボット格納庫"};
         bool[] active={_nodeOfficeOpen,_nodeFactoryOpen,_nodeDisposalOpen,_nodeAssemblyOpen};
         bool[] enabled={true,NodeFactoriesAllowed && _setup.Robots.Workshops[_populationNode].ProductionLines.Length>0 && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner),CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner),CanOpenHangar};
         for(int i=0;i<4;i++){
@@ -28,10 +29,8 @@ public partial class Game1
         _ui.Box(new(54,150,850,825),new Color(27,49,62));DrawNodeTabs();
         var node=_setup.Nodes.All[_populationNode];var image=new Rectangle(229,294,500,326);
         _ui.Box(new(image.X-6,image.Y-6,image.Width+12,image.Height+12),_setup.OwnerColor(node.Owner));DrawSupervisor(image,node.Owner,_populationNode);
-        _ui.Center("役所 / 地点監督",new(84,644,780,60),.8f,Cream);
+        _ui.Center(NodeOfficeName+" / 地点監督",new(84,644,780,60),.8f,Cream);
         string owner=node.Owner<0?"未征服":_setup.ConquerorNames[node.Owner]+"の配下";
         _ui.Center(owner,new(84,718,780,45),.6f,Cream);
-        string name=_setup.Nodes.DisplayName(node);
-        _ui.Center(name,new(84,778,780,55),Math.Min(.6f,760/Math.Max(1,_font.MeasureString(name).X)),Cream);
     }
 }

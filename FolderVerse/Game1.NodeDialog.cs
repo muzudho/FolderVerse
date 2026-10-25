@@ -33,8 +33,6 @@ public partial class Game1
     }
     private void DrawNodeDialog()
     {
-        var heading="地点インスペクター / "+NodeLandmarks.Label(_setup,_setup.Nodes.All[_populationNode]);
-        _ui.Text(heading,new(54,112),Math.Min(.5f,850/_font.MeasureString(heading).X),Cream);
         if(!_nodeOfficeOpen && !_nodeAssemblyOpen && !_nodeFactoryOpen && !_nodeTransportOpen && !_nodeDisposalOpen)RestoreNodeTab();
         if(_nodeOfficeOpen){DrawNodeOffice();return;}
         if(_nodeAssemblyOpen){DrawNodeAssembly();return;}

@@ -10,7 +10,7 @@ public partial class Game1
     private bool LessonPickedUp=>_lessonPage<_lessonPickups.Length && _lessonPickups[_lessonPage];
     private int _lessonPage;
     private double _lessonAge;
-    private static readonly Rectangle LessonCatalogButton=new(770,230,120,64);
+    private static readonly Rectangle LessonCatalogButton=new(678,912,190,52);
     private static readonly Rectangle LessonContinue=new(1370,974,440,64),LessonBack=new(90,974,440,64);
     private void BeginBattleResearch()
     {
@@ -35,6 +35,12 @@ public partial class Game1
     private void LessonText(string text,Rectangle box,float scale,Color color)=>_ui.Center(text,box,Math.Min(scale,(box.Width-28)/_font.MeasureString(text).X),color);
     private void DrawLessonCard(BattleLesson lesson,Rectangle box,bool owned,float reveal=1)
     {
+        if(!owned){
+            _ui.Box(new(box.X+8,box.Y+10,box.Width,box.Height),new Color(5,16,25)*.45f);
+            _ui.Box(box,new Color(40,59,70));
+            LessonText($"戦訓＃{Array.IndexOf(BattleLessons.All,lesson)+1}　未取得",new(box.X+18,box.Center.Y-30,box.Width-36,60),.65f,Cream);
+            return;
+        }
         var ink=new Color(48,61,68);var accent=lesson==BattleLesson.FlagCourtesy?new Color(51,139,143):lesson==BattleLesson.RetreatBackwards?new Color(184,110,69):lesson==BattleLesson.LeaveFiringLine?new Color(65,123,170):new Color(102,109,172);
         _ui.Box(new(box.X+8,box.Y+10,box.Width,box.Height),new Color(5,16,25)*.45f);
         _ui.Box(box,owned?new Color(250,243,219):new Color(175,186,187));

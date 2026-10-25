@@ -12,7 +12,7 @@ public partial class Game1
     private readonly HashSet<int> _expandedFolderRegions=new();
     private readonly List<(int Kind,int Id,int Depth,int Owner,string Label)> _inspectorFolderRows=new();
     private bool StrategyReadOnly=>_reignView && _strategyRuler>=0 && _strategyRuler!=_setup.PlayerSlot;
-    private Rectangle InspectorFolderButton=>_reignView?new(54,110,32,30):new(54,184,24,28);
+    private Rectangle InspectorFolderButton=>new(54,150,850,50);
     private static readonly Rectangle InspectorFolderPanel=new(64,238,820,650);
     private void DrawCountryFolder(Rectangle r,int owner)
     {
@@ -86,7 +86,13 @@ public partial class Game1
         if(!_reignView && _regionCell<0 && _populationCell<0)return;
         DrawInspector(()=>{
             int owner=_populationNode>=0?_setup.Nodes.All[_populationNode].Owner:_regionCell>=0?_setup.Nodes.All[_inspectedNode].Owner:_strategyRuler>=0?_strategyRuler:_setup.PlayerSlot;
-            DrawCountryFolder(InspectorFolderButton,owner);
+            var header=InspectorFolderButton;
+            _ui.Box(header,_inspectorFoldersOpen || header.Contains(_ui.Pointer)?new Color(65,96,106):new Color(40,67,82));
+            _ui.Box(new(header.X,header.Y,header.Width,3),_setup.OwnerColor(owner));
+            DrawCountryFolder(new(header.X+14,header.Y+12,32,28),owner);
+            string label=_populationNode>=0?"地点 / "+_setup.Nodes.DisplayName(_setup.Nodes.All[_populationNode]):_regionCell>=0?"地域 / "+WorldCoordinates.Label(_setup,_regionCell):"国 / "+_setup.ConquerorFullNames[owner];
+            _ui.Text(label,new(header.X+60,header.Y+13),Math.Min(.55f,(header.Width-116)/Math.Max(1,_font.MeasureString(label).X)),Cream);
+            for(int row=0;row<10;row++)_ui.Box(new(header.Right-38+row,header.Y+21+row,20-row*2,1),Cream);
             if(!_inspectorFoldersOpen)return;
             _ui.Box(new(68,243,820,650),Color.Black*.6f);_ui.Box(InspectorFolderPanel,new Color(23,43,56));
             _ui.Text("所属フォルダー",new(90,254),.6f,Cream);_ui.Button(new(824,248,44,36),"×",Muted,.6f);

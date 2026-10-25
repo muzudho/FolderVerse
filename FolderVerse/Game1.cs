@@ -517,12 +517,12 @@ public partial class Game1 : Game
         int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
         if(_reignView)DrawInspector(()=>{
         int ruler=_strategyRuler>=0?_strategyRuler:_setup.PlayerSlot,rulerCapital=_setup.Capitals[ruler];Color rulerColor=_setup.OwnerColor(ruler);
-        _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Text("国インスペクター",new(96,112),.65f,Cream);var image=new Rectangle(212,220,518,360);
+        _ui.Box(new(54,150,850,825),new(27,49,62));var image=new Rectangle(212,260,518,320);
         if(!InspectingSupervisor && !System.Linq.Enumerable.Any(_setup.Nodes.All,node=>node.Owner==ruler))DrawReignWantedPoster(ruler);
         else
         {
         // Raised ceremonial frame: layered gilt bevels, corners and a crest.
-        _ui.Box(new(188,203,570,412),new Color(4,14,23,180));
+        _ui.Box(new(188,243,570,372),new Color(4,14,23,180));
         Color[] gold={new(100,58,18),new(235,177,64),new(255,231,152),new(127,76,21),new(239,192,85)};
         for(int i=0;i<gold.Length;i++){int margin=24-i*4;_ui.Box(new(image.X-margin,image.Y-margin,image.Width+margin*2,image.Height+margin*2),gold[i]);}
         if(InspectingSupervisor)DrawSupervisor(image,_setup.Nodes.All[_inspectedNode].Owner,_inspectedNode);else _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],image);
@@ -530,8 +530,8 @@ public partial class Game1 : Game
         {
             _spriteBatch.Draw(_pixel,new Vector2(corner.X,corner.Y),null,rulerColor,MathHelper.PiOver4,new Vector2(0.5f),new Vector2(22),SpriteEffects.None,0);
         }
-        if(!InspectingSupervisor && _setup.Relations.Superiors[ruler]<0){_ui.Box(new(330,165,282,42),new(125,78,28));
-        _ui.Center("★ 世界征服者 ★",new(330,165,282,42),0.65f,new(255,227,132));}
+        if(!InspectingSupervisor && HasConqueredWorld(ruler)){_ui.Box(new(330,205,282,42),new(125,78,28));
+        _ui.Center("★ 世界征服者 ★",new(330,205,282,42),0.65f,new(255,227,132));}
         }
         if(InspectingSupervisor)DrawSupervisorSuperior();else DrawControlledRuler(ruler);
         _ui.Box(new(210,633,520,62),new(27,46,55));
@@ -539,9 +539,9 @@ public partial class Game1 : Game
         _ui.Center(formalName,new(90,641,760,56),Math.Min(0.88f,740f/_font.MeasureString(formalName).X),Cream);
         _ui.Center(_setup.TerritoryCounts[ruler]>0?"政治体制　"+WorldSetup.PoliticalSystem:"放浪者",new(90,710,760,45),0.7f,new(181,204,211));
         string capitalLabel=_setup.TerritoryCounts[ruler]==0?"放浪者 / 自国なし":"首都　"+WorldCoordinates.Label(_setup,rulerCapital);
-        _ui.Center(capitalLabel,new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
+        _ui.Center(capitalLabel,new(65,765,840,48),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
         int fully=System.Linq.Enumerable.Count(_setup.Cells,c=>_setup.Nodes.FullOwner(c.Id)==ruler);
-        _ui.Center("完全占領　"+fully+" sector / 地点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==ruler),new(90,842,760,48),0.76f,Cream);
+        _ui.Center("完全占領　"+fully+" sector / 地点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==ruler),new(90,820,760,32),0.6f,Cream);
         if(!StrategyReadOnly)DrawWandererPolicy();
         if(!InspectingSupervisor && !StrategyReadOnly)_ui.Button(LessonCatalogButton,"戦訓カード",Muted,.45f);
         }); _ui.Box(new(MapViewBounds.X-20,142,MapViewBounds.Width+40,750),new(20,42,54));
@@ -587,7 +587,6 @@ public partial class Game1 : Game
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
             if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();_spriteBatch.End();
-            DrawOrientationOverlay(MapViewBounds,canvas,transform);
         }
         else using(var clipping=new RasterizerState{ScissorTestEnable=true})
         {
@@ -599,10 +598,12 @@ public partial class Game1 : Game
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clipping);
             _net.DrawMapObjects(_ui,_setup,NetPanel,_animationTime);_spriteBatch.End();
         }
-        if(!_statusGlobe && !MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
+        _spriteBatch.Begin(transformMatrix:transform);
+        DrawConquerorResidences();DrawRegionOffice();
+        _spriteBatch.End();
+        if(!MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         DrawBattleActivity();
-        DrawRegionOffice();
         DrawDestinationMap();DrawContinuationBadges();DrawWarReservationMarkers();DrawMoveReservationMarkers();DrawDirectTrucks(); DrawDomesticPortrait();
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(InspectorVisible?1276:991,InspectorVisible?770:831),Math.Min(0.48f,(InspectorVisible?600:870)/_font.MeasureString(location).X),Cream);

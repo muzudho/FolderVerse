@@ -11,6 +11,8 @@ public partial class Game1
     private readonly HashSet<int> _landSelection=new();
     private int[] _landOrder=Array.Empty<int>();
     private int _landTurn;
+    private bool _skipOtherLandTurns;
+    private static readonly Rectangle LandSkipOthers=new(60,930,450,60);
     private double _landAge;
     private Point? _landDrag;
     private int[] _automaticLand=Array.Empty<int>();
@@ -21,6 +23,7 @@ public partial class Game1
     private bool LandHumanTurn=>_setup.HumanPlayers.Count==0?LandRuler==_setup.PlayerSlot:_setup.HumanPlayers.Contains(LandRuler);
     private void BeginLandConquest()
     {
+        _skipOtherLandTurns=false;
         _domesticViews.Clear();_landOrder=_setup.LandOrder();_landTurn=0;_landAge=0;_landSelection.Clear();_landDrag=null;_automaticLand=Array.Empty<int>();
         _screen=Screen.LandConquest;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.ShowLandConquest(_setup);
     }
@@ -92,6 +95,11 @@ public partial class Game1
             if(_landAge>=5){_setup.CompleteLand(_random.Next());_world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();}
             return;
         }
+        if(active && click && LandSkipOthers.Contains(_pointer)){_skipOtherLandTurns=!_skipOtherLandTurns;_landDrag=null;}
+        while(_screen==Screen.LandConquest && _skipOtherLandTurns && !LandHumanTurn){
+            _landSelection.Clear();_landSelection.UnionWith(AutomaticLand(LandRuler));ConfirmLand();
+        }
+        if(_screen!=Screen.LandConquest)return;
         bool rotating=OrientationRotating;UpdateOrientationRotation((float)elapsed);
         if(rotating)return;
         if(active && click && OrientationControlClick(_pointer)){_landDrag=null;return;}
@@ -148,6 +156,7 @@ public partial class Game1
         _ui.Text("左ドラッグ：範囲を反転\n右ドラッグ：星を回す\nホイール：拡大・縮小\n飛び地も選択できます",new(60,685),.38f,Color.White);
         _ui.Text("地形と交通路だけで土地を選ぼう",new(60,805),.32f,Cream);
         _ui.Button(LandConfirm,LandHumanTurn?"この土地を獲得":"他国が土地を選択中",LandHumanTurn && _landSelection.Count==_setup.TerritoryRights[LandRuler]?Accent:Muted,.65f);
+        _ui.Button(LandSkipOthers,(_skipOtherLandTurns?"✓ ":"□ ")+"自分のターン以外をスキップ",_skipOtherLandTurns?Accent:Muted,.48f);
     }
     private void DrawLandSetupGlobe(Rectangle canvas,Matrix transform,Viewport viewport)
     {

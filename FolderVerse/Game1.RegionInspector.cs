@@ -36,21 +36,19 @@ public partial class Game1
         var nodes=_setup.Nodes.InCell(_regionCell).OrderByDescending(n=>n.Population.Total).ThenBy(n=>n.Id).ToArray();
         var node=_setup.Nodes.All[_inspectedNode];var color=_setup.OwnerColor(node.Owner);
         _ui.Box(new(54,150,850,825),new Color(27,49,62));
-        _ui.Text("地域インスペクター",new(84,170),.7f,Cream);
-        string name=WorldCoordinates.Label(_setup,_regionCell);
-        _ui.Center(name,new(84,215,780,45),Math.Min(.65f,760/Math.Max(1,_font.MeasureString(name).X)),Cream);
         var image=new Rectangle(229,286,500,326);
         _ui.Box(new(image.X-6,image.Y-6,image.Width+12,image.Height+12),color);
         DrawSupervisor(image,node.Owner,_inspectedNode);
-        _ui.Center("地域監督 / "+RegionOfficeName+"（仮）",new(84,628,780,45),.64f,Cream);
+        _ui.Center("地域監督 / "+RegionOfficeName,new(84,628,780,45),.64f,Cream);
         string owner=node.Owner<0?"未征服":_setup.ConquerorNames[node.Owner]+"の配下";
-        _ui.Center(owner+" / 担当地点："+_setup.Nodes.DisplayName(node),new(84,678,780,28),Math.Min(.38f,760/Math.Max(1,_font.MeasureString(owner+" / 担当地点："+_setup.Nodes.DisplayName(node)).X)),Cream);
+        string assignment=owner+" / 担当地点："+_setup.Nodes.Description(node);
+        _ui.Center(assignment,new(84,678,780,28),Math.Min(.38f,760/Math.Max(1,_font.MeasureString(assignment).X)),Cream);
         _ui.Text("地域内の担当地点を選択",new(84,713),.38f,Cream);
         int pages=Math.Max(1,(nodes.Length+5)/6);
         if(pages>1){_ui.Button(new(644,700,100,40),"←",Muted,.5f);_ui.Button(new(754,700,100,40),"→",Muted,.5f);}
         for(int i=0;i<6;i++){
             int index=_regionNodePage*6+i;if(index>=nodes.Length)break;
-            var n=nodes[index];var r=RegionNodeButton(i);string label=_setup.Nodes.DisplayName(n);
+            var n=nodes[index];var r=RegionNodeButton(i);string label=_setup.Nodes.Description(n);
             _ui.Button(r,label,n.Id==_inspectedNode?Accent:Muted,Math.Min(.4f,(r.Width-16)/Math.Max(1,_font.MeasureString(label).X)));
         }
         DrawNodeAutomation();

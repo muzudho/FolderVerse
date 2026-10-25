@@ -81,7 +81,7 @@ public partial class Game1
     private bool DomesticViewClick(Point p)
     {
         if(_trainingOpen || _supervisorDialog>0)return false;
-        if(InspectorVisible && new Rectangle(InspectorFolderButton.X+NodeInspectorOffset,InspectorFolderButton.Y,InspectorFolderButton.Width,InspectorFolderButton.Height).Contains(p)){OpenInspectorFolders();return true;}
+        if((_reignView || _regionCell>=0 || _populationCell>=0) && new Rectangle(InspectorFolderButton.X+NodeInspectorOffset,InspectorFolderButton.Y,InspectorFolderButton.Width,InspectorFolderButton.Height).Contains(p)){OpenInspectorFolders();return true;}
         if(StrategyReadOnly && new Rectangle(54+NodeInspectorOffset,96,850,879).Contains(p) && !InspectorClose.Contains(p))return true;
         if(TransportOverviewAllowed && !InspectorVisible && DirectDeliveryButton.Contains(p)){if(_directMap)CloseDirectDelivery();else OpenDirectMap();return true;}
         if(_reignView && !InspectingSupervisor && LessonCatalogButton.Contains(new Point(p.X-NodeInspectorOffset,p.Y))){_screen=Screen.LessonCatalog;return true;}

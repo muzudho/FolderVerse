@@ -19,9 +19,9 @@ public partial class Game1
         if(ruler<0)ruler=_setup.PlayerSlot;
         if(ruler==_setup.PlayerSlot && _setup.Relations.Party(_setup).Length>1){_ui.Button(RulerSwitch(0),"← 操作する征服者",Muted,.48f);_ui.Button(RulerSwitch(1),"操作する征服者 →",Muted,.48f);}
         int superior=_setup.Relations.Superiors[ruler];if(superior<0)return;
-        var photo=new Rectangle(64,155,144,100);_ui.Box(new(60,151,152,108),_setup.OwnerColor(superior));
+        var photo=new Rectangle(64,205,144,100);_ui.Box(new(60,201,152,108),_setup.OwnerColor(superior));
         _portraitRenderer.Draw(_spriteBatch,_setup.Looks[superior],photo,true,forCreation:true);
         string label=_setup.ConquerorNames[superior]+"の手下です";
-        _ui.Center(label,new(220,145,660,40),.58f,Cream);
+        _ui.Center(label,new(220,205,660,40),.58f,Cream);
     }
 }

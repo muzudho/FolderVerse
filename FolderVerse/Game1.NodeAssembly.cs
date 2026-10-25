@@ -15,7 +15,7 @@ public partial class Game1
     private int _hangarSource;
     private Point _hangarGrabOffset;
     private string _hangarMessage="";
-    private static readonly Rectangle NodeAssemblyTile=new(678,169,190,60),HangarAutoCheck=new(84,240,770,42);
+    private static readonly Rectangle NodeAssemblyTile=new(678,210,190,40),HangarAutoCheck=new(84,258,770,34);
     private HangarReservation _hangarReservation;
     private static readonly Rectangle HangarAssemblyButton=new(84,860,182,42);
     private static Rectangle HangarReservationButton(int i)=>new(280+i%3*196,860+i/3*48,182,42);

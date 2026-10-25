@@ -9,18 +9,18 @@ public partial class Game1
     private bool _nodeFactoryOpen;
     private int _factoryDropDown=-1,_factoryLine,_factoryPlanLine=-1;
     private string _factoryMessage="";
-    private static readonly Rectangle NodeFactoryTile=new(282,169,190,60);
+    private static readonly Rectangle NodeFactoryTile=new(282,210,190,40);
     private bool NodeFactoriesAllowed=>_setup.TutorialStep!=1;
     private bool CanManageNodeFactory(int owner){for(int r=owner;r>=0;r=_setup.Relations.Superiors[r])if(r==_setup.PlayerSlot)return true;return false;}
     private void OpenNodeFactory(){if(!NodeFactoriesAllowed)return;if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length)return;if(_setup.Robots.Workshops[_populationNode].ProductionLines.Length==0 || !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;_nodeOfficeOpen=false;_lastNodeTab=1;}
-    private static Rectangle FactoryRobotButton(int line,int period)=>new(160+(Math.Min(5,Math.Max(1,period))-1)*72,254+line*220,72,88);
+    private static Rectangle FactoryRobotButton(int line,int period)=>new(160+(Math.Min(5,Math.Max(1,period))-1)*72,288+line*200,72,88);
     private static Rectangle FactoryRobotArrow(int line,int period){var r=FactoryRobotButton(line,period);return new(r.Right+2,r.Y+30,24,28);}
     private static Rectangle FactoryPlanButton(int i)=>new(94+(i<4?i:i-4)*194,510+(i<4?0:155),180,144);
     private Rectangle FactoryDropButton(int field)
     {
         if(field==2)return new(420,884,110,30);
         var line=_setup.Robots.Workshops[_populationNode].ProductionLines[_factoryLine];
-        int period=Math.Min(5,line.Manufacturing?line.ProductionPeriod:1),rest=Math.Min(4,line.RestTurns),y=250+_factoryLine*220;
+        int period=Math.Min(5,line.Manufacturing?line.ProductionPeriod:1),rest=Math.Min(4,line.RestTurns),y=284+_factoryLine*200;
         return field==0?new(160+period*72/2-34,y+155,68,44):new(160+period*72+rest*72/2-34,y+155,68,44);
     }
     private Rectangle FactoryDropOption(int field,int index){var r=FactoryDropButton(field);int count=field==2?13:9;return new(r.X,r.Y-count*30+index*30,r.Width,30);}
@@ -57,7 +57,7 @@ public partial class Game1
 
         int savedLine=_factoryLine;
         for(int l=factory.ProductionLines.Length;l<3;l++){
-            int y=226+l*220;var area=new Rectangle(78,y,782,216);
+            int y=260+l*200;var area=new Rectangle(78,y,782,196);
             if(l>=factory.LineLimit){
                 _ui.Box(area,new Color(24,78,110));
                 for(int row=0;row<7;row++)for(int x=area.X+12;x<area.Right-30;x+=64){int wave=(int)(MathF.Sin(x*.05f+row)*5);_ui.Box(new(x,area.Y+20+row*27+wave,34,3),new Color(76,151,178));}
@@ -65,8 +65,8 @@ public partial class Game1
             }else{_ui.Box(area,new Color(24,43,54));_ui.Center("空きレーン / 工場作業員予約で追加",area,.45f,Cream*.7f);}
         }
         for(int l=0;l<factory.ProductionLines.Length;l++){
-            var line=factory.ProductionLines[l];int y=250+l*220,period=line.Manufacturing?line.ProductionPeriod:1;_factoryLine=l;
-            _ui.Box(new(78,y-24,782,216),l%2==0?new Color(37,63,77):new Color(46,67,79));
+            var line=factory.ProductionLines[l];int y=284+l*200,period=line.Manufacturing?line.ProductionPeriod:1;_factoryLine=l;
+            _ui.Box(new(78,y-24,782,196),l%2==0?new Color(37,63,77):new Color(46,67,79));
             _ui.Center((l+1).ToString(),new(84,y+22,62,96),1.35f,new Color(167,190,194));
             int shownPeriod=Math.Min(5,period),shownRest=Math.Min(4,line.RestTurns);
             for(int i=0;i<shownPeriod+shownRest;i++){int x=160+i*72;_ui.Box(new(x,y+96,72,8),i<shownPeriod?Accent:new Color(137,151,157));_ui.Box(new(x+70,y+96,2,8),new(27,49,62));}

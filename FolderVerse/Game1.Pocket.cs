@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 
 public partial class Game1
 {
-    private static readonly Rectangle PocketButton=new(354,1018,140,52);
+    private static readonly Rectangle PocketButton=new(84,912,190,52);
     private long? _pocketRobot;
     private bool _pocketFromNode;
     private string _pocketMessage="";
