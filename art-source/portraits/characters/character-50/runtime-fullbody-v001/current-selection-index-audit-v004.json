@@ -1,0 +1,10 @@
+{
+  "At": "2026-10-24T08:05:00+09:00",
+  "Status": "CURRENT_INDEX_REFRESH_NOT_ADOPTED",
+  "MastersVerified": 14,
+  "StagedAndSourceVerified": 20,
+  "LinkedFilesVerified": 28,
+  "Manifest": "staged-manifest-v026.json",
+  "Index": "current-selection-review-v004.html",
+  "Notes": "Electionv009 included. Prior v003 is historical. No new generation, no new visual approval, no game build/adoption."
+}

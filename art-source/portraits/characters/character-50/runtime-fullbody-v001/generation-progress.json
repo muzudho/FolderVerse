@@ -1,6 +1,6 @@
 {
   "CharacterId": 50,
-  "UpdatedAt": "2026-10-24T03:05:00+09:00",
+  "UpdatedAt": "2026-10-24T08:05:00+09:00",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018",
   "GameAdopted": false,
@@ -1162,6 +1162,60 @@
               "Y": 140,
               "Width": 720,
               "Height": 540
+            },
+            "Width": 256,
+            "Height": 192,
+            "Status": "REVIEW_ONLY_NOT_STAGED"
+          }
+        },
+        {
+          "Source": "character-50-normal-6-v015-generated.png",
+          "Width": 1024,
+          "Height": 1536,
+          "Sha256": "45c0e83be16f611bc8ff07a94436163fa3a934146c81297f4acda45b68db6d13",
+          "Prompt": "character-50-normal-6-v015-prompt.txt",
+          "References": [
+            "character-50-normal-6-v014-generated.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "NOT_SELECTED_LOWER_HIGHLIGHT_SPILL",
+          "Review": "下側のみ指定したv015でも小白円は分離せず、下反射が白く広がり下瞼外へ白い尖りが出たため不採用。上主点/中央瞳孔/青眼/銀眼鏡/開いた笑顔/前掌と後腕の白手袋/金髪/衣装/電池/全身余白と裾両靴を保持。256x192で顔/前掌/電池判別。体格の厳密測定なし。",
+          "Evidence": "normal-6-eye-review-v015.png",
+          "Preview": {
+            "File": "normal-6-v015-preview.png",
+            "Crop": {
+              "X": 170,
+              "Y": 140,
+              "Width": 720,
+              "Height": 540
+            },
+            "Width": 256,
+            "Height": 192,
+            "Status": "REVIEW_ONLY_NOT_STAGED"
+          }
+        },
+        {
+          "Source": "character-50-normal-6-v016-generated.png",
+          "Width": 1024,
+          "Height": 1536,
+          "Sha256": "1f550b05b8774b2f1b03df27d27864999dee3bdca2d9bece8812e6013f78085c",
+          "Prompt": "character-50-normal-6-v016-prompt.txt",
+          "References": [
+            "art-source/portraits/characters/character-50/character-50-6-v003-generated.png",
+            "character-50-normal-6-v014-generated.png",
+            "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Review": "旧本人場面を主参照に全身を新規描画v016。全身頭飾り/金髪/リボン裾/両靴は画内、左右余白は狭い。開いた笑顔/銀眼鏡/前掌白手袋/後腕白手袋/電池/衣装/宮殿を保持。脚の交差と手の配置が変化。瞳は上寄り反射複数と下側の大きな淡反射になり下小円未達、不採用。256x192で顔/手/電池判別。動的姿勢の厳密頭身未認定。",
+          "Evidence": "normal-6-eye-review-v016.png",
+          "Preview": {
+            "File": "normal-6-v016-preview.png",
+            "Crop": {
+              "X": 140,
+              "Y": 50,
+              "Width": 800,
+              "Height": 600
             },
             "Width": 256,
             "Height": 192,
@@ -2403,6 +2457,58 @@
             "Height": 400,
             "Status": "REVIEW_ONLY_NOT_STAGED"
           }
+        },
+        {
+          "Source": "character-50-paparazzi-v010-generated.png",
+          "Width": 1086,
+          "Height": 1448,
+          "Sha256": "6afd8fdb9b93016c60ba55e894e77888985f46835b0e58efa85715b97f68cff9",
+          "Prompt": "character-50-paparazzi-v010-prompt.txt",
+          "References": [
+            "character-50-paparazzi-v003-generated.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "NOT_SELECTED_HIGHLIGHT_OUTSIDE_EYE_OPENING",
+          "Review": "短い日本語直接編集で上主白円は大きく明瞭になったが、上右円が目の開口外の瞼/肌へはみ出した。下左白点も淡青反射に接触し小円未分離。不採用。右向き驚き小開口/銀眼鏡/金髪/月桂/耳飾り/衣装/電池/白手袋/夕暮れ/全身裾両靴保持。300x400白黒で顔/眼鏡/電池判別、手は切出し外。",
+          "Evidence": "paparazzi-eye-review-v010.png",
+          "Preview": {
+            "File": "paparazzi-v010-preview.png",
+            "Grayscale": "paparazzi-v010-grayscale.png",
+            "Crop": {
+              "X": 260,
+              "Y": 0,
+              "Width": 540,
+              "Height": 720
+            },
+            "Width": 300,
+            "Height": 400
+          }
+        },
+        {
+          "Source": "character-50-paparazzi-v011-generated.png",
+          "Width": 1086,
+          "Height": 1448,
+          "Sha256": "f3e748c8f6636f34f68f47fa427523f773b1e6873dd63cb3a6b792450118b6f9",
+          "Prompt": "character-50-paparazzi-v011-prompt.txt",
+          "References": [
+            "character-50-paparazzi-v010-generated.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Review": "v010の瞼/肌へ出た白円はv011で除去され目の開口内に戻った。ただし主白点は縮小し右側眼は小点、下小白円は両眼とも淡青反射へ混じって未分離。全体の画風条件改善とは判定せず不採用。右向き驚き小開口/銀眼鏡/金髪/月桂/耳飾り/衣装/電池/白手袋/夕暮れ/全身裾両靴保持。300x400白黒で顔/眼鏡/電池判別、手は切出し外。",
+          "Evidence": "paparazzi-eye-review-v011.png",
+          "Preview": {
+            "File": "paparazzi-v011-preview.png",
+            "Grayscale": "paparazzi-v011-grayscale.png",
+            "Crop": {
+              "X": 260,
+              "Y": 0,
+              "Width": 540,
+              "Height": 720
+            },
+            "Width": 300,
+            "Height": 400
+          }
         }
       ],
       "Audit20261022": {
@@ -2634,6 +2740,32 @@
             "Width": 300,
             "Height": 400
           }
+        },
+        {
+          "Source": "character-50-coin-v010-generated.png",
+          "Width": 1024,
+          "Height": 1536,
+          "Sha256": "f29cff6f7bc96a91673761bc64ed8e24eed597cd114c457feb3acd14d9c8f3a5",
+          "Prompt": "character-50-coin-v010-prompt.txt",
+          "References": [
+            "character-50-coin-v004-generated.png"
+          ],
+          "Method": "built-in image_gen",
+          "Status": "NOT_SELECTED_SUPPLEMENT_UNCLEAR",
+          "Review": "短い日本語直接編集v010でも上主点は小さく、下側は白水色の大きい涙滴状反射となり小円未達。不採用。左横顔/閉じ口/青眼/銀眼鏡つる/金髪/月桂/菱耳飾り/青白金衣装/電池/重ね白手袋/暖灰背景/全身裾両靴保持。隠れた目追加なし。300x400白黒で顔/眼鏡/電池/手判別。厳密頭身未認定。",
+          "Evidence": "coin-eye-review-v010.png",
+          "Preview": {
+            "File": "coin-v010-preview.png",
+            "Grayscale": "coin-v010-grayscale.png",
+            "Crop": {
+              "X": 200,
+              "Y": 20,
+              "Width": 570,
+              "Height": 760
+            },
+            "Width": 300,
+            "Height": 400
+          }
         }
       ],
       "Audit20261022": {
@@ -2690,7 +2822,7 @@
       }
     }
   ],
-  "Next": "No50 normal6 tall composition v013/v014: margins recovered but lower highlights not transferred; selected v003/stagedv026/Game0/20 unchanged. Stop further identical iris redraw/face transfers across remaining3. Next prepare adoption-readiness checklist and verify original backups/live hashes/build path separately while documenting unresolved normal6/paparazzi/coin; do not mark adopted or silently waive style requirements.",
+  "Next": "No50 supervision artistic judgment requested07:35 has no human answer yet; heartbeat is not approval. Current-selection reviewv004 now matches stagedv026 including electionv009;14master/20staged hashes verified08:05. Keep adoption pending, do not repeat failed glint generation or duplicate user question. Independent non-destructive prep only if useful; unchanged state stay quiet.",
   "CurrentSelectionAudit": {
     "Report": "current-selection-audit-v003.md",
     "Review": "current-selection-review-v003.html",
@@ -2710,5 +2842,38 @@
     "At": "2026-10-24T02:35:00+09:00",
     "Source": "作品統一感仕様4.2",
     "Finding": "過去の「白点が白目へかかるだけで未達」という判定は仕様にない過剰制約。仕様4.2は虹彩輪郭への接触と目の開口内トリミングを要求する。白目への重なり単独は不採用理由にしない。旧試作の大小分離/目の開口外へのはみ出し/縁の視認性を個別評価する。過去ログは履歴として残す。"
+  },
+  "PreAdoptionAudit": {
+    "Report": "pre-adoption-readiness-v001.md",
+    "Evidence": "pre-adoption-audit-v001.json",
+    "BackupLiveHashMatches": 20,
+    "StagedHashMatches": 20,
+    "OriginalOutputNormalPixels": 12,
+    "OriginalOutputNewspaperHashes": 8,
+    "Status": "PREPARED_NOT_ADOPTED_NOT_BUILT"
+  },
+  "RemainingThreeComparison": {
+    "Html": "remaining-three-comparison-v001.html",
+    "Report": "remaining-three-decision-v001.md",
+    "Evidence": "remaining-three-comparison-v001.json",
+    "Status": "REVIEWED_NOT_ADOPTED"
+  },
+  "EarlyCandidateReview": {
+    "Html": "early-candidate-review-v001.html",
+    "Evidence": "early-candidate-review-v001.json",
+    "ReviewedCount": 11,
+    "Status": "NO_NEW_SELECTION"
+  },
+  "SupervisionReview": {
+    "File": "supervision-review-v001.html",
+    "Status": "ARTISTIC_JUDGMENT_REQUESTED_NOT_APPROVED",
+    "Question": "現候補の下側反射表現を今回許容してNo50適用へ進むか、明瞭な小白円を必須として修正を続けるか",
+    "Scope": "No50 current stagedv026 only; no generalized style approval",
+    "GameAdopted": false
+  },
+  "CurrentSelectionIndex": {
+    "File": "current-selection-review-v004.html",
+    "Evidence": "current-selection-index-audit-v004.json",
+    "Status": "LINKS_HASHES_VERIFIED_NOT_NEW_VISUAL_APPROVAL"
   }
 }

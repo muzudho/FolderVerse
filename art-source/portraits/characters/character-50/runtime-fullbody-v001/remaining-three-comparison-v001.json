@@ -1,0 +1,45 @@
+{
+  "At": "2026-10-24T05:35:00+09:00",
+  "Status": "NOT_ADOPTED",
+  "Rows": [
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Candidate": "character-50-normal-6-v014-generated.png",
+      "Eye": "normal-6-eye-review-v014.png",
+      "Preview": "normal-6-v014-preview.png",
+      "Finding": "全身余白を回復、主白点は明瞭。下小円が淡青反射へ混じり、上寄りの別小点あり。顔/前掌/電池は通常サイズで判別。",
+      "Next": "次の修正対象はこの版の下側反射のみ。上主点と全身余白は維持し、小白円を1つ区別できるようにする。",
+      "Selected": "character-50-normal-6-v003-generated.png",
+      "TrialCount": 15,
+      "CandidateSha256": "b3ef96be5a449db68d0b5fb1c21c37a097d08c956609f3a5e613fa434b8ca465",
+      "Status": "REVIEWED_NOT_SELECTED"
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Candidate": "character-50-paparazzi-v011-generated.png",
+      "Eye": "paparazzi-eye-review-v011.png",
+      "Preview": "paparazzi-v011-grayscale.png",
+      "Finding": "開口外白円は除去。主白点は左右不均等で小さく、下小円未分離。顔/眼鏡/電池は白黒で判別、手は切出し外。",
+      "Next": "主/補助の両方が残課題。v010の開口外白円へ戻さない。通常6の下反射修正が成功するまで同方式反復を保留。",
+      "Selected": "character-50-paparazzi-v003-generated.png",
+      "TrialCount": 12,
+      "CandidateSha256": "f3e748c8f6636f34f68f47fa427523f773b1e6873dd63cb3a6b792450118b6f9",
+      "Status": "REVIEWED_NOT_SELECTED"
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Candidate": "character-50-coin-v010-generated.png",
+      "Eye": "coin-eye-review-v010.png",
+      "Preview": "coin-v010-grayscale.png",
+      "Finding": "主白点小、下反射が涙滴状で小円ではない。左横顔と眼鏡つる保持。白黒で顔/電池/白手袋判別。",
+      "Next": "眼鏡つるが可視虹彩を横切る固有条件あり。隠れた目追加や横顔変更はしない。通常6の代表修正結果を待って手法を決める。",
+      "Selected": "character-50-coin-v004-generated.png",
+      "TrialCount": 13,
+      "CandidateSha256": "f29cff6f7bc96a91673761bc64ed8e24eed597cd114c457feb3acd14d9c8f3a5",
+      "Status": "REVIEWED_NOT_SELECTED"
+    }
+  ]
+}
