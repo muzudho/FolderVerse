@@ -87,7 +87,7 @@ public partial class Game1
         _factoryLine=savedLine;
         _ui.Text("格納庫は必ず",new(180,888),.43f,Cream);FactoryDrop(2,factory.ReservedSlots);_ui.Text("個空ける",new(552,888),.43f,Cream);
         DrawNodeTabs();
-        if(_factoryPlanLine>=0){var line=factory.ProductionLines[_factoryPlanLine];_ui.Box(new(84,455,790,370),new(22,40,54));_ui.Text($"生産ライン {_factoryPlanLine+1} / 正規・安いパーツ",new(160,469),.45f,Cream);for(int i=0;i<7;i++){var r=FactoryPlanButton(i);_ui.Box(r,line.SelectedPlan==i?Accent:Muted);if(i==3)_ui.Center("製造しない",r,.42f,line.SelectedPlan==i?SelectionInk:Cream);else{var plan=line.PlanAt(i);DrawRobotGlyph(new(r.X+54,r.Y+8,72,88),node.Owner,plan.Product,cheap:plan.Cheap);_ui.Center($"{(plan.Cheap?"安い":"正規")} / {plan.Turns}産業ターン",new(r.X,r.Bottom-36,r.Width,28),.32f,line.SelectedPlan==i?SelectionInk:Cream);}}}
+        if(_factoryPlanLine>=0){var line=factory.ProductionLines[_factoryPlanLine];_ui.Box(new(84,455,790,370),new(22,40,54));_ui.Text($"生産ライン {_factoryPlanLine+1} / 正規・安いパーツ",new(160,469),.45f,Cream);for(int i=0;i<7;i++){var r=FactoryPlanButton(i);_ui.Box(r,line.SelectedPlan==i?Accent:Muted);if(i==3)_ui.Center("製造しない",r,.42f,line.SelectedPlan==i?SelectionInk:Cream);else{var plan=line.PlanAt(i);DrawRobotGlyph(new(r.X+54,r.Y+8,72,88),node.Owner,plan.Product,whiteOutline:true,cheap:plan.Cheap);_ui.Center($"{(plan.Cheap?"安い":"正規")} / {plan.Turns}産業ターン",new(r.X,r.Bottom-36,r.Width,28),.32f,line.SelectedPlan==i?SelectionInk:Cream);}}}
         if(_factoryDropDown>=0)for(int i=0;i<(_factoryDropDown==2?13:9);i++)_ui.Button(FactoryDropOption(_factoryDropDown,i),(_factoryDropDown==2?i:i+1).ToString(),Muted,.42f);
     }
     private void DrawFactoryOmission(int x,int y)
