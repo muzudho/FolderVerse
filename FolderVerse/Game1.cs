@@ -279,6 +279,7 @@ public partial class Game1 : Game
                 }
                 bool action=click && (TransportOverviewClick(_pointer) || RouteLayerClick(_pointer) || BatteryClick(_pointer) || MovementClick(_pointer,keyboard) || NodeDialogClick(_pointer,keyboard));
                 if(!action && click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
+                else if(!action && click && NetButton(3).Contains(_pointer))FocusInspectorLocation();
                 else if(!action && click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
                 DragStatusMap(mouse,active);
                 GlobeCellClick(mouse,click,active,action);
@@ -301,7 +302,8 @@ public partial class Game1 : Game
             else if(click && MovementClick(_pointer,keyboard)){}
             else if(click && NodeDialogClick(_pointer,keyboard)){}
             else if(click && NetButton(2).Contains(_pointer))FocusCurrentNode();
-            else if(click && NetButton(3).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
+            else if(click && NetButton(3).Contains(_pointer))FocusInspectorLocation();
+            else if(click && NetButton(4).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
             else if(click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
             else if(click && !pan && !_net.IsAnimating && _net.ClickEdge()){RecordTutorialMapEdge();}
             else if(click && !pan && !_movementOpen && !_net.IsAnimating && _statusCell>=0)
@@ -561,6 +563,7 @@ public partial class Game1 : Game
         if(MapTransitionActive)
         {
             var viewport=GraphicsDevice.Viewport;GraphicsDevice.Viewport=new Viewport(canvas);
+            _net.RegionFocusCell=RegionMapFocusCell;
             DrawMapTransition();GraphicsDevice.Viewport=viewport;
         }
         else if(_statusGlobe)
@@ -568,6 +571,7 @@ public partial class Game1 : Game
             var viewport=GraphicsDevice.Viewport;
             var areas=OrientationAreas(NetPanel,false);
             GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
+            _net.RegionFocusCell=_world.RegionFocusCell=RegionMapFocusCell;
             _net.SelectedCell=_world.SelectedCell=_transportOverview || _net.ShowRoutes?-1:_selectedMapCell;
             _world.SelectionSetup=_setup;
             _world.Draw(_yaw,_pitch,_animationTime,false,true);
@@ -586,6 +590,7 @@ public partial class Game1 : Game
         {
             _spriteBatch.Begin(transformMatrix:_net.ScreenTransform(NetPanel)*transform,rasterizerState:clipping);
             var mapPointer=_ui.Pointer;_ui.Pointer=_net.UnrotateScreen(_pointer,NetPanel);
+            _net.RegionFocusCell=RegionMapFocusCell;
             _net.SelectedCell=_transportOverview || _net.ShowRoutes?-1:_selectedMapCell;
             _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:(_statusCell>=0?_statusCell:_selectedMapCell),_animationTime,false);_ui.Pointer=mapPointer;_spriteBatch.End();
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clipping);
@@ -597,7 +602,9 @@ public partial class Game1 : Game
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(InspectorVisible?1276:991,InspectorVisible?770:831),Math.Min(0.48f,(InspectorVisible?600:870)/_font.MeasureString(location).X),Cream);
         _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):"右ドラッグ："+(MapDragSlide?"スライド":"回転")+" / ホイール：拡縮",new(InspectorVisible?1276:991,InspectorVisible?810:865),InspectorVisible?.27f:0.37f,new(177,206,216));
-        _ui.Button(NetButton(2),"現在地へ移動",Accent,0.45f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
+        _ui.Button(NetButton(2),"征服者はどこ？",Accent,0.45f);
+        _ui.Button(NetButton(3),"今どこ見てる？",InspectorLocationNode>=0?Accent:Muted,0.45f);
+        if(!_statusGlobe)_ui.Button(NetButton(4),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
         if(_statusCell>=0 && !InspectorVisible)
         {
             var cell=_setup.Cells[_statusCell];int owner=_setup.Owners[cell.Id];

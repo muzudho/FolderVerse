@@ -20,6 +20,18 @@ sealed class RegionChecks:Game1{
   Set("_pointer",at.ToPoint());Call("GlobeCellClick",new MouseState(),true,true,false);
   Check((int)Get("_regionCell")==cell && (int)Get("_populationCell")==-1 && (bool)Get("_statusGlobe"),"Globe region click opens its inspector without switching view or opening a node");
   Call("UpdateDomesticSlide",.4f);
+  Check((int)Prop("RegionMapFocusCell")==cell,"Only the inspected region is exempt from dimming");
+  int other=w.Cells.First(c=>c.Id!=cell).Id;
+  net.RegionFocusCell=-1;var original=net.TerrainColor(w,other,.5f);var selectedOriginal=net.TerrainColor(w,cell,.5f);
+  net.RegionFocusCell=cell;var dimmed=net.TerrainColor(w,other,.5f);
+  Check(Math.Abs(dimmed.R-original.R*.65f)<=1 && Math.Abs(dimmed.G-original.G*.65f)<=1 && Math.Abs(dimmed.B-original.B*.65f)<=1 && dimmed.A==original.A,"Other terrain cells retain 65 percent RGB and their opacity");
+  Check(net.TerrainColor(w,cell,.5f)==selectedOriginal,"Inspected region keeps its original terrain color");
+  world.GlobePan=new Vector2(.4f,.2f);Call("FocusInspectorLocation");
+  var inspected=w.Nodes.All[(int)Get("_inspectedNode")];
+  Check(world.ProjectVisible(w.Routes.Position(inspected.Cell,inspected.Center),w.Cells[inspected.Cell].Normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),(Rectangle)Prop("StatusGlobeArea"),out var centered) && Vector2.Distance(centered,((Rectangle)Prop("MapViewBounds")).Center.ToVector2())<1,"Inspector button centers the inspected region subject on the globe");
+  Set("_statusGlobe",false);net.Drag(new Vector2(350,180));Call("FocusInspectorLocation");
+  Check(Vector2.Distance(net.NodePosition(w,inspected,(Rectangle)Prop("NetPanel")),((Rectangle)Prop("MapViewBounds")).Center.ToVector2())<1,"Inspector button centers both axes on the unfolded map");
+  Set("_statusGlobe",true);
   Check((bool)Prop("InspectorVisible"),"Region inspector shares the panel animation");
   var nodes=w.Nodes.InCell(cell).OrderByDescending(n=>n.Population.Total).ThenBy(n=>n.Id).ToArray();
   var r=(Rectangle)typeof(Game1).GetMethod("RegionNodeButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{0})!;
@@ -29,7 +41,7 @@ sealed class RegionChecks:Game1{
   Call("SupervisorDialogInput",false,true,new KeyboardState());Check((int)Get("_supervisorDialog")==0,"Escape dismisses supervisor dialog");
   int foreign=Enumerable.Range(1,w.ActiveCount-1).First(n=>!w.Relations.Controls(n));w.Nodes.All[representative].Owner=foreign;
   Call("NodeAutomationClick",new Point(200,940));Check((int)Get("_supervisorDialog")==0,"Foreign regional supervisor remains read only");w.Nodes.All[representative].Owner=0;
-  Call("OpenNodeInspector",node);Check((int)Get("_regionCell")==-1 && (int)Get("_populationNode")==node && (bool)Get("_nodeOfficeOpen"),"Point selection initially opens the office");
+  Call("OpenNodeInspector",node);Check((int)Prop("RegionMapFocusCell")==-1,"Point inspector clears region dimming");Check((int)Get("_regionCell")==-1 && (int)Get("_populationNode")==node && (bool)Get("_nodeOfficeOpen"),"Point selection initially opens the office");
   Check(!(bool)Get("_nodeAssemblyOpen"),"Office does not overlap the hangar");
   var assemblyTab=(Rectangle)typeof(Game1).GetField("NodeAssemblyTile",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
   Call("NodeDialogClick",assemblyTab.Center,new KeyboardState());Check((bool)Get("_nodeAssemblyOpen"),"Hangar tab opens");

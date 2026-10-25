@@ -6,6 +6,28 @@ public partial class Game1
     private int _inspectorCenterNode=-1;
     private bool _inspectorCenterPending,_inspectorCenterGlobe;
     private float _inspectorCenterAge=-1,_inspectorCenterDistance,_inspectorCenterApplied;
+    private int InspectorLocationNode=>_nodeInspectorClosing?-1:_regionCell>=0?_inspectedNode:_populationNode;
+    private void FocusInspectorLocation()
+    {
+        int id=InspectorLocationNode;
+        if(id<0 || id>=_setup.Nodes.All.Length || MapTransitionActive || _net.IsAnimating)return;
+        _inspectorCenterPending=false;_inspectorCenterAge=-1;
+        var node=_setup.Nodes.All[id];
+        var position=_setup.Routes.Position(node.Cell,node.Center);
+        _domesticMapLeft=55+480*_domesticSlide;
+        Vector2 at;
+        if(_statusGlobe){
+            FocusGlobePosition(position);
+            if(!_world.ProjectVisible(position,_setup.Cells[node.Cell].Normal,_yaw,_pitch,StatusGlobeArea,out at))return;
+            var delta=MapViewBounds.Center.ToVector2()-at;
+            _world.GlobePan+=new Vector2(delta.X/StatusGlobeArea.Width,delta.Y/StatusGlobeArea.Height);
+        }else{
+            _net.SetCenter(_setup,_setup.Cells[node.Cell].Face);
+            at=_net.NodePosition(_setup,node,NetPanel);
+            _net.Drag(MapViewBounds.Center.ToVector2()-at);
+        }
+        _dragging=_mapDragging=false;
+    }
     private void QueueInspectorCenter(int node)
     {
         _inspectorCenterNode=node;_inspectorCenterPending=node>=0;_inspectorCenterAge=-1;

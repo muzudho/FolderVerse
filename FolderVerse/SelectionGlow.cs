@@ -10,5 +10,6 @@ internal static class SelectionGlow
 }
 public sealed partial class CubeNet
 {
+    public int RegionFocusCell {get;set;}=-1;
     public int SelectedCell {get;set;}=-1;
 }

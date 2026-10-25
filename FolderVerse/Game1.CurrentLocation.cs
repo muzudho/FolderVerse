@@ -21,7 +21,7 @@ public partial class Game1
             int ruler=_setup.PlayerSlot;
             if(ruler>=0 && _setup.Relations.Powered[ruler] && !MapTransitionActive && !_net.IsAnimating){
                 var hint=new Rectangle(MapViewBounds.X+16,MapViewBounds.Y+105,480,38);
-                _ui.Box(hint,new(12,31,43));_ui.Center("現在地は画面外 / 現在地へ移動 で表示",hint,.42f,Cream);
+                _ui.Box(hint,new(12,31,43));_ui.Center("現在地は画面外 / 征服者はどこ？ で表示",hint,.42f,Cream);
             }
             return;
         }

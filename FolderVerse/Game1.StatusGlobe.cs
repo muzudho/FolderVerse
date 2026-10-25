@@ -93,8 +93,12 @@ public partial class Game1
         _world.GlobePan=Vector2.Zero;
         _domesticMapLeft=55+480*_domesticSlide;
         _globeSelectedNode=_setup.Nodes.Current(_setup.PlayerSlot)?.Id??-1;
-        _world.GlobeAnchor=CurrentMapPosition();
-        var point=CurrentMapPosition();
+        FocusGlobePosition(CurrentMapPosition());
+    }
+    private void FocusGlobePosition(Vector3 point)
+    {
+        _world.GlobePan=Vector2.Zero;
+        _world.GlobeAnchor=point;
         _pitch=MathF.Atan2(point.Y,point.Z);
         if(_pitch>MathHelper.PiOver2)_pitch-=MathHelper.Pi;
         if(_pitch< -MathHelper.PiOver2)_pitch+=MathHelper.Pi;
