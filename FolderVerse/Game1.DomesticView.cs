@@ -32,6 +32,7 @@ public partial class Game1
     private void ResetInspector(){
         _inspectorFoldersOpen=false;_strategyRuler=-1;
         _nodeOfficeOpen=false;
+        if(_routesBeforeRegionInspector.HasValue){_net.ShowRoutes=_routesBeforeRegionInspector.Value;_routesBeforeRegionInspector=null;}
         _regionCell=-1;
         QueueInspectorCenter(-1);
         CloseDirectDelivery();

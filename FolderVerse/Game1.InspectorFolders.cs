@@ -43,8 +43,16 @@ public partial class Game1
         if(node<0 || node>=_setup.Nodes.All.Length)node=_setup.Nodes.Current(_setup.PlayerSlot)?.Id??-1;
         _folderContextNode=node;
         if(node>=0)_expandedFolderRegions.Add(_setup.Nodes.All[node].Cell);
-        BuildInspectorFolders();_folderScroll=0;_inspectorFoldersOpen=true;
+        BuildInspectorFolders();
+        int current=_inspectorFolderRows.FindIndex(row=>IsCurrentInspectorFolder(row.Kind,row.Id));
+        _folderScroll=Math.Clamp(current-4,0,Math.Max(0,_inspectorFolderRows.Count-10));_inspectorFoldersOpen=true;
     }
+    private bool IsCurrentInspectorFolder(int kind,int id)=>kind switch {
+        0=>_reignView && id==(_strategyRuler>=0?_strategyRuler:_setup.PlayerSlot),
+        1=>_regionCell>=0 && id==_regionCell,
+        2=>_populationNode>=0 && id==_populationNode,
+        _=>false
+    };
     private void OpenInspectorFolderRow(int index)
     {
         if(index<0 || index>=_inspectorFolderRows.Count)return;
@@ -85,7 +93,7 @@ public partial class Game1
             for(int i=0;i<10;i++){
                 int index=_folderScroll+i;if(index>=_inspectorFolderRows.Count)break;
                 var row=_inspectorFolderRows[index];int x=90+Math.Min(row.Depth,10)*25,y=298+i*56;
-                var r=new Rectangle(80,y,788,52);if(r.Contains(_ui.Pointer))_ui.Box(r,new Color(48,72,87));
+                var r=new Rectangle(80,y,788,52);if(IsCurrentInspectorFolder(row.Kind,row.Id)){_ui.Box(r,new Color(65,96,106));_ui.Box(new(r.X,y,5,r.Height),Accent);}else if(r.Contains(_ui.Pointer))_ui.Box(r,new Color(48,72,87));
                 if(row.Depth>0){_ui.Box(new(x-13,y-17,1,43),Muted);_ui.Box(new(x-13,y+25,18,1),Muted);}
                 if(row.Kind==1)_ui.Text(_expandedFolderRegions.Contains(row.Id)?"－":"+",new(x,y+13),.4f,Cream);
                 DrawCountryFolder(new(x+25,y+12,30,28),row.Owner);

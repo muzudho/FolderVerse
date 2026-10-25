@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 
 public partial class Game1
 {
+    private bool? _routesBeforeRegionInspector;
     private int _regionCell=-1,_regionNodePage;
     private int AutomationNode=>_regionCell>=0?_inspectedNode:_populationNode;
     private static Rectangle RegionNodeButton(int slot)=>new(84+slot%2*395,750+slot/2*46,380,40);
@@ -13,7 +14,8 @@ public partial class Game1
         if(cell<0 || cell>=_setup.Cells.Length)return;
         var nodes=_setup.Nodes.InCell(cell).OrderByDescending(n=>n.Population.Total).ThenBy(n=>n.Id).ToArray();
         if(nodes.Length==0)return;
-        ResetInspector();_regionCell=_selectedMapCell=cell;_inspectedNode=nodes[0].Id;_regionNodePage=0;
+        bool routes=_routesBeforeRegionInspector??_net.ShowRoutes;
+        ResetInspector();_routesBeforeRegionInspector=routes;_net.ShowRoutes=false;_regionCell=_selectedMapCell=cell;_inspectedNode=nodes[0].Id;_regionNodePage=0;
         QueueInspectorCenter(_inspectedNode);
     }
     private bool RegionInspectorClick(Point point)
@@ -33,7 +35,7 @@ public partial class Game1
         var nodes=_setup.Nodes.InCell(_regionCell).OrderByDescending(n=>n.Population.Total).ThenBy(n=>n.Id).ToArray();
         var node=_setup.Nodes.All[_inspectedNode];var color=_setup.OwnerColor(node.Owner);
         _ui.Box(new(54,150,850,825),new Color(27,49,62));
-        _ui.Text("区画インスペクター",new(84,170),.7f,Cream);
+        _ui.Text("地域インスペクター",new(84,170),.7f,Cream);
         string name=WorldCoordinates.Label(_setup,_regionCell);
         _ui.Center(name,new(84,215,780,45),Math.Min(.65f,760/Math.Max(1,_font.MeasureString(name).X)),Cream);
         var image=new Rectangle(229,286,500,326);
@@ -42,7 +44,7 @@ public partial class Game1
         _ui.Center("地域監督",new(84,628,780,45),.64f,Cream);
         string owner=node.Owner<0?"未征服":_setup.ConquerorNames[node.Owner]+"の配下";
         _ui.Center(owner+" / 担当地点："+_setup.Nodes.DisplayName(node),new(84,678,780,28),Math.Min(.38f,760/Math.Max(1,_font.MeasureString(owner+" / 担当地点："+_setup.Nodes.DisplayName(node)).X)),Cream);
-        _ui.Text("区画内の担当地点を選択",new(84,713),.38f,Cream);
+        _ui.Text("地域内の担当地点を選択",new(84,713),.38f,Cream);
         int pages=Math.Max(1,(nodes.Length+5)/6);
         if(pages>1){_ui.Button(new(644,700,100,40),"←",Muted,.5f);_ui.Button(new(754,700,100,40),"→",Muted,.5f);}
         for(int i=0;i<6;i++){

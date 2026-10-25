@@ -45,6 +45,10 @@ sealed class RegionChecks:Game1{
    Call("OpenNodeInspector",node);Check((bool)Get(tab.Item2),"Factory/disposal tab is remembered on reopening");
   }
   Call("OpenNodeOffice");
+  net.ShowRoutes=true;Call("OpenRegionInspector",cell);
+  Check(!net.ShowRoutes,"Region inspector temporarily selects regions");
+  Call("OpenRegionInspector",cell);Check(!net.ShowRoutes,"Reopening preserves temporary region mode");
+  Call("ResetInspector");Check(net.ShowRoutes,"Leaving region inspector restores point mode");
   Call("OpenRegionInspector",cell);Call("UpdateDomesticSlide",1f);
  }
  protected override void Update(GameTime t){}

@@ -568,6 +568,8 @@ public partial class Game1 : Game
             var viewport=GraphicsDevice.Viewport;
             var areas=OrientationAreas(NetPanel,false);
             GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
+            _net.SelectedCell=_world.SelectedCell=_transportOverview || _net.ShowRoutes?-1:_selectedMapCell;
+            _world.SelectionSetup=_setup;
             _world.Draw(_yaw,_pitch,_animationTime,false,true);
             _net.HoveredBattery=_net.HitBattery(_pointer);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1;
@@ -584,6 +586,7 @@ public partial class Game1 : Game
         {
             _spriteBatch.Begin(transformMatrix:_net.ScreenTransform(NetPanel)*transform,rasterizerState:clipping);
             var mapPointer=_ui.Pointer;_ui.Pointer=_net.UnrotateScreen(_pointer,NetPanel);
+            _net.SelectedCell=_transportOverview || _net.ShowRoutes?-1:_selectedMapCell;
             _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:(_statusCell>=0?_statusCell:_selectedMapCell),_animationTime,false);_ui.Pointer=mapPointer;_spriteBatch.End();
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clipping);
             _net.DrawMapObjects(_ui,_setup,NetPanel,_animationTime);_spriteBatch.End();

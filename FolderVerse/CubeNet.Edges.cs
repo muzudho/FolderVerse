@@ -135,6 +135,7 @@ public sealed partial class CubeNet
             {
                 var p=cell.Origin+cell.U*((x+.5f)/detail)+cell.V*((y+.5f)/detail);float elevation=WorldTerrain.Elevation(p,offset);
                 var color=TerrainColor(world,cell.Id,elevation);
+                if(!ShowRoutes && cell.Id==SelectedCell)color=SelectionGlow.Brighten(color,(x+.5f)/detail,(y+.5f)/detail,pulse);
                 var post=world.Nodes.At(cell.Id,new Point(x,y));
                 ui.Tile(Project(p),new Vector2(fit.Scale/detail+1),moving?angle:0,color);
             }

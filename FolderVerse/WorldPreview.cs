@@ -178,6 +178,7 @@ public sealed partial class WorldPreview : IDisposable
             foreach(var pass in _effect.CurrentTechnique.Passes){pass.Apply();_device.DrawPrimitives(PrimitiveType.TriangleList,0,_highlightCount);}
             _effect.DiffuseColor=Vector3.One;_effect.LightingEnabled=true;
         }
+        if(globeView)DrawCellSelection(glow);
         if(_markers != null && markers)
         {
             _device.SetVertexBuffer(_markers); _effect.LightingEnabled=false;

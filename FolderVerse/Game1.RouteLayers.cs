@@ -11,7 +11,7 @@ public partial class Game1
     private bool _mapLayerListOpen;
     private bool _trafficLayerListOpen;
     private static readonly string[] MapLayerNames={"地形","国区画色分け"};
-    private static readonly string[] TrafficLayerNames={"区画を選択","地点を選択"};
+    private static readonly string[] TrafficLayerNames={"地域を選択","地点を選択"};
     private static Rectangle MapLayerOption(int i)=>new(1480,134+i*52,190,52);
     private static Rectangle TrafficLayerOption(int i)=>new(1638,134+i*52,220,52);
     private bool RouteLayerClick(Point pointer)

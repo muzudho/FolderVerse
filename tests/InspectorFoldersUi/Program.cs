@@ -21,6 +21,7 @@ sealed class FolderChecks:Game1{
   Call("OpenNodeOffice");var icon=(Rectangle)Prop("InspectorFolderButton");Check((bool)Call("DomesticViewClick",icon.Center) && (bool)Get("_inspectorFoldersOpen"),"Office folder icon opens the tree");
   Check(Rows().Take(3).Select(r=>r.Id).SequenceEqual(new[]{2,1,0}) && Rows().Take(3).All(r=>r.Kind==0),"Boss chain includes all ancestors in top-down order");
   Check(Rows().Any(r=>r.Kind==1) && Rows().Any(r=>r.Kind==2 && r.Id==node),"Region and point supervisor folders are available");
+  Check((bool)Call("IsCurrentInspectorFolder",2,node) && !(bool)Call("IsCurrentInspectorFolder",1,w.Nodes.All[node].Cell),"Only the active point folder is highlighted");
   int expandIndex=Rows().FindIndex(r=>r.Kind==1);var expandRow=Rows()[expandIndex];
   bool expanded=((HashSet<int>)Get("_expandedFolderRegions")).Contains(expandRow.Id);
   Set("_pointer",new Point(94+Math.Min(expandRow.Depth,10)*25,318+expandIndex*56));
@@ -33,6 +34,7 @@ sealed class FolderChecks:Game1{
   Call("OpenInspectorFolderRow",0);Check((bool)Get("_reignView") && (int)Get("_strategyRuler")==2 && w.PlayerSlot==0 && (bool)Prop("StrategyReadOnly"),"Top boss opens the strategy inspector without changing turn or control");
   Call("OpenInspectorFolders");int own=Rows().FindIndex(r=>r.Kind==0 && r.Id==0);Call("OpenInspectorFolderRow",own);Check((bool)Get("_reignView") && !(bool)Prop("StrategyReadOnly") && w.PlayerSlot==0,"Current conqueror opens the same editable strategy inspector");
   Call("OpenInspectorFolders");int region=Rows().FindIndex(r=>r.Kind==1 && r.Id==w.Nodes.All[node].Cell);Check(region>=0,"Context region is in the tree");Call("OpenInspectorFolderRow",region);Check((int)Get("_regionCell")==w.Nodes.All[node].Cell,"Region folder opens regional supervisor");
+  Check((bool)Call("IsCurrentInspectorFolder",1,w.Nodes.All[node].Cell) && !(bool)Call("IsCurrentInspectorFolder",2,node),"Region folder is highlighted instead of its representative point");
   Call("OpenInspectorFolders");int point=Rows().FindIndex(r=>r.Kind==2 && r.Id==node);Call("OpenInspectorFolderRow",point);Check((bool)Get("_nodeOfficeOpen") && (int)Get("_populationNode")==node,"Point folder opens point supervisor Office");
   Call("OpenInspectorFolders");Set("_pointer",new Point(1100,600));Call("InspectorFolderInput",new MouseState(),false,true,true);Check(!(bool)Get("_inspectorFoldersOpen"),"Escape closes the tree");
  }
