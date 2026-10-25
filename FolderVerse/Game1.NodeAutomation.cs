@@ -96,9 +96,9 @@ public partial class Game1
     }
     private bool SupervisorNodePanel=>false;
     private bool InspectingSupervisor=>_populationCell>=0 && _inspectedNode>=0 && _inspectedNode<_setup.Nodes.All.Length;
-    private void DrawSupervisor(Rectangle image,int owner)
+    private void DrawSupervisor(Rectangle image,int owner,int nodeId)
     {
-        int kind=NodeSupervisors.For(_setup.Nodes.All[_inspectedNode],_setup.Cells[_setup.Nodes.All[_inspectedNode].Cell].Face);
+        int kind=NodeSupervisors.For(_setup.Nodes.All[nodeId],_setup.Cells[_setup.Nodes.All[nodeId].Cell].Face);
         if(!_supervisorTextures.TryGetValue(kind,out var textures)){using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","NodeSupervisors",NodeSupervisors.Kinds[kind]+"-v001.png"));var _supervisorBase=Texture2D.FromStream(GraphicsDevice,stream);
             var pixels=new Color[_supervisorBase.Width*_supervisorBase.Height];_supervisorBase.GetData(pixels);
             for(int y=0;y<_supervisorBase.Height;y++)for(int x=0;x<_supervisorBase.Width;x++){

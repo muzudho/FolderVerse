@@ -94,9 +94,9 @@ public partial class Game1 : Game
         _marginRainbow=Content.Load<Texture2D>("Images/margin-rainbow");
         _demoLollipop=Content.Load<Texture2D>("Images/demo-lollipop");
         _titleLogo=Content.Load<Texture2D>("Images/title-logo");
-        _portraitRenderer=new PortraitRenderer(Content); _font=Content.Load<SpriteFont>("UiFont");
+        _portraitRenderer=new PortraitRenderer(Content); _font=Fonts.LoadUi(Content);
         _pixel=new Texture2D(GraphicsDevice,1,1); _pixel.SetData(new[]{Color.White});
-        _counter=new ToyCounterRenderer(Content.Load<SpriteFont>("ToyCounterFont"),_pixel);
+        _counter=new ToyCounterRenderer(Content.Load<SpriteFont>(Fonts.Counter),_pixel);
         _ui=new UiPainter(_spriteBatch,_pixel,_font){AdaptiveText=()=>DomesticTheme}; _world=new WorldPreview(GraphicsDevice);
         _orientationToy=new ToyOrientationRenderer(GraphicsDevice);
         LoadScreenshotFeedback();LoadCutInMobs();LoadSetupHost();LoadTutorialHost();CheckAutoSave();LoadTutorialAchievements();LoadTitleStartAssets();
@@ -525,7 +525,7 @@ public partial class Game1 : Game
         _ui.Box(new(188,203,570,412),new Color(4,14,23,180));
         Color[] gold={new(100,58,18),new(235,177,64),new(255,231,152),new(127,76,21),new(239,192,85)};
         for(int i=0;i<gold.Length;i++){int margin=24-i*4;_ui.Box(new(image.X-margin,image.Y-margin,image.Width+margin*2,image.Height+margin*2),gold[i]);}
-        if(InspectingSupervisor)DrawSupervisor(image,_setup.Nodes.All[_inspectedNode].Owner);else _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],image);
+        if(InspectingSupervisor)DrawSupervisor(image,_setup.Nodes.All[_inspectedNode].Owner,_inspectedNode);else _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],image);
         foreach(var corner in new[]{new Point(image.Left-14,image.Top-14),new Point(image.Right+14,image.Top-14),new Point(image.Left-14,image.Bottom+14),new Point(image.Right+14,image.Bottom+14)})
         {
             _spriteBatch.Draw(_pixel,new Vector2(corner.X,corner.Y),null,rulerColor,MathHelper.PiOver4,new Vector2(0.5f),new Vector2(22),SpriteEffects.None,0);

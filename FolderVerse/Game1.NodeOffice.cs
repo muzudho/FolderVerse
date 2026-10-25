@@ -27,7 +27,7 @@ public partial class Game1
     private void DrawNodeOffice(){
         _ui.Box(new(54,150,850,825),new Color(27,49,62));DrawNodeTabs();
         var node=_setup.Nodes.All[_populationNode];var image=new Rectangle(229,294,500,326);
-        _ui.Box(new(image.X-6,image.Y-6,image.Width+12,image.Height+12),_setup.OwnerColor(node.Owner));DrawSupervisor(image,node.Owner);
+        _ui.Box(new(image.X-6,image.Y-6,image.Width+12,image.Height+12),_setup.OwnerColor(node.Owner));DrawSupervisor(image,node.Owner,_populationNode);
         _ui.Center("役所 / 地点監督",new(84,644,780,60),.8f,Cream);
         string owner=node.Owner<0?"未征服":_setup.ConquerorNames[node.Owner]+"の配下";
         _ui.Center(owner,new(84,718,780,45),.6f,Cream);

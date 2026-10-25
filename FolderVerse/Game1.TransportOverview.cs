@@ -8,7 +8,7 @@ public partial class Game1
     private Microsoft.Xna.Framework.Graphics.SpriteFont _transportHudFont;
     private Rectangle TransportHud(string text,Vector2 center,Color color)
     {
-        _transportHudFont??=Content.Load<Microsoft.Xna.Framework.Graphics.SpriteFont>("ToyCounterFont");
+        _transportHudFont??=Content.Load<Microsoft.Xna.Framework.Graphics.SpriteFont>(Fonts.Counter);
         float scale=36f/_transportHudFont.LineSpacing/(CanvasBounds().Height/1080f);
         var size=_transportHudFont.MeasureString(text)*scale;var at=center-size/2;
         // Keep the white outline two physical pixels wide at every window size.
