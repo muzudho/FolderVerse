@@ -1,0 +1,20 @@
+{
+  "At": "2026-10-25T10:09:25.386Z",
+  "Source": "character-50-coin-v017-generated.png",
+  "Sha256": "112dc1459876744ef122aa13325a8ad751729e3cb7be3bf2b656223752f386e8",
+  "Prompt": "coin-v017-prompt.txt",
+  "References": [
+    "character-50-coin-v004-generated.png",
+    "coin-face-detail-v004-generated.png"
+  ],
+  "Region": {
+    "X": 290,
+    "Y": 100,
+    "Width": 300,
+    "Height": 300
+  },
+  "Evidence": "coin-eye-review-v017.png",
+  "Status": "COMPOSITE_SAVED_FINAL_REVIEW_PENDING",
+  "Finding": "内蔵image_genへ座標指定で顔試作を全身へ合成指示。原画と眼部比較保存。全身/300x400白黒での最終判定は次回。",
+  "GameAdopted": false
+}

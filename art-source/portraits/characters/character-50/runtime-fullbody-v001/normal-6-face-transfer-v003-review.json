@@ -1,0 +1,34 @@
+{
+  "At": "2026-10-25T06:10:19.905Z",
+  "Files": [
+    {
+      "File": "normal-6-face-detail-v003-generated.png",
+      "Sha256": "1a1632f32a0f96d697fbf6d5c25b9e5bd14c2e4b640b7dc527cff363f87694e9"
+    },
+    {
+      "File": "character-50-normal-6-v019-generated.png",
+      "Sha256": "9b175abe2efd66aa4fec29d64f6d1204393d9e92f6741d2fcf5a2714891470d8"
+    }
+  ],
+  "Prompts": [
+    "normal-6-face-detail-v003-prompt.txt",
+    "normal-6-v019-prompt.txt"
+  ],
+  "References": [
+    "normal-6-face-input-v002.png",
+    "character-50-normal-6-v017-generated.png",
+    "normal-6-face-detail-v003-generated.png"
+  ],
+  "InputCrop": {
+    "Source": "character-50-normal-6-v017-generated.png",
+    "X": 590,
+    "Y": 120,
+    "Width": 250,
+    "Height": 250,
+    "OutputWidth": 1024,
+    "OutputHeight": 1024
+  },
+  "Finding": "顔拡大v003は画面左眼の大白丸が右上虹彩端へ近づき白目と接触。銀眼鏡/笑顔/青眼下輪郭/本人意匠保持。全身v019へ転送、眼部拡大を保存。全身と通常サイズの最終採否判定は次回。",
+  "Status": "TRANSFER_SAVED_FINAL_WHOLEBODY_RUNTIME_REVIEW_PENDING",
+  "GameAdopted": false
+}

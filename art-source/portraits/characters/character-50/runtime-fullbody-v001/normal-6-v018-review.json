@@ -1,0 +1,18 @@
+{
+  "At": "2026-10-25T01:07:43.211Z",
+  "Source": "character-50-normal-6-v018-generated.png",
+  "Sha256": "415a87c550250459fe86100e8929f956151ef186da2d9370a31e8b7fa933e1ab",
+  "References": [
+    "character-50-normal-6-v017-generated.png"
+  ],
+  "Prompt": "normal-6-v018-prompt.txt",
+  "Width": 1447,
+  "Height": 1087,
+  "Status": "UPPER_RIM_CONTACT_NOT_MATERIALLY_IMPROVED_NOT_SELECTED",
+  "Evidence": [
+    "normal-6-eye-review-v018.png",
+    "normal-6-v018-preview.png"
+  ],
+  "Finding": "上白丸は大きいがv017から画面左眼の白目接触が明瞭には改善しなかった。下側の淡い反射・青い下輪郭維持。下独立小円を必須とは判定しない。全身/両靴/本人衣装/銀眼鏡/前掌後腕/電池/宮殿は保持。256x192の顔・手・電池を判別。",
+  "GameAdopted": false
+}

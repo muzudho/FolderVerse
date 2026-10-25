@@ -1,0 +1,18 @@
+{
+  "At": "2026-10-25T01:38:01.081Z",
+  "Source": "character-50-paparazzi-v012-generated.png",
+  "Sha256": "cfbe5bf39c4f389c917e713297a752a6154ad37ff15d460c6aaa7bdfe60fd62f",
+  "References": [
+    "character-50-paparazzi-v003-generated.png"
+  ],
+  "Prompt": "paparazzi-v012-prompt.txt",
+  "Width": 1086,
+  "Height": 1448,
+  "Status": "UPPER_WHITE_ENLARGED_LOWER_CONTOUR_REVIEW_PENDING_NOT_ADOPTED",
+  "Evidence": [
+    "paparazzi-eye-review-v012.png",
+    "paparazzi-v012-preview.png"
+  ],
+  "Finding": "両眼上白丸が拡大、上縁近くの白目へ接触。肌/瞼への白丸はみ出しなし。左下は既存の白い反射と同化して目立たず、新指示の許容対象。ただし画面左眼の下輪郭が白反射付近で薄くなるため、輪郭を切らない条件は最終確認・必要時修正。全身/両靴/裾/金髪銀眼鏡青白金衣装電池/右向き驚き口/夕暮れ宮殿保持。",
+  "GameAdopted": false
+}

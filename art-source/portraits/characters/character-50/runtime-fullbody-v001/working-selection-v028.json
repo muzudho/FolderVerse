@@ -1,0 +1,24 @@
+{
+  "At": "2026-10-25T06:37:42.659Z",
+  "Status": "NORMAL6_REVIEWED_NEWSPAPER_RESIDUALS_NOT_ADOPTED",
+  "Manifest": "staged-manifest-v028.json",
+  "GameAdopted": false,
+  "Choices": [
+    {
+      "Id": 6,
+      "Source": "character-50-normal-6-v019-generated.png",
+      "Issue": "最新瞳条件を目視確認済み。動的頭身の厳密測定は未認定。"
+    },
+    {
+      "Id": "paparazzi",
+      "Source": "character-50-paparazzi-v012-generated.png",
+      "Issue": "下白反射付近の虹彩輪郭が薄くなる。"
+    },
+    {
+      "Id": "coin",
+      "Source": "character-50-coin-v004-generated.png",
+      "Issue": "主白点が小さい。眼鏡を保持した全身で修正未達。"
+    }
+  ],
+  "Note": "作業候補のみ。既存選択原画メタデータと旧仮配置v026を保存。20出力は別ディレクトリ。全14原画の最新条件適合は未認定。"
+}
