@@ -27,7 +27,7 @@ public sealed class RobotBattlePlayback
     {
         return slices.Select(s=>
         {
-            var b=scenes[s.Scene];var units=b.Frames[s.Start].Units.Where(u=>!u.Fallen && !u.Retreated && BattleState.Inside(u.Position)).ToArray();
+            var b=scenes[s.Scene];var units=b.Frames[s.Start].Units.Where(u=>!u.Fallen && !u.Retreated && b.Contains(u.Position)).ToArray();
             var owners=units.Select(u=>u.Owner).Distinct().ToArray();
             int player=Enumerable.Range(0,players.Count).FirstOrDefault(i=>owners.Contains(players[i]) || b.Armies.Any(a=>a.Owner==players[i]),int.MaxValue);
             int queens=units.Where(u=>u.Role==BattleRole.Queen).Select(u=>u.Owner).Distinct().Count();

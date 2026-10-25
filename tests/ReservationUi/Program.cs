@@ -37,14 +37,17 @@ class Checks:Game1{
   var rows=(System.Collections.IList)Get("_invasionSources");rows.Clear();var sourceType=typeof(Game1).GetNestedType("InvasionSource",F)!;var source=Activator.CreateInstance(sourceType,true)!;sourceType.GetField("Owner")!.SetValue(source,0);sourceType.GetField("Node")!.SetValue(source,node.Id);sourceType.GetField("Robots")!.SetValue(source,new HashSet<long>{first});rows.Add(source);var route=w.Routes.Neighbors(node)[0];Set("_selectedMoveNode",w.Nodes.At(route.Target,route.Entry).Id);Call("ReserveInvasion");
   Check(!w.Robots.Nodes[node.Id].Robots.Single(r=>r.Id==first).Stationed && w.Campaign.PlannedOrders.Any(o=>o.RobotIds?.Contains(first)==true),"Confirming sortie replaces worker reservation");
   Check(w.Robots.ToggleReservation(node.Id,first,HangarReservation.Worker) && !w.Campaign.PlannedOrders.Any(o=>o.RobotIds?.Contains(first)==true),"Worker overwrite removes robot from sortie plan");
-  Call("OpenNodeInspector",node.Id);Call("UpdateDomesticSlide",1f);
+  Call("OpenNodeInspector",node.Id);Call("UpdateDomesticSlide",1f);Call("OpenNodeAssembly");
+  Click(Button(3));Click(Cell(0).Center);Check(w.Robots.Nodes[node.Id].Robots.Single(r=>r.Id==first).InterceptOnly,"New interception reservation button assigns the selected robot");
+  Click(Cell(0).Center);Check(!w.Robots.Nodes[node.Id].Robots.Single(r=>r.Id==first).InterceptOnly,"Interception reservation cancels on repeat click");
+  var close=(Rectangle)typeof(Game1).GetProperty("NodeInspectorBounds",F)!.GetValue(this)!;Check(close.Contains(Button(3)),"Interception button stays inside the inspector");
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
   if(frame==0){Click(Button(1));Set("_pointer",new Point(Cell(0).X+90,Cell(0).Y+25));}
   if(frame==1)Call("OpenNodeFactory");
   if(frame==2){w.Robots.Workshops[node.Id].LimitLines(1);w.Robots.SyncWorkers(node.Id);}
-  if(frame==3){Screen("WorldStatus");Call("StartAutoPlay");Call("UpdateAutoDomestic",2d);Check((bool)Get("_nodeAssemblyOpen"),"AUTO shows hangar");Call("UpdateAutoDomestic",2d);Check((bool)Get("_nodeTransportOpen"),"AUTO shows transport plan");}
+  if(frame==3){Screen("WorldStatus");Call("StartAutoPlay");Call("UpdateAutoDomestic",2d);Check((int)Get("_populationNode")>=0,"AUTO opens a node inspector and preserves the remembered tab");Call("UpdateAutoDomestic",2d);Check((bool)Get("_nodeTransportOpen"),"AUTO shows transport plan");}
   if(frame==4){Call("UpdateAutoDomestic",2d);Call("UpdateAutoDomestic",2d);Call("UpdateAutoDomestic",2d);}
   base.Draw(t);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"reservation-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);
   if(frame==0){Color At(int x,int y)=>pixels[(y*p.BackBufferHeight/1080)*p.BackBufferWidth+x*p.BackBufferWidth/1920];Check(At(Cell(0).X+1,Cell(0).Y+50)==(Color)typeof(Game1).GetProperty("ControlEdge",F)!.GetValue(this)!,"Reservation hover highlights entire cell");Check(At(Cell(0).X+57,Cell(0).Y+11)==new Color(9,19,26),"Reservation hover leaves part border inactive");}

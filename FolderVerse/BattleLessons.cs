@@ -34,7 +34,7 @@ public sealed class BattleLessons
     public static bool Has(BattleState battle,BattleUnit unit,BattleLesson lesson)=>unit.Role!=BattleRole.Queen && (battle.Lessons[unit.Owner]&lesson)!=0;
     public static void Witness(BattleState battle,BattleLesson lesson)
     {
-        foreach(var unit in battle.Units.Where(u=>u.Active && u.Role!=BattleRole.Queen && BattleState.Inside(u.Position)))unit.WitnessedLessons|=lesson;
+        foreach(var unit in battle.Units.Where(u=>u.Active && u.Role!=BattleRole.Queen && battle.Contains(u.Position)))unit.WitnessedLessons|=lesson;
     }
     // Decisions use the starting positions: a friend can still enter the line during simultaneous movement.
     public static bool SafeShot(BattleState battle,BattleUnit shooter,BattleFacing facing)

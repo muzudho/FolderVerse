@@ -14,8 +14,8 @@ public static class BattleRetreat
             var first=new Dictionary<Point,Point>{{unit.Position,Point.Zero}};Point? move=null;
             while(queue.TryDequeue(out var current) && move==null)foreach(var step in Steps){
                 var next=current+step;if(first.ContainsKey(next))continue;
-                if(!BattleState.Inside(next)){
-                    if(BattleState.HomeExit(next,battle.Army(unit.Owner).Side)){move=current==unit.Position?step:first[current];break;}
+                if(!battle.Contains(next)){
+                    if(BattleState.HomeExit(next,battle.Army(unit.Owner).Side,battle.BoardSize)){move=current==unit.Position?step:first[current];break;}
                     continue;
                 }
                 if(!battle.Walkable(next))continue;

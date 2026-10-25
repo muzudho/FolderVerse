@@ -10,6 +10,14 @@ public sealed partial class BattleState
     public void BuildSeaLayout(int pattern,int rotation=0)
     {
         Terrain=BattleTerrain.Sea;Walls.Clear();SeaLogs.Clear();SeaClearWater.Clear();
+        if(BoardSize==Size){
+            LayoutName="中央船・四方接舷";EntrySides=new[]{0,1,2,3};Flag=new(6,6);
+            var deck13=Enumerable.Range(0,5).SelectMany(Region).ToHashSet();
+            // One open boarding lane joins each attacking ship to the central defending deck.
+            for(int i=2;i<=10;i++){deck13.Add(new(6,i));deck13.Add(new(i,6));}
+            for(int y=0;y<Size;y++)for(int x=0;x<Size;x++)if(!deck13.Contains(new(x,y))){Walls.Add(new(x,y));SeaClearWater.Add(new(x,y));}
+            return;
+        }
         rotation=((rotation%4)+4)%4;
         Point Rotate(Point p){for(int i=0;i<rotation;i++)p=new(9-p.Y,p.X);return p;}
         var deck=new HashSet<Point>();

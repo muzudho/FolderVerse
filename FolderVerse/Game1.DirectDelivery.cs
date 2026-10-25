@@ -110,7 +110,7 @@ public partial class Game1
                     if(robot!=null && (robot.Parts&part)!=0){bool reserved=(_setup.Robots.DirectDelivery.LockedParts(node,robot.Id)&part)!=0;DrawRobotGlyph(glyph,robot.Origin(part),part,robot.Role==RobotRole.Captain,opacity:reserved?.35f:1,whiteOutline:true,damaged:robot.IsDamaged(part),cheap:robot.IsCheap(part));if(reserved)_ui.Text("予約",new(cell.X+120,bounds.Y+8),.25f,color);}
                     foreach(var order in _setup.Robots.DirectDelivery.Orders.Where(o=>o.Target==node && o.Part==part && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot))){var original=_setup.Robots.Nodes[order.Source].Robots.FirstOrDefault(r=>r.Id==order.RobotId);if(original!=null)DrawRobotGlyph(glyph,original.Origin(part),part,opacity:.5f,whiteOutline:true,damaged:original.IsDamaged(part),cheap:original.IsCheap(part));_ui.Text("予定",new(cell.X+120,bounds.Y+8),.25f,Cream);}
                 }
-                if(robot!=null){_ui.Center("ID "+robot.Id,new(cell.X,cell.Y+111,cell.Width,24),.32f,Cream);if(robot.Stationed || robot.Disposal)_ui.Center(robot.FactoryWorker?"工場作業員":robot.DefenseOnly?"守備専用":"廃棄予約",new(cell.X,cell.Y+135,cell.Width,18),.24f,color);}
+                if(robot!=null){_ui.Center("ID "+robot.Id,new(cell.X,cell.Y+111,cell.Width,24),.32f,Cream);if(robot.Stationed || robot.Disposal)_ui.Center(robot.FactoryWorker?"工場作業員":robot.InterceptOnly?"迎撃専用":robot.DefenseOnly?"守備専用":"廃棄予約",new(cell.X,cell.Y+135,cell.Width,18),.24f,color);}
             }
             _spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);
         }

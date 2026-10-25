@@ -90,6 +90,9 @@ public static class AutoSaveStore
                     if(type==typeof(RobotCampaign) && field.Name=="_homeOwners"){field.SetValue(value,new Dictionary<long,int>());continue;}
                     if(type==typeof(Robot) && (field.Name=="<LastBattlePersuasionTurn>k__BackingField" || field.Name=="<LastDomesticPersuasionTurn>k__BackingField")){field.SetValue(value,-1);continue;}
                     if(type==typeof(RobotWorld) && field.Name=="<DomesticPersuasionTurns>k__BackingField"){field.SetValue(value,new Dictionary<int,int>());continue;}
+                    if(type==typeof(BattleState) && field.Name=="BoardSize"){field.SetValue(value,10);continue;}
+                    if(type==typeof(RobotEncounter) && field.Name=="InterceptOwner"){field.SetValue(value,-1);continue;}
+                    if(type==typeof(Robot) && field.Name=="<InterceptOnly>k__BackingField")continue;
                     if(type==typeof(BattleState) && field.Name=="GlobalTurn"){field.SetValue(value,0);continue;}
                     if(type==typeof(BattleState) && field.Name=="<PersuadedUnits>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
                     if(type==typeof(BattleUnitView) && field.Name=="<Robot>k__BackingField")continue;

@@ -1,7 +1,7 @@
 using FolderVerse;
 using Microsoft.Xna.Framework;
 static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
-BattleState Board(BattleKind kind=BattleKind.Edge,int noWill=10){var b=new BattleState(42,new(){NoWillTurns=noWill,PersuasionPercent=0}){Kind=kind,Defender=1};b.Armies.Add(new(){Owner=0,Side=0});b.Armies.Add(new(){Owner=1,Side=2});return b;}
+BattleState Board(BattleKind kind=BattleKind.Edge,int noWill=10){var b=new BattleState(42,new(){NoWillTurns=noWill,PersuasionPercent=0}){BoardSize=10,Flag=new(5,5),Kind=kind,Defender=1};b.Armies.Add(new(){Owner=0,Side=0});b.Armies.Add(new(){Owner=1,Side=2});return b;}
 BattleUnit Unit(BattleState b,long id,int owner,int x,int y,BattleFacing facing){var u=new BattleUnit{Id=id,Owner=owner,Position=new(x,y),Facing=facing,Shields=4,Rifles=3};b.Units.Add(u);return u;}
 void Turn(BattleState b,params (BattleUnit Unit,BattleWeapon Weapon,Point Step,BattleFacing? Facing)[] actions)
 {
@@ -71,7 +71,7 @@ for(int seed=0;seed<10;seed++)
 Console.WriteLine($"Combat sweep: {cases} encounters, mean {turns/(double)cases:F2} turns, max {longest}, no winner {undecided}.");
 Console.WriteLine("PASS: simultaneous combat, weapon examples, walls, movement rollback, flags, no-will outcomes, reinforcements and 1–12 / four-army deployment.");
 for(int pattern=1;pattern<=4;pattern++)for(int rotation=0;rotation<4;rotation++){
-var arena=new BattleState(1);arena.BuildLayout(pattern,rotation);
+var arena=new BattleState(1){BoardSize=10};arena.BuildLayout(pattern,rotation);
 Check(arena.Walkable(arena.Flag),"Flag blocked");
 foreach(int side in arena.EntrySides)Check(arena.Region(side).Count(arena.Walkable)>=12,"Deployment capacity");
 var reachable=new HashSet<Point>{arena.Flag};var queue=new Queue<Point>();queue.Enqueue(arena.Flag);
@@ -83,7 +83,7 @@ Console.WriteLine("PASS: rotated arenas, twelve-unit deployment capacity and con
 
 for(int pattern=0;pattern<2;pattern++)for(int rotation=0;rotation<4;rotation++)
 {
-    var sea=new BattleState(17);sea.BuildSeaLayout(pattern,rotation);
+    var sea=new BattleState(17){BoardSize=10};sea.BuildSeaLayout(pattern,rotation);
     Check(sea.SeaLogs.Count>0 && sea.SeaLogs.All(sea.Walkable),"Missing walkable logs");
     foreach(int side in sea.EntrySides)Check(sea.Region(side).Count(sea.Walkable)>=12,"Sea deployment capacity");
     var reachable=new HashSet<Point>{sea.Flag};var queue=new Queue<Point>();queue.Enqueue(sea.Flag);
@@ -94,7 +94,7 @@ for(int pattern=0;pattern<2;pattern++)for(int rotation=0;rotation<4;rotation++)
 }
 Console.WriteLine("PASS: rotated ship decks, narrow logs, connected ships and twelve-unit entry areas");for(int armies=2;armies<=4;armies++)for(int pattern=0;pattern<(armies==2?2:1);pattern++)for(int rotation=0;rotation<4;rotation++)
 {
-    var sea=new BattleState(42){Kind=BattleKind.Node,Defender=1};
+    var sea=new BattleState(42){BoardSize=10,Kind=BattleKind.Node,Defender=1};
     for(int owner=0;owner<armies;owner++)sea.Armies.Add(new(){Owner=owner,Side=owner});
     sea.BuildSeaLayout(pattern,rotation);sea.Deploy();
     Check(sea.Region(sea.Army(1).Side).Contains(sea.Flag) && !sea.SeaLogs.Contains(sea.Flag),"Flag outside defending deck");
@@ -110,7 +110,7 @@ Turn(b);
 Check(!b.Finished && a.Retreating && c.Active,"Judgment waits for retreat rather than removing pieces instantly");
 for(int i=0;i<20 && !b.Finished;i++)Turn(b);
 Check(b.Finished && b.Winner==1 && a.Retreated,"Judgment completes after the retreating force crosses its home edge");
-Check(b.Frames.SelectMany(f=>f.Units).Any(u=>u.Owner==0 && !BattleState.Inside(u.Position)),"Replay contains actual exit movement");
+Check(b.Frames.SelectMany(f=>f.Units).Any(u=>u.Owner==0 && !b.Contains(u.Position)),"Replay contains actual exit movement");
 Check(c.Active && c.Position==new Point(7,7),"Victorious garrison remains on its node");
 Console.WriteLine("PASS: morale judgment waits for physical retreat and preserves the victorious garrison");
 

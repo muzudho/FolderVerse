@@ -601,6 +601,7 @@ public partial class Game1 : Game
         }
         if(!_statusGlobe && !MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
+        DrawBattleActivity();
         DrawRegionOffice();
         DrawDestinationMap();DrawContinuationBadges();DrawWarReservationMarkers();DrawMoveReservationMarkers();DrawDirectTrucks(); DrawDomesticPortrait();
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);

@@ -13,7 +13,7 @@ public partial class Game1
     private static readonly Rectangle NewspaperSwitch=new(1128,750,704,28);
     internal static Rectangle NewspaperColumn(int index,int count)
     {
-        int columns=Math.Clamp(count,2,4),width=704/columns;
+        int columns=Math.Clamp(count,2,5),width=704/columns;
         return new(1128+index*width,402,width-16,330);
     }
     private void DrawWantedStamp(Rectangle photo)
@@ -62,10 +62,10 @@ public partial class Game1
         _ui.Box(new(1128,391,704,2),ink);
         int index=0;
         bool biased=profile.FavorsArmy;
-        foreach(var army in battle.Armies.OrderBy(a=>biased && a.Owner==patron?0:1).Take(4))
+        foreach(var army in battle.Armies.OrderBy(a=>biased && a.Owner==patron?0:1).Take(5))
         {
             int current=index++;
-            var r=biased?(current==0?new Rectangle(1128,402,398,330):new Rectangle(1548,402+(current-1)*104,284,100)):NewspaperColumn(current,battle.Armies.Count);
+            var r=biased?(current==0?new Rectangle(1128,402,398,330):new Rectangle(1548,402+(current-1)*(battle.Armies.Count==5?82:104),284,battle.Armies.Count==5?78:100)):NewspaperColumn(current,battle.Armies.Count);
             if(index>1)_ui.Box(new(r.X-9,r.Y,1,r.Height),ink*.35f);
             string name=issue.Names[army.Owner];
             _ui.Center(name,new(r.X,r.Y,r.Width,32),Math.Min(.48f,r.Width/_font.MeasureString(name).X),ink);

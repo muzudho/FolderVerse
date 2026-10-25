@@ -143,10 +143,14 @@ public partial class Game1
         _ui.Button(RobotBattlePrevious,"前の戦場",Muted,.5f);_ui.Button(RobotBattleNext,"次の戦場",Muted,.5f);
         BattleInfo($"{(battle.SplitBoard?"分割野戦":battle.Kind==BattleKind.Edge?"辺戦":"節戦")} / Point {battle.TargetNode+1} / {battle.Terrain} / 戦闘ターン {frame.Turn} / {PhaseLabel(frame.Phase)}",112,.5f);
         const int left=40,top=40,size=100;
-        _ui.Box(new(left,top,size*10,size*10),new Color(24,43,51));
+        var battleCanvas=CanvasBounds();var battleTransform=Matrix.CreateScale(battleCanvas.Width/1920f,battleCanvas.Height/1080f,1)*Matrix.CreateTranslation(battleCanvas.X,battleCanvas.Y,0);
+        var boardTransform=Matrix.CreateTranslation(-left,-top,0)*Matrix.CreateScale(10f/battle.BoardSize)*Matrix.CreateTranslation(left,top,0)*battleTransform;
+        _spriteBatch.End();_spriteBatch.Begin(transformMatrix:boardTransform);
+
+        _ui.Box(new(left,top,size*battle.BoardSize,size*battle.BoardSize),new Color(24,43,51));
         var terrainNode=_setup.Nodes.All[battle.TargetNode];var terrainCell=_setup.Cells[terrainNode.Cell];
         float terrainHeight=WorldTerrain.Elevation(_setup.Routes.Position(terrainNode.Cell,terrainNode.Center),WorldTerrain.Offset(_setup.WorldSeed));
-        for(int y=0;y<10;y++)for(int x=0;x<10;x++)
+        for(int y=0;y<battle.BoardSize;y++)for(int x=0;x<battle.BoardSize;x++)
         {
             var r=new Rectangle(left+x*size,top+y*size,size-2,size-2);bool wall=battle.Walls.Contains(new(x,y));
             if(battle.Terrain==BattleTerrain.Sea)
@@ -182,16 +186,18 @@ public partial class Game1
                 if(wall)BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(false,false,terrainHeight,_setup.Geographic(terrainCell.Normal).Y));
             }
         }
-        for(int line=0;line<=10;line++){_ui.Box(new(left+line*size,top,2,size*10),new Color(24,43,51));_ui.Box(new(left,top+line*size,size*10,2),new Color(24,43,51));}
-        foreach(var army in battle.Armies)
+        for(int line=0;line<=battle.BoardSize;line++){_ui.Box(new(left+line*size,top,2,size*battle.BoardSize),new Color(24,43,51));_ui.Box(new(left,top+line*size,size*battle.BoardSize,2),new Color(24,43,51));}
+        foreach(var army in battle.Armies.Where(a=>a.Side<4))
         {
-            var border=BattleObstacleArt.HomeBorder(army.Side,new Rectangle(left,top,size*10,size*10));
+            var border=BattleObstacleArt.HomeBorder(army.Side,new Rectangle(left,top,size*battle.BoardSize,size*battle.BoardSize));
             _ui.Box(border,_setup.OwnerColor(army.Owner));
             // Keep retreat markers inside the left 1080-pixel battlefield area.
-            _ui.Center($"#{army.Owner+1}",army.Side is 0 or 2?new Rectangle(border.X,border.Y+(army.Side==0?-28:8),border.Width,24):new Rectangle(army.Side==3?0:1042,top+450,36,30),.3f,_setup.OwnerColor(army.Owner));
+            var countryLabel=army.Side is 0 or 2?new Rectangle(border.X,border.Y+(army.Side==0?-28:8),border.Width,24):new Rectangle(army.Side==3?0:left+size*battle.BoardSize+2,top+450,36,30);
+            if(battle.BoardSize==BattleState.Size)countryLabel=new(left+(army.Side is 1 or 2?(battle.BoardSize-2)*size:10),top+(army.Side>=2?(battle.BoardSize-1)*size+35:20),150,30);
+            _ui.Center($"#{army.Owner+1}",countryLabel,.4f,_setup.OwnerColor(army.Owner));
         }
-        for(int i=0;i<10;i++)
-        {_ui.Text(i.ToString(),new(left+i*size+42,top-32),.45f,Cream);_ui.Text(((char)('A'+i)).ToString(),new(left-30,top+i*size+35),.45f,Cream);}
+        for(int i=0;i<battle.BoardSize;i++)
+        {_ui.Text((i+1).ToString(),new(left+i*size+42,top-32),.45f,Cream);_ui.Text(((char)('A'+i)).ToString(),new(left-30,top+i*size+35),.45f,Cream);}
         if(battle.Kind==BattleKind.Node)
         {
             var f=new Rectangle(left+battle.Flag.X*size,top+battle.Flag.Y*size,size-2,size-2);
@@ -203,19 +209,19 @@ public partial class Game1
         }
         if(BattleIntroActive){
             float dim=BattleBoardDim;
-            _ui.Box(new(left,top,size*10,size*10),new Color(105,110,116)*(dim*.9f));
+            _ui.Box(new(left,top,size*battle.BoardSize,size*battle.BoardSize),new Color(105,110,116)*(dim*.9f));
         }
         DrawPersuasionRange(battle,frame,left,top,size);
         float impactProgress=BattleAttackArt.ImpactProgress(battle,frameIndex,_robotPlaying?RobotBattlePlayback.FramePosition(RobotSlice(_battleWave),_battleAge,RobotSeconds(_battleWave)):frameIndex+.5);
         foreach(var unit in frame.Units)
         {
-            if(unit.Retreated && BattleState.Inside(unit.Position))continue;
+            if(unit.Retreated && battle.Contains(unit.Position))continue;
             int firstExit=unit.Retreated?battle.Frames.FindIndex(f=>f.Units.Any(u=>u.Id==unit.Id && u.Retreated)):-1;
             if(unit.Retreated && (firstExit<0 || frameIndex-firstExit>5))continue;
             float exitAge=unit.Retreated?(float)(RobotBattlePlayback.FramePosition(RobotSlice(_battleWave),_battleAge,RobotSeconds(_battleWave))-firstExit)/5f:0;
             var pos=new Vector2(left+unit.Position.X*size+19,top+unit.Position.Y*size+7);
             pos+=BattleAttackArt.Recoil(battle,frame.Turn,unit.Id,impactProgress);
-            if(unit.Retreated){var last=battle.Frames.Take(firstExit).LastOrDefault(f=>f.Units.Any(u=>u.Id==unit.Id && !u.Retreated));var prior=last?.Units.FirstOrDefault(u=>u.Id==unit.Id);if(prior!=null && BattleState.Inside(prior.Position)){var from=new Vector2(left+prior.Position.X*size+19,top+prior.Position.Y*size+7);var exit=battle.Frames[firstExit].Units.First(u=>u.Id==unit.Id);var step=BattleState.Forward(prior.Facing);var delta=new Vector2(exit.Position.X-prior.Position.X,exit.Position.Y-prior.Position.Y);var direction=delta.LengthSquared()>0?Vector2.Normalize(delta):new Vector2(step.X,step.Y);pos=Vector2.Lerp(from,from+direction*70,Math.Clamp(exitAge*2,0,1));}}
+            if(unit.Retreated){var last=battle.Frames.Take(firstExit).LastOrDefault(f=>f.Units.Any(u=>u.Id==unit.Id && !u.Retreated));var prior=last?.Units.FirstOrDefault(u=>u.Id==unit.Id);if(prior!=null && battle.Contains(prior.Position)){var from=new Vector2(left+prior.Position.X*size+19,top+prior.Position.Y*size+7);var exit=battle.Frames[firstExit].Units.First(u=>u.Id==unit.Id);var step=BattleState.Forward(prior.Facing);var delta=new Vector2(exit.Position.X-prior.Position.X,exit.Position.Y-prior.Position.Y);var direction=delta.LengthSquared()>0?Vector2.Normalize(delta):new Vector2(step.X,step.Y);pos=Vector2.Lerp(from,from+direction*70,Math.Clamp(exitAge*2,0,1));}}
             var r=new Rectangle((int)pos.X,(int)pos.Y,62,85);
             int firstFall=unit.Fallen?battle.Frames.FindIndex(f=>f.Units.Any(u=>u.Id==unit.Id && u.Fallen)):-1;
             float opacity=1f;
@@ -353,6 +359,7 @@ public partial class Game1
         // Draw counters after attack/shield effects so the remaining supplies stay readable.
         foreach(var unit in frame.Units)
             DrawBattleSupplies(unit,left+unit.Position.X*size+(size-72)/2,top+(unit.Position.Y+1)*size-12,BattlePieceOpacity);
+        _spriteBatch.End();_spriteBatch.Begin(transformMatrix:battleTransform);
         DrawBattleNewspaper(battle,frame);
         string result=$"全 {_robotPlayback.Rounds[_robotRound].Length} 戦場で１戦闘ターンを同時進行 / 結果は最後に表示";
         var recent=battle.Events.LastOrDefault(e=>e.Turn==frame.Turn && e.Phase==frame.Phase && e.Unit!=0);
