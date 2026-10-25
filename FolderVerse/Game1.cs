@@ -305,7 +305,7 @@ public partial class Game1 : Game
             else if(click && !pan && !_net.IsAnimating && _net.ClickEdge()){RecordTutorialMapEdge();}
             else if(click && !pan && !_movementOpen && !_net.IsAnimating && _statusCell>=0)
             {
-                if(!_net.ShowRoutes)_selectedMapCell=_statusCell;
+                if(!_net.ShowRoutes)OpenRegionInspector(_statusCell);
                 var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);int hit=_net.ShowRoutes?_net.HitNode(_setup,NetPanel,_pointer):-1;var post=hit>=0?_setup.Nodes.All[hit]:null;
                 if(post!=null)
                 {OpenNodeInspector(post.Id);}
@@ -612,6 +612,7 @@ public partial class Game1 : Game
             else DrawInspector(()=>{DrawNodeDialog();DrawNodeAutomation();});
         }
         if(_movementOpen)DrawInspector(DrawMovementPanel);
+        if(_regionCell>=0)DrawInspector(DrawRegionInspector);
 
         if(_transportOverview){DrawInspector(DrawTransportOverviewPanel);if(_rateTarget>=0)DrawRatePieDialog();}
         DrawWandererLocation();DrawRouteLayerButtons();

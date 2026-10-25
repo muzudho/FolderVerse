@@ -64,25 +64,7 @@ public partial class Game1
         if(!_globeCellDragged && selectedNode>=0)
         {_globeSelectedNode=selectedNode;OpenNodeInspector(selectedNode);return;}
         if(_globeCellDragged || _net.ShowRoutes)return;
-        var cell=_setup.Cells[selected];
-        _dragging=_mapDragging=false;
-        _net.SetCenter(_setup,cell.Face);_net.ResetView();
-        // Choose the quarter turn whose screen axes best match the viewed face.
-        var face=_net.Faces[0];
-        _world.ProjectVisible(cell.Center,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var origin);
-        _world.ProjectVisible(cell.Center+face.Right*.25f,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var right);
-        _world.ProjectVisible(cell.Center+face.Up*.25f,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var up);
-        var r=right-origin;var u=up-origin;int rotation=0;float best=float.NegativeInfinity;
-        for(int i=0;i<4;i++)
-        {
-            float score=r.X-u.Y;
-            if(score>best){best=score;rotation=i;}
-            var old=r;r=u;u=-old;
-        }
-        for(int i=0;i<rotation;i++)_net.Turn(_setup,1);
-        var fit=_net.Fit(NetPanel);
-        _net.Drag(Vector2.TransformNormal(-_net.Faces[0].Project(cell.Center)*fit.Scale,Matrix.CreateRotationZ(_net.ScreenAngle)));
-        _statusGlobe=false;_statusCell=selected;_inputOutcome="globe_cell_opened_net";
+        OpenRegionInspector(selected);_inputOutcome="globe_cell_inspected";
     }
     private Rectangle StatusGlobeArea=>OrientationAreas(NetPanel,false).Globe;
     private Rectangle OrientationResetButton=>OrientationGlobe?new(OrientationToyArea.Center.X-42,OrientationToyArea.Bottom+12,84,28):new(OrientationToyArea.Center.X-14,OrientationToyArea.Center.Y-OrientationToyArea.Width/2-37,28,28);

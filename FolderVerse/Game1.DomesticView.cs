@@ -23,13 +23,14 @@ public partial class Game1
     private bool _reignView;
     private float _domesticSlide;
     private bool _nodeInspectorClosing;
-    private bool InspectorVisible=>_reignView || _populationCell>=0 || _movementOpen || _transportOverview;
+    private bool InspectorVisible=>_reignView || _regionCell>=0 || _populationCell>=0 || _movementOpen || _transportOverview;
     private bool DomesticPanelOpen=>InspectorVisible && !_nodeInspectorClosing;
     private int NodeInspectorOffset=>(int)MathF.Round(-960*(1-_domesticSlide));
     private Rectangle NodeInspectorBounds=>new(54+NodeInspectorOffset,150,850,825);
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
     private void ResetInspector(){
+        _regionCell=-1;
         QueueInspectorCenter(-1);
         CloseDirectDelivery();
         _wandererPolicyOpen=false;
@@ -64,7 +65,7 @@ public partial class Game1
         _nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;_movementOpen=false;OpenNodeAssembly();
         QueueInspectorCenter(id);
     }
-    private void CloseNodeInspector(){QueueInspectorCenter(_populationNode);_nodeInspectorClosing=true;_trainingOpen=false;_hangarDrag=null;_supervisorDialog=0;}
+    private void CloseNodeInspector(){QueueInspectorCenter(_regionCell>=0?_inspectedNode:_populationNode);_nodeInspectorClosing=true;_trainingOpen=false;_hangarDrag=null;_supervisorDialog=0;}
     private void UpdateDomesticSlide(float elapsed){
         float target=DomesticPanelOpen?1:0;
         bool layoutSettled=_domesticSlide==target;
@@ -81,6 +82,7 @@ public partial class Game1
         if(_reignView && !InspectingSupervisor && LessonCatalogButton.Contains(new Point(p.X-NodeInspectorOffset,p.Y))){_screen=Screen.LessonCatalog;return true;}
         if(WandererPolicyClick(p))return true;
         if(InspectorVisible && InspectorClose.Contains(p)){CloseNodeInspector();return true;}
+        if(RegionInspectorClick(p))return true;
         if(InspectorVisible)return InspectorHandle.Contains(p);
         if(StrategyToggle.Contains(p)){if(_reignView)CloseNodeInspector();else OpenStrategyInspector();return true;}
         if(WarButton.Contains(p)){if(_movementOpen && _warPlanning)CloseNodeInspector();else{ResetInspector();OpenWarPlanning();}return true;}

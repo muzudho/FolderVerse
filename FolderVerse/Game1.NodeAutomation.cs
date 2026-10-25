@@ -18,11 +18,11 @@ public partial class Game1
     private string SupervisorRole(int node)=>NodeSupervisors.Labels[NodeSupervisors.For(_setup.Nodes.All[node],_setup.Cells[_setup.Nodes.All[node].Cell].Face)];
     private bool NodeAutomationClick(Point point)
     {
-        if(_populationCell<0)return false;
-        var w=_setup.Robots.Workshops[_populationNode];
-        bool allowed=CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) && !_setup.Campaign.RobotBattles.LockedNode(_populationNode);
+        if(AutomationNode<0)return false;
+        var w=_setup.Robots.Workshops[AutomationNode];
+        bool allowed=CanManageNodeFactory(_setup.Nodes.All[AutomationNode].Owner) && !_setup.Campaign.RobotBattles.LockedNode(AutomationNode);
         if(SupervisorLeaveButton.Contains(point)){
-            if(allowed){_supervisorDialogNode=_populationNode;_supervisorRecall=w.Automation==NodeAutomation.Manual;_supervisorDialog=_supervisorRecall?2:1;_supervisorLeaveValue="1";_supervisorReplace=true;_supervisorLeaveError="";}
+            if(allowed){_supervisorDialogNode=AutomationNode;_supervisorRecall=w.Automation==NodeAutomation.Manual;_supervisorDialog=_supervisorRecall?2:1;_supervisorLeaveValue="1";_supervisorReplace=true;_supervisorLeaveError="";}
             return true;
         }
         if(SupervisorPolicyButton.Contains(point)){
@@ -70,10 +70,10 @@ public partial class Game1
     }
     private void DrawNodeAutomation()
     {
-        if(_populationCell<0)return;
-        var w=_setup.Robots.Workshops[_populationNode];string role=SupervisorRole(_populationNode);
+        if(AutomationNode<0)return;
+        var w=_setup.Robots.Workshops[AutomationNode];string role=SupervisorRole(AutomationNode);
         string leave=w.Automation==NodeAutomation.Manual?"休暇中の"+role+"をすぐ呼び戻す":role+"に休暇を与える";
-        bool allowed=CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) && !_setup.Campaign.RobotBattles.LockedNode(_populationNode);
+        bool allowed=CanManageNodeFactory(_setup.Nodes.All[AutomationNode].Owner) && !_setup.Campaign.RobotBattles.LockedNode(AutomationNode);
         void Button(Rectangle r,string label,Color tint){_ui.Button(r,label,tint,Math.Min(.53f,(r.Width-20)/_ui.Measure(label,1).X));}
         Button(SupervisorLeaveButton,leave,allowed?Accent:Muted);
         if(w.Automation!=NodeAutomation.Manual)Button(SupervisorPolicyButton,w.Automation==NodeAutomation.Gentle?"一任する方針に変更する":"現在の方針を引き継がせる方針に変更する",allowed?Accent:Muted);
@@ -114,7 +114,7 @@ public partial class Game1
     }
     private void DrawSupervisorSuperior()
     {
-        int owner=_setup.Nodes.All[_inspectedNode].Owner;if(owner<0){_ui.Center("現場監督 / 無征服",new(220,145,660,40),.58f,Cream);return;}
+        int owner=_setup.Nodes.All[_inspectedNode].Owner;if(owner<0){_ui.Center("地域監督 / 無征服",new(220,145,660,40),.58f,Cream);return;}
         var photo=new Rectangle(64,155,144,100);_ui.Box(new(60,151,152,108),_setup.OwnerColor(owner));
         _portraitRenderer.Draw(_spriteBatch,_setup.Looks[owner],photo,true,forCreation:true);
         _ui.Center(_setup.ConquerorNames[owner]+"の手下です",new(220,145,660,40),.58f,Cream);
