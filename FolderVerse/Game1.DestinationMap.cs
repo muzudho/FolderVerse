@@ -107,7 +107,7 @@ public partial class Game1
     private void DrawTransportDestinationChoice()
     {
         if(!_transportDestinationPicking)return;
-        _ui.Text("隣接する節点を地図で選択 / Escで取消",new(991,900),.45f,Cream);
+        _ui.Text("隣接する地点を地図で選択 / Escで取消",new(991,900),.45f,Cream);
         foreach(int id in TransportAdjacent())if(_net.NodeVisible(_setup,_setup.Nodes.All[id]) && OperationPosition(id,out var at) && MapViewBounds.Contains(at.ToPoint())){
             var r=new Rectangle((int)at.X-23,(int)at.Y-23,46,46);var c=new Color(255,239,130);
             _ui.Box(new(r.X,r.Y,r.Width,2),c);_ui.Box(new(r.X,r.Bottom-2,r.Width,2),c);_ui.Box(new(r.X,r.Y,2,r.Height),c);_ui.Box(new(r.Right-2,r.Y,2,r.Height),c);

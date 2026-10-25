@@ -49,7 +49,7 @@ public partial class Game1
             _ui.Box(new(face.X,face.Y+y,width,1),white);
             _ui.Box(new(face.X+width-1,face.Y+y,2,1),new Color(75,83,87));
         }
-        _transportHudFont??=Content.Load<SpriteFont>("ToyCounterFont");
+        _transportHudFont??=Content.Load<SpriteFont>(Fonts.Counter);
         float scale=25f/_transportHudFont.LineSpacing;
         void Number(string text,Vector2 center)
         {

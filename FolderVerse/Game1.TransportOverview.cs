@@ -8,7 +8,7 @@ public partial class Game1
     private Microsoft.Xna.Framework.Graphics.SpriteFont _transportHudFont;
     private Rectangle TransportHud(string text,Vector2 center,Color color)
     {
-        _transportHudFont??=Content.Load<Microsoft.Xna.Framework.Graphics.SpriteFont>("ToyCounterFont");
+        _transportHudFont??=Content.Load<Microsoft.Xna.Framework.Graphics.SpriteFont>(Fonts.Counter);
         float scale=36f/_transportHudFont.LineSpacing/(CanvasBounds().Height/1080f);
         var size=_transportHudFont.MeasureString(text)*scale;var at=center-size/2;
         // Keep the white outline two physical pixels wide at every window size.
@@ -70,7 +70,7 @@ public partial class Game1
         _ui.Box(new(54,150,850,825),new Color(27,49,62));
         _ui.Text("ロボット輸送長期計画",new(84,178),.8f,Cream);
 
-        if(_populationNode<0){_ui.Text("地図から輸送元の節点を選択",new(84,270),.6f,Cream);return;}
+        if(_populationNode<0){_ui.Text("地図から輸送元の地点を選択",new(84,270),.6f,Cream);return;}
         string label=_setup.Nodes.Label(_setup.Nodes.All[_populationNode]);_ui.Text(label,new(84,230),Math.Min(.43f,770/_font.MeasureString(label).X),Cream);
         DrawTransportInstructions();
     }

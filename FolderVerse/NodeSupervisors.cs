@@ -2,7 +2,7 @@ namespace FolderVerse;
 public static class NodeSupervisors
 {
     public static readonly string[] Kinds={"construction","mayor","town","village","harbor","captain","admiral","pirate","polar","abbess","hospital","class","nursery","shop"};
-    public static readonly string[] Labels={"工事現場監督","市長","町長","村長","港湾監督","船長","艦長","海賊","極地探検隊長","修道院長","病院長","学級委員長","保母","店長"};
+    public static readonly string[] Labels={"工事監督","地点監督","町長","村長","港湾監督","船長","艦長","海賊","極地探検隊長","修道院長","病院長","学級委員長","保母","店長"};
     public static int For(Node node,int face)
     {
         if(face is 2 or 3)return 8;

@@ -18,12 +18,13 @@ public partial class Game1
         if(_nodeFactoryOpen && (_factoryDropDown>=0 || _factoryPlanLine>=0))return NodeFactoryClick(pointer);
         if(NodeAutomationClick(pointer))return true;
         if(_populationCell<0)return false;
-        if(!_nodeAssemblyOpen && !_nodeFactoryOpen && !_nodeTransportOpen && !_nodeDisposalOpen)OpenNodeAssembly();
+        if(NodeOfficeTile.Contains(pointer)){OpenNodeOffice();return true;}
         if(NodeAssemblyTile.Contains(pointer)){OpenNodeAssembly();return true;}
-        if(NodeDisposalTile.Contains(pointer)){if(_nodeDisposalOpen)_nodeDisposalOpen=false;else OpenNodeDisposal();return true;}
+        if(NodeDisposalTile.Contains(pointer)){OpenNodeDisposal();return true;}
         if(NodeTransportAllowed && NodeTransportTile.Contains(pointer)){if(_nodeTransportOpen)_nodeTransportOpen=false;else OpenNodeTransport();return true;}
 
-        if(NodeFactoriesAllowed && _setup.Robots.Workshops[_populationNode].ProductionLines.Length>0 && NodeFactoryTile.Contains(pointer)){if(_nodeFactoryOpen)_nodeFactoryOpen=false;else OpenNodeFactory();return true;}
+        if(NodeFactoryTile.Contains(pointer)){OpenNodeFactory();return true;}
+        if(_nodeOfficeOpen)return true;
         if(_nodeAssemblyOpen)return new Rectangle(54,150,850,825).Contains(pointer);
         if(_nodeDisposalOpen)return NodeDisposalClick(pointer);
         if(_nodeTransportOpen)return NodeTransportClick(pointer);
@@ -32,9 +33,8 @@ public partial class Game1
     }
     private void DrawNodeDialog()
     {
-        var heading="節点インスペクター / "+NodeLandmarks.Label(_setup,_setup.Nodes.All[_populationNode]);
-        _ui.Text(heading,new(54,112),Math.Min(.5f,850/_font.MeasureString(heading).X),Cream);
-        if(!_nodeAssemblyOpen && !_nodeFactoryOpen && !_nodeTransportOpen && !_nodeDisposalOpen)OpenNodeAssembly();
+        if(!_nodeOfficeOpen && !_nodeAssemblyOpen && !_nodeFactoryOpen && !_nodeTransportOpen && !_nodeDisposalOpen)RestoreNodeTab();
+        if(_nodeOfficeOpen){DrawNodeOffice();return;}
         if(_nodeAssemblyOpen){DrawNodeAssembly();return;}
         if(_nodeDisposalOpen){DrawNodeDisposal();return;}
         if(_nodeTransportOpen){DrawNodeTransport();return;}

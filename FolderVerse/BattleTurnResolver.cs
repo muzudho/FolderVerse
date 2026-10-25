@@ -29,7 +29,7 @@ public static class BattleTurnResolver
         foreach(var u in units)
         {
             var p=positions[u.Id];var army=battle.Army(u.Owner);
-            if(!battle.Walkable(p) && !(u.Retreating && BattleState.HomeExit(p,army.Side)))blocked.Add(u.Id);
+            if(!battle.Walkable(p) && !(u.Retreating && BattleState.HomeExit(p,army.Side,battle.BoardSize)))blocked.Add(u.Id);
             u.Facing=actions[u.Id].Facing;
         }
         battle.Events.Add(new(battle.Turn,BattlePhase.Place,0,"仮配置"));
@@ -39,12 +39,12 @@ public static class BattleTurnResolver
         while(true)
         {
             foreach(var id in blocked)positions[id]=origin[id];
-            var collisions=units.Where(u=>!u.Retreating && BattleState.Inside(positions[u.Id])).GroupBy(u=>positions[u.Id]).Where(g=>g.Count()>1).SelectMany(g=>g).ToArray();
+            var collisions=units.Where(u=>!u.Retreating && battle.Contains(positions[u.Id])).GroupBy(u=>positions[u.Id]).Where(g=>g.Count()>1).SelectMany(g=>g).ToArray();
             bool added=false;foreach(var u in collisions)added|=blocked.Add(u.Id);if(!added)break;
         }
         foreach(var u in units)
         {
-            u.Position=positions[u.Id];if(!BattleState.Inside(u.Position))u.Retreated=true;
+            u.Position=positions[u.Id];if(!battle.Contains(u.Position))u.Retreated=true;
             battle.Events.Add(new(battle.Turn,blocked.Contains(u.Id)?BattlePhase.Rollback:BattlePhase.Place,u.Id,$"{u.Position.X},{u.Position.Y} / {u.Facing}"));
         }
         if(battle.Kind==BattleKind.Node && flagEntrants.Length>=2 && flagEntrants.All(u=>blocked.Contains(u.Id) && u.Position!=battle.Flag))BattleLessons.Witness(battle,BattleLesson.FlagCourtesy);
@@ -65,7 +65,7 @@ public static class BattleTurnResolver
             var weapon=actions[attacker.Id].Weapon;if(weapon==BattleWeapon.None)continue;
             var step=BattleState.Forward(attacker.Facing);BattleUnit target=null;var end=attacker.Position+step;
             if(weapon==BattleWeapon.Dagger)target=units.FirstOrDefault(u=>u.Active && u.Position==end);
-            else for(int distance=1;distance<10;distance++)
+            else for(int distance=1;distance<battle.BoardSize;distance++)
             {
                 var p=attacker.Position+new Point(step.X*distance,step.Y*distance);if(battle.BlocksShot(p))break;
                 end=p;if(distance==1)continue;target=units.FirstOrDefault(u=>u.Active && u.Position==p);if(target!=null)break;

@@ -33,7 +33,7 @@ public partial class Game1
             case 0:
                 var node=_setup.Nodes.All.Where(n=>n.Owner==_setup.PlayerSlot && !_setup.Campaign.RobotBattles.LockedNode(n.Id)).OrderByDescending(n=>_setup.Robots.AssemblySelection(n.Id,_setup.PlayerSlot,true)!=null).FirstOrDefault();
                 if(node==null){_demoDomesticStage=12;return true;}
-                _populationNode=node.Id;_populationCell=node.Cell;_nodeAssemblyOpen=_nodeTransportOpen=_nodeDisposalOpen=_nodeFactoryOpen=false;break;
+                OpenNodeInspector(node.Id);OpenNodeOffice();break;
             case 1:OpenNodeTransport();break;
             case 2:
                 break; // Show the real transport plan; do not invent demonstration-only orders.
@@ -53,7 +53,7 @@ public partial class Game1
             case 8:_nodeAssemblyOpen=false;OpenNodeFactory();break;
             case 9:if(_nodeFactoryOpen){_factoryPlanLine=0;_factoryLine=0;}break;
             case 10:if(_nodeFactoryOpen){_factoryPlanLine=-1;}break;
-            case 11:_nodeFactoryOpen=false;_populationCell=-1;break;
+            case 11:ResetInspector();break;
             case 12:OpenMovement();break;
             case 13:MovementClick(target,new KeyboardState());break;
             case 14:MovementClick(target,new KeyboardState());break;

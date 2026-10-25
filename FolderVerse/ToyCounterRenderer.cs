@@ -43,7 +43,7 @@ public sealed class ToyCounterRenderer
     public void Draw(SpriteBatch batch,int count,Rectangle portrait,Color color)
     {
         string number=count.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        var digits=Metrics(number);var unit=Metrics("cell");
+        var digits=Metrics(number);var unit=Metrics("sector");
         float height=portrait.Height/3f,numberScale=height/digits.Height,unitScale=height*0.5f/unit.Height;
         float width=digits.Width*numberScale+7+unit.Width*unitScale;
         // The entire supported range (0..150) fits the card; retain a margin if dimensions change.
@@ -52,6 +52,6 @@ public sealed class ToyCounterRenderer
         float right=portrait.Right-6,bottom=portrait.Bottom-6;
         batch.Draw(_pixel,new Rectangle((int)(right-width-5),(int)(bottom-height-5),(int)Math.Ceiling(width+10),(int)Math.Ceiling(height+10)),new Color(10,25,35,195));
         Ink(batch,number,new Vector2(right-width,bottom-height),numberScale,digits.Top,color);
-        Ink(batch,"cell",new Vector2(right-unit.Width*unitScale,bottom-height*0.5f),unitScale,unit.Top,color);
+        Ink(batch,"sector",new Vector2(right-unit.Width*unitScale,bottom-height*0.5f),unitScale,unit.Top,color);
     }
 }

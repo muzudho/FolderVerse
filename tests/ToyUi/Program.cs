@@ -19,7 +19,7 @@ sealed class ToyCheck:Game1
     {
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
         setup=(WorldSetup)Get("_setup");world=(WorldPreview)Get("_world");
-        world.Generate(1,1,1,0);Check(world.GlobeName=="地棒儀","Unit world has 1x1 faces");
+        world.Generate(1,1,1,0);Check(world.GlobeName=="地賽儀","Unit world has 1x1 faces");
         world.Generate(1,1,4,0);Check(world.GlobeName=="地棒儀","Rod name");
         world.Generate(1,3,4,0);Check(world.GlobeName=="地盤儀","Slab name");
         world.Generate(2,3,4,0);Check(world.GlobeName=="地箱儀","Box name");

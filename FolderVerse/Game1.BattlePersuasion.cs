@@ -8,10 +8,10 @@ public partial class Game1
     private void DrawPersuasionRange(BattleState battle,BattleFrame frame,int left,int top,int size)
     {
         if(frame.Phase!=BattlePhase.Persuade)return;
-        foreach(var queen in frame.Units.Where(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated && BattleState.Inside(u.Position)))
+        foreach(var queen in frame.Units.Where(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated && battle.Contains(u.Position)))
         {
             var color=_setup.OwnerColor(queen.Owner);
-            for(int y=0;y<10;y++)for(int x=0;x<10;x++)
+            for(int y=0;y<battle.BoardSize;y++)for(int x=0;x<battle.BoardSize;x++)
                 if(Math.Abs(x-queen.Position.X)+Math.Abs(y-queen.Position.Y)<=battle.Rules.PersuasionRadius)
                 {
                     var r=new Rectangle(left+x*size+3,top+y*size+3,size-6,size-6);

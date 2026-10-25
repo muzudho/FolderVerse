@@ -40,4 +40,8 @@
     <None Update="Content/Images/robot-map-toy-v001.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Music/*.wav" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <Target Name="CheckStaticFontCoverage" BeforeTargets="PrepareForBuild" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Exec Command="dotnet run --project &quot;$(MSBuildProjectDirectory)/../tools/FontCoverage/FontCoverage.csproj&quot; --no-launch-profile --configuration &quot;$(Configuration)&quot; -- &quot;$(MSBuildProjectDirectory)&quot;"
+          WorkingDirectory="$(MSBuildProjectDirectory)/.." UseUtf8Encoding="Always" StdOutEncoding="utf-8" StdErrEncoding="utf-8" />
+  </Target>
 </Project>

@@ -5,12 +5,13 @@ using Microsoft.Xna.Framework;
 // Small map pictograms share the existing flat, outlined map rendering.
 public static class LandmarkArt
 {
-    public static void Draw(UiPainter ui,LandmarkKind kind,Vector2 at,float size,float time=0)
+    public static void Draw(UiPainter ui,LandmarkKind kind,Vector2 at,float size,float time=0,float brightness=1)
     {
+        Color Tint(Color color)=>new Color(color.R*brightness/255,color.G*brightness/255,color.B*brightness/255,color.A/255f);
         var ink=new Color(15,31,39);var cream=new Color(247,224,174);var wood=new Color(166,111,63);var green=new Color(78,158,95);var red=new Color(230,100,83);
         Vector2 P(float x,float y)=>at+new Vector2(x,y)*size;
-        void Bar(float x,float y,float w,float h,Color color,float angle=0)=>ui.Tile(P(x,y),new Vector2(w,h)*size,angle,color);
-        void Line(float x,float y,float xx,float yy,float width,Color color){var a=P(x,y);var b=P(xx,yy);var d=b-a;ui.Tile((a+b)/2,new(d.Length(),width*size),MathF.Atan2(d.Y,d.X),color);}
+        void Bar(float x,float y,float w,float h,Color color,float angle=0)=>ui.Tile(P(x,y),new Vector2(w,h)*size,angle,Tint(color));
+        void Line(float x,float y,float xx,float yy,float width,Color color){var a=P(x,y);var b=P(xx,yy);var d=b-a;ui.Tile((a+b)/2,new(d.Length(),width*size),MathF.Atan2(d.Y,d.X),Tint(color));}
         void Box(float x,float y,float w,float h,Color color){Bar(x,y,w+.12f,h+.12f,ink);Bar(x,y,w,h,color);}
         void Roof(float x,float y,float width,Color color){Line(x-width/2,y,x,y-width*.45f,.2f,ink);Line(x,y-width*.45f,x+width/2,y,.2f,ink);Line(x-width/2,y,x,y-width*.45f,.11f,color);Line(x,y-width*.45f,x+width/2,y,.11f,color);}
         void Tree(float x,float y,float scale){Box(x,y+.25f*scale,.15f*scale,.7f*scale,wood);for(int i=0;i<3;i++){float yy=y-i*.22f*scale;Line(x-.4f*scale,yy,x,yy-.5f*scale,.28f*scale,green);Line(x,yy-.5f*scale,x+.4f*scale,yy,.28f*scale,green);}}

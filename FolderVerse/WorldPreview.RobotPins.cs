@@ -53,6 +53,7 @@ public sealed partial class WorldPreview
             float batteryTilt=0,batteryV=0;
             void Box(float u,float v,float z,float width,float depth,float height,Color color)
             {
+                if(net.CountryFocus>=0)color=net.NodeTint(node.Id,color);
                 var corners=new Vector3[8];
                 for(int i=0;i<8;i++){
                     float x=u+((i&1)==0?-1:1)*width/2,y=v+((i&2)==0?-1:1)*depth/2,h=z+((i&4)==0?0:height);

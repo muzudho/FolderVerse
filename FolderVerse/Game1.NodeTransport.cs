@@ -36,7 +36,7 @@ public partial class Game1
             if(encounters.Length>0)
             {
                 try{_setup.Campaign.RobotBattles.SendReinforcement(_setup,_setup.PlayerSlot,_populationNode,encounters[Math.Clamp(_nodeReinforcementIndex,0,encounters.Length-1)].Id);_nodeTransportMessage="完成体を継戦へ増援に送りました";}
-                catch(InvalidOperationException){_nodeTransportMessage="自国の節点・完成体・戦場への経路を確認してください";}
+                catch(InvalidOperationException){_nodeTransportMessage="自国の地点・完成体・戦場への経路を確認してください";}
             }
             return true;
         }
@@ -58,6 +58,6 @@ public partial class Game1
         _ui.Button(new(84,840,526,34),reinforcement,encounters.Length>0 && node.Owner==_setup.PlayerSlot?Accent:Muted,.38f);
         _ui.Button(new(630,840,100,34),"←",Muted,.4f);_ui.Button(new(744,840,100,34),"→",Muted,.4f);
         _ui.Text(_nodeTransportMessage,new(84,810),.38f,Cream);
-        DrawNodeFactoryTile(false);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
+        DrawNodeTabs();
     }
 }

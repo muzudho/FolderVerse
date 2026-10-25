@@ -11,6 +11,8 @@
 <CharacterRegion><Start>c</Start><End>c</End></CharacterRegion>
 <CharacterRegion><Start>e</Start><End>e</End></CharacterRegion>
 <CharacterRegion><Start>l</Start><End>l</End></CharacterRegion>
+<CharacterRegion><Start>o</Start><End>o</End></CharacterRegion>
+<CharacterRegion><Start>r</Start><End>t</End></CharacterRegion>
 <CharacterRegion><Start>%</Start><End>%</End></CharacterRegion><CharacterRegion><Start>.</Start><End>.</End></CharacterRegion><CharacterRegion><Start>A</Start><End>A</End></CharacterRegion><CharacterRegion><Start>T</Start><End>T</End></CharacterRegion><CharacterRegion><Start>U</Start><End>U</End></CharacterRegion></CharacterRegions>
 </Asset>
 </XnaContent>

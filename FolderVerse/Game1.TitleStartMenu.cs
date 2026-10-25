@@ -4,16 +4,15 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 public partial class Game1
 {
-    private Texture2D _titleStartPaper,_titleStartButton;
+    private Texture2D _titleStartButton;
     private Rectangle _titleStartButtonSource;
     private bool _titleMenuOpen,_titleMenuKeyboardFocus;
     private int _titleMenuSelection=2;
     private static Rectangle TitleMenuPaper=>new(765,310,390,460);
     // The three title actions share the paper menu.
     private static Rectangle TitleMenuItem(int slot)=>new(815,385+slot*100,290,64);
-    private static readonly Color TitleMenuInk=new(43,62,68);
+    private static Color TitleMenuInk=>RulebookInk;
     private void LoadTitleStartAssets(){
-        _titleStartPaper=Content.Load<Texture2D>("Images/title-start-paper-v002");
         _titleStartButton=Content.Load<Texture2D>("Images/title-start-button-v001");
         var pixels=new Color[_titleStartButton.Width*_titleStartButton.Height];_titleStartButton.GetData(pixels);
         int left=_titleStartButton.Width,top=_titleStartButton.Height,right=-1,bottom=-1;
@@ -49,15 +48,22 @@ public partial class Game1
             _ui.Center("PRESS ENTER",new(740,1000,440,40),.42f,new Color(26,55,80));return;
         }
         _ui.Box(new(0,0,1920,1080),Color.Black*.3f);
-        _spriteBatch.Draw(_titleStartPaper,TitleMenuPaper,Color.White);
+        DrawRulebookPaper(TitleMenuPaper);
+        var heading=new Rectangle(790,336,340,34);
+        // Expand the printed strokes in every direction for an extra-bold heading.
+        for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+            var impression=heading;impression.Offset(x,y);
+            _ui.Center("スタートメニュー",impression,.6f,RulebookRose);
+        }
         void Item(int slot,string text){
             var r=TitleMenuItem(slot);
             bool highlighted=r.Contains(_pointer) || _titleMenuKeyboardFocus && _titleMenuSelection==slot;
-            _ui.Center(text,r,.65f,highlighted?new Color(160,85,46):TitleMenuInk);
+            if(highlighted){_ui.Box(new(r.X,r.Bottom-5,r.Width,1),TitleMenuInk);_ui.Text("›",new(r.X-14,r.Y+12),.6f,TitleMenuInk);}
+            _ui.Center(text,r,.65f,TitleMenuInk);
         }
         Item(0,"遊び方");
         if(_hasAutoSave)Item(1,"続きから");
         Item(2,"最初から");
-        if(_autoSaveError.Length>0)_ui.Center(_autoSaveError,new(795,690,330,45),.26f,new Color(145,57,46));
+        if(_autoSaveError.Length>0)_ui.Center(_autoSaveError,new(795,690,330,45),.26f,TitleMenuInk);
     }
 }

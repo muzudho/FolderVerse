@@ -121,15 +121,22 @@ public sealed partial class CubeNet
         {
             var face=Faces.First(f=>f.Face==cell.Face);var rect=CellBounds(cell,panel);
             if(ScreenAngle==0 && !rect.Intersects(MapViewport(panel)))continue;
-            const int detail=10;
+            int detail=10;
+            foreach(var circle in FocusCircles){
+                var center=UnrotateScreen(circle.Center.ToPoint(),panel).ToVector2();
+                var closest=Vector2.Clamp(center,new Vector2(rect.Left,rect.Top),new Vector2(rect.Right,rect.Bottom));
+                if(Vector2.Distance(closest,center)<=circle.Radius+8){detail=40;break;}
+            }
             for(int y=0;y<detail;y++)for(int x=0;x<detail;x++)
             {
                 var p=cell.Origin+cell.U*((x+0.5f)/detail)+cell.V*((y+0.5f)/detail);
                 // Project each little terrain pixel so map orientation matches the unfolded face.
                 var a=face.Project(p);int px=(int)(fit.Origin.X+a.X*fit.Scale),py=(int)(fit.Origin.Y+a.Y*fit.Scale);
                 int size=(int)Math.Ceiling(fit.Scale/detail)+1;
-                float elevation=WorldTerrain.Elevation(p,offset);
-                Color terrain=TerrainColor(setup,cell.Id,elevation);
+                var sample=cell.Origin+cell.U*((Math.Min(9,x*10/detail)+.5f)/10)+cell.V*((Math.Min(9,y*10/detail)+.5f)/10);
+                float elevation=WorldTerrain.Elevation(sample,offset);
+                Color terrain=FocusTerrain(TerrainColor(setup,cell.Id,elevation),RotateScreen(new Vector2(px,py),panel),cell.Id);
+                if(CountryFocus<0 && NodeFocus<0 && RegionFocusCell<0 && !ShowRoutes && cell.Id==SelectedCell)terrain=SelectionGlow.Brighten(terrain,(x+.5f)/detail,(y+.5f)/detail,pulse);
                 var post=setup.Nodes.At(cell.Id,new Point(x,y));
                 
                 ui.Box(new(px-size/2,py-size/2,size,size),terrain);

@@ -29,7 +29,7 @@ public partial class Game1
             if(subordinateCells>0)counterArea.Height=Math.Max(1,counterArea.Height-25);
             _counter.Draw(_spriteBatch,ranking[ruler].Cells,counterArea,_setup.OwnerColor(ruler));
             if(subordinateCells>0){
-                string detail=$"（内、手下 {subordinateCells} cells）";
+                string detail=$"（内、手下 {subordinateCells} sectors）";
                 var detailArea=new Rectangle(image.X,image.Bottom-25,image.Width,25);
                 _ui.Box(detailArea,Color.Black*.7f);
                 _ui.Center(detail,detailArea,Math.Min(.30f,(image.Width-8)/_font.MeasureString(detail).X),Cream);

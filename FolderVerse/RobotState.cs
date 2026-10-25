@@ -9,9 +9,10 @@ public enum RobotRole { Soldier, Captain }
 public sealed record RobotWorkshopEdit(int Node,long[] Ids,RobotParts? SplitPart,int? Owner=null);
 public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=RobotRole.Soldier,bool Disposal=false)
 {
+    public bool InterceptOnly {get;init;}
     public bool DefenseOnly {get;init;}
     public bool FactoryWorker {get;init;}
-    public bool Stationed=>DefenseOnly || FactoryWorker;
+    public bool Stationed=>DefenseOnly || InterceptOnly || FactoryWorker;
     public RobotParts DamagedParts {get;init;}=0;
     public RobotParts CheapParts {get;init;}=0;
     public int LastBattlePersuasionTurn {get;init;}=-1;

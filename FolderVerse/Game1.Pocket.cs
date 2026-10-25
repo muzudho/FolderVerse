@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 
 public partial class Game1
 {
-    private static readonly Rectangle PocketButton=new(354,1018,140,52);
+    private static readonly Rectangle PocketButton=new(84,912,190,52);
     private long? _pocketRobot;
     private bool _pocketFromNode;
     private string _pocketMessage="";
@@ -51,14 +51,14 @@ public partial class Game1
         if(!PocketTransferButton(_pocketFromNode).Contains(_pointer))return;
         var source=_pocketFromNode?deployed:pocket;var destination=_pocketFromNode?pocket:deployed;
         long id=_pocketRobot.Value;
-        if(_setup.Campaign.RobotBattles.LockedNode(node)){_pocketMessage="継戦中の節点では配備を変更できません";return;}
+        if(_setup.Campaign.RobotBattles.LockedNode(node)){_pocketMessage="継戦中の地点では配備を変更できません";return;}
         if(!destination.HasSpace){_pocketMessage="移動先が満杯です（出撃中の帰還予約を含む）";return;}
         if(_pocketFromNode && !PocketRobotSelectable(source.Robots.Single(r=>r.Id==id),true))
         {_pocketMessage="組立・分解・廃棄を予約したロボットは移せません";return;}
         if(!source.Robots.Any(r=>r.Id==id && r.Owner==player)){_pocketRobot=null;return;}
         destination.Add(source.Remove(id));_pocketRobot=null;
         if(_pocketFromNode && _setup.TutorialStep==2 && player==0)_setup.TutorialPocketed=true;
-        _pocketMessage=_pocketFromNode?"自分のポケットに入れました":"現在地の節点へ配備しました";
+        _pocketMessage=_pocketFromNode?"自分のポケットに入れました":"現在地の地点へ配備しました";
     }
     private void DrawPocket()
     {
@@ -71,7 +71,7 @@ public partial class Game1
         foreach(bool fromNode in new[]{false,true})
         {
             var store=fromNode?_setup.Robots.Nodes[node.Id]:_setup.Robots.Retinues[player];int x=fromNode?1000:54;
-            _ui.Text($"{(fromNode?"節点の配備":"自分のポケット")} {store.Count}/12",new(x,185),.5f,Cream);
+            _ui.Text($"{(fromNode?"地点の配備":"自分のポケット")} {store.Count}/12",new(x,185),.5f,Cream);
             for(int i=0;i<12;i++)
             {
                 var card=PocketCard(i,fromNode);_ui.Box(card,new(30,47,59));if(i>=store.Count)continue;var robot=store.Robots[i];
@@ -86,12 +86,12 @@ public partial class Game1
                 else if(hover)PocketOutline(card,Cream);
             }
             var button=PocketTransferButton(fromNode);bool enabled=PocketTransferEnabled(fromNode),buttonHover=enabled && button.Contains(_pointer);
-            string action=fromNode?"ポケットへ入れる":"節点へ配備";
+            string action=fromNode?"ポケットへ入れる":"地点へ配備";
             if(enabled)_ui.Button(button,action,buttonHover?new Color(81,173,172):Accent,.5f);
             else{_ui.Box(button,new(53,65,75));_ui.Center(action,button,.5f,new(163,174,180));}
             if(buttonHover)PocketOutline(button,Cream);
         }
-        _ui.Text("自分のロボットを選んで、現在地の節点と出し入れできます",new(54,695),.5f,Cream);
+        _ui.Text("自分のロボットを選んで、現在地の地点と出し入れできます",new(54,695),.5f,Cream);
         _ui.Text("自国・他国の帯は所属国 / ロボットの色はパーツの製造国です",new(54,741),.46f,Cream);
         foreach(bool fromNode in new[]{false,true}){
             var store=fromNode?_setup.Robots.Nodes[node.Id]:_setup.Robots.Retinues[player];

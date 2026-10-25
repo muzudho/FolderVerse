@@ -45,7 +45,7 @@ public partial class Game1
         _ui.Box(new(portrait.X-8,portrait.Y-8,size+16,size+16),color);
         _portraitRenderer.Draw(_spriteBatch,_setup.Looks[_endingWinner],portrait,_setup.Relations.Powered[_endingWinner]);
         _ui.Center(_setup.ConquerorNames[_endingWinner],new(260,728,1400,64),.95f,Cream);
-        _ui.Center($"{_endingCells} cells . Entry {ConquerorRelations.EntryNumber(_endingWinner+1,_setup.ActiveCount)} / {_endingScore} points",new(300,810,1320,42),.6f,Cream);
+        _ui.Center($"{_endingCells} sectors . Entry {ConquerorRelations.EntryNumber(_endingWinner+1,_setup.ActiveCount)} / {_endingScore} points",new(300,810,1320,42),.6f,Cream);
         for(int i=0;i<42;i++)
         {
             float x=100+(i*137%1720),y=170+(float)((i*79+_endingAge*65)%670);

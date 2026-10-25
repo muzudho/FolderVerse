@@ -85,7 +85,7 @@ public partial class Game1
         _ui.Center(_setup.Relations.Message,new(200,790,1520,44),.54f,new(255,196,112));
         string[] choices={accepts?"手下にする":"手下にする（拒否）","逃がす","電池を引き抜く"};
         for(int i=0;i<3;i++)_ui.Button(DispositionButton(i),choices[i],i==0 && !accepts?Muted:Accent,.65f);
-        _ui.Center("逃がす：その節点に留まる / 電池を引き抜く：所有する節点を未征服にする",new(160,970,1600,48),.48f,Cream);
+        _ui.Center("逃がす：その地点に留まる / 電池を引き抜く：所有する地点を未征服にする",new(160,970,1600,48),.48f,Cream);
     }
     private void DrawInactiveUi()
     {
@@ -99,7 +99,7 @@ public partial class Game1
             _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new(r.X+8,r.Y+8,130,160),false);
             _ui.Center(_setup.ConquerorNames[ruler],new(r.X+145,r.Y+14,190,70),Math.Min(.48f,185/_font.MeasureString(_setup.ConquerorNames[ruler]).X),Cream);
             _ui.Button(InsertBatteryButton(i),"電池を戻す",Accent,.49f);
-            _ui.Text("Node "+(_setup.Nodes.Current(ruler).Id+1),new(r.X+10,r.Bottom-27),.38f,Cream);
+            _ui.Text("Point "+(_setup.Nodes.Current(ruler).Id+1),new(r.X+10,r.Bottom-27),.38f,Cream);
         }
         _ui.Button(InactiveBack,"ゲームへ戻る",Muted,.58f);
     }

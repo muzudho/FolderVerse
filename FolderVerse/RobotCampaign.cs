@@ -9,6 +9,7 @@ public sealed class RobotEncounter
     public BattleKind Kind;
     public List<BattleState> Battles {get;}=new();
     public Dictionary<int,int> LostHomes {get;}=new();
+    public int InterceptOwner=-1;
     public bool Finished;
     public HashSet<int> WithdrawalOwners {get;}=new();
     public HashSet<long> IncomingWinners {get;}=new();
@@ -138,13 +139,27 @@ public sealed class RobotCampaign
         foreach(var group in orders.Where(o=>!stopped.Contains(o)).GroupBy(o=>o.TargetNode).OrderBy(g=>g.Key))
         {
             int target=group.Key;var node=world.Nodes.All[target];var existing=Encounters.FirstOrDefault(e=>!e.Finished && e.Kind==BattleKind.Node && e.Target==target);
+            var hostile=group.Where(o=>!o.Peaceful && node.Owner>=0 && !world.Relations.Allied(o.Ruler,node.Owner) && (troops[o].Count>0 || o.Queen)).ToArray();
+            bool alreadyIntercepting=Encounters.Any(e=>!e.Finished && e.InterceptOwner>=0 && e.Target==target);
+            if(existing==null && !alreadyIntercepting && hostile.Length>0 && hostile.Select(o=>source[o]).Distinct().Count()==1){
+                var interceptors=world.Robots.Nodes[target].Robots.Where(r=>r.InterceptOnly && world.Relations.Allied(r.Owner,node.Owner) && world.Robots.Training[r.Owner].Eligible(r) && world.Robots.DirectDelivery.LockedParts(target,r.Id)==0 && world.Robots.Workshops[target].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id))).ToArray();
+                if(interceptors.Length>0){
+                    var interceptArmies=hostile.GroupBy(o=>o.Ruler).Select(g=>(g.Key,source[g.First()],g.SelectMany(o=>troops[o]).ToList(),g.Any(o=>o.Queen))).ToList();
+                    foreach(var defenders in interceptors.GroupBy(r=>r.Owner)){foreach(var robot in defenders)Depart(world,target,robot);interceptArmies.Add((defenders.Key,target,defenders.ToList(),false));}
+                    var interception=CreateEncounter(world,BattleKind.Edge,source[hostile[0]],target,-1,interceptArmies.ToArray());interception.InterceptOwner=node.Owner;
+                    Encounters.Add(interception);
+                    // Friendly arrivals do not add an enemy approach and must still reach their destination.
+                    foreach(var arrival in group.Where(o=>!hostile.Contains(o))){var staying=troops[arrival].Select(r=>r.Id).ToHashSet();foreach(var robot in troops[arrival])PlaceWinner(world,target,robot,source[arrival],staying);if(arrival.Queen)Move(world,arrival.Ruler,target);}
+                    continue;
+                }
+            }
             if(existing!=null)
             {
                 foreach(var o in group)AddReinforcement(world,existing,o.Ruler,source[o],troops[o],o.Queen);
                 continue;
             }
             var armies=group.GroupBy(o=>o.Ruler).Select(g=>(Owner:g.Key,Home:source[g.FirstOrDefault(o=>o.Queen)??g.First()],Robots:g.SelectMany(o=>troops[o]).ToList(),Queen:g.Any(o=>o.Queen))).ToList();
-            foreach(var ownership in world.Robots.Nodes[target].Robots.Where(r=>r.CanFight && !r.FactoryWorker && (!r.DefenseOnly || world.Robots.Training[r.Owner].Eligible(r))).GroupBy(r=>r.Owner).ToArray())
+            foreach(var ownership in world.Robots.Nodes[target].Robots.Where(r=>r.CanFight && !r.FactoryWorker && (!(r.DefenseOnly || r.InterceptOnly) || world.Robots.Training[r.Owner].Eligible(r))).GroupBy(r=>r.Owner).ToArray())
             {
                 var robots=ownership.ToList();foreach(var r in robots)Depart(world,target,r);
                 int index=armies.FindIndex(a=>a.Owner==ownership.Key);
@@ -190,6 +205,10 @@ public sealed class RobotCampaign
     private RobotEncounter CreateEncounter(WorldSetup world,BattleKind kind,int source,int target,int defender,
         (int Owner,int Home,List<Robot> Robots,bool Queen)[] armies)
     {
+        if(kind==BattleKind.Node && defender>=0 && world.Nodes.Current(defender)?.Id==target && !armies.Any(a=>a.Owner==defender && a.Queen) && !Encounters.Where(e=>!e.Finished).SelectMany(e=>e.Battles).SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Any(u=>u.Owner==defender && u.Role==BattleRole.Queen && u.Active)){
+            int index=Array.FindIndex(armies,a=>a.Owner==defender);
+            if(index>=0){var army=armies[index];army.Queen=true;foreach(var robot in world.Robots.Retinues[defender].Robots.Where(world.Robots.Training[defender].Eligible).ToArray()){Depart(world,target,robot,true);army.Robots.Add(robot);}armies[index]=army;}
+        }
         var e=new RobotEncounter{Id=_nextBattle++,Kind=kind,Source=source,Target=target,Defender=defender};
         // Stable route/source ordering puts nearby invasion groups in the same board.
         int Bearing(int home)
@@ -199,7 +218,8 @@ public sealed class RobotCampaign
         }
         var sorted=armies.OrderBy(a=>a.Owner==defender?0:1).ThenBy(a=>Bearing(a.Home)).ThenBy(a=>a.Home).ThenBy(a=>a.Owner).ToArray();
         var sizes=new List<int>();int left=sorted.Length;
-        while(left>4){int size=left==5?2:4;sizes.Add(size);left-=size;}sizes.Add(left);
+        int capacity=kind==BattleKind.Node && defender>=0 && sorted.Length<=5?5:4;
+        while(left>capacity){int size=left==capacity+1?2:capacity;sizes.Add(size);left-=size;}sizes.Add(left);
         int offset=0;foreach(int size in sizes)
         {
             var state=NewState(world,e);
@@ -301,18 +321,19 @@ public sealed class RobotCampaign
             return false;
         }
         var old=e.Battles.ToArray();
-        var groups=survivors.OrderBy(g=>g.Key).ToArray();e.Battles.Clear();
-        for(int i=0;i<groups.Length;i+=4)
+        var groups=survivors.OrderBy(g=>g.Key==e.Defender?0:1).ThenBy(g=>g.Key).ToArray();e.Battles.Clear();
+        for(int i=0;i<groups.Length;)
         {
             var state=NewState(world,e);state.InheritHistory(old);
-            foreach(var g in groups.Skip(i).Take(4))
+            int capacity=e.Kind==BattleKind.Node && groups.Skip(i).Any(g=>g.Key==e.Defender)?5:4;
+            foreach(var g in groups.Skip(i).OrderBy(g=>g.Key==e.Defender?0:1).Take(capacity))
             {
                 var previous=old.SelectMany(b=>b.Armies).First(a=>a.Owner==g.Key);
                 var army=new BattleArmy{Owner=g.Key,HomeNode=previous.HomeNode,Side=state.Armies.Count,Limit=previous.Limit,Wanderer=previous.Wanderer,WandererPolicy=previous.WandererPolicy,Withdrawing=previous.Withdrawing};
                 if(state.Armies.Count==1)army.Side=2;state.Armies.Add(army);
                 foreach(var unit in g.OrderBy(u=>u.Role==BattleRole.Queen?1:0).ThenBy(u=>u.Id))army.Waiting.Enqueue(unit);
             }
-            state.Deploy();e.Battles.Add(state);
+            state.Deploy();e.Battles.Add(state);i+=capacity;
         }
         PrepareSplitBoards(e);
         // Failed/retreated individuals are returned now; active survivors are only in the new boards.
@@ -332,6 +353,8 @@ public sealed class RobotCampaign
         if(e.Kind==BattleKind.Node && winner>=0)
         foreach(int ruler in Enumerable.Range(0,world.ActiveCount))
             if(world.Nodes.Current(ruler).Id==e.Target && !world.Relations.Allied(ruler,winner))world.Relations.Capture(world,ruler,winner,e.Target);
+        // Interception buys time: either winner returns home; a later turn is needed to enter the node.
+        if(e.Kind==BattleKind.Edge && e.InterceptOwner>=0)return;
         if(e.Kind==BattleKind.Edge && winner>=0)
         {
             var army=state.Army(winner);int next=army.HomeNode==e.Source?e.Target:e.Source;
@@ -344,7 +367,7 @@ public sealed class RobotCampaign
                 Depart(world,home>=0?home:army.HomeNode,r,home<0);
             }
             Reserves.RemoveAll(r=>ids.Contains(r.Robot.Id));
-            var node=world.Nodes.All[next];var residents=world.Robots.Nodes[next].Robots.Where(r=>r.CanFight && !r.FactoryWorker && (!r.DefenseOnly || world.Robots.Training[r.Owner].Eligible(r))).ToArray();
+            var node=world.Nodes.All[next];var residents=world.Robots.Nodes[next].Robots.Where(r=>r.CanFight && !r.FactoryWorker && (!(r.DefenseOnly || r.InterceptOnly) || world.Robots.Training[r.Owner].Eligible(r))).ToArray();
             foreach(var r in residents)Depart(world,next,r);
             var armies=new List<(int,int,List<Robot>,bool)>{(winner,army.HomeNode,robots.ToList(),state.Units.Any(u=>u.Active && u.Owner==winner && u.Role==BattleRole.Queen))};
             foreach(var group in residents.GroupBy(r=>r.Owner))
@@ -421,11 +444,12 @@ public sealed class RobotCampaign
     {
         var home=ReleaseHome(world,robot,fallback);var destination=world.Robots.Nodes[target];
         // Pocket robots retain their own hangar; their conqueror's location can change separately.
-        if(_retinueIds.Remove(robot.Id) || ReferenceEquals(home.Store,destination)){home.Store.Add(robot);return;}
+        if(_retinueIds.Remove(robot.Id) || ReferenceEquals(home.Store,destination)){if(home.Store.HasSpace)home.Store.Add(robot);else Reserves.Add((home.Node,robot));return;}
         if(destination.HasSpace){destination.Add(robot);return;}
         var swapped=destination.Robots.Where(r=>staying?.Contains(r.Id)!=true && !r.Stationed && world.Robots.Workshops[target].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))
             .OrderByDescending(r=>r.NativeParts(robot.Owner)).ThenBy(r=>r.Id).FirstOrDefault();
-        if(swapped==null){home.Store.Add(robot);return;}
+        if(swapped==null){if(home.Store.HasSpace)home.Store.Add(robot);else Reserves.Add((home.Node,robot));return;}
+        if(!home.Store.HasSpace){Reserves.Add((home.Node,robot));return;}
         destination.Remove(swapped.Id);
         home.Store.Add(swapped.Materialize() with {Owner=robot.Owner});destination.Add(robot);
     }

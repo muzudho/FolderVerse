@@ -94,9 +94,9 @@ public partial class Game1 : Game
         _marginRainbow=Content.Load<Texture2D>("Images/margin-rainbow");
         _demoLollipop=Content.Load<Texture2D>("Images/demo-lollipop");
         _titleLogo=Content.Load<Texture2D>("Images/title-logo");
-        _portraitRenderer=new PortraitRenderer(Content); _font=Content.Load<SpriteFont>("UiFont");
+        _portraitRenderer=new PortraitRenderer(Content); _font=Fonts.LoadUi(Content);
         _pixel=new Texture2D(GraphicsDevice,1,1); _pixel.SetData(new[]{Color.White});
-        _counter=new ToyCounterRenderer(Content.Load<SpriteFont>("ToyCounterFont"),_pixel);
+        _counter=new ToyCounterRenderer(Content.Load<SpriteFont>(Fonts.Counter),_pixel);
         _ui=new UiPainter(_spriteBatch,_pixel,_font){AdaptiveText=()=>DomesticTheme}; _world=new WorldPreview(GraphicsDevice);
         _orientationToy=new ToyOrientationRenderer(GraphicsDevice);
         LoadScreenshotFeedback();LoadCutInMobs();LoadSetupHost();LoadTutorialHost();CheckAutoSave();LoadTutorialAchievements();LoadTitleStartAssets();
@@ -140,11 +140,12 @@ public partial class Game1 : Game
         UpdateRateDrag(mouse,active,click);
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
+        if(InspectorFolderInput(mouse,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_autoPlay && (click || escape)){
             _autoPlay=false;_autoStepAge=_autoDomesticAge=0;_autoDomesticStage=0;_hangarDrag=null;
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
-        if(IsStatusScreen && _directPairOpen){if(active)DirectPairInput(mouse,click,escape);else _directDrag=null;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && _directPairOpen){_animationTime+=(float)gameTime.ElapsedGameTime.TotalSeconds;_directPairSlide=Math.Min(1,_directPairSlide+(float)gameTime.ElapsedGameTime.TotalSeconds/.25f);if(active){if(_directPairSlide>=1 || escape)DirectPairInput(mouse,click,escape);DirectPairMapInput(mouse);}else _directDrag=null;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _directMap && escape){CloseDirectDelivery();_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _invasionPicker>=0)
         {if(active)InvasionPickerInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -274,15 +275,11 @@ public partial class Game1 : Game
                 if(active && MapViewBounds.Contains(_pointer))
                 {
                     int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
-                    if(wheel!=0)
-                    {
-                        int selected=_movementOpen && _selectedMoveNode>=0?_selectedMoveNode:_globeSelectedNode;
-                        _world.GlobeAnchor=selected>=0?_setup.Routes.Position(_setup.Nodes.All[selected].Cell,_setup.Nodes.All[selected].Center):null;
-                        _world.GlobeZoom=MathHelper.Clamp(_world.GlobeZoom*MathF.Pow(1.2f,wheel/120f),.5f,16);
-                    }
+                    ZoomSelectedPoint(wheel);
                 }
                 bool action=click && (TransportOverviewClick(_pointer) || RouteLayerClick(_pointer) || BatteryClick(_pointer) || MovementClick(_pointer,keyboard) || NodeDialogClick(_pointer,keyboard));
                 if(!action && click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
+                else if(!action && click && NetButton(3).Contains(_pointer))FocusInspectorLocation();
                 else if(!action && click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
                 DragStatusMap(mouse,active);
                 GlobeCellClick(mouse,click,active,action);
@@ -294,7 +291,7 @@ public partial class Game1 : Game
             if(active && MapViewBounds.Contains(_pointer))
             {
                 int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
-                if(wheel!=0)_net.ZoomAt(NetPanel,_pointer,wheel);
+                ZoomSelectedPoint(wheel);
             }
             _statusCell=_net.IsAnimating?-1:_net.Hit(_setup,NetPanel,_pointer);
             _net.HoveredBattery=_net.HitBattery(_pointer);
@@ -305,12 +302,13 @@ public partial class Game1 : Game
             else if(click && MovementClick(_pointer,keyboard)){}
             else if(click && NodeDialogClick(_pointer,keyboard)){}
             else if(click && NetButton(2).Contains(_pointer))FocusCurrentNode();
-            else if(click && NetButton(3).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
+            else if(click && NetButton(3).Contains(_pointer))FocusInspectorLocation();
+            else if(click && NetButton(4).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
             else if(click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
             else if(click && !pan && !_net.IsAnimating && _net.ClickEdge()){RecordTutorialMapEdge();}
             else if(click && !pan && !_movementOpen && !_net.IsAnimating && _statusCell>=0)
             {
-                if(!_net.ShowRoutes)_selectedMapCell=_statusCell;
+                if(!_net.ShowRoutes)OpenRegionInspector(_statusCell);
                 var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);int hit=_net.ShowRoutes?_net.HitNode(_setup,NetPanel,_pointer):-1;var post=hit>=0?_setup.Nodes.All[hit]:null;
                 if(post!=null)
                 {OpenNodeInspector(post.Id);}
@@ -437,7 +435,7 @@ public partial class Game1 : Game
         }
         _ui.Button(CastBack,"世界へ戻る",Muted,0.48f);
         _ui.Button(CastRetry,_screen is Screen.CastRolling or Screen.CastReview?"人物を再抽選":"配置を再抽選",Muted,0.48f);
-        string action=IsRolling?"STOP":_screen==Screen.CastReview?"登場人物を確定 / セル権利へ":_screen==Screen.PlacementReview?"セル権利を確定":"セル権利を確定済み";
+        string action=IsRolling?"STOP":_screen==Screen.CastReview?"登場人物を確定 / 区画権利へ":_screen==Screen.PlacementReview?"区画権利を確定":"区画権利を確定済み";
         _ui.Button(CastAction,_screen==Screen.Ready?"世界征服者を選択":action,Accent,0.57f);
         _ui.Button(SeedButton(0),"世界 SEED "+_setup.WorldSeed,Muted,0.36f);
         _ui.Button(SeedButton(1),"人物 SEED "+_setup.CastSeed,Muted,0.36f);
@@ -512,37 +510,40 @@ public partial class Game1 : Game
     }
     private void DrawStatusUi()
     {
+        if(_directPairOpen){DrawDirectPair();return;}
         _ui.Text("世界征服状況",new(54,22),1.1f,Cream);
         _net.InspectedNode=_populationCell>=0?_populationNode:-1;
+        _net.NodeFocus=_world.NodeFocus=!_nodeInspectorClosing && _populationCell>=0?_populationNode:-1;
         int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
         if(_reignView)DrawInspector(()=>{
-        _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Text("世界征服計画",new(54,112),.65f,Cream);var image=new Rectangle(212,220,518,360);
-        if(!InspectingSupervisor && !System.Linq.Enumerable.Any(_setup.Nodes.All,node=>node.Owner==player))DrawReignWantedPoster(player);
+        int ruler=_strategyRuler>=0?_strategyRuler:_setup.PlayerSlot,rulerCapital=_setup.Capitals[ruler];Color rulerColor=_setup.OwnerColor(ruler);
+        _ui.Box(new(54,150,850,825),new(27,49,62));var image=new Rectangle(212,260,518,320);
+        if(!InspectingSupervisor && !System.Linq.Enumerable.Any(_setup.Nodes.All,node=>node.Owner==ruler))DrawReignWantedPoster(ruler);
         else
         {
         // Raised ceremonial frame: layered gilt bevels, corners and a crest.
-        _ui.Box(new(188,203,570,412),new Color(4,14,23,180));
+        _ui.Box(new(188,243,570,372),new Color(4,14,23,180));
         Color[] gold={new(100,58,18),new(235,177,64),new(255,231,152),new(127,76,21),new(239,192,85)};
         for(int i=0;i<gold.Length;i++){int margin=24-i*4;_ui.Box(new(image.X-margin,image.Y-margin,image.Width+margin*2,image.Height+margin*2),gold[i]);}
-        if(InspectingSupervisor)DrawSupervisor(image,_setup.Nodes.All[_inspectedNode].Owner);else _portraitRenderer.Draw(_spriteBatch,_setup.Looks[player],image);
+        if(InspectingSupervisor)DrawSupervisor(image,_setup.Nodes.All[_inspectedNode].Owner,_inspectedNode);else _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],image);
         foreach(var corner in new[]{new Point(image.Left-14,image.Top-14),new Point(image.Right+14,image.Top-14),new Point(image.Left-14,image.Bottom+14),new Point(image.Right+14,image.Bottom+14)})
         {
-            _spriteBatch.Draw(_pixel,new Vector2(corner.X,corner.Y),null,color,MathHelper.PiOver4,new Vector2(0.5f),new Vector2(22),SpriteEffects.None,0);
+            _spriteBatch.Draw(_pixel,new Vector2(corner.X,corner.Y),null,rulerColor,MathHelper.PiOver4,new Vector2(0.5f),new Vector2(22),SpriteEffects.None,0);
         }
-        if(!InspectingSupervisor && _setup.Relations.Superiors[player]<0){_ui.Box(new(330,165,282,42),new(125,78,28));
-        _ui.Center("★ 世界征服者 ★",new(330,165,282,42),0.65f,new(255,227,132));}
+        if(!InspectingSupervisor && HasConqueredWorld(ruler)){_ui.Box(new(330,205,282,42),new(125,78,28));
+        _ui.Center("★ 世界征服者 ★",new(330,205,282,42),0.65f,new(255,227,132));}
         }
-        if(InspectingSupervisor)DrawSupervisorSuperior();else DrawControlledRuler();
+        if(InspectingSupervisor)DrawSupervisorSuperior();else DrawControlledRuler(ruler);
         _ui.Box(new(210,633,520,62),new(27,46,55));
-        string formalName=InspectingSupervisor?NodeSupervisors.Labels[NodeSupervisors.For(_setup.Nodes.All[_inspectedNode],_setup.Cells[_setup.Nodes.All[_inspectedNode].Cell].Face)]:"征服者　"+_setup.ConquerorFullNames[player];
+        string formalName=InspectingSupervisor?NodeSupervisors.Labels[NodeSupervisors.For(_setup.Nodes.All[_inspectedNode],_setup.Cells[_setup.Nodes.All[_inspectedNode].Cell].Face)]:"征服者　"+_setup.ConquerorFullNames[ruler];
         _ui.Center(formalName,new(90,641,760,56),Math.Min(0.88f,740f/_font.MeasureString(formalName).X),Cream);
-        _ui.Center(_setup.TerritoryCounts[player]>0?"政治体制　"+WorldSetup.PoliticalSystem:"放浪者",new(90,710,760,45),0.7f,new(181,204,211));
-        string capitalLabel=_setup.TerritoryCounts[player]==0?"放浪者 / 自国なし":"首都　"+WorldCoordinates.Label(_setup,capital);
-        _ui.Center(capitalLabel,new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
-        int fully=System.Linq.Enumerable.Count(_setup.Cells,c=>_setup.Nodes.FullOwner(c.Id)==player);
-        _ui.Center("完全占領　"+fully+" cell / 節点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==player),new(90,842,760,48),0.76f,Cream);
-        DrawWandererPolicy();
-        if(!InspectingSupervisor)_ui.Button(LessonCatalogButton,"戦訓カード",Muted,.45f);
+        _ui.Center(_setup.TerritoryCounts[ruler]>0?"政治体制　"+WorldSetup.PoliticalSystem:"放浪者",new(90,710,760,45),0.7f,new(181,204,211));
+        string capitalLabel=_setup.TerritoryCounts[ruler]==0?"放浪者 / 自国なし":"首都　"+WorldCoordinates.Label(_setup,rulerCapital);
+        _ui.Center(capitalLabel,new(65,765,840,48),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
+        int fully=System.Linq.Enumerable.Count(_setup.Cells,c=>_setup.Nodes.FullOwner(c.Id)==ruler);
+        _ui.Center("完全占領　"+fully+" sector / 地点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==ruler),new(90,820,760,32),0.6f,Cream);
+        if(!StrategyReadOnly)DrawWandererPolicy();
+        if(!InspectingSupervisor && !StrategyReadOnly)_ui.Button(LessonCatalogButton,"戦訓カード",Muted,.45f);
         }); _ui.Box(new(MapViewBounds.X-20,142,MapViewBounds.Width+40,750),new(20,42,54));
         _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+_setup.FaceName(_net.CenterFace)+" が中心",new(991,156),0.68f,Cream);
         int geographicFace=_setup.GeographicFace(_net.CenterFace);
@@ -556,6 +557,7 @@ public partial class Game1 : Game
         }
         _ui.Text("△：山頂 / 錨：港",new(1590,203),.38f,new(255,204,83));
         PrepareDestinationMap();
+        UpdateNodeFocusCircle();
         var canvas=CanvasBounds();
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _spriteBatch.End();
@@ -564,6 +566,7 @@ public partial class Game1 : Game
         if(MapTransitionActive)
         {
             var viewport=GraphicsDevice.Viewport;GraphicsDevice.Viewport=new Viewport(canvas);
+            _net.RegionFocusCell=RegionMapFocusCell;
             DrawMapTransition();GraphicsDevice.Viewport=viewport;
         }
         else if(_statusGlobe)
@@ -571,6 +574,9 @@ public partial class Game1 : Game
             var viewport=GraphicsDevice.Viewport;
             var areas=OrientationAreas(NetPanel,false);
             GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
+            _net.RegionFocusCell=_world.RegionFocusCell=RegionMapFocusCell;
+            _net.SelectedCell=_world.SelectedCell=_transportOverview || _net.ShowRoutes?-1:_selectedMapCell;
+            _world.SelectionSetup=_setup;
             _world.Draw(_yaw,_pitch,_animationTime,false,true);
             _net.HoveredBattery=_net.HitBattery(_pointer);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1;
@@ -581,23 +587,30 @@ public partial class Game1 : Game
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
             if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();_spriteBatch.End();
-            DrawOrientationOverlay(MapViewBounds,canvas,transform);
         }
         else using(var clipping=new RasterizerState{ScissorTestEnable=true})
         {
             _spriteBatch.Begin(transformMatrix:_net.ScreenTransform(NetPanel)*transform,rasterizerState:clipping);
             var mapPointer=_ui.Pointer;_ui.Pointer=_net.UnrotateScreen(_pointer,NetPanel);
+            _net.RegionFocusCell=RegionMapFocusCell;
+            _net.SelectedCell=_transportOverview || _net.ShowRoutes?-1:_selectedMapCell;
             _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:(_statusCell>=0?_statusCell:_selectedMapCell),_animationTime,false);_ui.Pointer=mapPointer;_spriteBatch.End();
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clipping);
             _net.DrawMapObjects(_ui,_setup,NetPanel,_animationTime);_spriteBatch.End();
         }
-        if(!_statusGlobe && !MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
+        _spriteBatch.Begin(transformMatrix:transform);
+        DrawConquerorResidences();DrawRegionOffice();
+        _spriteBatch.End();
+        if(!MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
+        DrawBattleActivity();
         DrawDestinationMap();DrawContinuationBadges();DrawWarReservationMarkers();DrawMoveReservationMarkers();DrawDirectTrucks(); DrawDomesticPortrait();
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(InspectorVisible?1276:991,InspectorVisible?770:831),Math.Min(0.48f,(InspectorVisible?600:870)/_font.MeasureString(location).X),Cream);
         _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):"右ドラッグ："+(MapDragSlide?"スライド":"回転")+" / ホイール：拡縮",new(InspectorVisible?1276:991,InspectorVisible?810:865),InspectorVisible?.27f:0.37f,new(177,206,216));
-        _ui.Button(NetButton(2),"現在地へ移動",Accent,0.45f);if(!_statusGlobe)_ui.Button(NetButton(3),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
+        _ui.Button(NetButton(2),"征服者はどこ？",Accent,0.45f);
+        _ui.Button(NetButton(3),"今どこ見てる？",InspectorLocationNode>=0?Accent:Muted,0.45f);
+        if(!_statusGlobe)_ui.Button(NetButton(4),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
         if(_statusCell>=0 && !InspectorVisible)
         {
             var cell=_setup.Cells[_statusCell];int owner=_setup.Owners[cell.Id];
@@ -608,7 +621,7 @@ public partial class Game1 : Game
         }
 
 
-        if(_reignView)DrawInspector(()=>{
+        if(_reignView && !StrategyReadOnly)DrawInspector(()=>{
         DrawMoveReservationButton();
         _ui.Button(PocketButton,"ポケット",Accent,.55f);});
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(1064,1037,800,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
@@ -617,19 +630,21 @@ public partial class Game1 : Game
             else DrawInspector(()=>{DrawNodeDialog();DrawNodeAutomation();});
         }
         if(_movementOpen)DrawInspector(DrawMovementPanel);
+        if(_regionCell>=0)DrawInspector(DrawRegionInspector);
 
         if(_transportOverview){DrawInspector(DrawTransportOverviewPanel);if(_rateTarget>=0)DrawRatePieDialog();}
         DrawWandererLocation();DrawRouteLayerButtons();
         DrawStatusMenu();
         if(_supervisorDialog==0)DrawNodeTooltip();
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();
-        if(_directPairOpen)DrawDirectPair();
+        DrawInspectorFolders();
+
     }
     private void DrawCastPreviewInfo()
     {
         _ui.Box(new(CastPreview.X+18,CastPreview.Y+12,CastPreview.Width-36,48),new Color(12,32,44,220));
-        _ui.Center($"{_setup.Width} x {_setup.Height} x {_setup.Depth} / {_setup.Cells.Length} セル / {_setup.ActiveCount} 人",new(CastPreview.X,CastPreview.Y+12,CastPreview.Width,48),0.72f,Cream);
-        string stage=_screen switch { Screen.CastRolling=>"登場人物を抽選中",Screen.CastReview=>"登場人物を確認",Screen.PlacementRolling=>"セル権利を抽選中",Screen.PlacementReview=>"セル権利を確認",_=>"セル権利を確定済み" };
+        _ui.Center($"{_setup.Width} x {_setup.Height} x {_setup.Depth} / {_setup.Cells.Length} 区画 / {_setup.ActiveCount} 人",new(CastPreview.X,CastPreview.Y+12,CastPreview.Width,48),0.72f,Cream);
+        string stage=_screen switch { Screen.CastRolling=>"登場人物を抽選中",Screen.CastReview=>"登場人物を確認",Screen.PlacementRolling=>"区画権利を抽選中",Screen.PlacementReview=>"区画権利を確認",_=>"区画権利を確定済み" };
         string detail=stage+" / 右ドラッグで回転";
         for(int slot=0;slot<WorldSetup.CastCount;slot++) if(PortraitCell(slot).Contains(_pointer))
         {
@@ -710,7 +725,7 @@ public partial class Game1 : Game
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){_net.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();_medallionRing?.Dispose();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){_rulebookTexture?.Dispose();_net.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();_medallionRing?.Dispose();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         if(disposing){StopBattleMusic();StopIndustryMusic();DisposeTitleMusic();}

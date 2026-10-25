@@ -18,14 +18,15 @@ public sealed partial class CubeNet
     {
         int owner=ShowCountryColors?world.Nodes.FullOwner(cell):-1;
         if(ControlledCountryColors && !world.Relations.Controls(owner))owner=-1;
-        return owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal,world.PolarAxis):WorldPreview.LandTerritoryColor(world.OwnerColor(owner),WorldTerrain.Kind(height));
+        var color=owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal,world.PolarAxis):WorldPreview.LandTerritoryColor(world.OwnerColor(owner),WorldTerrain.Kind(height));
+        return NodeFocus<0 && RegionFocusCell>=0 && cell!=RegionFocusCell?SelectionGlow.Dim(color):color;
     }
     public bool ShowRoutes {get;set;}=true; public int HoveredNode {get;set;}=-1; public int InspectedNode {get;set;}=-1;
     public bool AttackTargetMarkers {get;set;}
     public HashSet<int> VisibleOperationBatteries {get;set;}
     public bool RevealMovementTargets {get;set;}
     public bool NodeVisible(WorldSetup world,Node node)=>(VisibleOperationNodes==null || VisibleOperationNodes.Contains(node.Id)) && (ShowOtherCountries || node.Owner<0 || world.Relations.Controls(node.Owner) || RevealMovementTargets && MovementTargets.Contains(node.Id));
-    public bool EmphasizedNode(int id)=>HoveredNode==id || InspectedNode==id;
+    public bool EmphasizedNode(int id)=>CountryFocus<0 && NodeFocus<0 && (HoveredNode==id || InspectedNode==id);
     public HashSet<int> MovementTargets {get;}=new();
     public int SelectedTarget {get;set;}=-1;
     public Vector2 NodePosition(WorldSetup world,Node node,Rectangle panel)
@@ -84,37 +85,38 @@ public sealed partial class CubeNet
             DrawLandmarks(ui,world,cell,p=>project(p),pulse);
             foreach(var post in world.Nodes.InCell(cell).Where(n=>NodeVisible(world,n) && (VisibleOperationNodes==null || VisibleOperationNodes.Contains(n.Id))))
             {
+                Color Tint(Color color)=>NodeTint(post.Id,color);
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
                 float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);
                 if(post.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
                 if(EmphasizedNode(post.Id))radius*=2; if(MovementTargets.Contains(post.Id) && MathF.Sin(pulse*6)>=0)
                 {
-                    Disc(ui,at,radius+7,new Color(255,219,96));
-                    Disc(ui,at,radius+5,new Color(13,36,44));
+                    Disc(ui,at,radius+7,Tint(new Color(255,219,96)));
+                    Disc(ui,at,radius+5,Tint(new Color(13,36,44)));
                 }
                 if(SelectedTarget==post.Id || EmphasizedNode(post.Id))
                 {
-                    Disc(ui,at,radius*1.5f+3,Color.White);
-                    Disc(ui,at,radius*1.5f,new Color(13,36,44));
+                    Disc(ui,at,radius*1.5f+3,Tint(Color.White));
+                    Disc(ui,at,radius*1.5f,Tint(new Color(13,36,44)));
                 }
                 if(AttackTargetMarkers && SelectedTarget==post.Id)
                 {
                     float size=radius*(1.3f+.25f*MathF.Sin(pulse*5));
-                    if(post.IsHarbor)DrawHarbor(ui,at,radius,world.OwnerColor(post.Owner));
+                    if(post.IsHarbor)DrawHarbor(ui,at,radius,Tint(world.OwnerColor(post.Owner)),DimNode(post.Id));
                     var center=post.IsHarbor?at+new Vector2(radius*.8f,-radius*.8f):at;
                     foreach(float angle in new[]{MathHelper.PiOver4,-MathHelper.PiOver4})
-                    {ui.Tile(center,new Vector2(size*2.5f,7),angle,new Color(13,36,44));ui.Tile(center,new Vector2(size*2.5f,3),angle,new Color(255,224,110));}
+                    {ui.Tile(center,new Vector2(size*2.5f,7),angle,Tint(new Color(13,36,44)));ui.Tile(center,new Vector2(size*2.5f,3),angle,new Color(255,224,110));}
                     continue;
                 }
-                if(post.IsHarbor)DrawHarbor(ui,at,radius,world.OwnerColor(post.Owner));
+                if(post.IsHarbor)DrawHarbor(ui,at,radius,Tint(world.OwnerColor(post.Owner)),DimNode(post.Id));
                 else
                 {
-                    Disc(ui,at,radius+2,new Color(13,36,44));
-                    Disc(ui,at,radius,world.OwnerColor(post.Owner));
+                    Disc(ui,at,radius+2,Tint(new Color(13,36,44)));
+                    Disc(ui,at,radius,Tint(world.OwnerColor(post.Owner)));
                 }
             }
     }
-    private static void DrawHarbor(UiPainter ui,Vector2 at,float radius,Color color)
+    private static void DrawHarbor(UiPainter ui,Vector2 at,float radius,Color color,bool dim=false)
     {
         void Stroke(Vector2 a,Vector2 b,float width,Color tint)
         {
@@ -128,11 +130,11 @@ public sealed partial class CubeNet
             Stroke(new(0,.7f),new(-.7f,.35f),width,tint);Stroke(new(0,.7f),new(.7f,.35f),width,tint);
             Stroke(new(-.7f,.35f),new(-.7f,.05f),width,tint);Stroke(new(.7f,.35f),new(.7f,.05f),width,tint);
         }
-        var dark=new Color(13,36,44);Shape(6,dark);Shape(3,color);
+        var dark=dim?SelectionGlow.Dim(new Color(13,36,44)):new Color(13,36,44);Shape(6,dark);Shape(3,color);
         var eye=at+new Vector2(0,-.65f)*radius;
         Disc(ui,eye,radius*.27f+2,dark);Disc(ui,eye,radius*.27f,color);Disc(ui,eye,radius*.12f,dark);
     }
-    private static void Disc(UiPainter ui,Vector2 center,float radius,Color color)
+    private static void Disc(UiPainter ui,Vector2 center,float radius,Color color,bool dim=false)
     {
         for(float y=-radius+.5f;y<radius;y++)
         {

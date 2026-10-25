@@ -4,13 +4,13 @@ public partial class Game1
 {
     private bool _wandererPolicyOpen;
     private static Rectangle WandererPolicyOption(int index)=>new(440,330+index*105,1040,80);
-    private static readonly Rectangle WandererPolicyButton=new(84,902,770,58);
+    private static readonly Rectangle WandererPolicyButton=new(84,856,784,32);
     private static readonly string[] WandererPolicyLabels={"すぐ撤退する","勝ちに行く","説得しながら危なくなったら撤退する","上記のいずれかをランダムに選ぶ"};
     private void DrawWandererPolicy()
     {
         if(InspectingSupervisor)return;
         _ui.Button(WandererPolicyButton,"在野で戦闘に巻き込まれたときの方針",Muted,.38f);
-        _ui.Center(WandererPolicyLabels[(int)_setup.WandererPolicyFor(_setup.PlayerSlot)],new(90,936,755,21),.27f,Cream);
+        _ui.Center(WandererPolicyLabels[(int)_setup.WandererPolicyFor(_setup.PlayerSlot)],new(90,890,755,18),.24f,Cream);
     }
     private bool WandererPolicyClick(Point pointer)
     {

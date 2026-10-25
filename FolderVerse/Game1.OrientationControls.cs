@@ -7,12 +7,13 @@ public partial class Game1
     private Quaternion _orientationFrom,_orientationTo;
     private bool _rotationGlobe;
     private bool OrientationRotating=>_orientationAge>=0;
-    private static readonly Color[] AxisColors={new(244,91,91),new(89,216,126),new(95,156,255)};
+    private static readonly Color[] AxisColors={ToyOrientationRenderer.AxisColor(0),ToyOrientationRenderer.AxisColor(1),ToyOrientationRenderer.AxisColor(2)};
     private bool OrientationGlobe=>!IsStatusScreen || _statusGlobe;
-    private bool OrientationControlsVisible=>IsStatusScreen || _screen>=Screen.Rolling && _screen<=Screen.PlayerReady;
+    private bool OrientationControlsVisible=>!IsRolling && (IsStatusScreen || _screen==Screen.LandConquest || _screen>=Screen.Rolling && _screen<=Screen.PlayerReady);
     private Rectangle OrientationControlArea {
         get {
             if(IsStatusScreen)return MapViewBounds;
+            if(_screen==Screen.LandConquest)return LandGlobeArea;
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;
             return OrientationAreas(area,IsCastScreen && !IsSelectionScreen).Globe;
@@ -23,7 +24,7 @@ public partial class Game1
     private int _automaticBoostAxis,_automaticBoostSign;
     private readonly System.Collections.Generic.Queue<(int Axis,int Sign)> _automaticBoostQueue=new();
     private const float AutomaticBoostSeconds=3;
-    private bool AutomaticOrientation=>!IsStatusScreen && (IsRolling || IsSelectionScreen || IsCastScreen) && !_dragging;
+    private bool AutomaticOrientation=>!IsStatusScreen && _screen<=Screen.PlayerReady && (IsRolling || IsSelectionScreen || IsCastScreen) && !_dragging;
     private Rectangle AxisButton(Rectangle toy,int axis,int sign)
     {
         float r=toy.Width/2f+23;var c=new Vector2(toy.Center.X,toy.Center.Y);
@@ -38,7 +39,7 @@ public partial class Game1
     }
     private bool OrientationControlClick(Point pointer)
     {
-        if(MapTransitionActive || OrientationRotating)return false;
+        if(!OrientationControlsVisible || MapTransitionActive || OrientationRotating)return false;
         var toy=OrientationToyArea;
         if(OrientationResetButton.Contains(pointer)){_automaticBoostAge=-1;_automaticBoostQueue.Clear();if(OrientationGlobe)ResetStatusOrientation();else {_net.ScreenAngle=-MathHelper.ToRadians(_net.Rotation*90);RecordTutorialMapRotation(2);}return true;}
         for(int axis=OrientationGlobe?0:2;axis<3;axis++)foreach(int sign in new[]{-1,1})
@@ -82,6 +83,7 @@ public partial class Game1
     }
     private void DrawOrientationControls(Rectangle toy)
     {
+        if(!OrientationControlsVisible)return;
         var c=new Vector2(toy.Center.X,toy.Center.Y);float r=toy.Width/2f+23;
         void Line(Vector2 a,Vector2 b,Color color){var d=b-a;_ui.Tile((a+b)/2,new(d.Length(),2),MathF.Atan2(d.Y,d.X),color);}
         void Arrow(Vector2 p,Vector2 direction,Color color){var side=new Vector2(-direction.Y,direction.X);Line(p,p-direction*9+side*5,color);Line(p,p-direction*9-side*5,color);}

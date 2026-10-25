@@ -11,6 +11,8 @@ public partial class Game1
     private readonly HashSet<int> _landSelection=new();
     private int[] _landOrder=Array.Empty<int>();
     private int _landTurn;
+    private bool _skipOtherLandTurns;
+    private static readonly Rectangle LandSkipOthers=new(60,930,450,60);
     private double _landAge;
     private Point? _landDrag;
     private int[] _automaticLand=Array.Empty<int>();
@@ -21,6 +23,7 @@ public partial class Game1
     private bool LandHumanTurn=>_setup.HumanPlayers.Count==0?LandRuler==_setup.PlayerSlot:_setup.HumanPlayers.Contains(LandRuler);
     private void BeginLandConquest()
     {
+        _skipOtherLandTurns=false;
         _domesticViews.Clear();_landOrder=_setup.LandOrder();_landTurn=0;_landAge=0;_landSelection.Clear();_landDrag=null;_automaticLand=Array.Empty<int>();
         _screen=Screen.LandConquest;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.ShowLandConquest(_setup);
     }
@@ -92,6 +95,14 @@ public partial class Game1
             if(_landAge>=5){_setup.CompleteLand(_random.Next());_world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();}
             return;
         }
+        if(active && click && LandSkipOthers.Contains(_pointer)){_skipOtherLandTurns=!_skipOtherLandTurns;_landDrag=null;}
+        while(_screen==Screen.LandConquest && _skipOtherLandTurns && !LandHumanTurn){
+            _landSelection.Clear();_landSelection.UnionWith(AutomaticLand(LandRuler));ConfirmLand();
+        }
+        if(_screen!=Screen.LandConquest)return;
+        bool rotating=OrientationRotating;UpdateOrientationRotation((float)elapsed);
+        if(rotating)return;
+        if(active && click && OrientationControlClick(_pointer)){_landDrag=null;return;}
         if(!LandHumanTurn || _demoActive)
         {
             if(_automaticLand.Length==0)
@@ -140,15 +151,18 @@ public partial class Game1
         _ui.Text(_screen==Screen.Fortune?"運否天賦フェーズ":"土地征服フェーズ",new(60,70),1.1f,Cream);
         if(_screen==Screen.Fortune){_ui.Text("空から届く運命のロボット",new(60,230),.75f,Color.White);_ui.Text("配備・工場・廃炉・輸送計画を抽選中",new(60,300),.45f,Cream);return;}
         _ui.Text(_setup.ConquerorNames[LandRuler]+" の土地選択",new(60,220),.7f,Color.White);
-        _ui.Text("選択 "+_landSelection.Count+" / 権利 "+_setup.TerritoryRights[LandRuler]+" セル",new(60,310),.65f,_landSelection.Count>_setup.TerritoryRights[LandRuler]?Color.Orange:Cream);
+        _ui.Text("選択 "+_landSelection.Count+" / 権利 "+_setup.TerritoryRights[LandRuler]+" 区画",new(60,310),.65f,_landSelection.Count>_setup.TerritoryRights[LandRuler]?Color.Orange:Cream);
         _portraitRenderer.Draw(_spriteBatch,_setup.Looks[LandRuler],new Rectangle(60,370,450,300),true,forCreation:true);
         _ui.Text("左ドラッグ：範囲を反転\n右ドラッグ：星を回す\nホイール：拡大・縮小\n飛び地も選択できます",new(60,685),.38f,Color.White);
         _ui.Text("地形と交通路だけで土地を選ぼう",new(60,805),.32f,Cream);
         _ui.Button(LandConfirm,LandHumanTurn?"この土地を獲得":"他国が土地を選択中",LandHumanTurn && _landSelection.Count==_setup.TerritoryRights[LandRuler]?Accent:Muted,.65f);
+        _ui.Button(LandSkipOthers,(_skipOtherLandTurns?"✓ ":"□ ")+"自分のターン以外をスキップ",_skipOtherLandTurns?Accent:Muted,.48f);
     }
     private void DrawLandSetupGlobe(Rectangle canvas,Matrix transform,Viewport viewport)
     {
-        GraphicsDevice.Viewport=OrientationViewport(LandGlobeArea,canvas);_world.Draw(_yaw,_pitch,_animationTime,false,true);GraphicsDevice.Viewport=viewport;
+        var frame=OrientationViewport(LandGlobeArea,canvas);
+        GraphicsDevice.Viewport=new Viewport(canvas);
+        _world.Draw(_yaw,_pitch,_animationTime,false,true,new Rectangle(frame.X,frame.Y,frame.Width,frame.Height));GraphicsDevice.Viewport=viewport;
         _spriteBatch.Begin(transformMatrix:transform);
         foreach(var c in _setup.Cells)
         {
@@ -171,7 +185,9 @@ public partial class Game1
         if(_landDrag.HasValue){var a=_landDrag.Value;var b=_pointer;LandLine(new(a.X,a.Y),new(b.X,a.Y),Color.White,2);LandLine(new(b.X,a.Y),new(b.X,b.Y),Color.White,2);LandLine(new(b.X,b.Y),new(a.X,b.Y),Color.White,2);LandLine(new(a.X,b.Y),new(a.X,a.Y),Color.White,2);}
         if(_screen==Screen.Fortune)
             for(int i=0;i<90;i++){float t=(float)((_landAge+i*.071)%1.8/1.8);float x=MathHelper.Lerp(650+(i*173%1100),1080+i*47%310,t);float y=MathHelper.Lerp(-100,460+i*31%200,t);DrawRobotGlyph(new Rectangle((int)x,(int)y,26,46),i%20,(RobotParts)(1+i%7),false,1-t*.3f);}
+        DrawLandSetupUi();
         _spriteBatch.End();
+        if(_screen==Screen.LandConquest)DrawOrientationOverlay(LandGlobeArea,canvas,transform);
     }
     private void LandLine(Vector2 a,Vector2 b,Color color,float width){var d=b-a;_spriteBatch.Draw(_pixel,a,null,color,MathF.Atan2(d.Y,d.X),Vector2.Zero,new Vector2(d.Length(),width),SpriteEffects.None,0);}
 }

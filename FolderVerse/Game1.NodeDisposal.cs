@@ -9,7 +9,7 @@ public partial class Game1
     private Texture2D _robotDisposalIcon;
     private bool _nodeDisposalOpen;
     private string _nodeDisposalMessage="";
-    private static readonly Rectangle NodeDisposalTile=new(322,169,230,60);
+    private static readonly Rectangle NodeDisposalTile=new(480,210,190,40);
     private Robot[] DisposalCandidates()
     {
         var workshop=_setup.Robots.Workshops[_populationNode];
@@ -19,6 +19,7 @@ public partial class Game1
     private void OpenNodeDisposal()
     {
         if(!CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;
+        _nodeOfficeOpen=false;_lastNodeTab=2;
         _nodeAssemblyOpen=false;_nodeDisposalOpen=true;_nodeFactoryOpen=_nodeTransportOpen=false;_nodeDisposalMessage="";
     }
     private bool NodeDisposalClick(Point pointer)
@@ -49,8 +50,8 @@ public partial class Game1
         var node=_setup.Nodes.All[_populationNode];var workshop=_setup.Robots.Workshops[node.Id];var robots=DisposalCandidates();
         _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Box(new(54,150,850,6),_setup.OwnerColor(node.Owner));
 
-        string status=!workshop.HasDisposalFactory?"この節点に廃棄炉はありません":workshop.DisposalTarget is long id?$"レーン使用中 ID {id} / {workshop.DisposalAge}/{workshop.DisposalPeriod} 産業ターン":"レーンは空いています / 廃棄フラグ付きの個体が自動で入ります";
-        _ui.Text(status,new(84,244),.43f,Cream);
+        string status=!workshop.HasDisposalFactory?"この地点に廃棄炉はありません":workshop.DisposalTarget is long id?$"レーン使用中 ID {id} / {workshop.DisposalAge}/{workshop.DisposalPeriod} 産業ターン":"レーンは空いています / 廃棄フラグ付きの個体が自動で入ります";
+        _ui.Text(status,new(84,260),.43f,Cream);
         _ui.Text("頭１・胴２・脚２産業ターン / 組み合わせは合計 / ↑↓で順番を変更",new(84,288),.42f,Cream);
         for(int i=0;i<robots.Length;i++)
         {
@@ -62,7 +63,7 @@ public partial class Game1
         }
         if(robots.Length==0)_ui.Text("廃棄待ちのロボットはいません",new(84,355),.5f,Cream);
         _ui.Text(_nodeDisposalMessage,new(84,819),.4f,Cream);
-        DrawNodeFactoryTile(false);DrawNodeTransportTile();DrawNodeDisposalTile();DrawNodeAssemblyTile();
+        DrawNodeTabs();
     }
     private void ToggleRobotDisposal(int node,long id)
     {

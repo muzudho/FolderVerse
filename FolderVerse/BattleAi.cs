@@ -29,7 +29,7 @@ public static class BattleAi
             unit.Retreating=true;
         if(unit.Retreating)
         {
-            var exit=army.Side switch{0=>new Point(unit.Position.X,-1),1=>new Point(10,unit.Position.Y),2=>new Point(unit.Position.X,10),_=>new Point(-1,unit.Position.Y)};
+            var exit=army.Side switch{0=>new Point(unit.Position.X,-1),1=>new Point(battle.BoardSize,unit.Position.Y),2=>new Point(unit.Position.X,battle.BoardSize),_=>new Point(-1,unit.Position.Y)};
             var step=Path(battle,unit,exit)??new Point(0,0);return new(step,Face(exit-unit.Position));
         }
         if(enemy!=null && unit.Role!=BattleRole.Queen && armed)
@@ -87,7 +87,7 @@ public static class BattleAi
     public static BattleUnit FirstTarget(BattleState battle,BattleUnit unit,BattleFacing facing)
     {
         var forward=BattleState.Forward(facing);
-        for(int i=1;i<10;i++)
+        for(int i=1;i<battle.BoardSize;i++)
         {
             var p=unit.Position+new Point(forward.X*i,forward.Y*i);if(battle.BlocksShot(p))break;if(i==1)continue;
             var target=battle.Units.FirstOrDefault(u=>u.Active && u.Position==p);if(target!=null)return target;
@@ -102,7 +102,7 @@ public static class BattleAi
         while(queue.TryDequeue(out var current))foreach(var step in Steps.OrderBy(s=>Distance(current+s,target)))
         {
             var next=current+step;if(first.ContainsKey(next))continue;
-            if(!Free(battle,unit,next) && !(next==target && (!BattleState.Inside(target) && unit.Retreating || battle.Units.Any(u=>u.Active && u.Position==target && !battle.Allied(u.Owner,unit.Owner)))))continue;
+            if(!Free(battle,unit,next) && !(next==target && (!battle.Contains(target) && unit.Retreating || battle.Units.Any(u=>u.Active && u.Position==target && !battle.Allied(u.Owner,unit.Owner)))))continue;
             first[next]=current==unit.Position?step:first[current];if(next==target)return first[next];queue.Enqueue(next);
         }
         return null;
