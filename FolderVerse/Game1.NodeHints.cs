@@ -6,6 +6,7 @@ public partial class Game1
 {
     private void DrawNodeTooltip()
     {
+        if(_inspectorFoldersOpen)return;
         if(_directPairOpen || !MapViewBounds.Contains(_pointer))return;
         if(_directTrucks.Exists(t=>t.Bounds.Contains(_pointer))){
             DrawRulebookHint("トラック","ロボットパーツの直送便です。両端の地点間でロボットパーツを移動できます。");return;

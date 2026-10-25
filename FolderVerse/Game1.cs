@@ -140,6 +140,7 @@ public partial class Game1 : Game
         UpdateRateDrag(mouse,active,click);
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
+        if(InspectorFolderInput(mouse,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_autoPlay && (click || escape)){
             _autoPlay=false;_autoStepAge=_autoDomesticAge=0;_autoDomesticStage=0;_hangarDrag=null;
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
@@ -511,33 +512,34 @@ public partial class Game1 : Game
         _net.InspectedNode=_populationCell>=0?_populationNode:-1;
         int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
         if(_reignView)DrawInspector(()=>{
-        _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Text("世界征服計画",new(54,112),.65f,Cream);var image=new Rectangle(212,220,518,360);
-        if(!InspectingSupervisor && !System.Linq.Enumerable.Any(_setup.Nodes.All,node=>node.Owner==player))DrawReignWantedPoster(player);
+        int ruler=_strategyRuler>=0?_strategyRuler:_setup.PlayerSlot,rulerCapital=_setup.Capitals[ruler];Color rulerColor=_setup.OwnerColor(ruler);
+        _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Text("世界征服計画",new(96,112),.65f,Cream);var image=new Rectangle(212,220,518,360);
+        if(!InspectingSupervisor && !System.Linq.Enumerable.Any(_setup.Nodes.All,node=>node.Owner==ruler))DrawReignWantedPoster(ruler);
         else
         {
         // Raised ceremonial frame: layered gilt bevels, corners and a crest.
         _ui.Box(new(188,203,570,412),new Color(4,14,23,180));
         Color[] gold={new(100,58,18),new(235,177,64),new(255,231,152),new(127,76,21),new(239,192,85)};
         for(int i=0;i<gold.Length;i++){int margin=24-i*4;_ui.Box(new(image.X-margin,image.Y-margin,image.Width+margin*2,image.Height+margin*2),gold[i]);}
-        if(InspectingSupervisor)DrawSupervisor(image,_setup.Nodes.All[_inspectedNode].Owner);else _portraitRenderer.Draw(_spriteBatch,_setup.Looks[player],image);
+        if(InspectingSupervisor)DrawSupervisor(image,_setup.Nodes.All[_inspectedNode].Owner);else _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],image);
         foreach(var corner in new[]{new Point(image.Left-14,image.Top-14),new Point(image.Right+14,image.Top-14),new Point(image.Left-14,image.Bottom+14),new Point(image.Right+14,image.Bottom+14)})
         {
-            _spriteBatch.Draw(_pixel,new Vector2(corner.X,corner.Y),null,color,MathHelper.PiOver4,new Vector2(0.5f),new Vector2(22),SpriteEffects.None,0);
+            _spriteBatch.Draw(_pixel,new Vector2(corner.X,corner.Y),null,rulerColor,MathHelper.PiOver4,new Vector2(0.5f),new Vector2(22),SpriteEffects.None,0);
         }
-        if(!InspectingSupervisor && _setup.Relations.Superiors[player]<0){_ui.Box(new(330,165,282,42),new(125,78,28));
+        if(!InspectingSupervisor && _setup.Relations.Superiors[ruler]<0){_ui.Box(new(330,165,282,42),new(125,78,28));
         _ui.Center("★ 世界征服者 ★",new(330,165,282,42),0.65f,new(255,227,132));}
         }
-        if(InspectingSupervisor)DrawSupervisorSuperior();else DrawControlledRuler();
+        if(InspectingSupervisor)DrawSupervisorSuperior();else DrawControlledRuler(ruler);
         _ui.Box(new(210,633,520,62),new(27,46,55));
-        string formalName=InspectingSupervisor?NodeSupervisors.Labels[NodeSupervisors.For(_setup.Nodes.All[_inspectedNode],_setup.Cells[_setup.Nodes.All[_inspectedNode].Cell].Face)]:"征服者　"+_setup.ConquerorFullNames[player];
+        string formalName=InspectingSupervisor?NodeSupervisors.Labels[NodeSupervisors.For(_setup.Nodes.All[_inspectedNode],_setup.Cells[_setup.Nodes.All[_inspectedNode].Cell].Face)]:"征服者　"+_setup.ConquerorFullNames[ruler];
         _ui.Center(formalName,new(90,641,760,56),Math.Min(0.88f,740f/_font.MeasureString(formalName).X),Cream);
-        _ui.Center(_setup.TerritoryCounts[player]>0?"政治体制　"+WorldSetup.PoliticalSystem:"放浪者",new(90,710,760,45),0.7f,new(181,204,211));
-        string capitalLabel=_setup.TerritoryCounts[player]==0?"放浪者 / 自国なし":"首都　"+WorldCoordinates.Label(_setup,capital);
+        _ui.Center(_setup.TerritoryCounts[ruler]>0?"政治体制　"+WorldSetup.PoliticalSystem:"放浪者",new(90,710,760,45),0.7f,new(181,204,211));
+        string capitalLabel=_setup.TerritoryCounts[ruler]==0?"放浪者 / 自国なし":"首都　"+WorldCoordinates.Label(_setup,rulerCapital);
         _ui.Center(capitalLabel,new(65,773,840,56),Math.Min(0.76f,800/_font.MeasureString(capitalLabel).X),Cream);
-        int fully=System.Linq.Enumerable.Count(_setup.Cells,c=>_setup.Nodes.FullOwner(c.Id)==player);
-        _ui.Center("完全占領　"+fully+" sector / 地点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==player),new(90,842,760,48),0.76f,Cream);
-        DrawWandererPolicy();
-        if(!InspectingSupervisor)_ui.Button(LessonCatalogButton,"戦訓カード",Muted,.45f);
+        int fully=System.Linq.Enumerable.Count(_setup.Cells,c=>_setup.Nodes.FullOwner(c.Id)==ruler);
+        _ui.Center("完全占領　"+fully+" sector / 地点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==ruler),new(90,842,760,48),0.76f,Cream);
+        if(!StrategyReadOnly)DrawWandererPolicy();
+        if(!InspectingSupervisor && !StrategyReadOnly)_ui.Button(LessonCatalogButton,"戦訓カード",Muted,.45f);
         }); _ui.Box(new(MapViewBounds.X-20,142,MapViewBounds.Width+40,750),new(20,42,54));
         _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+_setup.FaceName(_net.CenterFace)+" が中心",new(991,156),0.68f,Cream);
         int geographicFace=_setup.GeographicFace(_net.CenterFace);
@@ -603,7 +605,7 @@ public partial class Game1 : Game
         }
 
 
-        if(_reignView)DrawInspector(()=>{
+        if(_reignView && !StrategyReadOnly)DrawInspector(()=>{
         DrawMoveReservationButton();
         _ui.Button(PocketButton,"ポケット",Accent,.55f);});
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(1064,1037,800,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
@@ -619,6 +621,7 @@ public partial class Game1 : Game
         DrawStatusMenu();
         if(_supervisorDialog==0)DrawNodeTooltip();
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();
+        DrawInspectorFolders();
         if(_directPairOpen)DrawDirectPair();
     }
     private void DrawCastPreviewInfo()

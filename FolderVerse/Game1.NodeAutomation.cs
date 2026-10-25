@@ -18,6 +18,7 @@ public partial class Game1
     private string SupervisorRole(int node)=>NodeSupervisors.Labels[NodeSupervisors.For(_setup.Nodes.All[node],_setup.Cells[_setup.Nodes.All[node].Cell].Face)];
     private bool NodeAutomationClick(Point point)
     {
+        if(_regionCell<0 && !_nodeOfficeOpen)return false;
         if(AutomationNode<0)return false;
         var w=_setup.Robots.Workshops[AutomationNode];
         bool allowed=CanManageNodeFactory(_setup.Nodes.All[AutomationNode].Owner) && !_setup.Campaign.RobotBattles.LockedNode(AutomationNode);
@@ -70,6 +71,7 @@ public partial class Game1
     }
     private void DrawNodeAutomation()
     {
+        if(_regionCell<0 && !_nodeOfficeOpen)return;
         if(AutomationNode<0)return;
         var w=_setup.Robots.Workshops[AutomationNode];string role=_regionCell>=0?"地域監督":"地点監督";
         string leave=w.Automation==NodeAutomation.Manual?"休暇中の"+role+"をすぐ呼び戻す":role+"に休暇を与える";
