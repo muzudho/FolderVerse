@@ -20,6 +20,8 @@ sealed class RegionChecks:Game1{
   Set("_pointer",at.ToPoint());Call("GlobeCellClick",new MouseState(),true,true,false);
   Check((int)Get("_regionCell")==cell && (int)Get("_populationCell")==-1 && (bool)Get("_statusGlobe"),"Globe region click opens its inspector without switching view or opening a node");
   Call("UpdateDomesticSlide",.4f);
+  Check((int)Prop("RegionOfficeNode")== (int)Get("_inspectedNode"),"Temporary regional office follows the inspected supervisor");
+  Check((bool)Prop("RegionOfficeOnLand")==w.Routes.Land(cell,w.Nodes.All[(int)Get("_inspectedNode")].Center),"Office art uses land or sea at the supervisor location");
   Check((int)Prop("RegionMapFocusCell")==cell,"Only the inspected region is exempt from dimming");
   int other=w.Cells.First(c=>c.Id!=cell).Id;
   net.RegionFocusCell=-1;var original=net.TerrainColor(w,other,.5f);var selectedOriginal=net.TerrainColor(w,cell,.5f);
@@ -42,6 +44,7 @@ sealed class RegionChecks:Game1{
   int foreign=Enumerable.Range(1,w.ActiveCount-1).First(n=>!w.Relations.Controls(n));w.Nodes.All[representative].Owner=foreign;
   Call("NodeAutomationClick",new Point(200,940));Check((int)Get("_supervisorDialog")==0,"Foreign regional supervisor remains read only");w.Nodes.All[representative].Owner=0;
   Call("OpenNodeInspector",node);Check((int)Prop("RegionMapFocusCell")==-1,"Point inspector clears region dimming");Check((int)Get("_regionCell")==-1 && (int)Get("_populationNode")==node && (bool)Get("_nodeOfficeOpen"),"Point selection initially opens the office");
+  Check((int)Prop("RegionOfficeNode")==-1,"Temporary regional office disappears in the point inspector");
   net.RegionFocusCell=-1;net.NodeFocus=node;net.HoveredNode=node;net.InspectedNode=node;
   var baseColor=new Color(200,160,120);
   Check(net.NodeTint(node,baseColor)==baseColor && net.NodeTint(w.Nodes.All.First(n=>n.Id!=node).Id,baseColor)==new Color(130,104,78),"Only selected point retains marker brightness");
@@ -71,6 +74,15 @@ sealed class RegionChecks:Game1{
   Check(!net.ShowRoutes,"Region inspector temporarily selects regions");
   Call("OpenRegionInspector",cell);Check(!net.ShowRoutes,"Reopening preserves temporary region mode");
   Call("ResetInspector");Check(net.ShowRoutes,"Leaving region inspector restores point mode");
+  foreach(bool land in new[]{true,false}){
+   var officeNode=w.Nodes.All.First(n=>w.Routes.Land(n.Cell,n.Center)==land);
+   Call("OpenRegionInspector",officeNode.Cell);
+   var candidates=w.Nodes.InCell(officeNode.Cell).OrderByDescending(n=>n.Population.Total).ThenBy(n=>n.Id).ToArray();
+   int slot=Array.FindIndex(candidates,n=>n.Id==officeNode.Id);Set("_regionNodePage",slot/6);
+   var button=(Rectangle)typeof(Game1).GetMethod("RegionNodeButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{slot%6})!;
+   Call("RegionInspectorClick",button.Center);
+   Check((int)Prop("RegionOfficeNode")==officeNode.Id && (bool)Prop("RegionOfficeOnLand")==land,"Regional office follows land/sea subject changes");
+  }
   Call("OpenRegionInspector",cell);Call("UpdateDomesticSlide",1f);
  }
  protected override void Update(GameTime t){}
@@ -85,6 +97,7 @@ sealed class RegionChecks:Game1{
    Call("HandleInput",mouse,new KeyboardState(),new GameTime(),true);
    Check((int)Get("_regionCell")==chosen.Id && !(bool)Get("_statusGlobe"),"Actual unfolded-map region click opens its inspector and preserves view mode");Call("UpdateDomesticSlide",.4f);
   }
+  if(frame==1){var land=w.Nodes.All.First(n=>w.Routes.Land(n.Cell,n.Center));Call("OpenRegionInspector",land.Cell);Set("_inspectedNode",land.Id);Call("FocusInspectorLocation");}
   if(frame==2){((CubeNet)Get("_net")).ShowRoutes=true;Call("OpenNodeInspector",node);Call("UpdateDomesticSlide",.4f);}
   if(frame==3){Set("_statusGlobe",true);Call("FocusInspectorLocation");var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();}
   base.Draw(t);
