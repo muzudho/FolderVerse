@@ -42,6 +42,16 @@ sealed class RegionChecks:Game1{
   int foreign=Enumerable.Range(1,w.ActiveCount-1).First(n=>!w.Relations.Controls(n));w.Nodes.All[representative].Owner=foreign;
   Call("NodeAutomationClick",new Point(200,940));Check((int)Get("_supervisorDialog")==0,"Foreign regional supervisor remains read only");w.Nodes.All[representative].Owner=0;
   Call("OpenNodeInspector",node);Check((int)Prop("RegionMapFocusCell")==-1,"Point inspector clears region dimming");Check((int)Get("_regionCell")==-1 && (int)Get("_populationNode")==node && (bool)Get("_nodeOfficeOpen"),"Point selection initially opens the office");
+  net.RegionFocusCell=-1;net.NodeFocus=node;net.HoveredNode=node;net.InspectedNode=node;
+  var baseColor=new Color(200,160,120);
+  Check(net.NodeTint(node,baseColor)==baseColor && net.NodeTint(w.Nodes.All.First(n=>n.Id!=node).Id,baseColor)==new Color(130,104,78),"Only selected point retains marker brightness");
+  Check(!net.EmphasizedNode(node),"Point focus disables the existing circle emphasis, including hover");
+  net.FocusCircleCenter=Vector2.Zero;net.FocusCircleRadius=80;
+  var terrain=net.TerrainColor(w,cell,.5f);
+  Check(net.FocusTerrain(terrain,Vector2.Zero)==terrain,"Circular mask keeps terrain at full brightness inside the robot ring");
+  var nodeTerrain=net.FocusTerrain(terrain,new Vector2(200,0));net.NodeFocus=-1;var fullTerrain=net.TerrainColor(w,cell,.5f);
+  Check(Math.Abs(nodeTerrain.R-fullTerrain.R*.65f)<=1 && Math.Abs(nodeTerrain.G-fullTerrain.G*.65f)<=1 && Math.Abs(nodeTerrain.B-fullTerrain.B*.65f)<=1,"Terrain outside the circular mask remains 35 percent dimmer");
+  Check(net.EmphasizedNode(node),"Existing point emphasis returns outside the focus preview");
   Check(!(bool)Get("_nodeAssemblyOpen"),"Office does not overlap the hangar");
   var assemblyTab=(Rectangle)typeof(Game1).GetField("NodeAssemblyTile",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
   Call("NodeDialogClick",assemblyTab.Center,new KeyboardState());Check((bool)Get("_nodeAssemblyOpen"),"Hangar tab opens");
@@ -75,9 +85,11 @@ sealed class RegionChecks:Game1{
    Call("HandleInput",mouse,new KeyboardState(),new GameTime(),true);
    Check((int)Get("_regionCell")==chosen.Id && !(bool)Get("_statusGlobe"),"Actual unfolded-map region click opens its inspector and preserves view mode");Call("UpdateDomesticSlide",.4f);
   }
-  if(frame==2){Call("OpenNodeInspector",node);Call("UpdateDomesticSlide",.4f);}
-  if(frame==3){var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();}
-  base.Draw(t);var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
+  if(frame==2){((CubeNet)Get("_net")).ShowRoutes=true;Call("OpenNodeInspector",node);Call("UpdateDomesticSlide",.4f);}
+  if(frame==3){Set("_statusGlobe",true);Call("FocusInspectorLocation");var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();}
+  base.Draw(t);
+  if(frame>=2){var focused=(CubeNet)Get("_net");Check(focused.FocusCircleRadius>=28 && focused.FocusCircleNodes.Contains(node),"Circle mask follows the selected point in both map views");}
+  var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
   using(var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight)){tex.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"region-{frame}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);}
   if(frame++==3){Call("CloseNodeInspector");Call("UpdateDomesticSlide",.4f);Check((int)Get("_regionCell")==-1 && !(bool)Prop("InspectorVisible"),"Close clears inspector");Console.WriteLine("PASS: region/point supervisors, office default, four-tab navigation and memory, permission checks, dialogs and full/half-size rendering.");Exit();}
  }

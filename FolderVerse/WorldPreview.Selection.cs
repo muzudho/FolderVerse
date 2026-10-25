@@ -4,6 +4,12 @@ using Microsoft.Xna.Framework.Graphics;
 
 public sealed partial class WorldPreview
 {
+    public Vector2 FocusCircleCenter {get;set;}
+    public float FocusCircleRadius {get;set;}
+    public Rectangle FocusCircleArea {get;set;}
+    public float FocusCircleYaw {get;set;}
+    public float FocusCirclePitch {get;set;}
+    public int NodeFocus {get;set;}=-1;
     public int RegionFocusCell {get;set;}=-1;
     public int SelectedCell {get;set;}=-1;
     public WorldSetup SelectionSetup {get;set;}
@@ -12,16 +18,35 @@ public sealed partial class WorldPreview
     {
         _device.BlendState=BlendState.AlphaBlend;_device.DepthStencilState=DepthStencilState.DepthRead;_effect.LightingEnabled=false;
         foreach(var cell in SelectionSetup.Cells){
-            if(cell.Id==RegionFocusCell)continue;
-            var lift=cell.Normal*.003f;var color=new Color(0f,0f,0f,.35f);
-            int i=0;foreach(int corner in new[]{0,1,2,0,2,3})_selectionVertices[i++]=new(cell.Corners[corner]+lift,color,cell.Normal);
-            foreach(var pass in _effect.CurrentTechnique.Passes){pass.Apply();_device.DrawUserPrimitives(PrimitiveType.TriangleList,_selectionVertices,0,2);}
+            if(NodeFocus<0 && cell.Id==RegionFocusCell)continue;
+            var lift=cell.Normal*.003f;
+            int detail=1;
+            if(NodeFocus>=0 && FocusCircleRadius>0 && ProjectVisible(cell.Center,cell.Normal,FocusCircleYaw,FocusCirclePitch,FocusCircleArea,out _)){
+                var min=new Vector2(float.PositiveInfinity);var max=new Vector2(float.NegativeInfinity);
+                foreach(var corner in cell.Corners){ProjectVisible(corner,cell.Normal,FocusCircleYaw,FocusCirclePitch,FocusCircleArea,out var at);min=Vector2.Min(min,at);max=Vector2.Max(max,at);}
+                var closest=Vector2.Clamp(FocusCircleCenter,min,max);
+                if(Vector2.Distance(closest,FocusCircleCenter)<=FocusCircleRadius+8)detail=24;
+            }
+            Color Mask(Vector3 p){
+                float outside=1;
+                if(detail>1){ProjectVisible(p,cell.Normal,FocusCircleYaw,FocusCirclePitch,FocusCircleArea,out var at);outside=SelectionGlow.OutsideCircle(at,FocusCircleCenter,FocusCircleRadius);}
+                return new Color(0f,0f,0f,.35f*outside);
+            }
+            int index=0;
+            for(int y=0;y<detail;y++)for(int x=0;x<detail;x++){
+                var a=cell.Origin+cell.U*(x/(float)detail)+cell.V*(y/(float)detail);
+                var b=a+cell.U/detail;var d=a+cell.V/detail;var c=b+cell.V/detail;
+                var ca=Mask(a);var cb=Mask(b);var cc=Mask(c);var cd=Mask(d);
+                _selectionVertices[index++]=new(a+lift,ca,cell.Normal);_selectionVertices[index++]=new(b+lift,cb,cell.Normal);_selectionVertices[index++]=new(c+lift,cc,cell.Normal);
+                _selectionVertices[index++]=new(a+lift,ca,cell.Normal);_selectionVertices[index++]=new(c+lift,cc,cell.Normal);_selectionVertices[index++]=new(d+lift,cd,cell.Normal);
+            }
+            foreach(var pass in _effect.CurrentTechnique.Passes){pass.Apply();_device.DrawUserPrimitives(PrimitiveType.TriangleList,_selectionVertices,0,index/3);}
         }
         _effect.LightingEnabled=true;_device.BlendState=BlendState.Opaque;_device.DepthStencilState=DepthStencilState.Default;
     }
     private void DrawCellSelection(float time)
     {
-        if(SelectionSetup!=null && RegionFocusCell>=0 && RegionFocusCell<SelectionSetup.Cells.Length){DrawRegionDim();return;}
+        if(SelectionSetup!=null && (NodeFocus>=0 || RegionFocusCell>=0 && RegionFocusCell<SelectionSetup.Cells.Length)){DrawRegionDim();return;}
         if(SelectionSetup==null || SelectedCell<0 || SelectedCell>=SelectionSetup.Cells.Length)return;
         var cell=SelectionSetup.Cells[SelectedCell];int index=0;
         const int detail=24;

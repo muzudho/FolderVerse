@@ -134,8 +134,8 @@ public sealed partial class CubeNet
             for(int y=0;y<detail;y++)for(int x=0;x<detail;x++)
             {
                 var p=cell.Origin+cell.U*((x+.5f)/detail)+cell.V*((y+.5f)/detail);float elevation=WorldTerrain.Elevation(p,offset);
-                var color=TerrainColor(world,cell.Id,elevation);
-                if(RegionFocusCell<0 && !ShowRoutes && cell.Id==SelectedCell)color=SelectionGlow.Brighten(color,(x+.5f)/detail,(y+.5f)/detail,pulse);
+                var color=FocusTerrain(TerrainColor(world,cell.Id,elevation),RotateScreen(Project(p),panel));
+                if(NodeFocus<0 && RegionFocusCell<0 && !ShowRoutes && cell.Id==SelectedCell)color=SelectionGlow.Brighten(color,(x+.5f)/detail,(y+.5f)/detail,pulse);
                 var post=world.Nodes.At(cell.Id,new Point(x,y));
                 ui.Tile(Project(p),new Vector2(fit.Scale/detail+1),moving?angle:0,color);
             }

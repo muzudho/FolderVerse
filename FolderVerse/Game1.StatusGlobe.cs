@@ -14,6 +14,7 @@ public partial class Game1
     private bool _globeCellDragged;
     private void DrawGlobeCellHover()
     {
+        if(_net.ShowRoutes && _net.NodeFocus>=0)return;
         if(_net.ShowRoutes){int id=HitGlobeNode(_pointer);if(id>=0){var n=_setup.Nodes.All[id];var c=_setup.Cells[n.Cell];if(_world.ProjectVisible(_setup.Routes.Position(n.Cell,n.Center),c.Normal,_yaw,_pitch,StatusGlobeArea,out var at)){_ui.Box(new((int)at.X-14,(int)at.Y-14,28,3),Color.White);_ui.Box(new((int)at.X-14,(int)at.Y+11,28,3),Color.White);}}return;} int hovered=HitGlobeCell(_pointer);
         if(hovered<0)return;
         var cell=_setup.Cells[hovered];

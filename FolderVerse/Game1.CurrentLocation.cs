@@ -25,11 +25,7 @@ public partial class Game1
             }
             return;
         }
-        var gold=new Color(255,231,133);float radius=15+MathF.Sin(_animationTime*5)*3;
-        for(int i=0;i<4;i++){
-            float angle=i*MathHelper.PiOver2;var direction=new Vector2(MathF.Cos(angle),MathF.Sin(angle));
-            _ui.Tile(at+direction*radius,new(10,3),angle,gold);
-        }
+        var gold=new Color(255,231,133);
         var center=new Vector2(Math.Clamp(at.X-46,MapViewBounds.Left+40,MapViewBounds.Right-40),Math.Clamp(at.Y-56,MapViewBounds.Top+40,MapViewBounds.Bottom-40));
         var delta=at-center;_ui.Tile((center+at)/2,new(delta.Length(),2),MathF.Atan2(delta.Y,delta.X),gold);
         void Disc(Vector2 point,int r,Color color){for(int y=-r;y<=r;y++){int half=(int)MathF.Sqrt(Math.Max(0,r*r-y*y));_ui.Box(new((int)point.X-half,(int)point.Y+y,Math.Max(1,half*2),1),color);}}

@@ -512,6 +512,7 @@ public partial class Game1 : Game
     {
         _ui.Text("世界征服状況",new(54,22),1.1f,Cream);
         _net.InspectedNode=_populationCell>=0?_populationNode:-1;
+        _net.NodeFocus=_world.NodeFocus=!_nodeInspectorClosing && _populationCell>=0?_populationNode:-1;
         int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
         if(_reignView)DrawInspector(()=>{
         int ruler=_strategyRuler>=0?_strategyRuler:_setup.PlayerSlot,rulerCapital=_setup.Capitals[ruler];Color rulerColor=_setup.OwnerColor(ruler);
@@ -555,6 +556,7 @@ public partial class Game1 : Game
         }
         _ui.Text("△：山頂 / 錨：港",new(1590,203),.38f,new(255,204,83));
         PrepareDestinationMap();
+        UpdateNodeFocusCircle();
         var canvas=CanvasBounds();
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _spriteBatch.End();

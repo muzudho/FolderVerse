@@ -14,8 +14,8 @@ public sealed partial class CubeNet
             float size=MathHelper.Clamp(Vector2.Distance(center.Value,unit.Value)*.55f,3.5f,13);
             if(EmphasizedNode(node.Id))size=Math.Max(size,13);
             var delta=center.Value-origin.Value;
-            ui.Tile((center.Value+origin.Value)/2,new(delta.Length(),1),MathF.Atan2(delta.Y,delta.X),new Color(221,219,182,120));
-            for(int i=0;i<mark.Objects.Length;i++)LandmarkArt.Draw(ui,mark.Objects[i],center.Value+new Vector2((i-(mark.Objects.Length-1)/2f)*size*1.9f,0),size,time);
+            ui.Tile((center.Value+origin.Value)/2,new(delta.Length(),1),MathF.Atan2(delta.Y,delta.X),NodeTint(node.Id,new Color(221,219,182,120)));
+            for(int i=0;i<mark.Objects.Length;i++)LandmarkArt.Draw(ui,mark.Objects[i],center.Value+new Vector2((i-(mark.Objects.Length-1)/2f)*size*1.9f,0),size,time,NodeFocus>=0 && node.Id!=NodeFocus && !FocusCircleNodes.Contains(node.Id)?.65f:1);
         }
     }
 }
