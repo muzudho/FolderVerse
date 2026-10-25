@@ -145,7 +145,7 @@ public partial class Game1 : Game
             _autoPlay=false;_autoStepAge=_autoDomesticAge=0;_autoDomesticStage=0;_hangarDrag=null;
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
-        if(IsStatusScreen && _directPairOpen){if(active)DirectPairInput(mouse,click,escape);else _directDrag=null;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && _directPairOpen){_animationTime+=(float)gameTime.ElapsedGameTime.TotalSeconds;_directPairSlide=Math.Min(1,_directPairSlide+(float)gameTime.ElapsedGameTime.TotalSeconds/.25f);if(active){if(_directPairSlide>=1 || escape)DirectPairInput(mouse,click,escape);DirectPairMapInput(mouse);}else _directDrag=null;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _directMap && escape){CloseDirectDelivery();_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _invasionPicker>=0)
         {if(active)InvasionPickerInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -510,6 +510,7 @@ public partial class Game1 : Game
     }
     private void DrawStatusUi()
     {
+        if(_directPairOpen){DrawDirectPair();return;}
         _ui.Text("世界征服状況",new(54,22),1.1f,Cream);
         _net.InspectedNode=_populationCell>=0?_populationNode:-1;
         _net.NodeFocus=_world.NodeFocus=!_nodeInspectorClosing && _populationCell>=0?_populationNode:-1;
@@ -635,7 +636,7 @@ public partial class Game1 : Game
         if(_supervisorDialog==0)DrawNodeTooltip();
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();
         DrawInspectorFolders();
-        if(_directPairOpen)DrawDirectPair();
+
     }
     private void DrawCastPreviewInfo()
     {
