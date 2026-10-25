@@ -516,7 +516,7 @@ public partial class Game1 : Game
         int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
         if(_reignView)DrawInspector(()=>{
         int ruler=_strategyRuler>=0?_strategyRuler:_setup.PlayerSlot,rulerCapital=_setup.Capitals[ruler];Color rulerColor=_setup.OwnerColor(ruler);
-        _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Text("世界征服計画",new(96,112),.65f,Cream);var image=new Rectangle(212,220,518,360);
+        _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Text("国インスペクター",new(96,112),.65f,Cream);var image=new Rectangle(212,220,518,360);
         if(!InspectingSupervisor && !System.Linq.Enumerable.Any(_setup.Nodes.All,node=>node.Owner==ruler))DrawReignWantedPoster(ruler);
         else
         {

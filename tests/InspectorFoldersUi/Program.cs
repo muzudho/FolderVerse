@@ -36,6 +36,32 @@ sealed class FolderChecks:Game1{
   Call("OpenInspectorFolders");int region=Rows().FindIndex(r=>r.Kind==1 && r.Id==w.Nodes.All[node].Cell);Check(region>=0,"Context region is in the tree");Call("OpenInspectorFolderRow",region);Check((int)Get("_regionCell")==w.Nodes.All[node].Cell,"Region folder opens regional supervisor");
   Check((bool)Call("IsCurrentInspectorFolder",1,w.Nodes.All[node].Cell) && !(bool)Call("IsCurrentInspectorFolder",2,node),"Region folder is highlighted instead of its representative point");
   Call("OpenInspectorFolders");int point=Rows().FindIndex(r=>r.Kind==2 && r.Id==node);Call("OpenInspectorFolderRow",point);Check((bool)Get("_nodeOfficeOpen") && (int)Get("_populationNode")==node,"Point folder opens point supervisor Office");
+  var originalOwners=w.Nodes.All.Select(n=>n.Owner).ToArray();
+  w.Relations.Reset();
+  var net=(CubeNet)Get("_net");var world=(WorldPreview)Get("_world");
+  int fullCell=w.Cells.First(c=>w.Nodes.InCell(c.Id).Any()).Id;
+  int partialCell=w.Cells.First(c=>c.Id!=fullCell && w.Nodes.InCell(c.Id).Count()>1).Id;
+  foreach(var n in w.Nodes.All)n.Owner=1;
+  foreach(var n in w.Nodes.InCell(fullCell))n.Owner=2;
+  var outpost=w.Nodes.InCell(partialCell).First();outpost.Owner=2;
+  var secondOutpost=w.Nodes.All.First(n=>n.Cell!=fullCell && n.Cell!=partialCell && w.Nodes.InCell(n.Cell).Count()>1);secondOutpost.Owner=2;
+  Call("OpenStrategyInspector");Set("_strategyRuler",2);Set("_statusGlobe",false);net.NodeFocus=-1;Call("UpdateNodeFocusCircle");
+  Check(net.CountryFocus==2 && world.CountryFocus==2 && w.PlayerSlot==0,"Country lighting follows the inspected ruler without changing turn");
+  Check(net.FocusCells.SetEquals(new[]{fullCell}) && world.FocusCells.SetEquals(net.FocusCells),"Only fully conquered cells remain bright");
+  Check(net.FocusCircles.Count==2 && world.FocusCircles.Count==2 && net.FocusCircleNodes.Contains(outpost.Id),"Owned outpost outside conquered cells gets a spotlight");
+  var color=new Color(200,160,120);var circle=net.FocusCircles[0];
+  Check(net.FocusTerrain(color,new Vector2(-10000),fullCell)==color && net.FocusTerrain(color,circle.Center,partialCell)==color,"Country territory and outpost spotlight retain original brightness");
+  Check(net.FocusTerrain(color,new Vector2(-10000),partialCell)==new Color(130,104,78),"Other terrain is dimmed by 35 percent");
+  Check(net.NodeTint(outpost.Id,color)==color && net.DimNode(w.Nodes.All.First(n=>n.Owner==1 && !net.FocusCircleNodes.Contains(n.Id)).Id),"Country point markers follow the bright territory and circles");
+  foreach(var n in w.Nodes.InCell(fullCell))n.Owner=1;
+  Call("UpdateNodeFocusCircle");Check(net.FocusCells.Count==0 && net.FocusCircles.Count==2,"Country with only outposts retains their spotlights");
+  outpost.Owner=secondOutpost.Owner=1;Call("UpdateNodeFocusCircle");
+  Check(net.FocusCells.Count==0 && net.FocusCircles.Count==0 && net.FocusTerrain(color,Vector2.Zero)==new Color(130,104,78),"Landless country with no owned points dims all terrain without stale circles");
+  Set("_strategyRuler",0);Call("UpdateNodeFocusCircle");Check(net.CountryFocus==0,"My country uses the active player's ownership");
+  Call("OpenNodeInspector",node);Call("UpdateNodeFocusCircle");Check(net.CountryFocus==-1 && net.FocusCells.Count==0,"Switching inspectors clears country lighting");
+  foreach(var n in w.Nodes.All)n.Owner=originalOwners[n.Id];
+  w.Relations.SetSuperior(0,1);w.Relations.SetSuperior(1,2);
+  Set("_statusGlobe",true);Call("OpenNodeOffice");
   Call("OpenInspectorFolders");Set("_pointer",new Point(1100,600));Call("InspectorFolderInput",new MouseState(),false,true,true);Check(!(bool)Get("_inspectorFoldersOpen"),"Escape closes the tree");
  }
  protected override void Update(GameTime t){}

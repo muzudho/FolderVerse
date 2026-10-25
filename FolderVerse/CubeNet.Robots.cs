@@ -68,16 +68,17 @@ public sealed partial class CubeNet
                     if((robot.Parts&part)==0)continue;
                     // Each present part touches the next, including head + legs.
                     var full=new Rectangle(card.X,card.Y+(int)((row*12-(part==RobotParts.Head?0:part==RobotParts.Body?12:24))*zoom),(int)(24*zoom),(int)(36*zoom));
-                    DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part));
+                    DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part),CountryFocus>=0 && DimNode(node.Id));
                     row++;
                 }
             }
         }
     }
-    public void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts,bool damaged=false,bool cheap=false)
+    public void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts,bool damaged=false,bool cheap=false,bool dim=false)
     {
         _mapRobotTexture ??= LoadMapRobot(ui.Batch.GraphicsDevice);
         var tint=damaged?new Color(136,137,127):Color.Lerp(Color.White,color,.48f);
+        if(dim)tint=SelectionGlow.Dim(tint);
         for(int part=0;part<3;part++)
         {
             if((parts&(RobotParts)(4>>part))==0)continue;
@@ -88,7 +89,7 @@ public sealed partial class CubeNet
             else for(int row=y;row<next;row++)
             {
                 int sy=top+(row-y)*(bottom-top)/Math.Max(1,next-y);
-                ui.Batch.Draw(_mapRobotTexture,new Rectangle(r.X,row,r.Width,1),new Rectangle(0,sy,source.Width,1),(row-y)%4<2?tint:damaged?new Color(165,162,146):Color.White);
+                ui.Batch.Draw(_mapRobotTexture,new Rectangle(r.X,row,r.Width,1),new Rectangle(0,sy,source.Width,1),(row-y)%4<2?tint:dim?SelectionGlow.Dim(damaged?new Color(165,162,146):Color.White):damaged?new Color(165,162,146):Color.White);
             }
         }
     }

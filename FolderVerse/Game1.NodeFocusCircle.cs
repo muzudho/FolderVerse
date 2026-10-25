@@ -7,9 +7,21 @@ public partial class Game1
 {
     private void UpdateNodeFocusCircle()
     {
-        _net.FocusCircleNodes.Clear();_net.FocusCircleRadius=_world.FocusCircleRadius=0;
-        int id=_net.NodeFocus;
-        if(id<0 || id>=_setup.Nodes.All.Length || MapTransitionActive || _net.IsAnimating)return;
+        _net.FocusCircleNodes.Clear();_net.FocusCircles.Clear();_world.FocusCircles.Clear();_net.FocusCells.Clear();_world.FocusCells.Clear();
+        _net.FocusCircleRadius=_world.FocusCircleRadius=0;
+        _net.CountryFocus=_world.CountryFocus=_reignView && !_nodeInspectorClosing?(_strategyRuler>=0?_strategyRuler:_setup.PlayerSlot):-1;
+        if(_net.CountryFocus>=0){
+            foreach(var cell in _setup.Cells)if(_setup.Nodes.FullOwner(cell.Id)==_net.CountryFocus){_net.FocusCells.Add(cell.Id);_world.FocusCells.Add(cell.Id);}
+            foreach(var node in _setup.Nodes.All)if(node.Owner==_net.CountryFocus || _net.FocusCells.Contains(node.Cell))_net.FocusCircleNodes.Add(node.Id);
+        }
+        if(MapTransitionActive || _net.IsAnimating)return;
+        if(_net.NodeFocus>=0)AddNodeFocusCircle(_net.NodeFocus);
+        else if(_net.CountryFocus>=0)foreach(var node in _setup.Nodes.All)
+            if(node.Owner==_net.CountryFocus && !_net.FocusCells.Contains(node.Cell))AddNodeFocusCircle(node.Id);
+    }
+    private void AddNodeFocusCircle(int id)
+    {
+        if(id<0 || id>=_setup.Nodes.All.Length)return;
         var node=_setup.Nodes.All[id];var cell=_setup.Cells[node.Cell];
         var position=_setup.Routes.Position(node.Cell,node.Center);
         int robots=_net.ShowRobots?_setup.Robots.Nodes[id].Robots.Count(r=>_net.ShowOtherCountries || _setup.Relations.Controls(r.Owner)):0;
@@ -31,6 +43,7 @@ public partial class Game1
         }
         _net.FocusCircleCenter=_world.FocusCircleCenter=center;
         _net.FocusCircleRadius=_world.FocusCircleRadius=radius;
+        _net.FocusCircles.Add(new(center,radius));_world.FocusCircles.Add(new(center,radius));
         _world.FocusCircleArea=StatusGlobeArea;_world.FocusCircleYaw=_yaw;_world.FocusCirclePitch=_pitch;
         foreach(var other in _setup.Nodes.All){
             Vector2 at;

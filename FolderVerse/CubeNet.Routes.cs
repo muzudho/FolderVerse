@@ -26,7 +26,7 @@ public sealed partial class CubeNet
     public HashSet<int> VisibleOperationBatteries {get;set;}
     public bool RevealMovementTargets {get;set;}
     public bool NodeVisible(WorldSetup world,Node node)=>(VisibleOperationNodes==null || VisibleOperationNodes.Contains(node.Id)) && (ShowOtherCountries || node.Owner<0 || world.Relations.Controls(node.Owner) || RevealMovementTargets && MovementTargets.Contains(node.Id));
-    public bool EmphasizedNode(int id)=>NodeFocus<0 && (HoveredNode==id || InspectedNode==id);
+    public bool EmphasizedNode(int id)=>CountryFocus<0 && NodeFocus<0 && (HoveredNode==id || InspectedNode==id);
     public HashSet<int> MovementTargets {get;}=new();
     public int SelectedTarget {get;set;}=-1;
     public Vector2 NodePosition(WorldSetup world,Node node,Rectangle panel)
@@ -102,13 +102,13 @@ public sealed partial class CubeNet
                 if(AttackTargetMarkers && SelectedTarget==post.Id)
                 {
                     float size=radius*(1.3f+.25f*MathF.Sin(pulse*5));
-                    if(post.IsHarbor)DrawHarbor(ui,at,radius,Tint(world.OwnerColor(post.Owner)),NodeFocus>=0 && post.Id!=NodeFocus && !FocusCircleNodes.Contains(post.Id));
+                    if(post.IsHarbor)DrawHarbor(ui,at,radius,Tint(world.OwnerColor(post.Owner)),DimNode(post.Id));
                     var center=post.IsHarbor?at+new Vector2(radius*.8f,-radius*.8f):at;
                     foreach(float angle in new[]{MathHelper.PiOver4,-MathHelper.PiOver4})
                     {ui.Tile(center,new Vector2(size*2.5f,7),angle,Tint(new Color(13,36,44)));ui.Tile(center,new Vector2(size*2.5f,3),angle,new Color(255,224,110));}
                     continue;
                 }
-                if(post.IsHarbor)DrawHarbor(ui,at,radius,Tint(world.OwnerColor(post.Owner)),NodeFocus>=0 && post.Id!=NodeFocus && !FocusCircleNodes.Contains(post.Id));
+                if(post.IsHarbor)DrawHarbor(ui,at,radius,Tint(world.OwnerColor(post.Owner)),DimNode(post.Id));
                 else
                 {
                     Disc(ui,at,radius+2,Tint(new Color(13,36,44)));

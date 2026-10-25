@@ -147,7 +147,7 @@ public partial class Game1
                     var a=cell.Origin+cell.U*(x/(float)detail)+cell.V*(y/(float)detail);var b=a+cell.U/detail;var c=b+cell.V/detail;var e=a+cell.V/detail;
                     var faceNormal=Vector3.TransformNormal(Vector3.UnitZ,pose[index]*rotation);
                     var color=faceNormal.Z<0?new Color(115,119,125):_net.TerrainColor(_setup,cell.Id,WorldTerrain.Elevation((a+c)/2,terrain));
-                    color=_net.FocusTerrain(color,Vector2.Zero);
+                    color=_net.FocusTerrain(color,Vector2.Zero,cell.Id);
                     var post=_setup.Nodes.At(cell.Id,new Point(x,y));
                     
                     foreach(var p in new[]{a,b,c,a,c,e})vertices.Add(new(Project(index,p),color));

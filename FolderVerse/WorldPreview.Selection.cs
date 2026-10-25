@@ -1,4 +1,6 @@
 namespace FolderVerse;
+using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -9,6 +11,9 @@ public sealed partial class WorldPreview
     public Rectangle FocusCircleArea {get;set;}
     public float FocusCircleYaw {get;set;}
     public float FocusCirclePitch {get;set;}
+    public int CountryFocus {get;set;}=-1;
+    public HashSet<int> FocusCells {get;}=new();
+    public List<MapFocusCircle> FocusCircles {get;}=new();
     public int NodeFocus {get;set;}=-1;
     public int RegionFocusCell {get;set;}=-1;
     public int SelectedCell {get;set;}=-1;
@@ -18,18 +23,17 @@ public sealed partial class WorldPreview
     {
         _device.BlendState=BlendState.AlphaBlend;_device.DepthStencilState=DepthStencilState.DepthRead;_effect.LightingEnabled=false;
         foreach(var cell in SelectionSetup.Cells){
-            if(NodeFocus<0 && cell.Id==RegionFocusCell)continue;
+            if(CountryFocus>=0?FocusCells.Contains(cell.Id):NodeFocus<0 && cell.Id==RegionFocusCell)continue;
             var lift=cell.Normal*.003f;
             int detail=1;
-            if(NodeFocus>=0 && FocusCircleRadius>0 && ProjectVisible(cell.Center,cell.Normal,FocusCircleYaw,FocusCirclePitch,FocusCircleArea,out _)){
+            if(FocusCircles.Count>0 && ProjectVisible(cell.Center,cell.Normal,FocusCircleYaw,FocusCirclePitch,FocusCircleArea,out _)){
                 var min=new Vector2(float.PositiveInfinity);var max=new Vector2(float.NegativeInfinity);
                 foreach(var corner in cell.Corners){ProjectVisible(corner,cell.Normal,FocusCircleYaw,FocusCirclePitch,FocusCircleArea,out var at);min=Vector2.Min(min,at);max=Vector2.Max(max,at);}
-                var closest=Vector2.Clamp(FocusCircleCenter,min,max);
-                if(Vector2.Distance(closest,FocusCircleCenter)<=FocusCircleRadius+8)detail=24;
+                foreach(var circle in FocusCircles){var closest=Vector2.Clamp(circle.Center,min,max);if(Vector2.Distance(closest,circle.Center)<=circle.Radius+8){detail=24;break;}}
             }
             Color Mask(Vector3 p){
                 float outside=1;
-                if(detail>1){ProjectVisible(p,cell.Normal,FocusCircleYaw,FocusCirclePitch,FocusCircleArea,out var at);outside=SelectionGlow.OutsideCircle(at,FocusCircleCenter,FocusCircleRadius);}
+                if(detail>1){ProjectVisible(p,cell.Normal,FocusCircleYaw,FocusCirclePitch,FocusCircleArea,out var at);foreach(var circle in FocusCircles)outside=Math.Min(outside,SelectionGlow.OutsideCircle(at,circle.Center,circle.Radius));}
                 return new Color(0f,0f,0f,.35f*outside);
             }
             int index=0;
@@ -46,7 +50,7 @@ public sealed partial class WorldPreview
     }
     private void DrawCellSelection(float time)
     {
-        if(SelectionSetup!=null && (NodeFocus>=0 || RegionFocusCell>=0 && RegionFocusCell<SelectionSetup.Cells.Length)){DrawRegionDim();return;}
+        if(SelectionSetup!=null && (CountryFocus>=0 || NodeFocus>=0 || RegionFocusCell>=0 && RegionFocusCell<SelectionSetup.Cells.Length)){DrawRegionDim();return;}
         if(SelectionSetup==null || SelectedCell<0 || SelectedCell>=SelectionSetup.Cells.Length)return;
         var cell=SelectionSetup.Cells[SelectedCell];int index=0;
         const int detail=24;

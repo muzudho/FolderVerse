@@ -105,6 +105,6 @@ public partial class Game1
         for(int i=0;i<BattleLessons.All.Length;i++){
             var lesson=BattleLessons.All[i];int width=1810/BattleLessons.All.Length;DrawLessonCard(lesson,new(55+i*width,180,width-20,710),(_setup.Lessons.Owned[_setup.PlayerSlot]&lesson)!=0);
         }
-        _ui.Button(LessonBack,"世界征服計画へ戻る / Esc",Muted,.55f);
+        _ui.Button(LessonBack,"国インスペクターへ戻る / Esc",Muted,.55f);
     }
 }
