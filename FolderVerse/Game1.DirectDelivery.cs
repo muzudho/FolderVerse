@@ -135,6 +135,6 @@ public partial class Game1
         _ui.Center(_directMessage,new(20,1012,1880,28),.4f,Cream);
         var pending=_setup.Robots.DirectDelivery.Orders.Where(o=>_directNodes.Contains(o.Source) && _directNodes.Contains(o.Target)).ToArray();string status=pending.Length==0?"この２地点の配送予約はありません":string.Join(" / ",pending.Take(6).Select(o=>$"#{o.Number} {(o.Source==_directNodes[0]?"左→右":"右→左")} {PartsLabel(o.Part)} {o.Status}"));
         _ui.Center(status,new(20,1046,1880,25),Math.Min(.32f,1840/Math.Max(1,_font.MeasureString(status).X)),Accent);
-        if(_directDrag is {} drag){var robot=_setup.Robots.Nodes[_directNodes[drag.Side]].Robots.FirstOrDefault(r=>r.Id==drag.Robot);if(robot!=null)foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if(((drag.Part==0?robot.Parts:drag.Part)&part)!=0)DrawRobotGlyph(new(_pointer.X-34,_pointer.Y-34,68,102),robot.Origin(part),part,whiteOutline:true);}
+        if(_directDrag is {} drag){var robot=_setup.Robots.Nodes[_directNodes[drag.Side]].Robots.FirstOrDefault(r=>r.Id==drag.Robot);if(robot!=null)foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if(((drag.Part==0?robot.Parts:drag.Part)&part)!=0)DrawRobotGlyph(new(_pointer.X-34,_pointer.Y-34,68,102),robot.Origin(part),part,robot.Role==RobotRole.Captain,whiteOutline:true,damaged:robot.IsDamaged(part),cheap:robot.IsCheap(part));}
     }
 }
