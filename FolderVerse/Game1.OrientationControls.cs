@@ -7,7 +7,7 @@ public partial class Game1
     private Quaternion _orientationFrom,_orientationTo;
     private bool _rotationGlobe;
     private bool OrientationRotating=>_orientationAge>=0;
-    private static readonly Color[] AxisColors={new(244,91,91),new(89,216,126),new(95,156,255)};
+    private static readonly Color[] AxisColors={ToyOrientationRenderer.AxisColor(0),ToyOrientationRenderer.AxisColor(1),ToyOrientationRenderer.AxisColor(2)};
     private bool OrientationGlobe=>!IsStatusScreen || _statusGlobe;
     private bool OrientationControlsVisible=>!IsRolling && (IsStatusScreen || _screen==Screen.LandConquest || _screen>=Screen.Rolling && _screen<=Screen.PlayerReady);
     private Rectangle OrientationControlArea {

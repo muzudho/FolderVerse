@@ -6,12 +6,14 @@ using Microsoft.Xna.Framework.Graphics;
 
 // A physical orientation reference: bowl +X, chopsticks -X, head +Y, feet -Y,
 // belly +Z and back -Z. Rotate the complete toy with the same matrix as the globe.
-public sealed class ToyOrientationRenderer:IDisposable
+public sealed partial class ToyOrientationRenderer:IDisposable
 {
     private readonly GraphicsDevice _device;
     private readonly BasicEffect _effect;
     private readonly VertexBuffer _mesh;
     private readonly int _primitives;
+    private readonly VertexBuffer _screws;
+    private readonly int _screwPrimitives;
     public ToyOrientationRenderer(GraphicsDevice device)
     {
         _device=device;_effect=new BasicEffect(device){VertexColorEnabled=true};
@@ -81,17 +83,23 @@ public sealed class ToyOrientationRenderer:IDisposable
         }
         // Chopsticks in the -X hand are deliberately distinct from the bowl.
         foreach(float x in new[]{-.91f,-.78f})Box(new(x,.19f,.13f),new(.045f,.72f,.045f),gold);
+        var screws=BuildAxisScrews();_screws=new VertexBuffer(device,VertexPositionColorNormal.VertexDeclaration,screws.Length,BufferUsage.WriteOnly);_screws.SetData(screws);_screwPrimitives=screws.Length/3;
         _mesh=new VertexBuffer(device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);_mesh.SetData(mesh.ToArray());_primitives=mesh.Count/3;
     }
     public void Draw(float yaw,float pitch,Matrix? orientation=null)
     {
         _device.BlendState=BlendState.Opaque;_device.DepthStencilState=DepthStencilState.Default;_device.RasterizerState=RasterizerState.CullNone;
-        _effect.World=orientation??WorldPreview.Orientation(yaw,pitch);
-        _effect.View=Matrix.CreateLookAt(new Vector3(0,.18f,6),new Vector3(0,.18f,0),Vector3.Up);
-        float aspect=_device.Viewport.AspectRatio,height=Math.Max(3.7f,3.4f/aspect);
+        var pose=orientation??WorldPreview.Orientation(yaw,pitch);
+        // An oblique view separates the negative Z screw from the robot silhouette.
+        _effect.View=Matrix.CreateLookAt(new Vector3(5,4,5),Vector3.Zero,Vector3.Up);
+        float aspect=_device.Viewport.AspectRatio,height=Math.Max(5.2f,5.2f/aspect);
         _effect.Projection=Matrix.CreateOrthographic(height*aspect,height,.1f,100);
+        // The screws mark the fixed axes used by the rotation buttons, while the robot rotates inside them.
+        _effect.World=Matrix.Identity;_device.SetVertexBuffer(_screws);
+        foreach(var pass in _effect.CurrentTechnique.Passes){pass.Apply();_device.DrawPrimitives(PrimitiveType.TriangleList,0,_screwPrimitives);}
+        _effect.World=pose;
         _device.SetVertexBuffer(_mesh);
         foreach(var pass in _effect.CurrentTechnique.Passes){pass.Apply();_device.DrawPrimitives(PrimitiveType.TriangleList,0,_primitives);}
     }
-    public void Dispose(){_mesh.Dispose();_effect.Dispose();}
+    public void Dispose(){_mesh.Dispose();_screws.Dispose();_effect.Dispose();}
 }

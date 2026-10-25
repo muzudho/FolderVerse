@@ -1,4 +1,4 @@
-﻿using FolderVerse;
+using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
@@ -13,6 +13,12 @@ sealed class RotationGame:Game1{
  WorldSetup w=null!;CubeNet net=null!;WorldPreview world=null!;int frame;
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
+  for(int axis=0;axis<3;axis++){
+   var direction=ToyOrientationRenderer.AxisDirection(axis);var screw=ToyOrientationRenderer.ScrewCenter(axis);
+   Check(Vector3.Dot(screw,direction)<-2 && Vector3.Cross(screw,direction).LengthSquared()<.00001f,"Each screw is separated along its negative axis");
+   var tint=ToyOrientationRenderer.AxisColor(axis);Check(axis==0?tint.R>tint.G && tint.R>tint.B:axis==1?tint.G>tint.R && tint.G>tint.B:tint.B>tint.R && tint.B>tint.G,"Axis screw colors follow RGB");
+   Check(tint==((Color[])typeof(Game1).GetField("AxisColors",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!)[axis],"Screws and rotation controls share their colors");
+  }
   w=(WorldSetup)Get("_setup");w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);
   world=(WorldPreview)Get("_world");world.ShowSetup(w,true);net=(CubeNet)Get("_net");net.Home(w);
   var baseOrientation=world.ManualOrientation;

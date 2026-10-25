@@ -37,7 +37,7 @@ public partial class Game1
     private static (Rectangle Globe,Rectangle Toy,Rectangle Legend) OrientationAreas(Rectangle area,bool cast)
     {
         if(cast)area=new(area.X,area.Y+64,area.Width,area.Height-64);
-        int width=Math.Min(190,Math.Min(area.Width/3,area.Height/3));
+        int width=Math.Min(230,Math.Min(area.Width/3,area.Height/3));
         var toy=new Rectangle(area.Right-width-65,area.Y+130,width,width);
         return (area,toy,new Rectangle(toy.X,toy.Bottom-26,toy.Width,26));
     }
@@ -59,10 +59,16 @@ public partial class Game1
         }
         _spriteBatch.End();
         var viewport=GraphicsDevice.Viewport;
-        GraphicsDevice.Viewport=OrientationViewport(new(toy.X+16+(int)_orientationDragOffset.X,toy.Y+4+(int)_orientationDragOffset.Y,toy.Width-32,toy.Height-30),canvas);
+        var robotBounds=new Rectangle(toy.X+16+(int)_orientationDragOffset.X,toy.Y+4+(int)_orientationDragOffset.Y,toy.Width-32,toy.Height-30);
+        GraphicsDevice.Viewport=OrientationViewport(robotBounds,canvas);
         _orientationToy.Draw(_yaw,_pitch,OrientationGlobe?(IsStatusScreen?_world.DisplayOrientation(_yaw,_pitch):_world.ViewOrientation(_yaw,_pitch)):_net.BellyOrientation);
         GraphicsDevice.Viewport=viewport;
         _spriteBatch.Begin(transformMatrix:transform);
+        for(int axis=0;axis<3;axis++){
+            var at=_orientationToy.ProjectScrew(axis,robotBounds);var away=at-toy.Center.ToVector2();
+            if(away.LengthSquared()>1)at+=Vector2.Normalize(away)*18;
+            _ui.Center("－"+"XYZ"[axis],new((int)at.X-18,(int)at.Y-10,36,20),.32f,AxisColors[axis]);
+        }
         DrawOrientationControls(toy);
         _spriteBatch.End();
     }
