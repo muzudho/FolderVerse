@@ -24,6 +24,7 @@ public partial class Game1
     }
     private void DrawConquerorResidences()
     {
+        if(_salvagePlan)return;
         int ruler=_reignView?(_strategyRuler>=0?_strategyRuler:_setup.PlayerSlot)
             :_populationNode>=0?_setup.Nodes.All[_populationNode].Owner
             :RegionOfficeNode>=0?_setup.Nodes.All[RegionOfficeNode].Owner:_setup.PlayerSlot;

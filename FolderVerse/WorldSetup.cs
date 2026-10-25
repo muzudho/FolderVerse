@@ -77,6 +77,7 @@ public sealed partial class WorldSetup
     public RobotWorld Robots {get;}=new();
     public IndustryCycle Industry {get;}=new();
     public BattleLessons Lessons {get;}=new();
+    public SalvagePlan Salvage {get;}=new();
     public ConquerorRelations Relations {get;}=new();
     public void SelectPlayer(int slot)
     {
@@ -163,7 +164,7 @@ public sealed partial class WorldSetup
         for(int i=0;i<ActiveCount;i++)ClaimLand(i,new[]{cells[i]});
         TutorialStep=1;TutorialCompletionPending=TutorialCompletionShown=false;
     }
-    public void ClearPlacement() { LandPending=false;TerritoryRights=new int[CastCount]; PlayerSlot=-1; Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); ConquerorLocations=Array.Empty<int>(); TerritoryCounts = new int[CastCount]; }
+    public void ClearPlacement() { Salvage.Reset();LandPending=false;TerritoryRights=new int[CastCount]; PlayerSlot=-1; Owners = Array.Empty<int>(); Capitals = Array.Empty<int>(); ConquerorLocations=Array.Empty<int>(); TerritoryCounts = new int[CastCount]; }
     public void SetPlacement(int seed)
     {
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
@@ -202,7 +203,7 @@ public sealed partial class WorldSetup
         for(int ruler=0;ruler<ActiveCount;ruler++)ConquerorPoints[ruler]=Nodes.Current(ruler).Center;
         for(int ruler=0;ruler<ActiveCount;ruler++)Robots.Workshops[Nodes.Current(ruler).Id].ConfigureDisposal();
         Routes.RefreshDisplay();
-        Campaign.Reset();
+        Campaign.Reset();Salvage.Initialize(this);
     }
     public static SurfaceCell[] CreateCells(int width, int height, int depth)
     {

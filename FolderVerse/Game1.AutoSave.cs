@@ -31,6 +31,7 @@ public partial class Game1
             if(next.PlayerSlot<0 || next.PlayerSlot>=next.ActiveCount || next.Robots.Nodes.Length!=next.Nodes.All.Length || next.LandPending || next.Industry.Pending)
                 throw new InvalidDataException("Autosave is not at a domestic turn boundary.");
             next.Robots.Check();
+            if(next.Salvage.LegacyPlacementPending)next.Salvage.Initialize(next);
             foreach(var battle in next.Campaign.RobotBattles.Encounters.SelectMany(e=>e.Battles).Concat(next.Campaign.RobotBattles.Scenes).Distinct()){
                 battle.Allied=next.Relations.Allied;battle.Check();
             }

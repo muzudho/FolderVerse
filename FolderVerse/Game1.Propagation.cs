@@ -52,6 +52,11 @@ public partial class Game1
             int owner=_setup.Robots.Transport.LastOwners.GetValueOrDefault(shipment.RobotId);
             _net.DrawMapRobot(_ui,new((int)at.X-12,(int)at.Y-32,24,36),_setup.OwnerColor(owner),shipment.Parts);
         }
+        if(movement)foreach(var agent in _setup.Salvage.Agents.Where(a=>a.PreviousNode!=a.Node && _setup.Relations.Controls(a.Owner))){
+            var at=Vector2.Lerp(NodeAt(agent.PreviousNode),NodeAt(agent.Node),PropagationTravel(agent.PreviousNode,agent.Node));
+            _ui.Box(new((int)at.X-5,(int)at.Y-18,10,9),Cream);_ui.Box(new((int)at.X-7,(int)at.Y-7,14,17),_setup.OwnerColor(agent.Owner));
+            _ui.Text("回収隊",at+new Vector2(10,-18),.27f,Cream);
+        }
         foreach(var march in movement?_setup.Campaign.RobotBattles.LastMarches:Enumerable.Empty<(int Owner,int Source,int Target)>())
         {
             var at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),PropagationMarchTravel(march.Owner,march.Source,march.Target));

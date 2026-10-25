@@ -115,6 +115,7 @@ public sealed class RobotCampaign
         world.Robots.Advance((a,b)=>!LockedEdge(a,b) && world.Routes.Neighbors(world.Nodes.All[a]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==b),
             n=>world.Nodes.All[n].Owner,world.PlacementSeed^world.Population.Turn^0x61238,LockedNode,(owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner),industry:false,directLocked:n=>LockedNode(n) || orders.Any(o=>!o.Peaceful && o.TargetNode==n && !world.Relations.Allied(o.Ruler,world.Nodes.All[n].Owner)));
         world.Population.Advance(world);
+        world.Salvage.Advance(world,world.Population.Turn,n=>orders.Any(o=>!o.Peaceful && o.TargetNode==n && !world.Relations.Allied(o.Ruler,world.Nodes.All[n].Owner)));
         world.Industry.Queue(world.Population.Turn);
         var stopped=new HashSet<March>();
         // Visits carry the queen and her pocket without claiming land or starting a war.

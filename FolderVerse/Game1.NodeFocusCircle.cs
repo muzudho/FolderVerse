@@ -10,6 +10,12 @@ public partial class Game1
         _net.FocusCircleNodes.Clear();_net.FocusCircles.Clear();_world.FocusCircles.Clear();_net.FocusCells.Clear();_world.FocusCells.Clear();
         _net.FocusCircleRadius=_world.FocusCircleRadius=0;
         _net.CountryFocus=_world.CountryFocus=_reignView && !_nodeInspectorClosing?(_strategyRuler>=0?_strategyRuler:_setup.PlayerSlot):-1;
+        if(_salvagePlan && !_nodeInspectorClosing){
+            RefreshSalvageFocus();_net.CountryFocus=_world.CountryFocus=_setup.PlayerSlot;
+            if(MapTransitionActive || _net.IsAnimating)return;
+            foreach(int node in _salvageFocusNodes){_net.FocusCircleNodes.Add(node);AddNodeFocusCircle(node);}
+            return;
+        }
         if(_net.CountryFocus>=0){
             foreach(var cell in _setup.Cells)if(_setup.Nodes.FullOwner(cell.Id)==_net.CountryFocus){_net.FocusCells.Add(cell.Id);_world.FocusCells.Add(cell.Id);}
             foreach(var node in _setup.Nodes.All)if(node.Owner==_net.CountryFocus || _net.FocusCells.Contains(node.Cell))_net.FocusCircleNodes.Add(node.Id);

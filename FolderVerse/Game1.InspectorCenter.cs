@@ -6,7 +6,7 @@ public partial class Game1
     private int _inspectorCenterNode=-1;
     private bool _inspectorCenterPending,_inspectorCenterGlobe;
     private float _inspectorCenterAge=-1,_inspectorCenterDistance,_inspectorCenterApplied;
-    private int InspectorLocationNode=>_nodeInspectorClosing?-1:_regionCell>=0?_inspectedNode:_populationNode;
+    private int InspectorLocationNode=>_nodeInspectorClosing?-1:_salvagePlan?(_setup.Salvage.Items.Find(i=>i.Id==_salvageSelected)?.Node??CurrentSalvageAgent?.Node??-1):_regionCell>=0?_inspectedNode:_populationNode;
     private void FocusInspectorLocation()
     {
         int id=InspectorLocationNode;

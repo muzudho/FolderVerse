@@ -6,7 +6,7 @@ static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 WorldSetup World(int seed=0)
 {
     var w=new WorldSetup();w.SetWorld(seed);w.SetCast(123);w.SetPlacement(456);w.SelectPlayer(0);
-    w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);return w;
+    w.Salvage.Reset();w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);return w;
 }
 void Place(WorldSetup w,int owner,Node node){node.Owner=owner;w.ConquerorLocations[owner]=node.Cell;w.ConquerorPoints[owner]=node.Center;}
 void Add(WorldSetup w,Node node,int owner,int count){for(int i=0;i<count;i++)w.Robots.Nodes[node.Id].Add(w.Robots.Create(owner,RobotParts.Complete));}
@@ -75,7 +75,7 @@ Console.WriteLine("PASS: leader and nested subordinate actions commit one shared
 }
 {
     void Assert(bool ok,string message){if(!ok)throw new Exception(message);}
-    WorldSetup Setup(){var x=new WorldSetup();x.SetWorld(2);x.SetCast(123);x.SetPlacement(456);x.SelectPlayer(0);x.Robots.Initialize(x.Nodes.All.Length,x.ActiveCount);return x;}
+    WorldSetup Setup(){var x=new WorldSetup();x.SetWorld(2);x.SetCast(123);x.SetPlacement(456);x.SelectPlayer(0);x.Salvage.Reset();x.Robots.Initialize(x.Nodes.All.Length,x.ActiveCount);return x;}
     var x=Setup();var home=x.Nodes.All.First(n=>x.Routes.Neighbors(n).Length>0);var route=x.Routes.Neighbors(home)[0];var target=x.Nodes.At(route.Target,route.Entry);
     home.Owner=0;target.Owner=1;x.ConquerorLocations[0]=home.Cell;x.ConquerorPoints[0]=home.Center;
     for(int i=0;i<12;i++)x.Robots.Nodes[home.Id].Add(x.Robots.Create(0,RobotParts.Complete));
@@ -121,7 +121,7 @@ Console.WriteLine("PASS: leader and nested subordinate actions commit one shared
 
 {
     void Assert(bool ok,string message){if(!ok)throw new Exception(message);}
-    var x=new WorldSetup();x.SetWorld(2);x.SetCast(123);x.SetPlacement(456);x.SelectPlayer(0);x.Robots.Initialize(x.Nodes.All.Length,x.ActiveCount);
+    var x=new WorldSetup();x.SetWorld(2);x.SetCast(123);x.SetPlacement(456);x.SelectPlayer(0);x.Salvage.Reset();x.Robots.Initialize(x.Nodes.All.Length,x.ActiveCount);
     var home=x.Nodes.All.First(n=>x.Routes.Neighbors(n).Length>0);var route=x.Routes.Neighbors(home)[0];var target=x.Nodes.At(route.Target,route.Entry);
     home.Owner=0;target.Owner=1;x.ConquerorLocations[0]=home.Cell;x.ConquerorPoints[0]=home.Center;
     var pocket=x.Robots.Create(0,RobotParts.Complete).Materialize() with {BodyOrigin=1,LegsOrigin=1,DamagedParts=RobotParts.Body};

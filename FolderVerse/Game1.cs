@@ -140,6 +140,7 @@ public partial class Game1 : Game
         UpdateRateDrag(mouse,active,click);
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
+        if(AbandonConfirmationInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(InspectorFolderInput(mouse,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_autoPlay && (click || escape)){
             _autoPlay=false;_autoStepAge=_autoDomesticAge=0;_autoDomesticStage=0;_hangarDrag=null;
@@ -195,6 +196,7 @@ public partial class Game1 : Game
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
         if(active && captureChord && !previousChord)_screenshots.Request();
         if(IsStatusScreen && click && DirectMapClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && SalvageInput(_pointer,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && active && click && DomesticViewClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _populationCell>=0 && _nodeAssemblyOpen && (NodeInspectorBounds.Contains(_pointer) || _hangarDrag.HasValue || escape))
         {if(active)NodeAssemblyInput(mouse,click,escape);else _hangarDrag=null;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -599,7 +601,7 @@ public partial class Game1 : Game
             _net.DrawMapObjects(_ui,_setup,NetPanel,_animationTime);_spriteBatch.End();
         }
         _spriteBatch.Begin(transformMatrix:transform);
-        DrawConquerorResidences();DrawRegionOffice();
+        DrawConquerorResidences();DrawRegionOffice();DrawSalvageMap();
         _spriteBatch.End();
         if(!MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
@@ -631,6 +633,7 @@ public partial class Game1 : Game
         }
         if(_movementOpen)DrawInspector(DrawMovementPanel);
         if(_regionCell>=0)DrawInspector(DrawRegionInspector);
+        if(_salvagePlan)DrawInspector(DrawSalvagePanel);
 
         if(_transportOverview){DrawInspector(DrawTransportOverviewPanel);if(_rateTarget>=0)DrawRatePieDialog();}
         DrawWandererLocation();DrawRouteLayerButtons();
@@ -638,6 +641,7 @@ public partial class Game1 : Game
         if(_supervisorDialog==0)DrawNodeTooltip();
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();
         DrawInspectorFolders();
+        DrawAbandonConfirmation();
 
     }
     private void DrawCastPreviewInfo()
