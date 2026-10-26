@@ -168,6 +168,7 @@ public partial class Game1 : Game
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _setup.Robots.Nodes.Length>0)
             _setup.Robots.PrepareDomestic(_setup.Population.Turn,(a,b)=>!_setup.Campaign.RobotBattles.LockedEdge(a,b) && _setup.Routes.Neighbors(_setup.Nodes.All[a]).Any(r=>_setup.Nodes.At(r.Target,r.Entry).Id==b),n=>_setup.Nodes.All[n].Owner,_setup.Campaign.RobotBattles.LockedNode);
+        if(IsStatusScreen && _salvageCatalogOpen){if(active)SalvageCatalogInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _supervisorDialog!=0){
             if(active)SupervisorDialogInput(click,escape,keyboard);
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
@@ -513,6 +514,7 @@ public partial class Game1 : Game
     }
     private void DrawStatusUi()
     {
+        if(_salvageCatalogOpen){DrawSalvageCatalog();return;}
         if(_directPairOpen){DrawDirectPair();return;}
         _ui.Text("世界征服状況",new(54,22),1.1f,Cream);
         _net.InspectedNode=_populationCell>=0?_populationNode:-1;

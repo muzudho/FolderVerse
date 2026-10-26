@@ -8,7 +8,7 @@ public partial class Game1
     {
         if(_inspectorFoldersOpen || _mapOverlayMenu)return;
         if(_directPairOpen || !MapViewBounds.Contains(_pointer))return;
-        if(_salvageHits.Exists(h=>h.Bounds.Contains(_pointer))){DrawRulebookHint("廃品回収計画","クリックで放棄品置き場と回収隊を確認できます。");return;}
+        if(_salvageHits.Exists(h=>h.Bounds.Contains(_pointer))){DrawRulebookHint("廃品回収計画","クリックでこの地点の廃品カタログを開きます。");return;}
         if(_directTrucks.Exists(t=>t.Bounds.Contains(_pointer))){
             var delivery=_directTrucks.Find(t=>t.Bounds.Contains(_pointer));
             DrawRulebookHint(DirectSeaRoute(delivery.A,delivery.B)?"小型フェリー":"トラック","ロボットパーツの直送便です。予約したパーツを伝播フェーズで配送します。");return;

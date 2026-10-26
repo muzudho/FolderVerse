@@ -19,7 +19,6 @@ public partial class Game1
     private static readonly Rectangle SalvageRequest=new(84,916,380,44),SalvagePickUp=new(478,916,390,44);
     private static readonly Rectangle AbandonYes=new(560,646,380,58),AbandonNo=new(980,646,380,58);
     private static Rectangle SalvagePolicyButton(int i)=>new(84+i%2*394,245+i/2*54,380,46);
-    private static Rectangle SalvageRow(int i)=>new(84,570+i*42,784,38);
     private static readonly string[] SalvagePolicies={"短期的に早く回収する","中期的に程よく回収する","長期的に多く回収する","任せる"};
     private SalvageAgent CurrentSalvageAgent=>_setup.Salvage.Agents.FirstOrDefault(a=>a.Owner==_setup.PlayerSlot);
     private SalvageItem[] VisibleSalvageItems()=>_setup.Salvage.Items.Where(i=>_salvageNodeFilter<0 || i.Node==_salvageNodeFilter)
@@ -61,7 +60,7 @@ public partial class Game1
         if(!_salvagePlan || !click)return false;
         if(MapViewBounds.Contains(point)){
             var hit=_salvageHits.FirstOrDefault(h=>h.Bounds.Contains(point));if(hit.Bounds!=Rectangle.Empty){
-                _salvageNodeFilter=hit.Node;_salvagePage=0;_salvageSelected=VisibleSalvageItems().FirstOrDefault()?.Id??-1;_salvageMessage="";CenterSalvageNode(hit.Node);return true;
+                OpenSalvageCatalog(hit.Node);return true;
             }
             return false;
         }
@@ -72,11 +71,8 @@ public partial class Game1
             if(SalvageToggle.Contains(point)){agent.Paused=!agent.Paused;_setup.Salvage.Preview(_setup,agent);_salvageFocusTurn=-1;return true;}
             if(SalvageAgentFocus.Contains(point)){CenterSalvageNode(agent.Node);return true;}
         }
-        if(SalvageAll.Contains(point)){_salvageNodeFilter=-1;_salvagePage=0;return true;}
-        var items=VisibleSalvageItems();int pages=Math.Max(1,(items.Length+5)/6);
-        if(new Rectangle(644,832,100,36).Contains(point))_salvagePage=(_salvagePage+pages-1)%pages;
-        if(new Rectangle(754,832,100,36).Contains(point))_salvagePage=(_salvagePage+1)%pages;
-        for(int i=0;i<6;i++)if(SalvageRow(i).Contains(point) && _salvagePage*6+i<items.Length){_salvageSelected=items[_salvagePage*6+i].Id;_salvageMessage="";CenterSalvageNode(items[_salvagePage*6+i].Node);return true;}
+        if(SalvageAll.Contains(point)){OpenSalvageCatalog();return true;}
+        if(SalvageCatalogButton.Contains(point)){OpenSalvageCatalog(_salvageNodeFilter);return true;}
         if(SalvageRequest.Contains(point)){
             _salvageMessage=_setup.Salvage.Request(_setup,_setup.PlayerSlot,_salvageSelected)?"回収を依頼しました":"回収隊が到達できません";_salvageFocusTurn=-1;
         }
@@ -94,7 +90,7 @@ public partial class Game1
         var agent=CurrentSalvageAgent;
         for(int i=0;i<4;i++)_ui.Button(SalvagePolicyButton(i),SalvagePolicies[i],agent?.Policy==(SalvagePolicy)i?Accent:Muted,.43f);
         _ui.Button(SalvageToggle,agent?.Paused==false?"回収する ✓":"休止中",agent?.Paused==false?Accent:Muted,.4f);
-        _ui.Button(SalvageAgentFocus,"回収隊を表示",Muted,.4f);_ui.Button(SalvageAll,"すべての廃品を表示",Muted,.38f);
+        _ui.Button(SalvageAgentFocus,"回収隊を表示",Muted,.4f);_ui.Button(SalvageAll,"世界中のカタログ",Muted,.38f);
         if(agent!=null){
             SalvageText("回収隊："+agent.Status+" / 積荷 "+agent.Load+" / "+SalvagePlan.Capacity+" 部位",new(84,407,784,32),.45f);
             SalvageText("現在地："+_setup.Nodes.DisplayName(_setup.Nodes.All[agent.Node]),new(84,442,784,28),.35f);
@@ -104,21 +100,19 @@ public partial class Game1
             string delivery=agent.DeliveryNode<0?"搬入先未定":"搬入先："+_setup.Nodes.Description(_setup.Nodes.All[agent.DeliveryNode])+" / 最短 約 "+agent.DeliveryTurns+" 全体ターン";
             SalvageText(delivery,new(84,534,784,25),.31f);
         }else SalvageText("所有地点がないため回収隊は待機しています",new(84,407,784,70),.4f);
-        var items=VisibleSalvageItems();int pages=Math.Max(1,(items.Length+5)/6);_salvagePage=Math.Clamp(_salvagePage,0,pages-1);
-        for(int i=0;i<6;i++){
-            int index=_salvagePage*6+i;if(index>=items.Length)break;var item=items[index];var r=SalvageRow(i);
-            string location=_salvageNodeFilter>=0?_setup.Nodes.Description(_setup.Nodes.All[item.Node]):_setup.Nodes.DisplayName(_setup.Nodes.All[item.Node]);
-            string label="#"+item.Id+" "+location+" / "+SalvagePartLabel(item.Robot);
-            _ui.Button(r,label,item.Id==_salvageSelected?Accent:Muted,Math.Min(.35f,(r.Width-16)/Math.Max(1,_font.MeasureString(label).X)));
-        }
-        if(items.Length==0)SalvageText("この範囲に廃品はありません",new(84,570,784,70),.45f);
-        SalvageText($"廃品 {items.Length} 件 / {_salvagePage+1} / {pages}",new(84,832,540,36),.36f);
-        if(pages>1){_ui.Button(new(644,832,100,36),"←",Muted,.5f);_ui.Button(new(754,832,100,36),"→",Muted,.5f);}
+        _ui.Button(SalvageCatalogButton,"迷子タグを使って、廃品になったロボットパーツを一覧",Accent,.4f);
+        SalvageText("放棄されたパーツの迷子タグを受信しています",new(84,678,784,30),.38f);
+        SalvageText("地図のカゴをクリックすると、その地点のカタログが開きます",new(84,714,784,30),.35f);
         var selected=_setup.Salvage.Items.FirstOrDefault(i=>i.Id==_salvageSelected);
-        string provenance=selected==null?"廃品を選択してください":"放棄元："+(selected.AbandonedBy<0?"初期配置（放棄元なし）":_setup.ConquerorNames[selected.AbandonedBy])+" / "+(selected.RequestedBy==_setup.PlayerSlot?"回収依頼済み":selected.AbandonedBy==_setup.PlayerSlot?"手動の回収依頼で拾い直せます":"未所属の回収品");
-        SalvageText(_salvageMessage.Length>0?_salvageMessage:provenance,new(84,875,784,30),.33f);
+        if(selected!=null){
+            DrawRobotGlyph(new(112,760,72,82),selected.Robot,whiteOutline:true);
+            SalvageText("#"+selected.Id+" / "+PartsLabel(selected.Robot),new(212,758,656,30),.43f);
+            SalvageText(_setup.Nodes.DisplayName(_setup.Nodes.All[selected.Node]),new(212,795,656,30),.34f);
+            SalvageText(SalvagePartLabel(selected.Robot),new(84,841,784,25),.31f);
+        }
+        SalvageText(_salvageMessage.Length>0?_salvageMessage:SalvageProvenance(selected),new(84,875,784,30),.33f);
         bool recover=selected!=null && _setup.Salvage.CanRecover(_setup,_setup.PlayerSlot,selected);
-        bool pickup=selected!=null && _setup.Nodes.Current(_setup.PlayerSlot)?.Id==selected.Node && _setup.Robots.Retinues[_setup.PlayerSlot].HasSpace && !_setup.Campaign.RobotBattles.LockedNode(selected.Node);
+        bool pickup=CanPickUpSalvage(selected);
         _ui.Button(SalvageRequest,"回収を依頼",recover?Accent:Muted,.45f);_ui.Button(SalvagePickUp,"現地でポケットに拾う",pickup?Accent:Muted,.4f);
     }
     private void DrawSalvageMap()
@@ -127,17 +121,17 @@ public partial class Game1
         foreach(var group in _setup.Salvage.Items.GroupBy(i=>i.Node)){
             if(!OperationPosition(group.Key,out var at))continue;at+=new Vector2(28,12);
             if(!MapViewBounds.Contains(at.ToPoint()))continue;
-            var r=new Rectangle((int)at.X-10,(int)at.Y-9,20,18);
+            var r=new Rectangle((int)at.X-14,(int)at.Y-17,28,32);
             bool dim=!_salvageFocusNodes.Contains(group.Key);
-            var wire=new Color(132,146,148);var scrap=new Color(103,118,123);
-            if(dim){wire=SelectionGlow.Dim(wire);scrap=SelectionGlow.Dim(scrap);}
-            // Small open mesh basket; neutral colours keep nodes and deployed robots prominent.
-            _ui.Box(new(r.X+4,r.Y+2,5,6),scrap);_ui.Box(new(r.X+11,r.Y,5,8),scrap);
-            _ui.Box(new(r.X,r.Y+6,20,2),wire);_ui.Box(new(r.X+3,r.Bottom-2,14,2),wire);
-            for(int x=3;x<=15;x+=4)_ui.Box(new(r.X+x,r.Y+8,1,8),wire);
-            _ui.Box(new(r.X+2,r.Y+11,16,1),wire);_ui.Box(new(r.X+3,r.Y+14,14,1),wire);
+            var wire=new Color(132,146,148);if(dim)wire=SelectionGlow.Dim(wire);
+            var representative=group.OrderBy(i=>i.Id).First().Robot;
+            DrawRobotGlyph(new(r.X+5,r.Y,18,24),representative,opacity:dim?.65f:1f);
+            // The representative part sits inside one quiet mesh basket per location.
+            _ui.Box(new(r.X,r.Y+16,28,2),wire);_ui.Box(new(r.X+3,r.Bottom-2,22,2),wire);
+            for(int x=3;x<=23;x+=5)_ui.Box(new(r.X+x,r.Y+18,1,12),wire);
+            _ui.Box(new(r.X+2,r.Y+22,24,1),wire);_ui.Box(new(r.X+3,r.Y+27,22,1),wire);
             _salvageHits.Add((r,group.Key));
-            if(_salvagePlan)_ui.Text(group.Count().ToString(),new(r.Right+3,r.Y),.3f,Cream);
+            _ui.Text(group.Count().ToString(),new(r.Right+3,r.Y+12),.3f,dim?SelectionGlow.Dim(Cream):Cream);
         }
         var agent=CurrentSalvageAgent;if(agent==null)return;
         if(_salvagePlan)for(int i=1;i<agent.Route.Length;i++)if(OperationPosition(agent.Route[i-1],out var a) && OperationPosition(agent.Route[i],out var b)){
@@ -148,7 +142,7 @@ public partial class Game1
         var own=_setup.OwnerColor(agent.Owner);_ui.Box(new((int)center.X-12,(int)center.Y-13,24,31),new Color(10,25,34));
         _ui.Box(new((int)center.X-4,(int)center.Y-10,8,8),Cream);_ui.Box(new((int)center.X-6,(int)center.Y,12,13),own);
         _ui.Box(new((int)center.X+7,(int)center.Y+5,13,9),new Color(220,183,112));
-        if(_salvagePlan){_ui.Text("回収隊",center+new Vector2(-22,20),.3f,Cream);_salvageHits.Add((new((int)center.X-14,(int)center.Y-15,40,35),agent.Node));}
+        if(_salvagePlan)_ui.Text("回収隊",center+new Vector2(-22,20),.3f,Cream);
     }
     private bool AbandonConfirmationInput(bool click,bool escape)
     {
