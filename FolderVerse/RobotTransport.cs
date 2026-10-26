@@ -61,7 +61,7 @@ public sealed partial class RobotTransport
                 if(HasInstructions(node,robot.Owner))continue;
                 for(int mask=7;mask>=1;mask--)
                 {
-                    if(((int)robot.Parts&mask)!=mask || world.Workshops[node].AutoAssemblyDisabled && (RobotParts)mask!=robot.Parts)continue;
+                    if(!robot.CanSeparate((RobotParts)mask) || world.Workshops[node].AutoAssemblyDisabled && (RobotParts)mask!=robot.Parts)continue;
                     var plan=Plan(node,robot.Owner,(RobotParts)mask).Select(w=>(Weight:w,Disposal:false))
                         .Concat(Plan(node,robot.Owner,(RobotParts)mask,true).Select(w=>(Weight:w,Disposal:true))).ToArray();
                     if(plan.Length==0){if(_plans.ContainsKey((node,robot.Owner,(RobotParts)mask,false)) || _plans.ContainsKey((node,robot.Owner,(RobotParts)mask,true)))break;continue;}
@@ -106,7 +106,7 @@ public sealed partial class RobotTransport
         {
             if(s.Source<0 || s.Source>=world.Nodes.Length || s.Target<0 || s.Target>=world.Nodes.Length || !connected(s.Source,s.Target) || s.Source==s.Target)throw new ArgumentException("Invalid transport route.");
             var robot=world.Nodes[s.Source].Robots.Single(r=>r.Id==s.RobotId);RobotWorld.Validate(robot.Owner,s.Parts);
-            if((robot.Parts&s.Parts)!=s.Parts || !world.CanShip(s.Source,robot) || world.Workshops[s.Source].AutoAssemblyDisabled && s.Parts!=robot.Parts)throw new ArgumentException("Unavailable parts.");
+            if(!robot.CanSeparate(s.Parts) || !world.CanShip(s.Source,robot) || world.Workshops[s.Source].AutoAssemblyDisabled && s.Parts!=robot.Parts)throw new ArgumentException("Unavailable parts.");
         }
         Commit(world,Select(world,orders));
     }
@@ -127,8 +127,8 @@ public sealed partial class RobotTransport
         foreach(var s in active)
         {
             var source=stores[s.Source];var robot=source.Single(r=>r.Id==s.RobotId);source.Remove(robot);
-            if(s.Parts!=robot.Parts){source.Add(robot with {Parts=robot.Parts^s.Parts,DamagedParts=robot.DamagedParts&(robot.Parts^s.Parts),CheapParts=robot.CheapParts&(robot.Parts^s.Parts)});robot=robot with {Id=temporary--};}
-            cargo[s.RobotId]=robot with {Parts=s.Parts,DamagedParts=robot.DamagedParts&s.Parts,CheapParts=robot.CheapParts&s.Parts,Disposal=robot.Disposal || s.Disposal};
+            if(s.Parts!=robot.Parts){source.Add(robot.Slice(robot.Parts^s.Parts));robot=robot with {Id=temporary--};}
+            cargo[s.RobotId]=(s.Parts==robot.Parts?robot:robot.Slice(s.Parts)) with {DamagedParts=robot.DamagedParts&s.Parts,CheapParts=robot.CheapParts&s.Parts,Disposal=robot.Disposal || s.Disposal};
         }
         foreach(var s in Ordered(active))
         {

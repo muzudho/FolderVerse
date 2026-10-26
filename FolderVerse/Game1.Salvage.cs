@@ -24,8 +24,8 @@ public partial class Game1
     private SalvageAgent CurrentSalvageAgent=>_setup.Salvage.Agents.FirstOrDefault(a=>a.Owner==_setup.PlayerSlot);
     private SalvageItem[] VisibleSalvageItems()=>_setup.Salvage.Items.Where(i=>_salvageNodeFilter<0 || i.Node==_salvageNodeFilter)
         .OrderByDescending(i=>i.RequestedBy==_setup.PlayerSlot).ThenBy(i=>i.Node).ThenBy(i=>i.Id).ToArray();
-    private string SalvagePartLabel(Robot r)=>string.Join("・",new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(p=>(r.Parts&p)!=0)
-        .Select(p=>PartsLabel(p)+"（"+(r.IsCheap(p)?"安い":"正規")+"・"+(r.IsDamaged(p)?"損傷":"無傷")+"）"));
+    private string SalvagePartLabel(Robot r)=>(r.IntegratedParts!=0?IntegratedLabel(r.IntegratedParts)+" / ":"")+string.Join("・",new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(p=>(r.Parts&p)!=0)
+        .Select(p=>PartsLabel(p)+"（"+(r.IsCheap(p)?"安い":"正規")+"・"+(r.IsDamaged(p)?"損傷":"無傷")+"）"))+(r.IntegratedParts!=0 && r.DamagedParts!=0?" / 実損傷："+PartsLabel(r.DamagedParts):"");
     private void SalvageText(string text,Rectangle r,float scale=.4f)=>_ui.Center(text,r,Math.Min(scale,(r.Width-12)/Math.Max(1,_font.MeasureString(text).X)),Cream);
     private void OpenSalvagePlan(int node=-1)
     {
@@ -161,7 +161,9 @@ public partial class Game1
         if(_salvageAbandonConfirmation is not {} selection)return;
         _ui.Box(new(0,0,1920,1080),Color.Black*.7f);_ui.Box(new(500,350,920,390),new Color(27,49,62));
         SalvageText("放棄しますか？",new(540,385,840,65),.8f);
-        SalvageText("ID "+selection.Robot+" / "+PartsLabel(selection.Parts),new(540,465,840,45),.6f);
+        var robot=_setup.Robots.Nodes[selection.Node].Robots.FirstOrDefault(r=>r.Id==selection.Robot);
+        string parts=robot!=null?PartsLabel(robot.Slice(selection.Parts)):PartsLabel(selection.Parts);
+        SalvageText("ID "+selection.Robot+" / "+parts,new(540,465,840,45),.6f);
         SalvageText("電源を切り、所有権を手放して地点の放棄品置き場へ出します。",new(540,530,840,35),.42f);
         SalvageText("品質・損傷は変わりません。他国に回収される可能性があります。",new(540,576,840,35),.4f);
         _ui.Button(AbandonYes,"放棄する",Accent,.6f);_ui.Button(AbandonNo,"やめる",Muted,.6f);

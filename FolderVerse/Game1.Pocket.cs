@@ -95,7 +95,7 @@ public partial class Game1
                 var ownerColor=_setup.OwnerColor(robot.Owner);_ui.Box(new(card.X+3,card.Y+3,card.Width-6,23),ownerColor);
                 _ui.Center((own?"自国":"他国")+$" #{robot.Owner+1}",new(card.X+3,card.Y+3,card.Width-6,23),.35f,UiPainter.ContrastInk(ownerColor));
                 DrawRobotGlyph(new(card.X+46,card.Y+28,44,46),robot,opacity:selectable?1:.38f,whiteOutline:true);
-                _ui.Center(PartsLabel(robot.Parts),new(card.X,card.Y+75,card.Width,24),.34f,selectable?Cream:Cream*.55f);
+                _ui.Center(PartsLabel(robot),new(card.X,card.Y+75,card.Width,24),System.Math.Min(.34f,(card.Width-8)/System.Math.Max(1,_font.MeasureString(PartsLabel(robot)).X)),selectable?Cream:Cream*.55f);
                 _ui.Center("ID "+robot.Id,new(card.X,card.Y+98,card.Width,18),.28f,Cream);
                 string reason=PocketRobotLockReason(robot,fromNode);
                 if(reason.Length>0){

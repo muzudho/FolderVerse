@@ -45,19 +45,19 @@ public sealed partial class RobotTransport
             if(changed)rule.Sent=0;
         }
     }
-    private static int ChoiceBit(int part,bool cheap)=>part switch{4=>1<<(cheap?3:0),2=>1<<(cheap?4:1),1=>1<<(cheap?5:2),_=>0};
+    private static int ChoiceBit(int part,bool cheap)=>part switch{4=>1<<(cheap?3:0),2=>1<<(cheap?4:1),1=>1<<(cheap?5:2),6=>1<<(cheap?8:6),3=>1<<(cheap?9:7),_=>0};
     public static int IndividualChoices(int variants,bool cheap){
         int singles=SinglePartVariants(variants),choices=0;
         foreach(int part in new[]{4,2,1})if((singles&(1<<part))!=0)choices|=ChoiceBit(part,cheap);
         return choices;
     }
     public void ConfigurePartChoices(int node,int owner,int number,int target,int choices,bool disposal,int limit){
-        if(choices<1 || choices>63 || target<0 || target==node || limit<1 || limit>9999)throw new ArgumentException("Invalid individual parts instruction.");
+        if(choices<1 || choices>1023 || target<0 || target==node || limit<1 || limit>9999)throw new ArgumentException("Invalid individual parts instruction.");
         var rule=Instructions(node,owner).Single(r=>r.Number==number);
         bool changed=rule.Target!=target || rule.PartChoices!=choices || rule.Disposal!=disposal;
         rule.Target=target;rule.QualityParts=choices;rule.Disposal=disposal;rule.Limit=limit;
-        rule.Cheap=(choices&7)==0;rule.Variants=0;
-        foreach(int part in new[]{4,2,1})if((choices&(ChoiceBit(part,false)|ChoiceBit(part,true)))!=0)rule.Variants|=1<<part;
+        rule.Cheap=(choices&199)==0;rule.Variants=0;
+        foreach(int part in new[]{4,2,1,6,3})if((choices&(ChoiceBit(part,false)|ChoiceBit(part,true)))!=0)rule.Variants|=1<<part;
         if(changed)rule.Sent=0;
     }
     public TransportInstruction AddInstruction(int node,int owner,int target)
@@ -101,7 +101,7 @@ public sealed partial class RobotTransport
                 var options=new List<InstructionChoice>();
                 foreach(var rule in Instructions(node,robot.Owner)){
                     if(rule.Complete || rule.Degrees==0 || rule.Target>=world.Nodes.Length || !connected(node,rule.Target) || locked?.Invoke(rule.Target)==true || !(canEnter?.Invoke(robot.Owner,rule.Target)??true) || robot.Disposal && !rule.Disposal)continue;
-                    int mask=Enumerable.Range(1,7).Where(m=>(rule.Variants&(1<<m))!=0 && ((int)robot.Parts&m)==m && (!world.Workshops[node].AutoAssemblyDisabled || (RobotParts)m==robot.Parts) && (rule.QualityParts is int choices?(choices&ChoiceBit(m,(robot.CheapParts&(RobotParts)m)!=0))!=0:rule.Cheap?(robot.CheapParts&(RobotParts)m)==(RobotParts)m:(robot.CheapParts&(RobotParts)m)==0))
+                    int mask=Enumerable.Range(1,7).Where(m=>(rule.Variants&(1<<m))!=0 && robot.CanSeparate((RobotParts)m) && (!rule.QualityParts.HasValue || m is not (3 or 6) || robot.IntegratedParts==(RobotParts)m) && (!world.Workshops[node].AutoAssemblyDisabled || (RobotParts)m==robot.Parts) && (rule.QualityParts is int choices?(choices&ChoiceBit(m,(robot.CheapParts&(RobotParts)m)!=0))!=0:rule.Cheap?(robot.CheapParts&(RobotParts)m)==(RobotParts)m:(robot.CheapParts&(RobotParts)m)==0))
                         .OrderByDescending(m=>PartCount((RobotParts)m)).ThenByDescending(m=>m).FirstOrDefault();
                     if(mask!=0)options.Add(new(new(node,rule.Target,robot.Id,(RobotParts)mask,rule.Disposal),rule));
                 }

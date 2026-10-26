@@ -94,6 +94,9 @@ public static class AutoSaveStore
                     if(type==typeof(BattleState) && field.Name=="BoardSize"){field.SetValue(value,10);continue;}
                     if(type==typeof(RobotEncounter) && field.Name=="InterceptOwner"){field.SetValue(value,-1);continue;}
                     if(type==typeof(Robot) && field.Name=="<InterceptOnly>k__BackingField")continue;
+                    if((type==typeof(Robot) || type==typeof(ProductionPlan)) && field.Name=="<IntegratedParts>k__BackingField")continue;
+                    if(type==typeof(RobotWorkshop) && field.Name=="<IntegratedProduct>k__BackingField")continue;
+                    if(type==typeof(RobotWorkshop) && field.Name=="<IntegratedPlans>k__BackingField"){field.SetValue(value,new[]{new ProductionPlan(RobotParts.Head|RobotParts.Body,3,false,RobotParts.Head|RobotParts.Body),new ProductionPlan(RobotParts.Body|RobotParts.Legs,4,false,RobotParts.Body|RobotParts.Legs)});continue;}
                     if(type==typeof(BattleState) && field.Name=="GlobalTurn"){field.SetValue(value,0);continue;}
                     if(type==typeof(BattleState) && field.Name=="<PersuadedUnits>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
                     if(type==typeof(BattleUnitView) && field.Name=="<Robot>k__BackingField")continue;

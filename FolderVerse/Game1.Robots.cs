@@ -6,10 +6,19 @@ public partial class Game1
 {
     private static Rectangle RobotCard(int index)=>new(54+index%6*149,220+index/6*153,137,141);
     private static string PartsLabel(RobotParts parts)=>((parts&RobotParts.Head)!=0?"頭":"")+((parts&RobotParts.Body)!=0?"胴":"")+((parts&RobotParts.Legs)!=0?"脚":"");
-    private void DrawRobotGlyph(Rectangle r,Robot robot,bool whiteOutline=false,float opacity=1)
-    {foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(r,robot.Origin(part),part,robot.Role==RobotRole.Captain,opacity:opacity,whiteOutline:whiteOutline,damaged:robot.IsDamaged(part),cheap:robot.IsCheap(part));}
-    private void DrawRobotGlyph(Rectangle r,int owner,RobotParts parts,bool captain=false,float opacity=1,bool whiteOutline=false,bool damaged=false,bool cheap=false)
+    private static string IntegratedLabel(RobotParts parts)=>parts==(RobotParts.Head|RobotParts.Body)?"頭／胴一体型":parts==(RobotParts.Body|RobotParts.Legs)?"胴／脚一体型":"";
+    private static string PartsLabel(Robot robot)=>robot.IntegratedParts==0?PartsLabel(robot.Parts):IntegratedLabel(robot.IntegratedParts)+((robot.Parts&~robot.IntegratedParts)!=0?"＋"+PartsLabel(robot.Parts&~robot.IntegratedParts):"");
+    private void DrawIntegrationLink(Rectangle r,RobotParts parts,float opacity=1)
     {
+        if(parts==0)return;var color=new Color(255,216,110)*opacity;
+        int top=r.Y+(parts==(RobotParts.Head|RobotParts.Body)?r.Height/8:r.Height/2),bottom=r.Y+(parts==(RobotParts.Head|RobotParts.Body)?r.Height/2:r.Height*7/8);
+        _ui.Box(new(r.X-6,top,3,Math.Max(1,bottom-top)),color);_ui.Box(new(r.X-6,top,8,3),color);_ui.Box(new(r.X-6,bottom-2,8,3),color);
+    }
+    private void DrawRobotGlyph(Rectangle r,Robot robot,bool whiteOutline=false,float opacity=1)
+    {foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(r,robot.Origin(part),part,robot.Role==RobotRole.Captain,opacity:opacity,whiteOutline:whiteOutline,damaged:robot.IsDamaged(part),cheap:robot.IsCheap(part));DrawIntegrationLink(r,robot.IntegratedParts,opacity);}
+    private void DrawRobotGlyph(Rectangle r,int owner,RobotParts parts,bool captain=false,float opacity=1,bool whiteOutline=false,bool damaged=false,bool cheap=false,RobotParts integrated=0)
+    {
+        if(integrated!=0 && (parts&integrated)==integrated)DrawIntegrationLink(r,integrated,opacity);
         var color=_setup.OwnerColor(owner);
         if(damaged)color=Color.Lerp(color,new Color(116,119,116),.8f);
         color*=opacity;

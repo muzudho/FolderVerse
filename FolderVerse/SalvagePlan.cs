@@ -40,6 +40,8 @@ public sealed class SalvagePlan
             int count=1+random.Next(2);
             for(int i=0;i<count;i++){
                 var r=w.Robots.Create(random.Next(w.ActiveCount),(RobotParts)(1+random.Next(7)));
+                var pairs=new[]{RobotParts.Head|RobotParts.Body,RobotParts.Body|RobotParts.Legs}.Where(p=>(r.Parts&p)==p).ToArray();
+                if(pairs.Length>0 && random.Next(3)==0)r=r with {IntegratedParts=pairs[random.Next(pairs.Length)]};
                 r=r with {CheapParts=random.Next(3)==0?r.Parts:0,DamagedParts=random.Next(5)==0?r.Parts:0};
                 Items.Add(new(_next++,nodes[random.Next(nodes.Length)].Id,r));
             }
@@ -58,14 +60,15 @@ public sealed class SalvagePlan
     {
         if(node<0 || node>=w.Nodes.All.Length || w.Nodes.All[node].Owner!=owner || w.Campaign.RobotBattles.LockedNode(node))throw new InvalidOperationException("Abandonment is unavailable here.");
         var store=w.Robots.Nodes[node];var robot=store.Robots.SingleOrDefault(r=>r.Id==id);
+        if(robot!=null)parts=robot.ConnectedParts(parts);
         if(robot==null || robot.Owner!=owner || parts==0 || (parts&robot.Parts)!=parts || new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(parts&p)!=0 && w.Robots.PartLocked(node,robot,p)))throw new InvalidOperationException("Reserved parts cannot be abandoned.");
-        var cargo=Stopped(robot) with {Parts=parts,DamagedParts=robot.DamagedParts&parts,CheapParts=robot.CheapParts&parts};
+        var cargo=Stopped(robot).Slice(parts);
         var remaining=robot.Parts&~parts;
         if(remaining==0 && w.Robots.DirectDelivery.Orders.Any(o=>o.Target==node && o.TargetRobotId==id))throw new InvalidOperationException("An incoming delivery requires its arrival anchor.");
         if(remaining==0)store.Remove(id);
         else{
             cargo=cargo with {Id=w.Robots.Create(owner,parts).Id};
-            store.Replace(store.Robots.Select(r=>r.Id==id?r with {Parts=remaining,DamagedParts=r.DamagedParts&remaining,CheapParts=r.CheapParts&remaining}:r).ToArray());
+            store.Replace(store.Robots.Select(r=>r.Id==id?r.Slice(remaining):r).ToArray());
         }
         var item=new SalvageItem(_next++,node,cargo,owner);Items.Add(item);return item;
     }
