@@ -36,7 +36,14 @@ sealed class IntegratedUi:Game1
   if(frame==5){Set("_pointer",Rect("AbandonYes").Center);Call("AbandonConfirmationInput",true,false);var item=w.Salvage.Items.Single();drop=item.Id;Check(item.Robot.Id==bodyLegs && item.Robot.IntegratedParts==(RobotParts.Body|RobotParts.Legs),"Discarded group stays joined");Call("OpenSalvagePlan",a);Call("UpdateDomesticSlide",1f);}
   if(frame==6){Check(w.Salvage.PickUp(w,0,drop),"Local retrieval accepts whole joined unit");Call("OpenPocket");var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();}
   if(frame==7){Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("OpenNodeInspector",a);Call("UpdateDomesticSlide",1f);Call("OpenNodeTransport");var rule=w.Robots.Transport.AddInstruction(a,0,b);w.Robots.Transport.ConfigurePartChoices(a,0,rule.Number,b,1023,false,5);Set("_transportEditNumber",rule.Number);Set("_transportEditor",1);}
-  base.Draw(time);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"integrated-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
+  base.Draw(time);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
+  if(frame==0){
+   var hb=Rect("FactoryPlanButton",7);var bl=Rect("FactoryPlanButton",8);var paint=w.OwnerColor(w.Nodes.All[a].Owner);
+   Check(pixels[(hb.Y+8+20)*p.BackBufferWidth+hb.X+54+36]==paint,"Head/body joint is filled without an internal outline");
+   Check(pixels[(bl.Y+8+52)*p.BackBufferWidth+bl.X+54+21]==paint,"Body/legs joint is filled without an internal outline");
+   Check(pixels[(bl.Y+8+65)*p.BackBufferWidth+bl.X+54+36]!=paint,"Joined legs retain the gap between left and right feet");
+  }
+  using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"integrated-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
   if(frame++==7){Console.WriteLine("PASS: 11-plan catalogue, joined hangar/direct dragging and ghosts, atomic cancellation, abandonment, recovery, pocket and 10-choice transport editor at full/half size.");Exit();}
  }
 }

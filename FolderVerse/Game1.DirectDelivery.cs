@@ -117,11 +117,17 @@ public partial class Game1
                 _ui.Box(new(cell.X-2,cell.Y-2,cell.Width+4,cell.Height+4),target?color:new Color(37,64,78));
                 _ui.Box(cell,cellHover?new Color(46,73,87):new Color(18,35,46));
                 for(int row=0;row<3;row++){
-                    var part=HangarPart(row);var bounds=DirectPart(side,slot,row);_ui.Box(bounds,(hover!=0 && ((robot?.ConnectedParts(hover)??hover)&part)!=0)?new Color(88,125,141):new Color(40,63,76));var glyph=new Rectangle(cell.X+48,cell.Y+8,68,102);
-                    if(robot!=null && (robot.Parts&part)!=0){bool reserved=(_setup.Robots.DirectDelivery.LockedParts(node,robot.Id)&part)!=0;DrawRobotGlyph(glyph,robot.Origin(part),part,robot.Role==RobotRole.Captain,opacity:reserved?.35f:1,whiteOutline:true,damaged:robot.IsDamaged(part),cheap:robot.IsCheap(part));if(reserved)_ui.Text("予約",new(cell.X+120,bounds.Y+8),.25f,color);}
-                    foreach(var order in _setup.Robots.DirectDelivery.Orders.Where(o=>o.Target==node && (o.Part&part)!=0 && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot))){var original=_setup.Robots.Nodes[order.Source].Robots.FirstOrDefault(r=>r.Id==order.RobotId);if(original!=null){DrawRobotGlyph(glyph,original.Origin(part),part,opacity:.5f,whiteOutline:true,damaged:original.IsDamaged(part),cheap:original.IsCheap(part));DrawIntegrationLink(glyph,original.IntegratedParts&order.Part,.5f);}_ui.Text("予定",new(cell.X+120,bounds.Y+8),.25f,Cream);}
+                    var part=HangarPart(row);var bounds=DirectPart(side,slot,row);_ui.Box(bounds,(hover!=0 && ((robot?.ConnectedParts(hover)??hover)&part)!=0)?new Color(88,125,141):new Color(40,63,76));
+                    if(robot!=null && (robot.Parts&part)!=0 && (_setup.Robots.DirectDelivery.LockedParts(node,robot.Id)&part)!=0)_ui.Text("予約",new(cell.X+120,bounds.Y+8),.25f,color);
+                    if(_setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==node && (o.Part&part)!=0 && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot)))_ui.Text("予定",new(cell.X+120,bounds.Y+8),.25f,Cream);
                 }
-                if(robot!=null){DrawIntegrationLink(new(cell.X+48,cell.Y+8,68,102),robot.IntegratedParts);if(robot.IntegratedParts!=0 && !robot.Stationed && !robot.Disposal)_ui.Center(IntegratedLabel(robot.IntegratedParts),new(cell.X,cell.Y+135,cell.Width,18),.24f,Cream);_ui.Center("ID "+robot.Id,new(cell.X,cell.Y+111,cell.Width,24),.32f,Cream);if(robot.Stationed || robot.Disposal)_ui.Center(robot.FactoryWorker?"工場作業員":robot.InterceptOnly?"迎撃専用":robot.DefenseOnly?"守備専用":"廃棄予約",new(cell.X,cell.Y+135,cell.Width,18),.24f,color);}
+                var joinedGlyph=new Rectangle(cell.X+48,cell.Y+8,68,102);
+                if(robot!=null)DrawRobotGlyph(joinedGlyph,robot,whiteOutline:true,partOpacity:part=>(_setup.Robots.DirectDelivery.LockedParts(node,robot.Id)&part)!=0?.35f:1);
+                foreach(var order in _setup.Robots.DirectDelivery.Orders.Where(o=>o.Target==node && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot))){
+                    var original=_setup.Robots.Nodes[order.Source].Robots.FirstOrDefault(r=>r.Id==order.RobotId);
+                    if(original!=null)DrawRobotGlyph(joinedGlyph,original with {Parts=order.Part,IntegratedParts=original.IntegratedParts&order.Part},whiteOutline:true,opacity:.5f);
+                }
+                if(robot!=null){if(robot.IntegratedParts!=0 && !robot.Stationed && !robot.Disposal)_ui.Center(IntegratedLabel(robot.IntegratedParts),new(cell.X,cell.Y+135,cell.Width,18),.24f,Cream);_ui.Center("ID "+robot.Id,new(cell.X,cell.Y+111,cell.Width,24),.32f,Cream);if(robot.Stationed || robot.Disposal)_ui.Center(robot.FactoryWorker?"工場作業員":robot.InterceptOnly?"迎撃専用":robot.DefenseOnly?"守備専用":"廃棄予約",new(cell.X,cell.Y+135,cell.Width,18),.24f,color);}
             }
             _spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);
         }
@@ -132,6 +138,6 @@ public partial class Game1
         _ui.Center(_directMessage,new(20,1012,1880,28),.4f,Cream);
         var pending=_setup.Robots.DirectDelivery.Orders.Where(o=>_directNodes.Contains(o.Source) && _directNodes.Contains(o.Target)).ToArray();string status=pending.Length==0?"この２地点の配送予約はありません":string.Join(" / ",pending.Take(6).Select(o=>$"#{o.Number} {(o.Source==_directNodes[0]?"左→右":"右→左")} {PartsLabel(o.Part)} {o.Status}"));
         _ui.Center(status,new(20,1046,1880,25),Math.Min(.32f,1840/Math.Max(1,_font.MeasureString(status).X)),Accent);
-        if(_directDrag is {} drag){var robot=_setup.Robots.Nodes[_directNodes[drag.Side]].Robots.FirstOrDefault(r=>r.Id==drag.Robot);if(robot!=null){var selected=drag.Part==0?robot.Parts:drag.Part;var bounds=new Rectangle(_pointer.X-34,_pointer.Y-34,68,102);foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((selected&part)!=0)DrawRobotGlyph(bounds,robot.Origin(part),part,robot.Role==RobotRole.Captain,whiteOutline:true,damaged:robot.IsDamaged(part),cheap:robot.IsCheap(part));DrawIntegrationLink(bounds,robot.IntegratedParts&selected);}}
+        if(_directDrag is {} drag){var robot=_setup.Robots.Nodes[_directNodes[drag.Side]].Robots.FirstOrDefault(r=>r.Id==drag.Robot);if(robot!=null){var selected=drag.Part==0?robot.Parts:drag.Part;var bounds=new Rectangle(_pointer.X-34,_pointer.Y-34,68,102);DrawRobotGlyph(bounds,robot with {Parts=selected,IntegratedParts=robot.IntegratedParts&selected},whiteOutline:true);}}
     }
 }

@@ -158,7 +158,7 @@ public partial class Game1
                 }
             }
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);if(robot==null)continue;robot=HomePersuasionRobot(robot);
-            foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0)DrawRobotGlyph(HangarRobotBounds(slot),robot.Origin(part),part,robot.Role==RobotRole.Captain,opacity:reservationMode?(canReserve?1:.45f):HangarPlaceEnabled(occupant,part)?1:.22f,whiteOutline:true,damaged:robot.IsDamaged(part),cheap:robot.IsCheap(part));
+            DrawRobotGlyph(HangarRobotBounds(slot),robot,whiteOutline:true,partOpacity:part=>reservationMode?(canReserve?1:.45f):HangarPlaceEnabled(occupant,part)?1:.22f);
             for(int row=0;!reservationMode && row<3;row++)
             {
                 var bounds=HangarPartBounds(slot,row);var part=HangarPart(row);
@@ -170,7 +170,6 @@ public partial class Game1
                 _ui.Box(new(bounds.X,bounds.Y,2,bounds.Height),color);_ui.Box(new(bounds.Right-2,bounds.Y,2,bounds.Height),color);
                 hover=movable?$"{PartsLabel(part)}{(robot.IsCheap(part)?"（安い）":"")}{(robot.IsDamaged(part)?"（損傷・未所属扱い）":"")}をドラッグ＆ドロップして再配置":"この個体は処理中・予約中、または操作できない所有国です";
             }
-            DrawIntegrationLink(HangarRobotBounds(slot),robot.IntegratedParts);
             string partsName=PartsLabel(robot)+$" / #{robot.Owner+1}";
             _ui.Center(partsName,new(cell.X,cell.Y+126,cell.Width,24),Math.Min(.4f,(cell.Width-8)/Math.Max(1,_font.MeasureString(partsName).X)),Cream);
             _ui.Center("ID "+robot.Id+(robot.DamagedParts!=0?" / 損傷":""),new(cell.X,cell.Y+148,90,22),.27f,Cream);
@@ -194,8 +193,7 @@ public partial class Game1
     {
         var origin=_pointer-_hangarGrabOffset;
         var bounds=new Rectangle(origin.X,origin.Y,68,102);
-        foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((_hangarPart&part)!=0)DrawRobotGlyph(bounds,robot.Origin(part),part,robot.Role==RobotRole.Captain,whiteOutline:true,damaged:robot.IsDamaged(part),cheap:robot.IsCheap(part));
-        DrawIntegrationLink(bounds,robot.IntegratedParts&_hangarPart);
+        DrawRobotGlyph(bounds,robot with {Parts=_hangarPart,IntegratedParts=robot.IntegratedParts&_hangarPart},whiteOutline:true);
     }
     private void SyncHangarSlots()
     {
