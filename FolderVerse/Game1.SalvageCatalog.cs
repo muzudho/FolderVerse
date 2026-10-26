@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private bool _salvageCatalogOpen;
+    private long _salvageMapTarget=-1;
+    private int SalvageMapTargetNode=>_salvagePlan && !_nodeInspectorClosing?(_setup.Salvage.Items.FirstOrDefault(i=>i.Id==_salvageMapTarget)?.Node??-1):-1;
     private const int SalvageCatalogPageSize=24;
     private static readonly Rectangle SalvageCatalogButton=new(84,580,784,84);
     private static readonly Rectangle SalvageCatalogBack=new(1570,30,296,58),SalvageCatalogMap=new(54,986,300,54),SalvageCatalogRequest=new(370,986,300,54),SalvageCatalogPickUp=new(686,986,350,54);
@@ -33,7 +35,7 @@ public partial class Game1
         if(SalvageCatalogNext.Contains(_pointer)){_salvagePage=(_salvagePage+1)%pages;return;}
         for(int i=0;i<SalvageCatalogPageSize;i++)if(SalvageCatalogCard(i).Contains(_pointer) && _salvagePage*SalvageCatalogPageSize+i<items.Length){_salvageSelected=items[_salvagePage*SalvageCatalogPageSize+i].Id;_salvageMessage="";return;}
         var selected=items.FirstOrDefault(i=>i.Id==_salvageSelected);
-        if(SalvageCatalogMap.Contains(_pointer) && selected!=null){_salvageCatalogOpen=false;CenterSalvageNode(selected.Node);return;}
+        if(SalvageCatalogMap.Contains(_pointer) && selected!=null){_salvageMapTarget=selected.Id;_salvageCatalogOpen=false;CenterSalvageNode(selected.Node);return;}
         if(SalvageCatalogRequest.Contains(_pointer) && selected!=null){_salvageMessage=_setup.Salvage.Request(_setup,_setup.PlayerSlot,selected.Id)?"回収を依頼しました":"回収隊が到達できません";_salvageFocusTurn=-1;}
         if(SalvageCatalogPickUp.Contains(_pointer) && selected!=null){_salvageMessage=_setup.Salvage.PickUp(_setup,_setup.PlayerSlot,selected.Id)?"ポケットに拾いました":"現地への到着・ポケットの空き・戦闘状況を確認してください";_salvageFocusTurn=-1;}
     }

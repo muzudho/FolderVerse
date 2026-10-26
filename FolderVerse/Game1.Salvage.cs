@@ -69,7 +69,7 @@ public partial class Game1
         if(agent!=null){
             for(int i=0;i<4;i++)if(SalvagePolicyButton(i).Contains(point)){agent.Policy=(SalvagePolicy)i;_setup.Salvage.Preview(_setup,agent);_salvageFocusTurn=-1;return true;}
             if(SalvageToggle.Contains(point)){agent.Paused=!agent.Paused;_setup.Salvage.Preview(_setup,agent);_salvageFocusTurn=-1;return true;}
-            if(SalvageAgentFocus.Contains(point)){CenterSalvageNode(agent.Node);return true;}
+            if(SalvageAgentFocus.Contains(point)){_salvageMapTarget=-1;CenterSalvageNode(agent.Node);return true;}
         }
         if(SalvageAll.Contains(point)){OpenSalvageCatalog();return true;}
         if(SalvageCatalogButton.Contains(point)){OpenSalvageCatalog(_salvageNodeFilter);return true;}
@@ -122,7 +122,7 @@ public partial class Game1
             if(!OperationPosition(group.Key,out var at))continue;at+=new Vector2(28,12);
             if(!MapViewBounds.Contains(at.ToPoint()))continue;
             var r=new Rectangle((int)at.X-14,(int)at.Y-17,28,32);
-            bool dim=!_salvageFocusNodes.Contains(group.Key);
+            bool dim=SalvageMapTargetNode>=0?_net.DimNode(group.Key):!_salvageFocusNodes.Contains(group.Key);
             var wire=new Color(132,146,148);if(dim)wire=SelectionGlow.Dim(wire);
             var representative=group.OrderBy(i=>i.Id).First().Robot;
             DrawRobotGlyph(new(r.X+5,r.Y,18,24),representative,opacity:dim?.65f:1f);
@@ -134,15 +134,16 @@ public partial class Game1
             _ui.Text(group.Count().ToString(),new(r.Right+3,r.Y+12),.3f,dim?SelectionGlow.Dim(Cream):Cream);
         }
         var agent=CurrentSalvageAgent;if(agent==null)return;
-        if(_salvagePlan)for(int i=1;i<agent.Route.Length;i++)if(OperationPosition(agent.Route[i-1],out var a) && OperationPosition(agent.Route[i],out var b)){
+        if(_salvagePlan && SalvageMapTargetNode<0)for(int i=1;i<agent.Route.Length;i++)if(OperationPosition(agent.Route[i-1],out var a) && OperationPosition(agent.Route[i],out var b)){
             var d=b-a;_ui.Tile((a+b)/2,new Vector2(d.Length(),4),MathF.Atan2(d.Y,d.X),new Color(255,221,135));
         }
         if(!OperationPosition(agent.Node,out var center))return;center+=new Vector2(-28,-35);
         if(!MapViewBounds.Contains(center.ToPoint()))return;
-        var own=_setup.OwnerColor(agent.Owner);_ui.Box(new((int)center.X-12,(int)center.Y-13,24,31),new Color(10,25,34));
-        _ui.Box(new((int)center.X-4,(int)center.Y-10,8,8),Cream);_ui.Box(new((int)center.X-6,(int)center.Y,12,13),own);
-        _ui.Box(new((int)center.X+7,(int)center.Y+5,13,9),new Color(220,183,112));
-        if(_salvagePlan)_ui.Text("回収隊",center+new Vector2(-22,20),.3f,Cream);
+        Color AgentColor(Color c)=>SalvageMapTargetNode>=0 && _net.DimNode(agent.Node)?SelectionGlow.Dim(c):c;
+        var own=AgentColor(_setup.OwnerColor(agent.Owner));_ui.Box(new((int)center.X-12,(int)center.Y-13,24,31),AgentColor(new Color(10,25,34)));
+        _ui.Box(new((int)center.X-4,(int)center.Y-10,8,8),AgentColor(Cream));_ui.Box(new((int)center.X-6,(int)center.Y,12,13),own);
+        _ui.Box(new((int)center.X+7,(int)center.Y+5,13,9),AgentColor(new Color(220,183,112)));
+        if(_salvagePlan)_ui.Text("回収隊",center+new Vector2(-22,20),.3f,AgentColor(Cream));
     }
     private bool AbandonConfirmationInput(bool click,bool escape)
     {

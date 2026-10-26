@@ -13,6 +13,7 @@ public partial class Game1
         if(_salvagePlan && !_nodeInspectorClosing){
             RefreshSalvageFocus();_net.CountryFocus=_world.CountryFocus=_setup.PlayerSlot;
             if(MapTransitionActive || _net.IsAnimating)return;
+            if(SalvageMapTargetNode is >=0 and var target){_net.FocusCircleNodes.Add(target);AddNodeFocusCircle(target,56);return;}
             foreach(int node in _salvageFocusNodes){_net.FocusCircleNodes.Add(node);AddNodeFocusCircle(node);}
             return;
         }
@@ -25,7 +26,7 @@ public partial class Game1
         else if(_net.CountryFocus>=0)foreach(var node in _setup.Nodes.All)
             if(node.Owner==_net.CountryFocus && !_net.FocusCells.Contains(node.Cell))AddNodeFocusCircle(node.Id);
     }
-    private void AddNodeFocusCircle(int id)
+    private void AddNodeFocusCircle(int id,float minimumRadius=0)
     {
         if(id<0 || id>=_setup.Nodes.All.Length)return;
         var node=_setup.Nodes.All[id];var cell=_setup.Cells[node.Cell];
@@ -47,6 +48,7 @@ public partial class Game1
             center=_net.NodePosition(_setup,node,NetPanel);
             radius=robots>0?Math.Max(48,robots*30/MathHelper.TwoPi)+38:32;
         }
+        radius=Math.Max(radius,minimumRadius);
         _net.FocusCircleCenter=_world.FocusCircleCenter=center;
         _net.FocusCircleRadius=_world.FocusCircleRadius=radius;
         _net.FocusCircles.Add(new(center,radius));_world.FocusCircles.Add(new(center,radius));
