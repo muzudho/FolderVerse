@@ -30,7 +30,7 @@ public partial class Game1
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
     private void ResetInspector(){
-        _salvagePlan=false;_hangarAbandonMode=false;_salvageAbandonConfirmation=null;
+        _mapOverlayMenu=false;_salvagePlan=false;_hangarAbandonMode=false;_salvageAbandonConfirmation=null;
         if(_salvageRoutesBefore.HasValue){_net.ShowRoutes=_salvageRoutesBefore.Value;_salvageRoutesBefore=null;}
         _inspectorFoldersOpen=false;_strategyRuler=-1;
         _nodeOfficeOpen=false;
@@ -56,8 +56,7 @@ public partial class Game1
         if(!InspectorVisible){
             _ui.Button(StrategyToggle,"わたしの国",Accent,.45f);
             var warLabel=WarReservationLabel;_ui.Button(WarButton,warLabel,Accent,Math.Min(.55f,(WarButton.Width-12)/_font.MeasureString(warLabel).X));
-            if(TransportOverviewAllowed){_ui.Button(TransportOverviewButton,"ロボット輸送長期計画",Accent,.42f);_ui.Button(DirectDeliveryButton,"ロボットパーツ直送便",_directMap?Cream:Accent,.45f);}
-            _ui.Button(SalvageButton,"廃品回収計画",Accent,.45f);
+            if(TransportOverviewAllowed){_ui.Button(TransportOverviewButton,"ロボット輸送長期計画",Accent,.42f);}
             _ui.Button(PopulationTurnButton,"ターン終了",Accent,.8f);return;
         }
         var r=InspectorHandle;
@@ -86,13 +85,11 @@ public partial class Game1
         if(_trainingOpen || _supervisorDialog>0)return false;
         if((_reignView || _regionCell>=0 || _populationCell>=0) && new Rectangle(InspectorFolderButton.X+NodeInspectorOffset,InspectorFolderButton.Y,InspectorFolderButton.Width,InspectorFolderButton.Height).Contains(p)){OpenInspectorFolders();return true;}
         if(StrategyReadOnly && new Rectangle(54+NodeInspectorOffset,96,850,879).Contains(p) && !InspectorClose.Contains(p))return true;
-        if(TransportOverviewAllowed && !InspectorVisible && DirectDeliveryButton.Contains(p)){if(_directMap)CloseDirectDelivery();else OpenDirectMap();return true;}
         if(_reignView && !InspectingSupervisor && LessonCatalogButton.Contains(new Point(p.X-NodeInspectorOffset,p.Y))){_screen=Screen.LessonCatalog;return true;}
         if(WandererPolicyClick(p))return true;
         if(InspectorVisible && InspectorClose.Contains(p)){CloseNodeInspector();return true;}
         if(RegionInspectorClick(p))return true;
         if(InspectorVisible)return InspectorHandle.Contains(p);
-        if(SalvageButton.Contains(p)){OpenSalvagePlan();return true;}
         if(StrategyToggle.Contains(p)){if(_reignView)CloseNodeInspector();else OpenStrategyInspector();return true;}
         if(WarButton.Contains(p)){if(_movementOpen && _warPlanning)CloseNodeInspector();else{ResetInspector();OpenWarPlanning();}return true;}
         if(TransportOverviewAllowed && TransportOverviewButton.Contains(p)){if(_transportOverview)CloseNodeInspector();else{ResetInspector();OpenTransportOverview();}return true;}

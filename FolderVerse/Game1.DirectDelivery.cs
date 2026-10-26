@@ -14,7 +14,7 @@ public partial class Game1
     private readonly List<(Rectangle Bounds,int A,int B)> _directTrucks=new();
     private (int Side,long Robot,RobotParts Part)? _directDrag;
     private string _directMessage="";
-    private static readonly Rectangle DirectDeliveryButton=new(1004,1006,242,64),DirectPairBack=new(932,110,56,48);
+    private static readonly Rectangle DirectPairBack=new(932,110,56,48);
     private static Rectangle DirectCell(int side,int slot)=>new(40+side*1320+slot%3*174,300+slot/3*166,164,156);
     private static Rectangle DirectPart(int side,int slot,int row){var r=DirectCell(side,slot);return new(r.X+48,r.Y+8+row*34,68,32);}
     private RobotParts DirectHoverPart(int side,int slot)
@@ -33,7 +33,6 @@ public partial class Game1
         var route=_setup.Routes.Neighbors(node).FirstOrDefault(r=>_setup.Nodes.At(r.Target,r.Entry)?.Id==b);
         return route?.Portal?.Terrain==TravelTerrain.Sea || !_setup.Routes.Land(node.Cell,node.Center) || !_setup.Routes.Land(next.Cell,next.Center);
     }
-    private bool InspectorDirectTrucks=>_populationCell>=0 && _populationNode>=0 && !_nodeInspectorClosing;
     private void CloseDirectDelivery(){if(_directMap)_net.ShowRoutes=_directRoutesBefore;_directMap=_directPairOpen=false;_directDrag=null;_directTrucks.Clear();}
     private void OpenDirectMap(){ResetInspector();_directRoutesBefore=_net.ShowRoutes;_net.ShowRoutes=true;_directMap=true;_directMessage="";}
     private void OpenDirectPair(int a,int b){
@@ -44,17 +43,15 @@ public partial class Game1
         foreach(var robot in robots)if(!_directSlots[side].Contains(robot.Id)){int slot=Enumerable.Range(0,12).FirstOrDefault(i=>!_directSlots[side][i].HasValue && !_setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==_directNodes[side] && o.TargetRobotId==null && o.TargetSlot==i),-1);if(slot<0)slot=Array.FindIndex(_directSlots[side],id=>!id.HasValue);if(slot>=0)_directSlots[side][slot]=robot.Id;}
     }}
     private bool DirectMapClick(Point p){
-        if((!_directMap && !InspectorDirectTrucks) || _directPairOpen || MapTransitionActive)return false;
-        if(_directMap && DirectDeliveryButton.Contains(p)){CloseDirectDelivery();return true;}
+        if(!_directMap || _directPairOpen || MapTransitionActive)return false;
         if(MapViewButton.Contains(p) || !MapViewBounds.Contains(p))return false;
         var hit=_directTrucks.Where(t=>t.Bounds.Contains(p)).OrderBy(t=>Vector2.DistanceSquared(t.Bounds.Center.ToVector2(),p.ToVector2())).FirstOrDefault();if(hit.Bounds!=Rectangle.Empty){OpenDirectPair(hit.A,hit.B);return true;}return _directMap;
     }
     private void DrawDirectTrucks(){
-        _directTrucks.Clear();if((!_directMap && !InspectorDirectTrucks) || _directPairOpen || MapTransitionActive)return;
+        _directTrucks.Clear();if(!_directMap || _directPairOpen || MapTransitionActive)return;
         foreach(var node in _setup.Nodes.All.Where(n=>DirectNodeAllowed(n.Id))){
             if(!OperationPosition(node.Id,out var a))continue;
             foreach(var route in _setup.Routes.Neighbors(node)){var next=_setup.Nodes.At(route.Target,route.Entry);if(node.Id>=next.Id || !DirectNodeAllowed(next.Id) || !OperationPosition(next.Id,out var b))continue;
-                if(!_directMap && node.Id!=_populationNode && next.Id!=_populationNode)continue;
                 var at=(a+b)/2;if(!MapViewBounds.Contains(at.ToPoint()))continue;
                 var bounds=new Rectangle((int)at.X-22,(int)at.Y-17,44,34);bool enabled=!_setup.Campaign.RobotBattles.LockedNode(node.Id) && !_setup.Campaign.RobotBattles.LockedNode(next.Id) && !_setup.Campaign.RobotBattles.LockedEdge(node.Id,next.Id);
                 var color=enabled?(bounds.Contains(_pointer)?Cream:Accent):Muted;var delta=b-a;_ui.Tile(at,new(delta.Length(),2),MathF.Atan2(delta.Y,delta.X),color*.4f);

@@ -60,14 +60,14 @@ class Checks:Game1{
   }
   if(frame==5){
    var trucks=(List<(Rectangle Bounds,int A,int B)>)Get("_directTrucks");
-   Check(trucks.Count>0 && trucks.All(t=>t.A==a || t.B==a),"Inspector shows only connected trucks without direct-map mode");
-   Check(!(bool)Get("_directMap"),"Inspector trucks do not require direct-map mode");Set("_pointer",trucks[0].Bounds.Center);
+   Check(trucks.Count==0 && !(bool)Get("_directMap"),"Ordinary inspector leaves direct-delivery markers hidden");
+   Call("OpenDirectMap");
   }
-  if(frame==6){Call("DirectMapClick",(Point)Get("_pointer"));Check((bool)Get("_directPairOpen"),"Inspector truck opens the pair directly");var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
-  if(frame==7){Call("DirectPairInput",new MouseState(),false,true);Check(!(bool)Get("_directPairOpen") && (int)Get("_populationNode")==a,"Back retains the inspected node");}
+  if(frame==6){var trucks=(List<(Rectangle Bounds,int A,int B)>)Get("_directTrucks");Check(trucks.Count>0,"Selecting direct delivery restores truck markers");Call("DirectMapClick",trucks[0].Bounds.Center);Check((bool)Get("_directPairOpen"),"Selected overlay truck opens the pair");var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
+  if(frame==7){Call("DirectPairInput",new MouseState(),false,true);Check(!(bool)Get("_directPairOpen") && (bool)Get("_directMap"),"Back retains the selected direct-delivery overlay");}
   if((bool)Get("_directPairOpen"))Set("_directPairSlide",1f);
   base.Draw(t);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var tex=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);tex.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"direct-{frame}.png")))tex.SaveAsPng(file,tex.Width,tex.Height);
   if(frame==1){var hits=(System.Collections.IList)Get("_directTrucks");Check(hits.Count>0,"Visible adjacent edge has a truck");}
-  if(frame++==7){Console.WriteLine("PASS: edge trucks, inspector-connected trucks, direct opening and return, two hangars, reservations and rendering.");Exit();}
+  if(frame++==7){Console.WriteLine("PASS: edge trucks, hidden ordinary-inspector markers, selected overlay opening and return, two hangars, reservations and rendering.");Exit();}
  }
 }

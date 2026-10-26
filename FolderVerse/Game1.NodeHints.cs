@@ -6,7 +6,7 @@ public partial class Game1
 {
     private void DrawNodeTooltip()
     {
-        if(_inspectorFoldersOpen)return;
+        if(_inspectorFoldersOpen || _mapOverlayMenu)return;
         if(_directPairOpen || !MapViewBounds.Contains(_pointer))return;
         if(_salvageHits.Exists(h=>h.Bounds.Contains(_pointer))){DrawRulebookHint("廃品回収計画","クリックで放棄品置き場と回収隊を確認できます。");return;}
         if(_directTrucks.Exists(t=>t.Bounds.Contains(_pointer))){

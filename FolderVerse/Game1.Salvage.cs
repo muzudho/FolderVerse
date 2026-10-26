@@ -14,7 +14,7 @@ public partial class Game1
     private readonly HashSet<int> _salvageFocusNodes=new();
     private readonly List<(Rectangle Bounds,int Node)> _salvageHits=new();
     private (int Node,long Robot,RobotParts Parts)? _salvageAbandonConfirmation;
-    private static readonly Rectangle SalvageButton=new(1260,1006,242,64),HangarAbandonButton=new(480,908,182,42),HangarSalvageButton=new(678,908,190,42);
+    private static readonly Rectangle HangarAbandonButton=new(480,908,182,42),HangarSalvageButton=new(678,908,190,42);
     private static readonly Rectangle SalvageToggle=new(84,355,200,42),SalvageAgentFocus=new(296,355,250,42),SalvageAll=new(558,355,310,42);
     private static readonly Rectangle SalvageRequest=new(84,916,380,44),SalvagePickUp=new(478,916,390,44);
     private static readonly Rectangle AbandonYes=new(560,646,380,58),AbandonNo=new(980,646,380,58);
@@ -123,14 +123,19 @@ public partial class Game1
     }
     private void DrawSalvageMap()
     {
-        _salvageHits.Clear();if(MapTransitionActive || _net.IsAnimating)return;
+        _salvageHits.Clear();if(!_salvagePlan || MapTransitionActive || _net.IsAnimating)return;
         foreach(var group in _setup.Salvage.Items.GroupBy(i=>i.Node)){
             if(!OperationPosition(group.Key,out var at))continue;at+=new Vector2(28,12);
             if(!MapViewBounds.Contains(at.ToPoint()))continue;
-            var r=new Rectangle((int)at.X-14,(int)at.Y-11,28,24);var color=new Color(220,183,112);
-            bool dim=_salvagePlan && !_salvageFocusNodes.Contains(group.Key);if(dim)color=SelectionGlow.Dim(color);
-            _ui.Box(new(r.X-2,r.Y-2,r.Width+4,r.Height+4),new Color(10,25,34));_ui.Box(r,color);
-            _ui.Box(new(r.X+3,r.Y+4,7,5),dim?SelectionGlow.Dim(Cream):Cream);_ui.Box(new(r.X+15,r.Y+11,9,8),dim?SelectionGlow.Dim(Muted):Muted);
+            var r=new Rectangle((int)at.X-10,(int)at.Y-9,20,18);
+            bool dim=!_salvageFocusNodes.Contains(group.Key);
+            var wire=new Color(132,146,148);var scrap=new Color(103,118,123);
+            if(dim){wire=SelectionGlow.Dim(wire);scrap=SelectionGlow.Dim(scrap);}
+            // Small open mesh basket; neutral colours keep nodes and deployed robots prominent.
+            _ui.Box(new(r.X+4,r.Y+2,5,6),scrap);_ui.Box(new(r.X+11,r.Y,5,8),scrap);
+            _ui.Box(new(r.X,r.Y+6,20,2),wire);_ui.Box(new(r.X+3,r.Bottom-2,14,2),wire);
+            for(int x=3;x<=15;x+=4)_ui.Box(new(r.X+x,r.Y+8,1,8),wire);
+            _ui.Box(new(r.X+2,r.Y+11,16,1),wire);_ui.Box(new(r.X+3,r.Y+14,14,1),wire);
             _salvageHits.Add((r,group.Key));
             if(_salvagePlan)_ui.Text(group.Count().ToString(),new(r.Right+3,r.Y),.3f,Cream);
         }
