@@ -270,6 +270,7 @@ public partial class Game1
                 }
                 _ui.Box(area,color*pieceOpacity);
             }
+            if(physical?.ShoeOwner>=0)RobotWorkArt.DrawShoes(_ui,r,_setup.OwnerColor(physical.ShoeOwner),pieceOpacity);
             if(unit.Role==BattleRole.Queen)
             {
                 var glow=new Color(255,228,135)*opacity;

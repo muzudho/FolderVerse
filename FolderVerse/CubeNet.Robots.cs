@@ -72,6 +72,7 @@ public sealed partial class CubeNet
                     DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part),CountryFocus>=0 && DimNode(node.Id));
                     row++;
                 }
+                if(robot.ShoeOwner>=0)RobotWorkArt.DrawShoes(ui,card,world.OwnerColor(robot.ShoeOwner));
             }
         }
     }

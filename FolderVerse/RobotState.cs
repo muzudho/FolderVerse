@@ -7,10 +7,14 @@ using System.Linq;
 public enum RobotParts { Legs=1, Body=2, Head=4, Complete=7 }
 public enum RobotRole { Soldier, Captain }
 public sealed record RobotWorkshopEdit(int Node,long[] Ids,RobotParts? SplitPart,int? Owner=null);
+public sealed record DefenseFlagReservation(int Commander,int Node,int FlagOwner);
 public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=RobotRole.Soldier,bool Disposal=false)
 {
     public bool InterceptOnly {get;init;}
     public bool DefenseOnly {get;init;}
+    public DefenseFlagReservation DefenseFlag {get;init;}
+    public int ShoeOwner=>Parts==RobotParts.Complete && DefenseOnly?DefenseFlag?.Commander??Owner:-1;
+    public Robot WithoutDefenseReservation()=>this with {DefenseOnly=false,DefenseFlag=null};
     public bool FactoryWorker {get;init;}
     public bool Stationed=>DefenseOnly || InterceptOnly || FactoryWorker;
     public RobotParts DamagedParts {get;init;}=0;
@@ -26,7 +30,7 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
     public Robot Slice(RobotParts selected)
     {
         if(selected==0 || !CanSeparate(selected))throw new InvalidOperationException("Integrated parts cannot be separated.");
-        return Materialize() with {Parts=selected,DamagedParts=DamagedParts&selected,CheapParts=CheapParts&selected,IntegratedParts=IntegratedParts&selected};
+        return Materialize() with {Parts=selected,DamagedParts=DamagedParts&selected,CheapParts=CheapParts&selected,IntegratedParts=IntegratedParts&selected,DefenseFlag=selected==RobotParts.Complete?DefenseFlag:null};
     }
     public int LastBattlePersuasionTurn {get;init;}=-1;
     public int LastDomesticPersuasionTurn {get;init;}=-1;
