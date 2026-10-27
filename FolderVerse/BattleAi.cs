@@ -93,7 +93,7 @@ public static class BattleAi
         var forward=BattleState.Forward(facing);
         for(int i=1;i<battle.BoardSize;i++)
         {
-            var p=unit.Position+new Point(forward.X*i,forward.Y*i);if(battle.BlocksShot(p))break;if(i==1)continue;
+            var p=unit.Position+new Point(forward.X*i,forward.Y*i);if(battle.BlocksShot(p,facing,i))break;if(i==1)continue;
             var target=battle.Units.FirstOrDefault(u=>u.Active && u.Position==p);if(target!=null)return target;
         }
         return null;

@@ -25,6 +25,25 @@ sealed class EffectsGame:Game1{
   var mixed=Supplies(empty with {Shields=2,Daggers=1});Check(!mixed.Where((p,i)=>i%120>=60).Any(p=>p.A>0),"Mixed counters compact remaining nonzero equipment");
   Check(Supplies(empty with {Shields=2,Fallen=true}).All(p=>p.A==0) && Supplies(empty with {Rifles=3,Retreated=true}).All(p=>p.A==0),"Fallen and retreated counters remain hidden");
   Console.WriteLine("PASS: zero equipment icons/numbers/background hidden, nonzero supplies retained and compacted.");
+  // Nine direction codes, unlit above / passing-shot glow below.
+  var ui=(UiPainter)Get("_ui");var viewport=GraphicsDevice.Viewport;
+  using(var ports=new RenderTarget2D(GraphicsDevice,900,200)){
+   GraphicsDevice.SetRenderTarget(ports);GraphicsDevice.Clear(new Color(24,43,51));batch.Begin(samplerState:SamplerState.PointClamp);
+   for(int code=0;code<9;code++)for(int row=0;row<2;row++){
+    var tile=new Rectangle(code*100,row*100,98,98);BattleObstacleArt.Draw(ui,tile,BattleObstacleStyle.Tree);
+    var state=new BattleState(1);state.Walls.Add(Point.Zero);state.WallShotDirections[Point.Zero]=code;
+    foreach(BattleFacing facing in Enum.GetValues<BattleFacing>())if(state.WallPassesShot(Point.Zero,facing)){
+     var step=BattleState.Forward(facing);BattleObstacleArt.DrawShotMarker(ui,new Vector2(tile.Center.X+step.X*39,tile.Center.Y+step.Y*39),facing,row);
+    }
+   }
+   batch.End();GraphicsDevice.SetRenderTarget(null);GraphicsDevice.Viewport=viewport;
+   var portPixels=new Color[900*200];ports.GetData(portPixels);
+   for(int code=0;code<9;code++){
+    bool changed=Enumerable.Range(0,100*100).Any(i=>portPixels[(i/100)*900+code*100+i%100]!=portPixels[(100+i/100)*900+code*100+i%100]);
+    Check(changed==(code!=0),"Only directional wall markers glow");
+   }
+   using var file=File.Create(Path.Combine(AppContext.BaseDirectory,"wall-shot-directions.png"));ports.SaveAsPng(file,900,200);
+  }
   var w=(WorldSetup)Get("_setup");w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);
   battle=new BattleState(1){TargetNode=w.Nodes.Current(0).Id,Defender=0,Kind=BattleKind.Edge};
   battle.Armies.Add(new(){Owner=0,Side=0});

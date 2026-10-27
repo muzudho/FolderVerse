@@ -16,6 +16,17 @@ public static class BattleObstacleArt
         2=>new(board.Left,board.Bottom,board.Width,thickness),
         _=>new(board.Left-thickness,board.Top,thickness,board.Height)
     };
+    public static void DrawShotMarker(UiPainter ui,Vector2 center,BattleFacing facing,float glow)
+    {
+        var p=BattleState.Forward(facing);var forward=new Vector2(p.X,p.Y);
+        float angle=MathF.Atan2(p.Y,p.X);
+        if(glow>0){ui.Tile(center,new(30,30),MathHelper.PiOver4,new Color(255,224,101)*(glow*.45f));}
+        // Scan lines form a small, outlined triangle pointing toward the exit.
+        for(int i=0;i<14;i++){
+            ui.Tile(center+forward*(i-6),new(1,19-i*1.25f),angle,new Color(20,30,35));
+            if(i>1 && i<12)ui.Tile(center+forward*(i-6),new(1,Math.Max(1,14-i)),angle,Color.Lerp(new Color(255,207,86),Color.White,glow));
+        }
+    }
     public static void Draw(UiPainter ui,Rectangle tile,BattleObstacleStyle style)
     {
         float scale=tile.Width/66f;var center=new Vector2(tile.Center.X,tile.Center.Y);
