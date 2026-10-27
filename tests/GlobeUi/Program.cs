@@ -118,6 +118,28 @@ sealed class GlobeCheck:Game1
         var panel=new Rectangle(55,150,1600,800);
         var at=net.NodePosition(setup,target.Node,panel).ToPoint();int nearest=net.HitNode(setup,panel,at);
         if(nearest>=0)Check(net.HitNode(setup,panel,at,setup.Nodes.All.Where(n=>n.Id!=nearest).Select(n=>n.Id))==-1,"Net action must select the hovered node or nothing");
+        // Test the real marker renderer and pick both ends with the same geometry.
+        var previous=setup.Nodes.All.Select(n=>n.Owner).ToArray();int original=target.Node.Owner;
+        typeof(ConquestCampaign).GetProperty("PreviousNodeOwners")!.SetValue(setup.Campaign,previous);
+        target.Node.Owner=original==0?1:0;
+        net.VisibleOperationNodes=new HashSet<int>{target.Node.Id};
+        globe.ProjectVisible(setup.Routes.Position(target.Node.Cell,target.Node.Center)+setup.Cells[target.Node.Cell].U,setup.Cells[target.Node.Cell].Normal,(float)typeof(Game1).GetProperty("_yaw",Flags)!.GetValue(this)!,(float)typeof(Game1).GetProperty("_pitch",Flags)!.GetValue(this)!,area,out var unit);
+        float radius=MathHelper.Clamp(Vector2.Distance(target.Point.ToVector2(),unit)*.06f,4,10);if(target.Node.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
+        var small=NodeOwnershipArt.PreviousCenter(target.Point.ToVector2(),radius).ToPoint();
+        Check(Hit(target.Point)==target.Node.Id && Hit(small)==target.Node.Id,"Both ownership circles pick the same globe node");
+        net.HoveredNode=target.Node.Id;Check(Hit(small)==target.Node.Id,"Hover does not move the old-owner hit area");net.HoveredNode=-1;
+        float netRadius=MathHelper.Clamp(net.Fit(panel).Scale*.06f,4,10);if(target.Node.IsHarbor)netRadius=MathHelper.Clamp(netRadius*1.7f,12,20);
+        var smallNet=NodeOwnershipArt.PreviousCenter(net.NodePosition(setup,target.Node,panel),netRadius).ToPoint();
+        Check(net.HitNode(setup,panel,smallNet)==target.Node.Id,"Old-owner circle picks the same net node");
+        net.VisibleOperationNodes=null;target.Node.Owner=original;typeof(ConquestCampaign).GetProperty("PreviousNodeOwners")!.SetValue(setup.Campaign,Array.Empty<int>());
+        var ui=(UiPainter)Get("_ui");var batch=(SpriteBatch)Get("_spriteBatch");var viewport=GraphicsDevice.Viewport;
+        using(var image=new RenderTarget2D(GraphicsDevice,600,170)){
+            GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(new Color(24,43,51));batch.Begin(samplerState:SamplerState.PointClamp);
+            for(int i=0;i<3;i++)NodeOwnershipArt.Draw(ui,new Vector2(140+i*190,85),new[]{4f,10f,20f}[i],Color.Red,Color.CornflowerBlue,new Color(13,36,44));
+            batch.End();GraphicsDevice.SetRenderTarget(null);GraphicsDevice.Viewport=viewport;
+            using var file=File.Create(Path.Combine(AppContext.BaseDirectory,"ownership-transition.png"));image.SaveAsPng(file,600,170);
+        }
+        Console.WriteLine("PASS: ownership twin-circle picking, stable hover and marker rendering.");
         Console.WriteLine("PASS: node marker priority, hover/action identity and robot gaps.");
     }
     protected override void Update(GameTime time)

@@ -310,10 +310,10 @@ public partial class Game1 : Game
             else if(click && NetButton(4).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
             else if(click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
             else if(click && !pan && !_net.IsAnimating && _net.ClickEdge()){RecordTutorialMapEdge();}
-            else if(click && !pan && !_movementOpen && !_net.IsAnimating && _statusCell>=0)
+            else if(click && !pan && !_movementOpen && !_net.IsAnimating && (_statusCell>=0 || _net.ShowRoutes))
             {
                 if(!_net.ShowRoutes)OpenRegionInspector(_statusCell);
-                var point=_net.MicroPoint(_setup,_statusCell,NetPanel,_pointer);int hit=_net.ShowRoutes?_net.HitNode(_setup,NetPanel,_pointer):-1;var post=hit>=0?_setup.Nodes.All[hit]:null;
+                int hit=_net.ShowRoutes?_net.HitNode(_setup,NetPanel,_pointer):-1;var post=hit>=0?_setup.Nodes.All[hit]:null;
                 if(post!=null)
                 {OpenNodeInspector(post.Id);}
             }

@@ -6,6 +6,8 @@ using System.Linq;
 public sealed record March(int Ruler,int TargetNode,long Fighters,int SourceNode=-1,bool Queen=true,bool PocketOnly=false,long[] RobotIds=null,bool Peaceful=false);
 public sealed class ConquestCampaign
 {
+    public int[] PreviousNodeOwners {get;private set;}=Array.Empty<int>();
+    public bool OwnershipChanged(Node node)=>PreviousNodeOwners!=null && node.Id<PreviousNodeOwners.Length && PreviousNodeOwners[node.Id]!=node.Owner;
     public bool UseRobotCombat {get;set;}=true;
     public RobotCampaign RobotBattles {get;}=new();
     public string Report {get;private set;}="";
@@ -46,7 +48,7 @@ public sealed class ConquestCampaign
     }
     public int[] Submitted=>_submitted.OrderBy(r=>r).ToArray();
     public bool AwaitingPlayers=>_submitted.Count>0;
-    public void Reset(){Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
+    public void Reset(){PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
     public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false)
     {
         world.Robots.PersuadeAtHome(world);
@@ -108,6 +110,7 @@ public sealed class ConquestCampaign
     }
     public void Resolve(WorldSetup world,IReadOnlyList<March> orders)
     {
+        PreviousNodeOwners=world.Nodes.All.Select(n=>n.Owner).ToArray();
         if(UseRobotCombat)
         {
             RobotBattles.Advance(world,orders);

@@ -177,3 +177,18 @@ Console.WriteLine("PASS: leader and nested subordinate actions commit one shared
     if(world.Campaign.PlannedOrders.Count!=1 || world.Campaign.PlannedOrders[0].Queen)throw new Exception("Battery cancellation removed hangar order");
     Console.WriteLine("PASS: independent battery/hangar reservations, shared edge encounter, pocket-only troops and physical node invariants");
 }
+
+{
+ void Check(bool ok,string message){if(!ok)throw new Exception(message);}
+ var world=new WorldSetup();world.SetWorld(0);world.SetCast(123);world.SetPlacement(456);world.SelectPlayer(0);
+ world.Salvage.Reset();world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);var node=world.Nodes.All[0];
+ Check(!world.Campaign.OwnershipChanged(node),"New world has no ownership history");
+ world.Campaign.Resolve(world,Array.Empty<March>());int before=node.Owner;node.Owner=before==0?1:0;
+ Check(world.Campaign.OwnershipChanged(node) && world.Campaign.PreviousNodeOwners[node.Id]==before,"History retains owner at start of global turn");
+ var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(world));
+ Check(restored.Campaign.OwnershipChanged(restored.Nodes.All[node.Id]),"Ownership transition survives save/resume");
+ world.Campaign.Resolve(world,Array.Empty<March>());
+ Check(!world.Campaign.OwnershipChanged(node),"Unchanged next turn clears previous transition");
+ world.Campaign.Reset();Check(!world.Campaign.OwnershipChanged(node),"Reset clears history");
+ Console.WriteLine("PASS: ownership transition snapshot, save/resume, next-turn expiry and reset.");
+}
