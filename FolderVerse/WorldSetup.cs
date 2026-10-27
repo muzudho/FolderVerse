@@ -61,15 +61,30 @@ public sealed partial class WorldSetup
         if(count<1 || count>GameLimits.MaxPlayers)throw new ArgumentOutOfRangeException(nameof(count));
         PlayerCount=count;HumanPlayers.Clear();
     }
-    public int[] ManualRulers()=>HumanPlayers.Count==0?Relations.Party(this):
-        Enumerable.Range(0,ActiveCount).Where(r=>Relations.CanAct(r) &&
-            HumanPlayers.Any(h=>r==h || !HumanPlayers.Contains(r) && Relations.Root(r)==h))
-            .OrderBy(r=>HumanPlayers.FindIndex(h=>r==h || Relations.Root(r)==h)).ThenBy(r=>r).ToArray();
+    // The nearest human ancestor owns the controls, even inside another human's faction.
+    public int ControllerOf(int ruler)
+    {
+        if(ruler<0 || ruler>=ActiveCount)return -1;
+        for(int step=0,current=ruler;step<ActiveCount && current>=0;step++,current=Relations.Superiors[current])
+            if(HumanPlayers.Count>0?HumanPlayers.Contains(current):current==Relations.Leader)return current;
+        return -1;
+    }
+    public int TurnPlayer=>ControllerOf(PlayerSlot) is var controller && controller>=0?controller:PlayerSlot;
+    public int[] ControlledParty(int player)=>Relations.Forest(this).Where(e=>ControllerOf(e.Ruler)==player && Relations.CanAct(e.Ruler)).Select(e=>e.Ruler).ToArray();
+    public int[] ManualRulers()=>Relations.Forest(this).Where(e=>ControllerOf(e.Ruler)>=0 && Relations.CanAct(e.Ruler))
+        .OrderBy(e=>HumanPlayers.Count==0?0:HumanPlayers.IndexOf(ControllerOf(e.Ruler))).Select(e=>e.Ruler).ToArray();
+    public int[] TurnPlayers()=>HumanPlayers.Count==0?new[]{TurnPlayer}:HumanPlayers.Where(h=>ControlledParty(h).Length>0).ToArray();
     public void SelectTurnRuler(int ruler)
     {
-        if(HumanPlayers.Count==0){SelectPlayer(ruler);return;}
-        int leader=HumanPlayers.Contains(ruler)?ruler:HumanPlayers.FirstOrDefault(h=>Relations.Root(ruler)==h,ruler);
-        Relations.Leader=leader;SelectPlayer(ruler);Relations.Leader=leader;
+        int controller=ControllerOf(ruler);
+        if(controller<0)controller=ruler;
+        SelectPlayer(ruler);Relations.Leader=controller;
+    }
+    public bool SelectControlledRuler(int ruler)
+    {
+        int player=TurnPlayer;
+        if(!ControlledParty(player).Contains(ruler))return false;
+        SelectPlayer(ruler);Relations.Leader=player;return true;
     }
     public int PlayerSlot { get; private set; } = -1;
     public PopulationSimulation Population {get;}=new();

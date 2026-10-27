@@ -28,7 +28,7 @@ public partial class Game1
         overlay=_seedDialog.IsOpen?"SeedDialog":_movementOpen?"Movement":_populationCell>=0?(_nodeAssemblyOpen?"RobotAssembly":_nodeDisposalOpen?"RobotDisposal":_nodeTransportOpen?"RobotTransport":_nodeFactoryOpen?"RobotFactory":"NodeDialog"):"None",
         view=_statusGlobe?"Globe":"Net",layer=_net.ShowRoutes?"Traffic":"Grid",mapSymbols=_net.ShowMapSymbols,equator=_net.ShowEquator,robots=_net.ShowRobots,otherCountries=_net.ShowOtherCountries,batteries=_net.ShowBatteries,
         worldSeed=_setup.WorldSeed,castSeed=_setup.CastSeed,placementSeed=_setup.PlacementSeed,
-        turn=_setup.Population.Turn,player=_setup.PlayerSlot,selectedMoveNode=_selectedMoveNode,escort=_escort,
+        turn=_setup.Population.Turn,player=_setup.PlayerSlot,turnPlayer=_setup.TurnPlayer,factionPicker=_factionPickerOpen,selectedMoveNode=_selectedMoveNode,escort=_escort,
         currentNode=_setup.PlayerSlot>=0 && _setup.PlayerSlot<_setup.ConquerorLocations.Length && _setup.PlayerSlot<_setup.ConquerorPoints.Length && _setup.Nodes.All.Length>0?_setup.Nodes.Current(_setup.PlayerSlot)?.Id:null,
         plannedOrders=_setup.Campaign.PlannedOrders.ToArray(),warPlanning=_warPlanning,
         hoveredNode=_net.HoveredNode,hoveredBattery=_net.HoveredBattery,invasionPicker=_invasionPicker,invasionDraft=_invasionDraft.OrderBy(id=>id).ToArray(),

@@ -20,7 +20,7 @@ Set("_pointer",new Point(1200,400));var right=new MouseState(1200,400,0,ButtonSt
 void worldCheck(){w.Relations.SetSuperior(1,0);w.Relations.SetSuperior(2,1);Call("RouteLayerClick",new Point(1400,100));Call("RouteLayerClick",new Point(1400,258));
 if(!n.ControlledCountryColors || !w.Relations.Controls(2) || w.Relations.Controls(3))throw new Exception("Controlled color scope");
 foreach(var surface in w.Cells){int ruler=w.Nodes.FullOwner(surface.Id);if(ruler<0)continue;var expected=w.Relations.Controls(ruler)?WorldPreview.LandTerritoryColor(w.OwnerColor(ruler),WorldTerrain.Kind(.6f)):WorldTerrain.ColorAt(.6f,surface.Normal);if(n.TerrainColor(w,surface.Id,.6f)!=expected)throw new Exception("Foreign territory tinted");}
-Call("SwitchControlledRuler",new Point(500,110));if(w.PlayerSlot==0 || w.Relations.Leader!=0)throw new Exception("Subordinate control switch failed");
+Call("SelectOperationRuler",1);if(w.PlayerSlot==0 || w.Relations.Leader!=0)throw new Exception("Subordinate control switch failed");
 }
 Set("_statusGlobe",false);Set("_populationCell",-1);Set("_previousMouse",new MouseState());
 void PanInput(int x,int y,ButtonState right)=>Call("HandleInput",new MouseState(x,y,0,ButtonState.Released,ButtonState.Released,right,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(),true);

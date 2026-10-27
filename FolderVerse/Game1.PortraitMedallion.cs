@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
     private Texture2D _medallionRing;
-    private Color _medallionColor;
+    private readonly Dictionary<Color,Texture2D> _medallionRings=new();
     private const float MedallionNameRadius=132; // Lettering moved outward by 2 px; the metal ring stays in place.
     private const float MedallionBandWidth=22*1.2f;
     private const float MedallionBandInner=132-MedallionBandWidth/2;
@@ -19,8 +19,7 @@ public partial class Game1
     private const float MedallionLetterGap=MathHelper.Pi/36; // Extra five degrees between glyph bounds.
     private static string MedallionName(string fullName)=>string.Join(" ",fullName.Replace('・',' ').Split(new[]{' ','　'},StringSplitOptions.RemoveEmptyEntries));
     private void DrawPortraitMedallion(Vector2 center,Color nation){
-        if(_medallionRing==null || _medallionColor!=nation){
-            _medallionRing?.Dispose();DisposeMedallionLetters();_medallionColor=nation;
+        if(!_medallionRings.TryGetValue(nation,out _medallionRing)){
             int size=(int)MathF.Ceiling(MedallionRadius)*2+2;var pixels=new Color[size*size];
             var surface=Color.Lerp(nation,new Color(246,241,226),.52f);
             for(int y=0;y<size;y++)for(int x=0;x<size;x++){
@@ -34,7 +33,7 @@ public partial class Game1
                 float coverage=Math.Min(Math.Clamp(r-MedallionPortraitRadius+.5f,0,1),Math.Clamp(MedallionRadius+.5f-r,0,1));
                 pixels[y*size+x]=ink*coverage;
             }
-            _medallionRing=new Texture2D(GraphicsDevice,size,size);_medallionRing.SetData(pixels);
+            _medallionRing=new Texture2D(GraphicsDevice,size,size);_medallionRing.SetData(pixels);_medallionRings.Add(nation,_medallionRing);
         }
         _spriteBatch.Draw(_medallionRing,center-new Vector2(_medallionRing.Width*.5f),Color.White);
     }

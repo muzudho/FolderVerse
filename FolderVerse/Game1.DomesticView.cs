@@ -32,7 +32,7 @@ public partial class Game1
     private void ResetInspector(){
         _salvageMapTarget=-1;_salvageCatalogOpen=false;_mapOverlayMenu=false;_salvagePlan=false;_hangarAbandonMode=false;_salvageAbandonConfirmation=null;
         if(_salvageRoutesBefore.HasValue){_net.ShowRoutes=_salvageRoutesBefore.Value;_salvageRoutesBefore=null;}
-        _inspectorFoldersOpen=false;_strategyRuler=-1;
+        _inspectorFoldersOpen=false;_strategyRuler=-1;_factionPickerOpen=false;
         _nodeOfficeOpen=false;
         if(_routesBeforeRegionInspector.HasValue){_net.ShowRoutes=_routesBeforeRegionInspector.Value;_routesBeforeRegionInspector=null;}
         _regionCell=-1;
@@ -57,7 +57,7 @@ public partial class Game1
             _ui.Button(StrategyToggle,"わたしの国",Accent,.45f);
             var warLabel=WarReservationLabel;_ui.Button(WarButton,warLabel,Accent,Math.Min(.55f,(WarButton.Width-12)/_font.MeasureString(warLabel).X));
             if(TransportOverviewAllowed){_ui.Button(TransportOverviewButton,"ロボット輸送長期計画",Accent,.42f);}
-            _ui.Button(PopulationTurnButton,"ターン終了",Accent,.8f);return;
+            _ui.Button(PopulationTurnButton,"陣営のターン終了",Accent,.48f);return;
         }
         var r=InspectorHandle;
         _ui.Box(new(r.X+4,r.Y+5,r.Width,r.Height),new Color(5,17,28));_ui.Box(r,_setup.OwnerColor(_setup.PlayerSlot));
@@ -97,12 +97,23 @@ public partial class Game1
 
         return false;
     }
+    private Vector2 PlayerMedallionCenter=>new(ReignPortrait.Center.X+(InspectorVisible?(int)(960*_domesticSlide):0),ReignPortrait.Center.Y);
+    private Vector2 OperationMedallionCenter=>PlayerMedallionCenter+new Vector2(_setup.PlayerSlot==_setup.TurnPlayer?0:320,0);
     private void DrawDomesticPortrait()
     {
-        var r=ReignPortrait;if(InspectorVisible)r.Offset((int)(960*_domesticSlide),0);var center=new Vector2(r.Center.X,r.Center.Y);
-        DrawPortraitMedallion(center,_setup.OwnerColor(_setup.PlayerSlot));
+        int player=_setup.TurnPlayer;DrawRulerMedallion(player,PlayerMedallionCenter);
+        _ui.Center(_setup.PlayerSlot==player?"あなたの陣営 / 操作中":"あなたの陣営のターン",new((int)PlayerMedallionCenter.X-145,650,290,30),.36f,Cream);
+        if(_setup.PlayerSlot!=player){
+            DrawRulerMedallion(_setup.PlayerSlot,OperationMedallionCenter);
+            _ui.Center("操作中の手下",new((int)OperationMedallionCenter.X-145,650,290,30),.36f,Cream);
+        }
+        if(FactionTree().Length>1)_ui.Button(FactionPickerButton,"▼",Accent,.65f);
+    }
+    private void DrawRulerMedallion(int ruler,Vector2 center)
+    {
+        var r=new Rectangle((int)center.X-120,(int)center.Y-120,240,240);
+        DrawPortraitMedallion(center,_setup.OwnerColor(ruler));
         var image=new Rectangle((int)(center.X-MedallionPortraitRadius),(int)(center.Y-MedallionPortraitRadius),(int)(MedallionPortraitRadius*2),(int)(MedallionPortraitRadius*2));
-        // Clip the portrait to a circular silhouette using horizontal scissor strips.
         var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _spriteBatch.End();var old=GraphicsDevice.ScissorRectangle;
         using(var clip=new RasterizerState{ScissorTestEnable=true}){
@@ -110,12 +121,10 @@ public partial class Game1
                 int half=(int)MathF.Sqrt(Math.Max(0,MedallionPortraitRadius*MedallionPortraitRadius-y*y));
                 GraphicsDevice.ScissorRectangle=new(canvas.X+(int)((r.Center.X-half)*canvas.Width/1920f),canvas.Y+(int)((r.Center.Y+y)*canvas.Height/1080f),Math.Max(1,(int)(half*2*canvas.Width/1920f)),Math.Max(1,(int)(2*canvas.Height/1080f)));
                 _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
-                _portraitRenderer.Draw(_spriteBatch,_setup.Looks[_setup.PlayerSlot],image);_spriteBatch.End();
+                _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],image,_setup.Relations.Powered[ruler]);_spriteBatch.End();
             }
         }
         GraphicsDevice.ScissorRectangle=old;_spriteBatch.Begin(transformMatrix:transform);
-        DrawPortraitMedallionName(center,_setup.ConquerorFullNames[_setup.PlayerSlot],_setup.OwnerColor(_setup.PlayerSlot));
-
-
+        DrawPortraitMedallionName(center,_setup.ConquerorFullNames[ruler],_setup.OwnerColor(ruler));
     }
 }

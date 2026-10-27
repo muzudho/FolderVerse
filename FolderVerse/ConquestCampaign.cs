@@ -53,7 +53,8 @@ public sealed class ConquestCampaign
     {
         world.Robots.PersuadeAtHome(world);
         Battles.Clear();
-        var orders=_plannedOrders.Where(o=>automaticAll || o.Ruler==world.PlayerSlot || world.HumanPlayers.Count==0 && !o.Queen).ToList();
+        int controller=world.TurnPlayer;var controlled=world.ControlledParty(controller).ToHashSet();
+        var orders=_plannedOrders.Where(o=>automaticAll || controlled.Contains(o.Ruler)).ToList();
         if(automaticAll){orders.AddRange(_partyOrders);_partyOrders.Clear();_submitted.Clear();}
         if(targetNode>=0)
         {
@@ -63,14 +64,15 @@ public sealed class ConquestCampaign
         _plannedOrders.RemoveAll(o=>orders.Contains(o));
         if(enemies)
         {
-            var party=world.ManualRulers();
+            var party=world.TurnPlayers();
             if(party.Length>1 && !automaticAll)
             {
-                _submitted.Add(world.PlayerSlot);_partyOrders.AddRange(orders);
+                _submitted.Add(controller);_partyOrders.AddRange(orders);
                 int next=party.FirstOrDefault(r=>!_submitted.Contains(r),-1);
                 if(next>=0){world.SelectTurnRuler(next);Report="次の担当の行動を選択 / 全員の行動後にターン確定";return;}
                 orders=_partyOrders.ToList();_partyOrders.Clear();_submitted.Clear();world.SelectTurnRuler(party[0]);
             }
+            if(!automaticAll && party.Length<=1)world.SelectTurnRuler(controller);
             var random=new SeedRandom(world.PlacementSeed^world.Population.Turn^0x57421);
             for(int ruler=0;ruler<world.ActiveCount;ruler++)
             {
