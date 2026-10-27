@@ -89,6 +89,27 @@ sealed class OverviewGame:Game1{
   for(int i=0;i<4;i++)Call("UpdateConquestOverview",.25d,false);Check((int)Get("_conquestStage")==1,"Hold lasts 1.5 seconds");
   for(int i=0;i<20 && (int)Get("_conquestStage")!=4;i++)Call("UpdateConquestOverview",.25d,false);
   Check((int)Get("_conquestStage")==4,"Opening and 1.5 second fade reach cards");
+  CheckPendingPortraits();
+ }
+ void CheckPendingPortraits(){
+  var presentation=(ConquestPresentation)Get("_conquestPresentation");int savedCard=(int)Get("_conquestCard");double savedAge=(double)Get("_conquestAge");
+  var revealed=(HashSet<int>)Get("_conquestRevealed");var savedRevealed=revealed.ToArray();
+  Set("_conquestCard",Array.FindIndex(presentation.Cards,c=>c.Ruler==0&&!c.Reminder));Call("SetConquestCard");revealed.Add(0);revealed.Add(1);
+  var batch=(SpriteBatch)Get("_spriteBatch");var viewport=GraphicsDevice.Viewport;
+  Color[] Render(double age){
+   Set("_conquestAge",age);using var target=new RenderTarget2D(GraphicsDevice,1920,1080);
+   GraphicsDevice.SetRenderTarget(target);GraphicsDevice.Clear(Color.Black);batch.Begin();Call("DrawConquestMosaic");batch.End();
+   GraphicsDevice.SetRenderTarget(null);GraphicsDevice.Viewport=viewport;var pixels=new Color[1920*1080];target.GetData(pixels);return pixels;
+  }
+  var pending=Render(0);
+  var oldLook=world.Looks[0];world.Looks[0]=world.Looks[1];var anonymous=Render(0);world.Looks[0]=oldLook;
+  var subject=((OverviewTile[])Get("_conquestTiles")).Single(t=>t.Slot==0).Bounds;
+  for(int y=subject.Top;y<subject.Bottom;y++)for(int x=subject.Left;x<subject.Right;x++)Check(pending[y*1920+x]==anonymous[y*1920+x],"Question-only placeholder must reveal no portrait or silhouette identity");
+  var resolved=Render(((ConquestTally)Get("_conquestTally")).FaceStart);
+  var previous=((OverviewTile[])Get("_conquestTiles")).Single(t=>t.Slot==1).Bounds;
+  for(int y=previous.Top;y<previous.Bottom;y++)for(int x=previous.Left;x<previous.Right;x++)Check(pending[y*1920+x]==resolved[y*1920+x],"Previously introduced portrait must not dim while another ruler is calculated");
+  Set("_conquestCard",savedCard);Call("SetConquestCard");Set("_conquestAge",savedAge);revealed.Clear();revealed.UnionWith(savedRevealed);
+  Console.WriteLine("PASS: only the calculation subject changes; previous portraits retain identical pixels.");
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
@@ -97,11 +118,19 @@ sealed class OverviewGame:Game1{
   Set("_conquestStage",frame switch{1=>1,6 or 7 or 8=>5,9 or 10=>6,11 or 12=>3,13=>8,_=>4});
   Set("_conquestAge",frame switch{0=>1.18,1=>.5,2=>tally.CountEnd+.75,3=>tally.ConvertStart+.1,4 or 5=>tally.RankStart+2,6=>0d,7=>.75d,8=>1.49999d,9=>0d,10=>.3d,11=>0d,12=>1.49d,13=>0d,14=>0d,15=>tally.CellsStart+.1,16=>tally.EntryStart+.1,17=>tally.ScoreStart+.1,18=>tally.RankStart+.1,19=>tally.FaceStart+.1,_=>0d});
   if(frame!=1 && frame<6 || frame>=14)Call("UpdateConquestOverview",0d,false);
-  if(frame>=14){Check(((HashSet<int>)Get("_conquestRevealed")).Contains(0)==(frame==19),"Portrait remains hidden until after provisional rank");}
+  if(frame>=14){Check(((HashSet<int>)Get("_conquestRevealed")).Contains(0)==(frame==19),"Full-color portrait remains unrevealed until after provisional rank");}
   if(frame==5){var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
   base.Draw(t);var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
   using(var texture=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight)){texture.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"conquest-{frame}.png"));texture.SaveAsPng(file,texture.Width,texture.Height);}
   var canvas=(Rectangle)Call("CanvasBounds");double brightness=0;
+  if(frame is 14 or 18 or 19){
+   var tile=((OverviewTile[])Get("_conquestTiles")).Single(x=>x.Slot==0).Bounds;
+   int brightest=0,dark=0,sampled=0,white=0;
+   for(int y=tile.Y+8;y<tile.Bottom-8;y+=3)for(int x=tile.X+8;x<tile.Right-8;x+=3){
+    int px=canvas.X+x*canvas.Width/1920,py=canvas.Y+y*canvas.Height/1080;var c=pixels[py*pp.BackBufferWidth+px];brightest=Math.Max(brightest,Math.Max(c.R,Math.Max(c.G,c.B)));sampled++;if(c.R<=28 && c.G<=35 && c.B<=48)dark++;if(c.R>240 && c.G>240 && c.B>240)white++;
+   }
+   Check(frame==19?brightest>100:white>sampled*.02 && dark>sampled*.4,"Pending portrait shows only the large white question mark on a dark background");
+  }
   for(int y=230;y<380;y+=5)for(int x=220;x<410;x+=5){int px=canvas.X+x*canvas.Width/1920,py=canvas.Y+y*canvas.Height/1080;var c=pixels[py*pp.BackBufferWidth+px];if(!(c.R>c.G*3 && c.R>c.B*2))brightness+=c.R+c.G+c.B;}
   if(frame==6){exitStart=brightness;Check(exitStart>0,"Outro begins from the globe already on screen");}
   if(frame==7){exitMiddle=brightness;Check(exitMiddle>0 && exitMiddle<exitStart*.65,"Outro darkens instead of fading back in");}

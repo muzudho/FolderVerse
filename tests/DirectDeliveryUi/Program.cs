@@ -19,6 +19,16 @@ class Checks:Game1{
   var node=w.Nodes.All.First(n=>!w.Routes.Land(n.Cell,n.Center) && w.Routes.Neighbors(n).Any(r=>!w.Routes.Land(w.Nodes.At(r.Target,r.Entry).Cell,w.Nodes.At(r.Target,r.Entry).Center)));var route=w.Routes.Neighbors(node).First(r=>!w.Routes.Land(w.Nodes.At(r.Target,r.Entry).Cell,w.Nodes.At(r.Target,r.Entry).Center));a=node.Id;b=w.Nodes.At(route.Target,route.Entry).Id;Check((bool)Call("DirectSeaRoute",a,b),"Sea connection uses ferry icon");foreach(var n in w.Nodes.All)n.Owner=1;w.Nodes.All[a].Owner=w.Nodes.All[b].Owner=0;w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);w.Robots.ConfigureFactories(w);
   var robot=w.Robots.Create(0,RobotParts.Complete);original=robot.Id;w.Robots.Nodes[a].Add(robot);w.Robots.Nodes[b].Add(w.Robots.Create(0,RobotParts.Legs));((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);
   Set("_statusGlobe",false);((CubeNet)Get("_net")).FitAll((Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!,1);Call("OpenDirectMap");
+  Rectangle Footer(string name)=>(Rectangle)typeof(Game1).GetProperty(name,F)!.GetValue(this)!;
+  var normal=Footer("PopulationTurnButton");Call("UpdateMapFooter",.125f);var midway=Footer("PopulationTurnButton");
+  Check(midway.Y>normal.Y && midway.Y<normal.Y+220,"Mode footer slides downward instead of disappearing immediately");
+  Call("UpdateMapFooter",.125f);Check(Footer("PopulationTurnButton").Top>=1080 && Footer("WarButton").Top>=1080 && ((Rectangle)Call("NetButton",2)).Top>=1080,"Bottom actions fully frame out");
+  Check((bool)Call("MapOverlayClick",normal.Center,false) && (bool)Get("_directMap"),"Hidden footer location consumes input without exiting direct mode");
+  var modeClose=(Rectangle)typeof(Game1).GetField("DirectMapCloseButton",BindingFlags.NonPublic|BindingFlags.Static)!.GetValue(null)!;
+  Check((bool)Call("MapOverlayClick",modeClose.Center,false) && !(bool)Get("_directMap"),"Close beside dropdown exits the delivery mode");
+  Call("UpdateMapFooter",.125f);Check(Footer("PopulationTurnButton").Y==midway.Y,"Footer slides back in on close");Call("UpdateMapFooter",.125f);
+  Check(Footer("PopulationTurnButton")==normal,"Footer returns to its exact original hit and draw bounds");Call("OpenDirectMap");Call("UpdateMapFooter",.25f);
+  Console.WriteLine("PASS: direct mode footer slides out/in, close button and hidden-button input.");
   Call("OpenDirectPair",a,b);
   var left=Cell(0,0);var right=Cell(1,0);
   Check(left.Right<600 && right.Left>1320,"Dedicated compact panes leave the center map open");
@@ -66,7 +76,7 @@ class Checks:Game1{
   if(frame==6){var trucks=(List<(Rectangle Bounds,int A,int B)>)Get("_directTrucks");Check(trucks.Count>0,"Selecting direct delivery restores truck markers");Call("DirectMapClick",trucks[0].Bounds.Center);Check((bool)Get("_directPairOpen"),"Selected overlay truck opens the pair");var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
   if(frame==7){Call("DirectPairInput",new MouseState(),false,true);Check(!(bool)Get("_directPairOpen") && (bool)Get("_directMap"),"Back retains the selected direct-delivery overlay");}
   if((bool)Get("_directPairOpen"))Set("_directPairSlide",1f);
-  base.Draw(t);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var tex=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);tex.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"direct-{frame}.png")))tex.SaveAsPng(file,tex.Width,tex.Height);
+  Call("UpdateMapFooter",.25f);base.Draw(t);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var tex=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);tex.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"direct-{frame}.png")))tex.SaveAsPng(file,tex.Width,tex.Height);
   if(frame==1){var hits=(System.Collections.IList)Get("_directTrucks");Check(hits.Count>0,"Visible adjacent edge has a truck");}
   if(frame++==7){Console.WriteLine("PASS: edge trucks, hidden ordinary-inspector markers, selected overlay opening and return, two hangars, reservations and rendering.");Exit();}
  }

@@ -79,7 +79,7 @@ public partial class Game1
         if(_nodeInspectorClosing && _domesticSlide==0){var node=_inspectorCenterNode;ResetInspector();QueueInspectorCenter(node);}
         if(layoutSettled)UpdateInspectorCenter(elapsed);
     }
-    private static readonly Rectangle ReignPortrait=new(56,700,240,240); private Rectangle StrategyToggle=>new(54,1006,242,64);
+    private static readonly Rectangle ReignPortrait=new(56,700,240,240); private Rectangle StrategyToggle=>MapFooterBounds(new(54,1006,242,64));
     private bool DomesticViewClick(Point p)
     {
         if(_trainingOpen || _supervisorDialog>0)return false;

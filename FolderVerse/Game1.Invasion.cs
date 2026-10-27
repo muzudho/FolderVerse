@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 public partial class Game1
 {
-    private Rectangle WarButton=>new(566,1006,200,64);
+    private Rectangle WarButton=>MapFooterBounds(new(566,1006,200,64));
     private bool _warPlanning;
     // A coordinated attack from several sources to one destination is one reservation.
     private int WarReservationCount=>_setup.Campaign.PlannedOrders.Where(o=>!o.Peaceful && CanPlanRuler(o.Ruler) && (o.Queen || o.Fighters>0) && EnemyTarget(o.TargetNode)).Select(o=>o.TargetNode).Distinct().Count();
