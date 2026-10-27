@@ -31,6 +31,7 @@ public partial class Game1
         turn=_setup.Population.Turn,player=_setup.PlayerSlot,selectedMoveNode=_selectedMoveNode,escort=_escort,
         currentNode=_setup.PlayerSlot>=0 && _setup.PlayerSlot<_setup.ConquerorLocations.Length && _setup.PlayerSlot<_setup.ConquerorPoints.Length && _setup.Nodes.All.Length>0?_setup.Nodes.Current(_setup.PlayerSlot)?.Id:null,
         plannedOrders=_setup.Campaign.PlannedOrders.ToArray(),warPlanning=_warPlanning,
+        hoveredNode=_net.HoveredNode,hoveredBattery=_net.HoveredBattery,invasionPicker=_invasionPicker,invasionDraft=_invasionDraft.OrderBy(id=>id).ToArray(),
         invasionSources=_invasionSources.Select(s=>new{s.Owner,s.Node,s.Queen,s.Selected,robots=s.Robots.OrderBy(id=>id).ToArray()}).ToArray(),
         homePersuasionActive=_homePersuasionActive,homePersuasionAge=_homePersuasionAge,
         focusedCell=_statusCell,populationNode=_populationNode,centerFace=_net.CenterFace,rotation=_net.Rotation,

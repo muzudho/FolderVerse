@@ -40,8 +40,9 @@ public sealed partial class CubeNet
         if(IsAnimating || !panel.Contains(pointer))return -1;
         var fit=Fit(panel);float radius=MathHelper.Clamp(fit.Scale*.06f,4,10)+4;
         var point=new Vector2(pointer.X,pointer.Y);
-        return (candidates??world.Nodes.All.Select(n=>n.Id)).Where(id=>NodeVisible(world,world.Nodes.All[id])).Select(id=>(Id:id,Distance:Vector2.DistanceSquared(NodePosition(world,world.Nodes.All[id],panel),point)))
+        int hit=world.Nodes.All.Select(n=>n.Id).Where(id=>NodeVisible(world,world.Nodes.All[id])).Select(id=>(Id:id,Distance:Vector2.DistanceSquared(NodePosition(world,world.Nodes.All[id],panel),point)))
             .Where(n=>n.Distance<=MathF.Pow(world.Nodes.All[n.Id].IsHarbor?Math.Max(radius,22):radius,2)).OrderBy(n=>n.Distance).ThenBy(n=>n.Id).Select(n=>n.Id).DefaultIfEmpty(-1).First();
+        return hit>=0 && (candidates==null || candidates.Contains(hit))?hit:-1;
     }
     public Point MicroPoint(WorldSetup world,int cell,Rectangle panel,Point pointer)
     {

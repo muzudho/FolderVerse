@@ -76,18 +76,23 @@ public partial class Game1
     private int HitGlobeNode(Point pointer,IEnumerable<int> candidates=null)
     {
         if(!MapViewBounds.Contains(pointer))return -1;
-        int badge=_net.HitRobotBadge(pointer);
-        if(badge>=0 && _net.NodeVisible(_setup,_setup.Nodes.All[badge]) && (candidates==null || candidates.Contains(badge)))return badge;
         int nearest=-1;float distance=float.PositiveInfinity;
-        foreach(var node in (candidates??_setup.Nodes.All.Select(n=>n.Id)).Select(id=>_setup.Nodes.All[id]).Where(n=>_net.NodeVisible(_setup,n)))
+        foreach(var node in _setup.Nodes.All.Where(n=>_net.NodeVisible(_setup,n)))
         {
             var cell=_setup.Cells[node.Cell];
             if(!_world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center),cell.Normal,_yaw,_pitch,StatusGlobeArea,out var at))continue;
             float candidate=Vector2.DistanceSquared(at,new(pointer.X,pointer.Y));
-            float radius=node.IsHarbor?22:12;
+            _world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center)+cell.U,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var unit);
+            float radius=MathHelper.Clamp(Vector2.Distance(at,unit)*.06f,4,10);
+            if(node.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
+            if(_net.EmphasizedNode(node.Id))radius*=2;
+            radius+=4; // Include the visible outline and a small pointer tolerance.
             if(candidate<=radius*radius && candidate<distance){nearest=node.Id;distance=candidate;}
         }
-        return nearest;
+        // Resolve the visible object first, then check whether the action permits it.
+        // Candidate filtering must never redirect a click to a neighboring node.
+        if(nearest<0){int badge=_net.HitRobotBadge(pointer);if(badge>=0 && _net.NodeVisible(_setup,_setup.Nodes.All[badge]))nearest=badge;}
+        return nearest>=0 && (candidates==null || candidates.Contains(nearest))?nearest:-1;
     }
     private void FocusStatusGlobe()
     {

@@ -20,8 +20,7 @@ public partial class Game1
             DrawRulebookHint($"電池 #{battery+1}・ポケット","現在地："+_setup.Nodes.DisplayName(_setup.Nodes.Current(battery))+" / ロボット "+robots.Count);
             return;
         }
-        if(!_net.ShowRoutes)return; int id=_net.HitRobotBadge(_pointer);
-        if(id<0)id=_statusGlobe?HitGlobeNode(_pointer):_net.HitNode(_setup,NetPanel,_pointer);if(id<0 || !_net.NodeVisible(_setup,_setup.Nodes.All[id]))return;
+        if(!_net.ShowRoutes)return; int id=_statusGlobe?HitGlobeNode(_pointer):_net.HitNode(_setup,NetPanel,_pointer);if(id<0 || !_net.NodeVisible(_setup,_setup.Nodes.All[id]))return;
         var node=_setup.Nodes.All[id];string name=_setup.Nodes.Label(node);
         string landmark="目印："+NodeLandmarks.At(_setup,id).Description;
         DrawRulebookHint(name,landmark+(_setup.Campaign.UseRobotCombat?" / ロボット "+_setup.Robots.Nodes[id].Robots.Count+"/12":""));
