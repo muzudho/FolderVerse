@@ -37,7 +37,7 @@ public partial class Game1
             }
             next.Robots.ConfigureFactories(next);ResetInspector();_setup=next;_tutorialAttackGuide=false;_tutorialAttackAchieved=next.TutorialStep==1 && _tutorialAchievements?.Has(TutorialAchievements.FirstAttack)==true;_domesticViews.Clear();foreach(var view in saved.Views)_domesticViews.Add(view.Key,view.Value);
             if(_tutorialAttackAchieved && !next.TutorialCompletionShown)next.TutorialCompletionPending=true;
-            if(next.TutorialStep==3 && next.TutorialMapStage<4)next.TutorialMapNotices&=~(1<<next.TutorialMapStage);
+            if(next.TutorialStep==3 && next.TutorialMapStage<4)next.TutorialMapNotices&=~(next.TutorialMapStage==2 && (next.TutorialMapRotations&8)==0?16:1<<next.TutorialMapStage);
             _autoPlay=_demoActive=false;_statusMenuOpen=false;_robotPlaying=false;_robotPendingFocus=-1;_robotPendingSummary=false;
             _battleAge=0;_notifiedTurn=(-1,-1);_screen=Screen.WorldStatus;
             _world.ShowSetup(_setup,true);_lastAutoSaveTurn=_setup.Population.Turn;RestoreDomesticCamera();OpenDisposition();
