@@ -57,3 +57,27 @@ roles.Reservations.CancelSource(0,0);roles.Reservations.Plan(new(0,1,1,0,true,Ro
 factory.ConfigureDisposal();factory.Dispose(roles.Nodes[0],partner.Id);Check(!roles.ToggleReservation(0,partner.Id,HangarReservation.Defense) && roles.Nodes[0].Robots.Single(r=>r.Id==partner.Id).Disposal,"Active disposal cannot be overwritten");
 roles.Reservations.RobotBattles.Encounters.Add(new(){Kind=BattleKind.Node,Target=0});Check(!roles.ToggleReservation(0,roleRobot.Id,HangarReservation.Disposal),"Ongoing node battle blocks overwrite");
 Console.WriteLine("PASS: all role replacements, same-role cancellation, failed replacement preservation, sortie membership/queen preservation and worker closure, active-work and battle locks.");
+
+{
+ var flagWorld=new WorldSetup();flagWorld.SetWorld(0);flagWorld.SetCast(123);flagWorld.SetPlacement(456);flagWorld.SelectPlayer(0);flagWorld.Relations.SetSuperior(1,0);
+ flagWorld.Robots.Initialize(flagWorld.Nodes.All.Length,flagWorld.ActiveCount);var jobs=flagWorld.Robots;flagWorld.Nodes.All[0].Owner=0;flagWorld.Nodes.All[1].Owner=1;jobs.ConfigureFactories(flagWorld);jobs.Training[1].DeploymentPolicy=1;
+ var mixed=jobs.Create(0,RobotParts.Complete) with {HeadOrigin=0,BodyOrigin=1,LegsOrigin=1};jobs.Nodes[0].Add(mixed);
+ Check(mixed.ShoeOwner<0,"Assembled complete robot is barefoot before reservation");
+ Check(jobs.ToggleReservation(0,mixed.Id,HangarReservation.Defense,1),"Present part country can reserve mixed defender");
+ var working=jobs.Nodes[0].Robots.Single();
+ Check(working.Owner==1 && working.ShoeOwner==1 && working.DefenseFlag==new DefenseFlagReservation(1,0,0),"Commander and host flag are recorded separately");
+ Check(working.HeadOrigin==0 && working.BodyOrigin==1 && working.LegsOrigin==1,"Flag changes shoes without recoloring parts");
+ Check(!jobs.ToggleReservation(0,mixed.Id,HangarReservation.Defense,0) && jobs.Nodes[0].Robots.Single()==working,"Another country cannot steal or cancel the first defense reservation");
+ Check(!jobs.ToggleReservation(0,mixed.Id,HangarReservation.Worker,0),"Other roles cannot bypass reservation commander");
+ var resumed=AutoSaveStore.Restore<RobotWorld>(AutoSaveStore.Capture(jobs)).Nodes[0].Robots.Single();Check(resumed.DefenseFlag==working.DefenseFlag && resumed.ShoeOwner==1,"Flag and shoes survive save");
+ var legacyFlagSave=AutoSaveStore.Capture(jobs);foreach(var entry in legacyFlagSave.Objects.Where(e=>e.Type.StartsWith("FolderVerse.Robot,")))entry.Fields.Remove("<DefenseFlag>k__BackingField");
+ Check(AutoSaveStore.Restore<RobotWorld>(legacyFlagSave).Nodes[0].Robots.Single().DefenseOnly,"Old saves without flag metadata remain readable");
+ Check(jobs.ToggleReservation(0,mixed.Id,HangarReservation.Defense,1) && jobs.Nodes[0].Robots.Single().ShoeOwner<0,"Reserving country cancels and removes shoes");
+ var partialRobot=jobs.Create(1,RobotParts.Legs);jobs.Nodes[0].Add(partialRobot);Check(!jobs.ToggleReservation(0,partialRobot.Id,HangarReservation.Defense,1) && partialRobot.ShoeOwner<0,"Incomplete robot cannot wear work shoes");
+ var foreign=jobs.Create(0,RobotParts.Complete);jobs.Nodes[0].Add(foreign);Check(!jobs.ToggleReservation(0,foreign.Id,HangarReservation.Defense,1),"No affiliated part means no defense reservation");
+ Check(jobs.ToggleReservation(0,mixed.Id,HangarReservation.Defense,1),"Can reserve again after cancellation");
+ var local=jobs.Create(1,RobotParts.Complete);jobs.Nodes[1].Add(local);jobs.ToggleReservation(1,local.Id,HangarReservation.Defense,1);
+ jobs.ReleaseDefenseFlag(0,0);Check(jobs.Nodes[0].Robots.Single(r=>r.Id==mixed.Id).ShoeOwner<0 && jobs.Nodes[1].Robots.Single().ShoeOwner==1,"Only reservations tied to the lost flag are released");
+ Check(RobotWorld.ValidateDefenseFlag(working,_=>2).ShoeOwner<0,"Defender returning after flag loss also loses reservation");
+ Console.WriteLine("PASS: barefoot assembly, mixed-country first claim, own-country cancellation, no-part/partial rejection, save compatibility and flag-specific release.");
+}

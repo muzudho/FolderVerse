@@ -8,6 +8,7 @@ public sealed partial class WorldSetup
     public int FortuneSeed {get;private set;}
     public void SetTerritoryRights(int seed)
     {
+        Salvage.Reset();
         if(seed<0)throw new ArgumentOutOfRangeException(nameof(seed));
         PlacementSeed=seed;PlayerSlot=-1;Relations.Reset();
         var random=new SeedRandom(seed);TerritoryRights=new int[CastCount];
@@ -58,6 +59,7 @@ public sealed partial class WorldSetup
         }
         for(int ruler=0;ruler<ActiveCount;ruler++)ConquerorPoints[ruler]=Nodes.Current(ruler).Center;
         Routes.RefreshDisplay();Campaign.Reset();LandPending=false;
+        Salvage.Initialize(this);
     }
 }
 

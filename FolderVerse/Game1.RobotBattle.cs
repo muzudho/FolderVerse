@@ -186,6 +186,20 @@ public partial class Game1
                 if(wall)BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(false,false,terrainHeight,_setup.Geographic(terrainCell.Normal).Y));
             }
         }
+        // Draw over terrain, using the same facing and turn as rifle playback.
+        foreach(var wall in battle.Walls)foreach(BattleFacing facing in Enum.GetValues<BattleFacing>())
+        {
+            if(!battle.WallPassesShot(wall,facing))continue;
+            var step=BattleState.Forward(facing);var forward=new Vector2(step.X,step.Y);
+            var center=new Vector2(left+wall.X*size+size/2,top+wall.Y*size+size/2)+forward*39;
+            float fraction=_robotPlaying?(float)Math.Clamp(_battleAge/RobotSeconds(_battleWave)-(frameIndex-RobotSlice(_battleWave).Start),0,1):.5f;
+            float progress=((frame.Phase==BattlePhase.Receive?1:0)+fraction)/2;
+            bool passed=(frame.Phase is BattlePhase.Attack or BattlePhase.Receive) && battle.Attacks.Any(a=>
+                a.Turn==frame.Turn && a.Weapon==BattleWeapon.Rifle && a.From+step==wall &&
+                (a.To.X-a.From.X)*step.X+(a.To.Y-a.From.Y)*step.Y>=2);
+            float glow=passed?Math.Clamp(1-progress/.55f,0,1):0;
+            BattleObstacleArt.DrawShotMarker(_ui,center,facing,glow);
+        }
         for(int line=0;line<=battle.BoardSize;line++){_ui.Box(new(left+line*size,top,2,size*battle.BoardSize),new Color(24,43,51));_ui.Box(new(left,top+line*size,size*battle.BoardSize,2),new Color(24,43,51));}
         foreach(var army in battle.Armies.Where(a=>a.Side<4))
         {
@@ -256,6 +270,7 @@ public partial class Game1
                 }
                 _ui.Box(area,color*pieceOpacity);
             }
+            if(physical?.ShoeOwner>=0)RobotWorkArt.DrawShoes(_ui,r,_setup.OwnerColor(physical.ShoeOwner),pieceOpacity);
             if(unit.Role==BattleRole.Queen)
             {
                 var glow=new Color(255,228,135)*opacity;

@@ -16,7 +16,7 @@ class Checks:Game1{
  Point Button(int i)=>((Rectangle)typeof(Game1).GetMethod("HangarReservationButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{i})!).Center;
  void Click(Point p){Set("_pointer",p);Call("NodeAssemblyLocalInput",new MouseState(),true,false);}
  protected override void LoadContent(){
-  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();w=(WorldSetup)Get("_setup");w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.SelectPlayer(0);w.Relations.Reset();Set("_conquestOverviewEnabled",false);Set("_conquestOverview",false);
+  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();w=(WorldSetup)Get("_setup");w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.SelectPlayer(0);w.Relations.Reset();w.SelectTurnRuler(0);Set("_conquestOverviewEnabled",false);Set("_conquestOverview",false);
   node=w.Nodes.All.First(n=>n.Terrain!=TravelTerrain.Sea);node.Owner=0;w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);w.Robots.ConfigureFactories(w);var factory=w.Robots.Workshops[node.Id];for(int seed=0;factory.ProductionLines.Length!=1;seed++)factory.GenerateLines(seed);
   for(int i=0;i<4;i++)w.Robots.Nodes[node.Id].Add(w.Robots.Create(0,RobotParts.Complete));first=w.Robots.Nodes[node.Id].Robots[0].Id;second=w.Robots.Nodes[node.Id].Robots[1].Id;
   ((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);Screen("WorldStatus");Call("OpenNodeInspector",node.Id);Call("UpdateDomesticSlide",1f);

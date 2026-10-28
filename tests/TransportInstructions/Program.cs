@@ -71,7 +71,7 @@ sealed class InstructionsGame:Game1{
   if(frame==0){var hits=(List<(Rectangle Bounds,int Source,int Target,Vector2 Start,Vector2 End)>)Get("_transportRouteHits");var hit=hits.First(h=>h.Source==source);var p=((hit.Start+hit.End)/2).ToPoint();Call("TransportOverviewClick",p);Check((int)Get("_populationNode")==source && (int)Get("_rateTarget")==-1,"Throughput arrow opens source plan rather than rate pie");}
   if(frame++>=7){
    var owner=setup.Nodes.All[source].Owner;foreach(var rule in setup.Robots.Transport.Instructions(source,owner).ToArray())setup.Robots.Transport.DeleteInstruction(source,owner,rule.Number);
-   Set("_demoDomesticStage",2);Set("_demoDomesticAge",0d);Call("UpdateDemoDomestic",1.81d);Check(setup.Robots.Transport.Instructions(source,owner).Single().Limit==2,"Demo creates a concrete two-unit instruction");
+   Set("_demoDomesticStage",2);Set("_demoDomesticAge",0d);Call("UpdateDemoDomestic",1.81d);Check(!setup.Robots.Transport.Instructions(source,owner).Any(),"Demo preserves the real transport plan without inventing orders");
    Console.WriteLine("PASS: shared instruction UI, quantity keypad, alternatives, adjacent modal picking, adoption pie, 16 orders, pages, throughput arrows and small-window rendering.");Exit();}
  }
 }

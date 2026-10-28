@@ -2,7 +2,7 @@ using FolderVerse;
 using Microsoft.Xna.Framework;
 using System.Reflection;
 static void Check(bool ok,string text){if(!ok)throw new Exception(text);}
-static BattleState Board(BattleKind kind=BattleKind.Edge){var b=new BattleState(42,new(){NoWillTurns=100,PersuasionPercent=0}){Kind=kind,Defender=1};b.Armies.Add(new(){Owner=0,HomeNode=0,Side=0});b.Armies.Add(new(){Owner=1,HomeNode=1,Side=2});return b;}
+static BattleState Board(BattleKind kind=BattleKind.Edge){var b=new BattleState(42,new(){NoWillTurns=100,PersuasionPercent=0}){Kind=kind,Defender=1,BoardSize=10,Flag=new(5,5)};b.Armies.Add(new(){Owner=0,HomeNode=0,Side=0});b.Armies.Add(new(){Owner=1,HomeNode=1,Side=2});return b;}
 static BattleUnit Unit(BattleState b,long id,int owner,int x,int y,BattleFacing facing=BattleFacing.South){var u=new BattleUnit{Id=id,Owner=owner,Position=new(x,y),Facing=facing,Robot=new(id,owner,RobotParts.Complete)};b.Units.Add(u);return u;}
 static void Turn(BattleState b,params (BattleUnit Unit,Point Step,BattleFacing Face,BattleWeapon Weapon)[] changes){var a=b.Units.Where(u=>u.Active).ToDictionary(u=>u.Id,u=>new BattleAction(Point.Zero,u.Facing));foreach(var c in changes)a[c.Unit.Id]=new(c.Step,c.Face,c.Weapon);BattleTurnResolver.Advance(b,a);}
 var b=Board(BattleKind.Node);var north=Unit(b,10001,0,5,4);var east=Unit(b,10002,0,6,5);var west=Unit(b,10003,0,4,5);var enemy=Unit(b,10004,1,9,9);var departed=Unit(b,10005,1,0,0);departed.Retreated=true;
@@ -14,7 +14,7 @@ var ledger=new BattleLessons();north.Fallen=true;ledger.BringHome(north);Check(l
 
 // Reproduce the reported case using normal AI and no defending robots.
 foreach(bool trained in new[]{false,true}){
- var emptyFort=new BattleState(42,new(){NoWillTurns=2,PersuasionPercent=0}){Kind=BattleKind.Node,Defender=1};emptyFort.Armies.Add(new(){Owner=0,HomeNode=0});emptyFort.Armies.Add(new(){Owner=1,HomeNode=1,Side=2});
+ var emptyFort=new BattleState(42,new(){NoWillTurns=2,PersuasionPercent=0}){Kind=BattleKind.Node,Defender=1,BoardSize=10,Flag=new(5,5)};emptyFort.Armies.Add(new(){Owner=0,HomeNode=0});emptyFort.Armies.Add(new(){Owner=1,HomeNode=1,Side=2});
  Unit(emptyFort,10101,0,5,4);Unit(emptyFort,10102,0,6,5);Unit(emptyFort,10103,0,4,5);if(trained)emptyFort.Lessons[0]=BattleLesson.FlagCourtesy;
  for(int i=0;i<30 && !emptyFort.Finished;i++)BattleTurnResolver.Advance(emptyFort);
  Check(emptyFort.Finished,"Empty-fort AI battle terminates");
@@ -88,3 +88,16 @@ Console.WriteLine("PASS: fourth lesson actual sideways hit, rear/no-dagger exclu
 
 var delayed=Board();var delayedVictim=Unit(delayed,23001,0,5,5,BattleFacing.North);var delayedGun=Unit(delayed,23002,1,5,1,BattleFacing.South);var delayedKnife=Unit(delayed,23003,1,6,5);delayedKnife.Rifles=0;var delayedWitness=Unit(delayed,23004,0,0,8);
 Turn(delayed,(delayedVictim,Point.Zero,BattleFacing.East,BattleWeapon.Dagger));Check((delayedWitness.WitnessedLessons&BattleLesson.LeaveFiringLine)==0,"Merely swinging in a line without an actual rifle hit does not award lesson four");
+
+foreach(bool trained in new[]{false,true}){
+ var duel=Board();duel.BoardSize=13;var attacker=Unit(duel,60001,0,3,5,BattleFacing.East);var defender=Unit(duel,60002,1,6,5,BattleFacing.West);
+ if(trained)duel.Lessons[0]=BattleLesson.CloseForDagger;
+ var action=BattleAi.Choose(duel,attacker);
+ Check(action.Step==(trained?new Point(1,0):Point.Zero) && action.Weapon==BattleWeapon.None && action.Facing==BattleFacing.East,"Lesson six advances into shielded standoff");
+ BattleTurnResolver.Advance(duel);
+ if(!trained){Check((attacker.WitnessedLessons&BattleLesson.CloseForDagger)!=0,"Unresolved standoff is witnessed");var learned=new BattleLessons();attacker.Retreated=true;learned.BringHome(attacker);Check(learned.Research().Any(a=>a.Lesson==BattleLesson.CloseForDagger),"Survivor brings sixth lesson home");}
+ else{BattleTurnResolver.Advance(duel);action=BattleAi.Choose(duel,attacker);Check(action.Weapon==BattleWeapon.Dagger,"Approach ends with dagger at adjacent range");}
+}
+var unarmedDuel=Board();var noKnife=Unit(unarmedDuel,60101,0,3,5,BattleFacing.East);Unit(unarmedDuel,60102,1,6,5,BattleFacing.West);noKnife.Daggers=0;unarmedDuel.Lessons[0]=BattleLesson.CloseForDagger;
+Check(BattleAi.Choose(unarmedDuel,noKnife).Step==Point.Zero,"Lesson six cannot charge without a dagger");
+Console.WriteLine("PASS: lesson six standoff, survivor research, frontal approach, adjacent dagger and no-dagger exclusion.");

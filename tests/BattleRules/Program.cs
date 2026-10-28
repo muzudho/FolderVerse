@@ -23,6 +23,22 @@ b=Board();a=Unit(b,1,0,4,3,BattleFacing.South);c=Unit(b,2,1,4,5,BattleFacing.Nor
 b=Board();a=Unit(b,1,0,4,3,BattleFacing.South);c=Unit(b,2,1,4,5,BattleFacing.North);Turn(b,(a,BattleWeapon.Rifle,Point.Zero,null),(c,BattleWeapon.Rifle,Point.Zero,null));Check(a.Fallen && c.Fallen && a.Rifles==2 && c.Rifles==2,"Simultaneous rifle falls");
 b=Board();a=Unit(b,1,0,3,5,BattleFacing.East);c=Unit(b,2,1,4,5,BattleFacing.North);var d=Unit(b,3,0,4,3,BattleFacing.North);Turn(b,(a,BattleWeapon.Dagger,Point.Zero,null),(c,BattleWeapon.Rifle,Point.Zero,null));Check(c.Fallen && d.Fallen && c.Rifles==2,"Fallen unit still shoots and friendly fire");
 b=Board();a=Unit(b,1,0,4,2,BattleFacing.South);d=Unit(b,3,0,4,3,BattleFacing.South);c=Unit(b,2,1,4,5,BattleFacing.North);c.Shields=1;Turn(b,(a,BattleWeapon.Rifle,Point.Zero,null),(d,BattleWeapon.Rifle,Point.Zero,null));Check(c.Fallen && c.Shields==0,"Two frontal shots shield shortage");
+// Every direction code must agree between AI sight and simultaneous hit resolution.
+for(int code=0;code<9;code++)foreach(BattleFacing facing in Enum.GetValues<BattleFacing>()){
+ var board=Board();var step=BattleState.Forward(facing);var start=new Point(4,4);
+ var shooter=Unit(board,101,0,start.X,start.Y,facing);var end=start+new Point(step.X*3,step.Y*3);
+ var victim=Unit(board,102,1,end.X,end.Y,facing);victim.Shields=0;
+ var wall=start+step;board.Walls.Add(wall);board.WallShotDirections[wall]=code;
+ bool permits=facing switch{BattleFacing.East=>code%3==1,BattleFacing.West=>code%3==2,BattleFacing.South=>code/3==1,_=>code/3==2};
+ Check((BattleAi.FirstTarget(board,shooter,facing)==victim)==permits,"Directional wall AI sight");
+ Turn(board,(shooter,BattleWeapon.Rifle,Point.Zero,null));Check(victim.Fallen==permits && shooter.Rifles==2,"Directional wall hit and ammo");
+ var distant= start+new Point(step.X*2,step.Y*2);board.Walls.Add(distant);board.WallShotDirections[distant]=code;
+ Check(board.BlocksShot(distant,facing,2),"Only the adjacent wall can be jumped");
+ Check(!board.Walkable(wall),"Firing ports never allow movement");
+}
+var fort=Board();fort.BuildTerrain(BattleTerrain.Fort);Check(fort.Walls.All(p=>fort.WallPassesShot(p,BattleFacing.South) && !fort.WallPassesShot(p,BattleFacing.North)),"Legacy fort fires outward");
+fort.BoardSize=13;fort.BuildTerrain(BattleTerrain.Fort);Check(fort.Walls.All(p=>fort.WallShotDirections[p] is >=1 and <=8),"Central fort has outward ports");
+fort.BuildLayout(0);Check(fort.WallShotDirections.Count==0,"Rebuilding terrain clears firing directions");
 b=Board();a=Unit(b,1,0,4,2,BattleFacing.South);c=Unit(b,2,1,4,5,BattleFacing.North);b.Walls.Add(new(4,3));Turn(b,(a,BattleWeapon.Rifle,Point.Zero,null));Check(!c.Fallen && c.Shields==4 && a.Rifles==2,"Adjacent wall blocks jump");
 b=Board();a=Unit(b,1,0,4,4,BattleFacing.South);c=Unit(b,2,1,4,5,BattleFacing.North);Turn(b,(a,BattleWeapon.None,new(0,1),null),(c,BattleWeapon.None,new(0,-1),null));Check(a.Position==new Point(4,4) && c.Position==new Point(4,5),"Enemy exchange blocked");
 b=Board();a=Unit(b,1,0,4,4,BattleFacing.South);c=Unit(b,2,0,4,5,BattleFacing.North);Unit(b,3,1,9,9,BattleFacing.North);Turn(b,(a,BattleWeapon.None,new(0,1),null),(c,BattleWeapon.None,new(0,-1),null));Check(a.Position==new Point(4,5) && c.Position==new Point(4,4),"Friendly exchange");

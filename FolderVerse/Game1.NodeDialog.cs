@@ -7,9 +7,10 @@ public partial class Game1
 {
     private int _populationCell=-1;
     private int _populationNode=-1;
-    private Rectangle PopulationTurnButton=>new(310,974,242,96);
+    private Rectangle PopulationTurnButton=>MapFooterBounds(new(310,974,242,96));
     private bool NodeDialogClick(Point pointer,KeyboardState keyboard)
     {
+        if(_populationNode>=0 && _nodeOfficeOpen && new Rectangle(84,778,784,48).Contains(new Point(pointer.X-NodeInspectorOffset,pointer.Y))){OpenSalvagePlan(_populationNode);return true;}
         if(!InspectorVisible && PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
         if(_populationCell<0 || _populationNode<0 || _populationNode>=_setup.Nodes.All.Length || _populationNode>=_setup.Robots.Workshops.Length)return false;
         if(SupervisorNodePanel){pointer.X-=920;pointer.Y-=40;}

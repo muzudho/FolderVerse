@@ -24,7 +24,7 @@ public sealed partial class RobotWorld
         for(int i=0;i<3;i++)counts[i]=stock.Count(r=>(r.Parts&parts[i])!=0 && r.Affiliation(parts[i])==owner);
         // Prefer plans that fill missing native parts. Available plans differ per line/node.
         foreach(var line in workshop.ProductionLines){
-            int best=Enumerable.Range(0,line.Plans.Length).OrderByDescending(i=>parts.Select((p,j)=>(p,j)).Where(x=>(line.Plans[i].Product&x.p)!=0).Sum(x=>12-counts[x.j])).ThenBy(i=>line.Plans[i].Turns).First();
+            int best=new[]{0,1,2,7,8}.OrderByDescending(i=>parts.Select((p,j)=>(p,j)).Where(x=>(line.PlanAt(i).Product&x.p)!=0).Sum(x=>12-counts[x.j])).ThenBy(i=>line.PlanAt(i).Turns).First();
             if(line.SelectedPlan!=best && (!line.Manufacturing || line.ProductionAge==0) && (!gentle || !changed)){line.SelectPlan(best);changed=true;}
             int every=Nodes[node].Count>=10?1:9,rest=Nodes[node].Count>=10?9:1;
             if((line.RestEvery!=every || line.RestTurns!=rest) && (!gentle || !changed)){

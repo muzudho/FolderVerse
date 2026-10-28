@@ -20,3 +20,17 @@ Console.WriteLine("PASS: part locks, free remaining parts, explicit/virtual arri
 Console.WriteLine("PASS: arrival-anchor protection, partial-group retry and attacks before departure.");
 (w,a,b)=Fixture();complete=Add(w,a,RobotParts.Head);w.Robots.DirectDelivery.Reserve(w,a,b,complete.Id,RobotParts.Head,null,0);w.Robots.Transport.SetPlan(b,0,RobotParts.Head,new[]{new TransportWeight(a,360)});Resolve(w);Check(w.Robots.Nodes[a].Count==0 && w.Robots.Nodes[b].Robots.Single().Parts==RobotParts.Head,"Fresh direct arrival is not shipped again by a long-term plan in the same turn");Resolve(w);Check(w.Robots.Nodes[a].Robots.Single().Parts==RobotParts.Head,"Long-term plan can ship that arrival on the next turn");
 Console.WriteLine("PASS: direct arrivals are protected from same-turn forwarding, with normal long-term transport next turn.");
+
+// Sea-to-sea delivery uses the same one-turn resolution and must preserve cargo.
+(w,a,b)=Fixture();
+var seaRoute=w.Nodes.All.Where(n=>!w.Routes.Land(n.Cell,n.Center))
+ .SelectMany(n=>w.Routes.Neighbors(n).Select(r=>(From:n,To:w.Nodes.At(r.Target,r.Entry))))
+ .First(p=>p.To!=null && !w.Routes.Land(p.To.Cell,p.To.Center));
+a=seaRoute.From.Id;b=seaRoute.To.Id;seaRoute.From.Owner=seaRoute.To.Owner=0;
+complete=Add(w,a,RobotParts.Complete);
+w.Robots.DirectDelivery.ReserveParts(w,a,b,complete.Id,RobotParts.Complete,null,0);
+Check(w.Robots.Nodes[a].Count==1 && w.Robots.Nodes[b].Count==0,"Sea reservation waits for end of turn");
+w.Campaign.RobotBattles.Advance(w,Array.Empty<March>());
+Check(w.Robots.Nodes[a].Count==0 && w.Robots.Nodes[b].Robots.Single().Parts==RobotParts.Complete && w.Robots.DirectDelivery.Orders.Count==0,"Sea delivery arrives intact through campaign propagation");
+Check(w.Robots.Transport.LastTransfers.Count==3,"Sea cargo is included in movement animation history");
+Console.WriteLine("PASS: sea-to-sea reservation, turn-end arrival and animation history.");

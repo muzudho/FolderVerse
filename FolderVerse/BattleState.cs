@@ -62,6 +62,8 @@ public sealed partial class BattleState
     public List<BattleArmy> Armies {get;}=new();
     public List<BattleUnit> Units {get;}=new();
     public HashSet<Point> Walls {get;}=new();
+    // Horizontal: 0/1 east/2 west; vertical: 0/3 south/6 north.
+    public Dictionary<Point,int> WallShotDirections {get;}=new();
     public List<BattleEvent> Events {get;}=new();
     public List<BattleFrame> Frames {get;}=new();
     public List<BattleAttack> Attacks {get;}=new();
@@ -81,6 +83,15 @@ public sealed partial class BattleState
     public static bool Inside(Point p)=>p.X>=0 && p.X<Size && p.Y>=0 && p.Y<Size;
     public bool Contains(Point p)=>p.X>=0 && p.X<BoardSize && p.Y>=0 && p.Y<BoardSize;
     public bool BlocksShot(Point p)=>!Contains(p) || Walls.Contains(p) && !(Terrain==BattleTerrain.Sea && SeaClearWater.Contains(p));
+    public bool WallPassesShot(Point p,BattleFacing facing)
+    {
+        if(!Walls.Contains(p))return false;
+        int code=WallShotDirections.GetValueOrDefault(p);
+        if(code<0 || code>8)return false;
+        return facing switch {BattleFacing.East=>code%3==1,BattleFacing.West=>code%3==2,BattleFacing.South=>code/3==1,_=>code/3==2};
+    }
+    public bool BlocksShot(Point p,BattleFacing facing,int distance)
+        =>BlocksShot(p) && !(Contains(p) && distance==1 && WallPassesShot(p,facing));
     public bool Walkable(Point p)=>Contains(p) && !Walls.Contains(p);
     public static bool HomeExit(Point p,int side,int size=Size)=>side switch{0=>p.Y<0,1=>p.X>=size,2=>p.Y>=size,_=>p.X<0};
     public BattleArmy Army(int owner)=>Armies.Single(a=>a.Owner==owner);
@@ -159,12 +170,14 @@ public sealed partial class BattleState
     }
     public void BuildTerrain(BattleTerrain terrain)
     {
-        Terrain=terrain;Walls.Clear();
+        Terrain=terrain;Walls.Clear();WallShotDirections.Clear();
         if(terrain==BattleTerrain.Fort)
         {
             if(BoardSize==10){foreach(int x in new[]{2,3,6,7})Walls.Add(new(x,3));Flag=new(5,2);}
             else {Flag=new(6,6);for(int y=2;y<=10;y++)for(int x=2;x<=10;x++)if(Math.Abs(x-6)+Math.Abs(y-6)==3 && x!=6 && y!=6)Walls.Add(new(x,y));}
         }
+        if(terrain==BattleTerrain.Fort)foreach(var p in Walls)
+            WallShotDirections[p]=BoardSize==10?3:(p.X>Flag.X?1:p.X<Flag.X?2:0)+(p.Y>Flag.Y?3:p.Y<Flag.Y?6:0);
         if(terrain==BattleTerrain.Sea)BuildSeaLayout(0);
     }
     public void Check()

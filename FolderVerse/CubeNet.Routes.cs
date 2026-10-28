@@ -40,8 +40,17 @@ public sealed partial class CubeNet
         if(IsAnimating || !panel.Contains(pointer))return -1;
         var fit=Fit(panel);float radius=MathHelper.Clamp(fit.Scale*.06f,4,10)+4;
         var point=new Vector2(pointer.X,pointer.Y);
-        return (candidates??world.Nodes.All.Select(n=>n.Id)).Where(id=>NodeVisible(world,world.Nodes.All[id])).Select(id=>(Id:id,Distance:Vector2.DistanceSquared(NodePosition(world,world.Nodes.All[id],panel),point)))
+        int hit=world.Nodes.All.Select(n=>n.Id).Where(id=>NodeVisible(world,world.Nodes.All[id])).Select(id=>(Id:id,Distance:Vector2.DistanceSquared(NodePosition(world,world.Nodes.All[id],panel),point)))
             .Where(n=>n.Distance<=MathF.Pow(world.Nodes.All[n.Id].IsHarbor?Math.Max(radius,22):radius,2)).OrderBy(n=>n.Distance).ThenBy(n=>n.Id).Select(n=>n.Id).DefaultIfEmpty(-1).First();
+        if(hit<0){
+            var local=UnrotateScreen(pointer,panel);var localPoint=new Vector2(local.X,local.Y);
+            hit=world.Nodes.All.Where(n=>NodeVisible(world,n) && world.Campaign.OwnershipChanged(n)).Where(n=>{
+                var at=UnrotateScreen(NodePosition(world,n,panel).ToPoint(),panel);
+                float r=MathHelper.Clamp(fit.Scale*.06f,4,10);if(n.IsHarbor)r=MathHelper.Clamp(r*1.7f,12,20);if(EmphasizedNode(n.Id) && !world.Campaign.OwnershipChanged(n))r*=2;
+                return NodeOwnershipArt.HitTwin(new Vector2(at.X,at.Y),r,localPoint);
+            }).OrderBy(n=>Vector2.DistanceSquared(NodePosition(world,n,panel),point)).Select(n=>n.Id).DefaultIfEmpty(-1).First();
+        }
+        return hit>=0 && (candidates==null || candidates.Contains(hit))?hit:-1;
     }
     public Point MicroPoint(WorldSetup world,int cell,Rectangle panel,Point pointer)
     {
@@ -89,7 +98,7 @@ public sealed partial class CubeNet
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
                 float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);
                 if(post.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
-                if(EmphasizedNode(post.Id))radius*=2; if(MovementTargets.Contains(post.Id) && MathF.Sin(pulse*6)>=0)
+                if(EmphasizedNode(post.Id) && !world.Campaign.OwnershipChanged(post))radius*=2; if(MovementTargets.Contains(post.Id) && MathF.Sin(pulse*6)>=0)
                 {
                     Disc(ui,at,radius+7,Tint(new Color(255,219,96)));
                     Disc(ui,at,radius+5,Tint(new Color(13,36,44)));
@@ -99,6 +108,8 @@ public sealed partial class CubeNet
                     Disc(ui,at,radius*1.5f+3,Tint(Color.White));
                     Disc(ui,at,radius*1.5f,Tint(new Color(13,36,44)));
                 }
+                if(world.Campaign.OwnershipChanged(post))
+                    NodeOwnershipArt.Draw(ui,at,radius,Tint(world.OwnerColor(world.Campaign.PreviousNodeOwners[post.Id])),Tint(world.OwnerColor(post.Owner)),Tint(new Color(13,36,44)));
                 if(AttackTargetMarkers && SelectedTarget==post.Id)
                 {
                     float size=radius*(1.3f+.25f*MathF.Sin(pulse*5));
@@ -108,6 +119,7 @@ public sealed partial class CubeNet
                     {ui.Tile(center,new Vector2(size*2.5f,7),angle,Tint(new Color(13,36,44)));ui.Tile(center,new Vector2(size*2.5f,3),angle,new Color(255,224,110));}
                     continue;
                 }
+                if(world.Campaign.OwnershipChanged(post))continue;
                 if(post.IsHarbor)DrawHarbor(ui,at,radius,Tint(world.OwnerColor(post.Owner)),DimNode(post.Id));
                 else
                 {

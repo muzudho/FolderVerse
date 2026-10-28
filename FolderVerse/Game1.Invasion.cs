@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 public partial class Game1
 {
-    private Rectangle WarButton=>new(566,1006,200,64);
+    private Rectangle WarButton=>MapFooterBounds(new(566,1006,200,64));
     private bool _warPlanning;
     // A coordinated attack from several sources to one destination is one reservation.
     private int WarReservationCount=>_setup.Campaign.PlannedOrders.Where(o=>!o.Peaceful && CanPlanRuler(o.Ruler) && (o.Queen || o.Fighters>0) && EnemyTarget(o.TargetNode)).Select(o=>o.TargetNode).Distinct().Count();
@@ -51,7 +51,7 @@ public partial class Game1
             }
         _invasionSources.Clear();_invasionPage=0;_invasionPicker=-1;
     }
-    private bool CanPlanRuler(int ruler)=>ruler>=0 && _setup.Relations.Controls(ruler) && _setup.Relations.Powered[ruler] && !_setup.Relations.Pending.Any(p=>p.Ruler==ruler);
+    private bool CanPlanRuler(int ruler)=>ruler>=0 && _setup.ControllerOf(ruler)==_setup.TurnPlayer && _setup.Relations.Powered[ruler] && !_setup.Relations.Pending.Any(p=>p.Ruler==ruler);
     private bool EnemyTarget(int id)=>_setup.Nodes.All[id].Owner<0 || !_setup.Relations.Allied(_setup.PlayerSlot,_setup.Nodes.All[id].Owner);
     private void BuildInvasionSources(int target)
     {
@@ -119,8 +119,7 @@ public partial class Game1
     private void EndPlannedTurn()
     {
         SaveDomesticCamera();CancelTransportModal();
-        if(_movementOpen && _selectedMoveNode>=0)
-        {if(_warPlanning)ReserveInvasion();else _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id,true,true,Peaceful:true));}
+        StoreCurrentMovementDraft();
         if(ShowTutorialAttackGuideIfRequired())return;
         CloseMovement();if(_transportOverview)CloseTransportOverview();
         _setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);_populationCell=-1;OpenBattle();

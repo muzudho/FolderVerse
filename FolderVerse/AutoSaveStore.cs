@@ -85,6 +85,7 @@ public static class AutoSaveStore
                     if(type==typeof(WorldSetup) && field.Name=="PolarAxis"){field.SetValue(value,1);continue;}
                     if(type==typeof(WorldSetup) && new[]{"TutorialMapStage","TutorialMapRotations","TutorialMapNotices","TutorialMapEdgeChanged"}.Contains(field.Name))continue;
                     if(type==typeof(WorldSetup) && field.Name=="<Lessons>k__BackingField"){field.SetValue(value,new BattleLessons());continue;}
+                    if(type==typeof(WorldSetup) && field.Name=="<Salvage>k__BackingField"){field.SetValue(value,new SalvagePlan{LegacyPlacementPending=true});continue;}
                     if(type==typeof(BattleState) && field.Name=="Lessons"){field.SetValue(value,new BattleLesson[WorldSetup.CastCount]);continue;}
                     if(type==typeof(BattleUnit) && field.Name=="WitnessedLessons")continue;
                     if(type==typeof(RobotCampaign) && field.Name=="_homeOwners"){field.SetValue(value,new Dictionary<long,int>());continue;}
@@ -93,6 +94,10 @@ public static class AutoSaveStore
                     if(type==typeof(BattleState) && field.Name=="BoardSize"){field.SetValue(value,10);continue;}
                     if(type==typeof(RobotEncounter) && field.Name=="InterceptOwner"){field.SetValue(value,-1);continue;}
                     if(type==typeof(Robot) && field.Name=="<InterceptOnly>k__BackingField")continue;
+                    if(type==typeof(Robot) && field.Name=="<DefenseFlag>k__BackingField")continue;
+                    if((type==typeof(Robot) || type==typeof(ProductionPlan)) && field.Name=="<IntegratedParts>k__BackingField")continue;
+                    if(type==typeof(RobotWorkshop) && field.Name=="<IntegratedProduct>k__BackingField")continue;
+                    if(type==typeof(RobotWorkshop) && field.Name=="<IntegratedPlans>k__BackingField"){field.SetValue(value,new[]{new ProductionPlan(RobotParts.Head|RobotParts.Body,3,false,RobotParts.Head|RobotParts.Body),new ProductionPlan(RobotParts.Body|RobotParts.Legs,4,false,RobotParts.Body|RobotParts.Legs)});continue;}
                     if(type==typeof(BattleState) && field.Name=="GlobalTurn"){field.SetValue(value,0);continue;}
                     if(type==typeof(BattleState) && field.Name=="<PersuadedUnits>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
                     if(type==typeof(BattleUnitView) && field.Name=="<Robot>k__BackingField")continue;

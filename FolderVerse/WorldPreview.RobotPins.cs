@@ -65,6 +65,7 @@ public sealed partial class WorldPreview
             }
             for(int slot=0;slot<robots.Count;slot++)
             {
+                bounds=Rectangle.Empty;
                 float angle=-MathHelper.PiOver2+slot*MathHelper.TwoPi/robots.Count,radius=Math.Max(.18f,robots.Count*.12f/MathHelper.TwoPi);
                 float u=MathF.Cos(angle)*radius,v=MathF.Sin(angle)*radius,z=.008f;var robot=robots[slot];
                 void RobotBox(float x,float y,float height,float width,float depth,float extent,Color tint)=>
@@ -82,8 +83,9 @@ public sealed partial class WorldPreview
                     foreach(float side in new[]{-1f,1f})RobotBox(u+side*.025f,v+.043f,z+.05f,.018f,.009f,.018f,new(25,41,49));
                     RobotBox(u,v+.044f,z+.023f,.04f,.008f,.009f,new(230,102,60));RobotBox(u,v,z+.09f,.01f,.01f,.025f,new(83,112,122));
                 }
+                if(robot.ShoeOwner>=0)foreach(float side in new[]{-1f,1f})RobotBox(u+side*.027f,v+.012f,.008f,.055f,.085f,.025f,setup.OwnerColor(robot.ShoeOwner));
+                if(bounds!=Rectangle.Empty && bounds.Intersects(panel))net.AddGlobeRobotBadge(node.Id,bounds);
             }
-            if(robots.Count>0 && bounds.Intersects(panel))net.AddGlobeRobotBadge(node.Id,bounds);
             foreach(int ruler in Enumerable.Range(0,setup.ActiveCount).Where(r=>net.ShowBatteries && setup.Relations.Powered[r] && setup.Nodes.Current(r)?.Id==node.Id && (net.ShowOtherCountries || setup.Relations.Controls(r)) && (net.VisibleOperationBatteries==null || net.VisibleOperationBatteries.Contains(r)))){
                 bounds=Rectangle.Empty;var point=setup.Routes.Position(setup.ConquerorLocations[ruler],setup.ConquerorPoints[ruler]);
                 var delta=point-center;int batterySlot=Enumerable.Range(0,ruler).Count(r=>setup.Relations.Powered[r] && setup.Nodes.Current(r)?.Id==node.Id);

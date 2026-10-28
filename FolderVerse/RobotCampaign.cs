@@ -115,6 +115,7 @@ public sealed class RobotCampaign
         world.Robots.Advance((a,b)=>!LockedEdge(a,b) && world.Routes.Neighbors(world.Nodes.All[a]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==b),
             n=>world.Nodes.All[n].Owner,world.PlacementSeed^world.Population.Turn^0x61238,LockedNode,(owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner),industry:false,directLocked:n=>LockedNode(n) || orders.Any(o=>!o.Peaceful && o.TargetNode==n && !world.Relations.Allied(o.Ruler,world.Nodes.All[n].Owner)));
         world.Population.Advance(world);
+        world.Salvage.Advance(world,world.Population.Turn,n=>orders.Any(o=>!o.Peaceful && o.TargetNode==n && !world.Relations.Allied(o.Ruler,world.Nodes.All[n].Owner)));
         world.Industry.Queue(world.Population.Turn);
         var stopped=new HashSet<March>();
         // Visits carry the queen and her pocket without claiming land or starting a war.
@@ -415,7 +416,7 @@ public sealed class RobotCampaign
                 Move(world,unit.Owner,location);continue;
             }
             if(unit.Robot==null)continue;
-            var robot=unit.Robot.Materialize() with {Owner=unit.Owner};
+            var robot=RobotWorld.ValidateDefenseFlag(unit.Robot.Materialize() with {Owner=unit.Owner},node=>world.Nodes.All[node].Owner);
             if(unit.Fallen)
             {
                 // Sample a physical part, including already damaged parts. No part is destroyed.
@@ -431,7 +432,7 @@ public sealed class RobotCampaign
         }
     }
     private static void SetOwner(WorldSetup world,Node node,int owner)
-    {if(node.Owner==owner)return;node.Owner=owner;Array.Clear(node.Population.Conversion);Array.Clear(node.Population.Migration);}
+    {if(node.Owner==owner)return;world.Robots.ReleaseDefenseFlag(node.Id,node.Owner);node.Owner=owner;Array.Clear(node.Population.Conversion);Array.Clear(node.Population.Migration);}
     private static void Move(WorldSetup world,int owner,int node)
     {world.ConquerorLocations[owner]=world.Nodes.All[node].Cell;world.ConquerorPoints[owner]=world.Nodes.All[node].Center;world.Relations.Released[owner]=false;}
     private void ReturnHome(WorldSetup world,Robot robot,int fallback)

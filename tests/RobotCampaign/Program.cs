@@ -6,7 +6,7 @@ static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 WorldSetup World(int seed=0)
 {
     var w=new WorldSetup();w.SetWorld(seed);w.SetCast(123);w.SetPlacement(456);w.SelectPlayer(0);
-    w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);return w;
+    w.Salvage.Reset();w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);return w;
 }
 void Place(WorldSetup w,int owner,Node node){node.Owner=owner;w.ConquerorLocations[owner]=node.Cell;w.ConquerorPoints[owner]=node.Center;}
 void Add(WorldSetup w,Node node,int owner,int count){for(int i=0;i<count;i++)w.Robots.Nodes[node.Id].Add(w.Robots.Create(owner,RobotParts.Complete));}
@@ -48,10 +48,11 @@ Console.WriteLine("PASS: independent population, neutral acquisition, robot marc
 catch(Exception error){Console.Error.WriteLine(error);Environment.ExitCode=1;}
 {
 var controlled=new WorldSetup();controlled.SetWorld(1);controlled.SetCast(123);controlled.SetPlacement(456);controlled.SelectPlayer(0);controlled.Relations.SetSuperior(1,0);controlled.Relations.SetSuperior(2,1);
-int before=controlled.Population.Turn;controlled.Campaign.Advance(controlled,-1,0);if(controlled.PlayerSlot==0 || controlled.Population.Turn!=before)throw new Exception("Subordinate turn skipped");
-controlled.Campaign.Advance(controlled,-1,0);if(controlled.Population.Turn!=before)throw new Exception("Party committed too early");
-controlled.Campaign.Advance(controlled,-1,0);if(controlled.PlayerSlot!=0 || controlled.Population.Turn!=before+1)throw new Exception("Party turn commit failed");
-Console.WriteLine("PASS: leader and nested subordinate actions commit one shared turn");
+int before=controlled.Population.Turn;
+if(!controlled.SelectControlledRuler(2) || controlled.TurnPlayer!=0)throw new Exception("Switching nested subordinate changed the human turn owner");
+controlled.Campaign.Advance(controlled,-1,0);
+if(controlled.PlayerSlot!=0 || controlled.Population.Turn!=before+1 || controlled.Campaign.AwaitingPlayers)throw new Exception("One faction end-turn must resolve the leader and nested subordinates together");
+Console.WriteLine("PASS: leader and nested subordinates share one faction end-turn");
 }
 {
     var world=new WorldSetup();world.SetWorld(2);world.SetCast(123);world.SetPlacement(456);world.SelectPlayer(0);
@@ -75,7 +76,7 @@ Console.WriteLine("PASS: leader and nested subordinate actions commit one shared
 }
 {
     void Assert(bool ok,string message){if(!ok)throw new Exception(message);}
-    WorldSetup Setup(){var x=new WorldSetup();x.SetWorld(2);x.SetCast(123);x.SetPlacement(456);x.SelectPlayer(0);x.Robots.Initialize(x.Nodes.All.Length,x.ActiveCount);return x;}
+    WorldSetup Setup(){var x=new WorldSetup();x.SetWorld(2);x.SetCast(123);x.SetPlacement(456);x.SelectPlayer(0);x.Salvage.Reset();x.Robots.Initialize(x.Nodes.All.Length,x.ActiveCount);return x;}
     var x=Setup();var home=x.Nodes.All.First(n=>x.Routes.Neighbors(n).Length>0);var route=x.Routes.Neighbors(home)[0];var target=x.Nodes.At(route.Target,route.Entry);
     home.Owner=0;target.Owner=1;x.ConquerorLocations[0]=home.Cell;x.ConquerorPoints[0]=home.Center;
     for(int i=0;i<12;i++)x.Robots.Nodes[home.Id].Add(x.Robots.Create(0,RobotParts.Complete));
@@ -121,7 +122,7 @@ Console.WriteLine("PASS: leader and nested subordinate actions commit one shared
 
 {
     void Assert(bool ok,string message){if(!ok)throw new Exception(message);}
-    var x=new WorldSetup();x.SetWorld(2);x.SetCast(123);x.SetPlacement(456);x.SelectPlayer(0);x.Robots.Initialize(x.Nodes.All.Length,x.ActiveCount);
+    var x=new WorldSetup();x.SetWorld(2);x.SetCast(123);x.SetPlacement(456);x.SelectPlayer(0);x.Salvage.Reset();x.Robots.Initialize(x.Nodes.All.Length,x.ActiveCount);
     var home=x.Nodes.All.First(n=>x.Routes.Neighbors(n).Length>0);var route=x.Routes.Neighbors(home)[0];var target=x.Nodes.At(route.Target,route.Entry);
     home.Owner=0;target.Owner=1;x.ConquerorLocations[0]=home.Cell;x.ConquerorPoints[0]=home.Center;
     var pocket=x.Robots.Create(0,RobotParts.Complete).Materialize() with {BodyOrigin=1,LegsOrigin=1,DamagedParts=RobotParts.Body};
@@ -176,4 +177,38 @@ Console.WriteLine("PASS: leader and nested subordinate actions commit one shared
     world.Campaign.CancelReservation(0,home.Id,true,target.Id);
     if(world.Campaign.PlannedOrders.Count!=1 || world.Campaign.PlannedOrders[0].Queen)throw new Exception("Battery cancellation removed hangar order");
     Console.WriteLine("PASS: independent battery/hangar reservations, shared edge encounter, pocket-only troops and physical node invariants");
+}
+
+{
+ void Check(bool ok,string message){if(!ok)throw new Exception(message);}
+ var world=new WorldSetup();world.SetWorld(0);world.SetCast(123);world.SetPlacement(456);world.SelectPlayer(0);
+ world.Salvage.Reset();world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);var node=world.Nodes.All[0];
+ Check(!world.Campaign.OwnershipChanged(node),"New world has no ownership history");
+ world.Campaign.Resolve(world,Array.Empty<March>());int before=node.Owner;node.Owner=before==0?1:0;
+ Check(world.Campaign.OwnershipChanged(node) && world.Campaign.PreviousNodeOwners[node.Id]==before,"History retains owner at start of global turn");
+ var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(world));
+ Check(restored.Campaign.OwnershipChanged(restored.Nodes.All[node.Id]),"Ownership transition survives save/resume");
+ world.Campaign.Resolve(world,Array.Empty<March>());
+ Check(!world.Campaign.OwnershipChanged(node),"Unchanged next turn clears previous transition");
+ world.Campaign.Reset();Check(!world.Campaign.OwnershipChanged(node),"Reset clears history");
+ Console.WriteLine("PASS: ownership transition snapshot, save/resume, next-turn expiry and reset.");
+}
+
+{
+ var world=new WorldSetup();world.SetWorld(0);world.SetCast(123);world.SetPlacement(456);world.HumanPlayers.AddRange(new[]{0,1});world.SelectTurnRuler(0);
+ world.Relations.SetSuperior(2,0);world.Relations.SetSuperior(3,2);world.Relations.SetSuperior(1,0);world.Relations.SetSuperior(4,1);
+ if(!world.ControlledParty(0).Contains(3) || world.ControlledParty(0).Contains(1) || world.ControlledParty(0).Contains(4) || !world.ControlledParty(1).Contains(4))throw new Exception("Human vassal retains own subtree controls");
+ var planned=new List<March>();
+ foreach(int ruler in new[]{0,3,1,4}){
+  var home=world.Nodes.Current(ruler);var route=world.Routes.NodeChoices(ruler).First();var target=world.Nodes.At(route.Target,route.Entry);
+  var order=new March(ruler,target.Id,0,home.Id,true,true,Peaceful:true);planned.Add(order);world.Campaign.Plan(order);
+ }
+ if(!world.SelectControlledRuler(3) || world.SelectControlledRuler(1))throw new Exception("Faction selector permissions");
+ var saved=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(world));
+ if(saved.TurnPlayer!=0 || saved.PlayerSlot!=3 || saved.Campaign.PlannedOrders.Count!=4)throw new Exception("Selected subordinate and human identity survive save/resume");
+ int turn=world.Population.Turn;world.Campaign.Advance(world,-1,0);
+ if(world.Population.Turn!=turn || world.TurnPlayer!=1 || world.Campaign.Submitted.Single()!=0 || world.Campaign.PlannedOrders.Count!=4)throw new Exception("Faction readiness waits for next human and preserves all orders");
+ world.Campaign.Advance(world,-1,0);
+ if(world.Population.Turn!=turn+1 || world.TurnPlayer!=0 || world.Campaign.AwaitingPlayers)throw new Exception("Exactly one global turn for two human factions");
+ Console.WriteLine("PASS: two human factions, human vassal control boundary, nested orders and one global commit.");
 }

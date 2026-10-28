@@ -52,8 +52,11 @@ public sealed class PortraitRenderer
         int side=Math.Max(1,(int)(Math.Min(source.Width,source.Height)*.48f));
         return new(source.Center.X-side/2,source.Y+Math.Max(0,(int)(source.Height*.27f)-side/2),side,side);
     }
-    public void Draw(SpriteBatch batch,ConquerorLook look,Rectangle destination,bool active=true,bool forCreation=false,Vector2? focalPoint=null,bool faceOnly=false)
+    public void Draw(SpriteBatch batch,ConquerorLook look,Rectangle destination,bool active=true,bool forCreation=false,Vector2? focalPoint=null,bool faceOnly=false,float brightness=1)
     {
+        brightness=Math.Clamp(brightness,0,1);
+        byte level=(byte)MathF.Round((active?255:115)*brightness);
+        var tint=new Color(level,level,level,(byte)255);
         if(look.BaseId<0 || look.BaseId>=60 || look.VariantId<0 || look.VariantId>=6)
             throw new ArgumentOutOfRangeException(nameof(look));
         if(PortraitAssets.Version=="v3-standardized")
@@ -64,7 +67,7 @@ public sealed class PortraitRenderer
                 : _individual[index];
             var sourceArea=new Rectangle(0,0,individual.Width,individual.Height);
             var crop=FitSource(faceOnly?FaceSource(sourceArea):sourceArea,destination,focalPoint);
-            batch.Draw(individual,destination,crop,active?Color.White:new Color(115,115,115));
+            batch.Draw(individual,destination,crop,tint);
             return;
         }
         var texture=_sheets[look.BaseId/6];
@@ -74,7 +77,7 @@ public sealed class PortraitRenderer
             texture=replacement;source=NormalizedSourceBounds(look.VariantId,texture.Width,texture.Height);
         }
         source=FitSource(faceOnly?FaceSource(source):source,destination,focalPoint);
-        batch.Draw(texture,destination,source,active?Color.White:new Color(115,115,115));
+        batch.Draw(texture,destination,source,tint);
     }
     public static Rectangle NormalizedSourceBounds(int variant,int width,int height)
     {

@@ -67,7 +67,7 @@ public static class BattleTurnResolver
             if(weapon==BattleWeapon.Dagger)target=units.FirstOrDefault(u=>u.Active && u.Position==end);
             else for(int distance=1;distance<battle.BoardSize;distance++)
             {
-                var p=attacker.Position+new Point(step.X*distance,step.Y*distance);if(battle.BlocksShot(p))break;
+                var p=attacker.Position+new Point(step.X*distance,step.Y*distance);if(battle.BlocksShot(p,attacker.Facing,distance))break;
                 end=p;if(distance==1)continue;target=units.FirstOrDefault(u=>u.Active && u.Position==p);if(target!=null)break;
             }
             battle.Attacks.Add(new(battle.Turn,attacker.Id,target?.Id,attacker.Position,end,weapon));

@@ -103,7 +103,7 @@ public sealed class ConquerorRelations
             for(int child=0;child<Capacity;child++)if(Superiors[child]==ruler)SetSuperior(child,former);
             SetSuperior(ruler,-1);Powered[ruler]=false;Released[ruler]=true;
             foreach(var node in world.Nodes.All.Where(n=>n.Owner==ruler))
-            {node.Owner=-1;Array.Clear(node.Population.Migration);}
+            {world.Robots.ReleaseDefenseFlag(node.Id,node.Owner);node.Owner=-1;Array.Clear(node.Population.Migration);}
             world.Nodes.Recount();Message="電池を引き抜いた / 領地は未征服";
         }
         Pending.Remove(captive);return true;

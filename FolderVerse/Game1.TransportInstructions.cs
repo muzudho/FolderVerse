@@ -16,8 +16,8 @@ public partial class Game1
     private IReadOnlyList<TransportInstruction> TransportRules=>_populationNode<0?Array.Empty<TransportInstruction>():_setup.Robots.Transport.Instructions(_populationNode,TransportOwner);
     private TransportInstruction EditingTransport=>TransportRules.FirstOrDefault(r=>r.Number==_transportEditNumber);
     private static string TransportPartsName(int mask)=>mask switch{4=>"頭",2=>"胴",_=>"脚"};
-    private static readonly int[] TransportMasks={4,2,1,4,2,1};
-    private static string TransportChoiceName(int i)=>(i<3?"正規品":"安物")+TransportPartsName(TransportMasks[i]);
+    private static readonly int[] TransportMasks={4,2,1,4,2,1,6,3,6,3};
+    private static string TransportChoiceName(int i)=>(i<3 || i is 6 or 7?"正規品":"安物")+(i>=6?IntegratedLabel((RobotParts)TransportMasks[i]):TransportPartsName(TransportMasks[i]));
     private static Rectangle InstructionField(int row,int field){int y=310+row*106;return field switch{0=>new(128,y,94,34),1=>new(230,y,142,34),2=>new(380,y,426,34),3=>new(380,y,426,34),4=>new(110,y+40,366,34),5=>new(518,y+40,80,34),_=>new(814,y,34,34)};}
     private void ConfigureTransport(TransportInstruction rule,int? target=null,int? choices=null,bool? disposal=null,int? limit=null)=>_setup.Robots.Transport.ConfigurePartChoices(_populationNode,TransportOwner,rule.Number,target??rule.Target,choices??rule.PartChoices,disposal??rule.Disposal,limit??rule.Limit);
     private int[] TransportAdjacent()=>_populationNode<0?Array.Empty<int>():_setup.Routes.Neighbors(_setup.Nodes.All[_populationNode]).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id).Where(id=>id!=_populationNode).Distinct().ToArray();
@@ -62,7 +62,7 @@ public partial class Game1
             _ui.Text("#"+rule.Number,new(84,y+7),.4f,Cream);
             _ui.Button(InstructionField(row,0),(rule.Degrees*100/360f).ToString("0.#")+"%",Accent,.43f);
             _ui.Button(InstructionField(row,1),rule.Disposal?"廃棄用として":"納品物として",rule.Disposal?new Color(177,60,73):Muted,.4f);
-            string variants=string.Join("／",Enumerable.Range(0,6).Where(i=>(rule.PartChoices&(1<<i))!=0).Select(TransportChoiceName));
+            string variants=string.Join("／",Enumerable.Range(0,TransportMasks.Length).Where(i=>(rule.PartChoices&(1<<i))!=0).Select(TransportChoiceName));
             var partsField=InstructionField(row,2);partsField.Width=426;
             _ui.Button(partsField,variants,Muted,Math.Min(.4f,408/Math.Max(1,_font.MeasureString(variants).X)));
             _ui.Button(InstructionField(row,6),"×",Muted,.5f);
@@ -85,14 +85,14 @@ public partial class Game1
         }else _ui.Text("休憩と実行できる指示から採用 / 合計100%",new(84,798),.35f,Cream);
         if(_transportEditor!=0)DrawTransportEditor();
     }
-    private static Rectangle TransportVariantButton(int i)=>new(104+i%3*244,370+i/3*136,224,124);
+    private static Rectangle TransportVariantButton(int i){int slot=i<3?i:i<6?i+2:i<8?i-3:i;return new(104+slot%5*146,370+slot/5*136,138,124);}
     private static Rectangle TransportQuantityKey(int i)=>new(220+i%3*142,400+i/3*66,132,56);
     private void DrawTransportEditor()
     {
         var rule=EditingTransport;if(rule==null)return;_ui.Box(new(84,305,770,433),new Color(17,33,46));
         if(_transportEditor==1){
-            _ui.Text("いずれか１つ（複数選択可）",new(110,325),.55f,Cream);
-            for(int i=0;i<TransportMasks.Length;i++){int mask=TransportMasks[i];var r=TransportVariantButton(i);bool on=(rule.PartChoices&(1<<i))!=0;_ui.Button(r,"",on?Color.Lerp(Muted,Accent,.25f):Muted,.4f);if(on)_ui.Box(new(r.X,r.Y,r.Width,3),Accent);DrawRobotGlyph(new(r.Center.X-24,r.Y+5,48,70),TransportOwner,(RobotParts)mask,whiteOutline:true,cheap:i>=3);_ui.Center((on?"ON ":"OFF ")+TransportChoiceName(i),new(r.X,r.Bottom-35,r.Width,30),.4f,Cream);}
+            _ui.Text("いずれか１つ（複数選択可）/ 一体型は専用項目",new(110,325),.4f,Cream);
+            for(int i=0;i<TransportMasks.Length;i++){int mask=TransportMasks[i];var r=TransportVariantButton(i);bool on=(rule.PartChoices&(1<<i))!=0;_ui.Button(r,"",on?Color.Lerp(Muted,Accent,.25f):Muted,.4f);if(on)_ui.Box(new(r.X,r.Y,r.Width,3),Accent);DrawRobotGlyph(new(r.Center.X-24,r.Y+5,48,70),TransportOwner,(RobotParts)mask,whiteOutline:true,cheap:i is 3 or 4 or 5 or 8 or 9,integrated:i>=6?(RobotParts)mask:0);_ui.Center((on?"ON ":"OFF ")+TransportChoiceName(i),new(r.X,r.Bottom-35,r.Width,30),Math.Min(.32f,(r.Width-8)/Math.Max(1,_font.MeasureString((on?"ON ":"OFF ")+TransportChoiceName(i)).X)),Cream);}
             _ui.Button(new(644,665,180,46),"閉じる",Accent,.5f);
         }else{
             _ui.Text("何個送ったら終了？（1 ～ 9999）",new(110,325),.5f,Cream);_ui.Center(_transportQuantity,new(220,350,416,42),.7f,Cream);

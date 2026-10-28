@@ -41,6 +41,10 @@ public static class BattleAi
             {
                 bool threatened=enemies.Any(e=>e.Rifles>0 && FirstTarget(battle,e,e.Facing)==unit);
                 if(!threatened || unit.Shields==0)return new(Point.Zero,facing,BattleWeapon.Rifle);
+                if(unit.Daggers>0 && BattleLessons.Has(battle,unit,BattleLesson.CloseForDagger)){
+                    var step=Path(battle,unit,enemy.Position);
+                    if(step.HasValue && step.Value!=Point.Zero)return new(step.Value,facing);
+                }
                 return new(Point.Zero,facing); // Facing the shooter enables the passive shield.
             }
             if(distance<=4)
@@ -89,7 +93,7 @@ public static class BattleAi
         var forward=BattleState.Forward(facing);
         for(int i=1;i<battle.BoardSize;i++)
         {
-            var p=unit.Position+new Point(forward.X*i,forward.Y*i);if(battle.BlocksShot(p))break;if(i==1)continue;
+            var p=unit.Position+new Point(forward.X*i,forward.Y*i);if(battle.BlocksShot(p,facing,i))break;if(i==1)continue;
             var target=battle.Units.FirstOrDefault(u=>u.Active && u.Position==p);if(target!=null)return target;
         }
         return null;

@@ -49,12 +49,12 @@ sealed class LessonGame:Game1
   var battle=new BattleState(42){Finished=true};battle.Armies.Add(new(){Owner=0});battle.Capture(BattlePhase.Result);Set("_robotScenes",new[]{battle});Set("_robotSummary",true);Screen("Battle");
   Set("_summaryReadAge",0d);Call("RobotBattleInput",5.99d,false,false);Check(Get("_screen").ToString()=="Battle","Newspaper remains before six idle seconds");
   Set("_pointer",new Point(100,950));Call("RobotBattleInput",0d,true,false);Check((double)Get("_summaryReadAge")==0,"Selecting a newspaper resets reading timer");
-  Call("RobotBattleInput",5.99d,false,false);Check(Get("_screen").ToString()=="Battle","Newly selected newspaper retains six seconds");Call("RobotBattleInput",.01d,false,false);Check(Get("_screen").ToString()=="BattleResearch","Idle newspaper opens research before industry");Check(world.Lessons.Owned[0]==(BattleLesson)31,"Research grants four cards");
+  Call("RobotBattleInput",5.99d,false,false);Check(Get("_screen").ToString()=="Battle","Newly selected newspaper retains six seconds");Call("RobotBattleInput",.01d,false,false);Check(Get("_screen").ToString()=="BattleResearch","Idle newspaper opens research before industry");Check(world.Lessons.Owned[0]==BattleLessons.All.Aggregate(BattleLesson.None,(a,b)=>a|b),"Research grants four cards");
  }
  protected override void Update(GameTime time){}
  protected override void Draw(GameTime time){
   if(frame<4){Set("_lessonAge",3d);Set("_lastCutInPhase","戦闘研究フェーズ");Set("_cutInStarted",-10d);}
-  if(frame==4){Set("_lessonAge",3d);Call("UpdateBattleResearch",0d,true);Check(Get("_screen").ToString()!="BattleResearch","Last card proceeds to industry/domestic");Screen("WorldStatus");Call("OpenStrategyInspector");Set("_domesticSlide",1f);Set("_lastCutInPhase","内政フェーズ");}
+  if(frame==4){while(Get("_screen").ToString()=="BattleResearch"){Set("_lessonAge",3d);Call("UpdateBattleResearch",0d,true);}Check(Get("_screen").ToString()!="BattleResearch","Last card proceeds to industry/domestic");Screen("WorldStatus");Call("OpenStrategyInspector");Set("_domesticSlide",1f);Set("_lastCutInPhase","内政フェーズ");}
   if(frame==5){Check((bool)Call("DomesticViewClick",CatalogPoint),"World plan card button handles click");Check(Get("_screen").ToString()=="LessonCatalog","Button opens catalogue");}
   if(frame==6){Call("HandleInputCore",new Microsoft.Xna.Framework.Input.MouseState(),new Microsoft.Xna.Framework.Input.KeyboardState(Microsoft.Xna.Framework.Input.Keys.Escape),new GameTime(TimeSpan.FromSeconds(20),TimeSpan.FromSeconds(.02)),true);Check(Get("_screen").ToString()=="WorldStatus","Esc returns catalogue to world plan");Call("DomesticViewClick",CatalogPoint);world.SelectPlayer(1);world.Lessons.Owned[1]=BattleLesson.FireDiscipline;}
   if(frame==7){Tutorial(2);Screen("Battle");Set("_robotSummary",true);Call("RobotBattleInput",0d,false,true);Check(Get("_screen").ToString()=="BattleResearch" && ((LessonAward[])Get("_lessonAwards")).Length==0,"No duplicate awards next research");Set("_lessonAge",1d);Set("_lastCutInPhase","戦闘研究フェーズ");}
@@ -62,10 +62,11 @@ sealed class LessonGame:Game1
   if(frame==9){world.Lessons.Pending.Add(new(2,BattleLesson.FlagCourtesy));Call("BeginBattleResearch");Set("_lessonAge",.2d);Check(((bool[])Get("_lessonPickups")).All(p=>!p),"Repeated card renders fully visible with no pickup animation");}
   if(frame==10){Call("UpdateBattleResearch",.2d,false);Check(Get("_screen").ToString()!="BattleResearch","Visible repeat completes at 0.4 seconds");Screen("WorldStatus");Call("ResetInspector");Set("_domesticSlide",0f);Set("_lastCutInPhase","内政フェーズ");Call("FocusStatusGlobe");}
   if(frame==11){Screen("Battle");Set("_robotSummary",true);Set("_summaryReadAge",3d);Set("_lastCutInPhase","戦闘結果");Set("_cutInStarted",-10d);}
+  if(frame==12){Screen("LessonCatalog");Set("_lastCutInPhase","戦闘フェーズ");Set("_cutInStarted",-10d);world.Lessons.Owned[world.PlayerSlot]=BattleLessons.All.Aggregate(BattleLesson.None,(a,b)=>a|b);}
   base.Draw(time);
   var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"lesson-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);
   if(frame==11)Check(pixels[1003*p.BackBufferWidth+100]==new Color(248,194,58) && pixels[1003*p.BackBufferWidth+1600]==new Color(19,38,49),"Newspaper timer renders half-filled after three of six seconds");
   if(frame<4)Call("UpdateBattleResearch",0d,true);
-  if(frame++==11){Console.WriteLine("PASS: newspaper/research/industry flow, four award reveals and newspaper timer, world-plan button, owned/unowned catalogue, empty research, subordinate plan, fast repeat and globe robots rendered.");Exit();}
+  if(frame++==12){Console.WriteLine("PASS: newspaper/research/industry flow, four award reveals and newspaper timer, world-plan button, owned/unowned catalogue, empty research, subordinate plan, fast repeat and globe robots rendered.");Exit();}
  }
 }

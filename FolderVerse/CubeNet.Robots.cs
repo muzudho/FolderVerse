@@ -58,7 +58,8 @@ public sealed partial class CubeNet
             }).ToArray();
             var bounds=cards.Aggregate(Rectangle.Union);
             if(!MapViewport(panel).Intersects(bounds))continue;
-            _robotBadges.Add(new(node.Id,bounds,true));
+            // Keep gaps between robots outside the hit area.
+            foreach(var card in cards)_robotBadges.Add(new(node.Id,card,true));
             for(int i=0;i<robots.Length;i++)
             {
                 var robot=robots[i];var card=cards[i];
@@ -71,6 +72,7 @@ public sealed partial class CubeNet
                     DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part),CountryFocus>=0 && DimNode(node.Id));
                     row++;
                 }
+                if(robot.ShoeOwner>=0)RobotWorkArt.DrawShoes(ui,card,world.OwnerColor(robot.ShoeOwner));
             }
         }
     }

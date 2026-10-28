@@ -6,6 +6,8 @@ using System.Linq;
 public sealed record March(int Ruler,int TargetNode,long Fighters,int SourceNode=-1,bool Queen=true,bool PocketOnly=false,long[] RobotIds=null,bool Peaceful=false);
 public sealed class ConquestCampaign
 {
+    public int[] PreviousNodeOwners {get;private set;}=Array.Empty<int>();
+    public bool OwnershipChanged(Node node)=>PreviousNodeOwners!=null && node.Id<PreviousNodeOwners.Length && PreviousNodeOwners[node.Id]!=node.Owner;
     public bool UseRobotCombat {get;set;}=true;
     public RobotCampaign RobotBattles {get;}=new();
     public string Report {get;private set;}="";
@@ -46,12 +48,13 @@ public sealed class ConquestCampaign
     }
     public int[] Submitted=>_submitted.OrderBy(r=>r).ToArray();
     public bool AwaitingPlayers=>_submitted.Count>0;
-    public void Reset(){Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
+    public void Reset(){PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
     public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false)
     {
         world.Robots.PersuadeAtHome(world);
         Battles.Clear();
-        var orders=_plannedOrders.Where(o=>automaticAll || o.Ruler==world.PlayerSlot || world.HumanPlayers.Count==0 && !o.Queen).ToList();
+        int controller=world.TurnPlayer;var controlled=world.ControlledParty(controller).ToHashSet();
+        var orders=_plannedOrders.Where(o=>automaticAll || controlled.Contains(o.Ruler)).ToList();
         if(automaticAll){orders.AddRange(_partyOrders);_partyOrders.Clear();_submitted.Clear();}
         if(targetNode>=0)
         {
@@ -61,14 +64,15 @@ public sealed class ConquestCampaign
         _plannedOrders.RemoveAll(o=>orders.Contains(o));
         if(enemies)
         {
-            var party=world.ManualRulers();
+            var party=world.TurnPlayers();
             if(party.Length>1 && !automaticAll)
             {
-                _submitted.Add(world.PlayerSlot);_partyOrders.AddRange(orders);
+                _submitted.Add(controller);_partyOrders.AddRange(orders);
                 int next=party.FirstOrDefault(r=>!_submitted.Contains(r),-1);
                 if(next>=0){world.SelectTurnRuler(next);Report="次の担当の行動を選択 / 全員の行動後にターン確定";return;}
                 orders=_partyOrders.ToList();_partyOrders.Clear();_submitted.Clear();world.SelectTurnRuler(party[0]);
             }
+            if(!automaticAll && party.Length<=1)world.SelectTurnRuler(controller);
             var random=new SeedRandom(world.PlacementSeed^world.Population.Turn^0x57421);
             for(int ruler=0;ruler<world.ActiveCount;ruler++)
             {
@@ -108,6 +112,7 @@ public sealed class ConquestCampaign
     }
     public void Resolve(WorldSetup world,IReadOnlyList<March> orders)
     {
+        PreviousNodeOwners=world.Nodes.All.Select(n=>n.Owner).ToArray();
         if(UseRobotCombat)
         {
             RobotBattles.Advance(world,orders);
@@ -155,6 +160,7 @@ public sealed class ConquestCampaign
             forces[order.Ruler]=army;
         }
         world.Population.Advance(world);
+        world.Salvage.Advance(world,world.Population.Turn);
         world.Industry.Queue(world.Population.Turn);
         int conquests=0;
         foreach(var entry in arrivals.OrderBy(e=>e.Key))

@@ -20,6 +20,7 @@ sealed class GlobeCheck:Game1
         setup=(WorldSetup)Get("_setup");for(int seed=0;;seed++){setup.SetWorld(seed);if(setup.Width>=3 && setup.Height>=3 && setup.Depth>=3)break;}setup.SetCast(123);setup.SetPlacement(456);setup.SelectPlayer(0);
         globe=(WorldPreview)Get("_world");globe.ShowSetup(setup,true);((CubeNet)Get("_net")).Home(setup);
         Set("_screen",Enum.Parse(typeof(Game1).GetField("_screen",Flags)!.FieldType,"WorldStatus"));
+        CheckNodeHits();
         Set("_yawAngle",0f);Set("_pitchAngle",0f);
         Check(globe.ProjectVisible(new(0,0,setup.Depth/2f),Vector3.Backward,0,0,new(1040,240,790,580),out var center) && Vector2.Distance(center,new(1435,530))<1,"Front projection wrong");
         Check(!globe.ProjectVisible(new(0,0,-setup.Depth/2f),Vector3.Forward,0,0,new(1040,240,790,580),out _),"Back label visible");
@@ -95,8 +96,55 @@ sealed class GlobeCheck:Game1
             Check(isolated.Values.All(v=>v.Longitude && v.Latitude),"Gap endpoints were suppressed");
         }
     }
+    void CheckNodeHits()
+    {
+        var net=(CubeNet)Get("_net");var area=(Rectangle)typeof(Game1).GetProperty("StatusGlobeArea",Flags)!.GetValue(this)!;
+        var bounds=(Rectangle)typeof(Game1).GetProperty("MapViewBounds",Flags)!.GetValue(this)!;
+        var hit=typeof(Game1).GetMethod("HitGlobeNode",Flags)!;
+        int Hit(Point p,IEnumerable<int> candidates=null)=>(int)hit.Invoke(this,new object[]{p,candidates})!;
+        net.ClearGlobeRobotBadges();
+        var visible=setup.Nodes.All.Select(n=>{
+            bool front=globe.ProjectVisible(setup.Routes.Position(n.Cell,n.Center),setup.Cells[n.Cell].Normal,(float)typeof(Game1).GetProperty("_yaw",Flags)!.GetValue(this)!,(float)typeof(Game1).GetProperty("_pitch",Flags)!.GetValue(this)!,area,out var at);
+            return (Node:n,Point:at.ToPoint(),Front:front);
+        }).Where(x=>x.Front && bounds.Contains(x.Point)).ToArray();
+        var target=visible.First(x=>Hit(x.Point)==x.Node.Id);int other=setup.Nodes.All.First(n=>n.Id!=target.Node.Id).Id;
+        net.AddGlobeRobotBadge(other,new Rectangle(target.Point.X-40,target.Point.Y-40,80,80));
+        Check(Hit(target.Point)==target.Node.Id,"Visible node marker must win over another node's robot bounds");
+        Check(Hit(target.Point,new[]{other})==-1,"Action candidates must not redirect a hover to a different node");
+        net.ClearGlobeRobotBadges();
+        net.AddGlobeRobotBadge(other,new Rectangle(100,100,10,10));net.AddGlobeRobotBadge(other,new Rectangle(140,100,10,10));
+        Check(net.HitRobotBadge(new Point(125,105))==-1,"Gap between individual robot bounds is not clickable");
+        net.ClearGlobeRobotBadges();
+        var panel=new Rectangle(55,150,1600,800);
+        var at=net.NodePosition(setup,target.Node,panel).ToPoint();int nearest=net.HitNode(setup,panel,at);
+        if(nearest>=0)Check(net.HitNode(setup,panel,at,setup.Nodes.All.Where(n=>n.Id!=nearest).Select(n=>n.Id))==-1,"Net action must select the hovered node or nothing");
+        // Test the real marker renderer and pick both ends with the same geometry.
+        var previous=setup.Nodes.All.Select(n=>n.Owner).ToArray();int original=target.Node.Owner;
+        typeof(ConquestCampaign).GetProperty("PreviousNodeOwners")!.SetValue(setup.Campaign,previous);
+        target.Node.Owner=original==0?1:0;
+        net.VisibleOperationNodes=new HashSet<int>{target.Node.Id};
+        globe.ProjectVisible(setup.Routes.Position(target.Node.Cell,target.Node.Center)+setup.Cells[target.Node.Cell].U,setup.Cells[target.Node.Cell].Normal,(float)typeof(Game1).GetProperty("_yaw",Flags)!.GetValue(this)!,(float)typeof(Game1).GetProperty("_pitch",Flags)!.GetValue(this)!,area,out var unit);
+        float radius=MathHelper.Clamp(Vector2.Distance(target.Point.ToVector2(),unit)*.06f,4,10);if(target.Node.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
+        var small=NodeOwnershipArt.PreviousCenter(target.Point.ToVector2(),radius).ToPoint();
+        Check(Hit(target.Point)==target.Node.Id && Hit(small)==target.Node.Id,"Both ownership circles pick the same globe node");
+        net.HoveredNode=target.Node.Id;Check(Hit(small)==target.Node.Id,"Hover does not move the old-owner hit area");net.HoveredNode=-1;
+        float netRadius=MathHelper.Clamp(net.Fit(panel).Scale*.06f,4,10);if(target.Node.IsHarbor)netRadius=MathHelper.Clamp(netRadius*1.7f,12,20);
+        var smallNet=NodeOwnershipArt.PreviousCenter(net.NodePosition(setup,target.Node,panel),netRadius).ToPoint();
+        Check(net.HitNode(setup,panel,smallNet)==target.Node.Id,"Old-owner circle picks the same net node");
+        net.VisibleOperationNodes=null;target.Node.Owner=original;typeof(ConquestCampaign).GetProperty("PreviousNodeOwners")!.SetValue(setup.Campaign,Array.Empty<int>());
+        var ui=(UiPainter)Get("_ui");var batch=(SpriteBatch)Get("_spriteBatch");var viewport=GraphicsDevice.Viewport;
+        using(var image=new RenderTarget2D(GraphicsDevice,600,170)){
+            GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(new Color(24,43,51));batch.Begin(samplerState:SamplerState.PointClamp);
+            for(int i=0;i<3;i++)NodeOwnershipArt.Draw(ui,new Vector2(140+i*190,85),new[]{4f,10f,20f}[i],Color.Red,Color.CornflowerBlue,new Color(13,36,44));
+            batch.End();GraphicsDevice.SetRenderTarget(null);GraphicsDevice.Viewport=viewport;
+            using var file=File.Create(Path.Combine(AppContext.BaseDirectory,"ownership-transition.png"));image.SaveAsPng(file,600,170);
+        }
+        Console.WriteLine("PASS: ownership twin-circle picking, stable hover and marker rendering.");
+        Console.WriteLine("PASS: node marker priority, hover/action identity and robot gaps.");
+    }
     protected override void Update(GameTime time)
     {
+        if(Environment.GetCommandLineArgs().Contains("--node-hits-only")){Exit();return;}
         if(updated==frame)return;updated=frame;
         switch(frame)
         {

@@ -9,9 +9,24 @@ public partial class Game1
     private bool _pocketFromNode;
     private string _pocketMessage="";
     private static Rectangle PocketTransferButton(bool fromNode)=>new(fromNode?1000:54,615,300,48);
-    private bool PocketRobotSelectable(Robot robot,bool fromNode)=>robot.Owner==_setup.PlayerSlot &&
-        !_setup.Campaign.RobotBattles.LockedNode(_setup.Nodes.Current(_setup.PlayerSlot).Id) &&
-        (!fromNode || !_setup.Robots.AssemblyLocked(_setup.Nodes.Current(_setup.PlayerSlot).Id,robot));
+    private string PocketRobotLockReason(Robot robot,bool fromNode)
+    {
+        if(robot.Owner!=_setup.PlayerSlot)return "他国のロボット";
+        int node=_setup.Nodes.Current(_setup.PlayerSlot).Id;var world=_setup.Robots;
+        if(_setup.Campaign.RobotBattles.LockedNode(node))return "継戦中";
+        if(!fromNode)return "";
+        if(world.Workshops[node].DisposalTarget==robot.Id)return "廃棄処理中";
+        if(robot.FactoryWorker)return "工場作業員予約";
+        if(robot.InterceptOnly)return "迎撃専用予約";
+        if(robot.DefenseOnly)return "守備専用予約";
+        if(robot.Disposal)return "廃棄予約";
+        var edit=world.PendingEdits.FirstOrDefault(e=>e.Ids.Contains(robot.Id));
+        if(edit!=null)return edit.SplitPart.HasValue?"分解予約":"組立予約";
+        if(world.MarchReserved(node,robot))return "出撃予約";
+        if(world.DirectDelivery.LockedParts(node,robot.Id)!=0)return "直送便予約";
+        return world.AssemblyLocked(node,robot)?"作業予約中":"";
+    }
+    private bool PocketRobotSelectable(Robot robot,bool fromNode)=>PocketRobotLockReason(robot,fromNode).Length==0;
     private bool PocketTransferEnabled(bool fromNode)
     {
         if(!_pocketRobot.HasValue || _pocketFromNode!=fromNode)return false;
@@ -43,7 +58,7 @@ public partial class Game1
             {
                 var robot=store.Robots[i];
                 if(PocketRobotSelectable(robot,fromNode)){_pocketRobot=robot.Id;_pocketFromNode=fromNode;_pocketMessage="";}
-                else _pocketMessage=robot.Owner!=player?"他国のロボットはポケットに入れられません":"継戦中・作業予約中のロボットは移せません";
+                else _pocketMessage=PocketRobotLockReason(robot,fromNode)+"のため移せません";
                 return;
             }
         }
@@ -54,7 +69,7 @@ public partial class Game1
         if(_setup.Campaign.RobotBattles.LockedNode(node)){_pocketMessage="継戦中の地点では配備を変更できません";return;}
         if(!destination.HasSpace){_pocketMessage="移動先が満杯です（出撃中の帰還予約を含む）";return;}
         if(_pocketFromNode && !PocketRobotSelectable(source.Robots.Single(r=>r.Id==id),true))
-        {_pocketMessage="組立・分解・廃棄を予約したロボットは移せません";return;}
+        {_pocketMessage=PocketRobotLockReason(source.Robots.Single(r=>r.Id==id),true)+"のため移せません";return;}
         if(!source.Robots.Any(r=>r.Id==id && r.Owner==player)){_pocketRobot=null;return;}
         destination.Add(source.Remove(id));_pocketRobot=null;
         if(_pocketFromNode && _setup.TutorialStep==2 && player==0)_setup.TutorialPocketed=true;
@@ -79,9 +94,15 @@ public partial class Game1
                 _ui.Box(card,hover?new Color(70,103,118):own?Muted:new Color(37,44,53));
                 var ownerColor=_setup.OwnerColor(robot.Owner);_ui.Box(new(card.X+3,card.Y+3,card.Width-6,23),ownerColor);
                 _ui.Center((own?"自国":"他国")+$" #{robot.Owner+1}",new(card.X+3,card.Y+3,card.Width-6,23),.35f,UiPainter.ContrastInk(ownerColor));
-                DrawRobotGlyph(new(card.X+46,card.Y+31,44,52),robot,whiteOutline:true);
-                _ui.Center(PartsLabel(robot.Parts),new(card.X,card.Y+89,card.Width,28),.4f,Cream);
-                _ui.Center("ID "+robot.Id,new(card.X,card.Y+115,card.Width,24),.32f,Cream);
+                DrawRobotGlyph(new(card.X+46,card.Y+28,44,46),robot,opacity:selectable?1:.38f,whiteOutline:true);
+                _ui.Center(PartsLabel(robot),new(card.X,card.Y+75,card.Width,24),System.Math.Min(.34f,(card.Width-8)/System.Math.Max(1,_font.MeasureString(PartsLabel(robot)).X)),selectable?Cream:Cream*.55f);
+                _ui.Center("ID "+robot.Id,new(card.X,card.Y+98,card.Width,18),.28f,Cream);
+                string reason=PocketRobotLockReason(robot,fromNode);
+                if(reason.Length>0){
+                    var badge=new Rectangle(card.X+3,card.Y+119,card.Width-6,19);
+                    _ui.Box(badge,new Color(86,54,35));
+                    _ui.Center(reason,badge,System.Math.Min(.28f,(badge.Width-8)/System.Math.Max(1,_font.MeasureString(reason).X)),new Color(255,222,162));
+                }
                 if(_pocketRobot==robot.Id && _pocketFromNode==fromNode)PocketOutline(card,new(255,220,114),4);
                 else if(hover)PocketOutline(card,Cream);
             }
@@ -98,6 +119,8 @@ public partial class Game1
             for(int i=0;i<store.Count;i++)if(PocketCard(i,fromNode).Contains(_pointer)){
                 var robot=store.Robots[i];string name=$"所属 #{robot.Owner+1}　"+_setup.ConquerorNames[robot.Owner]+(robot.Owner==player?" / 自国":" / 他国");
                 _ui.Text(name,new(54,793),System.Math.Min(.55f,1770/_font.MeasureString(name).X),_setup.OwnerColor(robot.Owner));
+                string reason=PocketRobotLockReason(robot,fromNode);
+                _ui.Text(reason.Length==0?"状態：移動可能":"状態："+reason+" / 移動不可",new(54,839),.48f,reason.Length==0?Cream:new Color(255,222,162));
             }
         }
         _ui.Text(_pocketMessage,new(54,936),.5f,Cream);
