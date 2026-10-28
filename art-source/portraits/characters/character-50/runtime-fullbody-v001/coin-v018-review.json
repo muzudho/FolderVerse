@@ -1,0 +1,12 @@
+{
+  "At": "2026-10-25T11:10:07.962Z",
+  "Source": "character-50-coin-v018-generated.png",
+  "Sha256": "13722a4a8c7ebcc2bf95925cf55e4c2a0c5b346b70ad6737d4bf0341bb5bbbee",
+  "Width": 1024,
+  "Height": 1536,
+  "Prompt": "coin-v018-prompt.txt",
+  "Reference": "character-50-coin-v004-generated.png",
+  "Evidence": "coin-eye-review-v018.png",
+  "Status": "HIGH_RESOLUTION_GENERATED_FINAL_RUNTIME_REVIEW_PENDING",
+  "GameAdopted": false
+}

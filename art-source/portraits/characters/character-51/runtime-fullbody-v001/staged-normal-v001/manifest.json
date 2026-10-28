@@ -1,0 +1,138 @@
+{
+  "CharacterId": 51,
+  "Status": "STAGED_NOT_ADOPTED",
+  "Images": [
+    {
+      "Id": 1,
+      "Set": "domestic",
+      "File": "domestic/character-51-1.png",
+      "Sha256": "3681ac2be5dcdbf2e5784a99ab2539d32529a794bbdf689147af3ba42a34cf57",
+      "Master": "character-51-normal-1-v004-generated.png",
+      "MasterSha256": "9c5cf2be2e3be26bac55b3ff40f7323daa8170b7beaadf29b82c6f8190f167f3",
+      "Prompt": "normal-1-v004-prompt.txt",
+      "Crop": {
+        "X": 250,
+        "Y": 65,
+        "Width": 640,
+        "Height": 480
+      },
+      "GameAdopted": false
+    },
+    {
+      "Id": 1,
+      "Set": "creation",
+      "File": "creation/character-51-1.png",
+      "Sha256": "3681ac2be5dcdbf2e5784a99ab2539d32529a794bbdf689147af3ba42a34cf57",
+      "Master": "character-51-normal-1-v004-generated.png",
+      "MasterSha256": "9c5cf2be2e3be26bac55b3ff40f7323daa8170b7beaadf29b82c6f8190f167f3",
+      "Prompt": "normal-1-v004-prompt.txt",
+      "Crop": {
+        "X": 250,
+        "Y": 65,
+        "Width": 640,
+        "Height": 480
+      },
+      "GameAdopted": false
+    },
+    {
+      "Id": 3,
+      "Set": "domestic",
+      "File": "domestic/character-51-3.png",
+      "Sha256": "0bb50280b79819350578cc28e44fdc4ba1fcdd319d4b1aecc294575f88262ad6",
+      "Master": "character-51-normal-3-v006-generated.png",
+      "MasterSha256": "89b31a269d1b3f433a93a4d850023a00db313de6e761f0a03d7d2f2bc0475111",
+      "Prompt": "normal-3-v006-prompt.txt",
+      "Crop": {
+        "X": 310,
+        "Y": 5,
+        "Width": 720,
+        "Height": 540
+      },
+      "GameAdopted": false
+    },
+    {
+      "Id": 3,
+      "Set": "creation",
+      "File": "creation/character-51-3.png",
+      "Sha256": "0bb50280b79819350578cc28e44fdc4ba1fcdd319d4b1aecc294575f88262ad6",
+      "Master": "character-51-normal-3-v006-generated.png",
+      "MasterSha256": "89b31a269d1b3f433a93a4d850023a00db313de6e761f0a03d7d2f2bc0475111",
+      "Prompt": "normal-3-v006-prompt.txt",
+      "Crop": {
+        "X": 310,
+        "Y": 5,
+        "Width": 720,
+        "Height": 540
+      },
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Set": "domestic",
+      "File": "domestic/character-51-4.png",
+      "Sha256": "af19d1307213b010069dd32b33e92c5b55013cc497b907ba3a354b4513d665e8",
+      "Master": "character-51-normal-4-v007-generated.png",
+      "MasterSha256": "57472eb96c489e76d9dff69ee9a68af04e7d6703229d9d1265b91db2c1b25a10",
+      "Prompt": "normal-4-v007-prompt.txt",
+      "Crop": {
+        "X": 260,
+        "Y": 150,
+        "Width": 680,
+        "Height": 510
+      },
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Set": "creation",
+      "File": "creation/character-51-4.png",
+      "Sha256": "af19d1307213b010069dd32b33e92c5b55013cc497b907ba3a354b4513d665e8",
+      "Master": "character-51-normal-4-v007-generated.png",
+      "MasterSha256": "57472eb96c489e76d9dff69ee9a68af04e7d6703229d9d1265b91db2c1b25a10",
+      "Prompt": "normal-4-v007-prompt.txt",
+      "Crop": {
+        "X": 260,
+        "Y": 150,
+        "Width": 680,
+        "Height": 510
+      },
+      "GameAdopted": false
+    },
+    {
+      "Id": 5,
+      "Set": "domestic",
+      "File": "domestic/character-51-5.png",
+      "Sha256": "72ffe25923ea88ab8e1faf9fa653a8ad4369a612a9d45d3aeec1d69e736e4288",
+      "Master": "character-51-normal-5-v003-generated.png",
+      "MasterSha256": "3ae5300dfec306e16013ac5e4061b416acae8672d38b2faad8fc0311aee2515f",
+      "Prompt": "normal-5-v003-prompt.txt",
+      "Crop": {
+        "X": 330,
+        "Y": 0,
+        "Width": 720,
+        "Height": 540
+      },
+      "GameAdopted": false
+    },
+    {
+      "Id": 5,
+      "Set": "creation",
+      "File": "creation/character-51-5.png",
+      "Sha256": "72ffe25923ea88ab8e1faf9fa653a8ad4369a612a9d45d3aeec1d69e736e4288",
+      "Master": "character-51-normal-5-v003-generated.png",
+      "MasterSha256": "3ae5300dfec306e16013ac5e4061b416acae8672d38b2faad8fc0311aee2515f",
+      "Prompt": "normal-5-v003-prompt.txt",
+      "Crop": {
+        "X": 330,
+        "Y": 0,
+        "Width": 720,
+        "Height": 540
+      },
+      "GameAdopted": false
+    }
+  ],
+  "Missing": [
+    2,
+    6
+  ]
+}
