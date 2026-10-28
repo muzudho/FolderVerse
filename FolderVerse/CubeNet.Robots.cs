@@ -21,7 +21,7 @@ public sealed partial class CubeNet
         if(ShowRoutes)foreach(var cell in world.Cells)
             DrawNodeMarkers(ui,world,cell.Id,p=>AnimatedSurfacePosition(cell.Id,p,world,panel),pulse);
         DrawBatteries(ui,world,panel,r=>AnimatedSurfacePosition(world.ConquerorLocations[r],world.Routes.Position(world.ConquerorLocations[r],world.ConquerorPoints[r]),world,panel),pulse);
-        DrawRobotLayer(ui,world,panel,n=>AnimatedNodePosition(world,n,panel),Fit(panel).Scale);
+        DrawRobotLayer(ui,world,panel,n=>AnimatedNodePosition(world,n,panel),Fit(panel).Scale,pulse);
     }
     public void DrawGlobeRobots(UiPainter ui,WorldSetup world,WorldPreview globe,Rectangle panel,float yaw,float pitch)
     {
@@ -40,7 +40,8 @@ public sealed partial class CubeNet
     }
     private static int MapPartCount(RobotParts parts)=>
         ((parts&RobotParts.Head)!=0?1:0)+((parts&RobotParts.Body)!=0?1:0)+((parts&RobotParts.Legs)!=0?1:0);
-    private void DrawRobotLayer(UiPainter ui,WorldSetup world,Rectangle panel,Func<Node,Vector2?> project,float scale)
+    public static float MapObjectHop(double seconds,int index)=>6*MathF.Pow(MathF.Max(0,MathF.Sin((float)(seconds*MathHelper.TwoPi/1.2)+index*.45f)),2);
+    private void DrawRobotLayer(UiPainter ui,WorldSetup world,Rectangle panel,Func<Node,Vector2?> project,float scale,float pulse=0)
     {
         _robotBadges.Clear();
         if(!ShowRobots || !world.Campaign.UseRobotCombat)return;
@@ -51,7 +52,7 @@ public sealed partial class CubeNet
             var robots=world.Robots.Nodes[node.Id].Robots.Where(r=>ShowOtherCountries || world.Relations.Controls(r.Owner)).OrderByDescending(r=>MapPartCount(r.Parts)).ToArray();
             if(robots.Length==0)continue;
             var point=project(node);if(point==null)continue;
-            var at=point.Value;float zoom=ShowRoutes && EmphasizedNode(node.Id)?2:1;
+            var at=point.Value;float zoom=1;
             var cards=robots.Select((robot,i)=>{
                 var offset=RobotRingSlot(i,robots.Length)*zoom;
                 return new Rectangle((int)(at.X+offset.X-12*zoom),(int)(at.Y+offset.Y-MapPartCount(robot.Parts)*6*zoom),(int)(24*zoom),(int)(MapPartCount(robot.Parts)*12*zoom));
@@ -59,10 +60,11 @@ public sealed partial class CubeNet
             var bounds=cards.Aggregate(Rectangle.Union);
             if(!MapViewport(panel).Intersects(bounds))continue;
             // Keep gaps between robots outside the hit area.
-            foreach(var card in cards)_robotBadges.Add(new(node.Id,card,true));
+            foreach(var card in cards){var hit=card;if(ShowRoutes && EmphasizedNode(node.Id)){hit.Y-=6;hit.Height+=6;}_robotBadges.Add(new(node.Id,hit,true));}
             for(int i=0;i<robots.Length;i++)
             {
                 var robot=robots[i];var card=cards[i];
+                if(ShowRoutes && EmphasizedNode(node.Id))card.Offset(0,-(int)MapObjectHop(pulse,i));
                 int row=0;
                 foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
                 {
