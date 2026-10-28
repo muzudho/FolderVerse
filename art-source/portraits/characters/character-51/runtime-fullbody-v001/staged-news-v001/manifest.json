@@ -1,0 +1,147 @@
+{
+  "CharacterId": 51,
+  "Status": "STAGED_NOT_ADOPTED",
+  "Images": [
+    {
+      "Id": "formal",
+      "Version": "v006",
+      "Master": "character-51-newspaper-formal-v006-generated.png",
+      "MasterSha256": "ef7ae5a50c4d3c40ce2cf859186bc9f759d8b033f05d5ef1464b18d1888d86ef",
+      "Prompt": "newspaper-formal-v006-prompt.txt",
+      "Crop": {
+        "X": 330,
+        "Y": 0,
+        "Width": 600,
+        "Height": 800
+      },
+      "File": "character-51-formal.png",
+      "Sha256": "5280db1ec5e3565ef8682c270cd6e344bb37b1a1d1f66cdc666a6f82c2213c8a",
+      "GrayPreview": "newspaper-formal-v006-preview-gray.png",
+      "GameAdopted": false
+    },
+    {
+      "Id": "election",
+      "Version": "v004",
+      "Master": "character-51-newspaper-election-v004-generated.png",
+      "MasterSha256": "388196a1143b83b823cd79ea9d7a3cf2565e65bf8d8f83f1b73180dd1e269e1c",
+      "Prompt": "newspaper-election-v004-prompt.txt",
+      "Crop": {
+        "X": 330,
+        "Y": 20,
+        "Width": 600,
+        "Height": 800
+      },
+      "File": "character-51-election.png",
+      "Sha256": "b26d06e4c10c1336b9c3a67cd2a8b3a08b5275e7e2d6e2167dd4b23689207795",
+      "GrayPreview": "newspaper-election-v004-preview-gray.png",
+      "GameAdopted": false
+    },
+    {
+      "Id": "friends",
+      "Version": "v004",
+      "Master": "character-51-newspaper-friends-v004-generated.png",
+      "MasterSha256": "781e2a9ed3a0d980ea39c6fed6ade9bc9414cb52564cd09d06f38ff1dcd1b526",
+      "Prompt": "newspaper-friends-v004-prompt.txt",
+      "Crop": {
+        "X": 390,
+        "Y": 100,
+        "Width": 540,
+        "Height": 720
+      },
+      "File": "character-51-friends.png",
+      "Sha256": "870d064100c5da31dd2405826ea1289676c0348303b5a7275a45837d1a27b383",
+      "GrayPreview": "newspaper-friends-v004-preview-gray.png",
+      "GameAdopted": false
+    },
+    {
+      "Id": "history",
+      "Version": "v005",
+      "Master": "character-51-newspaper-history-v005-generated.png",
+      "MasterSha256": "2fe4f07c60c67a5361ad4510dc47567c4a64e5ba2d731a6f5ecd3b341182c62d",
+      "Prompt": "newspaper-history-v005-prompt.txt",
+      "Crop": {
+        "X": 360,
+        "Y": 85,
+        "Width": 600,
+        "Height": 800
+      },
+      "File": "character-51-history.png",
+      "Sha256": "2b962a0807c391e43de498392ee205303a7d3360b5623713f35725e2fb14288a",
+      "GrayPreview": "newspaper-history-v005-preview-gray.png",
+      "GameAdopted": false
+    },
+    {
+      "Id": "coin",
+      "Version": "v008",
+      "Master": "character-51-newspaper-coin-v008-generated.png",
+      "MasterSha256": "b9f93230a96aa236d42bd1120a3cf9a1c43c3494356a62a9f279a367b647282e",
+      "Prompt": "newspaper-coin-v008-prompt.txt",
+      "Crop": {
+        "X": 320,
+        "Y": 0,
+        "Width": 600,
+        "Height": 800
+      },
+      "File": "character-51-coin.png",
+      "Sha256": "46d4a145be1fcf81dbec4c5254dcb81d4055fc6abd5616acd23f050cd9bfd9e5",
+      "GrayPreview": "newspaper-coin-v008-preview-gray.png",
+      "GameAdopted": false
+    },
+    {
+      "Id": "id",
+      "Version": "v017",
+      "Master": "character-51-newspaper-id-v017-generated.png",
+      "MasterSha256": "690faea522da33d81824dfcb7bd4ba914312b677e999d5df4fe32e913ee22718",
+      "Prompt": "newspaper-id-v017-prompt.txt",
+      "Crop": {
+        "X": 210,
+        "Y": 30,
+        "Width": 600,
+        "Height": 800
+      },
+      "File": "character-51-id.png",
+      "Sha256": "3a90a0cf8d36352b67f0ae6b709a89a05e4b3b2f5ba354131e5d23f95a0df060",
+      "GrayPreview": "newspaper-id-v017-preview-gray.png",
+      "GameAdopted": false
+    },
+    {
+      "Id": "idol",
+      "Version": "v009",
+      "Master": "character-51-newspaper-idol-v009-generated.png",
+      "MasterSha256": "9843c2f2c364d217eb92325208aa574a16fe9199261e930cf402ebea3c166617",
+      "Prompt": "newspaper-idol-v009-prompt.txt",
+      "Crop": {
+        "X": 280,
+        "Y": 35,
+        "Width": 750,
+        "Height": 1000
+      },
+      "File": "character-51-idol.png",
+      "Sha256": "4d552c0a5e1d47b902892047c0ebb77534dbcc2569adb12c93bf01fddf27ddfc",
+      "GrayPreview": "newspaper-idol-v009-preview-gray.png",
+      "GameAdopted": false
+    },
+    {
+      "Id": "paparazzi",
+      "Version": "v011",
+      "Master": "character-51-newspaper-paparazzi-v011-generated.png",
+      "MasterSha256": "defa1c1f1550f9583cfb9d29d52d46c58eb16852564dd9d4f516f5b6da68a2fb",
+      "Prompt": "newspaper-paparazzi-v011-prompt.txt",
+      "Crop": {
+        "X": 225,
+        "Y": 60,
+        "Width": 600,
+        "Height": 800
+      },
+      "File": "character-51-paparazzi.png",
+      "Sha256": "438b2dfbb7f263d766bf64ca1be1b260b3985ba684aa394c0654edd4157f4073",
+      "GrayPreview": "newspaper-paparazzi-v011-preview-gray.png",
+      "GameAdopted": false
+    }
+  ],
+  "Remaining": [
+    "normal-2",
+    "normal-6"
+  ],
+  "GameAdopted": false
+}

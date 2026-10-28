@@ -1,0 +1,82 @@
+[
+  {
+    "Target": "v3-standardized/tiles/character-51-1.png",
+    "Sha256": "7ba898bb287a582332793e42570aa5c1d9772e6fda2079f7ccd3cb81dfbfe599"
+  },
+  {
+    "Target": "conqueror-creation/tiles/character-51-1.png",
+    "Sha256": "68b589264fe13b0a90319403cd29026753925fb99fb6ee3b85c18c1c4a9f535b"
+  },
+  {
+    "Target": "v3-standardized/tiles/character-51-2.png",
+    "Sha256": "cd18cb69d4f1ff13c2b8c968bc109f2e754fa1f603ef77003c6b2f08bea490ee"
+  },
+  {
+    "Target": "conqueror-creation/tiles/character-51-2.png",
+    "Sha256": "a6da227606a59732638ca213d2bf5b07ecb66d0f5182742b1b1ab1f3bc28fa7e"
+  },
+  {
+    "Target": "v3-standardized/tiles/character-51-3.png",
+    "Sha256": "211c03a4b3d852191970d6276b0228a994799c9c7da3975d1d66b7369da32ee3"
+  },
+  {
+    "Target": "conqueror-creation/tiles/character-51-3.png",
+    "Sha256": "f926215e6390180104b0c0465d0db777707108b79e139ef1459028a4702a3c85"
+  },
+  {
+    "Target": "v3-standardized/tiles/character-51-4.png",
+    "Sha256": "0988b6362d2339cbaab6f4cb11fb74950b8a28225b9b3090a557f1c2f7df3277"
+  },
+  {
+    "Target": "conqueror-creation/tiles/character-51-4.png",
+    "Sha256": "0f8b14d66417bf59acbb0c16c5caed1e9601468477f2f276e6beccd511e27cdb"
+  },
+  {
+    "Target": "v3-standardized/tiles/character-51-5.png",
+    "Sha256": "a165507db833b98335bd9fdbbcdf6aba60e51b4120b229352dcda4f6f4db2aaa"
+  },
+  {
+    "Target": "conqueror-creation/tiles/character-51-5.png",
+    "Sha256": "0306922889d291151cdeb9071ee4e21f3dd37554d20bd57952264b7d7d9b116e"
+  },
+  {
+    "Target": "v3-standardized/tiles/character-51-6.png",
+    "Sha256": "9482e5af2748bba3e7190b2813030a326b7db0188b8dfe617a2825b6ca049028"
+  },
+  {
+    "Target": "conqueror-creation/tiles/character-51-6.png",
+    "Sha256": "9a02595e145907c8395e1adef3bd9463ffa48ccccd5c9c2e05a031a722e9a511"
+  },
+  {
+    "Target": "newspaper/character-51-formal.png",
+    "Sha256": "a0ef5d208aef340b80ab9426c70d097fe82187fcf0e5c3087d363666a206b628"
+  },
+  {
+    "Target": "newspaper/character-51-election.png",
+    "Sha256": "0299f5c7751df6ec72ae0a416876c0b0ea79b460a4b3e9fc00a80cb16aeef110"
+  },
+  {
+    "Target": "newspaper/character-51-friends.png",
+    "Sha256": "ce7f15d4e6766a891af563176cd1369fb4a3c5c689b1529d44ccefd29cda7b7c"
+  },
+  {
+    "Target": "newspaper/character-51-history.png",
+    "Sha256": "790bbb5eedb6be22809ed2418bc38718ef3f5f9dbf83b18b3408cfc15b863a6a"
+  },
+  {
+    "Target": "newspaper/character-51-id.png",
+    "Sha256": "2b3c61cf348a017e47384dabb6cae45b282390166897e2ff347a75514571b778"
+  },
+  {
+    "Target": "newspaper/character-51-idol.png",
+    "Sha256": "5fad277f295a693ec157dccf1b8fcdb9a9656ec045b7fb9e792e956a4b7cd3a2"
+  },
+  {
+    "Target": "newspaper/character-51-paparazzi.png",
+    "Sha256": "a43d0141a65fe6f90da03658850c8bf93cd5ea6d152ccc8e17dfff2d6f667c13"
+  },
+  {
+    "Target": "newspaper/character-51-coin.png",
+    "Sha256": "b8411d5905e542b8090176a34b48021551bf30ebf8535337cd26d8c4dfb6e915"
+  }
+]

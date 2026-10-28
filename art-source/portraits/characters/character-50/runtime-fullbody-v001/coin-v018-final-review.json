@@ -1,0 +1,14 @@
+{
+  "At": "2026-10-25T11:38:27.722Z",
+  "Source": "character-50-coin-v018-generated.png",
+  "Sha256": "13722a4a8c7ebcc2bf95925cf55e4c2a0c5b346b70ad6737d4bf0341bb5bbbee",
+  "Evidence": [
+    "coin-eye-review-v018.png",
+    "coin-v018-preview.png",
+    "coin-v018-gray.png"
+  ],
+  "Finding": "上白部分はv016/v017の角状切れ込みから丸みのある白い主光点へ改善。横顔で細く見える虹彩の右上端に接触し白目へ同化、銀つるは下を連続して横切る。下白反射は青い下輪郭内。肌/瞼/睫毛への白円はみ出しなし。全身と本人横顔/銀眼鏡/衣装電池/重ね手袋/裾両靴保持。300x400カラー白黒で本人識別可。",
+  "Decision": "最新瞳条件に沿う実用候補としてv018を作業選択。横顔の見かけの楕円・画素の揺れがあり完全な幾何学真円の保証ではない。",
+  "ActualDimensions": "1024x1536（要求2048x3072は未反映）",
+  "GameAdopted": false
+}

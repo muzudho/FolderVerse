@@ -1,9 +1,9 @@
 {
   "CharacterId": 50,
-  "UpdatedAt": "2026-10-25T10:38:04.705Z",
+  "UpdatedAt": "2026-10-25T12:12:07.555Z",
   "Method": "built-in image_gen",
   "Standard": "v017-approved-20261018",
-  "GameAdopted": false,
+  "GameAdopted": true,
   "Backup": "backup-manifest.json",
   "Images": [
     {
@@ -123,7 +123,10 @@
         "Preview": "normal-1-v004-preview.png",
         "Evidence": "normal-1-eye-review-v004.png",
         "Status": "SELECTED_STAGED_V017_NOT_GAME_ADOPTED"
-      }
+      },
+      "PreAdoptionSource": "character-50-normal-1-v004-generated.png",
+      "GameAdopted": true,
+      "AdoptionRecord": "adoption.json"
     },
     {
       "Id": 2,
@@ -246,7 +249,10 @@
         "Evidence": "normal-2-props-compare-v001.png",
         "Order": "left v003 right v004",
         "Finding": "Blackwhite panda green leaves/collar bell red tassel raised paw retained. Eye/mouth shapes minor variation; blue battery scroll cups retained."
-      }
+      },
+      "PreAdoptionSource": "character-50-normal-2-v004-generated.png",
+      "GameAdopted": true,
+      "AdoptionRecord": "adoption.json"
     },
     {
       "Id": 3,
@@ -538,7 +544,10 @@
         "Source": "character-50-normal-3-v014-generated.png",
         "Status": "IMPROVED_STAGED_NOT_EXACT_CERTIFIED",
         "Evidence": "normal-3-eye-review-v014.png"
-      }
+      },
+      "PreAdoptionSource": "character-50-normal-3-v014-generated.png",
+      "GameAdopted": true,
+      "AdoptionRecord": "adoption.json"
     },
     {
       "Id": 4,
@@ -651,7 +660,10 @@
         "Preview": "normal-4-v004-preview.png",
         "Evidence": "normal-4-eye-review-v004.png",
         "Status": "SELECTED_STAGED_V019_NOT_GAME_ADOPTED"
-      }
+      },
+      "PreAdoptionSource": "character-50-normal-4-v004-generated.png",
+      "GameAdopted": true,
+      "AdoptionRecord": "adoption.json"
     },
     {
       "Id": 5,
@@ -894,15 +906,18 @@
         },
         "Width": 1024,
         "Height": 1024
-      }
+      },
+      "PreAdoptionSource": "character-50-normal-5-v009-generated.png",
+      "GameAdopted": true,
+      "AdoptionRecord": "adoption.json"
     },
     {
       "Id": 6,
       "Kind": "normal",
-      "Source": "character-50-normal-6-v003-generated.png",
+      "Source": "character-50-normal-6-v019-generated.png",
       "Width": 1448,
       "Height": 1086,
-      "Sha256": "bd19133df38c00c2b9c10863016ade3939416b64580bf73e359a9a737111cd43",
+      "Sha256": "9b175abe2efd66aa4fec29d64f6d1204393d9e92f6741d2fcf5a2714891470d8",
       "References": [
         "art-source/portraits/characters/character-50/character-50-6-v003-generated.png",
         "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
@@ -1335,7 +1350,10 @@
         "File": "normal-6-v019-final-review.json",
         "Source": "character-50-normal-6-v019-generated.png",
         "Status": "SELECTED_FOR_WORKING_STAGING_NOT_GAME_ADOPTED"
-      }
+      },
+      "PreAdoptionSource": "character-50-normal-6-v003-generated.png",
+      "GameAdopted": true,
+      "AdoptionRecord": "adoption.json"
     },
     {
       "Id": "formal",
@@ -1475,7 +1493,10 @@
         "Source": "character-50-formal-v006-generated.png",
         "Status": "IMPROVED_REVIEWED",
         "Evidence": "formal-eye-review-v006.png"
-      }
+      },
+      "PreAdoptionSource": "character-50-formal-v006-generated.png",
+      "GameAdopted": true,
+      "AdoptionRecord": "adoption.json"
     },
     {
       "Id": "election",
@@ -1710,7 +1731,10 @@
         },
         "Width": 1024,
         "Height": 1024
-      }
+      },
+      "PreAdoptionSource": "character-50-election-v009-generated.png",
+      "GameAdopted": true,
+      "AdoptionRecord": "adoption.json"
     },
     {
       "Id": "friends",
@@ -1816,7 +1840,10 @@
         "Source": "character-50-friends-v004-generated.png",
         "Status": "IMPROVED_REVIEWED",
         "Evidence": "friends-eye-review-v004.png"
-      }
+      },
+      "PreAdoptionSource": "character-50-friends-v004-generated.png",
+      "GameAdopted": true,
+      "AdoptionRecord": "adoption.json"
     },
     {
       "Id": "history",
@@ -2024,7 +2051,10 @@
         },
         "Width": 1024,
         "Height": 1024
-      }
+      },
+      "PreAdoptionSource": "character-50-history-v008-generated.png",
+      "GameAdopted": true,
+      "AdoptionRecord": "adoption.json"
     },
     {
       "Id": "id",
@@ -2187,7 +2217,10 @@
         "CropRecord": "audit-current-eyes-v001-crops.json",
         "Finding": "v005で上右主白点/左下補助点が改善。補助の一部は反射へ接する。既存個別拡大・白黒確認記録参照。",
         "Common": "青虹彩/白目/銀眼鏡/元の表情を判別。白点が肌へ大きくはみ出す異常は一覧で見られない。主点輪郭接触/微細睫毛本数の完全認定ではない。"
-      }
+      },
+      "PreAdoptionSource": "character-50-id-v005-generated.png",
+      "GameAdopted": true,
+      "AdoptionRecord": "adoption.json"
     },
     {
       "Id": "idol",
@@ -2299,15 +2332,18 @@
         "Source": "character-50-idol-v005-generated.png",
         "Status": "IMPROVED_REVIEWED",
         "Evidence": "idol-eye-review-v005.png"
-      }
+      },
+      "PreAdoptionSource": "character-50-idol-v005-generated.png",
+      "GameAdopted": true,
+      "AdoptionRecord": "adoption.json"
     },
     {
       "Id": "paparazzi",
       "Kind": "newspaper",
-      "Source": "character-50-paparazzi-v003-generated.png",
+      "Source": "character-50-paparazzi-v014-generated.png",
       "Width": 1086,
       "Height": 1448,
-      "Sha256": "54d75c62ce4a08e30eea6c20e6ee0aa281c9c85277f6a4d2124b3bb72124df9b",
+      "Sha256": "b2711f2586c60f8d396d3d5775cd2f406c24d54112de4d71f6b2da2f1ce39977",
       "References": [
         "art-source/portraits/newspaper-trials/character-50-paparazzi-v001-generated.png",
         "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
@@ -2642,15 +2678,18 @@
         "File": "paparazzi-v014-final-review.json",
         "Source": "character-50-paparazzi-v014-generated.png",
         "Status": "SELECTED_FOR_WORKING_STAGING_NOT_GAME_ADOPTED"
-      }
+      },
+      "PreAdoptionSource": "character-50-paparazzi-v003-generated.png",
+      "GameAdopted": true,
+      "AdoptionRecord": "adoption.json"
     },
     {
       "Id": "coin",
       "Kind": "newspaper",
-      "Source": "character-50-coin-v004-generated.png",
+      "Source": "character-50-coin-v018-generated.png",
       "Width": 1024,
       "Height": 1536,
-      "Sha256": "86444014a89fbfe834f0048de1107f9297d6f96938bc2b7c097e3062ec356bfb",
+      "Sha256": "13722a4a8c7ebcc2bf95925cf55e4c2a0c5b346b70ad6737d4bf0341bb5bbbee",
       "References": [
         "art-source/portraits/newspaper-trials/character-50-coin-v001-generated.png",
         "art-source/portraits/characters/character-01/proportion-study/character-01-vitruvian-v017-trial.png",
@@ -3000,18 +3039,27 @@
         "Status": "EYE_REVIEWED_FINAL_WHOLEBODY_RUNTIME_REVIEW_PENDING"
       },
       "LatestCandidateDecision": {
-        "File": "coin-v017-final-review.json",
-        "Source": "character-50-coin-v017-generated.png",
-        "Status": "REVIEWED_NOT_SELECTED_ROUND_GLINT_TRANSFER_FAILED"
+        "File": "coin-v018-final-review.json",
+        "Source": "character-50-coin-v018-generated.png",
+        "Status": "SELECTED_FOR_WORKING_STAGING_NOT_GAME_ADOPTED"
       },
       "LatestComposite": {
         "File": "coin-v017-review.json",
         "Source": "character-50-coin-v017-generated.png",
         "Status": "COMPOSITE_SAVED_FINAL_REVIEW_PENDING"
-      }
+      },
+      "LatestHighResolution": {
+        "File": "coin-v018-review.json",
+        "Source": "character-50-coin-v018-generated.png",
+        "Width": 1024,
+        "Height": 1536
+      },
+      "PreAdoptionSource": "character-50-coin-v004-generated.png",
+      "GameAdopted": true,
+      "AdoptionRecord": "adoption.json"
     }
   ],
-  "Next": "No50 coinv017の座標合成も角状切れ込みで丸白点転送失敗、非選択確定。作業v029 coinv004維持。次回は小さい全身原画への局所転送を反復せず、内蔵image_genに2048x3072高解像度の既存全身保持編集を指定して眼の画素面積を確保する別案を検討。出力実寸と白点を確認し不成功なら未達記録。通常6v019/paparazziv014選択済み。ゲーム0/20、採用/カタログ/ビルド/配布未完了。",
+  "Next": "No50全14原画/20出力採用・ビルド・配布照合完了。次回はNo51本人設定と既存通常6/新聞8を確認して制作を開始。No40〜46全身化の既知未対応は過去記録のまま残す。No51〜60未完了のため定期実行継続。",
   "CurrentSelectionAudit": {
     "Report": "current-selection-audit-v003.md",
     "Review": "current-selection-review-v003.html",
@@ -3067,10 +3115,10 @@
     "Status": "LINKS_HASHES_VERIFIED_NOT_NEW_VISUAL_APPROVAL"
   },
   "WorkingSelection": {
-    "File": "working-selection-v029.json",
-    "Manifest": "staged-manifest-v029.json",
-    "Html": "working-selection-v029.html",
-    "Status": "NORMAL6_PAPARAZZI_REVIEWED_COIN_PENDING_NOT_ADOPTED"
+    "File": "working-selection-v030.json",
+    "Manifest": "staged-manifest-v030.json",
+    "Html": "working-selection-v030.html",
+    "Status": "WORKING_SELECTION_REVIEWED_READY_FOR_ADOPTION_CHECKS_NOT_ADOPTED"
   },
   "LatestRuntimeReview": {
     "File": "working-v027-runtime-review.json",
@@ -3082,5 +3130,8 @@
     "Evidence": "latest-eye-review-v001.png",
     "Count": 14,
     "Status": "LATEST_SOURCES_REVIEWED_CONTACT_STRENGTH_VARIATION_REMAINS"
-  }
+  },
+  "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
+  "WholeCharacterComplete": true,
+  "Adoption": "adoption.json"
 }
