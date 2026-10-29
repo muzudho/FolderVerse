@@ -40,7 +40,7 @@ public partial class Game1
             if(next.TutorialStep==3 && next.TutorialMapStage<4)next.TutorialMapNotices&=~(next.TutorialMapStage==2 && (next.TutorialMapRotations&8)==0?16:1<<next.TutorialMapStage);
             _autoPlay=_demoActive=false;_statusMenuOpen=false;_robotPlaying=false;_robotPendingFocus=-1;_robotPendingSummary=false;
             _battleAge=0;_notifiedTurn=(-1,-1);_screen=Screen.WorldStatus;
-            _world.ShowSetup(_setup,true);_lastAutoSaveTurn=_setup.Population.Turn;RestoreDomesticCamera();OpenDisposition();
+            _world.ShowSetup(_setup,true);_lastAutoSaveTurn=_setup.Population.Turn;RestoreDomesticCamera();OpenDisposition();if(_setup.ComputerOnly)StartAutoPlay();
             _autoSaveError="";_operations.Write("autosave_resumed",new{turn=_lastAutoSaveTurn});return true;
         }catch(Exception error){_screen=Screen.Title;_autoSaveError="続きからを開始できません。最初からを選べます。";RecordFailure(error,"autosave_read");return false;}
     }

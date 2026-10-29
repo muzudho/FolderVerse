@@ -21,7 +21,7 @@ public partial class Game1
         new[]{"［地星儀］に戻しましょう！","画面の右上の［組立］ボタンをクリックしてください！"},
         new[]{"展開図の右上のロボットをマウスでドラッグすると、","展開図をスライドできます。やってみましょう！"}
     };
-    private bool TutorialReviewAvailable=>_setup.TutorialStep is 1 or 2 or 3 && _screen!=Screen.Title && _screen!=Screen.PlayerCount;
+    private bool TutorialReviewAvailable=>_setup.TutorialStep is 1 or 2 or 3 && _screen!=Screen.Title && _screen!=Screen.PlayerCount && _screen!=Screen.ComputerPlayerCount;
     private int TutorialMessageBase=>_setup.TutorialStep switch{2=>4,3=>8,_=>0};
     private Rectangle TutorialReviewButton=>_screen==Screen.Battle?new(55,1046,400,30):new(1110,20,380,48);
     private int[] TutorialReviewMessages=>_setup.TutorialStep==3?new[]{8,9,12,10,11}:new[]{TutorialMessageBase,TutorialMessageBase+1,TutorialMessageBase+2,TutorialMessageBase+3};

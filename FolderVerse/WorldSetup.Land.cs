@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 public sealed partial class WorldSetup
 {
-    public int[] TerritoryRights {get;private set;}=new int[20];
+    public int[] TerritoryRights {get;private set;}=new int[CastCount];
     public bool LandPending {get;private set;}
     public int FortuneSeed {get;private set;}
     public void SetTerritoryRights(int seed)
@@ -15,7 +15,7 @@ public sealed partial class WorldSetup
         for(int i=0;i<ActiveCount;i++)TerritoryRights[i]=1;
         var order=Enumerable.Range(0,ActiveCount).OrderBy(_=>random.Next(1000000)).ToArray();
         // Rank-weighted rights preserve both large nations and one-cell hard starts.
-        var tickets=order.SelectMany((r,rank)=>Enumerable.Repeat(r,rank==0?0:(rank+1)*(rank+1))).ToArray();
+        var tickets=order.SelectMany((r,rank)=>Enumerable.Repeat(r,rank==0 && ActiveCount>1?0:(rank+1)*(rank+1))).ToArray();
         for(int i=ActiveCount;i<Cells.Length;i++)TerritoryRights[tickets[random.Next(tickets.Length)]]++;
         TerritoryCounts=(int[])TerritoryRights.Clone();
         Owners=Enumerable.Repeat(-1,Cells.Length).ToArray();Capitals=Array.Empty<int>();ConquerorLocations=Array.Empty<int>();

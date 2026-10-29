@@ -97,7 +97,7 @@ public sealed partial class BattleState
     public BattleArmy Army(int owner)=>Armies.Single(a=>a.Owner==owner);
     public void AddArmy(int owner,int home,IEnumerable<Robot> robots,bool queen=false)
     {
-        if(owner<0 || owner>=20 || home<0)throw new ArgumentOutOfRangeException();
+        if(owner<0 || owner>=GameLimits.MaxConquerors || home<0)throw new ArgumentOutOfRangeException();
         if(Armies.Count>=EntryCapacity || Armies.Any(a=>a.Owner==owner))throw new InvalidOperationException("Battle supports distinct armies, at most five.");
         int side=BoardSize==Size && Kind==BattleKind.Node && owner==Defender?4:Armies.Count==1 && EntrySides.Contains(2) && !Armies.Any(a=>a.Side==2)?2:EntrySides.First(i=>!Armies.Any(a=>a.Side==i));
         var army=new BattleArmy{Owner=owner,HomeNode=home,Side=side,InvadingQueen=queen};
@@ -182,7 +182,7 @@ public sealed partial class BattleState
     }
     public void Check()
     {
-        if(BoardSize is not (10 or Size) || Armies.Count>5 || Armies.Select(a=>a.Owner).Distinct().Count()!=Armies.Count || Armies.Select(a=>a.Side).Distinct().Count()!=Armies.Count || Armies.Any(a=>a.Owner<0 || a.Owner>=20 || a.Side<0 || a.Side>(BoardSize==Size && (SplitBoard || Kind==BattleKind.Node && a.Owner==Defender)?4:3) || a.Limit<1 || a.Limit>12))throw new InvalidOperationException("Invalid battle armies.");
+        if(BoardSize is not (10 or Size) || Armies.Count>5 || Armies.Select(a=>a.Owner).Distinct().Count()!=Armies.Count || Armies.Select(a=>a.Side).Distinct().Count()!=Armies.Count || Armies.Any(a=>a.Owner<0 || a.Owner>=GameLimits.MaxConquerors || a.Side<0 || a.Side>(BoardSize==Size && (SplitBoard || Kind==BattleKind.Node && a.Owner==Defender)?4:3) || a.Limit<1 || a.Limit>12))throw new InvalidOperationException("Invalid battle armies.");
         var active=Units.Where(u=>u.Active).ToArray();
         var solid=active.Where(u=>!u.Retreating).ToArray();
         if(active.Any(u=>!Walkable(u.Position)) || solid.Select(u=>u.Position).Distinct().Count()!=solid.Length)throw new InvalidOperationException("Battle occupancy is invalid.");

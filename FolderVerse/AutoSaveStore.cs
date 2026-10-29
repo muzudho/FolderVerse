@@ -111,7 +111,7 @@ public static class AutoSaveStore
                     if(type.Name=="DomesticViewState" && new[]{"<GlobePan>k__BackingField","<GlobeDragSlide>k__BackingField","<NetDragRotate>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(RobotEncounter) && field.Name=="<ReturnedWanderers>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
                     if(type==typeof(WorldSetup) && field.Name=="WandererPolicies"){field.SetValue(value,new WandererPolicy[WorldSetup.CastCount]);continue;}
-                    if(type==typeof(WorldSetup) && new[]{"_presetCastCount","TutorialPocketed","TutorialMoved","TutorialPocketNoticeShown","TutorialMoveNoticeShown"}.Contains(field.Name))continue;
+                    if(type==typeof(WorldSetup) && new[]{"_participantCountsConfigured","<ComputerPlayerCount>k__BackingField","_presetCastCount","TutorialPocketed","TutorialMoved","TutorialPocketNoticeShown","TutorialMoveNoticeShown"}.Contains(field.Name))continue;
                     if(type==typeof(March) && field.Name=="<Peaceful>k__BackingField")continue;
                     if(type==typeof(BattleArmy) && (field.Name=="Wanderer" || field.Name=="WandererPolicy"))continue;
                     if(type==typeof(BattleRules) && field.Name=="<FlagCaptureTurns>k__BackingField"){field.SetValue(value,10);continue;}

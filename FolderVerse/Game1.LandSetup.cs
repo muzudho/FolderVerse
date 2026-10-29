@@ -20,7 +20,7 @@ public partial class Game1
     private int[][] _automaticLandRectangles=Array.Empty<int[]>();
     private float _landStartYaw,_landStartPitch;
     private int LandRuler=>_landOrder[_landTurn];
-    private bool LandHumanTurn=>_setup.HumanPlayers.Count==0?LandRuler==_setup.PlayerSlot:_setup.HumanPlayers.Contains(LandRuler);
+    private bool LandHumanTurn=>!_setup.ComputerOnly && (_setup.HumanPlayers.Count==0?LandRuler==_setup.PlayerSlot:_setup.HumanPlayers.Contains(LandRuler));
     private void BeginLandConquest()
     {
         _skipOtherLandTurns=false;
@@ -92,7 +92,7 @@ public partial class Game1
             int segment=Math.Min((int)progress,tour.Length-2);
             float blend=MathHelper.SmoothStep(0,1,progress-segment);
             _world.ManualOrientation=Quaternion.Slerp(tour[segment],tour[segment+1],blend);
-            if(_landAge>=5){_setup.CompleteLand(_random.Next());_world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();}
+            if(_landAge>=5){_setup.CompleteLand(_random.Next());_world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();if(_setup.ComputerOnly)StartAutoPlay();}
             return;
         }
         if(active && click && LandSkipOthers.Contains(_pointer)){_skipOtherLandTurns=!_skipOtherLandTurns;_landDrag=null;}
@@ -169,7 +169,7 @@ public partial class Game1
             if(!_world.ProjectVisible(c.Center,c.Normal,_yaw,_pitch,LandGlobeArea,out var p))continue;
             if(_setup.Owners[c.Id]>=0 || _landSelection.Contains(c.Id) || _screen==Screen.LandConquest)
             {
-                var color=_landSelection.Contains(c.Id)?Color.Yellow:_setup.Owners[c.Id]>=0?WorldSetup.Colors[_setup.Owners[c.Id]]:new Color(110,140,150);
+                var color=_landSelection.Contains(c.Id)?Color.Yellow:_setup.Owners[c.Id]>=0?_setup.OwnerColor(_setup.Owners[c.Id]):new Color(110,140,150);
                 foreach(var edge in c.Corners.Select((v,i)=>(A:v,B:c.Corners[(i+1)%c.Corners.Length])))
                     if(_world.ProjectVisible(edge.A,c.Normal,_yaw,_pitch,LandGlobeArea,out var a) && _world.ProjectVisible(edge.B,c.Normal,_yaw,_pitch,LandGlobeArea,out var b))LandLine(a,b,color,3);
             }
@@ -184,7 +184,7 @@ public partial class Game1
                 if(_world.ProjectVisible(_setup.Routes.Position(c.Id,node.Center),c.Normal,_yaw,_pitch,LandGlobeArea,out var h))_ui.Box(new((int)h.X-3,(int)h.Y-3,6,6),Cream);        }
         if(_landDrag.HasValue){var a=_landDrag.Value;var b=_pointer;LandLine(new(a.X,a.Y),new(b.X,a.Y),Color.White,2);LandLine(new(b.X,a.Y),new(b.X,b.Y),Color.White,2);LandLine(new(b.X,b.Y),new(a.X,b.Y),Color.White,2);LandLine(new(a.X,b.Y),new(a.X,a.Y),Color.White,2);}
         if(_screen==Screen.Fortune)
-            for(int i=0;i<90;i++){float t=(float)((_landAge+i*.071)%1.8/1.8);float x=MathHelper.Lerp(650+(i*173%1100),1080+i*47%310,t);float y=MathHelper.Lerp(-100,460+i*31%200,t);DrawRobotGlyph(new Rectangle((int)x,(int)y,26,46),i%20,(RobotParts)(1+i%7),false,1-t*.3f);}
+            for(int i=0;i<90;i++){float t=(float)((_landAge+i*.071)%1.8/1.8);float x=MathHelper.Lerp(650+(i*173%1100),1080+i*47%310,t);float y=MathHelper.Lerp(-100,460+i*31%200,t);DrawRobotGlyph(new Rectangle((int)x,(int)y,26,46),i%_setup.ActiveCount,(RobotParts)(1+i%7),false,1-t*.3f);}
         DrawLandSetupUi();
         _spriteBatch.End();
         if(_screen==Screen.LandConquest)DrawOrientationOverlay(LandGlobeArea,canvas,transform);
