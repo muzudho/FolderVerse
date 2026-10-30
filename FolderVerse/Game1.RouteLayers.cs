@@ -31,6 +31,7 @@ public partial class Game1
         if(MapViewButton.Contains(pointer)){StartMapTransition();_inputOutcome="view_transition_started";_dragging=_mapDragging=false;return true;}
         for(int i=0;i<7;i++)if(RouteLayerButton(i).Contains(pointer))
         {
+            CloseReservationDirectory();
             if((i==0 || i==4) && !MapOverlayAvailable(i))return true;
             if(i==5){_net.ShowRobots=!_net.ShowRobots;_net.ClearGlobeRobotBadges();}
             if(i==6){_net.ShowOtherCountries=!_net.ShowOtherCountries;_net.ControlledCountryColors=_world.ControlledCountryColors=!_net.ShowOtherCountries;_world.ShowSetup(_setup,true);_net.ClearGlobeRobotBadges();}
@@ -45,7 +46,7 @@ public partial class Game1
     }
     private void DrawRouteLayerButtons()
     {
-        DrawMapDragButton();
+        DrawMapDragButton();DrawReservationDirectoryButton();
         string[] names={"緯番・経番","電池","赤道","ロボット","他国"};bool[] enabled={_net.ShowMapSymbols,_net.ShowBatteries,_net.ShowEquator,_net.ShowRobots,_net.ShowOtherCountries};int[] indices={0,1,4,5,6};
         for(int i=0;i<5;i++){
             var r=RouteLayerButton(indices[i]);bool available=indices[i] is 1 or 5 or 6 || MapOverlayAvailable(indices[i]);

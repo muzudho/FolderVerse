@@ -9,7 +9,9 @@ public sealed partial class RobotWorld
     public Func<int,int> ReservationSource;
     private Func<long,bool> _arrivalLocked;
     private Func<int,int> _reservationFlagOwner;
-    public bool MarchReserved(int node,Robot robot)=>Reservations?.PlannedOrders.Any(o=>!o.PocketOnly && o.Ruler==robot.Owner && (o.SourceNode>=0?o.SourceNode:ReservationSource?.Invoke(o.Ruler)??node)==node && (o.RobotIds?.Contains(robot.Id)??Training[o.Ruler].Order(Nodes[node].Robots.Where(r=>r.Owner==o.Ruler && Training[r.Owner].Eligible(r) && !r.Stationed && DirectDelivery.LockedParts(node,r.Id)==0)).Take((int)Math.Min(12,o.Fighters)).Any(r=>r.Id==robot.Id)))==true;
+    public bool MarchReserved(int node,Robot robot)=>MarchReservedCore(node,robot,false);
+    public bool CombatMarchReserved(int node,Robot robot)=>MarchReservedCore(node,robot,true);
+    private bool MarchReservedCore(int node,Robot robot,bool combatOnly)=>Reservations?.PlannedOrders.Any(o=>(!combatOnly || !o.Peaceful) && !o.PocketOnly && o.Ruler==robot.Owner && (o.SourceNode>=0?o.SourceNode:ReservationSource?.Invoke(o.Ruler)??node)==node && (o.RobotIds?.Contains(robot.Id)??Training[o.Ruler].Order(Nodes[node].Robots.Where(r=>r.Owner==o.Ruler && Training[r.Owner].Eligible(r) && !r.Stationed && DirectDelivery.LockedParts(node,r.Id)==0)).Take((int)Math.Min(12,o.Fighters)).Any(r=>r.Id==robot.Id)))==true;
     public bool BaseAssemblyLocked(int node,Robot robot)=>robot.Disposal || robot.Stationed || Workshops[node].DisposalTarget==robot.Id || PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) || MarchReserved(node,robot);
     public bool AssemblyLocked(int node,Robot robot)=>BaseAssemblyLocked(node,robot) || DirectDelivery.LockedParts(node,robot.Id)!=0 || _arrivalLocked?.Invoke(robot.Id)==true;
     public bool PartLocked(int node,Robot robot,RobotParts part)=>BaseAssemblyLocked(node,robot) || (DirectDelivery.LockedParts(node,robot.Id)&robot.ConnectedParts(part))!=0;

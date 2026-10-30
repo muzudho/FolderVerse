@@ -198,6 +198,7 @@ public partial class Game1 : Game
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
         if(active && captureChord && !previousChord)_screenshots.Request();
         if(IsStatusScreen && active && FactionPickerInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && active && (click || escape) && ReservationDirectoryInput(_pointer,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && active && (click || escape) && (click || _directMap || _mapOverlayMenu) && MapOverlayClick(_pointer,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && click && DirectMapClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && SalvageInput(_pointer,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -595,13 +596,13 @@ public partial class Game1 : Game
             _world.Draw(_yaw,_pitch,_animationTime,false,true);
             _net.HoveredBattery=_net.HitBattery(_pointer);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1;
-            _world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe,_animationTime);
+            if(!_reservationDirectory)_world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe,_animationTime);
             GraphicsDevice.Viewport=viewport;
             using var globeClip=new RasterizerState{ScissorTestEnable=true};
             GraphicsDevice.ScissorRectangle=OrientationClip(canvas);
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
-            if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();_spriteBatch.End();
+            if(!_reservationDirectory){if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();}_spriteBatch.End();
         }
         else using(var clipping=new RasterizerState{ScissorTestEnable=true})
         {
@@ -614,12 +615,14 @@ public partial class Game1 : Game
             _net.DrawMapObjects(_ui,_setup,NetPanel,_animationTime);_spriteBatch.End();
         }
         _spriteBatch.Begin(transformMatrix:transform);
-        DrawConquerorResidences();DrawRegionOffice();DrawSalvageMap();
+        if(!_reservationDirectory){DrawConquerorResidences();DrawRegionOffice();DrawSalvageMap();}
         _spriteBatch.End();
         if(!MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
+        if(!_reservationDirectory){
         DrawBattleActivity();
-        DrawDestinationMap();DrawContinuationBadges();DrawWarReservationMarkers();DrawMoveReservationMarkers();DrawDirectTrucks(); DrawDomesticPortrait();
+        DrawDestinationMap();DrawContinuationBadges();DrawWarReservationMarkers();DrawMoveReservationMarkers();DrawDirectTrucks();DrawDomesticPortrait();
+        }else DrawReservationDirectory();
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(InspectorVisible?1276:991,InspectorVisible?770:831),Math.Min(0.48f,(InspectorVisible?600:870)/_font.MeasureString(location).X),Cream);
         _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):"右ドラッグ："+(MapDragSlide?"スライド":"回転")+" / ホイール：拡縮",new(InspectorVisible?1276:991,InspectorVisible?810:865),InspectorVisible?.27f:0.37f,new(177,206,216));
@@ -649,9 +652,9 @@ public partial class Game1 : Game
         if(_salvagePlan)DrawInspector(DrawSalvagePanel);
 
         if(_transportOverview){DrawInspector(DrawTransportOverviewPanel);if(_rateTarget>=0)DrawRatePieDialog();}
-        DrawWandererLocation();DrawRouteLayerButtons();
+        if(!_reservationDirectory)DrawWandererLocation();DrawRouteLayerButtons();
         DrawStatusMenu();
-        if(_supervisorDialog==0)DrawNodeTooltip();
+        if(_supervisorDialog==0 && !_reservationDirectory)DrawNodeTooltip();
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();
         DrawMapOverlayMenu();
         DrawInspectorFolders();
