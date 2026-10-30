@@ -5,16 +5,17 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 
 [Flags]
-public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8,ShieldSupport=16,CloseForDagger=32,CollisionTempo=64,RelieveFront=128 }
+public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8,ShieldSupport=16,CloseForDagger=32,CollisionTempo=64,RelieveFront=128,WaitingDaggerSafety=256 }
 public sealed record LessonAward(int Owner,BattleLesson Lesson);
 public sealed class BattleLessons
 {
-    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine,BattleLesson.ShieldSupport,BattleLesson.CloseForDagger,BattleLesson.CollisionTempo,BattleLesson.RelieveFront};
+    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine,BattleLesson.ShieldSupport,BattleLesson.CloseForDagger,BattleLesson.CollisionTempo,BattleLesson.RelieveFront,BattleLesson.WaitingDaggerSafety};
     public static string Title(BattleLesson lesson)=>lesson switch {
         BattleLesson.FlagCourtesy=>"戦訓#1 旗でお見合い",
         BattleLesson.RetreatBackwards=>"戦訓#2 撤退したら背中を撃たれた",
         BattleLesson.LeaveFiringLine=>"戦訓#4 射線にいるのに横向いて短剣振ってしまって撃たれた",
         BattleLesson.ShieldSupport=>"戦訓#5 前に盾持った仲間がいるのに後ろのやつが撃たない",
+        BattleLesson.WaitingDaggerSafety=>"戦訓#9 逃げた敵を追う仲間を置き短剣で斬った",
         BattleLesson.RelieveFront=>"戦訓#8 短剣も無いのに目の前で向かい合ったまま時間が過ぎた",
         BattleLesson.CollisionTempo=>"戦訓#7 衝突で守備に時間を稼がれた",
         BattleLesson.CloseForDagger=>"戦訓#6 撃つと撃ち返されるので、向かい合ったまま立ち止まった",
@@ -68,7 +69,7 @@ public sealed class BattleLessons
         foreach(var unit in units)actions[unit.Id]=RelieveFrontAction(battle,unit,CollisionTempoAction(battle,unit,actions[unit.Id]));
         foreach(var unit in units)actions[unit.Id]=AvoidSideDagger(battle,unit,actions[unit.Id]);
         foreach(var unit in units)if(actions[unit.Id].Weapon==BattleWeapon.Rifle && Has(battle,unit,BattleLesson.FireDiscipline) && !SafeShot(battle,unit,actions[unit.Id].Facing))actions[unit.Id]=actions[unit.Id] with {Weapon=BattleWeapon.None};
-        if(battle.Kind!=BattleKind.Node)return;
+        if(battle.Kind==BattleKind.Node){
         var entrants=units.Where(u=>!u.Retreating && u.Position!=battle.Flag && u.Position+actions[u.Id].Step==battle.Flag).ToArray();
         foreach(var unit in entrants.Where(u=>Has(battle,u,BattleLesson.FlagCourtesy)))
         {
@@ -77,6 +78,8 @@ public sealed class BattleLessons
             var first=friends.OrderBy(Priority).ThenBy(u=>u.Id).FirstOrDefault();
             if(first!=null && first.Id!=unit.Id)actions[unit.Id]=actions[unit.Id] with {Step=Point.Zero};
         }
+        }
+        foreach(var unit in units)actions[unit.Id]=WaitingDaggerAction(battle,unit,actions[unit.Id]);
     }
     public static BattleAction CollisionTempoAction(BattleState battle,BattleUnit unit,BattleAction action)
     {
@@ -129,6 +132,15 @@ public sealed class BattleLessons
             if(battle.WalkableFor(at,unit.Owner) && !battle.Units.Any(u=>u.Active && u.Id!=unit.Id && u.Position==at) && !battle.Units.Any(e=>e.Active && !battle.Allied(unit.Owner,e.Owner) && BattleAi.Distance(e.Position,at)<=1))return new(step,facing);
         }
         return new(Point.Zero,facing);
+    }
+    public static BattleAction WaitingDaggerAction(BattleState battle,BattleUnit unit,BattleAction action)
+    {
+        if(!Has(battle,unit,BattleLesson.WaitingDaggerSafety) || action.Weapon!=BattleWeapon.Dagger || action.Step!=Point.Zero)return action;
+        var cell=unit.Position+BattleState.Forward(action.Facing);
+        // Any legal one-cell move is a possibility; do not read another unit's chosen action.
+        bool risk=battle.Units.Any(friend=>friend.Active && friend.Id!=unit.Id && battle.Allied(unit.Owner,friend.Owner) &&
+            battle.WalkableFor(cell,friend.Owner) && BattleAi.Distance(friend.Position,cell)<=1);
+        return risk?action with {Weapon=BattleWeapon.None}:action;
     }
     public static bool SideDaggerExposed(BattleState battle,BattleUnit unit,BattleAction action,BattleUnit shooter)
     {

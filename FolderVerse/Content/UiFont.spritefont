@@ -27,4 +27,5 @@
 <CharacterRegion><Start>構</Start><End>構</End></CharacterRegion>
 <CharacterRegion><Start>稼</Start><End>稼</End></CharacterRegion>
 <CharacterRegion><Start>過</Start><End>過</End></CharacterRegion>
+<CharacterRegion><Start>控</Start><End>控</End></CharacterRegion>
 </CharacterRegions></Asset></XnaContent>

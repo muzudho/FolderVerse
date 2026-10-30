@@ -89,6 +89,10 @@ public static class BattleTurnResolver
             }
             if(weapon==BattleWeapon.Rifle && sideDaggerExposures.Contains((attacker.Id,target.Id)))BattleLessons.Witness(battle,BattleLesson.LeaveFiringLine);
             if(battle.Allied(attacker.Owner,target.Owner))BattleLessons.Witness(battle,BattleLesson.FireDiscipline);
+            if(weapon==BattleWeapon.Dagger && actions[attacker.Id].Step==Point.Zero && battle.Allied(attacker.Owner,target.Owner) && origin[target.Id]!=target.Position &&
+                units.Any(enemy=>!battle.Allied(attacker.Owner,enemy.Owner) && origin[enemy.Id]==origin[attacker.Id]+step && enemy.Position!=origin[enemy.Id] &&
+                    (enemy.Position.X-origin[enemy.Id].X)*step.X+(enemy.Position.Y-origin[enemy.Id].Y)*step.Y==0))
+                BattleLessons.Witness(battle,BattleLesson.WaitingDaggerSafety);
             hits[target.Id].HostileHit|=!battle.Allied(attacker.Owner,target.Owner);
             if(weapon==BattleWeapon.Dagger)hits[attacker.Id].DaggerHit=true;
             var front=BattleState.Forward(target.Facing);var delta=attacker.Position-target.Position;bool frontal=front.X!=0?delta.Y==0 && Math.Sign(delta.X)==front.X:delta.X==0 && Math.Sign(delta.Y)==front.Y;

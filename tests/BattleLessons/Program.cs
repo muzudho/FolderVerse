@@ -156,3 +156,28 @@ var capturedHold=Tempo();capturedHold.Flag=new(3,5);capturedHold.FlagStanding=fa
 Check(BattleLessons.RelieveFrontAction(capturedHold,flagHolder,hold)==hold && !flagHolder.Retreating,"Keeping a captured flag remains useful despite empty weapons");
 var productiveGate=Tempo();var gateWorker=Unit(productiveGate,80901,0,3,5,BattleFacing.East);var gateOccupant=Unit(productiveGate,80902,1,4,5,BattleFacing.West);gateWorker.Daggers=gateOccupant.Daggers=0;productiveGate.Fortifications.Add(new(new(4,5),FortificationKind.Gate,1,BattleFacing.West));
 Turn(productiveGate,(gateWorker,Point.Zero,BattleFacing.East,BattleWeapon.Rifle));Check(productiveGate.GateAt(new(4,5))?.Health==1 && (gateWorker.WitnessedLessons&BattleLesson.RelieveFront)==0,"Making progress by damaging a gate is not an idle standoff");
+
+// Lesson nine: the enemy sidesteps and an allied pursuer enters a waiting dagger.
+foreach(bool trained in new[]{false,true}){
+ var ambush=Tempo();var stabber=Unit(ambush,90001,0,3,5,BattleFacing.East);var runner=Unit(ambush,90002,1,4,5,BattleFacing.North);var pursuer=Unit(ambush,90003,0,4,6,BattleFacing.North);
+ if(trained)ambush.Lessons[0]=BattleLesson.WaitingDaggerSafety;
+ Turn(ambush,(stabber,Point.Zero,BattleFacing.East,BattleWeapon.Dagger),(runner,new(0,-1),BattleFacing.North,BattleWeapon.None),(pursuer,new(0,-1),BattleFacing.North,BattleWeapon.None));
+ Check(runner.Position==new Point(4,4) && pursuer.Position==new Point(4,5),"Enemy sidesteps and ally actually pursues into the former enemy cell");
+ if(!trained){
+  Check(pursuer.Fallen && stabber.Daggers==2 && (stabber.WitnessedLessons&BattleLesson.WaitingDaggerSafety)!=0,"Untrained waiting dagger hits allied pursuer and teaches ninth lesson");
+  var ninth=new BattleLessons();ninth.BringHome(pursuer);Check(ninth.Pending.Count==0,"Fallen friendly victim cannot bring lesson home");stabber.Retreated=true;ninth.BringHome(stabber);Check(ninth.Research().Any(a=>a.Lesson==BattleLesson.WaitingDaggerSafety),"Surviving witness researches ninth lesson");
+  Check((AutoSaveStore.Restore<BattleLessons>(AutoSaveStore.Capture(ninth)).Owned[0]&BattleLesson.WaitingDaggerSafety)!=0,"Ninth lesson persists through save/load");
+ }else Check(!pursuer.Fallen && stabber.Daggers==3 && !ambush.Attacks.Any(a=>a.Attacker==stabber.Id),"Trained robot refrains before movement and protects pursuer without spending dagger");
+}
+var careful=Tempo();var carefulStab=Unit(careful,90101,0,3,5,BattleFacing.East);var possibleFriend=Unit(careful,90102,0,4,6,BattleFacing.South);careful.Lessons[0]=BattleLesson.WaitingDaggerSafety;
+var waitingSlash=new BattleAction(Point.Zero,BattleFacing.East,BattleWeapon.Dagger);
+Check(BattleLessons.WaitingDaggerAction(careful,carefulStab,waitingSlash).Weapon==BattleWeapon.None,"Possible backward entry by a friend is enough; no future-action knowledge");
+possibleFriend.Position=new(4,7);Check(BattleLessons.WaitingDaggerAction(careful,carefulStab,waitingSlash)==waitingSlash,"Friend two steps away cannot enter this turn, so dagger remains available");
+possibleFriend.Position=new(4,6);careful.Walls.Add(new(4,5));Check(BattleLessons.WaitingDaggerAction(careful,carefulStab,waitingSlash)==waitingSlash,"Impassable terrain does not create a false friend-entry risk");careful.Walls.Clear();
+careful.Fortifications.Add(new(new(4,5),FortificationKind.Gate,1,BattleFacing.West));Check(BattleLessons.WaitingDaggerAction(careful,carefulStab,waitingSlash)==waitingSlash,"Friendly unit cannot enter enemy gate; breaching remains allowed");careful.Fortifications.Clear();
+possibleFriend.Owner=1;Check(BattleLessons.WaitingDaggerAction(careful,carefulStab,waitingSlash)==waitingSlash,"Enemy entry does not suppress waiting dagger");careful.Allied=(a,c)=>true;
+Check(BattleLessons.WaitingDaggerAction(careful,carefulStab,waitingSlash).Weapon==BattleWeapon.None,"Allied different-owner unit is protected too");
+Check(BattleLessons.WaitingDaggerAction(careful,carefulStab,waitingSlash with {Weapon=BattleWeapon.Rifle}).Weapon==BattleWeapon.Rifle && BattleLessons.WaitingDaggerAction(careful,carefulStab,waitingSlash with {Step=new(1,0)}).Weapon==BattleWeapon.Dagger,"Only stationary dagger is constrained, not rifle or advancing attack");
+var noChase=Tempo();var oldFriendHit=Unit(noChase,90201,0,3,5,BattleFacing.East);Unit(noChase,90202,0,4,5,BattleFacing.North);Turn(noChase,(oldFriendHit,Point.Zero,BattleFacing.East,BattleWeapon.Dagger));
+Check((oldFriendHit.WitnessedLessons&BattleLesson.WaitingDaggerSafety)==0,"Existing friendly target without fleeing enemy is not the specific ninth-lesson event");
+Console.WriteLine("PASS: ninth-lesson sidestep/chase friendly hit, acquisition and save, conservative pre-move prevention, terrain/enemy-gate exclusions, allied ownership, stationary-only scope and unrelated-hit exclusion.");

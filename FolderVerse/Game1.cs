@@ -214,7 +214,7 @@ public partial class Game1 : Game
         if(_screen==Screen.BattleResearch)
         {UpdateBattleResearch(elapsed,active && (enter || click && LessonContinue.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.LessonCatalog)
-        {if(active && (escape || click && LessonBack.Contains(_pointer)))_screen=Screen.WorldStatus;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        {if(active)LessonCatalogInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Hierarchy)
         {
             if(active && (escape || click && InactiveBack.Contains(_pointer)))_screen=Screen.WorldStatus;
