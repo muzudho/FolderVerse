@@ -96,7 +96,7 @@ public sealed class BattleLessons
         }
         foreach(var step in new[]{side,new Point(-side.X,-side.Y)}){
             var p=unit.Position+step;
-            if(battle.Walkable(p) && !battle.Units.Any(u=>u.Active && u.Id!=unit.Id && u.Position==p) && !battle.Units.Any(e=>e.Active && e.Rifles>0 && !battle.Allied(e.Owner,unit.Owner) && InLine(p,e)))return new(step,face);
+            if(battle.WalkableFor(p,unit.Owner) && !battle.Units.Any(u=>u.Active && u.Id!=unit.Id && u.Position==p) && !battle.Units.Any(e=>e.Active && e.Rifles>0 && !battle.Allied(e.Owner,unit.Owner) && InLine(p,e)))return new(step,face);
         }
         return new(Point.Zero,face);
     }

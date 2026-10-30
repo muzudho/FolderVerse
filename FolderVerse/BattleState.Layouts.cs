@@ -10,7 +10,7 @@ public sealed partial class BattleState
     public int EntryCapacity=>EntrySides.Length+(BoardSize==Size && Kind==BattleKind.Node && Defender>=0?1:0);
     public void BuildLayout(int pattern,int rotation=0)
     {
-        Walls.Clear();WallShotDirections.Clear();rotation=((rotation%4)+4)%4;
+        ResetFortifications();Walls.Clear();WallShotDirections.Clear();rotation=((rotation%4)+4)%4;
         Point Rotate(Point p){for(int i=0;i<rotation;i++)p=new(BoardSize-1-p.Y,p.X);return p;}
         LayoutName=pattern switch{1=>"渓谷",2=>"Ｔ字路",3=>"片側峡谷",4=>"中央衝突",_=>"標準"};
         int[] sides=pattern==1?new[]{0,2}:pattern==2?new[]{2,1,3}:new[]{0,1,2,3};

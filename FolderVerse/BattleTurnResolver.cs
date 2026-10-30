@@ -29,7 +29,7 @@ public static class BattleTurnResolver
         foreach(var u in units)
         {
             var p=positions[u.Id];var army=battle.Army(u.Owner);
-            if(!battle.Walkable(p) && !(u.Retreating && BattleState.HomeExit(p,army.Side,battle.BoardSize)))blocked.Add(u.Id);
+            if(p!=u.Position && !battle.WalkableFor(p,u.Owner) && !(u.Retreating && BattleState.HomeExit(p,army.Side,battle.BoardSize)))blocked.Add(u.Id);
             u.Facing=actions[u.Id].Facing;
         }
         battle.Events.Add(new(battle.Turn,BattlePhase.Place,0,"仮配置"));
@@ -60,6 +60,7 @@ public static class BattleTurnResolver
         battle.Capture(BattlePhase.Rollback);
         battle.Events.Add(new(battle.Turn,BattlePhase.Attack,0,"同時攻撃"));
         battle.Capture(BattlePhase.Attack);
+        var gateDamage=new Dictionary<Point,int>();
         foreach(var attacker in units.Where(u=>u.Active))
         {
             var weapon=actions[attacker.Id].Weapon;if(weapon==BattleWeapon.None)continue;
@@ -67,11 +68,19 @@ public static class BattleTurnResolver
             if(weapon==BattleWeapon.Dagger)target=units.FirstOrDefault(u=>u.Active && u.Position==end);
             else for(int distance=1;distance<battle.BoardSize;distance++)
             {
-                var p=attacker.Position+new Point(step.X*distance,step.Y*distance);if(battle.BlocksShot(p,attacker.Facing,distance))break;
+                var p=attacker.Position+new Point(step.X*distance,step.Y*distance);if(battle.BlocksShot(p,attacker.Facing,distance)){if(battle.GateAt(p)!=null)end=p;break;}
                 end=p;if(distance==1)continue;target=units.FirstOrDefault(u=>u.Active && u.Position==p);if(target!=null)break;
             }
             battle.Attacks.Add(new(battle.Turn,attacker.Id,target?.Id,attacker.Position,end,weapon));
-            if(target==null)continue;
+            if(target==null){
+                var gate=battle.GateAt(end);
+                if(gate!=null && !battle.Allied(attacker.Owner,gate.Owner)){
+                    gateDamage[end]=gateDamage.GetValueOrDefault(end)+1;
+                    battle.GateHits.Add(new(battle.Turn,end,attacker.Position));willing.Add(attacker.Owner);
+                    if(weapon==BattleWeapon.Dagger)hits[attacker.Id].DaggerHit=true;
+                }
+                continue;
+            }
             if(weapon==BattleWeapon.Rifle && sideDaggerExposures.Contains((attacker.Id,target.Id)))BattleLessons.Witness(battle,BattleLesson.LeaveFiringLine);
             if(battle.Allied(attacker.Owner,target.Owner))BattleLessons.Witness(battle,BattleLesson.FireDiscipline);
             hits[target.Id].HostileHit|=!battle.Allied(attacker.Owner,target.Owner);
@@ -83,6 +92,10 @@ public static class BattleTurnResolver
             else hits[target.Id].Rifle++;
             if(!battle.Allied(attacker.Owner,target.Owner))willing.Add(attacker.Owner);
             battle.Events.Add(new(battle.Turn,BattlePhase.Receive,target.Id,$"{weapon} ← {attacker.Id}"));
+        }
+        foreach(var damage in gateDamage){
+            int index=battle.Fortifications.FindIndex(f=>f.Kind==FortificationKind.Gate && f.Position==damage.Key && f.Health>0);
+            if(index>=0){var gate=battle.Fortifications[index];battle.Fortifications[index]=gate with {Health=Math.Max(0,gate.Health-damage.Value)};}
         }
         battle.Capture(BattlePhase.Receive);
         foreach(var u in units.Where(u=>u.Active))

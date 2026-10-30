@@ -152,7 +152,7 @@ public partial class Game1
         float terrainHeight=WorldTerrain.Elevation(_setup.Routes.Position(terrainNode.Cell,terrainNode.Center),WorldTerrain.Offset(_setup.WorldSeed));
         for(int y=0;y<battle.BoardSize;y++)for(int x=0;x<battle.BoardSize;x++)
         {
-            var r=new Rectangle(left+x*size,top+y*size,size-2,size-2);bool wall=battle.Walls.Contains(new(x,y));
+            var r=new Rectangle(left+x*size,top+y*size,size-2,size-2);bool wall=battle.Walls.Contains(new(x,y)) && !battle.Fortifications.Any(f=>f.Position==new Point(x,y));
             if(battle.Terrain==BattleTerrain.Sea)
             {
                 bool log=battle.SeaLogs.Contains(new(x,y));
@@ -185,6 +185,14 @@ public partial class Game1
                 _ui.Box(r,Math.Abs(_setup.Geographic(terrainCell.Normal).Y)>.5f?new Color(161,192,203):terrainHeight<.55f?new Color(163,137,91):new Color(35,64,58));
                 if(wall)BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(false,false,terrainHeight,_setup.Geographic(terrainCell.Normal).Y));
             }
+        }
+        float fortImpact=BattleAttackArt.ImpactProgress(battle,frameIndex,_robotPlaying?RobotBattlePlayback.FramePosition(RobotSlice(_battleWave),_battleAge,RobotSeconds(_battleWave)):frameIndex+.5);
+        foreach(var fort in frame.Fortifications??battle.Fortifications.ToArray()){
+            if(fort.Kind==FortificationKind.Gate && fort.Health<=0)continue;
+            var tile=new Rectangle(left+fort.Position.X*size,top+fort.Position.Y*size,size-2,size-2);
+            var hit=battle.GateHits.LastOrDefault(h=>h.Turn==frame.Turn && h.Position==fort.Position);
+            if(hit!=null && fortImpact>=0){var away=fort.Position-hit.From;float amount=MathF.Sin(fortImpact*MathHelper.Pi)*7;tile.Offset((int)(Math.Sign(away.X)*amount),(int)(Math.Sign(away.Y)*amount));}
+            BattleFortificationArt.Draw(_ui,tile,fort);
         }
         // Draw over terrain, using the same facing and turn as rifle playback.
         foreach(var wall in battle.Walls)foreach(BattleFacing facing in Enum.GetValues<BattleFacing>())

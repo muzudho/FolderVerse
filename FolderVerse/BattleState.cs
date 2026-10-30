@@ -12,7 +12,7 @@ public enum BattleTerrain { Field,Sea,Fort }
 public sealed record BattleAction(Point Step,BattleFacing Facing,BattleWeapon Weapon=BattleWeapon.None);
 public sealed record BattleEvent(int Turn,BattlePhase Phase,long Unit,string Detail);
 public sealed record BattleUnitView(long Id,int Owner,BattleRole Role,Point Position,BattleFacing Facing,int Daggers,int Rifles,int Shields,bool Fallen,bool Retreated,Robot Robot=null);
-public sealed record BattleFrame(int Turn,BattlePhase Phase,BattleUnitView[] Units,bool FlagStanding,int LastFlagOwner,int FlagDefenseTurns=0,int FlagCaptureTurns=0);
+public sealed record BattleFrame(int Turn,BattlePhase Phase,BattleUnitView[] Units,bool FlagStanding,int LastFlagOwner,int FlagDefenseTurns=0,int FlagCaptureTurns=0,BattleFortification[] Fortifications=null);
 public sealed record BattlePersuasion(int Turn,long Queen,long Target,int Owner,int PreviousOwner,Point From,Point To,bool Success);
 public sealed record BattleAttack(int Turn,long Attacker,long? Target,Point From,Point To,BattleWeapon Weapon);
 public sealed class BattleRules
@@ -82,7 +82,7 @@ public sealed partial class BattleState
     public static Point Forward(BattleFacing facing)=>facing switch{BattleFacing.North=>new(0,-1),BattleFacing.East=>new(1,0),BattleFacing.South=>new(0,1),_=>new(-1,0)};
     public static bool Inside(Point p)=>p.X>=0 && p.X<Size && p.Y>=0 && p.Y<Size;
     public bool Contains(Point p)=>p.X>=0 && p.X<BoardSize && p.Y>=0 && p.Y<BoardSize;
-    public bool BlocksShot(Point p)=>!Contains(p) || Walls.Contains(p) && !(Terrain==BattleTerrain.Sea && SeaClearWater.Contains(p));
+    public bool BlocksShot(Point p)=>!Contains(p) || GateAt(p)!=null || Walls.Contains(p) && !MoatAt(p) && !(Terrain==BattleTerrain.Sea && SeaClearWater.Contains(p));
     public bool WallPassesShot(Point p,BattleFacing facing)
     {
         if(!Walls.Contains(p))return false;
@@ -130,21 +130,21 @@ public sealed partial class BattleState
             foreach(var unit in army.Waiting)unit.Facing=Inward(army.Side==4?0:army.Side);
             int count=Math.Min(initial,Math.Min(army.Limit,army.Waiting.Count(u=>u.Role!=BattleRole.Queen)));
             var region=Region(army.Side).ToHashSet();var candidates=army.Patterns.GetValueOrDefault(count,new List<Point[]>());
-            bool Available(Point p)=>Walkable(p) && !Units.Any(u=>u.Active && u.Position==p) && !(army.Side==4 && p==Flag);
+            bool Available(Point p)=>WalkableFor(p,army.Owner) && !Units.Any(u=>u.Active && u.Position==p) && !(army.Side==4 && p==Flag);
             var pattern=candidates.Where(p=>p.Length==count && p.Distinct().Count()==p.Length && p.All(region.Contains)).OrderByDescending(p=>p.Count(Available)).FirstOrDefault();
             var cells=(pattern??DefaultPattern(army.Side,count)).Where(Available).Take(count).ToList();
             foreach(var p in Region(army.Side).Where(Available))if(cells.Count<count && !cells.Contains(p))cells.Add(p);
             foreach(var p in cells){if(army.Waiting.Count==0 || army.Waiting.Peek().Role==BattleRole.Queen)break;var unit=army.Waiting.Dequeue();unit.Position=p;Units.Add(unit);}
             if(army.Waiting.TryPeek(out var queen) && queen.Role==BattleRole.Queen){
                 var place=army.Side==4?(Point?)Flag:Region(army.Side).Where(Available).Select(p=>(Point?)p).FirstOrDefault();
-                if(place.HasValue && Walkable(place.Value) && !Units.Any(u=>u.Active && u.Position==place.Value)){army.Waiting.Dequeue();queen.Position=place.Value;Units.Add(queen);}
+                if(place.HasValue && WalkableFor(place.Value,army.Owner) && !Units.Any(u=>u.Active && u.Position==place.Value)){army.Waiting.Dequeue();queen.Position=place.Value;Units.Add(queen);}
             }
         }
         if(Terrain==BattleTerrain.Sea && BoardSize==10)PlaceSeaFlag();
         Check();
     }
     public Point[] DefaultPattern(int side,int count)=>Region(side).Where(p=>side!=4 || p!=Flag).Take(count).ToArray();
-    public void Capture(BattlePhase phase)=>Frames.Add(new(Turn,phase,phase==BattlePhase.Result && Finished && Frames.LastOrDefault()?.Phase==BattlePhase.Retreat?Frames[^1].Units:Units.Select(u=>new BattleUnitView(u.Id,u.Owner,u.Role,u.Position,u.Facing,u.Daggers,u.Rifles,u.Shields,u.Fallen,u.Retreated,u.Robot)).ToArray(),FlagStanding,LastFlagOwner,FlagDefenseTurns,FlagCaptureTurns));
+    public void Capture(BattlePhase phase)=>Frames.Add(new(Turn,phase,phase==BattlePhase.Result && Finished && Frames.LastOrDefault()?.Phase==BattlePhase.Retreat?Frames[^1].Units:Units.Select(u=>new BattleUnitView(u.Id,u.Owner,u.Role,u.Position,u.Facing,u.Daggers,u.Rifles,u.Shields,u.Fallen,u.Retreated,u.Robot)).ToArray(),FlagStanding,LastFlagOwner,FlagDefenseTurns,FlagCaptureTurns,Fortifications.ToArray()));
     public void InheritHistory(IEnumerable<BattleState> previous)
     {
         var states=previous.OrderBy(b=>b.Id).ToArray();if(states.Length==0)return;
@@ -152,6 +152,8 @@ public sealed partial class BattleState
         GlobalTurn=states.Max(b=>b.GlobalTurn);PersuadedUnits.UnionWith(states.Where(b=>b.GlobalTurn==GlobalTurn).SelectMany(b=>b.PersuadedUnits));
         foreach(var army in Armies){var prior=states.SelectMany(b=>b.Armies).Where(a=>a.Owner==army.Owner).ToArray();if(prior.Length>0){army.NoWillCount=prior.Min(a=>a.NoWillCount);army.Withdrawing=prior.All(a=>a.Withdrawing);}}
         var flag=states.Where(b=>b.Kind==BattleKind.Node && !b.SplitBoard).OrderByDescending(b=>b.Turn).FirstOrDefault();
+        var fortState=states.FirstOrDefault(b=>b.FortificationsBuilt);
+        if(fortState!=null)InheritFortifications(fortState);
         if(flag!=null){FlagStanding=flag.FlagStanding;LastFlagOwner=flag.LastFlagOwner;FlagDefenseTurns=flag.FlagDefenseTurns;FlagCaptureTurns=flag.FlagCaptureTurns;}
     }
     public bool Reinforce()
@@ -161,7 +163,7 @@ public sealed partial class BattleState
         {
             if(army.Withdrawing || army.Waiting.Count==0 || Units.Count(u=>u.Active && u.Owner==army.Owner && u.Role!=BattleRole.Queen)>=army.Limit && army.Waiting.Peek().Role!=BattleRole.Queen)continue;
             var cells=Region(army.Side).Where(p=>army.Side switch{0=>p.Y==0,1=>p.X==BoardSize-1,2=>p.Y==BoardSize-1,3=>p.X==0,_=>true});
-            var free=cells.Where(Walkable).Where(p=>!Units.Any(u=>u.Active && u.Position==p)).Select(p=>(Point?)p).FirstOrDefault();
+            var free=cells.Where(p=>WalkableFor(p,army.Owner)).Where(p=>!Units.Any(u=>u.Active && u.Position==p)).Select(p=>(Point?)p).FirstOrDefault();
             if(free==null)continue;
             var unit=army.Waiting.Dequeue();unit.Position=free.Value;unit.Facing=Inward(army.Side);Units.Add(unit);entered=true;
             Events.Add(new(Turn,BattlePhase.Reinforce,unit.Id,"増援"));
@@ -170,7 +172,7 @@ public sealed partial class BattleState
     }
     public void BuildTerrain(BattleTerrain terrain)
     {
-        Terrain=terrain;Walls.Clear();WallShotDirections.Clear();
+        ResetFortifications();Terrain=terrain;Walls.Clear();WallShotDirections.Clear();
         if(terrain==BattleTerrain.Fort)
         {
             if(BoardSize==10){foreach(int x in new[]{2,3,6,7})Walls.Add(new(x,3));Flag=new(5,2);}

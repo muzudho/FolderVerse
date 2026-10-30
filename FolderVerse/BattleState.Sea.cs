@@ -9,7 +9,7 @@ public sealed partial class BattleState
     public HashSet<Point> SeaClearWater {get;}=new();
     public void BuildSeaLayout(int pattern,int rotation=0)
     {
-        Terrain=BattleTerrain.Sea;Walls.Clear();WallShotDirections.Clear();SeaLogs.Clear();SeaClearWater.Clear();
+        ResetFortifications();Terrain=BattleTerrain.Sea;Walls.Clear();WallShotDirections.Clear();SeaLogs.Clear();SeaClearWater.Clear();
         if(BoardSize==Size){
             LayoutName="中央船・四方接舷";EntrySides=new[]{0,1,2,3};Flag=new(6,6);
             var deck13=Enumerable.Range(0,5).SelectMany(Region).ToHashSet();

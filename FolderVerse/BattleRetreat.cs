@@ -18,7 +18,7 @@ public static class BattleRetreat
                     if(BattleState.HomeExit(next,battle.Army(unit.Owner).Side,battle.BoardSize)){move=current==unit.Position?step:first[current];break;}
                     continue;
                 }
-                if(!battle.Walkable(next))continue;
+                if(!battle.WalkableFor(next,unit.Owner))continue;
                 first[next]=current==unit.Position?step:first[current];queue.Enqueue(next);
             }
             var delta=move??Point.Zero;

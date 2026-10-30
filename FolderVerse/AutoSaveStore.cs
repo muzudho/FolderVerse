@@ -38,7 +38,7 @@ public static class AutoSaveStore
         .Where(f=>!typeof(Delegate).IsAssignableFrom(f.FieldType)).OrderBy(f=>f.Name,StringComparer.Ordinal).ToArray();
     // Turn-boundary saves need combat state, not thousands of already-played animation frames.
     private static object SavedField(object owner,FieldInfo field){
-        bool playback=owner is BattleState && new[]{"<Frames>k__BackingField","<Events>k__BackingField","<Attacks>k__BackingField","<Persuasions>k__BackingField"}.Contains(field.Name) ||
+        bool playback=owner is BattleState && new[]{"<Frames>k__BackingField","<Events>k__BackingField","<Attacks>k__BackingField","<Persuasions>k__BackingField","<GateHits>k__BackingField"}.Contains(field.Name) ||
             owner is RobotCampaign && field.Name=="<Scenes>k__BackingField";
         return playback?Activator.CreateInstance(field.FieldType):field.GetValue(owner);
     }
@@ -120,6 +120,11 @@ public static class AutoSaveStore
                        (type==typeof(BattleFrame) && (field.Name=="<FlagCaptureTurns>k__BackingField" || field.Name=="<FlagDefenseTurns>k__BackingField")))continue;
                     if(type==typeof(March) && field.Name=="<RobotIds>k__BackingField")continue;
                     if(type==typeof(BattleState) && field.Name=="<Persuasions>k__BackingField"){field.SetValue(value,new List<BattlePersuasion>());continue;}
+                    if(type==typeof(BattleState) && field.Name=="<Fortifications>k__BackingField"){field.SetValue(value,new List<BattleFortification>());continue;}
+                    if(type==typeof(BattleState) && field.Name=="<GateHits>k__BackingField"){field.SetValue(value,new List<BattleGateHit>());continue;}
+                    if(type==typeof(BattleState) && (field.Name=="FortificationsBuilt" || field.Name=="InitialDefenseCount"))continue;
+                    if(type==typeof(BattleFrame) && field.Name=="<Fortifications>k__BackingField"){field.SetValue(value,Array.Empty<BattleFortification>());continue;}
+                    if(type==typeof(RobotEncounter) && field.Name=="DefenseCount")continue;
                     throw new InvalidDataException("Autosave field is missing: "+field.Name);
                 }
                 var restored=Read(id);
