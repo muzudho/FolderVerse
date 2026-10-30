@@ -1,0 +1,3299 @@
+{
+  "CharacterId": 52,
+  "Images": [
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Version": "v001",
+      "File": "character-52-normal-1-v001-generated.png",
+      "Sha256": "c72296bd8ad9cc0cb6b4e272dea332333f8594da34073a3a45a6ce2325df9962",
+      "Prompt": "normal-1-v001-prompt.txt",
+      "References": [
+        {
+          "File": "../character-52-1-v003-generated.png",
+          "Role": "本人意匠と場面",
+          "Sha256": "6f172470d240565269197055c449afde72f3f01973cb73ec31dafe9a1c14c142"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-585e734b-5e63-4630-b0c1-19b33b1ea6ad.png",
+      "Tool": "builtin image_gen",
+      "Status": "FULLBODY_MARGIN_AND_EYE_REVIEW_REQUIRED",
+      "VisualReview": "全身直接目視。淡青長髪/尖り耳/赤眼鏡/本人紺白ファー帽子と服/手袋ティーカップ/電池棒/雪街を保持し両ブーツを補完。ただし帽子上端が画面に切れ、全身原画余白未達。眼部白丸は拡大確認未実施、256x192未作成。未選択。座位約6頭身は厳密採寸未実施。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Version": "v002",
+      "File": "character-52-normal-1-v002-generated.png",
+      "Sha256": "aaf96c3bbe5adc1c45c0e3a83c43685ddad2752c9e0454f8ddde27df5e922fbc",
+      "Prompt": "normal-1-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-1-v001-generated.png",
+          "Sha256": "c72296bd8ad9cc0cb6b4e272dea332333f8594da34073a3a45a6ce2325df9962",
+          "Role": "修正対象"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-faed8c7d-f181-42df-9d7c-aecdbc41a3ef.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-1-v002-eyes.png",
+      "Preview": {
+        "Path": "normal-1-v002-preview.png",
+        "Crop": {
+          "X": 300,
+          "Y": 180,
+          "Width": 560,
+          "Height": 420
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "95cee776543f8fe5025c3021b74df32ea47253c6bb8b01350d0e234890e42e71"
+      },
+      "Status": "EYE_HIGHLIGHTS_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部拡大/256x192直接目視。帽子上端に空、両靴下に雪の余白ができ全身切れを解消。本人意匠・小物保持。ただし両眼の上右白丸が小さく白目への接触不明瞭、左下は黄反射で中白丸不足。未選択。縮小で顔/眼鏡/手/カップ/電池判読。帽子はゲーム切出し上端に接するため眼部修正後は切出しも再調整。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Version": "v003",
+      "File": "character-52-normal-1-v003-generated.png",
+      "Sha256": "331e08ced393cc43a4eaef1c469a2851f068492f6b5811fdd9ccd992c0549ea4",
+      "Prompt": "normal-1-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-1-v002-generated.png",
+          "Sha256": "aaf96c3bbe5adc1c45c0e3a83c43685ddad2752c9e0454f8ddde27df5e922fbc"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-df4abe8a-939e-4952-8e59-2826a203f633.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-1-v003-eyes.png",
+      "Status": "LOWER_LEFT_WHITE_HIGHLIGHTS_REQUIRED",
+      "VisualReview": "全身・眼部拡大直接目視。両上右大白丸が白目へ連続する形へ改善。両下左は黄色反射が残り中白丸不足。全身帽子/靴余白と本人意匠保持。未選択、v003縮小未作成。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Version": "v004",
+      "File": "character-52-normal-1-v004-generated.png",
+      "Sha256": "ce85ee9d6600c498a2126b6c5e493a50bed28610e01efc527fb81a9a1bbbc9cd",
+      "Prompt": "normal-1-v004-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-1-v003-generated.png",
+          "Sha256": "331e08ced393cc43a4eaef1c469a2851f068492f6b5811fdd9ccd992c0549ea4"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-e6015005-e56d-4d2d-bf48-ee2a0c18f8df.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-1-v004-eyes.png",
+      "Preview": {
+        "Path": "normal-1-v004-preview.png",
+        "Crop": {
+          "X": 240,
+          "Y": 100,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "26f02acbb08e6209fed4459bba562d0c4c28141890675a3aa3229f0cc9f3271c"
+      },
+      "Status": "LOWER_HIGHLIGHTS_OUTSIDE_IRIS_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。下白丸追加されたが両方とも虹彩外へ出て輪郭を切り、画面右眼は下右寄り。未選択。上右白丸/全身余白/本人意匠保持。縮小は帽子上部余白改善、顔眼鏡手カップ電池判読。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 1,
+      "Kind": "face-study",
+      "Version": "v001",
+      "File": "normal-1-face-v001-generated.png",
+      "Sha256": "cd8df6cccc94d478319a1d0eab64c5a51b04ced0da20f5c4c4f65c9144a49de5",
+      "Prompt": "normal-1-face-v001-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-1-v003-generated.png",
+          "Sha256": "331e08ced393cc43a4eaef1c469a2851f068492f6b5811fdd9ccd992c0549ea4"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-7a00615f-49a0-4382-94da-4ca2e7af27b0.png",
+      "Tool": "builtin image_gen",
+      "Status": "LOWER_WHITE_CIRCLES_STILL_MISSING",
+      "VisualReview": "顔詳細を直接目視。本人の顔/眼鏡/帽子/耳/髪を保持。両下左は黄色反射で純白中丸が確認できず未選択。上右は白丸あり。全身原画の代替ではない。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 1,
+      "Kind": "face-study",
+      "Version": "v002",
+      "File": "normal-1-face-v002-generated.png",
+      "Sha256": "ce149f074c57bc0fe88cccf41b04f89465fa61dfd0930c2c9db383e9d0e5cc77",
+      "Prompt": "normal-1-face-v002-prompt.txt",
+      "References": [
+        {
+          "File": "normal-1-face-v001-generated.png",
+          "Sha256": "cd8df6cccc94d478319a1d0eab64c5a51b04ced0da20f5c4c4f65c9144a49de5"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-acd370fd-6eb0-441f-b14d-100c7908dad5.png",
+      "Tool": "builtin image_gen",
+      "Status": "FACE_STUDY_REVIEWED_FOR_FULLBODY_REFERENCE",
+      "VisualReview": "顔詳細直接目視。両下左中白丸が赤橙虹彩内部に入り下輪郭保持。上右白丸と白目接触保持。本人顔/眼鏡/耳/髪/帽子/閉口微笑保持。全身原画への転用参照として確認、全身の代替でもゲーム採用でもない。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Version": "v005",
+      "File": "character-52-normal-1-v005-generated.png",
+      "Sha256": "c57b5e2e6e7ae07d191c09de9bb383c965c7193694904ff2da679fd39574e1cc",
+      "Prompt": "normal-1-v005-prompt.txt",
+      "References": [
+        {
+          "File": "normal-1-face-v002-generated.png",
+          "Sha256": "ce149f074c57bc0fe88cccf41b04f89465fa61dfd0930c2c9db383e9d0e5cc77"
+        },
+        {
+          "File": "character-52-normal-1-v003-generated.png",
+          "Sha256": "331e08ced393cc43a4eaef1c469a2851f068492f6b5811fdd9ccd992c0549ea4"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-c08b8ada-9b33-42b1-bf40-b601fdd35b57.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-1-v005-eyes.png",
+      "Preview": {
+        "Path": "normal-1-v005-preview.png",
+        "Crop": {
+          "X": 240,
+          "Y": 100,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "097234d8c433c50e4b3c70dcbed9b0fa3da145e1b657ebb6bcb535136dc8b74e"
+      },
+      "Status": "WORKING_SELECTED_NOT_GAME_ADOPTED",
+      "VisualReview": "全身/眼部拡大/256x192直接目視。両上右大白丸が白目へ連続、両下左白丸は橙虹彩内の反射に重なり下輪郭を保持。全身帽子/靴余白と本人意匠/小物を保持。縮小で顔/眼鏡/手/カップ/電池を判読。座位の厳密関節採寸未実施。作業用選択、ゲーム未採用。",
+      "Selected": true,
+      "GameAdopted": false
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Version": "v001",
+      "File": "character-52-normal-2-v001-generated.png",
+      "Sha256": "a10b37448e19d9e6caf8b5a12a3ce395e7858e9b1dbe2f3b1e9ca09782d09552",
+      "Prompt": "normal-2-v001-prompt.txt",
+      "References": [
+        {
+          "File": "../character-52-2-v003-generated.png",
+          "Sha256": "aa9cd18d1563d75860dca47783d93c55e6e6f5c7d4a2366240bcb7d4feda925b",
+          "Role": "本人意匠と場面"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-a9536dc0-3bb8-4244-b902-48b171e16977.png",
+      "Tool": "builtin image_gen",
+      "Status": "MARGIN_AND_EYE_REVIEW_REQUIRED",
+      "VisualReview": "全身直接目視。本人の眼鏡/帽子/髪/舌笑顔/黒手袋双眼鏡/ペンギン電池を保持。下半身と両ブーツ補完。帽子上端が画面に近く余白不足、両眼白丸は拡大未確認。未選択、縮小未作成。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Version": "v002",
+      "File": "character-52-normal-2-v002-generated.png",
+      "Sha256": "f71d16bba0781a05adf3968e02047c88e9e9900d75eaa9880e7b99b5085d8a63",
+      "Prompt": "normal-2-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-2-v001-generated.png",
+          "Sha256": "a10b37448e19d9e6caf8b5a12a3ce395e7858e9b1dbe2f3b1e9ca09782d09552"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-87d21b80-1abf-4515-9ad7-da1ea6eccd58.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-2-v002-eyes.png",
+      "Preview": {
+        "Path": "normal-2-v002-preview.png",
+        "Crop": {
+          "X": 540,
+          "Y": 100,
+          "Width": 600,
+          "Height": 450
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "b34946c079c4d577c119a0b17dc00a519eb47050e01fa803b05048aeaf1c30bd"
+      },
+      "Status": "EYE_HIGHLIGHTS_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。帽子上と両靴下の余白を確保。本人意匠/舌笑顔/双眼鏡/ペンギン電池保持。両上右は小点で白目接触なし、両下左は黄反射で中白丸不足。未選択。縮小で顔眼鏡手双眼鏡玩具電池判読。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Version": "v003",
+      "File": "character-52-normal-2-v003-generated.png",
+      "Sha256": "0d6d341b87f437e626caaec3f9d089fc23d3e4a04cbf9e4042c44d84057313b1",
+      "Prompt": "normal-2-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-2-v002-generated.png",
+          "Sha256": "f71d16bba0781a05adf3968e02047c88e9e9900d75eaa9880e7b99b5085d8a63"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-821c9e48-c2a6-44ff-bcb6-1662e2dc5bb9.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-2-v003-eyes.png",
+      "Status": "LOWER_LEFT_WHITE_HIGHLIGHTS_REQUIRED",
+      "VisualReview": "全身/眼部拡大直接目視。両上右大白丸の白目接触改善。両下左は黄色反射のままで中白丸不足。本人意匠/舌笑顔/双眼鏡/玩具電池/全身余白保持。未選択、v003縮小未作成。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Version": "v004",
+      "File": "character-52-normal-2-v004-generated.png",
+      "Sha256": "3807b6c668f90e3011587049a07fdcb432b8b8b1c9151721f50030e80fda87a0",
+      "Prompt": "normal-2-v004-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-2-v003-generated.png",
+          "Sha256": "0d6d341b87f437e626caaec3f9d089fc23d3e4a04cbf9e4042c44d84057313b1"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-ff68a52a-166b-430d-90da-e49c2ce9c99c.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-2-v004-eyes.png",
+      "Preview": {
+        "Path": "normal-2-v004-preview.png",
+        "Crop": {
+          "X": 540,
+          "Y": 100,
+          "Width": 600,
+          "Height": 450
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "2edcd7a5a00d9a4fcda20fcbcc4a494745a2670e84313b83c27c48f52290b41d"
+      },
+      "Status": "LOWER_LEFT_WHITE_HIGHLIGHTS_STILL_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。両下左は黄反射のまま中白丸なし。画面右虹彩の右縁も濃線が出て上白丸接触が弱まる。本人意匠/余白/小物保持。未選択。縮小判読は維持。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Version": "v005",
+      "File": "character-52-normal-2-v005-generated.png",
+      "Sha256": "3e2f82ef45e55e2126e7d516fbc08acb09eac09e7090e7e412b104698fbe497e",
+      "Prompt": "normal-2-v005-prompt.txt",
+      "References": [
+        {
+          "File": "normal-1-face-v002-generated.png",
+          "Sha256": "ce149f074c57bc0fe88cccf41b04f89465fa61dfd0930c2c9db383e9d0e5cc77"
+        },
+        {
+          "File": "character-52-normal-2-v003-generated.png",
+          "Sha256": "0d6d341b87f437e626caaec3f9d089fc23d3e4a04cbf9e4042c44d84057313b1"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-fe2d483a-193f-4bcd-b6fa-852cd0540916.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-2-v005-eyes.png",
+      "Preview": {
+        "Path": "normal-2-v005-preview.png",
+        "Crop": {
+          "X": 540,
+          "Y": 100,
+          "Width": 600,
+          "Height": 450
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "7932421c2cf3b9a855a1d5d3cd012b6da354cdf3930d50f93703adf06b7f694e"
+      },
+      "Status": "LOWER_LEFT_WHITE_HIGHLIGHT_TRANSFER_INCOMPLETE",
+      "VisualReview": "全身/眼部/256x192直接目視。上右白目接触保持、下左は黄色反射で白丸転用未完。舌笑顔/ファー縁なし帽子/双眼鏡/玩具電池/余白保持。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 2,
+      "Kind": "face-study",
+      "Version": "v001",
+      "File": "normal-2-face-v001-generated.png",
+      "Sha256": "8b1f9124743c10f321c63528f8d09a83744f8de56a81acf6ff548ac30dbdb076",
+      "Prompt": "normal-2-face-v001-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-2-v003-generated.png",
+          "Sha256": "0d6d341b87f437e626caaec3f9d089fc23d3e4a04cbf9e4042c44d84057313b1"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-bd5fe374-b140-4dd7-8c77-1b5ed36f1dcb.png",
+      "Tool": "builtin image_gen",
+      "Status": "FACE_STUDY_REVISION_REQUIRED",
+      "VisualReview": "顔詳細直接目視。下左円状反射はあるが黄白に混ざり純白判定が不確実、上右白丸は白目境界付近。口が原画より大きくなった。眼部調整用の途中候補、未選択。全身原画の代替には使用しない。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 2,
+      "Kind": "face-study",
+      "Version": "v002",
+      "File": "normal-2-face-v002-generated.png",
+      "Sha256": "bab50279e70c98a6d220e0def9baee1d223278ab5c32e8755e6eb044ff0f194c",
+      "Prompt": "normal-2-face-v002-prompt.txt",
+      "References": [
+        {
+          "File": "normal-2-face-v001-generated.png",
+          "Sha256": "8b1f9124743c10f321c63528f8d09a83744f8de56a81acf6ff548ac30dbdb076"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-4e8304dc-f3b8-44a0-a8c3-607472c5bbca.png",
+      "Tool": "builtin image_gen",
+      "Status": "FACE_STUDY_REVIEWED_FOR_FULLBODY_REFERENCE",
+      "VisualReview": "顔詳細直接目視。両眼の下左中白丸は純白で虹彩内、下縁保持。上右大白丸は白目側へ接触。本人意匠保持。口は元全身より大きいため眼部のみ参照し、転用先v003の小さい舌笑顔を保持する。全身原画の代替ではない。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Version": "v006",
+      "File": "character-52-normal-2-v006-generated.png",
+      "Sha256": "3e5bdd5a440d64383799ceb26b0eaff07fe222997dbf016d02622b6d9ba9c648",
+      "Prompt": "normal-2-v006-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-2-v003-generated.png",
+          "Sha256": "0d6d341b87f437e626caaec3f9d089fc23d3e4a04cbf9e4042c44d84057313b1"
+        },
+        {
+          "File": "normal-2-face-v002-generated.png",
+          "Sha256": "bab50279e70c98a6d220e0def9baee1d223278ab5c32e8755e6eb044ff0f194c"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-605bd555-ef7e-4f1c-a7e2-513b296552bf.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-2-v006-eyes.png",
+      "Preview": {
+        "Path": "normal-2-v006-preview.png",
+        "Crop": {
+          "X": 540,
+          "Y": 100,
+          "Width": 600,
+          "Height": 450
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "5db81c95a00b60e41a94c49c632aaa2c2e68c519dba9ee117f4937f5ae8c21c3"
+      },
+      "Status": "LOWER_LEFT_WHITE_HIGHLIGHT_TRANSFER_INCOMPLETE",
+      "VisualReview": "眼部と256x192直接目視。上右大白丸は白目接触。両下左は黄反射のままで白丸転用失敗。全身構図・小さい舌笑顔・帽子・双眼鏡・玩具電池は保持。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Version": "v007",
+      "File": "character-52-normal-2-v007-generated.png",
+      "Sha256": "146213f2bf19af8a798fb894e0035b22e0e098b6ae67934989a0230176dd6656",
+      "Prompt": "normal-2-v007-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-2-v006-generated.png",
+          "Sha256": "3e5bdd5a440d64383799ceb26b0eaff07fe222997dbf016d02622b6d9ba9c648"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-5889f31d-eca0-4c2f-82cf-3ffd8a7eaaab.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-2-v007-eyes.png",
+      "Preview": {
+        "Path": "normal-2-v007-preview.png",
+        "Crop": {
+          "X": 540,
+          "Y": 100,
+          "Width": 600,
+          "Height": 450
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "07e486d415b67d96e5bcc453d1d1da94e17e0a78283496a577ef83ce8830de8d"
+      },
+      "Status": "LOWER_LEFT_WHITE_HIGHLIGHT_TRANSFER_INCOMPLETE",
+      "VisualReview": "全身/眼部/256x192直接目視。両下左は黄色のまま、白丸修正未達。上右白目接触・全身余白・本人衣装・舌笑顔・双眼鏡・玩具電池保持。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Version": "v008",
+      "File": "character-52-normal-2-v008-generated.png",
+      "Sha256": "63f38cd3d70dc9cc96c9c43de609e2a2bb6e0e159239c631e854b00b03d83182",
+      "Prompt": "normal-2-v008-prompt.txt",
+      "References": [
+        {
+          "File": "normal-2-face-v002-generated.png",
+          "Sha256": "bab50279e70c98a6d220e0def9baee1d223278ab5c32e8755e6eb044ff0f194c"
+        },
+        {
+          "File": "character-52-normal-2-v003-generated.png",
+          "Sha256": "0d6d341b87f437e626caaec3f9d089fc23d3e4a04cbf9e4042c44d84057313b1"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-8f0d945a-95be-47ab-8231-91705a8f7209.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-2-v008-eyes.png",
+      "Preview": {
+        "Path": "normal-2-v008-preview.png",
+        "Crop": {
+          "X": 350,
+          "Y": 60,
+          "Width": 660,
+          "Height": 495
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "1d91232760b991c0a6b8a8c9aa32881690fa1de4a95c1da4194a5335c046c017"
+      },
+      "Status": "EYES_IMPROVED_PROPORTION_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。両眼下左の中白丸が虹彩内、下縁保持。上右大白丸が白目接触。本人帽子/眼鏡/双眼鏡/玩具電池/全身余白保持。口はやや大きい。頭に対し体が長くv017の5.5〜6頭身より長く見えるため未選択、頭身調整必要。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Version": "v009",
+      "File": "character-52-normal-2-v009-generated.png",
+      "Sha256": "d226bd039cbe35d31b85bad362dc1582641cff1edcc164521d8f058d6535c179",
+      "Prompt": "normal-2-v009-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-2-v008-generated.png",
+          "Role": "edit target identity and eyes",
+          "Sha256": "63f38cd3d70dc9cc96c9c43de609e2a2bb6e0e159239c631e854b00b03d83182"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "approved body proportions only",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-b930f819-502b-43d4-b55f-8585851c02c3.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-2-v009-eyes.png",
+      "Preview": {
+        "Path": "normal-2-v009-preview.png",
+        "Crop": {
+          "X": 330,
+          "Y": 80,
+          "Width": 680,
+          "Height": 510
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "517140b4dfa57425994d580e2515edbd86b68d09ff4959a4ab4c354973efa293"
+      },
+      "Status": "PROPORTION_REVIEW_PENDING",
+      "VisualReview": "全身/眼部/256x192直接目視。頭部が大きく首短く改善、全身余白/本人衣装/双眼鏡/玩具電池保持。両下左白丸は虹彩内、上右大白丸白目接触保持。口はまだ大きめ。傾斜頭部の頭長と膝位置をv017と比較して体格の最終判定が必要、未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Version": "v010",
+      "File": "character-52-normal-2-v010-generated.png",
+      "Sha256": "ee580b7d3ab78a57fe45d185ce2821f3bf428da1df267332cb62382e113bb10c",
+      "Prompt": "normal-2-v010-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-2-v009-generated.png",
+          "Role": "edit target",
+          "Sha256": "d226bd039cbe35d31b85bad362dc1582641cff1edcc164521d8f058d6535c179"
+        },
+        {
+          "File": "../character-52-2-v003-generated.png",
+          "Role": "original mouth only",
+          "Sha256": "aa9cd18d1563d75860dca47783d93c55e6e6f5c7d4a2366240bcb7d4feda925b"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-cb322217-9fa0-4749-aafa-debdda4e9e63.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-2-v010-eyes.png",
+      "Preview": {
+        "Path": "normal-2-v010-preview.png",
+        "Crop": {
+          "X": 330,
+          "Y": 80,
+          "Width": 680,
+          "Height": 510
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "48ddcf8c9cc6d1f8b47561ee6b7ee4e410754291f78d3e2257a642aca5dc090e"
+      },
+      "Status": "MOUTH_FIXED_PROPORTION_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。小さな舌笑顔へ修正、上下白丸/本人衣装/小物/全身余白保持。v009とv017を再比較すると頭部拡大後は頭に対する胴脚が短めに見え、頭身一致は未確認。帽子下の頭蓋位置が不明確で数値確定せず。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Version": "v011",
+      "File": "character-52-normal-2-v011-generated.png",
+      "Sha256": "bd561654cc2b0f8f7fb5a47991e1345076f9e6089569fc7b2ab4df605ea39698",
+      "Prompt": "normal-2-v011-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-2-v010-generated.png",
+          "Role": "edit target",
+          "Sha256": "ee580b7d3ab78a57fe45d185ce2821f3bf428da1df267332cb62382e113bb10c"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "body proportions only",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-34f706be-e5cf-4bc9-89e2-df63d9fe9b9c.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-2-v011-eyes.png",
+      "Preview": {
+        "Path": "normal-2-v011-preview.png",
+        "Crop": {
+          "X": 350,
+          "Y": 90,
+          "Width": 660,
+          "Height": 495
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "7dc065567d3e0fd15cd6d96502b9e0375d7c9fdf391ae6bc12d917a3dcc15c76"
+      },
+      "Status": "WORKING_SELECTED_NOT_GAME_ADOPTED",
+      "VisualReview": "全身/眼部/256x192直接目視。v010より頭部を抑え短い首/大きい手足/高い膝、短い腿と長い脛を保持。頭蓋上端は帽子内推定、傾斜と前屈込みで約6頭身の目安、厳密な直立計測ではない。小さい舌笑顔/本人衣装/双眼鏡/玩具電池/帽子靴裾余白保持。両下左は白い円中心が虹彩内、周囲の橙黄反射と区別でき下縁保持。上右大白丸は白目接触。縮小で本人/眼鏡/玩具/双眼鏡判読可。作業用選択。",
+      "Selected": true,
+      "GameAdopted": false
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Version": "v001",
+      "File": "character-52-normal-3-v001-generated.png",
+      "Sha256": "be6990332bfbf821304e3ee847edcbc961445679b4ae26ee9fc853cd32314741",
+      "Prompt": "normal-3-v001-prompt.txt",
+      "References": [
+        {
+          "File": "../character-52-3-v003-generated.png",
+          "Role": "scene identity",
+          "Sha256": "5fbf924e2f4b0e56eeb7c33d81a55514c4640e2544f0d7efa61f62d162141f70"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "body only",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-4afafdc0-417e-4031-9b69-fb9a938b0ff8.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-3-v001-eyes.png",
+      "Status": "FRAME_AND_EYE_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部直接目視。両靴と両手は収まり本人場面の銀細縁眼鏡/裸手/白ストッキング/驚き丸口/氷/玩具電池保持。上端の髪が切れ帽子上余白も狭い。両眼上右白丸は小さく虹彩内で境界未接触、下左は黄反射。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Version": "v002",
+      "File": "character-52-normal-3-v002-generated.png",
+      "Sha256": "55fb15cbafcd78a255f9fc3686f3038cc47c6bfc7f3ca7190e3e6a2a4e911ef3",
+      "Prompt": "normal-3-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-3-v001-generated.png",
+          "Sha256": "be6990332bfbf821304e3ee847edcbc961445679b4ae26ee9fc853cd32314741"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-675f6fe9-7fc3-4ea5-8534-123d15e4f263.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-3-v002-eyes.png",
+      "Preview": {
+        "Path": "normal-3-v002-preview.png",
+        "Crop": {
+          "X": 590,
+          "Y": 110,
+          "Width": 680,
+          "Height": 510
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "47225998633a14c49a39ef3d93aab0630af426409573ed7d78d2c1cec102d5d8"
+      },
+      "Status": "FRAME_FIXED_EYE_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。上端髪と帽子の余白改善、両手/両靴/裾/玩具も枠内。銀細縁眼鏡/裸手/驚き丸口/白ニーハイ/浮遊氷場面保持。瞳は上白丸が虹彩内のまま白目未接触、下左は黄色反射。縮小で顔/玩具判読可、帽子上端余白が狭いため最終切出し調整余地。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Version": "v003",
+      "File": "character-52-normal-3-v003-generated.png",
+      "Sha256": "0ee0a0d4024db6f3649dc11f4b891446c6350d64c16170e80fb9d17a55ec084a",
+      "Prompt": "normal-3-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-3-v002-generated.png",
+          "Sha256": "55fb15cbafcd78a255f9fc3686f3038cc47c6bfc7f3ca7190e3e6a2a4e911ef3"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-e523e03f-eb88-49e0-aae4-bf86d5ebd55f.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-3-v003-eyes.png",
+      "Preview": {
+        "Path": "normal-3-v003-preview.png",
+        "Crop": {
+          "X": 580,
+          "Y": 90,
+          "Width": 700,
+          "Height": 525
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "4fbe40d9b1b93105aa55eedfffdc3cf1c9f37ab77725029999e5efe21bc9dfc9"
+      },
+      "Status": "UPPER_WHITE_IMPROVED_LOWER_RIM_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。上右大白丸が白目接触へ改善。下左白反射も出たが画面右眼は横長で左虹彩境界に接触し、白目へつながる。画面左眼は黄白混在。下左中白丸を虹彩内に収める修正必要。本人意匠/全身余白/場面保持。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Version": "v004",
+      "File": "character-52-normal-3-v004-generated.png",
+      "Sha256": "069ef7694fb56f4d5b8125a5148e518716a68505e26f02fff97ca6d9af0e235c",
+      "Prompt": "normal-3-v004-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-3-v003-generated.png",
+          "Sha256": "0ee0a0d4024db6f3649dc11f4b891446c6350d64c16170e80fb9d17a55ec084a"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-da2ac4f0-a41e-4bf8-adef-5cbd83f75259.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-3-v004-eyes.png",
+      "Preview": {
+        "Path": "normal-3-v004-preview.png",
+        "Crop": {
+          "X": 580,
+          "Y": 90,
+          "Width": 700,
+          "Height": 525
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "8a15d64a837ccae3620798d6da0fdbd1d3c1d3b07f71afac01c79c5acb38ad62"
+      },
+      "Status": "LOWER_WHITE_IMPROVED_EDGE_REVIEW_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。下左は丸い白中心へ改善し下縁は赤橙が残る。画面右眼の左縁は白目に近く縮小で接触有無の判別が難しい。上右大白丸白目接触保持。本人場面/全身余白保持。最終眼部境界確認待ち、未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 3,
+      "Kind": "face-study",
+      "Version": "v001",
+      "File": "normal-3-face-v001-generated.png",
+      "Sha256": "68cddd561e7a9b37b7a490de9cc77a10e7bc34bc266f006342118f1fdf8aea9a",
+      "Prompt": "normal-3-face-v001-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-3-v004-generated.png",
+          "Sha256": "069ef7694fb56f4d5b8125a5148e518716a68505e26f02fff97ca6d9af0e235c"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-2b63d032-9c0f-4738-a640-39abf50b6959.png",
+      "Tool": "builtin image_gen",
+      "Status": "FACE_STUDY_REVIEWED_FOR_FULLBODY_REFERENCE",
+      "VisualReview": "顔詳細直接目視。両下左中白丸は純白で虹彩内、左/下の色と細い輪郭を保持。上右大白丸は白目境界へ接触。銀細縁眼鏡/驚き丸口/本人髪帽子保持。顔詳細は眼部参照のみ、全身原画の代替ではない。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Version": "v005",
+      "File": "character-52-normal-3-v005-generated.png",
+      "Sha256": "cc29f27980e4b8795e3279f1a466193b93eb3f29f5d8024823c30d2859a1c0db",
+      "Prompt": "normal-3-v005-prompt.txt",
+      "References": [
+        {
+          "File": "normal-3-face-v001-generated.png",
+          "Sha256": "68cddd561e7a9b37b7a490de9cc77a10e7bc34bc266f006342118f1fdf8aea9a"
+        },
+        {
+          "File": "character-52-normal-3-v004-generated.png",
+          "Sha256": "069ef7694fb56f4d5b8125a5148e518716a68505e26f02fff97ca6d9af0e235c"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-b818a026-34d8-4933-a6ad-8264963b33bc.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-3-v005-eyes.png",
+      "Preview": {
+        "Path": "normal-3-v005-preview.png",
+        "Crop": {
+          "X": 580,
+          "Y": 90,
+          "Width": 700,
+          "Height": 525
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "7d472e06155ea33421d41da394d77aed0758cfa892fb687c5add6e2c18e17aa2"
+      },
+      "Status": "WORKING_SELECTED_NOT_GAME_ADOPTED",
+      "VisualReview": "全身/眼部/256x192直接目視。両下左は丸い白中心、左側と下側に赤橙の虹彩が残り輪郭を切らない。上右大白丸は白目に接触。銀細縁眼鏡/驚き丸口/裸手/白ニーハイ/両靴/玩具電池/浮遊氷場面保持、髪帽子裾指先の余白保持。大きい頭と短い首、大手足、屈曲短縮を伴う腿と脛の見え方を維持。直立頭身の厳密測定はしていない。縮小で顔と玩具判読可。作業用選択。",
+      "Selected": true,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v001",
+      "File": "character-52-normal-4-v001-generated.png",
+      "Sha256": "5acbd084de7f9184d816437ad724543931ed601b230b766a3a4e4a726a99d90b",
+      "Prompt": "normal-4-v001-prompt.txt",
+      "References": [
+        {
+          "File": "../character-52-4-v003-generated.png",
+          "Role": "scene identity",
+          "Sha256": "c15d514f4e648c94b9843a7ae3aaabf1b06e5b7d4676ae20cea816b0a91b44a5"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "body only",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-4b8caf9d-b85b-43cd-bacf-2a69855611b8.png",
+      "Tool": "builtin image_gen",
+      "Status": "FULLBODY_MARGIN_REVISION_REQUIRED",
+      "VisualReview": "全体直接目視。両靴を描き足したが画面下で靴底が切れ、帽子上ファーも切れる。赤眼鏡/閉口微笑/左右異色瞳/バーガー/指なし手袋/白胸部衣装/黒ニーハイ/青リボン/電池/玩具/ランタン場面保持。瞳白丸は未確認。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v002",
+      "File": "character-52-normal-4-v002-generated.png",
+      "Sha256": "646e83524fcc36f6f36c79730914e88745e002a96f49fe0e3d3144433f2bd478",
+      "Prompt": "normal-4-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-v001-generated.png",
+          "Sha256": "5acbd084de7f9184d816437ad724543931ed601b230b766a3a4e4a726a99d90b"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-f94f9463-c9da-40b3-ba22-8b266a1711dc.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-4-v002-eyes.png",
+      "Preview": {
+        "Path": "normal-4-v002-preview.png",
+        "Crop": {
+          "X": 610,
+          "Y": 100,
+          "Width": 600,
+          "Height": 450
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "c6f7f3473ac9044746cf570db857ff7ff46cc4e18ef90e7f9b5e5ce66068b6cc"
+      },
+      "Status": "FRAME_FIXED_EYE_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。帽子上ファーと両靴底/踵の切れを解消し余白確保。本人閉口微笑/赤眼鏡/左右異色瞳/バーガー/指なし手袋/白胸部衣装/電池/玩具/ランタン保持。上白点は小さく境界未接触、下左は橙黄または紫反射で白丸未達。縮小で顔/バーガー判読可、玩具は左端で一部切れるため最終切出し要調整。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v003-rejected",
+      "Prompt": "normal-4-v003-rejected-prompt.txt",
+      "Status": "GENERATION_REJECTED",
+      "Error": "HTTP400 moderation_blocked output category sexual request06dfa5af-c075-4645-8cb2-1b0269d57145",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v003",
+      "File": "character-52-normal-4-v003-generated.png",
+      "Sha256": "a0897c68eadb15d55480b19b2fe4cf3b51ed59fb33db57fdc2a2f6e7db5b555e",
+      "Prompt": "normal-4-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-v002-generated.png",
+          "Sha256": "646e83524fcc36f6f36c79730914e88745e002a96f49fe0e3d3144433f2bd478"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-e44b5532-e806-449e-a2ef-27e49d411c4a.png",
+      "Tool": "builtin image_gen",
+      "Status": "CLOTHING_CHANGED_EYE_EXPRESSION_REVISION_REQUIRED",
+      "VisualReview": "全体直接目視。拒否を受けユーザー既存許可に従い脚を覆う紺金冬用ズボン/両足接地の座り姿勢へ変更して生成成功。本人赤眼鏡/髪耳/帽子/バーガー/電池/玩具/ランタン保持。ただし両眼が閉じ目へ変化、元の開眼・左右異色瞳を復元必要。帽子上余白も極小。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v004",
+      "File": "character-52-normal-4-v004-generated.png",
+      "Sha256": "7edb41b3b1d3bbf96f626f923a6020591bf94d47c7b542c8c5c63aa2f4d8b49a",
+      "Prompt": "normal-4-v004-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-v003-generated.png",
+          "Sha256": "a0897c68eadb15d55480b19b2fe4cf3b51ed59fb33db57fdc2a2f6e7db5b555e"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-c6fdfc3e-c331-4118-ad0f-c6c162ea141a.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-4-v004-eyes.png",
+      "Preview": {
+        "Path": "normal-4-v004-preview.png",
+        "Crop": {
+          "X": 400,
+          "Y": 100,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "86a08b3417f63d17177408dd54ed3513678802e04e4a00bc22c74cea69393605"
+      },
+      "Status": "OPEN_EYES_RESTORED_HIGHLIGHT_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。開眼復元、左橙赤/右紫の瞳と閉口微笑保持。冬用ズボン/両足接地/本人髪耳眼鏡/バーガー/電池/玩具保持、帽子と靴余白確保。上右白丸は小点のまま、下左は色反射で中白丸未達。縮小で顔/バーガー/玩具判読可。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal-face-detail",
+      "Version": "v001",
+      "File": "character-52-normal-4-face-v001-generated.png",
+      "Sha256": "10e8561d931857d3ad1e747596201987c2b6c5f71cfb48207ea0cd96d97f504e",
+      "Prompt": "normal-4-face-v001-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-v004-generated.png",
+          "Sha256": "7edb41b3b1d3bbf96f626f923a6020591bf94d47c7b542c8c5c63aa2f4d8b49a"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-a83194e7-3fe7-4cea-b75e-2816abb701ef.png",
+      "Tool": "builtin image_gen",
+      "Status": "HIGHLIGHT_REVISION_REQUIRED",
+      "VisualReview": "2026-10-29 16:08 JST実行。顔詳細を直接目視。赤眼鏡/閉口微笑/左橙赤・右紫の異色瞳を保持。上下白丸生成を確認。ただし上右白丸は虹彩内部で輪郭に未接触。下左白丸も左端余白が狭く、特に左画像側は境界接触が疑われる。未選択。顔詳細のため帽子上切れは全身用判定対象外。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal-face-detail",
+      "Version": "v002",
+      "File": "character-52-normal-4-face-v002-generated.png",
+      "Sha256": "a0025f806505b1806451013f3297591fcf3092aa54ef67d71d2cda3e9e15d868",
+      "Prompt": "normal-4-face-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-face-v001-generated.png",
+          "Sha256": "10e8561d931857d3ad1e747596201987c2b6c5f71cfb48207ea0cd96d97f504e"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-b117c4f0-dc53-45eb-b7ca-2f5c7f1768f4.png",
+      "Tool": "builtin image_gen",
+      "Status": "EYE_DETAIL_REFERENCE_ONLY",
+      "VisualReview": "顔詳細直接目視。上右大白丸が虹彩右上輪郭を白抜きし白目へ接続。下左中白丸の外に色の縁あり。左右異色瞳/赤眼鏡/閉口微笑保持。全身への転写参照のみ。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v005",
+      "File": "character-52-normal-4-v005-generated.png",
+      "Sha256": "40272d7e5fd90dedeae0b6661bf7ce1a7898ab1fe2a647cac7985dac640ecfef",
+      "Prompt": "normal-4-v005-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-face-v002-generated.png",
+          "Sha256": "a0025f806505b1806451013f3297591fcf3092aa54ef67d71d2cda3e9e15d868"
+        },
+        {
+          "File": "character-52-normal-4-v004-generated.png",
+          "Sha256": "7edb41b3b1d3bbf96f626f923a6020591bf94d47c7b542c8c5c63aa2f4d8b49a"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-ba7cf2d8-ed55-4a10-bf9a-73fee14f5e7d.png",
+      "Tool": "builtin image_gen",
+      "Status": "EYE_TRANSFER_FAILED_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部拡大/256x192を直接目視。冬用ズボン/両足接地/バーガー/玩具/電池/帽子靴余白は保持。顔詳細の白丸が転写されず上右は小白点、下左は黄/紫の色反射へ戻った。未選択。縮小で顔とバーガー判読、玩具下端は切出し底辺近く。",
+      "Selected": false,
+      "GameAdopted": false,
+      "EyePreview": "normal-4-v005-eyes.png",
+      "Preview": {
+        "Path": "normal-4-v005-preview.png",
+        "Crop": {
+          "X": 400,
+          "Y": 100,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "cddf4d3f56f399be628b30bc12559bc9a74b58d26e944022192894187852293a"
+      }
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v006",
+      "File": "character-52-normal-4-v006-generated.png",
+      "Sha256": "27749d14f14396c4d3ce8941a63b0290082a9dbee733d723208ed81abfb467b0",
+      "Prompt": "normal-4-v006-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-v005-generated.png",
+          "Sha256": "40272d7e5fd90dedeae0b6661bf7ce1a7898ab1fe2a647cac7985dac640ecfef"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-c155da86-7f18-49ff-ba5e-c20562e2d662.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-4-v006-eyes.png",
+      "Preview": {
+        "Path": "normal-4-v006-preview.png",
+        "Crop": {
+          "X": 400,
+          "Y": 100,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "53ce8a91bd8a4059a76baa27345f94090dbb79c5f014047437aacfb4f03dd88a"
+      },
+      "Status": "LOWER_HIGHLIGHT_CUTS_IRIS_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。上下白丸が全身でも出現。上右大白丸は白目接続へ改善。ただし下左白丸が大きく左虹彩輪郭を切り、特に橙赤側は白目へ接続。下白丸を少し小さく瞳孔側へ移動必要。本人赤眼鏡/異色瞳/微笑/バーガー/玩具/電池/冬用ズボン/全身余白保持。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v007",
+      "File": "character-52-normal-4-v007-generated.png",
+      "Sha256": "59bea3d230caef5a0a730e64c17ad6497532dbae92b835a20466816931e3bebe",
+      "Prompt": "normal-4-v007-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-v006-generated.png",
+          "Sha256": "27749d14f14396c4d3ce8941a63b0290082a9dbee733d723208ed81abfb467b0"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-6fa1987b-89b8-40e8-b842-f952af63a53b.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-4-v007-eyes.png",
+      "Preview": {
+        "Path": "normal-4-v007-preview.png",
+        "Crop": {
+          "X": 400,
+          "Y": 100,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "9713ca62752547e0680a320c04a91e5bc50b7a4f2e75c81412997ef202f4403b"
+      },
+      "Status": "LOWER_HIGHLIGHT_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。下左白丸の位置がほぼ変わらず、虹彩左輪郭を切ったまま。未選択。 本人小物/冬用ズボン/全身余白保持。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v008",
+      "File": "character-52-normal-4-v008-generated.png",
+      "Sha256": "d7318ea95afcf933d33dc184d1c57b379c587f1b052b370f7be402066df9a658",
+      "Prompt": "normal-4-v008-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-v007-generated.png",
+          "Sha256": "59bea3d230caef5a0a730e64c17ad6497532dbae92b835a20466816931e3bebe"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-06d87473-e613-4426-9443-d4b61650a452.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-4-v008-eyes.png",
+      "Preview": {
+        "Path": "normal-4-v008-preview.png",
+        "Crop": {
+          "X": 400,
+          "Y": 100,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "848545d71f31d370882ec8863830e32b483404dad3025ae255134d47e96e8965"
+      },
+      "Status": "LOWER_HIGHLIGHT_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。下白丸縮小移動を強調したが、橙赤側は境界接触が残り、紫側は下白丸が色反射へ消失。未選択。反復編集で細部もやや軟化。 本人小物/冬用ズボン/全身余白保持。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v009",
+      "File": "character-52-normal-4-v009-generated.png",
+      "Sha256": "66385b1934db7e180406ae6271812b8194d2443e1552c7c8632e6c2dee127c8d",
+      "Prompt": "normal-4-v009-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-v004-generated.png",
+          "Sha256": "7edb41b3b1d3bbf96f626f923a6020591bf94d47c7b542c8c5c63aa2f4d8b49a"
+        },
+        {
+          "File": "character-52-normal-4-face-v002-generated.png",
+          "Sha256": "a0025f806505b1806451013f3297591fcf3092aa54ef67d71d2cda3e9e15d868"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-f710e93b-5f2b-4873-a967-e7614f0a9db5.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-4-v009-eyes.png",
+      "Preview": {
+        "Path": "normal-4-v009-preview.png",
+        "Crop": {
+          "X": 400,
+          "Y": 100,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "1966de08c7be8aefb69fe0a71c2430f1268dc5152aa63ad4a3d9dc991999e280"
+      },
+      "Status": "LOWER_WHITE_HIGHLIGHT_MISSING",
+      "VisualReview": "全身/眼部/256x192直接目視。鮮明なv004を起点に顔詳細v002参照で再生成。上右白丸は拡大したが、下左は橙黄/紫の色反射となり白丸未達。本人左右瞳色/赤眼鏡/閉口微笑/衣装ズボン/バーガー/電池/玩具と全身余白は保持。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v010",
+      "File": "character-52-normal-4-v010-generated.png",
+      "Sha256": "7b1deee458256fe63a70fc7d66d4fc2ae4ad69ce52a94cbf8f2c1af51f054d80",
+      "Prompt": "normal-4-v010-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-v006-generated.png",
+          "Sha256": "27749d14f14396c4d3ce8941a63b0290082a9dbee733d723208ed81abfb467b0"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-462a0b3e-277b-48d9-ab8d-ef0258927b0d.png",
+      "Tool": "builtin image_gen",
+      "EyePreview": "normal-4-v010-eyes.png",
+      "Preview": {
+        "Path": "normal-4-v010-preview.png",
+        "Crop": {
+          "X": 400,
+          "Y": 100,
+          "Width": 640,
+          "Height": 480
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "b70ce9a09db4016212119fb9f3a70a891173e41e504fcc926225b209e6e80f92"
+      },
+      "Status": "LOWER_HIGHLIGHT_BOUNDARY_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。v006から虹彩色の縁の復元を指示。橙赤側下白丸は小さくなったが左輪郭との接触が残る。紫側も下白丸が左輪郭に接触したまま。上白丸も橙赤側は輪郭接触が不明瞭。本人小物/冬用ズボン/全身余白保持。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal-face-detail",
+      "Version": "v003",
+      "File": "character-52-normal-4-face-v003-generated.png",
+      "Sha256": "5cb78149975d430dec5642940584eb3183a2383ff022589129b461fda4bae36f",
+      "Prompt": "normal-4-face-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-face-v002-generated.png",
+          "Sha256": "a0025f806505b1806451013f3297591fcf3092aa54ef67d71d2cda3e9e15d868"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-df781cf7-d1dd-4124-b9ce-fc93eb619cfc.png",
+      "Tool": "builtin image_gen",
+      "Status": "EYE_DETAIL_REFERENCE_ONLY",
+      "VisualReview": "顔詳細直接目視。左右瞳色/赤眼鏡/閉口微笑/上右白丸白目接続/下左白丸を保持。v002からの下白丸移動はほぼ見られず、色縁の余裕は増えていない。全身未反映。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v011",
+      "File": "character-52-normal-4-v011-generated.png",
+      "Sha256": "a4a327aca2063c357860a6035ddcb5bf57c7a7f421a1f812010d8b6f07251339",
+      "Prompt": "normal-4-v011-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-v004-generated.png",
+          "Sha256": "7edb41b3b1d3bbf96f626f923a6020591bf94d47c7b542c8c5c63aa2f4d8b49a"
+        },
+        {
+          "File": "character-52-normal-4-face-v002-generated.png",
+          "Sha256": "a0025f806505b1806451013f3297591fcf3092aa54ef67d71d2cda3e9e15d868"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-439234bd-6905-4c4b-9a55-bfa73fc10a81.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "EyePreview": "normal-4-v011-eyes.png",
+      "Preview": {
+        "Path": "normal-4-v011-preview.png",
+        "Crop": {
+          "X": 160,
+          "Y": 100,
+          "Width": 720,
+          "Height": 540
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "f04adbdd3f851e690a74f8f6abb3b33ae321235fec6356f4bd73bdfc5a7adc81"
+      },
+      "Status": "VERTICAL_FRAME_EYE_REVISION_REQUIRED",
+      "VisualReview": "縦全身/眼部/256x192直接目視。全帽子/両靴余白、ズボン/本人髪耳眼鏡/バーガー/電池/玩具を保持。顔の描画面積増加。上右白丸は小点、下左は色反射で白丸未達。縮小は顔とバーガー判読、玩具が下へ外れるため切出し再調整必要。未選択。座り姿勢の頭身厳密測定なし。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v012",
+      "File": "character-52-normal-4-v012-generated.png",
+      "Sha256": "b22d3ddd13685429e19c9cd27754a4a5dbdff36bc0eb0622ad5db292344d8bb3",
+      "Prompt": "normal-4-v012-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-v011-generated.png",
+          "Sha256": "a4a327aca2063c357860a6035ddcb5bf57c7a7f421a1f812010d8b6f07251339"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-72ccb71b-7134-4229-9766-8e2d7000f2d4.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "EyePreview": "normal-4-v012-eyes.png",
+      "Preview": {
+        "Path": "normal-4-v012-preview.png",
+        "Crop": {
+          "X": 0,
+          "Y": 100,
+          "Width": 1024,
+          "Height": 768
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "4c9f3a371619a5f960b49cabd4bf22f15deeb4035d3744fafa66f6f331117af7"
+      },
+      "Status": "UPPER_HIGHLIGHT_CONTACT_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。上下白丸出現、下左白丸は色縁内へ改善。上右白丸は虹彩内部に浮き白目未接続。 本人左右異色瞳/赤眼鏡/閉口微笑/冬用ズボン/バーガー/電池/玩具/全身余白保持。切出しを拡げ玩具も収まるが顔小さめ。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v013",
+      "File": "character-52-normal-4-v013-generated.png",
+      "Sha256": "d9cbacc6a7334152a418d1fc92e5e2904bbf7af0bb35d5afbacb5c7e99eec549",
+      "Prompt": "normal-4-v013-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-v012-generated.png",
+          "Sha256": "b22d3ddd13685429e19c9cd27754a4a5dbdff36bc0eb0622ad5db292344d8bb3"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-9025d6c8-dd8d-4e13-8412-d72aaacc13ac.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "EyePreview": "normal-4-v013-eyes.png",
+      "Preview": {
+        "Path": "normal-4-v013-preview.png",
+        "Crop": {
+          "X": 0,
+          "Y": 100,
+          "Width": 1024,
+          "Height": 768
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "2c64ff5290e42cbb9b6bd4223045cdbace496f4f012299f8b4bcf98a942cd9ee"
+      },
+      "Status": "UPPER_HIGHLIGHT_CONTACT_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。上右白丸の白目接続のみを指示したが位置ほぼ不変。下左白丸は色縁内を保持。 本人左右異色瞳/赤眼鏡/閉口微笑/冬用ズボン/バーガー/電池/玩具/全身余白保持。切出しを拡げ玩具も収まるが顔小さめ。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v014",
+      "File": "character-52-normal-4-v014-generated.png",
+      "Sha256": "30686386e74339f59649102efb20e3054d5d621d859f317deb3de64d6732939d",
+      "Prompt": "normal-4-v014-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-4-v013-generated.png",
+          "Sha256": "d9cbacc6a7334152a418d1fc92e5e2904bbf7af0bb35d5afbacb5c7e99eec549"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-e4dd4d05-634e-4cde-bc9e-1d02fd33bf36.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "EyePreview": "normal-4-v014-eyes.png",
+      "Preview": {
+        "Path": "normal-4-v014-preview.png",
+        "Crop": {
+          "X": 0,
+          "Y": 100,
+          "Width": 1024,
+          "Height": 768
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "bc0f3686c03d1d2e62196c77cf3ae8833c03bda028dc6276af22a32398b545a1"
+      },
+      "Status": "WORKING_SELECTED_NOT_GAME_ADOPTED",
+      "VisualReview": "全身/眼部/256x192直接目視。上右大白丸が短い虹彩輪郭を切り白目へ接続。下左中白丸は色縁内に保持。上下大小差明瞭、左右異色瞳/赤眼鏡/閉口微笑/本人小物/冬用ズボン/全身余白保持。縮小で顔/バーガー/玩具判読。座り姿勢の厳密な直立頭身測定は行っていない。作業選択、ゲーム未採用。",
+      "Selected": true,
+      "GameAdopted": false
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Version": "v001",
+      "File": "character-52-normal-5-v001-generated.png",
+      "Sha256": "060e29f483c21a34d0057419d518ecd00afb31c6d529c45fd63f8eb9cd0d3666",
+      "Prompt": "normal-5-v001-prompt.txt",
+      "References": [
+        {
+          "File": "../character-52-5-v003-generated.png",
+          "Role": "本人意匠・表情・場面",
+          "Sha256": "29b95641bd29c2299d3311ca9ed98bb42ae2fc5224a1abaefcf0cf882bf3d29b"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "v017体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-0e23f20a-a4e0-4b79-b2d7-2d3e8de72e40.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "normal-5-v001-preview.png",
+        "Crop": {
+          "X": 140,
+          "Y": 0,
+          "Width": 800,
+          "Height": 600
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "857bd52a4bc7722cf9ffef1cf957c09c50d4ed27d0c24479be0d79da25d4d85a"
+      },
+      "Status": "WORKING_SELECTED_NOT_GAME_ADOPTED",
+      "VisualReview": "原画/全身/256x192直接目視。本人閉眼/閉口微笑/赤眼鏡/淡青髪耳/ファー縁なし庇帽子/白手袋でヘッドホン付きペンギン玩具と電池を抱く/白雪柄タイツ/紺金青宝石靴を保持。帽子飾りから靴底と裾まで収まる。閉眼なので虹彩白丸追加しない。大きな顔・短い首・大きな手足を確認、膝曲げ遠近姿勢で直立頭身の厳密測定なし。切出しを調整して帽子飾り切れ解消、顔/手/玩具/電池判読。作業選択。",
+      "Selected": true,
+      "GameAdopted": false
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Version": "v001",
+      "File": "character-52-normal-6-v001-generated.png",
+      "Sha256": "8349b2f21c138d8dfe81db9cf19259cc655a8ad6590c066f2598d6d3bfb22fbd",
+      "Prompt": "normal-6-v001-prompt.txt",
+      "References": [
+        {
+          "File": "../character-52-6-v003-generated.png",
+          "Role": "本人意匠・表情・場面",
+          "Sha256": "f652009d716f8fadfc2ee6bd7b15f7a757ff47ad2056ea57480bb46bc5496ee5"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-3f3f83a4-c277-48ce-ba18-338fd0db827b.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Status": "FRAME_AND_EYE_REVISION_REQUIRED",
+      "VisualReview": "本人原画と生成全体を直接目視。両眼橙赤/赤眼鏡/開口笑顔/汗/淡青髪耳ピンクリボン/黒手袋の手前手/ペンギン玩具と電池/白胸部紺金冬衣装黒ニーハイ保持。全靴を補完したが帽子上ファーが画面端で切れ、下靴底余白も極小。瞳は小白点と黄反射で上下白丸未達。未選択、縮小前。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Version": "v002",
+      "File": "character-52-normal-6-v002-generated.png",
+      "Sha256": "e7c38e02a8faf296ea93ef20c24c0f46af22347928e4806870f70a64e90047eb",
+      "Prompt": "normal-6-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-6-v001-generated.png",
+          "Sha256": "8349b2f21c138d8dfe81db9cf19259cc655a8ad6590c066f2598d6d3bfb22fbd"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-3cb77425-1e17-442e-9367-c4133b772312.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "EyePreview": "normal-6-v002-eyes.png",
+      "Preview": {
+        "Path": "normal-6-v002-preview.png",
+        "Crop": {
+          "X": 150,
+          "Y": 20,
+          "Width": 800,
+          "Height": 600
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "ad377f5be2c4e2406bfa8f1ff5883ae4b330771da4ae3440b79916941cb94871"
+      },
+      "Status": "FRAME_FIXED_EYE_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。帽子上ファー切れ解消、両靴底と全身余白確保。本人両橙赤瞳/開口笑顔/汗/赤眼鏡/黒手袋前手/玩具電池/衣装/魔法保持。上白点は小点のまま、下左は黄反射で白丸未達。縮小で顔/手/玩具/電池判読。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Version": "v003",
+      "File": "character-52-normal-6-v003-generated.png",
+      "Sha256": "6b9ea8206c956413f2f7ede35cbd407e014c1160947894ac2598ecdd46691b33",
+      "Prompt": "normal-6-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-6-v002-generated.png",
+          "Sha256": "e7c38e02a8faf296ea93ef20c24c0f46af22347928e4806870f70a64e90047eb"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-5ea06e5f-6395-4c5c-ba84-42118aa60cad.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "EyePreview": "normal-6-v003-eyes.png",
+      "Preview": {
+        "Path": "normal-6-v003-preview.png",
+        "Crop": {
+          "X": 150,
+          "Y": 20,
+          "Width": 800,
+          "Height": 600
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "6b3eb0d382622953f4c573798b6f82549878bb11a631ad885b9babb63452fffe"
+      },
+      "Status": "HIGHLIGHT_BOUNDARY_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。上下純白丸出現、本人両橙赤瞳/赤眼鏡/開口笑顔/汗と全身余白/持ち物保持。ただし上右大白丸は虹彩内部で白目未接続、下左中白丸は左境界への白線接触が残る。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Version": "v004",
+      "File": "character-52-normal-6-v004-generated.png",
+      "Sha256": "380b9875e684d2e910c1947a48503ef0f478efa9bc7cb8cfac15e19dab3a348d",
+      "Prompt": "normal-6-v004-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-6-v003-generated.png",
+          "Sha256": "6b9ea8206c956413f2f7ede35cbd407e014c1160947894ac2598ecdd46691b33"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-718f7c01-444e-4377-a42a-e0b2cd7c768d.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "EyePreview": "normal-6-v004-eyes.png",
+      "Preview": {
+        "Path": "normal-6-v004-preview.png",
+        "Crop": {
+          "X": 150,
+          "Y": 20,
+          "Width": 800,
+          "Height": 600
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "7eb0662ca217e5ebe66a68677d3b7e018639fa601a2f2ace49559545a13a7839"
+      },
+      "Status": "LOWER_HIGHLIGHT_CONNECTOR_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。上右大白丸拡大し虹彩輪郭と白目へ接続、目の外へのはみ出しなし。下左中白丸は白目へつながる細白線が残り色縁未達。本人両橙赤瞳/開口笑顔/汗/赤眼鏡/小物/全身余白保持。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Version": "v005",
+      "File": "character-52-normal-6-v005-generated.png",
+      "Sha256": "ead3be6b988f5a4d3a97d7f2181b2763f935e987c7f6f5a66092886154b06ca3",
+      "Prompt": "normal-6-v005-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-6-v004-generated.png",
+          "Sha256": "380b9875e684d2e910c1947a48503ef0f478efa9bc7cb8cfac15e19dab3a348d"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-d6ad36f5-f98d-458c-bb6a-c7c2abf420f9.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "EyePreview": "normal-6-v005-eyes.png",
+      "Preview": {
+        "Path": "normal-6-v005-preview.png",
+        "Crop": {
+          "X": 150,
+          "Y": 20,
+          "Width": 800,
+          "Height": 600
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "bcda56afe297d838c44bb940d8939a18796a93be6aa06806c745b20257a58a9f"
+      },
+      "Status": "LOWER_WHITE_HIGHLIGHT_MISSING",
+      "VisualReview": "全身/眼部/256x192直接目視。上右大白丸接続と本人表情/小物/全身余白保持。下左の白線は消えたが中白丸自体も橙黄の色反射へ変化し未達。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Version": "v006",
+      "File": "character-52-normal-6-v006-generated.png",
+      "Sha256": "a9139a061a4bec748bf7a4e3829fa5bb6c9bd4382405c5e9aac7593f0a18fb83",
+      "Prompt": "normal-6-v006-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-6-v005-generated.png",
+          "Sha256": "ead3be6b988f5a4d3a97d7f2181b2763f935e987c7f6f5a66092886154b06ca3"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-e5d04e31-8622-416c-9847-a9ff634d01ca.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "EyePreview": "normal-6-v006-eyes.png",
+      "Preview": {
+        "Path": "normal-6-v006-preview.png",
+        "Crop": {
+          "X": 150,
+          "Y": 20,
+          "Width": 800,
+          "Height": 600
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "24b62179b642f82d7c2ebcdc389d177ac61815f837b2d1fb752bc64c12381064"
+      },
+      "Status": "LOWER_HIGHLIGHT_CUTS_BOTTOM_IRIS_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。下左中白丸は復元したが位置が低く左下輪郭を切り白目へ白い尾が接続。上右大白丸接続と本人表情/小物/全身余白保持。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Version": "v007",
+      "File": "character-52-normal-6-v007-generated.png",
+      "Sha256": "1e02273392851565d9d40428b9fd0dfd78905d6c676b7a19aa5e0da4f9a15ac7",
+      "Prompt": "normal-6-v007-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-6-v006-generated.png",
+          "Sha256": "a9139a061a4bec748bf7a4e3829fa5bb6c9bd4382405c5e9aac7593f0a18fb83"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-7080f3e3-8e3e-4b48-aab2-a50a4b931688.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "EyePreview": "normal-6-v007-eyes.png",
+      "Preview": {
+        "Path": "normal-6-v007-preview.png",
+        "Crop": {
+          "X": 150,
+          "Y": 20,
+          "Width": 800,
+          "Height": 600
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "af8dfb357b138e0094074a05fa476a562c0908891167a16f6dd0a8e1185e3521"
+      },
+      "Status": "LOWER_HIGHLIGHT_CONNECTOR_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/256x192直接目視。下白丸はやや上へ移ったが左下白目への細白線が両眼に残る。上右大白丸接続/本人表情/小物/全身余白保持。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 6,
+      "Kind": "normal-face-detail",
+      "Version": "v001",
+      "File": "normal-6-face-v001-generated.png",
+      "Sha256": "f258bbec7d0e1137b65b7a66df92d28ef02136ff487aaa4e16d6f5f97f6c0d03",
+      "Prompt": "normal-6-face-v001-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-6-v007-generated.png",
+          "Sha256": "1e02273392851565d9d40428b9fd0dfd78905d6c676b7a19aa5e0da4f9a15ac7"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-584de3da-bf1a-43f8-92b5-290b09431539.png",
+      "Tool": "builtin image_gen",
+      "Status": "EYE_DETAIL_REFERENCE_ONLY",
+      "VisualReview": "直接目視。上右大白丸は白目接続、下左中白丸は色縁内。顔詳細参照専用、全身原画の代替ではない。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Version": "v008",
+      "File": "character-52-normal-6-v008-generated.png",
+      "Sha256": "549d258d65d0ed586e475dffc6e182eb82b209dff2e7ad8e6aaf89eb2df3fda3",
+      "Prompt": "normal-6-v008-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-normal-6-v007-generated.png",
+          "Sha256": "1e02273392851565d9d40428b9fd0dfd78905d6c676b7a19aa5e0da4f9a15ac7"
+        },
+        {
+          "File": "normal-6-face-v001-generated.png",
+          "Sha256": "f258bbec7d0e1137b65b7a66df92d28ef02136ff487aaa4e16d6f5f97f6c0d03"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-6ea5e99e-edf2-42d9-8efa-118815a8a719.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "EyePreview": "normal-6-v008-eyes.png",
+      "Preview": {
+        "Path": "normal-6-v008-preview.png",
+        "Crop": {
+          "X": 150,
+          "Y": 20,
+          "Width": 800,
+          "Height": 600
+        },
+        "Width": 256,
+        "Height": 192,
+        "Sha256": "c84dde66558a0eaf9d2cbf8825abc8c505541f4f51660f9d549fe75c6506100d"
+      },
+      "Status": "WORKING_SELECTED_GAME_PENDING",
+      "VisualReview": "全身/眼部/256x192直接目視。上右大白丸が白目へ接続、下左中白丸は橙赤の色縁内に分離。下の黄反射は白丸とは別。両橙赤瞳/開口笑顔/汗/赤眼鏡/本人持ち物/全帽子/両靴余白保持。動的曲げ脚のため厳密な直立頭身測定なし。作業選択、ゲーム未採用。",
+      "Selected": true,
+      "GameAdopted": false
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Version": "v001",
+      "File": "character-52-news-id-v001-generated.png",
+      "Sha256": "2ef3536fb09c9f0ff1bff36da704e716eb86d59f220fe39c1f80b2d08f01a6e8",
+      "Prompt": "news-id-v001-prompt.txt",
+      "References": [
+        {
+          "File": "../../../newspaper-trials/character-52-id-v001-generated.png",
+          "Role": "本人意匠/無表情/灰背景",
+          "Sha256": "3246662dc39d0dd1c916f7fb6e69e1705738fd5a7ba5b2dabe98b0ad8ae93eeb"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "承認体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-879fdfd2-2f32-4f39-a2ce-169866460b76.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-id-v001-preview.png",
+        "Crop": {
+          "X": 212,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "5972bbe3162ff97a3dd31158165637f65e11d6785bc150a96cde449c0b0e93d6"
+      },
+      "GrayPreview": "news-id-v001-gray.png",
+      "Status": "PROPORTION_AND_EYES_REVISION_REQUIRED",
+      "VisualReview": "原画/全身/300x400白黒直接目視。正面無表情/本人帽子眼鏡耳装飾/白手袋保持、帽子と両靴余白あり。全身体格は約7頭身寄りで頭が小さくv017未達。瞳は上小白点/下黄反射、最新白丸条件未達。白黒では顔/髪/服分離。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Version": "v002",
+      "File": "character-52-news-id-v002-generated.png",
+      "Sha256": "a38b3cf25fe1d1eefbc99a1accdb2e7794f61ec86065a737004fe8bced733f90",
+      "Prompt": "news-id-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-id-v001-generated.png",
+          "Role": "本人/全身",
+          "Sha256": "2ef3536fb09c9f0ff1bff36da704e716eb86d59f220fe39c1f80b2d08f01a6e8"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "承認体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-4da6d4d7-93ac-491c-912e-70e2e37c7edf.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-id-v002-preview.png",
+        "Crop": {
+          "X": 212,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "c93c134279703d3947f4109deb8c8a78eba5ee6d8ad9d623a51e2a5889a4f206"
+      },
+      "GrayPreview": "news-id-v002-gray.png",
+      "Status": "PROPORTION_IMPROVED_EYES_REVISION_REQUIRED",
+      "VisualReview": "全身/300x400白黒直接目視。顔と手を拡大、短い首/高い膝へ改善。頭蓋上端推定約190、顎約410、身体足底約1480の目測で約5.9頭身（帽子/靴底追加分除外、厳密測定ではない）。本人正面無表情/装飾/白手袋/全帽子両靴余白保持。瞳は上小白点/下黄反射で未達、未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Version": "v003",
+      "File": "character-52-news-id-v003-generated.png",
+      "Sha256": "c08a45059d30dc937f0d5bb03f4d571bdc8140ce41aedf97a233bfc591f3a4e6",
+      "Prompt": "news-id-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-id-v002-generated.png",
+          "Sha256": "a38b3cf25fe1d1eefbc99a1accdb2e7794f61ec86065a737004fe8bced733f90",
+          "Role": "本人/体格保持"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-282e52a2-8395-4620-9d34-46d5abd5a532.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-id-v003-preview.png",
+        "Crop": {
+          "X": 212,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "e0a05fccf7d7d8c07a5f1b6d2b35701e96d55347d488e9773768d2884240e606"
+      },
+      "GrayPreview": "news-id-v003-gray.png",
+      "Status": "LOWER_WHITE_HIGHLIGHT_MISSING",
+      "VisualReview": "全身/眼部/300x400白黒直接目視。上右大白丸を拡大し白目接続改善。下左中白丸は黄反射のまま欠落。本人無表情/装飾/改善体格/全帽子両靴余白保持、未選択。",
+      "Selected": false,
+      "GameAdopted": false,
+      "EyePreview": "news-id-v003-eyes.png"
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Version": "v004",
+      "File": "character-52-news-id-v004-generated.png",
+      "Sha256": "60916148e7576e21a95cbf5b45f6d9245873bd25967628456170fc06c48be6d0",
+      "Prompt": "news-id-v004-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-id-v003-generated.png",
+          "Sha256": "c08a45059d30dc937f0d5bb03f4d571bdc8140ce41aedf97a233bfc591f3a4e6"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-3142d086-7ae0-49f4-9dc2-4e3e2147ea40.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-id-v004-preview.png",
+        "Crop": {
+          "X": 212,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "09b9b380c63f04450dc38b93b7391825c21e8e3bb0379e42f32f92b0dbaa6bbf"
+      },
+      "GrayPreview": "news-id-v004-gray.png",
+      "Status": "LOWER_WHITE_HIGHLIGHT_MISSING",
+      "VisualReview": "全身/眼部/300x400白黒直接目視。下左中白丸追加指示は反映されず黄反射のまま。上右大白丸/本人/体格/全身余白保持。未選択、実質状態変化なし。",
+      "Selected": false,
+      "GameAdopted": false,
+      "EyePreview": "news-id-v004-eyes.png"
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper-face-detail",
+      "Version": "v001",
+      "File": "news-id-face-v001-generated.png",
+      "Sha256": "fd4bccee442513f2dc80ed12e79b31e8d252862418ca009413b7dacabdfae4ae",
+      "Prompt": "news-id-face-v001-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-id-v004-generated.png",
+          "Sha256": "60916148e7576e21a95cbf5b45f6d9245873bd25967628456170fc06c48be6d0"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-f58bc738-7f54-49db-9dea-96f8ab319079.png",
+      "Tool": "builtin image_gen",
+      "Status": "EYE_DETAIL_REFERENCE_ONLY",
+      "VisualReview": "直接目視。下左白丸が両眼の色縁内に出現。上白丸は右上輪郭へ接触。無表情保持。顔詳細参照専用。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Version": "v005",
+      "File": "character-52-news-id-v005-generated.png",
+      "Sha256": "5227b4690bdc78e63e51174d90a5d7be48f96d52405f8d020a020fdacce7781a",
+      "Prompt": "news-id-v005-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-id-v004-generated.png",
+          "Sha256": "60916148e7576e21a95cbf5b45f6d9245873bd25967628456170fc06c48be6d0"
+        },
+        {
+          "File": "news-id-face-v001-generated.png",
+          "Sha256": "fd4bccee442513f2dc80ed12e79b31e8d252862418ca009413b7dacabdfae4ae"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-10268655-a867-495d-afff-8047707fdb35.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-id-v005-preview.png",
+        "Crop": {
+          "X": 212,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "2fbea6800e94a0441a5d9250d8343853632c7a47ec73b4d491923a915deb924e"
+      },
+      "GrayPreview": "news-id-v005-gray.png",
+      "Status": "LOWER_HIGHLIGHT_ASYMMETRIC_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/300x400白黒直接目視。画面左下白丸出現、画面右下は黄反射に小白点が混ざる程度で中白丸未達。上白丸/本人無表情/体格/余白保持。未選択。",
+      "Selected": false,
+      "GameAdopted": false,
+      "EyePreview": "news-id-v005-eyes.png"
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Version": "v006",
+      "File": "character-52-news-id-v006-generated.png",
+      "Sha256": "a666b2d8e168581a13e1e04de33ece29a61846c5e134cb859e7efe265d51c47a",
+      "Prompt": "news-id-v006-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-id-v005-generated.png",
+          "Sha256": "5227b4690bdc78e63e51174d90a5d7be48f96d52405f8d020a020fdacce7781a"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-4bfe5c07-431f-48a9-9099-d93af1985064.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-id-v006-preview.png",
+        "Crop": {
+          "X": 212,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "28f8c7a4a4a5f86d57ff36108357cefda4c0c075aa3de7ef460513309ea9b992"
+      },
+      "GrayPreview": "news-id-v006-gray.png",
+      "Status": "LOWER_HIGHLIGHT_ASYMMETRIC_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/300x400白黒直接目視。左右下白丸修正はほぼ不変、画面右下は小白点/黄反射で中白丸未達。本人無表情/体格/上白丸/全身余白保持。未選択、実質状態変化なし。",
+      "Selected": false,
+      "GameAdopted": false,
+      "EyePreview": "news-id-v006-eyes.png"
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper-face-detail",
+      "Version": "v002",
+      "File": "news-id-face-v002-generated.png",
+      "Sha256": "0b858034d9828979b4b53681c1475c7776f9abbb24db73792e08375f6a0a789f",
+      "Prompt": "news-id-face-v002-prompt.txt",
+      "References": [
+        {
+          "File": "news-id-face-v001-generated.png",
+          "Sha256": "fd4bccee442513f2dc80ed12e79b31e8d252862418ca009413b7dacabdfae4ae"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-d61eacfe-65bd-4a1c-b150-635a251c4d35.png",
+      "Tool": "builtin image_gen",
+      "Status": "EYE_DETAIL_REFERENCE_ONLY",
+      "VisualReview": "直接目視。両下白丸が拡大/少し上へ移り色縁内保持。無表情保持。顔詳細参照専用。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Version": "v007",
+      "File": "character-52-news-id-v007-generated.png",
+      "Sha256": "c43a86bb70a196d7f760c502aa50f175685af5bc238d5e7b5f810f721ce92955",
+      "Prompt": "news-id-v007-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-id-v006-generated.png",
+          "Sha256": "a666b2d8e168581a13e1e04de33ece29a61846c5e134cb859e7efe265d51c47a"
+        },
+        {
+          "File": "news-id-face-v002-generated.png",
+          "Sha256": "0b858034d9828979b4b53681c1475c7776f9abbb24db73792e08375f6a0a789f"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-f70d4e14-39c5-482e-9fef-536a7d6d886e.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-id-v007-preview.png",
+        "Crop": {
+          "X": 212,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "efe43dbf72e57388931b5b58dc8bcf52edfc353cbde9866650079266990f116a"
+      },
+      "GrayPreview": "news-id-v007-gray.png",
+      "Status": "LOWER_HIGHLIGHT_ASYMMETRIC_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/300x400白黒直接目視。画面左下白丸拡大、右下も白点出現したが黄反射に混ざり中白丸として弱い。本人/体格/上白丸/余白保持。未選択。",
+      "Selected": false,
+      "GameAdopted": false,
+      "EyePreview": "news-id-v007-eyes.png"
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Version": "v008",
+      "File": "character-52-news-id-v008-generated.png",
+      "Sha256": "eb6abe3037f98db79fc5b660c6ffc19eea21872f64140985ce18474d0433e743",
+      "Prompt": "news-id-v008-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-id-v007-generated.png",
+          "Sha256": "c43a86bb70a196d7f760c502aa50f175685af5bc238d5e7b5f810f721ce92955"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-f857bea8-9039-4171-a27b-3376ae8930a3.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-id-v008-preview.png",
+        "Crop": {
+          "X": 212,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "c29a035e15daee722032dc880b5e4c29861cf25aa74a78aacde2857720366f35"
+      },
+      "GrayPreview": "news-id-v008-gray.png",
+      "Status": "LOWER_HIGHLIGHT_ASYMMETRIC_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部/300x400白黒直接目視。画面右下白丸明瞭化指示はほぼ不変、小白点/黄反射のまま中白丸未達。本人/体格/余白保持。未選択、実質状態変化なし。",
+      "Selected": false,
+      "GameAdopted": false,
+      "EyePreview": "news-id-v008-eyes.png"
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Version": "v009",
+      "File": "character-52-news-id-v009-generated.png",
+      "Sha256": "e24ad6c61f92da434fe13a8c9ce05ce80f34e09f55c649f3a871b32174d8722d",
+      "Prompt": "news-id-v009-prompt.txt",
+      "References": [
+        {
+          "File": "news-id-face-v002-generated.png",
+          "Sha256": "0b858034d9828979b4b53681c1475c7776f9abbb24db73792e08375f6a0a789f"
+        },
+        {
+          "File": "character-52-news-id-v008-generated.png",
+          "Sha256": "eb6abe3037f98db79fc5b660c6ffc19eea21872f64140985ce18474d0433e743"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-be1567cb-ebd2-4179-9320-2bd569d72aae.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-id-v009-preview.png",
+        "Crop": {
+          "X": 212,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "6e8fb4e4e13aa9abf28c0ad1a4e6045d20cc1abbc8e453ac606e137855302d3a"
+      },
+      "GrayPreview": "news-id-v009-gray.png",
+      "Status": "WORKING_SELECTED_GAME_PENDING",
+      "VisualReview": "全身/眼部/300x400白黒直接目視。両下左中白丸が色縁内に明瞭化、上右大白丸は白目接続。本人正面無表情/装飾/手袋/帽子両靴余白保持。大頭短首/高膝/大手足、頭蓋推定と靴追加分を除き目測約6頭身程度（厳密測定ではない）。白黒でも顔髪服分離。作業選択、ゲーム未採用。",
+      "Selected": true,
+      "GameAdopted": false,
+      "EyePreview": "news-id-v009-eyes.png"
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Version": "v001",
+      "File": "character-52-news-formal-v001-generated.png",
+      "Sha256": "2e92413e481137a240bd71e74ffe7d7733ba17b9ff98b95c37680c2c446376b0",
+      "Prompt": "news-formal-v001-prompt.txt",
+      "References": [
+        {
+          "File": "../../../newspaper-trials/character-52-formal-v001-generated.png",
+          "Role": "本人意匠/微笑/宮殿",
+          "Sha256": "b60eea5065fda02fcd28dae84805b7bd203ca42337d8a76768f6ba3e78527553"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "承認体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-7cffbe43-ce43-4891-a484-0f1e98ecced4.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-formal-v001-preview.png",
+        "Crop": {
+          "X": 275,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "1ec019c0be1fff1e90ebb2d758681d01c54d0acf1f1d7e9847a34909bf69836e"
+      },
+      "GrayPreview": "news-formal-v001-gray.png",
+      "Status": "PROPORTION_AND_EYES_REVISION_REQUIRED",
+      "VisualReview": "本人原画/全身/300x400白黒直接目視。閉口微笑/斜め顔/赤眼鏡/青チェック裏地/宮殿保持、帽子両靴余白あり。頭が小さく約7頭身以上寄り、瞳上下白丸未達。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Version": "v002",
+      "File": "character-52-news-formal-v002-generated.png",
+      "Sha256": "27e39eb9db33ff032f453e7cf054f546263636d16707e463f2afb8819da19324",
+      "Prompt": "news-formal-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-formal-v001-generated.png",
+          "Role": "本人全身",
+          "Sha256": "2e92413e481137a240bd71e74ffe7d7733ba17b9ff98b95c37680c2c446376b0"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "承認体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-45831687-8b38-464f-9771-ffa9bc033307.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-formal-v002-preview.png",
+        "Crop": {
+          "X": 275,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "968362b9567f43ea5d11cd7a50efe013698054b17bbac61f36c0540eda4bac08"
+      },
+      "GrayPreview": "news-formal-v002-gray.png",
+      "Status": "PROPORTION_AND_EYES_REVISION_REQUIRED",
+      "VisualReview": "全身/300x400白黒直接目視。頭部/手はわずか拡大したが頭が小さい長身体格が残り約7頭身寄り。瞳上下白丸も未達。本人微笑/衣装/青チェック/宮殿/帽子両靴余白保持。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Version": "v003",
+      "File": "character-52-news-formal-v003-generated.png",
+      "Sha256": "a87db963d8de51e8c180cfb05954533d93d1bfd8751f4ccf30577d63361b8dd7",
+      "Prompt": "news-formal-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-formal-v002-generated.png",
+          "Sha256": "27e39eb9db33ff032f453e7cf054f546263636d16707e463f2afb8819da19324"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-3b82cc06-6a73-4df0-b498-314ad693b015.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-formal-v003-preview.png",
+        "Crop": {
+          "X": 275,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "70813df84068dc9aac7a33a8f23a996c1b4265f9dc8d383970c7bce4c08096e0"
+      },
+      "GrayPreview": "news-formal-v003-gray.png",
+      "Status": "PROPORTION_AND_EYES_REVISION_REQUIRED",
+      "VisualReview": "全身/300x400白黒直接目視。頭部が大幅に拡大し過ぎ、脚/胴短縮で約4.5–5頭身寄り。v017約5.5–6頭身未達、未選択。本人微笑/衣装/青チェック/宮殿/帽子両靴余白保持。瞳白丸未達。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Version": "v004",
+      "File": "character-52-news-formal-v004-generated.png",
+      "Sha256": "42c2e0c32e15f8fa54fd6d855710dd50da5b0ae0a57d0a03da9d1a5b380f15c4",
+      "Prompt": "news-formal-v004-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-formal-v003-generated.png",
+          "Sha256": "a87db963d8de51e8c180cfb05954533d93d1bfd8751f4ccf30577d63361b8dd7"
+        },
+        {
+          "File": "character-52-news-formal-v002-generated.png",
+          "Sha256": "27e39eb9db33ff032f453e7cf054f546263636d16707e463f2afb8819da19324"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-52c74b73-28e8-4955-886d-4a0f236d74cb.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-formal-v004-preview.png",
+        "Crop": {
+          "X": 275,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "08a5502538da1dcd770e25b9e794152c765eadf4bf3339970018a215048ce5cd"
+      },
+      "GrayPreview": "news-formal-v004-gray.png",
+      "Status": "PROPORTION_AND_EYES_REVISION_REQUIRED",
+      "VisualReview": "全身/300x400白黒直接目視。中間比率指定で再生成したがv002に近い小頭/長身体格へ戻り約7頭身寄り、未達。本人/微笑/青チェック/宮殿/帽子両靴余白保持。瞳も未達、未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Version": "v005",
+      "File": "character-52-news-formal-v005-generated.png",
+      "Sha256": "469d4c5140ed75ce5947d2e577a395c1cd96951350a084f8161a08e8c098aa8a",
+      "Prompt": "news-formal-v005-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-formal-v003-generated.png",
+          "Sha256": "a87db963d8de51e8c180cfb05954533d93d1bfd8751f4ccf30577d63361b8dd7"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-18e1298a-3a36-4327-9bcf-651537cf0953.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-formal-v005-preview.png",
+        "Crop": {
+          "X": 275,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "ab854809d9e31fe115187554b3b3295deddb17789459233cdb8053d8c53f5b64"
+      },
+      "GrayPreview": "news-formal-v005-gray.png",
+      "Status": "EYES_REVISION_REQUIRED_PROPORTION_REVIEW",
+      "VisualReview": "全身直接目視。v003単体から頭部縮小し中間比率へ改善。実頭頂推定240/顎420/靴底1500で約7に近く厳密採寸とv017再照合は未了、体格合格とはしない。本人微笑/衣装/青チェック/宮殿/帽子両靴余白保持。瞳の上白丸は小さく下白丸未達、未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Version": "v006",
+      "File": "character-52-news-formal-v006-generated.png",
+      "Sha256": "742ed425a5fa8489eda613efb2765e70a6130111c4b621494ee543f41842c8ab",
+      "Prompt": "news-formal-v006-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-formal-v005-generated.png",
+          "Role": "本人意匠と場面",
+          "Sha256": "469d4c5140ed75ce5947d2e577a395c1cd96951350a084f8161a08e8c098aa8a"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-1ee1e60d-451e-4da7-8a0c-e2072070b5d7.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-formal-v006-preview.png",
+        "Crop": {
+          "X": 275,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "cbe2dfb01d43972612d786bd70f61b3d8acdd4fbded814c8afed405639042ce0"
+      },
+      "GrayPreview": "news-formal-v006-gray.png",
+      "Status": "PROPORTION_AND_EYES_REVISION_REQUIRED",
+      "VisualReview": "全身直接目視。頭部拡大でv005から改善するが、帽子除く頭蓋上端推定155/顎385/身体足底1460として約5.7頭身（帽子下推定のため概算）。体格は目安域、手は再確認。上白丸は虹彩内で接触未達、左下は黄橙のみで白丸未達。本人微笑/赤眼鏡/青チェック/宮殿保持、帽子両靴余白あり。未選択。",
+      "Selected": false,
+      "GameAdopted": false
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Version": "v007",
+      "File": "character-52-news-formal-v007-generated.png",
+      "Sha256": "43573afa7f2968fdaaff6f4e60a3adeb51f1f4e2d60bbb3bbd3de5bbc04d3c51",
+      "Prompt": "news-formal-v007-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-formal-v006-generated.png",
+          "Role": "修正対象・本人全身",
+          "Sha256": "742ed425a5fa8489eda613efb2765e70a6130111c4b621494ee543f41842c8ab"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-4423d9b5-7875-4ea4-b3fb-f95f7c796597.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-formal-v007-preview.png",
+        "Crop": {
+          "X": 275,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "8ea0b034ada1172cfe788fa9560c65a3b1e4045412ffd3ac26c0e031143aaecf"
+      },
+      "GrayPreview": "news-formal-v007-gray.png",
+      "Status": "EYES_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部拡大/300x400白黒を直接目視。両上白丸は大きくなり右虹彩境界へ接するが短い輪郭消失は再確認要。画面左の補助白丸は虹彩内部に出現、右は薄い小反射のままで中白丸未達。体格と手/帽子両靴余白/本人意匠維持。未選択。",
+      "Selected": false,
+      "GameAdopted": false,
+      "EyePreview": "news-formal-v007-eyes.png"
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Version": "v008",
+      "File": "character-52-news-formal-v008-generated.png",
+      "Sha256": "c781f50809e50641ccb7e2d9483a0481012dddba7e44b150fcac35e47e58fc38",
+      "Prompt": "news-formal-v008-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-formal-v007-generated.png",
+          "Role": "本人全身・瞳修正対象",
+          "Sha256": "43573afa7f2968fdaaff6f4e60a3adeb51f1f4e2d60bbb3bbd3de5bbc04d3c51"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-cda750a0-9034-4a84-9b4c-22dd312d42b3.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-formal-v008-preview.png",
+        "Crop": {
+          "X": 275,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "f3b8b9bbb4af8e52ebb93b4bf14bd48d3a159a972f490daac3d4ca89cc4df438"
+      },
+      "GrayPreview": "news-formal-v008-gray.png",
+      "Status": "EYES_REVISION_REQUIRED",
+      "VisualReview": "全身/眼部拡大/300x400白黒直接目視。v007から有意な改善なし。画面右補助は黄反射で白丸未達、両上丸と白目の間に色輪郭が残る。本人意匠/全身余白/体格維持。未選択。",
+      "Selected": false,
+      "GameAdopted": false,
+      "EyePreview": "news-formal-v008-eyes.png"
+    },
+    {
+      "Id": "formal-face",
+      "Kind": "reference-only",
+      "Version": "v001",
+      "File": "character-52-news-formal-face-v001-generated.png",
+      "Prompt": "news-formal-face-v001-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-formal-v008-generated.png",
+          "Sha256": "c781f50809e50641ccb7e2d9483a0481012dddba7e44b150fcac35e47e58fc38",
+          "Role": "本人顔と瞳修正対象"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-24fd5e37-c6c9-403b-a6a3-395554bc4123.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大全体直接目視。両下白丸は出現したが左下端寄りの第三白丸も追加されている。両上丸と白目の間には細い紫輪郭が残り接触未達。本人微笑/赤眼鏡/顔傾き維持。原画ではなく顔参照のみ。",
+      "Sha256": "91b86783c2c4a372d6606dc83e465d935fef584de9111c99bc8ab2c4e621bcb9"
+    },
+    {
+      "Id": "formal-face",
+      "Kind": "reference-only",
+      "Version": "v002",
+      "File": "character-52-news-formal-face-v002-generated.png",
+      "Prompt": "news-formal-face-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-formal-face-v001-generated.png",
+          "Sha256": "91b86783c2c4a372d6606dc83e465d935fef584de9111c99bc8ab2c4e621bcb9",
+          "Role": "顔参照修正対象"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-33563056-57b2-4031-8135-d9ecb1d81d2f.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。上丸が外へ移動し画面右は白目接触に近づくが画面左上丸と白目の間に紫縁が残る。下白丸と余分な第三反射は維持。全身へ戻す前の参照修正継続、未選択。",
+      "Sha256": "f1d508675297c39eeb353c13063247227ae1f4b4bfac6838b7e656f324f9b485"
+    },
+    {
+      "Id": "formal-face",
+      "Kind": "reference-only",
+      "Version": "v003",
+      "File": "character-52-news-formal-face-v003-generated.png",
+      "Prompt": "news-formal-face-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-formal-face-v002-generated.png",
+          "Sha256": "f1d508675297c39eeb353c13063247227ae1f4b4bfac6838b7e656f324f9b485",
+          "Role": "顔参照修正対象"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-cea0cb75-ebf0-4c46-b65f-80d1ee1070d4.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_VISUALLY_PASSED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。両上白丸が右側虹彩縁を越えて白目に接続、両下白丸は内部で色縁を保持。第三白丸が整理され二丸となる。本人微笑/赤眼鏡/顔傾き維持。瞳参照として使用可能、全身原画でなくゲーム未採用。",
+      "Sha256": "ef4eecf2da23494e7d8bbfee2753937fee68ddd8ecaa0e0fd8b1ca52b1f94955"
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Version": "v009",
+      "File": "character-52-news-formal-v009-generated.png",
+      "Sha256": "ee303238a1015f49cfcc7dcff2033c316d07a9ea8388998b72b90fea766eb0f1",
+      "Prompt": "news-formal-v009-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-formal-face-v003-generated.png",
+          "Role": "顔と瞳",
+          "Sha256": "ef4eecf2da23494e7d8bbfee2753937fee68ddd8ecaa0e0fd8b1ca52b1f94955"
+        },
+        {
+          "File": "character-52-news-formal-v008-generated.png",
+          "Role": "全身/体格/本人衣装",
+          "Sha256": "c781f50809e50641ccb7e2d9483a0481012dddba7e44b150fcac35e47e58fc38"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-56d741b3-c5d9-4127-b0cb-d82a7cf499ee.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Preview": {
+        "Path": "news-formal-v009-preview.png",
+        "Crop": {
+          "X": 275,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "ae078316c3e8ebcfb69195e351d92840723d103eab7803bb42e7ee01630cbd8b"
+      },
+      "GrayPreview": "news-formal-v009-gray.png",
+      "Status": "WORKING_SELECTED_GAME_PENDING",
+      "VisualReview": "全身/眼部拡大/300x400白黒直接目視。両上大白丸が右上虹彩縁の一部を白目へ接続、両下中白丸は内部で下/左色縁保持。本人閉口微笑/赤眼鏡/白ファー帽子/青チェック/宮殿維持。短首/大頭/手足/膝配置と全身余白を保持、v006相当の概算約5.7頭身（帽子下推定）。白黒で顔/服分離確認。作業選択、人物一式採用は未完了。",
+      "Selected": true,
+      "GameAdopted": false,
+      "EyePreview": "news-formal-v009-eyes.png"
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Version": "v001",
+      "File": "character-52-news-election-v001-generated.png",
+      "Prompt": "news-election-v001-prompt.txt",
+      "References": [
+        {
+          "File": "../../../newspaper-trials/character-52-election-v001-generated.png",
+          "Role": "本人意匠/表情/背景",
+          "Sha256": "76a4c81b8421365822701b1148ef8ac7da769f50cbfd61ddb3e4bd3f40cff1bc"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-e37b0bcf-0e2b-48de-89b3-1fd9f2c50cdb.png",
+      "Tool": "builtin image_gen",
+      "Width": 1086,
+      "Height": 1448,
+      "Status": "PROPORTION_AND_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身直接目視。本人閉口微笑/赤眼鏡/淡青髪/白ファー帽子/紺金高襟/青チェック/無地薄青背景を保持。両手白手袋と白タイツ/靴は下部補完案。頭小さめ約7頭身寄り、瞳白丸未達、帽子上余白も狭い。未選択、縮小白黒未作成。",
+      "Sha256": "579ad7d8188aa15e4327b3a3643e8fbe35fed016519211e2b54a97e342f9cd59"
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Version": "v002",
+      "File": "character-52-news-election-v002-generated.png",
+      "Prompt": "news-election-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-election-v001-generated.png",
+          "Sha256": "579ad7d8188aa15e4327b3a3643e8fbe35fed016519211e2b54a97e342f9cd59",
+          "Role": "本人全身修正対象"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-2085fcf1-228f-41d8-ab20-ab84cf07a82b.png",
+      "Tool": "builtin image_gen",
+      "Width": 1086,
+      "Height": 1448,
+      "Status": "VISUAL_DETAIL_REVIEW_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身直接目視。頭部拡大と上余白は出力を再確認。本人意匠維持。瞳白丸/体格の詳細採寸とゲーム縮小白黒は次回確認、未選択。",
+      "Sha256": "8a2a1cf624672d9758077709d5a3b9f041e49c98f215ea7584fb0fce9807f3aa"
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Version": "v003",
+      "File": "character-52-news-election-v003-generated.png",
+      "Prompt": "news-election-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-election-v002-generated.png",
+          "Sha256": "8a2a1cf624672d9758077709d5a3b9f041e49c98f215ea7584fb0fce9807f3aa",
+          "Role": "本人全身修正対象"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-a4d66ac7-a438-49bd-a15a-98435b4f12d8.png",
+      "Tool": "builtin image_gen",
+      "Width": 1086,
+      "Height": 1448,
+      "Status": "EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身/300x400白黒直接目視。v002は小頭長身が残り、v003で頭部拡大を確認。頭頂帽子下推定150/顎365/身体足底1350として約5.6頭身概算。短首と手足/高膝維持。本人意匠維持、帽子上余白は約20pxで狭めだが切れなし。両瞳白丸未達、未選択。",
+      "Sha256": "4793f9851441ac2aff070429eb1e0da15c748b7e8e5ab29e93081009c85e3218",
+      "Preview": {
+        "Path": "news-election-v003-preview.png",
+        "Crop": {
+          "X": 250,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "c51fa3d9069f287d1d88d483978f88a3b3acb92969c2e01cf90cf5b0a013602f"
+      },
+      "GrayPreview": "news-election-v003-gray.png"
+    },
+    {
+      "Id": "election-face",
+      "Kind": "reference-only",
+      "Version": "v001",
+      "File": "character-52-news-election-face-v001-generated.png",
+      "Prompt": "news-election-face-v001-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-election-v003-generated.png",
+          "Role": "本人顔/瞳修正対象",
+          "Sha256": "4793f9851441ac2aff070429eb1e0da15c748b7e8e5ab29e93081009c85e3218"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-318896d2-8ace-4dfe-ba25-f6c026b68896.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。本人微笑/赤眼鏡/薄青背景維持。上白丸は虹彩中央上で右縁に接触せず、下白丸は小さく輪郭近く、未達。全身原画とは別の未選択参照。",
+      "Sha256": "082b9a2dbea221e4af03e226ded6e687626e696ee6e94f451f8fb66ae68a2cec"
+    },
+    {
+      "Id": "election-face",
+      "Kind": "reference-only",
+      "Version": "v002",
+      "File": "character-52-news-election-face-v002-generated.png",
+      "Prompt": "news-election-face-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-election-face-v001-generated.png",
+          "Role": "顔参照修正対象",
+          "Sha256": "082b9a2dbea221e4af03e226ded6e687626e696ee6e94f451f8fb66ae68a2cec"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-5db4fbe8-84a5-45b8-b2ac-02a665c80d06.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。両上白丸が右側へ移動し拡大。画面左は白目との間に色縁が残る、右は接触近傍。両下丸は拡大したが左端輪郭近くで内側移動が必要。余分な右下白線も残る。本人意匠保持、未選択。",
+      "Sha256": "78316d7a350c5c7452fd749a039a09934d2823338f44b8d19c3be829ce8d87a9"
+    },
+    {
+      "Id": "election-face",
+      "Kind": "reference-only",
+      "Version": "v003",
+      "File": "character-52-news-election-face-v003-generated.png",
+      "Prompt": "news-election-face-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-election-face-v002-generated.png",
+          "Role": "顔参照修正対象",
+          "Sha256": "78316d7a350c5c7452fd749a039a09934d2823338f44b8d19c3be829ce8d87a9"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-08d460c8-07d6-474e-9876-49bc3adcc803.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。上丸は外側へ移動したが画面左は色縁が残り白目接続未達、下白丸も左輪郭寄り。右下余分反射も残る。有意な達成状態変更なし。本人意匠保持、未選択。",
+      "Sha256": "ec5d0a2dc0cc73b16eccfad82a1dd019aae6191425035b3522bd9687ef4df866"
+    },
+    {
+      "Id": "election-face",
+      "Kind": "reference-only",
+      "Version": "v004",
+      "File": "character-52-news-election-face-v004-generated.png",
+      "Prompt": "news-election-face-v004-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-election-face-v003-generated.png",
+          "Role": "顔参照修正対象",
+          "Sha256": "ec5d0a2dc0cc73b16eccfad82a1dd019aae6191425035b3522bd9687ef4df866"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-944359b3-550e-4e46-bb02-bd436fd71d91.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。右下余分白線が消え上白丸は右側へ移動。両下白丸は依然左輪郭に近く接触して見え、内包未達。上白目接続も拡大再確認必要。本人意匠保持、未選択。",
+      "Sha256": "b846170ef1a1623329039f9bd8797805d1de7327a4e01237c9a7c38fa3288d3c"
+    },
+    {
+      "Id": "election-face",
+      "Kind": "reference-only",
+      "Version": "v005",
+      "File": "character-52-news-election-face-v005-generated.png",
+      "Prompt": "news-election-face-v005-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-election-face-v004-generated.png",
+          "Role": "顔参照修正対象",
+          "Sha256": "b846170ef1a1623329039f9bd8797805d1de7327a4e01237c9a7c38fa3288d3c"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-211a4954-6562-40a4-8f34-c7b1ae79fc73.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。両下白丸が内側へ移り、色縁を確保。位置は瞳孔下に近く左下配置としてやや中央、再確認。上白丸と白目の間に紫縁が残り接続未達、未選択。本人意匠保持。",
+      "Sha256": "bdb26cf7665e333e8146af326872d4548f47ec2adb3ad69fa929a5b2010474a1"
+    },
+    {
+      "Id": "election-face",
+      "Kind": "reference-only",
+      "Version": "v006",
+      "File": "character-52-news-election-face-v006-generated.png",
+      "Prompt": "news-election-face-v006-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-election-face-v005-generated.png",
+          "Role": "顔参照修正対象",
+          "Sha256": "bdb26cf7665e333e8146af326872d4548f47ec2adb3ad69fa929a5b2010474a1"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-6e45f357-b1a6-4af6-b922-009b2b5deb1b.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_VISUALLY_PASSED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。両上大白丸が右上虹彩縁を白目へ接続、両下中白丸は内部で色縁保持。下丸は瞳孔の下やや左、元の左縁切断は解消。本人意匠/希望ある閉口微笑保持。瞳参照として確認、全身原画/ゲーム未採用。",
+      "Sha256": "3104facfc7c0108a29e4de79988d630c47070e5638c23e9aa4d408f1153f35ed"
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Version": "v004",
+      "File": "character-52-news-election-v004-generated.png",
+      "Prompt": "news-election-v004-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-election-face-v006-generated.png",
+          "Role": "確認済み瞳参照",
+          "Sha256": "3104facfc7c0108a29e4de79988d630c47070e5638c23e9aa4d408f1153f35ed"
+        },
+        {
+          "File": "character-52-news-election-v003-generated.png",
+          "Role": "本人全身体格衣装参照",
+          "Sha256": "4793f9851441ac2aff070429eb1e0da15c748b7e8e5ab29e93081009c85e3218"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-c91375af-28bc-4621-be09-c8b0079a453d.png",
+      "Tool": "builtin image_gen",
+      "Width": 1086,
+      "Height": 1448,
+      "Status": "WORKING_SELECTED_GAME_PENDING",
+      "Selected": true,
+      "GameAdopted": false,
+      "VisualReview": "全身/眼部拡大/300x400白黒直接目視。両上大白丸は右上虹彩縁を白目へ接続、両下中白丸は色縁内側。本人微笑/眼鏡/髪/帽子/冬制服/青チェック/白手袋/白タイツ/青背景保持。v003同様概算約5.6頭身、短首/大きい手足/高膝保持。帽子上余白は狭めだが切れなし、両靴も収まる。作業選択、ゲーム未採用。",
+      "Sha256": "dcc720c69114382773f1a5b209b25685c524226c20e2473f37035526d5c30e41",
+      "Preview": {
+        "Path": "news-election-v004-preview.png",
+        "Crop": {
+          "X": 250,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "6825a06421bc639e170af6cc522a707da9f373a419f70689fd34fe60803c5f7a"
+      },
+      "GrayPreview": "news-election-v004-preview-gray.png",
+      "EyePreview": {
+        "Path": "news-election-v004-eyes-preview.png",
+        "Crop": {
+          "X": 505,
+          "Y": 235,
+          "Width": 155,
+          "Height": 85
+        },
+        "Width": 775,
+        "Height": 425,
+        "Sha256": "918ea560f7fe1e45edc5f2a0e1f0e8c00051b6d44771e0fbe50bfc3824cca735"
+      }
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Version": "v001",
+      "File": "character-52-news-friends-v001-generated.png",
+      "Prompt": "news-friends-v001-prompt.txt",
+      "References": [
+        {
+          "File": "../../../newspaper-trials/character-52-friends-v001-generated.png",
+          "Role": "本人意匠/笑顔/カップ/喫茶室",
+          "Sha256": "e5bf4e9c7a5e86f63474b02f57b5fd5bf1d6eed1fb0dc6d77a8c422250630c49"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "承認済み体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-b9d470aa-7048-4b4d-bf60-0660243db154.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Status": "EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身/300x400白黒直接目視。本人青髪/赤眼鏡/赤紫橙瞳/開口笑顔/白ファー雪帽子/冬制服/両白手袋雪カップ/喫茶室保持。帽子両靴収まり。座位で厳密頭身未採寸、体格詳細再照合必要。上白丸白目接続と下中白丸未達。下衣/白タイツ/靴は原画外補完案、未選択。",
+      "Preview": {
+        "Path": "news-friends-v001-preview.png",
+        "Crop": {
+          "X": 250,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "25d3ed023277862c13176d3d1dee0fb689fdc9e85c8df3a79ad48b487efaadf0"
+      },
+      "GrayPreview": "news-friends-v001-preview-gray.png",
+      "Sha256": "2b3f77ad70f074a4ce3cfdfd061864a60e5eecac35caeed56598a066dcdda734"
+    },
+    {
+      "Id": "friends-face",
+      "Kind": "reference-only",
+      "Version": "v001",
+      "File": "character-52-news-friends-face-v001-generated.png",
+      "Prompt": "news-friends-face-v001-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-friends-v001-generated.png",
+          "Role": "本人顔修正対象",
+          "Sha256": "2b3f77ad70f074a4ce3cfdfd061864a60e5eecac35caeed56598a066dcdda734"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-50d32f3e-643e-465f-8bcd-98949cea3288.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。両目白丸は明瞭化したが上白丸が虹彩中央寄りで白目未接続、下白丸は左輪郭に接し内包未達。余分な小反射も残る。本人赤紫橙瞳/赤眼鏡/開口笑顔保持。全身v001は大きな手足/短首/高膝の座位を確認、座位遠近で厳密頭身未採寸。顔参照のみ未選択。",
+      "Sha256": "eff442b5586bf4980f5dd74aab5d75052b737cbf348f6b9f54dde0969adc2d72"
+    },
+    {
+      "Id": "friends-face",
+      "Kind": "reference-only",
+      "Version": "v002",
+      "File": "character-52-news-friends-face-v002-generated.png",
+      "Prompt": "news-friends-face-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-friends-face-v001-generated.png",
+          "Role": "顔瞳修正対象",
+          "Sha256": "eff442b5586bf4980f5dd74aab5d75052b737cbf348f6b9f54dde0969adc2d72"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-4e5decab-63a8-4dde-8e81-bd22b345ccfd.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。両下白丸は内側へ移動し色縁確保、上白丸も右移動/拡大したが白目との間に紫縁が残り未接続。右下余分白線も残る。本人意匠/開口笑顔保持、参照のみ未選択。",
+      "Sha256": "39006d8a71436eab1dcc37b91adeeaaae13cc0f95a5abbc3feca4614d8e1e7c2"
+    },
+    {
+      "Id": "friends-face",
+      "Kind": "reference-only",
+      "Version": "v003",
+      "File": "character-52-news-friends-face-v003-generated.png",
+      "Prompt": "news-friends-face-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-friends-face-v002-generated.png",
+          "Role": "顔瞳修正対象",
+          "Sha256": "39006d8a71436eab1dcc37b91adeeaaae13cc0f95a5abbc3feca4614d8e1e7c2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-013c38a4-677d-4914-ad15-c1b887f92f2b.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_VISUALLY_PASSED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。両上大白丸が右上虹彩輪郭を白目へ接続、両下中白丸は左下内部で色縁保持。余分小白点整理。本人赤紫橙瞳/赤眼鏡/開口笑顔保持。顔参照として確認、全身/ゲーム未採用。",
+      "Sha256": "67424de87175eddfcd1b6e5110bd8f202388f68089872c61b62600d9d17de7a3"
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Version": "v002",
+      "File": "character-52-news-friends-v002-generated.png",
+      "Prompt": "news-friends-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-friends-face-v003-generated.png",
+          "Role": "確認済み瞳参照",
+          "Sha256": "67424de87175eddfcd1b6e5110bd8f202388f68089872c61b62600d9d17de7a3"
+        },
+        {
+          "File": "character-52-news-friends-v001-generated.png",
+          "Role": "本人全身/体格/衣装/構図",
+          "Sha256": "2b3f77ad70f074a4ce3cfdfd061864a60e5eecac35caeed56598a066dcdda734"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-20b8c2d1-35fb-4eb2-82f4-7ae1dd321bdd.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Status": "WORKING_SELECTED_GAME_PENDING",
+      "Selected": true,
+      "GameAdopted": false,
+      "VisualReview": "全身/眼部拡大/300x400白黒直接目視。両上大白丸白目接続/下中白丸内側を確認。本人赤紫橙瞳/赤眼鏡/開口笑顔/カップ両白手袋/冬制服/喫茶室保持。大きな手足/短首/高膝の座位と全帽子両靴余白保持。座位遠近のため厳密頭身未採寸。下衣靴は補完案。作業選択、ゲーム未採用。",
+      "Preview": {
+        "Path": "news-friends-v002-preview.png",
+        "Crop": {
+          "X": 250,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "8b9983ef6c879288ed3db388760048ab224660f03e855e4ee72c9a6d2ab1126d"
+      },
+      "GrayPreview": "news-friends-v002-preview-gray.png",
+      "Sha256": "7355bd4a458773331d5743089fdb2ac14f9ce212b782810f6a9f6d044dda97f0",
+      "EyePreview": {
+        "Path": "news-friends-v002-eyes.png",
+        "Crop": {
+          "X": 460,
+          "Y": 265,
+          "Width": 155,
+          "Height": 85
+        },
+        "Width": 775,
+        "Height": 425,
+        "Sha256": "61029fa8d259d52c0310373683cdde96d87989eea1661c48e91aa3c5ba56fd52"
+      }
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Version": "v001",
+      "File": "character-52-news-history-v001-generated.png",
+      "Prompt": "news-history-v001-prompt.txt",
+      "References": [
+        {
+          "File": "../../../newspaper-trials/character-52-history-v001-generated.png",
+          "Role": "本人顔/衣装/椅子/茶背景",
+          "Sha256": "948d59ba38a96498c6c140306bf1b1fc0f80579104367f5ef1849ea039f41b3b"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-5bbd3211-25eb-4648-bd6b-41a82f7cbaa3.png",
+      "Tool": "builtin image_gen",
+      "Width": 1086,
+      "Height": 1448,
+      "Status": "PROPORTIONS_AND_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身直接目視。本人赤眼鏡/青髪/赤紫橙瞳/無表情閉口/白胸黒中央帯/白手袋膝上重ね/冬ケープ青チェック/木椅子茶背景保持。全帽子両靴収まり。ただし小頭長身寄りで頭部拡大必要、瞳白丸も未達。下衣長スカート/白タイツ/靴は原画外補完案。縮小白黒/眼部拡大は次回、未選択。",
+      "Sha256": "beb19222f06c8c9b7467fc127f45fe14dc1e5ce4fa3a91974b90b36b4c9ff402"
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Version": "v002",
+      "File": "character-52-news-history-v002-generated.png",
+      "Prompt": "news-history-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-history-v001-generated.png",
+          "Role": "本人全身体格修正対象",
+          "Sha256": "beb19222f06c8c9b7467fc127f45fe14dc1e5ce4fa3a91974b90b36b4c9ff402"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-b5d2ec5e-f07b-4fb3-869c-3111d9179214.png",
+      "Tool": "builtin image_gen",
+      "Width": 1086,
+      "Height": 1448,
+      "Status": "PROPORTIONS_AND_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身直接目視。帽子余白増加、本人無表情/眼鏡髪/制服/白手袋膝上/椅子茶背景保持。ただし実頭部拡大が不十分で小頭長身が残る、体格未達。瞳も未達。縮小白黒未確認、未選択。",
+      "Sha256": "18f8314ff011257a854a194b2bb484f53d2e4075164c60d9d82193e1be37417d"
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Version": "v003",
+      "File": "character-52-news-history-v003-generated.png",
+      "Prompt": "news-history-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-history-v002-generated.png",
+          "Role": "本人全身体格修正対象",
+          "Sha256": "18f8314ff011257a854a194b2bb484f53d2e4075164c60d9d82193e1be37417d"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "承認済み体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-10e84471-f70f-42e0-9ff5-37b15dfbe1e6.png",
+      "Tool": "builtin image_gen",
+      "Width": 1086,
+      "Height": 1448,
+      "Status": "PROPORTIONS_AND_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身直接目視。実頭部と顔の拡大を確認、短首/大手足/座位保持。体格は改善したが座位換算頭身詳細未確定。帽子上余白が約5pxと不足、瞳白丸未達。本人無表情/眼鏡髪/制服/手袋膝上/椅子茶背景保持。両靴収まり。縮小白黒未確認、未選択。",
+      "Sha256": "f71773b9a195fe0d654ec9f409b45563b47e12d0f966d52159d2061a859209cb"
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Version": "v004",
+      "File": "character-52-news-history-v004-generated.png",
+      "Prompt": "news-history-v004-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-history-v003-generated.png",
+          "Role": "本人全身/体格/余白修正対象",
+          "Sha256": "f71773b9a195fe0d654ec9f409b45563b47e12d0f966d52159d2061a859209cb"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-e49ecb38-d537-4953-8db2-2ee5d84860b5.png",
+      "Tool": "builtin image_gen",
+      "Width": 1086,
+      "Height": 1448,
+      "Status": "PROPORTIONS_AND_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身/300x400白黒直接目視。帽子上余白約85pxと両靴下余白確保、本人無表情/衣装/手袋膝上/椅子茶背景保持。短首/大きい手足/高膝座位保持、座位換算頭身は厳密未採寸。顔はv003より少し縮小して見え体格詳細再照合必要。瞳白丸未達、未選択。",
+      "Sha256": "38b60f1bf16d28a450d345fa9ae22cf6f04f483a08bb14b2d64b16719be39e36",
+      "Preview": {
+        "Path": "news-history-v004-preview.png",
+        "Crop": {
+          "X": 230,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "e6f8a858f443092ed2cda23e527a91a9c912295c14294aec27924458b1de8529"
+      },
+      "GrayPreview": "news-history-v004-preview-gray.png"
+    },
+    {
+      "Id": "history-face",
+      "Kind": "reference-only",
+      "Version": "v001",
+      "File": "character-52-news-history-face-v001-generated.png",
+      "Prompt": "news-history-face-v001-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-history-v004-generated.png",
+          "Role": "本人顔瞳修正対象",
+          "Sha256": "38b60f1bf16d28a450d345fa9ae22cf6f04f483a08bb14b2d64b16719be39e36"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-9ff2c845-e8e0-446f-ab1e-7b1c145f50f8.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。両上白丸と白目の間に紫縁が残り未接続。下白丸も小さく左端寄り、画面右は特に不足。本人無表情/赤眼鏡/青髪/赤紫橙瞳保持。顔参照のみ未選択。全身v004体格詳細照合は引続き未完。",
+      "Sha256": "23b63d9b081386a636ff481dd7dfd6f04eb603ecaab695f4f2a49d8b182a5e95"
+    },
+    {
+      "Id": "history-face",
+      "Kind": "reference-only",
+      "Version": "v002",
+      "File": "character-52-news-history-face-v002-generated.png",
+      "Prompt": "news-history-face-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-history-face-v001-generated.png",
+          "Role": "本人顔瞳修正対象",
+          "Sha256": "23b63d9b081386a636ff481dd7dfd6f04eb603ecaab695f4f2a49d8b182a5e95"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-cfcffea7-78dc-49cb-9e91-db9dca33b838.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。上白丸拡大/右移動、下中白丸も両目で明瞭化。上白目接続は画面左の紫縁が残り未達、下は左端近く色縁再確認必要。本人無表情/眼鏡/髪/瞳色保持、顔参照のみ未選択。",
+      "Sha256": "07ec8b86a1384dd97855dee89aff170c6f7203f39f5a84c77fd7a9ac369c984f"
+    },
+    {
+      "Id": "history-face",
+      "Kind": "reference-only",
+      "Version": "v003",
+      "File": "character-52-news-history-face-v003-generated.png",
+      "Prompt": "news-history-face-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-history-face-v002-generated.png",
+          "Role": "本人顔瞳修正対象",
+          "Sha256": "07ec8b86a1384dd97855dee89aff170c6f7203f39f5a84c77fd7a9ac369c984f"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-563cf06d-65a8-4c82-be34-9f1c4a57ba32.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。上丸右移動、下丸内側移動。ただし上白目接続はなお紫縁が残り未確定。瞳孔が細い縦線へ変化し本人の丸楕円瞳孔から逸脱、未選択。無表情/髪眼鏡衣装保持。次はv002を基に瞳孔保持して修正。",
+      "Sha256": "ac0458ee4a19fe31ca303137bb4d7f57b6759160b59aa6013ed980ddbe7925f8"
+    },
+    {
+      "Id": "history-face",
+      "Kind": "reference-only",
+      "Version": "v004",
+      "File": "character-52-news-history-face-v004-generated.png",
+      "Prompt": "news-history-face-v004-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-history-face-v002-generated.png",
+          "Role": "本人瞳孔保持/白丸修正対象",
+          "Sha256": "07ec8b86a1384dd97855dee89aff170c6f7203f39f5a84c77fd7a9ac369c984f"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-11ddead6-0e09-48b3-bcfd-2590a32ab6c3.png",
+      "Tool": "builtin image_gen",
+      "Status": "REFERENCE_EYES_VISUALLY_PASSED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "顔拡大直接目視。丸楕円瞳孔保持、両上大白丸が右上虹彩縁を白目へ接続。両下白丸は内側で色縁保持、画面右は比較的小さめ。本人無表情/赤眼鏡/青髪/瞳色保持。顔参照確認、全身ゲーム未採用。",
+      "Sha256": "560604cefc9f7de189470dc35c7aa06ed67cd1cb2c4b5197b3e4045336b17f01"
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Version": "v005",
+      "File": "character-52-news-history-v005-generated.png",
+      "Prompt": "news-history-v005-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-history-face-v004-generated.png",
+          "Role": "確認済み瞳",
+          "Sha256": "560604cefc9f7de189470dc35c7aa06ed67cd1cb2c4b5197b3e4045336b17f01"
+        },
+        {
+          "File": "character-52-news-history-v004-generated.png",
+          "Role": "本人全身体格衣装構図",
+          "Sha256": "38b60f1bf16d28a450d345fa9ae22cf6f04f483a08bb14b2d64b16719be39e36"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-0b2942b0-9dc9-4da6-a781-9afd5ff606ca.png",
+      "Tool": "builtin image_gen",
+      "Width": 1086,
+      "Height": 1448,
+      "Status": "PROPORTIONS_REVIEW_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身/眼部拡大/300x400白黒直接目視。両上白丸白目接続、両下白丸内側を確認、画面右下は小さめ。本人無表情/丸楕円瞳孔/赤眼鏡/青髪/冬制服/手袋膝上/椅子茶背景保持、全帽子両靴余白あり。体格は頭部に対し胴脚がなお長く見え、座位換算約5.5–6頭身合格未確定。体格確認修正が残るため未選択。",
+      "Sha256": "7a9ec0950594b530191fbccdd024c6568bfa8f67085573972d99fa15c371e976",
+      "Preview": {
+        "Path": "news-history-v005-preview.png",
+        "Crop": {
+          "X": 230,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "6f0bd201bfe711d7d79e8d604fe8564cc973017fd9e92a8a2a19bb676cbce2ba"
+      },
+      "GrayPreview": "news-history-v005-preview-gray.png",
+      "EyePreview": {
+        "Path": "news-history-v005-eyes-detail.png",
+        "Crop": {
+          "X": 490,
+          "Y": 255,
+          "Width": 150,
+          "Height": 75
+        },
+        "Width": 900,
+        "Height": 450,
+        "Sha256": "58b8d1b6ed10ebe3ff53c2b93af8e54d3c70bd8d090db58d5a5648c2e03a1cf4"
+      }
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Version": "v006",
+      "File": "character-52-news-history-v006-generated.png",
+      "Prompt": "news-history-v006-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-history-v005-generated.png",
+          "Role": "本人全身体格修正対象",
+          "Sha256": "7a9ec0950594b530191fbccdd024c6568bfa8f67085573972d99fa15c371e976"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-9efcabc4-34ea-40db-8a29-240cb30cb40f.png",
+      "Tool": "builtin image_gen",
+      "Width": 1086,
+      "Height": 1448,
+      "Status": "PROPORTIONS_REVIEW_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身直接目視。実頭部はわずか拡大したが指示25%ほど変化せず、胴脚長身が残り体格未確定。本人無表情/衣装/手袋/椅子茶背景/帽子両靴収まり保持。瞳は全身表示では維持して見えるが眼部拡大/縮小白黒は未確認。未選択。",
+      "Sha256": "81be74c9ae00aac2e1bc38da1ff1f59c998c4f4b059c848ed6f4bb7cb091844a"
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Version": "v007",
+      "File": "character-52-news-history-v007-generated.png",
+      "Prompt": "news-history-v007-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-history-v006-generated.png",
+          "Role": "本人全身体格修正対象",
+          "Sha256": "81be74c9ae00aac2e1bc38da1ff1f59c998c4f4b059c848ed6f4bb7cb091844a"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "承認済み体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-f3eff929-0075-495d-a1ae-38e65c0f35b8.png",
+      "Tool": "builtin image_gen",
+      "Width": 1086,
+      "Height": 1448,
+      "Status": "EYE_REVISION_AND_PROPORTIONS_REVIEW_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身/眼部拡大/300x400白黒を直接目視。胴短縮は改善、本人意匠と帽子両靴余白保持。左下白丸が黄味へ弱まり再修正必要。座位体格詳細は未確定。未選択。",
+      "Sha256": "478fee298b1efb16de288905eebe8b6f66dd5faa349c71fd85d7544db2158d35",
+      "EyePreview": "news-history-v007-eyes.png",
+      "Preview": {
+        "Path": "news-history-v007-preview.png",
+        "Crop": {
+          "X": 230,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "73bee91d501cdd9bca578521abf84a5ae65a98756d16d3b77939262e87f5ecf1"
+      },
+      "GrayPreview": "news-history-v007-preview-gray.png"
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Version": "v008",
+      "File": "character-52-news-history-v008-generated.png",
+      "Prompt": "news-history-v008-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-history-face-v004-generated.png",
+          "Role": "確認済み瞳参照",
+          "Sha256": "560604cefc9f7de189470dc35c7aa06ed67cd1cb2c4b5197b3e4045336b17f01"
+        },
+        {
+          "File": "character-52-news-history-v007-generated.png",
+          "Role": "全身修正対象、体格と衣装保持",
+          "Sha256": "478fee298b1efb16de288905eebe8b6f66dd5faa349c71fd85d7544db2158d35"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-f67f1ad8-ee58-428f-a68a-b8b644c7f7ca.png",
+      "Tool": "builtin image_gen",
+      "Width": 1086,
+      "Height": 1448,
+      "Status": "PROPORTIONS_REVIEW_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身/眼部拡大/300x400白黒直接目視。両上の大白丸が白目へ接続し両下の中白丸は虹彩内、丸楕円瞳孔保持。本人意匠/無表情/椅子茶背景/全身余白/短縮胴保持。白黒で顔と手が判読可能。座位体格は厳密換算未確定、小頭長身疑いが残り未選択。",
+      "Sha256": "df33e65ad2cb8b6b6e6672cb611a0de0d5f7fc53f3ab4f20c746f2efc5a7e430",
+      "EyePreview": "news-history-v008-eyes.png",
+      "Preview": {
+        "Path": "news-history-v008-preview.png",
+        "Crop": {
+          "X": 230,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "cd25db883406ae8031474975edf4c9266a930c1e5c8392a6070b53044bdaa5fc"
+      },
+      "GrayPreview": "news-history-v008-preview-gray.png"
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Version": "v009",
+      "File": "character-52-news-history-v009-generated.png",
+      "Prompt": "news-history-v009-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-history-v008-generated.png",
+          "Role": "本人意匠と瞳、体格修正対象",
+          "Sha256": "df33e65ad2cb8b6b6e6672cb611a0de0d5f7fc53f3ab4f20c746f2efc5a7e430"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "承認体格のみ、顔衣装転用禁止",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-c951757d-d1b0-4d6c-a0e9-98be120a2112.png",
+      "Tool": "builtin image_gen",
+      "Width": 1086,
+      "Height": 1448,
+      "Status": "EYE_REVISION_AND_PROPORTIONS_REVIEW_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身直接目視。実頭部が拡大し胴脚に対する比率改善、短首/大手足/本人意匠/無表情/椅子茶背景保持。帽子上余白は約10pxと狭いが切れなし、両靴完全。左下白丸が黄寄りへ戻り修正必要。座位厳密換算頭身/眼部拡大/300x400白黒は未確認。未選択。",
+      "Sha256": "a17351bac15e8bd186b6ed7ca0c92e8b319fc3c93105895ae11060827625bad4"
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Version": "v010",
+      "File": "character-52-news-history-v010-generated.png",
+      "Prompt": "news-history-v010-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-history-face-v004-generated.png",
+          "Role": "確認済み瞳参照",
+          "Sha256": "560604cefc9f7de189470dc35c7aa06ed67cd1cb2c4b5197b3e4045336b17f01"
+        },
+        {
+          "File": "character-52-news-history-v009-generated.png",
+          "Role": "全身修正対象、拡大頭部と体格保持",
+          "Sha256": "a17351bac15e8bd186b6ed7ca0c92e8b319fc3c93105895ae11060827625bad4"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-37888384-d972-41f6-890e-d29df0d5b8d3.png",
+      "Tool": "builtin image_gen",
+      "Width": 1086,
+      "Height": 1448,
+      "Status": "WORKING_SELECTED_GAME_PENDING",
+      "Selected": true,
+      "GameAdopted": false,
+      "VisualReview": "全身/眼部拡大/300x400白黒直接目視。両上大白丸が虹彩輪郭から白目へ接続、両下白丸が虹彩内に収まり丸楕円瞳孔保持。本人意匠/無表情/椅子茶背景保持。実頭部拡大/短首/大手足/高膝の座位体格をv017の見た目と照合し作業用選択。座位の厳密立位換算頭身は測定しておらず推定値の承認ではない。帽子上余白は狭いが帽子両靴切れなし。白黒で顔/手/衣装判読可能。",
+      "EyePreview": "news-history-v010-eyes.png",
+      "GrayPreview": "news-history-v010-preview-gray.png",
+      "Preview": {
+        "Path": "news-history-v010-preview.png",
+        "Crop": {
+          "X": 230,
+          "Y": 0,
+          "Width": 660,
+          "Height": 880
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "3061d070ad353f87fed517241643fccff0088c2e36c020750f9b3e33fa10ae23"
+      },
+      "Sha256": "1f5706899f2d76c8f6e8c6e2fc575311b7ba0023246b72caa84a8092c4f5c490"
+    }
+  ],
+  "Next": "history v010作業用選択済み。次は新聞coin本人原画確認と全身制作、idol/paparazzi未着手。全14候補完了後に20ゲーム画像/カタログ/配布ビルド適用。現ゲーム0/20。",
+  "UserAuthorization": "拒否時は報告し元画像保持、衣装・持ち物変更して続行可。"
+}

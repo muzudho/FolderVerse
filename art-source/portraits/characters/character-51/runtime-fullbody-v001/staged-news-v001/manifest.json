@@ -1,6 +1,6 @@
 {
   "CharacterId": 51,
-  "Status": "STAGED_NOT_ADOPTED",
+  "Status": "ADOPTED_BUILD_DISTRIBUTION_VERIFIED",
   "Images": [
     {
       "Id": "formal",
@@ -17,7 +17,7 @@
       "File": "character-51-formal.png",
       "Sha256": "5280db1ec5e3565ef8682c270cd6e344bb37b1a1d1f66cdc666a6f82c2213c8a",
       "GrayPreview": "newspaper-formal-v006-preview-gray.png",
-      "GameAdopted": false
+      "GameAdopted": true
     },
     {
       "Id": "election",
@@ -34,7 +34,7 @@
       "File": "character-51-election.png",
       "Sha256": "b26d06e4c10c1336b9c3a67cd2a8b3a08b5275e7e2d6e2167dd4b23689207795",
       "GrayPreview": "newspaper-election-v004-preview-gray.png",
-      "GameAdopted": false
+      "GameAdopted": true
     },
     {
       "Id": "friends",
@@ -51,7 +51,7 @@
       "File": "character-51-friends.png",
       "Sha256": "870d064100c5da31dd2405826ea1289676c0348303b5a7275a45837d1a27b383",
       "GrayPreview": "newspaper-friends-v004-preview-gray.png",
-      "GameAdopted": false
+      "GameAdopted": true
     },
     {
       "Id": "history",
@@ -68,7 +68,7 @@
       "File": "character-51-history.png",
       "Sha256": "2b962a0807c391e43de498392ee205303a7d3360b5623713f35725e2fb14288a",
       "GrayPreview": "newspaper-history-v005-preview-gray.png",
-      "GameAdopted": false
+      "GameAdopted": true
     },
     {
       "Id": "coin",
@@ -85,7 +85,7 @@
       "File": "character-51-coin.png",
       "Sha256": "46d4a145be1fcf81dbec4c5254dcb81d4055fc6abd5616acd23f050cd9bfd9e5",
       "GrayPreview": "newspaper-coin-v008-preview-gray.png",
-      "GameAdopted": false
+      "GameAdopted": true
     },
     {
       "Id": "id",
@@ -102,7 +102,7 @@
       "File": "character-51-id.png",
       "Sha256": "3a90a0cf8d36352b67f0ae6b709a89a05e4b3b2f5ba354131e5d23f95a0df060",
       "GrayPreview": "newspaper-id-v017-preview-gray.png",
-      "GameAdopted": false
+      "GameAdopted": true
     },
     {
       "Id": "idol",
@@ -119,7 +119,7 @@
       "File": "character-51-idol.png",
       "Sha256": "4d552c0a5e1d47b902892047c0ebb77534dbcc2569adb12c93bf01fddf27ddfc",
       "GrayPreview": "newspaper-idol-v009-preview-gray.png",
-      "GameAdopted": false
+      "GameAdopted": true
     },
     {
       "Id": "paparazzi",
@@ -136,7 +136,7 @@
       "File": "character-51-paparazzi.png",
       "Sha256": "438b2dfbb7f263d766bf64ca1be1b260b3985ba684aa394c0654edd4157f4073",
       "GrayPreview": "newspaper-paparazzi-v011-preview-gray.png",
-      "GameAdopted": false
+      "GameAdopted": true
     }
   ],
   "Remaining": [
