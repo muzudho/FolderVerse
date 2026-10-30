@@ -37,7 +37,7 @@ sealed class SalvageChecks:Game1
   Call("ResetInspector");Call("DrawSalvageMap");Check(((System.Collections.ICollection)Get("_salvageHits")).Count==0,"Default map hides salvage markers and hit targets");
   Point Action(int i)=>((Rectangle)Call("PrimaryActionBounds",i)).Center;
   Call("MapOverlayClick",Action(3),false);Check((bool)Get("_directMap") && !(bool)Get("_salvagePlan"),"One click selects direct delivery");
-  Call("MapOverlayClick",Action(3),false);Check(!(bool)Get("_directMap"),"Second click closes direct delivery");
+  Call("MapOverlayClick",Point.Zero,true);Call("UpdateMapFooter",1f);Check(!(bool)Get("_directMap"),"Escape closes direct delivery");
   Call("MapOverlayClick",Action(5),false);Check((bool)Get("_salvagePlan") && !(bool)Get("_directMap"),"One click opens recovery plan exclusively");Call("UpdateDomesticSlide",1f);
   Set("_salvageSelected",discard);PlanClick(Rect("SalvageRequest").Center);
   Check(w.Salvage.Items.Single(i=>i.Id==discard).RequestedBy==0,"UI requests self-abandoned goods");

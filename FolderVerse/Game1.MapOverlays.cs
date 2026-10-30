@@ -2,29 +2,38 @@ namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 public partial class Game1
 {
     private bool _mapOverlayMenu;
     private Rectangle MapFooterBounds(Rectangle bounds)=>bounds;
-    // Primary actions remain visible while the direct-delivery overlay is active.
-    private void UpdateMapFooter(float elapsed){}
+    private float _primaryActionSlide;
+    private void UpdateMapFooter(float elapsed){
+        float target=_directMap?1:0;
+        _primaryActionSlide=target>_primaryActionSlide?Math.Min(target,_primaryActionSlide+elapsed/.25f):Math.Max(target,_primaryActionSlide-elapsed/.25f);
+    }
     // Five squares and one double-width, 1.5-height end-turn button share a baseline.
-    private Rectangle PrimaryActionBounds(int index){Rectangle r=index switch {
+    private static Rectangle PrimaryActionHomeBounds(int index)=>index switch {
         0=>new(54,974,96,96),1=>new(160,926,192,144),
         _=>new(362+(index-2)*106,974,96,96)
-    };return r;}
+    };
+    private Rectangle PrimaryActionBounds(int index){var r=PrimaryActionHomeBounds(index);if(index!=3)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,_primaryActionSlide));return r;}
+    private static Rectangle DirectMapCloseButton=>new(PrimaryActionHomeBounds(3).Right+10,1002,40,40);
     private bool MapMarkerMenuAvailable=>!_directPairOpen && !_trainingOpen && _supervisorDialog==0 && !_inspectorFoldersOpen && !_salvageAbandonConfirmation.HasValue && !_hangarDrag.HasValue && !_seedDialog.IsOpen;
     private bool MapOverlayClick(Point p,bool escape)
     {
         if(!MapMarkerMenuAvailable || InspectorVisible)return false;
         if(escape && _directMap){CloseDirectDelivery();return true;}
         if(escape)return false;
+        if(_directMap && DirectMapCloseButton.Contains(p)){CloseDirectDelivery();return true;}
+        if(_directMap && PrimaryActionBounds(3).Contains(p))return true;
+        if((_directMap || _primaryActionSlide>0) && Enumerable.Range(0,6).Any(i=>i!=3 && (PrimaryActionHomeBounds(i).Contains(p) || PrimaryActionBounds(i).Contains(p))))return true;
         for(int i=0;i<6;i++)if(PrimaryActionBounds(i).Contains(p)){
             if(i==0)OpenStrategyInspector();
             else if(i==1){ResetInspector();EndPlannedTurn();}
             else if(i==2){ResetInspector();OpenWarPlanning();}
-            else if(i==3 && TransportOverviewAllowed){if(_directMap)CloseDirectDelivery();else OpenDirectMap();}
+            else if(i==3 && TransportOverviewAllowed){OpenDirectMap();}
             else if(i==4 && TransportOverviewAllowed){ResetInspector();OpenTransportOverview();}
             else if(i==5){if(_salvagePlan)ResetInspector();else OpenSalvagePlan();}
             return true;
@@ -43,9 +52,18 @@ public partial class Game1
     private void DrawMapOverlayMenu()
     {
         if(!MapMarkerMenuAvailable || InspectorVisible)return;
+        var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
+        _spriteBatch.End();var old=GraphicsDevice.ScissorRectangle;
+        using var clip=new RasterizerState{ScissorTestEnable=true};GraphicsDevice.ScissorRectangle=canvas;
+        _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
+        try{DrawPrimaryActionButtons();}finally{_spriteBatch.End();GraphicsDevice.ScissorRectangle=old;_spriteBatch.Begin(transformMatrix:transform);}
+    }
+    private void DrawPrimaryActionButtons()
+    {
         string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画"};
         for(int i=0;i<6;i++){
-            var r=PrimaryActionBounds(i);bool enabled=i is not (3 or 4) || TransportOverviewAllowed;
+            var r=PrimaryActionBounds(i);if(r.Top>=1080)continue;
+            bool enabled=(i==3 || !_directMap && _primaryActionSlide==0) && (i is not (3 or 4) || TransportOverviewAllowed);
             var color=_setup.OwnerColor(_setup.PlayerSlot);
             if(!enabled)color=Color.Lerp(color,new Color(45,49,54),.75f);
             else if(r.Contains(_pointer))color=Color.Lerp(color,Color.White,.22f);
@@ -57,11 +75,12 @@ public partial class Game1
                 string label=i==3?"パーツ直送便":i==4?"輸送長期計画":labels[i];
                 _ui.Center(label,new(r.X+3,r.Bottom-28,r.Width-6,24),Math.Min(.34f,(r.Width-6)/_font.MeasureString(label).X),ink);
             }
-            if(r.Contains(_pointer)){
+            if((i==3 || !_directMap && _primaryActionSlide==0) && r.Contains(_pointer)){
                 string hint=labels[i]+(!enabled?"（このステップでは利用できません）":i==2?$"（{WarReservationCount}件）":"");
                 var box=new Rectangle(InspectorVisible?1000:54,884,760,34);_ui.Box(box,new Color(7,23,35));_ui.Center(hint,box,.36f,Cream);
             }
         }
+        if(_directMap)_ui.Button(DirectMapCloseButton,"×",Muted,.55f);
     }
     private void DrawPrimaryIcon(int kind,Rectangle r,Color ink)
     {

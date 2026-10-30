@@ -28,11 +28,21 @@ class Checks:Game1{
    for(int j=0;j<i;j++)Check(!rect.Intersects((Rectangle)Call("PrimaryActionBounds",j)),"Primary hit bounds never overlap");
   }
   var delivery=(Rectangle)Call("PrimaryActionBounds",3);
-  Check((bool)Call("MapOverlayClick",delivery.Center,false) && !(bool)Get("_directMap"),"Delivery action toggles the overlay off in one click");
-  Check((bool)Call("MapOverlayClick",delivery.Center,false) && (bool)Get("_directMap"),"Delivery action opens the overlay in one click");
-  Check((bool)Call("MapOverlayClick",Point.Zero,true) && !(bool)Get("_directMap"),"Escape exits direct mode");
+  Check((bool)Call("MapOverlayClick",delivery.Center,false) && (bool)Get("_directMap"),"Active delivery action retains its mode until close");
+  Call("UpdateMapFooter",.125f);var half=Footer("PopulationTurnButton");Check(half.Y>normal.Y && half.Top<1080,"Other actions slide down at the halfway point");
+  Check((bool)Call("MapOverlayClick",normal.Center,false) && (bool)Get("_directMap"),"Original hidden turn-button location cannot end the turn");
+  Check((bool)Call("MapOverlayClick",new Point(half.Center.X,half.Top+10),false) && (bool)Get("_directMap"),"Moving actions cannot activate during frame-out");
+  Call("UpdateMapFooter",.125f);
+  for(int i=0;i<6;i++)Check(i==3?((Rectangle)Call("PrimaryActionBounds",i))==delivery:((Rectangle)Call("PrimaryActionBounds",i)).Top>=1080,"Only delivery remains after frame-out");
+  var closeMode=(Rectangle)typeof(Game1).GetProperty("DirectMapCloseButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  Check((bool)Call("MapOverlayClick",closeMode.Center,false) && !(bool)Get("_directMap"),"Close beside delivery exits mode");
+  Call("UpdateMapFooter",.125f);Check(Footer("PopulationTurnButton").Y==half.Y,"Other actions slide back in halfway");
+  Check((bool)Call("MapOverlayClick",Footer("WarButton").Center,false) && !(bool)Get("_movementOpen"),"Returning buttons remain inactive until fully visible");
+  Call("UpdateMapFooter",.125f);Check(Footer("PopulationTurnButton")==normal,"Actions return to exact original draw and hit bounds");
+  Check((bool)Call("MapOverlayClick",delivery.Center,false) && (bool)Get("_directMap"),"Delivery action opens mode");
+  Check((bool)Call("MapOverlayClick",Point.Zero,true) && !(bool)Get("_directMap"),"Escape also closes delivery mode");
   Call("OpenDirectMap");
-  Console.WriteLine("PASS: primary action proportions, separate hit bounds, direct overlay toggle and Escape.");
+  Console.WriteLine("PASS: action proportions, animated frame-out/in, hidden/moving input suppression, delivery close and Escape.");
   var viewNet=(CubeNet)Get("_net");var mainPanel=(Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!;
   foreach(float angle in new[]{0f,MathHelper.PiOver2,MathHelper.Pi,MathHelper.Pi*1.5f}){
    viewNet.ScreenAngle=angle;var view=viewNet.CaptureView();Call("OpenDirectPair",b,a);
