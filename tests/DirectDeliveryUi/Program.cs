@@ -33,7 +33,19 @@ class Checks:Game1{
   Check((bool)Call("MapOverlayClick",Point.Zero,true) && !(bool)Get("_directMap"),"Escape exits direct mode");
   Call("OpenDirectMap");
   Console.WriteLine("PASS: primary action proportions, separate hit bounds, direct overlay toggle and Escape.");
+  var viewNet=(CubeNet)Get("_net");var mainPanel=(Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!;
+  foreach(float angle in new[]{0f,MathHelper.PiOver2,MathHelper.Pi,MathHelper.Pi*1.5f}){
+   viewNet.ScreenAngle=angle;var view=viewNet.CaptureView();Call("OpenDirectPair",b,a);
+   var ids=(int[])Get("_directNodes");var first=(Vector2)Call("DirectPairPosition",ids[0]);var second=(Vector2)Call("DirectPairPosition",ids[1]);
+   Check(first.X<=second.X+.5f,"Panes follow map left/right at every net rotation");
+   var copy=(CubeNet)Get("_directPairNet");Check(copy.ScreenAngle==angle && copy.Faces.SequenceEqual(view.Faces),"Pair map keeps unfolded faces and screen rotation");
+   Check(viewNet.CaptureView()==view || viewNet.ScreenAngle==view.ScreenAngle && viewNet.Pan==view.Pan && viewNet.Zoom==view.Zoom && viewNet.Faces.SequenceEqual(view.Faces),"Opening pair leaves main map camera untouched");
+   Call("FitDirectPairMap");Check(((int[])Get("_directNodes")).SequenceEqual(ids),"Fit does not reverse inspector assignment");
+  }
+  viewNet.ScreenAngle=0;
+  if(viewNet.NodePosition(w,w.Nodes.All[a],mainPanel).X>viewNet.NodePosition(w,w.Nodes.All[b],mainPanel).X)viewNet.ScreenAngle=MathHelper.Pi;
   Call("OpenDirectPair",a,b);
+  Check(((int[])Get("_directNodes"))[0]==a,"Transaction fixture follows visual order");
   var left=Cell(0,0);var right=Cell(1,0);
   Check(left.Right<600 && right.Left>1320,"Dedicated compact panes leave the center map open");
   var close=(Rectangle)typeof(Game1).GetField("DirectPairBack",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
@@ -79,9 +91,20 @@ class Checks:Game1{
   }
   if(frame==6){var trucks=(List<(Rectangle Bounds,int A,int B)>)Get("_directTrucks");Check(trucks.Count>0,"Selecting direct delivery restores truck markers");Call("DirectMapClick",trucks[0].Bounds.Center);Check((bool)Get("_directPairOpen"),"Selected overlay truck opens the pair");var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
   if(frame==7){Call("DirectPairInput",new MouseState(),false,true);Check(!(bool)Get("_directPairOpen") && (bool)Get("_directMap"),"Back retains the selected direct-delivery overlay");}
+  if(frame==8){
+   Set("_statusGlobe",true);var globe=(WorldPreview)Get("_world");globe.ManualOrientation=null;
+   var center=(w.Routes.Position(w.Nodes.All[a].Cell,w.Nodes.All[a].Center)+w.Routes.Position(w.Nodes.All[b].Cell,w.Nodes.All[b].Center))/2;
+   Call("FocusGlobePosition",center);var orientation=globe.ViewOrientation((float)Get("_yawAngle"),(float)Get("_pitchAngle"));
+   foreach(float angle in new[]{0f,MathHelper.PiOver2,MathHelper.Pi}){
+    globe.ManualOrientation=Quaternion.CreateFromRotationMatrix(orientation*Matrix.CreateRotationZ(angle));var saved=globe.ManualOrientation;var pan=globe.GlobePan;float zoom=globe.GlobeZoom;
+    Call("OpenDirectPair",b,a);var ids=(int[])Get("_directNodes");var x=(Vector2)Call("DirectPairPosition",ids[0]);var y=(Vector2)Call("DirectPairPosition",ids[1]);
+    Check(x.X<=y.X+.5f && (bool)Get("_directPairGlobe"),"Globe also keeps visual left/right");
+    Check(((WorldPreview)Get("_directPairWorld")).ManualOrientation==saved && globe.ManualOrientation==saved && globe.GlobePan==pan && globe.GlobeZoom==zoom,"Globe direction is copied and main camera is unchanged");
+   }
+  }
   if((bool)Get("_directPairOpen"))Set("_directPairSlide",1f);
   Call("UpdateMapFooter",.25f);base.Draw(t);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var tex=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);tex.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"direct-{frame}.png")))tex.SaveAsPng(file,tex.Width,tex.Height);
   if(frame==1){var hits=(System.Collections.IList)Get("_directTrucks");Check(hits.Count>0,"Visible adjacent edge has a truck");}
-  if(frame++==7){Console.WriteLine("PASS: edge trucks, hidden ordinary-inspector markers, selected overlay opening and return, two hangars, reservations and rendering.");Exit();}
+  if(frame++==8){Console.WriteLine("PASS: edge trucks, hidden ordinary-inspector markers, selected overlay opening and return, two hangars, reservations and rendering.");Exit();}
  }
 }
