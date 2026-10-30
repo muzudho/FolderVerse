@@ -46,11 +46,6 @@ public partial class Game1
         DrawConquestNumber(pointsBox,tally.Score(age),score);DrawConquestNumber(rankBox,ConquestCard.Rank,rank);
         _ui.Center("points",new(pointsBox.X,y+298,pointsBox.Width,30),.38f,Cream);
         _ui.Text("位",new(rankBox.Right-35,y+298),.4f,Cream);
-        if(entry || ConquestCard.Reminder){
-            var map=ConquestMapSpace;
-            int player=_setup.HumanPlayers.IndexOf(ruler);
-            if(player>=0)_ui.Center($"＜プレイヤー{player+1}＞",new(map.X+8,map.Bottom-27,map.Width-16,25),.38f,new Color(255,224,120));
-        }
         if(main && age>=tally.FaceStart)DrawConquestSubtree(ruler,age-tally.FaceStart);
     }
     private void DrawConquestSubtree(int root,double age){
