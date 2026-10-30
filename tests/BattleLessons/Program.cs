@@ -101,3 +101,28 @@ foreach(bool trained in new[]{false,true}){
 var unarmedDuel=Board();var noKnife=Unit(unarmedDuel,60101,0,3,5,BattleFacing.East);Unit(unarmedDuel,60102,1,6,5,BattleFacing.West);noKnife.Daggers=0;unarmedDuel.Lessons[0]=BattleLesson.CloseForDagger;
 Check(BattleAi.Choose(unarmedDuel,noKnife).Step==Point.Zero,"Lesson six cannot charge without a dagger");
 Console.WriteLine("PASS: lesson six standoff, survivor research, frontal approach, adjacent dagger and no-dagger exclusion.");
+
+// Lesson seven: opposed movement into one empty cell teaches both sides about tempo.
+BattleState Tempo(){var t=new BattleState(7,new(){NoWillTurns=100,PersuasionPercent=0}){BoardSize=10,Kind=BattleKind.Node,Defender=1,Flag=new(8,8)};t.Armies.Add(new(){Owner=0,Side=0});t.Armies.Add(new(){Owner=1,Side=2});return t;}
+var collision=Tempo();var advance=Unit(collision,70001,0,3,5,BattleFacing.East);var guard=Unit(collision,70002,1,5,5,BattleFacing.West);
+Turn(collision,(advance,new(1,0),BattleFacing.East,BattleWeapon.None),(guard,new(-1,0),BattleFacing.West,BattleWeapon.None));
+Check(advance.Position==new Point(3,5) && guard.Position==new Point(5,5) && new[]{advance,guard}.All(u=>(u.WitnessedLessons&BattleLesson.CollisionTempo)!=0),"Opposing one-gap collision rolls back and is witnessed by both sides");
+var tempoResearch=new BattleLessons();advance.Retreated=true;tempoResearch.BringHome(advance);Check(tempoResearch.Research().Any(a=>a.Lesson==BattleLesson.CollisionTempo),"Surviving collision witness brings the new card home");
+foreach(bool wall in new[]{false,true}){
+ var excluded=Tempo();var x=Unit(excluded,70101,0,3,5);var y=Unit(excluded,70102,wall?1:0,5,5);
+ if(wall)excluded.Walls.Add(new(4,5));Turn(excluded,(x,new(1,0),BattleFacing.East,BattleWeapon.None),(y,new(-1,0),BattleFacing.West,BattleWeapon.None));
+ Check((x.WitnessedLessons&BattleLesson.CollisionTempo)==0,"Allied collision or impassable wall does not teach opposed empty-cell collision");
+}
+var trainedTempo=Tempo();var knifeWait=Unit(trainedTempo,70201,0,3,5,BattleFacing.East);var timeGuard=Unit(trainedTempo,70202,1,5,5,BattleFacing.West);
+trainedTempo.Lessons[0]=trainedTempo.Lessons[1]=BattleLesson.CollisionTempo;timeGuard.Shields=0;
+var attackChoice=BattleAi.Choose(trainedTempo,knifeWait);var defenseChoice=BattleAi.Choose(trainedTempo,timeGuard);
+Check(attackChoice.Step==Point.Zero && attackChoice.Weapon==BattleWeapon.Dagger && defenseChoice.Step==new Point(-1,0),"Trained attacker waits with dagger while defender advances into one-gap cell");
+BattleTurnResolver.Advance(trainedTempo);Check(knifeWait.Position==new Point(3,5) && timeGuard.Position==new Point(4,5) && timeGuard.Fallen,"Waiting dagger actually catches the advancing unshielded defender");
+var rangedTempo=Tempo();var ranged=Unit(rangedTempo,70301,0,3,5,BattleFacing.East);var rangedGuard=Unit(rangedTempo,70302,1,6,5,BattleFacing.West);rangedGuard.Shields=0;rangedTempo.Lessons[0]=BattleLesson.CollisionTempo;
+var shot=BattleLessons.CollisionTempoAction(rangedTempo,ranged,new(new(1,0),BattleFacing.East));Check(shot.Step==Point.Zero && shot.Weapon==BattleWeapon.Rifle,"Two empty cells select rifle instead of advancing");
+Turn(rangedTempo,(ranged,new(1,0),BattleFacing.East,BattleWeapon.None));Check(ranged.Position==new Point(3,5) && rangedGuard.Fallen && ranged.Rifles==3,"New ranged tactic fires and consumes ammunition");
+var savedTempo=AutoSaveStore.Restore<BattleLessons>(AutoSaveStore.Capture(tempoResearch));Check((savedTempo.Owned[0]&BattleLesson.CollisionTempo)!=0,"Seventh card survives save/load");
+Console.WriteLine("PASS: opposed empty-cell rollback, friendly/wall exclusions, survivor research/save, defending advance, attacking dagger ambush and two-gap rifle.");
+
+var edgeTempo=Tempo();edgeTempo.Kind=BattleKind.Edge;var edgeApproach=Unit(edgeTempo,70401,0,3,5,BattleFacing.East);Unit(edgeTempo,70402,1,5,5,BattleFacing.West);edgeTempo.Lessons[0]=BattleLesson.CollisionTempo;
+var originalEdgeAction=new BattleAction(new(1,0),BattleFacing.East);Check(BattleLessons.CollisionTempoAction(edgeTempo,edgeApproach,originalEdgeAction)==originalEdgeAction,"No defending faction on edge boards: avoid making both attackers wait forever");

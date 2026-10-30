@@ -63,10 +63,11 @@ sealed class LessonGame:Game1
   if(frame==10){Call("UpdateBattleResearch",.2d,false);Check(Get("_screen").ToString()!="BattleResearch","Visible repeat completes at 0.4 seconds");Screen("WorldStatus");Call("ResetInspector");Set("_domesticSlide",0f);Set("_lastCutInPhase","内政フェーズ");Call("FocusStatusGlobe");}
   if(frame==11){Screen("Battle");Set("_robotSummary",true);Set("_summaryReadAge",3d);Set("_lastCutInPhase","戦闘結果");Set("_cutInStarted",-10d);}
   if(frame==12){Screen("LessonCatalog");Set("_lastCutInPhase","戦闘フェーズ");Set("_cutInStarted",-10d);world.Lessons.Owned[world.PlayerSlot]=BattleLessons.All.Aggregate(BattleLesson.None,(a,b)=>a|b);}
+  if(frame==13){world.Lessons.Owned[0]&=~BattleLesson.CollisionTempo;world.Lessons.Pending.Add(new(0,BattleLesson.CollisionTempo));Call("BeginBattleResearch");Check(((LessonAward[])Get("_lessonAwards")).Any(a=>a.Lesson==BattleLesson.CollisionTempo),"New collision lesson has its research card");Set("_lessonAge",2d);}
   base.Draw(time);
   var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"lesson-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);
   if(frame==11)Check(pixels[1003*p.BackBufferWidth+100]==new Color(248,194,58) && pixels[1003*p.BackBufferWidth+1600]==new Color(19,38,49),"Newspaper timer renders half-filled after three of six seconds");
   if(frame<4)Call("UpdateBattleResearch",0d,true);
-  if(frame++==12){Console.WriteLine("PASS: newspaper/research/industry flow, four award reveals and newspaper timer, world-plan button, owned/unowned catalogue, empty research, subordinate plan, fast repeat and globe robots rendered.");Exit();}
+  if(frame++==13){Console.WriteLine("PASS: newspaper/research/industry flow, four award reveals and newspaper timer, world-plan button, owned/unowned catalogue, empty research, subordinate plan, fast repeat and globe robots rendered.");Exit();}
  }
 }

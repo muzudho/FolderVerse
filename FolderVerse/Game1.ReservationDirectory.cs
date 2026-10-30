@@ -109,32 +109,35 @@ public partial class Game1
         _directoryHits.Clear();
         if(MapTransitionActive || _net.IsAnimating)return;
         var map=MapViewBounds;
-        foreach(var node in _setup.Nodes.All){
-            var counts=ReservationDirectoryCounts(node.Id);int rows=counts.Count(n=>n>0);
-            if(rows==0 || !OperationPosition(node.Id,out var at))continue;
+        var toy=OrientationToyArea;toy.Inflate(50,50);
+        var covered=new[]{new Rectangle(985,142,900,100),new Rectangle(990,242,710,122),toy,new Rectangle(985,820,900,65),new Rectangle(1330,908,540,58)};
+        var sites=_setup.Nodes.All.Select(n=>(Node:n,Counts:ReservationDirectoryCounts(n.Id),Status:DirectoryTurnStatus(n.Owner)))
+            .OrderByDescending(s=>s.Counts.Any(n=>n>0)).ThenBy(s=>s.Node.Id);
+        foreach(var site in sites){
+            var node=site.Node;var counts=site.Counts;string status=site.Status;int rows=counts.Count(n=>n>0);
+            if(rows==0 && status.Length==0 || !OperationPosition(node.Id,out var at))continue;
             const int height=24;
             string[] amounts=counts.Select((n,i)=>i==4?DirectoryTransportAmount(n):n.ToString()).ToArray();
-            int width=Math.Max(70,32+(int)MathF.Ceiling(amounts.Max(t=>_font.MeasureString(t).X)*.43f));
-            string status=DirectoryTurnStatus(node.Owner);
+            int width=rows==0?48:Math.Max(70,32+(int)MathF.Ceiling(amounts.Max(t=>_font.MeasureString(t).X)*.43f));
             int total=rows*(height+3)+8+(status.Length>0?18:0);
             int x=Math.Clamp((int)at.X+9,map.Left+2,map.Right-width-10);
             int y=Math.Clamp((int)at.Y-total/2,map.Top+2,map.Bottom-total-2);
             var whole=new Rectangle(x-3,y-3,width+11,total+6);
             // Nearby sites can share a screen position: move their signs aside, preserving a connector.
-            if(_directoryHits.Any(h=>h.Bounds.Intersects(whole))){
+            if(_directoryHits.Any(h=>h.Bounds.Intersects(whole)) || covered.Any(r=>r.Intersects(whole))){
                 var origin=whole;
-                var offsets=Enumerable.Range(-3,7).SelectMany(dx=>Enumerable.Range(-3,7).Select(dy=>new Point(dx*(width+18),dy*(total+12))))
+                var offsets=Enumerable.Range(-6,13).SelectMany(dx=>Enumerable.Range(-6,13).Select(dy=>new Point(dx*(width+18),dy*(total+12))))
                     .OrderBy(p=>p.X*p.X+p.Y*p.Y);
                 foreach(var offset in offsets){
                     var candidate=origin;candidate.Offset(offset);
-                    if(!map.Contains(candidate) || _directoryHits.Any(h=>h.Bounds.Intersects(candidate)))continue;
+                    if(!map.Contains(candidate) || covered.Any(r=>r.Intersects(candidate)) || _directoryHits.Any(h=>h.Bounds.Intersects(candidate)))continue;
                     whole=candidate;x=whole.X+3;y=whole.Y+3;break;
                 }
             }
             // A short connector keeps the stack anchored to its geographic node.
             var foot=new Vector2(x+width/2,y+total);var d=foot-at;
-            _ui.Tile((at+foot)/2,new(d.Length(),2),MathF.Atan2(d.Y,d.X),new Color(12,25,32));
-            _ui.Box(new(x+width/2-2,y,4,total),new Color(73,51,35));
+            if(rows>0 || whole.Contains(_pointer))_ui.Tile((at+foot)/2,new(d.Length(),2),MathF.Atan2(d.Y,d.X),new Color(12,25,32));
+            if(rows>0)_ui.Box(new(x+width/2-2,y,4,total),new Color(73,51,35));
             int row=0;
             for(int kind=0;kind<DirectoryLabels.Length;kind++)if(counts[kind]>0){
                 var board=new Rectangle(x,y+row++*(height+3),width,height);var shadow=board;shadow.Offset(2,2);

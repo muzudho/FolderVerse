@@ -11,7 +11,7 @@ sealed class DirectoryGame:Game1 {
  void Set(string n,object v)=>typeof(Game1).GetField(n,F)!.SetValue(this,v);
  static Rectangle Rect(string n)=>(Rectangle)typeof(Game1).GetField(n,BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
  static void Check(bool ok,string m){if(!ok)throw new Exception(m);}
- WorldSetup w=null!;CubeNet net=null!;int source,enemy,frame;
+ WorldSetup w=null!;CubeNet net=null!;int source,enemy,zeroOwn,zeroForeign,frame;
  bool[] Before()=>new[]{net.ShowMapSymbols,net.ShowEquator,net.ShowRobots,net.ShowBatteries,net.ShowCountryColors,net.ShowRoutes,net.ShowOtherCountries,((WorldPreview)Get("_world")).CountryColors};
  bool[] before=null!;
  void Click(Point p){
@@ -41,6 +41,9 @@ sealed class DirectoryGame:Game1 {
   w.Nodes.All[enemy].Owner=1;foreach(var r in w.Robots.Nodes[enemy].Robots.ToArray())w.Robots.Nodes[enemy].Remove(r.Id);
   w.Robots.Nodes[enemy].Add(w.Robots.Create(1,RobotParts.Complete) with {InterceptOnly=true});
   Check(((int[])Call("ReservationDirectoryCounts",enemy))[1]==1,"Enemy reservations are included");
+  var quiet=w.Nodes.All.Where(n=>n.Id!=source && n.Id!=enemy).OrderBy(n=>Vector3.DistanceSquared(w.Routes.Position(n.Cell,n.Center),w.Routes.Position(w.Nodes.All[source].Cell,w.Nodes.All[source].Center))).Take(2).ToArray();
+  zeroOwn=quiet[0].Id;zeroForeign=quiet[1].Id;
+  for(int i=0;i<2;i++){quiet[i].Owner=i;foreach(var robot in w.Robots.Nodes[quiet[i].Id].Robots.ToArray())w.Robots.Nodes[quiet[i].Id].Remove(robot.Id);Check(((int[])Call("ReservationDirectoryCounts",quiet[i].Id)).All(n=>n==0),"Quiet own/enemy fixture has no reservations");}
   var formatter=typeof(Game1).GetMethod("DirectoryTransportAmount",BindingFlags.Static|BindingFlags.NonPublic)!;
   foreach(var pair in new[]{(0,"0"),(1,"1/3"),(2,"2/3"),(6,"2"),(7,"2 + 1/3"),(8,"2 + 2/3")})Check((string)formatter.Invoke(null,new object[]{pair.Item1})! ==pair.Item2,"Exact mixed fraction "+pair.Item2);
   Check(!(bool)Call("DirectorySeaTransport",source) && (bool)Call("DirectorySeaTransport",w.Nodes.All.First(n=>!w.Routes.Land(n.Cell,n.Center)).Id),"Truck/ferry follows node terrain");
@@ -67,7 +70,8 @@ sealed class DirectoryGame:Game1 {
   var hits=(List<(Rectangle Bounds,int Node)>)Get("_directoryHits");
   Check(hits.Any(h=>h.Node==source),"Visible reserved source has a board in net/globe/half-size view at frame "+frame);
   Check(((int[])Call("ReservationDirectoryCounts",source)).SequenceEqual(new[]{3,1,1,2,7,1}),"Displayed counts remain 3/1/1/2/7 thirds/1");
-  Check(hits.All(h=>((int[])Call("ReservationDirectoryCounts",h.Node)).Any(n=>n>0)),"Zero-only nodes have no signpost");
+  Check(hits.All(h=>((int[])Call("ReservationDirectoryCounts",h.Node)).Any(n=>n>0) || ((string)Call("DirectoryTurnStatus",w.Nodes.All[h.Node].Owner)).Length>0),"Zero reservation nodes retain their turn badge");
+  if(frame==0)Check(hits.Any(h=>h.Node==zeroOwn) && hits.Any(h=>h.Node==zeroForeign),"Both own and foreign zero-reservation sites are shown");
   if(frame==0)Check(hits.Any(h=>h.Node==enemy),"Enemy board is visible even though other-country display was off before entry");
   Check(!hits.First(h=>h.Node==source).Bounds.Intersects(hits.First(h=>h.Node==enemy).Bounds),"Nearby enemy and own signs do not overlap");
   Check(net.RobotBadges.Count==0,"Robot rendering and robot hit targets are hidden");

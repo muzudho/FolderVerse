@@ -5,16 +5,17 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 
 [Flags]
-public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8,ShieldSupport=16,CloseForDagger=32 }
+public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8,ShieldSupport=16,CloseForDagger=32,CollisionTempo=64 }
 public sealed record LessonAward(int Owner,BattleLesson Lesson);
 public sealed class BattleLessons
 {
-    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine,BattleLesson.ShieldSupport,BattleLesson.CloseForDagger};
+    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine,BattleLesson.ShieldSupport,BattleLesson.CloseForDagger,BattleLesson.CollisionTempo};
     public static string Title(BattleLesson lesson)=>lesson switch {
         BattleLesson.FlagCourtesy=>"戦訓#1 旗でお見合い",
         BattleLesson.RetreatBackwards=>"戦訓#2 撤退したら背中を撃たれた",
         BattleLesson.LeaveFiringLine=>"戦訓#4 射線にいるのに横向いて短剣振ってしまって撃たれた",
         BattleLesson.ShieldSupport=>"戦訓#5 前に盾持った仲間がいるのに後ろのやつが撃たない",
+        BattleLesson.CollisionTempo=>"戦訓#7 衝突で守備に時間を稼がれた",
         BattleLesson.CloseForDagger=>"戦訓#6 撃つと撃ち返されるので、向かい合ったまま立ち止まった",
         _=>"戦訓#3 射線上の仲間を撃った"};
     public BattleLesson[] Owned {get;}=new BattleLesson[WorldSetup.CastCount];
@@ -62,6 +63,7 @@ public sealed class BattleLessons
             BattleAi.FirstTarget(battle,u,actions[u.Id].Facing) is {} enemy && !battle.Allied(u.Owner,enemy.Owner) &&
             enemy.Rifles>0 && BattleAi.FirstTarget(battle,enemy,enemy.Facing)==u))Witness(battle,BattleLesson.CloseForDagger);
         if(units.Any(u=>actions[u.Id].Weapon==BattleWeapon.Rifle && Has(battle,u,BattleLesson.FireDiscipline) && !Has(battle,u,BattleLesson.ShieldSupport) && ShieldInFront(battle,u,actions[u.Id].Facing) && BattleAi.FirstTarget(battle,u,actions[u.Id].Facing) is {} target && !battle.Allied(u.Owner,target.Owner)))Witness(battle,BattleLesson.ShieldSupport);
+        foreach(var unit in units)actions[unit.Id]=CollisionTempoAction(battle,unit,actions[unit.Id]);
         foreach(var unit in units)actions[unit.Id]=AvoidSideDagger(battle,unit,actions[unit.Id]);
         foreach(var unit in units)if(actions[unit.Id].Weapon==BattleWeapon.Rifle && Has(battle,unit,BattleLesson.FireDiscipline) && !SafeShot(battle,unit,actions[unit.Id].Facing))actions[unit.Id]=actions[unit.Id] with {Weapon=BattleWeapon.None};
         if(battle.Kind!=BattleKind.Node)return;
@@ -73,6 +75,26 @@ public sealed class BattleLessons
             var first=friends.OrderBy(Priority).ThenBy(u=>u.Id).FirstOrDefault();
             if(first!=null && first.Id!=unit.Id)actions[unit.Id]=actions[unit.Id] with {Step=Point.Zero};
         }
+    }
+    public static BattleAction CollisionTempoAction(BattleState battle,BattleUnit unit,BattleAction action)
+    {
+        if(battle.Kind!=BattleKind.Node || battle.SplitBoard || battle.Defender<0)return action;
+        if(!Has(battle,unit,BattleLesson.CollisionTempo) || unit.Retreating || battle.Army(unit.Owner).Withdrawing)return action;
+        var enemy=battle.Units.Where(u=>u.Active && !u.Retreating && !battle.Allied(unit.Owner,u.Owner))
+            .Where(u=>u.Position.X==unit.Position.X || u.Position.Y==unit.Position.Y)
+            .OrderBy(u=>BattleAi.Distance(u.Position,unit.Position)).ThenBy(u=>u.Id).FirstOrDefault();
+        if(enemy==null)return action;
+        int distance=BattleAi.Distance(unit.Position,enemy.Position);if(distance is not (2 or 3))return action;
+        var facing=BattleAi.Face(enemy.Position-unit.Position);var step=BattleState.Forward(facing);
+        var middle=unit.Position+step;
+        if(battle.Units.Any(u=>u.Active && u.Position==middle) || !battle.WalkableFor(middle,unit.Owner) || !battle.WalkableFor(middle,enemy.Owner))return action;
+        bool defending=battle.Kind==BattleKind.Node && !battle.SplitBoard && battle.Allied(unit.Owner,battle.Defender);
+        if(distance==2){
+            if(defending)return new(step,facing);
+            else if(unit.Daggers>0)return new(Point.Zero,facing,BattleWeapon.Dagger);
+        }else if(!defending && unit.Rifles>0 && BattleAi.FirstTarget(battle,unit,facing)==enemy && SafeShot(battle,unit,facing))
+            return new(Point.Zero,facing,BattleWeapon.Rifle);
+        return action;
     }
     public static bool SideDaggerExposed(BattleState battle,BattleUnit unit,BattleAction action,BattleUnit shooter)
     {

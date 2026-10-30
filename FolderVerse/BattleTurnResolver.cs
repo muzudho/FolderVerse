@@ -47,6 +47,12 @@ public static class BattleTurnResolver
             u.Position=positions[u.Id];if(!battle.Contains(u.Position))u.Retreated=true;
             battle.Events.Add(new(battle.Turn,blocked.Contains(u.Id)?BattlePhase.Rollback:BattlePhase.Place,u.Id,$"{u.Position.X},{u.Position.Y} / {u.Facing}"));
         }
+        if(units.Any(a=>!a.Retreating && blocked.Contains(a.Id) && actions[a.Id].Step!=Point.Zero &&
+            units.Any(b=>b.Id>a.Id && !b.Retreating && blocked.Contains(b.Id) && actions[b.Id].Step!=Point.Zero && !battle.Allied(a.Owner,b.Owner) &&
+                BattleAi.Distance(origin[a.Id],origin[b.Id])==2 && (origin[a.Id].X==origin[b.Id].X || origin[a.Id].Y==origin[b.Id].Y) &&
+                origin[a.Id]+actions[a.Id].Step==origin[b.Id]+actions[b.Id].Step && !origin.Values.Contains(origin[a.Id]+actions[a.Id].Step) &&
+                battle.WalkableFor(origin[a.Id]+actions[a.Id].Step,a.Owner) && battle.WalkableFor(origin[b.Id]+actions[b.Id].Step,b.Owner))))
+            BattleLessons.Witness(battle,BattleLesson.CollisionTempo);
         if(battle.Kind==BattleKind.Node && flagEntrants.Length>=2 && flagEntrants.All(u=>blocked.Contains(u.Id) && u.Position!=battle.Flag))BattleLessons.Witness(battle,BattleLesson.FlagCourtesy);
         foreach(var u in units.Where(u=>u.Active && u.ResumeAfterRetreatOverlap))if(!units.Any(other=>other.Active && other.Id!=u.Id && !other.Retreating && other.Position==u.Position)){
             u.ResumeAfterRetreatOverlap=false;if(!battle.Army(u.Owner).Withdrawing)u.Retreating=false;
