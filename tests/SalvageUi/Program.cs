@@ -35,11 +35,10 @@ sealed class SalvageChecks:Game1
   HangarClick(Rect("HangarPartBounds",0,0).Center);Confirm(true);discard=w.Salvage.Items.Single(i=>i.AbandonedBy==0).Id;
   Check(w.Robots.Nodes[home].Robots.Single().Parts==(RobotParts.Body|RobotParts.Legs) && w.Salvage.Items.Single(i=>i.Id==discard).Robot.IsDamaged(RobotParts.Head),"Confirmed part abandonment updates physical stock and keeps damage");
   Call("ResetInspector");Call("DrawSalvageMap");Check(((System.Collections.ICollection)Get("_salvageHits")).Count==0,"Default map hides salvage markers and hit targets");
-  Call("MapOverlayClick",Rect("MapOverlayButton").Center,false);Call("MapOverlayClick",Rect("MapOverlayOption",1).Center,false);Check((bool)Get("_directMap") && !(bool)Get("_salvagePlan"),"Dropdown selects direct delivery only");
-  Call("MapOverlayClick",Rect("MapOverlayButton").Center,false);Call("MapOverlayClick",Rect("MapOverlayOption",0).Center,false);Check(!(bool)Get("_directMap") && !(bool)Get("_salvagePlan"),"None closes the selected overlay");
-  Call("MapOverlayClick",Rect("MapOverlayButton").Center,false);Call("MapOverlayClick",new Point(950,980),false);Check(!(bool)Get("_mapOverlayMenu"),"Outside click dismisses menu");
-  Call("MapOverlayClick",Rect("MapOverlayButton").Center,false);Call("MapOverlayClick",new Point(),true);Check(!(bool)Get("_mapOverlayMenu"),"Escape dismisses menu");
-  Call("MapOverlayClick",Rect("MapOverlayButton").Center,false);Call("MapOverlayClick",Rect("MapOverlayOption",2).Center,false);Check((bool)Get("_salvagePlan") && !(bool)Get("_directMap"),"Dropdown opens recovery plan exclusively");Call("UpdateDomesticSlide",1f);
+  Point Action(int i)=>((Rectangle)Call("PrimaryActionBounds",i)).Center;
+  Call("MapOverlayClick",Action(3),false);Check((bool)Get("_directMap") && !(bool)Get("_salvagePlan"),"One click selects direct delivery");
+  Call("MapOverlayClick",Action(3),false);Check(!(bool)Get("_directMap"),"Second click closes direct delivery");
+  Call("MapOverlayClick",Action(5),false);Check((bool)Get("_salvagePlan") && !(bool)Get("_directMap"),"One click opens recovery plan exclusively");Call("UpdateDomesticSlide",1f);
   Set("_salvageSelected",discard);PlanClick(Rect("SalvageRequest").Center);
   Check(w.Salvage.Items.Single(i=>i.Id==discard).RequestedBy==0,"UI requests self-abandoned goods");
   var net=(CubeNet)Get("_net");Call("UpdateNodeFocusCircle");var color=new Color(200,160,120);
@@ -52,10 +51,10 @@ sealed class SalvageChecks:Game1
   if(frame==2){PlanClick(Rect("SalvageToggle").Center);for(int i=0;i<4;i++){PlanClick(Rect("SalvagePolicyButton",i).Center);Check(w.Salvage.Agents.Single(a=>a.Owner==0).Policy==(SalvagePolicy)i,"All four policy buttons apply");}Set("_salvageSelected",100L);PlanClick(Rect("SalvageRequest").Center);Set("_statusGlobe",true);Call("FocusStatusGlobe");}
   if(frame==3){w.Salvage.Advance(w,1);Set("_salvageFocusTurn",-1);var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();}
   if(frame==4){Call("OpenNodeInspector",home);Call("UpdateDomesticSlide",1f);Call("OpenNodeAssembly");HangarClick(Rect("HangarAbandonButton").Center);HangarClick(Rect("HangarCell",0).Location+new Point(12,150));Check(Get("_salvageAbandonConfirmation")!=null,"Card margin selects all remaining parts for abandonment");}
-  if(frame==5){Call("ResetInspector");Call("UpdateDomesticSlide",1f);Call("MapOverlayClick",Rect("MapOverlayButton").Center,false);}
+  if(frame==5){Call("ResetInspector");Call("UpdateDomesticSlide",1f);}
   base.Draw(t);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
   using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"salvage-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
   if(frame==4){Confirm(true);Check(w.Robots.Nodes[home].Count==0 && w.Salvage.Items.Any(i=>i.AbandonedBy==0 && i.Robot.Parts==(RobotParts.Body|RobotParts.Legs)),"Whole abandonment frees hangar slot");}
-  if(frame++==5){Console.WriteLine("PASS: exclusive overlay dropdown, default hiding, outside/escape dismissal, recovery plan entry, four policies, pause/request/pickup, 35 percent dimming, part/whole abandonment confirmation, globe/net and full/half-size rendering.");Exit();}
+  if(frame++==5){Console.WriteLine("PASS: primary action entry and toggle, default hiding, recovery plan entry, four policies, pause/request/pickup, 35 percent dimming, part/whole abandonment confirmation, globe/net and full/half-size rendering.");Exit();}
  }
 }

@@ -20,15 +20,19 @@ class Checks:Game1{
   var robot=w.Robots.Create(0,RobotParts.Complete);original=robot.Id;w.Robots.Nodes[a].Add(robot);w.Robots.Nodes[b].Add(w.Robots.Create(0,RobotParts.Legs));((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);
   Set("_statusGlobe",false);((CubeNet)Get("_net")).FitAll((Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!,1);Call("OpenDirectMap");
   Rectangle Footer(string name)=>(Rectangle)typeof(Game1).GetProperty(name,F)!.GetValue(this)!;
-  var normal=Footer("PopulationTurnButton");Call("UpdateMapFooter",.125f);var midway=Footer("PopulationTurnButton");
-  Check(midway.Y>normal.Y && midway.Y<normal.Y+220,"Mode footer slides downward instead of disappearing immediately");
-  Call("UpdateMapFooter",.125f);Check(Footer("PopulationTurnButton").Top>=1080 && Footer("WarButton").Top>=1080 && ((Rectangle)Call("NetButton",2)).Top>=1080,"Bottom actions fully frame out");
-  Check((bool)Call("MapOverlayClick",normal.Center,false) && (bool)Get("_directMap"),"Hidden footer location consumes input without exiting direct mode");
-  var modeClose=(Rectangle)typeof(Game1).GetField("DirectMapCloseButton",BindingFlags.NonPublic|BindingFlags.Static)!.GetValue(null)!;
-  Check((bool)Call("MapOverlayClick",modeClose.Center,false) && !(bool)Get("_directMap"),"Close beside dropdown exits the delivery mode");
-  Call("UpdateMapFooter",.125f);Check(Footer("PopulationTurnButton").Y==midway.Y,"Footer slides back in on close");Call("UpdateMapFooter",.125f);
-  Check(Footer("PopulationTurnButton")==normal,"Footer returns to its exact original hit and draw bounds");Call("OpenDirectMap");Call("UpdateMapFooter",.25f);
-  Console.WriteLine("PASS: direct mode footer slides out/in, close button and hidden-button input.");
+  var normal=Footer("PopulationTurnButton");
+  Check(normal.Width==192 && normal.Height==144,"End turn uses 2:1.5 units");
+  for(int i=0;i<6;i++){
+   var rect=(Rectangle)Call("PrimaryActionBounds",i);
+   Check(rect.Bottom==1070 && (i==1 || rect.Width==rect.Height),"Primary actions share a baseline with five squares");
+   for(int j=0;j<i;j++)Check(!rect.Intersects((Rectangle)Call("PrimaryActionBounds",j)),"Primary hit bounds never overlap");
+  }
+  var delivery=(Rectangle)Call("PrimaryActionBounds",3);
+  Check((bool)Call("MapOverlayClick",delivery.Center,false) && !(bool)Get("_directMap"),"Delivery action toggles the overlay off in one click");
+  Check((bool)Call("MapOverlayClick",delivery.Center,false) && (bool)Get("_directMap"),"Delivery action opens the overlay in one click");
+  Check((bool)Call("MapOverlayClick",Point.Zero,true) && !(bool)Get("_directMap"),"Escape exits direct mode");
+  Call("OpenDirectMap");
+  Console.WriteLine("PASS: primary action proportions, separate hit bounds, direct overlay toggle and Escape.");
   Call("OpenDirectPair",a,b);
   var left=Cell(0,0);var right=Cell(1,0);
   Check(left.Right<600 && right.Left>1320,"Dedicated compact panes leave the center map open");

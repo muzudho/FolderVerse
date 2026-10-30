@@ -198,7 +198,7 @@ public partial class Game1 : Game
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
         if(active && captureChord && !previousChord)_screenshots.Request();
         if(IsStatusScreen && active && FactionPickerInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(IsStatusScreen && active && (click || escape) && (click || _mapOverlayMenu) && MapOverlayClick(_pointer,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && active && (click || escape) && (click || _directMap || _mapOverlayMenu) && MapOverlayClick(_pointer,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && click && DirectMapClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && SalvageInput(_pointer,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && active && click && DomesticViewClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}

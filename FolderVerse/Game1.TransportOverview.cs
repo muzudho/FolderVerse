@@ -22,7 +22,7 @@ public partial class Game1
     private bool NodeTransportAllowed=>_setup.TutorialStep!=1;
     private bool _transportOverview;
     private bool _transportRoutesBefore;
-    private Rectangle TransportOverviewButton=>MapFooterBounds(new(780,1006,210,64));
+    private Rectangle TransportOverviewButton=>PrimaryActionBounds(4);
     private readonly List<(Rectangle Bounds,int Source,int Target,Vector2 Start,Vector2 End)> _transportRouteHits=new();
 
     private static bool TransportArrowHit(Point p,Vector2 start,Vector2 end)
