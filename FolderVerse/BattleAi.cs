@@ -10,7 +10,7 @@ public static class BattleAi
     public static BattleFacing Face(Point delta)=>Math.Abs(delta.X)>Math.Abs(delta.Y)?delta.X>0?BattleFacing.East:BattleFacing.West:delta.Y>0?BattleFacing.South:BattleFacing.North;
     public static BattleAction Choose(BattleState battle,BattleUnit unit)
     {
-        var action=BattleLessons.CollisionTempoAction(battle,unit,ChooseCore(battle,unit));
+        var action=BattleLessons.RelieveFrontAction(battle,unit,BattleLessons.CollisionTempoAction(battle,unit,ChooseCore(battle,unit)));
         if(action.Step!=Point.Zero && battle.GateAt(unit.Position+action.Step) is {} gate && !battle.Allied(unit.Owner,gate.Owner) && !unit.Retreating && unit.Role!=BattleRole.Queen && unit.Daggers+unit.Rifles>=gate.Health)
             return new(Point.Zero,Face(action.Step),unit.Daggers>0?BattleWeapon.Dagger:BattleWeapon.Rifle);
         // A short-of-ammo soldier can still contribute one hit for another ally to finish.

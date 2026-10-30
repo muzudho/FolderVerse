@@ -99,6 +99,12 @@ public static class BattleTurnResolver
             if(!battle.Allied(attacker.Owner,target.Owner))willing.Add(attacker.Owner);
             battle.Events.Add(new(battle.Turn,BattlePhase.Receive,target.Id,$"{weapon} ← {attacker.Id}"));
         }
+        if(units.Any(u=>u.Active && u.Role!=BattleRole.Queen && !u.Retreating && u.Daggers==0 && u.Position==origin[u.Id] &&
+            units.Any(e=>e.Active && e.Role!=BattleRole.Queen && !e.Retreating && !battle.Allied(u.Owner,e.Owner) && e.Position==origin[e.Id] &&
+                e.Position==u.Position+BattleState.Forward(u.Facing) && u.Position==e.Position+BattleState.Forward(e.Facing) &&
+                !battle.Attacks.Any(a=>a.Turn==battle.Turn && (a.Attacker==u.Id || a.Attacker==e.Id) && a.Target.HasValue) &&
+                !battle.GateHits.Any(h=>h.Turn==battle.Turn && (h.From==u.Position || h.From==e.Position)))))
+            BattleLessons.Witness(battle,BattleLesson.RelieveFront);
         foreach(var damage in gateDamage){
             int index=battle.Fortifications.FindIndex(f=>f.Kind==FortificationKind.Gate && f.Position==damage.Key && f.Health>0);
             if(index>=0){var gate=battle.Fortifications[index];battle.Fortifications[index]=gate with {Health=Math.Max(0,gate.Health-damage.Value)};}

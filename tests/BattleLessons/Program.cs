@@ -126,3 +126,33 @@ Console.WriteLine("PASS: opposed empty-cell rollback, friendly/wall exclusions, 
 
 var edgeTempo=Tempo();edgeTempo.Kind=BattleKind.Edge;var edgeApproach=Unit(edgeTempo,70401,0,3,5,BattleFacing.East);Unit(edgeTempo,70402,1,5,5,BattleFacing.West);edgeTempo.Lessons[0]=BattleLesson.CollisionTempo;
 var originalEdgeAction=new BattleAction(new(1,0),BattleFacing.East);Check(BattleLessons.CollisionTempoAction(edgeTempo,edgeApproach,originalEdgeAction)==originalEdgeAction,"No defending faction on edge boards: avoid making both attackers wait forever");
+
+// Lesson eight: an empty-handed adjacent standoff wastes the attacking side's time.
+var emptyFront=Tempo();var stalled=Unit(emptyFront,80001,0,3,5,BattleFacing.East);var stalledGuard=Unit(emptyFront,80002,1,4,5,BattleFacing.West);stalled.Daggers=stalledGuard.Daggers=0;
+Turn(emptyFront);Check(new[]{stalled,stalledGuard}.All(u=>(u.WitnessedLessons&BattleLesson.RelieveFront)!=0),"Adjacent empty-dagger standoff is witnessed by both sides");
+var reliefResearch=new BattleLessons();stalled.Retreated=true;reliefResearch.BringHome(stalled);Check(reliefResearch.Research().Any(a=>a.Lesson==BattleLesson.RelieveFront),"Survivor brings eighth lesson home");
+Check((AutoSaveStore.Restore<BattleLessons>(AutoSaveStore.Capture(reliefResearch)).Owned[0]&BattleLesson.RelieveFront)!=0,"Eighth lesson survives save/load");
+foreach(bool moving in new[]{false,true}){
+ var noStall=Tempo();var x=Unit(noStall,80101,0,3,5,BattleFacing.East);var y=Unit(noStall,80102,1,4,5,BattleFacing.West);x.Daggers=0;
+ Turn(noStall,(x,moving?new Point(-1,0):Point.Zero,BattleFacing.East,BattleWeapon.None),(y,Point.Zero,BattleFacing.West,moving?BattleWeapon.None:BattleWeapon.Dagger));
+ Check((x.WitnessedLessons&BattleLesson.RelieveFront)==0,"Moving apart or actually hitting the opponent is not an idle standoff");
+}
+var support=Tempo();var reliefShooter=Unit(support,80201,0,3,5,BattleFacing.East);var closeEnemy=Unit(support,80202,1,4,5,BattleFacing.West);var screen=Unit(support,80203,0,4,6,BattleFacing.East);var screenEnemy=Unit(support,80204,1,5,6,BattleFacing.West);reliefShooter.Daggers=0;reliefShooter.Rifles=2;screen.Shields=0;screenEnemy.Shields=0;support.Lessons[0]=BattleLesson.RelieveFront|BattleLesson.FireDiscipline;
+var takeRear=BattleAi.Choose(support,reliefShooter);Check(takeRear.Step==new Point(0,1) && takeRear.Weapon==BattleWeapon.None,"Short-of-daggers attacker moves behind a fighting ally");
+Turn(support,(reliefShooter,takeRear.Step,takeRear.Facing,takeRear.Weapon));var supportShot=BattleAi.Choose(support,reliefShooter);Check(supportShot.Weapon==BattleWeapon.Rifle && BattleLessons.SafeShot(support,reliefShooter,BattleFacing.East),"Eighth lesson permits support past the adjacent same-facing ally even without her shield");
+Turn(support,(reliefShooter,supportShot.Step,supportShot.Facing,supportShot.Weapon));Check(screenEnemy.Fallen && !screen.Fallen && reliefShooter.Rifles==1,"Support shot actually passes the screen, hits enemy and spends ammunition");
+var obstruction=Tempo();var obGun=Unit(obstruction,80301,0,2,5,BattleFacing.East);Unit(obstruction,80302,0,3,5,BattleFacing.East);Unit(obstruction,80303,0,4,5,BattleFacing.East);Unit(obstruction,80304,1,6,5,BattleFacing.West);obGun.Daggers=0;obstruction.Lessons[0]=BattleLesson.RelieveFront|BattleLesson.FireDiscipline;
+Check(!BattleLessons.SafeShot(obstruction,obGun,BattleFacing.East),"A second friendly unit farther down the line still prohibits fire");
+var closedGate=Tempo();var gateGun=Unit(closedGate,80401,0,2,5,BattleFacing.East);Unit(closedGate,80402,0,3,5,BattleFacing.East);Unit(closedGate,80403,1,5,5,BattleFacing.West);gateGun.Daggers=0;closedGate.Lessons[0]=BattleLesson.RelieveFront;closedGate.Fortifications.Add(new(new(4,5),FortificationKind.Gate,1,BattleFacing.West));
+Check(BattleAi.FirstTarget(closedGate,gateGun,BattleFacing.East)==null && BattleAi.Choose(closedGate,gateGun).Weapon!=BattleWeapon.Rifle,"Closed gate cannot become an imaginary support firing line");
+var backOff=Tempo();var aloneGun=Unit(backOff,80501,0,3,5,BattleFacing.East);Unit(backOff,80502,1,4,5,BattleFacing.West);aloneGun.Daggers=0;backOff.Lessons[0]=BattleLesson.RelieveFront;Check(BattleAi.Choose(backOff,aloneGun).Step==new Point(-1,0),"No support position: back away while facing opponent");
+var replace=Tempo();var empty=Unit(replace,80601,0,3,5,BattleFacing.East);Unit(replace,80602,1,4,5,BattleFacing.West);Unit(replace,80603,0,1,8,BattleFacing.East);empty.Daggers=empty.Rifles=0;replace.Lessons[0]=BattleLesson.RelieveFront;replace.Army(0).Limit=2;replace.Army(0).Waiting.Enqueue(new(){Id=80604,Owner=0,Robot=new(80604,0,RobotParts.Complete)});
+BattleAi.Choose(replace,empty);Check(empty.Retreating && !replace.Army(0).Withdrawing,"Only unarmed individual yields the front, not whole army");for(int t=0;t<9;t++)Turn(replace);
+Check(empty.Retreated && replace.Units.Any(u=>u.Id==80604 && u.Active),"Individual withdrawal actually releases a reinforcement slot");
+var defendHold=Tempo();var defenderOnly=Unit(defendHold,80701,1,3,5,BattleFacing.East);Unit(defendHold,80702,0,4,5,BattleFacing.West);defenderOnly.Daggers=defenderOnly.Rifles=0;defendHold.Lessons[1]=BattleLesson.RelieveFront;
+var hold=new BattleAction(Point.Zero,BattleFacing.East);Check(BattleLessons.RelieveFrontAction(defendHold,defenderOnly,hold)==hold && !defenderOnly.Retreating,"Defender's useful time-wasting remains unchanged");
+Console.WriteLine("PASS: eighth-lesson standoff/research/save, real move-to-support and shot, farther-friendly/gate exclusions, fallback backstep, individual relief/reinforcement and unchanged defender.");
+var capturedHold=Tempo();capturedHold.Flag=new(3,5);capturedHold.FlagStanding=false;capturedHold.LastFlagOwner=0;var flagHolder=Unit(capturedHold,80801,0,3,5,BattleFacing.East);Unit(capturedHold,80802,1,4,5,BattleFacing.West);flagHolder.Daggers=flagHolder.Rifles=0;capturedHold.Lessons[0]=BattleLesson.RelieveFront;
+Check(BattleLessons.RelieveFrontAction(capturedHold,flagHolder,hold)==hold && !flagHolder.Retreating,"Keeping a captured flag remains useful despite empty weapons");
+var productiveGate=Tempo();var gateWorker=Unit(productiveGate,80901,0,3,5,BattleFacing.East);var gateOccupant=Unit(productiveGate,80902,1,4,5,BattleFacing.West);gateWorker.Daggers=gateOccupant.Daggers=0;productiveGate.Fortifications.Add(new(new(4,5),FortificationKind.Gate,1,BattleFacing.West));
+Turn(productiveGate,(gateWorker,Point.Zero,BattleFacing.East,BattleWeapon.Rifle));Check(productiveGate.GateAt(new(4,5))?.Health==1 && (gateWorker.WitnessedLessons&BattleLesson.RelieveFront)==0,"Making progress by damaging a gate is not an idle standoff");
