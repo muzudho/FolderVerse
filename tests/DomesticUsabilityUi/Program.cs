@@ -16,8 +16,9 @@ sealed class UsabilityGame:Game1
  void Pointer(Point p){Set("_pointer",p);}
  void Click(Point p){Pointer(p);Call("PocketInput",true,false);}
  void Persuasion(bool manual){
+  int preferredTab=manual?1:2;Set("_lastNodeTab",preferredTab);
   Screen("WorldStatus");Set("_homePersuasion",new List<DomesticPersuasion>{new(0,node,foreign,foreign,false)});Set("_homePersuasionActive",false);Set("_homePersuasionAge",0d);Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",0d);
-  Check((bool)Call("UpdateHomePersuasion",.1d,false,10d) && (bool)Get("_nodeAssemblyOpen"),"Persuasion opens the hangar first");Set("_domesticSlide",1f);
+  Check((bool)Call("UpdateHomePersuasion",.1d,false,10d) && (bool)Get("_nodeAssemblyOpen"),"Persuasion opens the hangar first");Check(!(bool)Get("_nodeFactoryOpen") && !(bool)Get("_nodeTransportOpen") && ((long?[])Get("_hangarSlots")).Contains(foreign.Id) && (int)Get("_lastNodeTab")==preferredTab,"Persuasion overrides remembered page, fills hangar slots and preserves preference");Set("_domesticSlide",1f);
   Call("UpdateHomePersuasion",manual?5d:8d,manual,20d);
   Check(!(bool)Get("_homePersuasionActive") && (bool)Get("_nodeInspectorClosing") && (float)Get("_domesticSlide")==1,"Persuasion starts the same close animation as the handle");
   Call("UpdateDomesticSlide",.2f);Check(Math.Abs((float)Get("_domesticSlide")-.5f)<.01,"Close animation reaches halfway at 0.2 seconds");Call("UpdateDomesticSlide",.2f);
@@ -53,6 +54,13 @@ sealed class UsabilityGame:Game1
   Call("OpenPocket");
   Console.WriteLine("PASS: persuasion closes both ways, owner/origin mismatch, foreign refusal, selection/directional enabling, reserved robot refusal and identity-preserving transfer.");
  }
+ void PersuasionPreview(GameTime time){
+  node=world.Nodes.Current(0).Id;var visitor=world.Robots.Create(1,RobotParts.Complete);world.Robots.Nodes[node].Add(visitor);
+  Screen("WorldStatus");Call("ResetInspector");Set("_lastNodeTab",1);Set("_homePersuasion",new List<DomesticPersuasion>{new(0,node,visitor,visitor,false)});Set("_homePersuasionActive",false);Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);
+  Call("UpdateHomePersuasion",2d,false,20d);Set("_domesticSlide",1f);base.Draw(time);
+  Check((bool)Get("_nodeAssemblyOpen") && !(bool)Get("_nodeFactoryOpen"),"Actual persuasion rendering retains the hangar instead of restoring factory page");
+  var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,"persuasion-hangar.png"));texture.SaveAsPng(file,texture.Width,texture.Height);
+ }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
   if(frame==0)Pointer(Rect("PocketCard",0,false).Center);
@@ -87,6 +95,6 @@ sealed class UsabilityGame:Game1
    var f11=new Microsoft.Xna.Framework.Input.KeyboardState(Microsoft.Xna.Framework.Input.Keys.F11);
    void Input(Microsoft.Xna.Framework.Input.KeyboardState keys,bool active)=>Call("HandleInput",new Microsoft.Xna.Framework.Input.MouseState(),keys,new GameTime(TimeSpan.FromSeconds(30),TimeSpan.Zero),active);
    Input(f11,false);Check(!graphics.IsFullScreen,"Inactive F11 does not toggle");Input(new(),true);Input(f11,true);Check(graphics.IsFullScreen && !graphics.HardwareModeSwitch,"F11 enters desktop fullscreen even with a modal open");Check(!IsMouseVisible,"Fullscreen uses the rendered cursor without a duplicate native cursor");Call("DrawMouseArrow",new Point(40,40));var pointerPixel=new Color[1];GraphicsDevice.GetBackBufferData(new Rectangle(44,50,1,1),pointerPixel,0,1);Check(pointerPixel[0]==Color.White,"Fullscreen cursor has a visible white interior");var cursorPixels=new Color[50*55];GraphicsDevice.GetBackBufferData(new Rectangle(35,35,50,55),cursorPixels,0,cursorPixels.Length);using(var cursorImage=new Texture2D(GraphicsDevice,50,55)){cursorImage.SetData(cursorPixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,"fullscreen-cursor.png"));cursorImage.SaveAsPng(file,50,55);}Input(f11,true);Check(graphics.IsFullScreen,"Holding F11 does not toggle repeatedly");Input(new(),true);Input(f11,true);Check(!graphics.IsFullScreen && Window.ClientBounds.Size==before,"F11 restores the former window dimensions");Check(IsMouseVisible,"Windowed mode restores the native cursor");Set("_invasionPicker",-1);
-   Console.WriteLine("PASS: F11 fullscreen/windowed, restored dimensions, held key and inactive window.");Console.WriteLine("PASS: hover, animated persuasion closure, quiet-turn playback, portrait chip, offscreen hint, selected/persistent buses, sword separation and animated battery hit bounds rendered.");Exit();}
+   Console.WriteLine("PASS: F11 fullscreen/windowed, restored dimensions, held key and inactive window.");Console.WriteLine("PASS: hover, animated persuasion closure, quiet-turn playback, portrait chip, offscreen hint, selected/persistent buses, sword separation and animated battery hit bounds rendered.");PersuasionPreview(t);Exit();}
  }
 }

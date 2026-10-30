@@ -97,6 +97,7 @@ public static class BattleTurnResolver
             if(weapon==BattleWeapon.Dagger)hits[attacker.Id].DaggerHit=true;
             var front=BattleState.Forward(target.Facing);var delta=attacker.Position-target.Position;bool frontal=front.X!=0?delta.Y==0 && Math.Sign(delta.X)==front.X:delta.X==0 && Math.Sign(delta.Y)==front.Y;
             if(weapon==BattleWeapon.Rifle && target.Retreating && delta.X*front.X+delta.Y*front.Y<0)hits[target.Id].RetreatBackShot=true;
+            if(weapon==BattleWeapon.Dagger && !frontal && !battle.Allied(attacker.Owner,target.Owner) && BattleLessons.CornerSideTrap(battle,target))BattleLessons.Witness(battle,BattleLesson.CornerEscape);
             if(!frontal)hits[target.Id].Side++;
             else if(weapon==BattleWeapon.Dagger){if(actions[target.Id].Weapon!=BattleWeapon.Dagger)hits[target.Id].Dagger++;}
             else hits[target.Id].Rifle++;

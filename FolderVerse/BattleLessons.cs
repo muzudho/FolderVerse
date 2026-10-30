@@ -5,16 +5,17 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 
 [Flags]
-public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8,ShieldSupport=16,CloseForDagger=32,CollisionTempo=64,RelieveFront=128,WaitingDaggerSafety=256 }
+public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8,ShieldSupport=16,CloseForDagger=32,CollisionTempo=64,RelieveFront=128,WaitingDaggerSafety=256,CornerEscape=512 }
 public sealed record LessonAward(int Owner,BattleLesson Lesson);
-public sealed class BattleLessons
+public sealed partial class BattleLessons
 {
-    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine,BattleLesson.ShieldSupport,BattleLesson.CloseForDagger,BattleLesson.CollisionTempo,BattleLesson.RelieveFront,BattleLesson.WaitingDaggerSafety};
+    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine,BattleLesson.ShieldSupport,BattleLesson.CloseForDagger,BattleLesson.CollisionTempo,BattleLesson.RelieveFront,BattleLesson.WaitingDaggerSafety,BattleLesson.CornerEscape};
     public static string Title(BattleLesson lesson)=>lesson switch {
         BattleLesson.FlagCourtesy=>"戦訓#1 旗でお見合い",
         BattleLesson.RetreatBackwards=>"戦訓#2 撤退したら背中を撃たれた",
         BattleLesson.LeaveFiringLine=>"戦訓#4 射線にいるのに横向いて短剣振ってしまって撃たれた",
         BattleLesson.ShieldSupport=>"戦訓#5 前に盾持った仲間がいるのに後ろのやつが撃たない",
+        BattleLesson.CornerEscape=>"戦訓#10 角地で囲まれて横から斬られた",
         BattleLesson.WaitingDaggerSafety=>"戦訓#9 逃げた敵を追う仲間を置き短剣で斬った",
         BattleLesson.RelieveFront=>"戦訓#8 短剣も無いのに目の前で向かい合ったまま時間が過ぎた",
         BattleLesson.CollisionTempo=>"戦訓#7 衝突で守備に時間を稼がれた",
@@ -79,7 +80,7 @@ public sealed class BattleLessons
             if(first!=null && first.Id!=unit.Id)actions[unit.Id]=actions[unit.Id] with {Step=Point.Zero};
         }
         }
-        foreach(var unit in units)actions[unit.Id]=WaitingDaggerAction(battle,unit,actions[unit.Id]);
+        foreach(var unit in units)actions[unit.Id]=WaitingDaggerAction(battle,unit,CornerAction(battle,unit,actions[unit.Id]));
     }
     public static BattleAction CollisionTempoAction(BattleState battle,BattleUnit unit,BattleAction action)
     {

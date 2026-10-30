@@ -55,8 +55,8 @@ public partial class Game1
         _ui.Box(new(box.X+8,box.Y+10,box.Width,box.Height),new Color(5,16,25)*.45f);
         _ui.Box(box,owned?new Color(250,243,219):new Color(175,186,187));
         _ui.Box(new(box.X+12,box.Y+12,box.Width-24,9),accent);
-        if(lesson is BattleLesson.LeaveFiringLine or BattleLesson.ShieldSupport or BattleLesson.CloseForDagger or BattleLesson.CollisionTempo or BattleLesson.RelieveFront or BattleLesson.WaitingDaggerSafety){
-            string[] title=lesson==BattleLesson.WaitingDaggerSafety?new[]{"戦訓#9 敵が横へ逃げ、","追ってきた仲間を置き短剣で斬った"}:lesson==BattleLesson.RelieveFront?new[]{"戦訓#8 短剣も無いのに、","目の前で向かい合ったまま時間が過ぎた"}:lesson==BattleLesson.CollisionTempo?new[]{"戦訓#7 同じ空きマスへ進み、","衝突で守備に時間を稼がれた"}:lesson==BattleLesson.CloseForDagger?new[]{"戦訓#6 撃つと撃ち返されるので、","向かい合ったまま立ち止まった"}:lesson==BattleLesson.ShieldSupport?new[]{"戦訓#5 前に盾持った仲間が","いるのに後ろのやつが撃たない"}:new[]{"戦訓#4 射線にいるのに","横向いて短剣振ってしまって","撃たれた"};
+        if(lesson is BattleLesson.LeaveFiringLine or BattleLesson.ShieldSupport or BattleLesson.CloseForDagger or BattleLesson.CollisionTempo or BattleLesson.RelieveFront or BattleLesson.WaitingDaggerSafety or BattleLesson.CornerEscape){
+            string[] title=lesson==BattleLesson.CornerEscape?new[]{"戦訓#10 角地へ入ったら、","囲まれて横から斬られた"}:lesson==BattleLesson.WaitingDaggerSafety?new[]{"戦訓#9 敵が横へ逃げ、","追ってきた仲間を置き短剣で斬った"}:lesson==BattleLesson.RelieveFront?new[]{"戦訓#8 短剣も無いのに、","目の前で向かい合ったまま時間が過ぎた"}:lesson==BattleLesson.CollisionTempo?new[]{"戦訓#7 同じ空きマスへ進み、","衝突で守備に時間を稼がれた"}:lesson==BattleLesson.CloseForDagger?new[]{"戦訓#6 撃つと撃ち返されるので、","向かい合ったまま立ち止まった"}:lesson==BattleLesson.ShieldSupport?new[]{"戦訓#5 前に盾持った仲間が","いるのに後ろのやつが撃たない"}:new[]{"戦訓#4 射線にいるのに","横向いて短剣振ってしまって","撃たれた"};
             for(int i=0;i<title.Length;i++)LessonText(title[i],new(box.X+18,box.Y+21+i*28,box.Width-36,30),.48f,ink);
         }else LessonText(BattleLessons.Title(lesson),new(box.X+18,box.Y+35,box.Width-36,65),.72f,ink);
         int cx=box.Center.X,cy=box.Y+235;
@@ -88,6 +88,10 @@ public partial class Game1
             Robot(cx-120,cy-40,BattleFacing.East,accent);Robot(cx+95,cy-40,BattleFacing.West,new Color(170,106,79));
             LessonText("→ →",new(cx-55,cy-35,120,60),.9f,accent);
             LessonText("正面を向いて接近、隣で短剣",new(box.X+30,box.Y+360,box.Width-60,42),.52f,ink);
+        }else if(lesson==BattleLesson.CornerEscape){
+            DiagramBox(new(cx+40,cy-36,62,70),ink);DiagramBox(new(cx-28,cy+36,130,28),ink);
+            Robot(cx-28,cy-40,BattleFacing.North,accent);Robot(cx-135,cy-40,BattleFacing.East,new Color(170,106,79));Robot(cx-28,cy-110,BattleFacing.South,new Color(170,106,79));
+            LessonText("入る前は２マス / 角にいれば３マス以内を警戒",new(box.X+30,box.Y+360,box.Width-60,42),.5f,ink);
         }else if(lesson==BattleLesson.WaitingDaggerSafety){
             Robot(cx-145,cy-40,BattleFacing.East,accent);Robot(cx-15,cy+25,BattleFacing.North,accent);Robot(cx+75,cy-95,BattleFacing.North,new Color(170,106,79));
             DiagramBox(new(cx-65,cy+4,75,4),ink);DiagramBox(new(cx+8,cy-25,4,55),accent);
@@ -113,6 +117,7 @@ public partial class Game1
             BattleLesson.RetreatBackwards=>new[]{"撤退中、背中を撃たれて転倒した。","撤退方向と逆を向いて移動する。","正面の盾で身を守る機会を残す。"},
             BattleLesson.LeaveFiringLine=>new[]{"正面の射線で横向きに短剣を振り、被弾。","まず射線から外れて、横の敵を攻撃。","逃げ場がなければ、正面を向いて待つ。"},
             BattleLesson.ShieldSupport=>new[]{"盾を持つ仲間の後ろで射撃を見送った。","すぐ前で同じ方向を向く盾持ちは越せる。","２区画目以降の仲間には引き続き注意。"},
+            BattleLesson.CornerEscape=>new[]{"直角に２方向を塞がれた角地で、","残る２方向を敵に囲まれ、横から斬られた。","敵が２体以上なら、進入前は２マス以内、","角地にいれば３マス以内で外へ出る。"},
             BattleLesson.WaitingDaggerSafety=>new[]{"敵が横へ逃げ、追ってきた仲間を斬った。","移動後の正面は、敵とは限らない。","味方が正面へ入れる配置なら、","その場で待つ短剣攻撃は見送る。"},
             BattleLesson.RelieveFront=>new[]{"短剣切れで敵と隣接し、時間だけが過ぎた。","守備側は、そのまま時間を稼げる。","攻撃側は味方のすぐ後ろから小銃で支援。","撃てないなら下がり、仲間と交代する。"},
             BattleLesson.CollisionTempo=>new[]{"空きマスへ同時に進入し、双方が巻き戻った。","守備：１マス空きなら進入し時間を稼ぐ。","攻撃：２マス空きなら小銃で射撃。","１マス空きなら待ち構えて短剣を振る。"},

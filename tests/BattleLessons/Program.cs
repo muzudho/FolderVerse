@@ -181,3 +181,33 @@ Check(BattleLessons.WaitingDaggerAction(careful,carefulStab,waitingSlash with {W
 var noChase=Tempo();var oldFriendHit=Unit(noChase,90201,0,3,5,BattleFacing.East);Unit(noChase,90202,0,4,5,BattleFacing.North);Turn(noChase,(oldFriendHit,Point.Zero,BattleFacing.East,BattleWeapon.Dagger));
 Check((oldFriendHit.WitnessedLessons&BattleLesson.WaitingDaggerSafety)==0,"Existing friendly target without fleeing enemy is not the specific ninth-lesson event");
 Console.WriteLine("PASS: ninth-lesson sidestep/chase friendly hit, acquisition and save, conservative pre-move prevention, terrain/enemy-gate exclusions, allied ownership, stationary-only scope and unrelated-hit exclusion.");
+
+// Lesson ten: perpendicular immovable neighbors create a corner, not a straight corridor.
+var boxed=Tempo();var boxedVictim=Unit(boxed,100001,0,5,5,BattleFacing.North);var boxNorth=Unit(boxed,100002,1,5,4,BattleFacing.South);var boxWest=Unit(boxed,100003,1,4,5,BattleFacing.East);var cornerWitness=Unit(boxed,100004,0,2,2,BattleFacing.East);boxed.Walls.Add(new(6,5));boxed.Walls.Add(new(5,6));
+Check(BattleLessons.IsCorner(boxed,boxedVictim.Position,0) && BattleLessons.CornerSideTrap(boxed,boxedVictim),"Perpendicular walls and enemies in both open directions form the reported trap");
+Turn(boxed,(boxWest,Point.Zero,BattleFacing.East,BattleWeapon.Dagger));Check(boxedVictim.Fallen && (cornerWitness.WitnessedLessons&BattleLesson.CornerEscape)!=0,"Actual sideways dagger in surrounded corner teaches tenth lesson");
+var cornerResearch=new BattleLessons();cornerResearch.BringHome(boxedVictim);Check(cornerResearch.Pending.Count==0,"Fallen corner victim cannot teach");cornerWitness.Retreated=true;cornerResearch.BringHome(cornerWitness);Check(cornerResearch.Research().Any(a=>a.Lesson==BattleLesson.CornerEscape),"Surviving observer brings corner lesson home");
+Check((AutoSaveStore.Restore<BattleLessons>(AutoSaveStore.Capture(cornerResearch)).Owned[0]&BattleLesson.CornerEscape)!=0,"Tenth lesson survives save/load");
+var leaveCorner=Tempo();var escaper=Unit(leaveCorner,100101,0,5,5,BattleFacing.North);Unit(leaveCorner,100102,1,5,3,BattleFacing.South);Unit(leaveCorner,100103,1,3,5,BattleFacing.East);leaveCorner.Walls.Add(new(6,5));leaveCorner.Walls.Add(new(5,6));leaveCorner.Lessons[0]=BattleLesson.CornerEscape;
+Check(BattleLessons.EnemiesWithinTwo(leaveCorner,escaper.Position,0)==2,"Two approaching enemies are reachable within two walking steps");var escape=BattleAi.Choose(leaveCorner,escaper);Check(escape.Step!=Point.Zero && !BattleLessons.IsCorner(leaveCorner,escaper.Position+escape.Step,0),"Trained AI leaves corner before enemies close both exits");
+Turn(leaveCorner);Check(!BattleLessons.IsCorner(leaveCorner,escaper.Position,0),"Learned escape actually moves out of the corner");
+var avoidCorner=Tempo();var approach=Unit(avoidCorner,100201,0,4,5,BattleFacing.East);Unit(avoidCorner,100202,1,5,4,BattleFacing.South);Unit(avoidCorner,100203,1,4,4,BattleFacing.South);avoidCorner.Walls.Add(new(6,5));avoidCorner.Walls.Add(new(5,6));avoidCorner.Lessons[0]=BattleLesson.CornerEscape;
+var forced=new BattleAction(new(1,0),BattleFacing.East);Check(BattleLessons.CornerAction(avoidCorner,approach,forced).Step==Point.Zero,"Trained unit refuses forced entry into a threatened adjacent corner");
+Check(BattleAi.Path(avoidCorner,approach,new(7,5)) is {} detour && detour!=new Point(1,0),"Pathfinding chooses an available route around the dangerous corner");
+var walkingDistance=Tempo();Unit(walkingDistance,100301,0,5,5);Unit(walkingDistance,100302,1,5,4);Unit(walkingDistance,100303,1,7,5);walkingDistance.Walls.Add(new(6,5));walkingDistance.Walls.Add(new(5,6));
+Check(BattleLessons.EnemiesWithinTwo(walkingDistance,new(5,5),0)==1 && !BattleLessons.DangerousCorner(walkingDistance,new(5,5),0),"Enemy close by Manhattan distance but behind a wall is excluded");
+var corridor=Tempo();corridor.Walls.Add(new(5,4));corridor.Walls.Add(new(5,6));Check(!BattleLessons.IsCorner(corridor,new(5,5),0),"Opposing blocked directions are a corridor, not a corner");Check(BattleLessons.IsCorner(corridor,new(0,0),0),"Map boundary counts as impassable terrain");
+var gateCorner=Tempo();gateCorner.Walls.Add(new(5,6));gateCorner.Fortifications.Add(new(new(6,5),FortificationKind.Gate,0,BattleFacing.East));Check(!BattleLessons.IsCorner(gateCorner,new(5,5),0) && BattleLessons.IsCorner(gateCorner,new(5,5),1),"Gate access changes corner geometry for owner and enemy");
+boxed.Lessons[0]=BattleLesson.CornerEscape;boxedVictim.Fallen=false;var trappedAction=BattleLessons.CornerAction(boxed,boxedVictim,new(Point.Zero,BattleFacing.North));Check(trappedAction.Step==Point.Zero,"Already surrounded unit cannot escape through occupied enemy squares");
+Console.WriteLine("PASS: tenth-lesson actual corner flank, survivor research/save, early escape, denied entry, rerouting, true walking distance, corridor/boundary/gate geometry and occupied-exit safety.");
+
+Check(BattleLessons.CornerAction(boxed,boxedVictim,new(Point.Zero,BattleFacing.North,BattleWeapon.Dagger)).Weapon==BattleWeapon.Dagger,"No legal exit: retain fighting action rather than freezing the surrounded unit");
+
+// Leave an occupied corner at walking radius three; entering still uses radius two.
+var earlyCorner=Tempo();var earlyEscaper=Unit(earlyCorner,101001,0,5,5,BattleFacing.North);Unit(earlyCorner,101002,1,5,2,BattleFacing.South);Unit(earlyCorner,101003,1,3,5,BattleFacing.East);earlyCorner.Walls.Add(new(6,5));earlyCorner.Walls.Add(new(5,6));earlyCorner.Lessons[0]=BattleLesson.CornerEscape;
+Check(BattleLessons.EnemiesWithinTwo(earlyCorner,new(5,5),0)==1 && BattleLessons.EnemiesWithinThree(earlyCorner,new(5,5),0)==2,"Radius three includes both nearer enemies and exactly-three-step enemies");
+Check(!BattleLessons.DangerousCorner(earlyCorner,new(5,5),0),"Entry avoidance remains radius two");
+var earlyExit=BattleLessons.CornerAction(earlyCorner,earlyEscaper,new(Point.Zero,BattleFacing.North));Check(earlyExit.Step!=Point.Zero && !BattleLessons.IsCorner(earlyCorner,earlyEscaper.Position+earlyExit.Step,0),"Existing corner is left before the enemy at three steps closes in");
+var fourAway=Tempo();var cautious=Unit(fourAway,101101,0,5,5,BattleFacing.North);Unit(fourAway,101102,1,5,1,BattleFacing.South);Unit(fourAway,101103,1,3,5,BattleFacing.East);fourAway.Walls.Add(new(6,5));fourAway.Walls.Add(new(5,6));fourAway.Lessons[0]=BattleLesson.CornerEscape;
+var stay=new BattleAction(Point.Zero,BattleFacing.North);Check(BattleLessons.EnemiesWithinThree(fourAway,new(5,5),0)==1 && BattleLessons.CornerAction(fourAway,cautious,stay)==stay,"Four steps is outside the early-exit radius");
+Console.WriteLine("PASS: corner entry at radius two, early exit at radius three inclusive, four-step exclusion.");

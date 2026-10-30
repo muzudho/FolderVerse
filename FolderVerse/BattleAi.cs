@@ -10,7 +10,11 @@ public static class BattleAi
     public static BattleFacing Face(Point delta)=>Math.Abs(delta.X)>Math.Abs(delta.Y)?delta.X>0?BattleFacing.East:BattleFacing.West:delta.Y>0?BattleFacing.South:BattleFacing.North;
     public static BattleAction Choose(BattleState battle,BattleUnit unit)
     {
-        var action=BattleLessons.WaitingDaggerAction(battle,unit,BattleLessons.RelieveFrontAction(battle,unit,BattleLessons.CollisionTempoAction(battle,unit,ChooseCore(battle,unit))));
+        var action=ChooseCore(battle,unit);
+        action=BattleLessons.CollisionTempoAction(battle,unit,action);
+        action=BattleLessons.RelieveFrontAction(battle,unit,action);
+        action=BattleLessons.CornerAction(battle,unit,action);
+        action=BattleLessons.WaitingDaggerAction(battle,unit,action);
         if(action.Step!=Point.Zero && battle.GateAt(unit.Position+action.Step) is {} gate && !battle.Allied(unit.Owner,gate.Owner) && !unit.Retreating && unit.Role!=BattleRole.Queen && unit.Daggers+unit.Rifles>=gate.Health)
             return new(Point.Zero,Face(action.Step),unit.Daggers>0?BattleWeapon.Dagger:BattleWeapon.Rifle);
         // A short-of-ammo soldier can still contribute one hit for another ally to finish.
@@ -119,6 +123,8 @@ public static class BattleAi
         var costs=new Dictionary<(Point,int),int>{{(unit.Position,0),0}};
         var first=new Dictionary<(Point,int),Point>{{(unit.Position,0),Point.Zero}};
         int budget=unit.Retreating || unit.Role==BattleRole.Queen?0:unit.Daggers+unit.Rifles;
+        var corners=new Dictionary<Point,bool>();
+        bool avoidCorners=!unit.Retreating && BattleLessons.Has(battle,unit,BattleLesson.CornerEscape);
         while(queue.TryDequeue(out var state,out int cost)){
             if(cost!=costs[state])continue;
             if(state.At==target)return first[state];
@@ -130,6 +136,10 @@ public static class BattleAi
                 bool enemyGoal=next==target && battle.Units.Any(u=>u.Active && u.Position==target && !battle.Allied(u.Owner,unit.Owner));
                 bool exit=next==target && !battle.Contains(target) && unit.Retreating;
                 if(!exit && (!battle.Walkable(next) || attacks==0 && !battle.WalkableFor(next,unit.Owner) || occupied && !unit.Retreating && !enemyGoal))continue;
+                if(avoidCorners && battle.Contains(next)){
+                    if(!corners.TryGetValue(next,out bool danger)){danger=BattleLessons.DangerousCorner(battle,next,unit.Owner);corners[next]=danger;}
+                    if(danger)continue;
+                }
                 var key=(next,state.Ammo+attacks);int nextCost=cost+10+attacks*10+(attacks>0?1:0);
                 if(costs.TryGetValue(key,out int prior) && prior<=nextCost)continue;
                 costs[key]=nextCost;first[key]=state.At==unit.Position?step:first[state];queue.Enqueue(key,nextCost);

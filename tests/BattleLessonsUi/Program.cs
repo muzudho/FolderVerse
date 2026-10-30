@@ -69,13 +69,15 @@ sealed class LessonGame:Game1
   if(frame==16){
    Screen("LessonCatalog");world.Lessons.Owned[world.PlayerSlot]=BattleLessons.All.Aggregate(BattleLesson.None,(a,b)=>a|b);Set("_lessonCatalogPage",0);
    Point Button(string name)=>((Rectangle)typeof(Game1).GetField(name,BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!).Center;
-   Set("_pointer",Button("LessonCatalogNext"));Call("LessonCatalogInput",true,false);Check((int)Get("_lessonCatalogPage")==1,"Catalogue next page");Call("LessonCatalogInput",true,false);Call("LessonCatalogInput",true,false);Check((int)Get("_lessonCatalogPage")==2,"Catalogue clamps at final page");
-   Set("_pointer",Button("LessonCatalogPrevious"));Call("LessonCatalogInput",true,false);Check((int)Get("_lessonCatalogPage")==1,"Catalogue previous page");Set("_lessonCatalogPage",2);
+   Set("_pointer",Button("LessonCatalogNext"));Call("LessonCatalogInput",true,false);Check((int)Get("_lessonCatalogPage")==1,"Catalogue next page");for(int i=0;i<BattleLessons.All.Length;i++)Call("LessonCatalogInput",true,false);Check((int)Get("_lessonCatalogPage")== (BattleLessons.All.Length+2)/3-1,"Catalogue clamps at final page");
+   Set("_pointer",Button("LessonCatalogPrevious"));Call("LessonCatalogInput",true,false);Check((int)Get("_lessonCatalogPage")== (BattleLessons.All.Length+2)/3-2,"Catalogue previous page");Set("_lessonCatalogPage",2);
   }
+  if(frame==17){world.Lessons.Owned[0]&=~BattleLesson.CornerEscape;world.Lessons.Pending.Add(new(0,BattleLesson.CornerEscape));Call("BeginBattleResearch");Check(((LessonAward[])Get("_lessonAwards")).Any(a=>a.Lesson==BattleLesson.CornerEscape),"Tenth lesson has its research card");Set("_lessonAge",2d);}
+  if(frame==18){Screen("LessonCatalog");world.Lessons.Owned[world.PlayerSlot]=BattleLessons.All.Aggregate(BattleLesson.None,(a,b)=>a|b);Set("_lessonCatalogPage",(BattleLessons.All.Length+2)/3-1);}
   base.Draw(time);
   var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"lesson-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);
   if(frame==11)Check(pixels[1003*p.BackBufferWidth+100]==new Color(248,194,58) && pixels[1003*p.BackBufferWidth+1600]==new Color(19,38,49),"Newspaper timer renders half-filled after three of six seconds");
   if(frame<4)Call("UpdateBattleResearch",0d,true);
-  if(frame++==16){Console.WriteLine("PASS: newspaper/research/industry flow, four award reveals and newspaper timer, world-plan button, owned/unowned catalogue, empty research, subordinate plan, fast repeat and globe robots rendered.");Exit();}
+  if(frame++==18){Console.WriteLine("PASS: newspaper/research/industry flow, four award reveals and newspaper timer, world-plan button, owned/unowned catalogue, empty research, subordinate plan, fast repeat and globe robots rendered.");Exit();}
  }
 }

@@ -28,4 +28,8 @@
 <CharacterRegion><Start>稼</Start><End>稼</End></CharacterRegion>
 <CharacterRegion><Start>過</Start><End>過</End></CharacterRegion>
 <CharacterRegion><Start>控</Start><End>控</End></CharacterRegion>
+<CharacterRegion><Start>塞</Start><End>塞</End></CharacterRegion>
+<CharacterRegion><Start>歩</Start><End>歩</End></CharacterRegion>
+<CharacterRegion><Start>角</Start><End>角</End></CharacterRegion>
+<CharacterRegion><Start>避</Start><End>避</End></CharacterRegion>
 </CharacterRegions></Asset></XnaContent>
