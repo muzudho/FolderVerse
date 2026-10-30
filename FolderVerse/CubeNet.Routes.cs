@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 public sealed partial class CubeNet
 {
     public HashSet<int> VisibleOperationNodes {get;set;}
+    public bool DirectoryOnly {get;set;}
     public bool ShowMapSymbols {get;set;}=true;
     public bool ShowEquator {get;set;}=true;
     public bool ShowRobots {get;set;}=true;
@@ -91,6 +92,7 @@ public sealed partial class CubeNet
     }
     private void DrawNodeMarkers(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse)
     {
+            if(DirectoryOnly)return;
             DrawLandmarks(ui,world,cell,p=>project(p),pulse);
             foreach(var post in world.Nodes.InCell(cell).Where(n=>NodeVisible(world,n) && (VisibleOperationNodes==null || VisibleOperationNodes.Contains(n.Id))))
             {

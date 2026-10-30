@@ -14,15 +14,17 @@ public partial class Game1
     {
         if(_setup.TutorialStep!=3)return false;
         if(_tutorialAttackGuide || _tutorialMessagesOpen || _autoPlay || _demoActive || !IsStatusScreen || _conquestOverview || _homePersuasionActive ||
-            MapTransitionActive || OrientationRotating || _net.IsAnimating || _lastCutInPhase!="内政フェーズ" || now-_cutInStarted<PhaseCutInSeconds)return true;
+            MapTransitionActive || OrientationRotating || _orientationDragging || _net.IsAnimating || _lastCutInPhase!="内政フェーズ" || now-_cutInStarted<PhaseCutInSeconds)return true;
         int before=_setup.TutorialMapStage;
         if(before==0 && !_statusGlobe)_setup.TutorialMapStage=1;
-        else if(before==1 && _setup.TutorialMapRotations==7)_setup.TutorialMapStage=2;
-        else if(before==2 && _setup.TutorialMapEdgeChanged)_setup.TutorialMapStage=3;
+        else if(before==1 && (_setup.TutorialMapRotations&7)==7)_setup.TutorialMapStage=2;
+        else if(before==2 && (_setup.TutorialMapRotations&8)!=0 && _setup.TutorialMapEdgeChanged)_setup.TutorialMapStage=3;
         else if(before==3 && _statusGlobe)_setup.TutorialMapStage=4;
         int stage=_setup.TutorialMapStage;
-        if(stage<4 && (_setup.TutorialMapNotices&(1<<stage))==0){
-            _setup.TutorialMapNotices|=1<<stage;_tutorialGuideMessage=8+stage;_tutorialAttackGuide=true;_tutorialGuideStarted=_animationTime;
+        bool slide=stage==2 && (_setup.TutorialMapRotations&8)==0;
+        int notice=slide?16:1<<stage;
+        if(stage<4 && (_setup.TutorialMapNotices&notice)==0){
+            _setup.TutorialMapNotices|=notice;_tutorialGuideMessage=slide?12:8+stage;_tutorialAttackGuide=true;_tutorialGuideStarted=_animationTime;
         }
         if(before!=stage){_lastAutoSaveTurn=-1;AutoSaveDomestic();}
         return true;
@@ -30,5 +32,5 @@ public partial class Game1
     private void RecordTutorialMapRotation(int button)
     {if(_setup.TutorialStep==3 && _setup.TutorialMapStage==1 && !OrientationGlobe)_setup.TutorialMapRotations|=button;}
     private void RecordTutorialMapEdge()
-    {if(_setup.TutorialStep==3 && _setup.TutorialMapStage==2)_setup.TutorialMapEdgeChanged=true;}
+    {if(_setup.TutorialStep==3 && _setup.TutorialMapStage==2 && (_setup.TutorialMapRotations&8)!=0)_setup.TutorialMapEdgeChanged=true;}
 }

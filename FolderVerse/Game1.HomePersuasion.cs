@@ -30,7 +30,7 @@ public partial class Game1
         if(!_homePersuasionActive)
         {
             if(_conquestOverview || _tutorialAttackGuide || _tutorialMessagesOpen || _lastCutInPhase!="内政フェーズ" || now-_cutInStarted<PhaseCutInSeconds)return false;
-            OpenNodeInspector(_homePersuasion[0].Node);_homePersuasionShown.Add(_setup.PlayerSlot);_homePersuasionActive=true;_homePersuasionAge=0;
+            int previousTab=_lastNodeTab;OpenNodeInspector(_homePersuasion[0].Node);OpenNodeAssembly();_lastNodeTab=previousTab;_homePersuasionShown.Add(_setup.PlayerSlot);_homePersuasionActive=true;_homePersuasionAge=0;
         }
         _homePersuasionAge+=elapsed;
         if(_homePersuasionAge>=8 || _homePersuasionAge>=5 && proceed)

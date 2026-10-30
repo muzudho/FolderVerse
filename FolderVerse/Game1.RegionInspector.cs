@@ -15,6 +15,7 @@ public partial class Game1
         if(cell<0 || cell>=_setup.Cells.Length)return;
         var nodes=_setup.Nodes.InCell(cell).OrderByDescending(n=>n.Population.Total).ThenBy(n=>n.Id).ToArray();
         if(nodes.Length==0)return;
+        CloseReservationDirectory();
         bool routes=_routesBeforeRegionInspector??_net.ShowRoutes;
         ResetInspector();_routesBeforeRegionInspector=routes;_net.ShowRoutes=false;_regionCell=_selectedMapCell=cell;_inspectedNode=nodes[0].Id;_regionNodePage=0;
         QueueInspectorCenter(_inspectedNode);

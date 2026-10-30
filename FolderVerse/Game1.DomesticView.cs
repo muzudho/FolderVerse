@@ -30,6 +30,7 @@ public partial class Game1
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
     private void ResetInspector(){
+        CloseReservationDirectory();
         _salvageMapTarget=-1;_salvageCatalogOpen=false;_mapOverlayMenu=false;_salvagePlan=false;_hangarAbandonMode=false;_salvageAbandonConfirmation=null;
         if(_salvageRoutesBefore.HasValue){_net.ShowRoutes=_salvageRoutesBefore.Value;_salvageRoutesBefore=null;}
         _inspectorFoldersOpen=false;_strategyRuler=-1;_factionPickerOpen=false;
@@ -54,10 +55,7 @@ public partial class Game1
     }
     private void DrawInspectorHandle(){
         if(!InspectorVisible){
-            _ui.Button(StrategyToggle,"わたしの国",Accent,.45f);
-            var warLabel=WarReservationLabel;_ui.Button(WarButton,warLabel,Accent,Math.Min(.55f,(WarButton.Width-12)/_font.MeasureString(warLabel).X));
-            if(TransportOverviewAllowed){_ui.Button(TransportOverviewButton,"ロボット輸送長期計画",Accent,.42f);}
-            _ui.Button(PopulationTurnButton,"陣営のターン終了",Accent,.48f);return;
+            return; // Primary actions are drawn together after the inspectors.
         }
         var r=InspectorHandle;
         _ui.Box(new(r.X+4,r.Y+5,r.Width,r.Height),new Color(5,17,28));_ui.Box(r,_setup.OwnerColor(_setup.PlayerSlot));
@@ -79,7 +77,7 @@ public partial class Game1
         if(_nodeInspectorClosing && _domesticSlide==0){var node=_inspectorCenterNode;ResetInspector();QueueInspectorCenter(node);}
         if(layoutSettled)UpdateInspectorCenter(elapsed);
     }
-    private static readonly Rectangle ReignPortrait=new(56,700,240,240); private Rectangle StrategyToggle=>MapFooterBounds(new(54,1006,242,64));
+    private static readonly Rectangle ReignPortrait=new(56,650,240,240); private Rectangle StrategyToggle=>PrimaryActionBounds(0);
     private bool DomesticViewClick(Point p)
     {
         if(_trainingOpen || _supervisorDialog>0)return false;
@@ -102,10 +100,10 @@ public partial class Game1
     private void DrawDomesticPortrait()
     {
         int player=_setup.TurnPlayer;DrawRulerMedallion(player,PlayerMedallionCenter);
-        _ui.Center(_setup.PlayerSlot==player?"あなたの陣営 / 操作中":"あなたの陣営のターン",new((int)PlayerMedallionCenter.X-145,650,290,30),.36f,Cream);
+        _ui.Center(_setup.PlayerSlot==player?"あなたの陣営 / 操作中":"あなたの陣営のターン",new((int)PlayerMedallionCenter.X-145,600,290,30),.36f,Cream);
         if(_setup.PlayerSlot!=player){
             DrawRulerMedallion(_setup.PlayerSlot,OperationMedallionCenter);
-            _ui.Center("操作中の手下",new((int)OperationMedallionCenter.X-145,650,290,30),.36f,Cream);
+            _ui.Center("操作中の手下",new((int)OperationMedallionCenter.X-145,600,290,30),.36f,Cream);
         }
         if(FactionTree().Length>1)_ui.Button(FactionPickerButton,"▼",Accent,.65f);
     }

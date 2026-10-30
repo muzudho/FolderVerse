@@ -44,11 +44,19 @@ public sealed partial class WorldPreview
             var center=setup.Routes.Position(node.Cell,node.Center);
             if(!ProjectVisible(center,cell.Normal,yaw,pitch,panel,out _))continue;
             Rectangle bounds=Rectangle.Empty;
-            float hoverScale=net.ShowRoutes && net.EmphasizedNode(node.Id)?2:1; Vector3 Point(float u,float v,float height)=>center+(cell.U*u+cell.V*v+cell.Normal*height)*hoverScale;
+            bool emphasized=net.ShowRoutes && net.EmphasizedNode(node.Id);
+            float hop=0;
+            Vector3 Point(float u,float v,float height)=>center+cell.U*u+cell.V*v+cell.Normal*(height+hop);
             void Track(Vector3 p)
             {
                 ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var at);
                 var box=new Rectangle((int)at.X-2,(int)at.Y-2,5,5);bounds=bounds==Rectangle.Empty?box:Rectangle.Union(bounds,box);
+                if(emphasized || hop>0){
+                    foreach(float lift in new[]{0f,.018f}){
+                        ProjectVisible(p+cell.Normal*(lift-hop),cell.Normal,yaw,pitch,panel,out var rest);
+                        bounds=Rectangle.Union(bounds,new Rectangle((int)rest.X-2,(int)rest.Y-2,5,5));
+                    }
+                }
             }
             float batteryTilt=0,batteryV=0;
             void Box(float u,float v,float z,float width,float depth,float height,Color color)
@@ -65,6 +73,7 @@ public sealed partial class WorldPreview
             }
             for(int slot=0;slot<robots.Count;slot++)
             {
+                hop=emphasized?CubeNet.MapObjectHop(seconds,slot)*.003f:0;
                 bounds=Rectangle.Empty;
                 float angle=-MathHelper.PiOver2+slot*MathHelper.TwoPi/robots.Count,radius=Math.Max(.18f,robots.Count*.12f/MathHelper.TwoPi);
                 float u=MathF.Cos(angle)*radius,v=MathF.Sin(angle)*radius,z=.008f;var robot=robots[slot];
@@ -87,6 +96,7 @@ public sealed partial class WorldPreview
                 if(bounds!=Rectangle.Empty && bounds.Intersects(panel))net.AddGlobeRobotBadge(node.Id,bounds);
             }
             foreach(int ruler in Enumerable.Range(0,setup.ActiveCount).Where(r=>net.ShowBatteries && setup.Relations.Powered[r] && setup.Nodes.Current(r)?.Id==node.Id && (net.ShowOtherCountries || setup.Relations.Controls(r)) && (net.VisibleOperationBatteries==null || net.VisibleOperationBatteries.Contains(r)))){
+                hop=emphasized || net.HoveredBattery==ruler?CubeNet.MapObjectHop(seconds,ruler)*.003f:0;
                 bounds=Rectangle.Empty;var point=setup.Routes.Position(setup.ConquerorLocations[ruler],setup.ConquerorPoints[ruler]);
                 var delta=point-center;int batterySlot=Enumerable.Range(0,ruler).Count(r=>setup.Relations.Powered[r] && setup.Nodes.Current(r)?.Id==node.Id);
                 float u=Vector3.Dot(delta,cell.U)+.32f,v=Vector3.Dot(delta,cell.V)+batterySlot*.13f;

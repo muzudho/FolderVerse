@@ -35,16 +35,16 @@ public sealed partial class WorldSetup
     public int Height { get; private set; }
     public int Depth { get; private set; }
     public SurfaceCell[] Cells { get; private set; } = Array.Empty<SurfaceCell>();
-    public int[] Portraits { get; private set; } = Enumerable.Range(0,20).ToArray();
-    public ConquerorLook[] Looks { get; private set; } = new ConquerorLook[20];
-    public int[] ColorIndices { get; private set; } = Enumerable.Range(0,20).ToArray();
+    public int[] Portraits { get; private set; } = Enumerable.Range(0,CastCount).ToArray();
+    public ConquerorLook[] Looks { get; private set; } = new ConquerorLook[CastCount];
+    public int[] ColorIndices { get; private set; } = Enumerable.Range(0,CastCount).ToArray();
     public int[] Owners { get; private set; } = Array.Empty<int>();
     public int[] Capitals { get; private set; } = Array.Empty<int>();
     public int[] ConquerorLocations { get; private set; } = Array.Empty<int>();
     public Point[] ConquerorPoints {get;private set;}=Array.Empty<Point>();
     public TerrainRoutes Routes {get;}=new();
     public WorldNodes Nodes {get;}=new();
-    public int[] TerritoryCounts { get; private set; } = new int[20];
+    public int[] TerritoryCounts { get; private set; } = new int[CastCount];
     public string[] CityNames { get; private set; } = Array.Empty<string>();
     public string[] ConquerorNames { get; private set; } = Array.Empty<string>();
     public string[] ConquerorFullNames { get; private set; } = Array.Empty<string>();
@@ -54,17 +54,27 @@ public sealed partial class WorldSetup
     public bool TutorialPocketed,TutorialMoved,TutorialPocketNoticeShown,TutorialMoveNoticeShown;
     private int _presetCastCount;
     public int PlayerCount {get;private set;}=1;
+    public int ComputerPlayerCount {get;private set;}=19;
+    // Older saves and tutorial callers retain the original, terrain-limited cast.
+    private bool _participantCountsConfigured;
+    public bool ComputerOnly=>_participantCountsConfigured && PlayerCount==0;
+    public int ParticipantCount=>_participantCountsConfigured?PlayerCount+ComputerPlayerCount:Math.Max(20,PlayerCount);
+    public void SetParticipantCounts(int humans,int computers)
+    {
+        if(humans<0 || computers<0 || humans+computers<1 || humans>GameLimits.MaxPlayers || computers>GameLimits.MaxPlayers-humans)throw new ArgumentOutOfRangeException(nameof(computers));
+        PlayerCount=humans;ComputerPlayerCount=computers;_participantCountsConfigured=true;HumanPlayers.Clear();
+    }
     public const int CastCount=GameLimits.MaxConquerors;
     public List<int> HumanPlayers {get;}=new();
     public void SetPlayerCount(int count)
     {
         if(count<1 || count>GameLimits.MaxPlayers)throw new ArgumentOutOfRangeException(nameof(count));
-        PlayerCount=count;HumanPlayers.Clear();
+        PlayerCount=count;ComputerPlayerCount=Math.Max(0,20-count);_participantCountsConfigured=false;HumanPlayers.Clear();
     }
     // The nearest human ancestor owns the controls, even inside another human's faction.
     public int ControllerOf(int ruler)
     {
-        if(ruler<0 || ruler>=ActiveCount)return -1;
+        if(ComputerOnly || ruler<0 || ruler>=ActiveCount)return -1;
         for(int step=0,current=ruler;step<ActiveCount && current>=0;step++,current=Relations.Superiors[current])
             if(HumanPlayers.Count>0?HumanPlayers.Contains(current):current==Relations.Leader)return current;
         return -1;
@@ -73,7 +83,7 @@ public sealed partial class WorldSetup
     public int[] ControlledParty(int player)=>Relations.Forest(this).Where(e=>ControllerOf(e.Ruler)==player && Relations.CanAct(e.Ruler)).Select(e=>e.Ruler).ToArray();
     public int[] ManualRulers()=>Relations.Forest(this).Where(e=>ControllerOf(e.Ruler)>=0 && Relations.CanAct(e.Ruler))
         .OrderBy(e=>HumanPlayers.Count==0?0:HumanPlayers.IndexOf(ControllerOf(e.Ruler))).Select(e=>e.Ruler).ToArray();
-    public int[] TurnPlayers()=>HumanPlayers.Count==0?new[]{TurnPlayer}:HumanPlayers.Where(h=>ControlledParty(h).Length>0).ToArray();
+    public int[] TurnPlayers()=>ComputerOnly?Array.Empty<int>():HumanPlayers.Count==0?new[]{TurnPlayer}:HumanPlayers.Where(h=>ControlledParty(h).Length>0).ToArray();
     public void SelectTurnRuler(int ruler)
     {
         int controller=ControllerOf(ruler);
@@ -100,14 +110,14 @@ public sealed partial class WorldSetup
         PlayerSlot=slot;
         if(Relations.Party(this).Length<=1)Relations.Leader=slot;
     }
-    public int ActiveCount => Math.Min(_presetCastCount>0?_presetCastCount:CastCount, Cells.Length);
+    public int ActiveCount => Math.Min(_presetCastCount>0?_presetCastCount:ParticipantCount, Cells.Length);
     public static readonly Color[] Colors = {
         new(239,88,97), new(66,171,235), new(247,194,63), new(76,195,139), new(178,117,239),
         new(245,139,63), new(238,121,186), new(53,200,205), new(166,207,64), new(121,153,249),
         new(220,177,135), new(188,68,96), new(34,119,173), new(174,137,26), new(32,132,103),
         new(126,71,171), new(181,97,43), new(176,76,139), new(35,138,144), new(217,228,240)
     };
-    public Color OwnerColor(int slot) => slot<0?new Color(155,169,180):Colors[ColorIndices[slot]];
+    public Color OwnerColor(int slot) => slot<0?new Color(155,169,180):Colors[ColorIndices[slot]%Colors.Length];
     public void SetWorld(int seed)
     {
         TutorialStep=0;_presetCastCount=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();Lessons.Reset();
@@ -127,7 +137,7 @@ public sealed partial class WorldSetup
             < 7 => new[] { 1, random.Next(6) + 2, random.Next(6) + 2 },
             _ => new[] { random.Next(4) + 2, random.Next(4) + 2, random.Next(4) + 2 }
         };
-        if(2*(dimensions[0]*dimensions[1]+dimensions[1]*dimensions[2]+dimensions[2]*dimensions[0])<PlayerCount)
+        if(2*(dimensions[0]*dimensions[1]+dimensions[1]*dimensions[2]+dimensions[2]*dimensions[0])<(_participantCountsConfigured?ParticipantCount:PlayerCount))
             dimensions=new[]{4,4,4};
         random.Shuffle(dimensions);
         Width = dimensions[0]; Height = dimensions[1]; Depth = dimensions[2];
@@ -142,8 +152,9 @@ public sealed partial class WorldSetup
         var random=new SeedRandom(seed);
         // Slot + 1 is the permanent creation number, displayed clockwise from the
         // top-left portrait. Keep it independent of later territory/ranking changes.
-        Portraits=new int[CastCount]; Looks=new ConquerorLook[CastCount];
-        ColorIndices=Enumerable.Range(0,CastCount).ToArray();random.Shuffle(ColorIndices);
+        int count=_participantCountsConfigured?ParticipantCount:CastCount;
+        Portraits=new int[count]; Looks=new ConquerorLook[count];
+        ColorIndices=Enumerable.Range(0,count).ToArray();random.Shuffle(ColorIndices);
         // Draw distinct completed portraits. A family can contain all six sisters.
         int familyBase=random.Next(ConquerorCatalog.BaseCount);
         int familySize=2+random.Next(5);
@@ -151,7 +162,7 @@ public sealed partial class WorldSetup
         // 75% have unique characters; 25% guarantee at least one family of distinct variants.
         bool distinctBases=random.Next(4)<3;
         int[] bases=Enumerable.Range(0,ConquerorCatalog.BaseCount).ToArray();random.Shuffle(bases);
-        for(int slot=0;slot<CastCount;slot++)
+        for(int slot=0;slot<count;slot++)
         {
             ConquerorLook look;
             do

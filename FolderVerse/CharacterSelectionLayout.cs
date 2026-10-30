@@ -27,7 +27,7 @@ public static class CharacterSelectionLayout
     public const int Columns=28,Rows=20;
     public static CharacterTile[] Create(int[] counts,int activeCount)
     {
-        if(activeCount<1 || activeCount>20 || counts.Length<activeCount || counts.Take(activeCount).Any(n=>n<=0))
+        if(activeCount<1 || activeCount>GameLimits.MaxConquerors || counts.Length<activeCount || counts.Take(activeCount).Any(n=>n<=0))
             throw new ArgumentException("Selection requires allocated territories.");
         int total=counts.Take(activeCount).Sum();
         int[] sides=counts.Take(activeCount).Select(n=>Math.Clamp((int)Math.Sqrt((double)(Columns*Rows-64)*n/total),1,Rows)).Append(8).ToArray();
@@ -35,7 +35,7 @@ public static class CharacterSelectionLayout
     }
     // Zero-cell rulers retain a minimal selectable portrait; positive areas use subtree cell totals.
     public static OverviewTile[] CreateOverview(int[] counts,int[] ranks=null){
-        if(counts.Length<1 || counts.Length>20 || counts.Any(n=>n<0))throw new ArgumentException("Invalid overview counts.");
+        if(counts.Length<1 || counts.Length>GameLimits.MaxConquerors || counts.Any(n=>n<0))throw new ArgumentException("Invalid overview counts.");
         var ranked=ranks==null?Enumerable.Range(0,counts.Length).OrderByDescending(i=>counts[i]).ThenByDescending(i=>i).ToArray():Enumerable.Range(0,counts.Length).OrderBy(i=>ranks[i]).ToArray();
         var weights=ranked.Select(i=>(double)Math.Max(1,counts[i])).ToArray();double total=weights.Sum();
         var targets=weights.Select(w=>4+(400-4*counts.Length)*w/total).ToArray();

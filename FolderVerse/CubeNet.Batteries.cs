@@ -30,12 +30,15 @@ public sealed partial class CubeNet
             if(!world.Relations.Powered[ruler] || !ShowOtherCountries && !world.Relations.Controls(ruler))continue;
             var origin=project(ruler);if(origin==null)continue;
             var at=origin.Value+BatteryOffset(world,ruler);
-            bool hover=HoveredBattery==ruler;int zoom=hover?2:1,width=25*zoom,height=16*zoom;
+            bool hover=HoveredBattery==ruler;int zoom=1,width=25,height=16;
+            var resting=at;
+            int nodeId=world.Nodes.Current(ruler)?.Id??-1;
+            if(hover || ShowRoutes && nodeId>=0 && EmphasizedNode(nodeId))at.Y-=MapObjectHop(pulse,ruler);
             var box=new Rectangle((int)at.X-width/2,(int)at.Y-height/2,width,height);
             if(!MapViewport(panel).Intersects(box))continue;
-            var hit=box;hit.Inflate(6,6);_batteries.Add((ruler,hit));
+            var hit=new Rectangle((int)resting.X-width/2,(int)resting.Y-height/2,width,height);hit.Inflate(6,6);_batteries.Add((ruler,Rectangle.Union(hit,box)));
             var delta=at-origin.Value;ui.Tile((at+origin.Value)/2,new(delta.Length(),1),MathF.Atan2(delta.Y,delta.X),world.OwnerColor(ruler)*.65f);
-            ui.Box(hit,new Color(12,27,36));ui.Box(box,world.OwnerColor(ruler));
+            var backing=box;backing.Inflate(6,6);ui.Box(backing,new Color(12,27,36));ui.Box(box,world.OwnerColor(ruler));
             ui.Box(new(box.Right,box.Y+height/4,3*zoom,height/2),world.OwnerColor(ruler));
             for(int i=0;i<3;i++)ui.Box(new(box.X+(3+i*7)*zoom,box.Y+3*zoom,5*zoom,10*zoom),new Color(35,112,70));
             if(ShowRobots && hover)

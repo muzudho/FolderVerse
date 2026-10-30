@@ -147,3 +147,5 @@ foreach(bool clashing in new[]{false,true}){
  Turn(mixedBoard,(daggerAttacker,BattleWeapon.Dagger,Point.Zero,null),(mixedTarget,clashing?BattleWeapon.Dagger:BattleWeapon.None,Point.Zero,null),(sideSniper,BattleWeapon.Rifle,Point.Zero,null));
  Check(mixedTarget.Fallen && !BattleAttackArt.CausesDaggerFall(mixedBoard,mixedBoard.Attacks.First(hit=>hit.Attacker==daggerAttacker.Id)) && BattleAttackArt.Recoil(mixedBoard,mixedBoard.Turn,mixedTarget.Id,.5f)==Vector2.Zero,"A simultaneous rifle fall must not give a defended dagger false hit feedback");
 }
+
+FortificationChecks.Run();

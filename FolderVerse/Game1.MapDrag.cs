@@ -8,7 +8,7 @@ public partial class Game1
     private bool _globeDragSlide,_netDragRotate,_mapDragListOpen;
     private bool MapDragSlide=>_statusGlobe?_globeDragSlide:!_netDragRotate;
     private string MapDragName=>(_statusGlobe?"地星儀":"展開図")+"を"+(MapDragSlide?"スライド":"回転");
-    private static readonly Rectangle MapDragButton=new(350,82,414,48);
+    private static readonly Rectangle MapDragButton=new(350,82,270,48);
     private static Rectangle MapDragOption(int index)=>new(350,134+index*52,414,52);
     private bool MapDragClick(Point pointer)
     {

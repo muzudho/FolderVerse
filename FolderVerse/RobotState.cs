@@ -110,7 +110,7 @@ public sealed partial class RobotWorld
     public List<(int Node,string Message)> WorkshopFailures {get;}=new();
     public static void Validate(int owner,RobotParts parts)
     {
-        if(owner<0 || owner>=20 || (int)parts<1 || (int)parts>7)throw new ArgumentOutOfRangeException();
+        if(owner<0 || owner>=GameLimits.MaxConquerors || (int)parts<1 || (int)parts>7)throw new ArgumentOutOfRangeException();
     }
     public Robot Create(int owner,RobotParts parts,RobotRole role=RobotRole.Soldier,bool disposal=false)
     {Validate(owner,parts);return new(_nextId++,owner,parts,role,disposal);}

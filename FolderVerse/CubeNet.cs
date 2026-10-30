@@ -168,7 +168,6 @@ public sealed partial class CubeNet
             var face=Faces.First(f=>f.Face==p.Cell.Face);
             return (face.Project(p.A)*fit.Scale+fit.Origin,face.Project(p.B)*fit.Scale+fit.Origin);
         });
-        DrawHoveredEdge(ui,panel);
-        DrawSeamLabels(ui,panel);
+        if(!DirectoryOnly){DrawHoveredEdge(ui,panel);DrawSeamLabels(ui,panel);}
     }
 }

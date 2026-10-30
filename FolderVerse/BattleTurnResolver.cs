@@ -29,7 +29,7 @@ public static class BattleTurnResolver
         foreach(var u in units)
         {
             var p=positions[u.Id];var army=battle.Army(u.Owner);
-            if(!battle.Walkable(p) && !(u.Retreating && BattleState.HomeExit(p,army.Side,battle.BoardSize)))blocked.Add(u.Id);
+            if(p!=u.Position && !battle.WalkableFor(p,u.Owner) && !(u.Retreating && BattleState.HomeExit(p,army.Side,battle.BoardSize)))blocked.Add(u.Id);
             u.Facing=actions[u.Id].Facing;
         }
         battle.Events.Add(new(battle.Turn,BattlePhase.Place,0,"仮配置"));
@@ -47,6 +47,12 @@ public static class BattleTurnResolver
             u.Position=positions[u.Id];if(!battle.Contains(u.Position))u.Retreated=true;
             battle.Events.Add(new(battle.Turn,blocked.Contains(u.Id)?BattlePhase.Rollback:BattlePhase.Place,u.Id,$"{u.Position.X},{u.Position.Y} / {u.Facing}"));
         }
+        if(units.Any(a=>!a.Retreating && blocked.Contains(a.Id) && actions[a.Id].Step!=Point.Zero &&
+            units.Any(b=>b.Id>a.Id && !b.Retreating && blocked.Contains(b.Id) && actions[b.Id].Step!=Point.Zero && !battle.Allied(a.Owner,b.Owner) &&
+                BattleAi.Distance(origin[a.Id],origin[b.Id])==2 && (origin[a.Id].X==origin[b.Id].X || origin[a.Id].Y==origin[b.Id].Y) &&
+                origin[a.Id]+actions[a.Id].Step==origin[b.Id]+actions[b.Id].Step && !origin.Values.Contains(origin[a.Id]+actions[a.Id].Step) &&
+                battle.WalkableFor(origin[a.Id]+actions[a.Id].Step,a.Owner) && battle.WalkableFor(origin[b.Id]+actions[b.Id].Step,b.Owner))))
+            BattleLessons.Witness(battle,BattleLesson.CollisionTempo);
         if(battle.Kind==BattleKind.Node && flagEntrants.Length>=2 && flagEntrants.All(u=>blocked.Contains(u.Id) && u.Position!=battle.Flag))BattleLessons.Witness(battle,BattleLesson.FlagCourtesy);
         foreach(var u in units.Where(u=>u.Active && u.ResumeAfterRetreatOverlap))if(!units.Any(other=>other.Active && other.Id!=u.Id && !other.Retreating && other.Position==u.Position)){
             u.ResumeAfterRetreatOverlap=false;if(!battle.Army(u.Owner).Withdrawing)u.Retreating=false;
@@ -60,6 +66,7 @@ public static class BattleTurnResolver
         battle.Capture(BattlePhase.Rollback);
         battle.Events.Add(new(battle.Turn,BattlePhase.Attack,0,"同時攻撃"));
         battle.Capture(BattlePhase.Attack);
+        var gateDamage=new Dictionary<Point,int>();
         foreach(var attacker in units.Where(u=>u.Active))
         {
             var weapon=actions[attacker.Id].Weapon;if(weapon==BattleWeapon.None)continue;
@@ -67,22 +74,45 @@ public static class BattleTurnResolver
             if(weapon==BattleWeapon.Dagger)target=units.FirstOrDefault(u=>u.Active && u.Position==end);
             else for(int distance=1;distance<battle.BoardSize;distance++)
             {
-                var p=attacker.Position+new Point(step.X*distance,step.Y*distance);if(battle.BlocksShot(p,attacker.Facing,distance))break;
+                var p=attacker.Position+new Point(step.X*distance,step.Y*distance);if(battle.BlocksShot(p,attacker.Facing,distance)){if(battle.GateAt(p)!=null)end=p;break;}
                 end=p;if(distance==1)continue;target=units.FirstOrDefault(u=>u.Active && u.Position==p);if(target!=null)break;
             }
             battle.Attacks.Add(new(battle.Turn,attacker.Id,target?.Id,attacker.Position,end,weapon));
-            if(target==null)continue;
+            if(target==null){
+                var gate=battle.GateAt(end);
+                if(gate!=null && !battle.Allied(attacker.Owner,gate.Owner)){
+                    gateDamage[end]=gateDamage.GetValueOrDefault(end)+1;
+                    battle.GateHits.Add(new(battle.Turn,end,attacker.Position));willing.Add(attacker.Owner);
+                    if(weapon==BattleWeapon.Dagger)hits[attacker.Id].DaggerHit=true;
+                }
+                continue;
+            }
             if(weapon==BattleWeapon.Rifle && sideDaggerExposures.Contains((attacker.Id,target.Id)))BattleLessons.Witness(battle,BattleLesson.LeaveFiringLine);
             if(battle.Allied(attacker.Owner,target.Owner))BattleLessons.Witness(battle,BattleLesson.FireDiscipline);
+            if(weapon==BattleWeapon.Dagger && actions[attacker.Id].Step==Point.Zero && battle.Allied(attacker.Owner,target.Owner) && origin[target.Id]!=target.Position &&
+                units.Any(enemy=>!battle.Allied(attacker.Owner,enemy.Owner) && origin[enemy.Id]==origin[attacker.Id]+step && enemy.Position!=origin[enemy.Id] &&
+                    (enemy.Position.X-origin[enemy.Id].X)*step.X+(enemy.Position.Y-origin[enemy.Id].Y)*step.Y==0))
+                BattleLessons.Witness(battle,BattleLesson.WaitingDaggerSafety);
             hits[target.Id].HostileHit|=!battle.Allied(attacker.Owner,target.Owner);
             if(weapon==BattleWeapon.Dagger)hits[attacker.Id].DaggerHit=true;
             var front=BattleState.Forward(target.Facing);var delta=attacker.Position-target.Position;bool frontal=front.X!=0?delta.Y==0 && Math.Sign(delta.X)==front.X:delta.X==0 && Math.Sign(delta.Y)==front.Y;
             if(weapon==BattleWeapon.Rifle && target.Retreating && delta.X*front.X+delta.Y*front.Y<0)hits[target.Id].RetreatBackShot=true;
+            if(weapon==BattleWeapon.Dagger && !frontal && !battle.Allied(attacker.Owner,target.Owner) && BattleLessons.CornerSideTrap(battle,target))BattleLessons.Witness(battle,BattleLesson.CornerEscape);
             if(!frontal)hits[target.Id].Side++;
             else if(weapon==BattleWeapon.Dagger){if(actions[target.Id].Weapon!=BattleWeapon.Dagger)hits[target.Id].Dagger++;}
             else hits[target.Id].Rifle++;
             if(!battle.Allied(attacker.Owner,target.Owner))willing.Add(attacker.Owner);
             battle.Events.Add(new(battle.Turn,BattlePhase.Receive,target.Id,$"{weapon} ← {attacker.Id}"));
+        }
+        if(units.Any(u=>u.Active && u.Role!=BattleRole.Queen && !u.Retreating && u.Daggers==0 && u.Position==origin[u.Id] &&
+            units.Any(e=>e.Active && e.Role!=BattleRole.Queen && !e.Retreating && !battle.Allied(u.Owner,e.Owner) && e.Position==origin[e.Id] &&
+                e.Position==u.Position+BattleState.Forward(u.Facing) && u.Position==e.Position+BattleState.Forward(e.Facing) &&
+                !battle.Attacks.Any(a=>a.Turn==battle.Turn && (a.Attacker==u.Id || a.Attacker==e.Id) && a.Target.HasValue) &&
+                !battle.GateHits.Any(h=>h.Turn==battle.Turn && (h.From==u.Position || h.From==e.Position)))))
+            BattleLessons.Witness(battle,BattleLesson.RelieveFront);
+        foreach(var damage in gateDamage){
+            int index=battle.Fortifications.FindIndex(f=>f.Kind==FortificationKind.Gate && f.Position==damage.Key && f.Health>0);
+            if(index>=0){var gate=battle.Fortifications[index];battle.Fortifications[index]=gate with {Health=Math.Max(0,gate.Health-damage.Value)};}
         }
         battle.Capture(BattlePhase.Receive);
         foreach(var u in units.Where(u=>u.Active))

@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Input;
 
 public partial class Game1 : Game
 {
-    private enum Screen { Title, PlayerCount, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, LandConquest, Fortune, WorldStatus, Battle, Industry, Disposition, InactiveList, Hierarchy, Pocket, Transport, Ending, BattleResearch, LessonCatalog }
+    private enum Screen { Title, PlayerCount, ComputerPlayerCount, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, LandConquest, Fortune, WorldStatus, Battle, Industry, Disposition, InactiveList, Hierarchy, Pocket, Transport, Ending, BattleResearch, LessonCatalog }
     private readonly GraphicsDeviceManager _graphics;
     private readonly Random _random=new();
     private WorldSetup _setup=new();
@@ -198,7 +198,8 @@ public partial class Game1 : Game
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
         if(active && captureChord && !previousChord)_screenshots.Request();
         if(IsStatusScreen && active && FactionPickerInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(IsStatusScreen && active && (click || escape) && (click || _mapOverlayMenu) && MapOverlayClick(_pointer,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && active && (click || escape) && ReservationDirectoryInput(_pointer,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && active && (click || escape) && (click || _directMap || _mapOverlayMenu) && MapOverlayClick(_pointer,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && click && DirectMapClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && SalvageInput(_pointer,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && active && click && DomesticViewClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -213,7 +214,7 @@ public partial class Game1 : Game
         if(_screen==Screen.BattleResearch)
         {UpdateBattleResearch(elapsed,active && (enter || click && LessonContinue.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.LessonCatalog)
-        {if(active && (escape || click && LessonBack.Contains(_pointer)))_screen=Screen.WorldStatus;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        {if(active)LessonCatalogInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Hierarchy)
         {
             if(active && (escape || click && InactiveBack.Contains(_pointer)))_screen=Screen.WorldStatus;
@@ -270,6 +271,8 @@ public partial class Game1 : Game
         }
         else if(_screen==Screen.Title)
         { if((click && StartButton.Contains(_pointer)) || enter)OpenTitleStartMenu(); }
+        else if(_screen==Screen.ComputerPlayerCount)
+        {if(click && BackButton.Contains(_pointer))_screen=Screen.PlayerCount;else ComputerPlayerCountInput(click,enter,keyboard);}
         else if(_screen==Screen.PlayerCount)
         {if(click && BackButton.Contains(_pointer))_screen=Screen.Title;else PlayerCountInput(click,enter,keyboard);}
         else if(IsStatusScreen)
@@ -417,8 +420,13 @@ public partial class Game1 : Game
         _ui.Button(BackButton,"タイトルへ戻る",Muted);
         _ui.Button(WorldSeedButton,"世界 SEED "+_setup.WorldSeed+" / 入力",Muted,0.6f);
     }
-    private static Rectangle PortraitCell(int slot)
+    private Rectangle PortraitCell(int slot)
     {
+        if(_setup.ParticipantCount>20)
+        {
+            // Thirty portraits above and thirty below the globe preview.
+            int row=slot/15;return new(54+slot%15*120,row<2?112+row*90:832+(row-2)*90,120,90);
+        }
         int x,y;
         if(slot<7){x=slot;y=0;} else if(slot<10){x=6;y=slot-6;} else if(slot<17){x=16-slot;y=4;} else{x=0;y=20-slot;}
         return new(54+x*258,112+y*180,258,180);
@@ -427,7 +435,7 @@ public partial class Game1 : Game
     {
         _ui.Text("世界征服者世代抽選フェーズ",new(54,22),1.1f,Cream);
         _ui.Box(CastPreview,new(23,49,64));
-        for(int slot=0;slot<WorldSetup.CastCount;slot++)
+        for(int slot=0;slot<_setup.ActiveCount;slot++)
         {
             var rect=PortraitCell(slot);int portrait=_setup.Portraits[slot];Color color=_setup.OwnerColor(slot);
             bool active=slot<_setup.ActiveCount;
@@ -451,6 +459,7 @@ public partial class Game1 : Game
     private void BeginSelection()
     {
         _setup.HumanPlayers.Clear();
+        if(_setup.ComputerOnly){_setup.SelectPlayer(0);BeginLandConquest();return;}
         _selectionTiles=CharacterSelectionLayout.Create(_setup.TerritoryCounts,_setup.ActiveCount);
         _screen=Screen.PlayerSelect;_dragging=false;_hoveredSlot=-1;_previewOwner=-1;
         _world.HighlightOwner(_setup,-1);
@@ -587,13 +596,13 @@ public partial class Game1 : Game
             _world.Draw(_yaw,_pitch,_animationTime,false,true);
             _net.HoveredBattery=_net.HitBattery(_pointer);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1;
-            _world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe,_animationTime);
+            if(!_reservationDirectory)_world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe,_animationTime);
             GraphicsDevice.Viewport=viewport;
             using var globeClip=new RasterizerState{ScissorTestEnable=true};
             GraphicsDevice.ScissorRectangle=OrientationClip(canvas);
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
-            if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();_spriteBatch.End();
+            if(!_reservationDirectory){if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();}_spriteBatch.End();
         }
         else using(var clipping=new RasterizerState{ScissorTestEnable=true})
         {
@@ -606,12 +615,14 @@ public partial class Game1 : Game
             _net.DrawMapObjects(_ui,_setup,NetPanel,_animationTime);_spriteBatch.End();
         }
         _spriteBatch.Begin(transformMatrix:transform);
-        DrawConquerorResidences();DrawRegionOffice();DrawSalvageMap();
+        if(!_reservationDirectory){DrawConquerorResidences();DrawRegionOffice();DrawSalvageMap();}
         _spriteBatch.End();
         if(!MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
+        if(!_reservationDirectory){
         DrawBattleActivity();
-        DrawDestinationMap();DrawContinuationBadges();DrawWarReservationMarkers();DrawMoveReservationMarkers();DrawDirectTrucks(); DrawDomesticPortrait();
+        DrawDestinationMap();DrawContinuationBadges();DrawWarReservationMarkers();DrawMoveReservationMarkers();DrawDirectTrucks();DrawDomesticPortrait();
+        }else DrawReservationDirectory();
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(InspectorVisible?1276:991,InspectorVisible?770:831),Math.Min(0.48f,(InspectorVisible?600:870)/_font.MeasureString(location).X),Cream);
         _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):"右ドラッグ："+(MapDragSlide?"スライド":"回転")+" / ホイール：拡縮",new(InspectorVisible?1276:991,InspectorVisible?810:865),InspectorVisible?.27f:0.37f,new(177,206,216));
@@ -641,9 +652,9 @@ public partial class Game1 : Game
         if(_salvagePlan)DrawInspector(DrawSalvagePanel);
 
         if(_transportOverview){DrawInspector(DrawTransportOverviewPanel);if(_rateTarget>=0)DrawRatePieDialog();}
-        DrawWandererLocation();DrawRouteLayerButtons();
+        if(!_reservationDirectory)DrawWandererLocation();DrawRouteLayerButtons();
         DrawStatusMenu();
-        if(_supervisorDialog==0)DrawNodeTooltip();
+        if(_supervisorDialog==0 && !_reservationDirectory)DrawNodeTooltip();
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();
         DrawMapOverlayMenu();
         DrawInspectorFolders();
@@ -657,7 +668,7 @@ public partial class Game1 : Game
         _ui.Center($"{_setup.Width} x {_setup.Height} x {_setup.Depth} / {_setup.Cells.Length} 区画 / {_setup.ActiveCount} 人",new(CastPreview.X,CastPreview.Y+12,CastPreview.Width,48),0.72f,Cream);
         string stage=_screen switch { Screen.CastRolling=>"登場人物を抽選中",Screen.CastReview=>"登場人物を確認",Screen.PlacementRolling=>"区画権利を抽選中",Screen.PlacementReview=>"区画権利を確認",_=>"区画権利を確定済み" };
         string detail=stage+" / 右ドラッグで回転";
-        for(int slot=0;slot<WorldSetup.CastCount;slot++) if(PortraitCell(slot).Contains(_pointer))
+        for(int slot=0;slot<_setup.ActiveCount;slot++) if(PortraitCell(slot).Contains(_pointer))
         {
             var look=_setup.Looks[slot];int sisters=0;
             foreach(var other in _setup.Looks)if(other.BaseId==look.BaseId)sisters++;
@@ -684,11 +695,11 @@ public partial class Game1 : Game
             _spriteBatch.Begin(transformMatrix:transform);
             _ui.Box(new(0,0,1920,1080),new(16,35,46));
             _spriteBatch.Draw(_titleLogo,new Rectangle(0,0,1920,1080),Color.White*0.14f);
-            if(_screen==Screen.BattleResearch)DrawBattleResearch();else if(_screen==Screen.LessonCatalog)DrawLessonCatalog();else if(_screen==Screen.Industry)DrawIndustry();else if(_screen==Screen.PlayerCount)DrawPlayerCount();else if(_screen is Screen.LandConquest or Screen.Fortune)DrawLandSetupUi();else if(_screen==Screen.Ending)DrawEndingUi();else if(_screen==Screen.Transport)DrawTransport();else if(_screen==Screen.Pocket)DrawPocket();else if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
+            if(_screen==Screen.BattleResearch)DrawBattleResearch();else if(_screen==Screen.LessonCatalog)DrawLessonCatalog();else if(_screen==Screen.Industry)DrawIndustry();else if(_screen==Screen.PlayerCount)DrawPlayerCount();else if(_screen==Screen.ComputerPlayerCount)DrawComputerPlayerCount();else if(_screen is Screen.LandConquest or Screen.Fortune)DrawLandSetupUi();else if(_screen==Screen.Ending)DrawEndingUi();else if(_screen==Screen.Transport)DrawTransport();else if(_screen==Screen.Pocket)DrawPocket();else if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
             {
             if(_screen is Screen.LandConquest or Screen.Fortune)DrawLandSetupGlobe(canvas,transform,viewport);
             else if(_screen==Screen.Battle){if(!_setup.Campaign.UseRobotCombat || _robotPendingFocus<0)DrawBattleGlobe(canvas,transform);}
-            else if(!IsStatusScreen && _screen is not (Screen.Industry or Screen.PlayerCount or Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Pocket or Screen.Transport or Screen.Ending or Screen.BattleResearch or Screen.LessonCatalog))
+            else if(!IsStatusScreen && _screen is not (Screen.Industry or Screen.PlayerCount or Screen.ComputerPlayerCount or Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Pocket or Screen.Transport or Screen.Ending or Screen.BattleResearch or Screen.LessonCatalog))
             {
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;
@@ -736,7 +747,7 @@ public partial class Game1 : Game
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){_rulebookTexture?.Dispose();_net.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         if(disposing){StopBattleMusic();StopIndustryMusic();DisposeTitleMusic();}

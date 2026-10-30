@@ -6,28 +6,37 @@ using Microsoft.Xna.Framework.Input;
 
 public partial class Game1
 {
-    private bool _orientationDragging;
+    private bool _orientationDragging,_tutorialSlideDragged;
     private Vector2 _orientationDragOffset;
     private bool DragOrientationRobot(MouseState mouse,bool active,bool click)
     {
         if(!IsStatusScreen || MapTransitionActive || OrientationRotating || _net.IsAnimating || _seedDialog.IsOpen){
-            _orientationDragging=false;_orientationDragOffset=Vector2.Zero;return false;
+            _orientationDragging=false;_tutorialSlideDragged=false;_orientationDragOffset=Vector2.Zero;return false;
         }
         var toy=OrientationToyArea;
         if(!_orientationDragging){
             // Keep the surrounding rotation and reset buttons separate from the drag handle.
             var handle=new Rectangle(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30);
             if(!click || !handle.Contains(_pointer))return false;
-            _orientationDragging=true;_orientationDragOffset=Vector2.Zero;
+            _orientationDragging=true;_tutorialSlideDragged=false;_orientationDragOffset=Vector2.Zero;
             _dragging=_mapDragging=false;_globePressedCell=-1;
             return true;
         }
         if(!active || mouse.LeftButton!=ButtonState.Pressed){
+            if(active && mouse.LeftButton==ButtonState.Released && _tutorialSlideDragged && !_statusGlobe && _setup.TutorialStep==3 && _setup.TutorialMapStage==2 && !_tutorialAttackGuide){
+                _setup.TutorialMapRotations|=8;_lastAutoSaveTurn=-1;AutoSaveDomestic();
+            }
+            _tutorialSlideDragged=false;
             _orientationDragging=false;_orientationDragOffset=Vector2.Zero;return true;
         }
         var old=CanvasPoint(_previousMouse);var delta=new Vector2(_pointer.X-old.X,_pointer.Y-old.Y);
         if(_statusGlobe)_world.GlobePan+=new Vector2(delta.X/StatusGlobeArea.Width,delta.Y/StatusGlobeArea.Height);
-        else _net.Drag(delta);
+        else {
+            _net.Drag(delta);
+            if(_setup.TutorialStep==3 && _setup.TutorialMapStage==2 && !_tutorialAttackGuide && delta.LengthSquared()>0 && (_setup.TutorialMapRotations&8)==0){
+                _tutorialSlideDragged=true;
+            }
+        }
         _orientationDragOffset+=delta;
         // The handle stays inside its small window even during a long map slide.
         float limit=toy.Width*.15f;
