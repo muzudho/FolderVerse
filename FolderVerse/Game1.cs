@@ -148,7 +148,15 @@ public partial class Game1 : Game
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(IsStatusScreen)UpdateMapFooter((float)gameTime.ElapsedGameTime.TotalSeconds);
-        if(IsStatusScreen && _directPairOpen){_animationTime+=(float)gameTime.ElapsedGameTime.TotalSeconds;_directPairSlide=Math.Min(1,_directPairSlide+(float)gameTime.ElapsedGameTime.TotalSeconds/.25f);if(active){if(_directPairSlide>=1 || escape)DirectPairInput(mouse,click,escape);DirectPairMapInput(mouse);}else _directDrag=null;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && _directPairOpen){
+            _animationTime+=(float)gameTime.ElapsedGameTime.TotalSeconds;
+            UpdateDirectPairTransition((float)gameTime.ElapsedGameTime.TotalSeconds);
+            if(active && _directPairOpen){
+                if(_directPairSlide>=1 || escape)DirectPairInput(mouse,click,escape);
+                if(_directPairSlide>=1 && !_directPairClosing)DirectPairMapInput(mouse);
+            }else _directDrag=null;
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
         if(IsStatusScreen && _directMap && escape){CloseDirectDelivery();_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _invasionPicker>=0)
         {if(active)InvasionPickerInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}

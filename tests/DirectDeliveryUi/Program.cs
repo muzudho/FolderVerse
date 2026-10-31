@@ -45,7 +45,7 @@ class Checks:Game1{
   Console.WriteLine("PASS: action proportions, animated frame-out/in, hidden/moving input suppression, delivery close and Escape.");
   var viewNet=(CubeNet)Get("_net");var mainPanel=(Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!;
   foreach(float angle in new[]{0f,MathHelper.PiOver2,MathHelper.Pi,MathHelper.Pi*1.5f}){
-   viewNet.ScreenAngle=angle;var view=viewNet.CaptureView();Call("OpenDirectPair",b,a);
+   viewNet.ScreenAngle=angle;var view=viewNet.CaptureView();Set("_directPairOpen",false);Call("OpenDirectPair",b,a);
    var ids=(int[])Get("_directNodes");var first=(Vector2)Call("DirectPairPosition",ids[0]);var second=(Vector2)Call("DirectPairPosition",ids[1]);
    Check(first.X<=second.X+.5f,"Panes follow map left/right at every net rotation");
    var copy=(CubeNet)Get("_directPairNet");Check(copy.ScreenAngle==angle && copy.Faces.SequenceEqual(view.Faces),"Pair map keeps unfolded faces and screen rotation");
@@ -54,7 +54,11 @@ class Checks:Game1{
   }
   viewNet.ScreenAngle=0;
   if(viewNet.NodePosition(w,w.Nodes.All[a],mainPanel).X>viewNet.NodePosition(w,w.Nodes.All[b],mainPanel).X)viewNet.ScreenAngle=MathHelper.Pi;
-  Call("OpenDirectPair",a,b);
+  Set("_directPairOpen",false);Call("OpenDirectPair",a,b);
+  Check((float)Get("_directPairSlide")==0,"Pair starts at the main camera without accepting hidden controls");
+  var beforeOrders=w.Robots.DirectDelivery.Orders.Count;Drag(0,0,0,1,0);Check(w.Robots.DirectDelivery.Orders.Count==beforeOrders,"Sliding inspectors cannot receive part drags");
+  Call("UpdateDirectPairTransition",.175f);var halfway=(Rectangle)typeof(Game1).GetProperty("DirectPairAnimatedPanel",F)!.GetValue(this)!;Check(halfway.Width>720 && halfway.Width<mainPanel.Width,"Map viewport interpolates between main and pair views");
+  Call("UpdateDirectPairTransition",.175f);
   Check(((int[])Get("_directNodes"))[0]==a,"Transaction fixture follows visual order");
   var left=Cell(0,0);var right=Cell(1,0);
   Check(left.Right<600 && right.Left>1320,"Dedicated compact panes leave the center map open");
@@ -71,7 +75,7 @@ class Checks:Game1{
   Drag(0,0,0,1,0);Drag(0,1,1,1,1);Check(w.Robots.DirectDelivery.Orders.Count==2,"Independent parts can use different destination cells");
   var doc=AutoSaveStore.Capture(w);Check(AutoSaveStore.Restore<WorldSetup>(doc).Robots.DirectDelivery.Orders.Count==2,"UI reservations are saved");
   foreach(var order in w.Robots.DirectDelivery.Orders.ToArray())w.Robots.DirectDelivery.Cancel(order.Number);
-  var body=w.Robots.Nodes[a].Robots.Single(r=>(r.Parts&RobotParts.Body)!=0);w.Robots.MovePart(a,body.Id,RobotParts.Body,original,0);Call("OpenDirectPair",a,b);
+  var body=w.Robots.Nodes[a].Robots.Single(r=>(r.Parts&RobotParts.Body)!=0);w.Robots.MovePart(a,body.Id,RobotParts.Body,original,0);Call("OpenDirectPair",a,b);Call("UpdateDirectPairTransition",.35f);
   void Whole(int fromSlot,int toSide,int toSlot){var from=Cell(0,fromSlot).Location+new Point(16,145);Set("_pointer",from);Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);var to=Cell(toSide,toSlot).Center;Set("_previousMouse",Mouse(from,ButtonState.Pressed));Set("_pointer",to);Call("DirectPairInput",Mouse(to,ButtonState.Released),false,false);}
   Whole(0,0,2);Check(((long?[][])Get("_directSlots"))[0][2]==original && w.Robots.Nodes[a].Robots.Single().Parts==RobotParts.Complete,"Cell drag within pane repositions complete robot");
   Whole(2,1,0);Check(w.Robots.DirectDelivery.Orders.Count==0 && w.Robots.Nodes[a].Robots.Single().Parts==RobotParts.Complete,"Whole robot conflicting with destination leaves no partial reservations");
@@ -102,21 +106,45 @@ class Checks:Game1{
    Call("OpenDirectMap");
   }
   if(frame==6){var trucks=(List<(Rectangle Bounds,int A,int B)>)Get("_directTrucks");Check(trucks.Count>0,"Selecting direct delivery restores truck markers");Call("DirectMapClick",trucks[0].Bounds.Center);Check((bool)Get("_directPairOpen"),"Selected overlay truck opens the pair");var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
-  if(frame==7){Call("DirectPairInput",new MouseState(),false,true);Check(!(bool)Get("_directPairOpen") && (bool)Get("_directMap"),"Back retains the selected direct-delivery overlay");}
+  if(frame==7){Call("DirectPairInput",new MouseState(),false,true);Check((bool)Get("_directPairClosing"),"Back starts the reverse transition");Call("UpdateDirectPairTransition",.35f);Check(!(bool)Get("_directPairOpen") && (bool)Get("_directMap"),"Back retains the selected direct-delivery overlay");}
   if(frame==8){
    Set("_statusGlobe",true);var globe=(WorldPreview)Get("_world");globe.ManualOrientation=null;
    var center=(w.Routes.Position(w.Nodes.All[a].Cell,w.Nodes.All[a].Center)+w.Routes.Position(w.Nodes.All[b].Cell,w.Nodes.All[b].Center))/2;
    Call("FocusGlobePosition",center);var orientation=globe.ViewOrientation((float)Get("_yawAngle"),(float)Get("_pitchAngle"));
    foreach(float angle in new[]{0f,MathHelper.PiOver2,MathHelper.Pi}){
     globe.ManualOrientation=Quaternion.CreateFromRotationMatrix(orientation*Matrix.CreateRotationZ(angle));var saved=globe.ManualOrientation;var pan=globe.GlobePan;float zoom=globe.GlobeZoom;
-    Call("OpenDirectPair",b,a);var ids=(int[])Get("_directNodes");var x=(Vector2)Call("DirectPairPosition",ids[0]);var y=(Vector2)Call("DirectPairPosition",ids[1]);
+    Set("_directPairOpen",false);Call("OpenDirectPair",b,a);var ids=(int[])Get("_directNodes");var x=(Vector2)Call("DirectPairPosition",ids[0]);var y=(Vector2)Call("DirectPairPosition",ids[1]);
     Check(x.X<=y.X+.5f && (bool)Get("_directPairGlobe"),"Globe also keeps visual left/right");
     Check(((WorldPreview)Get("_directPairWorld")).ManualOrientation==saved && globe.ManualOrientation==saved && globe.GlobePan==pan && globe.GlobeZoom==zoom,"Globe direction is copied and main camera is unchanged");
    }
   }
-  if((bool)Get("_directPairOpen"))Set("_directPairSlide",1f);
+  if(frame<9 && (bool)Get("_directPairOpen"))Set("_directPairSlide",1f);
+  if(frame==8){foreach(var n in w.Nodes.All)n.Owner=0;var pairGlobe=(WorldPreview)Get("_directPairWorld");pairGlobe.GlobeZoom=.8f;pairGlobe.GlobeAnchor=null;}
+  void ClickOtherTruck(){
+   var trucks=(List<(Rectangle Bounds,int A,int B)>)Get("_directPairTrucks");var current=(int[])Get("_directNodes");
+   var next=trucks.FirstOrDefault(t=>!current.Contains(t.A) || !current.Contains(t.B));Check(next.Bounds!=Rectangle.Empty,"Pair map exposes another reachable truck/ferry");
+   var orders=w.Robots.DirectDelivery.Orders.Select(o=>o.Number).ToArray();
+   // Use physical 960x540 coordinates, then the same canvas conversion as production input.
+   var canvas=(Rectangle)Call("CanvasBounds");var physical=new Point(canvas.X+next.Bounds.Center.X*canvas.Width/1920,canvas.Y+next.Bounds.Center.Y*canvas.Height/1080);
+   var mouse=Mouse(physical,ButtonState.Pressed);Set("_pointer",(Point)Call("CanvasPoint",mouse));
+   var snapshot=current.ToArray();Set("_directDrag",(0,original,RobotParts.Head));Call("DirectPairInput",mouse,true,false);Check(((int[])Get("_directNodes")).SequenceEqual(snapshot),"Carrying a part cannot switch to another route");Set("_directDrag",null!);
+   Call("DirectPairInput",mouse,true,false);
+   var selected=(int[])Get("_directNodes");Check(selected.Contains(next.A) && selected.Contains(next.B) && (bool)Get("_directPairOpen"),"Truck click switches pairs directly without returning to main map");
+   Check(orders.SequenceEqual(w.Robots.DirectDelivery.Orders.Select(o=>o.Number)),"Consecutive truck clicks preserve previous reservations");
+   Check(!(bool)Get("_directPairFromMain"),"Consecutive pair switches keep main controls out of view");
+   Check((float)Get("_directPairSlide")==0 && ((List<(Rectangle Bounds,int A,int B)>)Get("_directPairTrucks")).Count==0,"Switch clears stale truck hit targets during camera motion");
+  }
+  if(frame==9)ClickOtherTruck();
+  if(frame==10)Call("UpdateDirectPairTransition",.35f);
+  if(frame==11){Call("DirectPairInput",new MouseState(),false,true);Call("UpdateDirectPairTransition",.175f);}
+  if(frame==12){Call("UpdateDirectPairTransition",.175f);Check(!(bool)Get("_directPairOpen"),"Reverse animation returns to the large map");Set("_statusGlobe",false);Call("OpenDirectPair",a,b);}
+  if(frame==13)Call("UpdateDirectPairTransition",.175f);
+  if(frame==14){Call("UpdateDirectPairTransition",.175f);((CubeNet)Get("_directPairNet")).FitAll((Rectangle)typeof(Game1).GetField("DirectPairMapBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!,.8f);}
+  if(frame==15)ClickOtherTruck();
+  if(frame==16)Call("UpdateDirectPairTransition",.175f);
+  if(frame==17)Call("UpdateDirectPairTransition",.175f);
   Call("UpdateMapFooter",.25f);base.Draw(t);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var tex=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);tex.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"direct-{frame}.png")))tex.SaveAsPng(file,tex.Width,tex.Height);
   if(frame==1){var hits=(System.Collections.IList)Get("_directTrucks");Check(hits.Count>0,"Visible adjacent edge has a truck");}
-  if(frame++==8){Console.WriteLine("PASS: edge trucks, hidden ordinary-inspector markers, selected overlay opening and return, two hangars, reservations and rendering.");Exit();}
+  if(frame++==17){Console.WriteLine("PASS: animated main/pair/return cameras, disabled moving controls, consecutive globe/net truck clicks at 540p and preserved reservations.");Console.WriteLine("PASS: edge trucks, hidden ordinary-inspector markers, selected overlay opening and return, two hangars, reservations and rendering.");Exit();}
  }
 }
