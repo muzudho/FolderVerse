@@ -137,7 +137,7 @@ public partial class Game1
         StoreCurrentMovementDraft();
         if(ShowTutorialAttackGuideIfRequired())return;
         CloseMovement();if(_transportOverview)CloseTransportOverview();
-        _setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);_populationCell=-1;OpenBattle();
+        ClearCurrentPlayerNodeChecks();_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);_populationCell=-1;OpenBattle();
     }
     private string InvasionTargetLabel=>_selectedMoveNode<0?"地図上で攻めることができる目標が光っています。　目標をクリックしてください。":"侵攻先："+_setup.Nodes.DisplayName(_setup.Nodes.All[_selectedMoveNode]);
     private void DrawInvasionPanel()

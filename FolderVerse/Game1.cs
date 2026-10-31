@@ -635,6 +635,7 @@ public partial class Game1 : Game
         DrawBattleActivity();
         DrawDestinationMap();DrawContinuationBadges();DrawWarReservationMarkers();DrawMoveReservationMarkers();DrawDirectTrucks();DrawDomesticPortrait();
         }else DrawReservationDirectory();
+        DrawNodeCheckMarkers(MapViewBounds);
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(InspectorVisible?1276:991,InspectorVisible?770:831),Math.Min(0.48f,(InspectorVisible?600:870)/_font.MeasureString(location).X),Cream);
         _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):"右ドラッグ："+(MapDragSlide?"スライド":"回転")+" / ホイール：拡縮",new(InspectorVisible?1276:991,InspectorVisible?810:865),InspectorVisible?.27f:0.37f,new(177,206,216));
@@ -666,7 +667,7 @@ public partial class Game1 : Game
         if(_transportOverview){DrawInspector(DrawTransportOverviewPanel);if(_rateTarget>=0)DrawRatePieDialog();}
         if(!_reservationDirectory)DrawWandererLocation();DrawRouteLayerButtons();
         DrawStatusMenu();
-        if(_supervisorDialog==0 && !_reservationDirectory)DrawNodeTooltip();
+        if(!DrawNodeCheckHint() && _supervisorDialog==0 && !_reservationDirectory)DrawNodeTooltip();
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();
         DrawMapOverlayMenu();
         DrawHangarTrainingNotice();

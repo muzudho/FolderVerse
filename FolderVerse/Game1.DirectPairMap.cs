@@ -162,7 +162,7 @@ public partial class Game1
             _ui.Center(label,badge,.38f,DirectSideColor(side));
         }
         _spriteBatch.End();GraphicsDevice.ScissorRectangle=new(canvas.X+(int)(panel.X*canvas.Width/1920f),canvas.Y+(int)(panel.Y*canvas.Height/1080f),(int)(panel.Width*canvas.Width/1920f),(int)(panel.Height*canvas.Height/1080f));
-        _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);DrawDirectPairTrucks(panel);
+        _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);DrawDirectPairTrucks(panel);DrawNodeCheckMarkers(panel,true);
         _spriteBatch.End();GraphicsDevice.ScissorRectangle=old;_spriteBatch.Begin(transformMatrix:transform);
         _ui.Center("右ドラッグ：地図を移動 / ホイール：拡縮",new(panel.X,879,panel.Width,28),.32f,Cream);
         _ui.Button(DirectPairFitButton,"両地点を表示",Muted,.45f);

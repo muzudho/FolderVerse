@@ -17,7 +17,7 @@ public partial class Game1
     }
     private void ReturnToTitle()
     {
-        StopBattleMusic();
+        StopBattleMusic();ClearAllNodeChecks();
         _dispositionScene=null;
         FinishConquestOverview();_conquestOverviewTurn=-1;_tutorialMenuOpen=false;_tutorialAttackGuide=false;_tutorialAttackAchieved=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;
         _campaignMenuStage=0;_titleMenuOpen=false;CancelTransportModal();_domesticViews.Clear();

@@ -61,7 +61,8 @@ public partial class Game1
         var r=InspectorHandle;
         _ui.Box(new(r.X+4,r.Y+5,r.Width,r.Height),new Color(5,17,28));_ui.Box(r,_setup.OwnerColor(_setup.PlayerSlot));
         _ui.Button(InspectorClose,"×",Muted,.75f);
-        for(int y=r.Y+90;y<r.Bottom-16;y+=12)_ui.Box(new(r.X+18,y,r.Width-36,4),new Color(30,48,58));
+        if(NodeCheckButtonVisible)DrawNodeCheckButton();
+        for(int y=r.Y+(NodeCheckButtonVisible?132:90);y<r.Bottom-16;y+=12)_ui.Box(new(r.X+18,y,r.Width-36,4),new Color(30,48,58));
     }
     private void OpenNodeInspector(int id){
         ResetInspector();var node=_setup.Nodes.All[id];_nodeInspectorClosing=false;_reignView=false;
@@ -82,6 +83,7 @@ public partial class Game1
     private bool DomesticViewClick(Point p)
     {
         if(_trainingOpen || _supervisorDialog>0)return false;
+        if(NodeCheckClick(p))return true;
         if((_reignView || _regionCell>=0 || _populationCell>=0) && new Rectangle(InspectorFolderButton.X+NodeInspectorOffset,InspectorFolderButton.Y,InspectorFolderButton.Width,InspectorFolderButton.Height).Contains(p)){OpenInspectorFolders();return true;}
         if(StrategyReadOnly && new Rectangle(54+NodeInspectorOffset,96,850,879).Contains(p) && !InspectorClose.Contains(p))return true;
         if(_reignView && !InspectingSupervisor && LessonCatalogButton.Contains(new Point(p.X-NodeInspectorOffset,p.Y))){_screen=Screen.LessonCatalog;return true;}
