@@ -189,12 +189,11 @@ public partial class Game1
             }
             DrawDefenseReservationEffect(cell,robot);
             string partsName=PartsLabel(robot)+$" / #{robot.Owner+1}";
-            if(robot.ShoeOwner>=0 && DefenseShoeProgress(robot)>.6f)DrawDefenseReservationLabel(new(cell.X,cell.Y+126,cell.Width,24),robot.ShoeOwner);
-            else if(robot.ShoeOwner<0)_ui.Center(partsName,new(cell.X,cell.Y+126,cell.Width,24),Math.Min(.4f,(cell.Width-8)/Math.Max(1,_font.MeasureString(partsName).X)),Cream);
+            string reservation=HangarReservationLabel(robot);
+            if(reservation.Length>0){
+                if(Math.Min(DefenseShoeProgress(robot),WorkShoeProgress(robot))>.6f)DrawHangarReservationLabel(new(cell.X,cell.Y+126,cell.Width,24),robot,reservation);
+            }else _ui.Center(partsName,new(cell.X,cell.Y+126,cell.Width,24),Math.Min(.4f,(cell.Width-8)/Math.Max(1,_font.MeasureString(partsName).X)),Cream);
             _ui.Center("ID "+robot.Id+(robot.DamagedParts!=0?" / 損傷":""),new(cell.X,cell.Y+148,90,22),.27f,Cream);
-            string reservation=robot.FactoryWorker?"工場作業員":robot.InterceptOnly?"迎撃専用":robot.DefenseOnly?"守備専用":robot.Disposal?"廃棄予約":_setup.Robots.MarchReserved(_populationNode,robot)?"出撃予約":"";
-            if(robot.ShoeOwner>=0)reservation="";
-            if(reservation.Length>0)_ui.Center(reservation,new(cell.X+88,cell.Y+148,cell.Width-88,22),.27f,Accent);
             if(cellHover){var edge=canReserve?ControlEdge:new Color(184,102,104);_ui.Box(new(cell.X,cell.Y,cell.Width,3),edge);_ui.Box(new(cell.X,cell.Bottom-3,cell.Width,3),edge);_ui.Box(new(cell.X,cell.Y,3,cell.Height),edge);_ui.Box(new(cell.Right-3,cell.Y,3,cell.Height),edge);}
         }
         _ui.Text(_hangarAbandonMode?"部位を選択：パーツを放棄 / 区画の余白：個体を放棄":_hangarMessage.Length>0 && !hoveringPart?_hangarMessage:hover,new(84,838),.32f,Cream);
@@ -203,8 +202,9 @@ public partial class Game1
             string[] labels={"廃棄予約","守備専用予約","工場作業員予約","迎撃専用予約"};
             for(int i=0;i<4;i++){
                 var button=HangarReservationButton(i);var color=_hangarReservation==(HangarReservation)(i+1)?Accent:Muted;
-                if(i!=1){_ui.Button(button,labels[i],color,.36f);continue;}
-                _ui.Button(button,"",color,.36f);RobotWorkArt.DrawFlag(_ui,new(button.X+6,button.Y+6,24,30),_setup.OwnerColor(_setup.PlayerSlot),DefenseFlagWave());
+                _ui.Button(button,"",color,.36f);
+                if(i==0)DrawDirectoryRoleIcon(5,new(button.X+6,button.Y+9,24,24),UiPainter.ContrastInk(color));
+                else RobotWorkArt.DrawFlag(_ui,new(button.X+6,button.Y+6,24,30),_setup.OwnerColor(_setup.PlayerSlot),DefenseFlagWave());
                 _ui.Center(labels[i],new(button.X+32,button.Y,button.Width-36,button.Height),.32f,UiPainter.ContrastInk(color));
             }
         }

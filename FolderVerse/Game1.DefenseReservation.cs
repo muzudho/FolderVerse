@@ -26,11 +26,15 @@ public partial class Game1
         float wave=MathF.Sin(age*18)*Math.Clamp(1-age/1.15f,0,1);
         RobotWorkArt.DrawFlag(_ui,new Rectangle(cell.Right-49,cell.Top+18,40,64),_setup.OwnerColor(robot.ShoeOwner),wave);
     }
-    private void DrawDefenseReservationLabel(Rectangle bounds,int country)
+    private string HangarReservationLabel(Robot robot)
+        =>robot.FactoryWorker?"工場作業員予約":robot.InterceptOnly?"迎撃専用予約":robot.DefenseOnly?"守備専用予約":robot.Disposal?"廃棄予約":_setup.Robots.MarchReserved(_populationNode,robot)?"出撃予約":"";
+    private void DrawHangarReservationLabel(Rectangle bounds,Robot robot,string label)
     {
+        int country=WorkReservationOwner(robot);if(country<0)country=robot.Owner;
+        float scale=Math.Min(.36f,(bounds.Width-8)/Math.Max(1,_font.MeasureString(label).X));
         foreach(var offset in new[]{new Point(-1,0),new Point(1,0),new Point(0,-1),new Point(0,1)}){
-            var shadow=bounds;shadow.Offset(offset);_ui.Center("守備専用予約",shadow,.36f,new Color(225,232,235));
+            var shadow=bounds;shadow.Offset(offset);_ui.Center(label,shadow,scale,new Color(225,232,235));
         }
-        _ui.Center("守備専用予約",bounds,.36f,_setup.OwnerColor(country));
+        _ui.Center(label,bounds,scale,_setup.OwnerColor(country));
     }
 }

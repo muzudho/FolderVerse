@@ -101,7 +101,15 @@ sealed class ShoesGame:Game1{
    int slot=Array.IndexOf((long?[])Get("_hangarSlots"),(long?)trainingRobot);Click(StaticRect("HangarCell",slot).Center);
    Check(world.Robots.Nodes[node].Robots.Single(r=>r.Id==trainingRobot).DefenseOnly && (int)Get("_hangarTrainingCountry")==-1,"Next reservation succeeds immediately after changing policy");
   }
+  if(frame==14){
+   world.SelectControlledRuler(0);Set("_animationTime",20f);Click(StaticRect("HangarReservationButton",3).Center);Click(StaticRect("HangarCell",3).Center);Set("_animationTime",22f);
+   var sortie=world.Robots.Create(0,RobotParts.Complete);world.Robots.Nodes[node].Add(sortie);int destination=world.Routes.Neighbors(world.Nodes.All[node]).Select(r=>world.Nodes.At(r.Target,r.Entry).Id).First(n=>n!=node);world.Campaign.Plan(new(0,destination,1,node,false,RobotIds:new[]{sortie.Id}));Call("SyncHangarSlots");
+   Check((string)Call("HangarReservationLabel",sortie)=="出撃予約","Sortie role uses the same full-name label");
+   string[] expected={"迎撃専用予約","工場作業員予約","廃棄予約"};
+   for(int i=0;i<workers.Length;i++)Check((string)Call("HangarReservationLabel",world.Robots.Nodes[node].Robots.Single(r=>r.Id==workers[i].Id))==expected[i],"Hangar displays the correct full role name: "+expected[i]);
+  }
+  if(frame==15){var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=1920;graphics.PreferredBackBufferHeight=1080;graphics.ApplyChanges();}
   base.Draw(time);var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var image=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);image.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"defense-shoes-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
-  if(++frame==14){Console.WriteLine("PASS: training-only reason, incomplete/foreign/busy exclusions, correct commander portrait, dismissal, policy change and 1080p/540p notice rendering.");Console.WriteLine("PASS: defense, worker/intercept/disposal, independent simultaneous flags, immediate cancellation, plan marker and footwear rendering.");Exit();}
+  if(++frame==16){Console.WriteLine("PASS: training-only reason, incomplete/foreign/busy exclusions, correct commander portrait, dismissal, policy change and 1080p/540p notice rendering.");Console.WriteLine("PASS: defense, worker/intercept/disposal, independent simultaneous flags, immediate cancellation, plan marker and footwear rendering.");Exit();}
  }
 }
