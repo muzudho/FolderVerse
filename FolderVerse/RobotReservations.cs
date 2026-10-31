@@ -55,6 +55,11 @@ public sealed partial class RobotWorld
         workshop.SetWorkers(ids);
     }
     public bool CanSetReservation(int node,Robot robot,HangarReservation kind,int? commander=null)
+        =>CanSetReservationCore(node,robot,kind,commander,false);
+    // Explain training only if relaxing that policy alone would make the command valid.
+    public bool ReservationBlockedByTraining(int node,Robot robot,HangarReservation kind,int? commander=null)
+        =>!CanSetReservationCore(node,robot,kind,commander,false) && CanSetReservationCore(node,robot,kind,commander,true);
+    private bool CanSetReservationCore(int node,Robot robot,HangarReservation kind,int? commander,bool ignoreTraining)
     {
         if(node<0 || node>=Nodes.Length || robot==null)return false;
         int country=commander??robot.Owner;if(country<0 || country>=Training.Length)return false;
@@ -64,7 +69,10 @@ public sealed partial class RobotWorld
         if(kind is <HangarReservation.Disposal or >HangarReservation.Intercept || ReservationBusy(node,robot.Id))return false;
         bool remove=kind==HangarReservation.Disposal?robot.Disposal:kind==HangarReservation.Defense?robot.DefenseOnly:kind==HangarReservation.Intercept?robot.InterceptOnly:kind==HangarReservation.Worker && robot.FactoryWorker;
         if(!remove){
-            if(kind is HangarReservation.Defense or HangarReservation.Worker or HangarReservation.Intercept && !Training[country].Eligible(WithoutRole(robot).Materialize() with {Owner=country}))return false;
+            if(kind is HangarReservation.Defense or HangarReservation.Worker or HangarReservation.Intercept){
+                var candidate=WithoutRole(robot).Materialize() with {Owner=country};
+                if(!candidate.CanFight || !ignoreTraining && !Training[country].Eligible(candidate))return false;
+            }
             if(kind==HangarReservation.Defense && robot.NativeParts(country)==0)return false;
             if(kind==HangarReservation.Worker && workshop.ProductionLines.Length>=workshop.LineLimit)return false;
         }

@@ -42,7 +42,7 @@ public partial class Game1
         CloseDirectDelivery();
         _wandererPolicyOpen=false;
         CancelTransportModal();
-        _nodeAssemblyOpen=_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;
+        _hangarTrainingCountry=-1;_nodeAssemblyOpen=_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;
         _factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;
         if(_movementOpen)CloseMovement();if(_transportOverview)CloseTransportOverview();
         _reignView=false;_populationCell=_populationNode=_inspectedNode=-1;_nodeInspectorClosing=false;_trainingOpen=false;_hangarDrag=null;_supervisorDialog=0;

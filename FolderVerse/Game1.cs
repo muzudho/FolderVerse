@@ -213,6 +213,8 @@ public partial class Game1 : Game
         if(IsStatusScreen && click && DirectMapClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && SalvageInput(_pointer,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && active && click && DomesticViewClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && active && click && HangarTrainingNoticeClick(_pointer))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _populationCell>=0 && _nodeAssemblyOpen && (NodeInspectorBounds.Contains(_pointer) || _hangarDrag.HasValue || escape))
         {if(active)NodeAssemblyInput(mouse,click,escape);else _hangarDrag=null;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Pocket)
@@ -667,6 +669,7 @@ public partial class Game1 : Game
         if(_supervisorDialog==0 && !_reservationDirectory)DrawNodeTooltip();
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();
         DrawMapOverlayMenu();
+        DrawHangarTrainingNotice();
         DrawFolderTree();DrawInspectorFolders();
         DrawFactionPicker();
         DrawAbandonConfirmation();

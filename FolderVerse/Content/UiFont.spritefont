@@ -33,4 +33,5 @@
 <CharacterRegion><Start>角</Start><End>角</End></CharacterRegion>
 <CharacterRegion><Start>避</Start><End>避</End></CharacterRegion>
 <CharacterRegion><Start>起</Start><End>起</End></CharacterRegion>
+<CharacterRegion><Start>私</Start><End>私</End></CharacterRegion>
 </CharacterRegions></Asset></XnaContent>

@@ -27,25 +27,25 @@ public partial class Game1
         bool main=!ConquestCard.Reminder,cells=main && age>=tally.CellsStart,entry=main && age>=tally.EntryStart;
         bool score=main && age>=tally.ScoreStart,rank=main && age>=tally.RankStart;
         _ui.Box(new(x,y,4,panel.Height),_setup.OwnerColor(ruler));
-        // One horizontal calculation, followed by a separate rank line.
-        float unit=(panel.Width-24)/540f;int line=y+85;
-        Rectangle Token(int start,int width)=>new(x+12+(int)(start*unit),line,Math.Max(1,(int)(width*unit)-3),56);
-        var cellsBox=Token(0,65);var entryBox=Token(215,65);var pointsBox=Token(385,95);
-        var rankBox=new Rectangle(x+panel.Width/2-40,y+220,135,62);
+        // Keep the arithmetic on one baseline; units sit above/below their counters.
+        float unit=(panel.Width-24)/500f;int line=y+75;
+        Rectangle Token(int start,int width)=>new(x+12+(int)(start*unit),line,Math.Max(1,(int)(width*unit)-3),76);
+        var cellsBox=Token(0,85);var entryBox=Token(230,85);var pointsBox=Token(355,145);
+        var rankBox=new Rectangle(x+panel.Width/2-40,y+245,135,62);
         DrawConquestNumber(entryBox,tally.Entry,entry);
-        _ui.Center("entry no",Token(280,75),.30f*unit,Cream);
+        _ui.Center("entry no",new(entryBox.X,y+35,entryBox.Width,32),.43f*unit,Cream);
         if(tally.Powered){
             DrawConquestNumber(cellsBox,tally.TotalCells,cells);
-            _ui.Center(ToyCounterRenderer.SectorUnit(tally.TotalCells),Token(65,65),.30f*unit,Cream);
-            _ui.Center($"× {tally.Scale} +",Token(130,85),.37f*unit,Cream);
+            _ui.Center(ToyCounterRenderer.SectorUnit(tally.TotalCells),new(cellsBox.X,y+156,cellsBox.Width,32),.43f*unit,Cream);
+            _ui.Center($"× {tally.Scale} +",Token(85,145),.60f*unit,Cream);
         }else if(cells){
-            _ui.Center("電池無し -100 pts +",Token(0,215),.36f*unit,Cream);
+            _ui.Center("電池無し -100 pts +",Token(0,230),.45f*unit,Cream);
         }
-        _ui.Center("=",Token(355,30),.50f*unit,Cream);
+        _ui.Center("=",Token(315,40),.75f*unit,Cream);
         DrawConquestNumber(pointsBox,tally.Score(age),score);
-        _ui.Center("points",Token(480,60),.30f*unit,Cream);
+        _ui.Center("points",new(pointsBox.X,y+156,pointsBox.Width,32),.43f*unit,Cream);
         if(cells && tally.SubordinateCells>0)
-            _ui.Center($"（内、手下 {tally.SubordinateCells} {ToyCounterRenderer.SectorUnit(tally.SubordinateCells)}）",new(x+12,y+155,panel.Width-24,28),.30f,Cream);
+            _ui.Center($"（内、手下 {tally.SubordinateCells} {ToyCounterRenderer.SectorUnit(tally.SubordinateCells)}）",new(x+12,y+195,panel.Width-24,28),.30f,Cream);
         _ui.Center("暫定",new(rankBox.X-100,rankBox.Y,90,62),.45f,Cream);
         DrawConquestNumber(rankBox,ConquestCard.Rank,rank);
         _ui.Center("位",new(rankBox.Right+8,rankBox.Y,40,62),.45f,Cream);

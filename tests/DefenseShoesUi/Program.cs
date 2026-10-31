@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using System.Reflection;
 using var game=new ShoesGame();game.Run();
 sealed class ShoesGame:Game1{
- const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;WorldSetup world=null!;int node,frame;long id;Robot bare=null!;Robot[] workers=Array.Empty<Robot>();
+ const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;WorldSetup world=null!;int node,frame;long id;Robot bare=null!;Robot[] workers=Array.Empty<Robot>();long trainingRobot;
  object Get(string n)=>typeof(Game1).GetField(n,F)!.GetValue(this)!;
  void Set(string n,object value)=>typeof(Game1).GetField(n,F)!.SetValue(this,value);
  object Call(string n,params object[] args)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,args)!;
@@ -17,6 +17,16 @@ sealed class ShoesGame:Game1{
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();world=(WorldSetup)Get("_setup");world.SetWorld(0);world.SetCast(123);world.SetPlacement(456);world.SelectPlayer(0);world.Relations.SetSuperior(1,0);world.SelectControlledRuler(1);
   node=world.Nodes.All.First(n=>n.Terrain!=TravelTerrain.Sea).Id;world.Nodes.All[node].Owner=0;world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);world.Robots.ConfigureFactories(world);world.Robots.Training[1].DeploymentPolicy=1;
   bare=world.Robots.Create(0,RobotParts.Complete) with {HeadOrigin=1,BodyOrigin=1,LegsOrigin=0};id=bare.Id;world.Robots.Nodes[node].Add(bare);world.Robots.Nodes[node].Add(world.Robots.Create(1,RobotParts.Legs));world.Robots.Nodes[node].Add(world.Robots.Create(0,RobotParts.Complete));
+  world.Robots.Training[1].DeploymentPolicy=0;
+  Check(world.Robots.ReservationBlockedByTraining(node,bare,HangarReservation.Defense,1),"Mixed complete robot is blocked only by the commander's training");
+  Check(!world.Robots.ReservationBlockedByTraining(node,bare with {Parts=RobotParts.Head},HangarReservation.Defense,1),"Incomplete robot is a base-rule failure, not training");
+  Check(!world.Robots.ReservationBlockedByTraining(node,bare with {HeadOrigin=0,BodyOrigin=0},HangarReservation.Defense,1),"No own part is a base-rule failure, not training");
+  Check(!world.Robots.ReservationBlockedByTraining(node,bare with {DefenseOnly=true,DefenseFlag=new(1,node,0)},HangarReservation.Defense,1),"Training cannot prevent cancellation of existing defense");
+  Check(!world.Robots.ReservationBlockedByTraining(node,bare with {DefenseOnly=true,DefenseFlag=new(0,node,0)},HangarReservation.Defense,1),"Foreign shoes are not blamed on training");
+  int shippingTarget=world.Routes.Neighbors(world.Nodes.All[node]).Select(r=>world.Nodes.At(r.Target,r.Entry).Id).First(n=>n!=node);
+  var shipment=new DirectPartOrder(900,node,shippingTarget,bare.Id,RobotParts.Head,null,0,0);
+  world.Robots.DirectDelivery.Orders.Add(shipment);Check(!world.Robots.ReservationBlockedByTraining(node,bare,HangarReservation.Defense,1),"Delivery lock is not blamed on training");world.Robots.DirectDelivery.Orders.Remove(shipment);
+  world.Robots.Training[1].DeploymentPolicy=1;
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_conquestOverviewEnabled",false);Set("_conquestOverview",false);Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);Set("_animationTime",0f);
   ((WorldPreview)Get("_world")).ShowSetup(world,true);((CubeNet)Get("_net")).Home(world);Call("OpenNodeInspector",node);Call("OpenNodeAssembly");Call("UpdateDomesticSlide",1f);Click(StaticRect("HangarReservationButton",1).Center);
  }
@@ -70,7 +80,28 @@ sealed class ShoesGame:Game1{
    Check(((System.Collections.IDictionary)Get("_transportPlanEffects")).Count==1,"Long-term plan animates its instruction marker");
    Check(world.Robots.Nodes[node].Robots.Single(r=>r.Id==workers[1].Id).FactoryWorker,"Plan animation does not assign existing workers to transport");
   }
+  if(frame==11){
+   world.SelectControlledRuler(1);world.Robots.Training[1].DeploymentPolicy=0;Call("ResetInspector");Call("OpenNodeInspector",node);Call("OpenNodeAssembly");Call("UpdateDomesticSlide",1f);
+   var robot=world.Robots.Create(0,RobotParts.Complete) with {HeadOrigin=1};trainingRobot=robot.Id;world.Robots.Nodes[node].Add(robot);Call("SyncHangarSlots");
+   Click(StaticRect("HangarReservationButton",1).Center);int slot=Array.IndexOf((long?[])Get("_hangarSlots"),(long?)trainingRobot);Click(StaticRect("HangarCell",slot).Center);
+   Check((int)Get("_hangarTrainingCountry")==1 && !world.Robots.Nodes[node].Robots.Single(r=>r.Id==trainingRobot).DefenseOnly,"Rejected defense identifies the acting commander, not the robot or node owner");
+   Check((bool)typeof(Game1).GetProperty("HangarTrainingNoticeVisible",F)!.GetValue(this)!,"Training explanation becomes visible without reserving the robot");
+  }
+  if(frame==12){
+   var panel=(Rectangle)typeof(Game1).GetProperty("HangarTrainingNoticeBounds",F)!.GetValue(this)!;
+   var canvas=(Rectangle)Call("CanvasBounds");var at=new Point(canvas.X+panel.Center.X*canvas.Width/1920,canvas.Y+panel.Center.Y*canvas.Height/1080);
+   foreach(var button in new[]{ButtonState.Released,ButtonState.Pressed,ButtonState.Released})Call("HandleInput",new MouseState(at.X,at.Y,0,button,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(),true);
+   Check((int)Get("_hangarTrainingCountry")==-1 && (int)Get("_populationNode")==node,"Real pointer clicks dismiss the speech panel without selecting the map underneath");
+   int slot=Array.IndexOf((long?[])Get("_hangarSlots"),(long?)trainingRobot);Click(StaticRect("HangarCell",slot).Center);
+   var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();
+  }
+  if(frame==13){
+   world.Robots.Training[1].DeploymentPolicy=1;
+   Check(!(bool)typeof(Game1).GetProperty("HangarTrainingNoticeVisible",F)!.GetValue(this)!,"Relaxing training removes the stale explanation");
+   int slot=Array.IndexOf((long?[])Get("_hangarSlots"),(long?)trainingRobot);Click(StaticRect("HangarCell",slot).Center);
+   Check(world.Robots.Nodes[node].Robots.Single(r=>r.Id==trainingRobot).DefenseOnly && (int)Get("_hangarTrainingCountry")==-1,"Next reservation succeeds immediately after changing policy");
+  }
   base.Draw(time);var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var image=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);image.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"defense-shoes-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
-  if(++frame==11){Console.WriteLine("PASS: defense, worker/intercept/disposal, independent simultaneous flags, immediate cancellation, plan marker and footwear rendering.");Exit();}
+  if(++frame==14){Console.WriteLine("PASS: training-only reason, incomplete/foreign/busy exclusions, correct commander portrait, dismissal, policy change and 1080p/540p notice rendering.");Console.WriteLine("PASS: defense, worker/intercept/disposal, independent simultaneous flags, immediate cancellation, plan marker and footwear rendering.");Exit();}
  }
 }
