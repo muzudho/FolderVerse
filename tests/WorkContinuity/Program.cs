@@ -45,12 +45,24 @@ foreach(string difference in new[]{"none","country","damage","quality"}){
  w.MovePart(0,a.Id,RobotParts.Head,null,0);Check(!w.Nodes[0].Robots.Single(r=>r.Id==a.Id).Stationed,"Removing a part from a complete robot cancels its job");
 }
 {
- var w=World();var a=w.Create(0,RobotParts.Complete) with {DefenseOnly=true,DefenseFlag=new(0,0,0)};var b=w.Create(0,RobotParts.Complete) with {HeadOrigin=1};w.Nodes[0].Add(a);w.Nodes[0].Add(b);
+ var w=World();w.Training[0].DeploymentPolicy=0;var a=w.Create(0,RobotParts.Complete) with {DefenseOnly=true,DefenseFlag=new(0,0,0)};var b=w.Create(0,RobotParts.Complete) with {HeadOrigin=1};w.Nodes[0].Add(a);w.Nodes[0].Add(b);
  w.MovePart(0,a.Id,RobotParts.Head,b.Id,0);Check(!w.Nodes[0].Robots.Single(r=>r.Id==a.Id).DefenseOnly,"A swap that fails training cannot keep its work reservation");
 }
 {
  var w=World();var a=w.Create(0,RobotParts.Complete);var b=w.Create(1,RobotParts.Complete) with {DefenseOnly=true,DefenseFlag=new(1,0,1)};w.Nodes[0].Add(a);w.Nodes[0].Add(b);w.DirectDelivery.Orders.Add(new(1,0,1,a.Id,RobotParts.Head,null,0,0));
  string before=JsonSerializer.Serialize(w.Nodes[0].Robots);bool rejected=false;try{w.MovePart(0,a.Id,RobotParts.Head,b.Id,0);}catch(InvalidOperationException){rejected=true;}
  Check(rejected && JsonSerializer.Serialize(w.Nodes[0].Robots)==before && w.DirectDelivery.Orders.Count==1,"Failed foreign-shoe swaps preserve both parts and delivery reservations atomically");
+}
+{
+ var w=World();var policy=w.Training[0];policy.AssemblyPolicy=0;policy.DeploymentPolicy=0;
+ var worker=w.Create(0,RobotParts.Complete) with {BodyOrigin=1,LegsOrigin=1};w.Nodes[0].Add(worker);
+ Check(w.CanSetReservation(0,worker,HangarReservation.Worker) && !w.CanSetReservation(0,worker,HangarReservation.Defense) && !w.CanReserveSortie(0,worker),"Worker training delegates locally independently of strict combat training");
+ Check(w.ToggleReservation(0,worker.Id,HangarReservation.Worker) && w.Workshops[0].ProductionLines.Length==2,"Mixed worker adds its lane under the separate worker policy");
+ w.RevalidateWorkReservations();Check(w.Nodes[0].Robots.Single().FactoryWorker,"Strict combat policy does not strip a qualified factory worker");
+ policy.WorkerPolicy=1;w.RevalidateWorkReservations();Check(!w.Nodes[0].Robots.Single().FactoryWorker && w.Workshops[0].ProductionLines.Length==1,"Tightening worker threshold releases its job and additional lane");
+ policy.WorkerPolicy=0;var pure=w.Create(0,RobotParts.Complete);Check(w.CanSetReservation(0,pure,HangarReservation.Worker),"All-native worker satisfies strict worker policy");
+ w.Nodes[0].Add(w.Create(0,RobotParts.Head));w.Nodes[0].Add(w.Create(1,RobotParts.Body|RobotParts.Legs));
+ Check(w.AssemblySelection(0,0)==null,"Renamed assembly policy retains its original restrictive behavior");policy.AssemblyPolicy=3;
+ Check(w.AssemblySelection(0,0)!=null && policy.WorkerPolicy==0,"Local assembly is independent of the worker threshold");
 }
 Console.WriteLine("PASS: qualification loss, training changes, wreck rescue, sortie trimming, queen preservation, equivalent/changed swaps, stable IDs, job continuation and atomic rejection.");

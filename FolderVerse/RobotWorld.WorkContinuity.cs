@@ -14,7 +14,11 @@ public sealed partial class RobotWorld
         return order?.Ruler??(MarchReserved(node,robot)?robot.Owner:-1);
     }
     public bool WorkQualified(Robot robot,int country)
-        =>country>=0 && country<Training.Length && robot.Parts==RobotParts.Complete && robot.NativeParts(country)>0 && Training[country].Eligible(WithoutRole(robot).Materialize() with {Owner=country});
+    {
+        if(country<0 || country>=Training.Length || robot.Parts!=RobotParts.Complete || robot.NativeParts(country)==0)return false;
+        var candidate=WithoutRole(robot).Materialize() with {Owner=country};
+        return robot.FactoryWorker?Training[country].WorkerEligible(candidate):Training[country].Eligible(candidate);
+    }
     private static Robot Barefoot(Robot robot)=>robot with {DefenseOnly=false,DefenseFlag=null,InterceptOnly=false,FactoryWorker=false};
     public Robot ValidateWorkReservation(Robot robot)
     {

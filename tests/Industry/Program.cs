@@ -1,6 +1,15 @@
 using FolderVerse;
 using System.Text.Json;
 static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
+var defaultTraining=new RobotTraining();
+Check(defaultTraining.AssemblyPolicy==3 && defaultTraining.DeploymentPolicy==3 && defaultTraining.WorkerPolicy==3 && defaultTraining.RequiredNative==1,"New countries delegate assembly and deployment decisions locally by default");
+var strictTraining=AutoSaveStore.Restore<RobotTraining>(AutoSaveStore.Capture(new RobotTraining{AssemblyPolicy=0,DeploymentPolicy=0}));
+Check(strictTraining.AssemblyPolicy==0 && strictTraining.DeploymentPolicy==0,"Explicit training restrictions in saved data are retained");
+var legacyTraining=AutoSaveStore.Capture(new RobotTraining{AssemblyPolicy=0,DeploymentPolicy=0});
+foreach(var item in legacyTraining.Objects)item.Fields?.Remove("<WorkerPolicy>k__BackingField");
+var restoredLegacy=AutoSaveStore.Restore<RobotTraining>(legacyTraining);
+Check(restoredLegacy.WorkerPolicy==3 && restoredLegacy.AssemblyPolicy==0 && restoredLegacy.DeploymentPolicy==0,"Older saves get only the new worker setting default, preserving existing preferences");
+Check(AutoSaveStore.Restore<RobotTraining>(AutoSaveStore.Capture(new RobotTraining{WorkerPolicy=1})).WorkerPolicy==1,"Explicit worker threshold survives save/restore");
 Check(IndustryCycle.Sectors.Sum(s=>s.Percent)==100,"Wheel probability");
 Check(IndustryCycle.Sectors.Sum(s=>s.Percent*s.Turns)==400,"Expected four industry turns");
 Check(IndustryCycle.Sectors.Where(s=>s.Turns==0).Sum(s=>s.Percent)==4,"Fumble 4 percent");
@@ -18,7 +27,7 @@ var cheapSortie=robots.Create(0,RobotParts.Complete) with {CheapParts=RobotParts
 Check(robots.CanReserveSortie(0,cheapSortie) && robots.PrepareSortieReservation(0,new[]{cheapSortie.Id}),"The actual sortie reservation accepts a healthy all-cheap native complete robot");robots.Nodes[0].Remove(cheapSortie.Id);
 var foreignCheap=new Robot(10000,0,RobotParts.Complete){HeadOrigin=0,BodyOrigin=1,LegsOrigin=1,DamagedParts=RobotParts.Head,CheapParts=RobotParts.Body|RobotParts.Legs};
 Check(!foreignCheap.CanFight && !new RobotTraining{DeploymentPolicy=1}.Eligible(foreignCheap),"Damaged native identity cannot borrow affiliation from foreign cheap parts");
-Check(new RobotTraining{DeploymentPolicy=1}.Eligible(mixed) && !new RobotTraining().Eligible(mixed),"Mixed deployment policy respected");
+Check(new RobotTraining().Eligible(mixed) && !new RobotTraining{DeploymentPolicy=0}.Eligible(mixed),"Default delegates locally while explicit pure deployment remains restrictive");
 robots.Nodes[0].Add(mixed);robots.Split(0,mixed.Id,RobotParts.Body);var body=robots.Nodes[0].Robots.Single(r=>r.Parts==RobotParts.Body);
 Check(body.IsCheap(RobotParts.Body) && body.CheapParts==RobotParts.Body,"Split preserves only matching cheap flags");
 var rest=robots.Nodes[0].Robots.Single(r=>r.Id!=body.Id);robots.MovePart(0,body.Id,RobotParts.Body,rest.Id,0);

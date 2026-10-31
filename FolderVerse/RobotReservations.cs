@@ -50,7 +50,7 @@ public sealed partial class RobotWorld
     public void SyncWorkers(int node)
     {
         var workshop=Workshops[node];
-        var ids=Nodes[node].Robots.Where(r=>r.FactoryWorker && Training[r.Owner].Eligible(r)).OrderBy(r=>r.Id).Take(Math.Max(0,workshop.LineLimit-workshop.BaseLineCount)).Select(r=>r.Id).ToArray();
+        var ids=Nodes[node].Robots.Where(r=>r.FactoryWorker && WorkQualified(r,r.Owner)).OrderBy(r=>r.Id).Take(Math.Max(0,workshop.LineLimit-workshop.BaseLineCount)).Select(r=>r.Id).ToArray();
         foreach(var robot in Nodes[node].Robots.Where(r=>r.FactoryWorker && !ids.Contains(r.Id)).ToArray())Nodes[node].Replace(Nodes[node].Robots.Select(r=>r.Id==robot.Id?r with {FactoryWorker=false}:r).ToArray());
         workshop.SetWorkers(ids);
     }
@@ -71,7 +71,8 @@ public sealed partial class RobotWorld
         if(!remove){
             if(kind is HangarReservation.Defense or HangarReservation.Worker or HangarReservation.Intercept){
                 var candidate=WithoutRole(robot).Materialize() with {Owner=country};
-                if(!candidate.CanFight || !ignoreTraining && !Training[country].Eligible(candidate))return false;
+                bool eligible=kind==HangarReservation.Worker?Training[country].WorkerEligible(candidate):Training[country].Eligible(candidate);
+                if(!candidate.CanFight || !ignoreTraining && !eligible)return false;
             }
             if(kind==HangarReservation.Defense && robot.NativeParts(country)==0)return false;
             if(kind==HangarReservation.Worker && workshop.ProductionLines.Length>=workshop.LineLimit)return false;
