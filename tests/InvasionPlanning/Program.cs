@@ -64,12 +64,16 @@ foreach(bool queen in new[]{false,true})
     Field("_setup").SetValue(g,w);Field("_invasionSources").SetValue(g,Activator.CreateInstance(Field("_invasionSources").FieldType));Field("_invasionDraft").SetValue(g,new HashSet<long>());
     Field("_workReservationEffects").SetValue(g,new Dictionary<long,(float Start,int Country)>());
     Field("_directTrucks").SetValue(g,Activator.CreateInstance(Field("_directTrucks").FieldType));
+    Field("_directPairTrucks").SetValue(g,Activator.CreateInstance(Field("_directPairTrucks").FieldType));
     Call("BuildInvasionSources",target.Id);
     var rows=(System.Collections.IList)Field("_invasionSources").GetValue(g)!;int battery=Enumerable.Range(0,rows.Count).First(i=>(bool)rows[i]!.GetType().GetField("Queen")!.GetValue(rows[i])!);
     Call("OpenInvasionPicker",battery);Field("_pointer").SetValue(g,new Point(400,350));Call("InvasionPickerInput",true,false);
     Check(((Dictionary<long,(float Start,int Country)>)Field("_workReservationEffects").GetValue(g)!).ContainsKey(r.Id),"Sortie selection starts its nonblocking work animation");
     Field("_pointer").SetValue(g,new Point(450,730));Call("InvasionPickerInput",true,false);
     Field("_pointer").SetValue(g,new Point(1400,820));Call("InvasionPickerInput",true,false);
+    var sampleRow=rows[battery]!;
+    foreach(var (robot,label) in new[]{(r with {DefenseOnly=true},"守備"),(r with {InterceptOnly=true},"迎撃"),(r with {FactoryWorker=true},"工場"),(r with {Disposal=true},"廃棄")})
+        Check((string)Call("InvasionReservationLabel",sampleRow,robot)==label,"Existing job remains visible even while drafting a sortie: "+label);
     var row=rows[battery]!;Check(((HashSet<long>)row.GetType().GetField("Robots")!.GetValue(row)!).SetEquals(new[]{r.Id}) && (bool)row.GetType().GetField("Selected")!.GetValue(row)!,"Picker applies robot and independent queen choice");
     Call("OpenInvasionPicker",battery);Field("_pointer").SetValue(g,new Point(400,350));Call("InvasionPickerInput",true,false);Call("InvasionPickerInput",false,true);
     Check(((HashSet<long>)row.GetType().GetField("Robots")!.GetValue(row)!).Contains(r.Id),"Escape discards draft edits and closes dialog");

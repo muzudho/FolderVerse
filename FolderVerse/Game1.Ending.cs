@@ -20,7 +20,7 @@ public partial class Game1
         StopBattleMusic();
         _dispositionScene=null;
         FinishConquestOverview();_conquestOverviewTurn=-1;_tutorialMenuOpen=false;_tutorialAttackGuide=false;_tutorialAttackAchieved=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;
-        _titleMenuOpen=false;CancelTransportModal();_domesticViews.Clear();
+        _campaignMenuStage=0;_titleMenuOpen=false;CancelTransportModal();_domesticViews.Clear();
         _homePersuasionActive=false;_homePersuasion.Clear();_homePersuasionWorld=null;_homePersuasionTurn=-1;
         _homePersuasionResults.Clear();_homePersuasionShown.Clear();
         CloseMovement();_statusMenuOpen=false;_dispositionReturnList=false;

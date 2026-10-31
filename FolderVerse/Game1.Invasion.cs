@@ -73,6 +73,16 @@ public partial class Game1
     private static Rectangle InvasionPreviewCard(int row,int slot)=>new(94+slot*61,334+row*77,57,37);
     private Robot[] InvasionPreviewRobots(InvasionSource row)=>(row.Queen?_setup.Robots.Retinues[row.Owner]:_setup.Robots.Nodes[row.Node]).Robots.Where(r=>r.Parts==RobotParts.Complete).ToArray();
     private bool ReservedElsewhere(InvasionSource row,Robot robot)=>_setup.Campaign.PlannedOrders.Any(o=>o.Ruler==row.Owner && o.TargetNode!=_selectedMoveNode && (o.Queen || o.PocketOnly)==row.Queen && (o.SourceNode==row.Node || o.SourceNode<0 && _setup.Nodes.Current(o.Ruler)?.Id==row.Node) && (o.RobotIds?.Contains(robot.Id)??InvasionRobots(row).Take((int)o.Fighters).Any(r=>r.Id==robot.Id)));
+    private string InvasionReservationLabel(InvasionSource source,Robot robot)
+    {
+        if(robot.DefenseOnly)return "守備";
+        if(robot.InterceptOnly)return "迎撃";
+        if(robot.FactoryWorker)return "工場";
+        if(robot.Disposal)return "廃棄";
+        if(_setup.Robots.DirectDelivery.Orders.Any(o=>o.Source==source.Node && o.RobotId==robot.Id || o.Target==source.Node && o.TargetRobotId==robot.Id))return "配送";
+        if(ReservedElsewhere(source,robot))return "別出撃";
+        return _setup.Campaign.PlannedOrders.Any(o=>!o.Peaceful && o.RobotIds?.Contains(robot.Id)==true)?"出撃":"";
+    }
     private bool InvasionClick(Point p)
     {
         if(SelectedWithdrawal!=null)return WithdrawalClick(p) || new Rectangle(54,150,850,825).Contains(p);
@@ -150,15 +160,20 @@ public partial class Game1
                 var card=InvasionPreviewCard(i,slot);var robot=robots[slot];bool selected=source.Robots.Contains(robot.Id);
                 _ui.Box(card,selected?Accent:new Color(19,35,46));
                 DrawRobotGlyph(new(card.X+4,card.Y+3,26,31),robot,whiteOutline:true);
-                if(ReservedElsewhere(source,robot))_ui.Text("予約",new(card.X+29,card.Y+9),.23f,Cream);
-                else if(selected)_ui.Text("出撃",new(card.X+29,card.Y+9),.23f,SelectionInk);
-                else if(!available.Any(a=>a.Id==robot.Id))_ui.Text("不可",new(card.X+29,card.Y+9),.23f,Cream);
+                string reservation=InvasionReservationLabel(source,robot);
+                if(reservation.Length>0){
+                    int kind=reservation switch{"守備"=>2,"迎撃"=>1,"工場"=>3,"配送"=>4,"廃棄"=>5,_=>0};
+                    var badge=new Rectangle(card.X+29,card.Y+1,27,17);_ui.Box(badge,DirectoryColors[kind]);
+                    _ui.Center(reservation,badge,Math.Min(.25f,25/_font.MeasureString(reservation).X),DirectoryInk(kind));
+                }
+                string state=selected?"出撃":!available.Any(a=>a.Id==robot.Id)?"不可":"";
+                if(state.Length>0)_ui.Center(state,new(card.X+29,card.Y+19,27,17),.24f,selected?SelectionInk:Cream);
             }
             if(robots.Length==0)_ui.Text("完成ロボットなし",new(r.X+10,r.Y+40),.34f,Cream);
         }
         _ui.Button(new(84,850,110,42),"←",Muted,.5f);_ui.Button(new(210,850,110,42),"→",Muted,.5f);
         if(_selectedMoveNode>=0)_ui.Button(new(570,850,274,42),"目標を選び直す",Muted,.48f);
-        _ui.Text("ロボットをクリックで出撃選択 / 予約：別の目標へ予約済",new(84,900),.35f,Cream);
+        _ui.Text("上段：現在の予約 / 下段：出撃選択 / 確定で元の仕事を上書き",new(84,900),.35f,Cream);
         _ui.Button(ConfirmMoveButton,"開戦を予約",_selectedMoveNode>=0?Accent:Muted,.55f);
     }
 }

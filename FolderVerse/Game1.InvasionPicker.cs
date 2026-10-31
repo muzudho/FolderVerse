@@ -51,7 +51,8 @@ public partial class Game1
             var r=InvasionRobotCard(i);var robot=robots[i];bool selected=_invasionDraft.Contains(robot.Id);
             _ui.Box(r,selected?Accent:Muted);DrawRobotGlyph(new(r.X+65,r.Y+8,55,75),robot,whiteOutline:true);
             _ui.Center($"ID {robot.Id} / {PartsLabel(robot.Parts)}",new(r.X,r.Y+90,r.Width,28),.38f,Cream);
-            _ui.Center(selected?"選択中":robot.FactoryWorker?"工場作業員":robot.InterceptOnly?"迎撃専用":robot.DefenseOnly?"守備専用":robot.Disposal?"廃棄予約":"待機",new(r.X,r.Y+122,r.Width,26),.4f,Cream);
+            string reservation=InvasionReservationLabel(row,robot);
+            _ui.Center((reservation.Length>0?reservation+"予約":"待機")+(selected?" → 出撃選択":""),new(r.X,r.Y+122,r.Width,26),.30f,Cream);
         }
         if(robots.Length==0)_ui.Text("出撃できるロボットはいません",new(380,375),.6f,Cream);
         if(row.Queen)_ui.Button(InvasionQueenToggle,_invasionQueenDraft?"クイーン：参加（移動も予約）":"クイーン：参加しない",_invasionQueenDraft?Accent:Muted,.5f);
