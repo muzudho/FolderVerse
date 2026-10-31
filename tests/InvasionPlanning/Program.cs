@@ -62,9 +62,12 @@ foreach(bool queen in new[]{false,true})
     FieldInfo Field(string n)=>typeof(Game1).GetField(n,flags)!;
     object Call(string n,params object[] args)=>typeof(Game1).GetMethod(n,flags)!.Invoke(g,args)!;
     Field("_setup").SetValue(g,w);Field("_invasionSources").SetValue(g,Activator.CreateInstance(Field("_invasionSources").FieldType));Field("_invasionDraft").SetValue(g,new HashSet<long>());
+    Field("_workReservationEffects").SetValue(g,new Dictionary<long,(float Start,int Country)>());
+    Field("_directTrucks").SetValue(g,Activator.CreateInstance(Field("_directTrucks").FieldType));
     Call("BuildInvasionSources",target.Id);
     var rows=(System.Collections.IList)Field("_invasionSources").GetValue(g)!;int battery=Enumerable.Range(0,rows.Count).First(i=>(bool)rows[i]!.GetType().GetField("Queen")!.GetValue(rows[i])!);
     Call("OpenInvasionPicker",battery);Field("_pointer").SetValue(g,new Point(400,350));Call("InvasionPickerInput",true,false);
+    Check(((Dictionary<long,(float Start,int Country)>)Field("_workReservationEffects").GetValue(g)!).ContainsKey(r.Id),"Sortie selection starts its nonblocking work animation");
     Field("_pointer").SetValue(g,new Point(450,730));Call("InvasionPickerInput",true,false);
     Field("_pointer").SetValue(g,new Point(1400,820));Call("InvasionPickerInput",true,false);
     var row=rows[battery]!;Check(((HashSet<long>)row.GetType().GetField("Robots")!.GetValue(row)!).SetEquals(new[]{r.Id}) && (bool)row.GetType().GetField("Selected")!.GetValue(row)!,"Picker applies robot and independent queen choice");
@@ -80,7 +83,7 @@ foreach(bool queen in new[]{false,true})
     Check((bool)Call("ReservedElsewhere",row,r),"Other-target pocket reservation is marked");
     w.Campaign.Plan(new(0,target.Id,1,home.Id,false,true,new[]{r.Id}));
     Check(!(bool)Call("ReservedElsewhere",row,r),"Current target is not marked as another reservation");
-    var net=new CubeNet();Field("_net").SetValue(g,net);
+    var net=new CubeNet();net.Home(w);Field("_net").SetValue(g,net);
     Field("_movementOpen").SetValue(g,true);Field("_warPlanning").SetValue(g,true);
     net.MovementTargets.Add(target.Id);net.MovementTargets.Add(home.Id);net.SelectedTarget=target.Id;
     net.AttackTargetMarkers=true;net.RevealMovementTargets=true;
@@ -148,12 +151,13 @@ Console.WriteLine("PASS: selected IDs, independent pocket/queen, solo queen, inv
     void SetGuide(string n,object value)=>typeof(Game1).GetField(n,f)!.SetValue(g,value);
     object GetGuide(string n)=>typeof(Game1).GetField(n,f)!.GetValue(g)!;
     object CallGuide(string n,params object[] a)=>typeof(Game1).GetMethod(n,f)!.Invoke(g,a)!;
+    w.TutorialCompletionPending=false;w.TutorialCompletionShown=false; // Start-guide fixture, independent of the achievement awarded above.
     SetGuide("_screen",Enum.Parse(typeof(Game1).GetField("_screen",f)!.FieldType,"WorldStatus"));
     SetGuide("_tutorialAttackAchieved",false);SetGuide("_tutorialAchievements",null!);SetGuide("_lastCutInPhase","内政フェーズ");SetGuide("_cutInStarted",100d);
     CallGuide("UpdateTutorialStartGuide",101d);Check(!(bool)GetGuide("_tutorialIntroShown"),"Wait until domestic phase cut-in finishes before automatic tutorial guide");
     CallGuide("UpdateTutorialStartGuide",102d);Check((bool)GetGuide("_tutorialAttackGuide") && (int)GetGuide("_tutorialGuideMessage")==0,"Automatic start guide tells user to press war reservation");
     SetGuide("_tutorialAttackGuide",false);CallGuide("UpdateTutorialStartGuide",110d);Check(!(bool)GetGuide("_tutorialAttackGuide"),"Automatic start guide appears only once per run");
-    SetGuide("_tutorialAchievementAge",-1d);SetGuide("_pointer",new Point(1500,40));CallGuide("TutorialMessageInput",true,false);Check((bool)GetGuide("_tutorialMessagesOpen"),"Review button opens message list");
+    SetGuide("_tutorialAchievementAge",-1d);SetGuide("_pointer",((Rectangle)typeof(Game1).GetProperty("TutorialReviewButton",f)!.GetValue(g)!).Center);CallGuide("TutorialMessageInput",true,false);Check((bool)GetGuide("_tutorialMessagesOpen"),"Review button opens message list");
     SetGuide("_pointer",new Point(450,550));CallGuide("TutorialMessageInput",true,false);Check((int)GetGuide("_tutorialMessageSelection")==2,"Review list selects achievement message without awarding it");
     CallGuide("TutorialMessageInput",false,true);Check(!(bool)GetGuide("_tutorialMessagesOpen") && !(bool)GetGuide("_tutorialAttackAchieved"),"Closing reader does not grant achievement");
     typeof(Game1).GetField("_tutorialAttackAchieved",f)!.SetValue(g,true);w.Campaign.Reset();Check(!Gate(),"Completed step permits peaceful end turns");

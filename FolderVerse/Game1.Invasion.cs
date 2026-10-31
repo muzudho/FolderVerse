@@ -88,7 +88,11 @@ public partial class Game1
             var robots=InvasionPreviewRobots(row);var available=InvasionRobots(row);
             for(int slot=0;slot<robots.Length;slot++)if(InvasionPreviewCard(i,slot).Contains(p))
             {
-                if(available.Any(a=>a.Id==robots[slot].Id)){if(!row.Robots.Remove(robots[slot].Id))row.Robots.Add(robots[slot].Id);row.Count=row.Robots.Count;}
+                if(available.Any(a=>a.Id==robots[slot].Id)){
+                    if(!row.Robots.Remove(robots[slot].Id)){row.Robots.Add(robots[slot].Id);BeginWorkReservationEffect(robots[slot],row.Owner);}
+                    else _workReservationEffects.Remove(robots[slot].Id);
+                    row.Count=row.Robots.Count;
+                }
                 return true;
             }
         }
@@ -107,6 +111,7 @@ public partial class Game1
             if(!row.Queen)_setup.Robots.PrepareSortieReservation(row.Node,row.Robots.ToArray());
             if(row.Robots.Count>0 || row.Queen && row.Selected)
                 _setup.Campaign.Plan(new(row.Owner,_selectedMoveNode,row.Robots.Count,row.Node,row.Queen && row.Selected,row.Queen,row.Robots.OrderBy(id=>id).ToArray()));
+            foreach(var robot in InvasionPreviewRobots(row).Where(r=>row.Robots.Contains(r.Id)))BeginWorkReservationEffect(robot,row.Owner);
         }
         ResetInvasionTarget();
     }

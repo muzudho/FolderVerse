@@ -93,7 +93,7 @@ public partial class Game1
     private int RateMaximum(int id)=>360;
     private void SetDestinationRate(int id,int value)
     {
-        if(CanEditTransport && TransportRules.Any(r=>r.Number==id))_setup.Robots.Transport.SetInstructionRate(_populationNode,TransportOwner,id,value);
+        if(CanEditTransport && TransportRules.FirstOrDefault(r=>r.Number==id) is {} rule){int before=rule.Degrees;_setup.Robots.Transport.SetInstructionRate(_populationNode,TransportOwner,id,value);if(rule.Degrees!=before)BeginTransportPlanEffect(rule);}
     }
     private bool DestinationMapClick(Point pointer)
     {

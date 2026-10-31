@@ -99,8 +99,13 @@ public partial class Game1
                     bool accepted=HangarReservationEnabled(robot) && _setup.Robots.ToggleReservation(_populationNode,robot.Id,_hangarReservation,HangarReservationCountry(robot));
                     if(accepted){
                         var reserved=store.Robots.Single(r=>r.Id==robot.Id);
+                        _workReservationEffects.Remove(robot.Id);
                         if(_hangarReservation==HangarReservation.Defense && reserved.DefenseOnly){BeginDefenseReservationEffect(reserved);_hangarMessage="旗で守備専用予約 / 靴を履いて仕事中";}
-                        else{_defenseReservationEffects.Remove(robot.Id);_hangarMessage="予約を切り替えました / 続けて個体を選択できます";}
+                        else{
+                            _defenseReservationEffects.Remove(robot.Id);
+                            if(reserved.InterceptOnly || reserved.FactoryWorker || reserved.Disposal)BeginWorkReservationEffect(reserved,reserved.Owner);
+                            _hangarMessage="予約を切り替えました / 続けて個体を選択できます";
+                        }
                     }else _hangarMessage="予約国・完全体・自国パーツ・出撃条件・処理中の状態を確認してください";
                     return;
                 }

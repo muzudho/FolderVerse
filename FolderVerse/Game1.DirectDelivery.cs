@@ -90,7 +90,7 @@ public partial class Game1
             try{int source=_directNodes[drag.Side],target=_directNodes[side];var destination=_directSlots[side][slot];if(side==drag.Side){if(destination==drag.Robot)return;if(!destination.HasValue && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==target && o.TargetRobotId==null && o.TargetSlot==slot))throw new InvalidOperationException("Arrival slot reserved.");
                     if(drag.Part==0){if(destination.HasValue && _setup.Robots.AssemblyLocked(source,_setup.Robots.Nodes[source].Robots.Single(r=>r.Id==destination)))throw new InvalidOperationException("Robot is reserved.");int from=Array.IndexOf(_directSlots[side],(long?)drag.Robot);_directSlots[side][from]=destination;_directSlots[side][slot]=drag.Robot;}
                     else {long id=_setup.Robots.MovePart(source,drag.Robot,drag.Part,destination,_setup.Nodes.All[source].Owner);_directSlots[side][slot]=id;}_directMessage="格納庫内でパーツを組み替えました";}
-                else {var robot=_setup.Robots.Nodes[source].Robots.Single(r=>r.Id==drag.Robot);_setup.Robots.DirectDelivery.ReserveParts(_setup,source,target,drag.Robot,drag.Part==0?robot.Parts:drag.Part,destination,slot);_directMessage="直送便を予約しました / ターン終了時に輸送";}SyncDirectSlots();}
+                else {var robot=_setup.Robots.Nodes[source].Robots.Single(r=>r.Id==drag.Robot);_setup.Robots.DirectDelivery.ReserveParts(_setup,source,target,drag.Robot,drag.Part==0?robot.Parts:drag.Part,destination,slot);BeginWorkReservationEffect(robot,robot.Owner);_directMessage="直送便を予約しました / ターン終了時に輸送";}SyncDirectSlots();}
             catch(InvalidOperationException){_directMessage="所有国・予約・同じ部位・空き枠を確認してください";}return;
         }
     }

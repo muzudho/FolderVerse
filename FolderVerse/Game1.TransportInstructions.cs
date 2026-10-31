@@ -19,7 +19,12 @@ public partial class Game1
     private static readonly int[] TransportMasks={4,2,1,4,2,1,6,3,6,3};
     private static string TransportChoiceName(int i)=>(i<3 || i is 6 or 7?"正規品":"安物")+(i>=6?IntegratedLabel((RobotParts)TransportMasks[i]):TransportPartsName(TransportMasks[i]));
     private static Rectangle InstructionField(int row,int field){int y=310+row*106;return field switch{0=>new(128,y,94,34),1=>new(230,y,142,34),2=>new(380,y,426,34),3=>new(380,y,426,34),4=>new(110,y+40,366,34),5=>new(518,y+40,80,34),_=>new(814,y,34,34)};}
-    private void ConfigureTransport(TransportInstruction rule,int? target=null,int? choices=null,bool? disposal=null,int? limit=null)=>_setup.Robots.Transport.ConfigurePartChoices(_populationNode,TransportOwner,rule.Number,target??rule.Target,choices??rule.PartChoices,disposal??rule.Disposal,limit??rule.Limit);
+    private void ConfigureTransport(TransportInstruction rule,int? target=null,int? choices=null,bool? disposal=null,int? limit=null)
+    {
+        bool changed=target.HasValue && target!=rule.Target || choices.HasValue && choices!=rule.PartChoices || disposal.HasValue && disposal!=rule.Disposal || limit.HasValue && limit!=rule.Limit;
+        _setup.Robots.Transport.ConfigurePartChoices(_populationNode,TransportOwner,rule.Number,target??rule.Target,choices??rule.PartChoices,disposal??rule.Disposal,limit??rule.Limit);
+        if(changed && !_transportNewInstruction)BeginTransportPlanEffect(rule);
+    }
     private int[] TransportAdjacent()=>_populationNode<0?Array.Empty<int>():_setup.Routes.Neighbors(_setup.Nodes.All[_populationNode]).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id).Where(id=>id!=_populationNode).Distinct().ToArray();
     private void PrepareTransportInstructions()
     {
@@ -45,8 +50,8 @@ public partial class Game1
         }
         if(new Rectangle(84,752,170,36).Contains(p))_transportPage=Math.Max(0,_transportPage-1);
         if(new Rectangle(264,752,170,36).Contains(p))_transportPage=Math.Min(Math.Max(0,(TransportRules.Count-1)/4),_transportPage+1);
-        if(new Rectangle(444,752,220,36).Contains(p) && TransportRules.Count<16){var targets=TransportAdjacent();if(targets.Length>0){_transportDraftRates=TransportRules.ToDictionary(r=>r.Number,r=>r.Degrees);var rule=transport.AddInstruction(_populationNode,TransportOwner,targets[0]);ConfigureTransport(rule,choices:7);_transportEditNumber=rule.Number;_transportPage=TransportRules.ToList().FindIndex(r=>r.Number==rule.Number)/4;_transportDestinationPicking=true;_transportNewInstruction=true;}}
-        if(new Rectangle(674,752,174,36).Contains(p))foreach(var rule in page.Where(r=>r.Complete))transport.RestartInstruction(_populationNode,TransportOwner,rule.Number);
+        if(new Rectangle(444,752,220,36).Contains(p) && TransportRules.Count<16){var targets=TransportAdjacent();if(targets.Length>0){_transportDraftRates=TransportRules.ToDictionary(r=>r.Number,r=>r.Degrees);var rule=transport.AddInstruction(_populationNode,TransportOwner,targets[0]);_transportNewInstruction=true;ConfigureTransport(rule,choices:7);_transportEditNumber=rule.Number;_transportPage=TransportRules.ToList().FindIndex(r=>r.Number==rule.Number)/4;_transportDestinationPicking=true;_transportNewInstruction=true;}}
+        if(new Rectangle(674,752,174,36).Contains(p))foreach(var rule in page.Where(r=>r.Complete)){transport.RestartInstruction(_populationNode,TransportOwner,rule.Number);BeginTransportPlanEffect(rule);}
         return new Rectangle(54,150,850,680).Contains(p);
     }
     private void DrawTransportInstructions()
@@ -74,6 +79,7 @@ public partial class Game1
             _ui.Text("へ",new(484,y+47),.4f,Cream);_ui.Button(InstructionField(row,5),rule.Limit.ToString(),Muted,.46f);
             _ui.Text("個送ったら終了。",new(610,y+47),.4f,Cream);
             _ui.Text("いずれか１つ / "+rule.Sent+" / "+rule.Limit+(rule.Complete?" 完了":""),new(110,y+80),.3f,rule.Complete?new Color(121,235,161):Cream);
+            DrawTransportPlanEffect(row,rule);
         }
         if(page.Length==0)_ui.Text("指示０個：この地点に留まります。",new(84,330),.5f,Cream);
         _ui.Button(new(84,752,170,36),"前へ",Muted,.4f);_ui.Button(new(264,752,170,36),"次へ",Muted,.4f);
@@ -154,7 +160,7 @@ public partial class Game1
         if(MapViewBounds.Contains(_pointer)){
             int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
             ZoomSelectedPoint(wheel);
-            if(click){var targets=TransportAdjacent();int id=_statusGlobe?HitGlobeNode(_pointer,targets):_net.HitNode(_setup,NetPanel,_pointer,targets);if(id>=0 && EditingTransport!=null){ConfigureTransport(EditingTransport,target:id);_transportNewInstruction=false;_transportDestinationPicking=false;}}
+            if(click){var targets=TransportAdjacent();int id=_statusGlobe?HitGlobeNode(_pointer,targets):_net.HitNode(_setup,NetPanel,_pointer,targets);if(id>=0 && EditingTransport!=null){ConfigureTransport(EditingTransport,target:id);BeginTransportPlanEffect(EditingTransport);_transportNewInstruction=false;_transportDestinationPicking=false;}}
         }
         return true;
     }

@@ -19,17 +19,25 @@ public partial class Game1
     }
     private void InvasionPickerInput(bool click,bool escape)
     {
-        if(escape || click && InvasionPickerCancel.Contains(_pointer)){_invasionPicker=-1;return;}
+        if(escape || click && InvasionPickerCancel.Contains(_pointer)){
+            foreach(long id in _invasionDraft.Except(_invasionSources[_invasionPicker].Robots))_workReservationEffects.Remove(id);
+            _invasionPicker=-1;return;
+        }
         if(!click)return;
         var row=_invasionSources[_invasionPicker];var robots=InvasionRobots(row);
         if(InvasionPickerDone.Contains(_pointer))
         {
             row.Robots.Clear();row.Robots.UnionWith(_invasionDraft.Intersect(robots.Select(r=>r.Id)));
+            foreach(var robot in robots.Where(r=>row.Robots.Contains(r.Id)))BeginWorkReservationEffect(robot,row.Owner);
             row.Count=row.Robots.Count;row.Selected=row.Queen && _invasionQueenDraft;_invasionPicker=-1;return;
         }
         if(row.Queen && InvasionQueenToggle.Contains(_pointer)){_invasionQueenDraft=!_invasionQueenDraft;return;}
         for(int i=0;i<robots.Length;i++)if(InvasionRobotCard(i).Contains(_pointer))
-        {if(!_invasionDraft.Remove(robots[i].Id))_invasionDraft.Add(robots[i].Id);return;}
+        {
+            if(!_invasionDraft.Remove(robots[i].Id)){_invasionDraft.Add(robots[i].Id);BeginWorkReservationEffect(robots[i],row.Owner);}
+            else _workReservationEffects.Remove(robots[i].Id);
+            return;
+        }
     }
     private void DrawInvasionPicker()
     {
