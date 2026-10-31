@@ -45,10 +45,15 @@ public partial class Game1
     private bool DirectMapClick(Point p){
         if(!_directMap || _directPairOpen || MapTransitionActive)return false;
         if(MapViewButton.Contains(p) || !MapViewBounds.Contains(p))return false;
+        if(!_statusGlobe){
+            if(_net.IsAnimating)return true;
+            _net.HoverEdge(NetPanel,p);
+            if(_net.ClickEdge()){_directTrucks.Clear();RecordTutorialMapEdge();return true;}
+        }
         var hit=_directTrucks.Where(t=>t.Bounds.Contains(p)).OrderBy(t=>Vector2.DistanceSquared(t.Bounds.Center.ToVector2(),p.ToVector2())).FirstOrDefault();if(hit.Bounds!=Rectangle.Empty){OpenDirectPair(hit.A,hit.B);return true;}return _directMap;
     }
     private void DrawDirectTrucks(){
-        _directTrucks.Clear();if(!_directMap || _directPairOpen || MapTransitionActive)return;
+        _directTrucks.Clear();if(!_directMap || _directPairOpen || MapTransitionActive || !_statusGlobe && _net.IsAnimating)return;
         foreach(var node in _setup.Nodes.All.Where(n=>DirectNodeAllowed(n.Id))){
             if(!OperationPosition(node.Id,out var a))continue;
             foreach(var route in _setup.Routes.Neighbors(node)){var next=_setup.Nodes.At(route.Target,route.Entry);if(node.Id>=next.Id || !DirectNodeAllowed(next.Id) || !OperationPosition(next.Id,out var b))continue;

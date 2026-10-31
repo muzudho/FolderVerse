@@ -91,6 +91,12 @@ class Checks:Game1{
   var guidance=(string)Get("_directMessage");var font=(SpriteFont)Get("_font");
   Check(guidance.Contains("パーツ単位") && font.Characters.Contains('単') && font.MeasureString(guidance).X>0,"Empty-slot guidance has every glyph required for rendering");
  }
+  NetFace[] edgeBefore=Array.Empty<NetFace>();int orderBefore;
+ void Physical(Point point,double elapsed=0,bool pressed=false){var canvas=(Rectangle)Call("CanvasBounds");var p=new Point(canvas.X+point.X*canvas.Width/1920,canvas.Y+point.Y*canvas.Height/1080);Call("HandleInput",Mouse(p,pressed?ButtonState.Pressed:ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.FromSeconds(30),TimeSpan.FromSeconds(elapsed)),true);}
+ void ClickLetter(CubeNet net,Rectangle panel){
+  foreach(var label in net.SeamLabels(panel)){var p=net.RotateScreen(label.Bounds.Center.ToVector2(),panel).ToPoint();if(!panel.Contains(p))continue;net.HoverEdge(panel,p);if(!net.CanClickEdge)continue;edgeBefore=net.Faces.ToArray();orderBefore=w.Robots.DirectDelivery.Orders.Count;Physical(p);Physical(p,pressed:true);Physical(p);Check(net.IsAnimating,"Physical alphabet click starts face attachment");return;}
+  throw new Exception("No clickable visible seam letter");
+ }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
   if(frame==1){Set("_directPairOpen",false);}
@@ -143,8 +149,14 @@ class Checks:Game1{
   if(frame==15)ClickOtherTruck();
   if(frame==16)Call("UpdateDirectPairTransition",.175f);
   if(frame==17)Call("UpdateDirectPairTransition",.175f);
-  Call("UpdateMapFooter",.25f);base.Draw(t);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var tex=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);tex.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"direct-{frame}.png")))tex.SaveAsPng(file,tex.Width,tex.Height);
+    if(frame==18){Call("CloseDirectDelivery");Call("OpenDirectMap");var net=(CubeNet)Get("_net");net.ScreenAngle=.3f;net.FitAll((Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!, .7f);ClickLetter(net,(Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!);}
+  if(frame==19){Physical(Point.Zero,.15);Check(((CubeNet)Get("_net")).IsAnimating,"Main attachment progresses across frames");}
+  if(frame==20){Physical(Point.Zero,1);Check(!((CubeNet)Get("_net")).IsAnimating && !((CubeNet)Get("_net")).Faces.SequenceEqual(edgeBefore),"Main face attachment completes");Check((bool)Get("_directMap") && w.Robots.DirectDelivery.Orders.Count==orderBefore,"Main attachment keeps delivery mode and reservations");Call("OpenDirectPair",a,b);Call("UpdateDirectPairTransition",.35f);var net=(CubeNet)Get("_directPairNet");net.FitAll(new(600,200,720,690),.65f);ClickLetter(net,new(600,200,720,690));}
+  if(frame==21){Physical(Point.Zero,.15);Check(((CubeNet)Get("_directPairNet")).IsAnimating,"Pair attachment progresses across frames and draws");}
+  if(frame==22){Physical(Point.Zero,1);var net=(CubeNet)Get("_directPairNet");Check(!net.IsAnimating && !net.Faces.SequenceEqual(edgeBefore),"Pair face attachment completes");Check((bool)Get("_directPairOpen") && w.Robots.DirectDelivery.Orders.Count==orderBefore,"Pair attachment preserves inspectors and reservations");var ids=(int[])Get("_directNodes");Check(((Vector2)Call("DirectPairPosition",ids[0])).X<=((Vector2)Call("DirectPairPosition",ids[1])).X+.5f,"Inspectors realign after face attachment");}
+  Call("UpdateMapFooter",.25f);base.Draw(t);
+  if(frame==20)Check(((CubeNet)Get("_directPairNet")).IsAnimating,"Rendering does not cancel pair attachment");var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var tex=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);tex.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"direct-{frame}.png")))tex.SaveAsPng(file,tex.Width,tex.Height);
   if(frame==1){var hits=(System.Collections.IList)Get("_directTrucks");Check(hits.Count>0,"Visible adjacent edge has a truck");}
-  if(frame++==17){Console.WriteLine("PASS: animated main/pair/return cameras, disabled moving controls, consecutive globe/net truck clicks at 540p and preserved reservations.");Console.WriteLine("PASS: edge trucks, hidden ordinary-inspector markers, selected overlay opening and return, two hangars, reservations and rendering.");Exit();}
+  if(frame++==22){Console.WriteLine("PASS: physical rotated seam-letter attachment on main and pair delivery maps at 540p, animation rendering and preserved reservations.");Console.WriteLine("PASS: animated main/pair/return cameras, disabled moving controls, consecutive globe/net truck clicks at 540p and preserved reservations.");Console.WriteLine("PASS: edge trucks, hidden ordinary-inspector markers, selected overlay opening and return, two hangars, reservations and rendering.");Exit();}
  }
 }

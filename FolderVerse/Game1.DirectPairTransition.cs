@@ -41,6 +41,9 @@ public partial class Game1
     }
     private void UpdateDirectPairTransition(float elapsed)
     {
+        bool unfolding=_directPairNet.IsAnimating;
+        _directPairNet.UpdateAnimation(elapsed);
+        if(unfolding && !_directPairNet.IsAnimating && _directPairOpen && !_directPairClosing)AlignDirectPairInspectors();
         _directPairSlide=MathHelper.Clamp(_directPairSlide+(_directPairClosing?-1:1)*elapsed/DirectPairTransitionSeconds,0,1);
         if(_directPairClosing && _directPairSlide==0){_directPairOpen=_directPairClosing=false;_directPairTrucks.Clear();}
     }

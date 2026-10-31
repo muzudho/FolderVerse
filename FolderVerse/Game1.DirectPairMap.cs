@@ -66,6 +66,7 @@ public partial class Game1
         if(!_directPairOpen || _directDrag.HasValue || _directPairClosing || _directPairSlide<1)return;
         if(mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released && DirectPairFitButton.Contains(_pointer)){FitDirectPairMap();return;}
         if(!DirectPairMapBounds.Contains(_pointer))return;
+        if(!_directPairGlobe)_directPairNet.HoverEdge(DirectPairMapBounds,_pointer);
         int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
         if(wheel!=0){if(_directPairGlobe)_directPairWorld.GlobeZoom=MathHelper.Clamp(_directPairWorld.GlobeZoom*MathF.Pow(1.2f,wheel/120f),.1f,64);else _directPairNet.ZoomAt(DirectPairMapBounds,_pointer,wheel);}
         if(mouse.RightButton==ButtonState.Pressed && _previousMouse.RightButton==ButtonState.Pressed){var before=CanvasPoint(_previousMouse);var delta=new Vector2(_pointer.X-before.X,_pointer.Y-before.Y);if(_directPairGlobe)_directPairWorld.GlobePan+=new Vector2(delta.X/DirectPairMapBounds.Width,delta.Y/DirectPairMapBounds.Height);else _directPairNet.Drag(delta);}
@@ -73,6 +74,11 @@ public partial class Game1
     private bool DirectPairTruckClick(Point point)
     {
         if(!DirectPairMapBounds.Contains(point))return false;
+        if(!_directPairGlobe){
+            if(_directPairNet.IsAnimating)return true;
+            _directPairNet.HoverEdge(DirectPairMapBounds,point);
+            if(_directPairNet.ClickEdge()){_directPairTrucks.Clear();return true;}
+        }
         var hit=_directPairTrucks.Where(t=>t.Bounds.Contains(point)).OrderBy(t=>Vector2.DistanceSquared(t.Bounds.Center.ToVector2(),point.ToVector2())).FirstOrDefault();
         if(hit.Bounds==Rectangle.Empty)return false;
         if(!_directNodes.Contains(hit.A) || !_directNodes.Contains(hit.B))OpenDirectPair(hit.A,hit.B);
@@ -87,6 +93,7 @@ public partial class Game1
     private void DrawDirectPairTrucks(Rectangle panel)
     {
         _directPairTrucks.Clear();
+        if(!_directPairGlobe && _directPairNet.IsAnimating)return;
         foreach(var node in _setup.Nodes.All.Where(n=>DirectNodeAllowed(n.Id))){
             if(!DirectPairVisible(node.Id,out var a))continue;
             foreach(var route in _setup.Routes.Neighbors(node)){
@@ -116,6 +123,7 @@ public partial class Game1
     {
         var panel=DirectPairAnimatedPanel;var canvas=CanvasBounds();
         var finalView=_directPairNet.CaptureView();
+        bool temporaryCamera=DirectPairEase<1;
         float finalZoom=_directPairWorld?.GlobeZoom??1;var finalPan=_directPairWorld?.GlobePan??Vector2.Zero;var finalAnchor=_directPairWorld?.GlobeAnchor;
         float targetScale=_directPairNet.Fit(DirectPairMapBounds).Scale;
         _directRenderPanel=panel;
@@ -167,7 +175,7 @@ public partial class Game1
         _ui.Center("右ドラッグ：地図を移動 / ホイール：拡縮",new(panel.X,879,panel.Width,28),.32f,Cream);
         _ui.Button(DirectPairFitButton,"両地点を表示",Muted,.45f);
         }finally{
-            _directRenderPanel=null;_directPairNet.RestoreView(finalView);
+            _directRenderPanel=null;if(temporaryCamera)_directPairNet.RestoreView(finalView);
             if(_directPairGlobe){_directPairWorld.GlobeZoom=finalZoom;_directPairWorld.GlobePan=finalPan;_directPairWorld.GlobeAnchor=finalAnchor;}
         }
     }
