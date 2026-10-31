@@ -36,8 +36,10 @@ public sealed partial class RobotWorld
         foreach(var robot in robots)RemoveMarchReservation(node,robot);
         store.Replace(store.Robots.Select(r=>ids.Contains(r.Id)?WithoutRole(r):r).ToArray());SyncWorkers(node);return true;
     }
+    private int _workerPlanWorldSeed;
     public void ConfigureFactories(WorldSetup world)
     {
+        _workerPlanWorldSeed=world.WorldSeed;
         Reservations=world.Campaign;_reservationFlagOwner=node=>world.Nodes.All[node].Owner;
         for(int node=0;node<Nodes.Length;node++){
             int current=node;
@@ -52,7 +54,8 @@ public sealed partial class RobotWorld
         var workshop=Workshops[node];
         var ids=Nodes[node].Robots.Where(r=>r.FactoryWorker && WorkQualified(r,r.Owner)).OrderBy(r=>r.Id).Take(Math.Max(0,workshop.LineLimit-workshop.BaseLineCount)).Select(r=>r.Id).ToArray();
         foreach(var robot in Nodes[node].Robots.Where(r=>r.FactoryWorker && !ids.Contains(r.Id)).ToArray())Nodes[node].Replace(Nodes[node].Robots.Select(r=>r.Id==robot.Id?r with {FactoryWorker=false}:r).ToArray());
-        workshop.SetWorkers(ids);
+        var workers=Nodes[node].Robots.Where(r=>ids.Contains(r.Id)).ToArray();
+        workshop.SetWorkers(workers,_workerPlanWorldSeed,node,_reservationFlagOwner?.Invoke(node)??workers.FirstOrDefault()?.Owner??0);
     }
     public bool CanSetReservation(int node,Robot robot,HangarReservation kind,int? commander=null)
         =>CanSetReservationCore(node,robot,kind,commander,false);

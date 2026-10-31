@@ -82,6 +82,9 @@ public static class AutoSaveStore
             else if(Collection(type)){var generic=type.GetGenericTypeDefinition();var add=type.GetMethod(generic==typeof(Queue<>)?"Enqueue":"Add");foreach(int id in entry.Items){if(generic==typeof(HashSet<>) && id>=0)Populate(id);add.Invoke(value,new[]{Read(id)});}}
             else foreach(var field in Fields(type)){
                 if(!entry.Fields.TryGetValue(field.Name,out int id)){
+                    if(type==typeof(ProductionPlan) && new[]{"<HeadOrigin>k__BackingField","<BodyOrigin>k__BackingField","<LegsOrigin>k__BackingField","<CheapParts>k__BackingField"}.Contains(field.Name))continue;
+                    if(type==typeof(RobotWorkshop) && new[]{"_workerPlans","_workerAppointment","_selectedProductPlan"}.Contains(field.Name))continue;
+                    if(type==typeof(RobotWorld) && field.Name=="_workerPlanWorldSeed")continue;
                     if(type==typeof(RobotTraining) && field.Name=="<WorkerPolicy>k__BackingField"){field.SetValue(value,3);continue;}
                     if(type==typeof(WorldSetup) && field.Name=="PolarAxis"){field.SetValue(value,1);continue;}
                     if(type==typeof(WorldSetup) && new[]{"TutorialMapStage","TutorialMapRotations","TutorialMapNotices","TutorialMapEdgeChanged"}.Contains(field.Name))continue;
