@@ -148,7 +148,7 @@ public sealed partial class CubeNet
                 var a=Project(corners[edge]);var b=Project(corners[(edge+1)%4]);var delta=b-a;
                 ui.Tile((a+b)/2,new Vector2(delta.Length(),2),MathF.Atan2(delta.Y,delta.X),owner<0?new Color(170,181,191):world.OwnerColor(owner));
             }
-            DrawCellRoutes(ui,world,cell.Id,Project,pulse,false);
+            DrawCellRoutes(ui,world,cell.Id,Project,pulse,false,p=>RotateScreen(p,panel));
         }
     }
 }

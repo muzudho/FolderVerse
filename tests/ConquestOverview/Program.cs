@@ -181,7 +181,7 @@ sealed class OverviewGame:Game1{
   Call("HandleInput",new MouseState(skipX,skipY,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.FromSeconds(11),TimeSpan.Zero),true);
   Check((int)Get("_conquestStage")==5 && (float)Get("_conquestExitOpacity")==1,"Mouse skip button follows the same closing transition as Enter at scaled resolution");
   Call("ReturnToTitle");Check(!(bool)Get("_conquestOverview") && (int)Get("_conquestOverviewTurn")==-1,"Title resets presentation and audio");
-  Set("_titleMenuSelection",2);Call("TitleStartMenuInput",false,true,false,new KeyboardState(),true);
+  Set("_titleMenuSelection",3);Call("TitleStartMenuInput",false,true,false,new KeyboardState(),true);
   Check(Get("_screen").ToString()=="PlayerCount","New game title action begins normal setup");
   world.SetWorld(123);world.SetCast(456);world.SetTerritoryRights(789);world.SelectPlayer(0);world.HumanPlayers.Add(0);
   foreach(int ruler in world.LandOrder())world.ClaimLand(ruler,world.Cells.Where(c=>world.Owners[c.Id]<0).Take(world.TerritoryRights[ruler]).Select(c=>c.Id).ToArray());

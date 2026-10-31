@@ -20,7 +20,12 @@ sealed class InvasionUiCheck:Game1
         foreach(var store in new[]{world.Robots.Nodes[home.Id],world.Robots.Retinues[0]})for(int i=0;i<5;i++)store.Add(world.Robots.Create(0,RobotParts.Complete));
         var hangar=world.Robots.Nodes[home.Id];var samples=hangar.Robots.ToArray();
         foreach(var r in samples)hangar.Remove(r.Id);
-        foreach(var r in samples.Select((r,i)=>i==1?r with {BodyOrigin=1}:i==2?r with {DamagedParts=RobotParts.Body}:i==3?r with {CheapParts=RobotParts.Complete}:r))hangar.Add(r);
+        foreach(var r in samples.Select((r,i)=>i switch{
+            1=>r with {DefenseOnly=true,DefenseFlag=new(0,0,0)},
+            2=>r with {DamagedParts=RobotParts.Body,InterceptOnly=true},
+            3=>r with {CheapParts=RobotParts.Complete,FactoryWorker=true},
+            4=>r with {Disposal=true},_=>r}))hangar.Add(r);
+        hangar.Add(world.Robots.Create(0,RobotParts.Complete) with {BodyOrigin=1});
         world.Campaign.Plan(new(0,target.Id,1,home.Id,false,false,new[]{samples[0].Id}));
         world.Campaign.Plan(new(0,home.Id,1,home.Id,false,true,new[]{world.Robots.Retinues[0].Robots[0].Id}));
         ((WorldPreview)Get("_world")).ShowSetup(world,true);((CubeNet)Get("_net")).Home(world);
@@ -32,7 +37,11 @@ sealed class InvasionUiCheck:Game1
         try
         {
             if(frame==1){Call("SelectMoveNode",target.Id);var net=(CubeNet)Get("_net");var panel=(Rectangle)typeof(Game1).GetProperty("NetPanel",Flags)!.GetValue(this)!;net.SetCenter(world,world.Cells[home.Cell].Face);net.FitNodesAtSource(world,home,panel,8);var middle=(net.NodePosition(world,home,panel)+net.NodePosition(world,target,panel))/2;net.Drag(new Vector2(1430,550)-middle);}
-            if(frame==2){Call("OpenInvasionPicker",0);Set("_pointer",new Point(400,350));Call("InvasionPickerInput",true,false);}
+            if(frame==2){
+                Call("OpenInvasionPicker",0);Set("_pointer",new Point(610,350));Call("InvasionPickerInput",true,false);
+                var guard=world.Robots.Nodes[home.Id].Robots.Single(r=>r.DefenseOnly);var rows=(System.Collections.IList)Get("_invasionSources");
+                if(!((HashSet<long>)Get("_invasionDraft")).Contains(guard.Id) || (string)Call("InvasionReservationLabel",rows[0]!,guard)!="守備")throw new Exception("Selected guard must still show its original reservation until confirmation");
+            }
             if(frame==3)
             {
                 Set("_invasionPicker",-1);

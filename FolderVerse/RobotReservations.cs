@@ -36,8 +36,10 @@ public sealed partial class RobotWorld
         foreach(var robot in robots)RemoveMarchReservation(node,robot);
         store.Replace(store.Robots.Select(r=>ids.Contains(r.Id)?WithoutRole(r):r).ToArray());SyncWorkers(node);return true;
     }
+    private int _workerPlanWorldSeed;
     public void ConfigureFactories(WorldSetup world)
     {
+        _workerPlanWorldSeed=world.WorldSeed;
         Reservations=world.Campaign;_reservationFlagOwner=node=>world.Nodes.All[node].Owner;
         for(int node=0;node<Nodes.Length;node++){
             int current=node;
@@ -45,15 +47,22 @@ public sealed partial class RobotWorld
         }
         ReservationSource=owner=>world.Nodes.Current(owner)?.Id??-1;
         foreach(var node in world.Nodes.All){Workshops[node.Id].LimitLines(node.Terrain==TravelTerrain.Sea?1:3);SyncWorkers(node.Id);}
+        RevalidateWorkReservations();
     }
     public void SyncWorkers(int node)
     {
         var workshop=Workshops[node];
-        var ids=Nodes[node].Robots.Where(r=>r.FactoryWorker && Training[r.Owner].Eligible(r)).OrderBy(r=>r.Id).Take(Math.Max(0,workshop.LineLimit-workshop.BaseLineCount)).Select(r=>r.Id).ToArray();
+        var ids=Nodes[node].Robots.Where(r=>r.FactoryWorker && WorkQualified(r,r.Owner)).OrderBy(r=>r.Id).Take(Math.Max(0,workshop.LineLimit-workshop.BaseLineCount)).Select(r=>r.Id).ToArray();
         foreach(var robot in Nodes[node].Robots.Where(r=>r.FactoryWorker && !ids.Contains(r.Id)).ToArray())Nodes[node].Replace(Nodes[node].Robots.Select(r=>r.Id==robot.Id?r with {FactoryWorker=false}:r).ToArray());
-        workshop.SetWorkers(ids);
+        var workers=Nodes[node].Robots.Where(r=>ids.Contains(r.Id)).ToArray();
+        workshop.SetWorkers(workers,_workerPlanWorldSeed,node,_reservationFlagOwner?.Invoke(node)??workers.FirstOrDefault()?.Owner??0);
     }
     public bool CanSetReservation(int node,Robot robot,HangarReservation kind,int? commander=null)
+        =>CanSetReservationCore(node,robot,kind,commander,false);
+    // Explain training only if relaxing that policy alone would make the command valid.
+    public bool ReservationBlockedByTraining(int node,Robot robot,HangarReservation kind,int? commander=null)
+        =>!CanSetReservationCore(node,robot,kind,commander,false) && CanSetReservationCore(node,robot,kind,commander,true);
+    private bool CanSetReservationCore(int node,Robot robot,HangarReservation kind,int? commander,bool ignoreTraining)
     {
         if(node<0 || node>=Nodes.Length || robot==null)return false;
         int country=commander??robot.Owner;if(country<0 || country>=Training.Length)return false;
@@ -63,7 +72,11 @@ public sealed partial class RobotWorld
         if(kind is <HangarReservation.Disposal or >HangarReservation.Intercept || ReservationBusy(node,robot.Id))return false;
         bool remove=kind==HangarReservation.Disposal?robot.Disposal:kind==HangarReservation.Defense?robot.DefenseOnly:kind==HangarReservation.Intercept?robot.InterceptOnly:kind==HangarReservation.Worker && robot.FactoryWorker;
         if(!remove){
-            if(kind is HangarReservation.Defense or HangarReservation.Worker or HangarReservation.Intercept && !Training[country].Eligible(WithoutRole(robot).Materialize() with {Owner=country}))return false;
+            if(kind is HangarReservation.Defense or HangarReservation.Worker or HangarReservation.Intercept){
+                var candidate=WithoutRole(robot).Materialize() with {Owner=country};
+                bool eligible=kind==HangarReservation.Worker?Training[country].WorkerEligible(candidate):Training[country].Eligible(candidate);
+                if(!candidate.CanFight || !ignoreTraining && !eligible)return false;
+            }
             if(kind==HangarReservation.Defense && robot.NativeParts(country)==0)return false;
             if(kind==HangarReservation.Worker && workshop.ProductionLines.Length>=workshop.LineLimit)return false;
         }

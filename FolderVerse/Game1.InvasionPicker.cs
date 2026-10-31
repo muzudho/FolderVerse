@@ -19,17 +19,25 @@ public partial class Game1
     }
     private void InvasionPickerInput(bool click,bool escape)
     {
-        if(escape || click && InvasionPickerCancel.Contains(_pointer)){_invasionPicker=-1;return;}
+        if(escape || click && InvasionPickerCancel.Contains(_pointer)){
+            foreach(long id in _invasionDraft.Except(_invasionSources[_invasionPicker].Robots))_workReservationEffects.Remove(id);
+            _invasionPicker=-1;return;
+        }
         if(!click)return;
         var row=_invasionSources[_invasionPicker];var robots=InvasionRobots(row);
         if(InvasionPickerDone.Contains(_pointer))
         {
             row.Robots.Clear();row.Robots.UnionWith(_invasionDraft.Intersect(robots.Select(r=>r.Id)));
+            foreach(var robot in robots.Where(r=>row.Robots.Contains(r.Id)))BeginWorkReservationEffect(robot,row.Owner);
             row.Count=row.Robots.Count;row.Selected=row.Queen && _invasionQueenDraft;_invasionPicker=-1;return;
         }
         if(row.Queen && InvasionQueenToggle.Contains(_pointer)){_invasionQueenDraft=!_invasionQueenDraft;return;}
         for(int i=0;i<robots.Length;i++)if(InvasionRobotCard(i).Contains(_pointer))
-        {if(!_invasionDraft.Remove(robots[i].Id))_invasionDraft.Add(robots[i].Id);return;}
+        {
+            if(!_invasionDraft.Remove(robots[i].Id)){_invasionDraft.Add(robots[i].Id);BeginWorkReservationEffect(robots[i],row.Owner);}
+            else _workReservationEffects.Remove(robots[i].Id);
+            return;
+        }
     }
     private void DrawInvasionPicker()
     {
@@ -43,7 +51,8 @@ public partial class Game1
             var r=InvasionRobotCard(i);var robot=robots[i];bool selected=_invasionDraft.Contains(robot.Id);
             _ui.Box(r,selected?Accent:Muted);DrawRobotGlyph(new(r.X+65,r.Y+8,55,75),robot,whiteOutline:true);
             _ui.Center($"ID {robot.Id} / {PartsLabel(robot.Parts)}",new(r.X,r.Y+90,r.Width,28),.38f,Cream);
-            _ui.Center(selected?"選択中":robot.FactoryWorker?"工場作業員":robot.InterceptOnly?"迎撃専用":robot.DefenseOnly?"守備専用":robot.Disposal?"廃棄予約":"待機",new(r.X,r.Y+122,r.Width,26),.4f,Cream);
+            string reservation=InvasionReservationLabel(row,robot);
+            _ui.Center((reservation.Length>0?reservation+"予約":"待機")+(selected?" → 出撃選択":""),new(r.X,r.Y+122,r.Width,26),.30f,Cream);
         }
         if(robots.Length==0)_ui.Text("出撃できるロボットはいません",new(380,375),.6f,Cream);
         if(row.Queen)_ui.Button(InvasionQueenToggle,_invasionQueenDraft?"クイーン：参加（移動も予約）":"クイーン：参加しない",_invasionQueenDraft?Accent:Muted,.5f);

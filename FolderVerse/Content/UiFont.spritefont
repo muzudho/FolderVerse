@@ -32,4 +32,8 @@
 <CharacterRegion><Start>歩</Start><End>歩</End></CharacterRegion>
 <CharacterRegion><Start>角</Start><End>角</End></CharacterRegion>
 <CharacterRegion><Start>避</Start><End>避</End></CharacterRegion>
+<CharacterRegion><Start>起</Start><End>起</End></CharacterRegion>
+<CharacterRegion><Start>私</Start><End>私</End></CharacterRegion>
+<CharacterRegion><Start>候</Start><End>候</End></CharacterRegion>
+<CharacterRegion><Start>補</Start><End>補</End></CharacterRegion>
 </CharacterRegions></Asset></XnaContent>

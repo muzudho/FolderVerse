@@ -94,8 +94,8 @@ sealed class InputGame:Game1{
   setup.HumanPlayers.AddRange(new[]{0,1});setup.SelectTurnRuler(0);net.ShowBatteries=false;
   Call("EndPlannedTurn");Check(setup.PlayerSlot==1 && Get("_screen").ToString()=="WorldStatus" && net.ShowBatteries && world.GlobeZoom==2,"Turn submission hands off to the other player's stored view");
   setup.Campaign.Reset();setup.HumanPlayers.Clear();setup.Relations.SetSuperior(1,0);setup.Relations.Leader=0;setup.SelectPlayer(0);Call("RestoreDomesticCamera");Call("OpenStrategyInspector");Input(default,dt:.5);
-  Click(new(650,118));Check(setup.PlayerSlot==1 && net.ShowBatteries,"Manual subordinate switch restores separate preferences");
-  Click(new(200,118));Check(setup.PlayerSlot==0 && !net.ShowBatteries && world.GlobeZoom==3,"Returning from subordinate preserves original settings");
+  Click(((Rectangle)Prop("FactionPickerButton")).Center);var childRow=(Rectangle)Call("FactionPickerRow",1);Click(new(childRow.X+20,childRow.Center.Y));Check(setup.PlayerSlot==1 && net.ShowBatteries,"Manual subordinate switch restores separate preferences");
+  Click(((Rectangle)Prop("FactionPickerButton")).Center);var parentRow=(Rectangle)Call("FactionPickerRow",0);Click(new(parentRow.X+20,parentRow.Center.Y));Check(setup.PlayerSlot==0 && !net.ShowBatteries && world.GlobeZoom==3,"Returning from subordinate preserves original settings");
   var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();
   Open(source);Click(new(250,365));Click(new(740,810));Check(!(bool)Get("_transportDestinationPicking"),"Scaled-window cancel hit testing");Click(new(550,325));Click(((Rectangle)Prop("InspectorClose")).Center);Input(default,dt:.5);Check(!(bool)Prop("InspectorVisible"),"Scaled-window modal close hit testing");
   Call("BeginPlayerCount");setup.SelectPlayer(0);Call("RestoreDomesticCamera");Check(net.ShowBatteries && world.GlobeZoom==1,"New game clears old player preferences");

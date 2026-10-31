@@ -16,7 +16,7 @@ for(int turn=0;turn<25;turn++){
 Check(w.Transport.Plan(0,0,RobotParts.Complete).Sum(x=>x.Degrees)==180,"Gentle converges over multiple turns");
 f.Automation=NodeAutomation.Auto;f.SelectPlan(3);w.AdjustNode(0,0,(a,b)=>true,nodeOwner:n=>0);Check(f.Manufacturing && !f.AutoAssemblyDisabled && f.ReservedSlots==2,"Auto sets manufacturing and assembly");
 var mixed=w.Create(0,RobotParts.Complete).Materialize() with{BodyOrigin=1,LegsOrigin=1};foreach(var r in w.Nodes[0].Robots.ToArray())w.Nodes[0].Remove(r.Id);w.Nodes[0].Add(mixed);w.Nodes[0].Add(mixed with{Id=100});
-w.AdjustNode(0,0,(a,b)=>true,nodeOwner:n=>0);Check(w.Transport.Plan(0,0,RobotParts.Complete).Count==0,"Pure training blocks mixed transport");w.Training[0].DeploymentPolicy=3;w.AdjustNode(0,0,(a,b)=>true,nodeOwner:n=>0);Check(w.Transport.Plan(0,0,RobotParts.Complete).Sum(x=>x.Degrees)>0,"Local deployment admits mixed soldiers");
+w.Training[0].DeploymentPolicy=0;w.AdjustNode(0,0,(a,b)=>true,nodeOwner:n=>0);Check(w.Transport.Plan(0,0,RobotParts.Complete).Count==0,"Pure training blocks mixed transport");w.Training[0].DeploymentPolicy=3;w.AdjustNode(0,0,(a,b)=>true,nodeOwner:n=>0);Check(w.Transport.Plan(0,0,RobotParts.Complete).Sum(x=>x.Degrees)>0,"Local deployment admits mixed soldiers");
 Console.WriteLine("PASS: manual preservation, gentle convergence and bounds, auto factory, nation filter and training.");
 var vacation=new RobotWorld();vacation.Initialize(2,1);
 var manager=vacation.Workshops[0];manager.Automation=NodeAutomation.Auto;

@@ -20,7 +20,7 @@ public sealed partial class CubeNet
         int owner=ShowCountryColors?world.Nodes.FullOwner(cell):-1;
         if(ControlledCountryColors && !world.Relations.Controls(owner))owner=-1;
         var color=owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal,world.PolarAxis):WorldPreview.LandTerritoryColor(world.OwnerColor(owner),WorldTerrain.Kind(height));
-        return NodeFocus<0 && RegionFocusCell>=0 && cell!=RegionFocusCell?SelectionGlow.Dim(color):color;
+        return NodeFocus<0 && RegionFocusCell>=0 && cell!=RegionFocusCell?SelectionGlow.Dim(color,FocusBrightness):color;
     }
     public bool ShowRoutes {get;set;}=true; public int HoveredNode {get;set;}=-1; public int InspectedNode {get;set;}=-1;
     public bool AttackTargetMarkers {get;set;}
@@ -62,13 +62,18 @@ public sealed partial class CubeNet
         var physical=surface.Normal*normalDistance+face.Right*p.X-face.Up*p.Y;
         return new(Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.U)*10),0,9),Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.V)*10),0,9));
     }
-    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true)
+    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null)
     {
+        Color SearchTint(Color color,Vector2 at){
+            if(!FolderSearchFocus)return color;
+            if(RegionFocusCell>=0)return cell==RegionFocusCell?color:SelectionGlow.Dim(color,FocusBrightness);
+            return FocusTerrain(color,focusPoint?.Invoke(at)??at,cell);
+        }
         foreach(var peak in world.Routes.Peaks(cell))
         {
             var point=world.Routes.Position(cell,peak);var surface=world.Cells[cell];
             var triangle=new[]{project(point-surface.V*.035f),project(point+surface.U*.028f+surface.V*.024f),project(point-surface.U*.028f+surface.V*.024f)};
-            for(int edge=0;edge<3;edge++){var a=triangle[edge];var b=triangle[(edge+1)%3];var delta=b-a;ui.Tile((a+b)/2,new Vector2(delta.Length(),2),MathF.Atan2(delta.Y,delta.X),new Color(245,246,249));}
+            for(int edge=0;edge<3;edge++){var a=triangle[edge];var b=triangle[(edge+1)%3];var delta=b-a;ui.Tile((a+b)/2,new Vector2(delta.Length(),2),MathF.Atan2(delta.Y,delta.X),SearchTint(new Color(245,246,249),(a+b)/2));}
         }
         if(ShowRoutes)
         {
@@ -83,8 +88,8 @@ public sealed partial class CubeNet
                     var a=project(curve[i-1]);var b=project(curve[i]);var delta=b-a;
                     float height=WorldTerrain.Elevation((curve[i-1]+curve[i])/2,offset);
                     var color=height<.52f?new Color(111,228,255):height>=WorldTerrain.MountainHeight?new Color(255,163,70):new Color(255,230,140);
-                    ui.Tile((a+b)/2,new Vector2(delta.Length()+1,4),MathF.Atan2(delta.Y,delta.X),new Color(13,36,44));
-                    ui.Tile((a+b)/2,new Vector2(delta.Length()+1,2),MathF.Atan2(delta.Y,delta.X),color);
+                    ui.Tile((a+b)/2,new Vector2(delta.Length()+1,4),MathF.Atan2(delta.Y,delta.X),SearchTint(new Color(13,36,44),(a+b)/2));
+                    ui.Tile((a+b)/2,new Vector2(delta.Length()+1,2),MathF.Atan2(delta.Y,delta.X),SearchTint(color,(a+b)/2));
                 }
             }
             if(drawNodes)DrawNodeMarkers(ui,world,cell,project,pulse);

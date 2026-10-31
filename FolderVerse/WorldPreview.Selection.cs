@@ -12,6 +12,7 @@ public sealed partial class WorldPreview
     public float FocusCircleYaw {get;set;}
     public float FocusCirclePitch {get;set;}
     public int CountryFocus {get;set;}=-1;
+    public float FocusBrightness {get;set;}=.65f;
     public HashSet<int> FocusCells {get;}=new();
     public List<MapFocusCircle> FocusCircles {get;}=new();
     public int NodeFocus {get;set;}=-1;
@@ -34,7 +35,7 @@ public sealed partial class WorldPreview
             Color Mask(Vector3 p){
                 float outside=1;
                 if(detail>1){ProjectVisible(p,cell.Normal,FocusCircleYaw,FocusCirclePitch,FocusCircleArea,out var at);foreach(var circle in FocusCircles)outside=Math.Min(outside,SelectionGlow.OutsideCircle(at,circle.Center,circle.Radius));}
-                return new Color(0f,0f,0f,.35f*outside);
+                return new Color(0f,0f,0f,(1-FocusBrightness)*outside);
             }
             int index=0;
             for(int y=0;y<detail;y++)for(int x=0;x<detail;x++){

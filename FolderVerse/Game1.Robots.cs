@@ -57,6 +57,8 @@ public partial class Game1
                 _ui.Box(new(r.X+r.Width/2,y+Math.Max(4,r.Height/12),Math.Max(2,r.Width/7),Math.Max(2,r.Height/28)),metal);
             }
         }
-        if(robot.ShoeOwner>=0)RobotWorkArt.DrawShoes(_ui,r,_setup.OwnerColor(robot.ShoeOwner),opacity*(partOpacity?.Invoke(RobotParts.Legs)??1),DefenseShoeProgress(robot));
+        int workOwner=WorkReservationOwner(robot);
+        if(workOwner>=0 && (robot.Parts&RobotParts.Legs)!=0)RobotWorkArt.DrawShoes(_ui,r,_setup.OwnerColor(workOwner),opacity*(partOpacity?.Invoke(RobotParts.Legs)??1),robot.ShoeOwner>=0?DefenseShoeProgress(robot):WorkShoeProgress(robot));
+        DrawWorkReservationEffect(r,robot,opacity);
     }
 }

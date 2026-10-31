@@ -46,7 +46,7 @@ public partial class Game1
     {
         get
         {
-            if(_homePersuasionAge<4)return "ロボットのみなさーん！　寝返ってくださーい！";
+            if(_homePersuasionAge<4)return _homePersuasion.Any(e=>e.Before.NativeParts(e.Ruler)>0)?"あなたたち、起きて！":"ロボットのみなさーん！　寝返ってくださーい！";
             if(_homePersuasion.Any(e=>e.Success && e.Before.Owner!=e.Ruler))return "やったあ！　こんにちわです～！";
             if(_homePersuasion.Any(e=>e.Success))return "これからも、よろしくお願いします～！";
             return "また、お話ししましょう～！";

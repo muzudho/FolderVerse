@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private bool? _routesBeforeRegionInspector;
-    private int RegionMapFocusCell=>_regionCell>=0 && !_nodeInspectorClosing?_regionCell:-1;
+    private int RegionMapFocusCell=>FolderTreeFocus && _folderTreeKind==1?_folderTreeId:_regionCell>=0 && !_nodeInspectorClosing?_regionCell:-1;
     private int _regionCell=-1,_regionNodePage;
     private int AutomationNode=>_regionCell>=0?_inspectedNode:_populationNode;
     private static Rectangle RegionNodeButton(int slot)=>new(84+slot%2*395,750+slot/2*46,380,40);

@@ -7,7 +7,7 @@ Check(w.Width==1 && w.Height==2 && w.Depth==1 && w.ActiveCount==7,"Step two shap
 Check(w.TerritoryCounts[0]==0 && Enumerable.Range(1,6).All(r=>w.TerritoryCounts[r]==1) && w.Owners.Count(o=>o<0)==4,"Zero-cell start, six one-cell nations and neutral remainder");
 Check(w.Robots.Retinues[0].Count==0,"Empty starting pocket");
 Check(Enumerable.Range(1,6).All(r=>w.Robots.Training[r].RequiredNative==1 && w.Robots.Training[r].DeploymentPolicy==1),"Step two CPUs assemble and deploy mixed robots");
-Check(w.Robots.Training[0].RequiredNative==3 && w.Robots.Training[0].DeploymentPolicy==0,"Player training remains unchanged");
+Check(w.Robots.Training[0].RequiredNative==1 && w.Robots.Training[0].DeploymentPolicy==3,"Player starts with local training defaults");
 foreach(var n in w.Nodes.All){var stock=w.Robots.Nodes[n.Id].Robots;Check(stock.Count==(n.Owner<0?1:4),"Initial stock count");Check(stock.Count(r=>r.Owner==0 && r.NativeParts(0)==3)==1,"One regular player robot per node");Check(n.Owner<0 || stock.Count(r=>r.Owner==n.Owner && r.CheapParts==RobotParts.Complete)==3,"Three cheap national robots");}
 int home=w.Nodes.Current(0).Id;
 var target=w.Routes.NodeChoices(0).Select(r=>w.Nodes.At(r.Target,r.Entry)).First(n=>n.Id!=home);
@@ -63,7 +63,8 @@ foreach(int guest in new[]{0,3,4,5,6})
 w.Nodes.Recount();w.Campaign.RobotBattles.Rules=new(){SegmentTurns=1};w.Campaign.Resolve(w,new[]{new March(2,home,0,invadingSource.Id,false)});
 var crowded=w.Campaign.RobotBattles.Encounters.First(e=>e.Target==home);
 Check(crowded.Battles.Count>1 && crowded.Battles.All(b=>b.SplitBoard),"Crowded bystanders use split boards without partial flag wins");
-Check(crowded.Battles.SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Count(u=>u.Role==BattleRole.Queen)==5,"All five resident queens participate once");
+var residentQueens=crowded.Battles.SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Where(u=>u.Role==BattleRole.Queen).ToArray();
+foreach(int guest in new[]{0,3,4,5,6})Check(residentQueens.Count(u=>u.Owner==guest)==1,"Each of the five named resident queens participates once; owners: "+string.Join(",",residentQueens.Select(u=>u.Owner)));
 for(int turn=0;turn<70 && !crowded.Finished;turn++){w.Campaign.Resolve(w,Array.Empty<March>());w.Campaign.RobotBattles.Check(w);}
 // Persuasion policy withdraws all units when an armed enemy closes on the queen.
 var battle=new BattleState(10){Kind=BattleKind.Edge};battle.AddArmy(0,0,Array.Empty<Robot>(),true);battle.AddArmy(1,1,Array.Empty<Robot>(),false);

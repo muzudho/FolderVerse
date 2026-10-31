@@ -23,13 +23,14 @@ public partial class Game1
     private bool _reignView;
     private float _domesticSlide;
     private bool _nodeInspectorClosing;
-    private bool InspectorVisible=>_reignView || _regionCell>=0 || _populationCell>=0 || _movementOpen || _transportOverview || _salvagePlan;
+    private bool InspectorVisible=>_folderTreeOpen || _reignView || _regionCell>=0 || _populationCell>=0 || _movementOpen || _transportOverview || _salvagePlan;
     private bool DomesticPanelOpen=>InspectorVisible && !_nodeInspectorClosing;
     private int NodeInspectorOffset=>(int)MathF.Round(-960*(1-_domesticSlide));
     private Rectangle NodeInspectorBounds=>new(54+NodeInspectorOffset,150,850,825);
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
     private void ResetInspector(){
+        CloseFolderTreeState();
         CloseReservationDirectory();
         _salvageMapTarget=-1;_salvageCatalogOpen=false;_mapOverlayMenu=false;_salvagePlan=false;_hangarAbandonMode=false;_salvageAbandonConfirmation=null;
         if(_salvageRoutesBefore.HasValue){_net.ShowRoutes=_salvageRoutesBefore.Value;_salvageRoutesBefore=null;}
@@ -41,7 +42,7 @@ public partial class Game1
         CloseDirectDelivery();
         _wandererPolicyOpen=false;
         CancelTransportModal();
-        _nodeAssemblyOpen=_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;
+        _hangarTrainingCountry=-1;_nodeAssemblyOpen=_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;
         _factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;
         if(_movementOpen)CloseMovement();if(_transportOverview)CloseTransportOverview();
         _reignView=false;_populationCell=_populationNode=_inspectedNode=-1;_nodeInspectorClosing=false;_trainingOpen=false;_hangarDrag=null;_supervisorDialog=0;
@@ -60,7 +61,8 @@ public partial class Game1
         var r=InspectorHandle;
         _ui.Box(new(r.X+4,r.Y+5,r.Width,r.Height),new Color(5,17,28));_ui.Box(r,_setup.OwnerColor(_setup.PlayerSlot));
         _ui.Button(InspectorClose,"×",Muted,.75f);
-        for(int y=r.Y+90;y<r.Bottom-16;y+=12)_ui.Box(new(r.X+18,y,r.Width-36,4),new Color(30,48,58));
+        if(NodeCheckButtonVisible)DrawNodeCheckButton();
+        for(int y=r.Y+(NodeCheckButtonVisible?132:90);y<r.Bottom-16;y+=12)_ui.Box(new(r.X+18,y,r.Width-36,4),new Color(30,48,58));
     }
     private void OpenNodeInspector(int id){
         ResetInspector();var node=_setup.Nodes.All[id];_nodeInspectorClosing=false;_reignView=false;
@@ -81,6 +83,7 @@ public partial class Game1
     private bool DomesticViewClick(Point p)
     {
         if(_trainingOpen || _supervisorDialog>0)return false;
+        if(NodeCheckClick(p))return true;
         if((_reignView || _regionCell>=0 || _populationCell>=0) && new Rectangle(InspectorFolderButton.X+NodeInspectorOffset,InspectorFolderButton.Y,InspectorFolderButton.Width,InspectorFolderButton.Height).Contains(p)){OpenInspectorFolders();return true;}
         if(StrategyReadOnly && new Rectangle(54+NodeInspectorOffset,96,850,879).Contains(p) && !InspectorClose.Contains(p))return true;
         if(_reignView && !InspectingSupervisor && LessonCatalogButton.Contains(new Point(p.X-NodeInspectorOffset,p.Y))){_screen=Screen.LessonCatalog;return true;}

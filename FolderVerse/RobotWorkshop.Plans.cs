@@ -1,6 +1,15 @@
 namespace FolderVerse;
 using System.Linq;
-public sealed record ProductionPlan(RobotParts Product,int Turns,bool Cheap=false,RobotParts IntegratedParts=0);
+public sealed record ProductionPlan(RobotParts Product,int Turns,bool Cheap=false,RobotParts IntegratedParts=0)
+{
+    public int? HeadOrigin {get;init;}
+    public int? BodyOrigin {get;init;}
+    public int? LegsOrigin {get;init;}
+    public RobotParts CheapParts {get;init;}
+    public RobotParts EffectiveCheapParts=>Cheap?Product:CheapParts&Product;
+    public string QualityLabel=>EffectiveCheapParts==0?"正規":EffectiveCheapParts==Product?"安い":"正規＋安い";
+    public Robot Preview(int owner,long id=0)=>new(id,owner,Product){HeadOrigin=HeadOrigin??owner,BodyOrigin=BodyOrigin??owner,LegsOrigin=LegsOrigin??owner,CheapParts=EffectiveCheapParts,IntegratedParts=IntegratedParts};
+}
 public sealed partial class RobotWorkshop
 {
     private int? _baseLineCount;
@@ -10,10 +19,15 @@ public sealed partial class RobotWorkshop
     public int BaseLineCount=>_baseLineCount??ProductionLines.Length;
     public long? WorkerAt(int line)=>line<BaseLineCount?null:_workerLines?.Keys.OrderBy(id=>id).Skip(line-BaseLineCount).Select(id=>(long?)id).FirstOrDefault();
     public void LimitLines(int limit){_lineLimit=limit;_baseLineCount=System.Math.Min(BaseLineCount,limit);ProductionLines=ProductionLines.Take(_baseLineCount.Value).ToArray();}
-    internal void SetWorkers(long[] ids){
+    internal void SetWorkers(Robot[] workers,int worldSeed,int node,int country){
         _baseLineCount??=ProductionLines.Length;_workerLines??=new();
+        var ids=workers.Select(r=>r.Id).ToArray();
         foreach(long id in _workerLines.Keys.Where(id=>!ids.Contains(id)).ToArray())_workerLines.Remove(id);
-        foreach(long id in ids)if(!_workerLines.ContainsKey(id)){var line=new RobotWorkshop();line.GeneratePlans(unchecked((int)id*7919));line.SelectPlan(0);_workerLines[id]=line;}
+        foreach(var worker in workers){
+            if(!_workerLines.TryGetValue(worker.Id,out var line)){
+                line=new RobotWorkshop();line.GenerateWorkerPlans(worker,worldSeed,node,country,false);line.SelectPlan(0);_workerLines[worker.Id]=line;
+            }else if(line._workerPlans==null)line.GenerateWorkerPlans(worker,worldSeed,node,country,true);
+        }
         ProductionLines=ProductionLines.Take(BaseLineCount).Concat(_workerLines.OrderBy(p=>p.Key).Select(p=>p.Value)).Take(LineLimit).ToArray();
     }
     public RobotWorkshop[] ProductionLines {get;private set;}
@@ -36,6 +50,11 @@ public sealed partial class RobotWorkshop
     public ProductionPlan PlanAt(int index)
     {
         if(index<0 || index>10 || index==3)throw new System.ArgumentOutOfRangeException(nameof(index));
+        return _workerPlans==null?BasePlanAt(index):_workerPlans[index];
+    }
+    private ProductionPlan BasePlanAt(int index)
+    {
+        if(index<0 || index>10 || index==3)throw new System.ArgumentOutOfRangeException(nameof(index));
         if(index>=7){var integrated=IntegratedPlans[(index-7)%2];int baseline=Plans.FirstOrDefault(p=>p.Product==integrated.Product)?.Turns??integrated.Turns;return integrated with {Turns=System.Math.Max(1,(index>=9?baseline/2:baseline)-1),Cheap=index>=9};}
         var regular=Plans[index<3?index:index-4];
         return index<3?regular:regular with {Turns=System.Math.Max(1,regular.Turns/2),Cheap=true};
@@ -48,6 +67,7 @@ public sealed partial class RobotWorkshop
     public bool RestEnabled {get;private set;}=true;
     public void GeneratePlans(int seed)
     {
+        _workerPlans=null;_workerAppointment=null;
         var random=new SeedRandom(seed);var masks=new System.Collections.Generic.List<int>{1,2,3,4,5,6,7};
         Plans=new ProductionPlan[3];
         for(int i=0;i<3;i++){int choice=random.Next(masks.Count),mask=masks[choice];masks.RemoveAt(choice);int pieces=System.Numerics.BitOperations.PopCount((uint)mask);Plans[i]=new((RobotParts)mask,pieces+1+random.Next(3));}
@@ -59,7 +79,7 @@ public sealed partial class RobotWorkshop
         if(SelectedPlan==index)return;
         SelectedPlan=index;Paused=false;RestRemaining=ProducedSinceRest=0;
         if(index==3){Manufacturing=false;ProductionAge=0;Paused=false;return;}
-        var plan=PlanAt(index);Configure(plan.Product,plan.Turns);CheapProduct=plan.Cheap;IntegratedProduct=plan.IntegratedParts;SelectedPlan=index;RestEnabled=true;
+        var plan=PlanAt(index);Configure(plan.Product,plan.Turns);CheapProduct=plan.EffectiveCheapParts==plan.Product;IntegratedProduct=plan.IntegratedParts;_selectedProductPlan=plan;SelectedPlan=index;RestEnabled=true;
     }
     public void SetRest(int every,int turns)
     {

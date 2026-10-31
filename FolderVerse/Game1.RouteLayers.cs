@@ -16,6 +16,7 @@ public partial class Game1
     private static Rectangle TrafficLayerOption(int i)=>new(1638,134+i*52,220,52);
     private bool RouteLayerClick(Point pointer)
     {
+        if(FolderTreeToolbarClick(pointer))return true;
         if(MapDragClick(pointer))return true;
         if(_mapLayerListOpen || _trafficLayerListOpen)
         {
@@ -46,7 +47,7 @@ public partial class Game1
     }
     private void DrawRouteLayerButtons()
     {
-        DrawMapDragButton();DrawReservationDirectoryButton();
+        DrawMapDragButton();DrawFolderTreeButton();DrawReservationDirectoryButton();
         string[] names={"緯番・経番","電池","赤道","ロボット","他国"};bool[] enabled={_net.ShowMapSymbols,_net.ShowBatteries,_net.ShowEquator,_net.ShowRobots,_net.ShowOtherCountries};int[] indices={0,1,4,5,6};
         for(int i=0;i<5;i++){
             var r=RouteLayerButton(indices[i]);bool available=indices[i] is 1 or 5 or 6 || MapOverlayAvailable(indices[i]);

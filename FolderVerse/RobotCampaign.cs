@@ -426,6 +426,7 @@ public sealed class RobotCampaign
                 robot=robot with {DamagedParts=robot.DamagedParts|hit};
                 state.Events.Add(new(state.Turn,BattlePhase.Result,unit.Id,$"帰還：損傷判定 {hit}"));
             }
+            robot=world.Robots.ValidateWorkReservation(robot);
             if(unit.Fallen || unit.Retreated || state.Winner<0 || !world.Relations.Allied(unit.Owner,state.Winner))
                 ReturnHome(world,robot,home);
             else if(e.Kind==BattleKind.Node)PlaceWinner(world,e.Target,robot,home,e.IncomingWinners);

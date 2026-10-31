@@ -12,6 +12,12 @@ sealed class FolderChecks:Game1{
  object Call(string n,params object[] a)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,a)!;
  static void Check(bool ok,string m){if(!ok)throw new Exception(m);}
  List<(int Kind,int Id,int Depth,int Owner,string Label)> Rows()=>(List<(int,int,int,int,string)>)Get("_inspectorFolderRows");
+ void TreeSelect(int kind,int id){
+  int index=Rows().FindIndex(r=>r.Kind==kind && r.Id==id);Check(index>=0,"Search row is present in the expanded tree");
+  int scroll=Math.Clamp(index-2,0,Math.Max(0,Rows().Count-10));Set("_folderScroll",scroll);
+  Set("_pointer",new Point(600,318+(index-scroll)*56));
+  Check((bool)Call("FolderTreeInput",new MouseState(),true,false,true),"Tree row click is consumed");Call("UpdateNodeFocusCircle");
+ }
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
   w=(WorldSetup)Get("_setup");w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);w.Relations.Reset();Check(w.ActiveCount>=3,"Three-ruler hierarchy fixture");w.Relations.SetSuperior(0,1);w.Relations.SetSuperior(1,2);
@@ -85,8 +91,54 @@ sealed class FolderChecks:Game1{
   if(frame==2)Call("OpenInspectorFolders");
   if(frame==3){Call("OpenNodeInspector",node);Call("OpenNodeAssembly");}
   if(frame==4){Call("OpenNodeOffice");Call("OpenInspectorFolders");var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();}
+  if(frame==5){
+   var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=1920;g.PreferredBackBufferHeight=1080;g.ApplyChanges();
+   Call("ResetInspector");Call("UpdateDomesticSlide",1f);var net=(CubeNet)Get("_net");net.ShowRoutes=net.ShowOtherCountries=false;
+   Check((bool)Call("FolderTreeToolbarClick",new Point(84,100)),"Global folder button opens with no point selected");Call("UpdateDomesticSlide",1f);
+   Check((bool)Get("_folderTreeOpen") && (int)Get("_populationNode")==-1 && !(bool)Get("_nodeOfficeOpen"),"Standalone search does not require or open a point inspector");
+   Check(net.ShowRoutes && net.ShowOtherCountries && Rows().Any(r=>r.Kind==0 && r.Id==1),"Search exposes foreign hierarchy and target markers");
+  }
+  if(frame==6){
+   Set("_statusGlobe",true);((WorldPreview)Get("_world")).ManualOrientation=Quaternion.CreateFromAxisAngle(Vector3.UnitY,MathHelper.Pi);
+   TreeSelect(1,w.Nodes.All[node].Cell);var net=(CubeNet)Get("_net");var world=(WorldPreview)Get("_world");
+   Check((int)Prop("RegionMapFocusCell")==w.Nodes.All[node].Cell && net.FocusBrightness==.35f && world.FocusBrightness==.35f,"Region search highlights the region and leaves 35-percent brightness elsewhere");
+   var outside=w.Nodes.All.First(n=>n.Cell!=w.Nodes.All[node].Cell);
+   Check(net.NodeTint(outside.Id,new Color(200,160,120))==new Color(70,56,42),"Other markers are actually reduced to 35 percent");
+  }
+  if(frame==7){
+   int foreign=w.Nodes.Current(1).Id;((HashSet<int>)Get("_expandedFolderRegions")).Add(w.Nodes.All[foreign].Cell);Call("BuildFolderTree");TreeSelect(2,foreign);
+   Check(w.PlayerSlot==0 && ((CubeNet)Get("_net")).NodeVisible(w,w.Nodes.All[foreign]),"Foreign point search is visible without changing the active ruler");
+   TreeSelect(2,node);var net=(CubeNet)Get("_net");var world=(WorldPreview)Get("_world");var site=w.Nodes.All[node];
+   Check(net.NodeFocus==node && (bool)Get("_folderTreeOpen") && (int)Get("_populationNode")==-1,"Point selection keeps the tree open rather than replacing it with Office");
+   Check(world.ProjectVisible(w.Routes.Position(site.Cell,site.Center),w.Cells[site.Cell].Normal,(float)Prop("_yaw"),(float)Prop("_pitch"),(Rectangle)Prop("StatusGlobeArea"),out var at) && ((Rectangle)Prop("MapViewBounds")).Contains(at.ToPoint()),"Hidden globe point is brought into view");
+   Check(net.FocusTerrain(new Color(200,160,120),new Vector2(-10000))==new Color(70,56,42),"Point spotlight darkens other terrain to 35 percent");
+  }
+  if(frame==8){Set("_statusGlobe",false);((CubeNet)Get("_net")).ScreenAngle=MathHelper.PiOver2;TreeSelect(1,w.Nodes.All[node].Cell);Check(((CubeNet)Get("_net")).ScreenAngle==MathHelper.PiOver2,"Region fitting preserves the net screen rotation");}
+  if(frame==9){
+   TreeSelect(2,node);var net=(CubeNet)Get("_net");var at=net.NodePosition(w,w.Nodes.All[node],(Rectangle)Prop("NetPanel"));
+   Check(Vector2.Distance(at,((Rectangle)Prop("MapViewBounds")).Center.ToVector2())<2,"Rotated net centers the selected point");
+  }
+  if(frame==10){
+   Call("FolderTreeInput",new MouseState(),false,true,true);Call("UpdateDomesticSlide",1f);var net=(CubeNet)Get("_net");
+   Check(!(bool)Get("_folderTreeOpen") && !net.ShowRoutes && !net.ShowOtherCountries && !net.FolderSearchFocus && net.FocusBrightness==.65f,"Escape restores display flags and removes search lighting");
+  }
+  if(frame==11){
+   var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();
+   Call("OpenFolderTree");Call("UpdateDomesticSlide",1f);TreeSelect(1,w.Nodes.All[node].Cell);
+   int index=Rows().FindIndex(r=>r.Kind==2 && r.Id==node),scroll=Math.Clamp(index-2,0,Math.Max(0,Rows().Count-10));Set("_folderScroll",scroll);
+   var mouse=new MouseState(300,(318+(index-scroll)*56)/2,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
+   Call("HandleInput",mouse,new KeyboardState(),new GameTime(TimeSpan.FromSeconds(100),TimeSpan.FromSeconds(.05)),true);
+   Check((int)Get("_folderTreeKind")==2 && (int)Get("_folderTreeId")==node && w.PlayerSlot==0,"Physical half-size clicks select the intended point without changing the active turn");
+  }
+  if(frame==12){Check((bool)Call("FolderTreeToolbarClick",new Point(84,100)),"Pressing the folder icon again closes the search");Call("UpdateDomesticSlide",1f);Check(!(bool)Get("_folderTreeOpen"),"Toolbar close finishes the normal inspector slide");}
+  if(frame==13){
+   Call("OpenFolderTree");Call("UpdateDomesticSlide",1f);Set("_previousMouse",new MouseState());
+   var close=(Rectangle)Prop("InspectorClose");var mouse=new MouseState(close.Center.X/2,close.Center.Y/2,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
+   Call("HandleInput",mouse,new KeyboardState(),new GameTime(TimeSpan.FromSeconds(101),TimeSpan.FromSeconds(.05)),true);Call("UpdateDomesticSlide",1f);
+   Check(!(bool)Get("_folderTreeOpen"),"Physical half-size inspector X closes the standalone tree");
+  }
   base.Draw(t);var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
   using(var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight)){tex.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"folders-{frame}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);}
-  if(frame++==4){Console.WriteLine("PASS: Office-only supervisor controls, recursive boss folders, conqueror/region/point navigation, unchanged active ruler, Escape and full/half-size rendering.");Exit();}
+  if(frame++==13){Console.WriteLine("PASS: legacy folders, standalone tree without selection, globe/net centering, region/point 35-percent spotlight, tree persistence, restored layers, Escape/toolbar/X close and full/half-size physical input and rendering.");Exit();}
  }
 }

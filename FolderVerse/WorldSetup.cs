@@ -28,6 +28,7 @@ public sealed class SurfaceCell
 
 public sealed partial class WorldSetup
 {
+    public bool WorldConquestEndingShown;
     public int WorldSeed { get; private set; }
     public int CastSeed { get; private set; }
     public int PlacementSeed { get; private set; }
@@ -120,7 +121,7 @@ public sealed partial class WorldSetup
     public Color OwnerColor(int slot) => slot<0?new Color(155,169,180):Colors[ColorIndices[slot]%Colors.Length];
     public void SetWorld(int seed)
     {
-        TutorialStep=0;_presetCastCount=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();Lessons.Reset();
+        WorldConquestEndingShown=false;TutorialStep=0;_presetCastCount=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();Lessons.Reset();
         TutorialPocketed=TutorialMoved=TutorialPocketNoticeShown=TutorialMoveNoticeShown=false;
         PolarAxis=1;TutorialMapStage=TutorialMapRotations=TutorialMapNotices=0;TutorialMapEdgeChanged=false;
         WandererPolicies=new WandererPolicy[CastCount];
@@ -194,7 +195,7 @@ public sealed partial class WorldSetup
     public void SetPlacement(int seed)
     {
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
-        PlayerSlot=-1;
+        PlayerSlot=-1;WorldConquestEndingShown=false;
         Relations.Reset();
         Lessons.Reset();
         PlacementSeed = seed;

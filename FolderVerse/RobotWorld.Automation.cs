@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 public sealed partial class RobotWorld
@@ -6,6 +6,7 @@ public sealed partial class RobotWorld
     private int _domesticPreparedTurn=-1;
     public void PrepareDomestic(int turn,Func<int,int,bool> connected,Func<int,int> owner,Func<int,bool> locked=null)
     {
+        RevalidateWorkReservations();
         if(_domesticPreparedTurn==turn)return;
         bool elapsed=_domesticPreparedTurn>=0;
         _domesticPreparedTurn=turn;
@@ -24,13 +25,19 @@ public sealed partial class RobotWorld
         for(int i=0;i<3;i++)counts[i]=stock.Count(r=>(r.Parts&parts[i])!=0 && r.Affiliation(parts[i])==owner);
         // Prefer plans that fill missing native parts. Available plans differ per line/node.
         foreach(var line in workshop.ProductionLines){
-            int best=new[]{0,1,2,7,8}.OrderByDescending(i=>parts.Select((p,j)=>(p,j)).Where(x=>(line.PlanAt(i).Product&x.p)!=0).Sum(x=>12-counts[x.j])).ThenBy(i=>line.PlanAt(i).Turns).First();
+            int Score(int index){
+                var preview=line.PlanAt(index).Preview(owner);
+                return parts.Select((p,j)=>(p,j)).Where(x=>(preview.Parts&x.p)!=0 && preview.Origin(x.p)==owner)
+                    .Sum(x=>(12-counts[x.j])*(line.WorkerSnapshot==null?1:preview.IsCheap(x.p)?1:2));
+            }
+            var choices=line.WorkerSnapshot==null?new[]{0,1,2,7,8}:Enumerable.Range(0,11).Where(i=>i!=3).ToArray();
+            int best=choices.OrderByDescending(Score).ThenBy(i=>line.PlanAt(i).Turns).First();
             if(line.SelectedPlan!=best && (!line.Manufacturing || line.ProductionAge==0) && (!gentle || !changed)){line.SelectPlan(best);changed=true;}
             int every=Nodes[node].Count>=10?1:9,rest=Nodes[node].Count>=10?9:1;
             if((line.RestEvery!=every || line.RestTurns!=rest) && (!gentle || !changed)){
                 line.SetRest(gentle?line.RestEvery+Math.Sign(every-line.RestEvery):every,gentle?line.RestTurns+Math.Sign(rest-line.RestTurns):rest);changed=true;
             }
-            for(int j=0;j<3;j++)if((line.Product&parts[j])!=0)counts[j]++;
+            for(int j=0;j<3;j++)if((line.Product&parts[j])!=0 && line.CurrentProductionPlan.Preview(owner).Origin(parts[j])==owner)counts[j]++;
         }
         if(workshop.AutoAssemblyDisabled && (!gentle || !changed)){workshop.AutoAssemblyDisabled=false;changed=true;}
         if(workshop.ReservedSlots!=2 && (!gentle || !changed)){workshop.SetReservedSlots(gentle?workshop.ReservedSlots+Math.Sign(2-workshop.ReservedSlots):2);changed=true;}

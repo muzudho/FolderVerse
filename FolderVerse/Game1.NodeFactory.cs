@@ -77,18 +77,46 @@ public partial class Game1
             if(line.RestTurns>4)DrawFactoryOmission(160+(shownPeriod+1)*72,y);
             var robot=FactoryRobotButton(l,period);_ui.Box(robot,_factoryPlanLine==l || robot.Contains(_pointer)?Accent:Muted);
             var arrow=FactoryRobotArrow(l,period);for(int row=0;row<10;row++)_ui.Box(new(arrow.X+2+row,arrow.Y+6+row,20-row*2,1),Cream);
-            if(line.Manufacturing)DrawRobotGlyph(robot,node.Owner,line.Product,whiteOutline:true,cheap:line.CheapProduct,integrated:line.IntegratedProduct);else _ui.Center("×",robot,.7f,Cream);
+            if(line.Manufacturing)DrawRobotGlyph(robot,line.CurrentProductionPlan.Preview(node.Owner),whiteOutline:true);else _ui.Center("×",robot,.7f,Cream);
             int width=shownPeriod*72,mid=160+width/2;_ui.Box(new(160,y+126,width,2),Cream);_ui.Box(new(160,y+121,2,7),Cream);_ui.Box(new(158+width,y+121,2,7),Cream);for(int i=0;i<5;i++){_ui.Box(new(mid-5+i,y+128+i,1,1),Cream);_ui.Box(new(mid+5-i,y+128+i,1,1),Cream);}FactoryDrop(0,line.RestEvery);FactoryDrop(1,line.RestTurns);
-            string status=!line.Manufacturing?"製造しない":line.RestRemaining>0?$"休業 あと{line.RestRemaining}産業ターン":line.Waiting?"空き枠待ち":$"{(line.CheapProduct?"安い":"正規")} {line.ProductionAge}/{line.ProductionPeriod}産業ターン";
+            string status=!line.Manufacturing?"製造しない":line.RestRemaining>0?$"休業 あと{line.RestRemaining}産業ターン":line.Waiting?"空き枠待ち":$"{line.CurrentProductionPlan.QualityLabel} {line.ProductionAge}/{line.ProductionPeriod}産業ターン";
             _ui.Text(status,new(560,y-19),.3f,Cream);
-            if(factory.WorkerAt(l) is long workerId){var worker=_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==workerId);if(worker!=null){DrawRobotGlyph(new(754,y+8,60,84),worker);_ui.Text("工場作業員",new(674,y+8),.3f,Accent);_ui.Text("ID "+workerId,new(674,y+36),.28f,Cream);}}
+            if(factory.WorkerAt(l) is long workerId){var worker=_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==workerId);if(worker!=null){DrawRobotGlyph(new(754,y+8,60,84),line.WorkerSnapshot??worker);_ui.Text("工場作業員",new(674,y+8),.3f,Accent);_ui.Text("ID "+workerId,new(674,y+36),.28f,Cream);if(line.WorkerSnapshot!=null)_ui.Text("任命時",new(674,y+62),.25f,Cream);}}
             else _ui.Text("常設レーン",new(674,y+8),.3f,Cream*.7f);
         }
         _factoryLine=savedLine;
         _ui.Text("格納庫は必ず",new(180,888),.43f,Cream);FactoryDrop(2,factory.ReservedSlots);_ui.Text("個空ける",new(552,888),.43f,Cream);
         DrawNodeTabs();
-        if(_factoryPlanLine>=0){var line=factory.ProductionLines[_factoryPlanLine];_ui.Box(new(84,360,790,570),new(22,40,54));_ui.Text($"生産ライン {_factoryPlanLine+1} / 正規・安い・一体型",new(160,374),.45f,Cream);for(int i=0;i<11;i++){var r=FactoryPlanButton(i);_ui.Box(r,line.SelectedPlan==i?Accent:Muted);if(i==3)_ui.Center("製造しない",r,.42f,line.SelectedPlan==i?SelectionInk:Cream);else{var plan=line.PlanAt(i);DrawRobotGlyph(new(r.X+54,r.Y+8,72,80),node.Owner,plan.Product,whiteOutline:true,cheap:plan.Cheap,integrated:plan.IntegratedParts);_ui.Center(plan.IntegratedParts==0?"通常品":IntegratedLabel(plan.IntegratedParts),new(r.X,r.Y+96,r.Width,22),.28f,line.SelectedPlan==i?SelectionInk:Cream);_ui.Center($"{(plan.Cheap?"安い":"正規")} / {plan.Turns}産業ターン",new(r.X,r.Bottom-24,r.Width,22),.32f,line.SelectedPlan==i?SelectionInk:Cream);}}}
-        if(_factoryDropDown>=0)for(int i=0;i<(_factoryDropDown==2?13:9);i++)_ui.Button(FactoryDropOption(_factoryDropDown,i),(_factoryDropDown==2?i:i+1).ToString(),Muted,.42f);
+        if(_factoryPlanLine>=0){
+            var line=factory.ProductionLines[_factoryPlanLine];_ui.Box(new(84,360,790,590),new(22,40,54));
+            _ui.Text($"生産ライン {_factoryPlanLine+1} / 正規・安い・一体型",new(160,374),.45f,Cream);
+            ProductionPlan hovered=null;
+            for(int i=0;i<11;i++){
+                var r=FactoryPlanButton(i);bool selected=line.SelectedPlan==i;
+                _ui.Box(r,selected?Accent:Muted);
+                if(i==3)_ui.Center("製造しない",r,.42f,selected?SelectionInk:Cream);
+                else{
+                    var plan=line.PlanAt(i);DrawRobotGlyph(new(r.X+54,r.Y+8,72,80),plan.Preview(node.Owner),whiteOutline:true);
+                    _ui.Center(plan.IntegratedParts==0?"通常品":IntegratedLabel(plan.IntegratedParts),new(r.X,r.Y+96,r.Width,22),.28f,selected?SelectionInk:Cream);
+                    string label=$"{plan.QualityLabel} / {plan.Turns}産業ターン";
+                    _ui.Center(label,new(r.X+4,r.Bottom-24,r.Width-8,22),Math.Min(.32f,(r.Width-8)/_font.MeasureString(label).X),selected?SelectionInk:Cream);
+                    if(r.Contains(_pointer))hovered=plan;
+                }
+            }
+            _ui.Center(line.WorkerSnapshot!=null?"作業員レーン：任命時のパーツで候補を固定":"常設レーン：地点の製造候補",new(96,886,764,24),.32f,Cream);
+            if(hovered!=null){
+                var preview=hovered.Preview(node.Owner);
+                string detail=string.Join(" / ",new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(part=>(preview.Parts&part)!=0).Select(part=>$"{PartsLabel(part)} #{preview.Origin(part)+1} {(preview.IsCheap(part)?"安い":"正規")}"));
+                _ui.Center(detail,new(96,916,764,26),Math.Min(.34f,750/_font.MeasureString(detail).X),Cream);
+            }
+        }
+        if(_factoryDropDown>=0){
+            int field=_factoryDropDown,count=field==2?13:9;
+            for(int i=0;i<count;i++){
+                var option=FactoryDropOption(field,i);
+                _ui.Button(option,(field==0?"× ":field==1?"休 ":"")+(field==2?i:i+1),Accent,.40f);
+            }
+        }
     }
     private void DrawFactoryOmission(int x,int y)
     {

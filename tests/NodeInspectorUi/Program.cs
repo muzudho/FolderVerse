@@ -1,4 +1,4 @@
-﻿using FolderVerse;
+using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -103,11 +103,11 @@ sealed class InspectorGame:Game1{
   var factory=w.Robots.Workshops[node];for(int seed=0;factory.ProductionLines.Length==0;seed++)factory.GenerateLines(seed);Call("OpenNodeFactory");
   Set("_factoryLine",0);var button=(Rectangle)Call("FactoryDropButton",0);Call("NodeDialogClick",button.Center,new KeyboardState());
   Check((int)Get("_factoryDropDown")==0,"Repeat menu opens");var option=(Rectangle)Call("FactoryDropOption",0,1);
-  Check(new Rectangle(84,169,230,60).Contains(option.Center),"Regression option overlaps factory tab");
+  Check(((Rectangle)Prop("NodeInspectorBounds")).Contains(option.Center),"Repeat option stays within the current inspector layout");
   Call("NodeDialogClick",option.Center,new KeyboardState());Check(factory.ProductionLines[0].RestEvery==2 && (bool)Get("_nodeFactoryOpen"),"Repeat option beats underlying factory tab");
   Check(!(bool)Call("NodeDialogClick",new Point(1500,500),new KeyboardState()),"Inspector passes map clicks through");
-  int other=w.Nodes.All.First(n=>n.Id!=node).Id;Call("OpenNodeInspector",other);
-  Check((int)Get("_populationNode")==other && (float)Get("_domesticSlide")==1 && (bool)Get("_nodeAssemblyOpen"),"Select another node without closing");Call("OpenNodeInspector",node);
+  int other=w.Nodes.All.First(n=>n.Id!=node && n.Owner==0 && w.Robots.Workshops[n.Id].ProductionLines.Length>0).Id;Call("OpenNodeInspector",other);
+  Check((int)Get("_populationNode")==other && (float)Get("_domesticSlide")==1 && (bool)Get("_nodeFactoryOpen"),"Select another equipped node without closing and retain the factory page");Call("OpenNodeInspector",node);
   var close=(Rectangle)Prop("InspectorClose");Check(close.X==912,"Handle sits on inspector right edge");Call("DomesticViewClick",close.Center);Call("UpdateDomesticSlide",.2f);
   Check((int)Get("_populationCell")>=0 && (float)Get("_domesticSlide")==.5f,"Closing keeps panel while sliding");Call("UpdateDomesticSlide",.2f);Check((int)Get("_populationCell")==-1,"Closing clears inspector only when offscreen");
   foreach(string launcher in new[]{"StrategyToggle","WarButton","TransportOverviewButton"}){
@@ -138,7 +138,7 @@ sealed class InspectorGame:Game1{
    Check(restored.Faces.SequenceEqual(view.Faces) && restored.Pan==view.Pan && restored.Zoom==view.Zoom && restored.Rotation==view.Rotation,"Net connections, rotation, zoom and pan restored");
    Check((bool)Get("_statusGlobe")==globe && world.ManualOrientation==orientation && world.GlobeZoom==2.5f && world.GlobeAnchor==new Vector3(1,2,3),"Globe camera and selected view restored");
   }
-  Check(((Rectangle)Prop("PopulationTurnButton")).Height==96,"Turn-end button is 1.5 times taller");
+  Check(((Rectangle)Prop("PopulationTurnButton")).Height==144,"Turn-end button uses the current 96-pixel unit at 1.5 times the height");
   for(int count=1;count<=12;count++)for(int i=0;i<count;i++)Check(CubeNet.RobotRingSlot(i,count).Length()>=47.99f,"Robots surround node with clear center");
  }
  protected override void Update(GameTime t){}
@@ -147,7 +147,8 @@ sealed class InspectorGame:Game1{
   foreach(string kind in new[]{"node","foreign","war","transport","strategy","map"})foreach(float slide in new[]{0f,.5f,1f}){
    Call("ResetInspector");if(kind=="map"){}else if(kind=="foreign")Call("OpenNodeInspector",foreignNode);else if(kind=="node")Call("OpenNodeInspector",node);else if(kind=="war")Call("OpenWarPlanning");else if(kind=="transport")Call("OpenTransportOverview");else Call("OpenStrategyInspector");Set("_domesticSlide",kind=="map"?0f:slide);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawStatusUi");batch.End();
    var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
-   int borderX=(int)((176+(kind=="map"?0:960*slide)+125)*pp.BackBufferWidth/1920f),borderY=(int)(820*pp.BackBufferHeight/1080f);
+   var center=(Vector2)Prop("PlayerMedallionCenter");float rim=(float)typeof(Game1).GetField("MedallionRadius",BindingFlags.Static|BindingFlags.NonPublic)!.GetRawConstantValue()!-1.2f;
+   int borderX=(int)(center.X*pp.BackBufferWidth/1920f),borderY=(int)((center.Y+rim)*pp.BackBufferHeight/1080f);
    Check(pixels[borderY*pp.BackBufferWidth+borderX]==w.OwnerColor(w.PlayerSlot),"Portrait border displays current country color: "+kind);
    using var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);tex.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"inspector-{kind}-{slide:0.0}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);
   }

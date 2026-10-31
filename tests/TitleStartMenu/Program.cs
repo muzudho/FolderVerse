@@ -19,12 +19,12 @@ sealed class MenuGame:Game1{
  string path=Path.Combine(AppContext.BaseDirectory,"menu-save-test","autosave.json.gz");int frame;
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_conquestOverviewEnabled",false);Set("_autoSavePath",path);Set("_autoSaveEnabled",true);if(File.Exists(path))File.Delete(path);Call("CheckAutoSave");
-  Click(960,930);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title" && (int)Get("_titleMenuSelection")==2,"Start opens menu without save, New Game selected");
+  Click(960,930);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title" && (int)Get("_titleMenuSelection")==3,"Start opens menu without save, New Game selected");
   Check(!(bool)Call("UpdateDemo",11d,true,false,false,false,11d),"Idle demo cannot steal open menu");
-  Click(960,517);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Hidden Continue row is inert without save");
+  Click(960,617);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Unavailable Continue row is inert without save");
   Click(960,417);Check((bool)Get("_tutorialMenuOpen"),"How to Play opens tutorial guide");
   Check(!(bool)Call("UpdateDemo",11d,true,false,false,false,11d),"Tutorial guide pauses demo");
-  Click(1100,640);Check((bool)Get("_tutorialMenuOpen"),"Unimplemented steps are disabled");
+  Click(1100,810);Check((bool)Get("_tutorialMenuOpen"),"Unimplemented steps are disabled");
   Click(1100,550);var tutorial=(WorldSetup)Get("_setup");
   Check(Get("_screen").ToString()=="WorldStatus" && tutorial.PlayerCount==1 && tutorial.HumanPlayers.SequenceEqual(new[]{0}) && tutorial.PlayerSlot==0,"Step one reaches domestic as No.1");
   Check(tutorial.Width==1 && tutorial.Height==1 && tutorial.Depth==1 && tutorial.ActiveCount==6 && tutorial.Portraits.Take(6).SequenceEqual(Enumerable.Range(0,6)) && tutorial.Looks.Take(6).All(l=>l.VariantId==0),"Dice world and original No.1 through No.6 cast");
@@ -61,15 +61,19 @@ sealed class MenuGame:Game1{
   Check(rows.Any(r=>(bool)queenField.GetValue(r)!) && rows.Where(r=>(bool)queenField.GetValue(r)!).All(r=>rows.Any(n=>!(bool)queenField.GetValue(n)! && (int)nodeField.GetValue(n)! ==(int)nodeField.GetValue(r)!)),"Battery and actual node have separate source rows");
   var targetLabel=(string)typeof(Game1).GetProperty("InvasionTargetLabel",F)!.GetValue(this)!;
   Check(targetLabel=="侵攻先："+tutorial.Nodes.DisplayName(tutorial.Nodes.All[invasionTarget]) && !targetLabel.Contains("Node "),"Invasion target uses human-readable node name without numeric ID");
-  Call("InvasionClick",new Point(794,332));Call("ReserveInvasion");
-  Check(tutorial.Campaign.PlannedOrders.Count==1 && tutorial.Campaign.PlannedOrders[0].Fighters==1 && (string)label.GetValue(this)! =="開戦予約（1件）","First-turn plus button reserves a soldier and updates label");
+  int hangarRow=Array.FindIndex(rows,r=>!(bool)queenField.GetValue(r)!);Set("_invasionPage",hangarRow/7);
+  var soldierCard=(Rectangle)typeof(Game1).GetMethod("InvasionPreviewCard",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{hangarRow%7,0})!;
+  Call("InvasionClick",soldierCard.Center);Call("ReserveInvasion");
+  Check(tutorial.Campaign.PlannedOrders.Count==1 && tutorial.Campaign.PlannedOrders[0].Fighters==1 && (string)label.GetValue(this)! =="開戦予約（1件）","First-turn inline robot selection reserves a soldier and updates label");
   var order=tutorial.Campaign.PlannedOrders[0];tutorial.Campaign.Plan(order);Check((string)label.GetValue(this)! =="開戦予約（1件）","Replacing same reservation does not double count");
   Call("OpenWarPlanning");Call("SelectMoveNode",invasionTarget);
   rows=((System.Collections.IEnumerable)Get("_invasionSources")).Cast<object>().ToArray();
   int batteryRow=Array.FindIndex(rows,r=>(bool)queenField.GetValue(r)!);
-  Set("_invasionPage",batteryRow/7);Call("InvasionClick",new Point(430,320+batteryRow%7*72));Call("ReserveInvasion");
+  Set("_invasionPage",batteryRow/7);Call("OpenInvasionPicker",batteryRow);
+  Set("_pointer",new Point(640,732));Call("InvasionPickerInput",true,false);Set("_pointer",new Point(1415,822));Call("InvasionPickerInput",true,false);Call("ReserveInvasion");
   Check(tutorial.Campaign.PlannedOrders.Count==2 && tutorial.Campaign.PlannedOrders.Single(o=>o.Queen).PocketOnly,"Battery button reserves only pocket alongside hangar");
-  Call("OpenWarPlanning");Call("SelectMoveNode",invasionTarget);Set("_invasionPage",batteryRow/7);Call("InvasionClick",new Point(430,320+batteryRow%7*72));Call("ReserveInvasion");
+  Call("OpenWarPlanning");Call("SelectMoveNode",invasionTarget);Set("_invasionPage",batteryRow/7);Call("OpenInvasionPicker",batteryRow);
+  Set("_pointer",new Point(640,732));Call("InvasionPickerInput",true,false);Set("_pointer",new Point(1415,822));Call("InvasionPickerInput",true,false);Call("ReserveInvasion");
   Check(tutorial.Campaign.PlannedOrders.Count==1 && !tutorial.Campaign.PlannedOrders[0].Queen,"Deselecting battery preserves hangar reservation");
   int subordinate=tutorial.Nodes.All[invasionTarget].Owner%5+1;tutorial.Relations.SetSuperior(subordinate,0);int subordinateSource=tutorial.Nodes.Current(subordinate).Id;
   tutorial.Campaign.Plan(new(subordinate,invasionTarget,1,subordinateSource,false));Check((string)label.GetValue(this)! =="開戦予約（1件）","Coordinated sources attacking one destination count once");
@@ -113,13 +117,13 @@ sealed class MenuGame:Game1{
   Key(Keys.Escape);Check(!(bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Escape dismisses menu instead of exiting app");
   Key(Keys.Enter);Check((bool)Get("_titleMenuOpen"),"Enter opens menu");Click(100,500);Check(!(bool)Get("_titleMenuOpen"),"Outside click dismisses menu");
   Click(960,930);Click(960,350);Check((bool)Get("_titleMenuOpen"),"Blank paper has no hidden close button");Key(Keys.Escape);
-  Click(960,930);Click(960,617);Check(Get("_screen").ToString()=="PlayerCount","New Game opens existing player-count flow");
+  Click(960,930);Click(960,717);Check(Get("_screen").ToString()=="PlayerCount","New Game opens existing player-count flow");
   var w=(WorldSetup)Get("_setup");w.SetWorld(123);Check(w.TutorialStep==0,"Normal world clears tutorial restrictions");w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);w.Industry.Queue(1);Call("BeginIndustry");Check(Get("_screen").ToString()=="Industry" && w.Industry.Pending,"Normal play retains industrial roulette");w.Industry.Reset();Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("AutoSaveDomestic");Call("ReturnToTitle");
-  Click(960,930);Check((int)Get("_titleMenuSelection")==1,"Continue is initial selection with save");Key(Keys.Down);Check((int)Get("_titleMenuSelection")==2,"Arrow key selects New Game");Key(Keys.Up);Check((int)Get("_titleMenuSelection")==1,"Arrow key returns to Continue");Input(new(960,617));Input(new(960,617),keys:new[]{Keys.Up});Input(new(960,617));Check((int)Get("_titleMenuSelection")==1,"Stationary mouse cannot override keyboard selection");Key(Keys.Enter);Check(Get("_screen").ToString()=="WorldStatus","Keyboard Continue restores game");Call("ReturnToTitle");
+  Click(960,930);Check((int)Get("_titleMenuSelection")==2,"Continue is initial selection with save");Key(Keys.Down);Check((int)Get("_titleMenuSelection")==3,"Arrow key selects New Game");Key(Keys.Up);Check((int)Get("_titleMenuSelection")==2,"Arrow key returns to Continue");Input(new(960,717));Input(new(960,717),keys:new[]{Keys.Up});Input(new(960,717));Check((int)Get("_titleMenuSelection")==2,"Stationary mouse cannot override keyboard selection");Key(Keys.Enter);Check(Get("_screen").ToString()=="WorldStatus","Keyboard Continue restores game");Call("ReturnToTitle");
   var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();
-  Click(960,930);Click(960,517);Check(Get("_screen").ToString()=="WorldStatus","Continue hit testing works at 960x540");Call("ReturnToTitle");
+  Click(960,930);Click(960,617);Check(Get("_screen").ToString()=="WorldStatus","Continue hit testing works at 960x540");Call("ReturnToTitle");
   graphics.PreferredBackBufferWidth=1920;graphics.PreferredBackBufferHeight=1080;graphics.ApplyChanges();
-  var savedBytes=File.ReadAllBytes(path);File.WriteAllText(path,"broken");Click(960,930);Click(960,517);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Resume failure retains usable paper menu");Click(960,617);Check(Get("_screen").ToString()=="PlayerCount" && File.ReadAllText(path)=="broken","New Game remains available without deleting unreadable save");File.WriteAllBytes(path,savedBytes);Set("_autoSaveError","");Set("_screen",Enum.Parse(Get("_screen").GetType(),"Title"));Call("OpenTitleStartMenu");
+  var savedBytes=File.ReadAllBytes(path);File.WriteAllText(path,"broken");Click(960,930);Click(960,617);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Resume failure retains usable paper menu");Click(960,717);Check(Get("_screen").ToString()=="PlayerCount" && File.ReadAllText(path)=="broken","New Game remains available without deleting unreadable save");File.WriteAllBytes(path,savedBytes);Set("_autoSaveError","");Set("_screen",Enum.Parse(Get("_screen").GetType(),"Title"));Call("OpenTitleStartMenu");
   Console.WriteLine("PASS: Start modal, tutorial guide, four-soldier preset, saved factory restrictions, skipped tutorial industry, extra-bold deboss medallion names and war reservation counts, save-dependent Continue, New Game, keyboard navigation, text-only paper, Escape/outside, demo pause and small-window hit testing.");
  }
  protected override void Update(GameTime t){}
