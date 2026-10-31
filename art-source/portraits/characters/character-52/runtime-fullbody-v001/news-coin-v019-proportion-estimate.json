@@ -1,0 +1,9 @@
+{
+  "Method": "目視、帽子下頭蓋と靴内足底の仮定。確定採寸ではない",
+  "EstimatedY": {
+    "SkullTop": 155,
+    "Chin": 375,
+    "AnatomicalSoles": 1380
+  },
+  "ApproxHeads": 5.57
+}

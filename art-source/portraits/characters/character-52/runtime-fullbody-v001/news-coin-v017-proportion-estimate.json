@@ -1,0 +1,12 @@
+{
+  "Source": "character-52-news-coin-v017-generated.png",
+  "Method": "直接目視による隠れた頭蓋・靴内足底の推定。確定採寸や承認設定ではない。",
+  "EstimatedY": {
+    "SkullTop": 220,
+    "Chin": 395,
+    "AnatomicalSoles": 1400
+  },
+  "ApproxHeads": 6.74,
+  "TargetHeads": 5.8,
+  "EditGuide": "頭部固定で顎下約15%短縮。一回の編集用目安、共通仕様に追加しない。"
+}
