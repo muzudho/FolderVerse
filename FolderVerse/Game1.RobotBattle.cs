@@ -259,7 +259,7 @@ public partial class Game1
                 foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
                     if((physical.Parts&part)!=0)
                         DrawRobotGlyph(r,physical.Origin(part),part,physical.Role==RobotRole.Captain,
-                            opacity*BattlePartOpacity(physical.Affiliation(part)==unit.Owner),damaged:physical.IsDamaged(part),cheap:physical.IsCheap(part));
+                            opacity*BattlePartOpacity(physical.IsDamaged(part) || physical.Origin(part)==unit.Owner),damaged:physical.IsDamaged(part),cheap:physical.IsCheap(part));
             float pieceOpacity=opacity*(physical==null?1:BattlePieceOpacity);
             foreach(var patch in BattlePieceArt.Pieces[BattlePieceArt.Index(unit.Role,unit.Facing)])
             {

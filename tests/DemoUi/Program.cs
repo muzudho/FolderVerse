@@ -34,6 +34,13 @@ sealed class DemoCheck:Game1
         Check(transport,$"Demo did not enter propagation: screen={Get("_screen")} age={Get("_demoAge")} stage={Get("_demoDomesticStage")}");
         double before=(double)Get("_demoAge");Tick(1,active:false);Check((double)Get("_demoAge")>before,"Inactive demo stopped");
         var screenField=typeof(Game1).GetField("_screen",Flags)!;
+        var regressionWorld=(WorldSetup)Get("_setup");regressionWorld.Relations.Pending.Clear();
+        Check((int)typeof(Game1).GetMethod("DemoDispositionChoice",Flags)!.Invoke(this,null)! == 0,"Resolved recruitment must not index empty pending queue");
+        typeof(Game1).GetField("_conquestOverview",Flags)!.SetValue(this,true);
+        double overviewBefore=(double)Get("_demoAge");Tick(.1);
+        Check((double)Get("_demoAge")>overviewBefore,"Demo label clock froze during conquest overview");
+        typeof(Game1).GetField("_conquestOverview",Flags)!.SetValue(this,false);
+
         screenField.SetValue(this,Enum.Parse(screenField.FieldType,"WorldStatus"));
         typeof(Game1).GetField("_demoMapVisits",Flags)!.SetValue(this,0);
         typeof(Game1).GetField("_demoMapStage",Flags)!.SetValue(this,0);
@@ -93,3 +100,4 @@ sealed class DemoCheck:Game1
         using var output=File.Create(Path.Combine(AppContext.BaseDirectory,"demo.png"));tex.SaveAsPng(output,tex.Width,tex.Height);drawn=true;
     }
 }
+

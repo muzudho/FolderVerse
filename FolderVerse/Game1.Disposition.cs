@@ -55,6 +55,7 @@ public partial class Game1
             return;
         }
         if(!click)return;
+        if(_setup.Relations.Pending.Count==0){_screen=Screen.WorldStatus;return;}
         var pending=_setup.Relations.Pending[0];
         for(int i=0;i<3;i++)if(DispositionButton(i).Contains(_pointer))
         {

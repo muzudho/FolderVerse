@@ -174,7 +174,13 @@ public partial class Game1
                     if(occupant==null || (occupant.Parts&part)==0)_ui.Center("＋",bounds,.35f,Cream*.65f);
                 }
             }
-            var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);if(robot==null)continue;robot=HomePersuasionRobot(robot);
+            var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);foreach(var order in _setup.Robots.DirectDelivery.Orders.Where(o=>o.Target==_populationNode && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot)))
+            {
+                var original=_setup.Robots.Nodes[order.Source].Robots.FirstOrDefault(r=>r.Id==order.RobotId);
+                if(original!=null)DrawRobotGlyph(HangarRobotBounds(slot),original.Slice(order.Part),whiteOutline:true,opacity:.5f);
+                _ui.Center("到着予定："+PartsLabel(order.Part),new(cell.X,cell.Y+148,cell.Width,22),.27f,Cream);
+            }
+            if(robot==null)continue;robot=HomePersuasionRobot(robot);
             DrawRobotGlyph(HangarRobotBounds(slot),robot,whiteOutline:true,partOpacity:part=>reservationMode?(canReserve?1:.45f):HangarPlaceEnabled(occupant,part)?1:.22f);
             for(int row=0;!reservationMode && row<3;row++)
             {
@@ -195,6 +201,11 @@ public partial class Game1
             }else _ui.Center(partsName,new(cell.X,cell.Y+126,cell.Width,24),Math.Min(.4f,(cell.Width-8)/Math.Max(1,_font.MeasureString(partsName).X)),Cream);
             _ui.Center("ID "+robot.Id+(robot.DamagedParts!=0?" / 損傷":""),new(cell.X,cell.Y+148,90,22),.27f,Cream);
             if(cellHover){var edge=canReserve?ControlEdge:new Color(184,102,104);_ui.Box(new(cell.X,cell.Y,cell.Width,3),edge);_ui.Box(new(cell.X,cell.Bottom-3,cell.Width,3),edge);_ui.Box(new(cell.X,cell.Y,3,cell.Height),edge);_ui.Box(new(cell.Right-3,cell.Y,3,cell.Height),edge);}
+        }
+        if(!hoveringPart && !_hangarDrag.HasValue){
+            var arrivals=_setup.Robots.DirectDelivery.Orders.Where(o=>o.Target==_populationNode).ToArray();
+            int planned=Enumerable.Range(0,_setup.Robots.Nodes.Length).Where(n=>n!=_populationNode).Sum(n=>Enumerable.Range(0,_setup.ActiveCount).Sum(owner=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Sum(part=>new[]{false,true}.Sum(disposal=>_setup.Robots.Transport.Plan(n,owner,part,disposal).Count(w=>w.Target==_populationNode && w.Degrees>0)))));
+            if(arrivals.Length>0 || planned>0)hover=$"到着予定：直送便 {arrivals.Length}件（半透明） / 長期輸送設定 {planned}件（実輸送量はターン終了時に決定）";
         }
         _ui.Text(_hangarAbandonMode?"部位を選択：パーツを放棄 / 区画の余白：個体を放棄":_hangarMessage.Length>0 && !hoveringPart?_hangarMessage:hover,new(84,838),.32f,Cream);
         _ui.Button(HangarAssemblyButton,"組み立て・分解",!reservationMode?Accent:Muted,.42f);

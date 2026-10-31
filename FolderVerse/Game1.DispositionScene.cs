@@ -1,5 +1,6 @@
 namespace FolderVerse;
 using System;
+using System.Linq;
 using Microsoft.Xna.Framework;
 public partial class Game1
 {
@@ -10,6 +11,7 @@ public partial class Game1
     private void FinishDispositionScene(){
         _dispositionScene=null;
         if(_setup.Relations.Pending.Count>0){_screen=Screen.Disposition;return;}
+        if(TryConquestEnding())return;
         _screen=_dispositionReturnList?Screen.InactiveList:Screen.WorldStatus;_dispositionReturnList=false;_lastAutoSaveTurn=-1;AutoSaveDomestic();
     }
     private void DispositionBubble(Rectangle box,string text){
@@ -26,7 +28,7 @@ public partial class Game1
             _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],portrait,!removal || side==0 || _dispositionSceneAge<1.2);
             _ui.Center(_setup.ConquerorNames[ruler],new(x,840,500,48),.6f,Cream);
             string line=removal?(side==0?"玩具から電池を抜きまーす。　これであなたは＜ゲーム＞から脱落ですね！":"やーん、抜かないでーっ"):
-                side==0?"期待しているわ。世界征服を手伝ってね。":_setup.ConquerorNames[ruler]+"でーす。これから、よろしくお願いしまーす！";
+                side==0?(_setup.Relations.ProvisionalRanking(_setup).Any(r=>r.Ruler==_setup.Relations.Root(_dispositionScene.Victor) && r.Cells==_setup.Cells.Length)?"これで世界征服できました！":"期待しているわ。世界征服を手伝ってね。") :_setup.ConquerorNames[ruler]+"でーす。これから、よろしくお願いしまーす！";
             DispositionBubble(new(x-180,170,860,115),line);
         }
         if(removal){

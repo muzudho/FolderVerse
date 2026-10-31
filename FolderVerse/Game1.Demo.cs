@@ -42,7 +42,7 @@ public partial class Game1
         }
         if(click && new Rectangle(0,0,1920,1080).Contains(_pointer) || escape){_demoFade=0;return true;}
         // Let every global turn's overview finish before resuming scripted actions.
-        if(_conquestOverview){UpdateConquestOverview(elapsed,false);return true;}
+        if(_conquestOverview){_demoAge+=elapsed;UpdateConquestOverview(elapsed,false);return true;}
         _demoAge+=elapsed;_demoStepAge+=elapsed;_yaw+=(float)elapsed*.12f;
         if(_demoStarsAge>=0){_demoStarsAge+=(float)elapsed;if(_demoStarsAge>.65f)_demoStarsAge=-1;}
         float previousSwing=_demoSwing;
@@ -132,7 +132,7 @@ public partial class Game1
         }
         return true;
     }
-    private int DemoDispositionChoice()=>_setup.Relations.Accepts(_setup,_setup.Relations.Pending[0].Ruler)?0:1;
+    private int DemoDispositionChoice()=>_setup.Relations.Pending.Count==0 || _setup.Relations.Accepts(_setup,_setup.Relations.Pending[0].Ruler)?0:1;
     private bool UpdateDemoMap(double elapsed)
     {
         if(_demoMapStage>=5)return false;

@@ -4419,11 +4419,100 @@
       "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-2fadb195-c7ab-4620-b573-d57e2bb777f3.png",
       "Tool": "builtin image_gen",
       "Sha256": "02bd11326f88a7afe4fe256bb9fa3318c9108d28cfd8d1dcd5a1f576da0fc820",
+      "Status": "UPPER_CONNECTION_AND_CIRCLE_STROKE_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "2026-10-31 23:09 JST 顔参照直接目視。下左白丸内包はあるが白丸自体に黒い縁、上右白丸は虹彩内に留まり白目接続なし。未選択、全身反映不可。"
+    },
+    {
+      "Id": "paparazzi-face",
+      "Kind": "correction-reference",
+      "Version": "v002",
+      "File": "character-52-news-paparazzi-face-v002-generated.png",
+      "Prompt": "news-paparazzi-face-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-paparazzi-face-v001-generated.png",
+          "Role": "本人顔保持、白丸黒縁除去/上右白目接続修正対象",
+          "Sha256": "02bd11326f88a7afe4fe256bb9fa3318c9108d28cfd8d1dcd5a1f576da0fc820"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-eb5a9341-a5e2-4c7d-8087-87820d33d09d.png",
+      "Tool": "builtin image_gen",
+      "Sha256": "ccb4e504eb2f2eb538e6c8e1ea4e1257c59833ce4761047d2601323ad891abf9",
+      "Status": "VISUALLY_PASSED_CORRECTION_REFERENCE",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "2026-10-31 23:39 JST 顔参照直接目視。白丸黒縁除去、上右の虹彩輪郭接続と下左内包/大小差確認、本人思案顔保持。顔反映用参照のみ、全身原画ではない。"
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Version": "v005",
+      "File": "character-52-news-paparazzi-v005-generated.png",
+      "Prompt": "news-paparazzi-v005-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-paparazzi-v004-generated.png",
+          "Role": "全身/本人意匠/体格保持",
+          "Sha256": "433bd0f5be6cf3ff532ec1a8d85e7de88578aa5902557bd639ffdfda49b1f5ef"
+        },
+        {
+          "File": "character-52-news-paparazzi-face-v002-generated.png",
+          "Role": "確認済み瞳/表情反映参照",
+          "Sha256": "ccb4e504eb2f2eb538e6c8e1ea4e1257c59833ce4761047d2601323ad891abf9"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-064f5147-a45f-483c-b32a-a12a8730dfe5.png",
+      "Tool": "builtin image_gen",
+      "Sha256": "6d4048eca0c5f48ce8857d7d1e736b2b99c36a9eb654097c34dc732e1214e877",
+      "Status": "HIGHLIGHTS_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "Width": 1024,
+      "Height": 1536,
+      "EyePreview": "news-paparazzi-v005-eyes.png",
+      "GrayPreview": "news-paparazzi-v005-preview-gray.png",
+      "Preview": {
+        "Path": "news-paparazzi-v005-preview.png",
+        "Crop": {
+          "X": 250,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "f864573347729baf1a0939f603dec2d5cf68fab5bc7c2f0195f6420245833e07"
+      },
+      "VisualReview": "2026-11-01 00:09 JST 全身/眼部/新聞白黒直接目視。本人意匠/体格/全身余白保持、白黒判読可。ただし全身反映時に上右大白丸と下左白丸が失われ小光点/黄光に戻っている。未選択。"
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Version": "v006",
+      "File": "character-52-news-paparazzi-v006-generated.png",
+      "Prompt": "news-paparazzi-v006-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-paparazzi-v005-generated.png",
+          "Role": "本人全身保持、瞳再反映対象",
+          "Sha256": "6d4048eca0c5f48ce8857d7d1e736b2b99c36a9eb654097c34dc732e1214e877"
+        },
+        {
+          "File": "character-52-news-paparazzi-face-v002-generated.png",
+          "Role": "確認済み瞳白丸参照",
+          "Sha256": "ccb4e504eb2f2eb538e6c8e1ea4e1257c59833ce4761047d2601323ad891abf9"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-6dd4e8a8-a093-4b52-87b5-57334c3e497a.png",
+      "Tool": "builtin image_gen",
+      "Sha256": "96dd62f2a5a8600c3c7628c964f9633a8b45da6a172ef6daa4ae5a522e7f4f64",
       "Status": "VISUAL_REVIEW_REQUIRED",
       "Selected": false,
       "GameAdopted": false
     }
   ],
-  "Next": "paparazzi face v001目視、適合後全身v004へ反映し全身/眼部/体格/新聞白黒再確認。ゲーム0/20。",
+  "Next": "paparazzi v006全身/眼部/体格/新聞白黒目視確認。全14確定後ステージ/採用/配布ビルド確認、ゲーム0/20。",
   "UserAuthorization": "拒否時は報告し元画像保持、衣装・持ち物変更して続行可。"
 }
