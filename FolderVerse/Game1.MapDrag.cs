@@ -25,7 +25,7 @@ public partial class Game1
     }
     private void DrawMapDragButton()
     {
-        _ui.Text("右マウスボタンドラッグ：",new(40,97),.45f,Cream);
+        _ui.Text("右マウスボタンドラッグ：",new(MapDragButton.X,65),.34f,Cream);
         _ui.Button(MapDragButton,MapDragName,Accent,.5f);
         for(int i=0;i<8;i++)_ui.Box(new(MapDragButton.Right-26+i,MapDragButton.Center.Y-3+i,15-i*2,1),SelectionInk);
         if(_mapDragListOpen)for(int i=0;i<2;i++)_ui.Button(MapDragOption(i),(_statusGlobe?"地星儀":"展開図")+"を"+(i==0?"回転":"スライド"),(i==1)==MapDragSlide?Accent:Muted,.5f);

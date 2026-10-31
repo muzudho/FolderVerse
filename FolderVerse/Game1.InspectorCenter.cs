@@ -6,9 +6,10 @@ public partial class Game1
     private int _inspectorCenterNode=-1;
     private bool _inspectorCenterPending,_inspectorCenterGlobe;
     private float _inspectorCenterAge=-1,_inspectorCenterDistance,_inspectorCenterApplied;
-    private int InspectorLocationNode=>_nodeInspectorClosing?-1:_salvagePlan?(_setup.Salvage.Items.Find(i=>i.Id==_salvageSelected)?.Node??CurrentSalvageAgent?.Node??-1):_regionCell>=0?_inspectedNode:_populationNode;
+    private int InspectorLocationNode=>_nodeInspectorClosing?-1:FolderTreeFocus?FolderTreeLocationNode:_salvagePlan?(_setup.Salvage.Items.Find(i=>i.Id==_salvageSelected)?.Node??CurrentSalvageAgent?.Node??-1):_regionCell>=0?_inspectedNode:_populationNode;
     private void FocusInspectorLocation()
     {
+        if(FolderTreeFocus){FocusFolderTreeRow(_inspectorFolderRows.FindIndex(row=>row.Kind==_folderTreeKind && row.Id==_folderTreeId && row.Owner==_folderTreeOwner));return;}
         int id=InspectorLocationNode;
         if(id<0 || id>=_setup.Nodes.All.Length || MapTransitionActive || _net.IsAnimating)return;
         _inspectorCenterPending=false;_inspectorCenterAge=-1;

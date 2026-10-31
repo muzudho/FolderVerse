@@ -7,9 +7,18 @@ public partial class Game1
 {
     private void UpdateNodeFocusCircle()
     {
+        _net.FolderSearchFocus=FolderTreeFocus;
+        _net.FocusBrightness=_world.FocusBrightness=FolderTreeFocus?.35f:.65f;
+        if(_folderTreeOpen)_net.NodeFocus=_world.NodeFocus=FolderTreeFocus && _folderTreeKind==2?_folderTreeId:-1;
+        _net.RegionFocusCell=_world.RegionFocusCell=RegionMapFocusCell;
         _net.FocusCircleNodes.Clear();_net.FocusCircles.Clear();_world.FocusCircles.Clear();_net.FocusCells.Clear();_world.FocusCells.Clear();
         _net.FocusCircleRadius=_world.FocusCircleRadius=0;
         _net.CountryFocus=_world.CountryFocus=_reignView && !_nodeInspectorClosing?(_strategyRuler>=0?_strategyRuler:_setup.PlayerSlot):-1;
+        if(FolderTreeFocus && _folderTreeKind==0)_net.CountryFocus=_world.CountryFocus=_folderTreeOwner;
+        if(FolderTreeFocus && _folderTreeKind==1){
+            foreach(var node in _setup.Nodes.InCell(_folderTreeId))_net.FocusCircleNodes.Add(node.Id);
+            return;
+        }
         if(_salvagePlan && !_nodeInspectorClosing){
             RefreshSalvageFocus();_net.CountryFocus=_world.CountryFocus=_setup.PlayerSlot;
             if(MapTransitionActive || _net.IsAnimating)return;

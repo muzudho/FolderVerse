@@ -156,7 +156,7 @@ public sealed partial class CubeNet
                 var pa=face.Project(a)*fit.Scale+fit.Origin;var pb=face.Project(b)*fit.Scale+fit.Origin;
                 ui.Box(new((int)Math.Min(pa.X,pb.X)-thickness/2,(int)Math.Min(pa.Y,pb.Y)-thickness/2,Math.Max(thickness,(int)Math.Abs(pa.X-pb.X)),Math.Max(thickness,(int)Math.Abs(pa.Y-pb.Y))),color);
             }
-            DrawCellRoutes(ui,setup,cell.Id,p=>face.Project(p)*fit.Scale+fit.Origin,pulse,false);
+            DrawCellRoutes(ui,setup,cell.Id,p=>face.Project(p)*fit.Scale+fit.Origin,pulse,false,p=>RotateScreen(p,panel));
             if(!ShowRoutes && focused==cell.Id)
             {
                 ui.Box(new(rect.Left,rect.Top,rect.Width,3),Color.White);ui.Box(new(rect.Left,rect.Bottom-3,rect.Width,3),Color.White);
