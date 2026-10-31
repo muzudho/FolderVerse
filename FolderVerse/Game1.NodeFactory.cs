@@ -110,6 +110,13 @@ public partial class Game1
                 _ui.Center(detail,new(96,916,764,26),Math.Min(.34f,750/_font.MeasureString(detail).X),Cream);
             }
         }
+        if(_factoryDropDown>=0){
+            int field=_factoryDropDown,count=field==2?13:9;
+            for(int i=0;i<count;i++){
+                var option=FactoryDropOption(field,i);
+                _ui.Button(option,(field==0?"× ":field==1?"休 ":"")+(field==2?i:i+1),Accent,.40f);
+            }
+        }
     }
     private void DrawFactoryOmission(int x,int y)
     {

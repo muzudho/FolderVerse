@@ -127,7 +127,7 @@ public partial class Game1 : Game
         _rollTime=0; _dragging=false;
     }
     protected override void Update(GameTime gameTime)
-    { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive);UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds); UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);UpdateIndustryMusic();base.Update(gameTime); }
+    { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive);UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds); UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);UpdateIndustryMusic();UpdateEndingMusic(IsActive);base.Update(gameTime); }
     private void HandleInputCore(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
     {
         UpdateFullscreen(keyboard,active);
@@ -196,7 +196,7 @@ public partial class Game1 : Game
         if(_screen is Screen.LandConquest or Screen.Fortune){UpdateLandSetup(elapsed,mouse,active,click,enter);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _net.UpdateAnimation((float)elapsed);
         if(_screen==Screen.Ending)
-        {UpdateEnding(elapsed,active && (escape || enter || click && EndingReturn.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        {if(active && click && EndingResume.Contains(_pointer) && _endingAge+elapsed<EndingSeconds)ResumeFromEnding();else UpdateEnding(elapsed,active && (escape || enter || click && EndingReturn.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(DragOrientationRobot(mouse,active,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool rotating=OrientationRotating;UpdateOrientationRotation((float)elapsed);
         if(rotating){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -764,7 +764,7 @@ public partial class Game1 : Game
     protected override void UnloadContent(){_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
-        if(disposing){StopBattleMusic();StopIndustryMusic();DisposeTitleMusic();}
+        if(disposing){StopBattleMusic();StopIndustryMusic();StopEndingMusic();DisposeTitleMusic();}
         try{base.Dispose(disposing);}
         finally
         {

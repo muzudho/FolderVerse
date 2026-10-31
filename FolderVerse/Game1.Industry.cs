@@ -22,6 +22,7 @@ public partial class Game1
     private void BeginIndustry()
     {
         StopBattleMusic();
+        if(TryConquestEnding())return;
         // Both introductory steps omit the roulette screen, retaining the normal industry processing.
         if(_setup.TutorialStep is 1 or 2 && _setup.Industry.Pending){
             _setup.Industry.Roll(_setup.PlacementSeed^_setup.FortuneSeed);_setup.Industry.Apply(_setup);_industryApplied=true;_world.ShowSetup(_setup,true);
