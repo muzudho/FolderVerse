@@ -9,17 +9,29 @@ sealed class DemoCheck:Game1
     bool checkedDemo;
     bool drawn;
     object Get(string n)=>typeof(Game1).GetField(n,Flags)!.GetValue(this)!;
-    void Tick(double elapsed,bool click=false,bool active=true)=>typeof(Game1).GetMethod("UpdateDemo",Flags)!.Invoke(this,new object[]{elapsed,active,click,false,false});
+    double now;
+    void Tick(double elapsed,bool click=false,bool active=true){
+        now+=elapsed;
+        typeof(Game1).GetMethod("UpdateDomesticSlide",Flags)!.Invoke(this,new object[]{(float)elapsed});
+        typeof(Game1).GetMethod("UpdateDemo",Flags)!.Invoke(this,new object[]{elapsed,active,click,false,false,now});
+    }
     void Check(bool ok,string message){if(!ok)throw new Exception(message);}
     protected override void LoadContent()
     {
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
         Tick(9);Check(!(bool)Get("_demoActive"),"Demo started too soon");Tick(0,true);Tick(9);Check(!(bool)Get("_demoActive"),"Click did not reset title timer");Tick(1);Check((bool)Get("_demoActive"),"Demo did not start at 10 seconds");
         Check(Get("_screen").ToString()=="Title","Intro should remain on title");
-        Tick(1.8);Check((float)Get("_demoSwing")>0,"START click swing missing");Tick(.4);Check(Get("_screen").ToString()=="Rolling","START intro did not launch demo");
-        bool transport=false,battle=false;
-        for(int i=0;i<180;i++){Tick(1);transport|=Get("_screen").ToString()=="Transport";battle|=Get("_screen").ToString()=="Battle";}
-        Check(transport,"Demo did not enter propagation");Check(battle,"Demo did not enter battle");
+        Tick(1.8);Check((float)Get("_demoSwing")>0,"START click swing missing");Tick(.4);Check(Get("_screen").ToString()=="PlayerCount","START intro did not launch player count");
+        var confirm=(Rectangle)typeof(Game1).GetField("PlayerCountConfirm",Flags|BindingFlags.Static)!.GetValue(null)!;
+        for(int i=0;i<55;i++)Tick(1d/18);
+        Check(Get("_screen").ToString()=="ComputerPlayerCount","Demo skipped computer count");
+        Check(confirm.Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Human count click misses confirm");
+        for(int i=0;i<55;i++)Tick(1d/18);
+        Check(Get("_screen").ToString()=="Rolling","Demo did not confirm computer count");
+        Check(confirm.Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Computer count click misses confirm");
+        bool transport=false;
+        for(int i=0;i<900 && !transport;i++){Tick(1);transport|=Get("_screen").ToString()=="Transport";}
+        Check(transport,$"Demo did not enter propagation: screen={Get("_screen")} age={Get("_demoAge")} stage={Get("_demoDomesticStage")}");
         double before=(double)Get("_demoAge");Tick(1,active:false);Check((double)Get("_demoAge")>before,"Inactive demo stopped");
         var screenField=typeof(Game1).GetField("_screen",Flags)!;
         screenField.SetValue(this,Enum.Parse(screenField.FieldType,"WorldStatus"));
@@ -28,7 +40,7 @@ sealed class DemoCheck:Game1
         typeof(Game1).GetField("_demoMapAge",Flags)!.SetValue(this,0d);
         var net=(CubeNet)Get("_net");
         bool sawGlobe=false,sawNet=false,sawEdgeAnimation=false;
-        for(int i=0;i<500;i++)
+        for(int i=0;i<1200;i++)
         {
             Tick(1d/18,active:false);
             if(Get("_screen").ToString()!="WorldStatus")break;
@@ -37,6 +49,16 @@ sealed class DemoCheck:Game1
         Check(sawGlobe && sawNet && sawEdgeAnimation,"Demo did not demonstrate globe/net and edge relocation");
         Check((int)Get("_demoMapVisits")>0,$"Demo map explanation did not resume gameplay: stage={Get("_demoMapStage")} age={Get("_demoMapAge")} screen={Get("_screen")} step={Get("_demoStepAge")}");
         var world=(WorldSetup)Get("_setup");
+        // Peaceful movement need not produce a battle. Exercise battle playback with a fixed scene instead.
+        var scene=new BattleState(1){TargetNode=world.Nodes.Current(0).Id,Defender=0};
+        scene.Armies.Add(new(){Owner=0,Side=0});
+        scene.Units.Add(new(){Id=1,Owner=0,Position=new(4,4),Robot=new Robot(1,0,RobotParts.Complete)});
+        scene.Capture(BattlePhase.Choose);
+        typeof(Game1).GetField("_robotScenes",Flags)!.SetValue(this,new[]{scene});
+        typeof(Game1).GetField("_robotPlayback",Flags)!.SetValue(this,new RobotBattlePlayback(new[]{scene}));
+        typeof(Game1).GetMethod("FinishTransport",Flags)!.Invoke(this,null);
+        Check(Get("_screen").ToString()=="Battle","Fixture did not enter battle");
+        Tick(.1,active:false);Check((double)Get("_battleIntroAge")>0,"Demo did not advance battle introduction");
         world.Relations.Pending.Clear();
         foreach(int personality in new[]{3,9,11,13})
         {

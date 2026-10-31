@@ -87,6 +87,7 @@ public partial class Game1
         var aim=_screen==Screen.Disposition?new Vector2(dispositionPoint.X,dispositionPoint.Y):_screen==Screen.WorldStatus?new Vector2(720,1040):_screen is Screen.Battle or Screen.Transport?new Vector2(1840,850):new Vector2(1580,790);
         if(_screen is Screen.Rolling or Screen.Review)aim=new((_screen==Screen.Review && _demoWorldRoll<3?RetryButton:ActionButton).Center.X,(_screen==Screen.Review && _demoWorldRoll<3?RetryButton:ActionButton).Center.Y);
         else if(_screen is Screen.CastRolling or Screen.CastReview)aim=new((_screen==Screen.CastReview && _demoCastRoll<3?CastRetry:CastAction).Center.X,(_screen==Screen.CastReview && _demoCastRoll<3?CastRetry:CastAction).Center.Y);
+        else if(_screen is Screen.PlayerCount or Screen.ComputerPlayerCount)aim=new(PlayerCountConfirm.Center.X,PlayerCountConfirm.Center.Y);
         if(_demoSwing<=0)_demoCursor=Vector2.Lerp(_demoCursor,aim,1-MathF.Exp(-(float)elapsed*2));
         if(_screen==Screen.Transport){UpdateTransport(elapsed,false,now);_demoStepAge=0;return true;}
         if(_screen==Screen.Battle)
@@ -100,7 +101,12 @@ public partial class Game1
         StartDemoClick();
         switch(_screen)
         {
-            case Screen.PlayerCount:_setup.SetPlayerCount(1);BeginRolling();break;
+            case Screen.PlayerCount:
+                _demoCursor=new(PlayerCountConfirm.Center.X,PlayerCountConfirm.Center.Y);_pointer=PlayerCountConfirm.Center;StartDemoClick();
+                PlayerCountInput(true,false,new Microsoft.Xna.Framework.Input.KeyboardState());break;
+            case Screen.ComputerPlayerCount:
+                _demoCursor=new(PlayerCountConfirm.Center.X,PlayerCountConfirm.Center.Y);_pointer=PlayerCountConfirm.Center;StartDemoClick();
+                ComputerPlayerCountInput(true,false,new Microsoft.Xna.Framework.Input.KeyboardState());break;
             case Screen.Rolling:_demoWorldRoll++;_screen=Screen.Review;break;
             case Screen.Review:if(_demoWorldRoll<3)BeginRolling();else BeginCast();break;
             case Screen.CastRolling:_demoCastRoll++;_screen=Screen.CastReview;break;
