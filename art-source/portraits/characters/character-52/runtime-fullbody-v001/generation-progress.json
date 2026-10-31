@@ -3292,8 +3292,500 @@
         "Sha256": "3061d070ad353f87fed517241643fccff0088c2e36c020750f9b3e33fa10ae23"
       },
       "Sha256": "1f5706899f2d76c8f6e8c6e2fc575311b7ba0023246b72caa84a8092c4f5c490"
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Version": "v001",
+      "File": "character-52-news-coin-v001-generated.png",
+      "Prompt": "news-coin-v001-prompt.txt",
+      "References": [
+        {
+          "File": "../../../newspaper-trials/character-52-coin-v001-generated.png",
+          "Role": "本人横顔意匠と背景",
+          "Sha256": "13c2c85a8e6faf039bc77a28a75d259face9deb18aa741d33170e4d119dcafd5"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "承認済み体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-57ef3979-8804-4aca-8175-654b6a08600a.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Status": "PROPORTIONS_AND_EYES_REVIEW_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身直接目視。左向き横顔/一眼/赤眼鏡/青長髪/尖り耳/本人雪帽子制服ファー/灰背景/閉口微笑を保持。下衣白タイツ紺金ブーツ白手袋を補完し全身収まり。実頭部が小さく胴脚が長く体格未達、首も長め。瞳詳細/300x400白黒未確認、未選択。",
+      "Sha256": "0cab5ee2d542712ca7c826eb666b4d6193665931242a44d638186f9d1b5ddf15"
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Version": "v002",
+      "File": "character-52-news-coin-v002-generated.png",
+      "Prompt": "news-coin-v002-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-coin-v001-generated.png",
+          "Role": "本人全身、体格修正対象",
+          "Sha256": "0cab5ee2d542712ca7c826eb666b4d6193665931242a44d638186f9d1b5ddf15"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "承認体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-2517a858-8256-495b-b438-f76d8f99c82b.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Status": "PROPORTIONS_AND_EYES_REVIEW_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身直接目視。実頭部が少し拡大したが指示ほど変化せず、小頭長身/長首が残り未達。本人左横顔一眼/衣装/灰背景/全身余白保持。眼部拡大/300x400白黒未確認。未選択。",
+      "Sha256": "029ab5ef74493c6145b7a7c3b67f08c468d8e897bb8e44c51d6635581d4c1709"
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Version": "v003",
+      "File": "character-52-news-coin-v003-generated.png",
+      "Prompt": "news-coin-v003-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-coin-v002-generated.png",
+          "Role": "本人全身、胴脚短縮対象",
+          "Sha256": "029ab5ef74493c6145b7a7c3b67f08c468d8e897bb8e44c51d6635581d4c1709"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-ebc0ebd8-4a98-47c3-82e3-314f852888f9.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Status": "PROPORTIONS_AND_EYES_REVIEW_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身直接目視。脚が短縮し膝位置上昇、首隙間も縮小。本人横顔/一眼/赤眼鏡/衣装/灰背景/帽子両靴余白保持。ただし実頭部に対して胴体がまだ長く5.5〜6頭身未達疑い、未選択。瞳詳細/300x400白黒未確認。",
+      "Sha256": "0205e9dce0c48988806a2ce1a5598d391c7485009eae50c5f9af687e54429a38"
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Version": "v004",
+      "File": "character-52-news-coin-v004-generated.png",
+      "Prompt": "news-coin-v004-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-coin-v003-generated.png",
+          "Role": "本人全身、頭部胴比率修正対象",
+          "Sha256": "0205e9dce0c48988806a2ce1a5598d391c7485009eae50c5f9af687e54429a38"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-24c24740-ed03-49b0-923c-cccef795af2e.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Status": "EYE_EXPRESSION_RESTORE_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身直接目視。実頭部が大きく胴短縮し体格改善、短首/大手足/高膝/全身余白保持。本人横顔/衣装/灰背景は保持したが目の開口が半閉じへ変化し元の開眼表情を損なう。眼部白丸も未確認。未選択、元coin原画を参照し目開口と瞳の復元必要。体格詳細/300x400白黒未確認。",
+      "Sha256": "8d960471d0746358c62940b94b96c141099ae40e4b32d5c9d6446dbf3755a6f1"
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Version": "v005",
+      "File": "character-52-news-coin-v005-generated.png",
+      "Prompt": "news-coin-v005-prompt.txt",
+      "References": [
+        {
+          "File": "../../../newspaper-trials/character-52-coin-v001-generated.png",
+          "Role": "元の開眼表情参照",
+          "Sha256": "13c2c85a8e6faf039bc77a28a75d259face9deb18aa741d33170e4d119dcafd5"
+        },
+        {
+          "File": "character-52-news-coin-v004-generated.png",
+          "Role": "全身修正対象、改善体格保持",
+          "Sha256": "8d960471d0746358c62940b94b96c141099ae40e4b32d5c9d6446dbf3755a6f1"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-d5b81305-f1c4-4f83-b30b-a2b1926cfb65.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Status": "EYES_AND_RUNTIME_REVIEW_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身直接目視。開眼表情を復元し一眼横顔/赤眼鏡/本人意匠/改善した頭部胴比率/全身余白保持。眼部白丸は全身表示で上小さく下黄寄りに見え詳細確認/修正必要。体格詳細/300x400白黒未確認、未選択。",
+      "Sha256": "4a66a40568d79935b6d59e56363b4d70852674446a2c0216214d9e247804ee05"
+    },
+    {
+      "Id": "coin-face",
+      "Kind": "newspaper-eye-reference",
+      "Version": "v001",
+      "File": "character-52-news-coin-face-v001-generated.png",
+      "Prompt": "news-coin-face-v001-prompt.txt",
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-bf5e04b9-8b21-453b-97d3-ed398c55ddc7.png",
+      "References": [
+        {
+          "File": "character-52-news-coin-v005-generated.png",
+          "Role": "本人横顔と開眼保持、瞳修正",
+          "Sha256": "4a66a40568d79935b6d59e56363b4d70852674446a2c0216214d9e247804ee05"
+        }
+      ],
+      "Status": "LOWER_HIGHLIGHT_RIM_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "補助顔参照を直接目視。開眼横顔/本人意匠保持。上右白丸は虹彩から白目へ接続。下白丸が大きく左端輪郭へ接触し白抜きに見え、完全内包の修正必要。上下の大小差も不足。全身ではなく補助参照、未選択。",
+      "Sha256": "2f3a99dd7d0a7cac165fc1ca3e6bacd02bf0fe203de23fb76aeae9654b8fe91e"
+    },
+    {
+      "Id": "coin-face",
+      "Kind": "newspaper-eye-reference",
+      "Version": "v002",
+      "File": "character-52-news-coin-face-v002-generated.png",
+      "Prompt": "news-coin-face-v002-prompt.txt",
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-574ff146-41cb-4885-b899-d08609f64199.png",
+      "References": [
+        {
+          "File": "character-52-news-coin-face-v001-generated.png",
+          "Role": "下白丸内包と上下大小差修正",
+          "Sha256": "2f3a99dd7d0a7cac165fc1ca3e6bacd02bf0fe203de23fb76aeae9654b8fe91e"
+        }
+      ],
+      "Status": "REFERENCE_EYES_VISUALLY_PASSED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "補助顔参照直接目視。上右大白丸が虹彩から白目へ接続、下中白丸は左/下に色縁を残して内包し上下大小差明瞭。開眼/丸楕円瞳孔/横顔/本人意匠保持。補助参照として確認、全身未反映、ゲーム未採用。",
+      "Sha256": "ba775c8907e0e689d1f69f8ba2cd802bb81f3e1553cb2db1a103a320adab3407"
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Version": "v006",
+      "File": "character-52-news-coin-v006-generated.png",
+      "Prompt": "news-coin-v006-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-coin-face-v002-generated.png",
+          "Role": "確認済み瞳参照",
+          "Sha256": "ba775c8907e0e689d1f69f8ba2cd802bb81f3e1553cb2db1a103a320adab3407"
+        },
+        {
+          "File": "character-52-news-coin-v005-generated.png",
+          "Role": "全身修正対象、体格保持",
+          "Sha256": "4a66a40568d79935b6d59e56363b4d70852674446a2c0216214d9e247804ee05"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-75efe508-f8bb-486f-83dd-6c043f44cb9a.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Status": "LOWER_HIGHLIGHT_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身/眼部拡大/300x400白黒直接目視。本人横顔/開眼/改善体格/全身余白保持、白黒で顔と衣装判読。上右大白丸の接続は確認。下白丸は反映されず黄光と左右輪郭の白切れが残るため未達、未選択。体格詳細は次回。",
+      "Sha256": "55be40b598724647a44272c0976a68c0fde1242f48e138ff9d8d56c510471f0b",
+      "EyePreview": "news-coin-v006-eyes.png",
+      "GrayPreview": "news-coin-v006-preview-gray.png",
+      "Preview": {
+        "Path": "news-coin-v006-preview.png",
+        "Crop": {
+          "X": 210,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "7a07eb5866f2e779669e9d682e876ebdcaba65eaad88ce7eb5c156d834f3eb0a"
+      }
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Version": "v007",
+      "File": "character-52-news-coin-v007-generated.png",
+      "Prompt": "news-coin-v007-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-coin-v006-generated.png",
+          "Role": "下白丸と虹彩輪郭修正対象",
+          "Sha256": "55be40b598724647a44272c0976a68c0fde1242f48e138ff9d8d56c510471f0b"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-81933a9d-42dd-457c-91dc-55ddebc74ec5.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Status": "LOWER_HIGHLIGHT_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身既確認、今回眼部拡大/300x400白黒直接目視。上右大白丸の接続は保持、下左は黄色発光と虹彩輪郭の白切れが残りv006から改善なし。白黒では本人横顔/衣装判読可能。未選択。体格詳細未確定。",
+      "Sha256": "a6af1b0268fb1bbe710c40568f0ed9b6949f5f8ce649cf3bbbeda6c507fde91a",
+      "EyePreview": "news-coin-v007-eyes.png",
+      "GrayPreview": "news-coin-v007-preview-gray.png",
+      "Preview": {
+        "Path": "news-coin-v007-preview.png",
+        "Crop": {
+          "X": 210,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "5e70ee8a18595845e963b2520428ca801ac3ba1486e4ba26a6ea68dec9f8f14e"
+      }
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Version": "v008",
+      "File": "character-52-news-coin-v008-generated.png",
+      "Prompt": "news-coin-v008-prompt.txt",
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-de59e5ca-40fb-4f0f-a48b-e5ff4aee1b3f.png",
+      "References": [
+        {
+          "File": "character-52-news-coin-face-v002-generated.png",
+          "Role": "確認済み本人顔/瞳を主参照、全身拡張",
+          "Sha256": "ba775c8907e0e689d1f69f8ba2cd802bb81f3e1553cb2db1a103a320adab3407"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "承認体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "Width": 1024,
+      "Height": 1536,
+      "Tool": "builtin image_gen",
+      "Status": "FULLBODY_MARGIN_AND_PROPORTIONS_FAILED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "全身直接目視。本人左横顔/開眼/赤眼鏡/青髪/雪帽子衣装/灰背景保持。ただし帽子上端切れ、実頭部小さく胴脚が再び長身化。ケープが長く補完され既存全身候補の衣装形状から変化。瞳詳細未確認、未選択。全身v007と顔v002は保持し次回再開元。",
+      "Sha256": "ff75bbead900196569a0254e4566a50acd0f555f591ad4e0c70b4bcccaed61f4"
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Version": "v009",
+      "File": "character-52-news-coin-v009-generated.png",
+      "Prompt": "news-coin-v009-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-coin-v007-generated.png",
+          "Role": "全身を第1参照、瞳のみ修正対象",
+          "Sha256": "a6af1b0268fb1bbe710c40568f0ed9b6949f5f8ce649cf3bbbeda6c507fde91a"
+        },
+        {
+          "File": "character-52-news-coin-face-v002-generated.png",
+          "Role": "下白丸の補助参照",
+          "Sha256": "ba775c8907e0e689d1f69f8ba2cd802bb81f3e1553cb2db1a103a320adab3407"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-8f2faa36-2a60-4e6f-9ec7-50051c6932e1.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Status": "LOWER_HIGHLIGHT_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "眼部拡大/300x400白黒直接目視。上右大白丸は接続、下部に白光は増えたが黄発光中心で円形が不明瞭、左右輪郭の白切れ残存。本人横顔と衣装は白黒判読可。未選択。体格詳細未確定。",
+      "Sha256": "d9574ecd238599f4aa3e96f7866983c988eca5705aa2440bde390fdd7c378656",
+      "EyePreview": "news-coin-v009-eyes.png",
+      "GrayPreview": "news-coin-v009-preview-gray.png",
+      "Preview": {
+        "Path": "news-coin-v009-preview.png",
+        "Crop": {
+          "X": 210,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "fdecb88bb5592a6167194573b04387018ee909b364f8daec534034e79faec8e3"
+      }
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Version": "v010",
+      "File": "character-52-news-coin-v010-generated.png",
+      "Prompt": "news-coin-v010-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-coin-v009-generated.png",
+          "Role": "全身修正対象",
+          "Sha256": "d9574ecd238599f4aa3e96f7866983c988eca5705aa2440bde390fdd7c378656"
+        },
+        {
+          "File": "news-coin-v009-eyes.png",
+          "Role": "問題箇所拡大",
+          "Sha256": "b7508a5661936e4ea0663a4072fb9dfb36a6789a35c1583e127f645b88b753e1"
+        },
+        {
+          "File": "character-52-news-coin-face-v002-generated.png",
+          "Role": "確認済み白丸参照",
+          "Sha256": "ba775c8907e0e689d1f69f8ba2cd802bb81f3e1553cb2db1a103a320adab3407"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-9bdbc1ea-ae8e-44ba-b7de-f8c460c547bf.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Status": "LOWER_HIGHLIGHT_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "2026-10-31 09:39 JST 眼部拡大/新聞300x400白黒目視。上右大白丸接続、下白丸明瞭だが右端が白目へ接続し虹彩輪郭を切る。未選択。体格詳細未確定。",
+      "Sha256": "5552ae62e7480cef834bb79029506081aca9ca927f755e95a7b6979b7795dd10",
+      "EyePreview": "news-coin-v010-eyes.png",
+      "GrayPreview": "news-coin-v010-preview-gray.png",
+      "Preview": {
+        "Path": "news-coin-v010-preview.png",
+        "Crop": {
+          "X": 210,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "36417114908a13fc338a7bc3cb6bcd34701c493887bca56d1021550652452bbb"
+      }
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Version": "v011",
+      "File": "character-52-news-coin-v011-generated.png",
+      "Prompt": "news-coin-v011-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-coin-v010-generated.png",
+          "Role": "全身保持、下白丸を左へ移動",
+          "Sha256": "5552ae62e7480cef834bb79029506081aca9ca927f755e95a7b6979b7795dd10"
+        },
+        {
+          "File": "news-coin-v010-eyes.png",
+          "Role": "問題箇所拡大",
+          "Sha256": "373c8b681e6ea7478623021d2edb1ceb2b6e3b800b3ae2d703ad40937dbc506b"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-8ffb15af-69fa-42c8-9fbf-7d49fe12c144.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Status": "LOWER_HIGHLIGHT_AND_PROPORTIONS_REVIEW_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "Sha256": "ddae286f2612d291ac91ac6414bc6bb189484d191f88d20c21e0a8e2a2163001",
+      "VisualReview": "2026-10-31 10:09 JST 全身/v017/眼部拡大/300x400白黒直接目視。上右大白丸接続保持。下白光は右端で白目へ流れ虹彩輪郭切れが残るため未選択。本人横顔・衣装は白黒判読可。全身体格は帽子を除いた頭蓋上端が隠れて厳密採寸不可だが、顔拡大後は5.5〜6頭身より低頭身に見える。過去の改善体格という記述を適合判定と扱わず、瞳と別に再調整必要。",
+      "EyePreview": "news-coin-v011-eyes.png",
+      "GrayPreview": "news-coin-v011-preview-gray.png",
+      "Preview": {
+        "Path": "news-coin-v011-preview.png",
+        "Crop": {
+          "X": 210,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "dbe6893e62686fce2a965c390a05380d2ab0cd8bd99a006ebcb77215042820bb"
+      }
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Version": "v012",
+      "File": "character-52-news-coin-v012-generated.png",
+      "Prompt": "news-coin-v012-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-coin-v011-generated.png",
+          "Role": "本人意匠・全身修正対象",
+          "Sha256": "ddae286f2612d291ac91ac6414bc6bb189484d191f88d20c21e0a8e2a2163001"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "承認体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-451437b4-64d2-46dd-b146-cdc38c020842.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Sha256": "fa694e74e95c33af7b5d6d9220ec19598173918541e8d8f18fe411c53aee8db7",
+      "Selected": false,
+      "GameAdopted": false,
+      "Status": "LOWER_HIGHLIGHT_REVISION_REQUIRED",
+      "VisualReview": "2026-10-31 11:09 JST 眼部拡大/300x400白黒直接目視。上右接続保持、下白光右側に白い橋が残り輪郭を切る。白黒本人判読可。体格詳細未確定、未選択。",
+      "EyePreview": "news-coin-v012-eyes.png",
+      "GrayPreview": "news-coin-v012-preview-gray.png",
+      "Preview": {
+        "Path": "news-coin-v012-preview.png",
+        "Crop": {
+          "X": 240,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "3d5c1b4be62ae35681fef209ad2bd09a00680ccf7c986311d69716df545fb880"
+      }
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Version": "v013",
+      "File": "character-52-news-coin-v013-generated.png",
+      "Prompt": "news-coin-v013-prompt.txt",
+      "References": [
+        {
+          "File": "character-52-news-coin-v012-generated.png",
+          "Role": "全身保持・下白光修正対象",
+          "Sha256": "fa694e74e95c33af7b5d6d9220ec19598173918541e8d8f18fe411c53aee8db7"
+        },
+        {
+          "File": "news-coin-v012-eyes.png",
+          "Role": "白い橋の問題箇所拡大",
+          "Sha256": "2d81e114aebf964efcb8b4a7627ee1aa9ff1caeeedcedadec5a0a28225678d55"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-68daac94-1e1f-4127-a525-2e6665e3bc34.png",
+      "Tool": "builtin image_gen",
+      "Width": 1024,
+      "Height": 1536,
+      "Sha256": "1eda2eeb4078aa4f6e87baec5f305e8bdb13b16ef9fdf4a37bd2c7600c3ba20e",
+      "Status": "LOWER_HIGHLIGHT_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "2026-10-31 11:39 JST 全身/眼部拡大/300x400白黒直接目視。本人横顔・衣装・全身余白・白黒判読保持。上右接続保持、下白光右側の白い橋が残り虹彩輪郭を切る。v012から問題改善なし、未選択。体格詳細未確定。同様の全身局所編集反復は止め、次回は眼部を主編集対象とした高解像度参照作成後、全身へ内蔵image_genで反映する別工程を検討。",
+      "EyePreview": "news-coin-v013-eyes.png",
+      "GrayPreview": "news-coin-v013-preview-gray.png",
+      "Preview": {
+        "Path": "news-coin-v013-preview.png",
+        "Crop": {
+          "X": 240,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "27764cdb5b2e83c542e2de21d823eeefd53ce189e45d01662088f2fb67ff54df"
+      }
     }
   ],
-  "Next": "history v010作業用選択済み。次は新聞coin本人原画確認と全身制作、idol/paparazzi未着手。全14候補完了後に20ゲーム画像/カタログ/配布ビルド適用。現ゲーム0/20。",
+  "Next": "coin v013下白光右輪郭切れ改善なし。次は全身局所編集反復を避け、眼部主編集→内蔵image_gen全身反映の別工程。体格詳細も未確定。idol/paparazzi未着手、ゲーム0/20。",
   "UserAuthorization": "拒否時は報告し元画像保持、衣装・持ち物変更して続行可。"
 }
