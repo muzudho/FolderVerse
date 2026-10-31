@@ -6,6 +6,7 @@ public sealed partial class RobotWorld
     private int _domesticPreparedTurn=-1;
     public void PrepareDomestic(int turn,Func<int,int,bool> connected,Func<int,int> owner,Func<int,bool> locked=null)
     {
+        RevalidateWorkReservations();
         if(_domesticPreparedTurn==turn)return;
         bool elapsed=_domesticPreparedTurn>=0;
         _domesticPreparedTurn=turn;

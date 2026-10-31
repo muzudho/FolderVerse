@@ -31,8 +31,8 @@ public partial class Game1
         _setup.Relations.CanAct(_setup.PlayerSlot) && _setup.Nodes.Current(_setup.PlayerSlot)?.Id==_populationNode;
     private bool CanOpenHangar=>_setup.Nodes.All[_populationNode].Owner<0 || CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) || VisitingForeignHangar;
     private bool CanMoveHangarRobot(Robot robot)=>CanOpenHangar && !_setup.Campaign.RobotBattles.LockedNode(_populationNode) && !_setup.Robots.AssemblyLocked(_populationNode,robot);
-    private bool CanMoveHangarPart(Robot robot,RobotParts part)=>CanOpenHangar && !_setup.Campaign.RobotBattles.LockedNode(_populationNode) && !_setup.Robots.PartLocked(_populationNode,robot,part) &&
-        (CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) || new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(p=>(robot.ConnectedParts(part)&p)!=0).All(p=>robot.Origin(p)==_setup.PlayerSlot));
+    private bool CanMoveHangarPart(Robot robot,RobotParts part)=>CanOpenHangar && _setup.Robots.CanEditReservedPart(_populationNode,robot,_setup.PlayerSlot) &&
+        (CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) || new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(p=>(robot.ConnectedParts(part)&robot.Parts&p)!=0).All(p=>robot.Origin(p)==_setup.PlayerSlot));
     private bool HangarPlaceEnabled(Robot target,RobotParts part)
     {
         var dragging=_hangarDrag.HasValue?_setup.Robots.Nodes[_populationNode].Robots.FirstOrDefault(r=>r.Id==_hangarDrag):null;
@@ -103,7 +103,7 @@ public partial class Game1
                         if(_hangarReservation==HangarReservation.Defense && reserved.DefenseOnly){BeginDefenseReservationEffect(reserved);_hangarMessage="旗で守備専用予約 / 靴を履いて仕事中";}
                         else{
                             _defenseReservationEffects.Remove(robot.Id);
-                            if(reserved.InterceptOnly || reserved.FactoryWorker || reserved.Disposal)BeginWorkReservationEffect(reserved,reserved.Owner);
+                            if(reserved.InterceptOnly || reserved.FactoryWorker)BeginWorkReservationEffect(reserved,reserved.Owner);
                             _hangarMessage="予約を切り替えました / 続けて個体を選択できます";
                         }
                     }else _hangarMessage="予約国・完全体・自国パーツ・出撃条件・処理中の状態を確認してください";

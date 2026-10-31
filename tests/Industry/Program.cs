@@ -9,10 +9,15 @@ Check(Enumerable.Range(0,100).Select(IndustryCycle.SectorAt).GroupBy(i=>i).All(g
 var robots=new RobotWorld();robots.Initialize(2,2);robots.Workshops[0].AutoAssemblyDisabled=true;
 var regular=robots.Create(0,RobotParts.Head) with {DamagedParts=RobotParts.Head};
 var cheap=robots.Create(0,RobotParts.Body|RobotParts.Legs) with {CheapParts=RobotParts.Body|RobotParts.Legs};
-var mixed=regular.Merge(cheap,0);Check(mixed.CanFight && mixed.NativeParts(0)==0 && mixed.Origin(RobotParts.Body)==0 && mixed.Affiliation(RobotParts.Body)==-1,"Damaged regular identity plus healthy cheap parts may fight");
-Check(mixed.CombatParts(0)==1,"Cheap backup has minimal combat equipment rather than pure native strength");
+var mixed=regular.Merge(cheap,0);Check(mixed.CanFight && mixed.NativeParts(0)==2 && mixed.Origin(RobotParts.Body)==0 && mixed.Affiliation(RobotParts.Body)==0,"Healthy cheap parts retain country affiliation; damaged regular parts do not count");
+Check(mixed.CombatParts(0)==2,"Healthy cheap native parts count toward combat equipment");
 Check(!(mixed with {DamagedParts=RobotParts.Complete}).CanFight,"All damaged cannot fight");
-Check(!(mixed with {CheapParts=RobotParts.Complete,DamagedParts=0}).CanFight,"All cheap cannot fight");
+var allCheap=mixed with {CheapParts=RobotParts.Complete,DamagedParts=0};
+Check(allCheap.CanFight && allCheap.NativeParts(0)==3 && new RobotTraining().Eligible(allCheap),"All three healthy native cheap parts may deploy even under the default policy");
+var cheapSortie=robots.Create(0,RobotParts.Complete) with {CheapParts=RobotParts.Complete};robots.Nodes[0].Add(cheapSortie);
+Check(robots.CanReserveSortie(0,cheapSortie) && robots.PrepareSortieReservation(0,new[]{cheapSortie.Id}),"The actual sortie reservation accepts a healthy all-cheap native complete robot");robots.Nodes[0].Remove(cheapSortie.Id);
+var foreignCheap=new Robot(10000,0,RobotParts.Complete){HeadOrigin=0,BodyOrigin=1,LegsOrigin=1,DamagedParts=RobotParts.Head,CheapParts=RobotParts.Body|RobotParts.Legs};
+Check(!foreignCheap.CanFight && !new RobotTraining{DeploymentPolicy=1}.Eligible(foreignCheap),"Damaged native identity cannot borrow affiliation from foreign cheap parts");
 Check(new RobotTraining{DeploymentPolicy=1}.Eligible(mixed) && !new RobotTraining().Eligible(mixed),"Mixed deployment policy respected");
 robots.Nodes[0].Add(mixed);robots.Split(0,mixed.Id,RobotParts.Body);var body=robots.Nodes[0].Robots.Single(r=>r.Parts==RobotParts.Body);
 Check(body.IsCheap(RobotParts.Body) && body.CheapParts==RobotParts.Body,"Split preserves only matching cheap flags");

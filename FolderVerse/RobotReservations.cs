@@ -45,6 +45,7 @@ public sealed partial class RobotWorld
         }
         ReservationSource=owner=>world.Nodes.Current(owner)?.Id??-1;
         foreach(var node in world.Nodes.All){Workshops[node.Id].LimitLines(node.Terrain==TravelTerrain.Sea?1:3);SyncWorkers(node.Id);}
+        RevalidateWorkReservations();
     }
     public void SyncWorkers(int node)
     {

@@ -47,14 +47,14 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
     public bool IsCheap(RobotParts part)=>(Parts&part)!=0 && (CheapParts&part)!=0;
     public bool IsDamaged(RobotParts part)=>(Parts&part)!=0 && (EffectiveDamagedParts&part)!=0;
     // Origin retains the country even while damage makes a part unaffiliated.
-    public int Affiliation(RobotParts part)=>(Parts&part)==0 || IsDamaged(part) || IsCheap(part)?-1:Origin(part);
+    public int Affiliation(RobotParts part)=>(Parts&part)==0 || IsDamaged(part)?-1:Origin(part);
     public int HeadOrigin {get;init;}=-1;
     public int BodyOrigin {get;init;}=-1;
     public int LegsOrigin {get;init;}=-1;
     public int Origin(RobotParts part)=>part switch{RobotParts.Head=>HeadOrigin<0?Owner:HeadOrigin,RobotParts.Body=>BodyOrigin<0?Owner:BodyOrigin,_=>LegsOrigin<0?Owner:LegsOrigin};
     public int NativeParts(int owner)=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Count(p=>(Parts&p)!=0 && owner>=0 && Affiliation(p)==owner);
     public int RegularNativeParts(int owner)=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Count(p=>(Parts&p)!=0 && !IsCheap(p) && Origin(p)==owner);
-    public int AssemblyCredit(int owner)=>NativeParts(owner)>0?NativeParts(owner):RegularNativeParts(owner)>0 && (CheapParts&Parts&~EffectiveDamagedParts)!=0?1:0;
+    public int AssemblyCredit(int owner)=>NativeParts(owner);
     public int CombatParts(int owner)=>Math.Max(NativeParts(owner),CanFight?1:0);
     public Robot Materialize()=>this with {HeadOrigin=Origin(RobotParts.Head),BodyOrigin=Origin(RobotParts.Body),LegsOrigin=Origin(RobotParts.Legs),DamagedParts=DamagedParts&Parts,CheapParts=CheapParts&Parts};
     public Robot Merge(Robot other,int owner)

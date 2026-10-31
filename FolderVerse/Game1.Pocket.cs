@@ -11,20 +11,14 @@ public partial class Game1
     private static Rectangle PocketTransferButton(bool fromNode)=>new(fromNode?1000:54,615,300,48);
     private string PocketRobotLockReason(Robot robot,bool fromNode)
     {
-        if(robot.Owner!=_setup.PlayerSlot)return "他国のロボット";
+        if(!new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(robot.Parts&p)!=0 && robot.Origin(p)==_setup.PlayerSlot))return "自国のパーツがありません";
         int node=_setup.Nodes.Current(_setup.PlayerSlot).Id;var world=_setup.Robots;
         if(_setup.Campaign.RobotBattles.LockedNode(node))return "継戦中";
-        if(!fromNode)return "";
+        int work=world.WorkCountry(node,robot);if(work>=0 && work!=_setup.PlayerSlot)return "他国の仕事予約";
         if(world.Workshops[node].DisposalTarget==robot.Id)return "廃棄処理中";
-        if(robot.FactoryWorker)return "工場作業員予約";
-        if(robot.InterceptOnly)return "迎撃専用予約";
-        if(robot.DefenseOnly)return "守備専用予約";
-        if(robot.Disposal)return "廃棄予約";
         var edit=world.PendingEdits.FirstOrDefault(e=>e.Ids.Contains(robot.Id));
         if(edit!=null)return edit.SplitPart.HasValue?"分解予約":"組立予約";
-        if(world.MarchReserved(node,robot))return "出撃予約";
-        if(world.DirectDelivery.LockedParts(node,robot.Id)!=0)return "直送便予約";
-        return world.AssemblyLocked(node,robot)?"作業予約中":"";
+        return world.CanTransferPocket(node,_setup.PlayerSlot,robot)?"":"作業中";
     }
     private bool PocketRobotSelectable(Robot robot,bool fromNode)=>PocketRobotLockReason(robot,fromNode).Length==0;
     private bool PocketTransferEnabled(bool fromNode)
@@ -44,7 +38,7 @@ public partial class Game1
     private static Rectangle PocketCard(int index,bool fromNode)
     {var card=RobotCard(index);if(fromNode)card.X+=946;return card;}
     private void OpenPocket()
-    {CloseMovement();_populationCell=-1;_pocketRobot=null;_pocketMessage="";_screen=Screen.Pocket;}
+    {_setup.Robots.RevalidateWorkReservations();CloseMovement();_populationCell=-1;_pocketRobot=null;_pocketMessage="";_screen=Screen.Pocket;}
     private void PocketInput(bool click,bool escape)
     {
         if(escape || click && InactiveBack.Contains(_pointer)){_screen=Screen.WorldStatus;return;}
@@ -70,8 +64,8 @@ public partial class Game1
         if(!destination.HasSpace){_pocketMessage="移動先が満杯です（出撃中の帰還予約を含む）";return;}
         if(_pocketFromNode && !PocketRobotSelectable(source.Robots.Single(r=>r.Id==id),true))
         {_pocketMessage=PocketRobotLockReason(source.Robots.Single(r=>r.Id==id),true)+"のため移せません";return;}
-        if(!source.Robots.Any(r=>r.Id==id && r.Owner==player)){_pocketRobot=null;return;}
-        destination.Add(source.Remove(id));_pocketRobot=null;
+        if(!source.Robots.Any(r=>r.Id==id)){_pocketRobot=null;return;}
+        _setup.Robots.TransferPocket(node,player,id,_pocketFromNode);_pocketRobot=null;
         if(_pocketFromNode && _setup.TutorialStep==2 && player==0)_setup.TutorialPocketed=true;
         _pocketMessage=_pocketFromNode?"自分のポケットに入れました":"現在地の地点へ配備しました";
     }
@@ -90,10 +84,10 @@ public partial class Game1
             for(int i=0;i<12;i++)
             {
                 var card=PocketCard(i,fromNode);_ui.Box(card,new(30,47,59));if(i>=store.Count)continue;var robot=store.Robots[i];
-                bool selectable=PocketRobotSelectable(robot,fromNode),hover=selectable && card.Contains(_pointer),own=robot.Owner==player;
+                bool selectable=PocketRobotSelectable(robot,fromNode),hover=selectable && card.Contains(_pointer),own=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(robot.Parts&p)!=0 && robot.Origin(p)==player);
                 _ui.Box(card,hover?new Color(70,103,118):own?Muted:new Color(37,44,53));
-                var ownerColor=_setup.OwnerColor(robot.Owner);_ui.Box(new(card.X+3,card.Y+3,card.Width-6,23),ownerColor);
-                _ui.Center((own?"自国":"他国")+$" #{robot.Owner+1}",new(card.X+3,card.Y+3,card.Width-6,23),.35f,UiPainter.ContrastInk(ownerColor));
+                int work=_setup.Robots.WorkCountry(node.Id,robot);var ownerColor=_setup.OwnerColor(work>=0?work:own?player:robot.Owner);_ui.Box(new(card.X+3,card.Y+3,card.Width-6,23),ownerColor);
+                _ui.Center(work>=0?$"仕事 #{work+1}":own?"自国パーツあり":"自国パーツなし",new(card.X+3,card.Y+3,card.Width-6,23),.30f,UiPainter.ContrastInk(ownerColor));
                 DrawRobotGlyph(new(card.X+46,card.Y+28,44,46),robot,opacity:selectable?1:.38f,whiteOutline:true);
                 _ui.Center(PartsLabel(robot),new(card.X,card.Y+75,card.Width,24),System.Math.Min(.34f,(card.Width-8)/System.Math.Max(1,_font.MeasureString(PartsLabel(robot)).X)),selectable?Cream:Cream*.55f);
                 _ui.Center("ID "+robot.Id,new(card.X,card.Y+98,card.Width,18),.28f,Cream);

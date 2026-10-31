@@ -28,12 +28,15 @@ sealed class PocketChecks:Game1
   var delivery=Add(world.Robots.Create(0,RobotParts.Complete));var route=world.Routes.Neighbors(home)[0];var target=world.Nodes.At(route.Target,route.Entry);target.Owner=0;
   world.Robots.DirectDelivery.Reserve(world,node,target.Id,delivery.Id,RobotParts.Head,null,0);
   var foreign=Add(world.Robots.Create(1,RobotParts.Complete));
+  world.Robots.Training[1].DeploymentPolicy=1;
+  var foreignWork=Add(world.Robots.Create(1,RobotParts.Complete) with {HeadOrigin=0,DefenseOnly=true,DefenseFlag=new(1,node,0)});
   Call("OpenPocket");Set("_cutInStarted",-10d);
-  foreach(var sample in new[]{(defense,"守備専用予約"),(intercept,"迎撃専用予約"),(worker,"工場作業員予約"),(disposal,"廃棄予約"),(assembly,"組立予約"),(delivery,"直送便予約"),(foreign,"他国のロボット")}){
+  foreach(var sample in new[]{(assembly,"組立予約"),(foreign,"自国のパーツがありません"),(foreignWork,"他国の仕事予約")}){
    Check((string)Call("PocketRobotLockReason",sample.Item1,true)==sample.Item2 && !(bool)Call("PocketRobotSelectable",sample.Item1,true),"Lock label matches transfer restriction");
   }
+  foreach(var own in new[]{defense,intercept,worker,disposal,delivery})Check((bool)Call("PocketRobotSelectable",own,true),"Own commands and part reservations can be overwritten by an immediate pocket transfer");
   Set("_pointer",Card(1).Center);Call("PocketInput",true,false);
-  Check(Get("_pocketRobot")==null && ((string)Get("_pocketMessage")).Contains("守備専用予約"),"Locked click reports reservation without selecting robot");
+  Check((long?)Get("_pocketRobot")==defense.Id && (bool)Call("PocketTransferEnabled",true),"Own shoes do not prevent pocket selection");
   Set("_pointer",Card(0).Center);Call("PocketInput",true,false);
   Check((bool)Call("PocketTransferEnabled",true),"Unreserved robot remains transferable");
  }

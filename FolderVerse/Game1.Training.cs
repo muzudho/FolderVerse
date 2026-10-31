@@ -12,11 +12,11 @@ public partial class Game1
     private bool TrainingInput(Point point,bool click,bool escape)
     {
         if(_setup.TutorialStep is 1 or 2 || StrategyReadOnly){_trainingOpen=false;_trainingDrop=-1;return false;}
-        if(!_trainingOpen){if(click && _reignView && _populationCell<0 && !_movementOpen && !_transportOverview && TrainingButton.Contains(new Point(point.X-NodeInspectorOffset,point.Y))){_trainingOpen=true;_trainingDrop=-1;return true;}return false;}
-        if(escape || click && TrainingClose.Contains(point)){_trainingOpen=false;_trainingDrop=-1;return true;}
+        if(!_trainingOpen){if(click && _reignView && _populationCell<0 && !_movementOpen && !_transportOverview && TrainingButton.Contains(new Point(point.X-NodeInspectorOffset,point.Y))){_trainingOpen=true;_setup.Robots.RevalidateWorkReservations();_trainingDrop=-1;return true;}return false;}
+        if(escape || click && TrainingClose.Contains(point)){_trainingOpen=false;_setup.Robots.RevalidateWorkReservations();_trainingDrop=-1;return true;}
         if(!click)return true;
         var policy=_setup.Robots.Training[_setup.PlayerSlot];
-        if(_trainingDrop>=0){int field=_trainingDrop;var labels=field==0?AssemblyLabels:DeploymentLabels;for(int i=0;i<labels.Length;i++)if(TrainingOption(field,i).Contains(point)){if(field==0)policy.AssemblyPolicy=i;else policy.DeploymentPolicy=i;break;}_trainingDrop=-1;return true;}
+        if(_trainingDrop>=0){int field=_trainingDrop;var labels=field==0?AssemblyLabels:DeploymentLabels;for(int i=0;i<labels.Length;i++)if(TrainingOption(field,i).Contains(point)){if(field==0)policy.AssemblyPolicy=i;else policy.DeploymentPolicy=i;break;}_setup.Robots.RevalidateWorkReservations();_trainingDrop=-1;return true;}
         for(int field=0;field<2;field++)if(TrainingField(field).Contains(point))_trainingDrop=field;
         return true;
     }

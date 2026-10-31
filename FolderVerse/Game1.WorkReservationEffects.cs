@@ -16,11 +16,10 @@ public partial class Game1
     }
     private int WorkReservationOwner(Robot robot)
     {
+        if(robot.Parts!=RobotParts.Complete)return -1;
         if(robot.ShoeOwner>=0)return robot.ShoeOwner;
-        if(robot.Disposal || robot.InterceptOnly || robot.FactoryWorker)return robot.Owner;
+        if(robot.InterceptOnly || robot.FactoryWorker)return robot.Owner;
         if(robot.Id<=0)return -1; // Decorative examples have no reservation identity.
-        var order=_setup.Robots.DirectDelivery.Orders.FirstOrDefault(o=>o.RobotId==robot.Id);
-        if(order!=null)return order.Owner;
         var march=_setup.Campaign.PlannedOrders.FirstOrDefault(o=>!o.Peaceful && o.RobotIds?.Contains(robot.Id)==true);
         if(march!=null)return march.Ruler;
         if(_warPlanning){

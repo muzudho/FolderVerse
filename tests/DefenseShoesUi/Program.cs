@@ -57,9 +57,9 @@ sealed class ShoesGame:Game1{
    Click(StaticRect("HangarReservationButton",0).Center);Click(StaticRect("HangarCell",5).Center);
    var robots=world.Robots.Nodes[node].Robots;
    Check(robots.Single(r=>r.Id==workers[0].Id).InterceptOnly && robots.Single(r=>r.Id==workers[1].Id).FactoryWorker && robots.Single(r=>r.Id==workers[2].Id).Disposal,"Three different jobs are accepted at the same animation time");
-   Check(((System.Collections.IDictionary)Get("_workReservationEffects")).Count==3,"Independent simultaneous flags do not replace each other");
+   Check(((System.Collections.IDictionary)Get("_workReservationEffects")).Count==2,"Independent work flags coexist; disposal waiting is not a shoe job");
    Click(StaticRect("HangarReservationButton",3).Center);Click(StaticRect("HangarCell",3).Center);
-   Check(!world.Robots.Nodes[node].Robots.Single(r=>r.Id==workers[0].Id).InterceptOnly && ((System.Collections.IDictionary)Get("_workReservationEffects")).Count==2,"Immediate cancellation works while flag animation is running");
+   Check(!world.Robots.Nodes[node].Robots.Single(r=>r.Id==workers[0].Id).InterceptOnly && ((System.Collections.IDictionary)Get("_workReservationEffects")).Count==1,"Immediate cancellation works while flag animation is running");
   }
   if(frame==8){Set("_animationTime",10.12f);Check((float)Call("WorkShoeProgress",world.Robots.Nodes[node].Robots.Single(r=>r.Id==workers[1].Id))==0,"Worker flag precedes shoes");}
   if(frame==9){Set("_animationTime",10.5f);float p=(float)Call("WorkShoeProgress",world.Robots.Nodes[node].Robots.Single(r=>r.Id==workers[1].Id));Check(p>0 && p<1,"Worker shoes animate without stopping input");CheckCompactGlyph();}

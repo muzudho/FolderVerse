@@ -21,6 +21,29 @@ static class PersuasionChecks
     static void Persuade(BattleState battle)=>typeof(BattleTurnResolver).GetMethod("Persuade",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{battle});
     public static void Run()
     {
+        foreach(bool cheap in new[]{false,true})foreach(int native in new[]{0,1,2,3}){
+            var robot=new Robot(500,1,RobotParts.Complete){HeadOrigin=native>=1?0:1,BodyOrigin=native>=2?0:1,LegsOrigin=native>=3?0:1,CheapParts=cheap?RobotParts.Complete:0};
+            Check(RobotWorld.DomesticPersuasionPercent(robot,0)==new[]{5,35,70,95}[native],"Persuasion tiers count healthy native cheap and regular parts equally");
+            Check(RobotWorld.DomesticPersuasionPercent(robot,0,0)==0 && RobotWorld.DomesticPersuasionPercent(robot,0,100)==100,"Explicit disabled/guaranteed simulation overrides remain available");
+        }
+        {
+            var robot=new Robot(501,1,RobotParts.Complete){HeadOrigin=0,BodyOrigin=0,LegsOrigin=0,CheapParts=RobotParts.Complete,DamagedParts=RobotParts.Head};
+            Check(RobotWorld.DomesticPersuasionPercent(robot,0)==70,"Damaged native cheap part is excluded from the healthy fraction");
+        }
+        foreach(int ticket in new[]{94,95,99}){
+            var(w,home,targets)=Fixture();w.Campaign.RobotBattles.Rules=new();var site=w.Nodes.All[targets[0]];
+            w.ConquerorLocations[0]=site.Cell;w.ConquerorPoints[0]=site.Center;
+            var original=w.Robots.Create(1,RobotParts.Complete) with {CheapParts=RobotParts.Complete};w.Robots.Nodes[site.Id].Add(original);
+            Check(w.Robots.ToggleReservation(site.Id,original.Id,HangarReservation.Defense,1),"Healthy cheap 3/3 can receive defense reservation");
+            var stale=w.Robots.Nodes[site.Id].Robots.Single().Persuaded(0,RobotParts.Complete,true);w.Robots.Nodes[site.Id].Remove(original.Id);w.Robots.Nodes[site.Id].Add(stale);
+            int turn=Enumerable.Range(0,10000).First(t=>new SeedRandom(w.PlacementSeed^t*7919^0x504552).Next(100)==ticket);
+            typeof(PopulationSimulation).GetProperty("Turn")!.SetValue(w.Population,turn);
+            var attempts=w.Robots.PersuadeAtHome(w);
+            Check(!attempts.Any(e=>e.Ruler==0 && e.Before.Id==stale.Id),"Ineligible foreign work is released before the owner needs persuasion");
+            var released=w.Robots.Nodes[site.Id].Robots.Single(r=>r.Id==stale.Id);
+            Check(released.ShoeOwner==-1 && released.NativeParts(0)==3 && released.CheapParts==RobotParts.Complete,"Automatic shoe removal preserves part affiliation and quality");
+            Check(w.Robots.PersuadeAtHome(w).Count==0,"The 95-percent case cannot be rerolled during the same global turn");
+        }
         {
             var(w,home,targets)=Fixture();var a=w.Robots.Create(0,RobotParts.Complete);var b=w.Robots.Create(0,RobotParts.Complete);
             w.Robots.Nodes[home.Id].Add(a);w.Robots.Nodes[home.Id].Add(b);

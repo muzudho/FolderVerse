@@ -77,7 +77,7 @@ class Checks:Game1{
   Whole(2,1,0);Check(w.Robots.DirectDelivery.Orders.Count==0 && w.Robots.Nodes[a].Robots.Single().Parts==RobotParts.Complete,"Whole robot conflicting with destination leaves no partial reservations");
   Whole(2,1,1);Check(w.Robots.DirectDelivery.Orders.Count==3 && w.Robots.DirectDelivery.LockedParts(a,original)==RobotParts.Complete,"Whole cell cross-pane drag reserves head body and legs together");
   Check(((System.Collections.IDictionary)Get("_workReservationEffects")).Contains(original),"Accepted delivery starts work animation without ending further input");
-  Check((float)Call("WorkShoeProgress",w.Robots.Nodes[a].Robots.Single(r=>r.Id==original))==0,"Delivery waves its flag before the shoes appear");
+  Check((int)Call("WorkReservationOwner",w.Robots.Nodes[a].Robots.Single(r=>r.Id==original))==-1,"Parts delivery is marked as reserved without work shoes");
   Set("_pointer",Part(0,2,0).Center);Check((RobotParts)Call("DirectHoverPart",0,2)==RobotParts.Head,"Part hover selects only head");
   Set("_pointer",Cell(0,2).Location+new Point(16,145));Check((RobotParts)Call("DirectHoverPart",0,2)==0,"Cell margin hover selects whole cell");
   Set("_directDrag",(0,original,RobotParts.Head));Set("_pointer",close.Center);
