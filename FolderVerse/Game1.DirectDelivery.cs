@@ -77,10 +77,12 @@ public partial class Game1
             _ui.Box(new(bounds.X,bounds.Y+3,27,20),color);_ui.Box(new(bounds.X+29,bounds.Y+8,13,15),color);_ui.Box(new(bounds.X+31,bounds.Y+10,8,7),new Color(125,196,222));_ui.Box(new(bounds.X+5,bounds.Y+23,9,8),new Color(14,22,29));_ui.Box(new(bounds.X+30,bounds.Y+23,9,8),new Color(14,22,29));
         }
         int count=_setup.Robots.DirectDelivery.Orders.Count(o=>o.Source==first && o.Target==second || o.Source==second && o.Target==first);if(count>0)_ui.Text(count.ToString(),new(bounds.X+15,bounds.Y-13),.35f,Cream);
+        DrawDirectTruckCheck(first,second,bounds);
     }
     private void DirectPairInput(MouseState mouse,bool click,bool escape){
         if(escape || click && !_directDrag.HasValue && DirectPairBack.Contains(_pointer)){CloseDirectPair();return;}
         if(_directPairClosing || _directPairSlide<1)return;
+        if(click && !_directDrag.HasValue && DirectPairCheckButton.Contains(_pointer)){ToggleDirectPairCheck();return;}
         if(click && !_directDrag.HasValue && DirectPairTruckClick(_pointer))return;
         SyncDirectSlots();
         if(click){for(int side=0;side<2;side++)for(int slot=0;slot<12;slot++)for(int row=0;row<3;row++)if(DirectHoverPart(side,slot)==HangarPart(row)){
@@ -152,6 +154,7 @@ public partial class Game1
         // Shared upper handle keeps closing controls away from the drag corridor.
         _ui.Box(new(20,114,940,34),DirectSideColor(0));_ui.Box(new(960,114,940,34),Color.White);
         _ui.Button(DirectPairBack,"×",Muted,.8f);
+        DrawDirectPairCheckButton();
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);
         _ui.Center("パーツをドラッグ：部位ごと / 枠をドラッグ：まとめて / 予約パーツをクリック：取消",new(20,978,1880,30),.38f,Cream);
         _ui.Center(_directMessage,new(20,1012,1880,28),.4f,Cream);

@@ -20,12 +20,12 @@ public partial class Game1
         if(ReferenceEquals(_nodeChecksWorld,_setup) && _nodeChecksTurn==_setup.Population.Turn)return;
         ClearAllNodeChecks();_nodeChecksWorld=_setup;_nodeChecksTurn=_setup.Population.Turn;
     }
-    private void ClearAllNodeChecks(){_nodeChecksByPlayer.Clear();_nodeCheckHits.Clear();_nodeChecksWorld=null;_nodeChecksTurn=-1;}
+    private void ClearAllNodeChecks(){_nodeChecksByPlayer.Clear();_directChecksByPlayer.Clear();_nodeCheckHits.Clear();_nodeChecksWorld=null;_nodeChecksTurn=-1;}
     private bool NodeChecked(int node)
     {
         EnsureNodeCheckContext();return _nodeChecksByPlayer.TryGetValue(NodeCheckPlayer,out var checks) && checks.Contains(node);
     }
-    private void ClearCurrentPlayerNodeChecks(){EnsureNodeCheckContext();_nodeChecksByPlayer.Remove(NodeCheckPlayer);_nodeCheckHits.Clear();}
+    private void ClearCurrentPlayerNodeChecks(){EnsureNodeCheckContext();_nodeChecksByPlayer.Remove(NodeCheckPlayer);_directChecksByPlayer.Remove(NodeCheckPlayer);_nodeCheckHits.Clear();}
     private bool NodeCheckClick(Point point)
     {
         if(!NodeCheckButtonVisible || !NodeCheckButton.Contains(point))return false;

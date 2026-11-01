@@ -114,7 +114,7 @@ public partial class Game1
         if(click && p.Y>=298 && p.Y<858){
             int index=_folderScroll+(p.Y-298)/56;
             if(index<_inspectorFolderRows.Count){
-                var row=_inspectorFolderRows[index];int x=90+Math.Min(row.Depth,10)*25;
+                var row=_inspectorFolderRows[index];int x=132+Math.Min(row.Depth,10)*25;
                 if(row.Kind<2 && p.X>=x && p.X<x+24){
                     var expanded=row.Kind==0?_expandedFolderCountries:_expandedFolderRegions;
                     if(!expanded.Add(row.Id))expanded.Remove(row.Id);BuildFolderTree();
@@ -140,15 +140,15 @@ public partial class Game1
             _ui.Text("所属フォルダー",new(90,254),.6f,Cream);
             for(int i=0;i<10;i++){
                 int index=_folderScroll+i;if(index>=_inspectorFolderRows.Count)break;
-                var row=_inspectorFolderRows[index];int x=90+Math.Min(row.Depth,10)*25,y=298+i*56;
+                var row=_inspectorFolderRows[index];int x=132+Math.Min(row.Depth,10)*25,y=298+i*56;
                 var r=new Rectangle(80,y,788,52);
                 if(FolderTreeFocus && row.Kind==_folderTreeKind && row.Id==_folderTreeId && row.Owner==_folderTreeOwner){_ui.Box(r,new Color(65,96,106));_ui.Box(new(r.X,y,5,r.Height),Accent);}
                 else if(r.Contains(_ui.Pointer))_ui.Box(r,new Color(48,72,87));
                 if(row.Depth>0){_ui.Box(new(x-13,y-17,1,43),Muted);_ui.Box(new(x-13,y+25,18,1),Muted);}
                 if(row.Kind<2)_ui.Text((row.Kind==0?_expandedFolderCountries.Contains(row.Id):_expandedFolderRegions.Contains(row.Id))?"－":"+",new(x,y+13),.4f,Cream);
                 DrawCountryFolder(new(x+25,y+12,30,28),row.Owner);
-                bool checkedNode=DrawFolderNodeCheck(row.Kind,row.Id,new(824,y+12,28,28));
-                _ui.Text(row.Label,new(x+64,y+15),Math.Min(.42f,(850-x-64-(checkedNode?40:0))/Math.Max(1,_font.MeasureString(row.Label).X)),Cream);
+                DrawFolderNodeCheck(row.Kind,row.Id,new(90,y+12,28,28));
+                _ui.Text(row.Label,new(x+64,y+15),Math.Min(.42f,(850-x-64)/Math.Max(1,_font.MeasureString(row.Label).X)),Cream);
             }
             _ui.Text("ホイール：スクロール / ＋：展開 / 名前：地図で探す",new(90,863),.32f,Cream);
             if(_inspectorFolderRows.Count>10){

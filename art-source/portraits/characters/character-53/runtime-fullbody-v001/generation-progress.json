@@ -1247,9 +1247,49 @@
         "Height": 192
       },
       "VisualReview": "2026-11-01 21:09 JST 全身/眼部/256x192直接目視。本人意匠/全身余白/約5.5頭身体格保持。瞳は全身編集で修正効果弱く、上右大白丸/左下中白丸を確認できず黄色が残る。未採用。"
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Version": "v010",
+      "File": "character-53-normal-5-v010-generated.png",
+      "Prompt": "normal-5-v010-prompt.txt",
+      "References": [
+        {
+          "File": "character-53-normal-5-v008-generated.png",
+          "Role": "全身の本人意匠/体格/半開き眼/構図参照",
+          "Sha256": "bd61dacbc40230a14d38b6cca1ae2a819a1f5a9db549861828408c20a981d591"
+        },
+        {
+          "File": "normal-5-eye-study-v009-generated.png",
+          "Role": "白丸配置のみ。開口形は転用しない",
+          "Sha256": "f42409fb5aae365b0696a9a774e7edf35447cc1d5da596fc8b865bf0f6b7b0c3"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-2dd0357c-1e37-4acf-bfe3-39953e342a17.png",
+      "Tool": "builtin image_gen",
+      "Sha256": "6d4c3c23b0b374a6c6b1702aa95a4f58c74b12cdf2f1afb2a48d20415fb28565",
+      "Status": "REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "Width": 1448,
+      "Height": 1086,
+      "EyePreview": "normal-5-v010-eyes.png",
+      "Preview": {
+        "Path": "normal-5-v010-preview.png",
+        "Crop": {
+          "X": 470,
+          "Y": 20,
+          "Width": 570,
+          "Height": 427
+        },
+        "Width": 256,
+        "Height": 192
+      },
+      "VisualReview": "2026-11-01 21:39 JST 全身/眼部拡大/256x192直接目視。本人の笠/両眼鏡/半開き眼/長髪/黒手袋竹筒/旅衣/全身余白/約5.5頭身保持。眼部試作v009を参照して顔の描き直しも許可したが、全身出力は瞳の変更が微弱で左下黄色が残り、上右大白丸接続/左下中白丸を明瞭に確認できず未達。未選択・未採用。"
     }
   ],
-  "Next": "通常5v008全身へ眼部試作v009の白丸配置のみ反映。元の半開き眼/両眼鏡/体格保持を再確認。通常6/新聞8未着手、ゲーム0/20。",
+  "Next": "通常5の瞳修正が全身編集で繰り返し反映不足。次回は半開き眼を維持した顔全体の拡大編集を参照に、全身出力への反映方法を変更する。体格/本人意匠/原画は維持。通常6/新聞8未着手、ゲーム0/20。",
   "DetailStudies": [
     {
       "Id": 2,
