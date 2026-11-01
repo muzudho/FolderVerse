@@ -71,7 +71,7 @@ public sealed partial class CubeNet
                     if((robot.Parts&part)==0)continue;
                     // Each present part touches the next, including head + legs.
                     var full=new Rectangle(card.X,card.Y+(int)((row*12-(part==RobotParts.Head?0:part==RobotParts.Body?12:24))*zoom),(int)(24*zoom),(int)(36*zoom));
-                    DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part),(CountryFocus>=0 || FolderSearchFocus) && DimNode(node.Id));
+                    DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part),DimNode(node.Id));
                     row++;
                 }
                 if(robot.ShoeOwner>=0)RobotWorkArt.DrawShoes(ui,card,NodeTint(node.Id,world.OwnerColor(robot.ShoeOwner)));

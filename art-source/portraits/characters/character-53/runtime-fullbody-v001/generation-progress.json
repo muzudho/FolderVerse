@@ -1145,9 +1145,35 @@
         "Height": 192
       },
       "VisualReview": "2026-11-01 19:39 JST 全身/眼部拡大/256x192直接目視。笠/両眼鏡/黒手袋竹筒/衣装/全身余白を保持。両眼の右上大白丸と左下中白丸が明確化。画面左眼の左下白丸は虹彩外縁との緑余白が狭く、体格は笠除外でも頭部比率が大きめで約5.5〜6頭身との一致未確定。未選択・未採用。"
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Version": "v006",
+      "File": "character-53-normal-5-v006-generated.png",
+      "Prompt": "normal-5-v006-prompt.txt",
+      "References": [
+        {
+          "File": "character-53-normal-5-v005-generated.png",
+          "Role": "本人意匠/瞳/構図保持・体格編集対象",
+          "Sha256": "00cd0d08ec2f3f05be5fa62ec3ab03fbbaaa6b3fcb1653df8d6d6e4183b68afe"
+        },
+        {
+          "File": "../../character-01/proportion-study/character-01-vitruvian-v017-trial.png",
+          "Role": "体格のみ",
+          "Sha256": "74814b71d415aa4e6643b6d91f70de2e08877af350d691c6ad2fe2dba23846e2"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-d69bcd24-5f5d-4890-bd6f-e47032893644.png",
+      "Tool": "builtin image_gen",
+      "Sha256": "7912ef896e1eaea363625d0df5011d4beaf16f3ec0e9426ad4c425d04d370a19",
+      "Status": "VISUAL_REVIEW_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "VisualReview": "未目視。利用者の開戦予約UI改修依頼へ移るため、原画保存して次回確認。"
     }
   ],
-  "Next": "通常5v005の笠除外頭身をv017と照合して調整、画面左眼の左下白丸の虹彩内余白確認/修正。通常6/新聞8未着手、ゲーム0/20。",
+  "Next": "通常5v006全身/頭身/瞳/縮小直接目視。通常6/新聞8未着手、ゲーム0/20。",
   "DetailStudies": [
     {
       "Id": 2,
