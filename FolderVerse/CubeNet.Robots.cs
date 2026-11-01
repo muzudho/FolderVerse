@@ -95,10 +95,11 @@ public sealed partial class CubeNet
                 int sy=top+(row-y)*(bottom-top)/Math.Max(1,next-y);
                 var ink=cheap && (row-y)%4>=2?(dim?SelectionGlow.Dim(Color.White,FocusBrightness):Color.White):tint;
                 var area=new Rectangle(r.X,y,r.Width,Math.Max(1,next-y));
-                int split=damaged?Math.Clamp(RobotDamageArt.SplitX(area,row),r.Left,r.Right):r.Right;
-                int leftWidth=split-r.Left,sourceSplit=leftWidth*source.Width/Math.Max(1,r.Width);
-                if(leftWidth>0 && sourceSplit>0)ui.Batch.Draw(_mapRobotTexture,new Rectangle(r.X,row,leftWidth,1),new Rectangle(0,sy,sourceSplit,1),ink);
-                if(split<r.Right && sourceSplit<source.Width)ui.Batch.Draw(_mapRobotTexture,new Rectangle(split,row,r.Right-split,1),new Rectangle(sourceSplit,sy,source.Width-sourceSplit,1),RobotDamageArt.Gray(ink));
+                for(int x=r.Left;x<r.Right;x++){
+                    int sx=(x-r.Left)*source.Width/Math.Max(1,r.Width);
+                    var shaded=damaged?RobotDamageArt.Tint(area,x,row,ink):ink;
+                    ui.Batch.Draw(_mapRobotTexture,new Rectangle(x,row,1,1),new Rectangle(sx,sy,1,1),shaded);
+                }
             }
 
         }

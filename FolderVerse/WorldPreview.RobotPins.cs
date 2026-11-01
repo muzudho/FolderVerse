@@ -69,7 +69,20 @@ public sealed partial class WorldPreview
                     corners[i]=Point(x,y,h);Track(corners[i]);
                 }
                 int[][] quads={new[]{0,1,3,2},new[]{4,6,7,5},new[]{0,4,5,1},new[]{2,3,7,6},new[]{0,2,6,4},new[]{1,5,7,3}};
-                foreach(var q in quads){Triangle(corners[q[0]],corners[q[1]],corners[q[2]],color);Triangle(corners[q[0]],corners[q[2]],corners[q[3]],damaged?RobotDamageArt.Gray(color):color);}
+                foreach(var q in quads){
+                    if(!damaged){Triangle(corners[q[0]],corners[q[1]],corners[q[2]],color);Triangle(corners[q[0]],corners[q[2]],corners[q[3]],color);continue;}
+                    Vector3 Face(float x,float y)=>Vector3.Lerp(Vector3.Lerp(corners[q[0]],corners[q[1]],x),Vector3.Lerp(corners[q[3]],corners[q[2]],x),y);
+                    for(int row=0;row<12;row++){
+                        float split=Math.Clamp(RobotDamageArt.SplitX(new(0,0,100,100),row*100/12+4)/100f,0,1);
+                        float[] cuts={0,Math.Max(0,split-.035f),Math.Min(1,split+.035f),1};
+                        for(int band=0;band<3;band++){
+                            float left=cuts[band],right=cuts[band+1];if(right<=left)continue;
+                            var ink=Color.Lerp(color,RobotDamageArt.Gray(color),band*.5f);
+                            var a=Face(left,row/12f);var b=Face(right,row/12f);var c=Face(right,(row+1)/12f);var d=Face(left,(row+1)/12f);
+                            Triangle(a,b,c,ink);Triangle(a,c,d,ink);
+                        }
+                    }
+                }
             }
             for(int slot=0;slot<robots.Count;slot++)
             {
