@@ -1,0 +1,42 @@
+using FolderVerse;using Microsoft.Xna.Framework;using Microsoft.Xna.Framework.Graphics;using Microsoft.Xna.Framework.Input;using System.Reflection;
+using var game=new Checks();game.Run();
+sealed class Checks:Game1{
+const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Static;WorldSetup w=null!;int frame,node,moves,moveTarget;RobotParts before;
+object Get(string n){var f=typeof(Game1).GetField(n,F);return f!=null?f.GetValue(this)!:typeof(Game1).GetProperty(n,F)!.GetValue(this)!;}
+void Set(string n,object v)=>typeof(Game1).GetField(n,F)!.SetValue(this,v);object Call(string n,params object[] a)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,a)!;
+static void Check(bool b,string m){if(!b)throw new Exception(m);}
+void Tick(double elapsed=1.8){Call("UpdateDemoDomestic",elapsed);}
+void Stage(int n){Set("_demoDomesticStage",n);Set("_demoDomesticAge",0d);Tick();}
+void Resize(bool small){var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=small?960:1920;g.PreferredBackBufferHeight=small?540:1080;g.ApplyChanges();}
+Robot Target(){int slot=(int)Get("_demoEmptySlot");var slots=(long?[])Get("_hangarSlots");return w.Robots.Nodes[node].Robots.Single(r=>r.Id==slots[slot]);}
+protected override void LoadContent(){Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();w=(WorldSetup)Get("_setup");w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_conquestOverview",false);Set("_conquestOverviewEnabled",false);Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);Set("_demoActive",true);Set("_demoIntro",false);}
+protected override void Update(GameTime t){}
+protected override void Draw(GameTime t){
+if(frame<6){
+ Call("ResetInspector");Set("_domesticSlide",0f);Resize(frame>=3);bool globe=frame%3==2;Set("_statusGlobe",globe);var net=(CubeNet)Get("_net");net.Home(w);net.ScreenAngle=frame%3==1?MathHelper.PiOver2:0;net.ShowRoutes=frame%3!=0;var world=(WorldPreview)Get("_world");if(globe){world.GlobePan=new Vector2(10,10);world.GlobeZoom=64;world.ManualOrientation=Quaternion.CreateFromYawPitchRoll(1,2,3);}
+ int expected=-1;Point p=Point.Zero;bool ready=false;
+ for(int attempt=0;attempt<4 && !ready;attempt++){var args=new object[]{Point.Zero};ready=(bool)Call("DemoNodePoint",args);p=(Point)args[0];}
+ Check(ready,"Demo brings a selectable node into view");expected=globe?(int)Call("HitGlobeNode",p,null!):net.HitNode(w,(Rectangle)Get("NetPanel"),p);Check(expected>=0,"Demo target hits an actual visible node before opening");Stage(0);Check((int)Get("_populationNode")==expected,"Opened node is exactly the hit node");Check(((Vector2)Get("_demoClickPoint")).ToPoint()==p,"Cursor follows current map projection");Call("UpdateDomesticSlide",1f);Console.WriteLine($"map frame={frame} node={expected} click={p} globe={globe}");
+}
+if(frame>=6 && frame<36){int step=(frame-6)%5,scenario=(frame-6)/5;
+ if(step==0){Resize(scenario>=3);Call("ResetInspector");node=w.Nodes.All.First(n=>n.Owner==0).Id;var store=w.Robots.Nodes[node];foreach(var r in store.Robots.ToArray())store.Remove(r.Id);
+  RobotParts[] parts=scenario%3==0?new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}:new[]{RobotParts.Head,RobotParts.Body|RobotParts.Legs};
+  foreach(var part in parts){var robot=w.Robots.Create(0,part);if(scenario%3==2 && part!=RobotParts.Head)robot=robot with{IntegratedParts=part};store.Add(robot);}
+  Call("OpenNodeInspector",node);Call("UpdateDomesticSlide",1f);Stage(3);Check((int)Get("_demoDomesticStage")==4,"Assembly finds a legal source");moves=0;
+ }
+ if(step is 1 or 3){if((int)Get("_demoDomesticStage")==4){before=Target().Parts;Tick();Check(Get("_hangarDrag")!=null,"Source press starts an actual part drag");Check(Target().Parts==before,"Press cannot prematurely assemble parts");}}
+ if(step is 2 or 4){if((int)Get("_demoDomesticStage")==5){Tick(.9);Check(Target().Parts==before && Get("_hangarDrag")!=null,"Robot remains unchanged while the cursor travels");Tick(.9);Check(Get("_hangarDrag")==null,"Drop releases drag");Check(Target().Parts!=before,"Drop transfers selected connected parts");moves++;if(step==2){Check(Target().Parts==(scenario%3==2?RobotParts.Complete:RobotParts.Head|RobotParts.Body),"First drop only transfers body unless physically integrated");}}
+  if(step==4){Check(Target().Parts==RobotParts.Complete && (int)Get("_demoDomesticStage")==8,"All required drags complete before factory stage");Check(moves==(scenario%3==2?1:2),"Disconnected legs need a separate drag");Console.WriteLine($"assembly scenario={scenario} moves={moves} complete=True");}}
+}
+if(frame>=36 && frame<60){int scenario=(frame-36)/4,step=(frame-36)%4;
+ if(step==0){Call("ResetInspector");Set("_domesticSlide",0f);w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_conquestOverview",false);Set("_conquestOverviewEnabled",false);((WorldPreview)Get("_world")).ShowSetup(w,true);var net=(CubeNet)Get("_net");net.Home(w);net.ScreenAngle=scenario%3==1?MathHelper.PiOver2:0;Set("_statusGlobe",scenario%3==2);Resize(scenario>=3);var world=(WorldPreview)Get("_world");world.ManualOrientation=null;world.GlobePan=Vector2.Zero;world.GlobeZoom=1;Call("OpenStrategyInspector");Call("UpdateDomesticSlide",1f);Call("MovementClick",((Rectangle)Get("MovementButton")).Center,new KeyboardState());Call("UpdateDomesticSlide",1f);if(scenario%3==2)world.GlobePan=new Vector2(10,10);Check(((int[])Call("DestinationNodes")).Length>0,"Movement fixture has legal choices");}
+ if(step==1){Set("_demoDomesticStage",scenario==0?15:13);Set("_demoDomesticAge",0d);for(int i=0;i<4 && (int)Get("_selectedMoveNode")<0;i++)Tick();moveTarget=(int)Get("_selectedMoveNode");Check(moveTarget>=0,"Demo selects an actual movement target, including retry from missing selection");var point=((Vector2)Get("_demoClickPoint")).ToPoint();var net=(CubeNet)Get("_net");int hit=(bool)Get("_statusGlobe")?(int)Call("HitGlobeNode",point,net.MovementTargets):net.HitNode(w,(Rectangle)Get("NetPanel"),point,net.MovementTargets);Check(hit==moveTarget && ((Rectangle)Get("MapViewBounds")).Contains(point),"Movement cursor is on the actual selectable node inside map");Check(w.Campaign.PlannedOrders.Count==0,"Selecting a target does not advance or reserve early");}
+ if(step==2){Tick();var plan=w.Campaign.PlannedOrders.Single();Check(plan.TargetNode==moveTarget && plan.Peaceful && plan.Queen && plan.PocketOnly,"Confirm creates the actual peaceful queen/pocket order");Check(Get("_screen").ToString()=="WorldStatus" && (int)Get("_demoDomesticStage")==19,"Reservation remains reviewable before separate turn-end click");Console.WriteLine($"movement scenario={scenario} target={moveTarget} order=peaceful cursor={Get("_demoClickPoint")}");}
+ if(step==3){var turn=(Rectangle)Get("PopulationTurnButton");Tick();Check(turn.Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Turn ends through a separate visible primary-button click");}
+}
+if(frame==60){Call("ResetInspector");Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("OpenMovement");Call("UpdateDomesticSlide",1f);((CubeNet)Get("_net")).MovementTargets.Clear();var previous=(Vector2)Get("_demoClickPoint");Stage(13);Check((int)Get("_demoDomesticStage")==19 && (Vector2)Get("_demoClickPoint")==previous,"No destinations closes without a fake movement/confirm click");}
+if(frame==61){Call("UpdateDomesticSlide",1f);var turn=(Rectangle)Get("PopulationTurnButton");Tick();Check(turn.Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"No-target fallback uses the visible end-turn action");}
+base.Draw(t);var pp=GraphicsDevice.PresentationParameters;var px=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(px);using var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);tex.SetData(px);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"demo-actions-{frame}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);
+if(frame++==61){Console.WriteLine("PASS: real peaceful movement orders and separate end-turn action, retry/no-target/offscreen handling at1080p/540p; actual visible-node hit and projection across net/globe, rotation, hidden layers/offscreen camera at1080p/540p; separate parts, two packages and integrated parts via held drag and real drop.");Exit();}
+}
+}

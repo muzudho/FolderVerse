@@ -15,6 +15,13 @@ public partial class Game1
     private void OpenNodeFactory(){if(!NodeFactoriesAllowed)return;if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length)return;if(_setup.Robots.Workshops[_populationNode].ProductionLines.Length==0 || !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;_nodeOfficeOpen=false;_lastNodeTab=1;}
     private static Rectangle FactoryRobotButton(int line,int period)=>new(160+(Math.Min(5,Math.Max(1,period))-1)*72,288+line*200,72,88);
     private static Rectangle FactoryRobotArrow(int line,int period){var r=FactoryRobotButton(line,period);return new(r.Right+2,r.Y+30,24,28);}
+    private Rectangle FactoryProductionButton(int line)
+    {
+        if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length)return Rectangle.Empty;
+        var lines=_setup.Robots.Workshops[_populationNode].ProductionLines;
+        if(line<0 || line>=lines.Length)return Rectangle.Empty;
+        return FactoryRobotButton(line,lines[line].Manufacturing?lines[line].ProductionPeriod:1);
+    }
     private static Rectangle FactoryPlanButton(int i)=>new(94+i%4*194,410+i/4*160,180,144);
     private Rectangle FactoryDropButton(int field)
     {
@@ -39,7 +46,7 @@ public partial class Game1
         }return true;}
         if(_factoryPlanLine>=0){int line=_factoryPlanLine;for(int i=0;i<11;i++)if(FactoryPlanButton(i).Contains(pointer)){factory.ProductionLines[line].SelectPlan(i);_factoryPlanLine=-1;return true;}_factoryPlanLine=-1;return true;}
         for(int l=0;l<factory.ProductionLines.Length;l++){
-            var line=factory.ProductionLines[l];if(FactoryRobotButton(l,line.Manufacturing?line.ProductionPeriod:1).Contains(pointer) || FactoryRobotArrow(l,line.Manufacturing?line.ProductionPeriod:1).Contains(pointer)){_factoryPlanLine=l;_factoryLine=l;return true;}
+            var line=factory.ProductionLines[l];if(FactoryProductionButton(l).Contains(pointer) || FactoryRobotArrow(l,line.Manufacturing?line.ProductionPeriod:1).Contains(pointer)){_factoryPlanLine=l;_factoryLine=l;return true;}
             _factoryLine=l;for(int field=0;field<2;field++)if(FactoryDropButton(field).Contains(pointer)){_factoryDropDown=field;return true;}
         }
         if(FactoryDropButton(2).Contains(pointer))_factoryDropDown=2;
@@ -75,7 +82,7 @@ public partial class Game1
             _ui.Center((period*line.RestEvery+line.RestTurns).ToString(),new(160+(shownPeriod+shownRest-1)*72,y+105,72,28),.43f,Cream);
             if(period>5)DrawFactoryOmission(160+2*72,y);
             if(line.RestTurns>4)DrawFactoryOmission(160+(shownPeriod+1)*72,y);
-            var robot=FactoryRobotButton(l,period);_ui.Box(robot,_factoryPlanLine==l || robot.Contains(_pointer)?Accent:Muted);
+            var robot=FactoryProductionButton(l);_ui.Box(robot,_factoryPlanLine==l || robot.Contains(_pointer)?Accent:Muted);
             var arrow=FactoryRobotArrow(l,period);for(int row=0;row<10;row++)_ui.Box(new(arrow.X+2+row,arrow.Y+6+row,20-row*2,1),Cream);
             if(line.Manufacturing)DrawRobotGlyph(robot,line.CurrentProductionPlan.Preview(node.Owner),whiteOutline:true);else _ui.Center("×",robot,.7f,Cream);
             int width=shownPeriod*72,mid=160+width/2;_ui.Box(new(160,y+126,width,2),Cream);_ui.Box(new(160,y+121,2,7),Cream);_ui.Box(new(158+width,y+121,2,7),Cream);for(int i=0;i<5;i++){_ui.Box(new(mid-5+i,y+128+i,1,1),Cream);_ui.Box(new(mid+5-i,y+128+i,1,1),Cream);}FactoryDrop(0,line.RestEvery);FactoryDrop(1,line.RestTurns);

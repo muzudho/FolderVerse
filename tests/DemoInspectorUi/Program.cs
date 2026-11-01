@@ -14,7 +14,9 @@ sealed class DemoInspectorChecks:Game1{
   ((WorldPreview)Get("_world")).ShowSetup(world,true);((CubeNet)Get("_net")).Home(world);
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_conquestOverview",false);Set("_conquestOverviewEnabled",false);Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);
   Call("ResetInspector");Check((int)Get("_inspectedNode")==-1,"Fixture starts with no inspected supervisor");
-  Set("_demoDomesticStage",0);Set("_demoDomesticAge",0d);Call("UpdateDemoDomestic",1.8d);Call("UpdateDomesticSlide",1f);
+  Set("_demoDomesticStage",0);Set("_demoDomesticAge",0d);
+  for(int attempt=0;attempt<4 && (int)Get("_populationNode")<0;attempt++)Call("UpdateDemoDomestic",1.8d);
+  Call("UpdateDomesticSlide",1f);
   node=(int)Get("_populationNode");Check(node>=0 && (int)Get("_inspectedNode")==node && (bool)Get("_nodeOfficeOpen"),"Demo opens the office with synchronized node and supervisor IDs");
   var font=(SpriteFont)Get("_font");Check("伏太峡渓渡谷".All(font.Characters.Contains),"Compiled font includes every previously missing static glyph");Check(font.DefaultCharacter=='?' && !font.Characters.Contains('\uE000'),"Unknown external text has an explicit fallback");Check(font.MeasureString("external \uE000").X>0,"Unknown dynamic glyph cannot throw during measurement");
  }
@@ -52,7 +54,23 @@ sealed class DemoInspectorChecks:Game1{
    var confirm=(Rectangle)typeof(Game1).GetField("PlayerCountConfirm",F|BindingFlags.Static)!.GetValue(null)!;
    Check(confirm.Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Count click misses rendered confirm");
   }
+  if(frame>=11){
+   int step=(frame-11)/2;int[] plans={3,0,1,2,4,10};
+   if(frame is 11 or 23){var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=frame==11?1920:960;g.PreferredBackBufferHeight=frame==11?1080:540;g.ApplyChanges();}
+   if((frame-11)%2==0){
+    Call("ResetInspector");Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("OpenNodeInspector",node);Call("OpenNodeFactory");Call("UpdateDomesticSlide",1f);
+    var line=world.Robots.Workshops[node].ProductionLines[0];line.SelectPlan(plans[step%plans.Length]);
+    var expected=(Rectangle)Call("FactoryProductionButton",0);Set("_demoDomesticStage",9);Set("_demoDomesticAge",0d);Call("UpdateDemoDomestic",1.8d);
+    Check(expected.Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Demo factory click follows actual period and disabled production");Check((int)Get("_factoryPlanLine")==0,"Demo factory click opens plan menu through normal input");
+    Console.WriteLine($"factory-plan-before={line.SelectedPlan} period={line.ProductionPeriod} click={Get("_demoClickPoint")} bounds={expected}");
+   }else{
+    var expected=(Rectangle)typeof(Game1).GetMethod("FactoryPlanButton",F|BindingFlags.Static)!.Invoke(null,new object[]{0})!;Set("_demoDomesticAge",0d);Call("UpdateDemoDomestic",1.8d);
+    Check(expected.Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Demo candidate click matches drawn rectangle");
+    var line=world.Robots.Workshops[node].ProductionLines[0];Check((int)Get("_factoryPlanLine")==-1 && line.SelectedPlan==0 && line.Manufacturing,"Demo really selects plan zero and resumes production");
+    Console.WriteLine($"factory-plan-after={line.SelectedPlan} manufacturing={line.Manufacturing}");
+   }
+  }
   base.Draw(t);var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);texture.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"demo-office-{frame}.png"));texture.SaveAsPng(file,texture.Width,texture.Height);
-  if(frame++==10){Console.WriteLine("PASS: Demo office, animated close, transport primary, my-country movement, human/computer count, click bounds and actual rendering.");Exit();}
+  if(frame++==34){Console.WriteLine("PASS: Demo factory current-rectangle opening and real plan selection across six plans at1080p/540p; Demo office, animated close, transport primary, my-country movement, human/computer count, click bounds and actual rendering.");Exit();}
  }
 }

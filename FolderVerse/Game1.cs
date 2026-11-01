@@ -349,7 +349,7 @@ public partial class Game1 : Game
             if(click && CastBack.Contains(_pointer)){_setup.HumanPlayers.Clear();_screen=Screen.Ready;_hoveredSlot=-1;_world.HighlightOwner(_setup,-1);}
             else if(click && _screen==Screen.PlayerReady && CastRetry.Contains(_pointer)){_screen=Screen.PlayerSelect;}
             else if(_screen==Screen.PlayerReady && ((click && StatusProceed.Contains(_pointer)) || enter)){ConfirmHumanSelection();}
-            else if(click && _hoveredSlot>=0 && !_setup.HumanPlayers.Contains(_hoveredSlot)){_setup.SelectPlayer(_hoveredSlot);_screen=Screen.PlayerReady;_hoveredSlot=-1;}
+            else if(click && _hoveredSlot>=0 && !_setup.HumanPlayers.Contains(_hoveredSlot))TrySelectPlayer(_pointer);
             if(IsSelectionScreen)
             {
                 Rotate(mouse,click,active,SelectionGlobe);
@@ -487,6 +487,12 @@ public partial class Game1 : Game
         }
         foreach(var tile in _selectionTiles)if(tile.Slot>=0 && tile.Bounds.Contains(point))return tile.Slot;
         return -1;
+    }
+    private bool TrySelectPlayer(Point pointer)
+    {
+        int slot=HitSelection(pointer);
+        if(slot<0 || _setup.HumanPlayers.Contains(slot))return false;
+        _setup.SelectPlayer(slot);_screen=Screen.PlayerReady;_hoveredSlot=-1;return true;
     }
     private void DrawSelectionTile(CharacterTile tile,bool floating)
     {
