@@ -1057,15 +1057,50 @@
       "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-8e074da4-9f46-48a8-a5f3-218913dc0e1d.png",
       "Tool": "builtin image_gen",
       "Sha256": "1aa131f7edbd878f71d8e16c6c7b6b43466512195da24363da19927e2c014139",
+      "Status": "EYE_AND_PROPORTION_REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "Width": 1448,
+      "Height": 1086,
+      "VisualReview": "2026-11-01 19:09 JST 全身/眼部/256x192直接目視。本人特徴/全身余白保持。笠除外の頭身は頭部が大きく短縮しすぎのため中間調整、左下黄色/上右大白丸なしで瞳未達。縮小は顔/竹筒識別可。未採用。",
+      "EyePreview": "normal-5-v003-eyes.png",
+      "Preview": {
+        "Path": "normal-5-v003-preview.png",
+        "Crop": {
+          "X": 460,
+          "Y": 20,
+          "Width": 600,
+          "Height": 450
+        },
+        "Width": 256,
+        "Height": 192
+      }
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Version": "v004",
+      "File": "character-53-normal-5-v004-generated.png",
+      "Prompt": "normal-5-v004-prompt.txt",
+      "References": [
+        {
+          "File": "character-53-normal-5-v003-generated.png",
+          "Role": "本人保持/体格中間調整/瞳修正",
+          "Sha256": "1aa131f7edbd878f71d8e16c6c7b6b43466512195da24363da19927e2c014139"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-d7c55d4d-75cb-429a-ab2a-add8cf6aa30c.png",
+      "Tool": "builtin image_gen",
+      "Sha256": "bf0ac104b38344d3295740cd41bb2efa6a8c79a9263543d52ebabf8f9f2bf930",
       "Status": "VISUAL_REVIEW_REQUIRED",
       "Selected": false,
       "GameAdopted": false,
       "Width": 1448,
       "Height": 1086,
-      "VisualReview": "2026-11-01 18:39 JST 全身直接目視。実頭部拡大/胴脚短縮が反映、本人笠/両眼鏡/黒手袋竹筒/衣装/髪/全身余白保持。頭身の最終推定/瞳拡大/256x192未確認につき未選択・未採用。"
+      "VisualReview": "2026-11-01 19:09 JST 全身直接目視。v003より頭部比率を抑え胴脚長を中間へ調整。本人笠/両眼鏡/竹筒/黒手袋/衣装/全身余白保持。頭身最終推定/眼部拡大/縮小は未確認、未選択・未採用。"
     }
   ],
-  "Next": "通常5v003は実頭部拡大/胴脚短縮反映。帽子を除く実頭部と足底で頭身推定、瞳拡大/256x192確認。通常6/新聞8未着手、ゲーム0/20。",
+  "Next": "通常5v004全身/体格/瞳/縮小直接目視。通常6/新聞8未着手、ゲーム0/20。",
   "DetailStudies": [
     {
       "Id": 2,

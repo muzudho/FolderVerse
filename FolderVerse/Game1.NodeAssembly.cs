@@ -174,14 +174,17 @@ public partial class Game1
                     if(occupant==null || (occupant.Parts&part)==0)_ui.Center("＋",bounds,.35f,Cream*.65f);
                 }
             }
-            var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);foreach(var order in _setup.Robots.DirectDelivery.Orders.Where(o=>o.Target==_populationNode && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot)))
+            var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);var incoming=_setup.Robots.DirectDelivery.Orders.Where(o=>o.Target==_populationNode && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot)).ToArray();foreach(var order in incoming)
             {
                 var original=_setup.Robots.Nodes[order.Source].Robots.FirstOrDefault(r=>r.Id==order.RobotId);
                 if(original!=null)DrawRobotGlyph(HangarRobotBounds(slot),original.Slice(order.Part),whiteOutline:true,opacity:.5f);
                 _ui.Center("到着予定："+PartsLabel(order.Part),new(cell.X,cell.Y+148,cell.Width,22),.27f,Cream);
             }
-            if(robot==null)continue;robot=HomePersuasionRobot(robot);
+            // Draw opaque labels after every glyph, including disabled/occupied slots.
+            if(robot==null){DrawHangarDeliveryTags(slot,incoming);continue;}
+            robot=HomePersuasionRobot(robot);
             DrawRobotGlyph(HangarRobotBounds(slot),robot,whiteOutline:true,partOpacity:part=>reservationMode?(canReserve?1:.45f):HangarPlaceEnabled(occupant,part)?1:.22f);
+            DrawHangarDeliveryTags(slot,incoming);
             for(int row=0;!reservationMode && row<3;row++)
             {
                 var bounds=HangarPartBounds(slot,row);var part=HangarPart(row);
@@ -226,6 +229,20 @@ public partial class Game1
         {
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarDrag);if(robot!=null)
             {DrawHangarDrag(robot);}
+        }
+    }
+    private void DrawHangarDeliveryTags(int slot,DirectPartOrder[] orders)
+    {
+        for(int row=0;row<3;row++){
+            if(!orders.Any(o=>(o.Part&HangarPart(row))!=0))continue;
+            var part=HangarPartBounds(slot,row);
+            var tag=new Rectangle(part.Right+8,part.Y+7,46,23);
+            var ink=new Color(54,38,20);var paper=new Color(255,221,139);
+            _ui.Box(new(part.Right-4,tag.Y+10,13,2),paper);
+            _ui.Box(new(tag.X-1,tag.Y-1,tag.Width+2,tag.Height+2),ink);
+            _ui.Box(tag,paper);
+            _ui.Box(new(tag.X+3,tag.Y+9,3,3),ink);
+            _ui.Center("予約",new(tag.X+7,tag.Y,tag.Width-7,tag.Height),.25f,ink);
         }
     }
     private void DrawHangarDrag(Robot robot)

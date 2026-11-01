@@ -267,16 +267,24 @@ public partial class Game1
                 var color=patch.Ink switch{0=>_setup.OwnerColor(unit.Owner),1=>new Color(255,222,180),2=>new Color(19,25,34),3=>new Color(255,224,115),4=>new Color(116,62,38),_=>new Color(249,135,149)};
                 var area=new Rectangle(r.X+b.X*r.Width/32,r.Y+b.Y*r.Height/48,Math.Max(1,b.Width*r.Width/32),Math.Max(1,b.Height*r.Height/48));
                 var part=b.Y<26?RobotParts.Head:b.Y<37?RobotParts.Body:RobotParts.Legs;
+                int partTop=part==RobotParts.Head?0:part==RobotParts.Body?26:37,partBottom=part==RobotParts.Head?26:part==RobotParts.Body?37:48;
+                var damageArea=new Rectangle(r.X,r.Y+partTop*r.Height/48,r.Width,Math.Max(1,(partBottom-partTop)*r.Height/48));
                 if(physical!=null && patch.Ink==0)
                 {
-                    color=physical.IsDamaged(part)?new Color(136,137,127):_setup.OwnerColor(physical.Origin(part));
+                    color=_setup.OwnerColor(physical.Origin(part));
                     if(physical.IsCheap(part))
                     {
-                        for(int row=0;row<area.Height;row++)_ui.Box(new(area.X,area.Y+row,area.Width,1),((area.Y+row)%6<3?color:physical.IsDamaged(part)?new Color(165,162,146):Cream)*pieceOpacity);
+                        for(int row=0;row<area.Height;row++){
+                            var stripe=new Rectangle(area.X,area.Y+row,area.Width,1);
+                            var ink=(area.Y+row)%6<3?color:Cream;
+                            if(physical.IsDamaged(part))RobotDamageArt.Draw(_ui,stripe,damageArea,ink,pieceOpacity);
+                            else _ui.Box(stripe,ink*pieceOpacity);
+                        }
                         continue;
                     }
                 }
-                _ui.Box(area,color*pieceOpacity);
+                if(physical!=null && patch.Ink==0 && physical.IsDamaged(part))RobotDamageArt.Draw(_ui,area,damageArea,color,pieceOpacity);
+                else _ui.Box(area,color*pieceOpacity);
             }
             if(physical?.ShoeOwner>=0)RobotWorkArt.DrawShoes(_ui,r,_setup.OwnerColor(physical.ShoeOwner),pieceOpacity);
             if(unit.Role==BattleRole.Queen)
