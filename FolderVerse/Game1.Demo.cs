@@ -93,6 +93,13 @@ public partial class Game1
         if(_screen is Screen.Rolling or Screen.Review)aim=new((_screen==Screen.Review && _demoWorldRoll<3?RetryButton:ActionButton).Center.X,(_screen==Screen.Review && _demoWorldRoll<3?RetryButton:ActionButton).Center.Y);
         else if(_screen is Screen.CastRolling or Screen.CastReview)aim=new((_screen==Screen.CastReview && _demoCastRoll<3?CastRetry:CastAction).Center.X,(_screen==Screen.CastReview && _demoCastRoll<3?CastRetry:CastAction).Center.Y);
         else if(_screen is Screen.PlayerCount or Screen.ComputerPlayerCount)aim=new(PlayerCountConfirm.Center.X,PlayerCountConfirm.Center.Y);
+        else if(_screen is Screen.PlacementRolling or Screen.PlacementReview)aim=CastAction.Center.ToVector2();
+        else if(_screen==Screen.PlayerReady)aim=StatusProceed.Center.ToVector2();
+        else if(_screen==Screen.PlayerSelect){
+            var tile=_selectionTiles.Where(t=>t.Slot>=0 && !_setup.HumanPlayers.Contains(t.Slot)).OrderBy(t=>t.Slot).Select(t=>t.Bounds).FirstOrDefault();
+            if(tile==Rectangle.Empty)return true;
+            aim=tile.Center.ToVector2();
+        }
         if(_demoSwing<=0)_demoCursor=Vector2.Lerp(_demoCursor,aim,1-MathF.Exp(-(float)elapsed*2));
         if(_screen==Screen.Transport){UpdateTransport(elapsed,false,now);_demoStepAge=0;return true;}
         if(_screen==Screen.Battle)
@@ -103,6 +110,9 @@ public partial class Game1
         }
         if(_demoStepAge<3)return true;
         _demoStepAge=0;
+        if(_screen is Screen.PlacementRolling or Screen.PlacementReview or Screen.PlayerSelect or Screen.PlayerReady){
+            _demoCursor=aim;_pointer=aim.ToPoint();_ui.Pointer=_pointer;
+        }
         StartDemoClick();
         switch(_screen)
         {
@@ -116,10 +126,10 @@ public partial class Game1
             case Screen.Review:if(_demoWorldRoll<3)BeginRolling();else BeginCast();break;
             case Screen.CastRolling:_demoCastRoll++;_screen=Screen.CastReview;break;
             case Screen.CastReview:if(_demoCastRoll<3)BeginCast();else BeginPlacement();break;
-            case Screen.PlacementRolling:_screen=Screen.PlacementReview;break;
-            case Screen.PlacementReview:BeginSelection();break;
-            case Screen.PlayerSelect:_setup.SelectPlayer(0);_screen=Screen.PlayerReady;break;
-            case Screen.PlayerReady:ConfirmHumanSelection();break;
+            case Screen.PlacementRolling:if(CastAction.Contains(_pointer))_screen=Screen.PlacementReview;break;
+            case Screen.PlacementReview:if(CastAction.Contains(_pointer))BeginSelection();break;
+            case Screen.PlayerSelect:TrySelectPlayer(_pointer);break;
+            case Screen.PlayerReady:if(StatusProceed.Contains(_pointer))ConfirmHumanSelection();break;
             case Screen.WorldStatus:
                 _demoMapVisits++;_demoMapStage=0;_demoMapAge=0;
                 var home=_setup.Nodes.Current(_setup.PlayerSlot);
