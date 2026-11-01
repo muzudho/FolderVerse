@@ -181,10 +181,10 @@ public partial class Game1
                 _ui.Center("到着予定："+PartsLabel(order.Part),new(cell.X,cell.Y+148,cell.Width,22),.27f,Cream);
             }
             // Draw opaque labels after every glyph, including disabled/occupied slots.
-            if(robot==null){DrawHangarDeliveryTags(slot,incoming);continue;}
+            if(robot==null){DrawHangarDeliveryTags(slot,incoming,occupant);continue;}
             robot=HomePersuasionRobot(robot);
             DrawRobotGlyph(HangarRobotBounds(slot),robot,whiteOutline:true,partOpacity:part=>reservationMode?(canReserve?1:.45f):HangarPlaceEnabled(occupant,part)?1:.22f);
-            DrawHangarDeliveryTags(slot,incoming);
+            DrawHangarDeliveryTags(slot,incoming,occupant);
             for(int row=0;!reservationMode && row<3;row++)
             {
                 var bounds=HangarPartBounds(slot,row);var part=HangarPart(row);
@@ -231,19 +231,25 @@ public partial class Game1
             {DrawHangarDrag(robot);}
         }
     }
-    private void DrawHangarDeliveryTags(int slot,DirectPartOrder[] orders)
+    private void DrawHangarDeliveryTags(int slot,DirectPartOrder[] orders,Robot robot)
     {
         for(int row=0;row<3;row++){
-            if(!orders.Any(o=>(o.Part&HangarPart(row))!=0))continue;
+            bool incoming=orders.Any(o=>(o.Part&HangarPart(row))!=0);
+            bool outgoing=robot!=null && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Source==_populationNode && o.RobotId==robot.Id && (o.Part&HangarPart(row))!=0);
             var part=HangarPartBounds(slot,row);
-            var tag=new Rectangle(part.Right+8,part.Y+7,46,23);
+            if(incoming)DrawHangarDeliveryTag(part,"予約");
+            if(outgoing)DrawHangarDeliveryTag(part,"直送",incoming);
+        }
+    }
+    private void DrawHangarDeliveryTag(Rectangle part,string label,bool left=false,int gap=8)
+    {
+            var tag=new Rectangle(left?part.Left-gap-46:part.Right+gap,part.Y+7,46,23);
             var ink=new Color(54,38,20);var paper=new Color(255,221,139);
-            _ui.Box(new(part.Right-4,tag.Y+10,13,2),paper);
+            _ui.Box(new(left?tag.Right:part.Right-4,tag.Y+10,gap+5,2),paper);
             _ui.Box(new(tag.X-1,tag.Y-1,tag.Width+2,tag.Height+2),ink);
             _ui.Box(tag,paper);
             _ui.Box(new(tag.X+3,tag.Y+9,3,3),ink);
-            _ui.Center("予約",new(tag.X+7,tag.Y,tag.Width-7,tag.Height),.25f,ink);
-        }
+            _ui.Center(label,new(tag.X+7,tag.Y,tag.Width-7,tag.Height),.25f,ink);
     }
     private void DrawHangarDrag(Robot robot)
     {

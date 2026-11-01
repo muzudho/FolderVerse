@@ -128,14 +128,19 @@ public partial class Game1
                 _ui.Box(cell,cellHover?new Color(46,73,87):new Color(18,35,46));
                 for(int row=0;row<3;row++){
                     var part=HangarPart(row);var bounds=DirectPart(side,slot,row);_ui.Box(bounds,(hover!=0 && ((robot?.ConnectedParts(hover)??hover)&part)!=0)?new Color(88,125,141):new Color(40,63,76));
-                    if(robot!=null && (robot.Parts&part)!=0 && (_setup.Robots.DirectDelivery.LockedParts(node,robot.Id)&part)!=0)_ui.Text("予約",new(cell.X+120,bounds.Y+8),.25f,color);
-                    if(_setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==node && (o.Part&part)!=0 && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot)))_ui.Text("予定",new(cell.X+120,bounds.Y+8),.25f,Cream);
                 }
                 var joinedGlyph=new Rectangle(cell.X+48,cell.Y+8,68,102);
                 if(robot!=null)DrawRobotGlyph(joinedGlyph,robot,whiteOutline:true,partOpacity:part=>(_setup.Robots.DirectDelivery.LockedParts(node,robot.Id)&part)!=0?.35f:1);
                 foreach(var order in _setup.Robots.DirectDelivery.Orders.Where(o=>o.Target==node && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot))){
                     var original=_setup.Robots.Nodes[order.Source].Robots.FirstOrDefault(r=>r.Id==order.RobotId);
                     if(original!=null)DrawRobotGlyph(joinedGlyph,original with {Parts=order.Part,IntegratedParts=original.IntegratedParts&order.Part},whiteOutline:true,opacity:.5f);
+                }
+                for(int row=0;row<3;row++){
+                    var part=HangarPart(row);var bounds=DirectPart(side,slot,row);
+                    bool incoming=_setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==node && (o.Part&part)!=0 && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot));
+                    bool outgoing=robot!=null && (_setup.Robots.DirectDelivery.LockedParts(node,robot.Id)&part)!=0;
+                    if(incoming)DrawHangarDeliveryTag(bounds,"予約",gap:2);
+                    if(outgoing)DrawHangarDeliveryTag(bounds,"直送",incoming,gap:2);
                 }
                 if(robot!=null){if(robot.IntegratedParts!=0 && !robot.Stationed && !robot.Disposal)_ui.Center(IntegratedLabel(robot.IntegratedParts),new(cell.X,cell.Y+135,cell.Width,18),.24f,Cream);_ui.Center("ID "+robot.Id,new(cell.X,cell.Y+111,cell.Width,24),.32f,Cream);if(robot.Stationed || robot.Disposal)_ui.Center(robot.FactoryWorker?"工場作業員":robot.InterceptOnly?"迎撃専用":robot.DefenseOnly?"守備専用":"廃棄予約",new(cell.X,cell.Y+135,cell.Width,18),.24f,color);}
             }
