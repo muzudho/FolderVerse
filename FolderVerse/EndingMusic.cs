@@ -40,7 +40,7 @@ public sealed class EndingMusic:IDisposable
     private readonly EndingMusicScore _score=new();
     public void Update(bool active)
     {
-        if(!active){if(_stream.State==SoundState.Playing)_stream.Pause();return;}
+        // The ending timer continues in the background, so its score must continue too.
         _stream.Volume=.45f;
         while(_stream.PendingBufferCount<3)_stream.SubmitBuffer(_score.Render());
         if(_stream.State==SoundState.Paused)_stream.Resume();else if(_stream.State!=SoundState.Playing)_stream.Play();
