@@ -1170,10 +1170,46 @@
       "Status": "VISUAL_REVIEW_REQUIRED",
       "Selected": false,
       "GameAdopted": false,
-      "VisualReview": "未目視。利用者の開戦予約UI改修依頼へ移るため、原画保存して次回確認。"
+      "VisualReview": "2026-11-01 20:39 JST 全身/眼部直接目視。実頭部を笠下頭蓋上端約y100〜顎y265、身体足底約y1000と推定し約5.45頭身、5.5目安に近い。短い首/手足/本人意匠/全身余白保持。瞳は主白点位置/左下黄光が未達のため未採用。",
+      "EyePreview": "normal-5-v006-eyes.png"
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Version": "v007",
+      "File": "character-53-normal-5-v007-generated.png",
+      "Prompt": "normal-5-v007-prompt.txt",
+      "References": [
+        {
+          "File": "character-53-normal-5-v006-generated.png",
+          "Role": "本人意匠/体格/構図保持・瞳のみ編集対象",
+          "Sha256": "7912ef896e1eaea363625d0df5011d4beaf16f3ec0e9426ad4c425d04d370a19"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-9911733b-3cc0-4717-a0cf-10f2976f66d0.png",
+      "Tool": "builtin image_gen",
+      "Sha256": "76a24cdd532848b7bb20c9b5030fe121dba327d30c3536d823919b5b6197d582",
+      "Status": "REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "Width": 1448,
+      "Height": 1086,
+      "EyePreview": "normal-5-v007-eyes.png",
+      "Preview": {
+        "Path": "normal-5-v007-preview.png",
+        "Crop": {
+          "X": 470,
+          "Y": 20,
+          "Width": 570,
+          "Height": 427
+        },
+        "Width": 256,
+        "Height": 192
+      },
+      "VisualReview": "2026-11-01 20:39 JST 全身/眼部/256x192直接目視。v006体格と本人笠/両眼鏡/黒手袋竹筒/長髪/旅衣/両靴/裾余白保持。頭身推定はv006同程度。瞳修正効果が弱く、上右大白丸接続/左下中白丸を確認できず黄色反射が残る。未選択・未採用。"
     }
   ],
-  "Next": "通常5v006全身/頭身/瞳/縮小直接目視。通常6/新聞8未着手、ゲーム0/20。",
+  "Next": "通常5v007の体格保持で瞳修正。全身編集では効果弱く、眼部拡大と既存白丸試作を参照して反映を検討。通常6/新聞8未着手、ゲーム0/20。",
   "DetailStudies": [
     {
       "Id": 2,
