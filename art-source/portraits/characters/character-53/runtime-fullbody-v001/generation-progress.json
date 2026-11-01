@@ -1341,6 +1341,27 @@
       "Height": 1001,
       "Scope": "通常5眼部だけの試作。全身へ未反映・採用不可。",
       "VisualReview": "2026-11-01 21:09 JST 直接目視。両眼上右大白丸の虹彩輪郭接続、左下中白丸の内側配置、二つの丸眼鏡を確認。元の半開き眼より開口が大きくなっており、その目の形は全身へ転用しない。白丸配置のみ参考とし、元の開口/体格保持で全身へ反映する必要あり。"
+    },
+    {
+      "Id": 5,
+      "Kind": "eye-detail-study",
+      "Version": "v011",
+      "File": "normal-5-eye-study-v011-generated.png",
+      "Prompt": "normal-5-eye-study-v011-prompt.txt",
+      "References": [
+        {
+          "File": "normal-5-v010-eyes.png",
+          "Role": "半開き眼の編集対象",
+          "Sha256": "730f915b797ce17bd7513d448d78960d9b36b57d3f4ee05d950cc2346fc4c2a1"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-9a2d0582-cbc2-4caa-a7f3-134059b21237.png",
+      "Tool": "builtin image_gen",
+      "Sha256": "169cfa701b7804f68e27c2454f3160dcc31fe3a0dbc5408f156ec9cc7121e073",
+      "Selected": false,
+      "GameAdopted": false,
+      "Status": "EYE_SHAPE_REVISION_REQUIRED",
+      "VisualReview": "2026-11-01 22:10 JST 眼部試作v011直接目視。両眼上右大白丸接続/左下中白丸の虹彩内配置を確認。原画より開口が大きくなり半開き眼の保持は不十分。全身原画未反映、未選択・ゲーム未採用。"
     }
   ]
 }

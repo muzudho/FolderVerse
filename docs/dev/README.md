@@ -23,6 +23,7 @@ dotnet run --project FolderVerse/FolderVerse.csproj
 - [実装と検証の記録](実装と検証.md)：IME、画像、クロップ、ロゴ。
 - [ゲームの仕組み](../ref/ゲームの仕組み.md)：ルールと表示仕様。
 - [実装計画](plan/)・[開発日誌](log/2026/10.md)
+- [2026年11月の開発日誌](log/2026/11.md)
 - [続きはここから](../続きはここから.md)：次回の起点。
 
 ```powershell
