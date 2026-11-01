@@ -1,0 +1,406 @@
+{
+  "CharacterId": 52,
+  "Status": "APPLIED_BUILD_PENDING",
+  "Images": [
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Version": "v005",
+      "File": "staged-runtime-v001/v3-standardized/tiles/character-52-1.png",
+      "Target": "FolderVerse/Content/Images/Portraits/v3-standardized/tiles/character-52-1.png",
+      "Master": "character-52-normal-1-v005-generated.png",
+      "MasterSha256": "c57b5e2e6e7ae07d191c09de9bb383c965c7193694904ff2da679fd39574e1cc",
+      "Prompt": "normal-1-v005-prompt.txt",
+      "Crop": {
+        "X": 240,
+        "Y": 100,
+        "Width": 640,
+        "Height": 480
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "097234d8c433c50e4b3c70dcbed9b0fa3da145e1b657ebb6bcb535136dc8b74e",
+      "GameAdopted": true
+    },
+    {
+      "Id": 1,
+      "Kind": "normal",
+      "Version": "v005",
+      "File": "staged-runtime-v001/conqueror-creation/tiles/character-52-1.png",
+      "Target": "FolderVerse/Content/Images/Portraits/conqueror-creation/tiles/character-52-1.png",
+      "Master": "character-52-normal-1-v005-generated.png",
+      "MasterSha256": "c57b5e2e6e7ae07d191c09de9bb383c965c7193694904ff2da679fd39574e1cc",
+      "Prompt": "normal-1-v005-prompt.txt",
+      "Crop": {
+        "X": 240,
+        "Y": 100,
+        "Width": 640,
+        "Height": 480
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "097234d8c433c50e4b3c70dcbed9b0fa3da145e1b657ebb6bcb535136dc8b74e",
+      "GameAdopted": true
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Version": "v011",
+      "File": "staged-runtime-v001/v3-standardized/tiles/character-52-2.png",
+      "Target": "FolderVerse/Content/Images/Portraits/v3-standardized/tiles/character-52-2.png",
+      "Master": "character-52-normal-2-v011-generated.png",
+      "MasterSha256": "bd561654cc2b0f8f7fb5a47991e1345076f9e6089569fc7b2ab4df605ea39698",
+      "Prompt": "normal-2-v011-prompt.txt",
+      "Crop": {
+        "X": 350,
+        "Y": 90,
+        "Width": 660,
+        "Height": 495
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "7dc065567d3e0fd15cd6d96502b9e0375d7c9fdf391ae6bc12d917a3dcc15c76",
+      "GameAdopted": true
+    },
+    {
+      "Id": 2,
+      "Kind": "normal",
+      "Version": "v011",
+      "File": "staged-runtime-v001/conqueror-creation/tiles/character-52-2.png",
+      "Target": "FolderVerse/Content/Images/Portraits/conqueror-creation/tiles/character-52-2.png",
+      "Master": "character-52-normal-2-v011-generated.png",
+      "MasterSha256": "bd561654cc2b0f8f7fb5a47991e1345076f9e6089569fc7b2ab4df605ea39698",
+      "Prompt": "normal-2-v011-prompt.txt",
+      "Crop": {
+        "X": 350,
+        "Y": 90,
+        "Width": 660,
+        "Height": 495
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "7dc065567d3e0fd15cd6d96502b9e0375d7c9fdf391ae6bc12d917a3dcc15c76",
+      "GameAdopted": true
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Version": "v005",
+      "File": "staged-runtime-v001/v3-standardized/tiles/character-52-3.png",
+      "Target": "FolderVerse/Content/Images/Portraits/v3-standardized/tiles/character-52-3.png",
+      "Master": "character-52-normal-3-v005-generated.png",
+      "MasterSha256": "cc29f27980e4b8795e3279f1a466193b93eb3f29f5d8024823c30d2859a1c0db",
+      "Prompt": "normal-3-v005-prompt.txt",
+      "Crop": {
+        "X": 580,
+        "Y": 90,
+        "Width": 700,
+        "Height": 525
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "7d472e06155ea33421d41da394d77aed0758cfa892fb687c5add6e2c18e17aa2",
+      "GameAdopted": true
+    },
+    {
+      "Id": 3,
+      "Kind": "normal",
+      "Version": "v005",
+      "File": "staged-runtime-v001/conqueror-creation/tiles/character-52-3.png",
+      "Target": "FolderVerse/Content/Images/Portraits/conqueror-creation/tiles/character-52-3.png",
+      "Master": "character-52-normal-3-v005-generated.png",
+      "MasterSha256": "cc29f27980e4b8795e3279f1a466193b93eb3f29f5d8024823c30d2859a1c0db",
+      "Prompt": "normal-3-v005-prompt.txt",
+      "Crop": {
+        "X": 580,
+        "Y": 90,
+        "Width": 700,
+        "Height": 525
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "7d472e06155ea33421d41da394d77aed0758cfa892fb687c5add6e2c18e17aa2",
+      "GameAdopted": true
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v014",
+      "File": "staged-runtime-v001/v3-standardized/tiles/character-52-4.png",
+      "Target": "FolderVerse/Content/Images/Portraits/v3-standardized/tiles/character-52-4.png",
+      "Master": "character-52-normal-4-v014-generated.png",
+      "MasterSha256": "30686386e74339f59649102efb20e3054d5d621d859f317deb3de64d6732939d",
+      "Prompt": "normal-4-v014-prompt.txt",
+      "Crop": {
+        "X": 0,
+        "Y": 100,
+        "Width": 1024,
+        "Height": 768
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "bc0f3686c03d1d2e62196c77cf3ae8833c03bda028dc6276af22a32398b545a1",
+      "GameAdopted": true
+    },
+    {
+      "Id": 4,
+      "Kind": "normal",
+      "Version": "v014",
+      "File": "staged-runtime-v001/conqueror-creation/tiles/character-52-4.png",
+      "Target": "FolderVerse/Content/Images/Portraits/conqueror-creation/tiles/character-52-4.png",
+      "Master": "character-52-normal-4-v014-generated.png",
+      "MasterSha256": "30686386e74339f59649102efb20e3054d5d621d859f317deb3de64d6732939d",
+      "Prompt": "normal-4-v014-prompt.txt",
+      "Crop": {
+        "X": 0,
+        "Y": 100,
+        "Width": 1024,
+        "Height": 768
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "bc0f3686c03d1d2e62196c77cf3ae8833c03bda028dc6276af22a32398b545a1",
+      "GameAdopted": true
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Version": "v001",
+      "File": "staged-runtime-v001/v3-standardized/tiles/character-52-5.png",
+      "Target": "FolderVerse/Content/Images/Portraits/v3-standardized/tiles/character-52-5.png",
+      "Master": "character-52-normal-5-v001-generated.png",
+      "MasterSha256": "060e29f483c21a34d0057419d518ecd00afb31c6d529c45fd63f8eb9cd0d3666",
+      "Prompt": "normal-5-v001-prompt.txt",
+      "Crop": {
+        "X": 140,
+        "Y": 0,
+        "Width": 800,
+        "Height": 600
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "857bd52a4bc7722cf9ffef1cf957c09c50d4ed27d0c24479be0d79da25d4d85a",
+      "GameAdopted": true
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Version": "v001",
+      "File": "staged-runtime-v001/conqueror-creation/tiles/character-52-5.png",
+      "Target": "FolderVerse/Content/Images/Portraits/conqueror-creation/tiles/character-52-5.png",
+      "Master": "character-52-normal-5-v001-generated.png",
+      "MasterSha256": "060e29f483c21a34d0057419d518ecd00afb31c6d529c45fd63f8eb9cd0d3666",
+      "Prompt": "normal-5-v001-prompt.txt",
+      "Crop": {
+        "X": 140,
+        "Y": 0,
+        "Width": 800,
+        "Height": 600
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "857bd52a4bc7722cf9ffef1cf957c09c50d4ed27d0c24479be0d79da25d4d85a",
+      "GameAdopted": true
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Version": "v008",
+      "File": "staged-runtime-v001/v3-standardized/tiles/character-52-6.png",
+      "Target": "FolderVerse/Content/Images/Portraits/v3-standardized/tiles/character-52-6.png",
+      "Master": "character-52-normal-6-v008-generated.png",
+      "MasterSha256": "549d258d65d0ed586e475dffc6e182eb82b209dff2e7ad8e6aaf89eb2df3fda3",
+      "Prompt": "normal-6-v008-prompt.txt",
+      "Crop": {
+        "X": 150,
+        "Y": 20,
+        "Width": 800,
+        "Height": 600
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "c84dde66558a0eaf9d2cbf8825abc8c505541f4f51660f9d549fe75c6506100d",
+      "GameAdopted": true
+    },
+    {
+      "Id": 6,
+      "Kind": "normal",
+      "Version": "v008",
+      "File": "staged-runtime-v001/conqueror-creation/tiles/character-52-6.png",
+      "Target": "FolderVerse/Content/Images/Portraits/conqueror-creation/tiles/character-52-6.png",
+      "Master": "character-52-normal-6-v008-generated.png",
+      "MasterSha256": "549d258d65d0ed586e475dffc6e182eb82b209dff2e7ad8e6aaf89eb2df3fda3",
+      "Prompt": "normal-6-v008-prompt.txt",
+      "Crop": {
+        "X": 150,
+        "Y": 20,
+        "Width": 800,
+        "Height": 600
+      },
+      "Width": 256,
+      "Height": 192,
+      "Sha256": "c84dde66558a0eaf9d2cbf8825abc8c505541f4f51660f9d549fe75c6506100d",
+      "GameAdopted": true
+    },
+    {
+      "Id": "id",
+      "Kind": "newspaper",
+      "Version": "v009",
+      "File": "staged-runtime-v001/newspaper/character-52-id.png",
+      "Target": "FolderVerse/Content/Images/Portraits/newspaper/character-52-id.png",
+      "Master": "character-52-news-id-v009-generated.png",
+      "MasterSha256": "e24ad6c61f92da434fe13a8c9ce05ce80f34e09f55c649f3a871b32174d8722d",
+      "Prompt": "news-id-v009-prompt.txt",
+      "Crop": {
+        "X": 212,
+        "Y": 0,
+        "Width": 600,
+        "Height": 800
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "6e8fb4e4e13aa9abf28c0ad1a4e6045d20cc1abbc8e453ac606e137855302d3a",
+      "GameAdopted": true
+    },
+    {
+      "Id": "formal",
+      "Kind": "newspaper",
+      "Version": "v009",
+      "File": "staged-runtime-v001/newspaper/character-52-formal.png",
+      "Target": "FolderVerse/Content/Images/Portraits/newspaper/character-52-formal.png",
+      "Master": "character-52-news-formal-v009-generated.png",
+      "MasterSha256": "ee303238a1015f49cfcc7dcff2033c316d07a9ea8388998b72b90fea766eb0f1",
+      "Prompt": "news-formal-v009-prompt.txt",
+      "Crop": {
+        "X": 275,
+        "Y": 0,
+        "Width": 600,
+        "Height": 800
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "ae078316c3e8ebcfb69195e351d92840723d103eab7803bb42e7ee01630cbd8b",
+      "GameAdopted": true
+    },
+    {
+      "Id": "election",
+      "Kind": "newspaper",
+      "Version": "v004",
+      "File": "staged-runtime-v001/newspaper/character-52-election.png",
+      "Target": "FolderVerse/Content/Images/Portraits/newspaper/character-52-election.png",
+      "Master": "character-52-news-election-v004-generated.png",
+      "MasterSha256": "dcc720c69114382773f1a5b209b25685c524226c20e2473f37035526d5c30e41",
+      "Prompt": "news-election-v004-prompt.txt",
+      "Crop": {
+        "X": 250,
+        "Y": 0,
+        "Width": 600,
+        "Height": 800
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "6825a06421bc639e170af6cc522a707da9f373a419f70689fd34fe60803c5f7a",
+      "GameAdopted": true
+    },
+    {
+      "Id": "friends",
+      "Kind": "newspaper",
+      "Version": "v002",
+      "File": "staged-runtime-v001/newspaper/character-52-friends.png",
+      "Target": "FolderVerse/Content/Images/Portraits/newspaper/character-52-friends.png",
+      "Master": "character-52-news-friends-v002-generated.png",
+      "MasterSha256": "7355bd4a458773331d5743089fdb2ac14f9ce212b782810f6a9f6d044dda97f0",
+      "Prompt": "news-friends-v002-prompt.txt",
+      "Crop": {
+        "X": 250,
+        "Y": 0,
+        "Width": 600,
+        "Height": 800
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "8b9983ef6c879288ed3db388760048ab224660f03e855e4ee72c9a6d2ab1126d",
+      "GameAdopted": true
+    },
+    {
+      "Id": "history",
+      "Kind": "newspaper",
+      "Version": "v010",
+      "File": "staged-runtime-v001/newspaper/character-52-history.png",
+      "Target": "FolderVerse/Content/Images/Portraits/newspaper/character-52-history.png",
+      "Master": "character-52-news-history-v010-generated.png",
+      "MasterSha256": "1f5706899f2d76c8f6e8c6e2fc575311b7ba0023246b72caa84a8092c4f5c490",
+      "Prompt": "news-history-v010-prompt.txt",
+      "Crop": {
+        "X": 230,
+        "Y": 0,
+        "Width": 660,
+        "Height": 880
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "3061d070ad353f87fed517241643fccff0088c2e36c020750f9b3e33fa10ae23",
+      "GameAdopted": true
+    },
+    {
+      "Id": "coin",
+      "Kind": "newspaper",
+      "Version": "v020",
+      "File": "staged-runtime-v001/newspaper/character-52-coin.png",
+      "Target": "FolderVerse/Content/Images/Portraits/newspaper/character-52-coin.png",
+      "Master": "character-52-news-coin-v020-generated.png",
+      "MasterSha256": "b47bc29ad0a701f61ba90e3eceb6f02418e0fc50462a3522d4b7a27bfe645f7e",
+      "Prompt": "news-coin-v020-prompt.txt",
+      "Crop": {
+        "X": 290,
+        "Y": 0,
+        "Width": 570,
+        "Height": 760
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "10c912caf7ad650d73fd3957f40eb297876d1dec26ccc294e3808f672eec8130",
+      "GameAdopted": true
+    },
+    {
+      "Id": "idol",
+      "Kind": "newspaper",
+      "Version": "v005",
+      "File": "staged-runtime-v001/newspaper/character-52-idol.png",
+      "Target": "FolderVerse/Content/Images/Portraits/newspaper/character-52-idol.png",
+      "Master": "character-52-news-idol-v005-generated.png",
+      "MasterSha256": "aa4255dadc70557c2de49f9862d7193f70be71808bf75af9b72aac6aca24eadf",
+      "Prompt": "news-idol-v005-prompt.txt",
+      "Crop": {
+        "X": 220,
+        "Y": 80,
+        "Width": 660,
+        "Height": 880
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "ddd77236c60b053ad2f9fcad6ad8acf441a99f224bf6563be6982cf8847e8541",
+      "GameAdopted": true
+    },
+    {
+      "Id": "paparazzi",
+      "Kind": "newspaper",
+      "Version": "v006",
+      "File": "staged-runtime-v001/newspaper/character-52-paparazzi.png",
+      "Target": "FolderVerse/Content/Images/Portraits/newspaper/character-52-paparazzi.png",
+      "Master": "character-52-news-paparazzi-v006-generated.png",
+      "MasterSha256": "96dd62f2a5a8600c3c7628c964f9633a8b45da6a172ef6daa4ae5a522e7f4f64",
+      "Prompt": "news-paparazzi-v006-prompt.txt",
+      "Crop": {
+        "X": 250,
+        "Y": 0,
+        "Width": 600,
+        "Height": 800
+      },
+      "Width": 300,
+      "Height": 400,
+      "Sha256": "8c9e559545e69ecdbdd276c110fe19990aee61f8db4e776056cbf6b32a603103",
+      "GameAdopted": true
+    }
+  ]
+}

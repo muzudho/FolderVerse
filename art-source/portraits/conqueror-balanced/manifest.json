@@ -673,14 +673,12 @@
     {
       "CharacterId": 52,
       "Variant": 1,
-      "File": "character-52-1-balanced.png",
-      "Width": 1448,
-      "Height": 1086,
-      "Sha256": "DD2138260FC0B9FEEE91D5E829439D7F6F131B5B0FF8E25968E2F3E01223980A",
-      "OriginalFile": "../characters/character-52/character-52-1-v003-generated.png",
-      "OriginalSha256": "6F172470D240565269197055C449AFDE72F3F01973CB73EC31DAFE9A1C14C142",
+      "File": "character-52-1-fullbody-v001.png",
+      "Sha256": "c57b5e2e6e7ae07d191c09de9bb383c965c7193694904ff2da679fd39574e1cc",
+      "OriginalFile": "../characters/character-52/runtime-fullbody-v001/character-52-normal-1-v005-generated.png",
+      "OriginalSha256": "c57b5e2e6e7ae07d191c09de9bb383c965c7193694904ff2da679fd39574e1cc",
       "GameTile": "game-tiles/character-52-1.png",
-      "GameTileSha256": "1EFDF834864824110ED65A1E44F64490177AA59976273E80A6609BC0D964D690",
+      "GameTileSha256": "097234d8c433c50e4b3c70dcbed9b0fa3da145e1b657ebb6bcb535136dc8b74e",
       "Reviewed": true
     },
     {
