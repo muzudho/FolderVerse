@@ -48,6 +48,11 @@ public partial class Game1
         if(r.Contains(_pointer) && !_nodeInspectorClosing)color=Color.Lerp(color,Color.White,.15f);
         PrimaryRoundBox(r,color,6);DrawNodeCheckGlyph(r,selected?Color.White:new Color(172,192,181));
     }
+    private bool DrawFolderNodeCheck(int kind,int node,Rectangle bounds)
+    {
+        if(kind!=2 || !NodeChecked(node))return false;
+        PrimaryRoundBox(bounds,new Color(39,143,75),5);DrawNodeCheckGlyph(bounds,Color.White);return true;
+    }
     private void DrawNodeCheckMarkers(Rectangle panel,bool directPair=false)
     {
         _nodeCheckHits.Clear();EnsureNodeCheckContext();

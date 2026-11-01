@@ -1207,9 +1207,49 @@
         "Height": 192
       },
       "VisualReview": "2026-11-01 20:39 JST 全身/眼部/256x192直接目視。v006体格と本人笠/両眼鏡/黒手袋竹筒/長髪/旅衣/両靴/裾余白保持。頭身推定はv006同程度。瞳修正効果が弱く、上右大白丸接続/左下中白丸を確認できず黄色反射が残る。未選択・未採用。"
+    },
+    {
+      "Id": 5,
+      "Kind": "normal",
+      "Version": "v008",
+      "File": "character-53-normal-5-v008-generated.png",
+      "Prompt": "normal-5-v008-prompt.txt",
+      "References": [
+        {
+          "File": "character-53-normal-5-v007-generated.png",
+          "Role": "全身編集対象・本人意匠/体格/構図保持",
+          "Sha256": "76a24cdd532848b7bb20c9b5030fe121dba327d30c3536d823919b5b6197d582"
+        },
+        {
+          "File": "normal-2-eye-study-v008-generated.png",
+          "Role": "瞳白丸配置のみ参考",
+          "Sha256": "a65e08106ec597c4c95d4409639bad1589bceffb6e529ddf187eb5894df5d734"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-8dcfa80c-e915-44d8-89fd-5d2ef2413a95.png",
+      "Tool": "builtin image_gen",
+      "Sha256": "bd61dacbc40230a14d38b6cca1ae2a819a1f5a9db549861828408c20a981d591",
+      "Status": "REVISION_REQUIRED",
+      "Selected": false,
+      "GameAdopted": false,
+      "Width": 1448,
+      "Height": 1086,
+      "EyePreview": "normal-5-v008-eyes.png",
+      "Preview": {
+        "Path": "normal-5-v008-preview.png",
+        "Crop": {
+          "X": 470,
+          "Y": 20,
+          "Width": 570,
+          "Height": 427
+        },
+        "Width": 256,
+        "Height": 192
+      },
+      "VisualReview": "2026-11-01 21:09 JST 全身/眼部/256x192直接目視。本人意匠/全身余白/約5.5頭身体格保持。瞳は全身編集で修正効果弱く、上右大白丸/左下中白丸を確認できず黄色が残る。未採用。"
     }
   ],
-  "Next": "通常5v007の体格保持で瞳修正。全身編集では効果弱く、眼部拡大と既存白丸試作を参照して反映を検討。通常6/新聞8未着手、ゲーム0/20。",
+  "Next": "通常5v008全身へ眼部試作v009の白丸配置のみ反映。元の半開き眼/両眼鏡/体格保持を再確認。通常6/新聞8未着手、ゲーム0/20。",
   "DetailStudies": [
     {
       "Id": 2,
@@ -1232,6 +1272,35 @@
       "GameAdopted": false,
       "Scope": "眼部のみの修正試作。全身原画ではない。採用不可。",
       "VisualReview": "2026-11-01 09:09 JST 眼部試作直接目視。両眼左下中白丸を確認、周囲緑輪郭保持。半開き眼と片眼鏡、上右大白丸接続保持。眼部拡大試作だけであり全身への反映は未実施。"
+    },
+    {
+      "Id": 5,
+      "Kind": "eye-detail-study",
+      "Version": "v009",
+      "File": "normal-5-eye-study-v009-generated.png",
+      "Prompt": "normal-5-eye-study-v009-prompt.txt",
+      "References": [
+        {
+          "File": "normal-5-v008-eyes.png",
+          "Role": "眼部編集対象",
+          "Sha256": "c77fb288ed8033b0aff9131b6d7456b24ac34c3190f0e44cc270ae6f3f8341f0"
+        },
+        {
+          "File": "normal-2-eye-study-v008-generated.png",
+          "Role": "瞳白丸配置のみ参考",
+          "Sha256": "a65e08106ec597c4c95d4409639bad1589bceffb6e529ddf187eb5894df5d734"
+        }
+      ],
+      "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-9b4bd604-7188-4a30-9010-fac552c9e535.png",
+      "Tool": "builtin image_gen",
+      "Sha256": "f42409fb5aae365b0696a9a774e7edf35447cc1d5da596fc8b865bf0f6b7b0c3",
+      "Status": "DETAIL_REVIEWED_PENDING_FULLBODY_TRANSFER",
+      "Selected": false,
+      "GameAdopted": false,
+      "Width": 1572,
+      "Height": 1001,
+      "Scope": "通常5眼部だけの試作。全身へ未反映・採用不可。",
+      "VisualReview": "2026-11-01 21:09 JST 直接目視。両眼上右大白丸の虹彩輪郭接続、左下中白丸の内側配置、二つの丸眼鏡を確認。元の半開き眼より開口が大きくなっており、その目の形は全身へ転用しない。白丸配置のみ参考とし、元の開口/体格保持で全身へ反映する必要あり。"
     }
   ]
 }

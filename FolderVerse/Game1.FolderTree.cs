@@ -147,7 +147,8 @@ public partial class Game1
                 if(row.Depth>0){_ui.Box(new(x-13,y-17,1,43),Muted);_ui.Box(new(x-13,y+25,18,1),Muted);}
                 if(row.Kind<2)_ui.Text((row.Kind==0?_expandedFolderCountries.Contains(row.Id):_expandedFolderRegions.Contains(row.Id))?"－":"+",new(x,y+13),.4f,Cream);
                 DrawCountryFolder(new(x+25,y+12,30,28),row.Owner);
-                _ui.Text(row.Label,new(x+64,y+15),Math.Min(.42f,(850-x-64)/Math.Max(1,_font.MeasureString(row.Label).X)),Cream);
+                bool checkedNode=DrawFolderNodeCheck(row.Kind,row.Id,new(824,y+12,28,28));
+                _ui.Text(row.Label,new(x+64,y+15),Math.Min(.42f,(850-x-64-(checkedNode?40:0))/Math.Max(1,_font.MeasureString(row.Label).X)),Cream);
             }
             _ui.Text("ホイール：スクロール / ＋：展開 / 名前：地図で探す",new(90,863),.32f,Cream);
             if(_inspectorFolderRows.Count>10){
