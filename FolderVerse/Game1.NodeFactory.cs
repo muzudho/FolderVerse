@@ -84,7 +84,7 @@ public partial class Game1
             for(int unit=0;unit<=Math.Min(15,period);unit++)_ui.Box(new(160+unit*24-1,y+96,unit%3==0?2:1,unit%3==0?8:4),unit%3==0?new Color(27,49,62):Color.White);
             for(int unit=0;unit<=shownRest*3;unit++)_ui.Box(new(160+productionWidth+unit*24-1,y+96,unit%3==0?2:1,unit%3==0?8:4),unit%3==0?new Color(27,49,62):Color.White);
             _ui.Center("0",new(146,y+105,28,22),.3f,Cream);
-            _ui.Center(IndustryTime.Format(line.CycleProductionTurns),new(160+productionWidth-40,y+105,80,22),.3f,Cream);
+            _ui.Center(IndustryTime.Format(period),new(160+productionWidth-40,y+105,80,22),.3f,Cream);
             if(shownRest>0)_ui.Center(IndustryTime.Format(line.CycleTurns),new(160+productionWidth+shownRest*72-40,y+105,80,22),.3f,Cream);
             int caret=160;
             if(line.Manufacturing){
