@@ -20,12 +20,12 @@ public partial class Game1
         if(ReferenceEquals(_nodeChecksWorld,_setup) && _nodeChecksTurn==_setup.Population.Turn)return;
         ClearAllNodeChecks();_nodeChecksWorld=_setup;_nodeChecksTurn=_setup.Population.Turn;
     }
-    private void ClearAllNodeChecks(){_nodeChecksByPlayer.Clear();_nodeCheckHits.Clear();_nodeChecksWorld=null;_nodeChecksTurn=-1;}
+    private void ClearAllNodeChecks(){_nodeChecksByPlayer.Clear();_directChecksByPlayer.Clear();_nodeCheckHits.Clear();_nodeChecksWorld=null;_nodeChecksTurn=-1;}
     private bool NodeChecked(int node)
     {
         EnsureNodeCheckContext();return _nodeChecksByPlayer.TryGetValue(NodeCheckPlayer,out var checks) && checks.Contains(node);
     }
-    private void ClearCurrentPlayerNodeChecks(){EnsureNodeCheckContext();_nodeChecksByPlayer.Remove(NodeCheckPlayer);_nodeCheckHits.Clear();}
+    private void ClearCurrentPlayerNodeChecks(){EnsureNodeCheckContext();_nodeChecksByPlayer.Remove(NodeCheckPlayer);_directChecksByPlayer.Remove(NodeCheckPlayer);_nodeCheckHits.Clear();}
     private bool NodeCheckClick(Point point)
     {
         if(!NodeCheckButtonVisible || !NodeCheckButton.Contains(point))return false;
@@ -47,6 +47,11 @@ public partial class Game1
         var color=selected?new Color(39,143,75):Muted;
         if(r.Contains(_pointer) && !_nodeInspectorClosing)color=Color.Lerp(color,Color.White,.15f);
         PrimaryRoundBox(r,color,6);DrawNodeCheckGlyph(r,selected?Color.White:new Color(172,192,181));
+    }
+    private bool DrawFolderNodeCheck(int kind,int node,Rectangle bounds)
+    {
+        if(kind!=2 || !NodeChecked(node))return false;
+        PrimaryRoundBox(bounds,new Color(39,143,75),5);DrawNodeCheckGlyph(bounds,Color.White);return true;
     }
     private void DrawNodeCheckMarkers(Rectangle panel,bool directPair=false)
     {

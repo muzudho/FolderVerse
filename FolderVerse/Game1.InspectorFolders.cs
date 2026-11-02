@@ -74,8 +74,8 @@ public partial class Game1
         if(click && p.Y>=298 && p.Y<858){
             int index=_folderScroll+(p.Y-298)/56;
             if(index<_inspectorFolderRows.Count){
-                var row=_inspectorFolderRows[index];int x=90+Math.Min(row.Depth,10)*25;
-                if(row.Kind==1 && p.X<x+24){if(!_expandedFolderRegions.Add(row.Id))_expandedFolderRegions.Remove(row.Id);BuildInspectorFolders();_folderScroll=Math.Min(_folderScroll,Math.Max(0,_inspectorFolderRows.Count-10));}
+                var row=_inspectorFolderRows[index];int x=132+Math.Min(row.Depth,10)*25;
+                if(row.Kind==1 && p.X>=x && p.X<x+24){if(!_expandedFolderRegions.Add(row.Id))_expandedFolderRegions.Remove(row.Id);BuildInspectorFolders();_folderScroll=Math.Min(_folderScroll,Math.Max(0,_inspectorFolderRows.Count-10));}
                 else OpenInspectorFolderRow(index);
             }
         }
@@ -91,18 +91,20 @@ public partial class Game1
             _ui.Box(new(header.X,header.Y,header.Width,3),_setup.OwnerColor(owner));
             DrawCountryFolder(new(header.X+14,header.Y+12,32,28),owner);
             string label=_populationNode>=0?"地点 / "+_setup.Nodes.DisplayName(_setup.Nodes.All[_populationNode]):_regionCell>=0?"地域 / "+WorldCoordinates.Label(_setup,_regionCell):"国 / "+_setup.ConquerorFullNames[owner];
-            _ui.Text(label,new(header.X+60,header.Y+13),Math.Min(.55f,(header.Width-116)/Math.Max(1,_font.MeasureString(label).X)),Cream);
+            bool checkedHeader=_populationNode>=0 && DrawFolderNodeCheck(2,_populationNode,new(header.Right-80,header.Y+11,28,28));
+            _ui.Text(label,new(header.X+60,header.Y+13),Math.Min(.55f,(header.Width-116-(checkedHeader?40:0))/Math.Max(1,_font.MeasureString(label).X)),Cream);
             for(int row=0;row<10;row++)_ui.Box(new(header.Right-38+row,header.Y+21+row,20-row*2,1),Cream);
             if(!_inspectorFoldersOpen)return;
             _ui.Box(new(68,243,820,650),Color.Black*.6f);_ui.Box(InspectorFolderPanel,new Color(23,43,56));
             _ui.Text("所属フォルダー",new(90,254),.6f,Cream);_ui.Button(new(824,248,44,36),"×",Muted,.6f);
             for(int i=0;i<10;i++){
                 int index=_folderScroll+i;if(index>=_inspectorFolderRows.Count)break;
-                var row=_inspectorFolderRows[index];int x=90+Math.Min(row.Depth,10)*25,y=298+i*56;
+                var row=_inspectorFolderRows[index];int x=132+Math.Min(row.Depth,10)*25,y=298+i*56;
                 var r=new Rectangle(80,y,788,52);if(IsCurrentInspectorFolder(row.Kind,row.Id)){_ui.Box(r,new Color(65,96,106));_ui.Box(new(r.X,y,5,r.Height),Accent);}else if(r.Contains(_ui.Pointer))_ui.Box(r,new Color(48,72,87));
                 if(row.Depth>0){_ui.Box(new(x-13,y-17,1,43),Muted);_ui.Box(new(x-13,y+25,18,1),Muted);}
                 if(row.Kind==1)_ui.Text(_expandedFolderRegions.Contains(row.Id)?"－":"+",new(x,y+13),.4f,Cream);
                 DrawCountryFolder(new(x+25,y+12,30,28),row.Owner);
+                DrawFolderNodeCheck(row.Kind,row.Id,new(90,y+12,28,28));
                 _ui.Text(row.Label,new(x+64,y+15),Math.Min(.42f,(850-x-64)/Math.Max(1,_font.MeasureString(row.Label).X)),Cream);
             }
             _ui.Text("ホイール：スクロール / ＋：地点を展開 / 名前：開く",new(90,863),.32f,Cream);

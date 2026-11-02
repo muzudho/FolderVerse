@@ -173,7 +173,7 @@ public partial class Game1
         }
         _ui.Button(new(84,850,110,42),"←",Muted,.5f);_ui.Button(new(210,850,110,42),"→",Muted,.5f);
         if(_selectedMoveNode>=0)_ui.Button(new(570,850,274,42),"目標を選び直す",Muted,.48f);
-        _ui.Text("上段：現在の予約 / 下段：出撃選択 / 確定で元の仕事を上書き",new(84,900),.35f,Cream);
+        _ui.Text("地図の別の目標をクリックで切替 / 確定で元の仕事を上書き",new(84,900),.35f,Cream);
         _ui.Button(ConfirmMoveButton,"開戦を予約",_selectedMoveNode>=0?Accent:Muted,.55f);
     }
 }

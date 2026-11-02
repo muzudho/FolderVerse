@@ -98,7 +98,21 @@ class Checks:Game1{
   throw new Exception("No clickable visible seam letter");
  }
  protected override void Update(GameTime t){}
+ void CheckDeliveryNotes(){
+  bool Marked(int first,int second)=>(bool)Call("DirectPairChecked",first,second);
+  Call("OpenDirectPair",a,b);Call("UpdateDirectPairTransition",.35f);
+  var button=(Rectangle)typeof(Game1).GetField("DirectPairCheckButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  var before=w.Robots.DirectDelivery.Orders.Select(o=>o.Number).ToArray();Set("_pointer",button.Center);
+  Call("DirectPairInput",Mouse(button.Center,ButtonState.Pressed),true,false);
+  Check(Marked(a,b) && Marked(b,a) && (bool)Get("_directPairOpen"),"Check button marks an undirected pair without closing it");
+  Check(before.SequenceEqual(w.Robots.DirectDelivery.Orders.Select(o=>o.Number)),"Marking does not alter delivery reservations");
+  Call("OpenDirectPair",b,a);Call("UpdateDirectPairTransition",.35f);Check(Marked(a,b),"Reopening in reverse order retains the mark");
+  w.HumanPlayers.Add(1);w.SelectTurnRuler(1);Check(!Marked(a,b),"Other human cannot see this delivery note");w.SelectTurnRuler(0);w.HumanPlayers.Remove(1);Check(Marked(a,b),"Original human retains note");
+  Set("_pointer",button.Center);Call("DirectPairInput",Mouse(button.Center,ButtonState.Pressed),true,false);Check(!Marked(a,b),"Second click removes note");Call("DirectPairInput",Mouse(button.Center,ButtonState.Pressed),true,false);
+  Call("ClearCurrentPlayerNodeChecks");Check(!Marked(a,b),"End-turn cleanup removes delivery checks");Call("ToggleDirectPairCheck");
+ }
  protected override void Draw(GameTime t){
+  if(frame==0)CheckDeliveryNotes();
   if(frame==1){Set("_directPairOpen",false);}
   if(frame==2){var hit=((System.Collections.IList)Get("_directTrucks"))[0]!;var bounds=(Rectangle)hit.GetType().GetField("Item1")!.GetValue(hit)!;Call("DirectMapClick",bounds.Center);Check((bool)Get("_directPairOpen"),"Clicking truck opens pair inspector");}
   if(frame==3)Set("_pointer",Cell(1,1).Location+new Point(16,145));

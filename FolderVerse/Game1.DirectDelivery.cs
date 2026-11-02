@@ -77,10 +77,12 @@ public partial class Game1
             _ui.Box(new(bounds.X,bounds.Y+3,27,20),color);_ui.Box(new(bounds.X+29,bounds.Y+8,13,15),color);_ui.Box(new(bounds.X+31,bounds.Y+10,8,7),new Color(125,196,222));_ui.Box(new(bounds.X+5,bounds.Y+23,9,8),new Color(14,22,29));_ui.Box(new(bounds.X+30,bounds.Y+23,9,8),new Color(14,22,29));
         }
         int count=_setup.Robots.DirectDelivery.Orders.Count(o=>o.Source==first && o.Target==second || o.Source==second && o.Target==first);if(count>0)_ui.Text(count.ToString(),new(bounds.X+15,bounds.Y-13),.35f,Cream);
+        DrawDirectTruckCheck(first,second,bounds);
     }
     private void DirectPairInput(MouseState mouse,bool click,bool escape){
         if(escape || click && !_directDrag.HasValue && DirectPairBack.Contains(_pointer)){CloseDirectPair();return;}
         if(_directPairClosing || _directPairSlide<1)return;
+        if(click && !_directDrag.HasValue && DirectPairCheckButton.Contains(_pointer)){ToggleDirectPairCheck();return;}
         if(click && !_directDrag.HasValue && DirectPairTruckClick(_pointer))return;
         SyncDirectSlots();
         if(click){for(int side=0;side<2;side++)for(int slot=0;slot<12;slot++)for(int row=0;row<3;row++)if(DirectHoverPart(side,slot)==HangarPart(row)){
@@ -128,14 +130,19 @@ public partial class Game1
                 _ui.Box(cell,cellHover?new Color(46,73,87):new Color(18,35,46));
                 for(int row=0;row<3;row++){
                     var part=HangarPart(row);var bounds=DirectPart(side,slot,row);_ui.Box(bounds,(hover!=0 && ((robot?.ConnectedParts(hover)??hover)&part)!=0)?new Color(88,125,141):new Color(40,63,76));
-                    if(robot!=null && (robot.Parts&part)!=0 && (_setup.Robots.DirectDelivery.LockedParts(node,robot.Id)&part)!=0)_ui.Text("予約",new(cell.X+120,bounds.Y+8),.25f,color);
-                    if(_setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==node && (o.Part&part)!=0 && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot)))_ui.Text("予定",new(cell.X+120,bounds.Y+8),.25f,Cream);
                 }
                 var joinedGlyph=new Rectangle(cell.X+48,cell.Y+8,68,102);
                 if(robot!=null)DrawRobotGlyph(joinedGlyph,robot,whiteOutline:true,partOpacity:part=>(_setup.Robots.DirectDelivery.LockedParts(node,robot.Id)&part)!=0?.35f:1);
                 foreach(var order in _setup.Robots.DirectDelivery.Orders.Where(o=>o.Target==node && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot))){
                     var original=_setup.Robots.Nodes[order.Source].Robots.FirstOrDefault(r=>r.Id==order.RobotId);
                     if(original!=null)DrawRobotGlyph(joinedGlyph,original with {Parts=order.Part,IntegratedParts=original.IntegratedParts&order.Part},whiteOutline:true,opacity:.5f);
+                }
+                for(int row=0;row<3;row++){
+                    var part=HangarPart(row);var bounds=DirectPart(side,slot,row);
+                    bool incoming=_setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==node && (o.Part&part)!=0 && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot));
+                    bool outgoing=robot!=null && (_setup.Robots.DirectDelivery.LockedParts(node,robot.Id)&part)!=0;
+                    if(incoming)DrawHangarDeliveryTag(bounds,"予約",gap:2);
+                    if(outgoing)DrawHangarDeliveryTag(bounds,"直送",incoming,gap:2);
                 }
                 if(robot!=null){if(robot.IntegratedParts!=0 && !robot.Stationed && !robot.Disposal)_ui.Center(IntegratedLabel(robot.IntegratedParts),new(cell.X,cell.Y+135,cell.Width,18),.24f,Cream);_ui.Center("ID "+robot.Id,new(cell.X,cell.Y+111,cell.Width,24),.32f,Cream);if(robot.Stationed || robot.Disposal)_ui.Center(robot.FactoryWorker?"工場作業員":robot.InterceptOnly?"迎撃専用":robot.DefenseOnly?"守備専用":"廃棄予約",new(cell.X,cell.Y+135,cell.Width,18),.24f,color);}
             }
@@ -147,6 +154,7 @@ public partial class Game1
         // Shared upper handle keeps closing controls away from the drag corridor.
         _ui.Box(new(20,114,940,34),DirectSideColor(0));_ui.Box(new(960,114,940,34),Color.White);
         _ui.Button(DirectPairBack,"×",Muted,.8f);
+        DrawDirectPairCheckButton();
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);
         _ui.Center("パーツをドラッグ：部位ごと / 枠をドラッグ：まとめて / 予約パーツをクリック：取消",new(20,978,1880,30),.38f,Cream);
         _ui.Center(_directMessage,new(20,1012,1880,28),.4f,Cream);

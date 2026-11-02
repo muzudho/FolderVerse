@@ -25,7 +25,7 @@ public partial class Game1
         Shape(new(r.X+r.Width/6,r.Y+legsTop,r.Width/4,legsBottom-legsTop),RobotParts.Legs);
         Shape(new(r.X+r.Width*7/12,r.Y+legsTop,r.Width/4,legsBottom-legsTop),RobotParts.Legs);
         float Alpha(RobotParts part)=>opacity*(partOpacity?.Invoke(part)??1);
-        Color Paint(RobotParts part){var c=_setup.OwnerColor(robot.Origin(part));return (robot.IsDamaged(part)?Color.Lerp(c,new Color(116,119,116),.8f):c)*Alpha(part);}
+        Color Paint(RobotParts part){var c=_setup.OwnerColor(robot.Origin(part));return c*Alpha(part);}
         if(whiteOutline)foreach(var shape in shapes){
             var bounds=shape.Bounds;bounds.Inflate(2,2);
             var edges=new System.Collections.Generic.List<Rectangle>{bounds};
@@ -43,12 +43,18 @@ public partial class Game1
             }
             foreach(var edge in edges)_ui.Box(edge,ControlEdge*Alpha(shape.Part));
         }
-        foreach(var shape in shapes)_ui.Box(shape.Bounds,shape.Face?Cream*Alpha(shape.Part):Paint(shape.Part));
+        foreach(var shape in shapes){
+            if(!shape.Face && robot.IsDamaged(shape.Part))RobotDamageArt.Draw(_ui,shape.Bounds,shape.Bounds,_setup.OwnerColor(robot.Origin(shape.Part)),Alpha(shape.Part));
+            else _ui.Box(shape.Bounds,shape.Face?Cream*Alpha(shape.Part):Paint(shape.Part));
+        }
         foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0){
             float alpha=Alpha(part);bool damaged=robot.IsDamaged(part);
             if(robot.IsCheap(part))foreach(var shape in shapes)if(shape.Part==part && !shape.Face){
                 var area=shape.Bounds;
-                for(int y=0;y<area.Height;y+=Math.Max(4,r.Height/12))_ui.Box(new(area.X,area.Y+y,area.Width,Math.Min(Math.Max(2,r.Height/28),area.Height-y)),(damaged?new Color(151,150,138):Cream)*alpha);
+                for(int y=0;y<area.Height;y+=Math.Max(4,r.Height/12)){
+                    var stripe=new Rectangle(area.X,area.Y+y,area.Width,Math.Min(Math.Max(2,r.Height/28),area.Height-y));
+                    if(damaged)RobotDamageArt.Draw(_ui,stripe,area,Cream,alpha);else _ui.Box(stripe,Cream*alpha);
+                }
             }
             if(damaged){
                 var metal=new Color(185,180,164)*alpha;

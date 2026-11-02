@@ -190,7 +190,7 @@
       "Status": "WORKING_SELECTED_NOT_GAME_ADOPTED",
       "VisualReview": "全身/眼部拡大/256x192直接目視。両上右大白丸が白目へ連続、両下左白丸は橙虹彩内の反射に重なり下輪郭を保持。全身帽子/靴余白と本人意匠/小物を保持。縮小で顔/眼鏡/手/カップ/電池を判読。座位の厳密関節採寸未実施。作業用選択、ゲーム未採用。",
       "Selected": true,
-      "GameAdopted": false
+      "GameAdopted": true
     },
     {
       "Id": 2,
@@ -599,7 +599,7 @@
       "Status": "WORKING_SELECTED_NOT_GAME_ADOPTED",
       "VisualReview": "全身/眼部/256x192直接目視。v010より頭部を抑え短い首/大きい手足/高い膝、短い腿と長い脛を保持。頭蓋上端は帽子内推定、傾斜と前屈込みで約6頭身の目安、厳密な直立計測ではない。小さい舌笑顔/本人衣装/双眼鏡/玩具電池/帽子靴裾余白保持。両下左は白い円中心が虹彩内、周囲の橙黄反射と区別でき下縁保持。上右大白丸は白目接触。縮小で本人/眼鏡/玩具/双眼鏡判読可。作業用選択。",
       "Selected": true,
-      "GameAdopted": false
+      "GameAdopted": true
     },
     {
       "Id": 3,
@@ -782,7 +782,7 @@
       "Status": "WORKING_SELECTED_NOT_GAME_ADOPTED",
       "VisualReview": "全身/眼部/256x192直接目視。両下左は丸い白中心、左側と下側に赤橙の虹彩が残り輪郭を切らない。上右大白丸は白目に接触。銀細縁眼鏡/驚き丸口/裸手/白ニーハイ/両靴/玩具電池/浮遊氷場面保持、髪帽子裾指先の余白保持。大きい頭と短い首、大手足、屈曲短縮を伴う腿と脛の見え方を維持。直立頭身の厳密測定はしていない。縮小で顔と玩具判読可。作業用選択。",
       "Selected": true,
-      "GameAdopted": false
+      "GameAdopted": true
     },
     {
       "Id": 4,
@@ -1314,7 +1314,7 @@
       "Status": "WORKING_SELECTED_NOT_GAME_ADOPTED",
       "VisualReview": "全身/眼部/256x192直接目視。上右大白丸が短い虹彩輪郭を切り白目へ接続。下左中白丸は色縁内に保持。上下大小差明瞭、左右異色瞳/赤眼鏡/閉口微笑/本人小物/冬用ズボン/全身余白保持。縮小で顔/バーガー/玩具判読。座り姿勢の厳密な直立頭身測定は行っていない。作業選択、ゲーム未採用。",
       "Selected": true,
-      "GameAdopted": false
+      "GameAdopted": true
     },
     {
       "Id": 5,
@@ -1354,7 +1354,7 @@
       "Status": "WORKING_SELECTED_NOT_GAME_ADOPTED",
       "VisualReview": "原画/全身/256x192直接目視。本人閉眼/閉口微笑/赤眼鏡/淡青髪耳/ファー縁なし庇帽子/白手袋でヘッドホン付きペンギン玩具と電池を抱く/白雪柄タイツ/紺金青宝石靴を保持。帽子飾りから靴底と裾まで収まる。閉眼なので虹彩白丸追加しない。大きな顔・短い首・大きな手足を確認、膝曲げ遠近姿勢で直立頭身の厳密測定なし。切出しを調整して帽子飾り切れ解消、顔/手/玩具/電池判読。作業選択。",
       "Selected": true,
-      "GameAdopted": false
+      "GameAdopted": true
     },
     {
       "Id": 6,
@@ -1646,7 +1646,7 @@
       "Status": "WORKING_SELECTED_GAME_PENDING",
       "VisualReview": "全身/眼部/256x192直接目視。上右大白丸が白目へ接続、下左中白丸は橙赤の色縁内に分離。下の黄反射は白丸とは別。両橙赤瞳/開口笑顔/汗/赤眼鏡/本人持ち物/全帽子/両靴余白保持。動的曲げ脚のため厳密な直立頭身測定なし。作業選択、ゲーム未採用。",
       "Selected": true,
-      "GameAdopted": false
+      "GameAdopted": true
     },
     {
       "Id": "id",
@@ -2032,7 +2032,7 @@
       "Status": "WORKING_SELECTED_GAME_PENDING",
       "VisualReview": "全身/眼部/300x400白黒直接目視。両下左中白丸が色縁内に明瞭化、上右大白丸は白目接続。本人正面無表情/装飾/手袋/帽子両靴余白保持。大頭短首/高膝/大手足、頭蓋推定と靴追加分を除き目測約6頭身程度（厳密測定ではない）。白黒でも顔髪服分離。作業選択、ゲーム未採用。",
       "Selected": true,
-      "GameAdopted": false,
+      "GameAdopted": true,
       "EyePreview": "news-id-v009-eyes.png"
     },
     {
@@ -2443,7 +2443,7 @@
       "Status": "WORKING_SELECTED_GAME_PENDING",
       "VisualReview": "全身/眼部拡大/300x400白黒直接目視。両上大白丸が右上虹彩縁の一部を白目へ接続、両下中白丸は内部で下/左色縁保持。本人閉口微笑/赤眼鏡/白ファー帽子/青チェック/宮殿維持。短首/大頭/手足/膝配置と全身余白を保持、v006相当の概算約5.7頭身（帽子下推定）。白黒で顔/服分離確認。作業選択、人物一式採用は未完了。",
       "Selected": true,
-      "GameAdopted": false,
+      "GameAdopted": true,
       "EyePreview": "news-formal-v009-eyes.png"
     },
     {
@@ -2683,7 +2683,7 @@
       "Height": 1448,
       "Status": "WORKING_SELECTED_GAME_PENDING",
       "Selected": true,
-      "GameAdopted": false,
+      "GameAdopted": true,
       "VisualReview": "全身/眼部拡大/300x400白黒直接目視。両上大白丸は右上虹彩縁を白目へ接続、両下中白丸は色縁内側。本人微笑/眼鏡/髪/帽子/冬制服/青チェック/白手袋/白タイツ/青背景保持。v003同様概算約5.6頭身、短首/大きい手足/高膝保持。帽子上余白は狭めだが切れなし、両靴も収まる。作業選択、ゲーム未採用。",
       "Sha256": "dcc720c69114382773f1a5b209b25685c524226c20e2473f37035526d5c30e41",
       "Preview": {
@@ -2840,7 +2840,7 @@
       "Height": 1536,
       "Status": "WORKING_SELECTED_GAME_PENDING",
       "Selected": true,
-      "GameAdopted": false,
+      "GameAdopted": true,
       "VisualReview": "全身/眼部拡大/300x400白黒直接目視。両上大白丸白目接続/下中白丸内側を確認。本人赤紫橙瞳/赤眼鏡/開口笑顔/カップ両白手袋/冬制服/喫茶室保持。大きな手足/短首/高膝の座位と全帽子両靴余白保持。座位遠近のため厳密頭身未採寸。下衣靴は補完案。作業選択、ゲーム未採用。",
       "Preview": {
         "Path": "news-friends-v002-preview.png",
@@ -3275,7 +3275,7 @@
       "Height": 1448,
       "Status": "WORKING_SELECTED_GAME_PENDING",
       "Selected": true,
-      "GameAdopted": false,
+      "GameAdopted": true,
       "VisualReview": "全身/眼部拡大/300x400白黒直接目視。両上大白丸が虹彩輪郭から白目へ接続、両下白丸が虹彩内に収まり丸楕円瞳孔保持。本人意匠/無表情/椅子茶背景保持。実頭部拡大/短首/大手足/高膝の座位体格をv017の見た目と照合し作業用選択。座位の厳密立位換算頭身は測定しておらず推定値の承認ではない。帽子上余白は狭いが帽子両靴切れなし。白黒で顔/手/衣装判読可能。",
       "EyePreview": "news-history-v010-eyes.png",
       "GrayPreview": "news-history-v010-preview-gray.png",
@@ -4065,7 +4065,7 @@
       "Sha256": "b47bc29ad0a701f61ba90e3eceb6f02418e0fc50462a3522d4b7a27bfe645f7e",
       "Status": "VISUALLY_PASSED_WORKING_SELECTION",
       "Selected": true,
-      "GameAdopted": false,
+      "GameAdopted": true,
       "EyePreview": "news-coin-v020-eyes.png",
       "GrayPreview": "news-coin-v020-preview-gray.png",
       "Preview": {
@@ -4286,7 +4286,7 @@
       "Sha256": "aa4255dadc70557c2de49f9862d7193f70be71808bf75af9b72aac6aca24eadf",
       "Status": "VISUALLY_PASSED_WORKING_SELECTION",
       "Selected": true,
-      "GameAdopted": false,
+      "GameAdopted": true,
       "Width": 1086,
       "Height": 1448,
       "EyePreview": "news-idol-v005-eyes.png",
@@ -4508,11 +4508,28 @@
       "OriginalGeneratedFile": "C:/Users/muzud/.codex/generated_images/01a1470c-a2ba-7161-b65f-de6cd2956aba/exec-6dd4e8a8-a093-4b52-87b5-57334c3e497a.png",
       "Tool": "builtin image_gen",
       "Sha256": "96dd62f2a5a8600c3c7628c964f9633a8b45da6a172ef6daa4ae5a522e7f4f64",
-      "Status": "VISUAL_REVIEW_REQUIRED",
-      "Selected": false,
-      "GameAdopted": false
+      "Status": "VISUALLY_PASSED_WORKING_SELECTION",
+      "Selected": true,
+      "GameAdopted": true,
+      "Width": 1024,
+      "Height": 1536,
+      "EyePreview": "news-paparazzi-v006-eyes.png",
+      "GrayPreview": "news-paparazzi-v006-preview-gray.png",
+      "Preview": {
+        "Path": "news-paparazzi-v006-preview.png",
+        "Crop": {
+          "X": 250,
+          "Y": 0,
+          "Width": 600,
+          "Height": 800
+        },
+        "Width": 300,
+        "Height": 400,
+        "Sha256": "8c9e559545e69ecdbdd276c110fe19990aee61f8db4e776056cbf6b32a603103"
+      },
+      "VisualReview": "2026-11-01 00:39 JST 全身/眼部/新聞300x400白黒直接目視。本人青髪/尖り耳/赤眼鏡/橙眼/右斜め思案顔・少し開く唇/冬制服/白手袋タイツ/雪街保持。帽子両靴切れなし。上右大白丸輪郭接続、下左白丸内包と大小差確認。体格v004保持、隠れ頭頂180/顎390/靴内足底1450の目測約6.0頭身、厳密ではない。顔首/髪の横帯/服外形/白黒で人物識別確認。作業用選択、ゲーム未採用。"
     }
   ],
-  "Next": "paparazzi v006全身/眼部/体格/新聞白黒目視確認。全14確定後ステージ/採用/配布ビルド確認、ゲーム0/20。",
+  "Next": "No.52全14原画/20ゲーム画像採用、ビルドと配布照合完了。次回No.53本人設定/採用記録を確認して開始。",
   "UserAuthorization": "拒否時は報告し元画像保持、衣装・持ち物変更して続行可。"
 }

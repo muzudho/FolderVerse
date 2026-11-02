@@ -59,9 +59,9 @@ public sealed partial class WorldPreview
                 }
             }
             float batteryTilt=0,batteryV=0;
-            void Box(float u,float v,float z,float width,float depth,float height,Color color)
+            void Box(float u,float v,float z,float width,float depth,float height,Color color,bool damaged=false)
             {
-                if(net.CountryFocus>=0 || net.FolderSearchFocus)color=net.NodeTint(node.Id,color);
+                color=net.NodeTint(node.Id,color);
                 var corners=new Vector3[8];
                 for(int i=0;i<8;i++){
                     float x=u+((i&1)==0?-1:1)*width/2,y=v+((i&2)==0?-1:1)*depth/2,h=z+((i&4)==0?0:height);
@@ -69,7 +69,20 @@ public sealed partial class WorldPreview
                     corners[i]=Point(x,y,h);Track(corners[i]);
                 }
                 int[][] quads={new[]{0,1,3,2},new[]{4,6,7,5},new[]{0,4,5,1},new[]{2,3,7,6},new[]{0,2,6,4},new[]{1,5,7,3}};
-                foreach(var q in quads){Triangle(corners[q[0]],corners[q[1]],corners[q[2]],color);Triangle(corners[q[0]],corners[q[2]],corners[q[3]],color);}
+                foreach(var q in quads){
+                    if(!damaged){Triangle(corners[q[0]],corners[q[1]],corners[q[2]],color);Triangle(corners[q[0]],corners[q[2]],corners[q[3]],color);continue;}
+                    Vector3 Face(float x,float y)=>Vector3.Lerp(Vector3.Lerp(corners[q[0]],corners[q[1]],x),Vector3.Lerp(corners[q[3]],corners[q[2]],x),y);
+                    for(int row=0;row<12;row++){
+                        float split=Math.Clamp(RobotDamageArt.SplitX(new(0,0,100,100),row*100/12+4)/100f,0,1);
+                        float[] cuts={0,Math.Max(0,split-.035f),Math.Min(1,split+.035f),1};
+                        for(int band=0;band<3;band++){
+                            float left=cuts[band],right=cuts[band+1];if(right<=left)continue;
+                            var ink=Color.Lerp(color,RobotDamageArt.Gray(color),band*.5f);
+                            var a=Face(left,row/12f);var b=Face(right,row/12f);var c=Face(right,(row+1)/12f);var d=Face(left,(row+1)/12f);
+                            Triangle(a,b,c,ink);Triangle(a,c,d,ink);
+                        }
+                    }
+                }
             }
             for(int slot=0;slot<robots.Count;slot++)
             {
@@ -77,11 +90,11 @@ public sealed partial class WorldPreview
                 bounds=Rectangle.Empty;
                 float angle=-MathHelper.PiOver2+slot*MathHelper.TwoPi/robots.Count,radius=Math.Max(.18f,robots.Count*.12f/MathHelper.TwoPi);
                 float u=MathF.Cos(angle)*radius,v=MathF.Sin(angle)*radius,z=.008f;var robot=robots[slot];
-                void RobotBox(float x,float y,float height,float width,float depth,float extent,Color tint)=>
-                    Box(u+(x-u)*.5f,v+(y-v)*.5f,.008f+(height-.008f)*.5f,width*.5f,depth*.5f,extent*.5f,tint);
+                void RobotBox(float x,float y,float height,float width,float depth,float extent,Color tint,bool damaged=false)=>
+                    Box(u+(x-u)*.5f,v+(y-v)*.5f,.008f+(height-.008f)*.5f,width*.5f,depth*.5f,extent*.5f,tint,damaged);
                 void Part(RobotParts part,float x,float y,float height,float width,float depth,float extent){
-                    var tint=robot.IsDamaged(part)?new Color(136,137,127):Color.Lerp(Color.White,setup.OwnerColor(robot.Origin(part)),.48f);
-                    RobotBox(x,y,height,width,depth,extent,tint);
+                    var tint=Color.Lerp(Color.White,setup.OwnerColor(robot.Origin(part)),.48f);
+                    RobotBox(x,y,height,width,depth,extent,tint,robot.IsDamaged(part));
                     if(robot.IsCheap(part))RobotBox(x,y,height+extent*.4f,width*1.02f,depth*1.02f,extent*.16f,Color.White);
                 }
                 if((robot.Parts&RobotParts.Legs)!=0){foreach(float side in new[]{-1f,1f})Part(RobotParts.Legs,u+side*.027f,v,z,.038f,.065f,.09f);z+=.1f;}

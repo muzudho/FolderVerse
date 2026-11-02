@@ -14,6 +14,19 @@ public partial class Game1
         _net.FocusCircleNodes.Clear();_net.FocusCircles.Clear();_world.FocusCircles.Clear();_net.FocusCells.Clear();_world.FocusCells.Clear();
         _net.FocusCircleRadius=_world.FocusCircleRadius=0;
         _net.CountryFocus=_world.CountryFocus=_reignView && !_nodeInspectorClosing?(_strategyRuler>=0?_strategyRuler:_setup.PlayerSlot):-1;
+        if(_movementOpen && _warPlanning){
+            _net.CountryFocus=_world.CountryFocus=-1;
+            _net.NodeFocus=_world.NodeFocus=_selectedMoveNode;
+            _net.FocusBrightness=_world.FocusBrightness=.65f;
+            if(_selectedMoveNode>=0 && !MapTransitionActive && !_net.IsAnimating){
+                AddNodeFocusCircle(_selectedMoveNode);
+                foreach(int source in _invasionSources.Select(s=>s.Node).Distinct().Where(id=>id!=_selectedMoveNode)){
+                    _net.FocusCircleNodes.Add(source);
+                    AddNodeFocusCircle(source);
+                }
+            }
+            return;
+        }
         if(FolderTreeFocus && _folderTreeKind==0)_net.CountryFocus=_world.CountryFocus=_folderTreeOwner;
         if(FolderTreeFocus && _folderTreeKind==1){
             foreach(var node in _setup.Nodes.InCell(_folderTreeId))_net.FocusCircleNodes.Add(node.Id);

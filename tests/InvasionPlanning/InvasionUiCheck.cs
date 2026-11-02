@@ -37,6 +37,23 @@ sealed class InvasionUiCheck:Game1
         try
         {
             if(frame==1){Call("SelectMoveNode",target.Id);var net=(CubeNet)Get("_net");var panel=(Rectangle)typeof(Game1).GetProperty("NetPanel",Flags)!.GetValue(this)!;net.SetCenter(world,world.Cells[home.Cell].Face);net.FitNodesAtSource(world,home,panel,8);var middle=(net.NodePosition(world,home,panel)+net.NodePosition(world,target,panel))/2;net.Drag(new Vector2(1430,550)-middle);}
+            if(frame==1 && Environment.GetCommandLineArgs().Contains("--war-targets")){
+                var net=(CubeNet)Get("_net");var globe=(WorldPreview)Get("_world");
+                Call("PrepareDestinationMap");Call("UpdateNodeFocusCircle");
+                var targets=net.MovementTargets.ToArray();
+                if(targets.Length<2 || targets.Any(id=>!net.NodeVisible(world,world.Nodes.All[id])))throw new Exception("Every attackable target must remain visible after selection");
+                if(net.NodeFocus!=target.Id || globe.NodeFocus!=target.Id || net.CountryFocus!=-1 || Math.Abs(net.FocusBrightness-.65f)>.001f || net.DimNode(target.Id))throw new Exception("Selected target must have a spotlight with 35% outside dimming");
+                foreach(var source in world.Nodes.All.Where(n=>n.Owner>=0 && world.ControllerOf(n.Owner)==world.TurnPlayer && world.Campaign.RobotBattles.CanAttackFrom(world,n.Owner,n.Id,target.Id)))
+                    if(net.DimNode(source.Id))throw new Exception("Eligible sortie sources must share the target spotlight");
+                int next=targets.First(id=>id!=target.Id);
+                var panel=(Rectangle)typeof(Game1).GetProperty("NetPanel",Flags)!.GetValue(this)!;
+                net.Drag(new Vector2(1430,550)-net.NodePosition(world,world.Nodes.All[next],panel));
+                var at=net.NodePosition(world,world.Nodes.All[next],panel).ToPoint();
+                if(!(bool)Call("MovementClick",at,new Microsoft.Xna.Framework.Input.KeyboardState()) || (int)Get("_selectedMoveNode")!=next)throw new Exception("Clicking another map target must switch directly without reset");
+                Call("PrepareDestinationMap");Call("UpdateNodeFocusCircle");
+                if(net.NodeFocus!=next || globe.NodeFocus!=next || targets.Any(id=>!net.NodeVisible(world,world.Nodes.All[id])))throw new Exception("Spotlight must follow selection while keeping targets visible");
+                if(!world.Campaign.PlannedOrders.Any(o=>o.TargetNode==target.Id))throw new Exception("Switching selection must preserve confirmed reservations");
+            }
             if(frame==2){
                 Call("OpenInvasionPicker",0);Set("_pointer",new Point(610,350));Call("InvasionPickerInput",true,false);
                 var guard=world.Robots.Nodes[home.Id].Robots.Single(r=>r.DefenseOnly);var rows=(System.Collections.IList)Get("_invasionSources");
@@ -82,6 +99,7 @@ sealed class InvasionUiCheck:Game1
             var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);
             using var image=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);image.SetData(pixels);
             using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"invasion-ui-{frame}.png"));image.SaveAsPng(file,image.Width,image.Height);
+            if(frame==1 && Environment.GetCommandLineArgs().Contains("--war-targets")){Console.WriteLine("PASS: all attackable targets visible, direct map target switching, spotlight at 65% outside brightness, confirmed reservations preserved.");Exit();return;}
             if(++frame==23){File.Delete(Path.Combine(AppContext.BaseDirectory,"tutorial-ui-medals.json"));Console.WriteLine("PASS: rendered invasion, battle recoloring, domestic call, robot chatter, recruitment success and own-part success");Exit();}
         }
         catch(Exception e){Console.Error.WriteLine(e);Environment.ExitCode=1;Exit();}
