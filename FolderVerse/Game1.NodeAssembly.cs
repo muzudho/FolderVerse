@@ -15,7 +15,7 @@ public partial class Game1
     private int _hangarSource;
     private Point _hangarGrabOffset;
     private string _hangarMessage="";
-    private static readonly Rectangle NodeAssemblyTile=new(678,210,190,40),HangarAutoCheck=new(84,258,770,34);
+    private static readonly Rectangle NodeAssemblyTile=new(678,210,190,40),HangarAutoCheck=new(84,950,350,24);
     private HangarReservation _hangarReservation;
     private static readonly Rectangle HangarAssemblyButton=new(84,860,182,42);
     private static Rectangle HangarReservationButton(int i)=>new(280+i%3*196,860+i/3*48,182,42);
@@ -151,7 +151,6 @@ public partial class Game1
 
 
         bool manage=CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
-        _ui.Button(HangarAutoCheck,manage?(workshop.AutoAssemblyDisabled?"✓ ":"□ ")+"自動での組み立て・分解を行わない":"他国の自動組立設定は変更できません",manage && workshop.AutoAssemblyDisabled?Accent:Muted,.48f);
         bool hoveringPart=false;
         bool reservationMode=_hangarReservation!=HangarReservation.None;
         string hover=VisitingForeignHangar?"滞在中：自国パーツ同士の交換・空き部位への移動ができます":CanOpenHangar?"頭・胴・脚をつかんで、格納庫の区画へドラッグ＆ドロップ":"他国の地点：自分の征服者がいる地点では自国パーツを動かせます";
@@ -210,7 +209,9 @@ public partial class Game1
             int planned=Enumerable.Range(0,_setup.Robots.Nodes.Length).Where(n=>n!=_populationNode).Sum(n=>Enumerable.Range(0,_setup.ActiveCount).Sum(owner=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Sum(part=>new[]{false,true}.Sum(disposal=>_setup.Robots.Transport.Plan(n,owner,part,disposal).Count(w=>w.Target==_populationNode && w.Degrees>0)))));
             if(arrivals.Length>0 || planned>0)hover=$"到着予定：直送便 {arrivals.Length}件（半透明） / 長期輸送設定 {planned}件（実輸送量はターン終了時に決定）";
         }
-        _ui.Text(_hangarAbandonMode?"部位を選択：パーツを放棄 / 区画の余白：個体を放棄":_hangarMessage.Length>0 && !hoveringPart?_hangarMessage:hover,new(84,838),.32f,Cream);
+        bool hoveringManagement=HangarAutoCheck.Contains(_pointer);
+        if(hoveringManagement)hover=manage?"自動合体と輸送時の自動分解を止めます / 手動操作はできます":"他国のパーツ管理設定は変更できません";
+        _ui.Text(hoveringManagement?hover:_hangarAbandonMode?"部位を選択：パーツを放棄 / 区画の余白：個体を放棄":_hangarMessage.Length>0 && !hoveringPart?_hangarMessage:hover,new(84,838),.32f,Cream);
         _ui.Button(HangarAssemblyButton,"組み立て・分解",!reservationMode?Accent:Muted,.42f);
         if(!VisitingForeignHangar){
             string[] labels={"廃棄予約","守備専用予約","工場作業員予約","迎撃専用予約"};
@@ -224,6 +225,11 @@ public partial class Game1
         }
         if(_setup.Nodes.All[_populationNode].Owner==_setup.PlayerSlot)_ui.Button(HangarAbandonButton,"放棄",_hangarAbandonMode?Accent:Muted,.42f);
         _ui.Button(HangarSalvageButton,"放棄品置き場",Muted,.38f);
+        var check=new Rectangle(HangarAutoCheck.X,HangarAutoCheck.Y+3,18,18);
+        var checkColor=manage?(hoveringManagement?Accent:Cream):Cream*.45f;
+        _ui.Box(check,checkColor);_ui.Box(new(check.X+2,check.Y+2,14,14),new Color(18,35,46));
+        if(workshop.AutoAssemblyDisabled)_ui.Center("✓",check,.35f,checkColor);
+        _ui.Text("パーツ構成を自分で管理する",new(check.Right+8,HangarAutoCheck.Y+4),.36f,checkColor);
         DrawNodeTabs();
         if(_hangarDrag.HasValue)
         {

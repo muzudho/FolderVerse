@@ -13,7 +13,7 @@ sealed class HangarGame:Game1
  bool Prop(string n)=>(bool)typeof(Game1).GetProperty(n,F)!.GetValue(this)!;
  Rectangle Rect(string n,params object[] a)=>(Rectangle)typeof(Game1).GetMethod(n,BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,a)!;
  static void Check(bool value,string text){if(!value)throw new Exception(text);}
- void Open(){Call("OpenNodeInspector",node);Set("_domesticSlide",1f);}
+ void Open(){Call("OpenNodeInspector",node);Set("_domesticSlide",1f);Call("OpenNodeAssembly");}
  void Drag(int source,int target)
  {
   var start=Rect("HangarPartBounds",source,0).Center;var end=Rect("HangarCell",target).Center;
