@@ -63,6 +63,7 @@ public partial class Game1
 
 
         int savedLine=_factoryLine;
+        RobotWorkshop hoveredCaret=null;
         for(int l=factory.ProductionLines.Length;l<3;l++){
             int y=260+l*200;var area=new Rectangle(78,y,782,196);
             if(l>=factory.LineLimit){
@@ -80,20 +81,23 @@ public partial class Game1
             _ui.Center("0",new(146,y+105,28,22),.3f,Cream);
             _ui.Center(line.CycleProductionTurns.ToString(),new(160+shownPeriod*72-28,y+105,56,22),.3f,Cream);
             if(shownRest>0)_ui.Center(line.CycleTurns.ToString(),new(160+(shownPeriod+shownRest)*72-28,y+105,56,22),.3f,Cream);
+            int caret=160;
             if(line.Manufacturing){
                 // Reuse the one-robot stretch for each repeat; only the final repeat enters rest.
                 int productionWidth=shownPeriod*72;
                 _ui.Box(new(160+productionWidth-1,y+93,2,14),Cream);
                 double progress=line.LaneProgress;
-                int caret=160+(int)Math.Round(progress<=period
+                caret=160+(int)Math.Round(progress<=period
                     ?productionWidth*progress/period
                     :productionWidth+shownRest*72*(progress-period)/line.RestTurns);
-                _ui.Box(new(caret-3,y+84,6,29),new Color(27,49,62));
-                _ui.Box(new(caret-1,y+85,2,27),line.RestRemaining>0?new Color(255,204,112):Cream);
             }
             var robot=FactoryProductionButton(l);_ui.Box(robot,_factoryPlanLine==l || robot.Contains(_pointer)?Accent:Muted);
             var arrow=FactoryRobotArrow(l,period);for(int row=0;row<10;row++)_ui.Box(new(arrow.X+2+row,arrow.Y+6+row,20-row*2,1),Cream);
             if(line.Manufacturing)DrawRobotGlyph(robot,line.CurrentProductionPlan.Preview(node.Owner),whiteOutline:true);else _ui.Center("×",robot,.7f,Cream);
+            if(line.Manufacturing){
+                DrawFactoryCaret(caret,y,line);
+                if(new Rectangle(caret-12,y+27,24,77).Contains(_pointer))hoveredCaret=line;
+            }
             int width=shownPeriod*72,mid=160+width/2;_ui.Box(new(160,y+126,width,2),Cream);_ui.Box(new(160,y+121,2,7),Cream);_ui.Box(new(158+width,y+121,2,7),Cream);for(int i=0;i<5;i++){_ui.Box(new(mid-5+i,y+128+i,1,1),Cream);_ui.Box(new(mid+5-i,y+128+i,1,1),Cream);}FactoryDrop(0,line.RestEvery);FactoryDrop(1,line.RestTurns);
             string status=!line.Manufacturing?"製造しない":line.Paused?"一時停止":line.RestRemaining>0?$"休憩中 あと{line.RestRemaining} / 次の完成まで{line.TurnsUntilNextProduction}産業ターン":line.Waiting?"完成位置で空き枠待ち / 空きができた次の産業ターンに生産":$"次の完成まで{line.TurnsUntilNextProduction}産業ターン / {line.ProducedSinceRest+1}台目・工期{line.ProductionAge}/{period}";
             if(line.Manufacturing)status=$"周期 {line.CycleProgress}/{line.CycleTurns} / "+status;
@@ -104,7 +108,7 @@ public partial class Game1
         _factoryLine=savedLine;
         _ui.Text("格納庫は必ず",new(180,888),.43f,Cream);FactoryDrop(2,factory.ReservedSlots);_ui.Text("個空ける",new(552,888),.43f,Cream);
         DrawNodeTabs();
-        _ui.Text($"産業ターン累計 {_setup.Robots.IndustryTurn}   /   縦棒：現在位置　小目盛：１台完成",new(160,248),.25f,Cream);
+        _ui.Text($"産業ターン累計 {_setup.Robots.IndustryTurn}   /   柱：現在位置　緑：生産　黄：休憩　赤：空き枠待ち",new(160,248),.25f,Cream);
         if(_factoryPlanLine>=0){
             var line=factory.ProductionLines[_factoryPlanLine];_ui.Box(new(84,360,790,590),new(22,40,54));
             _ui.Text($"生産ライン {_factoryPlanLine+1} / 正規・安い・一体型",new(160,374),.45f,Cream);
@@ -135,6 +139,36 @@ public partial class Game1
                 _ui.Button(option,(field==0?"× ":field==1?"休 ":"")+(field==2?i:i+1),Accent,.40f);
             }
         }
+        if(hoveredCaret!=null && _factoryDropDown<0 && _factoryPlanLine<0){
+            string hint=hoveredCaret.Paused?"一時停止中だよ。再開すると製造が進むよ":hoveredCaret.Waiting?"格納庫が空いた次の生産ターンにロボットを製造できるよ":$"あと{hoveredCaret.TurnsUntilNextProduction}生産ターンでロボットを製造できるよ";
+            if(hoveredCaret.RestRemaining>0)hint+=$"（休憩あと{hoveredCaret.RestRemaining}ターンを含む）";
+            const float scale=.38f;
+            int hintWidth=(int)Math.Ceiling(_font.MeasureString(hint).X*scale)+24;
+            var hintBox=new Rectangle(Math.Clamp(_pointer.X+18,70,888-hintWidth),Math.Clamp(_pointer.Y-48,260,922),hintWidth,38);
+            _ui.Box(hintBox,Cream);_ui.Box(new(hintBox.X+2,hintBox.Y+2,hintBox.Width-4,hintBox.Height-4),new Color(16,32,43));
+            _ui.Text(hint,new(hintBox.X+12,hintBox.Y+9),scale,Cream);
+        }
+    }
+    private void DrawFactoryCaret(int x,int y,RobotWorkshop line)
+    {
+        var ink=new Color(16,32,43);
+        var signal=line.Paused?new Color(167,190,194):line.RestRemaining>0?new Color(255,204,112):line.Waiting?new Color(255,113,105):new Color(102,244,175);
+        float pulse=.78f+.22f*(.5f+.5f*MathF.Sin(_animationTime*2.4f));
+        // A local pool of light marks the exact position without suggesting motion along the belt.
+        for(int glow=3;glow>=0;glow--){
+            int half=13+glow*7;
+            _ui.Box(new(x-half,y+97,half*2,7),Color.Lerp(ink,signal,(.13f+(3-glow)*.15f)*pulse));
+        }
+        // One centered pillar points directly at the tick, rather than straddling an interval.
+        _ui.Box(new(x-9,y+44,18,60),ink);
+        _ui.Box(new(x-5,y+44,10,57),Cream);
+        _ui.Box(new(x-3,y+46,3,51),Color.White*.85f);
+        // Rounded pixel lamp and a bright central position marker.
+        _ui.Box(new(x-10,y+30,20,15),ink);_ui.Box(new(x-7,y+27,14,21),ink);
+        var lamp=Color.Lerp(signal*.6f,signal,pulse);
+        _ui.Box(new(x-7,y+32,14,11),lamp);_ui.Box(new(x-5,y+30,10,15),lamp);
+        _ui.Box(new(x-4,y+32,5,3),Cream*.9f);
+        _ui.Box(new(x-2,y+95,4,9),Cream);
     }
     private void DrawFactoryOmission(int x,int y)
     {

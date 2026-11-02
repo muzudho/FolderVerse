@@ -40,4 +40,7 @@
 <CharacterRegion><Start>幅</Start><End>幅</End></CharacterRegion>
 <CharacterRegion><Start>縦</Start><End>縦</End></CharacterRegion>
 <CharacterRegion><Start>盛</Start><End>盛</End></CharacterRegion>
+<CharacterRegion><Start>緑</Start><End>緑</End></CharacterRegion>
+<CharacterRegion><Start>黄</Start><End>黄</End></CharacterRegion>
+<CharacterRegion><Start>柱</Start><End>柱</End></CharacterRegion>
 </CharacterRegions></Asset></XnaContent>
