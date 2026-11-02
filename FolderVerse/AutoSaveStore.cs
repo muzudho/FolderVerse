@@ -22,7 +22,7 @@ public static class AutoSaveStore
         public Dictionary<string,int> Fields {get;set;}
     }
     public sealed class Document {
-        public int Version {get;set;}=1;
+        public int Version {get;set;}=2;
         public int Root {get;set;}
         public List<Entry> Objects {get;set;}=new();
     }
@@ -61,7 +61,7 @@ public static class AutoSaveStore
         doc.Root=Visit(root);return doc;
     }
     public static T Restore<T>(Document doc){
-        if(doc.Version!=1 || doc.Objects.Count==0 || doc.Objects.Count>2000000)throw new InvalidDataException("Unsupported autosave format.");
+        if(doc.Version is not (1 or 2) || doc.Objects.Count==0 || doc.Objects.Count>2000000)throw new InvalidDataException("Unsupported autosave format.");
         var values=new object[doc.Objects.Count];var types=new Type[values.Length];
         for(int i=0;i<values.Length;i++){
             var entry=doc.Objects[i];var type=Type.GetType(entry.Type,false);if(type==null || !Allowed(type))throw new InvalidDataException("Invalid save type.");types[i]=type;
@@ -101,7 +101,7 @@ public static class AutoSaveStore
                     if(type==typeof(Robot) && field.Name=="<DefenseFlag>k__BackingField")continue;
                     if((type==typeof(Robot) || type==typeof(ProductionPlan)) && field.Name=="<IntegratedParts>k__BackingField")continue;
                     if(type==typeof(RobotWorkshop) && field.Name=="<IntegratedProduct>k__BackingField")continue;
-                    if(type==typeof(RobotWorkshop) && field.Name=="<IntegratedPlans>k__BackingField"){field.SetValue(value,new[]{new ProductionPlan(RobotParts.Head|RobotParts.Body,3,false,RobotParts.Head|RobotParts.Body),new ProductionPlan(RobotParts.Body|RobotParts.Legs,4,false,RobotParts.Body|RobotParts.Legs)});continue;}
+                    if(type==typeof(RobotWorkshop) && field.Name=="<IntegratedPlans>k__BackingField"){field.SetValue(value,new[]{new ProductionPlan(RobotParts.Head|RobotParts.Body,9,false,RobotParts.Head|RobotParts.Body),new ProductionPlan(RobotParts.Body|RobotParts.Legs,12,false,RobotParts.Body|RobotParts.Legs)});continue;}
                     if(type==typeof(BattleState) && field.Name=="GlobalTurn"){field.SetValue(value,0);continue;}
                     if(type==typeof(BattleState) && field.Name=="<PersuadedUnits>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
                     if(type==typeof(BattleUnitView) && field.Name=="<Robot>k__BackingField")continue;
@@ -111,6 +111,7 @@ public static class AutoSaveStore
                     if(type==typeof(RobotTransport) && field.Name=="_directOwners"){field.SetValue(value,new Dictionary<long,int>());continue;}
                     if(type==typeof(Robot) && new[]{"<DefenseOnly>k__BackingField","<FactoryWorker>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(RobotWorkshop) && new[]{"_baseLineCount","_lineLimit","_workerLines"}.Contains(field.Name))continue;
+                    if(type==typeof(RobotWorkshop) && field.Name=="<WaitingProductionTurns>k__BackingField")continue;
                     if(type==typeof(RobotWorld) && field.Name=="<Reservations>k__BackingField")continue;
                     if(type.Name=="DomesticViewState" && new[]{"<GlobePan>k__BackingField","<GlobeDragSlide>k__BackingField","<NetDragRotate>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(RobotEncounter) && field.Name=="<ReturnedWanderers>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
@@ -132,6 +133,10 @@ public static class AutoSaveStore
                     throw new InvalidDataException("Autosave field is missing: "+field.Name);
                 }
                 var restored=Read(id);
+                if(doc.Version==1 && restored is int duration && (
+                    type==typeof(RobotWorkshop) && new[]{"<ProductionPeriod>k__BackingField","<ProductionAge>k__BackingField","<RestRemaining>k__BackingField","<WaitingProductionTurns>k__BackingField","<DisposalPeriod>k__BackingField","<DisposalAge>k__BackingField"}.Contains(field.Name) ||
+                    type==typeof(RobotWorld) && field.Name=="<IndustryTurn>k__BackingField" ||
+                    (type==typeof(ProductionPlan) || type==typeof(IndustrySector)) && field.Name=="<Turns>k__BackingField"))restored=IndustryTime.Whole(duration);
                 // Apply the shorter standard segment to campaigns saved with the old default.
                 if(type==typeof(BattleRules) && field.Name=="<SegmentTurns>k__BackingField" && restored is int turns && turns==200)restored=100;
                 field.SetValue(value,restored);

@@ -32,7 +32,7 @@ public sealed partial class RobotWorkshop
     }
     public RobotWorkshop[] ProductionLines {get;private set;}
     public RobotWorkshop(){ProductionLines=new[]{this};}
-    internal void RemoveProductionLines(){ProductionLines=System.Array.Empty<RobotWorkshop>();_baseLineCount=0;_workerLines=null;Manufacturing=false;ProductionAge=0;}
+    internal void RemoveProductionLines(){ProductionLines=System.Array.Empty<RobotWorkshop>();_baseLineCount=0;_workerLines=null;Manufacturing=false;ProductionAge=WaitingProductionTurns=0;}
     public void GenerateLines(int seed)
     {
         Automation=NodeAutomation.Gentle;var random=new SeedRandom(seed);int count=random.Next(4);
@@ -42,11 +42,11 @@ public sealed partial class RobotWorkshop
             line.GeneratePlans(seed^((i+1)*7919));line.SelectPlan(random.Next(11));line.SetRest(1+random.Next(9),1+random.Next(9));
         }
     }
-    public ProductionPlan[] Plans {get;private set;}={new(RobotParts.Head,2),new(RobotParts.Body,2),new(RobotParts.Head|RobotParts.Body,3)};
+    public ProductionPlan[] Plans {get;private set;}={new(RobotParts.Head,4),new(RobotParts.Body,4),new(RobotParts.Head|RobotParts.Body,8)};
     public int SelectedPlan {get;private set;}=-1;
     public bool CheapProduct {get;private set;}
     public RobotParts IntegratedProduct {get;private set;}
-    public ProductionPlan[] IntegratedPlans {get;private set;}={new(RobotParts.Head|RobotParts.Body,3,false,RobotParts.Head|RobotParts.Body),new(RobotParts.Body|RobotParts.Legs,4,false,RobotParts.Body|RobotParts.Legs)};
+    public ProductionPlan[] IntegratedPlans {get;private set;}={new(RobotParts.Head|RobotParts.Body,8,false,RobotParts.Head|RobotParts.Body),new(RobotParts.Body|RobotParts.Legs,8,false,RobotParts.Body|RobotParts.Legs)};
     public ProductionPlan PlanAt(int index)
     {
         if(index<0 || index>10 || index==3)throw new System.ArgumentOutOfRangeException(nameof(index));
@@ -55,7 +55,7 @@ public sealed partial class RobotWorkshop
     private ProductionPlan BasePlanAt(int index)
     {
         if(index<0 || index>10 || index==3)throw new System.ArgumentOutOfRangeException(nameof(index));
-        if(index>=7){var integrated=IntegratedPlans[(index-7)%2];int baseline=Plans.FirstOrDefault(p=>p.Product==integrated.Product)?.Turns??integrated.Turns;return integrated with {Turns=System.Math.Max(1,(index>=9?baseline/2:baseline)-1),Cheap=index>=9};}
+        if(index>=7){var integrated=IntegratedPlans[(index-7)%2];int baseline=Plans.FirstOrDefault(p=>p.Product==integrated.Product)?.Turns??integrated.Turns;return integrated with {Turns=System.Math.Max(1,(index>=9?baseline/2:baseline)-3),Cheap=index>=9};}
         var regular=Plans[index<3?index:index-4];
         return index<3?regular:regular with {Turns=System.Math.Max(1,regular.Turns/2),Cheap=true};
     }
@@ -65,20 +65,29 @@ public sealed partial class RobotWorkshop
     public int ProducedSinceRest {get;private set;}
     public int ReservedSlots {get;private set;}
     public bool RestEnabled {get;private set;}=true;
+    public int CycleProductionTurns=>ProductionPeriod*(RestEnabled?RestEvery:1);
+    public int CycleTurns=>CycleProductionTurns+(RestEnabled?IndustryTime.Whole(RestTurns):0);
+    public int CycleProgress=>RestEnabled && RestRemaining>0
+        ?CycleTurns-RestRemaining
+        :(RestEnabled?ProducedSinceRest*ProductionPeriod:0)+ProductionAge;
+    public int TurnsUntilNextProduction=>(RestEnabled?RestRemaining:0)+System.Math.Max(0,ProductionPeriod-ProductionAge);
+    public int LaneProgress=>RestEnabled && RestRemaining>0
+        ?ProductionPeriod+IndustryTime.Whole(RestTurns)-RestRemaining
+        :Waiting?ProductionPeriod:CycleProgress%ProductionPeriod;
     public void GeneratePlans(int seed)
     {
         _workerPlans=null;_workerAppointment=null;
         var random=new SeedRandom(seed);var masks=new System.Collections.Generic.List<int>{1,2,3,4,5,6,7};
         Plans=new ProductionPlan[3];
-        for(int i=0;i<3;i++){int choice=random.Next(masks.Count),mask=masks[choice];masks.RemoveAt(choice);int pieces=System.Numerics.BitOperations.PopCount((uint)mask);Plans[i]=new((RobotParts)mask,pieces+1+random.Next(3));}
-        IntegratedPlans=new[]{RobotParts.Head|RobotParts.Body,RobotParts.Body|RobotParts.Legs}.Select(p=>new ProductionPlan(p,3+random.Next(3),false,p)).ToArray();
+        for(int i=0;i<3;i++){int choice=random.Next(masks.Count),mask=masks[choice];masks.RemoveAt(choice);int pieces=System.Numerics.BitOperations.PopCount((uint)mask);Plans[i]=new((RobotParts)mask,pieces*4+random.Next(5)-2);}
+        IntegratedPlans=new[]{RobotParts.Head|RobotParts.Body,RobotParts.Body|RobotParts.Legs}.Select(p=>new ProductionPlan(p,8+random.Next(5)-2,false,p)).ToArray();
     }
     public void SelectPlan(int index)
     {
         if(index<0 || index>10)throw new System.ArgumentOutOfRangeException(nameof(index));
         if(SelectedPlan==index)return;
         SelectedPlan=index;Paused=false;RestRemaining=ProducedSinceRest=0;
-        if(index==3){Manufacturing=false;ProductionAge=0;Paused=false;return;}
+        if(index==3){Manufacturing=false;ProductionAge=WaitingProductionTurns=0;Paused=false;return;}
         var plan=PlanAt(index);Configure(plan.Product,plan.Turns);CheapProduct=plan.EffectiveCheapParts==plan.Product;IntegratedProduct=plan.IntegratedParts;_selectedProductPlan=plan;SelectedPlan=index;RestEnabled=true;
     }
     public void SetRest(int every,int turns)

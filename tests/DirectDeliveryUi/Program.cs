@@ -115,7 +115,7 @@ class Checks:Game1{
   if(frame==0)CheckDeliveryNotes();
   if(frame==1){Set("_directPairOpen",false);}
   if(frame==2){var hit=((System.Collections.IList)Get("_directTrucks"))[0]!;var bounds=(Rectangle)hit.GetType().GetField("Item1")!.GetValue(hit)!;Call("DirectMapClick",bounds.Center);Check((bool)Get("_directPairOpen"),"Clicking truck opens pair inspector");}
-  if(frame==3)Set("_pointer",Cell(1,1).Location+new Point(16,145));
+  if(frame==3){var arrival=Part(1,1,0);Set("_pointer",new Point(arrival.Right+32,arrival.Y+18));}
   if(frame==4){
    Call("CloseDirectDelivery");Call("OpenNodeInspector",a);Call("UpdateDomesticSlide",1f);
    ((CubeNet)Get("_net")).FitAll((Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!,1);

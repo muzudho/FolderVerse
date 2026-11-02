@@ -39,7 +39,7 @@ sealed class CheckGame:Game1
     protected override void Draw(GameTime time)
     {
         var batch=(SpriteBatch)Get("_spriteBatch");
-        foreach(int result in new[]{0,7,40})
+        foreach(int result in new[]{0,26,120})
         {
             w.Industry.Reset();w.Industry.Queue(1);
             int seed=Enumerable.Range(0,100000).First(s=>IndustryCycle.CreateWheel(s,1)[IndustryCycle.SectorAt(new SeedRandom(s^7919^0x45123).Next(100),IndustryCycle.CreateWheel(s,1))].Turns==result);w.Industry.Roll(seed);
@@ -60,7 +60,7 @@ sealed class CheckGame:Game1
             Call("UpdateIndustry",.02,false);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();Check(!allNumbers.SequenceEqual(Pixels()),"Spin starts after final reading interval");
             Call("UpdateIndustry",6d,false);int industry=w.Robots.IndustryTurn;Call("UpdateIndustry",.1,false);Check(w.Robots.IndustryTurn==industry,"Repeated draw/update must not produce twice");
             GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();Save("industry-"+result);
-            if(result==0)Check(Get("_industryPrayer")!=null,"Prayer mob on fumble");if(result==40)Check(Get("_industrySurprise")!=null,"Surprised mob on jackpot");
+            if(result==0)Check(Get("_industryPrayer")!=null,"Prayer mob on fumble");if(result==120)Check(Get("_industrySurprise")!=null,"Surprised mob on jackpot");
             Set("_industryIdleAge",4.99d);Call("UpdateIndustry",0d,false);Check(Get("_screen").ToString()=="Industry","Result waits until five idle seconds");
             Set("_previousKeyboard",new KeyboardState());Call("HandleInputCore",new MouseState(),new KeyboardState(Keys.Space),new GameTime(TimeSpan.FromSeconds(20),TimeSpan.Zero),true);Check((double)Get("_industryIdleAge")==0 && Get("_screen").ToString()=="Industry","Keyboard activity resets industry timer without skipping result");
             Call("UpdateIndustry",4.99d,false);Check(Get("_screen").ToString()=="Industry","Result remains before timeout");Call("UpdateIndustry",.01d,false);Check(Get("_screen").ToString()=="WorldStatus","Idle result automatically proceeds at five seconds");Call("UpdateIndustryMusic");Check(Get("_industryMusic")==null,"Leaving industry disposes its BGM");

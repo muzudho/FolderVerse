@@ -15,7 +15,8 @@ public partial class Game1
     private int _hangarSource;
     private Point _hangarGrabOffset;
     private string _hangarMessage="";
-    private static readonly Rectangle NodeAssemblyTile=new(678,210,190,40),HangarAutoCheck=new(84,258,770,34);
+    private string _deliveryTagHint="";
+    private static readonly Rectangle NodeAssemblyTile=new(678,210,190,40),HangarAutoCheck=new(84,950,350,24);
     private HangarReservation _hangarReservation;
     private static readonly Rectangle HangarAssemblyButton=new(84,860,182,42);
     private static Rectangle HangarReservationButton(int i)=>new(280+i%3*196,860+i/3*48,182,42);
@@ -145,13 +146,13 @@ public partial class Game1
     }
     private void DrawNodeAssembly()
     {
+        _deliveryTagHint="";
         SyncHangarSlots();
         var workshop=_setup.Robots.Workshops[_populationNode];var store=_setup.Robots.Nodes[_populationNode];
         _ui.Box(new(54,150,850,825),new(27,49,62));
 
 
         bool manage=CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
-        _ui.Button(HangarAutoCheck,manage?(workshop.AutoAssemblyDisabled?"✓ ":"□ ")+"自動での組み立て・分解を行わない":"他国の自動組立設定は変更できません",manage && workshop.AutoAssemblyDisabled?Accent:Muted,.48f);
         bool hoveringPart=false;
         bool reservationMode=_hangarReservation!=HangarReservation.None;
         string hover=VisitingForeignHangar?"滞在中：自国パーツ同士の交換・空き部位への移動ができます":CanOpenHangar?"頭・胴・脚をつかんで、格納庫の区画へドラッグ＆ドロップ":"他国の地点：自分の征服者がいる地点では自国パーツを動かせます";
@@ -210,7 +211,9 @@ public partial class Game1
             int planned=Enumerable.Range(0,_setup.Robots.Nodes.Length).Where(n=>n!=_populationNode).Sum(n=>Enumerable.Range(0,_setup.ActiveCount).Sum(owner=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Sum(part=>new[]{false,true}.Sum(disposal=>_setup.Robots.Transport.Plan(n,owner,part,disposal).Count(w=>w.Target==_populationNode && w.Degrees>0)))));
             if(arrivals.Length>0 || planned>0)hover=$"到着予定：直送便 {arrivals.Length}件（半透明） / 長期輸送設定 {planned}件（実輸送量はターン終了時に決定）";
         }
-        _ui.Text(_hangarAbandonMode?"部位を選択：パーツを放棄 / 区画の余白：個体を放棄":_hangarMessage.Length>0 && !hoveringPart?_hangarMessage:hover,new(84,838),.32f,Cream);
+        bool hoveringManagement=HangarAutoCheck.Contains(_pointer);
+        if(hoveringManagement)hover=manage?"自動合体と輸送時の自動分解を止めます / 手動操作はできます":"他国のパーツ管理設定は変更できません";
+        _ui.Text(hoveringManagement?hover:_hangarAbandonMode?"部位を選択：パーツを放棄 / 区画の余白：個体を放棄":_hangarMessage.Length>0 && !hoveringPart?_hangarMessage:hover,new(84,838),.32f,Cream);
         _ui.Button(HangarAssemblyButton,"組み立て・分解",!reservationMode?Accent:Muted,.42f);
         if(!VisitingForeignHangar){
             string[] labels={"廃棄予約","守備専用予約","工場作業員予約","迎撃専用予約"};
@@ -224,12 +227,18 @@ public partial class Game1
         }
         if(_setup.Nodes.All[_populationNode].Owner==_setup.PlayerSlot)_ui.Button(HangarAbandonButton,"放棄",_hangarAbandonMode?Accent:Muted,.42f);
         _ui.Button(HangarSalvageButton,"放棄品置き場",Muted,.38f);
+        var check=new Rectangle(HangarAutoCheck.X,HangarAutoCheck.Y+3,18,18);
+        var checkColor=manage?(hoveringManagement?Accent:Cream):Cream*.45f;
+        _ui.Box(check,checkColor);_ui.Box(new(check.X+2,check.Y+2,14,14),new Color(18,35,46));
+        if(workshop.AutoAssemblyDisabled)_ui.Center("✓",check,.35f,checkColor);
+        _ui.Text("パーツ構成を自分で管理する",new(check.Right+8,HangarAutoCheck.Y+4),.36f,checkColor);
         DrawNodeTabs();
         if(_hangarDrag.HasValue)
         {
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarDrag);if(robot!=null)
             {DrawHangarDrag(robot);}
         }
+        else DrawDeliveryTagHint(new(54,150,850,825));
     }
     private void DrawHangarDeliveryTags(int slot,DirectPartOrder[] orders,Robot robot)
     {
@@ -237,19 +246,30 @@ public partial class Game1
             bool incoming=orders.Any(o=>(o.Part&HangarPart(row))!=0);
             bool outgoing=robot!=null && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Source==_populationNode && o.RobotId==robot.Id && (o.Part&HangarPart(row))!=0);
             var part=HangarPartBounds(slot,row);
-            if(incoming)DrawHangarDeliveryTag(part,"予約");
-            if(outgoing)DrawHangarDeliveryTag(part,"直送",incoming);
+            if(incoming)DrawHangarDeliveryTag(part,"入荷予定");
+            if(outgoing)DrawHangarDeliveryTag(part,"出荷予定",incoming);
         }
     }
     private void DrawHangarDeliveryTag(Rectangle part,string label,bool left=false,int gap=8)
     {
-            var tag=new Rectangle(left?part.Left-gap-46:part.Right+gap,part.Y+7,46,23);
+            const int tagWidth=60;
+            var tag=new Rectangle(left?part.Left-gap-tagWidth:part.Right+gap,part.Y+7,tagWidth,23);
             var ink=new Color(54,38,20);var paper=new Color(255,221,139);
             _ui.Box(new(left?tag.Right:part.Right-4,tag.Y+10,gap+5,2),paper);
             _ui.Box(new(tag.X-1,tag.Y-1,tag.Width+2,tag.Height+2),ink);
             _ui.Box(tag,paper);
             _ui.Box(new(tag.X+3,tag.Y+9,3,3),ink);
-            _ui.Center(label,new(tag.X+7,tag.Y,tag.Width-7,tag.Height),.25f,ink);
+            _ui.Center(label,new(tag.X+7,tag.Y,tag.Width-7,tag.Height),.3f,ink);
+            if(tag.Contains(_pointer))_deliveryTagHint=label=="出荷予定"?"ターン終了時に出荷予定です（伝播フェーズで配送）":"この部位へ入荷予定です（伝播フェーズで配送）";
+    }
+    private void DrawDeliveryTagHint(Rectangle area)
+    {
+        if(_deliveryTagHint.Length==0)return;
+        const float scale=.38f;
+        int width=(int)Math.Ceiling(_font.MeasureString(_deliveryTagHint).X*scale)+24;
+        var box=new Rectangle(Math.Clamp(_pointer.X+18,area.Left+8,area.Right-width-8),Math.Clamp(_pointer.Y-48,area.Top+8,area.Bottom-46),width,38);
+        _ui.Box(box,Cream);_ui.Box(new(box.X+2,box.Y+2,box.Width-4,box.Height-4),new Color(16,32,43));
+        _ui.Text(_deliveryTagHint,new(box.X+12,box.Y+9),scale,Cream);
     }
     private void DrawHangarDrag(Robot robot)
     {

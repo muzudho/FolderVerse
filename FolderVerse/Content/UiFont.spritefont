@@ -38,4 +38,10 @@
 <CharacterRegion><Start>補</Start><End>補</End></CharacterRegion>
 <CharacterRegion><Start>誌</Start><End>誌</End></CharacterRegion>
 <CharacterRegion><Start>幅</Start><End>幅</End></CharacterRegion>
+<CharacterRegion><Start>縦</Start><End>縦</End></CharacterRegion>
+<CharacterRegion><Start>盛</Start><End>盛</End></CharacterRegion>
+<CharacterRegion><Start>緑</Start><End>緑</End></CharacterRegion>
+<CharacterRegion><Start>黄</Start><End>黄</End></CharacterRegion>
+<CharacterRegion><Start>柱</Start><End>柱</End></CharacterRegion>
+<CharacterRegion><Start>管</Start><End>管</End></CharacterRegion>
 </CharacterRegions></Asset></XnaContent>

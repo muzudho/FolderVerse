@@ -153,6 +153,7 @@ public sealed partial class RobotWorld
         store.Replace(store.Robots.Where(r=>r.Id!=id).Append(robot.Slice(first)).Append(remainder));
     }
     public int IndustryTurn {get;private set;}
+    // One simulation step is 1/3 displayed industry turn.
     public void AdvanceIndustry(Func<int,int> owner,Func<int,bool> locked=null)
     {
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)SyncWorkers(n);
@@ -187,6 +188,29 @@ public sealed partial class RobotWorld
     private void AutoAssemble(int node,int owner)
     {
         while(AssemblySelection(node,owner) is {} selection)Assemble(node,selection,owner);
+    }
+    internal bool TryStoreProduction(int node,int owner,Robot product,int reservedSlots)
+    {
+        var store=Nodes[node];int limit=store.StorageLimit-reservedSlots;
+        bool StoreComplete(Robot[] partners){
+            if(store.Count-partners.Length+1>limit)return false;
+            var merged=partners.Aggregate((a,b)=>a.Merge(b,owner)).Merge(product,owner);
+            if(merged.Parts!=RobotParts.Complete || merged.AssemblyCredit(owner)<Training[owner].RequiredNative)return false;
+            merged=merged with {Role=partners.Any(r=>r.Role==RobotRole.Captain)?RobotRole.Captain:RobotRole.Soldier};
+            var ids=partners.Select(r=>r.Id).ToHashSet();
+            store.Replace(store.Robots.Where(r=>!ids.Contains(r.Id)).Append(merged));
+            return true;
+        }
+        if(!Workshops[node].AutoAssemblyDisabled && product.Parts!=RobotParts.Complete){
+            var parts=store.Robots.Where(r=>r.Parts!=RobotParts.Complete && (r.Parts&product.Parts)==0 && !AssemblyLocked(node,r)).OrderBy(r=>r.Id).ToArray();
+            for(int a=0;a<parts.Length;a++){
+                if((parts[a].Parts|product.Parts)==RobotParts.Complete && StoreComplete(new[]{parts[a]}))return true;
+                for(int b=a+1;b<parts.Length;b++)
+                    if((parts[a].Parts&parts[b].Parts)==0 && (parts[a].Parts|parts[b].Parts|product.Parts)==RobotParts.Complete && StoreComplete(new[]{parts[a],parts[b]}))return true;
+            }
+        }
+        if(store.Count>=limit)return false;
+        store.Add(product with {Id=Create(owner,product.Parts).Id});return true;
     }
     public long[] AssemblySelection(int node,int owner,bool deployable=false)
     {

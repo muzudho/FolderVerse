@@ -6,7 +6,7 @@ public enum NodeAutomation { Auto, Gentle, Manual }
 public sealed partial class RobotWorkshop
 {
     public RobotParts Product {get;private set;}=RobotParts.Complete;
-    public int ProductionPeriod {get;private set;}=3;
+    public int ProductionPeriod {get;private set;}=12;
     public int ProductionAge {get;private set;}
     public bool Manufacturing {get;private set;}
     public bool Paused {get;set;}
@@ -29,12 +29,13 @@ public sealed partial class RobotWorkshop
     }
     public bool AutoAssemblyDisabled {get;set;}
     public bool Waiting=>Manufacturing && ProductionAge>=ProductionPeriod;
+    public int WaitingProductionTurns {get;private set;}
     public int DisposalPeriod {get;private set;}
     public bool HasDisposalFactory {get;private set;}
     public int DisposalAge {get;private set;}
     public long? DisposalTarget {get;private set;}
     public void Configure(RobotParts product,int period)
-    {RobotWorld.Validate(0,product);if(period<1)throw new ArgumentOutOfRangeException(nameof(period));Product=product;_selectedProductPlan=null;CheapProduct=false;IntegratedProduct=0;ProductionPeriod=period;ProductionAge=0;Manufacturing=true;SelectedPlan=-1;RestEnabled=false;RestRemaining=ProducedSinceRest=0;}
+    {RobotWorld.Validate(0,product);if(period<1)throw new ArgumentOutOfRangeException(nameof(period));Product=product;_selectedProductPlan=null;CheapProduct=false;IntegratedProduct=0;ProductionPeriod=period;ProductionAge=WaitingProductionTurns=0;Manufacturing=true;SelectedPlan=-1;RestEnabled=false;RestRemaining=ProducedSinceRest=0;}
     public void Dispose(RobotStore store,long id)
     {if(store.Robots.Single(r=>r.Id==id).Stationed)throw new InvalidOperationException("Stationed robot is locked.");if(DisposalTarget.HasValue)throw new InvalidOperationException("Disposal lane is busy.");if(!HasDisposalFactory)throw new InvalidOperationException("This node has no disposal factory.");int duration=DisposalTurns(store.Robots.Single(r=>r.Id==id).Parts);if(duration<1 || !store.Robots.Any(r=>r.Id==id))throw new ArgumentException("Invalid disposal order.");DisposalTarget=id;DisposalAge=0;DisposalPeriod=duration;}
     public void ConfigureDisposal()
@@ -43,7 +44,7 @@ public sealed partial class RobotWorkshop
     public System.Collections.Generic.IReadOnlyList<long> DisposalOrder=>_disposalOrder;
     public void SetDisposalOrder(System.Collections.Generic.IEnumerable<long> ids)
     {var order=ids.ToArray();if(order.Distinct().Count()!=order.Length)throw new ArgumentException("Duplicate disposal priority.");_disposalOrder=order;}
-    public static int DisposalTurns(RobotParts parts)=>((parts&RobotParts.Head)!=0?1:0)+((parts&RobotParts.Body)!=0?2:0)+((parts&RobotParts.Legs)!=0?2:0);
+    public static int DisposalTurns(RobotParts parts)=>IndustryTime.Whole(((parts&RobotParts.Head)!=0?1:0)+((parts&RobotParts.Body)!=0?2:0)+((parts&RobotParts.Legs)!=0?2:0));
     internal void StartDisposal(RobotStore store,Func<long,bool> reserved)
     {
         if(!HasDisposalFactory || DisposalTarget.HasValue)return;
@@ -67,9 +68,13 @@ public sealed partial class RobotWorkshop
         if(!Manufacturing || Paused || owner<0)return;
         if(RestEnabled && RestRemaining>0){RestRemaining--;return;}
         ProductionAge=Math.Min(ProductionPeriod,ProductionAge+1);
-        if(!Waiting || world.Nodes[node].Count>=world.Nodes[node].StorageLimit-reservedSlots)return;
-        var robot=CurrentProductionPlan.Preview(owner,world.Create(owner,Product).Id);world.Nodes[node].Add(robot);ProductionAge=0;
-        if(RestEnabled && ++ProducedSinceRest>=RestEvery){ProducedSinceRest=0;RestRemaining=RestTurns;}
+        if(!Waiting)return;
+        if(!world.TryStoreProduction(node,owner,CurrentProductionPlan.Preview(owner),reservedSlots)){
+            if(WaitingProductionTurns<int.MaxValue)WaitingProductionTurns++;
+            return;
+        }
+        ProductionAge=WaitingProductionTurns=0;
+        if(RestEnabled && ++ProducedSinceRest>=RestEvery){ProducedSinceRest=0;RestRemaining=IndustryTime.Whole(RestTurns);}
     }
 }
 

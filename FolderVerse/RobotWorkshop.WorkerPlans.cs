@@ -36,7 +36,7 @@ public sealed partial class RobotWorkshop
                 // Keep ceil(N/2) regular choices, including at least one when N > 0.
                 foreach(int i in regular.Take(regular.Length/2)){
                     var cheap=plans[i].EffectiveCheapParts|part;
-                    plans[i]=plans[i] with {CheapParts=cheap,Cheap=cheap==plans[i].Product};
+                    plans[i]=plans[i] with {CheapParts=cheap,Cheap=cheap==plans[i].Product,Turns=Math.Max(1,plans[i].Turns-2)};
                 }
             }
             if(worker.Origin(part)!=country){
