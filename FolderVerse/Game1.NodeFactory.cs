@@ -94,6 +94,8 @@ public partial class Game1
             var robot=FactoryProductionButton(l);_ui.Box(robot,_factoryPlanLine==l || robot.Contains(_pointer)?Accent:Muted);
             var arrow=FactoryRobotArrow(l,period);for(int row=0;row<10;row++)_ui.Box(new(arrow.X+2+row,arrow.Y+6+row,20-row*2,1),Cream);
             if(line.Manufacturing)DrawRobotGlyph(robot,line.CurrentProductionPlan.Preview(node.Owner),whiteOutline:true);else _ui.Center("×",robot,.7f,Cream);
+            if(period>shownPeriod)DrawFactoryOmission(160+2*72,y);
+            if(line.RestEnabled && line.RestTurns>shownRest)DrawFactoryOmission(160+(shownPeriod+1)*72,y);
             if(line.Manufacturing){
                 DrawFactoryCaret(caret,y,line);
                 if(new Rectangle(caret-12,y+27,24,77).Contains(_pointer))hoveredCaret=line;
