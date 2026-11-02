@@ -11,9 +11,14 @@ var restoredLegacy=AutoSaveStore.Restore<RobotTraining>(legacyTraining);
 Check(restoredLegacy.WorkerPolicy==3 && restoredLegacy.AssemblyPolicy==0 && restoredLegacy.DeploymentPolicy==0,"Older saves get only the new worker setting default, preserving existing preferences");
 Check(AutoSaveStore.Restore<RobotTraining>(AutoSaveStore.Capture(new RobotTraining{WorkerPolicy=1})).WorkerPolicy==1,"Explicit worker threshold survives save/restore");
 Check(IndustryCycle.Sectors.Sum(s=>s.Percent)==100,"Wheel probability");
-Check(IndustryCycle.Sectors.Sum(s=>s.Percent*s.Turns)==400,"Expected four industry turns");
+Check(IndustryCycle.Sectors.Sum(s=>s.Percent*s.Turns)==1200,"Expected four industry turns in thirds");
 Check(IndustryCycle.Sectors.Where(s=>s.Turns==0).Sum(s=>s.Percent)==4,"Fumble 4 percent");
-Check(IndustryCycle.Sectors.Where(s=>s.Turns==40).Sum(s=>s.Percent)==1,"Jackpot 1 percent");
+Check(IndustryCycle.Sectors.Where(s=>s.Turns==120).Sum(s=>s.Percent)==1,"Jackpot 1 percent");
+Check(IndustryTime.Format(1)=="1/3" && IndustryTime.Format(2)=="2/3" && IndustryTime.Format(3)=="1" && IndustryTime.Format(26)=="8+2/3","Fraction formatting preserves exact thirds");
+for(int seed=0;seed<1000;seed++){
+    var wheel=IndustryCycle.CreateWheel(seed,1);
+    Check(wheel.Sum(s=>s.Percent)==100 && wheel.Sum(s=>s.Percent*s.Turns)==1200 && wheel.Any(s=>s.Turns%3!=0),"Generated wheels have exact expectation four and fractional outcomes");
+}
 Check(Enumerable.Range(0,100).Select(IndustryCycle.SectorAt).GroupBy(i=>i).All(g=>g.Count()==IndustryCycle.Sectors[g.Key].Percent),"Every ticket matches visible sector area");
 var robots=new RobotWorld();robots.Initialize(2,2);robots.Workshops[0].AutoAssemblyDisabled=true;
 var regular=robots.Create(0,RobotParts.Head) with {DamagedParts=RobotParts.Head};
@@ -45,15 +50,15 @@ int stock=robots.Nodes[1].Count;robots.AdvanceIndustry(n=>0);robots.AdvanceIndus
 factory.SelectPlan(3);stock=robots.Nodes[1].Count;for(int i=0;i<40;i++)robots.AdvanceIndustry(n=>0);Check(robots.Nodes[1].Count==stock,"Stop plan prevents cheap overproduction");
 var timelineWorld=new RobotWorld();timelineWorld.Initialize(1,1);
 var timeline=timelineWorld.Workshops[0];timeline.Configure(RobotParts.Head,2);timeline.SetRest(3,2);timeline.AutoAssemblyDisabled=true;
-Check(timeline.CycleTurns==8 && timeline.CycleProgress==0 && timeline.TurnsUntilNextProduction==2,"Timeline starts at zero with all repeats and rest included");
-for(int tick=1;tick<=8;tick++){
+Check(timeline.CycleTurns==12 && timeline.CycleProgress==0 && timeline.TurnsUntilNextProduction==2,"Timeline starts at zero with all repeats and whole-turn rest included");
+for(int tick=1;tick<=12;tick++){
     timelineWorld.AdvanceIndustry(n=>0);
-    Check(timeline.CycleProgress==(tick==8?0:tick),"Caret follows repeat boundaries and rest, then wraps");
+    Check(timeline.CycleProgress==(tick==12?0:tick),"Caret follows repeat boundaries and rest, then wraps");
     Check(timelineWorld.Nodes[0].Count==Math.Min(tick/2,3),"Each completion marker produces one robot, rest produces none");
-    if(tick==6)Check(timeline.RestRemaining==2 && timeline.TurnsUntilNextProduction==4,"Rest begins at final completion and next completion includes rest");
+    if(tick==6)Check(timeline.RestRemaining==6 && timeline.TurnsUntilNextProduction==8,"Rest begins at final completion and next completion includes rest");
 }
 timelineWorld.AdvanceIndustry(n=>0);timeline.SetRest(2,3);
-Check(timeline.CycleProgress==1 && timeline.CycleTurns==7,"Changing repeat/rest preserves current robot progress and recomputes timeline");
+Check(timeline.CycleProgress==1 && timeline.CycleTurns==13,"Changing repeat/rest preserves current robot progress and recomputes timeline");
 timeline.SetReservedSlots(12);timelineWorld.AdvanceIndustry(n=>0);
 Check(timeline.Waiting && timeline.CycleProgress==2 && timeline.TurnsUntilNextProduction==0,"Capacity wait holds caret at completion without claiming another work turn");
 timelineWorld.AdvanceIndustry(n=>0);Check(timeline.CycleProgress==2,"Capacity wait keeps caret stationary");
@@ -62,11 +67,11 @@ Check(!timeline.Waiting && timeline.CycleProgress==2 && timeline.ProducedSinceRe
 var repeatWorld=new RobotWorld();repeatWorld.Initialize(1,1);
 var repeatLane=repeatWorld.Workshops[0];repeatLane.Configure(RobotParts.Head,4);repeatLane.SetRest(9,1);repeatLane.AutoAssemblyDisabled=true;
 // Leave room for all nine products without changing the production rules.
-for(int tick=1;tick<=37;tick++){
+for(int tick=1;tick<=39;tick++){
     repeatWorld.AdvanceIndustry(n=>0);
-    Check(repeatLane.LaneProgress==(tick==36?4:tick==37?0:tick%4),"One-robot lane uses modulo across nine repeats, then enters rest");
+    Check(repeatLane.LaneProgress==(tick==39?0:tick>=36?tick-32:tick%4),"One-robot lane uses modulo across nine repeats, then enters whole-turn rest");
     if(tick==10)Check(repeatLane.LaneProgress==2 && repeatLane.ProducedSinceRest==2,"Ten production turns place caret at second tick of four-turn lane");
-    if(tick==36)Check(repeatLane.RestRemaining==1 && repeatLane.CycleProgress==36,"Ninth completion starts rest at the end of the four-turn stretch");
+    if(tick==36)Check(repeatLane.RestRemaining==3 && repeatLane.CycleProgress==36,"Ninth completion starts three-unit rest at the end of the production stretch");
 }
 Check(timeline.LaneProgress==0,"Successful intermediate completion wraps caret to start");
 RobotWorld ProductionWorld(params RobotParts[] products){
@@ -87,8 +92,16 @@ var held=noLookahead.Workshops[0].ProductionLines[1];
 Check(noLookahead.Nodes[0].Robots.Single().Parts==RobotParts.Head && held.WaitingProductionTurns==3 && held.LaneProgress==4,"No lookahead or partial merge: lower lane stores first and later lanes wait at completion for three ticks");
 Check(AutoSaveStore.Restore<RobotWorld>(AutoSaveStore.Capture(noLookahead)).Workshops[0].ProductionLines[1].WaitingProductionTurns==3,"Waiting duration survives save/restore");
 var legacyWait=AutoSaveStore.Capture(noLookahead);
+legacyWait.Version=1;
 foreach(var item in legacyWait.Objects)item.Fields?.Remove("<WaitingProductionTurns>k__BackingField");
-Check(AutoSaveStore.Restore<RobotWorld>(legacyWait).Workshops[0].ProductionLines[1].WaitingProductionTurns==0,"Old saves start counting waits from zero");
+var upgradedWait=AutoSaveStore.Restore<RobotWorld>(legacyWait);
+Check(upgradedWait.Workshops[0].ProductionLines[1].WaitingProductionTurns==0,"Old saves start counting waits from zero");
+Check(upgradedWait.IndustryTurn==18 && upgradedWait.Workshops[0].ProductionLines[1].ProductionPeriod==12 && upgradedWait.Workshops[0].ProductionLines[1].ProductionAge==12 && upgradedWait.Workshops[0].RestTurns==noLookahead.Workshops[0].RestTurns,"Version-one saves migrate elapsed time and progress to thirds without scaling integer factory settings");
+Check(AutoSaveStore.Restore<RobotWorld>(AutoSaveStore.Capture(upgradedWait)).IndustryTurn==18,"Saving an upgraded game does not multiply its clock a second time");
+var oldRecipe=AutoSaveStore.Capture(new ProductionPlan(RobotParts.Complete,4));oldRecipe.Version=1;
+Check(AutoSaveStore.Restore<ProductionPlan>(oldRecipe).Turns==12,"Legacy four-turn recipe still takes four displayed turns");
+var oldSector=AutoSaveStore.Capture(new IndustrySector(8,10));oldSector.Version=1;
+Check(AutoSaveStore.Restore<IndustrySector>(oldSector).Turns==24,"Pending legacy roulette sectors keep their displayed duration");
 noLookahead.Workshops[0].SetReservedSlots(10);noLookahead.AdvanceIndustry(n=>0);
 Check(noLookahead.Nodes[0].Robots.Single().Parts==RobotParts.Complete && held.WaitingProductionTurns==0,"New space permits body delivery, then legs merge with both stored parts in the same tick");
 var disabled=ProductionWorld(RobotParts.Head,RobotParts.Body|RobotParts.Legs);disabled.Workshops[0].SetReservedSlots(11);disabled.Workshops[0].AutoAssemblyDisabled=true;
@@ -103,7 +116,7 @@ for(int tick=0;tick<4;tick++)lockedProduct.AdvanceIndustry(n=>0);
 Check(lockedProduct.Workshops[0].Waiting && lockedProduct.Nodes[0].Robots.Single().Parts==RobotParts.Head,"Reserved parts are excluded from direct production assembly");
 var w=new WorldSetup();w.SetWorld(1);w.SetCast(2);w.SetPlacement(3);w.SelectPlayer(0);w.Campaign.Advance(w,-1,0);
 Check(w.Industry.Pending && w.Robots.IndustryTurn==0,"Global combat queues industry without implicit production");
-foreach(int wanted in new[]{0,1,40})
+foreach(int wanted in new[]{0,3,120,26})
 {
     w.Industry.Reset();w.Industry.Queue(w.Population.Turn);
     int seed=Enumerable.Range(0,100000).First(s=>IndustryCycle.CreateWheel(s,w.Population.Turn)[IndustryCycle.SectorAt(new SeedRandom(s^w.Population.Turn*7919^0x45123).Next(100),IndustryCycle.CreateWheel(s,w.Population.Turn))].Turns==wanted);

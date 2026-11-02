@@ -6,8 +6,8 @@ using System.Collections.Generic;
 public sealed record IndustrySector(int Turns,int Percent);
 public sealed class IndustryCycle
 {
-    // Duplicate values keep the wheel irregular; total probability 100, expectation 4.
-    public static readonly IndustrySector[] Sectors={new(1,1),new(1,20),new(13,10),new(0,2),new(7,15),new(2,7),new(40,1),new(0,2),new(3,12),new(1,22),new(4,8)};
+    // Durations are thirds: total probability 100, expectation 12 units = 4 turns.
+    public static readonly IndustrySector[] Sectors={new(5,1),new(4,20),new(39,10),new(0,2),new(21,15),new(6,7),new(120,1),new(0,2),new(9,12),new(2,22),new(12,8)};
     public IReadOnlyList<IndustrySector> Wheel {get;private set;}=MergeAdjacent(Sectors);
     public bool Jackpot=>SelectedSector>=0 && Result==Wheel.Max(s=>s.Turns);
     public static IndustrySector[] CreateWheel(int seed,int round)
@@ -15,13 +15,16 @@ public sealed class IndustryCycle
         var random=new SeedRandom(seed^round*13007^0x78219);
         for(int attempt=0;attempt<512;attempt++)
         {
-            int a=3+random.Next(4),b=7+random.Next(4),c=11+random.Next(6),jackpot=30+random.Next(31);
+            int a=9+random.Next(12),b=21+random.Next(12),c=33+random.Next(18),jackpot=90+random.Next(91);
+            if(a%3==0 && b%3==0 && c%3==0 && jackpot%3==0)continue;
             int wa=6+random.Next(11),wb=10+random.Next(11),wc=6+random.Next(9);
-            int twos=400-jackpot-95-(a-1)*wa-(b-1)*wb-(c-1)*wc;
+            int balance=1200-jackpot-285-(a-3)*wa-(b-3)*wb-(c-3)*wc;
+            if(balance%3!=0)continue;
+            int twos=balance/3;
             int ones=95-wa-wb-wc-twos;
             if(twos<1 || ones<25)continue;
             int split=1+random.Next(ones-1);
-            var sectors=new[]{new IndustrySector(0,2),new(0,2),new(1,split),new(1,ones-split),new(2,twos),new(a,wa),new(b,wb),new(c,wc),new(jackpot,1)};
+            var sectors=new[]{new IndustrySector(0,2),new(0,2),new(3,split),new(3,ones-split),new(6,twos),new(a,wa),new(b,wb),new(c,wc),new(jackpot,1)};
             random.Shuffle(sectors);return MergeAdjacent(sectors);
         }
         return MergeAdjacent(Sectors);

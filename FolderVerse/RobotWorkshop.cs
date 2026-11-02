@@ -6,7 +6,7 @@ public enum NodeAutomation { Auto, Gentle, Manual }
 public sealed partial class RobotWorkshop
 {
     public RobotParts Product {get;private set;}=RobotParts.Complete;
-    public int ProductionPeriod {get;private set;}=3;
+    public int ProductionPeriod {get;private set;}=12;
     public int ProductionAge {get;private set;}
     public bool Manufacturing {get;private set;}
     public bool Paused {get;set;}
@@ -44,7 +44,7 @@ public sealed partial class RobotWorkshop
     public System.Collections.Generic.IReadOnlyList<long> DisposalOrder=>_disposalOrder;
     public void SetDisposalOrder(System.Collections.Generic.IEnumerable<long> ids)
     {var order=ids.ToArray();if(order.Distinct().Count()!=order.Length)throw new ArgumentException("Duplicate disposal priority.");_disposalOrder=order;}
-    public static int DisposalTurns(RobotParts parts)=>((parts&RobotParts.Head)!=0?1:0)+((parts&RobotParts.Body)!=0?2:0)+((parts&RobotParts.Legs)!=0?2:0);
+    public static int DisposalTurns(RobotParts parts)=>IndustryTime.Whole(((parts&RobotParts.Head)!=0?1:0)+((parts&RobotParts.Body)!=0?2:0)+((parts&RobotParts.Legs)!=0?2:0));
     internal void StartDisposal(RobotStore store,Func<long,bool> reserved)
     {
         if(!HasDisposalFactory || DisposalTarget.HasValue)return;
@@ -74,7 +74,7 @@ public sealed partial class RobotWorkshop
             return;
         }
         ProductionAge=WaitingProductionTurns=0;
-        if(RestEnabled && ++ProducedSinceRest>=RestEvery){ProducedSinceRest=0;RestRemaining=RestTurns;}
+        if(RestEnabled && ++ProducedSinceRest>=RestEvery){ProducedSinceRest=0;RestRemaining=IndustryTime.Whole(RestTurns);}
     }
 }
 

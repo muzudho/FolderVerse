@@ -153,6 +153,7 @@ public sealed partial class RobotWorld
         store.Replace(store.Robots.Where(r=>r.Id!=id).Append(robot.Slice(first)).Append(remainder));
     }
     public int IndustryTurn {get;private set;}
+    // One simulation step is 1/3 displayed industry turn.
     public void AdvanceIndustry(Func<int,int> owner,Func<int,bool> locked=null)
     {
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)SyncWorkers(n);
