@@ -154,21 +154,18 @@ public partial class Game1
         var ink=new Color(16,32,43);
         var signal=line.Paused?new Color(167,190,194):line.RestRemaining>0?new Color(255,204,112):line.Waiting?new Color(255,113,105):new Color(102,244,175);
         float pulse=.78f+.22f*(.5f+.5f*MathF.Sin(_animationTime*2.4f));
-        // A local pool of light marks the exact position without suggesting motion along the belt.
-        for(int glow=3;glow>=0;glow--){
-            int half=13+glow*7;
-            _ui.Box(new(x-half,y+97,half*2,7),Color.Lerp(ink,signal,(.13f+(3-glow)*.15f)*pulse));
-        }
-        // One centered pillar points directly at the tick, rather than straddling an interval.
-        _ui.Box(new(x-9,y+44,18,60),ink);
-        _ui.Box(new(x-5,y+44,10,57),Cream);
-        _ui.Box(new(x-3,y+46,3,51),Color.White*.85f);
-        // Rounded pixel lamp and a bright central position marker.
-        _ui.Box(new(x-10,y+30,20,15),ink);_ui.Box(new(x-7,y+27,14,21),ink);
-        var lamp=Color.Lerp(signal*.6f,signal,pulse);
-        _ui.Box(new(x-7,y+32,14,11),lamp);_ui.Box(new(x-5,y+30,10,15),lamp);
-        _ui.Box(new(x-4,y+32,5,3),Cream*.9f);
-        _ui.Box(new(x-2,y+95,4,9),Cream);
+        // A fluorescent tube and its narrow socket share the exact tick center.
+        // Keep the glow vertical so it cannot be mistaken for a range on the floor.
+        _ui.Box(new(x-10,y+29,20,64),Color.Lerp(ink,signal,.12f*pulse));
+        _ui.Box(new(x-8,y+29,16,64),ink);
+        _ui.Box(new(x-5,y+32,10,58),Color.Lerp(signal*.65f,signal,pulse));
+        _ui.Box(new(x-2,y+33,4,56),Cream);
+        _ui.Box(new(x-6,y+27,12,6),ink);
+        _ui.Box(new(x-4,y+28,8,3),Cream);
+        _ui.Box(new(x-6,y+90,12,7),ink);
+        _ui.Box(new(x-3,y+91,6,5),Cream);
+        _ui.Box(new(x-2,y+96,4,8),ink);
+        _ui.Box(new(x-1,y+96,2,8),Cream);
     }
     private void DrawFactoryOmission(int x,int y)
     {
