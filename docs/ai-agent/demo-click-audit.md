@@ -678,3 +678,10 @@
 - 更新後本体のDemoUiを再ビルドして開始・地図・終了経路を確認。DOTNET_CLI_TELEMETRY_OPTOUT=1、dotnet build tests/DemoUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers：成功、警告０・エラー０。ログartifacts/demo-click-audit/demo-build-0700-output.txt。ALSOFT_DRIVERS=null、dotnet artifacts/corner-lesson/DemoUi.dll：正常終了、終了コード０。ログ同demo-0700-nov3-output.txt。
 - タイトル待機からの開始、地星儀／展開図切替、18FPSの面接続、拒否分岐、終了ループとDemoラベルの既存検証が成功。生成された1920×1080のdemo.pngを開きタイトルとDemoラベルを確認。全時間をタイトルから終了まで連続描画した検証ではなく、テスト内の対象段階からの再生を含む。優先プライマリー／直送便は前回までの確認からコード差分なし。
 - 新規不具合なし、既報0001～0011完了を維持。ゲーム・既存テスト無変更、記録のみ追記。既存出力先使用。次回は更新後本体のDemoActionsUiで格納庫の実押下／ドロップ、移動予約のクリックと結果を再確認する。直送便専用Demo・全Seed／人数・タイトル全体再生・利用者ゲーム併存は未確認。
+
+### 実行履歴：2026-11-03 08:00回（トリガー08:04）
+
+- 開始：08:04:06 JST。終了：2026-11-03 08:05:16 JST。状態：完了（部分点検）。AGENTS、README、両記録・差分を先に確認。HEAD=35077bf66db9158017436278975e7baee65b1f02へ更新、関係未コミット差分なし。同対象の別チャットはnotLoaded、ゲーム・dotnetプロセスなし。停止・セーブ操作・コミット・プッシュ・公開なし。
+- 格納庫・直送便・産業時間・製造プラン等の更新を確認し、旧本体を流用せずDemoActionsUiを再ビルド。DOTNET_CLI_TELEMETRY_OPTOUT=1、dotnet build tests/DemoActionsUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers：成功、警告０・エラー０。ログartifacts/demo-click-audit/actions-build-0800-output.txt。ALSOFT_DRIVERS=null、dotnet artifacts/corner-lesson/DemoActionsUi.dll：正常終了、終了コード０。ログ同actions-0800-output.txt。
+- 1080p／540pで実地点ヒット・地星儀／展開図・回転・非表示レイヤー／画面外カメラ、単独部位／２包み／結合部位の押下保持と実ドロップ、移動予約と独立したターン終了、再試行／行先なしを確認。demo-actions-1.pngを開き描画確認。ゲーム・既存テスト無変更、記録のみ追記、既存出力先使用。
+- 新規不具合なし、既報0001～0011完了を維持。更新後の直送便・工場プラン・産業の再検証は今回未実施。次回は優先のDemoInspectorUiとDirectDeliveryUiを更新後本体でビルド・実行する。直送便専用Demo・全Seed／人数・タイトル全体再生・利用者ゲーム併存は未確認。
