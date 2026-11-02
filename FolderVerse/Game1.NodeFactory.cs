@@ -83,9 +83,9 @@ public partial class Game1
             _ui.Box(new(160+productionWidth,y+96,shownRest*72,8),new Color(137,151,157));
             for(int unit=0;unit<=Math.Min(15,period);unit++)_ui.Box(new(160+unit*24-1,y+96,unit%3==0?2:1,unit%3==0?8:4),unit%3==0?new Color(27,49,62):Color.White);
             for(int unit=0;unit<=shownRest*3;unit++)_ui.Box(new(160+productionWidth+unit*24-1,y+96,unit%3==0?2:1,unit%3==0?8:4),unit%3==0?new Color(27,49,62):Color.White);
-            _ui.Center("0",new(146,y+105,28,22),.3f,Cream);
-            _ui.Center(IndustryTime.Format(period),new(160+productionWidth-40,y+105,80,22),.3f,Cream);
-            if(shownRest>0)_ui.Center(IndustryTime.Format(line.CycleTurns),new(160+productionWidth+shownRest*72-40,y+105,80,22),.3f,Cream);
+            DrawIndustryDuration(0,new(146,y+109,28,30),Cream,.3f);
+            DrawIndustryDuration(period,new(160+productionWidth-40,y+109,80,30),Cream,.3f);
+            if(shownRest>0)DrawIndustryDuration(line.CycleTurns,new(160+productionWidth+shownRest*72-40,y+109,80,30),Cream,.3f);
             int caret=160;
             if(line.Manufacturing){
                 // Reuse the one-robot stretch for each repeat; only the final repeat enters rest.
@@ -104,7 +104,7 @@ public partial class Game1
                 DrawFactoryCaret(caret,y,line);
                 if(new Rectangle(caret-12,y+27,24,77).Contains(_pointer))hoveredCaret=line;
             }
-            int width=productionWidth,mid=160+width/2;_ui.Box(new(160,y+126,width,2),Cream);_ui.Box(new(160,y+121,2,7),Cream);_ui.Box(new(158+width,y+121,2,7),Cream);for(int i=0;i<5;i++){_ui.Box(new(mid-5+i,y+128+i,1,1),Cream);_ui.Box(new(mid+5-i,y+128+i,1,1),Cream);}FactoryDrop(0,line.RestEvery);FactoryDrop(1,line.RestTurns);
+            int width=productionWidth,mid=160+width/2;_ui.Box(new(160,y+140,width,2),Cream);_ui.Box(new(160,y+135,2,7),Cream);_ui.Box(new(158+width,y+135,2,7),Cream);for(int i=0;i<5;i++){_ui.Box(new(mid-5+i,y+142+i,1,1),Cream);_ui.Box(new(mid+5-i,y+142+i,1,1),Cream);}FactoryDrop(0,line.RestEvery);FactoryDrop(1,line.RestTurns);
             string status=!line.Manufacturing?"製造しない":line.Paused?"一時停止":line.RestRemaining>0?$"休憩中 あと{IndustryTime.Format(line.RestRemaining)} / 次の完成まで{IndustryTime.Format(line.TurnsUntilNextProduction)}産業ターン":line.Waiting?$"出荷待ち {IndustryTime.Format(line.WaitingProductionTurns)}生産ターン / 格納できるまで停止":$"次の完成まで{IndustryTime.Format(line.TurnsUntilNextProduction)}産業ターン / {line.ProducedSinceRest+1}台目・工期{IndustryTime.Format(line.ProductionAge)}/{IndustryTime.Format(period)}";
             if(line.Manufacturing)status=$"周期 {IndustryTime.Format(line.CycleProgress)} / {IndustryTime.Format(line.CycleTurns)} / "+status;
             _ui.Text(status,new(160,y-19),Math.Min(.3f,690/_font.MeasureString(status).X),Cream);
@@ -126,8 +126,7 @@ public partial class Game1
                 else{
                     var plan=line.PlanAt(i);DrawRobotGlyph(new(r.X+54,r.Y+8,72,80),plan.Preview(node.Owner),whiteOutline:true);
                     _ui.Center(plan.IntegratedParts==0?"通常品":IntegratedLabel(plan.IntegratedParts),new(r.X,r.Y+96,r.Width,22),.28f,selected?SelectionInk:Cream);
-                    string label=$"{plan.QualityLabel} / {IndustryTime.Format(plan.Turns)}産業ターン";
-                    _ui.Center(label,new(r.X+4,r.Bottom-24,r.Width-8,22),Math.Min(.32f,(r.Width-8)/_font.MeasureString(label).X),selected?SelectionInk:Cream);
+                    DrawIndustryDuration(plan.Turns,new(r.X+4,r.Bottom-27,r.Width-8,26),selected?SelectionInk:Cream,prefix:plan.QualityLabel+" ",suffix:" 産業ターン");
                     if(r.Contains(_pointer))hovered=plan;
                 }
             }
