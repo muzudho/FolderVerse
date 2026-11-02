@@ -30,7 +30,7 @@ public partial class Game1
     private void DrawDirectTruckCheck(int a,int b,Rectangle truck)
     {
         if(!DirectPairChecked(a,b))return;
-        var badge=new Rectangle(truck.Right-8,truck.Y-12,20,20);
+        var badge=new Rectangle(truck.Center.X-10,truck.Center.Y-10,20,20);
         PrimaryRoundBox(badge,new Color(39,143,75),4);DrawNodeCheckGlyph(badge,Color.White);
     }
 }
