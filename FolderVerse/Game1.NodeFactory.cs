@@ -75,25 +75,36 @@ public partial class Game1
             var line=factory.ProductionLines[l];int y=284+l*200,period=line.Manufacturing?line.ProductionPeriod:1;_factoryLine=l;
             _ui.Box(new(78,y-24,782,196),l%2==0?new Color(37,63,77):new Color(46,67,79));
             _ui.Center((l+1).ToString(),new(84,y+22,62,96),1.35f,new Color(167,190,194));
-            int shownPeriod=Math.Min(5,period),shownRest=Math.Min(4,line.RestTurns);
+            int shownPeriod=Math.Min(5,period),shownRest=line.RestEnabled?Math.Min(4,line.RestTurns):0;
             for(int i=0;i<shownPeriod+shownRest;i++){int x=160+i*72;_ui.Box(new(x,y+96,72,8),i<shownPeriod?Accent:new Color(137,151,157));_ui.Box(new(x+70,y+96,2,8),new(27,49,62));}
-            _ui.Center("1",new(160,y+105,72,28),.43f,Cream);
-            if(shownPeriod>1)_ui.Center(period.ToString(),new(160+(shownPeriod-1)*72,y+105,72,28),.43f,Cream);
-            _ui.Center((period*line.RestEvery+line.RestTurns).ToString(),new(160+(shownPeriod+shownRest-1)*72,y+105,72,28),.43f,Cream);
-            if(period>5)DrawFactoryOmission(160+2*72,y);
-            if(line.RestTurns>4)DrawFactoryOmission(160+(shownPeriod+1)*72,y);
+            _ui.Center("0",new(146,y+105,28,22),.3f,Cream);
+            _ui.Center(line.CycleProductionTurns.ToString(),new(160+shownPeriod*72-28,y+105,56,22),.3f,Cream);
+            if(shownRest>0)_ui.Center(line.CycleTurns.ToString(),new(160+(shownPeriod+shownRest)*72-28,y+105,56,22),.3f,Cream);
+            if(line.Manufacturing){
+                // Reuse the one-robot stretch for each repeat; only the final repeat enters rest.
+                int productionWidth=shownPeriod*72;
+                _ui.Box(new(160+productionWidth-1,y+93,2,14),Cream);
+                double progress=line.LaneProgress;
+                int caret=160+(int)Math.Round(progress<=period
+                    ?productionWidth*progress/period
+                    :productionWidth+shownRest*72*(progress-period)/line.RestTurns);
+                _ui.Box(new(caret-3,y+84,6,29),new Color(27,49,62));
+                _ui.Box(new(caret-1,y+85,2,27),line.RestRemaining>0?new Color(255,204,112):Cream);
+            }
             var robot=FactoryProductionButton(l);_ui.Box(robot,_factoryPlanLine==l || robot.Contains(_pointer)?Accent:Muted);
             var arrow=FactoryRobotArrow(l,period);for(int row=0;row<10;row++)_ui.Box(new(arrow.X+2+row,arrow.Y+6+row,20-row*2,1),Cream);
             if(line.Manufacturing)DrawRobotGlyph(robot,line.CurrentProductionPlan.Preview(node.Owner),whiteOutline:true);else _ui.Center("×",robot,.7f,Cream);
             int width=shownPeriod*72,mid=160+width/2;_ui.Box(new(160,y+126,width,2),Cream);_ui.Box(new(160,y+121,2,7),Cream);_ui.Box(new(158+width,y+121,2,7),Cream);for(int i=0;i<5;i++){_ui.Box(new(mid-5+i,y+128+i,1,1),Cream);_ui.Box(new(mid+5-i,y+128+i,1,1),Cream);}FactoryDrop(0,line.RestEvery);FactoryDrop(1,line.RestTurns);
-            string status=!line.Manufacturing?"製造しない":line.RestRemaining>0?$"休業 あと{line.RestRemaining}産業ターン":line.Waiting?"空き枠待ち":$"{line.CurrentProductionPlan.QualityLabel} {line.ProductionAge}/{line.ProductionPeriod}産業ターン";
-            _ui.Text(status,new(560,y-19),.3f,Cream);
+            string status=!line.Manufacturing?"製造しない":line.Paused?"一時停止":line.RestRemaining>0?$"休憩中 あと{line.RestRemaining} / 次の完成まで{line.TurnsUntilNextProduction}産業ターン":line.Waiting?"完成位置で空き枠待ち / 空きができた次の産業ターンに生産":$"次の完成まで{line.TurnsUntilNextProduction}産業ターン / {line.ProducedSinceRest+1}台目・工期{line.ProductionAge}/{period}";
+            if(line.Manufacturing)status=$"周期 {line.CycleProgress}/{line.CycleTurns} / "+status;
+            _ui.Text(status,new(160,y-19),Math.Min(.3f,690/_font.MeasureString(status).X),Cream);
             if(factory.WorkerAt(l) is long workerId){var worker=_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==workerId);if(worker!=null){DrawRobotGlyph(new(754,y+8,60,84),line.WorkerSnapshot??worker);_ui.Text("工場作業員",new(674,y+8),.3f,Accent);_ui.Text("ID "+workerId,new(674,y+36),.28f,Cream);if(line.WorkerSnapshot!=null)_ui.Text("任命時",new(674,y+62),.25f,Cream);}}
             else _ui.Text("常設レーン",new(674,y+8),.3f,Cream*.7f);
         }
         _factoryLine=savedLine;
         _ui.Text("格納庫は必ず",new(180,888),.43f,Cream);FactoryDrop(2,factory.ReservedSlots);_ui.Text("個空ける",new(552,888),.43f,Cream);
         DrawNodeTabs();
+        _ui.Text($"産業ターン累計 {_setup.Robots.IndustryTurn}   /   縦棒：現在位置　小目盛：１台完成",new(160,248),.25f,Cream);
         if(_factoryPlanLine>=0){
             var line=factory.ProductionLines[_factoryPlanLine];_ui.Box(new(84,360,790,590),new(22,40,54));
             _ui.Text($"生産ライン {_factoryPlanLine+1} / 正規・安い・一体型",new(160,374),.45f,Cream);

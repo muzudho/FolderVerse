@@ -65,6 +65,15 @@ public sealed partial class RobotWorkshop
     public int ProducedSinceRest {get;private set;}
     public int ReservedSlots {get;private set;}
     public bool RestEnabled {get;private set;}=true;
+    public int CycleProductionTurns=>ProductionPeriod*(RestEnabled?RestEvery:1);
+    public int CycleTurns=>CycleProductionTurns+(RestEnabled?RestTurns:0);
+    public int CycleProgress=>RestEnabled && RestRemaining>0
+        ?CycleTurns-RestRemaining
+        :(RestEnabled?ProducedSinceRest*ProductionPeriod:0)+ProductionAge;
+    public int TurnsUntilNextProduction=>(RestEnabled?RestRemaining:0)+System.Math.Max(0,ProductionPeriod-ProductionAge);
+    public int LaneProgress=>RestEnabled && RestRemaining>0
+        ?ProductionPeriod+RestTurns-RestRemaining
+        :Waiting?ProductionPeriod:CycleProgress%ProductionPeriod;
     public void GeneratePlans(int seed)
     {
         _workerPlans=null;_workerAppointment=null;

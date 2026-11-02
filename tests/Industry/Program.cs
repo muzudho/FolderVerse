@@ -43,6 +43,32 @@ for(int i=0;i<period;i++)robots.AdvanceIndustry(n=>0);
 Check(robots.Nodes[1].Robots.Any(r=>r.IsCheap(factory.Product)),"Cheap production creates real flagged parts");
 int stock=robots.Nodes[1].Count;robots.AdvanceIndustry(n=>0);robots.AdvanceIndustry(n=>0);Check(robots.Nodes[1].Count==stock,"Rest consumes industry turns");
 factory.SelectPlan(3);stock=robots.Nodes[1].Count;for(int i=0;i<40;i++)robots.AdvanceIndustry(n=>0);Check(robots.Nodes[1].Count==stock,"Stop plan prevents cheap overproduction");
+var timelineWorld=new RobotWorld();timelineWorld.Initialize(1,1);
+var timeline=timelineWorld.Workshops[0];timeline.Configure(RobotParts.Head,2);timeline.SetRest(3,2);timeline.AutoAssemblyDisabled=true;
+Check(timeline.CycleTurns==8 && timeline.CycleProgress==0 && timeline.TurnsUntilNextProduction==2,"Timeline starts at zero with all repeats and rest included");
+for(int tick=1;tick<=8;tick++){
+    timelineWorld.AdvanceIndustry(n=>0);
+    Check(timeline.CycleProgress==(tick==8?0:tick),"Caret follows repeat boundaries and rest, then wraps");
+    Check(timelineWorld.Nodes[0].Count==Math.Min(tick/2,3),"Each completion marker produces one robot, rest produces none");
+    if(tick==6)Check(timeline.RestRemaining==2 && timeline.TurnsUntilNextProduction==4,"Rest begins at final completion and next completion includes rest");
+}
+timelineWorld.AdvanceIndustry(n=>0);timeline.SetRest(2,3);
+Check(timeline.CycleProgress==1 && timeline.CycleTurns==7,"Changing repeat/rest preserves current robot progress and recomputes timeline");
+timeline.SetReservedSlots(12);timelineWorld.AdvanceIndustry(n=>0);
+Check(timeline.Waiting && timeline.CycleProgress==2 && timeline.TurnsUntilNextProduction==0,"Capacity wait holds caret at completion without claiming another work turn");
+timelineWorld.AdvanceIndustry(n=>0);Check(timeline.CycleProgress==2,"Capacity wait keeps caret stationary");
+timeline.SetReservedSlots(0);timelineWorld.AdvanceIndustry(n=>0);
+Check(!timeline.Waiting && timeline.CycleProgress==2 && timeline.ProducedSinceRest==1,"Releasing capacity produces at the same completion boundary");
+var repeatWorld=new RobotWorld();repeatWorld.Initialize(1,1);
+var repeatLane=repeatWorld.Workshops[0];repeatLane.Configure(RobotParts.Head,4);repeatLane.SetRest(9,1);repeatLane.AutoAssemblyDisabled=true;
+// Leave room for all nine products without changing the production rules.
+for(int tick=1;tick<=37;tick++){
+    repeatWorld.AdvanceIndustry(n=>0);
+    Check(repeatLane.LaneProgress==(tick==36?4:tick==37?0:tick%4),"One-robot lane uses modulo across nine repeats, then enters rest");
+    if(tick==10)Check(repeatLane.LaneProgress==2 && repeatLane.ProducedSinceRest==2,"Ten production turns place caret at second tick of four-turn lane");
+    if(tick==36)Check(repeatLane.RestRemaining==1 && repeatLane.CycleProgress==36,"Ninth completion starts rest at the end of the four-turn stretch");
+}
+Check(timeline.LaneProgress==0,"Successful intermediate completion wraps caret to start");
 var w=new WorldSetup();w.SetWorld(1);w.SetCast(2);w.SetPlacement(3);w.SelectPlayer(0);w.Campaign.Advance(w,-1,0);
 Check(w.Industry.Pending && w.Robots.IndustryTurn==0,"Global combat queues industry without implicit production");
 foreach(int wanted in new[]{0,1,40})
