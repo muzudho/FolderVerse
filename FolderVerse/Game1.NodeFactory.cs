@@ -101,7 +101,7 @@ public partial class Game1
                 if(new Rectangle(caret-12,y+27,24,77).Contains(_pointer))hoveredCaret=line;
             }
             int width=shownPeriod*72,mid=160+width/2;_ui.Box(new(160,y+126,width,2),Cream);_ui.Box(new(160,y+121,2,7),Cream);_ui.Box(new(158+width,y+121,2,7),Cream);for(int i=0;i<5;i++){_ui.Box(new(mid-5+i,y+128+i,1,1),Cream);_ui.Box(new(mid+5-i,y+128+i,1,1),Cream);}FactoryDrop(0,line.RestEvery);FactoryDrop(1,line.RestTurns);
-            string status=!line.Manufacturing?"製造しない":line.Paused?"一時停止":line.RestRemaining>0?$"休憩中 あと{line.RestRemaining} / 次の完成まで{line.TurnsUntilNextProduction}産業ターン":line.Waiting?"完成位置で空き枠待ち / 空きができた次の産業ターンに生産":$"次の完成まで{line.TurnsUntilNextProduction}産業ターン / {line.ProducedSinceRest+1}台目・工期{line.ProductionAge}/{period}";
+            string status=!line.Manufacturing?"製造しない":line.Paused?"一時停止":line.RestRemaining>0?$"休憩中 あと{line.RestRemaining} / 次の完成まで{line.TurnsUntilNextProduction}産業ターン":line.Waiting?$"出荷待ち {line.WaitingProductionTurns}生産ターン / 格納できるまで停止":$"次の完成まで{line.TurnsUntilNextProduction}産業ターン / {line.ProducedSinceRest+1}台目・工期{line.ProductionAge}/{period}";
             if(line.Manufacturing)status=$"周期 {line.CycleProgress}/{line.CycleTurns} / "+status;
             _ui.Text(status,new(160,y-19),Math.Min(.3f,690/_font.MeasureString(status).X),Cream);
             if(factory.WorkerAt(l) is long workerId){var worker=_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==workerId);if(worker!=null){DrawRobotGlyph(new(754,y+8,60,84),line.WorkerSnapshot??worker);_ui.Text("工場作業員",new(674,y+8),.3f,Accent);_ui.Text("ID "+workerId,new(674,y+36),.28f,Cream);if(line.WorkerSnapshot!=null)_ui.Text("任命時",new(674,y+62),.25f,Cream);}}
@@ -142,7 +142,7 @@ public partial class Game1
             }
         }
         if(hoveredCaret!=null && _factoryDropDown<0 && _factoryPlanLine<0){
-            string hint=hoveredCaret.Paused?"一時停止中だよ。再開すると製造が進むよ":hoveredCaret.Waiting?"格納庫が空いた次の生産ターンにロボットを製造できるよ":$"あと{hoveredCaret.TurnsUntilNextProduction}生産ターンでロボットを製造できるよ";
+            string hint=hoveredCaret.Paused?"一時停止中だよ。再開すると製造が進むよ":hoveredCaret.Waiting?$"{hoveredCaret.WaitingProductionTurns}生産ターンも待っていますよ！ 格納できれば出荷するよ":$"あと{hoveredCaret.TurnsUntilNextProduction}生産ターンでロボットを製造できるよ";
             if(hoveredCaret.RestRemaining>0)hint+=$"（休憩あと{hoveredCaret.RestRemaining}ターンを含む）";
             const float scale=.38f;
             int hintWidth=(int)Math.Ceiling(_font.MeasureString(hint).X*scale)+24;

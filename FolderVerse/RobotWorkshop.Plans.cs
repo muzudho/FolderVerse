@@ -32,7 +32,7 @@ public sealed partial class RobotWorkshop
     }
     public RobotWorkshop[] ProductionLines {get;private set;}
     public RobotWorkshop(){ProductionLines=new[]{this};}
-    internal void RemoveProductionLines(){ProductionLines=System.Array.Empty<RobotWorkshop>();_baseLineCount=0;_workerLines=null;Manufacturing=false;ProductionAge=0;}
+    internal void RemoveProductionLines(){ProductionLines=System.Array.Empty<RobotWorkshop>();_baseLineCount=0;_workerLines=null;Manufacturing=false;ProductionAge=WaitingProductionTurns=0;}
     public void GenerateLines(int seed)
     {
         Automation=NodeAutomation.Gentle;var random=new SeedRandom(seed);int count=random.Next(4);
@@ -87,7 +87,7 @@ public sealed partial class RobotWorkshop
         if(index<0 || index>10)throw new System.ArgumentOutOfRangeException(nameof(index));
         if(SelectedPlan==index)return;
         SelectedPlan=index;Paused=false;RestRemaining=ProducedSinceRest=0;
-        if(index==3){Manufacturing=false;ProductionAge=0;Paused=false;return;}
+        if(index==3){Manufacturing=false;ProductionAge=WaitingProductionTurns=0;Paused=false;return;}
         var plan=PlanAt(index);Configure(plan.Product,plan.Turns);CheapProduct=plan.EffectiveCheapParts==plan.Product;IntegratedProduct=plan.IntegratedParts;_selectedProductPlan=plan;SelectedPlan=index;RestEnabled=true;
     }
     public void SetRest(int every,int turns)
