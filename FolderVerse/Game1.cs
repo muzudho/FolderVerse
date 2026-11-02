@@ -141,6 +141,7 @@ public partial class Game1 : Game
         UpdateRateDrag(mouse,active,click);
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
+        if(CountrySettingsInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(AbandonConfirmationInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(active && click && FolderTreeToolbarClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(InspectorFolderInput(mouse,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -459,7 +460,9 @@ public partial class Game1 : Game
             if(HasTerritories)
                 _counter.Draw(_spriteBatch,active?_setup.TerritoryCounts[slot]:0,
                     new Rectangle(rect.X+7,rect.Y+7,rect.Width-14,rect.Height-14),color);
+            DrawCountrySwatch(new(rect.Right-43,rect.Bottom-29,34,22),slot);
         }
+        _ui.Text("人間プレイヤー、コンピュータープレイヤー、国の色は後で変えることができます。",new(54,78),.36f,new(170,206,216));
         _ui.Button(CastBack,"世界へ戻る",Muted,0.48f);
         _ui.Button(CastRetry,_screen is Screen.CastRolling or Screen.CastReview?"人物を再抽選":"配置を再抽選",Muted,0.48f);
         string action=IsRolling?"STOP":_screen==Screen.CastReview?"登場人物を確定 / 区画権利へ":_screen==Screen.PlacementReview?"区画権利を確定":"区画権利を確定済み";
@@ -512,6 +515,7 @@ public partial class Game1 : Game
         _counter.Draw(_spriteBatch,_setup.TerritoryCounts[tile.Slot],image,color);
         _ui.Box(new(rect.X+5,rect.Y+5,Math.Min(65,rect.Width-10),27),new Color(10,25,35,210));
         _ui.Text("#"+(tile.Slot+1).ToString("00"),new(rect.X+10,rect.Y+7),Math.Min(0.42f,(rect.Width-20)/_font.MeasureString("#00").X),color);
+        DrawCountrySwatch(new(rect.Right-38,rect.Bottom-27,30,20),tile.Slot);
         if(_screen==Screen.PlayerReady && tile.Slot==_setup.PlayerSlot)
         {
             _ui.Box(new(rect.X+4,rect.Y+34,Math.Min(rect.Width-8,140),33),new Color(10,25,35,220));
@@ -762,6 +766,7 @@ public partial class Game1 : Game
         if(TutorialReviewAvailable){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialMessages();_spriteBatch.End();}
         if(_tutorialAttackGuide){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAttackGuide();_spriteBatch.End();}
         if(_wandererPolicyOpen){_spriteBatch.Begin(transformMatrix:transform);DrawWandererPolicyDialog();_spriteBatch.End();}
+        if(_countrySettingsOpen && IsStatusScreen){_spriteBatch.Begin(transformMatrix:transform);DrawCountrySettings();_spriteBatch.End();}
         if(_screen==Screen.Battle && _tutorialAchievementAge>=0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAchievementCutIn();_spriteBatch.End();}
         if(_conquestOverview){_spriteBatch.Begin(transformMatrix:transform);DrawConquestCurtain(1-MathHelper.SmoothStep(0,1,(float)(_conquestAge/.65)));_spriteBatch.End();}
         DrawFullscreenCursor();

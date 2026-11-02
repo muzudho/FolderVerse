@@ -15,11 +15,11 @@ public sealed partial class CubeNet
     public bool ShowBatteries {get;set;}=true;
     public bool ShowCountryColors {get;set;}
     public bool ControlledCountryColors {get;set;}
-    public Color TerrainColor(WorldSetup world,int cell,float height)
+    public Color TerrainColor(WorldSetup world,int cell,float height,int x=0,int y=0)
     {
         int owner=ShowCountryColors?world.Nodes.FullOwner(cell):-1;
         if(ControlledCountryColors && !world.Relations.Controls(owner))owner=-1;
-        var color=owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal,world.PolarAxis):WorldPreview.LandTerritoryColor(world.OwnerColor(owner),WorldTerrain.Kind(height));
+        var color=owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal,world.PolarAxis):WorldPreview.LandTerritoryColor(world.CountryMapColor(owner,x,y),WorldTerrain.Kind(height));
         return NodeFocus<0 && RegionFocusCell>=0 && cell!=RegionFocusCell?SelectionGlow.Dim(color,FocusBrightness):color;
     }
     public bool ShowRoutes {get;set;}=true; public int HoveredNode {get;set;}=-1; public int InspectedNode {get;set;}=-1;
@@ -117,6 +117,7 @@ public sealed partial class CubeNet
                 }
                 if(world.Campaign.OwnershipChanged(post))
                     NodeOwnershipArt.Draw(ui,at,radius,Tint(world.OwnerColor(world.Campaign.PreviousNodeOwners[post.Id])),Tint(world.OwnerColor(post.Owner)),Tint(new Color(13,36,44)));
+                if(world.Campaign.OwnershipChanged(post) && !post.IsHarbor)DrawCountryNodePattern(ui,world,post.Owner,at,radius,Tint);
                 if(AttackTargetMarkers && SelectedTarget==post.Id)
                 {
                     float size=radius*(1.3f+.25f*MathF.Sin(pulse*5));
@@ -132,8 +133,20 @@ public sealed partial class CubeNet
                 {
                     Disc(ui,at,radius+2,Tint(new Color(13,36,44)));
                     Disc(ui,at,radius,Tint(world.OwnerColor(post.Owner)));
+                    DrawCountryNodePattern(ui,world,post.Owner,at,radius,Tint);
                 }
             }
+    }
+    private static void DrawCountryNodePattern(UiPainter ui,WorldSetup world,int owner,Vector2 at,float radius,Func<Color,Color> tint)
+    {
+        if(owner<0 || world.CountryPattern(owner)==0)return;
+        // Clip each stripe/dot to the round ownership badge, including at small zooms.
+        float step=radius/5;
+        for(int y=0;y<10;y++)for(int x=0;x<10;x++){
+            float dx=(x-4.5f)*step,dy=(y-4.5f)*step;
+            if(dx*dx+dy*dy>radius*radius || !WorldSetup.CountryPatternSecondary(world.CountryPattern(owner),x,y))continue;
+            ui.Tile(at+new Vector2(dx,dy),new Vector2(step,step),0,tint(world.CountryMapColor(owner,x,y)));
+        }
     }
     private static void DrawHarbor(UiPainter ui,Vector2 at,float radius,Color color,bool dim=false)
     {

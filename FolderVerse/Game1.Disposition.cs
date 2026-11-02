@@ -23,6 +23,7 @@ public partial class Game1
         if(_statusMenuOpen && HierarchyMenuItem.Contains(point))
         {CloseMovement();_statusMenuOpen=false;_screen=Screen.Hierarchy;return true;}
         if(_statusMenuOpen && AutoMenuItem.Contains(point)){StartAutoPlay();return true;}
+        if(_statusMenuOpen && CountrySettingsMenuItem.Contains(point)){OpenCountrySettings();return true;}
         if(_statusMenuOpen && EndingMenuItem.Contains(point)){StartEnding();return true;}
         if(_statusMenuOpen && QuitMenuItem.Contains(point)){ReturnToTitle();return true;}
         _statusMenuOpen=false;return false;
@@ -37,6 +38,7 @@ public partial class Game1
             _ui.Button(EndingMenuItem,"ここでゲームをエンディングにする",Muted,.48f);
             _ui.Button(QuitMenuItem,"ゲームを止めてタイトル画面に戻る",Muted,.48f);
             _ui.Button(AutoMenuItem,"コンピューターに続きをやってもらう",Muted,.48f);
+            _ui.Button(CountrySettingsMenuItem,"人間とコンピューター / 国の色と網かけ",Muted,.46f);
         }
     }
     private void DispositionInput(bool click,bool escape)
