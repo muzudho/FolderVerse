@@ -140,7 +140,7 @@ public partial class Game1
                 for(int row=0;row<3;row++){
                     var part=HangarPart(row);var bounds=DirectPart(side,slot,row);
                     bool incoming=_setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==node && (o.Part&part)!=0 && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot));
-                    bool outgoing=robot!=null && (_setup.Robots.DirectDelivery.LockedParts(node,robot.Id)&part)!=0;
+                    bool outgoing=robot!=null && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Source==node && o.RobotId==robot.Id && (o.Part&part)!=0);
                     if(incoming)DrawHangarDeliveryTag(bounds,"予約",gap:2);
                     if(outgoing)DrawHangarDeliveryTag(bounds,"直送",incoming,gap:2);
                 }
