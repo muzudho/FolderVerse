@@ -15,6 +15,7 @@ public partial class Game1
     private int _hangarSource;
     private Point _hangarGrabOffset;
     private string _hangarMessage="";
+    private string _deliveryTagHint="";
     private static readonly Rectangle NodeAssemblyTile=new(678,210,190,40),HangarAutoCheck=new(84,950,350,24);
     private HangarReservation _hangarReservation;
     private static readonly Rectangle HangarAssemblyButton=new(84,860,182,42);
@@ -145,6 +146,7 @@ public partial class Game1
     }
     private void DrawNodeAssembly()
     {
+        _deliveryTagHint="";
         SyncHangarSlots();
         var workshop=_setup.Robots.Workshops[_populationNode];var store=_setup.Robots.Nodes[_populationNode];
         _ui.Box(new(54,150,850,825),new(27,49,62));
@@ -236,6 +238,7 @@ public partial class Game1
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarDrag);if(robot!=null)
             {DrawHangarDrag(robot);}
         }
+        else DrawDeliveryTagHint(new(54,150,850,825));
     }
     private void DrawHangarDeliveryTags(int slot,DirectPartOrder[] orders,Robot robot)
     {
@@ -243,19 +246,30 @@ public partial class Game1
             bool incoming=orders.Any(o=>(o.Part&HangarPart(row))!=0);
             bool outgoing=robot!=null && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Source==_populationNode && o.RobotId==robot.Id && (o.Part&HangarPart(row))!=0);
             var part=HangarPartBounds(slot,row);
-            if(incoming)DrawHangarDeliveryTag(part,"予約");
-            if(outgoing)DrawHangarDeliveryTag(part,"直送",incoming);
+            if(incoming)DrawHangarDeliveryTag(part,"入荷予定");
+            if(outgoing)DrawHangarDeliveryTag(part,"出荷予定",incoming);
         }
     }
     private void DrawHangarDeliveryTag(Rectangle part,string label,bool left=false,int gap=8)
     {
-            var tag=new Rectangle(left?part.Left-gap-46:part.Right+gap,part.Y+7,46,23);
+            const int tagWidth=60;
+            var tag=new Rectangle(left?part.Left-gap-tagWidth:part.Right+gap,part.Y+7,tagWidth,23);
             var ink=new Color(54,38,20);var paper=new Color(255,221,139);
             _ui.Box(new(left?tag.Right:part.Right-4,tag.Y+10,gap+5,2),paper);
             _ui.Box(new(tag.X-1,tag.Y-1,tag.Width+2,tag.Height+2),ink);
             _ui.Box(tag,paper);
             _ui.Box(new(tag.X+3,tag.Y+9,3,3),ink);
-            _ui.Center(label,new(tag.X+7,tag.Y,tag.Width-7,tag.Height),.25f,ink);
+            _ui.Center(label,new(tag.X+7,tag.Y,tag.Width-7,tag.Height),.3f,ink);
+            if(tag.Contains(_pointer))_deliveryTagHint=label=="出荷予定"?"ターン終了時に出荷予定です（伝播フェーズで配送）":"この部位へ入荷予定です（伝播フェーズで配送）";
+    }
+    private void DrawDeliveryTagHint(Rectangle area)
+    {
+        if(_deliveryTagHint.Length==0)return;
+        const float scale=.38f;
+        int width=(int)Math.Ceiling(_font.MeasureString(_deliveryTagHint).X*scale)+24;
+        var box=new Rectangle(Math.Clamp(_pointer.X+18,area.Left+8,area.Right-width-8),Math.Clamp(_pointer.Y-48,area.Top+8,area.Bottom-46),width,38);
+        _ui.Box(box,Cream);_ui.Box(new(box.X+2,box.Y+2,box.Width-4,box.Height-4),new Color(16,32,43));
+        _ui.Text(_deliveryTagHint,new(box.X+12,box.Y+9),scale,Cream);
     }
     private void DrawHangarDrag(Robot robot)
     {

@@ -16,7 +16,7 @@ public partial class Game1
     private string _directMessage="";
     private static readonly Rectangle DirectPairBack=new(932,110,56,48);
     private static Rectangle DirectCell(int side,int slot)=>new(40+side*1320+slot%3*174,300+slot/3*166,164,156);
-    private static Rectangle DirectPart(int side,int slot,int row){var r=DirectCell(side,slot);return new(r.X+48,r.Y+8+row*34,68,32);}
+    private static Rectangle DirectPart(int side,int slot,int row){var r=DirectCell(side,slot);return new(r.X+40,r.Y+8+row*34,68,32);}
     private RobotParts DirectHoverPart(int side,int slot)
     {
         int node=_directNodes[side];long? id=_directSlots[side][slot];var robot=_setup.Robots.Nodes[node].Robots.FirstOrDefault(r=>r.Id==id);
@@ -108,6 +108,7 @@ public partial class Game1
         }
     }
     private void DrawDirectPair(){
+        _deliveryTagHint="";
         SyncDirectSlots();_ui.Box(new(0,0,1920,1080),new Color(14,29,40));
         DrawDirectPairMap();
         DrawDepartingDirectControls();
@@ -131,7 +132,7 @@ public partial class Game1
                 for(int row=0;row<3;row++){
                     var part=HangarPart(row);var bounds=DirectPart(side,slot,row);_ui.Box(bounds,(hover!=0 && ((robot?.ConnectedParts(hover)??hover)&part)!=0)?new Color(88,125,141):new Color(40,63,76));
                 }
-                var joinedGlyph=new Rectangle(cell.X+48,cell.Y+8,68,102);
+                var joinedGlyph=new Rectangle(cell.X+40,cell.Y+8,68,102);
                 if(robot!=null)DrawRobotGlyph(joinedGlyph,robot,whiteOutline:true,partOpacity:part=>(_setup.Robots.DirectDelivery.LockedParts(node,robot.Id)&part)!=0?.35f:1);
                 foreach(var order in _setup.Robots.DirectDelivery.Orders.Where(o=>o.Target==node && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot))){
                     var original=_setup.Robots.Nodes[order.Source].Robots.FirstOrDefault(r=>r.Id==order.RobotId);
@@ -141,8 +142,8 @@ public partial class Game1
                     var part=HangarPart(row);var bounds=DirectPart(side,slot,row);
                     bool incoming=_setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==node && (o.Part&part)!=0 && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot));
                     bool outgoing=robot!=null && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Source==node && o.RobotId==robot.Id && (o.Part&part)!=0);
-                    if(incoming)DrawHangarDeliveryTag(bounds,"予約",gap:2);
-                    if(outgoing)DrawHangarDeliveryTag(bounds,"直送",incoming,gap:2);
+                    if(incoming)DrawHangarDeliveryTag(bounds,"入荷予定",gap:2);
+                    if(outgoing)DrawHangarDeliveryTag(bounds,"出荷予定",incoming,gap:2);
                 }
                 if(robot!=null){if(robot.IntegratedParts!=0 && !robot.Stationed && !robot.Disposal)_ui.Center(IntegratedLabel(robot.IntegratedParts),new(cell.X,cell.Y+135,cell.Width,18),.24f,Cream);_ui.Center("ID "+robot.Id,new(cell.X,cell.Y+111,cell.Width,24),.32f,Cream);if(robot.Stationed || robot.Disposal)_ui.Center(robot.FactoryWorker?"工場作業員":robot.InterceptOnly?"迎撃専用":robot.DefenseOnly?"守備専用":"廃棄予約",new(cell.X,cell.Y+135,cell.Width,18),.24f,color);}
             }
@@ -161,6 +162,7 @@ public partial class Game1
         var pending=_setup.Robots.DirectDelivery.Orders.Where(o=>_directNodes.Contains(o.Source) && _directNodes.Contains(o.Target)).ToArray();string status=pending.Length==0?"この２地点の配送予約はありません":string.Join(" / ",pending.Take(6).Select(o=>$"#{o.Number} {(o.Source==_directNodes[0]?"左→右":"右→左")} {PartsLabel(o.Part)} {o.Status}"));
         _ui.Center(status,new(20,1046,1880,25),Math.Min(.32f,1840/Math.Max(1,_font.MeasureString(status).X)),Accent);
         DrawNodeCheckHint();
+        if(!_directDrag.HasValue)DrawDeliveryTagHint(new(0,0,1920,1080));
         if(_directDrag is {} drag){var robot=_setup.Robots.Nodes[_directNodes[drag.Side]].Robots.FirstOrDefault(r=>r.Id==drag.Robot);if(robot!=null){var selected=drag.Part==0?robot.Parts:drag.Part;var bounds=new Rectangle(_pointer.X-34,_pointer.Y-34,68,102);DrawRobotGlyph(bounds,robot with {Parts=selected,IntegratedParts=robot.IntegratedParts&selected},whiteOutline:true);}}
     }
 }
