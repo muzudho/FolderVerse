@@ -41,13 +41,18 @@ sealed class InvasionUiCheck:Game1
             if(!net.MovementTargets.Contains(target.Id) || net.AttackHighlightTargets.Contains(target.Id) || net.EmphasizedNode(target.Id) || !net.NodeVisible(world,target))throw new Exception("Empty destination stays visible/clickable without emphasis");
             var rows=(System.Collections.IList)Get("_invasionSources");if(rows.Count==0 || ((Robot[])Call("InvasionRobots",rows[0]!)).Length!=0)throw new Exception("Empty sortie source must remain inspectable");Call("OpenInvasionPicker",0);
         }
-
+        if(Environment.GetCommandLineArgs().Contains("--sortie-hints")){
+            var hintsRobots=hangar.Robots.Select(r=>r.Id==samples[2].Id?r with {DamagedParts=RobotParts.Complete}:r).ToArray();foreach(var r in hangar.Robots.ToArray())hangar.Remove(r.Id);foreach(var r in hintsRobots)hangar.Add(r);Call("SelectMoveNode",target.Id);Set("_pointer",new Point(236,350));
+        }
     }
     protected override void Update(GameTime time){}
     protected override void Draw(GameTime time)
     {
         try
         {
+            if(frame==1 && Environment.GetCommandLineArgs().Contains("--sortie-hints")){
+                var robot=world.Robots.Nodes[home.Id].Robots.ElementAt(2);world.Robots.PendingEdits.Add(new(home.Id,new[]{robot.Id},null));
+            }
             if(EmptySortie && frame==1){
                 Set("_invasionPicker",-1);foreach(var entry in emptySortieStores)foreach(var robot in entry.Robots)entry.Store.Add(robot);
                 Call("RefreshWarTargetHighlights");var net=(CubeNet)Get("_net");net.HoveredNode=target.Id;
@@ -149,6 +154,7 @@ sealed class InvasionUiCheck:Game1
             var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);
             using var image=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);image.SetData(pixels);
             using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"invasion-ui-{frame}.png"));image.SaveAsPng(file,image.Width,image.Height);
+            if(frame==1 && Environment.GetCommandLineArgs().Contains("--sortie-hints")){Console.WriteLine("PASS: unavailable robot hover renders one and multiple actual sortie refusal reasons.");Exit();return;}
             if(frame==3 && Environment.GetCommandLineArgs().Contains("--immediate-sortie")){Console.WriteLine("PASS: native picker confirmation immediately saves sortie and replaces guard job; inspector stays open without final reserve button.");Exit();return;}
             if(EmptySortie && frame==1){Console.WriteLine("PASS: no-robot map destination remains clickable, empty sortie picker renders, emphasis returns when robots become available.");Exit();return;}
             if(frame==3 && Environment.GetCommandLineArgs().Contains("--war-targets")){Console.WriteLine("PASS: all attackable targets visible, direct map target switching, spotlight at 65% outside brightness in net/globe, no own-hover emphasis, close restores hover, confirmed reservations preserved.");Exit();return;}

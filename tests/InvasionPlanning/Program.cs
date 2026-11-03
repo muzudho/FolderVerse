@@ -108,6 +108,24 @@ foreach(bool queen in new[]{false,true})
     Check(!(bool)Field("_movementOpen").GetValue(g)! && !net.AttackTargetMarkers && net.MovementTargets.Count==0,"Closing the inspector exits war mode");
     Check(w.Campaign.PlannedOrders.Single().TargetNode==target.Id,"Closing preserves confirmed reservations");
 }
+// Unavailable explanations match the actual hangar and pocket selection rules.
+{
+    var(w,home,target)=Fixture();var robot=w.Robots.Create(0,RobotParts.Complete);w.Robots.Nodes[home.Id].Add(robot);w.Robots.Retinues[0].Add(robot);
+    var g=(Game1)RuntimeHelpers.GetUninitializedObject(typeof(Game1));const BindingFlags flags=BindingFlags.Instance|BindingFlags.NonPublic;
+    FieldInfo Field(string n)=>typeof(Game1).GetField(n,flags)!;
+    object Call(string n,params object[] args)=>typeof(Game1).GetMethod(n,flags)!.Invoke(g,args)!;
+    Field("_setup").SetValue(g,w);Field("_invasionSources").SetValue(g,Activator.CreateInstance(Field("_invasionSources").FieldType));Call("BuildInvasionSources",target.Id);
+    var rows=(System.Collections.IList)Field("_invasionSources").GetValue(g)!;var hangar=rows.Cast<object>().Single(r=>!(bool)r.GetType().GetField("Queen")!.GetValue(r)! && (int)r.GetType().GetField("Node")!.GetValue(r)! ==home.Id);var pocket=rows.Cast<object>().Single(r=>(bool)r.GetType().GetField("Queen")!.GetValue(r)! && (int)r.GetType().GetField("Owner")!.GetValue(r)! ==0);
+    void Replace(RobotStore store,Robot r){foreach(var old in store.Robots.ToArray())store.Remove(old.Id);store.Add(r);}
+    string[] Reasons(object row,Robot r)=> (string[])Call("InvasionUnavailableReasons",row,r);
+    foreach(var r in new[]{robot,robot with {DefenseOnly=true},robot with {InterceptOnly=true},robot with {FactoryWorker=true},robot with {Disposal=true}}){Replace(w.Robots.Nodes[home.Id],r);Check(Reasons(hangar,r).Length==0,"Overwritable hangar jobs do not give false refusal reasons");}
+    var damaged=robot with {DamagedParts=RobotParts.Complete};Replace(w.Robots.Nodes[home.Id],damaged);Check(Reasons(hangar,damaged).Any(r=>r.Contains("１／３")),"No undamaged own part explains one-third requirement");
+    var mixed=robot with {BodyOrigin=1};Replace(w.Robots.Nodes[home.Id],mixed);w.Robots.Training[0].DeploymentPolicy=0;Check(Reasons(hangar,mixed).Any(r=>r.Contains("３／３")),"Pure domestic deployment policy explains stricter requirement");w.Robots.Training[0].DeploymentPolicy=3;
+    Replace(w.Robots.Nodes[home.Id],robot);w.Robots.PendingEdits.Add(new(home.Id,new[]{robot.Id},null));Check(Reasons(hangar,robot).Any(r=>r.Contains("組立・分解")),"Pending workshop edit explains lock");w.Robots.PendingEdits.Clear();
+    w.Robots.DirectDelivery.Orders.Add(new(1,home.Id,target.Id,robot.Id,RobotParts.Head,null,0,0));Check(Reasons(hangar,robot).Any(r=>r.Contains("直送便")),"Direct shipment explains lock");w.Robots.DirectDelivery.Orders.Clear();
+    foreach(var r in new[]{robot with {Disposal=true},robot with {FactoryWorker=true}}){Replace(w.Robots.Retinues[0],r);Check(Reasons(pocket,r).Length>0,"Pocket roles explain their actual eligibility restrictions");}
+    Replace(w.Robots.Nodes[home.Id],damaged);w.Robots.PendingEdits.Add(new(home.Id,new[]{robot.Id},null));Check(Reasons(hangar,damaged).Length==2,"All simultaneous refusal reasons are returned");
+}
 // Distance uses taxicab geometry; successful conversion has separate before/after frames.
 {
     var b=new BattleState(123,new(){PersuasionPercent=100,PersuasionRadius=4});b.Armies.Add(new(){Owner=0});b.Armies.Add(new(){Owner=1});
