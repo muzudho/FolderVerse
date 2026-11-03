@@ -6,6 +6,11 @@ using System.Collections.Generic;
 using System.Text.Json;
 public sealed class TutorialAchievements
 {
+    // Planet medals are separate from shared action achievements such as captive choices.
+    public const string PetitstellaLessons="tutorial-planet-petitstella-lessons";
+    public const string PetitstellaConquest="tutorial-planet-petitstella-conquest";
+    public static bool PetitstellaLessonsCompleted(WorldSetup w)=>w.TutorialStep==1 && w.TutorialMapBeforeWar && w.TutorialMapStage>=6 && w.TutorialAttackCompleted && w.TutorialPocketed && w.TutorialMoved;
+    public static bool PetitstellaWorldConquered(WorldSetup w)=>w.TutorialStep==1 && w.TutorialMapBeforeWar && w.Cells.Length>0 && w.Relations.Powered[0] && w.Relations.ProvisionalRanking(w).Any(r=>r.Ruler==0 && r.Cells==w.Cells.Length);
     public const string FirstAttack="tutorial-step-1-first-attack";
     public const string CaptiveRecruited="tutorial-captive-recruited";
     public const string CaptiveReleased="tutorial-captive-released";

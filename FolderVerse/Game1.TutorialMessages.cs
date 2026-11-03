@@ -40,6 +40,7 @@ public partial class Game1
     private Rectangle TutorialMessageRow(int i)=>new(400,315+i*(_setup.TutorialMapBeforeWar?Math.Min(40,560/TutorialReviewMessages.Length):_setup.TutorialStep==3?60:100),360,_setup.TutorialMapBeforeWar?Math.Min(34,560/TutorialReviewMessages.Length-6):_setup.TutorialStep==3?48:75);
     private static Rectangle TutorialMessageClose=>new(1150,800,360,60);
     private void UpdateTutorialStartGuide(double now){
+        RecordPetitstellaMedals();
         if(UpdateTutorialThreeGuide(now))return;
         if(UpdateTutorialWarGuide(now))return;
         if(UpdateTutorialTwoGuide(now))return;

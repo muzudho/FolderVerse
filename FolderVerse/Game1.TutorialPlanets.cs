@@ -46,6 +46,7 @@ public partial class Game1
             float scale=.67f+i*.055f;int width=(int)(300*scale),height=(int)(180*scale);
             if(_tutorialPlanetTextures!=null)_spriteBatch.Draw(_tutorialPlanetTextures[i],new Rectangle(r.Center.X-width/2,r.Y+16+(170-height)/2,width,height),enabled?Color.White:new Color(65,74,86));
             _ui.Text((i+1).ToString("00"),new(r.X+20,r.Y+12),.42f,enabled?gold:new Color(106,117,134));
+            if(i==0)DrawPetitstellaMedals(r);
             var ink=enabled?Cream:new Color(133,145,162);
             _ui.Center(TutorialPlanetNames[i],new(r.X+15,r.Y+182,r.Width-30,35),.63f,ink);
             var size=TutorialPlanetSizes[i];

@@ -21,6 +21,7 @@ public partial class Game1
     }
     private void StartEnding()
     {
+        RecordPetitstellaMedals();
         StopBattleMusic();StopIndustryMusic();ResetInspector();_autoPlay=false;
         _endingBeforeIndustry=false;
         var winner=_setup.Relations.ProvisionalRanking(_setup)[0];
@@ -30,6 +31,7 @@ public partial class Game1
     }
     private void ReturnToTitle()
     {
+        RecordPetitstellaMedals();
         StopEndingMusic();StopBattleMusic();ClearAllNodeChecks();
         _operationSettingsOpen=false;_operationSettingsSlide=0;
         _dispositionScene=null;_tutorialCaptiveToastSeconds=0;
