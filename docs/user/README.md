@@ -4,21 +4,21 @@
 
 ## ダウンロードして遊ぶ
 
-[v0.1.0 Pre-release（無料試遊版）](https://github.com/muzudho/FolderVerse/releases/tag/v0.1.0)を公開しています。Windows x64向けで、Windows 11を想定しています。Visual Studioや.NET SDKの準備は不要です。.NETランタイムも同梱しています。
+[v0.2.0 Pre-release（無料試遊版）](https://github.com/muzudho/FolderVerse/releases/tag/v0.2.0)を公開しています。Windows x64向けで、Windows 11を想定しています。Visual Studioや.NET SDKの準備は不要です。.NETランタイムも同梱しています。
 
-1. リリースページの **Assets** から `FolderVerse-v0.1.0-win-x64.zip` をダウンロードします。
+1. リリースページの **Assets** から `FolderVerse-v0.2.0-win-x64.zip` をダウンロードします。
 2. ZIPを好きなフォルダーへ**すべて展開**します。ZIPの中から直接実行せず、`Content` など同梱ファイルも一緒に置いてください。
 3. 展開先の `FolderVerse.exe` を起動します。
 
 GitHubが自動表示する `Source code (zip)` / `Source code (tar.gz)` は開発用ソースコードです。遊ぶ場合は上記のWindows向けZIPを選んでください。
 
-今後の配布版は[GitHub Releases一覧](https://github.com/muzudho/FolderVerse/releases)から確認できます。v0.1.0は開発中の試遊版です。既知の問題や検証範囲は、そのリリースページも確認してください。
+今後の配布版は[GitHub Releases一覧](https://github.com/muzudho/FolderVerse/releases)から確認できます。v0.2.0は開発中の試遊版です。既知の問題や検証範囲は、そのリリースページも確認してください。
 
 ## 最初の操作
 
-タイトルの［START］から［遊び方］を選ぶと、チュートリアルを始められます。通常のゲームを始める場合は［初めから］を選び、世界・征服者・初期配置を抽選して、操作する征服者を選びます。
+タイトルの［START］→［遊び方］→［プチステラ］で、統合チュートリアルを始められます。残り５つの星は未制作です。通常のゲームを始める場合は［初めから］を選び、世界・征服者・初期配置を抽選して、操作する征服者を選びます。
 
-ゲームが始まったら、［移動］で行先を選ぶか、［次のターン］で待機します。ロボットの設定は地図の地点をクリックして開きます。戦闘は自動で進み、最後に結果を確認します。
+プチステラではモブ女の案内に沿って、地図操作、開戦予約、陣営のターン終了、ポケットと移動を順に覚えます。通常ゲームでも、行動を予約して［陣営のターン終了］で実行します。ロボットの設定は地図の地点をクリックして開きます。戦闘は自動で進み、最後に結果を確認します。
 
 詳しいボタン操作は[操作ガイド](操作ガイド.md)、ルールは[ゲームの仕組み](../ref/ゲームの仕組み.md)を参照してください。これらの資料は開発中の最新版を含み、配布版では画面や利用できる機能が異なる場合があります。
 
@@ -30,6 +30,6 @@ GitHubが自動表示する `Source code (zip)` / `Source code (tar.gz)` は開�
 
 ## 不具合を報告するには
 
-[GitHub Issues](https://github.com/muzudho/FolderVerse/issues)へ、遊んだバージョン（例：v0.1.0）、再現手順、画面の解像度、分かれば世界・人物・配置のSEEDを添えてください。配布版の操作ログは通常、実行ファイルの隣の `Logs` に保存されます。書き込めない場合は `%LOCALAPPDATA%\FolderVerse\Logs` を確認してください。
+[GitHub Issues](https://github.com/muzudho/FolderVerse/issues)へ、遊んだバージョン（例：v0.2.0）、再現手順、画面の解像度、分かれば世界・人物・配置のSEEDを添えてください。配布版の操作ログは通常、実行ファイルの隣の `Logs` に保存されます。書き込めない場合は `%LOCALAPPDATA%\FolderVerse\Logs` を確認してください。
 
 ソースコードを変更したり、開発中の機能を検証したりする場合は[開発者向けの起動方法](../dev/README.md#開発版を起動する)を参照してください。
