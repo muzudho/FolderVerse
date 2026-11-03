@@ -23,7 +23,7 @@ public partial class Game1
             return true;
         }
         if(!active || mouse.LeftButton!=ButtonState.Pressed){
-            if(active && mouse.LeftButton==ButtonState.Released && _tutorialSlideDragged && _setup.TutorialStep==3 && (!_statusGlobe && _setup.TutorialMapStage==2 || _statusGlobe && _setup.TutorialMapStage==5) && !_tutorialAttackGuide){
+            if(active && mouse.LeftButton==ButtonState.Released && _tutorialSlideDragged && TutorialMapCourse && (!_statusGlobe && _setup.TutorialMapStage==2 || _statusGlobe && _setup.TutorialMapStage==5) && !_tutorialAttackGuide){
                 _setup.TutorialMapRotations|=_statusGlobe?TutorialGlobeSlide:8;_lastAutoSaveTurn=-1;AutoSaveDomestic();
             }
             _tutorialSlideDragged=false;
@@ -32,11 +32,11 @@ public partial class Game1
         var old=CanvasPoint(_previousMouse);var delta=new Vector2(_pointer.X-old.X,_pointer.Y-old.Y);
         if(_statusGlobe){
             _world.GlobePan+=new Vector2(delta.X/StatusGlobeArea.Width,delta.Y/StatusGlobeArea.Height);
-            if(_setup.TutorialStep==3 && _setup.TutorialMapStage==5 && !_tutorialAttackGuide && delta.LengthSquared()>0)_tutorialSlideDragged=true;
+            if(TutorialMapCourse && _setup.TutorialMapStage==5 && !_tutorialAttackGuide && delta.LengthSquared()>0)_tutorialSlideDragged=true;
         }
         else {
             _net.Drag(delta);
-            if(_setup.TutorialStep==3 && _setup.TutorialMapStage==2 && !_tutorialAttackGuide && delta.LengthSquared()>0 && (_setup.TutorialMapRotations&8)==0){
+            if(TutorialMapCourse && _setup.TutorialMapStage==2 && !_tutorialAttackGuide && delta.LengthSquared()>0 && (_setup.TutorialMapRotations&8)==0){
                 _tutorialSlideDragged=true;
             }
         }

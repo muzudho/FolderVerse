@@ -6,6 +6,12 @@ using System.Reflection;
 static void Check(bool ok,string text){if(!ok)throw new Exception(text);}
 var routes=new Dictionary<RouteStep,int>{{new(1,new(0,1),new(1,0),new[]{new Point(1,1)}),11},{new(2,new(2,1),new(1,2),new[]{new Point(2,2)}),22}};
 var routeCopy=AutoSaveStore.Restore<Dictionary<RouteStep,int>>(AutoSaveStore.Capture(routes));Check(routeCopy.Count==2 && routeCopy.All(p=>routeCopy.ContainsKey(p.Key)) && routeCopy.Keys.Select(k=>k.Target).Order().SequenceEqual(new[]{1,2}),"Rendered route cache record keys restore before hashing and remain searchable");
+// Distinct portal records can share every other route field, including the same path array.
+var sharedPath=new[]{new Point(1,1)};
+var portalA=new RoutePortal(1,0,0,1,TravelTerrain.Land,Vector3.Zero,new(0,1),new(1,0),true);
+var portalB=portalA with {Direction=1};
+var portalRoutes=new Dictionary<RouteStep,int>{{new RouteStep(1,new(0,1),new(1,0),sharedPath){Portal=portalA},1},{new RouteStep(1,new(0,1),new(1,0),sharedPath){Portal=portalB},2}};
+var portalCopy=AutoSaveStore.Restore<Dictionary<RouteStep,int>>(AutoSaveStore.Capture(portalRoutes));Check(portalCopy.Count==2 && portalCopy.All(p=>portalCopy.ContainsKey(p.Key)) && portalCopy.Keys.Select(p=>p.Portal.Direction).Order().SequenceEqual(new[]{0,1}),"Route keys differing only by portal restore before hashing");
 var world=new WorldSetup();world.PrepareTutorialStepThree(123,456,789);
 Check(world.Width==3 && world.Height==1 && world.Depth==2 && world.Cells.Length==22 && world.PolarAxis==0,"3x1x2 slab with chopsticks/bowl poles");
 Check(world.TutorialStep==3 && world.ActiveCount==7 && world.Looks.Take(7).Select(l=>l.BaseId).SequenceEqual(Enumerable.Range(0,7)),"Seven specific characters");
@@ -14,12 +20,13 @@ Check(world.Cells.Where(c=>c.Face==0).All(c=>WorldCoordinates.At(world,c).Y>0) &
 Check(WorldTerrain.ColorAt(.6f,Vector3.Right,0)==WorldTerrain.ColorAt(.6f,Vector3.Up),"Polar terrain colors follow X");
 var net=new CubeNet();world.SelectPlayer(0);net.Home(world);net.SetCenter(world,4);Check(net.Faces[0].Up==Vector3.Right,"Net north follows bowl direction");
 world.TutorialMapStage=2;world.TutorialMapRotations=7;world.TutorialMapNotices=7;var save=AutoSaveStore.Capture(world);var restored=AutoSaveStore.Restore<WorldSetup>(save);Check(restored.PolarAxis==0 && restored.TutorialMapStage==2 && restored.TutorialMapRotations==7,"Tutorial progress and poles survive saves");
-foreach(var o in save.Objects)if(o.Fields!=null)foreach(var name in new[]{"PolarAxis","TutorialMapStage","TutorialMapRotations","TutorialMapNotices","TutorialMapEdgeChanged"})o.Fields.Remove(name);restored=AutoSaveStore.Restore<WorldSetup>(save);Check(restored.PolarAxis==1 && restored.TutorialMapStage==0,"Old saves default to Y poles and no map progress");
+foreach(var o in save.Objects)if(o.Fields!=null)foreach(var name in new[]{"PolarAxis","TutorialMapStage","TutorialMapRotations","TutorialMapNotices","TutorialMapEdgeChanged","TutorialMapBeforeWar"})o.Fields.Remove(name);restored=AutoSaveStore.Restore<WorldSetup>(save);Check(restored.PolarAxis==1 && restored.TutorialMapStage==0 && !restored.TutorialMapBeforeWar,"Old saves default to Y poles and no map progress");
 var second=new WorldSetup();second.PrepareTutorialStepThree(123,456,790);Check(!world.Owners.SequenceEqual(second.Owners),"Placement seed randomizes territories");
 Console.WriteLine("PASS: slab dimensions, X poles/north/latitude/terrain, seven characters, normal random economy/robots, distinct placements and legacy/current saves.");
 using var game=new MapLessonGame();game.Run();
 sealed class MapLessonGame:Game1
 {
+ bool Journey=>Environment.GetCommandLineArgs().Contains("--journey");
  const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;WorldSetup w=null!;CubeNet net=null!;int frame;
  object Get(string n)=>typeof(Game1).GetField(n,F)!.GetValue(this)!;
  void Set(string n,object value)=>typeof(Game1).GetField(n,F)!.SetValue(this,value);
@@ -38,8 +45,12 @@ sealed class MapLessonGame:Game1
   typeof(WorldSetup).GetProperty("TutorialStep")!.SetValue(Get("_setup"),0);Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");Check((bool)Get("_conquestOverview"),"Normal game still starts overview after tutorials");Call("FinishConquestOverview");
 
   Set("_pointer",((Rectangle)typeof(Game1).GetMethod("TutorialPlanetCard",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{0})!).Center);Call("TutorialMenuInput",true,false,false,new KeyboardState());
-  Set("_pointer",new Point(1000,722));Call("TutorialMenuInput",true,false,false,new KeyboardState());w=(WorldSetup)Get("_setup");net=(CubeNet)Get("_net");
-  Check(w.TutorialStep==3 && w.PlayerSlot==0 && w.HumanPlayers.SequenceEqual(new[]{0}) && (bool)Get("_statusGlobe"),"Menu starts step three with player one as No.1 on globe");
+  Set("_pointer",new Point(1000,Journey?552:722));Call("TutorialMenuInput",true,false,false,new KeyboardState());w=(WorldSetup)Get("_setup");net=(CubeNet)Get("_net");
+  Check(w.TutorialStep==(Journey?1:3) && w.TutorialMapBeforeWar==Journey && w.PlayerSlot==0 && w.HumanPlayers.SequenceEqual(new[]{0}) && (bool)Get("_statusGlobe"),"Menu starts step three with player one as No.1 on globe");
+  if(Journey){
+   Check(w.Width==1 && w.Height==1 && w.Depth==1 && w.ActiveCount==6,"Integrated tutorial retains step-one dice world and cast");
+   for(int i=0;i<6;i++)Check(!(bool)Call("TutorialPrimaryActionAllowed",i),"All primary actions start disabled");
+  }
   Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",90d);Set("_tutorialAttackGuide",false);Set("_homePersuasionActive",false);Guide(8);
  }
  protected override void Update(GameTime t){}
@@ -47,7 +58,7 @@ sealed class MapLessonGame:Game1
   if(frame==1){Dismiss();var button=(Rectangle)typeof(Game1).GetField("MapViewButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;Check((bool)Call("RouteLayerClick",button.Center),"Actual unfold button handles click");Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==0,"Unfold animation must finish first");Call("UpdateMapTransition",10f);Guide(9);Check(!(bool)Get("_statusGlobe"),"Unfold yields net");}
   if(frame==2){Dismiss();var toy=(Rectangle)Prop("OrientationToyArea");var plus=(Rectangle)Call("AxisButton",toy,2,1);Call("OrientationControlClick",plus.Center);Call("UpdateOrientationRotation",.5f);Check(w.TutorialMapRotations==1 && Math.Abs(net.ScreenAngle-MathHelper.ToRadians(30))<.001,"Plus rotates net and records one distinct button");Call("UpdateTutorialStartGuide",100d);Check(!(bool)Get("_tutorialAttackGuide") && w.TutorialMapStage==1,"One button cannot finish rotation lesson");var zero=(Rectangle)Prop("OrientationResetButton");Call("OrientationControlClick",zero.Center);Check(w.TutorialMapRotations==3 && net.ScreenAngle==0,"Zero resets rotation and records second button");var minus=(Rectangle)Call("AxisButton",toy,2,-1);Call("OrientationControlClick",minus.Center);Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==1,"Rotation must finish before next guide");Call("UpdateOrientationRotation",.5f);Guide(12);Check(w.TutorialMapRotations==7,"All three buttons required");}
   if(frame==3){
-   string path=Path.Combine(AppContext.BaseDirectory,"tutorial-three-test-save.gz");Set("_autoSavePath",path);Set("_autoSaveEnabled",true);Set("_lastAutoSaveTurn",-1);Call("AutoSaveDomestic");Call("ReturnToTitle");Check((bool)Call("ResumeAutoSave"),"Actual autosave resumes step three");Set("_autoSaveEnabled",false);File.Delete(path);w=(WorldSetup)Get("_setup");net=(CubeNet)Get("_net");Check(w.PolarAxis==0 && w.TutorialMapStage==2 && w.TutorialMapRotations==7,"Resume retains poles, stage and all three buttons");Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",90d);Set("_conquestOverview",false);Guide(12);Dismiss();
+   string path=Path.Combine(AppContext.BaseDirectory,"tutorial-three-test-save.gz");Set("_autoSavePath",path);Set("_autoSaveEnabled",true);Set("_lastAutoSaveTurn",-1);Call("AutoSaveDomestic");Call("ReturnToTitle");Check((bool)Call("ResumeAutoSave"),"Actual autosave resumes step three");Set("_autoSaveEnabled",false);File.Delete(path);w=(WorldSetup)Get("_setup");net=(CubeNet)Get("_net");Check(w.PolarAxis==(Journey?1:0) && w.TutorialMapBeforeWar==Journey && w.TutorialMapStage==2 && w.TutorialMapRotations==7,"Resume retains poles, stage and all three buttons");Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",90d);Set("_conquestOverview",false);Guide(12);Dismiss();
    Call("UpdateTutorialStartGuide",100d);Check(!(bool)Get("_tutorialAttackGuide"),"Dismissing slide guide does not finish the lesson");
    var toy=(Rectangle)Prop("OrientationToyArea");var start=new Point(toy.Center.X,toy.Center.Y-10);
    Set("_pointer",start);var held=new MouseState(start.X,start.Y,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
@@ -80,19 +91,27 @@ sealed class MapLessonGame:Game1
    Dismiss();var toy=(Rectangle)Prop("OrientationToyArea");var start=toy.Center;var held=new MouseState(start.X,start.Y,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
    Set("_pointer",start);Call("DragOrientationRobot",held,true,true);Call("DragOrientationRobot",new MouseState(),true,false);Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==5,"Click without dragging does not finish globe slide");
    Set("_pointer",start);Call("DragOrientationRobot",held,true,true);Set("_previousMouse",held);Set("_pointer",new Point(start.X+40,start.Y+20));Call("DragOrientationRobot",held,true,false);
-   Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==5,"Slide waits for release");Call("DragOrientationRobot",new MouseState(),true,false);Guide(15);Check(w.TutorialMapStage==6 && w.TutorialCompletionShown,"Globe drag release unlocks final title-return guide");
+   Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==5,"Slide waits for release");Call("DragOrientationRobot",new MouseState(),true,false);Guide(Journey?16:15);Check(w.TutorialMapStage==6 && w.TutorialCompletionShown==!Journey,"Globe drag release unlocks appropriate completion guide");
   }
   if(frame==7){Dismiss();Call("UpdateTutorialStartGuide",100d);Check(!(bool)Get("_tutorialAttackGuide"),"Completion guide is shown once");int turn=w.Population.Turn;var screen=Get("_screen");
    for(int i=0;i<6;i++){
+    if(Journey && i is 1 or 2){Check((bool)Call("TutorialPrimaryActionAllowed",i),"War reservation and end turn unlock after all map tasks");continue;}
     var r=(Rectangle)Call("PrimaryActionBounds",i);var canvas=(Rectangle)Call("CanvasBounds");var at=r.Center;
     Set("_previousMouse",new MouseState());Call("HandleInputCore",new MouseState(canvas.X+(int)Math.Round(at.X*canvas.Width/1920d),canvas.Y+(int)Math.Round(at.Y*canvas.Height/1080d),0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero),true);
     Check(w.Population.Turn==turn && Get("_screen").Equals(screen) && !(bool)Prop("InspectorVisible") && !(bool)Get("_directMap") && !(bool)Get("_salvagePlan"),"Disabled primary action "+i+" does not change game state");
     Check((bool)Call("MapOverlayClick",at,false) && (bool)Call("DomesticViewClick",at),"Both primary input routes consume disabled button "+i);
    }
-   var review=(Rectangle)Prop("TutorialReviewButton");Set("_pointer",review.Center);Call("TutorialMessageInput",true,false);Check((bool)Get("_tutorialMessagesOpen") && (int)Get("_tutorialMessageSelection")==15,"Step three review highlights the latest completion guide");}
+   var review=(Rectangle)Prop("TutorialReviewButton");Set("_pointer",review.Center);Call("TutorialMessageInput",true,false);Check((bool)Get("_tutorialMessagesOpen") && (int)Get("_tutorialMessageSelection")== (Journey?16:15),"Step three review highlights the latest completion guide");}
   if(frame==8){Call("TutorialMessageInput",false,true);Set("_pointer",((Rectangle)Call("PrimaryActionBounds",2)).Center);}
   base.Draw(new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero));
   var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"tutorial-three-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
-  if(frame++==8){Console.WriteLine("PASS: menu/No.1, all eight mob guides, actual unfolding, plus/zero/minus, actual alphabet attachment, animation gating, assembly, all seven globe buttons, globe slide release, completion, save progress, all six disabled primary actions and review rendered.");Exit();}
+  if(frame==8 && Journey){
+   var button=(Rectangle)Call("PrimaryActionBounds",2);Check((bool)Call("MapOverlayClick",button.Center,false) && (bool)Get("_warPlanning"),"Unlocked war reservation opens actual war planning");
+   Call("CloseMovement");
+   string path=Path.Combine(AppContext.BaseDirectory,"petitstella-unlocked-save.gz");Set("_autoSavePath",path);Set("_autoSaveEnabled",true);Set("_lastAutoSaveTurn",-1);Call("AutoSaveDomestic");Call("ReturnToTitle");Check((bool)Call("ResumeAutoSave"),"Integrated tutorial resumes after unlock");Set("_autoSaveEnabled",false);File.Delete(path);
+   w=(WorldSetup)Get("_setup");Check(w.TutorialMapBeforeWar && w.TutorialMapStage==6 && (bool)Call("TutorialPrimaryActionAllowed",2) && (bool)Call("TutorialPrimaryActionAllowed",1),"Save preserves integrated mode and unlocked war button");
+   Call("UpdateTutorialStartGuide",100d);Check(!(bool)Get("_tutorialAttackGuide"),"Unlock guide does not turn into legacy step-one intro after resume");
+  }
+  if(frame++==8){Console.WriteLine((Journey?"PASS: integrated map-first Petitstella, war and end-turn unlock and save/resume; ":"PASS: ")+"menu/No.1, all eight mob guides, actual unfolding, plus/zero/minus, actual alphabet attachment, animation gating, assembly, all seven globe buttons, globe slide release, completion, save progress, all six disabled primary actions and review rendered.");Exit();}
  }
 }

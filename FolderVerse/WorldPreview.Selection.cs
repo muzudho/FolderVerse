@@ -16,6 +16,7 @@ public sealed partial class WorldPreview
     public HashSet<int> FocusCells {get;}=new();
     public List<MapFocusCircle> FocusCircles {get;}=new();
     public int NodeFocus {get;set;}=-1;
+    public bool AttackTargetSpotlight {get;set;}
     public int RegionFocusCell {get;set;}=-1;
     public int SelectedCell {get;set;}=-1;
     public WorldSetup SelectionSetup {get;set;}
@@ -51,7 +52,7 @@ public sealed partial class WorldPreview
     }
     private void DrawCellSelection(float time)
     {
-        if(SelectionSetup!=null && (CountryFocus>=0 || NodeFocus>=0 || RegionFocusCell>=0 && RegionFocusCell<SelectionSetup.Cells.Length)){DrawRegionDim();return;}
+        if(SelectionSetup!=null && (AttackTargetSpotlight || CountryFocus>=0 || NodeFocus>=0 || RegionFocusCell>=0 && RegionFocusCell<SelectionSetup.Cells.Length)){DrawRegionDim();return;}
         if(SelectionSetup==null || SelectedCell<0 || SelectedCell>=SelectionSetup.Cells.Length)return;
         var cell=SelectionSetup.Cells[SelectedCell];int index=0;
         const int detail=24;

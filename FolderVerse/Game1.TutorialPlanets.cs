@@ -65,7 +65,7 @@ public partial class Game1
         _ui.Box(new(0,0,1920,1080),Color.Black*.65f);_ui.Box(new(700,390,1100,450),new Color(27,49,62));
         _ui.Text("プチステラ",new(760,420),.8f,Cream);_ui.Button(TutorialStepDialogClose,"×",Muted,.6f);
         _ui.Text("ステップ１から順番に進めてください。",new(760,480),.43f,Cream);
-        string[] titles={"ステップ１：開戦しましょう","ステップ２：ロボットをポケットに入れて移動しよう","ステップ３：地図を使おう"};
+        string[] titles={"ステップ１：地図を覚えて開戦しましょう","ステップ２：ロボットをポケットに入れて移動しよう","ステップ３：地図を使おう"};
         for(int i=0;i<3;i++){
             var r=TutorialStep(i);if(i==_tutorialStepSelection){var border=r;border.Inflate(3,3);_ui.Box(border,new Color(255,214,112));}
             _ui.Button(r,titles[i],i==_tutorialStepSelection?Accent:Muted,i==1?.46f:.55f);

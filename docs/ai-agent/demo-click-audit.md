@@ -785,3 +785,17 @@
 - Demo.cs／DemoDomestic.csと既存テストを起点に、実地点ヒット、MapViewButtonと現在矩形による操作、戦闘／伝播は自動進行であることを照合。ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=8、dotnet artifacts/corner-lesson/DemoUi.dll：16:56頃開始、コード０。世界／人物／配置=2077225190／2051580673／1889511192。18FPS地図説明・内政１巡・ターン１→２・次のTransport・戦闘／拒否／終了の検査成功。ログaudit-latest-seed8.log。今回は更新済み本体を使用し、前回の旧DLLでの成功と区別した。
 - 続けてDemoInspectorUi.dll／DirectDeliveryUi.dllを現本体で実行し、両方コード０。16:56:22頃までに前者成功、直送便も後続ポーリングで終了確認。ログaudit-latest-inspector.log／audit-latest-direct.log。工場６プランの現在矩形・実選択、監督、閉じる、長期輸送プライマリー、わたしの国→移動（1080p／540p）、直送便の退避復帰・×／Escape・左右・連続トラック・回転面接続と予約保持が成功。direct-17.png（960×540）を開き左右の地点名・格納庫と中央地図の描画を目視。既存ログ・画像名を再利用。
 - 新規確認不具合なし、DEMO-0001～0012の状態維持。Norton保留の直接証拠・セキュリティ設定変更なし。今回の直送便確認は通常UIテストであり専用Demo完走ではない。未確認：全Seed／人数、専用直送便Demo、各Seed全フレーム、戦闘／伝播全描画、複数ruler説得、利用者ゲーム併存。次回はSeed９か未確認経路を追加。部分点検を全経路完了とはしない。
+
+### 実行履歴：2026-11-03 18:00回（トリガー17:56）
+
+- 開始：2026-11-03 17:56:48 JST。終了：2026-11-03 17:58:08 JST。状態：完了（部分点検）。AGENTS、README、両記録、Git差分を最初に確認。HEAD=1701d0ce8db6d51c352d9a037c3aae3ad9fb62d2。別開発チャットはidle、開始時ゲーム／dotnet／MSBuildなし。既存のAutoSave・Tutorial・MapOverlays・OrientationToy・WorldSetupと関連テスト計12ファイル、および個人用チャット文書の差分を保持。終了前numstatも開始時と同じ。ゲーム／テスト無変更、セーブ操作・停止・コミット・プッシュ・公開なし。
+- Demo.cs／DemoDomestic.csを入口にMapViewButton、実表示範囲と地点ヒット、伝播／戦闘の自動進行を照合。DOTNET_CLI_TELEMETRY_OPTOUT=1、dotnet build tests/DemoUi --no-restore -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers：17:57頃要求、約８秒で成功、警告・エラー０。現在の未コミット差分を含む本体を既存分離出力へビルド。ログaudit-latest-build.log。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=9、dotnet artifacts/corner-lesson/DemoUi.dll：17:57頃開始、約５秒でコード０。世界／人物／配置=195421134／1235535442／27364853。18FPS地図説明・内政１巡・全体ターン１→２・次のTransport・戦闘／拒否／終了ループ成功。ログaudit-latest-seed9.log。
+- 続けてDemoInspectorUi.dll、DirectDeliveryUi.dllを現本体で実行、両方コード０、17:57:50頃までに終了。工場６プランの現在矩形と実選択、監督、閉じる、長期輸送プライマリー、わたしの国から移動（1080p／540p）、直送便退避復帰・×／Escape・左右・連続トラック・回転面接続・予約保持が成功。ログaudit-latest-inspector.log／audit-latest-direct.log。direct-17.png（960×540）を開き左右の地点名と格納庫・中央地図を目視。既存画像／ログ名を再利用し出力先を増設していない。
+- 新規確認不具合なし、DEMO-0001～0012の完了状態を維持。起動要求から終了を短く追跡し、今回Norton保留の直接証拠・再試行・設定変更なし。未確認：全Seed／人数、専用直送便Demo、各Seed全フレーム、戦闘／伝播全描画、複数ruler説得、利用者ゲーム併存。次回はSeed10または未確認経路へ。通常直送便UIテストを専用Demo巡回完了とは扱わない。
+
+### 実行履歴：2026-11-03 19:00回
+
+- 開始：2026-11-03 19:00:19 JST。終了：2026-11-03 19:00:40 JST。状態：中断（同一作業場所で別開発が実行中のため次回へ送る）。AGENTS、README、両記録とGit差分を最初に確認。HEAD=1701d0ce8db6d51c352d9a037c3aae3ad9fb62d2。別チャット「解説カットイン時にボタンを退避」がactive、移動・地図描画・選択ハイライト等にも前回から未コミット差分の追加あり。開始時ゲーム／dotnet／MSBuildは見つからなかったが、プロセスなしだけで先行作業の完了とは判断しない。
+- 利用者の変更と既存点検記録を保持し、ビルド・UI起動・ゲーム／テスト変更・セーブ操作・プロセス停止・コミット・プッシュ・公開は行わない。新しい不具合を確認した実行はなく、DEMO連番や既報の状態は変更しない。
+- 未確認：現差分でのプライマリー、直送便の退避復帰・左右、Seed10、残りのDemo経路。次回は先行開発の終了と競合なしを確認したうえで既存分離出力を更新し、Seed10から点検を再開する。今回の未実施を正常確認とは扱わない。

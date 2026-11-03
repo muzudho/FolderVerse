@@ -23,7 +23,7 @@ public partial class Game1
             if(keys.IsKeyDown(Keys.Down) && _previousKeyboard.IsKeyUp(Keys.Down))_tutorialStepSelection=(_tutorialStepSelection+1)%3;
             int chosen=enter?_tutorialStepSelection:-1;
             if(click)for(int i=0;i<3;i++)if(TutorialStep(i).Contains(_pointer))chosen=i;
-            if(chosen>=0){_tutorialStepDialogOpen=false;if(chosen==0)BeginTutorialStepOne();else if(chosen==1)BeginTutorialStepTwo();else BeginTutorialStepThree();}
+            if(chosen>=0){_tutorialStepDialogOpen=false;if(chosen==0)BeginPetitstellaTutorial();else if(chosen==1)BeginTutorialStepTwo();else BeginTutorialStepThree();}
             return;
         }
         if(escape || click && BackButton.Contains(_pointer)){_tutorialMenuOpen=false;return;}
@@ -39,6 +39,10 @@ public partial class Game1
         if(keys.IsKeyDown(Keys.Down) && _previousKeyboard.IsKeyUp(Keys.Down))move=3;
         _tutorialPlanetSelection=(_tutorialPlanetSelection+move+6)%6;
         if(_tutorialPlanetSelection==0 && (enter || click && TutorialPlanetCard(0).Contains(_pointer))){_tutorialStepDialogOpen=true;_tutorialStepSelection=0;}
+    }
+    private void BeginPetitstellaTutorial(){
+        BeginTutorialStepOne();_setup.TutorialMapBeforeWar=true;_statusGlobe=true;
+        _lastAutoSaveTurn=-1;AutoSaveDomestic();
     }
     private void BeginTutorialStepOne(){
         _tutorialAttackAchieved=false;_tutorialAttackGuide=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;_tutorialLastMessage=-1;

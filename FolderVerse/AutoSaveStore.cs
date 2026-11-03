@@ -76,7 +76,8 @@ public static class AutoSaveStore
         void Populate(int i){
             if(populated[i])return;populated[i]=true;var entry=doc.Objects[i];var type=types[i];var value=values[i];
             if(Scalar(type))return;
-            object Read(int id){if(id>=0 && types[id].IsValueType)Populate(id);return At(id);}
+            // Route portals contribute to RouteStep key equality and must be ready before hashing.
+            object Read(int id){if(id>=0 && (types[id].IsValueType || types[id]==typeof(RoutePortal)))Populate(id);return At(id);}
             if(value is Array array){int flat=0;foreach(int id in entry.Items){int n=flat++;var index=new int[array.Rank];for(int d=array.Rank-1;d>=0;d--){index[d]=n%array.GetLength(d);n/=array.GetLength(d);}array.SetValue(Read(id),index);}}
             else if(value is IDictionary dictionary){for(int n=0;n<entry.Items.Count;n+=2){int key=entry.Items[n];if(key>=0)Populate(key);dictionary.Add(Read(key),Read(entry.Items[n+1]));}}
             else if(Collection(type)){var generic=type.GetGenericTypeDefinition();var add=type.GetMethod(generic==typeof(Queue<>)?"Enqueue":"Add");foreach(int id in entry.Items){if(generic==typeof(HashSet<>) && id>=0)Populate(id);add.Invoke(value,new[]{Read(id)});}}
@@ -88,7 +89,7 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorld) && field.Name=="_workerPlanWorldSeed")continue;
                     if(type==typeof(RobotTraining) && field.Name=="<WorkerPolicy>k__BackingField"){field.SetValue(value,3);continue;}
                     if(type==typeof(WorldSetup) && field.Name=="PolarAxis"){field.SetValue(value,1);continue;}
-                    if(type==typeof(WorldSetup) && new[]{"TutorialMapStage","TutorialMapRotations","TutorialMapNotices","TutorialMapEdgeChanged"}.Contains(field.Name))continue;
+                    if(type==typeof(WorldSetup) && new[]{"TutorialMapStage","TutorialMapRotations","TutorialMapNotices","TutorialMapEdgeChanged","TutorialMapBeforeWar"}.Contains(field.Name))continue;
                     if(type==typeof(WorldSetup) && field.Name=="<Lessons>k__BackingField"){field.SetValue(value,new BattleLessons());continue;}
                     if(type==typeof(WorldSetup) && field.Name=="<Salvage>k__BackingField"){field.SetValue(value,new SalvagePlan{LegacyPlacementPending=true});continue;}
                     if(type==typeof(BattleState) && field.Name=="Lessons"){field.SetValue(value,new BattleLesson[WorldSetup.CastCount]);continue;}
