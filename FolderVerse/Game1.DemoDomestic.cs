@@ -26,6 +26,8 @@ public partial class Game1
         if(MapTransitionActive || _net.IsAnimating || OrientationRotating)return true;
         // Finish the same inspector animation as a normal click before aiming at the next control.
         if(_nodeInspectorClosing || InspectorVisible && _domesticSlide<1)return true;
+        if(_demoDomesticStage is >=30 and <=36)return UpdateDemoWarChecks(elapsed);
+        if(_demoDomesticStage==20 && (!NodeCheckButtonVisible || NodeChecked(_populationNode))){_demoDomesticStage=11;_demoDomesticAge=0;}
         Point nodePoint=Point.Zero;
         if(_demoDomesticStage==0 && !DemoNodePoint(out nodePoint))return true;
         Point destinationPoint=Point.Zero;
@@ -50,7 +52,7 @@ public partial class Game1
             7=>_demoSourceSlot<0?new(480,540):HangarCell(_demoSourceSlot).Center,
             8=>NodeFactoryTile.Center,9=>FactoryProductionButton(0).Center,10=>FactoryPlanButton(0).Center,
             11 or 16=>InspectorClose.Center,12=>TransportOverviewButton.Center,17=>StrategyToggle.Center,
-            18=>MovementButton.Center,13=>destinationPoint,19=>PopulationTurnButton.Center,_=>ConfirmMoveButton.Center
+            18=>MovementButton.Center,13=>destinationPoint,19=>PopulationTurnButton.Center,20=>NodeCheckButton.Center,_=>ConfirmMoveButton.Center
         };
         if(_demoSwing<=0)_demoCursor=Vector2.Lerp(_demoCursor,new(target.X,target.Y),1-MathF.Exp(-(float)elapsed*4));
         if(_hangarDrag.HasValue)_pointer=new((int)_demoCursor.X,(int)_demoCursor.Y);
@@ -74,12 +76,13 @@ public partial class Game1
                 if(DemoAssemblyRelease() && PrepareDemoAssemblyDrag()){_demoDomesticStage=3;break;}
                 _demoAssemblySelection=null;_demoDomesticStage=7;break;
             case 8:_nodeAssemblyOpen=false;OpenNodeFactory();break;
-            case 9:
-            case 10:if(_nodeFactoryOpen)NodeDialogClick(target,new KeyboardState());break;
+            case 9:if(_nodeFactoryOpen)NodeDialogClick(target,new KeyboardState());break;
+            case 10:if(_nodeFactoryOpen)NodeDialogClick(target,new KeyboardState());_demoDomesticStage=19;break;
+            case 20:DomesticViewClick(target);_demoDomesticStage=11;return true;
             case 11:DomesticViewClick(target);break;
             // Transport planning now lives in the primary actions, outside the node inspector.
             case 12:MapOverlayClick(target,false);_demoDomesticStage=15;break;
-            case 16:DomesticViewClick(target);break;
+            case 16:DomesticViewClick(target);if(_demoActive && _demoMapVisits%2==0)_demoDomesticStage=29;break;
             case 17:MapOverlayClick(target,false);break;
             case 18:MovementClick(target,new KeyboardState());_demoDomesticStage=12;break;
             case 13:

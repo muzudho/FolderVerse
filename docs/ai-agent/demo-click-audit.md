@@ -821,3 +821,34 @@
 - ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=11、dotnet artifacts/corner-lesson/DemoUi.dll：21:58後半要求、21:59:11までに成功ログ・コード０。世界／人物／配置=726780316／1750928627／598039469。18FPS地図説明・内政１巡・ターン１→２・次のTransport・戦闘／拒否／終了ループ成功。ログaudit-latest-seed11.log。短いポーリングで開始ログと進行結果を区別し、無出力を即失敗とは扱わなかった。Norton保留の直接証拠なし。
 - DemoInspectorUi.dll／DirectDeliveryUi.dllも現本体で成功、21:59:20頃までに両方コード０。工場６プランの現在矩形と実選択、監督、閉じる、長期輸送プライマリー、わたしの国→移動（1080p／540p）、直送便退避復帰・×／Escape・左右・連続トラック・回転面接続・予約保持を確認。ログaudit-latest-inspector.log／audit-latest-direct.log。direct-17.png（960×540）を開き左右の地点名・格納庫・中央地図を目視。既存ログ／画像名・出力先を再利用。
 - 新規確認不具合なし、DEMO-0001～0012の完了状態維持。再試行・セキュリティ設定変更なし。未確認：全Seed／人数、専用直送便Demo、各Seed全フレーム、戦闘／伝播全描画、複数ruler説得、利用者ゲーム併存。次回はSeed12または残る経路。通常直送便UIテストを専用Demo完走とは扱わない。
+
+### 修正回の追加経路確認：2026-11-03 22:30回
+
+- 開始：2026-11-03 22:32:52 JST。終了：2026-11-03 22:33:22 JST。状態：中断（同一作業場所の別開発がactive）。AGENTS、README、両記録とGit差分を確認。HEAD=9e55c582ac8341148a5c90275e81ee66c3f54aeb。既存DEMO-0001～0012は完了、新たに点検済みの未解決IDなし。ゲーム／テスト無変更、ビルド・起動・コミット・プッシュ・公開なし。
+- 利用者の追加指示を受け、緑／赤チェックのDemo実演を次回優先対象として確認した。現ソースのDemoDomestic段階にはNodeCheckButtonのクリックと開戦予約→赤チェックの手順が見当たらず、NodeChecksのNodeCheckPlayerは_demoActive中に-1となる。追加経路には実装不足の可能性がある。現段階は静的確認のみで、実描画・実入力・状態変化の再現確認前であり、新しい確定不具合IDとして登録していない。
+- 別チャット「解説カットイン時にボタンを退避」がactiveのため依存実装を重複して進めない。次回点検は先行作業終了後の現コードで、実ハンドルから緑✅、地点選択→出撃確定（即予約）→赤✅→閉じる→ターン終了を優先して照合する。表示モード分離・赤チェックのスポットライト解除・チェック後のクリック・ターン末消去と、削除済み予約確定ボタンを使わないことも確認する。未実装が再現された場合はDEMO連番を付け、次の修正回で最小実装と描画検証へ進む。
+
+### 利用者追加依頼の確認：2026-11-03夜、操作後の緑・赤チェック
+
+- 開始時、Demoの定期点検・修正はACTIVE。既存の毎時00分・30分、対象チャットを維持して追加依頼を両automationへ反映した。22:30修正回が実行中だったため同じコードを同時編集せず、同回の終了を確認してから実装した。同回の「実装不足の可能性」という静的確認を、確定済みの旧不具合IDに読み替えていない。
+- 利用者の依頼として、地点操作後の緑✅、開戦予約確定後の赤✅を追加。検証と手順はdemo-click-fixes.mdの同日の項目を参照。通常画面用のNodeCheckPlayerがDemo中に-1になる点も修正した。
+- DemoChecksUiの地図／地星儀・1080p／540p４条件で、実ボタン内のクリック、実地点ヒット、出撃確定時の即予約、赤チェックによる強調除外、閉じた後の独立したターン終了、実進軍、両チェック消去を確認した。DemoUiは固定Seed12で自然巡回し、内政１巡からTransport、ターン２、戦闘・拒否・終了ループまで成功。DemoActionsUi・DemoInspectorUiの回帰も成功した。
+- 実描画demo-checks-0-6.pngを開き、開戦予約済みの地点の赤チェック、ハンドルを指すDemoの手、予約保持を目視した。既存の点検結果・未確認範囲は保持し、全Seed／人数・専用直送便Demoまで確認済みとは扱わない。
+- 完了：2026-11-03T22:40:28+09:00。利用者のゲームは停止していない。実セーブ・勲章の変更、コミット・プッシュ・追加リリースは行っていない。
+
+### 実行履歴：2026-11-03 23:00回（トリガー22:59）
+
+- 開始：2026-11-03 22:59:23 JST。終了：2026-11-03 23:00:51 JST。状態：完了（部分点検）。AGENTS、README、両記録・Git差分を最初に確認。HEAD=9e55c582ac8341148a5c90275e81ee66c3f54aeb。別チャットidle、開始時ゲーム／dotnet／MSBuildなし。利用者が22:40に追加したDemoChecks・DemoDomestic・NodeChecks・テスト・引継ぎ文書の差分を保持し、ゲーム／テスト無変更。実セーブ・勲章操作、停止、コミット・プッシュ・公開なし。
+- 追加の緑／赤チェック経路を優先。DemoChecks.csで段階30～36の地点選択→出撃選択確定による即予約→赤チェック→閉じる→別段階19のターン終了と、NodeCheckButtonの実矩形使用を照合。旧開戦確定ボタンを使わない。前回の実装不足の可能性は利用者側の実装済みであり、新規未解決IDを追加していない。
+- 最初に既存tests/DemoChecksUi/bin/DemoChecks/DemoChecksUi.dllを起動したがContent/Images/robot-assembly-icon.xnbの欠落によるContentLoadExceptionで終了。これは不完全な検証出力で、ゲーム内のクリック失敗やNorton保留ではない。DOTNET_CLI_TELEMETRY_OPTOUT=1、dotnet build tests/DemoChecksUi --no-restore -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-serversを実行し、既存の素材付き分離出力を再利用。約８秒で警告・エラー０。
+- ALSOFT_DRIVERS=null、dotnet artifacts/corner-lesson/DemoChecksUi.dll：23:00頃要求、約７秒でコード０。地星儀／展開図×1920×1080／960×540の４条件で、緑ハンドルのクリック、実開戦地点ヒット、出撃確定時の即予約、赤ハンドルのクリック、緑／赤メモ独立、赤地点の強調除外、閉じた後の独立したターン終了、実進軍、両チェック消去が成功。ログaudit-latest-checks.log／audit-latest-checks-build.log。demo-checks-0-6.pngを開き赤チェック・予約１件・ハンドルを指すカーソルと画面描画を確認。
+- 続けてFOLDERVERSE_DEMO_TEST_SEED=12、dotnet artifacts/corner-lesson/DemoUi.dll：コード０、地図説明・自然内政巡回・次のTransport・戦闘／拒否／終了ループ成功（audit-latest-seed12.log）。現本体での優先追加経路の再確認であり全経路完走ではない。
+- 新規確認不具合なし。未確認：チェック後の地点再クリックの独立再検査、全Seed／人数、専用直送便Demo、各Seed全フレーム、戦闘／伝播全描画、利用者ゲーム併存。直送便の退避復帰・左右は前回確認後の追加変更に対して今回未再実行。次回はチェック済み地点の実クリックと通常／開戦モード表示切替、直送便回帰、Seed13を優先。Norton設定変更なし。既存ログ・出力先を使用。
+
+### 実行履歴：2026-11-04 00:00回（トリガー11月3日23:56）
+
+- 開始：2026-11-03 23:56:24 JST。終了：2026-11-03 23:58:11 JST。状態：完了（部分点検）。AGENTS、README、両記録・Git差分を最初に確認。HEAD=9e55c582ac8341148a5c90275e81ee66c3f54aeb。別チャットidle、開始時ゲーム／dotnet／MSBuildなし。既存のDemoChecks関連コード・テスト・文書差分を保持。ゲーム／テスト無変更、実セーブ・勲章操作・プロセス停止・コミット・プッシュ・公開なし。
+- 追加チェック経路を優先し、NodeChecksUiのソースで緑／赤モード別描画、赤チェック後もMovementTargetsに残すこと、解除時の強調復帰を確認。DOTNET_CLI_TELEMETRY_OPTOUT=1、dotnet build tests/NodeChecksUi --no-restore -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers：23:56後半要求、約９秒で警告・エラー０。ALSOFT_DRIVERS=nullで同出力のNodeChecksUi.dllを実行、コード０。1080p／540pの非閉鎖トグル、モード別の赤／緑描画、ハンドル入力・地点変更後の保持、地星儀／展開図の赤強調除外と候補維持、ターン末消去が成功。ログaudit-latest-nodechecks-build.log／audit-latest-nodechecks.log。
+- DemoChecksUi.dllも同出力で成功、４条件の実ハンドル・実地点・即予約→赤→閉じる→独立ターン終了・実進軍を確認。demo-checks-0-6.pngを開き赤チェック・ハンドルのカーソルと予約１件を目視。ログaudit-latest-checks.log。FOLDERVERSE_DEMO_TEST_SEED=13のDemoUi.dllもコード０（世界／人物／配置=1258139498／118838165／1168714085）、自然巡回・次のTransport・戦闘／拒否／終了チェック成功。ログaudit-latest-seed13.log。
+- DirectDeliveryUiの古いDLLはFolderVerse Version=1.0.0.0参照のFileNotFoundExceptionで開始不能。現本体との参照版の不一致として切り分け、同プロジェクトを上記と同じ既存分離出力へ再ビルド（約８秒、警告・エラー０）後の実行はコード０。540pでプライマリー退避復帰・左右・連続トラック・面接続・予約保持のチェック成功。ログaudit-latest-direct-build.log／audit-latest-direct.log。再ビルド前の失敗をゲーム内クリック不具合とは扱わない。
+- 新規確認不具合なし。未確認：赤チェック後の地点再クリックを実入力で独立検査する項目（今回は候補集合維持まで）、全Seed／人数、専用直送便Demo、全中間フレーム、利用者ゲーム併存。次回は実地点再クリックの検査、または残るDemo経路へ。既存ログ／画像・出力先を再利用。Norton保留の直接証拠・セキュリティ設定変更なし。
