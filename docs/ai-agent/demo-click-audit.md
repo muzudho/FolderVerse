@@ -719,3 +719,53 @@
 - DemoUiは２回とも上記DEMO-0012で停止。今回は修正していない。既報DEMO-0001～0011の完了状態は維持。次回修正回は0012のテスト状態と実再生の切り分けから開始し、Seed・国内段階・待機条件を記録する。全Seed／全人数・直送便専用Demo・タイトルから終了までの連続描画・利用者ゲーム併存は未確認。ゲーム・テストは無変更、点検記録のみ追記。
 
 - DEMO-0012修正回引き継ぎ：2026-11-03 10:39:25 JST完了。地図の投影中心と実表示範囲のずれ、およびクリック待機中の自動回転を修正。固定Seed０・１・２が元の1,200更新で次の伝播まで進み、Actions／Inspectorの実描画も確認。全条件の網羅ではない。
+
+### 実行履歴：2026-11-03 11:00回
+
+- 開始：2026-11-03 11:00:08 JST（トリガー）。終了：2026-11-03 11:02:44 JST。状態：完了（部分点検）。AGENTS、README（Norton起動待ち手順を含む）、両記録・Git差分を最初に確認。HEAD=6e9b0955ad4ce3769e909e114ba71e3c4066ab02、開始時未コミット差分なし。アプリ一覧は当該チャットのみactive、他はnotLoaded。ゲーム・Demo・dotnet・MSBuildなしを確認して開始。ゲーム・テスト無変更、点検記録のみ追記。セーブ操作・プロセス停止・コミット・プッシュ・公開なし。
+- Demo／DemoDomesticの視点補正・内政中の自動回転抑止を確認。前回修正のSeed０～２に続き、FOLDERVERSE_DEMO_TEST_SEED=3を追加点検。dotnet build tests/DemoUi --no-restore -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers：成功（警告・エラー０）。要求11:00:40、終了11:01:05、約25秒の実行中を失敗扱いせず短くポーリングした。ログartifacts/demo-click-audit/audit-latest-demo-build.log。
+- ALSOFT_DRIVERS=null、dotnet artifacts/corner-lesson/DemoUi.dll：要求11:01:37、終了11:01:43、終了コード０。ログaudit-latest-seed3.log。乱数３の世界／人物／配置は748827235／1836839534／462824652。元の1,200更新・18FPS刻みで地図説明後の内政１巡から全体ターン１→２と次のTransportへ進み、戦闘・拒否・終了ループも成功。固定Seed３を加えてもDEMO-0012は再発せず、完了状態を維持する。全Seedの解消とは扱わない。
+- 現本体に対し、ソースに差分のない既存DirectDeliveryUi.dll（11:01:55～11:02:04）とDemoInspectorUi.dll（11:02:04～11:02:14）を順番に実行、どちらも終了コード０。ログaudit-latest-direct.log／audit-latest-inspector.log。直送便の退避復帰、×／Escape、左右インスペクター、540pの回転面接続・連続トラック・カメラ・予約保持、工場６プラン・閉じる・長期輸送プライマリー・わたしの国→移動を照合した。DirectDeliveryUiは通常UIテストであり専用Demo巡回ではない。
+- 最新direct-17.png（960×540）とdemo-office-5.png（1920×1080）を開き、左右の地点名・格納庫・中央地図と、長期輸送一覧がプライマリーの操作から描画されることを確認。各画像・DLLは既存出力先を再使用。起動要求とテストSeed表示等のログを区別し、今回Nortonによる保留の直接証拠はなく原因にしていない。再試行・セキュリティ設定の変更なし。
+- 新規確認不具合なし、DEMO-0001～0012の完了状態を維持。未確認：全Seed／人数、直送便専用Demo、固定Seedの全フレーム連続描画、利用者ゲーム併存。次回は必要に応じSeed４以降か1280×800条件を追加し、実クリック位置・遷移結果の範囲を広げる。
+
+### 実行履歴：2026-11-03 12:00回（トリガー12:04）
+
+- 開始：2026-11-03 12:04:09 JST（トリガー）。終了：2026-11-03 12:06:52 JST。状態：完了（部分点検）。AGENTS、README（Norton起動猶予）、両記録・Git差分を先に確認。HEAD=6e9b0955ad4ce3769e909e114ba71e3c4066ab02、既存の点検記録９行の差分を保持。他チャットはnotLoaded、ゲーム・Demo・dotnet・MSBuildプロセスなし。ゲーム／既存テスト無変更、セーブ操作・プロセス停止・コミット・プッシュ・公開なし。
+- Demo／DemoDomesticの入力先が現在のプライマリー・インスペクター矩形とヒット可能な地点を使うことを再確認。前回から本体ソースに変更がなく、現本体を含む既存出力artifacts/corner-lessonを利用。再ビルドや出力先の新設なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=4でdotnet artifacts/corner-lesson/DemoUi.dll：12:04:40要求、12:04:46終了、コード０。ログartifacts/demo-click-audit/audit-latest-seed4.log。世界／人物／配置=1014506826／1020794303／748161960。元の1,200更新・18FPS刻みで地図説明→内政１巡→全体ターン１から２→次のTransport、戦闘・拒否・終了ループの検査成功。DEMO-0012は追加Seed４でも再発せず。
+- dotnet artifacts/corner-lesson/DemoAuditNative800.dll：12:04:59要求、12:05:31終了、コード０。既存ソースartifacts/demo-click-audit/ProbeNative800.cs.txtと既存診断DLLを現本体に対して使用。世界123・人物456・配置789、1280×800・18FPS、通常HandleInput＋毎更新Draw。監督・格納庫・工場・長期輸送・閉じる・わたしの国・移動選択・予約確定・ターン終了を465更新でTransportまで進めた。ログaudit-latest-native800.log。段階12のクリック(622,1022)、移動先(1203,263)、確定(707,938)、ターン終了(256,998)。audit-native800-398.pngを開き、クリック付近の選択先とPoint90の選択表示を確認した。座標は1920×1080論理値。
+- dotnet artifacts/corner-lesson/DemoAuditPrimaryDraw800.dll：12:05:49要求、12:06:00終了、コード０。既存ソースProbePrimaryDraw800.cs.txt。1280×800の６プライマリー物理中心→論理矩形、直送便の退避途中・復帰、物理×クリックのチェック成功。primary800-half.pngを開き退避途中の切れ方を目視。さらに540p回転面接続・左右・連続トラック・カメラ・予約保持の既存検証も成功。ログaudit-latest-primary800.log。通常直送便UIの検査を専用Demo巡回と扱わない。
+- 要求・終了時刻と起動後の進行ログを分け、短い待機で実行中を追跡した。今回Nortonの直接証拠なし、再試行・セキュリティ設定変更なし。新規確認不具合なし、DEMO-0001～0012の完了を維持。
+- 未確認：全Seed／人数、直送便専用Demo、追加Seed全フレームの目視、利用者ゲーム併存。次回は必要に応じSeed５または未確認の戦闘・説得・世界構築Demo経路を巡回し、現矩形と実際の遷移を照合する。
+
+### 実行履歴：2026-11-03 13:00回（トリガー12:55）
+
+- 開始：2026-11-03 12:55:10 JST（トリガー）。終了：2026-11-03 12:56:48 JST。状態：完了（部分点検）。AGENTS、README、両記録、Git差分を最初に確認。HEAD=6e9b0955ad4ce3769e909e114ba71e3c4066ab02、既存の点検記録19行の差分を保持。同対象の他チャットはnotLoaded、ゲーム・Demo・dotnet・MSBuildプロセスなしを確認。ゲーム／テスト変更、利用者セーブ操作、プロセス停止、コミット・プッシュ・公開なし。
+- Game1.Demo／DemoDomesticを入口に、区画権利はCastAction、人物確認はStatusProceed、人物選択は実タイル、内政はプライマリーとインスペクターの現矩形を参照することを確認。前回から本体・関連テストの変更なし、現本体を含む既存出力artifacts/corner-lessonを使用。再ビルド・出力先増設なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=5、dotnet artifacts/corner-lesson/DemoUi.dll：12:55:39要求、12:55:44終了、コード０。ログartifacts/demo-click-audit/audit-latest-seed5.log。世界／人物／配置=1280186417／204749072／1033499268。地図説明から内政１巡、全体ターン１→２、次のTransport、戦闘・拒否・終了ループの検査成功。DEMO-0012は追加Seed５でも再発せず。
+- dotnet artifacts/corner-lesson/DemoInspectorUi.dll：12:55:55要求、12:56:07終了、コード０。ログaudit-latest-inspector.log。工場６プランのクリック現在矩形・実選択（1080p／540p）、監督、閉じる演出、長期輸送プライマリー、わたしの国から移動、人数確認が成功。
+- 残る世界構築経路の再点検としてdotnet artifacts/corner-lesson/DemoSetupUi.dll：12:56:07要求、12:56:19終了、コード０。ログaudit-latest-setup.log。世界123・人物456・初期配置789のfixture、18FPS・人間１／２人・1080p／540pで、停止／確定は(758,1045)の実矩形、人物は実タイルのHitSelectionと実選択、別人を選ぶ２人目、LandConquestへの遷移を照合した。通常の物理マウスによるスロット３選択と確認も成功。人物タイルの配置はその時点の領地数による。
+- demo-setup-26.png（960×540）を開き、２人目の「あなた」表示とカーソルが同じ人物を指すことを目視。既存画像名・ログ名を再利用。直送便の退避復帰・左右・連続トラックは前回12:00点検以後コード変更がなく、今回は追加実行していない。専用直送便Demoの未確認状態は維持。
+- 起動要求と終了時刻を記録し、短いポーリングで追跡した。Nortonの直接証拠、再試行、セキュリティ設定変更なし。新規確認不具合なし、DEMO-0001～0012の完了状態を維持。
+- 未確認：全Seed／人数、専用直送便Demo、追加Seed全フレーム、利用者ゲーム併存。次回は必要に応じSeed６、または戦闘／説得など未確認のクリック付き経路を調べる。現在の成功を全経路の完了とは扱わない。
+
+### 実行履歴：2026-11-03 14:00回（トリガー14:02）
+
+- 開始：2026-11-03 14:02:41 JST（トリガー）。終了：2026-11-03 14:04:26 JST。状態：完了（部分点検）。AGENTS、README、両記録・Git差分を最初に確認。HEAD=6e9b0955ad4ce3769e909e114ba71e3c4066ab02、既存の点検記録30行の差分を保持。他チャットはnotLoaded、ゲーム・Demo・dotnet・MSBuildなし。ゲーム／テスト無変更、セーブ操作・停止・コミット・プッシュ・公開なし。
+- Demo／DemoDomesticを入口に、戦闘と伝播はUpdateTransport／RobotBattleInputを自動進行させ、内政のクリックは現矩形と実ヒットを使うことを確認。本体・既存診断ソースに前回から変更なし、既存出力artifacts/corner-lessonを現本体のまま使用。再ビルド・出力先増設なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=6、dotnet artifacts/corner-lesson/DemoUi.dll：14:03:10要求、14:03:14終了、コード０。ログartifacts/demo-click-audit/audit-latest-seed6.log。世界／人物／配置=1545866008／1536187488／1318836576。地図説明・内政１巡・全体ターン１→２・次のTransport、戦闘・拒否・終了ループの検査成功。DEMO-0012は追加Seed６でも再発せず。
+- 優先直送便：dotnet artifacts/corner-lesson/DirectDeliveryUi.dll：14:03:39要求、14:03:50終了、コード０。ログaudit-latest-direct.log。プライマリー比率・退避復帰・移動中の入力抑止、×／Escape、540p回転面接続、左右、連続トラック、カメラ・予約保持を確認。direct-17.png（960×540）を開き左右の地点名・格納庫と中央地図を目視。通常UI検証であり専用直送便Demo巡回ではない。
+- 残る説得経路：dotnet artifacts/corner-lesson/DemoAuditPersuasionResume.dll：14:03:50要求、14:03:55終了、コード０。既存ソースartifacts/demo-click-audit/ProbePersuasionResume.cs.txtを参照。世界123・人物456・配置789、1080p／540p・18FPSの通常HandleInput＋Draw。工場を開いたfixtureから説得演出で格納庫へ切り替わり、約８秒の待機・自動クローズ中にDemoクリックを発生させず、その後実地点クリック(960,552)でstage3へ復帰した。ログaudit-latest-persuasion.log。
+- audit-persuasion-resume-5.png（960×540）を開き、説得中に工場ではなく格納庫が表示されることを確認。fixtureは説得結果を事前設定し、今回確率・パーツ変更の実計算や複数rulerの説得は検査していない。既存画像・ログ名を再利用。
+- 起動要求と終了・Seed表示を区別して追跡し、今回Norton保留の直接証拠なし。再試行・セキュリティ設定変更なし。新規確認不具合なし、DEMO-0001～0012の完了状態を維持。
+- 未確認：全Seed／人数、専用直送便Demo、追加Seed全フレーム、複数ruler説得、利用者ゲーム併存。次回は必要に応じSeed７か、未確認の戦闘・伝播の実描画／クリック有無を照合する。現在の部分検査を全経路完了とはしない。
+
+### 実行履歴：2026-11-03 15:00回（トリガー14:57）
+
+- 開始：2026-11-03 14:57:42 JST（トリガー）。終了：2026-11-03 14:58:55 東京 (標準時)。状態：完了（部分点検）。AGENTS、README、両記録・Git差分を最初に確認。HEAD=6e9b0955ad4ce3769e909e114ba71e3c4066ab02。既存の点検記録、README／docsの配布版案内、個人用チャットの差分を保持。アプリ一覧は当該チャットのみactive、他はnotLoaded。開始時FolderVerse／dotnetプロセスなし。ゲーム・テスト無変更、セーブ操作・停止・コミット・プッシュ・公開なし。
+- Demo.cs／DemoDomestic.csとDemoUi／DemoInspectorUiを入口に、現矩形からのクリックと遷移チェックを確認。戦闘・伝播はUpdateTransport／RobotBattleInputの自動進行で、通常内政のクリック経路とは異なる。ゲーム／テストのGit差分なし、既存本体DLL（11:01更新）と出力artifacts/corner-lessonを再利用。再ビルド・出力先増設なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=7、dotnet artifacts/corner-lesson/DemoUi.dll：14:58頃に要求・開始ログ・約７秒後終了、コード０。ログartifacts/demo-click-audit/audit-latest-seed7.log。世界／人物／配置=1811545599／720142257／1604173884。18FPS地図説明、内政１巡、全体ターン１→２と次のTransport、戦闘・拒否・終了ループ成功。DEMO-0012は追加Seed７でも再発せず。
+- dotnet artifacts/corner-lesson/DemoInspectorUi.dll、続けてDirectDeliveryUi.dll：14:58:10頃要求、14:58:30までに両方コード０。ログaudit-latest-inspector.log／audit-latest-direct.logを再使用。工場６プランの現在矩形と実選択（1080p／540p）、監督、閉じる、長期輸送プライマリー、わたしの国から移動を確認。直送便はプライマリー退避復帰、移動中入力抑止、×／Escape、左右、連続トラック、540pの回転面接続と予約保持が成功。通常UI検証であり専用直送便Demoの完走とは扱わない。
+- direct-17.png（960×540）を開き、左／右インスペクター、地点名、格納庫、中央地図とトラックの描画を確認。既存画像名を再使用。起動待ちをゲーム内停止と混同せず、今回Norton保留の直接証拠・再試行・セキュリティ設定変更なし。
+- 新規確認不具合なし。DEMO-0001～0012の完了状態を維持。未確認：全Seed／人数、専用直送便Demo巡回、追加Seed全フレーム、複数ruler説得、利用者ゲーム併存。次回はSeed８か、未確認の戦闘／伝播の描画・クリック有無を照合する。部分検査を全経路完了とはしない。
