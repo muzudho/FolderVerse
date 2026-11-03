@@ -15,9 +15,20 @@ sealed class DemoCheck:Game1
         typeof(Game1).GetMethod("UpdateDomesticSlide",Flags)!.Invoke(this,new object[]{(float)elapsed});
         typeof(Game1).GetMethod("UpdateDemo",Flags)!.Invoke(this,new object[]{elapsed,active,click,false,false,now});
     }
-    void Check(bool ok,string message){if(!ok)throw new Exception(message);}
+    string Snapshot(){
+        var w=(WorldSetup)Get("_setup");var net=(CubeNet)Get("_net");
+        if((bool)Get("_movementOpen")){
+            var ids=(int[])typeof(Game1).GetMethod("DestinationNodes",Flags)!.Invoke(this,null)!;
+            foreach(int id in ids.Take(4)){var args=new object[]{id,Vector2.Zero};var visible=typeof(Game1).GetMethod("OperationPosition",Flags)!.Invoke(this,args);Console.WriteLine($"destination={id} visible={visible} point={args[1]} allowed={net.NodeVisible(w,w.Nodes.All[id])} globe={Get("_statusGlobe")} mapLeft={Get("_domesticMapLeft")}");}
+        }
+        return $"seeds={w.WorldSeed}/{w.CastSeed}/{w.PlacementSeed} screen={Get("_screen")} domestic={Get("_demoDomesticStage")} age={Get("_demoDomesticAge")} map={Get("_demoMapStage")} visits={Get("_demoMapVisits")} slide={Get("_domesticSlide")} closing={Get("_nodeInspectorClosing")} node={Get("_populationNode")} animation={net.IsAnimating} orientationAge={Get("_orientationAge")} turn={w.Population.Turn} movement={Get("_movementOpen")} war={Get("_warPlanning")} selected={Get("_selectedMoveNode")} reign={Get("_reignView")} click={Get("_demoClickPoint")}";
+    }
+    void Check(bool ok,string message){if(!ok)throw new Exception(message+" / "+Snapshot());}
     protected override void LoadContent()
     {
+        int seed=int.TryParse(Environment.GetEnvironmentVariable("FOLDERVERSE_DEMO_TEST_SEED"),out int requestedSeed)?requestedSeed:0;
+        typeof(Game1).GetField("_random",Flags)!.SetValue(this,new Random(seed));
+        Console.WriteLine("Demo test random seed="+seed);
         Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
         Tick(9);Check(!(bool)Get("_demoActive"),"Demo started too soon");Tick(0,true);Tick(9);Check(!(bool)Get("_demoActive"),"Click did not reset title timer");Tick(1);Check((bool)Get("_demoActive"),"Demo did not start at 10 seconds");
         Check(Get("_screen").ToString()=="Title","Intro should remain on title");
@@ -32,6 +43,7 @@ sealed class DemoCheck:Game1
         bool transport=false;
         for(int i=0;i<900 && !transport;i++){Tick(1);transport|=Get("_screen").ToString()=="Transport";}
         Check(transport,$"Demo did not enter propagation: screen={Get("_screen")} age={Get("_demoAge")} stage={Get("_demoDomesticStage")}");
+        Console.WriteLine("first transport: "+Snapshot());
         double before=(double)Get("_demoAge");Tick(1,active:false);Check((double)Get("_demoAge")>before,"Inactive demo stopped");
         var screenField=typeof(Game1).GetField("_screen",Flags)!;
         var regressionWorld=(WorldSetup)Get("_setup");regressionWorld.Relations.Pending.Clear();
@@ -47,13 +59,21 @@ sealed class DemoCheck:Game1
         typeof(Game1).GetField("_demoMapAge",Flags)!.SetValue(this,0d);
         var net=(CubeNet)Get("_net");
         bool sawGlobe=false,sawNet=false,sawEdgeAnimation=false;
-        for(int i=0;i<1200;i++)
+        // A visit counts a complete domestic turn, not just the map explanation.
+        // Twelve hangar slots can each require multiple held part drags. Keep
+        // the 18 FPS cadence, with enough time for that real input sequence.
+        bool resumedDomestic=false;
+        for(int i=0;i<3600;i++)
         {
             Tick(1d/18,active:false);
             if(Get("_screen").ToString()!="WorldStatus")break;
             sawGlobe|=(bool)Get("_statusGlobe");sawNet|=!(bool)Get("_statusGlobe");sawEdgeAnimation|=net.IsAnimating;
+            resumedDomestic|=(int)Get("_demoMapStage")>=5 && (int)Get("_demoDomesticStage")>0;
+            if((int)Get("_demoMapVisits")>0)break;
         }
         Check(sawGlobe && sawNet && sawEdgeAnimation,"Demo did not demonstrate globe/net and edge relocation");
+        Check(resumedDomestic,"Demo map explanation did not resume domestic actions");
+        Console.WriteLine("map follow-up: "+Snapshot());
         Check((int)Get("_demoMapVisits")>0,$"Demo map explanation did not resume gameplay: stage={Get("_demoMapStage")} age={Get("_demoMapAge")} screen={Get("_screen")} step={Get("_demoStepAge")}");
         var world=(WorldSetup)Get("_setup");
         // Peaceful movement need not produce a battle. Exercise battle playback with a fixed scene instead.
