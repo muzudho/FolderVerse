@@ -7,7 +7,7 @@ public partial class Game1
     private Captive _dispositionScene;
     private DefeatedChoice _dispositionSceneChoice;
     private double _dispositionSceneAge;
-    private void UpdateDispositionScene(double elapsed){if(_dispositionScene!=null){_dispositionSceneAge+=elapsed;if(_dispositionSceneAge>=8)FinishDispositionScene();}}
+    private void UpdateDispositionScene(double elapsed){_tutorialCaptiveToastSeconds=Math.Max(0,_tutorialCaptiveToastSeconds-Math.Max(0,elapsed));if(_dispositionScene!=null){_dispositionSceneAge+=elapsed;if(_dispositionSceneAge>=8)FinishDispositionScene();}}
     private void FinishDispositionScene(){
         _dispositionScene=null;
         if(_setup.Relations.Pending.Count>0){_screen=Screen.Disposition;return;}

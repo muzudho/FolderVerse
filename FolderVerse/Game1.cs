@@ -775,6 +775,7 @@ public partial class Game1 : Game
         }
         if(IsStatusScreen && !_countrySettingsOpen && (_operationSettingsOpen || _operationSettingsSlide>0)){_spriteBatch.Begin(transformMatrix:transform);DrawOperationSettings();_spriteBatch.End();}
         if(_countrySettingsOpen && IsStatusScreen){_spriteBatch.Begin(transformMatrix:transform);DrawCountrySettings();_spriteBatch.End();}
+        if(_tutorialCaptiveToastSeconds>0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialCaptiveAchievementToast();_spriteBatch.End();}
         DrawFullscreenCursor();
         LogDisplayedScreen();
         base.Draw(gameTime);

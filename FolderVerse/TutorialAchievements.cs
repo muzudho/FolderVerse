@@ -7,6 +7,12 @@ using System.Text.Json;
 public sealed class TutorialAchievements
 {
     public const string FirstAttack="tutorial-step-1-first-attack";
+    public const string CaptiveRecruited="tutorial-captive-recruited";
+    public const string CaptiveReleased="tutorial-captive-released";
+    public const string CaptiveBatteryRemoved="tutorial-captive-battery-removed";
+    public static string CaptiveChoiceId(DefeatedChoice choice)=>choice switch{
+        DefeatedChoice.Recruit=>CaptiveRecruited,DefeatedChoice.Release=>CaptiveReleased,DefeatedChoice.RemoveBattery=>CaptiveBatteryRemoved,_=>throw new ArgumentOutOfRangeException(nameof(choice))
+    };
     private readonly string _path;
     public Dictionary<string,DateTimeOffset> Unlocked {get;private set;}=new();
     public TutorialAchievements(string path){_path=path;if(File.Exists(path))Unlocked=JsonSerializer.Deserialize<Dictionary<string,DateTimeOffset>>(File.ReadAllText(path))??new();}

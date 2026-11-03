@@ -66,6 +66,7 @@ public partial class Game1
             bool accepted=_setup.Relations.Choose(_setup,pending,choice);
             _operations.Write("conqueror_disposition",new{pending,choice=choice.ToString(),accepted});
             if(!accepted)return;
+            AwardTutorialCaptiveChoice(choice);
             _world.ShowSetup(_setup,true);
             if(choice is DefeatedChoice.RemoveBattery or DefeatedChoice.Recruit){_dispositionScene=pending;_dispositionSceneChoice=choice;_dispositionSceneAge=0;return;}
             if(_setup.Relations.Pending.Count>0)return;
@@ -89,7 +90,8 @@ public partial class Game1
         _ui.Center(_setup.Relations.Message,new(200,790,1520,44),.54f,new(255,196,112));
         string[] choices={accepts?"手下にする":"手下にする（拒否）","逃がす","電池を引き抜く"};
         for(int i=0;i<3;i++)_ui.Button(DispositionButton(i),choices[i],i==0 && !accepts?Muted:Accent,.65f);
-        _ui.Center("逃がす：その地点に留まる / 電池を引き抜く：所有する地点を未征服にする",new(160,970,1600,48),.48f,Cream);
+        if(TutorialCaptiveAchievementsAvailable)DrawTutorialCaptiveChoiceNotes();
+        else _ui.Center("逃がす：その地点に留まる / 電池を引き抜く：所有する地点を未征服にする",new(160,970,1600,48),.48f,Cream);
     }
     private void DrawInactiveUi()
     {
