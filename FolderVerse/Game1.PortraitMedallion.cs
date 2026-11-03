@@ -18,7 +18,8 @@ public partial class Game1
     private const float MedallionFontScale=.36f*1.2f;
     private const float MedallionLetterGap=MathHelper.Pi/36; // Extra five degrees between glyph bounds.
     private static string MedallionName(string fullName)=>string.Join(" ",fullName.Replace('・',' ').Split(new[]{' ','　'},StringSplitOptions.RemoveEmptyEntries));
-    private void DrawPortraitMedallion(Vector2 center,Color nation){
+    private void DrawPortraitMedallion(Vector2 center,Color nation,int owner=-1){
+        int pattern=owner<0?0:_setup.CountryPattern(owner);
         if(!_medallionRings.TryGetValue(nation,out _medallionRing)){
             int size=(int)MathF.Ceiling(MedallionRadius)*2+2;var pixels=new Color[size*size];
             var surface=Color.Lerp(nation,new Color(246,241,226),.52f);
@@ -36,6 +37,8 @@ public partial class Game1
             _medallionRing=new Texture2D(GraphicsDevice,size,size);_medallionRing.SetData(pixels);_medallionRings.Add(nation,_medallionRing);
         }
         _spriteBatch.Draw(_medallionRing,center-new Vector2(_medallionRing.Width*.5f),Color.White);
+        if(pattern!=0)foreach(int side in new[]{-1,1})
+            DrawCountryMark(new((int)(center.X+side*(MedallionRadius+12)-8),(int)center.Y-8,16,16),owner);
     }
     private (string Glyph,Vector2 At,float Rotation,Vector2 Origin)[] MedallionNameLayout(Vector2 center,string fullName){
         var text=MedallionName(fullName);var glyphs=new List<string>();

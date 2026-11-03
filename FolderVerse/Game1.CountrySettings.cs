@@ -10,8 +10,8 @@ public partial class Game1
     private static readonly Rectangle CountrySettingsMenuItem=new(1320,350,538,52);
     private static readonly Rectangle CountrySettingsClose=new(1730,85,100,50),CountryHumanButton=new(1110,305,320,60),CountryComputerButton=new(1450,305,320,60);
     private static Rectangle CountrySettingsCard(int i)=>new(90+i%5*194,200+i/5*62,186,56);
-    private static Rectangle CountryColorOption(int row,int i)=>new(1110+i%10*66,455+row*120+i/10*48,58,42);
-    private static Rectangle CountryPatternOption(int i)=>new(1110+i%3*220,730+i/3*64,208,54);
+    private static Rectangle CountryColorOption(int row,int i)=>new(1110+i%10*66,645+row*120+i/10*48,58,42);
+    private static Rectangle CountryPatternOption(int i)=>new(1110+i%3*220,430+i/3*64,208,54);
     private void OpenCountrySettings()
     {
         _countrySettingsRuler=Math.Clamp(_setup.PlayerSlot,0,_setup.ActiveCount-1);
@@ -47,7 +47,7 @@ public partial class Game1
         }
         int primary=_setup.ColorIndices[ruler]%WorldSetup.Colors.Length,secondary=_setup.CountrySecondaryColor(ruler),pattern=_setup.CountryPattern(ruler);
         bool changed=false;
-        for(int i=0;i<WorldSetup.Colors.Length;i++)for(int row=0;row<2;row++)if(CountryColorOption(row,i).Contains(_pointer)){if(row==0)primary=i;else secondary=i;changed=true;}
+        for(int i=0;i<WorldSetup.Colors.Length;i++)for(int row=0;row<(pattern==0?1:2);row++)if(CountryColorOption(row,i).Contains(_pointer)){if(row==0)primary=i;else secondary=i;changed=true;}
         for(int i=0;i<WorldSetup.CountryPatternNames.Length;i++)if(CountryPatternOption(i).Contains(_pointer)){pattern=i;changed=true;}
         if(changed){_setup.SetCountryAppearance(ruler,primary,secondary,pattern);_world.ShowSetup(_setup,true);_net.ClearGlobeRobotBadges();_operations.Write("country_appearance_changed",new{ruler,primary,secondary,pattern});}
         return true;
@@ -84,15 +84,15 @@ public partial class Game1
         _ui.Button(CountryHumanButton,"人間",human?Accent:Muted,.6f);
         _ui.Button(CountryComputerButton,"コンピューター",human?Muted:Accent,.56f);
         _ui.Text("人間の手下は自分のターンで操作します。",new(1110,380),.40f,Cream);
-        _ui.Text("基本の色",new(1110,420),.45f,Cream);
-        _ui.Text("模様の色",new(1110,540),.45f,Cream);
-        for(int row=0;row<2;row++)for(int i=0;i<WorldSetup.Colors.Length;i++)
+        _ui.Text("基本の色",new(1110,610),.45f,Cream);
+        if(_setup.CountryPattern(ruler)!=0)_ui.Text("２色目",new(1110,730),.45f,Cream);
+        for(int row=0;row<(_setup.CountryPattern(ruler)==0?1:2);row++)for(int i=0;i<WorldSetup.Colors.Length;i++)
         {
             var r=CountryColorOption(row,i);
             bool selected=i==(row==0?_setup.ColorIndices[ruler]%WorldSetup.Colors.Length:_setup.CountrySecondaryColor(ruler));
             _ui.Box(r,selected?Cream:Muted);_ui.Box(new(r.X+4,r.Y+4,r.Width-8,r.Height-8),WorldSetup.Colors[i]);
         }
-        _ui.Text("網かけ / 回転による向き違いは共通",new(1110,685),.45f,Cream);
+        _ui.Text("網かけ / 回転による向き違いは共通",new(1110,405),.45f,Cream);
         for(int i=0;i<WorldSetup.CountryPatternNames.Length;i++)
         {
             var r=CountryPatternOption(i);_ui.Button(r,"",i==_setup.CountryPattern(ruler)?Accent:Muted,.4f);

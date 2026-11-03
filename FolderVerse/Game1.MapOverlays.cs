@@ -68,12 +68,14 @@ public partial class Game1
             if(!enabled)color=Color.Lerp(color,new Color(45,49,54),.75f);
             else if(r.Contains(_pointer))color=Color.Lerp(color,Color.White,.22f);
             var shadow=r;shadow.Y+=4;PrimaryRoundBox(shadow,new Color(7,23,35));PrimaryRoundBox(r,color);
+            DrawCountryCornerMarks(r,_setup.PlayerSlot,enabled?1:.3f);
             var ink=UiPainter.ContrastInk(color);
             if(i==1){_ui.Center("陣営の",new(r.X,r.Y+32,r.Width,32),.44f,ink);_ui.Center("ターン終了",new(r.X,r.Y+73,r.Width,36),.57f,ink);}
             else {
+                int inset=_setup.CountryPattern(_setup.PlayerSlot)==0?3:14;
                 DrawPrimaryIcon(i,new(r.X+12,r.Y+8,r.Width-24,58),ink);
                 string label=i==3?"パーツ直送便":i==4?"輸送長期計画":labels[i];
-                _ui.Center(label,new(r.X+3,r.Bottom-28,r.Width-6,24),Math.Min(.34f,(r.Width-6)/_font.MeasureString(label).X),ink);
+                _ui.Center(label,new(r.X+inset,r.Bottom-28,r.Width-inset*2,24),Math.Min(.34f,(r.Width-inset*2)/_font.MeasureString(label).X),ink);
             }
             if((i==3 || !_directMap && _primaryActionSlide==0) && r.Contains(_pointer)){
                 string hint=labels[i]+(!enabled?"（このステップでは利用できません）":i==2?$"（{WarReservationCount}件）":"");

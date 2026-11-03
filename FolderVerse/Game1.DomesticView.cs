@@ -113,7 +113,7 @@ public partial class Game1
     private void DrawRulerMedallion(int ruler,Vector2 center)
     {
         var r=new Rectangle((int)center.X-120,(int)center.Y-120,240,240);
-        DrawPortraitMedallion(center,_setup.OwnerColor(ruler));
+        DrawPortraitMedallion(center,_setup.OwnerColor(ruler),ruler);
         var image=new Rectangle((int)(center.X-MedallionPortraitRadius),(int)(center.Y-MedallionPortraitRadius),(int)(MedallionPortraitRadius*2),(int)(MedallionPortraitRadius*2));
         var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _spriteBatch.End();var old=GraphicsDevice.ScissorRectangle;

@@ -272,6 +272,7 @@ public partial class Game1
                 if(physical!=null && patch.Ink==0)
                 {
                     color=_setup.OwnerColor(physical.Origin(part));
+                    if(_setup.CountryPattern(unit.Owner)!=0){DrawBattleUniformPatch(area,r,damageArea,physical,unit.Owner,color,part,pieceOpacity);continue;}
                     if(physical.IsCheap(part))
                     {
                         for(int row=0;row<area.Height;row++){

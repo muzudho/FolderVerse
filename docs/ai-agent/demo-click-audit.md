@@ -685,3 +685,13 @@
 - 格納庫・直送便・産業時間・製造プラン等の更新を確認し、旧本体を流用せずDemoActionsUiを再ビルド。DOTNET_CLI_TELEMETRY_OPTOUT=1、dotnet build tests/DemoActionsUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers：成功、警告０・エラー０。ログartifacts/demo-click-audit/actions-build-0800-output.txt。ALSOFT_DRIVERS=null、dotnet artifacts/corner-lesson/DemoActionsUi.dll：正常終了、終了コード０。ログ同actions-0800-output.txt。
 - 1080p／540pで実地点ヒット・地星儀／展開図・回転・非表示レイヤー／画面外カメラ、単独部位／２包み／結合部位の押下保持と実ドロップ、移動予約と独立したターン終了、再試行／行先なしを確認。demo-actions-1.pngを開き描画確認。ゲーム・既存テスト無変更、記録のみ追記、既存出力先使用。
 - 新規不具合なし、既報0001～0011完了を維持。更新後の直送便・工場プラン・産業の再検証は今回未実施。次回は優先のDemoInspectorUiとDirectDeliveryUiを更新後本体でビルド・実行する。直送便専用Demo・全Seed／人数・タイトル全体再生・利用者ゲーム併存は未確認。
+
+### 実行履歴：2026-11-03 09:00回（トリガー09:06）
+
+- 開始：2026-11-03 09:06:37 JST（トリガー）。終了：2026-11-03 09:08:51 JST。状態：完了（部分点検）。AGENTS、README、両記録とGit差分を最初に確認。HEAD=e2a5b2eff6ac6ab8e94d9f0ea849d7b5b266b215。アプリ一覧は当該チャットのみactive、同対象の他チャットはnotLoaded。FolderVerse・Demo・dotnet・MSBuildプロセスなしを確認して開始。利用者のゲーム・セーブ操作、停止、コミット・プッシュ・公開なし。
+- 関係する既存差分：Game1.CountrySettings／DomesticView／FolderTree／MapOverlays／PortraitMedallion／ReservationDirectory／Robots、未追跡Game1.CountryBorders、tests/CountrySettingsと個人用チャット文書。国模様の縁描画と設定画面の並び替えを保持した。Game1.Demo.cs／DemoDomestic.cs／既存Demoテストに未コミット差分なし。今回ゲームコード・テストは変更していない。
+- Demo／DemoDomesticを入口に、DemoInspectorUi、DirectDeliveryUi、DemoUiを順に現ソースから再ビルド・実行。共通：DOTNET_CLI_TELEMETRY_OPTOUT=1、dotnet build tests/<対象> --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers、ALSOFT_DRIVERS=null、dotnet artifacts/corner-lesson/<対象>.dll。全３ビルド成功（警告・エラー０）、全３実行成功。既存出力先を再使用。ログはartifacts/demo-click-audit/audit-latest-{build,inspector,direct-build,direct,demo-build,demo}.log（再利用する最新点検用ログ）。
+- DemoInspectorUi：1920×1080／960×540、世界123・人物456・配置789。工場６プランのクリックと現矩形・実選択、監督、閉じる演出、輸送長期計画プライマリー、わたしの国→移動、人数確認を照合。段階12のクリックはTransportOverviewButton=PrimaryActionBounds(4)。demo-office-5.pngを開き長期輸送一覧の描画を確認した。
+- DirectDeliveryUi：比率、他プライマリーの退避／復帰・移動中入力抑止、×／Escape、540pの回転面接続、左右インスペクター、連続トラッククリック、カメラ遷移と予約保持が成功。direct-17.pngを開き、左右の地点名・格納庫と中央地図の描画を確認した。通常直送便UIテストであり、直送便専用Demo巡回を完了したとは扱わない。
+- DemoUi：タイトル待機開始、地星儀／展開図切替、18FPS面接続、拒否分岐、終了ループ、Demoラベルの検証成功。リリース準備時の「propagationへ到達せずWorldStatus stage=0」失敗は今回再現せず、原因・全Seedでの解消は未確定。成功した１回を恒久的な修正の証拠にはしない。
+- 新規確認不具合なし。既報DEMO-0001～0011の完了状態を維持。未確認：全時間をタイトルから連続描画する経路、直送便専用Demo、全Seed／全人数、利用者ゲーム併存。次回はDemoActionsUiで現在の縁描画を含む格納庫押下／ドロップ・移動予約を再確認し、伝播到達失敗のSeed／再現条件が特定できるか調べる。
