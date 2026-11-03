@@ -55,7 +55,7 @@ public partial class Game1
     private void UpdateTransport(double elapsed,bool proceed,double now)
     {
         // Wait for Draw to register the card, then advance only time after it ends.
-        if(_lastCutInPhase!=(DeliveryPlayback?"配送フェーズ":"伝播フェーズ"))return;
+        if(_lastCutInPhase!=(DeliveryPlayback?"配送フェーズ":"出兵フェーズ"))return;
         elapsed=Math.Min(elapsed,Math.Max(0,now-_cutInStarted-PhaseCutInSeconds));
         if(elapsed<=0)return;
         if(!PropagationComplete){UpdatePropagationMovement(elapsed);return;}
