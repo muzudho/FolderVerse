@@ -5,7 +5,7 @@ public partial class Game1
 {
     private bool _tutorialIntroShown,_tutorialMessagesOpen;
     private int _tutorialMessageSelection,_tutorialGuideMessage=1,_tutorialLastMessage=-1;
-    private static readonly string[] TutorialMessageTitles={"内政開始の案内","開戦予約の案内","開戦の実績解除","ステップ１の完了","ステップ２の案内","ポケットの達成","移動の達成","ステップ２の完了","地星儀を展開図へ","展開図の回転","面のつながり","地星儀へ組立","展開図のスライド","地星儀の回転","地星儀のスライド","ステップ３の完了","開戦予約の解放","ポケットと移動の達成"};
+    private static readonly string[] TutorialMessageTitles={"内政開始の案内","開戦予約の案内","開戦の実績解除","ステップ１の完了","ステップ２の案内","ポケットの達成","移動の達成","ステップ２の完了","地星儀を展開図へ","展開図の回転","面のつながり","地星儀へ組立","展開図のスライド","地星儀の回転","地星儀のスライド","ステップ３の完了","開戦予約の解放","戦力の余裕と世界征服","中断と続きから","セーブ枠の案内"};
     private static readonly string[][] TutorialMessageLines={
         new[]{"さあ、戦争の始め方を覚えましょう！","画面下段の交差する短剣［開戦予約］を押してください！"},
         new[]{"待った～！　ステップ１では、戦争の始め方を覚えてみましょう！","下段のプライマリー・アクション・ボタンで、開戦予約をしてから、","大きな［陣営のターン終了］ボタンを押してください！"},
@@ -24,7 +24,9 @@ public partial class Game1
         new[]{"地星儀（ちせいぎ）もスライドできます！","右上の円いウィンドウの中にいるロボットを","マウスでドラッグしてください。"},
         new[]{"これで遊び方　ステップ３は終了です。","右上の＜システムメニュー＞ボタンから、","［ゲームを止めてタイトル画面に戻る］メニューをクリックしてください。"},
         new[]{"地図の操作を覚えることができましたね！","［開戦予約］と［陣営のターン終了］ボタンが使えるようになりました！","開戦予約をしてから、［陣営のターン終了］を押してください！"},
-        new[]{"ポケットに入れて移動することができましたね！","覚えた操作で、プチステラを世界征服しましょう！"}
+        new[]{"戦力には余裕があります！　開戦だけで押しきっちゃってくださーい！","覚えた操作で、プチステラを世界征服しましょう！"},
+        new[]{"休みたくなったら、右上の＜システムメニュー＞から、","［ゲームを止めてタイトル画面に戻る］を選んでね！","スタートメニューの［続きから］で再開できます！"},
+        new[]{"内政フェーズの開始時に、自動でセーブされます！","セーブデータのスロットは１つだけです。","新しいゲームを進めると、前のセーブは上書きされます！"}
     };
     private void ShowTutorialGuide(int message){
         _tutorialGuideMessage=_tutorialLastMessage=message;_tutorialAttackGuide=true;_tutorialGuideStarted=_animationTime;
@@ -32,8 +34,8 @@ public partial class Game1
     private bool TutorialReviewAvailable=>_setup.TutorialStep is 1 or 2 or 3 && _screen!=Screen.Title && _screen!=Screen.PlayerCount && _screen!=Screen.ComputerPlayerCount;
     private int TutorialMessageBase=>_setup.TutorialMapBeforeWar?8:_setup.TutorialStep switch{2=>4,3=>8,_=>0};
     private Rectangle TutorialReviewButton=>_screen==Screen.Battle?new(55,1046,400,30):new(1110,20,380,48);
-    private int[] TutorialReviewMessages=>_setup.TutorialMapBeforeWar?new[]{8,9,12,10,11,13,14,16,1,2,4,5,6,17}:_setup.TutorialStep==3?new[]{8,9,12,10,11,13,14,15}:new[]{TutorialMessageBase,TutorialMessageBase+1,TutorialMessageBase+2,TutorialMessageBase+3};
-    private Rectangle TutorialMessageRow(int i)=>new(400,315+i*(_setup.TutorialMapBeforeWar?40:_setup.TutorialStep==3?60:100),360,_setup.TutorialMapBeforeWar?34:_setup.TutorialStep==3?48:75);
+    private int[] TutorialReviewMessages=>_setup.TutorialMapBeforeWar?new[]{8,9,12,10,11,13,14,16,1,2,4,5,6,17,18,19}:_setup.TutorialStep==3?new[]{8,9,12,10,11,13,14,15}:new[]{TutorialMessageBase,TutorialMessageBase+1,TutorialMessageBase+2,TutorialMessageBase+3};
+    private Rectangle TutorialMessageRow(int i)=>new(400,315+i*(_setup.TutorialMapBeforeWar?Math.Min(40,560/TutorialReviewMessages.Length):_setup.TutorialStep==3?60:100),360,_setup.TutorialMapBeforeWar?Math.Min(34,560/TutorialReviewMessages.Length-6):_setup.TutorialStep==3?48:75);
     private static Rectangle TutorialMessageClose=>new(1150,800,360,60);
     private void UpdateTutorialStartGuide(double now){
         if(UpdateTutorialThreeGuide(now))return;

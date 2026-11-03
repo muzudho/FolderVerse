@@ -4,14 +4,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
-    private bool _tutorialStepDialogOpen;
-    private int _tutorialPlanetSelection,_tutorialStepSelection;
+    private int _tutorialPlanetSelection;
     private RenderTarget2D[] _tutorialPlanetTextures;
     private static readonly string[] TutorialPlanetNames={"プチステラ","コルトロディア","エトロブレッタ","オチョエッカ","ラルゴエディア","グランキスタ"};
     private static readonly (int X,int Y,int Z)[] TutorialPlanetSizes={(1,1,1),(1,2,1),(2,1,2),(2,2,2),(3,2,2),(3,3,3)};
     private static readonly string[] TutorialPlanetForms={"地賽","地棒","地盤","地箱","地箱","地箱"};
     private static Rectangle TutorialPlanetCard(int i)=>new(520+i%3*445,340+i/3*300,420,275);
-    private static Rectangle TutorialStepDialogClose=>new(1710,410,60,48);
     private void LoadTutorialPlanets()
     {
         var previous=GraphicsDevice.GetRenderTargets();var viewport=GraphicsDevice.Viewport;
@@ -52,25 +50,12 @@ public partial class Game1
             _ui.Center(TutorialPlanetNames[i],new(r.X+15,r.Y+182,r.Width-30,35),.63f,ink);
             var size=TutorialPlanetSizes[i];
             _ui.Center($"{size.X}×{size.Y}×{size.Z}　{TutorialPlanetForms[i]}",new(r.X+15,r.Y+221,r.Width-30,24),.38f,ink);
-            _ui.Center(enabled?"この星へ出発":"準備中",new(r.X+15,r.Y+250,r.Width-30,22),.34f,enabled?gold:new Color(95,108,126));
+            string status=enabled?"この星へ出発":"このチュートリアルはまだ作ってません。";
+            _ui.Center(status,new(r.X+15,r.Y+250,r.Width-30,22),Math.Min(.34f,(r.Width-30)/_font.MeasureString(status).X),enabled?gold:ink);
         }
         _ui.Text("方向キーで選択 / Enterで決定",new(520,945),.35f,Cream);
         _ui.Button(BackButton,"戻る",Muted,.6f);
         _ui.Button(TutorialClearMedals,"チュートリアルの勲章をクリアーする",Muted,.43f);
         if(_tutorialAchievementError.Length>0)_ui.Text(_tutorialAchievementError,new(520,1010),.4f,new Color(255,160,140));
-        if(_tutorialStepDialogOpen)DrawTutorialStepDialog();
-    }
-    private void DrawTutorialStepDialog()
-    {
-        _ui.Box(new(0,0,1920,1080),Color.Black*.65f);_ui.Box(new(700,390,1100,450),new Color(27,49,62));
-        _ui.Text("プチステラ",new(760,420),.8f,Cream);_ui.Button(TutorialStepDialogClose,"×",Muted,.6f);
-        _ui.Text("ステップ１から順番に進めてください。",new(760,480),.43f,Cream);
-        string[] titles={"ステップ１：地図を覚えて開戦しましょう","ステップ２：ロボットをポケットに入れて移動しよう","ステップ３：地図を使おう"};
-        for(int i=0;i<3;i++){
-            var r=TutorialStep(i);if(i==_tutorialStepSelection){var border=r;border.Inflate(3,3);_ui.Box(border,new Color(255,214,112));}
-            _ui.Button(r,titles[i],i==_tutorialStepSelection?Accent:Muted,i==1?.46f:.55f);
-        }
-        if(_tutorialAchievements?.Has(TutorialAchievements.FirstAttack)==true)DrawTutorialMedal(new(1750,550));
-        _ui.Text("１つのステップの推定プレイ時間は２０分です。",new(760,790),.4f,Cream);
     }
 }

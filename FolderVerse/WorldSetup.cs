@@ -55,6 +55,7 @@ public sealed partial class WorldSetup
     public bool TutorialPocketCourse=>TutorialStep==2 || TutorialMapBeforeWar && TutorialAttackCompleted;
     public bool TutorialCompletionPending,TutorialCompletionShown;
     public bool TutorialPocketed,TutorialMoved,TutorialPocketNoticeShown,TutorialMoveNoticeShown;
+    public int TutorialPostMoveStage;
     private int _presetCastCount;
     public int PlayerCount {get;private set;}=1;
     public int ComputerPlayerCount {get;private set;}=19;
@@ -124,7 +125,7 @@ public sealed partial class WorldSetup
     public void SetWorld(int seed)
     {
         WorldConquestEndingShown=false;TutorialStep=0;TutorialMapBeforeWar=TutorialAttackCompleted=TutorialPocketIntroShown=false;_presetCastCount=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();Lessons.Reset();
-        TutorialPocketed=TutorialMoved=TutorialPocketNoticeShown=TutorialMoveNoticeShown=false;
+        TutorialPocketed=TutorialMoved=TutorialPocketNoticeShown=TutorialMoveNoticeShown=false;TutorialPostMoveStage=0;
         PolarAxis=1;TutorialMapStage=TutorialMapRotations=TutorialMapNotices=0;TutorialMapEdgeChanged=false;
         WandererPolicies=new WandererPolicy[CastCount];
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));

@@ -9,7 +9,6 @@ public partial class Game1
     private bool _tutorialMenuOpen;
     private Texture2D _tutorialHost;
     private static Rectangle TutorialClearMedals=>new(1000,975,720,52);
-    private static Rectangle TutorialStep(int i)=>new(760,520+i*85,960,65);
     private void LoadTutorialHost(){
         using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Setup","tutorial-library.png"));
         _tutorialHost=Texture2D.FromStream(GraphicsDevice,stream);
@@ -17,15 +16,6 @@ public partial class Game1
         RemoveMobBackdrop(pixels,_tutorialHost.Width,_tutorialHost.Height,new(-1,-1));_tutorialHost.SetData(pixels);LoadTutorialPlanets();
     }
     private void TutorialMenuInput(bool click,bool enter,bool escape,KeyboardState keys){
-        if(_tutorialStepDialogOpen){
-            if(escape || click && TutorialStepDialogClose.Contains(_pointer)){_tutorialStepDialogOpen=false;return;}
-            if(keys.IsKeyDown(Keys.Up) && _previousKeyboard.IsKeyUp(Keys.Up))_tutorialStepSelection=(_tutorialStepSelection+2)%3;
-            if(keys.IsKeyDown(Keys.Down) && _previousKeyboard.IsKeyUp(Keys.Down))_tutorialStepSelection=(_tutorialStepSelection+1)%3;
-            int chosen=enter?_tutorialStepSelection:-1;
-            if(click)for(int i=0;i<3;i++)if(TutorialStep(i).Contains(_pointer))chosen=i;
-            if(chosen>=0){_tutorialStepDialogOpen=false;if(chosen==0)BeginPetitstellaTutorial();else if(chosen==1)BeginTutorialStepTwo();else BeginTutorialStepThree();}
-            return;
-        }
         if(escape || click && BackButton.Contains(_pointer)){_tutorialMenuOpen=false;return;}
         if(click && TutorialClearMedals.Contains(_pointer)){
             try{if(_tutorialAchievements==null)LoadTutorialAchievements();if(_tutorialAchievements==null)throw new InvalidDataException("Achievement store unavailable.");_tutorialAchievements.Clear();_tutorialAttackAchieved=false;_tutorialAchievementError="";}
@@ -38,10 +28,12 @@ public partial class Game1
         if(keys.IsKeyDown(Keys.Up) && _previousKeyboard.IsKeyUp(Keys.Up))move=-3;
         if(keys.IsKeyDown(Keys.Down) && _previousKeyboard.IsKeyUp(Keys.Down))move=3;
         _tutorialPlanetSelection=(_tutorialPlanetSelection+move+6)%6;
-        if(_tutorialPlanetSelection==0 && (enter || click && TutorialPlanetCard(0).Contains(_pointer))){_tutorialStepDialogOpen=true;_tutorialStepSelection=0;}
+        if(_tutorialPlanetSelection==0 && (enter || click && TutorialPlanetCard(0).Contains(_pointer)))BeginPetitstellaTutorial();
     }
     private void BeginPetitstellaTutorial(){
         BeginTutorialStepOne();_setup.TutorialMapBeforeWar=true;_statusGlobe=true;
+        foreach(var node in _setup.Nodes.All)for(int i=0;i<2;i++)_setup.Robots.Nodes[node.Id].Add(_setup.Robots.Create(0,RobotParts.Complete,RobotRole.Soldier));
+        _world.ShowSetup(_setup,true);
         _lastAutoSaveTurn=-1;AutoSaveDomestic();
     }
     private void BeginTutorialStepOne(){

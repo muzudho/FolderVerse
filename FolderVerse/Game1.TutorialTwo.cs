@@ -18,7 +18,9 @@ public partial class Game1
         if(_setup.TutorialMapBeforeWar?!_setup.TutorialPocketIntroShown:!_tutorialIntroShown){_tutorialIntroShown=true;_setup.TutorialPocketIntroShown=true;message=4;}
         else if(_setup.TutorialPocketed && !_setup.TutorialPocketNoticeShown){_setup.TutorialPocketNoticeShown=true;message=5;}
         else if(_setup.TutorialMoved && !_setup.TutorialMoveNoticeShown){_setup.TutorialMoveNoticeShown=true;message=6;}
-        else if(_setup.TutorialPocketNoticeShown && _setup.TutorialMoveNoticeShown && !_setup.TutorialCompletionShown){_setup.TutorialCompletionShown=true;message=_setup.TutorialMapBeforeWar?17:7;}
+        else if(_setup.TutorialMapBeforeWar && _setup.TutorialMoveNoticeShown && _setup.TutorialPostMoveStage<3){message=17+_setup.TutorialPostMoveStage++;}
+        else if(!_setup.TutorialMapBeforeWar && _setup.TutorialPocketNoticeShown && _setup.TutorialMoveNoticeShown && !_setup.TutorialCompletionShown){_setup.TutorialCompletionShown=true;message=7;}
+        if(_setup.TutorialMapBeforeWar && _setup.TutorialPocketNoticeShown && _setup.TutorialMoveNoticeShown)_setup.TutorialCompletionShown=true;
         if(message>=0){ShowTutorialGuide(message);if(_setup.TutorialMapBeforeWar){_lastAutoSaveTurn=-1;AutoSaveDomestic();}}
         return true;
     }

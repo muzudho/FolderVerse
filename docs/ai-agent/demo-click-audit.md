@@ -805,3 +805,11 @@
 - 開始：2026-11-03 20:04:50 JST。終了：2026-11-03 20:05:13 JST。状態：中断（同一作業場所で別開発がactiveのため重複実行を避け、次回へ送る）。AGENTS、README、両記録・Git差分を最初に確認。HEAD=e1ac2e6b5cc75072008a6bc9b22b470af933ab2f。開始時の未コミット差分は個人用チャット文書13行、ゲーム／dotnet／MSBuildプロセスなし。ただし別チャット「解説カットイン時にボタンを退避」のactiveを確認し、先行開発が完了したとは扱わない。
 - ゲーム／テスト、利用者の変更・セーブ・起動中ゲームを保護。ビルド・Demo起動・プロセス停止・コミット・プッシュ・公開なし。新しい問題を再現した実行はなく、DEMO連番・既報の状態は変更しない。
 - 未確認：現HEADでのプライマリー、直送便の退避復帰・左右、Seed10、残りのDemo経路。次回は先行作業終了と競合なしを確認し、既存分離出力を現コードで更新してSeed10から再開。今回の実行未確認を正常扱いしない。
+
+### 実行履歴：2026-11-03 21:00回（トリガー20:59）
+
+- 開始：2026-11-03 20:59:51 JST。終了：2026-11-03 21:00:56 JST。状態：完了（部分点検）。AGENTS、README、両記録とGit差分を最初に確認。HEAD=92a85d1fac0883cdd62f585c40538031a524749a（終了前も同じ）。別チャットはidle、開始時ゲーム／dotnet／MSBuildなし。既存の個人用チャット文書12行差分を保持。ゲーム／テスト無変更、利用者セーブ操作・プロセス停止・コミット・プッシュ・公開なし。
+- 現HEADへ既存分離出力を更新。DOTNET_CLI_TELEMETRY_OPTOUT=1、dotnet build tests/DemoUi --no-restore -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers：21:00頃要求、約９秒で成功、警告・エラー０。ログaudit-latest-build.log。Demo.cs／DemoDomestic.csのMapViewButton、実地点ヒット・行先、伝播／戦闘の自動進行を照合した。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=10、dotnet artifacts/corner-lesson/DemoUi.dll：21:00頃開始し約５秒でコード０。世界／人物／配置=461100725／419490211／312702161。18FPS地図説明、内政１巡、全体ターン１→２・次のTransport、戦闘／拒否／終了ループ成功。ログaudit-latest-seed10.log。
+- 続けてDemoInspectorUi.dll／DirectDeliveryUi.dllを現本体で実行、両方コード０、21:00:40頃までに終了。工場６プランの現在矩形・実選択、監督、閉じる、長期輸送プライマリー、わたしの国→移動（1080p／540p）、直送便退避復帰・×／Escape・左右・連続トラック・回転面接続・予約保持が成功。ログaudit-latest-inspector.log／audit-latest-direct.log。direct-17.png（960×540）を開き左右の地点名・格納庫・中央地図を目視した。既存ログ／画像名と出力先を再利用。
+- 新規確認不具合なし、DEMO-0001～0012の状態維持。Norton起動保留の直接証拠・再試行・設定変更なし。未確認：全Seed／人数、専用直送便Demo、各Seed全フレーム、戦闘／伝播全描画、複数ruler説得、利用者ゲーム併存。次回は同じ優先UIを必要に応じ確認しつつ、Seed11または未確認経路へ。通常直送便UIテストを専用Demo完走とは扱わない。
