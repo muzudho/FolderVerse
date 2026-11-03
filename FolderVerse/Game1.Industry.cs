@@ -98,10 +98,11 @@ public partial class Game1
         for(int i=0;i<Math.Min(labels.Length,IndustryVisibleLabels);i++){
             var label=labels[i];
             if(label.Backplate)_ui.Box(label.Bounds,Cream);
-            _ui.Center(label.Text,label.Bounds,label.Scale,new Color(19,38,49));
+            DrawIndustryDuration(_setup.Industry.Wheel[i].Turns,label.Bounds,new Color(19,38,49),label.Scale);
         }
         for(int y=0;y<28;y++)_ui.Box(new((int)center.X-28+y,(int)(center.Y-radius)-35+y,56-y*2,1),Cream);
-        _ui.Center(stopped?$"{IndustryTime.Format(result).Replace("+"," ")} 産業ターン":_industryAge<IndustryReadSeconds?"ルーレットを見てみよう":"ルーレット回転中",new(800,890,740,45),.8f,Cream);
+        if(stopped)DrawIndustryDuration(result,new(800,885,740,65),Cream,.65f,suffix:" 産業ターン");
+        else _ui.Center(_industryAge<IndustryReadSeconds?"ルーレットを見てみよう":"ルーレット回転中",new(800,890,740,45),.8f,Cream);
         _ui.Text($"全体ターン {_setup.Population.Turn} / 産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn).Replace("+"," ")}",new(565,1000),.5f,Cream);
         if(stopped){_ui.Button(IndustryContinue,"次の内政へ",Accent,.7f);DrawPhaseTimer(new(565,1050,1255,12),_industryIdleAge,IndustryIdleSeconds);}
     }

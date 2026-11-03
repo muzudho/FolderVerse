@@ -20,7 +20,7 @@ public partial class Game1
             var direction=new Vector2(MathF.Cos(middles[i]),MathF.Sin(middles[i]));
             Rectangle best=default;float bestScale=.65f,bestScore=float.MaxValue;
             foreach(float scale in new[]{.65f,.58f,.50f,.44f}){
-                var size=_font.MeasureString(text)*scale;
+                var size=IndustryDurationSize(wheel[i].Turns,scale);
                 int width=(int)MathF.Ceiling(size.X)+8,height=(int)MathF.Ceiling(size.Y)+4;
                 foreach(float distance in Enumerable.Range(0,21).Select(n=>.16f+n*.035f).OrderBy(d=>MathF.Abs(d-(tiny?.84f:.70f)))){
                     var at=center+direction*(radius*distance);

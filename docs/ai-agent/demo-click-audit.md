@@ -695,3 +695,25 @@
 - DirectDeliveryUi：比率、他プライマリーの退避／復帰・移動中入力抑止、×／Escape、540pの回転面接続、左右インスペクター、連続トラッククリック、カメラ遷移と予約保持が成功。direct-17.pngを開き、左右の地点名・格納庫と中央地図の描画を確認した。通常直送便UIテストであり、直送便専用Demo巡回を完了したとは扱わない。
 - DemoUi：タイトル待機開始、地星儀／展開図切替、18FPS面接続、拒否分岐、終了ループ、Demoラベルの検証成功。リリース準備時の「propagationへ到達せずWorldStatus stage=0」失敗は今回再現せず、原因・全Seedでの解消は未確定。成功した１回を恒久的な修正の証拠にはしない。
 - 新規確認不具合なし。既報DEMO-0001～0011の完了状態を維持。未確認：全時間をタイトルから連続描画する経路、直送便専用Demo、全Seed／全人数、利用者ゲーム併存。次回はDemoActionsUiで現在の縁描画を含む格納庫押下／ドロップ・移動予約を再確認し、伝播到達失敗のSeed／再現条件が特定できるか調べる。
+
+## 2026-11-03 10:00回の追加問題
+
+### DEMO-0012：DemoUiの連続巡回検証が地図説明後の復帰判定で停止する
+
+- 状態：未解決（検証停止を再現。通常のゲームで同じ停止が起きるかは未確定）。優先度：中。
+- 確認日時：2026-11-03 10:05～10:06 JST。HEAD=f0612ee5ecdf6e912e06982bb0e89a82c20f68a9。未コミット差分はGame1.csとGame1.CountrySettings.csの設定画面背景・背面描画抑止、個人用チャット文書。Demo本体・DemoUi／InspectorUi／DirectDeliveryUiは前回HEAD e2a5b2eから変更なし。今回ゲームコード・既存テストを変更していない。
+- 対象：tests/DemoUi/Program.cs:44～57、FolderVerse/Game1.Demo.csのUpdateDemoMap／UpdateDemoDomesticへの移行。原因は未確定。
+- 再現手順：現在の本体をtests/DemoActionsUiのビルドで更新後、既存のDemoUi.dllをALSOFT_DRIVERS=nullで起動する。テストはタイトル待機・人数確認・世界構築からTransport到達を確認後、WorldStatusに切り替えて_demoMapVisits／Stage／Ageを０にし、1/18秒×1200更新で地図説明と内政１巡を検査する。同コマンドを２回実行。
+- 期待：地星儀／展開図／面接続の説明後に内政操作へ復帰し、_demoMapVisits>0となって後続の戦闘・拒否分岐・終了ループ検証へ進む。
+- 実際：２回とも「Demo map explanation did not resume gameplay: stage=5 age=0 screen=WorldStatus step=0」でLoadContentの57行目から例外終了（終了コード非０）。３種類の地図説明を見たことの直前チェックは通過した。後続の戦闘・終了検証は未実施。テストの部分状態リセットや待ち時間が不適切である可能性も残り、ゲームのクリック不具合と断定しない。
+- 解像度：標準1920×1080論理キャンバスのテストホスト。地図説明は18FPS刻み。世界・人物・配置Seedは既存テストがDemo中に生成し、今回例外ログには未収録。次回はSeedと国内段階・アニメーション待ち・地図位置を採取して固定再現を試す。
+- 証拠：artifacts/demo-click-audit/audit-latest-demo.log、audit-latest-demo-recheck.logに同一の例外とスタック。テストはLoadContent内で停止したため、この失敗実行の画像は生成されていない。既存demo.pngを失敗地点の証拠には流用していない。
+- 補足：前回09:00点検では同テストが成功した。以前のリリース準備時の「propagationへ到達せずWorldStatus stage=0」との因果関係は未確定。伝播未到達を今回再現したとは扱わない。
+
+### 実行履歴：2026-11-03 10:00回（トリガー10:03）
+
+- 開始：2026-11-03 10:03:37 JST（トリガー）。終了：2026-11-03 10:07:08 JST。状態：完了（部分点検、DEMO-0012追加）。AGENTS、README、両記録、Git差分を最初に確認。アプリ一覧は当該チャットのみactive、他はnotLoaded。開始時FolderVerse・Demo・dotnet・MSBuildプロセスなし。利用者の起動中ゲーム／セーブ／既存差分を保護し、停止・コミット・プッシュ・公開なし。
+- Demo／DemoDomesticと既存テストの矩形・遷移チェックを確認。DOTNET_CLI_TELEMETRY_OPTOUT=1、dotnet build tests/DemoActionsUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers：成功、警告・エラー０。ALSOFT_DRIVERS=null、dotnet artifacts/corner-lesson/DemoActionsUi.dll：成功。ログaudit-latest-actions-build.log／audit-latest-actions.log（artifacts/demo-click-audit内の既存最新ログ名を再使用）。
+- 現本体に対する既存DemoInspectorUi.dll／DirectDeliveryUi.dllも成功。前回から両テストのソース差分なしを確認し、現ゲームDLLに対して実行。ログaudit-latest-inspector.log／audit-latest-direct.log。プライマリー・直送便退避復帰・左右・連続トラック、工場６プラン・閉じる・人数確認を検査。1080p／540p。通常直送便UIの検証であり、直送便専用Demo巡回と混同しない。
+- Actionsは世界123・人物456・配置789、実地点26の座標（展開図1026,503／回転1008,618／地星儀960,552）とヒット、押下保持・実ドロップ、部位／包み／結合部位、６条件の対象89への和平移動予約と独立したターン終了が成功。demo-actions-38.pngを開き「移動予約済」「予約１件／ターン終了で実行」と地図・プライマリー描画を確認。
+- DemoUiは２回とも上記DEMO-0012で停止。今回は修正していない。既報DEMO-0001～0011の完了状態は維持。次回修正回は0012のテスト状態と実再生の切り分けから開始し、Seed・国内段階・待機条件を記録する。全Seed／全人数・直送便専用Demo・タイトルから終了までの連続描画・利用者ゲーム併存は未確認。ゲーム・テストは無変更、点検記録のみ追記。
