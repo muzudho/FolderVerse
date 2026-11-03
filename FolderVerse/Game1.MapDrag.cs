@@ -34,7 +34,8 @@ public partial class Game1
     private void DragStatusMap(MouseState mouse,bool active)
     {
         bool held=active && mouse.RightButton==ButtonState.Pressed;
-        if(!held || MapTransitionActive || OrientationRotating || _net.IsAnimating || _mapDragListOpen || _operationSettingsOpen || _operationSettingsSlide>0){_mapDragging=_dragging=false;return;}
+        if(_operationSettingsOpen && !OperationSettingsBlocksMapDrag && held && _previousMouse.RightButton!=ButtonState.Pressed)_mapDragListOpen=false;
+        if(!held || MapTransitionActive || OrientationRotating || _net.IsAnimating || _mapDragListOpen || OperationSettingsBlocksMapDrag){_mapDragging=_dragging=false;return;}
         if(_previousMouse.RightButton!=ButtonState.Pressed && MapViewBounds.Contains(_pointer))_mapDragging=true;
         if(!_mapDragging || _previousMouse.RightButton!=ButtonState.Pressed)return;
         var old=CanvasPoint(_previousMouse);var delta=new Vector2(_pointer.X-old.X,_pointer.Y-old.Y);

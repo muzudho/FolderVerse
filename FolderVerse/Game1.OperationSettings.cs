@@ -6,9 +6,12 @@ public partial class Game1
 {
     private bool _operationSettingsOpen;
     private float _operationSettingsSlide;
-    private Rectangle OperationSettingsButton=>new(OrientationToyArea.Right+8,OrientationToyArea.Bottom+54,48,56);
+    private Rectangle OperationSettingsButton=>new(OrientationToyArea.Right+8,OrientationToyArea.Bottom-56,48,56);
     private static readonly Rectangle OperationSettingsClose=new(1792,180,48,48);
     private int OperationSettingsOffset=>(int)MathF.Round(600*(1-MathHelper.SmoothStep(0,1,_operationSettingsSlide)));
+    private Rectangle OperationSettingsBounds=>new(1310+OperationSettingsOffset,150,580,830);
+    private bool OperationSettingsBlocksMapDrag=>(_operationSettingsOpen || _operationSettingsSlide>0) &&
+        (!_operationSettingsOpen || _operationSettingsSlide<1 || OperationSettingsBounds.Contains(_pointer) || OperationSettingsButton.Contains(_pointer) || !MapViewBounds.Contains(_pointer));
     private bool OperationSettingsAvailable=>IsStatusScreen && !_countrySettingsOpen && !_conquestOverview && !_demoActive && !_autoPlay &&
         !_tutorialAttackGuide && !_tutorialMessagesOpen && !_homePersuasionActive && !_directPairOpen && !_salvageCatalogOpen &&
         _invasionPicker<0 && !_hangarDrag.HasValue && _supervisorDialog==0 && !_trainingOpen && !_inspectorFoldersOpen && !_factionPickerOpen && !_wandererPolicyOpen && _rateTarget<0 && !_salvageAbandonConfirmation.HasValue && !_seedDialog.IsOpen;
