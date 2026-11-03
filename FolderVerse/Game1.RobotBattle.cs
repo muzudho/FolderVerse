@@ -70,6 +70,7 @@ public partial class Game1
             if(!BattleIntroActive)RevealTutorialAttackAchievement();
             return;
         }
+        if(_tutorialAttackPending){RevealTutorialAttackAchievement();if(_tutorialAchievementAge>=0)return;}
         if(_robotSummary){if(click || enter)_summaryReadAge=0;else if(!_autoPlay && !_demoActive)_summaryReadAge+=elapsed;}
         _newspaperClock+=elapsed;_newspaperSlideAge+=elapsed;
         if(click && _robotSummary && NewspaperMusicButton.Contains(_pointer)){_newspaperMusicMood=(NewspaperMusicMood)(((int)_newspaperMusicMood+1)%4);return;}

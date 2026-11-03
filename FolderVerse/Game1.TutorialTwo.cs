@@ -12,14 +12,14 @@ public partial class Game1
     }
     private bool UpdateTutorialTwoGuide(double now)
     {
-        if(_setup.TutorialStep!=2)return false;
+        if(!_setup.TutorialPocketCourse)return false;
         if(_tutorialAttackGuide || _tutorialMessagesOpen || _autoPlay || _demoActive || !IsStatusScreen || _conquestOverview || _lastCutInPhase!="内政フェーズ" || now-_cutInStarted<PhaseCutInSeconds)return true;
         int message=-1;
-        if(!_tutorialIntroShown){_tutorialIntroShown=true;message=4;}
+        if(_setup.TutorialMapBeforeWar?!_setup.TutorialPocketIntroShown:!_tutorialIntroShown){_tutorialIntroShown=true;_setup.TutorialPocketIntroShown=true;message=4;}
         else if(_setup.TutorialPocketed && !_setup.TutorialPocketNoticeShown){_setup.TutorialPocketNoticeShown=true;message=5;}
         else if(_setup.TutorialMoved && !_setup.TutorialMoveNoticeShown){_setup.TutorialMoveNoticeShown=true;message=6;}
-        else if(_setup.TutorialPocketNoticeShown && _setup.TutorialMoveNoticeShown && !_setup.TutorialCompletionShown){_setup.TutorialCompletionShown=true;message=7;}
-        if(message>=0){ShowTutorialGuide(message);}
+        else if(_setup.TutorialPocketNoticeShown && _setup.TutorialMoveNoticeShown && !_setup.TutorialCompletionShown){_setup.TutorialCompletionShown=true;message=_setup.TutorialMapBeforeWar?17:7;}
+        if(message>=0){ShowTutorialGuide(message);if(_setup.TutorialMapBeforeWar){_lastAutoSaveTurn=-1;AutoSaveDomestic();}}
         return true;
     }
 }

@@ -35,10 +35,10 @@ public partial class Game1
             foreach(var battle in next.Campaign.RobotBattles.Encounters.SelectMany(e=>e.Battles).Concat(next.Campaign.RobotBattles.Scenes).Distinct()){
                 battle.Allied=next.Relations.Allied;battle.Check();
             }
-            next.Robots.ConfigureFactories(next);ResetInspector();_setup=next;_tutorialAttackGuide=false;_tutorialLastMessage=-1;_tutorialAttackAchieved=next.TutorialStep==1 && _tutorialAchievements?.Has(TutorialAchievements.FirstAttack)==true;_domesticViews.Clear();foreach(var view in saved.Views)_domesticViews.Add(view.Key,view.Value);
+            next.Robots.ConfigureFactories(next);ResetInspector();_setup=next;_tutorialAttackGuide=false;_tutorialLastMessage=-1;_tutorialAttackAchieved=next.TutorialMapBeforeWar?next.TutorialAttackCompleted:next.TutorialStep==1 && _tutorialAchievements?.Has(TutorialAchievements.FirstAttack)==true;_domesticViews.Clear();foreach(var view in saved.Views)_domesticViews.Add(view.Key,view.Value);
             if(_tutorialAttackAchieved && !next.TutorialMapBeforeWar && !next.TutorialCompletionShown)next.TutorialCompletionPending=true;
             if((next.TutorialStep==3 || next.TutorialMapBeforeWar && next.TutorialMapStage<6) && next.TutorialMapStage<=6)next.TutorialMapNotices&=~TutorialThreeNotice(next.TutorialMapStage,next.TutorialMapRotations);
-            if(next.TutorialMapBeforeWar && next.TutorialMapStage>=6){_tutorialIntroShown=true;_tutorialLastMessage=16;}
+            if(next.TutorialMapBeforeWar && next.TutorialMapStage>=6){_tutorialIntroShown=true;_tutorialLastMessage=next.TutorialCompletionShown?17:next.TutorialMoveNoticeShown?6:next.TutorialPocketNoticeShown?5:next.TutorialPocketIntroShown?4:16;}
             _autoPlay=_demoActive=false;_statusMenuOpen=false;_robotPlaying=false;_robotPendingFocus=-1;_robotPendingSummary=false;
             _battleAge=0;_notifiedTurn=(-1,-1);_screen=Screen.WorldStatus;
             _world.ShowSetup(_setup,true);_lastAutoSaveTurn=_setup.Population.Turn;RestoreDomesticCamera();OpenDisposition();if(_setup.ComputerOnly)StartAutoPlay();

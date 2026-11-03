@@ -87,7 +87,7 @@ foreach(bool queen in new[]{false,true})
     Check((bool)Call("ReservedElsewhere",row,r),"Other-target pocket reservation is marked");
     w.Campaign.Plan(new(0,target.Id,1,home.Id,false,true,new[]{r.Id}));
     Check(!(bool)Call("ReservedElsewhere",row,r),"Current target is not marked as another reservation");
-    var net=new CubeNet();net.Home(w);Field("_net").SetValue(g,net);
+    var net=new CubeNet();net.Home(w);Field("_net").SetValue(g,net);Field("_world").SetValue(g,RuntimeHelpers.GetUninitializedObject(typeof(WorldPreview)));
     Field("_movementOpen").SetValue(g,true);Field("_warPlanning").SetValue(g,true);
     net.MovementTargets.Add(target.Id);net.MovementTargets.Add(home.Id);net.SelectedTarget=target.Id;
     net.AttackTargetMarkers=true;net.RevealMovementTargets=true;
@@ -136,6 +136,8 @@ Console.WriteLine("PASS: selected IDs, independent pocket/queen, solo queen, inv
     Check(!Gate(),"An attack reservation permits tutorial end turn");
     w.Campaign.Resolve(w,w.Campaign.PlannedOrders.ToArray());
     Check(TutorialAchievements.Attacked(w),"Actual attack battle qualifies for the tutorial medal");
+    int formerEnemy=w.Campaign.RobotBattles.Scenes.First(b=>TutorialAchievements.AttackedScene(w,b)).Armies.First(a=>a.Owner!=0).Owner;
+    int superior=w.Relations.Superiors[formerEnemy];w.Relations.SetSuperior(formerEnemy,0);Check(TutorialAchievements.Attacked(w),"Post-battle allegiance changes cannot erase the actual attack");w.Relations.SetSuperior(formerEnemy,superior);
     var medalPath=Path.Combine(AppContext.BaseDirectory,"intro-medals-"+Guid.NewGuid()+".json");
     try{
         var medals=new TutorialAchievements(medalPath);

@@ -89,7 +89,7 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorld) && field.Name=="_workerPlanWorldSeed")continue;
                     if(type==typeof(RobotTraining) && field.Name=="<WorkerPolicy>k__BackingField"){field.SetValue(value,3);continue;}
                     if(type==typeof(WorldSetup) && field.Name=="PolarAxis"){field.SetValue(value,1);continue;}
-                    if(type==typeof(WorldSetup) && new[]{"TutorialMapStage","TutorialMapRotations","TutorialMapNotices","TutorialMapEdgeChanged","TutorialMapBeforeWar"}.Contains(field.Name))continue;
+                    if(type==typeof(WorldSetup) && new[]{"TutorialMapStage","TutorialMapRotations","TutorialMapNotices","TutorialMapEdgeChanged","TutorialMapBeforeWar","TutorialAttackCompleted","TutorialPocketIntroShown"}.Contains(field.Name))continue;
                     if(type==typeof(WorldSetup) && field.Name=="<Lessons>k__BackingField"){field.SetValue(value,new BattleLessons());continue;}
                     if(type==typeof(WorldSetup) && field.Name=="<Salvage>k__BackingField"){field.SetValue(value,new SalvagePlan{LegacyPlacementPending=true});continue;}
                     if(type==typeof(BattleState) && field.Name=="Lessons"){field.SetValue(value,new BattleLesson[WorldSetup.CastCount]);continue;}

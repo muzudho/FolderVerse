@@ -21,7 +21,7 @@ public partial class Game1
     private Rectangle PrimaryActionBounds(int index){var r=PrimaryActionHomeBounds(index);if(index!=3)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,_primaryActionSlide));return r;}
     private static Rectangle DirectMapCloseButton=>new(PrimaryActionHomeBounds(3).Right+10,1002,40,40);
     private bool TutorialPrimaryActionsDisabled=>_setup.TutorialStep==3 || _setup.TutorialMapBeforeWar && _setup.TutorialMapStage<6;
-    private bool TutorialPrimaryActionAllowed(int index)=>!TutorialPrimaryActionsDisabled && (!_setup.TutorialMapBeforeWar || index is 1 or 2);
+    private bool TutorialPrimaryActionAllowed(int index)=>!TutorialPrimaryActionsDisabled && (!_setup.TutorialMapBeforeWar || index is 1 or 2 || index==0 && _setup.TutorialAttackCompleted);
     private bool TutorialPrimaryActionClick(Point p)=>Enumerable.Range(0,6).Any(i=>!TutorialPrimaryActionAllowed(i) && PrimaryActionBounds(i).Contains(p));
     private bool MapMarkerMenuAvailable=>!_directPairOpen && !_trainingOpen && _supervisorDialog==0 && !_inspectorFoldersOpen && !_salvageAbandonConfirmation.HasValue && !_hangarDrag.HasValue && !_seedDialog.IsOpen;
     private bool MapOverlayClick(Point p,bool escape)

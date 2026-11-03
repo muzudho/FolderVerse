@@ -124,7 +124,7 @@ public sealed class RobotCampaign
         {
             foreach(var robot in troops[visit])ReturnHome(world,robot,source[visit]);
             Move(world,visit.Ruler,visit.TargetNode);stopped.Add(visit);
-            if(world.TutorialStep==2 && visit.Ruler==0 && source[visit]!=visit.TargetNode)world.TutorialMoved=true;
+            if(world.TutorialPocketCourse && visit.Ruler==0 && source[visit]!=visit.TargetNode)world.TutorialMoved=true;
         }
         foreach(var first in orders.OrderBy(o=>o.Ruler))
         {

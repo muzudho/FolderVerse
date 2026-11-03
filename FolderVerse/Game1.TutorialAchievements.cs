@@ -15,7 +15,7 @@ public partial class Game1
         _tutorialAttackPending=TutorialAttackRequired && TutorialAchievements.Attacked(_setup);
     }
     private void RevealTutorialAttackAchievement(){
-        if(!_tutorialAttackPending || !TutorialAchievements.AttackedScene(_setup,_robotScenes[_battleWave]))return;
+        if(!_tutorialAttackPending || !(_robotSummary?TutorialAchievements.Attacked(_setup):TutorialAchievements.AttackedScene(_setup,_robotScenes[_battleWave])))return;
         _tutorialAttackPending=false;CheckTutorialAttackAchievement();_tutorialAchievementAge=0;_tutorialLastMessage=2;
     }
     private void UpdateTutorialAchievementCutIn(double elapsed){
@@ -40,13 +40,13 @@ public partial class Game1
     }
     private void CheckTutorialAttackAchievement(){
         if(!TutorialAchievements.Attacked(_setup))return;
-        _tutorialAttackAchieved=true;
-        if(_setup.TutorialStep==1 && !_setup.TutorialCompletionShown)_setup.TutorialCompletionPending=true;
+        _tutorialAttackAchieved=true;_setup.TutorialAttackCompleted=true;
+        if(_setup.TutorialStep==1 && !_setup.TutorialMapBeforeWar && !_setup.TutorialCompletionShown)_setup.TutorialCompletionPending=true;
         if(!_autoSaveEnabled)return;
         try{if(_tutorialAchievements==null)LoadTutorialAchievements();_tutorialAchievements?.Award(TutorialAchievements.FirstAttack);}
         catch(Exception e){_tutorialAchievementError="勲章の保存に失敗しました";RecordFailure(e,"achievement_write");}
     }
-    private bool TutorialAttackRequired=>_setup.TutorialStep==1 && !_tutorialAttackAchieved && _tutorialAchievements?.Has(TutorialAchievements.FirstAttack)!=true;
+    private bool TutorialAttackRequired=>_setup.TutorialStep==1 && (_setup.TutorialMapBeforeWar?!_setup.TutorialAttackCompleted:!_tutorialAttackAchieved && _tutorialAchievements?.Has(TutorialAchievements.FirstAttack)!=true);
     private bool TutorialHasAttackReservation=>_setup.Campaign.PlannedOrders.Any(o=>!o.Peaceful && o.Ruler==0 && (o.Queen || o.Fighters>0) &&
         _setup.Nodes.All[o.TargetNode].Owner>=0 && !_setup.Relations.Allied(0,_setup.Nodes.All[o.TargetNode].Owner));
     private bool ShowTutorialAttackGuideIfRequired(){
@@ -73,7 +73,7 @@ public partial class Game1
     private void DrawTutorialGoal(){
         if(_setup.TutorialMapBeforeWar && (IsStatusScreen || _screen==Screen.Transport)){
             _ui.Box(new(700,20,400,48),new Color(14,26,39,235));
-            string goal=_setup.TutorialMapStage<6?$"プチステラ　地図を使おう {_setup.TutorialMapStage+1+((_setup.TutorialMapStage>2 || _setup.TutorialMapStage==2 && (_setup.TutorialMapRotations&8)!=0)?1:0)}/7":"プチステラ　開戦予約をしよう";
+            string goal=_setup.TutorialAttackCompleted?(_setup.TutorialCompletionShown?"プチステラ　ポケット・移動 完了":$"プチステラ　ポケット {(_setup.TutorialPocketed?"✓":"□")}　移動 {(_setup.TutorialMoved?"✓":"□")}"):_setup.TutorialMapStage<6?$"プチステラ　地図を使おう {_setup.TutorialMapStage+1+((_setup.TutorialMapStage>2 || _setup.TutorialMapStage==2 && (_setup.TutorialMapRotations&8)!=0)?1:0)}/7":"プチステラ　開戦予約をしよう";
             _ui.Center(goal,new(710,20,380,48),.3f,Cream);return;
         }
         if(_setup.TutorialStep==3 && (IsStatusScreen || _screen==Screen.Transport)){
