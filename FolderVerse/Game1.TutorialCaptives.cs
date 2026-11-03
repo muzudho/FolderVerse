@@ -30,9 +30,7 @@ public partial class Game1
     {
         for(int i=0;i<3;i++){
             var button=DispositionButton(i);
-            if(!TutorialCaptiveChoiceNeedsExplanation((DefeatedChoice)i)){
-                _ui.Center("実績解除済み",new(button.X,950,button.Width,28),.34f,new Color(255,214,112));continue;
-            }
+            if(!TutorialCaptiveChoiceNeedsExplanation((DefeatedChoice)i))continue;
             var box=new Rectangle(button.X,946,button.Width,110);_ui.Box(box,new Color(27,49,62));
             var lines=TutorialCaptiveChoiceLines[i];
             for(int line=0;line<lines.Length;line++)_ui.Text(lines[line],new(button.X+12,956+line*29),Math.Min(.38f,(button.Width-24)/_font.MeasureString(lines[line]).X),Cream);

@@ -68,6 +68,8 @@ public partial class Game1
             if(InvasionRobots(new(){Owner=ruler,Node=source,Queen=true}).Length==0)continue;
             foreach(int target in InvasionTargets(ruler))if(_net.MovementTargets.Contains(target))_net.AttackHighlightTargets.Add(target);
         }
+        if(ReferenceEquals(_nodeChecksWorld,_setup) && _nodeChecksTurn==_setup.Population.Turn && _warChecksByPlayer.TryGetValue(NodeCheckPlayer,out var checkedTargets))
+            _net.AttackHighlightTargets.ExceptWith(checkedTargets);
     }
     private IEnumerable<int> InvasionTargets(int ruler)=>_setup.Routes.NodeChoices(ruler).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id)
         .Append(_setup.Nodes.Current(ruler)?.Id??-1).Where(id=>id>=0 && _setup.Campaign.RobotBattles.CanSortie(_setup,ruler,id)).Distinct();

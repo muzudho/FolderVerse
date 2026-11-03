@@ -38,6 +38,7 @@ public partial class Game1
         EnsureNodeCheckContext();
         if(!ActiveNodeChecks.TryGetValue(player,out var checks))ActiveNodeChecks[player]=checks=new();
         if(!checks.Remove(CheckTargetNode))checks.Add(CheckTargetNode);
+        if(WarCheckMode)RefreshWarTargetHighlights();
         return true;
     }
     private void DrawNodeCheckGlyph(Rectangle bounds,Color color)
