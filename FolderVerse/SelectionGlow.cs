@@ -24,7 +24,7 @@ public sealed partial class CubeNet
     public int CountryFocus {get;set;}=-1;
     public HashSet<int> FocusCells {get;}=new();
     public List<MapFocusCircle> FocusCircles {get;}=new();
-    public bool DimNode(int id)=>AttackTargetSpotlight?!MovementTargets.Contains(id): (CountryFocus>=0 || NodeFocus>=0 || FolderSearchFocus) && id!=NodeFocus && !FocusCircleNodes.Contains(id);
+    public bool DimNode(int id)=>AttackTargetSpotlight?!AttackHighlightTargets.Contains(id): (CountryFocus>=0 || NodeFocus>=0 || FolderSearchFocus) && id!=NodeFocus && !FocusCircleNodes.Contains(id);
     public Color NodeTint(int id,Color color)=>DimNode(id)?SelectionGlow.Dim(color,FocusBrightness):color;
     public Color FocusTerrain(Color color,Vector2 point,int cell=-1){
         if(CountryFocus>=0 && FocusCells.Contains(cell))return color;

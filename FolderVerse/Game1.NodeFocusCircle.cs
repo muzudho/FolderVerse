@@ -22,7 +22,7 @@ public partial class Game1
             _net.FocusBrightness=_world.FocusBrightness=.65f;
             _net.RegionFocusCell=_world.RegionFocusCell=-1;
             if(!MapTransitionActive && !_net.IsAnimating)
-                foreach(int target in _net.MovementTargets)AddNodeFocusCircle(target);
+                foreach(int target in _net.AttackHighlightTargets)AddNodeFocusCircle(target);
             return;
         }
         if(FolderTreeFocus && _folderTreeKind==0)_net.CountryFocus=_world.CountryFocus=_folderTreeOwner;

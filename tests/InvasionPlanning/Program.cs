@@ -119,6 +119,22 @@ foreach(bool queen in new[]{false,true})
 }
 Console.WriteLine("PASS: selected IDs, independent pocket/queen, solo queen, invalid selection atomicity, autosave compatibility, dialog apply/cancel and persuasion distance/events");
 
+// Clickable attack destinations and destinations with an actual available robot are separate.
+{
+    var(w,home,target)=Fixture();var net=new CubeNet();net.MovementTargets.Add(target.Id);net.AttackTargetSpotlight=true;
+    var g=(Game1)RuntimeHelpers.GetUninitializedObject(typeof(Game1));const BindingFlags flags=BindingFlags.Instance|BindingFlags.NonPublic;
+    FieldInfo Field(string n)=>typeof(Game1).GetField(n,flags)!;
+    object Call(string n,params object[] a)=>typeof(Game1).GetMethod(n,flags)!.Invoke(g,a)!;
+    Field("_setup").SetValue(g,w);Field("_net").SetValue(g,net);Field("_movementOpen").SetValue(g,true);Field("_warPlanning").SetValue(g,true);Field("_invasionSources").SetValue(g,Activator.CreateInstance(Field("_invasionSources").FieldType));
+    Call("RefreshWarTargetHighlights");net.HoveredNode=target.Id;
+    Check(net.MovementTargets.Contains(target.Id) && !net.AttackHighlightTargets.Contains(target.Id) && !net.EmphasizedNode(target.Id) && net.DimNode(target.Id),"Empty sortie destination stays selectable but unhighlighted");
+    Call("SelectMoveNode",target.Id);var rows=(System.Collections.IList)Field("_invasionSources").GetValue(g)!;
+    Check((int)Field("_selectedMoveNode").GetValue(g)! == target.Id && rows.Count>0 && rows.Cast<object>().All(row=>((Robot[])Call("InvasionRobots",row)).Length==0),"Clicking empty destination still exposes its empty sortie sources");
+    var partial=w.Robots.Create(0,RobotParts.Head);w.Robots.Nodes[home.Id].Add(partial);Call("RefreshWarTargetHighlights");Check(!net.AttackHighlightTargets.Contains(target.Id),"An incomplete robot does not light the destination");
+    var ready=w.Robots.Create(0,RobotParts.Complete);w.Robots.Nodes[home.Id].Add(ready);Call("RefreshWarTargetHighlights");Check(net.AttackHighlightTargets.Contains(target.Id) && net.EmphasizedNode(target.Id) && !net.DimNode(target.Id),"A deployable hangar robot enables emphasis immediately");
+    w.Robots.Nodes[home.Id].Remove(ready.Id);w.Robots.Retinues[0].Add(ready);Call("RefreshWarTargetHighlights");Check(net.AttackHighlightTargets.Contains(target.Id),"A deployable pocket robot also enables emphasis");
+    w.Robots.Retinues[0].Remove(ready.Id);Call("RefreshWarTargetHighlights");Check(!net.AttackHighlightTargets.Contains(target.Id) && net.MovementTargets.Contains(target.Id),"Losing the last deployable robot removes only emphasis");
+}
 // A reservation alone is not an achievement, and defensive participation does not count.
 {
     var w=new WorldSetup();w.PrepareTutorialStepOne(123,456,789);w.CompleteLand(90);w.SelectPlayer(0);w.HumanPlayers.Add(0);

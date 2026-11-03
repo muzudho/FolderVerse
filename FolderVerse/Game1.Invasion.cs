@@ -49,7 +49,29 @@ public partial class Game1
                 int target=_setup.Nodes.At(route.Target,route.Entry).Id;
                 if(_setup.Campaign.RobotBattles.CanMarch(_setup,ruler,target) && EnemyTarget(target))_net.MovementTargets.Add(target);
             }
+        RefreshWarTargetHighlights();
         _invasionSources.Clear();_invasionPage=0;_invasionPicker=-1;
+    }
+    private void RefreshWarTargetHighlights()
+    {
+        _net.AttackHighlightTargets.Clear();
+        if(!_movementOpen || !_warPlanning)return;
+        // Use the picker's own eligibility rules while retaining all clickable destinations.
+        foreach(var node in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner))){
+            if(InvasionRobots(new(){Owner=node.Owner,Node=node.Id}).Length==0)continue;
+            foreach(var route in _setup.Routes.Neighbors(node)){
+                int target=_setup.Nodes.At(route.Target,route.Entry).Id;
+                if(_net.MovementTargets.Contains(target) && _setup.Campaign.RobotBattles.CanAttackFrom(_setup,node.Owner,node.Id,target))_net.AttackHighlightTargets.Add(target);
+            }
+        }
+        foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler)){
+            int source=_setup.Nodes.Current(ruler)?.Id??-1;
+            if(source<0 || InvasionRobots(new(){Owner=ruler,Node=source,Queen=true}).Length==0)continue;
+            foreach(var route in _setup.Routes.NodeChoices(ruler)){
+                int target=_setup.Nodes.At(route.Target,route.Entry).Id;
+                if(_net.MovementTargets.Contains(target) && _setup.Campaign.RobotBattles.CanMarch(_setup,ruler,target))_net.AttackHighlightTargets.Add(target);
+            }
+        }
     }
     private bool CanPlanRuler(int ruler)=>ruler>=0 && _setup.ControllerOf(ruler)==_setup.TurnPlayer && _setup.Relations.Powered[ruler] && !_setup.Relations.Pending.Any(p=>p.Ruler==ruler);
     private bool EnemyTarget(int id)=>_setup.Nodes.All[id].Owner<0 || !_setup.Relations.Allied(_setup.PlayerSlot,_setup.Nodes.All[id].Owner);

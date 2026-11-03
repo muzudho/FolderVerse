@@ -29,8 +29,9 @@ public sealed partial class CubeNet
     public HashSet<int> VisibleOperationBatteries {get;set;}
     public bool RevealMovementTargets {get;set;}
     public bool NodeVisible(WorldSetup world,Node node)=>(VisibleOperationNodes==null || VisibleOperationNodes.Contains(node.Id)) && (ShowOtherCountries || node.Owner<0 || world.Relations.Controls(node.Owner) || RevealMovementTargets && MovementTargets.Contains(node.Id));
-    public bool EmphasizedNode(int id)=>id!=HoverSuppressedNode && (AttackTargetSpotlight?MovementTargets.Contains(id):CountryFocus<0 && NodeFocus<0) && (HoveredNode==id || InspectedNode==id);
+    public bool EmphasizedNode(int id)=>id!=HoverSuppressedNode && (AttackTargetSpotlight?AttackHighlightTargets.Contains(id):CountryFocus<0 && NodeFocus<0) && (HoveredNode==id || InspectedNode==id);
     public HashSet<int> MovementTargets {get;}=new();
+    public HashSet<int> AttackHighlightTargets {get;}=new();
     public int SelectedTarget {get;set;}=-1;
     public Vector2 NodePosition(WorldSetup world,Node node,Rectangle panel)
     {
@@ -107,7 +108,7 @@ public sealed partial class CubeNet
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
                 float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);
                 if(post.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
-                if(EmphasizedNode(post.Id) && !world.Campaign.OwnershipChanged(post))radius*=2; if(MovementTargets.Contains(post.Id) && MathF.Sin(pulse*6)>=0)
+                if(EmphasizedNode(post.Id) && !world.Campaign.OwnershipChanged(post))radius*=2; if(MovementTargets.Contains(post.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(post.Id)) && MathF.Sin(pulse*6)>=0)
                 {
                     Disc(ui,at,radius+7,Tint(new Color(255,219,96)));
                     Disc(ui,at,radius+5,Tint(new Color(13,36,44)));
