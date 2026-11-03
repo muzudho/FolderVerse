@@ -19,7 +19,7 @@ sealed class DemoCheck:Game1
         var w=(WorldSetup)Get("_setup");var net=(CubeNet)Get("_net");
         if((bool)Get("_movementOpen")){
             var ids=(int[])typeof(Game1).GetMethod("DestinationNodes",Flags)!.Invoke(this,null)!;
-            foreach(int id in ids.Take(4)){var args=new object[]{id,Vector2.Zero};var visible=typeof(Game1).GetMethod("OperationPosition",Flags)!.Invoke(this,args);Console.WriteLine($"destination={id} visible={visible} point={args[1]} allowed={net.NodeVisible(w,w.Nodes.All[id])} globe={Get("_statusGlobe")} mapLeft={Get("_domesticMapLeft")}");}
+            foreach(int id in ids.Take(4)){var args=new object[]{id,Vector2.Zero};var visible=typeof(Game1).GetMethod("OperationPosition",Flags)!.Invoke(this,args);int hit=(int)typeof(Game1).GetMethod("HitGlobeNode",Flags)!.Invoke(this,new object[]{((Vector2)args[1]).ToPoint(),ids})!;Console.WriteLine($"destination={id} visible={visible} point={args[1]} allowed={net.NodeVisible(w,w.Nodes.All[id])} hit={hit} globe={Get("_statusGlobe")} mapLeft={Get("_domesticMapLeft")}");}
         }
         return $"seeds={w.WorldSeed}/{w.CastSeed}/{w.PlacementSeed} screen={Get("_screen")} domestic={Get("_demoDomesticStage")} age={Get("_demoDomesticAge")} map={Get("_demoMapStage")} visits={Get("_demoMapVisits")} slide={Get("_domesticSlide")} closing={Get("_nodeInspectorClosing")} node={Get("_populationNode")} animation={net.IsAnimating} orientationAge={Get("_orientationAge")} turn={w.Population.Turn} movement={Get("_movementOpen")} war={Get("_warPlanning")} selected={Get("_selectedMoveNode")} reign={Get("_reignView")} click={Get("_demoClickPoint")}";
     }
@@ -59,11 +59,8 @@ sealed class DemoCheck:Game1
         typeof(Game1).GetField("_demoMapAge",Flags)!.SetValue(this,0d);
         var net=(CubeNet)Get("_net");
         bool sawGlobe=false,sawNet=false,sawEdgeAnimation=false;
-        // A visit counts a complete domestic turn, not just the map explanation.
-        // Twelve hangar slots can each require multiple held part drags. Keep
-        // the 18 FPS cadence, with enough time for that real input sequence.
         bool resumedDomestic=false;
-        for(int i=0;i<3600;i++)
+        for(int i=0;i<1200;i++)
         {
             Tick(1d/18,active:false);
             if(Get("_screen").ToString()!="WorldStatus")break;

@@ -700,7 +700,7 @@
 
 ### DEMO-0012：DemoUiの連続巡回検証が地図説明後の復帰判定で停止する
 
-- 状態：未解決（検証停止を再現。通常のゲームで同じ停止が起きるかは未確定）。優先度：中。
+- 状態：完了（2026-11-03 10:39:25 JST修正・検証。固定Seed３条件と関連UIで確認。詳細はdemo-click-fixes.md）。優先度：中。
 - 確認日時：2026-11-03 10:05～10:06 JST。HEAD=f0612ee5ecdf6e912e06982bb0e89a82c20f68a9。未コミット差分はGame1.csとGame1.CountrySettings.csの設定画面背景・背面描画抑止、個人用チャット文書。Demo本体・DemoUi／InspectorUi／DirectDeliveryUiは前回HEAD e2a5b2eから変更なし。今回ゲームコード・既存テストを変更していない。
 - 対象：tests/DemoUi/Program.cs:44～57、FolderVerse/Game1.Demo.csのUpdateDemoMap／UpdateDemoDomesticへの移行。原因は未確定。
 - 再現手順：現在の本体をtests/DemoActionsUiのビルドで更新後、既存のDemoUi.dllをALSOFT_DRIVERS=nullで起動する。テストはタイトル待機・人数確認・世界構築からTransport到達を確認後、WorldStatusに切り替えて_demoMapVisits／Stage／Ageを０にし、1/18秒×1200更新で地図説明と内政１巡を検査する。同コマンドを２回実行。
@@ -717,3 +717,5 @@
 - 現本体に対する既存DemoInspectorUi.dll／DirectDeliveryUi.dllも成功。前回から両テストのソース差分なしを確認し、現ゲームDLLに対して実行。ログaudit-latest-inspector.log／audit-latest-direct.log。プライマリー・直送便退避復帰・左右・連続トラック、工場６プラン・閉じる・人数確認を検査。1080p／540p。通常直送便UIの検証であり、直送便専用Demo巡回と混同しない。
 - Actionsは世界123・人物456・配置789、実地点26の座標（展開図1026,503／回転1008,618／地星儀960,552）とヒット、押下保持・実ドロップ、部位／包み／結合部位、６条件の対象89への和平移動予約と独立したターン終了が成功。demo-actions-38.pngを開き「移動予約済」「予約１件／ターン終了で実行」と地図・プライマリー描画を確認。
 - DemoUiは２回とも上記DEMO-0012で停止。今回は修正していない。既報DEMO-0001～0011の完了状態は維持。次回修正回は0012のテスト状態と実再生の切り分けから開始し、Seed・国内段階・待機条件を記録する。全Seed／全人数・直送便専用Demo・タイトルから終了までの連続描画・利用者ゲーム併存は未確認。ゲーム・テストは無変更、点検記録のみ追記。
+
+- DEMO-0012修正回引き継ぎ：2026-11-03 10:39:25 JST完了。地図の投影中心と実表示範囲のずれ、およびクリック待機中の自動回転を修正。固定Seed０・１・２が元の1,200更新で次の伝播まで進み、Actions／Inspectorの実描画も確認。全条件の網羅ではない。
