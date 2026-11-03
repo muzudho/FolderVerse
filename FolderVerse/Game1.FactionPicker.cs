@@ -19,9 +19,8 @@ public partial class Game1
     private bool FactionPickerAvailable=>!_directPairOpen && !_trainingOpen && _supervisorDialog==0 && !_inspectorFoldersOpen && !_salvageAbandonConfirmation.HasValue && !_hangarDrag.HasValue && !_seedDialog.IsOpen && _invasionPicker<0;
     private void StoreCurrentMovementDraft()
     {
-        if(!_movementOpen || _selectedMoveNode<0)return;
-        if(_warPlanning)ReserveInvasion();
-        else _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id,true,true,Peaceful:true));
+        if(!_movementOpen || _warPlanning || _selectedMoveNode<0)return;
+        _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id,true,true,Peaceful:true));
     }
     private bool SelectOperationRuler(int ruler)
     {

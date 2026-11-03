@@ -90,13 +90,18 @@ sealed class InvasionUiCheck:Game1
                 var guard=world.Robots.Nodes[home.Id].Robots.Single(r=>r.DefenseOnly);var rows=(System.Collections.IList)Get("_invasionSources");
                 if(!((HashSet<long>)Get("_invasionDraft")).Contains(guard.Id) || (string)Call("InvasionReservationLabel",rows[0]!,guard)!="守備")throw new Exception("Selected guard must still show its original reservation until confirmation");
             }
-            if(frame==3 && !Environment.GetCommandLineArgs().Contains("--war-targets"))
+            if(frame==3 && !Environment.GetCommandLineArgs().Contains("--war-targets") && !Environment.GetCommandLineArgs().Contains("--immediate-sortie"))
             {
                 Set("_invasionPicker",-1);
                 var b=new BattleState(42,new(){PersuasionPercent=100}){Id=100,TargetNode=target.Id,Kind=BattleKind.Edge};b.Armies.Add(new(){Owner=0,Side=0});b.Armies.Add(new(){Owner=1,Side=2});
                 b.Units.Add(new(){Id=-1,Owner=0,Role=BattleRole.Queen,Position=new(3,4),Daggers=0,Rifles=0});b.Units.Add(new(){Id=999,Owner=1,Position=new(5,4),Robot=new(999,1,RobotParts.Complete){DamagedParts=RobotParts.Body}});
                 b.Capture(BattlePhase.Persuade);typeof(BattleTurnResolver).GetMethod("Persuade",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{b});b.Capture(BattlePhase.Converted);
                 Set("_robotScenes",new[]{b});Set("_robotPlayback",new RobotBattlePlayback(new[]{b}));Set("_robotPlaying",false);Set("_battleAge",0d);Screen("Battle");
+            }
+            if(frame==3 && Environment.GetCommandLineArgs().Contains("--immediate-sortie")){
+                var guard=world.Robots.Nodes[home.Id].Robots.Single(r=>r.DefenseOnly);Set("_pointer",new Point(1400,820));Call("InvasionPickerInput",true,false);
+                if(world.Robots.Nodes[home.Id].Robots.Single(r=>r.Id==guard.Id).DefenseOnly || !world.Campaign.PlannedOrders.Any(o=>o.TargetNode==target.Id && o.RobotIds?.Contains(guard.Id)==true))throw new Exception("Picker confirmation must immediately replace guard role with saved sortie");
+                if((int)Get("_selectedMoveNode")!=target.Id || (int)Get("_invasionPicker")!=-1)throw new Exception("Confirmation keeps inspector target and closes only picker");
             }
             if(frame==4)Set("_battleAge",.25d);
             if(frame==5){Screen("WorldStatus");Set("_tutorialAttackGuide",true);Set("_tutorialGuideStarted",0f);}
@@ -144,6 +149,7 @@ sealed class InvasionUiCheck:Game1
             var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);
             using var image=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);image.SetData(pixels);
             using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"invasion-ui-{frame}.png"));image.SaveAsPng(file,image.Width,image.Height);
+            if(frame==3 && Environment.GetCommandLineArgs().Contains("--immediate-sortie")){Console.WriteLine("PASS: native picker confirmation immediately saves sortie and replaces guard job; inspector stays open without final reserve button.");Exit();return;}
             if(EmptySortie && frame==1){Console.WriteLine("PASS: no-robot map destination remains clickable, empty sortie picker renders, emphasis returns when robots become available.");Exit();return;}
             if(frame==3 && Environment.GetCommandLineArgs().Contains("--war-targets")){Console.WriteLine("PASS: all attackable targets visible, direct map target switching, spotlight at 65% outside brightness in net/globe, no own-hover emphasis, close restores hover, confirmed reservations preserved.");Exit();return;}
             if(++frame==23){File.Delete(Path.Combine(AppContext.BaseDirectory,"tutorial-ui-medals.json"));Console.WriteLine("PASS: rendered invasion, battle recoloring, domestic call, robot chatter, recruitment success and own-part success");Exit();}

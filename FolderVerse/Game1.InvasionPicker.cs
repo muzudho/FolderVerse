@@ -29,7 +29,7 @@ public partial class Game1
         {
             row.Robots.Clear();row.Robots.UnionWith(_invasionDraft.Intersect(robots.Select(r=>r.Id)));
             foreach(var robot in robots.Where(r=>row.Robots.Contains(r.Id)))BeginWorkReservationEffect(robot,row.Owner);
-            row.Count=row.Robots.Count;row.Selected=row.Queen && _invasionQueenDraft;_invasionPicker=-1;return;
+            row.Count=row.Robots.Count;row.Selected=row.Queen && _invasionQueenDraft;ReserveInvasion(row);_invasionPicker=-1;return;
         }
         if(row.Queen && InvasionQueenToggle.Contains(_pointer)){_invasionQueenDraft=!_invasionQueenDraft;return;}
         for(int i=0;i<robots.Length;i++)if(InvasionRobotCard(i).Contains(_pointer))
@@ -45,7 +45,7 @@ public partial class Game1
         var row=_invasionSources[_invasionPicker];var robots=InvasionRobots(row);
         _ui.Box(new(0,0,1920,1080),new Color(0,0,0,175));_ui.Box(new(310,185,1300,720),new Color(27,49,62));
         _ui.Text(row.Queen?"ポケットから出撃するロボットを選択":"格納庫から出撃するロボットを選択",new(350,215),.7f,Cream);
-        _ui.Text("出撃予約の確定で元の役割を上書き / 未選択は変更しません",new(350,270),.47f,Cream);
+        _ui.Text("選択を確定すると開戦予約に反映 / 選んだロボットの役割を上書き",new(350,270),.47f,Cream);
         for(int i=0;i<robots.Length;i++)
         {
             var r=InvasionRobotCard(i);var robot=robots[i];bool selected=_invasionDraft.Contains(robot.Id);

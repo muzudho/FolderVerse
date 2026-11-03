@@ -28,6 +28,7 @@ public sealed class ConquestCampaign
     {
         bool Matches(March o)=>o.Ruler==owner && (o.Queen || o.PocketOnly)==queen && o.TargetNode==target && (queen || o.SourceNode==source);
         _plannedOrders.RemoveAll(o=>Matches(o));_partyOrders.RemoveAll(o=>Matches(o));
+        Report=PlannedOrders.Count>0?$"予約 {PlannedOrders.Count} 件 / ターン終了で実行":"";
     }
     public void Plan(March order)
     {

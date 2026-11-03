@@ -111,7 +111,6 @@ public partial class Game1
         if(new Rectangle(84,850,110,42).Contains(p)){_invasionPage=Math.Max(0,_invasionPage-1);return true;}
         if(new Rectangle(210,850,110,42).Contains(p)){_invasionPage=Math.Min(Math.Max(0,(_invasionSources.Count-1)/7),_invasionPage+1);return true;}
         if(new Rectangle(570,850,274,42).Contains(p)){ResetInvasionTarget();return true;}
-        if(ConfirmMoveButton.Contains(p)){ReserveInvasion();return true;}
         for(int i=0;i<7;i++)
         {
             int index=_invasionPage*7+i;if(index>=_invasionSources.Count)break;
@@ -123,29 +122,26 @@ public partial class Game1
                 if(available.Any(a=>a.Id==robots[slot].Id)){
                     if(!row.Robots.Remove(robots[slot].Id)){row.Robots.Add(robots[slot].Id);BeginWorkReservationEffect(robots[slot],row.Owner);}
                     else _workReservationEffects.Remove(robots[slot].Id);
-                    row.Count=row.Robots.Count;
+                    row.Count=row.Robots.Count;ReserveInvasion(row);
                 }
                 return true;
             }
         }
         return false;
     }
-    private void ReserveInvasion()
+    private void ReserveInvasion(InvasionSource row)
     {
         if(_selectedMoveNode<0)return;
-        if(_invasionSources.Any(row=>row.Robots.Any(id=>!InvasionRobots(row).Any(r=>r.Id==id))))return;
-        foreach(var row in _invasionSources)
-        {
-            // Materialize old count-only reservations before splitting this store across targets.
-            foreach(var old in _setup.Campaign.PlannedOrders.Where(o=>o.Ruler==row.Owner && o.SourceNode==row.Node && (o.Queen || o.PocketOnly)==row.Queen && o.RobotIds==null).ToArray())
-                _setup.Campaign.Plan(old with {RobotIds=_setup.Campaign.RobotBattles.SelectableRobots(_setup,row.Owner,row.Node,row.Queen).Take((int)old.Fighters).Select(r=>r.Id).ToArray()});
-            _setup.Campaign.CancelReservation(row.Owner,row.Node,row.Queen,_selectedMoveNode);
-            if(!row.Queen)_setup.Robots.PrepareSortieReservation(row.Node,row.Robots.ToArray());
-            if(row.Robots.Count>0 || row.Queen && row.Selected)
-                _setup.Campaign.Plan(new(row.Owner,_selectedMoveNode,row.Robots.Count,row.Node,row.Queen && row.Selected,row.Queen,row.Robots.OrderBy(id=>id).ToArray()));
-            foreach(var robot in InvasionPreviewRobots(row).Where(r=>row.Robots.Contains(r.Id)))BeginWorkReservationEffect(robot,row.Owner);
-        }
-        ResetInvasionTarget();
+        if(row.Robots.Any(id=>!InvasionRobots(row).Any(r=>r.Id==id)))return;
+        // Materialize old count-only reservations before splitting this store across targets.
+        foreach(var old in _setup.Campaign.PlannedOrders.Where(o=>o.Ruler==row.Owner && o.SourceNode==row.Node && (o.Queen || o.PocketOnly)==row.Queen && o.RobotIds==null).ToArray())
+            _setup.Campaign.Plan(old with {RobotIds=_setup.Campaign.RobotBattles.SelectableRobots(_setup,row.Owner,row.Node,row.Queen).Take((int)old.Fighters).Select(r=>r.Id).ToArray()});
+        _setup.Campaign.CancelReservation(row.Owner,row.Node,row.Queen,_selectedMoveNode);
+        if(!row.Queen)_setup.Robots.PrepareSortieReservation(row.Node,row.Robots.ToArray());
+        if(row.Robots.Count>0 || row.Queen && row.Selected)
+            _setup.Campaign.Plan(new(row.Owner,_selectedMoveNode,row.Robots.Count,row.Node,row.Queen && row.Selected,row.Queen,row.Robots.OrderBy(id=>id).ToArray()));
+        foreach(var robot in InvasionPreviewRobots(row).Where(r=>row.Robots.Contains(r.Id)))BeginWorkReservationEffect(robot,row.Owner);
+        RefreshWarTargetHighlights();
     }
     private void ResetInvasionTarget()
     {
@@ -195,7 +191,7 @@ public partial class Game1
         }
         _ui.Button(new(84,850,110,42),"←",Muted,.5f);_ui.Button(new(210,850,110,42),"→",Muted,.5f);
         if(_selectedMoveNode>=0)_ui.Button(new(570,850,274,42),"目標を選び直す",Muted,.48f);
-        _ui.Text("地図の別の目標をクリックで切替 / 確定で元の仕事を上書き",new(84,900),.35f,Cream);
-        _ui.Button(ConfirmMoveButton,"開戦を予約",_selectedMoveNode>=0?Accent:Muted,.55f);
+        _ui.Text("出撃の選択確定で開戦予約に反映 / 地図の別の目標で切替",new(84,900),.35f,Cream);
+        _ui.Text("予約は陣営のターン終了時に実行されます",new(84,938),.4f,Cream);
     }
 }
