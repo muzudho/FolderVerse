@@ -10,7 +10,7 @@ sealed class WarGuideGame:Game1
  void Set(string n,object v)=>typeof(Game1).GetField(n,F)!.SetValue(this,v);
  object Call(string n,params object[] a)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,a)!;
  void Check(bool ok,string text){if(!ok)throw new Exception(text);}
- void Ready(){Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",90d);Set("_homePersuasionActive",false);}
+ void Ready(){Set("_lastCutInPhase",w.Campaign.Phase==CampaignPhase.Military?"軍事フェーズ":"内政フェーズ");Set("_cutInStarted",90d);Set("_homePersuasionActive",false);}
  void UpdateGuide(){Ready();Call("UpdateTutorialStartGuide",100d);}
  void Guide(int id){UpdateGuide();Check((bool)Get("_tutorialAttackGuide") && (int)Get("_tutorialGuideMessage")==id,"Expected guide "+id);Set("_animationTime",(float)Get("_tutorialGuideStarted")+1);}
  void Dismiss(){Set("_tutorialAttackGuide",false);Set("_tutorialGuideClosing",-1f);Set("_tutorialChromeSlide",0f);}
@@ -24,6 +24,7 @@ sealed class WarGuideGame:Game1
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
   if(frame==1){
+   w.Campaign.FinishDomestic(w);w.Campaign.BeginMilitary();
    Dismiss();Call("OpenWarPlanning");Call("UpdateDomesticSlide",1f);Guide(22);Check(w.TutorialWarTargetNoticeShown && !w.TutorialSortieNoticeShown && !w.TutorialTurnEndNoticeShown,"Opening war inspector explains rotation and target selection before sortie");
   }
   if(frame==2){

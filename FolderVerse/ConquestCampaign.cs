@@ -4,8 +4,32 @@ using System.Collections.Generic;
 using System.Linq;
 
 public sealed record March(int Ruler,int TargetNode,long Fighters,int SourceNode=-1,bool Queen=true,bool PocketOnly=false,long[] RobotIds=null,bool Peaceful=false);
+public enum CampaignPhase { Domestic, Delivery, Military }
 public sealed class ConquestCampaign
 {
+    public CampaignPhase Phase {get;private set;}
+    private readonly HashSet<int> _domesticSubmitted=new();
+    public bool FinishDomestic(WorldSetup world,bool automaticAll=false)
+    {
+        if(Phase!=CampaignPhase.Domestic)return false;
+        world.Robots.DirectDelivery.ReconcileDestinations(world);
+        var party=world.TurnPlayers();
+        _domesticSubmitted.IntersectWith(party);
+        if(!automaticAll && party.Length>1){
+            _domesticSubmitted.Add(world.TurnPlayer);
+            int next=party.FirstOrDefault(r=>!_domesticSubmitted.Contains(r),-1);
+            if(next>=0){world.SelectTurnRuler(next);Report="次の担当の内政 / 全員の内政後に配送";return false;}
+        }
+        _domesticSubmitted.Clear();
+        if(party.Length>0)world.SelectTurnRuler(party[0]);
+        if(UseRobotCombat)world.Robots.Advance(
+            (a,b)=>!RobotBattles.LockedEdge(a,b) && world.Routes.Neighbors(world.Nodes.All[a]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==b),
+            n=>world.Nodes.All[n].Owner,world.PlacementSeed^world.Population.Turn^0x61238,RobotBattles.LockedNode,
+            (owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner),industry:false);
+        Phase=CampaignPhase.Delivery;Report=$"配送 {world.Robots.Transport.LastTransfers.Count} / 配送後に軍事指示";return true;
+    }
+    public void BeginMilitary()
+    {if(Phase!=CampaignPhase.Delivery)throw new InvalidOperationException("Delivery must finish before military orders.");Phase=CampaignPhase.Military;}
     public int[] PreviousNodeOwners {get;private set;}=Array.Empty<int>();
     public bool OwnershipChanged(Node node)=>PreviousNodeOwners!=null && node.Id<PreviousNodeOwners.Length && PreviousNodeOwners[node.Id]!=node.Owner;
     public bool UseRobotCombat {get;set;}=true;
@@ -51,13 +75,15 @@ public sealed class ConquestCampaign
     public bool AwaitingPlayers=>_submitted.Count>0;
     internal void ReconcileControllers(WorldSetup world)
     {
+        _domesticSubmitted.IntersectWith(world.TurnPlayers());
         _submitted.IntersectWith(world.TurnPlayers());
         // Switching control does not cancel an already chosen march.
         for(int i=_plannedOrders.Count-1;i>=0;i--)if(world.ControllerOf(_plannedOrders[i].Ruler)<0){_partyOrders.Add(_plannedOrders[i]);_plannedOrders.RemoveAt(i);}
     }
-    public void Reset(){PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
+    public void Reset(){Phase=CampaignPhase.Domestic;_domesticSubmitted.Clear();PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
     public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false)
     {
+        if(Phase==CampaignPhase.Delivery)throw new InvalidOperationException("Wait for delivery playback before military orders.");
         world.Robots.PersuadeAtHome(world);
         Battles.Clear();
         int controller=world.TurnPlayer;var controlled=world.ControlledParty(controller).ToHashSet();
@@ -126,6 +152,7 @@ public sealed class ConquestCampaign
         if(UseRobotCombat)
         {
             RobotBattles.Advance(world,orders);
+            Phase=CampaignPhase.Domestic;
             Report=$"ロボット輸送 {world.Robots.Transport.LastTransfers.Count} / 観戦 {RobotBattles.Scenes.Count} / 継戦 {RobotBattles.Encounters.Count(e=>!e.Finished)}";
             return;
         }
@@ -205,5 +232,6 @@ public sealed class ConquestCampaign
             world.TerritoryCounts[world.PlayerSlot]==0?"あなたは放浪者":world.Nodes.Current(world.PlayerSlot)?.Owner==world.PlayerSlot?"あなたの現在地は自国地点":"あなたの現在地は他国地点":"あなたは待機";
         int cellsWon=world.Cells.Count(c=>world.Nodes.FullOwner(c.Id)>=0 && world.Nodes.FullOwner(c.Id)!=previousFull[c.Id]);
         Report=$"{result} / 戦闘 {Battles.Count} 件 / 地点確保 {conquests} / 区画征服 {cellsWon}";
+        Phase=CampaignPhase.Domestic;
     }
 }

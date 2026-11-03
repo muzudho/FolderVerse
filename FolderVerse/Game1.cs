@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 namespace FolderVerse;
 
 using System;
@@ -130,6 +130,7 @@ public partial class Game1 : Game
     { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive);UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds); UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);UpdateIndustryMusic();UpdateEndingMusic(IsActive);base.Update(gameTime); }
     private void HandleInputCore(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
     {
+        if(IsStatusScreen)_setup.Robots.DirectDelivery.ReconcileDestinations(_setup);
         UpdateTutorialChrome((float)gameTime.ElapsedGameTime.TotalSeconds);
         UpdateOperationSettings((float)gameTime.ElapsedGameTime.TotalSeconds);
         UpdateFullscreen(keyboard,active);
@@ -553,7 +554,7 @@ public partial class Game1 : Game
         if(_countrySettingsOpen)return;
         if(_salvageCatalogOpen){DrawSalvageCatalog();return;}
         if(_directPairOpen){DrawDirectPair();return;}
-        _ui.Text("世界征服状況",new(54,22),1.1f,Cream);
+        _ui.Text(PlanningPhaseLabel,new(54,22),1.1f,Cream);
         _net.InspectedNode=_populationCell>=0?_populationNode:-1;
         _net.NodeFocus=_world.NodeFocus=!_nodeInspectorClosing && _populationCell>=0?_populationNode:-1;
         int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
@@ -794,6 +795,3 @@ public partial class Game1 : Game
         }
     }
 }
-
-
-

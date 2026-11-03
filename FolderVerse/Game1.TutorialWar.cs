@@ -5,7 +5,7 @@ public partial class Game1
     {
         if(!_setup.TutorialMapBeforeWar || _setup.TutorialMapStage<6 || _setup.TutorialAttackCompleted)return false;
         if(_tutorialAttackGuide || _tutorialMessagesOpen || _tutorialGuideClosing>=0 || _autoPlay || _demoActive || !IsStatusScreen || _conquestOverview || _homePersuasionActive ||
-            _invasionPicker>=0 || _lastCutInPhase!="内政フェーズ" || now-_cutInStarted<PhaseCutInSeconds)return true;
+            _invasionPicker>=0 || _lastCutInPhase!=PlanningPhaseLabel || now-_cutInStarted<PhaseCutInSeconds)return true;
         int message=-1;
         if(_movementOpen && _warPlanning && !_nodeInspectorClosing && !_setup.TutorialWarTargetNoticeShown){
             _setup.TutorialWarTargetNoticeShown=true;message=22;

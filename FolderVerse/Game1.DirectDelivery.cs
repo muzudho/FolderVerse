@@ -34,8 +34,9 @@ public partial class Game1
         return route?.Portal?.Terrain==TravelTerrain.Sea || !_setup.Routes.Land(node.Cell,node.Center) || !_setup.Routes.Land(next.Cell,next.Center);
     }
     private void CloseDirectDelivery(){if(_directMap)_net.ShowRoutes=_directRoutesBefore;_directMap=_directPairOpen=_directPairClosing=false;_directDrag=null;_directTrucks.Clear();_directPairTrucks.Clear();}
-    private void OpenDirectMap(){ResetInspector();_directRoutesBefore=_net.ShowRoutes;_net.ShowRoutes=true;_directMap=true;_directMessage="";}
+    private void OpenDirectMap(){if(!DomesticOperationsAllowed)return;ResetInspector();_directRoutesBefore=_net.ShowRoutes;_net.ShowRoutes=true;_directMap=true;_directMessage="";}
     private void OpenDirectPair(int a,int b){
+        if(!DomesticOperationsAllowed)return;
         if(!DirectNodeAllowed(a) || !DirectNodeAllowed(b) || _setup.Campaign.RobotBattles.LockedNode(a) || _setup.Campaign.RobotBattles.LockedNode(b) || _setup.Campaign.RobotBattles.LockedEdge(a,b))return;
         bool switching=_directPairOpen;BeginDirectPairTransition(switching);_directNodes[0]=a;_directNodes[1]=b;foreach(var slots in _directSlots)Array.Clear(slots);_directPairOpen=true;_directPairClosing=false;_directPairSlide=0;if(!switching)PrepareDirectPairMap();FitDirectPairMap();SyncDirectSlots();_directDrag=null;_directMessage="同じ側：組立・分解 / 反対側：直送便を予約 / 予約パーツをクリック：取消";
     }
@@ -80,6 +81,7 @@ public partial class Game1
         DrawDirectTruckCheck(first,second,bounds);
     }
     private void DirectPairInput(MouseState mouse,bool click,bool escape){
+        if(!DomesticOperationsAllowed){_directDrag=null;CloseDirectDelivery();return;}
         if(escape || click && !_directDrag.HasValue && DirectPairBack.Contains(_pointer)){CloseDirectPair();return;}
         if(_directPairClosing || _directPairSlide<1)return;
         if(click && !_directDrag.HasValue && DirectPairCheckButton.Contains(_pointer)){ToggleDirectPairCheck();return;}
@@ -103,7 +105,7 @@ public partial class Game1
             try{int source=_directNodes[drag.Side],target=_directNodes[side];var destination=_directSlots[side][slot];if(side==drag.Side){if(destination==drag.Robot)return;if(!destination.HasValue && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==target && o.TargetRobotId==null && o.TargetSlot==slot))throw new InvalidOperationException("Arrival slot reserved.");
                     if(drag.Part==0){if(destination.HasValue && _setup.Robots.AssemblyLocked(source,_setup.Robots.Nodes[source].Robots.Single(r=>r.Id==destination)))throw new InvalidOperationException("Robot is reserved.");int from=Array.IndexOf(_directSlots[side],(long?)drag.Robot);_directSlots[side][from]=destination;_directSlots[side][slot]=drag.Robot;}
                     else {long id=_setup.Robots.MovePart(source,drag.Robot,drag.Part,destination,_setup.Nodes.All[source].Owner);_directSlots[side][slot]=id;}_directMessage="格納庫内でパーツを組み替えました";}
-                else {var robot=_setup.Robots.Nodes[source].Robots.Single(r=>r.Id==drag.Robot);_setup.Robots.DirectDelivery.ReserveParts(_setup,source,target,drag.Robot,drag.Part==0?robot.Parts:drag.Part,destination,slot);BeginWorkReservationEffect(robot,robot.Owner);_directMessage="直送便を予約しました / ターン終了時に輸送";}SyncDirectSlots();}
+                else {var robot=_setup.Robots.Nodes[source].Robots.Single(r=>r.Id==drag.Robot);_setup.Robots.DirectDelivery.ReserveParts(_setup,source,target,drag.Robot,drag.Part==0?robot.Parts:drag.Part,destination,slot);BeginWorkReservationEffect(robot,robot.Owner);_directMessage="直送便を予約しました / 内政終了後の配送フェーズで輸送";}SyncDirectSlots();}
             catch(InvalidOperationException){_directMessage="所有国・予約・同じ部位・空き枠を確認してください";}return;
         }
     }
@@ -144,6 +146,7 @@ public partial class Game1
                     bool outgoing=robot!=null && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Source==node && o.RobotId==robot.Id && (o.Part&part)!=0);
                     if(incoming)DrawHangarDeliveryTag(bounds,"入荷予定",gap:2);
                     if(outgoing)DrawHangarDeliveryTag(bounds,"出荷予定",incoming,gap:2);
+                    else if(robot!=null && (robot.Parts&part)!=0 && _setup.Robots.DirectDelivery.FailedPart(node,robot.Id,part))DrawHangarDeliveryTag(bounds,"出荷失敗",incoming,gap:2);
                 }
                 if(robot!=null){if(robot.IntegratedParts!=0 && !robot.Stationed && !robot.Disposal)_ui.Center(IntegratedLabel(robot.IntegratedParts),new(cell.X,cell.Y+135,cell.Width,18),.24f,Cream);_ui.Center("ID "+robot.Id,new(cell.X,cell.Y+111,cell.Width,24),.32f,Cream);if(robot.Stationed || robot.Disposal)_ui.Center(robot.FactoryWorker?"工場作業員":robot.InterceptOnly?"迎撃専用":robot.DefenseOnly?"守備専用":"廃棄予約",new(cell.X,cell.Y+135,cell.Width,18),.24f,color);}
             }
@@ -151,7 +154,7 @@ public partial class Game1
         }
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:Matrix.CreateTranslation(0,-300*(1-DirectPairEase),0)*transform);
         _ui.Text("ロボットパーツ直送便",new(36,26),.85f,Cream);
-        _ui.Text("左右どちらからでも予約 / 伝播フェーズで配送",new(36,76),.4f,Cream);
+        _ui.Text("左右どちらからでも予約 / 配送フェーズで配送",new(36,76),.4f,Cream);
         // Shared upper handle keeps closing controls away from the drag corridor.
         _ui.Box(new(20,114,940,34),DirectSideColor(0));_ui.Box(new(960,114,940,34),Color.White);
         _ui.Button(DirectPairBack,"×",Muted,.8f);

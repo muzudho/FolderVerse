@@ -58,6 +58,7 @@ foreach(bool queen in new[]{false,true})
 // Exercise the selection dialog without creating a GPU/window.
 {
     var(w,home,target)=Fixture();var r=w.Robots.Create(0,RobotParts.Complete);w.Robots.Retinues[0].Add(r);
+    w.Campaign.FinishDomestic(w);w.Campaign.BeginMilitary();
     var g=(Game1)RuntimeHelpers.GetUninitializedObject(typeof(Game1));const BindingFlags flags=BindingFlags.Instance|BindingFlags.NonPublic;
     FieldInfo Field(string n)=>typeof(Game1).GetField(n,flags)!;
     object Call(string n,params object[] args)=>typeof(Game1).GetMethod(n,flags)!.Invoke(g,args)!;

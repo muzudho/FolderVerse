@@ -15,7 +15,7 @@ public partial class Game1
     private object OperationState()=>new
     {
         screen=_screen.ToString(),phase=IsStatusScreen || _screen is Screen.Industry or Screen.Battle or Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Pocket or Screen.Transport or Screen.Ending?"Game":_screen==Screen.Title?"Title":"Setup",
-        industryTurn=_setup.Robots.IndustryTurn,industryResult=_setup.Industry.Result,industryPending=_setup.Industry.Pending,
+        campaignPhase=_setup.Campaign.Phase.ToString(),industryTurn=_setup.Robots.IndustryTurn,industryResult=_setup.Industry.Result,industryPending=_setup.Industry.Pending,
         superiors=_setup.Relations.Superiors,
         party=_setup.Relations.Party(_setup),powered=_setup.Relations.Powered,released=_setup.Relations.Released,teams=_setup.Relations.Teams,pendingCaptives=_setup.Relations.Pending.ToArray(),submitted=_setup.Campaign.Submitted,menuOpen=_statusMenuOpen,
         battleWave=_battleWave,battleAge=_battleAge,battleFocus=_battleFocus,battleCount=_setup.Campaign.Battles.Count,
@@ -114,4 +114,3 @@ public partial class Game1
         _operations.Write("screen_displayed",new{state=OperationState(),window=new{width=window.BackBufferWidth,height=window.BackBufferHeight}});
     }
 }
-

@@ -46,18 +46,18 @@ public partial class Game1
         _propagationNet.Draw(_ui,_setup,panel,-1,_animationTime);
         Vector2 NodeAt(int id)=>_propagationNet.AnimatedNodePosition(_setup,_setup.Nodes.All[id],panel);
 
-        foreach(var shipment in movement?_setup.Robots.Transport.LastTransfers:Array.Empty<RobotShipment>())
+        foreach(var shipment in movement?PropagationShipments:Array.Empty<RobotShipment>())
         {
             var at=Vector2.Lerp(NodeAt(shipment.Source),NodeAt(shipment.Target),PropagationTravel(shipment.Source,shipment.Target));
             int owner=_setup.Robots.Transport.LastOwners.GetValueOrDefault(shipment.RobotId);
             _net.DrawMapRobot(_ui,new((int)at.X-12,(int)at.Y-32,24,36),_setup.OwnerColor(owner),shipment.Parts);
         }
-        if(movement)foreach(var agent in _setup.Salvage.Agents.Where(a=>a.PreviousNode!=a.Node && _setup.Relations.Controls(a.Owner))){
+        if(movement && !DeliveryPlayback)foreach(var agent in _setup.Salvage.Agents.Where(a=>a.PreviousNode!=a.Node && _setup.Relations.Controls(a.Owner))){
             var at=Vector2.Lerp(NodeAt(agent.PreviousNode),NodeAt(agent.Node),PropagationTravel(agent.PreviousNode,agent.Node));
             _ui.Box(new((int)at.X-5,(int)at.Y-18,10,9),Cream);_ui.Box(new((int)at.X-7,(int)at.Y-7,14,17),_setup.OwnerColor(agent.Owner));
             _ui.Text("回収隊",at+new Vector2(10,-18),.27f,Cream);
         }
-        foreach(var march in movement?_setup.Campaign.RobotBattles.LastMarches:Enumerable.Empty<(int Owner,int Source,int Target)>())
+        foreach(var march in movement && !DeliveryPlayback?_setup.Campaign.RobotBattles.LastMarches:Enumerable.Empty<(int Owner,int Source,int Target)>())
         {
             var at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),PropagationMarchTravel(march.Owner,march.Source,march.Target));
             DrawToySoldier(new((int)at.X-10,(int)at.Y-30,20,30),_setup.OwnerColor(march.Owner),false);
@@ -68,7 +68,7 @@ public partial class Game1
             var node=_setup.Nodes.Current(owner);if(node==null)continue;
             var at=NodeAt(node.Id);
             var march=_setup.Campaign.RobotBattles.LastQueenMarches.FirstOrDefault(m=>m.Owner==owner);
-            if(movement && _setup.Campaign.RobotBattles.LastQueenMarches.Any(m=>m.Owner==owner))at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),PropagationMarchTravel(march.Owner,march.Source,march.Target));
+            if(movement && !DeliveryPlayback && _setup.Campaign.RobotBattles.LastQueenMarches.Any(m=>m.Owner==owner))at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),PropagationMarchTravel(march.Owner,march.Source,march.Target));
             _ui.Box(new((int)at.X-12,(int)at.Y-9,24,16),_setup.OwnerColor(owner));
             _ui.Box(new((int)at.X+12,(int)at.Y-5,4,8),Cream);
         }

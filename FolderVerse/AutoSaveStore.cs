@@ -108,6 +108,9 @@ public static class AutoSaveStore
                     if(type==typeof(BattleState) && field.Name=="<PersuadedUnits>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
                     if(type==typeof(BattleUnitView) && field.Name=="<Robot>k__BackingField")continue;
                     // Defaults for fields introduced after older turn-boundary saves.
+                    if(type==typeof(ConquestCampaign) && field.Name=="_domesticSubmitted"){field.SetValue(value,new HashSet<int>());continue;}
+                    if(type==typeof(ConquestCampaign) && field.Name=="<Phase>k__BackingField")continue;
+                    if(type==typeof(RobotDirectDelivery) && field.Name=="<Failures>k__BackingField"){field.SetValue(value,new List<DirectPartOrder>());continue;}
                     if(type==typeof(RobotWorld) && field.Name=="<DirectDelivery>k__BackingField"){field.SetValue(value,new RobotDirectDelivery());continue;}
                     if(type==typeof(RobotTransport) && field.Name=="_directTransfers"){field.SetValue(value,Array.Empty<RobotShipment>());continue;}
                     if(type==typeof(RobotTransport) && field.Name=="_directOwners"){field.SetValue(value,new Dictionary<long,int>());continue;}

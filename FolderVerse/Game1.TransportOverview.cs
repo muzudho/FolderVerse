@@ -19,7 +19,7 @@ public partial class Game1
         return new Rectangle((int)at.X,(int)at.Y,(int)size.X,(int)size.Y);
     }
     private bool TransportOverviewAllowed=>NodeTransportAllowed && _setup.TutorialStep!=2;
-    private bool NodeTransportAllowed=>_setup.TutorialStep!=1;
+    private bool NodeTransportAllowed=>DomesticOperationsAllowed && _setup.TutorialStep!=1;
     private bool _transportOverview;
     private bool _transportRoutesBefore;
     private Rectangle TransportOverviewButton=>PrimaryActionBounds(4);
@@ -40,6 +40,7 @@ public partial class Game1
     }
     private void OpenTransportOverview()
     {
+        if(!DomesticOperationsAllowed)return;
         _nodeInspectorClosing=false;_reignView=false;CloseMovement();_populationCell=-1;_nodeTransportOpen=false;_rateTarget=-1;
         _transportRoutesBefore=_net.ShowRoutes;_net.ShowRoutes=true;_transportOverview=true;
         _net.VisibleOperationNodes=null;_transportPage=0;_transportEditor=0;_transportDestinationPicking=false;

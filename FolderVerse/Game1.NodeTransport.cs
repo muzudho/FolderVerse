@@ -21,9 +21,10 @@ public partial class Game1
     private string _nodeTransportMessage="";
     private static readonly Rectangle NodeTransportTile=new(280,875,182,84);
     private void OpenNodeTransport()
-    {_nodeAssemblyOpen=false;_nodeDisposalOpen=false;_nodeFactoryOpen=false;_nodeTransportOpen=true;_rateTarget=-1;_nodeReinforcementIndex=0;_nodeTransportMessage="";_transportPage=0;_transportEditor=0;_transportDestinationPicking=false;PrepareTransportInstructions();}
+    {if(!NodeTransportAllowed)return;_nodeAssemblyOpen=false;_nodeDisposalOpen=false;_nodeFactoryOpen=false;_nodeTransportOpen=true;_rateTarget=-1;_nodeReinforcementIndex=0;_nodeTransportMessage="";_transportPage=0;_transportEditor=0;_transportDestinationPicking=false;PrepareTransportInstructions();}
     private bool NodeTransportClick(Point pointer)
     {
+        if(!DomesticOperationsAllowed)return true;
         if(NodeTransportTile.Contains(pointer)){_nodeTransportOpen=false;return true;}
         if(NodeFactoriesAllowed && _setup.Robots.Workshops[_populationNode].ProductionLines.Length>0 && NodeFactoryTile.Contains(pointer)){OpenNodeFactory();return true;}
         if(TransportInstructionsClick(pointer))return true;

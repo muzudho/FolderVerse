@@ -11,6 +11,19 @@ public sealed class RobotDirectDelivery
 {
     private long _next=1;
     public List<DirectPartOrder> Orders {get;}=new();
+    public List<DirectPartOrder> Failures {get;}=new();
+    public bool FailedPart(int node,long id,RobotParts part)=>Failures.Any(o=>o.Source==node && o.RobotId==id && (o.Part&part)!=0);
+    public void ReconcileDestinations(WorldSetup setup)
+    {
+        foreach(var order in Orders.ToArray()){
+            int owner=setup.Nodes.All[order.Target].Owner;
+            if(owner>=0 && !setup.Relations.Allied(order.Owner,owner)){
+                Orders.Remove(order);Failures.RemoveAll(o=>o.Source==order.Source && o.RobotId==order.RobotId && (o.Part&order.Part)!=0);
+                Failures.Add(order with {Status="出荷失敗"});
+            }
+        }
+        Failures.RemoveAll(o=>!setup.Robots.Nodes[o.Source].Robots.Any(r=>r.Id==o.RobotId && r.Owner==o.Owner && (r.Parts&o.Part)!=0));
+    }
     public RobotParts LockedParts(int node,long id)=>Orders.Where(o=>o.Source==node && o.RobotId==id || o.Target==node && o.TargetRobotId==id).Aggregate((RobotParts)0,(mask,o)=>mask|o.Part);
     public bool Cancel(long number)=>Orders.RemoveAll(o=>o.Number==number)>0;
     public void ReserveParts(WorldSetup setup,int source,int target,long id,RobotParts parts,long? targetId,int slot)
@@ -18,11 +31,12 @@ public sealed class RobotDirectDelivery
         if(parts==0 || (parts&~RobotParts.Complete)!=0)throw new InvalidOperationException("Select physical parts.");
         if(source<0 || source>=setup.Robots.Nodes.Length)throw new InvalidOperationException("Invalid direct delivery source.");
         long start=_next;
+        var failures=Failures.ToArray();
         try{
             var robot=setup.Robots.Nodes[source].Robots.Single(r=>r.Id==id);parts=robot.ConnectedParts(parts);
             foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((parts&part)!=0){var order=Reserve(setup,source,target,id,part,targetId,slot);parts&=~order.Part;}
         }
-        catch{Orders.RemoveAll(o=>o.Number>=start);_next=start;throw;}
+        catch{Orders.RemoveAll(o=>o.Number>=start);_next=start;Failures.Clear();Failures.AddRange(failures);throw;}
     }
     public DirectPartOrder Reserve(WorldSetup setup,int source,int target,long id,RobotParts part,long? targetId,int slot)
     {
@@ -36,7 +50,8 @@ public sealed class RobotDirectDelivery
         if((outgoing&robot.Parts)==robot.Parts && Orders.Any(o=>o.Target==source && o.TargetRobotId==id))throw new InvalidOperationException("Arrival anchor must remain.");
         if(targetId is long receiver){var destination=world.Nodes[target].Robots.SingleOrDefault(r=>r.Id==receiver);if(destination==null || destination.Owner!=robot.Owner || (destination.Parts&part)!=0 || world.BaseAssemblyLocked(target,destination) || (LockedParts(target,receiver)&part)!=0 || Orders.Where(o=>o.Source==target && o.RobotId==receiver).Aggregate((RobotParts)0,(mask,o)=>mask|o.Part)==destination.Parts)throw new InvalidOperationException("Destination part unavailable.");}
         else if(Orders.Any(o=>o.Target==target && o.TargetRobotId==null && o.TargetSlot==slot && ((o.Part&part)!=0 || o.Owner!=robot.Owner)))throw new InvalidOperationException("Arrival slot already reserved.");
-        var order=new DirectPartOrder(_next++,source,target,id,part,targetId,slot,robot.Owner);Orders.Add(order);return order;
+        var order=new DirectPartOrder(_next++,source,target,id,part,targetId,slot,robot.Owner);Orders.Add(order);
+        Failures.RemoveAll(o=>o.Source==source && o.RobotId==id && (o.Part&part)!=0);return order;
     }
     internal HashSet<long> Resolve(RobotWorld world,Func<int,int,bool> connected,Func<int,bool> locked,Func<int,int,bool> canEnter)
     {
