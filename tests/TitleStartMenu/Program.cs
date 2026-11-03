@@ -23,6 +23,7 @@ sealed class MenuGame:Game1{
   Check(!(bool)Call("UpdateDemo",11d,true,false,false,false,11d),"Idle demo cannot steal open menu");
   Click(960,617);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Unavailable Continue row is inert without save");
   Click(960,417);Check((bool)Get("_tutorialMenuOpen"),"How to Play opens tutorial guide");
+  Click(730,477);Check((bool)Get("_tutorialStepDialogOpen"),"First planet opens temporary step selection");
   Check(!(bool)Call("UpdateDemo",11d,true,false,false,false,11d),"Tutorial guide pauses demo");
   Click(1100,810);Check((bool)Get("_tutorialMenuOpen"),"Unimplemented steps are disabled");
   Click(1100,550);var tutorial=(WorldSetup)Get("_setup");

@@ -37,6 +37,7 @@ sealed class MapLessonGame:Game1
   }
   typeof(WorldSetup).GetProperty("TutorialStep")!.SetValue(Get("_setup"),0);Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");Check((bool)Get("_conquestOverview"),"Normal game still starts overview after tutorials");Call("FinishConquestOverview");
 
+  Set("_pointer",((Rectangle)typeof(Game1).GetMethod("TutorialPlanetCard",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{0})!).Center);Call("TutorialMenuInput",true,false,false,new KeyboardState());
   Set("_pointer",new Point(1000,722));Call("TutorialMenuInput",true,false,false,new KeyboardState());w=(WorldSetup)Get("_setup");net=(CubeNet)Get("_net");
   Check(w.TutorialStep==3 && w.PlayerSlot==0 && w.HumanPlayers.SequenceEqual(new[]{0}) && (bool)Get("_statusGlobe"),"Menu starts step three with player one as No.1 on globe");
   Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",90d);Set("_tutorialAttackGuide",false);Set("_homePersuasionActive",false);Guide(8);

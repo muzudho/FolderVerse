@@ -777,3 +777,11 @@
 - 並行状況と差分の取得と同じツール呼出しで、既存出力artifacts/corner-lesson/DemoUi.dllをALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=8で１回実行した。約５秒でコード０、ログaudit-latest-seed8.log。世界／人物／配置=2077225190／2051580673／1889511192、地図説明から内政・次のTransport・戦闘／拒否／終了の既存チェック成功。ただしDLLは前回本体（11:01更新）であり、今回のHEADを検証した証拠にはしない。Norton起動保留の直接証拠なし。
 - Demo.cs／DemoDomestic.csの実地点ヒット・MapViewButton・自動戦闘／伝播の入口を読んだが、現HEADのプライマリー・直送便退避復帰・左右の実描画／遷移照合は未実施。新規確認不具合なし、DEMO-0001～0012の既存状態を変更しない。ゲーム／テスト・利用者セーブ無変更、プロセス停止・コミット・プッシュ・公開なし。
 - 次回：先行開発の終了とゲーム／検証プロセスを確認し、その時点のHEADで既存の分離出力を更新してSeed８から再開。優先UIの回帰、全Seed／人数、専用直送便Demo、戦闘／伝播の描画、利用者ゲーム併存は未確認。今回を現コードの正常確認とは扱わない。
+
+### 実行履歴：2026-11-03 17:00回（トリガー16:55）
+
+- 開始：2026-11-03 16:55:16 JST。終了：2026-11-03 16:56:51 JST。状態：完了（部分点検）。AGENTS、README、両記録・Git差分を最初に確認。HEAD=34f433a803770fa5a50d5cc0188cc4e6531ccc70（終了時も同じ）。個人用チャット文書45行の既存差分を保持。別開発チャットはidle、開始時FolderVerse／dotnet／MSBuildなし。ゲーム／テスト無変更、利用者セーブ操作・停止・コミット・プッシュ・公開なし。
+- 前回中断後の現HEADで既存出力artifacts/corner-lessonを更新。dotnet build tests/DemoUi --no-restore -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers：最初はCLIのTelemetry初期化例外で終了。DOTNET_CLI_TELEMETRY_OPTOUT=1を設定した実行は約15秒で成功、警告・エラー０。ログaudit-latest-build.log（成功実行）。これはNorton保留の証拠ではない。
+- Demo.cs／DemoDomestic.csと既存テストを起点に、実地点ヒット、MapViewButtonと現在矩形による操作、戦闘／伝播は自動進行であることを照合。ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=8、dotnet artifacts/corner-lesson/DemoUi.dll：16:56頃開始、コード０。世界／人物／配置=2077225190／2051580673／1889511192。18FPS地図説明・内政１巡・ターン１→２・次のTransport・戦闘／拒否／終了の検査成功。ログaudit-latest-seed8.log。今回は更新済み本体を使用し、前回の旧DLLでの成功と区別した。
+- 続けてDemoInspectorUi.dll／DirectDeliveryUi.dllを現本体で実行し、両方コード０。16:56:22頃までに前者成功、直送便も後続ポーリングで終了確認。ログaudit-latest-inspector.log／audit-latest-direct.log。工場６プランの現在矩形・実選択、監督、閉じる、長期輸送プライマリー、わたしの国→移動（1080p／540p）、直送便の退避復帰・×／Escape・左右・連続トラック・回転面接続と予約保持が成功。direct-17.png（960×540）を開き左右の地点名・格納庫と中央地図の描画を目視。既存ログ・画像名を再利用。
+- 新規確認不具合なし、DEMO-0001～0012の状態維持。Norton保留の直接証拠・セキュリティ設定変更なし。今回の直送便確認は通常UIテストであり専用Demo完走ではない。未確認：全Seed／人数、専用直送便Demo、各Seed全フレーム、戦闘／伝播全描画、複数ruler説得、利用者ゲーム併存。次回はSeed９か未確認経路を追加。部分点検を全経路完了とはしない。
