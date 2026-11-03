@@ -50,10 +50,10 @@ public partial class Game1
     {
         _inspectorFolderRows.Clear();var seen=new HashSet<int>();
         void Regions(int owner,int depth){
-            foreach(var cell in _setup.Cells.Where(c=>_setup.Nodes.InCell(c.Id).Any(n=>n.Owner==owner))){
+            foreach(var cell in _setup.Cells.Where(c=>_setup.Nodes.InCell(c.Id).Any(n=>n.Functional && n.Owner==owner))){
                 _inspectorFolderRows.Add((1,cell.Id,depth,owner,"地域："+WorldCoordinates.Label(_setup,cell.Id)));
                 if(!_expandedFolderRegions.Contains(cell.Id))continue;
-                foreach(var node in _setup.Nodes.InCell(cell.Id).Where(n=>n.Owner==owner))
+                foreach(var node in _setup.Nodes.InCell(cell.Id).Where(n=>n.Functional && n.Owner==owner))
                     _inspectorFolderRows.Add((2,node.Id,depth+1,owner,"地点："+_setup.Nodes.DisplayName(node)));
             }
         }

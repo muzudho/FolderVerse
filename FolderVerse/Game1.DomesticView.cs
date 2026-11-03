@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -30,6 +30,7 @@ public partial class Game1
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
     private void ResetInspector(){
+        _functionTransferSource=-1;_functionTransferMessage="";
         CloseFolderTreeState();
         CloseReservationDirectory();
         _salvageMapTarget=-1;_salvageCatalogOpen=false;_mapOverlayMenu=false;_salvagePlan=false;_hangarAbandonMode=false;_salvageAbandonConfirmation=null;
@@ -66,6 +67,7 @@ public partial class Game1
         for(int y=r.Y+(NodeCheckButtonVisible?132:90);y<r.Bottom-16;y+=12)_ui.Box(new(r.X+18,y,r.Width-36,4),new Color(30,48,58));
     }
     private void OpenNodeInspector(int id){
+        if(!_setup.Nodes.All[id].Functional)return;
         ResetInspector();var node=_setup.Nodes.All[id];_nodeInspectorClosing=false;_reignView=false;
         _populationCell=node.Cell;_populationNode=_inspectedNode=id;_supervisorDialog=0;_hangarDrag=null;_rateTarget=-1;
         _nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;_movementOpen=false;RestoreNodeTab();

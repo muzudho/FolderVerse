@@ -46,10 +46,11 @@ public sealed partial class CubeNet
         _robotBadges.Clear();
         if(!ShowRobots || !world.Campaign.UseRobotCombat)return;
         int current=world.Nodes.Current(world.PlayerSlot)?.Id??-1;
+        var groups=world.Robots.FunctionDisplayGroups(world);
         foreach(var node in world.Nodes.All.OrderBy(n=>EmphasizedNode(n.Id)?2:n.Id==current?1:0).ThenBy(n=>n.Id))
         {
             if(!NodeVisible(world,node))continue;
-            var robots=world.Robots.Nodes[node.Id].Robots.Where(r=>ShowOtherCountries || world.Relations.Controls(r.Owner)).OrderByDescending(r=>MapPartCount(r.Parts)).ToArray();
+            var robots=groups.GetValueOrDefault(node.Id,new List<Robot>()).Where(r=>ShowOtherCountries || world.Relations.Controls(r.Owner)).OrderByDescending(r=>MapPartCount(r.Parts)).ToArray();
             if(robots.Length==0)continue;
             var point=project(node);if(point==null)continue;
             var at=point.Value;float zoom=1;
@@ -60,7 +61,7 @@ public sealed partial class CubeNet
             var bounds=cards.Aggregate(Rectangle.Union);
             if(!MapViewport(panel).Intersects(bounds))continue;
             // Keep gaps between robots outside the hit area.
-            foreach(var card in cards){var hit=card;if(ShowRoutes && EmphasizedNode(node.Id)){hit.Y-=6;hit.Height+=6;}_robotBadges.Add(new(node.Id,hit,true));}
+            foreach(var card in cards){var hit=card;if(ShowRoutes && EmphasizedNode(node.Id)){hit.Y-=6;hit.Height+=6;}_robotBadges.Add(new(node.Functional?node.Id:node.FunctionHost,hit,true));}
             for(int i=0;i<robots.Length;i++)
             {
                 var robot=robots[i];var card=cards[i];

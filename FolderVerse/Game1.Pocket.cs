@@ -15,7 +15,7 @@ public partial class Game1
         int node=_setup.Nodes.Current(_setup.PlayerSlot).Id;var world=_setup.Robots;
         if(_setup.Campaign.RobotBattles.LockedNode(node))return "継戦中";
         int work=world.WorkCountry(node,robot);if(work>=0 && work!=_setup.PlayerSlot)return "他国の仕事予約";
-        if(world.Workshops[node].DisposalTarget==robot.Id)return "廃棄処理中";
+        if(world.Workshops[node].IsDisposing(robot.Id))return "廃棄処理中";
         var edit=world.PendingEdits.FirstOrDefault(e=>e.Ids.Contains(robot.Id));
         if(edit!=null)return edit.SplitPart.HasValue?"分解予約":"組立予約";
         return world.CanTransferPocket(node,_setup.PlayerSlot,robot)?"":"作業中";

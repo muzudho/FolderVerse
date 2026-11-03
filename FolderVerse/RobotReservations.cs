@@ -12,11 +12,11 @@ public sealed partial class RobotWorld
     public bool MarchReserved(int node,Robot robot)=>MarchReservedCore(node,robot,false);
     public bool CombatMarchReserved(int node,Robot robot)=>MarchReservedCore(node,robot,true);
     private bool MarchReservedCore(int node,Robot robot,bool combatOnly)=>Reservations?.PlannedOrders.Any(o=>(!combatOnly || !o.Peaceful) && !o.PocketOnly && o.Ruler==robot.Owner && (o.SourceNode>=0?o.SourceNode:ReservationSource?.Invoke(o.Ruler)??node)==node && (o.RobotIds?.Contains(robot.Id)??Training[o.Ruler].Order(Nodes[node].Robots.Where(r=>r.Owner==o.Ruler && Training[r.Owner].Eligible(r) && !r.Stationed && DirectDelivery.LockedParts(node,r.Id)==0)).Take((int)Math.Min(12,o.Fighters)).Any(r=>r.Id==robot.Id)))==true;
-    public bool BaseAssemblyLocked(int node,Robot robot)=>robot.Disposal || robot.Stationed || Workshops[node].DisposalTarget==robot.Id || PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) || MarchReserved(node,robot);
+    public bool BaseAssemblyLocked(int node,Robot robot)=>robot.Disposal || robot.Stationed || Workshops[node].IsDisposing(robot.Id) || PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) || MarchReserved(node,robot);
     public bool AssemblyLocked(int node,Robot robot)=>BaseAssemblyLocked(node,robot) || DirectDelivery.LockedParts(node,robot.Id)!=0 || _arrivalLocked?.Invoke(robot.Id)==true;
     public bool PartLocked(int node,Robot robot,RobotParts part)=>BaseAssemblyLocked(node,robot) || (DirectDelivery.LockedParts(node,robot.Id)&robot.ConnectedParts(part))!=0;
-    public bool CanShip(int node,Robot robot)=>!robot.Stationed && Workshops[node].DisposalTarget!=robot.Id && !PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) && !MarchReserved(node,robot) && DirectDelivery.LockedParts(node,robot.Id)==0 && _arrivalLocked?.Invoke(robot.Id)!=true;
-    private bool ReservationBusy(int node,long id)=>Reservations?.RobotBattles.LockedNode(node)==true || Workshops[node].DisposalTarget==id || PendingEdits.Any(e=>e.Ids.Contains(id)) || DirectDelivery.LockedParts(node,id)!=0;
+    public bool CanShip(int node,Robot robot)=>!robot.Stationed && !Workshops[node].IsDisposing(robot.Id) && !PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) && !MarchReserved(node,robot) && DirectDelivery.LockedParts(node,robot.Id)==0 && _arrivalLocked?.Invoke(robot.Id)!=true;
+    private bool ReservationBusy(int node,long id)=>Reservations?.RobotBattles.LockedNode(node)==true || Workshops[node].IsDisposing(id) || PendingEdits.Any(e=>e.Ids.Contains(id)) || DirectDelivery.LockedParts(node,id)!=0;
     private Robot WithoutRole(Robot robot)=>robot with {Disposal=false,DefenseOnly=false,InterceptOnly=false,FactoryWorker=false,DefenseFlag=null};
     public bool CanReserveSortie(int node,Robot robot)=>!ReservationBusy(node,robot.Id) && Training[robot.Owner].Eligible(WithoutRole(robot));
     private void RemoveMarchReservation(int node,Robot robot)
@@ -46,7 +46,7 @@ public sealed partial class RobotWorld
             Nodes[node].Replace(Nodes[node].Robots.Select(r=>ValidateDefenseFlag(r,n=>world.Nodes.All[n].Owner)).Select(r=>r.DefenseOnly && r.Parts==RobotParts.Complete && r.DefenseFlag==null?r with {DefenseFlag=new(r.Owner,current,world.Nodes.All[current].Owner)}:r).ToArray());
         }
         ReservationSource=owner=>world.Nodes.Current(owner)?.Id??-1;
-        foreach(var node in world.Nodes.All){Workshops[node.Id].LimitLines(node.Terrain==TravelTerrain.Sea?1:3);SyncWorkers(node.Id);}
+        foreach(var node in world.Nodes.All){Workshops[node.Id].LimitLines(node.Functional?(Workshops[node.Id].TransferredLineLimit??(node.Terrain==TravelTerrain.Sea?1:3)):0);SyncWorkers(node.Id);}
         RevalidateWorkReservations();
     }
     public void SyncWorkers(int node)

@@ -10,6 +10,7 @@ public partial class Game1
     private Rectangle PopulationTurnButton=>PrimaryActionBounds(1);
     private bool NodeDialogClick(Point pointer,KeyboardState keyboard)
     {
+        if(FunctionTransferOfficeClick(new Point(pointer.X-NodeInspectorOffset,pointer.Y)))return true;
         if(_populationNode>=0 && _nodeOfficeOpen && new Rectangle(84,778,784,48).Contains(new Point(pointer.X-NodeInspectorOffset,pointer.Y))){OpenSalvagePlan(_populationNode);return true;}
         if(!InspectorVisible && PopulationTurnButton.Contains(pointer)){EndPlannedTurn();return true;}
         if(_populationCell<0 || _populationNode<0 || _populationNode>=_setup.Nodes.All.Length || _populationNode>=_setup.Robots.Workshops.Length)return false;

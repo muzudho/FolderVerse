@@ -6,6 +6,9 @@ using Microsoft.Xna.Framework;
 
 public sealed class Node
 {
+    public int FunctionUnits=1;
+    public int FunctionHost=-1;
+    public bool Functional=>FunctionUnits>0;
     public int Id,Cell,Owner;
     public Point Center;
     public Point[] Points;

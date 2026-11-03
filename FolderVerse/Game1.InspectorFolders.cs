@@ -30,10 +30,10 @@ public partial class Game1
         ancestors.Reverse();int depth=0;
         foreach(int parent in ancestors)_inspectorFolderRows.Add((0,parent,depth++,parent,"征服者："+_setup.ConquerorFullNames[parent]));
         _inspectorFolderRows.Add((0,ruler,depth,ruler,"征服者："+_setup.ConquerorFullNames[ruler]+"（現在のターン）"));
-        foreach(var cell in _setup.Cells.Where(c=>_setup.Nodes.InCell(c.Id).Any(n=>n.Owner==ruler))){
+        foreach(var cell in _setup.Cells.Where(c=>_setup.Nodes.InCell(c.Id).Any(n=>n.Functional && n.Owner==ruler))){
             _inspectorFolderRows.Add((1,cell.Id,depth+1,ruler,"地域監督："+WorldCoordinates.Label(_setup,cell.Id)));
             if(!_expandedFolderRegions.Contains(cell.Id))continue;
-            foreach(var node in _setup.Nodes.InCell(cell.Id).Where(n=>n.Owner==ruler))
+            foreach(var node in _setup.Nodes.InCell(cell.Id).Where(n=>n.Functional && n.Owner==ruler))
                 _inspectorFolderRows.Add((2,node.Id,depth+2,ruler,"地点監督："+_setup.Nodes.DisplayName(node)));
         }
     }

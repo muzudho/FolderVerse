@@ -34,12 +34,13 @@ public sealed partial class WorldPreview
             var normal=Vector3.Normalize(Vector3.Cross(b-a,c-a));
             mesh.Add(new(a,tint,normal));mesh.Add(new(b,tint,normal));mesh.Add(new(c,tint,normal));
         }
+        var groups=setup.Robots.FunctionDisplayGroups(setup);
         foreach(var node in setup.Nodes.All)
         {
             bool nodeVisible=net.NodeVisible(setup,node);
             bool ownBattery=Enumerable.Range(0,setup.ActiveCount).Any(r=>net.ShowBatteries && setup.Relations.Powered[r] && setup.Nodes.Current(r)?.Id==node.Id && (net.ShowOtherCountries || setup.Relations.Controls(r)) && (net.VisibleOperationBatteries==null || net.VisibleOperationBatteries.Contains(r)));
             if(!nodeVisible && !ownBattery)continue;
-            var cell=setup.Cells[node.Cell];var robots=setup.Robots.Nodes[node.Id].Robots.Where(r=>nodeVisible && net.ShowRobots && (net.ShowOtherCountries || setup.Relations.Controls(r.Owner))).ToList();
+            var cell=setup.Cells[node.Cell];var robots=groups.GetValueOrDefault(node.Id,new List<Robot>()).Where(r=>nodeVisible && net.ShowRobots && (net.ShowOtherCountries || setup.Relations.Controls(r.Owner))).ToList();
             if(net.ShowRobots && net.ShowBatteries && net.HoveredBattery>=0 && setup.Relations.Powered[net.HoveredBattery] && setup.Nodes.Current(net.HoveredBattery)?.Id==node.Id && (net.ShowOtherCountries || setup.Relations.Controls(net.HoveredBattery)))robots.AddRange(setup.Robots.Retinues[net.HoveredBattery].Robots);
             var center=setup.Routes.Position(node.Cell,node.Center);
             if(!ProjectVisible(center,cell.Normal,yaw,pitch,panel,out _))continue;
@@ -106,7 +107,7 @@ public sealed partial class WorldPreview
                     RobotBox(u,v+.044f,z+.023f,.04f,.008f,.009f,new(230,102,60));RobotBox(u,v,z+.09f,.01f,.01f,.025f,new(83,112,122));
                 }
                 if(robot.ShoeOwner>=0)foreach(float side in new[]{-1f,1f})RobotBox(u+side*.027f,v+.012f,.008f,.055f,.085f,.025f,setup.OwnerColor(robot.ShoeOwner));
-                if(bounds!=Rectangle.Empty && bounds.Intersects(panel))net.AddGlobeRobotBadge(node.Id,bounds);
+                if(bounds!=Rectangle.Empty && bounds.Intersects(panel))net.AddGlobeRobotBadge(node.Functional?node.Id:node.FunctionHost,bounds);
             }
             foreach(int ruler in Enumerable.Range(0,setup.ActiveCount).Where(r=>net.ShowBatteries && setup.Relations.Powered[r] && setup.Nodes.Current(r)?.Id==node.Id && (net.ShowOtherCountries || setup.Relations.Controls(r)) && (net.VisibleOperationBatteries==null || net.VisibleOperationBatteries.Contains(r)))){
                 hop=emphasized || net.HoveredBattery==ruler?CubeNet.MapObjectHop(seconds,ruler)*.003f:0;

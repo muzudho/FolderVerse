@@ -14,7 +14,7 @@ public partial class Game1
     {
         var workshop=_setup.Robots.Workshops[_populationNode];
         int Rank(long id){int index=workshop.DisposalOrder.ToList().IndexOf(id);return index<0?int.MaxValue:index;}
-        return _setup.Robots.Nodes[_populationNode].Robots.Where(r=>r.Disposal && r.Id!=workshop.DisposalTarget).OrderBy(r=>Rank(r.Id)).ThenBy(r=>r.Id).ToArray();
+        return _setup.Robots.Nodes[_populationNode].Robots.Where(r=>r.Disposal && !workshop.IsDisposing(r.Id)).OrderBy(r=>Rank(r.Id)).ThenBy(r=>r.Id).ToArray();
     }
     private void OpenNodeDisposal()
     {

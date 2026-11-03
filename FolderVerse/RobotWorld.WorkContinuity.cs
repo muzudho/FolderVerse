@@ -61,7 +61,7 @@ public sealed partial class RobotWorld
             return ids.Length==0 && !order.Queen?null:order with {RobotIds=ids,Fighters=ids.Length};
         });
     }
-    private bool PhysicalEditBusy(int node,Robot robot)=>node<0 || node>=Nodes.Length || Reservations?.RobotBattles.LockedNode(node)==true || Workshops[node].DisposalTarget==robot.Id || PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) || _arrivalLocked?.Invoke(robot.Id)==true;
+    private bool PhysicalEditBusy(int node,Robot robot)=>node<0 || node>=Nodes.Length || Reservations?.RobotBattles.LockedNode(node)==true || Workshops[node].IsDisposing(robot.Id) || PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) || _arrivalLocked?.Invoke(robot.Id)==true;
     public bool CanEditReservedPart(int node,Robot robot,int country)
     {
         if(PhysicalEditBusy(node,robot))return false;

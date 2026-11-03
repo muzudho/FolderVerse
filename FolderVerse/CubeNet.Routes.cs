@@ -108,6 +108,7 @@ public sealed partial class CubeNet
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
                 float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);
                 if(post.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
+                if(!post.Functional)radius=Math.Min(3.5f,radius*.5f);
                 if(EmphasizedNode(post.Id) && !world.Campaign.OwnershipChanged(post))radius*=2; if(MovementTargets.Contains(post.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(post.Id)) && MathF.Sin(pulse*6)>=0)
                 {
                     Disc(ui,at,radius+7,Tint(new Color(255,219,96)));
@@ -131,7 +132,7 @@ public sealed partial class CubeNet
                     continue;
                 }
                 if(world.Campaign.OwnershipChanged(post))continue;
-                if(post.IsHarbor)DrawHarbor(ui,at,radius,Tint(world.OwnerColor(post.Owner)),DimNode(post.Id));
+                if(post.IsHarbor && post.Functional)DrawHarbor(ui,at,radius,Tint(world.OwnerColor(post.Owner)),DimNode(post.Id));
                 else
                 {
                     Disc(ui,at,radius+2,Tint(new Color(13,36,44)));

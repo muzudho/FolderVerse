@@ -25,7 +25,7 @@ public sealed partial class RobotWorld
                 var parts=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(p=>(robot.PersuadableParts(ruler)&p)!=0).ToArray();
                 int work=WorkCountry(node.Id,robot);bool foreignShoes=work>=0 && work!=ruler;
                 bool canEnsureNative=robot.NativeParts(ruler)>0 || parts.Length>0;
-                if(!canEnsureNative || parts.Length==0 && !foreignShoes || robot.LastDomesticPersuasionTurn==turn || robot.Disposal || Workshops[node.Id].DisposalTarget==robot.Id || PendingEdits.Any(e=>e.Ids.Contains(robot.Id)))continue;
+                if(!canEnsureNative || parts.Length==0 && !foreignShoes || robot.LastDomesticPersuasionTurn==turn || robot.Disposal || Workshops[node.Id].IsDisposing(robot.Id) || PendingEdits.Any(e=>e.Ids.Contains(robot.Id)))continue;
                 bool success=random.Next(100)<DomesticPersuasionPercent(robot,ruler,world.Campaign.RobotBattles.Rules.PersuasionPercent);
                 var after=robot;
                 if(success){

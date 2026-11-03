@@ -12,6 +12,13 @@ public sealed class RobotDirectDelivery
     private long _next=1;
     public List<DirectPartOrder> Orders {get;}=new();
     public List<DirectPartOrder> Failures {get;}=new();
+    internal void RelocateNode(int source,int target,int slotOffset)
+    {
+        DirectPartOrder Move(DirectPartOrder o)=>o with {Source=o.Source==source?target:o.Source,Target=o.Target==source?target:o.Target,
+            TargetSlot=o.Target==source && !o.TargetRobotId.HasValue?o.TargetSlot+slotOffset:o.TargetSlot};
+        for(int i=0;i<Orders.Count;i++)Orders[i]=Move(Orders[i]);for(int i=0;i<Failures.Count;i++)Failures[i]=Move(Failures[i]);
+        Orders.RemoveAll(o=>o.Source==o.Target && !o.TargetRobotId.HasValue);
+    }
     public bool FailedPart(int node,long id,RobotParts part)=>Failures.Any(o=>o.Source==node && o.RobotId==id && (o.Part&part)!=0);
     public void ReconcileDestinations(WorldSetup setup)
     {
@@ -41,8 +48,8 @@ public sealed class RobotDirectDelivery
     public DirectPartOrder Reserve(WorldSetup setup,int source,int target,long id,RobotParts part,long? targetId,int slot)
     {
         var world=setup.Robots;var battles=setup.Campaign.RobotBattles;
-        if(part==0 || (part&~RobotParts.Complete)!=0 || slot<0 || slot>=12 || source<0 || source>=world.Nodes.Length || target<0 || target>=world.Nodes.Length || source==target)throw new InvalidOperationException("Invalid direct delivery.");
-        if(battles.LockedNode(source) || battles.LockedNode(target) || battles.LockedEdge(source,target) || !setup.Routes.Neighbors(setup.Nodes.All[source]).Any(r=>setup.Nodes.At(r.Target,r.Entry).Id==target))throw new InvalidOperationException("Route unavailable.");
+        if(part==0 || (part&~RobotParts.Complete)!=0 || source<0 || source>=world.Nodes.Length || target<0 || target>=world.Nodes.Length || source==target || slot<0 || slot>=world.Nodes[target].TotalCapacity || !setup.Nodes.All[source].Functional || !setup.Nodes.All[target].Functional)throw new InvalidOperationException("Invalid direct delivery.");
+        if(battles.LockedNode(source) || battles.LockedNode(target) || !FunctionalDeliveryRoutes.Connected(setup,source,target))throw new InvalidOperationException("Route unavailable.");
         var robot=world.Nodes[source].Robots.SingleOrDefault(r=>r.Id==id);
         if(robot!=null){part=robot.ConnectedParts(part);if(part is not (RobotParts.Head or RobotParts.Body or RobotParts.Legs) && robot.IntegratedParts!=part)throw new InvalidOperationException("Select one physical unit.");}
         if(robot==null || !setup.Relations.Controls(robot.Owner) || !setup.Relations.Controls(setup.Nodes.All[source].Owner) || !setup.Relations.Controls(setup.Nodes.All[target].Owner) || (robot.Parts&part)==0 || world.BaseAssemblyLocked(source,robot) || (LockedParts(source,id)&part)!=0)throw new InvalidOperationException("Part unavailable.");

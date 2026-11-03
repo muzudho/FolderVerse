@@ -46,6 +46,8 @@ public sealed partial class RobotWorkshop
     {var order=ids.ToArray();if(order.Distinct().Count()!=order.Length)throw new ArgumentException("Duplicate disposal priority.");_disposalOrder=order;}
     public static int DisposalTurns(RobotParts parts)=>IndustryTime.Whole(((parts&RobotParts.Head)!=0?1:0)+((parts&RobotParts.Body)!=0?2:0)+((parts&RobotParts.Legs)!=0?2:0));
     internal void StartDisposal(RobotStore store,Func<long,bool> reserved)
+    {foreach(var facility in DisposalFacilities)facility.StartSingleDisposal(store,id=>reserved(id) || IsDisposing(id));}
+    private void StartSingleDisposal(RobotStore store,Func<long,bool> reserved)
     {
         if(!HasDisposalFactory || DisposalTarget.HasValue)return;
         int Rank(long id){int rank=Array.IndexOf(_disposalOrder,id);return rank<0?int.MaxValue:rank;}
@@ -53,6 +55,8 @@ public sealed partial class RobotWorkshop
         if(robot!=null)Dispose(store,robot.Id);
     }
     internal void CompleteDisposal(RobotStore store)
+    {foreach(var facility in DisposalFacilities)facility.CompleteSingleDisposal(store);}
+    private void CompleteSingleDisposal(RobotStore store)
     {
         if(DisposalTarget is not long id)return;
         if(!store.Robots.Any(r=>r.Id==id)){DisposalTarget=null;DisposalAge=0;return;}
@@ -69,7 +73,7 @@ public sealed partial class RobotWorkshop
         if(RestEnabled && RestRemaining>0){RestRemaining--;return;}
         ProductionAge=Math.Min(ProductionPeriod,ProductionAge+1);
         if(!Waiting)return;
-        if(!world.TryStoreProduction(node,owner,CurrentProductionPlan.Preview(owner),reservedSlots)){
+        if(!world.TryStoreProduction(node,owner,CurrentProductionPlan.Preview(owner) with {FunctionDisplayNode=FunctionOriginNode},reservedSlots)){
             if(WaitingProductionTurns<int.MaxValue)WaitingProductionTurns++;
             return;
         }

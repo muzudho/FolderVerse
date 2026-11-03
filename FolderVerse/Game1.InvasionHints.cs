@@ -22,7 +22,7 @@ public partial class Game1
             if(robot.Disposal)reasons.Add("廃棄の予約があります。");
             if(robot.Stationed)reasons.Add("守備・迎撃・工場の仕事に配置されています。");
         }else{
-            if(_setup.Robots.Workshops[source.Node].DisposalTarget==robot.Id)reasons.Add("廃棄処理が進行中です。");
+            if(_setup.Robots.Workshops[source.Node].IsDisposing(robot.Id))reasons.Add("廃棄処理が進行中です。");
             if(_setup.Robots.PendingEdits.Any(e=>e.Ids.Contains(robot.Id)))reasons.Add("組立・分解などの変更が予約されています。");
         }
         if(reasons.Count==0)reasons.Add("現在の出撃条件を満たしていません。");

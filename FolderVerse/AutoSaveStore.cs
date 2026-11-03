@@ -108,6 +108,12 @@ public static class AutoSaveStore
                     if(type==typeof(BattleState) && field.Name=="<PersuadedUnits>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
                     if(type==typeof(BattleUnitView) && field.Name=="<Robot>k__BackingField")continue;
                     // Defaults for fields introduced after older turn-boundary saves.
+                    if(type==typeof(Node) && field.Name=="FunctionUnits"){field.SetValue(value,1);continue;}
+                    if(type==typeof(Node) && field.Name=="FunctionHost"){field.SetValue(value,-1);continue;}
+                    if(type==typeof(RobotStore) && field.Name=="_capacity")continue;
+                    if(type==typeof(Robot) && field.Name=="<FunctionDisplayNode>k__BackingField")continue;
+                    if(type==typeof(RobotWorkshop) && new[]{"_disposalAnnexes","TransferredLineLimit","FunctionOriginNode","_storageSlotLimit"}.Contains(field.Name))continue;
+                    if(type==typeof(ConquestCampaign) && field.Name=="<FunctionTransfers>k__BackingField"){field.SetValue(value,new NodeFunctionTransfers());continue;}
                     if(type==typeof(ConquestCampaign) && field.Name=="_domesticSubmitted"){field.SetValue(value,new HashSet<int>());continue;}
                     if(type==typeof(ConquestCampaign) && field.Name=="<Phase>k__BackingField")continue;
                     if(type==typeof(RobotDirectDelivery) && field.Name=="<Failures>k__BackingField"){field.SetValue(value,new List<DirectPartOrder>());continue;}

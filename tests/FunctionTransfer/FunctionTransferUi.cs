@@ -1,0 +1,57 @@
+using FolderVerse;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using System.Reflection;
+
+sealed class FunctionTransferUi:Game1
+{
+    const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;
+    int frame,a,b;WorldSetup w=null!;
+    object Get(string name)=>typeof(Game1).GetField(name,F)!.GetValue(this)!;
+    void Set(string name,object value)=>typeof(Game1).GetField(name,F)!.SetValue(this,value);
+    object Call(string name,params object[] values)=>typeof(Game1).GetMethod(name,F)!.Invoke(this,values)!;
+    static void Check(bool ok,string text){if(!ok)throw new Exception(text);}
+    protected override void LoadContent()
+    {
+        Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_autoSaveEnabled",false);Set("_conquestOverviewEnabled",false);Set("_conquestOverview",false);
+        w=(WorldSetup)Get("_setup");w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.Relations.Reset();w.SelectPlayer(0);
+        foreach(var n in w.Nodes.All)n.Owner=0;
+        w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);w.Robots.ConfigureFactories(w);
+        var source=w.Nodes.All.First(n=>w.Routes.Neighbors(n).Length>1);a=source.Id;var route=w.Routes.Neighbors(source)[0];b=w.Nodes.At(route.Target,route.Entry).Id;
+        foreach(int node in new[]{a,b}){
+            var factory=w.Robots.Workshops[node];factory.LimitLines(3);
+            for(int seed=0;factory.ProductionLines.Length!=3;seed++)factory.GenerateLines(seed);
+            foreach(var line in factory.ProductionLines)line.SelectPlan(3);factory.AutoAssemblyDisabled=true;
+            for(int i=0;i<12;i++)w.Robots.Nodes[node].Add(w.Robots.Create(0,RobotParts.Complete));
+        }
+        ((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);Set("_statusGlobe",false);
+        Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("OpenNodeInspector",a);Call("OpenNodeOffice");Call("UpdateDomesticSlide",1f);
+    }
+    protected override void Update(GameTime time){}
+    protected override void Draw(GameTime time)
+    {
+        if(frame==1){
+            Check((bool)Call("FunctionTransferOfficeClick",new Point(200,860)),"Office reservation button responds");
+            Check((int)Get("_functionTransferSource")==a,"Reservation opens target selection");
+        }
+        if(frame==2){w.Campaign.FunctionTransfers.Reserve(w,a,b);Set("_functionTransferSource",-1);}
+        if(frame==3){Call("EndPlannedTurn");Check(w.Robots.Nodes[b].Count==24 && !w.Nodes.All[a].Functional,"Delivery executes the office reservation");}
+        if(frame==4){Call("FinishTransport");Call("OpenNodeInspector",b);Call("OpenNodeAssembly");Call("UpdateDomesticSlide",1f);}
+        if(frame==5){
+            Check((bool)Call("HangarPageClick",new Point(820,275)),"Hangar page selector responds");
+            Call("SyncHangarSlots");Check((int)Get("_hangarPage")==1 && ((long?[])Get("_hangarSlots")).Skip(12).Any(id=>id.HasValue),"Second hangar page exposes merged stock");
+        }
+        if(frame==6){Call("OpenNodeFactory");Check((bool)Call("FactoryPageClick",new Point(820,940)),"Factory page selector responds");Check((int)Get("_factoryPage")==1,"Second factory page is reachable");}
+        if(frame==7){
+            w.Campaign.Advance(w,-1,0,enemies:false);Call("ResetInspector");Call("OpenDirectMap");Call("OpenDirectPair",b,FunctionalDeliveryRoutes.Targets(w,b).First());Call("UpdateDirectPairTransition",.35f);
+            var nodes=(int[])Get("_directNodes");int side=Array.IndexOf(nodes,b);Call("DirectPageClick",new Point(500+side*1320,275));
+            Check(((int[])Get("_directPages"))[side]==1,"Direct-delivery inspector exposes merged second page");
+        }
+        base.Draw(new GameTime(TimeSpan.FromSeconds(100+frame*10),TimeSpan.Zero));
+        var p=GraphicsDevice.PresentationParameters;var colors=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(colors);
+        using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(colors);
+        using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"function-transfer-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
+        if(frame++==7){Console.WriteLine("PASS: office reservation and target selector, delivery execution, source references and second pages of hangar, factory and delivery inspectors.");Exit();}
+    }
+}

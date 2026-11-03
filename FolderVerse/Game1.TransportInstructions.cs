@@ -25,7 +25,7 @@ public partial class Game1
         _setup.Robots.Transport.ConfigurePartChoices(_populationNode,TransportOwner,rule.Number,target??rule.Target,choices??rule.PartChoices,disposal??rule.Disposal,limit??rule.Limit);
         if(changed && !_transportNewInstruction)BeginTransportPlanEffect(rule);
     }
-    private int[] TransportAdjacent()=>_populationNode<0?Array.Empty<int>():_setup.Routes.Neighbors(_setup.Nodes.All[_populationNode]).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id).Where(id=>id!=_populationNode).Distinct().ToArray();
+    private int[] TransportAdjacent()=>_populationNode<0?Array.Empty<int>():FunctionalDeliveryRoutes.Targets(_setup,_populationNode);
     private void PrepareTransportInstructions()
     {
         if(!CanEditTransport)return;

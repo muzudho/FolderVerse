@@ -32,6 +32,7 @@ public partial class Game1
         if(a.X>b.X+.5f || Math.Abs(a.X-b.X)<=.5f && a.Y>b.Y){
             (_directNodes[0],_directNodes[1])=(_directNodes[1],_directNodes[0]);
             (_directSlots[0],_directSlots[1])=(_directSlots[1],_directSlots[0]);
+            (_directPages[0],_directPages[1])=(_directPages[1],_directPages[0]);
         }
     }
     private static readonly Rectangle DirectPairMapBounds=new(600,200,720,690),DirectPairFitButton=new(800,912,320,44);
@@ -96,8 +97,8 @@ public partial class Game1
         if(!_directPairGlobe && _directPairNet.IsAnimating)return;
         foreach(var node in _setup.Nodes.All.Where(n=>DirectNodeAllowed(n.Id))){
             if(!DirectPairVisible(node.Id,out var a))continue;
-            foreach(var route in _setup.Routes.Neighbors(node)){
-                var next=_setup.Nodes.At(route.Target,route.Entry);
+            foreach(int destination in FunctionalDeliveryRoutes.Targets(_setup,node.Id)){
+                var next=_setup.Nodes.All[destination];
                 if(node.Id>=next.Id || !DirectNodeAllowed(next.Id) || !DirectPairVisible(next.Id,out var b))continue;
                 var at=(a+b)/2;var bounds=new Rectangle((int)at.X-22,(int)at.Y-17,44,34);
                 if(!panel.Contains(bounds))continue;

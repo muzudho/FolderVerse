@@ -10,6 +10,7 @@ public sealed record RobotWorkshopEdit(int Node,long[] Ids,RobotParts? SplitPart
 public sealed record DefenseFlagReservation(int Commander,int Node,int FlagOwner);
 public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=RobotRole.Soldier,bool Disposal=false)
 {
+    public int? FunctionDisplayNode {get;init;}
     public bool InterceptOnly {get;init;}
     public bool DefenseOnly {get;init;}
     public DefenseFlagReservation DefenseFlag {get;init;}
@@ -70,12 +71,15 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
 public sealed class RobotStore
 {
     public const int Capacity=12;
+    private int? _capacity;
+    public int TotalCapacity=>_capacity??Capacity;
+    internal void SetCapacity(int capacity){if(capacity<Count+ReservedReturns)throw new InvalidOperationException("Occupied hangar capacity.");_capacity=capacity;}
     private readonly List<Robot> _robots=new();
     public IReadOnlyList<Robot> Robots=>_robots;
     public int Count=>_robots.Count;
     private readonly HashSet<long> _returnReservations=new();
     public int ReservedReturns=>_returnReservations.Count;
-    public int StorageLimit=>Capacity-ReservedReturns;
+    public int StorageLimit=>TotalCapacity-ReservedReturns;
     public bool HasSpace=>Count<StorageLimit;
     internal Robot Depart(long id){var robot=Remove(id);_returnReservations.Add(id);return robot;}
     internal void ReleaseReturn(long id)=>_returnReservations.Remove(id);

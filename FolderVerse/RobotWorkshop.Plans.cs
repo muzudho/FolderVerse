@@ -15,10 +15,10 @@ public sealed partial class RobotWorkshop
     private int? _baseLineCount;
     private int _lineLimit;
     private System.Collections.Generic.Dictionary<long,RobotWorkshop> _workerLines;
-    public int LineLimit=>_lineLimit==0?3:_lineLimit;
+    public int LineLimit=>_lineLimit<0?0:_lineLimit==0?3:_lineLimit;
     public int BaseLineCount=>_baseLineCount??ProductionLines.Length;
     public long? WorkerAt(int line)=>line<BaseLineCount?null:_workerLines?.Keys.OrderBy(id=>id).Skip(line-BaseLineCount).Select(id=>(long?)id).FirstOrDefault();
-    public void LimitLines(int limit){_lineLimit=limit;_baseLineCount=System.Math.Min(BaseLineCount,limit);ProductionLines=ProductionLines.Take(_baseLineCount.Value).ToArray();}
+    public void LimitLines(int limit){_lineLimit=limit==0?-1:limit;_baseLineCount=System.Math.Min(BaseLineCount,limit);ProductionLines=ProductionLines.Take(_baseLineCount.Value).ToArray();}
     internal void SetWorkers(Robot[] workers,int worldSeed,int node,int country){
         _baseLineCount??=ProductionLines.Length;_workerLines??=new();
         var ids=workers.Select(r=>r.Id).ToArray();
@@ -96,7 +96,7 @@ public sealed partial class RobotWorkshop
         if(RestEnabled && RestEvery==every && RestTurns==turns)return;RestEvery=every;RestTurns=turns;RestEnabled=true;RestRemaining=ProducedSinceRest=0;
     }
     public void SetReservedSlots(int count)
-    {if(count<0 || count>12)throw new System.ArgumentOutOfRangeException(nameof(count));ReservedSlots=count;}
+    {if(count<0 || count>ReservedSlotLimit)throw new System.ArgumentOutOfRangeException(nameof(count));ReservedSlots=count;}
 }
 
 

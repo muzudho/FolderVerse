@@ -143,6 +143,7 @@ public partial class Game1 : Game
         if(!_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
+        if(IsStatusScreen && FunctionTransferInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(CountrySettingsInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(OperationSettingsInput(active && click,escape)){DragStatusMap(mouse,active);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateCampaignDivider(mouse,active,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -185,7 +186,7 @@ public partial class Game1 : Game
         if(UpdateHomePersuasion(elapsed,active && (click || enter || escape),gameTime.TotalGameTime.TotalSeconds))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _setup.Robots.Nodes.Length>0)
-            _setup.Robots.PrepareDomestic(_setup.Population.Turn,(a,b)=>!_setup.Campaign.RobotBattles.LockedEdge(a,b) && _setup.Routes.Neighbors(_setup.Nodes.All[a]).Any(r=>_setup.Nodes.At(r.Target,r.Entry).Id==b),n=>_setup.Nodes.All[n].Owner,_setup.Campaign.RobotBattles.LockedNode);
+            _setup.Robots.PrepareDomestic(_setup.Population.Turn,(a,b)=>FunctionalDeliveryRoutes.Connected(_setup,a,b),n=>_setup.Nodes.All[n].Owner,_setup.Campaign.RobotBattles.LockedNode);
         if(IsStatusScreen && _salvageCatalogOpen){if(active)SalvageCatalogInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _supervisorDialog!=0){
             if(active)SupervisorDialogInput(click,escape,keyboard);
