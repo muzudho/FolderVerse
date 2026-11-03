@@ -548,6 +548,9 @@ public partial class Game1 : Game
     }
     private void DrawStatusUi()
     {
+        // Settings use the normal full-canvas logo background without the map
+        // or action buttons showing through the transparent content area.
+        if(_countrySettingsOpen)return;
         if(_salvageCatalogOpen){DrawSalvageCatalog();return;}
         if(_directPairOpen){DrawDirectPair();return;}
         _ui.Text("世界征服状況",new(54,22),1.1f,Cream);
@@ -760,15 +763,17 @@ public partial class Game1 : Game
             _spriteBatch.End();
         }
         DrawScreenshotFeedback(gameTime.TotalGameTime.TotalSeconds);
+        if(!_countrySettingsOpen || !IsStatusScreen){
         _spriteBatch.Begin(transformMatrix:transform);if(!_conquestOverview)DrawTutorialGoal();if(!_conquestOverview)DrawPhaseCutIn(gameTime.TotalGameTime.TotalSeconds);_spriteBatch.End();
         DrawDemoOverlay(transform);
         if(_homePersuasionActive){_spriteBatch.Begin(transformMatrix:transform);DrawHomePersuasion();_spriteBatch.End();}
         if(TutorialReviewAvailable){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialMessages();_spriteBatch.End();}
         if(_tutorialAttackGuide){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAttackGuide();_spriteBatch.End();}
         if(_wandererPolicyOpen){_spriteBatch.Begin(transformMatrix:transform);DrawWandererPolicyDialog();_spriteBatch.End();}
-        if(_countrySettingsOpen && IsStatusScreen){_spriteBatch.Begin(transformMatrix:transform);DrawCountrySettings();_spriteBatch.End();}
         if(_screen==Screen.Battle && _tutorialAchievementAge>=0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAchievementCutIn();_spriteBatch.End();}
         if(_conquestOverview){_spriteBatch.Begin(transformMatrix:transform);DrawConquestCurtain(1-MathHelper.SmoothStep(0,1,(float)(_conquestAge/.65)));_spriteBatch.End();}
+        }
+        if(_countrySettingsOpen && IsStatusScreen){_spriteBatch.Begin(transformMatrix:transform);DrawCountrySettings();_spriteBatch.End();}
         DrawFullscreenCursor();
         LogDisplayedScreen();
         base.Draw(gameTime);

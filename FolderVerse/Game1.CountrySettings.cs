@@ -65,7 +65,6 @@ public partial class Game1
     private void DrawCountrySettings()
     {
         if(!_countrySettingsOpen)return;
-        _ui.Box(new(60,65,1800,950),new(18,36,48));
         _ui.Text("人間とコンピューター / 国の色と網かけ",new(90,95),.72f,Cream);
         _ui.Button(CountrySettingsClose,"閉じる",Muted,.50f);
         _ui.Text("設定する征服者を選んでください",new(90,155),.46f,Cream);
