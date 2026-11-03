@@ -187,6 +187,7 @@ public static class BattleTurnResolver
         bool cleared=!battle.FlagStanding && captor>=0 && !battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (a.Waiting.Count>0 || battle.Units.Any(u=>u.Active && u.Owner==a.Owner)));
         if(!defended && !captured && !cleared)return false;
         battle.Winner=defended?battle.Defender:captor;battle.Finished=true;
+        if(defended)BattleRetreat.AfterFlagDefense(battle);
         battle.Events.Add(new(battle.Turn,BattlePhase.Result,0,defended?"旗の防衛成功":"旗の奪取成功 / 守備側降伏"));
         return true;
     }

@@ -24,11 +24,11 @@ public sealed partial class CubeNet
     public int CountryFocus {get;set;}=-1;
     public HashSet<int> FocusCells {get;}=new();
     public List<MapFocusCircle> FocusCircles {get;}=new();
-    public bool DimNode(int id)=> (CountryFocus>=0 || NodeFocus>=0 || FolderSearchFocus) && id!=NodeFocus && !FocusCircleNodes.Contains(id);
+    public bool DimNode(int id)=>AttackTargetSpotlight?!AttackHighlightTargets.Contains(id): (CountryFocus>=0 || NodeFocus>=0 || FolderSearchFocus) && id!=NodeFocus && !FocusCircleNodes.Contains(id);
     public Color NodeTint(int id,Color color)=>DimNode(id)?SelectionGlow.Dim(color,FocusBrightness):color;
     public Color FocusTerrain(Color color,Vector2 point,int cell=-1){
         if(CountryFocus>=0 && FocusCells.Contains(cell))return color;
-        if(NodeFocus<0 && CountryFocus<0)return color;
+        if(NodeFocus<0 && CountryFocus<0 && !AttackTargetSpotlight)return color;
         float outside=1;
         foreach(var circle in FocusCircles)outside=Math.Min(outside,SelectionGlow.OutsideCircle(point,circle.Center,circle.Radius));
         if(NodeFocus>=0 && FocusCircles.Count==0)outside=SelectionGlow.OutsideCircle(point,FocusCircleCenter,FocusCircleRadius);

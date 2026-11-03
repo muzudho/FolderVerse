@@ -36,8 +36,7 @@ public partial class Game1
                 if(DestinationNodes().Length==0){CloseNodeInspector();_demoDomesticStage=19;}
                 else{
                     var node=_setup.Nodes.All[DestinationNodes()[0]];
-                    if(_statusGlobe){_world.ManualOrientation=null;_world.GlobeZoom=1;FocusGlobePosition(_setup.Routes.Position(node.Cell,node.Center));}
-                    else _net.FitNodesAtSource(_setup,node,NetPanel,4);
+                    FocusDemoNode(node);
                 }
                 _demoDomesticAge=0;return true;
             }

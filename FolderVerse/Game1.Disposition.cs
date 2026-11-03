@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -23,11 +23,13 @@ public partial class Game1
         if(_statusMenuOpen && HierarchyMenuItem.Contains(point))
         {CloseMovement();_statusMenuOpen=false;_screen=Screen.Hierarchy;return true;}
         if(_statusMenuOpen && AutoMenuItem.Contains(point)){StartAutoPlay();return true;}
+        if(_statusMenuOpen && CountrySettingsMenuItem.Contains(point)){OpenCountrySettings();return true;}
         if(_statusMenuOpen && EndingMenuItem.Contains(point)){StartEnding();return true;}
         if(_statusMenuOpen && QuitMenuItem.Contains(point)){ReturnToTitle();return true;}
         _statusMenuOpen=false;return false;
     }
-    private void DrawStatusMenu()
+    private void DrawStatusMenu() => DrawTutorialChrome(()=>DrawStatusMenuCore(),true);
+    private void DrawStatusMenuCore()
     {
         _ui.Button(StatusMenuButton,"＜システムメニュー＞",Muted,.52f);
         if(_statusMenuOpen)
@@ -37,6 +39,7 @@ public partial class Game1
             _ui.Button(EndingMenuItem,"ここでゲームをエンディングにする",Muted,.48f);
             _ui.Button(QuitMenuItem,"ゲームを止めてタイトル画面に戻る",Muted,.48f);
             _ui.Button(AutoMenuItem,"コンピューターに続きをやってもらう",Muted,.48f);
+            _ui.Button(CountrySettingsMenuItem,"人間とコンピューター / 国の色と網かけ",Muted,.46f);
         }
     }
     private void DispositionInput(bool click,bool escape)
@@ -63,6 +66,7 @@ public partial class Game1
             bool accepted=_setup.Relations.Choose(_setup,pending,choice);
             _operations.Write("conqueror_disposition",new{pending,choice=choice.ToString(),accepted});
             if(!accepted)return;
+            AwardTutorialCaptiveChoice(choice);
             _world.ShowSetup(_setup,true);
             if(choice is DefeatedChoice.RemoveBattery or DefeatedChoice.Recruit){_dispositionScene=pending;_dispositionSceneChoice=choice;_dispositionSceneAge=0;return;}
             if(_setup.Relations.Pending.Count>0)return;
@@ -86,7 +90,8 @@ public partial class Game1
         _ui.Center(_setup.Relations.Message,new(200,790,1520,44),.54f,new(255,196,112));
         string[] choices={accepts?"手下にする":"手下にする（拒否）","逃がす","電池を引き抜く"};
         for(int i=0;i<3;i++)_ui.Button(DispositionButton(i),choices[i],i==0 && !accepts?Muted:Accent,.65f);
-        _ui.Center("逃がす：その地点に留まる / 電池を引き抜く：所有する地点を未征服にする",new(160,970,1600,48),.48f,Cream);
+        if(TutorialCaptiveAchievementsAvailable)DrawTutorialCaptiveChoiceNotes();
+        else _ui.Center("逃がす：その地点に留まる / 電池を引き抜く：所有する地点を未征服にする",new(160,970,1600,48),.48f,Cream);
     }
     private void DrawInactiveUi()
     {

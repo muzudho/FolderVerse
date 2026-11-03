@@ -28,6 +28,7 @@ public sealed class ConquestCampaign
     {
         bool Matches(March o)=>o.Ruler==owner && (o.Queen || o.PocketOnly)==queen && o.TargetNode==target && (queen || o.SourceNode==source);
         _plannedOrders.RemoveAll(o=>Matches(o));_partyOrders.RemoveAll(o=>Matches(o));
+        Report=PlannedOrders.Count>0?$"予約 {PlannedOrders.Count} 件 / ターン終了で実行":"";
     }
     public void Plan(March order)
     {
@@ -48,6 +49,12 @@ public sealed class ConquestCampaign
     }
     public int[] Submitted=>_submitted.OrderBy(r=>r).ToArray();
     public bool AwaitingPlayers=>_submitted.Count>0;
+    internal void ReconcileControllers(WorldSetup world)
+    {
+        _submitted.IntersectWith(world.TurnPlayers());
+        // Switching control does not cancel an already chosen march.
+        for(int i=_plannedOrders.Count-1;i>=0;i--)if(world.ControllerOf(_plannedOrders[i].Ruler)<0){_partyOrders.Add(_plannedOrders[i]);_plannedOrders.RemoveAt(i);}
+    }
     public void Reset(){PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
     public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false)
     {
@@ -65,6 +72,9 @@ public sealed class ConquestCampaign
         if(enemies)
         {
             var party=world.TurnPlayers();
+            // A participant may become a computer after submitting this turn.
+            // Preserve submitted orders, but do not leave an obsolete waiting flag.
+            if(party.Length<=1 && !automaticAll){orders.AddRange(_partyOrders);_partyOrders.Clear();_submitted.Clear();}
             if(party.Length>1 && !automaticAll)
             {
                 _submitted.Add(controller);_partyOrders.AddRange(orders);

@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,11 +35,12 @@ public partial class Game1
             foreach(var battle in next.Campaign.RobotBattles.Encounters.SelectMany(e=>e.Battles).Concat(next.Campaign.RobotBattles.Scenes).Distinct()){
                 battle.Allied=next.Relations.Allied;battle.Check();
             }
-            next.Robots.ConfigureFactories(next);ResetInspector();_setup=next;_tutorialAttackGuide=false;_tutorialAttackAchieved=next.TutorialStep==1 && _tutorialAchievements?.Has(TutorialAchievements.FirstAttack)==true;_domesticViews.Clear();foreach(var view in saved.Views)_domesticViews.Add(view.Key,view.Value);
-            if(_tutorialAttackAchieved && !next.TutorialCompletionShown)next.TutorialCompletionPending=true;
-            if(next.TutorialStep==3 && next.TutorialMapStage<4)next.TutorialMapNotices&=~(next.TutorialMapStage==2 && (next.TutorialMapRotations&8)==0?16:1<<next.TutorialMapStage);
+            next.Robots.ConfigureFactories(next);ResetInspector();_setup=next;_tutorialAttackGuide=false;_tutorialLastMessage=-1;_tutorialAttackAchieved=next.TutorialMapBeforeWar?next.TutorialAttackCompleted:next.TutorialStep==1 && _tutorialAchievements?.Has(TutorialAchievements.FirstAttack)==true;_domesticViews.Clear();foreach(var view in saved.Views)_domesticViews.Add(view.Key,view.Value);
+            if(_tutorialAttackAchieved && !next.TutorialMapBeforeWar && !next.TutorialCompletionShown)next.TutorialCompletionPending=true;
+            if((next.TutorialStep==3 || next.TutorialMapBeforeWar && next.TutorialMapStage<6) && next.TutorialMapStage<=6)next.TutorialMapNotices&=~TutorialThreeNotice(next.TutorialMapStage,next.TutorialMapRotations);
+            if(next.TutorialMapBeforeWar && next.TutorialMapStage>=6){_tutorialIntroShown=true;_tutorialLastMessage=!next.TutorialAttackCompleted && next.TutorialTurnEndNoticeShown?21:!next.TutorialAttackCompleted && next.TutorialSortieNoticeShown?20:!next.TutorialAttackCompleted && next.TutorialWarTargetNoticeShown?22:next.TutorialPostMoveStage>0?16+Math.Min(next.TutorialPostMoveStage,3):next.TutorialMoveNoticeShown?6:next.TutorialPocketNoticeShown?5:next.TutorialPocketIntroShown?4:16;}
             _autoPlay=_demoActive=false;_statusMenuOpen=false;_robotPlaying=false;_robotPendingFocus=-1;_robotPendingSummary=false;
-            _battleAge=0;_notifiedTurn=(-1,-1);_screen=Screen.WorldStatus;
+            _battleAge=0;_notifiedTurn=(-1,-1);_screen=Screen.WorldStatus;RecordPetitstellaMedals();
             _world.ShowSetup(_setup,true);_lastAutoSaveTurn=_setup.Population.Turn;RestoreDomesticCamera();OpenDisposition();if(_setup.ComputerOnly)StartAutoPlay();
             _autoSaveError="";_operations.Write("autosave_resumed",new{turn=_lastAutoSaveTurn});return true;
         }catch(Exception error){_screen=Screen.Title;_autoSaveError="続きからを開始できません。最初からを選べます。";RecordFailure(error,"autosave_read");return false;}

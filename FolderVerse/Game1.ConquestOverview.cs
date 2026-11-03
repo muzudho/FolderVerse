@@ -25,7 +25,7 @@ public partial class Game1
     private ConquestPresentation.Card ConquestCard=>_conquestPresentation.Cards[_conquestCard];
     private double ConquestCardSeconds=>ConquestCard.Reminder?.8:_conquestTally.Duration;
     private void BeginConquestOverview(){
-        if(!_conquestOverviewEnabled || _autoPlay || _conquestOverviewTurn==_setup.Population.Turn)return;
+        if(_setup.TutorialStep is 1 or 2 or 3 || !_conquestOverviewEnabled || _autoPlay || _conquestOverviewTurn==_setup.Population.Turn)return;
         _conquestOverviewTurn=_setup.Population.Turn;_conquestPresentation=new(_setup);_conquestCard=0;_conquestStage=0;_conquestAge=0;_conquestOverview=true;_conquestExitOpacity=1;
         _conquestRevealed.Clear();
         var ranking=_setup.Relations.ProvisionalRanking(_setup).OrderBy(r=>r.Ruler).ToArray();

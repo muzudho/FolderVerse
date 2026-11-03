@@ -1,4 +1,4 @@
-using FolderVerse;
+﻿using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
@@ -31,7 +31,7 @@ sealed class RotationGame:Game1{
    var previous=GraphicsDevice.GetRenderTargets();GraphicsDevice.SetRenderTarget(target);var batch=(SpriteBatch)Get("_spriteBatch");
    var drawLayer=typeof(CubeNet).GetMethod("DrawRobotLayer",BindingFlags.NonPublic|BindingFlags.Instance)!;
    foreach(var robotAt in new[]{new Vector2(300,300),new Vector2(300,104)}){
-    batch.Begin();drawLayer.Invoke(net,new object[]{Get("_ui"),w,new Rectangle(100,100,400,400),(Func<Node,Vector2?>)(n=>occupied.Contains(n.Id)?robotAt:null),1f});batch.End();
+    batch.Begin();drawLayer.Invoke(net,new object[]{Get("_ui"),w,new Rectangle(100,100,400,400),(Func<Node,Vector2?>)(n=>occupied.Contains(n.Id)?robotAt:null),1f,0f});batch.End();
     Check(net.RobotBadges.Select(b=>b.Node).Distinct().Count()==2,"Overlapping robot groups and partially clipped edge groups both remain visible");
    }
    GraphicsDevice.SetRenderTargets(previous);net.ClearGlobeRobotBadges();
@@ -142,7 +142,7 @@ sealed class RotationGame:Game1{
   Set("_statusGlobe",true);net.ShowEquator=true;Call("FocusStatusGlobe");
   Check(!(bool)Prop("MapDragSlide"),"Globe defaults to rotation");
   var dragButton=(Rectangle)typeof(Game1).GetField("MapDragButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
-  void SelectDrag(int index){Call("RouteLayerClick",dragButton.Center);Call("RouteLayerClick",((Rectangle)typeof(Game1).GetMethod("MapDragOption",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{index})!).Center);}
+  void SelectDrag(int index){Set("_operationSettingsOpen",true);Set("_operationSettingsSlide",1f);Call("MapDragClick",dragButton.Center);Call("MapDragClick",((Rectangle)typeof(Game1).GetMethod("MapDragOption",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{index})!).Center);Set("_operationSettingsOpen",false);Set("_operationSettingsSlide",0f);}
   void Drag(int dx,int dy){
    var canvas=(Rectangle)Call("CanvasBounds");var start=((Rectangle)Prop("MapViewBounds")).Center;
    Microsoft.Xna.Framework.Input.MouseState Mouse(Point p)=>new(canvas.X+(int)Math.Round(p.X*canvas.Width/1920d),canvas.Y+(int)Math.Round(p.Y*canvas.Height/1080d),0,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Pressed,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released);
@@ -185,9 +185,9 @@ sealed class RotationGame:Game1{
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
   var batch=(SpriteBatch)Get("_spriteBatch");
-  if(frame==0)Set("_mapDragListOpen",true);
+  if(frame==0){Set("_operationSettingsOpen",true);Set("_operationSettingsSlide",1f);Set("_mapDragListOpen",true);}
   if(frame==1){Set("_statusGlobe",false);Set("_mapDragListOpen",true);}
-  if(frame==2){Set("_statusGlobe",true);Call("StartMapTransition");}
+  if(frame==2){Set("_operationSettingsOpen",false);Set("_operationSettingsSlide",0f);Set("_statusGlobe",true);Call("StartMapTransition");}
   if(frame==9){Call("UpdateMapTransition",.1f);Check(!(bool)Get("_statusGlobe"),"Unfold completes");Call("StartMapTransition");}
   if(frame>=2 && frame<=8)Set("_mapTransitionAge",(frame-2)*.6f);
   if(frame>=9 && frame<=15)Set("_mapTransitionAge",(frame-9)*.6f);
@@ -199,7 +199,7 @@ sealed class RotationGame:Game1{
    world.GlobeRock=frame is 21 or 22?Game1.GlobeCradle((frame-21)*4):Matrix.Identity;
    base.Draw(t);
   }
-  else{GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawStatusUi");batch.End();}
+  else{GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawStatusUi");if(frame<2)Call("DrawOperationSettings");batch.End();}
   var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
   using var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);tex.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"rotation-{frame}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);
   if(frame==16)Check(pixels.Count(c=>c==new Color(115,119,125))>100,"Back faces render in solid gray");

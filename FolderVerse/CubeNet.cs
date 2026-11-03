@@ -135,7 +135,7 @@ public sealed partial class CubeNet
                 int size=(int)Math.Ceiling(fit.Scale/detail)+1;
                 var sample=cell.Origin+cell.U*((Math.Min(9,x*10/detail)+.5f)/10)+cell.V*((Math.Min(9,y*10/detail)+.5f)/10);
                 float elevation=WorldTerrain.Elevation(sample,offset);
-                Color terrain=FocusTerrain(TerrainColor(setup,cell.Id,elevation),RotateScreen(new Vector2(px,py),panel),cell.Id);
+                Color terrain=FocusTerrain(TerrainColor(setup,cell.Id,elevation,x*10/detail,y*10/detail),RotateScreen(new Vector2(px,py),panel),cell.Id);
                 if(CountryFocus<0 && NodeFocus<0 && RegionFocusCell<0 && !ShowRoutes && cell.Id==SelectedCell)terrain=SelectionGlow.Brighten(terrain,(x+.5f)/detail,(y+.5f)/detail,pulse);
                 var post=setup.Nodes.At(cell.Id,new Point(x,y));
                 

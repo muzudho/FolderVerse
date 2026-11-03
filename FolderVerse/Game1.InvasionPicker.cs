@@ -29,7 +29,7 @@ public partial class Game1
         {
             row.Robots.Clear();row.Robots.UnionWith(_invasionDraft.Intersect(robots.Select(r=>r.Id)));
             foreach(var robot in robots.Where(r=>row.Robots.Contains(r.Id)))BeginWorkReservationEffect(robot,row.Owner);
-            row.Count=row.Robots.Count;row.Selected=row.Queen && _invasionQueenDraft;_invasionPicker=-1;return;
+            row.Count=row.Robots.Count;row.Selected=row.Queen && _invasionQueenDraft;ReserveInvasion(row);_invasionPicker=-1;return;
         }
         if(row.Queen && InvasionQueenToggle.Contains(_pointer)){_invasionQueenDraft=!_invasionQueenDraft;return;}
         for(int i=0;i<robots.Length;i++)if(InvasionRobotCard(i).Contains(_pointer))
@@ -45,7 +45,7 @@ public partial class Game1
         var row=_invasionSources[_invasionPicker];var robots=InvasionRobots(row);
         _ui.Box(new(0,0,1920,1080),new Color(0,0,0,175));_ui.Box(new(310,185,1300,720),new Color(27,49,62));
         _ui.Text(row.Queen?"ポケットから出撃するロボットを選択":"格納庫から出撃するロボットを選択",new(350,215),.7f,Cream);
-        _ui.Text("出撃予約の確定で元の役割を上書き / 未選択は変更しません",new(350,270),.47f,Cream);
+        _ui.Text("選択を確定すると開戦予約に反映 / 選んだロボットの役割を上書き",new(350,270),.47f,Cream);
         for(int i=0;i<robots.Length;i++)
         {
             var r=InvasionRobotCard(i);var robot=robots[i];bool selected=_invasionDraft.Contains(robot.Id);
@@ -55,7 +55,7 @@ public partial class Game1
             _ui.Center((reservation.Length>0?reservation+"予約":"待機")+(selected?" → 出撃選択":""),new(r.X,r.Y+122,r.Width,26),.30f,Cream);
         }
         if(robots.Length==0)_ui.Text("出撃できるロボットはいません",new(380,375),.6f,Cream);
-        if(row.Queen)_ui.Button(InvasionQueenToggle,_invasionQueenDraft?"クイーン：参加（移動も予約）":"クイーン：参加しない",_invasionQueenDraft?Accent:Muted,.5f);
+        if(row.Queen)_ui.Button(InvasionQueenToggle,_invasionQueenDraft?(row.Node==_selectedMoveNode?"クイーン：参加（この地点で開戦）":"クイーン：参加（移動も予約）"):"クイーン：参加しない",_invasionQueenDraft?Accent:Muted,.5f);
         _ui.Text($"ロボット {_invasionDraft.Count}体"+(row.Queen && _invasionQueenDraft?" ＋ クイーン":""),new(380,800),.55f,Cream);
         _ui.Button(InvasionPickerCancel,"取消",Muted,.55f);_ui.Button(InvasionPickerDone,"選択を確定",Accent,.55f);
         _ui.Text("０体かつクイーン不参加なら、この出撃元は参加しません",new(350,865),.42f,Cream);

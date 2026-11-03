@@ -1,5 +1,7 @@
 using FolderVerse;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System.Reflection;
 static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 BattleState Board(BattleKind kind=BattleKind.Edge,int noWill=10){var b=new BattleState(42,new(){NoWillTurns=noWill,PersuasionPercent=0}){BoardSize=10,Flag=new(5,5),Kind=kind,Defender=1};b.Armies.Add(new(){Owner=0,Side=0});b.Armies.Add(new(){Owner=1,Side=2});return b;}
 BattleUnit Unit(BattleState b,long id,int owner,int x,int y,BattleFacing facing){var u=new BattleUnit{Id=id,Owner=owner,Position=new(x,y),Facing=facing,Shields=4,Rifles=3};b.Units.Add(u);return u;}
@@ -47,3 +49,36 @@ saved=AutoSaveStore.Restore<BattleState>(legacy);Check(saved.FlagDefenseTurns==0
 var profile=Path.Combine(AppContext.BaseDirectory,"FolderVerse-medals-"+Guid.NewGuid()+".json");
 try{var medals=new TutorialAchievements(profile);Check(!medals.Has(TutorialAchievements.FirstAttack),"Fresh medals");Check(medals.Award(TutorialAchievements.FirstAttack),"First award persists");Check(!medals.Award(TutorialAchievements.FirstAttack),"Award is idempotent");medals.Award("other-achievement");medals=new(profile);Check(medals.Has(TutorialAchievements.FirstAttack),"Medal survives relaunch");medals.Clear();Check(!new TutorialAchievements(profile).Has(TutorialAchievements.FirstAttack) && new TutorialAchievements(profile).Has("other-achievement"),"Clear removes only tutorial medals and persists");}finally{File.Delete(profile);}
 Console.WriteLine("PASS: ten-turn capture, fifty-turn defense, deadline recapture, edge exclusion, replay/save/legacy timers, persistent medals and tutorial-only clearing.");
+
+// Victory retreat crosses an occupied choke point without another combat turn.
+b=new BattleState(7,new(){FlagDefenseTurns=1,PersuasionPercent=0}){BoardSize=10,Flag=new(5,3),Kind=BattleKind.Node,Defender=1};
+b.Armies.Add(new(){Owner=0,Side=0});b.Armies.Add(new(){Owner=1,Side=1});b.Armies.Add(new(){Owner=2,Side=2});b.Armies.Add(new(){Owner=3,Side=3});b.Allied=(x,y)=>x==y || x is 1 or 3 && y is 1 or 3;
+for(int x=0;x<10;x++)for(int y=0;y<10;y++)if(x!=5)b.Walls.Add(new(x,y));
+a=Unit(b,1,0,5,4,BattleFacing.North);c=Unit(b,2,1,5,2,BattleFacing.South);var third=Unit(b,3,2,5,5,BattleFacing.North);var ally=Unit(b,4,3,5,8,BattleFacing.North);var fallen=Unit(b,5,0,5,1,BattleFacing.South);fallen.Fallen=true;
+b.Army(0).Waiting.Enqueue(new(){Id=6,Owner=0});
+Turn(b);Check(b.Finished && b.Winner==1 && b.Turn==1,"Defense remains final with no extra combat turns");
+Check(a.Retreated && third.Retreated && BattleState.HomeExit(a.Position,0,b.BoardSize) && BattleState.HomeExit(third.Position,2,b.BoardSize),"All surviving hostile nations exit toward home");
+Check(!c.Retreated && !ally.Retreated && c.Position==new Point(5,2) && ally.Position==new Point(5,8),"Defender and ally remain stationary to celebrate");
+Check(b.Frames.Any(f=>f.Phase==BattlePhase.DefenseRetreat && f.Units.Any(u=>u.Id==a.Id && !u.Retreated && u.Position==c.Position)),"Attacker passes through foreign defender at single corridor");
+Check(fallen.Fallen && !fallen.Retreated && b.Units.Single(u=>u.Id==6).Retreated && b.Army(0).Waiting.Count==0,"Fallen pieces stay; undeployed reserves return directly");
+Check(b.Attacks.Count==0 && b.Persuasions.Count==0 && a.Shields==4 && a.Rifles==3,"Victory retreat consumes no supplies and causes no combat");
+var playback=new RobotBattlePlayback(new[]{b});Check(playback.Rounds.Length==1 && RobotBattlePlayback.SecondsPerFrame(b,playback.Rounds[0][0])==.25,"Retreat gets visible movement pacing even without attacks");
+b.Check();saved=AutoSaveStore.Restore<BattleState>(AutoSaveStore.Capture(b));Check(saved.Units.Single(u=>u.Id==a.Id).Retreated,"Returned unit state persists through save");
+Console.WriteLine("PASS: defensive victory retreat, foreign-unit pass-through, multi-attacker home exits, defender allies, fallen/reserve handling, no extra combat, visible replay and save.");
+
+if(args.Contains("--ui")){using var game=new DefenseRetreatGame(b);game.Run();}
+sealed class DefenseRetreatGame(BattleState battle):Game1
+{
+ const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;int frame;
+ void Set(string n,object v)=>typeof(Game1).GetField(n,F)!.SetValue(this,v);
+ protected override void LoadContent(){
+  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();var w=(WorldSetup)typeof(Game1).GetField("_setup",F)!.GetValue(this)!;w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.SelectPlayer(0);battle.TargetNode=w.Nodes.Current(1).Id;
+  Set("_screen",Enum.Parse(typeof(Game1).GetField("_screen",F)!.FieldType,"Battle"));Set("_robotScenes",new[]{battle});Set("_robotPlayback",new RobotBattlePlayback(new[]{battle}));Set("_robotPlaying",false);Set("_robotSummary",false);Set("_lastCutInPhase","戦闘フェーズ");Set("_cutInStarted",-10d);
+ }
+ protected override void Update(GameTime t){}
+ protected override void Draw(GameTime t){
+  int start=battle.Frames.FindIndex(f=>f.Phase==BattlePhase.DefenseRetreat);Set("_battleAge",(start+frame+0.3)*.25);base.Draw(t);
+  var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"defense-retreat-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
+  if(frame++==6){Console.WriteLine("PASS: defense celebration and retreat frames rendered.");Exit();}
+ }
+}

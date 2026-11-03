@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -20,9 +20,13 @@ public partial class Game1
     };
     private Rectangle PrimaryActionBounds(int index){var r=PrimaryActionHomeBounds(index);if(index!=3)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,_primaryActionSlide));return r;}
     private static Rectangle DirectMapCloseButton=>new(PrimaryActionHomeBounds(3).Right+10,1002,40,40);
+    private bool TutorialPrimaryActionsDisabled=>_setup.TutorialStep==3 || _setup.TutorialMapBeforeWar && _setup.TutorialMapStage<6;
+    private bool TutorialPrimaryActionAllowed(int index)=>!TutorialPrimaryActionsDisabled && (!_setup.TutorialMapBeforeWar || index is 1 or 2 || index==0 && _setup.TutorialAttackCompleted);
+    private bool TutorialPrimaryActionClick(Point p)=>Enumerable.Range(0,6).Any(i=>!TutorialPrimaryActionAllowed(i) && PrimaryActionBounds(i).Contains(p));
     private bool MapMarkerMenuAvailable=>!_directPairOpen && !_trainingOpen && _supervisorDialog==0 && !_inspectorFoldersOpen && !_salvageAbandonConfirmation.HasValue && !_hangarDrag.HasValue && !_seedDialog.IsOpen;
     private bool MapOverlayClick(Point p,bool escape)
     {
+        if(!escape && TutorialPrimaryActionClick(p))return true;
         if(!MapMarkerMenuAvailable || InspectorVisible)return false;
         if(escape && _directMap){CloseDirectDelivery();return true;}
         if(escape)return false;
@@ -58,22 +62,25 @@ public partial class Game1
         _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
         try{DrawPrimaryActionButtons();}finally{_spriteBatch.End();GraphicsDevice.ScissorRectangle=old;_spriteBatch.Begin(transformMatrix:transform);}
     }
-    private void DrawPrimaryActionButtons()
+    private void DrawPrimaryActionButtons() => DrawTutorialChrome(()=>DrawPrimaryActionButtonsCore(),false);
+    private void DrawPrimaryActionButtonsCore()
     {
         string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画"};
         for(int i=0;i<6;i++){
             var r=PrimaryActionBounds(i);if(r.Top>=1080)continue;
-            bool enabled=(i==3 || !_directMap && _primaryActionSlide==0) && (i is not (3 or 4) || TransportOverviewAllowed);
+            bool enabled=TutorialPrimaryActionAllowed(i) && (i==3 || !_directMap && _primaryActionSlide==0) && (i is not (3 or 4) || TransportOverviewAllowed);
             var color=_setup.OwnerColor(_setup.PlayerSlot);
             if(!enabled)color=Color.Lerp(color,new Color(45,49,54),.75f);
             else if(r.Contains(_pointer))color=Color.Lerp(color,Color.White,.22f);
             var shadow=r;shadow.Y+=4;PrimaryRoundBox(shadow,new Color(7,23,35));PrimaryRoundBox(r,color);
+            DrawCountryCornerMarks(r,_setup.PlayerSlot,enabled?1:.3f);
             var ink=UiPainter.ContrastInk(color);
             if(i==1){_ui.Center("陣営の",new(r.X,r.Y+32,r.Width,32),.44f,ink);_ui.Center("ターン終了",new(r.X,r.Y+73,r.Width,36),.57f,ink);}
             else {
+                int inset=_setup.CountryPattern(_setup.PlayerSlot)==0?3:14;
                 DrawPrimaryIcon(i,new(r.X+12,r.Y+8,r.Width-24,58),ink);
                 string label=i==3?"パーツ直送便":i==4?"輸送長期計画":labels[i];
-                _ui.Center(label,new(r.X+3,r.Bottom-28,r.Width-6,24),Math.Min(.34f,(r.Width-6)/_font.MeasureString(label).X),ink);
+                _ui.Center(label,new(r.X+inset,r.Bottom-28,r.Width-inset*2,24),Math.Min(.34f,(r.Width-inset*2)/_font.MeasureString(label).X),ink);
             }
             if((i==3 || !_directMap && _primaryActionSlide==0) && r.Contains(_pointer)){
                 string hint=labels[i]+(!enabled?"（このステップでは利用できません）":i==2?$"（{WarReservationCount}件）":"");

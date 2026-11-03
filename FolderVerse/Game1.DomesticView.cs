@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -54,7 +54,8 @@ public partial class Game1
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:Matrix.CreateTranslation(NodeInspectorOffset,0,0)*transform);
         try{draw();}finally{_pointer=pointer;_ui.Pointer=hover;_spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);}
     }
-    private void DrawInspectorHandle(){
+    private void DrawInspectorHandle() => DrawTutorialChrome(()=>DrawInspectorHandleCore(),false);
+    private void DrawInspectorHandleCore(){
         if(!InspectorVisible){
             return; // Primary actions are drawn together after the inspectors.
         }
@@ -82,6 +83,7 @@ public partial class Game1
     private static readonly Rectangle ReignPortrait=new(56,650,240,240); private Rectangle StrategyToggle=>PrimaryActionBounds(0);
     private bool DomesticViewClick(Point p)
     {
+        if(TutorialPrimaryActionClick(p))return true;
         if(_trainingOpen || _supervisorDialog>0)return false;
         if(NodeCheckClick(p))return true;
         if((_reignView || _regionCell>=0 || _populationCell>=0) && new Rectangle(InspectorFolderButton.X+NodeInspectorOffset,InspectorFolderButton.Y,InspectorFolderButton.Width,InspectorFolderButton.Height).Contains(p)){OpenInspectorFolders();return true;}
@@ -113,7 +115,7 @@ public partial class Game1
     private void DrawRulerMedallion(int ruler,Vector2 center)
     {
         var r=new Rectangle((int)center.X-120,(int)center.Y-120,240,240);
-        DrawPortraitMedallion(center,_setup.OwnerColor(ruler));
+        DrawPortraitMedallion(center,_setup.OwnerColor(ruler),ruler);
         var image=new Rectangle((int)(center.X-MedallionPortraitRadius),(int)(center.Y-MedallionPortraitRadius),(int)(MedallionPortraitRadius*2),(int)(MedallionPortraitRadius*2));
         var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _spriteBatch.End();var old=GraphicsDevice.ScissorRectangle;

@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 public enum BattleFacing { North,East,South,West }
 public enum BattleWeapon { None,Dagger,Rifle }
 public enum BattleRole { Soldier,Captain,Queen }
-public enum BattlePhase { Choose,Place,Rollback,Attack,Receive,Consume,Fall,Flag,Reinforce,Result,Retreat,Persuade,Converted }
+public enum BattlePhase { Choose,Place,Rollback,Attack,Receive,Consume,Fall,Flag,Reinforce,Result,Retreat,Persuade,Converted,DefenseRetreat }
 public enum BattleTerrain { Field,Sea,Fort }
 public sealed record BattleAction(Point Step,BattleFacing Facing,BattleWeapon Weapon=BattleWeapon.None);
 public sealed record BattleEvent(int Turn,BattlePhase Phase,long Unit,string Detail);

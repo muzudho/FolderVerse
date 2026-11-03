@@ -8,6 +8,8 @@
 
 ## 現在の状況
 
-2026年10月10日時点では、Windows 11を想定したMonoGame製の開発版です。20分での完走は制作の目標で、完成した製品としての案内ではありません。GitHub Releasesの配布版はまだありません。
+[v0.2.0 Pre-release（無料試遊版）](https://github.com/muzudho/FolderVerse/releases/tag/v0.2.0)をGitHub Releasesで公開しています。Windows x64向けで、Windows 11を想定しています。ZIPを展開して実行でき、Visual Studioの準備は不要です。
 
-制作の経過は[開発日誌](../dev/log/2026/10.md)、遊ぶ方法は[ユーザー向け案内](../user/README.md)を参照してください。
+MonoGame製の開発中のゲームです。20分での完走は制作の目標です。既知の問題や検証範囲はリリースページを参照してください。このリポジトリーの資料には、配布版にまだ含まれない開発中の機能も記載しています。
+
+制作の経過は[開発日誌](../dev/log/2026/11.md)、遊ぶ方法は[ユーザー向け案内](../user/README.md)を参照してください。

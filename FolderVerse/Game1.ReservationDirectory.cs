@@ -68,6 +68,7 @@ public partial class Game1
         var color=Color.Lerp(Accent,Color.White,DirectoryButtonPulse);
         if(r.Contains(_pointer))color=Color.Lerp(color,Color.White,.12f);
         var shadow=r;shadow.Y+=4;PrimaryRoundBox(shadow,new Color(7,23,35));PrimaryRoundBox(r,color);
+        DrawCountryCornerMarks(r,_setup.PlayerSlot);
         var ink=UiPainter.ContrastInk(color);
         _ui.Box(new(r.X+27,r.Y+10,5,41),ink);
         for(int i=0;i<3;i++){

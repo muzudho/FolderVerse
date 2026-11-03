@@ -73,14 +73,14 @@ public partial class Game1
         string[] lines=!stopped?new[]{"さあ、産業の時間です！","あなたは何台のロボットを製造できるかなー？"}:
             result==0?new[]{"ロボット不足の征服者のみなさん、ざんねんでした～！","工場はストップだー！","次は製造できるように、祈ってくださーい！"}:
             _setup.Industry.Jackpot?new[]{"数年に一度の当たり年だあ！？","大穴当てたみなさん、今だ、大チャーンス！"}:
-            new[]{"さあ、工場を動かしましょう！",$"{IndustryTime.Format(result)}産業ターン進みました！"};
+            new[]{"さあ、工場を動かしましょう！",$"{IndustryTime.Format(result).Replace("+"," ")}産業ターン進みました！"};
         _ui.Box(new(565,130,1290,205),Cream);_ui.Tile(new(558,270),new(36,36),MathHelper.PiOver4,Cream);
         for(int i=0;i<lines.Length;i++)_ui.Text(lines[i],new(610,160+i*55),.65f,Muted);
         var center=new Vector2(1170,625);const float radius=255;
         float progress=(float)Math.Clamp((_industryAge-IndustryReadSeconds)/IndustrySpinSeconds,0,1);
         float angle=MathHelper.Lerp(_industryStartAngle,_industryStopAngle,1-MathF.Pow(1-progress,4));
         float cumulative=0;
-        var labels=new List<(string Text,Vector2 At,bool Callout)>();
+        var labels=IndustryLabelLayout(center,radius,angle);
         var colors=IndustryColors(_setup.Industry.Wheel);
         for(int i=0;i<_setup.Industry.Wheel.Count;i++)
         {
@@ -93,20 +93,16 @@ public partial class Game1
                 float a=start+sector.Percent/100f*MathHelper.TwoPi*k/steps;
                 _ui.Tile(center+new Vector2(MathF.Cos(a),MathF.Sin(a))*radius*.5f,new(radius,4),a,color);
             }
-            float middle=start+sector.Percent/200f*MathHelper.TwoPi;
-            bool callout=sector.Percent<=2 && sector.Turns>0;
-            var label=center+new Vector2(MathF.Cos(middle),MathF.Sin(middle))*(callout?radius*1.2f:sector.Percent<=2?radius*.94f:radius*.7f);
-            if(i<IndustryVisibleLabels)labels.Add((IndustryTime.Format(sector.Turns),label,callout));
             cumulative+=sector.Percent;
         }
-        foreach(var label in labels){
-            var bounds=new Rectangle((int)label.At.X-50,(int)label.At.Y-18,100,36);
-            if(label.Callout){_ui.Box(new(bounds.X-2,bounds.Y-2,bounds.Width+4,bounds.Height+4),Muted);_ui.Box(bounds,Cream);}
-            _ui.Center(label.Text,bounds,Math.Min(.65f,96/_font.MeasureString(label.Text).X),new Color(19,38,49));
+        for(int i=0;i<Math.Min(labels.Length,IndustryVisibleLabels);i++){
+            var label=labels[i];
+            DrawIndustryDuration(_setup.Industry.Wheel[i].Turns,label.Bounds,new Color(19,38,49),label.Scale);
         }
         for(int y=0;y<28;y++)_ui.Box(new((int)center.X-28+y,(int)(center.Y-radius)-35+y,56-y*2,1),Cream);
-        _ui.Center(stopped?$"{IndustryTime.Format(result)} 産業ターン":_industryAge<IndustryReadSeconds?"ルーレットを見てみよう":"ルーレット回転中",new(800,890,740,45),.8f,Cream);
-        _ui.Text($"全体ターン {_setup.Population.Turn} / 産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn)}",new(565,1000),.5f,Cream);
+        if(stopped)DrawIndustryDuration(result,new(800,885,740,65),Cream,.65f,suffix:" 産業ターン");
+        else _ui.Center(_industryAge<IndustryReadSeconds?"ルーレットを見てみよう":"ルーレット回転中",new(800,890,740,45),.8f,Cream);
+        _ui.Text($"全体ターン {_setup.Population.Turn} / 産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn).Replace("+"," ")}",new(565,1000),.5f,Cream);
         if(stopped){_ui.Button(IndustryContinue,"次の内政へ",Accent,.7f);DrawPhaseTimer(new(565,1050,1255,12),_industryIdleAge,IndustryIdleSeconds);}
     }
 }

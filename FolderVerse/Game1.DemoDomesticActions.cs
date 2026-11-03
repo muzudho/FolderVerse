@@ -21,9 +21,23 @@ public partial class Game1
         }
         // Bring an off-screen country into view before aiming; never click an unrelated fixed point.
         var first=nodes[0];
-        if(_statusGlobe){_world.ManualOrientation=null;_world.GlobeZoom=1;FocusGlobePosition(_setup.Routes.Position(first.Cell,first.Center));}
-        else _net.FitNodesAtSource(_setup,first,NetPanel,4);
+        FocusDemoNode(first);
         _demoDomesticAge=0;return false;
+    }
+    private void FocusDemoNode(Node node)
+    {
+        Vector2 at;
+        if(_statusGlobe){
+            _world.ManualOrientation=null;_world.GlobeZoom=1;
+            var position=_setup.Routes.Position(node.Cell,node.Center);FocusGlobePosition(position);
+            if(!_world.ProjectVisible(position,_setup.Cells[node.Cell].Normal,_yaw,_pitch,StatusGlobeArea,out at))return;
+            var delta=MapViewBounds.Center.ToVector2()-at;
+            _world.GlobePan+=new Vector2(delta.X/StatusGlobeArea.Width,delta.Y/StatusGlobeArea.Height);
+        }else{
+            _net.FitNodesAtSource(_setup,node,NetPanel,4);
+            at=_net.NodePosition(_setup,node,NetPanel);
+            _net.Drag(MapViewBounds.Center.ToVector2()-at);
+        }
     }
     private bool PrepareDemoAssemblyDrag()
     {

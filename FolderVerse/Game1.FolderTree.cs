@@ -126,7 +126,8 @@ public partial class Game1
     private void DrawFolderTreeButton()
     {
         PrimaryRoundBox(FolderTreeButton,_folderTreeOpen?Color.Lerp(Accent,Color.White,.2f):Accent,12);
-        DrawCountryFolder(new(FolderTreeButton.X+12,FolderTreeButton.Y+15,36,30),_setup.PlayerSlot);
+        DrawCountryCornerMarks(FolderTreeButton,_setup.PlayerSlot);
+        DrawCountryFolder(new(FolderTreeButton.X+13,FolderTreeButton.Y+21,30,24),_setup.PlayerSlot);
         if(FolderTreeButton.Contains(_pointer))_ui.Text("所属フォルダーツリー",new(124,98),.38f,Cream);
     }
     private void DrawFolderTree()

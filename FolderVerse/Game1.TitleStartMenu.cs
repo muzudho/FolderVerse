@@ -39,7 +39,7 @@ public partial class Game1
         int chosen=-1;
         if(click)foreach(int slot in slots)if(TitleMenuItem(slot).Contains(_pointer))chosen=slot;
         if(enter)chosen=_titleMenuSelection;
-        if(chosen==0)_tutorialMenuOpen=true;
+        if(chosen==0){_tutorialMenuOpen=true;_tutorialPlanetSelection=0;}
         else if(chosen==1)OpenCampaignMenu();
         else if(chosen==2){_titleMenuOpen=false;if(!ResumeAutoSave())_titleMenuOpen=true;}
         else if(chosen==3){_titleMenuOpen=false;BeginPlayerCount();}

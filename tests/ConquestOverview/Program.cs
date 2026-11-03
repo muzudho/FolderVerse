@@ -13,7 +13,7 @@ sealed class OverviewGame:Game1{
  double exitStart,exitMiddle;int frame;WorldSetup world=null!;int[] owners=null!;bool batteries;object originalWorld=null!;
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
-  world=(WorldSetup)Get("_setup");world.PrepareTutorialStepOne(123,456,789);world.CompleteLand(90);world.SelectPlayer(0);world.HumanPlayers.Add(0);
+  world=(WorldSetup)Get("_setup");world.PrepareTutorialStepOne(123,456,789);typeof(WorldSetup).GetProperty("TutorialStep")!.SetValue(world,0);world.CompleteLand(90);world.SelectPlayer(0);world.HumanPlayers.Add(0);
   world.Relations.SetSuperior(2,0);world.Relations.SetSuperior(3,2);
   world.HumanPlayers.Add(3);
   var p=new ConquestPresentation(world);var main=p.Cards.Where(c=>!c.Reminder).ToArray();

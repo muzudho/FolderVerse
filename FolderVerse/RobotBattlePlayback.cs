@@ -14,7 +14,7 @@ public sealed class RobotBattlePlayback
         int turn=scene.Frames[slice.Start].Turn;
         return !scene.Attacks.Any(a=>a.Turn==turn);
     }
-    public static double SecondsPerFrame(BattleState scene,RobotBattleSlice slice,double normal=.25)=>MovementOnly(scene,slice)?.4/(slice.End-slice.Start+1):normal;
+    public static double SecondsPerFrame(BattleState scene,RobotBattleSlice slice,double normal=.25)=>scene.Frames.Skip(slice.Start).Take(slice.End-slice.Start+1).Any(f=>f.Phase==BattlePhase.DefenseRetreat)?normal:MovementOnly(scene,slice)?.4/(slice.End-slice.Start+1):normal;
     public RobotBattlePlayback(IReadOnlyList<BattleState> scenes)
     {
         var turns=scenes.Select(b=>b.Frames.Select((f,i)=>(Frame:f,Index:i))

@@ -172,3 +172,32 @@ DEMO-0010を完了へ更新した。以前のDestinationBadgeを描画・通常�
 ### 完了判定と未確認範囲
 
 DEMO-0011を完了へ更新した。今回の範囲は対象フェーズからの18FPS再生と１・２人のケースであり、タイトルからの全時間・全人数の画像確認を完了したわけではない。世界・人物抽選の停止／再抽選の残り、戦闘・輸送・説得、直送便専用Demo巡回などは次の点検回へ引き継ぐ。過去の別の開発依頼は再開していない。
+
+## 2026-11-03 10:30枠の修正回（トリガー10:25）
+
+- 開始：2026-11-03 10:25:08 JST。完了：2026-11-03 10:39:25 JST。対象：DEMO-0012。先行点検の10:07:08完了記録、AGENTS、README、両記録と差分を先に確認。開始HEAD=428a6f24392084537a5e74fd6d41cf173714deec、終了時HEAD=dc50148546f48b100a96bdb7e15bac15efbf009a。途中で外部のHEAD更新を検出したが、その変更は戻していない。本エージェントによるコミット・プッシュ・公開なし。アプリ一覧は当該チャットのみactive、他はnotLoaded。開始時ゲーム・Demo・dotnet・MSBuildプロセスなし。利用者のセーブは読み書きしていない。
+
+### 再現と原因
+
+現本体に対する既存DemoUiの最初の再実行は成功した。非決定的な世界抽選を切り分けるため、テストの乱数を固定してSeed・画面・国内段階・スライド・実クリック位置・候補の投影／ヒットを記録した。乱数Seed０（世界2099272109／人物2137491580／配置1754296375）では、地図説明はstage=5へ進む一方、内政stage=13で移動先を選べず停止した。記録はfix-latest-seed0.log／fix-latest-diagnostic.log（artifacts/demo-click-audit内）。起動後に同じゲーム内段階を再現しており、Nortonの起動待ちとは異なる。
+
+移動先へ向きを合わせても、NetPanel／地星儀の投影中心と、インスペクターを除いたMapViewBoundsの中心が異なるため、狙う地点が実際の表示範囲外に残った。さらにDemo全体の自動回転がクリックの1.8秒待機中も動き、ぎりぎり見えている地点を再び隠す場合があった。待ち時間を3,600更新まで増やしても同じ段階で停止したため、その変更は取り消し、最終検証は元の1,200更新を維持した。
+
+### 変更ファイルと修正
+
+- FolderVerse/Game1.Demo.cs：内政のクリック操作中は自動のyaw回転を止める。地図の説明中と他フェーズの回転は継続。
+- FolderVerse/Game1.DemoDomesticActions.cs：FocusDemoNodeを共通化。地星儀は向きを合わせた後、投影した地点とMapViewBoundsの中心との差をGlobePanへ補正する。展開図も実際の表示範囲の中央へ移す。
+- FolderVerse/Game1.DemoDomestic.cs：行先が見つからない場合の視点合わせも同じFocusDemoNodeを使う。地点を開く操作と行先を選ぶ操作で、別の固定位置を使わない。
+- tests/DemoUi/Program.cs：FOLDERVERSE_DEMO_TEST_SEED（既定０）で再現性を確保し、Seed・段階・候補の投影／ヒットを出力。地図説明後に内政操作へ復帰したことと、実際に次の伝播へ進むことを分けて検査する。待機上限は元の1,200更新。通常のUI仕様、当たり判定、予約を直接成功にする処理は変更しない。
+
+### 検証
+
+共通：DOTNET_CLI_TELEMETRY_OPTOUT=1、ALSOFT_DRIVERS=null、既存出力artifacts/corner-lessonを再使用。
+
+1. dotnet build tests/DemoUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers。続く最終ビルドは--no-restore：成功、警告・エラー０。ログfix-latest-build.log。
+2. FOLDERVERSE_DEMO_TEST_SEED=0／1／2でdotnet artifacts/corner-lesson/DemoUi.dll：３実行とも成功。ログfix-latest-seed0-after.log、fix-latest-seed1-after.log、fix-latest-seed2-after.log。各Seedで地図説明後の内政１巡、全体ターン１→２と次のTransport到達、戦闘・拒否・終了ループが成功。Seed１の世界／人物／配置は217468053／1321446349／2039633683、Seed２は483147644／505401118／177487344。
+3. dotnet artifacts/corner-lesson/DemoActionsUi.dll：現本体に対する既存テスト成功。1080p／540pの展開図・回転・地星儀、視野外からの復帰、部位／包み／結合部位の実ドラッグ、６条件の和平移動予約と独立したターン終了。ログfix-latest-actions.log。
+4. dotnet artifacts/corner-lesson/DemoInspectorUi.dll：現本体に対する既存テスト成功。工場６プランの現在矩形・実選択、監督・閉じる・長期輸送プライマリー・わたしの国→移動。ログfix-latest-inspector.log。
+5. demo-actions-38.pngを開き、地図上の「移動予約済」と予約１件／ターン終了で実行、実際のプライマリー描画を目視した。DemoUiの描画は最後のタイトルまでであり、固定３Seedの全フレーム画像を目視したとは扱わない。
+
+DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者ゲーム併存は未確認。次の点検は固定Seedログを起点に、必要なら他Seedや解像度を追加する。以前のリリース準備時の伝播未到達と同一原因だったかは確定していない。利用者の新しい依頼に従い、開発日誌とNorton起動待ちの引き継ぎを追記して通常開発を終了する。

@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -21,6 +21,7 @@ public partial class Game1
     }
     private void StartEnding()
     {
+        RecordPetitstellaMedals();
         StopBattleMusic();StopIndustryMusic();ResetInspector();_autoPlay=false;
         _endingBeforeIndustry=false;
         var winner=_setup.Relations.ProvisionalRanking(_setup)[0];
@@ -30,8 +31,10 @@ public partial class Game1
     }
     private void ReturnToTitle()
     {
+        RecordPetitstellaMedals();
         StopEndingMusic();StopBattleMusic();ClearAllNodeChecks();
-        _dispositionScene=null;
+        _operationSettingsOpen=false;_operationSettingsSlide=0;
+        _dispositionScene=null;_tutorialCaptiveToastSeconds=0;
         FinishConquestOverview();_conquestOverviewTurn=-1;_tutorialMenuOpen=false;_tutorialAttackGuide=false;_tutorialAttackAchieved=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;
         _campaignMenuStage=0;_titleMenuOpen=false;CancelTransportModal();_domesticViews.Clear();
         _homePersuasionActive=false;_homePersuasion.Clear();_homePersuasionWorld=null;_homePersuasionTurn=-1;

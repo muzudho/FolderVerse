@@ -66,7 +66,7 @@ public partial class Game1
         {_pocketMessage=PocketRobotLockReason(source.Robots.Single(r=>r.Id==id),true)+"のため移せません";return;}
         if(!source.Robots.Any(r=>r.Id==id)){_pocketRobot=null;return;}
         _setup.Robots.TransferPocket(node,player,id,_pocketFromNode);_pocketRobot=null;
-        if(_pocketFromNode && _setup.TutorialStep==2 && player==0)_setup.TutorialPocketed=true;
+        if(_pocketFromNode && _setup.TutorialPocketCourse && player==0)_setup.TutorialPocketed=true;
         _pocketMessage=_pocketFromNode?"自分のポケットに入れました":"現在地の地点へ配備しました";
     }
     private void DrawPocket()

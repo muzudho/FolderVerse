@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 namespace FolderVerse;
 
 using System;
@@ -97,7 +97,7 @@ public partial class Game1 : Game
         _portraitRenderer=new PortraitRenderer(Content); _font=Fonts.LoadUi(Content);
         _pixel=new Texture2D(GraphicsDevice,1,1); _pixel.SetData(new[]{Color.White});
         _counter=new ToyCounterRenderer(Content.Load<SpriteFont>(Fonts.Counter),_pixel);
-        _ui=new UiPainter(_spriteBatch,_pixel,_font){AdaptiveText=()=>DomesticTheme}; _world=new WorldPreview(GraphicsDevice);
+        _ui=new UiPainter(_spriteBatch,_pixel,_font){AdaptiveText=()=>DomesticTheme,ButtonOffsetY=TutorialButtonOffset}; _world=new WorldPreview(GraphicsDevice);
         _orientationToy=new ToyOrientationRenderer(GraphicsDevice);
         LoadScreenshotFeedback();LoadCutInMobs();LoadSetupHost();LoadTutorialHost();CheckAutoSave();LoadTutorialAchievements();LoadTitleStartAssets();
     }
@@ -130,6 +130,8 @@ public partial class Game1 : Game
     { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive);UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds); UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);UpdateIndustryMusic();UpdateEndingMusic(IsActive);base.Update(gameTime); }
     private void HandleInputCore(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
     {
+        UpdateTutorialChrome((float)gameTime.ElapsedGameTime.TotalSeconds);
+        UpdateOperationSettings((float)gameTime.ElapsedGameTime.TotalSeconds);
         UpdateFullscreen(keyboard,active);
         if(active && (mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released || mouse.RightButton==ButtonState.Pressed && _previousMouse.RightButton==ButtonState.Released || mouse.ScrollWheelValue!=_previousMouse.ScrollWheelValue || keyboard.GetPressedKeys().Any(k=>_previousKeyboard.IsKeyUp(k)))){
             if(_screen==Screen.Industry)_industryIdleAge=0;
@@ -137,10 +139,13 @@ public partial class Game1 : Game
         }
         _pointer=CanvasPoint(mouse); _ui.Pointer=_pointer;
         bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
-        if(UpdateCampaignDivider(mouse,active,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        UpdateRateDrag(mouse,active,click);
+        if(!_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
+        if(CountrySettingsInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(OperationSettingsInput(active && click,escape)){DragStatusMap(mouse,active);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(UpdateCampaignDivider(mouse,active,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        UpdateRateDrag(mouse,active,click);
         if(AbandonConfirmationInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(active && click && FolderTreeToolbarClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(InspectorFolderInput(mouse,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -172,7 +177,7 @@ public partial class Game1 : Game
         if(WandererPolicyInput(active && click,active && escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         UpdateTutorialStartGuide(gameTime.TotalGameTime.TotalSeconds);
         if(_tutorialAttackGuide){
-            if(active && (click || enter || escape)){_tutorialAttackGuide=false;if(_tutorialGuideMessage is 3 or >=5){_lastAutoSaveTurn=-1;AutoSaveDomestic();}}
+            if(active && (click || enter || escape)){_tutorialAttackGuide=false;_tutorialGuideClosing=0;if(_tutorialGuideMessage is 3 or >=5){_lastAutoSaveTurn=-1;AutoSaveDomestic();}}
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(TutorialMessageInput(active && click,active && escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -184,10 +189,6 @@ public partial class Game1 : Game
         if(IsStatusScreen && _supervisorDialog!=0){
             if(active)SupervisorDialogInput(click,escape,keyboard);
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
-        }
-        if(IsStatusScreen && active && !MapTransitionActive && !OrientationRotating){
-            if(_mapDragListOpen && escape){_mapDragListOpen=false;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-            if(click && MapDragClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         }
         if(TransportModalInput(mouse,keyboard,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateAutoPlay(elapsed,click,escape,gameTime.TotalGameTime.TotalSeconds))
@@ -459,7 +460,9 @@ public partial class Game1 : Game
             if(HasTerritories)
                 _counter.Draw(_spriteBatch,active?_setup.TerritoryCounts[slot]:0,
                     new Rectangle(rect.X+7,rect.Y+7,rect.Width-14,rect.Height-14),color);
+            DrawCountrySwatch(new(rect.Right-43,rect.Bottom-29,34,22),slot);
         }
+        _ui.Text("人間プレイヤー、コンピュータープレイヤー、国の色は後で変えることができます。",new(54,78),.36f,new(170,206,216));
         _ui.Button(CastBack,"世界へ戻る",Muted,0.48f);
         _ui.Button(CastRetry,_screen is Screen.CastRolling or Screen.CastReview?"人物を再抽選":"配置を再抽選",Muted,0.48f);
         string action=IsRolling?"STOP":_screen==Screen.CastReview?"登場人物を確定 / 区画権利へ":_screen==Screen.PlacementReview?"区画権利を確定":"区画権利を確定済み";
@@ -512,6 +515,7 @@ public partial class Game1 : Game
         _counter.Draw(_spriteBatch,_setup.TerritoryCounts[tile.Slot],image,color);
         _ui.Box(new(rect.X+5,rect.Y+5,Math.Min(65,rect.Width-10),27),new Color(10,25,35,210));
         _ui.Text("#"+(tile.Slot+1).ToString("00"),new(rect.X+10,rect.Y+7),Math.Min(0.42f,(rect.Width-20)/_font.MeasureString("#00").X),color);
+        DrawCountrySwatch(new(rect.Right-38,rect.Bottom-27,30,20),tile.Slot);
         if(_screen==Screen.PlayerReady && tile.Slot==_setup.PlayerSlot)
         {
             _ui.Box(new(rect.X+4,rect.Y+34,Math.Min(rect.Width-8,140),33),new Color(10,25,35,220));
@@ -544,6 +548,9 @@ public partial class Game1 : Game
     }
     private void DrawStatusUi()
     {
+        // Settings use the normal full-canvas logo background without the map
+        // or action buttons showing through the transparent content area.
+        if(_countrySettingsOpen)return;
         if(_salvageCatalogOpen){DrawSalvageCatalog();return;}
         if(_directPairOpen){DrawDirectPair();return;}
         _ui.Text("世界征服状況",new(54,22),1.1f,Cream);
@@ -674,7 +681,7 @@ public partial class Game1 : Game
         if(_transportOverview){DrawInspector(DrawTransportOverviewPanel);if(_rateTarget>=0)DrawRatePieDialog();}
         if(!_reservationDirectory)DrawWandererLocation();DrawRouteLayerButtons();
         DrawStatusMenu();
-        if(!DrawNodeCheckHint() && _supervisorDialog==0 && !_reservationDirectory)DrawNodeTooltip();
+        if(!DrawInvasionUnavailableHint() && !DrawNodeCheckHint() && _supervisorDialog==0 && !_reservationDirectory)DrawNodeTooltip();
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();
         DrawMapOverlayMenu();
         DrawHangarTrainingNotice();
@@ -702,7 +709,7 @@ public partial class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
-        if(!_conquestOverview)NotifyPlayerTurn();
+        BeginNewspaperToyPatternFrame();if(!_conquestOverview)NotifyPlayerTurn();
         GraphicsDevice.Clear(new Color(16,35,46)); var viewport=GraphicsDevice.Viewport; var canvas=CanvasBounds();
         if(canvas.Width<=0 || canvas.Height<=0){base.Draw(gameTime);return;}
         _spriteBatch.Begin(samplerState:SamplerState.LinearClamp);
@@ -756,19 +763,24 @@ public partial class Game1 : Game
             _spriteBatch.End();
         }
         DrawScreenshotFeedback(gameTime.TotalGameTime.TotalSeconds);
+        if(!_countrySettingsOpen || !IsStatusScreen){
         _spriteBatch.Begin(transformMatrix:transform);if(!_conquestOverview)DrawTutorialGoal();if(!_conquestOverview)DrawPhaseCutIn(gameTime.TotalGameTime.TotalSeconds);_spriteBatch.End();
         DrawDemoOverlay(transform);
         if(_homePersuasionActive){_spriteBatch.Begin(transformMatrix:transform);DrawHomePersuasion();_spriteBatch.End();}
         if(TutorialReviewAvailable){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialMessages();_spriteBatch.End();}
-        if(_tutorialAttackGuide){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAttackGuide();_spriteBatch.End();}
+        if(_tutorialAttackGuide || _tutorialGuideClosing>=0){_spriteBatch.Begin(transformMatrix:transform);_tutorialDrawingHost=true;DrawTutorialAttackGuide();_tutorialDrawingHost=false;_spriteBatch.End();}
         if(_wandererPolicyOpen){_spriteBatch.Begin(transformMatrix:transform);DrawWandererPolicyDialog();_spriteBatch.End();}
         if(_screen==Screen.Battle && _tutorialAchievementAge>=0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAchievementCutIn();_spriteBatch.End();}
         if(_conquestOverview){_spriteBatch.Begin(transformMatrix:transform);DrawConquestCurtain(1-MathHelper.SmoothStep(0,1,(float)(_conquestAge/.65)));_spriteBatch.End();}
+        }
+        if(IsStatusScreen && !_countrySettingsOpen && (_operationSettingsOpen || _operationSettingsSlide>0)){_spriteBatch.Begin(transformMatrix:transform);DrawOperationSettings();_spriteBatch.End();}
+        if(_countrySettingsOpen && IsStatusScreen){_spriteBatch.Begin(transformMatrix:transform);DrawCountrySettings();_spriteBatch.End();}
+        if(_tutorialCaptiveToastSeconds>0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialCaptiveAchievementToast();_spriteBatch.End();}
         DrawFullscreenCursor();
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeTutorialPlanets();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         if(disposing){StopBattleMusic();StopIndustryMusic();StopEndingMusic();DisposeTitleMusic();}

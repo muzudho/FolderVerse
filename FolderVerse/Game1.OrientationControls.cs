@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using Microsoft.Xna.Framework;
 public partial class Game1
@@ -41,13 +41,14 @@ public partial class Game1
     {
         if(!OrientationControlsVisible || MapTransitionActive || OrientationRotating)return false;
         var toy=OrientationToyArea;
-        if(OrientationResetButton.Contains(pointer)){_automaticBoostAge=-1;_automaticBoostQueue.Clear();if(OrientationGlobe)ResetStatusOrientation();else {_net.ScreenAngle=-MathHelper.ToRadians(_net.Rotation*90);RecordTutorialMapRotation(2);}return true;}
+        if(OrientationResetButton.Contains(pointer)){_automaticBoostAge=-1;_automaticBoostQueue.Clear();if(OrientationGlobe){ResetStatusOrientation();RecordTutorialGlobeRotation(1<<10);}else {_net.ScreenAngle=-MathHelper.ToRadians(_net.Rotation*90);RecordTutorialMapRotation(2);}return true;}
         for(int axis=OrientationGlobe?0:2;axis<3;axis++)foreach(int sign in new[]{-1,1})
         {
             if(!AxisButton(toy,axis,sign).Contains(pointer))continue;
             if(AutomaticOrientation){if(_automaticBoostAge>=0){_automaticBoostQueue.Enqueue((axis,sign));return true;}_automaticBoostAge=0;_automaticBoostAxis=axis;_automaticBoostSign=sign;return true;}
             _rotationGlobe=OrientationGlobe;_orientationAge=0;_dragging=_mapDragging=false;_globePressedCell=-1;
             if(OrientationGlobe){
+                RecordTutorialGlobeRotation(1<<(4+axis*2+(sign>0?1:0)));
                 _orientationFrom=Quaternion.CreateFromRotationMatrix(_world.ViewOrientation(_yaw,_pitch));
                 var vector=axis==0?Vector3.UnitX:axis==1?Vector3.UnitY:Vector3.UnitZ;
                 float angle=MathHelper.ToRadians(30)*sign*(axis==2?-1:1);
@@ -81,9 +82,11 @@ public partial class Game1
         else _net.ScreenAngle=MathHelper.Lerp(_rotationFrom,_rotationTo,t);
         if(_orientationAge>=.4f)_orientationAge=-1;
     }
-    private void DrawOrientationControls(Rectangle toy)
+    private void DrawOrientationControls(Rectangle toy) => DrawTutorialChrome(()=>DrawOrientationControlsCore(toy),true);
+    private void DrawOrientationControlsCore(Rectangle toy)
     {
         if(!OrientationControlsVisible)return;
+        if(IsStatusScreen)DrawOperationSettingsButton();
         var c=new Vector2(toy.Center.X,toy.Center.Y);float r=toy.Width/2f+23;
         void Line(Vector2 a,Vector2 b,Color color){var d=b-a;_ui.Tile((a+b)/2,new(d.Length(),2),MathF.Atan2(d.Y,d.X),color);}
         void Arrow(Vector2 p,Vector2 direction,Color color){var side=new Vector2(-direction.Y,direction.X);Line(p,p-direction*9+side*5,color);Line(p,p-direction*9-side*5,color);}

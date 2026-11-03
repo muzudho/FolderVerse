@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.IO;
 using System.Linq;
@@ -15,8 +15,8 @@ public partial class Game1
         _tutorialAttackPending=TutorialAttackRequired && TutorialAchievements.Attacked(_setup);
     }
     private void RevealTutorialAttackAchievement(){
-        if(!_tutorialAttackPending || !TutorialAchievements.AttackedScene(_setup,_robotScenes[_battleWave]))return;
-        _tutorialAttackPending=false;CheckTutorialAttackAchievement();_tutorialAchievementAge=0;
+        if(!_tutorialAttackPending || !(_robotSummary?TutorialAchievements.Attacked(_setup):TutorialAchievements.AttackedScene(_setup,_robotScenes[_battleWave])))return;
+        _tutorialAttackPending=false;CheckTutorialAttackAchievement();_tutorialAchievementAge=0;_tutorialLastMessage=2;
     }
     private void UpdateTutorialAchievementCutIn(double elapsed){
         _tutorialAchievementAge+=Math.Max(0,elapsed);
@@ -26,7 +26,7 @@ public partial class Game1
         float age=(float)_tutorialAchievementAge;
         float slide=1-MathHelper.SmoothStep(0,1,Math.Clamp(age/.35f,0,1));
         float alpha=Math.Clamp((float)(TutorialAchievementSeconds-age)/.4f,0,1);
-        if(_tutorialHost!=null){float scale=Math.Min(520f/_tutorialHost.Width,740f/_tutorialHost.Height);_spriteBatch.Draw(_tutorialHost,new Rectangle(85-(int)(slide*500),300,(int)(_tutorialHost.Width*scale),(int)(_tutorialHost.Height*scale)),Color.White*alpha);}
+        if(_tutorialHost!=null){float scale=Math.Min(520f/_tutorialHost.Width,740f/_tutorialHost.Height);_spriteBatch.Draw(_tutorialHost,new Rectangle(85-(int)(slide*650),300,(int)(_tutorialHost.Width*scale),(int)(_tutorialHost.Height*scale)),Color.White*alpha);}
         _ui.Box(new(640,395,1190,215),Cream*alpha);_ui.Tile(new(640,490),new(40,40),MathHelper.PiOver4,Cream*alpha);
         _ui.Center("［開戦］を実績解除しました！",new(690,435,1090,120),.85f,Muted*alpha);
     }
@@ -40,28 +40,29 @@ public partial class Game1
     }
     private void CheckTutorialAttackAchievement(){
         if(!TutorialAchievements.Attacked(_setup))return;
-        _tutorialAttackAchieved=true;
-        if(_setup.TutorialStep==1 && !_setup.TutorialCompletionShown)_setup.TutorialCompletionPending=true;
+        _tutorialAttackAchieved=true;_setup.TutorialAttackCompleted=true;
+        if(_setup.TutorialStep==1 && !_setup.TutorialMapBeforeWar && !_setup.TutorialCompletionShown)_setup.TutorialCompletionPending=true;
         if(!_autoSaveEnabled)return;
         try{if(_tutorialAchievements==null)LoadTutorialAchievements();_tutorialAchievements?.Award(TutorialAchievements.FirstAttack);}
         catch(Exception e){_tutorialAchievementError="勲章の保存に失敗しました";RecordFailure(e,"achievement_write");}
     }
-    private bool TutorialAttackRequired=>_setup.TutorialStep==1 && !_tutorialAttackAchieved && _tutorialAchievements?.Has(TutorialAchievements.FirstAttack)!=true;
+    private bool TutorialAttackRequired=>_setup.TutorialStep==1 && (_setup.TutorialMapBeforeWar?!_setup.TutorialAttackCompleted:!_tutorialAttackAchieved && _tutorialAchievements?.Has(TutorialAchievements.FirstAttack)!=true);
     private bool TutorialHasAttackReservation=>_setup.Campaign.PlannedOrders.Any(o=>!o.Peaceful && o.Ruler==0 && (o.Queen || o.Fighters>0) &&
         _setup.Nodes.All[o.TargetNode].Owner>=0 && !_setup.Relations.Allied(0,_setup.Nodes.All[o.TargetNode].Owner));
     private bool ShowTutorialAttackGuideIfRequired(){
         if(!TutorialAttackRequired || TutorialHasAttackReservation)return false;
-        _tutorialGuideMessage=1;_tutorialAttackGuide=true;_tutorialGuideStarted=_animationTime;return true;
+        ShowTutorialGuide(1);return true;
     }
     private void DrawTutorialAttackGuide(){
         float slide=1-MathHelper.SmoothStep(0,1,Math.Clamp((_animationTime-_tutorialGuideStarted)/.35f,0,1));
+        if(_tutorialGuideClosing>=0)slide=MathHelper.SmoothStep(0,1,Math.Clamp(_tutorialGuideClosing/.35f,0,1));
         _ui.Box(new(0,0,1920,1080),Color.Black*.4f);
-        if(_tutorialHost!=null){float scale=Math.Min(520f/_tutorialHost.Width,740f/_tutorialHost.Height);_spriteBatch.Draw(_tutorialHost,new Rectangle(85-(int)(slide*500),300,(int)(_tutorialHost.Width*scale),(int)(_tutorialHost.Height*scale)),Color.White);}
+        if(_tutorialHost!=null){float scale=Math.Min(520f/_tutorialHost.Width,740f/_tutorialHost.Height);_spriteBatch.Draw(_tutorialHost,new Rectangle(85-(int)(slide*650),300,(int)(_tutorialHost.Width*scale),(int)(_tutorialHost.Height*scale)),Color.White);}
         _ui.Box(new(640,345,1190,350),Cream);_ui.Tile(new(640,490),new(40,40),MathHelper.PiOver4,Cream);
         var lines=TutorialMessageLines[_tutorialGuideMessage];
         for(int i=0;i<lines.Length;i++)_ui.Text(lines[i],new(690,395+i*70),Math.Min(.55f,1080/_font.MeasureString(lines[i]).X),Muted);
         if(_tutorialGuideMessage==1)_ui.Text("通常のゲームでは、開戦しなくてもターン終了できます。",new(690,610),.4f,Muted);
-        _ui.Button(new(1360,730,400,60),"わかった",Accent,.6f);
+        if(_tutorialGuideClosing<0)_ui.Button(new(1360,730,400,60),"わかった",Accent,.6f);
     }
     private void DrawTutorialMedal(Vector2 center){
         _ui.Tile(center+new Vector2(-7,19),new(12,26),.2f,new Color(185,45,66));
@@ -70,9 +71,14 @@ public partial class Game1
         _ui.Tile(center,new(21,21),MathHelper.PiOver4,new Color(255,235,151));
     }
     private void DrawTutorialGoal(){
+        if(_setup.TutorialMapBeforeWar && (IsStatusScreen || _screen==Screen.Transport)){
+            _ui.Box(new(700,20,400,48),new Color(14,26,39,235));
+            string goal=_setup.TutorialAttackCompleted?(_setup.TutorialCompletionShown?"プチステラ　ポケット・移動 完了":$"プチステラ　ポケット {(_setup.TutorialPocketed?"✓":"□")}　移動 {(_setup.TutorialMoved?"✓":"□")}"):_setup.TutorialMapStage<6?$"プチステラ　地図を使おう {_setup.TutorialMapStage+1+((_setup.TutorialMapStage>2 || _setup.TutorialMapStage==2 && (_setup.TutorialMapRotations&8)!=0)?1:0)}/7":"プチステラ　開戦予約をしよう";
+            _ui.Center(goal,new(710,20,380,48),.3f,Cream);return;
+        }
         if(_setup.TutorialStep==3 && (IsStatusScreen || _screen==Screen.Transport)){
             _ui.Box(new(700,20,400,48),new Color(14,26,39,235));
-            _ui.Center(_setup.TutorialMapStage<4?$"ステップ３　地図を使おう {_setup.TutorialMapStage+1+((_setup.TutorialMapStage>2 || _setup.TutorialMapStage==2 && (_setup.TutorialMapRotations&8)!=0)?1:0)}/5":"ステップ３　地図の続きは準備中",new(710,20,380,48),.3f,Cream);return;
+            _ui.Center(_setup.TutorialMapStage<6?$"ステップ３　地図を使おう {_setup.TutorialMapStage+1+((_setup.TutorialMapStage>2 || _setup.TutorialMapStage==2 && (_setup.TutorialMapRotations&8)!=0)?1:0)}/7":"ステップ３　地図を使おう 完了",new(710,20,380,48),.3f,Cream);return;
         }
         if(_setup.TutorialStep==2 && (IsStatusScreen || _screen==Screen.Transport))
         {

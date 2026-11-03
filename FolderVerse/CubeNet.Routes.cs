@@ -15,20 +15,23 @@ public sealed partial class CubeNet
     public bool ShowBatteries {get;set;}=true;
     public bool ShowCountryColors {get;set;}
     public bool ControlledCountryColors {get;set;}
-    public Color TerrainColor(WorldSetup world,int cell,float height)
+    public Color TerrainColor(WorldSetup world,int cell,float height,int x=0,int y=0)
     {
         int owner=ShowCountryColors?world.Nodes.FullOwner(cell):-1;
         if(ControlledCountryColors && !world.Relations.Controls(owner))owner=-1;
-        var color=owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal,world.PolarAxis):WorldPreview.LandTerritoryColor(world.OwnerColor(owner),WorldTerrain.Kind(height));
+        var color=owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal,world.PolarAxis):WorldPreview.LandTerritoryColor(world.CountryMapColor(owner,x,y),WorldTerrain.Kind(height));
         return NodeFocus<0 && RegionFocusCell>=0 && cell!=RegionFocusCell?SelectionGlow.Dim(color,FocusBrightness):color;
     }
     public bool ShowRoutes {get;set;}=true; public int HoveredNode {get;set;}=-1; public int InspectedNode {get;set;}=-1;
     public bool AttackTargetMarkers {get;set;}
+    public bool AttackTargetSpotlight {get;set;}
+    public int HoverSuppressedNode {get;set;}=-1;
     public HashSet<int> VisibleOperationBatteries {get;set;}
     public bool RevealMovementTargets {get;set;}
     public bool NodeVisible(WorldSetup world,Node node)=>(VisibleOperationNodes==null || VisibleOperationNodes.Contains(node.Id)) && (ShowOtherCountries || node.Owner<0 || world.Relations.Controls(node.Owner) || RevealMovementTargets && MovementTargets.Contains(node.Id));
-    public bool EmphasizedNode(int id)=>CountryFocus<0 && NodeFocus<0 && (HoveredNode==id || InspectedNode==id);
+    public bool EmphasizedNode(int id)=>id!=HoverSuppressedNode && (AttackTargetSpotlight?AttackHighlightTargets.Contains(id):CountryFocus<0 && NodeFocus<0) && (HoveredNode==id || InspectedNode==id);
     public HashSet<int> MovementTargets {get;}=new();
+    public HashSet<int> AttackHighlightTargets {get;}=new();
     public int SelectedTarget {get;set;}=-1;
     public Vector2 NodePosition(WorldSetup world,Node node,Rectangle panel)
     {
@@ -65,7 +68,7 @@ public sealed partial class CubeNet
     private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null)
     {
         Color SearchTint(Color color,Vector2 at){
-            if(!FolderSearchFocus)return color;
+            if(!FolderSearchFocus && !AttackTargetSpotlight)return color;
             if(RegionFocusCell>=0)return cell==RegionFocusCell?color:SelectionGlow.Dim(color,FocusBrightness);
             return FocusTerrain(color,focusPoint?.Invoke(at)??at,cell);
         }
@@ -105,7 +108,7 @@ public sealed partial class CubeNet
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
                 float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);
                 if(post.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
-                if(EmphasizedNode(post.Id) && !world.Campaign.OwnershipChanged(post))radius*=2; if(MovementTargets.Contains(post.Id) && MathF.Sin(pulse*6)>=0)
+                if(EmphasizedNode(post.Id) && !world.Campaign.OwnershipChanged(post))radius*=2; if(MovementTargets.Contains(post.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(post.Id)) && MathF.Sin(pulse*6)>=0)
                 {
                     Disc(ui,at,radius+7,Tint(new Color(255,219,96)));
                     Disc(ui,at,radius+5,Tint(new Color(13,36,44)));
@@ -117,6 +120,7 @@ public sealed partial class CubeNet
                 }
                 if(world.Campaign.OwnershipChanged(post))
                     NodeOwnershipArt.Draw(ui,at,radius,Tint(world.OwnerColor(world.Campaign.PreviousNodeOwners[post.Id])),Tint(world.OwnerColor(post.Owner)),Tint(new Color(13,36,44)));
+                if(world.Campaign.OwnershipChanged(post) && !post.IsHarbor)DrawCountryNodePattern(ui,world,post.Owner,at,radius,Tint);
                 if(AttackTargetMarkers && SelectedTarget==post.Id)
                 {
                     float size=radius*(1.3f+.25f*MathF.Sin(pulse*5));
@@ -132,8 +136,20 @@ public sealed partial class CubeNet
                 {
                     Disc(ui,at,radius+2,Tint(new Color(13,36,44)));
                     Disc(ui,at,radius,Tint(world.OwnerColor(post.Owner)));
+                    DrawCountryNodePattern(ui,world,post.Owner,at,radius,Tint);
                 }
             }
+    }
+    private static void DrawCountryNodePattern(UiPainter ui,WorldSetup world,int owner,Vector2 at,float radius,Func<Color,Color> tint)
+    {
+        if(owner<0 || world.CountryPattern(owner)==0)return;
+        // Clip each stripe/dot to the round ownership badge, including at small zooms.
+        float step=radius/5;
+        for(int y=0;y<10;y++)for(int x=0;x<10;x++){
+            float dx=(x-4.5f)*step,dy=(y-4.5f)*step;
+            if(dx*dx+dy*dy>radius*radius || !WorldSetup.CountryPatternSecondary(world.CountryPattern(owner),x,y))continue;
+            ui.Tile(at+new Vector2(dx,dy),new Vector2(step,step),0,tint(world.CountryMapColor(owner,x,y)));
+        }
     }
     private static void DrawHarbor(UiPainter ui,Vector2 at,float radius,Color color,bool dim=false)
     {

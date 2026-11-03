@@ -7,6 +7,8 @@ public partial class Game1
 {
     private void UpdateNodeFocusCircle()
     {
+        _net.HoverSuppressedNode=_movementOpen && !_warPlanning?(_setup.Nodes.Current(_setup.PlayerSlot)?.Id??-1):-1;
+        _net.AttackTargetSpotlight=_world.AttackTargetSpotlight=_movementOpen && _warPlanning;
         _net.FolderSearchFocus=FolderTreeFocus;
         _net.FocusBrightness=_world.FocusBrightness=FolderTreeFocus?.35f:.65f;
         if(_folderTreeOpen)_net.NodeFocus=_world.NodeFocus=FolderTreeFocus && _folderTreeKind==2?_folderTreeId:-1;
@@ -18,13 +20,9 @@ public partial class Game1
             _net.CountryFocus=_world.CountryFocus=-1;
             _net.NodeFocus=_world.NodeFocus=_selectedMoveNode;
             _net.FocusBrightness=_world.FocusBrightness=.65f;
-            if(_selectedMoveNode>=0 && !MapTransitionActive && !_net.IsAnimating){
-                AddNodeFocusCircle(_selectedMoveNode);
-                foreach(int source in _invasionSources.Select(s=>s.Node).Distinct().Where(id=>id!=_selectedMoveNode)){
-                    _net.FocusCircleNodes.Add(source);
-                    AddNodeFocusCircle(source);
-                }
-            }
+            _net.RegionFocusCell=_world.RegionFocusCell=-1;
+            if(!MapTransitionActive && !_net.IsAnimating)
+                foreach(int target in _net.AttackHighlightTargets)AddNodeFocusCircle(target);
             return;
         }
         if(FolderTreeFocus && _folderTreeKind==0)_net.CountryFocus=_world.CountryFocus=_folderTreeOwner;

@@ -21,6 +21,18 @@ sealed class CheckGame:Game1
             var wheel=IndustryCycle.CreateWheel(seed,1);var colors=(Color[])typeof(Game1).GetMethod("IndustryColors",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{wheel})!;
             for(int i=0;i<colors.Length;i++)Check(colors[i]!=colors[(i+1)%colors.Length],"Adjacent roulette colors differ including last/first seam");
         }
+        for(int seed=0;seed<100;seed++){
+            w.Industry.Reset();w.Industry.Queue(1);w.Industry.Roll(seed);
+            for(int turn=0;turn<12;turn++){
+                var labels=((string Text,Rectangle Bounds,float Scale,bool Backplate)[])Call("IndustryLabelLayout",new Vector2(1170,625),255f,turn*MathHelper.TwoPi/12);
+                for(int i=0;i<labels.Length;i++){
+                    var r=labels[i].Bounds;
+                    Check(r.Width>0 && !labels[i].Text.Contains('+'),"Wheel uses mixed fractions without an addition sign");
+                    foreach(var p in new[]{new Vector2(r.Left,r.Top),new Vector2(r.Right,r.Top),new Vector2(r.Left,r.Bottom),new Vector2(r.Right,r.Bottom)})Check(Vector2.Distance(p,new(1170,625))<255,"Every label corner stays inside the roulette");
+                    for(int j=0;j<i;j++)Check(!r.Intersects(labels[j].Bounds),$"Labels overlap: seed={seed},angle={turn},items={i}/{j}");
+                }
+            }
+        }
         var score=new IndustryMusicScore();var pcm=score.Render(IndustryMusicScore.Rate*16);double energy=0;int peak=0;
         for(int i=0;i<pcm.Length;i+=2){int sample=(short)(pcm[i]|pcm[i+1]<<8);energy+=(double)sample*sample;peak=Math.Max(peak,Math.Abs(sample));}
         Check(energy/(pcm.Length/2)>100000 && peak<30000 && score.CompletedLoops==1,"Original industry tune is audible, unclipped and loops");
@@ -64,6 +76,9 @@ sealed class CheckGame:Game1
             Set("_industryIdleAge",4.99d);Call("UpdateIndustry",0d,false);Check(Get("_screen").ToString()=="Industry","Result waits until five idle seconds");
             Set("_previousKeyboard",new KeyboardState());Call("HandleInputCore",new MouseState(),new KeyboardState(Keys.Space),new GameTime(TimeSpan.FromSeconds(20),TimeSpan.Zero),true);Check((double)Get("_industryIdleAge")==0 && Get("_screen").ToString()=="Industry","Keyboard activity resets industry timer without skipping result");
             Call("UpdateIndustry",4.99d,false);Check(Get("_screen").ToString()=="Industry","Result remains before timeout");Call("UpdateIndustry",.01d,false);Check(Get("_screen").ToString()=="WorldStatus","Idle result automatically proceeds at five seconds");Call("UpdateIndustryMusic");Check(Get("_industryMusic")==null,"Leaving industry disposes its BGM");
+        }
+        if(Environment.GetCommandLineArgs().Contains("--roulette-only")){
+            Console.WriteLine("PASS: 100 seeds x 12 angles, mixed fractions, every label inside the wheel with no overlap, result rendering and industry timing/application.");Exit();return;
         }
         var node=w.Nodes.Current(0);var factory=w.Robots.Workshops[node.Id];factory.LimitLines(3);for(int seed=0;factory.ProductionLines.Length!=3;seed++)factory.GenerateLines(seed);
         Set("_domesticSlide",1f);Set("_populationNode",node.Id);Set("_populationCell",node.Cell);Set("_factoryPlanLine",0);factory.SelectPlan(4);

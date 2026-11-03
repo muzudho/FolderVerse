@@ -70,6 +70,7 @@ public partial class Game1
             if(!BattleIntroActive)RevealTutorialAttackAchievement();
             return;
         }
+        if(_tutorialAttackPending){RevealTutorialAttackAchievement();if(_tutorialAchievementAge>=0)return;}
         if(_robotSummary){if(click || enter)_summaryReadAge=0;else if(!_autoPlay && !_demoActive)_summaryReadAge+=elapsed;}
         _newspaperClock+=elapsed;_newspaperSlideAge+=elapsed;
         if(click && _robotSummary && NewspaperMusicButton.Contains(_pointer)){_newspaperMusicMood=(NewspaperMusicMood)(((int)_newspaperMusicMood+1)%4);return;}
@@ -112,7 +113,7 @@ public partial class Game1
     private void SwitchRobotFocus()
     {if(_robotPendingSummary){_summaryReadAge=0;_robotSummary=true;_robotPendingSummary=false;}if(_robotPendingRound){_robotRound++;_battleAge=0;}_battleWave=_robotPendingFocus;_robotPendingFocus=-1;_robotPendingRound=false;_robotResultAge=0;}
     private static string PhaseLabel(BattlePhase phase)=>phase switch
-    {BattlePhase.Persuade=>"説得中",BattlePhase.Converted=>"説得の結果",BattlePhase.Choose=>"行動選択",BattlePhase.Place=>"配置",BattlePhase.Rollback=>"巻き戻し",BattlePhase.Attack=>"攻撃",BattlePhase.Receive=>"被攻撃",BattlePhase.Consume=>"消費",BattlePhase.Fall=>"転倒",BattlePhase.Flag=>"旗更新",BattlePhase.Reinforce=>"増援",BattlePhase.Retreat=>"戦意喪失 / 全軍撤退",_=>"戦意・勝敗"};
+    {BattlePhase.Persuade=>"説得中",BattlePhase.Converted=>"説得の結果",BattlePhase.Choose=>"行動選択",BattlePhase.Place=>"配置",BattlePhase.Rollback=>"巻き戻し",BattlePhase.Attack=>"攻撃",BattlePhase.Receive=>"被攻撃",BattlePhase.Consume=>"消費",BattlePhase.Fall=>"転倒",BattlePhase.Flag=>"旗更新",BattlePhase.Reinforce=>"増援",BattlePhase.Retreat=>"戦意喪失 / 全軍撤退",BattlePhase.DefenseRetreat=>"旗の防衛成功 / 攻撃側撤退",_=>"戦意・勝敗"};
     private void DrawSmokePuff(Vector2 center,float radius,float opacity)
     {
         int extent=(int)Math.Ceiling(radius);
@@ -272,6 +273,7 @@ public partial class Game1
                 if(physical!=null && patch.Ink==0)
                 {
                     color=_setup.OwnerColor(physical.Origin(part));
+                    if(_setup.CountryPattern(unit.Owner)!=0){DrawBattleUniformPatch(area,r,damageArea,physical,unit.Owner,color,part,pieceOpacity);continue;}
                     if(physical.IsCheap(part))
                     {
                         for(int row=0;row<area.Height;row++){
@@ -307,8 +309,7 @@ public partial class Game1
                     _ui.Tile(at,new(8,3),MathF.Atan2(normal.Y,normal.X),new Color(255,238,143));
                 }
             }
-            if((_robotPendingFocus>=0 || _robotPendingSummary) && battle.Finished && battle.Winner>=0 &&
-                frameIndex==battle.Frames.Count-1 && !unit.Fallen && !unit.Retreated && battle.Allied(unit.Owner,battle.Winner)){
+            if((frame.Phase==BattlePhase.DefenseRetreat || (_robotPendingFocus>=0 || _robotPendingSummary) && frameIndex==battle.Frames.Count-1) && battle.Finished && battle.Winner>=0 && !unit.Fallen && !unit.Retreated && battle.Allied(unit.Owner,battle.Winner)){
                 var front=BattleState.Forward(unit.Facing);var direction=new Vector2(front.X,front.Y);
                 var mouth=new Vector2(r.Center.X,r.Y+28);float angle=MathF.Atan2(direction.Y,direction.X);
                 // Trumpet held to the mouth, bell pointing toward the unit's front.

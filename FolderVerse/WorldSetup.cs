@@ -51,8 +51,12 @@ public sealed partial class WorldSetup
     public string[] ConquerorFullNames { get; private set; } = Array.Empty<string>();
     public const string PoliticalSystem="独裁者";
     public int TutorialStep {get;private set;}
+    public bool TutorialMapBeforeWar,TutorialAttackCompleted,TutorialPocketIntroShown;
+    public bool TutorialPocketCourse=>TutorialStep==2 || TutorialMapBeforeWar && TutorialAttackCompleted;
     public bool TutorialCompletionPending,TutorialCompletionShown;
     public bool TutorialPocketed,TutorialMoved,TutorialPocketNoticeShown,TutorialMoveNoticeShown;
+    public int TutorialPostMoveStage;
+    public bool TutorialSortieNoticeShown,TutorialTurnEndNoticeShown,TutorialWarTargetNoticeShown;
     private int _presetCastCount;
     public int PlayerCount {get;private set;}=1;
     public int ComputerPlayerCount {get;private set;}=19;
@@ -121,8 +125,8 @@ public sealed partial class WorldSetup
     public Color OwnerColor(int slot) => slot<0?new Color(155,169,180):Colors[ColorIndices[slot]%Colors.Length];
     public void SetWorld(int seed)
     {
-        WorldConquestEndingShown=false;TutorialStep=0;_presetCastCount=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();Lessons.Reset();
-        TutorialPocketed=TutorialMoved=TutorialPocketNoticeShown=TutorialMoveNoticeShown=false;
+        WorldConquestEndingShown=false;TutorialStep=0;TutorialMapBeforeWar=TutorialAttackCompleted=TutorialPocketIntroShown=false;_presetCastCount=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();Lessons.Reset();
+        TutorialPocketed=TutorialMoved=TutorialPocketNoticeShown=TutorialMoveNoticeShown=false;TutorialPostMoveStage=0;TutorialSortieNoticeShown=TutorialTurnEndNoticeShown=TutorialWarTargetNoticeShown=false;
         PolarAxis=1;TutorialMapStage=TutorialMapRotations=TutorialMapNotices=0;TutorialMapEdgeChanged=false;
         WandererPolicies=new WandererPolicy[CastCount];
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
@@ -156,6 +160,7 @@ public sealed partial class WorldSetup
         int count=_participantCountsConfigured?ParticipantCount:CastCount;
         Portraits=new int[count]; Looks=new ConquerorLook[count];
         ColorIndices=Enumerable.Range(0,count).ToArray();random.Shuffle(ColorIndices);
+        _countryPatterns=null;_countrySecondaryColors=null;
         // Draw distinct completed portraits. A family can contain all six sisters.
         int familyBase=random.Next(ConquerorCatalog.BaseCount);
         int familySize=2+random.Next(5);

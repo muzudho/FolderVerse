@@ -46,6 +46,8 @@ public partial class Game1
         foreach(var shape in shapes){
             if(!shape.Face && robot.IsDamaged(shape.Part))RobotDamageArt.Draw(_ui,shape.Bounds,shape.Bounds,_setup.OwnerColor(robot.Origin(shape.Part)),Alpha(shape.Part));
             else _ui.Box(shape.Bounds,shape.Face?Cream*Alpha(shape.Part):Paint(shape.Part));
+            if(!shape.Face && _setup.CountryPattern(robot.Origin(shape.Part))!=0)
+                DrawCountryBorder(shape.Bounds,robot.Origin(shape.Part),0,Math.Max(1,r.Width/30),Alpha(shape.Part),tint:(x,y,c)=>robot.IsDamaged(shape.Part)?RobotDamageArt.Tint(shape.Bounds,x,y,c):c);
         }
         foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0){
             float alpha=Alpha(part);bool damaged=robot.IsDamaged(part);

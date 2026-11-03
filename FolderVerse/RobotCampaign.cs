@@ -48,11 +48,15 @@ public sealed class RobotCampaign
     {
         var node=world.Nodes.Current(ruler);return node==null || LockedNode(node.Id)?0:world.Robots.Nodes[node.Id].Robots.Count(r=>r.Owner==ruler && world.Robots.Training[ruler].Eligible(r) && !r.Stationed && world.Robots.DirectDelivery.LockedParts(node.Id,r.Id)==0 && world.Robots.Workshops[node.Id].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)));
     }
-    public bool CanMarch(WorldSetup world,int ruler,int target)
+    public bool CanMarch(WorldSetup world,int ruler,int target)=>CanDeploy(world,ruler,target,false);
+    public bool CanSortie(WorldSetup world,int ruler,int target)=>CanDeploy(world,ruler,target,true);
+    private bool CanDeploy(WorldSetup world,int ruler,int target,bool localAttack)
     {
         var node=world.Nodes.Current(ruler);
         bool deployed=Encounters.Where(e=>!e.Finished).SelectMany(e=>e.Battles).SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Any(u=>u.Owner==ruler && u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated);
-        return node!=null && !deployed && !LockedNode(node.Id) && !LockedEdge(node.Id,target) && world.Routes.ToNode(ruler,target)!=null;
+        bool atEnemy=node!=null && node.Id==target && node.Owner>=0 && !world.Relations.Allied(ruler,node.Owner);
+        return node!=null && !deployed && !LockedNode(node.Id) && !LockedEdge(node.Id,target) &&
+            (world.Routes.ToNode(ruler,target)!=null || localAttack && atEnemy);
     }
     private static int Source(WorldSetup world,March order)=>order.SourceNode>=0?order.SourceNode:world.Nodes.Current(order.Ruler).Id;
     public int AvailableFrom(WorldSetup world,int owner,int source)
@@ -89,7 +93,7 @@ public sealed class RobotCampaign
         if(orders.Where(o=>o.Queen).GroupBy(o=>o.Ruler).Any(g=>g.Count()>1) || orders.GroupBy(o=>(o.Ruler,Source(world,o),Pocket:o.Queen || o.PocketOnly)).Any(g=>g.Count()>1 && (g.Any(o=>o.RobotIds==null) || g.GroupBy(o=>o.TargetNode).Any(t=>t.Count()>1))))throw new ArgumentException("Duplicate target, ambiguous legacy selection or conqueror order.");
         var reservedIds=orders.Where(o=>o.RobotIds!=null).SelectMany(o=>o.RobotIds).ToArray();
         if(reservedIds.Distinct().Count()!=reservedIds.Length)throw new ArgumentException("A robot can have only one destination.");
-        foreach(var o in orders)if(o.Ruler<0 || o.Ruler>=world.ActiveCount || !world.Relations.Powered[o.Ruler] || world.Relations.Pending.Any(p=>p.Ruler==o.Ruler) || o.Fighters<0 || (o.Queen || o.PocketOnly) && o.SourceNode>=0 && o.SourceNode!=world.Nodes.Current(o.Ruler)?.Id || !((o.Queen || o.PocketOnly)?CanMarch(world,o.Ruler,o.TargetNode):CanAttackFrom(world,o.Ruler,o.SourceNode,o.TargetNode)))throw new ArgumentException("Invalid robot march.");
+        foreach(var o in orders)if(o.Ruler<0 || o.Ruler>=world.ActiveCount || !world.Relations.Powered[o.Ruler] || world.Relations.Pending.Any(p=>p.Ruler==o.Ruler) || o.Fighters<0 || (o.Queen || o.PocketOnly) && o.SourceNode>=0 && o.SourceNode!=world.Nodes.Current(o.Ruler)?.Id || !((o.Queen || o.PocketOnly)?(o.Peaceful?CanMarch(world,o.Ruler,o.TargetNode):CanSortie(world,o.Ruler,o.TargetNode)):CanAttackFrom(world,o.Ruler,o.SourceNode,o.TargetNode)))throw new ArgumentException("Invalid robot march.");
         // Validate every explicit selection before any stores or encounters are mutated.
         foreach(var o in orders.Where(o=>o.RobotIds!=null))
         {
@@ -124,11 +128,11 @@ public sealed class RobotCampaign
         {
             foreach(var robot in troops[visit])ReturnHome(world,robot,source[visit]);
             Move(world,visit.Ruler,visit.TargetNode);stopped.Add(visit);
-            if(world.TutorialStep==2 && visit.Ruler==0 && source[visit]!=visit.TargetNode)world.TutorialMoved=true;
+            if(world.TutorialPocketCourse && visit.Ruler==0 && source[visit]!=visit.TargetNode)world.TutorialMoved=true;
         }
         foreach(var first in orders.OrderBy(o=>o.Ruler))
         {
-            if(stopped.Contains(first))continue;
+            if(stopped.Contains(first) || source[first]==first.TargetNode)continue;
             var second=orders.Where(o=>o.Ruler>first.Ruler && !stopped.Contains(o) && source[o]==first.TargetNode && o.TargetNode==source[first] && !world.Relations.Allied(first.Ruler,o.Ruler)).OrderBy(o=>o.Ruler).FirstOrDefault();
             if(second==null)continue;
             // Both source kinds travelling the same edge share the encounter.
@@ -143,7 +147,7 @@ public sealed class RobotCampaign
             int target=group.Key;var node=world.Nodes.All[target];var existing=Encounters.FirstOrDefault(e=>!e.Finished && e.Kind==BattleKind.Node && e.Target==target);
             var hostile=group.Where(o=>!o.Peaceful && node.Owner>=0 && !world.Relations.Allied(o.Ruler,node.Owner) && (troops[o].Count>0 || o.Queen)).ToArray();
             bool alreadyIntercepting=Encounters.Any(e=>!e.Finished && e.InterceptOwner>=0 && e.Target==target);
-            if(existing==null && !alreadyIntercepting && hostile.Length>0 && hostile.Select(o=>source[o]).Distinct().Count()==1){
+            if(existing==null && !alreadyIntercepting && hostile.Length>0 && hostile.All(o=>source[o]!=target) && hostile.Select(o=>source[o]).Distinct().Count()==1){
                 var interceptors=world.Robots.Nodes[target].Robots.Where(r=>r.InterceptOnly && world.Relations.Allied(r.Owner,node.Owner) && world.Robots.Training[r.Owner].Eligible(r) && world.Robots.DirectDelivery.LockedParts(target,r.Id)==0 && world.Robots.Workshops[target].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id))).ToArray();
                 if(interceptors.Length>0){
                     var interceptArmies=hostile.GroupBy(o=>o.Ruler).Select(g=>(g.Key,source[g.First()],g.SelectMany(o=>troops[o]).ToList(),g.Any(o=>o.Queen))).ToList();

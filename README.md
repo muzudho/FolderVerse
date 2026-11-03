@@ -12,12 +12,16 @@
 
 ## ユーザー_すぐ遊びたい人
 
-現在は開発版です。ダウンロードして遊べる配布版はまだありません。
+[v0.2.0 Pre-release（無料試遊版）をダウンロード](https://github.com/muzudho/FolderVerse/releases/tag/v0.2.0)できます。Windows x64向けです。Visual Studioの準備は不要です。
 
-- [配布状況と起動方法](docs/user/README.md)
+Assetsの `FolderVerse-v0.2.0-win-x64.zip` をすべて展開し、`FolderVerse.exe` を起動してください。
+
+- [ダウンロードと起動方法](docs/user/README.md)
 - [操作ガイド](docs/user/操作ガイド.md)
 
 ## リサーチャー_しっかり理解したい人
+
+実際に遊んで調べる場合も、[配布版から起動](docs/user/README.md)できます。仕様資料は開発中の最新版を含むため、v0.2.0との違いに注意してください。
 
 - [ゲームの仕組み](docs/ref/ゲームの仕組み.md)：ロボット・戦闘・人物抽選・地図と節点。
 - [仕様の読み方](docs/ref/README.md)：実装中のルールと世界観の原本。
@@ -26,7 +30,7 @@
 
 - [開発を始める](docs/dev/README.md)：Visual Studioでの起動、検証、画像管理。
 - [実装と検証の記録](docs/dev/実装と検証.md)：IMEの調査、グラフィックと画像加工。
-- [実装計画](docs/dev/plan/)・[開発日誌](docs/dev/log/2026/10.md)
+- [実装計画](docs/dev/plan/)・[開発日誌](docs/dev/log/2026/11.md)
 - [続きはここから](docs/続きはここから.md)：作業を再開する人向け。
 
 ## 一般_このプロジェクトに興味はないが関心はある人

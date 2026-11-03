@@ -60,8 +60,9 @@ public partial class Game1
     }
     private void PrepareDestinationMap()
     {
-        _net.VisibleOperationNodes=!_transportOverview && DestinationOperation?VisibleDestinationNodes():null;
-        _net.VisibleOperationBatteries=_movementOpen && _warPlanning?Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler).Where(r=>_net.MovementTargets.Any(t=>_setup.Campaign.RobotBattles.CanMarch(_setup,r,t))).ToHashSet():null;
+        RefreshWarTargetHighlights();
+        _net.VisibleOperationNodes=!_transportOverview && DestinationOperation && !(_movementOpen && _warPlanning)?VisibleDestinationNodes():null;
+        _net.VisibleOperationBatteries=_movementOpen && _warPlanning?Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler).Where(r=>_net.MovementTargets.Any(t=>_setup.Campaign.RobotBattles.CanSortie(_setup,r,t))).ToHashSet():null;
     }
     private HashSet<int> VisibleDestinationNodes()
     {

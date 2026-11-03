@@ -43,7 +43,11 @@ public partial class Game1
         if(click && new Rectangle(0,0,1920,1080).Contains(_pointer) || escape){_demoFade=0;return true;}
         // Let every global turn's overview finish before resuming scripted actions.
         if(_conquestOverview){_demoAge+=elapsed;UpdateConquestOverview(elapsed,false);return true;}
-        _demoAge+=elapsed;_demoStepAge+=elapsed;_yaw+=(float)elapsed*.12f;
+        _demoAge+=elapsed;_demoStepAge+=elapsed;
+        // Keep the actual map target still while scripted domestic clicks aim.
+        // Rotating a barely visible destination can hide it before the click's
+        // 1.8-second wait completes, restarting the same focus forever.
+        if(_screen!=Screen.WorldStatus || _demoMapVisits%3==0 && _demoMapStage<5)_yaw+=(float)elapsed*.12f;
         if(_demoStarsAge>=0){_demoStarsAge+=(float)elapsed;if(_demoStarsAge>.65f)_demoStarsAge=-1;}
         float previousSwing=_demoSwing;
         _demoSwing=Math.Max(0,_demoSwing-(float)elapsed);

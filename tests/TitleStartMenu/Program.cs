@@ -24,16 +24,16 @@ sealed class MenuGame:Game1{
   Click(960,617);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Unavailable Continue row is inert without save");
   Click(960,417);Check((bool)Get("_tutorialMenuOpen"),"How to Play opens tutorial guide");
   Check(!(bool)Call("UpdateDemo",11d,true,false,false,false,11d),"Tutorial guide pauses demo");
-  Click(1100,810);Check((bool)Get("_tutorialMenuOpen"),"Unimplemented steps are disabled");
-  Click(1100,550);var tutorial=(WorldSetup)Get("_setup");
+  Click(1100,810);Check((bool)Get("_tutorialMenuOpen"),"Unimplemented planets are disabled");
+  Click(730,477);var tutorial=(WorldSetup)Get("_setup");Check(tutorial.TutorialMapBeforeWar,"First planet directly starts integrated tutorial");
   Check(Get("_screen").ToString()=="WorldStatus" && tutorial.PlayerCount==1 && tutorial.HumanPlayers.SequenceEqual(new[]{0}) && tutorial.PlayerSlot==0,"Step one reaches domestic as No.1");
   Check(tutorial.Width==1 && tutorial.Height==1 && tutorial.Depth==1 && tutorial.ActiveCount==6 && tutorial.Portraits.Take(6).SequenceEqual(Enumerable.Range(0,6)) && tutorial.Looks.Take(6).All(l=>l.VariantId==0),"Dice world and original No.1 through No.6 cast");
   Check(!tutorial.LandPending && tutorial.Owners.Distinct().Count()==6 && tutorial.Robots.Nodes.Length==tutorial.Nodes.All.Length && File.Exists(path),"Normal randomized land, economy, robots and autosave initialized");
-  Check(tutorial.TutorialStep==1 && tutorial.Nodes.All.All(n=>tutorial.Robots.Nodes[n.Id].Count==4 && tutorial.Robots.Nodes[n.Id].Robots.All(r=>r.Role==RobotRole.Soldier && r.Parts==RobotParts.Complete && r.CanFight && r.Owner==n.Owner)),"Every tutorial hangar starts with four complete soldiers");
+  Check(tutorial.TutorialStep==1 && tutorial.Nodes.All.All(n=>tutorial.Robots.Nodes[n.Id].Count==6 && tutorial.Robots.Nodes[n.Id].Robots.All(r=>r.Role==RobotRole.Soldier && r.Parts==RobotParts.Complete && r.CanFight && r.Owner==n.Owner)),"Every tutorial hangar starts with four complete soldiers");
   for(int seed=0;seed<10;seed++){
    var sample=new WorldSetup();sample.PrepareTutorialStepOne(seed,456,789);sample.CompleteLand(seed+100);sample.SelectPlayer(0);
    Check(WorldTerrain.HasSeaAndLand(sample.Cells,sample.WorldSeed),"Tutorial rerolls until it has both sea and land cells");
-   Check(sample.Nodes.All.All(n=>sample.Robots.Nodes[n.Id].Count==4 && sample.Campaign.RobotBattles.AvailableFrom(sample,n.Owner,n.Id)==4),"Random terrain keeps four immediately deployable soldiers at every node");
+   Check(sample.Nodes.All.All(n=>sample.Robots.Nodes[n.Id].Count==6 && sample.Campaign.RobotBattles.AvailableFrom(sample,n.Owner,n.Id)==4),"Random terrain keeps four immediately deployable soldiers at every node");
    Check(sample.Nodes.All.Where(n=>n.Owner==0).Any(n=>sample.Routes.Neighbors(n).Any(r=>sample.Nodes.At(r.Target,r.Entry).Owner!=0)),"Random tutorial terrain always has a first-turn attack route");
   }
   int allSeaSeed=-1,allLandSeed=-1;var cube=WorldSetup.CreateCells(1,1,1);
@@ -63,17 +63,17 @@ sealed class MenuGame:Game1{
   Check(targetLabel=="侵攻先："+tutorial.Nodes.DisplayName(tutorial.Nodes.All[invasionTarget]) && !targetLabel.Contains("Node "),"Invasion target uses human-readable node name without numeric ID");
   int hangarRow=Array.FindIndex(rows,r=>!(bool)queenField.GetValue(r)!);Set("_invasionPage",hangarRow/7);
   var soldierCard=(Rectangle)typeof(Game1).GetMethod("InvasionPreviewCard",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{hangarRow%7,0})!;
-  Call("InvasionClick",soldierCard.Center);Call("ReserveInvasion");
+  Call("InvasionClick",soldierCard.Center);
   Check(tutorial.Campaign.PlannedOrders.Count==1 && tutorial.Campaign.PlannedOrders[0].Fighters==1 && (string)label.GetValue(this)! =="開戦予約（1件）","First-turn inline robot selection reserves a soldier and updates label");
   var order=tutorial.Campaign.PlannedOrders[0];tutorial.Campaign.Plan(order);Check((string)label.GetValue(this)! =="開戦予約（1件）","Replacing same reservation does not double count");
   Call("OpenWarPlanning");Call("SelectMoveNode",invasionTarget);
   rows=((System.Collections.IEnumerable)Get("_invasionSources")).Cast<object>().ToArray();
   int batteryRow=Array.FindIndex(rows,r=>(bool)queenField.GetValue(r)!);
   Set("_invasionPage",batteryRow/7);Call("OpenInvasionPicker",batteryRow);
-  Set("_pointer",new Point(640,732));Call("InvasionPickerInput",true,false);Set("_pointer",new Point(1415,822));Call("InvasionPickerInput",true,false);Call("ReserveInvasion");
+  Set("_pointer",new Point(640,732));Call("InvasionPickerInput",true,false);Set("_pointer",new Point(1415,822));Call("InvasionPickerInput",true,false);
   Check(tutorial.Campaign.PlannedOrders.Count==2 && tutorial.Campaign.PlannedOrders.Single(o=>o.Queen).PocketOnly,"Battery button reserves only pocket alongside hangar");
   Call("OpenWarPlanning");Call("SelectMoveNode",invasionTarget);Set("_invasionPage",batteryRow/7);Call("OpenInvasionPicker",batteryRow);
-  Set("_pointer",new Point(640,732));Call("InvasionPickerInput",true,false);Set("_pointer",new Point(1415,822));Call("InvasionPickerInput",true,false);Call("ReserveInvasion");
+  Set("_pointer",new Point(640,732));Call("InvasionPickerInput",true,false);Set("_pointer",new Point(1415,822));Call("InvasionPickerInput",true,false);
   Check(tutorial.Campaign.PlannedOrders.Count==1 && !tutorial.Campaign.PlannedOrders[0].Queen,"Deselecting battery preserves hangar reservation");
   int subordinate=tutorial.Nodes.All[invasionTarget].Owner%5+1;tutorial.Relations.SetSuperior(subordinate,0);int subordinateSource=tutorial.Nodes.Current(subordinate).Id;
   tutorial.Campaign.Plan(new(subordinate,invasionTarget,1,subordinateSource,false));Check((string)label.GetValue(this)! =="開戦予約（1件）","Coordinated sources attacking one destination count once");
@@ -84,7 +84,7 @@ sealed class MenuGame:Game1{
   tutorial.Campaign.CancelSource(subordinate,subordinateSource);
   tutorial.Campaign.CancelSource(order.Ruler,order.SourceNode);Check((string)label.GetValue(this)! =="開戦予約（なし）","Cancel returns label to none");
   tutorial.Robots.Check();Call("ReturnToTitle");Check((bool)Call("ResumeAutoSave"),"Tutorial save resumes");
-  tutorial=(WorldSetup)Get("_setup");Check(tutorial.TutorialStep==1 && tutorial.Robots.Nodes.All(n=>n.Count==4),"Resume preserves step restrictions and initial stock");
+  tutorial=(WorldSetup)Get("_setup");Check(tutorial.TutorialStep==1 && tutorial.Robots.Nodes.All(n=>n.Count==6),"Resume preserves step restrictions and initial stock");
   tutorial.Population.Advance(tutorial);tutorial.Industry.Queue(tutorial.Population.Turn);int beforeIndustry=tutorial.Robots.IndustryTurn;
   Call("BeginIndustry");Check(Get("_screen").ToString()=="WorldStatus" && !tutorial.Industry.Pending && tutorial.Population.Turn==1,"Step one skips industrial screen and reaches a stable domestic boundary without extra global turns");
   Check(tutorial.Robots.IndustryTurn==beforeIndustry+tutorial.Industry.Result,"Silent industrial processing retains disposal and assembly timing");
