@@ -51,11 +51,11 @@ public partial class Game1
         _screen=Screen.Transport;_transportAge=0;BeginPropagation();
     }
     private void FinishTransport()
-    {if(_robotScenes.Length>0){_screen=Screen.Battle;_battleIntroAge=0;}else if(_setup.Lessons.Pending.Count>0)BeginBattleResearch();else BeginIndustry();}
+    {if(DeliveryPlayback){OpenMilitaryPhase();return;}if(_robotScenes.Length>0){_screen=Screen.Battle;_battleIntroAge=0;}else if(_setup.Lessons.Pending.Count>0)BeginBattleResearch();else BeginIndustry();}
     private void UpdateTransport(double elapsed,bool proceed,double now)
     {
         // Wait for Draw to register the card, then advance only time after it ends.
-        if(_lastCutInPhase!="伝播フェーズ")return;
+        if(_lastCutInPhase!=(DeliveryPlayback?"配送フェーズ":"出兵フェーズ"))return;
         elapsed=Math.Min(elapsed,Math.Max(0,now-_cutInStarted-PhaseCutInSeconds));
         if(elapsed<=0)return;
         if(!PropagationComplete){UpdatePropagationMovement(elapsed);return;}

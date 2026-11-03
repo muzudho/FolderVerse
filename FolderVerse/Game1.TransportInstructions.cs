@@ -12,7 +12,7 @@ public partial class Game1
     private string _transportQuantity="1";
     private bool _transportQuantityReplace;
     private int TransportOwner=>_populationNode>=0 && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner)?_setup.Nodes.All[_populationNode].Owner:_setup.PlayerSlot;
-    private bool CanEditTransport=>_populationNode>=0 && (CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) || _setup.Robots.Nodes[_populationNode].Robots.Any(r=>r.Owner==_setup.PlayerSlot)) && !_setup.Campaign.RobotBattles.LockedNode(_populationNode);
+    private bool CanEditTransport=>DomesticOperationsAllowed && _populationNode>=0 && (CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) || _setup.Robots.Nodes[_populationNode].Robots.Any(r=>r.Owner==_setup.PlayerSlot)) && !_setup.Campaign.RobotBattles.LockedNode(_populationNode);
     private IReadOnlyList<TransportInstruction> TransportRules=>_populationNode<0?Array.Empty<TransportInstruction>():_setup.Robots.Transport.Instructions(_populationNode,TransportOwner);
     private TransportInstruction EditingTransport=>TransportRules.FirstOrDefault(r=>r.Number==_transportEditNumber);
     private static string TransportPartsName(int mask)=>mask switch{4=>"頭",2=>"胴",_=>"脚"};

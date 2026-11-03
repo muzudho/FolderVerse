@@ -11,13 +11,13 @@ public partial class Game1
     private void DrawPhaseCutIn(double now)
     {
         // Auxiliary menus and battlefield changes retain the current campaign phase.
-        string phase=_screen==Screen.Transport?"伝播フェーズ":_screen==Screen.Battle?"戦闘フェーズ":_screen==Screen.BattleResearch && System.Array.Exists(_lessonPickups,p=>p)?"戦闘研究フェーズ":_screen==Screen.WorldStatus?"内政フェーズ":"";
+        string phase=_screen==Screen.Transport?(DeliveryPlayback?"配送フェーズ":"出兵フェーズ"):_screen==Screen.Battle?"戦闘フェーズ":_screen==Screen.BattleResearch && System.Array.Exists(_lessonPickups,p=>p)?"戦闘研究フェーズ":_screen==Screen.WorldStatus?PlanningPhaseLabel:"";
         if(_screen==Screen.Title){_lastCutInPhase="";_cutInPhase="";return;}
         if(phase!="" && phase!=_lastCutInPhase){_lastCutInPhase=phase;_cutInPhase=phase;_cutInStarted=now;ChooseCutInMob();}
         double age=now-_cutInStarted;if(age<0 || age>=PhaseCutInSeconds || _cutInPhase=="")return;
         float fade=(float)Math.Min(Math.Min(age/.22,(PhaseCutInSeconds-age)/.35),1);
         float slide=(float)Math.Pow(1-Math.Clamp(age/.45,0,1),3)*360;
-        Color color=_cutInPhase=="内政フェーズ"?new(126,219,190):_cutInPhase=="伝播フェーズ"?new(130,208,246):new(255,183,156);
+        Color color=_cutInPhase=="内政フェーズ"?new(126,219,190):_cutInPhase is "出兵フェーズ" or "配送フェーズ"?new(130,208,246):new(255,183,156);
         int x=380+(int)slide,y=410;
         // A floating title card with diagonal ornaments, rather than a screen-wide band.
         _ui.Box(new(x+8,y+10,1160,240),new Color(12,27,39)*(.38f*fade));

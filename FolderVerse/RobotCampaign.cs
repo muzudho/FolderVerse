@@ -89,6 +89,7 @@ public sealed class RobotCampaign
     }
     public void Advance(WorldSetup world,IReadOnlyList<March> orders)
     {
+        world.Robots.DirectDelivery.ReconcileDestinations(world);
         if(orders.Any(o=>o.Peaceful && (!o.Queen || !o.PocketOnly || o.Fighters!=0 || o.RobotIds?.Length>0)))throw new ArgumentException("A peaceful visit carries only the queen and her pocket.");
         if(orders.Where(o=>o.Queen).GroupBy(o=>o.Ruler).Any(g=>g.Count()>1) || orders.GroupBy(o=>(o.Ruler,Source(world,o),Pocket:o.Queen || o.PocketOnly)).Any(g=>g.Count()>1 && (g.Any(o=>o.RobotIds==null) || g.GroupBy(o=>o.TargetNode).Any(t=>t.Count()>1))))throw new ArgumentException("Duplicate target, ambiguous legacy selection or conqueror order.");
         var reservedIds=orders.Where(o=>o.RobotIds!=null).SelectMany(o=>o.RobotIds).ToArray();
@@ -116,8 +117,8 @@ public sealed class RobotCampaign
             // Direct retinue travels with its conqueror and is excluded from transport plans.
             foreach(var r in world.Robots.Retinues[o.Ruler].Robots.Where(r=>o.RobotIds==null && o.Queen && world.Robots.Training[o.Ruler].Eligible(r)).ToArray()){Depart(world,source[o],r,true);troops[o].Add(r);}
         }
-        // One global update: disposal, queued assembly/splits, simultaneous transport, shipment.
-        world.Robots.Advance((a,b)=>!LockedEdge(a,b) && world.Routes.Neighbors(world.Nodes.All[a]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==b),
+        // Legacy one-step callers resolve delivery here; phased turns already delivered before military orders.
+        if(world.Campaign.Phase!=CampaignPhase.Military)world.Robots.Advance((a,b)=>!LockedEdge(a,b) && world.Routes.Neighbors(world.Nodes.All[a]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==b),
             n=>world.Nodes.All[n].Owner,world.PlacementSeed^world.Population.Turn^0x61238,LockedNode,(owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner),industry:false,directLocked:n=>LockedNode(n) || orders.Any(o=>!o.Peaceful && o.TargetNode==n && !world.Relations.Allied(o.Ruler,world.Nodes.All[n].Owner)));
         world.Population.Advance(world);
         world.Salvage.Advance(world,world.Population.Turn,n=>orders.Any(o=>!o.Peaceful && o.TargetNode==n && !world.Relations.Allied(o.Ruler,world.Nodes.All[n].Owner)));
@@ -206,7 +207,7 @@ public sealed class RobotCampaign
                 if(encounter.Battles.All(b=>b.Finished))Complete(world,encounter);
             }
         }while(changed);
-        world.Nodes.Recount();Check(world);
+        world.Nodes.Recount();world.Robots.DirectDelivery.ReconcileDestinations(world);Check(world);
     }
     private RobotEncounter CreateEncounter(WorldSetup world,BattleKind kind,int source,int target,int defender,
         (int Owner,int Home,List<Robot> Robots,bool Queen)[] armies)
@@ -469,4 +470,3 @@ public sealed class RobotCampaign
         if(all.Select(r=>r.Id).Distinct().Count()!=all.Length)throw new InvalidOperationException("Robot duplicated between world and battlefield.");
     }
 }
-

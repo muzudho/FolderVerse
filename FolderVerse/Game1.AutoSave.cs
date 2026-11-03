@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,7 +16,7 @@ public partial class Game1
     private string _autoSaveError="";
     private void CheckAutoSave(){_hasAutoSave=_autoSaveEnabled && File.Exists(_autoSavePath);}
     private void AutoSaveDomestic(){
-        if(!_autoSaveEnabled || _demoActive || !IsStatusScreen || _setup.PlayerSlot<0 || _lastAutoSaveTurn==_setup.Population.Turn)return;
+        if(!_autoSaveEnabled || _demoActive || !IsStatusScreen || DeliveryPlayback || _setup.PlayerSlot<0 || _lastAutoSaveTurn==_setup.Population.Turn)return;
         try{
             SaveDomesticCamera();
             AutoSaveStore.Write(_autoSavePath,new SavedGame(_setup,new(_domesticViews)));
@@ -28,9 +28,10 @@ public partial class Game1
         if(!_hasAutoSave)return false;
         try{
             var saved=AutoSaveStore.Read<SavedGame>(_autoSavePath);var next=saved.World;
-            if(next.PlayerSlot<0 || next.PlayerSlot>=next.ActiveCount || next.Robots.Nodes.Length!=next.Nodes.All.Length || next.LandPending || next.Industry.Pending)
-                throw new InvalidDataException("Autosave is not at a domestic turn boundary.");
+            if(next.PlayerSlot<0 || next.PlayerSlot>=next.ActiveCount || next.Robots.Nodes.Length!=next.Nodes.All.Length || next.LandPending || next.Industry.Pending || next.Campaign.Phase==CampaignPhase.Delivery)
+                throw new InvalidDataException("Autosave is not in a planning phase.");
             next.Robots.Check();
+            next.Robots.DirectDelivery.ReconcileDestinations(next);
             if(next.Salvage.LegacyPlacementPending)next.Salvage.Initialize(next);
             foreach(var battle in next.Campaign.RobotBattles.Encounters.SelectMany(e=>e.Battles).Concat(next.Campaign.RobotBattles.Scenes).Distinct()){
                 battle.Allied=next.Relations.Allied;battle.Check();

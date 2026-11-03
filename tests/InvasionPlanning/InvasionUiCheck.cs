@@ -31,6 +31,7 @@ sealed class InvasionUiCheck:Game1
         world.Campaign.Plan(new(0,target.Id,1,home.Id,false,false,new[]{samples[0].Id}));
         world.Campaign.Plan(new(0,home.Id,1,home.Id,false,true,new[]{world.Robots.Retinues[0].Robots[0].Id}));
         ((WorldPreview)Get("_world")).ShowSetup(world,true);((CubeNet)Get("_net")).Home(world);
+        world.Campaign.FinishDomestic(world);world.Campaign.BeginMilitary();
         Set("_statusGlobe",false);Screen("WorldStatus");Call("OpenWarPlanning");Set("_domesticSlide",1f);
         if(EmptySortie){
             foreach(var store in world.Robots.Nodes.Append(world.Robots.Retinues[0])){var robots=store.Robots.ToArray();emptySortieStores.Add((store,robots));foreach(var robot in robots)store.Remove(robot.Id);}
@@ -42,7 +43,7 @@ sealed class InvasionUiCheck:Game1
             var rows=(System.Collections.IList)Get("_invasionSources");if(rows.Count==0 || ((Robot[])Call("InvasionRobots",rows[0]!)).Length!=0)throw new Exception("Empty sortie source must remain inspectable");Call("OpenInvasionPicker",0);
         }
         if(Environment.GetCommandLineArgs().Contains("--local-attack")){
-            world.Campaign.Reset();world.ConquerorLocations[0]=target.Cell;world.ConquerorPoints[0]=target.Center;foreach(var r in world.Robots.Retinues[0].Robots.ToArray())world.Robots.Retinues[0].Remove(r.Id);
+            world.Campaign.Reset();world.Campaign.FinishDomestic(world);world.Campaign.BeginMilitary();world.ConquerorLocations[0]=target.Cell;world.ConquerorPoints[0]=target.Center;foreach(var r in world.Robots.Retinues[0].Robots.ToArray())world.Robots.Retinues[0].Remove(r.Id);
             Call("OpenWarPlanning");var net=(CubeNet)Get("_net");
             if(!net.MovementTargets.Contains(target.Id) || !net.AttackHighlightTargets.Contains(target.Id) || net.HoverSuppressedNode==target.Id)throw new Exception("Hostile current node must be selectable and highlighted even with empty pocket");
             Call("SelectMoveNode",target.Id);var rows=(System.Collections.IList)Get("_invasionSources");int queen=Enumerable.Range(0,rows.Count).Single(i=>(bool)rows[i]!.GetType().GetField("Queen")!.GetValue(rows[i])! && (int)rows[i]!.GetType().GetField("Owner")!.GetValue(rows[i])! ==0);Call("OpenInvasionPicker",queen);

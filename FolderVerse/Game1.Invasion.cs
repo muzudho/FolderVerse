@@ -36,6 +36,7 @@ public partial class Game1
     }
     private void OpenWarPlanning()
     {
+        if(!MilitaryOperationsAllowed)return;
         _withdrawalEncounter=-1;CloseMovement();OpenMovementWithFit(false);_warPlanning=true;_net.HoverSuppressedNode=-1;_net.AttackTargetMarkers=true;_net.RevealMovementTargets=true;_net.MovementTargets.Clear();
         foreach(var node in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner)))
             foreach(var route in _setup.Routes.Neighbors(node))
@@ -131,6 +132,7 @@ public partial class Game1
     }
     private void ReserveInvasion(InvasionSource row)
     {
+        if(!MilitaryOperationsAllowed)return;
         if(_selectedMoveNode<0)return;
         if(row.Robots.Any(id=>!InvasionRobots(row).Any(r=>r.Id==id)))return;
         // Materialize old count-only reservations before splitting this store across targets.
@@ -151,11 +153,15 @@ public partial class Game1
     }
     private void EndPlannedTurn()
     {
+        if(DomesticOperationsAllowed){EndDomesticPhase();return;}
+        if(!MilitaryOperationsAllowed)return;
         SaveDomesticCamera();CancelTransportModal();
         StoreCurrentMovementDraft();
         if(ShowTutorialAttackGuideIfRequired())return;
         CloseMovement();if(_transportOverview)CloseTransportOverview();
-        ClearCurrentPlayerNodeChecks();_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);_populationCell=-1;OpenBattle();
+        ClearCurrentPlayerNodeChecks();_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);_populationCell=-1;
+        if(_setup.Campaign.AwaitingPlayers){ResetInspector();RestoreDomesticCamera();return;}
+        _militaryTransportPlayback=true;OpenBattle();
     }
     private string InvasionTargetLabel=>_selectedMoveNode<0?"地図上で攻めることができる目標が光っています。　目標をクリックしてください。":"侵攻先："+_setup.Nodes.DisplayName(_setup.Nodes.All[_selectedMoveNode]);
     private void DrawInvasionPanel()

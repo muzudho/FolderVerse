@@ -45,6 +45,10 @@ public partial class Game1
         _autoDomesticAge+=elapsed;
         if(_autoDomesticAge<2)return;
         _autoDomesticAge=0;
+        if(MilitaryOperationsAllowed){
+            ResetInspector();_autoDomesticStage=0;_setup.Campaign.Advance(_setup,-1,0,automaticAll:true);
+            _militaryTransportPlayback=true;_world.ShowSetup(_setup,true);OpenBattle();return;
+        }
         switch(_autoDomesticStage++){
             case 0:
                 var node=_setup.Nodes.All.Where(n=>n.Owner==_setup.PlayerSlot && !_setup.Campaign.RobotBattles.LockedNode(n.Id)).OrderByDescending(n=>_setup.Robots.AssemblySelection(n.Id,_setup.PlayerSlot,true)!=null).FirstOrDefault();
@@ -57,7 +61,7 @@ public partial class Game1
             case 4:OpenNodeFactory();break;
             default:
                 ResetInspector();_autoDomesticStage=0;_autoStepAge=0;
-                _setup.Campaign.Advance(_setup,-1,0,automaticAll:true);_world.ShowSetup(_setup,true);OpenBattle();break;
+                EndDomesticPhase(automaticAll:true);break;
         }
     }
     private void DrawAutoLabel(Matrix transform)

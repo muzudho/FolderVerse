@@ -17,7 +17,8 @@ public partial class Game1{
    _world.GlobePan,_globeDragSlide,_netDragRotate);
  }
  private void RestoreDomesticCamera(){
-  ResetInspector();_domesticSlide=0;RestorePlayerView();PrepareHomePersuasion();AutoSaveDomestic();BeginConquestOverview();
+  ResetInspector();_domesticSlide=0;RestorePlayerView();
+  if(DomesticOperationsAllowed){PrepareHomePersuasion();AutoSaveDomestic();BeginConquestOverview();}
  }
  private void RestorePlayerView(){
   _orientationAge=-1;_mapTransitionAge=-1;_dragging=_mapDragging=false;

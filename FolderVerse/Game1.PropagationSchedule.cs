@@ -22,9 +22,11 @@ public partial class Game1
         _propagationNet.SetCenter(_setup,_net.CenterFace);
         _propagationTravel.Clear();_propagationAttachments.Clear();_propagationBatch=Array.Empty<(int,int)>();
         _propagationStageAge=0;_propagationMovingFaces=_propagationCentering=false;
-        foreach(var s in _setup.Robots.Transport.LastTransfers)_propagationTravel.TryAdd((s.Source,s.Target),0);
-        foreach(var a in _setup.Salvage.Agents.Where(a=>a.PreviousNode!=a.Node && _setup.Relations.Controls(a.Owner)))_propagationTravel.TryAdd((a.PreviousNode,a.Node),0);
-        foreach(var m in _setup.Campaign.RobotBattles.LastMarches)_propagationTravel.TryAdd((m.Source,m.Target),0);
+        foreach(var s in PropagationShipments)_propagationTravel.TryAdd((s.Source,s.Target),0);
+        if(!DeliveryPlayback){
+            foreach(var a in _setup.Salvage.Agents.Where(a=>a.PreviousNode!=a.Node && _setup.Relations.Controls(a.Owner)))_propagationTravel.TryAdd((a.PreviousNode,a.Node),0);
+            foreach(var m in _setup.Campaign.RobotBattles.LastMarches)_propagationTravel.TryAdd((m.Source,m.Target),0);
+        }
         PreparePropagationBatch();
     }
     private int PropagationFace(int node)=>_setup.Cells[_setup.Nodes.All[node].Cell].Face;

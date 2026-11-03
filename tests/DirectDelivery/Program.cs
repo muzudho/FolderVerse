@@ -4,6 +4,20 @@ static void Reject(Action action){try{action();}catch(InvalidOperationException)
 static (WorldSetup W,int A,int B) Fixture(){var w=new WorldSetup();w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.Relations.Reset();w.SelectPlayer(0);var a=w.Nodes.All.First(n=>w.Routes.Neighbors(n).Length>0);var route=w.Routes.Neighbors(a)[0];var b=w.Nodes.At(route.Target,route.Entry);a.Owner=b.Owner=0;w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);w.Robots.ConfigureFactories(w);foreach(var s in w.Robots.Workshops)s.AutoAssemblyDisabled=true;return(w,a.Id,b.Id);}
 static Robot Add(WorldSetup w,int n,RobotParts p){var r=w.Robots.Create(0,p);w.Robots.Nodes[n].Add(r);return r;}
 static void Resolve(WorldSetup w,Func<int,bool> blocked=null)=>w.Robots.Advance((a,b)=>w.Routes.Neighbors(w.Nodes.All[a]).Any(r=>w.Nodes.At(r.Target,r.Entry).Id==b),n=>w.Nodes.All[n].Owner,1,blocked,industry:false);
+{
+// Exercise the turn-end entry point, independently of the industry roulette.
+var (deliveryWorld,deliverySource,deliveryTarget)=Fixture();var deliveryRobot=Add(deliveryWorld,deliverySource,RobotParts.Complete);
+deliveryWorld.Robots.DirectDelivery.ReserveParts(deliveryWorld,deliverySource,deliveryTarget,deliveryRobot.Id,RobotParts.Complete,null,0);
+int turn=deliveryWorld.Population.Turn;
+Check(deliveryWorld.Robots.Nodes[deliverySource].Count==1 && deliveryWorld.Robots.Nodes[deliveryTarget].Count==0,"Reservation does not deliver before a global turn");
+deliveryWorld.Campaign.Advance(deliveryWorld,-1,0,enemies:false);
+Check(deliveryWorld.Population.Turn==turn+1,"Turn-end advances exactly one global turn");
+Check(deliveryWorld.Industry.Pending && deliveryWorld.Industry.SelectedSector<0,"Delivery is checked before industry roulette is rolled or applied");
+Check(deliveryWorld.Robots.Nodes[deliverySource].Count==0 && deliveryWorld.Robots.Nodes[deliveryTarget].Robots.Single().Parts==RobotParts.Complete && deliveryWorld.Robots.DirectDelivery.Orders.Count==0,"Truck parts arrive after exactly one global turn through the turn-end entry point");
+Check(deliveryWorld.Robots.Transport.LastTransfers.Count==3,"Turn-end records all three delivered parts");
+Console.WriteLine("PASS: exactly one global turn delivers truck parts before industry roulette.");
+}
+if(args.Contains("--global-turn-only"))return;
 var (w,a,b)=Fixture();var complete=Add(w,a,RobotParts.Complete);var receiver=Add(w,b,RobotParts.Legs);var order=w.Robots.DirectDelivery.Reserve(w,a,b,complete.Id,RobotParts.Head,receiver.Id,0);
 Check(w.Campaign.RobotBattles.AvailableFrom(w,0,a)==0 && w.Campaign.RobotBattles.SelectableRobots(w,0,a,false).Length==0,"Direct-part locks exclude whole robot from offensive deployment");Check(w.Robots.Nodes[a].Robots.Single().Parts==RobotParts.Complete,"Reservation leaves actual parts at source");Reject(()=>w.Robots.MovePart(a,complete.Id,RobotParts.Head,null));w.Robots.MovePart(a,complete.Id,RobotParts.Body,null);Check(w.Robots.Nodes[a].Count==2,"Unreserved body can still be moved");Reject(()=>w.Robots.MovePart(b,receiver.Id,RobotParts.Legs,null));
 Resolve(w);Check(w.Robots.Nodes[b].Robots.Single().Parts==(RobotParts.Head|RobotParts.Legs) && w.Robots.DirectDelivery.Orders.Count==0,"One-shot part attaches to chosen robot");Check(w.Robots.Transport.LastTransfers.Any(s=>s.RobotId==complete.Id && s.Parts==RobotParts.Head),"Direct delivery included in transport history");

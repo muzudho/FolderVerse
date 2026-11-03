@@ -11,7 +11,7 @@ public partial class Game1
         if(_salvageHits.Exists(h=>h.Bounds.Contains(_pointer))){DrawRulebookHint("廃品回収計画","クリックでこの地点の廃品カタログを開きます。");return;}
         if(_directTrucks.Exists(t=>t.Bounds.Contains(_pointer))){
             var delivery=_directTrucks.Find(t=>t.Bounds.Contains(_pointer));
-            DrawRulebookHint(DirectSeaRoute(delivery.A,delivery.B)?"小型フェリー":"トラック","ロボットパーツの直送便です。予約したパーツを伝播フェーズで配送します。");return;
+            DrawRulebookHint(DirectSeaRoute(delivery.A,delivery.B)?"小型フェリー":"トラック","ロボットパーツの直送便です。内政終了後の配送フェーズで配送します。");return;
         }
         int battery=_net.HitBattery(_pointer);
         if(battery>=0)

@@ -135,12 +135,13 @@ public partial class Game1
             case Screen.PlayerSelect:TrySelectPlayer(_pointer);break;
             case Screen.PlayerReady:if(StatusProceed.Contains(_pointer))ConfirmHumanSelection();break;
             case Screen.WorldStatus:
+                if(DomesticOperationsAllowed){EndDomesticPhase(automaticAll:true);_demoMapStage=0;_demoMapAge=0;break;}
                 _demoMapVisits++;_demoMapStage=0;_demoMapAge=0;
                 var home=_setup.Nodes.Current(_setup.PlayerSlot);
                 var path=home==null?null:_setup.Routes.Neighbors(home).FirstOrDefault(r=>_setup.Campaign.RobotBattles.CanMarch(_setup,_setup.PlayerSlot,_setup.Nodes.At(r.Target,r.Entry).Id));
                 int target=path==null?-1:_setup.Nodes.At(path.Target,path.Entry).Id;
                 _setup.Campaign.Advance(_setup,target,target<0?0:_setup.Campaign.RobotBattles.Available(_setup,_setup.PlayerSlot));
-                _world.ShowSetup(_setup,true);OpenBattle();break;
+                _militaryTransportPlayback=true;_world.ShowSetup(_setup,true);OpenBattle();break;
             case Screen.Disposition:_pointer=dispositionPoint;DispositionInput(true,false);break;
             default:BeginRolling();break;
         }
