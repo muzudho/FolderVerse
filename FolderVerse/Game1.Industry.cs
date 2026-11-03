@@ -97,7 +97,6 @@ public partial class Game1
         }
         for(int i=0;i<Math.Min(labels.Length,IndustryVisibleLabels);i++){
             var label=labels[i];
-            if(label.Backplate)_ui.Box(label.Bounds,Cream);
             DrawIndustryDuration(_setup.Industry.Wheel[i].Turns,label.Bounds,new Color(19,38,49),label.Scale);
         }
         for(int y=0;y<28;y++)_ui.Box(new((int)center.X-28+y,(int)(center.Y-radius)-35+y,56-y*2,1),Cream);
