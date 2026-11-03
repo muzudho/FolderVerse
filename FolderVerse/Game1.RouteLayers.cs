@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using Microsoft.Xna.Framework;
 
 public partial class Game1
@@ -45,7 +45,8 @@ public partial class Game1
         }
         return false;
     }
-    private void DrawRouteLayerButtons()
+    private void DrawRouteLayerButtons() => DrawTutorialChrome(()=>DrawRouteLayerButtonsCore(),true);
+    private void DrawRouteLayerButtonsCore()
     {
         DrawMapDragButton();DrawFolderTreeButton();DrawReservationDirectoryButton();
         string[] names={"緯番・経番","電池","赤道","ロボット","他国"};bool[] enabled={_net.ShowMapSymbols,_net.ShowBatteries,_net.ShowEquator,_net.ShowRobots,_net.ShowOtherCountries};int[] indices={0,1,4,5,6};

@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -58,7 +58,8 @@ public partial class Game1
         _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
         try{DrawPrimaryActionButtons();}finally{_spriteBatch.End();GraphicsDevice.ScissorRectangle=old;_spriteBatch.Begin(transformMatrix:transform);}
     }
-    private void DrawPrimaryActionButtons()
+    private void DrawPrimaryActionButtons() => DrawTutorialChrome(()=>DrawPrimaryActionButtonsCore(),false);
+    private void DrawPrimaryActionButtonsCore()
     {
         string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画"};
         for(int i=0;i<6;i++){

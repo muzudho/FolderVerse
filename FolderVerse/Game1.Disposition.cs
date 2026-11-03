@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -28,7 +28,8 @@ public partial class Game1
         if(_statusMenuOpen && QuitMenuItem.Contains(point)){ReturnToTitle();return true;}
         _statusMenuOpen=false;return false;
     }
-    private void DrawStatusMenu()
+    private void DrawStatusMenu() => DrawTutorialChrome(()=>DrawStatusMenuCore(),true);
+    private void DrawStatusMenuCore()
     {
         _ui.Button(StatusMenuButton,"＜システムメニュー＞",Muted,.52f);
         if(_statusMenuOpen)

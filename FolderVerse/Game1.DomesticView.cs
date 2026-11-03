@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -54,7 +54,8 @@ public partial class Game1
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:Matrix.CreateTranslation(NodeInspectorOffset,0,0)*transform);
         try{draw();}finally{_pointer=pointer;_ui.Pointer=hover;_spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);}
     }
-    private void DrawInspectorHandle(){
+    private void DrawInspectorHandle() => DrawTutorialChrome(()=>DrawInspectorHandleCore(),false);
+    private void DrawInspectorHandleCore(){
         if(!InspectorVisible){
             return; // Primary actions are drawn together after the inspectors.
         }

@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 namespace FolderVerse;
 
 using System;
@@ -97,7 +97,7 @@ public partial class Game1 : Game
         _portraitRenderer=new PortraitRenderer(Content); _font=Fonts.LoadUi(Content);
         _pixel=new Texture2D(GraphicsDevice,1,1); _pixel.SetData(new[]{Color.White});
         _counter=new ToyCounterRenderer(Content.Load<SpriteFont>(Fonts.Counter),_pixel);
-        _ui=new UiPainter(_spriteBatch,_pixel,_font){AdaptiveText=()=>DomesticTheme}; _world=new WorldPreview(GraphicsDevice);
+        _ui=new UiPainter(_spriteBatch,_pixel,_font){AdaptiveText=()=>DomesticTheme,ButtonOffsetY=TutorialButtonOffset}; _world=new WorldPreview(GraphicsDevice);
         _orientationToy=new ToyOrientationRenderer(GraphicsDevice);
         LoadScreenshotFeedback();LoadCutInMobs();LoadSetupHost();LoadTutorialHost();CheckAutoSave();LoadTutorialAchievements();LoadTitleStartAssets();
     }
@@ -130,6 +130,7 @@ public partial class Game1 : Game
     { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive);UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds); UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);UpdateIndustryMusic();UpdateEndingMusic(IsActive);base.Update(gameTime); }
     private void HandleInputCore(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
     {
+        UpdateTutorialChrome((float)gameTime.ElapsedGameTime.TotalSeconds);
         UpdateFullscreen(keyboard,active);
         if(active && (mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released || mouse.RightButton==ButtonState.Pressed && _previousMouse.RightButton==ButtonState.Released || mouse.ScrollWheelValue!=_previousMouse.ScrollWheelValue || keyboard.GetPressedKeys().Any(k=>_previousKeyboard.IsKeyUp(k)))){
             if(_screen==Screen.Industry)_industryIdleAge=0;
@@ -137,6 +138,7 @@ public partial class Game1 : Game
         }
         _pointer=CanvasPoint(mouse); _ui.Pointer=_pointer;
         bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
+        if(!_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateCampaignDivider(mouse,active,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         UpdateRateDrag(mouse,active,click);
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
@@ -173,7 +175,7 @@ public partial class Game1 : Game
         if(WandererPolicyInput(active && click,active && escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         UpdateTutorialStartGuide(gameTime.TotalGameTime.TotalSeconds);
         if(_tutorialAttackGuide){
-            if(active && (click || enter || escape)){_tutorialAttackGuide=false;if(_tutorialGuideMessage is 3 or >=5){_lastAutoSaveTurn=-1;AutoSaveDomestic();}}
+            if(active && (click || enter || escape)){_tutorialAttackGuide=false;_tutorialGuideClosing=0;if(_tutorialGuideMessage is 3 or >=5){_lastAutoSaveTurn=-1;AutoSaveDomestic();}}
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(TutorialMessageInput(active && click,active && escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -768,7 +770,7 @@ public partial class Game1 : Game
         DrawDemoOverlay(transform);
         if(_homePersuasionActive){_spriteBatch.Begin(transformMatrix:transform);DrawHomePersuasion();_spriteBatch.End();}
         if(TutorialReviewAvailable){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialMessages();_spriteBatch.End();}
-        if(_tutorialAttackGuide){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAttackGuide();_spriteBatch.End();}
+        if(_tutorialAttackGuide || _tutorialGuideClosing>=0){_spriteBatch.Begin(transformMatrix:transform);_tutorialDrawingHost=true;DrawTutorialAttackGuide();_tutorialDrawingHost=false;_spriteBatch.End();}
         if(_wandererPolicyOpen){_spriteBatch.Begin(transformMatrix:transform);DrawWandererPolicyDialog();_spriteBatch.End();}
         if(_screen==Screen.Battle && _tutorialAchievementAge>=0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAchievementCutIn();_spriteBatch.End();}
         if(_conquestOverview){_spriteBatch.Begin(transformMatrix:transform);DrawConquestCurtain(1-MathHelper.SmoothStep(0,1,(float)(_conquestAge/.65)));_spriteBatch.End();}

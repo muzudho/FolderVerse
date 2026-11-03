@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using Microsoft.Xna.Framework;
 public partial class Game1
 {
@@ -20,15 +20,22 @@ public partial class Game1
         else if(before==1 && (_setup.TutorialMapRotations&7)==7)_setup.TutorialMapStage=2;
         else if(before==2 && (_setup.TutorialMapRotations&8)!=0 && _setup.TutorialMapEdgeChanged)_setup.TutorialMapStage=3;
         else if(before==3 && _statusGlobe)_setup.TutorialMapStage=4;
+        else if(before==4 && _statusGlobe && (_setup.TutorialMapRotations&TutorialGlobeRotationMask)==TutorialGlobeRotationMask)_setup.TutorialMapStage=5;
+        else if(before==5 && _statusGlobe && (_setup.TutorialMapRotations&TutorialGlobeSlide)!=0){_setup.TutorialMapStage=6;_setup.TutorialCompletionShown=true;}
         int stage=_setup.TutorialMapStage;
         bool slide=stage==2 && (_setup.TutorialMapRotations&8)==0;
-        int notice=slide?16:1<<stage;
-        if(stage<4 && (_setup.TutorialMapNotices&notice)==0){
-            _setup.TutorialMapNotices|=notice;_tutorialGuideMessage=slide?12:8+stage;_tutorialAttackGuide=true;_tutorialGuideStarted=_animationTime;
+        int notice=TutorialThreeNotice(stage,_setup.TutorialMapRotations);
+        if(stage<=6 && (_setup.TutorialMapNotices&notice)==0){
+            _setup.TutorialMapNotices|=notice;_tutorialGuideMessage=slide?12:stage>=4?stage+9:8+stage;_tutorialAttackGuide=true;_tutorialGuideStarted=_animationTime;
         }
         if(before!=stage){_lastAutoSaveTurn=-1;AutoSaveDomestic();}
         return true;
     }
+    // Keep the original net bits (0..3); globe buttons use bits 4..10 and slide uses bit 11.
+    private const int TutorialGlobeRotationMask=127<<4,TutorialGlobeSlide=1<<11;
+    private static int TutorialThreeNotice(int stage,int rotations)=>stage==2 && (rotations&8)==0?16:1<<(stage>=4?stage+1:stage);
+    private void RecordTutorialGlobeRotation(int button)
+    {if(_setup.TutorialStep==3 && _setup.TutorialMapStage==4 && OrientationGlobe && !_tutorialAttackGuide)_setup.TutorialMapRotations|=button;}
     private void RecordTutorialMapRotation(int button)
     {if(_setup.TutorialStep==3 && _setup.TutorialMapStage==1 && !OrientationGlobe)_setup.TutorialMapRotations|=button;}
     private void RecordTutorialMapEdge()

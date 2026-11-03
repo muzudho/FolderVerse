@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Text.RegularExpressions;
 using Microsoft.Xna.Framework;
@@ -10,14 +10,17 @@ public sealed class UiPainter
     private readonly Texture2D _pixel;
     private readonly SpriteFont _font;
     public Point Pointer { get; set; }
+    public int OffsetY { get; set; }
+    public Func<Rectangle,int> ButtonOffsetY { get; set; } = _=>0;
     public Func<bool> AdaptiveText {get;set;}=()=>false;
     public UiPainter(SpriteBatch batch, Texture2D pixel, SpriteFont font) { Batch=batch; _pixel=pixel; _font=font; }
-    public void Box(Rectangle rect, Color color) => Batch.Draw(_pixel,rect,color);
-    public void Tile(Vector2 center,Vector2 size,float rotation,Color color)=>Batch.Draw(_pixel,center,null,color,rotation,new Vector2(.5f),size,SpriteEffects.None,0);
+    public void Box(Rectangle rect, Color color) { rect.Y+=OffsetY; Batch.Draw(_pixel,rect,color); }
+    public void Tile(Vector2 center,Vector2 size,float rotation,Color color)=>Batch.Draw(_pixel,center+new Vector2(0,OffsetY),null,color,rotation,new Vector2(.5f),size,SpriteEffects.None,0);
     public Vector2 Measure(string text,float scale)=>_font.MeasureString(text)*scale;
     private static readonly Regex Coordinates=new(@"（(?<longitude>-?\d+),(?<latitude>-?\d+)(?=[,）])",RegexOptions.Compiled);
     public void Text(string text, Vector2 at, float scale, Color color)
     {
+        at.Y+=OffsetY;
         int start=0;
         void Run(string part,Color tint)
         {
@@ -47,7 +50,9 @@ public sealed class UiPainter
     }
     public void Button(Rectangle rect,string label,Color color,float scale=0.7f)
     {
-        if(rect.Contains(Pointer)) color=Color.Lerp(color,Color.White,0.14f);
+        int offset=OffsetY==0?ButtonOffsetY(rect):0;
+        rect.Y+=offset;
+        if(OffsetY==0 && offset==0 && rect.Contains(Pointer)) color=Color.Lerp(color,Color.White,0.14f);
         Box(new Rectangle(rect.X,rect.Y+4,rect.Width,rect.Height),new Color(7,23,35)); Box(rect,color); Center(label,rect,scale,AdaptiveText()?ContrastInk(color):Color.White);
     }
 }

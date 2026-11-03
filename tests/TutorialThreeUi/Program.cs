@@ -1,4 +1,4 @@
-using FolderVerse;
+﻿using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -26,8 +26,8 @@ sealed class MapLessonGame:Game1
  object Call(string n,params object[] a)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,a)!;
  object Prop(string n)=>typeof(Game1).GetProperty(n,F)!.GetValue(this)!;
  static void Check(bool ok,string text){if(!ok)throw new Exception(text);}
- void Guide(int id){Call("UpdateTutorialStartGuide",100d);Check((bool)Get("_tutorialAttackGuide") && (int)Get("_tutorialGuideMessage")==id,"Expected map guide "+id);Set("_animationTime",(float)Get("_tutorialGuideStarted")+1);}
- void Dismiss(){Set("_tutorialAttackGuide",false);}
+ void Guide(int id){Call("UpdateTutorialStartGuide",100d);Check((bool)Get("_tutorialAttackGuide") && (int)Get("_tutorialGuideMessage")==id,"Expected map guide "+id);Set("_animationTime",(float)Get("_tutorialGuideStarted")+1);Call("UpdateTutorialChrome",.35f);}
+ void Dismiss(){Set("_tutorialAttackGuide",false);Call("UpdateTutorialChrome",.35f);}
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_conquestOverviewEnabled",false);
   Set("_pointer",new Point(1000,722));Call("TutorialMenuInput",true,false,false,new KeyboardState());w=(WorldSetup)Get("_setup");net=(CubeNet)Get("_net");
@@ -57,10 +57,26 @@ sealed class MapLessonGame:Game1
    }
    Check(clicked && net.IsAnimating,"Actual alphabet click changes face attachment and records it");Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==2,"Attachment animation finishes before guide");net.UpdateAnimation(1f);Guide(11);
   }
-  if(frame==4){Dismiss();var button=(Rectangle)typeof(Game1).GetField("MapViewButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;Call("RouteLayerClick",button.Center);Call("UpdateMapTransition",10f);Call("UpdateTutorialStartGuide",100d);Check((bool)Get("_statusGlobe") && w.TutorialMapStage==4 && !(bool)Get("_tutorialAttackGuide") && !w.TutorialCompletionShown,"Assembly returns to globe without inventing completion/reward");}
-  if(frame==5){var review=(Rectangle)Prop("TutorialReviewButton");Set("_pointer",review.Center);Call("TutorialMessageInput",true,false);Check((bool)Get("_tutorialMessagesOpen") && (int)Get("_tutorialMessageSelection")==8,"Step three has its own review messages");}
+  if(frame==4){Dismiss();var button=(Rectangle)typeof(Game1).GetField("MapViewButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;Call("RouteLayerClick",button.Center);Call("UpdateMapTransition",10f);Guide(13);Check((bool)Get("_statusGlobe") && w.TutorialMapStage==4 && !w.TutorialCompletionShown,"Assembly starts globe rotation lesson before completion");}
+  if(frame==5){
+   Dismiss();var toy=(Rectangle)Prop("OrientationToyArea");
+   for(int axis=0;axis<3;axis++)foreach(int sign in new[]{-1,1}){
+    var button=(Rectangle)Call("AxisButton",toy,axis,sign);Check((bool)Call("OrientationControlClick",button.Center),"Globe axis button accepts click");
+    Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==4,"Globe rotation animation finishes before advancing");Call("UpdateOrientationRotation",.5f);
+   }
+   Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==4 && !(bool)Get("_tutorialAttackGuide"),"Six axis buttons still require reset button");
+   var zero=(Rectangle)Prop("OrientationResetButton");Call("OrientationControlClick",zero.Center);Guide(14);Check(w.TutorialMapStage==5 && !w.TutorialCompletionShown,"Seven distinct buttons unlock globe slide");
+   var progress=new WorldSetup();progress.PrepareTutorialStepThree(123,456,789);progress.TutorialMapStage=w.TutorialMapStage;progress.TutorialMapRotations=w.TutorialMapRotations;progress.TutorialMapNotices=w.TutorialMapNotices;var copy=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(progress));Check(copy.TutorialMapRotations==w.TutorialMapRotations && copy.TutorialMapStage==5 && copy.TutorialMapNotices==w.TutorialMapNotices,"Globe rotation progress survives saves");
+  }
+  if(frame==6){
+   Dismiss();var toy=(Rectangle)Prop("OrientationToyArea");var start=toy.Center;var held=new MouseState(start.X,start.Y,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
+   Set("_pointer",start);Call("DragOrientationRobot",held,true,true);Call("DragOrientationRobot",new MouseState(),true,false);Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==5,"Click without dragging does not finish globe slide");
+   Set("_pointer",start);Call("DragOrientationRobot",held,true,true);Set("_previousMouse",held);Set("_pointer",new Point(start.X+40,start.Y+20));Call("DragOrientationRobot",held,true,false);
+   Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==5,"Slide waits for release");Call("DragOrientationRobot",new MouseState(),true,false);Guide(15);Check(w.TutorialMapStage==6 && w.TutorialCompletionShown,"Globe drag release unlocks final title-return guide");
+  }
+  if(frame==7){Dismiss();Call("UpdateTutorialStartGuide",100d);Check(!(bool)Get("_tutorialAttackGuide"),"Completion guide is shown once");var review=(Rectangle)Prop("TutorialReviewButton");Set("_pointer",review.Center);Call("TutorialMessageInput",true,false);Check((bool)Get("_tutorialMessagesOpen") && (int)Get("_tutorialMessageSelection")==8,"Step three has its own review messages");}
   base.Draw(new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero));
   var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"tutorial-three-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
-  if(frame++==5){Console.WriteLine("PASS: menu/No.1, four mob guides, actual unfolding, plus/zero/minus, actual alphabet attachment, animation gating, assembly, no premature completion and review rendered.");Exit();}
+  if(frame++==7){Console.WriteLine("PASS: menu/No.1, all eight mob guides, actual unfolding, plus/zero/minus, actual alphabet attachment, animation gating, assembly, all seven globe buttons, globe slide release, completion, save progress and review rendered.");Exit();}
  }
 }
