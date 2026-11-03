@@ -41,6 +41,13 @@ sealed class InvasionUiCheck:Game1
             if(!net.MovementTargets.Contains(target.Id) || net.AttackHighlightTargets.Contains(target.Id) || net.EmphasizedNode(target.Id) || !net.NodeVisible(world,target))throw new Exception("Empty destination stays visible/clickable without emphasis");
             var rows=(System.Collections.IList)Get("_invasionSources");if(rows.Count==0 || ((Robot[])Call("InvasionRobots",rows[0]!)).Length!=0)throw new Exception("Empty sortie source must remain inspectable");Call("OpenInvasionPicker",0);
         }
+        if(Environment.GetCommandLineArgs().Contains("--local-attack")){
+            world.Campaign.Reset();world.ConquerorLocations[0]=target.Cell;world.ConquerorPoints[0]=target.Center;foreach(var r in world.Robots.Retinues[0].Robots.ToArray())world.Robots.Retinues[0].Remove(r.Id);
+            Call("OpenWarPlanning");var net=(CubeNet)Get("_net");
+            if(!net.MovementTargets.Contains(target.Id) || !net.AttackHighlightTargets.Contains(target.Id) || net.HoverSuppressedNode==target.Id)throw new Exception("Hostile current node must be selectable and highlighted even with empty pocket");
+            Call("SelectMoveNode",target.Id);var rows=(System.Collections.IList)Get("_invasionSources");int queen=Enumerable.Range(0,rows.Count).Single(i=>(bool)rows[i]!.GetType().GetField("Queen")!.GetValue(rows[i])! && (int)rows[i]!.GetType().GetField("Owner")!.GetValue(rows[i])! ==0);Call("OpenInvasionPicker",queen);
+            Set("_pointer",new Point(450,730));Call("InvasionPickerInput",true,false);
+        }
         if(Environment.GetCommandLineArgs().Contains("--sortie-hints")){
             var hintsRobots=hangar.Robots.Select(r=>r.Id==samples[2].Id?r with {DamagedParts=RobotParts.Complete}:r).ToArray();foreach(var r in hangar.Robots.ToArray())hangar.Remove(r.Id);foreach(var r in hintsRobots)hangar.Add(r);Call("SelectMoveNode",target.Id);Set("_pointer",new Point(236,350));
         }
@@ -52,6 +59,10 @@ sealed class InvasionUiCheck:Game1
         {
             if(frame==1 && Environment.GetCommandLineArgs().Contains("--sortie-hints")){
                 var robot=world.Robots.Nodes[home.Id].Robots.ElementAt(2);world.Robots.PendingEdits.Add(new(home.Id,new[]{robot.Id},null));
+            }
+            if(frame==1 && Environment.GetCommandLineArgs().Contains("--local-attack")){
+                Set("_pointer",new Point(1400,820));Call("InvasionPickerInput",true,false);
+                if(!world.Campaign.PlannedOrders.Any(o=>o.TargetNode==target.Id && o.SourceNode==target.Id && o.Queen && o.Fighters==0))throw new Exception("Solo queen picker saves current-node attack immediately");
             }
             if(EmptySortie && frame==1){
                 Set("_invasionPicker",-1);foreach(var entry in emptySortieStores)foreach(var robot in entry.Robots)entry.Store.Add(robot);
@@ -154,6 +165,7 @@ sealed class InvasionUiCheck:Game1
             var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);
             using var image=new Texture2D(GraphicsDevice,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height);image.SetData(pixels);
             using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"invasion-ui-{frame}.png"));image.SaveAsPng(file,image.Width,image.Height);
+            if(frame==1 && Environment.GetCommandLineArgs().Contains("--local-attack")){Console.WriteLine("PASS: local hostile target highlighted, empty pocket queen-only picker and immediate same-node attack reservation rendered.");Exit();return;}
             if(frame==1 && Environment.GetCommandLineArgs().Contains("--sortie-hints")){Console.WriteLine("PASS: unavailable robot hover renders one and multiple actual sortie refusal reasons.");Exit();return;}
             if(frame==3 && Environment.GetCommandLineArgs().Contains("--immediate-sortie")){Console.WriteLine("PASS: native picker confirmation immediately saves sortie and replaces guard job; inspector stays open without final reserve button.");Exit();return;}
             if(EmptySortie && frame==1){Console.WriteLine("PASS: no-robot map destination remains clickable, empty sortie picker renders, emphasis returns when robots become available.");Exit();return;}

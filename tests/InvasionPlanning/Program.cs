@@ -126,6 +126,24 @@ foreach(bool queen in new[]{false,true})
     foreach(var r in new[]{robot with {Disposal=true},robot with {FactoryWorker=true}}){Replace(w.Robots.Retinues[0],r);Check(Reasons(pocket,r).Length>0,"Pocket roles explain their actual eligibility restrictions");}
     Replace(w.Robots.Nodes[home.Id],damaged);w.Robots.PendingEdits.Add(new(home.Id,new[]{robot.Id},null));Check(Reasons(hangar,damaged).Length==2,"All simultaneous refusal reasons are returned");
 }
+// A conqueror can attack hostile territory she already occupies, including alone.
+foreach(int count in new[]{0,2}){
+    var(w,home,target)=Fixture();home.Owner=1;typeof(WorldSetup).GetProperty("TutorialStep")!.SetValue(w,1);
+    Check(w.Campaign.RobotBattles.CanSortie(w,0,home.Id) && !w.Campaign.RobotBattles.CanMarch(w,0,home.Id),"Local hostile attack allowed while same-node peaceful move stays invalid");
+    foreach(int owner in new[]{0,-1}){home.Owner=owner;Check(!w.Campaign.RobotBattles.CanSortie(w,0,home.Id),"Own and neutral current nodes cannot start local war");}home.Owner=1;w.Relations.SetSuperior(1,0);Check(!w.Campaign.RobotBattles.CanSortie(w,0,home.Id),"Allied current node cannot start local war");w.Relations.SetSuperior(1,-1);
+    var robots=Enumerable.Range(0,count).Select(_=>w.Robots.Create(0,RobotParts.Complete)).ToArray();foreach(var r in robots)w.Robots.Retinues[0].Add(r);
+    w.Robots.Nodes[home.Id].Add(w.Robots.Create(1,RobotParts.Complete) with {InterceptOnly=true});
+    w.Campaign.Resolve(w,new[]{new March(0,home.Id,count,home.Id,true,true,robots.Select(r=>r.Id).ToArray())});
+    var encounter=w.Campaign.RobotBattles.Encounters.Single();Check(encounter.Kind==BattleKind.Node && encounter.Target==home.Id,"In-place attack skips interception and starts a node battle");
+    var units=encounter.Battles.SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Where(u=>u.Owner==0).ToArray();Check(units.Any(u=>u.Role==BattleRole.Queen) && units.Count(u=>u.Robot!=null)==count,"Solo queen and chosen pocket robots enter actual local combat");
+    Check(w.Campaign.RobotBattles.LastQueenMarches.Single()==(0,home.Id,home.Id),"Local attack records no travel to another node");Check(TutorialAchievements.Attacked(w),"Actual in-place war unlocks tutorial attack achievement");Check(!w.Campaign.RobotBattles.CanSortie(w,0,home.Id),"Ongoing local combat blocks another reservation");w.Campaign.RobotBattles.Check(w);
+}
+{
+    var(w,home,target)=Fixture();home.Owner=1;w.ConquerorLocations[2]=home.Cell;w.ConquerorPoints[2]=home.Center;
+    w.Campaign.Resolve(w,new[]{new March(0,home.Id,0,home.Id,true,true,Array.Empty<long>()),new March(2,home.Id,0,home.Id,true,true,Array.Empty<long>())});
+    Check(w.Campaign.RobotBattles.Encounters.All(e=>e.Kind==BattleKind.Node),"Simultaneous local attackers do not create a zero-length edge encounter");
+}
+Console.WriteLine("PASS: local hostile attacks with queen alone or pocket robots, own/allied/neutral exclusions, ongoing-battle blocking, interception bypass and simultaneous local attackers.");
 // Distance uses taxicab geometry; successful conversion has separate before/after frames.
 {
     var b=new BattleState(123,new(){PersuasionPercent=100,PersuasionRadius=4});b.Armies.Add(new(){Owner=0});b.Armies.Add(new(){Owner=1});

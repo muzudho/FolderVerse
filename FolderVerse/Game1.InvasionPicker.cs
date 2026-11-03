@@ -55,7 +55,7 @@ public partial class Game1
             _ui.Center((reservation.Length>0?reservation+"予約":"待機")+(selected?" → 出撃選択":""),new(r.X,r.Y+122,r.Width,26),.30f,Cream);
         }
         if(robots.Length==0)_ui.Text("出撃できるロボットはいません",new(380,375),.6f,Cream);
-        if(row.Queen)_ui.Button(InvasionQueenToggle,_invasionQueenDraft?"クイーン：参加（移動も予約）":"クイーン：参加しない",_invasionQueenDraft?Accent:Muted,.5f);
+        if(row.Queen)_ui.Button(InvasionQueenToggle,_invasionQueenDraft?(row.Node==_selectedMoveNode?"クイーン：参加（この地点で開戦）":"クイーン：参加（移動も予約）"):"クイーン：参加しない",_invasionQueenDraft?Accent:Muted,.5f);
         _ui.Text($"ロボット {_invasionDraft.Count}体"+(row.Queen && _invasionQueenDraft?" ＋ クイーン":""),new(380,800),.55f,Cream);
         _ui.Button(InvasionPickerCancel,"取消",Muted,.55f);_ui.Button(InvasionPickerDone,"選択を確定",Accent,.55f);
         _ui.Text("０体かつクイーン不参加なら、この出撃元は参加しません",new(350,865),.42f,Cream);

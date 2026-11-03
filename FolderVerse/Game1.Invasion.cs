@@ -36,7 +36,7 @@ public partial class Game1
     }
     private void OpenWarPlanning()
     {
-        _withdrawalEncounter=-1;CloseMovement();OpenMovementWithFit(false);_warPlanning=true;_net.AttackTargetMarkers=true;_net.RevealMovementTargets=true;_net.MovementTargets.Clear();
+        _withdrawalEncounter=-1;CloseMovement();OpenMovementWithFit(false);_warPlanning=true;_net.HoverSuppressedNode=-1;_net.AttackTargetMarkers=true;_net.RevealMovementTargets=true;_net.MovementTargets.Clear();
         foreach(var node in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner)))
             foreach(var route in _setup.Routes.Neighbors(node))
             {
@@ -44,11 +44,7 @@ public partial class Game1
                 if(_setup.Campaign.RobotBattles.CanAttackFrom(_setup,node.Owner,node.Id,target) && EnemyTarget(target))_net.MovementTargets.Add(target);
             }
         foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler))
-            foreach(var route in _setup.Routes.NodeChoices(ruler))
-            {
-                int target=_setup.Nodes.At(route.Target,route.Entry).Id;
-                if(_setup.Campaign.RobotBattles.CanMarch(_setup,ruler,target) && EnemyTarget(target))_net.MovementTargets.Add(target);
-            }
+            foreach(int target in InvasionTargets(ruler))if(EnemyTarget(target))_net.MovementTargets.Add(target);
         RefreshWarTargetHighlights();
         _invasionSources.Clear();_invasionPage=0;_invasionPicker=-1;
     }
@@ -66,13 +62,15 @@ public partial class Game1
         }
         foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler)){
             int source=_setup.Nodes.Current(ruler)?.Id??-1;
-            if(source<0 || InvasionRobots(new(){Owner=ruler,Node=source,Queen=true}).Length==0)continue;
-            foreach(var route in _setup.Routes.NodeChoices(ruler)){
-                int target=_setup.Nodes.At(route.Target,route.Entry).Id;
-                if(_net.MovementTargets.Contains(target) && _setup.Campaign.RobotBattles.CanMarch(_setup,ruler,target))_net.AttackHighlightTargets.Add(target);
-            }
+            if(source<0)continue;
+            // A conqueror already in hostile territory can start a persuasion-only attack.
+            if(_net.MovementTargets.Contains(source) && _setup.Campaign.RobotBattles.CanSortie(_setup,ruler,source))_net.AttackHighlightTargets.Add(source);
+            if(InvasionRobots(new(){Owner=ruler,Node=source,Queen=true}).Length==0)continue;
+            foreach(int target in InvasionTargets(ruler))if(_net.MovementTargets.Contains(target))_net.AttackHighlightTargets.Add(target);
         }
     }
+    private IEnumerable<int> InvasionTargets(int ruler)=>_setup.Routes.NodeChoices(ruler).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id)
+        .Append(_setup.Nodes.Current(ruler)?.Id??-1).Where(id=>id>=0 && _setup.Campaign.RobotBattles.CanSortie(_setup,ruler,id)).Distinct();
     private bool CanPlanRuler(int ruler)=>ruler>=0 && _setup.ControllerOf(ruler)==_setup.TurnPlayer && _setup.Relations.Powered[ruler] && !_setup.Relations.Pending.Any(p=>p.Ruler==ruler);
     private bool EnemyTarget(int id)=>_setup.Nodes.All[id].Owner<0 || !_setup.Relations.Allied(_setup.PlayerSlot,_setup.Nodes.All[id].Owner);
     private void BuildInvasionSources(int target)
@@ -80,7 +78,7 @@ public partial class Game1
         _invasionSources.Clear();_invasionPage=0;_invasionPicker=-1;
         foreach(var node in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner) && _setup.Campaign.RobotBattles.CanAttackFrom(_setup,n.Owner,n.Id,target)))
             _invasionSources.Add(new(){Owner=node.Owner,Node=node.Id,CanNode=true});
-        foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler).Where(r=>_setup.Campaign.RobotBattles.CanMarch(_setup,r,target)))
+        foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler).Where(r=>_setup.Campaign.RobotBattles.CanSortie(_setup,r,target)))
         {
             int node=_setup.Nodes.Current(ruler).Id;
             _invasionSources.Add(new(){Owner=ruler,Node=node,Queen=true,CanQueen=true});

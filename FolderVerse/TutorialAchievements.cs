@@ -35,6 +35,6 @@ public sealed class TutorialAchievements
         // The battle itself proves hostile contact; post-battle alliances must not erase it.
         b.Armies.Any(a=>a.Owner==0) && b.Armies.Any(a=>a.Owner!=0) &&
         w.Campaign.RobotBattles.LastMarches.Any(m=>m.Owner==0 &&
-            (b.Kind==BattleKind.Node?b.TargetNode==m.Target && m.Source!=m.Target && b.Defender!=0:
+            (b.Kind==BattleKind.Node?b.TargetNode==m.Target && b.Defender!=0:
              (b.SourceNode==m.Source && b.TargetNode==m.Target || b.SourceNode==m.Target && b.TargetNode==m.Source)));
 }
