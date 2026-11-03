@@ -4,7 +4,7 @@ public partial class Game1
 {
     private void BeginTutorialStepTwo()
     {
-        _tutorialAttackAchieved=false;_tutorialAttackGuide=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;
+        _tutorialAttackAchieved=false;_tutorialAttackGuide=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;_tutorialLastMessage=-1;
         BeginPlayerCount();_autoPlay=_demoActive=false;_statusMenuOpen=false;
         _setup.PrepareTutorialStepTwo(_random.Next(),_random.Next(),_random.Next());
         _setup.SelectPlayer(0);_setup.HumanPlayers.Add(0);_setup.SelectTurnRuler(0);
@@ -19,7 +19,7 @@ public partial class Game1
         else if(_setup.TutorialPocketed && !_setup.TutorialPocketNoticeShown){_setup.TutorialPocketNoticeShown=true;message=5;}
         else if(_setup.TutorialMoved && !_setup.TutorialMoveNoticeShown){_setup.TutorialMoveNoticeShown=true;message=6;}
         else if(_setup.TutorialPocketNoticeShown && _setup.TutorialMoveNoticeShown && !_setup.TutorialCompletionShown){_setup.TutorialCompletionShown=true;message=7;}
-        if(message>=0){_tutorialGuideMessage=message;_tutorialAttackGuide=true;_tutorialGuideStarted=_animationTime;}
+        if(message>=0){ShowTutorialGuide(message);}
         return true;
     }
 }

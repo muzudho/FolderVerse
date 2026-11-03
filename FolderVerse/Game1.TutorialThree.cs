@@ -4,7 +4,7 @@ public partial class Game1
 {
     private void BeginTutorialStepThree()
     {
-        _tutorialAttackAchieved=false;_tutorialAttackGuide=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;
+        _tutorialAttackAchieved=false;_tutorialAttackGuide=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;_tutorialLastMessage=-1;
         BeginPlayerCount();_autoPlay=_demoActive=false;_statusMenuOpen=false;
         _setup.PrepareTutorialStepThree(_random.Next(),_random.Next(),_random.Next());
         _setup.SelectPlayer(0);_setup.HumanPlayers.Add(0);_setup.SelectTurnRuler(0);
@@ -26,7 +26,7 @@ public partial class Game1
         bool slide=stage==2 && (_setup.TutorialMapRotations&8)==0;
         int notice=TutorialThreeNotice(stage,_setup.TutorialMapRotations);
         if(stage<=6 && (_setup.TutorialMapNotices&notice)==0){
-            _setup.TutorialMapNotices|=notice;_tutorialGuideMessage=slide?12:stage>=4?stage+9:8+stage;_tutorialAttackGuide=true;_tutorialGuideStarted=_animationTime;
+            _setup.TutorialMapNotices|=notice;ShowTutorialGuide(slide?12:stage>=4?stage+9:8+stage);
         }
         if(before!=stage){_lastAutoSaveTurn=-1;AutoSaveDomestic();}
         return true;

@@ -27,7 +27,7 @@ public partial class Game1
         else if(click && TutorialStep(2).Contains(_pointer))BeginTutorialStepThree();
     }
     private void BeginTutorialStepOne(){
-        _tutorialAttackAchieved=false;_tutorialAttackGuide=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;
+        _tutorialAttackAchieved=false;_tutorialAttackGuide=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;_tutorialLastMessage=-1;
         BeginPlayerCount();_autoPlay=_demoActive=false;_statusMenuOpen=false;
         _setup.PrepareTutorialStepOne(_random.Next(),_random.Next(),_random.Next());
         _setup.CompleteLand(_random.Next());_setup.SelectPlayer(0);_setup.HumanPlayers.Add(0);_setup.SelectTurnRuler(0);

@@ -33,7 +33,12 @@ sealed class CompletionGame:Game1{
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
   if(frame==1){Set("_tutorialAttackGuide",false);Call("UpdateTutorialChrome",.35f);Call("UpdateTutorialStartGuide",101d);Check(!(bool)Get("_tutorialAttackGuide"),"Completion guide is not repeated on later frames");}
+  if(frame==2){
+   var review=(Rectangle)typeof(Game1).GetProperty("TutorialReviewButton",F)!.GetValue(this)!;Set("_pointer",review.Center);Call("TutorialMessageInput",true,false);Check((int)Get("_tutorialMessageSelection")==3,"Review opens with latest completion guide selected");
+   Set("_pointer",new Point(450,350));Call("TutorialMessageInput",true,false);Check((int)Get("_tutorialMessageSelection")==0,"Older message can still be selected");
+   Call("TutorialMessageInput",false,true);Set("_pointer",review.Center);Call("TutorialMessageInput",true,false);Check((int)Get("_tutorialMessageSelection")==3,"Reopening review returns to last guide rather than last manually reviewed message");
+  }
   base.Draw(new GameTime(TimeSpan.FromSeconds(100+frame),TimeSpan.Zero));var pp=GraphicsDevice.PresentationParameters;var colors=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(colors);using var image=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);image.SetData(colors);using var output=File.Create(Path.Combine(AppContext.BaseDirectory,$"completion-{frame}.png"));image.SaveAsPng(output,image.Width,image.Height);
-  if(frame++==1){Console.WriteLine("PASS: next-domestic completion dialogue, no battle interruption, one-time/save behavior and non-overlapping header controls.");Exit();}
+  if(frame++==2){Console.WriteLine("PASS: next-domestic completion dialogue, no battle interruption, one-time/save behavior and non-overlapping header controls.");Exit();}
  }
 }

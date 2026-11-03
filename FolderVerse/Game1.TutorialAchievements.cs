@@ -16,7 +16,7 @@ public partial class Game1
     }
     private void RevealTutorialAttackAchievement(){
         if(!_tutorialAttackPending || !TutorialAchievements.AttackedScene(_setup,_robotScenes[_battleWave]))return;
-        _tutorialAttackPending=false;CheckTutorialAttackAchievement();_tutorialAchievementAge=0;
+        _tutorialAttackPending=false;CheckTutorialAttackAchievement();_tutorialAchievementAge=0;_tutorialLastMessage=2;
     }
     private void UpdateTutorialAchievementCutIn(double elapsed){
         _tutorialAchievementAge+=Math.Max(0,elapsed);
@@ -51,7 +51,7 @@ public partial class Game1
         _setup.Nodes.All[o.TargetNode].Owner>=0 && !_setup.Relations.Allied(0,_setup.Nodes.All[o.TargetNode].Owner));
     private bool ShowTutorialAttackGuideIfRequired(){
         if(!TutorialAttackRequired || TutorialHasAttackReservation)return false;
-        _tutorialGuideMessage=1;_tutorialAttackGuide=true;_tutorialGuideStarted=_animationTime;return true;
+        ShowTutorialGuide(1);return true;
     }
     private void DrawTutorialAttackGuide(){
         float slide=1-MathHelper.SmoothStep(0,1,Math.Clamp((_animationTime-_tutorialGuideStarted)/.35f,0,1));

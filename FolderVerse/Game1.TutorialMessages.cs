@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private bool _tutorialIntroShown,_tutorialMessagesOpen;
-    private int _tutorialMessageSelection,_tutorialGuideMessage=1;
+    private int _tutorialMessageSelection,_tutorialGuideMessage=1,_tutorialLastMessage=-1;
     private static readonly string[] TutorialMessageTitles={"内政開始の案内","開戦予約の案内","開戦の実績解除","ステップ１の完了","ステップ２の案内","ポケットの達成","移動の達成","ステップ２の完了","地星儀を展開図へ","展開図の回転","面のつながり","地星儀へ組立","展開図のスライド","地星儀の回転","地星儀のスライド","ステップ３の完了"};
     private static readonly string[][] TutorialMessageLines={
         new[]{"さあ、戦争の始め方を覚えましょう！","画面下段の交差する短剣［開戦予約］を押してください！"},
@@ -24,6 +24,9 @@ public partial class Game1
         new[]{"地星儀（ちせいぎ）もスライドできます！","右上の円いウィンドウの中にいるロボットを","マウスでドラッグしてください。"},
         new[]{"これで遊び方　ステップ３は終了です。","右上の＜システムメニュー＞ボタンから、","［ゲームを止めてタイトル画面に戻る］メニューをクリックしてください。"}
     };
+    private void ShowTutorialGuide(int message){
+        _tutorialGuideMessage=_tutorialLastMessage=message;_tutorialAttackGuide=true;_tutorialGuideStarted=_animationTime;
+    }
     private bool TutorialReviewAvailable=>_setup.TutorialStep is 1 or 2 or 3 && _screen!=Screen.Title && _screen!=Screen.PlayerCount && _screen!=Screen.ComputerPlayerCount;
     private int TutorialMessageBase=>_setup.TutorialStep switch{2=>4,3=>8,_=>0};
     private Rectangle TutorialReviewButton=>_screen==Screen.Battle?new(55,1046,400,30):new(1110,20,380,48);
@@ -36,11 +39,11 @@ public partial class Game1
         if(_setup.TutorialStep==1 && _setup.TutorialCompletionPending && !_setup.TutorialCompletionShown && IsStatusScreen && !_conquestOverview && !_autoPlay && !_demoActive &&
             _lastCutInPhase=="内政フェーズ" && now-_cutInStarted>=PhaseCutInSeconds){
             _setup.TutorialCompletionPending=false;_setup.TutorialCompletionShown=true;
-            _tutorialGuideMessage=3;_tutorialAttackGuide=true;_tutorialGuideStarted=_animationTime;return;
+            ShowTutorialGuide(3);return;
         }
         if(_tutorialIntroShown || !TutorialAttackRequired || !IsStatusScreen || _autoPlay || _demoActive ||
             _lastCutInPhase!="内政フェーズ" || now-_cutInStarted<PhaseCutInSeconds)return;
-        _tutorialIntroShown=true;_tutorialGuideMessage=0;_tutorialAttackGuide=true;_tutorialGuideStarted=_animationTime;
+        _tutorialIntroShown=true;ShowTutorialGuide(0);
     }
     private bool TutorialMessageInput(bool click,bool escape){
         if(_tutorialMessagesOpen){
@@ -49,17 +52,32 @@ public partial class Game1
             return true;
         }
         if(TutorialReviewAvailable && _tutorialAchievementAge<0 && click && TutorialReviewButton.Contains(_pointer)){
-            _tutorialMessagesOpen=true;_tutorialMessageSelection=TutorialMessageBase;return true;
+            _tutorialMessagesOpen=true;_tutorialMessageSelection=Array.IndexOf(TutorialReviewMessages,_tutorialLastMessage)>=0?_tutorialLastMessage:TutorialMessageBase;return true;
         }
         return false;
     }
+    private void DrawTutorialReviewButton()=>DrawTutorialChrome(()=>{
+        var r=TutorialReviewButton;
+        bool hover=r.Contains(_pointer);
+        _ui.Button(r,"",new Color(205,143,42));
+        var top=new Color(255,230,151);var bottom=new Color(224,157,51);
+        if(hover){top=Color.Lerp(top,Color.White,.2f);bottom=Color.Lerp(bottom,Color.White,.2f);}
+        for(int y=2;y<r.Height-2;y++)_ui.Box(new(r.X+2,r.Y+y,r.Width-4,1),Color.Lerp(top,bottom,(y-2f)/(r.Height-5)));
+        const string label="チュートリアルを見返す";
+        float scale=Math.Min(.48f,(r.Width-24)/_ui.Measure(label,1).X);
+        _ui.Center(label,r,scale,new Color(35,38,46));
+    },TutorialReviewButton.Center.Y<540);
     private void DrawTutorialMessages(){
         if(!TutorialReviewAvailable)return;
-        _ui.Button(TutorialReviewButton,"チュートリアルを見返す",Muted,.3f);
+        DrawTutorialReviewButton();
         if(!_tutorialMessagesOpen)return;
         _ui.Box(new(0,0,1920,1080),Color.Black*.65f);_ui.Box(new(350,170,1220,760),new Color(25,42,56));
         _ui.Text("チュートリアルを見返す",new(400,215),.8f,Cream);
-        for(int i=0;i<TutorialReviewMessages.Length;i++){int index=TutorialReviewMessages[i];_ui.Button(TutorialMessageRow(i),TutorialMessageTitles[index],index==_tutorialMessageSelection?Accent:Muted,.48f);}
+        for(int i=0;i<TutorialReviewMessages.Length;i++){
+            int index=TutorialReviewMessages[i];var row=TutorialMessageRow(i);bool selected=index==_tutorialMessageSelection;
+            if(selected){var border=row;border.Inflate(3,3);_ui.Box(border,new Color(255,214,112));}
+            _ui.Button(row,TutorialMessageTitles[index],selected?Accent:Muted,.48f);
+        }
         _ui.Box(new(790,300,730,450),Cream);
         var lines=TutorialMessageLines[_tutorialMessageSelection];
         for(int i=0;i<lines.Length;i++)_ui.Text(lines[i],new(825,365+i*85),Math.Min(.46f,655/_font.MeasureString(lines[i]).X),Muted);
