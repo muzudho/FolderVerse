@@ -29,7 +29,14 @@ sealed class MapLessonGame:Game1
  void Guide(int id){Call("UpdateTutorialStartGuide",100d);Check((bool)Get("_tutorialAttackGuide") && (int)Get("_tutorialGuideMessage")==id,"Expected map guide "+id);Set("_animationTime",(float)Get("_tutorialGuideStarted")+1);Call("UpdateTutorialChrome",.35f);}
  void Dismiss(){Set("_tutorialAttackGuide",false);Call("UpdateTutorialChrome",.35f);}
  protected override void LoadContent(){
-  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_conquestOverviewEnabled",false);
+  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_autoSaveEnabled",false);
+  Check((bool)Get("_conquestOverviewEnabled"),"Overview remains enabled globally");
+  foreach(string begin in new[]{"BeginTutorialStepOne","BeginTutorialStepTwo","BeginTutorialStepThree"}){
+   Call(begin);var tutorial=(WorldSetup)Get("_setup");Check(!(bool)Get("_conquestOverview"),begin+" skips initial conquest overview");
+   tutorial.Population.Advance(tutorial);Call("RestoreDomesticCamera");Check(!(bool)Get("_conquestOverview"),begin+" skips conquest overview on later turns");
+  }
+  typeof(WorldSetup).GetProperty("TutorialStep")!.SetValue(Get("_setup"),0);Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");Check((bool)Get("_conquestOverview"),"Normal game still starts overview after tutorials");Call("FinishConquestOverview");
+
   Set("_pointer",new Point(1000,722));Call("TutorialMenuInput",true,false,false,new KeyboardState());w=(WorldSetup)Get("_setup");net=(CubeNet)Get("_net");
   Check(w.TutorialStep==3 && w.PlayerSlot==0 && w.HumanPlayers.SequenceEqual(new[]{0}) && (bool)Get("_statusGlobe"),"Menu starts step three with player one as No.1 on globe");
   Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",90d);Set("_tutorialAttackGuide",false);Set("_homePersuasionActive",false);Guide(8);
