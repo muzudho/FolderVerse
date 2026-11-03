@@ -131,6 +131,7 @@ public partial class Game1 : Game
     private void HandleInputCore(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
     {
         UpdateTutorialChrome((float)gameTime.ElapsedGameTime.TotalSeconds);
+        UpdateOperationSettings((float)gameTime.ElapsedGameTime.TotalSeconds);
         UpdateFullscreen(keyboard,active);
         if(active && (mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released || mouse.RightButton==ButtonState.Pressed && _previousMouse.RightButton==ButtonState.Released || mouse.ScrollWheelValue!=_previousMouse.ScrollWheelValue || keyboard.GetPressedKeys().Any(k=>_previousKeyboard.IsKeyUp(k)))){
             if(_screen==Screen.Industry)_industryIdleAge=0;
@@ -139,11 +140,12 @@ public partial class Game1 : Game
         _pointer=CanvasPoint(mouse); _ui.Pointer=_pointer;
         bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
         if(!_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(UpdateCampaignDivider(mouse,active,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        UpdateRateDrag(mouse,active,click);
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
         if(CountrySettingsInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(OperationSettingsInput(active && click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(UpdateCampaignDivider(mouse,active,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        UpdateRateDrag(mouse,active,click);
         if(AbandonConfirmationInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(active && click && FolderTreeToolbarClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(InspectorFolderInput(mouse,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -187,10 +189,6 @@ public partial class Game1 : Game
         if(IsStatusScreen && _supervisorDialog!=0){
             if(active)SupervisorDialogInput(click,escape,keyboard);
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
-        }
-        if(IsStatusScreen && active && !MapTransitionActive && !OrientationRotating){
-            if(_mapDragListOpen && escape){_mapDragListOpen=false;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-            if(click && MapDragClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         }
         if(TransportModalInput(mouse,keyboard,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateAutoPlay(elapsed,click,escape,gameTime.TotalGameTime.TotalSeconds))
@@ -775,6 +773,7 @@ public partial class Game1 : Game
         if(_screen==Screen.Battle && _tutorialAchievementAge>=0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAchievementCutIn();_spriteBatch.End();}
         if(_conquestOverview){_spriteBatch.Begin(transformMatrix:transform);DrawConquestCurtain(1-MathHelper.SmoothStep(0,1,(float)(_conquestAge/.65)));_spriteBatch.End();}
         }
+        if(IsStatusScreen && !_countrySettingsOpen && (_operationSettingsOpen || _operationSettingsSlide>0)){_spriteBatch.Begin(transformMatrix:transform);DrawOperationSettings();_spriteBatch.End();}
         if(_countrySettingsOpen && IsStatusScreen){_spriteBatch.Begin(transformMatrix:transform);DrawCountrySettings();_spriteBatch.End();}
         DrawFullscreenCursor();
         LogDisplayedScreen();

@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -31,6 +31,7 @@ public partial class Game1
     private void ReturnToTitle()
     {
         StopEndingMusic();StopBattleMusic();ClearAllNodeChecks();
+        _operationSettingsOpen=false;_operationSettingsSlide=0;
         _dispositionScene=null;
         FinishConquestOverview();_conquestOverviewTurn=-1;_tutorialMenuOpen=false;_tutorialAttackGuide=false;_tutorialAttackAchieved=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;
         _campaignMenuStage=0;_titleMenuOpen=false;CancelTransportModal();_domesticViews.Clear();

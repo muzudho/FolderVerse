@@ -86,6 +86,7 @@ public partial class Game1
     private void DrawOrientationControlsCore(Rectangle toy)
     {
         if(!OrientationControlsVisible)return;
+        if(IsStatusScreen)DrawOperationSettingsButton();
         var c=new Vector2(toy.Center.X,toy.Center.Y);float r=toy.Width/2f+23;
         void Line(Vector2 a,Vector2 b,Color color){var d=b-a;_ui.Tile((a+b)/2,new(d.Length(),2),MathF.Atan2(d.Y,d.X),color);}
         void Arrow(Vector2 p,Vector2 direction,Color color){var side=new Vector2(-direction.Y,direction.X);Line(p,p-direction*9+side*5,color);Line(p,p-direction*9-side*5,color);}
