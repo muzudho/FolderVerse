@@ -24,24 +24,26 @@ sealed class WarGuideGame:Game1
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
   if(frame==1){
-   Dismiss();Call("OpenWarPlanning");Call("UpdateDomesticSlide",1f);Guide(20);Check(w.TutorialSortieNoticeShown && !w.TutorialTurnEndNoticeShown,"Opening war inspector explains sortie first");
+   Dismiss();Call("OpenWarPlanning");Call("UpdateDomesticSlide",1f);Guide(22);Check(w.TutorialWarTargetNoticeShown && !w.TutorialSortieNoticeShown && !w.TutorialTurnEndNoticeShown,"Opening war inspector explains rotation and target selection before sortie");
   }
   if(frame==2){
    Dismiss();Call("CloseNodeInspector");Call("UpdateDomesticSlide",1f);UpdateGuide();Check(!(bool)Get("_tutorialAttackGuide") && !w.TutorialTurnEndNoticeShown,"Closing without reservation gives no turn-end hint");
-   Call("OpenWarPlanning");Call("UpdateDomesticSlide",1f);UpdateGuide();Check(!(bool)Get("_tutorialAttackGuide"),"Reopening does not repeat sortie hint");
+   Call("OpenWarPlanning");Call("UpdateDomesticSlide",1f);UpdateGuide();Check(!(bool)Get("_tutorialAttackGuide"),"Reopening without a target neither repeats target hint nor starts sortie hint");
    var net=(CubeNet)Get("_net");int target=net.MovementTargets.First(id=>w.Nodes.All[id].Owner>=0 && w.Nodes.All[id].Owner!=0);Call("SelectMoveNode",target);
+   Guide(20);Check(w.TutorialSortieNoticeShown,"Selecting actual target unlocks troop strength and sortie instructions");
+  }
+  if(frame==3){
+   Dismiss();
    var rows=(System.Collections.IList)Get("_invasionSources");int index=Enumerable.Range(0,rows.Count).First(i=>((Robot[])Call("InvasionRobots",rows[i]!)).Length>0);
    Call("OpenInvasionPicker",index);Set("_pointer",new Point(400,350));Call("InvasionPickerInput",true,false);Set("_pointer",new Point(1400,820));Call("InvasionPickerInput",true,false);
    Check((bool)Call("get_TutorialHasAttackReservation"),"Actual sortie confirmation creates valid attack reservation");UpdateGuide();Check(!(bool)Get("_tutorialAttackGuide") && !w.TutorialTurnEndNoticeShown,"Reservation while inspector open waits for close");
-  }
-  if(frame==3){
    Call("CloseNodeInspector");Call("UpdateDomesticSlide",.1f);UpdateGuide();Check(!(bool)Get("_tutorialAttackGuide"),"Closing animation must finish before hint");Call("UpdateDomesticSlide",1f);Guide(21);Check(w.TutorialTurnEndNoticeShown,"Closed reserved inspector explains turn end");
   }
   if(frame==4){
-   Dismiss();Call("ReturnToTitle");Check((bool)Call("ResumeAutoSave"),"Reservation and guide progress resume");w=(WorldSetup)Get("_setup");Check(w.TutorialSortieNoticeShown && w.TutorialTurnEndNoticeShown && (int)Get("_tutorialLastMessage")==21,"Both notices and latest review selection persist");UpdateGuide();Check(!(bool)Get("_tutorialAttackGuide"),"Resume does not repeat guide");
+   Dismiss();Call("ReturnToTitle");Check((bool)Call("ResumeAutoSave"),"Reservation and guide progress resume");w=(WorldSetup)Get("_setup");Check(w.TutorialWarTargetNoticeShown && w.TutorialSortieNoticeShown && w.TutorialTurnEndNoticeShown && (int)Get("_tutorialLastMessage")==21,"Both notices and latest review selection persist");UpdateGuide();Check(!(bool)Get("_tutorialAttackGuide"),"Resume does not repeat guide");
    Call("OpenWarPlanning");Call("UpdateDomesticSlide",1f);UpdateGuide();Check(!(bool)Get("_tutorialAttackGuide"),"Sortie guide stays one-time after reload");Call("CloseNodeInspector");Call("UpdateDomesticSlide",1f);UpdateGuide();Check(!(bool)Get("_tutorialAttackGuide"),"Turn-end guide stays one-time after reload");
   }
   base.Draw(new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero));var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"war-guide-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
-  if(frame++==4){File.Delete(save);Set("_autoSaveEnabled",false);Console.WriteLine("PASS: separated reservation/turn-end instructions, actual sortie confirmation, close-without-order exclusion, closing animation, one-time guides and save/resume.");Exit();}
+  if(frame++==4){File.Delete(save);Set("_autoSaveEnabled",false);Console.WriteLine("PASS: rotation/target then sortie then turn-end instructions, actual sortie confirmation, close-without-order exclusion, closing animation, one-time guides and save/resume.");Exit();}
  }
 }

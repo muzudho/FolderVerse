@@ -813,3 +813,11 @@
 - ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=10、dotnet artifacts/corner-lesson/DemoUi.dll：21:00頃開始し約５秒でコード０。世界／人物／配置=461100725／419490211／312702161。18FPS地図説明、内政１巡、全体ターン１→２・次のTransport、戦闘／拒否／終了ループ成功。ログaudit-latest-seed10.log。
 - 続けてDemoInspectorUi.dll／DirectDeliveryUi.dllを現本体で実行、両方コード０、21:00:40頃までに終了。工場６プランの現在矩形・実選択、監督、閉じる、長期輸送プライマリー、わたしの国→移動（1080p／540p）、直送便退避復帰・×／Escape・左右・連続トラック・回転面接続・予約保持が成功。ログaudit-latest-inspector.log／audit-latest-direct.log。direct-17.png（960×540）を開き左右の地点名・格納庫・中央地図を目視した。既存ログ／画像名と出力先を再利用。
 - 新規確認不具合なし、DEMO-0001～0012の状態維持。Norton起動保留の直接証拠・再試行・設定変更なし。未確認：全Seed／人数、専用直送便Demo、各Seed全フレーム、戦闘／伝播全描画、複数ruler説得、利用者ゲーム併存。次回は同じ優先UIを必要に応じ確認しつつ、Seed11または未確認経路へ。通常直送便UIテストを専用Demo完走とは扱わない。
+
+### 実行履歴：2026-11-03 22:00回（トリガー21:58）
+
+- 開始：2026-11-03 21:58:22 JST。終了：2026-11-03 21:59:36 JST。状態：完了（部分点検）。AGENTS、README、両記録、Git差分（ステージ含む）を最初に確認。HEAD=973ceab60ea4309fc5aa20901b4eba69866fb8cc（終了前も同じ）。他チャットidle、開始時ゲーム／dotnet／MSBuildなし。UiFont・AutoSave・TutorialMessages／War・WorldSetup・TutorialWarGuidesUiの既存差分と個人用文書を保持。終了前のゲーム／テストnumstatは開始時と一致。ゲーム／テスト無変更、セーブ操作・停止・コミット・プッシュ・公開なし。
+- DOTNET_CLI_TELEMETRY_OPTOUT=1、dotnet build tests/DemoUi --no-restore -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers：21:58頃要求、約12秒で成功、警告・エラー０。現未コミット差分を含む本体を既存出力へ更新。ログaudit-latest-build.log。Demo.cs／DemoDomestic.csの実地点ヒット・MapViewButton・戦闘と伝播の自動進行を照合。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=11、dotnet artifacts/corner-lesson/DemoUi.dll：21:58後半要求、21:59:11までに成功ログ・コード０。世界／人物／配置=726780316／1750928627／598039469。18FPS地図説明・内政１巡・ターン１→２・次のTransport・戦闘／拒否／終了ループ成功。ログaudit-latest-seed11.log。短いポーリングで開始ログと進行結果を区別し、無出力を即失敗とは扱わなかった。Norton保留の直接証拠なし。
+- DemoInspectorUi.dll／DirectDeliveryUi.dllも現本体で成功、21:59:20頃までに両方コード０。工場６プランの現在矩形と実選択、監督、閉じる、長期輸送プライマリー、わたしの国→移動（1080p／540p）、直送便退避復帰・×／Escape・左右・連続トラック・回転面接続・予約保持を確認。ログaudit-latest-inspector.log／audit-latest-direct.log。direct-17.png（960×540）を開き左右の地点名・格納庫・中央地図を目視。既存ログ／画像名・出力先を再利用。
+- 新規確認不具合なし、DEMO-0001～0012の完了状態維持。再試行・セキュリティ設定変更なし。未確認：全Seed／人数、専用直送便Demo、各Seed全フレーム、戦闘／伝播全描画、複数ruler説得、利用者ゲーム併存。次回はSeed12または残る経路。通常直送便UIテストを専用Demo完走とは扱わない。
