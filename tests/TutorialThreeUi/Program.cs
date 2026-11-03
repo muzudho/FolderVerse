@@ -32,7 +32,7 @@ sealed class MapLessonGame:Game1
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_autoSaveEnabled",false);
   Check((bool)Get("_conquestOverviewEnabled"),"Overview remains enabled globally");
   foreach(string begin in new[]{"BeginTutorialStepOne","BeginTutorialStepTwo","BeginTutorialStepThree"}){
-   Call(begin);var tutorial=(WorldSetup)Get("_setup");Check(!(bool)Get("_conquestOverview"),begin+" skips initial conquest overview");
+   Call(begin);var tutorial=(WorldSetup)Get("_setup");Check((bool)Prop("TutorialPrimaryActionsDisabled")== (tutorial.TutorialStep==3),"Primary actions are disabled only in step three");Check(!(bool)Get("_conquestOverview"),begin+" skips initial conquest overview");
    tutorial.Population.Advance(tutorial);Call("RestoreDomesticCamera");Check(!(bool)Get("_conquestOverview"),begin+" skips conquest overview on later turns");
   }
   typeof(WorldSetup).GetProperty("TutorialStep")!.SetValue(Get("_setup"),0);Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");Check((bool)Get("_conquestOverview"),"Normal game still starts overview after tutorials");Call("FinishConquestOverview");
@@ -81,9 +81,17 @@ sealed class MapLessonGame:Game1
    Set("_pointer",start);Call("DragOrientationRobot",held,true,true);Set("_previousMouse",held);Set("_pointer",new Point(start.X+40,start.Y+20));Call("DragOrientationRobot",held,true,false);
    Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==5,"Slide waits for release");Call("DragOrientationRobot",new MouseState(),true,false);Guide(15);Check(w.TutorialMapStage==6 && w.TutorialCompletionShown,"Globe drag release unlocks final title-return guide");
   }
-  if(frame==7){Dismiss();Call("UpdateTutorialStartGuide",100d);Check(!(bool)Get("_tutorialAttackGuide"),"Completion guide is shown once");var review=(Rectangle)Prop("TutorialReviewButton");Set("_pointer",review.Center);Call("TutorialMessageInput",true,false);Check((bool)Get("_tutorialMessagesOpen") && (int)Get("_tutorialMessageSelection")==15,"Step three review highlights the latest completion guide");}
+  if(frame==7){Dismiss();Call("UpdateTutorialStartGuide",100d);Check(!(bool)Get("_tutorialAttackGuide"),"Completion guide is shown once");int turn=w.Population.Turn;var screen=Get("_screen");
+   for(int i=0;i<6;i++){
+    var r=(Rectangle)Call("PrimaryActionBounds",i);var canvas=(Rectangle)Call("CanvasBounds");var at=r.Center;
+    Set("_previousMouse",new MouseState());Call("HandleInputCore",new MouseState(canvas.X+(int)Math.Round(at.X*canvas.Width/1920d),canvas.Y+(int)Math.Round(at.Y*canvas.Height/1080d),0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero),true);
+    Check(w.Population.Turn==turn && Get("_screen").Equals(screen) && !(bool)Prop("InspectorVisible") && !(bool)Get("_directMap") && !(bool)Get("_salvagePlan"),"Disabled primary action "+i+" does not change game state");
+    Check((bool)Call("MapOverlayClick",at,false) && (bool)Call("DomesticViewClick",at),"Both primary input routes consume disabled button "+i);
+   }
+   var review=(Rectangle)Prop("TutorialReviewButton");Set("_pointer",review.Center);Call("TutorialMessageInput",true,false);Check((bool)Get("_tutorialMessagesOpen") && (int)Get("_tutorialMessageSelection")==15,"Step three review highlights the latest completion guide");}
+  if(frame==8){Call("TutorialMessageInput",false,true);Set("_pointer",((Rectangle)Call("PrimaryActionBounds",2)).Center);}
   base.Draw(new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero));
   var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"tutorial-three-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
-  if(frame++==7){Console.WriteLine("PASS: menu/No.1, all eight mob guides, actual unfolding, plus/zero/minus, actual alphabet attachment, animation gating, assembly, all seven globe buttons, globe slide release, completion, save progress and review rendered.");Exit();}
+  if(frame++==8){Console.WriteLine("PASS: menu/No.1, all eight mob guides, actual unfolding, plus/zero/minus, actual alphabet attachment, animation gating, assembly, all seven globe buttons, globe slide release, completion, save progress, all six disabled primary actions and review rendered.");Exit();}
  }
 }
