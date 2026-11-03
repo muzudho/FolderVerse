@@ -37,8 +37,21 @@ public partial class Game1
             _medallionRing=new Texture2D(GraphicsDevice,size,size);_medallionRing.SetData(pixels);_medallionRings.Add(nation,_medallionRing);
         }
         _spriteBatch.Draw(_medallionRing,center-new Vector2(_medallionRing.Width*.5f),Color.White);
-        if(pattern!=0)foreach(int side in new[]{-1,1})
-            DrawCountryMark(new((int)(center.X+side*(MedallionRadius+12)-8),(int)center.Y-8,16,16),owner);
+        if(pattern!=0){
+            var letters=MedallionNameLayout(center,_setup.ConquerorFullNames[owner]);
+            foreach(int side in new[]{-1,1}){
+                Vector2 at=center+new Vector2(side*MedallionNameRadius,0);
+                // Stay on the name band; long names may push the two marks a
+                // little downward, beyond the ends of their lettering.
+                for(int step=0;step<=12;step++){
+                    float angle=step*MathHelper.Pi/36;
+                    at=center+new Vector2(side*MathF.Cos(angle),MathF.Sin(angle))*MedallionNameRadius;
+                    if(!letters.Any(letter=>letter.Glyph!=" " && Vector2.DistanceSquared(letter.At,at)<24*24))break;
+                }
+                var mark=new Rectangle((int)at.X-8,(int)at.Y-8,16,16);
+                _ui.Box(mark,nation);DrawCountryMark(mark,owner);
+            }
+        }
     }
     private (string Glyph,Vector2 At,float Rotation,Vector2 Origin)[] MedallionNameLayout(Vector2 center,string fullName){
         var text=MedallionName(fullName);var glyphs=new List<string>();
