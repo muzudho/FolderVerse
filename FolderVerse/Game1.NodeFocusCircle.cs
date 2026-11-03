@@ -7,6 +7,7 @@ public partial class Game1
 {
     private void UpdateNodeFocusCircle()
     {
+        _net.HoverSuppressedNode=_movementOpen && !_warPlanning?(_setup.Nodes.Current(_setup.PlayerSlot)?.Id??-1):-1;
         _net.AttackTargetSpotlight=_world.AttackTargetSpotlight=_movementOpen && _warPlanning;
         _net.FolderSearchFocus=FolderTreeFocus;
         _net.FocusBrightness=_world.FocusBrightness=FolderTreeFocus?.35f:.65f;

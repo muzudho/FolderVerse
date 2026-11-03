@@ -20,14 +20,16 @@ public partial class Game1
         _dragging=false;
         _routesBeforeMovement=_net.ShowRoutes;_net.ShowRoutes=true;_movementOpen=true;
         _populationCell=-1;_escort=Math.Min(_escort,AvailableEscort);_selectedMoveNode=-1;
+        _net.HoverSuppressedNode=_setup.Nodes.Current(_setup.PlayerSlot)?.Id??-1;
         _net.MovementTargets.Clear();
         _net.RevealMovementTargets=true;
-        _net.MovementTargets.UnionWith(_setup.Routes.NodeChoices(_setup.PlayerSlot).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id).Where(id=>_setup.Campaign.RobotBattles.CanMarch(_setup,_setup.PlayerSlot,id)));
+        _net.MovementTargets.UnionWith(_setup.Routes.NodeChoices(_setup.PlayerSlot).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id).Where(id=>id!=_net.HoverSuppressedNode && _setup.Campaign.RobotBattles.CanMarch(_setup,_setup.PlayerSlot,id)));
         _net.SelectedTarget=-1;
         if(fit && _statusGlobe)FitDestinationView();
     }
     private void CloseMovement()
     {
+        _net.HoverSuppressedNode=-1;
         _net.AttackTargetSpotlight=_world.AttackTargetSpotlight=false;
         _invasionPicker=-1;_net.AttackTargetMarkers=false;_net.VisibleOperationNodes=null;_net.VisibleOperationBatteries=null;
         _net.RevealMovementTargets=false;

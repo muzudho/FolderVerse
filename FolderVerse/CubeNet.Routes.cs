@@ -25,10 +25,11 @@ public sealed partial class CubeNet
     public bool ShowRoutes {get;set;}=true; public int HoveredNode {get;set;}=-1; public int InspectedNode {get;set;}=-1;
     public bool AttackTargetMarkers {get;set;}
     public bool AttackTargetSpotlight {get;set;}
+    public int HoverSuppressedNode {get;set;}=-1;
     public HashSet<int> VisibleOperationBatteries {get;set;}
     public bool RevealMovementTargets {get;set;}
     public bool NodeVisible(WorldSetup world,Node node)=>(VisibleOperationNodes==null || VisibleOperationNodes.Contains(node.Id)) && (ShowOtherCountries || node.Owner<0 || world.Relations.Controls(node.Owner) || RevealMovementTargets && MovementTargets.Contains(node.Id));
-    public bool EmphasizedNode(int id)=>(AttackTargetSpotlight?MovementTargets.Contains(id):CountryFocus<0 && NodeFocus<0) && (HoveredNode==id || InspectedNode==id);
+    public bool EmphasizedNode(int id)=>id!=HoverSuppressedNode && (AttackTargetSpotlight?MovementTargets.Contains(id):CountryFocus<0 && NodeFocus<0) && (HoveredNode==id || InspectedNode==id);
     public HashSet<int> MovementTargets {get;}=new();
     public int SelectedTarget {get;set;}=-1;
     public Vector2 NodePosition(WorldSetup world,Node node,Rectangle panel)

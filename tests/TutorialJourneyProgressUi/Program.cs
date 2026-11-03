@@ -44,8 +44,11 @@ sealed class JourneyGame:Game1
    Check(w.TutorialPocketed && w.Robots.Retinues[0].Count==before+1 && w.Robots.Retinues[0].Robots.Any(r=>r.Id==pocketRobot),"Actual pocket transfer records integrated lesson");Call("PocketInput",false,true);Guide(5);
   }
   if(frame==3){
-   Dismiss();Call("ResetInspector");Call("OpenMovement");var target=w.Routes.NodeChoices(0).Select(r=>w.Nodes.At(r.Target,r.Entry)).First(n=>n.Id!=w.Nodes.Current(0).Id && w.Campaign.RobotBattles.CanMarch(w,0,n.Id));int source=w.Nodes.Current(0).Id;
-   w.Campaign.Resolve(w,new[]{new March(0,target.Id,0,source,true,true,Peaceful:true)});Check(w.TutorialMoved && w.Nodes.Current(0).Id==target.Id && w.Robots.Retinues[0].Robots.Any(r=>r.Id==pocketRobot),"Actual peaceful move carries pocket and records lesson");Call("CloseMovement");Call("BeginIndustry");Guide(6);
+   Dismiss();Call("ResetInspector");Call("OpenMovement");Call("UpdateNodeFocusCircle");var net=(CubeNet)Get("_net");int current=w.Nodes.Current(0).Id;
+   net.HoveredNode=current;Check(!net.EmphasizedNode(current) && !net.MovementTargets.Contains(current),"Movement origin is neither hover-emphasized nor offered as destination");
+   int candidate=net.MovementTargets.First();net.HoveredNode=candidate;Check(net.EmphasizedNode(candidate),"Movement destination still responds to hover");
+   var target=w.Routes.NodeChoices(0).Select(r=>w.Nodes.At(r.Target,r.Entry)).First(n=>n.Id!=w.Nodes.Current(0).Id && w.Campaign.RobotBattles.CanMarch(w,0,n.Id));int source=w.Nodes.Current(0).Id;
+   w.Campaign.Resolve(w,new[]{new March(0,target.Id,0,source,true,true,Peaceful:true)});Check(w.TutorialMoved && w.Nodes.Current(0).Id==target.Id && w.Robots.Retinues[0].Robots.Any(r=>r.Id==pocketRobot),"Actual peaceful move carries pocket and records lesson");Call("CloseMovement");Call("UpdateNodeFocusCircle");net.HoveredNode=w.Nodes.Current(0).Id;Check(net.HoverSuppressedNode==-1 && net.EmphasizedNode(net.HoveredNode),"Closing movement restores ordinary current-node hover");Call("BeginIndustry");Guide(6);
   }
   if(frame==4){Dismiss();Guide(17);Check(w.TutorialCompletionShown && w.TutorialPocketNoticeShown && w.TutorialMoveNoticeShown && w.TutorialStep==1,"Both pocket objectives complete inside integrated step-one world");}
   base.Draw(new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero));
