@@ -42,14 +42,21 @@ sealed class CountrySettingsUi:Game1
    for(int ruler=1;ruler<w.ActiveCount;ruler+=2)w.ToggleComputerOperations(ruler);
    Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
    ((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);
-   w.Campaign.FinishDomestic(w);w.Campaign.BeginMilitary();
+   Call("EndDomesticPhase",false);
+   var domestic=(Node[])Get("_computerDomesticNodes");
+   Check(domestic is {Length:>0} && w.PlayerSlot==domestic[0].Owner && w.Campaign.Phase==CampaignPhase.Domestic,
+    "CPU view is selected before domestic actions and delivery waits");
+   Call("UpdateComputerDomestic",0d,true);
+   Check(w.PlayerSlot==0 && w.Campaign.Phase==CampaignPhase.Delivery,"Domestic playback restores the human before delivery");
+   Call("OpenMilitaryPhase");
    Call("EndPlannedTurn");
    var visible=(March[])Get("_visibleComputerMarches");
    Check(visible is {Length:>0} && visible.All(o=>o.Ruler%2==1),"Only opted-in CPUs show actual campaign orders");
    Check(w.Campaign.Phase==CampaignPhase.Military,"Military orders wait for playback");
-   Call("UpdateComputerMarches",1.7d,false);
+   Check(w.PlayerSlot==visible[0].Ruler,"CPU view is selected before military actions");
+   Call("UpdateComputerMarches",2.45d,false);
   }
-  if(frame==13){Call("UpdateComputerMarches",0d,true);Check(w.Campaign.Phase==CampaignPhase.Domestic,"Skipping playback resolves the queued military turn");}
+  if(frame==13){Call("UpdateComputerMarches",0d,true);Check(w.PlayerSlot==0 && w.Campaign.Phase==CampaignPhase.Domestic,"Skipping restores the human and resolves the military turn");}
   base.Draw(time);
   if(frame==10){
    var batch=(SpriteBatch)Get("_spriteBatch");var c=(Rectangle)Call("CanvasBounds");batch.Begin(transformMatrix:Matrix.CreateScale(c.Width/1920f,c.Height/1080f,1)*Matrix.CreateTranslation(c.X,c.Y,0));

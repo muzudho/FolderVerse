@@ -143,6 +143,9 @@ public partial class Game1 : Game
         if(!_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
+        if(UpdateComputerDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) ||
+            UpdateComputerMarches(gameTime.ElapsedGameTime.TotalSeconds,escape))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && FunctionTransferInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(CountrySettingsInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(OperationSettingsInput(active && click,escape)){DragStatusMap(mouse,active);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -193,7 +196,7 @@ public partial class Game1 : Game
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(TransportModalInput(mouse,keyboard,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(UpdateComputerMarches(elapsed,active && escape) || UpdateAutoPlay(elapsed,click,escape,gameTime.TotalGameTime.TotalSeconds))
+        if(UpdateAutoPlay(elapsed,click,escape,gameTime.TotalGameTime.TotalSeconds))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateDemo(elapsed,active,click,escape,enter,gameTime.TotalGameTime.TotalSeconds))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -769,6 +772,7 @@ public partial class Game1 : Game
         _spriteBatch.Begin(transformMatrix:transform);if(!_conquestOverview)DrawTutorialGoal();if(!_conquestOverview)DrawPhaseCutIn(gameTime.TotalGameTime.TotalSeconds);_spriteBatch.End();
         DrawDemoOverlay(transform);
         DrawComputerMarches(transform);
+        DrawComputerDomestic(transform);
         if(_homePersuasionActive){_spriteBatch.Begin(transformMatrix:transform);DrawHomePersuasion();_spriteBatch.End();}
         if(TutorialReviewAvailable){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialMessages();_spriteBatch.End();}
         if(_tutorialAttackGuide || _tutorialGuideClosing>=0){_spriteBatch.Begin(transformMatrix:transform);_tutorialDrawingHost=true;DrawTutorialAttackGuide();_tutorialDrawingHost=false;_spriteBatch.End();}

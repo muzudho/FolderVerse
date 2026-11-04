@@ -1017,3 +1017,10 @@
 - 開始 22:03:52 JST、終了 22:04:13 JST（PC時計）。部分点検完了。HEAD=fd82fa9f0d143a812e2b0441583c05354061cc83。開始時差分は点検記録のみ。先行修正は対象なしで終了。起動中のゲーム・検証プロセスなし。
 - ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=30 で既存の dotnet artifacts/corner-lesson/DemoUi.dll を実行し終了コード0。世界1479725251／人物1278454767／配置1724481027。論理1920×1080で初回配送クリック(256,998)と地図復帰、地星儀／展開図切替、18FPSでの端地点移動、拒否時処遇、終了ループとDemoラベル描画を確認。証拠 artifacts/demo-click-audit/audit-latest-seed30.log。
 - 新規不具合なし。優先UIの個別回帰は関係コードに差分がないため13:00回を参照。赤チェック地点のOS入力での再選択、専用直送便の自然Demo、全Seed／人数と全中間フレームは未確認。次回は再選択またはSeed31。ゲーム・テストの変更なし。
+
+### 実行履歴：2026-11-04 23:00回
+
+- 開始 23:04:58 JST、終了 23:06:52 JST（PC時計）。部分点検完了。HEAD=5a82a870569f23ad9f5543acd79133b2e2fb6963。開始時にゲーム・検証プロセスなし。コンピューター内政・軍事表示とフェーズ処理の既存差分を保持。
+- 既存分離出力 artifacts/corner-lesson に DemoUi、DemoChecksUi、DemoInspectorUi、DirectDeliveryUi を dotnet build tests/<対象> --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers で再ビルド。全て警告・エラー0。ALSOFT_DRIVERS=null で各DLLを実行し、全て終了コード0。証拠は artifacts/demo-click-audit/audit-latest-<対象>.log。
+- DemoUi Seed31（世界1745404842／人物462409536／配置2009818335）でクリック(256,998)から初回配送と地図復帰、18FPSの端地点移動と終了ループを確認。DemoChecksUiは1080p／540p×地星儀／展開図で緑・赤の実クリック、即予約、閉じる、ターン終了と消去を検査。DemoInspectorUiは同解像度で工場・プライマリーと開閉、DirectDeliveryUiは540pで退避復帰・左右・予約保持・描画を検査。
+- 新規不具合なし。専用直送便の自然Demo、赤チェック地点のOS入力による再選択、全Seed／人数と全中間フレームは未確認。次回は再選択またはSeed32。ゲーム・テストの変更なし。

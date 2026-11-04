@@ -10,7 +10,7 @@ public sealed class ConquestCampaign
     public CampaignPhase Phase {get;private set;}
     public NodeFunctionTransfers FunctionTransfers {get;}=new();
     private readonly HashSet<int> _domesticSubmitted=new();
-    public bool FinishDomestic(WorldSetup world,bool automaticAll=false)
+    public bool FinishDomestic(WorldSetup world,bool automaticAll=false,Func<bool> deferDelivery=null)
     {
         if(Phase!=CampaignPhase.Domestic)return false;
         world.Robots.DirectDelivery.ReconcileDestinations(world);
@@ -23,12 +23,18 @@ public sealed class ConquestCampaign
         }
         _domesticSubmitted.Clear();
         if(party.Length>0)world.SelectTurnRuler(party[0]);
+        if(deferDelivery?.Invoke()==true)return false;
+        BeginDelivery(world);
+        return true;
+    }
+    internal void BeginDelivery(WorldSetup world)
+    {
         FunctionTransfers.Resolve(world);
         if(UseRobotCombat)world.Robots.Advance(
             (a,b)=>FunctionalDeliveryRoutes.Connected(world,a,b),
             n=>world.Nodes.All[n].Owner,world.PlacementSeed^world.Population.Turn^0x61238,RobotBattles.LockedNode,
             (owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner),industry:false);
-        Phase=CampaignPhase.Delivery;Report=$"配送 {world.Robots.Transport.LastTransfers.Count} / 配送後に軍事指示";return true;
+        Phase=CampaignPhase.Delivery;Report=$"配送 {world.Robots.Transport.LastTransfers.Count} / 配送後に軍事指示";
     }
     public void BeginMilitary()
     {if(Phase!=CampaignPhase.Delivery)throw new InvalidOperationException("Delivery must finish before military orders.");Phase=CampaignPhase.Military;}

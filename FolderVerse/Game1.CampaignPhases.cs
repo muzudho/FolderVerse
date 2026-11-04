@@ -15,7 +15,15 @@ public partial class Game1
     private void EndDomesticPhase(bool automaticAll=false)
     {
         SaveDomesticCamera();ResetInspector();ClearCurrentPlayerNodeChecks();
-        if(!_setup.Campaign.FinishDomestic(_setup,automaticAll)){_world.ShowSetup(_setup,true);RestoreDomesticCamera();return;}
+        if(!_setup.Campaign.FinishDomestic(_setup,automaticAll,ShowComputerDomestic))
+        {
+            if(_computerDomesticNodes==null){_world.ShowSetup(_setup,true);RestoreDomesticCamera();}
+            return;
+        }
+        FinishDomesticDelivery();
+    }
+    private void FinishDomesticDelivery()
+    {
         _world.ShowSetup(_setup,true);_robotScenes=Array.Empty<BattleState>();_battleWave=0;
         _robotPendingSummary=false;_robotSummary=true;_militaryTransportPlayback=false;
         _dragging=false;_net.CancelAnimation();_screen=Screen.Transport;_transportAge=0;BeginPropagation();
