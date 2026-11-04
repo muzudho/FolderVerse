@@ -211,3 +211,29 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 - tests/DemoChecksUi：実クリック・実予約・実進軍を４条件で検査。初回実行は成功（テストのTick名に警告があったためStepDemoへ改名）。画像はtests/DemoChecksUi/bin/DemoChecks/demo-checks-*-*.png。地図・地星儀それぞれ1920×1080／960×540で、緑・赤のハンドルと状態更新を確認した。
 - DOTNET_CLI_TELEMETRY_OPTOUT=1、ALSOFT_DRIVERS=null。DemoUi、DemoActionsUi、DemoInspectorUiをキャッシュから復元し、既存artifacts/corner-lessonへそれぞれ現ソースをビルド（警告・エラー０）、DLLを実行して成功。自然巡回はFOLDERVERSE_DEMO_TEST_SEED=12、世界／人物／配置=992459907／934883396／883376777。実地点・ドラッグ・和平移動６条件、工場６プラン×２解像度も成功した。
 - 全Seed・全人数、専用直送便Demo、すべての途中フレームの目視は未実施。v0.2.0の配布物を差し替えていない。完了：2026-11-03T22:40:28+09:00。コミット・プッシュ・公開なし。
+
+## 2026-11-04 01:30修正回：DEMO-0013
+
+- 開始：2026-11-04 01:32:26 JST。完了：2026-11-04 01:36:41 JST。HEAD=015d7ce960d7262ca70920f6d803fd38849d5584。AGENTS、README、両記録、差分と先行点検の終了を最初に確認。他チャットidle、ゲーム／dotnet／MSBuildなし。既存点検記録の差分を保護。コミット・プッシュ・公開、実セーブ・勲章操作なし。
+- 現本体のDemoChecksUiを再実行し、開戦プライマリー遷移のassertを再現（fix-latest-checks-before.log）。原因は新しい内政→配送→軍事のフェーズ分離。OpenWarPlanningは軍事だけ許可されるが、Demo／fixtureは内政のまま開戦を試みていた。通常のUI制限を緩めず、Demoを正しいフェーズへ接続した。
+- FolderVerse/Game1.DemoDomestic.cs：内政の工場確認→緑チェック→閉じる後は内政終了へ進む。配送後の軍事開始は開戦または移動の巡回から開始し、軍事でない状態では開戦段階を実行しない。既存の実ボタン矩形／入力、赤チェック→閉じる→ターン終了を維持。
+- tests/DemoChecksUi/Program.cs：緑チェックと閉鎖後に実Demoの内政終了・配送入り・緑メモ消去を検査。配送後の軍事へ入ってから実開戦クリックを検査する。緑メモがフェーズ終了をまたいで残るという古い期待を訂正し、赤の強調解除・即予約・進軍・消去は維持。
+- tests/DemoUi/Program.cs：配送直後に戦闘fixtureへ入る旧前提を訂正。配送から軍事へ移行し、Demoが軍事操作を自然巡回してターンを進め、出兵Transportへ到達することを追加検査してから既存の戦闘fixtureを使う。
+- 検証：DOTNET_CLI_TELEMETRY_OPTOUT=1、ALSOFT_DRIVERS=null。dotnet build tests/DemoChecksUi および tests/DemoUi --no-restore -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers：警告・エラー０。最終ビルドログfix-latest-checks-build.log／fix-latest-demo-build.log。両DLLの実行はコード０。DemoChecksUiは地星儀／展開図×1080p／540pの４条件で緑・内政終了・軍事・即予約・赤・閉鎖・独立ターン終了・実進軍を確認（fix-latest-checks.log）。DemoUiはSeed12で配送／軍事巡回と戦闘・拒否・終了ループ成功（fix-latest-demo.log）。途中の古い緑メモ期待と配送後の戦闘fixture失敗は上記テスト修正で解消。
+- demo-checks-0-6.pngを開き「軍事フェーズ」、赤ハンドルを指すDemoの手、地図の赤チェックと予約１件を目視。git diff --check成功。既存の分離出力・ログ／画像名を再利用。DEMO-0013を完了へ更新。
+- 未確認：全Seed／人数、専用直送便Demo、今回変更後の全周辺UI再実行、チェック済み地点の独立した実再クリック。次回はフェーズ切替の回帰とこれらを優先。Norton保留の直接証拠・設定変更なし。
+
+## 2026-11-04 04:30修正回：DEMO-0014
+
+- 開始 04:34:29 JST、完了 2026-11-04 04:35:32 JST。HEAD=015d7ce960d7262ca70920f6d803fd38849d5584。先行点検完了、別チャットidle。既存のDEMO-0013差分を保持。
+- 現DLLで「Transport click misses primary action」を再現（fix-latest-inspector-before.log）。内政の閉鎖後は段階19へ進むため、tests/DemoInspectorUi/Program.csでその遷移を明示的に検査し、長期輸送の矩形と入力は独立して段階12から検査するよう修正した。
+- DOTNET_CLI_TELEMETRY_OPTOUT=1、dotnet build tests/DemoInspectorUi --no-restore -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers、ALSOFT_DRIVERS=nullで同出力DemoInspectorUi.dllを実行。コード０。長期輸送の実クリック・開閉、わたしの国から移動、人数確認、工場6プランの1080p／540p検査が成功。fix-latest-inspector-build.log／fix-latest-inspector.log。demo-office-5.pngで内政の長期輸送画面と閉じるハンドルの描画を目視。
+- この検証は長期輸送の個別操作を対象とする。自然巡回が長期輸送へ分岐することや、赤チェック地点の物理再クリックは今回未検証。
+
+## 2026-11-04 12:26修正回：DEMO-0015
+
+- 開始 2026-11-04 12:26:05 JST、完了 2026-11-04 12:29:58 JST。HEAD=015d7ce960d7262ca70920f6d803fd38849d5584。先行点検完了と別チャットidleを確認。既存差分を保持。
+- Seed20（970412988/848972489/1018591594）で初回配送前の停止を再現。地点へ向き直した直後は正しくヒットしたが、TickSlotsの抽選画面用の自動回転がWorldStatusでも地星儀の向きを更新し、クリック前に再照準が繰り返された（fix-latest-seed20-before.log）。
+- FolderVerse/Game1.csのTickSlotsでWorldStatusを抽選画面用の自動回転の条件から除外。抽選時とDemoの地図紹介時の回転は既存経路を維持。
+- dotnet build tests/DemoUi --no-restore -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers は警告・エラー0。分離出力のDemoUi.dllをSeed20とSeed12で実行し、両方で初回Transport入り、WorldStatus復帰、終了ループを確認。DemoChecksUi.dllも終了コード0。1080p／540pの地星儀・展開図で実ハンドルクリック、即予約、赤チェック、閉鎖、ターン終了と表示消去を検査。demo-checks-0-6.pngで赤ハンドルを指す手と地図の赤チェック、予約1件を目視。
+- 証拠は artifacts/demo-click-audit の fix-latest-seed20-build.log、fix-latest-seed20-after.log、fix-latest-seed12-after.log、fix-latest-checks.log。既存の分離出力を再利用。全Seed、通常プレイの物理マウス入力は未確認。

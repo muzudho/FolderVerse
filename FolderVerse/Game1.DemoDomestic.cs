@@ -26,6 +26,9 @@ public partial class Game1
         if(MapTransitionActive || _net.IsAnimating || OrientationRotating)return true;
         // Finish the same inspector animation as a normal click before aiming at the next control.
         if(_nodeInspectorClosing || InspectorVisible && _domesticSlide<1)return true;
+        // Delivery separates node work from military orders; demonstrate only enabled actions.
+        if(_demoDomesticStage==0 && MilitaryOperationsAllowed)_demoDomesticStage=_demoMapVisits%2==0?30:17;
+        if(_demoDomesticStage is >=30 and <=36 && !MilitaryOperationsAllowed)_demoDomesticStage=19;
         if(_demoDomesticStage is >=30 and <=36)return UpdateDemoWarChecks(elapsed);
         if(_demoDomesticStage==20 && (!NodeCheckButtonVisible || NodeChecked(_populationNode))){_demoDomesticStage=11;_demoDomesticAge=0;}
         Point nodePoint=Point.Zero;
@@ -79,7 +82,7 @@ public partial class Game1
             case 9:if(_nodeFactoryOpen)NodeDialogClick(target,new KeyboardState());break;
             case 10:if(_nodeFactoryOpen)NodeDialogClick(target,new KeyboardState());_demoDomesticStage=19;break;
             case 20:DomesticViewClick(target);_demoDomesticStage=11;return true;
-            case 11:DomesticViewClick(target);break;
+            case 11:DomesticViewClick(target);if(DomesticOperationsAllowed)_demoDomesticStage=18;break;
             // Transport planning now lives in the primary actions, outside the node inspector.
             case 12:MapOverlayClick(target,false);_demoDomesticStage=15;break;
             case 16:DomesticViewClick(target);if(_demoActive && _demoMapVisits%2==0)_demoDomesticStage=29;break;

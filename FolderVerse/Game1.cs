@@ -410,7 +410,7 @@ public partial class Game1 : Game
                 else SetPlacementSeed(_random.Next());
             }
         }
-        if(IsRolling || (IsCastScreen && !_dragging))AdvanceAutomaticOrientation((float)elapsed);
+        if(IsRolling || (IsCastScreen && !IsStatusScreen && !_dragging))AdvanceAutomaticOrientation((float)elapsed);
     }
     private void Rotate(MouseState mouse,bool click,bool active,Rectangle area)
     {

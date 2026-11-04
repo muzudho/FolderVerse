@@ -73,6 +73,12 @@ sealed class DemoCheck:Game1
         Console.WriteLine("map follow-up: "+Snapshot());
         Check((int)Get("_demoMapVisits")>0,$"Demo map explanation did not resume gameplay: stage={Get("_demoMapStage")} age={Get("_demoMapAge")} screen={Get("_screen")} step={Get("_demoStepAge")}");
         var world=(WorldSetup)Get("_setup");
+        // Node work now ends in delivery, followed by a separate military planning pass.
+        if(world.Campaign.Phase==CampaignPhase.Delivery)
+            typeof(Game1).GetMethod("FinishTransport",Flags)!.Invoke(this,null);
+        for(int i=0;i<1200 && Get("_screen").ToString()=="WorldStatus";i++)Tick(1d/18);
+        Check(world.Population.Turn>0 && Get("_screen").ToString()=="Transport" && world.Campaign.Phase!=CampaignPhase.Delivery,
+            "Demo military planning did not finish after delivery");
         // Peaceful movement need not produce a battle. Exercise battle playback with a fixed scene instead.
         var scene=new BattleState(1){TargetNode=world.Nodes.Current(0).Id,Defender=0};
         scene.Armies.Add(new(){Owner=0,Side=0});
