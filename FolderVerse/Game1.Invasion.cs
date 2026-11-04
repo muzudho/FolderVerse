@@ -159,7 +159,14 @@ public partial class Game1
         StoreCurrentMovementDraft();
         if(ShowTutorialAttackGuideIfRequired())return;
         CloseMovement();if(_transportOverview)CloseTransportOverview();
-        ClearCurrentPlayerNodeChecks();_setup.Campaign.Advance(_setup,-1,0);_world.ShowSetup(_setup,true);_populationCell=-1;
+        ClearCurrentPlayerNodeChecks();
+        _setup.Campaign.Advance(_setup,-1,0,deferResolution:ShowComputerMarches);
+        if(_computerMarches!=null)return;
+        FinishMilitaryAdvance();
+    }
+    private void FinishMilitaryAdvance()
+    {
+        _world.ShowSetup(_setup,true);_populationCell=-1;
         if(_setup.Campaign.AwaitingPlayers){ResetInspector();RestoreDomesticCamera();return;}
         _militaryTransportPlayback=true;OpenBattle();
     }

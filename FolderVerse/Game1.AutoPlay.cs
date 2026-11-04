@@ -46,8 +46,10 @@ public partial class Game1
         if(_autoDomesticAge<2)return;
         _autoDomesticAge=0;
         if(MilitaryOperationsAllowed){
-            ResetInspector();_autoDomesticStage=0;_setup.Campaign.Advance(_setup,-1,0,automaticAll:true);
-            _militaryTransportPlayback=true;_world.ShowSetup(_setup,true);OpenBattle();return;
+            ResetInspector();_autoDomesticStage=0;
+            _setup.Campaign.Advance(_setup,-1,0,automaticAll:true,deferResolution:ShowComputerMarches);
+            if(_computerMarches==null)FinishMilitaryAdvance();
+            return;
         }
         switch(_autoDomesticStage++){
             case 0:

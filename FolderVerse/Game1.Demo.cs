@@ -202,15 +202,7 @@ public partial class Game1
                     _counter.DrawText(_spriteBatch,"DEMO"[i].ToString(),new(860+i*50,510-jump,46,48),(i%2==0?new Color(255,187,214):new Color(185,230,231))*fade);
                 }
             }
-            const float restAngle=-.28f;
-            float swing=_demoSwing>0?MathF.Sin((1-_demoSwing/.4f)*MathHelper.Pi)*.42f:0;
-            float scale=116f/_demoLollipop.Height;
-            // The grip remains fixed; the candy end lands on the intended click point.
-            var origin=new Vector2(_demoLollipop.Width*.5f,_demoLollipop.Height*.94f);
-            var tip=new Vector2(_demoLollipop.Width*.5f,_demoLollipop.Height*.045f);
-            var contact=_demoSwing>0?_demoClickPoint:_demoCursor;
-            var grip=contact-RotateDemoOffset((tip-origin)*scale,restAngle);
-            _spriteBatch.Draw(_demoLollipop,grip,null,Color.White,restAngle+swing,origin,scale,SpriteEffects.None,0);
+            DrawDemoHand(_demoSwing>0?_demoClickPoint:_demoCursor,_demoSwing);
             if(_demoStarsAge>=0)
             for(int i=0;i<7;i++)
             {
@@ -232,5 +224,15 @@ public partial class Game1
             _ui.Box(new(0,0,1920,1080),Color.Black*Math.Clamp(opacity,0,1));
         }
         _spriteBatch.End();
+    }
+    private void DrawDemoHand(Vector2 contact,float remainingSwing)
+    {
+        const float restAngle=-.28f;
+        float swing=remainingSwing>0?MathF.Sin((1-remainingSwing/.4f)*MathHelper.Pi)*.42f:0;
+        float scale=116f/_demoLollipop.Height;
+        var origin=new Vector2(_demoLollipop.Width*.5f,_demoLollipop.Height*.94f);
+        var tip=new Vector2(_demoLollipop.Width*.5f,_demoLollipop.Height*.045f);
+        var grip=contact-RotateDemoOffset((tip-origin)*scale,restAngle);
+        _spriteBatch.Draw(_demoLollipop,grip,null,Color.White,restAngle+swing,origin,scale,SpriteEffects.None,0);
     }
 }

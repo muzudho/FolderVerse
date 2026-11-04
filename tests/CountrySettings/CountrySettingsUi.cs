@@ -37,6 +37,19 @@ sealed class CountrySettingsUi:Game1
    }
    battle.Capture(BattlePhase.Choose);Set("_robotScenes",new[]{battle});Set("_robotPlayback",new RobotBattlePlayback(new[]{battle}));Call("FinishTransport");Set("_battleIntroAge",10d);Set("_lastCutInPhase","戦闘フェーズ");Set("_cutInStarted",-100d);
   }
+  if(frame==12){
+   w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.HumanPlayers.Add(0);w.SelectTurnRuler(0);
+   for(int ruler=1;ruler<w.ActiveCount;ruler+=2)w.ToggleComputerOperations(ruler);
+   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
+   ((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);
+   w.Campaign.FinishDomestic(w);w.Campaign.BeginMilitary();
+   Call("EndPlannedTurn");
+   var visible=(March[])Get("_visibleComputerMarches");
+   Check(visible is {Length:>0} && visible.All(o=>o.Ruler%2==1),"Only opted-in CPUs show actual campaign orders");
+   Check(w.Campaign.Phase==CampaignPhase.Military,"Military orders wait for playback");
+   Call("UpdateComputerMarches",1.7d,false);
+  }
+  if(frame==13){Call("UpdateComputerMarches",0d,true);Check(w.Campaign.Phase==CampaignPhase.Domestic,"Skipping playback resolves the queued military turn");}
   base.Draw(time);
   if(frame==10){
    var batch=(SpriteBatch)Get("_spriteBatch");var c=(Rectangle)Call("CanvasBounds");batch.Begin(transformMatrix:Matrix.CreateScale(c.Width/1920f,c.Height/1080f,1)*Matrix.CreateTranslation(c.X,c.Y,0));
@@ -46,7 +59,7 @@ sealed class CountrySettingsUi:Game1
    for(int i=0;i<4;i++){var sample=robot with {CheapParts=i%2==1?RobotParts.Complete:0,DamagedParts=i>=2?RobotParts.Complete:0};glyph.Invoke(this,new object[]{new Rectangle(470+i*260,250,180,320),sample,true,1f,null});}
    batch.End();
   }
-  if(frame is 1 or 2 or 3 or 5 or 6 or 7 or 10 or 11){var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"country-settings-{frame}.png"));texture.SaveAsPng(file,texture.Width,texture.Height);}
-  if(frame++==11){Console.WriteLine("PASS: settings input, solid/second-color visibility, automatic/manual transitions, map/cast previews, corner marks and four-direction patterned battle uniforms with cheap/damaged parts at 1080p/540p.");Exit();}
+  if(frame is 1 or 2 or 3 or 5 or 6 or 7 or 10 or 11 or 12){var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"country-settings-{frame}.png"));texture.SaveAsPng(file,texture.Width,texture.Height);}
+  if(frame++==13){Console.WriteLine("PASS: settings input, automatic/manual transitions, country patterns and opt-in computer military playback.");Exit();}
  }
 }

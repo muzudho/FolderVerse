@@ -193,7 +193,7 @@ public partial class Game1 : Game
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(TransportModalInput(mouse,keyboard,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(UpdateAutoPlay(elapsed,click,escape,gameTime.TotalGameTime.TotalSeconds))
+        if(UpdateComputerMarches(elapsed,active && escape) || UpdateAutoPlay(elapsed,click,escape,gameTime.TotalGameTime.TotalSeconds))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateDemo(elapsed,active,click,escape,enter,gameTime.TotalGameTime.TotalSeconds))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -768,6 +768,7 @@ public partial class Game1 : Game
         if(!_countrySettingsOpen || !IsStatusScreen){
         _spriteBatch.Begin(transformMatrix:transform);if(!_conquestOverview)DrawTutorialGoal();if(!_conquestOverview)DrawPhaseCutIn(gameTime.TotalGameTime.TotalSeconds);_spriteBatch.End();
         DrawDemoOverlay(transform);
+        DrawComputerMarches(transform);
         if(_homePersuasionActive){_spriteBatch.Begin(transformMatrix:transform);DrawHomePersuasion();_spriteBatch.End();}
         if(TutorialReviewAvailable){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialMessages();_spriteBatch.End();}
         if(_tutorialAttackGuide || _tutorialGuideClosing>=0){_spriteBatch.Begin(transformMatrix:transform);_tutorialDrawingHost=true;DrawTutorialAttackGuide();_tutorialDrawingHost=false;_spriteBatch.End();}

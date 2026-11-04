@@ -83,7 +83,8 @@ public sealed class ConquestCampaign
         for(int i=_plannedOrders.Count-1;i>=0;i--)if(world.ControllerOf(_plannedOrders[i].Ruler)<0){_partyOrders.Add(_plannedOrders[i]);_plannedOrders.RemoveAt(i);}
     }
     public void Reset(){Phase=CampaignPhase.Domestic;FunctionTransfers.Orders.Clear();FunctionTransfers.LastResults.Clear();_domesticSubmitted.Clear();PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
-    public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false)
+    public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false,
+        Func<IReadOnlyList<March>,bool> deferResolution=null)
     {
         if(Phase==CampaignPhase.Delivery)throw new InvalidOperationException("Wait for delivery playback before military orders.");
         world.Robots.PersuadeAtHome(world);
@@ -146,7 +147,7 @@ public sealed class ConquestCampaign
             var ids=order.RobotIds.Where(available.Contains).Distinct().ToArray();
             if(ids.Length==0 && !order.Queen)orders.RemoveAt(i);else orders[i]=order with {RobotIds=ids,Fighters=ids.Length};
         }
-        Resolve(world,orders);
+        if(deferResolution?.Invoke(orders)!=true)Resolve(world,orders);
     }
     public void Resolve(WorldSetup world,IReadOnlyList<March> orders)
     {
