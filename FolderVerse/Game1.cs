@@ -146,7 +146,6 @@ public partial class Game1 : Game
         if(UpdateComputerDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) ||
             UpdateComputerMarches(gameTime.ElapsedGameTime.TotalSeconds,escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(IsStatusScreen && FunctionTransferInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(CountrySettingsInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(OperationSettingsInput(active && click,escape)){DragStatusMap(mouse,active);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateCampaignDivider(mouse,active,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}

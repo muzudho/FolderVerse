@@ -31,7 +31,6 @@ public partial class Game1
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
     private void ResetInspector(){
         CloseFunctionTransferMap();
-        _functionTransferSource=-1;_functionTransferMessage="";
         CloseFolderTreeState();
         CloseReservationDirectory();
         _salvageMapTarget=-1;_salvageCatalogOpen=false;_mapOverlayMenu=false;_salvagePlan=false;_hangarAbandonMode=false;_salvageAbandonConfirmation=null;

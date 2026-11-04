@@ -8,6 +8,7 @@ public partial class Game1
 {
     private static readonly Rectangle FunctionTransferMapBanner=new(54,878,810,36);
     private bool _functionTransferMap, _functionTransferRoutesBefore;
+    private string _functionTransferMessage="";
     private readonly List<FunctionTransferMarker> _functionTransferMarkers=new();
     private sealed record FunctionTransferMarker(int Source,int Target,Vector2 From,Vector2 To,Rectangle Bounds,bool Reserved);
 

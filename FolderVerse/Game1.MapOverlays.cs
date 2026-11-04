@@ -8,9 +8,16 @@ public partial class Game1
 {
     private bool _mapOverlayMenu;
     private Rectangle MapFooterBounds(Rectangle bounds)=>bounds;
+    private const int DirectMapAction=3;
     private float _primaryActionSlide;
+    private int _lastMapFooterAction=-1;
+    private int MapFooterAction=>_directMap?DirectMapAction:_functionTransferMap?FunctionTransferAction:-1;
+    private int PinnedPrimaryAction=>MapFooterAction>=0?MapFooterAction:_lastMapFooterAction;
+    private bool PrimaryActionInUse(int index)=>_primaryActionSlide==0 && MapFooterAction<0 || index==PinnedPrimaryAction;
     private void UpdateMapFooter(float elapsed){
-        float target=_directMap?1:0;
+        int action=MapFooterAction;
+        if(action>=0)_lastMapFooterAction=action;
+        float target=action>=0?1:0;
         _primaryActionSlide=target>_primaryActionSlide?Math.Min(target,_primaryActionSlide+elapsed/.25f):Math.Max(target,_primaryActionSlide-elapsed/.25f);
     }
     private const int FunctionTransferAction=6;
@@ -19,8 +26,8 @@ public partial class Game1
         0=>new(54,974,96,96),1=>new(160,926,192,144),
         _=>new(362+(index-2)*106,974,96,96)
     };
-    private Rectangle PrimaryActionBounds(int index){var r=PrimaryActionHomeBounds(index);if(index!=3)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,_primaryActionSlide));return r;}
-    private static Rectangle DirectMapCloseButton=>new(PrimaryActionHomeBounds(3).Right+10,1002,40,40);
+    private Rectangle PrimaryActionBounds(int index){var r=PrimaryActionHomeBounds(index);if(index!=PinnedPrimaryAction)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,_primaryActionSlide));return r;}
+    private static Rectangle MapModeCloseButton(int index)=>new(PrimaryActionHomeBounds(index).Right+10,1002,40,40);
     private bool TutorialPrimaryActionsDisabled=>_setup.TutorialStep==3 || _setup.TutorialMapBeforeWar && _setup.TutorialMapStage<6;
     private bool TutorialPrimaryActionAllowed(int index)=>!TutorialPrimaryActionsDisabled && (!_setup.TutorialMapBeforeWar || index is 1 or 2 || index==0 && _setup.TutorialAttackCompleted);
     private bool TutorialPrimaryActionClick(Point p)=>Enumerable.Range(0,PrimaryActionCount).Any(i=>(!TutorialPrimaryActionAllowed(i) || !PhasePrimaryActionAllowed(i)) && PrimaryActionBounds(i).Contains(p));
@@ -32,9 +39,14 @@ public partial class Game1
         if(escape && _functionTransferMap){CloseFunctionTransferMap();return true;}
         if(escape && _directMap){CloseDirectDelivery();return true;}
         if(escape)return false;
-        if(_directMap && DirectMapCloseButton.Contains(p)){CloseDirectDelivery();return true;}
-        if(_directMap && PrimaryActionBounds(3).Contains(p))return true;
-        if((_directMap || _primaryActionSlide>0) && Enumerable.Range(0,PrimaryActionCount).Any(i=>i!=3 && (PrimaryActionHomeBounds(i).Contains(p) || PrimaryActionBounds(i).Contains(p))))return true;
+        int action=MapFooterAction;
+        if(action>=0 && MapModeCloseButton(action).Contains(p)){
+            if(_directMap)CloseDirectDelivery();else CloseFunctionTransferMap();
+            return true;
+        }
+        if(_directMap && PrimaryActionBounds(DirectMapAction).Contains(p))return true;
+        if(Enumerable.Range(0,PrimaryActionCount).Any(i=>!PrimaryActionInUse(i) &&
+            (PrimaryActionHomeBounds(i).Contains(p) || PrimaryActionBounds(i).Contains(p))))return true;
         for(int i=0;i<PrimaryActionCount;i++)if(PrimaryActionBounds(i).Contains(p)){
             if(i==0)OpenStrategyInspector();
             else if(i==1){ResetInspector();EndPlannedTurn();}
@@ -71,7 +83,7 @@ public partial class Game1
         string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画","地点の機能移転の予約"};
         for(int i=0;i<PrimaryActionCount;i++){
             var r=PrimaryActionBounds(i);if(r.Top>=1080)continue;
-            bool enabled=PhasePrimaryActionAllowed(i) && TutorialPrimaryActionAllowed(i) && (i==3 || !_directMap && _primaryActionSlide==0) && (i is not (3 or 4) || TransportOverviewAllowed);
+            bool enabled=PhasePrimaryActionAllowed(i) && TutorialPrimaryActionAllowed(i) && PrimaryActionInUse(i) && (i is not (3 or 4) || TransportOverviewAllowed);
             var color=_setup.OwnerColor(_setup.PlayerSlot);
             if(!enabled)color=Color.Lerp(color,new Color(45,49,54),.75f);
             else if((i==FunctionTransferAction && _functionTransferMap) || r.Contains(_pointer))color=Color.Lerp(color,Color.White,.22f);
@@ -85,12 +97,12 @@ public partial class Game1
                 string label=i==3?"パーツ直送便":i==4?"輸送長期計画":i==FunctionTransferAction?"機能移転":labels[i];
                 _ui.Center(label,new(r.X+inset,r.Bottom-28,r.Width-inset*2,24),Math.Min(.34f,(r.Width-inset*2)/_font.MeasureString(label).X),ink);
             }
-            if((i==3 || !_directMap && _primaryActionSlide==0) && r.Contains(_pointer)){
+            if(PrimaryActionInUse(i) && r.Contains(_pointer)){
                 string hint=labels[i]+(!PhasePrimaryActionAllowed(i)?i==2?"（軍事フェーズで操作できます）":"（内政フェーズで操作できます）":!enabled?"（このステップでは利用できません）":i==2?$"（{WarReservationCount}件）":i==1?DomesticOperationsAllowed?"（全員の内政終了後に配送）":"（全員の軍事終了後に開戦）":"");
                 var box=new Rectangle(InspectorVisible?1000:54,884,760,34);_ui.Box(box,new Color(7,23,35));_ui.Center(hint,box,.36f,Cream);
             }
         }
-        if(_directMap)_ui.Button(DirectMapCloseButton,"×",Muted,.55f);
+        if(MapFooterAction>=0)_ui.Button(MapModeCloseButton(MapFooterAction),"×",Muted,.55f);
     }
     private void DrawPrimaryIcon(int kind,Rectangle r,Color ink)
     {
