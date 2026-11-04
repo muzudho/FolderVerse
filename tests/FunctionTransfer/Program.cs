@@ -85,7 +85,53 @@ static Robot Add(WorldSetup w,int n,RobotParts parts){var r=w.Robots.Create(0,pa
     var loaded=AutoSaveStore.Restore<WorldSetup>(legacy);loaded.Robots.ConfigureFactories(loaded);
     Check(loaded.Nodes.All.All(n=>n.Functional && n.FunctionHost==-1) && loaded.Robots.Nodes.All(s=>s.TotalCapacity==12),"Old saves retain functional nodes and original capacity");
 }
-Console.WriteLine("PASS: reservation timing, full-hangar merge, relocation, source references, multi-origin consolidation, empty-node delivery, military guards, hostile destination and legacy saves.");
+{
+    var(w,a,b,c)=Fixture();
+    var military=w.Campaign.RobotBattles;
+    var original=w.Nodes.All[a];
+    var host=w.Nodes.All[b];
+    var attacker=w.Nodes.All[c];
+    w.Campaign.FunctionTransfers.Reserve(w,a,b);
+    w.Campaign.FinishDomestic(w);
+    w.Campaign.BeginMilitary();
+    attacker.Owner=1;
+    w.ConquerorLocations[1]=attacker.Cell;w.ConquerorPoints[1]=attacker.Center;
+    var robot=w.Robots.Create(1,RobotParts.Complete);
+    w.Robots.Nodes[c].Add(robot);
+    Check(!military.CanAttackFrom(w,1,c,a) && !military.CanSortie(w,1,a),"The army and conqueror cannot target an empty settlement");
+    Check(military.CanAttackFrom(w,1,c,b) && military.CanSortie(w,1,b),"An army can cross the enemy settlement to reach its host");
+
+    military.Rules=new(){SegmentTurns=1,PersuasionPercent=0};
+    w.Campaign.Resolve(w,new[]{new March(1,b,1,c,Queen:false)});
+    var battle=military.Encounters.Single();
+    Check(battle.Kind==BattleKind.Node && battle.Target==b && original.Owner==0 && w.Robots.Nodes[a].Count==0,
+        "Passing through the settlement leaves its ownership and empty store alone");
+    var people=original.Population.People.Sum();
+    battle.Battles[0].Winner=1;
+    battle.Battles[0].Finished=true;
+    typeof(RobotCampaign).GetMethod("Complete",BindingFlags.NonPublic|BindingFlags.Instance)!.Invoke(military,new object[]{w,battle});
+    Check(host.Owner==1 && original.Owner==1 && original.FunctionHost==b && !original.Functional &&
+        original.Population.People.Sum()==people && w.Robots.Nodes[a].Count==0,"Capturing the host transfers the settlement and leaves its residents in place");
+    military.Check(w);
+}
+{
+    var(w,a,b,c)=Fixture();
+    var military=w.Campaign.RobotBattles;
+    w.Campaign.FunctionTransfers.Reserve(w,a,b);
+    w.Campaign.FinishDomestic(w);
+    w.Campaign.BeginMilitary();
+    w.Nodes.All[c].Owner=1;
+    Add(w,b,RobotParts.Complete);
+    w.Robots.Nodes[c].Add(w.Robots.Create(1,RobotParts.Complete));
+    military.Rules=new(){SegmentTurns=1,PersuasionPercent=0};
+    w.Campaign.Resolve(w,new[]{new March(0,c,1,b,Queen:false),new March(1,b,1,c,Queen:false)});
+    var crossing=military.Encounters.Single();
+    Check(crossing.Kind==BattleKind.Edge && crossing.MarchDestinations[0]==c && crossing.MarchDestinations[1]==b &&
+        w.Nodes.All[a].Owner==0,"Opposing marches meet on an edge without capturing the settlement");
+    var saved=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
+    Check(saved.Campaign.RobotBattles.Encounters.Single().MarchDestinations[1]==b,"March destinations survive a continued edge battle save");
+}
+Console.WriteLine("PASS: military transit, edge crossings, grouped conquest, reservation timing, full-hangar merge, relocation, source references, multi-origin consolidation, empty-node delivery, military guards, hostile destination and legacy saves.");
 
 static class FixtureExtensions
 {
