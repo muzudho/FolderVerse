@@ -28,10 +28,50 @@ sealed class FunctionTransferUi:Game1
         ((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);Set("_statusGlobe",false);
         Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("OpenNodeInspector",a);Call("OpenNodeOffice");Call("UpdateDomesticSlide",1f);
     }
+    private void CheckMapReservation()
+    {
+        Call("ResetInspector");Call("UpdateDomesticSlide",1f);
+        var net=(CubeNet)Get("_net");net.ShowRoutes=false;
+        var button=(Rectangle)Call("PrimaryActionBounds",6);
+        Check((bool)Call("MapOverlayClick",button.Center,false) && (bool)Get("_functionTransferMap"),"Primary action opens reservation mode");
+        Call("BuildFunctionTransferMarkers");
+
+        var markers=(System.Collections.IList)Get("_functionTransferMarkers");
+        (int Source,int Target,Rectangle Bounds,bool Reserved)[] ReadMarkers()=>markers.Cast<object>().Select(m=>{
+            var type=m.GetType();
+            return ((int)type.GetProperty("Source")!.GetValue(m)!,(int)type.GetProperty("Target")!.GetValue(m)!,
+                (Rectangle)type.GetProperty("Bounds")!.GetValue(m)!,(bool)type.GetProperty("Reserved")!.GetValue(m)!);
+        }).ToArray();
+        var candidates=ReadMarkers();
+        var first=candidates.First(m=>candidates.Any(n=>n.Source==m.Target && n.Target==m.Source && !n.Bounds.Intersects(m.Bounds)));
+        Check((bool)Call("MapOverlayClick",first.Bounds.Center,false),"Map arrow responds");
+        var orders=w.Campaign.FunctionTransfers.Orders;
+        Check(orders.Count==1 && orders[0].Source==first.Source && orders[0].Target==first.Target,"Arrow reserves the indicated direction");
+        Check((bool)Get("_functionTransferMap"),"Reservation leaves the mode open");
+        Call("BuildFunctionTransferMarkers");
+        var updated=ReadMarkers();
+        Check(!updated.Any(m=>!m.Reserved && (m.Source==first.Source || m.Source==first.Target)),"Reserved source and chain directions are removed");
+        var second=updated.First(m=>!m.Reserved);
+        Check((bool)Call("MapOverlayClick",second.Bounds.Center,false) && orders.Count==2,"A second arrow can be reserved immediately");
+        Call("BuildFunctionTransferMarkers");
+        var document=ReadMarkers().Single(m=>m.Reserved && m.Source==first.Source);
+        Check((bool)Call("MapOverlayClick",document.Bounds.Center,false) && orders.Count==1 && orders[0].Source==second.Source,"Document cancels only its reservation");
+        Set("_pointer",second.Bounds.Center);
+    }
+    private void CloseMapReservation()
+    {
+        var orders=w.Campaign.FunctionTransfers.Orders;
+        w.Campaign.FunctionTransfers.Cancel(orders.Single().Source);
+        var net=(CubeNet)Get("_net");
+        Check((bool)Call("MapOverlayClick",Point.Zero,true) && !(bool)Get("_functionTransferMap") && !net.ShowRoutes,"Esc closes the mode and restores route visibility");
+        Call("OpenNodeInspector",a);Call("OpenNodeOffice");Call("UpdateDomesticSlide",1f);
+    }
     protected override void Update(GameTime time){}
     protected override void Draw(GameTime time)
     {
+        if(frame==0)CheckMapReservation();
         if(frame==1){
+            CloseMapReservation();
             Check((bool)Call("FunctionTransferOfficeClick",new Point(200,860)),"Office reservation button responds");
             Check((int)Get("_functionTransferSource")==a,"Reservation opens target selection");
         }
@@ -52,6 +92,6 @@ sealed class FunctionTransferUi:Game1
         var p=GraphicsDevice.PresentationParameters;var colors=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(colors);
         using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(colors);
         using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"function-transfer-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
-        if(frame++==7){Console.WriteLine("PASS: office reservation and target selector, delivery execution, source references and second pages of hangar, factory and delivery inspectors.");Exit();}
+        if(frame++==7){Console.WriteLine("PASS: map and office reservation and target selector, delivery execution, source references and second pages of hangar, factory and delivery inspectors.");Exit();}
     }
 }

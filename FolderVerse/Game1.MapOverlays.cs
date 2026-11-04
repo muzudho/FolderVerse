@@ -13,7 +13,8 @@ public partial class Game1
         float target=_directMap?1:0;
         _primaryActionSlide=target>_primaryActionSlide?Math.Min(target,_primaryActionSlide+elapsed/.25f):Math.Max(target,_primaryActionSlide-elapsed/.25f);
     }
-    // Five squares and one double-width, 1.5-height end-turn button share a baseline.
+    private const int FunctionTransferAction=6;
+    private const int PrimaryActionCount=7;
     private static Rectangle PrimaryActionHomeBounds(int index)=>index switch {
         0=>new(54,974,96,96),1=>new(160,926,192,144),
         _=>new(362+(index-2)*106,974,96,96)
@@ -22,27 +23,29 @@ public partial class Game1
     private static Rectangle DirectMapCloseButton=>new(PrimaryActionHomeBounds(3).Right+10,1002,40,40);
     private bool TutorialPrimaryActionsDisabled=>_setup.TutorialStep==3 || _setup.TutorialMapBeforeWar && _setup.TutorialMapStage<6;
     private bool TutorialPrimaryActionAllowed(int index)=>!TutorialPrimaryActionsDisabled && (!_setup.TutorialMapBeforeWar || index is 1 or 2 || index==0 && _setup.TutorialAttackCompleted);
-    private bool TutorialPrimaryActionClick(Point p)=>Enumerable.Range(0,6).Any(i=>(!TutorialPrimaryActionAllowed(i) || !PhasePrimaryActionAllowed(i)) && PrimaryActionBounds(i).Contains(p));
+    private bool TutorialPrimaryActionClick(Point p)=>Enumerable.Range(0,PrimaryActionCount).Any(i=>(!TutorialPrimaryActionAllowed(i) || !PhasePrimaryActionAllowed(i)) && PrimaryActionBounds(i).Contains(p));
     private bool MapMarkerMenuAvailable=>!_directPairOpen && !_trainingOpen && _supervisorDialog==0 && !_inspectorFoldersOpen && !_salvageAbandonConfirmation.HasValue && !_hangarDrag.HasValue && !_seedDialog.IsOpen;
     private bool MapOverlayClick(Point p,bool escape)
     {
         if(!escape && TutorialPrimaryActionClick(p))return true;
         if(!MapMarkerMenuAvailable || InspectorVisible)return false;
+        if(escape && _functionTransferMap){CloseFunctionTransferMap();return true;}
         if(escape && _directMap){CloseDirectDelivery();return true;}
         if(escape)return false;
         if(_directMap && DirectMapCloseButton.Contains(p)){CloseDirectDelivery();return true;}
         if(_directMap && PrimaryActionBounds(3).Contains(p))return true;
-        if((_directMap || _primaryActionSlide>0) && Enumerable.Range(0,6).Any(i=>i!=3 && (PrimaryActionHomeBounds(i).Contains(p) || PrimaryActionBounds(i).Contains(p))))return true;
-        for(int i=0;i<6;i++)if(PrimaryActionBounds(i).Contains(p)){
+        if((_directMap || _primaryActionSlide>0) && Enumerable.Range(0,PrimaryActionCount).Any(i=>i!=3 && (PrimaryActionHomeBounds(i).Contains(p) || PrimaryActionBounds(i).Contains(p))))return true;
+        for(int i=0;i<PrimaryActionCount;i++)if(PrimaryActionBounds(i).Contains(p)){
             if(i==0)OpenStrategyInspector();
             else if(i==1){ResetInspector();EndPlannedTurn();}
             else if(i==2){ResetInspector();OpenWarPlanning();}
             else if(i==3 && TransportOverviewAllowed){OpenDirectMap();}
             else if(i==4 && TransportOverviewAllowed){ResetInspector();OpenTransportOverview();}
             else if(i==5){if(_salvagePlan)ResetInspector();else OpenSalvagePlan();}
+            else if(i==FunctionTransferAction){if(_functionTransferMap)CloseFunctionTransferMap();else OpenFunctionTransferMap();}
             return true;
         }
-        return false;
+        return FunctionTransferMapClick(p);
     }
     private void PrimaryRoundBox(Rectangle r,Color color,int radius=12)
     {
@@ -65,13 +68,13 @@ public partial class Game1
     private void DrawPrimaryActionButtons() => DrawTutorialChrome(()=>DrawPrimaryActionButtonsCore(),false);
     private void DrawPrimaryActionButtonsCore()
     {
-        string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画"};
-        for(int i=0;i<6;i++){
+        string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画","地点の機能移転の予約"};
+        for(int i=0;i<PrimaryActionCount;i++){
             var r=PrimaryActionBounds(i);if(r.Top>=1080)continue;
             bool enabled=PhasePrimaryActionAllowed(i) && TutorialPrimaryActionAllowed(i) && (i==3 || !_directMap && _primaryActionSlide==0) && (i is not (3 or 4) || TransportOverviewAllowed);
             var color=_setup.OwnerColor(_setup.PlayerSlot);
             if(!enabled)color=Color.Lerp(color,new Color(45,49,54),.75f);
-            else if(r.Contains(_pointer))color=Color.Lerp(color,Color.White,.22f);
+            else if((i==FunctionTransferAction && _functionTransferMap) || r.Contains(_pointer))color=Color.Lerp(color,Color.White,.22f);
             var shadow=r;shadow.Y+=4;PrimaryRoundBox(shadow,new Color(7,23,35));PrimaryRoundBox(r,color);
             DrawCountryCornerMarks(r,_setup.PlayerSlot,enabled?1:.3f);
             var ink=UiPainter.ContrastInk(color);
@@ -79,7 +82,7 @@ public partial class Game1
             else {
                 int inset=_setup.CountryPattern(_setup.PlayerSlot)==0?3:14;
                 DrawPrimaryIcon(i,new(r.X+12,r.Y+8,r.Width-24,58),ink);
-                string label=i==3?"パーツ直送便":i==4?"輸送長期計画":labels[i];
+                string label=i==3?"パーツ直送便":i==4?"輸送長期計画":i==FunctionTransferAction?"機能移転":labels[i];
                 _ui.Center(label,new(r.X+inset,r.Bottom-28,r.Width-inset*2,24),Math.Min(.34f,(r.Width-inset*2)/_font.MeasureString(label).X),ink);
             }
             if((i==3 || !_directMap && _primaryActionSlide==0) && r.Contains(_pointer)){
@@ -117,6 +120,12 @@ public partial class Game1
             if(sea){Line(.06f,.65f,.86f,.65f,8);Line(.86f,.65f,.70f,.86f,6);Line(.12f,.65f,.24f,.86f,6);Line(.24f,.86f,.70f,.86f,6);Box(.25f,.32f,.40f,.25f);Line(.06f,.96f,.86f,.96f,2);}
             else {Box(.05f,.26f,.48f,.45f);Box(.56f,.43f,.29f,.28f);Box(.12f,.76f,.15f,.16f);Box(.62f,.76f,.15f,.16f);}
             if(kind==4){var c=P(.79f,.24f);for(int a=0;a<360;a+=12){float angle=MathHelper.ToRadians(a);var d=new Vector2(MathF.Cos(angle),MathF.Sin(angle));_ui.Tile(c+d*13,new(3,3),0,ink);}for(int a=-90;a<=0;a+=6){float angle=MathHelper.ToRadians(a);var d=new Vector2(MathF.Cos(angle),MathF.Sin(angle));_ui.Tile(c+d*6,new(13,2),angle,ink);}}
+        }else if(kind==FunctionTransferAction){
+            Line(.20f,.10f,.67f,.10f);Line(.67f,.10f,.80f,.28f);Line(.80f,.28f,.80f,.91f);
+            Line(.80f,.91f,.20f,.91f);Line(.20f,.91f,.20f,.10f);
+            Line(.32f,.34f,.65f,.34f,2);Line(.32f,.49f,.59f,.49f,2);
+            Line(.51f,.66f,.67f,.66f,2);Line(.67f,.66f,.67f,.80f,2);
+            Line(.67f,.80f,.51f,.80f,2);Line(.51f,.80f,.51f,.66f,2);
         }else{
             Box(.32f,.16f,.38f,.34f);Box(.39f,.05f,.07f,.11f);var eye=UiPainter.ContrastInk(ink);_ui.Box(new((int)P(.39f,.27f).X,(int)P(.39f,.27f).Y,4,4),eye);_ui.Box(new((int)P(.59f,.27f).X,(int)P(.59f,.27f).Y,4,4),eye);
             Line(.13f,.50f,.23f,.93f);Line(.87f,.50f,.77f,.93f);Line(.23f,.93f,.77f,.93f);Line(.10f,.50f,.90f,.50f,6);
