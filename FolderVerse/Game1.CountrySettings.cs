@@ -9,6 +9,7 @@ public partial class Game1
     private int _countrySettingsRuler;
     private static readonly Rectangle CountrySettingsMenuItem=new(1320,350,538,52);
     private static readonly Rectangle CountrySettingsClose=new(1730,85,100,50),CountryHumanButton=new(1110,305,320,60),CountryComputerButton=new(1450,305,320,60);
+    private static readonly Rectangle CountryShowOperations=new(1450,250,320,44);
     private static Rectangle CountrySettingsCard(int i)=>new(90+i%5*194,200+i/5*62,186,56);
     private static Rectangle CountryColorOption(int row,int i)=>new(1110+i%10*66,645+row*120+i/10*48,58,42);
     private static Rectangle CountryPatternOption(int i)=>new(1110+i%3*220,430+i/3*64,208,54);
@@ -40,6 +41,11 @@ public partial class Game1
         if(!click)return true;
         for(int i=0;i<_setup.ActiveCount;i++)if(CountrySettingsCard(i).Contains(_pointer)){_countrySettingsRuler=i;return true;}
         int ruler=_countrySettingsRuler;
+        if(CountryShowOperations.Contains(_pointer))
+        {
+            if(!_setup.IsHumanPlayer(ruler))_setup.ToggleComputerOperations(ruler);
+            return true;
+        }
         if(CountryHumanButton.Contains(_pointer) || CountryComputerButton.Contains(_pointer))
         {
             _setup.SetHumanPlayer(ruler,CountryHumanButton.Contains(_pointer));
@@ -82,6 +88,20 @@ public partial class Game1
         bool human=_setup.IsHumanPlayer(ruler);
         _ui.Button(CountryHumanButton,"人間",human?Accent:Muted,.6f);
         _ui.Button(CountryComputerButton,"コンピューター",human?Muted:Accent,.56f);
+        var toggle=CountryShowOperations;
+        bool show=_setup.ShowComputerOperations(ruler);
+        _ui.Box(toggle,human?new Color(30,44,57):toggle.Contains(_pointer)?Color.Lerp(Muted,Color.White,.14f):Muted);
+        var box=new Rectangle(toggle.X+16,toggle.Y+10,24,24);
+        var ink=human?new Color(144,157,168):Cream;
+        _ui.Box(box,ink);
+        box.Inflate(-2,-2);
+        _ui.Box(box,new Color(18,36,48));
+        if(show)
+        {
+            box.Inflate(-3,-3);
+            _ui.Box(box,human?ink:Accent);
+        }
+        _ui.Text("操作を表示",new(toggle.X+54,toggle.Y+8),.50f,ink);
         _ui.Text("人間の手下は自分のターンで操作します。",new(1110,380),.40f,Cream);
         _ui.Text("基本の色",new(1110,610),.45f,Cream);
         if(_setup.CountryPattern(ruler)!=0)_ui.Text("２色目",new(1110,730),.45f,Cream);

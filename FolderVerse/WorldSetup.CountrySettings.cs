@@ -7,6 +7,14 @@ public sealed partial class WorldSetup
 {
     // Null means the palette assigned by world setup (also the legacy-save default).
     private int[] _countrySecondaryColors, _countryPatterns;
+    private bool[] _showComputerOperations;
+    public bool ShowComputerOperations(int ruler)=>_showComputerOperations?[ruler]??false;
+    public void ToggleComputerOperations(int ruler)
+    {
+        if(IsHumanPlayer(ruler))return;
+        _showComputerOperations??=new bool[CastCount];
+        _showComputerOperations[ruler]=!_showComputerOperations[ruler];
+    }
     public static readonly string[] CountryPatternNames={"無地","横縞","水玉","格子","市松"};
     public bool IsHumanPlayer(int ruler)=>!ComputerOnly && (HumanPlayers.Count>0?HumanPlayers.Contains(ruler):ruler==Relations.Leader);
     public void SetHumanPlayer(int ruler,bool human)

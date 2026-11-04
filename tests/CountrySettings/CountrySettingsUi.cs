@@ -16,8 +16,10 @@ sealed class CountrySettingsUi:Game1
  protected override void Draw(GameTime time){
   if(frame==0){Click(1680,43);Click(1550,376);Check((bool)Get("_countrySettingsOpen"),"System menu opens settings through real input");}
   if(frame==1){Click(765,910);Check((int)Get("_countrySettingsRuler")==58,"Bottom row can select country 59");Click(1200,335);Click(1430,457);Click(1535,666);Click(1535,786);Check(w.IsHumanPlayer(58) && w.ColorIndices[58]==6 && w.CountrySecondaryColor(58)==6 && w.CountryPattern(58)==1,"Real controls change country 59");Click(1200,786);}
-  if(frame==2){Click(1200,457);int secondary=w.CountrySecondaryColor(58);Click(1535,786);Check(w.CountryPattern(58)==0 && w.CountrySecondaryColor(58)==secondary,"Solid pattern hides and disables the second palette without discarding its color");var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();}
-  if(frame==3){Click(1200,520);Check(w.CountryPattern(58)==3 && w.CountrySecondaryColor(58)==1,"Scaled input selects grid and restores the second color");}
+  if(frame==2){Click(1200,457);int secondary=w.CountrySecondaryColor(58);Click(1535,786);Check(w.CountryPattern(58)==0 && w.CountrySecondaryColor(58)==secondary,"Solid pattern hides and disables the second palette without discarding its color");Click(1500,272);Check(!w.ShowComputerOperations(58),"Human toggle is disabled");var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();}
+  if(frame==3){Click(1200,520);Check(w.CountryPattern(58)==3 && w.CountrySecondaryColor(58)==1,"Scaled input selects grid and restores the second color");
+   Click(1580,335);Click(1500,272);Check(w.ShowComputerOperations(58) && !w.ShowComputerOperations(0),"Scaled toggle affects only the selected CPU");
+   Click(1200,335);Click(1500,272);Check(w.ShowComputerOperations(58),"Human mode preserves the saved preference");Click(1580,335);}
   if(frame==4){Click(1780,110);Check(!(bool)Get("_countrySettingsOpen"),"Close dismisses modal");}
   if(frame==5){Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-100d);foreach(var n in w.Nodes.All)n.Owner=58;Array.Fill(w.Owners,58);var net=(CubeNet)Get("_net");net.ShowCountryColors=true;net.ShowRobots=net.ShowBatteries=net.ShowMapSymbols=net.ShowEquator=net.ShowRoutes=false;Set("_statusGlobe",false);var world=(WorldPreview)Get("_world");world.CountryColors=true;world.ShowSetup(w,true);}
   if(frame==6)Set("_statusGlobe",true);

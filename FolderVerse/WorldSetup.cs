@@ -160,7 +160,7 @@ public sealed partial class WorldSetup
         int count=_participantCountsConfigured?ParticipantCount:CastCount;
         Portraits=new int[count]; Looks=new ConquerorLook[count];
         ColorIndices=Enumerable.Range(0,count).ToArray();random.Shuffle(ColorIndices);
-        _countryPatterns=null;_countrySecondaryColors=null;
+        _countryPatterns=null;_countrySecondaryColors=null;_showComputerOperations=null;
         // Draw distinct completed portraits. A family can contain all six sisters.
         int familyBase=random.Next(ConquerorCatalog.BaseCount);
         int familySize=2+random.Next(5);

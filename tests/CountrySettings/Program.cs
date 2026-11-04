@@ -19,10 +19,13 @@ Check(w.Population.Turn==turn+1 && !w.Campaign.AwaitingPlayers,"Removing a submi
 Check(w.Campaign.PlannedOrders.Count==0,"Switched CPU orders resolve rather than remaining stale");
 var original=w.OwnerColor(2);var robot=w.Robots.Create(2,RobotParts.Complete);
 w.SetCountryAppearance(2,6,12,3);Check(w.OwnerColor(2)==WorldSetup.Colors[6] && w.CountryMapColor(2,0,1)==WorldSetup.Colors[12] && robot.Owner==2,"Appearance changes preserve robot identity");
+w.ToggleComputerOperations(58);
 var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
+Check(restored.ShowComputerOperations(58) && !restored.ShowComputerOperations(2),"CPU display preference survives save/load per ruler");
 Check(restored.IsHumanPlayer(2) && restored.CountryPattern(2)==3 && restored.CountrySecondaryColor(2)==12,"Appearance and controls survive save/load");
-var legacy=AutoSaveStore.Capture(w);foreach(var entry in legacy.Objects)if(entry.Fields!=null){entry.Fields.Remove("_countryPatterns");entry.Fields.Remove("_countrySecondaryColors");}
+var legacy=AutoSaveStore.Capture(w);foreach(var entry in legacy.Objects)if(entry.Fields!=null){entry.Fields.Remove("_countryPatterns");entry.Fields.Remove("_countrySecondaryColors");entry.Fields.Remove("_showComputerOperations");}
 var old=AutoSaveStore.Restore<WorldSetup>(legacy);Check(old.CountryPattern(2)==0 && old.OwnerColor(2)==w.OwnerColor(2),"Old saves retain their colors and receive safe defaults");
+Check(!old.ShowComputerOperations(58),"Old saves default CPU display to off");
 string Mask(int pattern,int rotation)=>string.Concat(Enumerable.Range(0,100).Select(i=>{int x=i%10,y=i/10;for(int r=0;r<rotation;r++)(x,y)=(9-y,x);return WorldSetup.CountryPatternSecondary(pattern,x,y)?'1':'0';}));
 for(int a=0;a<WorldSetup.CountryPatternNames.Length;a++)for(int b=0;b<a;b++)for(int r=0;r<4;r++)Check(Mask(a,0)!=Mask(b,r),"No rotated duplicate pattern options");
 Console.WriteLine("PASS: 60 identities, human subordinate turns, CPU transitions, stable ownership, save roundtrip/legacy and rotated-pattern deduplication.");
