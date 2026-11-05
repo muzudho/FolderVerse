@@ -21,10 +21,11 @@ public partial class Game1
     private bool CountrySettingsInput(bool click,bool escape)
     {
         if(!_countrySettingsOpen)return false;
-        if(!IsStatusScreen){_countrySettingsOpen=false;return false;}
+        if(!IsStatusScreen && !_autoPaused){_countrySettingsOpen=false;return false;}
         if(escape || click && CountrySettingsClose.Contains(_pointer))
         {
             _countrySettingsOpen=false;
+            if(_autoPaused){_lastAutoSaveTurn=-1;return true;}
             // Keep an unfinished human's turn when its controller still exists.
             int controller=_setup.ControllerOf(_setup.PlayerSlot);
             if(controller<0 || _setup.Campaign.Submitted.Contains(controller))

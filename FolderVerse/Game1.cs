@@ -127,9 +127,15 @@ public partial class Game1 : Game
         _rollTime=0; _dragging=false;
     }
     protected override void Update(GameTime gameTime)
-    { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive);UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds); UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);UpdateIndustryMusic();UpdateEndingMusic(IsActive);base.Update(gameTime); }
+    { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive);if(!_autoPaused){UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds);UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);}UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);UpdateIndustryMusic();UpdateEndingMusic(IsActive);base.Update(gameTime); }
     private void HandleInputCore(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
     {
+        _pointer=CanvasPoint(mouse);_ui.Pointer=_pointer;
+        bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
+        bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
+        if(AutoPauseInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(ComputerExhibition && !_autoPlay && _screen is not (Screen.LandConquest or Screen.Fortune))StartAutoPlay();
+        if(AutomaticGame)_autoAge+=gameTime.ElapsedGameTime.TotalSeconds;
         _setup.Robots.PartPlanning.Invalidate();
         if(IsStatusScreen)_setup.Robots.DirectDelivery.ReconcileDestinations(_setup);
         UpdateTutorialChrome((float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -139,11 +145,8 @@ public partial class Game1 : Game
             if(_screen==Screen.Industry)_industryIdleAge=0;
             if(_screen==Screen.Battle && _robotSummary)_summaryReadAge=0;
         }
-        _pointer=CanvasPoint(mouse); _ui.Pointer=_pointer;
-        bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
         if(!_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
-        bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
         if(UpdateSubordinateDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) || UpdateComputerDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) ||
             UpdateComputerMarches(gameTime.ElapsedGameTime.TotalSeconds,escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -154,10 +157,6 @@ public partial class Game1 : Game
         if(AbandonConfirmationInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(active && click && FolderTreeToolbarClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(InspectorFolderInput(mouse,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(_autoPlay && (click || escape)){
-            _autoPlay=false;_autoStepAge=_autoDomesticAge=0;_autoDomesticStage=0;_hangarDrag=null;
-            _previousMouse=mouse;_previousKeyboard=keyboard;return;
-        }
         if(IsStatusScreen)UpdateMapFooter((float)gameTime.ElapsedGameTime.TotalSeconds);
         if(IsStatusScreen && _directPairOpen){
             _animationTime+=(float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -721,6 +720,7 @@ public partial class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
+        if(_autoPaused){DrawAutoPause();base.Draw(gameTime);return;}
         _setup.Robots.PartPlanning.Invalidate();
         BeginNewspaperToyPatternFrame();if(!_conquestOverview)NotifyPlayerTurn();
         GraphicsDevice.Clear(new Color(16,35,46)); var viewport=GraphicsDevice.Viewport; var canvas=CanvasBounds();
@@ -729,7 +729,7 @@ public partial class Game1 : Game
         DrawWindowMargins(viewport.Width,viewport.Height,canvas);
         if(_screen==Screen.Title)_spriteBatch.Draw(_titleScreen,canvas,Color.White); _spriteBatch.End();
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
-        if(_conquestOverview && _conquestStage<8){DrawConquestOverview(canvas,transform,viewport);if(_demoActive)DrawDemoOverlay(transform);DrawFullscreenCursor();base.Draw(gameTime);return;}
+        if(_conquestOverview && _conquestStage<8){DrawConquestOverview(canvas,transform,viewport);if(_demoActive || AutomaticGame)DrawDemoOverlay(transform);DrawFullscreenCursor();base.Draw(gameTime);return;}
         if(_screen==Screen.Title){_spriteBatch.Begin(transformMatrix:transform);DrawTitleStartMenu();_spriteBatch.End();}
         if(_screen!=Screen.Title)
         {

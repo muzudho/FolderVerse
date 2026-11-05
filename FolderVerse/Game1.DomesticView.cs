@@ -110,7 +110,7 @@ public partial class Game1
     private void DrawDomesticPortrait()
     {
         int player=_setup.TurnPlayer;DrawRulerMedallion(player,PlayerMedallionCenter);
-        _ui.Center(_setup.PlayerSlot==player?"あなたの陣営 / 操作中":"あなたの陣営のターン",new((int)PlayerMedallionCenter.X-145,600,290,30),.36f,Cream);
+        _ui.Center(_setup.ComputerOnly?"AUTO / 観戦中":_setup.PlayerSlot==player?"あなたの陣営 / 操作中":"あなたの陣営のターン",new((int)PlayerMedallionCenter.X-145,600,290,30),.36f,Cream);
         if(_setup.PlayerSlot!=player){
             DrawRulerMedallion(_setup.PlayerSlot,OperationMedallionCenter);
             _ui.Center("操作中の手下",new((int)OperationMedallionCenter.X-145,600,290,30),.36f,Cream);

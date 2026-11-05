@@ -19,8 +19,9 @@ public partial class Game1
     private bool UpdateAutoPlay(double elapsed,bool click,bool escape,double now)
     {
         if(!_autoPlay)return false;
-        if(click || escape){_autoPlay=false;_autoStepAge=0;return true;}
-        _autoAge+=elapsed;_autoStepAge+=elapsed;
+        if(_autoPaused)return true;
+        if(click || escape){AutoPauseInput(click,escape);return true;}
+        _autoStepAge+=elapsed;
         _net.UpdateAnimation((float)elapsed);UpdateMapTransition((float)elapsed);
         switch(_screen)
         {

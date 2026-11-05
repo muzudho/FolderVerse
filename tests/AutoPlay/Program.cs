@@ -1,4 +1,5 @@
 using FolderVerse;
+if(args.Contains("--ui")){using var game=new AutoPauseUi();game.Run();return;}
 var world=new WorldSetup();world.SetWorld(0);world.SetCast(123);world.SetPlacement(456);world.SelectPlayer(0);
 world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);
 var home=world.Nodes.All.First(n=>world.Routes.Neighbors(n).Length>0);
