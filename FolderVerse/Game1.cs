@@ -209,6 +209,8 @@ public partial class Game1 : Game
         if(OrientationControlsVisible && !_seedDialog.IsOpen && active && click && OrientationControlClick(_pointer)){if(AutomaticOrientation)AdvanceAutomaticOrientation((float)elapsed);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool transitioning=MapTransitionActive;UpdateMapTransition((float)elapsed);
         if(transitioning){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(UpdateGlobeSpin((float)elapsed,active,click,mouse.RightButton==ButtonState.Pressed))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _screenshots.Update(gameTime.ElapsedGameTime.TotalSeconds);
         bool captureChord=keyboard.IsKeyDown(Keys.P) && (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
@@ -657,6 +659,7 @@ public partial class Game1 : Game
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(InspectorVisible?1276:991,InspectorVisible?770:831),Math.Min(0.48f,(InspectorVisible?600:870)/_font.MeasureString(location).X),Cream);
         _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):"右ドラッグ："+(MapDragSlide?"スライド":"回転")+" / ホイール：拡縮",new(InspectorVisible?1276:991,InspectorVisible?810:865),InspectorVisible?.27f:0.37f,new(177,206,216));
+        if(_statusGlobe)_ui.Button(NetButton(1),(_globeSpinning?"✓ ":"□ ")+"くるくる回す",_globeSpinning?Accent:Muted,0.45f);
         _ui.Button(NetButton(2),"征服者はどこ？",Accent,0.45f);
         _ui.Button(NetButton(3),"今どこ見てる？",InspectorLocationNode>=0?Accent:Muted,0.45f);
         if(!_statusGlobe)_ui.Button(NetButton(4),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
