@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 public partial class Game1
 {
@@ -10,6 +11,8 @@ public partial class Game1
     private March[] _visibleComputerMarches;
     private int _computerMarchIndex;
     private double _computerMarchAge;
+    private int _computerWarStage;
+    private Point _computerWarClick;
     private int _computerViewRuler,_computerViewLeader;
     private const double ComputerViewLeadIn=.75,ComputerMarchSeconds=2.4+ComputerViewLeadIn;
     private static readonly Rectangle ComputerMarchPanel=new(54,170,750,280);
@@ -25,6 +28,7 @@ public partial class Game1
         _visibleComputerMarches=visible;
         _computerMarchIndex=0;
         _computerMarchAge=0;
+        _computerWarStage=0;
         BeginComputerView(visible[0].Ruler);
         return true;
     }
@@ -32,9 +36,20 @@ public partial class Game1
     private bool UpdateComputerMarches(double elapsed,bool skip)
     {
         if(_computerMarches==null)return false;
+        _net.UpdateAnimation((float)elapsed);
+        UpdateMapTransition((float)elapsed);
+        UpdateDomesticSlide((float)elapsed);
         _computerMarchAge+=elapsed;
+        if(!skip && _computerWarStage>=0 &&
+            _visibleComputerMarches[_computerMarchIndex] is {Peaceful:false, Queen:false, PocketOnly:false, SourceNode:>=0, Fighters:>0} attack)
+        {
+            if(_computerMarchAge<1)return true;
+            if(AdvanceComputerWarPreview(attack)){_computerMarchAge=0;return true;}
+        }
         if(!skip && _computerMarchAge<ComputerMarchSeconds)return true;
+        CloseMovement();
         _computerMarchAge=0;
+        _computerWarStage=0;
         if(!skip && ++_computerMarchIndex<_visibleComputerMarches.Length)
         {
             int ruler=_visibleComputerMarches[_computerMarchIndex].Ruler;
@@ -50,9 +65,72 @@ public partial class Game1
         return true;
     }
 
+    private bool AdvanceComputerWarPreview(March order)
+    {
+        switch(_computerWarStage++)
+        {
+            case 0:
+                _computerWarClick=WarButton.Center;
+                MapOverlayClick(_computerWarClick,false);
+                if(!_warPlanning)break;
+                FocusDemoNode(_setup.Nodes.All[order.TargetNode]);
+                return true;
+            case 1:
+                if(!OperationPosition(order.TargetNode,out var at))break;
+                _computerWarClick=at.ToPoint();
+                if(!MapViewBounds.Contains(_computerWarClick) ||
+                    (_statusGlobe?HitGlobeNode(_computerWarClick,_net.MovementTargets):
+                        _net.HitNode(_setup,NetPanel,_computerWarClick,_net.MovementTargets))!=order.TargetNode)break;
+                MovementClick(_computerWarClick,new KeyboardState());
+                if(_selectedMoveNode==order.TargetNode)return true;
+                break;
+            case 2:
+                int source=_invasionSources.FindIndex(row=>!row.Queen && row.Owner==order.Ruler && row.Node==order.SourceNode);
+                if(source<0)break;
+                var robots=InvasionRobots(_invasionSources[source]);
+                var ids=order.RobotIds??robots.Take((int)order.Fighters).Select(robot=>robot.Id).ToArray();
+                if(ids.Length!=order.Fighters || ids.Any(id=>!robots.Any(robot=>robot.Id==id)))break;
+                _invasionPage=source/7;
+                var local=InvasionSortieButton(source%7).Center;
+                _computerWarClick=new Point(local.X+NodeInspectorOffset,local.Y);
+                InvasionClick(local);
+                if(_invasionPicker<0)break;
+                _invasionDraft.Clear();
+                _invasionDraft.UnionWith(ids);
+                return true;
+            case 3:
+                _computerWarClick=InvasionPickerDone.Center;
+                _pointer=_computerWarClick;
+                InvasionPickerInput(true,false);
+                return true;
+            case 4:
+                _computerWarClick=InspectorClose.Center;
+                DomesticViewClick(_computerWarClick);
+                return true;
+            default:
+                _computerMarchAge=ComputerMarchSeconds;
+                return false;
+        }
+        CloseMovement();
+        _computerWarStage=-1;
+        _computerMarchAge=0;
+        return false;
+    }
+
     private void DrawComputerMarches(Matrix transform)
     {
         if(_computerMarches==null)return;
+        if(_computerWarStage>0)
+        {
+            if(_computerWarStage==5)return;
+            _spriteBatch.Begin(transformMatrix:transform);
+            // Once the modal opens, the source button is behind it.
+            if(_invasionPicker>=0)DrawDemoHand(InvasionPickerDone.Center.ToVector2(),0);
+            else if(_computerWarStage==4)DrawDemoHand(InspectorClose.Center.ToVector2(),0);
+            else DrawDemoHand(_computerWarClick.ToVector2(),Math.Clamp(.4f-(float)_computerMarchAge,0,.4f));
+            _spriteBatch.End();
+            return;
+        }
         var order=_visibleComputerMarches[_computerMarchIndex];
         string target=_setup.Nodes.DisplayName(_setup.Nodes.All[order.TargetNode]);
         int sourceId=order.SourceNode>=0?order.SourceNode:_setup.Nodes.Current(order.Ruler)?.Id??-1;

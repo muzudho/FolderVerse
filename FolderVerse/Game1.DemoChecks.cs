@@ -32,7 +32,7 @@ public partial class Game1
             _demoWarSource=Enumerable.Range(0,_invasionSources.Count).FirstOrDefault(i=>InvasionRobots(_invasionSources[i]).Length>0,-1);
             if(_demoWarSource<0)_demoWarSource=_invasionSources.FindIndex(r=>r.Queen);
             if(_demoWarSource<0){_demoDomesticStage=36;_demoDomesticAge=0;return true;}
-            _invasionPage=_demoWarSource/7;var row=InvasionRow(_demoWarSource%7);target=new(row.X+565+NodeInspectorOffset,row.Y+17);
+            _invasionPage=_demoWarSource/7;var button=InvasionSortieButton(_demoWarSource%7).Center;target=new(button.X+NodeInspectorOffset,button.Y);
         }
         if(_demoDomesticStage is 33 or 34){
             if(_invasionPicker<0){_demoDomesticStage=32;_demoDomesticAge=0;return true;}

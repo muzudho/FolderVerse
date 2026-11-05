@@ -237,3 +237,31 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 - FolderVerse/Game1.csのTickSlotsでWorldStatusを抽選画面用の自動回転の条件から除外。抽選時とDemoの地図紹介時の回転は既存経路を維持。
 - dotnet build tests/DemoUi --no-restore -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers は警告・エラー0。分離出力のDemoUi.dllをSeed20とSeed12で実行し、両方で初回Transport入り、WorldStatus復帰、終了ループを確認。DemoChecksUi.dllも終了コード0。1080p／540pの地星儀・展開図で実ハンドルクリック、即予約、赤チェック、閉鎖、ターン終了と表示消去を検査。demo-checks-0-6.pngで赤ハンドルを指す手と地図の赤チェック、予約1件を目視。
 - 証拠は artifacts/demo-click-audit の fix-latest-seed20-build.log、fix-latest-seed20-after.log、fix-latest-seed12-after.log、fix-latest-checks.log。既存の分離出力を再利用。全Seed、通常プレイの物理マウス入力は未確認。
+
+## 2026-11-05 00:26修正回：DEMO-0016
+
+- 開始 00:26:52 JST、終了 00:30:45 JST。HEAD=1b6ed946b563cdd9b64b90303a9d0238945d686f。既存の点検差分を保持。修正前の CountrySettings.dll --ui で専用パネル経路を再実行。
+- Game1.ComputerMarches.cs、Game1.Invasion.cs、Game1.InvasionPicker.cs、Game1.DemoChecks.cs、tests/CountrySettings/CountrySettingsUi.cs を変更。対応できる格納庫出撃で通常の開戦・地図ヒット・出撃元・出撃選択・確定・閉じるを使用。出撃元ボタンの矩形を描画・入力・Demoで共有。AIが計算した指示を従来どおり一括実行し、確認操作で予約を二重登録しない。
+- dotnet build tests/CountrySettings および tests/DemoChecksUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers 成功。ALSOFT_DRIVERS=null で dotnet artifacts/corner-lesson/CountrySettings.dll --ui および dotnet artifacts/corner-lesson/DemoChecksUi.dll はコード0。通常ピッカーの開閉、確定で予約数が増えないこと、スキップ後の人間視点と進行を検査。country-settings-12.png（540p）で通常ピッカーと出撃3体を目視。ログ fix-latest-CountrySettings.log／fix-latest-DemoChecksUi.log。
+- 検証待ち：CPUの予約マーカー・赤チェック、個々のロボット選択クリック、全指示をスキップせずに完走する経路。和平移動・ポケット出撃・画面上の対象が一致しない場合は専用パネル。内政の通常UI化は今回の範囲外。次回は残る軍事表示と内政の実描画点検へ。
+
+## 2026-11-05 01:29修正回：DEMO-0016のピッカー表示直後のカーソル
+
+- 開始 01:29:23 JST、完了 01:30:46 JST。HEAD=1b6ed946b563cdd9b64b90303a9d0238945d686f、先行修正の差分を保持。既存 CountrySettings.dll --ui の540p画像でカード上に手が残る状態を再現。
+- FolderVerse/Game1.ComputerMarches.csで、通常の出撃ピッカーを表示中は次の操作先 InvasionPickerDone.Center を静止状態で描画する。ピッカー確定の入力と同じ矩形を使用。
+- dotnet build tests/CountrySettings --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null で dotnet artifacts/corner-lesson/CountrySettings.dll --ui と dotnet artifacts/corner-lesson/DemoChecksUi.dll は終了コード0。country-settings-12.pngで手がカードから確定ボタンへ移ったことを目視。確定後の二重予約防止とスキップ復帰、Demoの緑／赤遷移も確認。証拠 fix-latest-CountrySettings.log／fix-latest-DemoChecksUi.log。
+- この表示ずれは修正・検証完了。DEMO-0016全体は検証待ち。個別ロボット選択の実演、CPUの予約マーカー・赤チェック、専用表示の残る操作、スキップなし完走、内政の通常UI化は今回未対応。
+
+## 2026-11-05 02:30修正回：DEMO-0017
+
+- 開始 02:30:54 JST、終了 02:33:08 JST。HEAD=1b6ed946b563cdd9b64b90303a9d0238945d686f。DEMO-0016の既存差分を保持。修正前の診断入り CountrySettings.dll --ui でフィリアの地点91の専用パネルと組み立てを再現。
+- FolderVerse/Game1.ComputerDomestic.cs と tests/CountrySettings/CountrySettingsUi.cs を変更。CPU視点に切り替えた後、投影した地点と通常のヒット判定を照合し、地点インスペクターを開く。共通の格納庫タブ矩形と入力を使い、組み立て結果を通常格納庫のスロットとメッセージに反映。
+- dotnet build tests/CountrySettings --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null で同出力 CountrySettings.dll --ui と DemoChecksUi.dll は終了コード0。地点一致、格納庫開放、実組み立て、スキップ後の人間復帰と配送、Demoの緑／赤を確認。audit-latest-computer-domestic.png（540p）でタブ上の手と完成ロボット、結果メッセージを目視。証拠 fix-latest-CountrySettings.log／fix-latest-DemoChecksUi.log。
+- 専用パネルの代わりに格納庫を見せる経路は検証済み。組み立て自体は既存のCPU処理で、個別のドラッグや緑チェックは未実装。地点ヒットやタブ操作が成立しない場合は専用表示へ戻る。全CPUのスキップなし完走は未確認。
+
+## 2026-11-05 09:30修正回：DEMO-0016の確定後カーソル
+
+- 開始 09:30:00 JST、完了 09:31:28 JST。HEAD=1b6ed946b563cdd9b64b90303a9d0238945d686f。既存のDEMO-0016／0017差分を保持。修正前の診断入り CountrySettings.dll --ui で確定直後を再描画。
+- FolderVerse/Game1.ComputerMarches.cs の描画を修正。ピッカー確定後は入力と共通の InspectorClose.Center を指し、インスペクターを閉じた後は手を消す。
+- dotnet build tests/CountrySettings --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null で CountrySettings.dll --ui と DemoChecksUi.dll は終了コード0。960×540の audit-latest-computer-confirm.png で閉じるハンドルを指す手を目視。確定で二重登録がないこと、スキップ後の復帰、Demoの緑・赤遷移を確認。証拠 fix-latest-CountrySettings.log／fix-latest-DemoChecksUi.log。
+- 描画診断用のテスト差分は復元。閉鎖後の手の非表示はコード確認。CPUの個別ロボット選択・予約マーカー・赤チェック、通常UI未対応の軍事経路は引き続き残る。

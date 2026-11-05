@@ -46,6 +46,22 @@ sealed class CountrySettingsUi:Game1
    var domestic=(Node[])Get("_computerDomesticNodes");
    Check(domestic is {Length:>0} && w.PlayerSlot==domestic[0].Owner && w.Campaign.Phase==CampaignPhase.Domestic,
     "CPU view is selected before domestic actions and delivery waits");
+   var node=domestic[0];
+   foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
+    w.Robots.Nodes[node.Id].Add(w.Robots.Create(node.Owner,part));
+   Call("UpdateComputerDomestic",.8d,false);
+   Check((int)Get("_populationNode")==node.Id,"CPU selects its projected node");
+   Call("UpdateComputerDomestic",.8d,false);
+   Check((bool)Get("_nodeAssemblyOpen"),"CPU opens the normal hangar");
+   Call("UpdateComputerDomestic",.8d,false);
+   Check((bool)Get("_computerAssembled"),"Assembly completes while the normal hangar is visible");
+   base.Draw(time);
+   var pp=GraphicsDevice.PresentationParameters;
+   var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];
+   GraphicsDevice.GetBackBufferData(pixels);
+   using(var capture=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight))
+   using(var output=File.Create(Path.Combine(AppContext.BaseDirectory,"audit-latest-computer-domestic.png")))
+   {capture.SetData(pixels);capture.SaveAsPng(output,capture.Width,capture.Height);}
    Call("UpdateComputerDomestic",0d,true);
    Check(w.PlayerSlot==0 && w.Campaign.Phase==CampaignPhase.Delivery,"Domestic playback restores the human before delivery");
    Call("OpenMilitaryPhase");
@@ -54,9 +70,16 @@ sealed class CountrySettingsUi:Game1
    Check(visible is {Length:>0} && visible.All(o=>o.Ruler%2==1),"Only opted-in CPUs show actual campaign orders");
    Check(w.Campaign.Phase==CampaignPhase.Military,"Military orders wait for playback");
    Check(w.PlayerSlot==visible[0].Ruler,"CPU view is selected before military actions");
-   Call("UpdateComputerMarches",2.45d,false);
+   for(int step=0;step<3;step++)Call("UpdateComputerMarches",1.1d,false);
+   Check((int)Get("_invasionPicker")>=0,"Computer uses the normal sortie picker for a supported attack");
   }
-  if(frame==13){Call("UpdateComputerMarches",0d,true);Check(w.PlayerSlot==0 && w.Campaign.Phase==CampaignPhase.Domestic,"Skipping restores the human and resolves the military turn");}
+  if(frame==13){
+   int reservations=w.Campaign.PlannedOrders.Count;
+   Call("UpdateComputerMarches",1.1d,false);
+   Check((int)Get("_invasionPicker")==-1 && w.Campaign.PlannedOrders.Count==reservations,"Normal picker confirmation closes without duplicating the queued order");
+   Call("UpdateComputerMarches",1.1d,false);
+   Call("UpdateComputerMarches",0d,true);
+   Check(w.PlayerSlot==0 && w.Campaign.Phase==CampaignPhase.Domestic,"Skipping restores the human and resolves the military turn");}
   base.Draw(time);
   if(frame==10){
    var batch=(SpriteBatch)Get("_spriteBatch");var c=(Rectangle)Call("CanvasBounds");batch.Begin(transformMatrix:Matrix.CreateScale(c.Width/1920f,c.Height/1080f,1)*Matrix.CreateTranslation(c.X,c.Y,0));

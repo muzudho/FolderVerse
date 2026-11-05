@@ -74,7 +74,9 @@ public partial class Game1
     }
     private IEnumerable<int> InvasionTargets(int ruler)=>_setup.Routes.NodeChoices(ruler).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id)
         .Append(_setup.Nodes.Current(ruler)?.Id??-1).Where(id=>id>=0 && _setup.Campaign.RobotBattles.CanSortie(_setup,ruler,id)).Distinct();
-    private bool CanPlanRuler(int ruler)=>ruler>=0 && _setup.ControllerOf(ruler)==_setup.TurnPlayer && _setup.Relations.Powered[ruler] && !_setup.Relations.Pending.Any(p=>p.Ruler==ruler);
+    private bool CanPlanRuler(int ruler)=>ruler>=0 &&
+        (_computerMarches!=null?ruler==_setup.PlayerSlot:_setup.ControllerOf(ruler)==_setup.TurnPlayer) &&
+        _setup.Relations.Powered[ruler] && !_setup.Relations.Pending.Any(p=>p.Ruler==ruler);
     private bool EnemyTarget(int id)=>_setup.Nodes.All[id].Owner<0 || !_setup.Relations.Allied(_setup.PlayerSlot,_setup.Nodes.All[id].Owner);
     private void BuildInvasionSources(int target)
     {
@@ -93,6 +95,7 @@ public partial class Game1
         }
     }
     private static Rectangle InvasionRow(int index)=>new(84,300+index*77,760,73);
+    private static Rectangle InvasionSortieButton(int index)=>new(474,302+index*77,350,30);
     private static Rectangle InvasionPreviewCard(int row,int slot)=>new(94+slot*61,334+row*77,57,37);
     private Robot[] InvasionPreviewRobots(InvasionSource row)=>(row.Queen?_setup.Robots.Retinues[row.Owner]:_setup.Robots.Nodes[row.Node]).Robots.Where(r=>r.Parts==RobotParts.Complete).ToArray();
     private bool ReservedElsewhere(InvasionSource row,Robot robot)=>_setup.Campaign.PlannedOrders.Any(o=>o.Ruler==row.Owner && o.TargetNode!=_selectedMoveNode && (o.Queen || o.PocketOnly)==row.Queen && (o.SourceNode==row.Node || o.SourceNode<0 && _setup.Nodes.Current(o.Ruler)?.Id==row.Node) && (o.RobotIds?.Contains(robot.Id)??InvasionRobots(row).Take((int)o.Fighters).Any(r=>r.Id==robot.Id)));
@@ -115,8 +118,8 @@ public partial class Game1
         for(int i=0;i<7;i++)
         {
             int index=_invasionPage*7+i;if(index>=_invasionSources.Count)break;
-            var row=_invasionSources[index];var r=InvasionRow(i);
-            if(new Rectangle(r.X+390,r.Y+2,350,30).Contains(p)){OpenInvasionPicker(index);return true;}
+            var row=_invasionSources[index];
+            if(InvasionSortieButton(i).Contains(p)){OpenInvasionPicker(index);return true;}
             var robots=InvasionPreviewRobots(row);var available=InvasionRobots(row);
             for(int slot=0;slot<robots.Length;slot++)if(InvasionPreviewCard(i,slot).Contains(p))
             {
@@ -184,7 +187,7 @@ public partial class Game1
             var source=_invasionSources[index];var r=InvasionRow(i);_ui.Box(r,Muted);
             var label=$"#{source.Owner+1} "+(source.Queen?"電池："+_setup.ConquerorFullNames[source.Owner]:_setup.Nodes.DisplayName(_setup.Nodes.All[source.Node]).Split(" / ")[0]);
             _ui.Text(label,new(r.X+10,r.Y+6),Math.Min(.43f,365/_font.MeasureString(label).X),Cream);
-            _ui.Button(new(r.X+390,r.Y+2,350,30),$"ロボット出撃（{source.Robots.Count}体）",source.Robots.Count>0 || source.Selected?Accent:Muted,.42f);
+            _ui.Button(InvasionSortieButton(i),$"ロボット出撃（{source.Robots.Count}体）",source.Robots.Count>0 || source.Selected?Accent:Muted,.42f);
             var robots=InvasionPreviewRobots(source);var available=InvasionRobots(source);
             for(int slot=0;slot<robots.Length;slot++)
             {
