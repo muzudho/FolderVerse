@@ -28,8 +28,14 @@ public partial class Game1
         if(InvasionPickerDone.Contains(_pointer))
         {
             row.Robots.Clear();row.Robots.UnionWith(_invasionDraft.Intersect(robots.Select(r=>r.Id)));
-            foreach(var robot in robots.Where(r=>row.Robots.Contains(r.Id)))BeginWorkReservationEffect(robot,row.Owner);
-            row.Count=row.Robots.Count;row.Selected=row.Queen && _invasionQueenDraft;ReserveInvasion(row);_invasionPicker=-1;return;
+            row.Count=row.Robots.Count;row.Selected=row.Queen && _invasionQueenDraft;
+            // CPU playback shows the committed choice. The original batch owns execution.
+            if(_computerMarches==null)
+            {
+                foreach(var robot in robots.Where(r=>row.Robots.Contains(r.Id)))BeginWorkReservationEffect(robot,row.Owner);
+                ReserveInvasion(row);
+            }
+            _invasionPicker=-1;return;
         }
         if(row.Queen && InvasionQueenToggle.Contains(_pointer)){_invasionQueenDraft=!_invasionQueenDraft;return;}
         for(int i=0;i<robots.Length;i++)if(InvasionRobotCard(i).Contains(_pointer))

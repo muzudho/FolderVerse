@@ -2,6 +2,7 @@ namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 public partial class Game1
 {
@@ -9,7 +10,9 @@ public partial class Game1
     private int _computerDomesticIndex;
     private double _computerDomesticAge;
     private bool _computerAssembled;
-    private const double ComputerAssemblyTime=1.55,ComputerDomesticSeconds=2.4;
+    private int _computerDomesticStage;
+    private Point _computerDomesticPoint;
+    private const double ComputerAssemblyTime=2.35,ComputerDomesticSeconds=3.4;
 
     private bool ShowsComputerTurn(int ruler)=>!_setup.IsHumanPlayer(ruler) &&
         _setup.ControllerOf(ruler)<0 && _setup.ShowComputerOperations(ruler);
@@ -51,27 +54,68 @@ public partial class Game1
         _computerDomesticAge=0;
         _computerAssembled=false;
         BeginComputerView(nodes[0].Owner);
+        FocusComputerDomestic(nodes[0]);
         return true;
+    }
+
+    private void FocusComputerDomestic(Node node)
+    {
+        _computerDomesticStage=0;
+        FocusDemoNode(node);
     }
 
     private bool UpdateComputerDomestic(double elapsed,bool skip)
     {
         if(_computerDomesticNodes==null)return false;
+        UpdateDomesticSlide((float)elapsed);
         double previousAge=_computerDomesticAge;
         _computerDomesticAge+=elapsed;
         do
         {
             var node=_computerDomesticNodes[_computerDomesticIndex];
+            if(!skip && _computerDomesticStage==0 && _computerDomesticAge>=ComputerViewLeadIn)
+            {
+                _computerDomesticStage=-1;
+                if(OperationPosition(node.Id,out var position) && MapViewBounds.Contains(position.ToPoint()))
+                {
+                    var point=position.ToPoint();
+                    int hit=_statusGlobe?HitGlobeNode(point):_net.HitNode(_setup,NetPanel,point);
+                    if(hit==node.Id)
+                    {
+                        OpenNodeInspector(hit);
+                        OpenNodeOffice();
+                        _computerDomesticPoint=point;
+                        _computerDomesticStage=1;
+                    }
+                }
+            }
+            if(!skip && _computerDomesticStage==1 && _computerDomesticAge>=1.55)
+            {
+                var tab=NodeAssemblyTile.Center;
+                _computerDomesticPoint=new(tab.X+NodeInspectorOffset,tab.Y);
+                NodeDialogClick(_computerDomesticPoint,new KeyboardState());
+                _computerDomesticStage=_nodeAssemblyOpen?2:-1;
+            }
             if(previousAge<ComputerAssemblyTime && (skip || _computerDomesticAge>=ComputerAssemblyTime) &&
                 _setup.Robots.AssemblySelection(node.Id,node.Owner,true) is {} parts)
             {
                 _computerAssembled=_setup.Robots.Assemble(node.Id,parts,node.Owner)!=null;
+                if(_computerDomesticStage==2 && _computerAssembled)
+                {
+                    SyncHangarSlots();
+                    _hangarMessage="ロボットを組み立てました";
+                }
             }
             if(!skip && _computerDomesticAge<ComputerDomesticSeconds)return true;
             _computerDomesticAge=previousAge=0;
             _computerAssembled=false;
             if(++_computerDomesticIndex==_computerDomesticNodes.Length)break;
-            if(!skip)ShowComputerView(_computerDomesticNodes[_computerDomesticIndex].Owner);
+            if(!skip)
+            {
+                var next=_computerDomesticNodes[_computerDomesticIndex];
+                ShowComputerView(next.Owner);
+                FocusComputerDomestic(next);
+            }
         }while(skip);
         if(!skip && _computerDomesticIndex<_computerDomesticNodes.Length)return true;
         _computerDomesticNodes=null;
@@ -84,6 +128,17 @@ public partial class Game1
     private void DrawComputerDomestic(Matrix transform)
     {
         if(_computerDomesticNodes==null)return;
+        if(_computerDomesticStage>=0)
+        {
+            if(_computerDomesticStage==0)return;
+            var target=_computerDomesticStage==2
+                ?new Point(NodeAssemblyTile.Center.X+NodeInspectorOffset,NodeAssemblyTile.Center.Y)
+                :_computerDomesticPoint;
+            _spriteBatch.Begin(transformMatrix:transform);
+            DrawDemoHand(target.ToVector2(),0);
+            _spriteBatch.End();
+            return;
+        }
         var node=_computerDomesticNodes[_computerDomesticIndex];
         float age=(float)(_computerDomesticAge-ComputerViewLeadIn);
         string location=_setup.Nodes.DisplayName(node);
