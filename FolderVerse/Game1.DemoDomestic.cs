@@ -26,9 +26,9 @@ public partial class Game1
         if(MapTransitionActive || _net.IsAnimating || OrientationRotating)return true;
         // Finish the same inspector animation as a normal click before aiming at the next control.
         if(_nodeInspectorClosing || InspectorVisible && _domesticSlide<1)return true;
-        // Delivery separates node work from military orders; demonstrate only enabled actions.
-        if(_demoDomesticStage==0 && MilitaryOperationsAllowed)_demoDomesticStage=_demoMapVisits%2==0?30:17;
-        if(_demoDomesticStage is >=30 and <=36 && !MilitaryOperationsAllowed)_demoDomesticStage=19;
+        // Alternate domestic work and war planning within the single planning phase.
+        if(_demoDomesticStage==0 && WarPlanningAllowed && _demoMapVisits%2==0)_demoDomesticStage=30;
+        if(_demoDomesticStage is >=30 and <=36 && !WarPlanningAllowed)_demoDomesticStage=19;
         if(_demoDomesticStage is >=30 and <=36)return UpdateDemoWarChecks(elapsed);
         if(_demoDomesticStage==20 && (!NodeCheckButtonVisible || NodeChecked(_populationNode))){_demoDomesticStage=11;_demoDomesticAge=0;}
         Point nodePoint=Point.Zero;
@@ -69,7 +69,7 @@ public partial class Game1
                 OpenNodeInspector(hit);OpenNodeOffice();_demoDomesticStage=2;break;
             case 3:
                 OpenNodeAssembly();
-                _demoAssemblySelection=_setup.Robots.AssemblySelection(_populationNode,_setup.PlayerSlot,true);
+                _demoAssemblySelection=PlanningStock.AssemblySelection(_populationNode,_setup.PlayerSlot,true);
                 if(_demoAssemblySelection==null){_demoDomesticStage=7;break;}
                 _demoEmptySlot=Array.FindIndex(_hangarSlots,id=>id==_demoAssemblySelection[0]);
                 if(!PrepareDemoAssemblyDrag())_demoDomesticStage=7;break;

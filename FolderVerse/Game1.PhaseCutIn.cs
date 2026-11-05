@@ -24,7 +24,9 @@ public partial class Game1
         _ui.Box(new(x,y,1160,240),new Color(246,239,224)*(.94f*fade));
         _ui.Box(new(x+24,y+22,1112,3),color*fade);_ui.Box(new(x+24,y+215,1112,3),color*fade);
         for(int i=0;i<3;i++){_ui.Tile(new(x+50+i*26,y+120),new(15,15),MathHelper.PiOver4,color*fade);_ui.Tile(new(x+1110-i*26,y+120),new(15,15),MathHelper.PiOver4,color*fade);}
-        _ui.Center(_cutInPhase,new(x+110,y+56,650,130),1.55f,new Color(35,58,70)*fade);
+        bool propagation=_cutInPhase is "配送フェーズ" or "出兵フェーズ";
+        _ui.Center(propagation?"伝播フェーズ":_cutInPhase,new(x+110,y+56,650,130),1.55f,new Color(35,58,70)*fade);
+        if(propagation)_ui.Center(_cutInPhase,new(x+110,y+172,650,36),.55f,new Color(35,58,70)*fade);
         DrawCutInMob(x,fade,slide);
     }
 }

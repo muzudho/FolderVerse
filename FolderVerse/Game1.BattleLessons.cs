@@ -22,6 +22,7 @@ public partial class Game1
     private double _lessonAge;
     private static readonly Rectangle LessonCatalogButton=new(678,912,190,52);
     private static readonly Rectangle LessonContinue=new(1370,974,440,64),LessonBack=new(90,974,440,64);
+    private static readonly Rectangle LessonSkip=new(1680,40,190,48);
     private void BeginBattleResearch()
     {
         StopBattleMusic();
@@ -130,6 +131,7 @@ public partial class Game1
     private void DrawBattleResearch()
     {
         _ui.Text("戦闘研究フェーズ",new(80,45),1.1f,Cream);
+        _ui.Button(LessonSkip,"スキップ",Accent,.55f);
         if(_lessonAwards.Length==0){
             _ui.Center("今回、新しく取得した戦訓カードはありません",new(180,430,1560,100),.85f,Cream);
             _ui.Center("失敗を目撃したロボットが、転倒せず帰還すると研究できます",new(180,555,1560,70),.55f,Cream);

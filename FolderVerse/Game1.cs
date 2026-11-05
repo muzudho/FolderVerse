@@ -130,6 +130,7 @@ public partial class Game1 : Game
     { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive);UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds); UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);UpdateIndustryMusic();UpdateEndingMusic(IsActive);base.Update(gameTime); }
     private void HandleInputCore(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
     {
+        _setup.Robots.PartPlanning.Invalidate();
         if(IsStatusScreen)_setup.Robots.DirectDelivery.ReconcileDestinations(_setup);
         UpdateTutorialChrome((float)gameTime.ElapsedGameTime.TotalSeconds);
         UpdateOperationSettings((float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -168,8 +169,12 @@ public partial class Game1 : Game
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(IsStatusScreen && _directMap && escape){CloseDirectDelivery();_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && ProductionIntakeInput(active && click,active && escape))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _invasionPicker>=0)
         {if(active)InvasionPickerInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && WarCancellationInput(active && click,active && escape))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds; UpdateDomesticSlide((float)elapsed);
         _animationTime+=(float)elapsed;
         if(FolderTreeInput(mouse,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -199,6 +204,8 @@ public partial class Game1 : Game
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateDemo(elapsed,active,click,escape,enter,gameTime.TotalGameTime.TotalSeconds))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && active && StatusMenuInput(click,escape))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen is Screen.LandConquest or Screen.Fortune){UpdateLandSetup(elapsed,mouse,active,click,enter);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _net.UpdateAnimation((float)elapsed);
         if(_screen==Screen.Ending)
@@ -209,6 +216,8 @@ public partial class Game1 : Game
         if(OrientationControlsVisible && !_seedDialog.IsOpen && active && click && OrientationControlClick(_pointer)){if(AutomaticOrientation)AdvanceAutomaticOrientation((float)elapsed);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool transitioning=MapTransitionActive;UpdateMapTransition((float)elapsed);
         if(transitioning){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(UpdateGlobeSpin((float)elapsed,active,click))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _screenshots.Update(gameTime.ElapsedGameTime.TotalSeconds);
         bool captureChord=keyboard.IsKeyDown(Keys.P) && (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
@@ -228,9 +237,9 @@ public partial class Game1 : Game
         if(_screen==Screen.Transport)
         {UpdateTransport(elapsed,active && (enter || click && BattleContinue.Contains(_pointer)),gameTime.TotalGameTime.TotalSeconds);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Industry)
-        {UpdateIndustry(elapsed,active && (enter || click && IndustryContinue.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        {if(active && click && IndustrySkip.Contains(_pointer))SkipIndustry();else UpdateIndustry(elapsed,active && (enter || click && IndustryContinue.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.BattleResearch)
-        {UpdateBattleResearch(elapsed,active && (enter || click && LessonContinue.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        {if(active && click && LessonSkip.Contains(_pointer))BeginIndustry();else UpdateBattleResearch(elapsed,active && (enter || click && LessonContinue.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.LessonCatalog)
         {if(active)LessonCatalogInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Hierarchy)
@@ -464,7 +473,6 @@ public partial class Game1 : Game
             if(HasTerritories)
                 _counter.Draw(_spriteBatch,active?_setup.TerritoryCounts[slot]:0,
                     new Rectangle(rect.X+7,rect.Y+7,rect.Width-14,rect.Height-14),color);
-            DrawCountrySwatch(new(rect.Right-43,rect.Bottom-29,34,22),slot);
         }
         _ui.Text("人間プレイヤー、コンピュータープレイヤー、国の色は後で変えることができます。",new(54,78),.36f,new(170,206,216));
         _ui.Button(CastBack,"世界へ戻る",Muted,0.48f);
@@ -519,7 +527,6 @@ public partial class Game1 : Game
         _counter.Draw(_spriteBatch,_setup.TerritoryCounts[tile.Slot],image,color);
         _ui.Box(new(rect.X+5,rect.Y+5,Math.Min(65,rect.Width-10),27),new Color(10,25,35,210));
         _ui.Text("#"+(tile.Slot+1).ToString("00"),new(rect.X+10,rect.Y+7),Math.Min(0.42f,(rect.Width-20)/_font.MeasureString("#00").X),color);
-        DrawCountrySwatch(new(rect.Right-38,rect.Bottom-27,30,20),tile.Slot);
         if(_screen==Screen.PlayerReady && tile.Slot==_setup.PlayerSlot)
         {
             _ui.Box(new(rect.X+4,rect.Y+34,Math.Min(rect.Width-8,140),33),new Color(10,25,35,220));
@@ -657,6 +664,7 @@ public partial class Game1 : Game
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
         _ui.Text(location,new(InspectorVisible?1276:991,InspectorVisible?770:831),Math.Min(0.48f,(InspectorVisible?600:870)/_font.MeasureString(location).X),Cream);
         _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):"右ドラッグ："+(MapDragSlide?"スライド":"回転")+" / ホイール：拡縮",new(InspectorVisible?1276:991,InspectorVisible?810:865),InspectorVisible?.27f:0.37f,new(177,206,216));
+        if(_statusGlobe)_ui.Button(NetButton(1),(_globeSpinning?"✓ ":"□ ")+"くるくる回す",_globeSpinning?Accent:Muted,0.45f);
         _ui.Button(NetButton(2),"征服者はどこ？",Accent,0.45f);
         _ui.Button(NetButton(3),"今どこ見てる？",InspectorLocationNode>=0?Accent:Muted,0.45f);
         if(!_statusGlobe)_ui.Button(NetButton(4),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
@@ -686,7 +694,7 @@ public partial class Game1 : Game
         if(!_reservationDirectory)DrawWandererLocation();DrawRouteLayerButtons();
         DrawStatusMenu();
         if(!DrawInvasionUnavailableHint() && !DrawNodeCheckHint() && _supervisorDialog==0 && !_reservationDirectory && !_functionTransferMap)DrawNodeTooltip();
-        DrawInspectorHandle();DrawTraining();DrawInvasionPicker();
+        DrawInspectorHandle();DrawTraining();DrawInvasionPicker();DrawWarCancellations();DrawProductionIntakePicker();
         DrawMapOverlayMenu();
         DrawHangarTrainingNotice();
         DrawFolderTree();DrawInspectorFolders();
@@ -713,6 +721,7 @@ public partial class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
+        _setup.Robots.PartPlanning.Invalidate();
         BeginNewspaperToyPatternFrame();if(!_conquestOverview)NotifyPlayerTurn();
         GraphicsDevice.Clear(new Color(16,35,46)); var viewport=GraphicsDevice.Viewport; var canvas=CanvasBounds();
         if(canvas.Width<=0 || canvas.Height<=0){base.Draw(gameTime);return;}

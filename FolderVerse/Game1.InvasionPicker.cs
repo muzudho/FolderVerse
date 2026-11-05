@@ -9,7 +9,7 @@ public partial class Game1
     private int _invasionPicker=-1;
     private readonly HashSet<long> _invasionDraft=new();
     private bool _invasionQueenDraft;
-    private Robot[] InvasionRobots(InvasionSource row)=>row.Queen?_setup.Campaign.RobotBattles.SelectableRobots(_setup,row.Owner,row.Node,true):_setup.Robots.Nodes[row.Node].Robots.Where(r=>r.Owner==row.Owner && _setup.Robots.CanReserveSortie(row.Node,r)).ToArray();
+    private Robot[] InvasionRobots(InvasionSource row)=>row.Queen?_setup.Campaign.RobotBattles.SelectableRobots(_setup,row.Owner,row.Node,true):DomesticOperationsAllowed?_setup.Campaign.DeliverySortieRobots(_setup,row.Owner,row.Node):_setup.Robots.Nodes[row.Node].Robots.Where(r=>r.Owner==row.Owner && _setup.Robots.CanReserveSortie(row.Node,r)).ToArray();
     private static Rectangle InvasionRobotCard(int i)=>new(350+i%6*200,320+i/6*170,185,155);
     private static readonly Rectangle InvasionPickerDone=new(1290,795,250,55),InvasionPickerCancel=new(1010,795,250,55),InvasionQueenToggle=new(380,705,520,55);
     private void OpenInvasionPicker(int index)
@@ -51,12 +51,13 @@ public partial class Game1
         var row=_invasionSources[_invasionPicker];var robots=InvasionRobots(row);
         _ui.Box(new(0,0,1920,1080),new Color(0,0,0,175));_ui.Box(new(310,185,1300,720),new Color(27,49,62));
         _ui.Text(row.Queen?"ポケットから出撃するロボットを選択":"格納庫から出撃するロボットを選択",new(350,215),.7f,Cream);
-        _ui.Text("選択を確定すると開戦予約に反映 / 選んだロボットの役割を上書き",new(350,270),.47f,Cream);
+        _ui.Text(row.Queen?"選択を確定すると開戦予約に反映":"直送便到着後の予定 / １体でも出撃できなければ開戦予定全体を中止",new(350,270),.43f,Cream);
         for(int i=0;i<robots.Length;i++)
         {
             var r=InvasionRobotCard(i);var robot=robots[i];bool selected=_invasionDraft.Contains(robot.Id);
             _ui.Box(r,selected?Accent:Muted);DrawRobotGlyph(new(r.X+65,r.Y+8,55,75),robot,whiteOutline:true);
-            _ui.Center($"ID {robot.Id} / {PartsLabel(robot.Parts)}",new(r.X,r.Y+90,r.Width,28),.38f,Cream);
+            string identity=RobotPartPlanning.PlannedId(robot.Id)?"組替後の予定":robot.Id<0?"直送便到着予定":$"ID {robot.Id}";
+            _ui.Center($"{identity} / {PartsLabel(robot.Parts)}",new(r.X,r.Y+90,r.Width,28),.32f,Cream);
             string reservation=InvasionReservationLabel(row,robot);
             _ui.Center((reservation.Length>0?reservation+"予約":"待機")+(selected?" → 出撃選択":""),new(r.X,r.Y+122,r.Width,26),.30f,Cream);
         }

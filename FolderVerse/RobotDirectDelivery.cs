@@ -12,6 +12,24 @@ public sealed class RobotDirectDelivery
     private long _next=1;
     public List<DirectPartOrder> Orders {get;}=new();
     public List<DirectPartOrder> Failures {get;}=new();
+    public Dictionary<long,long> CompletedArrivals {get;}=new();
+    // Synthetic negative IDs are stable order references, never allocated game IDs.
+    public Robot[] Preview(RobotWorld world,int node)
+    {
+        if(Orders.Count==0)return world.Nodes[node].Robots.ToArray();
+        var valid=PreviewOrders(world);
+        var stores=Simulate(world,valid,out _,out int invalid);
+        return invalid<0?stores[node].ToArray():Array.Empty<Robot>();
+    }
+    public long[] ArrivalOrders(RobotWorld world,int node,long projectedId)
+    {
+        if(Orders.Count==0)return Array.Empty<long>();
+        var valid=PreviewOrders(world);
+        Simulate(world,valid,out var groups,out int invalid);
+        if(invalid>=0)return Array.Empty<long>();
+        return valid.Where(o=>o.Target==node && (o.TargetRobotId??groups.GetValueOrDefault((o.Target,o.TargetSlot)))==projectedId).Select(o=>o.Number).ToArray();
+    }
+    private DirectPartOrder[] PreviewOrders(RobotWorld world)=>Orders.Where(o=>world.Nodes[o.Source].Robots.Any(r=>r.Id==o.RobotId && r.Owner==o.Owner && r.CanSeparate(o.Part))).ToArray();
     internal void RelocateNode(int source,int target,int slotOffset)
     {
         DirectPartOrder Move(DirectPartOrder o)=>o with {Source=o.Source==source?target:o.Source,Target=o.Target==source?target:o.Target,
@@ -60,17 +78,7 @@ public sealed class RobotDirectDelivery
         var order=new DirectPartOrder(_next++,source,target,id,part,targetId,slot,robot.Owner);Orders.Add(order);
         Failures.RemoveAll(o=>o.Source==source && o.RobotId==id && (o.Part&part)!=0);return order;
     }
-    internal HashSet<long> Resolve(RobotWorld world,Func<int,int,bool> connected,Func<int,bool> locked,Func<int,int,bool> canEnter)
-    {
-        var active=new List<DirectPartOrder>();
-        foreach(var order in Orders.ToArray()){
-            var source=world.Nodes[order.Source].Robots.SingleOrDefault(r=>r.Id==order.RobotId);
-            var destination=order.TargetRobotId is long id?world.Nodes[order.Target].Robots.SingleOrDefault(r=>r.Id==id):null;
-            if(source==null || source.Owner!=order.Owner || !source.CanSeparate(order.Part) || order.TargetRobotId.HasValue && (destination==null || destination.Owner!=order.Owner || (destination.Parts&order.Part)!=0)){Orders.Remove(order);continue;}
-            if(locked?.Invoke(order.Source)==true || locked?.Invoke(order.Target)==true || !connected(order.Source,order.Target) || canEnter?.Invoke(order.Owner,order.Source)==false || canEnter?.Invoke(order.Owner,order.Target)==false || world.BaseAssemblyLocked(order.Source,source) || destination!=null && world.BaseAssemblyLocked(order.Target,destination)){order.Status="継戦・経路待機";continue;}
-            order.Status="受取待機";active.Add(order);
-        }
-        List<Robot>[] Simulate(IReadOnlyList<DirectPartOrder> selected,out Dictionary<(int,int),long> groups,out int invalid)
+    private static List<Robot>[] Simulate(RobotWorld world,IReadOnlyList<DirectPartOrder> selected,out Dictionary<(int,int),long> groups,out int invalid)
         {
             var stores=world.Nodes.Select(s=>s.Robots.ToList()).ToArray();groups=new();invalid=-1;
             var cargo=new Dictionary<long,Robot>();
@@ -83,8 +91,20 @@ public sealed class RobotDirectDelivery
             }
             return stores;
         }
+
+    internal HashSet<long> Resolve(RobotWorld world,Func<int,int,bool> connected,Func<int,bool> locked,Func<int,int,bool> canEnter)
+    {
+        CompletedArrivals.Clear();
+        var active=new List<DirectPartOrder>();
+        foreach(var order in Orders.ToArray()){
+            var source=world.Nodes[order.Source].Robots.SingleOrDefault(r=>r.Id==order.RobotId);
+            var destination=order.TargetRobotId is long id?world.Nodes[order.Target].Robots.SingleOrDefault(r=>r.Id==id):null;
+            if(source==null || source.Owner!=order.Owner || !source.CanSeparate(order.Part) || order.TargetRobotId.HasValue && (destination==null || destination.Owner!=order.Owner || (destination.Parts&order.Part)!=0)){Orders.Remove(order);continue;}
+            if(locked?.Invoke(order.Source)==true || locked?.Invoke(order.Target)==true || !connected(order.Source,order.Target) || canEnter?.Invoke(order.Owner,order.Source)==false || canEnter?.Invoke(order.Owner,order.Target)==false || world.BaseAssemblyLocked(order.Source,source) || destination!=null && world.BaseAssemblyLocked(order.Target,destination)){order.Status="継戦・経路待機";continue;}
+            order.Status="受取待機";active.Add(order);
+        }
         while(active.Count>0){
-            var stores=Simulate(active,out var groups,out int invalid);
+            var stores=Simulate(world,active,out var groups,out int invalid);
             if(invalid>=0){active[invalid].Status="受取部位待機";active.RemoveAt(invalid);continue;}
             int overflow=Enumerable.Range(0,stores.Length).FirstOrDefault(n=>stores[n].Count>world.Nodes[n].StorageLimit,-1);
             if(overflow>=0){var rejected=active.LastOrDefault(o=>o.Target==overflow);if(rejected==null)throw new InvalidOperationException("Direct delivery capacity invariant.");rejected.Status="空き枠待機";active.Remove(rejected);continue;}
@@ -93,7 +113,7 @@ public sealed class RobotDirectDelivery
             for(int n=0;n<stores.Length;n++)world.Nodes[n].Replace(stores[n].Select(r=>r.Id<0?r with {Id=allocated[r.Id]}:r).ToArray());
             foreach(var order in active)Orders.Remove(order);
             for(int i=0;i<Orders.Count;i++){var order=Orders[i];if(order.TargetRobotId==null && groups.TryGetValue((order.Target,order.TargetSlot),out long group))Orders[i]=order with {TargetRobotId=group<0?allocated[group]:group};}
-            var arrivals=new HashSet<long>();foreach(var order in active){long id=order.TargetRobotId??groups[(order.Target,order.TargetSlot)];arrivals.Add(id<0?allocated[id]:id);}world.Check();return arrivals;
+            var arrivals=new HashSet<long>();foreach(var order in active){long id=order.TargetRobotId??groups[(order.Target,order.TargetSlot)];id=id<0?allocated[id]:id;arrivals.Add(id);CompletedArrivals[order.Number]=id;}world.Check();return arrivals;
         }
         return new HashSet<long>();
     }

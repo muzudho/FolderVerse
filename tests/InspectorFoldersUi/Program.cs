@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using System.Reflection;
 using var game=new FolderChecks();game.Run();
 sealed class FolderChecks:Game1{
- const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;int frame,node;WorldSetup w=null!;
+ const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;int frame,node,landJunction;WorldSetup w=null!;
  object Get(string n)=>typeof(Game1).GetField(n,F)!.GetValue(this)!;
  object Prop(string n)=>typeof(Game1).GetProperty(n,F)!.GetValue(this)!;
  void Set(string n,object v)=>typeof(Game1).GetField(n,F)!.SetValue(this,v);
@@ -30,7 +30,7 @@ sealed class FolderChecks:Game1{
   Check((bool)Call("IsCurrentInspectorFolder",2,node) && !(bool)Call("IsCurrentInspectorFolder",1,w.Nodes.All[node].Cell),"Only the active point folder is highlighted");
   int expandIndex=Rows().FindIndex(r=>r.Kind==1);var expandRow=Rows()[expandIndex];
   bool expanded=((HashSet<int>)Get("_expandedFolderRegions")).Contains(expandRow.Id);
-  Set("_pointer",new Point(94+Math.Min(expandRow.Depth,10)*25,318+expandIndex*56));
+  Set("_pointer",new Point(144+Math.Min(expandRow.Depth,10)*25,318+expandIndex*56));
   Call("InspectorFolderInput",new MouseState(),true,false,true);
   Check(((HashSet<int>)Get("_expandedFolderRegions")).Contains(expandRow.Id)!=expanded && (bool)Get("_inspectorFoldersOpen"),"Region branch expands/collapses without navigating");
   Call("InspectorFolderInput",new MouseState(),true,false,true);
@@ -108,15 +108,28 @@ sealed class FolderChecks:Game1{
   if(frame==7){
    int foreign=w.Nodes.Current(1).Id;((HashSet<int>)Get("_expandedFolderRegions")).Add(w.Nodes.All[foreign].Cell);Call("BuildFolderTree");TreeSelect(2,foreign);
    Check(w.PlayerSlot==0 && ((CubeNet)Get("_net")).NodeVisible(w,w.Nodes.All[foreign]),"Foreign point search is visible without changing the active ruler");
+   w.Nodes.All[node].FunctionUnits=0;Call("BuildFolderTree");
+   landJunction=w.Nodes.All.First(n=>n.Id!=node && n.Cell==w.Nodes.All[node].Cell && w.Routes.Land(n.Cell,n.Center)).Id;
+   w.Nodes.All[landJunction].FunctionUnits=0;Call("BuildFolderTree");
+   Check(Rows().Any(r=>r.Kind==2 && r.Id==node && r.Label.StartsWith("無機能地点：")),"Nonfunctional points remain searchable and are explicitly labeled");
    TreeSelect(2,node);var net=(CubeNet)Get("_net");var world=(WorldPreview)Get("_world");var site=w.Nodes.All[node];
    Check(net.NodeFocus==node && (bool)Get("_folderTreeOpen") && (int)Get("_populationNode")==-1,"Point selection keeps the tree open rather than replacing it with Office");
    Check(world.ProjectVisible(w.Routes.Position(site.Cell,site.Center),w.Cells[site.Cell].Normal,(float)Prop("_yaw"),(float)Prop("_pitch"),(Rectangle)Prop("StatusGlobeArea"),out var at) && ((Rectangle)Prop("MapViewBounds")).Contains(at.ToPoint()),"Hidden globe point is brought into view");
+   world.ProjectVisible(w.Routes.Position(site.Cell,site.Center)+w.Cells[site.Cell].U,w.Cells[site.Cell].Normal,(float)Prop("_yaw"),(float)Prop("_pitch"),(Rectangle)Prop("StatusGlobeArea"),out var unit);
+   float radius=MathHelper.Clamp(Vector2.Distance(at,unit)*.06f,4,10);if(site.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
+   Check((int)Call("HitGlobeNode",JunctionArt.SymbolCenter(at,JunctionArt.Size(radius)).ToPoint(),null!)==node,"Globe ship/house ownership symbol hits its junction");
    Check(net.FocusTerrain(new Color(200,160,120),new Vector2(-10000))==new Color(70,56,42),"Point spotlight darkens other terrain to 35 percent");
   }
   if(frame==8){Set("_statusGlobe",false);((CubeNet)Get("_net")).ScreenAngle=MathHelper.PiOver2;TreeSelect(1,w.Nodes.All[node].Cell);Check(((CubeNet)Get("_net")).ScreenAngle==MathHelper.PiOver2,"Region fitting preserves the net screen rotation");}
   if(frame==9){
    TreeSelect(2,node);var net=(CubeNet)Get("_net");var at=net.NodePosition(w,w.Nodes.All[node],(Rectangle)Prop("NetPanel"));
    Check(Vector2.Distance(at,((Rectangle)Prop("MapViewBounds")).Center.ToVector2())<2,"Rotated net centers the selected point");
+   foreach(int id in new[]{node,landJunction}){
+    TreeSelect(2,id);var fit=net.Fit((Rectangle)Prop("NetPanel"));float radius=MathHelper.Clamp(fit.Scale*.06f,4,10);if(w.Nodes.All[id].IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
+    var junction=net.UnrotateScreen(net.NodePosition(w,w.Nodes.All[id],(Rectangle)Prop("NetPanel")).ToPoint(),(Rectangle)Prop("NetPanel"));
+    var symbol=net.RotateScreen(JunctionArt.SymbolCenter(junction.ToVector2(),JunctionArt.Size(radius)),(Rectangle)Prop("NetPanel"));
+    Check(net.HitNode(w,(Rectangle)Prop("NetPanel"),symbol.ToPoint())==id,"Rotated net house/ship ownership symbol hits the correct junction");
+   }
   }
   if(frame==10){
    Call("FolderTreeInput",new MouseState(),false,true,true);Call("UpdateDomesticSlide",1f);var net=(CubeNet)Get("_net");

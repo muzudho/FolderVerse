@@ -1,5 +1,6 @@
 using FolderVerse;
 using System.Text.Json;
+NoRepeatChecks.Run();
 static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 var defaultTraining=new RobotTraining();
 Check(defaultTraining.AssemblyPolicy==3 && defaultTraining.DeploymentPolicy==3 && defaultTraining.WorkerPolicy==3 && defaultTraining.RequiredNative==1,"New countries delegate assembly and deployment decisions locally by default");

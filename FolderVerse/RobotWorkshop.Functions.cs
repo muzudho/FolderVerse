@@ -12,7 +12,9 @@ public sealed partial class RobotWorkshop
     internal void PreserveFunctionOrigin(int node){TransferredLineLimit=LineLimit;foreach(var line in ProductionLines)line.FunctionOriginNode??=node;}
     public RobotWorkshop[] DisposalFacilities=>new[]{this}.Concat(_disposalAnnexes??Array.Empty<RobotWorkshop>()).ToArray();
     public bool IsDisposing(long id)=>DisposalFacilities.Any(f=>f.DisposalTarget==id);
-    internal static RobotWorkshop EmptyFunctions(){var w=new RobotWorkshop();w.RemoveProductionLines();w._lineLimit=-1;return w;}
+    internal static RobotWorkshop EmptyFunctions(){var w=new RobotWorkshop();w.RemoveProductionLines();w._lineLimit=-1;w._storageSlotLimit=0;return w;}
+    internal static RobotWorkshop PlanningView(System.Collections.Generic.IEnumerable<RobotWorkshop> sources)
+    {var result=EmptyFunctions();foreach(var source in sources)result.AbsorbFunctions(source);return result;}
     internal void AbsorbFunctions(RobotWorkshop other)
     {
         var baseLines=ProductionLines.Take(BaseLineCount).Concat(other.ProductionLines.Take(other.BaseLineCount)).ToArray();

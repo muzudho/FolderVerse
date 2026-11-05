@@ -14,7 +14,7 @@ public static class NodeOwnershipArt
         var delta=current-old;float t=Math.Clamp(Vector2.Dot(pointer-old,delta)/delta.LengthSquared(),0,1);
         return Vector2.DistanceSquared(pointer,old+delta*t)<=16;
     }
-    public static void Draw(UiPainter ui,Vector2 current,float radius,Color before,Color after,Color ink)
+    public static void Draw(UiPainter ui,Vector2 current,float radius,Color before,Color after,Color ink,Action<Vector2,float,Color> marker=null)
     {
         var old=PreviousCenter(current,radius);float small=PreviousRadius(radius);
         var direction=Vector2.Normalize(current-old);var side=new Vector2(-direction.Y,direction.X);
@@ -23,7 +23,7 @@ public static class NodeOwnershipArt
         Line(start,end,5,ink);Line(start,end,2,Color.White);
         foreach(int sign in new[]{-1,1}){var tail=end-direction*5+side*sign*4;Line(tail,end,5,ink);Line(tail,end,2,Color.White);}
         void Disc(Vector2 center,float r,Color color){for(float y=-r+.5f;y<r;y++){float width=2*MathF.Sqrt(Math.Max(0,r*r-y*y));ui.Tile(center+new Vector2(0,y),new(width,1.1f),0,color);}}
-        Disc(old,small+2,ink);Disc(old,small,before);
-        Disc(current,radius+2,ink);Disc(current,radius,after);
+        if(marker!=null){marker(old,small,before);marker(current,radius,after);}
+        else{Disc(old,small+2,ink);Disc(old,small,before);Disc(current,radius+2,ink);Disc(current,radius,after);}
     }
 }

@@ -10,6 +10,13 @@ public sealed partial class RobotWorkshop
     public int ProductionAge {get;private set;}
     public bool Manufacturing {get;private set;}
     public bool Paused {get;set;}
+    public bool DoNotRepeat {get;private set;}
+    public bool CycleFinished {get;private set;}
+    public void SetDoNotRepeat(bool value)
+    {
+        DoNotRepeat=value;
+        if(!value)CycleFinished=false;
+    }
     public NodeAutomation Automation {get;set;}=NodeAutomation.Manual;
     public int SupervisorLeaveRemaining {get;private set;}
     public NodeAutomation SupervisorReturnPolicy {get;private set;}=NodeAutomation.Gentle;
@@ -35,7 +42,7 @@ public sealed partial class RobotWorkshop
     public int DisposalAge {get;private set;}
     public long? DisposalTarget {get;private set;}
     public void Configure(RobotParts product,int period)
-    {RobotWorld.Validate(0,product);if(period<1)throw new ArgumentOutOfRangeException(nameof(period));Product=product;_selectedProductPlan=null;CheapProduct=false;IntegratedProduct=0;ProductionPeriod=period;ProductionAge=WaitingProductionTurns=0;Manufacturing=true;SelectedPlan=-1;RestEnabled=false;RestRemaining=ProducedSinceRest=0;}
+    {RobotWorld.Validate(0,product);if(period<1)throw new ArgumentOutOfRangeException(nameof(period));Product=product;_selectedProductPlan=null;CheapProduct=false;IntegratedProduct=0;ProductionPeriod=period;ProductionAge=WaitingProductionTurns=0;Manufacturing=true;CycleFinished=false;SelectedPlan=-1;RestEnabled=false;RestRemaining=ProducedSinceRest=0;}
     public void Dispose(RobotStore store,long id)
     {if(store.Robots.Single(r=>r.Id==id).Stationed)throw new InvalidOperationException("Stationed robot is locked.");if(DisposalTarget.HasValue)throw new InvalidOperationException("Disposal lane is busy.");if(!HasDisposalFactory)throw new InvalidOperationException("This node has no disposal factory.");int duration=DisposalTurns(store.Robots.Single(r=>r.Id==id).Parts);if(duration<1 || !store.Robots.Any(r=>r.Id==id))throw new ArgumentException("Invalid disposal order.");DisposalTarget=id;DisposalAge=0;DisposalPeriod=duration;}
     public void ConfigureDisposal()
@@ -69,16 +76,18 @@ public sealed partial class RobotWorkshop
     }
     private void CompleteSingleProduction(RobotWorld world,int node,int owner,int reservedSlots)
     {
-        if(!Manufacturing || Paused || owner<0)return;
-        if(RestEnabled && RestRemaining>0){RestRemaining--;return;}
+        if(!Manufacturing || Paused || CycleFinished || owner<0)return;
+        if(RestEnabled && RestRemaining>0){if(--RestRemaining==0 && DoNotRepeat)CycleFinished=true;return;}
         ProductionAge=Math.Min(ProductionPeriod,ProductionAge+1);
         if(!Waiting)return;
-        if(!world.TryStoreProduction(node,owner,CurrentProductionPlan.Preview(owner) with {FunctionDisplayNode=FunctionOriginNode},reservedSlots)){
+        var product=CurrentProductionPlan.Preview(owner) with {FunctionDisplayNode=FunctionOriginNode};
+        if(!(world.ProductionIntakeEnabled?world.QueueProduction(this,node,owner,product,reservedSlots):world.TryStoreProduction(node,owner,product,reservedSlots))){
             if(WaitingProductionTurns<int.MaxValue)WaitingProductionTurns++;
             return;
         }
         ProductionAge=WaitingProductionTurns=0;
         if(RestEnabled && ++ProducedSinceRest>=RestEvery){ProducedSinceRest=0;RestRemaining=IndustryTime.Whole(RestTurns);}
+        if(!RestEnabled && DoNotRepeat)CycleFinished=true;
     }
 }
 

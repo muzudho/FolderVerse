@@ -131,7 +131,46 @@ static Robot Add(WorldSetup w,int n,RobotParts parts){var r=w.Robots.Create(0,pa
     var saved=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
     Check(saved.Campaign.RobotBattles.Encounters.Single().MarchDestinations[1]==b,"March destinations survive a continued edge battle save");
 }
-Console.WriteLine("PASS: military transit, edge crossings, grouped conquest, reservation timing, full-hangar merge, relocation, source references, multi-origin consolidation, empty-node delivery, military guards, hostile destination and legacy saves.");
+{
+    // 0 is the entrance; 1-2-3 form a loop behind it, 4 is foreign land outside.
+    int[][] graph={new[]{1,4},new[]{0,2,3},new[]{1,3},new[]{1,2},new[]{0}};
+    Check(ComputerFunctionTransfers.EnclosedPocket(graph,1,0,id=>id!=4),"A closed loop with one entrance is safe to consolidate");
+    graph[3]=new[]{1,2,4};graph[4]=new[]{0,3};
+    Check(!ComputerFunctionTransfers.EnclosedPocket(graph,1,0,id=>id!=4),"A second exit to foreign land prevents consolidation");
+    graph[3]=new[]{1,2};graph[4]=new[]{0};
+    Check(!ComputerFunctionTransfers.EnclosedPocket(graph,1,0,id=>id!=2 && id!=4),"An enemy inside the pocket prevents consolidation");
+}
+{
+    var(w,a,b,c)=Fixture();
+    var graph=w.Nodes.All.Select(n=>w.Routes.Neighbors(n).Select(r=>w.Nodes.At(r.Target,r.Entry).Id).Distinct().ToArray()).ToArray();
+    (int Source,int Target,HashSet<int> Inside)? best=null;
+    for(int target=0;target<graph.Length;target++)foreach(int source in graph[target]){
+        var seen=new HashSet<int>{target,source};var queue=new Queue<int>();queue.Enqueue(source);
+        while(queue.TryDequeue(out int at))foreach(int next in graph[at])if(seen.Add(next))queue.Enqueue(next);
+        seen.Remove(target);
+        if(graph[target].Any(id=>!seen.Contains(id)) && (best==null || seen.Count<best.Value.Inside.Count))best=(source,target,seen);
+    }
+    Check(best!=null,"Generated map has an enclosed pocket fixture");
+    var pocket=best.Value;
+    foreach(var n in w.Nodes.All)n.Owner=pocket.Inside.Contains(n.Id) || n.Id==pocket.Target?0:1;
+    w.HumanPlayers.Clear();w.HumanPlayers.Add(0);
+    ComputerFunctionTransfers.Plan(w);
+    Check(!w.Campaign.FunctionTransfers.Orders.Any(o=>o.Owner==0),"CPU never overrides a human-controlled country");
+    w.Campaign.FunctionTransfers.Orders.Clear();
+    w.Robots.PartPlanning.Orders.Add(new(1,0,pocket.Target,pocket.Target,0,RobotParts.Head,null));
+    ComputerFunctionTransfers.Plan(w,true);
+    Check(!w.Campaign.FunctionTransfers.Orders.Any(o=>o.Owner==0),"An existing part operation protects the entrance from CPU relocation");
+    w.Robots.PartPlanning.Orders.Clear();w.Campaign.FunctionTransfers.Orders.Clear();
+    ComputerFunctionTransfers.Plan(w,true);
+    var order=w.Campaign.FunctionTransfers.Orders.Single(o=>o.Owner==0);
+    Check(order.Target==pocket.Target && w.Nodes.All[order.Source].Functional,"CPU reserves a safe entrance merge without immediately changing stock");
+    int capacity=w.Robots.Nodes[order.Source].TotalCapacity+w.Robots.Nodes[order.Target].TotalCapacity;
+    ComputerFunctionTransfers.Plan(w,true);
+    Check(w.Campaign.FunctionTransfers.Orders.Count(o=>o.Owner==0)==1,"At most one transfer is planned per country per turn");
+    w.Campaign.FinishDomestic(w,automaticAll:true);
+    Check(!w.Nodes.All[order.Source].Functional && w.Robots.Nodes[order.Target].TotalCapacity==capacity,"CPU transfer executes during the ordinary delivery phase");
+}
+Console.WriteLine("PASS: function transfers, logistics, combat, saves and CPU enclosed-loop strategy, second-exit rejection, human control protection and delivery execution.");
 
 static class FixtureExtensions
 {

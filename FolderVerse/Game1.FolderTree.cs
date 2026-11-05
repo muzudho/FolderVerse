@@ -50,11 +50,11 @@ public partial class Game1
     {
         _inspectorFolderRows.Clear();var seen=new HashSet<int>();
         void Regions(int owner,int depth){
-            foreach(var cell in _setup.Cells.Where(c=>_setup.Nodes.InCell(c.Id).Any(n=>n.Functional && n.Owner==owner))){
+            foreach(var cell in _setup.Cells.Where(c=>_setup.Nodes.InCell(c.Id).Any(n=>n.Owner==owner))){
                 _inspectorFolderRows.Add((1,cell.Id,depth,owner,"地域："+WorldCoordinates.Label(_setup,cell.Id)));
                 if(!_expandedFolderRegions.Contains(cell.Id))continue;
-                foreach(var node in _setup.Nodes.InCell(cell.Id).Where(n=>n.Functional && n.Owner==owner))
-                    _inspectorFolderRows.Add((2,node.Id,depth+1,owner,"地点："+_setup.Nodes.DisplayName(node)));
+                foreach(var node in _setup.Nodes.InCell(cell.Id).Where(n=>n.Owner==owner))
+                    _inspectorFolderRows.Add((2,node.Id,depth+1,owner,(node.Functional?"地点：":"無機能地点：")+_setup.Nodes.DisplayName(node)));
             }
         }
         void Country(int owner,int depth,bool visible){
@@ -147,7 +147,7 @@ public partial class Game1
                 else if(r.Contains(_ui.Pointer))_ui.Box(r,new Color(48,72,87));
                 if(row.Depth>0){_ui.Box(new(x-13,y-17,1,43),Muted);_ui.Box(new(x-13,y+25,18,1),Muted);}
                 if(row.Kind<2)_ui.Text((row.Kind==0?_expandedFolderCountries.Contains(row.Id):_expandedFolderRegions.Contains(row.Id))?"－":"+",new(x,y+13),.4f,Cream);
-                DrawCountryFolder(new(x+25,y+12,30,28),row.Owner);
+                DrawFolderEntryIcon(new(x+25,y+12,30,28),row.Kind,row.Id,row.Owner);
                 DrawFolderNodeCheck(row.Kind,row.Id,new(90,y+12,28,28));
                 _ui.Text(row.Label,new(x+64,y+15),Math.Min(.42f,(850-x-64)/Math.Max(1,_font.MeasureString(row.Label).X)),Cream);
             }

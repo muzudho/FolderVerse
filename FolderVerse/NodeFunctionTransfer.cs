@@ -31,6 +31,11 @@ public sealed class NodeFunctionTransfers
         if(!CanReserve(w,source,target))throw new InvalidOperationException("Function transfer unavailable.");
         Cancel(source);Orders.Add(new(source,target,w.Nodes.All[source].Owner));
     }
+    internal bool ReserveComputer(WorldSetup w,int source,int target,int owner)
+    {
+        if(w.Nodes.All[source].Owner!=owner || w.Nodes.All[target].Owner!=owner || !Available(w,source,target,false))return false;
+        Orders.Add(new(source,target,owner));return true;
+    }
     internal void Resolve(WorldSetup w)
     {
         LastResults.Clear();
@@ -52,6 +57,7 @@ public sealed class NodeFunctionTransfers
             w.Nodes.All[a].FunctionHost=b;w.Nodes.All[b].FunctionHost=-1;
             for(int i=0;i<w.Robots.PendingEdits.Count;i++)if(w.Robots.PendingEdits[i].Node==a)w.Robots.PendingEdits[i]=w.Robots.PendingEdits[i] with {Node=b};
             w.Robots.DirectDelivery.RelocateNode(a,b,offset);
+            w.Robots.RelocateProductionIntakes(a,b);
             w.Robots.Transport.RelocateNode(a,b);
             w.Campaign.RewriteReservations(m=>!m.PocketOnly && m.SourceNode==a?m with {SourceNode=b}:m);
             Orders.Remove(order);LastResults.Add(order with {Status="移転完了"});w.Robots.SyncWorkers(b);

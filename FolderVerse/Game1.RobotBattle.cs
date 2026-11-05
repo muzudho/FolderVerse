@@ -429,5 +429,6 @@ public partial class Game1
     private void DrawTransport()
     {
         DrawPropagation(_robotScenes.Length>0?_battleWave:-1,PropagationComplete?.6f+.4f*(float)(_transportAge/2):.6f*_propagationTravel.Values.DefaultIfEmpty(0).Average(),true);
+        _ui.Text(DeliveryPlayback?"伝播フェーズ / 配送":"伝播フェーズ / 出兵",new(55,16),.6f,Cream);
     }
 }

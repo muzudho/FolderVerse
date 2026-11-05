@@ -151,7 +151,7 @@ public partial class Game1
         _ui.Text("コンピューターの操作 / "+_setup.ConquerorNames[order.Ruler],new(82,199),.58f,Cream);
         _ui.Button(ComputerMarchTarget,targetLabel,age>=.55f?Accent:Muted,Math.Min(.45f,670/_font.MeasureString(targetLabel).X));
         _ui.Button(ComputerMarchOrder,orderLabel,age>=1.55f?Accent:Muted,Math.Min(.43f,670/_font.MeasureString(orderLabel).X));
-        _ui.Text(age>=1.55f?"指示確定 / Escでスキップ":"軍事フェーズ / Escでスキップ",new(82,403),.39f,Cream);
+        _ui.Text(age>=1.55f?"指示確定 / Escでスキップ":"開戦予約の実行 / Escでスキップ",new(82,403),.39f,Cream);
         if(age>=0)DrawDemoHand(cursor,swing);
         _spriteBatch.End();
     }

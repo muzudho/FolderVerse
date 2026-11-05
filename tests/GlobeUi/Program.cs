@@ -21,6 +21,7 @@ sealed class GlobeCheck:Game1
         globe=(WorldPreview)Get("_world");globe.ShowSetup(setup,true);((CubeNet)Get("_net")).Home(setup);
         Set("_screen",Enum.Parse(typeof(Game1).GetField("_screen",Flags)!.FieldType,"WorldStatus"));
         CheckNodeHits();
+        CheckGlobeSpin();
         Set("_yawAngle",0f);Set("_pitchAngle",0f);
         Check(globe.ProjectVisible(new(0,0,setup.Depth/2f),Vector3.Backward,0,0,new(1040,240,790,580),out var center) && Vector2.Distance(center,new(1435,530))<1,"Front projection wrong");
         Check(!globe.ProjectVisible(new(0,0,-setup.Depth/2f),Vector3.Forward,0,0,new(1040,240,790,580),out _),"Back label visible");
@@ -95,6 +96,37 @@ sealed class GlobeCheck:Game1
             var isolated=WorldCoordinates.GlobeLabelComponents(setup,new[]{run[0].Id,run[^1].Id});
             Check(isolated.Values.All(v=>v.Longitude && v.Latitude),"Gap endpoints were suppressed");
         }
+    }
+    void CheckGlobeSpin()
+    {
+        Set("_statusGlobe",true);
+        var original=globe.ManualOrientation;
+        var button=(Rectangle)typeof(Game1).GetMethod("NetButton",Flags)!.Invoke(this,new object[]{1})!;
+        var focus=(Rectangle)typeof(Game1).GetMethod("NetButton",Flags)!.Invoke(this,new object[]{2})!;
+        Check(button.Right<focus.Left,"Spin toggle must be left of conqueror focus");
+        Click(button.Center);
+        Check((bool)Get("_globeSpinning"),"Spin toggle did not turn on through normal input");
+        var before=globe.ViewOrientation((float)Get("_yawAngle"),(float)Get("_pitchAngle"));
+        typeof(Game1).GetMethod("HandleInput",Flags)!.Invoke(this,new object[]{
+            new MouseState(0,0,0,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),
+            new KeyboardState(),new GameTime(TimeSpan.FromSeconds(1),TimeSpan.FromSeconds(1)),true});
+        var after=globe.ViewOrientation((float)Get("_yawAngle"),(float)Get("_pitchAngle"));
+        Check(after!=before,"Checked globe did not rotate");
+        Check(Vector3.Distance(Vector3.TransformNormal(Vector3.UnitX,after),Vector3.TransformNormal(Vector3.UnitX,before*Matrix.CreateRotationY(.12f)))<.0001f,"Spin speed differs from Demo");
+        Click(button.Center);
+        Check(!(bool)Get("_globeSpinning"),"Toggle did not stop globe");
+        Click(button.Center);
+        var map=(Rectangle)typeof(Game1).GetProperty("MapViewBounds",Flags)!.GetValue(this)!;
+        Click(map.Center);
+        Check((bool)Get("_globeSpinning"),"Map click stopped globe");
+        typeof(Game1).GetMethod("HandleInput",Flags)!.Invoke(this,new object[]{
+            new MouseState(map.Center.X,map.Center.Y,0,ButtonState.Released,ButtonState.Released,ButtonState.Pressed,ButtonState.Released,ButtonState.Released),
+            new KeyboardState(),new GameTime(),true});
+        Check((bool)Get("_globeSpinning"),"Right mouse button stopped globe");
+        Set("_globeSpinning",false);
+        globe.ManualOrientation=original;
+        Set("_statusGlobe",false);
+        Console.WriteLine("PASS: globe spin toggle, Demo speed, toggle stop and continued spinning after map click through normal input.");
     }
     void CheckNodeHits()
     {

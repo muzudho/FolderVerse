@@ -10,7 +10,7 @@ public partial class Game1
     {
         point=Point.Zero;
         var nodes=_setup.Nodes.All.Where(n=>n.Owner==_setup.PlayerSlot && !_setup.Campaign.RobotBattles.LockedNode(n.Id))
-            .OrderByDescending(n=>_setup.Robots.AssemblySelection(n.Id,_setup.PlayerSlot,true)!=null).ToArray();
+            .OrderByDescending(n=>PlanningStock.AssemblySelection(n.Id,_setup.PlayerSlot,true)!=null).ToArray();
         if(nodes.Length==0){_demoDomesticStage=12;return false;}
         _net.ShowRoutes=true;
         foreach(var node in nodes){
@@ -42,7 +42,7 @@ public partial class Game1
     private bool PrepareDemoAssemblyDrag()
     {
         if(_demoAssemblySelection==null || _demoEmptySlot<0)return false;
-        var store=_setup.Robots.Nodes[_populationNode];
+        var store=PlanningStock.Nodes[_populationNode];
         var target=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[_demoEmptySlot]);
         if(target==null || target.Parts==RobotParts.Complete)return false;
         foreach(long id in _demoAssemblySelection){
@@ -66,10 +66,10 @@ public partial class Game1
     {
         // Use the same press/release contract as a physical drag, without changing the real input history.
         var previous=_previousMouse;
-        var store=_setup.Robots.Nodes[_populationNode];
+        var store=PlanningStock.Nodes[_populationNode];
         var before=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[_demoEmptySlot])?.Parts??0;
         _previousMouse=new MouseState(0,0,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
         try{NodeAssemblyInput(new MouseState(),false,false);}finally{_previousMouse=previous;}
-        return before!=(store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[_demoEmptySlot])?.Parts??0);
+        return before!=(PlanningStock.Nodes[_populationNode].Robots.FirstOrDefault(r=>r.Id==_hangarSlots[_demoEmptySlot])?.Parts??0);
     }
 }

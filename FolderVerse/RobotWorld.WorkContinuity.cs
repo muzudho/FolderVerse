@@ -43,6 +43,7 @@ public sealed partial class RobotWorld
         }
         foreach(var store in Retinues)if(store.Robots.Any(r=>ValidateWorkReservation(r)!=r))store.Replace(store.Robots.Select(ValidateWorkReservation));
         Reservations?.RewriteReservations(order=>{
+            if(order.DeliveryMembers!=null)return order;
             if(order.Peaceful || order.Fighters==0 && order.RobotIds==null)return order;
             var store=OrderStore(order);
             var ids=order.RobotIds==null?LegacyOrderIds(order,store):order.RobotIds.Where(id=>store?.Robots.Any(r=>r.Id==id && WorkQualified(r,order.Ruler))==true).ToArray();
@@ -54,6 +55,7 @@ public sealed partial class RobotWorld
     private void CancelRobotWorkOrders(Robot robot)
     {
         Reservations?.RewriteReservations(order=>{
+            if(order.DeliveryMembers!=null)return order;
             if(order.Peaceful)return order;
             var ids=order.RobotIds??LegacyOrderIds(order,OrderStore(order));
             if(!ids.Contains(robot.Id))return order;
