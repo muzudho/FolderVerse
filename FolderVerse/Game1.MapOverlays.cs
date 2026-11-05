@@ -90,7 +90,7 @@ public partial class Game1
             var shadow=r;shadow.Y+=4;PrimaryRoundBox(shadow,new Color(7,23,35));PrimaryRoundBox(r,color);
             DrawCountryCornerMarks(r,_setup.PlayerSlot,enabled?1:.3f);
             var ink=UiPainter.ContrastInk(color);
-            if(i==1){_ui.Center(DomesticOperationsAllowed?"内政終了":"軍事終了",new(r.X,r.Y+32,r.Width,32),.44f,ink);_ui.Center(DomesticOperationsAllowed?"配送へ":"ターン終了",new(r.X,r.Y+73,r.Width,36),.57f,ink);}
+            if(i==1){_ui.Center(DomesticOperationsAllowed?"内政終了":"軍事終了",new(r.X,r.Y+32,r.Width,32),.44f,ink);_ui.Center(DomesticOperationsAllowed?"伝播へ":"ターン終了",new(r.X,r.Y+73,r.Width,36),.57f,ink);}
             else {
                 int inset=_setup.CountryPattern(_setup.PlayerSlot)==0?3:14;
                 DrawPrimaryIcon(i,new(r.X+12,r.Y+8,r.Width-24,58),ink);
@@ -98,7 +98,7 @@ public partial class Game1
                 _ui.Center(label,new(r.X+inset,r.Bottom-28,r.Width-inset*2,24),Math.Min(.34f,(r.Width-inset*2)/_font.MeasureString(label).X),ink);
             }
             if(PrimaryActionInUse(i) && r.Contains(_pointer)){
-                string hint=labels[i]+(!PhasePrimaryActionAllowed(i)?i==2?"（軍事フェーズで操作できます）":"（内政フェーズで操作できます）":!enabled?"（このステップでは利用できません）":i==2?$"（{WarReservationCount}件）":i==1?DomesticOperationsAllowed?"（全員の内政終了後に配送）":"（全員の軍事終了後に開戦）":"");
+                string hint=labels[i]+(!PhasePrimaryActionAllowed(i)?i==2?"（軍事フェーズで操作できます）":"（内政フェーズで操作できます）":!enabled?"（このステップでは利用できません）":i==2?$"（{WarReservationCount}件）":i==1?DomesticOperationsAllowed?"（全員の内政終了後に配送・開戦）":"（全員の軍事終了後に開戦）":"");
                 var box=new Rectangle(InspectorVisible?1000:54,884,760,34);_ui.Box(box,new Color(7,23,35));_ui.Center(hint,box,.36f,Cream);
             }
         }

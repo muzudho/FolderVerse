@@ -116,6 +116,10 @@ public static class AutoSaveStore
                     if(type==typeof(ConquestCampaign) && field.Name=="<FunctionTransfers>k__BackingField"){field.SetValue(value,new NodeFunctionTransfers());continue;}
                     if(type==typeof(ConquestCampaign) && field.Name=="_domesticSubmitted"){field.SetValue(value,new HashSet<int>());continue;}
                     if(type==typeof(ConquestCampaign) && field.Name=="<Phase>k__BackingField")continue;
+                    if(type==typeof(ConquestCampaign) && field.Name=="<LastCancelledWars>k__BackingField"){field.SetValue(value,new List<CancelledWar>());continue;}
+                    if(type==typeof(March) && field.Name=="<DeliveryMembers>k__BackingField")continue;
+                    if(type==typeof(DeliverySortieMember) && field.Name=="<Cancelled>k__BackingField")continue;
+                    if(type==typeof(RobotDirectDelivery) && field.Name=="<CompletedArrivals>k__BackingField"){field.SetValue(value,new Dictionary<long,long>());continue;}
                     if(type==typeof(RobotDirectDelivery) && field.Name=="<Failures>k__BackingField"){field.SetValue(value,new List<DirectPartOrder>());continue;}
                     if(type==typeof(RobotWorld) && field.Name=="<DirectDelivery>k__BackingField"){field.SetValue(value,new RobotDirectDelivery());continue;}
                     if(type==typeof(RobotTransport) && field.Name=="_directTransfers"){field.SetValue(value,Array.Empty<RobotShipment>());continue;}

@@ -7,11 +7,12 @@ public partial class Game1
 {
     private bool DomesticOperationsAllowed=>_setup.Campaign.Phase==CampaignPhase.Domestic;
     private bool MilitaryOperationsAllowed=>_setup.Campaign.Phase==CampaignPhase.Military;
+    private bool WarPlanningAllowed=>DomesticOperationsAllowed || MilitaryOperationsAllowed;
     private bool _militaryTransportPlayback;
     private bool DeliveryPlayback=>_setup.Campaign.Phase==CampaignPhase.Delivery;
     private IReadOnlyList<RobotShipment> PropagationShipments=>_militaryTransportPlayback?Array.Empty<RobotShipment>():_setup.Robots.Transport.LastTransfers;
-    private string PlanningPhaseLabel=>MilitaryOperationsAllowed?"軍事フェーズ":"内政フェーズ";
-    private bool PhasePrimaryActionAllowed(int index)=>index==2?MilitaryOperationsAllowed:index is 3 or 4 or 5 or FunctionTransferAction?DomesticOperationsAllowed:true;
+    private string PlanningPhaseLabel=>"内政フェーズ";
+    private bool PhasePrimaryActionAllowed(int index)=>index==2?WarPlanningAllowed:index is 3 or 4 or 5 or FunctionTransferAction?DomesticOperationsAllowed:true;
     private void EndDomesticPhase(bool automaticAll=false)
     {
         SaveDomesticCamera();ResetInspector();ClearCurrentPlayerNodeChecks();
@@ -31,6 +32,8 @@ public partial class Game1
     private void OpenMilitaryPhase()
     {
         _setup.Campaign.BeginMilitary();_screen=Screen.WorldStatus;
-        ResetInspector();RestoreDomesticCamera();_world.ShowSetup(_setup,true);
+        ResetInspector();_world.ShowSetup(_setup,true);
+        _setup.Campaign.Advance(_setup,-1,0,automaticAll:_setup.ComputerOnly || _autoPlay || _demoActive,deferResolution:ShowComputerMarches,allPlanned:true);
+        if(_computerMarches==null)FinishMilitaryAdvance();
     }
 }

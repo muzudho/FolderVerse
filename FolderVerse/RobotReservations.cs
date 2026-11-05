@@ -11,7 +11,7 @@ public sealed partial class RobotWorld
     private Func<int,int> _reservationFlagOwner;
     public bool MarchReserved(int node,Robot robot)=>MarchReservedCore(node,robot,false);
     public bool CombatMarchReserved(int node,Robot robot)=>MarchReservedCore(node,robot,true);
-    private bool MarchReservedCore(int node,Robot robot,bool combatOnly)=>Reservations?.PlannedOrders.Any(o=>(!combatOnly || !o.Peaceful) && !o.PocketOnly && o.Ruler==robot.Owner && (o.SourceNode>=0?o.SourceNode:ReservationSource?.Invoke(o.Ruler)??node)==node && (o.RobotIds?.Contains(robot.Id)??Training[o.Ruler].Order(Nodes[node].Robots.Where(r=>r.Owner==o.Ruler && Training[r.Owner].Eligible(r) && !r.Stationed && DirectDelivery.LockedParts(node,r.Id)==0)).Take((int)Math.Min(12,o.Fighters)).Any(r=>r.Id==robot.Id)))==true;
+    private bool MarchReservedCore(int node,Robot robot,bool combatOnly)=>Reservations?.PlannedOrders.Any(o=>(o.DeliveryMembers==null || o.DeliveryMembers.Any(m=>m.RobotId==robot.Id && m.DeliveryNumbers.Length==0)) && (!combatOnly || !o.Peaceful) && !o.PocketOnly && o.Ruler==robot.Owner && (o.SourceNode>=0?o.SourceNode:ReservationSource?.Invoke(o.Ruler)??node)==node && (o.RobotIds?.Contains(robot.Id)??Training[o.Ruler].Order(Nodes[node].Robots.Where(r=>r.Owner==o.Ruler && Training[r.Owner].Eligible(r) && !r.Stationed && DirectDelivery.LockedParts(node,r.Id)==0)).Take((int)Math.Min(12,o.Fighters)).Any(r=>r.Id==robot.Id)))==true;
     public bool BaseAssemblyLocked(int node,Robot robot)=>robot.Disposal || robot.Stationed || Workshops[node].IsDisposing(robot.Id) || PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) || MarchReserved(node,robot);
     public bool AssemblyLocked(int node,Robot robot)=>BaseAssemblyLocked(node,robot) || DirectDelivery.LockedParts(node,robot.Id)!=0 || _arrivalLocked?.Invoke(robot.Id)==true;
     public bool PartLocked(int node,Robot robot,RobotParts part)=>BaseAssemblyLocked(node,robot) || (DirectDelivery.LockedParts(node,robot.Id)&robot.ConnectedParts(part))!=0;
@@ -25,8 +25,9 @@ public sealed partial class RobotWorld
             if(order.PocketOnly || order.Ruler!=robot.Owner || (order.SourceNode>=0?order.SourceNode:ReservationSource?.Invoke(order.Ruler)??node)!=node)return order;
             var ids=order.RobotIds??Training[order.Ruler].Order(Nodes[node].Robots.Where(r=>r.Owner==order.Ruler && Training[r.Owner].Eligible(r) && !r.Stationed && DirectDelivery.LockedParts(node,r.Id)==0)).Take((int)Math.Min(12,order.Fighters)).Select(r=>r.Id).ToArray();
             if(!ids.Contains(robot.Id))return order;
+            if(order.DeliveryMembers!=null)return order with {DeliveryMembers=order.DeliveryMembers.Select(m=>m.RobotId==robot.Id?m with {Cancelled=true}:m).ToArray()};
             ids=ids.Where(id=>id!=robot.Id).ToArray();
-            return ids.Length==0 && !order.Queen?null:order with {RobotIds=ids,Fighters=ids.Length};
+            return ids.Length==0 && !order.Queen?null:order with {RobotIds=ids,Fighters=ids.Length,DeliveryMembers=order.DeliveryMembers?.Where(m=>ids.Contains(m.RobotId)).ToArray()};
         });
     }
     public bool PrepareSortieReservation(int node,long[] ids)

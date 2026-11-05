@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 if(args.Contains("--ui")){using var game=new CampaignPhasesUi();game.Run();return;}
+DeliverySortiesChecks.Run();
 
 static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 static (WorldSetup W,int A,int B,int C) Fixture()
@@ -60,9 +61,7 @@ static Robot Add(WorldSetup w,int node,RobotParts parts){var r=w.Robots.Create(0
     var r=Add(w,a,RobotParts.Head);w.Robots.DirectDelivery.Reserve(w,a,b,r.Id,r.Parts,null,0);int turn=w.Population.Turn;
     Check(!w.Campaign.FinishDomestic(w) && w.TurnPlayer==1 && w.Campaign.Phase==CampaignPhase.Domestic && w.Robots.Nodes[a].Count==1,"First human submits domestic without delivering");
     Check(w.Campaign.FinishDomestic(w) && w.TurnPlayer==0 && w.Robots.Nodes[b].Count==1,"Last human triggers one shared delivery");
-    w.Campaign.BeginMilitary();w.Campaign.Advance(w,-1,0);
-    Check(w.Campaign.Phase==CampaignPhase.Military && w.Campaign.AwaitingPlayers && w.Population.Turn==turn && w.TurnPlayer==1,"Each human gets military decisions before world advances");
-    w.Campaign.Advance(w,-1,0);
+    w.Campaign.BeginMilitary();w.Campaign.Advance(w,-1,0,allPlanned:true);
     Check(w.Population.Turn==turn+1 && !w.Campaign.AwaitingPlayers && w.Campaign.Phase==CampaignPhase.Domestic,"Last human completes one shared global turn");
 }
 {
@@ -76,7 +75,7 @@ static Robot Add(WorldSetup w,int node,RobotParts parts){var r=w.Robots.Create(0
     w.Nodes.All[b].Owner=0;w.Robots.DirectDelivery.Reserve(w,a,b,r.Id,RobotParts.Head,null,0);
     Check(!w.Robots.DirectDelivery.FailedPart(a,r.Id,RobotParts.Head),"New reservation replaces old failure label");
     var legacy=AutoSaveStore.Capture(w);
-    foreach(var o in legacy.Objects)if(o.Fields!=null){o.Fields.Remove("<Phase>k__BackingField");o.Fields.Remove("_domesticSubmitted");o.Fields.Remove("<Failures>k__BackingField");}
+    foreach(var o in legacy.Objects)if(o.Fields!=null){o.Fields.Remove("<Phase>k__BackingField");o.Fields.Remove("_domesticSubmitted");o.Fields.Remove("<Failures>k__BackingField");o.Fields.Remove("<LastCancelledWars>k__BackingField");o.Fields.Remove("<CompletedArrivals>k__BackingField");o.Fields.Remove("<DeliveryMembers>k__BackingField");}
     saved=AutoSaveStore.Restore<WorldSetup>(legacy);
     Check(saved.Campaign.Phase==CampaignPhase.Domestic && saved.Robots.DirectDelivery.Failures.Count==0 && saved.Campaign.FinishDomestic(saved),"Legacy saves default to domestic phase with no failure labels");
 }
@@ -86,8 +85,7 @@ static Robot Add(WorldSetup w,int node,RobotParts parts){var r=w.Robots.Create(0
     void Set(string n,object v)=>typeof(Game1).GetField(n,flags)!.SetValue(game,v);
     object Call(string n,params object[] values)=>typeof(Game1).GetMethod(n,flags)!.Invoke(game,values)!;
     Set("_setup",w);Set("_populationNode",a);Set("_pointer",new Point(85,861));
-    Check(!(bool)Call("PhasePrimaryActionAllowed",2) && (bool)Call("PhasePrimaryActionAllowed",3),"Domestic disables war and enables delivery");
-    Call("OpenWarPlanning");Check(!(bool)typeof(Game1).GetField("_movementOpen",flags)!.GetValue(game)!,"War planning cannot open through another entry point during domestic");
+    Check((bool)Call("PhasePrimaryActionAllowed",2) && (bool)Call("PhasePrimaryActionAllowed",3),"Domestic enables both war planning and delivery");
     w.Campaign.FinishDomestic(w);w.Campaign.BeginMilitary();
     Check((bool)Call("PhasePrimaryActionAllowed",2) && !(bool)Call("PhasePrimaryActionAllowed",3) && !(bool)Call("PhasePrimaryActionAllowed",4),"Military enables war and disables both delivery controls");
     Check(!(bool)Call("CanMoveHangarPart",r,RobotParts.Head),"Military forbids part drag and assembly");

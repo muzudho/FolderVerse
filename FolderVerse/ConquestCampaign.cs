@@ -3,9 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public sealed record March(int Ruler,int TargetNode,long Fighters,int SourceNode=-1,bool Queen=true,bool PocketOnly=false,long[] RobotIds=null,bool Peaceful=false);
+public sealed record March(int Ruler,int TargetNode,long Fighters,int SourceNode=-1,bool Queen=true,bool PocketOnly=false,long[] RobotIds=null,bool Peaceful=false)
+{
+    public DeliverySortieMember[] DeliveryMembers {get;init;}
+}
 public enum CampaignPhase { Domestic, Delivery, Military }
-public sealed class ConquestCampaign
+public sealed partial class ConquestCampaign
 {
     public CampaignPhase Phase {get;private set;}
     public NodeFunctionTransfers FunctionTransfers {get;}=new();
@@ -29,12 +32,14 @@ public sealed class ConquestCampaign
     }
     internal void BeginDelivery(WorldSetup world)
     {
+        LastCancelledWars.Clear();
         FunctionTransfers.Resolve(world);
         if(UseRobotCombat)world.Robots.Advance(
             (a,b)=>FunctionalDeliveryRoutes.Connected(world,a,b),
             n=>world.Nodes.All[n].Owner,world.PlacementSeed^world.Population.Turn^0x61238,RobotBattles.LockedNode,
             (owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner),industry:false);
-        Phase=CampaignPhase.Delivery;Report=$"配送 {world.Robots.Transport.LastTransfers.Count} / 配送後に軍事指示";
+        ResolveDeliverySorties(world);
+        Phase=CampaignPhase.Delivery;Report=$"配送 {world.Robots.Transport.LastTransfers.Count} / 配送後に開戦予約を実行";
     }
     public void BeginMilitary()
     {if(Phase!=CampaignPhase.Delivery)throw new InvalidOperationException("Delivery must finish before military orders.");Phase=CampaignPhase.Military;}
@@ -73,7 +78,7 @@ public sealed class ConquestCampaign
                 var prior=orders[i];if(!SameStore(prior))continue;
                 if(prior.TargetNode==order.TargetNode || order.RobotIds==null || prior.RobotIds==null){orders.RemoveAt(i);continue;}
                 var remaining=prior.RobotIds.Except(order.RobotIds).ToArray();
-                prior=prior with {RobotIds=remaining,Fighters=remaining.Length,Queen=prior.Queen && !order.Queen};
+                prior=prior with {RobotIds=remaining,Fighters=remaining.Length,Queen=prior.Queen && !order.Queen,DeliveryMembers=prior.DeliveryMembers?.Where(m=>remaining.Contains(m.RobotId)).ToArray()};
                 if(remaining.Length==0 && !prior.Queen)orders.RemoveAt(i);else orders[i]=prior;
             }
         }
@@ -88,16 +93,16 @@ public sealed class ConquestCampaign
         // Switching control does not cancel an already chosen march.
         for(int i=_plannedOrders.Count-1;i>=0;i--)if(world.ControllerOf(_plannedOrders[i].Ruler)<0){_partyOrders.Add(_plannedOrders[i]);_plannedOrders.RemoveAt(i);}
     }
-    public void Reset(){Phase=CampaignPhase.Domestic;FunctionTransfers.Orders.Clear();FunctionTransfers.LastResults.Clear();_domesticSubmitted.Clear();PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
+    public void Reset(){LastCancelledWars.Clear();Phase=CampaignPhase.Domestic;FunctionTransfers.Orders.Clear();FunctionTransfers.LastResults.Clear();_domesticSubmitted.Clear();PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
     public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false,
-        Func<IReadOnlyList<March>,bool> deferResolution=null)
+        Func<IReadOnlyList<March>,bool> deferResolution=null,bool allPlanned=false)
     {
         if(Phase==CampaignPhase.Delivery)throw new InvalidOperationException("Wait for delivery playback before military orders.");
         world.Robots.PersuadeAtHome(world);
         Battles.Clear();
         int controller=world.TurnPlayer;var controlled=world.ControlledParty(controller).ToHashSet();
-        var orders=_plannedOrders.Where(o=>automaticAll || controlled.Contains(o.Ruler)).ToList();
-        if(automaticAll){orders.AddRange(_partyOrders);_partyOrders.Clear();_submitted.Clear();}
+        var orders=_plannedOrders.Where(o=>allPlanned || automaticAll || controlled.Contains(o.Ruler)).ToList();
+        if(automaticAll || allPlanned){orders.AddRange(_partyOrders);_partyOrders.Clear();_submitted.Clear();}
         if(targetNode>=0)
         {
             if(UseRobotCombat?!RobotBattles.CanSortie(world,world.PlayerSlot,targetNode):world.Routes.ToNode(world.PlayerSlot,targetNode)==null || !world.Nodes.All[targetNode].Functional){Report="交通路がない、または戦闘中のため移動できない";return;}
@@ -110,7 +115,7 @@ public sealed class ConquestCampaign
             // A participant may become a computer after submitting this turn.
             // Preserve submitted orders, but do not leave an obsolete waiting flag.
             if(party.Length<=1 && !automaticAll){orders.AddRange(_partyOrders);_partyOrders.Clear();_submitted.Clear();}
-            if(party.Length>1 && !automaticAll)
+            if(party.Length>1 && !automaticAll && !allPlanned)
             {
                 _submitted.Add(controller);_partyOrders.AddRange(orders);
                 int next=party.FirstOrDefault(r=>!_submitted.Contains(r),-1);
@@ -148,6 +153,7 @@ public sealed class ConquestCampaign
                 }
             }
         }
+        if(UseRobotCombat)CancelInvalidWars(world,orders);
         orders.RemoveAll(o=>!world.Nodes.All[o.TargetNode].Functional);
         for(int i=orders.Count-1;i>=0;i--)if(orders[i].RobotIds!=null)
         {

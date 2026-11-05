@@ -170,6 +170,8 @@ public partial class Game1 : Game
         if(IsStatusScreen && _directMap && escape){CloseDirectDelivery();_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _invasionPicker>=0)
         {if(active)InvasionPickerInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && WarCancellationInput(active && click,active && escape))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds; UpdateDomesticSlide((float)elapsed);
         _animationTime+=(float)elapsed;
         if(FolderTreeInput(mouse,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -687,7 +689,7 @@ public partial class Game1 : Game
         if(!_reservationDirectory)DrawWandererLocation();DrawRouteLayerButtons();
         DrawStatusMenu();
         if(!DrawInvasionUnavailableHint() && !DrawNodeCheckHint() && _supervisorDialog==0 && !_reservationDirectory && !_functionTransferMap)DrawNodeTooltip();
-        DrawInspectorHandle();DrawTraining();DrawInvasionPicker();
+        DrawInspectorHandle();DrawTraining();DrawInvasionPicker();DrawWarCancellations();
         DrawMapOverlayMenu();
         DrawHangarTrainingNotice();
         DrawFolderTree();DrawInspectorFolders();
