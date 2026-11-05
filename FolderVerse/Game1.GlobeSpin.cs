@@ -5,7 +5,7 @@ public partial class Game1
 {
     private bool _globeSpinning;
 
-    private bool UpdateGlobeSpin(float elapsed,bool active,bool click,bool rightHeld)
+    private bool UpdateGlobeSpin(float elapsed,bool active,bool click)
     {
         if(!IsStatusScreen || !_statusGlobe){_globeSpinning=false;return false;}
         if(active && click && NetButton(1).Contains(_pointer)){
@@ -14,10 +14,6 @@ public partial class Game1
             return true;
         }
         if(!_globeSpinning)return false;
-        if(active && MapViewBounds.Contains(_pointer) && rightHeld){
-            _globeSpinning=false;
-            return false;
-        }
         if(active && elapsed>0 && !OrientationRotating){
             // Match Demo's 0.12 radians/second, preserving the current camera pose.
             var orientation=_world.ViewOrientation(_yaw,_pitch);

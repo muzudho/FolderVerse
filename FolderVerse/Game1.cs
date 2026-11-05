@@ -209,7 +209,7 @@ public partial class Game1 : Game
         if(OrientationControlsVisible && !_seedDialog.IsOpen && active && click && OrientationControlClick(_pointer)){if(AutomaticOrientation)AdvanceAutomaticOrientation((float)elapsed);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool transitioning=MapTransitionActive;UpdateMapTransition((float)elapsed);
         if(transitioning){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(UpdateGlobeSpin((float)elapsed,active,click,mouse.RightButton==ButtonState.Pressed))
+        if(UpdateGlobeSpin((float)elapsed,active,click))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _screenshots.Update(gameTime.ElapsedGameTime.TotalSeconds);
         bool captureChord=keyboard.IsKeyDown(Keys.P) && (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));

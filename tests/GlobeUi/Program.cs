@@ -119,6 +119,10 @@ sealed class GlobeCheck:Game1
         var map=(Rectangle)typeof(Game1).GetProperty("MapViewBounds",Flags)!.GetValue(this)!;
         Click(map.Center);
         Check((bool)Get("_globeSpinning"),"Map click stopped globe");
+        typeof(Game1).GetMethod("HandleInput",Flags)!.Invoke(this,new object[]{
+            new MouseState(map.Center.X,map.Center.Y,0,ButtonState.Released,ButtonState.Released,ButtonState.Pressed,ButtonState.Released,ButtonState.Released),
+            new KeyboardState(),new GameTime(),true});
+        Check((bool)Get("_globeSpinning"),"Right mouse button stopped globe");
         Set("_globeSpinning",false);
         globe.ManualOrientation=original;
         Set("_statusGlobe",false);
