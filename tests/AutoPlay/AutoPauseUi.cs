@@ -58,9 +58,23 @@ sealed class AutoPauseUi:Game1
             Call("UpdateComputerDomestic",0d,true);Check(w.PlayerSlot==3 && !(bool)Get("_autoPlay") && w.Campaign.Phase==CampaignPhase.Delivery,"Pending CPU presentation restores the newly added human rather than its previous spectator");
         }
         if(frame==11){Ready();Input(0);Click(new(10,10));Click(Bounds("QuitMenuItem").Center);Check(Get("_screen").ToString()=="Title" && !(bool)Get("_autoPaused"),"Paused menu can stop the exhibition and return to title");}
+        if(frame==12){
+            Ready();
+            foreach(var node in w.Nodes.All.Where(n=>n.Owner==0))node.FunctionUnits=0;
+            Input(2.1);
+            Check((int)Get("_populationNode")==-1,"AUTO does not open an inspector for a nonfunctional point");
+            Input(2.1);
+            Check(w.Campaign.Phase==CampaignPhase.Delivery,"AUTO proceeds to delivery when no point can be inspected");
+        }
+        if(frame==13){
+            Ready();Input(2.1);
+            Check((int)Get("_populationNode")>=0,"AUTO opens a functional point");
+            Input(2.1);Call("ResetInspector");Input(2.1);
+            Check(w.Campaign.Phase==CampaignPhase.Delivery,"AUTO proceeds to delivery if the inspector is cleared before opening the hangar");
+        }
         base.Draw(new GameTime(TimeSpan.FromSeconds(100+frame),TimeSpan.Zero));
         var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
         using(var texture=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight)){texture.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"auto-pause-{frame}.png"));texture.SaveAsPng(file,texture.Width,texture.Height);}
-        if(frame++==11){Console.WriteLine("PASS: first CPU in 0/20, AUTO bounce, hidden paused game, country takeover, zero-human resume, industry/playback/overview/land freeze, Escape, queued CPU takeover, title return and 1080p/540p menu controls.");Exit();}
+        if(frame++==13){Console.WriteLine("PASS: AUTO pause, takeover, resume, and delivery with no valid inspector.");Exit();}
     }
 }

@@ -6,9 +6,13 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private RobotWorld PlanningStock=>DomesticOperationsAllowed?_setup.Robots.PartPlanning.Preview(_setup):_setup.Robots;
-    private bool PlanningFunctional(int node)=>DomesticOperationsAllowed
+    private bool PlanningFunctional(int node)
+    {
+        if(node<0 || node>=_setup.Nodes.All.Length)return false;
+        return DomesticOperationsAllowed
         ? !_setup.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node) && (_setup.Nodes.All[node].Functional || _setup.Campaign.FunctionTransfers.Orders.Any(o=>o.Target==node))
         :_setup.Nodes.All[node].Functional;
+    }
     private static readonly Rectangle HangarUndoButton=new(340,260,258,30);
     private int[] PlanningFactorySources(int node)=>DomesticOperationsAllowed?_setup.Campaign.FunctionTransfers.Orders.Where(o=>o.Target==node).Select(o=>o.Source).Prepend(node).ToArray():new[]{node};
     private RobotWorkshop PlanningWorkshop(int node)=>PlanningFactorySources(node).Length==1?_setup.Robots.Workshops[node]:RobotWorkshop.PlanningView(PlanningFactorySources(node).Select(n=>_setup.Robots.Workshops[n]));

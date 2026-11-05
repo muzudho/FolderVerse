@@ -52,10 +52,19 @@ public partial class Game1
             if(_computerMarches==null)FinishMilitaryAdvance();
             return;
         }
+        const int finishStage=5;
+        if(_autoDomesticStage>0 && _autoDomesticStage<finishStage && !PlanningFunctional(_populationNode))
+            _autoDomesticStage=finishStage;
+
         switch(_autoDomesticStage++){
             case 0:
-                var node=_setup.Nodes.All.Where(n=>n.Owner==_setup.PlayerSlot && !_setup.Campaign.RobotBattles.LockedNode(n.Id)).OrderByDescending(n=>_setup.Robots.AssemblySelection(n.Id,_setup.PlayerSlot,true)!=null).FirstOrDefault();
-                if(node==null){_autoDomesticStage=5;break;}OpenNodeInspector(node.Id);break;
+                var node=_setup.Nodes.All
+                    .Where(n=>n.Owner==_setup.PlayerSlot && PlanningFunctional(n.Id) && !_setup.Campaign.RobotBattles.LockedNode(n.Id))
+                    .OrderByDescending(n=>_setup.Robots.AssemblySelection(n.Id,_setup.PlayerSlot,true)!=null)
+                    .FirstOrDefault();
+                if(node==null)_autoDomesticStage=finishStage;
+                else OpenNodeInspector(node.Id);
+                break;
             case 1:OpenNodeTransport();break;
             case 2:OpenNodeAssembly();break;
             case 3:
