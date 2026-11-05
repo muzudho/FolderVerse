@@ -466,7 +466,6 @@ public partial class Game1 : Game
             if(HasTerritories)
                 _counter.Draw(_spriteBatch,active?_setup.TerritoryCounts[slot]:0,
                     new Rectangle(rect.X+7,rect.Y+7,rect.Width-14,rect.Height-14),color);
-            DrawCountrySwatch(new(rect.Right-43,rect.Bottom-29,34,22),slot);
         }
         _ui.Text("人間プレイヤー、コンピュータープレイヤー、国の色は後で変えることができます。",new(54,78),.36f,new(170,206,216));
         _ui.Button(CastBack,"世界へ戻る",Muted,0.48f);
@@ -521,7 +520,6 @@ public partial class Game1 : Game
         _counter.Draw(_spriteBatch,_setup.TerritoryCounts[tile.Slot],image,color);
         _ui.Box(new(rect.X+5,rect.Y+5,Math.Min(65,rect.Width-10),27),new Color(10,25,35,210));
         _ui.Text("#"+(tile.Slot+1).ToString("00"),new(rect.X+10,rect.Y+7),Math.Min(0.42f,(rect.Width-20)/_font.MeasureString("#00").X),color);
-        DrawCountrySwatch(new(rect.Right-38,rect.Bottom-27,30,20),tile.Slot);
         if(_screen==Screen.PlayerReady && tile.Slot==_setup.PlayerSlot)
         {
             _ui.Box(new(rect.X+4,rect.Y+34,Math.Min(rect.Width-8,140),33),new Color(10,25,35,220));
