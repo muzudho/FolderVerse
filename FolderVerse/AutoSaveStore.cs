@@ -127,6 +127,7 @@ public static class AutoSaveStore
                     if(type==typeof(Robot) && new[]{"<DefenseOnly>k__BackingField","<FactoryWorker>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(RobotWorkshop) && new[]{"_baseLineCount","_lineLimit","_workerLines"}.Contains(field.Name))continue;
                     if(type==typeof(RobotWorkshop) && field.Name=="<WaitingProductionTurns>k__BackingField")continue;
+                    if(type==typeof(RobotWorkshop) && field.Name is "<DoNotRepeat>k__BackingField" or "<CycleFinished>k__BackingField")continue;
                     if(type==typeof(RobotWorld) && field.Name=="<Reservations>k__BackingField")continue;
                     if(type.Name=="DomesticViewState" && new[]{"<GlobePan>k__BackingField","<GlobeDragSlide>k__BackingField","<NetDragRotate>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(RobotEncounter) && field.Name=="<ReturnedWanderers>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}

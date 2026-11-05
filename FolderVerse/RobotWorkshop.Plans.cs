@@ -67,11 +67,11 @@ public sealed partial class RobotWorkshop
     public bool RestEnabled {get;private set;}=true;
     public int CycleProductionTurns=>ProductionPeriod*(RestEnabled?RestEvery:1);
     public int CycleTurns=>CycleProductionTurns+(RestEnabled?IndustryTime.Whole(RestTurns):0);
-    public int CycleProgress=>RestEnabled && RestRemaining>0
+    public int CycleProgress=>CycleFinished?CycleTurns:RestEnabled && RestRemaining>0
         ?CycleTurns-RestRemaining
         :(RestEnabled?ProducedSinceRest*ProductionPeriod:0)+ProductionAge;
-    public int TurnsUntilNextProduction=>(RestEnabled?RestRemaining:0)+System.Math.Max(0,ProductionPeriod-ProductionAge);
-    public int LaneProgress=>RestEnabled && RestRemaining>0
+    public int TurnsUntilNextProduction=>CycleFinished?0:(RestEnabled?RestRemaining:0)+System.Math.Max(0,ProductionPeriod-ProductionAge);
+    public int LaneProgress=>CycleFinished?ProductionPeriod+(RestEnabled?IndustryTime.Whole(RestTurns):0):RestEnabled && RestRemaining>0
         ?ProductionPeriod+IndustryTime.Whole(RestTurns)-RestRemaining
         :Waiting?ProductionPeriod:CycleProgress%ProductionPeriod;
     public void GeneratePlans(int seed)
@@ -86,7 +86,7 @@ public sealed partial class RobotWorkshop
     {
         if(index<0 || index>10)throw new System.ArgumentOutOfRangeException(nameof(index));
         if(SelectedPlan==index)return;
-        SelectedPlan=index;Paused=false;RestRemaining=ProducedSinceRest=0;
+        SelectedPlan=index;Paused=false;CycleFinished=false;RestRemaining=ProducedSinceRest=0;
         if(index==3){Manufacturing=false;ProductionAge=WaitingProductionTurns=0;Paused=false;return;}
         var plan=PlanAt(index);Configure(plan.Product,plan.Turns);CheapProduct=plan.EffectiveCheapParts==plan.Product;IntegratedProduct=plan.IntegratedParts;_selectedProductPlan=plan;SelectedPlan=index;RestEnabled=true;
     }

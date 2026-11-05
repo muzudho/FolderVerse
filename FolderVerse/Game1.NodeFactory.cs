@@ -36,9 +36,10 @@ public partial class Game1
         var line=_setup.Robots.Workshops[_populationNode].ProductionLines[_factoryLine];
         int width=FactoryProductionWidth(line.Manufacturing?line.ProductionPeriod:3),rest=Math.Min(4,line.RestTurns),y=284+(_factoryLine%3)*200;
         int restLeft=160+width+rest*72/2-34;
-        return field==0?new(Math.Min(160+width/2-34,restLeft-72),y+155,68,44):new(restLeft,y+155,68,44);
+        return field==0?new(Math.Min(160+width/2-34,restLeft-72),y+150,68,24):new(restLeft,y+150,68,24);
     }
     private Rectangle FactoryDropOption(int field,int index){var r=FactoryDropButton(field);int count=field==2?_setup.Robots.Workshops[_populationNode].ReservedSlotLimit+1:9;if(field==2 && count>13){int columns=(count+12)/13,width=784/columns;return new(84+index/13*width,490+index%13*30,width-3,30);}int top=Math.Max(260,r.Y-count*30);return new(r.X,top+index*30,r.Width,30);}
+    private Rectangle FactoryNoRepeatButton(){var rest=FactoryDropButton(1);return new(rest.Right+10,rest.Y,145,rest.Height);}
     private bool NodeFactoryClick(Point pointer)
     {
         if(!NodeFactoriesAllowed){_nodeFactoryOpen=false;_factoryDropDown=_factoryPlanLine=-1;return false;}
@@ -57,6 +58,7 @@ public partial class Game1
         for(int l=_factoryPage*3;l<Math.Min(factory.ProductionLines.Length,(_factoryPage+1)*3);l++){
             var line=factory.ProductionLines[l];if(FactoryProductionButton(l).Contains(pointer) || FactoryRobotArrow(l%3,line.Manufacturing?line.ProductionPeriod:3).Contains(pointer)){_factoryPlanLine=l;_factoryLine=l;return true;}
             _factoryLine=l;for(int field=0;field<2;field++)if(FactoryDropButton(field).Contains(pointer)){_factoryDropDown=field;return true;}
+            if(FactoryNoRepeatButton().Contains(pointer)){line.SetDoNotRepeat(!line.DoNotRepeat);return true;}
         }
         if(FactoryDropButton(2).Contains(pointer))_factoryDropDown=2;
         if(NodeFactoryTile.Contains(pointer))_nodeFactoryOpen=false;
@@ -112,7 +114,8 @@ public partial class Game1
                 if(new Rectangle(caret-12,y+27,24,77).Contains(_pointer))hoveredCaret=line;
             }
             int width=productionWidth,mid=160+width/2;_ui.Box(new(160,y+140,width,2),Cream);_ui.Box(new(160,y+135,2,7),Cream);_ui.Box(new(158+width,y+135,2,7),Cream);for(int i=0;i<5;i++){_ui.Box(new(mid-5+i,y+142+i,1,1),Cream);_ui.Box(new(mid+5-i,y+142+i,1,1),Cream);}FactoryDrop(0,line.RestEvery);FactoryDrop(1,line.RestTurns);
-            string status=!line.Manufacturing?"製造しない":line.Paused?"一時停止":line.RestRemaining>0?$"休憩中 あと{IndustryTime.Format(line.RestRemaining)} / 次の完成まで{IndustryTime.Format(line.TurnsUntilNextProduction)}産業ターン":line.Waiting?$"出荷待ち {IndustryTime.Format(line.WaitingProductionTurns)}生産ターン / 格納できるまで停止":$"次の完成まで{IndustryTime.Format(line.TurnsUntilNextProduction)}産業ターン / {line.ProducedSinceRest+1}台目・工期{IndustryTime.Format(line.ProductionAge)}/{IndustryTime.Format(period)}";
+            _ui.Button(FactoryNoRepeatButton(),(line.DoNotRepeat?"✓ ":"□ ")+"繰り返さない",line.DoNotRepeat?Accent:Muted,.34f);
+            string status=!line.Manufacturing?"製造しない":line.CycleFinished?"製造終了 / 繰り返さない":line.Paused?"一時停止":line.RestRemaining>0?$"休憩中 あと{IndustryTime.Format(line.RestRemaining)} / 次の完成まで{IndustryTime.Format(line.TurnsUntilNextProduction)}産業ターン":line.Waiting?$"出荷待ち {IndustryTime.Format(line.WaitingProductionTurns)}生産ターン / 格納できるまで停止":$"次の完成まで{IndustryTime.Format(line.TurnsUntilNextProduction)}産業ターン / {line.ProducedSinceRest+1}台目・工期{IndustryTime.Format(line.ProductionAge)}/{IndustryTime.Format(period)}";
             if(line.Manufacturing)status=$"周期 {IndustryTime.Format(line.CycleProgress)} / {IndustryTime.Format(line.CycleTurns)} / "+status;
             if(line.FunctionOriginNode is int origin)status="参照元："+_setup.Nodes.DisplayName(_setup.Nodes.All[origin])+" / "+status;
             _ui.Text(status,new(160,y-19),Math.Min(.3f,690/_font.MeasureString(status).X),Cream);
@@ -153,7 +156,7 @@ public partial class Game1
             }
         }
         if(hoveredCaret!=null && _factoryDropDown<0 && _factoryPlanLine<0){
-            string hint=hoveredCaret.Paused?"一時停止中だよ。再開すると製造が進むよ":hoveredCaret.Waiting?$"{IndustryTime.Format(hoveredCaret.WaitingProductionTurns)}生産ターンも待っていますよ！ 格納できれば出荷するよ":$"あと{IndustryTime.Format(hoveredCaret.TurnsUntilNextProduction)}生産ターンでロボットを製造できるよ";
+            string hint=hoveredCaret.CycleFinished?"製造と休暇が終了しました。繰り返さないのチェックを外すと再開します":hoveredCaret.Paused?"一時停止中だよ。再開すると製造が進むよ":hoveredCaret.Waiting?$"{IndustryTime.Format(hoveredCaret.WaitingProductionTurns)}生産ターンも待っていますよ！ 格納できれば出荷するよ":$"あと{IndustryTime.Format(hoveredCaret.TurnsUntilNextProduction)}生産ターンでロボットを製造できるよ";
             if(hoveredCaret.RestRemaining>0)hint+=$"（休憩あと{IndustryTime.Format(hoveredCaret.RestRemaining)}ターンを含む）";
             const float scale=.38f;
             int hintWidth=(int)Math.Ceiling(_font.MeasureString(hint).X*scale)+24;
@@ -165,14 +168,14 @@ public partial class Game1
     private void DrawFactoryCaret(int x,int y,RobotWorkshop line)
     {
         var ink=new Color(16,32,43);
-        var signal=line.Paused?new Color(167,190,194):line.RestRemaining>0?new Color(255,204,112):line.Waiting?new Color(255,113,105):new Color(102,244,175);
-        float pulse=.78f+.22f*(.5f+.5f*MathF.Sin(_animationTime*2.4f));
+        var signal=line.CycleFinished?new Color(65,78,83):line.Paused?new Color(167,190,194):line.RestRemaining>0?new Color(255,204,112):line.Waiting?new Color(255,113,105):new Color(102,244,175);
+        float pulse=line.CycleFinished?0:.78f+.22f*(.5f+.5f*MathF.Sin(_animationTime*2.4f));
         // A fluorescent tube and its narrow socket share the exact tick center.
         // Keep the glow vertical so it cannot be mistaken for a range on the floor.
         _ui.Box(new(x-10,y+29,20,64),Color.Lerp(ink,signal,.12f*pulse));
         _ui.Box(new(x-8,y+29,16,64),ink);
         _ui.Box(new(x-5,y+32,10,58),Color.Lerp(signal*.65f,signal,pulse));
-        _ui.Box(new(x-2,y+33,4,56),Cream);
+        _ui.Box(new(x-2,y+33,4,56),line.CycleFinished?new Color(45,57,63):Cream);
         _ui.Box(new(x-6,y+27,12,6),ink);
         _ui.Box(new(x-4,y+28,8,3),Cream);
         _ui.Box(new(x-6,y+90,12,7),ink);

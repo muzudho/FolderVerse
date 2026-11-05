@@ -25,6 +25,7 @@ public sealed partial class RobotWorld
         for(int i=0;i<3;i++)counts[i]=stock.Count(r=>(r.Parts&parts[i])!=0 && r.Affiliation(parts[i])==owner);
         // Prefer plans that fill missing native parts. Available plans differ per line/node.
         foreach(var line in workshop.ProductionLines){
+            if(line.DoNotRepeat)continue;
             int Score(int index){
                 var preview=line.PlanAt(index).Preview(owner);
                 return parts.Select((p,j)=>(p,j)).Where(x=>(preview.Parts&x.p)!=0 && preview.Origin(x.p)==owner)
