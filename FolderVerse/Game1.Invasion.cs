@@ -38,12 +38,9 @@ public partial class Game1
     {
         if(!MilitaryOperationsAllowed)return;
         _withdrawalEncounter=-1;CloseMovement();OpenMovementWithFit(false);_warPlanning=true;_net.HoverSuppressedNode=-1;_net.AttackTargetMarkers=true;_net.RevealMovementTargets=true;_net.MovementTargets.Clear();
-        foreach(var node in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner)))
-            foreach(var route in _setup.Routes.Neighbors(node))
-            {
-                int target=_setup.Nodes.At(route.Target,route.Entry).Id;
-                if(_setup.Campaign.RobotBattles.CanAttackFrom(_setup,node.Owner,node.Id,target) && EnemyTarget(target))_net.MovementTargets.Add(target);
-            }
+        foreach(var node in _setup.Nodes.All.Where(n=>n.Functional && CanPlanRuler(n.Owner)))
+            foreach(int target in _setup.Campaign.RobotBattles.MarchTargets(_setup,node.Id))
+                if(EnemyTarget(target))_net.MovementTargets.Add(target);
         foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler))
             foreach(int target in InvasionTargets(ruler))if(EnemyTarget(target))_net.MovementTargets.Add(target);
         RefreshWarTargetHighlights();
@@ -54,12 +51,10 @@ public partial class Game1
         _net.AttackHighlightTargets.Clear();
         if(!_movementOpen || !_warPlanning)return;
         // Use the picker's own eligibility rules while retaining all clickable destinations.
-        foreach(var node in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner))){
+        foreach(var node in _setup.Nodes.All.Where(n=>n.Functional && CanPlanRuler(n.Owner))){
             if(InvasionRobots(new(){Owner=node.Owner,Node=node.Id}).Length==0)continue;
-            foreach(var route in _setup.Routes.Neighbors(node)){
-                int target=_setup.Nodes.At(route.Target,route.Entry).Id;
-                if(_net.MovementTargets.Contains(target) && _setup.Campaign.RobotBattles.CanAttackFrom(_setup,node.Owner,node.Id,target))_net.AttackHighlightTargets.Add(target);
-            }
+            foreach(int target in _setup.Campaign.RobotBattles.MarchTargets(_setup,node.Id))
+                if(_net.MovementTargets.Contains(target))_net.AttackHighlightTargets.Add(target);
         }
         foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler)){
             int source=_setup.Nodes.Current(ruler)?.Id??-1;
@@ -72,12 +67,12 @@ public partial class Game1
         if(ReferenceEquals(_nodeChecksWorld,_setup) && _nodeChecksTurn==_setup.Population.Turn && _warChecksByPlayer.TryGetValue(NodeCheckPlayer,out var checkedTargets))
             _net.AttackHighlightTargets.ExceptWith(checkedTargets);
     }
-    private IEnumerable<int> InvasionTargets(int ruler)=>_setup.Routes.NodeChoices(ruler).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id)
+    private IEnumerable<int> InvasionTargets(int ruler)=>_setup.Campaign.RobotBattles.MarchTargets(_setup,_setup.Nodes.Current(ruler)?.Id??-1)
         .Append(_setup.Nodes.Current(ruler)?.Id??-1).Where(id=>id>=0 && _setup.Campaign.RobotBattles.CanSortie(_setup,ruler,id)).Distinct();
     private bool CanPlanRuler(int ruler)=>ruler>=0 &&
         (_computerMarches!=null?ruler==_setup.PlayerSlot:_setup.ControllerOf(ruler)==_setup.TurnPlayer) &&
         _setup.Relations.Powered[ruler] && !_setup.Relations.Pending.Any(p=>p.Ruler==ruler);
-    private bool EnemyTarget(int id)=>_setup.Nodes.All[id].Owner<0 || !_setup.Relations.Allied(_setup.PlayerSlot,_setup.Nodes.All[id].Owner);
+    private bool EnemyTarget(int id)=>_setup.Nodes.All[id].Functional && (_setup.Nodes.All[id].Owner<0 || !_setup.Relations.Allied(_setup.PlayerSlot,_setup.Nodes.All[id].Owner));
     private void BuildInvasionSources(int target)
     {
         _invasionSources.Clear();_invasionPage=0;_invasionPicker=-1;

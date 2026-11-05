@@ -13,9 +13,8 @@ public partial class Game1
     {
         get
         {
-            var routes=_setup.Routes.Neighbors(_setup.Nodes.All[_populationNode]);
-            return _setup.Campaign.RobotBattles.Encounters.Where(e=>!e.Finished && (e.Kind==BattleKind.Edge?
-                e.Source==_populationNode || e.Target==_populationNode:routes.Any(r=>_setup.Nodes.At(r.Target,r.Entry).Id==e.Target))).OrderBy(e=>e.Id).ToArray();
+            var battles=_setup.Campaign.RobotBattles;
+            return battles.Encounters.Where(e=>!e.Finished && battles.CanReachEncounter(_setup,_populationNode,e)).OrderBy(e=>e.Id).ToArray();
         }
     }
     private string _nodeTransportMessage="";

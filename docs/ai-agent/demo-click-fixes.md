@@ -265,3 +265,8 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 - FolderVerse/Game1.ComputerMarches.cs の描画を修正。ピッカー確定後は入力と共通の InspectorClose.Center を指し、インスペクターを閉じた後は手を消す。
 - dotnet build tests/CountrySettings --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null で CountrySettings.dll --ui と DemoChecksUi.dll は終了コード0。960×540の audit-latest-computer-confirm.png で閉じるハンドルを指す手を目視。確定で二重登録がないこと、スキップ後の復帰、Demoの緑・赤遷移を確認。証拠 fix-latest-CountrySettings.log／fix-latest-DemoChecksUi.log。
 - 描画診断用のテスト差分は復元。閉鎖後の手の非表示はコード確認。CPUの個別ロボット選択・予約マーカー・赤チェック、通常UI未対応の軍事経路は引き続き残る。
+
+## マージ競合解消
+
+- 2026-11-05 22:31:58 JST、利用者の明示依頼により Game1.Invasion.cs の競合を解消。CPU操作表示中のCanPlanRuler判定と、機能移転後の非機能地点を除外するEnemyTarget判定を両立。git addで同ファイルのみ解決済みとして登録。ゲーム変更はこの競合箇所のみ。
+- 既存分離出力へ CountrySettings、FunctionTransfer、DemoUi、DemoChecksUi を --source artifacts/nuget-feed --disable-build-servers でビルドし全て警告・エラー0。CountrySettings --ui、FunctionTransferモデル検査、Seed45のDemoUiとDemoChecksUiの緑赤チェック・即予約・閉鎖・終了遷移は全てコード0。コミット・プッシュ・公開なし。

@@ -11,7 +11,7 @@ public partial class Game1
     private bool DeliveryPlayback=>_setup.Campaign.Phase==CampaignPhase.Delivery;
     private IReadOnlyList<RobotShipment> PropagationShipments=>_militaryTransportPlayback?Array.Empty<RobotShipment>():_setup.Robots.Transport.LastTransfers;
     private string PlanningPhaseLabel=>MilitaryOperationsAllowed?"軍事フェーズ":"内政フェーズ";
-    private bool PhasePrimaryActionAllowed(int index)=>index==2?MilitaryOperationsAllowed:index is 3 or 4 or 5?DomesticOperationsAllowed:true;
+    private bool PhasePrimaryActionAllowed(int index)=>index==2?MilitaryOperationsAllowed:index is 3 or 4 or 5 or FunctionTransferAction?DomesticOperationsAllowed:true;
     private void EndDomesticPhase(bool automaticAll=false)
     {
         SaveDomesticCamera();ResetInspector();ClearCurrentPlayerNodeChecks();

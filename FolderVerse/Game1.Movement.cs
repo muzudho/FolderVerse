@@ -23,7 +23,7 @@ public partial class Game1
         _net.HoverSuppressedNode=_setup.Nodes.Current(_setup.PlayerSlot)?.Id??-1;
         _net.MovementTargets.Clear();
         _net.RevealMovementTargets=true;
-        _net.MovementTargets.UnionWith(_setup.Routes.NodeChoices(_setup.PlayerSlot).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id).Where(id=>id!=_net.HoverSuppressedNode && _setup.Campaign.RobotBattles.CanMarch(_setup,_setup.PlayerSlot,id)));
+        _net.MovementTargets.UnionWith(_setup.Campaign.RobotBattles.MarchTargets(_setup,_net.HoverSuppressedNode).Where(id=>id!=_net.HoverSuppressedNode && _setup.Campaign.RobotBattles.CanMarch(_setup,_setup.PlayerSlot,id)));
         _net.SelectedTarget=-1;
         if(fit && _statusGlobe)FitDestinationView();
     }
@@ -59,7 +59,7 @@ public partial class Game1
         if(!InspectorVisible && PopulationTurnButton.Contains(pointer))return true;
         if(!_warPlanning && ConfirmMoveButton.Contains(pointer))
         {
-            if(_selectedMoveNode<0 || _setup.Routes.ToNode(_setup.PlayerSlot,_selectedMoveNode)==null)return true;
+            if(_selectedMoveNode<0 || !_setup.Campaign.RobotBattles.CanMarch(_setup,_setup.PlayerSlot,_selectedMoveNode))return true;
             _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id,true,true,Peaceful:true));
             CloseMovement();return true;
         }
@@ -82,7 +82,6 @@ public partial class Game1
         if(_warPlanning){DrawInvasionPanel();return;}
         int ruler=_setup.PlayerSlot;var current=_setup.Nodes.Current(ruler);
         _escort=Math.Min(_escort,AvailableEscort);
-        var choices=_setup.Routes.NodeChoices(ruler);
         _ui.Box(new(54,150,850,825),new(27,49,62));
         _ui.Text("征服者の移動",new(84,177),.9f,Cream);
         string city="現在地　"+(current==null?_setup.Routes.LocationLabel(ruler):_setup.Nodes.Label(current));
@@ -92,7 +91,7 @@ public partial class Game1
 
         _ui.Text("地図上の明るい地点を選んでください",new(84,470),.65f,Cream);
         _ui.Text("他国の地点にも移動できます / ターン終了で実行",new(84,878),.49f,new(180,209,219));
-        string status=choices.Length==0?"交通路でつながる移動先がない":_selectedMoveNode<0?"点滅する地点をクリックして選択":$"選択：Point {_selectedMoveNode+1} / ターン終了で移動";
+        string status=_net.MovementTargets.Count==0?"交通路でつながる移動先がない":_selectedMoveNode<0?"点滅する地点をクリックして選択":$"選択：Point {_selectedMoveNode+1} / ターン終了で移動";
         _ui.Text(status,new(84,926),Math.Min(.47f,465/_font.MeasureString(status).X),new(180,209,219));
         _ui.Button(ConfirmMoveButton,"移動を予約",_selectedMoveNode>=0?Accent:Muted,.7f);
     }

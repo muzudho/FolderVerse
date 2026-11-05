@@ -146,7 +146,6 @@ public partial class Game1 : Game
         if(UpdateComputerDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) ||
             UpdateComputerMarches(gameTime.ElapsedGameTime.TotalSeconds,escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(IsStatusScreen && FunctionTransferInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(CountrySettingsInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(OperationSettingsInput(active && click,escape)){DragStatusMap(mouse,active);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateCampaignDivider(mouse,active,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -216,7 +215,7 @@ public partial class Game1 : Game
         if(active && captureChord && !previousChord)_screenshots.Request();
         if(IsStatusScreen && active && FactionPickerInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && active && (click || escape) && ReservationDirectoryInput(_pointer,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(IsStatusScreen && active && (click || escape) && (click || _directMap || _mapOverlayMenu) && MapOverlayClick(_pointer,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && active && (click || escape) && (click || _directMap || _mapOverlayMenu || _functionTransferMap) && MapOverlayClick(_pointer,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && click && DirectMapClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && SalvageInput(_pointer,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && active && click && DomesticViewClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -652,7 +651,7 @@ public partial class Game1 : Game
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         if(!_reservationDirectory){
         DrawBattleActivity();
-        DrawDestinationMap();DrawContinuationBadges();DrawWarReservationMarkers();DrawMoveReservationMarkers();DrawDirectTrucks();DrawDomesticPortrait();
+        DrawDestinationMap();DrawContinuationBadges();DrawWarReservationMarkers();DrawMoveReservationMarkers();DrawDirectTrucks();DrawDomesticPortrait();DrawFunctionTransferMap();
         }else DrawReservationDirectory();
         DrawNodeCheckMarkers(MapViewBounds);
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
@@ -686,7 +685,7 @@ public partial class Game1 : Game
         if(_transportOverview){DrawInspector(DrawTransportOverviewPanel);if(_rateTarget>=0)DrawRatePieDialog();}
         if(!_reservationDirectory)DrawWandererLocation();DrawRouteLayerButtons();
         DrawStatusMenu();
-        if(!DrawInvasionUnavailableHint() && !DrawNodeCheckHint() && _supervisorDialog==0 && !_reservationDirectory)DrawNodeTooltip();
+        if(!DrawInvasionUnavailableHint() && !DrawNodeCheckHint() && _supervisorDialog==0 && !_reservationDirectory && !_functionTransferMap)DrawNodeTooltip();
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();
         DrawMapOverlayMenu();
         DrawHangarTrainingNotice();
