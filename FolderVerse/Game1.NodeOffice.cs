@@ -34,6 +34,11 @@ public partial class Game1
         string owner=node.Owner<0?"未征服":_setup.ConquerorNames[node.Owner]+"の配下";
         _ui.Center(owner,new(84,718,780,45),.6f,Cream);
         _ui.Button(new(84,778,784,48),"放棄品置き場 / "+_setup.Salvage.Items.Count(i=>i.Node==node.Id)+" 件",Muted,.46f);
+        var report=_setup.Campaign.SubordinateResults.LastOrDefault(r=>r.Node==node.Id && r.Controller==_setup.TurnPlayer);
+        if(report!=null){
+            _ui.Text($"手下の操作記録 / 全体ターン {report.Turn}",new(84,842),.34f,Cream);
+            _ui.Text(report.Action,new(84,869),Math.Min(.32f,780/Math.Max(1,_font.MeasureString(report.Action).X)),Cream);
+        }
         DrawFunctionTransferOffice();
     }
 }

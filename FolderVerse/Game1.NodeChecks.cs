@@ -15,8 +15,8 @@ public partial class Game1
     private readonly List<(Rectangle Bounds,int Node)> _nodeCheckHits=new();
     private WorldSetup _nodeChecksWorld;
     private int _nodeChecksTurn=-1;
-    private const string NodeCheckButtonHint="地図ビューにチェックマークを付けることができます。ターン終了時に消えます。好きなようにお使いください。";
-    private const string NodeCheckMarkerHint="チェックマークはあなたが付けました。";
+    private const string NodeCheckButtonHint="確認済みの地点にチェックを付けます。未チェックの手下の地点はターン終了時に手下が操作します。";
+    private const string NodeCheckMarkerHint="確認済みの地点です。";
     private Rectangle NodeCheckButton=>new(912+NodeInspectorOffset,520,48,48);
     private bool NodeCheckButtonVisible=>WarCheckMode?InspectorVisible && _selectedMoveNode>=0 && _selectedMoveNode<_setup.Nodes.All.Length && SelectedWithdrawal==null:InspectorVisible && _populationCell>=0 && _populationNode>=0 && _populationNode<_setup.Nodes.All.Length && !_reignView && !_movementOpen && !_transportOverview && !_salvagePlan;
     private int NodeCheckPlayer=>_setup.PlayerSlot>=0 && _setup.ControllerOf(_setup.PlayerSlot)>=0 && (_demoActive || !_autoPlay)?_setup.TurnPlayer:-1;
@@ -85,7 +85,7 @@ public partial class Game1
             _ui.Text(hint[..split],new(r.X+24,r.Y+65),.38f,RulebookInk);
             _ui.Text(hint[split..],new(r.X+24,r.Y+93),.38f,RulebookInk);return true;
         }
-        if(_nodeCheckHits.Any(h=>h.Bounds.Contains(_pointer))){DrawRulebookHint(WarCheckMode?"開戦予約のチェック":"地点のチェック",NodeCheckMarkerHint);return true;}
+        if(_nodeCheckHits.Any(h=>h.Bounds.Contains(_pointer))){DrawRulebookHint(WarCheckMode?"開戦予約のチェック":"地点のチェック",WarCheckMode?"チェックマークはあなたが付けました。":NodeCheckMarkerHint);return true;}
         return false;
     }
 }
