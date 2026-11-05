@@ -22,6 +22,16 @@ public partial class Game1
         _ui.Box(new(r.X+2,r.Y+7,r.Width-2,r.Height-9),color);
         _ui.Box(new(r.X+4,r.Y+9,r.Width-6,2),Cream*.65f);
     }
+    private void DrawFolderEntryIcon(Rectangle r,int kind,int id,int owner)
+    {
+        if(kind!=2){DrawCountryFolder(r,owner);return;}
+        int radius=_setup.Nodes.All[id].Functional?13:7;
+        var center=r.Center;
+        for(int y=-radius;y<=radius;y++){
+            int half=(int)MathF.Sqrt(radius*radius-y*y);
+            _ui.Box(new(center.X-half,center.Y+y,half*2+1,1),_setup.OwnerColor(owner));
+        }
+    }
     private void BuildInspectorFolders()
     {
         _inspectorFolderRows.Clear();int ruler=_setup.PlayerSlot;
@@ -89,7 +99,7 @@ public partial class Game1
             var header=InspectorFolderButton;
             _ui.Box(header,_inspectorFoldersOpen || header.Contains(_ui.Pointer)?new Color(65,96,106):new Color(40,67,82));
             _ui.Box(new(header.X,header.Y,header.Width,3),_setup.OwnerColor(owner));
-            DrawCountryFolder(new(header.X+14,header.Y+12,32,28),owner);
+            DrawFolderEntryIcon(new(header.X+14,header.Y+12,32,28),_populationNode>=0?2:0,_populationNode,owner);
             string label=_populationNode>=0?"地点 / "+_setup.Nodes.DisplayName(_setup.Nodes.All[_populationNode]):_regionCell>=0?"地域 / "+WorldCoordinates.Label(_setup,_regionCell):"国 / "+_setup.ConquerorFullNames[owner];
             bool checkedHeader=_populationNode>=0 && DrawFolderNodeCheck(2,_populationNode,new(header.Right-80,header.Y+11,28,28));
             _ui.Text(label,new(header.X+60,header.Y+13),Math.Min(.55f,(header.Width-116-(checkedHeader?40:0))/Math.Max(1,_font.MeasureString(label).X)),Cream);
@@ -103,7 +113,7 @@ public partial class Game1
                 var r=new Rectangle(80,y,788,52);if(IsCurrentInspectorFolder(row.Kind,row.Id)){_ui.Box(r,new Color(65,96,106));_ui.Box(new(r.X,y,5,r.Height),Accent);}else if(r.Contains(_ui.Pointer))_ui.Box(r,new Color(48,72,87));
                 if(row.Depth>0){_ui.Box(new(x-13,y-17,1,43),Muted);_ui.Box(new(x-13,y+25,18,1),Muted);}
                 if(row.Kind==1)_ui.Text(_expandedFolderRegions.Contains(row.Id)?"－":"+",new(x,y+13),.4f,Cream);
-                DrawCountryFolder(new(x+25,y+12,30,28),row.Owner);
+                DrawFolderEntryIcon(new(x+25,y+12,30,28),row.Kind,row.Id,row.Owner);
                 DrawFolderNodeCheck(row.Kind,row.Id,new(90,y+12,28,28));
                 _ui.Text(row.Label,new(x+64,y+15),Math.Min(.42f,(850-x-64)/Math.Max(1,_font.MeasureString(row.Label).X)),Cream);
             }
