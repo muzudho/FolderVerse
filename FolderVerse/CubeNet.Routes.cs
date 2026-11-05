@@ -46,14 +46,23 @@ public sealed partial class CubeNet
         if(IsAnimating || !panel.Contains(pointer))return -1;
         var fit=Fit(panel);float radius=MathHelper.Clamp(fit.Scale*.06f,4,10)+4;
         var point=new Vector2(pointer.X,pointer.Y);
-        int hit=world.Nodes.All.Select(n=>n.Id).Where(id=>NodeVisible(world,world.Nodes.All[id])).Select(id=>(Id:id,Distance:Vector2.DistanceSquared(NodePosition(world,world.Nodes.All[id],panel),point)))
-            .Where(n=>n.Distance<=MathF.Pow(world.Nodes.All[n.Id].IsHarbor?Math.Max(radius,22):radius,2)).OrderBy(n=>n.Distance).ThenBy(n=>n.Id).Select(n=>n.Id).DefaultIfEmpty(-1).First();
+        var unrotated=UnrotateScreen(pointer,panel).ToVector2();
+        float JunctionSize(Node n)=>JunctionArt.Size(n.IsHarbor?MathHelper.Clamp((radius-4)*1.7f,12,20):radius-4);
+        float HitDistance(Node n){
+            var at=NodePosition(world,n,panel);float d=Vector2.DistanceSquared(at,point);
+            if(n.Functional)return d<=MathF.Pow(n.IsHarbor?Math.Max(radius,22):radius,2)?d:float.PositiveInfinity;
+            var junction=UnrotateScreen(at.ToPoint(),panel).ToVector2();float size=JunctionSize(n);
+            return JunctionArt.Hit(junction,size,unrotated)?Math.Min(Vector2.DistanceSquared(junction,unrotated),Vector2.DistanceSquared(JunctionArt.SymbolCenter(junction,size),unrotated)):float.PositiveInfinity;
+        }
+        int hit=world.Nodes.All.Where(n=>NodeVisible(world,n)).Select(n=>(Id:n.Id,Distance:HitDistance(n)))
+            .Where(n=>float.IsFinite(n.Distance)).OrderBy(n=>n.Distance).ThenBy(n=>n.Id).Select(n=>n.Id).DefaultIfEmpty(-1).First();
         if(hit<0){
             var local=UnrotateScreen(pointer,panel);var localPoint=new Vector2(local.X,local.Y);
             hit=world.Nodes.All.Where(n=>NodeVisible(world,n) && world.Campaign.OwnershipChanged(n)).Where(n=>{
                 var at=UnrotateScreen(NodePosition(world,n,panel).ToPoint(),panel);
                 float r=MathHelper.Clamp(fit.Scale*.06f,4,10);if(n.IsHarbor)r=MathHelper.Clamp(r*1.7f,12,20);if(EmphasizedNode(n.Id) && !world.Campaign.OwnershipChanged(n))r*=2;
-                return NodeOwnershipArt.HitTwin(new Vector2(at.X,at.Y),r,localPoint);
+                var center=at.ToVector2();if(!n.Functional){r=JunctionSize(n);center=JunctionArt.SymbolCenter(center,r);}
+                return NodeOwnershipArt.HitTwin(center,r,localPoint);
             }).OrderBy(n=>Vector2.DistanceSquared(NodePosition(world,n,panel),point)).Select(n=>n.Id).DefaultIfEmpty(-1).First();
         }
         return hit>=0 && (candidates==null || candidates.Contains(hit))?hit:-1;
@@ -112,7 +121,18 @@ public sealed partial class CubeNet
                 var position=world.Routes.Position(cell,post.Center);var at=project(position);
                 float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);
                 if(post.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
-                if(!post.Functional)radius=Math.Min(3.5f,radius*.5f);
+                if(!post.Functional){
+                    float size=JunctionArt.Size(radius);var symbol=JunctionArt.SymbolCenter(at,size);
+                    bool sea=!world.Routes.Land(post.Cell,post.Center);var ink=Tint(new Color(13,36,44));
+                    if(changed)NodeOwnershipArt.Draw(ui,symbol,size,Tint(world.OwnerColor(world.Campaign.PreviousNodeOwners[post.Id])),Tint(world.OwnerColor(owner)),ink,
+                        (p,r,c)=>JunctionArt.Draw(ui,p,r,sea,c,ink));
+                    else JunctionArt.Draw(ui,symbol,size,sea,Tint(world.OwnerColor(owner)),ink);
+                    if(SelectedTarget==post.Id || EmphasizedNode(post.Id)){
+                        float extent=size+4;
+                        foreach(int side in new[]{-1,1})ui.Tile(symbol+new Vector2(side*extent,0),new Vector2(2,extent*2),0,Tint(Color.White));
+                    }
+                    continue;
+                }
                 if(EmphasizedNode(post.Id) && !changed)radius*=2; if(MovementTargets.Contains(post.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(post.Id)) && MathF.Sin(pulse*6)>=0)
                 {
                     Disc(ui,at,radius+7,Tint(new Color(255,219,96)));

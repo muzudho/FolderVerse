@@ -31,6 +31,11 @@ public sealed class NodeFunctionTransfers
         if(!CanReserve(w,source,target))throw new InvalidOperationException("Function transfer unavailable.");
         Cancel(source);Orders.Add(new(source,target,w.Nodes.All[source].Owner));
     }
+    internal bool ReserveComputer(WorldSetup w,int source,int target,int owner)
+    {
+        if(w.Nodes.All[source].Owner!=owner || w.Nodes.All[target].Owner!=owner || !Available(w,source,target,false))return false;
+        Orders.Add(new(source,target,owner));return true;
+    }
     internal void Resolve(WorldSetup w)
     {
         LastResults.Clear();

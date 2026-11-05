@@ -86,6 +86,13 @@ public partial class Game1
             _world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center)+cell.U,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var unit);
             float radius=MathHelper.Clamp(Vector2.Distance(at,unit)*.06f,4,10);
             if(node.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
+            if(!node.Functional){
+                float size=JunctionArt.Size(radius);var point=pointer.ToVector2();var symbol=JunctionArt.SymbolCenter(at,size);
+                candidate=System.Math.Min(candidate,Vector2.DistanceSquared(symbol,point));
+                if(JunctionArt.Hit(at,size,point) && candidate<distance){nearest=node.Id;distance=candidate;}
+                if(_setup.Campaign.OwnershipChanged(node) && NodeOwnershipArt.HitTwin(symbol,size,point) && candidate<twinDistance){twin=node.Id;twinDistance=candidate;}
+                continue;
+            }
             if(_net.EmphasizedNode(node.Id) && !_setup.Campaign.OwnershipChanged(node))radius*=2;
             if(_setup.Campaign.OwnershipChanged(node) && NodeOwnershipArt.HitTwin(at,radius,new Vector2(pointer.X,pointer.Y)) && candidate<twinDistance){twin=node.Id;twinDistance=candidate;}
             radius+=4; // Include the visible outline and a small pointer tolerance.

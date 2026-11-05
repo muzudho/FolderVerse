@@ -25,7 +25,14 @@ public partial class Game1
     private void DrawFolderEntryIcon(Rectangle r,int kind,int id,int owner)
     {
         if(kind!=2){DrawCountryFolder(r,owner);return;}
-        int radius=_setup.Nodes.All[id].Functional?13:7;
+        var node=_setup.Nodes.All[id];
+        if(!node.Functional){
+            var at=r.Center.ToVector2();var road=new Color(173,194,199);
+            _ui.Tile(at-new Vector2(9,0),new Vector2(12,2),0,road);
+            _ui.Tile(at-new Vector2(9,0),new Vector2(2,18),0,road);
+            JunctionArt.Draw(_ui,at+new Vector2(7,0),8,!_setup.Routes.Land(node.Cell,node.Center),_setup.OwnerColor(owner),new Color(7,19,28));return;
+        }
+        int radius=13;
         var center=r.Center;
         for(int y=-radius;y<=radius;y++){
             int half=(int)MathF.Sqrt(radius*radius-y*y);

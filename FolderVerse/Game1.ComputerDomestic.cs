@@ -42,7 +42,8 @@ public partial class Game1
         var nodes=_setup.Nodes.All.Where(node=>node.Owner>=0 && ShowsComputerTurn(node.Owner) &&
             _setup.Relations.CanAct(node.Owner) && !_setup.Campaign.RobotBattles.LockedNode(node.Id))
             .GroupBy(node=>node.Owner).OrderBy(group=>group.Key)
-            .Select(group=>group.OrderByDescending(node=>_setup.Robots.AssemblySelection(node.Id,node.Owner,true)!=null).First())
+            .Select(group=>group.OrderByDescending(node=>_setup.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node.Id))
+                .ThenByDescending(node=>_setup.Robots.AssemblySelection(node.Id,node.Owner,true)!=null).First())
             .ToArray();
         if(nodes.Length==0)return false;
         _computerDomesticNodes=nodes;
@@ -88,6 +89,11 @@ public partial class Game1
         string location=_setup.Nodes.DisplayName(node);
         string action=_computerAssembled?"ロボットを組み立てました":
             _computerDomesticAge>=ComputerAssemblyTime?"格納庫の確認完了":"格納庫を確認";
+        var transfer=_setup.Campaign.FunctionTransfers.Orders.FirstOrDefault(o=>o.Source==node.Id);
+        if(transfer!=null){
+            location+=" → "+_setup.Nodes.DisplayName(_setup.Nodes.All[transfer.Target]);
+            action="領地の入口へ機能移転を予約";
+        }
         _spriteBatch.Begin(transformMatrix:transform);
         _ui.Box(ComputerMarchPanel,new Color(18,36,48));
         _ui.Text("コンピューターの操作 / "+_setup.ConquerorNames[node.Owner],new(82,199),.58f,Cream);
