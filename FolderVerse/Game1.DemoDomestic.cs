@@ -69,7 +69,7 @@ public partial class Game1
                 OpenNodeInspector(hit);OpenNodeOffice();_demoDomesticStage=2;break;
             case 3:
                 OpenNodeAssembly();
-                _demoAssemblySelection=_setup.Robots.AssemblySelection(_populationNode,_setup.PlayerSlot,true);
+                _demoAssemblySelection=PlanningStock.AssemblySelection(_populationNode,_setup.PlayerSlot,true);
                 if(_demoAssemblySelection==null){_demoDomesticStage=7;break;}
                 _demoEmptySlot=Array.FindIndex(_hangarSlots,id=>id==_demoAssemblySelection[0]);
                 if(!PrepareDemoAssemblyDrag())_demoDomesticStage=7;break;

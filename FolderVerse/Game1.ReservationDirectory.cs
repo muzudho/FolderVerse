@@ -14,10 +14,12 @@ public partial class Game1
     private static readonly string[] DirectoryLabels={"出撃予約","迎撃予約","守備専用予約","工場作業員予約","輸送予約","廃棄予約"};
     private int[] ReservationDirectoryCounts(int node)
     {
-        var robots=_setup.Robots.Nodes[node].Robots;
+        var robots=PlanningStock.Nodes[node].Robots;
         // Transport is measured in thirds: union per robot avoids counting one part twice.
         int parts=_setup.Robots.DirectDelivery.Orders.Where(o=>o.Source==node).GroupBy(o=>o.RobotId)
             .Sum(g=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Count(p=>(g.Aggregate((RobotParts)0,(mask,o)=>mask|o.Part)&p)!=0));
+        parts+=_setup.Robots.PartPlanning.Orders.Where(o=>PlanningMoveSource(o)==node && o.Target!=node).GroupBy(o=>o.RobotId).Sum(g=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Count(p=>(g.Aggregate((RobotParts)0,(mask,o)=>mask|o.Parts)&p)!=0));
+        parts+=_setup.Robots.ProductionIntakes.Where(i=>i.Source==node && i.Target.HasValue && i.Target!=node).Sum(i=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Count(p=>(i.Product.Parts&p)!=0));
         return new[]{robots.Count(r=>_setup.Robots.CombatMarchReserved(node,r)),robots.Count(r=>r.InterceptOnly),robots.Count(r=>r.DefenseOnly),robots.Count(r=>r.FactoryWorker),parts,robots.Count(r=>r.Disposal)};
     }
     private static string DirectoryTransportAmount(int thirds)=>thirds%3==0?(thirds/3).ToString():thirds<3?$"{thirds}/3":$"{thirds/3} + {thirds%3}/3";

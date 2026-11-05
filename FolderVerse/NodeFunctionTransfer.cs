@@ -52,6 +52,7 @@ public sealed class NodeFunctionTransfers
             w.Nodes.All[a].FunctionHost=b;w.Nodes.All[b].FunctionHost=-1;
             for(int i=0;i<w.Robots.PendingEdits.Count;i++)if(w.Robots.PendingEdits[i].Node==a)w.Robots.PendingEdits[i]=w.Robots.PendingEdits[i] with {Node=b};
             w.Robots.DirectDelivery.RelocateNode(a,b,offset);
+            w.Robots.RelocateProductionIntakes(a,b);
             w.Robots.Transport.RelocateNode(a,b);
             w.Campaign.RewriteReservations(m=>!m.PocketOnly && m.SourceNode==a?m with {SourceNode=b}:m);
             Orders.Remove(order);LastResults.Add(order with {Status="移転完了"});w.Robots.SyncWorkers(b);

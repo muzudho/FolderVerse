@@ -34,10 +34,13 @@ public sealed partial class ConquestCampaign
     {
         LastCancelledWars.Clear();
         FunctionTransfers.Resolve(world);
+        world.Robots.ResolveProductionIntakes(world);
         if(UseRobotCombat)world.Robots.Advance(
             (a,b)=>FunctionalDeliveryRoutes.Connected(world,a,b),
             n=>world.Nodes.All[n].Owner,world.PlacementSeed^world.Population.Turn^0x61238,RobotBattles.LockedNode,
             (owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner),industry:false);
+        world.Robots.Transport.AppendPlannedTransfers(world.Robots.IntakePlayback);
+        world.Robots.PartPlanning.Resolve(world);
         ResolveDeliverySorties(world);
         Phase=CampaignPhase.Delivery;Report=$"配送 {world.Robots.Transport.LastTransfers.Count} / 配送後に開戦予約を実行";
     }

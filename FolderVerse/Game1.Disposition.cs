@@ -8,6 +8,15 @@ public partial class Game1
     private bool _statusMenuOpen,_dispositionReturnList;
     private static readonly Rectangle StatusMenuButton=new(1510,20,348,46),InactiveMenuItem=new(1320,70,538,52),InactiveBack=new(54,1020,270,50);
     private static readonly Rectangle HierarchyMenuItem=new(1320,126,538,52);
+    private bool StatusMenuRetiring=>MapFooterAction>=0 || _primaryActionSlide>0 || _directPairOpen;
+    private bool StatusMenuInput(bool click,bool escape)
+    {
+        if(StatusMenuRetiring){_statusMenuOpen=false;return false;}
+        if(_trainingOpen || _supervisorDialog>0 || _factionPickerOpen || _inspectorFoldersOpen || _wandererPolicyOpen || _rateTarget>=0)return false;
+        if(!_statusMenuOpen && !(click && StatusMenuButton.Contains(_pointer)))return false;
+        if(escape)_statusMenuOpen=false;else if(click)StatusMenuClick(_pointer);
+        return true;
+    }
     private static Rectangle DispositionButton(int index)=>new(380+index*400,860,370,70);
     private static Rectangle InactiveCard(int index)=>new(54+index%5*362,140+index/5*214,346,198);
     private static Rectangle InsertBatteryButton(int index){var r=InactiveCard(index);return new(r.X+145,r.Y+100,190,60);}
@@ -17,6 +26,7 @@ public partial class Game1
     }
     private bool StatusMenuClick(Point point)
     {
+        if(StatusMenuRetiring){_statusMenuOpen=false;return false;}
         if(StatusMenuButton.Contains(point)){_statusMenuOpen=!_statusMenuOpen;return true;}
         if(_statusMenuOpen && InactiveMenuItem.Contains(point))
         {CloseMovement();_statusMenuOpen=false;_screen=Screen.InactiveList;return true;}
@@ -31,7 +41,10 @@ public partial class Game1
     private void DrawStatusMenu() => DrawTutorialChrome(()=>DrawStatusMenuCore(),true);
     private void DrawStatusMenuCore()
     {
-        _ui.Button(StatusMenuButton,"＜システムメニュー＞",Muted,.52f);
+        if(MapFooterAction>=0 || _primaryActionSlide>0)_statusMenuOpen=false;
+        if(_primaryActionSlide>=1)return;
+        var button=StatusMenuButton;button.Y-=(int)MathF.Round(100*MathHelper.SmoothStep(0,1,_primaryActionSlide));
+        _ui.Button(button,"＜システムメニュー＞",Muted,.52f);
         if(_statusMenuOpen)
         {
             _ui.Button(InactiveMenuItem,"電池を戻す",Muted,.5f);

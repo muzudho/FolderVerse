@@ -50,7 +50,7 @@ public partial class Game1
         {
             var r=InvasionRobotCard(i);var robot=robots[i];bool selected=_invasionDraft.Contains(robot.Id);
             _ui.Box(r,selected?Accent:Muted);DrawRobotGlyph(new(r.X+65,r.Y+8,55,75),robot,whiteOutline:true);
-            string identity=robot.Id<0?"直送便到着予定":$"ID {robot.Id}";
+            string identity=RobotPartPlanning.PlannedId(robot.Id)?"組替後の予定":robot.Id<0?"直送便到着予定":$"ID {robot.Id}";
             _ui.Center($"{identity} / {PartsLabel(robot.Parts)}",new(r.X,r.Y+90,r.Width,28),.32f,Cream);
             string reservation=InvasionReservationLabel(row,robot);
             _ui.Center((reservation.Length>0?reservation+"予約":"待機")+(selected?" → 出撃選択":""),new(r.X,r.Y+122,r.Width,26),.30f,Cream);

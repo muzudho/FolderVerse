@@ -130,6 +130,7 @@ public partial class Game1 : Game
     { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive);UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds); UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);UpdateIndustryMusic();UpdateEndingMusic(IsActive);base.Update(gameTime); }
     private void HandleInputCore(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
     {
+        _setup.Robots.PartPlanning.Invalidate();
         if(IsStatusScreen)_setup.Robots.DirectDelivery.ReconcileDestinations(_setup);
         UpdateTutorialChrome((float)gameTime.ElapsedGameTime.TotalSeconds);
         UpdateOperationSettings((float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -168,6 +169,8 @@ public partial class Game1 : Game
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(IsStatusScreen && _directMap && escape){CloseDirectDelivery();_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && ProductionIntakeInput(active && click,active && escape))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _invasionPicker>=0)
         {if(active)InvasionPickerInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && WarCancellationInput(active && click,active && escape))
@@ -200,6 +203,8 @@ public partial class Game1 : Game
         if(UpdateAutoPlay(elapsed,click,escape,gameTime.TotalGameTime.TotalSeconds))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateDemo(elapsed,active,click,escape,enter,gameTime.TotalGameTime.TotalSeconds))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && active && StatusMenuInput(click,escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen is Screen.LandConquest or Screen.Fortune){UpdateLandSetup(elapsed,mouse,active,click,enter);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _net.UpdateAnimation((float)elapsed);
@@ -689,7 +694,7 @@ public partial class Game1 : Game
         if(!_reservationDirectory)DrawWandererLocation();DrawRouteLayerButtons();
         DrawStatusMenu();
         if(!DrawInvasionUnavailableHint() && !DrawNodeCheckHint() && _supervisorDialog==0 && !_reservationDirectory && !_functionTransferMap)DrawNodeTooltip();
-        DrawInspectorHandle();DrawTraining();DrawInvasionPicker();DrawWarCancellations();
+        DrawInspectorHandle();DrawTraining();DrawInvasionPicker();DrawWarCancellations();DrawProductionIntakePicker();
         DrawMapOverlayMenu();
         DrawHangarTrainingNotice();
         DrawFolderTree();DrawInspectorFolders();
@@ -716,6 +721,7 @@ public partial class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
+        _setup.Robots.PartPlanning.Invalidate();
         BeginNewspaperToyPatternFrame();if(!_conquestOverview)NotifyPlayerTurn();
         GraphicsDevice.Clear(new Color(16,35,46)); var viewport=GraphicsDevice.Viewport; var canvas=CanvasBounds();
         if(canvas.Width<=0 || canvas.Height<=0){base.Draw(gameTime);return;}

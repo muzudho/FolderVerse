@@ -39,7 +39,7 @@ public static class AutoSaveStore
     // Turn-boundary saves need combat state, not thousands of already-played animation frames.
     private static object SavedField(object owner,FieldInfo field){
         bool playback=owner is BattleState && new[]{"<Frames>k__BackingField","<Events>k__BackingField","<Attacks>k__BackingField","<Persuasions>k__BackingField","<GateHits>k__BackingField"}.Contains(field.Name) ||
-            owner is RobotCampaign && field.Name=="<Scenes>k__BackingField";
+            owner is RobotCampaign && field.Name=="<Scenes>k__BackingField" || owner is RobotPartPlanning && field.Name=="<PreviewResults>k__BackingField";
         return playback?Activator.CreateInstance(field.FieldType):field.GetValue(owner);
     }
     public static Document Capture(object root){
@@ -119,6 +119,7 @@ public static class AutoSaveStore
                     if(type==typeof(ConquestCampaign) && field.Name=="<LastCancelledWars>k__BackingField"){field.SetValue(value,new List<CancelledWar>());continue;}
                     if(type==typeof(March) && field.Name=="<DeliveryMembers>k__BackingField")continue;
                     if(type==typeof(DeliverySortieMember) && field.Name=="<Cancelled>k__BackingField")continue;
+                    if(type==typeof(DeliverySortieMember) && field.Name=="<PartNumbers>k__BackingField"){field.SetValue(value,Array.Empty<long>());continue;}
                     if(type==typeof(RobotDirectDelivery) && field.Name=="<CompletedArrivals>k__BackingField"){field.SetValue(value,new Dictionary<long,long>());continue;}
                     if(type==typeof(RobotDirectDelivery) && field.Name=="<Failures>k__BackingField"){field.SetValue(value,new List<DirectPartOrder>());continue;}
                     if(type==typeof(RobotWorld) && field.Name=="<DirectDelivery>k__BackingField"){field.SetValue(value,new RobotDirectDelivery());continue;}
@@ -128,6 +129,11 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorkshop) && new[]{"_baseLineCount","_lineLimit","_workerLines"}.Contains(field.Name))continue;
                     if(type==typeof(RobotWorkshop) && field.Name=="<WaitingProductionTurns>k__BackingField")continue;
                     if(type==typeof(RobotWorkshop) && field.Name is "<DoNotRepeat>k__BackingField" or "<CycleFinished>k__BackingField")continue;
+                    if(type==typeof(RobotWorkshop) && field.Name=="<IntakeTarget>k__BackingField")continue;
+                    if(type==typeof(RobotWorkshop) && field.Name=="<IntakeFailure>k__BackingField"){field.SetValue(value,"");continue;}
+                    if(type==typeof(RobotWorld) && field.Name=="<PartPlanning>k__BackingField"){field.SetValue(value,new RobotPartPlanning());continue;}
+                    if(type==typeof(RobotWorld) && field.Name=="<ProductionIntakes>k__BackingField"){field.SetValue(value,new List<ProductionIntake>());continue;}
+                    if(type==typeof(RobotWorld) && field.Name=="<ProductionIntakeEnabled>k__BackingField")continue;
                     if(type==typeof(RobotWorld) && field.Name=="<Reservations>k__BackingField")continue;
                     if(type.Name=="DomesticViewState" && new[]{"<GlobePan>k__BackingField","<GlobeDragSlide>k__BackingField","<NetDragRotate>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(RobotEncounter) && field.Name=="<ReturnedWanderers>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}

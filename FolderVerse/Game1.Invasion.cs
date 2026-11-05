@@ -38,7 +38,7 @@ public partial class Game1
     {
         if(!WarPlanningAllowed)return;
         _withdrawalEncounter=-1;CloseMovement();OpenMovementWithFit(false);_warPlanning=true;_net.HoverSuppressedNode=-1;_net.AttackTargetMarkers=true;_net.RevealMovementTargets=true;_net.MovementTargets.Clear();
-        foreach(var node in _setup.Nodes.All.Where(n=>n.Functional && CanPlanRuler(n.Owner)))
+        foreach(var node in _setup.Nodes.All.Where(n=>PlanningFunctional(n.Id) && CanPlanRuler(n.Owner)))
             foreach(int target in _setup.Campaign.RobotBattles.MarchTargets(_setup,node.Id))
                 if(EnemyTarget(target))_net.MovementTargets.Add(target);
         foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler))
@@ -51,7 +51,7 @@ public partial class Game1
         _net.AttackHighlightTargets.Clear();
         if(!_movementOpen || !_warPlanning)return;
         // Use the picker's own eligibility rules while retaining all clickable destinations.
-        foreach(var node in _setup.Nodes.All.Where(n=>n.Functional && CanPlanRuler(n.Owner))){
+        foreach(var node in _setup.Nodes.All.Where(n=>PlanningFunctional(n.Id) && CanPlanRuler(n.Owner))){
             if(InvasionRobots(new(){Owner=node.Owner,Node=node.Id}).Length==0)continue;
             foreach(int target in _setup.Campaign.RobotBattles.MarchTargets(_setup,node.Id))
                 if(_net.MovementTargets.Contains(target))_net.AttackHighlightTargets.Add(target);
@@ -74,7 +74,7 @@ public partial class Game1
     private void BuildInvasionSources(int target)
     {
         _invasionSources.Clear();_invasionPage=0;_invasionPicker=-1;
-        foreach(var node in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner) && _setup.Campaign.RobotBattles.CanAttackFrom(_setup,n.Owner,n.Id,target)))
+        foreach(var node in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner) && PlanningCanAttackFrom(n.Owner,n.Id,target)))
             _invasionSources.Add(new(){Owner=node.Owner,Node=node.Id,CanNode=true});
         foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler).Where(r=>_setup.Campaign.RobotBattles.CanSortie(_setup,r,target)))
         {

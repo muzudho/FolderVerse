@@ -80,7 +80,8 @@ public sealed partial class RobotWorkshop
         if(RestEnabled && RestRemaining>0){if(--RestRemaining==0 && DoNotRepeat)CycleFinished=true;return;}
         ProductionAge=Math.Min(ProductionPeriod,ProductionAge+1);
         if(!Waiting)return;
-        if(!world.TryStoreProduction(node,owner,CurrentProductionPlan.Preview(owner) with {FunctionDisplayNode=FunctionOriginNode},reservedSlots)){
+        var product=CurrentProductionPlan.Preview(owner) with {FunctionDisplayNode=FunctionOriginNode};
+        if(!(world.ProductionIntakeEnabled?world.QueueProduction(this,node,owner,product,reservedSlots):world.TryStoreProduction(node,owner,product,reservedSlots))){
             if(WaitingProductionTurns<int.MaxValue)WaitingProductionTurns++;
             return;
         }

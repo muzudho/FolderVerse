@@ -38,7 +38,7 @@ sealed class FactoryNoRepeatCheck:Game1
         Check(toggle.Left>rest.Right && toggle.Right<904,"Checkbox is right of rest dropdown and inside inspector");
         if(frame==1){Click(toggle.Center);Check(factory.DoNotRepeat && !factory.ProductionLines[1].DoNotRepeat,"Normal input toggles only selected lane");Tick(6);Check(factory.RestRemaining==3 && !factory.CycleFinished,"Production ends in rest, not immediate stop");}
         if(frame==2){Tick(3);Check(factory.CycleFinished && factory.LaneProgress==9,"Final rest reaches right endpoint");}
-        if(frame==3){int before=w.Robots.Nodes[node].Count;Tick(6);Check(w.Robots.Nodes[node].Count==before+2,"Other two lanes keep manufacturing while first is stopped");var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
+        if(frame==3){int before=w.Robots.ProductionIntakes.Count;Tick(6);Check(w.Robots.ProductionIntakes.Count==before+2,"Other two lanes keep manufacturing while first is stopped");var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
         if(frame==4){Click(toggle.Center);Check(!factory.DoNotRepeat && !factory.CycleFinished,"Scaled input unchecks and resumes lane");Tick(1);}
         base.Draw(new GameTime(TimeSpan.FromSeconds(100+frame*10),TimeSpan.Zero));
         var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);

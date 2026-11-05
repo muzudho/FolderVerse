@@ -14,6 +14,11 @@ public sealed partial class RobotTransport
     private readonly Dictionary<int,int[]> _priorities=new();
     public IReadOnlyList<RobotShipment> LastTransfers {get;private set;}=Array.Empty<RobotShipment>();
     public Dictionary<long,int> LastOwners {get;}=new();
+    internal void AppendPlannedTransfers(IEnumerable<(RobotShipment Shipment,int Owner)> transfers)
+    {
+        var values=transfers.ToArray();LastTransfers=LastTransfers.Concat(values.Select(v=>v.Shipment)).ToArray();
+        foreach(var value in values)LastOwners[value.Shipment.RobotId]=value.Owner;
+    }
     public IReadOnlyList<TransportWeight> Plan(int node,int owner,RobotParts parts,bool disposal=false)=>_plans.GetValueOrDefault((node,owner,parts,disposal),Array.Empty<TransportWeight>());
     public IReadOnlyList<int> Priority(int node)=>_priorities.GetValueOrDefault(node,Array.Empty<int>());
     public void Reset(){_plans.Clear();_priorities.Clear();LastTransfers=Array.Empty<RobotShipment>();LastOwners.Clear();ResetInstructions();}

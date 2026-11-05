@@ -31,6 +31,7 @@ public partial class Game1
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
     private void ResetInspector(){
         _warCancellationsOpen=false;
+        _intakeLine=null;
         CloseFunctionTransferMap();
         CloseFolderTreeState();
         CloseReservationDirectory();
@@ -68,10 +69,11 @@ public partial class Game1
         for(int y=r.Y+(NodeCheckButtonVisible?132:90);y<r.Bottom-16;y+=12)_ui.Box(new(r.X+18,y,r.Width-36,4),new Color(30,48,58));
     }
     private void OpenNodeInspector(int id){
-        if(!_setup.Nodes.All[id].Functional)return;
+        if(!PlanningFunctional(id))return;
         ResetInspector();var node=_setup.Nodes.All[id];_nodeInspectorClosing=false;_reignView=false;
         _populationCell=node.Cell;_populationNode=_inspectedNode=id;_supervisorDialog=0;_hangarDrag=null;_rateTarget=-1;
         _nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;_movementOpen=false;RestoreNodeTab();
+        if(!node.Functional)OpenNodeAssembly();
         QueueInspectorCenter(id);
     }
     private void CloseNodeInspector(){QueueInspectorCenter(_regionCell>=0?_inspectedNode:_populationNode);_nodeInspectorClosing=true;_trainingOpen=false;_hangarDrag=null;_supervisorDialog=0;}

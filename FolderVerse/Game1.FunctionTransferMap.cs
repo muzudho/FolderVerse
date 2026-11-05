@@ -17,6 +17,7 @@ public partial class Game1
         if(!DomesticOperationsAllowed)return;
         ResetInspector();
         _functionTransferRoutesBefore=_net.ShowRoutes;
+        _statusMenuOpen=false;
         _net.ShowRoutes=true;
         _functionTransferMap=true;
     }
@@ -53,6 +54,9 @@ public partial class Game1
             {
                 transfers.Cancel(marker.Source);
                 _functionTransferMessage=$"{direction} の予約を取り消しました";
+                _setup.Robots.PartPlanning.Preview(_setup);
+                int failed=_setup.Robots.PartPlanning.PreviewResults.Count(r=>r.Status!="実施予定");
+                _functionTransferMessage+=failed>0?$" / 関連予約 {failed}件は実施できません（格納庫で確認）":" / 関連操作は同地点・隣接地点の予約として継続";
             }
         }
         else if(!transfers.Orders.Any(o=>o.Source==marker.Source) && transfers.CanReserve(_setup,marker.Source,marker.Target))

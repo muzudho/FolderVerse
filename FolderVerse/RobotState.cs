@@ -100,6 +100,10 @@ public sealed class RobotStore
         if(next.Length>StorageLimit || next.Any(r=>!r.ValidIntegration) || next.Select(r=>r.Id).Distinct().Count()!=next.Length)throw new InvalidOperationException("Invalid robot store.");
         _robots.Clear();_robots.AddRange(next);
     }
+    internal RobotStore PlanningCopy()
+    {
+        var result=new RobotStore();result.SetCapacity(TotalCapacity);foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);return result;
+    }
 }
 public sealed partial class RobotWorld
 {
@@ -124,6 +128,7 @@ public sealed partial class RobotWorld
         _domesticPreparedTurn=-1;Training=Enumerable.Range(0,rulerCount).Select(_=>new RobotTraining()).ToArray();_nextId=1;Nodes=Enumerable.Range(0,nodeCount).Select(_=>new RobotStore()).ToArray();
         Retinues=Enumerable.Range(0,rulerCount).Select(_=>new RobotStore()).ToArray();
         Workshops=Enumerable.Range(0,nodeCount).Select(_=>new RobotWorkshop()).ToArray();Transport.Reset();PendingEdits.Clear();WorkshopFailures.Clear();
+        PartPlanning.Reset();ProductionIntakes.Clear();ProductionIntakeEnabled=false;IntakeAdjacent=null;IntakeAllowed=null;
     }
     public void QueueAssembly(int node,IEnumerable<long> ids,int? owner=null)=>QueueEdit(new(node,ids.ToArray(),null,owner));
     public void QueueSplit(int node,long id,RobotParts part)=>QueueEdit(new(node,new[]{id},part));
@@ -231,7 +236,7 @@ public sealed partial class RobotWorld
     }
     public void Check()
     {
-        var all=Nodes.Concat(Retinues).SelectMany(s=>s.Robots).ToArray();
+        var all=Nodes.Concat(Retinues).SelectMany(s=>s.Robots).Concat(ProductionIntakes.Select(o=>o.Product)).ToArray();
         if(all.Select(r=>r.Id).Distinct().Count()!=all.Length)throw new InvalidOperationException("Robot has multiple locations.");
         foreach(var store in Nodes.Concat(Retinues))if(store.Count>store.StorageLimit)throw new InvalidOperationException("Hangar return capacity exceeded.");
         foreach(var robot in all){Validate(robot.Owner,robot.Parts);if(!robot.ValidIntegration)throw new InvalidOperationException("Invalid integrated parts.");}
