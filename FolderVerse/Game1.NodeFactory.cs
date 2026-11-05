@@ -24,6 +24,12 @@ public partial class Game1
         return FactoryRobotButton(line%3,lines[line].Manufacturing?lines[line].ProductionPeriod:3);
     }
     private static Rectangle FactoryPlanButton(int i)=>new(94+i%4*194,410+i/4*160,180,144);
+    private static string FactoryProductLabel(ProductionPlan plan)
+    {
+        if(plan.IntegratedParts!=0)return PartsLabel(plan.Preview(0));
+        var parts=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(part=>(plan.Product&part)!=0).Select(PartsLabel).ToArray();
+        return string.Join("／",parts)+(parts.Length>1?"分割型":"");
+    }
     private Rectangle FactoryDropButton(int field)
     {
         if(field==2)return new(420,884,110,30);
@@ -127,7 +133,7 @@ public partial class Game1
                 if(i==3)_ui.Center("製造しない",r,.42f,selected?SelectionInk:Cream);
                 else{
                     var plan=line.PlanAt(i);DrawRobotGlyph(new(r.X+54,r.Y+8,72,80),plan.Preview(node.Owner),whiteOutline:true);
-                    _ui.Center(plan.IntegratedParts==0?"通常品":IntegratedLabel(plan.IntegratedParts),new(r.X,r.Y+96,r.Width,22),.28f,selected?SelectionInk:Cream);
+                    _ui.Center(FactoryProductLabel(plan),new(r.X,r.Y+96,r.Width,22),.28f,selected?SelectionInk:Cream);
                     DrawIndustryDuration(plan.Turns,new(r.X+4,r.Bottom-27,r.Width-8,26),selected?SelectionInk:Cream,prefix:plan.QualityLabel+" ",suffix:" 産業ターン");
                     if(r.Contains(_pointer))hovered=plan;
                 }

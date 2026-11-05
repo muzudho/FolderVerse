@@ -19,6 +19,13 @@ public partial class Game1
     private int IndustryVisibleLabels=>_industryAge<IndustryLeadSeconds?0:Math.Min(_setup.Industry.Wheel.Count,1+(int)((_industryAge-IndustryLeadSeconds)/IndustryRevealSeconds+1e-8));
     private double IndustryStopSeconds=>IndustryReadSeconds+IndustrySpinSeconds;
     private static readonly Rectangle IndustryContinue=new(1230,935,590,80);
+    private static readonly Rectangle IndustrySkip=new(1680,40,190,48);
+    private void SkipIndustry()
+    {
+        if(_industryAge>=IndustryStopSeconds)return;
+        _industryAge=IndustryStopSeconds;_industryIdleAge=0;
+        UpdateIndustry(0,false);
+    }
     private void BeginIndustry()
     {
         StopBattleMusic();
@@ -66,6 +73,7 @@ public partial class Game1
     {
         bool stopped=_industryAge>=IndustryStopSeconds;int result=_setup.Industry.Result;
         _ui.Text("産業フェーズ",new(54,28),1.1f,Cream);
+        if(!stopped)_ui.Button(IndustrySkip,"スキップ",Accent,.55f);
         var mob=_setupHost;
         if(stopped && result==0)mob=_industryPrayer??=LoadIndustryMob("prayer");
         else if(stopped && _setup.Industry.Jackpot)mob=_industrySurprise??=LoadIndustryMob("surprised");

@@ -232,9 +232,9 @@ public partial class Game1 : Game
         if(_screen==Screen.Transport)
         {UpdateTransport(elapsed,active && (enter || click && BattleContinue.Contains(_pointer)),gameTime.TotalGameTime.TotalSeconds);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Industry)
-        {UpdateIndustry(elapsed,active && (enter || click && IndustryContinue.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        {if(active && click && IndustrySkip.Contains(_pointer))SkipIndustry();else UpdateIndustry(elapsed,active && (enter || click && IndustryContinue.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.BattleResearch)
-        {UpdateBattleResearch(elapsed,active && (enter || click && LessonContinue.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        {if(active && click && LessonSkip.Contains(_pointer))BeginIndustry();else UpdateBattleResearch(elapsed,active && (enter || click && LessonContinue.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.LessonCatalog)
         {if(active)LessonCatalogInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Hierarchy)

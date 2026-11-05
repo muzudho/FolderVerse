@@ -90,7 +90,7 @@ public partial class Game1
             var shadow=r;shadow.Y+=4;PrimaryRoundBox(shadow,new Color(7,23,35));PrimaryRoundBox(r,color);
             DrawCountryCornerMarks(r,_setup.PlayerSlot,enabled?1:.3f);
             var ink=UiPainter.ContrastInk(color);
-            if(i==1){_ui.Center(DomesticOperationsAllowed?"内政終了":"軍事終了",new(r.X,r.Y+32,r.Width,32),.44f,ink);_ui.Center(DomesticOperationsAllowed?"伝播へ":"ターン終了",new(r.X,r.Y+73,r.Width,36),.57f,ink);}
+            if(i==1){_ui.Center("この陣営の",new(r.X,r.Y+32,r.Width,32),.44f,ink);_ui.Center("ターン終了",new(r.X,r.Y+73,r.Width,36),.57f,ink);}
             else {
                 int inset=_setup.CountryPattern(_setup.PlayerSlot)==0?3:14;
                 DrawPrimaryIcon(i,new(r.X+12,r.Y+8,r.Width-24,58),ink);
