@@ -69,7 +69,7 @@ public partial class Game1
         for(int y=r.Y+(NodeCheckButtonVisible?132:90);y<r.Bottom-16;y+=12)_ui.Box(new(r.X+18,y,r.Width-36,4),new Color(30,48,58));
     }
     private void OpenNodeInspector(int id){
-        if(!PlanningFunctional(id))return;
+        if(!InspectableNode(id))return;
         ResetInspector();var node=_setup.Nodes.All[id];_nodeInspectorClosing=false;_reignView=false;
         _populationCell=node.Cell;_populationNode=_inspectedNode=id;_supervisorDialog=0;_hangarDrag=null;_rateTarget=-1;
         _nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;_movementOpen=false;RestoreNodeTab();
@@ -110,7 +110,7 @@ public partial class Game1
     private void DrawDomesticPortrait()
     {
         int player=_setup.TurnPlayer;DrawRulerMedallion(player,PlayerMedallionCenter);
-        _ui.Center(_setup.PlayerSlot==player?"あなたの陣営 / 操作中":"あなたの陣営のターン",new((int)PlayerMedallionCenter.X-145,600,290,30),.36f,Cream);
+        _ui.Center(_setup.ComputerOnly?"AUTO / 観戦中":_setup.PlayerSlot==player?"あなたの陣営 / 操作中":"あなたの陣営のターン",new((int)PlayerMedallionCenter.X-145,600,290,30),.36f,Cream);
         if(_setup.PlayerSlot!=player){
             DrawRulerMedallion(_setup.PlayerSlot,OperationMedallionCenter);
             _ui.Center("操作中の手下",new((int)OperationMedallionCenter.X-145,600,290,30),.36f,Cream);

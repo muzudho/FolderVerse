@@ -11,11 +11,24 @@ public sealed partial class BattleState
     {
         ResetFortifications();Terrain=BattleTerrain.Sea;Walls.Clear();WallShotDirections.Clear();SeaLogs.Clear();SeaClearWater.Clear();
         if(BoardSize==Size){
-            LayoutName="中央船・四方接舷";EntrySides=new[]{0,1,2,3};Flag=new(6,6);
-            var deck13=Enumerable.Range(0,5).SelectMany(Region).ToHashSet();
-            // One open boarding lane joins each attacking ship to the central defending deck.
-            for(int i=2;i<=10;i++){deck13.Add(new(6,i));deck13.Add(new(i,6));}
-            for(int y=0;y<Size;y++)for(int x=0;x<Size;x++)if(!deck13.Contains(new(x,y))){Walls.Add(new(x,y));SeaClearWater.Add(new(x,y));}
+            EntrySides=new[]{0,1,2,3};Flag=new(6,6);
+            for(int y=0;y<Size;y++)for(int x=0;x<Size;x++){Walls.Add(new(x,y));SeaClearWater.Add(new(x,y));}
+            OpenSeaTile(Flag,bridge:Defender<0);
+            var sides=Armies.Where(a=>a.Side<4).Select(a=>a.Side).ToArray();
+            foreach(int side in sides)OpenSeaApproach(side);
+            // Reefs sit outside the entry regions and the boarding lanes.
+            foreach(var p in new[]{new Point(2,2),new Point(2,1),new Point(1,2)})
+                SeaClearWater.Remove(RotateSeaTile(p,rotation));
+            if(Kind==BattleKind.Node && Defender>=0){
+                foreach(var p in Region(4))OpenSeaTile(p);
+                OpenSeaTile(new(5,4));OpenSeaTile(new(7,8));
+                foreach(var cover in new[]{new Point(4,4),new Point(8,8)}){
+                    OpenSeaTile(cover);
+                    Walls.Add(cover);
+                    Fortifications.Add(new(cover,FortificationKind.Barrel,Defender,BattleFacing.North));
+                }
+            }
+            UpdateSeaLayoutName();
             return;
         }
         rotation=((rotation%4)+4)%4;
@@ -56,6 +69,38 @@ public sealed partial class BattleState
         for(int y=0;y<10;y++)for(int x=0;x<10;x++)
             if(!deck.Contains(new(x,y)) && !SeaLogs.Contains(new(x,y)))Walls.Add(new(x,y));
         Flag=deck.OrderBy(p=>p.Y).ThenBy(p=>Math.Abs(p.X-4)).First();
+    }
+    private static Point RotateSeaTile(Point p,int side)
+    {
+        for(int i=0;i<side;i++)p=new(Size-1-p.Y,p.X);
+        return p;
+    }
+    private void OpenSeaTile(Point p,bool bridge=false)
+    {
+        if(Fortifications.Any(f=>f.Position==p))return;
+        Walls.Remove(p);SeaClearWater.Remove(p);
+        if(bridge)SeaLogs.Add(p);else SeaLogs.Remove(p);
+    }
+    private void OpenSeaApproach(int side)
+    {
+        if(side==4)return;
+        foreach(var p in Region(side))OpenSeaTile(p);
+        for(int y=2;y<=4;y++)
+            for(int x=y+1;x<Size-y-1;x++)OpenSeaTile(RotateSeaTile(new(x,y),side));
+        OpenSeaTile(RotateSeaTile(new(6,5),side),bridge:true);
+    }
+    private void UpdateSeaLayoutName()
+    {
+        var sides=Armies.Where(a=>a.Side<4).Select(a=>a.Side).ToArray();
+        if(Kind==BattleKind.Node && Defender>=0){LayoutName="中央船・接舷";return;}
+        if(sides.Length==2 && (sides[0]+2)%4!=sides[1])
+        {
+            int corner=(sides[0]+1)%4==sides[1]?sides[0]:sides[1];
+            var plank=RotateSeaTile(new(9,3),corner);
+            if(SeaClearWater.Contains(plank))OpenSeaTile(plank,bridge:true);
+            LayoutName="接舷・丸太渡り";
+        }
+        else LayoutName="船首衝突・丸太渡り";
     }
     private void PlaceSeaFlag()
     {

@@ -16,10 +16,10 @@ public sealed partial class RobotWorld
             if(owner(n)>=0 && locked?.Invoke(n)!=true)AdjustNode(n,owner(n),connected,locked,owner);
         }
     }
-    public void AdjustNode(int node,int owner,Func<int,int,bool> connected,Func<int,bool> locked=null,Func<int,int> nodeOwner=null)
+    public void AdjustNode(int node,int owner,Func<int,int,bool> connected,Func<int,bool> locked=null,Func<int,int> nodeOwner=null,NodeAutomation? policyOverride=null,bool adjustTransport=true)
     {
-        var workshop=Workshops[node];if(workshop.Automation==NodeAutomation.Manual)return;
-        bool gentle=workshop.Automation==NodeAutomation.Gentle,changed=false;
+        var workshop=Workshops[node];var policy=policyOverride??workshop.Automation;if(policy==NodeAutomation.Manual)return;
+        bool gentle=policy==NodeAutomation.Gentle,changed=false;
         var stock=Nodes[node].Robots.Where(r=>!r.Disposal).ToArray();
         var counts=new int[3];var parts=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs};
         for(int i=0;i<3;i++)counts[i]=stock.Count(r=>(r.Parts&parts[i])!=0 && r.Affiliation(parts[i])==owner);
@@ -41,7 +41,12 @@ public sealed partial class RobotWorld
             for(int j=0;j<3;j++)if((line.Product&parts[j])!=0 && line.CurrentProductionPlan.Preview(owner).Origin(parts[j])==owner)counts[j]++;
         }
         if(workshop.AutoAssemblyDisabled && (!gentle || !changed)){workshop.AutoAssemblyDisabled=false;changed=true;}
-        if(workshop.ReservedSlots!=2 && (!gentle || !changed)){workshop.SetReservedSlots(gentle?workshop.ReservedSlots+Math.Sign(2-workshop.ReservedSlots):2);changed=true;}
+        int reserveTarget=Math.Clamp(workshop.ReservedSlotLimit-1,0,2);
+        if(workshop.ReservedSlots!=reserveTarget && (!gentle || !changed)){
+            workshop.SetReservedSlots(gentle?workshop.ReservedSlots+Math.Sign(reserveTarget-workshop.ReservedSlots):reserveTarget);
+            changed=true;
+        }
+        if(!adjustTransport)return;
         var targets=Enumerable.Range(0,Nodes.Length).Where(n=>n!=node && (nodeOwner==null || nodeOwner(n)==owner) && connected(node,n) && locked?.Invoke(n)!=true && Nodes[n].Count<Nodes[node].Count-1).OrderBy(n=>Nodes[n].Count).ThenBy(n=>n).Take(2).ToArray();
         // A complete soldier may only be dispatched when its ruler's training permits it.
         if(!stock.Any(r=>r.Owner==owner && Training[owner].Eligible(r)))targets=Array.Empty<int>();

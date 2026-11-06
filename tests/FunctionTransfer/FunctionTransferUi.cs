@@ -86,7 +86,13 @@ sealed class FunctionTransferUi:Game1
             CloseMapReservation();
             Check(!(bool)Call("FunctionTransferOfficeClick",new Point(200,860)),"Former office reservation button is inactive");
         }
-        if(frame==2)w.Campaign.FunctionTransfers.Reserve(w,a,b);
+        if(frame==2){
+            w.Campaign.FunctionTransfers.Reserve(w,a,b);
+            Call("ResetInspector");Call("OpenNodeInspector",a);
+            Check((int)Get("_populationNode")==a,"Pending origin still opens its inspector");
+            Call("OpenNodeFactory");Check((bool)Get("_nodeFactoryOpen"),"Pending origin still opens its factory");
+            Call("OpenNodeAssembly");Check((bool)Get("_nodeAssemblyOpen") && ((long?[])Get("_hangarSlots")).Length==24,"Pending origin can edit the forecast hangar");
+        }
         if(frame==3){Call("EndPlannedTurn");Check(w.Robots.Nodes[b].Count==24 && !w.Nodes.All[a].Functional,"Delivery executes the reservation");}
         if(frame==4){Call("FinishTransport");Call("OpenNodeInspector",b);Call("OpenNodeAssembly");Call("UpdateDomesticSlide",1f);}
         if(frame==5){

@@ -17,6 +17,19 @@ static (WorldSetup W,int A,int B,int C) Fixture()
     return(w,a.Id,b,c);
 }
 static Robot Add(WorldSetup w,int n,RobotParts parts){var r=w.Robots.Create(0,parts);w.Robots.Nodes[n].Add(r);return r;}
+foreach(bool cancel in new[]{false,true})
+{
+    var(w,a,b,c)=Fixture();
+    var head=Add(w,a,RobotParts.Head);
+    var body=Add(w,a,RobotParts.Body|RobotParts.Legs);
+    var plans=w.Robots.PartPlanning;
+    w.Campaign.FunctionTransfers.Reserve(w,a,b);
+    long robot=plans.Reserve(w,a,a,head.Id,RobotParts.Head,body.Id,0);
+    Check(plans.Preview(w).Nodes[b].Robots.Any(r=>r.Id==robot && r.CanFight),"Origin assembly appears in the destination forecast");
+    if(cancel)w.Campaign.FunctionTransfers.Cancel(a);
+    w.Campaign.FinishDomestic(w);
+    Check(w.Robots.Nodes[cancel?a:b].Robots.Any(r=>r.Id==robot && r.CanFight),"Origin assembly follows the transfer or stays local after cancellation");
+}
 {
     var(w,a,b,c)=Fixture();for(int i=0;i<12;i++){Add(w,a,RobotParts.Complete);Add(w,b,RobotParts.Complete);}
     w.Robots.Workshops[a].Configure(RobotParts.Head,15);var lane=w.Robots.Workshops[a];int turn=w.Population.Turn;
@@ -33,8 +46,8 @@ static Robot Add(WorldSetup w,int n,RobotParts parts){var r=w.Robots.Create(0,pa
     saved=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));saved.Robots.ConfigureFactories(saved);
     Check(saved.Robots.Nodes[b].Count==24 && saved.Robots.Workshops[b].ProductionLines.Length==w.Robots.Workshops[b].ProductionLines.Length && saved.Nodes.All[a].FunctionHost==b,"Merged functions and reference origins survive reconfiguration after loading");
     w.Campaign.BeginMilitary();Reject(()=>w.Campaign.FunctionTransfers.Reserve(w,b,a));w.Campaign.Advance(w,-1,0,enemies:false);
-    w.Campaign.FunctionTransfers.Reserve(w,b,a);w.Campaign.FinishDomestic(w);
-    Check(w.Nodes.All[a].Functional && !w.Nodes.All[b].Functional && w.Robots.Nodes[a].Count==24 && w.Robots.Nodes[a].TotalCapacity==24,"Moving into an empty node restores it without losing merged capacity");
+    Reject(()=>w.Campaign.FunctionTransfers.Reserve(w,b,a));
+    Check(!w.Nodes.All[a].Functional && w.Nodes.All[b].Functional && w.Robots.Nodes[b].Count==24 && w.Robots.Nodes[b].TotalCapacity==24,"A completed transfer cannot be reversed");
 }
 {
     var(w,a,b,c)=Fixture();w.Campaign.FunctionTransfers.Reserve(w,b,a);w.Campaign.FunctionTransfers.Reserve(w,c,a);
@@ -92,6 +105,12 @@ static Robot Add(WorldSetup w,int n,RobotParts parts){var r=w.Robots.Create(0,pa
     var host=w.Nodes.All[b];
     var attacker=w.Nodes.All[c];
     w.Campaign.FunctionTransfers.Reserve(w,a,b);
+    attacker.Owner=1;
+    var preview=(IEnumerable<(int[] Path,bool Threat)>)typeof(RobotCampaign)
+        .GetMethod("FunctionTransferRoutes",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(military,new object[]{w,a,b})!;
+    Check(preview.Any(r=>r.Threat && r.Path[0]==c && r.Path[^1]==b),
+        "Preview shows the hostile approach and its defense endpoint before delivery");
+    Check(original.Functional && w.Campaign.FunctionTransfers.Orders.Count==1,"Preview does not change the map or reservation");
     w.Campaign.FinishDomestic(w);
     w.Campaign.BeginMilitary();
     attacker.Owner=1;

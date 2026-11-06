@@ -29,7 +29,7 @@ sealed class CheckGame:Game1
   Set("_conquestOverviewEnabled",false);Set("_conquestOverview",false);Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
   ((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);Open(node);FitNet();
   string Literal(string name)=>(string)typeof(Game1).GetField(name,BindingFlags.Static|BindingFlags.NonPublic)!.GetRawConstantValue()!;
-  Check(Literal("NodeCheckButtonHint")=="地図ビューにチェックマークを付けることができます。ターン終了時に消えます。好きなようにお使いください。" && Literal("NodeCheckMarkerHint")=="チェックマークはあなたが付けました。","Both requested tooltip messages match exactly");
+  Check(Literal("NodeCheckButtonHint")=="確認済みの地点にチェックを付けます。未チェックの手下の地点はターン終了時に手下が操作します。" && Literal("NodeCheckMarkerHint")=="確認済みの地点です。","Tooltip explains completion and the subordinate fallback");
   Check(!Checked(node),"New turn begins unchecked");
  }
  protected override void Update(GameTime t){}

@@ -25,7 +25,7 @@ sealed class CountrySettingsUi:Game1
   if(frame==6)Set("_statusGlobe",true);
   if(frame==7){Set("_screen",Enum.Parse(Get("_screen").GetType(),"CastReview"));((WorldPreview)Get("_world")).ShowSetup(w,false);}
   if(frame==8){Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("OpenCountrySettings");Click(180,225);Click(1580,335);Click(765,910);Click(1580,335);Click(1780,110);Check(w.ComputerOnly && (bool)Get("_autoPlay"),"Closing after removing the last human starts automatic play");}
-  if(frame==9){Click(10,10);Check(!(bool)Get("_autoPlay"),"Automatic play can be interrupted");Call("OpenCountrySettings");Click(180,225);Click(1200,335);Click(1780,110);Check(w.PlayerSlot==0 && !w.ComputerOnly && !(bool)Get("_autoPlay"),"Switching back selects a human controller");}
+  if(frame==9){Click(10,10);Check((bool)Get("_autoPaused"),"Automatic play opens the paused system menu");Click(1550,376);Click(180,225);Click(1200,335);Click(1780,110);Click(1260,43);Check(w.PlayerSlot==0 && !w.ComputerOnly && !(bool)Get("_autoPlay") && !(bool)Get("_autoPaused"),"Resuming after adding a human selects that controller");}
   if(frame==11){
    var battle=new BattleState(9){TargetNode=w.Nodes.Current(0).Id,Defender=0};
    for(int army=0;army<4;army++){
@@ -65,7 +65,6 @@ sealed class CountrySettingsUi:Game1
    Call("UpdateComputerDomestic",0d,true);
    Check(w.PlayerSlot==0 && w.Campaign.Phase==CampaignPhase.Delivery,"Domestic playback restores the human before delivery");
    Call("OpenMilitaryPhase");
-   Call("EndPlannedTurn");
    var visible=(March[])Get("_visibleComputerMarches");
    Check(visible is {Length:>0} && visible.All(o=>o.Ruler%2==1),"Only opted-in CPUs show actual campaign orders");
    Check(w.Campaign.Phase==CampaignPhase.Military,"Military orders wait for playback");

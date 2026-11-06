@@ -74,7 +74,8 @@ public partial class Game1
     private void BuildInvasionSources(int target)
     {
         _invasionSources.Clear();_invasionPage=0;_invasionPicker=-1;
-        foreach(var node in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner) && PlanningCanAttackFrom(n.Owner,n.Id,target)))
+        foreach(var node in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner) &&
+            (DomesticOperationsAllowed?PlanningCanAttackFrom(n.Owner,n.Id,target):_setup.Campaign.RobotBattles.CanAttackFrom(_setup,n.Owner,n.Id,target))))
             _invasionSources.Add(new(){Owner=node.Owner,Node=node.Id,CanNode=true});
         foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler).Where(r=>_setup.Campaign.RobotBattles.CanSortie(_setup,r,target)))
         {
@@ -90,7 +91,9 @@ public partial class Game1
     private static Rectangle InvasionRow(int index)=>new(84,300+index*77,760,73);
     private static Rectangle InvasionSortieButton(int index)=>new(474,302+index*77,350,30);
     private static Rectangle InvasionPreviewCard(int row,int slot)=>new(94+slot*61,334+row*77,57,37);
-    private Robot[] InvasionPreviewRobots(InvasionSource row)=>(row.Queen?_setup.Robots.Retinues[row.Owner]:_setup.Robots.Nodes[row.Node]).Robots.Where(r=>r.Parts==RobotParts.Complete).ToArray();
+    private Robot[] InvasionPreviewRobots(InvasionSource row)=>!row.Queen && DomesticOperationsAllowed
+        ? InvasionRobots(row)
+        : (row.Queen?_setup.Robots.Retinues[row.Owner]:_setup.Robots.Nodes[row.Node]).Robots.Where(r=>r.Parts==RobotParts.Complete).ToArray();
     private bool ReservedElsewhere(InvasionSource row,Robot robot)=>_setup.Campaign.PlannedOrders.Any(o=>o.Ruler==row.Owner && o.TargetNode!=_selectedMoveNode && (o.Queen || o.PocketOnly)==row.Queen && (o.SourceNode==row.Node || o.SourceNode<0 && _setup.Nodes.Current(o.Ruler)?.Id==row.Node) && (o.RobotIds?.Contains(robot.Id)??InvasionRobots(row).Take((int)o.Fighters).Any(r=>r.Id==robot.Id)));
     private string InvasionReservationLabel(InvasionSource source,Robot robot)
     {
@@ -140,7 +143,9 @@ public partial class Game1
         {
             var order=new March(row.Owner,_selectedMoveNode,row.Robots.Count,row.Node,row.Queen && row.Selected,row.Queen,row.Robots.OrderBy(id=>id).ToArray());
             if(!row.Queen && DomesticOperationsAllowed)_setup.Campaign.PlanDeliverySortie(_setup,order);
-            else _setup.Campaign.Plan(DomesticOperationsAllowed?order with {DeliveryMembers=row.Robots.Select(id=>new DeliverySortieMember(id,Array.Empty<long>())).ToArray()}:order);
+            else _setup.Campaign.Plan(DomesticOperationsAllowed
+                ? order with {DeliveryMembers=row.Robots.Select(id=>new DeliverySortieMember(id,Array.Empty<long>())).ToArray()}
+                : order);
         }
         foreach(var robot in InvasionPreviewRobots(row).Where(r=>row.Robots.Contains(r.Id)))BeginWorkReservationEffect(robot,row.Owner);
         RefreshWarTargetHighlights();
@@ -153,7 +158,12 @@ public partial class Game1
     }
     private void EndPlannedTurn()
     {
-        if(DomesticOperationsAllowed){EndDomesticPhase();return;}
+        if(DomesticOperationsAllowed){
+            StoreCurrentMovementDraft();
+            if(ShowTutorialAttackGuideIfRequired())return;
+            EndDomesticPhase();
+            return;
+        }
         if(!MilitaryOperationsAllowed)return;
         SaveDomesticCamera();CancelTransportModal();
         StoreCurrentMovementDraft();
@@ -175,6 +185,7 @@ public partial class Game1
     {
         _ui.Box(new(54,150,850,825),new Color(27,49,62));
         _ui.Text("開戦・増援の予約",new(84,177),.8f,Cream);
+        _ui.Button(new(620,177,224,42),"前回の開戦中止",Muted,.4f);
         if(SelectedWithdrawal!=null){DrawWithdrawal();return;}
         var targetLines=InvasionTargetLabel.Split('　',StringSplitOptions.RemoveEmptyEntries);
         for(int line=0;line<targetLines.Length;line++)_ui.Text(targetLines[line],new(84,235+line*30),Math.Min(.6f,760/_font.MeasureString(targetLines[line]).X),Cream);
@@ -205,6 +216,6 @@ public partial class Game1
         _ui.Button(new(84,850,110,42),"←",Muted,.5f);_ui.Button(new(210,850,110,42),"→",Muted,.5f);
         if(_selectedMoveNode>=0)_ui.Button(new(570,850,274,42),"目標を選び直す",Muted,.48f);
         _ui.Text("出撃の選択確定で開戦予約に反映 / 地図の別の目標で切替",new(84,900),.35f,Cream);
-        _ui.Text("予約は陣営のターン終了時に実行されます",new(84,938),.4f,Cream);
+        _ui.Text("直送便の配送後に実行 / １体でも出撃できなければ予定全体を中止",new(84,938),.34f,Cream);
     }
 }

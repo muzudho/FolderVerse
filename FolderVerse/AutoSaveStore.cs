@@ -114,6 +114,7 @@ public static class AutoSaveStore
                     if(type==typeof(Robot) && field.Name=="<FunctionDisplayNode>k__BackingField")continue;
                     if(type==typeof(RobotWorkshop) && new[]{"_disposalAnnexes","TransferredLineLimit","FunctionOriginNode","_storageSlotLimit"}.Contains(field.Name))continue;
                     if(type==typeof(ConquestCampaign) && field.Name=="<FunctionTransfers>k__BackingField"){field.SetValue(value,new NodeFunctionTransfers());continue;}
+                    if(type==typeof(ConquestCampaign) && field.Name=="<SubordinateResults>k__BackingField"){field.SetValue(value,new List<SubordinateDomesticResult>());continue;}
                     if(type==typeof(ConquestCampaign) && field.Name=="_domesticSubmitted"){field.SetValue(value,new HashSet<int>());continue;}
                     if(type==typeof(ConquestCampaign) && field.Name=="<Phase>k__BackingField")continue;
                     if(type==typeof(ConquestCampaign) && field.Name=="<LastCancelledWars>k__BackingField"){field.SetValue(value,new List<CancelledWar>());continue;}

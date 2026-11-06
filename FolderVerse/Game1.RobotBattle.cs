@@ -148,45 +148,7 @@ public partial class Game1
         var boardTransform=Matrix.CreateTranslation(-left,-top,0)*Matrix.CreateScale(10f/battle.BoardSize)*Matrix.CreateTranslation(left,top,0)*battleTransform;
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:boardTransform);
 
-        _ui.Box(new(left,top,size*battle.BoardSize,size*battle.BoardSize),new Color(24,43,51));
-        var terrainNode=_setup.Nodes.All[battle.TargetNode];var terrainCell=_setup.Cells[terrainNode.Cell];
-        float terrainHeight=WorldTerrain.Elevation(_setup.Routes.Position(terrainNode.Cell,terrainNode.Center),WorldTerrain.Offset(_setup.WorldSeed));
-        for(int y=0;y<battle.BoardSize;y++)for(int x=0;x<battle.BoardSize;x++)
-        {
-            var r=new Rectangle(left+x*size,top+y*size,size-2,size-2);bool wall=battle.Walls.Contains(new(x,y)) && !battle.Fortifications.Any(f=>f.Position==new Point(x,y));
-            if(battle.Terrain==BattleTerrain.Sea)
-            {
-                bool log=battle.SeaLogs.Contains(new(x,y));
-                _ui.Box(r,new Color(28,88,125));
-                if(wall)
-                {
-                    if(!battle.SeaClearWater.Contains(new(x,y)))BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(true,false,terrainHeight,_setup.Geographic(terrainCell.Normal).Y));
-                }
-                else if(log)
-                {
-                    bool horizontal=battle.SeaLogs.Contains(new(x-1,y)) || battle.SeaLogs.Contains(new(x+1,y));
-                    var timber=horizontal?new Rectangle(r.X,r.Y+28,r.Width,44):new Rectangle(r.X+28,r.Y,44,r.Height);
-                    _ui.Box(timber,new Color(151,101,52));
-                    for(int stripe=0;stripe<3;stripe++)
-                        _ui.Box(horizontal?new(timber.X,timber.Y+8+stripe*12,timber.Width,3):new(timber.X+8+stripe*12,timber.Y,3,timber.Height),new Color(212,165,91));
-                    _ui.Box(horizontal?new(timber.X+16,timber.Y,5,timber.Height):new(timber.X,timber.Y+16,timber.Width,5),new Color(91,61,35));
-                }
-                else
-                {
-                    // Sloping hull edges distinguish the deck from a rectangular land tile.
-                    for(int sy=0;sy<r.Height;sy+=2)
-                    {
-                        int inset=(int)(12*Math.Abs(sy-r.Height/2f)/(r.Height/2f));
-                        _ui.Box(new(r.X+inset,r.Y+sy,r.Width-inset*2,2),new Color(112,75,47));
-                    }
-                    for(int plank=1;plank<5;plank++)_ui.Box(new(r.X+12,r.Y+plank*18,r.Width-24,2),new Color(193,145,88));
-                }            }
-            else
-            {
-                _ui.Box(r,Math.Abs(_setup.Geographic(terrainCell.Normal).Y)>.5f?new Color(161,192,203):terrainHeight<.55f?new Color(163,137,91):new Color(35,64,58));
-                if(wall)BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(false,false,terrainHeight,_setup.Geographic(terrainCell.Normal).Y));
-            }
-        }
+        DrawBattleTerrain(battle,new(left,top,size*battle.BoardSize,size*battle.BoardSize),1);
         float fortImpact=BattleAttackArt.ImpactProgress(battle,frameIndex,_robotPlaying?RobotBattlePlayback.FramePosition(RobotSlice(_battleWave),_battleAge,RobotSeconds(_battleWave)):frameIndex+.5);
         foreach(var fort in frame.Fortifications??battle.Fortifications.ToArray()){
             if(fort.Kind==FortificationKind.Gate && fort.Health<=0)continue;

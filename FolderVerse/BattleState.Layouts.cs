@@ -29,7 +29,8 @@ public sealed partial class BattleState
     }
     public void ChooseLayout()
     {
-        if(BoardSize==Size && Kind==BattleKind.Node && Defender>=0){if(Terrain==BattleTerrain.Sea)BuildSeaLayout(0);else BuildTerrain(BattleTerrain.Fort);EntrySides=new[]{0,1,2,3};return;}
+        if(BoardSize==Size && Terrain==BattleTerrain.Sea){BuildSeaLayout(0,Random.Next(4));return;}
+        if(BoardSize==Size && Kind==BattleKind.Node && Defender>=0){BuildTerrain(Terrain);EntrySides=new[]{0,1,2,3};return;}
         if(BoardSize==Size){BuildTerrain(Terrain);EntrySides=new[]{0,1,2,3};return;}
         if(Terrain==BattleTerrain.Sea){BuildSeaLayout(Armies.Count<=2?Random.Next(2):0,Random.Next(4));return;}
         // Restrict narrow arenas to armies that fit their entrances.

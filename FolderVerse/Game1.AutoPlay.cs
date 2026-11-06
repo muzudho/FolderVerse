@@ -19,8 +19,9 @@ public partial class Game1
     private bool UpdateAutoPlay(double elapsed,bool click,bool escape,double now)
     {
         if(!_autoPlay)return false;
-        if(click || escape){_autoPlay=false;_autoStepAge=0;return true;}
-        _autoAge+=elapsed;_autoStepAge+=elapsed;
+        if(_autoPaused)return true;
+        if(click || escape){AutoPauseInput(click,escape);return true;}
+        _autoStepAge+=elapsed;
         _net.UpdateAnimation((float)elapsed);UpdateMapTransition((float)elapsed);
         switch(_screen)
         {
@@ -51,10 +52,19 @@ public partial class Game1
             if(_computerMarches==null)FinishMilitaryAdvance();
             return;
         }
+        const int finishStage=5;
+        if(_autoDomesticStage>0 && _autoDomesticStage<finishStage && !PlanningFunctional(_populationNode))
+            _autoDomesticStage=finishStage;
+
         switch(_autoDomesticStage++){
             case 0:
-                var node=_setup.Nodes.All.Where(n=>n.Owner==_setup.PlayerSlot && !_setup.Campaign.RobotBattles.LockedNode(n.Id)).OrderByDescending(n=>_setup.Robots.AssemblySelection(n.Id,_setup.PlayerSlot,true)!=null).FirstOrDefault();
-                if(node==null){_autoDomesticStage=5;break;}OpenNodeInspector(node.Id);break;
+                var node=_setup.Nodes.All
+                    .Where(n=>n.Owner==_setup.PlayerSlot && PlanningFunctional(n.Id) && !_setup.Campaign.RobotBattles.LockedNode(n.Id))
+                    .OrderByDescending(n=>_setup.Robots.AssemblySelection(n.Id,_setup.PlayerSlot,true)!=null)
+                    .FirstOrDefault();
+                if(node==null)_autoDomesticStage=finishStage;
+                else OpenNodeInspector(node.Id);
+                break;
             case 1:OpenNodeTransport();break;
             case 2:OpenNodeAssembly();break;
             case 3:

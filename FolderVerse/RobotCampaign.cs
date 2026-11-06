@@ -152,7 +152,8 @@ public sealed partial class RobotCampaign
                 var crossing=orders.Where(o=>!stopped.Contains(o) && (marchEdges[o].Contains(edge) || marchEdges[o].Contains(reverse))).ToArray();
                 var groups=crossing.GroupBy(o=>o.Ruler).ToArray();
                 var armies=groups.Select(g=>(g.Key,source[g.FirstOrDefault(o=>o.Queen)??g.First()],g.SelectMany(o=>troops[o]).ToList(),g.Any(o=>o.Queen))).ToArray();
-                var encounter=CreateEncounter(world,BattleKind.Edge,edge.From,edge.To,-1,armies);
+                var approaches=groups.ToDictionary(g=>g.Key,g=>marchEdges[g.FirstOrDefault(o=>o.Queen)??g.First()].Contains(edge)?edge.From:edge.To);
+                var encounter=CreateEncounter(world,BattleKind.Edge,edge.From,edge.To,-1,armies,approaches);
                 encounter.MarchDestinations=groups.ToDictionary(g=>g.Key,g=>(g.FirstOrDefault(o=>o.Queen)??g.First()).TargetNode);
                 Encounters.Add(encounter);
                 foreach(var order in crossing)stopped.Add(order);
@@ -203,6 +204,8 @@ public sealed partial class RobotCampaign
         // Residents waiting outside full stores can be used as reinforcements at their own node.
         foreach(var reserve in Reserves.ToArray())
         {
+            // Keep robots that cannot fight in overflow until a hangar has room.
+            if(!reserve.Robot.CanFight)continue;
             var encounter=Encounters.FirstOrDefault(e=>!e.Finished && e.Kind==BattleKind.Node && e.Target==reserve.Node);
             if(encounter!=null){AddReinforcement(world,encounter,reserve.Robot.Owner,reserve.Node,new(){reserve.Robot},false);Reserves.Remove(reserve);}
         }
@@ -226,7 +229,7 @@ public sealed partial class RobotCampaign
         world.Nodes.Recount();world.Robots.DirectDelivery.ReconcileDestinations(world);Check(world);
     }
     private RobotEncounter CreateEncounter(WorldSetup world,BattleKind kind,int source,int target,int defender,
-        (int Owner,int Home,List<Robot> Robots,bool Queen)[] armies)
+        (int Owner,int Home,List<Robot> Robots,bool Queen)[] armies,IReadOnlyDictionary<int,int> approaches=null)
     {
         if(kind==BattleKind.Node && defender>=0 && world.Nodes.Current(defender)?.Id==target && !armies.Any(a=>a.Owner==defender && a.Queen) && !Encounters.Where(e=>!e.Finished).SelectMany(e=>e.Battles).SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Any(u=>u.Owner==defender && u.Role==BattleRole.Queen && u.Active)){
             int index=Array.FindIndex(armies,a=>a.Owner==defender);
@@ -247,10 +250,25 @@ public sealed partial class RobotCampaign
         {
             var state=NewState(world,e);
             if(sizes.Count>1){state.SplitBoard=true;state.Kind=BattleKind.Edge;state.Defender=-1;state.BuildTerrain(world.Nodes.All[target].Terrain==TravelTerrain.Sea?BattleTerrain.Sea:BattleTerrain.Field);}
-            foreach(var a in sorted.Skip(offset).Take(size))state.AddArmy(a.Owner,a.Home,a.Robots,a.Queen);
+            foreach(var a in sorted.Skip(offset).Take(size))
+                state.AddArmy(a.Owner,a.Home,a.Robots,a.Queen,state.Terrain==BattleTerrain.Sea
+                    ?SeaApproach(world,e,approaches?.GetValueOrDefault(a.Owner,a.Home)??a.Home):-1);
             state.ChooseLayout();state.Deploy();state.BuildFortifications(e.DefenseCount);e.Battles.Add(state);offset+=size;
         }
         return e;
+    }
+    private int SeaApproach(WorldSetup world,RobotEncounter encounter,int home)
+    {
+        var target=world.Nodes.All[encounter.Target];
+        int approach=home;
+        if(encounter.Kind==BattleKind.Edge && home==encounter.Target)approach=encounter.Source;
+        if(approach==target.Id)return -1;
+        var route=world.Routes.Neighbors(target).FirstOrDefault(r=>world.Nodes.At(r.Target,r.Entry).Id==approach);
+        if(route==null && MarchRoutes(world,approach).TryGetValue(target.Id,out int previous))
+            route=world.Routes.Neighbors(target).FirstOrDefault(r=>world.Nodes.At(r.Target,r.Entry).Id==previous);
+        if(route==null)return -1;
+        int side=((world.Routes.Bearing(target,route)+2)/4)%4;
+        return encounter.Kind==BattleKind.Edge && home==target.Id?(side+2)%4:side;
     }
     private void JoinWanderers(WorldSetup world,RobotEncounter encounter)
     {
@@ -280,17 +298,28 @@ public sealed partial class RobotCampaign
         var state=new BattleState(world.PlacementSeed^e.Id^_nextBattle,Rules){Id=_nextBattle++,GlobalTurn=world.Population.Turn,Kind=e.Kind,SourceNode=e.Source,TargetNode=e.Target,Defender=e.Defender,Allied=world.Relations.Allied};
         state.Lessons=(BattleLesson[])world.Lessons.Owned.Clone();
         foreach(var rank in world.Relations.ProvisionalRanking(world))state.NewspaperRanks[rank.Ruler]=rank.Rank;
-        state.BuildTerrain(world.Nodes.All[e.Target].Terrain==TravelTerrain.Sea?BattleTerrain.Sea:e.Kind==BattleKind.Node?BattleTerrain.Fort:BattleTerrain.Field);return state;
+        var target=world.Nodes.All[e.Target];
+        var terrain=target.Terrain==TravelTerrain.Sea?BattleTerrain.Sea:BattleTerrain.Field;
+        if(e.Kind==BattleKind.Node && e.Defender>=0 && target.Terrain!=TravelTerrain.Sea){
+            if(target.Terrain==TravelTerrain.Mountain)terrain=BattleTerrain.Mountain;
+            else if(world.TerrainArea(target.Cell,TravelTerrain.Land)<100)terrain=BattleTerrain.Fort;
+        }
+        state.BuildTerrain(terrain);
+        return state;
     }
     private void AddReinforcement(WorldSetup world,RobotEncounter e,int owner,int home,List<Robot> robots,bool queen)
     {
         if(robots.Count==0 && !queen)return;
+        // The prior retreat remains in its playback frames, but the robot can fight again.
+        foreach(var robot in robots)
+            if(e.ReturnedWanderers.Remove(robot.Id))
+                foreach(var board in e.Battles)board.Units.RemoveAll(u=>u.Id==robot.Id && u.Retreated);
         var state=e.Battles.FirstOrDefault(b=>b.Armies.Any(a=>a.Owner==owner));
         if(state==null)
         {
             state=e.Battles.FirstOrDefault(b=>!b.Finished && b.Armies.Count<b.EntryCapacity);
             if(state==null){state=NewState(world,e);e.Battles.Add(state);}
-            state.AddArmy(owner,home,robots,queen);return;
+            state.AddArmy(owner,home,robots,queen,state.Terrain==BattleTerrain.Sea?SeaApproach(world,e,home):-1);return;
         }
         var army=state.Army(owner);
         state.Finished=false; // Will is reset only when a unit actually enters the board.
@@ -347,16 +376,21 @@ public sealed partial class RobotCampaign
         var groups=survivors.OrderBy(g=>g.Key==e.Defender?0:1).ThenBy(g=>g.Key).ToArray();e.Battles.Clear();
         for(int i=0;i<groups.Length;)
         {
-            var state=NewState(world,e);state.InheritHistory(old);
+            var state=NewState(world,e);
             int capacity=e.Kind==BattleKind.Node && groups.Skip(i).Any(g=>g.Key==e.Defender)?5:4;
             foreach(var g in groups.Skip(i).OrderBy(g=>g.Key==e.Defender?0:1).Take(capacity))
             {
                 var previous=old.SelectMany(b=>b.Armies).First(a=>a.Owner==g.Key);
                 var army=new BattleArmy{Owner=g.Key,HomeNode=previous.HomeNode,Side=state.Armies.Count,Limit=previous.Limit,Wanderer=previous.Wanderer,WandererPolicy=previous.WandererPolicy,Withdrawing=previous.Withdrawing};
-                if(state.Armies.Count==1)army.Side=2;state.Armies.Add(army);
+                if(state.Terrain==BattleTerrain.Sea){
+                    int approach=SeaApproach(world,e,previous.HomeNode);
+                    army.Side=g.Key==e.Defender && e.Kind==BattleKind.Node?4:state.FreeSeaSide(approach>=0?approach:previous.Side%4);
+                }else if(state.Armies.Count==1)army.Side=2;
+                state.Armies.Add(army);
                 foreach(var unit in g.OrderBy(u=>u.Role==BattleRole.Queen?1:0).ThenBy(u=>u.Id))army.Waiting.Enqueue(unit);
             }
-            state.Deploy();state.BuildFortifications(e.DefenseCount);e.Battles.Add(state);i+=capacity;
+            if(state.Terrain==BattleTerrain.Sea)state.ChooseLayout();
+            state.InheritHistory(old);state.Deploy();state.BuildFortifications(e.DefenseCount);e.Battles.Add(state);i+=capacity;
         }
         PrepareSplitBoards(e);
         // Failed/retreated individuals are returned now; active survivors are only in the new boards.

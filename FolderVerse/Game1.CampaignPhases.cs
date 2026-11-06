@@ -15,7 +15,13 @@ public partial class Game1
     private bool PhasePrimaryActionAllowed(int index)=>index==2?WarPlanningAllowed:index is 3 or 4 or 5 or FunctionTransferAction?DomesticOperationsAllowed:true;
     private void EndDomesticPhase(bool automaticAll=false)
     {
-        SaveDomesticCamera();ResetInspector();ClearCurrentPlayerNodeChecks();
+        SaveDomesticCamera();
+        if(!automaticAll && BeginSubordinateDomestic())return;
+        SubmitDomesticPhase(automaticAll);
+    }
+    private void SubmitDomesticPhase(bool automaticAll)
+    {
+        ResetInspector();ClearCurrentPlayerNodeChecks();
         if(!_setup.Campaign.FinishDomestic(_setup,automaticAll,ShowComputerDomestic))
         {
             if(_computerDomesticNodes==null){_world.ShowSetup(_setup,true);RestoreDomesticCamera();}

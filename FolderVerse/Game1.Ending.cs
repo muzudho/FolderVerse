@@ -21,6 +21,7 @@ public partial class Game1
     }
     private void StartEnding()
     {
+        _autoPaused=false;
         RecordPetitstellaMedals();
         StopBattleMusic();StopIndustryMusic();ResetInspector();_autoPlay=false;
         _endingBeforeIndustry=false;
@@ -31,6 +32,7 @@ public partial class Game1
     }
     private void ReturnToTitle()
     {
+        _autoPaused=false;_autoPausePage=0;
         RecordPetitstellaMedals();
         StopEndingMusic();StopBattleMusic();ClearAllNodeChecks();
         _operationSettingsOpen=false;_operationSettingsSlide=0;
