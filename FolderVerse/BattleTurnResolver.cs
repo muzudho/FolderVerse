@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 
-public static class BattleTurnResolver
+public static partial class BattleTurnResolver
 {
     private sealed class Hits {public int Dagger,Rifle,Side;public bool DaggerHit,HostileHit,RetreatBackShot;}
     public static void Advance(BattleState battle,IReadOnlyDictionary<long,BattleAction> orders=null)
@@ -42,6 +42,7 @@ public static class BattleTurnResolver
             var collisions=units.Where(u=>!u.Retreating && battle.Contains(positions[u.Id])).GroupBy(u=>positions[u.Id]).Where(g=>g.Count()>1).SelectMany(g=>g).ToArray();
             bool added=false;foreach(var u in collisions)added|=blocked.Add(u.Id);if(!added)break;
         }
+        var blockedEscapes=ClearEscapePaths(battle,units,actions,origin,positions,blocked);
         foreach(var u in units)
         {
             u.Position=positions[u.Id];if(!battle.Contains(u.Position))u.Retreated=true;
@@ -70,13 +71,8 @@ public static class BattleTurnResolver
         foreach(var attacker in units.Where(u=>u.Active))
         {
             var weapon=actions[attacker.Id].Weapon;if(weapon==BattleWeapon.None)continue;
-            var step=BattleState.Forward(attacker.Facing);BattleUnit target=null;var end=attacker.Position+step;
-            if(weapon==BattleWeapon.Dagger)target=units.FirstOrDefault(u=>u.Active && u.Position==end);
-            else for(int distance=1;distance<battle.BoardSize;distance++)
-            {
-                var p=attacker.Position+new Point(step.X*distance,step.Y*distance);if(battle.BlocksShot(p,attacker.Facing,distance)){if(battle.GateAt(p)!=null)end=p;break;}
-                end=p;if(distance==1)continue;target=units.FirstOrDefault(u=>u.Active && u.Position==p);if(target!=null)break;
-            }
+            var step=BattleState.Forward(attacker.Facing);
+            var target=AttackTarget(battle,units,attacker,weapon,out var end);
             battle.Attacks.Add(new(battle.Turn,attacker.Id,target?.Id,attacker.Position,end,weapon));
             if(target==null){
                 var gate=battle.GateAt(end);
@@ -132,6 +128,7 @@ public static class BattleTurnResolver
         foreach(var u in units.Where(u=>u.Active))
         {
             var h=hits[u.Id];if(h.Dagger+h.Rifle+h.Side==0)continue;
+            if(h.HostileHit && blockedEscapes.Contains(u.Id))BattleLessons.Witness(battle,BattleLesson.ClearEscape);
             u.Fallen=true;battle.Events.Add(new(battle.Turn,BattlePhase.Fall,u.Id,"転倒"));
             if(h.HostileHit)willing.Add(u.Owner);
         }

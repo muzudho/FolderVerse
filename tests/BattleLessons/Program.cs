@@ -211,3 +211,31 @@ var earlyExit=BattleLessons.CornerAction(earlyCorner,earlyEscaper,new(Point.Zero
 var fourAway=Tempo();var cautious=Unit(fourAway,101101,0,5,5,BattleFacing.North);Unit(fourAway,101102,1,5,1,BattleFacing.South);Unit(fourAway,101103,1,3,5,BattleFacing.East);fourAway.Walls.Add(new(6,5));fourAway.Walls.Add(new(5,6));fourAway.Lessons[0]=BattleLesson.CornerEscape;
 var stay=new BattleAction(Point.Zero,BattleFacing.North);Check(BattleLessons.EnemiesWithinThree(fourAway,new(5,5),0)==1 && BattleLessons.CornerAction(fourAway,cautious,stay)==stay,"Four steps is outside the early-exit radius");
 Console.WriteLine("PASS: corner entry at radius two, early exit at radius three inclusive, four-step exclusion.");
+
+foreach(var weapon in new[]{BattleWeapon.Dagger,BattleWeapon.Rifle})
+foreach(bool queen in new[]{false,true})
+foreach(bool trained in new[]{false,true}){
+    var board=Board();
+    var victim=Unit(board,110001,0,5,5);
+    victim.Shields=0;
+    if(queen){victim.Id=-1;victim.Role=BattleRole.Queen;victim.Robot=null;victim.Daggers=victim.Rifles=0;}
+    var helper=Unit(board,110002,0,5,4);
+    var attacker=Unit(board,110003,1,weapon==BattleWeapon.Dagger?4:3,5,BattleFacing.East);
+    if(weapon==BattleWeapon.Rifle)Unit(board,110004,1,4,5);
+    board.Walls.Add(new(5,6));
+    board.Walls.Add(new(6,5));
+    if(trained)board.Lessons[0]=BattleLesson.ClearEscape;
+
+    Turn(board,(victim,new(0,-1),BattleFacing.North,BattleWeapon.None),
+        (attacker,Point.Zero,BattleFacing.East,weapon));
+
+    Check(victim.Fallen!=trained,"A trained ally saves a shieldless robot or queen from either weapon");
+    Check(((helper.WitnessedLessons&BattleLesson.ClearEscape)!=0)!=trained,"Only a fatal, preventable blocked escape teaches the lesson");
+    if(trained)Check(victim.Position==new Point(5,4) && helper.Position==new Point(6,4) && helper.Active,
+        "The ally steps sideways and the victim enters its square without taking a hit");
+    else{
+        var research=new BattleLessons();research.BringHome(helper);
+        Check(research.Research().Single().Lesson==BattleLesson.ClearEscape,"A surviving witness can research the escape lesson");
+    }
+}
+Console.WriteLine("PASS: blocked escape and learned sidestep for soldiers and queens against dagger and rifle.");
