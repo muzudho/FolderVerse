@@ -127,7 +127,7 @@ public partial class Game1 : Game
         _rollTime=0; _dragging=false;
     }
     protected override void Update(GameTime gameTime)
-    { HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive);if(!_autoPaused){UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds);UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);}UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);UpdateIndustryMusic();UpdateEndingMusic(IsActive);base.Update(gameTime); }
+    { _autoSaveNoticeSeconds=Math.Max(0,_autoSaveNoticeSeconds-gameTime.ElapsedGameTime.TotalSeconds);HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive);if(!_autoPaused){UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds);UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);}UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);UpdateIndustryMusic();UpdateEndingMusic(IsActive);base.Update(gameTime); }
     private void HandleInputCore(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
     {
         _pointer=CanvasPoint(mouse);_ui.Pointer=_pointer;
@@ -729,7 +729,7 @@ public partial class Game1 : Game
         DrawWindowMargins(viewport.Width,viewport.Height,canvas);
         if(_screen==Screen.Title)_spriteBatch.Draw(_titleScreen,canvas,Color.White); _spriteBatch.End();
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
-        if(_conquestOverview && _conquestStage<8){DrawConquestOverview(canvas,transform,viewport);if(_demoActive || AutomaticGame)DrawDemoOverlay(transform);DrawFullscreenCursor();base.Draw(gameTime);return;}
+        if(_conquestOverview && _conquestStage<8){DrawConquestOverview(canvas,transform,viewport);if(_demoActive || AutomaticGame)DrawDemoOverlay(transform);DrawAutoSaveNotice(canvas,transform);DrawFullscreenCursor();base.Draw(gameTime);return;}
         if(_screen==Screen.Title){_spriteBatch.Begin(transformMatrix:transform);DrawTitleStartMenu();_spriteBatch.End();}
         if(_screen!=Screen.Title)
         {
@@ -792,6 +792,7 @@ public partial class Game1 : Game
         if(IsStatusScreen && !_countrySettingsOpen && (_operationSettingsOpen || _operationSettingsSlide>0)){_spriteBatch.Begin(transformMatrix:transform);DrawOperationSettings();_spriteBatch.End();}
         if(_countrySettingsOpen && IsStatusScreen){_spriteBatch.Begin(transformMatrix:transform);DrawCountrySettings();_spriteBatch.End();}
         if(_tutorialCaptiveToastSeconds>0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialCaptiveAchievementToast();_spriteBatch.End();}
+        DrawAutoSaveNotice(canvas,transform);
         DrawFullscreenCursor();
         LogDisplayedScreen();
         base.Draw(gameTime);
