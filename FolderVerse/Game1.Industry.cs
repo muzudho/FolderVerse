@@ -73,7 +73,7 @@ public partial class Game1
     {
         bool stopped=_industryAge>=IndustryStopSeconds;int result=_setup.Industry.Result;
         _ui.Text("産業フェーズ",new(54,28),1.1f,Cream);
-        if(!stopped)_ui.Button(IndustrySkip,"スキップ",Accent,.55f);
+        if(!stopped && !ComputerExhibition)_ui.Button(IndustrySkip,"スキップ",Accent,.55f);
         var mob=_setupHost;
         if(stopped && result==0)mob=_industryPrayer??=LoadIndustryMob("prayer");
         else if(stopped && _setup.Industry.Jackpot)mob=_industrySurprise??=LoadIndustryMob("surprised");

@@ -81,9 +81,10 @@ public partial class Game1
         float time=(float)(_autoAge%9);if(time>=2.4f)return;
         float fade=Math.Clamp(Math.Min(time/.25f,(2.4f-time)/.4f),0,1);
         _spriteBatch.Begin(transformMatrix:transform);
-        for(int i=0;i<4;i++){
+        string label=ComputerExhibition?"Exhibition":"AUTO";
+        for(int i=0;i<label.Length;i++){
             int jump=(int)(Math.Abs(MathF.Sin(time*5-i*.5f))*16);
-            _counter.DrawText(_spriteBatch,"AUTO"[i].ToString(),new(860+i*50,510-jump,46,48),(i%2==0?new Color(255,187,214):new Color(185,230,231))*fade);
+            _counter.DrawText(_spriteBatch,label[i].ToString(),new(960-label.Length*25+i*50,510-jump,46,48),(i%2==0?new Color(255,187,214):new Color(185,230,231))*fade);
         }
         _spriteBatch.End();
     }

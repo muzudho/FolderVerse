@@ -4,6 +4,10 @@
 <FontName>Comic Sans MS</FontName><Size>64</Size><Spacing>0</Spacing>
 <UseKerning>true</UseKerning><Style>Bold</Style>
 <CharacterRegions>
+<CharacterRegion><Start>b</Start><End>b</End></CharacterRegion>
+<CharacterRegion><Start>h</Start><End>i</End></CharacterRegion>
+<CharacterRegion><Start>n</Start><End>n</End></CharacterRegion>
+<CharacterRegion><Start>x</Start><End>x</End></CharacterRegion>
 <CharacterRegion><Start>0</Start><End>9</End></CharacterRegion>
 <CharacterRegion><Start>D</Start><End>E</End></CharacterRegion>
 <CharacterRegion><Start>M</Start><End>M</End></CharacterRegion>

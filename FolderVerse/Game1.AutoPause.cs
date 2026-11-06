@@ -66,7 +66,7 @@ public partial class Game1
         else if(_autoPausePage==1)DrawHierarchyUi();
         else if(_autoPausePage==2)DrawInactiveUi();
         else{
-            _ui.Text("AUTO / 一時停止",new(80,88),.8f,Cream);
+            _ui.Text(_autoPauseComputerOnly?"Exhibition / 一時停止":"AUTO / 一時停止",new(80,88),.8f,Cream);
             _ui.Text("×でゲームを再開",new(80,154),.5f,Cream);
             _ui.Text($"人間 {_setup.PlayerCount} 人 / コンピューター {_setup.ComputerPlayerCount} 人",new(80,220),.5f,Cream);
             _ui.Button(StatusMenuButton,"＜システムメニュー＞",Muted,.52f);
