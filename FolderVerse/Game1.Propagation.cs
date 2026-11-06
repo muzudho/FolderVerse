@@ -100,17 +100,64 @@ public partial class Game1
     }
     private void DrawPropagationGrid(BattleState battle,Rectangle bounds,float opacity)
     {
-        _ui.Box(bounds,new Color(16,35,46)*opacity);
+        DrawBattleTerrain(battle,bounds,opacity);
+        foreach(var fort in battle.Fortifications)
+            if(fort.Kind!=FortificationKind.Gate || fort.Health>0)
+                BattleFortificationArt.Draw(_ui,BattleTerrainTile(bounds,battle.BoardSize,fort.Position),fort,opacity);
+    }
+
+    private static Rectangle BattleTerrainTile(Rectangle bounds,int size,Point p)
+    {
+        int left=bounds.X+p.X*bounds.Width/size,top=bounds.Y+p.Y*bounds.Height/size;
+        int width=bounds.X+(p.X+1)*bounds.Width/size-left,height=bounds.Y+(p.Y+1)*bounds.Height/size-top;
+        int gap=width>=50?2:width>=15?1:0;
+        return new(left,top,Math.Max(1,width-gap),Math.Max(1,height-gap));
+    }
+
+    private void DrawBattleTerrain(BattleState battle,Rectangle bounds,float opacity)
+    {
+        _ui.Box(bounds,new Color(24,43,51)*opacity);
         var node=_setup.Nodes.All[battle.TargetNode];var cell=_setup.Cells[node.Cell];
         float elevation=WorldTerrain.Elevation(_setup.Routes.Position(node.Cell,node.Center),WorldTerrain.Offset(_setup.WorldSeed));
-        for(int y=0;y<10;y++)for(int x=0;x<10;x++)
+        float latitude=_setup.Geographic(cell.Normal).Y;
+        var ground=Math.Abs(latitude)>.5f?new Color(161,192,203):elevation<.55f?new Color(163,137,91):new Color(35,64,58);
+        for(int y=0;y<battle.BoardSize;y++)for(int x=0;x<battle.BoardSize;x++)
         {
-            int left=bounds.X+x*bounds.Width/10,top=bounds.Y+y*bounds.Height/10;
-            var rect=new Rectangle(left,top,bounds.X+(x+1)*bounds.Width/10-left-2,bounds.Y+(y+1)*bounds.Height/10-top-2);
-            bool wall=battle.Walls.Contains(new(x,y));bool bridge=x is 4 or 5 || y is 4 or 5;
-            Color color=battle.Terrain==BattleTerrain.Sea?(wall?new Color(28,69,101):bridge?new Color(162,121,73):new Color(107,79,55)):
-                Math.Abs(cell.Normal.Y)>.5f?new Color(161,192,203):elevation<.55f?new Color(163,137,91):new Color(35,64,58);
-            _ui.Box(rect,color*opacity);
+            var p=new Point(x,y);
+            var tile=BattleTerrainTile(bounds,battle.BoardSize,p);
+            bool wall=battle.Walls.Contains(p) && !battle.Fortifications.Any(f=>f.Position==p);
+            if(battle.Terrain!=BattleTerrain.Sea)
+            {
+                _ui.Box(tile,ground*opacity);
+                if(wall)BattleObstacleArt.Draw(_ui,tile,battle.Terrain==BattleTerrain.Mountain
+                    ?BattleObstacleStyle.Rock:BattleObstacleArt.Style(false,false,elevation,latitude),opacity);
+                continue;
+            }
+            _ui.Box(tile,new Color(28,88,125)*opacity);
+            if(wall)
+            {
+                if(!battle.SeaClearWater.Contains(p))
+                    BattleObstacleArt.Draw(_ui,tile,BattleObstacleArt.Style(true,false,elevation,latitude),opacity);
+                continue;
+            }
+            bool bridge=battle.SeaLogs.Contains(p);
+            bool horizontal=battle.BoardSize==10
+                ?battle.SeaLogs.Contains(p+new Point(1,0)) || battle.SeaLogs.Contains(p-new Point(1,0))
+                :battle.Walkable(p+new Point(1,0)) && battle.Walkable(p-new Point(1,0));
+            Rectangle Mark(int x,int y,int width,int height)=>new(tile.X+x*tile.Width/100,tile.Y+y*tile.Height/100,
+                Math.Max(1,width*tile.Width/100),Math.Max(1,height*tile.Height/100));
+            if(bridge)
+            {
+                _ui.Box(horizontal?Mark(0,28,100,44):Mark(28,0,44,100),new Color(151,101,52)*opacity);
+                if(tile.Width>=12)for(int stripe=36;stripe<=60;stripe+=12)
+                    _ui.Box(horizontal?Mark(0,stripe,100,3):Mark(stripe,0,3,100),new Color(212,165,91)*opacity);
+            }
+            else
+            {
+                _ui.Box(tile,new Color(112,75,47)*opacity);
+                if(tile.Width>=12)for(int plank=18;plank<=72;plank+=18)
+                    _ui.Box(Mark(12,plank,76,2),new Color(193,145,88)*opacity);
+            }
         }
     }
 }

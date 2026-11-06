@@ -9,8 +9,8 @@ static class FortificationChecks
  public static void Run(){
   foreach(bool sea in new[]{false,true})for(int count=0;count<=12;count++){
    var b=Board();b.Defender=1;b.BuildTerrain(sea?BattleTerrain.Sea:BattleTerrain.Fort);
-   var original=b.Walls.ToHashSet();b.BuildFortifications(count);
-   Check(b.Fortifications.Count==count,"Every defense reservation supplies one obstacle on an available board");
+   var original=b.Walls.ToHashSet();int terrainCover=b.Fortifications.Count;b.BuildFortifications(count);
+   Check(b.Fortifications.Count==terrainCover+count,"Every defense reservation adds one obstacle to the existing terrain cover");
    Check(original.IsSubsetOf(b.Walls),"Existing fort walls and sea layout stay intact");
    Check(!sea || b.Fortifications.All(f=>f.Kind is FortificationKind.Barrel or FortificationKind.Gate),"Sea has barrels/gates, never moats");
    Check(b.Fortifications.All(f=>f.Position!=b.Flag),"Flag stays clear");
@@ -18,14 +18,14 @@ static class FortificationChecks
    var seen=new HashSet<Point>{b.Flag};var q=new Queue<Point>();q.Enqueue(b.Flag);
    while(q.TryDequeue(out var p))foreach(BattleFacing face in Enum.GetValues<BattleFacing>()){var n=p+BattleState.Forward(face);if(b.Walkable(n) && seen.Add(n))q.Enqueue(n);}
    Check(seen.Count==Enumerable.Range(0,13).Sum(y=>Enumerable.Range(0,13).Count(x=>b.Walkable(new(x,y)))),"All remaining terrain stays connected through traversable/breakable gates");
-   b.BuildFortifications(12);Check(b.Fortifications.Count==count && b.InitialDefenseCount==count,"Reinforcements cannot generate extra defenses");
+   b.BuildFortifications(12);Check(b.Fortifications.Count==terrainCover+count && b.InitialDefenseCount==count,"Reinforcements cannot generate extra defenses");
   }
   {
    var crowded=new BattleState(7){Kind=BattleKind.Node,Defender=0};crowded.BuildTerrain(BattleTerrain.Sea);
    var robots=new RobotWorld();robots.Initialize(1,5);
    for(int owner=0;owner<5;owner++)crowded.AddArmy(owner,0,Enumerable.Range(0,12).Select(_=>robots.Create(owner,RobotParts.Complete)));
-   crowded.Deploy();crowded.BuildFortifications(12);crowded.Check();
-   Check(crowded.Fortifications.Count==12,"Full five-army ship still fits twelve defenses using allied-passable gates");
+   crowded.Deploy();int terrainCover=crowded.Fortifications.Count;crowded.BuildFortifications(12);crowded.Check();
+   Check(crowded.Fortifications.Count==terrainCover+12,"Full five-army ship still fits twelve defenses using allied-passable gates");
    Check(crowded.Units.All(u=>crowded.WalkableFor(u.Position,u.Owner)),"No gate traps an initial enemy deployment");
   }
   var gate=new BattleFortification(new(6,6),FortificationKind.Gate,1,BattleFacing.North);

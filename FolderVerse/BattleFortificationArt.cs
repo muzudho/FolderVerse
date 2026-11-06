@@ -4,15 +4,16 @@ using Microsoft.Xna.Framework;
 
 public static class BattleFortificationArt
 {
-    public static void Draw(UiPainter ui,Rectangle tile,BattleFortification fort)
+    public static void Draw(UiPainter ui,Rectangle tile,BattleFortification fort,float opacity=1)
     {
-        if(fort.Kind==FortificationKind.Barrel){BattleObstacleArt.Draw(ui,tile,BattleObstacleStyle.Barrel);return;}
+        if(fort.Kind==FortificationKind.Barrel){BattleObstacleArt.Draw(ui,tile,BattleObstacleStyle.Barrel,opacity);return;}
         Vector2 P(float x,float y){var p=new Vector2(x-.5f,y-.5f);for(int i=0;i<(int)fort.Facing;i++)p=new(-p.Y,p.X);return new Vector2(tile.Center.X,tile.Center.Y)+p*tile.Width;}
-        void Line(float x,float y,float xx,float yy,float width,Color color){var a=P(x,y);var b=P(xx,yy);var d=b-a;ui.Tile((a+b)/2,new(d.Length(),width*tile.Width),MathF.Atan2(d.Y,d.X),color);}
+        void Line(float x,float y,float xx,float yy,float width,Color color){var a=P(x,y);var b=P(xx,yy);var d=b-a;ui.Tile((a+b)/2,new(d.Length(),width*tile.Width),MathF.Atan2(d.Y,d.X),color*opacity);}
         var dark=new Color(25,30,33);
         if(fort.Kind==FortificationKind.Moat){
-            ui.Box(new(tile.X+8,tile.Y+8,tile.Width-16,tile.Height-16),new Color(83,64,44));
-            ui.Box(new(tile.X+14,tile.Y+14,tile.Width-28,tile.Height-28),new Color(29,111,152));
+            int bank=tile.Width*8/98,water=tile.Width*14/98;
+            ui.Box(new(tile.X+bank,tile.Y+bank,tile.Width-2*bank,tile.Height-2*bank),new Color(83,64,44)*opacity);
+            ui.Box(new(tile.X+water,tile.Y+water,tile.Width-2*water,tile.Height-2*water),new Color(29,111,152)*opacity);
             for(int i=0;i<3;i++)Line(.23f,.29f+i*.2f,.77f,.29f+i*.2f,.025f,new Color(102,202,220));return;
         }
         if(fort.Kind==FortificationKind.Wall){

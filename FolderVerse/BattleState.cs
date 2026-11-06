@@ -95,13 +95,16 @@ public sealed partial class BattleState
     public bool Walkable(Point p)=>Contains(p) && !Walls.Contains(p);
     public static bool HomeExit(Point p,int side,int size=Size)=>side switch{0=>p.Y<0,1=>p.X>=size,2=>p.Y>=size,_=>p.X<0};
     public BattleArmy Army(int owner)=>Armies.Single(a=>a.Owner==owner);
-    public void AddArmy(int owner,int home,IEnumerable<Robot> robots,bool queen=false)
+    public void AddArmy(int owner,int home,IEnumerable<Robot> robots,bool queen=false,int preferredSide=-1)
     {
         if(owner<0 || owner>=GameLimits.MaxConquerors || home<0)throw new ArgumentOutOfRangeException();
         if(Armies.Count>=EntryCapacity || Armies.Any(a=>a.Owner==owner))throw new InvalidOperationException("Battle supports distinct armies, at most five.");
-        int side=BoardSize==Size && Kind==BattleKind.Node && owner==Defender?4:Armies.Count==1 && EntrySides.Contains(2) && !Armies.Any(a=>a.Side==2)?2:EntrySides.First(i=>!Armies.Any(a=>a.Side==i));
+        int side=BoardSize==Size && Kind==BattleKind.Node && owner==Defender?4:
+            Terrain==BattleTerrain.Sea && BoardSize==Size && preferredSide>=0?FreeSeaSide(preferredSide):
+            Armies.Count==1 && EntrySides.Contains(2) && !Armies.Any(a=>a.Side==2)?2:EntrySides.First(i=>!Armies.Any(a=>a.Side==i));
         var army=new BattleArmy{Owner=owner,HomeNode=home,Side=side,InvadingQueen=queen};
         Armies.Add(army);int index=0;
+        if(BoardSize==Size && Terrain==BattleTerrain.Sea){OpenSeaApproach(side);UpdateSeaLayoutName();}
         foreach(var robot in robots.OrderBy(r=>r.Id))
         {
             if(!robot.CanFight || robot.Owner!=owner)throw new ArgumentException("Only complete owned robots may enter battle.");
@@ -109,6 +112,7 @@ public sealed partial class BattleState
         }
         if(queen)army.Waiting.Enqueue(new(){Id=-(owner+1),Owner=owner,Role=BattleRole.Queen,Facing=Inward(army.Side),Daggers=0,Rifles=0});
     }
+    internal int FreeSeaSide(int preferred)=>new[]{0,1,3,2}.Select(offset=>(preferred+offset)%4).First(side=>Armies.All(a=>a.Side!=side));
     public static BattleFacing Inward(int side)=>(BattleFacing)((side+2)%4);
     public IEnumerable<Point> Region(int side)
     {
@@ -124,8 +128,9 @@ public sealed partial class BattleState
     {
         int edge=0;
         foreach(var army in Armies){
-            army.Side=BoardSize==Size && Kind==BattleKind.Node && army.Owner==Defender?4:
-                EntrySides.SequenceEqual(new[]{0,1,2,3}) && Armies.Count==2 && edge==1?2:EntrySides[edge];
+            if(BoardSize!=Size || Terrain!=BattleTerrain.Sea)
+                army.Side=BoardSize==Size && Kind==BattleKind.Node && army.Owner==Defender?4:
+                    EntrySides.SequenceEqual(new[]{0,1,2,3}) && Armies.Count==2 && edge==1?2:EntrySides[edge];
             if(army.Side!=4)edge++;
             foreach(var unit in army.Waiting)unit.Facing=Inward(army.Side==4?0:army.Side);
             int count=Math.Min(initial,Math.Min(army.Limit,army.Waiting.Count(u=>u.Role!=BattleRole.Queen)));

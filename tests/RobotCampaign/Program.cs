@@ -23,6 +23,16 @@ int willBefore=battle.NoWillCount;bool noTroopsRejected=false;try{w.Campaign.Rob
 Add(w,a,0,1);w.Campaign.RobotBattles.SendReinforcement(w,0,a.Id,w.Campaign.RobotBattles.Encounters[0].Id);Check(w.Robots.Nodes[a.Id].Count==0 && battle.NoWillCount==willBefore && battle.Army(0).Waiting.Any(u=>u.Robot!=null),"World reinforcement queue does not reset will before entry");w.Campaign.RobotBattles.Check(w);
 w=World();a=w.Nodes.All.First(n=>w.Routes.Neighbors(n).Length>0);route=w.Routes.Neighbors(a)[0];b=w.Nodes.At(route.Target,route.Entry);Place(w,0,a);Place(w,1,b);Add(w,a,0,2);Add(w,b,1,2);w.Campaign.RobotBattles.Rules=new(){SegmentTurns=1,NoWillTurns=1000,PersuasionPercent=0};w.Campaign.Resolve(w,new[]{new March(0,b.Id,2),new March(1,a.Id,2)});
 Check(w.Campaign.RobotBattles.LockedEdge(a.Id,b.Id) && !w.Campaign.RobotBattles.CanMarch(w,0,b.Id),"Continued edge cannot be crossed");a.Owner=2;b.Owner=3;w.Campaign.Resolve(w,Array.Empty<March>());Check(w.Campaign.RobotBattles.Encounters.All(e=>e.Finished),"Both edge armies lose their homes");
+w=World();
+b=w.Nodes.All.First(n=>n.Terrain==TravelTerrain.Sea && w.Routes.Neighbors(n).Length>0);
+route=w.Routes.Neighbors(b)[0];a=w.Nodes.At(route.Target,route.Entry);
+Place(w,0,a);Place(w,1,b);Add(w,a,0,2);Add(w,b,1,2);
+w.Campaign.RobotBattles.Rules=new(){SegmentTurns=1,NoWillTurns=1000,PersuasionPercent=0};
+w.Campaign.Resolve(w,new[]{new March(0,b.Id,2),new March(1,a.Id,2)});
+battle=w.Campaign.RobotBattles.Encounters.Single().Battles.Single();
+int approach=((w.Routes.Bearing(b,route)+2)/4)%4;
+Check(battle.Terrain==BattleTerrain.Sea && battle.Army(0).Side==approach && battle.Army(1).Side==(approach+2)%4,
+    "A sea collision deploys ships on opposite sides along the route bearing");
 // Real seeded worlds exercise many simultaneous marches and continued battles.
 for(int seed=0;seed<4;seed++)
 {

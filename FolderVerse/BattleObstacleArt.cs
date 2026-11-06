@@ -27,11 +27,11 @@ public static class BattleObstacleArt
             if(i>1 && i<12)ui.Tile(center+forward*(i-6),new(1,Math.Max(1,14-i)),angle,Color.Lerp(new Color(255,207,86),Color.White,glow));
         }
     }
-    public static void Draw(UiPainter ui,Rectangle tile,BattleObstacleStyle style)
+    public static void Draw(UiPainter ui,Rectangle tile,BattleObstacleStyle style,float opacity=1)
     {
         float scale=tile.Width/66f;var center=new Vector2(tile.Center.X,tile.Center.Y);
-        void Box(int x,int y,int w,int h,Color c)=>ui.Box(new(tile.X+(int)(x*scale),tile.Y+(int)(y*scale),Math.Max(1,(int)(w*scale)),Math.Max(1,(int)(h*scale))),c);
-        void Diamond(int x,int y,int w,int h,Color c)=>ui.Tile(center+new Vector2(x,y)*scale,new Vector2(w,h)*scale,MathHelper.PiOver4,c);
+        void Box(int x,int y,int w,int h,Color c)=>ui.Box(new(tile.X+(int)(x*scale),tile.Y+(int)(y*scale),Math.Max(1,(int)(w*scale)),Math.Max(1,(int)(h*scale))),c*opacity);
+        void Diamond(int x,int y,int w,int h,Color c)=>ui.Tile(center+new Vector2(x,y)*scale,new Vector2(w,h)*scale,MathHelper.PiOver4,c*opacity);
         if(style==BattleObstacleStyle.Tree)
         {
             Box(29,34,9,27,new(120,74,41));Diamond(0,-9,29,29,new(22,94,56));
