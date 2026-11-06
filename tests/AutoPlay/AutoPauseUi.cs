@@ -47,11 +47,18 @@ sealed class AutoPauseUi:Game1
         }
         if(frame==8){
             Ready();w.SetTerritoryRights(456);Call("BeginSelection");Check(Get("_screen").ToString()=="LandConquest" && !w.IsHumanPlayer(0),"Zero humans skip human selection and start automatic land allocation");
-            Click(new(10,10));Check((bool)Get("_autoPaused"),"Land allocation can be interrupted from its first screen");
             var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();
-            Click(Bounds("HierarchyMenuItem").Center);
+            Click(Bounds("LandSkipOthers").Center);
+            Check((bool)Get("_skipOtherLandTurns") && !(bool)Get("_autoPaused") && !(bool)Get("_autoPlay") &&
+                Get("_screen").ToString()=="Fortune","Land skip works in a zero-human game before AUTO starts");
         }
-        if(frame==9){Click(Bounds("InactiveBack").Center);Click(Bounds("AutoPauseClose").Center);Check(!(bool)Get("_autoPaused") && Get("_screen").ToString()=="LandConquest","Scaled hierarchy menu returns to the same automatic land phase");Click(new(10,10));}
+        if(frame==9){
+            Click(new(10,10));
+            Check(!(bool)Get("_autoPaused") && !(bool)Get("_autoPlay"),"Fortune clicks do not pause AUTO");
+            Click(Bounds("FortuneConfirm").Center);
+            Check((bool)Get("_autoPlay") && Get("_screen").ToString()=="WorldStatus","Confirming Fortune starts AUTO after world construction");
+            Click(new(10,10));Check((bool)Get("_autoPaused"),"AUTO can be paused after world construction");
+        }
         if(frame==10){
             Ready();Input(0);var home=w.Nodes.All.First(n=>n.Owner==1);Call("BeginComputerView",1);Set("_computerDomesticNodes",new[]{home});Set("_computerDomesticIndex",0);Set("_computerDomesticAge",.5d);
             Click(new(10,10));Click(Bounds("CountrySettingsMenuItem").Center);Click(((Rectangle)Call("CountrySettingsCard",3)).Center);Click(Bounds("CountryHumanButton").Center);Click(Bounds("CountrySettingsClose").Center);Click(Bounds("AutoPauseClose").Center);

@@ -134,7 +134,7 @@ public partial class Game1 : Game
         bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
         if(AutoPauseInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(ComputerExhibition && !_autoPlay && _screen is not (Screen.LandConquest or Screen.Fortune))StartAutoPlay();
+        if(ComputerExhibition && !_autoPlay)StartAutoPlay();
         if(AutomaticGame)_autoAge+=gameTime.ElapsedGameTime.TotalSeconds;
         _setup.Robots.PartPlanning.Invalidate();
         if(IsStatusScreen)_setup.Robots.DirectDelivery.ReconcileDestinations(_setup);

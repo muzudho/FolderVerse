@@ -10,13 +10,13 @@ public partial class Game1
     private int _autoPausePage;
     private static readonly Rectangle AutoPauseClose=new(1230,20,60,46);
     private bool ComputerExhibition=>!_demoActive && _setup.ComputerOnly && _setup.PlayerSlot>=0 &&
-        _screen is Screen.LandConquest or Screen.Fortune or Screen.WorldStatus or Screen.Transport or Screen.Battle or Screen.Industry or Screen.BattleResearch or Screen.Disposition;
-    private bool AutomaticGame=>!_demoActive && (_autoPlay || ComputerExhibition);
+        _screen is Screen.WorldStatus or Screen.Transport or Screen.Battle or Screen.Industry or Screen.BattleResearch or Screen.Disposition;
+    private bool BuildingWorld=>_screen is Screen.LandConquest or Screen.Fortune;
+    private bool AutomaticGame=>!_demoActive && !BuildingWorld && (_autoPlay || ComputerExhibition);
     private bool AutoPauseInput(bool click,bool escape)
     {
         if(!_autoPaused){
             if(!AutomaticGame || !(click || escape))return false;
-            if(click && FortuneSettingsAvailable && (FortuneSlider.Contains(_pointer) || FortuneConfirm.Contains(_pointer)))return false;
             _autoPauseComputerOnly=_setup.ComputerOnly;
             _autoPaused=true;_autoPausePage=0;_statusMenuOpen=true;_countrySettingsOpen=false;
             _operations.Write("auto_paused",new{screen=_screen.ToString(),turn=_setup.Population.Turn});return true;

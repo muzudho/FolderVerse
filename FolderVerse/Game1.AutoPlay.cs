@@ -18,7 +18,7 @@ public partial class Game1
     }
     private bool UpdateAutoPlay(double elapsed,bool click,bool escape,double now)
     {
-        if(!_autoPlay)return false;
+        if(!_autoPlay || BuildingWorld)return false;
         if(_autoPaused)return true;
         if(click || escape){AutoPauseInput(click,escape);return true;}
         _autoStepAge+=elapsed;
