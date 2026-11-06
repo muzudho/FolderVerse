@@ -16,6 +16,7 @@ public partial class Game1
     {
         if(!_autoPaused){
             if(!AutomaticGame || !(click || escape))return false;
+            if(click && FortuneSettingsAvailable && (FortuneSlider.Contains(_pointer) || FortuneConfirm.Contains(_pointer)))return false;
             _autoPauseComputerOnly=_setup.ComputerOnly;
             _autoPaused=true;_autoPausePage=0;_statusMenuOpen=true;_countrySettingsOpen=false;
             _operations.Write("auto_paused",new{screen=_screen.ToString(),turn=_setup.Population.Turn});return true;

@@ -30,7 +30,17 @@ sealed class CheckGame:Game1
         Set("_skipOtherLandTurns",true);Call("UpdateLandSetup",0d,new MouseState(),false,false,false);
         Check(Get("_screen").ToString()=="Fortune","All 60 computer land turns finish automatically");
         Call("UpdateLandSetup",5d,new MouseState(),false,false,false);
+        Check(Get("_screen").ToString()=="Fortune" && (int)Get("_robotScatterPercent")==25,"Fortune waits for confirmation with 25 percent selected");
+        var canvas=(Rectangle)Call("CanvasBounds");
+        void FortuneClick(int x,int y){
+            foreach(var state in new[]{ButtonState.Released,ButtonState.Pressed,ButtonState.Released})
+                Call("HandleInput",new MouseState(canvas.X+x*canvas.Width/1920,canvas.Y+y*canvas.Height/1080,0,state,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(),true);
+        }
+        FortuneClick(539,459);Check((int)Get("_robotScatterPercent")==100,"Right end selects 100 percent");
+        FortuneClick(61,459);Check((int)Get("_robotScatterPercent")==0,"Left end selects zero percent");
+        FortuneClick(300,568);
         Check(Get("_screen").ToString()=="WorldStatus" && (bool)Get("_autoPlay"),"Computer-only begins automatic domestic play");Set("_autoPlay",false);
+        Check(w.Robots.Nodes.All(s=>s.Count==0) && w.Robots.Retinues.All(s=>s.Count==2),"Zero scatter preserves two pocket robots per participant");
         Call("BeginPlayerCount");Check((int)Get("_requestedPlayers")==1,"New session default 1");
         w.SetPlayerCount(2);w.SetWorld(0);w.SetCast(123);w.SetTerritoryRights(456);Call("BeginSelection");
         w.SelectPlayer(0);Call("ConfirmHumanSelection");Check(Get("_screen").ToString()=="PlayerSelect","Second participant selection");
@@ -85,7 +95,8 @@ sealed class CheckGame:Game1
         w.SelectPlayer(1);Call("NotifyPlayerTurn");Check(Get("_notifiedTurn").Equals((0,1)),"Turn notification follows next participant");
         w.SetPlayerCount(20);Set("_demoActive",true);Set("_demoIntro",true);Set("_demoAge",0d);
         Call("UpdateDemo",2.3,true,false,false,false,2.3);Check(w.PlayerCount==1 && Get("_screen").ToString()=="PlayerCount","Demo starts at one participant");
-        Call("UpdateDemo",3.1,true,false,false,false,5.4);Check(w.PlayerCount==1 && Get("_screen").ToString()=="Rolling","Demo confirms one participant");
+        Call("UpdateDemo",3.1,true,false,false,false,5.4);Check(w.PlayerCount==1 && Get("_screen").ToString()=="ComputerPlayerCount","Demo confirms one human participant");
+        Call("UpdateDemo",3.1,true,false,false,false,8.5);Check(w.PlayerCount==1 && Get("_screen").ToString()=="Rolling","Demo confirms computer participants");
         Console.WriteLine("PASS: glyphs, 60-person mouse selection, computer limits, zero-total guard, computer-only setup, participant selection, rendering, demo and turn chime.");Exit();
     }
 }
