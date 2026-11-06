@@ -41,7 +41,11 @@ public sealed partial class RobotWorld
             for(int j=0;j<3;j++)if((line.Product&parts[j])!=0 && line.CurrentProductionPlan.Preview(owner).Origin(parts[j])==owner)counts[j]++;
         }
         if(workshop.AutoAssemblyDisabled && (!gentle || !changed)){workshop.AutoAssemblyDisabled=false;changed=true;}
-        if(workshop.ReservedSlots!=2 && (!gentle || !changed)){workshop.SetReservedSlots(gentle?workshop.ReservedSlots+Math.Sign(2-workshop.ReservedSlots):2);changed=true;}
+        int reserveTarget=Math.Clamp(workshop.ReservedSlotLimit-1,0,2);
+        if(workshop.ReservedSlots!=reserveTarget && (!gentle || !changed)){
+            workshop.SetReservedSlots(gentle?workshop.ReservedSlots+Math.Sign(reserveTarget-workshop.ReservedSlots):reserveTarget);
+            changed=true;
+        }
         if(!adjustTransport)return;
         var targets=Enumerable.Range(0,Nodes.Length).Where(n=>n!=node && (nodeOwner==null || nodeOwner(n)==owner) && connected(node,n) && locked?.Invoke(n)!=true && Nodes[n].Count<Nodes[node].Count-1).OrderBy(n=>Nodes[n].Count).ThenBy(n=>n).Take(2).ToArray();
         // A complete soldier may only be dispatched when its ruler's training permits it.

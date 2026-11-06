@@ -16,6 +16,13 @@ public sealed partial class BattleState
             // One open boarding lane joins each attacking ship to the central defending deck.
             for(int i=2;i<=10;i++){deck13.Add(new(6,i));deck13.Add(new(i,6));}
             for(int y=0;y<Size;y++)for(int x=0;x<Size;x++)if(!deck13.Contains(new(x,y))){Walls.Add(new(x,y));SeaClearWater.Add(new(x,y));}
+            if(Kind==BattleKind.Node && Defender>=0){
+                // Cover on the defending deck leaves the four boarding lanes clear.
+                foreach(var cover in new[]{new Point(5,5),new Point(7,7)}){
+                    Walls.Add(cover);
+                    Fortifications.Add(new(cover,FortificationKind.Barrel,Defender,BattleFacing.North));
+                }
+            }
             return;
         }
         rotation=((rotation%4)+4)%4;

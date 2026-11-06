@@ -52,12 +52,11 @@ public partial class Game1
     private void OpenNodeAssembly()
     {
         if(!PlanningFunctional(_populationNode))return;
-        _hangarPage=0;Array.Resize(ref _hangarSlots,Math.Max(12,PlanningStock.Nodes[_populationNode].TotalCapacity));_hangarTrainingCountry=-1;_hangarAbandonMode=false;
+        _hangarPage=0;_hangarTrainingCountry=-1;_hangarAbandonMode=false;
         _nodeOfficeOpen=false;_lastNodeTab=3;
         _nodeAssemblyOpen=true;_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;
         _hangarDrag=null;_hangarReservation=HangarReservation.None;_hangarMessage="";Array.Clear(_hangarSlots);
-        var robots=PlanningStock.Nodes[_populationNode].Robots;
-        for(int i=0;i<robots.Count;i++)_hangarSlots[i]=robots[i].Id;
+        SyncHangarSlots();
     }
     private void NodeAssemblyInput(MouseState mouse,bool click,bool escape)
     {
@@ -159,6 +158,7 @@ public partial class Game1
         SyncHangarSlots();
         var workshop=PlanningWorkshop(_populationNode);var store=PlanningStock.Nodes[_populationNode];
         _ui.Box(new(54,150,850,825),new(27,49,62));
+        _ui.Text($"格納庫 {store.Count}/{store.TotalCapacity}",new(84,285),.28f,Cream);
         _ui.Text("入荷・機能移転・組替後の予定",new(84,266),.28f,Cream);DrawHangarUndo();
 
 
@@ -293,7 +293,8 @@ public partial class Game1
     }
     private void SyncHangarSlots()
     {
-        Array.Resize(ref _hangarSlots,Math.Max(12,PlanningStock.Nodes[_populationNode].TotalCapacity));
+        Array.Resize(ref _hangarSlots,PlanningStock.Nodes[_populationNode].TotalCapacity);
+        _hangarPage=Math.Min(_hangarPage,FunctionPageCount(_populationNode)-1);
         var robots=PlanningStock.Nodes[_populationNode].Robots;
         for(int i=0;i<_hangarSlots.Length;i++)if(_hangarSlots[i].HasValue && !robots.Any(r=>r.Id==_hangarSlots[i]))_hangarSlots[i]=null;
         foreach(var robot in robots)if(!_hangarSlots.Contains(robot.Id)){int slot=Array.FindIndex(_hangarSlots,id=>!id.HasValue);if(slot>=0)_hangarSlots[slot]=robot.Id;}

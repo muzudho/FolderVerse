@@ -15,11 +15,14 @@ public sealed class NodeFunctionTransfers
     public bool Cancel(int source)=>Orders.RemoveAll(o=>o.Source==source)>0;
     public bool CanReserve(WorldSetup w,int source,int target)
         =>Available(w,source,target,true);
+    internal IEnumerable<int> ValidSources(WorldSetup w)=>Orders
+        .Where(o=>Available(w,o.Source,o.Target,false) && w.Nodes.All[o.Source].Owner==o.Owner)
+        .Select(o=>o.Source);
     private bool Available(WorldSetup w,int source,int target,bool authority)
     {
         if(w.Campaign.Phase!=CampaignPhase.Domestic || source<0 || target<0 || source>=w.Nodes.All.Length || target>=w.Nodes.All.Length || source==target)return false;
         var a=w.Nodes.All[source];var b=w.Nodes.All[target];var battles=w.Campaign.RobotBattles;
-        return a.Functional && (!authority || w.Relations.Controls(a.Owner) && w.Relations.Controls(b.Owner)) && w.Relations.Allied(a.Owner,b.Owner) &&
+        return a.Functional && b.Functional && (!authority || w.Relations.Controls(a.Owner) && w.Relations.Controls(b.Owner)) && w.Relations.Allied(a.Owner,b.Owner) &&
             !battles.LockedNode(source) && !battles.LockedNode(target) && !battles.LockedEdge(source,target) &&
             w.Robots.Nodes[source].ReservedReturns==0 && w.Robots.Nodes[target].ReservedReturns==0 &&
             !battles.Reserves.Any(r=>r.Node==source || r.Node==target) &&
@@ -49,8 +52,7 @@ public sealed class NodeFunctionTransfers
             target.Replace(target.Robots.Concat(source.Robots.Select(r=>(r.DefenseOnly?r.WithoutDefenseReservation():r) with {FunctionDisplayNode=r.FunctionDisplayNode??a})).ToArray());
             source.Replace(Array.Empty<Robot>());source.SetCapacity(0);
             w.Robots.Workshops[a].PreserveFunctionOrigin(a);w.Robots.Workshops[b].PreserveFunctionOrigin(b);
-            if(w.Nodes.All[b].Functional)w.Robots.Workshops[b].AbsorbFunctions(w.Robots.Workshops[a]);
-            else w.Robots.Workshops[b]=w.Robots.Workshops[a];
+            w.Robots.Workshops[b].AbsorbFunctions(w.Robots.Workshops[a]);
             w.Robots.Workshops[a]=RobotWorkshop.EmptyFunctions();
             w.Nodes.All[b].FunctionUnits=checked(w.Nodes.All[b].FunctionUnits+w.Nodes.All[a].FunctionUnits);w.Nodes.All[a].FunctionUnits=0;
             foreach(var node in w.Nodes.All)if(node.FunctionHost==a)node.FunctionHost=b;

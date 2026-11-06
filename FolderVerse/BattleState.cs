@@ -8,7 +8,7 @@ public enum BattleFacing { North,East,South,West }
 public enum BattleWeapon { None,Dagger,Rifle }
 public enum BattleRole { Soldier,Captain,Queen }
 public enum BattlePhase { Choose,Place,Rollback,Attack,Receive,Consume,Fall,Flag,Reinforce,Result,Retreat,Persuade,Converted,DefenseRetreat }
-public enum BattleTerrain { Field,Sea,Fort }
+public enum BattleTerrain { Field,Sea,Fort,Mountain }
 public sealed record BattleAction(Point Step,BattleFacing Facing,BattleWeapon Weapon=BattleWeapon.None);
 public sealed record BattleEvent(int Turn,BattlePhase Phase,long Unit,string Detail);
 public sealed record BattleUnitView(long Id,int Owner,BattleRole Role,Point Position,BattleFacing Facing,int Daggers,int Rifles,int Shields,bool Fallen,bool Retreated,Robot Robot=null);
@@ -173,6 +173,20 @@ public sealed partial class BattleState
     public void BuildTerrain(BattleTerrain terrain)
     {
         ResetFortifications();Terrain=terrain;Walls.Clear();WallShotDirections.Clear();
+        if(terrain==BattleTerrain.Field){
+            LayoutName="平地";Flag=new(BoardSize/2,BoardSize/2);
+        }
+        if(terrain==BattleTerrain.Mountain){
+            LayoutName="高山・岩壁";Flag=new(BoardSize/2,BoardSize/2);
+            // Four ridges screen the flag from the deployment edges, with offset passes.
+            for(int side=0;side<4;side++)
+            for(int offset=-3;offset<=3;offset++){
+                if(offset==1)continue;
+                var p=new Point(offset,-3);
+                for(int turn=0;turn<side;turn++)p=new(-p.Y,p.X);
+                Walls.Add(Flag+p);
+            }
+        }
         if(terrain==BattleTerrain.Fort)
         {
             if(BoardSize==10){foreach(int x in new[]{2,3,6,7})Walls.Add(new(x,3));Flag=new(5,2);}

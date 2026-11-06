@@ -184,7 +184,9 @@ public partial class Game1
             else
             {
                 _ui.Box(r,Math.Abs(_setup.Geographic(terrainCell.Normal).Y)>.5f?new Color(161,192,203):terrainHeight<.55f?new Color(163,137,91):new Color(35,64,58));
-                if(wall)BattleObstacleArt.Draw(_ui,r,BattleObstacleArt.Style(false,false,terrainHeight,_setup.Geographic(terrainCell.Normal).Y));
+                if(wall)BattleObstacleArt.Draw(_ui,r,battle.Terrain==BattleTerrain.Mountain
+                    ? BattleObstacleStyle.Rock
+                    : BattleObstacleArt.Style(false,false,terrainHeight,_setup.Geographic(terrainCell.Normal).Y));
             }
         }
         float fortImpact=BattleAttackArt.ImpactProgress(battle,frameIndex,_robotPlaying?RobotBattlePlayback.FramePosition(RobotSlice(_battleWave),_battleAge,RobotSeconds(_battleWave)):frameIndex+.5);

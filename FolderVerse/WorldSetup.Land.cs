@@ -1,6 +1,7 @@
 namespace FolderVerse;
 using System;
 using System.Linq;
+using Microsoft.Xna.Framework;
 public sealed partial class WorldSetup
 {
     public int[] TerritoryRights {get;private set;}=new int[CastCount];
@@ -38,7 +39,9 @@ public sealed partial class WorldSetup
         TerritoryCounts=Enumerable.Range(0,CastCount).Select(o=>Owners.Count(v=>v==o)).ToArray();
         Capitals=Enumerable.Range(0,ActiveCount).Select(o=>Array.IndexOf(Owners,o)).ToArray();ConquerorLocations=(int[])Capitals.Clone();
         Population.Initialize(this);Routes.Initialize(this);ConquerorPoints=ConquerorLocations.Select(Routes.Start).ToArray();Nodes.Initialize(this);
-        Robots.Initialize(Nodes.All.Length,ActiveCount);Robots.ConfigureFactories(this);var random=new SeedRandom(fortuneSeed);
+        Robots.Initialize(Nodes.All.Length,ActiveCount);
+        if(TutorialStep==0)InitializeTerrainHangars();
+        Robots.ConfigureFactories(this);var random=new SeedRandom(fortuneSeed);
         int scatterRemainder=50;
         foreach(var node in Nodes.All.Where(n=>n.Owner>=0))
         {
@@ -48,7 +51,8 @@ public sealed partial class WorldSetup
                 for(int i=0;i<4;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,RobotParts.Complete,RobotRole.Soldier));
             }else{
                 int count=1+random.Next(8);
-                int scaled=count*(TutorialStep==0?robotScatterPercent:100)+scatterRemainder;
+                int capacity=Robots.Nodes[node.Id].TotalCapacity;
+                int scaled=Math.Min(count,capacity)*(TutorialStep==0?robotScatterPercent:100)+scatterRemainder;
                 int placed=scaled/100;
                 scatterRemainder=scaled%100;
                 for(int i=0;i<count;i++){
@@ -71,6 +75,35 @@ public sealed partial class WorldSetup
         for(int ruler=0;ruler<ActiveCount;ruler++)ConquerorPoints[ruler]=Nodes.Current(ruler).Center;
         Routes.RefreshDisplay();Campaign.Reset();LandPending=false;
         Salvage.Initialize(this);
+    }
+
+    internal int TerrainArea(int cell,TravelTerrain terrain)
+    {
+        int area=0;
+        for(int y=0;y<10;y++)
+        for(int x=0;x<10;x++)
+            if(Routes.Terrain(cell,new Point(x,y))==terrain)area++;
+        return area;
+    }
+
+    private void InitializeTerrainHangars()
+    {
+        foreach(var region in Nodes.All.GroupBy(node=>(node.Cell,node.Terrain))){
+            var (cell,terrain)=region.Key;
+            int area=TerrainArea(cell,terrain);
+            double mean=terrain==TravelTerrain.Land
+                ? area<=50 ? 1+area/10.0 : 6+(area-50)*.08
+                : 2+Math.Max(0,area-50)*.04;
+            foreach(var node in region){
+                var random=new SeedRandom(unchecked(WorldSeed^(node.Id+1)*7919));
+                int center=(int)mean;
+                if(random.Unit()<mean-center)center++;
+                int spread=Math.Min(terrain==TravelTerrain.Land?2:1,Math.Min(center-1,RobotStore.Capacity-center));
+                int capacity=center+random.Next(2*spread+1)-spread;
+                Robots.Nodes[node.Id].SetCapacity(capacity);
+                Robots.Workshops[node.Id].SetStorageSlotLimit(capacity);
+            }
+        }
     }
 }
 

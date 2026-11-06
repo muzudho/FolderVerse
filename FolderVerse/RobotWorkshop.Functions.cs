@@ -9,6 +9,7 @@ public sealed partial class RobotWorkshop
     public int? FunctionOriginNode;
     private int? _storageSlotLimit;
     public int ReservedSlotLimit=>_storageSlotLimit??RobotStore.Capacity;
+    internal void SetStorageSlotLimit(int limit)=>_storageSlotLimit=limit;
     internal void PreserveFunctionOrigin(int node){TransferredLineLimit=LineLimit;foreach(var line in ProductionLines)line.FunctionOriginNode??=node;}
     public RobotWorkshop[] DisposalFacilities=>new[]{this}.Concat(_disposalAnnexes??Array.Empty<RobotWorkshop>()).ToArray();
     public bool IsDisposing(long id)=>DisposalFacilities.Any(f=>f.DisposalTarget==id);

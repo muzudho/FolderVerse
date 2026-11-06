@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 public partial class Game1
 {
-    private static readonly Rectangle FunctionTransferMapBanner=new(54,878,810,36);
+    private static readonly Rectangle FunctionTransferMapBanner=new(54,822,810,92);
     private bool _functionTransferMap, _functionTransferRoutesBefore;
     private string _functionTransferMessage="";
     private readonly List<FunctionTransferMarker> _functionTransferMarkers=new();
@@ -115,12 +115,38 @@ public partial class Game1
         var hovered=HitFunctionTransferMarker(_pointer);
         var background=new Color(7,23,35);
         var reservedColor=new Color(255,210,125);
+        var routeColor=new Color(110,235,245);
+        var threatColor=new Color(255,145,105);
+        var defenseSites=new HashSet<int>();
+        var attackSites=new HashSet<int>();
 
         foreach(var marker in _functionTransferMarkers)
             DrawFunctionTransferLine(marker.From,marker.To,marker.Reserved?reservedColor:Accent*.6f,2);
         if(hovered!=null)
         {
             DrawFunctionTransferLine(hovered.From,hovered.To,Cream,4);
+            foreach(var (path,threat) in _setup.Campaign.RobotBattles.FunctionTransferRoutes(_setup,hovered.Source,hovered.Target))
+            {
+                if(threat)
+                {
+                    attackSites.Add(path[0]);
+                    defenseSites.Add(path[^1]);
+                }
+                var ink=threat?threatColor:routeColor;
+                for(int i=1;i<path.Length;i++)
+                {
+                    if(!VisiblePosition(path[i-1],out var from) || !VisiblePosition(path[i],out var to))continue;
+                    DrawFunctionTransferLine(from,to,ink,threat?3:5);
+                    if(!threat || (to-from).LengthSquared()<1)continue;
+                    var unit=Vector2.Normalize(to-from);
+                    var tip=(from+to)/2+unit*9;
+                    var wing=new Vector2(-unit.Y,unit.X)*6;
+                    DrawFunctionTransferLine(tip-unit*10+wing,tip,ink,3);
+                    DrawFunctionTransferLine(tip-unit*10-wing,tip,ink,3);
+                }
+            }
+            foreach(int id in attackSites)DrawSite(id,"敵");
+            foreach(int id in defenseSites)DrawSite(id,"守備");
             foreach(var at in new[]{hovered.From,hovered.To})
             {
                 _ui.Tile(at+new Vector2(0,-13),new(28,3),0,Cream);
@@ -133,10 +159,28 @@ public partial class Game1
 
         string hint=hovered==null
             ? _functionTransferMessage.Length>0?_functionTransferMessage:"機能移転の予約　/　矢印で予約　/　書類で取消　/　Esc で閉じる"
-            : FunctionTransferDirection(hovered.Source,hovered.Target)+(hovered.Reserved?" の予約を取り消す"
-                :_setup.Nodes.All[hovered.Target].Functional?" に機能を集約する":" に機能を移す");
+            : FunctionTransferDirection(hovered.Source,hovered.Target)+(hovered.Reserved?" の予約を取り消す":" に機能を集約する");
         _ui.Box(FunctionTransferMapBanner,background);
-        _ui.Center(hint,FunctionTransferMapBanner,Math.Min(.4f,790/Math.Max(1,_font.MeasureString(hint).X)),Cream);
+        BannerRow(hint,0,Cream);
+        BannerRow("配送後、移転元は無機能地点になり、この対戦中は機能を戻せません",1,Cream);
+        BannerRow(hovered==null?"矢印や書類にカーソルを合わせて移転後の経路と守備地点を確認"
+            :"水色：新たに通れる進軍経路　/　オレンジの矢印：敵の進軍経路と守備地点",2,routeColor);
+
+        bool VisiblePosition(int id,out Vector2 at)=>OperationPosition(id,out at) && MapViewBounds.Contains(at.ToPoint());
+
+        void DrawSite(int id,string text)
+        {
+            if(!VisiblePosition(id,out var at))return;
+            var label=new Rectangle((int)at.X-25,(int)at.Y-38,50,23);
+            _ui.Box(label,background);
+            _ui.Center(text,label,.30f,threatColor);
+        }
+
+        void BannerRow(string label,int row,Color ink)
+        {
+            var bounds=new Rectangle(FunctionTransferMapBanner.X,FunctionTransferMapBanner.Y+row*30,FunctionTransferMapBanner.Width,30);
+            _ui.Center(label,bounds,Math.Min(.36f,790/Math.Max(1,_font.MeasureString(label).X)),ink);
+        }
 
         void DrawMarker(FunctionTransferMarker marker)
         {

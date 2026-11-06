@@ -33,8 +33,8 @@ static Robot Add(WorldSetup w,int n,RobotParts parts){var r=w.Robots.Create(0,pa
     saved=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));saved.Robots.ConfigureFactories(saved);
     Check(saved.Robots.Nodes[b].Count==24 && saved.Robots.Workshops[b].ProductionLines.Length==w.Robots.Workshops[b].ProductionLines.Length && saved.Nodes.All[a].FunctionHost==b,"Merged functions and reference origins survive reconfiguration after loading");
     w.Campaign.BeginMilitary();Reject(()=>w.Campaign.FunctionTransfers.Reserve(w,b,a));w.Campaign.Advance(w,-1,0,enemies:false);
-    w.Campaign.FunctionTransfers.Reserve(w,b,a);w.Campaign.FinishDomestic(w);
-    Check(w.Nodes.All[a].Functional && !w.Nodes.All[b].Functional && w.Robots.Nodes[a].Count==24 && w.Robots.Nodes[a].TotalCapacity==24,"Moving into an empty node restores it without losing merged capacity");
+    Reject(()=>w.Campaign.FunctionTransfers.Reserve(w,b,a));
+    Check(!w.Nodes.All[a].Functional && w.Nodes.All[b].Functional && w.Robots.Nodes[b].Count==24 && w.Robots.Nodes[b].TotalCapacity==24,"A completed transfer cannot be reversed");
 }
 {
     var(w,a,b,c)=Fixture();w.Campaign.FunctionTransfers.Reserve(w,b,a);w.Campaign.FunctionTransfers.Reserve(w,c,a);
@@ -92,6 +92,12 @@ static Robot Add(WorldSetup w,int n,RobotParts parts){var r=w.Robots.Create(0,pa
     var host=w.Nodes.All[b];
     var attacker=w.Nodes.All[c];
     w.Campaign.FunctionTransfers.Reserve(w,a,b);
+    attacker.Owner=1;
+    var preview=(IEnumerable<(int[] Path,bool Threat)>)typeof(RobotCampaign)
+        .GetMethod("FunctionTransferRoutes",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(military,new object[]{w,a,b})!;
+    Check(preview.Any(r=>r.Threat && r.Path[0]==c && r.Path[^1]==b),
+        "Preview shows the hostile approach and its defense endpoint before delivery");
+    Check(original.Functional && w.Campaign.FunctionTransfers.Orders.Count==1,"Preview does not change the map or reservation");
     w.Campaign.FinishDomestic(w);
     w.Campaign.BeginMilitary();
     attacker.Owner=1;

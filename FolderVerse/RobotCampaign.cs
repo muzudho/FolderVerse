@@ -282,7 +282,14 @@ public sealed partial class RobotCampaign
         var state=new BattleState(world.PlacementSeed^e.Id^_nextBattle,Rules){Id=_nextBattle++,GlobalTurn=world.Population.Turn,Kind=e.Kind,SourceNode=e.Source,TargetNode=e.Target,Defender=e.Defender,Allied=world.Relations.Allied};
         state.Lessons=(BattleLesson[])world.Lessons.Owned.Clone();
         foreach(var rank in world.Relations.ProvisionalRanking(world))state.NewspaperRanks[rank.Ruler]=rank.Rank;
-        state.BuildTerrain(world.Nodes.All[e.Target].Terrain==TravelTerrain.Sea?BattleTerrain.Sea:e.Kind==BattleKind.Node?BattleTerrain.Fort:BattleTerrain.Field);return state;
+        var target=world.Nodes.All[e.Target];
+        var terrain=target.Terrain==TravelTerrain.Sea?BattleTerrain.Sea:BattleTerrain.Field;
+        if(e.Kind==BattleKind.Node && e.Defender>=0 && target.Terrain!=TravelTerrain.Sea){
+            if(target.Terrain==TravelTerrain.Mountain)terrain=BattleTerrain.Mountain;
+            else if(world.TerrainArea(target.Cell,TravelTerrain.Land)<100)terrain=BattleTerrain.Fort;
+        }
+        state.BuildTerrain(terrain);
+        return state;
     }
     private void AddReinforcement(WorldSetup world,RobotEncounter e,int owner,int home,List<Robot> robots,bool queen)
     {

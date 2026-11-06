@@ -62,6 +62,10 @@ public sealed partial class BattleState
     }
     public void InheritFortifications(BattleState previous)
     {
+        foreach(var f in Fortifications.Where(f=>f.Kind!=FortificationKind.Gate)){
+            Walls.Remove(f.Position);
+            WallShotDirections.Remove(f.Position);
+        }
         FortificationsBuilt=previous.FortificationsBuilt;InitialDefenseCount=previous.InitialDefenseCount;
         Fortifications.Clear();Fortifications.AddRange(previous.Fortifications);
         foreach(var f in Fortifications.Where(f=>f.Kind!=FortificationKind.Gate)){
