@@ -203,6 +203,8 @@ public sealed partial class RobotCampaign
         // Residents waiting outside full stores can be used as reinforcements at their own node.
         foreach(var reserve in Reserves.ToArray())
         {
+            // Keep robots that cannot fight in overflow until a hangar has room.
+            if(!reserve.Robot.CanFight)continue;
             var encounter=Encounters.FirstOrDefault(e=>!e.Finished && e.Kind==BattleKind.Node && e.Target==reserve.Node);
             if(encounter!=null){AddReinforcement(world,encounter,reserve.Robot.Owner,reserve.Node,new(){reserve.Robot},false);Reserves.Remove(reserve);}
         }
