@@ -36,9 +36,9 @@ public partial class Game1
     }
     private void OpenWarPlanning()
     {
-        if(!MilitaryOperationsAllowed)return;
+        if(!WarPlanningAllowed)return;
         _withdrawalEncounter=-1;CloseMovement();OpenMovementWithFit(false);_warPlanning=true;_net.HoverSuppressedNode=-1;_net.AttackTargetMarkers=true;_net.RevealMovementTargets=true;_net.MovementTargets.Clear();
-        foreach(var node in _setup.Nodes.All.Where(n=>n.Functional && CanPlanRuler(n.Owner)))
+        foreach(var node in _setup.Nodes.All.Where(n=>PlanningFunctional(n.Id) && CanPlanRuler(n.Owner)))
             foreach(int target in _setup.Campaign.RobotBattles.MarchTargets(_setup,node.Id))
                 if(EnemyTarget(target))_net.MovementTargets.Add(target);
         foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler))
@@ -51,7 +51,7 @@ public partial class Game1
         _net.AttackHighlightTargets.Clear();
         if(!_movementOpen || !_warPlanning)return;
         // Use the picker's own eligibility rules while retaining all clickable destinations.
-        foreach(var node in _setup.Nodes.All.Where(n=>n.Functional && CanPlanRuler(n.Owner))){
+        foreach(var node in _setup.Nodes.All.Where(n=>PlanningFunctional(n.Id) && CanPlanRuler(n.Owner))){
             if(InvasionRobots(new(){Owner=node.Owner,Node=node.Id}).Length==0)continue;
             foreach(int target in _setup.Campaign.RobotBattles.MarchTargets(_setup,node.Id))
                 if(_net.MovementTargets.Contains(target))_net.AttackHighlightTargets.Add(target);
@@ -69,12 +69,12 @@ public partial class Game1
     }
     private IEnumerable<int> InvasionTargets(int ruler)=>_setup.Campaign.RobotBattles.MarchTargets(_setup,_setup.Nodes.Current(ruler)?.Id??-1)
         .Append(_setup.Nodes.Current(ruler)?.Id??-1).Where(id=>id>=0 && _setup.Campaign.RobotBattles.CanSortie(_setup,ruler,id)).Distinct();
-    private bool CanPlanRuler(int ruler)=>ruler>=0 && _setup.ControllerOf(ruler)==_setup.TurnPlayer && _setup.Relations.Powered[ruler] && !_setup.Relations.Pending.Any(p=>p.Ruler==ruler);
+    private bool CanPlanRuler(int ruler)=>ruler>=0 && (_computerMarches!=null?ruler==_setup.PlayerSlot:_setup.ControllerOf(ruler)==_setup.TurnPlayer) && _setup.Relations.Powered[ruler] && !_setup.Relations.Pending.Any(p=>p.Ruler==ruler);
     private bool EnemyTarget(int id)=>_setup.Nodes.All[id].Owner<0 || !_setup.Relations.Allied(_setup.PlayerSlot,_setup.Nodes.All[id].Owner);
     private void BuildInvasionSources(int target)
     {
         _invasionSources.Clear();_invasionPage=0;_invasionPicker=-1;
-        foreach(var node in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner) && _setup.Campaign.RobotBattles.CanAttackFrom(_setup,n.Owner,n.Id,target)))
+        foreach(var node in _setup.Nodes.All.Where(n=>CanPlanRuler(n.Owner) && PlanningCanAttackFrom(n.Owner,n.Id,target)))
             _invasionSources.Add(new(){Owner=node.Owner,Node=node.Id,CanNode=true});
         foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler).Where(r=>_setup.Campaign.RobotBattles.CanSortie(_setup,r,target)))
         {
@@ -128,16 +128,20 @@ public partial class Game1
     }
     private void ReserveInvasion(InvasionSource row)
     {
-        if(!MilitaryOperationsAllowed)return;
+        if(!WarPlanningAllowed)return;
         if(_selectedMoveNode<0)return;
         if(row.Robots.Any(id=>!InvasionRobots(row).Any(r=>r.Id==id)))return;
         // Materialize old count-only reservations before splitting this store across targets.
         foreach(var old in _setup.Campaign.PlannedOrders.Where(o=>o.Ruler==row.Owner && o.SourceNode==row.Node && (o.Queen || o.PocketOnly)==row.Queen && o.RobotIds==null).ToArray())
             _setup.Campaign.Plan(old with {RobotIds=_setup.Campaign.RobotBattles.SelectableRobots(_setup,row.Owner,row.Node,row.Queen).Take((int)old.Fighters).Select(r=>r.Id).ToArray()});
         _setup.Campaign.CancelReservation(row.Owner,row.Node,row.Queen,_selectedMoveNode);
-        if(!row.Queen)_setup.Robots.PrepareSortieReservation(row.Node,row.Robots.ToArray());
+        if(!row.Queen && !DomesticOperationsAllowed)_setup.Robots.PrepareSortieReservation(row.Node,row.Robots.ToArray());
         if(row.Robots.Count>0 || row.Queen && row.Selected)
-            _setup.Campaign.Plan(new(row.Owner,_selectedMoveNode,row.Robots.Count,row.Node,row.Queen && row.Selected,row.Queen,row.Robots.OrderBy(id=>id).ToArray()));
+        {
+            var order=new March(row.Owner,_selectedMoveNode,row.Robots.Count,row.Node,row.Queen && row.Selected,row.Queen,row.Robots.OrderBy(id=>id).ToArray());
+            if(!row.Queen && DomesticOperationsAllowed)_setup.Campaign.PlanDeliverySortie(_setup,order);
+            else _setup.Campaign.Plan(DomesticOperationsAllowed?order with {DeliveryMembers=row.Robots.Select(id=>new DeliverySortieMember(id,Array.Empty<long>())).ToArray()}:order);
+        }
         foreach(var robot in InvasionPreviewRobots(row).Where(r=>row.Robots.Contains(r.Id)))BeginWorkReservationEffect(robot,row.Owner);
         RefreshWarTargetHighlights();
     }

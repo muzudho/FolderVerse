@@ -270,3 +270,45 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 
 - 2026-11-05 22:31:58 JST、利用者の明示依頼により Game1.Invasion.cs の競合を解消。CPU操作表示中のCanPlanRuler判定と、機能移転後の非機能地点を除外するEnemyTarget判定を両立。git addで同ファイルのみ解決済みとして登録。ゲーム変更はこの競合箇所のみ。
 - 既存分離出力へ CountrySettings、FunctionTransfer、DemoUi、DemoChecksUi を --source artifacts/nuget-feed --disable-build-servers でビルドし全て警告・エラー0。CountrySettings --ui、FunctionTransferモデル検査、Seed45のDemoUiとDemoChecksUiの緑赤チェック・即予約・閉鎖・終了遷移は全てコード0。コミット・プッシュ・公開なし。
+
+## 2026-11-06 13:30修正回
+
+- 終了 13:34:57 JST。DEMO-0016の個別選択を対象に Game1.ComputerMarches.cs で通常のカード矩形・入力を使う変更と CountrySettingsUi.cs の検証を試行し、両ファイルの差分を取り消した。
+- DOTNET_CLI_TELEMETRY_OPTOUT=1 で dotnet build tests/CountrySettings --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null で CountrySettings.dll --ui は征服者切替の検査で失敗し、テスト内の重複ターン進行を避けた再試行では出撃ピッカー到達の検査で失敗。既存の DemoChecksUi.dll も軍事プライマリーの検査で失敗。原因の切り分けと修正後の実描画は未確認。
+- 分離出力に試行ビルドが残るため、次回は現行ソースで対象テストを揃えて再ビルドし、変更前の失敗を切り分ける。修正完了扱いなし。
+
+## 2026-11-06 14:30修正回
+
+- 終了 14:33:22 JST。DEMO-0016の検証前に、前回の現行ビルドで失敗した両テストの軍事フェーズ入口を確認。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。
+- Game1.CampaignPhases.cs の OpenMilitaryPhase は BeginMilitary の直後に Advance を呼ぶ。CPU表示が始まる場合に CountrySettingsUi は続けて EndPlannedTurn を呼ぶ。DemoChecksUi は OpenMilitaryPhase 後も軍事の操作待ちを想定するが、現行経路は Demo で automaticAll を有効にして即時進行する。前回の失敗位置と一致する。操作待ちを直接設定した試験で、実経路の遷移と個別選択の検証を分ける余地がある。
+- 今回はコード・テスト無変更、再実行なし。DEMO-0016は現行の実経路でピッカー到達を再確認するまで検証待ち。実ゲームで軍事の操作待ちを設けるかは、配達後の自動進行とDemoの予約実演を切り分けて点検する。
+
+## 2026-11-06 15:30修正回
+
+- 完了 15:34:48 JST。DEMO-0018。Game1.Invasion.cs で開戦入力と予約の条件を既存の WarPlanningAllowed に揃え、内政の出撃元判定と配送後の予約処理を復元。軍事フェーズの予約処理も維持。
+- 修正前は内政・段階31・war=False を既存診断で再現済み。修正後は DOTNET_CLI_TELEMETRY_OPTOUT=1、dotnet build artifacts/demo-click-audit/DemoAuditPlanningChecks.csproj --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers が警告・エラー0。ALSOFT_DRIVERS=null で dotnet artifacts/corner-lesson/DemoAuditPlanningChecks.dll が終了コード0。
+- 地図／地星儀、1080p／540pで実描画し、開戦クリック (410,1022)、地点選択、出撃確定と即予約、赤チェック、閉鎖、ターン終了と消去を検証。診断は内政を起点とする分離試験。配送後の戦闘実行とCPU個別選択は未再検証。
+
+## 2026-11-06 18:30修正回
+
+- 完了 18:36:08 JST。DEMO-0016の通常出撃選択に到達しない経路を修正。Game1.Invasion.cs の CanPlanRuler でCPU軍事表示中は表示中の征服者を候補にし、既存の活動条件を適用。
+- DOTNET_CLI_TELEMETRY_OPTOUT=1 で dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null で dotnet artifacts/corner-lesson/DemoAuditCpuSortie.dll は終了コード0。fix-latest-cpu-sortie.log で征服者1、目標93、picker=0、確定時の二重予約なし、スキップ後の復帰を確認。country-settings-12.png（960×540）で通常ピッカーと確定を指すカーソルを目視。
+- 個別ロボット選択は引き続き省略される。専用表示への退避条件とDemo巡回は今回未再検証。DEMO-0016全体は検証待ちを継続。
+
+## 2026-11-06 19:30修正回
+
+- 完了 19:33:00 JST。DEMO-0016の個別選択。Game1.ComputerMarches.cs でAIの出撃対象を通常ピッカーのカード矩形へ対応付け、通常入力で1体ずつ選択してから確定する。表示できないカードを含む場合は既存の専用表示へ戻る。
+- DOTNET_CLI_TELEMETRY_OPTOUT=1、dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null で DemoAuditCpuSortie.dll と DemoAuditPlanningChecks.dll は終了コード0。既存の非追跡診断を拡張し、地点93の空の選択から4回のクリック、AI指定ID、二重予約なし、スキップ復帰を確認。960×540の audit-latest-computer-confirm.png で1枚目のカード内のカーソルと選択色を目視。診断画像にフェーズ演出の重なりあり。
+- Demoは展開図／地星儀、1080p／540pで緑赤チェック、出撃確定と即予約、閉鎖、ターン終了と配送後の進軍を再確認。証拠は artifacts/demo-click-audit の fix-latest-cpu-sortie.log と fix-latest-planning-checks.log。専用表示への退避とCPU側の赤チェックは未検証。
+
+## 2026-11-07 03:30修正回
+
+- 終了 03:33:38 JST。DEMO-0016の和平移動を確認。直近の実描画は表示用データのみ和平移動へ差し替えた診断で、実際の和平指示の生成・実行は要再確認。
+- Game1.Movement.cs の通常の移動確定は Campaign.Plan に予約を追加する。CPU表示は既に受け取った指示一覧を最後に実行するため、通常入力を共用する場合は表示中の確定と実予約の追加を分離する必要がある。次回は現行のAIが生成した和平指示を用い、移動先のクリック判定と指示の一回実行を照合する。
+- ゲームコード・テスト無変更。今回の実行検証なし。既存の通常出撃選択の検証結果は前回記録参照。
+
+## 2026-11-07 05:30修正回
+
+- 完了 05:30:07 JST。DEMO-0016の和平移動。Game1.ComputerMarches.cs と Game1.Movement.cs で通常の移動パネル、地図のヒット判定、移動予約ボタンの入力を共用。表示中の確定は追加予約を作らず、元の指示一覧が実行を担当する。通常UIで選べない指示は専用表示に戻る。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null で DemoAuditCpuSortie.dll と DemoAuditPlanningChecks.dll は終了コード0。征服者17の地点204の選択、確定後の閉鎖と追加予約なし、スキップ復帰を確認。960×540の audit-latest-computer-fallback.png で通常移動パネルと地点を指す手を目視。Demoの緑赤チェックと予約から配送後の進軍も再確認。
+- 和平移動ごとの実行回数と残る専用表示・CPU赤チェックは未検証。

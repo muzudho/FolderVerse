@@ -13,6 +13,7 @@ public partial class Game1
     private double _computerMarchAge;
     private int _computerWarStage;
     private Point _computerWarClick;
+    private readonly Queue<Point> _computerWarCards=new();
     private int _computerViewRuler,_computerViewLeader;
     private const double ComputerViewLeadIn=.75,ComputerMarchSeconds=2.4+ComputerViewLeadIn;
     private static readonly Rectangle ComputerMarchPanel=new(54,170,750,280);
@@ -40,11 +41,12 @@ public partial class Game1
         UpdateMapTransition((float)elapsed);
         UpdateDomesticSlide((float)elapsed);
         _computerMarchAge+=elapsed;
+        var order=_visibleComputerMarches[_computerMarchIndex];
         if(!skip && _computerWarStage>=0 &&
-            _visibleComputerMarches[_computerMarchIndex] is {Peaceful:false, Queen:false, PocketOnly:false, SourceNode:>=0, Fighters:>0} attack)
+            (order.Peaceful || order is {Queen:false, PocketOnly:false, SourceNode:>=0, Fighters:>0}))
         {
             if(_computerMarchAge<1)return true;
-            if(AdvanceComputerWarPreview(attack)){_computerMarchAge=0;return true;}
+            if(AdvanceComputerWarPreview(order)){_computerMarchAge=0;return true;}
         }
         if(!skip && _computerMarchAge<ComputerMarchSeconds)return true;
         CloseMovement();
@@ -70,6 +72,13 @@ public partial class Game1
         switch(_computerWarStage++)
         {
             case 0:
+                if(order.Peaceful)
+                {
+                    OpenMovementWithFit(false);
+                    if(!_net.MovementTargets.Contains(order.TargetNode))break;
+                    FocusDemoNode(_setup.Nodes.All[order.TargetNode]);
+                    return true;
+                }
                 _computerWarClick=WarButton.Center;
                 MapOverlayClick(_computerWarClick,false);
                 if(!_warPlanning)break;
@@ -85,20 +94,38 @@ public partial class Game1
                 if(_selectedMoveNode==order.TargetNode)return true;
                 break;
             case 2:
+                if(order.Peaceful)
+                {
+                    _computerWarClick=ConfirmMoveButton.Center;
+                    MovementClick(_computerWarClick,new KeyboardState());
+                    if(_movementOpen)break;
+                    _computerWarStage=5;
+                    return true;
+                }
                 int source=_invasionSources.FindIndex(row=>!row.Queen && row.Owner==order.Ruler && row.Node==order.SourceNode);
                 if(source<0)break;
                 var robots=InvasionRobots(_invasionSources[source]);
                 var ids=order.RobotIds??robots.Take((int)order.Fighters).Select(robot=>robot.Id).ToArray();
-                if(ids.Length!=order.Fighters || ids.Any(id=>!robots.Any(robot=>robot.Id==id)))break;
+                var cards=ids.Select(id=>Array.FindIndex(robots,robot=>robot.Id==id)).ToArray();
+                if(ids.Length!=order.Fighters || cards.Distinct().Count()!=cards.Length || cards.Any(i=>i<0 || InvasionRobotCard(i).Center.Y>=InvasionPickerDone.Top))break;
                 _invasionPage=source/7;
                 var local=InvasionSortieButton(source%7).Center;
                 _computerWarClick=new Point(local.X+NodeInspectorOffset,local.Y);
                 InvasionClick(local);
                 if(_invasionPicker<0)break;
                 _invasionDraft.Clear();
-                _invasionDraft.UnionWith(ids);
+                _computerWarCards.Clear();
+                foreach(int card in cards)_computerWarCards.Enqueue(InvasionRobotCard(card).Center);
+                _computerWarClick=_computerWarCards.Peek();
                 return true;
             case 3:
+                if(_computerWarCards.TryDequeue(out var cardClick))
+                {
+                    _computerWarClick=_pointer=cardClick;
+                    InvasionPickerInput(true,false);
+                    _computerWarStage--;
+                    return true;
+                }
                 _computerWarClick=InvasionPickerDone.Center;
                 _pointer=_computerWarClick;
                 InvasionPickerInput(true,false);
@@ -122,10 +149,10 @@ public partial class Game1
         if(_computerMarches==null)return;
         if(_computerWarStage>0)
         {
-            if(_computerWarStage==5)return;
+            if(_computerWarStage==5 || (_computerWarStage==1 && _visibleComputerMarches[_computerMarchIndex].Peaceful))return;
             _spriteBatch.Begin(transformMatrix:transform);
             // Once the modal opens, the source button is behind it.
-            if(_invasionPicker>=0)DrawDemoHand(InvasionPickerDone.Center.ToVector2(),0);
+            if(_invasionPicker>=0)DrawDemoHand(_computerWarClick.ToVector2(),Math.Clamp(.4f-(float)_computerMarchAge,0,.4f));
             else if(_computerWarStage==4)DrawDemoHand(InspectorClose.Center.ToVector2(),0);
             else DrawDemoHand(_computerWarClick.ToVector2(),Math.Clamp(.4f-(float)_computerMarchAge,0,.4f));
             _spriteBatch.End();

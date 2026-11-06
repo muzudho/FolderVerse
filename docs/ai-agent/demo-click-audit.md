@@ -1180,3 +1180,209 @@
 
 - 開始 21:55:20 JST、終了 21:55:29 JST。中断。Game1.Invasion.cs の72／77／80行に同じ競合マーカー、Git状態UUを確認。既存差分を保持。再ビルド・実描画・Demo巡回は未実施。ゲーム・テスト無変更。
 - 続きは競合解消後の現行コード再ビルドと優先UI／CPU通常UI回帰。Seed45は未実施、DEMO-0016／0017は状態維持。
+
+### 実行履歴：2026-11-05 23:00回
+
+- 開始 22:59:25 JST、終了 23:00:44 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。差分・未解決競合なし、開始時にゲーム・検証プロセスなし。利用者依頼で競合解消済みの記録を確認し点検を再開。
+- ALSOFT_DRIVERS=null で既存分離出力 DemoUi.dll（Seed46）と CountrySettings.dll --ui は終了コード0。論理1920×1080、世界1435631413／人物1106632953／配置1994910661。初回配送クリック(256,998)、地図復帰、18FPSの端地点移動、終了ループを確認。CPU通常格納庫の組み立て、通常出撃ピッカー、確定と二重予約防止、人間復帰の検査も通過。証拠 artifacts/demo-click-audit/audit-latest-DemoUi.log／audit-latest-CountrySettings.log。
+- 新規不具合なし。優先UIの個別回帰は競合解消時と直近の検査結果を参照。CPU個別操作と緑赤チェック、赤地点の物理マウス再選択、専用直送便の自然Demoは未確認。次回は個別操作の描画比較またはSeed47。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 00:00回
+
+- 開始 00:03:57 JST、終了 00:04:23 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時の差分は点検記録のみ、ゲーム・検証プロセスなし。先行点検・修正終了。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=47 で既存分離出力 dotnet artifacts/corner-lesson/DemoUi.dll を実行し終了コード0。論理1920×1080、世界1701311004／人物290587722／配置132764322。初回配送クリック(256,998)、地図復帰、地星儀／展開図、18FPSの端地点移動、拒否時処遇、終了ループとDemoラベル描画を確認。証拠 artifacts/demo-click-audit/audit-latest-DemoUi.log。
+- 新規不具合なし。優先UIとCPUの通常格納庫・軍事確定・閉鎖は直近の個別検査を参照。CPU個別選択・ドラッグと緑赤チェック、赤地点の物理マウス再選択、専用直送便の自然Demoは未確認。次回は個別操作の描画比較またはSeed48。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 01:00回
+
+- 開始 00:58:53 JST、終了 00:59:17 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時の差分は点検記録のみ、ゲーム・検証プロセスなし。先行点検・修正終了。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=48 で既存分離出力 dotnet artifacts/corner-lesson/DemoUi.dll を実行し終了コード0。論理1920×1080、世界1966990595／人物1622026138／配置418101630。初回配送クリック(256,998)、地図復帰、地星儀／展開図、18FPSの端地点移動、拒否時処遇、終了ループとDemoラベル描画を確認。証拠 artifacts/demo-click-audit/audit-latest-DemoUi.log。
+- 新規不具合なし。優先UIとCPUの通常格納庫・軍事確定・閉鎖は直近の個別検査を参照。CPU個別選択・ドラッグと緑赤チェック、赤地点の物理マウス再選択、専用直送便の自然Demoは未確認。次回は個別操作の描画比較またはSeed49。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 02:00回
+
+- 開始 02:01:27 JST、終了 02:01:52 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時の差分は点検記録のみ、ゲーム・検証プロセスなし。先行点検・修正終了。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=49 で既存分離出力 dotnet artifacts/corner-lesson/DemoUi.dll を実行し終了コード0。論理1920×1080、世界85186539／人物805980907／配置703438938。初回配送クリック(256,998)、地図復帰、地星儀／展開図、18FPSの端地点移動、拒否時処遇、終了ループとDemoラベル描画を確認。証拠 artifacts/demo-click-audit/audit-latest-DemoUi.log。
+- 新規不具合なし。優先UIとCPUの通常格納庫・軍事確定・閉鎖は直近の個別検査を参照。CPU個別選択・ドラッグと緑赤チェック、赤地点の物理マウス再選択、専用直送便の自然Demoは未確認。次回は個別操作の描画比較またはSeed50。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 03:00回
+
+- 開始 03:01:24 JST、終了 03:01:49 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時の差分は点検記録のみ、ゲーム・検証プロセスなし。先行点検・修正終了。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=50 で既存分離出力 dotnet artifacts/corner-lesson/DemoUi.dll を実行し終了コード0。論理1920×1080、世界350866130／人物2137419323／配置988776246。初回配送クリック(256,998)、地図復帰、地星儀／展開図、18FPSの端地点移動、拒否時処遇、終了ループとDemoラベル描画を確認。証拠 artifacts/demo-click-audit/audit-latest-DemoUi.log。
+- 新規不具合なし。優先UIとCPUの通常格納庫・軍事確定・閉鎖は直近の個別検査を参照。CPU個別選択・ドラッグと緑赤チェック、赤地点の物理マウス再選択、専用直送便の自然Demoは未確認。次回は個別操作の描画比較またはSeed51。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 04:00回
+
+- 開始 04:01:57 JST、終了 04:02:22 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は点検記録のみ。起動中のゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=51 で既存出力の dotnet artifacts/corner-lesson/DemoUi.dll を実行し終了コード0。論理1920×1080、世界616545721／人物1321374092／配置1274113554。初回配送クリック(256,998)、地図復帰、地星儀／展開図切替、18FPSの端地点移動、終了ループを確認。証拠 artifacts/demo-click-audit/audit-latest-DemoUi.log。
+- 新規不具合なし。プライマリー、直送便、左右インスペクター、緑赤チェックとCPU通常UIは直近の個別結果を参照。CPUの個別選択・ドラッグと緑赤チェック、赤地点の物理マウス再選択、専用直送便の自然Demoは未確認。次回はCPU個別操作の描画比較またはSeed52。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 05:00回
+
+- 開始 04:57:25 JST、終了 04:57:48 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は点検記録のみ。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=52 で既存分離出力 dotnet artifacts/corner-lesson/DemoUi.dll を実行し終了コード0。論理1920×1080、世界882225312／人物505328861／配置1559450862。初回配送クリック(256,998)、地図復帰、地星儀／展開図切替、18FPSの端地点移動、終了ループを確認。証拠 artifacts/demo-click-audit/audit-latest-DemoUi.log。
+- 新規不具合なし。優先UI・緑赤チェック・CPU通常UIは直近の個別検査を参照。CPUの個別選択・ドラッグと緑赤チェック、物理マウスでの赤地点再選択、専用直送便の自然Demoは未確認。次回はCPU個別操作の描画比較またはSeed53。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 06:00回
+
+- 開始 05:59:04 JST、終了 05:59:09 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は点検記録のみ。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=53 で既存分離出力 dotnet artifacts/corner-lesson/DemoUi.dll を実行し終了コード0。論理1920×1080、世界1147904903／人物1836767277／配置1844788170。初回配送クリック(256,998)、地図復帰、地星儀／展開図切替、18FPSの端地点移動、拒否時処遇、終了ループ、Demoラベル描画を確認。証拠 artifacts/demo-click-audit/audit-latest-DemoUi.log。
+- 新規不具合なし。プライマリー、直送便の退避復帰、左右インスペクター、緑赤チェックとCPU通常UIは今回未再検証。CPU個別選択・ドラッグと緑赤チェック、赤地点の物理マウス再選択、専用直送便の自然Demoは未確認。次回はCPU個別操作の描画比較またはSeed54。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 07:00回
+
+- 開始 06:57:30 JST、終了 06:57:36 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は点検記録のみ。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=54 で既存分離出力 dotnet artifacts/corner-lesson/DemoUi.dll を実行し終了コード0。論理1920×1080、世界1413584494／人物1020722046／配置2130125478。初回配送クリック(256,998)、地図復帰、地星儀／展開図切替、18FPSの端地点移動、拒否時処遇、終了ループ、Demoラベル描画を確認。証拠 artifacts/demo-click-audit/audit-latest-DemoUi.log。
+- 新規不具合なし。プライマリー、直送便の退避復帰、左右インスペクター、緑赤チェックとCPU通常UIは今回未再検証。CPUの個別選択・ドラッグと緑赤チェック、赤地点の物理マウス再選択、専用直送便の自然Demoは未確認。次回はCPU個別操作の描画比較から。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 08:00回
+
+- 開始 08:02:32 JST、終了 08:02:39 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は点検記録のみ。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null で既存分離出力 dotnet artifacts/corner-lesson/CountrySettings.dll --ui を実行。設定入力、手動／自動遷移、軍事の操作表示の既存検査が成功。今回の実ウィンドウ解像度は未採取。
+- DEMO-0016の残項目をコード照合。Game1.ComputerMarches.cs の AdvanceComputerWarPreview 段階2は通常の出撃ボタンを開いたあと _invasionDraft.UnionWith(ids) で選択済みにし、DrawComputerMarches はピッカー表示中に確定ボタンを指す。通常の操作で見える個別ロボット選択のクリックはこの経路にない。既報と一致するため重複登録なし。個別選択時の描画比較と専用表示への退避条件の実行再現は未確認。
+- プライマリー、直送便の退避復帰、左右インスペクター、Demoの緑赤チェックとCPU内政は今回未再検証。次回は軍事ピッカーの個別選択の描画比較から。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 09:00回
+
+- 開始 09:00:34 JST、終了 09:01:13 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時の差分は点検記録のみ。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null で既存分離出力 artifacts/corner-lesson の DemoActionsUi.dll、DemoInspectorUi.dll、DemoChecksUi.dll を順次 dotnet で実行し、すべて終了コード0。1080p／540p。証拠は artifacts/demo-click-audit の audit-latest-DemoActionsUi.log、audit-latest-DemoInspectorUi.log、audit-latest-DemoChecksUi.log。
+- 直送便のプライマリー、工場の実矩形（例 160,288,72,88 にクリック196,332）と製造開始、閉鎖、和平移動、緑赤チェック、出撃確定・即予約・赤チェック・閉鎖・ターン終了の順序とチェック消去を確認。新規不具合なし。
+- 専用直送便の自然巡回での退避復帰、左右別の再照合、赤地点の物理マウス再選択、CPUの個別操作の実描画比較は今回未実施。次回はCPU軍事ピッカーの個別選択の比較から。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 10:00回
+
+- 開始 10:04:36 JST、終了 10:04:42 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は点検記録のみ。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null で既存分離出力の dotnet artifacts/corner-lesson/CountrySettings.dll --ui が成功。通常の出撃ピッカーへ進む軍事経路を既存検査で確認。証拠は実行ログの PASS と tests/CountrySettings/CountrySettingsUi.cs のピッカー確認。実ウィンドウ解像度は未採取。
+- 新規不具合なし。個別ロボット選択クリック、専用表示へ退避する軍事経路、CPU内政と優先Demo経路は今回未確認。次回は軍事ピッカーの選択前後をフレームごとに比較する。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 11:00回
+
+- 開始 10:56:35 JST、終了 10:57:26 JST。直送便点検は中断。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時の差分は点検記録のみ。起動中のゲーム・検証プロセスなし。
+- 1280×800用の既存 DemoAuditDirect800.dll は依存アセンブリの読み込みで停止。DOTNET_CLI_TELEMETRY_OPTOUT=1 で既存の DemoAuditDirect800.csproj を分離出力へ再ビルドし警告・エラー0。ALSOFT_DRIVERS=null で再実行すると、旧診断の ProbeDirect800.cs.txt 37行目が現行ソースに存在しない DirectMapCloseButton を反射で参照して停止。証拠 artifacts/demo-click-audit/direct800-0100-output.txt。1280×800の描画は未確認。
+- ゲームの不具合としては未登録。次回は現行の直送便終了入力を起点に、退避・復帰と左右の実矩形を照合する。緑赤チェックとCPU個別操作の描画比較は今回未実施。ゲーム・テストソース無変更。
+
+### 実行履歴：2026-11-06 12:00回
+
+- 開始 11:56:46 JST、終了 11:56:58 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は点検記録のみ。ゲーム・検証プロセスなし。
+- 既存の非追跡診断 ProbeDirect800.cs.txt を現行の MapModeCloseButton(3) とプライマリー7個に合わせた。DOTNET_CLI_TELEMETRY_OPTOUT=1 で DemoAuditDirect800.csproj を既存分離出力へ再ビルドし警告・エラー0。ALSOFT_DRIVERS=null で DemoAuditDirect800.dll は終了コード0。証拠 artifacts/demo-click-audit/direct800-0100-output.txt。1280×800用の診断で、ログの540p表記は既存メッセージ。
+- 直送便でプライマリー退避・復帰、移動中の入力抑止、閉じるボタンとEscape、回転時の左右割り当て、両格納庫と予約維持を確認。新規不具合なし。自然Demo巡回、CPU個別選択の実描画、赤地点の物理マウス再選択は未確認。次回はCPU軍事ピッカーの個別選択を照合。ゲームコード無変更。
+
+### 実行履歴：2026-11-06 13:00回
+
+- 開始 12:58:06 JST、終了 12:58:19 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は点検記録のみ。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null で dotnet artifacts/corner-lesson/CountrySettings.dll --ui を実行し終了コード0。960×540の artifacts/corner-lesson/country-settings-12.png を目視。通常の出撃ピッカーの初回描画ですでに4体が選択済みで、カーソルは「選択を確定」の実ボタン内。期待は通常UIの個別選択操作が見えること。実際は選択済み状態から始まる。既存DEMO-0016の個別選択省略を実描画で再現。重複登録なし。既存テストは確定時の二重予約なしとスキップ後の人間への復帰も確認。
+- 次回はDEMO-0016の個別選択に通常UIの矩形と入力を使えるか確認。専用表示に落ちる軍事経路、CPU内政、緑赤チェック、優先Demo経路は今回未再検証。ゲーム・テスト無変更。
+
+- 2026-11-06 13:30修正回の追記。DEMO-0016は検証待ちを継続。個別選択の試行変更は取り消し。再ビルド後の軍事UI検査が出撃ピッカー到達前に失敗したため、詳細は修正記録を参照。
+
+### 実行履歴：2026-11-06 14:00回
+
+- 開始 14:03:12 JST、終了 14:04:17 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は点検・修正記録のみ。ゲーム・検証プロセスなし。
+- 試行変更のない現行ソースから CountrySettings と DemoChecksUi を dotnet build tests/<対象> --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers で順次再ビルド。DOTNET_CLI_TELEMETRY_OPTOUT=1、両方とも警告・エラー0。
+- ALSOFT_DRIVERS=null で CountrySettings.dll --ui と DemoChecksUi.dll を実行。前者は軍事操作開始前の征服者切替の検査、後者は軍事プライマリーを開く検査で失敗（ともに終了コード -532462766）。証拠は artifacts/demo-click-audit/audit-latest-CountrySettings.log と audit-latest-DemoChecksUi.log。前回の試行変更を含まない状態でも同じ検査が失敗することを確認。実ウィンドウ解像度は未採取。
+- ゲーム側とテスト手順の切り分けが残るため新規IDは付与せず。次回は CountrySettingsUi の軍事開始後の操作順と DemoChecksUi の軍事ボタン入力前の状態を確認。個別出撃選択、緑赤チェック後半、直送便・左右インスペクターは今回未再検証。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 15:00回
+
+- 開始 14:56:42 JST、終了 14:57:58 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は点検・修正記録のみ。ゲーム・検証プロセスなし。
+- DEMO-0018（未解決）。緑チェック後にインスペクターを閉じ、現行の内政フェーズのままDemoの開戦段階を開始すると、開戦ボタン中央 (410,1022) を指し、段階31に進むが開戦モードは開かない。期待は地点を選べる開戦モードへの遷移。実際は WarPlanningAllowed が内政を許す一方で OpenWarPlanning が軍事限定で戻る。論理1920×1080、最初の1080p条件。後続の赤チェック・予約・閉鎖は未到達。
+- 証拠 artifacts/demo-click-audit/audit-latest-planning-checks.log。DemoChecksUi を元にした非追跡の ProbePlanningChecks.cs.txt で、旧テストの軍事フェーズ強制遷移を外し、内政の開戦段階へ進めて再現。DemoAuditPlanningChecks.csproj を既存分離出力へビルドして警告・エラー0、ALSOFT_DRIVERS=null で DemoAuditPlanningChecks.dll を実行し該当アサーションで停止。自然巡回での到達、優先直送便・左右、CPU個別選択は今回未再検証。次回は開戦モードのフェーズ条件を関連入力と照合。ゲームコードと追跡テスト無変更。
+
+- DEMO-0018は 15:34:48 JST に修正・検証完了。内政で開戦入力が通り、出撃確定から赤チェック・閉鎖・ターン終了まで4条件で検証。範囲とコマンドは修正記録を参照。
+
+### 実行履歴：2026-11-06 16:00回
+
+- 開始 15:59:08 JST、終了 15:59:22 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は DEMO-0018 の Game1.Invasion.cs と点検・修正記録。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=55 で既存分離出力 dotnet artifacts/corner-lesson/DemoUi.dll を実行し終了コード0。世界1679264085／人物204676815／配置267979139。配送クリック(256,998)、地図復帰、地星儀／展開図、18FPSの端地点移動、拒否時処遇、終了ループとDemoラベル描画を確認。証拠 artifacts/demo-click-audit/audit-latest-DemoUi.log。実ウィンドウ解像度は未採取。
+- 新規不具合なし。出撃予約後の配送・戦闘、CPU個別選択、左右インスペクターと直送便の退避復帰は今回未再検証。次回は自然巡回で予約から戦闘までを照合。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 17:00回
+
+- 開始 16:58:09 JST、終了 16:58:44 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時の内容差分は DEMO-0018 の Game1.Invasion.cs と点検・修正記録。ゲーム・検証プロセスなし。
+- 既存の非追跡 ProbePlanningChecks.cs.txt に、配送終了を呼び出して予約先と同じ地点への進軍を LastMarches で確認する検査を追加。既存分離出力へ DemoAuditPlanningChecks.csproj を再ビルドし警告・エラー0。ALSOFT_DRIVERS=null で実行し終了コード0。証拠 artifacts/demo-click-audit/audit-latest-planning-checks.log。1080p／540p、展開図／地星儀で即予約・赤チェック・閉鎖・ターン終了・配送後の進軍を確認。
+- 新規不具合なし。自然巡回での配送演出と戦闘の完走、CPUの個別選択、直送便・左右インスペクターは今回未再検証。次回はCPUの通常出撃ピッカーへの到達を調べる。ゲームコード・追跡テスト無変更。
+
+### 実行履歴：2026-11-06 18:00回
+
+- 開始 18:01:39 JST、終了 18:02:20 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時の内容差分は DEMO-0018 の Game1.Invasion.cs と点検・修正記録。ゲーム・検証プロセスなし。
+- CountrySettingsUi を元にした非追跡の DemoAuditCpuSortie.csproj を既存分離出力へビルド（警告・エラー0）。重複した EndPlannedTurn を省いた診断で OpenMilitaryPhase から開始。ALSOFT_DRIVERS=null で DemoAuditCpuSortie.dll を実行。征服者1への切替は確認したが、目標93の通常出撃経路は stage=-1、picker=-1、selected=-1 となり、ピッカー到達の検査で停止（-532462766）。証拠 artifacts/demo-click-audit/audit-latest-cpu-sortie.log。実解像度は未採取。
+- 期待は対象の地点を選び通常のピッカーを開くこと。既存DEMO-0016に追記し、重複登録なし。次回は対象93のヒット判定と CanPlanRuler による候補除外を分けて確認。専用表示の実描画、CPU個別選択、優先Demo経路は今回未再検証。ゲームコード・追跡テスト無変更。
+
+- 18:30修正回の追記。DEMO-0016の目標93で通常ピッカーに到達しない経路は修正・実描画検証済み。個別選択と専用表示の残項目は検証待ち。詳細は修正記録を参照。
+
+### 実行履歴：2026-11-06 19:00回
+
+- 開始 19:03:09 JST、終了 19:03:24 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は Game1.Invasion.cs の DEMO-0018 と DEMO-0016 修正、および点検・修正記録。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null で既存分離出力の dotnet artifacts/corner-lesson/DemoAuditCpuSortie.dll を実行し終了コード0。征服者1の表示切替、地点93選択と通常ピッカー到達、確定時の二重予約なしとスキップ後の人間への復帰を再確認。証拠 artifacts/demo-click-audit/audit-latest-cpu-sortie.log。実ウィンドウ解像度は今回未採取。
+- 新規不具合なし。個別ロボット選択クリックの省略はDEMO-0016の残項目。次回はカードの描画・入力矩形とCPUの選択順を比較する。専用表示への退避、CPU内政、優先Demo経路、緑赤チェックは今回未再検証。ゲーム・テスト無変更。
+
+- 19:30修正回の追記。DEMO-0016の通常ピッカーでの個別選択を修正し、960×540の描画と4体の選択を確認。専用表示への退避とCPU側の赤チェックは検証待ち。詳細は修正記録を参照。
+
+### 実行履歴：2026-11-06 20:00回
+
+- 開始 20:01:40 JST、終了 20:01:56 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は Game1.ComputerMarches.cs、Game1.Invasion.cs と点検・修正記録。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null で既存分離出力の dotnet artifacts/corner-lesson/DemoAuditCpuSortie.dll を実行し終了コード0。征服者1、地点93、通常ピッカーで個別4クリック、確定時の二重予約なし、スキップ復帰を再確認。証拠 artifacts/demo-click-audit/audit-latest-cpu-sortie.log。実解像度は今回未採取。
+- 新規不具合なし。CPUの赤チェック、専用表示への退避、優先Demo経路は今回未再検証。次回はピッカーの対象外となる軍事指示で専用表示と状態遷移を確認する。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 21:00回
+
+- 開始 20:58:12 JST、終了 20:58:39 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は Game1.ComputerMarches.cs、Game1.Invasion.cs と点検・修正記録。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null で既存分離出力の DemoAuditDirect800.dll と DemoAuditPlanningChecks.dll を dotnet で順次実行。1280×800用の直送便診断ではプライマリー退避・復帰と閉鎖が成功したが、右から左のドラッグで予約1件を期待する検査が失敗（-532462766、ProbeDirect800.cs.txt 70行目）。その時点の実予約件数は未採取。証拠 artifacts/demo-click-audit/audit-latest-DemoAuditDirect800.log。既存バイナリと共有アセンブリの組み合わせでの結果のため、ゲーム不具合としての登録は現行ソースからの再ビルドと入力照合まで保留。
+- 開戦診断は終了コード0。展開図／地星儀、1080p／540pで緑赤チェックと出撃確定・閉鎖・ターン終了を再確認。証拠 artifacts/demo-click-audit/audit-latest-DemoAuditPlanningChecks.log。CPU専用表示と赤チェックは未確認。次回は直送便の右から左のドラッグを現行ビルドで再現し、実矩形と予約の向きを確認。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-06 22:00回
+
+- 開始 22:00:14 JST、終了 22:01:13 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は Game1.ComputerMarches.cs、Game1.Invasion.cs と点検・修正記録。ゲーム・検証プロセスなし。
+- 1280×800用 DemoAuditDirect800 を現行コードで再ビルドし、旧予約一覧の検査失敗を再現。非追跡の ProbeDirect800.cs.txt を現行の PartPlanning 参照に変更して再実行。論理座標 (1434,392)→(470,544) の右から左の入力で地点3→0の予約1件、旧一覧0件を確認。プライマリー退避・復帰と閉鎖も成功。証拠 artifacts/demo-click-audit/audit-latest-DemoAuditDirect800.log。
+- DOTNET_CLI_TELEMETRY_OPTOUT=1 で dotnet build artifacts/demo-click-audit/DemoAuditDirect800.csproj --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers。再診断は対象検査で終了するため到達不能の警告1、エラー0。ALSOFT_DRIVERS=null で実行し終了コード0。前回の失敗は検査が旧一覧を参照していたためと判明し、不具合登録なし。
+- ドラッグ中の画像と後続の左から右の検査、CPU専用表示・赤チェック、緑赤Demo経路は今回は未確認。次回は現行予約一覧で左から右の入力と描画を照合。ゲームコード・追跡テスト無変更。
+
+### 実行履歴：2026-11-06 23:00回
+
+- 開始 23:03:16 JST、終了 23:03:38 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は Game1.ComputerMarches.cs、Game1.Invasion.cs と点検・修正記録。ゲーム・検証プロセスなし。
+- 1280×800用の既存非追跡 ProbeDirect800 に左から右の予約方向の検査を追加し、DemoAuditDirect800.csproj を既存分離出力へ再ビルド。診断の早期終了による警告1、エラー0。ALSOFT_DRIVERS=null で DemoAuditDirect800.dll は終了コード0。論理座標 (1434,392)→(470,544) で地点3→0、(114,324)→(1442,378) で地点0→3。現行予約一覧に合計2件。プライマリー退避・復帰と閉鎖も成功。証拠 artifacts/demo-click-audit/audit-latest-DemoAuditDirect800.log。
+- 新規不具合なし。ドラッグ中の描画、自然Demo巡回、緑赤チェック、CPUの専用表示と赤チェックは今回未再検証。次回は直送便ドラッグ中の描画を照合。ゲームコード・追跡テスト無変更。
+
+### 実行履歴：2026-11-07 00:00回
+
+- 開始 23:56:13 JST、終了 23:56:34 JST（いずれも11月6日）。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は Game1.ComputerMarches.cs、Game1.Invasion.cs と点検・修正記録。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=56 で既存分離出力 dotnet artifacts/corner-lesson/DemoUi.dll を実行し終了コード0。初回配送クリック (256,998)、地図復帰、地星儀／展開図切替、18FPSの端地点移動、拒否時処遇、終了ループとDemoラベル描画を確認。証拠 artifacts/demo-click-audit/audit-latest-DemoUi.log。実ウィンドウ解像度は未採取。
+- 新規不具合なし。直送便ドラッグ中の描画はカーソルを基準にパーツを描く実装まで確認し、実画面は未採取。次回はドラッグ中の描画を照合。プライマリー、左右インスペクター、緑赤チェックとCPU経路は今回未再検証。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-07 01:00回
+
+- 開始 00:57:46 JST、終了 00:58:11 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は Game1.ComputerMarches.cs、Game1.Invasion.cs と点検・修正記録。ゲーム・検証プロセスなし。
+- 既存の非追跡 ProbeDirect800 に保持中の撮影を追加。DemoAuditDirect800.csproj を既存分離出力へ再ビルドし、早期終了による警告1、エラー0。ALSOFT_DRIVERS=null で実行し終了コード0。退避・復帰と閉鎖、左右両方向の予約を再確認。証拠 artifacts/demo-click-audit/audit-latest-DemoAuditDirect800.log。
+- 左格納庫から胴体を保持し、論理ポインター (960,600) に対応する胴体を左右インスペクター間に描くことを direct800-0.png で目視。診断名と異なり、この撮影時の実バックバッファは1920×1080。1280×800での保持中の描画、自然Demo巡回、CPU専用表示と赤チェックは未確認。次回は1280×800で保持中の描画を照合。新規不具合なし。ゲームコード・追跡テスト無変更。
+
+### 実行履歴：2026-11-07 02:00回
+
+- 開始 02:02:47 JST、終了 02:03:06 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は Game1.ComputerMarches.cs、Game1.Invasion.cs と点検・修正記録。ゲーム・検証プロセスなし。
+- 既存の非追跡 ProbeDirect800 を撮影前に1280×800へ切り替えるようにし、DemoAuditDirect800.csproj を既存分離出力へ再ビルド。診断の早期終了による警告1、エラー0。ALSOFT_DRIVERS=null で実行し終了コード0。プライマリー退避・復帰、閉鎖、左右両方向の予約を再確認。
+- 実バックバッファ1280×800の direct800-0.png で、論理ポインター (960,600) の位置に保持中の胴体が描かれることを目視。証拠 artifacts/demo-click-audit/audit-latest-DemoAuditDirect800.log と artifacts/corner-lesson/direct800-0.png。新規不具合なし。自然Demo巡回とCPU専用表示・赤チェックは未確認。次回はCPU軍事の専用表示への切り替えを照合。ゲームコード・追跡テスト無変更。
+
+### 実行履歴：2026-11-07 03:00回
+
+- 開始 03:03:18 JST、終了 03:04:03 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は Game1.ComputerMarches.cs、Game1.Invasion.cs と点検・修正記録。ゲーム・検証プロセスなし。
+- 既存の非追跡 DemoAuditCpuSortie を再ビルドし警告・エラー0。ALSOFT_DRIVERS=null で実行し終了コード0。地点93で通常のピッカーと4回の個別選択を再確認。次に表示用データだけを和平移動へ差し替え、960×540の実描画で専用の町名・指示パネルとカーソルを確認。征服者1の表示維持とスキップ後の人間復帰を確認。証拠 audit-latest-cpu-sortie.log と audit-latest-computer-fallback.png。
+- DEMO-0016の残項目として和平移動の専用表示を確認。実際の和平指示の生成と実行、赤チェック、対応可能な攻撃が失敗して専用表示に戻る経路は未確認。次回は和平移動を通常の移動UIの入力と照合。優先Demo経路・内政は今回未再検証。ゲームコード・追跡テスト無変更。
+
+### 実行履歴：2026-11-07 04:00回
+
+- 開始 03:56:17 JST、終了 03:56:52 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は Game1.ComputerMarches.cs、Game1.Invasion.cs と点検・修正記録。ゲーム・検証プロセスなし。
+- 既存の非追跡 DemoAuditCpuSortie.csproj を既存分離出力へ再ビルドし警告・エラー0。ALSOFT_DRIVERS=null で DemoAuditCpuSortie.dll は終了コード0。差し替え前のAI指示一覧52件に和平移動3件が含まれることを確認。通常出撃の個別4クリックとスキップ後の復帰を再確認。960×540の専用表示は引き続き差し替え用データでの確認。証拠 artifacts/demo-click-audit/audit-latest-cpu-sortie.log。
+- 新規不具合なし。次回は差し替え前の和平指示を表示順に再生し、通常移動の地点判定と照合する。和平指示ごとの実行回数、CPU赤チェック、優先Demo経路は今回未検証。ゲームコード・追跡テスト無変更。
+
+### 実行履歴：2026-11-07 05:00回
+
+- 開始 04:57:50 JST、終了 04:58:35 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は Game1.ComputerMarches.cs、Game1.Invasion.cs と点検・修正記録。ゲーム・検証プロセスなし。
+- 既存の非追跡 DemoAuditCpuSortie を分離出力へ再ビルドし警告・エラー0。ALSOFT_DRIVERS=null で実行し終了コード0。実際のAI指示を順に進め、征服者17の地点204への和平移動で通常ピッカーが開かず専用表示となる経路を960×540で採取。期待は通常の地点選択と移動確定が見えること。既存DEMO-0016の再現であり重複登録なし。証拠 artifacts/demo-click-audit/audit-latest-cpu-sortie.log と artifacts/corner-lesson/audit-latest-computer-fallback.png。
+- スキップ後の人間復帰を確認。和平移動の実行回数、通常移動UIでの地点判定、CPU赤チェックと優先Demo経路は未確認。次回は征服者17の移動先204で通常の地点選択を照合。ゲームコード・追跡テスト無変更。
+
+- 05:30修正回の追記。DEMO-0016の征服者17の和平移動は通常UIで実描画検証済み。個別の実行回数と残る専用表示は検証待ち。詳細は修正記録を参照。
+
+### 実行履歴：2026-11-07 06:00回
+
+- 開始 05:59:50 JST、終了 06:00:06 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は Game1.ComputerMarches.cs、Game1.Invasion.cs、Game1.Movement.cs と点検・修正記録。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null で既存分離出力 dotnet artifacts/corner-lesson/DemoAuditCpuSortie.dll を実行し終了コード0。地点93の通常ピッカーで4クリック、征服者17の地点204への通常移動選択、確定後の閉鎖と予約件数維持、スキップ後の人間復帰を再確認。960×540。証拠 artifacts/demo-click-audit/audit-latest-cpu-sortie.log。ログの Dedicated peaceful preview は旧文言。
+- 新規不具合なし。和平指示の実行回数、CPU赤チェック、優先Demo経路は今回未再検証。次回は配送後の和平移動の結果と通常再生終了時の復帰を照合。ゲーム・テスト無変更。
