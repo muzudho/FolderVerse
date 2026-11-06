@@ -60,7 +60,8 @@ public partial class Game1
         if(!_warPlanning && ConfirmMoveButton.Contains(pointer))
         {
             if(_selectedMoveNode<0 || !_setup.Campaign.RobotBattles.CanMarch(_setup,_setup.PlayerSlot,_selectedMoveNode))return true;
-            _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id,true,true,Peaceful:true));
+            if(_computerMarches==null)
+                _setup.Campaign.Plan(new(_setup.PlayerSlot,_selectedMoveNode,0,_setup.Nodes.Current(_setup.PlayerSlot).Id,true,true,Peaceful:true));
             CloseMovement();return true;
         }
 

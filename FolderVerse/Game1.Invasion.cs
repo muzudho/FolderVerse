@@ -69,7 +69,7 @@ public partial class Game1
     }
     private IEnumerable<int> InvasionTargets(int ruler)=>_setup.Campaign.RobotBattles.MarchTargets(_setup,_setup.Nodes.Current(ruler)?.Id??-1)
         .Append(_setup.Nodes.Current(ruler)?.Id??-1).Where(id=>id>=0 && _setup.Campaign.RobotBattles.CanSortie(_setup,ruler,id)).Distinct();
-    private bool CanPlanRuler(int ruler)=>ruler>=0 && _setup.ControllerOf(ruler)==_setup.TurnPlayer && _setup.Relations.Powered[ruler] && !_setup.Relations.Pending.Any(p=>p.Ruler==ruler);
+    private bool CanPlanRuler(int ruler)=>ruler>=0 && (_computerMarches!=null?ruler==_setup.PlayerSlot:_setup.ControllerOf(ruler)==_setup.TurnPlayer) && _setup.Relations.Powered[ruler] && !_setup.Relations.Pending.Any(p=>p.Ruler==ruler);
     private bool EnemyTarget(int id)=>_setup.Nodes.All[id].Owner<0 || !_setup.Relations.Allied(_setup.PlayerSlot,_setup.Nodes.All[id].Owner);
     private void BuildInvasionSources(int target)
     {
