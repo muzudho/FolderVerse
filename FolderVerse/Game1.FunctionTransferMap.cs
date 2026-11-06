@@ -136,9 +136,16 @@ public partial class Game1
                 for(int i=1;i<path.Length;i++)
                 {
                     if(!VisiblePosition(path[i-1],out var from) || !VisiblePosition(path[i],out var to))continue;
+                    var delta=to-from;
+                    if(delta.LengthSquared()<1)continue;
+                    var unit=Vector2.Normalize(delta);
+                    // Use the same orientation for both directions along this segment.
+                    var roadDirection=path[i-1]<path[i]?unit:-unit;
+                    var offset=new Vector2(-roadDirection.Y,roadDirection.X)*(threat?7:-7);
+                    from+=offset;
+                    to+=offset;
                     DrawFunctionTransferLine(from,to,ink,threat?3:5);
-                    if(!threat || (to-from).LengthSquared()<1)continue;
-                    var unit=Vector2.Normalize(to-from);
+                    if(!threat)continue;
                     var tip=(from+to)/2+unit*9;
                     var wing=new Vector2(-unit.Y,unit.X)*6;
                     DrawFunctionTransferLine(tip-unit*10+wing,tip,ink,3);
