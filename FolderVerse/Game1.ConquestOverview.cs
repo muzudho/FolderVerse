@@ -123,7 +123,7 @@ public partial class Game1
         _ui.Text("世界征服状況フェーズ",new(55,35),.7f,Cream);
         _ui.Center($"全体ターン {_setup.Population.Turn} / 征服者 {_setup.ActiveCount}人 / 敵 {Enumerable.Range(0,_setup.ActiveCount).Count(r=>!_setup.Relations.Allied(r,_setup.PlayerSlot))}人",new(580,35,950,45),.5f,Cream);
         _ui.Text("Enter / Esc : 内政へ",new(1260,1020),.4f,Cream);
-        if(!_demoActive && _conquestStage<5)_ui.Button(ConquestSkipButton,"スキップ",Accent,.55f);
+        if(!_demoActive && !ComputerExhibition && _conquestStage<5)_ui.Button(ConquestSkipButton,"スキップ",Accent,.55f);
         if(_conquestStage<3 || _conquestStage>=6){
             float cover=_conquestStage switch{0=>(float)(_conquestAge/.65),1 or 7=>1,2 or 8=>1-(float)(_conquestAge/.65),6=>(float)(_conquestAge/.65),_=>0};
             DrawConquestCurtain(MathHelper.SmoothStep(0,1,Math.Clamp(cover,0,1)));
