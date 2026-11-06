@@ -17,6 +17,19 @@ static (WorldSetup W,int A,int B,int C) Fixture()
     return(w,a.Id,b,c);
 }
 static Robot Add(WorldSetup w,int n,RobotParts parts){var r=w.Robots.Create(0,parts);w.Robots.Nodes[n].Add(r);return r;}
+foreach(bool cancel in new[]{false,true})
+{
+    var(w,a,b,c)=Fixture();
+    var head=Add(w,a,RobotParts.Head);
+    var body=Add(w,a,RobotParts.Body|RobotParts.Legs);
+    var plans=w.Robots.PartPlanning;
+    w.Campaign.FunctionTransfers.Reserve(w,a,b);
+    long robot=plans.Reserve(w,a,a,head.Id,RobotParts.Head,body.Id,0);
+    Check(plans.Preview(w).Nodes[b].Robots.Any(r=>r.Id==robot && r.CanFight),"Origin assembly appears in the destination forecast");
+    if(cancel)w.Campaign.FunctionTransfers.Cancel(a);
+    w.Campaign.FinishDomestic(w);
+    Check(w.Robots.Nodes[cancel?a:b].Robots.Any(r=>r.Id==robot && r.CanFight),"Origin assembly follows the transfer or stays local after cancellation");
+}
 {
     var(w,a,b,c)=Fixture();for(int i=0;i<12;i++){Add(w,a,RobotParts.Complete);Add(w,b,RobotParts.Complete);}
     w.Robots.Workshops[a].Configure(RobotParts.Head,15);var lane=w.Robots.Workshops[a];int turn=w.Population.Turn;

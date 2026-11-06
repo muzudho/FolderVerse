@@ -12,13 +12,13 @@ public partial class Game1
     private bool HangarPageClick(Point p)
     {
         if(!FunctionPagePrevious.Contains(p) && !FunctionPageNext.Contains(p))return false;
-        _hangarPage=Math.Clamp(_hangarPage+(FunctionPagePrevious.Contains(p)?-1:1),0,FunctionPageCount(_populationNode)-1);return true;
+        _hangarPage=Math.Clamp(_hangarPage+(FunctionPagePrevious.Contains(p)?-1:1),0,FunctionPageCount(HangarPlanningNode)-1);return true;
     }
     private void DrawHangarPages()
     {
-        if(FunctionPageCount(_populationNode)<=1)return;
+        if(FunctionPageCount(HangarPlanningNode)<=1)return;
         _ui.Button(FunctionPagePrevious,"←",Muted,.4f);_ui.Button(FunctionPageNext,"→",Muted,.4f);
-        _ui.Center($"{_hangarPage+1}/{FunctionPageCount(_populationNode)}",new(722,262,80,30),.35f,Cream);
+        _ui.Center($"{_hangarPage+1}/{FunctionPageCount(HangarPlanningNode)}",new(722,262,80,30),.35f,Cream);
     }
     private static Rectangle FactoryPagePrevious=>new(660,926,62,30);
     private static Rectangle FactoryPageNext=>new(802,926,62,30);

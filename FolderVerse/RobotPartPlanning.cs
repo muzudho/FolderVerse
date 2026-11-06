@@ -62,7 +62,11 @@ public sealed class RobotPartPlanning
         for(int n=0;n<copy.Nodes.Length;n++)if(direct[n].Length<=copy.Nodes[n].StorageLimit)copy.Nodes[n].Replace(direct[n]);
         copy.DirectDelivery.Orders.Clear();
         PreviewResults.Clear();
-        foreach(var order in Orders)try{Apply(world,copy,order,false);PreviewResults.Add(new(order.Number,order.Owner,order.Target,"実施予定"));}catch(InvalidOperationException e){PreviewResults.Add(new(order.Number,order.Owner,order.Target,e.Message));}
+        foreach(var order in Orders)try{
+            int host=order.Target>=0 && order.Target<hosts.Length?hosts[order.Target]:order.Target;
+            Apply(world,copy,RelocateLocalOrder(order,host),false);
+            PreviewResults.Add(new(order.Number,order.Owner,order.Target,"実施予定"));
+        }catch(InvalidOperationException e){PreviewResults.Add(new(order.Number,order.Owner,order.Target,e.Message));}
         var recipes=new Dictionary<long,PlannedPartMove[]>();copy.PartPlanning.Orders.AddRange(Orders);
         for(int node=0;node<copy.Nodes.Length;node++){
             int owner=world.Nodes.All[node].Owner;if(owner<0 || copy.Workshops[node].AutoAssemblyDisabled)continue;
@@ -95,7 +99,7 @@ public sealed class RobotPartPlanning
         var copy=Preview(world).PlanningCopy();
         var inputs=copy.Nodes.SelectMany(s=>s.Robots).ToArray();
         var order=new PlannedPartMove(_next,owner,source,target,id,parts,targetId){ExpectedSource=inputs.FirstOrDefault(r=>r.Id==id)?.Parts??0,ExpectedTarget=inputs.FirstOrDefault(r=>r.Id==targetId)?.Parts??0};
-        long result=Apply(world,copy,order,false);Orders.Add(order);_next++;return result;
+        long result=Apply(world,copy,ProjectedLocalOrder(world,order),false);Orders.Add(order);_next++;return result;
         }catch{Orders.RemoveAll(o=>o.Number>=start);_next=start;Invalidate();throw;}
     }
     public bool ReserveRole(WorldSetup world,int node,long id,HangarReservation role,int owner)
@@ -103,7 +107,20 @@ public sealed class RobotPartPlanning
         long start=_next;
         EnsureForecastRobot(world,id);
         var copy=Preview(world).PlanningCopy();var order=new PlannedPartMove(_next,owner,node,node,id,0,null,role);
-        try{Apply(world,copy,order,false);Orders.Add(order);_next++;return true;}catch(InvalidOperationException){Orders.RemoveAll(o=>o.Number>=start);_next=start;Invalidate();return false;}
+        try{Apply(world,copy,ProjectedLocalOrder(world,order),false);Orders.Add(order);_next++;return true;}catch(InvalidOperationException){Orders.RemoveAll(o=>o.Number>=start);_next=start;Invalidate();return false;}
+    }
+    private static PlannedPartMove RelocateLocalOrder(PlannedPartMove order,int host)=>
+        order.Source==order.Target && host!=order.Target?order with {Source=host,Target=host}:order;
+    private static PlannedPartMove ProjectedLocalOrder(WorldSetup world,PlannedPartMove order)
+    {
+        var transfer=world.Campaign.FunctionTransfers.Orders.FirstOrDefault(o=>o.Source==order.Target);
+        return transfer!=null && world.Campaign.FunctionTransfers.CanReserve(world,transfer.Source,transfer.Target)
+            ?RelocateLocalOrder(order,transfer.Target):order;
+    }
+    internal void RelocateLocalOrders(int source,int target)
+    {
+        for(int i=0;i<Orders.Count;i++)
+            if(Orders[i].Target==source)Orders[i]=RelocateLocalOrder(Orders[i],target);
     }
     public long[] Dependencies(long id)
     {
