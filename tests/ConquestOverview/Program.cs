@@ -18,7 +18,8 @@ sealed class OverviewGame:Game1{
   world.HumanPlayers.Add(3);
   var p=new ConquestPresentation(world);var main=p.Cards.Where(c=>!c.Reminder).ToArray();
   Check(main.Select(c=>c.Ruler).SequenceEqual(world.Relations.ProvisionalRanking(world).OrderByDescending(e=>e.Rank).Select(e=>e.Ruler)),"Lowest rank first main introductions");
-  int child=Array.FindIndex(p.Cards,c=>c.Ruler==3 && !c.Reminder);Check(p.Cards[child-2].Ruler==0 && p.Cards[child-1].Ruler==2 && p.Cards[child-1].Reminder,"Ancestors recalled root first");
+  Check(p.Cards.All(c=>!c.Reminder),"Subordinate results are compact even when a human controls them");
+  Check(world.Relations.ProvisionalRanking(world).Where(r=>r.Ruler is 2 or 3).All(r=>r.Cells==0 && !world.Relations.CanWinConquest(r.Ruler)),"Subordinates count zero sectors and cannot win individually");
   world.HumanPlayers.Remove(3);
   Check(ConquestPresentation.Detailed(world,0,6) && ConquestPresentation.Detailed(world,5,2) && !ConquestPresentation.Detailed(world,5,3) && !ConquestPresentation.Detailed(world,2,4),"Only human identities and top two keep detailed animation; controlled subordinates are compact");
   var compactCard=new ConquestPresentation.Card(3,6,3,false,ConquestPresentation.FaceTour(world,3));
@@ -59,7 +60,7 @@ sealed class OverviewGame:Game1{
   Check(emptyCompact.CellsStart==0 && emptyCompact.RankStart==0 && Math.Abs(emptyCompact.Duration*multi.ActiveCount-5)<1e-9,"Zero-cell results reveal instantly and share the compact group's five seconds");
   int batteryless=multi.ActiveCount-1;multi.Relations.Powered[batteryless]=false;
   var batterylessRanking=multi.Relations.ProvisionalRanking(multi);
-  Check(batterylessRanking[^1].Ruler==batteryless,"Batteryless ruler ranks below every powered zero-cell ruler despite highest entry number");
+  Check(batterylessRanking[^1].Ruler==batteryless && batterylessRanking[^1].Cells==-1,"Batteryless ruler counts minus one sector and ranks below powered zero-cell rulers");
   var batterylessCard=new ConquestPresentation(multi).Cards.Single(c=>c.Ruler==batteryless && !c.Reminder);
   var batterylessTally=new ConquestTally(multi,batterylessCard,true);
   Check(!batterylessTally.Powered && batterylessTally.Score(0)==-100+batteryless+1 && batterylessTally.Score(0)==ConquerorRelations.RankingScore(0,batteryless+1,multi.ActiveCount,false),"Batteryless tally uses minus 100 plus Entry consistently with ranking");
@@ -148,7 +149,7 @@ sealed class OverviewGame:Game1{
    foreach(var n in world.Nodes.All.Where(n=>n.Owner==0))n.Owner=-1;world.Relations.SetSuperior(2,-1);world.Relations.Powered[0]=false;
    var noBatteryPresentation=new ConquestPresentation(world);Set("_conquestPresentation",noBatteryPresentation);Set("_conquestCard",Array.FindIndex(noBatteryPresentation.Cards,c=>c.Ruler==0 && !c.Reminder));
    Set("_conquestTally",new ConquestTally(world,noBatteryPresentation.Cards[(int)Get("_conquestCard")],true));
-   var noBatteryRanking=world.Relations.ProvisionalRanking(world).OrderBy(r=>r.Ruler).ToArray();Set("_conquestTiles",CharacterSelectionLayout.CreateOverview(noBatteryRanking.Select(r=>r.Cells).ToArray(),noBatteryRanking.Select(r=>r.Rank).ToArray()));
+   var noBatteryRanking=world.Relations.ProvisionalRanking(world).OrderBy(r=>r.Ruler).ToArray();Set("_conquestTiles",CharacterSelectionLayout.CreateOverview(noBatteryRanking.Select(r=>Math.Max(0,r.Cells)).ToArray(),noBatteryRanking.Select(r=>r.Rank).ToArray()));
    base.Draw(t);GraphicsDevice.GetBackBufferData(full);texture.SetData(full);using var batterylessOutput=File.Create(Path.Combine(AppContext.BaseDirectory,"conquest-batteryless.png"));texture.SaveAsPng(batterylessOutput,texture.Width,texture.Height);
    for(int i=0;i<nodeOwners.Length;i++)world.Nodes.All[i].Owner=nodeOwners[i];world.Relations.SetSuperior(2,savedSuperior);world.Relations.Powered[0]=true;
    Set("_conquestTally",savedTally);Set("_conquestPresentation",savedPresentation);Set("_conquestCard",savedCard);Set("_conquestTiles",savedTiles);
@@ -186,7 +187,7 @@ sealed class OverviewGame:Game1{
   world.SetWorld(123);world.SetCast(456);world.SetTerritoryRights(789);world.SelectPlayer(0);world.HumanPlayers.Add(0);
   foreach(int ruler in world.LandOrder())world.ClaimLand(ruler,world.Cells.Where(c=>world.Owners[c.Id]<0).Take(world.TerritoryRights[ruler]).Select(c=>c.Id).ToArray());
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"Fortune"));Set("_landAge",5d);
-  Call("UpdateLandSetup",0d,new MouseState(),true,false,false);
+  Call("UpdateLandSetup",0d,new MouseState(),true,false,true);
   Check(world.TutorialStep==0 && (bool)Get("_conquestOverview"),"Normal new game enters conquest overview after fortune without tutorial mode");
   Call("FinishConquestOverview");
   Set("_demoActive",true);Set("_demoIntro",false);

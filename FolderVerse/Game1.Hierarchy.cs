@@ -44,7 +44,8 @@ public partial class Game1
             int size=Math.Min(62,height-62);_portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new(box.Center.X-size/2,box.Y+32,size,size),_setup.Relations.Powered[ruler]);
             var name=_setup.ConquerorNames[ruler];
             _ui.Center(name,new(box.X+6,box.Bottom-33,box.Width-12,16),Math.Min(.32f,(box.Width-12)/_font.MeasureString(name).X),Cream);
-            string result=$"{(_setup.Relations.Powered[ruler]?$"{entry.Cells} sectors":"電池無し -100 pts")} . Entry {ConquerorRelations.EntryNumber(ruler+1,_setup.ActiveCount)} / {ConquerorRelations.RankingScore(entry.Cells,ruler+1,_setup.ActiveCount,_setup.Relations.Powered[ruler])} points";
+            string status=!_setup.Relations.Powered[ruler]?"脱落":_setup.Relations.Superiors[ruler]>=0?"手下":$"{entry.Cells} sectors";
+            string result=$"{status} . Entry {ConquerorRelations.EntryNumber(ruler+1,_setup.ActiveCount)} / {ConquerorRelations.RankingScore(entry.Cells,ruler+1,_setup.ActiveCount)} points";
             _ui.Center(result,new(box.X+6,box.Bottom-17,box.Width-12,16),Math.Min(.3f,(box.Width-12)/_font.MeasureString(result).X),Cream);
         }
         _ui.Button(InactiveBack,"ゲームへ戻る",Muted,.58f);

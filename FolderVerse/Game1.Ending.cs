@@ -15,17 +15,19 @@ public partial class Game1
     {
         if(_setup.WorldConquestEndingShown || _setup.Cells.Length==0)return false;
         var ranking=_setup.Relations.ProvisionalRanking(_setup);
-        if(!ranking.Any(r=>r.Cells==_setup.Cells.Length && _setup.Relations.Powered[r.Ruler]))return false;
+        if(!ranking.Any(r=>r.Cells==_setup.Cells.Length && _setup.Relations.CanWinConquest(r.Ruler)))return false;
         _setup.WorldConquestEndingShown=true;
         StartEnding();_endingBeforeIndustry=true;return true;
     }
     private void StartEnding()
     {
+        var eligible=_setup.Relations.ProvisionalRanking(_setup).Where(r=>_setup.Relations.CanWinConquest(r.Ruler)).ToArray();
+        if(eligible.Length==0)return;
+        var winner=eligible[0];
         _autoPaused=false;
         RecordPetitstellaMedals();
         StopBattleMusic();StopIndustryMusic();ResetInspector();_autoPlay=false;
         _endingBeforeIndustry=false;
-        var winner=_setup.Relations.ProvisionalRanking(_setup)[0];
         _endingWinner=winner.Ruler;_endingScore=ConquerorRelations.RankingScore(winner.Cells,winner.Ruler+1,_setup.ActiveCount,_setup.Relations.Powered[winner.Ruler]);_endingCells=winner.Cells;_endingAge=0;
         CloseMovement();_statusMenuOpen=false;_populationCell=-1;_mapTransitionAge=-1;_screen=Screen.Ending;
         _operations.Write("ending_started",new{winner=_endingWinner,cells=_endingCells,score=_endingScore,turn=_setup.Population.Turn});

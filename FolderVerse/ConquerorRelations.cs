@@ -40,7 +40,8 @@ public sealed class ConquerorRelations
     }
     public static int RankingScale(int participants){int scale=100;while(participants>=scale)scale=checked(scale*10);return scale;}
     public static string EntryNumber(int entry,int participants)=>entry.ToString(new string('0',(RankingScale(participants)-1).ToString().Length));
-    public static int RankingScore(int cells,int entry,int participants,bool powered=true)=>checked((powered?cells*RankingScale(participants):-100)+entry);
+    public static int RankingScore(int cells,int entry,int participants,bool powered=true)=>checked((powered?cells:-1)*RankingScale(participants)+entry);
+    public bool CanWinConquest(int ruler)=>Powered[ruler] && Superiors[ruler]<0;
     // Ruler slots are the permanent clockwise IDs assigned by SetCast / PortraitCell.
     public (int Ruler,int Rank,int Cells,int Nodes)[] ProvisionalRanking(WorldSetup world)
     {
@@ -53,7 +54,8 @@ public sealed class ConquerorRelations
         var scores=Enumerable.Range(0,world.ActiveCount).Select(ruler=>new
         {
             Ruler=ruler,
-            Cells=world.Cells.Count(cell=>world.Nodes.InCell(cell.Id).Any() && world.Nodes.InCell(cell.Id).All(node=>InSubtree(node.Owner,ruler))),
+            Cells=!Powered[ruler]?-1:Superiors[ruler]>=0?0:
+                world.Cells.Count(cell=>world.Nodes.InCell(cell.Id).Any() && world.Nodes.InCell(cell.Id).All(node=>InSubtree(node.Owner,ruler))),
             Nodes=world.Nodes.All.Count(node=>InSubtree(node.Owner,ruler))
         }).OrderByDescending(r=>RankingScore(r.Cells,r.Ruler+1,world.ActiveCount,Powered[r.Ruler])).ToArray();
         return scores.Select((r,index)=>(r.Ruler,index+1,r.Cells,r.Nodes)).ToArray();
