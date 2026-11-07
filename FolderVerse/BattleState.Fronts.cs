@@ -9,6 +9,8 @@ public sealed partial class BattleState
     public const int ArmiesPerEdge=3;
     public bool CompactFronts=>BoardSize==Size && Armies.Where(a=>a.Side<4).GroupBy(a=>a.Side).Any(g=>g.Count()>1);
     public int FieldLimit(BattleArmy army)=>CompactFronts?Math.Min(3,army.Limit):army.Limit;
+    public bool CanAddArmy(int owner)=>!Armies.Any(a=>a.Owner==owner) && (BoardSize==Size && Kind==BattleKind.Node && owner==Defender
+        ?Armies.All(a=>a.Side!=4):EntrySides.Any(side=>Armies.Count(a=>a.Side==side)<(BoardSize==Size?ArmiesPerEdge:1)));
     private int FreeEntrySide(int preferred)
     {
         if(BoardSize!=Size)return EntrySides.First(side=>Armies.All(a=>a.Side!=side));
@@ -48,8 +50,15 @@ public sealed partial class BattleState
         var p=army.EntrySlot switch{0=>new Point(2,4),2=>new Point(10,4),_=>new Point(6,0)};
         int exit=army.EntrySlot switch{0=>3,2=>9,_=>1};
         yield return FrontPoint(p,army.Side);
-        while(p.X!=exit){p.X+=Math.Sign(exit-p.X);yield return FrontPoint(p,army.Side);}
         while(p.Y!=0){p.Y--;yield return FrontPoint(p,army.Side);}
+        while(p.X!=exit){p.X+=Math.Sign(exit-p.X);yield return FrontPoint(p,army.Side);}
+    }
+    private void PrepareCompactMountain()
+    {
+        if(!CompactFronts || Terrain!=BattleTerrain.Mountain)return;
+        // Move the four old offset passes onto the protected central approaches.
+        // Every ridge retains a single one-cell pass instead of accumulating extra gaps.
+        for(int side=0;side<4;side++)for(int offset=-3;offset<=3;offset++)Walls.Add(FrontPoint(new(6+offset,3),side));
     }
     private void OpenCompactApproaches()
     {

@@ -99,7 +99,7 @@ public sealed partial class BattleState
     public void AddArmy(int owner,int home,IEnumerable<Robot> robots,bool queen=false,int preferredSide=-1)
     {
         if(owner<0 || owner>=GameLimits.MaxConquerors || home<0)throw new ArgumentOutOfRangeException();
-        if(Armies.Count>=EntryCapacity || Armies.Any(a=>a.Owner==owner))throw new InvalidOperationException("Battle entry capacity is full or the army already participates.");
+        if(Armies.Count>=EntryCapacity || !CanAddArmy(owner))throw new InvalidOperationException("Battle entry capacity is full or the army already participates.");
         int side=BoardSize==Size && Kind==BattleKind.Node && owner==Defender?4:
             BoardSize==Size?FreeEntrySide(preferredSide):
             Armies.Count==1 && EntrySides.Contains(2) && !Armies.Any(a=>a.Side==2)?2:EntrySides.First(i=>!Armies.Any(a=>a.Side==i));

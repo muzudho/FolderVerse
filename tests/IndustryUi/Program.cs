@@ -156,6 +156,8 @@ sealed class CheckGame:Game1
         Check(w.Robots.IndustryTurn==clock && w.Robots.ProductionIntakes.Count==0 && !beforeMotion.SequenceEqual(duringMotion),"The shared fluorescent tube moves between ticks without producing early");
         Call("UpdateManufacturing",.625d,false);
         Check(w.Robots.IndustryTurn==clock+3 && w.Robots.ProductionIntakes.Count==3 && w.Industry.Pending,"One displayed industry turn produces actual queued products");
+        var flights=((IEnumerable<(ProductionIntake Arrival,double Started)>)Get("_manufacturingFlights")).ToArray();
+        Check(flights.Length==3 && flights.Select(f=>f.Started).Distinct().Count()==3,"Fast production retains three independent delivery animations instead of resetting the previous flight");
         GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();Save("manufacturing-delivery");
         for(int i=0;w.Industry.Pending && i<20;i++)Call("UpdateManufacturing",.75d,false);
         Check(w.Robots.ProductionIntakes.Count==11 && (int)Get("_manufacturingReceived")==33 &&

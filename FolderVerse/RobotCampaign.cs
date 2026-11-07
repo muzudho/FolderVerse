@@ -316,7 +316,7 @@ public sealed partial class RobotCampaign
         var state=e.Battles.FirstOrDefault(b=>b.Armies.Any(a=>a.Owner==owner));
         if(state==null)
         {
-            state=e.Battles.FirstOrDefault(b=>!b.Finished && b.Armies.Count<b.EntryCapacity);
+            state=e.Battles.FirstOrDefault(b=>!b.Finished && b.CanAddArmy(owner));
             if(state==null){state=NewState(world,e);e.Battles.Add(state);}
             state.AddArmy(owner,home,robots,queen,SeaApproach(world,e,home));return;
         }
