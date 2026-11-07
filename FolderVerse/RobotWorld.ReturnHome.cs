@@ -9,11 +9,12 @@ public sealed partial class RobotWorld
     public List<ReturningRobot> ReturningRobots {get;}=new();
     public const string NoHomeCountry="帰る国がもうありません。";
     private static readonly RobotParts[] HomeParts={RobotParts.Head,RobotParts.Body,RobotParts.Legs};
-    public bool CanReturnHome(WorldSetup world,int node,Robot robot,int commander)
+    public bool CanReturnHome(WorldSetup world,int node,Robot robot,int commander)=>CanReturnHomeCore(world,node,robot,commander,true);
+    private bool CanReturnHomeCore(WorldSetup world,int node,Robot robot,int commander,bool authority)
         =>node>=0 && node<Nodes.Length && robot!=null && commander>=0 && commander<world.ActiveCount &&
           robot.Parts==RobotParts.Complete && !robot.Disposal &&
           HomeParts.All(p=>robot.Origin(p)!=commander) && !AssemblyLocked(node,robot) &&
-          world.Campaign.Phase==CampaignPhase.Domestic && world.Nodes.All[node].Owner>=0 && world.Relations.Controls(world.Nodes.All[node].Owner) && !world.Campaign.RobotBattles.LockedNode(node);
+          world.Campaign.Phase==CampaignPhase.Domestic && world.Nodes.All[node].Owner>=0 && (authority?world.Relations.Controls(world.Nodes.All[node].Owner):world.Nodes.All[node].Owner==commander) && !world.Campaign.RobotBattles.LockedNode(node);
 
     public bool ToggleReturnHome(WorldSetup world,long id,int commander,out string message)
     {
@@ -27,6 +28,11 @@ public sealed partial class RobotWorld
         string status=HomeCountries(world,robot).Length==0?NoHomeCountry:"国へ帰る予約";
         Nodes[node].Replace(Nodes[node].Robots.Select(r=>r.Id==id?r with {ReturnHomeCommander=commander,ReturnHomeStatus=status}:r));
         PartPlanning.Invalidate();message=status;return true;
+    }
+    internal bool ReserveComputerReturnHome(WorldSetup world,int node,Robot robot,int owner)
+    {
+        if(!CanReturnHomeCore(world,node,robot,owner,false) || HomeCountries(world,robot).Length==0)return false;
+        Nodes[node].Replace(Nodes[node].Robots.Select(r=>r.Id==robot.Id?r with {ReturnHomeCommander=owner,ReturnHomeStatus="国へ帰る予約"}:r));PartPlanning.Invalidate();return true;
     }
     private static int[] HomeCountries(WorldSetup world,Robot robot)
     {

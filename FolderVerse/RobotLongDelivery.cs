@@ -49,12 +49,17 @@ public sealed class RobotLongDelivery
         return Array.Empty<int>();
     }
     public LongPartOrder Reserve(WorldSetup w,int source,int target,long id,RobotParts parts,long? receiver,int commander,int targetSlot=0)
+        =>ReserveCore(w,source,target,id,parts,receiver,commander,targetSlot,true);
+    internal LongPartOrder ReserveComputer(WorldSetup w,int source,int target,long id,RobotParts parts,long? receiver,int commander,int targetSlot=0)
+        =>ReserveCore(w,source,target,id,parts,receiver,commander,targetSlot,false);
+    private LongPartOrder ReserveCore(WorldSetup w,int source,int target,long id,RobotParts parts,long? receiver,int commander,int targetSlot,bool authority)
     {
         var world=w.Robots;
+        bool Controls(int owner)=>owner>=0 && (authority?w.Relations.Controls(owner):owner==commander);
         if(w.Campaign.Phase!=CampaignPhase.Domestic || source==target || source<0 || target<0 || source>=world.Nodes.Length || target>=world.Nodes.Length ||
-            !w.Nodes.All[source].Functional || !w.Nodes.All[target].Functional || w.Nodes.All[source].Owner<0 || w.Nodes.All[target].Owner<0 || !w.Relations.Controls(w.Nodes.All[source].Owner) || !w.Relations.Controls(w.Nodes.All[target].Owner))throw new InvalidOperationException("操作できる元地点と先地点を選んでください。");
+            !w.Nodes.All[source].Functional || !w.Nodes.All[target].Functional || w.Nodes.All[source].Owner<0 || w.Nodes.All[target].Owner<0 || !Controls(w.Nodes.All[source].Owner) || !Controls(w.Nodes.All[target].Owner))throw new InvalidOperationException("操作できる元地点と先地点を選んでください。");
         var robot=world.Nodes[source].Robots.SingleOrDefault(r=>r.Id==id);
-        if(robot==null || !w.Relations.Controls(robot.Owner) || world.AssemblyLocked(source,robot) && !HoldsSource(source,id) || parts==0 || (parts&robot.Parts)!=parts)throw new InvalidOperationException("配送できるパーツを選んでください。");
+        if(robot==null || !Controls(robot.Owner) || world.AssemblyLocked(source,robot) && !HoldsSource(source,id) || parts==0 || (parts&robot.Parts)!=parts)throw new InvalidOperationException("配送できるパーツを選んでください。");
         parts=robot.ConnectedParts(parts);
         if(Orders.Any(o=>o.Node==source && o.CargoId==id && (o.Parts&parts)!=0))throw new InvalidOperationException("その部位は長距離便で予約済みです。");
         if(Path(w,source,target,robot.Owner).Length<2)throw new InvalidOperationException("先地点へつながる経路がありません。");

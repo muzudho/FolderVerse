@@ -27,6 +27,7 @@ public sealed partial class ConquestCampaign
         }
         _domesticSubmitted.Clear();
         if(party.Length>0)world.SelectTurnRuler(party[0]);
+        ComputerLogistics.Plan(world,automaticAll);
         ComputerFunctionTransfers.Plan(world,automaticAll);
         if(deferDelivery?.Invoke()==true)return false;
         BeginDelivery(world);
@@ -131,7 +132,8 @@ public sealed partial class ConquestCampaign
             }
             if(!automaticAll && party.Length<=1)world.SelectTurnRuler(controller);
             var random=new SeedRandom(world.PlacementSeed^world.Population.Turn^0x57421);
-            for(int ruler=0;ruler<world.ActiveCount;ruler++)
+            if(UseRobotCombat)ComputerJointAttacks.Plan(world,orders,automaticAll);
+            else for(int ruler=0;ruler<world.ActiveCount;ruler++)
             {
                 if(!automaticAll && world.ManualRulers().Contains(ruler) || !world.Relations.CanAct(ruler))continue;
                 if(UseRobotCombat)BattleLessons.ReserveHomeGuards(world,ruler);
