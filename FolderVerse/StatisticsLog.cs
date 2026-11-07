@@ -44,7 +44,7 @@ public sealed class StatisticsLog
             int won=nodes.Count(n=>_previousOwners!=null && _previousOwners[n.Id]!=owner);
             int lost=_previousOwners==null?0:world.Nodes.All.Count(n=>_previousOwners[n.Id]==owner && n.Owner!=owner);
             return new{
-                owner,powered=world.Relations.Powered[owner],superior=world.Relations.Superiors[owner],sectors=ranking[owner].Cells,
+                owner,powered=world.Relations.Powered[owner],eliminationOrder=world.Relations.EliminationOrders[owner],superior=world.Relations.Superiors[owner],sectors=ranking[owner].Cells,
                 nodes=nodes.Length,functional=nodes.Count(n=>n.Functional),won,lost,
                 capacity=stores.Sum(s=>s.TotalCapacity),occupied=stores.Sum(s=>s.Count),returnReservations=stores.Sum(s=>s.ReservedReturns),
                 robots=stock.Length,complete=stock.Count(r=>r.Parts==RobotParts.Complete),

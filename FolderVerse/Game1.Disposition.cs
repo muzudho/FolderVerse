@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -58,6 +58,7 @@ public partial class Game1
     private void DispositionInput(bool click,bool escape)
     {
         if(_dispositionScene!=null){if(click && _dispositionSceneAge>=1.2 || escape && _dispositionSceneAge>=1.2)FinishDispositionScene();return;}
+        if(_screen==Screen.Disposition && MercyInput(click,escape))return;
         if(_screen==Screen.InactiveList)
         {
             if(escape || click && InactiveBack.Contains(_pointer)){_screen=Screen.WorldStatus;AutoSaveDomestic();return;}
@@ -76,6 +77,10 @@ public partial class Game1
         for(int i=0;i<3;i++)if(DispositionButton(i).Contains(_pointer))
         {
             var choice=(DefeatedChoice)i;
+            if(choice==DefeatedChoice.Release){
+                if(!_setup.Relations.CanMercy(_setup,pending))return;
+                _setup.Relations.EnsureComputerMercyOffer(_setup,pending);BeginMercyInput(pending,false);return;
+            }
             bool accepted=_setup.Relations.Choose(_setup,pending,choice);
             _operations.Write("conqueror_disposition",new{pending,choice=choice.ToString(),accepted});
             if(!accepted)return;
@@ -90,7 +95,10 @@ public partial class Game1
     private void DrawDispositionUi()
     {
         if(_dispositionScene!=null){DrawDispositionScene();return;}
+        if(DrawMercyUi())return;
+        if(_setup.Relations.Pending.Count==0)return;
         var captive=_setup.Relations.Pending[0];bool accepts=_setup.Relations.Accepts(_setup,captive.Ruler);
+        if(!_mercyInput && _setup.Relations.CanMercy(_setup,captive) && _setup.HumanPlayers.Contains(captive.Ruler) && !_setup.Relations.MercyOffers.Any(o=>o.Captive==captive))BeginMercyInput(captive,true);
         _ui.Text("征服者の処遇",new(54,30),1f,Cream);
         _ui.Center(_setup.Nodes.Label(_setup.Nodes.All[captive.Node]),new(160,110,1600,45),.58f,Cream);
         for(int side=0;side<2;side++)
@@ -100,11 +108,14 @@ public partial class Game1
             _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new(x,206,480,494));
             _ui.Center((side==0?"勝者　":"敗れた征服者　")+_setup.ConquerorNames[ruler],new(x-80,720,640,48),.65f,Cream);
         }
+        _ui.Center($"敗者の直轄地点：{_setup.Relations.OwnedMercyNodes(_setup,captive)}",new(200,157,1520,36),.45f,Cream);
+        if(_mercyInput){DrawMercyNumber();return;}
         _ui.Center(_setup.Relations.Message,new(200,790,1520,44),.54f,new(255,196,112));
-        string[] choices={accepts?"手下にする":"手下にする（拒否）","逃がす","電池を引き抜く"};
-        for(int i=0;i<3;i++)_ui.Button(DispositionButton(i),choices[i],i==0 && !accepts?Muted:Accent,.65f);
+        string[] choices={accepts?"手下にする":"手下にする（拒否）","見逃し交渉","電池を引き抜く"};
+        for(int i=0;i<3;i++)_ui.Button(DispositionButton(i),choices[i],i==0 && !accepts || i==1 && !_setup.Relations.CanMercy(_setup,captive)?Muted:Accent,.65f);
         if(TutorialCaptiveAchievementsAvailable)DrawTutorialCaptiveChoiceNotes();
-        else _ui.Center("逃がす：その地点に留まる / 電池を引き抜く：所有する地点を未征服にする",new(160,970,1600,48),.48f,Cream);
+        else _ui.Center("見逃し：敗者の申告分の地点を譲渡 / 交渉不成立なら電池を引き抜く",new(160,970,1600,48),.48f,Cream);
+        _ui.Center(ConquerorRelations.MercyMinimumExplanation,new(160,1020,1600,36),.4f,Cream);
     }
     private void DrawInactiveUi()
     {

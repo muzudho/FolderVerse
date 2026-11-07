@@ -38,9 +38,9 @@ public static class SubordinateDomestic
             var complete=w.Robots.PartPlanning.Preview(w).Nodes[node].Robots.Where(r=>r.Owner==owner && r.Parts==RobotParts.Complete && !r.Stationed && !r.Disposal).Select(r=>r.Id).ToArray();
             foreach(long id in complete)w.Robots.PartPlanning.EnsureForecastRobot(w,id);
             actions.Add(w.Robots.PartPlanning.Orders.Count>before?"製造を調整・組立を予約":"製造・格納庫を確認");
-            var soldiers=w.Campaign.DeliverySortieRobots(w,owner,node).Where(r=>!r.Stationed && !r.Disposal).Take(13).ToArray();
+            var soldiers=w.Campaign.DeliverySortieRobots(w,owner,node).Where(r=>!r.Stationed && !r.Disposal).ToArray();
             // Keep one complete robot home. Only attack a weaker visible neighboring force.
-            var outgoing=soldiers.Take(Math.Min(12,Math.Max(0,soldiers.Length-1))).Select(r=>r.Id).ToArray();
+            var outgoing=soldiers.Take(Math.Max(0,soldiers.Length-1)).Select(r=>r.Id).ToArray();
             int target=w.Campaign.RobotBattles.MarchTargets(w,node).Where(id=>{
                 var enemy=w.Nodes.All[id];
                 if(enemy.Owner<0 || w.Relations.Allied(owner,enemy.Owner) || w.Campaign.RobotBattles.LockedNode(id) || w.Campaign.PlannedOrders.Any(o=>o.TargetNode==id))return false;

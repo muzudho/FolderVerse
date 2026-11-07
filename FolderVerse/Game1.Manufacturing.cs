@@ -11,6 +11,7 @@ public partial class Game1
     private double _manufacturingAge,_manufacturingTickAge,_manufacturingDoneAge;
     private readonly List<(ProductionIntake Arrival,double Started)> _manufacturingFlights=new();
     private const double ManufacturingTickSeconds=.75;
+    private const double ManufacturingAnticipation=.45,ManufacturingFlightSeconds=1.1,ManufacturingLampPass=.4;
     private HashSet<long> _manufacturingInitial=new();
     private ProductionIntake[] _manufacturingArrivals=Array.Empty<ProductionIntake>();
 
@@ -48,7 +49,8 @@ public partial class Game1
     private void UpdateManufacturing(double elapsed,bool proceed)
     {
         _manufacturingAge+=elapsed;
-        _manufacturingFlights.RemoveAll(f=>_manufacturingAge-f.Started>=ManufacturingTickSeconds);
+        _manufacturingFlights.RemoveAll(f=>_manufacturingAge-f.Started>=ManufacturingAnticipation+ManufacturingFlightSeconds);
+        if(_manufacturingFlights.Count>0)return;
         if(_setup.Industry.Pending)
         {
             _manufacturingTickAge+=elapsed;
@@ -61,11 +63,12 @@ public partial class Game1
                 _setup.Industry.Advance(_setup,1);
                 var incoming=_setup.Robots.ProductionIntakes.Where(i=>(i.Target??i.Source)==_manufacturingNode && !before.Contains(i.Product.Id)).ToArray();
                 arrivals.AddRange(incoming);
-                _manufacturingFlights.AddRange(incoming.Select(i=>(i,_manufacturingAge-_manufacturingTickAge)));
+                if(incoming.Length>0){_manufacturingFlights.AddRange(incoming.Select(i=>(i,_manufacturingAge)));PlayPresentationSound(false);_manufacturingTickAge=0;}
                 _manufacturingReceived=ManufacturingStock().Where(r=>!_manufacturingInitial.Contains(r.Id)).Sum(ProductParts);
+                if(incoming.Length>0)break;
             }
             if(arrivals.Count>0)_manufacturingArrivals=arrivals.ToArray();
-            _manufacturingFlights.RemoveAll(f=>_manufacturingAge-f.Started>=ManufacturingTickSeconds);
+
             return;
         }
         _manufacturingTickAge+=elapsed;
@@ -108,9 +111,13 @@ public partial class Game1
                 double increment=Math.Clamp(_manufacturingTickAge/(ManufacturingTickSeconds/IndustryTime.UnitsPerTurn),0,1);
                 progress=Math.Min(progress+increment,line.RestRemaining>0?period+IndustryTime.Whole(line.RestTurns):period);
             }
+            var shipment=_manufacturingFlights.LastOrDefault(f=>ReferenceEquals(f.Arrival.Line,line));
+            double shipmentAge=shipment.Arrival==null?-1:_manufacturingAge-shipment.Started;
+            if(shipmentAge>=0)progress=period;
             int caret=DrawFactoryLaneTrack(line,160,y,progress);
+            if(shipmentAge>=0)caret=160+Math.Max(72,FactoryProductionWidth(period))-18+(int)(36*Math.Clamp((shipmentAge-ManufacturingAnticipation)/ManufacturingLampPass,0,1));
             var product=FactoryRobotButton(item.index,period);_ui.Box(product,Muted);
-            if(line.Manufacturing)DrawRobotGlyph(product,line.CurrentProductionPlan.Preview(Math.Max(0,owner)),whiteOutline:true);else _ui.Center("×",product,.7f,Cream);
+            if(line.Manufacturing && !(shipmentAge>=ManufacturingAnticipation && shipmentAge<ManufacturingAnticipation+ManufacturingLampPass))DrawRobotGlyph(product,line.CurrentProductionPlan.Preview(Math.Max(0,owner)),whiteOutline:true);else if(!line.Manufacturing)_ui.Center("×",product,.7f,Cream);
             DrawFactoryLaneOmissions(line,160,y);
             if(line.Manufacturing)DrawFactoryCaret(caret,y,line);
             _ui.Text($"× {line.RestEvery}　休 {line.RestTurns}"+(line.DoNotRepeat?" / 繰り返さない":""),new(160,y+140),.34f,Cream);
@@ -128,7 +135,7 @@ public partial class Game1
             var box=new Rectangle(1015+slot%4*207,235+slot/4*215,192,195);
             _ui.Box(box,new Color(12,29,42));
             var robot=stock.ElementAtOrDefault(stockPage*12+slot);
-            if(robot==null)continue;
+            if(robot==null || _manufacturingFlights.Any(f=>f.Arrival.Product.Id==robot.Id))continue;
             bool fresh=!_manufacturingInitial.Contains(robot.Id);
             DrawRobotGlyph(new(box.X+55,box.Y+12,82,125),robot,whiteOutline:true);
             _ui.Center(fresh?"今回の入荷予約":_setup.Robots.ProductionIntakes.Any(i=>i.Product.Id==robot.Id)?"入荷予約":"格納済",
@@ -139,8 +146,8 @@ public partial class Game1
         foreach(var item in _manufacturingFlights.TakeLast(12))
         {
             var arrival=item.Arrival;
-            float flight=(float)Math.Clamp((_manufacturingAge-item.Started)/ManufacturingTickSeconds,0,1);
-            if(flight<.95f)
+            float flight=(float)Math.Clamp((_manufacturingAge-item.Started-ManufacturingAnticipation)/ManufacturingFlightSeconds,0,1);
+            if(_manufacturingAge-item.Started>=ManufacturingAnticipation && flight<1)
             {
                 int lane=Array.FindIndex(lines,l=>ReferenceEquals(l.Line,arrival.Line));
                 int slot=Array.FindIndex(stock,r=>r.Id==arrival.Product.Id);
@@ -148,10 +155,11 @@ public partial class Game1
                 var from=FactoryRobotButton(lane%lanesPerPage,lines[lane].Line.Manufacturing?lines[lane].Line.ProductionPeriod:3).Center.ToVector2();
                 var to=new Vector2(1111+slot%4*207,315+slot%12/4*215);
                 var at=Vector2.Lerp(from,to,MathHelper.SmoothStep(0,1,flight));
-                DrawRobotGlyph(new((int)at.X-38,(int)at.Y-55,76,110),arrival.Product,whiteOutline:true);
+                int width=(int)MathHelper.Lerp(72,82,flight),height=(int)MathHelper.Lerp(88,125,flight);
+                DrawRobotGlyph(new((int)at.X-width/2,(int)at.Y-height/2,width,height),arrival.Product,whiteOutline:true);
             }
         }
         _ui.Center("できたパーツは入荷予約へ。次の配送で格納庫に入ります。",new(54,950,1120,60),.43f,Cream);
-        if(!_setup.Industry.Pending && !ComputerExhibition)_ui.Button(IndustryContinue,"次の内政へ",Accent,.65f);
+        if(!_setup.Industry.Pending && _manufacturingFlights.Count==0 && !ComputerExhibition)_ui.Button(IndustryContinue,"次の内政へ",Accent,.65f);
     }
 }

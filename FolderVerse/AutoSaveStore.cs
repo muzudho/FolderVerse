@@ -84,6 +84,10 @@ public static class AutoSaveStore
             else foreach(var field in Fields(type)){
                 if(!entry.Fields.TryGetValue(field.Name,out int id)){
                     if(type==typeof(WorldSetup) && field.Name is "_countryPatterns" or "_countrySecondaryColors" or "_countryEmblems" or "_showComputerOperations")continue;
+                    if(type==typeof(ConquerorRelations) && field.Name=="<MercyOffers>k__BackingField"){field.SetValue(value,new List<MercyOffer>());continue;}
+                    if(type==typeof(ConquerorRelations) && field.Name=="<MercyResults>k__BackingField"){field.SetValue(value,new List<MercyOutcome>());continue;}
+                    if(type==typeof(ConquerorRelations) && field.Name=="<EliminationOrders>k__BackingField"){field.SetValue(value,new int[GameLimits.MaxConquerors]);continue;}
+                    if(type==typeof(ConquerorRelations) && field.Name=="_nextEliminationOrder"){field.SetValue(value,1);continue;}
                     if((type==typeof(Robot) || type==typeof(ProductionPlan)) && field.Name=="<PremiumParts>k__BackingField")continue;
                     if(type==typeof(RobotWorkshop) && field.Name is "_premiumPlan" or "_premiumCatalogueInitialized")continue;
                     if(type==typeof(ProductionPlan) && new[]{"<HeadOrigin>k__BackingField","<BodyOrigin>k__BackingField","<LegsOrigin>k__BackingField","<CheapParts>k__BackingField"}.Contains(field.Name))continue;

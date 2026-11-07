@@ -64,6 +64,7 @@ public partial class Game1
     }
     private void RobotBattleInput(double elapsed,bool click,bool enter)
     {
+        UpdateSeaPresentation(elapsed);
         if(_tutorialAchievementAge>=0){UpdateTutorialAchievementCutIn(elapsed);return;}
         if(BattleIntroActive && !_robotSummary){
             _battleIntroAge=Math.Min(BattlePartsHoldSeconds+BattleForeignFadeSeconds+BattleNativeHoldSeconds+BattlePieceFadeSeconds+BattleBoardRevealSeconds,_battleIntroAge+elapsed);
@@ -145,7 +146,7 @@ public partial class Game1
         BattleInfo($"{(battle.SplitBoard?"分割野戦":battle.Kind==BattleKind.Edge?"辺戦":"節戦")} / Point {battle.TargetNode+1} / {battle.Terrain} / 戦闘ターン {frame.Turn} / {PhaseLabel(frame.Phase)}",112,.5f);
         const int left=40,top=40,size=100;
         var battleCanvas=CanvasBounds();var battleTransform=Matrix.CreateScale(battleCanvas.Width/1920f,battleCanvas.Height/1080f,1)*Matrix.CreateTranslation(battleCanvas.X,battleCanvas.Y,0);
-        var boardTransform=Matrix.CreateTranslation(-left,-top,0)*Matrix.CreateScale(10f/battle.BoardSize)*Matrix.CreateTranslation(left,top,0)*battleTransform;
+        var boardTransform=Matrix.CreateTranslation(-left,-top,0)*Matrix.CreateScale(10f/battle.BoardSize)*Matrix.CreateTranslation(left,top,0)*SeaBoardTransform(battle)*battleTransform;
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:boardTransform);
 
         DrawBattleTerrain(battle,new(left,top,size*battle.BoardSize,size*battle.BoardSize),1);

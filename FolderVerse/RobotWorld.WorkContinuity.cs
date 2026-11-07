@@ -34,7 +34,7 @@ public sealed partial class RobotWorld
         int node=order.SourceNode>=0?order.SourceNode:ReservationSource?.Invoke(order.Ruler)??-1;
         return node>=0 && node<Nodes.Length?Nodes[node]:null;
     }
-    private long[] LegacyOrderIds(March order,RobotStore store)=>store==null?Array.Empty<long>():Training[order.Ruler].Order(store.Robots.Where(r=>r.Owner==order.Ruler && !r.Stationed && !r.Disposal && WorkQualified(r,order.Ruler))).Take((int)Math.Min(12,order.Fighters)).Select(r=>r.Id).ToArray();
+    private long[] LegacyOrderIds(March order,RobotStore store)=>store==null?Array.Empty<long>():Training[order.Ruler].Order(store.Robots.Where(r=>r.Owner==order.Ruler && !r.Stationed && !r.Disposal && WorkQualified(r,order.Ruler))).Take((int)Math.Min(store.TotalCapacity,order.Fighters)).Select(r=>r.Id).ToArray();
     public void RevalidateWorkReservations()
     {
         for(int node=0;node<Nodes.Length;node++){

@@ -141,7 +141,7 @@ public sealed partial class ConquestCampaign
                     var target=world.Nodes.All[id];
                     return world.TerritoryCounts[ruler]==0?random.Next(100):
                         home==null || home.Owner!=ruler?(target.Owner==ruler?0:100):
-                        target.Owner!=ruler && target.Population.People[0]<army?0:50+random.Next(50);
+                        target.Owner!=ruler && RobotBattles.DefendingRobots(world,ruler,id)<army?0:50+random.Next(50);
                 }).FirstOrDefault(-1);
                 if(targetId>=0 && !orders.Any(o=>o.Ruler==ruler && (o.Queen || o.SourceNode==home?.Id)))
                 {

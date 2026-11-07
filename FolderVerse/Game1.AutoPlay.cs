@@ -36,7 +36,7 @@ public partial class Game1
                 else{_robotPlaying=true;RobotBattleInput(elapsed,false,false);_autoStepAge=0;}
                 break;
             case Screen.Disposition:
-                if(_autoStepAge>=2){_pointer=DispositionButton(DemoDispositionChoice()).Center;DispositionInput(true,false);_autoStepAge=0;}
+                if(_autoStepAge>=2){_pointer=AutomaticDispositionPoint;DispositionInput(true,false);_autoStepAge=0;}
                 break;
         }
         return true;

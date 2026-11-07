@@ -23,15 +23,23 @@ sealed class CheckGame:Game1
         }
         for(int seed=0;seed<100;seed++){
             w.Industry.Reset();w.Industry.Queue(1);w.Industry.Roll(seed);
+            var reference=((string Text,Rectangle Bounds,float Scale,bool Backplate)[])Call("IndustryLabelLayout",new Vector2(1170,625),255f,0f);
             for(int turn=0;turn<12;turn++){
                 var labels=((string Text,Rectangle Bounds,float Scale,bool Backplate)[])Call("IndustryLabelLayout",new Vector2(1170,625),255f,turn*MathHelper.TwoPi/12);
                 for(int i=0;i<labels.Length;i++){
                     var r=labels[i].Bounds;
+                    Check(r.Size==reference[i].Bounds.Size && Math.Abs(Vector2.Distance(r.Center.ToVector2(),new(1170,625))-Vector2.Distance(reference[i].Bounds.Center.ToVector2(),new(1170,625)))<2,"Rotating labels retain their size and radial position");
                     Check(r.Width>0 && !labels[i].Text.Contains('+'),"Wheel uses mixed fractions without an addition sign");
                     foreach(var p in new[]{new Vector2(r.Left,r.Top),new Vector2(r.Right,r.Top),new Vector2(r.Left,r.Bottom),new Vector2(r.Right,r.Bottom)})Check(Vector2.Distance(p,new(1170,625))<255,"Every label corner stays inside the roulette");
                     for(int j=0;j<i;j++)Check(!r.Intersects(labels[j].Bounds),$"Labels overlap: seed={seed},angle={turn},items={i}/{j}");
                 }
             }
+        }
+        if(Environment.GetCommandLineArgs().Contains("--cast-patterns")){
+            var castBatch=(SpriteBatch)Get("_spriteBatch");w.SetParticipantCounts(0,60);w.SetCast(123);
+            Set("_screen",Enum.Parse(Get("_screen").GetType(),"CastReview"));
+            GraphicsDevice.Clear(new Color(16,35,46));castBatch.Begin();Call("DrawCastUi");castBatch.End();Save("cast-sixty-patterns");
+            Console.WriteLine("PASS: sixty patterned country swatches render in the cast lottery.");Exit();return;
         }
         var score=new IndustryMusicScore();var pcm=score.Render(IndustryMusicScore.Rate*16);double energy=0;int peak=0;
         for(int i=0;i<pcm.Length;i+=2){int sample=(short)(pcm[i]|pcm[i+1]<<8);energy+=(double)sample*sample;peak=Math.Max(peak,Math.Abs(sample));}
@@ -51,6 +59,9 @@ sealed class CheckGame:Game1
     protected override void Draw(GameTime time)
     {
         var batch=(SpriteBatch)Get("_spriteBatch");
+        if(Environment.GetCommandLineArgs().Contains("--mercy")){
+            CheckMercyUi(batch);Exit();return;
+        }
         if(Environment.GetCommandLineArgs().Contains("--battle13")){
             CheckBattle13Ui(batch);Exit();return;
         }
@@ -90,7 +101,7 @@ sealed class CheckGame:Game1
             Call("UpdateIndustry",4.99d,false);Check(Get("_screen").ToString()=="Industry","Result remains before timeout");Call("UpdateIndustry",.01d,false);
             Check((bool)Get("_manufacturingActive") && w.Robots.IndustryTurn==clock,"Roulette hands off to manufacturing before production");
             int guard=0;
-            while(w.Industry.Pending && guard++<100)Call("UpdateIndustry",.75d,false);
+            while(w.Industry.Pending && guard++<500)Call("UpdateIndustry",.75d,false);
             Check(!w.Industry.Pending && w.Robots.IndustryTurn==clock+result,"Manufacturing applies the exact awarded industry duration once");
             GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();Save("manufacturing-"+result);
             Call("UpdateIndustry",3d,false);
@@ -155,11 +166,14 @@ sealed class CheckGame:Game1
         GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();var duringMotion=Pixels();Save("manufacturing-lane-moving");
         Check(w.Robots.IndustryTurn==clock && w.Robots.ProductionIntakes.Count==0 && !beforeMotion.SequenceEqual(duringMotion),"The shared fluorescent tube moves between ticks without producing early");
         Call("UpdateManufacturing",.625d,false);
-        Check(w.Robots.IndustryTurn==clock+3 && w.Robots.ProductionIntakes.Count==3 && w.Industry.Pending,"One displayed industry turn produces actual queued products");
+        Check(w.Robots.IndustryTurn==clock+1 && w.Robots.ProductionIntakes.Count==1 && w.Industry.Pending,"One displayed industry turn produces actual queued products");
         var flights=((IEnumerable<(ProductionIntake Arrival,double Started)>)Get("_manufacturingFlights")).ToArray();
-        Check(flights.Length==3 && flights.Select(f=>f.Started).Distinct().Count()==3,"Fast production retains three independent delivery animations instead of resetting the previous flight");
+        Check(flights.Length==1,"Shipment pauses production so every departure remains visible");
         GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();Save("manufacturing-delivery");
-        for(int i=0;w.Industry.Pending && i<20;i++)Call("UpdateManufacturing",.75d,false);
+        Call("UpdateManufacturing",.55d,false);
+        Check(w.Robots.IndustryTurn==clock+1,"Production waits while the button product is flying");
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();Save("manufacturing-in-flight");
+        for(int i=0;w.Industry.Pending && i<100;i++)Call("UpdateManufacturing",.75d,false);
         Check(w.Robots.ProductionIntakes.Count==11 && (int)Get("_manufacturingReceived")==33 &&
             w.Robots.IndustryTurn==clock+26 && w.Robots.Nodes[target.Id].Count==1,"Capacity and exactly-once production match the intake reservation rule");
         var glyph=typeof(Game1).GetMethods(F).Single(m=>m.Name=="DrawRobotGlyph" && m.GetParameters().Length==5);
@@ -177,11 +191,48 @@ sealed class CheckGame:Game1
             RobotPartSilhouette.Row(shape,0,true).Width<shape.Width,"Premium parts have a narrow middle; cheap parts have rounded corners");
         Console.WriteLine("PASS: most productive adjacent intake, one-turn production, visible delivery, capacity and no forecast mutation.");
     }
+    private void CheckMercyUi(SpriteBatch batch)
+    {
+        void Fixture(bool humanLoser){
+            w.SetWorld(1);w.SetCast(2);w.SetPlacement(3);w.SelectPlayer(0);w.Relations.Reset();w.HumanPlayers.Clear();w.HumanPlayers.Add(0);
+            foreach(var n in w.Nodes.All)n.Owner=-1;
+            int loser=humanLoser?0:1,victor=humanLoser?1:0;
+            w.Nodes.All[0].Owner=victor;foreach(var n in w.Nodes.All.Skip(1).Take(10))n.Owner=loser;w.Nodes.Recount();
+            w.Relations.Pending.Add(new(loser,victor,0));
+            Set("_screen",Enum.Parse(Get("_screen").GetType(),"Disposition"));
+            Set("_mercyResult",null!);Set("_mercyInput",false);Set("_mercyCaptive",null!);
+            Set("_dispositionScene",null!);
+        }
+        void Draw(string name){GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawDispositionUi");batch.End();Save(name);}
+        void Confirm(){Set("_pointer",new Point(1200,980));Call("DispositionInput",true,false);}
+        Fixture(true);Call("DispositionInput",false,false);
+        Check((bool)Get("_mercyInput") && (bool)Get("_mercyOfferInput"),"A captured human enters their own offer before the CPU demand is revealed");
+        Set("_previousKeyboard",new KeyboardState());Call("MercyKeyboard",new KeyboardState(Keys.D8));
+        Check((string)Get("_mercyDigits")=="8","The human can type their offered count");Draw("mercy-human-offer");Confirm();
+        Check(w.Relations.MercyResults.Last().Offer==8 && w.Relations.MercyResults.Last().Success && w.Nodes.All.Count(n=>n.Owner==0)==2,"The declared eight, rather than the lower CPU demand, is transferred");Draw("mercy-human-result");Confirm();
+        Fixture(false);var captive=w.Relations.Pending[0];w.Relations.SetMercyOffer(w,captive,8);
+        Set("_pointer",new Point(960,895));Call("DispositionInput",true,false);
+        Check((bool)Get("_mercyInput") && !(bool)Get("_mercyOfferInput"),"A human captor enters their minimum demand");
+        Set("_previousKeyboard",new KeyboardState());Call("MercyKeyboard",new KeyboardState(Keys.D3));Draw("mercy-captor-demand");Confirm();
+        Check(w.Relations.MercyResults.Last().Nodes.Length==8,"Demand three receives the actual hidden offer of eight");Confirm();
+        Fixture(false);captive=w.Relations.Pending[0];w.Relations.SetMercyOffer(w,captive,8);
+        Set("_pointer",new Point(960,895));Call("DispositionInput",true,false);
+        Set("_previousKeyboard",new KeyboardState());Call("MercyKeyboard",new KeyboardState(Keys.D9));Confirm();
+        Check(!w.Relations.Powered[1] && w.Relations.MercyResults.Last().Success==false,"An excessive demand removes the battery");Draw("mercy-failed-result");
+        Fixture(false);foreach(var n in w.Nodes.All.Skip(3))if(n.Owner==1)n.Owner=-1;
+        Set("_pointer",new Point(960,895));Call("DispositionInput",true,false);
+        Check(!(bool)Get("_mercyInput") && w.Relations.Pending.Count==1,"Below three locations the mercy button is inactive");Draw("mercy-below-three");
+        Console.WriteLine("PASS: human captive numeric input, hidden offer, captor demand, surrender execution and failed negotiation result screens.");
+    }
     private void CheckBattle13Ui(SpriteBatch batch)
     {
         foreach(var terrain in Enum.GetValues<BattleTerrain>()){
             var battle=new BattleState(73,new(){NoWillTurns=100,FlagDefenseTurns=500,PersuasionPercent=0}){Kind=BattleKind.Node,Defender=0,Id=1};
             battle.BuildTerrain(terrain);
+            Set("_seaPresentationAge",0d);var first=(Matrix)Call("SeaBoardTransform",battle);
+            Set("_seaPresentationAge",2d);var second=(Matrix)Call("SeaBoardTransform",battle);
+            Check(terrain==BattleTerrain.Sea?first!=second:first==Matrix.Identity && second==Matrix.Identity,"Only sea boards receive cosmetic rocking");
+            Check(Vector2.Distance(Vector2.Transform(new Vector2(540,540),second),new Vector2(540,540))<.01f,"Rocking keeps the board center anchored");
             for(int owner=0;owner<13;owner++)battle.AddArmy(owner,0,Enumerable.Range(0,8).Select(_=>w.Robots.Create(owner,RobotParts.Complete)),preferredSide:owner==0?-1:(owner-1)/3);
             battle.ChooseLayout();battle.Deploy();battle.BuildFortifications(12);battle.Capture(BattlePhase.Choose);
             foreach(bool biased in new[]{false,true}){

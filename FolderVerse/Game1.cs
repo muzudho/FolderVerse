@@ -248,7 +248,7 @@ public partial class Game1 : Game
         }
         if(_screen is Screen.Disposition or Screen.InactiveList)
         {
-            if(active)DispositionInput(click || enter,escape);
+            if(active){MercyKeyboard(keyboard);if(enter && (_mercyInput || _mercyResult!=null))_pointer=MercyConfirm.Center;DispositionInput(click || enter,escape);}
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(IsStatusScreen && TrainingInput(_pointer,active && click,active && escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -467,6 +467,8 @@ public partial class Game1 : Game
             bool active=slot<_setup.ActiveCount;
             _ui.Box(new(rect.X+2,rect.Y+2,rect.Width-4,rect.Height-4),active?color:new Color(57,69,77));
             _portraitRenderer.Draw(_spriteBatch,_setup.Looks[slot],new Rectangle(rect.X+7,rect.Y+7,rect.Width-14,rect.Height-14),active,forCreation:true);
+            DrawCountryBorder(new(rect.X+2,rect.Y+2,rect.Width-4,rect.Height-4),slot,width:5);
+            if(_setup.ActiveCount>7)DrawCountrySwatch(new(rect.Right-48,rect.Y+9,36,36),slot);
             _ui.Box(new(rect.X+8,rect.Y+8,70,28),new Color(10,25,35,215));
             _ui.Text("#"+(slot+1).ToString("00"),new(rect.X+16,rect.Y+10),0.46f,active?color:Color.Gray);
             if(HasTerritories)
@@ -797,7 +799,7 @@ public partial class Game1 : Game
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeTutorialPlanets();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeTutorialPlanets();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_shipmentChime?.Dispose();_seaWave?.Dispose();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         if(disposing){StopBattleMusic();StopIndustryMusic();StopEndingMusic();DisposeTitleMusic();}

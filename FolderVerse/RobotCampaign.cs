@@ -62,6 +62,15 @@ public sealed partial class RobotCampaign
     private static int Source(WorldSetup world,March order)=>order.SourceNode>=0?order.SourceNode:world.Nodes.Current(order.Ruler).Id;
     public int AvailableFrom(WorldSetup world,int owner,int source)
         =>source<0 || source>=world.Nodes.All.Length || !world.Nodes.All[source].Functional || LockedNode(source)?0:world.Robots.Nodes[source].Robots.Count(r=>r.Owner==owner && world.Robots.Training[owner].Eligible(r) && !r.Stationed && world.Robots.DirectDelivery.LockedParts(source,r.Id)==0 && !world.Robots.Workshops[source].IsDisposing(r.Id) && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)));
+    public int DefendingRobots(WorldSetup world,int attacker,int target)
+    {
+        int count=world.Robots.Nodes[target].Robots.Count(r=>!world.Relations.Allied(attacker,r.Owner) && r.CanFight && !r.FactoryWorker &&
+            (!(r.DefenseOnly || r.InterceptOnly) || world.Robots.Training[r.Owner].Eligible(r)));
+        int defender=world.Nodes.All[target].Owner;
+        if(defender>=0 && !world.Relations.Allied(attacker,defender) && world.Nodes.Current(defender)?.Id==target)
+            count+=world.Robots.Retinues[defender].Robots.Count(world.Robots.Training[defender].Eligible);
+        return count;
+    }
     public Robot[] SelectableRobots(WorldSetup world,int owner,int source,bool pocket)
     {
         if(owner<0 || owner>=world.ActiveCount || source<0 || source>=world.Nodes.All.Length || LockedNode(source))return Array.Empty<Robot>();
@@ -118,7 +127,7 @@ public sealed partial class RobotCampaign
         foreach(var o in orders)
         {
             var store=world.Robots.Nodes[source[o]];
-            var selected=o.RobotIds!=null?SelectableRobots(world,o.Ruler,source[o],o.PocketOnly).Where(r=>o.RobotIds.Contains(r.Id)).ToArray():world.Robots.Training[o.Ruler].Order(store.Robots.Where(r=>!o.PocketOnly && r.Owner==o.Ruler && world.Robots.Training[o.Ruler].Eligible(r) && !r.Stationed && world.Robots.DirectDelivery.LockedParts(source[o],r.Id)==0 && world.Robots.Workshops[source[o]].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).Take((int)Math.Min(12,o.Fighters)).ToArray();
+            var selected=o.RobotIds!=null?SelectableRobots(world,o.Ruler,source[o],o.PocketOnly).Where(r=>o.RobotIds.Contains(r.Id)).ToArray():world.Robots.Training[o.Ruler].Order(store.Robots.Where(r=>!o.PocketOnly && r.Owner==o.Ruler && world.Robots.Training[o.Ruler].Eligible(r) && !r.Stationed && world.Robots.DirectDelivery.LockedParts(source[o],r.Id)==0 && world.Robots.Workshops[source[o]].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).Take((int)Math.Min(store.TotalCapacity,o.Fighters)).ToArray();
             foreach(var r in selected)Depart(world,source[o],r,o.PocketOnly);
             troops[o]=selected.ToList();
             // Direct retinue travels with its conqueror and is excluded from transport plans.
