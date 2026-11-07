@@ -8,7 +8,7 @@ public partial class Game1
 {
     private bool _manufacturingActive;
     private int _manufacturingNode=-1,_manufacturingReceived;
-    private double _manufacturingAge,_manufacturingTickAge,_manufacturingDoneAge;
+    private double _manufacturingAge,_manufacturingTickAge,_manufacturingDoneAge,_manufacturingFlightAge;
     private const double ManufacturingTickSeconds=.75;
     private HashSet<long> _manufacturingInitial=new();
     private ProductionIntake[] _manufacturingArrivals=Array.Empty<ProductionIntake>();
@@ -33,7 +33,7 @@ public partial class Game1
     {
         _manufacturingNode=PickManufacturingNode();
         _manufacturingActive=true;
-        _manufacturingAge=_manufacturingTickAge=_manufacturingDoneAge=0;
+        _manufacturingAge=_manufacturingTickAge=_manufacturingDoneAge=_manufacturingFlightAge=0;
         _manufacturingReceived=0;
         _manufacturingArrivals=Array.Empty<ProductionIntake>();
         _manufacturingInitial=ManufacturingStock().Select(r=>r.Id).ToHashSet();
@@ -46,17 +46,21 @@ public partial class Game1
     private void UpdateManufacturing(double elapsed,bool proceed)
     {
         _manufacturingAge+=elapsed;
+        _manufacturingFlightAge+=elapsed;
         if(_setup.Industry.Pending)
         {
             _manufacturingTickAge+=elapsed;
-            if(_manufacturingTickAge>=ManufacturingTickSeconds)
+            double unitSeconds=ManufacturingTickSeconds/IndustryTime.UnitsPerTurn;
+            var arrivals=new List<ProductionIntake>();
+            while(_manufacturingTickAge+1e-8>=unitSeconds && _setup.Industry.Pending)
             {
-                _manufacturingTickAge=0;
+                _manufacturingTickAge=Math.Max(0,_manufacturingTickAge-unitSeconds);
                 var before=_setup.Robots.ProductionIntakes.Select(i=>i.Product.Id).ToHashSet();
-                _setup.Industry.Advance(_setup,IndustryTime.UnitsPerTurn);
-                _manufacturingArrivals=_setup.Robots.ProductionIntakes.Where(i=>(i.Target??i.Source)==_manufacturingNode && !before.Contains(i.Product.Id)).ToArray();
+                _setup.Industry.Advance(_setup,1);
+                arrivals.AddRange(_setup.Robots.ProductionIntakes.Where(i=>(i.Target??i.Source)==_manufacturingNode && !before.Contains(i.Product.Id)));
                 _manufacturingReceived=ManufacturingStock().Where(r=>!_manufacturingInitial.Contains(r.Id)).Sum(ProductParts);
             }
+            if(arrivals.Count>0){_manufacturingArrivals=arrivals.ToArray();_manufacturingFlightAge=0;}
             return;
         }
         _manufacturingTickAge+=elapsed;
@@ -72,6 +76,7 @@ public partial class Game1
         var left=new Rectangle(54,145,850,790);var right=new Rectangle(990,145,870,790);
         _ui.Box(left,new Color(24,45,59));_ui.Box(right,new Color(24,45,59));
         _ui.Center("ロボット製造工場",new(left.X,160,left.Width,48),.65f,Cream);
+        _ui.Text("蛍光灯：現在位置 / 緑：生産　黄：休暇　赤：空き枠待ち",new(80,222),.32f,Cream);
         _ui.Center("格納庫 / 入荷予約",new(right.X,160,right.Width,48),.65f,Cream);
         if(_manufacturingNode<0){_ui.Center("稼働できる工場がありません",new(54,420,1806,60),.6f,Cream);return;}
         var node=_setup.Nodes.All[_manufacturingNode];
@@ -80,26 +85,34 @@ public partial class Game1
         var lines=_setup.Robots.Workshops.SelectMany((w,n)=>w.ProductionLines
             .Where(l=>(l.IntakeTarget??n)==_manufacturingNode && _setup.Nodes.All[n].Functional)
             .Select(l=>(Source:n,Line:l))).ToArray();
-        int pages=Math.Max(1,(lines.Length+3)/4);
+        const int lanesPerPage=3;
+        int pages=Math.Max(1,(lines.Length+lanesPerPage-1)/lanesPerPage);
         int page=(int)(_manufacturingAge/3)%pages;
         var latest=_manufacturingArrivals.LastOrDefault();
-        if(latest!=null){int index=Array.FindIndex(lines,l=>ReferenceEquals(l.Line,latest.Line));if(index>=0)page=index/4;}
-        foreach(var item in lines.Skip(page*4).Take(4).Select((value,index)=>(value,index)))
+        if(latest!=null){int index=Array.FindIndex(lines,l=>ReferenceEquals(l.Line,latest.Line));if(index>=0)page=index/lanesPerPage;}
+        foreach(var item in lines.Skip(page*lanesPerPage).Take(lanesPerPage).Select((value,index)=>(value,index)))
         {
-            var (source,line)=item.value;int y=245+item.index*160;
+            var (source,line)=item.value;int y=284+item.index*200;
             int owner=_setup.Nodes.All[source].Owner;
-            _ui.Text(_setup.Nodes.DisplayName(_setup.Nodes.All[source]),new(80,y),.33f,Cream);
-            DrawRobotGlyph(new(90,y+28,65,100),line.CurrentProductionPlan.Preview(Math.Max(0,owner)),whiteOutline:true);
-            var bar=new Rectangle(184,y+50,645,34);
-            _ui.Box(bar,Muted);
-            float progress=line.RestRemaining>0?(float)(IndustryTime.Whole(line.RestTurns)-line.RestRemaining)/Math.Max(1,IndustryTime.Whole(line.RestTurns))
-                :(float)line.ProductionAge/Math.Max(1,line.ProductionPeriod);
-            var ink=line.Waiting?new Color(223,106,93):line.RestRemaining>0?new Color(234,203,98):Accent;
-            _ui.Box(new(bar.X,bar.Y,(int)(bar.Width*progress),bar.Height),ink);
+            _ui.Box(new(78,y-24,782,196),item.index%2==0?new Color(37,63,77):new Color(46,67,79));
+            _ui.Center((page*lanesPerPage+item.index+1).ToString(),new(84,y+22,62,96),1.35f,new Color(167,190,194));
+            _ui.Text(_setup.Nodes.DisplayName(_setup.Nodes.All[source]),new(160,y-19),.30f,Cream);
+            int period=line.Manufacturing?line.ProductionPeriod:3;
+            double progress=line.LaneProgress;
+            if(_setup.Industry.Pending && line.Manufacturing && !line.Paused && !line.CycleFinished && !line.Waiting){
+                double increment=Math.Clamp(_manufacturingTickAge/(ManufacturingTickSeconds/IndustryTime.UnitsPerTurn),0,1);
+                progress=Math.Min(progress+increment,line.RestRemaining>0?period+IndustryTime.Whole(line.RestTurns):period);
+            }
+            int caret=DrawFactoryLaneTrack(line,160,y,progress);
+            var product=FactoryRobotButton(item.index,period);_ui.Box(product,Muted);
+            if(line.Manufacturing)DrawRobotGlyph(product,line.CurrentProductionPlan.Preview(Math.Max(0,owner)),whiteOutline:true);else _ui.Center("×",product,.7f,Cream);
+            DrawFactoryLaneOmissions(line,160,y);
+            if(line.Manufacturing)DrawFactoryCaret(caret,y,line);
+            _ui.Text($"× {line.RestEvery}　休 {line.RestTurns}"+(line.DoNotRepeat?" / 繰り返さない":""),new(160,y+140),.34f,Cream);
             string status=line.CycleFinished?"製造終了":!line.Manufacturing?"製造しない":line.Paused?"一時停止":
                 line.RestRemaining>0?$"休暇 あと {IndustryTime.Format(line.RestRemaining)}":
                 line.Waiting?"格納枠の空きを待っています":$"工期 {IndustryTime.Format(line.ProductionAge)} / {IndustryTime.Format(line.ProductionPeriod)}";
-            _ui.Text(status,new(184,y+100),.4f,Cream);
+            _ui.Text(status,new(480,y+140),.32f,Cream);
         }
         _ui.Center($"製造レーン {page+1}/{pages}",new(54,895,850,30),.32f,Cream);
         var stock=ManufacturingStock();
@@ -118,15 +131,15 @@ public partial class Game1
         }
         _ui.Center($"今回 { _manufacturingReceived} パーツ / 格納・入荷予約 {stock.Length} / {_setup.Robots.Nodes[node.Id].TotalCapacity} 枠　{stockPage+1}/{stockPages}",
             new(990,895,870,30),.34f,Cream);
-        float flight=(float)Math.Clamp(_manufacturingTickAge/ManufacturingTickSeconds,0,1);
+        float flight=(float)Math.Clamp(_manufacturingFlightAge/ManufacturingTickSeconds,0,1);
         if(flight<.95f)
         {
             foreach(var arrival in _manufacturingArrivals.TakeLast(4))
             {
                 int lane=Array.FindIndex(lines,l=>ReferenceEquals(l.Line,arrival.Line));
                 int slot=Array.FindIndex(stock,r=>r.Id==arrival.Product.Id);
-                if(lane<0 || lane/4!=page || slot<0 || slot/12!=stockPage)continue;
-                var from=new Vector2(820,305+lane%4*160);
+                if(lane<0 || lane/lanesPerPage!=page || slot<0 || slot/12!=stockPage)continue;
+                var from=new Vector2(820,344+lane%lanesPerPage*200);
                 var to=new Vector2(1111+slot%4*207,315+slot%12/4*215);
                 var at=Vector2.Lerp(from,to,MathHelper.SmoothStep(0,1,flight));
                 DrawRobotGlyph(new((int)at.X-38,(int)at.Y-55,76,110),arrival.Product,whiteOutline:true);

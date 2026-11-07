@@ -89,28 +89,12 @@ public partial class Game1
             _ui.Box(new(78,y-24,782,196),l%2==0?new Color(37,63,77):new Color(46,67,79));
             _ui.Center((l+1).ToString(),new(84,y+22,62,96),1.35f,new Color(167,190,194));
             _ui.Button(FactoryIntakeButton(l),"入荷先",Muted,.34f);
-            int productionWidth=FactoryProductionWidth(period),shownRest=line.RestEnabled?Math.Min(4,line.RestTurns):0;
-            _ui.Box(new(160,y+96,productionWidth,8),Accent);
-            _ui.Box(new(160+productionWidth,y+96,shownRest*72,8),new Color(137,151,157));
-            for(int unit=0;unit<=Math.Min(15,period);unit++)_ui.Box(new(160+unit*24-1,y+96,unit%3==0?2:1,unit%3==0?8:4),unit%3==0?new Color(27,49,62):Color.White);
-            for(int unit=0;unit<=shownRest*3;unit++)_ui.Box(new(160+productionWidth+unit*24-1,y+96,unit%3==0?2:1,unit%3==0?8:4),unit%3==0?new Color(27,49,62):Color.White);
-            DrawIndustryDuration(0,new(146,y+109,28,30),Cream,.3f);
-            DrawIndustryDuration(period,new(160+productionWidth-40,y+109,80,30),Cream,.3f);
-            if(shownRest>0)DrawIndustryDuration(line.CycleTurns,new(160+productionWidth+shownRest*72-40,y+109,80,30),Cream,.3f);
-            int caret=160;
-            if(line.Manufacturing){
-                // Reuse the one-robot stretch for each repeat; only the final repeat enters rest.
-                _ui.Box(new(160+productionWidth-1,y+93,2,14),Cream);
-                double progress=line.LaneProgress;
-                caret=160+(int)Math.Round(progress<=period
-                    ?productionWidth*progress/period
-                    :productionWidth+shownRest*72*(progress-period)/IndustryTime.Whole(line.RestTurns));
-            }
+            int productionWidth=FactoryProductionWidth(period);
+            int caret=DrawFactoryLaneTrack(line,160,y);
             var robot=FactoryProductionButton(l);_ui.Box(robot,_factoryPlanLine==l || robot.Contains(_pointer)?Accent:Muted);
             var arrow=FactoryRobotArrow(l%3,period);for(int row=0;row<10;row++)_ui.Box(new(arrow.X+2+row,arrow.Y+6+row,20-row*2,1),Cream);
             if(line.Manufacturing)DrawRobotGlyph(robot,line.CurrentProductionPlan.Preview(node.Owner),whiteOutline:true);else _ui.Center("×",robot,.7f,Cream);
-            if(period>15)DrawFactoryOmission(160+2*72,y);
-            if(line.RestEnabled && line.RestTurns>shownRest)DrawFactoryOmission(160+productionWidth+72,y);
+            DrawFactoryLaneOmissions(line,160,y);
             if(line.Manufacturing){
                 DrawFactoryCaret(caret,y,line);
                 if(new Rectangle(caret-12,y+27,24,77).Contains(_pointer))hoveredCaret=line;
@@ -130,7 +114,7 @@ public partial class Game1
         _factoryLine=savedLine;
         _ui.Text("格納庫は必ず",new(180,888),.43f,Cream);FactoryDrop(2,factory.ReservedSlots);_ui.Text("個空ける",new(552,888),.43f,Cream);
         DrawNodeTabs();DrawFactoryPages();
-        _ui.Text($"産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn)}   /   柱：現在位置　緑：生産　黄：休憩　赤：空き枠待ち",new(160,248),.25f,Cream);
+        _ui.Text($"産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn)}   /   蛍光灯：現在位置　緑：生産　黄：休暇　赤：空き枠待ち",new(160,248),.25f,Cream);
         if(_factoryPlanLine>=0){
             var line=factory.ProductionLines[_factoryPlanLine];_ui.Box(new(84,360,790,590),new(22,40,54));
             _ui.Text($"生産ライン {_factoryPlanLine+1} / 正規・安い・一体型"+(line.PlanCount>11?"・高級":""),new(160,374),.45f,Cream);

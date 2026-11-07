@@ -11,6 +11,13 @@ public partial class Game1
     private int _newspaperEdition;
 
     private static readonly Rectangle NewspaperSwitch=new(1128,750,704,28);
+    private (BattleArmy[] Armies,int Page,int Pages) NewspaperArmyPage(BattleState battle,int patron,bool biased)
+    {
+        var ordered=battle.Armies.OrderBy(a=>biased && a.Owner==patron?0:1).ToArray();
+        int pages=Math.Max(1,(ordered.Length-(biased?1:0)+(biased?3:4))/(biased?4:5));
+        int page=Math.Clamp((int)(_newspaperClock*pages/10),0,pages-1);
+        return(biased?ordered.Take(1).Concat(ordered.Skip(1+page*4).Take(4)).ToArray():ordered.Skip(page*5).Take(5).ToArray(),page,pages);
+    }
     internal static Rectangle NewspaperColumn(int index,int count)
     {
         int columns=Math.Clamp(count,2,5),width=704/columns;
@@ -55,17 +62,18 @@ public partial class Game1
         int patron=_newspaperEdition==0?(battle.Armies.FirstOrDefault(a=>a.Owner==_setup.PlayerSlot)?.Owner??battle.Armies[0].Owner):battle.Defender;
         if(patron<0 || patron>=_setup.Looks.Length)patron=battle.Armies[0].Owner;
         string affiliation=profile.FavorsArmy?$"#{patron+1} 陣営 / {profile.Label}":$"Point {battle.TargetNode+1} / {profile.Label}";
-        _ui.Center($"{affiliation} / 第 {issue.Turn} 号",new(1128,293,704,24),.35f,ink);
+        var armyPage=NewspaperArmyPage(battle,patron,profile.FavorsArmy);
+        _ui.Center($"{affiliation} / 第 {issue.Turn} 号"+(armyPage.Pages>1?$" / 参戦{battle.Armies.Count}軍 {armyPage.Page+1}/{armyPage.Pages}":""),new(1128,293,704,24),.35f,ink);
         _newspaperPortraits??=new NewspaperPortraitRenderer(Content);
         string headline=issue.Headline;
         _ui.Center(headline,new(1128,325,704,62),Math.Min(1.05f,690/_font.MeasureString(headline).X),ink);
         _ui.Box(new(1128,391,704,2),ink);
         int index=0;
         bool biased=profile.FavorsArmy;
-        foreach(var army in battle.Armies.OrderBy(a=>biased && a.Owner==patron?0:1).Take(5))
+        foreach(var army in armyPage.Armies)
         {
             int current=index++;
-            var r=biased?(current==0?new Rectangle(1128,402,398,330):new Rectangle(1548,402+(current-1)*(battle.Armies.Count==5?82:104),284,battle.Armies.Count==5?78:100)):NewspaperColumn(current,battle.Armies.Count);
+            var r=biased?(current==0?new Rectangle(1128,402,398,330):new Rectangle(1548,402+(current-1)*(armyPage.Armies.Length==5?82:104),284,armyPage.Armies.Length==5?78:100)):NewspaperColumn(current,armyPage.Armies.Length);
             if(index>1)_ui.Box(new(r.X-9,r.Y,1,r.Height),ink*.35f);
             string name=issue.Names[army.Owner];
             _ui.Center(name,new(r.X,r.Y,r.Width,32),Math.Min(.48f,r.Width/_font.MeasureString(name).X),ink);

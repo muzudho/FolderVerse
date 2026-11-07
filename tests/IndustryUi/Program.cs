@@ -51,6 +51,12 @@ sealed class CheckGame:Game1
     protected override void Draw(GameTime time)
     {
         var batch=(SpriteBatch)Get("_spriteBatch");
+        if(Environment.GetCommandLineArgs().Contains("--battle13")){
+            CheckBattle13Ui(batch);Exit();return;
+        }
+        if(Environment.GetCommandLineArgs().Contains("--manufacturing-lanes")){
+            CheckManufacturingDelivery(batch);Exit();return;
+        }
         if(Environment.GetCommandLineArgs().Contains("--invasion60")){
             CheckInvasion60(batch);Exit();return;
         }
@@ -144,7 +150,11 @@ sealed class CheckGame:Game1
         Call("BeginManufacturing");
         Check((int)Get("_manufacturingNode")==target.Id && w.Robots.IndustryTurn==clock && w.Robots.ProductionIntakes.Count==0,
             "Most productive intake destination is selected without producing into the live world");
-        Call("UpdateManufacturing",.75d,false);
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();var beforeMotion=Pixels();Save("manufacturing-lane-start");
+        Call("UpdateManufacturing",.125d,false);
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();var duringMotion=Pixels();Save("manufacturing-lane-moving");
+        Check(w.Robots.IndustryTurn==clock && w.Robots.ProductionIntakes.Count==0 && !beforeMotion.SequenceEqual(duringMotion),"The shared fluorescent tube moves between ticks without producing early");
+        Call("UpdateManufacturing",.625d,false);
         Check(w.Robots.IndustryTurn==clock+3 && w.Robots.ProductionIntakes.Count==3 && w.Industry.Pending,"One displayed industry turn produces actual queued products");
         GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();Save("manufacturing-delivery");
         for(int i=0;w.Industry.Pending && i<20;i++)Call("UpdateManufacturing",.75d,false);
@@ -164,6 +174,28 @@ sealed class CheckGame:Game1
         Check(RobotPartSilhouette.Row(shape,50,false,true).Width<RobotPartSilhouette.Row(shape,20,false,true).Width &&
             RobotPartSilhouette.Row(shape,0,true).Width<shape.Width,"Premium parts have a narrow middle; cheap parts have rounded corners");
         Console.WriteLine("PASS: most productive adjacent intake, one-turn production, visible delivery, capacity and no forecast mutation.");
+    }
+    private void CheckBattle13Ui(SpriteBatch batch)
+    {
+        foreach(var terrain in Enum.GetValues<BattleTerrain>()){
+            var battle=new BattleState(73,new(){NoWillTurns=100,FlagDefenseTurns=500,PersuasionPercent=0}){Kind=BattleKind.Node,Defender=0,Id=1};
+            battle.BuildTerrain(terrain);
+            for(int owner=0;owner<13;owner++)battle.AddArmy(owner,0,Enumerable.Range(0,8).Select(_=>w.Robots.Create(owner,RobotParts.Complete)),preferredSide:owner==0?-1:(owner-1)/3);
+            battle.ChooseLayout();battle.Deploy();battle.BuildFortifications(12);battle.Capture(BattlePhase.Choose);
+            foreach(bool biased in new[]{false,true}){
+                var shown=new HashSet<int>();
+                foreach(double clock in new[]{0d,4d,8d}){
+                    Set("_newspaperClock",clock);
+                    var page=((BattleArmy[] Armies,int Page,int Pages))Call("NewspaperArmyPage",battle,0,biased);
+                    shown.UnionWith(page.Armies.Select(a=>a.Owner));Check(page.Armies.Length<=5,"Each newspaper page fits within five army columns");
+                }
+                Check(shown.Count==13,"Newspaper pagination includes every participating army");
+            }
+            Set("_newspaperClock",0d);
+            Set("_robotScenes",new[]{battle});Set("_robotPlayback",new RobotBattlePlayback(new[]{battle}));Set("_robotRound",0);Set("_battleWave",0);Set("_battleAge",0d);Set("_battleIntroAge",100d);Set("_robotPlaying",false);Set("_robotSummary",false);
+            GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawRobotBattle");batch.End();Save("battle-13-"+terrain.ToString().ToLowerInvariant());
+        }
+        Console.WriteLine("PASS: thirteen-country battlefield renders for field, fort, mountain and twelve small-boat sea entries.");
     }
     private void CheckInvasion60(SpriteBatch batch)
     {

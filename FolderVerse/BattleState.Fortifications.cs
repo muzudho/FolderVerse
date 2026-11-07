@@ -25,6 +25,7 @@ public sealed partial class BattleState
         var protectedCells=Units.Where(u=>u.Active).Select(u=>u.Position).ToHashSet();protectedCells.Add(Flag);
         foreach(var army in Armies)foreach(var p in Region(army.Side))
             if(army.Side==4 || p.X==0 || p.Y==0 || p.X==BoardSize-1 || p.Y==BoardSize-1)protectedCells.Add(p);
+        if(CompactFronts)foreach(var army in Armies)protectedCells.UnionWith(ArmyRegion(army).Concat(ApproachPath(army)).Concat(RetreatPath(army)));
         bool Connected(){
             var seen=new HashSet<Point>{Flag};var queue=new Queue<Point>();queue.Enqueue(Flag);
             while(queue.TryDequeue(out var p))foreach(var step in steps){var next=p+step;if(Walkable(next) && seen.Add(next))queue.Enqueue(next);}

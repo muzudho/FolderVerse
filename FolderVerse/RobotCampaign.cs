@@ -244,15 +244,14 @@ public sealed partial class RobotCampaign
         }
         var sorted=armies.OrderBy(a=>a.Owner==defender?0:1).ThenBy(a=>Bearing(a.Home)).ThenBy(a=>a.Home).ThenBy(a=>a.Owner).ToArray();
         var sizes=new List<int>();int left=sorted.Length;
-        int capacity=kind==BattleKind.Node && defender>=0 && sorted.Length<=5?5:4;
+        int capacity=kind==BattleKind.Node && defender>=0 && sorted.Length<=13?13:12;
         while(left>capacity){int size=left==capacity+1?2:capacity;sizes.Add(size);left-=size;}sizes.Add(left);
         int offset=0;foreach(int size in sizes)
         {
             var state=NewState(world,e);
             if(sizes.Count>1){state.SplitBoard=true;state.Kind=BattleKind.Edge;state.Defender=-1;state.BuildTerrain(world.Nodes.All[target].Terrain==TravelTerrain.Sea?BattleTerrain.Sea:BattleTerrain.Field);}
             foreach(var a in sorted.Skip(offset).Take(size))
-                state.AddArmy(a.Owner,a.Home,a.Robots,a.Queen,state.Terrain==BattleTerrain.Sea
-                    ?SeaApproach(world,e,approaches?.GetValueOrDefault(a.Owner,a.Home)??a.Home):-1);
+                state.AddArmy(a.Owner,a.Home,a.Robots,a.Queen,SeaApproach(world,e,approaches?.GetValueOrDefault(a.Owner,a.Home)??a.Home));
             state.ChooseLayout();state.Deploy();state.BuildFortifications(e.DefenseCount);e.Battles.Add(state);offset+=size;
         }
         return e;
@@ -319,7 +318,7 @@ public sealed partial class RobotCampaign
         {
             state=e.Battles.FirstOrDefault(b=>!b.Finished && b.Armies.Count<b.EntryCapacity);
             if(state==null){state=NewState(world,e);e.Battles.Add(state);}
-            state.AddArmy(owner,home,robots,queen,state.Terrain==BattleTerrain.Sea?SeaApproach(world,e,home):-1);return;
+            state.AddArmy(owner,home,robots,queen,SeaApproach(world,e,home));return;
         }
         var army=state.Army(owner);
         state.Finished=false; // Will is reset only when a unit actually enters the board.
@@ -377,19 +376,16 @@ public sealed partial class RobotCampaign
         for(int i=0;i<groups.Length;)
         {
             var state=NewState(world,e);
-            int capacity=e.Kind==BattleKind.Node && groups.Skip(i).Any(g=>g.Key==e.Defender)?5:4;
+            int capacity=e.Kind==BattleKind.Node && groups.Length<=13 && groups.Skip(i).Any(g=>g.Key==e.Defender)?13:12;
             foreach(var g in groups.Skip(i).OrderBy(g=>g.Key==e.Defender?0:1).Take(capacity))
             {
                 var previous=old.SelectMany(b=>b.Armies).First(a=>a.Owner==g.Key);
-                var army=new BattleArmy{Owner=g.Key,HomeNode=previous.HomeNode,Side=state.Armies.Count,Limit=previous.Limit,Wanderer=previous.Wanderer,WandererPolicy=previous.WandererPolicy,Withdrawing=previous.Withdrawing};
-                if(state.Terrain==BattleTerrain.Sea){
-                    int approach=SeaApproach(world,e,previous.HomeNode);
-                    army.Side=g.Key==e.Defender && e.Kind==BattleKind.Node?4:state.FreeSeaSide(approach>=0?approach:previous.Side%4);
-                }else if(state.Armies.Count==1)army.Side=2;
-                state.Armies.Add(army);
+                int approach=SeaApproach(world,e,previous.HomeNode);
+                state.AddArmy(g.Key,previous.HomeNode,Array.Empty<Robot>(),false,approach>=0?approach:previous.Side%4);
+                var army=state.Army(g.Key);army.Limit=previous.Limit;army.Wanderer=previous.Wanderer;army.WandererPolicy=previous.WandererPolicy;army.Withdrawing=previous.Withdrawing;army.InvadingQueen=previous.InvadingQueen;
                 foreach(var unit in g.OrderBy(u=>u.Role==BattleRole.Queen?1:0).ThenBy(u=>u.Id))army.Waiting.Enqueue(unit);
             }
-            if(state.Terrain==BattleTerrain.Sea)state.ChooseLayout();
+            state.ChooseLayout();
             state.InheritHistory(old);state.Deploy();state.BuildFortifications(e.DefenseCount);e.Battles.Add(state);i+=capacity;
         }
         PrepareSplitBoards(e);

@@ -144,6 +144,7 @@ public static class AutoSaveStore
                     if(type==typeof(WorldSetup) && new[]{"_participantCountsConfigured","<ComputerPlayerCount>k__BackingField","_presetCastCount","TutorialPocketed","TutorialMoved","TutorialPocketNoticeShown","TutorialMoveNoticeShown"}.Contains(field.Name))continue;
                     if(type==typeof(March) && field.Name=="<Peaceful>k__BackingField")continue;
                     if(type==typeof(BattleArmy) && (field.Name=="Wanderer" || field.Name=="WandererPolicy"))continue;
+                    if(type==typeof(BattleArmy) && field.Name=="EntrySlot"){field.SetValue(value,1);continue;}
                     if(type==typeof(BattleRules) && field.Name=="<FlagCaptureTurns>k__BackingField"){field.SetValue(value,10);continue;}
                     if(type==typeof(BattleRules) && field.Name=="<FlagDefenseTurns>k__BackingField"){field.SetValue(value,50);continue;}
                     if((type==typeof(BattleState) && (field.Name=="FlagCaptureTurns" || field.Name=="FlagDefenseTurns")) ||

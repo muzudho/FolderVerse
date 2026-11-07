@@ -45,7 +45,7 @@ public static class BattleAi
             unit.Retreating=true;
         if(unit.Retreating)
         {
-            var exit=army.Side switch{0=>new Point(unit.Position.X,-1),1=>new Point(battle.BoardSize,unit.Position.Y),2=>new Point(unit.Position.X,battle.BoardSize),_=>new Point(-1,unit.Position.Y)};
+            var exit=army.Side switch{0=>new Point(unit.Position.X,-1),1=>new Point(battle.BoardSize,unit.Position.Y),2=>new Point(unit.Position.X,battle.BoardSize),4=>battle.Flag,_=>new Point(-1,unit.Position.Y)};
             var step=Path(battle,unit,exit)??new Point(0,0);return new(step,Face(exit-unit.Position));
         }
         if(enemy!=null && unit.Role!=BattleRole.Queen && armed)

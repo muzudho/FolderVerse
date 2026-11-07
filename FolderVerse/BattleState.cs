@@ -41,6 +41,7 @@ public sealed class BattleUnit
 public sealed class BattleArmy
 {
     public int Owner,HomeNode,Side,Limit=12;
+    public int EntrySlot=1;
     public int NoWillCount;
     public bool Withdrawing;
     public bool InvadingQueen;
@@ -93,18 +94,19 @@ public sealed partial class BattleState
     public bool BlocksShot(Point p,BattleFacing facing,int distance)
         =>BlocksShot(p) && !(Contains(p) && distance==1 && WallPassesShot(p,facing));
     public bool Walkable(Point p)=>Contains(p) && !Walls.Contains(p);
-    public static bool HomeExit(Point p,int side,int size=Size)=>side switch{0=>p.Y<0,1=>p.X>=size,2=>p.Y>=size,_=>p.X<0};
+    public static bool HomeExit(Point p,int side,int size=Size)=>side switch{0=>p.Y<0,1=>p.X>=size,2=>p.Y>=size,3=>p.X<0,_=>false};
     public BattleArmy Army(int owner)=>Armies.Single(a=>a.Owner==owner);
     public void AddArmy(int owner,int home,IEnumerable<Robot> robots,bool queen=false,int preferredSide=-1)
     {
         if(owner<0 || owner>=GameLimits.MaxConquerors || home<0)throw new ArgumentOutOfRangeException();
-        if(Armies.Count>=EntryCapacity || Armies.Any(a=>a.Owner==owner))throw new InvalidOperationException("Battle supports distinct armies, at most five.");
+        if(Armies.Count>=EntryCapacity || Armies.Any(a=>a.Owner==owner))throw new InvalidOperationException("Battle entry capacity is full or the army already participates.");
         int side=BoardSize==Size && Kind==BattleKind.Node && owner==Defender?4:
-            Terrain==BattleTerrain.Sea && BoardSize==Size && preferredSide>=0?FreeSeaSide(preferredSide):
+            BoardSize==Size?FreeEntrySide(preferredSide):
             Armies.Count==1 && EntrySides.Contains(2) && !Armies.Any(a=>a.Side==2)?2:EntrySides.First(i=>!Armies.Any(a=>a.Side==i));
-        var army=new BattleArmy{Owner=owner,HomeNode=home,Side=side,InvadingQueen=queen};
+        var army=new BattleArmy{Owner=owner,HomeNode=home,Side=side,EntrySlot=side==4?1:FreeEntrySlot(side),InvadingQueen=queen};
         Armies.Add(army);int index=0;
-        if(BoardSize==Size && Terrain==BattleTerrain.Sea){OpenSeaApproach(side);UpdateSeaLayoutName();}
+        if(BoardSize==Size && Terrain==BattleTerrain.Sea){if(!CompactFronts)OpenSeaApproach(side);UpdateSeaLayoutName();}
+        OpenCompactApproaches();
         foreach(var robot in robots.OrderBy(r=>r.Id))
         {
             if(!robot.CanFight || robot.Owner!=owner)throw new ArgumentException("Only complete owned robots may enter battle.");
@@ -112,7 +114,7 @@ public sealed partial class BattleState
         }
         if(queen)army.Waiting.Enqueue(new(){Id=-(owner+1),Owner=owner,Role=BattleRole.Queen,Facing=Inward(army.Side),Daggers=0,Rifles=0});
     }
-    internal int FreeSeaSide(int preferred)=>new[]{0,1,3,2}.Select(offset=>(preferred+offset)%4).First(side=>Armies.All(a=>a.Side!=side));
+    internal int FreeSeaSide(int preferred)=>FreeEntrySide(preferred);
     public static BattleFacing Inward(int side)=>(BattleFacing)((side+2)%4);
     public IEnumerable<Point> Region(int side)
     {
@@ -128,20 +130,20 @@ public sealed partial class BattleState
     {
         int edge=0;
         foreach(var army in Armies){
-            if(BoardSize!=Size || Terrain!=BattleTerrain.Sea)
+            if(BoardSize!=Size)
                 army.Side=BoardSize==Size && Kind==BattleKind.Node && army.Owner==Defender?4:
                     EntrySides.SequenceEqual(new[]{0,1,2,3}) && Armies.Count==2 && edge==1?2:EntrySides[edge];
             if(army.Side!=4)edge++;
             foreach(var unit in army.Waiting)unit.Facing=Inward(army.Side==4?0:army.Side);
-            int count=Math.Min(initial,Math.Min(army.Limit,army.Waiting.Count(u=>u.Role!=BattleRole.Queen)));
-            var region=Region(army.Side).ToHashSet();var candidates=army.Patterns.GetValueOrDefault(count,new List<Point[]>());
+            int count=Math.Min(initial,Math.Min(FieldLimit(army),army.Waiting.Count(u=>u.Role!=BattleRole.Queen)));
+            var region=ArmyRegion(army).ToHashSet();var candidates=army.Patterns.GetValueOrDefault(count,new List<Point[]>());
             bool Available(Point p)=>WalkableFor(p,army.Owner) && !Units.Any(u=>u.Active && u.Position==p) && !(army.Side==4 && p==Flag);
             var pattern=candidates.Where(p=>p.Length==count && p.Distinct().Count()==p.Length && p.All(region.Contains)).OrderByDescending(p=>p.Count(Available)).FirstOrDefault();
-            var cells=(pattern??DefaultPattern(army.Side,count)).Where(Available).Take(count).ToList();
-            foreach(var p in Region(army.Side).Where(Available))if(cells.Count<count && !cells.Contains(p))cells.Add(p);
+            var cells=(pattern??ArmyRegion(army).Where(p=>army.Side!=4 || p!=Flag).Take(count).ToArray()).Where(Available).Take(count).ToList();
+            foreach(var p in ArmyRegion(army).Where(Available))if(cells.Count<count && !cells.Contains(p))cells.Add(p);
             foreach(var p in cells){if(army.Waiting.Count==0 || army.Waiting.Peek().Role==BattleRole.Queen)break;var unit=army.Waiting.Dequeue();unit.Position=p;Units.Add(unit);}
             if(army.Waiting.TryPeek(out var queen) && queen.Role==BattleRole.Queen){
-                var place=army.Side==4?(Point?)Flag:Region(army.Side).Where(Available).Select(p=>(Point?)p).FirstOrDefault();
+                var place=army.Side==4?(Point?)Flag:ArmyRegion(army).Where(Available).Select(p=>(Point?)p).FirstOrDefault();
                 if(place.HasValue && WalkableFor(place.Value,army.Owner) && !Units.Any(u=>u.Active && u.Position==place.Value)){army.Waiting.Dequeue();queen.Position=place.Value;Units.Add(queen);}
             }
         }
@@ -166,8 +168,8 @@ public sealed partial class BattleState
         bool entered=false;
         foreach(var army in Armies.OrderBy(a=>a.Owner))
         {
-            if(army.Withdrawing || army.Waiting.Count==0 || Units.Count(u=>u.Active && u.Owner==army.Owner && u.Role!=BattleRole.Queen)>=army.Limit && army.Waiting.Peek().Role!=BattleRole.Queen)continue;
-            var cells=Region(army.Side).Where(p=>army.Side switch{0=>p.Y==0,1=>p.X==BoardSize-1,2=>p.Y==BoardSize-1,3=>p.X==0,_=>true});
+            if(army.Withdrawing || army.Waiting.Count==0 || Units.Count(u=>u.Active && u.Owner==army.Owner && u.Role!=BattleRole.Queen)>=FieldLimit(army) && army.Waiting.Peek().Role!=BattleRole.Queen)continue;
+            var cells=ArmyEntrance(army);
             var free=cells.Where(p=>WalkableFor(p,army.Owner)).Where(p=>!Units.Any(u=>u.Active && u.Position==p)).Select(p=>(Point?)p).FirstOrDefault();
             if(free==null)continue;
             var unit=army.Waiting.Dequeue();unit.Position=free.Value;unit.Facing=Inward(army.Side);Units.Add(unit);entered=true;
@@ -203,7 +205,7 @@ public sealed partial class BattleState
     }
     public void Check()
     {
-        if(BoardSize is not (10 or Size) || Armies.Count>5 || Armies.Select(a=>a.Owner).Distinct().Count()!=Armies.Count || Armies.Select(a=>a.Side).Distinct().Count()!=Armies.Count || Armies.Any(a=>a.Owner<0 || a.Owner>=GameLimits.MaxConquerors || a.Side<0 || a.Side>(BoardSize==Size && (SplitBoard || Kind==BattleKind.Node && a.Owner==Defender)?4:3) || a.Limit<1 || a.Limit>12))throw new InvalidOperationException("Invalid battle armies.");
+        if(BoardSize is not (10 or Size) || Armies.Count>EntryCapacity || Armies.Select(a=>a.Owner).Distinct().Count()!=Armies.Count || Armies.Select(a=>(a.Side,a.EntrySlot)).Distinct().Count()!=Armies.Count || Armies.Where(a=>a.Side<4).GroupBy(a=>a.Side).Any(g=>g.Count()>(BoardSize==Size?ArmiesPerEdge:1)) || Armies.Count(a=>a.Side==4)>1 || Armies.Any(a=>a.Owner<0 || a.Owner>=GameLimits.MaxConquerors || a.Side<0 || a.Side>(BoardSize==Size && (SplitBoard || Kind==BattleKind.Node && a.Owner==Defender)?4:3) || a.EntrySlot<0 || a.EntrySlot>=ArmiesPerEdge || a.Limit<1 || a.Limit>12))throw new InvalidOperationException("Invalid battle armies.");
         var active=Units.Where(u=>u.Active).ToArray();
         var solid=active.Where(u=>!u.Retreating).ToArray();
         if(active.Any(u=>!Walkable(u.Position)) || solid.Select(u=>u.Position).Distinct().Count()!=solid.Length)throw new InvalidOperationException("Battle occupancy is invalid.");

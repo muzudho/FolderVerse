@@ -23,7 +23,7 @@ public static class BattleRetreat
             ClearPaths(battle,units,actions);bool moved=false;
             foreach(var unit in units){
                 var action=actions[unit.Id];unit.Facing=action.Facing;unit.Position+=action.Step;moved|=action.Step!=Point.Zero;
-                if(!battle.Contains(unit.Position))unit.Retreated=true;
+                if(battle.ReachedHome(unit))unit.Retreated=true;
             }
             if(!moved)break;
             battle.Capture(BattlePhase.DefenseRetreat);
@@ -36,10 +36,13 @@ public static class BattleRetreat
         foreach(var unit in units.Where(u=>u.Retreating)){
             var queue=new Queue<Point>();queue.Enqueue(unit.Position);
             var first=new Dictionary<Point,Point>{{unit.Position,Point.Zero}};Point? move=null;
+            bool central=battle.BoardSize==BattleState.Size && battle.Army(unit.Owner).Side==4;
+            if(central && unit.Position==battle.Flag)move=Point.Zero;
             while(queue.TryDequeue(out var current) && move==null)foreach(var step in Steps){
                 var next=current+step;if(first.ContainsKey(next))continue;
+                if(central && next==battle.Flag){move=current==unit.Position?step:first[current];break;}
                 if(!battle.Contains(next)){
-                    if(BattleState.HomeExit(next,battle.Army(unit.Owner).Side,battle.BoardSize)){move=current==unit.Position?step:first[current];break;}
+                    if(battle.HomeExit(next,battle.Army(unit.Owner))){move=current==unit.Position?step:first[current];break;}
                     continue;
                 }
                 if(!battle.WalkableFor(next,unit.Owner))continue;

@@ -39,14 +39,22 @@ for(int seed=0;seed<4;seed++)
     w=new WorldSetup();w.SetWorld(seed);w.SetCast(123);w.SetPlacement(456);w.SelectPlayer(0);w.Campaign.RobotBattles.Rules=new(){SegmentTurns=10,NoWillTurns=10,PersuasionPercent=5};
     for(int t=0;t<12;t++){w.Campaign.Advance(w,-1,0);w.Campaign.RobotBattles.Check(w);Check(w.Population.Turn==t+1,"Global turn increments once");}
 }
-// Five invaders plus one defender must use multiple boards, preserving all individual IDs.
+// Five invaders plus one defender now fit one board, preserving all individual IDs.
 Node target=null;
 for(int seed=0;seed<64 && target==null;seed++){w=World(seed);target=w.Nodes.All.FirstOrDefault(n=>w.Routes.Neighbors(n).Length>=5);}
 Check(target!=null,"Five-route fixture");Place(w,5,target);Add(w,target,5,2);var neighbors=w.Routes.Neighbors(target).Take(5).Select(r=>w.Nodes.At(r.Target,r.Entry)).ToArray();
 var marches=new List<March>();for(int owner=0;owner<5;owner++){Place(w,owner,neighbors[owner]);Add(w,neighbors[owner],owner,2);marches.Add(new(owner,target.Id,2));}
 w.Campaign.RobotBattles.Rules=new(){SegmentTurns=1,NoWillTurns=100,PersuasionPercent=0};w.Campaign.Resolve(w,marches);
-Check(w.Campaign.RobotBattles.Encounters.Single().Battles.Count>=2 && w.Campaign.RobotBattles.Encounters.Single().Battles.All(state=>state.Armies.Count<=4),"Six countries split into boards");w.Campaign.RobotBattles.Check(w);
+Check(w.Campaign.RobotBattles.Encounters.Single().Battles.Count==1 && w.Campaign.RobotBattles.Encounters.Single().Battles.Single().Armies.Count==6,"Six countries share one board");w.Campaign.RobotBattles.Check(w);
 var split=w.Campaign.RobotBattles.Encounters.Single();
+// Recreate an older save's split battle to retain coverage for its survivor merge.
+var original=split.Battles.Single();split.Battles.Clear();
+foreach(var group in original.Armies.Chunk(3)){
+    var legacy=new BattleState(42,w.Campaign.RobotBattles.Rules){Id=original.Id+split.Battles.Count,Kind=BattleKind.Edge,SplitBoard=true,SourceNode=original.SourceNode,TargetNode=original.TargetNode,Turn=original.Turn,Allied=w.Relations.Allied};
+    legacy.BuildTerrain(BattleTerrain.Field);int side=0;
+    foreach(var army in group){army.Side=side++;army.EntrySlot=1;legacy.Armies.Add(army);}
+    legacy.Units.AddRange(original.Units.Where(u=>group.Any(army=>army.Owner==u.Owner)));split.Battles.Add(legacy);
+}
 foreach(var state in split.Battles)
 {
     var survivor=state.Units.First(u=>u.Robot!=null);survivor.Daggers=1;survivor.Rifles=2;survivor.Shields=3;
