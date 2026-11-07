@@ -350,7 +350,7 @@ public sealed partial class RobotCampaign
             foreach(var state in active)
             {
                 if(!Scenes.Contains(state))Scenes.Add(state);
-                BattleTurnResolver.Advance(state);
+                BattleTurnResolver.Advance(state);world.Lessons.ObserveEmptyFlag(state);
                 if(e.Kind==BattleKind.Edge && LoseHomes(world,e,state)){state.Capture(BattlePhase.Fall);BattleTurnResolver.Finish(state);state.Capture(BattlePhase.Result);}
             }
             budget--;

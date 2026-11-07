@@ -17,9 +17,10 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
     public int ShoeOwner=>Parts==RobotParts.Complete && DefenseOnly?DefenseFlag?.Commander??Owner:-1;
     public Robot WithoutDefenseReservation()=>this with {DefenseOnly=false,DefenseFlag=null};
     public bool FactoryWorker {get;init;}
+    public long? LongDeliveryNumber {get;init;}
     public int? ReturnHomeCommander {get;init;}
     public string ReturnHomeStatus {get;init;}
-    public bool Stationed=>DefenseOnly || InterceptOnly || FactoryWorker || ReturnHomeCommander.HasValue;
+    public bool Stationed=>DefenseOnly || InterceptOnly || FactoryWorker || LongDeliveryNumber.HasValue || ReturnHomeCommander.HasValue;
     public RobotParts DamagedParts {get;init;}=0;
     public RobotParts CheapParts {get;init;}=0;
     public RobotParts PremiumParts {get;init;}=0;
@@ -73,7 +74,7 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
         if(!result.ValidIntegration)throw new InvalidOperationException("Incompatible integrated parts.");
         return result with {Owner=result.AssemblyCredit(owner)>0?owner:Owner};
     }
-    public bool CanFight=>!ReturnHomeCommander.HasValue && Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
+    public bool CanFight=>!LongDeliveryNumber.HasValue && !ReturnHomeCommander.HasValue && Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
 }
 public sealed class RobotStore
 {
@@ -131,7 +132,7 @@ public sealed partial class RobotWorld
     {Validate(owner,parts);return new(_nextId++,owner,parts,role,disposal);}
     public void Initialize(int nodeCount,int rulerCount)
     {
-        ReturningRobots.Clear();_workerPlanWorldSeed=0;DirectDelivery=new();Reservations=null;ReservationSource=null;IndustryTurn=0;DomesticPersuasionTurns.Clear();
+        LongDelivery.Reset();ReturningRobots.Clear();_workerPlanWorldSeed=0;DirectDelivery=new();Reservations=null;ReservationSource=null;IndustryTurn=0;DomesticPersuasionTurns.Clear();
         _domesticPreparedTurn=-1;Training=Enumerable.Range(0,rulerCount).Select(_=>new RobotTraining()).ToArray();_nextId=1;Nodes=Enumerable.Range(0,nodeCount).Select(_=>new RobotStore()).ToArray();
         Retinues=Enumerable.Range(0,rulerCount).Select(_=>new RobotStore()).ToArray();
         Workshops=Enumerable.Range(0,nodeCount).Select(_=>new RobotWorkshop()).ToArray();Transport.Reset();PendingEdits.Clear();WorkshopFailures.Clear();

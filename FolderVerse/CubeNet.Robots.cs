@@ -18,6 +18,7 @@ public sealed partial class CubeNet
     public void DrawMapObjects(UiPainter ui,WorldSetup world,Rectangle panel,float pulse)
     {
         _badgePanel=null;
+        DrawWhirlpools(ui,world,panel);
         if(ShowRoutes)foreach(var cell in world.Cells)
             DrawNodeMarkers(ui,world,cell.Id,p=>AnimatedSurfacePosition(cell.Id,p,world,panel),pulse);
         DrawBatteries(ui,world,panel,r=>AnimatedSurfacePosition(world.ConquerorLocations[r],world.Routes.Position(world.ConquerorLocations[r],world.ConquerorPoints[r]),world,panel),pulse);
@@ -25,6 +26,7 @@ public sealed partial class CubeNet
     }
     public void DrawGlobeRobots(UiPainter ui,WorldSetup world,WorldPreview globe,Rectangle panel,float yaw,float pitch)
     {
+        _whirlpoolScreens.Clear();
         _badgePanel=null;
         DrawRobotLayer(ui,world,panel,n=>{
             var cell=world.Cells[n.Cell];
@@ -56,7 +58,7 @@ public sealed partial class CubeNet
             var at=point.Value;float zoom=1;
             var cards=robots.Select((robot,i)=>{
                 var offset=RobotRingSlot(i,robots.Length)*zoom;
-                return new Rectangle((int)(at.X+offset.X-12*zoom),(int)(at.Y+offset.Y-MapPartCount(robot.Parts)*6*zoom),(int)(24*zoom),(int)(MapPartCount(robot.Parts)*12*zoom));
+                return AvoidWhirlpool(new Rectangle((int)(at.X+offset.X-12*zoom),(int)(at.Y+offset.Y-MapPartCount(robot.Parts)*6*zoom),(int)(24*zoom),(int)(MapPartCount(robot.Parts)*12*zoom)));
             }).ToArray();
             var bounds=cards.Aggregate(Rectangle.Union);
             if(!MapViewport(panel).Intersects(bounds))continue;

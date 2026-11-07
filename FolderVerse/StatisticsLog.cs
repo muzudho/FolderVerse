@@ -52,7 +52,7 @@ public sealed class StatisticsLog
                 damagedParts=Count((r,p)=>r.IsDamaged(p)),cheapParts=Count((r,p)=>r.IsCheap(p)),premiumParts=Count((r,p)=>r.IsPremium(p)),
                 disposal=stock.Count(r=>r.Disposal),stationed=stock.Count(r=>r.Stationed),pocket=world.Robots.Retinues[owner].Count,
                 intakeReservations=world.Robots.ProductionIntakes.Count(i=>i.Product.Owner==owner),
-                returningRobots=world.Robots.ReturningRobots.Count(j=>j.Commander==owner),returnHomeReservations=stock.Count(r=>r.ReturnHomeCommander.HasValue),
+                longDistanceReservations=world.Robots.LongDelivery.Orders.Count(o=>o.Commander==owner),longDistanceWaiting=world.Robots.LongDelivery.Orders.Count(o=>o.Commander==owner && o.Status.Contains("待機")),returningRobots=world.Robots.ReturningRobots.Count(j=>j.Commander==owner),returnHomeReservations=stock.Count(r=>r.ReturnHomeCommander.HasValue),
                 manufacturing=lines.Count(l=>l.Manufacturing && !l.Paused && !l.CycleFinished),
                 blockedProduction=lines.Count(l=>l.Waiting),resting=lines.Count(l=>l.RestRemaining>0),
                 pausedProduction=lines.Count(l=>l.Paused),

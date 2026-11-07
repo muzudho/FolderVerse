@@ -32,7 +32,7 @@ public sealed partial class TerrainRoutes
         _world=world;_cache.Clear();_curves.Clear();var offset=WorldTerrain.Offset(world.WorldSeed);
         _heights=world.Cells.Select(c=>Enumerable.Range(0,100).Select(i=>WorldTerrain.Elevation(Position(c.Id,PointAt(i)),offset)).ToArray()).ToArray();
         _links=world.Cells.Select(c=>Enumerable.Range(0,100).Select(_=>new List<int>()).ToArray()).ToArray();
-        BuildMountainPasses();
+        BuildWhirlpools();BuildMountainPasses();
         foreach(var cell in world.Cells)for(int i=0;i<100;i++)
         {
             var p=PointAt(i);

@@ -83,6 +83,9 @@ public static class AutoSaveStore
             else if(Collection(type)){var generic=type.GetGenericTypeDefinition();var add=type.GetMethod(generic==typeof(Queue<>)?"Enqueue":"Add");foreach(int id in entry.Items){if(generic==typeof(HashSet<>) && id>=0)Populate(id);add.Invoke(value,new[]{Read(id)});}}
             else foreach(var field in Fields(type)){
                 if(!entry.Fields.TryGetValue(field.Name,out int id)){
+                    if(type==typeof(TerrainRoutes) && field.Name=="_whirlpools"){field.SetValue(value,Array.Empty<SeaWhirlpool>());continue;}
+                    if(type==typeof(Robot) && field.Name=="<LongDeliveryNumber>k__BackingField")continue;
+                    if(type==typeof(RobotWorld) && field.Name=="<LongDelivery>k__BackingField"){field.SetValue(value,new RobotLongDelivery());continue;}
                     if(type==typeof(Robot) && field.Name is "<ReturnHomeCommander>k__BackingField" or "<ReturnHomeStatus>k__BackingField")continue;
                     if(type==typeof(RobotWorld) && field.Name=="<ReturningRobots>k__BackingField"){field.SetValue(value,new List<ReturningRobot>());continue;}
                     if(type==typeof(WorldSetup) && field.Name is "_countryPatterns" or "_countrySecondaryColors" or "_countryEmblems" or "_showComputerOperations")continue;

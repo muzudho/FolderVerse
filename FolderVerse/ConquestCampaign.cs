@@ -43,6 +43,7 @@ public sealed partial class ConquestCampaign
             (owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner),industry:false);
         world.Robots.Transport.AppendPlannedTransfers(world.Robots.IntakePlayback);
         world.Robots.PartPlanning.Resolve(world);
+        world.Robots.LongDelivery.Advance(world);
         world.Robots.AdvanceReturnHome(world);
         ResolveDeliverySorties(world);
         Phase=CampaignPhase.Delivery;Report=$"配送 {world.Robots.Transport.LastTransfers.Count} / 配送後に開戦予約を実行";
@@ -133,6 +134,7 @@ public sealed partial class ConquestCampaign
             for(int ruler=0;ruler<world.ActiveCount;ruler++)
             {
                 if(!automaticAll && world.ManualRulers().Contains(ruler) || !world.Relations.CanAct(ruler))continue;
+                if(UseRobotCombat)BattleLessons.ReserveHomeGuards(world,ruler);
                 var home=world.Nodes.Current(ruler);
                 long army=UseRobotCombat?RobotBattles.Available(world,ruler):home!=null && world.Relations.Allied(home.Owner,ruler)?home.Population.People[0]/2:0;
                 var destinations=UseRobotCombat?RobotBattles.MarchTargets(world,home?.Id??-1).Where(id=>RobotBattles.CanMarch(world,ruler,id)):

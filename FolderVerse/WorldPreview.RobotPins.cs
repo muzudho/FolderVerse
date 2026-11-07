@@ -93,6 +93,13 @@ public sealed partial class WorldPreview
                 bounds=Rectangle.Empty;
                 float angle=-MathHelper.PiOver2+slot*MathHelper.TwoPi/robots.Count,radius=Math.Max(.18f,robots.Count*.12f/MathHelper.TwoPi);
                 float u=MathF.Cos(angle)*radius,v=MathF.Sin(angle)*radius,z=.008f;var robot=robots[slot];
+                foreach(var whirl in setup.Routes.Whirlpools){
+                    if(Vector3.Dot(cell.Normal,setup.Cells[whirl.Cell].Normal)<.99f)continue;
+                    var delta=center+cell.U*u+cell.V*v-setup.Routes.WhirlpoolCenter(whirl);float clearance=whirl.Radius/10+.10f;
+                    if(delta.LengthSquared()>=clearance*clearance)continue;
+                    var away=delta.LengthSquared()<.0001f?cell.U:Vector3.Normalize(delta);
+                    var safe=setup.Routes.WhirlpoolCenter(whirl)+away*clearance-center;u=Vector3.Dot(safe,cell.U);v=Vector3.Dot(safe,cell.V);
+                }
                 void RobotBox(float x,float y,float height,float width,float depth,float extent,Color tint,bool damaged=false,int patternOwner=-1)=>
                     Box(u+(x-u)*.5f,v+(y-v)*.5f,.008f+(height-.008f)*.5f,width*.5f,depth*.5f,extent*.5f,tint,damaged,patternOwner);
                 void Part(RobotParts part,float x,float y,float height,float width,float depth,float extent){

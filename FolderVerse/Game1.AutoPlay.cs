@@ -58,6 +58,7 @@ public partial class Game1
 
         switch(_autoDomesticStage++){
             case 0:
+                BattleLessons.ReserveHomeGuards(_setup,_setup.PlayerSlot);
                 var node=_setup.Nodes.All
                     .Where(n=>n.Owner==_setup.PlayerSlot && PlanningFunctional(n.Id) && !_setup.Campaign.RobotBattles.LockedNode(n.Id))
                     .OrderByDescending(n=>_setup.Robots.AssemblySelection(n.Id,_setup.PlayerSlot,true)!=null)
@@ -69,7 +70,7 @@ public partial class Game1
             case 2:OpenNodeAssembly();break;
             case 3:
                 var ids=_setup.Robots.AssemblySelection(_populationNode,_setup.Nodes.All[_populationNode].Owner,true);
-                if(ids!=null){_setup.Robots.Assemble(_populationNode,ids,_setup.Nodes.All[_populationNode].Owner);SyncHangarSlots();_hangarMessage="出撃できるロボットを組み立てました";}break;
+                if(ids!=null){_setup.Robots.Assemble(_populationNode,ids,_setup.Nodes.All[_populationNode].Owner);SyncHangarSlots();_hangarMessage="出撃できるロボットを組み立てました";}BattleLessons.ReserveHomeGuards(_setup,_setup.PlayerSlot,_populationNode);break;
             case 4:OpenNodeFactory();break;
             default:
                 ResetInspector();_autoDomesticStage=0;_autoStepAge=0;
