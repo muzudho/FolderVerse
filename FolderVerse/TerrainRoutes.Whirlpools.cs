@@ -9,6 +9,9 @@ public sealed partial class TerrainRoutes
 {
     private SeaWhirlpool[] _whirlpools=Array.Empty<SeaWhirlpool>();
     public SeaWhirlpool[] Whirlpools=>_whirlpools??Array.Empty<SeaWhirlpool>();
+    public bool NearWhirlpool(Node node)=>node.Terrain==TravelTerrain.Sea && Whirlpools.Any(w=>
+        Vector3.Dot(_world.Cells[node.Cell].Normal,_world.Cells[w.Cell].Normal)>.99f && node.Points.Any(p=>
+            Vector3.DistanceSquared(Position(node.Cell,p),WhirlpoolCenter(w))<MathF.Pow((w.Radius+1.5f)/10,2)));
     public bool WhirlpoolAt(int cell,Point point)
     {
         var sample=Position(cell,point);
@@ -20,7 +23,7 @@ public sealed partial class TerrainRoutes
     {
         _whirlpools=Array.Empty<SeaWhirlpool>();if(_world.TutorialStep!=0)return;
         var candidates=new List<(int First,int Second)>();
-        foreach(var cell in _world.Cells){
+        foreach(var cell in _world.Cells.Where(c=>!_world.IsPolarFace(c.Face))){
             var next=_world.Cells.FirstOrDefault(c=>c.Face==cell.Face && Vector3.DistanceSquared(c.Center,cell.Center+cell.U)<.001f);
             if(next==null)continue;
             var center=cell.Origin+cell.U+cell.V*.5f;

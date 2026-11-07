@@ -92,7 +92,7 @@ public sealed class WorldNodes
         string name=p.IsHarbor?p.Name+$"（{coordinate.X},{coordinate.Y}）":WorldCoordinates.Label(_world,p.Cell);
         return name+" / "+Description(p);
     }
-    public string Description(Node p)=>(p.IsHarbor?"海港":TerrainRoutes.TerrainName(p.Terrain))+"地点・"+_world.Routes.PointName(p.Cell,p.Center);
+    public string Description(Node p)=>(p.IsHarbor?"海港":TerrainRoutes.TerrainName(p.Terrain))+"地点・"+_world.Routes.PointName(p.Cell,p.Center)+(_world.Routes.NearWhirlpool(p)?"・灘付近":"");
     public int FullOwner(int cell)
     {
         var owners=InCell(cell).Select(p=>p.Owner<0?-1:_world.Relations.Root(p.Owner)).Distinct().ToArray();return owners.Length==1?owners[0]:-1;

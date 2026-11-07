@@ -8,7 +8,7 @@ public sealed partial class CubeNet
     private readonly List<(Vector2 Center,float Radius)> _whirlpoolScreens=new();
     private void DrawWhirlpools(UiPainter ui,WorldSetup world,Rectangle panel)
     {
-        _whirlpoolScreens.Clear();if(world.Owners.Length!=world.Cells.Length)return;
+        _whirlpoolScreens.Clear();if(world.Owners.Length!=world.Cells.Length)return;DrawPackIce(ui,world,panel);
         foreach(var whirl in world.Routes.Whirlpools){
             var cell=world.Cells[whirl.Cell];
             SeaWhirlpoolArt.Draw(ui,p=>AnimatedSurfacePosition(cell.Id,cell.Origin+cell.U*((whirl.Center.X+.5f+p.X*whirl.Radius)/10)+cell.V*((whirl.Center.Y+.5f+p.Y*whirl.Radius)/10),world,panel));

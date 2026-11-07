@@ -83,7 +83,7 @@ public partial class Game1
         DrawDirectTruckCheck(first,second,bounds);
     }
     private void DirectPairInput(MouseState mouse,bool click,bool escape){
-        if(_longDeliveryMode){LongPairInput(click,escape);return;}
+        if(_longDeliveryMode){LongPairInput(mouse,click,escape);return;}
         if(!DomesticOperationsAllowed){_directDrag=null;CloseDirectDelivery();return;}
         if(escape || click && !_directDrag.HasValue && DirectPairBack.Contains(_pointer)){CloseDirectPair();return;}
         if(_directPairClosing || _directPairSlide<1)return;

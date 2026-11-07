@@ -65,7 +65,7 @@ public sealed class NodeFunctionTransfers
             w.Robots.DirectDelivery.RelocateNode(a,b,offset);
             w.Robots.PartPlanning.RelocateLocalOrders(a,b);
             w.Robots.RelocateProductionIntakes(a,b);
-            w.Robots.Transport.RelocateNode(a,b);w.Robots.LongDelivery.Relocate(a,b);
+            w.Robots.Transport.RelocateNode(a,b);w.Robots.LongDelivery.Relocate(a,b,offset);
             for(int i=0;i<w.Robots.ReturningRobots.Count;i++)if(w.Robots.ReturningRobots[i].Source==a)
                 w.Robots.ReturningRobots[i]=w.Robots.ReturningRobots[i] with {Source=b};
             w.Campaign.RewriteReservations(m=>!m.PocketOnly && m.SourceNode==a?m with {SourceNode=b}:m);

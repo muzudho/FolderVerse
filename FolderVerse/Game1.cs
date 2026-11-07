@@ -163,7 +163,7 @@ public partial class Game1 : Game
             UpdateDirectPairTransition((float)gameTime.ElapsedGameTime.TotalSeconds);
             if(active && _directPairOpen){
                 if(_directPairSlide>=1 || escape)DirectPairInput(mouse,click,escape);
-                if(_directPairOpen && !_longDeliveryMode && _directPairSlide>=1 && !_directPairClosing)DirectPairMapInput(mouse);
+                if(_directPairOpen && (!_longDeliveryMode || !_longOrdersOpen) && _directPairSlide>=1 && !_directPairClosing)DirectPairMapInput(mouse);
             }else _directDrag=null;
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }

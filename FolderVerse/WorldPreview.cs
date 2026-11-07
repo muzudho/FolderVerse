@@ -74,8 +74,10 @@ public sealed partial class WorldPreview : IDisposable
     public void ShowSetup(WorldSetup setup, bool territories)
     {
         if(CountryColors && territories)ShowLandConquest(setup,true);
-        else Generate(setup.Width, setup.Height, setup.Depth, setup.WorldSeed,setup.PolarAxis);
-        if(setup.Owners.Length==setup.Cells.Length)BuildWhirlpoolMesh(setup);
+        else {
+            Generate(setup.Width, setup.Height, setup.Depth, setup.WorldSeed,setup.PolarAxis);
+            if(setup.Owners.Length==setup.Cells.Length)BuildWhirlpoolMesh(setup);
+        }
         if (!territories || setup.Owners.Length == 0) return;
         var mesh = new List<VertexPositionColorNormal>();
         void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, Vector3 normal)

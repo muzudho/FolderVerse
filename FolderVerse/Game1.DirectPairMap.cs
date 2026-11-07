@@ -28,6 +28,7 @@ public partial class Game1
         var n=_setup.Nodes.All[node];_directPairWorld.ProjectVisible(_setup.Routes.Position(n.Cell,n.Center),_setup.Cells[n.Cell].Normal,_directPairYaw,_directPairPitch,panel,out var at);return at;
     }
     private void AlignDirectPairInspectors(){
+        if(_longDeliveryMode)return;
         var a=DirectPairPosition(_directNodes[0]);var b=DirectPairPosition(_directNodes[1]);
         if(a.X>b.X+.5f || Math.Abs(a.X-b.X)<=.5f && a.Y>b.Y){
             (_directNodes[0],_directNodes[1])=(_directNodes[1],_directNodes[0]);
@@ -39,6 +40,7 @@ public partial class Game1
     private Color DirectSideColor(int side)=>side==0?_setup.OwnerColor(_setup.PlayerSlot):Color.White;
     private void FitDirectPairMap()
     {
+        if(_longDeliveryMode && _longChoosingSource){if(!_directPairGlobe)_directPairNet.FitAll(DirectPairMapBounds);else{_directPairWorld.GlobeZoom=_world.GlobeZoom;_directPairWorld.GlobeAnchor=_world.GlobeAnchor;_directPairWorld.GlobePan=_world.GlobePan;}return;}
         var panel=DirectPairMapBounds;
         _directPairNet.ShowRoutes=true;_directPairNet.ShowOtherCountries=_net.ShowOtherCountries;
         _directPairNet.ShowRobots=_net.ShowRobots;_directPairNet.ShowBatteries=_net.ShowBatteries;
@@ -93,6 +95,7 @@ public partial class Game1
     }
     private void DrawDirectPairTrucks(Rectangle panel)
     {
+        if(_longDeliveryMode){DrawLongPairMarkers(panel);return;}
         _directPairTrucks.Clear();
         if(!_directPairGlobe && _directPairNet.IsAnimating)return;
         foreach(var node in _setup.Nodes.All.Where(n=>DirectNodeAllowed(n.Id))){
@@ -137,6 +140,7 @@ public partial class Game1
         _directPairNet.FocusCircles.Clear();_directPairNet.FocusCircleNodes.Clear();
         var points=new Vector2[2];
         for(int side=0;side<2;side++){
+            if(_longDeliveryMode && _longChoosingSource && side==0)continue;
             int id=_directNodes[side];var at=DirectPairPosition(id);points[side]=at;
             int count=_directPairNet.ShowRobots?_setup.Robots.Nodes[id].Count:0;float radius=count>0?Math.Max(48,count*30/MathHelper.TwoPi)+38:32;
             _directPairNet.FocusCircles.Add(new(at,radius));_directPairNet.FocusCircleNodes.Add(id);
@@ -162,6 +166,7 @@ public partial class Game1
         }
         _spriteBatch.End();GraphicsDevice.ScissorRectangle=old;_spriteBatch.Begin(transformMatrix:transform);
         for(int side=0;side<2 && DirectPairEase>=1;side++){
+            if(_longDeliveryMode && _longChoosingSource && side==0)continue;
             var at=points[side];var edge=new Vector2(side==0?580:1340,Math.Clamp(at.Y,250,860));
             var tip=new Vector2(Math.Clamp(at.X,panel.Left+12,panel.Right-12),Math.Clamp(at.Y,panel.Top+12,panel.Bottom-12));
             // A tapered speech-bubble tail links the fixed pane to its geographic endpoint.
@@ -171,10 +176,10 @@ public partial class Game1
             _ui.Center(label,badge,.38f,DirectSideColor(side));
         }
         _spriteBatch.End();GraphicsDevice.ScissorRectangle=new(canvas.X+(int)(panel.X*canvas.Width/1920f),canvas.Y+(int)(panel.Y*canvas.Height/1080f),(int)(panel.Width*canvas.Width/1920f),(int)(panel.Height*canvas.Height/1080f));
-        _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);DrawDirectPairTrucks(panel);DrawNodeCheckMarkers(panel,true);
+        _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);DrawDirectPairTrucks(panel);if(!_longDeliveryMode)DrawNodeCheckMarkers(panel,true);
         _spriteBatch.End();GraphicsDevice.ScissorRectangle=old;_spriteBatch.Begin(transformMatrix:transform);
         _ui.Center("右ドラッグ：地図を移動 / ホイール：拡縮",new(panel.X,879,panel.Width,28),.32f,Cream);
-        _ui.Button(DirectPairFitButton,"両地点を表示",Muted,.45f);
+        _ui.Button(DirectPairFitButton,_longDeliveryMode && _longChoosingSource?"全体を表示":"両地点を表示",Muted,.45f);
         }finally{
             _directRenderPanel=null;if(temporaryCamera)_directPairNet.RestoreView(finalView);
             if(_directPairGlobe){_directPairWorld.GlobeZoom=finalZoom;_directPairWorld.GlobePan=finalPan;_directPairWorld.GlobeAnchor=finalAnchor;}

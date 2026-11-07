@@ -10,7 +10,7 @@ public sealed partial class WorldPreview
     private void BuildWhirlpoolMesh(WorldSetup world)
     {
         _whirlpoolMesh?.Dispose();_whirlpoolMesh=null;_whirlpoolTriangles=0;
-        var mesh=new List<VertexPositionColorNormal>();const int detail=SeaWhirlpoolArt.Detail;
+        var mesh=new List<VertexPositionColorNormal>();AppendPackIce(world,mesh);const int detail=SeaWhirlpoolArt.Detail;
         foreach(var whirl in world.Routes.Whirlpools){
             var cell=world.Cells[whirl.Cell];
             Vector3 At(Vector2 p)=>cell.Origin+cell.U*((whirl.Center.X+.5f+p.X*whirl.Radius)/10)+cell.V*((whirl.Center.Y+.5f+p.Y*whirl.Radius)/10)+cell.Normal*(.012f+p.Length()*.035f);

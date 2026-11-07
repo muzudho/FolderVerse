@@ -83,6 +83,10 @@ public static class AutoSaveStore
             else if(Collection(type)){var generic=type.GetGenericTypeDefinition();var add=type.GetMethod(generic==typeof(Queue<>)?"Enqueue":"Add");foreach(int id in entry.Items){if(generic==typeof(HashSet<>) && id>=0)Populate(id);add.Invoke(value,new[]{Read(id)});}}
             else foreach(var field in Fields(type)){
                 if(!entry.Fields.TryGetValue(field.Name,out int id)){
+                    if(type==typeof(LongPartOrder) && field.Name=="<TargetSlot>k__BackingField"){field.SetValue(value,-1);continue;}
+                    if(type==typeof(RobotLongDelivery) && field.Name=="_slotArrivals"){field.SetValue(value,new Dictionary<(int,int,int),long>());continue;}
+                    if(type==typeof(TerrainRoutes) && field.Name=="_packIce")continue;
+                    if(type==typeof(TerrainRoutes) && field.Name=="_iceWalls"){field.SetValue(value,Array.Empty<SeaIceWall>());continue;}
                     if(type==typeof(TerrainRoutes) && field.Name=="_whirlpools"){field.SetValue(value,Array.Empty<SeaWhirlpool>());continue;}
                     if(type==typeof(Robot) && field.Name=="<LongDeliveryNumber>k__BackingField")continue;
                     if(type==typeof(RobotWorld) && field.Name=="<LongDelivery>k__BackingField"){field.SetValue(value,new RobotLongDelivery());continue;}
@@ -178,6 +182,7 @@ public static class AutoSaveStore
             }
         }
         for(int i=0;i<values.Length;i++)Populate(i);
+        foreach(var world in values.OfType<WorldSetup>())world.Robots.LongDelivery.RestoreLegacySlots(world.Robots);
         return At(doc.Root) is T result?result:throw new InvalidDataException("Invalid autosave root.");
     }
     public static void Write(string path,object root){

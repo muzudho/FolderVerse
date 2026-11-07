@@ -3,116 +3,150 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 public partial class Game1
 {
-    private bool _longDeliveryMode;
-    private int _longSource=-1;
-    private int _longOrderPage;
-    private (long Id,RobotParts Parts)? _longSelected;
+    private bool _longDeliveryMode,_longChoosingSource,_longOrdersOpen;
+    private int _longSource=-1,_longTarget=-1,_longOrderPage;
     private readonly List<(Rectangle Bounds,int Node)> _longMarkers=new();
-    private void OpenLongDeliveryMap(){OpenDirectMap();if(!_directMap)return;_longDeliveryMode=true;_longSource=-1;_longOrderPage=0;_longSelected=null;}
-    private bool LongDestination(int node)=>DirectNodeAllowed(node) && !_setup.Campaign.RobotBattles.LockedNode(node) && (_longSource<0 || node==_longSource || RobotLongDelivery.Path(_setup,_longSource,node,_setup.Nodes.All[_longSource].Owner).Length>1);
+    private readonly HashSet<int> _longSourceCandidates=new();
+    private static readonly Rectangle LongOrdersToggle=new(610,968,700,36);
+    private static Rectangle LongCancelButton(int side)=>new(40+side*1320,242,150,32);
+    private static Rectangle LongPageButton(int side,int direction)=>new(220+side*1320+(direction<0?0:222),242,120,32);
+    private static Rectangle LongOrderButton(int index)=>new(610,270+index*65,700,58);
+    private static Rectangle LongOrderPageButton(int direction)=>new(direction<0?610:1160,840,150,42);
+    private LongPartOrder[] AllLongOrders=>_setup.Robots.LongDelivery.Orders.Where(o=>o.Commander==_setup.PlayerSlot).ToArray();
+    private LongPartOrder[] VisibleLongOrders{get{_longOrderPage=Math.Clamp(_longOrderPage,0,Math.Max(0,(AllLongOrders.Length-1)/8));return AllLongOrders.Skip(_longOrderPage*8).Take(8).ToArray();}}
+    private void OpenLongDeliveryMap(){OpenDirectMap();if(!_directMap)return;_longDeliveryMode=true;_longSource=_longTarget=-1;_longChoosingSource=_longOrdersOpen=false;_longOrderPage=0;}
+    private bool LongDestination(int node)=>DirectNodeAllowed(node) && !_setup.Campaign.RobotBattles.LockedNode(node) && (_longTarget<0 || _longSourceCandidates.Contains(node));
+    private void FindLongSources(int target)
+    {
+        _longSourceCandidates.Clear();_longSourceCandidates.Add(target);var queue=new Queue<int>();queue.Enqueue(target);
+        while(queue.TryDequeue(out int node))foreach(int next in RobotLongDelivery.Neighbors(_setup,node,_setup.Nodes.All[target].Owner))if(_longSourceCandidates.Add(next))queue.Enqueue(next);
+    }
     private void DrawLongMarkers()
     {
         _longMarkers.Clear();if(!_directMap || _directPairOpen || MapTransitionActive || !_statusGlobe && _net.IsAnimating)return;
         foreach(var node in _setup.Nodes.All.Where(n=>LongDestination(n.Id))){
             if(!OperationPosition(node.Id,out var at) || !MapViewBounds.Contains(at.ToPoint()))continue;
-            var bounds=new Rectangle((int)at.X-18,(int)at.Y-18,36,36);
-            _ui.Box(bounds,node.Id==_longSource?Cream:Accent);DrawPrimaryIcon(LongMapAction,new(bounds.X+3,bounds.Y+3,30,30),new Color(14,29,40));
-            _longMarkers.Add((bounds,node.Id));
+            var bounds=new Rectangle((int)at.X-18,(int)at.Y-18,36,36);_ui.Box(bounds,Accent);
+            DrawPrimaryIcon(LongMapAction,new(bounds.X+3,bounds.Y+3,30,30),new Color(14,29,40));_longMarkers.Add((bounds,node.Id));
         }
-        _ui.Center(_longSource<0?"パーツ長距離便：元地点を選んでください":"パーツ長距離便：つながる先地点を選んでください / 元地点を再クリックで選び直す",new(54,110,1300,40),.43f,Cream);
+        _ui.Center("パーツ長距離便：まず右インスペクターの移動先を選んでください",new(54,110,1300,40),.43f,Cream);
     }
     private bool LongMapClick(Point point)
     {
         if(!_directMap || _directPairOpen || MapTransitionActive || !MapViewBounds.Contains(point))return false;
         var hit=_longMarkers.Where(m=>m.Bounds.Contains(point)).OrderBy(m=>Vector2.DistanceSquared(m.Bounds.Center.ToVector2(),point.ToVector2())).FirstOrDefault();
         if(hit.Bounds!=Rectangle.Empty){
-            if(_longSource<0)_longSource=hit.Node;
-            else if(_longSource==hit.Node)_longSource=-1;
-            else{OpenDirectPair(_longSource,hit.Node);_longSelected=null;_directMessage="左のパーツを選び、右の受取区画をクリック / １全体ターンに１地点分進みます";}
-            return true;
+            _longTarget=hit.Node;_longSource=-1;_longChoosingSource=true;
+            FindLongSources(hit.Node);
+            OpenDirectPair(hit.Node,hit.Node);_directPages[0]=_directPages[1]=0;
+            if(!_directPairGlobe)_directPairNet.FitAll(DirectPairMapBounds);
+            _directMessage="移動先を選びました / 中央の地図から左の元地点を選んでください";return true;
         }
-        if(!_statusGlobe && !_net.IsAnimating){_net.HoverEdge(NetPanel,point);if(_net.ClickEdge())_longMarkers.Clear();}
-        return true;
+        if(!_statusGlobe && !_net.IsAnimating){_net.HoverEdge(NetPanel,point);if(_net.ClickEdge())_longMarkers.Clear();}return true;
+    }
+    private void DrawLongPairMarkers(Rectangle panel)
+    {
+        _longMarkers.Clear();if(!_longChoosingSource || _longOrdersOpen || _directPairSlide<1 || _directPairNet.IsAnimating)return;
+        foreach(var node in _setup.Nodes.All.Where(n=>n.Id!=_longTarget && LongDestination(n.Id))){
+            if(!DirectPairVisible(node.Id,out var at) || !panel.Contains(at.ToPoint()))continue;
+            var r=new Rectangle((int)at.X-12,(int)at.Y-12,24,24);_ui.Box(r,Accent);DrawPrimaryIcon(LongMapAction,new(r.X+2,r.Y+2,20,20),new Color(14,29,40));_longMarkers.Add((r,node.Id));
+        }
+    }
+    private void LongBack()
+    {
+        _directDrag=null;
+        if(_longOrdersOpen){_longOrdersOpen=false;return;}
+        if(!_longChoosingSource){_longChoosingSource=true;_longSource=-1;_directNodes[0]=_longTarget;Array.Clear(_directSlots[0]);_directMessage="移動先を残しました / 元地点を選び直してください";}
+        else{_directPairOpen=_directPairClosing=false;_longTarget=_longSource=-1;_longChoosingSource=false;_directMessage="移動先を選び直してください";}
     }
     private void SyncLongSlots()
     {
         for(int side=0;side<2;side++){
-            var store=_setup.Robots.Nodes[_directNodes[side]];Array.Resize(ref _directSlots[side],store.TotalCapacity);
+            if(side==0 && _longChoosingSource)continue;int node=_directNodes[side];var store=_setup.Robots.Nodes[node];Array.Resize(ref _directSlots[side],store.TotalCapacity);
             for(int slot=0;slot<_directSlots[side].Length;slot++)if(_directSlots[side][slot].HasValue && !store.Robots.Any(r=>r.Id==_directSlots[side][slot]))_directSlots[side][slot]=null;
-            foreach(var robot in store.Robots)if(!_directSlots[side].Contains(robot.Id)){int slot=Array.IndexOf(_directSlots[side],null);if(slot>=0)_directSlots[side][slot]=robot.Id;}
+            foreach(var robot in store.Robots)if(!_directSlots[side].Contains(robot.Id)){
+                int slot=Enumerable.Range(0,_directSlots[side].Length).FirstOrDefault(i=>!_directSlots[side][i].HasValue && _setup.Robots.LongDelivery.SlotArrival(node,i,robot.Owner)==robot.Id,-1);
+                if(slot<0)slot=Enumerable.Range(0,_directSlots[side].Length).FirstOrDefault(i=>!_directSlots[side][i].HasValue && !_setup.Robots.LongDelivery.Orders.Any(o=>o.Target==node && !o.Receiver.HasValue && o.TargetSlot==i),-1);
+                if(slot<0)slot=Array.IndexOf(_directSlots[side],null);if(slot>=0)_directSlots[side][slot]=robot.Id;
+            }
         }
     }
-    private static Rectangle LongPageButton(int side,int direction)=>new(40+side*1320+(direction<0?0:402),244,120,42);
-    private static Rectangle LongOrderButton(int index)=>new(610,270+index*65,700,58);
-    private LongPartOrder[] AllLongOrders=>_setup.Robots.LongDelivery.Orders.Where(o=>o.Commander==_setup.PlayerSlot).ToArray();
-    private LongPartOrder[] VisibleLongOrders{get{_longOrderPage=Math.Clamp(_longOrderPage,0,Math.Max(0,(AllLongOrders.Length-1)/8));return AllLongOrders.Skip(_longOrderPage*8).Take(8).ToArray();}}
-    private static Rectangle LongOrderPageButton(int direction)=>new(direction<0?610:1160,940,150,42);
-    private void LongPairInput(bool click,bool escape)
+    private void LongPairInput(MouseState mouse,bool click,bool escape)
     {
         if(!DomesticOperationsAllowed){CloseDirectDelivery();return;}
-        if(escape || click && DirectPairBack.Contains(_pointer)){_directPairOpen=false;_directPairClosing=false;_directDrag=null;_longSelected=null;return;}
-        if(!click)return;SyncLongSlots();
-        foreach(int direction in new[]{-1,1})if(LongOrderPageButton(direction).Contains(_pointer)){_longOrderPage=Math.Clamp(_longOrderPage+direction,0,Math.Max(0,(AllLongOrders.Length-1)/8));return;}
-        for(int side=0;side<2;side++)foreach(int direction in new[]{-1,1})if(LongPageButton(side,direction).Contains(_pointer)){
-            _directPages[side]=Math.Clamp(_directPages[side]+direction,0,Math.Max(0,(_directSlots[side].Length-1)/12));return;
+        if(escape || click && (DirectPairBack.Contains(_pointer) || LongCancelButton(1).Contains(_pointer) || !_longChoosingSource && LongCancelButton(0).Contains(_pointer))){LongBack();return;}
+        if(click && LongOrdersToggle.Contains(_pointer)){_longOrdersOpen=!_longOrdersOpen;_directDrag=null;return;}
+        if(_longOrdersOpen){
+            if(!click)return;foreach(int direction in new[]{-1,1})if(LongOrderPageButton(direction).Contains(_pointer)){_longOrderPage=Math.Clamp(_longOrderPage+direction,0,Math.Max(0,(AllLongOrders.Length-1)/8));return;}
+            var orders=VisibleLongOrders;for(int i=0;i<orders.Length;i++)if(LongOrderButton(i).Contains(_pointer)){_setup.Robots.LongDelivery.Cancel(_setup.Robots,orders[i].Number);_directMessage="長距離便を取り消しました / 荷物は現在地点に残ります";return;}return;
         }
-        var orders=VisibleLongOrders;for(int i=0;i<orders.Length;i++)if(LongOrderButton(i).Contains(_pointer)){
-            _setup.Robots.LongDelivery.Cancel(_setup.Robots,orders[i].Number);_directMessage="長距離便を取り消しました / 荷物は現在地点に残ります";return;
-        }
-        for(int side=0;side<2;side++)for(int slot=_directPages[side]*12;slot<Math.Min(_directSlots[side].Length,(_directPages[side]+1)*12);slot++)if(DirectCell(side,slot).Contains(_pointer)){
-            var robot=_setup.Robots.Nodes[_directNodes[side]].Robots.FirstOrDefault(r=>r.Id==_directSlots[side][slot]);
-            if(side==0){
-                if(robot==null)return;
-                var parts=robot.Parts;for(int row=0;row<3;row++)if(DirectPart(0,slot,row).Contains(_pointer) && (robot.Parts&HangarPart(row))!=0)parts=robot.ConnectedParts(HangarPart(row));
-                var existing=_setup.Robots.LongDelivery.Orders.FirstOrDefault(o=>o.CargoId==robot.Id && o.Node==_directNodes[0] && (o.Parts&parts)!=0);
-                if(existing!=null){_setup.Robots.LongDelivery.Cancel(_setup.Robots,existing.Number);_directMessage="長距離便の予約を取り消しました";return;}
-                if((!_setup.Robots.CanShip(_directNodes[0],robot) && !_setup.Robots.LongDelivery.HoldsSource(_directNodes[0],robot.Id)) || !CanManageNodeFactory(robot.Owner)){_directMessage="予約中・他国所有のパーツは出荷できません";return;}
-                _longSelected=(robot.Id,parts);_directMessage="右の受取区画を選んでください / 区画の余白を選ぶと個体全体を出荷";return;
+        if(click)for(int side=_longChoosingSource?1:0;side<2;side++)foreach(int direction in new[]{-1,1})if(LongPageButton(side,direction).Contains(_pointer)){_directPages[side]=Math.Clamp(_directPages[side]+direction,0,Math.Max(0,(_directSlots[side].Length-1)/12));return;}
+        if(_longChoosingSource){
+            if(click){var hit=_longMarkers.Where(m=>m.Bounds.Contains(_pointer)).OrderBy(m=>Vector2.DistanceSquared(m.Bounds.Center.ToVector2(),_pointer.ToVector2())).FirstOrDefault();
+                if(hit.Bounds!=Rectangle.Empty){_longSource=hit.Node;_directNodes[0]=hit.Node;_longChoosingSource=false;Array.Clear(_directSlots[0]);FitDirectPairMap();_directMessage="左のパーツを右の格納庫へドラッグ＆ドロップしてください";}
             }
-            if(!_longSelected.HasValue){_directMessage="先に左の出荷するパーツを選んでください";return;}
-            try{
-                var selected=_longSelected.Value;var order=_setup.Robots.LongDelivery.Reserve(_setup,_directNodes[0],_directNodes[1],selected.Id,selected.Parts,robot?.Id,_setup.PlayerSlot);
-                _directMessage=$"長距離便 #{order.Number} を予約しました / 配送ごとに１地点ずつ進みます";_longSelected=null;_longOrderPage=Math.Max(0,(AllLongOrders.Length-1)/8);
-                _operations.Write("long_delivery_reserved",order);
-            }catch(InvalidOperationException error){_directMessage=error.Message;}
             return;
+        }
+        SyncLongSlots();
+
+        if(click && !_directDrag.HasValue)for(int side=0;side<2;side++)for(int slot=_directPages[side]*12;slot<Math.Min(_directSlots[side].Length,(_directPages[side]+1)*12);slot++)if(DirectCell(side,slot).Contains(_pointer)){
+            int node=_directNodes[side];var robot=_setup.Robots.Nodes[node].Robots.FirstOrDefault(r=>r.Id==_directSlots[side][slot]);
+            RobotParts part=0;for(int row=0;row<3;row++)if(DirectPart(side,slot,row).Contains(_pointer))part=HangarPart(row);
+            var pending=_setup.Robots.LongDelivery.Orders.FirstOrDefault(o=>(part==0 || (o.Parts&part)!=0) && (side==0?o.Node==node && o.CargoId==robot?.Id:o.Target==node && (o.Receiver.HasValue?o.Receiver==robot?.Id:o.TargetSlot==slot)));
+            if(pending!=null){_setup.Robots.LongDelivery.Cancel(_setup.Robots,pending.Number);_directMessage="長距離便の予約を取り消しました";return;}
+            if(side!=0 || robot==null)return;
+            if((!_setup.Robots.CanShip(node,robot) && !_setup.Robots.LongDelivery.HoldsSource(node,robot.Id)) || !CanManageNodeFactory(robot.Owner)){_directMessage="予約中・他国所有のパーツは出荷できません";return;}
+            if(part==0)part=robot.Parts;if((robot.Parts&part)==0)return;_directDrag=(0,robot.Id,robot.ConnectedParts(part));return;
+        }
+        if(!_directDrag.HasValue || mouse.LeftButton!=ButtonState.Released || _previousMouse.LeftButton!=ButtonState.Pressed)return;
+        var drag=_directDrag.Value;_directDrag=null;
+        for(int slot=_directPages[1]*12;slot<Math.Min(_directSlots[1].Length,(_directPages[1]+1)*12);slot++)if(DirectCell(1,slot).Contains(_pointer)){
+            try{var order=_setup.Robots.LongDelivery.Reserve(_setup,_directNodes[0],_directNodes[1],drag.Robot,drag.Part,_directSlots[1][slot],_setup.PlayerSlot,slot);_directMessage=$"長距離便 #{order.Number} を予約しました / 配送ごとに１地点ずつ進みます";_operations.Write("long_delivery_reserved",order);}
+            catch(InvalidOperationException error){_directMessage=error.Message;}return;
+        }
+        _directMessage="ドラッグを取り消しました";
+    }
+    private LongPartOrder[] LongIncoming(int node,int slot,Robot robot)=>_setup.Robots.LongDelivery.Orders.Where(o=>o.Target==node && (o.Receiver.HasValue?o.Receiver==robot?.Id:o.TargetSlot==slot)).ToArray();
+    private void DrawLongPane(int side)
+    {
+        int node=_directNodes[side],x=20+side*1320;var store=_setup.Robots.Nodes[node];var color=DirectSideColor(side);
+        _ui.Box(new(x,146,560,820),new Color(27,49,62));_ui.Box(new(x,146,560,6),color);
+        _ui.Text(side==0?"長距離便 左インスペクター / 元地点":"長距離便 右インスペクター / 移動先",new(x+20,164),.46f,color);
+        _ui.Center(_setup.Nodes.DisplayName(_setup.Nodes.All[node]),new(x+12,206,536,34),.34f,Cream);
+        _ui.Button(LongCancelButton(side),"キャンセル",Muted,.38f);_ui.Button(LongPageButton(side,-1),"前",Muted,.4f);_ui.Button(LongPageButton(side,1),"次",Muted,.4f);
+        _ui.Text($"格納庫 {store.Count}/{store.TotalCapacity}　{_directPages[side]+1}/{Math.Max(1,(_directSlots[side].Length+11)/12)}ページ",new(x+20,278),.28f,Cream);
+        for(int slot=_directPages[side]*12;slot<Math.Min(_directSlots[side].Length,(_directPages[side]+1)*12);slot++){
+            var cell=DirectCell(side,slot);var robot=store.Robots.FirstOrDefault(r=>r.Id==_directSlots[side][slot]);var incoming=LongIncoming(node,slot,robot);
+            _ui.Box(cell,_directDrag.HasValue && side==1 && cell.Contains(_pointer)?new Color(65,100,115):new Color(18,35,46));
+            for(int row=0;row<3;row++)_ui.Box(DirectPart(side,slot,row),new Color(40,63,76));
+            var glyph=new Rectangle(cell.X+40,cell.Y+8,68,102);
+            if(robot!=null)DrawRobotGlyph(glyph,robot,whiteOutline:true,partOpacity:p=>_setup.Robots.LongDelivery.Orders.Any(o=>o.CargoId==robot.Id && o.Node==node && (o.Parts&p)!=0)?.35f:1);
+            foreach(var order in incoming){var cargo=_setup.Robots.Nodes[order.Node].Robots.FirstOrDefault(r=>r.Id==order.CargoId);if(cargo!=null && (cargo.Parts&order.Parts)==order.Parts)DrawRobotGlyph(glyph,cargo.Slice(order.Parts),whiteOutline:true,opacity:.5f);}
+            for(int row=0;row<3;row++){
+                var part=HangarPart(row);bool arrival=incoming.Any(o=>(o.Parts&part)!=0);
+                bool outgoing=robot!=null && _setup.Robots.LongDelivery.Orders.Any(o=>o.Node==node && o.CargoId==robot.Id && (o.Parts&part)!=0);
+                if(arrival)DrawHangarDeliveryTag(DirectPart(side,slot,row),"入荷予定",gap:2);
+                if(outgoing)DrawHangarDeliveryTag(DirectPart(side,slot,row),"出荷予定",arrival,gap:2);
+            }
+            if(robot!=null)_ui.Center($"ID {robot.Id}",new(cell.X,cell.Bottom-32,cell.Width,26),.3f,Cream);
         }
     }
     private void DrawLongPair()
     {
-        SyncLongSlots();_ui.Box(new(0,0,1920,1080),new Color(14,29,40));
-        _ui.Text("ロボットパーツ長距離便",new(36,26),.85f,Cream);_ui.Button(DirectPairBack,"×",Muted,.55f);
-        _ui.Center(_directMessage,new(40,90,1840,42),.4f,Cream);
-        for(int side=0;side<2;side++){
-            int node=_directNodes[side],x=20+side*1320;var store=_setup.Robots.Nodes[node];
-            _ui.Box(new(x,146,560,820),new Color(27,49,62));_ui.Text(side==0?"元地点 / 出荷するパーツを選択":"先地点 / 受取区画を選択",new(x+20,164),.48f,Cream);
-            _ui.Center(_setup.Nodes.DisplayName(_setup.Nodes.All[node]),new(x+12,210,536,30),.32f,Cream);
-            _ui.Button(LongPageButton(side,-1),"前",Muted,.4f);_ui.Button(LongPageButton(side,1),"次",Muted,.4f);
-            _ui.Center($"{store.Count}/{store.TotalCapacity}枠　{_directPages[side]+1}/{Math.Max(1,(_directSlots[side].Length+11)/12)}ページ",new(x+140,250,270,30),.31f,Cream);
-            for(int slot=_directPages[side]*12;slot<Math.Min(_directSlots[side].Length,(_directPages[side]+1)*12);slot++){
-                var cell=DirectCell(side,slot);var robot=store.Robots.FirstOrDefault(r=>r.Id==_directSlots[side][slot]);
-                _ui.Box(cell,new Color(10,23,33));if(robot==null){_ui.Center("空き",cell,.35f,Muted);continue;}
-                DrawRobotGlyph(new(cell.X+48,cell.Y+8,68,102),robot,whiteOutline:true);
-                _ui.Center(robot.LongDeliveryNumber.HasValue?$"長距離便 #{robot.LongDeliveryNumber}":$"ID {robot.Id}",new(cell.X,cell.Bottom-34,cell.Width,28),.3f,robot.LongDeliveryNumber.HasValue?Accent:Cream);
-                if(side==0 && _longSelected?.Id==robot.Id)for(int row=0;row<3;row++)if((_longSelected.Value.Parts&HangarPart(row))!=0){var r=DirectPart(side,slot,row);_ui.Box(new(r.X-3,r.Y,r.Width+6,3),Accent);_ui.Box(new(r.X-3,r.Bottom,r.Width+6,3),Accent);}
-            }
+        SyncLongSlots();_deliveryTagHint="";_ui.Box(new(0,0,1920,1080),new Color(14,29,40));DrawDirectPairMap();
+        _ui.Text("ロボットパーツ長距離便",new(36,26),.85f,Cream);_ui.Button(DirectPairBack,"×",Muted,.55f);_ui.Center(_directMessage,new(40,76,1840,32),.4f,Cream);
+        if(!_longChoosingSource)DrawLongPane(0);DrawLongPane(1);
+        if(_longOrdersOpen){_ui.Box(new(600,220,720,670),new Color(20,42,54));var orders=VisibleLongOrders;
+            for(int i=0;i<orders.Length;i++){var order=orders[i];var r=LongOrderButton(i);_ui.Box(r,Muted);_ui.Text($"#{order.Number} 地点{order.Source+1} → {order.Target+1} / 現在 {order.Node+1}",new(r.X+12,r.Y+5),.32f,Cream);_ui.Text(order.Status,new(r.X+12,r.Y+32),.29f,Cream);}
+            _ui.Center("予約をクリックして取消 / 荷物は現在地点に残ります",new(610,224,700,34),.3f,Cream);_ui.Button(LongOrderPageButton(-1),"前",Muted,.4f);_ui.Button(LongOrderPageButton(1),"次",Muted,.4f);
         }
-        var path=RobotLongDelivery.Path(_setup,_directNodes[0],_directNodes[1],_setup.PlayerSlot);
-        _ui.Center($"配送距離 {Math.Max(0,path.Length-1)} 地点 / 最短 {Math.Max(0,path.Length-1)} 全体ターン",new(600,182,720,40),.44f,Cream);
-        _ui.Center("予約一覧：クリックで取り消す / 荷物は現在地点に残る",new(600,228,720,30),.32f,Cream);
-        var orders=VisibleLongOrders;for(int i=0;i<orders.Length;i++){
-            var o=orders[i];var r=LongOrderButton(i);_ui.Box(r,Muted);
-            _ui.Text($"#{o.Number}　地点{o.Source+1} → {o.Target+1}　現在 {o.Node+1}",new(r.X+12,r.Y+5),.32f,Cream);
-            _ui.Text(o.Status,new(r.X+12,r.Y+32),.29f,Cream);
-        }
-        int rowIndex=0;foreach(var result in _setup.Robots.LongDelivery.Results.Where(o=>o.Commander==_setup.PlayerSlot).TakeLast(2)){
-            _ui.Center($"#{result.Number} {result.Status}",new(600,828+rowIndex++*40,720,36),.3f,Cream);
-        }
-        _ui.Button(LongOrderPageButton(-1),"前",Muted,.4f);_ui.Button(LongOrderPageButton(1),"次",Muted,.4f);
-        _ui.Center($"予約 {_longOrderPage+1}/{Math.Max(1,(AllLongOrders.Length+7)/8)} ページ",new(780,946,360,32),.33f,Cream);
-        _ui.Center("満杯なら現在地点で待機 / 経路がなくなれば荷物を残して予約解除",new(40,998,1840,40),.4f,Cream);
+        _ui.Button(LongOrdersToggle,$"配送予約 {AllLongOrders.Length}件 / {(_longOrdersOpen?"地図に戻る":"一覧と取消")}",Muted,.4f);
+        if(_directDrag.HasValue){var drag=_directDrag.Value;var robot=_setup.Robots.Nodes[_directNodes[0]].Robots.FirstOrDefault(r=>r.Id==drag.Robot);if(robot!=null)DrawRobotGlyph(new(_pointer.X-34,_pointer.Y-51,68,102),robot.Slice(drag.Part),whiteOutline:true,opacity:.8f);}
+        else DrawDeliveryTagHint(new(20,146,1880,820));
+        _ui.Center("１全体ターンに１地点 / 満杯なら待機 / 経路が切れたら荷物を残して解除",new(40,1012,1840,40),.37f,Cream);
     }
 }
