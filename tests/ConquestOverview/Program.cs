@@ -85,6 +85,9 @@ sealed class OverviewGame:Game1{
   owners=(int[])world.Owners.Clone();originalWorld=Get("_world");var net=(CubeNet)Get("_net");net.ShowBatteries=false;batteries=net.ShowBatteries;
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("RestoreDomesticCamera");batteries=net.ShowBatteries;
   Check((bool)Get("_conquestOverview"),"First domestic boundary starts presentation");
+  var contenderTiles=(OverviewTile[])Get("_conquestTiles");
+  Check(contenderTiles.All(t=>world.Relations.CanWinConquest(t.Slot)) && contenderTiles.Sum(t=>t.Width*t.Height)==400,
+      "Only independent powered contenders occupy the portrait area");
   Call("UpdateConquestOverview",.25d,false);Check((int)Get("_conquestStage")==0,"Curtain closes before hold");
   for(int i=0;i<3;i++)Call("UpdateConquestOverview",.25d,false);Check((int)Get("_conquestStage")==1,"Curtain hold stage");
   for(int i=0;i<4;i++)Call("UpdateConquestOverview",.25d,false);Check((int)Get("_conquestStage")==1,"Hold lasts 1.5 seconds");
@@ -208,7 +211,33 @@ sealed class OverviewGame:Game1{
   Check((float)Get("_demoFade")==0,"Escape exits demo during overview");
   Call("UpdateDemo",.81d,true,false,false,false,0d);
   Check(!(bool)Get("_demoActive") && !(bool)Get("_conquestOverview") && Get("_screen").ToString()=="Title","Demo exit clears overview and returns to title");
+  CheckGroupedExhibition();
   Console.WriteLine("PASS: normal new game conquest overview, monotonic outro fade, no globe reappearance behind curtain, preserved intro fade, cell paint and static addition formula, lower-rank-first introductions, area portraits, four-second ranking tree, ancestor recalls, exact owner cells, terrain mix, curtain timing, full playback, skip, and preserved game/view state.");Exit();
+ }
+ void CheckGroupedExhibition(){
+  var exhibition=new WorldSetup();exhibition.SetParticipantCounts(0,60);exhibition.SetWorld(123);exhibition.SetCast(456);exhibition.SetPlacement(789);exhibition.SelectPlayer(0);
+  foreach(var node in exhibition.Nodes.All)node.Owner=0;
+  for(int ruler=1;ruler<=24;ruler++)exhibition.Relations.Powered[ruler]=false;
+  for(int ruler=25;ruler<=32;ruler++)exhibition.Relations.SetSuperior(ruler,0);
+  Set("_setup",exhibition);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_autoPlay",true);Set("_conquestOverviewTurn",-1);
+  Call("BeginConquestOverview");
+  var tiles=(OverviewTile[])Get("_conquestTiles");
+  Check((bool)Get("_conquestOverview") && tiles.Length==28 && tiles.All(t=>exhibition.Relations.CanWinConquest(t.Slot)) &&
+      tiles.Sum(t=>t.Width*t.Height)==400,"60-player Exhibition groups 24 eliminated and eight followers outside portrait space");
+  for(int ruler=25;ruler<60;ruler++)exhibition.Relations.SetSuperior(ruler,0);
+  Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");
+  tiles=(OverviewTile[])Get("_conquestTiles");
+  Check(tiles.Length==1 && tiles[0].Slot==0 && tiles[0].Width*tiles[0].Height==400,"Final independent contender gets the full portrait area");
+  var cards=((ConquestPresentation)Get("_conquestPresentation")).Cards;
+  Set("_conquestCard",Array.FindIndex(cards,c=>c.Ruler==0 && !c.Reminder));Call("SetConquestCard");
+  Set("_conquestStage",4);Set("_conquestAge",100d);((HashSet<int>)Get("_conquestRevealed")).Add(0);
+  var batch=(SpriteBatch)Get("_spriteBatch");var canvas=(Rectangle)Call("CanvasBounds");
+  var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
+  GraphicsDevice.Clear(Color.Black);batch.Begin(transformMatrix:transform);Call("DrawConquestMosaic");batch.End();
+  var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
+  using var image=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);image.SetData(pixels);
+  using var output=File.Create(Path.Combine(AppContext.BaseDirectory,"conquest-grouped-exhibition.png"));image.SaveAsPng(output,image.Width,image.Height);
+  Console.WriteLine("PASS: 60-player Exhibition shows overview and groups inactive rulers while preserving the whole portrait area.");
  }
 }
 

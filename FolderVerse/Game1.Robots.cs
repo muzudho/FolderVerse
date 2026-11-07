@@ -25,8 +25,14 @@ public partial class Game1
         Shape(new(r.X+r.Width/6,r.Y+legsTop,r.Width/4,legsBottom-legsTop),RobotParts.Legs);
         Shape(new(r.X+r.Width*7/12,r.Y+legsTop,r.Width/4,legsBottom-legsTop),RobotParts.Legs);
         float Alpha(RobotParts part)=>opacity*(partOpacity?.Invoke(part)??1);
-        Color Paint(RobotParts part){var c=_setup.OwnerColor(robot.Origin(part));return c*Alpha(part);}
         if(whiteOutline)foreach(var shape in shapes){
+            if(robot.IsCheap(shape.Part)){
+                for(int y=shape.Bounds.Top;y<shape.Bounds.Bottom;y++){
+                    var row=RobotPartSilhouette.Row(shape.Bounds,y,true);row.Inflate(1,1);
+                    _ui.Box(row,ControlEdge*Alpha(shape.Part));
+                }
+                continue;
+            }
             var bounds=shape.Bounds;bounds.Inflate(2,2);
             var edges=new System.Collections.Generic.List<Rectangle>{bounds};
             foreach(var filled in shapes){
@@ -44,20 +50,11 @@ public partial class Game1
             foreach(var edge in edges)_ui.Box(edge,ControlEdge*Alpha(shape.Part));
         }
         foreach(var shape in shapes){
-            if(!shape.Face && robot.IsDamaged(shape.Part))RobotDamageArt.Draw(_ui,shape.Bounds,shape.Bounds,_setup.OwnerColor(robot.Origin(shape.Part)),Alpha(shape.Part));
-            else _ui.Box(shape.Bounds,shape.Face?Cream*Alpha(shape.Part):Paint(shape.Part));
-            if(!shape.Face && _setup.CountryPattern(robot.Origin(shape.Part))!=0)
-                DrawCountryBorder(shape.Bounds,robot.Origin(shape.Part),0,Math.Max(1,r.Width/30),Alpha(shape.Part),tint:(x,y,c)=>robot.IsDamaged(shape.Part)?RobotDamageArt.Tint(shape.Bounds,x,y,c):c);
+            DrawRobotPartFill(shape.Bounds,r,shape.Bounds,robot,shape.Part,robot.Origin(shape.Part),
+                shape.Face?Cream:_setup.OwnerColor(robot.Origin(shape.Part)),Alpha(shape.Part));
         }
         foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0){
             float alpha=Alpha(part);bool damaged=robot.IsDamaged(part);
-            if(robot.IsCheap(part))foreach(var shape in shapes)if(shape.Part==part && !shape.Face){
-                var area=shape.Bounds;
-                for(int y=0;y<area.Height;y+=Math.Max(4,r.Height/12)){
-                    var stripe=new Rectangle(area.X,area.Y+y,area.Width,Math.Min(Math.Max(2,r.Height/28),area.Height-y));
-                    if(damaged)RobotDamageArt.Draw(_ui,stripe,area,Cream,alpha);else _ui.Box(stripe,Cream*alpha);
-                }
-            }
             if(damaged){
                 var metal=new Color(185,180,164)*alpha;
                 int y=part==RobotParts.Head?r.Y+r.Height/12:part==RobotParts.Body?r.Y+r.Height/3:r.Y+r.Height*3/4;
@@ -68,5 +65,24 @@ public partial class Game1
         int workOwner=WorkReservationOwner(robot);
         if(workOwner>=0 && (robot.Parts&RobotParts.Legs)!=0)RobotWorkArt.DrawShoes(_ui,r,_setup.OwnerColor(workOwner),opacity*(partOpacity?.Invoke(RobotParts.Legs)??1),robot.ShoeOwner>=0?DefenseShoeProgress(robot):WorkShoeProgress(robot));
         DrawWorkReservationEffect(r,robot,opacity);
+    }
+    private void DrawRobotPartFill(Rectangle area,Rectangle robotArea,Rectangle damageArea,Robot robot,RobotParts part,int owner,Color primary,float opacity)
+    {
+        int pattern=_setup.CountryPattern(owner),unit=Math.Max(1,robotArea.Width/16);
+        var secondary=pattern==0?primary:WorldSetup.Colors[_setup.CountrySecondaryColor(owner)];
+        for(int y=area.Top;y<area.Bottom;y++){
+            var row=RobotPartSilhouette.Row(area,y,robot.IsCheap(part));
+            int start=row.Left;Color prior=default;
+            for(int x=row.Left;x<=row.Right;x++){
+                Color ink=default;
+                if(x<row.Right){
+                    ink=pattern!=0 && WorldSetup.CountryPatternSecondary(pattern,(x-robotArea.X)/unit,(y-robotArea.Y)/unit)?secondary:primary;
+                    if(robot.IsDamaged(part))ink=RobotDamageArt.Tint(damageArea,x,y,ink);
+                    ink*=opacity;
+                }
+                if(x==row.Left)prior=ink;
+                if(x==row.Right || ink!=prior){_ui.Box(new(start,y,x-start,1),prior);start=x;prior=ink;}
+            }
+        }
     }
 }

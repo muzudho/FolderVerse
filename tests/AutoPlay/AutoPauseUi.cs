@@ -39,7 +39,9 @@ sealed class AutoPauseUi:Game1
         }
         if(frame==6){
             Click(Bounds("AutoPauseClose").Center);Input(.1);Check((double)Get("_computerDomesticAge")>.8,"Computer playback resumes at its saved position");
-            Ready();Set("_conquestOverviewEnabled",true);Call("BeginConquestOverview");Input(.2);Click(new(10,10));var age=Get("_conquestAge");Input(30);Check((bool)Get("_autoPaused") && Get("_conquestAge").Equals(age),"Conquest overview also pauses before its update and drawing");Set("_conquestOverviewEnabled",false);
+            Ready();Set("_autoPlay",true);Set("_conquestOverviewTurn",-1);Set("_conquestOverviewEnabled",true);Call("BeginConquestOverview");
+            Check((bool)Get("_conquestOverview"),"Exhibition shows conquest overview even with AUTO already active");
+            Input(.2);Click(new(10,10));var age=Get("_conquestAge");Input(30);Check((bool)Get("_autoPaused") && Get("_conquestAge").Equals(age),"Conquest overview also pauses before its update and drawing");Set("_conquestOverviewEnabled",false);
         }
         if(frame==7){
             Ready();w.SetHumanPlayer(0,true);Call("StartAutoPlay");Click(new(10,10));Click(Bounds("AutoPauseClose").Center);Check((bool)Get("_autoPlay") && !(bool)Get("_autoPaused"),"Existing human's optional AUTO also resumes with X");

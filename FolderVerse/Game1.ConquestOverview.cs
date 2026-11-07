@@ -25,11 +25,14 @@ public partial class Game1
     private ConquestPresentation.Card ConquestCard=>_conquestPresentation.Cards[_conquestCard];
     private double ConquestCardSeconds=>ConquestCard.Reminder?.8:_conquestTally.Duration;
     private void BeginConquestOverview(){
-        if(_setup.TutorialStep is 1 or 2 or 3 || !_conquestOverviewEnabled || _autoPlay || _conquestOverviewTurn==_setup.Population.Turn)return;
+        if(_setup.TutorialStep is 1 or 2 or 3 || !_conquestOverviewEnabled || _autoPlay && !ComputerExhibition || _conquestOverviewTurn==_setup.Population.Turn)return;
         _conquestOverviewTurn=_setup.Population.Turn;_conquestPresentation=new(_setup);_conquestCard=0;_conquestStage=0;_conquestAge=0;_conquestOverview=true;_conquestExitOpacity=1;
         _conquestRevealed.Clear();
         var ranking=_setup.Relations.ProvisionalRanking(_setup).OrderBy(r=>r.Ruler).ToArray();
-        _conquestTiles=CharacterSelectionLayout.CreateOverview(ranking.Select(r=>Math.Max(0,r.Cells)).ToArray(),ranking.Select(r=>r.Rank).ToArray());
+        var contenders=ranking.Where(r=>_setup.Relations.CanWinConquest(r.Ruler)).ToArray();
+        _conquestTiles=contenders.Length==0?Array.Empty<OverviewTile>():
+            CharacterSelectionLayout.CreateOverview(contenders.Select(r=>r.Cells).ToArray(),contenders.Select(r=>r.Rank).ToArray())
+                .Select(t=>t with {Slot=contenders[t.Slot].Ruler}).ToArray();
         _conquestGlobe??=new WorldPreview(GraphicsDevice);_conquestGlobe.ManualOrientation=null;_conquestGlobe.GlobeAnchor=null;_conquestGlobe.GlobeZoom=1;
         _conquestFrom=Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,0));SetConquestCard();PlayCurtain();
     }

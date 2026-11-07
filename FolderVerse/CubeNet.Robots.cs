@@ -72,14 +72,15 @@ public sealed partial class CubeNet
                     if((robot.Parts&part)==0)continue;
                     // Each present part touches the next, including head + legs.
                     var full=new Rectangle(card.X,card.Y+(int)((row*12-(part==RobotParts.Head?0:part==RobotParts.Body?12:24))*zoom),(int)(24*zoom),(int)(36*zoom));
-                    DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part),DimNode(node.Id));
+                    DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part),DimNode(node.Id),
+                        world.CountryPattern(robot.Origin(part)),WorldSetup.Colors[world.CountrySecondaryColor(robot.Origin(part))]);
                     row++;
                 }
                 if(robot.ShoeOwner>=0)RobotWorkArt.DrawShoes(ui,card,NodeTint(node.Id,world.OwnerColor(robot.ShoeOwner)));
             }
         }
     }
-    public void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts,bool damaged=false,bool cheap=false,bool dim=false)
+    public void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts,bool damaged=false,bool cheap=false,bool dim=false,int pattern=0,Color? secondary=null)
     {
         _mapRobotTexture ??= LoadMapRobot(ui.Batch.GraphicsDevice);
         var tint=Color.Lerp(Color.White,color,.48f);
@@ -90,14 +91,16 @@ public sealed partial class CubeNet
             int top=_mapRobotTexture.Height*part/3,bottom=_mapRobotTexture.Height*(part+1)/3;
             var source=new Rectangle(0,top,_mapRobotTexture.Width,bottom-top);
             int y=r.Y+r.Height*part/3,next=r.Y+r.Height*(part+1)/3;
-            if(!damaged && !cheap)ui.Batch.Draw(_mapRobotTexture,new Rectangle(r.X,y,r.Width,Math.Max(1,next-y)),source,tint);
+            if(!damaged && !cheap && pattern==0)ui.Batch.Draw(_mapRobotTexture,new Rectangle(r.X,y,r.Width,Math.Max(1,next-y)),source,tint);
             else for(int row=y;row<next;row++)
             {
                 int sy=top+(row-y)*(bottom-top)/Math.Max(1,next-y);
-                var ink=cheap && (row-y)%4>=2?(dim?SelectionGlow.Dim(Color.White,FocusBrightness):Color.White):tint;
                 var area=new Rectangle(r.X,y,r.Width,Math.Max(1,next-y));
-                for(int x=r.Left;x<r.Right;x++){
-                    int sx=(x-r.Left)*source.Width/Math.Max(1,r.Width);
+                var span=RobotPartSilhouette.Row(area,row,cheap);
+                for(int x=span.Left;x<span.Right;x++){
+                    var ink=pattern!=0 && WorldSetup.CountryPatternSecondary(pattern,(x-r.X)/2,(row-r.Y)/2)?secondary??color:tint;
+                    if(dim && pattern!=0 && ink!=tint)ink=SelectionGlow.Dim(ink,FocusBrightness);
+                    int sx=(x-span.Left)*source.Width/Math.Max(1,span.Width);
                     var shaded=damaged?RobotDamageArt.Tint(area,x,row,ink):ink;
                     ui.Batch.Draw(_mapRobotTexture,new Rectangle(x,row,1,1),new Rectangle(sx,sy,1,1),shaded);
                 }

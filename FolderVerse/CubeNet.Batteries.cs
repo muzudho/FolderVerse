@@ -47,7 +47,10 @@ public sealed partial class CubeNet
                 for(int i=0;i<robots.Count;i++)
                 {
                     var robot=robots[i];var slot=at+RobotRingSlot(i,robots.Count)*1.6f;
-                    DrawMapRobot(ui,new((int)slot.X-12,(int)slot.Y-18,24,36),world.OwnerColor(ruler),robot.Parts,robot.DamagedParts!=(RobotParts)0,robot.CheapParts!=(RobotParts)0);
+                    foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
+                        if((robot.Parts&part)!=0)
+                            DrawMapRobot(ui,new((int)slot.X-12,(int)slot.Y-18,24,36),world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part),
+                                pattern:world.CountryPattern(robot.Origin(part)),secondary:WorldSetup.Colors[world.CountrySecondaryColor(robot.Origin(part))]);
                 }
             }
         }

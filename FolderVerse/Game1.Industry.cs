@@ -11,7 +11,6 @@ public partial class Game1
     private double _industryAge,_industryIdleAge;
     private const double IndustryIdleSeconds=5;
     private float _industryStartAngle,_industryStopAngle;
-    private bool _industryApplied;
     private const double IndustrySpinSeconds=4.5;
     private const double IndustryRevealSeconds=.4;
     private const double IndustryLeadSeconds=1.5,IndustryTailSeconds=1.5;
@@ -28,27 +27,32 @@ public partial class Game1
     }
     private void BeginIndustry()
     {
+        _manufacturingActive=false;
         StopBattleMusic();
         if(TryConquestEnding())return;
         // Both introductory steps omit the roulette screen, retaining the normal industry processing.
         if(_setup.TutorialStep is 1 or 2 && _setup.Industry.Pending){
-            _setup.Industry.Roll(_setup.PlacementSeed^_setup.FortuneSeed);_setup.Industry.Apply(_setup);_industryApplied=true;_world.ShowSetup(_setup,true);
+            _setup.Industry.Roll(_setup.PlacementSeed^_setup.FortuneSeed);_setup.Industry.Apply(_setup);_world.ShowSetup(_setup,true);
         }
         if(!_setup.Industry.Pending){_screen=Screen.WorldStatus;RestoreDomesticCamera();OpenDisposition();return;}
         _setup.Industry.Roll(_setup.PlacementSeed^_setup.FortuneSeed);
         int before=0;for(int i=0;i<_setup.Industry.SelectedSector;i++)before+=_setup.Industry.Wheel[i].Percent;
         _industryStartAngle=-MathHelper.PiOver2;
         _industryStopAngle=_industryStartAngle+MathHelper.TwoPi*5-(before+_setup.Industry.Wheel[_setup.Industry.SelectedSector].Percent*.5f)/100*MathHelper.TwoPi;
-        _industryAge=_industryIdleAge=0;_industryApplied=false;_screen=Screen.Industry;
+        _industryAge=_industryIdleAge=0;_screen=Screen.Industry;
         _populationCell=_populationNode=-1;_reignView=false;
     }
     private void UpdateIndustry(double elapsed,bool proceed)
     {
+        if(_manufacturingActive){UpdateManufacturing(elapsed,proceed);return;}
         double before=_industryAge;_industryAge+=elapsed;
         _industryIdleAge+=Math.Max(0,_industryAge-IndustryStopSeconds)-Math.Max(0,before-IndustryStopSeconds);
         if(_industryAge<IndustryStopSeconds)return;
-        if(!_industryApplied){_setup.Industry.Apply(_setup);_industryApplied=true;_world.ShowSetup(_setup,true);}
         if(!proceed && _industryIdleAge+1e-8<IndustryIdleSeconds)return;
+        BeginManufacturing();
+    }
+    private void FinishIndustry()
+    {
         _screen=Screen.WorldStatus;_world.ShowSetup(_setup,true);RestoreDomesticCamera();OpenDisposition();
     }
     private Texture2D LoadIndustryMob(string name)
@@ -71,6 +75,7 @@ public partial class Game1
     }
     private void DrawIndustry()
     {
+        if(_manufacturingActive){DrawManufacturing();return;}
         bool stopped=_industryAge>=IndustryStopSeconds;int result=_setup.Industry.Result;
         _ui.Text("産業フェーズ",new(54,28),1.1f,Cream);
         if(!stopped && !ComputerExhibition)_ui.Button(IndustrySkip,"スキップ",Accent,.55f);
@@ -111,6 +116,6 @@ public partial class Game1
         if(stopped)DrawIndustryDuration(result,new(800,885,740,65),Cream,.65f,suffix:" 産業ターン");
         else _ui.Center(_industryAge<IndustryReadSeconds?"ルーレットを見てみよう":"ルーレット回転中",new(800,890,740,45),.8f,Cream);
         _ui.Text($"全体ターン {_setup.Population.Turn} / 産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn).Replace("+"," ")}",new(565,1000),.5f,Cream);
-        if(stopped){_ui.Button(IndustryContinue,"次の内政へ",Accent,.7f);DrawPhaseTimer(new(565,1050,1255,12),_industryIdleAge,IndustryIdleSeconds);}
+        if(stopped){_ui.Button(IndustryContinue,"製造レーン稼働へ",Accent,.7f);DrawPhaseTimer(new(565,1050,1255,12),_industryIdleAge,IndustryIdleSeconds);}
     }
 }

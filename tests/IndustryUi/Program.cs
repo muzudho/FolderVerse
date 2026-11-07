@@ -14,7 +14,7 @@ sealed class CheckGame:Game1
     void Check(bool ok,string message){if(!ok)throw new Exception(message);}
     protected override void LoadContent()
     {
-        Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();w=(WorldSetup)Get("_setup");
+        Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();w=(WorldSetup)Get("_setup");Set("_autoSaveEnabled",false);Set("_conquestOverviewEnabled",false);
         w.SetWorld(1);w.SetCast(2);w.SetPlacement(3);w.SelectPlayer(0);
         w.Industry.Queue(1);Call("FinishTransport");Check(Get("_screen").ToString()=="Industry","No-battle round still enters industry");
         for(int seed=0;seed<1000;seed++){
@@ -75,9 +75,17 @@ sealed class CheckGame:Game1
             if(result==0)Check(Get("_industryPrayer")!=null,"Prayer mob on fumble");if(result==120)Check(Get("_industrySurprise")!=null,"Surprised mob on jackpot");
             Set("_industryIdleAge",4.99d);Call("UpdateIndustry",0d,false);Check(Get("_screen").ToString()=="Industry","Result waits until five idle seconds");
             Set("_previousKeyboard",new KeyboardState());Call("HandleInputCore",new MouseState(),new KeyboardState(Keys.Space),new GameTime(TimeSpan.FromSeconds(20),TimeSpan.Zero),true);Check((double)Get("_industryIdleAge")==0 && Get("_screen").ToString()=="Industry","Keyboard activity resets industry timer without skipping result");
-            Call("UpdateIndustry",4.99d,false);Check(Get("_screen").ToString()=="Industry","Result remains before timeout");Call("UpdateIndustry",.01d,false);Check(Get("_screen").ToString()=="WorldStatus","Idle result automatically proceeds at five seconds");Call("UpdateIndustryMusic");Check(Get("_industryMusic")==null,"Leaving industry disposes its BGM");
+            Call("UpdateIndustry",4.99d,false);Check(Get("_screen").ToString()=="Industry","Result remains before timeout");Call("UpdateIndustry",.01d,false);
+            Check((bool)Get("_manufacturingActive") && w.Robots.IndustryTurn==clock,"Roulette hands off to manufacturing before production");
+            int guard=0;
+            while(w.Industry.Pending && guard++<100)Call("UpdateIndustry",.75d,false);
+            Check(!w.Industry.Pending && w.Robots.IndustryTurn==clock+result,"Manufacturing applies the exact awarded industry duration once");
+            GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();Save("manufacturing-"+result);
+            Call("UpdateIndustry",3d,false);
+            Check(Get("_screen").ToString()=="WorldStatus","Manufacturing returns to the next domestic phase");Call("UpdateIndustryMusic");Check(Get("_industryMusic")==null,"Leaving industry disposes its BGM");
         }
         if(Environment.GetCommandLineArgs().Contains("--roulette-only")){
+            CheckManufacturingDelivery(batch);
             Console.WriteLine("PASS: 100 seeds x 12 angles, mixed fractions, every label inside the wheel with no overlap, result rendering and industry timing/application.");Exit();return;
         }
         var node=w.Nodes.Current(0);var factory=w.Robots.Workshops[node.Id];factory.LimitLines(3);for(int seed=0;factory.ProductionLines.Length!=3;seed++)factory.GenerateLines(seed);
@@ -107,5 +115,48 @@ sealed class CheckGame:Game1
             Check(Get("_screen").ToString()=="WorldStatus","Industry automatically proceeds during "+mode);Set(mode,false);
         }
         Console.WriteLine("PASS: industry entry without battle, font, wheel/result screens, prayer/surprise mobs, exactly-once application, return and cheap factory menu.");Exit();
+    }
+    private void CheckManufacturingDelivery(SpriteBatch batch)
+    {
+        w.SetWorld(1);w.SetCast(2);w.SetPlacement(3);w.SelectPlayer(0);
+        foreach(var node in w.Nodes.All)node.Owner=0;
+        w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);w.Robots.ConfigureFactories(w);
+        foreach(var shop in w.Robots.Workshops){shop.AutoAssemblyDisabled=true;shop.SetReservedSlots(0);foreach(var line in shop.ProductionLines)line.SelectPlan(3);}
+        var source=w.Nodes.All.First(n=>w.Routes.Neighbors(n).Length>0);
+        var route=w.Routes.Neighbors(source)[0];var target=w.Nodes.At(route.Target,route.Entry);
+        var factory=w.Robots.Workshops[source.Id];
+        for(int seed=0;factory.ProductionLines.Length==0;seed++)factory.GenerateLines(seed);
+        var producer=factory.ProductionLines[0];producer.Configure(RobotParts.Complete,1);producer.IntakeTarget=target.Id;
+        w.Robots.Nodes[target.Id].Add(w.Robots.Create(0,RobotParts.Head));
+        w.Industry.Reset();w.Industry.Queue(1);
+        int seed26=Enumerable.Range(0,100000).First(seed=>{
+            var wheel=IndustryCycle.CreateWheel(seed,1);
+            return wheel[IndustryCycle.SectorAt(new SeedRandom(seed^7919^0x45123).Next(100),wheel)].Turns==26;
+        });
+        w.Industry.Roll(seed26);
+        int clock=w.Robots.IndustryTurn;
+        Call("BeginManufacturing");
+        Check((int)Get("_manufacturingNode")==target.Id && w.Robots.IndustryTurn==clock && w.Robots.ProductionIntakes.Count==0,
+            "Most productive intake destination is selected without producing into the live world");
+        Call("UpdateManufacturing",.75d,false);
+        Check(w.Robots.IndustryTurn==clock+3 && w.Robots.ProductionIntakes.Count==3 && w.Industry.Pending,"One displayed industry turn produces actual queued products");
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();Save("manufacturing-delivery");
+        for(int i=0;w.Industry.Pending && i<20;i++)Call("UpdateManufacturing",.75d,false);
+        Check(w.Robots.ProductionIntakes.Count==11 && (int)Get("_manufacturingReceived")==33 &&
+            w.Robots.IndustryTurn==clock+26 && w.Robots.Nodes[target.Id].Count==1,"Capacity and exactly-once production match the intake reservation rule");
+        var glyph=typeof(Game1).GetMethods(F).Single(m=>m.Name=="DrawRobotGlyph" && m.GetParameters().Length==5);
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();
+        for(int pattern=0;pattern<5;pattern++){
+            w.SetCountryAppearance(0,0,5,pattern);
+            foreach(bool cheap in new[]{false,true}){
+                var box=new Rectangle(130+pattern*340,cheap?550:130,180,280);
+                glyph.Invoke(this,new object[]{box,new Robot(100,0,RobotParts.Complete){CheapParts=cheap?RobotParts.Complete:0},true,1f,null});
+            }
+        }
+        batch.End();Save("robot-pattern-quality");
+        var shape=new Rectangle(0,0,80,100);
+        Check(RobotPartSilhouette.Row(shape,50,true).Width<RobotPartSilhouette.Row(shape,20,true).Width &&
+            RobotPartSilhouette.Row(shape,0,true).Width<shape.Width,"Cheap parts have a narrow middle and rounded corners");
+        Console.WriteLine("PASS: most productive adjacent intake, one-turn production, visible delivery, capacity and no forecast mutation.");
     }
 }

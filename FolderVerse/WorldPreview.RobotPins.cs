@@ -60,7 +60,7 @@ public sealed partial class WorldPreview
                 }
             }
             float batteryTilt=0,batteryV=0;
-            void Box(float u,float v,float z,float width,float depth,float height,Color color,bool damaged=false)
+            void Box(float u,float v,float z,float width,float depth,float height,Color color,bool damaged=false,int patternOwner=-1)
             {
                 color=net.NodeTint(node.Id,color);
                 var corners=new Vector3[8];
@@ -71,17 +71,17 @@ public sealed partial class WorldPreview
                 }
                 int[][] quads={new[]{0,1,3,2},new[]{4,6,7,5},new[]{0,4,5,1},new[]{2,3,7,6},new[]{0,2,6,4},new[]{1,5,7,3}};
                 foreach(var q in quads){
-                    if(!damaged){Triangle(corners[q[0]],corners[q[1]],corners[q[2]],color);Triangle(corners[q[0]],corners[q[2]],corners[q[3]],color);continue;}
+                    int pattern=patternOwner>=0?setup.CountryPattern(patternOwner):0;
+                    if(!damaged && pattern==0){Triangle(corners[q[0]],corners[q[1]],corners[q[2]],color);Triangle(corners[q[0]],corners[q[2]],corners[q[3]],color);continue;}
                     Vector3 Face(float x,float y)=>Vector3.Lerp(Vector3.Lerp(corners[q[0]],corners[q[1]],x),Vector3.Lerp(corners[q[3]],corners[q[2]],x),y);
-                    for(int row=0;row<12;row++){
-                        float split=Math.Clamp(RobotDamageArt.SplitX(new(0,0,100,100),row*100/12+4)/100f,0,1);
-                        float[] cuts={0,Math.Max(0,split-.035f),Math.Min(1,split+.035f),1};
-                        for(int band=0;band<3;band++){
-                            float left=cuts[band],right=cuts[band+1];if(right<=left)continue;
-                            var ink=Color.Lerp(color,RobotDamageArt.Gray(color),band*.5f);
-                            var a=Face(left,row/12f);var b=Face(right,row/12f);var c=Face(right,(row+1)/12f);var d=Face(left,(row+1)/12f);
-                            Triangle(a,b,c,ink);Triangle(a,c,d,ink);
-                        }
+                    int resolution=pattern==0?12:4;
+                    for(int row=0;row<resolution;row++)for(int column=0;column<resolution;column++){
+                        var ink=pattern!=0 && WorldSetup.CountryPatternSecondary(pattern,column*2,row*2)
+                            ?net.NodeTint(node.Id,WorldSetup.Colors[setup.CountrySecondaryColor(patternOwner)]):color;
+                        if(damaged)ink=RobotDamageArt.Tint(new(0,0,100,100),column*100/resolution,row*100/resolution,ink);
+                        var a=Face(column/(float)resolution,row/(float)resolution);var b=Face((column+1f)/resolution,row/(float)resolution);
+                        var c=Face((column+1f)/resolution,(row+1f)/resolution);var d=Face(column/(float)resolution,(row+1f)/resolution);
+                        Triangle(a,b,c,ink);Triangle(a,c,d,ink);
                     }
                 }
             }
@@ -91,12 +91,17 @@ public sealed partial class WorldPreview
                 bounds=Rectangle.Empty;
                 float angle=-MathHelper.PiOver2+slot*MathHelper.TwoPi/robots.Count,radius=Math.Max(.18f,robots.Count*.12f/MathHelper.TwoPi);
                 float u=MathF.Cos(angle)*radius,v=MathF.Sin(angle)*radius,z=.008f;var robot=robots[slot];
-                void RobotBox(float x,float y,float height,float width,float depth,float extent,Color tint,bool damaged=false)=>
-                    Box(u+(x-u)*.5f,v+(y-v)*.5f,.008f+(height-.008f)*.5f,width*.5f,depth*.5f,extent*.5f,tint,damaged);
+                void RobotBox(float x,float y,float height,float width,float depth,float extent,Color tint,bool damaged=false,int patternOwner=-1)=>
+                    Box(u+(x-u)*.5f,v+(y-v)*.5f,.008f+(height-.008f)*.5f,width*.5f,depth*.5f,extent*.5f,tint,damaged,patternOwner);
                 void Part(RobotParts part,float x,float y,float height,float width,float depth,float extent){
                     var tint=Color.Lerp(Color.White,setup.OwnerColor(robot.Origin(part)),.48f);
-                    RobotBox(x,y,height,width,depth,extent,tint,robot.IsDamaged(part));
-                    if(robot.IsCheap(part))RobotBox(x,y,height+extent*.4f,width*1.02f,depth*1.02f,extent*.16f,Color.White);
+                    if(!robot.IsCheap(part)){RobotBox(x,y,height,width,depth,extent,tint,robot.IsDamaged(part),robot.Origin(part));return;}
+                    for(int layer=0;layer<6;layer++){
+                        float t=(layer+.5f)/6;
+                        float rounded=.8f+.2f*MathF.Sin(MathF.PI*t);
+                        float waist=1-.35f*MathF.Pow(MathF.Sin(MathF.PI*t),2);
+                        RobotBox(x,y,height+extent*layer/6,width*waist*rounded,depth*rounded,extent/6,tint,robot.IsDamaged(part),robot.Origin(part));
+                    }
                 }
                 if((robot.Parts&RobotParts.Legs)!=0){foreach(float side in new[]{-1f,1f})Part(RobotParts.Legs,u+side*.027f,v,z,.038f,.065f,.09f);z+=.1f;}
                 if((robot.Parts&RobotParts.Body)!=0){Part(RobotParts.Body,u,v,z,.10f,.065f,.11f);foreach(float side in new[]{-1f,1f})Part(RobotParts.Body,u+side*.068f,v,z+.01f,.026f,.045f,.09f);z+=.12f;}

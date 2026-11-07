@@ -235,20 +235,10 @@ public partial class Game1
                 if(physical!=null && patch.Ink==0)
                 {
                     color=_setup.OwnerColor(physical.Origin(part));
-                    if(_setup.CountryPattern(unit.Owner)!=0){DrawBattleUniformPatch(area,r,damageArea,physical,unit.Owner,color,part,pieceOpacity);continue;}
-                    if(physical.IsCheap(part))
-                    {
-                        for(int row=0;row<area.Height;row++){
-                            var stripe=new Rectangle(area.X,area.Y+row,area.Width,1);
-                            var ink=(area.Y+row)%6<3?color:Cream;
-                            if(physical.IsDamaged(part))RobotDamageArt.Draw(_ui,stripe,damageArea,ink,pieceOpacity);
-                            else _ui.Box(stripe,ink*pieceOpacity);
-                        }
-                        continue;
-                    }
+                    DrawBattleUniformPatch(area,r,damageArea,physical,unit.Owner,color,part,pieceOpacity);
+                    continue;
                 }
-                if(physical!=null && patch.Ink==0 && physical.IsDamaged(part))RobotDamageArt.Draw(_ui,area,damageArea,color,pieceOpacity);
-                else _ui.Box(area,color*pieceOpacity);
+                _ui.Box(area,color*pieceOpacity);
             }
             if(physical?.ShoeOwner>=0)RobotWorkArt.DrawShoes(_ui,r,_setup.OwnerColor(physical.ShoeOwner),pieceOpacity);
             if(unit.Role==BattleRole.Queen)

@@ -55,6 +55,10 @@ public partial class Game1
             _ui.Center(label,new(r.X+4,r.Y+4,r.Width-8,25),Math.Min(.35f,(r.Width-12)/_font.MeasureString(label).X),Cream);
         }
         _ui.Box(ConquestMapSpace,Color.Black);_ui.Box(ConquestFormulaSpace,new Color(25,34,46));_ui.Box(ConquestTreeSpace,new Color(19,30,43));
+        int eliminated=Enumerable.Range(0,_setup.ActiveCount).Count(r=>!_setup.Relations.Powered[r]);
+        int followers=Enumerable.Range(0,_setup.ActiveCount).Count(r=>_setup.Relations.Powered[r] && _setup.Relations.Superiors[r]>=0);
+        _ui.Box(new(54,976,ConquestTreeSpace.Width,36),new Color(8,21,31));
+        _ui.Center($"脱落 {eliminated}名　/　手下 {followers}名",new(54,976,ConquestTreeSpace.Width,36),.42f,Cream);
     }
     private void DrawConquestQuestion(Rectangle image){
         var measure=_font.MeasureString("?");
