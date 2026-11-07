@@ -208,7 +208,7 @@ public partial class Game1 : Game
         if(_screen is Screen.LandConquest or Screen.Fortune){UpdateLandSetup(elapsed,mouse,active,click,enter);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         _net.UpdateAnimation((float)elapsed);
         if(_screen==Screen.Ending)
-        {if(active && click && EndingResume.Contains(_pointer) && _endingAge+elapsed<EndingSeconds)ResumeFromEnding();else UpdateEnding(elapsed,active && (escape || enter || click && EndingReturn.Contains(_pointer)));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        {if(active && click && EndingReturn.Contains(_pointer))FinishEndingToTitle();else if(active && click && EndingResume.Contains(_pointer) && (EndingReturnsToGame || _endingAge+elapsed<EndingSeconds))ResumeFromEnding();else UpdateEnding(elapsed,active && (escape || enter));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(DragOrientationRobot(mouse,active,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool rotating=OrientationRotating;UpdateOrientationRotation((float)elapsed);
         if(rotating){_previousMouse=mouse;_previousKeyboard=keyboard;return;}

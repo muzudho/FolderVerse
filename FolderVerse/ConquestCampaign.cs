@@ -43,6 +43,7 @@ public sealed partial class ConquestCampaign
             (owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner),industry:false);
         world.Robots.Transport.AppendPlannedTransfers(world.Robots.IntakePlayback);
         world.Robots.PartPlanning.Resolve(world);
+        world.Robots.AdvanceReturnHome(world);
         ResolveDeliverySorties(world);
         Phase=CampaignPhase.Delivery;Report=$"配送 {world.Robots.Transport.LastTransfers.Count} / 配送後に開戦予約を実行";
     }

@@ -533,7 +533,7 @@ public sealed partial class RobotCampaign
         world.Robots.Check();
         var stored=world.Robots.Nodes.Concat(world.Robots.Retinues).SelectMany(s=>s.Robots);
         var fighting=Encounters.Where(e=>!e.Finished).SelectMany(e=>e.Battles.SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Where(u=>u.Robot!=null && !e.ReturnedWanderers.Contains(u.Id))).Select(u=>u.Robot);
-        var all=stored.Concat(fighting).Concat(Reserves.Select(r=>r.Robot)).ToArray();
+        var all=stored.Concat(fighting).Concat(Reserves.Select(r=>r.Robot)).Concat(world.Robots.ReturningRobots.Select(j=>j.Robot)).ToArray();
         if(all.Select(r=>r.Id).Distinct().Count()!=all.Length)throw new InvalidOperationException("Robot duplicated between world and battlefield.");
     }
 }

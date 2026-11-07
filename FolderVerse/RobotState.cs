@@ -17,7 +17,9 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
     public int ShoeOwner=>Parts==RobotParts.Complete && DefenseOnly?DefenseFlag?.Commander??Owner:-1;
     public Robot WithoutDefenseReservation()=>this with {DefenseOnly=false,DefenseFlag=null};
     public bool FactoryWorker {get;init;}
-    public bool Stationed=>DefenseOnly || InterceptOnly || FactoryWorker;
+    public int? ReturnHomeCommander {get;init;}
+    public string ReturnHomeStatus {get;init;}
+    public bool Stationed=>DefenseOnly || InterceptOnly || FactoryWorker || ReturnHomeCommander.HasValue;
     public RobotParts DamagedParts {get;init;}=0;
     public RobotParts CheapParts {get;init;}=0;
     public RobotParts PremiumParts {get;init;}=0;
@@ -71,7 +73,7 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
         if(!result.ValidIntegration)throw new InvalidOperationException("Incompatible integrated parts.");
         return result with {Owner=result.AssemblyCredit(owner)>0?owner:Owner};
     }
-    public bool CanFight=>Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
+    public bool CanFight=>!ReturnHomeCommander.HasValue && Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
 }
 public sealed class RobotStore
 {
@@ -129,7 +131,7 @@ public sealed partial class RobotWorld
     {Validate(owner,parts);return new(_nextId++,owner,parts,role,disposal);}
     public void Initialize(int nodeCount,int rulerCount)
     {
-        _workerPlanWorldSeed=0;DirectDelivery=new();Reservations=null;ReservationSource=null;IndustryTurn=0;DomesticPersuasionTurns.Clear();
+        ReturningRobots.Clear();_workerPlanWorldSeed=0;DirectDelivery=new();Reservations=null;ReservationSource=null;IndustryTurn=0;DomesticPersuasionTurns.Clear();
         _domesticPreparedTurn=-1;Training=Enumerable.Range(0,rulerCount).Select(_=>new RobotTraining()).ToArray();_nextId=1;Nodes=Enumerable.Range(0,nodeCount).Select(_=>new RobotStore()).ToArray();
         Retinues=Enumerable.Range(0,rulerCount).Select(_=>new RobotStore()).ToArray();
         Workshops=Enumerable.Range(0,nodeCount).Select(_=>new RobotWorkshop()).ToArray();Transport.Reset();PendingEdits.Clear();WorkshopFailures.Clear();
@@ -241,7 +243,7 @@ public sealed partial class RobotWorld
     }
     public void Check()
     {
-        var all=Nodes.Concat(Retinues).SelectMany(s=>s.Robots).Concat(ProductionIntakes.Select(o=>o.Product)).ToArray();
+        var all=Nodes.Concat(Retinues).SelectMany(s=>s.Robots).Concat(ProductionIntakes.Select(o=>o.Product)).Concat(ReturningRobots.Select(j=>j.Robot)).ToArray();
         if(all.Select(r=>r.Id).Distinct().Count()!=all.Length)throw new InvalidOperationException("Robot has multiple locations.");
         foreach(var store in Nodes.Concat(Retinues))if(store.Count>store.StorageLimit)throw new InvalidOperationException("Hangar return capacity exceeded.");
         foreach(var robot in all){Validate(robot.Owner,robot.Parts);if(!robot.ValidIntegration)throw new InvalidOperationException("Invalid integrated parts.");}
