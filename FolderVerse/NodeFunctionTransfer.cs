@@ -9,6 +9,7 @@ public sealed record NodeFunctionTransferOrder(int Source,int Target,int Owner)
 }
 public sealed class NodeFunctionTransfers
 {
+    public const int MaximumCapacity=60;
     public static int[] Members(WorldSetup w,int host)=>w.Nodes.All.Where(n=>n.Id==host || n.FunctionHost==host).Select(n=>n.Id).ToArray();
     public List<NodeFunctionTransferOrder> Orders {get;}=new();
     public List<NodeFunctionTransferOrder> LastResults {get;}=new();
@@ -22,6 +23,9 @@ public sealed class NodeFunctionTransfers
     {
         if(w.Campaign.Phase!=CampaignPhase.Domestic || source<0 || target<0 || source>=w.Nodes.All.Length || target>=w.Nodes.All.Length || source==target)return false;
         var a=w.Nodes.All[source];var b=w.Nodes.All[target];var battles=w.Campaign.RobotBattles;
+        long capacity=(long)w.Robots.Nodes[target].TotalCapacity+w.Robots.Nodes[source].TotalCapacity+
+            Orders.Where(o=>o.Source!=source && o.Target==target).Sum(o=>(long)w.Robots.Nodes[o.Source].TotalCapacity);
+        if(capacity>MaximumCapacity)return false;
         return a.Functional && b.Functional && (!authority || w.Relations.Controls(a.Owner) && w.Relations.Controls(b.Owner)) && w.Relations.Allied(a.Owner,b.Owner) &&
             !battles.LockedNode(source) && !battles.LockedNode(target) && !battles.LockedEdge(source,target) &&
             w.Robots.Nodes[source].ReservedReturns==0 && w.Robots.Nodes[target].ReservedReturns==0 &&

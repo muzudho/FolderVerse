@@ -9,7 +9,8 @@ public partial class Game1
     private int _invasionPicker=-1;
     private readonly HashSet<long> _invasionDraft=new();
     private bool _invasionQueenDraft;
-    private Robot[] InvasionRobots(InvasionSource row)=>row.Queen?_setup.Campaign.RobotBattles.SelectableRobots(_setup,row.Owner,row.Node,true):DomesticOperationsAllowed?_setup.Campaign.DeliverySortieRobots(_setup,row.Owner,row.Node):_setup.Robots.Nodes[row.Node].Robots.Where(r=>r.Owner==row.Owner && _setup.Robots.CanReserveSortie(row.Node,r)).ToArray();
+    // Role/assembly previews remove and append robots. Their storage order is not a UI identity.
+    private Robot[] InvasionRobots(InvasionSource row)=>(row.Queen?_setup.Campaign.RobotBattles.SelectableRobots(_setup,row.Owner,row.Node,true):DomesticOperationsAllowed?_setup.Campaign.DeliverySortieRobots(_setup,row.Owner,row.Node):_setup.Robots.Nodes[row.Node].Robots.Where(r=>r.Owner==row.Owner && _setup.Robots.CanReserveSortie(row.Node,r)).ToArray()).OrderBy(r=>r.Id).ToArray();
     private static Rectangle InvasionRobotCard(int i)=>new(350+i%6*200,320+i/6*170,185,155);
     private static readonly Rectangle InvasionPickerDone=new(1290,795,250,55),InvasionPickerCancel=new(1010,795,250,55),InvasionQueenToggle=new(380,705,520,55);
     private void OpenInvasionPicker(int index)

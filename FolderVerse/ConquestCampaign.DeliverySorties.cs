@@ -26,7 +26,7 @@ public sealed partial class ConquestCampaign
     {
         var ids=order.RobotIds??Array.Empty<long>();
         var available=DeliverySortieRobots(world,order.Ruler,order.SourceNode);
-        if(ids.Length>12 || ids.Distinct().Count()!=ids.Length || ids.Any(id=>!available.Any(r=>r.Id==id)))
+        if(ids.Distinct().Count()!=ids.Length || ids.Any(id=>!available.Any(r=>r.Id==id)))
             throw new InvalidOperationException("配送後の出撃メンバーを選択してください。");
         foreach(long id in ids)world.Robots.PartPlanning.EnsureForecastRobot(world,id);
         foreach(long id in ids)world.Robots.PartPlanning.EnsureArrival(world,order.SourceNode,id,order.Ruler);

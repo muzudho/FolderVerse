@@ -84,7 +84,7 @@ public sealed partial class RobotWorld
     {
         if((before.Parts&parts)!=(after.Parts&parts))return false;
         foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((parts&part)!=0 && (before.Parts&part)!=0){
-            if(before.Origin(part)!=after.Origin(part) || before.IsCheap(part)!=after.IsCheap(part) || (before.DamagedParts&part)!=(after.DamagedParts&part) || before.IsDamaged(part)!=after.IsDamaged(part) || before.ConnectedParts(part)!=after.ConnectedParts(part))return false;
+            if(before.Origin(part)!=after.Origin(part) || before.IsCheap(part)!=after.IsCheap(part) || before.IsPremium(part)!=after.IsPremium(part) || (before.DamagedParts&part)!=(after.DamagedParts&part) || before.IsDamaged(part)!=after.IsDamaged(part) || before.ConnectedParts(part)!=after.ConnectedParts(part))return false;
         }
         return true;
     }

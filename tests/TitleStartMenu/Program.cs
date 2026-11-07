@@ -29,11 +29,11 @@ sealed class MenuGame:Game1{
   Check(Get("_screen").ToString()=="WorldStatus" && tutorial.PlayerCount==1 && tutorial.HumanPlayers.SequenceEqual(new[]{0}) && tutorial.PlayerSlot==0,"Step one reaches domestic as No.1");
   Check(tutorial.Width==1 && tutorial.Height==1 && tutorial.Depth==1 && tutorial.ActiveCount==6 && tutorial.Portraits.Take(6).SequenceEqual(Enumerable.Range(0,6)) && tutorial.Looks.Take(6).All(l=>l.VariantId==0),"Dice world and original No.1 through No.6 cast");
   Check(!tutorial.LandPending && tutorial.Owners.Distinct().Count()==6 && tutorial.Robots.Nodes.Length==tutorial.Nodes.All.Length && File.Exists(path),"Normal randomized land, economy, robots and autosave initialized");
-  Check(tutorial.TutorialStep==1 && tutorial.Nodes.All.All(n=>tutorial.Robots.Nodes[n.Id].Count==6 && tutorial.Robots.Nodes[n.Id].Robots.All(r=>r.Role==RobotRole.Soldier && r.Parts==RobotParts.Complete && r.CanFight && r.Owner==n.Owner)),"Every tutorial hangar starts with four complete soldiers");
+  Check(tutorial.TutorialStep==1 && tutorial.Nodes.All.All(n=>tutorial.Robots.Nodes[n.Id].Count==6 && tutorial.Robots.Nodes[n.Id].Robots.All(r=>r.Role==RobotRole.Soldier && r.Parts==RobotParts.Complete && r.CanFight) && tutorial.Robots.Nodes[n.Id].Robots.Count(r=>r.Owner==n.Owner)==(n.Owner==0?6:4)),"Integrated tutorial has four local soldiers and two player soldiers per hangar");
   for(int seed=0;seed<10;seed++){
    var sample=new WorldSetup();sample.PrepareTutorialStepOne(seed,456,789);sample.CompleteLand(seed+100);sample.SelectPlayer(0);
    Check(WorldTerrain.HasSeaAndLand(sample.Cells,sample.WorldSeed),"Tutorial rerolls until it has both sea and land cells");
-   Check(sample.Nodes.All.All(n=>sample.Robots.Nodes[n.Id].Count==6 && sample.Campaign.RobotBattles.AvailableFrom(sample,n.Owner,n.Id)==4),"Random terrain keeps four immediately deployable soldiers at every node");
+   Check(sample.Nodes.All.All(n=>sample.Robots.Nodes[n.Id].Count==4 && sample.Campaign.RobotBattles.AvailableFrom(sample,n.Owner,n.Id)==4),"Random terrain keeps four immediately deployable soldiers at every node");
    Check(sample.Nodes.All.Where(n=>n.Owner==0).Any(n=>sample.Routes.Neighbors(n).Any(r=>sample.Nodes.At(r.Target,r.Entry).Owner!=0)),"Random tutorial terrain always has a first-turn attack route");
   }
   int allSeaSeed=-1,allLandSeed=-1;var cube=WorldSetup.CreateCells(1,1,1);
@@ -61,8 +61,9 @@ sealed class MenuGame:Game1{
   Check(rows.Any(r=>(bool)queenField.GetValue(r)!) && rows.Where(r=>(bool)queenField.GetValue(r)!).All(r=>rows.Any(n=>!(bool)queenField.GetValue(n)! && (int)nodeField.GetValue(n)! ==(int)nodeField.GetValue(r)!)),"Battery and actual node have separate source rows");
   var targetLabel=(string)typeof(Game1).GetProperty("InvasionTargetLabel",F)!.GetValue(this)!;
   Check(targetLabel=="侵攻先："+tutorial.Nodes.DisplayName(tutorial.Nodes.All[invasionTarget]) && !targetLabel.Contains("Node "),"Invasion target uses human-readable node name without numeric ID");
-  int hangarRow=Array.FindIndex(rows,r=>!(bool)queenField.GetValue(r)!);Set("_invasionPage",hangarRow/7);
-  var soldierCard=(Rectangle)typeof(Game1).GetMethod("InvasionPreviewCard",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{hangarRow%7,0})!;
+  int hangarRow=Array.FindIndex(rows,r=>!(bool)queenField.GetValue(r)!);Set("_invasionPage",Call("InvasionPageForSource",hangarRow));
+  var sourceBounds=((IEnumerable<(int Index,int Row,Rectangle Bounds)>)Call("InvasionVisibleRows")).Single(row=>row.Index==hangarRow).Bounds;
+  var soldierCard=(Rectangle)typeof(Game1).GetMethod("InvasionCardAt",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{sourceBounds,0})!;
   Call("InvasionClick",soldierCard.Center);
   Check(tutorial.Campaign.PlannedOrders.Count==1 && tutorial.Campaign.PlannedOrders[0].Fighters==1 && (string)label.GetValue(this)! =="開戦予約（1件）","First-turn inline robot selection reserves a soldier and updates label");
   var order=tutorial.Campaign.PlannedOrders[0];tutorial.Campaign.Plan(order);Check((string)label.GetValue(this)! =="開戦予約（1件）","Replacing same reservation does not double count");

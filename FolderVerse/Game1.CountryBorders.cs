@@ -4,6 +4,11 @@ using Microsoft.Xna.Framework;
 
 public partial class Game1
 {
+    private void DrawCountryEmblem(Rectangle area,int owner,float opacity=1)
+    {
+        if(owner<0 || owner>=_setup.ActiveCount)return;
+        CountryEmblemArt.Draw(_ui,area,_setup.CountryEmblem(owner),WorldSetup.Colors[_setup.CountrySecondaryColor(owner)],opacity);
+    }
     private void DrawCountryMark(Rectangle area,int owner,float opacity=1)
     {
         if(owner<0 || owner>=_setup.ActiveCount)return;
@@ -16,10 +21,11 @@ public partial class Game1
             int left=area.X+x*area.Width/10,top=area.Y+y*area.Height/10;
             _ui.Box(new(left,top,area.X+(x+1)*area.Width/10-left,area.Y+(y+1)*area.Height/10-top),ink*opacity);
         }
+        DrawCountryEmblem(area,owner,opacity);
     }
     private void DrawCountryCornerMarks(Rectangle r,int owner,float opacity=1)
     {
-        if(owner<0 || _setup.CountryPattern(owner)==0)return;
+        if(owner<0 || _setup.CountryPattern(owner)==0 && _setup.CountryEmblem(owner)==0)return;
         int size=Math.Clamp(Math.Min(r.Width,r.Height)/6,10,16),inset=5;
         DrawCountryMark(new(r.Right-inset-size,r.Top+inset,size,size),owner,opacity);
         DrawCountryMark(new(r.Left+inset,r.Bottom-inset-size,size,size),owner,opacity);

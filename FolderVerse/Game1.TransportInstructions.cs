@@ -16,8 +16,8 @@ public partial class Game1
     private IReadOnlyList<TransportInstruction> TransportRules=>_populationNode<0?Array.Empty<TransportInstruction>():_setup.Robots.Transport.Instructions(_populationNode,TransportOwner);
     private TransportInstruction EditingTransport=>TransportRules.FirstOrDefault(r=>r.Number==_transportEditNumber);
     private static string TransportPartsName(int mask)=>mask switch{4=>"頭",2=>"胴",_=>"脚"};
-    private static readonly int[] TransportMasks={4,2,1,4,2,1,6,3,6,3};
-    private static string TransportChoiceName(int i)=>(i<3 || i is 6 or 7?"正規品":"安物")+(i>=6?IntegratedLabel((RobotParts)TransportMasks[i]):TransportPartsName(TransportMasks[i]));
+    private static readonly int[] TransportMasks={4,2,1,4,2,1,6,3,6,3,4,2,1,6,3};
+    private static string TransportChoiceName(int i)=>(i>=10?"高級":i<3 || i is 6 or 7?"正規品":"安物")+(i is 6 or 7 or 8 or 9 or 13 or 14?IntegratedLabel((RobotParts)TransportMasks[i]):TransportPartsName(TransportMasks[i]));
     private static Rectangle InstructionField(int row,int field){int y=310+row*106;return field switch{0=>new(128,y,94,34),1=>new(230,y,142,34),2=>new(380,y,426,34),3=>new(380,y,426,34),4=>new(110,y+40,366,34),5=>new(518,y+40,80,34),_=>new(814,y,34,34)};}
     private void ConfigureTransport(TransportInstruction rule,int? target=null,int? choices=null,bool? disposal=null,int? limit=null)
     {
@@ -95,11 +95,11 @@ public partial class Game1
     private static Rectangle TransportQuantityKey(int i)=>new(220+i%3*142,400+i/3*66,132,56);
     private void DrawTransportEditor()
     {
-        var rule=EditingTransport;if(rule==null)return;_ui.Box(new(84,305,770,433),new Color(17,33,46));
+        var rule=EditingTransport;if(rule==null)return;_ui.Box(new(84,305,770,_transportEditor==1?600:433),new Color(17,33,46));
         if(_transportEditor==1){
             _ui.Text("いずれか１つ（複数選択可）/ 一体型は専用項目",new(110,325),.4f,Cream);
-            for(int i=0;i<TransportMasks.Length;i++){int mask=TransportMasks[i];var r=TransportVariantButton(i);bool on=(rule.PartChoices&(1<<i))!=0;_ui.Button(r,"",on?Color.Lerp(Muted,Accent,.25f):Muted,.4f);if(on)_ui.Box(new(r.X,r.Y,r.Width,3),Accent);DrawRobotGlyph(new(r.Center.X-24,r.Y+5,48,70),TransportOwner,(RobotParts)mask,whiteOutline:true,cheap:i is 3 or 4 or 5 or 8 or 9,integrated:i>=6?(RobotParts)mask:0);_ui.Center((on?"ON ":"OFF ")+TransportChoiceName(i),new(r.X,r.Bottom-35,r.Width,30),Math.Min(.32f,(r.Width-8)/Math.Max(1,_font.MeasureString((on?"ON ":"OFF ")+TransportChoiceName(i)).X)),Cream);}
-            _ui.Button(new(644,665,180,46),"閉じる",Accent,.5f);
+            for(int i=0;i<TransportMasks.Length;i++){int mask=TransportMasks[i];var r=TransportVariantButton(i);bool on=(rule.PartChoices&(1<<i))!=0;_ui.Button(r,"",on?Color.Lerp(Muted,Accent,.25f):Muted,.4f);if(on)_ui.Box(new(r.X,r.Y,r.Width,3),Accent);DrawRobotGlyph(new(r.Center.X-24,r.Y+5,48,70),TransportOwner,(RobotParts)mask,whiteOutline:true,cheap:i is 3 or 4 or 5 or 8 or 9,integrated:i is 6 or 7 or 8 or 9 or 13 or 14?(RobotParts)mask:0,premium:i>=10);_ui.Center((on?"ON ":"OFF ")+TransportChoiceName(i),new(r.X,r.Bottom-35,r.Width,30),Math.Min(.32f,(r.Width-8)/Math.Max(1,_font.MeasureString((on?"ON ":"OFF ")+TransportChoiceName(i)).X)),Cream);}
+            _ui.Button(new(644,830,180,46),"閉じる",Accent,.5f);
         }else{
             _ui.Text("何個送ったら終了？（1 ～ 9999）",new(110,325),.5f,Cream);_ui.Center(_transportQuantity,new(220,350,416,42),.7f,Cream);
             string[] keys={"7","8","9","4","5","6","1","2","3","C","0","<"};for(int i=0;i<12;i++)_ui.Button(TransportQuantityKey(i),keys[i],Muted,.6f);
@@ -149,7 +149,7 @@ public partial class Game1
         if(_rateTarget>=0){if(click){if(RateDialogArea.Contains(_pointer))RatePieClick(_pointer);else _rateTarget=-1;}return true;}
         var p=_pointer;p.X-=NodeInspectorOffset;
         if(_transportEditor==1){
-            if(click){for(int i=0;i<TransportMasks.Length;i++)if(TransportVariantButton(i).Contains(p) && EditingTransport!=null){int choices=EditingTransport.PartChoices^(1<<i);if(choices!=0)ConfigureTransport(EditingTransport,choices:choices);}if(new Rectangle(644,665,180,46).Contains(p))_transportEditor=0;}return true;
+            if(click){for(int i=0;i<TransportMasks.Length;i++)if(TransportVariantButton(i).Contains(p) && EditingTransport!=null){int choices=EditingTransport.PartChoices^(1<<i);if(choices!=0)ConfigureTransport(EditingTransport,choices:choices);}if(new Rectangle(644,830,180,46).Contains(p))_transportEditor=0;}return true;
         }
         if(_transportEditor==2){
             if(click){string[] keys={"7","8","9","4","5","6","1","2","3","C","0","<"};for(int i=0;i<12;i++)if(TransportQuantityKey(i).Contains(p))TransportQuantityPress(keys[i]);if(new Rectangle(660,465,160,56).Contains(p))TransportQuantityPress("OK");if(new Rectangle(660,535,160,56).Contains(p))_transportEditor=0;}

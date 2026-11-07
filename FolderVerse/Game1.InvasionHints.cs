@@ -32,11 +32,11 @@ public partial class Game1
     {
         if(!WarCheckMode || _nodeInspectorClosing || _invasionPicker>=0 || _trainingOpen || _supervisorDialog>0 || _inspectorFoldersOpen || _folderTreeOpen || _factionPickerOpen || _hangarDrag.HasValue)return false;
         var point=new Point(_pointer.X-NodeInspectorOffset,_pointer.Y);
-        for(int row=0;row<7;row++){
-            int index=_invasionPage*7+row;if(index>=_invasionSources.Count)break;
+        foreach(var layout in InvasionVisibleRows()){
+            int index=layout.Index;
             var source=_invasionSources[index];var robots=InvasionPreviewRobots(source);
             for(int slot=0;slot<robots.Length;slot++){
-                if(!InvasionPreviewCard(row,slot).Contains(point))continue;
+                if(!InvasionCardAt(layout.Bounds,slot).Contains(point))continue;
                 var reasons=InvasionUnavailableReasons(source,robots[slot]);if(reasons.Length==0)return false;
                 var r=RulebookHintArea;r.Height=Math.Max(r.Height,84+reasons.Length*29);DrawRulebookPaper(r);
                 _ui.Text($"ロボット ID {robots[slot].Id}：出撃できない理由",new(r.X+24,r.Y+20),.46f,RulebookInk);

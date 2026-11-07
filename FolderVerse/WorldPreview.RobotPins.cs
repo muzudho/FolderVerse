@@ -76,7 +76,9 @@ public sealed partial class WorldPreview
                     Vector3 Face(float x,float y)=>Vector3.Lerp(Vector3.Lerp(corners[q[0]],corners[q[1]],x),Vector3.Lerp(corners[q[3]],corners[q[2]],x),y);
                     int resolution=pattern==0?12:4;
                     for(int row=0;row<resolution;row++)for(int column=0;column<resolution;column++){
-                        var ink=pattern!=0 && WorldSetup.CountryPatternSecondary(pattern,column*2,row*2)
+                        // Front/back quads run vertically along their first edge; texture Y must follow height.
+                        bool upright=MathF.Abs(Vector3.Dot(corners[q[1]]-corners[q[0]],cell.Normal))>height*.5f;
+                        var ink=pattern!=0 && WorldSetup.CountryPatternSecondary(pattern,upright?row*2:column*2,upright?column*2:row*2)
                             ?net.NodeTint(node.Id,WorldSetup.Colors[setup.CountrySecondaryColor(patternOwner)]):color;
                         if(damaged)ink=RobotDamageArt.Tint(new(0,0,100,100),column*100/resolution,row*100/resolution,ink);
                         var a=Face(column/(float)resolution,row/(float)resolution);var b=Face((column+1f)/resolution,row/(float)resolution);
@@ -95,19 +97,33 @@ public sealed partial class WorldPreview
                     Box(u+(x-u)*.5f,v+(y-v)*.5f,.008f+(height-.008f)*.5f,width*.5f,depth*.5f,extent*.5f,tint,damaged,patternOwner);
                 void Part(RobotParts part,float x,float y,float height,float width,float depth,float extent){
                     var tint=Color.Lerp(Color.White,setup.OwnerColor(robot.Origin(part)),.48f);
-                    if(!robot.IsCheap(part)){RobotBox(x,y,height,width,depth,extent,tint,robot.IsDamaged(part),robot.Origin(part));return;}
+                    bool cheap=robot.IsCheap(part),premium=robot.IsPremium(part);
+                    if(!cheap && !premium){RobotBox(x,y,height,width,depth,extent,tint,robot.IsDamaged(part),robot.Origin(part));return;}
                     for(int layer=0;layer<6;layer++){
                         float t=(layer+.5f)/6;
                         float rounded=.8f+.2f*MathF.Sin(MathF.PI*t);
-                        float waist=1-.35f*MathF.Pow(MathF.Sin(MathF.PI*t),2);
-                        RobotBox(x,y,height+extent*layer/6,width*waist*rounded,depth*rounded,extent/6,tint,robot.IsDamaged(part),robot.Origin(part));
+                        float waist=premium?1-.35f*MathF.Pow(MathF.Sin(MathF.PI*t),2):.76f;
+                        var ink=premium && layer is 0 or 5?new Color(255,215,100):tint;
+                        RobotBox(x,y,height+extent*layer/6,width*waist*rounded,depth*(cheap?.75f:1)*rounded,extent/6,ink,robot.IsDamaged(part),premium && layer is 0 or 5?-1:robot.Origin(part));
+                    }
+                }
+                void Emblem(RobotParts part,float baseHeight,float depth,float extent){
+                    int owner=robot.Origin(part),emblem=setup.CountryEmblem(owner);
+                    var ink=net.NodeTint(node.Id,WorldSetup.Colors[setup.CountrySecondaryColor(owner)]);
+                    float side=.042f,front=v+depth*.25f+.002f,h=.008f+(baseHeight-.008f)*.5f+extent*.25f;
+                    Vector3 P(float px,float py)=>Point(u+(px-.5f)*side,front,h+(.5f-py)*side);
+                    foreach(var tile in CountryEmblemArt.Tiles(emblem)){
+                        var a=P(tile.X/32f,tile.Y/32f);var b=P(tile.Right/32f,tile.Y/32f);
+                        var c=P(tile.Right/32f,tile.Bottom/32f);var d=P(tile.X/32f,tile.Bottom/32f);
+                        Triangle(a,b,c,ink);Triangle(a,c,d,ink);
                     }
                 }
                 if((robot.Parts&RobotParts.Legs)!=0){foreach(float side in new[]{-1f,1f})Part(RobotParts.Legs,u+side*.027f,v,z,.038f,.065f,.09f);z+=.1f;}
-                if((robot.Parts&RobotParts.Body)!=0){Part(RobotParts.Body,u,v,z,.10f,.065f,.11f);foreach(float side in new[]{-1f,1f})Part(RobotParts.Body,u+side*.068f,v,z+.01f,.026f,.045f,.09f);z+=.12f;}
+                if((robot.Parts&RobotParts.Body)!=0){Part(RobotParts.Body,u,v,z,.10f,.065f,.11f);Emblem(RobotParts.Body,z,robot.IsCheap(RobotParts.Body)?.065f*.75f:.065f,.11f);foreach(float side in new[]{-1f,1f})Part(RobotParts.Body,u+side*.068f,v,z+.01f,.026f,.045f,.09f);z+=.12f;}
                 if((robot.Parts&RobotParts.Head)!=0)
                 {
                     Part(RobotParts.Head,u,v,z,.115f,.08f,.09f);
+                    if((robot.Parts&RobotParts.Body)==0)Emblem(RobotParts.Head,z,.08f,.09f);
                     foreach(float side in new[]{-1f,1f})RobotBox(u+side*.025f,v+.043f,z+.05f,.018f,.009f,.018f,new(25,41,49));
                     RobotBox(u,v+.044f,z+.023f,.04f,.008f,.009f,new(230,102,60));RobotBox(u,v,z+.09f,.01f,.01f,.025f,new(83,112,122));
                 }

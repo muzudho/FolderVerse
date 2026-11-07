@@ -29,9 +29,10 @@ public sealed partial class RobotWorld
             int Score(int index){
                 var preview=line.PlanAt(index).Preview(owner);
                 return parts.Select((p,j)=>(p,j)).Where(x=>(preview.Parts&x.p)!=0 && preview.Origin(x.p)==owner)
-                    .Sum(x=>(12-counts[x.j])*(line.WorkerSnapshot==null?1:preview.IsCheap(x.p)?1:2));
+                    .Sum(x=>(12-counts[x.j])*(preview.IsPremium(x.p)?3:line.WorkerSnapshot==null?1:preview.IsCheap(x.p)?1:2));
             }
             var choices=line.WorkerSnapshot==null?new[]{0,1,2,7,8}:Enumerable.Range(0,11).Where(i=>i!=3).ToArray();
+            if(line.PlanCount>11)choices=choices.Append(11).ToArray();
             int best=choices.OrderByDescending(Score).ThenBy(i=>line.PlanAt(i).Turns).First();
             if(line.SelectedPlan!=best && (!line.Manufacturing || line.ProductionAge==0) && (!gentle || !changed)){line.SelectPlan(best);changed=true;}
             int every=Nodes[node].Count>=10?1:9,rest=Nodes[node].Count>=10?9:1;

@@ -52,6 +52,9 @@ public sealed partial class RobotWorld
         ReservationSource=owner=>world.Nodes.Current(owner)?.Id??-1;
         foreach(var node in world.Nodes.All){Workshops[node.Id].LimitLines(node.Functional?(Workshops[node.Id].TransferredLineLimit??(node.Terrain==TravelTerrain.Sea?1:3)):0);SyncWorkers(node.Id);}
         RevalidateWorkReservations();
+        foreach(var node in world.Nodes.All)
+            for(int line=0;line<Workshops[node.Id].ProductionLines.Length;line++)
+                Workshops[node.Id].ProductionLines[line].EnsurePremiumPlan(world.WorldSeed^node.Id*7919^line*13007);
     }
     public void SyncWorkers(int node)
     {

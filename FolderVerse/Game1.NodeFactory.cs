@@ -54,7 +54,7 @@ public partial class Game1
             if(field==2)SetPlanningReservedSlots(_populationNode,i);
             else {var line=factory.ProductionLines[_factoryLine];if(field==0)line.SetRest(i+1,line.RestTurns);else line.SetRest(line.RestEvery,i+1);}return true;
         }return true;}
-        if(_factoryPlanLine>=0){int line=_factoryPlanLine;for(int i=0;i<11;i++)if(FactoryPlanButton(i).Contains(pointer)){factory.ProductionLines[line].SelectPlan(i);_factoryPlanLine=-1;return true;}_factoryPlanLine=-1;return true;}
+        if(_factoryPlanLine>=0){int line=_factoryPlanLine;for(int i=0;i<factory.ProductionLines[line].PlanCount;i++)if(FactoryPlanButton(i).Contains(pointer)){factory.ProductionLines[line].SelectPlan(i);_factoryPlanLine=-1;return true;}_factoryPlanLine=-1;return true;}
         for(int l=_factoryPage*3;l<Math.Min(factory.ProductionLines.Length,(_factoryPage+1)*3);l++){
             if(FactoryIntakeButton(l).Contains(pointer)){_intakeLine=factory.ProductionLines[l];_intakeNode=_populationNode;_intakePage=0;return true;}
             var line=factory.ProductionLines[l];if(FactoryProductionButton(l).Contains(pointer) || FactoryRobotArrow(l%3,line.Manufacturing?line.ProductionPeriod:3).Contains(pointer)){_factoryPlanLine=l;_factoryLine=l;return true;}
@@ -133,9 +133,9 @@ public partial class Game1
         _ui.Text($"産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn)}   /   柱：現在位置　緑：生産　黄：休憩　赤：空き枠待ち",new(160,248),.25f,Cream);
         if(_factoryPlanLine>=0){
             var line=factory.ProductionLines[_factoryPlanLine];_ui.Box(new(84,360,790,590),new(22,40,54));
-            _ui.Text($"生産ライン {_factoryPlanLine+1} / 正規・安い・一体型",new(160,374),.45f,Cream);
+            _ui.Text($"生産ライン {_factoryPlanLine+1} / 正規・安い・一体型"+(line.PlanCount>11?"・高級":""),new(160,374),.45f,Cream);
             ProductionPlan hovered=null;
-            for(int i=0;i<11;i++){
+            for(int i=0;i<line.PlanCount;i++){
                 var r=FactoryPlanButton(i);bool selected=line.SelectedPlan==i;
                 _ui.Box(r,selected?Accent:Muted);
                 if(i==3)_ui.Center("製造しない",r,.42f,selected?SelectionInk:Cream);
@@ -149,7 +149,8 @@ public partial class Game1
             _ui.Center(line.WorkerSnapshot!=null?"作業員レーン：任命時のパーツで候補を固定":"常設レーン：地点の製造候補",new(96,886,764,24),.32f,Cream);
             if(hovered!=null){
                 var preview=hovered.Preview(node.Owner);
-                string detail=string.Join(" / ",new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(part=>(preview.Parts&part)!=0).Select(part=>$"{PartsLabel(part)} #{preview.Origin(part)+1} {(preview.IsCheap(part)?"安い":"正規")}"));
+                string detail=string.Join(" / ",new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(part=>(preview.Parts&part)!=0).Select(part=>$"{PartsLabel(part)} #{preview.Origin(part)+1} {(preview.IsPremium(part)?"高級":preview.IsCheap(part)?"安い":"正規")}"));
+                if(preview.PremiumParts!=0)detail+=" / 高級１つで盾・短剣・小銃 各＋１";
                 _ui.Center(detail,new(96,916,764,26),Math.Min(.34f,750/_font.MeasureString(detail).X),Cream);
             }
         }

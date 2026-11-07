@@ -50,7 +50,8 @@ public sealed partial class CubeNet
                     foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
                         if((robot.Parts&part)!=0)
                             DrawMapRobot(ui,new((int)slot.X-12,(int)slot.Y-18,24,36),world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part),
-                                pattern:world.CountryPattern(robot.Origin(part)),secondary:WorldSetup.Colors[world.CountrySecondaryColor(robot.Origin(part))]);
+                                pattern:world.CountryPattern(robot.Origin(part)),secondary:WorldSetup.Colors[world.CountrySecondaryColor(robot.Origin(part))],premium:robot.IsPremium(part),
+                                emblem:part==((robot.Parts&RobotParts.Body)!=0?RobotParts.Body:(robot.Parts&RobotParts.Head)!=0?RobotParts.Head:RobotParts.Legs)?world.CountryEmblem(robot.Origin(part)):0);
                 }
             }
         }

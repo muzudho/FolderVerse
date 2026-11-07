@@ -8,8 +8,8 @@ public partial class Game1
     private static string PartsLabel(RobotParts parts)=>((parts&RobotParts.Head)!=0?"頭":"")+((parts&RobotParts.Body)!=0?"胴":"")+((parts&RobotParts.Legs)!=0?"脚":"");
     private static string IntegratedLabel(RobotParts parts)=>parts==(RobotParts.Head|RobotParts.Body)?"頭／胴一体型":parts==(RobotParts.Body|RobotParts.Legs)?"胴／脚一体型":"";
     private static string PartsLabel(Robot robot)=>robot.IntegratedParts==0?PartsLabel(robot.Parts):IntegratedLabel(robot.IntegratedParts)+((robot.Parts&~robot.IntegratedParts)!=0?"＋"+PartsLabel(robot.Parts&~robot.IntegratedParts):"");
-    private void DrawRobotGlyph(Rectangle r,int owner,RobotParts parts,bool captain=false,float opacity=1,bool whiteOutline=false,bool damaged=false,bool cheap=false,RobotParts integrated=0)
-        =>DrawRobotGlyph(r,new Robot(0,owner,parts,captain?RobotRole.Captain:RobotRole.Soldier){IntegratedParts=integrated,DamagedParts=damaged?parts:0,CheapParts=cheap?parts:0},whiteOutline,opacity);
+    private void DrawRobotGlyph(Rectangle r,int owner,RobotParts parts,bool captain=false,float opacity=1,bool whiteOutline=false,bool damaged=false,bool cheap=false,RobotParts integrated=0,bool premium=false)
+        =>DrawRobotGlyph(r,new Robot(0,owner,parts,captain?RobotRole.Captain:RobotRole.Soldier){IntegratedParts=integrated,DamagedParts=damaged?parts:0,CheapParts=cheap?parts:0,PremiumParts=premium?parts:0},whiteOutline,opacity);
     private void DrawRobotGlyph(Rectangle r,Robot robot,bool whiteOutline=false,float opacity=1,Func<RobotParts,float> partOpacity=null)
     {
         // Outline only the exterior, including for translucent reservations and delivery ghosts.
@@ -20,15 +20,23 @@ public partial class Game1
         int bodyTop=headBody?r.Height/4:r.Height/3,bodyBottom=r.Height/3+r.Height/3;
         int legsTop=bodyLegs?bodyBottom:r.Height*3/4,legsBottom=bodyLegs?r.Height:r.Height*3/4+r.Height/4;
         Shape(new(r.X+r.Width/4,r.Y,r.Width/2,r.Height/4),RobotParts.Head,true);
-        Shape(new(r.X+r.Width/5,r.Y,r.Width*3/5,robot.Role==RobotRole.Captain?r.Height/7:r.Height/12),RobotParts.Head);
+        Shape(new(r.X+r.Width/5+(robot.IsCheap(RobotParts.Head)?r.Width/10:0),r.Y,r.Width*(robot.IsCheap(RobotParts.Head)?2:3)/5,robot.Role==RobotRole.Captain?r.Height/7:r.Height/12),RobotParts.Head);
         Shape(new(r.X+r.Width/6,r.Y+bodyTop,r.Width*2/3,bodyBottom-bodyTop),RobotParts.Body);
         Shape(new(r.X+r.Width/6,r.Y+legsTop,r.Width/4,legsBottom-legsTop),RobotParts.Legs);
         Shape(new(r.X+r.Width*7/12,r.Y+legsTop,r.Width/4,legsBottom-legsTop),RobotParts.Legs);
         float Alpha(RobotParts part)=>opacity*(partOpacity?.Invoke(part)??1);
+        var joint=new Color(105,119,125);
+        if((robot.Parts&(RobotParts.Head|RobotParts.Body))==(RobotParts.Head|RobotParts.Body) && bodyTop>r.Height/4)
+            _ui.Box(new(r.X+r.Width*5/12,r.Y+r.Height/4,Math.Max(1,r.Width/6),bodyTop-r.Height/4+2),joint*Math.Min(Alpha(RobotParts.Head),Alpha(RobotParts.Body)));
+        if((robot.Parts&(RobotParts.Body|RobotParts.Legs))==(RobotParts.Body|RobotParts.Legs) && legsTop>bodyBottom){
+            float alpha=Math.Min(Alpha(RobotParts.Body),Alpha(RobotParts.Legs));
+            _ui.Box(new(r.X+r.Width*5/12,r.Y+bodyBottom,Math.Max(1,r.Width/6),legsTop-bodyBottom),joint*alpha);
+            _ui.Box(new(r.X+r.Width/6,r.Y+legsTop-2,r.Width*2/3,Math.Max(2,r.Height/45)),joint*alpha);
+        }
         if(whiteOutline)foreach(var shape in shapes){
-            if(robot.IsCheap(shape.Part)){
+            if(robot.IsCheap(shape.Part) || robot.IsPremium(shape.Part)){
                 for(int y=shape.Bounds.Top;y<shape.Bounds.Bottom;y++){
-                    var row=RobotPartSilhouette.Row(shape.Bounds,y,true);row.Inflate(1,1);
+                    var row=RobotPartSilhouette.Row(shape.Bounds,y,robot.IsCheap(shape.Part),robot.IsPremium(shape.Part));row.Inflate(1,1);
                     _ui.Box(row,ControlEdge*Alpha(shape.Part));
                 }
                 continue;
@@ -53,6 +61,12 @@ public partial class Game1
             DrawRobotPartFill(shape.Bounds,r,shape.Bounds,robot,shape.Part,robot.Origin(shape.Part),
                 shape.Face?Cream:_setup.OwnerColor(robot.Origin(shape.Part)),Alpha(shape.Part));
         }
+        var emblemPart=(robot.Parts&RobotParts.Body)!=0?RobotParts.Body:(robot.Parts&RobotParts.Head)!=0?RobotParts.Head:RobotParts.Legs;
+        int emblemSize=Math.Max(1,Math.Min(r.Width/3,r.Height/7));
+        int emblemY=emblemPart==RobotParts.Body?r.Y+(bodyTop+bodyBottom-emblemSize)/2:emblemPart==RobotParts.Head?r.Y+(r.Height/4-emblemSize)/2:r.Y+legsTop;
+        int emblemX=r.Center.X;
+        if(emblemPart==RobotParts.Legs){emblemSize=Math.Max(1,Math.Min(emblemSize,r.Width/6));emblemX=r.X+r.Width*7/24;emblemY=r.Y+(legsTop+legsBottom-emblemSize)/2;}
+        DrawCountryEmblem(new(emblemX-emblemSize/2,emblemY,emblemSize,emblemSize),robot.Origin(emblemPart),Alpha(emblemPart));
         foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0){
             float alpha=Alpha(part);bool damaged=robot.IsDamaged(part);
             if(damaged){
@@ -71,12 +85,14 @@ public partial class Game1
         int pattern=_setup.CountryPattern(owner),unit=Math.Max(1,robotArea.Width/16);
         var secondary=pattern==0?primary:WorldSetup.Colors[_setup.CountrySecondaryColor(owner)];
         for(int y=area.Top;y<area.Bottom;y++){
-            var row=RobotPartSilhouette.Row(area,y,robot.IsCheap(part));
+            var row=RobotPartSilhouette.Row(area,y,robot.IsCheap(part),robot.IsPremium(part));
             int start=row.Left;Color prior=default;
             for(int x=row.Left;x<=row.Right;x++){
                 Color ink=default;
                 if(x<row.Right){
                     ink=pattern!=0 && WorldSetup.CountryPatternSecondary(pattern,(x-robotArea.X)/unit,(y-robotArea.Y)/unit)?secondary:primary;
+                    if(robot.IsPremium(part) && (y-area.Top<Math.Max(1,area.Height/12) || area.Bottom-y<=Math.Max(1,area.Height/12)))
+                        ink=Color.Lerp(new Color(255,215,100),primary,.2f);
                     if(robot.IsDamaged(part))ink=RobotDamageArt.Tint(damageArea,x,y,ink);
                     ink*=opacity;
                 }

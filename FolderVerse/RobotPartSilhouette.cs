@@ -4,11 +4,11 @@ using Microsoft.Xna.Framework;
 
 public static class RobotPartSilhouette
 {
-    public static Rectangle Row(Rectangle shape,int y,bool cheap)
+    public static Rectangle Row(Rectangle shape,int y,bool cheap,bool premium=false)
     {
-        if(!cheap)return new(shape.X,y,shape.Width,1);
+        if(!cheap && !premium)return new(shape.X,y,shape.Width,1);
         float t=(y-shape.Y+.5f)/Math.Max(1,shape.Height);
-        int neck=(int)(shape.Width*.22f*MathF.Pow(MathF.Sin(MathF.PI*t),2));
+        int neck=premium?(int)(shape.Width*.22f*MathF.Pow(MathF.Sin(MathF.PI*t),2)):(int)(shape.Width*.12f);
         float radius=Math.Min(shape.Width,shape.Height)*.24f;
         float edge=Math.Max(0,radius-Math.Min(y-shape.Top+.5f,shape.Bottom-y-.5f));
         int corner=(int)MathF.Ceiling(radius-MathF.Sqrt(Math.Max(0,radius*radius-edge*edge)));

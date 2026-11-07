@@ -133,7 +133,7 @@ public sealed partial class RobotTransport
         {
             var source=stores[s.Source];var robot=source.Single(r=>r.Id==s.RobotId);source.Remove(robot);
             if(s.Parts!=robot.Parts){source.Add(robot.Slice(robot.Parts^s.Parts));robot=robot with {Id=temporary--};}
-            cargo[s.RobotId]=(s.Parts==robot.Parts?robot:robot.Slice(s.Parts)) with {DamagedParts=robot.DamagedParts&s.Parts,CheapParts=robot.CheapParts&s.Parts,Disposal=robot.Disposal || s.Disposal};
+            cargo[s.RobotId]=(s.Parts==robot.Parts?robot:robot.Slice(s.Parts)) with {DamagedParts=robot.DamagedParts&s.Parts,CheapParts=robot.CheapParts&s.Parts,PremiumParts=robot.PremiumParts&s.Parts,Disposal=robot.Disposal || s.Disposal};
         }
         foreach(var s in Ordered(active))
         {

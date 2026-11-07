@@ -169,7 +169,7 @@ public partial class Game1
             : FunctionTransferDirection(hovered.Source,hovered.Target)+(hovered.Reserved?" の予約を取り消す":" に機能を集約する");
         _ui.Box(FunctionTransferMapBanner,background);
         BannerRow(hint,0,Cream);
-        BannerRow("配送後、移転元は無機能地点になり、この対戦中は機能を戻せません",1,Cream);
+        BannerRow("移転先の格納庫は合計60個まで / 配送後、移転元に機能を戻せません",1,Cream);
         BannerRow(hovered==null?"矢印や書類にカーソルを合わせて移転後の経路と守備地点を確認"
             :"水色：新たに通れる進軍経路　/　オレンジの矢印：敵の進軍経路と守備地点",2,routeColor);
 

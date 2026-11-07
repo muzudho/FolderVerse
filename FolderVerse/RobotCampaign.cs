@@ -106,7 +106,7 @@ public sealed partial class RobotCampaign
         foreach(var o in orders.Where(o=>o.RobotIds!=null))
         {
             var available=SelectableRobots(world,o.Ruler,Source(world,o),o.PocketOnly);
-            if(o.RobotIds.Length>12 || o.RobotIds.Distinct().Count()!=o.RobotIds.Length || o.Fighters!=o.RobotIds.Length || o.RobotIds.Any(id=>!available.Any(r=>r.Id==id)))throw new ArgumentException("Reserved robot selection is no longer available.");
+            if(o.RobotIds.Distinct().Count()!=o.RobotIds.Length || o.Fighters!=o.RobotIds.Length || o.RobotIds.Any(id=>!available.Any(r=>r.Id==id)))throw new ArgumentException("Reserved robot selection is no longer available.");
         }
         Scenes.Clear();Encounters.RemoveAll(e=>e.Finished);
         foreach(var reserve in Reserves.ToArray())if(!LockedNode(reserve.Node) && world.Robots.Nodes[reserve.Node].HasSpace)
@@ -323,7 +323,7 @@ public sealed partial class RobotCampaign
         }
         var army=state.Army(owner);
         state.Finished=false; // Will is reset only when a unit actually enters the board.
-        foreach(var robot in robots)army.Waiting.Enqueue(new(){Id=robot.Id,Owner=owner,Robot=robot,Daggers=robot.CombatParts(owner),Shields=robot.CombatParts(owner),Rifles=robot.NativeParts(owner)==3?4:robot.CombatParts(owner),Role=robot.Role==RobotRole.Captain?BattleRole.Captain:BattleRole.Soldier});
+        foreach(var robot in robots)army.Waiting.Enqueue(new(){Id=robot.Id,Owner=owner,Robot=robot,Daggers=robot.CombatParts(owner),Shields=robot.CombatParts(owner),Rifles=robot.CombatRifles(owner),Role=robot.Role==RobotRole.Captain?BattleRole.Captain:BattleRole.Soldier});
         if(queen && !state.Units.Concat(state.Armies.SelectMany(a=>a.Waiting)).Any(u=>u.Id==-(owner+1)))army.Waiting.Enqueue(new(){Id=-(owner+1),Owner=owner,Role=BattleRole.Queen,Daggers=0,Rifles=0});
     }
     private void RunSegment(WorldSetup world,RobotEncounter e)

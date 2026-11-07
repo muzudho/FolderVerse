@@ -18,6 +18,16 @@ static (WorldSetup World,Node Home,Node Target) Fixture()
     w.Campaign.RobotBattles.Rules=new(){SegmentTurns=1,NoWillTurns=1000,PersuasionPercent=0};
     return(w,home,target);
 }
+{
+    var(w,home,target)=Fixture();
+    typeof(RobotStore).GetMethod("SetCapacity",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(w.Robots.Nodes[home.Id],new object[]{60});
+    var robots=Enumerable.Range(0,60).Select(_=>w.Robots.Create(0,RobotParts.Complete)).ToArray();
+    foreach(var robot in robots)w.Robots.Nodes[home.Id].Add(robot);
+    w.Campaign.PlanDeliverySortie(w,new March(0,target.Id,60,home.Id,false,false,robots.Select(r=>r.Id).ToArray()));
+    w.Campaign.Resolve(w,w.Campaign.PlannedOrders.ToArray());
+    var units=w.Campaign.RobotBattles.Encounters.SelectMany(e=>e.Battles).SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Where(u=>u.Owner==0 && u.Robot!=null).Select(u=>u.Id).ToHashSet();
+    Check(units.SetEquals(robots.Select(r=>r.Id)) && w.Robots.Nodes[home.Id].Count==0,"All 60 reserved members enter battle from an expanded hangar");
+}
 foreach(bool queen in new[]{false,true})
 {
     var(w,home,target)=Fixture();var hangar=Enumerable.Range(0,3).Select(_=>w.Robots.Create(0,RobotParts.Complete)).ToArray();
@@ -108,6 +118,27 @@ foreach(bool queen in new[]{false,true})
     Call("CloseNodeInspector");Call("UpdateDomesticSlide",1f);
     Check(!(bool)Field("_movementOpen").GetValue(g)! && !net.AttackTargetMarkers && net.MovementTargets.Count==0,"Closing the inspector exits war mode");
     Check(w.Campaign.PlannedOrders.Single().TargetNode==target.Id,"Closing preserves confirmed reservations");
+}
+// Moving a complete robot within the same planned hangar must not reshuffle sortie cards.
+{
+    var(w,home,target)=Fixture();
+    var robots=Enumerable.Range(0,5).Select(_=>w.Robots.Create(0,RobotParts.Complete)).ToArray();
+    foreach(var robot in robots)w.Robots.Nodes[home.Id].Add(robot);
+    var g=(Game1)RuntimeHelpers.GetUninitializedObject(typeof(Game1));const BindingFlags flags=BindingFlags.Instance|BindingFlags.NonPublic;
+    FieldInfo Field(string n)=>typeof(Game1).GetField(n,flags)!;
+    object Call(string n,params object[] args)=>typeof(Game1).GetMethod(n,flags)!.Invoke(g,args)!;
+    Field("_setup").SetValue(g,w);Field("_invasionSources").SetValue(g,Activator.CreateInstance(Field("_invasionSources").FieldType));
+    Field("_workReservationEffects").SetValue(g,new Dictionary<long,(float Start,int Country)>());
+    Call("BuildInvasionSources",target.Id);
+    var rows=(System.Collections.IList)Field("_invasionSources").GetValue(g)!;
+    int index=Enumerable.Range(0,rows.Count).Single(i=>!(bool)rows[i]!.GetType().GetField("Queen")!.GetValue(rows[i])! && (int)rows[i]!.GetType().GetField("Node")!.GetValue(rows[i])! ==home.Id);
+    var row=rows[index]!;var before=((Robot[])Call("InvasionPreviewRobots",row)).Select(r=>r.Id).ToArray();
+    w.Robots.PartPlanning.Reserve(w,home.Id,home.Id,robots[1].Id,RobotParts.Complete,null,0);
+    Check(w.Campaign.DeliverySortieRobots(w,0,home.Id).Last().Id==robots[1].Id,"Fixture reproduces preview moving the second robot to the end");
+    Check(((Robot[])Call("InvasionPreviewRobots",row)).Select(r=>r.Id).SequenceEqual(before),"Sortie card positions survive planned inventory reordering");
+    Field("_invasionDraft").SetValue(g,new HashSet<long>());Call("OpenInvasionPicker",index);
+    Field("_pointer").SetValue(g,new Point(640,350));Call("InvasionPickerInput",true,false);
+    Check(((HashSet<long>)Field("_invasionDraft").GetValue(g)!).SetEquals(new[]{robots[1].Id}),"Clicking the second sortie card selects the second robot, not the fifth");
 }
 // Unavailable explanations match the actual hangar and pocket selection rules.
 {

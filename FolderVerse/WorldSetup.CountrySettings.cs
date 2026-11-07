@@ -7,6 +7,14 @@ public sealed partial class WorldSetup
 {
     // Null means the palette assigned by world setup (also the legacy-save default).
     private int[] _countrySecondaryColors, _countryPatterns;
+    private int[] _countryEmblems;
+    public static readonly string[] CountryEmblemNames={"なし","太陽","月","星","スペード","ハート","ダイヤ","クローバー","炎","水滴","雷","うずまき","雪の結晶","チューリップ"};
+    public int CountryEmblem(int ruler)=>ruler<0?0:_countryEmblems?[ruler]??0;
+    public void SetCountryEmblem(int ruler,int emblem)
+    {
+        if(ruler<0 || ruler>=ActiveCount || emblem<0 || emblem>=CountryEmblemNames.Length)throw new ArgumentOutOfRangeException();
+        _countryEmblems??=new int[ColorIndices.Length];_countryEmblems[ruler]=emblem;
+    }
     private bool[] _showComputerOperations;
     public bool ShowComputerOperations(int ruler)=>_showComputerOperations?[ruler]??false;
     public void ToggleComputerOperations(int ruler)
@@ -28,10 +36,16 @@ public sealed partial class WorldSetup
         Campaign.ReconcileControllers(this);
     }
     public int CountryPattern(int ruler)=>ruler<0?0:_countryPatterns?[ruler]??ColorIndices[ruler]/Colors.Length%CountryPatternNames.Length;
-    public int CountrySecondaryColor(int ruler)=>_countrySecondaryColors?[ruler]??(ColorIndices[ruler]+10)%Colors.Length;
+    public int CountrySecondaryColor(int ruler)
+    {
+        if(ruler<0)return 0;
+        int primary=ColorIndices[ruler]%Colors.Length,secondary=_countrySecondaryColors?[ruler]??(ColorIndices[ruler]+10)%Colors.Length;
+        return secondary==primary?(primary+Colors.Length/2)%Colors.Length:secondary;
+    }
     public void SetCountryAppearance(int ruler,int primary,int secondary,int pattern)
     {
         if(ruler<0 || ruler>=ActiveCount || primary<0 || primary>=Colors.Length || secondary<0 || secondary>=Colors.Length || pattern<0 || pattern>=CountryPatternNames.Length)throw new ArgumentOutOfRangeException(nameof(ruler));
+        if(secondary==primary)secondary=(primary+Colors.Length/2)%Colors.Length;
         _countryPatterns??=Enumerable.Range(0,ColorIndices.Length).Select(CountryPattern).ToArray();
         _countrySecondaryColors??=Enumerable.Range(0,ColorIndices.Length).Select(CountrySecondaryColor).ToArray();
         ColorIndices[ruler]=primary;_countrySecondaryColors[ruler]=secondary;_countryPatterns[ruler]=pattern;

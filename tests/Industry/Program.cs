@@ -131,3 +131,4 @@ foreach(int wanted in new[]{0,3,120,26})
     Check(w.Robots.IndustryTurn==before+wanted && w.Population.Turn==turn,"Independent industrial clock, including zero and forty");w.Robots.Check();
 }
 Console.WriteLine("PASS: wheel probabilities, expectation, flags, eligibility, split/move/transport/serialization, cheap plans/rest/stop, independent clocks and exactly-once 0/1/40 industry.");
+PremiumChecks.Run();

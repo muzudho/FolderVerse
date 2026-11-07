@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 if(args.Contains("--ui")){using var game=new FunctionTransferUi();game.Run();return;}
 static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 static void Reject(Action action){try{action();}catch(InvalidOperationException){return;}throw new Exception("Invalid transfer accepted");}
+static void Capacity(RobotStore store,int capacity)=>typeof(RobotStore).GetMethod("SetCapacity",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(store,new object[]{capacity});
 static (WorldSetup W,int A,int B,int C) Fixture()
 {
     var w=new WorldSetup();w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.Relations.Reset();w.SelectPlayer(0);
@@ -17,6 +18,20 @@ static (WorldSetup W,int A,int B,int C) Fixture()
     return(w,a.Id,b,c);
 }
 static Robot Add(WorldSetup w,int n,RobotParts parts){var r=w.Robots.Create(0,parts);w.Robots.Nodes[n].Add(r);return r;}
+{
+    var(w,a,b,c)=Fixture();Capacity(w.Robots.Nodes[a],48);
+    w.Campaign.FunctionTransfers.Reserve(w,b,a);
+    Check(!w.Campaign.FunctionTransfers.CanReserve(w,c,a),"Pending transfers count toward the 60-slot ceiling");
+    Reject(()=>w.Campaign.FunctionTransfers.Reserve(w,c,a));
+    w.Campaign.FinishDomestic(w);
+    Check(w.Robots.Nodes[a].TotalCapacity==60,"Exactly 60 slots may consolidate");
+}
+{
+    var(w,a,b,c)=Fixture();Capacity(w.Robots.Nodes[a],49);
+    Check(!w.Campaign.FunctionTransfers.CanReserve(w,b,a),"61 slots are rejected");
+    Capacity(w.Robots.Nodes[a],72);
+    Check(!w.Campaign.FunctionTransfers.CanReserve(w,b,a) && w.Robots.Nodes[a].TotalCapacity==72,"Legacy oversized storage is preserved but cannot receive another transfer");
+}
 foreach(bool cancel in new[]{false,true})
 {
     var(w,a,b,c)=Fixture();
