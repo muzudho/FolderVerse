@@ -45,6 +45,6 @@ tests/CpuCampaignBenchで、105ターンの同一セーブから205ターンま�
 
 ## 検証と定期調査
 
-CpuConvergenceで廃棄・帰国・遠隔組立・手下との共同攻撃・軍事処理への投入・選択重複防止・人間陣営保護を確認した。BattleLessons、BattleRules、BattleContinuation、FunctionTransfer、ReturnHome、RobotCampaign、SubordinateDomestic、LongDeliveryは成功。公開版の差し替え、コミット、プッシュはしていない。
+CpuConvergenceで廃棄・帰国・遠隔組立・手下との共同攻撃・軍事処理への投入・選択重複防止・人間陣営保護を確認した。BattleLessons、BattleRules、BattleContinuation、FunctionTransfer、ReturnHome、RobotCampaign、SubordinateDomestic、LongDeliveryは成功。この初回改善をv0.6.0 Pre-releaseへ含める。以後の定期タスクによる改善は、別途検証する開発中の変更として扱う。
 
 定期タスク folderverse-cpuは今日23時まで１時間ごとに、この記録と差分を確認し、調査・仮説・CPU判断の実装と検証を続ける。ゲームルールは変更しない。元のセーブ、実行中のゲーム、個人用チャット、他の作業の編集を保護する。
