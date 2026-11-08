@@ -92,7 +92,7 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorld) && field.Name=="<LongDelivery>k__BackingField"){field.SetValue(value,new RobotLongDelivery());continue;}
                     if(type==typeof(Robot) && field.Name is "<ReturnHomeCommander>k__BackingField" or "<ReturnHomeStatus>k__BackingField")continue;
                     if(type==typeof(RobotWorld) && field.Name=="<ReturningRobots>k__BackingField"){field.SetValue(value,new List<ReturningRobot>());continue;}
-                    if(type==typeof(WorldSetup) && field.Name is "_countryPatterns" or "_countrySecondaryColors" or "_countryEmblems" or "_showComputerOperations")continue;
+                    if(type==typeof(WorldSetup) && field.Name is "_countryPatterns" or "_countrySecondaryColors" or "_countryEmblems" or "_countryFlagShapes" or "_showComputerOperations")continue;
                     if(type==typeof(ConquerorRelations) && field.Name=="<MercyOffers>k__BackingField"){field.SetValue(value,new List<MercyOffer>());continue;}
                     if(type==typeof(ConquerorRelations) && field.Name=="<MercyResults>k__BackingField"){field.SetValue(value,new List<MercyOutcome>());continue;}
                     if(type==typeof(ConquerorRelations) && field.Name=="<EliminationOrders>k__BackingField"){field.SetValue(value,new int[GameLimits.MaxConquerors]);continue;}

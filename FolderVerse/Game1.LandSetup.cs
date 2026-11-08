@@ -183,7 +183,7 @@ public partial class Game1
         _ui.Text("選択 "+_landSelection.Count+" / 権利 "+_setup.TerritoryRights[LandRuler]+" 区画",new(60,310),.65f,_landSelection.Count>_setup.TerritoryRights[LandRuler]?Color.Orange:Cream);
         _portraitRenderer.Draw(_spriteBatch,_setup.Looks[LandRuler],new Rectangle(60,370,450,300),true,forCreation:true);
         _ui.Text("左ドラッグ：範囲を反転\n右ドラッグ：星を回す\nホイール：拡大・縮小\n飛び地も選択できます",new(60,685),.38f,Color.White);
-        _ui.Text("地形と交通路だけで土地を選ぼう",new(60,805),.32f,Cream);
+        _ui.Text("国旗あり：取得済み / 国旗なし：未取得",new(60,805),.32f,Cream);
         _ui.Button(LandConfirm,LandHumanTurn?"この土地を獲得":"他国が土地を選択中",LandHumanTurn && _landSelection.Count==_setup.TerritoryRights[LandRuler]?Accent:Muted,.65f);
         _ui.Button(LandSkipOthers,(_skipOtherLandTurns?"✓ ":"□ ")+"自分のターン以外をスキップ",_skipOtherLandTurns?Accent:Muted,.48f);
     }
@@ -202,6 +202,7 @@ public partial class Game1
                 foreach(var edge in c.Corners.Select((v,i)=>(A:v,B:c.Corners[(i+1)%c.Corners.Length])))
                     if(_world.ProjectVisible(edge.A,c.Normal,_yaw,_pitch,LandGlobeArea,out var a) && _world.ProjectVisible(edge.B,c.Normal,_yaw,_pitch,LandGlobeArea,out var b))LandLine(a,b,color,3);
             }
+            if(_setup.Owners[c.Id]>=0)CountryFlagArt.Marker(_ui,_setup,_setup.Owners[c.Id],p,38);
             foreach(var route in _setup.Routes.DisplayPaths(c.Id))
             {
                 var curve=_setup.Routes.Curve(c.Id,route);

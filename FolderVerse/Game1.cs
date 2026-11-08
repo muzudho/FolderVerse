@@ -477,7 +477,7 @@ public partial class Game1 : Game
                 _counter.Draw(_spriteBatch,active?_setup.TerritoryCounts[slot]:0,
                     new Rectangle(rect.X+7,rect.Y+7,rect.Width-14,rect.Height-14),color);
         }
-        _ui.Text("人間プレイヤー、コンピュータープレイヤー、国の色は後で変えることができます。",new(54,78),.36f,new(170,206,216));
+        _ui.Text("人間プレイヤー、コンピュータープレイヤー、国旗は後で変えることができます。",new(54,78),.36f,new(170,206,216));
         if(_screen is Screen.CastRolling or Screen.CastReview)_ui.Button(CastDuplicateButton,(_setup.AllowDuplicateCharacters?"✓ ":"□ ")+"同キャラ有り",_setup.AllowDuplicateCharacters?Accent:Muted,.48f);
         _ui.Button(CastBack,"世界へ戻る",Muted,0.48f);
         _ui.Button(CastRetry,_screen is Screen.CastRolling or Screen.CastReview?"人物を再抽選":"配置を再抽選",Muted,0.48f);

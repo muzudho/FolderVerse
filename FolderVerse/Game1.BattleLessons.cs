@@ -139,8 +139,8 @@ public partial class Game1
         string[] lines=lesson switch {
             BattleLesson.PursuitLoop=>new[]{"短剣持ちの敵と斜めに追い合い、４手で元に戻った。","目撃した兵は退却し、戦訓を持ち帰る。","研究後は片方が待ち、追跡をずらす。","小銃の間合いを作る戦訓とは別。"},
             BattleLesson.RifleSpacing=>new[]{"短剣切れで追い合い、40手などで元に戻った。","目撃した兵は退却し、戦訓を持ち帰る。","研究後は隣接した敵から一歩離れ、射撃を狙う。","斜めの追跡をずらす戦訓とは別。"},
-            BattleLesson.EmptyHome=>new[]{"守備兵がいない旗を倒した側が習得。","内政では全員を出撃させず、留守番を残す。","留守番には守備専用予約を付ける。","手下・自動操縦でも適用する。"},
-            BattleLesson.FlagCourtesy=>new[]{"旗への同時侵入で、巻き戻された。","仲間と譲り合い、北・東・南・西の順で","１体だけが旗区画に入る。"},
+            BattleLesson.EmptyHome=>new[]{"守備兵がいない国旗を倒した側が習得。","内政では全員を出撃させず、留守番を残す。","留守番には守備専用予約を付ける。","手下・自動操縦でも適用する。"},
+            BattleLesson.FlagCourtesy=>new[]{"国旗への同時侵入で、巻き戻された。","仲間と譲り合い、北・東・南・西の順で","１体だけが国旗区画に入る。"},
             BattleLesson.RetreatBackwards=>new[]{"撤退中、背中を撃たれて転倒した。","撤退方向と逆を向いて移動する。","正面の盾で身を守る機会を残す。"},
             BattleLesson.LeaveFiringLine=>new[]{"正面の射線で横向きに短剣を振り、被弾。","まず射線から外れて、横の敵を攻撃。","逃げ場がなければ、正面を向いて待つ。"},
             BattleLesson.ShieldSupport=>new[]{"盾を持つ仲間の後ろで射撃を見送った。","すぐ前で同じ方向を向く盾持ちは越せる。","２区画目以降の仲間には引き続き注意。"},
@@ -152,7 +152,7 @@ public partial class Game1
             BattleLesson.CloseForDagger=>new[]{"撃ち返されるのを警戒して立ち止まった。","短剣があれば、敵を向いたまま前進。","隣接したら短剣で攻撃する。"},
             _=>new[]{"仲間に攻撃が命中した。","射線に仲間がいれば小銃を撃たない。","両隣から射線を向く仲間にも注意。"}};
         for(int i=0;i<lines.Length;i++)LessonText(lines[i],new(box.X+24,box.Y+423+i*43,box.Width-48,40),.48f,ink);
-        LessonText(lesson==BattleLesson.EmptyHome?"旗を倒した側が取得 / 内政の判断に適用":owned?"取得済み / 自国の兵隊ロボットに適用":"未取得 / 生き残った目撃者が持ち帰る",new(box.X+24,box.Bottom-73,box.Width-48,45),.46f,owned?accent:ink);
+        LessonText(lesson==BattleLesson.EmptyHome?"国旗を倒した側が取得 / 内政の判断に適用":owned?"取得済み / 自国の兵隊ロボットに適用":"未取得 / 生き残った目撃者が持ち帰る",new(box.X+24,box.Bottom-73,box.Width-48,45),.46f,owned?accent:ink);
         if(reveal<1)_ui.Box(box,new Color(27,43,55)*(1-reveal));
     }
     private void DrawBattleResearch()

@@ -75,7 +75,7 @@ public partial class Game1
             _ui.Button(EndingMenuItem,"ここでゲームをエンディングにする",Muted,.48f);
             _ui.Button(QuitMenuItem,"ゲームを止めてタイトル画面に戻る",Muted,.48f);
             _ui.Button(AutoMenuItem,"ゲームを再開する",Muted,.48f);
-            _ui.Button(CountrySettingsMenuItem,"人間とコンピューター / 国の色と網かけ",Muted,.46f);
+            _ui.Button(CountrySettingsMenuItem,"人間とコンピューター / 国旗の設定",Muted,.46f);
         }
         if(_autoPausePage!=0 && !_countrySettingsOpen)_ui.Button(InactiveBack,"システムメニューへ",Muted,.5f);
         _ui.Button(AutoPauseClose,"×",Muted,.7f);_spriteBatch.End();DrawFullscreenCursor();

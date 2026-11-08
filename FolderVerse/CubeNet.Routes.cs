@@ -127,6 +127,7 @@ public sealed partial class CubeNet
                     if(changed)NodeOwnershipArt.Draw(ui,symbol,size,Tint(world.OwnerColor(world.Campaign.PreviousNodeOwners[post.Id])),Tint(world.OwnerColor(owner)),ink,
                         (p,r,c)=>JunctionArt.Draw(ui,p,r,sea,c,ink));
                     else JunctionArt.Draw(ui,symbol,size,sea,Tint(world.OwnerColor(owner)),ink);
+                    CountryFlagArt.Marker(ui,world,owner,symbol+new Vector2(size+2,0),22,Tint);
                     if(SelectedTarget==post.Id || EmphasizedNode(post.Id)){
                         float extent=size+4;
                         foreach(int side in new[]{-1,1})ui.Tile(symbol+new Vector2(side*extent,0),new Vector2(2,extent*2),0,Tint(Color.White));
@@ -145,6 +146,7 @@ public sealed partial class CubeNet
                 }
                 if(changed)
                     NodeOwnershipArt.Draw(ui,at,radius,Tint(world.OwnerColor(world.Campaign.PreviousNodeOwners[post.Id])),Tint(world.OwnerColor(owner)),Tint(new Color(13,36,44)));
+                CountryFlagArt.Marker(ui,world,owner,at+new Vector2(radius+4,-radius),Math.Clamp((int)(radius*3),24,42),Tint);
                 if(changed && !post.IsHarbor)DrawCountryNodePattern(ui,world,owner,at,radius,Tint);
                 if(AttackTargetMarkers && SelectedTarget==post.Id)
                 {

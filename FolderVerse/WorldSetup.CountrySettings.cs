@@ -8,9 +8,18 @@ public sealed partial class WorldSetup
     // Null means the palette assigned by world setup (also the legacy-save default).
     private int[] _countrySecondaryColors, _countryPatterns;
     private int[] _countryEmblems;
+    private int[] _countryFlagShapes;
+    public static readonly string[] CountryFlagShapeNames={"横３：縦２","横２：縦１","正方形","右向き三角形"};
+    public int CountryFlagShape(int ruler)=>ruler<0?0:_countryFlagShapes?[ruler]??0;
+    public void SetCountryFlagShape(int ruler,int shape)
+    {
+        if(ruler<0 || ruler>=ActiveCount || shape<0 || shape>=CountryFlagShapeNames.Length)throw new ArgumentOutOfRangeException();
+        _countryFlagShapes??=new int[ColorIndices.Length];_countryFlagShapes[ruler]=shape;
+    }
     private void AssignCastCountryAppearance(int count)
     {
-        _countryPatterns=new int[count];_countrySecondaryColors=new int[count];_countryEmblems=new int[count];
+        _countryPatterns=new int[count];_countrySecondaryColors=new int[count];_countryEmblems=new int[count];_countryFlagShapes=new int[count];
+        var random=new SeedRandom(CastSeed^0x2a61c73);int triangle=count>7 && random.Next(100)<75?random.Next(count):-1;
         var usedPairs=new System.Collections.Generic.HashSet<(int,int)>();
         for(int ruler=0;ruler<count;ruler++){
             int rank=ColorIndices[ruler],primary=rank%Colors.Length;
@@ -19,9 +28,11 @@ public sealed partial class WorldSetup
             _countrySecondaryColors[ruler]=Enumerable.Range(0,Colors.Length).Where(i=>i!=primary && !usedPairs.Contains((Math.Min(i,primary),Math.Max(i,primary))))
                 .OrderByDescending(i=>Math.Abs(Luma(Colors[i])-Luma(baseColor))).ThenBy(i=>i).First();
             int secondary=_countrySecondaryColors[ruler];usedPairs.Add((Math.Min(primary,secondary),Math.Max(primary,secondary)));
-            if(count>7){
-                _countryPatterns[ruler]=1+(rank+rank/Colors.Length)%4;
-                _countryEmblems[ruler]=1+rank%(CountryEmblemNames.Length-1);
+            int shape=random.Next(100);_countryFlagShapes[ruler]=ruler==triangle?3:shape<50?0:shape<90?1:2;
+            if(count>7 && rank>=7){
+                int kind=random.Next(100);
+                if(kind<40 || kind>=70)_countryPatterns[ruler]=1+random.Next(CountryPatternNames.Length-1);
+                if(kind>=40)_countryEmblems[ruler]=1+random.Next(CountryEmblemNames.Length-1);
             }
         }
     }

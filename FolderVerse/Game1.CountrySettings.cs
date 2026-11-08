@@ -14,6 +14,7 @@ public partial class Game1
     private static Rectangle CountryColorOption(int row,int i)=>new(1110+i%10*66,645+row*120+i/10*48,58,42);
     private static Rectangle CountryPatternOption(int i)=>new(1110+i%3*220,430+i/3*64,208,54);
     private static Rectangle CountryEmblemOption(int i)=>new(1110+i%7*100,896+i/7*74,92,68);
+    private static Rectangle CountryFlagShapeOption(int i)=>new(1110+i*170,565,162,38);
     private void OpenCountrySettings()
     {
         _countrySettingsRuler=Math.Clamp(_setup.PlayerSlot,0,_setup.ActiveCount-1);
@@ -58,6 +59,7 @@ public partial class Game1
         for(int i=0;i<WorldSetup.Colors.Length;i++)for(int row=0;row<(pattern==0 && _setup.CountryEmblem(ruler)==0?1:2);row++)if((row==0 || i!=primary) && CountryColorOption(row,i).Contains(_pointer)){if(row==0)primary=i;else secondary=i;changed=true;}
         for(int i=0;i<WorldSetup.CountryPatternNames.Length;i++)if(CountryPatternOption(i).Contains(_pointer)){pattern=i;changed=true;}
         for(int i=0;i<WorldSetup.CountryEmblemNames.Length;i++)if(CountryEmblemOption(i).Contains(_pointer)){_setup.SetCountryEmblem(ruler,i);changed=true;}
+        for(int i=0;i<WorldSetup.CountryFlagShapeNames.Length;i++)if(CountryFlagShapeOption(i).Contains(_pointer)){_setup.SetCountryFlagShape(ruler,i);changed=true;}
         if(changed){_setup.SetCountryAppearance(ruler,primary,secondary,pattern);secondary=_setup.CountrySecondaryColor(ruler);_world.ShowSetup(_setup,true);_net.ClearGlobeRobotBadges();_operations.Write("country_appearance_changed",new{ruler,primary,secondary,pattern});}
         return true;
     }
@@ -76,7 +78,7 @@ public partial class Game1
     private void DrawCountrySettings()
     {
         if(!_countrySettingsOpen)return;
-        _ui.Text("人間とコンピューター / 国の色と網かけ",new(90,95),.72f,Cream);
+        _ui.Text("人間とコンピューター / 国旗の設定",new(90,95),.72f,Cream);
         _ui.Button(CountrySettingsClose,"閉じる",Muted,.50f);
         _ui.Text("設定する征服者を選んでください",new(90,155),.46f,Cream);
         for(int i=0;i<_setup.ActiveCount;i++)
@@ -108,6 +110,9 @@ public partial class Game1
         }
         _ui.Text("操作を表示",new(toggle.X+54,toggle.Y+8),.50f,ink);
         _ui.Text("人間の手下は自分のターンで操作します。",new(1110,380),.40f,Cream);
+        CountryFlagArt.Draw(_ui,_setup,ruler,new(1580,160,180,100));
+        _ui.Text("国旗の形",new(1110,549),.28f,Cream);
+        for(int i=0;i<WorldSetup.CountryFlagShapeNames.Length;i++)_ui.Button(CountryFlagShapeOption(i),WorldSetup.CountryFlagShapeNames[i],_setup.CountryFlagShape(ruler)==i?Accent:Muted,.32f);
         _ui.Text("基本の色",new(1110,610),.45f,Cream);
         if(_setup.CountryPattern(ruler)!=0 || _setup.CountryEmblem(ruler)!=0)_ui.Text("２色目",new(1110,730),.45f,Cream);
         for(int row=0;row<(_setup.CountryPattern(ruler)==0 && _setup.CountryEmblem(ruler)==0?1:2);row++)for(int i=0;i<WorldSetup.Colors.Length;i++)

@@ -103,15 +103,6 @@ public sealed partial class WorldPreview : IDisposable
                 Quad(a+inward*0.02f+lift,b+inward*0.02f+lift,b+inward*0.065f+lift,a+inward*0.065f+lift,setup.OwnerColor(owner),cell.Normal);
             }
         }
-        for(int owner=0;owner<setup.Capitals.Length;owner++)
-        {
-            if(setup.TerritoryCounts[owner]==0)continue;
-            var cell=setup.Cells[setup.Capitals[owner]]; var foot=cell.Center+cell.Normal*0.03f;
-            var top=foot+cell.Normal*0.48f;
-            Quad(foot-cell.U*0.013f,foot+cell.U*0.013f,top+cell.U*0.013f,top-cell.U*0.013f,new Color(255,241,198),cell.V);
-            Quad(top,top+cell.U*0.27f,top+cell.U*0.27f-cell.Normal*0.18f,top-cell.Normal*0.18f,setup.OwnerColor(owner),cell.V);
-            Quad(foot-cell.U*0.12f-cell.V*0.12f,foot+cell.U*0.12f-cell.V*0.12f,foot+cell.U*0.12f+cell.V*0.12f,foot-cell.U*0.12f+cell.V*0.12f,setup.OwnerColor(owner),cell.Normal);
-        }
         if(mesh.Count==0)return;
         _markers=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
         _markers.SetData(mesh.ToArray()); _markerCount=mesh.Count/3;
