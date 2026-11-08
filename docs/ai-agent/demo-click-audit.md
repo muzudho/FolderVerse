@@ -1494,3 +1494,33 @@
 - 開始 22:00:06 JST、終了 22:00:36 JST。部分点検完了。HEAD=6f8118c4。開始時差分はCPU緑赤チェックのゲーム変更、CountrySettings・DemoInspectorUi テストと点検・修正記録。ゲーム・検証プロセスなし。
 - ALSOFT_DRIVERS=null で既存一時出力 artifacts/tmp/delete-after-2026-11-07/merge-check の DemoInspectorUi.dll と DemoAuditPlanningChecks.dll を実行し、両方とも終了コード0。1080p／540pで工場の現行矩形と製造、庁舎、閉鎖、直送便プライマリー、開戦の選択確定・即予約・赤チェック・閉鎖・ターン終了・配送後の進軍を再確認。証拠は同出力の audit-latest-DemoInspectorUi.log と audit-latest-DemoAuditPlanningChecks.log。
 - 新規不具合なし。直送便自然DemoとCPU画面外条件の自然発生、物理マウスによるチェック地点再選択は未確認。次回は未確認経路の診断条件を照合する。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-08 19:48回
+
+- 開始 19:48:22 JST、終了 19:50:17 JST。部分点検完了。HEAD=c65db2134b43ace0239eb8ab5ed70477a6b324ae。FolderVerse・tests・docs/ai-agent・AGENTS.md の開始時差分なし。ゲーム・検証プロセスなし。全体のGit状態取得はブランド画像のgit-lfsフィルター起動で失敗したため、関係パスへ限定して差分を確認。他の画像は未確認。
+- DemoInspectorUi を現行ソースから artifacts/tmp/delete-after-2026-11-08/demo-check へビルドし警告・エラー0。ALSOFT_DRIVERS=null で実行し終了コード0。1080p／540pで庁舎、閉鎖、直送便プライマリー、工場の6計画について現行矩形と製造開始、描画を確認。証拠は同出力の audit-inspector.log。例として矩形(160,288,72,88)内の(196,332)をクリックして製造開始。
+- 新規不具合なし。直送便自然Demo、左右ペアの退避復帰、緑赤チェックとCPU経路は今回未再検証。次回は現行HEADで緑赤チェックとCPU通常UIの回帰から継続。期限切れの旧検証出力は今回削除していない。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-08 19:55回
+
+- 開始 19:55:59 JST、終了 19:56:55 JST。部分点検完了。HEAD=c65db2134b43ace0239eb8ab5ed70477a6b324ae。関係パスの開始時差分は点検記録のみ。ゲーム・検証プロセスなし。
+- CountrySettings と DemoChecksUi を現行ソースから artifacts/tmp/delete-after-2026-11-08/demo-check へビルドし、両方とも警告・エラー0。ALSOFT_DRIVERS=null で順次実行。CountrySettings --ui は国59の入力変更の検査（CountrySettingsUi.cs 18行目）で停止し、CPU操作へ未到達。DemoChecksUi は実際にクリックできる開戦対象を見つける検査（Program.cs 29行目）で停止。ともに終了コード -532462766。
+- 証拠は同出力の audit-CountrySettings.log と audit-DemoChecksUi.log。停止時の個別状態・解像度・実描画は未採取。現行UIと検査条件の差を切り分けるまでゲーム不具合の新規登録は保留。正常扱いしない。
+- 次回は国設定の実矩形と入力後の各設定値、およびDemo開戦段階と対象候補を採取する。赤チェック以降の遷移、CPU操作、直送便自然Demoは今回未確認。ゲームコード・テスト無変更。
+
+### 実行履歴：2026-11-08 21:00回
+
+- 開始 21:00:37 JST、終了 21:01:32 JST。部分点検完了。HEAD=c65db213。関係パスの開始時差分は点検・修正記録のみ。ゲーム・検証プロセスなし。
+- DemoChecksUi から非追跡の DemoAuditCurrentChecks 診断を作成し、既存一時出力へビルド。警告・エラー0、ALSOFT_DRIVERS=null で実行。失敗時は段階17、選択地点-1、Phase=Domestic、移動候補4、攻撃ハイライト0。終了コード -532462766。証拠 artifacts/tmp/delete-after-2026-11-08/demo-check/audit-current-checks.log。
+- 検査は配送後に OpenMilitaryPhase を直接呼び、その後に攻撃対象が残ることを期待する。現行入口は即時Advanceするため、失敗時には内政へ進んでいた。ゲーム不具合の採番は保留し、次回は内政中の実予約手順を使う診断と分離して照合。停止時の実解像度・描画は未採取。
+- 国設定の各設定値、赤チェック後半、CPU操作、直送便自然Demoは今回未確認。ゲームコード・追跡テスト無変更。
+
+- 21:30修正回でDemoChecksUiの手順を現行の内政予約へ合わせ、4条件の実クリック・描画・配送後進軍の検証が成功。19:55回のDemo検査失敗は解消。国設定の失敗は継続。
+
+### 実行履歴：2026-11-08 22:00回
+
+- 開始 22:03:41 JST、終了 22:04:19 JST。部分点検完了。HEAD=c65db213。関係パスの開始時差分は DemoChecksUi テストと点検・修正記録。ゲーム・検証プロセスなし。
+- CountrySettingsUi の非追跡診断 DemoAuditCurrentCountry を既存一時出力へビルドし警告・エラー0。ALSOFT_DRIVERS=null で実行し失敗時の値を採取。国59は人間=True、主色6、副色17、模様1。主色と同じ副色6の矩形への入力は受理されず、副色17を維持。現行UIは主色と同じ副色を除外するため、検査の副色6という期待と不一致。終了コード -532462766。ゲーム不具合の新規登録なし。
+- 証拠 artifacts/tmp/delete-after-2026-11-08/demo-check/audit-country-values.log。実解像度・失敗時描画は未採取。次回は異なる副色を選ぶ入力と同色除外の検査へ修正し、CPU操作への後続経路を再検証。優先Demo経路・直送便は今回未再検証。ゲームコード・追跡テスト無変更。
+
+- 22:28修正回で国設定検査を異なる副色7の選択と主色6と同じ副色入力の拒否へ修正。CountrySettings --ui は描画とCPU操作の後続検査を含め終了コード0（fix-CountrySettings.log）。19:55回の国設定検査失敗は解消。ゲームコード無変更。自然Demo・全Seed・専用表示への退避など既存の未確認範囲は継続。

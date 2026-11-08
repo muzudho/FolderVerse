@@ -334,3 +334,20 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 - 完了 15:28:15 JST。DEMO-0017のCPU内政緑チェック。Game1.ComputerDomestic.cs に格納庫確認後の実ハンドル入力→閉鎖→次地点の段階を追加し、内政終了時にCPUの緑チェックを消去。Game1.NodeChecks.cs でCPU内政表示中も表示中の征服者へ保持。
 - CountrySettingsUi に緑チェック保持と配送前消去の検査を追加。CountrySettings と既存 DemoAuditCpuSortie を artifacts/tmp/delete-after-2026-11-07/merge-check へビルドし、両方とも警告・エラー0。ALSOFT_DRIVERS=null で両実行は終了コード0。960×540の artifacts/demo-click-audit/audit-latest-computer-domestic.png でハンドル・地点・地点見出しの緑チェックを目視。赤チェックと和平移動の通常完了も回帰成功。
 - 証拠は一時出力の fix-cpu-green.log と fix-cpu-green-draw.log。画面外の地点で専用表示へ戻る経路、全人数・全Seed、内政の通常終了時の緑チェック消去の実描画は未確認。
+
+## 2026-11-08 20:28修正回
+
+- 終了 20:29:19 JST。前回の国設定検査失敗をコード照合。CountrySettingsUi は主色と副色の両方に色6を選んだ結果を期待するが、現行 Game1.CountrySettings.cs は副色パレットから主色と同じ色を除外する。検査条件と入力可否の不一致がある。
+- ゲーム側の新規不具合としては未登録。国設定の失敗時の各設定値とDemo開戦対象未到達の状態採取は未実施で、修正完了扱いなし。今回はゲーム・テスト無変更、実行検証なし。
+
+## 2026-11-08 21:30修正回
+
+- 完了 21:31:36 JST。DemoChecksUi の失敗を修正。tests/DemoChecksUi/Program.cs を現行の内政中の予約手順へ合わせ、緑チェック後も内政のまま開戦・出撃選択・即予約・赤チェック・閉鎖・ターン終了を進める。配送終了後に予約先への進軍を確認。ゲームコード無変更。
+- dotnet build tests/DemoChecksUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-08/demo-check/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null で DemoChecksUi.dll は終了コード0。展開図／地星儀、1920×1080／960×540の4条件が成功。赤チェックのハンドルと地点を demo-checks-3-6.png で目視。
+- 証拠は同出力の fix-DemoChecksUi.log。緑赤表示の分離、ターン終了時の両チェック消去も検査。国設定の失敗は今回未修正。物理マウス再選択と自然Demo完走は未確認。
+
+## 2026-11-08 22:28修正回
+
+- 完了 22:29:04 JST。19:55回の国設定検査失敗を解消（ゲーム不具合の新規IDなし）。tests/CountrySettings/CountrySettingsUi.cs で主色6と異なる副色7を実入力で選び、その後の副色6への入力が拒否されて7を維持することを検査。現行UIの同色除外へ期待値を合わせた。ゲームコード無変更。
+- dotnet build tests/CountrySettings --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-08/demo-check/ -v quiet --disable-build-servers は警告・エラー0。DOTNET_CLI_TELEMETRY_OPTOUT=1、ALSOFT_DRIVERS=null で同出力の CountrySettings.dll --ui は終了コード0。証拠は fix-CountrySettings.log。
+- 実描画を伴う検査で国設定の入力・表示オンオフ、征服者切り替え、通常格納庫・組み立て、軍事の個別選択・予約維持、緑赤チェックの保持と消去、スキップ復帰まで成功。今回画像の目視比較と自然Demo完走、全Seedや専用表示への退避は未検証。DEMO-0016／0017の既存制約は継続。
