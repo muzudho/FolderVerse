@@ -62,7 +62,13 @@ sealed class CountrySettingsUi:Game1
    using(var capture=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight))
    using(var output=File.Create(Path.Combine(AppContext.BaseDirectory,"audit-latest-computer-domestic.png")))
    {capture.SetData(pixels);capture.SaveAsPng(output,capture.Width,capture.Height);}
+   Call("UpdateComputerDomestic",.8d,false);
+   var green=(Dictionary<int,HashSet<int>>)Get("_nodeChecksByPlayer");
+   Check(green.TryGetValue(node.Owner,out var marked) && marked.Contains(node.Id),"CPU clicks green after domestic work");
+   base.Draw(new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero));
+   Call("UpdateComputerDomestic",1d,false);
    Call("UpdateComputerDomestic",0d,true);
+   Check(!green.ContainsKey(node.Owner),"CPU green checks expire before delivery");
    Check(w.PlayerSlot==0 && w.Campaign.Phase==CampaignPhase.Delivery,"Domestic playback restores the human before delivery");
    Call("OpenMilitaryPhase");
    var visible=(March[])Get("_visibleComputerMarches");
@@ -74,10 +80,25 @@ sealed class CountrySettingsUi:Game1
   }
   if(frame==13){
    int reservations=w.Campaign.PlannedOrders.Count;
+   var order=((March[])Get("_visibleComputerMarches"))[0];
+   var draft=(HashSet<long>)Get("_invasionDraft");
+   Check(draft.Count==0,"Computer opens the picker before selecting robots");
+   for(int selected=1;selected<=order.Fighters;selected++){
+    Call("UpdateComputerMarches",1.1d,false);
+    Check((int)Get("_invasionPicker")>=0 && draft.Count==selected && w.Campaign.PlannedOrders.Count==reservations,
+     "Computer selects one robot per click without adding a reservation");
+    base.Draw(time);
+   }
+   Check(order.RobotIds==null || draft.SetEquals(order.RobotIds),"Computer selects the planned robots");
    Call("UpdateComputerMarches",1.1d,false);
    Check((int)Get("_invasionPicker")==-1 && w.Campaign.PlannedOrders.Count==reservations,"Normal picker confirmation closes without duplicating the queued order");
    Call("UpdateComputerMarches",1.1d,false);
+   var redChecks=(Dictionary<int,HashSet<int>>)Get("_warChecksByPlayer");
+   Check(redChecks.TryGetValue(order.Ruler,out var targets) && targets.Contains(order.TargetNode),
+    "Computer clicks the red check after confirming");
+   Call("UpdateComputerMarches",1.1d,false);
    Call("UpdateComputerMarches",0d,true);
+   Check(!redChecks.ContainsKey(order.Ruler),"Computer checks expire when playback finishes");
    Check(w.PlayerSlot==0 && w.Campaign.Phase==CampaignPhase.Domestic,"Skipping restores the human and resolves the military turn");}
   base.Draw(time);
   if(frame==10){

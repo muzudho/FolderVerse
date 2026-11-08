@@ -19,7 +19,7 @@ public partial class Game1
     private const string NodeCheckMarkerHint="確認済みの地点です。";
     private Rectangle NodeCheckButton=>new(912+NodeInspectorOffset,520,48,48);
     private bool NodeCheckButtonVisible=>WarCheckMode?InspectorVisible && _selectedMoveNode>=0 && _selectedMoveNode<_setup.Nodes.All.Length && SelectedWithdrawal==null:InspectorVisible && _populationCell>=0 && _populationNode>=0 && _populationNode<_setup.Nodes.All.Length && !_reignView && !_movementOpen && !_transportOverview && !_salvagePlan;
-    private int NodeCheckPlayer=>_setup.PlayerSlot>=0 && _setup.ControllerOf(_setup.PlayerSlot)>=0 && (_demoActive || !_autoPlay)?_setup.TurnPlayer:-1;
+    private int NodeCheckPlayer=>(_computerMarches!=null || _computerDomesticNodes!=null)?_setup.PlayerSlot:_setup.PlayerSlot>=0 && _setup.ControllerOf(_setup.PlayerSlot)>=0 && (_demoActive || !_autoPlay)?_setup.TurnPlayer:-1;
     private void EnsureNodeCheckContext()
     {
         if(ReferenceEquals(_nodeChecksWorld,_setup) && _nodeChecksTurn==_setup.Population.Turn)return;

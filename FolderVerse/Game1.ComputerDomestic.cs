@@ -12,7 +12,7 @@ public partial class Game1
     private bool _computerAssembled;
     private int _computerDomesticStage;
     private Point _computerDomesticPoint;
-    private const double ComputerAssemblyTime=2.35,ComputerDomesticSeconds=3.4;
+    private const double ComputerAssemblyTime=2.35,ComputerDomesticSeconds=5;
 
     private bool ShowsComputerTurn(int ruler)=>!_setup.IsHumanPlayer(ruler) &&
         _setup.ControllerOf(ruler)<0 && _setup.ShowComputerOperations(ruler);
@@ -106,6 +106,18 @@ public partial class Game1
                     _hangarMessage="ロボットを組み立てました";
                 }
             }
+            if(!skip && _computerDomesticStage==2 && _computerDomesticAge>=3.2)
+            {
+                _computerDomesticPoint=NodeCheckButton.Center;
+                if(!NodeChecked(node.Id))DomesticViewClick(_computerDomesticPoint);
+                _computerDomesticStage=3;
+            }
+            if(!skip && _computerDomesticStage==3 && _computerDomesticAge>=4.2)
+            {
+                _computerDomesticPoint=InspectorClose.Center;
+                DomesticViewClick(_computerDomesticPoint);
+                _computerDomesticStage=4;
+            }
             if(!skip && _computerDomesticAge<ComputerDomesticSeconds)return true;
             _computerDomesticAge=previousAge=0;
             _computerAssembled=false;
@@ -118,6 +130,7 @@ public partial class Game1
             }
         }while(skip);
         if(!skip && _computerDomesticIndex<_computerDomesticNodes.Length)return true;
+        foreach(int ruler in _computerDomesticNodes.Select(node=>node.Owner).Distinct())_nodeChecksByPlayer.Remove(ruler);
         _computerDomesticNodes=null;
         EndComputerView();
         _setup.Campaign.BeginDelivery(_setup);
@@ -130,8 +143,8 @@ public partial class Game1
         if(_computerDomesticNodes==null)return;
         if(_computerDomesticStage>=0)
         {
-            if(_computerDomesticStage==0)return;
-            var target=_computerDomesticStage==2
+            if(_computerDomesticStage is 0 or 4)return;
+            var target=_computerDomesticStage==3?InspectorClose.Center:_computerDomesticStage==2
                 ?new Point(NodeAssemblyTile.Center.X+NodeInspectorOffset,NodeAssemblyTile.Center.Y)
                 :_computerDomesticPoint;
             _spriteBatch.Begin(transformMatrix:transform);
