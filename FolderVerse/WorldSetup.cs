@@ -150,6 +150,7 @@ public sealed partial class WorldSetup
         CityNames=WorldNames.Cities(Cells,seed);
         ClearPlacement();
     }
+    public bool AllowDuplicateCharacters;
     public void SetCast(int seed)
     {
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
@@ -166,7 +167,7 @@ public sealed partial class WorldSetup
         int familySize=2+random.Next(5);
         int[] variants=Enumerable.Range(0,6).ToArray();random.Shuffle(variants);
         // 75% have unique characters; 25% guarantee at least one family of distinct variants.
-        bool distinctBases=random.Next(4)<3;
+        bool distinctBases=!AllowDuplicateCharacters || random.Next(4)<3;
         int[] bases=Enumerable.Range(0,ConquerorCatalog.BaseCount).ToArray();random.Shuffle(bases);
         for(int slot=0;slot<count;slot++)
         {

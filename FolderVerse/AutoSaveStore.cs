@@ -154,6 +154,7 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorld) && field.Name=="<Reservations>k__BackingField")continue;
                     if(type.Name=="DomesticViewState" && new[]{"<GlobePan>k__BackingField","<GlobeDragSlide>k__BackingField","<NetDragRotate>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(RobotEncounter) && field.Name=="<ReturnedWanderers>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
+                    if(type==typeof(WorldSetup) && field.Name=="AllowDuplicateCharacters")continue;
                     if(type==typeof(WorldSetup) && field.Name=="WandererPolicies"){field.SetValue(value,new WandererPolicy[WorldSetup.CastCount]);continue;}
                     if(type==typeof(WorldSetup) && new[]{"_participantCountsConfigured","<ComputerPlayerCount>k__BackingField","_presetCastCount","TutorialPocketed","TutorialMoved","TutorialPocketNoticeShown","TutorialMoveNoticeShown"}.Contains(field.Name))continue;
                     if(type==typeof(March) && field.Name=="<Peaceful>k__BackingField")continue;

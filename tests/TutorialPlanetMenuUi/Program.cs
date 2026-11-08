@@ -16,6 +16,7 @@ sealed class PlanetMenuGame:Game1
  MouseState MouseAt(Point p){var c=(Rectangle)Call("CanvasBounds");return new(c.X+(int)Math.Round(p.X*c.Width/1920d),c.Y+(int)Math.Round(p.Y*c.Height/1080d),0,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);}
  void Click(Rectangle r){Set("_pointer",r.Center);Input(click:true);}
  void OpenMenu(){Set("_screen",Enum.Parse(Get("_screen").GetType(),"Title"));Call("OpenTitleStartMenu");Set("_pointer",Bounds("TitleMenuItem",0).Center);Call("TitleStartMenuInput",true,false,false,new KeyboardState(),true);}
+ void SkipOpening(){Check(Get("_screen").ToString()=="OpeningBook","Tutorial starts with the storybook");Set("_pointer",new Point(1675,55));Call("OpeningInput",true,false,false,0d,new KeyboardState());}
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_autoSaveEnabled",false);OpenMenu();
   Check((bool)Get("_tutorialMenuOpen") && (int)Get("_tutorialPlanetSelection")==0,"How to Play opens six-planet menu with first selected");
@@ -29,11 +30,11 @@ sealed class PlanetMenuGame:Game1
    for(int i=1;i<6;i++){Click(Bounds("TutorialPlanetCard",i));Check(Get("_screen").ToString()=="Title","Disabled planet "+i+" cannot launch");}
   }
   if(frame==2){
-   Click(Bounds("TutorialPlanetCard",0));var setup=(WorldSetup)Get("_setup");Check(Get("_screen").ToString()=="WorldStatus" && setup.TutorialStep==1 && setup.TutorialMapBeforeWar && setup.PlayerSlot==0 && !(bool)Get("_tutorialMenuOpen"),"Clicking Petitstella directly starts integrated tutorial");
+   Click(Bounds("TutorialPlanetCard",0));SkipOpening();var setup=(WorldSetup)Get("_setup");Check(Get("_screen").ToString()=="WorldStatus" && setup.TutorialStep==1 && setup.TutorialMapBeforeWar && setup.PlayerSlot==0 && !(bool)Get("_tutorialMenuOpen"),"Clicking Petitstella directly starts integrated tutorial");
    Check(setup.Nodes.All.All(n=>setup.Robots.Nodes[n.Id].Count==6),"Direct launch retains beginner reinforcements");
   }
   if(frame==3){
-   Call("ReturnToTitle");OpenMenu();Input(enter:true);var setup=(WorldSetup)Get("_setup");Check(Get("_screen").ToString()=="WorldStatus" && setup.TutorialMapBeforeWar && setup.TutorialMapStage==0 && setup.PlayerSlot==0,"Enter directly starts integrated tutorial at map lesson");
+   Call("ReturnToTitle");OpenMenu();Input(enter:true);SkipOpening();var setup=(WorldSetup)Get("_setup");Check(Get("_screen").ToString()=="WorldStatus" && setup.TutorialMapBeforeWar && setup.TutorialMapStage==0 && setup.PlayerSlot==0,"Enter directly starts integrated tutorial at map lesson");
   }
   if(frame==4){Call("ReturnToTitle");OpenMenu();Input(escape:true);Check(!(bool)Get("_tutorialMenuOpen") && (bool)Get("_titleMenuOpen"),"Escape returns to start menu");OpenMenu();}
   base.Draw(new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero));
