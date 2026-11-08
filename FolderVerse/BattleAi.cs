@@ -11,17 +11,17 @@ public static class BattleAi
     public static BattleAction Choose(BattleState battle,BattleUnit unit)
     {
         var action=ChooseCore(battle,unit);
-        if(BattleLessons.Has(battle,unit,BattleLesson.PursuitLoop) && !unit.Retreating && unit.Role==BattleRole.Soldier && action.Weapon==BattleWeapon.None){
+        if(!unit.Retreating && unit.Role==BattleRole.Soldier && action.Weapon==BattleWeapon.None){
             var enemy=battle.Units.Where(u=>u.Active && !battle.Allied(u.Owner,unit.Owner)).OrderBy(u=>Distance(u.Position,unit.Position)).ThenBy(u=>u.Id).FirstOrDefault();
             if(enemy!=null){
                 var delta=unit.Position-enemy.Position;int distance=Distance(unit.Position,enemy.Position);
                 // A rifle has no adjacent shot. Create a firing interval rather
                 // than walking onto the same adjacent goal indefinitely.
-                if(unit.Daggers==0 && unit.Rifles>0 && distance==1 && Free(battle,unit,unit.Position+delta))
+                if(BattleLessons.Has(battle,unit,BattleLesson.RifleSpacing) && unit.Daggers==0 && unit.Rifles>0 && distance==1 && Free(battle,unit,unit.Position+delta))
                     action=new(delta,Face(enemy.Position-unit.Position));
                 // Identical diagonal pursuit produces a four-step orbit. One
                 // soldier holds while the other approaches, breaking symmetry.
-                else if(distance==2 && delta.X!=0 && delta.Y!=0 && unit.Id<enemy.Id && unit.Daggers+unit.Rifles>0)
+                else if(BattleLessons.Has(battle,unit,BattleLesson.PursuitLoop) && (unit.Daggers>0 || enemy.Daggers>0) && distance==2 && delta.X!=0 && delta.Y!=0 && unit.Id<enemy.Id && unit.Daggers+unit.Rifles>0)
                     action=new(Point.Zero,Face(enemy.Position-unit.Position));
             }
         }
