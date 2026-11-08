@@ -136,6 +136,9 @@ static void ResolveTransfers(WorldSetup w)=>typeof(RobotLongDelivery).GetMethod(
 }
 {
     var w=Fixture(10);int checkedChoices=0;
+    // Controller tests need both personalities regardless of the cast lottery algorithm.
+    w.Looks[1]=Enumerable.Range(0,60).Select(i=>new ConquerorLook(i,0)).First(l=>l.Keywords.Personality is not (3 or 9 or 11));
+    w.Looks[9]=Enumerable.Range(0,60).Select(i=>new ConquerorLook(i,0)).First(l=>l.Keywords.Personality is 3 or 9 or 11);
     foreach(int victor in Enumerable.Range(1,9))foreach(int ruler in Enumerable.Range(1,9).Where(r=>r!=victor && w.Relations.Accepts(w,r))){
         w.Relations.Reset();w.Relations.Leader=0;w.Relations.Capture(w,ruler,victor,w.Nodes.Current(ruler)!.Id);
         Check(w.Relations.Superiors[ruler]==victor && w.Relations.Pending.Count==0,"CPU recruits an accepting captive rather than releasing a new rival");checkedChoices++;
