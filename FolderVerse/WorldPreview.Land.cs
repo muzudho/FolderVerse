@@ -30,7 +30,9 @@ public sealed partial class WorldPreview
             var a=cell.Origin+cell.U*(x/10f)+cell.V*(y/10f);
             var b=a+cell.U/10;var c=b+cell.V/10;var d=a+cell.V/10;
             float height=WorldTerrain.Elevation((a+c)/2,offset);
-            var color=owner<0?WorldTerrain.ColorAt(height,cell.Normal,setup.PolarAxis):LandTerritoryColor(setup.CountryMapColor(owner,x,y),WorldTerrain.Kind(height));
+            // Land selection and the normal globe keep the planet's terrain.
+            // The existing, explicitly selected colour-overlay layer remains optional.
+            var color=exclusive && CountryColors && owner>=0?LandTerritoryColor(setup.CountryMapColor(owner,x,y),WorldTerrain.Kind(height)):WorldTerrain.ColorAt(height,cell.Normal,setup.PolarAxis);
             if(x==0 || y==0)color=Color.Lerp(color,new Color(17,47,62),.18f);
             foreach(var point in new[]{a,b,c,a,c,d})mesh.Add(new(point,color,cell.Normal));
         }

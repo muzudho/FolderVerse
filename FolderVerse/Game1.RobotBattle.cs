@@ -114,7 +114,7 @@ public partial class Game1
     private void SwitchRobotFocus()
     {if(_robotPendingSummary){_summaryReadAge=0;_robotSummary=true;_robotPendingSummary=false;}if(_robotPendingRound){_robotRound++;_battleAge=0;}_battleWave=_robotPendingFocus;_robotPendingFocus=-1;_robotPendingRound=false;_robotResultAge=0;}
     private static string PhaseLabel(BattlePhase phase)=>phase switch
-    {BattlePhase.Persuade=>"説得中",BattlePhase.Converted=>"説得の結果",BattlePhase.Choose=>"行動選択",BattlePhase.Place=>"配置",BattlePhase.Rollback=>"巻き戻し",BattlePhase.Attack=>"攻撃",BattlePhase.Receive=>"被攻撃",BattlePhase.Consume=>"消費",BattlePhase.Fall=>"転倒",BattlePhase.Flag=>"旗更新",BattlePhase.Reinforce=>"増援",BattlePhase.Retreat=>"戦意喪失 / 全軍撤退",BattlePhase.DefenseRetreat=>"旗の防衛成功 / 攻撃側撤退",_=>"戦意・勝敗"};
+    {BattlePhase.Persuade=>"説得中",BattlePhase.Converted=>"説得の結果",BattlePhase.Choose=>"行動選択",BattlePhase.Place=>"配置",BattlePhase.Rollback=>"巻き戻し",BattlePhase.Attack=>"攻撃",BattlePhase.Receive=>"被攻撃",BattlePhase.Consume=>"消費",BattlePhase.Fall=>"転倒",BattlePhase.Flag=>"国旗更新",BattlePhase.Reinforce=>"増援",BattlePhase.Retreat=>"戦意喪失 / 全軍撤退",BattlePhase.DefenseRetreat=>"国旗の防衛成功 / 攻撃側撤退",_=>"戦意・勝敗"};
     private void DrawSmokePuff(Vector2 center,float radius,float opacity)
     {
         int extent=(int)Math.Ceiling(radius);
@@ -204,10 +204,12 @@ public partial class Game1
         if(battle.Kind==BattleKind.Node)
         {
             var f=new Rectangle(left+battle.Flag.X*size,top+battle.Flag.Y*size,size-2,size-2);
-            foreach(var patch in BattlePieceArt.Flags[frame.FlagStanding?0:1])
-            {
-                var b=patch.Bounds;var color=patch.Ink==0?_setup.OwnerColor(battle.Defender):patch.Ink==2?new Color(215,198,159):new Color(255,224,115);
-                _ui.Box(new(f.X+b.X*size/34,f.Y+b.Y*size/68,Math.Min(f.Width,b.Width*size/34),Math.Max(1,b.Height*size/68)),color);
+            int flagOwner=frame.FlagStanding?battle.Defender:frame.LastFlagOwner;
+            var foot=new Vector2(f.X+f.Width*.25f,f.Bottom-6);
+            if(frame.FlagStanding)CountryFlagArt.Marker(_ui,_setup,flagOwner,foot,Math.Max(24,f.Width*2/3));
+            else {
+                _ui.Box(new(f.X+5,f.Bottom-9,f.Width-10,3),new Color(229,218,185));
+                CountryFlagArt.Draw(_ui,_setup,battle.Defender,new(f.X+9,f.Bottom-f.Height/2,f.Width*2/3,f.Height/3),.55f);
             }
         }
         if(BattleIntroActive){
@@ -369,7 +371,7 @@ public partial class Game1
         if(battle.Kind==BattleKind.Node && !battle.SplitBoard)DrawBattleFlagCountdown(battle,frame);
         else if(recent!=null)BattleInfo($"ID {recent.Unit} / {recent.Detail}",794,.42f);
         if(battle.Kind==BattleKind.Node && !battle.SplitBoard){
-            BattleInfo(frame.Units.Any(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated)?$"説得：上下左右{battle.Rules.PersuasionRadius}マス以内 / {battle.Rules.PersuasionPercent}％ / 壁越し有効":battle.CompactFronts?"扉：各軍の増援・退却口 / 旗：守備軍の出入口":"足元は左から盾・短剣・弾の残数",872,.4f);
+            BattleInfo(frame.Units.Any(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated)?$"説得：上下左右{battle.Rules.PersuasionRadius}マス以内 / {battle.Rules.PersuasionPercent}％ / 壁越し有効":battle.CompactFronts?"扉：各軍の増援・退却口 / 国旗：守備軍の出入口":"足元は左から盾・短剣・弾の残数",872,.4f);
         }
         else if(frame.Units.Any(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated))
         {

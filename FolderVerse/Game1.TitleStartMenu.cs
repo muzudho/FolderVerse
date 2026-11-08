@@ -42,7 +42,7 @@ public partial class Game1
         if(chosen==0){_tutorialMenuOpen=true;_tutorialPlanetSelection=0;}
         else if(chosen==1)OpenCampaignMenu();
         else if(chosen==2){_titleMenuOpen=false;if(!ResumeAutoSave())_titleMenuOpen=true;}
-        else if(chosen==3){_titleMenuOpen=false;BeginPlayerCount();}
+        else if(chosen==3){_titleMenuOpen=false;BeginOpening(false);}
     }
     private void DrawTitleStartMenu(){
         if(_campaignMenuStage>0){DrawCampaignMenu();return;}

@@ -2,10 +2,11 @@
 
 - [地点の機能移転：予約、参照元、集積と配送](設計/地点の機能移転.md)
 - [ゲーム用語：地点（Point）](ref/ゲーム用語.md)
+- [国旗：５要素、抽選と地図・戦場表示](ref/国旗.md)
 
 [リポジトリーのトップ](../README.md)
 
-遊ぶ・調べる場合は、[v0.6.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.6.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
+遊ぶ・調べる場合は、[v0.7.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.7.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
 
 | 読みたい内容 | 入口 |
 | --- | --- |

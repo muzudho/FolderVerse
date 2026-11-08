@@ -10,6 +10,8 @@ public sealed partial class CubeNet
             if(!globe.ProjectVisible(cell.Center,cell.Normal,yaw,pitch,panel,out _))continue;
             Vector2 Project(Vector3 p){globe.ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var result);return result;}
             DrawCellRoutes(ui,setup,cell.Id,Project,pulse);
+            if(!ShowRoutes)foreach(var node in setup.Nodes.InCell(cell.Id))
+                if(NodeVisible(setup,node))CountryFlagArt.Marker(ui,setup,DisplayedNodeOwner(node),Project(setup.Routes.Position(node.Cell,node.Center)),28,c=>NodeTint(node.Id,c));
         }
         DrawMapSymbols(ui,setup,p=>
         {

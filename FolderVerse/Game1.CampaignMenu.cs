@@ -51,7 +51,7 @@ public partial class Game1
             }
             for(int i=_campaignCharacterPage*CampaignCharacterPageSize;i<Math.Min(ConquerorCatalog.BaseCount,(_campaignCharacterPage+1)*CampaignCharacterPageSize);i++)if(CampaignCharacterCard(i).Contains(_pointer)){_campaignCharacters[_campaignCharacterTarget]=i;return;}
         }
-        if(enter || click && CampaignStartButton.Contains(_pointer))BeginCampaignDuel();
+        if(enter || click && CampaignStartButton.Contains(_pointer))BeginOpening(false,BeginCampaignDuel);
     }
     private void BeginCampaignDuel()
     {

@@ -104,6 +104,11 @@ public partial class Game1
             DrawConquestOrientation(canvas,transform,viewport);
         }
         _spriteBatch.Begin(transformMatrix:transform);
+        if(_conquestStage is 3 or 4 or 5 && _conquestGlobe.PresentationCells!=null)
+            foreach(int id in _conquestGlobe.PresentationCells){var cell=_setup.Cells[id];
+                if(_conquestGlobe.ProjectVisible(cell.Center,cell.Normal,0,0,ConquestGlobeArea,out var flagAt))
+                    CountryFlagArt.Marker(_ui,_setup,ConquestCard.Ruler,flagAt,32);
+            }
         if(_conquestStage==4){
             int ruler=ConquestCard.Ruler;var color=_setup.OwnerColor(ruler);
             foreach(var node in _setup.Nodes.All.Where(n=>n.Owner==ruler)){

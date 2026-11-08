@@ -9,7 +9,7 @@ public sealed partial class BattleLessons
         var units=battle.Units.Concat(battle.Armies.SelectMany(a=>a.Waiting)).ToArray();
         // Fallen or withdrawn defenders still prove that this was a defended battle.
         if(units.Any(u=>u.Robot!=null && battle.Allied(u.Owner,battle.Defender)))return;
-        foreach(var flag in battle.Events.Where(e=>e.Phase==BattlePhase.Flag && e.Detail=="旗を倒した")){
+        foreach(var flag in battle.Events.Where(e=>e.Phase==BattlePhase.Flag && e.Detail is "旗を倒した" or "国旗を倒した")){
             var attacker=units.FirstOrDefault(u=>u.Id==flag.Unit);
             if(attacker==null || battle.Allied(attacker.Owner,battle.Defender) || (Owned[attacker.Owner]&BattleLesson.EmptyHome)!=0 || Pending.Any(a=>a.Owner==attacker.Owner && a.Lesson==BattleLesson.EmptyHome))continue;
             Pending.Add(new(attacker.Owner,BattleLesson.EmptyHome));

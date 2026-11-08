@@ -23,7 +23,7 @@ public partial class Game1
         return minutes<60?$"{minutes}分":minutes%60==0?$"{minutes/60}時間":$"{minutes/60}時間{minutes%60}分";
     }
     private static string MetaTime(int players)=>"＜"+string.Concat(EstimatedPlayTime(players).Select(c=>c>='0' && c<='9'?(char)('０'+c-'0'):c))+"＞";
-    private void BeginPlayerCount(){ClearAllNodeChecks();_campaignMenuStage=0;FinishConquestOverview();_conquestOverviewTurn=-1;_tutorialMenuOpen=false;_titleMenuOpen=false;_lastAutoSaveTurn=-1;_domesticViews.Clear();_requestedPlayers=1;_requestedComputers=19;_notifiedTurn=(-1,-1);_screen=Screen.PlayerCount;}
+    private void BeginPlayerCount(){_openingActive=_openingWorldSelected=false;_setup.AllowDuplicateCharacters=false;ClearAllNodeChecks();_campaignMenuStage=0;FinishConquestOverview();_conquestOverviewTurn=-1;_tutorialMenuOpen=false;_titleMenuOpen=false;_lastAutoSaveTurn=-1;_domesticViews.Clear();_requestedPlayers=1;_requestedComputers=19;_notifiedTurn=(-1,-1);_screen=Screen.PlayerCount;}
     private void PlayerCountInput(bool click,bool enter,KeyboardState keys)
     {
         if(keys.IsKeyDown(Keys.Left) && _previousKeyboard.IsKeyUp(Keys.Left))_requestedPlayers=Math.Max(0,_requestedPlayers-1);
@@ -34,10 +34,10 @@ public partial class Game1
     private void DrawPlayerCount()
     {
         _ui.Text("＜大きなお子様＞の人数確認フェーズ",new(54,28),1f,Cream);
-        if(_setupHost!=null)_spriteBatch.Draw(_setupHost,new Rectangle(100,180,500,750),Color.White);
+        if(!_openingActive && _setupHost!=null)_spriteBatch.Draw(_setupHost,new Rectangle(100,180,500,750),Color.White);
         _ui.Box(new(680,130,1180,230),Cream);
         _ui.Tile(new(675,240),new(45,45),MathHelper.PiOver4,Cream);
-        const string greeting="さあ、＜大きなお子様＞のみなさん＜画面＞の前に集まってください。";
+        string greeting=_openingActive?"この絵本を読む＜大きなお子様＞は、何人いますか？":"さあ、＜大きなお子様＞のみなさん＜画面＞の前に集まってください。";
         _ui.Text(greeting,new(730,155),Math.Min(.65f,1080/_font.MeasureString(greeting).X),Muted);
         _ui.Text("準備はよろしいですか？",new(730,225),.65f,Muted);
         _ui.Text("このゲームをお遊びになる人数を選んでください。",new(730,300),.65f,Muted);
@@ -45,7 +45,7 @@ public partial class Game1
         _ui.Center($"＜{_requestedPlayers}人＞ / 推定プレイ時間は{MetaTime(_requestedPlayers)}です。",new(690,800,1160,55),.7f,Cream);
         _ui.Button(PlayerCountConfirm,"よろしいですか？　次へ",Accent,.65f);
         _ui.Text("＜１人あたり20分＞の概算です。遊ぶ時間は自由です。",new(730,1005),.5f,Cream);
-        _ui.Button(BackButton,"タイトルへ戻る",Muted,.6f);
+        _ui.Button(BackButton,_openingActive?"絵本へ戻る":"タイトルへ戻る",Muted,.6f);
     }
     private void ComputerPlayerCountInput(bool click,bool enter,KeyboardState keys)
     {
@@ -54,12 +54,12 @@ public partial class Game1
         if(keys.IsKeyDown(Keys.Right) && _previousKeyboard.IsKeyUp(Keys.Right))_requestedComputers=Math.Min(maximum,_requestedComputers+1);
         if(click)for(int i=0;i<=maximum;i++)if(PlayerCountOption(i).Contains(_pointer))_requestedComputers=i;
         if((enter || click && PlayerCountConfirm.Contains(_pointer)) && _requestedPlayers+_requestedComputers>0)
-        {_setup.SetParticipantCounts(_requestedPlayers,_requestedComputers);BeginRolling();}
+        {_setup.SetParticipantCounts(_requestedPlayers,_requestedComputers);if(_openingActive){if(_openingSkipNarration)BeginOpeningLottery();else EnterOpeningSpace();}else BeginRolling();}
     }
     private void DrawComputerPlayerCount()
     {
         _ui.Text("＜コンピュータープレイヤー＞の人数確認フェーズ",new(54,28),.85f,Cream);
-        if(_setupHost!=null)_spriteBatch.Draw(_setupHost,new Rectangle(100,180,500,750),Color.White);
+        if(!_openingActive && _setupHost!=null)_spriteBatch.Draw(_setupHost,new Rectangle(100,180,500,750),Color.White);
         _ui.Box(new(680,130,1180,230),Cream);
         _ui.Tile(new(675,240),new(45,45),MathHelper.PiOver4,Cream);
         _ui.Text("一緒に遊ぶ＜コンピュータープレイヤー＞の人数を",new(730,170),.65f,Muted);

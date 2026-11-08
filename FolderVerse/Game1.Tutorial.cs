@@ -28,7 +28,7 @@ public partial class Game1
         if(keys.IsKeyDown(Keys.Up) && _previousKeyboard.IsKeyUp(Keys.Up))move=-3;
         if(keys.IsKeyDown(Keys.Down) && _previousKeyboard.IsKeyUp(Keys.Down))move=3;
         _tutorialPlanetSelection=(_tutorialPlanetSelection+move+6)%6;
-        if(_tutorialPlanetSelection==0 && (enter || click && TutorialPlanetCard(0).Contains(_pointer)))BeginPetitstellaTutorial();
+        if(_tutorialPlanetSelection==0 && (enter || click && TutorialPlanetCard(0).Contains(_pointer)))BeginOpening(true);
     }
     private void BeginPetitstellaTutorial(){
         BeginTutorialStepOne();_setup.TutorialMapBeforeWar=true;_statusGlobe=true;

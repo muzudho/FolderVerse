@@ -13,6 +13,8 @@ public static partial class BattleTurnResolver
         battle.Check();var units=battle.Units.Where(u=>u.Active).OrderBy(u=>u.Id).ToArray();
         foreach(var u in units.Where(u=>battle.Army(u.Owner).Withdrawing))u.Retreating=true;
         var actions=units.ToDictionary(u=>u.Id,u=>orders!=null && orders.TryGetValue(u.Id,out var action)?action:BattleAi.Choose(battle,u));
+        if(orders==null)BattleLessons.ObservePursuit(battle,units,actions);
+        else battle.PursuitHistory.Clear();
         foreach(var unit in units)
         {
             var action=actions[unit.Id];
@@ -144,8 +146,8 @@ public static partial class BattleTurnResolver
             var occupant=battle.Units.FirstOrDefault(u=>u.Active && u.Position==battle.Flag);
             if(occupant!=null)
             {
-                if(battle.Allied(occupant.Owner,battle.Defender) && !battle.FlagStanding){battle.FlagStanding=true;battle.Events.Add(new(battle.Turn,BattlePhase.Flag,occupant.Id,"旗を立てた"));}
-                else if(!battle.Allied(occupant.Owner,battle.Defender) && battle.FlagStanding){battle.FlagStanding=false;battle.LastFlagOwner=occupant.Owner;willing.Add(occupant.Owner);battle.Events.Add(new(battle.Turn,BattlePhase.Flag,occupant.Id,"旗を倒した"));}
+                if(battle.Allied(occupant.Owner,battle.Defender) && !battle.FlagStanding){battle.FlagStanding=true;battle.Events.Add(new(battle.Turn,BattlePhase.Flag,occupant.Id,"国旗を立てた"));}
+                else if(!battle.Allied(occupant.Owner,battle.Defender) && battle.FlagStanding){battle.FlagStanding=false;battle.LastFlagOwner=occupant.Owner;willing.Add(occupant.Owner);battle.Events.Add(new(battle.Turn,BattlePhase.Flag,occupant.Id,"国旗を倒した"));}
             }
             battle.FlagDefenseTurns=battle.FlagStanding?(wasStanding?battle.FlagDefenseTurns+1:0):0;
             battle.FlagCaptureTurns=!battle.FlagStanding?(!wasStanding?battle.FlagCaptureTurns+1:0):0;
@@ -185,7 +187,7 @@ public static partial class BattleTurnResolver
         if(!defended && !captured && !cleared)return false;
         battle.Winner=defended?battle.Defender:captor;battle.Finished=true;
         if(defended)BattleRetreat.AfterFlagDefense(battle);
-        battle.Events.Add(new(battle.Turn,BattlePhase.Result,0,defended?"旗の防衛成功":"旗の奪取成功 / 守備側降伏"));
+        battle.Events.Add(new(battle.Turn,BattlePhase.Result,0,defended?"国旗の防衛成功":"国旗の奪取成功 / 守備側降伏"));
         return true;
     }
     private static void Persuade(BattleState battle)

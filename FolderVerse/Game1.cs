@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Input;
 
 public partial class Game1 : Game
 {
-    private enum Screen { Title, PlayerCount, ComputerPlayerCount, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, LandConquest, Fortune, WorldStatus, Battle, Industry, Disposition, InactiveList, Hierarchy, Pocket, Transport, Ending, BattleResearch, LessonCatalog }
+    private enum Screen { Title, PlayerCount, ComputerPlayerCount, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, LandConquest, Fortune, WorldStatus, Battle, Industry, Disposition, InactiveList, Hierarchy, Pocket, Transport, Ending, BattleResearch, LessonCatalog, OpeningBook, OpeningSpace, OpeningLottery, OpeningReview }
     private readonly GraphicsDeviceManager _graphics;
     private readonly Random _random=new();
     private WorldSetup _setup=new();
@@ -145,8 +145,9 @@ public partial class Game1 : Game
             if(_screen==Screen.Industry)_industryIdleAge=0;
             if(_screen==Screen.Battle && _robotSummary)_summaryReadAge=0;
         }
-        if(!_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(!IsOpeningScreen && !_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
+        if(IsOpeningScreen){OpeningInput(click,enter,escape,gameTime.ElapsedGameTime.TotalSeconds,keyboard);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateSubordinateDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) || UpdateComputerDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) ||
             UpdateComputerMarches(gameTime.ElapsedGameTime.TotalSeconds,escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -384,7 +385,8 @@ public partial class Game1 : Game
         }
         else
         {
-            if(click && CastBack.Contains(_pointer)) { _screen=Screen.Review; _setup.ClearPlacement(); _world.ShowSetup(_setup,false); }
+            if(CastDuplicateInput(click)){}
+            else if(click && CastBack.Contains(_pointer)) { _screen=_openingWorldSelected?Screen.OpeningReview:Screen.Review;_openingActive=_openingWorldSelected; _setup.ClearPlacement(); _world.ShowSetup(_setup,false); }
             else if(click && SeedButton(0).Contains(_pointer))_seedDialog.Open(SeedDialog.Target.World,_setup.WorldSeed);
             else if(click && SeedButton(1).Contains(_pointer))_seedDialog.Open(SeedDialog.Target.Cast,_setup.CastSeed);
             else if(HasTerritories && click && SeedButton(2).Contains(_pointer))_seedDialog.Open(SeedDialog.Target.Placement,_setup.PlacementSeed);
@@ -475,7 +477,8 @@ public partial class Game1 : Game
                 _counter.Draw(_spriteBatch,active?_setup.TerritoryCounts[slot]:0,
                     new Rectangle(rect.X+7,rect.Y+7,rect.Width-14,rect.Height-14),color);
         }
-        _ui.Text("人間プレイヤー、コンピュータープレイヤー、国の色は後で変えることができます。",new(54,78),.36f,new(170,206,216));
+        _ui.Text("人間プレイヤー、コンピュータープレイヤー、国旗は後で変えることができます。",new(54,78),.36f,new(170,206,216));
+        if(_screen is Screen.CastRolling or Screen.CastReview)_ui.Button(CastDuplicateButton,(_setup.AllowDuplicateCharacters?"✓ ":"□ ")+"同キャラ有り",_setup.AllowDuplicateCharacters?Accent:Muted,.48f);
         _ui.Button(CastBack,"世界へ戻る",Muted,0.48f);
         _ui.Button(CastRetry,_screen is Screen.CastRolling or Screen.CastReview?"人物を再抽選":"配置を再抽選",Muted,0.48f);
         string action=IsRolling?"STOP":_screen==Screen.CastReview?"登場人物を確定 / 区画権利へ":_screen==Screen.PlacementReview?"区画権利を確定":"区画権利を確定済み";
@@ -722,6 +725,7 @@ public partial class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
+        if(IsOpeningScreen){DrawOpeningFrame(gameTime);base.Draw(gameTime);return;}
         if(_autoPaused){DrawAutoPause();base.Draw(gameTime);return;}
         _setup.Robots.PartPlanning.Invalidate();
         BeginNewspaperToyPatternFrame();if(!_conquestOverview)NotifyPlayerTurn();
