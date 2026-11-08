@@ -120,6 +120,7 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorkshop) && field.Name=="<IntegratedProduct>k__BackingField")continue;
                     if(type==typeof(RobotWorkshop) && field.Name=="<IntegratedPlans>k__BackingField"){field.SetValue(value,new[]{new ProductionPlan(RobotParts.Head|RobotParts.Body,9,false,RobotParts.Head|RobotParts.Body),new ProductionPlan(RobotParts.Body|RobotParts.Legs,12,false,RobotParts.Body|RobotParts.Legs)});continue;}
                     if(type==typeof(BattleState) && field.Name=="GlobalTurn"){field.SetValue(value,0);continue;}
+                    if(type==typeof(BattleState) && field.Name=="<PursuitHistory>k__BackingField"){field.SetValue(value,new List<string>());continue;}
                     if(type==typeof(BattleState) && field.Name=="<PersuadedUnits>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
                     if(type==typeof(BattleUnitView) && field.Name=="<Robot>k__BackingField")continue;
                     // Defaults for fields introduced after older turn-boundary saves.

@@ -130,6 +130,7 @@ static void ResolveTransfers(WorldSetup w)=>typeof(RobotLongDelivery).GetMethod(
 {
     var b=new BattleState(1,new()){Kind=BattleKind.Edge};b.AddArmy(0,0,new[]{new Robot(1,0,RobotParts.Complete)});b.AddArmy(1,1,new[]{new Robot(2,1,RobotParts.Complete)});b.Reinforce();
     var a=b.Units.Single(u=>u.Owner==0);var rifle=b.Units.Single(u=>u.Owner==1);a.Position=new(6,5);rifle.Position=new(7,6);a.Role=rifle.Role=BattleRole.Soldier;a.Daggers=1;rifle.Daggers=0;a.Rifles=1;rifle.Rifles=2;
+    b.Lessons[0]=b.Lessons[1]=BattleLesson.PursuitLoop;
     Check(BattleAi.Choose(b,a).Step==Point.Zero,"One soldier breaks diagonal pursuit by holding for an approach");
     rifle.Position=new(7,5);var step=BattleAi.Choose(b,rifle).Step;Check(BattleAi.Distance(rifle.Position+step,a.Position)>=2,"A rifle-only soldier creates a firing interval from an adjacent enemy");
 }

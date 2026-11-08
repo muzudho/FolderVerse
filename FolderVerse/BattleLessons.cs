@@ -5,12 +5,13 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 
 [Flags]
-public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8,ShieldSupport=16,CloseForDagger=32,CollisionTempo=64,RelieveFront=128,WaitingDaggerSafety=256,CornerEscape=512,ClearEscape=1024,EmptyHome=2048 }
+public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8,ShieldSupport=16,CloseForDagger=32,CollisionTempo=64,RelieveFront=128,WaitingDaggerSafety=256,CornerEscape=512,ClearEscape=1024,EmptyHome=2048,PursuitLoop=4096 }
 public sealed record LessonAward(int Owner,BattleLesson Lesson);
 public sealed partial class BattleLessons
 {
-    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine,BattleLesson.ShieldSupport,BattleLesson.CloseForDagger,BattleLesson.CollisionTempo,BattleLesson.RelieveFront,BattleLesson.WaitingDaggerSafety,BattleLesson.CornerEscape,BattleLesson.ClearEscape,BattleLesson.EmptyHome};
+    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine,BattleLesson.ShieldSupport,BattleLesson.CloseForDagger,BattleLesson.CollisionTempo,BattleLesson.RelieveFront,BattleLesson.WaitingDaggerSafety,BattleLesson.CornerEscape,BattleLesson.ClearEscape,BattleLesson.EmptyHome,BattleLesson.PursuitLoop};
     public static string Title(BattleLesson lesson)=>lesson switch {
+        BattleLesson.PursuitLoop=>"戦訓#13 追いかけ合って元に戻った",
         BattleLesson.FlagCourtesy=>"戦訓#1 旗でお見合い",
         BattleLesson.RetreatBackwards=>"戦訓#2 撤退したら背中を撃たれた",
         BattleLesson.LeaveFiringLine=>"戦訓#4 射線にいるのに横向いて短剣振ってしまって撃たれた",

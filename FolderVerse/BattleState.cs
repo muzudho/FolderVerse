@@ -68,6 +68,7 @@ public sealed partial class BattleState
     public List<BattleEvent> Events {get;}=new();
     public List<BattleFrame> Frames {get;}=new();
     public List<BattleAttack> Attacks {get;}=new();
+    public List<string> PursuitHistory {get;}=new();
     public List<BattlePersuasion> Persuasions {get;}=new();
     public int GlobalTurn;
     public BattleLesson[] Lessons=new BattleLesson[WorldSetup.CastCount];

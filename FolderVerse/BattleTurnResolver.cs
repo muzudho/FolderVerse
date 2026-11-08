@@ -13,6 +13,8 @@ public static partial class BattleTurnResolver
         battle.Check();var units=battle.Units.Where(u=>u.Active).OrderBy(u=>u.Id).ToArray();
         foreach(var u in units.Where(u=>battle.Army(u.Owner).Withdrawing))u.Retreating=true;
         var actions=units.ToDictionary(u=>u.Id,u=>orders!=null && orders.TryGetValue(u.Id,out var action)?action:BattleAi.Choose(battle,u));
+        if(orders==null)BattleLessons.ObservePursuit(battle,units,actions);
+        else battle.PursuitHistory.Clear();
         foreach(var unit in units)
         {
             var action=actions[unit.Id];

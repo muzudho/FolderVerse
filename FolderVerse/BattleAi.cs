@@ -11,7 +11,7 @@ public static class BattleAi
     public static BattleAction Choose(BattleState battle,BattleUnit unit)
     {
         var action=ChooseCore(battle,unit);
-        if(!unit.Retreating && unit.Role==BattleRole.Soldier && action.Weapon==BattleWeapon.None){
+        if(BattleLessons.Has(battle,unit,BattleLesson.PursuitLoop) && !unit.Retreating && unit.Role==BattleRole.Soldier && action.Weapon==BattleWeapon.None){
             var enemy=battle.Units.Where(u=>u.Active && !battle.Allied(u.Owner,unit.Owner)).OrderBy(u=>Distance(u.Position,unit.Position)).ThenBy(u=>u.Id).FirstOrDefault();
             if(enemy!=null){
                 var delta=unit.Position-enemy.Position;int distance=Distance(unit.Position,enemy.Position);
