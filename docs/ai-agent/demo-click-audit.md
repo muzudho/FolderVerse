@@ -1386,3 +1386,111 @@
 - 開始 05:59:50 JST、終了 06:00:06 JST。部分点検完了。HEAD=81d4057cee77b11bdcec2f6bc64637b549e1ef84。開始時差分は Game1.ComputerMarches.cs、Game1.Invasion.cs、Game1.Movement.cs と点検・修正記録。ゲーム・検証プロセスなし。
 - ALSOFT_DRIVERS=null で既存分離出力 dotnet artifacts/corner-lesson/DemoAuditCpuSortie.dll を実行し終了コード0。地点93の通常ピッカーで4クリック、征服者17の地点204への通常移動選択、確定後の閉鎖と予約件数維持、スキップ後の人間復帰を再確認。960×540。証拠 artifacts/demo-click-audit/audit-latest-cpu-sortie.log。ログの Dedicated peaceful preview は旧文言。
 - 新規不具合なし。和平指示の実行回数、CPU赤チェック、優先Demo経路は今回未再検証。次回は配送後の和平移動の結果と通常再生終了時の復帰を照合。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-07 07:00回
+
+- 開始 07:04:51 JST、終了 07:05:14 JST。部分点検完了。HEAD=6f8118c4。開始時に追跡差分なし。
+- マージ時の分離ビルドから ALSOFT_DRIVERS=null で CountrySettings.dll --ui を実行。通常出撃ピッカーの確定後に閉じることと予約件数を検査する CountrySettingsUi.cs 78行目で失敗。実解像度・失敗時の予約件数は未採取。個別選択の追加に対し、既存検査は1ステップで確定を期待しているため、二重予約の有無は未確認。ゲーム不具合の新規登録は保留。
+- 次回は現行HEADから再ビルドし、個別選択の各段階と確定前後の件数を照合。和平移動の実行回数、優先Demo経路、緑赤チェックは今回未検証。ゲーム・テスト無変更。
+
+- 07:30修正回で出撃UI検査を個別選択の手順へ更新。選択と確定の全段階で二重予約なしを確認し、07:00回の検査失敗を解消。DEMO-0016のその他の未確認範囲は継続。
+
+### 実行履歴：2026-11-07 08:00回
+
+- 開始 07:56:55 JST、終了 07:57:26 JST。部分点検完了。HEAD=6f8118c4。開始時差分は CountrySettings のテストと点検・修正記録。ゲーム・検証プロセスなし。
+- dotnet build tests/DemoUi --source artifacts/nuget-feed を既存の一時出力 artifacts/tmp/delete-after-2026-11-07/merge-check で実行し警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=57 で DemoUi.dll は終了コード0。初回配送クリック (256,998)、地図復帰、地星儀／展開図、18FPSの端地点移動、拒否時処遇、終了ループとDemoラベル描画を確認。証拠は同出力の audit-demo-seed57.log。実ウィンドウ解像度は未採取。
+- 新規不具合なし。左右インスペクター、直送便の退避復帰、緑赤チェック、CPU和平移動の実行回数は今回未再検証。次回はマージ後の優先UIと緑赤チェックの個別診断を再実行する。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-07 09:00回
+
+- 開始 09:03:53 JST、終了 09:04:44 JST。部分点検完了。HEAD=6f8118c4。開始時差分は CountrySettings テストと点検・修正記録。ゲーム・検証プロセスなし。
+- DemoInspectorUi と既存の DemoAuditPlanningChecks を現行コードから artifacts/tmp/delete-after-2026-11-07/merge-check へビルドし、両方とも警告・エラー0。ALSOFT_DRIVERS=null で順次実行。証拠は同出力の audit-DemoInspectorUi.log と audit-DemoAuditPlanningChecks.log。
+- 開戦診断は終了コード0。展開図／地星儀、1080p／540pで緑赤チェック、出撃確定・即予約、閉鎖、ターン終了と配送後の進軍を確認。DemoInspectorUi は庁舎を開いて地点IDと担当者IDが一致することを期待する検査（Program.cs 20行目）で停止し、終了コード -532462766。停止時のID・解像度・描画は未採取。ゲーム不具合としての採番は保留。
+- 次回は庁舎入力の実矩形、表示中の地点IDと担当者IDを照合して原因を切り分ける。直送便の退避復帰、左右インスペクター、CPU和平移動の実行回数は今回未確認。ゲームコード・テスト無変更。
+
+- 09:30修正回で庁舎検査の初期巡回番号を修正し、実描画を伴う再実行が成功。ゲームの不具合としては登録せず、検査失敗を解消。
+
+### 実行履歴：2026-11-07 10:00回
+
+- 開始 10:01:54 JST、終了 10:02:11 JST。部分点検完了。HEAD=6f8118c4。開始時差分は CountrySettings・DemoInspectorUi のテストと点検・修正記録。ゲーム・検証プロセスなし。
+- 既存 DemoAuditDirect800.csproj を一時出力 artifacts/tmp/delete-after-2026-11-07/merge-check へビルド。早期終了による警告1、エラー0。ALSOFT_DRIVERS=null で実行し終了コード0。プライマリー退避・復帰・閉鎖、左右それぞれの予約、1280×800の描画で論理ポインター(960,600)付近のドラッグ中の胴体を確認。証拠は同出力の audit-direct800.log と direct800-0.png。
+- 新規不具合なし。自然Demo巡回の直送便、緑赤チェックとCPU和平移動の実行回数は今回未再検証。次回はCPU和平移動の通常再生完了と復帰を照合。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-07 11:00回
+
+- 開始 11:01:56 JST、終了 11:03:09 JST。部分点検完了。HEAD=6f8118c4。開始時差分は CountrySettings・DemoInspectorUi のテストと点検・修正記録。ゲーム・検証プロセスなし。
+- 非追跡の DemoAuditCpuSortie を現行の一時停止メニュー手順に合わせ、スキップなしで再生を進める診断を既存の一時出力へ再ビルド。警告・エラー0。ALSOFT_DRIVERS=null で実行し終了コード0。960×540。征服者17の和平移動先204と終了後の現在地204が一致し、プレイヤー0への復帰を確認。証拠 artifacts/tmp/delete-after-2026-11-07/merge-check/audit-cpu-completion.log。
+- 新規不具合なし。個々の指示の実行回数は未計測。CPU赤チェックと直送便の自然Demo巡回は未確認。次回はCPUの赤チェック経路を照合。ゲームコード・追跡テスト無変更。
+
+### 実行履歴：2026-11-07 12:00回
+
+- 開始 11:56:57 JST、終了 11:57:12 JST。部分点検完了。HEAD=6f8118c4。開始時差分は CountrySettings・DemoInspectorUi のテストと点検・修正記録。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null で既存一時出力 artifacts/tmp/delete-after-2026-11-07/merge-check/CountrySettings.dll --ui を実行し終了コード0。個別選択、確定時の予約件数維持、スキップ復帰を再確認。証拠は同出力の audit-country-latest.log。実解像度は今回未採取。
+- CPU赤チェックはコード照合のみ。Game1.ComputerMarches.cs は確定後に直接閉鎖し、NodeCheckClick を呼ばない。Game1.NodeChecks.cs の NodeCheckPlayer も人間の制御者がいないCPUでは -1 となるため、通常のハンドル入力を追加するだけではチェックを保持できない。既存DEMO-0016の未対応範囲として記録。実描画でチェック前後の状態は未確認。
+- 次回はCPU出撃確定後のハンドル表示とチェック状態を実描画で照合。優先Demo経路と直送便自然巡回は今回未再検証。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-07 13:00回
+
+- 開始 13:03:28 JST、終了 13:04:13 JST。部分点検完了。HEAD=6f8118c4。開始時差分は CountrySettings・DemoInspectorUi のテストと点検・修正記録。ゲーム・検証プロセスなし。
+- 既存の非追跡 DemoAuditCpuSortie に確定直後の撮影を追加し一時出力へビルド。警告・エラー0、ALSOFT_DRIVERS=null で実行し終了コード0。960×540。征服者1・地点93で個別4体の選択確定後、段階4となりカーソルが閉じるハンドルを指し、赤チェックは灰色のまま。NodeCheckPlayer=-1。期待は赤チェックの実入力を経て閉じること。既存DEMO-0016の未対応経路として実描画で再現、重複登録なし。
+- 証拠 artifacts/demo-click-audit/audit-latest-cpu-red.png と artifacts/tmp/delete-after-2026-11-07/merge-check/audit-cpu-red.log。和平移動の通常完了と人間復帰も成功。次回はCPU表示中のチェック所有者と、チェック→閉鎖の段階を修正対象にする。直送便・優先Demo経路は今回未再検証。ゲームコード・追跡テスト無変更。
+
+- 13:30修正回でDEMO-0016のCPU赤チェックを修正。確定後の実ハンドル入力、960×540の赤チェック描画と終了時消去を検証。その他の未確認範囲は修正記録参照。
+
+### 実行履歴：2026-11-07 14:00回
+
+- 開始 13:55:57 JST、終了 13:56:13 JST。部分点検完了。HEAD=6f8118c4。開始時差分はCPU赤チェックのゲーム変更、CountrySettings・DemoInspectorUi のテストと点検・修正記録。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null で一時出力 artifacts/tmp/delete-after-2026-11-07/merge-check/CountrySettings.dll --ui を実行し終了コード0。内政で通常格納庫を開いて組み立てる経路と軍事の赤チェック・終了時消去を再確認。実解像度は今回未採取。
+- CPU内政の緑チェックはコード上未対応。Game1.ComputerDomestic.cs は組み立て後に次の地点へ切り替え、NodeCheckClick を呼ばない。今回の実描画で緑チェック前後は未採取。既存DEMO-0017の残項目として記録し重複登録なし。
+- 次回は組み立て後の格納庫ハンドルと緑チェック状態を実描画で照合。直送便・優先Demo経路は今回未再検証。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-07 15:00回
+
+- 開始 15:02:59 JST、終了 15:03:13 JST。部分点検完了。HEAD=6f8118c4。開始時差分はCPU赤チェックのゲーム変更、CountrySettings・DemoInspectorUi テストと点検・修正記録。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null で一時出力の CountrySettings.dll --ui を実行し終了コード0。960×540の組み立て直後の格納庫描画を目視。組み立て成功メッセージが表示され、手は格納庫タブを指し、ハンドルのチェックは灰色のまま。期待は作業終了後に通常ハンドルから緑チェックを付けること。既存DEMO-0017の未対応範囲を実描画で再現。重複登録なし。
+- 証拠 artifacts/demo-click-audit/audit-latest-computer-domestic.png（既存の保存先を再利用）。次回は組み立て後の緑チェックと閉鎖、内政終了時の消去を修正対象にする。直送便自然Demo・優先ボタンの再巡回は未実施。ゲームコード・テスト無変更。
+
+- 15:30修正回でDEMO-0017のCPU緑チェックを修正。960×540で実描画検証済み。配送前消去は状態検査で確認。その他の未確認範囲は修正記録参照。
+
+### 実行履歴：2026-11-07 16:00回
+
+- 開始 15:59:30 JST、終了 16:00:07 JST。部分点検完了。HEAD=6f8118c4。開始時差分はCPU緑赤チェックのゲーム変更、CountrySettings・DemoInspectorUi のテストと点検・修正記録。ゲーム・検証プロセスなし。
+- 非追跡の DemoAuditCpuSortie を内政もスキップせず完了する診断へ更新し、既存の一時出力へビルド。警告・エラー0。ALSOFT_DRIVERS=null で実行し終了コード0。960×540。内政の通常再生終了時に緑チェック一覧が空となり、人間へ復帰して配送へ進むことを確認。軍事の個別選択、赤チェック、和平移動先204への到着と通常再生終了も成功。証拠 artifacts/tmp/delete-after-2026-11-07/merge-check/audit-normal-domestic.log。
+- 新規不具合なし。緑チェック消去直後の画像、画面外指示での専用表示への退避、直送便自然Demo巡回は未確認。次回は画面外のCPU内政で通常UIへの復帰を照合。ゲームコード・追跡テスト無変更。
+
+### 実行履歴：2026-11-07 17:00回
+
+- 開始 17:01:31 JST、終了 17:01:45 JST。部分点検完了。HEAD=6f8118c4。開始時差分はCPU緑赤チェックのゲーム変更、CountrySettings・DemoInspectorUi テストと点検・修正記録。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=58 で既存一時出力 artifacts/tmp/delete-after-2026-11-07/merge-check/DemoUi.dll を実行し終了コード0。配送クリック (256,998)、地図復帰、地星儀／展開図、18FPSの端地点移動、拒否時処遇、終了ループとDemoラベル描画を確認。証拠は同出力の audit-demo-seed58.log。実解像度は今回未採取。
+- 新規不具合なし。画面外CPU内政での専用表示への退避と復帰は今回実施できず未確認。直送便自然巡回とCPU緑赤チェックは今回未再検証。次回はCPU地点を画面外にした診断で退避・復帰を照合。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-07 18:00回
+
+- 開始 18:03:35 JST、終了 18:04:45 JST。部分点検完了。HEAD=6f8118c4。開始時差分はCPU緑赤チェックのゲーム変更、CountrySettings・DemoInspectorUi テストと点検・修正記録。ゲーム・検証プロセスなし。
+- 既存CPU診断から非追跡 DemoAuditOffscreenDomestic を作成。地図を Drag(100000,100000) で画面外へ移し、CPU内政が専用表示に戻る段階-1を確認。960×540の audit-offscreen-domestic.png を目視し、町名・指示の専用パネルを確認。スキップで人間へ復帰し配送へ進むことも成功。
+- 一時出力へビルドし診断の早期終了警告1、エラー0。ALSOFT_DRIVERS=null で実行し終了コード0。証拠 artifacts/tmp/delete-after-2026-11-07/merge-check/audit-offscreen.log と artifacts/demo-click-audit/audit-offscreen-domestic.png。初回は診断の読み取り専用プロパティ代入でコンパイル失敗し、公開Drag操作へ直して再試行。
+- 既存DEMO-0017の専用表示残項目として記録。自然巡回での画面外条件、スキップせず次地点で通常UIへ戻る経路は未確認。次回は次地点での通常UI復帰を照合。ゲームコード・追跡テスト無変更。
+
+### 実行履歴：2026-11-07 19:00回
+
+- 開始 19:03:03 JST、終了 19:03:37 JST。部分点検完了。HEAD=6f8118c4。開始時差分はCPU緑赤チェックのゲーム変更、CountrySettings・DemoInspectorUi テストと点検・修正記録。ゲーム・検証プロセスなし。
+- 既存の非追跡 DemoAuditOffscreenDomestic を画面外地点の専用表示から次地点までスキップせず進める診断へ更新。既存一時出力へビルドし、診断の早期終了警告1、エラー0。ALSOFT_DRIVERS=null で実行し終了コード0。960×540。次の征服者3・地点102で通常格納庫に戻り、段階2となることを状態検査で確認。その後スキップで人間へ復帰し配送へ進むことも成功。
+- 証拠 artifacts/tmp/delete-after-2026-11-07/merge-check/audit-offscreen-return.log。新規不具合なし。次地点での復帰画像、自然巡回で同じ画面外条件になる経路、直送便自然Demoは未確認。次回は優先Demo経路の別Seed巡回または復帰直後の描画を照合。ゲームコード・追跡テスト無変更。
+
+### 実行履歴：2026-11-07 20:00回
+
+- 開始 20:03:05 JST、終了 20:03:41 JST。部分点検完了。HEAD=6f8118c4。開始時差分はCPU緑赤チェックのゲーム変更、CountrySettings・DemoInspectorUi テストと点検・修正記録。ゲーム・検証プロセスなし。
+- 既存非追跡 DemoAuditOffscreenDomestic に復帰後の撮影を追加し一時出力へビルド。早期終了の警告1、エラー0。ALSOFT_DRIVERS=null で実行し終了コード0。960×540の artifacts/demo-click-audit/audit-offscreen-return.png で征服者3・地点102の通常格納庫と格納庫タブを指す手を目視。画面外地点の専用表示後、次地点では地図・地点・陣営色が切り替わって通常UIへ戻る。スキップによる人間復帰も成功。
+- 証拠は同画像と artifacts/tmp/delete-after-2026-11-07/merge-check/audit-offscreen-return.log。新規不具合なし。自然巡回で画面外になる条件と直送便自然Demoは未確認。次回は別Seed巡回と優先UIの回帰。ゲームコード・追跡テスト無変更。
+
+### 実行履歴：2026-11-07 21:00回
+
+- 開始 20:57:35 JST、終了 20:57:46 JST。部分点検完了。HEAD=6f8118c4。開始時差分はCPU緑赤チェックのゲーム変更、CountrySettings・DemoInspectorUi テストと点検・修正記録。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=59 で既存一時出力 artifacts/tmp/delete-after-2026-11-07/merge-check/DemoUi.dll を実行し終了コード0。配送クリック (256,998)、地図復帰、地星儀／展開図、18FPSの端地点移動、拒否時処遇、終了ループとDemoラベル描画を確認。証拠は同出力の audit-demo-seed59.log。実解像度は未採取。
+- 新規不具合なし。優先ボタンの個別矩形再照合、直送便自然Demo、CPU画面外条件の自然発生、緑赤チェックは今回未再検証。次回は優先UI個別検査の回帰を実施。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-07 22:00回
+
+- 開始 22:00:06 JST、終了 22:00:36 JST。部分点検完了。HEAD=6f8118c4。開始時差分はCPU緑赤チェックのゲーム変更、CountrySettings・DemoInspectorUi テストと点検・修正記録。ゲーム・検証プロセスなし。
+- ALSOFT_DRIVERS=null で既存一時出力 artifacts/tmp/delete-after-2026-11-07/merge-check の DemoInspectorUi.dll と DemoAuditPlanningChecks.dll を実行し、両方とも終了コード0。1080p／540pで工場の現行矩形と製造、庁舎、閉鎖、直送便プライマリー、開戦の選択確定・即予約・赤チェック・閉鎖・ターン終了・配送後の進軍を再確認。証拠は同出力の audit-latest-DemoInspectorUi.log と audit-latest-DemoAuditPlanningChecks.log。
+- 新規不具合なし。直送便自然DemoとCPU画面外条件の自然発生、物理マウスによるチェック地点再選択は未確認。次回は未確認経路の診断条件を照合する。ゲーム・テスト無変更。

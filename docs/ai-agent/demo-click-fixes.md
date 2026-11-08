@@ -312,3 +312,25 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 - 完了 05:30:07 JST。DEMO-0016の和平移動。Game1.ComputerMarches.cs と Game1.Movement.cs で通常の移動パネル、地図のヒット判定、移動予約ボタンの入力を共用。表示中の確定は追加予約を作らず、元の指示一覧が実行を担当する。通常UIで選べない指示は専用表示に戻る。
 - dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/corner-lesson/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null で DemoAuditCpuSortie.dll と DemoAuditPlanningChecks.dll は終了コード0。征服者17の地点204の選択、確定後の閉鎖と追加予約なし、スキップ復帰を確認。960×540の audit-latest-computer-fallback.png で通常移動パネルと地点を指す手を目視。Demoの緑赤チェックと予約から配送後の進軍も再確認。
 - 和平移動ごとの実行回数と残る専用表示・CPU赤チェックは未検証。
+
+## 2026-11-07 07:30修正回
+
+- 完了 07:29:11 JST。DEMO-0016のマージ後回帰検査。CountrySettingsUi.cs を個別選択の手順に合わせ、各クリックで1体増えること、AI指定IDと一致すること、確定前後に予約件数が増えないことを検査。ゲームコード無変更。
+- dotnet build tests/CountrySettings --source artifacts/nuget-feed -p:OutputPath=artifacts/tmp/delete-after-2026-11-07/merge-check/ -v quiet --disable-build-servers 相当の絶対出力パス指定で警告・エラー0。ALSOFT_DRIVERS=null で同出力の CountrySettings.dll --ui は終了コード0。選択ごとの描画、確定時の閉鎖、スキップ後の復帰を確認。今回は画像の目視比較とDemo自然巡回は未実施。
+
+## 2026-11-07 09:30修正回
+
+- 完了 09:32:13 JST。09:00回の庁舎検査（DEMO新規採番なし）。tests/DemoInspectorUi/Program.cs の初期巡回番号を1に設定。既定値0では開戦経路を選ぶため、庁舎検査に到達しなかった。ゲームコード無変更。
+- dotnet build tests/DemoInspectorUi --source artifacts/nuget-feed -p:OutputPath=<絶対パス>/artifacts/tmp/delete-after-2026-11-07/merge-check/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null で DemoInspectorUi.dll は終了コード0。1080p／540pで庁舎、閉鎖、直送便プライマリー、工場の実矩形と製造開始を検証。証拠は同出力の fix-DemoInspectorUi.log。左右の直送便とCPU和平移動の実行回数は未再検証。
+
+## 2026-11-07 13:30修正回
+
+- 完了 13:29:39 JST。DEMO-0016のCPU赤チェック。Game1.ComputerMarches.cs に通常の NodeCheckButton と NodeCheckClick を使う確定→赤チェック→閉鎖の段階を追加。Game1.NodeChecks.cs でCPU軍事表示中のチェック所有者を表示中の征服者にし、再生終了時にCPUの赤チェックを消去する。既に付いたチェックは解除しない。
+- CountrySettingsUi に赤チェックの保持と終了時消去の検査を追加。tests/CountrySettings と既存 DemoAuditCpuSortie を artifacts/tmp/delete-after-2026-11-07/merge-check へビルドし警告・エラー0。ALSOFT_DRIVERS=null で両方の実行がコード0。個別4選択、予約件数維持、赤チェック保持・消去、スキップ復帰、通常再生完了を確認。
+- artifacts/demo-click-audit/audit-latest-cpu-red.png（960×540）でハンドルと地点の赤チェックを目視。診断ログの段階5・所有者1も一致。既存 DemoAuditPlanningChecks もコード0で展開図／地星儀の1080p／540pを確認。証拠は一時出力の fix-cpu-red.log、fix-cpu-red-draw.log、fix-red-demo-regression.log。CPU内政の緑チェック、画面外の指示や専用表示への退避は未検証。
+
+## 2026-11-07 15:30修正回
+
+- 完了 15:28:15 JST。DEMO-0017のCPU内政緑チェック。Game1.ComputerDomestic.cs に格納庫確認後の実ハンドル入力→閉鎖→次地点の段階を追加し、内政終了時にCPUの緑チェックを消去。Game1.NodeChecks.cs でCPU内政表示中も表示中の征服者へ保持。
+- CountrySettingsUi に緑チェック保持と配送前消去の検査を追加。CountrySettings と既存 DemoAuditCpuSortie を artifacts/tmp/delete-after-2026-11-07/merge-check へビルドし、両方とも警告・エラー0。ALSOFT_DRIVERS=null で両実行は終了コード0。960×540の artifacts/demo-click-audit/audit-latest-computer-domestic.png でハンドル・地点・地点見出しの緑チェックを目視。赤チェックと和平移動の通常完了も回帰成功。
+- 証拠は一時出力の fix-cpu-green.log と fix-cpu-green-draw.log。画面外の地点で専用表示へ戻る経路、全人数・全Seed、内政の通常終了時の緑チェック消去の実描画は未確認。

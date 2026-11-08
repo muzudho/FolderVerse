@@ -58,6 +58,7 @@ public partial class Game1
             if(ruler!=_setup.PlayerSlot)ShowComputerView(ruler);
             return true;
         }
+        foreach(int ruler in _visibleComputerMarches.Select(order=>order.Ruler).Distinct())_warChecksByPlayer.Remove(ruler);
         var orders=_computerMarches;
         _computerMarches=null;
         _visibleComputerMarches=null;
@@ -99,7 +100,7 @@ public partial class Game1
                     _computerWarClick=ConfirmMoveButton.Center;
                     MovementClick(_computerWarClick,new KeyboardState());
                     if(_movementOpen)break;
-                    _computerWarStage=5;
+                    _computerWarStage=6;
                     return true;
                 }
                 int source=_invasionSources.FindIndex(row=>!row.Queen && row.Owner==order.Ruler && row.Node==order.SourceNode);
@@ -131,6 +132,11 @@ public partial class Game1
                 InvasionPickerInput(true,false);
                 return true;
             case 4:
+                _computerWarClick=NodeCheckButton.Center;
+                if(!_warChecksByPlayer.TryGetValue(order.Ruler,out var checks) || !checks.Contains(order.TargetNode))
+                    NodeCheckClick(_computerWarClick);
+                return true;
+            case 5:
                 _computerWarClick=InspectorClose.Center;
                 DomesticViewClick(_computerWarClick);
                 return true;
@@ -149,11 +155,12 @@ public partial class Game1
         if(_computerMarches==null)return;
         if(_computerWarStage>0)
         {
-            if(_computerWarStage==5 || (_computerWarStage==1 && _visibleComputerMarches[_computerMarchIndex].Peaceful))return;
+            if(_computerWarStage==6 || (_computerWarStage==1 && _visibleComputerMarches[_computerMarchIndex].Peaceful))return;
             _spriteBatch.Begin(transformMatrix:transform);
             // Once the modal opens, the source button is behind it.
             if(_invasionPicker>=0)DrawDemoHand(_computerWarClick.ToVector2(),Math.Clamp(.4f-(float)_computerMarchAge,0,.4f));
-            else if(_computerWarStage==4)DrawDemoHand(InspectorClose.Center.ToVector2(),0);
+            else if(_computerWarStage==4)DrawDemoHand(NodeCheckButton.Center.ToVector2(),0);
+            else if(_computerWarStage==5)DrawDemoHand(InspectorClose.Center.ToVector2(),0);
             else DrawDemoHand(_computerWarClick.ToVector2(),Math.Clamp(.4f-(float)_computerMarchAge,0,.4f));
             _spriteBatch.End();
             return;
