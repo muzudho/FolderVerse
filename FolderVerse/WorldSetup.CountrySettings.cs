@@ -36,7 +36,8 @@ public sealed partial class WorldSetup
             }
         }
     }
-    public static readonly string[] CountryEmblemNames={"なし","太陽","月","星","スペード","ハート","ダイヤ","クローバー","炎","水滴","雷","うずまき","雪の結晶","チューリップ"};
+    // Keep existing IDs stable: replace the three retired motifs in place and append the gem.
+    public static readonly string[] CountryEmblemNames={"なし","猫","イルカ","四分音符","スペード","ハート","トランプのダイヤ","クローバー","炎","水滴","雷","うずまき","雪の結晶","チューリップ","ダイヤモンド","虹"};
     public int CountryEmblem(int ruler)=>ruler<0?0:_countryEmblems?[ruler]??0;
     public void SetCountryEmblem(int ruler,int emblem)
     {
@@ -51,7 +52,7 @@ public sealed partial class WorldSetup
         _showComputerOperations??=new bool[CastCount];
         _showComputerOperations[ruler]=!_showComputerOperations[ruler];
     }
-    public static readonly string[] CountryPatternNames={"無地","横縞","水玉","格子","市松"};
+    public static readonly string[] CountryPatternNames={"無地","斜め縞","水玉","格子","市松"};
     public bool IsHumanPlayer(int ruler)=>!ComputerOnly && (HumanPlayers.Count>0?HumanPlayers.Contains(ruler):ruler==Relations.Leader);
     public void SetHumanPlayer(int ruler,bool human)
     {
@@ -80,10 +81,11 @@ public sealed partial class WorldSetup
     }
     // Canonical patterns only; rotated stripe/grid variants are not separate choices.
     // Coordinates are local to the surface, so the pattern follows the rotating map.
+    public static bool CountryStripeSecondary(float x,float y)=>((x+y)%5+5)%5<2;
     public static bool CountryPatternSecondary(int pattern,int x,int y)
     {
         x=(x%10+10)%10;y=(y%10+10)%10;
-        return pattern switch {1=>y%5<2,2=>x%5==2 && y%5==2,3=>x%5==0 || y%5==0,4=>(x/2+y/2)%2==0,_=>false};
+        return pattern switch {1=>CountryStripeSecondary(x,y),2=>x%5==2 && y%5==2,3=>x%5==0 || y%5==0,4=>(x/2+y/2)%2==0,_=>false};
     }
     public Color CountryMapColor(int ruler,int x,int y)=>ruler<0?OwnerColor(ruler):CountryPatternSecondary(CountryPattern(ruler),x,y)?Colors[CountrySecondaryColor(ruler)]:OwnerColor(ruler);
 }

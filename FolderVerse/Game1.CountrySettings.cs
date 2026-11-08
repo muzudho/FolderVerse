@@ -13,7 +13,7 @@ public partial class Game1
     private static Rectangle CountrySettingsCard(int i)=>new(90+i%5*194,200+i/5*62,186,56);
     private static Rectangle CountryColorOption(int row,int i)=>new(1110+i%10*66,645+row*120+i/10*48,58,42);
     private static Rectangle CountryPatternOption(int i)=>new(1110+i%3*220,430+i/3*64,208,54);
-    private static Rectangle CountryEmblemOption(int i)=>new(1110+i%7*100,896+i/7*74,92,68);
+    private static Rectangle CountryEmblemOption(int i)=>new(1110+i%8*87,896+i/8*74,80,68);
     private static Rectangle CountryFlagShapeOption(int i)=>new(1110+i*170,565,162,38);
     private void OpenCountrySettings()
     {
@@ -132,7 +132,8 @@ public partial class Game1
         for(int i=0;i<WorldSetup.CountryEmblemNames.Length;i++){
             var option=CountryEmblemOption(i);_ui.Button(option,"",_setup.CountryEmblem(ruler)==i?Accent:Muted,.4f);
             if(i!=0)CountryEmblemArt.Draw(_ui,new(option.Center.X-20,option.Y+3,40,40),i,WorldSetup.Colors[_setup.CountrySecondaryColor(ruler)]);
-            _ui.Center(WorldSetup.CountryEmblemNames[i],new(option.X,option.Bottom-25,option.Width,22),.28f,Cream);
+            string label=WorldSetup.CountryEmblemNames[i];
+            _ui.Center(label,new(option.X,option.Bottom-25,option.Width,22),Math.Min(.28f,(option.Width-4)/_font.MeasureString(label).X),Cream);
         }
     }
 }

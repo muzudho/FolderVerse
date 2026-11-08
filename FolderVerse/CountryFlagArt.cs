@@ -30,6 +30,7 @@ public static class CountryFlagArt
         }
         if(mark)return WorldSetup.Colors[world.CountrySecondaryColor(owner)];
         if(outline)return new(12,23,31);
+        if(world.CountryPattern(owner)==1)return WorldSetup.CountryStripeSecondary((x+.5f)*10/36,(y+.5f)*10/24)?WorldSetup.Colors[world.CountrySecondaryColor(owner)]:world.OwnerColor(owner);
         return world.CountryMapColor(owner,x*10/36,y*10/24);
     }
     public static void Draw(UiPainter ui,WorldSetup world,int owner,Rectangle area,float opacity=1,Func<Color,Color> tint=null)
