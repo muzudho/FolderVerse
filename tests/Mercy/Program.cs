@@ -79,6 +79,6 @@ static WorldSetup Fixture(){
     foreach(var n in w.Nodes.All)n.Population.People[0]=0;
     foreach(var n in clone.Nodes.All)n.Population.People[0]=100000000;
     March[] Orders(WorldSetup world){March[] result=Array.Empty<March>();world.Campaign.Advance(world,-1,0,automaticAll:true,deferResolution:orders=>{result=orders.ToArray();return true;});return result;}
-    Check(Orders(w).SequenceEqual(Orders(clone)),"Changing only population cannot alter robot AI attack orders");
+    Check(System.Text.Json.JsonSerializer.Serialize(Orders(w))==System.Text.Json.JsonSerializer.Serialize(Orders(clone)),"Changing only population cannot alter robot AI attack orders");
 }
 Console.WriteLine("PASS: negotiated surrender counts and connected groups, hidden offers, CPU/human capture paths, failure, elimination order, revival, legacy saves and population-independent robot attack decisions.");

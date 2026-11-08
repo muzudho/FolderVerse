@@ -91,8 +91,9 @@ public sealed partial class ConquerorRelations
         {if(!Pending.Any(p=>p.Ruler==ruler)){Pending.Add(new(ruler,victor,node));Message="処遇を選んでください";}}
         else if(!Allied(ruler,Leader) && !world.HumanPlayers.Any(h=>Allied(ruler,h))){
             var captive=new Captive(ruler,victor,node);Pending.Add(captive);
-            var random=new SeedRandom(world.PlacementSeed^world.Population.Turn*7919^ruler*13007^victor*37);
-            if(Accepts(world,ruler) && random.Next(100)<40)Choose(world,captive,DefeatedChoice.Recruit);
+            // Prefer durable faction growth to a ransom when recruitment is accepted.
+            // Rejection and the human disposition menu retain their existing rules.
+            if(Accepts(world,ruler))Choose(world,captive,DefeatedChoice.Recruit);
             else if(CanMercy(world,captive)){EnsureComputerMercyOffer(world,captive);ResolveMercy(world,captive,ComputerMercyDemand(world,captive));}
             else Choose(world,captive,DefeatedChoice.RemoveBattery);
         }
