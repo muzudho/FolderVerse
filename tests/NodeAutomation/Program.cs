@@ -1,4 +1,5 @@
 using FolderVerse;
+CapacityChecks.Run();
 void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 var w=new RobotWorld();w.Initialize(4,2);for(int i=0;i<6;i++)w.Nodes[0].Add(w.Create(0,RobotParts.Complete));
 var f=w.Workshops[0];f.SelectPlan(3);f.SetRest(2,7);f.SetReservedSlots(5);f.AutoAssemblyDisabled=true;

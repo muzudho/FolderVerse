@@ -51,7 +51,8 @@ public partial class Game1
         {
             var at=Vector2.Lerp(NodeAt(shipment.Source),NodeAt(shipment.Target),PropagationTravel(shipment.Source,shipment.Target));
             int owner=_setup.Robots.Transport.LastOwners.GetValueOrDefault(shipment.RobotId);
-            _net.DrawMapRobot(_ui,new((int)at.X-12,(int)at.Y-32,24,36),_setup.OwnerColor(owner),shipment.Parts);
+            _net.DrawMapRobot(_ui,new((int)at.X-12,(int)at.Y-32,24,36),_setup.OwnerColor(owner),shipment.Parts,
+                pattern:_setup.CountryPattern(owner),secondary:WorldSetup.Colors[_setup.CountrySecondaryColor(owner)],emblem:_setup.CountryEmblem(owner));
         }
         if(movement && !DeliveryPlayback)foreach(var agent in _setup.Salvage.Agents.Where(a=>a.PreviousNode!=a.Node && _setup.Relations.Controls(a.Owner))){
             var at=Vector2.Lerp(NodeAt(agent.PreviousNode),NodeAt(agent.Node),PropagationTravel(agent.PreviousNode,agent.Node));

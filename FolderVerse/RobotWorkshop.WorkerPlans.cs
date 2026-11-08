@@ -17,6 +17,7 @@ public sealed partial class RobotWorkshop
         foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}){
             if((worker.Parts&part)==0)continue;
             Add(worker.Origin(part));Add(worker.IsCheap(part)?1:0);Add((int)(worker.DamagedParts&part));Add(worker.IsDamaged(part)?1:0);Add((int)worker.ConnectedParts(part));
+            if(worker.IsPremium(part))Add(2);
         }
         return (int)(hash&int.MaxValue);
     }
@@ -50,6 +51,7 @@ public sealed partial class RobotWorkshop
             }
         }
         _workerPlans=plans;
+        if(_premiumPlan!=null)_premiumPlan=_premiumPlan with {HeadOrigin=country,BodyOrigin=country,LegsOrigin=country};
         _workerAppointment=worker.Materialize() with {Id=0,Disposal=false,DefenseOnly=false,DefenseFlag=null,InterceptOnly=false,FactoryWorker=false,LastDomesticPersuasionTurn=-1,LastBattlePersuasionTurn=-1};
         // Legacy saves did not snapshot the catalogue. Preserve their in-progress recipe.
         if(active!=null){_selectedProductPlan=active;SelectedPlan=-1;}

@@ -34,12 +34,12 @@ public partial class Game1
         var rankBox=new Rectangle(x+panel.Width/2-40,y+245,135,62);
         DrawConquestNumber(entryBox,tally.Entry,entry);
         _ui.Center("entry no",new(entryBox.X,y+35,entryBox.Width,32),.43f*unit,Cream);
-        if(tally.Powered){
+        if(tally.Powered && !tally.Subordinate){
             DrawConquestNumber(cellsBox,tally.TotalCells,cells);
             _ui.Center(ToyCounterRenderer.SectorUnit(tally.TotalCells),new(cellsBox.X,y+156,cellsBox.Width,32),.43f*unit,Cream);
             _ui.Center($"× {tally.Scale} +",Token(85,145),.60f*unit,Cream);
         }else if(cells){
-            _ui.Center("電池無し -100 pts +",Token(0,230),.45f*unit,Cream);
+            _ui.Center(tally.Powered?"手下 0 pts +":$"脱落 {-tally.Scale} pts +",Token(0,230),.45f*unit,Cream);
         }
         _ui.Center("=",Token(315,40),.75f*unit,Cream);
         DrawConquestNumber(pointsBox,tally.Score(age),score);

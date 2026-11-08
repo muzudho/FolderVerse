@@ -27,6 +27,7 @@ public sealed partial class ConquestCampaign
         }
         _domesticSubmitted.Clear();
         if(party.Length>0)world.SelectTurnRuler(party[0]);
+        ComputerLogistics.Plan(world,automaticAll);
         ComputerFunctionTransfers.Plan(world,automaticAll);
         if(deferDelivery?.Invoke()==true)return false;
         BeginDelivery(world);
@@ -43,6 +44,8 @@ public sealed partial class ConquestCampaign
             (owner,target)=>world.Nodes.All[target].Owner<0 || world.Relations.Allied(owner,world.Nodes.All[target].Owner),industry:false);
         world.Robots.Transport.AppendPlannedTransfers(world.Robots.IntakePlayback);
         world.Robots.PartPlanning.Resolve(world);
+        world.Robots.LongDelivery.Advance(world);
+        world.Robots.AdvanceReturnHome(world);
         ResolveDeliverySorties(world);
         Phase=CampaignPhase.Delivery;Report=$"配送 {world.Robots.Transport.LastTransfers.Count} / 配送後に開戦予約を実行";
     }
@@ -129,9 +132,11 @@ public sealed partial class ConquestCampaign
             }
             if(!automaticAll && party.Length<=1)world.SelectTurnRuler(controller);
             var random=new SeedRandom(world.PlacementSeed^world.Population.Turn^0x57421);
-            for(int ruler=0;ruler<world.ActiveCount;ruler++)
+            if(UseRobotCombat)ComputerJointAttacks.Plan(world,orders,automaticAll);
+            else for(int ruler=0;ruler<world.ActiveCount;ruler++)
             {
                 if(!automaticAll && world.ManualRulers().Contains(ruler) || !world.Relations.CanAct(ruler))continue;
+                if(UseRobotCombat)BattleLessons.ReserveHomeGuards(world,ruler);
                 var home=world.Nodes.Current(ruler);
                 long army=UseRobotCombat?RobotBattles.Available(world,ruler):home!=null && world.Relations.Allied(home.Owner,ruler)?home.Population.People[0]/2:0;
                 var destinations=UseRobotCombat?RobotBattles.MarchTargets(world,home?.Id??-1).Where(id=>RobotBattles.CanMarch(world,ruler,id)):
@@ -141,7 +146,7 @@ public sealed partial class ConquestCampaign
                     var target=world.Nodes.All[id];
                     return world.TerritoryCounts[ruler]==0?random.Next(100):
                         home==null || home.Owner!=ruler?(target.Owner==ruler?0:100):
-                        target.Owner!=ruler && target.Population.People[0]<army?0:50+random.Next(50);
+                        target.Owner!=ruler && RobotBattles.DefendingRobots(world,ruler,id)<army?0:50+random.Next(50);
                 }).FirstOrDefault(-1);
                 if(targetId>=0 && !orders.Any(o=>o.Ruler==ruler && (o.Queen || o.SourceNode==home?.Id)))
                 {

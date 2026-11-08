@@ -45,7 +45,7 @@ public sealed partial class WorldSetup
         int scatterRemainder=50;
         foreach(var node in Nodes.All.Where(n=>n.Owner>=0))
         {
-            if(TutorialStep==1)Robots.Workshops[node.Id].RemoveProductionLines();else Robots.Workshops[node.Id].GenerateLines(fortuneSeed^node.Id*7919);
+            if(TutorialStep==1 || Routes.NearWhirlpool(node))Robots.Workshops[node.Id].RemoveProductionLines();else Robots.Workshops[node.Id].GenerateLines(fortuneSeed^node.Id*7919);
             if(random.Next(5)==0)Robots.Workshops[node.Id].ConfigureDisposal();
             if(TutorialStep==1){
                 for(int i=0;i<4;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,RobotParts.Complete,RobotRole.Soldier));
@@ -100,6 +100,7 @@ public sealed partial class WorldSetup
                 if(random.Unit()<mean-center)center++;
                 int spread=Math.Min(terrain==TravelTerrain.Land?2:1,Math.Min(center-1,RobotStore.Capacity-center));
                 int capacity=center+random.Next(2*spread+1)-spread;
+                if(Routes.NearWhirlpool(node))capacity=1;
                 Robots.Nodes[node.Id].SetCapacity(capacity);
                 Robots.Workshops[node.Id].SetStorageSlotLimit(capacity);
             }

@@ -8,10 +8,10 @@ public partial class Game1
 {
     private bool _mapOverlayMenu;
     private Rectangle MapFooterBounds(Rectangle bounds)=>bounds;
-    private const int DirectMapAction=3;
+    private const int DirectMapAction=3,LongMapAction=7;
     private float _primaryActionSlide;
     private int _lastMapFooterAction=-1;
-    private int MapFooterAction=>_directMap?DirectMapAction:_functionTransferMap?FunctionTransferAction:-1;
+    private int MapFooterAction=>_directMap?(_longDeliveryMode?LongMapAction:DirectMapAction):_functionTransferMap?FunctionTransferAction:-1;
     private int PinnedPrimaryAction=>MapFooterAction>=0?MapFooterAction:_lastMapFooterAction;
     private bool PrimaryActionInUse(int index)=>_primaryActionSlide==0 && MapFooterAction<0 || index==PinnedPrimaryAction;
     private void UpdateMapFooter(float elapsed){
@@ -21,10 +21,10 @@ public partial class Game1
         _primaryActionSlide=target>_primaryActionSlide?Math.Min(target,_primaryActionSlide+elapsed/.25f):Math.Max(target,_primaryActionSlide-elapsed/.25f);
     }
     private const int FunctionTransferAction=6;
-    private const int PrimaryActionCount=7;
+    private const int PrimaryActionCount=8;
     private static Rectangle PrimaryActionHomeBounds(int index)=>index switch {
         0=>new(54,974,96,96),1=>new(160,926,192,144),
-        _=>new(362+(index-2)*106,974,96,96)
+        _=>new(362+((index==7?4:index>=4?index+1:index)-2)*106,974,96,96)
     };
     private Rectangle PrimaryActionBounds(int index){var r=PrimaryActionHomeBounds(index);if(index!=PinnedPrimaryAction)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,_primaryActionSlide));return r;}
     private static Rectangle MapModeCloseButton(int index)=>new(PrimaryActionHomeBounds(index).Right+10,1002,40,40);
@@ -44,7 +44,7 @@ public partial class Game1
             if(_directMap)CloseDirectDelivery();else CloseFunctionTransferMap();
             return true;
         }
-        if(_directMap && PrimaryActionBounds(DirectMapAction).Contains(p))return true;
+        if(_directMap && PrimaryActionBounds(MapFooterAction).Contains(p))return true;
         if(Enumerable.Range(0,PrimaryActionCount).Any(i=>!PrimaryActionInUse(i) &&
             (PrimaryActionHomeBounds(i).Contains(p) || PrimaryActionBounds(i).Contains(p))))return true;
         for(int i=0;i<PrimaryActionCount;i++)if(PrimaryActionBounds(i).Contains(p)){
@@ -52,6 +52,7 @@ public partial class Game1
             else if(i==1){ResetInspector();EndPlannedTurn();}
             else if(i==2){ResetInspector();OpenWarPlanning();}
             else if(i==3 && TransportOverviewAllowed){OpenDirectMap();}
+            else if(i==LongMapAction && TransportOverviewAllowed){OpenLongDeliveryMap();}
             else if(i==4 && TransportOverviewAllowed){ResetInspector();OpenTransportOverview();}
             else if(i==5){if(_salvagePlan)ResetInspector();else OpenSalvagePlan();}
             else if(i==FunctionTransferAction){if(_functionTransferMap)CloseFunctionTransferMap();else OpenFunctionTransferMap();}
@@ -80,10 +81,10 @@ public partial class Game1
     private void DrawPrimaryActionButtons() => DrawTutorialChrome(()=>DrawPrimaryActionButtonsCore(),false);
     private void DrawPrimaryActionButtonsCore()
     {
-        string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画","地点の機能移転の予約"};
+        string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画","地点の機能移転の予約","ロボットパーツ長距離便"};
         for(int i=0;i<PrimaryActionCount;i++){
             var r=PrimaryActionBounds(i);if(r.Top>=1080)continue;
-            bool enabled=PhasePrimaryActionAllowed(i) && TutorialPrimaryActionAllowed(i) && PrimaryActionInUse(i) && (i is not (3 or 4) || TransportOverviewAllowed);
+            bool enabled=PhasePrimaryActionAllowed(i) && TutorialPrimaryActionAllowed(i) && PrimaryActionInUse(i) && (i is not (3 or 4 or LongMapAction) || TransportOverviewAllowed);
             var color=_setup.OwnerColor(_setup.PlayerSlot);
             if(!enabled)color=Color.Lerp(color,new Color(45,49,54),.75f);
             else if((i==FunctionTransferAction && _functionTransferMap) || r.Contains(_pointer))color=Color.Lerp(color,Color.White,.22f);
@@ -94,7 +95,7 @@ public partial class Game1
             else {
                 int inset=_setup.CountryPattern(_setup.PlayerSlot)==0?3:14;
                 DrawPrimaryIcon(i,new(r.X+12,r.Y+8,r.Width-24,58),ink);
-                string label=i==3?"パーツ直送便":i==4?"輸送長期計画":i==FunctionTransferAction?"機能移転":labels[i];
+                string label=i==3?"パーツ直送便":i==LongMapAction?"パーツ長距離便":i==4?"輸送長期計画":i==FunctionTransferAction?"機能移転":labels[i];
                 _ui.Center(label,new(r.X+inset,r.Bottom-28,r.Width-inset*2,24),Math.Min(.34f,(r.Width-inset*2)/_font.MeasureString(label).X),ink);
             }
             if(PrimaryActionInUse(i) && r.Contains(_pointer)){
@@ -125,12 +126,13 @@ public partial class Game1
         }else if(kind==2){
             Line(.18f,.88f,.83f,.12f,7);Line(.82f,.88f,.17f,.12f,7);
             Line(.08f,.63f,.40f,.94f);Line(.60f,.94f,.92f,.63f);
-        }else if(kind is 3 or 4){
+        }else if(kind is 3 or 4 or LongMapAction){
             int selected=_populationNode>=0?_populationNode:_inspectedNode;
             var node=selected>=0 && selected<_setup.Nodes.All.Length?_setup.Nodes.All[selected]:_setup.Nodes.Current(_setup.PlayerSlot);
             bool sea=node!=null && !_setup.Routes.Land(node.Cell,node.Center);
             if(sea){Line(.06f,.65f,.86f,.65f,8);Line(.86f,.65f,.70f,.86f,6);Line(.12f,.65f,.24f,.86f,6);Line(.24f,.86f,.70f,.86f,6);Box(.25f,.32f,.40f,.25f);Line(.06f,.96f,.86f,.96f,2);}
             else {Box(.05f,.26f,.48f,.45f);Box(.56f,.43f,.29f,.28f);Box(.12f,.76f,.15f,.16f);Box(.62f,.76f,.15f,.16f);}
+            if(kind==LongMapAction){Line(.12f,.04f,.17f,.22f,2);Line(.17f,.22f,.34f,.22f,2);Line(.34f,.22f,.39f,.04f,2);Line(.12f,.04f,.39f,.04f,2);Line(.55f,.04f,.60f,.22f,2);Line(.60f,.22f,.77f,.22f,2);Line(.77f,.22f,.82f,.04f,2);Line(.55f,.04f,.82f,.04f,2);}
             if(kind==4){var c=P(.79f,.24f);for(int a=0;a<360;a+=12){float angle=MathHelper.ToRadians(a);var d=new Vector2(MathF.Cos(angle),MathF.Sin(angle));_ui.Tile(c+d*13,new(3,3),0,ink);}for(int a=-90;a<=0;a+=6){float angle=MathHelper.ToRadians(a);var d=new Vector2(MathF.Cos(angle),MathF.Sin(angle));_ui.Tile(c+d*6,new(13,2),angle,ink);}}
         }else if(kind==FunctionTransferAction){
             Line(.20f,.10f,.67f,.10f);Line(.67f,.10f,.80f,.28f);Line(.80f,.28f,.80f,.91f);

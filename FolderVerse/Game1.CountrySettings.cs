@@ -13,6 +13,7 @@ public partial class Game1
     private static Rectangle CountrySettingsCard(int i)=>new(90+i%5*194,200+i/5*62,186,56);
     private static Rectangle CountryColorOption(int row,int i)=>new(1110+i%10*66,645+row*120+i/10*48,58,42);
     private static Rectangle CountryPatternOption(int i)=>new(1110+i%3*220,430+i/3*64,208,54);
+    private static Rectangle CountryEmblemOption(int i)=>new(1110+i%7*100,896+i/7*74,92,68);
     private void OpenCountrySettings()
     {
         _countrySettingsRuler=Math.Clamp(_setup.PlayerSlot,0,_setup.ActiveCount-1);
@@ -54,9 +55,10 @@ public partial class Game1
         }
         int primary=_setup.ColorIndices[ruler]%WorldSetup.Colors.Length,secondary=_setup.CountrySecondaryColor(ruler),pattern=_setup.CountryPattern(ruler);
         bool changed=false;
-        for(int i=0;i<WorldSetup.Colors.Length;i++)for(int row=0;row<(pattern==0?1:2);row++)if(CountryColorOption(row,i).Contains(_pointer)){if(row==0)primary=i;else secondary=i;changed=true;}
+        for(int i=0;i<WorldSetup.Colors.Length;i++)for(int row=0;row<(pattern==0 && _setup.CountryEmblem(ruler)==0?1:2);row++)if((row==0 || i!=primary) && CountryColorOption(row,i).Contains(_pointer)){if(row==0)primary=i;else secondary=i;changed=true;}
         for(int i=0;i<WorldSetup.CountryPatternNames.Length;i++)if(CountryPatternOption(i).Contains(_pointer)){pattern=i;changed=true;}
-        if(changed){_setup.SetCountryAppearance(ruler,primary,secondary,pattern);_world.ShowSetup(_setup,true);_net.ClearGlobeRobotBadges();_operations.Write("country_appearance_changed",new{ruler,primary,secondary,pattern});}
+        for(int i=0;i<WorldSetup.CountryEmblemNames.Length;i++)if(CountryEmblemOption(i).Contains(_pointer)){_setup.SetCountryEmblem(ruler,i);changed=true;}
+        if(changed){_setup.SetCountryAppearance(ruler,primary,secondary,pattern);secondary=_setup.CountrySecondaryColor(ruler);_world.ShowSetup(_setup,true);_net.ClearGlobeRobotBadges();_operations.Write("country_appearance_changed",new{ruler,primary,secondary,pattern});}
         return true;
     }
     private void DrawCountrySwatch(Rectangle area,int ruler,int pattern=-1)
@@ -68,6 +70,8 @@ public partial class Game1
             var color=WorldSetup.CountryPatternSecondary(pattern,x,y)?WorldSetup.Colors[_setup.CountrySecondaryColor(ruler)]:_setup.OwnerColor(ruler);
             _ui.Box(new(left,top,area.X+(x+1)*area.Width/10-left,area.Y+(y+1)*area.Height/10-top),color);
         }
+        int side=Math.Min(area.Width,area.Height)*3/4;
+        DrawCountryEmblem(new(area.Center.X-side/2,area.Center.Y-side/2,side,side),ruler);
     }
     private void DrawCountrySettings()
     {
@@ -105,9 +109,10 @@ public partial class Game1
         _ui.Text("操作を表示",new(toggle.X+54,toggle.Y+8),.50f,ink);
         _ui.Text("人間の手下は自分のターンで操作します。",new(1110,380),.40f,Cream);
         _ui.Text("基本の色",new(1110,610),.45f,Cream);
-        if(_setup.CountryPattern(ruler)!=0)_ui.Text("２色目",new(1110,730),.45f,Cream);
-        for(int row=0;row<(_setup.CountryPattern(ruler)==0?1:2);row++)for(int i=0;i<WorldSetup.Colors.Length;i++)
+        if(_setup.CountryPattern(ruler)!=0 || _setup.CountryEmblem(ruler)!=0)_ui.Text("２色目",new(1110,730),.45f,Cream);
+        for(int row=0;row<(_setup.CountryPattern(ruler)==0 && _setup.CountryEmblem(ruler)==0?1:2);row++)for(int i=0;i<WorldSetup.Colors.Length;i++)
         {
+            if(row==1 && i==_setup.ColorIndices[ruler]%WorldSetup.Colors.Length)continue;
             var r=CountryColorOption(row,i);
             bool selected=i==(row==0?_setup.ColorIndices[ruler]%WorldSetup.Colors.Length:_setup.CountrySecondaryColor(ruler));
             _ui.Box(r,selected?Cream:Muted);_ui.Box(new(r.X+4,r.Y+4,r.Width-8,r.Height-8),WorldSetup.Colors[i]);
@@ -118,8 +123,11 @@ public partial class Game1
             var r=CountryPatternOption(i);_ui.Button(r,"",i==_setup.CountryPattern(ruler)?Accent:Muted,.4f);
             DrawCountrySwatch(new(r.X+6,r.Y+6,52,42),ruler,i);_ui.Text(WorldSetup.CountryPatternNames[i],new(r.X+72,r.Y+15),.45f,Cream);
         }
-        _ui.Text("国の色表示で地図にも模様が付きます。",new(1110,885),.43f,Cream);
-        _ui.Text("コンピューターの手下は人間の親分が操作します。",new(1110,930),.37f,Cream);
-        _ui.Text("人間が０人になると自動プレイを開始します。",new(1110,970),.37f,Cream);
+        _ui.Text("ワンポイント / ２色目で表示",new(1110,864),.4f,Cream);
+        for(int i=0;i<WorldSetup.CountryEmblemNames.Length;i++){
+            var option=CountryEmblemOption(i);_ui.Button(option,"",_setup.CountryEmblem(ruler)==i?Accent:Muted,.4f);
+            if(i!=0)CountryEmblemArt.Draw(_ui,new(option.Center.X-20,option.Y+3,40,40),i,WorldSetup.Colors[_setup.CountrySecondaryColor(ruler)]);
+            _ui.Center(WorldSetup.CountryEmblemNames[i],new(option.X,option.Bottom-25,option.Width,22),.28f,Cream);
+        }
     }
 }

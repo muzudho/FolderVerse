@@ -4,15 +4,15 @@
 
 ## ダウンロードして遊ぶ
 
-[v0.3.0 Pre-release（無料試遊版）](https://github.com/muzudho/FolderVerse/releases/tag/v0.3.0)を公開しています。Windows x64向けで、Windows 11を想定しています。Visual Studioや.NET SDKの準備は不要です。.NETランタイムも同梱しています。
+[v0.6.0 Pre-release（無料試遊版）](https://github.com/muzudho/FolderVerse/releases/tag/v0.6.0)を公開しています。Windows x64向けで、Windows 11を想定しています。Visual Studioや.NET SDKの準備は不要です。.NETランタイムも同梱しています。
 
-1. リリースページの **Assets** から `FolderVerse-v0.3.0-win-x64.zip` をダウンロードします。
+1. リリースページの **Assets** から `FolderVerse-v0.6.0-win-x64.zip` をダウンロードします。
 2. ZIPを好きなフォルダーへ**すべて展開**します。ZIPの中から直接実行せず、`Content` など同梱ファイルも一緒に置いてください。
 3. 展開先の `FolderVerse.exe` を起動します。
 
 GitHubが自動表示する `Source code (zip)` / `Source code (tar.gz)` は開発用ソースコードです。遊ぶ場合は上記のWindows向けZIPを選んでください。
 
-今後の配布版は[GitHub Releases一覧](https://github.com/muzudho/FolderVerse/releases)から確認できます。v0.3.0は開発中の試遊版です。既知の問題や検証範囲は、そのリリースページも確認してください。
+今後の配布版は[GitHub Releases一覧](https://github.com/muzudho/FolderVerse/releases)から確認できます。v0.6.0は開発中の試遊版です。既知の問題や検証範囲は、そのリリースページも確認してください。
 
 ## 最初の操作
 
@@ -30,6 +30,6 @@ GitHubが自動表示する `Source code (zip)` / `Source code (tar.gz)` は開�
 
 ## 不具合を報告するには
 
-[GitHub Issues](https://github.com/muzudho/FolderVerse/issues)へ、遊んだバージョン（例：v0.3.0）、再現手順、画面の解像度、分かれば世界・人物・配置のSEEDを添えてください。配布版の操作ログは通常、実行ファイルの隣の `Logs` に保存されます。書き込めない場合は `%LOCALAPPDATA%\FolderVerse\Logs` を確認してください。
+[GitHub Issues](https://github.com/muzudho/FolderVerse/issues)へ、遊んだバージョン（例：v0.6.0）、再現手順、画面の解像度、分かれば世界・人物・配置のSEEDを添えてください。配布版の操作ログは通常、実行ファイルの隣の `Logs` に保存されます。書き込めない場合は `%LOCALAPPDATA%\FolderVerse\Logs` を確認してください。
 
 ソースコードを変更したり、開発中の機能を検証したりする場合は[開発者向けの起動方法](../dev/README.md#開発版を起動する)を参照してください。

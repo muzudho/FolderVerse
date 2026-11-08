@@ -6,9 +6,10 @@ public sealed record ProductionPlan(RobotParts Product,int Turns,bool Cheap=fals
     public int? BodyOrigin {get;init;}
     public int? LegsOrigin {get;init;}
     public RobotParts CheapParts {get;init;}
+    public RobotParts PremiumParts {get;init;}
     public RobotParts EffectiveCheapParts=>Cheap?Product:CheapParts&Product;
-    public string QualityLabel=>EffectiveCheapParts==0?"正規":EffectiveCheapParts==Product?"安い":"正規＋安い";
-    public Robot Preview(int owner,long id=0)=>new(id,owner,Product){HeadOrigin=HeadOrigin??owner,BodyOrigin=BodyOrigin??owner,LegsOrigin=LegsOrigin??owner,CheapParts=EffectiveCheapParts,IntegratedParts=IntegratedParts};
+    public string QualityLabel=>PremiumParts!=0?"高級":EffectiveCheapParts==0?"正規":EffectiveCheapParts==Product?"安い":"正規＋安い";
+    public Robot Preview(int owner,long id=0)=>new(id,owner,Product){HeadOrigin=HeadOrigin??owner,BodyOrigin=BodyOrigin??owner,LegsOrigin=LegsOrigin??owner,CheapParts=EffectiveCheapParts,PremiumParts=PremiumParts&Product,IntegratedParts=IntegratedParts};
 }
 public sealed partial class RobotWorkshop
 {
@@ -44,12 +45,17 @@ public sealed partial class RobotWorkshop
     }
     public ProductionPlan[] Plans {get;private set;}={new(RobotParts.Head,4),new(RobotParts.Body,4),new(RobotParts.Head|RobotParts.Body,8)};
     public int SelectedPlan {get;private set;}=-1;
+    private ProductionPlan _premiumPlan;
+    private bool _premiumCatalogueInitialized;
+    public int PlanCount=>_premiumPlan==null?11:12;
+    public int RegularCompleteProductionTurns=>Plans.Where(p=>p.Product==RobotParts.Complete && p.EffectiveCheapParts==0 && p.PremiumParts==0).Select(p=>p.Turns).DefaultIfEmpty(12).Max();
     public bool CheapProduct {get;private set;}
     public RobotParts IntegratedProduct {get;private set;}
     public ProductionPlan[] IntegratedPlans {get;private set;}={new(RobotParts.Head|RobotParts.Body,8,false,RobotParts.Head|RobotParts.Body),new(RobotParts.Body|RobotParts.Legs,8,false,RobotParts.Body|RobotParts.Legs)};
     public ProductionPlan PlanAt(int index)
     {
-        if(index<0 || index>10 || index==3)throw new System.ArgumentOutOfRangeException(nameof(index));
+        if(index<0 || index>=PlanCount || index==3)throw new System.ArgumentOutOfRangeException(nameof(index));
+        if(index==11)return _premiumPlan;
         return _workerPlans==null?BasePlanAt(index):_workerPlans[index];
     }
     private ProductionPlan BasePlanAt(int index)
@@ -81,10 +87,25 @@ public sealed partial class RobotWorkshop
         Plans=new ProductionPlan[3];
         for(int i=0;i<3;i++){int choice=random.Next(masks.Count),mask=masks[choice];masks.RemoveAt(choice);int pieces=System.Numerics.BitOperations.PopCount((uint)mask);Plans[i]=new((RobotParts)mask,pieces*4+random.Next(5)-2);}
         IntegratedPlans=new[]{RobotParts.Head|RobotParts.Body,RobotParts.Body|RobotParts.Legs}.Select(p=>new ProductionPlan(p,8+random.Next(5)-2,false,p)).ToArray();
+        GeneratePremiumPlan(seed);
+    }
+    internal void EnsurePremiumPlan(int seed)
+    {
+        if(!_premiumCatalogueInitialized)GeneratePremiumPlan(seed);
+    }
+    private void GeneratePremiumPlan(int seed)
+    {
+        var rarity=new SeedRandom(seed^0x613947);
+        _premiumCatalogueInitialized=true;
+        _premiumPlan=null;
+        if(rarity.Next(10)==0){
+            var part=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}[rarity.Next(3)];
+            _premiumPlan=new(part,checked(RegularCompleteProductionTurns*2)){PremiumParts=part};
+        }
     }
     public void SelectPlan(int index)
     {
-        if(index<0 || index>10)throw new System.ArgumentOutOfRangeException(nameof(index));
+        if(index<0 || index>=PlanCount)throw new System.ArgumentOutOfRangeException(nameof(index));
         if(SelectedPlan==index)return;
         SelectedPlan=index;Paused=false;CycleFinished=false;RestRemaining=ProducedSinceRest=0;
         if(index==3){Manufacturing=false;ProductionAge=WaitingProductionTurns=0;Paused=false;return;}

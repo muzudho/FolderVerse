@@ -3,6 +3,18 @@ if(args.Contains("--ui")){using var game=new CountrySettingsUi();game.Run();retu
 static void Check(bool value,string message){if(!value)throw new Exception(message);}
 var w=new WorldSetup();w.SetParticipantCounts(1,59);w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.HumanPlayers.Add(0);w.SelectTurnRuler(0);
 int active=w.ActiveCount,total=w.ParticipantCount;
+for(int seed=0;seed<100;seed++){
+    var cast=new WorldSetup();cast.SetParticipantCounts(0,60);cast.SetCast(seed);
+    var pairs=new HashSet<(int,int)>();
+    for(int i=0;i<60;i++){
+        int a=cast.ColorIndices[i]%WorldSetup.Colors.Length,b=cast.CountrySecondaryColor(i);
+        Check(a!=b && pairs.Add((Math.Min(a,b),Math.Max(a,b))),"No identical or reversed two-color pairs across sixty countries");
+        Check(cast.CountryPattern(i)>0 && cast.CountryEmblem(i)>0,"Large casts use both patterns and emblems");
+    }
+    cast.SetParticipantCounts(0,7);cast.SetCast(seed);
+    Check(Enumerable.Range(0,7).All(i=>cast.CountryPattern(i)==0 && cast.CountryEmblem(i)==0),"Seven-country casts remain plain after reroll");
+}
+
 Check(Enumerable.Range(0,60).Select(i=>(w.OwnerColor(i),w.CountryPattern(i))).Distinct().Count()==60,"60 default country identities are unique");
 w.Relations.SetSuperior(1,0);w.SetHumanPlayer(1,true);
 Check(w.ControllerOf(0)==0 && w.ControllerOf(1)==1 && !w.ControlledParty(0).Contains(1),"Human subordinate keeps a separate controller");

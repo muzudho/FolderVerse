@@ -24,7 +24,7 @@ public partial class Game1
     private SalvageItem[] VisibleSalvageItems()=>_setup.Salvage.Items.Where(i=>_salvageNodeFilter<0 || i.Node==_salvageNodeFilter)
         .OrderByDescending(i=>i.RequestedBy==_setup.PlayerSlot).ThenBy(i=>i.Node).ThenBy(i=>i.Id).ToArray();
     private string SalvagePartLabel(Robot r)=>(r.IntegratedParts!=0?IntegratedLabel(r.IntegratedParts)+" / ":"")+string.Join("・",new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(p=>(r.Parts&p)!=0)
-        .Select(p=>PartsLabel(p)+"（"+(r.IsCheap(p)?"安い":"正規")+"・"+(r.IsDamaged(p)?"損傷":"無傷")+"）"))+(r.IntegratedParts!=0 && r.DamagedParts!=0?" / 実損傷："+PartsLabel(r.DamagedParts):"");
+        .Select(p=>PartsLabel(p)+"（"+(r.IsPremium(p)?"高級":r.IsCheap(p)?"安い":"正規")+"・"+(r.IsDamaged(p)?"損傷":"無傷")+"）"))+(r.IntegratedParts!=0 && r.DamagedParts!=0?" / 実損傷："+PartsLabel(r.DamagedParts):"");
     private void SalvageText(string text,Rectangle r,float scale=.4f)=>_ui.Center(text,r,Math.Min(scale,(r.Width-12)/Math.Max(1,_font.MeasureString(text).X)),Cream);
     private void OpenSalvagePlan(int node=-1)
     {

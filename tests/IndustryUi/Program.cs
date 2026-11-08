@@ -14,7 +14,7 @@ sealed class CheckGame:Game1
     void Check(bool ok,string message){if(!ok)throw new Exception(message);}
     protected override void LoadContent()
     {
-        Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();w=(WorldSetup)Get("_setup");
+        Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();w=(WorldSetup)Get("_setup");Set("_autoSaveEnabled",false);Set("_conquestOverviewEnabled",false);
         w.SetWorld(1);w.SetCast(2);w.SetPlacement(3);w.SelectPlayer(0);
         w.Industry.Queue(1);Call("FinishTransport");Check(Get("_screen").ToString()=="Industry","No-battle round still enters industry");
         for(int seed=0;seed<1000;seed++){
@@ -23,15 +23,23 @@ sealed class CheckGame:Game1
         }
         for(int seed=0;seed<100;seed++){
             w.Industry.Reset();w.Industry.Queue(1);w.Industry.Roll(seed);
+            var reference=((string Text,Rectangle Bounds,float Scale,bool Backplate)[])Call("IndustryLabelLayout",new Vector2(1170,625),255f,0f);
             for(int turn=0;turn<12;turn++){
                 var labels=((string Text,Rectangle Bounds,float Scale,bool Backplate)[])Call("IndustryLabelLayout",new Vector2(1170,625),255f,turn*MathHelper.TwoPi/12);
                 for(int i=0;i<labels.Length;i++){
                     var r=labels[i].Bounds;
+                    Check(r.Size==reference[i].Bounds.Size && Math.Abs(Vector2.Distance(r.Center.ToVector2(),new(1170,625))-Vector2.Distance(reference[i].Bounds.Center.ToVector2(),new(1170,625)))<2,"Rotating labels retain their size and radial position");
                     Check(r.Width>0 && !labels[i].Text.Contains('+'),"Wheel uses mixed fractions without an addition sign");
                     foreach(var p in new[]{new Vector2(r.Left,r.Top),new Vector2(r.Right,r.Top),new Vector2(r.Left,r.Bottom),new Vector2(r.Right,r.Bottom)})Check(Vector2.Distance(p,new(1170,625))<255,"Every label corner stays inside the roulette");
                     for(int j=0;j<i;j++)Check(!r.Intersects(labels[j].Bounds),$"Labels overlap: seed={seed},angle={turn},items={i}/{j}");
                 }
             }
+        }
+        if(Environment.GetCommandLineArgs().Contains("--cast-patterns")){
+            var castBatch=(SpriteBatch)Get("_spriteBatch");w.SetParticipantCounts(0,60);w.SetCast(123);
+            Set("_screen",Enum.Parse(Get("_screen").GetType(),"CastReview"));
+            GraphicsDevice.Clear(new Color(16,35,46));castBatch.Begin();Call("DrawCastUi");castBatch.End();Save("cast-sixty-patterns");
+            Console.WriteLine("PASS: sixty patterned country swatches render in the cast lottery.");Exit();return;
         }
         var score=new IndustryMusicScore();var pcm=score.Render(IndustryMusicScore.Rate*16);double energy=0;int peak=0;
         for(int i=0;i<pcm.Length;i+=2){int sample=(short)(pcm[i]|pcm[i+1]<<8);energy+=(double)sample*sample;peak=Math.Max(peak,Math.Abs(sample));}
@@ -51,6 +59,21 @@ sealed class CheckGame:Game1
     protected override void Draw(GameTime time)
     {
         var batch=(SpriteBatch)Get("_spriteBatch");
+        if(Environment.GetCommandLineArgs().Contains("--mercy")){
+            CheckMercyUi(batch);Exit();return;
+        }
+        if(Environment.GetCommandLineArgs().Contains("--battle13")){
+            CheckBattle13Ui(batch);Exit();return;
+        }
+        if(Environment.GetCommandLineArgs().Contains("--manufacturing-lanes")){
+            CheckManufacturingDelivery(batch);Exit();return;
+        }
+        if(Environment.GetCommandLineArgs().Contains("--invasion60")){
+            CheckInvasion60(batch);Exit();return;
+        }
+        if(Environment.GetCommandLineArgs().Contains("--premium")){
+            CheckPremiumUi(batch);Exit();return;
+        }
         foreach(int result in new[]{0,26,120})
         {
             w.Industry.Reset();w.Industry.Queue(1);
@@ -75,9 +98,17 @@ sealed class CheckGame:Game1
             if(result==0)Check(Get("_industryPrayer")!=null,"Prayer mob on fumble");if(result==120)Check(Get("_industrySurprise")!=null,"Surprised mob on jackpot");
             Set("_industryIdleAge",4.99d);Call("UpdateIndustry",0d,false);Check(Get("_screen").ToString()=="Industry","Result waits until five idle seconds");
             Set("_previousKeyboard",new KeyboardState());Call("HandleInputCore",new MouseState(),new KeyboardState(Keys.Space),new GameTime(TimeSpan.FromSeconds(20),TimeSpan.Zero),true);Check((double)Get("_industryIdleAge")==0 && Get("_screen").ToString()=="Industry","Keyboard activity resets industry timer without skipping result");
-            Call("UpdateIndustry",4.99d,false);Check(Get("_screen").ToString()=="Industry","Result remains before timeout");Call("UpdateIndustry",.01d,false);Check(Get("_screen").ToString()=="WorldStatus","Idle result automatically proceeds at five seconds");Call("UpdateIndustryMusic");Check(Get("_industryMusic")==null,"Leaving industry disposes its BGM");
+            Call("UpdateIndustry",4.99d,false);Check(Get("_screen").ToString()=="Industry","Result remains before timeout");Call("UpdateIndustry",.01d,false);
+            Check((bool)Get("_manufacturingActive") && w.Robots.IndustryTurn==clock,"Roulette hands off to manufacturing before production");
+            int guard=0;
+            while(w.Industry.Pending && guard++<500)Call("UpdateIndustry",.75d,false);
+            Check(!w.Industry.Pending && w.Robots.IndustryTurn==clock+result,"Manufacturing applies the exact awarded industry duration once");
+            GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawIndustry");batch.End();Save("manufacturing-"+result);
+            Call("UpdateIndustry",3d,false);
+            Check(Get("_screen").ToString()=="WorldStatus","Manufacturing returns to the next domestic phase");Call("UpdateIndustryMusic");Check(Get("_industryMusic")==null,"Leaving industry disposes its BGM");
         }
         if(Environment.GetCommandLineArgs().Contains("--roulette-only")){
+            CheckManufacturingDelivery(batch);
             Console.WriteLine("PASS: 100 seeds x 12 angles, mixed fractions, every label inside the wheel with no overlap, result rendering and industry timing/application.");Exit();return;
         }
         var node=w.Nodes.Current(0);var factory=w.Robots.Workshops[node.Id];factory.LimitLines(3);for(int seed=0;factory.ProductionLines.Length!=3;seed++)factory.GenerateLines(seed);
@@ -107,5 +138,195 @@ sealed class CheckGame:Game1
             Check(Get("_screen").ToString()=="WorldStatus","Industry automatically proceeds during "+mode);Set(mode,false);
         }
         Console.WriteLine("PASS: industry entry without battle, font, wheel/result screens, prayer/surprise mobs, exactly-once application, return and cheap factory menu.");Exit();
+    }
+    private void CheckManufacturingDelivery(SpriteBatch batch)
+    {
+        w.SetWorld(1);w.SetCast(2);w.SetPlacement(3);w.SelectPlayer(0);
+        foreach(var node in w.Nodes.All)node.Owner=0;
+        w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);w.Robots.ConfigureFactories(w);
+        foreach(var shop in w.Robots.Workshops){shop.AutoAssemblyDisabled=true;shop.SetReservedSlots(0);foreach(var line in shop.ProductionLines)line.SelectPlan(3);}
+        var source=w.Nodes.All.First(n=>w.Routes.Neighbors(n).Length>0);
+        var route=w.Routes.Neighbors(source)[0];var target=w.Nodes.At(route.Target,route.Entry);
+        var factory=w.Robots.Workshops[source.Id];
+        for(int seed=0;factory.ProductionLines.Length==0;seed++)factory.GenerateLines(seed);
+        var producer=factory.ProductionLines[0];producer.Configure(RobotParts.Complete,1);producer.IntakeTarget=target.Id;
+        w.Robots.Nodes[target.Id].Add(w.Robots.Create(0,RobotParts.Head));
+        w.Industry.Reset();w.Industry.Queue(1);
+        int seed26=Enumerable.Range(0,100000).First(seed=>{
+            var wheel=IndustryCycle.CreateWheel(seed,1);
+            return wheel[IndustryCycle.SectorAt(new SeedRandom(seed^7919^0x45123).Next(100),wheel)].Turns==26;
+        });
+        w.Industry.Roll(seed26);
+        int clock=w.Robots.IndustryTurn;
+        Call("BeginManufacturing");
+        Check((int)Get("_manufacturingNode")==target.Id && w.Robots.IndustryTurn==clock && w.Robots.ProductionIntakes.Count==0,
+            "Most productive intake destination is selected without producing into the live world");
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();var beforeMotion=Pixels();Save("manufacturing-lane-start");
+        Call("UpdateManufacturing",.125d,false);
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();var duringMotion=Pixels();Save("manufacturing-lane-moving");
+        Check(w.Robots.IndustryTurn==clock && w.Robots.ProductionIntakes.Count==0 && !beforeMotion.SequenceEqual(duringMotion),"The shared fluorescent tube moves between ticks without producing early");
+        Call("UpdateManufacturing",.625d,false);
+        Check(w.Robots.IndustryTurn==clock+1 && w.Robots.ProductionIntakes.Count==1 && w.Industry.Pending,"One displayed industry turn produces actual queued products");
+        var flights=((IEnumerable<(ProductionIntake Arrival,double Started)>)Get("_manufacturingFlights")).ToArray();
+        Check(flights.Length==1,"Shipment pauses production so every departure remains visible");
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();Save("manufacturing-delivery");
+        Call("UpdateManufacturing",.55d,false);
+        Check(w.Robots.IndustryTurn==clock+1,"Production waits while the button product is flying");
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();Save("manufacturing-in-flight");
+        for(int i=0;w.Industry.Pending && i<100;i++)Call("UpdateManufacturing",.75d,false);
+        Check(w.Robots.ProductionIntakes.Count==11 && (int)Get("_manufacturingReceived")==33 &&
+            w.Robots.IndustryTurn==clock+26 && w.Robots.Nodes[target.Id].Count==1,"Capacity and exactly-once production match the intake reservation rule");
+        var glyph=typeof(Game1).GetMethods(F).Single(m=>m.Name=="DrawRobotGlyph" && m.GetParameters().Length==5);
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();
+        for(int pattern=0;pattern<5;pattern++){
+            w.SetCountryAppearance(0,0,5,pattern);
+            foreach(bool cheap in new[]{false,true}){
+                var box=new Rectangle(130+pattern*340,cheap?550:130,180,280);
+                glyph.Invoke(this,new object[]{box,new Robot(100,0,RobotParts.Complete){CheapParts=cheap?RobotParts.Complete:0},true,1f,null});
+            }
+        }
+        batch.End();Save("robot-pattern-quality");
+        var shape=new Rectangle(0,0,80,100);
+        Check(RobotPartSilhouette.Row(shape,50,false,true).Width<RobotPartSilhouette.Row(shape,20,false,true).Width &&
+            RobotPartSilhouette.Row(shape,0,true).Width<shape.Width,"Premium parts have a narrow middle; cheap parts have rounded corners");
+        Console.WriteLine("PASS: most productive adjacent intake, one-turn production, visible delivery, capacity and no forecast mutation.");
+    }
+    private void CheckMercyUi(SpriteBatch batch)
+    {
+        void Fixture(bool humanLoser){
+            w.SetWorld(1);w.SetCast(2);w.SetPlacement(3);w.SelectPlayer(0);w.Relations.Reset();w.HumanPlayers.Clear();w.HumanPlayers.Add(0);
+            foreach(var n in w.Nodes.All)n.Owner=-1;
+            int loser=humanLoser?0:1,victor=humanLoser?1:0;
+            w.Nodes.All[0].Owner=victor;foreach(var n in w.Nodes.All.Skip(1).Take(10))n.Owner=loser;w.Nodes.Recount();
+            w.Relations.Pending.Add(new(loser,victor,0));
+            Set("_screen",Enum.Parse(Get("_screen").GetType(),"Disposition"));
+            Set("_mercyResult",null!);Set("_mercyInput",false);Set("_mercyCaptive",null!);
+            Set("_dispositionScene",null!);
+        }
+        void Draw(string name){GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawDispositionUi");batch.End();Save(name);}
+        void Confirm(){Set("_pointer",new Point(1200,980));Call("DispositionInput",true,false);}
+        Fixture(true);Call("DispositionInput",false,false);
+        Check((bool)Get("_mercyInput") && (bool)Get("_mercyOfferInput"),"A captured human enters their own offer before the CPU demand is revealed");
+        Set("_previousKeyboard",new KeyboardState());Call("MercyKeyboard",new KeyboardState(Keys.D8));
+        Check((string)Get("_mercyDigits")=="8","The human can type their offered count");Draw("mercy-human-offer");Confirm();
+        Check(w.Relations.MercyResults.Last().Offer==8 && w.Relations.MercyResults.Last().Success && w.Nodes.All.Count(n=>n.Owner==0)==2,"The declared eight, rather than the lower CPU demand, is transferred");Draw("mercy-human-result");Confirm();
+        Fixture(false);var captive=w.Relations.Pending[0];w.Relations.SetMercyOffer(w,captive,8);
+        Set("_pointer",new Point(960,895));Call("DispositionInput",true,false);
+        Check((bool)Get("_mercyInput") && !(bool)Get("_mercyOfferInput"),"A human captor enters their minimum demand");
+        Set("_previousKeyboard",new KeyboardState());Call("MercyKeyboard",new KeyboardState(Keys.D3));Draw("mercy-captor-demand");Confirm();
+        Check(w.Relations.MercyResults.Last().Nodes.Length==8,"Demand three receives the actual hidden offer of eight");Confirm();
+        Fixture(false);captive=w.Relations.Pending[0];w.Relations.SetMercyOffer(w,captive,8);
+        Set("_pointer",new Point(960,895));Call("DispositionInput",true,false);
+        Set("_previousKeyboard",new KeyboardState());Call("MercyKeyboard",new KeyboardState(Keys.D9));Confirm();
+        Check(!w.Relations.Powered[1] && w.Relations.MercyResults.Last().Success==false,"An excessive demand removes the battery");Draw("mercy-failed-result");
+        Fixture(false);foreach(var n in w.Nodes.All.Skip(3))if(n.Owner==1)n.Owner=-1;
+        Set("_pointer",new Point(960,895));Call("DispositionInput",true,false);
+        Check(!(bool)Get("_mercyInput") && w.Relations.Pending.Count==1,"Below three locations the mercy button is inactive");Draw("mercy-below-three");
+        Console.WriteLine("PASS: human captive numeric input, hidden offer, captor demand, surrender execution and failed negotiation result screens.");
+    }
+    private void CheckBattle13Ui(SpriteBatch batch)
+    {
+        foreach(var terrain in Enum.GetValues<BattleTerrain>()){
+            var battle=new BattleState(73,new(){NoWillTurns=100,FlagDefenseTurns=500,PersuasionPercent=0}){Kind=BattleKind.Node,Defender=0,Id=1};
+            battle.BuildTerrain(terrain);
+            Set("_seaPresentationAge",0d);var first=(Matrix)Call("SeaBoardTransform",battle);
+            Set("_seaPresentationAge",2d);var second=(Matrix)Call("SeaBoardTransform",battle);
+            Check(terrain==BattleTerrain.Sea?first!=second:first==Matrix.Identity && second==Matrix.Identity,"Only sea boards receive cosmetic rocking");
+            Check(Vector2.Distance(Vector2.Transform(new Vector2(540,540),second),new Vector2(540,540))<.01f,"Rocking keeps the board center anchored");
+            for(int owner=0;owner<13;owner++)battle.AddArmy(owner,0,Enumerable.Range(0,8).Select(_=>w.Robots.Create(owner,RobotParts.Complete)),preferredSide:owner==0?-1:(owner-1)/3);
+            battle.ChooseLayout();battle.Deploy();battle.BuildFortifications(12);battle.Capture(BattlePhase.Choose);
+            foreach(bool biased in new[]{false,true}){
+                var shown=new HashSet<int>();
+                foreach(double clock in new[]{0d,4d,8d}){
+                    Set("_newspaperClock",clock);
+                    var page=((BattleArmy[] Armies,int Page,int Pages))Call("NewspaperArmyPage",battle,0,biased);
+                    shown.UnionWith(page.Armies.Select(a=>a.Owner));Check(page.Armies.Length<=5,"Each newspaper page fits within five army columns");
+                }
+                Check(shown.Count==13,"Newspaper pagination includes every participating army");
+            }
+            Set("_newspaperClock",0d);
+            Set("_robotScenes",new[]{battle});Set("_robotPlayback",new RobotBattlePlayback(new[]{battle}));Set("_robotRound",0);Set("_battleWave",0);Set("_battleAge",0d);Set("_battleIntroAge",100d);Set("_robotPlaying",false);Set("_robotSummary",false);
+            GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawRobotBattle");batch.End();Save("battle-13-"+terrain.ToString().ToLowerInvariant());
+        }
+        Console.WriteLine("PASS: thirteen-country battlefield renders for field, fort, mountain and twelve small-boat sea entries.");
+    }
+    private void CheckInvasion60(SpriteBatch batch)
+    {
+        var home=w.Nodes.Current(0);var route=w.Routes.Neighbors(home)[0];var target=w.Nodes.At(route.Target,route.Entry);target.Owner=1;home.Owner=0;
+        var store=w.Robots.Nodes[home.Id];foreach(var robot in store.Robots.ToArray())store.Remove(robot.Id);
+        typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(store,new object[]{60});
+        var robots=Enumerable.Range(0,60).Select(_=>w.Robots.Create(0,RobotParts.Complete)).ToArray();foreach(var robot in robots)store.Add(robot);
+        Set("_selectedMoveNode",target.Id);Call("BuildInvasionSources",target.Id);
+        var sources=(System.Collections.IList)Get("_invasionSources");
+        int index=Enumerable.Range(0,sources.Count).Single(i=>!(bool)sources[i]!.GetType().GetField("Queen")!.GetValue(sources[i])! && (int)sources[i]!.GetType().GetField("Node")!.GetValue(sources[i])! ==home.Id);
+        Set("_invasionPage",(int)Call("InvasionPageForSource",index));
+        var layouts=((IEnumerable<(int Index,int Row,Rectangle Bounds)>)Call("InvasionVisibleRows")).ToArray();
+        var bounds=layouts.Single(l=>l.Index==index).Bounds;
+        Rectangle Card(int slot)=>(Rectangle)typeof(Game1).GetMethod("InvasionCardAt",F|BindingFlags.Static)!.Invoke(null,new object[]{bounds,slot})!;
+        Check(Card(0).X==Card(12).X && Card(59).Bottom<=bounds.Bottom && Card(59).Bottom<850,"60 robots fit in 12 columns and five rows above the controls");
+        foreach(int slot in new[]{1,59})Call("InvasionClick",Card(slot).Center);
+        Check(w.Campaign.PlannedOrders.Single(o=>o.SourceNode==home.Id && !o.PocketOnly).RobotIds!.ToHashSet().SetEquals(new[]{robots[1].Id,robots[59].Id}),"Second and sixtieth inline cards reserve their exact robots");
+        Check((int)Get("_invasionPicker")==-1,"Inline selection needs no separate sortie picker");
+        foreach(int slot in Enumerable.Range(0,60).Where(i=>i!=1 && i!=59))Call("InvasionClick",Card(slot).Center);
+        Check(w.Campaign.PlannedOrders.Single(o=>o.SourceNode==home.Id && !o.PocketOnly).RobotIds!.Length==60,"An expanded hangar may reserve all 60 robots");
+        int queen=Enumerable.Range(0,sources.Count).Single(i=>(bool)sources[i]!.GetType().GetField("Queen")!.GetValue(sources[i])! && (int)sources[i]!.GetType().GetField("Owner")!.GetValue(sources[i])! ==0);
+        Set("_invasionPage",(int)Call("InvasionPageForSource",queen));
+        var queenBounds=((IEnumerable<(int Index,int Row,Rectangle Bounds)>)Call("InvasionVisibleRows")).Single(l=>l.Index==queen).Bounds;
+        var toggle=(Rectangle)typeof(Game1).GetMethod("InvasionQueenAt",F|BindingFlags.Static)!.Invoke(null,new object[]{queenBounds})!;
+        Call("InvasionClick",toggle.Center);Check(w.Campaign.PlannedOrders.Any(o=>o.PocketOnly && o.Queen),"Queen participation is selectable directly in the list");
+        Call("InvasionClick",toggle.Center);Check(!w.Campaign.PlannedOrders.Any(o=>o.PocketOnly),"Queen participation can be cancelled directly in the list");
+        Set("_invasionPage",(int)Call("InvasionPageForSource",index));
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawInvasionPanel");batch.End();Save("invasion-60-inline");
+        Console.WriteLine("PASS: 60 inline sortie cards, five rows, exact IDs, no picker and a 60-member reservation.");
+    }
+    private void CheckPremiumUi(SpriteBatch batch)
+    {
+        w.SetCountryAppearance(0,0,5,1);w.SetCountryEmblem(0,13);
+        Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("OpenCountrySettings");
+        Rectangle Option(string method,int index)=>(Rectangle)typeof(Game1).GetMethod(method,F|BindingFlags.Static)!.Invoke(null,new object[]{index})!;
+        Rectangle ColorOption(int row,int index)=>(Rectangle)typeof(Game1).GetMethod("CountryColorOption",F|BindingFlags.Static)!.Invoke(null,new object[]{row,index})!;
+        var original=w.CountrySecondaryColor(0);Set("_pointer",ColorOption(1,0).Center);Call("CountrySettingsInput",true,false);
+        Check(w.CountrySecondaryColor(0)==original,"Hidden primary color in the secondary palette cannot be selected");
+        Set("_pointer",ColorOption(0,5).Center);Call("CountrySettingsInput",true,false);
+        Check(w.CountrySecondaryColor(0)!=5,"Selecting the secondary as primary chooses a contrasting secondary");
+        for(int emblem=0;emblem<WorldSetup.CountryEmblemNames.Length;emblem++){
+            Set("_pointer",Option("CountryEmblemOption",emblem).Center);Call("CountrySettingsInput",true,false);
+            Check(w.CountryEmblem(0)==emblem,"Every one-point emblem is selectable");
+        }
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawCountrySettings");batch.End();Save("premium-country-settings");
+        Set("_countrySettingsOpen",false);w.SetCountryAppearance(0,0,5,1);w.SetCountryEmblem(0,0);
+        var glyph=typeof(Game1).GetMethods(F).Single(m=>m.Name=="DrawRobotGlyph" && m.GetParameters().Length==5);
+        var rectangles=new List<Rectangle>();
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();
+        for(int kind=0;kind<27;kind++){
+            var premium=(RobotParts)0;var cheap=(RobotParts)0;
+            int choices=kind;
+            foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}){
+                int quality=choices%3;choices/=3;
+                if(quality==1)cheap|=part;if(quality==2)premium|=part;
+            }
+            var r=new Rectangle(95+kind%9*200,100+kind/9*310,110,210);rectangles.Add(r);
+            glyph.Invoke(this,new object[]{r,new Robot(kind+1,0,RobotParts.Complete){CheapParts=cheap,PremiumParts=premium},true,1f,null});
+        }
+        batch.End();Save("premium-mixed-parts");
+        var pixels=Pixels();int width=GraphicsDevice.PresentationParameters.BackBufferWidth;
+        foreach(var r in rectangles)foreach(int y in new[]{r.Y+r.Height*7/24,r.Y+r.Height*17/24})
+            Check(pixels[y*width+r.Center.X]!=new Color(16,35,46),"Every mixed-quality complete robot has connected neck and waist joints");
+        var ui=(UiPainter)Get("_ui");GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();
+        for(int emblem=1;emblem<WorldSetup.CountryEmblemNames.Length;emblem++){
+            var r=new Rectangle(100+(emblem-1)%7*250,150+(emblem-1)/7*360,150,150);
+            CountryEmblemArt.Draw(ui,r,emblem,WorldSetup.Colors[w.CountrySecondaryColor(0)]);
+            ui.Center(WorldSetup.CountryEmblemNames[emblem],new(r.X-30,r.Bottom+25,210,50),.5f,Color.White);
+        }
+        batch.End();Save("premium-emblems");
+        var node=w.Nodes.Current(0);var factory=w.Robots.Workshops[node.Id];
+        if(factory.ProductionLines.Length==0)for(int seed=0;factory.ProductionLines.Length==0;seed++)factory.GenerateLines(seed);
+        var line=factory.ProductionLines[0];
+        for(int seed=0;;seed++){line.GeneratePlans(seed);if(line.PlanCount==12)break;}
+        Call("OpenNodeInspector",node.Id);Call("OpenNodeFactory");Set("_domesticSlide",1f);Set("_factoryPlanLine",0);
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawNodeFactory");batch.End();Save("premium-factory-catalogue");
+        Set("_pointer",Option("FactoryPlanButton",11).Center);Call("NodeFactoryClick",(Point)Get("_pointer"));
+        Check(line.SelectedPlan==11 && line.CurrentProductionPlan.PremiumParts!=0,"Rare premium recipe can be selected through the factory menu");
+        Console.WriteLine("PASS: 27 connected mixed-quality robots, 13 selectable emblems, hidden duplicate palette color and rare premium factory choice.");
     }
 }

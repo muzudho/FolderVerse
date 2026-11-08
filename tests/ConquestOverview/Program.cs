@@ -18,7 +18,8 @@ sealed class OverviewGame:Game1{
   world.HumanPlayers.Add(3);
   var p=new ConquestPresentation(world);var main=p.Cards.Where(c=>!c.Reminder).ToArray();
   Check(main.Select(c=>c.Ruler).SequenceEqual(world.Relations.ProvisionalRanking(world).OrderByDescending(e=>e.Rank).Select(e=>e.Ruler)),"Lowest rank first main introductions");
-  int child=Array.FindIndex(p.Cards,c=>c.Ruler==3 && !c.Reminder);Check(p.Cards[child-2].Ruler==0 && p.Cards[child-1].Ruler==2 && p.Cards[child-1].Reminder,"Ancestors recalled root first");
+  Check(p.Cards.All(c=>!c.Reminder),"Subordinate results are compact even when a human controls them");
+  Check(world.Relations.ProvisionalRanking(world).Where(r=>r.Ruler is 2 or 3).All(r=>r.Cells==0 && !world.Relations.CanWinConquest(r.Ruler)),"Subordinates count zero sectors and cannot win individually");
   world.HumanPlayers.Remove(3);
   Check(ConquestPresentation.Detailed(world,0,6) && ConquestPresentation.Detailed(world,5,2) && !ConquestPresentation.Detailed(world,5,3) && !ConquestPresentation.Detailed(world,2,4),"Only human identities and top two keep detailed animation; controlled subordinates are compact");
   var compactCard=new ConquestPresentation.Card(3,6,3,false,ConquestPresentation.FaceTour(world,3));
@@ -59,7 +60,7 @@ sealed class OverviewGame:Game1{
   Check(emptyCompact.CellsStart==0 && emptyCompact.RankStart==0 && Math.Abs(emptyCompact.Duration*multi.ActiveCount-5)<1e-9,"Zero-cell results reveal instantly and share the compact group's five seconds");
   int batteryless=multi.ActiveCount-1;multi.Relations.Powered[batteryless]=false;
   var batterylessRanking=multi.Relations.ProvisionalRanking(multi);
-  Check(batterylessRanking[^1].Ruler==batteryless,"Batteryless ruler ranks below every powered zero-cell ruler despite highest entry number");
+  Check(batterylessRanking[^1].Ruler==batteryless && batterylessRanking[^1].Cells==-1,"Batteryless ruler counts minus one sector and ranks below powered zero-cell rulers");
   var batterylessCard=new ConquestPresentation(multi).Cards.Single(c=>c.Ruler==batteryless && !c.Reminder);
   var batterylessTally=new ConquestTally(multi,batterylessCard,true);
   Check(!batterylessTally.Powered && batterylessTally.Score(0)==-100+batteryless+1 && batterylessTally.Score(0)==ConquerorRelations.RankingScore(0,batteryless+1,multi.ActiveCount,false),"Batteryless tally uses minus 100 plus Entry consistently with ranking");
@@ -84,6 +85,9 @@ sealed class OverviewGame:Game1{
   owners=(int[])world.Owners.Clone();originalWorld=Get("_world");var net=(CubeNet)Get("_net");net.ShowBatteries=false;batteries=net.ShowBatteries;
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("RestoreDomesticCamera");batteries=net.ShowBatteries;
   Check((bool)Get("_conquestOverview"),"First domestic boundary starts presentation");
+  var contenderTiles=(OverviewTile[])Get("_conquestTiles");
+  Check(contenderTiles.All(t=>world.Relations.CanWinConquest(t.Slot)) && contenderTiles.Sum(t=>t.Width*t.Height)==400,
+      "Only independent powered contenders occupy the portrait area");
   Call("UpdateConquestOverview",.25d,false);Check((int)Get("_conquestStage")==0,"Curtain closes before hold");
   for(int i=0;i<3;i++)Call("UpdateConquestOverview",.25d,false);Check((int)Get("_conquestStage")==1,"Curtain hold stage");
   for(int i=0;i<4;i++)Call("UpdateConquestOverview",.25d,false);Check((int)Get("_conquestStage")==1,"Hold lasts 1.5 seconds");
@@ -148,7 +152,7 @@ sealed class OverviewGame:Game1{
    foreach(var n in world.Nodes.All.Where(n=>n.Owner==0))n.Owner=-1;world.Relations.SetSuperior(2,-1);world.Relations.Powered[0]=false;
    var noBatteryPresentation=new ConquestPresentation(world);Set("_conquestPresentation",noBatteryPresentation);Set("_conquestCard",Array.FindIndex(noBatteryPresentation.Cards,c=>c.Ruler==0 && !c.Reminder));
    Set("_conquestTally",new ConquestTally(world,noBatteryPresentation.Cards[(int)Get("_conquestCard")],true));
-   var noBatteryRanking=world.Relations.ProvisionalRanking(world).OrderBy(r=>r.Ruler).ToArray();Set("_conquestTiles",CharacterSelectionLayout.CreateOverview(noBatteryRanking.Select(r=>r.Cells).ToArray(),noBatteryRanking.Select(r=>r.Rank).ToArray()));
+   var noBatteryRanking=world.Relations.ProvisionalRanking(world).OrderBy(r=>r.Ruler).ToArray();Set("_conquestTiles",CharacterSelectionLayout.CreateOverview(noBatteryRanking.Select(r=>Math.Max(0,r.Cells)).ToArray(),noBatteryRanking.Select(r=>r.Rank).ToArray()));
    base.Draw(t);GraphicsDevice.GetBackBufferData(full);texture.SetData(full);using var batterylessOutput=File.Create(Path.Combine(AppContext.BaseDirectory,"conquest-batteryless.png"));texture.SaveAsPng(batterylessOutput,texture.Width,texture.Height);
    for(int i=0;i<nodeOwners.Length;i++)world.Nodes.All[i].Owner=nodeOwners[i];world.Relations.SetSuperior(2,savedSuperior);world.Relations.Powered[0]=true;
    Set("_conquestTally",savedTally);Set("_conquestPresentation",savedPresentation);Set("_conquestCard",savedCard);Set("_conquestTiles",savedTiles);
@@ -186,7 +190,7 @@ sealed class OverviewGame:Game1{
   world.SetWorld(123);world.SetCast(456);world.SetTerritoryRights(789);world.SelectPlayer(0);world.HumanPlayers.Add(0);
   foreach(int ruler in world.LandOrder())world.ClaimLand(ruler,world.Cells.Where(c=>world.Owners[c.Id]<0).Take(world.TerritoryRights[ruler]).Select(c=>c.Id).ToArray());
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"Fortune"));Set("_landAge",5d);
-  Call("UpdateLandSetup",0d,new MouseState(),true,false,false);
+  Call("UpdateLandSetup",0d,new MouseState(),true,false,true);
   Check(world.TutorialStep==0 && (bool)Get("_conquestOverview"),"Normal new game enters conquest overview after fortune without tutorial mode");
   Call("FinishConquestOverview");
   Set("_demoActive",true);Set("_demoIntro",false);
@@ -207,7 +211,33 @@ sealed class OverviewGame:Game1{
   Check((float)Get("_demoFade")==0,"Escape exits demo during overview");
   Call("UpdateDemo",.81d,true,false,false,false,0d);
   Check(!(bool)Get("_demoActive") && !(bool)Get("_conquestOverview") && Get("_screen").ToString()=="Title","Demo exit clears overview and returns to title");
+  CheckGroupedExhibition();
   Console.WriteLine("PASS: normal new game conquest overview, monotonic outro fade, no globe reappearance behind curtain, preserved intro fade, cell paint and static addition formula, lower-rank-first introductions, area portraits, four-second ranking tree, ancestor recalls, exact owner cells, terrain mix, curtain timing, full playback, skip, and preserved game/view state.");Exit();
+ }
+ void CheckGroupedExhibition(){
+  var exhibition=new WorldSetup();exhibition.SetParticipantCounts(0,60);exhibition.SetWorld(123);exhibition.SetCast(456);exhibition.SetPlacement(789);exhibition.SelectPlayer(0);
+  foreach(var node in exhibition.Nodes.All)node.Owner=0;
+  for(int ruler=1;ruler<=24;ruler++)exhibition.Relations.Powered[ruler]=false;
+  for(int ruler=25;ruler<=32;ruler++)exhibition.Relations.SetSuperior(ruler,0);
+  Set("_setup",exhibition);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_autoPlay",true);Set("_conquestOverviewTurn",-1);
+  Call("BeginConquestOverview");
+  var tiles=(OverviewTile[])Get("_conquestTiles");
+  Check((bool)Get("_conquestOverview") && tiles.Length==28 && tiles.All(t=>exhibition.Relations.CanWinConquest(t.Slot)) &&
+      tiles.Sum(t=>t.Width*t.Height)==400,"60-player Exhibition groups 24 eliminated and eight followers outside portrait space");
+  for(int ruler=25;ruler<60;ruler++)exhibition.Relations.SetSuperior(ruler,0);
+  Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");
+  tiles=(OverviewTile[])Get("_conquestTiles");
+  Check(tiles.Length==1 && tiles[0].Slot==0 && tiles[0].Width*tiles[0].Height==400,"Final independent contender gets the full portrait area");
+  var cards=((ConquestPresentation)Get("_conquestPresentation")).Cards;
+  Set("_conquestCard",Array.FindIndex(cards,c=>c.Ruler==0 && !c.Reminder));Call("SetConquestCard");
+  Set("_conquestStage",4);Set("_conquestAge",100d);((HashSet<int>)Get("_conquestRevealed")).Add(0);
+  var batch=(SpriteBatch)Get("_spriteBatch");var canvas=(Rectangle)Call("CanvasBounds");
+  var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
+  GraphicsDevice.Clear(Color.Black);batch.Begin(transformMatrix:transform);Call("DrawConquestMosaic");batch.End();
+  var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
+  using var image=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);image.SetData(pixels);
+  using var output=File.Create(Path.Combine(AppContext.BaseDirectory,"conquest-grouped-exhibition.png"));image.SaveAsPng(output,image.Width,image.Height);
+  Console.WriteLine("PASS: 60-player Exhibition shows overview and groups inactive rulers while preserving the whole portrait area.");
  }
 }
 

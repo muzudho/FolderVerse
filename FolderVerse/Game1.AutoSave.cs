@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
     private sealed record SavedGame(WorldSetup World,Dictionary<int,DomesticViewState> Views);
@@ -14,6 +15,8 @@ public partial class Game1
     private int _lastAutoSaveTurn=-1;
     private bool _hasAutoSave;
     private string _autoSaveError="";
+    private const double AutoSaveNoticeDuration=2,AutoSaveNoticeSlide=.25;
+    private double _autoSaveNoticeSeconds;
     private void CheckAutoSave(){_hasAutoSave=_autoSaveEnabled && File.Exists(_autoSavePath);}
     private void AutoSaveDomestic(){
         if(!_autoSaveEnabled || _demoActive || !IsStatusScreen || DeliveryPlayback || _setup.PlayerSlot<0 || _lastAutoSaveTurn==_setup.Population.Turn)return;
@@ -21,8 +24,24 @@ public partial class Game1
             SaveDomesticCamera();
             AutoSaveStore.Write(_autoSavePath,new SavedGame(_setup,new(_domesticViews)));
             _lastAutoSaveTurn=_setup.Population.Turn;_hasAutoSave=true;_autoSaveError="";
+            _autoSaveNoticeSeconds=AutoSaveNoticeDuration;
             _operations.Write("autosave_written",new{turn=_lastAutoSaveTurn,path=_autoSavePath});
         }catch(Exception error){_autoSaveError="オートセーブに失敗しました";RecordFailure(error,"autosave_write");}
+    }
+    private void DrawAutoSaveNotice(Rectangle canvas,Matrix transform)
+    {
+        if(_autoSaveNoticeSeconds<=0 || _screen==Screen.Title)return;
+        float slide=(float)Math.Clamp(Math.Min(AutoSaveNoticeDuration-_autoSaveNoticeSeconds,_autoSaveNoticeSeconds)/AutoSaveNoticeSlide,0,1);
+        int height=32;
+        var row=new Rectangle(820,1080-(int)MathF.Round(height*MathHelper.SmoothStep(0,1,slide)),280,height);
+        var previousClip=GraphicsDevice.ScissorRectangle;
+        using var clip=new RasterizerState{ScissorTestEnable=true};
+        GraphicsDevice.ScissorRectangle=canvas;
+        _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
+        _ui.Box(row,new Color(8,24,34,235));
+        _ui.Center("セーブしました",row,.38f,Cream);
+        _spriteBatch.End();
+        GraphicsDevice.ScissorRectangle=previousClip;
     }
     private bool ResumeAutoSave(){
         if(!_hasAutoSave)return false;

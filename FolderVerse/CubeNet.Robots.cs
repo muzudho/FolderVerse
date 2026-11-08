@@ -18,6 +18,7 @@ public sealed partial class CubeNet
     public void DrawMapObjects(UiPainter ui,WorldSetup world,Rectangle panel,float pulse)
     {
         _badgePanel=null;
+        DrawWhirlpools(ui,world,panel);
         if(ShowRoutes)foreach(var cell in world.Cells)
             DrawNodeMarkers(ui,world,cell.Id,p=>AnimatedSurfacePosition(cell.Id,p,world,panel),pulse);
         DrawBatteries(ui,world,panel,r=>AnimatedSurfacePosition(world.ConquerorLocations[r],world.Routes.Position(world.ConquerorLocations[r],world.ConquerorPoints[r]),world,panel),pulse);
@@ -25,6 +26,7 @@ public sealed partial class CubeNet
     }
     public void DrawGlobeRobots(UiPainter ui,WorldSetup world,WorldPreview globe,Rectangle panel,float yaw,float pitch)
     {
+        _whirlpoolScreens.Clear();
         _badgePanel=null;
         DrawRobotLayer(ui,world,panel,n=>{
             var cell=world.Cells[n.Cell];
@@ -56,7 +58,7 @@ public sealed partial class CubeNet
             var at=point.Value;float zoom=1;
             var cards=robots.Select((robot,i)=>{
                 var offset=RobotRingSlot(i,robots.Length)*zoom;
-                return new Rectangle((int)(at.X+offset.X-12*zoom),(int)(at.Y+offset.Y-MapPartCount(robot.Parts)*6*zoom),(int)(24*zoom),(int)(MapPartCount(robot.Parts)*12*zoom));
+                return AvoidWhirlpool(new Rectangle((int)(at.X+offset.X-12*zoom),(int)(at.Y+offset.Y-MapPartCount(robot.Parts)*6*zoom),(int)(24*zoom),(int)(MapPartCount(robot.Parts)*12*zoom)));
             }).ToArray();
             var bounds=cards.Aggregate(Rectangle.Union);
             if(!MapViewport(panel).Intersects(bounds))continue;
@@ -72,14 +74,16 @@ public sealed partial class CubeNet
                     if((robot.Parts&part)==0)continue;
                     // Each present part touches the next, including head + legs.
                     var full=new Rectangle(card.X,card.Y+(int)((row*12-(part==RobotParts.Head?0:part==RobotParts.Body?12:24))*zoom),(int)(24*zoom),(int)(36*zoom));
-                    DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part),DimNode(node.Id));
+                    DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part),DimNode(node.Id),
+                        world.CountryPattern(robot.Origin(part)),WorldSetup.Colors[world.CountrySecondaryColor(robot.Origin(part))],robot.IsPremium(part),
+                        part==((robot.Parts&RobotParts.Body)!=0?RobotParts.Body:(robot.Parts&RobotParts.Head)!=0?RobotParts.Head:RobotParts.Legs)?world.CountryEmblem(robot.Origin(part)):0);
                     row++;
                 }
                 if(robot.ShoeOwner>=0)RobotWorkArt.DrawShoes(ui,card,NodeTint(node.Id,world.OwnerColor(robot.ShoeOwner)));
             }
         }
     }
-    public void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts,bool damaged=false,bool cheap=false,bool dim=false)
+    public void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts,bool damaged=false,bool cheap=false,bool dim=false,int pattern=0,Color? secondary=null,bool premium=false,int emblem=0)
     {
         _mapRobotTexture ??= LoadMapRobot(ui.Batch.GraphicsDevice);
         var tint=Color.Lerp(Color.White,color,.48f);
@@ -90,23 +94,28 @@ public sealed partial class CubeNet
             int top=_mapRobotTexture.Height*part/3,bottom=_mapRobotTexture.Height*(part+1)/3;
             var source=new Rectangle(0,top,_mapRobotTexture.Width,bottom-top);
             int y=r.Y+r.Height*part/3,next=r.Y+r.Height*(part+1)/3;
-            if(!damaged && !cheap)ui.Batch.Draw(_mapRobotTexture,new Rectangle(r.X,y,r.Width,Math.Max(1,next-y)),source,tint);
+            if(!damaged && !cheap && !premium && pattern==0)ui.Batch.Draw(_mapRobotTexture,new Rectangle(r.X,y,r.Width,Math.Max(1,next-y)),source,tint);
             else for(int row=y;row<next;row++)
             {
                 int sy=top+(row-y)*(bottom-top)/Math.Max(1,next-y);
-                var ink=cheap && (row-y)%4>=2?(dim?SelectionGlow.Dim(Color.White,FocusBrightness):Color.White):tint;
                 var area=new Rectangle(r.X,y,r.Width,Math.Max(1,next-y));
-                for(int x=r.Left;x<r.Right;x++){
-                    int sx=(x-r.Left)*source.Width/Math.Max(1,r.Width);
+                var span=RobotPartSilhouette.Row(area,row,cheap,premium);
+                for(int x=span.Left;x<span.Right;x++){
+                    var ink=pattern!=0 && WorldSetup.CountryPatternSecondary(pattern,(x-r.X)/2,(row-r.Y)/2)?secondary??color:tint;
+                    if(premium && (row==y || row==next-1))ink=new Color(255,215,100);
+                    if(dim && pattern!=0 && ink!=tint)ink=SelectionGlow.Dim(ink,FocusBrightness);
+                    int sx=(x-span.Left)*source.Width/Math.Max(1,span.Width);
                     var shaded=damaged?RobotDamageArt.Tint(area,x,row,ink):ink;
                     ui.Batch.Draw(_mapRobotTexture,new Rectangle(x,row,1,1),new Rectangle(sx,sy,1,1),shaded);
                 }
             }
 
         }
+        int emblemSide=Math.Max(1,r.Width/2),emblemTop=(parts&RobotParts.Body)!=0?r.Y+r.Height/3:(parts&RobotParts.Head)!=0?r.Y:r.Y+r.Height*2/3;
+        CountryEmblemArt.Draw(ui,new(r.Center.X-emblemSide/2,emblemTop,emblemSide,emblemSide),emblem,secondary??color,dim?FocusBrightness:1);
     }
     private Texture2D _mapRobotTexture;
-    public void DisposeRobotTexture(){_mapRobotTexture?.Dispose();_mapRobotTexture=null;}
+    public void DisposeRobotTexture(){DisposeIceTextures();_mapRobotTexture?.Dispose();_mapRobotTexture=null;}
     private static Texture2D LoadMapRobot(GraphicsDevice device)
     {
         using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","robot-map-toy-v001.png"));

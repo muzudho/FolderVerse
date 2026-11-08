@@ -25,8 +25,8 @@ public sealed partial class TerrainRoutes
     private IEnumerable<(int Node,RoutePortal Portal)> PhysicalNeighbors(int node)
     {
         int cell=node/100,point=node%100;
-        foreach(int next in Nearby(point))yield return (cell*100+next,null);
-        foreach(var portal in _portals[cell].SelectMany(p=>p).Where(p=>Id(p.Exit)==point))yield return (portal.Target*100+Id(portal.Entry),portal);
+        foreach(int next in Nearby(point).Where(n=>!WhirlpoolAt(cell,PointAt(n))))yield return (cell*100+next,null);
+        foreach(var portal in _portals[cell].SelectMany(p=>p).Where(p=>Id(p.Exit)==point && !WhirlpoolAt(p.Target,p.Entry)))yield return (portal.Target*100+Id(portal.Entry),portal);
     }
     private void RepairConnectivity()
     {

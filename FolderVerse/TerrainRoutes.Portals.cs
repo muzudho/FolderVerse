@@ -16,7 +16,7 @@ public sealed partial class TerrainRoutes
     public TravelTerrain Terrain(int cell,Point p)=>Classify(_heights[cell][Id(p)]);
     private static TravelTerrain Classify(float h)=>h<.52f?TravelTerrain.Sea:h<WorldTerrain.MountainHeight?TravelTerrain.Land:TravelTerrain.Mountain;
     public bool MountainPass(int cell,Point p)=>_passes[cell][Id(p)];
-    public bool Walkable(int cell,Point p)=>Terrain(cell,p)!=TravelTerrain.Mountain || MountainPass(cell,p);
+    public bool Walkable(int cell,Point p)=>!PackIceAt(cell,p) && !WhirlpoolAt(cell,p) && (Terrain(cell,p)!=TravelTerrain.Mountain || MountainPass(cell,p));
     private static IEnumerable<int> Nearby(int id)
     {
         if(id%10>0)yield return id-1;if(id%10<9)yield return id+1;if(id>=10)yield return id-10;if(id<90)yield return id+10;

@@ -34,7 +34,7 @@ public sealed partial class RobotWorld
         int node=order.SourceNode>=0?order.SourceNode:ReservationSource?.Invoke(order.Ruler)??-1;
         return node>=0 && node<Nodes.Length?Nodes[node]:null;
     }
-    private long[] LegacyOrderIds(March order,RobotStore store)=>store==null?Array.Empty<long>():Training[order.Ruler].Order(store.Robots.Where(r=>r.Owner==order.Ruler && !r.Stationed && !r.Disposal && WorkQualified(r,order.Ruler))).Take((int)Math.Min(12,order.Fighters)).Select(r=>r.Id).ToArray();
+    private long[] LegacyOrderIds(March order,RobotStore store)=>store==null?Array.Empty<long>():Training[order.Ruler].Order(store.Robots.Where(r=>r.Owner==order.Ruler && !r.Stationed && !r.Disposal && WorkQualified(r,order.Ruler))).Take((int)Math.Min(store.TotalCapacity,order.Fighters)).Select(r=>r.Id).ToArray();
     public void RevalidateWorkReservations()
     {
         for(int node=0;node<Nodes.Length;node++){
@@ -66,7 +66,7 @@ public sealed partial class RobotWorld
     private bool PhysicalEditBusy(int node,Robot robot)=>node<0 || node>=Nodes.Length || Reservations?.RobotBattles.LockedNode(node)==true || Workshops[node].IsDisposing(robot.Id) || PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) || _arrivalLocked?.Invoke(robot.Id)==true;
     public bool CanEditReservedPart(int node,Robot robot,int country)
     {
-        if(PhysicalEditBusy(node,robot))return false;
+        if(robot.LongDeliveryNumber.HasValue || robot.ReturnHomeCommander.HasValue || PhysicalEditBusy(node,robot))return false;
         int work=WorkCountry(node,robot);return work<0 || work==country;
     }
     private Robot AfterPartEdit(int node,Robot before,Robot after,bool swap)
@@ -84,7 +84,7 @@ public sealed partial class RobotWorld
     {
         if((before.Parts&parts)!=(after.Parts&parts))return false;
         foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((parts&part)!=0 && (before.Parts&part)!=0){
-            if(before.Origin(part)!=after.Origin(part) || before.IsCheap(part)!=after.IsCheap(part) || (before.DamagedParts&part)!=(after.DamagedParts&part) || before.IsDamaged(part)!=after.IsDamaged(part) || before.ConnectedParts(part)!=after.ConnectedParts(part))return false;
+            if(before.Origin(part)!=after.Origin(part) || before.IsCheap(part)!=after.IsCheap(part) || before.IsPremium(part)!=after.IsPremium(part) || (before.DamagedParts&part)!=(after.DamagedParts&part) || before.IsDamaged(part)!=after.IsDamaged(part) || before.ConnectedParts(part)!=after.ConnectedParts(part))return false;
         }
         return true;
     }

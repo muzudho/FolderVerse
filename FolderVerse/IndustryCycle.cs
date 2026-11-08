@@ -40,11 +40,12 @@ public sealed class IndustryCycle
         return merged.ToArray();
     }
     public bool Pending {get;private set;}
+    public int AppliedUnits {get;private set;}
     public int Round {get;private set;}
     public int SelectedSector {get;private set;}=-1;
     public int Result=>SelectedSector<0?-1:Wheel[SelectedSector].Turns;
-    public void Reset(){Pending=false;Round=0;SelectedSector=-1;Wheel=MergeAdjacent(Sectors);}
-    public void Queue(int round){if(round<=Round)return;Round=round;Pending=true;SelectedSector=-1;}
+    public void Reset(){Pending=false;Round=0;SelectedSector=-1;AppliedUnits=0;Wheel=MergeAdjacent(Sectors);}
+    public void Queue(int round){if(round<=Round)return;Round=round;Pending=true;SelectedSector=-1;AppliedUnits=0;}
     public static int SectorAt(int ticket)=>SectorAt(ticket,Sectors);
     public static int SectorAt(int ticket,IReadOnlyList<IndustrySector> wheel)
     {
@@ -54,9 +55,14 @@ public sealed class IndustryCycle
     }
     public void Roll(int seed){if(!Pending || SelectedSector>=0)return;Wheel=CreateWheel(seed,Round);SelectedSector=SectorAt(new SeedRandom(seed^Round*7919^0x45123).Next(100),Wheel);}
     public bool Apply(WorldSetup world)
+        =>Advance(world,Math.Max(0,Result-AppliedUnits));
+    public bool Advance(WorldSetup world,int units)
     {
+        if(units<0)throw new ArgumentOutOfRangeException(nameof(units));
         if(!Pending || SelectedSector<0)return false;
-        for(int i=0;i<Result;i++)world.Robots.AdvanceIndustry(n=>world.Nodes.All[n].Owner,world.Campaign.RobotBattles.LockedNode);
-        Pending=false;return true;
+        int steps=Math.Min(units,Result-AppliedUnits);
+        for(int i=0;i<steps;i++){world.Robots.AdvanceIndustry(n=>world.Nodes.All[n].Owner,world.Campaign.RobotBattles.LockedNode);AppliedUnits++;}
+        if(AppliedUnits==Result)Pending=false;
+        return true;
     }
 }

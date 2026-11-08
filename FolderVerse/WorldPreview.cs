@@ -51,6 +51,7 @@ public sealed partial class WorldPreview : IDisposable
             throw new ArgumentOutOfRangeException(nameof(height));
         if (depth < 1 || depth > 9)
             throw new ArgumentOutOfRangeException(nameof(depth));
+        _whirlpoolMesh?.Dispose();_whirlpoolMesh=null;
         _highlight?.Dispose();_highlight=null;_highlightCount=0;HighlightedOwner=-1;
         Width = width; Height = height; Depth = depth; Seed = seed;
         _markers?.Dispose(); _markers = null; _markerCount = 0;
@@ -73,7 +74,10 @@ public sealed partial class WorldPreview : IDisposable
     public void ShowSetup(WorldSetup setup, bool territories)
     {
         if(CountryColors && territories)ShowLandConquest(setup,true);
-        else Generate(setup.Width, setup.Height, setup.Depth, setup.WorldSeed,setup.PolarAxis);
+        else {
+            Generate(setup.Width, setup.Height, setup.Depth, setup.WorldSeed,setup.PolarAxis);
+            if(setup.Owners.Length==setup.Cells.Length)BuildWhirlpoolMesh(setup);
+        }
         if (!territories || setup.Owners.Length == 0) return;
         var mesh = new List<VertexPositionColorNormal>();
         void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, Vector3 normal)
@@ -170,6 +174,7 @@ public sealed partial class WorldPreview : IDisposable
             pass.Apply();
             _device.DrawPrimitives(PrimitiveType.TriangleList, 0, _primitiveCount);
         }
+        DrawWhirlpoolMesh();
         if(_highlight!=null)
         {
             _device.SetVertexBuffer(_highlight);_effect.LightingEnabled=false;
@@ -199,5 +204,5 @@ public sealed partial class WorldPreview : IDisposable
         screen=new(projected.X,projected.Y);
         return Vector3.Dot(facing,camera-transformed)>0 && projected.Z>=0 && projected.Z<=1;
     }
-    public void Dispose() { _vertices?.Dispose(); _markers?.Dispose();_highlight?.Dispose(); _effect.Dispose(); }
+    public void Dispose() { _whirlpoolMesh?.Dispose();_vertices?.Dispose(); _markers?.Dispose();_highlight?.Dispose(); _effect.Dispose(); }
 }

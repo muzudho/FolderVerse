@@ -28,11 +28,22 @@ public partial class Game1
             if(pending){_ui.Box(image,new Color(19,30,43));DrawConquestQuestion(image);}
             else _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],image,_setup.Relations.Powered[ruler],focalPoint:new Vector2(.5f,.3f));
             if(!revealed)continue;
-            if(!focus)_ui.Box(image,Color.Black*.25f);
-            int subordinateCells=ranking[ruler].Cells-ConquestPresentation.OwnCells(_setup,ruler).Length;
-            var counterArea=image;
-            if(subordinateCells>0)counterArea.Height=Math.Max(1,counterArea.Height-25);
-            _counter.Draw(_spriteBatch,ranking[ruler].Cells,counterArea,_setup.OwnerColor(ruler));
+            bool powered=_setup.Relations.Powered[ruler];
+            if(!powered || !focus)_ui.Box(image,Color.Black*(powered?.25f:.60f));
+            bool subordinate=_setup.Relations.Superiors[ruler]>=0;
+            int subordinateCells=powered && !subordinate?ranking[ruler].Cells-ConquestPresentation.OwnCells(_setup,ruler).Length:0;
+            if(powered && !subordinate){
+                var counterArea=image;
+                if(subordinateCells>0)counterArea.Height=Math.Max(1,counterArea.Height-25);
+                _counter.Draw(_spriteBatch,ranking[ruler].Cells,counterArea,_setup.OwnerColor(ruler));
+            }else{
+                int width=Math.Min(56,image.Width),height=Math.Clamp(image.Height-25,1,28);
+                var badge=new Rectangle(image.Right-width,image.Bottom-height,width,height);
+                _ui.Box(badge,Color.Black*.75f);
+                string status=powered?"手下":"脱落";
+                var textSize=_font.MeasureString(status);
+                _ui.Center(status,badge,Math.Min(.36f,Math.Min(width/textSize.X,height/textSize.Y)),Cream);
+            }
             if(subordinateCells>0){
                 string detail=$"（内、手下 {subordinateCells} {ToyCounterRenderer.SectorUnit(subordinateCells)}）";
                 var detailArea=new Rectangle(image.X,image.Bottom-25,image.Width,25);
@@ -44,6 +55,10 @@ public partial class Game1
             _ui.Center(label,new(r.X+4,r.Y+4,r.Width-8,25),Math.Min(.35f,(r.Width-12)/_font.MeasureString(label).X),Cream);
         }
         _ui.Box(ConquestMapSpace,Color.Black);_ui.Box(ConquestFormulaSpace,new Color(25,34,46));_ui.Box(ConquestTreeSpace,new Color(19,30,43));
+        int eliminated=Enumerable.Range(0,_setup.ActiveCount).Count(r=>!_setup.Relations.Powered[r]);
+        int followers=Enumerable.Range(0,_setup.ActiveCount).Count(r=>_setup.Relations.Powered[r] && _setup.Relations.Superiors[r]>=0);
+        _ui.Box(new(54,976,ConquestTreeSpace.Width,36),new Color(8,21,31));
+        _ui.Center($"脱落 {eliminated}名　/　手下 {followers}名",new(54,976,ConquestTreeSpace.Width,36),.42f,Cream);
     }
     private void DrawConquestQuestion(Rectangle image){
         var measure=_font.MeasureString("?");

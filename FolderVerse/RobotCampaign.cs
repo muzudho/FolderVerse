@@ -62,6 +62,15 @@ public sealed partial class RobotCampaign
     private static int Source(WorldSetup world,March order)=>order.SourceNode>=0?order.SourceNode:world.Nodes.Current(order.Ruler).Id;
     public int AvailableFrom(WorldSetup world,int owner,int source)
         =>source<0 || source>=world.Nodes.All.Length || !world.Nodes.All[source].Functional || LockedNode(source)?0:world.Robots.Nodes[source].Robots.Count(r=>r.Owner==owner && world.Robots.Training[owner].Eligible(r) && !r.Stationed && world.Robots.DirectDelivery.LockedParts(source,r.Id)==0 && !world.Robots.Workshops[source].IsDisposing(r.Id) && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)));
+    public int DefendingRobots(WorldSetup world,int attacker,int target)
+    {
+        int count=world.Robots.Nodes[target].Robots.Count(r=>!world.Relations.Allied(attacker,r.Owner) && r.CanFight && !r.FactoryWorker &&
+            (!(r.DefenseOnly || r.InterceptOnly) || world.Robots.Training[r.Owner].Eligible(r)));
+        int defender=world.Nodes.All[target].Owner;
+        if(defender>=0 && !world.Relations.Allied(attacker,defender) && world.Nodes.Current(defender)?.Id==target)
+            count+=world.Robots.Retinues[defender].Robots.Count(world.Robots.Training[defender].Eligible);
+        return count;
+    }
     public Robot[] SelectableRobots(WorldSetup world,int owner,int source,bool pocket)
     {
         if(owner<0 || owner>=world.ActiveCount || source<0 || source>=world.Nodes.All.Length || LockedNode(source))return Array.Empty<Robot>();
@@ -106,7 +115,7 @@ public sealed partial class RobotCampaign
         foreach(var o in orders.Where(o=>o.RobotIds!=null))
         {
             var available=SelectableRobots(world,o.Ruler,Source(world,o),o.PocketOnly);
-            if(o.RobotIds.Length>12 || o.RobotIds.Distinct().Count()!=o.RobotIds.Length || o.Fighters!=o.RobotIds.Length || o.RobotIds.Any(id=>!available.Any(r=>r.Id==id)))throw new ArgumentException("Reserved robot selection is no longer available.");
+            if(o.RobotIds.Distinct().Count()!=o.RobotIds.Length || o.Fighters!=o.RobotIds.Length || o.RobotIds.Any(id=>!available.Any(r=>r.Id==id)))throw new ArgumentException("Reserved robot selection is no longer available.");
         }
         Scenes.Clear();Encounters.RemoveAll(e=>e.Finished);
         foreach(var reserve in Reserves.ToArray())if(!LockedNode(reserve.Node) && world.Robots.Nodes[reserve.Node].HasSpace)
@@ -118,7 +127,7 @@ public sealed partial class RobotCampaign
         foreach(var o in orders)
         {
             var store=world.Robots.Nodes[source[o]];
-            var selected=o.RobotIds!=null?SelectableRobots(world,o.Ruler,source[o],o.PocketOnly).Where(r=>o.RobotIds.Contains(r.Id)).ToArray():world.Robots.Training[o.Ruler].Order(store.Robots.Where(r=>!o.PocketOnly && r.Owner==o.Ruler && world.Robots.Training[o.Ruler].Eligible(r) && !r.Stationed && world.Robots.DirectDelivery.LockedParts(source[o],r.Id)==0 && world.Robots.Workshops[source[o]].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).Take((int)Math.Min(12,o.Fighters)).ToArray();
+            var selected=o.RobotIds!=null?SelectableRobots(world,o.Ruler,source[o],o.PocketOnly).Where(r=>o.RobotIds.Contains(r.Id)).ToArray():world.Robots.Training[o.Ruler].Order(store.Robots.Where(r=>!o.PocketOnly && r.Owner==o.Ruler && world.Robots.Training[o.Ruler].Eligible(r) && !r.Stationed && world.Robots.DirectDelivery.LockedParts(source[o],r.Id)==0 && world.Robots.Workshops[source[o]].DisposalTarget!=r.Id && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).Take((int)Math.Min(store.TotalCapacity,o.Fighters)).ToArray();
             foreach(var r in selected)Depart(world,source[o],r,o.PocketOnly);
             troops[o]=selected.ToList();
             // Direct retinue travels with its conqueror and is excluded from transport plans.
@@ -244,15 +253,14 @@ public sealed partial class RobotCampaign
         }
         var sorted=armies.OrderBy(a=>a.Owner==defender?0:1).ThenBy(a=>Bearing(a.Home)).ThenBy(a=>a.Home).ThenBy(a=>a.Owner).ToArray();
         var sizes=new List<int>();int left=sorted.Length;
-        int capacity=kind==BattleKind.Node && defender>=0 && sorted.Length<=5?5:4;
+        int capacity=kind==BattleKind.Node && defender>=0 && sorted.Length<=13?13:12;
         while(left>capacity){int size=left==capacity+1?2:capacity;sizes.Add(size);left-=size;}sizes.Add(left);
         int offset=0;foreach(int size in sizes)
         {
             var state=NewState(world,e);
             if(sizes.Count>1){state.SplitBoard=true;state.Kind=BattleKind.Edge;state.Defender=-1;state.BuildTerrain(world.Nodes.All[target].Terrain==TravelTerrain.Sea?BattleTerrain.Sea:BattleTerrain.Field);}
             foreach(var a in sorted.Skip(offset).Take(size))
-                state.AddArmy(a.Owner,a.Home,a.Robots,a.Queen,state.Terrain==BattleTerrain.Sea
-                    ?SeaApproach(world,e,approaches?.GetValueOrDefault(a.Owner,a.Home)??a.Home):-1);
+                state.AddArmy(a.Owner,a.Home,a.Robots,a.Queen,SeaApproach(world,e,approaches?.GetValueOrDefault(a.Owner,a.Home)??a.Home));
             state.ChooseLayout();state.Deploy();state.BuildFortifications(e.DefenseCount);e.Battles.Add(state);offset+=size;
         }
         return e;
@@ -317,13 +325,13 @@ public sealed partial class RobotCampaign
         var state=e.Battles.FirstOrDefault(b=>b.Armies.Any(a=>a.Owner==owner));
         if(state==null)
         {
-            state=e.Battles.FirstOrDefault(b=>!b.Finished && b.Armies.Count<b.EntryCapacity);
+            state=e.Battles.FirstOrDefault(b=>!b.Finished && b.CanAddArmy(owner));
             if(state==null){state=NewState(world,e);e.Battles.Add(state);}
-            state.AddArmy(owner,home,robots,queen,state.Terrain==BattleTerrain.Sea?SeaApproach(world,e,home):-1);return;
+            state.AddArmy(owner,home,robots,queen,SeaApproach(world,e,home));return;
         }
         var army=state.Army(owner);
         state.Finished=false; // Will is reset only when a unit actually enters the board.
-        foreach(var robot in robots)army.Waiting.Enqueue(new(){Id=robot.Id,Owner=owner,Robot=robot,Daggers=robot.CombatParts(owner),Shields=robot.CombatParts(owner),Rifles=robot.NativeParts(owner)==3?4:robot.CombatParts(owner),Role=robot.Role==RobotRole.Captain?BattleRole.Captain:BattleRole.Soldier});
+        foreach(var robot in robots)army.Waiting.Enqueue(new(){Id=robot.Id,Owner=owner,Robot=robot,Daggers=robot.CombatParts(owner),Shields=robot.CombatParts(owner),Rifles=robot.CombatRifles(owner),Role=robot.Role==RobotRole.Captain?BattleRole.Captain:BattleRole.Soldier});
         if(queen && !state.Units.Concat(state.Armies.SelectMany(a=>a.Waiting)).Any(u=>u.Id==-(owner+1)))army.Waiting.Enqueue(new(){Id=-(owner+1),Owner=owner,Role=BattleRole.Queen,Daggers=0,Rifles=0});
     }
     private void RunSegment(WorldSetup world,RobotEncounter e)
@@ -342,7 +350,7 @@ public sealed partial class RobotCampaign
             foreach(var state in active)
             {
                 if(!Scenes.Contains(state))Scenes.Add(state);
-                BattleTurnResolver.Advance(state);
+                BattleTurnResolver.Advance(state);world.Lessons.ObserveEmptyFlag(state);
                 if(e.Kind==BattleKind.Edge && LoseHomes(world,e,state)){state.Capture(BattlePhase.Fall);BattleTurnResolver.Finish(state);state.Capture(BattlePhase.Result);}
             }
             budget--;
@@ -377,19 +385,16 @@ public sealed partial class RobotCampaign
         for(int i=0;i<groups.Length;)
         {
             var state=NewState(world,e);
-            int capacity=e.Kind==BattleKind.Node && groups.Skip(i).Any(g=>g.Key==e.Defender)?5:4;
+            int capacity=e.Kind==BattleKind.Node && groups.Length<=13 && groups.Skip(i).Any(g=>g.Key==e.Defender)?13:12;
             foreach(var g in groups.Skip(i).OrderBy(g=>g.Key==e.Defender?0:1).Take(capacity))
             {
                 var previous=old.SelectMany(b=>b.Armies).First(a=>a.Owner==g.Key);
-                var army=new BattleArmy{Owner=g.Key,HomeNode=previous.HomeNode,Side=state.Armies.Count,Limit=previous.Limit,Wanderer=previous.Wanderer,WandererPolicy=previous.WandererPolicy,Withdrawing=previous.Withdrawing};
-                if(state.Terrain==BattleTerrain.Sea){
-                    int approach=SeaApproach(world,e,previous.HomeNode);
-                    army.Side=g.Key==e.Defender && e.Kind==BattleKind.Node?4:state.FreeSeaSide(approach>=0?approach:previous.Side%4);
-                }else if(state.Armies.Count==1)army.Side=2;
-                state.Armies.Add(army);
+                int approach=SeaApproach(world,e,previous.HomeNode);
+                state.AddArmy(g.Key,previous.HomeNode,Array.Empty<Robot>(),false,approach>=0?approach:previous.Side%4);
+                var army=state.Army(g.Key);army.Limit=previous.Limit;army.Wanderer=previous.Wanderer;army.WandererPolicy=previous.WandererPolicy;army.Withdrawing=previous.Withdrawing;army.InvadingQueen=previous.InvadingQueen;
                 foreach(var unit in g.OrderBy(u=>u.Role==BattleRole.Queen?1:0).ThenBy(u=>u.Id))army.Waiting.Enqueue(unit);
             }
-            if(state.Terrain==BattleTerrain.Sea)state.ChooseLayout();
+            state.ChooseLayout();
             state.InheritHistory(old);state.Deploy();state.BuildFortifications(e.DefenseCount);e.Battles.Add(state);i+=capacity;
         }
         PrepareSplitBoards(e);
@@ -528,7 +533,7 @@ public sealed partial class RobotCampaign
         world.Robots.Check();
         var stored=world.Robots.Nodes.Concat(world.Robots.Retinues).SelectMany(s=>s.Robots);
         var fighting=Encounters.Where(e=>!e.Finished).SelectMany(e=>e.Battles.SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Where(u=>u.Robot!=null && !e.ReturnedWanderers.Contains(u.Id))).Select(u=>u.Robot);
-        var all=stored.Concat(fighting).Concat(Reserves.Select(r=>r.Robot)).ToArray();
+        var all=stored.Concat(fighting).Concat(Reserves.Select(r=>r.Robot)).Concat(world.Robots.ReturningRobots.Select(j=>j.Robot)).ToArray();
         if(all.Select(r=>r.Id).Distinct().Count()!=all.Length)throw new InvalidOperationException("Robot duplicated between world and battlefield.");
     }
 }

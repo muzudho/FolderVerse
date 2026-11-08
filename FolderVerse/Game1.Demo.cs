@@ -92,7 +92,7 @@ public partial class Game1
         _net.UpdateAnimation((float)elapsed);UpdateMapTransition((float)elapsed);
         if(_screen==Screen.WorldStatus && _demoMapVisits%3==0 && UpdateDemoMap(elapsed))return true;
         if(_screen==Screen.WorldStatus)return UpdateDemoDomestic(elapsed);
-        var dispositionPoint=_screen==Screen.Disposition?DispositionButton(DemoDispositionChoice()).Center:Point.Zero;
+        var dispositionPoint=_screen==Screen.Disposition?AutomaticDispositionPoint:Point.Zero;
         var aim=_screen==Screen.Disposition?new Vector2(dispositionPoint.X,dispositionPoint.Y):_screen==Screen.WorldStatus?new Vector2(720,1040):_screen is Screen.Battle or Screen.Transport?new Vector2(1840,850):new Vector2(1580,790);
         if(_screen is Screen.Rolling or Screen.Review)aim=new((_screen==Screen.Review && _demoWorldRoll<3?RetryButton:ActionButton).Center.X,(_screen==Screen.Review && _demoWorldRoll<3?RetryButton:ActionButton).Center.Y);
         else if(_screen is Screen.CastRolling or Screen.CastReview)aim=new((_screen==Screen.CastReview && _demoCastRoll<3?CastRetry:CastAction).Center.X,(_screen==Screen.CastReview && _demoCastRoll<3?CastRetry:CastAction).Center.Y);
@@ -147,7 +147,8 @@ public partial class Game1
         }
         return true;
     }
-    private int DemoDispositionChoice()=>_setup.Relations.Pending.Count==0 || _setup.Relations.Accepts(_setup,_setup.Relations.Pending[0].Ruler)?0:1;
+    private int DemoDispositionChoice()=>_setup.Relations.Pending.Count==0 || _setup.Relations.Accepts(_setup,_setup.Relations.Pending[0].Ruler)?0:
+        _setup.Relations.CanMercy(_setup,_setup.Relations.Pending[0])?1:2;
     private bool UpdateDemoMap(double elapsed)
     {
         if(_demoMapStage>=5)return false;

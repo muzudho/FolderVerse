@@ -18,7 +18,7 @@ public partial class Game1{
  }
  private void RestoreDomesticCamera(){
   ResetInspector();_domesticSlide=0;RestorePlayerView();
-  if(DomesticOperationsAllowed){PrepareHomePersuasion();AutoSaveDomestic();BeginConquestOverview();}
+  if(DomesticOperationsAllowed){PrepareHomePersuasion();AutoSaveDomestic();WriteTurnStatistics();BeginConquestOverview();}
  }
  private void RestorePlayerView(){
   _orientationAge=-1;_mapTransitionAge=-1;_dragging=_mapDragging=false;

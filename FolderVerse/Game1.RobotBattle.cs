@@ -64,6 +64,7 @@ public partial class Game1
     }
     private void RobotBattleInput(double elapsed,bool click,bool enter)
     {
+        UpdateSeaPresentation(elapsed);
         if(_tutorialAchievementAge>=0){UpdateTutorialAchievementCutIn(elapsed);return;}
         if(BattleIntroActive && !_robotSummary){
             _battleIntroAge=Math.Min(BattlePartsHoldSeconds+BattleForeignFadeSeconds+BattleNativeHoldSeconds+BattlePieceFadeSeconds+BattleBoardRevealSeconds,_battleIntroAge+elapsed);
@@ -140,12 +141,12 @@ public partial class Game1
         var battle=_robotScenes[_battleWave];int frameIndex=RobotFrameIndex(battle);
         var frame=battle.Frames.Count==0?new BattleFrame(battle.Turn,BattlePhase.Result,Array.Empty<BattleUnitView>(),battle.FlagStanding,battle.LastFlagOwner):battle.Frames[frameIndex];
         _ui.Text($"自動戦闘 / 全体ターン {_setup.Population.Turn}",new(1120,24),.65f,Cream);
-        _ui.Text($"同時進行 {_robotRound+1}/{_robotPlayback.Rounds.Length} / 戦場 {_battleWave+1}/{_robotScenes.Length}",new(1120,68),.55f,Cream);
+        _ui.Text($"同時進行 {_robotRound+1}/{_robotPlayback.Rounds.Length} / 戦場 {_battleWave+1}/{_robotScenes.Length} / {battle.Armies.Count}軍",new(1120,68),.55f,Cream);
         _ui.Button(RobotBattlePrevious,"前の戦場",Muted,.5f);_ui.Button(RobotBattleNext,"次の戦場",Muted,.5f);
         BattleInfo($"{(battle.SplitBoard?"分割野戦":battle.Kind==BattleKind.Edge?"辺戦":"節戦")} / Point {battle.TargetNode+1} / {battle.Terrain} / 戦闘ターン {frame.Turn} / {PhaseLabel(frame.Phase)}",112,.5f);
         const int left=40,top=40,size=100;
         var battleCanvas=CanvasBounds();var battleTransform=Matrix.CreateScale(battleCanvas.Width/1920f,battleCanvas.Height/1080f,1)*Matrix.CreateTranslation(battleCanvas.X,battleCanvas.Y,0);
-        var boardTransform=Matrix.CreateTranslation(-left,-top,0)*Matrix.CreateScale(10f/battle.BoardSize)*Matrix.CreateTranslation(left,top,0)*battleTransform;
+        var boardTransform=Matrix.CreateTranslation(-left,-top,0)*Matrix.CreateScale(10f/battle.BoardSize)*Matrix.CreateTranslation(left,top,0)*SeaBoardTransform(battle)*battleTransform;
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:boardTransform);
 
         DrawBattleTerrain(battle,new(left,top,size*battle.BoardSize,size*battle.BoardSize),1);
@@ -174,11 +175,28 @@ public partial class Game1
         for(int line=0;line<=battle.BoardSize;line++){_ui.Box(new(left+line*size,top,2,size*battle.BoardSize),new Color(24,43,51));_ui.Box(new(left,top+line*size,size*battle.BoardSize,2),new Color(24,43,51));}
         foreach(var army in battle.Armies.Where(a=>a.Side<4))
         {
+            if(battle.CompactFronts)foreach(var entry in battle.ArmyEntrance(army)){
+                var door=new Rectangle(left+entry.X*size+7,top+entry.Y*size+7,24,33);
+                var color=_setup.OwnerColor(army.Owner);
+                _ui.Box(new(door.X-2,door.Y-2,door.Width+4,door.Height+4),Cream);
+                _ui.Box(door,color);_ui.Box(new(door.X+5,door.Y+6,14,27),new Color(19,35,46));
+                _ui.Center($"#{army.Owner+1}",new(door.X-5,door.Bottom+3,48,22),.22f,color);
+            }
             var border=BattleObstacleArt.HomeBorder(army.Side,new Rectangle(left,top,size*battle.BoardSize,size*battle.BoardSize));
+            if(battle.CompactFronts){
+                int slot=army.Side>=2?2-army.EntrySlot:army.EntrySlot;
+                if(army.Side%2==0){border.X+=(1+slot*4)*size;border.Width=3*size;}
+                else{border.Y+=(1+slot*4)*size;border.Height=3*size;}
+            }
             _ui.Box(border,_setup.OwnerColor(army.Owner));
             // Keep retreat markers inside the left 1080-pixel battlefield area.
             var countryLabel=army.Side is 0 or 2?new Rectangle(border.X,border.Y+(army.Side==0?-28:8),border.Width,24):new Rectangle(army.Side==3?0:left+size*battle.BoardSize+2,top+450,36,30);
             if(battle.BoardSize==BattleState.Size)countryLabel=new(left+(army.Side is 1 or 2?(battle.BoardSize-2)*size:10),top+(army.Side>=2?(battle.BoardSize-1)*size+35:20),150,30);
+            if(battle.CompactFronts)countryLabel=army.Side switch{
+                0=>new(border.Center.X-32,top+4,64,26),
+                1=>new(left+size*battle.BoardSize-68,border.Center.Y-13,64,26),
+                2=>new(border.Center.X-32,top+size*battle.BoardSize-30,64,26),
+                _=>new(left+4,border.Center.Y-13,64,26)};
             _ui.Center($"#{army.Owner+1}",countryLabel,.4f,_setup.OwnerColor(army.Owner));
         }
         for(int i=0;i<battle.BoardSize;i++)
@@ -222,7 +240,7 @@ public partial class Game1
                 foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
                     if((physical.Parts&part)!=0)
                         DrawRobotGlyph(r,physical.Origin(part),part,physical.Role==RobotRole.Captain,
-                            opacity*BattlePartOpacity(physical.IsDamaged(part) || physical.Origin(part)==unit.Owner),damaged:physical.IsDamaged(part),cheap:physical.IsCheap(part));
+                            opacity*BattlePartOpacity(physical.IsDamaged(part) || physical.Origin(part)==unit.Owner),damaged:physical.IsDamaged(part),cheap:physical.IsCheap(part),premium:physical.IsPremium(part));
             float pieceOpacity=opacity*(physical==null?1:BattlePieceOpacity);
             foreach(var patch in BattlePieceArt.Pieces[BattlePieceArt.Index(unit.Role,unit.Facing)])
             {
@@ -235,21 +253,12 @@ public partial class Game1
                 if(physical!=null && patch.Ink==0)
                 {
                     color=_setup.OwnerColor(physical.Origin(part));
-                    if(_setup.CountryPattern(unit.Owner)!=0){DrawBattleUniformPatch(area,r,damageArea,physical,unit.Owner,color,part,pieceOpacity);continue;}
-                    if(physical.IsCheap(part))
-                    {
-                        for(int row=0;row<area.Height;row++){
-                            var stripe=new Rectangle(area.X,area.Y+row,area.Width,1);
-                            var ink=(area.Y+row)%6<3?color:Cream;
-                            if(physical.IsDamaged(part))RobotDamageArt.Draw(_ui,stripe,damageArea,ink,pieceOpacity);
-                            else _ui.Box(stripe,ink*pieceOpacity);
-                        }
-                        continue;
-                    }
+                    DrawBattleUniformPatch(area,r,damageArea,physical,unit.Owner,color,part,pieceOpacity);
+                    continue;
                 }
-                if(physical!=null && patch.Ink==0 && physical.IsDamaged(part))RobotDamageArt.Draw(_ui,area,damageArea,color,pieceOpacity);
-                else _ui.Box(area,color*pieceOpacity);
+                _ui.Box(area,color*pieceOpacity);
             }
+            if(physical!=null)DrawCountryEmblem(new(r.X+r.Width/3,r.Y+r.Height*27/48,r.Width/3,r.Width/3),unit.Owner,pieceOpacity);
             if(physical?.ShoeOwner>=0)RobotWorkArt.DrawShoes(_ui,r,_setup.OwnerColor(physical.ShoeOwner),pieceOpacity);
             if(unit.Role==BattleRole.Queen)
             {
@@ -360,7 +369,7 @@ public partial class Game1
         if(battle.Kind==BattleKind.Node && !battle.SplitBoard)DrawBattleFlagCountdown(battle,frame);
         else if(recent!=null)BattleInfo($"ID {recent.Unit} / {recent.Detail}",794,.42f);
         if(battle.Kind==BattleKind.Node && !battle.SplitBoard){
-            BattleInfo(frame.Units.Any(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated)?$"説得：上下左右{battle.Rules.PersuasionRadius}マス以内 / {battle.Rules.PersuasionPercent}％ / 壁越し有効":"足元は左から盾・短剣・弾の残数",872,.4f);
+            BattleInfo(frame.Units.Any(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated)?$"説得：上下左右{battle.Rules.PersuasionRadius}マス以内 / {battle.Rules.PersuasionPercent}％ / 壁越し有効":battle.CompactFronts?"扉：各軍の増援・退却口 / 旗：守備軍の出入口":"足元は左から盾・短剣・弾の残数",872,.4f);
         }
         else if(frame.Units.Any(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated))
         {

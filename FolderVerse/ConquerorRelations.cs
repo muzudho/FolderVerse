@@ -5,7 +5,7 @@ using System.Linq;
 
 public enum DefeatedChoice { Recruit,Release,RemoveBattery }
 public sealed record Captive(int Ruler,int Victor,int Node);
-public sealed class ConquerorRelations
+public sealed partial class ConquerorRelations
 {
     public int Leader=-1;
     private const int Capacity=GameLimits.MaxConquerors;
@@ -13,11 +13,13 @@ public sealed class ConquerorRelations
     public int[] Teams=>Enumerable.Range(0,Capacity).Select(Root).ToArray();
     public bool[] Powered {get;}=Enumerable.Repeat(true,Capacity).ToArray();
     public bool[] Released {get;}=new bool[Capacity];
+    public int[] EliminationOrders {get;}=new int[Capacity];
+    private int _nextEliminationOrder=1;
     public List<Captive> Pending {get;}=new();
     public string Message {get;private set;}="";
     public void Reset()
     {
-        Leader=-1;Pending.Clear();Message="";
+        Leader=-1;Pending.Clear();MercyOffers.Clear();MercyResults.Clear();Array.Clear(EliminationOrders);_nextEliminationOrder=1;Message="";
         for(int i=0;i<Capacity;i++){Superiors[i]=-1;Powered[i]=true;Released[i]=false;}
     }
     public int Root(int ruler)
@@ -40,7 +42,8 @@ public sealed class ConquerorRelations
     }
     public static int RankingScale(int participants){int scale=100;while(participants>=scale)scale=checked(scale*10);return scale;}
     public static string EntryNumber(int entry,int participants)=>entry.ToString(new string('0',(RankingScale(participants)-1).ToString().Length));
-    public static int RankingScore(int cells,int entry,int participants,bool powered=true)=>checked((powered?cells*RankingScale(participants):-100)+entry);
+    public static int RankingScore(int cells,int entry,int participants,bool powered=true)=>checked((powered?cells:-1)*RankingScale(participants)+entry);
+    public bool CanWinConquest(int ruler)=>Powered[ruler] && Superiors[ruler]<0;
     // Ruler slots are the permanent clockwise IDs assigned by SetCast / PortraitCell.
     public (int Ruler,int Rank,int Cells,int Nodes)[] ProvisionalRanking(WorldSetup world)
     {
@@ -53,9 +56,12 @@ public sealed class ConquerorRelations
         var scores=Enumerable.Range(0,world.ActiveCount).Select(ruler=>new
         {
             Ruler=ruler,
-            Cells=world.Cells.Count(cell=>world.Nodes.InCell(cell.Id).Any() && world.Nodes.InCell(cell.Id).All(node=>InSubtree(node.Owner,ruler))),
+            Cells=!Powered[ruler]?-1:Superiors[ruler]>=0?0:
+                world.Cells.Count(cell=>world.Nodes.InCell(cell.Id).Any() && world.Nodes.InCell(cell.Id).All(node=>InSubtree(node.Owner,ruler))),
             Nodes=world.Nodes.All.Count(node=>InSubtree(node.Owner,ruler))
-        }).OrderByDescending(r=>RankingScore(r.Cells,r.Ruler+1,world.ActiveCount,Powered[r.Ruler])).ToArray();
+        }).OrderByDescending(r=>Powered[r.Ruler])
+            .ThenByDescending(r=>Powered[r.Ruler]?RankingScore(r.Cells,r.Ruler+1,world.ActiveCount):EliminationOrders[r.Ruler])
+            .ThenByDescending(r=>r.Ruler).ToArray();
         return scores.Select((r,index)=>(r.Ruler,index+1,r.Cells,r.Nodes)).ToArray();
     }
     public (int Ruler,int Depth,int Rank,int Cells,int Nodes)[] RankedForest(WorldSetup world)
@@ -80,10 +86,16 @@ public sealed class ConquerorRelations
     public bool Accepts(WorldSetup world,int ruler)=>world.Looks[ruler].Keywords.Personality is not (3 or 9 or 11);
     public void Capture(WorldSetup world,int ruler,int victor,int node)
     {
-        if(ruler==victor || Allied(ruler,victor) || !Powered[ruler])return;
-        if(Allied(victor,Leader) || world.HumanPlayers.Any(h=>Allied(victor,h)))
+        if(ruler==victor || Allied(ruler,victor) || !Powered[ruler] || Pending.Any(p=>p.Ruler==ruler))return;
+        if(Allied(victor,Leader) || world.HumanPlayers.Any(h=>Allied(victor,h)) || world.HumanPlayers.Contains(ruler))
         {if(!Pending.Any(p=>p.Ruler==ruler)){Pending.Add(new(ruler,victor,node));Message="処遇を選んでください";}}
-        else if(!Allied(ruler,Leader) && !world.HumanPlayers.Any(h=>Allied(ruler,h)))Released[ruler]=true;
+        else if(!Allied(ruler,Leader) && !world.HumanPlayers.Any(h=>Allied(ruler,h))){
+            var captive=new Captive(ruler,victor,node);Pending.Add(captive);
+            var random=new SeedRandom(world.PlacementSeed^world.Population.Turn*7919^ruler*13007^victor*37);
+            if(Accepts(world,ruler) && random.Next(100)<40)Choose(world,captive,DefeatedChoice.Recruit);
+            else if(CanMercy(world,captive)){EnsureComputerMercyOffer(world,captive);ResolveMercy(world,captive,ComputerMercyDemand(world,captive));}
+            else Choose(world,captive,DefeatedChoice.RemoveBattery);
+        }
     }
     public bool Choose(WorldSetup world,Captive captive,DefeatedChoice choice)
     {
@@ -96,29 +108,29 @@ public sealed class ConquerorRelations
             if(!SetSuperior(ruler,captive.Victor)){Message="上下関係が循環するため手下にできない";return false;}
             Released[ruler]=false;Message="手下になった";
         }
-        else if(choice==DefeatedChoice.Release){SetSuperior(ruler,-1);Released[ruler]=true;Message="その地点に留まっている";}
+        else if(choice==DefeatedChoice.Release){if(!CanMercy(world,captive)){Message=MercyMinimumExplanation;return false;}EnsureComputerMercyOffer(world,captive);ResolveMercy(world,captive,ComputerMercyDemand(world,captive));return true;}
         else
         {
             int former=Superiors[ruler];
             for(int child=0;child<Capacity;child++)if(Superiors[child]==ruler)SetSuperior(child,former);
-            SetSuperior(ruler,-1);Powered[ruler]=false;Released[ruler]=true;
+            SetSuperior(ruler,-1);Powered[ruler]=false;Released[ruler]=true;EliminationOrders[ruler]=_nextEliminationOrder++;
             foreach(var node in world.Nodes.All.Where(n=>n.Owner==ruler))
             {world.Robots.ReleaseDefenseFlag(node.Id,node.Owner);node.Owner=-1;Array.Clear(node.Population.Migration);}
             world.Nodes.Recount();Message="電池を引き抜いた / 領地は未征服";
         }
-        Pending.Remove(captive);return true;
+        Pending.Remove(captive);MercyOffers.RemoveAll(o=>o.Captive==captive);return true;
     }
     public Captive InsertBattery(WorldSetup world,int ruler)
     {
         if(Powered[ruler])throw new InvalidOperationException("Battery is already inserted.");
-        Powered[ruler]=true;Released[ruler]=true;
+        Powered[ruler]=true;Released[ruler]=true;EliminationOrders[ruler]=0;
         var captive=new Captive(ruler,world.PlayerSlot,world.Nodes.Current(ruler).Id);
         Pending.Add(captive);Message="電池を入れた / 処遇を選んでください";return captive;
     }
     public void RestoreBattery(WorldSetup world,int ruler)
     {
         if(ruler<0 || ruler>=world.ActiveCount || Powered[ruler])throw new InvalidOperationException("Ruler is not batteryless.");
-        Powered[ruler]=true;Released[ruler]=false;SetSuperior(ruler,-1);Pending.RemoveAll(c=>c.Ruler==ruler);
+        Powered[ruler]=true;Released[ruler]=false;EliminationOrders[ruler]=0;SetSuperior(ruler,-1);Pending.RemoveAll(c=>c.Ruler==ruler);MercyOffers.RemoveAll(o=>o.Captive.Ruler==ruler);
         Message="電池を戻した / 独立した征服者として復活";
     }
 }

@@ -17,9 +17,13 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
     public int ShoeOwner=>Parts==RobotParts.Complete && DefenseOnly?DefenseFlag?.Commander??Owner:-1;
     public Robot WithoutDefenseReservation()=>this with {DefenseOnly=false,DefenseFlag=null};
     public bool FactoryWorker {get;init;}
-    public bool Stationed=>DefenseOnly || InterceptOnly || FactoryWorker;
+    public long? LongDeliveryNumber {get;init;}
+    public int? ReturnHomeCommander {get;init;}
+    public string ReturnHomeStatus {get;init;}
+    public bool Stationed=>DefenseOnly || InterceptOnly || FactoryWorker || LongDeliveryNumber.HasValue || ReturnHomeCommander.HasValue;
     public RobotParts DamagedParts {get;init;}=0;
     public RobotParts CheapParts {get;init;}=0;
+    public RobotParts PremiumParts {get;init;}=0;
     // A normal multi-part package stays separable; only this mask denotes a physical joint.
     public RobotParts IntegratedParts {get;init;}=0;
     public static bool ValidIntegratedParts(RobotParts parts)=>parts==0 || parts==(RobotParts.Head|RobotParts.Body) || parts==(RobotParts.Body|RobotParts.Legs);
@@ -31,7 +35,7 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
     public Robot Slice(RobotParts selected)
     {
         if(selected==0 || !CanSeparate(selected))throw new InvalidOperationException("Integrated parts cannot be separated.");
-        return Materialize() with {Parts=selected,DamagedParts=DamagedParts&selected,CheapParts=CheapParts&selected,IntegratedParts=IntegratedParts&selected,DefenseFlag=selected==RobotParts.Complete?DefenseFlag:null};
+        return Materialize() with {Parts=selected,DamagedParts=DamagedParts&selected,CheapParts=CheapParts&selected&~PremiumParts,PremiumParts=PremiumParts&selected,IntegratedParts=IntegratedParts&selected,DefenseFlag=selected==RobotParts.Complete?DefenseFlag:null};
     }
     public int LastBattlePersuasionTurn {get;init;}=-1;
     public int LastDomesticPersuasionTurn {get;init;}=-1;
@@ -45,7 +49,9 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
             BodyOrigin=(parts&RobotParts.Body)!=0?owner:robot.BodyOrigin,
             LegsOrigin=(parts&RobotParts.Legs)!=0?owner:robot.LegsOrigin};
     }
-    public bool IsCheap(RobotParts part)=>(Parts&part)!=0 && (CheapParts&part)!=0;
+    public bool IsCheap(RobotParts part)=>(Parts&part)!=0 && (CheapParts&~PremiumParts&part)!=0;
+    public bool IsPremium(RobotParts part)=>(Parts&PremiumParts&part)!=0;
+    public int PremiumBonus=>CanFight && (Parts&PremiumParts&~EffectiveDamagedParts)!=0?1:0;
     public bool IsDamaged(RobotParts part)=>(Parts&part)!=0 && (EffectiveDamagedParts&part)!=0;
     // Origin retains the country even while damage makes a part unaffiliated.
     public int Affiliation(RobotParts part)=>(Parts&part)==0 || IsDamaged(part)?-1:Origin(part);
@@ -56,17 +62,19 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
     public int NativeParts(int owner)=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Count(p=>(Parts&p)!=0 && owner>=0 && Affiliation(p)==owner);
     public int RegularNativeParts(int owner)=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Count(p=>(Parts&p)!=0 && !IsCheap(p) && Origin(p)==owner);
     public int AssemblyCredit(int owner)=>NativeParts(owner);
-    public int CombatParts(int owner)=>Math.Max(NativeParts(owner),CanFight?1:0);
-    public Robot Materialize()=>this with {HeadOrigin=Origin(RobotParts.Head),BodyOrigin=Origin(RobotParts.Body),LegsOrigin=Origin(RobotParts.Legs),DamagedParts=DamagedParts&Parts,CheapParts=CheapParts&Parts};
+    public int CombatParts(int owner)=>Math.Max(NativeParts(owner),CanFight?1:0)+PremiumBonus;
+    public int CombatRifles(int owner)=>(NativeParts(owner)==3?4:Math.Max(NativeParts(owner),CanFight?1:0))+PremiumBonus;
+    public Robot Materialize()=>this with {HeadOrigin=Origin(RobotParts.Head),BodyOrigin=Origin(RobotParts.Body),LegsOrigin=Origin(RobotParts.Legs),DamagedParts=DamagedParts&Parts,CheapParts=CheapParts&Parts&~PremiumParts,PremiumParts=PremiumParts&Parts};
     public Robot Merge(Robot other,int owner)
     {
         if(!ValidIntegration || !other.ValidIntegration || !CanSeparate(other.Parts&Parts))throw new InvalidOperationException("Cannot replace only half of integrated parts.");
         var result=Materialize() with {Parts=Parts|other.Parts,LastBattlePersuasionTurn=Math.Max(LastBattlePersuasionTurn,other.LastBattlePersuasionTurn),LastDomesticPersuasionTurn=Math.Max(LastDomesticPersuasionTurn,other.LastDomesticPersuasionTurn),DamagedParts=(DamagedParts&Parts&~other.Parts)|(other.DamagedParts&other.Parts),CheapParts=(CheapParts&Parts&~other.Parts)|(other.CheapParts&other.Parts),HeadOrigin=(other.Parts&RobotParts.Head)!=0?other.Origin(RobotParts.Head):Origin(RobotParts.Head),BodyOrigin=(other.Parts&RobotParts.Body)!=0?other.Origin(RobotParts.Body):Origin(RobotParts.Body),LegsOrigin=(other.Parts&RobotParts.Legs)!=0?other.Origin(RobotParts.Legs):Origin(RobotParts.Legs)};
         result=result with {IntegratedParts=(IntegratedParts&~other.Parts)|other.IntegratedParts};
+        result=result with {PremiumParts=(PremiumParts&Parts&~other.Parts)|(other.PremiumParts&other.Parts)};
         if(!result.ValidIntegration)throw new InvalidOperationException("Incompatible integrated parts.");
         return result with {Owner=result.AssemblyCredit(owner)>0?owner:Owner};
     }
-    public bool CanFight=>Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
+    public bool CanFight=>!LongDeliveryNumber.HasValue && !ReturnHomeCommander.HasValue && Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
 }
 public sealed class RobotStore
 {
@@ -124,7 +132,7 @@ public sealed partial class RobotWorld
     {Validate(owner,parts);return new(_nextId++,owner,parts,role,disposal);}
     public void Initialize(int nodeCount,int rulerCount)
     {
-        _workerPlanWorldSeed=0;DirectDelivery=new();Reservations=null;ReservationSource=null;IndustryTurn=0;DomesticPersuasionTurns.Clear();
+        LongDelivery.Reset();ReturningRobots.Clear();_workerPlanWorldSeed=0;DirectDelivery=new();Reservations=null;ReservationSource=null;IndustryTurn=0;DomesticPersuasionTurns.Clear();
         _domesticPreparedTurn=-1;Training=Enumerable.Range(0,rulerCount).Select(_=>new RobotTraining()).ToArray();_nextId=1;Nodes=Enumerable.Range(0,nodeCount).Select(_=>new RobotStore()).ToArray();
         Retinues=Enumerable.Range(0,rulerCount).Select(_=>new RobotStore()).ToArray();
         Workshops=Enumerable.Range(0,nodeCount).Select(_=>new RobotWorkshop()).ToArray();Transport.Reset();PendingEdits.Clear();WorkshopFailures.Clear();
@@ -236,7 +244,7 @@ public sealed partial class RobotWorld
     }
     public void Check()
     {
-        var all=Nodes.Concat(Retinues).SelectMany(s=>s.Robots).Concat(ProductionIntakes.Select(o=>o.Product)).ToArray();
+        var all=Nodes.Concat(Retinues).SelectMany(s=>s.Robots).Concat(ProductionIntakes.Select(o=>o.Product)).Concat(ReturningRobots.Select(j=>j.Robot)).ToArray();
         if(all.Select(r=>r.Id).Distinct().Count()!=all.Length)throw new InvalidOperationException("Robot has multiple locations.");
         foreach(var store in Nodes.Concat(Retinues))if(store.Count>store.StorageLimit)throw new InvalidOperationException("Hangar return capacity exceeded.");
         foreach(var robot in all){Validate(robot.Owner,robot.Parts);if(!robot.ValidIntegration)throw new InvalidOperationException("Invalid integrated parts.");}

@@ -18,6 +18,7 @@ public static class SubordinateDomestic
     private static bool Busy(WorldSetup w,int id)=>
         w.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==id || o.Target==id) ||
         w.Robots.DirectDelivery.Orders.Any(o=>o.Source==id || o.Target==id) ||
+        w.Robots.LongDelivery.Orders.Any(o=>o.Source==id || o.Target==id || o.Node==id) ||
         w.Robots.PartPlanning.Orders.Any(o=>o.Source==id || o.Target==id) ||
         w.Robots.PendingEdits.Any(o=>o.Node==id) ||
         w.Campaign.PlannedOrders.Any(o=>o.SourceNode==id || o.TargetNode==id || o.SourceNode<0 && w.Nodes.Current(o.Ruler)?.Id==id);
@@ -33,14 +34,23 @@ public static class SubordinateDomestic
         else if(shop.SupervisorLeaveRemaining>0)actions.Add("監督の休暇を維持");
         else{
             w.Robots.AdjustNode(node,owner,(a,b)=>false,policyOverride:NodeAutomation.Auto,adjustTransport:false);
+            if(BattleLessons.ReserveHomeGuards(w,owner,node)>0)actions.Add("留守番を守備専用予約");
             w.Robots.PartPlanning.Invalidate();
             int before=w.Robots.PartPlanning.Orders.Count;
             var complete=w.Robots.PartPlanning.Preview(w).Nodes[node].Robots.Where(r=>r.Owner==owner && r.Parts==RobotParts.Complete && !r.Stationed && !r.Disposal).Select(r=>r.Id).ToArray();
             foreach(long id in complete)w.Robots.PartPlanning.EnsureForecastRobot(w,id);
+            if((w.Lessons.Owned[owner]&BattleLesson.EmptyHome)!=0){
+                var stock=w.Robots.PartPlanning.Preview(w);
+                if(!stock.Nodes[node].Robots.Any(r=>r.Owner==owner && r.DefenseOnly && r.CanFight)){
+                    var guard=stock.Nodes[node].Robots.FirstOrDefault(r=>r.Owner==owner && !r.Stationed && stock.CanSetReservation(node,r,HangarReservation.Defense,owner));
+                    if(guard!=null && w.Robots.PartPlanning.ReserveRole(w,node,guard.Id,HangarReservation.Defense,owner))actions.Add("組立後の留守番を守備専用予約");
+                }
+            }
             actions.Add(w.Robots.PartPlanning.Orders.Count>before?"製造を調整・組立を予約":"製造・格納庫を確認");
-            var soldiers=w.Campaign.DeliverySortieRobots(w,owner,node).Where(r=>!r.Stationed && !r.Disposal).Take(13).ToArray();
+            var soldiers=w.Campaign.DeliverySortieRobots(w,owner,node).Where(r=>!r.Stationed && !r.Disposal).ToArray();
             // Keep one complete robot home. Only attack a weaker visible neighboring force.
-            var outgoing=soldiers.Take(Math.Min(12,Math.Max(0,soldiers.Length-1))).Select(r=>r.Id).ToArray();
+            int stay=w.Robots.PartPlanning.Preview(w).Nodes[node].Robots.Any(r=>r.Owner==owner && r.DefenseOnly && r.CanFight)?0:1;
+            var outgoing=soldiers.Take(Math.Max(0,soldiers.Length-stay)).Select(r=>r.Id).ToArray();
             int target=w.Campaign.RobotBattles.MarchTargets(w,node).Where(id=>{
                 var enemy=w.Nodes.All[id];
                 if(enemy.Owner<0 || w.Relations.Allied(owner,enemy.Owner) || w.Campaign.RobotBattles.LockedNode(id) || w.Campaign.PlannedOrders.Any(o=>o.TargetNode==id))return false;

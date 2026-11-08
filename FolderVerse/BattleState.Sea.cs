@@ -15,9 +15,10 @@ public sealed partial class BattleState
             for(int y=0;y<Size;y++)for(int x=0;x<Size;x++){Walls.Add(new(x,y));SeaClearWater.Add(new(x,y));}
             OpenSeaTile(Flag,bridge:Defender<0);
             var sides=Armies.Where(a=>a.Side<4).Select(a=>a.Side).ToArray();
-            foreach(int side in sides)OpenSeaApproach(side);
+            if(CompactFronts)OpenCompactApproaches();else foreach(int side in sides)OpenSeaApproach(side);
             // Reefs sit outside the entry regions and the boarding lanes.
-            foreach(var p in new[]{new Point(2,2),new Point(2,1),new Point(1,2)})
+            var reefs=CompactFronts?new[]{new Point(0,0),new Point(1,1),new Point(0,1)}:new[]{new Point(2,2),new Point(2,1),new Point(1,2)};
+            foreach(var p in reefs)
                 SeaClearWater.Remove(RotateSeaTile(p,rotation));
             if(Kind==BattleKind.Node && Defender>=0){
                 foreach(var p in Region(4))OpenSeaTile(p);
@@ -92,6 +93,7 @@ public sealed partial class BattleState
     private void UpdateSeaLayoutName()
     {
         var sides=Armies.Where(a=>a.Side<4).Select(a=>a.Side).ToArray();
+        if(CompactFronts){LayoutName=$"小舟{sides.Length}隻"+(Kind==BattleKind.Node && Defender>=0?"・中央船への接舷":"・丸太渡り");return;}
         if(Kind==BattleKind.Node && Defender>=0){LayoutName="中央船・接舷";return;}
         if(sides.Length==2 && (sides[0]+2)%4!=sides[1])
         {

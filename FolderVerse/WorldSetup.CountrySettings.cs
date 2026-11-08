@@ -7,6 +7,31 @@ public sealed partial class WorldSetup
 {
     // Null means the palette assigned by world setup (also the legacy-save default).
     private int[] _countrySecondaryColors, _countryPatterns;
+    private int[] _countryEmblems;
+    private void AssignCastCountryAppearance(int count)
+    {
+        _countryPatterns=new int[count];_countrySecondaryColors=new int[count];_countryEmblems=new int[count];
+        var usedPairs=new System.Collections.Generic.HashSet<(int,int)>();
+        for(int ruler=0;ruler<count;ruler++){
+            int rank=ColorIndices[ruler],primary=rank%Colors.Length;
+            var baseColor=Colors[primary];
+            double Luma(Color c)=>.2126*c.R+.7152*c.G+.0722*c.B;
+            _countrySecondaryColors[ruler]=Enumerable.Range(0,Colors.Length).Where(i=>i!=primary && !usedPairs.Contains((Math.Min(i,primary),Math.Max(i,primary))))
+                .OrderByDescending(i=>Math.Abs(Luma(Colors[i])-Luma(baseColor))).ThenBy(i=>i).First();
+            int secondary=_countrySecondaryColors[ruler];usedPairs.Add((Math.Min(primary,secondary),Math.Max(primary,secondary)));
+            if(count>7){
+                _countryPatterns[ruler]=1+(rank+rank/Colors.Length)%4;
+                _countryEmblems[ruler]=1+rank%(CountryEmblemNames.Length-1);
+            }
+        }
+    }
+    public static readonly string[] CountryEmblemNames={"なし","太陽","月","星","スペード","ハート","ダイヤ","クローバー","炎","水滴","雷","うずまき","雪の結晶","チューリップ"};
+    public int CountryEmblem(int ruler)=>ruler<0?0:_countryEmblems?[ruler]??0;
+    public void SetCountryEmblem(int ruler,int emblem)
+    {
+        if(ruler<0 || ruler>=ActiveCount || emblem<0 || emblem>=CountryEmblemNames.Length)throw new ArgumentOutOfRangeException();
+        _countryEmblems??=new int[ColorIndices.Length];_countryEmblems[ruler]=emblem;
+    }
     private bool[] _showComputerOperations;
     public bool ShowComputerOperations(int ruler)=>_showComputerOperations?[ruler]??false;
     public void ToggleComputerOperations(int ruler)
@@ -28,10 +53,16 @@ public sealed partial class WorldSetup
         Campaign.ReconcileControllers(this);
     }
     public int CountryPattern(int ruler)=>ruler<0?0:_countryPatterns?[ruler]??ColorIndices[ruler]/Colors.Length%CountryPatternNames.Length;
-    public int CountrySecondaryColor(int ruler)=>_countrySecondaryColors?[ruler]??(ColorIndices[ruler]+10)%Colors.Length;
+    public int CountrySecondaryColor(int ruler)
+    {
+        if(ruler<0)return 0;
+        int primary=ColorIndices[ruler]%Colors.Length,secondary=_countrySecondaryColors?[ruler]??(ColorIndices[ruler]+10)%Colors.Length;
+        return secondary==primary?(primary+Colors.Length/2)%Colors.Length:secondary;
+    }
     public void SetCountryAppearance(int ruler,int primary,int secondary,int pattern)
     {
         if(ruler<0 || ruler>=ActiveCount || primary<0 || primary>=Colors.Length || secondary<0 || secondary>=Colors.Length || pattern<0 || pattern>=CountryPatternNames.Length)throw new ArgumentOutOfRangeException(nameof(ruler));
+        if(secondary==primary)secondary=(primary+Colors.Length/2)%Colors.Length;
         _countryPatterns??=Enumerable.Range(0,ColorIndices.Length).Select(CountryPattern).ToArray();
         _countrySecondaryColors??=Enumerable.Range(0,ColorIndices.Length).Select(CountrySecondaryColor).ToArray();
         ColorIndices[ruler]=primary;_countrySecondaryColors[ruler]=secondary;_countryPatterns[ruler]=pattern;

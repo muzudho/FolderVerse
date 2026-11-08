@@ -72,7 +72,11 @@ public partial class Game1
             foreach(var patch in BattlePieceArt.Pieces[BattlePieceArt.Index(BattleRole.Soldier,facing)])
                 DiagramBox(new(x+patch.Bounds.X*2,y+patch.Bounds.Y*2,patch.Bounds.Width*2,patch.Bounds.Height*2),color);
         }
-        if(lesson==BattleLesson.FlagCourtesy){
+        if(lesson==BattleLesson.EmptyHome){
+            DiagramBox(new(cx-3,cy-38,6,77),ink);DiagramBox(new(cx+3,cy-38,52,30),accent);
+            Robot(cx-110,cy-32,BattleFacing.East,accent);
+            LessonText("留守番に守備専用予約",new(box.X+30,box.Y+360,box.Width-60,42),.52f,ink);
+        }else if(lesson==BattleLesson.FlagCourtesy){
             DiagramBox(new(cx-3,cy-38,6,77),ink);DiagramBox(new(cx+3,cy-38,52,30),accent);
             Robot(cx-32,cy-105,BattleFacing.South,accent);Robot(cx+85,cy-32,BattleFacing.West,new Color(170,106,79));Robot(cx-145,cy-32,BattleFacing.East,new Color(170,106,79));
             LessonText("北 → 東 → 南 → 西",new(box.X+30,box.Y+360,box.Width-60,42),.52f,ink);
@@ -124,6 +128,7 @@ public partial class Game1
             LessonText("射線と、その両隣を確認",new(box.X+30,box.Y+360,box.Width-60,42),.52f,ink);
         }
         string[] lines=lesson switch {
+            BattleLesson.EmptyHome=>new[]{"守備兵がいない旗を倒した側が習得。","内政では全員を出撃させず、留守番を残す。","留守番には守備専用予約を付ける。","手下・自動操縦でも適用する。"},
             BattleLesson.FlagCourtesy=>new[]{"旗への同時侵入で、巻き戻された。","仲間と譲り合い、北・東・南・西の順で","１体だけが旗区画に入る。"},
             BattleLesson.RetreatBackwards=>new[]{"撤退中、背中を撃たれて転倒した。","撤退方向と逆を向いて移動する。","正面の盾で身を守る機会を残す。"},
             BattleLesson.LeaveFiringLine=>new[]{"正面の射線で横向きに短剣を振り、被弾。","まず射線から外れて、横の敵を攻撃。","逃げ場がなければ、正面を向いて待つ。"},
@@ -136,13 +141,13 @@ public partial class Game1
             BattleLesson.CloseForDagger=>new[]{"撃ち返されるのを警戒して立ち止まった。","短剣があれば、敵を向いたまま前進。","隣接したら短剣で攻撃する。"},
             _=>new[]{"仲間に攻撃が命中した。","射線に仲間がいれば小銃を撃たない。","両隣から射線を向く仲間にも注意。"}};
         for(int i=0;i<lines.Length;i++)LessonText(lines[i],new(box.X+24,box.Y+423+i*43,box.Width-48,40),.48f,ink);
-        LessonText(owned?"取得済み / 自国の兵隊ロボットに適用":"未取得 / 生き残った目撃者が持ち帰る",new(box.X+24,box.Bottom-73,box.Width-48,45),.46f,owned?accent:ink);
+        LessonText(lesson==BattleLesson.EmptyHome?"旗を倒した側が取得 / 内政の判断に適用":owned?"取得済み / 自国の兵隊ロボットに適用":"未取得 / 生き残った目撃者が持ち帰る",new(box.X+24,box.Bottom-73,box.Width-48,45),.46f,owned?accent:ink);
         if(reveal<1)_ui.Box(box,new Color(27,43,55)*(1-reveal));
     }
     private void DrawBattleResearch()
     {
         _ui.Text("戦闘研究フェーズ",new(80,45),1.1f,Cream);
-        _ui.Button(LessonSkip,"スキップ",Accent,.55f);
+        if(!ComputerExhibition)_ui.Button(LessonSkip,"スキップ",Accent,.55f);
         if(_lessonAwards.Length==0){
             _ui.Center("今回、新しく取得した戦訓カードはありません",new(180,430,1560,100),.85f,Cream);
             _ui.Center("失敗を目撃したロボットが、転倒せず帰還すると研究できます",new(180,555,1560,70),.55f,Cream);

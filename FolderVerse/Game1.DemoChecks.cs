@@ -32,7 +32,7 @@ public partial class Game1
             _demoWarSource=Enumerable.Range(0,_invasionSources.Count).FirstOrDefault(i=>InvasionRobots(_invasionSources[i]).Length>0,-1);
             if(_demoWarSource<0)_demoWarSource=_invasionSources.FindIndex(r=>r.Queen);
             if(_demoWarSource<0){_demoDomesticStage=36;_demoDomesticAge=0;return true;}
-            _invasionPage=_demoWarSource/7;var button=InvasionSortieButton(_demoWarSource%7).Center;target=new(button.X+NodeInspectorOffset,button.Y);
+            _invasionPage=InvasionPageForSource(_demoWarSource);var button=InvasionVisibleRows().Single(row=>row.Index==_demoWarSource).Bounds.Center;target=new(button.X+NodeInspectorOffset,button.Y);
         }
         if(_demoDomesticStage is 33 or 34){
             if(_invasionPicker<0){_demoDomesticStage=32;_demoDomesticAge=0;return true;}
@@ -50,7 +50,7 @@ public partial class Game1
         switch(_demoDomesticStage){
             case 30:MapOverlayClick(target,false);break;
             case 31:MovementClick(target,new KeyboardState());if(_selectedMoveNode<0)return true;break;
-            case 32:InvasionClick(new(target.X-NodeInspectorOffset,target.Y));if(_invasionPicker<0)return true;break;
+            case 32:OpenInvasionPicker(_demoWarSource);break;
             case 33:InvasionPickerInput(true,false);break;
             case 34:
                 InvasionPickerInput(true,false);

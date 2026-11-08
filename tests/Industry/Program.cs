@@ -122,7 +122,13 @@ foreach(int wanted in new[]{0,3,120,26})
     w.Industry.Reset();w.Industry.Queue(w.Population.Turn);
     int seed=Enumerable.Range(0,100000).First(s=>IndustryCycle.CreateWheel(s,w.Population.Turn)[IndustryCycle.SectorAt(new SeedRandom(s^w.Population.Turn*7919^0x45123).Next(100),IndustryCycle.CreateWheel(s,w.Population.Turn))].Turns==wanted);
     w.Industry.Roll(seed);int before=w.Robots.IndustryTurn;int turn=w.Population.Turn;
+    if(wanted>0){
+        Check(w.Industry.Advance(w,1) && w.Industry.AppliedUnits==1 && w.Robots.IndustryTurn==before+1,"Manufacturing advances one simulation unit");
+        var saved=AutoSaveStore.Restore<IndustryCycle>(AutoSaveStore.Capture(w.Industry));
+        Check(saved.AppliedUnits==1,"Partial industry progress survives serialization");
+    }
     Check(w.Industry.Apply(w) && !w.Industry.Apply(w),"Exactly once application");
     Check(w.Robots.IndustryTurn==before+wanted && w.Population.Turn==turn,"Independent industrial clock, including zero and forty");w.Robots.Check();
 }
 Console.WriteLine("PASS: wheel probabilities, expectation, flags, eligibility, split/move/transport/serialization, cheap plans/rest/stop, independent clocks and exactly-once 0/1/40 industry.");
+PremiumChecks.Run();

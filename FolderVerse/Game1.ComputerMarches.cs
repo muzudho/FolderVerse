@@ -109,10 +109,10 @@ public partial class Game1
                 var ids=order.RobotIds??robots.Take((int)order.Fighters).Select(robot=>robot.Id).ToArray();
                 var cards=ids.Select(id=>Array.FindIndex(robots,robot=>robot.Id==id)).ToArray();
                 if(ids.Length!=order.Fighters || cards.Distinct().Count()!=cards.Length || cards.Any(i=>i<0 || InvasionRobotCard(i).Center.Y>=InvasionPickerDone.Top))break;
-                _invasionPage=source/7;
-                var local=InvasionSortieButton(source%7).Center;
+                _invasionPage=InvasionPageForSource(source);
+                var local=InvasionVisibleRows().Single(row=>row.Index==source).Bounds.Center;
                 _computerWarClick=new Point(local.X+NodeInspectorOffset,local.Y);
-                InvasionClick(local);
+                OpenInvasionPicker(source);
                 if(_invasionPicker<0)break;
                 _invasionDraft.Clear();
                 _computerWarCards.Clear();

@@ -52,7 +52,7 @@ public partial class Game1
     private void OpenNodeAssembly()
     {
         if(!InspectableNode(_populationNode))return;
-        _hangarPage=0;_hangarTrainingCountry=-1;_hangarAbandonMode=false;
+        _hangarPage=0;_hangarTrainingCountry=-1;_hangarAbandonMode=false;_hangarReturnHomeMode=false;
         _nodeOfficeOpen=false;_lastNodeTab=3;
         _nodeAssemblyOpen=true;_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;
         _hangarDrag=null;_hangarReservation=HangarReservation.None;_hangarMessage="";Array.Clear(_hangarSlots);
@@ -65,6 +65,7 @@ public partial class Game1
     }
     private void NodeAssemblyLocalInput(MouseState mouse,bool click,bool escape)
     {
+        if(ReturnHomeHangarInput(click))return;
         if(click && HangarUndoButton.Contains(_pointer)){UndoHangarPlan();return;}
         if(click && HangarPageClick(_pointer))return;
         if(!DomesticOperationsAllowed){
@@ -164,7 +165,7 @@ public partial class Game1
 
         bool manage=DomesticOperationsAllowed && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
         bool hoveringPart=false;
-        bool reservationMode=_hangarReservation!=HangarReservation.None;
+        bool reservationMode=_hangarReservation!=HangarReservation.None || _hangarReturnHomeMode;
         string hover=VisitingForeignHangar?"滞在中：自国パーツ同士の交換・空き部位への移動ができます":CanOpenHangar?"頭・胴・脚をつかんで、格納庫の区画へドラッグ＆ドロップ":"他国の地点：自分の征服者がいる地点では自国パーツを動かせます";
         if(reservationMode)hover="区画をクリック：予約 / 同じ国の同じ予約は解除 / 続けて選択できます";
         if(!DomesticOperationsAllowed)hover="軍事フェーズ：格納庫は閲覧のみ / 組立・配送は次の内政フェーズで操作できます";
@@ -172,7 +173,7 @@ public partial class Game1
         {
             var cell=HangarCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
             bool cellHover=reservationMode && cell.Contains(_pointer) && occupant!=null;
-            bool canReserve=reservationMode && HangarReservationEnabled(occupant);
+            bool canReserve=_hangarReturnHomeMode?CanSelectReturnHome(occupant):reservationMode && HangarReservationEnabled(occupant);
             _ui.Box(cell,cellHover?(canReserve?new Color(48,78,94):new Color(67,40,44)):new Color(18,35,46));
             for(int row=0;row<3;row++)
             {
@@ -206,7 +207,7 @@ public partial class Game1
                 var color=movable?ControlEdge:new Color(145,156,166);
                 _ui.Box(new(bounds.X,bounds.Y,bounds.Width,2),color);_ui.Box(new(bounds.X,bounds.Bottom-2,bounds.Width,2),color);
                 _ui.Box(new(bounds.X,bounds.Y,2,bounds.Height),color);_ui.Box(new(bounds.Right-2,bounds.Y,2,bounds.Height),color);
-                hover=movable?$"{PartsLabel(part)}{(robot.IsCheap(part)?"（安い）":"")}{(robot.IsDamaged(part)?"（損傷・未所属扱い）":"")}をドラッグ＆ドロップして再配置":"この個体は処理中・予約中、または操作できない所有国です";
+                hover=movable?$"{PartsLabel(part)}{(robot.IsPremium(part)?"（高級・盾／短剣／小銃＋１）":robot.IsCheap(part)?"（安い）":"")}{(robot.IsDamaged(part)?"（損傷・未所属扱い）":"")}をドラッグ＆ドロップして再配置":"この個体は処理中・予約中、または操作できない所有国です";
             }
             DrawDefenseReservationEffect(cell,robot);
             string partsName=PartsLabel(robot)+$" / #{robot.Owner+1}";
@@ -215,6 +216,11 @@ public partial class Game1
                 if(Math.Min(DefenseShoeProgress(robot),WorkShoeProgress(robot))>.6f)DrawHangarReservationLabel(new(cell.X,cell.Y+126,cell.Width,24),robot,reservation);
             }else _ui.Center(partsName,new(cell.X,cell.Y+126,cell.Width,24),Math.Min(.4f,(cell.Width-8)/Math.Max(1,_font.MeasureString(partsName).X)),Cream);
             _ui.Center((robot.Id<0?"組替予定":"ID "+robot.Id)+(robot.DamagedParts!=0?" / 損傷":""),new(cell.X,cell.Y+148,90,22),.27f,Cream);
+            if(robot.ReturnHomeCommander.HasValue){
+                _ui.Box(new(cell.X+2,cell.Y+124,cell.Width-4,24),new Color(18,35,46));
+                _ui.Center(robot.ReturnHomeStatus??"国へ帰る予約",new(cell.X+3,cell.Y+124,cell.Width-6,26),.25f,Accent);
+                if(cell.Contains(_pointer))hover=robot.ReturnHomeStatus??"国へ帰る予約";
+            }
             if(robot.FunctionDisplayNode is int origin)_ui.Text("元地点 "+origin,new(cell.X+92,cell.Y+151),.23f,Cream);
             if(cellHover){var edge=canReserve?ControlEdge:new Color(184,102,104);_ui.Box(new(cell.X,cell.Y,cell.Width,3),edge);_ui.Box(new(cell.X,cell.Bottom-3,cell.Width,3),edge);_ui.Box(new(cell.X,cell.Y,3,cell.Height),edge);_ui.Box(new(cell.Right-3,cell.Y,3,cell.Height),edge);}
         }
@@ -244,6 +250,7 @@ public partial class Game1
         _ui.Box(check,checkColor);_ui.Box(new(check.X+2,check.Y+2,14,14),new Color(18,35,46));
         if(workshop.AutoAssemblyDisabled)_ui.Center("✓",check,.35f,checkColor);
         _ui.Text("パーツ構成を自分で管理する",new(check.Right+8,HangarAutoCheck.Y+4),.36f,checkColor);
+        DrawReturnHomeHangar();
         DrawNodeTabs();DrawHangarPages();
         if(_hangarDrag.HasValue)
         {

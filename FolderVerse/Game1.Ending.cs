@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -8,6 +8,8 @@ public partial class Game1
     private int _endingWinner=-1,_endingScore,_endingCells;
     private double _endingAge;
     private bool _endingBeforeIndustry;
+    private bool _endingWasAutoPlay;
+    private bool EndingReturnsToGame=>!_demoActive && _endingBeforeIndustry;
     private const double EndingSeconds=10;
     private static readonly Rectangle EndingMenuItem=new(1320,182,538,52),QuitMenuItem=new(1320,238,538,52);
     private static readonly Rectangle EndingReturn=new(980,960,824,64),EndingResume=new(116,960,824,64);
@@ -15,17 +17,20 @@ public partial class Game1
     {
         if(_setup.WorldConquestEndingShown || _setup.Cells.Length==0)return false;
         var ranking=_setup.Relations.ProvisionalRanking(_setup);
-        if(!ranking.Any(r=>r.Cells==_setup.Cells.Length && _setup.Relations.Powered[r.Ruler]))return false;
+        if(!ranking.Any(r=>r.Cells==_setup.Cells.Length && _setup.Relations.CanWinConquest(r.Ruler)))return false;
         _setup.WorldConquestEndingShown=true;
         StartEnding();_endingBeforeIndustry=true;return true;
     }
     private void StartEnding()
     {
+        var eligible=_setup.Relations.ProvisionalRanking(_setup).Where(r=>_setup.Relations.CanWinConquest(r.Ruler)).ToArray();
+        if(eligible.Length==0)return;
+        var winner=eligible[0];
         _autoPaused=false;
         RecordPetitstellaMedals();
+        _endingWasAutoPlay=_autoPlay;
         StopBattleMusic();StopIndustryMusic();ResetInspector();_autoPlay=false;
         _endingBeforeIndustry=false;
-        var winner=_setup.Relations.ProvisionalRanking(_setup)[0];
         _endingWinner=winner.Ruler;_endingScore=ConquerorRelations.RankingScore(winner.Cells,winner.Ruler+1,_setup.ActiveCount,_setup.Relations.Powered[winner.Ruler]);_endingCells=winner.Cells;_endingAge=0;
         CloseMovement();_statusMenuOpen=false;_populationCell=-1;_mapTransitionAge=-1;_screen=Screen.Ending;
         _operations.Write("ending_started",new{winner=_endingWinner,cells=_endingCells,score=_endingScore,turn=_setup.Population.Turn});
@@ -52,12 +57,18 @@ public partial class Game1
         CheckAutoSave();_screen=Screen.Title;_inputOutcome="game_ended_to_title";
     }
     private void UpdateEnding(double elapsed,bool finish)
-    {_endingAge+=elapsed;if(finish || _endingAge>=EndingSeconds){DeleteCompletedAutoSave();ReturnToTitle();}}
+    {
+        _endingAge+=elapsed;
+        if(!finish && _endingAge<EndingSeconds)return;
+        if(EndingReturnsToGame)ResumeFromEnding();else FinishEndingToTitle();
+    }
+    private void FinishEndingToTitle(){DeleteCompletedAutoSave();ReturnToTitle();}
     private void ResumeFromEnding()
     {
         StopEndingMusic();_endingAge=0;
         if(_endingBeforeIndustry){_endingBeforeIndustry=false;BeginIndustry();}
         else{_screen=Screen.WorldStatus;_world.ShowSetup(_setup,true);RestoreDomesticCamera();}
+        if(!_demoActive && (_endingWasAutoPlay || _setup.ComputerOnly))StartAutoPlay();
         _inputOutcome="ending_resumed";
     }
     private void DrawEndingUi()
@@ -76,9 +87,9 @@ public partial class Game1
             float x=100+(i*137%1720),y=170+(float)((i*79+_endingAge*65)%670);
             _ui.Tile(new(x,y),new(7,15),(float)_endingAge+i,Color.Lerp(color,Cream,(i%5)/4f));
         }
-        _ui.Button(EndingReturn,"ゲームを止めてタイトル画面に戻る",Accent,.6f);
-        _ui.Button(EndingResume,"ゲームに戻る",Muted,.65f);
-        _ui.Center($"{Math.Max(0,(int)Math.Ceiling(EndingSeconds-_endingAge))}秒後にタイトルへ / Enter・Esc でも戻る",new(300,866,1320,36),.43f,Cream);
+        _ui.Button(EndingReturn,"ゲームを止めてタイトル画面に戻る",EndingReturnsToGame?Muted:Accent,.6f);
+        _ui.Button(EndingResume,"ゲームに戻る",EndingReturnsToGame?Accent:Muted,.65f);
+        _ui.Center($"{Math.Max(0,(int)Math.Ceiling(EndingSeconds-_endingAge))}秒後に{(EndingReturnsToGame?"ゲームへ":"タイトルへ")} / Enter・Esc でも戻る",new(300,866,1320,36),.43f,Cream);
         _ui.Box(new(300,916,1320,14),Muted);
         _ui.Box(new(300,916,(int)(1320*Math.Clamp(1-_endingAge/EndingSeconds,0,1)),14),Accent);
     }

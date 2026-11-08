@@ -29,7 +29,7 @@ public static partial class BattleTurnResolver
         foreach(var u in units)
         {
             var p=positions[u.Id];var army=battle.Army(u.Owner);
-            if(p!=u.Position && !battle.WalkableFor(p,u.Owner) && !(u.Retreating && BattleState.HomeExit(p,army.Side,battle.BoardSize)))blocked.Add(u.Id);
+            if(p!=u.Position && !battle.WalkableFor(p,u.Owner) && !(u.Retreating && battle.HomeExit(p,army)))blocked.Add(u.Id);
             u.Facing=actions[u.Id].Facing;
         }
         battle.Events.Add(new(battle.Turn,BattlePhase.Place,0,"仮配置"));
@@ -45,7 +45,7 @@ public static partial class BattleTurnResolver
         var blockedEscapes=ClearEscapePaths(battle,units,actions,origin,positions,blocked);
         foreach(var u in units)
         {
-            u.Position=positions[u.Id];if(!battle.Contains(u.Position))u.Retreated=true;
+            u.Position=positions[u.Id];if(battle.ReachedHome(u))u.Retreated=true;
             battle.Events.Add(new(battle.Turn,blocked.Contains(u.Id)?BattlePhase.Rollback:BattlePhase.Place,u.Id,$"{u.Position.X},{u.Position.Y} / {u.Facing}"));
         }
         if(units.Any(a=>!a.Retreating && blocked.Contains(a.Id) && actions[a.Id].Step!=Point.Zero &&

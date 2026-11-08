@@ -38,6 +38,7 @@ public sealed partial class WorldPreview
         _vertices.Dispose();
         _vertices=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
         _vertices.SetData(mesh.ToArray());_primitiveCount=mesh.Count/3;
+        BuildWhirlpoolMesh(setup);
     }
 }
 

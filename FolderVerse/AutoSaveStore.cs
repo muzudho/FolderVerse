@@ -83,7 +83,22 @@ public static class AutoSaveStore
             else if(Collection(type)){var generic=type.GetGenericTypeDefinition();var add=type.GetMethod(generic==typeof(Queue<>)?"Enqueue":"Add");foreach(int id in entry.Items){if(generic==typeof(HashSet<>) && id>=0)Populate(id);add.Invoke(value,new[]{Read(id)});}}
             else foreach(var field in Fields(type)){
                 if(!entry.Fields.TryGetValue(field.Name,out int id)){
-                    if(type==typeof(WorldSetup) && field.Name is "_countryPatterns" or "_countrySecondaryColors" or "_showComputerOperations")continue;
+                    if(type==typeof(LongPartOrder) && field.Name=="<TargetSlot>k__BackingField"){field.SetValue(value,-1);continue;}
+                    if(type==typeof(RobotLongDelivery) && field.Name=="_slotArrivals"){field.SetValue(value,new Dictionary<(int,int,int),long>());continue;}
+                    if(type==typeof(TerrainRoutes) && field.Name=="_packIce")continue;
+                    if(type==typeof(TerrainRoutes) && field.Name=="_iceWalls"){field.SetValue(value,Array.Empty<SeaIceWall>());continue;}
+                    if(type==typeof(TerrainRoutes) && field.Name=="_whirlpools"){field.SetValue(value,Array.Empty<SeaWhirlpool>());continue;}
+                    if(type==typeof(Robot) && field.Name=="<LongDeliveryNumber>k__BackingField")continue;
+                    if(type==typeof(RobotWorld) && field.Name=="<LongDelivery>k__BackingField"){field.SetValue(value,new RobotLongDelivery());continue;}
+                    if(type==typeof(Robot) && field.Name is "<ReturnHomeCommander>k__BackingField" or "<ReturnHomeStatus>k__BackingField")continue;
+                    if(type==typeof(RobotWorld) && field.Name=="<ReturningRobots>k__BackingField"){field.SetValue(value,new List<ReturningRobot>());continue;}
+                    if(type==typeof(WorldSetup) && field.Name is "_countryPatterns" or "_countrySecondaryColors" or "_countryEmblems" or "_showComputerOperations")continue;
+                    if(type==typeof(ConquerorRelations) && field.Name=="<MercyOffers>k__BackingField"){field.SetValue(value,new List<MercyOffer>());continue;}
+                    if(type==typeof(ConquerorRelations) && field.Name=="<MercyResults>k__BackingField"){field.SetValue(value,new List<MercyOutcome>());continue;}
+                    if(type==typeof(ConquerorRelations) && field.Name=="<EliminationOrders>k__BackingField"){field.SetValue(value,new int[GameLimits.MaxConquerors]);continue;}
+                    if(type==typeof(ConquerorRelations) && field.Name=="_nextEliminationOrder"){field.SetValue(value,1);continue;}
+                    if((type==typeof(Robot) || type==typeof(ProductionPlan)) && field.Name=="<PremiumParts>k__BackingField")continue;
+                    if(type==typeof(RobotWorkshop) && field.Name is "_premiumPlan" or "_premiumCatalogueInitialized")continue;
                     if(type==typeof(ProductionPlan) && new[]{"<HeadOrigin>k__BackingField","<BodyOrigin>k__BackingField","<LegsOrigin>k__BackingField","<CheapParts>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(RobotWorkshop) && new[]{"_workerPlans","_workerAppointment","_selectedProductPlan"}.Contains(field.Name))continue;
                     if(type==typeof(RobotWorld) && field.Name=="_workerPlanWorldSeed")continue;
@@ -142,6 +157,7 @@ public static class AutoSaveStore
                     if(type==typeof(WorldSetup) && new[]{"_participantCountsConfigured","<ComputerPlayerCount>k__BackingField","_presetCastCount","TutorialPocketed","TutorialMoved","TutorialPocketNoticeShown","TutorialMoveNoticeShown"}.Contains(field.Name))continue;
                     if(type==typeof(March) && field.Name=="<Peaceful>k__BackingField")continue;
                     if(type==typeof(BattleArmy) && (field.Name=="Wanderer" || field.Name=="WandererPolicy"))continue;
+                    if(type==typeof(BattleArmy) && field.Name=="EntrySlot"){field.SetValue(value,1);continue;}
                     if(type==typeof(BattleRules) && field.Name=="<FlagCaptureTurns>k__BackingField"){field.SetValue(value,10);continue;}
                     if(type==typeof(BattleRules) && field.Name=="<FlagDefenseTurns>k__BackingField"){field.SetValue(value,50);continue;}
                     if((type==typeof(BattleState) && (field.Name=="FlagCaptureTurns" || field.Name=="FlagDefenseTurns")) ||
@@ -166,6 +182,7 @@ public static class AutoSaveStore
             }
         }
         for(int i=0;i<values.Length;i++)Populate(i);
+        foreach(var world in values.OfType<WorldSetup>())world.Robots.LongDelivery.RestoreLegacySlots(world.Robots);
         return At(doc.Root) is T result?result:throw new InvalidDataException("Invalid autosave root.");
     }
     public static void Write(string path,object root){

@@ -1,5 +1,8 @@
 # フォルダーバース
 
+![ぐれーすけーるサークルカット](./art-source/branding/grayscale/grayscale-circle-cut-2026-v002-500.png)  
+👆　デジゲー博２０２６には間に合わなかったサークルカットです。  
+
 フォルダーバース（Folder Verse；畳域）は、ニコニコ動画などの生配信で、配信者も視聴者も楽しめる、20分ほどで遊び終わるゲームを目指しています。  
 女の子の征服者を選び、兵隊ロボットを製造・輸送して、直方体の展開図のような世界の領地を広げるストラテジーゲームです。  
 たとえば、ロボットと一緒に隣の都市へ進軍し、自動戦闘を観戦して、勝った相手を手下にできます。
@@ -12,9 +15,9 @@
 
 ## ユーザー_すぐ遊びたい人
 
-[v0.3.0 Pre-release（無料試遊版）をダウンロード](https://github.com/muzudho/FolderVerse/releases/tag/v0.3.0)できます。Windows x64向けです。Visual Studioの準備は不要です。
+[v0.6.0 Pre-release（無料試遊版）をダウンロード](https://github.com/muzudho/FolderVerse/releases/tag/v0.6.0)できます。Windows x64向けです。Visual Studioの準備は不要です。
 
-Assetsの `FolderVerse-v0.3.0-win-x64.zip` をすべて展開し、`FolderVerse.exe` を起動してください。
+Assetsの `FolderVerse-v0.6.0-win-x64.zip` をすべて展開し、`FolderVerse.exe` を起動してください。
 
 - [ダウンロードと起動方法](docs/user/README.md)
 - [操作ガイド](docs/user/操作ガイド.md)

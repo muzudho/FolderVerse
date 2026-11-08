@@ -7,7 +7,7 @@ public sealed partial class BattleState
 {
     public string LayoutName {get;private set;}="標準";
     public int[] EntrySides {get;private set;}={0,1,2,3};
-    public int EntryCapacity=>EntrySides.Length+(BoardSize==Size && Kind==BattleKind.Node && Defender>=0?1:0);
+    public int EntryCapacity=>EntrySides.Length*(BoardSize==Size?ArmiesPerEdge:1)+(BoardSize==Size && (Kind==BattleKind.Node && Defender>=0 || SplitBoard && Armies.Any(a=>a.Side==4))?1:0);
     public void BuildLayout(int pattern,int rotation=0)
     {
         ResetFortifications();Walls.Clear();WallShotDirections.Clear();rotation=((rotation%4)+4)%4;
@@ -30,8 +30,7 @@ public sealed partial class BattleState
     public void ChooseLayout()
     {
         if(BoardSize==Size && Terrain==BattleTerrain.Sea){BuildSeaLayout(0,Random.Next(4));return;}
-        if(BoardSize==Size && Kind==BattleKind.Node && Defender>=0){BuildTerrain(Terrain);EntrySides=new[]{0,1,2,3};return;}
-        if(BoardSize==Size){BuildTerrain(Terrain);EntrySides=new[]{0,1,2,3};return;}
+        if(BoardSize==Size){BuildTerrain(Terrain);EntrySides=new[]{0,1,2,3};PrepareCompactMountain();OpenCompactApproaches();DecorateCompactTerrain();return;}
         if(Terrain==BattleTerrain.Sea){BuildSeaLayout(Armies.Count<=2?Random.Next(2):0,Random.Next(4));return;}
         // Restrict narrow arenas to armies that fit their entrances.
         int[] patterns=Armies.Count<=2?new[]{0,1,2,3,4}:Armies.Count==3?new[]{0,2,3,4}:new[]{0,3,4};
