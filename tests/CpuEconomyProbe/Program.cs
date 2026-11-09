@@ -115,3 +115,22 @@ if(args.Contains("--return-space")){
             locked=battles.LockedNode(source),leave=stock.Workshops[source].SupervisorLeaveRemaining,routes}));
     }
 }
+if(args.Contains("--supply-gap")){
+    foreach(var n in w.Nodes.All.Where(n=>n.Functional && n.Owner>=0 && !Front(n))){
+        int owner=n.Owner;
+        var ready=battles.SelectableRobots(w,owner,n.Id,false).Where(r=>!stock.AssemblyLocked(n.Id,r) && stock.CanShip(n.Id,r)).ToArray();
+        bool guard=stock.Nodes[n.Id].Robots.Any(r=>r.Owner==owner && r.DefenseOnly && r.CanFight);
+        int surplus=Math.Max(0,ready.Length-(guard?0:1));if(surplus==0)continue;
+        var targets=w.Nodes.All.Where(t=>t.Functional && t.Owner>=0 && w.Relations.Allied(owner,t.Owner) && Front(t)).Select(t=>{
+            var path=RobotLongDelivery.Path(w,n.Id,t.Id,owner);
+            return new{target=t.Id,owner=t.Owner,sameCountry=t.Owner==owner,free=stock.Nodes[t.Id].StorageLimit-stock.Nodes[t.Id].Count,path,
+                fullRelays=path.Skip(1).SkipLast(1).Where(at=>!stock.Nodes[at].HasSpace).ToArray()};
+        }).Where(t=>t.path.Length>1).ToArray();
+        Console.WriteLine(JsonSerializer.Serialize(new{supplySource=n.Id,owner,root=w.Relations.Root(owner),surplus,
+            locked=battles.LockedNode(n.Id),leave=stock.Workshops[n.Id].SupervisorLeaveRemaining,
+            ownFronts=targets.Count(t=>t.sameCountry),alliedFronts=targets.Count(t=>!t.sameCountry),
+            ownFreeClear=targets.Count(t=>t.sameCountry && t.free>0 && t.fullRelays.Length==0),
+            alliedFreeClear=targets.Count(t=>!t.sameCountry && t.free>0 && t.fullRelays.Length==0),
+            nearest=targets.OrderBy(t=>t.path.Length).ThenBy(t=>t.target).Take(6)}));
+    }
+}
