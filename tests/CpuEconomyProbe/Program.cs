@@ -171,3 +171,22 @@ if(args.Contains("--exchange-gate")){
             busy=Busy(node.Id),leave=stock.Workshops[node.Id].SupervisorLeaveRemaining,partials=partial.Select(r=>r.Id),sources}));
     }
 }
+if(args.Contains("--function-gates")){
+    var graph=w.Nodes.All.Select(n=>w.Routes.Neighbors(n).Select(r=>w.Nodes.At(r.Target,r.Entry).Id).Distinct().ToArray()).ToArray();
+    bool Busy(int id)=>w.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==id || o.Target==id) ||
+        stock.PartPlanning.Orders.Any(o=>o.Source==id || o.Target==id) || stock.DirectDelivery.Orders.Any(o=>o.Source==id || o.Target==id) ||
+        stock.LongDelivery.Orders.Any(o=>o.Source==id || o.Target==id || o.Node==id) || stock.PendingEdits.Any(o=>o.Node==id) ||
+        w.Campaign.PlannedOrders.Any(o=>o.SourceNode==id || o.TargetNode==id);
+    foreach(var target in w.Nodes.All.Where(n=>n.Functional && n.Owner>=0 && w.Relations.CanAct(n.Owner) && Front(n)))
+    foreach(int source in graph[target.Id].Where(id=>id!=target.Id && w.Nodes.All[id].Functional && w.Nodes.All[id].Owner==target.Owner)){
+        int owner=target.Owner;
+        bool strict=ComputerFunctionTransfers.EnclosedPocket(graph,source,target.Id,id=>w.Nodes.All[id].Owner==owner && !battles.LockedNode(id));
+        bool allied=ComputerFunctionTransfers.EnclosedPocket(graph,source,target.Id,id=>w.Nodes.All[id].Owner>=0 && w.Relations.Allied(owner,w.Nodes.All[id].Owner) && !battles.LockedNode(id));
+        Console.WriteLine(JsonSerializer.Serialize(new{functionSource=source,target=target.Id,owner,root=w.Relations.Root(owner),strictPocket=strict,alliedPocket=allied,sourceFront=Front(w.Nodes.All[source]),
+            friendlyImmediateNeighbors=graph[source].All(id=>w.Nodes.All[id].Owner>=0 && w.Relations.Allied(owner,w.Nodes.All[id].Owner) && !battles.LockedNode(id)),
+            busySource=Busy(source),busyTarget=Busy(target.Id),capacity=stock.Nodes[source].TotalCapacity+stock.Nodes[target.Id].TotalCapacity,
+            reservedReturns=stock.Nodes[source].ReservedReturns+stock.Nodes[target.Id].ReservedReturns,
+            overflow=battles.Reserves.Count(r=>r.Node==source || r.Node==target.Id),
+            locked=battles.LockedNode(source) || battles.LockedNode(target.Id) || battles.LockedEdge(source,target.Id),phase=w.Campaign.Phase.ToString()}));
+    }
+}
