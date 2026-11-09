@@ -386,3 +386,26 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 - artifacts/demo-click-audit/ProbeCpuSortie.cs.txtで和平指示がない場合は別の指示を探し続けず、有限1000更新内で再生完了・人間0・内政フェーズを検査してDraw後に終了するよう変更。既定の和平あり経路は維持。
 - DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-09/demo-check/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_FALLBACK=0、FOLDERVERSE_AUDIT_WORLD=1でDemoAuditCpuSortie.dllは終了コード0。証拠fix-cpu-world1.log。
 - 世界1の15表示指示で通常出撃選択・個別4クリック・赤チェックからスキップせず完了し、人間復帰・内政描画を確認。今回画像目視なし。診断例外の解消であり、ゲーム修正ではない。自然退避・全指示実行回数・全Seedは未確認、既存DEMO-0016の制約を継続。
+
+## 2026-11-10 03:33修正回
+
+- 完了 03:35:56 JST。対象DEMO-0016の同行ロボット0体の非和平Queen指示。02:56回の合法固定場面を現行コードで使用。開始時差分は点検記録のみ、ゲーム・検証プロセスなし。HEAD=838cd06d70063f5af6344f6901c6b0d09b3d1ff6。
+- FolderVerse/Game1.ComputerMarches.csでQueen=true／Fighters=0を通常再生の対象へ追加。現在地のQueen行を選び、通常ピッカーで実同行トグルをクリック→確定→赤チェック→通常閉鎖を再生。共有InvasionQueenToggle／InvasionPickerDone／NodeCheckButton／InspectorClose矩形を使用。CPU確定の既存ガードを維持し、元指示列だけが実行を受け持つ。ロボットありQueen／PocketOnlyのみの非和平指示と画面外カードは専用表示のまま。
+- 非追跡ProbeCpuSortieの合法Queen診断を新経路に更新。通常ピッカー・同行トグル・確定時追加予約なし・赤チェック・閉鎖・スキップ人間復帰とLastQueenMarchesの同地点指示1件を検査。DOTNET_CLI_TELEMETRY_OPTOUT=1でDemoAuditCpuSortie.csprojをartifacts/tmp/delete-after-2026-11-10/demo-check/へビルド（--source artifacts/nuget-feed、-v quiet、--disable-build-servers）、警告・エラー0。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_LEGAL_QUEEN=1で終了コード0。fix-legal-queen.logと1920×1080 audit-legal-queen.pngで通常開戦インスペクター、Queen参加0体、ハンドル・地点の赤チェックを確認・目視。通常診断（LEGAL_QUEEN=0、FALLBACK=0、WORLD=0）も終了コード0で、オンオフ・CPU切替・緑赤消去・個別出撃選択・和平移動と到着・人間復帰を回帰確認。証拠fix-queen-regression.log。git diff --check成功。
+- この対応は合法固定指示の同行0体に限定。自然AI生成、Queenの540p実描画・スキップなし終了、同行ありQueen、19体カード、自然Demo全経路は未確認。DEMO-0016全体は一部対応・検証待ちを継続。コミット・プッシュなし。
+
+## 2026-11-10 05:26修正回
+
+- 完了 05:29:54 JST。対象DEMO-0016、05:04点検で再現した合法な同行2体のQueen指示。HEAD=838cd06d70063f5af6344f6901c6b0d09b3d1ff6。先行作業・ゲームプロセスなしを確認し、既存の同行0体対応差分を保って拡張。
+- FolderVerse/Game1.ComputerMarches.csの通常再生条件をQueenの非負同行数へ拡張。既存の共有矩形・入力経路でQueen参加トグル、指定RobotIdsの各カード、確定、赤チェック、閉鎖を順次クリックする。通常UI仕様・AI指示を変更せず、CPU確定時の追加予約防止を維持。非追跡artifacts/demo-click-audit/ProbeCpuSortie.cs.txtを同行カードごとの選択件数とID集合の検査へ更新。
+- DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-10/demo-check/ -v quiet --disable-build-servers 成功、警告・エラー0。ALSOFT_DRIVERS=nullで同出力のDemoAuditCpuSortie.dllを実行。
+- LEGAL_QUEEN=1／QUEEN_ESCORTS=1（環境変数接頭辞FOLDERVERSE_AUDIT_）でQUEEN540=1と0の両方が終了コード0。540pはスキップなし、1080pはスキップで人間0へ復帰。確定時PlannedOrders不増、赤チェック、閉鎖、LastQueenMarches同指示1件を確認。証拠fix-queen-escorts.log、fix-queen-escorts1080.log。540pの実描画でQueen参加・2体と赤チェックを目視（audit-legal-queen.pngは後続の同一診断で上書き再利用）。
+- QUEEN_ESCORTS=0／QUEEN540=1も成功（fix-queen-solo-regression.log）。LEGAL_QUEEN=0／FALLBACK=0／WORLD=0の通常診断も成功し、操作表示オンオフ、征服者切替、個別出撃選択、緑赤消去、和平到着、人間復帰を回帰確認（fix-queen-escorts-regression.log）。
+- DEMO-0016全体は一部対応・検証待ち。自然AI生成の同行Queen、画面外カード、非QueenのPocketOnly専用表示、自然Demo全経路、戦闘内の同行個体ID照合は未確認。既存のカード到達不能時フォールバックを維持。コミット・プッシュなし。
+
+## 2026-11-10 06:32修正回
+
+- 開始06:32:27、終了06:32:40 JST。AGENTS.md・README・両記録・現行差分とプロセスを確認。先行作業・ゲーム・検証プロセスなし。HEAD=838cd06d70063f5af6344f6901c6b0d09b3d1ff6。既存同行Queen差分を保護し、ゲーム・テスト・診断コード無変更。
+- 対象DEMO-0016の残件。直前の完了済み05:59点検では非Queen PocketOnlyと画面外カードは静的照合のみで、合法場面の実行再現・実描画は未実施。既に再現済みの同行0／2体Queenは05:26修正の検証済み範囲であり、追加修正の根拠となる新しい実行結果はない。
+- 今回は追加修正・ビルド・実行を行わず、一部対応・検証待ちを維持。未確認を完了に変更しない。次の点検で非Queen PocketOnlyの合法な通常出撃元・対象・IDを確立し、専用表示と通常UIの差を実描画で再現してから修正対象を確定する。出力追加なし、コミット・プッシュなし。
