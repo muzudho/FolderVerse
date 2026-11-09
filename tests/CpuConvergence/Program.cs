@@ -216,4 +216,18 @@ static void ResolveTransfers(WorldSetup w)=>typeof(RobotLongDelivery).GetMethod(
     var orders=new List<March>();ComputerJointAttacks.Plan(w,orders,true);
     Check(!orders.Any(o=>o.Ruler==0 && o.Queen && o.TargetNode==target && !o.Peaceful),"An individual queen does not immediately repeat a failed escort assault with the same strength");
 }
-Console.WriteLine("PASS: CPU disposal, repatriation, remote assembly, coordinated subordinate attacks, unique selections and manual control protection.");
+{
+    var w=Fixture();int source=w.Nodes.All.First(n=>w.Campaign.RobotBattles.MarchTargets(w,n.Id).Any()).Id;
+    int target=w.Campaign.RobotBattles.MarchTargets(w,source).First();w.Nodes.All[target].Owner=1;
+    var guard=w.Robots.Create(0,RobotParts.Complete) with {DefenseOnly=true};
+    var weak=w.Robots.Create(0,RobotParts.Complete) with {BodyOrigin=1,LegsOrigin=1};
+    var regular=w.Robots.Create(0,RobotParts.Complete);
+    var premium=w.Robots.Create(0,RobotParts.Complete) with {PremiumParts=RobotParts.Head};
+    foreach(var r in new[]{guard,weak,regular,premium})w.Robots.Nodes[source].Add(r);
+    var orders=new List<March>();ComputerJointAttacks.Plan(w,orders,true);
+    Check(orders.Single(o=>!o.Queen && o.TargetNode==target).RobotIds!.SequenceEqual(new[]{premium.Id}),"Automatic selection sends the best equipped soldier while keeping the guard");
+    Check(w.Robots.Nodes[source].Robots.Single(r=>r.Id==guard.Id).DefenseOnly,"Quality selection preserves defense reservation");
+    w.Robots.Training[0].DeploymentPolicy=2;orders.Clear();ComputerJointAttacks.Plan(w,orders,true);
+    Check(orders.Single(o=>!o.Queen && o.TargetNode==target).RobotIds!.SequenceEqual(new[]{weak.Id}),"Explicit low-native deployment preference is respected");
+}
+Console.WriteLine("PASS: CPU disposal, repatriation, remote assembly, coordinated subordinate attacks, unique selections, equipment priority and manual control protection.");

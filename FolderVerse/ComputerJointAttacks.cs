@@ -9,6 +9,7 @@ public static class ComputerJointAttacks
     {
         var manual=w.ManualRulers().ToHashSet();var battle=w.Campaign.RobotBattles;var stock=w.Robots;
         var owners=Enumerable.Range(0,w.ActiveCount).Where(o=>w.Relations.CanAct(o) && (automaticAll || !manual.Contains(o))).ToHashSet();
+        Robot[] Prefer(int owner,IEnumerable<Robot> robots)=>stock.Training[owner].DeploymentPolicy==3?robots.OrderByDescending(r=>2*r.CombatParts(owner)+r.CombatRifles(owner)).ThenBy(r=>r.Id).ToArray():stock.Training[owner].Order(robots).ToArray();
         var used=orders.SelectMany(o=>o.RobotIds??Array.Empty<long>()).ToHashSet();
         var busy=orders.Where(o=>!o.PocketOnly).Select(o=>o.SourceNode>=0?o.SourceNode:w.Nodes.Current(o.Ruler)?.Id??-1).ToHashSet();
         foreach(int owner in owners)BattleLessons.ReserveHomeGuards(w,owner);
@@ -18,7 +19,7 @@ public static class ComputerJointAttacks
                 .ToDictionary(n=>n.Id,n=>{
                     var robots=battle.SelectableRobots(w,n.Owner,n.Id,false).Where(r=>!used.Contains(r.Id)).ToArray();
                     bool guard=stock.Nodes[n.Id].Robots.Any(r=>r.Owner==n.Owner && r.DefenseOnly && r.CanFight);
-                    return stock.Training[n.Owner].Order(robots).Take(Math.Max(0,robots.Length-(!guard && robots.Length>1?1:0))).ToArray();
+                    return Prefer(n.Owner,robots).Take(Math.Max(0,robots.Length-(!guard && robots.Length>1?1:0))).ToArray();
                 });
             int FailedForce(int target)=>battle.Encounters.Where(e=>e.Finished && e.Target==target)
                 .SelectMany(e=>e.Battles).Where(b=>b.Finished && (b.Winner<0 || !w.Relations.Allied(b.Winner,faction.Key)) &&
@@ -48,7 +49,7 @@ public static class ComputerJointAttacks
             // Nearby rulers of one faction may combine their pocket escorts.
             // Individually weak retinues must not hide a jointly viable assault.
             var escorts=faction.Where(o=>!orders.Any(m=>m.Ruler==o && m.Queen) && w.Nodes.Current(o) is {} home && !battle.LockedNode(home.Id))
-                .ToDictionary(o=>o,o=>battle.SelectableRobots(w,o,w.Nodes.Current(o)!.Id,true).Where(r=>!used.Contains(r.Id)).ToArray());
+                .ToDictionary(o=>o,o=>Prefer(o,battle.SelectableRobots(w,o,w.Nodes.Current(o)!.Id,true).Where(r=>!used.Contains(r.Id))));
             var escortTargets=escorts.Where(p=>p.Value.Length>0).SelectMany(p=>battle.MarchTargets(w,w.Nodes.Current(p.Key)!.Id)).Distinct()
                 .Where(t=>w.Nodes.All[t].Owner>=0 && !w.Relations.Allied(faction.Key,w.Nodes.All[t].Owner) && !battle.LockedNode(t) && !orders.Any(o=>o.TargetNode==t && family.Contains(o.Ruler)))
                 .Select(t=>new{Target=t,Members=escorts.Where(p=>p.Value.Length>0 && battle.CanSortie(w,p.Key,t)).Select(p=>p.Key).ToArray(),Defense=battle.DefendingRobots(w,faction.Key,t)})
@@ -93,7 +94,7 @@ public static class ComputerJointAttacks
             foreach(int owner in faction.OrderBy(o=>o)){
                 if(orders.Any(o=>o.Ruler==owner && o.Queen))continue;var home=w.Nodes.Current(owner);if(home==null || battle.LockedNode(home.Id))continue;
                 var choices=battle.MarchTargets(w,home.Id).Where(t=>battle.CanMarch(w,owner,t)).ToArray();
-                var retinue=battle.SelectableRobots(w,owner,home.Id,true).Where(r=>!used.Contains(r.Id)).ToArray();
+                var retinue=Prefer(owner,battle.SelectableRobots(w,owner,home.Id,true).Where(r=>!used.Contains(r.Id)));
                 int hostile=choices.Where(t=>w.Nodes.All[t].Owner>=0 && w.Relations.Root(w.Nodes.All[t].Owner)!=faction.Key && battle.DefendingRobots(w,owner,t)<retinue.Length && retinue.Length>FailedForce(t))
                     .OrderBy(t=>battle.DefendingRobots(w,owner,t)).ThenBy(t=>t).FirstOrDefault(-1);
                 if(hostile>=0){orders.Add(new(owner,hostile,retinue.Length,home.Id,Queen:true,PocketOnly:true,RobotIds:retinue.Select(r=>r.Id).ToArray()));continue;}
@@ -104,5 +105,6 @@ public static class ComputerJointAttacks
                 if(move>=0)orders.Add(new(owner,move,0,home.Id,Queen:true,PocketOnly:true,Peaceful:true));
             }
         }
+        ComputerRecoveryMoves.Plan(w,orders,automaticAll);
     }
 }
