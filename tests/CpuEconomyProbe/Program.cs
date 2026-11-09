@@ -134,3 +134,40 @@ if(args.Contains("--supply-gap")){
             nearest=targets.OrderBy(t=>t.path.Length).ThenBy(t=>t.target).Take(6)}));
     }
 }
+if(args.Contains("--exchange-gate")){
+        bool Busy(int node)=>battles.LockedNode(node) || w.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node || o.Target==node) ||
+            stock.PartPlanning.Orders.Any(o=>o.Source==node || o.Target==node) || stock.PendingEdits.Any(o=>o.Node==node) ||
+            stock.DirectDelivery.Orders.Any(o=>o.Source==node || o.Target==node) || w.Campaign.PlannedOrders.Any(o=>o.SourceNode==node || o.TargetNode==node);
+        bool AnyViableAttack(int? root=null){
+            var automated=Enumerable.Range(0,w.ActiveCount).Where(o=>w.Relations.CanAct(o) && (root==null || w.Relations.Root(o)==root)).ToHashSet();
+            if(w.Campaign.PlannedOrders.Any(o=>automated.Contains(o.Ruler) && !o.Peaceful && (w.Nodes.All[o.TargetNode].Owner<0 || !w.Relations.Allied(o.Ruler,w.Nodes.All[o.TargetNode].Owner))))return true;
+            foreach(var family in automated.GroupBy(w.Relations.Root)){
+                var members=family.ToHashSet();
+                var sources=w.Nodes.All.Where(n=>n.Functional && members.Contains(n.Owner) && !Busy(n.Id)).Select(n=>{
+                    int count=battles.SelectableRobots(w,n.Owner,n.Id,false).Length;
+                    bool guard=stock.Nodes[n.Id].Robots.Any(r=>r.Owner==n.Owner && r.DefenseOnly && r.CanFight);
+                    return new{Node=n.Id,Owner=n.Owner,Count=Math.Max(0,count-(!guard && count>1?1:0))};
+                }).Where(s=>s.Count>0).ToArray();
+                var queens=family.Where(o=>w.Nodes.Current(o) is {} n && !battles.LockedNode(n.Id)).ToArray();
+                var targets=sources.SelectMany(s=>battles.MarchTargets(w,s.Node)).Concat(queens.SelectMany(o=>battles.MarchTargets(w,w.Nodes.Current(o)!.Id))).Distinct();
+                foreach(int target in targets.Where(t=>!battles.LockedNode(t) && (w.Nodes.All[t].Owner<0 || !w.Relations.Allied(family.Key,w.Nodes.All[t].Owner)))){
+                    int defense=battles.DefendingRobots(w,family.Key,target);
+                    if(w.Nodes.All[target].Owner<0 && defense==0 && queens.Any(o=>battles.CanMarch(w,o,target)))return true;
+                    int ground=sources.Where(s=>battles.CanAttackFrom(w,s.Owner,s.Node,target)).Sum(s=>s.Count);
+                    int pockets=queens.Where(o=>battles.CanSortie(w,o,target)).Sum(o=>battles.SelectableRobots(w,o,w.Nodes.Current(o)!.Id,true).Length);
+                    if(ground+pockets>=defense+Math.Max(1,(defense+2)/3))return true;
+                }
+            }
+            return false;
+        }
+    bool global=AnyViableAttack();
+    foreach(var node in w.Nodes.All.Where(n=>n.Functional && n.Owner>=0 && Front(n) && !stock.Nodes[n.Id].HasSpace && battles.AvailableFrom(w,n.Owner,n.Id)<2)){
+        int owner=node.Owner;
+        var partial=stock.Nodes[node.Id].Robots.Where(r=>r.Owner==owner && r.Parts!=RobotParts.Complete && !stock.AssemblyLocked(node.Id,r)).ToArray();
+        var sources=w.Nodes.All.Where(n=>n.Functional && n.Owner==owner && !Front(n) && !Busy(n.Id) && stock.Workshops[n.Id].SupervisorLeaveRemaining==0 && FunctionalDeliveryRoutes.Connected(w,n.Id,node.Id))
+            .Where(n=>stock.Nodes[n.Id].Robots.Count(r=>r.Owner==owner && r.CanFight)>=2)
+            .Where(n=>battles.SelectableRobots(w,owner,n.Id,false).Any(r=>!stock.AssemblyLocked(n.Id,r))).Select(n=>n.Id).ToArray();
+        Console.WriteLine(JsonSerializer.Serialize(new{exchangeTarget=node.Id,owner,root=w.Relations.Root(owner),globalViableAttack=global,factionViableAttack=AnyViableAttack(w.Relations.Root(owner)),
+            busy=Busy(node.Id),leave=stock.Workshops[node.Id].SupervisorLeaveRemaining,partials=partial.Select(r=>r.Id),sources}));
+    }
+}
