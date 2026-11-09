@@ -12,6 +12,7 @@ sealed class DemoCheck:Game1
     double now;
     void Tick(double elapsed,bool click=false,bool active=true){
         now+=elapsed;
+        typeof(Game1).GetMethod("UpdateDispositionScene",Flags)!.Invoke(this,new object[]{elapsed});
         typeof(Game1).GetMethod("UpdateDomesticSlide",Flags)!.Invoke(this,new object[]{(float)elapsed});
         typeof(Game1).GetMethod("UpdateDemo",Flags)!.Invoke(this,new object[]{elapsed,active,click,false,false,now});
     }
@@ -84,6 +85,8 @@ sealed class DemoCheck:Game1
         scene.Armies.Add(new(){Owner=0,Side=0});
         scene.Units.Add(new(){Id=1,Owner=0,Position=new(4,4),Robot=new Robot(1,0,RobotParts.Complete)});
         scene.Capture(BattlePhase.Choose);
+        Console.WriteLine($"Fixed battle replaces {((BattleState[])Get("_robotScenes")).Length} scenes at wave {Get("_battleWave")}");
+        typeof(Game1).GetField("_battleWave",Flags)!.SetValue(this,0);
         typeof(Game1).GetField("_robotScenes",Flags)!.SetValue(this,new[]{scene});
         typeof(Game1).GetField("_robotPlayback",Flags)!.SetValue(this,new RobotBattlePlayback(new[]{scene}));
         typeof(Game1).GetMethod("FinishTransport",Flags)!.Invoke(this,null);
@@ -98,8 +101,9 @@ sealed class DemoCheck:Game1
             world.Relations.Pending.Add(new(1,0,world.Nodes.Current(1).Id));
             screenField.SetValue(this,Enum.Parse(screenField.FieldType,"Disposition"));
             typeof(Game1).GetField("_demoStepAge",Flags)!.SetValue(this,0d);
-            for(int frame=0;frame<55;frame++)Tick(1d/18,active:false);
+            for(int frame=0;frame<360 && (world.Relations.Pending.Count>0 || Get("_dispositionScene")!=null || (bool)Get("_mercyInput") || Get("_mercyResult")!=null);frame++)Tick(1d/18,active:false);
             Check(world.Relations.Pending.Count==0,"Demo repeatedly selected a refused recruitment");
+            Check(Get("_dispositionScene")==null && !(bool)Get("_mercyInput") && Get("_mercyResult")==null,"Demo completes negotiation and presentation before next captive");
             Check(world.Relations.Accepts(world,1)?world.Relations.Superiors[1]==0:world.Relations.Released[1],"Demo disposition choice incorrect");
         }
         var phaseSeconds=(double)typeof(Game1).GetField("RobotFrameSeconds",BindingFlags.Static|BindingFlags.NonPublic)!.GetRawConstantValue()!;

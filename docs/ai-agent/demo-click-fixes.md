@@ -351,3 +351,38 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 - 完了 22:29:04 JST。19:55回の国設定検査失敗を解消（ゲーム不具合の新規IDなし）。tests/CountrySettings/CountrySettingsUi.cs で主色6と異なる副色7を実入力で選び、その後の副色6への入力が拒否されて7を維持することを検査。現行UIの同色除外へ期待値を合わせた。ゲームコード無変更。
 - dotnet build tests/CountrySettings --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-08/demo-check/ -v quiet --disable-build-servers は警告・エラー0。DOTNET_CLI_TELEMETRY_OPTOUT=1、ALSOFT_DRIVERS=null で同出力の CountrySettings.dll --ui は終了コード0。証拠は fix-CountrySettings.log。
 - 実描画を伴う検査で国設定の入力・表示オンオフ、征服者切り替え、通常格納庫・組み立て、軍事の個別選択・予約維持、緑赤チェックの保持と消去、スキップ復帰まで成功。今回画像の目視比較と自然Demo完走、全Seedや専用表示への退避は未検証。DEMO-0016／0017の既存制約は継続。
+
+## 2026-11-08 23:27修正回
+
+- 終了 23:28:03 JST、部分修正・検証待ち。対象は22:58回のDirectDeliveryUi実行不能（DEMO新規IDなし）。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分は点検記録のみ、ゲーム・検証プロセスなし。
+- tests/DirectDeliveryUi/Program.cs の削除済み DirectMapCloseButton の反射参照を、描画・入力が共有する MapModeCloseButton(3) に置換。ゲームコード無変更。
+- DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build tests/DirectDeliveryUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-08/demo-check/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=nullで同出力のDirectDeliveryUi.dllを起動、fix-direct.logへ採取。
+- 旧参照例外は解消し、プライマリー退避・復帰・途中入力抑止・直送便終了・Escapeの検査はPASS。ただし後続Program.cs 70行の右→左ドラッグ予約で停止（終了コード -532462766）。現行はPartPlanning.Reserveを使うため、DirectDelivery.Ordersを即時期待する検査との差を次回切り分ける。Draw到達前の停止で実描画・縮小表示・Demo遷移は未確認、全体修正完了とは扱わない。git diff --check成功。
+
+## 2026-11-09 00:26修正回
+
+- 完了 00:28:37 JST。対象は22:58回からの直送便テスト不一致（DEMO新規IDなし）。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分は旧ボタン参照修正と両記録、ゲーム・検証プロセスなし。ゲームコード無変更。
+- tests/DirectDeliveryUi/Program.cs を現行PartPlanning予約へ移行。右→左・左→右、実在庫保持とプレビュー反映、同地点組替の予約、保存復元、実取消ボタン、全パーツの一括予約と失敗時の無変更を検査。地図切替・チェック・アニメーション中の予約保持も空の旧DirectDelivery予約ではなくPartPlanning予約で照合。旧ボタン参照の共有矩形化も維持。
+- DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build tests/DirectDeliveryUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-09/demo-check/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=nullで同出力DirectDeliveryUi.dllは終了コード0。最終変更後に再ビルド・再実行成功。証拠fix-direct.log、direct-0.png〜direct-22.png。同日の既存出力がなかったため期限付き出力を作成し、前日分は削除せず保存。
+- 実描画の960×540 direct-6.pngで左右インスペクター、中央地図、取消・閉じる・チェックの表示を目視。プライマリー退避復帰、地星儀／回転展開図の左右配置、540p物理座標入力、連続ペア切替、地図接続アニメーションと予約保持が成功。git diff --check成功。自然Demo巡回とCPU操作は今回未再検証で、既存DEMO-0016／0017の未確認範囲は継続。
+
+## 2026-11-09 01:35修正回
+
+- 終了 01:36:03 JST、部分修正・検証待ち。対象00:58回のDemoUi固定戦闘シーン例外（新規DEMO採番なし）。開始時差分はDirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲームコード無変更。
+- tests/DemoUi/Program.csで固定シーン導入時の旧配列長・波番号をログ化し、単一シーンに合わせ波番号を0へ初期化。実行ログは旧16シーン・波番号4で、長さ1への差替え後に波番号が残るテスト条件が原因と確認。通常OpenRobotBattleは波番号を初期化しており、ゲーム側へ防御変更は加えていない。
+- DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build tests/DemoUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-09/demo-check/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=12でDemoUi.dllを実行。配列例外は解消し、戦闘導入の進行検査は成功。
+- 後続の勧誘拒否フォールバック検査（Program.cs104行）でPendingが残り停止、終了コード -532462766。証拠は同出力fix-demo.log。Drawへ未到達で描画・Demo完走は未確認。後続停止は待ち時間・現行処遇UIとの条件差を次回切り分け、ゲーム不具合とは未判定。全体修正完了にはしない。
+
+## 2026-11-09 02:29修正回
+
+- 完了 02:30:49 JST。対象01:55回の処遇テスト条件不一致（DEMO新規IDなし）。開始時はDemoUi・DirectDeliveryUiの既存修正と両記録のみ、ゲーム・検証プロセスなし。ゲームコード無変更。
+- tests/DemoUi/Program.cs のTickで通常更新と同じUpdateDispositionScene時計を進める。性格別の処遇は固定55フレームから、最大360フレームでPending・交渉入力・結果確認・演出のすべてが終わるまで進める検査へ変更。各終了状態と勧誘受諾／解放の実結果を確認し、次の固定捕虜へ進む。
+- DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build tests/DemoUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-09/demo-check/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=12でDemoUi.dllは最終変更後も終了コード0。証拠fix-demo.logとdemo.png。1920×1080のタイトル上のDemoラベルを目視。
+- 配送、地星儀／展開図と18FPS地図接続、固定戦闘導入、4性格の処遇、エンディング経路・タイトル復帰と再開の検査が成功。固定場面を含む検査であり、自然Demo全経路完走や処遇途中の各画面の実描画、CPU操作の再検証は未実施。ゲーム変更の完了とは扱わず、検査不一致の解消として記録。
+
+## 2026-11-09 13:27修正回
+
+- 完了 13:28:29 JST。対象12:59回の非追跡診断の和平0件時例外（DEMO新規IDなし）。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・追跡テスト無変更。
+- artifacts/demo-click-audit/ProbeCpuSortie.cs.txtで和平指示がない場合は別の指示を探し続けず、有限1000更新内で再生完了・人間0・内政フェーズを検査してDraw後に終了するよう変更。既定の和平あり経路は維持。
+- DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-09/demo-check/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_FALLBACK=0、FOLDERVERSE_AUDIT_WORLD=1でDemoAuditCpuSortie.dllは終了コード0。証拠fix-cpu-world1.log。
+- 世界1の15表示指示で通常出撃選択・個別4クリック・赤チェックからスキップせず完了し、人間復帰・内政描画を確認。今回画像目視なし。診断例外の解消であり、ゲーム修正ではない。自然退避・全指示実行回数・全Seedは未確認、既存DEMO-0016の制約を継続。
