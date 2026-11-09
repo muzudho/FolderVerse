@@ -1494,3 +1494,198 @@
 - 開始 22:00:06 JST、終了 22:00:36 JST。部分点検完了。HEAD=6f8118c4。開始時差分はCPU緑赤チェックのゲーム変更、CountrySettings・DemoInspectorUi テストと点検・修正記録。ゲーム・検証プロセスなし。
 - ALSOFT_DRIVERS=null で既存一時出力 artifacts/tmp/delete-after-2026-11-07/merge-check の DemoInspectorUi.dll と DemoAuditPlanningChecks.dll を実行し、両方とも終了コード0。1080p／540pで工場の現行矩形と製造、庁舎、閉鎖、直送便プライマリー、開戦の選択確定・即予約・赤チェック・閉鎖・ターン終了・配送後の進軍を再確認。証拠は同出力の audit-latest-DemoInspectorUi.log と audit-latest-DemoAuditPlanningChecks.log。
 - 新規不具合なし。直送便自然DemoとCPU画面外条件の自然発生、物理マウスによるチェック地点再選択は未確認。次回は未確認経路の診断条件を照合する。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-08 19:48回
+
+- 開始 19:48:22 JST、終了 19:50:17 JST。部分点検完了。HEAD=c65db2134b43ace0239eb8ab5ed70477a6b324ae。FolderVerse・tests・docs/ai-agent・AGENTS.md の開始時差分なし。ゲーム・検証プロセスなし。全体のGit状態取得はブランド画像のgit-lfsフィルター起動で失敗したため、関係パスへ限定して差分を確認。他の画像は未確認。
+- DemoInspectorUi を現行ソースから artifacts/tmp/delete-after-2026-11-08/demo-check へビルドし警告・エラー0。ALSOFT_DRIVERS=null で実行し終了コード0。1080p／540pで庁舎、閉鎖、直送便プライマリー、工場の6計画について現行矩形と製造開始、描画を確認。証拠は同出力の audit-inspector.log。例として矩形(160,288,72,88)内の(196,332)をクリックして製造開始。
+- 新規不具合なし。直送便自然Demo、左右ペアの退避復帰、緑赤チェックとCPU経路は今回未再検証。次回は現行HEADで緑赤チェックとCPU通常UIの回帰から継続。期限切れの旧検証出力は今回削除していない。ゲーム・テスト無変更。
+
+### 実行履歴：2026-11-08 19:55回
+
+- 開始 19:55:59 JST、終了 19:56:55 JST。部分点検完了。HEAD=c65db2134b43ace0239eb8ab5ed70477a6b324ae。関係パスの開始時差分は点検記録のみ。ゲーム・検証プロセスなし。
+- CountrySettings と DemoChecksUi を現行ソースから artifacts/tmp/delete-after-2026-11-08/demo-check へビルドし、両方とも警告・エラー0。ALSOFT_DRIVERS=null で順次実行。CountrySettings --ui は国59の入力変更の検査（CountrySettingsUi.cs 18行目）で停止し、CPU操作へ未到達。DemoChecksUi は実際にクリックできる開戦対象を見つける検査（Program.cs 29行目）で停止。ともに終了コード -532462766。
+- 証拠は同出力の audit-CountrySettings.log と audit-DemoChecksUi.log。停止時の個別状態・解像度・実描画は未採取。現行UIと検査条件の差を切り分けるまでゲーム不具合の新規登録は保留。正常扱いしない。
+- 次回は国設定の実矩形と入力後の各設定値、およびDemo開戦段階と対象候補を採取する。赤チェック以降の遷移、CPU操作、直送便自然Demoは今回未確認。ゲームコード・テスト無変更。
+
+### 実行履歴：2026-11-08 21:00回
+
+- 開始 21:00:37 JST、終了 21:01:32 JST。部分点検完了。HEAD=c65db213。関係パスの開始時差分は点検・修正記録のみ。ゲーム・検証プロセスなし。
+- DemoChecksUi から非追跡の DemoAuditCurrentChecks 診断を作成し、既存一時出力へビルド。警告・エラー0、ALSOFT_DRIVERS=null で実行。失敗時は段階17、選択地点-1、Phase=Domestic、移動候補4、攻撃ハイライト0。終了コード -532462766。証拠 artifacts/tmp/delete-after-2026-11-08/demo-check/audit-current-checks.log。
+- 検査は配送後に OpenMilitaryPhase を直接呼び、その後に攻撃対象が残ることを期待する。現行入口は即時Advanceするため、失敗時には内政へ進んでいた。ゲーム不具合の採番は保留し、次回は内政中の実予約手順を使う診断と分離して照合。停止時の実解像度・描画は未採取。
+- 国設定の各設定値、赤チェック後半、CPU操作、直送便自然Demoは今回未確認。ゲームコード・追跡テスト無変更。
+
+- 21:30修正回でDemoChecksUiの手順を現行の内政予約へ合わせ、4条件の実クリック・描画・配送後進軍の検証が成功。19:55回のDemo検査失敗は解消。国設定の失敗は継続。
+
+### 実行履歴：2026-11-08 22:00回
+
+- 開始 22:03:41 JST、終了 22:04:19 JST。部分点検完了。HEAD=c65db213。関係パスの開始時差分は DemoChecksUi テストと点検・修正記録。ゲーム・検証プロセスなし。
+- CountrySettingsUi の非追跡診断 DemoAuditCurrentCountry を既存一時出力へビルドし警告・エラー0。ALSOFT_DRIVERS=null で実行し失敗時の値を採取。国59は人間=True、主色6、副色17、模様1。主色と同じ副色6の矩形への入力は受理されず、副色17を維持。現行UIは主色と同じ副色を除外するため、検査の副色6という期待と不一致。終了コード -532462766。ゲーム不具合の新規登録なし。
+- 証拠 artifacts/tmp/delete-after-2026-11-08/demo-check/audit-country-values.log。実解像度・失敗時描画は未採取。次回は異なる副色を選ぶ入力と同色除外の検査へ修正し、CPU操作への後続経路を再検証。優先Demo経路・直送便は今回未再検証。ゲームコード・追跡テスト無変更。
+
+- 22:28修正回で国設定検査を異なる副色7の選択と主色6と同じ副色入力の拒否へ修正。CountrySettings --ui は描画とCPU操作の後続検査を含め終了コード0（fix-CountrySettings.log）。19:55回の国設定検査失敗は解消。ゲームコード無変更。自然Demo・全Seed・専用表示への退避など既存の未確認範囲は継続。
+
+### 実行履歴：2026-11-08 22:58回
+
+- 開始 22:58:25 JST、終了 23:00:16 JST。部分点検・中断。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。関係パス（FolderVerse・tests・docs/ai-agent・AGENTS.md）の開始時差分なし、未解決マージなし、ゲーム・検証プロセスなし。前回修正後にHEADが更新されている。
+- Game1.DemoDomestic.cs のプライマリー経路を照合し、直送便の退避復帰・左右インスペクターを優先して DirectDeliveryUi を現行ソースから既存出力 artifacts/tmp/delete-after-2026-11-08/demo-check/ へビルド。dotnet build tests/DirectDeliveryUi --source artifacts/nuget-feed -p:OutputPath=<同出力の絶対パス> -v quiet --disable-build-servers は警告・エラー0、約54秒。DOTNET_CLI_TELEMETRY_OPTOUT=1を使用。
+- 22:59台に ALSOFT_DRIVERS=null で DirectDeliveryUi.dll を起動、23:00までに終了コード -1073741819。LoadContentのProgram.cs 37行でNullReferenceException。検査が反射取得する DirectMapCloseButton は現行ゲームソースに存在せず、古い検査との不一致。証拠は同出力の audit-direct.log。ゲームのクリック不具合としての新規採番は保留。
+- 例外前に退避途中の入力抑止等のアサートを通過したが、Drawへ未到達のため実描画成功とは扱わない。解像度の実描画確認、左右ペア・退避復帰の後半、自然Demo、CPU操作は今回未確認。次回は現行の直送便終了操作と検査の旧ボタン参照を照合し、テスト更新後に左右・縮小表示を再点検。ゲーム・テスト無変更。
+
+- 23:27修正回：旧ボタン参照を共有矩形MapModeCloseButton(3)へ更新し、終了・退避復帰の入力検査は成功。後続の右→左ドラッグ予約検査（DirectDeliveryUi 70行）で停止。状態は検証待ち。証拠fix-direct.log。Draw未到達で実描画未確認。次回はPartPlanningの予約と旧DirectDelivery.Orders期待値の差を切り分ける。
+
+### 実行履歴：2026-11-09 00:02回
+
+- 開始 00:01:56 JST、終了 00:02:30 JST。部分点検完了（静的照合のみ）。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分は直送便テストの旧ボタン参照修正と両記録のみ。ゲーム・検証プロセスなし。ゲーム・テスト無変更。
+- 前回の右→左ドラッグ停止を現行入力と照合。Game1.DirectDelivery.cs 113行はPartPlanning.Reserveを呼び、RobotPartPlanning.cs 102行はPartPlanning.Ordersへ追加する。DirectDeliveryUi 70行は旧DirectDelivery.Ordersの件数と向きを期待し、後続にも旧予約の取消・実在庫の即時変更を期待する検査が続く。予約先変更だけでなく予約プレビュー・取消手順を含むテスト移行が必要と判断。クリック失敗を示す証拠にはならず、実際のPartPlanning予約値は未採取のため新規DEMO採番なし・検証待ちを継続。
+- Game1.Demo.cs／DemoDomestic.csの入口、前回の関係差分を確認。今回はビルド・実行・実描画・解像度確認なし。直送便の左右・退避復帰後半、自然Demo、CPU軍事／内政は未確認。次回修正はドラッグ直後のPartPlanning.OrdersとPreviewResultsを採取し、通常予約UIに合う検査へ更新するところから。旧一時出力は未使用・未削除で、再利用時に保存期限の更新が必要。
+
+- 2026-11-09 00:26修正回でDirectDeliveryUiを現行PartPlanning予約へ移行し、終了コード0。旧参照・右→左ドラッグで停止する検査不一致は解消。予約保持も現行予約を対象に検証。実描画540pの左右ペアを目視、証拠はartifacts/tmp/delete-after-2026-11-09/demo-check/fix-direct.logとdirect-6.png。ゲーム無変更。自然Demo・CPUの残りは未確認として継続。
+
+### 実行履歴：2026-11-09 00:58回
+
+- 開始 00:57:57 JST、終了 00:58:48 JST。部分点検・中断。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDirectDeliveryUiの前回修正と両記録。ゲーム・検証プロセスなし。ゲーム・テスト無変更。
+- Game1.DemoDomestic.csの共有プライマリー・閉じる・チェック矩形参照を照合後、残るDemo巡回を優先。DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build tests/DemoUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-09/demo-check/ -v quiet --disable-build-servers は警告・エラー0。
+- 00:58台にALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=12でDemoUi.dllを起動。開始ログあり、世界Seed=992459907/934883396/883376777。最初の配送と地図説明からの復帰は通過。その後Program.cs 91行の固定戦闘シーンへの差替え後に、UpdateSeaPresentation（Game1.PresentationAudio.cs 46行）の_robotScenes[_battleWave]でIndexOutOfRangeException。終了コード -532462766。証拠は同出力audit-demo.log。
+- 自然巡回そのものの不具合と断定せず、固定シーン差替え時に波番号を初期化していない検査との関係を次回切り分ける。新規DEMO採番は保留。Drawへ未到達で解像度・描画確認なし、戦闘以降の遷移と自然Demo完走は未確認。CPU通常UIと直送便の再点検も今回未実施。次回は固定シーン導入直前の波番号と配列長を採取する。
+
+- 2026-11-09 01:35修正回：固定シーン差替え時の旧波番号4／旧配列長16を採取。テスト側で波番号0を設定し配列例外を解消、戦闘導入検査は通過。ただし後続の勧誘拒否検査で停止し全体は検証待ち。fix-demo.log参照。次回はDispositionの待ち時間・実UIとPending残存を照合する。描画未到達、ゲーム無変更。
+
+### 実行履歴：2026-11-09 01:55回
+
+- 開始 01:55:28 JST、終了 01:56:00 JST。部分点検完了（静的照合）。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUiの波番号初期化、DirectDeliveryUiの予約方式対応、両記録。ゲーム・検証プロセスなし。ゲーム・テスト無変更。
+- DemoUiの勧誘拒否検査をGame1.Demo.cs、Disposition.cs、Mercy.csと照合。UpdateDemoは3秒ごとにAutomaticDispositionPointをクリックする。拒否時に選ぶReleaseは現在、即解放ではなくBeginMercyInputによる交渉入力へ進むため、55フレーム（約3.06秒）でPending消去を期待する検査では確認クリックまで到達しない。現行ボタン中心を狙っていることはコード上確認、実描画上の一致は未確認。
+- また通常Game1.Updateが進めるUpdateDispositionSceneをDemoUi.Tickは呼ばず、各性格の固定シーン間で残る処遇演出にも注意が必要。次回修正は交渉入力→確定→結果確認と演出時計を含む有限時間の検査へ合わせ、実際の選択・結果を検証する。停止原因はテスト条件との不一致が濃厚だが実行による確認前のため検証待ち継続、新規DEMO採番なし。
+- 今回ビルド・実行・実解像度／描画確認なし。直送便優先経路は前回成功範囲を維持、自然Demo後半・CPU軍事／内政は未確認。続き位置はDemoUiの性格別処遇ループ。
+
+- 2026-11-09 02:29修正回でDemoUiの処遇時計・交渉と結果確認の待ち条件を通常UIへ合わせ、Seed12の検査が描画・終了まで成功。00:58回からの固定シーン／処遇検査停止は解消。証拠artifacts/tmp/delete-after-2026-11-09/demo-check/fix-demo.logとdemo.png（1920×1080）。自然Demo全経路・処遇途中の実描画・CPU通常UIの残りは未確認として継続。ゲーム無変更。
+
+### 実行履歴：2026-11-09 02:59回
+
+- 開始 02:59:29 JST、終了 03:00:10 JST。部分点検完了。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiの検査修正と両記録、ゲーム・検証プロセスなし。ゲーム・テスト無変更。
+- 直送便優先経路の前回成功を踏まえCPU通常UIの残りへ巡回。DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build tests/CountrySettings --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-09/demo-check/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=nullでCountrySettings.dll --uiを03:00まで実行し終了コード0。証拠audit-cpu.log。
+- 表示オンオフ、征服者切替、内政格納庫・組立と緑チェック、配送前消去、人間復帰、軍事通常出撃選択、AI指定ロボットID、個別クリックの増分、確定時の二重予約なし、赤チェックと終了時消去、スキップ復帰を既存テストで確認。960×540 country-settings-12.pngで通常出撃選択ダイアログとカード上のカーソルを目視。新規不具合なし。
+- 全Seed・画面外指示時の専用表示への退避／復帰、和平移動の実行回数、自然Demo全経路、各クリック前後すべての実描画は今回未確認。DEMO-0016／0017の残項目は継続。次回は専用表示へ退避する条件と通常UI復帰を優先。直送便とDemoInspectorUiは今回再実行していない。
+
+### 実行履歴：2026-11-09 03:55回
+
+- 開始 03:55:30 JST、終了 03:55:44 JST。部分点検完了（静的照合のみ）。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiの既存検査修正と両記録。ゲーム・検証プロセスなし。ゲーム・テスト無変更。
+- DEMO-0016／0017の専用表示への退避条件を照合。内政はFocusComputerDomesticで各地点の段階を0へ戻し、OperationPosition・MapViewBounds・実ヒットIDが一致すれば通常インスペクターへ進む。不一致なら段階-1で専用表示を維持する。次地点で再び判定する設計は確認したが、実際の退避→通常UI復帰は未再現。
+- 軍事は_computerWarStage>0で通常UI上の実操作先・チェック・閉じるを描き、段階0では町名／指示の専用パネルを描く。既存DEMO-0016の未対応・退避表示として扱い、重複登録なし。新たなクリックずれや状態破損は確認していない。
+- 今回ビルド・実行・解像度・実描画確認なし。退避を自然発生させるSeed／画面条件と次地点復帰、和平移動の実行回数、自然Demo全経路は未確認。次回は既存CPU診断で退避の段階・地点IDを採取し、実描画と次地点への遷移を検証する。直送便・プライマリーは00:26回の成功範囲を維持。
+
+### 実行履歴：2026-11-09 05:05回
+
+- 開始 05:05:01 JST、終了 05:05:46 JST。部分点検完了。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・追跡テスト無変更。
+- 既存の非追跡診断ProbeOffscreenDomestic.cs.txtの旧副色期待値だけを前回修正済みCountrySettingsと同じ入力へ合わせて再利用。DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build artifacts/demo-click-audit/DemoAuditOffscreenDomestic.csproj --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-09/demo-check/ -v quiet --disable-build-servers はエラー0、既存の早期return後の到達不能コード警告CS0162が1件。
+- ALSOFT_DRIVERS=nullでDemoAuditOffscreenDomestic.dllを実行し終了コード0、audit-offscreen.logに保存。960×540で地図を意図的に100000px退避させ、内政段階-1の専用町名パネルを再現。その後スキップせず次CPU（owner=3、node=102）で段階2の通常格納庫へ復帰し、最後のスキップで人間と配送フェーズへ戻ることを確認。
+- artifacts/demo-click-audit/audit-offscreen-domestic.png と audit-offscreen-return.png を再利用して描画を保存・目視。専用パネルと次CPUの通常格納庫・タブ上のカーソルが一致。DEMO-0017の退避後復帰は制御した画面外条件で確認済みへ更新。専用パネル自体は既存未対応として維持、自然発生条件や各実行回数・軍事の退避復帰・自然Demo全経路は未確認。新規不具合なし。次回は軍事側の退避条件と復帰を照合。
+
+### 実行履歴：2026-11-09 06:03回
+
+- 開始 06:03:32 JST、終了 06:03:46 JST。部分点検完了（静的照合）。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・テスト無変更。
+- DEMO-0016の軍事専用表示を通常UI経路と照合。通常経路の対象は和平移動、またはQueen=false／PocketOnly=false／SourceNode>=0／Fighters>0。対象外は専用パネルを使用。通常経路でも地点位置・実ヒット不一致、出撃元なし、指定ロボットカードが画面下限外などで段階-1へ退避する。正常な次指示への移行時に段階0へ戻すコードを確認。
+- 専用パネルはComputerMarchTarget／ComputerMarchOrder矩形の中心に手を動かす表示で、通常の地点・出撃確定を実入力で再演する経路ではない。既存の未対応範囲として保持し、新規採番なし。再生終了時は元のAI指示列をResolveへ渡す設計を確認したが、各指示の一回限り実行と退避→次通常指示の実描画は今回未検証。
+- 既存ProbeCpuSortieは通常出撃と和平移動の巡回用で、軍事退避の段階を強制・検査する診断ではない。今回ビルド・実行・解像度確認なし。次回は対象外指示（Queen／PocketOnly）か画面外カードの再現条件を作り、専用表示・次指示復帰・予約件数を採取する。優先プライマリー・直送便の前回確認範囲は維持、全経路確認済みとはしない。
+
+### 実行履歴：2026-11-09 07:05回
+
+- 開始 07:05:03 JST、終了 07:06:09 JST。部分点検完了。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・追跡テスト無変更。
+- 既存非追跡ProbeCpuSortie.cs.txtに環境変数FOLDERVERSE_AUDIT_FALLBACK=1の場合のみ軍事段階-1を注入する診断を追加。旧副色検査は現行CountrySettingsと同じ入力へ更新。DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-09/demo-check/ -v quiet --disable-build-servers は警告・エラー0。
+- ALSOFT_DRIVERS=nullで同DLLを実行し終了コード0。実AI指示31件（和平1件）、表示征服者9で専用パネルを描画。2秒後に次指示index=1・段階0へ一度だけ進み、続く3更新で段階3の通常出撃選択へ復帰。PlannedOrdersは0→0（追加予約なし）。証拠audit-war-fallback.log、audit-war-fallback.png、audit-war-return.png。
+- 960×540の両画像で町名専用パネルと通常の出撃選択・カード上カーソルを目視。DEMO-0016の退避状態から次通常UIへの復帰は制御した状態注入で確認。対象外指示や画面外カードによる自然な退避発生の再現ではなく、予約0件の不変確認だけで全指示の一回限り実行を証明しない。専用表示の未対応範囲は継続、新規不具合なし。次回は自然な退避入口とResolve後の実行結果を照合。優先直送便・プライマリーは前回確認範囲を維持。
+
+### 実行履歴：2026-11-09 08:03回
+
+- 開始 08:03:34 JST、終了 08:03:54 JST。部分点検完了。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・追跡テスト無変更。
+- 前回現行ソースからビルド済みのDemoAuditCpuSortie.dllを同じ出力で再利用。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_FALLBACK=0で実AI指示の通常巡回を実行。終了コード0。証拠artifacts/tmp/delete-after-2026-11-09/demo-check/audit-cpu-complete.log。今回は再ビルドなし。
+- 表示指示31件／和平1件。征服者9の通常出撃選択（対象27、個別クリック2回）・赤チェックからスキップせず後続へ進行。征服者57の実際の和平指示（対象98）で通常移動UIの地点選択と確定、追加予約なしを確認。再生完了後の現在地98が指示先98と一致し、人間0と内政フェーズへ復帰。960×540 audit-latest-computer-fallback.pngは名前に反して現在は通常移動UIの画像であり、その内容を目視。
+- 今回は退避段階注入なし。ただし各段階の退避ログやResolve呼出し回数を採取しておらず、全指示一回限り実行と自然退避入口は未証明。既存DEMO-0016の未確認範囲として維持、新規不具合なし。次回は自然な対象外指示またはカード下限外による退避入口の記録を追加。優先直送便・プライマリーは前回成功範囲を維持。
+
+### 実行履歴：2026-11-09 09:01回
+
+- 開始 09:01:05 JST、終了 09:01:48 JST。部分点検完了。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・追跡テスト無変更。
+- 既存非追跡ProbeCpuSortieの通常巡回ループへ、段階が負へ変わる退避入口と次指示indexのログだけを追加。DOTNET_CLI_TELEMETRY_OPTOUT=1でDemoAuditCpuSortie.csprojを既存artifacts/tmp/delete-after-2026-11-09/demo-check/へビルド（--source artifacts/nuget-feed、-v quiet、--disable-build-servers）、警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_FALLBACK=0で実行し終了コード0。
+- 証拠audit-cpu-natural.log。表示31指示でindex0→30が順次進み、記録範囲内の段階負への自然退避は0件。和平の指示先98と終了後現在地98、人間復帰も成功。これはこの固定世界・表示範囲での結果であり、対象外指示や全Seedでの退避不発を意味しない。
+- 今回は新しい画像目視なし（診断は960×540の通常移動画像を再生成）。自然退避入口は再現できず要再確認を継続、新規不具合なし。次回は対象外指示Queen／PocketOnlyを含む別世界の選定か、画面外カードの条件を切り分ける。全指示のResolve実行回数と自然Demo全経路は未確認。優先UIの前回検証範囲は維持。
+
+### 実行履歴：2026-11-09 10:00回
+
+- 開始 10:00:06 JST、終了 10:00:54 JST。部分点検完了。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiの既存修正と両記録、ゲーム・検証プロセスなし。ゲーム・テスト無変更。
+- 優先UIへ巡回し、DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build tests/DemoInspectorUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-09/demo-check/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=nullでDemoInspectorUi.dllを実行し終了コード0。
+- 庁舎、アニメーション付き閉鎖、直送便プライマリー、自国インスペクターから移動、人間／CPU人数確認のクリック矩形と実描画を検証。1920×1080／960×540で工場6計画は現行矩形(160,288,72,88)の中心(196,332)入力から製造開始まで成功。証拠同出力audit-inspector.log。今回は画像の追加目視なし。
+- 新規不具合なし。左右直送便ペアは00:26回の確認範囲を維持。軍事の自然退避入口・全指示実行回数・自然Demo全経路は未確認で継続。次回は既存CPU診断の指示属性を採取し、対象外指示のある条件を特定する。全経路を正常扱いしない。
+
+### 実行履歴：2026-11-09 11:01回
+
+- 開始 11:01:37 JST、終了 11:02:29 JST。部分点検完了。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・追跡テスト無変更。
+- 非追跡ProbeCpuSortieへ表示指示の属性集計ログを追加して既存出力へ再ビルド。DOTNET_CLI_TELEMETRY_OPTOUT=1、dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-09/demo-check/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_FALLBACK=0で実行し終了コード0。
+- 証拠audit-cpu-attributes.log。31表示指示のQueen=1、PocketOnly=1、SourceNode欠落0、非和平のFighters<=0は0。集計は和平を除外していないため、この属性だけで通常UI対象外の非和平指示が存在すると判定できない。自然退避段階ログなし、通常巡回と和平指示先への到着は成功。ゲーム不具合の新規採番なし。
+- 今回画像目視なし、自然退避入口の検証は未完了。次回はPeacefulとQueen／PocketOnlyの組合せを指示単位で採取し、通常UI対象外の非和平指示があるか区別する。Resolve一回限り実行、全Seed、自然Demo全経路は未確認。優先UIは前回検証範囲を維持。
+
+### 実行履歴：2026-11-09 12:00回
+
+- 開始 12:00:38 JST、終了 12:01:24 JST。部分点検完了。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・追跡テスト無変更。
+- 非追跡ProbeCpuSortieにQueen／PocketOnly指示の個別属性ログを追加。DOTNET_CLI_TELEMETRY_OPTOUT=1でDemoAuditCpuSortie.csprojを既存artifacts/tmp/delete-after-2026-11-09/demo-check/へビルド（--source artifacts/nuget-feed、-v quiet、--disable-build-servers）、警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_FALLBACK=0で実行し終了コード0。
+- audit-cpu-attributes.logを同名で更新。該当はindex30・ruler57・Peaceful=True・Queen=True・PocketOnly=True・source99・fighters0の1指示のみ。これは和平なので通常移動UIの対象であり、非和平の通常UI対象外指示はこの31件には含まれない。自然退避を再現できなかった条件を特定。出撃選択・赤チェック・和平移動・人間復帰の既存検査も成功。
+- 新規不具合なし。今回は画像の追加目視なし（診断の実描画は960×540）。自然退避入口は別世界または画面外カード条件で要再確認、全指示の実行回数・自然Demo全経路は未確認。次回は別世界の指示選定を行い、通常経路対象外の非和平指示を先に確認してから描画検証する。優先UIの成功範囲は前回記録を維持。
+
+### 実行履歴：2026-11-09 12:59回
+
+- 開始 12:59:39 JST、終了 13:00:37 JST。部分点検・中断。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・追跡テスト無変更。
+- 非追跡ProbeCpuSortieの世界Seedを環境変数FOLDERVERSE_AUDIT_WORLDで選べるようにし、既定0を維持して別世界1を検査。Cast123／Placement456。DOTNET_CLI_TELEMETRY_OPTOUT=1で既存DemoAuditCpuSortie.csprojを既存期限付きdemo-check出力へビルド（--source artifacts/nuget-feed、-v quiet、--disable-build-servers）、警告・エラー0。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_FALLBACK=0、FOLDERVERSE_AUDIT_WORLD=1で実行。表示15指示・和平0、Queen／PocketOnly／出撃元欠落／非和平の戦力0はいずれも0。征服者1の対象57、通常出撃選択の個別クリック4回、赤チェックまで成功。記録範囲内の自然退避ログなし。
+- 後続の「和平指示まで進む」診断ループが和平0件を扱えず、全指示終了後に配列添字範囲外（ProbeCpuSortie.cs.txt132行）で停止。終了コード -532462766。証拠artifacts/tmp/delete-after-2026-11-09/demo-check/audit-cpu-world1.log。ゲーム例外ではなく診断の固定条件不一致として記録、新規DEMO採番なし。13:00までに実行開始・段階ログあり、起動待ちではない。
+- 960×540で途中描画は実行したが今回画像目視なし。正常終了・人間復帰・和平移動は今回未確認。次回は非追跡診断で和平0件でも完了を観測できる境界条件を整え、別Seed選定を継続。ゲームコード修正対象とはしない。
+
+- 2026-11-09 13:27修正回で非追跡CPU診断の和平0件条件を修正。世界1の15指示がスキップなしで完了、人間0と内政への復帰・描画を確認し終了コード0。fix-cpu-world1.log参照。12:59回の診断例外は解消。ゲーム無変更、自然退避と実行回数は未確認として継続。
+
+### 実行履歴：2026-11-09 13:57回
+
+- 開始 13:57:11 JST、終了 13:57:30 JST。部分点検完了。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・追跡テスト無変更。
+- 直前修正済みDemoAuditCpuSortie.dllを既存期限付き出力から再利用し、ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_FALLBACK=0、FOLDERVERSE_AUDIT_WORLD=2で別世界を点検。Cast123／Placement456。再ビルドなし。終了コード0、証拠artifacts/tmp/delete-after-2026-11-09/demo-check/audit-cpu-world2.log。
+- 表示15指示／和平0、Queen／PocketOnly／出撃元欠落／非和平の戦力0はいずれも0。征服者9の対象27、通常出撃選択・個別4クリック・赤チェックの検査を経て、スキップなしで再生完了、人間0と内政へ復帰、描画も成功。診断表示は960×540、今回は画像目視なし。
+- 新規不具合なし。世界2にも自然退避を狙う対象外指示がなく、通常UI対象外入口と全指示実行回数は未確認。次回は世界3以降の属性選定または制御した画面外カード条件で入口を特定。直送便・プライマリーと自然Demo全経路は今回未再検証、既存の確認／未確認範囲を保持。
+
+### 実行履歴：2026-11-09 15:04回
+
+- 開始 15:04:12 JST、終了 15:04:31 JST。部分点検完了。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・追跡テスト無変更。
+- 現行ビルド済みDemoAuditCpuSortie.dllを既存期限付き出力で再利用。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_FALLBACK=0、FOLDERVERSE_AUDIT_WORLD=3（Cast123／Placement456）で実行し終了コード0。証拠artifacts/tmp/delete-after-2026-11-09/demo-check/audit-cpu-world3.log。
+- 征服者3の対象91、通常出撃選択・個別4クリック・赤チェックを検査。後続和平指示の対象93を通常移動UIで選択・確定し、再生完了後の現在地93と人間0への復帰を確認。自然退避の段階ログは今回の巡回範囲ではなし。
+- 実描画は960×540、今回画像目視なし。新規不具合なし。自然退避入口・全指示実行回数・自然Demo全経路は未確認。次回はSeed巡回を広げる前に通常UIから退避するカード下限条件の診断を検討する。優先直送便・プライマリーは前回確認範囲を保持。
+
+### 実行履歴：2026-11-09 16:04回
+
+- 開始 16:04:43 JST、終了 16:04:56 JST。部分点検完了（静的照合）。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・テスト無変更。
+- CPU軍事の画面外カード退避条件を通常出撃選択矩形と照合。InvasionRobotCard(i)は論理(350+i%6*200,320+i/6*170,185,155)、確定ボタン上端795。カード中心Yは0〜5番397、6〜11番567、12〜17番737、18番以降907以上。AdvanceComputerWarPreviewは指定カード中心Y>=795で通常経路を中止するため、退避入口の制御再現には少なくとも19番目（index18）のロボットをAI指示へ含む在庫が必要。
+- 通常描画・入力も同じInvasionRobotCardを使うことを確認。今回のコード照合だけでは、カード全体の重なりや通常UI自体の画面外操作を不具合と断定しない。既存DEMO-0016の未確認条件として保持、新規採番なし。
+- ビルド・実行・実描画・解像度確認は今回なし。次回は通常の在庫上限とAI出撃元の在庫順を確認し、19体条件が成立する固定場面で段階2→-1と次指示復帰を検証する。全指示実行回数・自然Demo全経路・優先UIの再検証は未実施。
+
+### 実行履歴：2026-11-09 16:55回
+
+- 開始 16:55:14 JST、終了 16:55:27 JST。部分点検完了（静的照合）。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・テスト無変更。
+- カード下限退避の前提を通常在庫と照合。InvasionRobotsは出撃可能な在庫をID昇順に並べる。RobotStoreはStorageLimit=TotalCapacity-ReservedReturnsで追加を制限し、機能移転のプレビューでは容量を加算する。19体条件は既定の単一格納庫の在庫を単に増やす診断では成立せず、容量を含む合法な集約状態が必要。通常在庫の制約を無視する再現は採用しない。
+- 今回ビルド・実行・実描画・解像度確認なし。19番目の指定カードによる段階2→-1は未再現で要再確認。新規採番なし。次回は格納庫容量を増やす通常機能移転の固定場面を用意できるか確認し、難しければ既存未対応のQueen／PocketOnly非和平指示を別条件で再現する。優先UIとCPU通常経路の既存成功範囲は維持、全経路正常とは扱わない。
+
+### 実行履歴：2026-11-09 18:00回
+
+- 開始 18:00:45 JST、終了 18:01:10 JST。部分点検完了（静的照合）。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・テスト無変更。
+- 19体以上の出撃元を作る前提としてNodeFunctionTransfersの通常予約条件を確認。内政中、隣接する同盟機能地点、予約権限あり、戦闘・帰還予約なし、合計容量60以下が必要。Resolveは容量とロボット在庫をともに移転するため、12枠を2地点分集約した24枠は仕様上可能。直接容量フィールドを書き換える必要はない。
+- 現時点では通常予約→配送解決で集約した在庫からAIが19番目以降を指定する固定場面を作成・実行していない。カード下限退避は要再確認を継続し、新規採番なし。今回ビルド・実描画・解像度確認なし。
+- 次回はこの通常機能移転を使う診断場面で24枠の出撃元を作り、AI指示IDとカード順を照合して段階2の退避を検証する。優先UI・CPU通常経路は既存確認範囲を維持。全指示実行回数・自然Demo全経路は未確認。
+
+### 実行履歴：2026-11-09 18:56回
+
+- 開始 18:56:16 JST、終了 18:56:56 JST。部分点検完了。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・テスト無変更。
+- 集約在庫の前提は既存tests/FunctionTransferの通常Reserve→FinishDomestic検査を確認したが、CPU19体固定場面は今回作成していない。未確認のまま保持し、追加指示の緑赤チェック経路へ巡回。
+- DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build tests/DemoChecksUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-09/demo-check/ -v quiet --disable-build-servers は警告・エラー0。ALSOFT_DRIVERS=nullでDemoChecksUi.dllは終了コード0。証拠audit-checks.log。
+- 展開図／地星儀、1920×1080／960×540の4条件で実ハンドルの緑チェック、地点選択→出撃選択→即予約→赤チェック→閉じる→ターン終了、緑赤表示分離と消去を検証。描画を実行、今回画像の追加目視なし。新規不具合なし。
+- 自然Demo全経路、赤地点の物理再選択、CPU19体の退避入口と全指示実行回数は未確認。優先直送便の前回成功範囲は維持。次回は集約在庫のCPU固定場面を作成するか、通常UI未対応の非和平Queen指示の場面を限定して点検する。
+
+### 実行履歴：2026-11-09 20:04回
+
+- 開始 20:04:47 JST、終了 20:05:33 JST。部分点検完了。HEAD=200f19005a2d5d1ec5114282941a9e425e75d6eb。開始時差分はDemoUi・DirectDeliveryUiと両記録、ゲーム・検証プロセスなし。ゲーム・追跡テスト無変更。
+- 19体集約の場面は未作成のため、既存DEMO-0016の別の未対応入口である非和平Queenの表示を制御検証。非追跡ProbeCpuSortieの環境変数FOLDERVERSE_AUDIT_FALLBACK=2で表示用の最初の指示だけQueen=trueへ差替え、実Resolve用の元指示列は変更しない。AI自然生成条件の再現ではない。
+- DOTNET_CLI_TELEMETRY_OPTOUT=1でDemoAuditCpuSortie.csprojを既存期限付きdemo-check出力へビルド（--source artifacts/nuget-feed、-v quiet、--disable-build-servers）、警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=0、FOLDERVERSE_AUDIT_FALLBACK=2で実行し終了コード0。証拠audit-cpu-queen.log。
+- 非和平Queenは通常地点・出撃選択を開かず専用パネルを描画。その後指示index1・段階3の通常出撃選択へ復帰、PlannedOrdersは0→0で追加予約なし。960×540のaudit-war-fallback.pngとaudit-war-return.pngを同名で再生成（今回は目視なし）。既報の未対応範囲として保持、新規採番なし。
+- 自然AIで非和平Queenを選ぶ条件、19体カード下限、全指示の実行回数、自然Demo全経路は未確認。今回の結果だけでゲーム修正は行わない。次回はQueen用通常UIで元指示を保持したまま表示可能かを調べるか、集約在庫の制御場面を点検する。
