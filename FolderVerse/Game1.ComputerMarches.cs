@@ -43,7 +43,7 @@ public partial class Game1
         _computerMarchAge+=elapsed;
         var order=_visibleComputerMarches[_computerMarchIndex];
         if(!skip && _computerWarStage>=0 &&
-            (order.Peaceful || order is {Queen:true, Fighters:>=0} || order is {Queen:false, PocketOnly:false, SourceNode:>=0, Fighters:>0}))
+            (order.Peaceful || order is {Queen:true, Fighters:>=0} || order is {PocketOnly:true, Fighters:>0} || order is {Queen:false, PocketOnly:false, SourceNode:>=0, Fighters:>0}))
         {
             if(_computerMarchAge<1)return true;
             if(AdvanceComputerWarPreview(order)){_computerMarchAge=0;return true;}
@@ -103,7 +103,8 @@ public partial class Game1
                     _computerWarStage=6;
                     return true;
                 }
-                int source=_invasionSources.FindIndex(row=>row.Queen==order.Queen && row.Owner==order.Ruler && row.Node==(order.Queen?_setup.Nodes.Current(order.Ruler)?.Id:order.SourceNode));
+                bool pocket=order.Queen || order.PocketOnly;
+                int source=_invasionSources.FindIndex(row=>row.Queen==pocket && row.Owner==order.Ruler && row.Node==(pocket?_setup.Nodes.Current(order.Ruler)?.Id:order.SourceNode));
                 if(source<0)break;
                 var robots=InvasionRobots(_invasionSources[source]);
                 var ids=order.RobotIds??robots.Take((int)order.Fighters).Select(robot=>robot.Id).ToArray();
@@ -115,7 +116,7 @@ public partial class Game1
                 OpenInvasionPicker(source);
                 if(_invasionPicker<0)break;
                 _invasionDraft.Clear();
-                if(order.Queen)_invasionQueenDraft=false;
+                if(pocket)_invasionQueenDraft=false;
                 _computerWarCards.Clear();
                 if(order.Queen)_computerWarCards.Enqueue(InvasionQueenToggle.Center);
                 foreach(int card in cards)_computerWarCards.Enqueue(InvasionRobotCard(card).Center);

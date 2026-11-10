@@ -97,6 +97,7 @@ public partial class Game1
                 _computerDomesticStage=_nodeAssemblyOpen?2:-1;
             }
             if(previousAge<ComputerAssemblyTime && (skip || _computerDomesticAge>=ComputerAssemblyTime) &&
+                !_setup.Robots.Workshops[node.Id].AutoAssemblyDisabled &&
                 _setup.Robots.AssemblySelection(node.Id,node.Owner,true) is {} parts)
             {
                 _computerAssembled=_setup.Robots.Assemble(node.Id,parts,node.Owner)!=null;
