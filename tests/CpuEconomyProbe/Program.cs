@@ -190,3 +190,13 @@ if(args.Contains("--function-gates")){
             locked=battles.LockedNode(source) || battles.LockedNode(target.Id) || battles.LockedEdge(source,target.Id),phase=w.Campaign.Phase.ToString()}));
     }
 }
+foreach(var option in args.Where(a=>a.StartsWith("--target-supply="))){
+ int target=int.Parse(option.Split('=')[1]),owner=w.Nodes.All[target].Owner;
+ var routes=w.Nodes.All.Where(n=>n.Functional && n.Owner==owner && n.Id!=target).Select(n=>new{
+ source=n.Id,toTarget=RobotLongDelivery.Path(w,n.Id,target,owner),fromTarget=RobotLongDelivery.Path(w,target,n.Id,owner),
+ free=stock.Nodes[n.Id].StorageLimit-stock.Nodes[n.Id].Count,
+ ready=battles.SelectableRobots(w,owner,n.Id,false).Where(r=>!stock.AssemblyLocked(n.Id,r) && stock.CanShip(n.Id,r)).Select(r=>r.Id),
+ localDirect=FunctionalDeliveryRoutes.Connected(w,n.Id,target)
+ }).ToArray();
+ Console.WriteLine(JsonSerializer.Serialize(new{targetSupply=target,owner,root=w.Relations.Root(owner),routes}));
+}
