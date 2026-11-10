@@ -64,19 +64,45 @@ public sealed class RobotDirectDelivery
         catch{Orders.RemoveAll(o=>o.Number>=start);_next=start;Failures.Clear();Failures.AddRange(failures);throw;}
     }
     public DirectPartOrder Reserve(WorldSetup setup,int source,int target,long id,RobotParts part,long? targetId,int slot)
+        =>ReserveCore(setup,source,target,id,part,targetId,slot,null);
+    private DirectPartOrder ReserveCore(WorldSetup setup,int source,int target,long id,RobotParts part,long? targetId,int slot,int? commander)
     {
         var world=setup.Robots;var battles=setup.Campaign.RobotBattles;
+        bool Controls(int owner)=>commander.HasValue?owner==commander.Value:setup.Relations.Controls(owner);
         if(part==0 || (part&~RobotParts.Complete)!=0 || source<0 || source>=world.Nodes.Length || target<0 || target>=world.Nodes.Length || source==target || slot<0 || slot>=world.Nodes[target].TotalCapacity || !setup.Nodes.All[source].Functional || !setup.Nodes.All[target].Functional)throw new InvalidOperationException("Invalid direct delivery.");
         if(battles.LockedNode(source) || battles.LockedNode(target) || !FunctionalDeliveryRoutes.Connected(setup,source,target))throw new InvalidOperationException("Route unavailable.");
         var robot=world.Nodes[source].Robots.SingleOrDefault(r=>r.Id==id);
         if(robot!=null){part=robot.ConnectedParts(part);if(part is not (RobotParts.Head or RobotParts.Body or RobotParts.Legs) && robot.IntegratedParts!=part)throw new InvalidOperationException("Select one physical unit.");}
-        if(robot==null || !setup.Relations.Controls(robot.Owner) || !setup.Relations.Controls(setup.Nodes.All[source].Owner) || !setup.Relations.Controls(setup.Nodes.All[target].Owner) || (robot.Parts&part)==0 || world.BaseAssemblyLocked(source,robot) || (LockedParts(source,id)&part)!=0)throw new InvalidOperationException("Part unavailable.");
+        if(robot==null || !Controls(robot.Owner) || !Controls(setup.Nodes.All[source].Owner) || !Controls(setup.Nodes.All[target].Owner) || (robot.Parts&part)==0 || world.BaseAssemblyLocked(source,robot) || (LockedParts(source,id)&part)!=0)throw new InvalidOperationException("Part unavailable.");
         var outgoing=Orders.Where(o=>o.Source==source && o.RobotId==id).Aggregate(part,(mask,o)=>mask|o.Part);
         if((outgoing&robot.Parts)==robot.Parts && Orders.Any(o=>o.Target==source && o.TargetRobotId==id))throw new InvalidOperationException("Arrival anchor must remain.");
         if(targetId is long receiver){var destination=world.Nodes[target].Robots.SingleOrDefault(r=>r.Id==receiver);if(destination==null || destination.Owner!=robot.Owner || (destination.Parts&part)!=0 || world.BaseAssemblyLocked(target,destination) || (LockedParts(target,receiver)&part)!=0 || Orders.Where(o=>o.Source==target && o.RobotId==receiver).Aggregate((RobotParts)0,(mask,o)=>mask|o.Part)==destination.Parts)throw new InvalidOperationException("Destination part unavailable.");}
         else if(Orders.Any(o=>o.Target==target && o.TargetRobotId==null && o.TargetSlot==slot && ((o.Part&part)!=0 || o.Owner!=robot.Owner)))throw new InvalidOperationException("Arrival slot already reserved.");
         var order=new DirectPartOrder(_next++,source,target,id,part,targetId,slot,robot.Owner);Orders.Add(order);
         Failures.RemoveAll(o=>o.Source==source && o.RobotId==id && (o.Part&part)!=0);return order;
+    }
+    internal void ReserveComputerExchange(WorldSetup w,int source,int target,long soldierId,long partialId,int commander)
+    {
+        if(w.Campaign.Phase!=CampaignPhase.Domestic || source<0 || target<0 || source>=w.Robots.Nodes.Length || target>=w.Robots.Nodes.Length ||
+            Orders.Any(o=>o.Source==source || o.Target==source || o.Source==target || o.Target==target))throw new InvalidOperationException("Exchange unavailable");
+        var ready=w.Robots.Nodes[source].Robots.SingleOrDefault(r=>r.Id==soldierId);
+        var partial=w.Robots.Nodes[target].Robots.SingleOrDefault(r=>r.Id==partialId);
+        if(ready==null || partial==null || !ready.CanFight || ready.Stationed || partial.Parts==RobotParts.Complete ||
+            w.Robots.AssemblyLocked(source,ready) || w.Robots.AssemblyLocked(target,partial))throw new InvalidOperationException("Exchange robots unavailable");
+        long start=_next;var failures=Failures.ToArray();
+        try{
+            void Ship(int from,int to,Robot robot,int slot){
+                var remaining=robot.Parts;
+                foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((remaining&part)!=0){
+                    var order=ReserveCore(w,from,to,robot.Id,part,null,slot,commander);remaining&=~order.Part;
+                }
+            }
+            Ship(source,target,ready,Array.FindIndex(w.Robots.Nodes[target].Robots.ToArray(),r=>r.Id==partialId));
+            Ship(target,source,partial,Array.FindIndex(w.Robots.Nodes[source].Robots.ToArray(),r=>r.Id==soldierId));
+            var projected=Simulate(w.Robots,Orders,out _,out int invalid);
+            if(invalid>=0 || projected[source].Count!=w.Robots.Nodes[source].Count || projected[target].Count!=w.Robots.Nodes[target].Count)
+                throw new InvalidOperationException("Exchange must preserve occupied capacity");
+        }catch{Orders.RemoveAll(o=>o.Number>=start);_next=start;Failures.Clear();Failures.AddRange(failures);throw;}
     }
     private static List<Robot>[] Simulate(RobotWorld world,IReadOnlyList<DirectPartOrder> selected,out Dictionary<(int,int),long> groups,out int invalid)
         {
