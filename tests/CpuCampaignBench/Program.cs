@@ -66,7 +66,12 @@ for(int step=1;step<=steps;step++){
     var previousRoots=Enumerable.Range(0,w.ActiveCount).Select(w.Relations.Root).ToArray();
     var previousPowered=w.Relations.Powered.Take(w.ActiveCount).ToArray();
     var previousEncounters=w.Campaign.RobotBattles.Encounters.Select(e=>e.Id).ToHashSet();
+    var transferSafety=new List<(int Source,int Target,int Owner,int[] Outgoing,int[] Incoming)>();
     w.Campaign.FinishDomestic(w,true,deferDelivery:()=>{
+        if(args.Contains("--check-transfer-safety"))foreach(var transfer in w.Campaign.FunctionTransfers.Orders)
+            transferSafety.Add((transfer.Source,transfer.Target,transfer.Owner,
+                w.Campaign.RobotBattles.MarchTargets(w,transfer.Target).Where(t=>w.Nodes.All[t].Owner>=0 && !w.Relations.Allied(transfer.Owner,w.Nodes.All[t].Owner)).ToArray(),
+                w.Nodes.All.Where(n=>n.Functional && n.Owner>=0 && !w.Relations.Allied(transfer.Owner,n.Owner) && w.Campaign.RobotBattles.CanAttackFrom(w,n.Owner,n.Id,transfer.Target)).Select(n=>n.Id).ToArray()));
         if(args.Contains("--trace-logistics"))Console.WriteLine(JsonSerializer.Serialize(new{trace="logistics",step,
             direct=w.Robots.DirectDelivery.Orders.Select(o=>new{o.Source,o.Target,o.RobotId,o.Part,o.Owner,
                 sourceAvailable=w.Campaign.RobotBattles.AvailableFrom(w,o.Owner,o.Source),targetAvailable=w.Campaign.RobotBattles.AvailableFrom(w,o.Owner,o.Target),
@@ -74,7 +79,14 @@ for(int step=1;step<=steps;step++){
                 targetDefense=w.Campaign.RobotBattles.MarchTargets(w,o.Target).Where(t=>w.Nodes.All[t].Owner>=0 && !w.Relations.Allied(o.Owner,w.Nodes.All[t].Owner)).Select(t=>new{target=t,defense=w.Campaign.RobotBattles.DefendingRobots(w,o.Owner,t)})}),
             longDistance=w.Robots.LongDelivery.Orders.Select(o=>new{o.Source,o.Target,o.RobotId,o.Parts})}));
         return false;
-    });w.Campaign.BeginMilitary();w.Campaign.Advance(w,-1,0,automaticAll:true,allPlanned:true,deferResolution:orders=>{
+    });
+    foreach(var transfer in transferSafety){
+        var outgoing=w.Campaign.RobotBattles.MarchTargets(w,transfer.Target).Where(t=>w.Nodes.All[t].Owner>=0 && !w.Relations.Allied(transfer.Owner,w.Nodes.All[t].Owner)).ToArray();
+        var incoming=w.Nodes.All.Where(n=>n.Functional && n.Owner>=0 && !w.Relations.Allied(transfer.Owner,n.Owner) && w.Campaign.RobotBattles.CanAttackFrom(w,n.Owner,n.Id,transfer.Target)).Select(n=>n.Id).ToArray();
+        if(outgoing.Except(transfer.Outgoing).Any() || incoming.Except(transfer.Incoming).Any())throw new Exception("Function transfer opened a new hostile approach.");
+        Console.WriteLine(JsonSerializer.Serialize(new{trace="transfer-safety",step,transfer.Source,transfer.Target,transfer.Owner,addedHostileApproaches=0}));
+    }
+    w.Campaign.BeginMilitary();w.Campaign.Advance(w,-1,0,automaticAll:true,allPlanned:true,deferResolution:orders=>{
         foreach(var instruction in rally){
             int ruler=instruction[0],target=instruction[1];var home=w.Nodes.Current(ruler);
             if(home==null || !w.Relations.CanAct(ruler) || w.Campaign.RobotBattles.LockedNode(home.Id))continue;
