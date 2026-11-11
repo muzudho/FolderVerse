@@ -44,28 +44,15 @@ public sealed partial class CubeNet
     public int HitNode(WorldSetup world,Rectangle panel,Point pointer,IEnumerable<int> candidates=null)
     {
         if(IsAnimating || !panel.Contains(pointer))return -1;
-        var fit=Fit(panel);float radius=MathHelper.Clamp(fit.Scale*.06f,4,10)+4;
-        var point=new Vector2(pointer.X,pointer.Y);
-        var unrotated=UnrotateScreen(pointer,panel).ToVector2();
-        float JunctionSize(Node n)=>JunctionArt.Size(n.IsHarbor?MathHelper.Clamp((radius-4)*1.7f,12,20):radius-4);
-        float HitDistance(Node n){
-            var at=NodePosition(world,n,panel);float d=Vector2.DistanceSquared(at,point);
-            if(n.Functional)return d<=MathF.Pow(n.IsHarbor?Math.Max(radius,22):radius,2)?d:float.PositiveInfinity;
-            var junction=UnrotateScreen(at.ToPoint(),panel).ToVector2();float size=JunctionSize(n);
-            return JunctionArt.Hit(junction,size,unrotated)?Math.Min(Vector2.DistanceSquared(junction,unrotated),Vector2.DistanceSquared(JunctionArt.SymbolCenter(junction,size),unrotated)):float.PositiveInfinity;
-        }
-        int hit=world.Nodes.All.Where(n=>NodeVisible(world,n)).Select(n=>(Id:n.Id,Distance:HitDistance(n)))
-            .Where(n=>float.IsFinite(n.Distance)).OrderBy(n=>n.Distance).ThenBy(n=>n.Id).Select(n=>n.Id).DefaultIfEmpty(-1).First();
-        if(hit<0){
-            var local=UnrotateScreen(pointer,panel);var localPoint=new Vector2(local.X,local.Y);
-            hit=world.Nodes.All.Where(n=>NodeVisible(world,n) && world.Campaign.OwnershipChanged(n)).Where(n=>{
-                var at=UnrotateScreen(NodePosition(world,n,panel).ToPoint(),panel);
-                float r=MathHelper.Clamp(fit.Scale*.06f,4,10);if(n.IsHarbor)r=MathHelper.Clamp(r*1.7f,12,20);if(EmphasizedNode(n.Id) && !world.Campaign.OwnershipChanged(n))r*=2;
-                var center=at.ToVector2();if(!n.Functional){r=JunctionSize(n);center=JunctionArt.SymbolCenter(center,r);}
-                return NodeOwnershipArt.HitTwin(center,r,localPoint);
-            }).OrderBy(n=>Vector2.DistanceSquared(NodePosition(world,n,panel),point)).Select(n=>n.Id).DefaultIfEmpty(-1).First();
-        }
-        return hit>=0 && (candidates==null || candidates.Contains(hit))?hit:-1;
+        var fit=Fit(panel);
+        var point=pointer.ToVector2();
+        int hit=world.Nodes.All.Where(n=>NodeVisible(world,n)).Select(n=>
+        {
+            float radius=MapPuckRadius(n,fit.Scale)+4;
+            float distance=Vector2.DistanceSquared(NodePosition(world,n,panel),point);
+            return (n.Id,Distance:distance<=radius*radius?distance:float.PositiveInfinity);
+        }).Where(n=>float.IsFinite(n.Distance)).OrderBy(n=>n.Distance).ThenBy(n=>n.Id)
+            .Select(n=>n.Id).DefaultIfEmpty(-1).First();        return hit>=0 && (candidates==null || candidates.Contains(hit))?hit:-1;
     }
     public Point MicroPoint(WorldSetup world,int cell,Rectangle panel,Point pointer)
     {
@@ -76,7 +63,7 @@ public sealed partial class CubeNet
         var physical=surface.Normal*normalDistance+face.Right*p.X-face.Up*p.Y;
         return new(Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.U)*10),0,9),Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.V)*10),0,9));
     }
-    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null)
+    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null,bool globeRibbon=false)
     {
         Color SearchTint(Color color,Vector2 at){
             if(!FolderSearchFocus && !AttackTargetSpotlight)return color;
@@ -94,88 +81,49 @@ public sealed partial class CubeNet
             var active=world.ConquerorLocations.Select((c,r)=>(Cell:c,Ruler:r)).Where(p=>p.Cell==cell)
                 .Where(p=>world.Nodes.Current(p.Ruler)?.Center!=world.ConquerorPoints[p.Ruler])
                 .SelectMany(p=>Enumerable.Range(0,4).Select(d=>world.Routes.ForRuler(p.Ruler,d))).Where(r=>r!=null);
+            var ribbons = globeRibbon ? new List<(Vector2 Center, float Length, float Angle, bool Sea)>() : null;
+            var offset=WorldTerrain.Offset(world.WorldSeed);
             foreach(var route in world.Routes.DisplayPaths(cell).Concat(active))
             {
-                var curve=world.Routes.Curve(cell,route);var offset=WorldTerrain.Offset(world.WorldSeed);
+                var curve=world.Routes.Curve(cell,route);
                 for(int i=1;i<curve.Length;i++)
                 {
                     var a=project(curve[i-1]);var b=project(curve[i]);var delta=b-a;
                     float height=WorldTerrain.Elevation((curve[i-1]+curve[i])/2,offset);
+                    if (ribbons != null)
+                    {
+                        if (delta.LengthSquared() > .001f)
+                            ribbons.Add(((a+b)/2, delta.Length()+2, MathF.Atan2(delta.Y,delta.X), height<.52f));
+                        continue;
+                    }
                     var color=height<.52f?new Color(111,228,255):height>=WorldTerrain.MountainHeight?new Color(255,163,70):new Color(255,230,140);
                     ui.Tile((a+b)/2,new Vector2(delta.Length()+1,4),MathF.Atan2(delta.Y,delta.X),SearchTint(new Color(13,36,44),(a+b)/2));
                     ui.Tile((a+b)/2,new Vector2(delta.Length()+1,2),MathF.Atan2(delta.Y,delta.X),SearchTint(color,(a+b)/2));
                 }
+            }
+            if (ribbons != null)
+            {
+                // Draw all sides before the top so adjoining segments form one ribbon.
+                foreach (var r in ribbons)
+                    ui.Tile(r.Center+new Vector2(0,2),new(r.Length,7),r.Angle,
+                        SearchTint(r.Sea ? new Color(39,107,137) : new Color(145,99,33),r.Center));
+                foreach (var r in ribbons)
+                    ui.Tile(r.Center,new(r.Length,6),r.Angle,
+                        SearchTint(r.Sea ? new Color(108,213,245) : new Color(255,216,99),r.Center));
             }
             if(drawNodes)DrawNodeMarkers(ui,world,cell,project,pulse);
         }
     }
     private void DrawNodeMarkers(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse)
     {
-            if(DirectoryOnly)return;
-            DrawLandmarks(ui,world,cell,p=>project(p),pulse);
-            foreach(var post in world.Nodes.InCell(cell).Where(n=>NodeVisible(world,n) && (VisibleOperationNodes==null || VisibleOperationNodes.Contains(n.Id))))
-            {
-                int owner=DisplayedNodeOwner(post);
-                bool changed=NodeOwnerSnapshot==null && world.Campaign.OwnershipChanged(post);
-                Color Tint(Color color)=>NodeTint(post.Id,color);
-                var position=world.Routes.Position(cell,post.Center);var at=project(position);
-                float radius=MathHelper.Clamp(Vector2.Distance(at,project(position+world.Cells[cell].U))*.06f,4,10);
-                if(post.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
-                if(!post.Functional){
-                    float size=JunctionArt.Size(radius);var symbol=JunctionArt.SymbolCenter(at,size);
-                    bool sea=!world.Routes.Land(post.Cell,post.Center);var ink=Tint(new Color(13,36,44));
-                    if(changed)NodeOwnershipArt.Draw(ui,symbol,size,Tint(world.OwnerColor(world.Campaign.PreviousNodeOwners[post.Id])),Tint(world.OwnerColor(owner)),ink,
-                        (p,r,c)=>JunctionArt.Draw(ui,p,r,sea,c,ink));
-                    else JunctionArt.Draw(ui,symbol,size,sea,Tint(world.OwnerColor(owner)),ink);
-                    CountryFlagArt.Marker(ui,world,owner,symbol+new Vector2(size+2,0),22,Tint);
-                    if(SelectedTarget==post.Id || EmphasizedNode(post.Id)){
-                        float extent=size+4;
-                        foreach(int side in new[]{-1,1})ui.Tile(symbol+new Vector2(side*extent,0),new Vector2(2,extent*2),0,Tint(Color.White));
-                    }
-                    continue;
-                }
-                if(EmphasizedNode(post.Id) && !changed)radius*=2; if(MovementTargets.Contains(post.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(post.Id)) && MathF.Sin(pulse*6)>=0)
-                {
-                    Disc(ui,at,radius+7,Tint(new Color(255,219,96)));
-                    Disc(ui,at,radius+5,Tint(new Color(13,36,44)));
-                }
-                if(SelectedTarget==post.Id || EmphasizedNode(post.Id))
-                {
-                    Disc(ui,at,radius*1.5f+3,Tint(Color.White));
-                    Disc(ui,at,radius*1.5f,Tint(new Color(13,36,44)));
-                }
-                if(changed)
-                    NodeOwnershipArt.Draw(ui,at,radius,Tint(world.OwnerColor(world.Campaign.PreviousNodeOwners[post.Id])),Tint(world.OwnerColor(owner)),Tint(new Color(13,36,44)));
-                CountryFlagArt.Marker(ui,world,owner,at+new Vector2(radius+4,-radius),Math.Clamp((int)(radius*3),24,42),Tint);
-                if(changed && !post.IsHarbor)DrawCountryNodePattern(ui,world,owner,at,radius,Tint);
-                if(AttackTargetMarkers && SelectedTarget==post.Id)
-                {
-                    float size=radius*(1.3f+.25f*MathF.Sin(pulse*5));
-                    if(post.IsHarbor)DrawHarbor(ui,at,radius,Tint(world.OwnerColor(owner)),DimNode(post.Id));
-                    var center=post.IsHarbor?at+new Vector2(radius*.8f,-radius*.8f):at;
-                    foreach(float angle in new[]{MathHelper.PiOver4,-MathHelper.PiOver4})
-                    {ui.Tile(center,new Vector2(size*2.5f,7),angle,Tint(new Color(13,36,44)));ui.Tile(center,new Vector2(size*2.5f,3),angle,new Color(255,224,110));}
-                    continue;
-                }
-                if(changed)continue;
-                if(post.IsHarbor && post.Functional)DrawHarbor(ui,at,radius,Tint(world.OwnerColor(owner)),DimNode(post.Id));
-                else
-                {
-                    Disc(ui,at,radius+2,Tint(new Color(13,36,44)));
-                    Disc(ui,at,radius,Tint(world.OwnerColor(owner)));
-                    DrawCountryNodePattern(ui,world,owner,at,radius,Tint);
-                }
-            }
-    }
-    private static void DrawCountryNodePattern(UiPainter ui,WorldSetup world,int owner,Vector2 at,float radius,Func<Color,Color> tint)
-    {
-        if(owner<0 || world.CountryPattern(owner)==0)return;
-        // Clip each stripe/dot to the round ownership badge, including at small zooms.
-        float step=radius/5;
-        for(int y=0;y<10;y++)for(int x=0;x<10;x++){
-            float dx=(x-4.5f)*step,dy=(y-4.5f)*step;
-            if(dx*dx+dy*dy>radius*radius || !WorldSetup.CountryPatternSecondary(world.CountryPattern(owner),x,y))continue;
-            ui.Tile(at+new Vector2(dx,dy),new Vector2(step,step),0,tint(world.CountryMapColor(owner,x,y)));
+        if (DirectoryOnly) return;
+        DrawLandmarks(ui,world,cell,p=>project(p),pulse);
+        foreach (var node in world.Nodes.InCell(cell).Where(n=>NodeVisible(world,n)))
+        {
+            var position=world.Routes.Position(cell,node.Center);
+            var at=project(position);
+            float radius=MapPuckRadius(node,Vector2.Distance(at,project(position+world.Cells[cell].U)));
+            DrawFlatPuck(ui,world,node,at,radius,pulse,color=>NodeTint(node.Id,color));
         }
     }
     private static void DrawHarbor(UiPainter ui,Vector2 at,float radius,Color color,bool dim=false)

@@ -46,6 +46,11 @@ public partial class Game1
                 _demoDomesticAge=0;return true;
             }
         }
+        // The narrated drag may start and end on different six-slot pages.
+        // Unlike a user's page-button click, revealing the scripted target must
+        // keep the held part until DemoAssemblyRelease uses the real input path.
+        int focusSlot=_demoDomesticStage is 4 or 7?_demoSourceSlot:_demoDomesticStage is 5 or 6?_demoEmptySlot:-1;
+        if(focusSlot>=0 && focusSlot<_hangarSlots.Length)_hangarPage=focusSlot/HangarSlotsPerPage;
         Point target=_demoDomesticStage switch
         {
             0=>nodePoint,3=>NodeAssemblyTile.Center,

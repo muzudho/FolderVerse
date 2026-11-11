@@ -17,10 +17,373 @@
 
 格納庫は３列２段６枠表示、容量は既存値を維持。12〜最大60枠にページ等で対応し、選択/ドラッグ/予約ヒットテストを整合させる。戦場との素体共通化・役職・汚損も段階実装。現在ユーザーがインスペクター配置モックアップを依頼中。仮配置を承認済みと扱わず最新指示を確認する。
 
-まだ本体描画の編集は開始していない。まず現行レンダラーと予約/６枠の導線を調査する。CPUタスクとのソース/ビルド競合、個人チャット原本の編集を避ける。コミット/プッシュ/リリースはしない。検証と目視確認まで完了したら報告して実装タスクを削除する。
+本体表示への接続は未実施。国旗合成の基盤を追加済み（下記11月10日23時41分節）。次は明示マスク付き実行素材と６枠の導線を調査する。CPUタスクとのソース/ビルド競合、個人チャット原本の編集を避ける。コミット/プッシュ/リリースはしない。検証と目視確認まで完了したら報告して実装タスクを削除する。
 
 ## インスペクター仮配置（同日追加）
 
 利用者の追加依頼でA左のみ/B右のみ/C左右半分ずつ/D左右＋中央地図の４画像をNAS art-source/robots/inspector-layout-study-v001へ保存し原寸カタログ作成。未承認。Dは２地点と経路を同時に見る配送向け案。生成画像の地形/建物/文字/素材取り違え/ぜんまいを製品仕様として扱わない。B操作バーのはみ出し等は実装時に解消が必要。画像のレイアウト承認を待って確定する。
 
 実装タスクfolderverse ACTIVE、30分間隔。既存CPUタスクもNAS保存先と描画実装との競合回避を公式updateで更新済み。
+
+## 2026年11月10日23時41分・明示マスク合成の基盤
+
+現行Game1.Robots.csは矩形素体とパーツごとのCountryPatternSecondaryで描き、紋章は代表１部位、予約は靴。戦場は別のBattleUniform経路もある。今回これらの既存表示は置換せず、RobotFlagComposite.csにCPU側の２Ｄ合成基盤を追加した。入力は共通素地Color配列と、画素ごとのUV・着色Coverage・Diffuse・Reflection。灰色判定で顔を推測して塗るHTML方式を本実装へ持ち込まず、制作済みマップだけが塗装領域を指定する。元画像とアルファを保持し、無着色部位・反射は国旗から独立する。
+
+国旗は既存CountryFlagArt.Pixel/Containsを使用し、全５要素を共有。三角形外の領域は共通素地を残す。素材別のDiffuse/Reflectionを渡せるが、９素材の実マップ・素材トーン変換・ステッカー専用UVはまだ作成していない。旗形の縦横比を含むUVの配置は実行素材制作時に決める。320組合せ（４旗形×５模様×16紋章値）を全画素で既存国旗に照合。顔保護・完全反射・透明画素・原画不変も成功。テストの初回はSetWorld欠落でActiveCount０となり失敗、検証世界を初期化して再実行し成功。Release警告０/エラー０。固定採用DLL C9ED5F123D7B4B0C319039F2A00BD696B824727CB3B98AF6AA06CCF1078C9D64を参照した隔離テストで、本体ビルドや実ゲーム実行はしていない。
+
+テストソース tests/RobotFlagComposite、出力 NAS tmp/delete-after-2026-11-14/robot-art-implementation/composite-foundation/。実画像の目視・GPUテクスチャ接続・キャッシュ・６枠ページ/選択/ドラッグ・全素材/兵隊/隊長/クイーン/汚損/ぜんまいは未対応。比較表切り出しを完成素材とせず、次はPP頭の共通素地と明示マスク/UV/反射を用意し、この合成基盤で実画像２国比較を検証する。未決定の能力/コスト/ぜんまい色・仮レイアウトは確定しない。公開物/実ゲーム/セーブ/CPU判断未変更、コミット/プッシュ/リリースなし。タスク継続。
+## 2026年11月11日０時11分・PP頭専用の明示サーフェスマップ
+
+承認済み試作のpp-head-neutral.pngを目視確認（1280角、クリームの顔が左寄り、右面に光沢）。RobotHeadSurface.Polypropyleneに、この１枚専用の正規化した丸角矩形による顔/縁の保護領域、曲面UV、素地の明暗から得るDiffuse/Reflectionを追加。マスクは灰色/肌色判定ではなく幾何形状で顔を守る。顔が灰色でも保護される点をテストした。他の頭や９素材へ同じマップを流用しない。原画を編集/上書きしていない。
+
+RobotFlagCompositeは36×24の国旗を１合成につき一度だけラスタライズし、大きな画像の画素ごとの紋章検索を除去。国旗320組合せの既存全画素照合と顔/反射/透明度/原画不変は引き続き成功。新しいPP頭マップについて顔内部４座標のCoverage０、右面Coverage255、白い反射/透明部分の保護を追加して成功。Release警告０/エラー０、固定DLL参照の隔離テストのみ。
+
+NAS tmp/delete-after-2026-11-15/robot-art-implementation/pp-head-map/ にbin/obj/results。次は実PNGを読み込みこのマップで合成した画像を出力し目視確認する。現状の旗全体UVだけでは主紋章が顔保護領域に重なるため、承認済みの右下ステッカー用UV/白い輪郭を別レイヤーで追加する必要がある。旗の縦横比も含めて確認してからゲーム描画へ接続する。GPUキャッシュと素材別トーン/６枠/役職/汚損/ぜんまいは未対応。まだ実画像の合成結果やゲーム表示を確認したとは扱わない。CPU/実ゲーム/元セーブ/公開物は未変更、コミット等なし。
+## 2026年11月11日０時41分・PP頭の実PNG合成とステッカーを目視確認
+
+RobotFlagComposite.Stickerにゲーム共通CountryEmblemArtの32角タイルを渡す独立合成を追加。ベージュ台座なし、１タイル幅の白い縁、右下の矩形内に猫/ハートを表示。透明画素と輪郭アルファを維持する。テストでは固定DLLのinternal Tilesをreflectionで取得したが、本体接続時は同じアセンブリ内から直接渡す。テスト用PNG入出力Render.ps1を追加し、NAS承認原画1280角をRGBAへ読み出し、実際のC#合成結果２国をPNGに保存した。Windows依存のPNG codecライブラリ参照２件不足を補って実行成功。
+
+初回画像の目視で旗全体の低解像度枠/巨大紋章が頭表面へ重複し、縞も階段状になることを発見。fieldOnly指定を追加し、頭は共有CountryStripeSecondary/CountryMapColorによる地模様、紋章は独立ステッカーに分離した。既存の旗全体の合成はデフォルトで維持。再出力した斜め縞＋猫、市松＋ハートの両PNGを目視し、顔の表情/クリーム色、光沢、右下ステッカー、滑らかな斜め縞を確認した。元画像の無着色マスク内と全画素アルファを完全一致assert。320組合せの旗全体照合/幾何マップ試験も成功。Release警告０/エラー０。
+
+出力NAS tmp/delete-after-2026-11-15/robot-art-implementation/pp-head-render/render/head-0.pngとhead-1.png、RGBA/neutral、bin/obj。ローカル画像キャッシュ不要。見た目の最終ゲームサイズ確認、ステッカーの曲面変形/アンチエイリアス、４旗形の実画像比較、GPUキャッシュ、全素材/役職/汚損/予約/６枠操作は未対応。今回の実画像２国確認を全素材対応済みと扱わない。次はゲーム側で必要なPP素地をContentへ登録し、同一国旗のキャッシュと解放を備えた描画へ接続する（元画像NAS原本は保持）。能力/コストの素材対応は未決定のまま。実ゲーム/元保存/公開物/CPU判断未変更、コミット等なし。タスク継続。
+## 2026年11月11日１時11分・Content登録とGPUキャッシュを検証
+
+ゲーム用素地Content/Images/Robots/pp-head-neutral-v001.pngをNAS承認原画から照合コピーし、csprojの出力コピー対象へ登録。NAS原画/ローカル制作原画は削除しない。RobotHeadTextureは256角へ読み取り縮小した素地/マップから国旗頭を生成し、５要素の値でGPUテクスチャをキャッシュ。16件上限でFIFO解放、Disposeの全解放/二重呼出/破棄後拒否を実装。通常SpriteBatch AlphaBlendに合わせてアップロード前にpremultiplyする。顔/ステッカーのC#共通処理を利用し、国旗変更で顔の原画を作り替えない。
+
+tests/RobotHeadGpuはGame1を起動せず、セーブ/自動保存/ゲーム状態を持たない小さなMonoGame.Gameだけで検証。同じ国旗の参照一致、色/模様変更時の別テクスチャ、24デザインで16件上限と古い画像のIsDisposed、全解放/再破棄/破棄後アクセス例外をassertし成功。640×360に300角２国頭を描画しpreview.pngを目視確認、顔/猫/ハート/模様/光沢/背景との輪郭を確認。最初はSDL2不足で起動失敗したため既存v0.7.0検証用SDL2.dllをNAS検証binへコピーして再実行成功。Release警告０/エラー０。
+
+NAS tmp/delete-after-2026-11-15/robot-art-implementation/pp-head-gpu/ にbin/obj/preview.png。実行素材１枚だけプロジェクトへ、再生成出力はNASへ保存。通常Game1からの呼出は未接続で、格納庫/戦場が新アートへ切り替わったとは扱わない。次はロード/UnloadContentへ所有関係を接続し、部分パーツ表示と元の操作当たり判定を整合させる。９素材の能力マッピング、未承認仮配置やぜんまい色を決めない。全素材の実行素材と全身/役職/汚損/６枠ページは未対応。元保存/実ゲーム/公開版/CPU判断未変更、コミット等なし。タスク継続。
+## 2026年11月11日１時42分・通常パーツ描画へPP頭を段階接続
+
+Game1.RobotHeadArt.csを追加し、DrawRobotGlyphから幅48以上・一般兵・分離型・正規・未汚損の頭だけを新PP頭へ接続。頭の旧矩形/旧外周線/頭のみ時の重複紋章をスキップし、既存の部位別opacityを反映。頭の下にある胴/脚、既存操作判定は変更していない。小アイコン/隊長/一体型/安物/高級/汚損は素材未対応のため既存描画を維持。これは９素材や戦場全体の切替完了ではない。実行素地が無ければ旧表示へフォールバック。初回の必要時にロードし、UnloadContentで所有キャッシュを解放。
+
+キャッシュを調査し、SpriteBatchの遅延描画中に追い出し画像を即Disposeする危険を修正。追い出しは退避し、次フレームDraw冒頭で前フレーム分を解放、Unloadでも解放。GPU試験を１フレーム24国旗の実Drawへ拡張し、追い出し後もEnd前に生存/End後に解放をassert。既存の再利用/国旗変更/上限/全解放も成功。
+
+全体ReleaseビルドをNASへ隔離して実行。最初はBaseIntermediateOutputPath変更でローカルobjの古いAssemblyInfoが通常ソースに混ざり重複属性エラー。csprojのDefaultItemExcludesへbin/**とobj/**を明示し再実行、警告０/エラー０。FontCoverage 988文字PASS。出力NAS tmp/delete-after-2026-11-15/robot-art-implementation/game-head-integration/bin/とbuild.log。BuildContent=falseで既存Contentキャッシュを利用する検証ビルドであり公開物ではない。専用GPU試験の出力はpp-head-gpu配下。通常Game1画面のスクリーンショット/頭当たり判定の目視回帰はまだ未実施なので次回優先する。実ゲーム/元セーブは起動・変更していない。
+
+次は隔離したGame1描画試験で通常/頭のみ/混在部位/薄表示を確認し、３列２段へのページと選択/ドラッグの整合を進める。承認済みモック配置とは混同しない。全素材/役職/汚損/予約ぜんまいは未対応。CPUソース/ルール/公開版/個人原本未変更、コミット等なし。タスク継続。
+## 2026年11月11日２時12分・実Game1のパーツ描画を隔離目視
+
+tests/RobotGlyphIntegrationを追加し、NASの新本体DLL FCFEBC567345CBD44B850F9DF0C944BB85AC3974B12752B7F955C9387051CF53を参照。Game1派生だがLoadContentのbase呼出を省き、Updateも空として自動保存/達成状況/音楽/ゲーム進行を読み書きしない。必要なSpriteBatch/白画素/UiPainter/人工WorldSetupだけ注入して、実際のDrawRobotGlyphを呼ぶ。Game1コンストラクタの操作ログはNASの検証実行先配下へ作成され、利用者ログと混ざらない。
+
+完成体・頭のみ・異国所属頭の半透明・汚損頭・安物頭・隊長の６例を960×540に描き、画像を目視。通常/頭のみには新頭が入り、半透明も反映。未対応の汚損/安物/隊長は旧表示を維持した。新頭と旧矩形の胴脚が混在しており、全身のアート統一は未完了である点も確認。頭が大きく表示できる６枠と胴/脚の素地を続ける必要あり。単純な矩形中心Contains試験は操作回帰の根拠にならないので削除し、実際のクリック/ドラッグ回帰が済んだとは報告しない。
+
+Release再実行は警告０/エラー０、Game1共通描画経路とキャッシュ生成assert成功。NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/ にbin/obj/preview.png/Logs。元保存/実ゲーム/公開物へ触れず。今回製品ソースの追加変更なし。次は既存半画面インスペクター内の格納庫を６枠ページへ変更し、実スロット番号・表示番号・選択/ドラッグを分離してテストする。未承認４配置案の採用とは分ける。全素材/全身/役職/汚損/ぜんまいは未対応。コミット等なし、タスク継続。
+## 2026年11月11日２時44分・通常格納庫を３列２段の６枠ページへ
+
+通常インスペクターのHangarCellを３列２段（252×260、横264/縦270間隔）へ変更し、ロボット表示を68×102から100×180、部位対象を102×62へ拡大。格納庫容量/ロボットIDは変更しない。表示・予約クリック・部位ドラッグ開始・ドロップ・帰国予約の対象をVisibleHangarSlotsへ共通化。ページ枚数は格納庫専用HangarPageCount（６枠）に分離し、直送便の既存12枠ページは今回維持。ページ変更時はドラッグを取消して、前ページの座標を別IDへ誤適用しない。文字/入荷ラベルを拡大枠の下側へ移動した。４つの仮配置案を採用する変更ではない。
+
+本体Releaseビルド警告０/エラー０。隔離Game1試験へ実VisibleHangarSlots/HangarCellの検証を追加し、容量1/6/7/12/59/60の全物理IDがちょうど１回ずつ表示されること、１ページ最大６、可視セルの非重複/インスペクター内収容をassert成功。既存パーツ６例の描画も再実行成功。出力NAS game-head-integration/build-six.logとglyph-integration/preview-six-check.png（画像はパーツ検証の再走で、格納庫全体の目視確認ではない）。
+
+未確認：拡大した格納庫全体の文字/荷札/予約表示の目視、実クリック・ドラッグ操作、ページ越しドラッグの取消、チュートリアル/デモの自動指差しで対象ページへ移る処理。次回はこの回帰を優先。直送便/長距離便の左右格納庫はまだ12枠なので、６枠へ揃える作業も残る。実ゲーム/元セーブ/CPU判断/ルール/公開物未変更。コミット等なし、タスク継続。
+## 2026年11月11日３時14分・実ページボタンとデモ追従
+
+Game1.DemoDomesticの自動指差し前に、stage4/7は元スロット、5/6は先スロットの６枠ページを表示する処理を追加。通常ユーザーのページボタンはドラッグ取消、デモの自動追従は保持したまま本来のDemoAssemblyReleaseへ渡す区別。ページをまたぐ組立例でも見えていない別スロットを指さないようにした。ただし実デモ全行程の再生回帰は未実施。
+
+隔離RobotGlyphIntegrationを人工配置世界と操作プレイヤーで初期化し、実HangarPageClickへ矢印座標を渡して０→１→上限１→０と、保持ドラッグの取消をassert成功。容量12への設定は内部SetCapacityをreflectionで呼ぶテストのみ。初回の直接呼出はinternalのためコンパイル失敗、修正後は操作プレイヤー未設定のCurrent(-1)で失敗、SelectTurnRuler(0)を補って再実行成功。元セーブは使わない。最終Release警告０/エラー０、既存６枠ID網羅/描画試験も成功。本体ビルドも警告０/エラー０。
+
+NAS game-head-integration/build-input.log、glyph-integration/preview-input.png/bin/objに保存。今回の入力回帰はページ矢印であり、ロボット本体を押して別枠へ落とす一連の部位移動の回帰ではない。次回は２ページ目の物理スロット６/７へ異なるIDを置き、実NodeAssemblyLocalInputのpress/releaseで組替予約対象が正しいかを検証する。格納庫全体のフォント/荷札目視、配送画面６枠化、全素材/全身は引き続き未対応。実ゲーム/元保存/公開物/CPU判断/ルール未変更、コミット等なし。タスク継続。
+## 2026年11月11日３時44分・２ページ目の部位ドラッグ予約IDを確認
+
+AGENTS/再開点/差分を確認し、通常ゲームとセーブには触らず隔離RobotGlyphIntegrationへ実入力回帰を追加。人工世界の自国格納庫容量12に頭100001/胴100002を配置、表示スロット配列は物理６/７へ割り当て。HumanPlayersと操作プレイヤーを明示し、実NodeAssemblyLocalInputへMouseState.Pressedと頭の対象座標を渡す。_hangarDrag=100001/_hangarSource=６をassert。その後スロット７へReleasedを渡し、実PartPlanning.OrdersのRobotId=100001/TargetRobotId=100002/Parts=Head、ドラッグ終了をassert成功。
+
+初回はテスト内のslots変数名競合でコンパイル失敗しmappingへ改名して修正。最終Release警告０/エラー０、既存ページID網羅/矢印入力/描画６例も成功。今回は製品コードの追加変更なし。NAS glyph-integration/preview-drag.png/bin/objに出力（画像は既存パーツ比較で、格納庫全体の見た目を検証した画像ではない）。
+
+残課題：格納庫全体の文字/荷札/予約ラベルをフォント付きで目視、予約クリック（守備/帰国）とページ最後の端数枠、配送２地点画面の６枠化。デモのページ追従はコード追加済みで全行程実再生は未確認。９素材の全身/役職/汚損/ぜんまい実素材も未対応。実ゲーム/元保存/公開物/CPU判断/ルール未変更、コミット等なし。タスク継続。
+## 2026年11月11日４時14分・６枠全体を実フォントで目視、守備予約IDも確認
+
+隔離RobotGlyphIntegrationへ実UiFont.xnbを読み込み、人工世界に完成体６体を配置。実NodeAssemblyLocalInputの２番目のセルクリックで守備予約を入れ、PartPlanning.Preview内のID200002だけDefenseOnlyになることをassert。他個体には付かない。初回は実在庫へ即反映すると誤認して試験失敗、予約は予定プレビューへ反映する既存仕様を確認して試験を修正した。製品動作の変更は不要だった。
+
+そのまま実DrawNodeAssemblyを1920基準の0.5倍（960×540）で描画しNAS inspector-six.pngを目視。３列２段６枠、拡大したロボット、基本部位ラベル/ID、２番目の予約演出、ページ矢印、下部予約ボタンが枠内に収まることを確認。入荷/出荷荷札はこの人工場面に無いため、荷札の重複がないとは未検証。小画面で文字は細かく、通常解像度/拡大画面との見比べも残す。旧胴脚と新頭の混在は継続。
+
+最終Release警告０/エラー０、全ページ列挙/矢印入力/２ページ目ドラッグ/守備予約の既存試験もPASS。NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/inspector-six.png/bin/obj、フォントも検証Contentへコピー。ユーザーのセーブ/ゲームは起動せず人工世界のみ。今回製品ソース変更なし。次は帰国予約と端数ページのクリック、荷札のある場面、直送/長距離便の６枠化。全素材/全身/帽子/汚損/ぜんまい実装は未完了。CPU/公開物/ルール/個人原本未変更、コミット等なし。タスク継続。
+## 2026年11月11日４時44分・帰国モードと端数ページの実入力回帰
+
+AGENTS/再開点/差分を確認。隔離人工世界の格納庫容量を７へ変更し、外国の完成体ID300001（Owner1）を物理スロット６だけへ配置。実NodeAssemblyLocalInputで帰国予約モードのまま次ページ矢印を押し、page１/帰国モード維持をassert。１体だけ表示する最終ページでID300001をクリックしReturnHomeCommander=0を確認。存在しないスロット７相当の位置をクリックしても予約状態が変わらず、元のスロット６を再クリックすると解除されることをassert成功。帰国先の国が存在する人工世界のみで、元保存を使わない。
+
+最終Release警告０/エラー０、ID網羅/ページ矢印/部位ドラッグ/守備予約/帰国端数の全試験成功。製品コードの追加修正は不要だった。NAS glyph-integration/bin/obj/inspector-return-test.png（画像は先に描画した通常６枠で、帰国端数ページのスクリーンショットではない）。今回の回帰は入力と状態変化を確認したもの。次は荷札のある格納庫表示、直送/長距離便の左右を６枠へ統一する作業を進める。全素材/全身/帽子/汚損/ぜんまいはまだ未完了。実ゲーム/元セーブ/公開物/CPU判断/ルール/個人原本未変更、コミット等なし。タスク継続。
+## 2026年11月11日５時14分・直送/長距離便の左右も６枠ページへ
+
+AGENTS/再開点/差分を確認。Game1.DirectDelivery/LongDeliveryの表示・部位選択・ドラッグ/ドロップ先走査をVisibleHangarSlotsへ揃え、DirectCellの繰返し周期を12→６へ変更。既存３列４段の上２段だけを１ページとし、容量は維持。左右の枚数/クランプもHangarPageCountへ変更。ページを押したら_directDragを取消し、別ページの同座標へ誤配送しない。今回ロボットの大きさ/セル寸法は従来のままであり、通常格納庫と同じ拡大まで済んだとは扱わない。
+
+本体Release警告０/エラー０。隔離Game1テストへ実DirectPageClickを追加し、右だけ０→１/上限１、左だけ０→１で他側のページが変わらないことを容量７でassert成功。既存の全容量ID網羅/通常格納庫矢印/２ページ目部位組替/守備/帰国端数も再走PASS。出力NAS game-head-integration/build-delivery-six.log、glyph-integration/bin/obj/inspector-delivery-page-test.png（画像は通常格納庫で配送画面の目視ではない）。
+
+次は実DirectPairInput/LongDeliveryInputの２ページ目ドロップで予約のTargetSlot/RobotIdと荷札表示を確認し、配送画面の素材拡大と荷札配置を調整する。左右パネルが通常格納庫より狭い現行配置なので、横にはみ出さない寸法を確認する。未承認モック配置を自動採用しない。全素材/全身/役職/汚損/ぜんまいは未完了。元セーブ/実ゲーム/CPU判断/ルール/公開物/個人原本未変更、コミット等なし。タスク継続。
+## 2026年11月11日５時46分・長距離便専用ページに残った12枠計算を修正
+
+AGENTS/再開点/差分を確認。前回は共有DirectPageClickの検証までで、LongDeliveryInput内の専用LongPageButtonには12枠の除算が残っていた。容量７〜12では表示が６枠になっても次ページへ進めない実装漏れだった。専用LongPageClickを切り出し、ページ上限/表示ページ数/SyncLongSlotsのクランプをHangarSlotsPerPageで統一。専用ページ変更でも保持ドラッグを取消す。
+
+隔離試験へ実SyncLongSlotsとLongPageClickを追加し、容量７の右側０→１/上限１、左側不変をassert成功。既存の通常格納庫/直送便ページ、ドラッグ、守備/帰国端数の全試験も成功。本体とテストのRelease警告０/エラー０。NAS game-head-integration/build-long-page.log、glyph-integration/bin/obj/inspector-long-page-test.png。画像は通常格納庫の再走で、長距離便全体の目視ではない。
+
+前回の「長距離便も６枠ページへ統一」は専用入力の網羅が不十分だった点をこの節で訂正。今回配送ドロップID/荷札の試験へ入る前にページ到達不具合を修正した。次回は実LongDeliveryInputで左スロット６から右スロット６へpress/releaseし、RobotId/TargetSlot/Receiverを確認。その後、実配送画面の荷札と拡大配置を目視する。全素材/全身/役職/汚損/ぜんまいは未完了。実ゲーム/元保存/公開物/CPU判断/ルール未変更、コミット等なし。タスク継続。
+## 2026年11月11日６時16分・長距離便の２ページ目ドロップ予約を確認
+
+AGENTS/再開点/差分を確認。人工世界の隣接する２地点を自国所有/容量７にし、左の物理６へ頭400001、右の物理６へ胴400002を置いた。実LongPairInput（記録の旧呼称LongDeliveryInputに相当）へPressed/Releasedを渡し、左ページ２で保持ドラッグが始まり、右ページ２へ落とすとLongDelivery.OrdersにRobotId400001/Receiver400002/TargetSlot６/正しいSource・Targetが入ることをassert成功。画面座標の繰返しによる枠０への誤記録は無かった。
+
+最終Release警告０/エラー０。通常組替/守備/帰国/共有ページ/長距離専用ページを含む既存操作試験も再走PASS。今回製品ソース追加変更なし。NAS glyph-integration/bin/obj/inspector-long-drag-test.png（画像は先に描いた通常格納庫で、配送場面ではない）。次は実DrawLongPanel/直送ペアを荷札付きで描き、配送側の拡大と荷札配置を調整する。長距離予約取消のクリックも追加するとよい。全素材/全身/役職/汚損/ぜんまいは未対応。実ゲーム/元保存/公開物/CPU判断/ルール/個人原本未変更、コミット等なし。タスク継続。
+## 2026年11月11日６時46分・荷札付き配送パネルを目視し素材を拡大
+
+AGENTS/再開点/差分を確認。隔離テストで実DrawLongPaneの左右を、前回の頭400001→胴400002予約付きで描画。入荷/出荷荷札と透けた到着予定頭を目視した。旧164×156セルには縦余白がある一方ロボットは小さかったため、共通DirectCellを164×280/縦290間隔の３列２段へ変更。直送/長距離便のロボットを68×102→90×180、部位ヒット領域を90×58/縦60間隔へ拡大。荷札は右側（セル内）へ置き、入荷と出荷の両方がある部位では出荷札を26px下へずらす。旧左側への札は隣セルへ出るため使わない。ID/予約ラベルもセル下へ移動した。左右パネルの位置/幅は未承認モックへ変更していない。
+
+本体と隔離試験のRelease警告０/エラー０。拡大後の座標で実ページ２ドラッグが引き続き正しい元/先/TargetSlotを予約し、既存通常格納庫/予約/ページ試験もPASS。更新したNAS glyph-integration/long-panes-tags.pngを目視し、荷札がロボット右側に収まり、到着予定と入荷札が表示されることを確認。描画例は容量７の最終１枠であり、６体が並ぶ場面/入出荷両札/直送全体の目視はまだ残る。build-delivery-size.logはNAS game-head-integration配下。
+
+次は６体/両荷札を並べる場面と予約取消、直送の実入力を確認する。その後、未対応の胴/脚素地を制作して全身のアート統一へ戻る。全素材/役職/汚損/ぜんまいは未完了。元セーブ/実ゲーム/公開物/CPU判断/ルール/個人原本未変更、コミット等なし。タスク継続。
+## 2026年11月11日７時16分・左右６体と両荷札の確認
+
+隔離試験で左右各６体を２ページ目に配置し、左の頭に入荷予定と出荷予定を同時に表示した。960×540の実パネルを目視し、２枚の荷札が上下に並び、隣のセルと重ならないことを確認。実クリックで出荷予約だけが解除され、逆向きの入荷予約は残ることを確認した。Releaseビルドは警告０・エラー０、既存操作回帰も通過。
+
+NASの tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/long-panes-tags.png に確認画像を保存。次は直送の実入力と、胴・脚の実行素材を進める。
+
+## 2026年11月11日７時48分・直送便の２ページ目操作を確認
+
+人工世界の左右２ページ目で、直送便の実入力処理に頭400001の押下と胴400002へのドロップを渡した。組替予定の元と先の地点、両個体ID、頭部の指定が一致した。隔離Releaseは警告０・エラー０で、通常格納庫と長距離便の既存回帰も通過。NASの glyph-integration/inspector-direct-test.png は試験中に描いた通常格納庫。直送画面の目視と胴・脚の実行素材は次の作業に残る。
+
+## 2026年11月11日８時18分・ポリプロピレンの胴と脚の原画
+
+既存の共通頭を参照して中立色の胴と脚を個別に生成。両方1536×1024で角と余白のサンプルはアルファ０。原画はNASの art-source/robots/pp-parts-v001/torso.png と legs.png に保存。外周の半透明のにじみ、頭との接合、実サイズでの比率を確認してから実行素材を登録する。国旗マスクと描画接続も次の作業に残る。
+
+## 2026年11月11日８時48分・胴と脚の透過分布
+
+NAS原画を４画素間隔で計測。アルファ240以上の範囲は胴が (144,136)〜(1376,920)、脚が (268,144)〜(1220,928)。非ゼロのサンプルのうちアルファ１〜31は胴728点、脚899点。胴と脚で横方向の余白が異なるため、頭と同じ正方形への伸縮を使うと接合時の比率が変わる。次の試作では素材ごとに縦横比を保ち、実サイズで輪郭と接合を確認する。
+
+計測結果はNASの tmp/delete-after-2026-11-15/robot-art-implementation/pp-parts-alpha/alpha.json。実サイズでの目視、国旗マスク、描画への組み込みは残っている。
+
+## 2026年11月11日９時18分・頭・胴・脚の接合見本
+
+中立色の原画を縦横比を保って合成し、幅84pxと42pxの全身を濃色背景で目視。首元と腰で隙間なくつながり、小さい方でも顔と脚を識別できた。確認画像はNASの pp-parts-alpha/assembly-preview.png。元画像の描画範囲は頭 (76,190,1076,880)、胴 (136,128,1248,800)、脚 (260,136,968,800)。幅84pxの見本では頭72px、胴84px、脚58px。これらは描画試作の寸法で、次は国旗の着色範囲と紋章の位置を合わせて確認する。
+
+### 2026-11-11 09:48 JST
+PPの胴・脚向けに、素地の透明部を保護しながら指定矩形から国旗のUVを求める処理を追加した。頭と同じGPU合成でパーツごとに紋章の位置を指定できる。国旗320組と、胴・脚向けマップの透明部・反射・UV境界の回帰が通過した。GPUテストプロジェクトはビルド成功。次はNASの中立胴・脚で実画像の合成を目視し、格納庫描画へ接続する。
+
+## 2026年11月11日10時18分・PP胴と脚の実画像GPU合成
+
+前回追加した胴・脚のマップをRobotHeadGpuの実画像試験へ接続。原画の縦横比3:2で描画し、胴の胸と脚の片足へ共通国旗の紋章を配置。ピンク/青の斜め縞と緑/青の格子の２種類を目視し、光沢、腕、脚の隙間、輪郭の透明が維持されることを確認。描画は仮の矩形UVであり立体面ごとのUV調整と全身での紋章サイズ確認は残る。ゲーム本体への胴脚の接続は次回。
+
+GPU試験はRelease警告０・エラー０、胴/脚の両方でキャッシュ再利用、色変更、遅延描画中の資源保持、フレーム後の破棄をPASS。出力はNAS tmp/delete-after-2026-11-15/robot-art-implementation/pp-head-gpu/torso-preview.png と legs-preview.png。比較表の切り貼りは使わず中立原画を実行時に着色した。テストのログ文言は既存のhead表記を含むが、実行引数torso/legsで別々の原画とマップを使用。全素材・汚損・役職・ぜんまいは未完了。次は全身の実行時合成と通常格納庫への接続。
+
+## 2026年11月11日10時48分・PP全身を格納庫へ接続
+
+NASの中立胴・脚をContent/Images/Robotsのpp-torso-neutral-v001.pngとpp-legs-neutral-v001.pngに登録し、元画像とのSHA-256一致を確認。通常品質・無傷・分割式の完成一般兵で、各部位の製造国を使って頭・胴・脚を動的合成する。首と腰の描画順は前回の接合見本に合わせ、格納庫のセル内で縦横比を維持した。部位別の半透明表示も同じ経路に渡す。
+
+本体とRobotGlyphIntegrationの隔離Releaseビルドは警告０・エラー０。６枠のページ、選択、ドラッグ、守備、帰国、直送、長距離便の既存回帰を通過。960×540の通常格納庫で全身６体を目視し、頭・胸・足の紋章、首と腰の接合、セル内の収まりを確認した。画像はNASのtmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/inspector-pp-full.png。
+
+次は単体や混成機の胴・脚にも個別のアートを適用し、完成機の部位境界とドラッグの見た目を確認する。戦場、他素材、汚損、役職、ぜんまいは引き続き作業対象。
+
+## 2026年11月11日11時18分・単体と混成機のPP胴脚
+
+通常品質・無傷の胴と脚を部位単位で判定し、単体と混成機でも製造国の紋章・配色を合成する。単体は各部位の従来の表示帯へ元画像の縦横比を保って収めた。３部位に素材が揃う場合は前回の接合配置を使う。
+
+隔離Releaseビルドは警告０・エラー０。単体が完成機より先に描画されても素材が読み込まれること、６枠の選択・ドラッグ・配送回帰を確認。NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/pp-part-samples.png で単体、異なる製造国、旧表示の頭とPP胴脚の組み合わせを目視した。混成機には従来の灰色の腰接合が見えるため、接合とドラッグ時の見た目を次に調整する。戦場、他素材、汚損、役職、ぜんまいは引き続き作業対象。
+
+## 2026年11月11日11時48分・腰の接合と脚ドラッグ
+
+PP脚は素材自体に腰の横帯があるため、混成機でその上に重なっていた旧表示の灰色横帯を省いた。胴と脚をつなぐ中央の支柱は維持した。隔離ビルドは警告０・エラー０。通常格納庫２ページ目で脚100003を押して胴100002へドロップし、脚の組立予約とドラッグ終了を確認。960×540でドラッグ中の足とドロップ先の枠、混成機の腰を目視した。既存の６枠・配送回帰も通過。
+
+NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/ の inspector-pp-leg-drag.png と pp-part-samples.png に確認画像。次は戦場の描画入口と向き、役職別の重ね描き位置を確認してPP素体の共用を進める。他素材、汚損、帽子、小銃、予約ぜんまいは作業対象。
+
+## 2026年11月11日12時18分・戦闘導入で共通素体を使用
+
+戦場の実描画を確認。導入時の部品表示は62×85、通常戦闘は向き別BattlePieceArtへフェードする構成。導入の３回の部位描画をRobotを直接渡す共通DrawRobotGlyph１回へ変更した。製造国、一体型情報、品質を渡し、PP完成兵は格納庫と同じ接合配置を使う。各部位のフェードは既存BattlePartOpacityを渡す。
+
+Release本体と隔離試験は警告０・エラー０。製造国が違う頭を持つ62×85の完成兵で、導入０秒と２秒を描画し、頭だけが消え自国の胴脚が残る画素検証と目視を通過。６枠と配送の回帰も成功。確認画像はNAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/pp-battle-intro.png。実戦全体の再生・向き別の新兵隊アートは次の作業。通常戦闘のBattlePieceArtと帽子・小銃の実行素材を合わせて調査する。
+
+## 2026年11月11日12時48分・通常戦闘の混成部品の配色
+
+通常戦闘では部品の主色だけ製造国から取得し、模様と副色には所属軍を使っていた。部品の製造国を一度求め、主色・副色・模様すべてに使用するよう修正。従来の向き別BattlePieceArtに対する変更で、通常戦闘の新しい素体や装備は作業中。隔離Release警告０・エラー０。異なる製造国の頭の塗り画素がその国の２色だけになることを検証し、戦闘導入・格納庫・配送の既存回帰も成功。次は帽子・小銃の素材制作と通常戦闘の向き別描画を進める。
+
+## 2026年11月11日13時18分・予約ぜんまい
+
+格納庫などが共用するロボット描画で、予約靴の代わりに頭右側へ金属色のぜんまいを表示する。守備・迎撃・工場作業・出撃の既存表示判定と、頭を持つ廃棄予約を使用。用途別の着色は未決定なので共通の金属色とした。予約受付と演出の進行は既存状態から取得する。戦闘中・地図上・輸送計画の靴表示には今後の接続が必要。
+
+本体と隔離試験のRelease警告０・エラー０。無予約と守備予約の同じPP素体を並べ、ぜんまいの画素が守備予約にだけ出ることを確認。顔と側面紋章の位置も目視。格納庫６枠・脚ドラッグ・配送の既存回帰成功。NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/pp-windup-comparison.png に比較画像。次は残る靴の描画入口と、輸送予約の表示条件を照合する。
+
+## 2026年11月11日13時48分・地図と戦闘と輸送の予約表示
+
+地図の守備予約、戦闘中の守備表示、輸送計画の受付演出を共通の金属色ぜんまいに切り替えた。格納庫などの共通描画でも、長距離便の予約番号を持つ頭付き機体にぜんまいを表示する。直送の予約は既存荷札で表示しており、ぜんまいとの併用は未検証。
+
+隔離Releaseは警告０・エラー０。無予約・守備予約・長距離便予約を並べて画素と目視で確認し、６枠と配送操作の既存回帰が通過。NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/pp-windup-comparison.png に比較画像。地図・戦闘・輸送受付の実画面での重なりは未確認。次は戦闘用の帽子と小銃の素材を進める。
+
+## 2026年11月11日14時18分・クイーンの正面素材
+
+採用済みqueen-study-v002の一体型磁器玩具を参照し、imagegenで背景と床影を除いた透過正面素材を制作。NAS art-source/robots/queen-runtime-v001/queen-front.png とゲーム用Content/Images/Robots/queen-front-v001.png のSHA-256はAFE384FD134EB319A19B5599C8D79DD5C90ED65F8D97411575DE77538B8DB6AE。戦闘の南向きに接続。北・東・西は従来の向き別駒を使う。原画の猫紋章と装飾色は現段階で固定。製造国の旗を反映する部分は後続作業。
+
+隔離Release警告０・エラー０。62×85の戦闘枠で人物画素と透過の角を検証し、王冠・顔・笏を目視した。北向きの既存表示への分岐と既存格納庫・配送の回帰も通過。画像はNAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/queen-battle-front.png。次は横・背面と、ゲーム中に向きが変わる場面を確認する。
+
+## 2026年11月11日14時48分・クイーンの４方向
+
+採用済み正面を基に透過の右側面と背面を制作。NAS art-source/robots/queen-runtime-v001/queen-side.png と queen-back.png を Content/Images/Robots/queen-side-v001.png と queen-back-v001.png に登録。SHA-256は側面6D2B6D4DE66328D7F0A76E4D80CE41B81418E5084755A7AFC0340239DFB163F5、背面E53F626B8E1AD59DA3C6042089B87CA182F682A39208A65CE2E07990BDD7A482。北は背面、南は正面、東は右側面、西は右側面の反転。反転時は笏も反転する。各素材は初回使用時に読み込んで再利用する。
+
+本体・隔離試験Release警告０・エラー０。62×85枠の４方向で人形画素と透過角を確認し、顔の向きと王冠・裾を目視。既存の格納庫・配送回帰も通過。NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/queen-battle-directions.png に確認画像。実戦中の向き変更の通し再生とクイーンの旗反映は未確認。次は戦場の所属表示と一般兵・隊長の帽子・小銃を進める。
+
+## 2026年11月11日15時18分・クイーンの所属旗
+
+クイーンの戦闘枠の右下に所属国の旗を表示。既存CountryFlagArtを使い、４方向で同じ位置に旗を出す。磁器の装飾と猫紋章は原画どおり。旗は駒の横に表示する方式で、衣装への合成は未対応。
+
+隔離Release警告０・エラー０。62×85枠の４方向と２国の正面を描き、所属国によって旗が変わり顔の画素が同じであることを確認。既存の格納庫・配送回帰も通過。NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/queen-battle-flags.png に確認画像。旗が隣の駒や戦闘エフェクトに重なるかは通し再生で確認する。次は一般兵・隊長の帽子と小銃の実行素材。
+
+## 2026年11月11日15時48分・兵隊装備の透過原画
+
+採用済みsoldier-hat-study-v002／soldier-rifle-study-v001とcaptain-hat-study-v001のPP例を参照し、共通素体へ重ねられる一般兵帽、隊長帽、上向き玩具小銃を独立した透過画像として生成した。NAS art-source/robots/soldier-runtime-v001/ に保存し、生成元とSHA-256が一致することを確認。４隅のうち左上アルファ０と中心の不透明画素を確認し、外形と形状を目視した。８画素間隔で測った不透明範囲は描画位置の初期値。
+
+| 原画 | サイズ | 不透明範囲 x1,y1–x2,y2 | SHA-256 |
+| --- | --- | --- | --- |
+| soldier-cap.png | 1312×1199 | 208,168–1096,1000 | 6D8B6717C477A63DAE9F3A2ED2976A64126F220CEB91C38E2205A948A47C35B9 |
+| captain-cap.png | 1536×1024 | 536,312–992,728 | 9A071CC6517F2BB90741C5EC39D455D276CE00BB8D45A99C457224AEAB17550D |
+| toy-rifle.png | 724×2172 | 192,120–520,2072 | 3F338DCF7ED316D3119D773526804A27A570EB80B231FCA47F9D33E158F3757D |
+
+ゲーム描画とビルド試験は次の作業。62×85の戦闘枠内で帽子の役職差、腕との接点、顔と紋章の視認性を確認してから、通常戦闘のPP兵に接続する。
+
+## 2026年11月11日16時18分・一般兵と隊長の正面戦闘駒
+
+NAS soldier-runtime-v001 の一般兵帽、隊長帽、玩具小銃を同じハッシュで Content/Images/Robots の soldier-cap-v001.png、captain-cap-v001.png、toy-rifle-v001.png に登録。南向きの無傷・通常品質・分割式の完成機に格納庫と共通のPP頭胴脚を使用し、役職別の帽子と小銃を重ねる。小銃は戦闘フレームの残数があるときに表示。描画処理は戦闘データを変更しない。横・背面や他素材は既存駒を使用する。
+
+隔離Release警告０・エラー０。62×85で一般兵・隊長・小銃残数０の一般兵を描き、帽子と顔と胸紋章を目視。小銃の表示差を画素で確認し、格納庫・配送回帰も通過。NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/pp-battle-soldiers.png に確認画像。次は戦闘再生での向き変更と横・背面の素材を進める。
+
+## 2026年11月11日16時48分・PPの汚損合成
+
+wear-study-v005の表現に合わせ、通常品質の分割式PP部品にクロスハッチ状の塗装擦れと絆創膏を実行時合成。既存の損傷状態を表示に使用し、顔と紋章の保護領域、透明輪郭は維持する。格納庫、戦闘導入、南向きのPP戦闘駒で共用。安物・高級・一体型・他方向の既存表示は後続作業。
+
+隔離Releaseと格納庫６枠・ドラッグ・配送回帰が成功。３部位のGPU試験で汚損のキャッシュ分離、輪郭の全アルファ一致、頭の顔画素の一致を確認。NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/pp-part-samples.png で汚損した頭を目視。胴・脚の汚損を戦闘寸法で並べる確認と、横・背面の素材は次の作業。
+
+## 2026年11月11日17時18分・戦闘枠で汚損を確認
+
+南向きPP戦闘駒を62×85で４体描き、無傷と頭・胴・脚の単独汚損を比較。胴と脚では絆創膏が小さく見えたため、同じマスク内で絆創膏の幅と明るさを調整した。各部位で汚損の画素差が出て、戦闘駒の旧表示へ切り替わらないことを検証。実寸では擦れの細線は控えめで、主な目印は絆創膏。横・背面の汚損描画は未対応。
+
+本体・隔離試験Releaseは警告０・エラー０。格納庫と配送の回帰も通過。NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/pp-battle-wear.png の下段は左から無傷・頭・胴・脚。次は横・背面の素地を制作し、戦闘再生で向きが変わる場面を確認する。
+
+## 2026年11月11日17時48分・PP頭の横と背面
+
+正面のpp-head-neutral-v001.pngを参照し、横向きの右端にクリーム色の顔が見える頭と、背面の連続した灰色外装をimagegenで制作。NAS art-source/robots/pp-views-v001/ に保存し、ハッシュ照合・左上の透明・中心の不透明を確認。両方1254×1254で、８画素間隔の不透明範囲は横が80,200–1136,1064、背面が88,200–1144,1056。正面とほぼ同じ輪郭寸法を維持できる。
+
+| 素材 | SHA-256 |
+| --- | --- |
+| head-side.png | 715404D788D3AB860ACD1B258E81FE1899EB836F88320EE36FC3B8FED7116E8B |
+| head-back.png | E12DE0252DA4BA09B117673D7C45F4A2A98B67846B93B4AD1BE615580A8A6257 |
+
+次は横の顔と光沢を保護するマスクと国旗UVを実画像で試す。背面は顔の保護範囲を持たない。胴・脚・装備の向き別素材と組み込みは未完了。今回の検証は原画の寸法・透過・目視まで。
+
+## 2026年11月11日18時18分・横と背面の国旗合成
+
+横向きの右端の顔と縁を、原画上で測った角丸矩形で保護。背面は外装全体に共通の国旗UVを適用。両方向とも光沢を残し、側面寄りに紋章を配置した。素材はNASの pp-views-v001 の２枚を使用。
+
+隔離GPUビルド警告０・エラー０。横・背面それぞれに斜め縞と格子を描画して目視。横の顔の内側25×62画素が国旗を変えても一致し、塗装面は変わることを検証。汚損前後のアルファ一致とキャッシュの回帰も通過。NAS tmp/delete-after-2026-11-15/robot-art-implementation/pp-head-gpu/ の head-side-flags.png と head-back-flags.png に確認画像。今回の接続先は検証描画。胴・脚・装備の向き別素材を揃え、戦闘駒へ接続する作業は残る。
+
+## 2026年11月11日18時48分・PP胴脚の側面
+
+正面のPP素地を参照して右向きの胴と脚を独立した透過画像として制作。NAS art-source/robots/pp-views-v001/ に保存し、生成元のSHA-256と一致を確認。腕とブーツの光沢を残して２種類の国旗と紋章を合成した。
+
+| 素材 | サイズ | 不透明範囲 x1,y1–x2,y2 | SHA-256 |
+| --- | --- | --- | --- |
+| torso-side.png | 1536×1024 | 432,144–1112,920 | 1748DF5C5150254E3A9FE7A204E22B969BF99F902CA4FFFF0CBC7ED72D2D1D12 |
+| legs-side.png | 1312×1199 | 296,128–992,1072 | D4C5E815C7B78004FF0E3C830F878590662F61855AD9961907B46F622CE12677 |
+
+GPU試験Release警告０・エラー０。２部位で国旗切替・透過・汚損前後のアルファ一致・キャッシュ回帰が成功。NAS tmp/delete-after-2026-11-15/robot-art-implementation/pp-head-gpu/ の torso-side-flags.png と legs-side-flags.png を目視した。ゲームへの接続は次の作業。横向き全身の首と腰、腕に重ねる小銃の位置を合わせる。背面の胴脚と帽子の向き別素材も残る。
+
+## 2026年11月11日19時18分・PP戦闘駒の横向き
+
+標準品質の分割PP一般兵と隊長に左右の全身描画を接続。頭・胴・脚ごとの出身国と汚損を既存の合成へ渡す。右向き素材の左右反転で左向きを描くため、左側の紋章も反転する。帽子は正面素材を共用。小銃はフレームに残数がある場合に腕へ重ねる。
+
+| NAS原画（art-source/robots/pp-views-v001） | ゲーム実行素材（Content/Images/Robots） |
+| --- | --- |
+| head-side.png | pp-head-side-v001.png |
+| torso-side.png | pp-torso-side-v001.png |
+| legs-side.png | pp-legs-side-v001.png |
+
+３ファイルのSHA-256一致を確認。NAS隔離Releaseビルドは警告・エラー各０。描画試験で左右それぞれの一般兵と隊長の３部位を確認。正面の小銃・汚損と格納庫の６枠操作の回帰も通過。実寸62×85の描画を目視し、小銃を腕へ寄せた。確認画像は NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/pp-battle-wear.png。
+
+次は背面の胴・脚と向き別の帽子。北向きの戦闘駒は既存表示。今回の目視は隔離した静止画まで。戦闘再生中の向き切替とPP以外の素材は未検証。
+
+## 2026年11月11日19時48分・左向きの紋章
+
+右向きの素体を反転して左向きを描く際、頭・胴・脚の紋章ステッカーだけを合成時に先に反転する。これで画面上の紋章の向きが左右で一致する。国旗地の模様は素体と一緒に反転する。GPUキャッシュは通常と反転ステッカーを区別する。使用素材は上記の横向き３点。
+
+非対称紋章と白縁の画素を照合し、ステッカー外の画素が一致することを確認。製品DLLを直接使うよう試験２件の重複ソース参照を外した。隔離Releaseで製品・画素・GPU・格納庫描画の各ビルドは警告・エラー各０。国旗320通り、横顔の保護、キャッシュ再利用、格納庫６枠の回帰が通過。左右の戦闘駒は隔離静止画を目視。NASの向き別原画には背面頭があり、背面胴・脚と向き別帽子の制作および戦闘への接続が残る。
+
+## 2026年11月11日20時18分・PP胴脚の背面
+
+正面PP素地を参照し、組み込み用の背面胴・脚を組み込みImageGenで別々に制作した。NASの art-source/robots/pp-views-v001/ に保存し、生成元とSHA-256を照合。
+
+| NAS原画 | 寸法 | SHA-256 |
+| --- | --- | --- |
+| torso-back.png | 1536×1024 | E18586903F673B2486EFE1589655707052A58029E761E14C3355E791696D66AC |
+| legs-back.png | 1536×1024 | 6F728DC68EF6D30D17B69F6D1C493006C7A3D4DF79A0F9FB26AB95459C20B869 |
+
+隔離Release GPU試験は警告・エラー各０。国旗切替と汚損の前後で全画素のアルファが一致し、脚の隙間が透過することを確認。斜め縞・格子と紋章を合成し、光沢と輪郭を目視した。確認画像は NAS tmp/delete-after-2026-11-15/robot-art-implementation/pp-head-gpu/ の torso-back-flags.png と legs-back-flags.png。次は背面帽子を制作し、頭・胴・脚を北向き戦闘駒に接続する。今回の製品描画は未変更。
+
+### 生成プロンプト
+
+Create a production 2D game sprite, a direct orthographic REAR view of the exact same neutral gray glossy injection molded polypropylene toy robot part as the reference. One part only, the robot torso shell with both attached short arms and rounded mitten fists. Plain smooth rounded-square back panel with a subtle molded perimeter seam, no fastener, no head or legs. Match the reference silhouette, proportions, grayscale base and controlled glossy white specular highlights. Clean outer edges; no haze, floor, ground shadows, logos, flag, graphics, weapon, text or other objects. Center the entire part with 10% clear space, genuine transparent background.
+
+Create a production 2D game sprite, a direct orthographic REAR view of the exact same neutral gray glossy injection molded polypropylene toy robot part as the reference. One part only, the joined hips and both short legs with boot heels. Rounded hip shell, symmetric rounded boots showing their heels and soles from behind, a real transparent gap between legs. No torso. Match the reference silhouette, proportions, grayscale base and controlled glossy white specular highlights. Clean outer edges; no haze, floor, ground shadows, logos, flag, graphics, weapon, text or other objects. Center the entire part with 10% clear space, genuine transparent background.
+
+## 2026年11月11日20時48分・北向き戦闘駒
+
+標準品質の分割PP一般兵・隊長に北向きの頭・胴・脚を接続。部位ごとの国旗・汚損を合成し、小銃が残る場合は背面の左腕側に表示。一般兵の黒帽子は正面素材を共用。隊長は金帯とボンボンの背面素材を使用し、前面の帽章とつばは隠れる。
+
+| NAS原画（art-source/robots/pp-views-v001） | ゲーム素材（Content/Images/Robots） |
+| --- | --- |
+| head-back.png | pp-head-back-v001.png |
+| torso-back.png | pp-torso-back-v001.png |
+| legs-back.png | pp-legs-back-v001.png |
+| captain-cap-back.png | captain-cap-back-v001.png |
+
+４点のSHA-256一致を確認。隊長帽のSHA-256は 05BAE4A83DCF16B4F7A161F12401437538D620AEEB0AC5AD514265F66BB59695。隔離Releaseのゲーム・描画試験とも警告とエラー各０。北向きの頭・胴・脚の描画、既存方向と格納庫６枠の回帰を確認。62×85の駒は NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/pp-battle-wear.png を目視。左右の隊長帽は正面素材共用の段階。戦闘再生での向き切替とPP以外の素材は未検証。
+
+### 背面隊長帽の生成プロンプト（組み込みImageGen）
+
+Create a single transparent game sprite: the orthographic back view of the exact toy captain shako in the reference. Keep the squat black cylinder, glossy rolled crown edge, centered golden pompom and continuous gold lower band. Camera faces the rear directly; the front flower badge and forward visor are entirely occluded by the black cap. Show a smooth unmarked black rear wall, with no rear badge, and the gold band. Match the toy lighting and proportions. No head, text, background, shadows or additional objects. Center it with clear margins.
+
+## 2026年11月11日21時18分・横向き隊長帽
+
+組み込みImageGenで右向きの隊長帽を制作。NAS原画 art-source/robots/pp-views-v001/captain-cap-side.png とゲーム素材 Content/Images/Robots/captain-cap-side-v001.png のSHA-256は 9C51063DF8E71FB44FDABF483DFEBAF3FADFBC79000A53D7AB9911239832EC12。左向きでは反転し、つばを進行方向に合わせる。
+
+隔離Releaseは警告・エラー各０。全方向の駒を62×85で目視し、格納庫６枠と地星儀の描画回帰も通過。確認画像は NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/pp-battle-wear.png。戦闘再生中の向き切替とPP以外の素材は未検証。
+
+Create one transparent game sprite of this exact toy captain shako in strict orthographic side profile, with the short black visor pointing to image right. Show the same squat black glossy cylinder, centered golden pompom, continuous gold lower band, and only a slim edge of the front flower badge at the right. The front badge must not appear on the side panel. Isolated cap only, transparent background, no head or other objects, clear margin on all sides.
+
+## 2026年11月11日21時48分・戦闘フレームの方向と装備
+
+隔離描画試験に、向きと小銃残数が変わる前後の BattleState.Capture を追加。過去フレームが変わらず、東西北の保存された向き・残数でPP駒を描画できることを確認。製品の DrawRobotBattle が同じフレーム項目を使用していることをコードで照合。隔離Release警告・エラー各０、格納庫６枠と地星儀の回帰も通過。製品コード・実行素材の追加変更なし。全画面の実時間再生とPP以外の実行素材は引き続き未確認。
+
+## 2026年11月11日22時18分・素材別描画の接続点
+
+現行の部位データには素材IDがなく、出身国・安物・高級品・汚損・一体成形の情報がある。通常格納庫のPP素材は分割された正規品の部位で使われ、安物・高級品は既存シルエットへ戻る。戦闘の新しい全身描画は頭・胴・脚が揃う場合に使う。地図の小アイコンも現状は安物・高級品のフラグで描き分ける。旧保存は高級品・一体成形フィールドの欠損を許す。９素材へ接続する際は、素材を既存等級とは独立して部位ごとに扱えるかを、組み替え・分離・旧保存の３経路で確認する。
+
+今回の素材と装備数は相談段階。描画監査のみでゲームコード、能力、保存形式、原画に変更なし。９素材の動的合成を検証する次の対象は、木目を保つメープルの素地と塗装マスク。素材の保存・配布先を決める前でも隔離描画で比較できる。
+
+## 2026年11月11日22時48分・メープルの塗装マスクの画素試験
+
+既存の合成器を使い、木目の明暗を持つ合成画素４点で、露出した木肌と塗装下の木目を２種類の国旗で比較。露出部分は画素が一致し、塗装部分は国旗で変わり、木目の明暗差とアルファが残った。隔離Release警告・エラー各０、既存の国旗320通りも通過。ゲーム描画・素材割当・能力の変更なし。次はメープル原画の素地と実寸の塗装マスクで目視する。試験出力先はNAS tmp/delete-after-2026-11-15/robot-art-implementation/flag-composite/。
+
+## 2026年11月11日23時18分・メープル頭の２国旗比較
+
+head-study-v002のメープルを参照して、組み込みImageGenで無塗装の頭を制作。NAS art-source/robots/maple-head-neutral-v001/maple-head-neutral-v001.png に保存。SHA-256 58F6C15CF04CE2C7C9C8E3D5CFA840E12B4EFBA5AAA4C9A21CCE98F4BD41B686。試験用に顔の丸い輪郭と側面の木肌をマスクで保護し、塗装部分には元の木目の明暗を反映。
+
+隔離Release警告・エラー各０。384×256に縮小した実原画で、保護画素と全画素のアルファ一致、２国旗の塗装差を確認。国旗320通りの回帰も通過。比較画像はNAS tmp/delete-after-2026-11-15/robot-art-implementation/flag-composite/maple-two-flags.png。目視では塗装下にも木目が残る。今回の比較は国旗地のみ。紋章、汚損、実行素材への登録は次回。
+
+生成プロンプト
+
+Create one unpainted pale maple wood toy robot HEAD sprite, based only on the top middle maple head of the reference design sheet. Preserve its three-quarter right view, rounded rectangular shell, pale inset face, two black oval eyes and curved black smile. All red and teal areas are now bare maple matching the right flank. Preserve continuous fine natural maple wood grain, smooth clean satin surface with very soft highlights. No paint, sticker, text, body, winding key, ground or shadow. One centered full object with margins, genuinely transparent background. Production game asset.
+
+## 2026年11月11日23時48分・メープル頭を共通描画へ接続
+
+素材９種モードで部位の素材IDを参照し、メープル頭を格納庫・工場などの共通描画に接続。正面の戦闘駒でも胴脚がPPなら使用できる。メープルの胴脚と別方向の頭、他素材の個別原画は未接続。ゲーム素材 Content/Images/Robots/maple-head-neutral-v001.png は NAS art-source/robots/maple-head-neutral-v001/ の同名原画とSHA-256一致（58F6C15CF04CE2C7C9C8E3D5CFA840E12B4EFBA5AAA4C9A21CCE98F4BD41B686）。
+
+前回の木目マスクを共通化し、紋章と汚損を合成。隔離Releaseは警告・エラー各０。保護画素・アルファ、国旗320通り、実際の共通描画で２国旗と汚損、格納庫６枠の回帰が通過。確認画像はNAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/maple-game-glyph.png。戦闘の実時間再生は未検証。
+
+## 2026年11月12日０時18分・メープルの胴と脚
+
+v012のメープルを参照し、組み込みImageGenで胴と脚を独立した透過原画に制作。NAS art-source/robots/maple-body-neutral-v001/ からゲームの Content/Images/Robots/ へ同名で配置し、SHA-256を照合。
+
+| 実行素材 | SHA-256 |
+| --- | --- |
+| maple-torso-neutral-v001.png | F4B79BE00F6ACF27F88AB229D0738DA4B5AAE8DD6F92A8018253FFFA8B7CA2F9 |
+| maple-legs-neutral-v001.png | 97B19C4F8602A80E50E908A5D29A9D4D9D4FD79B2AD1524A1CDD0DD80E0668AA |
+
+素材９種モードの共通描画と正面戦闘駒で使用。胴の同心円状の木目と靴の木肌を保護し、国旗、紋章、汚損を各部位へ合成。隔離Release警告・エラー各０。国旗２種類と汚損の全身を目視し、格納庫６枠・地星儀の回帰も通過。比較画像はNAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/maple-game-glyph.png。メープルの横・背面と戦闘全画面の再生は未確認。
+
+生成プロンプト
+
+Create one independent transparent production game sprite based only on the top-middle maple toy of the reference. Show the isolated torso and both attached wooden arms. Preserve the broad inset end-grain on the chest with gentle concentric growth rings flush with the torso and no symbol. Keep pale satin maple and its visible fine natural grain, with the original toy proportions. All surfaces unpainted. No flag, emblem, text, winding key, head, other parts, floor shadow or background. Center the full part with clear margins.
+
+Create one independent transparent production game sprite based only on the top-middle maple toy of the reference. Show the isolated joined waist and both legs with broad wooden shoes. Preserve a genuinely transparent gap between the legs, show the same three-quarter front angle and sturdy squared shoe shape. Keep pale satin maple and its visible fine natural grain, with the original toy proportions. All surfaces unpainted. No flag, emblem, text, winding key, head, other parts, floor shadow or background. Center the full part with clear margins.

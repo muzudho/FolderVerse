@@ -6,6 +6,7 @@
     <RollForward>Major</RollForward>
     <PublishReadyToRun>false</PublishReadyToRun>
     <TieredCompilation>false</TieredCompilation>
+    <DefaultItemExcludes>$(DefaultItemExcludes);bin/**;obj/**</DefaultItemExcludes>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -39,6 +40,7 @@
     <None Update="Content/Images/Newspapers/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/NodeSupervisors/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/robot-map-toy-v001.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Content/Images/Robots/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Music/*.wav" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Target Name="CheckStaticFontCoverage" BeforeTargets="PrepareForBuild" Condition="'$(DesignTimeBuild)' != 'true'">

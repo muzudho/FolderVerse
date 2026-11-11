@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FolderVerse ロボット装備数の組み合わせ</title>
+<style>
+body{font:16px/1.6 system-ui,sans-serif;color:#192f39;background:#f6f7f4;margin:0}
+main{max-width:960px;margin:auto;padding:28px 16px}
+table{border-collapse:collapse;width:100%;background:white}
+caption{text-align:left;font-weight:700;margin:12px 0}
+th,td{padding:6px 10px;border-bottom:1px solid #dbe3e4;text-align:right;vertical-align:top}
+th{background:#e5eef0}th:last-child,td:last-child{text-align:left}
+ul{margin:0;padding:0;list-style:none}
+tr[data-count="1"]{color:#41515a}
+.filters{display:flex;flex-wrap:wrap;gap:8px 24px}
+</style>
+<main>
+<h1>ロボット装備数の組み合わせ</h1>
+<p>頭・胴・脚に使う９素材を重複ありで選んだ165通り。部位の順序を区別せず、盾・短剣・小銃ごとに３部位の値を足してから切り捨てています。無傷の完全体が対象です。</p>
+<p><strong>110種類の装備配分</strong>のうち、35種類は複数の組み合わせで作れます（該当90通り）。１つの配分に重なるのは最大5通りです。</p>
+<p>工場で作れる８素材に限ると120通り、装備配分は71種類です。うち30種類に被りがあります。</p>
+<p>異なる３素材だけなら84通りで、装備配分は63種類。部位の順序も区別すると504通りです。同じ素材の繰り返しと部位の順序を両方数えると729通りになります。</p>
+<div class="filters">
+<label><input type="checkbox" id="exclude-tin"> ブリキを除く（製造できる８素材）</label>
+<label><input type="checkbox" id="duplicates"> 装備数が被る組み合わせだけ表示</label>
+</div>
+<p id="visible-count" role="status">表示中：165通り・110種類の装備配分</p>
+<table>
+<caption>装備配分別の全組み合わせ</caption>
+<thead><tr><th scope="col">盾</th><th scope="col">短剣</th><th scope="col">小銃</th><th scope="col">通り</th><th scope="col">素材の組み合わせ</th></tr></thead>
+<tbody>
+<tr data-count="2"><td>0</td><td>0</td><td>1</td><td>2</td><td><ul><li>紙 ＋ 紙 ＋ 紙</li><li>紙 ＋ 紙 ＋ 段ボール</li></ul></td></tr>
+<tr data-count="2"><td>0</td><td>2</td><td>1</td><td>2</td><td><ul><li>紙 ＋ 紙 ＋ ポリスチレン</li><li>紙 ＋ 段ボール ＋ ポリスチレン</li></ul></td></tr>
+<tr data-count="1"><td>0</td><td>4</td><td>1</td><td>1</td><td><ul><li>紙 ＋ ポリスチレン ＋ ポリスチレン</li></ul></td></tr>
+<tr data-count="1"><td>0</td><td>4</td><td>2</td><td>1</td><td><ul><li>段ボール ＋ ポリスチレン ＋ ポリスチレン</li></ul></td></tr>
+<tr data-count="1"><td>0</td><td>6</td><td>2</td><td>1</td><td><ul><li>ポリスチレン ＋ ポリスチレン ＋ ポリスチレン</li></ul></td></tr>
+<tr data-count="1"><td>1</td><td>0</td><td>1</td><td>1</td><td><ul><li>紙 ＋ 紙 ＋ 発泡スチロール</li></ul></td></tr>
+<tr data-count="2"><td>1</td><td>1</td><td>1</td><td>2</td><td><ul><li>紙 ＋ 紙 ＋ メープル</li><li>紙 ＋ 段ボール ＋ 段ボール</li></ul></td></tr>
+<tr data-count="2"><td>1</td><td>1</td><td>2</td><td>2</td><td><ul><li>紙 ＋ 紙 ＋ ポリプロピレン</li><li>紙 ＋ 段ボール ＋ ポリプロピレン</li></ul></td></tr>
+<tr data-count="1"><td>1</td><td>2</td><td>1</td><td>1</td><td><ul><li>紙 ＋ 発泡スチロール ＋ ポリスチレン</li></ul></td></tr>
+<tr data-count="4"><td>1</td><td>3</td><td>2</td><td>4</td><td><ul><li>紙 ＋ ポリスチレン ＋ ポリプロピレン</li><li>紙 ＋ ポリスチレン ＋ メープル</li><li>段ボール ＋ 段ボール ＋ ポリスチレン</li><li>段ボール ＋ ポリスチレン ＋ ポリプロピレン</li></ul></td></tr>
+<tr data-count="1"><td>1</td><td>4</td><td>1</td><td>1</td><td><ul><li>発泡スチロール ＋ ポリスチレン ＋ ポリスチレン</li></ul></td></tr>
+<tr data-count="2"><td>1</td><td>5</td><td>2</td><td>2</td><td><ul><li>ポリスチレン ＋ ポリスチレン ＋ ポリプロピレン</li><li>ポリスチレン ＋ ポリスチレン ＋ メープル</li></ul></td></tr>
+<tr data-count="1"><td>2</td><td>0</td><td>0</td><td>1</td><td><ul><li>紙 ＋ 紙 ＋ ソフトビニール</li></ul></td></tr>
+<tr data-count="1"><td>2</td><td>0</td><td>1</td><td>1</td><td><ul><li>紙 ＋ 紙 ＋ シリコン</li></ul></td></tr>
+<tr data-count="1"><td>2</td><td>1</td><td>1</td><td>1</td><td><ul><li>紙 ＋ 発泡スチロール ＋ 段ボール</li></ul></td></tr>
+<tr data-count="1"><td>2</td><td>1</td><td>2</td><td>1</td><td><ul><li>紙 ＋ 発泡スチロール ＋ ポリプロピレン</li></ul></td></tr>
+<tr data-count="1"><td>2</td><td>2</td><td>1</td><td>1</td><td><ul><li>紙 ＋ ポリスチレン ＋ ソフトビニール</li></ul></td></tr>
+<tr data-count="5"><td>2</td><td>2</td><td>2</td><td>5</td><td><ul><li>紙 ＋ 段ボール ＋ メープル</li><li>紙 ＋ ポリスチレン ＋ シリコン</li><li>紙 ＋ ポリプロピレン ＋ メープル</li><li>段ボール ＋ 段ボール ＋ 段ボール</li><li>段ボール ＋ 段ボール ＋ ポリプロピレン</li></ul></td></tr>
+<tr data-count="2"><td>2</td><td>2</td><td>3</td><td>2</td><td><ul><li>紙 ＋ ポリプロピレン ＋ ポリプロピレン</li><li>段ボール ＋ ポリプロピレン ＋ ポリプロピレン</li></ul></td></tr>
+<tr data-count="1"><td>2</td><td>3</td><td>1</td><td>1</td><td><ul><li>発泡スチロール ＋ 段ボール ＋ ポリスチレン</li></ul></td></tr>
+<tr data-count="3"><td>2</td><td>3</td><td>2</td><td>3</td><td><ul><li>紙 ＋ メープル ＋ メープル</li><li>発泡スチロール ＋ ポリスチレン ＋ ポリプロピレン</li><li>段ボール ＋ 段ボール ＋ メープル</li></ul></td></tr>
+<tr data-count="1"><td>2</td><td>4</td><td>1</td><td>1</td><td><ul><li>ポリスチレン ＋ ポリスチレン ＋ ソフトビニール</li></ul></td></tr>
+<tr data-count="2"><td>2</td><td>4</td><td>2</td><td>2</td><td><ul><li>段ボール ＋ ポリスチレン ＋ メープル</li><li>ポリスチレン ＋ ポリスチレン ＋ シリコン</li></ul></td></tr>
+<tr data-count="2"><td>2</td><td>4</td><td>3</td><td>2</td><td><ul><li>ポリスチレン ＋ ポリプロピレン ＋ ポリプロピレン</li><li>ポリスチレン ＋ ポリプロピレン ＋ メープル</li></ul></td></tr>
+<tr data-count="1"><td>2</td><td>5</td><td>2</td><td>1</td><td><ul><li>ポリスチレン ＋ メープル ＋ メープル</li></ul></td></tr>
+<tr data-count="1"><td>3</td><td>0</td><td>1</td><td>1</td><td><ul><li>紙 ＋ 発泡スチロール ＋ 発泡スチロール</li></ul></td></tr>
+<tr data-count="1"><td>3</td><td>0</td><td>2</td><td>1</td><td><ul><li>紙 ＋ 段ボール ＋ シリコン</li></ul></td></tr>
+<tr data-count="4"><td>3</td><td>1</td><td>1</td><td>4</td><td><ul><li>紙 ＋ 段ボール ＋ ソフトビニール</li><li>紙 ＋ ソフトビニール ＋ ポリプロピレン</li><li>発泡スチロール ＋ 段ボール ＋ 段ボール</li><li>段ボール ＋ 段ボール ＋ ソフトビニール</li></ul></td></tr>
+<tr data-count="1"><td>3</td><td>1</td><td>2</td><td>1</td><td><ul><li>紙 ＋ ポリプロピレン ＋ シリコン</li></ul></td></tr>
+<tr data-count="3"><td>3</td><td>2</td><td>1</td><td>3</td><td><ul><li>紙 ＋ 発泡スチロール ＋ メープル</li><li>紙 ＋ ソフトビニール ＋ メープル</li><li>発泡スチロール ＋ 発泡スチロール ＋ ポリスチレン</li></ul></td></tr>
+<tr data-count="3"><td>3</td><td>2</td><td>2</td><td>3</td><td><ul><li>発泡スチロール ＋ 段ボール ＋ ポリプロピレン</li><li>発泡スチロール ＋ 段ボール ＋ メープル</li><li>段ボール ＋ ポリスチレン ＋ シリコン</li></ul></td></tr>
+<tr data-count="1"><td>3</td><td>2</td><td>3</td><td>1</td><td><ul><li>発泡スチロール ＋ ポリプロピレン ＋ ポリプロピレン</li></ul></td></tr>
+<tr data-count="1"><td>3</td><td>3</td><td>1</td><td>1</td><td><ul><li>段ボール ＋ ポリスチレン ＋ ソフトビニール</li></ul></td></tr>
+<tr data-count="1"><td>3</td><td>3</td><td>2</td><td>1</td><td><ul><li>ポリスチレン ＋ ソフトビニール ＋ ポリプロピレン</li></ul></td></tr>
+<tr data-count="3"><td>3</td><td>3</td><td>3</td><td>3</td><td><ul><li>段ボール ＋ ポリプロピレン ＋ メープル</li><li>ポリスチレン ＋ ポリプロピレン ＋ シリコン</li><li>ポリプロピレン ＋ ポリプロピレン ＋ メープル</li></ul></td></tr>
+<tr data-count="1"><td>3</td><td>3</td><td>4</td><td>1</td><td><ul><li>ポリプロピレン ＋ ポリプロピレン ＋ ポリプロピレン</li></ul></td></tr>
+<tr data-count="1"><td>3</td><td>4</td><td>1</td><td>1</td><td><ul><li>ポリスチレン ＋ ソフトビニール ＋ メープル</li></ul></td></tr>
+<tr data-count="2"><td>3</td><td>4</td><td>2</td><td>2</td><td><ul><li>発泡スチロール ＋ ポリスチレン ＋ メープル</li><li>段ボール ＋ メープル ＋ メープル</li></ul></td></tr>
+<tr data-count="1"><td>3</td><td>4</td><td>3</td><td>1</td><td><ul><li>ポリプロピレン ＋ メープル ＋ メープル</li></ul></td></tr>
+<tr data-count="2"><td>4</td><td>0</td><td>0</td><td>2</td><td><ul><li>紙 ＋ 発泡スチロール ＋ ソフトビニール</li><li>紙 ＋ ソフトビニール ＋ ソフトビニール</li></ul></td></tr>
+<tr data-count="1"><td>4</td><td>0</td><td>1</td><td>1</td><td><ul><li>紙 ＋ 発泡スチロール ＋ シリコン</li></ul></td></tr>
+<tr data-count="2"><td>4</td><td>1</td><td>1</td><td>2</td><td><ul><li>発泡スチロール ＋ 発泡スチロール ＋ 段ボール</li><li>発泡スチロール ＋ 段ボール ＋ ソフトビニール</li></ul></td></tr>
+<tr data-count="3"><td>4</td><td>1</td><td>2</td><td>3</td><td><ul><li>紙 ＋ シリコン ＋ メープル</li><li>発泡スチロール ＋ 発泡スチロール ＋ ポリプロピレン</li><li>段ボール ＋ 段ボール ＋ シリコン</li></ul></td></tr>
+<tr data-count="1"><td>4</td><td>1</td><td>3</td><td>1</td><td><ul><li>段ボール ＋ ポリプロピレン ＋ シリコン</li></ul></td></tr>
+<tr data-count="1"><td>4</td><td>2</td><td>0</td><td>1</td><td><ul><li>ポリスチレン ＋ ソフトビニール ＋ ソフトビニール</li></ul></td></tr>
+<tr data-count="3"><td>4</td><td>2</td><td>1</td><td>3</td><td><ul><li>発泡スチロール ＋ 発泡スチロール ＋ メープル</li><li>発泡スチロール ＋ ポリスチレン ＋ ソフトビニール</li><li>段ボール ＋ ソフトビニール ＋ メープル</li></ul></td></tr>
+<tr data-count="4"><td>4</td><td>2</td><td>2</td><td>4</td><td><ul><li>発泡スチロール ＋ ポリスチレン ＋ シリコン</li><li>段ボール ＋ ソフトビニール ＋ ポリプロピレン</li><li>段ボール ＋ シリコン ＋ メープル</li><li>ソフトビニール ＋ ポリプロピレン ＋ ポリプロピレン</li></ul></td></tr>
+<tr data-count="1"><td>4</td><td>2</td><td>3</td><td>1</td><td><ul><li>ポリプロピレン ＋ ポリプロピレン ＋ シリコン</li></ul></td></tr>
+<tr data-count="4"><td>4</td><td>3</td><td>2</td><td>4</td><td><ul><li>発泡スチロール ＋ ポリプロピレン ＋ メープル</li><li>発泡スチロール ＋ メープル ＋ メープル</li><li>ポリスチレン ＋ シリコン ＋ メープル</li><li>ソフトビニール ＋ ポリプロピレン ＋ メープル</li></ul></td></tr>
+<tr data-count="1"><td>4</td><td>5</td><td>3</td><td>1</td><td><ul><li>メープル ＋ メープル ＋ メープル</li></ul></td></tr>
+<tr data-count="1"><td>5</td><td>0</td><td>1</td><td>1</td><td><ul><li>紙 ＋ ソフトビニール ＋ シリコン</li></ul></td></tr>
+<tr data-count="1"><td>5</td><td>0</td><td>2</td><td>1</td><td><ul><li>紙 ＋ シリコン ＋ シリコン</li></ul></td></tr>
+<tr data-count="2"><td>5</td><td>1</td><td>0</td><td>2</td><td><ul><li>発泡スチロール ＋ 発泡スチロール ＋ ソフトビニール</li><li>段ボール ＋ ソフトビニール ＋ ソフトビニール</li></ul></td></tr>
+<tr data-count="4"><td>5</td><td>1</td><td>1</td><td>4</td><td><ul><li>発泡スチロール ＋ 発泡スチロール ＋ 発泡スチロール</li><li>発泡スチロール ＋ ソフトビニール ＋ ポリプロピレン</li><li>段ボール ＋ ソフトビニール ＋ シリコン</li><li>ソフトビニール ＋ ソフトビニール ＋ ポリプロピレン</li></ul></td></tr>
+<tr data-count="2"><td>5</td><td>1</td><td>2</td><td>2</td><td><ul><li>発泡スチロール ＋ 段ボール ＋ シリコン</li><li>発泡スチロール ＋ ポリプロピレン ＋ シリコン</li></ul></td></tr>
+<tr data-count="2"><td>5</td><td>2</td><td>1</td><td>2</td><td><ul><li>発泡スチロール ＋ ソフトビニール ＋ メープル</li><li>ポリスチレン ＋ ソフトビニール ＋ シリコン</li></ul></td></tr>
+<tr data-count="2"><td>5</td><td>2</td><td>2</td><td>2</td><td><ul><li>発泡スチロール ＋ シリコン ＋ メープル</li><li>ポリスチレン ＋ シリコン ＋ シリコン</li></ul></td></tr>
+<tr data-count="1"><td>5</td><td>2</td><td>3</td><td>1</td><td><ul><li>ポリプロピレン ＋ シリコン ＋ メープル</li></ul></td></tr>
+<tr data-count="1"><td>5</td><td>3</td><td>2</td><td>1</td><td><ul><li>ソフトビニール ＋ メープル ＋ メープル</li></ul></td></tr>
+<tr data-count="1"><td>5</td><td>3</td><td>3</td><td>1</td><td><ul><li>シリコン ＋ メープル ＋ メープル</li></ul></td></tr>
+<tr data-count="2"><td>6</td><td>0</td><td>1</td><td>2</td><td><ul><li>発泡スチロール ＋ 発泡スチロール ＋ シリコン</li><li>発泡スチロール ＋ ソフトビニール ＋ シリコン</li></ul></td></tr>
+<tr data-count="1"><td>6</td><td>0</td><td>2</td><td>1</td><td><ul><li>段ボール ＋ シリコン ＋ シリコン</li></ul></td></tr>
+<tr data-count="1"><td>6</td><td>1</td><td>0</td><td>1</td><td><ul><li>発泡スチロール ＋ ソフトビニール ＋ ソフトビニール</li></ul></td></tr>
+<tr data-count="1"><td>6</td><td>1</td><td>2</td><td>1</td><td><ul><li>ソフトビニール ＋ ポリプロピレン ＋ シリコン</li></ul></td></tr>
+<tr data-count="2"><td>6</td><td>1</td><td>3</td><td>2</td><td><ul><li>ポリプロピレン ＋ シリコン ＋ シリコン</li><li>シリコン ＋ シリコン ＋ メープル</li></ul></td></tr>
+<tr data-count="1"><td>6</td><td>2</td><td>1</td><td>1</td><td><ul><li>ソフトビニール ＋ ソフトビニール ＋ メープル</li></ul></td></tr>
+<tr data-count="1"><td>6</td><td>2</td><td>2</td><td>1</td><td><ul><li>ソフトビニール ＋ シリコン ＋ メープル</li></ul></td></tr>
+<tr data-count="1"><td>6</td><td>7</td><td>5</td><td>1</td><td><ul><li>紙 ＋ 紙 ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>6</td><td>9</td><td>5</td><td>1</td><td><ul><li>紙 ＋ ポリスチレン ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>6</td><td>11</td><td>5</td><td>1</td><td><ul><li>ポリスチレン ＋ ポリスチレン ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>7</td><td>0</td><td>1</td><td>1</td><td><ul><li>ソフトビニール ＋ ソフトビニール ＋ シリコン</li></ul></td></tr>
+<tr data-count="2"><td>7</td><td>0</td><td>2</td><td>2</td><td><ul><li>発泡スチロール ＋ シリコン ＋ シリコン</li><li>ソフトビニール ＋ シリコン ＋ シリコン</li></ul></td></tr>
+<tr data-count="1"><td>7</td><td>1</td><td>0</td><td>1</td><td><ul><li>ソフトビニール ＋ ソフトビニール ＋ ソフトビニール</li></ul></td></tr>
+<tr data-count="2"><td>7</td><td>8</td><td>5</td><td>2</td><td><ul><li>紙 ＋ 段ボール ＋ ブリキ</li><li>段ボール ＋ 段ボール ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>7</td><td>8</td><td>6</td><td>1</td><td><ul><li>紙 ＋ ポリプロピレン ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>7</td><td>9</td><td>5</td><td>1</td><td><ul><li>紙 ＋ メープル ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>7</td><td>10</td><td>5</td><td>1</td><td><ul><li>段ボール ＋ ポリスチレン ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>7</td><td>10</td><td>6</td><td>1</td><td><ul><li>ポリスチレン ＋ ポリプロピレン ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>7</td><td>11</td><td>6</td><td>1</td><td><ul><li>ポリスチレン ＋ メープル ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>8</td><td>0</td><td>3</td><td>1</td><td><ul><li>シリコン ＋ シリコン ＋ シリコン</li></ul></td></tr>
+<tr data-count="1"><td>8</td><td>7</td><td>4</td><td>1</td><td><ul><li>紙 ＋ ソフトビニール ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>8</td><td>7</td><td>5</td><td>1</td><td><ul><li>紙 ＋ 発泡スチロール ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>8</td><td>8</td><td>5</td><td>1</td><td><ul><li>発泡スチロール ＋ 段ボール ＋ ブリキ</li></ul></td></tr>
+<tr data-count="2"><td>8</td><td>9</td><td>5</td><td>2</td><td><ul><li>発泡スチロール ＋ ポリスチレン ＋ ブリキ</li><li>ポリスチレン ＋ ソフトビニール ＋ ブリキ</li></ul></td></tr>
+<tr data-count="2"><td>8</td><td>9</td><td>6</td><td>2</td><td><ul><li>段ボール ＋ ポリプロピレン ＋ ブリキ</li><li>段ボール ＋ メープル ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>8</td><td>9</td><td>7</td><td>1</td><td><ul><li>ポリプロピレン ＋ ポリプロピレン ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>8</td><td>10</td><td>6</td><td>1</td><td><ul><li>ポリプロピレン ＋ メープル ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>9</td><td>7</td><td>5</td><td>1</td><td><ul><li>紙 ＋ シリコン ＋ ブリキ</li></ul></td></tr>
+<tr data-count="3"><td>9</td><td>8</td><td>5</td><td>3</td><td><ul><li>発泡スチロール ＋ 発泡スチロール ＋ ブリキ</li><li>段ボール ＋ ソフトビニール ＋ ブリキ</li><li>ソフトビニール ＋ ポリプロピレン ＋ ブリキ</li></ul></td></tr>
+<tr data-count="2"><td>9</td><td>8</td><td>6</td><td>2</td><td><ul><li>発泡スチロール ＋ ポリプロピレン ＋ ブリキ</li><li>段ボール ＋ シリコン ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>9</td><td>9</td><td>5</td><td>1</td><td><ul><li>発泡スチロール ＋ メープル ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>9</td><td>9</td><td>6</td><td>1</td><td><ul><li>ポリスチレン ＋ シリコン ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>9</td><td>10</td><td>6</td><td>1</td><td><ul><li>メープル ＋ メープル ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>10</td><td>7</td><td>5</td><td>1</td><td><ul><li>発泡スチロール ＋ シリコン ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>10</td><td>8</td><td>4</td><td>1</td><td><ul><li>発泡スチロール ＋ ソフトビニール ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>10</td><td>8</td><td>6</td><td>1</td><td><ul><li>ポリプロピレン ＋ シリコン ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>10</td><td>9</td><td>5</td><td>1</td><td><ul><li>ソフトビニール ＋ メープル ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>10</td><td>9</td><td>6</td><td>1</td><td><ul><li>シリコン ＋ メープル ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>11</td><td>7</td><td>5</td><td>1</td><td><ul><li>ソフトビニール ＋ シリコン ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>11</td><td>7</td><td>6</td><td>1</td><td><ul><li>シリコン ＋ シリコン ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>11</td><td>8</td><td>4</td><td>1</td><td><ul><li>ソフトビニール ＋ ソフトビニール ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>12</td><td>14</td><td>9</td><td>1</td><td><ul><li>紙 ＋ ブリキ ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>12</td><td>16</td><td>9</td><td>1</td><td><ul><li>ポリスチレン ＋ ブリキ ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>13</td><td>15</td><td>9</td><td>1</td><td><ul><li>段ボール ＋ ブリキ ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>13</td><td>15</td><td>10</td><td>1</td><td><ul><li>ポリプロピレン ＋ ブリキ ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>14</td><td>15</td><td>9</td><td>1</td><td><ul><li>発泡スチロール ＋ ブリキ ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>14</td><td>16</td><td>9</td><td>1</td><td><ul><li>メープル ＋ ブリキ ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>15</td><td>14</td><td>9</td><td>1</td><td><ul><li>シリコン ＋ ブリキ ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>15</td><td>15</td><td>8</td><td>1</td><td><ul><li>ソフトビニール ＋ ブリキ ＋ ブリキ</li></ul></td></tr>
+<tr data-count="1"><td>19</td><td>22</td><td>13</td><td>1</td><td><ul><li>ブリキ ＋ ブリキ ＋ ブリキ</li></ul></td></tr>
+</tbody>
+</table>
+</main>
+<script>
+const excludeTin = document.querySelector("#exclude-tin");
+const duplicates = document.querySelector("#duplicates");
+const summary = document.querySelector("#visible-count");
+const rows = Array.from(document.querySelectorAll("tbody tr"), row => ({
+  row,
+  count: row.cells[3],
+  combinations: Array.from(row.querySelectorAll("li"), item => ({
+    item,
+    hasTin: item.textContent.includes("ブリキ")
+  }))
+}));
+function filterCombinations() {
+  let combinations = 0;
+  let distributions = 0;
+  for (const entry of rows) {
+    let count = 0;
+    for (const { item, hasTin } of entry.combinations) {
+      item.hidden = excludeTin.checked && hasTin;
+      if (!item.hidden) count++;
+    }
+    entry.count.textContent = count;
+    entry.row.dataset.count = count;
+    entry.row.hidden = count === 0 || (duplicates.checked && count < 2);
+    if (!entry.row.hidden) {
+      combinations += count;
+      distributions++;
+    }
+  }
+  summary.textContent = `表示中：${combinations}通り・${distributions}種類の装備配分`;
+}
+excludeTin.addEventListener("change", filterCombinations);
+duplicates.addEventListener("change", filterCombinations);
+filterCombinations();
+</script>
+</html>

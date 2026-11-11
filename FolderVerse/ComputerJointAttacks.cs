@@ -9,7 +9,7 @@ public static class ComputerJointAttacks
     {
         var manual=w.ManualRulers().ToHashSet();var battle=w.Campaign.RobotBattles;var stock=w.Robots;
         var owners=Enumerable.Range(0,w.ActiveCount).Where(o=>w.Relations.CanAct(o) && (automaticAll || !manual.Contains(o))).ToHashSet();
-        Robot[] Prefer(int owner,IEnumerable<Robot> robots)=>stock.Training[owner].DeploymentPolicy==3?robots.OrderByDescending(r=>2*r.CombatParts(owner)+r.CombatRifles(owner)).ThenBy(r=>r.Id).ToArray():stock.Training[owner].Order(robots).ToArray();
+        Robot[] Prefer(int owner,IEnumerable<Robot> robots)=>stock.Training[owner].DeploymentPolicy==3?robots.OrderByDescending(r=>r.Equipment(owner,w.EquipmentMode).Total).ThenBy(r=>r.Id).ToArray():stock.Training[owner].Order(robots).ToArray();
         var used=orders.SelectMany(o=>o.RobotIds??Array.Empty<long>()).ToHashSet();
         var busy=orders.Where(o=>!o.PocketOnly).Select(o=>o.SourceNode>=0?o.SourceNode:w.Nodes.Current(o.Ruler)?.Id??-1).ToHashSet();
         foreach(int owner in owners)BattleLessons.ReserveHomeGuards(w,owner);

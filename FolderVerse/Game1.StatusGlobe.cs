@@ -77,30 +77,22 @@ public partial class Game1
     private int HitGlobeNode(Point pointer,IEnumerable<int> candidates=null)
     {
         if(!MapViewBounds.Contains(pointer))return -1;
-        int nearest=-1,twin=-1;float distance=float.PositiveInfinity,twinDistance=float.PositiveInfinity;
+        int nearest=-1;float distance=float.PositiveInfinity;
+        var offset=WorldTerrain.Offset(_setup.WorldSeed);
         foreach(var node in _setup.Nodes.All.Where(n=>_net.NodeVisible(_setup,n)))
         {
             var cell=_setup.Cells[node.Cell];
-            if(!_world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center),cell.Normal,_yaw,_pitch,StatusGlobeArea,out var at))continue;
+            var position=_setup.Routes.Position(node.Cell,node.Center);
+            position+=cell.Normal*WorldTerrain.ReliefAt(cell,position,offset);
+            if(!_world.ProjectVisible(position,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var at))continue;
             float candidate=Vector2.DistanceSquared(at,new(pointer.X,pointer.Y));
-            _world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center)+cell.U,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var unit);
-            float radius=MathHelper.Clamp(Vector2.Distance(at,unit)*.06f,4,10);
-            if(node.IsHarbor)radius=MathHelper.Clamp(radius*1.7f,12,20);
-            if(!node.Functional){
-                float size=JunctionArt.Size(radius);var point=pointer.ToVector2();var symbol=JunctionArt.SymbolCenter(at,size);
-                candidate=System.Math.Min(candidate,Vector2.DistanceSquared(symbol,point));
-                if(JunctionArt.Hit(at,size,point) && candidate<distance){nearest=node.Id;distance=candidate;}
-                if(_setup.Campaign.OwnershipChanged(node) && NodeOwnershipArt.HitTwin(symbol,size,point) && candidate<twinDistance){twin=node.Id;twinDistance=candidate;}
-                continue;
-            }
-            if(_net.EmphasizedNode(node.Id) && !_setup.Campaign.OwnershipChanged(node))radius*=2;
-            if(_setup.Campaign.OwnershipChanged(node) && NodeOwnershipArt.HitTwin(at,radius,new Vector2(pointer.X,pointer.Y)) && candidate<twinDistance){twin=node.Id;twinDistance=candidate;}
-            radius+=4; // Include the visible outline and a small pointer tolerance.
+            _world.ProjectVisible(position+cell.U,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var unit);
+            _world.ProjectVisible(position+cell.V,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var otherUnit);
+            float radius=_net.MapPuckRadius(node,MathF.Max(Vector2.Distance(at,unit),Vector2.Distance(at,otherUnit)))+4;
             if(candidate<=radius*radius && candidate<distance){nearest=node.Id;distance=candidate;}
         }
         // Resolve the visible object first, then check whether the action permits it.
         // Candidate filtering must never redirect a click to a neighboring node.
-        if(nearest<0)nearest=twin;
         if(nearest<0){int badge=_net.HitRobotBadge(pointer);if(badge>=0 && _net.NodeVisible(_setup,_setup.Nodes.All[badge]))nearest=badge;}
         return nearest>=0 && (candidates==null || candidates.Contains(nearest))?nearest:-1;
     }

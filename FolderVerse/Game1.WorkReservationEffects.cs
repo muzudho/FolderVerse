@@ -50,7 +50,7 @@ public partial class Game1
         // Plans choose future parts, not a particular robot: use a clearly separate instruction marker.
         var glyph=new Rectangle(82,350+row*106,24,36);
         DrawRobotGlyph(glyph,TransportOwner,RobotParts.Complete);
-        RobotWorkArt.DrawShoes(_ui,glyph,_setup.OwnerColor(TransportOwner),progress:Math.Clamp((age-.28f)/.45f,0,1));
+        RobotWorkArt.DrawWindupKey(_ui,glyph,progress:Math.Clamp((age-.28f)/.45f,0,1));
         RobotWorkArt.DrawFlag(_ui,new(92,glyph.Y,14,24),_setup.OwnerColor(TransportOwner),MathF.Sin(age*18)*(1-age/1.15f));
     }
 }

@@ -79,7 +79,7 @@ public sealed partial class CubeNet
                         part==((robot.Parts&RobotParts.Body)!=0?RobotParts.Body:(robot.Parts&RobotParts.Head)!=0?RobotParts.Head:RobotParts.Legs)?world.CountryEmblem(robot.Origin(part)):0);
                     row++;
                 }
-                if(robot.ShoeOwner>=0)RobotWorkArt.DrawShoes(ui,card,NodeTint(node.Id,world.OwnerColor(robot.ShoeOwner)));
+                if(robot.ShoeOwner>=0)RobotWorkArt.DrawWindupKey(ui,card);
             }
         }
     }

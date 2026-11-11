@@ -51,6 +51,7 @@ public partial class Game1 : Game
     private static readonly Rectangle StartButton=new(740,884,440,106),ActionButton=new(1360,750,400,90),RetryButton=new(1360,860,400,80),BackButton=new(100,960,320,65),PreviewArea=new(130,240,1120,680),WorldSeedButton=new(520,960,730,65);
     private static readonly Rectangle CastPreview=new(312,292,1296,540),CastBack=new(54,1020,200,50),CastRetry=new(266,1020,240,50),CastAction=new(518,1020,480,50);
     private static Rectangle SeedButton(int index)=>new(1010+index*286,1020,274,50);
+    private static readonly Rectangle EquipmentModeButton=new(1450,76,405,46);
     private bool IsCastScreen=>_screen>=Screen.CastRolling;
     private bool IsRolling=>_screen is Screen.Rolling or Screen.CastRolling or Screen.PlacementRolling;
     private bool HasTerritories=>_screen is Screen.PlacementRolling or Screen.PlacementReview or Screen.Ready;
@@ -386,6 +387,8 @@ public partial class Game1 : Game
         else
         {
             if(CastDuplicateInput(click)){}
+            else if(_screen==Screen.CastReview && click && EquipmentModeButton.Contains(_pointer))
+                _setup.EquipmentMode=_setup.EquipmentMode==RobotEquipmentMode.Legacy?RobotEquipmentMode.Materials:RobotEquipmentMode.Legacy;
             else if(click && CastBack.Contains(_pointer)) { _screen=_openingWorldSelected?Screen.OpeningReview:Screen.Review;_openingActive=_openingWorldSelected; _setup.ClearPlacement(); _world.ShowSetup(_setup,false); }
             else if(click && SeedButton(0).Contains(_pointer))_seedDialog.Open(SeedDialog.Target.World,_setup.WorldSeed);
             else if(click && SeedButton(1).Contains(_pointer))_seedDialog.Open(SeedDialog.Target.Cast,_setup.CastSeed);
@@ -479,6 +482,9 @@ public partial class Game1 : Game
         }
         _ui.Text("人間プレイヤー、コンピュータープレイヤー、国旗は後で変えることができます。",new(54,78),.36f,new(170,206,216));
         if(_screen is Screen.CastRolling or Screen.CastReview)_ui.Button(CastDuplicateButton,(_setup.AllowDuplicateCharacters?"✓ ":"□ ")+"同キャラ有り",_setup.AllowDuplicateCharacters?Accent:Muted,.48f);
+        if(_screen==Screen.CastReview)_ui.Button(EquipmentModeButton,
+            _setup.EquipmentMode==RobotEquipmentMode.Materials?"装備数：素材９種":"装備数：旧仕様",
+            _setup.EquipmentMode==RobotEquipmentMode.Materials?Accent:Muted,.48f);
         _ui.Button(CastBack,"世界へ戻る",Muted,0.48f);
         _ui.Button(CastRetry,_screen is Screen.CastRolling or Screen.CastReview?"人物を再抽選":"配置を再抽選",Muted,0.48f);
         string action=IsRolling?"STOP":_screen==Screen.CastReview?"登場人物を確定 / 区画権利へ":_screen==Screen.PlacementReview?"区画権利を確定":"区画権利を確定済み";
@@ -725,6 +731,11 @@ public partial class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
+        _robotHeadTextures?.EndFrame(); _robotTorsoTextures?.EndFrame(); _robotLegTextures?.EndFrame();
+        _mapleHeadTextures?.EndFrame();
+        _mapleTorsoTextures?.EndFrame(); _mapleLegTextures?.EndFrame();
+        _sideHead?.EndFrame(); _sideTorso?.EndFrame(); _sideLegs?.EndFrame();
+        _rearHead?.EndFrame(); _rearTorso?.EndFrame(); _rearLegs?.EndFrame();
         if(IsOpeningScreen){DrawOpeningFrame(gameTime);base.Draw(gameTime);return;}
         if(_autoPaused){DrawAutoPause();base.Draw(gameTime);return;}
         _setup.Robots.PartPlanning.Invalidate();
@@ -803,7 +814,7 @@ public partial class Game1 : Game
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeTutorialPlanets();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_shipmentChime?.Dispose();_seaWave?.Dispose();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){DisposeBattleToyArt();_robotHeadTextures?.Dispose();_robotHeadTextures=null;_robotTorsoTextures?.Dispose();_robotTorsoTextures=null;_robotLegTextures?.Dispose();_robotLegTextures=null;_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeTutorialPlanets();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_shipmentChime?.Dispose();_seaWave?.Dispose();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         if(disposing){StopBattleMusic();StopIndustryMusic();StopEndingMusic();DisposeTitleMusic();}

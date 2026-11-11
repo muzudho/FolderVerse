@@ -7,9 +7,11 @@ public sealed record ProductionPlan(RobotParts Product,int Turns,bool Cheap=fals
     public int? LegsOrigin {get;init;}
     public RobotParts CheapParts {get;init;}
     public RobotParts PremiumParts {get;init;}
+    public RobotMaterial Material {get;init;}
     public RobotParts EffectiveCheapParts=>Cheap?Product:CheapParts&Product;
     public string QualityLabel=>PremiumParts!=0?"高級":EffectiveCheapParts==0?"正規":EffectiveCheapParts==Product?"安い":"正規＋安い";
-    public Robot Preview(int owner,long id=0)=>new(id,owner,Product){HeadOrigin=HeadOrigin??owner,BodyOrigin=BodyOrigin??owner,LegsOrigin=LegsOrigin??owner,CheapParts=EffectiveCheapParts,PremiumParts=PremiumParts&Product,IntegratedParts=IntegratedParts};
+    public Robot Preview(int owner,long id=0)=>new(id,owner,Product){HeadOrigin=HeadOrigin??owner,BodyOrigin=BodyOrigin??owner,LegsOrigin=LegsOrigin??owner,CheapParts=EffectiveCheapParts,PremiumParts=PremiumParts&Product,IntegratedParts=IntegratedParts,
+        HeadMaterial=(Product&RobotParts.Head)!=0?Material:default,BodyMaterial=(Product&RobotParts.Body)!=0?Material:default,LegsMaterial=(Product&RobotParts.Legs)!=0?Material:default};
 }
 public sealed partial class RobotWorkshop
 {
@@ -26,7 +28,7 @@ public sealed partial class RobotWorkshop
         foreach(long id in _workerLines.Keys.Where(id=>!ids.Contains(id)).ToArray())_workerLines.Remove(id);
         foreach(var worker in workers){
             if(!_workerLines.TryGetValue(worker.Id,out var line)){
-                line=new RobotWorkshop();line.GenerateWorkerPlans(worker,worldSeed,node,country,false);line.SelectPlan(0);_workerLines[worker.Id]=line;
+                line=new RobotWorkshop{_materialCatalogueOffset=_materialCatalogueOffset};line.GenerateWorkerPlans(worker,worldSeed,node,country,false);line.SelectPlan(0);_workerLines[worker.Id]=line;
             }else if(line._workerPlans==null)line.GenerateWorkerPlans(worker,worldSeed,node,country,true);
         }
         ProductionLines=ProductionLines.Take(BaseLineCount).Concat(_workerLines.OrderBy(p=>p.Key).Select(p=>p.Value)).Take(LineLimit).ToArray();
@@ -34,20 +36,27 @@ public sealed partial class RobotWorkshop
     public RobotWorkshop[] ProductionLines {get;private set;}
     public RobotWorkshop(){ProductionLines=new[]{this};}
     internal void RemoveProductionLines(){ProductionLines=System.Array.Empty<RobotWorkshop>();_baseLineCount=0;_workerLines=null;Manufacturing=false;ProductionAge=WaitingProductionTurns=0;}
-    public void GenerateLines(int seed)
+    private int? _materialCatalogueOffset;
+    public void GenerateLines(int seed,RobotEquipmentMode mode=RobotEquipmentMode.Legacy)
     {
+        ConfigureMaterialCatalogue(seed,mode);
         Automation=NodeAutomation.Gentle;var random=new SeedRandom(seed);int count=random.Next(4);
         count=System.Math.Min(count,LineLimit);_baseLineCount=count;_workerLines=null;ProductionLines=new RobotWorkshop[count];
         for(int i=0;i<count;i++){
             var line=i==0?this:new RobotWorkshop();ProductionLines[i]=line;
+            line.ConfigureMaterialCatalogue(seed^i*13007,mode);
             line.GeneratePlans(seed^((i+1)*7919));line.SelectPlan(random.Next(11));line.SetRest(1+random.Next(9),1+random.Next(9));
         }
+    }
+    internal void ConfigureMaterialCatalogue(int seed,RobotEquipmentMode mode)
+    {
+        _materialCatalogueOffset=mode==RobotEquipmentMode.Materials?_materialCatalogueOffset??(int)((uint)seed%8):null;
     }
     public ProductionPlan[] Plans {get;private set;}={new(RobotParts.Head,4),new(RobotParts.Body,4),new(RobotParts.Head|RobotParts.Body,8)};
     public int SelectedPlan {get;private set;}=-1;
     private ProductionPlan _premiumPlan;
     private bool _premiumCatalogueInitialized;
-    public int PlanCount=>_premiumPlan==null?11:12;
+    public int PlanCount=>_premiumPlan==null || _materialCatalogueOffset.HasValue?11:12;
     public int RegularCompleteProductionTurns=>Plans.Where(p=>p.Product==RobotParts.Complete && p.EffectiveCheapParts==0 && p.PremiumParts==0).Select(p=>p.Turns).DefaultIfEmpty(12).Max();
     public bool CheapProduct {get;private set;}
     public RobotParts IntegratedProduct {get;private set;}
@@ -56,7 +65,13 @@ public sealed partial class RobotWorkshop
     {
         if(index<0 || index>=PlanCount || index==3)throw new System.ArgumentOutOfRangeException(nameof(index));
         if(index==11)return _premiumPlan;
-        return _workerPlans==null?BasePlanAt(index):_workerPlans[index];
+        var plan=_workerPlans==null?BasePlanAt(index):_workerPlans[index];
+        if(_materialCatalogueOffset is not int offset)return plan;
+        int ordinal=index>3?index-1:index;
+        var material=(RobotMaterial)((ordinal+offset)%8);
+        int parts=System.Numerics.BitOperations.PopCount((uint)plan.Product);
+        int extra=material==RobotMaterial.Maple?2*parts:0;
+        return plan with {Material=material,Turns=plan.Turns+extra};
     }
     private ProductionPlan BasePlanAt(int index)
     {

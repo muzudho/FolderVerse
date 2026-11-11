@@ -29,6 +29,7 @@ public sealed class SurfaceCell
 public sealed partial class WorldSetup
 {
     public bool WorldConquestEndingShown;
+    public RobotEquipmentMode EquipmentMode {get;set;}
     public int WorldSeed { get; private set; }
     public int CastSeed { get; private set; }
     public int PlacementSeed { get; private set; }
@@ -228,7 +229,7 @@ public sealed partial class WorldSetup
         Robots.Initialize(Nodes.All.Length,ActiveCount);
         foreach(var node in Nodes.All.Where(n=>n.Owner>=0))
         {
-            Robots.Workshops[node.Id].GenerateLines(seed^node.Id*7919);
+            Robots.Workshops[node.Id].GenerateLines(seed^node.Id*7919,EquipmentMode);
             for(int i=0;i<3;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,RobotParts.Complete,i==1?RobotRole.Captain:RobotRole.Soldier));
         }
         Robots.ConfigureFactories(this);

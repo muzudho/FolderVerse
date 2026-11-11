@@ -23,7 +23,7 @@ public sealed partial class BattleLessons
             var store=w.Robots.Nodes[node.Id];
             if(store.Robots.Any(r=>r.Owner==owner && r.DefenseOnly && r.CanFight))continue;
             var robot=store.Robots.Where(r=>r.Owner==owner && !r.Stationed && !w.Robots.AssemblyLocked(node.Id,r) && w.Robots.CanSetReservation(node.Id,r,HangarReservation.Defense,owner))
-                .OrderBy(r=>r.CombatParts(owner)).ThenBy(r=>r.Id).FirstOrDefault();
+                .OrderBy(r=>r.Equipment(owner,w.EquipmentMode).Daggers).ThenBy(r=>r.Id).FirstOrDefault();
             if(robot!=null && w.Robots.ToggleReservation(node.Id,robot.Id,HangarReservation.Defense,owner))count++;
         }
         return count;

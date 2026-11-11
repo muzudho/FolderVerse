@@ -6,6 +6,7 @@ public enum TerrainKind { Sea,Coast,Grassland,Hill,Mountain }
 public static class WorldTerrain
 {
     public const float MountainHeight=0.72f;
+    internal const float MaxRelief=.052f;
     public static Vector3 Offset(int seed)
     {
         var random=new SeedRandom(seed);return new Vector3(random.Unit(),random.Unit(),random.Unit())*100;
@@ -16,6 +17,22 @@ public static class WorldTerrain
         return Noise(sample)*0.68f+Noise(sample*2.07f)*0.23f+Noise(sample*4.13f)*0.09f;
     }
     public static TerrainKind Kind(float height)=>height<0.52f?TerrainKind.Sea:height<0.55f?TerrainKind.Coast:height<0.70f?TerrainKind.Grassland:height<MountainHeight?TerrainKind.Hill:TerrainKind.Mountain;
+    // Display-only relief in world units. One terrain sample is 0.1 units wide.
+    public static float Relief(float height)=>Kind(height) switch
+    {
+        TerrainKind.Sea=>0,
+        TerrainKind.Coast=>.014f,
+        TerrainKind.Grassland=>.024f,
+        TerrainKind.Hill=>.036f,
+        _=>MaxRelief
+    };
+    public static float ReliefAt(SurfaceCell cell,Vector3 point,Vector3 offset)
+    {
+        var local=point-cell.Origin;
+        float u=(MathF.Floor(Vector3.Dot(local,cell.U)*10)+.5f)/10;
+        float v=(MathF.Floor(Vector3.Dot(local,cell.V)*10)+.5f)/10;
+        return Relief(Elevation(cell.Origin+cell.U*u+cell.V*v,offset));
+    }
     public static Color ColorAt(float height)=>height<0.47f?new(32,112,182):height<0.52f?new(53,155,207):height<0.55f?new(237,211,140):height<0.70f?new(85,164,103):height<MountainHeight?new(167,188,124):height<.77f?new(111,101,96):new(227,235,242);
     public static Color ColorAt(float height,Vector3 normal,int polarAxis=1)
     {

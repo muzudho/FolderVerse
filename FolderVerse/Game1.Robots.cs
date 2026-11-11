@@ -17,6 +17,16 @@ public partial class Game1
         void Shape(Rectangle bounds,RobotParts part,bool face=false){if((robot.Parts&part)!=0)shapes.Add((bounds,part,face));}
         bool headBody=(robot.IntegratedParts&robot.Parts)==(RobotParts.Head|RobotParts.Body);
         bool bodyLegs=(robot.IntegratedParts&robot.Parts)==(RobotParts.Body|RobotParts.Legs);
+        bool artHead=HasRobotHeadArt(r,robot);
+        var torsoArt = FindRobotBodyArt(r, robot, RobotParts.Body);
+        var legsArt = FindRobotBodyArt(r, robot, RobotParts.Legs);
+        bool completeArt = artHead && torsoArt != null && legsArt != null;
+        bool HasArt(RobotParts part) => part switch
+        {
+            RobotParts.Head => artHead,
+            RobotParts.Body => torsoArt != null,
+            _ => legsArt != null
+        };
         int bodyTop=headBody?r.Height/4:r.Height/3,bodyBottom=r.Height/3+r.Height/3;
         int legsTop=bodyLegs?bodyBottom:r.Height*3/4,legsBottom=bodyLegs?r.Height:r.Height*3/4+r.Height/4;
         Shape(new(r.X+r.Width/4,r.Y,r.Width/2,r.Height/4),RobotParts.Head,true);
@@ -25,51 +35,64 @@ public partial class Game1
         Shape(new(r.X+r.Width/6,r.Y+legsTop,r.Width/4,legsBottom-legsTop),RobotParts.Legs);
         Shape(new(r.X+r.Width*7/12,r.Y+legsTop,r.Width/4,legsBottom-legsTop),RobotParts.Legs);
         float Alpha(RobotParts part)=>opacity*(partOpacity?.Invoke(part)??1);
-        var joint=new Color(105,119,125);
-        if((robot.Parts&(RobotParts.Head|RobotParts.Body))==(RobotParts.Head|RobotParts.Body) && bodyTop>r.Height/4)
-            _ui.Box(new(r.X+r.Width*5/12,r.Y+r.Height/4,Math.Max(1,r.Width/6),bodyTop-r.Height/4+2),joint*Math.Min(Alpha(RobotParts.Head),Alpha(RobotParts.Body)));
-        if((robot.Parts&(RobotParts.Body|RobotParts.Legs))==(RobotParts.Body|RobotParts.Legs) && legsTop>bodyBottom){
-            float alpha=Math.Min(Alpha(RobotParts.Body),Alpha(RobotParts.Legs));
-            _ui.Box(new(r.X+r.Width*5/12,r.Y+bodyBottom,Math.Max(1,r.Width/6),legsTop-bodyBottom),joint*alpha);
-            _ui.Box(new(r.X+r.Width/6,r.Y+legsTop-2,r.Width*2/3,Math.Max(2,r.Height/45)),joint*alpha);
-        }
-        if(whiteOutline)foreach(var shape in shapes){
-            if(robot.IsCheap(shape.Part) || robot.IsPremium(shape.Part)){
-                for(int y=shape.Bounds.Top;y<shape.Bounds.Bottom;y++){
-                    var row=RobotPartSilhouette.Row(shape.Bounds,y,robot.IsCheap(shape.Part),robot.IsPremium(shape.Part));row.Inflate(1,1);
-                    _ui.Box(row,ControlEdge*Alpha(shape.Part));
-                }
-                continue;
+        if (completeArt)
+            DrawCompleteRobotArt(r, robot, Alpha);
+        else
+        {
+            var joint=new Color(105,119,125);
+            if((robot.Parts&(RobotParts.Head|RobotParts.Body))==(RobotParts.Head|RobotParts.Body) && bodyTop>r.Height/4)
+                _ui.Box(new(r.X+r.Width*5/12,r.Y+r.Height/4,Math.Max(1,r.Width/6),bodyTop-r.Height/4+2),joint*Math.Min(Alpha(RobotParts.Head),Alpha(RobotParts.Body)));
+            if((robot.Parts&(RobotParts.Body|RobotParts.Legs))==(RobotParts.Body|RobotParts.Legs) && legsTop>bodyBottom){
+                float alpha=Math.Min(Alpha(RobotParts.Body),Alpha(RobotParts.Legs));
+                _ui.Box(new(r.X+r.Width*5/12,r.Y+bodyBottom,Math.Max(1,r.Width/6),legsTop-bodyBottom),joint*alpha);
+                if (legsArt == null)
+                    _ui.Box(new(r.X+r.Width/6,r.Y+legsTop-2,r.Width*2/3,Math.Max(2,r.Height/45)),joint*alpha);
             }
-            var bounds=shape.Bounds;bounds.Inflate(2,2);
-            var edges=new System.Collections.Generic.List<Rectangle>{bounds};
-            foreach(var filled in shapes){
-                var next=new System.Collections.Generic.List<Rectangle>();
-                foreach(var edge in edges){
-                    var cut=Rectangle.Intersect(edge,filled.Bounds);
-                    if(cut.Width<=0 || cut.Height<=0){next.Add(edge);continue;}
-                    if(edge.Top<cut.Top)next.Add(new(edge.X,edge.Y,edge.Width,cut.Top-edge.Top));
-                    if(cut.Bottom<edge.Bottom)next.Add(new(edge.X,cut.Bottom,edge.Width,edge.Bottom-cut.Bottom));
-                    if(edge.Left<cut.Left)next.Add(new(edge.X,cut.Top,cut.Left-edge.Left,cut.Height));
-                    if(cut.Right<edge.Right)next.Add(new(cut.Right,cut.Top,edge.Right-cut.Right,cut.Height));
+            if(whiteOutline)foreach(var shape in shapes){
+                if(HasArt(shape.Part))continue;
+                if(robot.IsCheap(shape.Part) || robot.IsPremium(shape.Part)){
+                    for(int y=shape.Bounds.Top;y<shape.Bounds.Bottom;y++){
+                        var row=RobotPartSilhouette.Row(shape.Bounds,y,robot.IsCheap(shape.Part),robot.IsPremium(shape.Part));row.Inflate(1,1);
+                        _ui.Box(row,ControlEdge*Alpha(shape.Part));
+                    }
+                    continue;
                 }
-                edges=next;
+                var bounds=shape.Bounds;bounds.Inflate(2,2);
+                var edges=new System.Collections.Generic.List<Rectangle>{bounds};
+                foreach(var filled in shapes){
+                    var next=new System.Collections.Generic.List<Rectangle>();
+                    foreach(var edge in edges){
+                        var cut=Rectangle.Intersect(edge,filled.Bounds);
+                        if(cut.Width<=0 || cut.Height<=0){next.Add(edge);continue;}
+                        if(edge.Top<cut.Top)next.Add(new(edge.X,edge.Y,edge.Width,cut.Top-edge.Top));
+                        if(cut.Bottom<edge.Bottom)next.Add(new(edge.X,cut.Bottom,edge.Width,edge.Bottom-cut.Bottom));
+                        if(edge.Left<cut.Left)next.Add(new(edge.X,cut.Top,cut.Left-edge.Left,cut.Height));
+                        if(cut.Right<edge.Right)next.Add(new(cut.Right,cut.Top,edge.Right-cut.Right,cut.Height));
+                    }
+                    edges=next;
+                }
+                foreach(var edge in edges)_ui.Box(edge,ControlEdge*Alpha(shape.Part));
             }
-            foreach(var edge in edges)_ui.Box(edge,ControlEdge*Alpha(shape.Part));
+            foreach(var shape in shapes){
+                if(artHead && shape.Part==RobotParts.Head){if(shape.Face)DrawRobotHeadArt(r,robot,Alpha(RobotParts.Head));continue;}
+                if (HasArt(shape.Part)) continue;
+                DrawRobotPartFill(shape.Bounds,r,shape.Bounds,robot,shape.Part,robot.Origin(shape.Part),
+                    shape.Face?Cream:_setup.OwnerColor(robot.Origin(shape.Part)),Alpha(shape.Part));
+            }
+            var emblemPart=(robot.Parts&RobotParts.Body)!=0?RobotParts.Body:(robot.Parts&RobotParts.Head)!=0?RobotParts.Head:RobotParts.Legs;
+            int emblemSize=Math.Max(1,Math.Min(r.Width/3,r.Height/7));
+            int emblemY=emblemPart==RobotParts.Body?r.Y+(bodyTop+bodyBottom-emblemSize)/2:emblemPart==RobotParts.Head?r.Y+(r.Height/4-emblemSize)/2:r.Y+legsTop;
+            int emblemX=r.Center.X;
+            if(emblemPart==RobotParts.Legs){emblemSize=Math.Max(1,Math.Min(emblemSize,r.Width/6));emblemX=r.X+r.Width*7/24;emblemY=r.Y+(legsTop+legsBottom-emblemSize)/2;}
+            if (torsoArt != null)
+                DrawRobotBodyPart(torsoArt, new(r.X, r.Y + bodyTop, r.Width, bodyBottom - bodyTop), robot, RobotParts.Body, Alpha(RobotParts.Body));
+            if (legsArt != null)
+                DrawRobotBodyPart(legsArt, new(r.X, r.Y + legsTop, r.Width, legsBottom - legsTop), robot, RobotParts.Legs, Alpha(RobotParts.Legs));
+            if(!HasArt(emblemPart))DrawCountryEmblem(new(emblemX-emblemSize/2,emblemY,emblemSize,emblemSize),robot.Origin(emblemPart),Alpha(emblemPart));
         }
-        foreach(var shape in shapes){
-            DrawRobotPartFill(shape.Bounds,r,shape.Bounds,robot,shape.Part,robot.Origin(shape.Part),
-                shape.Face?Cream:_setup.OwnerColor(robot.Origin(shape.Part)),Alpha(shape.Part));
-        }
-        var emblemPart=(robot.Parts&RobotParts.Body)!=0?RobotParts.Body:(robot.Parts&RobotParts.Head)!=0?RobotParts.Head:RobotParts.Legs;
-        int emblemSize=Math.Max(1,Math.Min(r.Width/3,r.Height/7));
-        int emblemY=emblemPart==RobotParts.Body?r.Y+(bodyTop+bodyBottom-emblemSize)/2:emblemPart==RobotParts.Head?r.Y+(r.Height/4-emblemSize)/2:r.Y+legsTop;
-        int emblemX=r.Center.X;
-        if(emblemPart==RobotParts.Legs){emblemSize=Math.Max(1,Math.Min(emblemSize,r.Width/6));emblemX=r.X+r.Width*7/24;emblemY=r.Y+(legsTop+legsBottom-emblemSize)/2;}
-        DrawCountryEmblem(new(emblemX-emblemSize/2,emblemY,emblemSize,emblemSize),robot.Origin(emblemPart),Alpha(emblemPart));
         foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0){
             float alpha=Alpha(part);bool damaged=robot.IsDamaged(part);
-            if(damaged){
+            if(damaged && !HasArt(part)){
                 var metal=new Color(185,180,164)*alpha;
                 int y=part==RobotParts.Head?r.Y+r.Height/12:part==RobotParts.Body?r.Y+r.Height/3:r.Y+r.Height*3/4;
                 _ui.Box(new(r.X+r.Width/4,y+2,Math.Max(2,r.Width/5),Math.Max(2,r.Height/28)),metal);
@@ -77,7 +100,9 @@ public partial class Game1
             }
         }
         int workOwner=WorkReservationOwner(robot);
-        if(workOwner>=0 && (robot.Parts&RobotParts.Legs)!=0)RobotWorkArt.DrawShoes(_ui,r,_setup.OwnerColor(workOwner),opacity*(partOpacity?.Invoke(RobotParts.Legs)??1),robot.ShoeOwner>=0?DefenseShoeProgress(robot):WorkShoeProgress(robot));
+        if ((workOwner >= 0 || robot.Disposal || robot.LongDeliveryNumber.HasValue) && (robot.Parts & RobotParts.Head) != 0)
+            RobotWorkArt.DrawWindupKey(_ui, r, Alpha(RobotParts.Head),
+                robot.ShoeOwner >= 0 ? DefenseShoeProgress(robot) : WorkShoeProgress(robot));
         DrawWorkReservationEffect(r,robot,opacity);
     }
     private void DrawRobotPartFill(Rectangle area,Rectangle robotArea,Rectangle damageArea,Robot robot,RobotParts part,int owner,Color primary,float opacity)

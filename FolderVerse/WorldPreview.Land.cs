@@ -25,17 +25,10 @@ public sealed partial class WorldPreview
             int owner=PresentationOwner.HasValue?ConquestPresentation.ExactCellOwner(setup,cell.Id):exclusive?setup.Nodes.FullOwner(cell.Id):setup.Owners[cell.Id];
             if(PresentationOwner.HasValue && (owner!=PresentationOwner.Value || PresentationCells!=null && !PresentationCells.Contains(cell.Id)))owner=-1;
             if(exclusive && ControlledCountryColors && !setup.Relations.Controls(owner))owner=-1;
-        for(int y=0;y<10;y++)for(int x=0;x<10;x++)
-        {
-            var a=cell.Origin+cell.U*(x/10f)+cell.V*(y/10f);
-            var b=a+cell.U/10;var c=b+cell.V/10;var d=a+cell.V/10;
-            float height=WorldTerrain.Elevation((a+c)/2,offset);
-            // Land selection and the normal globe keep the planet's terrain.
-            // The existing, explicitly selected colour-overlay layer remains optional.
-            var color=exclusive && CountryColors && owner>=0?LandTerritoryColor(setup.CountryMapColor(owner,x,y),WorldTerrain.Kind(height)):WorldTerrain.ColorAt(height,cell.Normal,setup.PolarAxis);
-            if(x==0 || y==0)color=Color.Lerp(color,new Color(17,47,62),.18f);
-            foreach(var point in new[]{a,b,c,a,c,d})mesh.Add(new(point,color,cell.Normal));
-        }
+            AddFace(mesh,cell.Origin,cell.U,cell.V,cell.Normal,1,1,offset,(height,x,y)=>
+                exclusive && CountryColors && owner>=0
+                    ? LandTerritoryColor(setup.CountryMapColor(owner,x,y),WorldTerrain.Kind(height))
+                    : WorldTerrain.ColorAt(height,cell.Normal,setup.PolarAxis));
         }
         _vertices.Dispose();
         _vertices=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
