@@ -150,7 +150,7 @@ public partial class Game1 : Game
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         if(IsOpeningScreen){OpeningInput(click,enter,escape,gameTime.ElapsedGameTime.TotalSeconds,keyboard);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateSubordinateDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) || UpdateComputerDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) ||
-            UpdateComputerMarches(gameTime.ElapsedGameTime.TotalSeconds,escape))
+            HandleComputerMarches(gameTime,escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(CountrySettingsInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(OperationSettingsInput(active && click,escape)){DragStatusMap(mouse,active);_previousMouse=mouse;_previousKeyboard=keyboard;return;}

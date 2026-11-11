@@ -466,3 +466,30 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 - DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-10/demo-check/ -v quiet --disable-build-servers 成功、最終警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP=1／DOMESTIC_ENTRY=1で実行し、AUTO_ENABLED=0と1の両方が終了コード0（fix-auto-disabled.log、fix-auto-enabled.log）。
 - 無効時の通常再生は960×540で3パーツ維持、組立成功フラグなし、実ハンドル緑チェックを検査・描画し目視（audit-latest-computer-domestic.pngを同名再利用、後続回帰で上書き）。通常診断（DOMESTIC_SKIP=0、LEGAL_QUEEN=0、CARD19=0、ASSEMBLY_COMPARE=0、FALLBACK=0、WORLD=0）も終了コード0で、オンオフ・征服者切替・緑赤消去・個別出撃・和平到着・人間復帰が成功（fix-auto-regression.log）。git diff --check成功。
 - 修正完了は自動組立オフ時の表示による追加組立に限定。DEMO-0017全体は一部対応・検証待ち、通常入力での組立実演は未完了。生産・機能移転や品質／損傷を伴う全条件・自然Demo全経路・19体カード通常操作は未確認。出力先追加・コミット・プッシュなし。
+
+## 2026-11-11 20:34修正回
+
+- 完了20:35:14 JST。対象は22:59点検のCPU軍事ピッカー画像に内政フェーズ演出が重なる診断上の問題。HEAD=6f02353570f4d67e3179faf97b02ac26f083febc。関係差分は点検記録のみ、競合プロセスなし。ゲームの新規DEMO IDなし。
+- 前回の非追跡ProbeCpuSortie.cs.txtの変更を検証。診断描画の時刻を単調増加にそろえ、軍事入口を描画したあと2秒進めてカード操作を採取した。
+- .NET 9参照パックがないため、SDK 10.0.302のRoslyn csc.dllを使い、net10.0参照DLLと既存FolderVerse.dll、MonoGame.Framework.dll、ProbeCpuSortieEntry.cs.txt、ProbeCpuSortie.cs.txt、グローバルusing定義から診断だけを既存demo-check内のDemoAuditCpuSortie-clock.dllへ再コンパイル。終了コード0、参照バージョン差の警告CS1701が3件。FolderVerseのソースは90c02432から差分なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=0で dotnet exec --roll-forward Major --runtimeconfig DemoAuditCpuSortie.runtimeconfig.json --depsfile DemoAuditCpuSortie.deps.json DemoAuditCpuSortie-clock.dll を既存出力の各絶対パスで実行。終了コード0（fix-cpu-clock.log）。960×540 audit-latest-computer-confirm.pngで演出終了後の選択カード、手、取消・確定ボタンを目視。既存診断の個別カード、重複予約なし、赤チェック、閉鎖、和平先98への到着と人間復帰も成功。
+- 診断画像の問題は対応済み。通常速度のゲームで演出と操作が重なるかは要再確認。正規net9.0再ビルド、DEMO-0017個別組立実演、19体通常操作、自然Demo全経路は引き続き未検証。ゲームコードと追跡ビルド設定に変更なし。コミット・プッシュ・公開なし。
+
+## 2026-11-11 22:26修正回
+
+- 開始22:26:03、完了 22:31:21 JST。対象DEMO-0018。HEAD=6f02353570f4d67e3179faf97b02ac26f083febc。開始時差分は両記録、競合するゲーム・検証作業なし。
+- 変更ファイル FolderVerse/Game1.cs、FolderVerse/Game1.ComputerMarches.cs。通常入力で、CPU軍事の先頭操作を地図のフェーズ演出終了まで待機させる。既存の1秒の操作前間隔を保ち、Escは待機中も既存のスキップ処理へ渡す。
+- 非追跡ProbeCpuSortie.cs.txtを通常入力のHandleInputで60Hz相当に進める診断へ更新。修正前は.NET 9参照DLLと既存ゲームDLLを使いRoslynで診断のみビルド（CS1701が1件）。最初の開戦操作1.017秒、予定地点27の選択2.033秒を再現（fix-phase-before.log）。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-11/demo-check/ -v quiet --disable-build-servers は警告・エラー0。初回のローカルフィードのみの復元はNU1101。既存のユーザーNuGetキャッシュとローカルフィードを使って復元した。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=0で dotnet DemoAuditCpuSortie.dll を実行。PHASE_TIMING=1で最初の開戦操作2.817秒、予定地点27の選択3.833秒。960×540のaudit-cpu-phase-entry.pngで中央演出が消え、地図と手カーソルが見えることを目視（fix-phase-after.log）。PHASE_SKIP=1は演出開始0.250秒にEscを入力し、再生終了、人間への復帰と内政進行を確認（fix-phase-skip.log）。
+- PHASE_TIMING=0の同診断で表示オンオフ、征服者切替、出撃選択と重複予約なし、和平到着・人間復帰を確認（fix-phase-regression.log）。dotnet DemoChecksUi.dllは展開図／地星儀の1080p／540pで緑赤チェック、選択→確定即予約→赤チェック→閉鎖→ターン終了、両チェックの消去を確認（fix-phase-checks.log）。4実行とも終了コード0。git diff --check成功。
+- 軍事入口の実描画は固定シードの60Hz相当診断。別シード・全自然Demo・DEMO-0017個別組立実演・19体カード通常操作は未確認。既存のdemo-checkを再利用。
+
+## 2026-11-11 23:28修正回
+
+- 開始23:28:04、完了 23:31:54 JST。対象DEMO-0016の出撃19体時の専用表示。HEAD=6f02353570f4d67e3179faf97b02ac26f083febc。開始時の関係差分はDEMO-0018のGame1.cs／Game1.ComputerMarches.csと両記録。競合プロセスなし。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_CARD19=1で修正前のDemoAuditCpuSortie.dllを実行し、19体で専用表示へ退避する挙動を再現（audit-card19.log、終了0）。
+- Game1.InvasionPicker.csで通常出撃選択を18枚ずつ表示し、ページ切替とカードの入力・描画に同じ矩形を使用。3段目は確定・取消に重ならない位置へ調整。Game1.ComputerMarches.csは既に決定した個体IDに対応するページを通常ボタンで送り、個別カードを押す。選択を確定した後のCPU予約の実行元は既存の指示列。
+- 非追跡ProbeCpuSortie.cs.txtのCARD19診断を更新。dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-11/demo-check/ -v quiet --disable-build-servers は警告・エラー0。既存のNuGetキャッシュと出力先を使用。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_CARD19=1で dotnet DemoAuditCpuSortie.dll（23:30:53〜23:30:58、終了0、fix-card19.log）。960×540の固定拡張格納庫で通常入力の次・前ページ、19体目の選択、選択の保持と取消を検査。CPUは通常画面で指定19体すべてを選択し、確定後の追加予約0、次の征服者3の1ページ目、スキップ後の人間復帰を確認。audit-card19.pngを目視し、2/2、選択19体、カード上の手と確定ボタンを確認。
+- 同DLLの通常診断（CARD19未設定、WORLD=0、23:31:07〜23:31:18）と dotnet DemoChecksUi.dll（23:31:18〜23:31:25）は終了0。表示オンオフ、征服者切替、出撃・和平と人間復帰、展開図／地星儀の1080p・540pで緑赤ハンドルから確定即予約・閉鎖・ターン終了と消去を回帰確認。証拠fix-card19-DemoAuditCpuSortie.log、fix-card19-DemoChecksUi.log。git diff --check成功。
+- 19体は固定場面。自然AIの19体以上、3ページ以上の実描画、無効指示等の専用表示分岐、DEMO-0017個別組立実演、全自然Demoは未確認または既存の制約を継続。

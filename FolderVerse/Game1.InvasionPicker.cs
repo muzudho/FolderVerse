@@ -7,15 +7,19 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private int _invasionPicker=-1;
+    private int _invasionPickerPage;
+    private const int InvasionCardsPerPage=18;
     private readonly HashSet<long> _invasionDraft=new();
     private bool _invasionQueenDraft;
     // Role/assembly previews remove and append robots. Their storage order is not a UI identity.
     private Robot[] InvasionRobots(InvasionSource row)=>(row.Queen?_setup.Campaign.RobotBattles.SelectableRobots(_setup,row.Owner,row.Node,true):DomesticOperationsAllowed?_setup.Campaign.DeliverySortieRobots(_setup,row.Owner,row.Node):_setup.Robots.Nodes[row.Node].Robots.Where(r=>r.Owner==row.Owner && _setup.Robots.CanReserveSortie(row.Node,r)).ToArray()).OrderBy(r=>r.Id).ToArray();
-    private static Rectangle InvasionRobotCard(int i)=>new(350+i%6*200,320+i/6*170,185,155);
+    private static Rectangle InvasionRobotCard(int i)=>new(350+i%6*200,320+i/6*160,185,155);
     private static readonly Rectangle InvasionPickerDone=new(1290,795,250,55),InvasionPickerCancel=new(1010,795,250,55),InvasionQueenToggle=new(380,705,520,55);
+    private static readonly Rectangle InvasionPickerPrevious=new(1190,855,100,40),InvasionPickerNext=new(1440,855,100,40);
+    private static int InvasionPickerPageCount(int count)=>Math.Max(1,(count+InvasionCardsPerPage-1)/InvasionCardsPerPage);
     private void OpenInvasionPicker(int index)
     {
-        _invasionPicker=index;_invasionDraft.Clear();_invasionDraft.UnionWith(_invasionSources[index].Robots);
+        _invasionPicker=index;_invasionPickerPage=0;_invasionDraft.Clear();_invasionDraft.UnionWith(_invasionSources[index].Robots);
         _invasionQueenDraft=_invasionSources[index].Selected;
     }
     private void InvasionPickerInput(bool click,bool escape)
@@ -39,7 +43,12 @@ public partial class Game1
             _invasionPicker=-1;return;
         }
         if(row.Queen && InvasionQueenToggle.Contains(_pointer)){_invasionQueenDraft=!_invasionQueenDraft;return;}
-        for(int i=0;i<robots.Length;i++)if(InvasionRobotCard(i).Contains(_pointer))
+        int pages=InvasionPickerPageCount(robots.Length);
+        _invasionPickerPage=Math.Min(_invasionPickerPage,pages-1);
+        if(pages>1 && InvasionPickerPrevious.Contains(_pointer)){_invasionPickerPage=Math.Max(0,_invasionPickerPage-1);return;}
+        if(pages>1 && InvasionPickerNext.Contains(_pointer)){_invasionPickerPage=Math.Min(pages-1,_invasionPickerPage+1);return;}
+        int start=_invasionPickerPage*InvasionCardsPerPage;
+        for(int i=start;i<Math.Min(start+InvasionCardsPerPage,robots.Length);i++)if(InvasionRobotCard(i-start).Contains(_pointer))
         {
             if(!_invasionDraft.Remove(robots[i].Id)){_invasionDraft.Add(robots[i].Id);BeginWorkReservationEffect(robots[i],row.Owner);}
             else _workReservationEffects.Remove(robots[i].Id);
@@ -53,9 +62,11 @@ public partial class Game1
         _ui.Box(new(0,0,1920,1080),new Color(0,0,0,175));_ui.Box(new(310,185,1300,720),new Color(27,49,62));
         _ui.Text(row.Queen?"ポケットから出撃するロボットを選択":"格納庫から出撃するロボットを選択",new(350,215),.7f,Cream);
         _ui.Text(row.Queen?"選択を確定すると開戦予約に反映":"直送便到着後の予定 / １体でも出撃できなければ開戦予定全体を中止",new(350,270),.43f,Cream);
-        for(int i=0;i<robots.Length;i++)
+        int pages=InvasionPickerPageCount(robots.Length),page=Math.Min(_invasionPickerPage,pages-1);
+        int start=page*InvasionCardsPerPage;
+        for(int i=start;i<Math.Min(start+InvasionCardsPerPage,robots.Length);i++)
         {
-            var r=InvasionRobotCard(i);var robot=robots[i];bool selected=_invasionDraft.Contains(robot.Id);
+            var r=InvasionRobotCard(i-start);var robot=robots[i];bool selected=_invasionDraft.Contains(robot.Id);
             _ui.Box(r,selected?Accent:Muted);DrawRobotGlyph(new(r.X+65,r.Y+8,55,75),robot,whiteOutline:true);
             string identity=RobotPartPlanning.PlannedId(robot.Id)?"組替後の予定":robot.Id<0?"直送便到着予定":$"ID {robot.Id}";
             _ui.Center($"{identity} / {PartsLabel(robot.Parts)}",new(r.X,r.Y+90,r.Width,28),.32f,Cream);
@@ -67,5 +78,11 @@ public partial class Game1
         _ui.Text($"ロボット {_invasionDraft.Count}体"+(row.Queen && _invasionQueenDraft?" ＋ クイーン":""),new(380,800),.55f,Cream);
         _ui.Button(InvasionPickerCancel,"取消",Muted,.55f);_ui.Button(InvasionPickerDone,"選択を確定",Accent,.55f);
         _ui.Text("０体かつクイーン不参加なら、この出撃元は参加しません",new(350,865),.42f,Cream);
+        if(pages>1)
+        {
+            _ui.Button(InvasionPickerPrevious,"前へ",page>0?Accent:Muted,.43f);
+            _ui.Center($"{page+1} / {pages}",new(1290,855,150,40),.43f,Cream);
+            _ui.Button(InvasionPickerNext,"次へ",page+1<pages?Accent:Muted,.43f);
+        }
     }
 }
