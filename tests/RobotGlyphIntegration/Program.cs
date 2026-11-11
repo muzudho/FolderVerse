@@ -342,7 +342,30 @@ sealed class GlyphProbe:Game1
   var directReservation=w.Robots.PartPlanning.Orders.Single();
   if(directReservation.RobotId!=cargo.Id || directReservation.TargetRobotId!=receiver.Id || directReservation.Source!=node || directReservation.Target!=destination || directReservation.Parts!=RobotParts.Head)throw new Exception("Direct delivery page2 selected incorrect robots");
   Console.WriteLine("PASS actual direct-delivery page2 drag reserves head400001 into body400002.");
-  Console.WriteLine("PASS Game1 glyph: complete/head-only/mixed origins/opacity/fallbacks render; actual shared glyph entry point verified.");Exit();
+  Console.WriteLine("PASS Game1 glyph: complete/head-only/mixed origins/opacity/fallbacks render; actual shared glyph entry point verified.");
+  using var globe = new WorldPreview(GraphicsDevice);
+  var globeWorld = new WorldSetup();
+  globeWorld.SetParticipantCounts(1,1);
+  globeWorld.SetWorld(0);
+  globeWorld.SetPlacement(2);
+  globe.ShowSetup(globeWorld,false);
+  var globeArea = new Rectangle(65,20,830,500);
+  var net = new CubeNet();
+  GraphicsDevice.Clear(new Color(25,36,48));
+  globe.Draw(.55f,-.35f,markers:false,globeView:true,globeFrame:globeArea);
+  batch.Begin();
+  net.DrawGlobeLayers((UiPainter)Get("_ui"),globeWorld,globe,globeArea,.55f,-.35f,0);
+  batch.End();
+  var globePixels = new Color[960 * 540];
+  GraphicsDevice.GetBackBufferData(globePixels);
+  foreach (var ink in new Color[]{new(255,216,99),new(108,213,245),new(255,232,153),new(164,226,242)})
+   if (!globePixels.Contains(ink)) throw new Exception($"Missing globe ribbon or puck color {ink}");
+  using var globeImage = new Texture2D(GraphicsDevice,960,540);
+  globeImage.SetData(globePixels);
+  using var globeFile = File.Create(Path.Combine(Path.GetDirectoryName(output)!,"globe-ribbons-pucks.png"));
+  globeImage.SaveAsPng(globeFile,960,540);
+  Console.WriteLine("PASS globe land/sea ribbons and pucks rendered.");
+  Exit();
  }
  protected override void UnloadContent(){(Get("_robotHeadTextures") as IDisposable)?.Dispose();batch?.Dispose();pixel?.Dispose();}
 }

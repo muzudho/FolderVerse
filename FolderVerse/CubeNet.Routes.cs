@@ -76,7 +76,7 @@ public sealed partial class CubeNet
         var physical=surface.Normal*normalDistance+face.Right*p.X-face.Up*p.Y;
         return new(Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.U)*10),0,9),Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.V)*10),0,9));
     }
-    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null)
+    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null,bool globeRibbon=false)
     {
         Color SearchTint(Color color,Vector2 at){
             if(!FolderSearchFocus && !AttackTargetSpotlight)return color;
@@ -94,17 +94,35 @@ public sealed partial class CubeNet
             var active=world.ConquerorLocations.Select((c,r)=>(Cell:c,Ruler:r)).Where(p=>p.Cell==cell)
                 .Where(p=>world.Nodes.Current(p.Ruler)?.Center!=world.ConquerorPoints[p.Ruler])
                 .SelectMany(p=>Enumerable.Range(0,4).Select(d=>world.Routes.ForRuler(p.Ruler,d))).Where(r=>r!=null);
+            var ribbons = globeRibbon ? new List<(Vector2 Center, float Length, float Angle, bool Sea)>() : null;
+            var offset=WorldTerrain.Offset(world.WorldSeed);
             foreach(var route in world.Routes.DisplayPaths(cell).Concat(active))
             {
-                var curve=world.Routes.Curve(cell,route);var offset=WorldTerrain.Offset(world.WorldSeed);
+                var curve=world.Routes.Curve(cell,route);
                 for(int i=1;i<curve.Length;i++)
                 {
                     var a=project(curve[i-1]);var b=project(curve[i]);var delta=b-a;
                     float height=WorldTerrain.Elevation((curve[i-1]+curve[i])/2,offset);
+                    if (ribbons != null)
+                    {
+                        if (delta.LengthSquared() > .001f)
+                            ribbons.Add(((a+b)/2, delta.Length()+2, MathF.Atan2(delta.Y,delta.X), height<.52f));
+                        continue;
+                    }
                     var color=height<.52f?new Color(111,228,255):height>=WorldTerrain.MountainHeight?new Color(255,163,70):new Color(255,230,140);
                     ui.Tile((a+b)/2,new Vector2(delta.Length()+1,4),MathF.Atan2(delta.Y,delta.X),SearchTint(new Color(13,36,44),(a+b)/2));
                     ui.Tile((a+b)/2,new Vector2(delta.Length()+1,2),MathF.Atan2(delta.Y,delta.X),SearchTint(color,(a+b)/2));
                 }
+            }
+            if (ribbons != null)
+            {
+                // Draw all sides before the top so adjoining segments form one ribbon.
+                foreach (var r in ribbons)
+                    ui.Tile(r.Center+new Vector2(0,2),new(r.Length,7),r.Angle,
+                        SearchTint(r.Sea ? new Color(39,107,137) : new Color(145,99,33),r.Center));
+                foreach (var r in ribbons)
+                    ui.Tile(r.Center,new(r.Length,6),r.Angle,
+                        SearchTint(r.Sea ? new Color(108,213,245) : new Color(255,216,99),r.Center));
             }
             if(drawNodes)DrawNodeMarkers(ui,world,cell,project,pulse);
         }
