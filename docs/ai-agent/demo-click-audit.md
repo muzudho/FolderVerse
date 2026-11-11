@@ -1889,3 +1889,25 @@
 - 今回実描画・解像度別検証なし。結果差はモデル状態で確認し、手や個別ドラッグの改善とは別に修正が必要。次回修正は表示オフの本番結果を基準に、再生専用の追加組立を抑制し、自動組立の設定・AI判断を保つ最小条件を検討する。通常入力実演は引き続き未完了。自然AI全条件・生産／移転併用・19体通常操作は未確認。優先UIは前回成功範囲を維持し今回再実行なし。コミット・プッシュなし。
 
 - 2026-11-10 20:28修正回：DEMO-0017の19:59既報「自動組立オフでも操作表示オンなら組立する」状態差は修正・検証済み。直接Assemble時にAutoAssemblyDisabledを尊重し、設定オン／オフ各々で表示オフ・オン通常・組立前後スキップの最終ID／構成／所有者が一致。既存予約の保持・配送1回確定と人間復帰、540pの3パーツ維持・実緑チェック描画を確認。詳細・コマンド・証拠は修正記録20:28回。個別パーツ実演は未対応のため全体は一部対応・検証待ちを継続。
+
+### 実行履歴：2026-11-10 20:55回
+
+- 開始20:55:41 JST、終了20:57:25 JST。部分点検完了。HEAD=90c02432296794b57a883060e75bb0f5afe93eb3へ更新、開始時関係差分なし。先行検証・ゲームなし。利用者のマージ済み変更を保護し、ゲーム・テスト無変更。前回AutoAssemblyDisabledガードが現行コードにもあることを確認。
+- HEAD更新にRobotDirectDelivery／ComputerLogistics等の変更が含まれるため、優先のプライマリー退避復帰と直送便左右検査を再実行。DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build tests/DirectDeliveryUi --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-10/demo-check/ -v quiet --disable-build-servers 成功（警告・エラー0、42.93秒）。20:56:55にALSOFT_DRIVERS=nullで同出力DirectDeliveryUi.dll起動、終了コード0。audit-direct.log、direct-0～22.pngを再利用。
+- 退避中／画面外入力抑止、閉鎖／Escapeと復帰、左右予約・取消、地星儀／展開図の連続トラック入力、540p回転継ぎ目の物理クリックと予約保持が成功。960×540 direct-22.pngの左右格納庫・中央地図を目視。新規不具合なし。
+- CPU本番入口オンオフ比較は新HEADで未実施。先行結果を新HEAD確認済みへ転用せず、次回は同診断を再ビルドしてAutoAssemblyDisabledオンオフ・表示オンオフ・既存予約保持とスキップを確認する。DEMO-0017の個別組立実演と19体通常操作、全自然Demoは未確認／既存制約を継続。コミット・プッシュなし。
+
+### 実行履歴：2026-11-10 21:58回
+
+- 開始21:58:42 JST、終了21:59:58 JST。部分点検完了。HEAD=90c02432296794b57a883060e75bb0f5afe93eb3。開始時関係差分は20:55点検記録のみ、先行作業・ゲームなし。ゲーム・テスト・診断無変更。
+- 新HEADでCPU本番入口比較を再ビルド。DOTNET_CLI_TELEMETRY_OPTOUT=1で dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --source artifacts/nuget-feed -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-10/demo-check/ -v quiet --disable-build-servers 成功、警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP=1／DOMESTIC_ENTRY=1でAUTO_ENABLED=0と1を別実行し、両方終了コード0（audit-auto-disabled.log、audit-auto-enabled.log）。既存出力先再利用。
+- 同じFinishDomestic入口で、自動組立無効は操作表示オフ／オン通常／組立前後スキップとも頭胴脚ID1～3、自動組立有効はID1／Complete／owner1／1体。人間の既存予約保持と配送時1回確定、人間0復帰・Deliveryを確認。960×540 audit-latest-computer-domestic.pngで無効時3パーツと実ハンドル／地点の緑チェック、カーソルを目視。20:28修正の範囲はこのHEADの固定場面でも回帰成功、新規不具合なし。
+- 個別パーツ実演は既報DEMO-0017の未対応、配送・移転・品質／損傷全条件と自然AI／自然Demoは未確認。19体通常操作の制約を継続。プライマリー・直送便左右は直前20:55の新HEAD成功範囲を維持し今回再実行なし。次回は通常CPU診断を新HEADで回し、征服者切替・格納庫からの緑／軍事赤チェックと人間復帰を照合する。コミット・プッシュなし。
+
+### 実行履歴：2026-11-10 22:59回
+
+- 開始22:59:43 JST、終了23:00:39 JST。部分点検完了。HEAD=90c02432296794b57a883060e75bb0f5afe93eb3。開始時関係差分は点検記録のみ、先行作業・ゲームなし。ゲーム・テスト・診断無変更。
+- 引き継ぎどおり現HEADで通常CPU診断を実行。21:58回で現HEADをビルド済み、以後ゲーム差分なしのため再ビルドなし。23:00:05にALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_COMPARE／CARD19／LEGAL_QUEEN／FALLBACK=0、WORLD=0で既存出力DemoAuditCpuSortie.dllを起動、終了コード0。証拠audit-cpu-current.logと既存audit-latest-computer-*.png。
+- 操作表示設定の実入力、征服者切替、通常格納庫、緑チェック・消去、通常出撃ピッカー個別カード・確定・赤チェック・閉鎖、和平移動の到着先98と人間0復帰の状態検査が成功。新規の状態遷移不具合なし。
+- 960×540 audit-latest-computer-confirm.pngを目視。通常ピッカーと個別カード上の手は確認できるが、中央の内政フェーズ演出がピッカーに重なり全ボタンを視認できない。診断はGameTimeを固定してbase.Drawへ渡す箇所があるため、実ゲームの演出待ち不具合か診断時計の問題かは未切分け。状態検査成功だけで全実描画正常とは扱わず、次回は演出の開始時計とDraw時刻をそろえて同画面を再採取する。未確定のため新規DEMO採番なし。
+- DEMO-0017個別組立実演・19体通常操作・全自然AI／Demoは未確認／既存制約を継続。プライマリーと直送便左右は20:55の現HEAD成功範囲を維持し今回再実行なし。コミット・プッシュなし。
