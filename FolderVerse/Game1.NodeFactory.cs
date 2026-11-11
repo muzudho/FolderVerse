@@ -117,7 +117,8 @@ public partial class Game1
         _ui.Text($"産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn)}   /   蛍光灯：現在位置　緑：生産　黄：休暇　赤：空き枠待ち",new(160,248),.25f,Cream);
         if(_factoryPlanLine>=0){
             var line=factory.ProductionLines[_factoryPlanLine];_ui.Box(new(84,360,790,590),new(22,40,54));
-            _ui.Text($"生産ライン {_factoryPlanLine+1} / 正規・安い・一体型"+(line.PlanCount>11?"・高級":""),new(160,374),.45f,Cream);
+            string catalogue=_setup.EquipmentMode==RobotEquipmentMode.Materials?"素材別の製造候補":"正規・安い・一体型"+(line.PlanCount>11?"・高級":"");
+            _ui.Text($"生産ライン {_factoryPlanLine+1} / {catalogue}",new(160,374),.45f,Cream);
             ProductionPlan hovered=null;
             for(int i=0;i<line.PlanCount;i++){
                 var r=FactoryPlanButton(i);bool selected=line.SelectedPlan==i;
@@ -126,15 +127,16 @@ public partial class Game1
                 else{
                     var plan=line.PlanAt(i);DrawRobotGlyph(new(r.X+54,r.Y+8,72,80),plan.Preview(node.Owner),whiteOutline:true);
                     _ui.Center(FactoryProductLabel(plan),new(r.X,r.Y+96,r.Width,22),.28f,selected?SelectionInk:Cream);
-                    DrawIndustryDuration(plan.Turns,new(r.X+4,r.Bottom-27,r.Width-8,26),selected?SelectionInk:Cream,prefix:plan.QualityLabel+" ",suffix:" 産業ターン");
+                    DrawIndustryDuration(plan.Turns,new(r.X+4,r.Bottom-27,r.Width-8,26),selected?SelectionInk:Cream,
+                        prefix:(_setup.EquipmentMode==RobotEquipmentMode.Materials?RobotMaterials.Label(plan.Material):plan.QualityLabel)+" ",suffix:" 産業ターン");
                     if(r.Contains(_pointer))hovered=plan;
                 }
             }
             _ui.Center(line.WorkerSnapshot!=null?"作業員レーン：任命時のパーツで候補を固定":"常設レーン：地点の製造候補",new(96,886,764,24),.32f,Cream);
             if(hovered!=null){
                 var preview=hovered.Preview(node.Owner);
-                string detail=string.Join(" / ",new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(part=>(preview.Parts&part)!=0).Select(part=>$"{PartsLabel(part)} #{preview.Origin(part)+1} {(preview.IsPremium(part)?"高級":preview.IsCheap(part)?"安い":"正規")}"));
-                if(preview.PremiumParts!=0)detail+=" / 高級１つで盾・短剣・小銃 各＋１";
+                string detail=string.Join(" / ",RobotMaterials.Parts.Where(part=>(preview.Parts&part)!=0).Select(part=>$"{PartsLabel(part)} #{preview.Origin(part)+1} {(_setup.EquipmentMode==RobotEquipmentMode.Materials?RobotMaterials.Label(preview.Material(part)):preview.IsPremium(part)?"高級":preview.IsCheap(part)?"安い":"正規")}"));
+                if(_setup.EquipmentMode==RobotEquipmentMode.Legacy && preview.PremiumParts!=0)detail+=" / 高級１つで盾・短剣・小銃 各＋１";
                 _ui.Center(detail,new(96,916,764,26),Math.Min(.34f,750/_font.MeasureString(detail).X),Cream);
             }
         }

@@ -303,7 +303,7 @@ public sealed partial class RobotCampaign
     }
     private BattleState NewState(WorldSetup world,RobotEncounter e)
     {
-        var state=new BattleState(world.PlacementSeed^e.Id^_nextBattle,Rules){Id=_nextBattle++,GlobalTurn=world.Population.Turn,Kind=e.Kind,SourceNode=e.Source,TargetNode=e.Target,Defender=e.Defender,Allied=world.Relations.Allied};
+        var state=new BattleState(world.PlacementSeed^e.Id^_nextBattle,Rules){Id=_nextBattle++,GlobalTurn=world.Population.Turn,Kind=e.Kind,SourceNode=e.Source,TargetNode=e.Target,Defender=e.Defender,Allied=world.Relations.Allied,EquipmentMode=world.EquipmentMode};
         state.Lessons=(BattleLesson[])world.Lessons.Owned.Clone();
         foreach(var rank in world.Relations.ProvisionalRanking(world))state.NewspaperRanks[rank.Ruler]=rank.Rank;
         var target=world.Nodes.All[e.Target];
@@ -331,7 +331,7 @@ public sealed partial class RobotCampaign
         }
         var army=state.Army(owner);
         state.Finished=false; // Will is reset only when a unit actually enters the board.
-        foreach(var robot in robots)army.Waiting.Enqueue(new(){Id=robot.Id,Owner=owner,Robot=robot,Daggers=robot.CombatParts(owner),Shields=robot.CombatParts(owner),Rifles=robot.CombatRifles(owner),Role=robot.Role==RobotRole.Captain?BattleRole.Captain:BattleRole.Soldier});
+        foreach(var robot in robots)army.Waiting.Enqueue(state.EquipRobot(robot,owner,robot.Role==RobotRole.Captain?BattleRole.Captain:BattleRole.Soldier));
         if(queen && !state.Units.Concat(state.Armies.SelectMany(a=>a.Waiting)).Any(u=>u.Id==-(owner+1)))army.Waiting.Enqueue(new(){Id=-(owner+1),Owner=owner,Role=BattleRole.Queen,Daggers=0,Rifles=0});
     }
     private void RunSegment(WorldSetup world,RobotEncounter e)

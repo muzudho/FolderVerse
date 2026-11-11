@@ -63,7 +63,8 @@ public partial class Game1
             role is not (BattleRole.Soldier or BattleRole.Captain))
             return false;
 
-        if (!HasRobotHeadArt(area, robot, allowCaptain: true) ||
+        if (facing!=BattleFacing.South && Array.Exists(RobotMaterials.Parts,part=>UsesMapleArt(robot,part)) ||
+            !HasRobotHeadArt(area, robot, allowCaptain: true) ||
             FindRobotBodyArt(area, robot, RobotParts.Body, allowCaptain: true) == null ||
             FindRobotBodyArt(area, robot, RobotParts.Legs, allowCaptain: true) == null)
             return false;
@@ -166,6 +167,10 @@ public partial class Game1
 
     private void DisposeBattleToyArt()
     {
+        _mapleHeadTextures?.Dispose();
+        _mapleTorsoTextures?.Dispose();
+        _mapleLegTextures?.Dispose();
+        _mapleHeadTextures=_mapleTorsoTextures=_mapleLegTextures=null;
         _sideHead?.Dispose();
         _sideTorso?.Dispose();
         _sideLegs?.Dispose();

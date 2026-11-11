@@ -26,5 +26,6 @@ public sealed partial class RobotWorkshop
         ProductionLines=baseLines.Concat(_workerLines.OrderBy(p=>p.Key).Select(p=>p.Value)).ToArray();
         _disposalAnnexes=(_disposalAnnexes??Array.Empty<RobotWorkshop>()).Concat(other.DisposalFacilities).ToArray();
         AutoAssemblyDisabled|=other.AutoAssemblyDisabled;
+        _materialCatalogueOffset??=other._materialCatalogueOffset;
     }
 }

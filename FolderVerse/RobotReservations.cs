@@ -50,7 +50,11 @@ public sealed partial class RobotWorld
             Nodes[node].Replace(Nodes[node].Robots.Select(r=>ValidateDefenseFlag(r,n=>world.Nodes.All[n].Owner)).Select(r=>r.DefenseOnly && r.Parts==RobotParts.Complete && r.DefenseFlag==null?r with {DefenseFlag=new(r.Owner,current,world.Nodes.All[current].Owner)}:r).ToArray());
         }
         ReservationSource=owner=>world.Nodes.Current(owner)?.Id??-1;
-        foreach(var node in world.Nodes.All){Workshops[node.Id].LimitLines(node.Functional?(Workshops[node.Id].TransferredLineLimit??(node.Terrain==TravelTerrain.Sea?1:3)):0);SyncWorkers(node.Id);}
+        foreach(var node in world.Nodes.All){
+            var workshop=Workshops[node.Id];
+            workshop.ConfigureMaterialCatalogue(world.WorldSeed^node.Id*7919,world.EquipmentMode);
+            workshop.LimitLines(node.Functional?(workshop.TransferredLineLimit??(node.Terrain==TravelTerrain.Sea?1:3)):0);SyncWorkers(node.Id);
+        }
         RevalidateWorkReservations();
         foreach(var node in world.Nodes.All)
             for(int line=0;line<Workshops[node.Id].ProductionLines.Length;line++)

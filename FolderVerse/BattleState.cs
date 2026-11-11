@@ -52,6 +52,7 @@ public sealed class BattleArmy
 }
 public sealed partial class BattleState
 {
+    public RobotEquipmentMode EquipmentMode {get;init;}
     public const int Size=13;
     public int BoardSize=Size;
     public int Id,SourceNode,TargetNode,Defender=-1,Turn,NoWillCount;
@@ -111,9 +112,15 @@ public sealed partial class BattleState
         foreach(var robot in robots.OrderBy(r=>r.Id))
         {
             if(!robot.CanFight || robot.Owner!=owner)throw new ArgumentException("Only complete owned robots may enter battle.");
-            army.Waiting.Enqueue(new(){Id=robot.Id,Owner=owner,Robot=robot,Daggers=robot.CombatParts(owner),Shields=robot.CombatParts(owner),Rifles=robot.CombatRifles(owner),Role=index++==1?BattleRole.Captain:BattleRole.Soldier,Facing=Inward(army.Side)});
+            army.Waiting.Enqueue(EquipRobot(robot,owner,index++==1?BattleRole.Captain:BattleRole.Soldier,Inward(army.Side)));
         }
         if(queen)army.Waiting.Enqueue(new(){Id=-(owner+1),Owner=owner,Role=BattleRole.Queen,Facing=Inward(army.Side),Daggers=0,Rifles=0});
+    }
+    internal BattleUnit EquipRobot(Robot robot,int owner,BattleRole role,BattleFacing facing=default)
+    {
+        var equipment=robot.Equipment(owner,EquipmentMode);
+        return new(){Id=robot.Id,Owner=owner,Robot=robot,Daggers=equipment.Daggers,Shields=equipment.Shields,
+            Rifles=equipment.Rifles,Role=role,Facing=facing};
     }
     internal int FreeSeaSide(int preferred)=>FreeEntrySide(preferred);
     public static BattleFacing Inward(int side)=>(BattleFacing)((side+2)%4);

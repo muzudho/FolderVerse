@@ -66,7 +66,7 @@ public sealed class StatisticsLog
         }).ToArray();
         var row=new{schemaVersion=1,session=_session,time=DateTimeOffset.Now,version=typeof(Game1).Assembly.GetName().Version?.ToString(),
             worldSeed=world.WorldSeed,castSeed=world.CastSeed,placementSeed=world.PlacementSeed,turn=world.Population.Turn,
-            industryTurn=world.Robots.IndustryTurn,industryResult=world.Industry.Result,exhibition=world.ComputerOnly,countries};
+            equipmentMode=world.EquipmentMode.ToString(),industryTurn=world.Robots.IndustryTurn,industryResult=world.Industry.Result,exhibition=world.ComputerOnly,countries};
         var bytes=Encoding.UTF8.GetBytes(JsonSerializer.Serialize(row)+"\n");
         Directory.CreateDirectory(_directory);
         string PathAt(int index)=>Path.Combine(_directory,$"statistics-{index}.jsonl");

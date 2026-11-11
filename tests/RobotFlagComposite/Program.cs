@@ -85,21 +85,7 @@ if(args.Length==5 && args[4]=="--maple")
  var bytes=File.ReadAllBytes(args[0]);int width=int.Parse(args[1]),height=int.Parse(args[2]);
  Check(bytes.Length==width*height*4,"Maple RGBA input dimensions");
  var source=Enumerable.Range(0,width*height).Select(i=>new Color(bytes[i*4],bytes[i*4+1],bytes[i*4+2],bytes[i*4+3])).ToArray();
- var woodSurface=new Surface[source.Length];
- for(int y=0;y<height;y++)for(int x=0;x<width;x++)
- {
-  int i=y*width+x;
-  float u=(x+.5f)/width,v=(y+.5f)/height;
-  // Measured face inset and exposed right flank of the single maple sprite.
-  float dx=Math.Max(Math.Abs(u-.4235f)-.1025f,0);
-  float dy=Math.Max(Math.Abs(v-.534f)-.069f,0)*2/3;
-  float faceCoverage=Math.Clamp((MathF.Sqrt(dx*dx+dy*dy)-.072f)/.008f,0,1);
-  float flankCoverage=Math.Clamp((.686f-u)/.008f,0,1);
-  var pixel=source[i];
-  byte diffuse=(byte)Math.Clamp((pixel.R+pixel.G+pixel.B)/3+30,0,255);
-  woodSurface[i]=new(new(Math.Clamp((u-.20f)/.49f,0,.999f),Math.Clamp((v-.15f)/.68f,0,.999f)),
-   (byte)(220*faceCoverage*flankCoverage),diffuse,0);
- }
+ var woodSurface=RobotHeadSurface.Maple(source,width,height);
  var renders=new List<Color[]>();
  for(int country=0;country<2;country++)
  {

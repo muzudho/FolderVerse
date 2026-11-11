@@ -24,6 +24,16 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
     public RobotParts DamagedParts {get;init;}=0;
     public RobotParts CheapParts {get;init;}=0;
     public RobotParts PremiumParts {get;init;}=0;
+    public RobotMaterial HeadMaterial {get;init;}
+    public RobotMaterial BodyMaterial {get;init;}
+    public RobotMaterial LegsMaterial {get;init;}
+    public RobotMaterial Material(RobotParts part)=>part switch
+    {
+        RobotParts.Head=>HeadMaterial,
+        RobotParts.Body=>BodyMaterial,
+        RobotParts.Legs=>LegsMaterial,
+        _=>throw new ArgumentOutOfRangeException(nameof(part))
+    };
     // A normal multi-part package stays separable; only this mask denotes a physical joint.
     public RobotParts IntegratedParts {get;init;}=0;
     public static bool ValidIntegratedParts(RobotParts parts)=>parts==0 || parts==(RobotParts.Head|RobotParts.Body) || parts==(RobotParts.Body|RobotParts.Legs);
@@ -35,7 +45,10 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
     public Robot Slice(RobotParts selected)
     {
         if(selected==0 || !CanSeparate(selected))throw new InvalidOperationException("Integrated parts cannot be separated.");
-        return Materialize() with {Parts=selected,DamagedParts=DamagedParts&selected,CheapParts=CheapParts&selected&~PremiumParts,PremiumParts=PremiumParts&selected,IntegratedParts=IntegratedParts&selected,DefenseFlag=selected==RobotParts.Complete?DefenseFlag:null};
+        return Materialize() with {Parts=selected,DamagedParts=DamagedParts&selected,CheapParts=CheapParts&selected&~PremiumParts,PremiumParts=PremiumParts&selected,IntegratedParts=IntegratedParts&selected,DefenseFlag=selected==RobotParts.Complete?DefenseFlag:null,
+            HeadMaterial=(selected&RobotParts.Head)!=0?HeadMaterial:default,
+            BodyMaterial=(selected&RobotParts.Body)!=0?BodyMaterial:default,
+            LegsMaterial=(selected&RobotParts.Legs)!=0?LegsMaterial:default};
     }
     public int LastBattlePersuasionTurn {get;init;}=-1;
     public int LastDomesticPersuasionTurn {get;init;}=-1;
@@ -64,13 +77,32 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
     public int AssemblyCredit(int owner)=>NativeParts(owner);
     public int CombatParts(int owner)=>Math.Max(NativeParts(owner),CanFight?1:0)+PremiumBonus;
     public int CombatRifles(int owner)=>(NativeParts(owner)==3?4:Math.Max(NativeParts(owner),CanFight?1:0))+PremiumBonus;
+    public RobotEquipment Equipment(int owner,RobotEquipmentMode mode)
+    {
+        if(mode==RobotEquipmentMode.Legacy)
+        {
+            int melee=CombatParts(owner);
+            return new(melee,melee,CombatRifles(owner));
+        }
+        int shields=0,daggers=0,rifles=0;
+        foreach(var part in RobotMaterials.Parts)
+        {
+            if((Parts&part)==0 || IsDamaged(part))continue;
+            var amount=RobotMaterials.Thirds(Material(part));
+            shields+=amount.Shields;daggers+=amount.Daggers;rifles+=amount.Rifles;
+        }
+        return new(shields/3,daggers/3,rifles/3);
+    }
     public Robot Materialize()=>this with {HeadOrigin=Origin(RobotParts.Head),BodyOrigin=Origin(RobotParts.Body),LegsOrigin=Origin(RobotParts.Legs),DamagedParts=DamagedParts&Parts,CheapParts=CheapParts&Parts&~PremiumParts,PremiumParts=PremiumParts&Parts};
     public Robot Merge(Robot other,int owner)
     {
         if(!ValidIntegration || !other.ValidIntegration || !CanSeparate(other.Parts&Parts))throw new InvalidOperationException("Cannot replace only half of integrated parts.");
         var result=Materialize() with {Parts=Parts|other.Parts,LastBattlePersuasionTurn=Math.Max(LastBattlePersuasionTurn,other.LastBattlePersuasionTurn),LastDomesticPersuasionTurn=Math.Max(LastDomesticPersuasionTurn,other.LastDomesticPersuasionTurn),DamagedParts=(DamagedParts&Parts&~other.Parts)|(other.DamagedParts&other.Parts),CheapParts=(CheapParts&Parts&~other.Parts)|(other.CheapParts&other.Parts),HeadOrigin=(other.Parts&RobotParts.Head)!=0?other.Origin(RobotParts.Head):Origin(RobotParts.Head),BodyOrigin=(other.Parts&RobotParts.Body)!=0?other.Origin(RobotParts.Body):Origin(RobotParts.Body),LegsOrigin=(other.Parts&RobotParts.Legs)!=0?other.Origin(RobotParts.Legs):Origin(RobotParts.Legs)};
         result=result with {IntegratedParts=(IntegratedParts&~other.Parts)|other.IntegratedParts};
-        result=result with {PremiumParts=(PremiumParts&Parts&~other.Parts)|(other.PremiumParts&other.Parts)};
+        result=result with {PremiumParts=(PremiumParts&Parts&~other.Parts)|(other.PremiumParts&other.Parts),
+            HeadMaterial=(other.Parts&RobotParts.Head)!=0?other.HeadMaterial:HeadMaterial,
+            BodyMaterial=(other.Parts&RobotParts.Body)!=0?other.BodyMaterial:BodyMaterial,
+            LegsMaterial=(other.Parts&RobotParts.Legs)!=0?other.LegsMaterial:LegsMaterial};
         if(!result.ValidIntegration)throw new InvalidOperationException("Incompatible integrated parts.");
         return result with {Owner=result.AssemblyCredit(owner)>0?owner:Owner};
     }

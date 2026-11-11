@@ -364,3 +364,26 @@ head-study-v002のメープルを参照して、組み込みImageGenで無塗装
 生成プロンプト
 
 Create one unpainted pale maple wood toy robot HEAD sprite, based only on the top middle maple head of the reference design sheet. Preserve its three-quarter right view, rounded rectangular shell, pale inset face, two black oval eyes and curved black smile. All red and teal areas are now bare maple matching the right flank. Preserve continuous fine natural maple wood grain, smooth clean satin surface with very soft highlights. No paint, sticker, text, body, winding key, ground or shadow. One centered full object with margins, genuinely transparent background. Production game asset.
+
+## 2026年11月11日23時48分・メープル頭を共通描画へ接続
+
+素材９種モードで部位の素材IDを参照し、メープル頭を格納庫・工場などの共通描画に接続。正面の戦闘駒でも胴脚がPPなら使用できる。メープルの胴脚と別方向の頭、他素材の個別原画は未接続。ゲーム素材 Content/Images/Robots/maple-head-neutral-v001.png は NAS art-source/robots/maple-head-neutral-v001/ の同名原画とSHA-256一致（58F6C15CF04CE2C7C9C8E3D5CFA840E12B4EFBA5AAA4C9A21CCE98F4BD41B686）。
+
+前回の木目マスクを共通化し、紋章と汚損を合成。隔離Releaseは警告・エラー各０。保護画素・アルファ、国旗320通り、実際の共通描画で２国旗と汚損、格納庫６枠の回帰が通過。確認画像はNAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/maple-game-glyph.png。戦闘の実時間再生は未検証。
+
+## 2026年11月12日０時18分・メープルの胴と脚
+
+v012のメープルを参照し、組み込みImageGenで胴と脚を独立した透過原画に制作。NAS art-source/robots/maple-body-neutral-v001/ からゲームの Content/Images/Robots/ へ同名で配置し、SHA-256を照合。
+
+| 実行素材 | SHA-256 |
+| --- | --- |
+| maple-torso-neutral-v001.png | F4B79BE00F6ACF27F88AB229D0738DA4B5AAE8DD6F92A8018253FFFA8B7CA2F9 |
+| maple-legs-neutral-v001.png | 97B19C4F8602A80E50E908A5D29A9D4D9D4FD79B2AD1524A1CDD0DD80E0668AA |
+
+素材９種モードの共通描画と正面戦闘駒で使用。胴の同心円状の木目と靴の木肌を保護し、国旗、紋章、汚損を各部位へ合成。隔離Release警告・エラー各０。国旗２種類と汚損の全身を目視し、格納庫６枠・地星儀の回帰も通過。比較画像はNAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/maple-game-glyph.png。メープルの横・背面と戦闘全画面の再生は未確認。
+
+生成プロンプト
+
+Create one independent transparent production game sprite based only on the top-middle maple toy of the reference. Show the isolated torso and both attached wooden arms. Preserve the broad inset end-grain on the chest with gentle concentric growth rings flush with the torso and no symbol. Keep pale satin maple and its visible fine natural grain, with the original toy proportions. All surfaces unpainted. No flag, emblem, text, winding key, head, other parts, floor shadow or background. Center the full part with clear margins.
+
+Create one independent transparent production game sprite based only on the top-middle maple toy of the reference. Show the isolated joined waist and both legs with broad wooden shoes. Preserve a genuinely transparent gap between the legs, show the same three-quarter front angle and sturdy squared shoe shape. Keep pale satin maple and its visible fine natural grain, with the original toy proportions. All surfaces unpainted. No flag, emblem, text, winding key, head, other parts, floor shadow or background. Center the full part with clear margins.

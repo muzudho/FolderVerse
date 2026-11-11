@@ -45,7 +45,7 @@ public sealed partial class WorldSetup
         int scatterRemainder=50;
         foreach(var node in Nodes.All.Where(n=>n.Owner>=0))
         {
-            if(TutorialStep==1 || Routes.NearWhirlpool(node))Robots.Workshops[node.Id].RemoveProductionLines();else Robots.Workshops[node.Id].GenerateLines(fortuneSeed^node.Id*7919);
+            if(TutorialStep==1 || Routes.NearWhirlpool(node))Robots.Workshops[node.Id].RemoveProductionLines();else Robots.Workshops[node.Id].GenerateLines(fortuneSeed^node.Id*7919,EquipmentMode);
             if(random.Next(5)==0)Robots.Workshops[node.Id].ConfigureDisposal();
             if(TutorialStep==1){
                 for(int i=0;i<4;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,RobotParts.Complete,RobotRole.Soldier));
@@ -74,7 +74,31 @@ public sealed partial class WorldSetup
                 for(int i=0;i<2;i++)Robots.Retinues[ruler].Add(Robots.Create(ruler,RobotParts.Complete));
         for(int ruler=0;ruler<ActiveCount;ruler++)ConquerorPoints[ruler]=Nodes.Current(ruler).Center;
         Routes.RefreshDisplay();Campaign.Reset();LandPending=false;
+        PlaceInitialTin(fortuneSeed);
         Salvage.Initialize(this);
+    }
+
+    private void PlaceInitialTin(int seed)
+    {
+        if(EquipmentMode!=RobotEquipmentMode.Materials)return;
+        var random=new SeedRandom(seed^0x2A19E3);
+        var used=new System.Collections.Generic.HashSet<int>();
+        foreach(var part in RobotMaterials.Parts)
+        {
+            // One of each part at most, on separate sites, independent of the world generation RNG.
+            var candidates=Nodes.All.Where(n=>n.Owner>=0 && n.Functional && !used.Contains(n.Id))
+                .Select(n=>(n.Id,Robot:Robots.Nodes[n.Id].Robots.FirstOrDefault(r=>r.Parts==part)))
+                .Where(candidate=>candidate.Robot!=null).ToArray();
+            if(candidates.Length==0)continue;
+            var (node,robot)=candidates[random.Next(candidates.Length)];
+            used.Add(node);
+            Robots.Nodes[node].Replace(Robots.Nodes[node].Robots.Select(r=>r.Id!=robot.Id?r:part switch
+            {
+                RobotParts.Head=>r with {HeadMaterial=RobotMaterial.Tin},
+                RobotParts.Body=>r with {BodyMaterial=RobotMaterial.Tin},
+                _=>r with {LegsMaterial=RobotMaterial.Tin}
+            }).ToArray());
+        }
     }
 
     internal int TerrainArea(int cell,TravelTerrain terrain)

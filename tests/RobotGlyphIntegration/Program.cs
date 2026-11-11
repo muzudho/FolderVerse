@@ -403,6 +403,35 @@ sealed class GlyphProbe:Game1
     throw new Exception($"The unfolded puck at {puckNode.Id} could not be selected");
   }
   Console.WriteLine("PASS unfolded land/sea pucks draw and accept center clicks.");
+  var materialWorld=(WorldSetup)Get("_setup");
+  materialWorld.EquipmentMode=RobotEquipmentMode.Materials;
+  GraphicsDevice.Clear(new Color(25,36,48));
+  batch.Begin();
+  var mapleHead=new Robot(501,0,RobotParts.Head){HeadMaterial=RobotMaterial.Maple};
+  for(int variant=0;variant<3;variant++)
+  {
+   var part=variant switch {1=>mapleHead with {HeadOrigin=1},2=>mapleHead with {DamagedParts=RobotParts.Head},_=>mapleHead};
+   draw.Invoke(this,new object[]{new Rectangle(45+200*variant,110,140,210),part,false,1f,null});
+   var full=part with {Parts=RobotParts.Complete,BodyMaterial=RobotMaterial.Maple,LegsMaterial=RobotMaterial.Maple};
+   if(variant==1)full=full with {BodyOrigin=1,LegsOrigin=1};
+   if(variant==2)full=full with {DamagedParts=RobotParts.Complete};
+   draw.Invoke(this,new object[]{new Rectangle(45+200*variant,250,140,210),full,false,1f,null});
+  }
+  batch.End();
+  if(Get("_mapleHeadTextures")==null)throw new Exception("Material glyph did not load maple head");
+  if(Get("_mapleTorsoTextures")==null || Get("_mapleLegTextures")==null)
+   throw new Exception("Material glyph did not load maple torso and legs");
+  GraphicsDevice.GetBackBufferData(globePixels);
+  for(int variant=1;variant<3;variant++)
+  {
+   int changes=Enumerable.Range(100,86).Sum(y=>Enumerable.Range(65,100)
+    .Count(x=>globePixels[y*960+x]!=globePixels[y*960+x+200*variant]));
+   if(changes<20)throw new Exception("Maple flag or wear did not change the drawn head");
+  }
+  globeImage.SetData(globePixels);
+  using (var mapleFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"maple-game-glyph.png")))
+   globeImage.SaveAsPng(mapleFile,960,540);
+  Console.WriteLine("PASS actual maple glyph shows country and wear variants.");
   Exit();
  }
  protected override void UnloadContent(){(Get("_robotHeadTextures") as IDisposable)?.Dispose();batch?.Dispose();pixel?.Dispose();}

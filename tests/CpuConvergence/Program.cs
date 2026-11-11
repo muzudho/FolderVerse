@@ -3,7 +3,9 @@ using System.Reflection;
 using Microsoft.Xna.Framework;
 static void Check(bool value,string message){if(!value)throw new Exception(message);}
 if(args.Length>0 && args[0]=="--create-world"){
-    int seed=int.Parse(args[1]),players=int.Parse(args[2]);var fresh=new WorldSetup();fresh.SetParticipantCounts(0,players);fresh.SetWorld(seed);fresh.SetCast(seed+1000);fresh.SetTerritoryRights(seed+2000);
+    int seed=int.Parse(args[1]),players=int.Parse(args[2]);
+    var fresh=new WorldSetup{EquipmentMode=args.Contains("--materials")?RobotEquipmentMode.Materials:RobotEquipmentMode.Legacy};
+    fresh.SetParticipantCounts(0,players);fresh.SetWorld(seed);fresh.SetCast(seed+1000);fresh.SetTerritoryRights(seed+2000);
     foreach(int ruler in fresh.LandOrder()){
         var random=new SeedRandom(fresh.PlacementSeed^ruler*7919);var available=fresh.Cells.Where(c=>fresh.Owners[c.Id]<0).Select(c=>c.Id).ToList();var chosen=new List<int>();
         int first=available[random.Next(available.Count)];chosen.Add(first);available.Remove(first);

@@ -14,6 +14,7 @@ public sealed class RobotHeadTexture:IDisposable
     private readonly RobotFlagComposite.Surface[] _surface;
     private readonly Rectangle _sticker;
     private readonly Vector2 _bandage;
+    private readonly byte _wearCoverage;
     private readonly Func<int,IReadOnlyList<Rectangle>> _emblems;
     private readonly Dictionary<(int,int,int,int,int,bool,bool),Texture2D> _textures=new();
     private readonly Queue<(int,int,int,int,int,bool,bool)> _age=new();
@@ -24,7 +25,7 @@ public sealed class RobotHeadTexture:IDisposable
 
     public RobotHeadTexture(GraphicsDevice device,string path,Func<int,IReadOnlyList<Rectangle>> emblems,
         RobotHeadSurface.RectangleF? bodyBounds = null, RobotHeadSurface.RectangleF? stickerBounds = null,
-        RobotHeadSurface.RectangleF? protectedFace = null)
+        RobotHeadSurface.RectangleF? protectedFace = null, RobotParts? maplePart = null)
     {
         _device=device??throw new ArgumentNullException(nameof(device));
         _emblems=emblems??throw new ArgumentNullException(nameof(emblems));
@@ -34,13 +35,19 @@ public sealed class RobotHeadTexture:IDisposable
         _neutral=new Color[Resolution*Resolution];
         for(int y=0;y<Resolution;y++)for(int x=0;x<Resolution;x++)
             _neutral[y*Resolution+x]=pixels[Math.Min(source.Height-1,(2*y+1)*source.Height/(2*Resolution))*source.Width+Math.Min(source.Width-1,(2*x+1)*source.Width/(2*Resolution))];
-        _surface = bodyBounds is { } bounds
+        _surface = maplePart is {} part ? RobotHeadSurface.Maple(_neutral,Resolution,Resolution,part) : bodyBounds is { } bounds
             ? RobotHeadSurface.PolypropyleneBody(_neutral, Resolution, Resolution, bounds, protectedFace)
             : RobotHeadSurface.Polypropylene(_neutral, Resolution, Resolution);
         var sticker = stickerBounds ?? new RobotHeadSurface.RectangleF(.70f, .59f, .15f, .16f);
         _sticker = new((int)(Resolution * sticker.X), (int)(Resolution * sticker.Y),
             (int)(Resolution * sticker.Width), (int)(Resolution * sticker.Height));
-        _bandage = bodyBounds == null ? new(.57f, .32f) : new(.36f, .64f);
+        _bandage = maplePart switch
+        {
+            RobotParts.Body=>new(.29f,.44f),
+            RobotParts.Legs=>new(.36f,.53f),
+            _=>bodyBounds == null ? new(.57f,.32f) : new(.36f,.64f)
+        };
+        _wearCoverage = maplePart.HasValue ? (byte)220 : (byte)255;
     }
     public Texture2D Get(WorldSetup world,int owner,bool worn=false,bool mirrorSticker=false)
     {
@@ -66,7 +73,7 @@ public sealed class RobotHeadTexture:IDisposable
         for (int x = 0; x < Resolution; x++)
         {
             int index = y * Resolution + x;
-            if (_surface[index].Coverage != 255 || pixels[index].A == 0 || _sticker.Contains(x, y))
+            if (_surface[index].Coverage != _wearCoverage || pixels[index].A == 0 || _sticker.Contains(x, y))
                 continue;
 
             float dx = x - _bandage.X * Resolution;
