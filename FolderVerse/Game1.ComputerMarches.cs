@@ -13,7 +13,7 @@ public partial class Game1
     private double _computerMarchAge;
     private int _computerWarStage;
     private Point _computerWarClick;
-    private readonly Queue<Point> _computerWarCards=new();
+    private readonly Queue<int> _computerWarCards=new();
     private int _computerViewRuler,_computerViewLeader;
     private const double ComputerViewLeadIn=.75,ComputerMarchSeconds=2.4+ComputerViewLeadIn;
     private static readonly Rectangle ComputerMarchPanel=new(54,170,750,280);
@@ -32,6 +32,15 @@ public partial class Game1
         _computerWarStage=0;
         BeginComputerView(visible[0].Ruler);
         return true;
+    }
+
+    private bool HandleComputerMarches(GameTime time,bool skip)
+    {
+        if(!skip && _computerMarches!=null && _computerMarchIndex==0 && _computerWarStage==0 &&
+            _screen==Screen.WorldStatus && !_conquestOverview &&
+            (_lastCutInPhase!=PlanningPhaseLabel || time.TotalGameTime.TotalSeconds-_cutInStarted<PhaseCutInSeconds))
+            return true;
+        return UpdateComputerMarches(time.ElapsedGameTime.TotalSeconds,skip);
     }
 
     private bool UpdateComputerMarches(double elapsed,bool skip)
@@ -109,7 +118,7 @@ public partial class Game1
                 var robots=InvasionRobots(_invasionSources[source]);
                 var ids=order.RobotIds??robots.Take((int)order.Fighters).Select(robot=>robot.Id).ToArray();
                 var cards=ids.Select(id=>Array.FindIndex(robots,robot=>robot.Id==id)).ToArray();
-                if(ids.Length!=order.Fighters || cards.Distinct().Count()!=cards.Length || cards.Any(i=>i<0 || InvasionRobotCard(i).Center.Y>=InvasionPickerDone.Top))break;
+                if(ids.Length!=order.Fighters || cards.Distinct().Count()!=cards.Length || cards.Any(i=>i<0))break;
                 _invasionPage=InvasionPageForSource(source);
                 var local=InvasionVisibleRows().Single(row=>row.Index==source).Bounds.Center;
                 _computerWarClick=new Point(local.X+NodeInspectorOffset,local.Y);
@@ -118,20 +127,19 @@ public partial class Game1
                 _invasionDraft.Clear();
                 if(pocket)_invasionQueenDraft=false;
                 _computerWarCards.Clear();
-                if(order.Queen)_computerWarCards.Enqueue(InvasionQueenToggle.Center);
-                foreach(int card in cards)_computerWarCards.Enqueue(InvasionRobotCard(card).Center);
-                _computerWarClick=_computerWarCards.Count>0?_computerWarCards.Peek():InvasionPickerDone.Center;
+                if(order.Queen)_computerWarCards.Enqueue(-1);
+                foreach(int index in cards.OrderBy(index=>index))_computerWarCards.Enqueue(index);
+                _computerWarClick=ComputerWarPickerPoint();
                 return true;
             case 3:
-                if(_computerWarCards.TryDequeue(out var cardClick))
+                _computerWarClick=_pointer=ComputerWarPickerPoint();
+                if(_computerWarCards.TryPeek(out int card))
                 {
-                    _computerWarClick=_pointer=cardClick;
+                    if(card<0 || card/InvasionCardsPerPage==_invasionPickerPage)_computerWarCards.Dequeue();
                     InvasionPickerInput(true,false);
                     _computerWarStage--;
                     return true;
                 }
-                _computerWarClick=InvasionPickerDone.Center;
-                _pointer=_computerWarClick;
                 InvasionPickerInput(true,false);
                 return true;
             case 4:
@@ -151,6 +159,14 @@ public partial class Game1
         _computerWarStage=-1;
         _computerMarchAge=0;
         return false;
+    }
+
+    private Point ComputerWarPickerPoint()
+    {
+        if(!_computerWarCards.TryPeek(out int card))return InvasionPickerDone.Center;
+        if(card<0)return InvasionQueenToggle.Center;
+        if(card/InvasionCardsPerPage>_invasionPickerPage)return InvasionPickerNext.Center;
+        return InvasionRobotCard(card%InvasionCardsPerPage).Center;
     }
 
     private void DrawComputerMarches(Matrix transform)
