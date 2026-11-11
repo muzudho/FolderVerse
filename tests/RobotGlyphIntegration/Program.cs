@@ -432,6 +432,178 @@ sealed class GlyphProbe:Game1
   using (var mapleFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"maple-game-glyph.png")))
    globeImage.SaveAsPng(mapleFile,960,540);
   Console.WriteLine("PASS actual maple glyph shows country and wear variants.");
+  GraphicsDevice.Clear(new Color(25,36,48));
+  batch.Begin();
+  var mapleSoldier = mapleHead with { Parts = RobotParts.Complete };
+  var directions = new[] { BattleFacing.East, BattleFacing.West, BattleFacing.North };
+  for (int index = 0; index < directions.Length; index++)
+  for (int owner = 0; owner < 2; owner++)
+  {
+   var soldier = mapleSoldier with { HeadOrigin = owner, BodyMaterial = RobotMaterial.Maple,
+     LegsMaterial = RobotMaterial.Maple, BodyOrigin = owner, LegsOrigin = owner };
+   if (!(bool)soldierArt.Invoke(this, new object[] { new Rectangle(100 + 225 * index, 100 + 175 * owner, 96, 145),
+     soldier, BattleRole.Soldier, directions[index], false, 1f })!)
+    throw new Exception($"Maple head did not draw facing {directions[index]}");
+  }
+  batch.End();
+  var sideHead = (RobotHeadTexture)Get("_mapleSideHead");
+  int size = RobotHeadTexture.Resolution;
+  var firstFlag = new Color[size * size];
+  var secondFlag = new Color[size * size];
+  sideHead.Get(materialWorld,0).GetData(firstFlag);
+  sideHead.Get(materialWorld,1).GetData(secondFlag);
+  int protectedPixels = 0, paintedChanges = 0;
+  for (int index = 0; index < firstFlag.Length; index++)
+  {
+   if (firstFlag[index].A != secondFlag[index].A)
+    throw new Exception("Maple profile alpha changed");
+   if (index % size >= 170 && firstFlag[index].A != 0)
+   {
+    protectedPixels++;
+    if (firstFlag[index] != secondFlag[index])
+     throw new Exception("Maple profile face or bare wood changed");
+   }
+   if (firstFlag[index] != secondFlag[index]) paintedChanges++;
+  }
+  if (protectedPixels < 100 || paintedChanges < 100)
+   throw new Exception("Maple profile mask or paint did not cover the sprite");
+  var rearLegs = (RobotHeadTexture)Get("_mapleRearLegs");
+  var sideLegs = (RobotHeadTexture)Get("_mapleSideLegs");
+  if (Get("_mapleSideTorso") == null || sideLegs == null)
+   throw new Exception("Maple side body assets were not used");
+  sideLegs.Get(materialWorld,0).GetData(firstFlag);
+  sideLegs.Get(materialWorld,1).GetData(secondFlag);
+  if (!firstFlag.Select(pixel => pixel.A).SequenceEqual(secondFlag.Select(pixel => pixel.A)) ||
+      firstFlag[190 * size + 100].A == 0 ||
+      firstFlag[190 * size + 100] != secondFlag[190 * size + 100] ||
+      firstFlag.SequenceEqual(secondFlag))
+   throw new Exception("Maple side legs lost their alpha, bare boot or flag paint");
+  if (Get("_mapleRearTorso") == null || rearLegs == null)
+   throw new Exception("Maple rear body assets were not used");
+  rearLegs.Get(materialWorld,0).GetData(firstFlag);
+  rearLegs.Get(materialWorld,1).GetData(secondFlag);
+  if (!firstFlag.Select(pixel => pixel.A).SequenceEqual(secondFlag.Select(pixel => pixel.A)) ||
+      firstFlag[190 * size + size / 2].A != 0 ||
+      firstFlag[219 * size + 80].A == 0 ||
+      firstFlag[219 * size + 80] != secondFlag[219 * size + 80] ||
+      firstFlag.SequenceEqual(secondFlag))
+   throw new Exception("Maple rear legs lost their transparent gap, bare heel or flag paint");
+  GraphicsDevice.GetBackBufferData(globePixels);
+  globeImage.SetData(globePixels);
+  using (var orientedFile = File.Create(Path.Combine(Path.GetDirectoryName(output)!, "maple-oriented.png")))
+   globeImage.SaveAsPng(orientedFile,960,540);
+  Console.WriteLine("PASS full maple soldiers face east, west and north with protected faces, wooden boots and unchanged alpha.");
+  var scene = new BattleState(1) { BoardSize = 10 };
+  materialWorld.SetCast(2);
+  scene.AddArmy(0, 0, Array.Empty<Robot>());
+  scene.AddArmy(1, 1, Array.Empty<Robot>());
+  var replayUnit = new BattleUnit { Id = mapleSoldier.Id, Robot = mapleSoldier with
+   { BodyMaterial = RobotMaterial.Maple, LegsMaterial = RobotMaterial.Maple },
+   Owner = 0, Role = BattleRole.Soldier, Position = new Point(4, 4), Facing = BattleFacing.East, Rifles = 1 };
+  scene.Units.Add(replayUnit);
+  scene.Capture(BattlePhase.Choose);
+  replayUnit.Rifles = 0;
+  scene.Capture(BattlePhase.Consume);
+  replayUnit.Facing = BattleFacing.North;
+  scene.Capture(BattlePhase.Choose);
+  var scenes = new[] { scene };
+  var playback = new RobotBattlePlayback(scenes);
+  Set("_robotScenes", scenes);
+  Set("_robotPlayback", playback);
+  Set("_robotRound", 0);
+  Set("_battleWave", 0);
+  Set("_robotPlaying", true);
+  Set("_battleIntroAge", 100d);
+  double seconds = RobotBattlePlayback.SecondsPerFrame(scene, playback.Rounds[0][0]);
+  var drawBattle = typeof(Game1).GetMethod("DrawRobotBattle", Flags)!;
+  var battleFramePixels = new Color[3][];
+  for (int index = 0; index < battleFramePixels.Length; index++)
+  {
+   Set("_battleAge", seconds * (index + .1));
+   GraphicsDevice.Clear(background);
+   batch.Begin(transformMatrix: Matrix.CreateScale(.5f));
+   drawBattle.Invoke(this, null);
+   batch.End();
+   var pixels = battleFramePixels[index] = new Color[960 * 540];
+   GraphicsDevice.GetBackBufferData(pixels);
+   globeImage.SetData(pixels);
+   using var battleFile = File.Create(Path.Combine(Path.GetDirectoryName(output)!, $"maple-battle-frame-{index}.png"));
+   globeImage.SaveAsPng(battleFile,960,540);
+  }
+  int UnitChanges(Color[] before, Color[] after) => Enumerable.Range(224, 39).Sum(y =>
+   Enumerable.Range(227, 36).Count(x => before[y * 960 + x] != after[y * 960 + x]));
+  if (UnitChanges(battleFramePixels[0], battleFramePixels[1]) < 4 ||
+      UnitChanges(battleFramePixels[1], battleFramePixels[2]) < 20)
+   throw new Exception("Full battle rendering did not show rifle removal and the turn to face north");
+  Console.WriteLine("PASS full battle screen selects historical maple facing and rifle supply at 960x540.");
+  var resolved = new BattleState(42) { Kind = BattleKind.Node, Defender = 1 };
+  var mapleRobot = replayUnit.Robot;
+  resolved.AddArmy(0, 0, new[] { mapleRobot, mapleRobot with { Id = 502 } }, true);
+  resolved.AddArmy(1, 1, new[] { new Robot(601,1,RobotParts.Complete) }, true);
+  resolved.BuildTerrain(BattleTerrain.Field);
+  resolved.Deploy();
+  for (int turn = 0; turn < 200 && !resolved.Finished; turn++)
+   BattleTurnResolver.Advance(resolved);
+  if (!resolved.Finished || !resolved.Frames.Any(frame => frame.Units.Any(unit =>
+      unit.Robot?.HeadMaterial == RobotMaterial.Maple)))
+   throw new Exception("Seeded replay must finish with a maple soldier in its history");
+  var resolvedScenes = new[] { resolved };
+  var resolvedPlayback = new RobotBattlePlayback(resolvedScenes);
+  Set("_robotScenes", resolvedScenes);
+  Set("_robotPlayback", resolvedPlayback);
+  var selectFrame = typeof(Game1).GetMethod("RobotFrameIndex", Flags)!;
+  int rendered = 0;
+  for (int round = 0; round < resolvedPlayback.Rounds.Length; round++)
+  {
+   Set("_robotRound", round);
+   var slice = resolvedPlayback.Rounds[round][0];
+   double frameSeconds = RobotBattlePlayback.SecondsPerFrame(resolved, slice);
+   for (int frameIndex = slice.Start; frameIndex <= slice.End; frameIndex++)
+   {
+    Set("_battleAge", frameSeconds * (frameIndex - slice.Start + .1));
+    Set("_animationTime", frameIndex * .1f);
+    if ((int)selectFrame.Invoke(this, new object[] { resolved })! != frameIndex)
+     throw new Exception("Battle playback skipped a captured frame");
+    GraphicsDevice.Clear(background);
+    batch.Begin(transformMatrix: Matrix.CreateScale(.5f));
+    drawBattle.Invoke(this, null);
+    batch.End();
+    rendered++;
+    if (frameIndex == 0 || frameIndex == resolved.Frames.Count / 2 || frameIndex == resolved.Frames.Count - 1)
+    {
+     GraphicsDevice.GetBackBufferData(globePixels);
+     globeImage.SetData(globePixels);
+     using var resolvedFile = File.Create(Path.Combine(Path.GetDirectoryName(output)!, $"maple-resolved-{frameIndex}.png"));
+     globeImage.SaveAsPng(resolvedFile,960,540);
+    }
+   }
+  }
+  if (rendered != resolved.Frames.Count)
+   throw new Exception("The complete battle history was not rendered");
+  Console.WriteLine($"PASS seeded battle rendered all {rendered} frames through turn {resolved.Turn}, winner {resolved.Winner}.");
+  GraphicsDevice.Clear(background);
+  batch.Begin();
+  var paper = new Robot(700,0,RobotParts.Head){HeadMaterial=RobotMaterial.Paper};
+  draw.Invoke(this,new object[]{new Rectangle(100,110,84,150),paper,false,1f,null});
+  draw.Invoke(this,new object[]{new Rectangle(300,110,84,150),paper with {HeadOrigin=1},false,1f,null});
+  var paperSoldier=paper with {Parts=RobotParts.Complete};
+  if (!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(510,110,62,85),paperSoldier,
+       BattleRole.Soldier,BattleFacing.South,true,1f})!)
+   throw new Exception("Front soldier failed to use paper head artwork");
+  batch.End();
+  var paperArt=(RobotHeadTexture)Get("_paperHeadTextures");
+  paperArt.Get(materialWorld,0).GetData(firstFlag);
+  paperArt.Get(materialWorld,1).GetData(secondFlag);
+  if (firstFlag.SequenceEqual(secondFlag) ||
+      !firstFlag.Select(p=>p.A).SequenceEqual(secondFlag.Select(p=>p.A)) ||
+      firstFlag[142*size+110].A==0 || firstFlag[142*size+110]!=secondFlag[142*size+110] ||
+      firstFlag[140*size+184].A==0 || firstFlag[140*size+184]!=secondFlag[140*size+184])
+   throw new Exception("Paper head flags must preserve face, fold and alpha");
+  GraphicsDevice.GetBackBufferData(globePixels);
+  globeImage.SetData(globePixels);
+  using(var paperFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"paper-glyph.png")))
+   globeImage.SaveAsPng(paperFile,960,540);
+  Console.WriteLine("PASS paper head in shared glyph and front soldier preserves face, fold and alpha.");
   Exit();
  }
  protected override void UnloadContent(){(Get("_robotHeadTextures") as IDisposable)?.Dispose();batch?.Dispose();pixel?.Dispose();}

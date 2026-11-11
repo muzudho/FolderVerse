@@ -7,6 +7,7 @@ public partial class Game1
 {
     private RobotHeadTexture _robotHeadTextures;
     private RobotHeadTexture _mapleHeadTextures;
+    private RobotHeadTexture _paperHeadTextures;
     private RobotHeadTexture _mapleTorsoTextures, _mapleLegTextures;
     private RobotHeadTexture _robotTorsoTextures;
     private RobotHeadTexture _robotLegTextures;
@@ -70,13 +71,17 @@ public partial class Game1
         bool mapleLegs=UsesMapleArt(robot,RobotParts.Legs),mapleTorso=UsesMapleArt(robot,RobotParts.Body);
         Draw(mapleLegs?_mapleLegTextures:_robotLegTextures, RobotParts.Legs, mapleLegs?MapleLegsCrop:LegsCrop, 102, 58, 48);
         Draw(mapleTorso?_mapleTorsoTextures:_robotTorsoTextures, RobotParts.Body, mapleTorso?MapleTorsoCrop:TorsoCrop, 54, 84, 54);
-        bool maple=UsesMapleArt(robot,RobotParts.Head);
-        Draw(maple?_mapleHeadTextures:_robotHeadTextures, RobotParts.Head,
-            maple?new(50,37,154,176):new(15,38,215,176), 0, 72, 59);
+        Draw(FrontHeadTexture(robot), RobotParts.Head, FrontHeadCrop(robot) ?? new(15,38,215,176), 0, 72, 59);
     }
     private bool UsesPolypropyleneArt(Robot robot,RobotParts part)=>_setup.EquipmentMode==RobotEquipmentMode.Materials
         ?robot.Material(part)==RobotMaterial.Polypropylene:!robot.IsCheap(part) && !robot.IsPremium(part);
     private bool UsesMapleArt(Robot robot,RobotParts part)=>_setup.EquipmentMode==RobotEquipmentMode.Materials && robot.Material(part)==RobotMaterial.Maple;
+    private bool UsesPaperHeadArt(Robot robot)=>_setup.EquipmentMode==RobotEquipmentMode.Materials &&
+        robot.Material(RobotParts.Head)==RobotMaterial.Paper;
+    private RobotHeadTexture FrontHeadTexture(Robot robot)=>UsesPaperHeadArt(robot)?_paperHeadTextures:
+        UsesMapleArt(robot,RobotParts.Head)?_mapleHeadTextures:_robotHeadTextures;
+    private Rectangle? FrontHeadCrop(Robot robot)=>UsesPaperHeadArt(robot)?new(46,51,160,163):
+        UsesMapleArt(robot,RobotParts.Head)?new(50,37,154,176):null;
     private RobotHeadTexture LoadMapleArt(string name,RobotParts part,RobotHeadSurface.RectangleF sticker)
     {
         string path=Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots",$"maple-{name}-neutral-v001.png");
@@ -91,6 +96,14 @@ public partial class Game1
             _mapleHeadTextures??=LoadMapleArt("head",RobotParts.Head,new(.61f,.61f,.09f,.14f));
             return _mapleHeadTextures!=null;
         }
+        if(UsesPaperHeadArt(robot))
+        {
+            string paperPath=Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots","paper-head-neutral-v001.png");
+            if(_paperHeadTextures==null && File.Exists(paperPath))
+                _paperHeadTextures=new(GraphicsDevice,paperPath,CountryEmblemArt.Tiles,
+                    stickerBounds:new(.595f,.719f,.052f,.069f),paperHead:true);
+            return _paperHeadTextures!=null;
+        }
         if(!UsesPolypropyleneArt(robot,RobotParts.Head))return false;
         if(_robotHeadTextures!=null)return true;
         string path=Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots","pp-head-neutral-v001.png");
@@ -100,9 +113,8 @@ public partial class Game1
     private void DrawRobotHeadArt(Rectangle area,Robot robot,float opacity)
     {
         var bounds=new Rectangle(area.X+area.Width/6,area.Y-area.Height/20,area.Width*2/3,area.Height/3+6);
-        bool maple=UsesMapleArt(robot,RobotParts.Head);
-        var art=maple?_mapleHeadTextures:_robotHeadTextures;
+        var art=FrontHeadTexture(robot);
         _spriteBatch.Draw(art.Get(_setup,robot.Origin(RobotParts.Head),robot.IsDamaged(RobotParts.Head)),bounds,
-            maple?new Rectangle(50,37,154,176):null,Color.White*opacity);
+            FrontHeadCrop(robot),Color.White*opacity);
     }
 }

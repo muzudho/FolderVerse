@@ -733,7 +733,11 @@ public partial class Game1 : Game
     {
         _robotHeadTextures?.EndFrame(); _robotTorsoTextures?.EndFrame(); _robotLegTextures?.EndFrame();
         _mapleHeadTextures?.EndFrame();
+        _paperHeadTextures?.EndFrame();
         _mapleTorsoTextures?.EndFrame(); _mapleLegTextures?.EndFrame();
+        _mapleSideHead?.EndFrame(); _mapleRearHead?.EndFrame();
+        _mapleSideTorso?.EndFrame(); _mapleSideLegs?.EndFrame();
+        _mapleRearTorso?.EndFrame(); _mapleRearLegs?.EndFrame();
         _sideHead?.EndFrame(); _sideTorso?.EndFrame(); _sideLegs?.EndFrame();
         _rearHead?.EndFrame(); _rearTorso?.EndFrame(); _rearLegs?.EndFrame();
         if(IsOpeningScreen){DrawOpeningFrame(gameTime);base.Draw(gameTime);return;}

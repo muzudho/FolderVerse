@@ -9,6 +9,8 @@ public partial class Game1
     private readonly Texture2D[] _queenTextures = new Texture2D[3];
     private RobotHeadTexture _sideHead, _sideTorso, _sideLegs;
     private RobotHeadTexture _rearHead, _rearTorso, _rearLegs;
+    private RobotHeadTexture _mapleSideHead, _mapleRearHead, _mapleRearTorso, _mapleRearLegs;
+    private RobotHeadTexture _mapleSideTorso, _mapleSideLegs;
     private Texture2D _rearCaptainCap, _sideCaptainCap;
     private Texture2D _soldierCapTexture, _captainCapTexture, _toyRifleTexture;
 
@@ -63,8 +65,7 @@ public partial class Game1
             role is not (BattleRole.Soldier or BattleRole.Captain))
             return false;
 
-        if (facing!=BattleFacing.South && Array.Exists(RobotMaterials.Parts,part=>UsesMapleArt(robot,part)) ||
-            !HasRobotHeadArt(area, robot, allowCaptain: true) ||
+        if (!HasRobotHeadArt(area, robot, allowCaptain: true) ||
             FindRobotBodyArt(area, robot, RobotParts.Body, allowCaptain: true) == null ||
             FindRobotBodyArt(area, robot, RobotParts.Legs, allowCaptain: true) == null)
             return false;
@@ -120,30 +121,47 @@ public partial class Game1
 
     private bool DrawOrientedRobotArt(Rectangle area, Robot robot, bool rear, bool west, float opacity)
     {
+        if (UsesPaperHeadArt(robot))
+            return false;
         float scale = Math.Min(area.Width / 84f, area.Height / 150f);
         int top = area.Center.Y - (int)Math.Round(75 * scale);
         var flip = west ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+        bool maple = UsesMapleArt(robot, RobotParts.Head);
+        bool mapleTorso = UsesMapleArt(robot, RobotParts.Body);
+        bool mapleLegs = UsesMapleArt(robot, RobotParts.Legs);
         if (rear)
         {
-            _rearHead ??= LoadOrientedRobotArt("head-back", new(.06f, .15f, .86f, .71f), new(.48f, .56f, .16f, .18f));
-            _rearTorso ??= LoadOrientedRobotArt("torso-back", new(128f/1536, 128f/1024, 1272f/1536, 800f/1024), new(.42f, .40f, .16f, .20f));
-            _rearLegs ??= LoadOrientedRobotArt("legs-back", new(240f/1536, 104f/1024, 1048f/1536, 832f/1024), new(.59f, .64f, .14f, .19f));
-            if (_rearHead == null || _rearTorso == null || _rearLegs == null)
+            var head = maple
+                ? _mapleRearHead ??= LoadOrientedRobotArt("head-back", new(.20f, .15f, .61f, .72f), new(.50f, .54f, .15f, .19f), maplePart: RobotParts.Head)
+                : _rearHead ??= LoadOrientedRobotArt("head-back", new(.06f, .15f, .86f, .71f), new(.48f, .56f, .16f, .18f));
+            var torso = mapleTorso
+                ? _mapleRearTorso ??= LoadOrientedRobotArt("torso-back", new(.06f, .13f, .86f, .78f), new(.42f, .40f, .16f, .20f), maplePart: RobotParts.Body)
+                : _rearTorso ??= LoadOrientedRobotArt("torso-back", new(128f/1536, 128f/1024, 1272f/1536, 800f/1024), new(.42f, .40f, .16f, .20f));
+            var legs = mapleLegs
+                ? _mapleRearLegs ??= LoadOrientedRobotArt("legs-back", new(.16f, .11f, .68f, .53f), new(.58f, .62f, .14f, .19f), maplePart: RobotParts.Legs)
+                : _rearLegs ??= LoadOrientedRobotArt("legs-back", new(240f/1536, 104f/1024, 1048f/1536, 832f/1024), new(.59f, .64f, .14f, .19f));
+            if (head == null || torso == null || legs == null)
                 return false;
-            Draw(_rearLegs, RobotParts.Legs, new(40, 26, 175, 208), 102, 58, 48);
-            Draw(_rearTorso, RobotParts.Body, new(21, 32, 213, 200), 54, 84, 54);
-            Draw(_rearHead, RobotParts.Head, new(16, 38, 220, 180), 0, 72, 59);
+            Draw(legs, RobotParts.Legs, mapleLegs ? new(40, 26, 176, 209) : new(40, 26, 175, 208), 102, 58, 48);
+            Draw(torso, RobotParts.Body, mapleTorso ? new(14, 32, 224, 201) : new(21, 32, 213, 200), 54, 84, 54);
+            Draw(head, RobotParts.Head, maple ? new(49, 35, 160, 190) : new(16, 38, 220, 180), 0, 72, 59);
         }
         else
         {
-            _sideHead ??= LoadOrientedRobotArt("head-side", new(.06f, .15f, .86f, .71f), new(.48f, .56f, .16f, .18f), new(.765f, .374f, .19f, .35f));
-            _sideTorso ??= LoadOrientedRobotArt("torso-side", new(424f/1536, 136f/1024, 696f/1536, 792f/1024), new(.32f, .52f, .11f, .17f));
-            _sideLegs ??= LoadOrientedRobotArt("legs-side", new(288f/1312, 120f/1199, 712f/1312, 960f/1199), new(.36f, .72f, .17f, .15f));
-            if (_sideHead == null || _sideTorso == null || _sideLegs == null)
+            var head = maple
+                ? _mapleSideHead ??= LoadOrientedRobotArt("head-side", new(.17f, .10f, .49f, .78f), new(.42f, .55f, .15f, .19f), maplePart: RobotParts.Head)
+                : _sideHead ??= LoadOrientedRobotArt("head-side", new(.06f, .15f, .86f, .71f), new(.48f, .56f, .16f, .18f), new(.765f, .374f, .19f, .35f));
+            var torso = mapleTorso
+                ? _mapleSideTorso ??= LoadOrientedRobotArt("torso-side", new(.25f, .13f, .50f, .78f), new(.33f, .53f, .12f, .18f), maplePart: RobotParts.Body)
+                : _sideTorso ??= LoadOrientedRobotArt("torso-side", new(424f/1536, 136f/1024, 696f/1536, 792f/1024), new(.32f, .52f, .11f, .17f));
+            var legs = mapleLegs
+                ? _mapleSideLegs ??= LoadOrientedRobotArt("legs-side", new(.22f, .13f, .53f, .49f), new(.32f, .61f, .16f, .15f), maplePart: RobotParts.Legs)
+                : _sideLegs ??= LoadOrientedRobotArt("legs-side", new(288f/1312, 120f/1199, 712f/1312, 960f/1199), new(.36f, .72f, .17f, .15f));
+            if (head == null || torso == null || legs == null)
                 return false;
-            Draw(_sideLegs, RobotParts.Legs, new(55, 25, 141, 205), 103, 35, 47);
-            Draw(_sideTorso, RobotParts.Body, new(70, 34, 117, 198), 53, 46, 55);
-            Draw(_sideHead, RobotParts.Head, new(15, 38, 220, 182), 0, 71, 59);
+            Draw(legs, RobotParts.Legs, mapleLegs ? new(55, 29, 140, 183) : new(55, 25, 141, 205), 103, 35, 47);
+            Draw(torso, RobotParts.Body, mapleTorso ? new(62, 32, 133, 201) : new(70, 34, 117, 198), 53, 46, 55);
+            Draw(head, RobotParts.Head, maple ? new(40, 24, 170, 207) : new(15, 38, 220, 182), 0, 71, 59);
         }
         return true;
 
@@ -159,18 +177,30 @@ public partial class Game1
     }
 
     private RobotHeadTexture LoadOrientedRobotArt(string part, RobotHeadSurface.RectangleF paint,
-        RobotHeadSurface.RectangleF sticker, RobotHeadSurface.RectangleF? protectedFace = null)
+        RobotHeadSurface.RectangleF sticker, RobotHeadSurface.RectangleF? protectedFace = null, RobotParts? maplePart = null)
     {
-        string path = Path.Combine(AppContext.BaseDirectory, "Content", "Images", "Robots", $"pp-{part}-v001.png");
-        return File.Exists(path) ? new(GraphicsDevice, path, CountryEmblemArt.Tiles, paint, sticker, protectedFace) : null;
+        string material = maplePart.HasValue ? "maple" : "pp";
+        string path = Path.Combine(AppContext.BaseDirectory, "Content", "Images", "Robots", $"{material}-{part}-v001.png");
+        return File.Exists(path) ? new(GraphicsDevice, path, CountryEmblemArt.Tiles, paint, sticker, protectedFace,
+            maplePart) : null;
     }
 
     private void DisposeBattleToyArt()
     {
+        _paperHeadTextures?.Dispose();
+        _paperHeadTextures=null;
         _mapleHeadTextures?.Dispose();
         _mapleTorsoTextures?.Dispose();
         _mapleLegTextures?.Dispose();
         _mapleHeadTextures=_mapleTorsoTextures=_mapleLegTextures=null;
+        _mapleSideHead?.Dispose();
+        _mapleSideTorso?.Dispose();
+        _mapleSideLegs?.Dispose();
+        _mapleSideTorso = _mapleSideLegs = null;
+        _mapleRearHead?.Dispose();
+        _mapleRearTorso?.Dispose();
+        _mapleRearLegs?.Dispose();
+        _mapleSideHead = _mapleRearHead = _mapleRearTorso = _mapleRearLegs = null;
         _sideHead?.Dispose();
         _sideTorso?.Dispose();
         _sideLegs?.Dispose();

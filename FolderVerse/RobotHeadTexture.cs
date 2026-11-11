@@ -25,7 +25,7 @@ public sealed class RobotHeadTexture:IDisposable
 
     public RobotHeadTexture(GraphicsDevice device,string path,Func<int,IReadOnlyList<Rectangle>> emblems,
         RobotHeadSurface.RectangleF? bodyBounds = null, RobotHeadSurface.RectangleF? stickerBounds = null,
-        RobotHeadSurface.RectangleF? protectedFace = null, RobotParts? maplePart = null)
+        RobotHeadSurface.RectangleF? protectedFace = null, RobotParts? maplePart = null, bool paperHead = false)
     {
         _device=device??throw new ArgumentNullException(nameof(device));
         _emblems=emblems??throw new ArgumentNullException(nameof(emblems));
@@ -35,7 +35,8 @@ public sealed class RobotHeadTexture:IDisposable
         _neutral=new Color[Resolution*Resolution];
         for(int y=0;y<Resolution;y++)for(int x=0;x<Resolution;x++)
             _neutral[y*Resolution+x]=pixels[Math.Min(source.Height-1,(2*y+1)*source.Height/(2*Resolution))*source.Width+Math.Min(source.Width-1,(2*x+1)*source.Width/(2*Resolution))];
-        _surface = maplePart is {} part ? RobotHeadSurface.Maple(_neutral,Resolution,Resolution,part) : bodyBounds is { } bounds
+        _surface = paperHead ? RobotHeadSurface.PaperHead(_neutral, Resolution, Resolution)
+            : maplePart is {} part ? RobotHeadSurface.Maple(_neutral,Resolution,Resolution,part,bodyBounds) : bodyBounds is { } bounds
             ? RobotHeadSurface.PolypropyleneBody(_neutral, Resolution, Resolution, bounds, protectedFace)
             : RobotHeadSurface.Polypropylene(_neutral, Resolution, Resolution);
         var sticker = stickerBounds ?? new RobotHeadSurface.RectangleF(.70f, .59f, .15f, .16f);

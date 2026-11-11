@@ -387,3 +387,109 @@ v012のメープルを参照し、組み込みImageGenで胴と脚を独立し�
 Create one independent transparent production game sprite based only on the top-middle maple toy of the reference. Show the isolated torso and both attached wooden arms. Preserve the broad inset end-grain on the chest with gentle concentric growth rings flush with the torso and no symbol. Keep pale satin maple and its visible fine natural grain, with the original toy proportions. All surfaces unpainted. No flag, emblem, text, winding key, head, other parts, floor shadow or background. Center the full part with clear margins.
 
 Create one independent transparent production game sprite based only on the top-middle maple toy of the reference. Show the isolated joined waist and both legs with broad wooden shoes. Preserve a genuinely transparent gap between the legs, show the same three-quarter front angle and sturdy squared shoe shape. Keep pale satin maple and its visible fine natural grain, with the original toy proportions. All surfaces unpainted. No flag, emblem, text, winding key, head, other parts, floor shadow or background. Center the full part with clear margins.
+
+## 2026年11月12日０時48分・メープル頭の横と背面
+
+メープル正面頭を質感、PP横・背面頭を輪郭の参照にして、組み込みImageGenで独立した透過原画を制作。NAS art-source/robots/maple-views-v001/ に保存し、生成元とSHA-256一致を確認。
+
+| 原画 | 寸法 | アルファ128以上の範囲（８px間隔の計測） | SHA-256 |
+| --- | --- | --- | --- |
+| maple-head-side-v001.png | 1536×1024 | 256,104–1232,904 | 47E8C768AD82F994A30A0D27727556C55A69F8EB62AFA52E41C7963E53AC9B3E |
+| maple-head-back-v001.png | 1536×1024 | 312,152–1224,880 | B90234124EB4712B359F6A86715468A2D21C66B0A6D8B6C5853C5240A99C6643 |
+
+横は右端に片目と口、背面は木目だけを目視した。今回は原画と透過の確認まで。次は横顔の保護マスクと国旗合成、横・背面の胴脚の制作。ゲーム素材への登録とビルドは次の作業。
+
+Create a single transparent game sprite of the pale unpainted maple robot head in the first reference. Match its wood grain and soft satin finish. Use the second reference only to match the strict right-facing profile with one black oval eye and the edge of the smile visible on the right. No body, paint, badge, key, cast shadow, text or background. Keep the complete rounded block centered with margin.
+
+Create a single transparent game sprite of the pale unpainted maple robot head in the first reference. Match its wood grain and soft satin finish. Use the second reference only to match the direct rear silhouette, a smooth wooden shell with no face visible. No body, paint, badge, key, cast shadow, text or background. Keep the complete rounded block centered with margin.
+
+## 2026年11月12日１時18分・メープル頭の横・背面を戦闘へ接続
+
+前節のNAS原画２点を Content/Images/Robots/ の同名PNGへ配置し、SHA-256一致を確認。素材９種モードでメープル頭とPP胴脚を組み合わせた戦闘駒に東・西・北向きの頭を適用。横顔の右端は木肌のまま残し、紋章は顔を避けて配置。西向きの紋章は文字や非対称形が反転しないよう既存の処理を利用した。
+
+隔離Releaseでゲーム・描画試験とも警告とエラー各０。実描画で東西北と２国旗を確認し、横顔の保護領域と全画素のアルファが２国旗で一致。960×540の確認画像を目視し、格納庫６枠・選択・配送ドラッグの回帰も通過。NAS tmp/delete-after-2026-11-15/robot-art-implementation/maple-oriented-0118/ に試験出力。メープル胴脚の横・背面、戦闘全画面での再生、今回の向き別素材での国旗全種の画素比較は未実施。
+
+## 2026年11月12日１時48分・メープル横向き胴脚の原画
+
+正面メープルを木目と形、横向きPPを向きの参照に使用。組み込みImageGenで部位を個別に生成し、NAS art-source/robots/maple-views-v001/ に生成元とのSHA-256一致を確認して保存。
+
+| NAS原画 | 寸法 | アルファ128以上の範囲（８px間隔） | SHA-256 |
+| --- | --- | --- | --- |
+| maple-legs-side-v001.png | 1312×1199 | 288,160–976,976 | 3F57A39DA742F53B8B9A3BF08B6423C3D727A92FB77CCE09DD404530009263D2 |
+| maple-torso-side-study-v001.png | 1536×1024 | 432,136–1184,912 | CA9EC40C8F8D8052DD01AF4DF25F314C5EE61F57BACFA961257B6B5B37A8BCE3 |
+
+両原画の左上は完全透過。目視で脚の木目と右向きの靴を確認。胴は腕が前へ伸び、輪郭に光のにじみが見えるため比較用として保存。別の胴出力はImageGenの出力審査でブロックされた。ゲーム用Contentへの登録とビルドは未実施。次は横向き胴の輪郭を揃え、脚の木肌を保つ塗装マスクと背面胴脚を準備する。
+
+### 保存した出力の生成指示
+
+- 胴。木製ぜんまい玩具の機械部品として、正面が画面右の側面視。丸い木製の拳付きの胴。正面メープルを木目と加工、PP横向きを視点とシルエットの参照にする。背景透過、床影・装飾なし。
+- 脚。右向きの靴と短い木製支持部、腰の接続部を持つ独立した玩具部品。正面メープルの材質と横向きPPの視点を参照。輪郭の光・霧・床影を避け、背景を透過。
+
+## 2026年11月12日２時18分・メープルの背面全身
+
+正面メープルを木目と加工、PP背面を向きと輪郭の参照にし、組み込みImageGenで背面の胴と脚を個別に制作。NAS art-source/robots/maple-views-v001/ とゲームの Content/Images/Robots/ に同名で保存し、生成元とSHA-256一致を確認。
+
+| 原画・実行素材 | 寸法 | アルファ128以上の範囲（８px間隔） | SHA-256 |
+| --- | --- | --- | --- |
+| maple-torso-back-v001.png | 1536×1024 | 96,136–1408,920 | 56F242FD6F1F28E1572F0A6B32FAF3EB4A9D90AD619F08211F7685021A4A585C |
+| maple-legs-back-v001.png | 1536×1024 | 256,112–1280,928 | 89FBF6A380F4186B9BEE42D0C65E5E0B2061E3A83FCFF9C8769C61B4E697CE59 |
+
+北向きで部位ごとにメープル素材を選び、木目の明暗を残す国旗と紋章を合成。かかとの下部は木肌。隔離Releaseのゲーム・描画・国旗試験は警告とエラー各０。国旗320組の合成、背面脚の全アルファ・脚間透過・木肌の２国旗比較、格納庫６枠の選択と配送ドラッグが通過。960×540の描画を目視。確認画像はNAS tmp/delete-after-2026-11-15/robot-art-implementation/maple-rear-0218/maple-oriented.png。横向きの胴と脚、背面の全旗での素材別比較、戦闘全画面での再生は未実施。
+
+生成指示は木製ぜんまい玩具の機械部品を真後ろから描くもの。胴は横木目の背板と左右対称の短い腕、脚は左右のかかとと透過する脚間。両方とも無塗装の白いメープルで、背景・床影・装飾なし。
+
+## 2026年11月12日２時48分・メープルの横向き全身
+
+PP横向き胴の形とメープル背面の木目を参照し、組み込みImageGenで腕を胴の近くに収めた横向き胴を制作。既存の横向き脚とともにNAS原画 art-source/robots/maple-views-v001/ とゲーム実行素材 Content/Images/Robots/ のSHA-256を照合。
+
+| 原画・実行素材 | SHA-256 |
+| --- | --- |
+| maple-torso-side-v001.png | 67491929A4BAA2C82DD8E9E0ADA202888D7D4914744FE80B68DE856EA1C3E8E7 |
+| maple-legs-side-v001.png | 3F57A39DA742F53B8B9A3BF08B6423C3D727A92FB77CCE09DD404530009263D2 |
+
+東西の戦闘駒で素材を部位ごとに選び、国旗と紋章を合成。西向きは紋章の向きを維持する既存処理を共有。足元は木肌を残す。胴の左右外と上方のうち計測した点でアルファ０。隔離Releaseのゲーム・描画試験は警告・エラー各０。実描画の東西北と２国旗、横顔・靴の保護画素と脚全体のアルファ一致、格納庫６枠の選択・配送ドラッグが通過。NAS tmp/delete-after-2026-11-15/robot-art-implementation/maple-side-0248/maple-oriented.png を960×540で目視。今回の向き別素材による国旗全種の画素比較と戦闘全画面の再生は未実施。次は実際の戦闘フレームで方向と装備を確認する。
+
+## 2026年11月12日３時18分・戦闘全画面で小銃と方向を確認
+
+前回の隔離ReleaseゲームDLLを参照し、RobotGlyphIntegrationに戦闘全画面の回帰を追加。２軍の模擬戦闘を用意し、メープル製一般兵が東向きで小銃１→東向きで小銃０→北向きへ変わる３フレームを BattleState.Capture に保存。実際の DrawRobotBattle を再生時間の３点で呼び、960×540の駒周辺の画素差と試験画像の目視で、小銃が消えてから後頭部が見えることを確認。格納庫６枠と配送ドラッグも通過。試験のReleaseは警告・エラー各０。製品コードと実行素材の追加変更なし。
+
+NAS tmp/delete-after-2026-11-15/robot-art-implementation/maple-replay-0318/ の maple-battle-frame-0〜2.png。試験は模擬戦闘の指定３点で、実時間の入力、戦闘開始から決着までの通し再生、他素材の実行素材は引き続き未検証。
+
+## 2026年11月12日３時48分・シード固定戦闘の全201フレーム
+
+RobotGlyphIntegrationに、シード42の平地節戦を追加。メープル２体とPP１体、両軍のクイーンを配置し、通常の BattleTurnResolver で国０が19ターンに勝利。生成された201フレームすべてについて、再生時刻から選ばれたフレーム番号と DrawRobotBattle の描画を確認した。960×540の開始・中間・決着の３枚を目視。既存の小銃・方向・格納庫６枠操作の回帰も通過。試験Releaseは警告とエラー各０。製品コードや素材の追加変更なし。
+
+NAS tmp/delete-after-2026-11-15/robot-art-implementation/maple-resolved-0348/ に maple-resolved-0.png、100.png、200.png（同じ接頭辞）。試験は再生時刻を順に指定したもので、実時間の操作と決着後の画面遷移は未検証。次は未対応の素材の実行素地と素材ごとの塗装マスクを進める。
+
+## 2026年11月12日４時18分・紙製の頭の無地原画
+
+採用済み head-study-v002 の右下の紙製頭を参照し、組み込みImageGenで独立した透過原画を描き起こした。角の折り返し、薄い継ぎ目、平らな面の陰影とクリーム色の顔を目視。国旗・紋章・ぜんまいは合成用の別要素とし、原画は無地。NAS art-source/robots/paper-head-neutral-v001/paper-head-neutral-v001.png、1485×1059。左上の背景アルファ０、顔中央254、右の折り目付近253。生成元とSHA-256一致（0FF83018C21C62CA67D33A9371A9CD773CA20C6A0183B4B0EC7BEC1EE48AD8AC）。
+
+次は正面の折り紙面を多角形マスクで指定し、顔の丸い輪郭、白い角の折り返しと側面を保護する。実原画の目視上の基準点は正面外周がおよそ (407,290)、(934,294)、(998,425)、(998,755)、(938,855)、(393,850)、(333,748)、(333,419)。顔の範囲はおよそ (386,430)–(902,758)。これらはマスク作成前の目安。今回は原画までで、実行素材への登録・動的合成・ビルドは未実施。
+
+生成指示は参照の右下の紙製頭を単体の透過スプライトとして描き起こし、斜めに折った角とクリーム色の顔、黒い目と笑顔を保持。赤と青緑を均一な無地のつや消し折り紙に置き換え、マーカーのむらや段ボールの波形、紋章、文字、床影を入れない。
+
+## 2026年11月12日４時48分・紙の正面だけに国旗を合成
+
+前節の無地原画に合わせ、RobotHeadSurface.PaperHead に８頂点の正面マスクと顔の保護領域を追加。正面UVは既存の５要素の国旗合成を使用し、明暗は紙の素地から取得。鏡面反射はゼロ。折り返しと側面は素地のまま残す。
+
+隔離Releaseのゲームと画素試験は警告・エラー各０。1485×1059の実原画に斜め縞と格子を合成し、マスク外の画素と全画素のアルファが原画と一致。顔・折り目・側面の測定点と正面の着色も確認し、２枚を目視した。既存の国旗320組の回帰も通過。NAS tmp/delete-after-2026-11-15/robot-art-implementation/paper-mask-0448/render/head-0.png と head-1.png。今回は国旗地まで。紋章の位置決定、Contentへの登録と共通描画への接続、格納庫での縮小確認は次回。
+
+## 2026年11月12日５時18分・紙製頭を共通描画へ接続
+
+NAS原画 paper-head-neutral-v001/paper-head-neutral-v001.png をゲームの Content/Images/Robots/ の同名素材へ配置し、SHA-256一致を確認（0FF83018C21C62CA67D33A9371A9CD773CA20C6A0183B4B0EC7BEC1EE48AD8AC）。素材９種モードで共通の頭部描画と正面戦闘駒に接続。白縁の紋章は顔に掛からない右下へ配置。横・背面は対応素材ができるまで既存の簡易戦闘駒を使用する。
+
+隔離Releaseのゲーム・描画試験は警告とエラー各０。２国の紙製頭、正面の紙頭＋PP胴脚、顔と折り返しの測定画素、全アルファ一致を確認。960×540の確認画像を目視。格納庫６枠・選択・配送ドラッグとメープルの201フレーム試験も通過。NAS tmp/delete-after-2026-11-15/robot-art-implementation/paper-game-0518/paper-glyph.png。紙製頭の紋章は縮小時に小さく、紙の汚損と実格納庫に置いた状態での見え方は追加確認する。次は紙の胴脚と向き別素材。
+
+## 2026年11月12日８時32分・紙製の胴と脚の無地原画
+
+採用済みv012の右下を形と角度、実行素材の紙製頭を紙の色と折り目の参照にし、ImageGenで胴・脚を別々に制作。平らなつや消しの面、肩の折り返し、角張った靴を目視。NAS art-source/robots/paper-body-neutral-v001/ に保存し、生成元とSHA-256一致を確認。
+
+| 原画 | 寸法 | SHA-256 |
+| --- | --- | --- |
+| paper-torso-neutral-v001.png | 1536×1024 | 9AF759401D11126F750B04D3701DF374E8ED787866D8F9193B4F81540321C41B |
+| paper-legs-neutral-v001.png | 1536×1024 | 46C4146E4DE1E53558DADB8A44DAE363F5F40E89CA92B67BDACEA2172721F9C6 |
+
+両原画の左上と上方(768,160)はアルファ０。脚間(737,700)にはアルファ３の残りがあり、実行素材化の際に暗色背景で確認する。胴の正面はおよそ(451,313)、(992,314)、(945,809)、(343,799)。脚はすねの正面２面を塗り、靴先と側面は紙のまま残す。次は胸・袖・すねの国旗マスクと紋章の配置、実行素材への接続。今回は原画までで、ゲーム側の変更とビルドは未実施。
+
+生成指示は参照の紙製ロボットから、台形の胴と下向きの袖、または短い腰と二つの角靴を単体で描くもの。無地のアイボリー、折り目と平面の陰影、透明背景。

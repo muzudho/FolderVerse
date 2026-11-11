@@ -102,11 +102,19 @@ if(args.Length==5 && args[4]=="--maple")
   "Country change did not affect enough of the painted maple shell");
  Console.WriteLine("PASS real maple head preserves face, bare flank and alpha while two flags recolor the shell.");
 }
-else if(args.Length==4){
+else if(args.Length==4 || args.Length==5 && args[4]=="--paper"){
+ bool paper=args.Length==5;
  var bytes=File.ReadAllBytes(args[0]);int width=int.Parse(args[1]),height=int.Parse(args[2]);
  Check(bytes.Length==width*height*4,"RGBA input dimensions");
  var original=Enumerable.Range(0,width*height).Select(i=>new Color(bytes[i*4],bytes[i*4+1],bytes[i*4+2],bytes[i*4+3])).ToArray();
- var surface=RobotHeadSurface.Polypropylene(original,width,height);
+ var surface=paper?RobotHeadSurface.PaperHead(original,width,height):RobotHeadSurface.Polypropylene(original,width,height);
+ if(paper){
+  int AtPaper(int x,int y)=>(y*height/1059)*width+x*width/1485;
+  foreach(var (x,y) in new[]{(644,590),(644,432),(1080,600),(950,320),(20,20)})
+   Check(surface[AtPaper(x,y)].Coverage==0,"Paper face, fold or side must stay uncolored");
+  Check(surface[AtPaper(645,350)].Coverage==255 && surface.All(p=>p.Reflection==0),
+   "Paper front must accept flat matte color");
+ }
  Directory.CreateDirectory(args[3]);
  var tilesMethod=typeof(CountryEmblemArt).GetMethod("Tiles",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!;
  for(int country=0;country<2;country++){
@@ -114,7 +122,7 @@ else if(args.Length==4){
   world.SetCountryEmblem(0,country==0?1:5);
   var output=RobotFlagComposite.Compose(world,0,original,surface,fieldOnly:true);
   var tiles=(IReadOnlyList<Rectangle>)tilesMethod.Invoke(null,new object[]{world.CountryEmblem(0)})!;
-  RobotFlagComposite.Sticker(output,width,height,new((int)(width*.70f),(int)(height*.59f),(int)(width*.15f),(int)(height*.16f)),tiles,WorldSetup.Colors[world.CountrySecondaryColor(0)]);
+  if(!paper)RobotFlagComposite.Sticker(output,width,height,new((int)(width*.70f),(int)(height*.59f),(int)(width*.15f),(int)(height*.16f)),tiles,WorldSetup.Colors[world.CountrySecondaryColor(0)]);
   for(int i=0;i<output.Length;i++){
    Check(output[i].A==original[i].A,"Rendered alpha changed");
    if(surface[i].Coverage==0)Check(output[i]==original[i],"Rendered face or transparent source changed");
@@ -122,5 +130,6 @@ else if(args.Length==4){
   var raw=new byte[bytes.Length];for(int i=0;i<output.Length;i++){raw[i*4]=output[i].R;raw[i*4+1]=output[i].G;raw[i*4+2]=output[i].B;raw[i*4+3]=output[i].A;}
   File.WriteAllBytes(Path.Combine(args[3],$"head-{country}.rgba"),raw);
  }
- Console.WriteLine("PASS actual neutral PNG pixels: two flags, shared emblem stickers, exact protected face and alpha.");
+ Console.WriteLine(paper?"PASS paper PNG: two flags preserve face, folds, bare side and alpha.":
+  "PASS actual neutral PNG pixels: two flags, shared emblem stickers, exact protected face and alpha.");
 }

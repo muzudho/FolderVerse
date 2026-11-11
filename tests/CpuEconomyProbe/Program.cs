@@ -280,3 +280,57 @@ if(args.Contains("--supply225-test")){
  stock.Check();
  Console.WriteLine(JsonSerializer.Serialize(new{supply225="PASS",remaining216=guards,reinforcement=reinforcement.Id,native=reinforcement.NativeParts(15),uses=reinforcement.CombatParts(15),rifles=reinforcement.CombatRifles(15)}));
 }
+if(args.Contains("--relay3-release-test")){
+ const int relay=3,owner=1,destination=5;
+ var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+ var delivery=stock.LongDelivery;
+ var advance=typeof(RobotLongDelivery).GetMethod("Advance",flags)!;
+ var reserve=typeof(RobotLongDelivery).GetMethod("ReserveComputer",flags)!;
+ var first=delivery.Orders.Single(o=>o.Number==1);
+ var assembly=delivery.Orders.Single(o=>o.Number==5);
+ var store=stock.Nodes[relay];
+ int initial=store.Count;
+ if(store.HasSpace || first.Node!=7 || assembly.Node!=13 || assembly.Receiver!=26)
+  throw new InvalidOperationException("Expected the turn-5 relay fixture.");
+ advance.Invoke(delivery,new object[]{w});
+ var completed=store.Robots.Single(r=>r.Id==26);
+ if(store.Count!=initial || delivery.Orders.Contains(assembly) || !completed.CanFight ||
+    !stock.CanShip(relay,completed) || stock.AssemblyLocked(relay,completed) || first.Started)
+  throw new InvalidOperationException("Expected assembly in place while the first order remains blocked.");
+ var target=stock.Nodes[destination];
+ var outgoing=(LongPartOrder)reserve.Invoke(delivery,new object[]{w,relay,destination,completed.Id,completed.Parts,null,owner,target.Count})!;
+ advance.Invoke(delivery,new object[]{w});
+ if(delivery.Orders.Contains(outgoing) || !target.Robots.Any(r=>r.Id==26) || !store.HasSpace || first.Started)
+  throw new InvalidOperationException("Expected the later departure to free one slot after the first order had been checked.");
+ advance.Invoke(delivery,new object[]{w});
+ if(first.Node!=relay || !first.Started || store.HasSpace)
+  throw new InvalidOperationException("Expected the first order to enter the relay on the next pass.");
+ advance.Invoke(delivery,new object[]{w});
+ if(delivery.Orders.Contains(first) || !stock.Nodes[13].Robots.Single(r=>r.Id==64).CanFight)
+  throw new InvalidOperationException("Expected the first order to complete the receiver at node 13.");
+ stock.Check();
+ Console.WriteLine(JsonSerializer.Serialize(new{relay3Release="PASS",assembled=completed.Id,outgoing=outgoing.Number,
+  firstOrder=first.Number,first.Node,first.Status,relayCount=store.Count,turn=w.Population.Turn}));
+}
+if(args.Contains("--relay3-normal-trace")){
+ void Trace(string phase){
+  var relay=stock.Nodes[3];
+  Console.WriteLine(JsonSerializer.Serialize(new{relayTrace=phase,turn=w.Population.Turn,
+   relay.Count,relay.StorageLimit,ids=relay.Robots.Select(r=>r.Id),
+   location26=Array.FindIndex(stock.Nodes,n=>n.Robots.Any(r=>r.Id==26)),
+   orders=stock.LongDelivery.Orders.Select(o=>new{o.Number,o.Source,o.Target,o.Node,o.CargoId,o.Receiver,o.Status}),
+   delivered=stock.LongDelivery.Results.Where(o=>o.Number is 1 or 5 or 6 || o.RobotId==26)
+    .Select(o=>new{o.Number,o.Status})}));
+ }
+ Trace("initial");
+ for(int step=0;step<4;step++){
+  if(w.Campaign.Phase!=CampaignPhase.Domestic)
+   throw new InvalidOperationException("Expected a domestic phase.");
+  w.Campaign.FinishDomestic(w,true,deferDelivery:()=>{Trace("planned");return false;});
+  Trace("delivered");
+  w.Campaign.BeginMilitary();
+  w.Campaign.Advance(w,-1,0,automaticAll:true,allPlanned:true);
+  stock.Check();
+  Trace("after-turn");
+ }
+}

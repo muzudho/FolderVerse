@@ -1,4 +1,4 @@
-param([Parameter(Mandatory=$true)][string]$Probe,[Parameter(Mandatory=$true)][string]$Source,[Parameter(Mandatory=$true)][string]$Output)
+param([Parameter(Mandatory=$true)][string]$Probe,[Parameter(Mandatory=$true)][string]$Source,[Parameter(Mandatory=$true)][string]$Output,[switch]$Paper)
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.Drawing
 Add-Type -ReferencedAssemblies System.Drawing.Common,System.Drawing.Primitives,System.Private.Windows.GdiPlus,System.Private.Windows.Core -TypeDefinition @'
@@ -31,6 +31,8 @@ New-Item -ItemType Directory -Force -Path $Output | Out-Null
 $image=[Drawing.Bitmap]::new($Source);$width=$image.Width;$height=$image.Height;$image.Dispose()
 $raw=Join-Path $Output 'neutral.rgba'
 [RobotProbePng]::Decode($Source,$raw)
-& dotnet $Probe $raw $width $height $Output
+$mode=@()
+if($Paper){$mode+='--paper'}
+& dotnet $Probe $raw $width $height $Output @mode
 if($LASTEXITCODE -ne 0){throw 'Composite rendering checks failed'}
 foreach($i in 0,1){[RobotProbePng]::Encode((Join-Path $Output "head-$i.rgba"),(Join-Path $Output "head-$i.png"),$width,$height)}

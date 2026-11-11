@@ -48,11 +48,52 @@ public static class RobotHeadSurface
 
     public readonly record struct RectangleF(float X, float Y, float Width, float Height);
 
-    public static RobotFlagComposite.Surface[] Maple(Color[] neutral,int width,int height,RobotParts part=RobotParts.Head)
+    public static RobotFlagComposite.Surface[] PaperHead(Color[] neutral, int width, int height)
+    {
+        if (width < 1 || height < 1 || neutral == null || (long)width * height != neutral.Length)
+            throw new ArgumentException("Head image dimensions do not match its pixels.");
+
+        // Front sheet measured on paper-head-neutral-v001 in source coordinates.
+        Vector2[] edge = [new(412, 297), new(929, 300), new(991, 428), new(991, 752),
+            new(934, 849), new(397, 844), new(340, 745), new(340, 422)];
+        var normals = new Vector2[edge.Length];
+        for (int i = 0; i < edge.Length; i++)
+        {
+            var side = edge[(i + 1) % edge.Length] - edge[i];
+            normals[i] = Vector2.Normalize(new(-side.Y, side.X));
+        }
+        var result = new RobotFlagComposite.Surface[neutral.Length];
+        for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+        {
+            int index = y * width + x;
+            var pixel = neutral[index];
+            if (pixel.A == 0) continue;
+            var point = new Vector2((x + .5f) * 1485 / width, (y + .5f) * 1059 / height);
+            float sheetDistance = float.PositiveInfinity;
+            for (int i = 0; i < edge.Length; i++)
+                sheetDistance = Math.Min(sheetDistance, Vector2.Dot(point - edge[i], normals[i]));
+            if (sheetDistance <= 0) continue;
+
+            // Keep the inset and its rim outside the dyed paper.
+            float dx = Math.Max(Math.Abs(point.X - 644) - 155, 0);
+            float dy = Math.Max(Math.Abs(point.Y - 594) - 68, 0);
+            float faceDistance = MathF.Sqrt(dx * dx + dy * dy) - 108;
+            float coverage = Math.Clamp(Math.Min(sheetDistance, faceDistance) / 7, 0, 1);
+            float light = (pixel.R + pixel.G + pixel.B) / (3f * 255);
+            result[index] = new(new(Math.Clamp((point.X - 340) / 652, 0, .999f),
+                Math.Clamp((point.Y - 297) / 553, 0, .999f)), Byte(coverage), Byte(Math.Min(light * 1.06f, 1)), 0);
+        }
+        return result;
+    }
+
+    public static RobotFlagComposite.Surface[] Maple(Color[] neutral,int width,int height,RobotParts part=RobotParts.Head,
+        RectangleF? paintBounds=null)
     {
         if(width<1 || height<1 || neutral==null || (long)width*height!=neutral.Length)
             throw new ArgumentException("Head image dimensions do not match its pixels.");
         var result=new RobotFlagComposite.Surface[neutral.Length];
+        var bounds=paintBounds ?? new RectangleF(.20f,.15f,.49f,.68f);
         for(int y=0;y<height;y++)for(int x=0;x<width;x++)
         {
             int i=y*width+x;
@@ -60,7 +101,14 @@ public static class RobotHeadSurface
             if(pixel.A==0)continue;
             float u=(x+.5f)/width,v=(y+.5f)/height;
             float coverage;
-            if(part==RobotParts.Body)
+            if(paintBounds.HasValue)
+            {
+                // Keep the wooden boot heels and the profile face outside the paint.
+                coverage=part==RobotParts.Legs
+                    ? Math.Clamp((bounds.Y+bounds.Height-v)/.025f,0,1)
+                    : Math.Clamp((bounds.X+bounds.Width-u)/.008f,0,1);
+            }
+            else if(part==RobotParts.Body)
             {
                 // Bare end-grain medallion on the chest.
                 float dx=(u-.476f)/.133f,dy=(v-.517f)/.204f;
@@ -76,7 +124,7 @@ public static class RobotHeadSurface
                 coverage=face*Math.Clamp((.686f-u)/.008f,0,1);
             }
             byte diffuse=(byte)Math.Clamp((pixel.R+pixel.G+pixel.B)/3+30,0,255);
-            result[i]=new(new(Math.Clamp((u-.20f)/.49f,0,.999f),Math.Clamp((v-.15f)/.68f,0,.999f)),
+            result[i]=new(new(Math.Clamp((u-bounds.X)/bounds.Width,0,.999f),Math.Clamp((v-bounds.Y)/bounds.Height,0,.999f)),
                 (byte)(220*coverage),diffuse,0);
         }
         return result;
