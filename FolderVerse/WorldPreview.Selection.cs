@@ -26,7 +26,7 @@ public sealed partial class WorldPreview
         _device.BlendState=BlendState.AlphaBlend;_device.DepthStencilState=DepthStencilState.DepthRead;_effect.LightingEnabled=false;
         foreach(var cell in SelectionSetup.Cells){
             if(CountryFocus>=0?FocusCells.Contains(cell.Id):NodeFocus<0 && cell.Id==RegionFocusCell)continue;
-            var lift=cell.Normal*.003f;
+            var lift=cell.Normal*(WorldTerrain.MaxRelief+.003f);
             int detail=1;
             if(FocusCircles.Count>0 && ProjectVisible(cell.Center,cell.Normal,FocusCircleYaw,FocusCirclePitch,FocusCircleArea,out _)){
                 var min=new Vector2(float.PositiveInfinity);var max=new Vector2(float.NegativeInfinity);
@@ -56,7 +56,7 @@ public sealed partial class WorldPreview
         if(SelectionSetup==null || SelectedCell<0 || SelectedCell>=SelectionSetup.Cells.Length)return;
         var cell=SelectionSetup.Cells[SelectedCell];int index=0;
         const int detail=24;
-        var lift=cell.Normal*.003f;
+        var lift=cell.Normal*(WorldTerrain.MaxRelief+.003f);
         for(int y=0;y<detail;y++)for(int x=0;x<detail;x++){
             var a=cell.Origin+cell.U*(x/(float)detail)+cell.V*(y/(float)detail)+lift;
             var b=a+cell.U/detail;var d=a+cell.V/detail;var c=b+cell.V/detail;

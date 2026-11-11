@@ -127,19 +127,37 @@ public sealed partial class CubeNet
                 var closest=Vector2.Clamp(center,new Vector2(rect.Left,rect.Top),new Vector2(rect.Right,rect.Bottom));
                 if(Vector2.Distance(closest,center)<=circle.Radius+8){detail=40;break;}
             }
+            var samples=new float[12,12];
+            for(int sy=-1;sy<=10;sy++)for(int sx=-1;sx<=10;sx++)
+                samples[sx+1,sy+1]=WorldTerrain.Elevation(cell.Origin+cell.U*((sx+.5f)/10)+cell.V*((sy+.5f)/10),offset);
+            int leftU=-(int)Vector3.Dot(face.Right,cell.U),leftV=-(int)Vector3.Dot(face.Right,cell.V);
+            int aboveU=(int)Vector3.Dot(face.Up,cell.U),aboveV=(int)Vector3.Dot(face.Up,cell.V);
             for(int y=0;y<detail;y++)for(int x=0;x<detail;x++)
             {
                 var p=cell.Origin+cell.U*((x+0.5f)/detail)+cell.V*((y+0.5f)/detail);
                 // Project each little terrain pixel so map orientation matches the unfolded face.
                 var a=face.Project(p);int px=(int)(fit.Origin.X+a.X*fit.Scale),py=(int)(fit.Origin.Y+a.Y*fit.Scale);
                 int size=(int)Math.Ceiling(fit.Scale/detail)+1;
-                var sample=cell.Origin+cell.U*((Math.Min(9,x*10/detail)+.5f)/10)+cell.V*((Math.Min(9,y*10/detail)+.5f)/10);
-                float elevation=WorldTerrain.Elevation(sample,offset);
+                int sx=x*10/detail,sy=y*10/detail;
+                var sample=cell.Origin+cell.U*((sx+.5f)/10)+cell.V*((sy+.5f)/10);
+                float elevation=samples[sx+1,sy+1];
                 Color terrain=FocusTerrain(TerrainColor(setup,cell.Id,elevation,x*10/detail,y*10/detail),RotateScreen(new Vector2(px,py),panel),cell.Id);
                 if(CountryFocus<0 && NodeFocus<0 && RegionFocusCell<0 && !ShowRoutes && cell.Id==SelectedCell)terrain=SelectionGlow.Brighten(terrain,(x+.5f)/detail,(y+.5f)/detail,pulse);
                 var post=setup.Nodes.At(cell.Id,new Point(x,y));
                 
                 ui.Box(new(px-size/2,py-size/2,size,size),terrain);
+                float relief=WorldTerrain.Relief(elevation);
+                // Cast a short top-down shadow onto the lower tile, from the left and above.
+                float left=WorldTerrain.Relief(samples[sx+1+leftU,sy+1+leftV]);
+                float above=WorldTerrain.Relief(samples[sx+1+aboveU,sy+1+aboveV]);
+                int shade=Math.Max(1,(int)MathF.Round(fit.Scale*.016f));
+                int subdivisions=detail/10;
+                var within=new Vector2(Vector3.Dot(p-sample,face.Right),-Vector3.Dot(p-sample,face.Up));
+                int x0=px-size/2,y0=py-size/2;
+                if(left>relief && within.X<=-.05f+.051f/subdivisions)
+                    ui.Box(new(x0,y0,Math.Min(size,shade),size),Color.Lerp(terrain,new Color(27,41,49),.27f));
+                if(above>relief && within.Y<=-.05f+.051f/subdivisions)
+                    ui.Box(new(x0,y0,size,Math.Min(size,shade)),Color.Lerp(terrain,new Color(27,41,49),.27f));
             }
             int owner=setup.Nodes.FullOwner(cell.Id);Color color=owner<0?new Color(170,181,191):setup.OwnerColor(owner);
             int thickness=owner==setup.PlayerSlot?3:2;

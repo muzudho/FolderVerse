@@ -78,13 +78,16 @@ public partial class Game1
     {
         if(!MapViewBounds.Contains(pointer))return -1;
         int nearest=-1;float distance=float.PositiveInfinity;
+        var offset=WorldTerrain.Offset(_setup.WorldSeed);
         foreach(var node in _setup.Nodes.All.Where(n=>_net.NodeVisible(_setup,n)))
         {
             var cell=_setup.Cells[node.Cell];
-            if(!_world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center),cell.Normal,_yaw,_pitch,StatusGlobeArea,out var at))continue;
+            var position=_setup.Routes.Position(node.Cell,node.Center);
+            position+=cell.Normal*WorldTerrain.ReliefAt(cell,position,offset);
+            if(!_world.ProjectVisible(position,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var at))continue;
             float candidate=Vector2.DistanceSquared(at,new(pointer.X,pointer.Y));
-            _world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center)+cell.U,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var unit);
-            _world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center)+cell.V,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var otherUnit);
+            _world.ProjectVisible(position+cell.U,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var unit);
+            _world.ProjectVisible(position+cell.V,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var otherUnit);
             float radius=_net.MapPuckRadius(node,MathF.Max(Vector2.Distance(at,unit),Vector2.Distance(at,otherUnit)))+4;
             if(candidate<=radius*radius && candidate<distance){nearest=node.Id;distance=candidate;}
         }

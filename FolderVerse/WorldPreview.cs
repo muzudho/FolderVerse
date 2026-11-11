@@ -99,7 +99,7 @@ public sealed partial class WorldPreview : IDisposable
                 }
                 if(neighbor>=0 && setup.Owners[neighbor]==owner) continue;
                 var inward=Vector3.Normalize(cell.Center-(a+b)*0.5f);
-                var lift=cell.Normal*0.014f;
+                var lift=cell.Normal*(WorldTerrain.MaxRelief+.014f);
                 Quad(a+inward*0.02f+lift,b+inward*0.02f+lift,b+inward*0.065f+lift,a+inward*0.065f+lift,setup.OwnerColor(owner),cell.Normal);
             }
         }
@@ -116,7 +116,7 @@ public sealed partial class WorldPreview : IDisposable
         foreach(var cell in setup.Cells)
         {
             if(setup.Owners[cell.Id]!=owner)continue;
-            var points=cell.Corners;var lift=cell.Normal*0.008f;var color=setup.OwnerColor(owner);
+            var points=cell.Corners;var lift=cell.Normal*(WorldTerrain.MaxRelief+.008f);var color=setup.OwnerColor(owner);
             foreach(int index in new[]{0,1,2,0,2,3})mesh.Add(new(points[index]+lift,color,cell.Normal));
         }
         // During rights selection, no land belongs to the hovered ruler yet.
@@ -124,22 +124,49 @@ public sealed partial class WorldPreview : IDisposable
         _highlight=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
         _highlight.SetData(mesh.ToArray());_highlightCount=mesh.Count/3;
     }
-    private void AddFace(List<VertexPositionColorNormal> mesh, Vector3 origin, Vector3 u, Vector3 v, Vector3 normal, int unitsU, int unitsV, Vector3 offset)
+    private void AddFace(List<VertexPositionColorNormal> mesh, Vector3 origin, Vector3 u, Vector3 v, Vector3 normal, int unitsU, int unitsV, Vector3 offset,
+        Func<float,int,int,Color> paint=null)
     {
         const int detail = 10;
         int countU = unitsU * detail, countV = unitsV * detail;
+        var stepU=u/countU;
+        var stepV=v/countV;
+        var half=new Vector3(Width,Height,Depth)*.5f;
+        var heights=new float[countU+2,countV+2];
+        for (int y=-1;y<=countV;y++)
+        for (int x=-1;x<=countU;x++)
+        {
+            var point=origin+stepU*(x+.5f)+stepV*(y+.5f);
+            bool inside=MathF.Abs(point.X)<=half.X+.001f && MathF.Abs(point.Y)<=half.Y+.001f && MathF.Abs(point.Z)<=half.Z+.001f;
+            heights[x+1,y+1]=inside ? WorldTerrain.Elevation(point,offset) : 0;
+        }
         for (int y = 0; y < countV; y++)
         for (int x = 0; x < countU; x++)
         {
-            var a = origin + u * (x / (float)countU) + v * (y / (float)countV);
-            var b = a + u / countU;
-            var c = b + v / countV;
-            var d = a + v / countV;
-            var center = (a + c) * 0.5f;
-            Color color=WorldTerrain.ColorAt(WorldTerrain.Elevation(center,offset),normal,_polarAxis);
-            if (x % detail == 0 || y % detail == 0) color = Color.Lerp(color, new Color(17, 47, 62), 0.3f);
-            mesh.Add(new(a, color, normal)); mesh.Add(new(b, color, normal)); mesh.Add(new(c, color, normal));
-            mesh.Add(new(a, color, normal)); mesh.Add(new(c, color, normal)); mesh.Add(new(d, color, normal));
+            float height=heights[x+1,y+1];
+            float relief=WorldTerrain.Relief(height);
+            var a=origin+stepU*x+stepV*y+normal*relief;
+            var b=a+stepU;var c=b+stepV;var d=a+stepV;
+            Color color=paint?.Invoke(height,x,y)??WorldTerrain.ColorAt(height,normal,_polarAxis);
+            if (x % detail == 0 || y % detail == 0) color=Color.Lerp(color,new Color(17,47,62),paint==null?.3f:.18f);
+            Quad(a,b,c,d,color,normal);
+            Wall(a,b,heights[x+1,y],-Vector3.Normalize(stepV));
+            Wall(b,c,heights[x+2,y+1],Vector3.Normalize(stepU));
+            Wall(c,d,heights[x+1,y+2],Vector3.Normalize(stepV));
+            Wall(d,a,heights[x,y+1],-Vector3.Normalize(stepU));
+
+            void Wall(Vector3 start,Vector3 end,float neighbor,Vector3 outward)
+            {
+                float drop=relief-WorldTerrain.Relief(neighbor);
+                if(drop<=0)return;
+                var down=normal*drop;
+                Quad(start,end,end-down,start-down,Color.Lerp(color,new Color(49,43,38),.28f),outward);
+            }
+        }
+        void Quad(Vector3 a,Vector3 b,Vector3 c,Vector3 d,Color color,Vector3 facing)
+        {
+            mesh.Add(new(a,color,facing));mesh.Add(new(b,color,facing));mesh.Add(new(c,color,facing));
+            mesh.Add(new(a,color,facing));mesh.Add(new(c,color,facing));mesh.Add(new(d,color,facing));
         }
     }
 

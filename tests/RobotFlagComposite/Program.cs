@@ -43,6 +43,24 @@ Check(first[0]==saved[0] && first[1]==new Color(255,255,255,153) && first[2]==sa
 Check(protectedPixels.SequenceEqual(saved),"Source artwork mutated");
 Check(neutral.All(p=>p==new Color(132,143,151,197)),"Shared neutral image mutated");
 Console.WriteLine($"PASS {combinations} five-element flag designs; explicit masks, reflection, silhouette alpha and immutable source.");
+// A wood finish needs an unpainted grain band and grain modulation under ink.
+world.SetCountryFlagShape(0,0);
+var wood = new[]{new Color(213,175,124),new Color(167,116,71),new Color(213,175,124,210),new Color(167,116,71,210)};
+var woodMap = new[]{new Surface(new(.4f,.5f),0,255,0),new Surface(new(.4f,.5f),0,255,0),
+ new Surface(new(.4f,.5f),200,225,0),new Surface(new(.4f,.5f),200,155,0)};
+world.SetCountryAppearance(0,6,12,1);
+var woodFirst=RobotFlagComposite.Compose(world,0,wood,woodMap,fieldOnly:true);
+world.SetCountryAppearance(0,9,3,4);
+var woodSecond=RobotFlagComposite.Compose(world,0,wood,woodMap,fieldOnly:true);
+foreach(var finish in new[]{woodFirst,woodSecond})
+{
+ Check(finish.Take(2).SequenceEqual(wood.Take(2)),"Unpainted wood grain changed");
+ Check(finish.Select(p=>p.A).SequenceEqual(wood.Select(p=>p.A)),"Wood finish changed alpha");
+ Check(finish[2].R+finish[2].G+finish[2].B>finish[3].R+finish[3].G+finish[3].B,
+  "Paint hid the grain contrast");
+}
+Check(woodFirst[2]!=woodSecond[2] && woodFirst[3]!=woodSecond[3],"Wood finish did not take the country colors");
+Console.WriteLine("PASS explicit wood mask keeps bare grain and diffuse detail under two country designs.");
 const int size=128;
 var headPixels=Enumerable.Repeat(new Color(140,140,140,255),size*size).ToArray();
 var headMap=RobotHeadSurface.Polypropylene(headPixels,size,size);
@@ -62,7 +80,43 @@ Check(bodyMap[At(.39f, .55f)].Coverage == 255, "Body paint must cover the area p
 Check(bodyMap[At(.8f, .8f)].Coverage == 0, "Body paint must preserve transparent gaps");
 Check(bodyMap[At(.78f, .55f)].Reflection > 240, "Body paint must preserve white highlights");
 Check(bodyMap[0].Uv == Vector2.Zero && bodyMap[^1].Uv == Vector2.One, "Body UV must stay within the flag field");
-if(args.Length==4){
+if(args.Length==5 && args[4]=="--maple")
+{
+ var bytes=File.ReadAllBytes(args[0]);int width=int.Parse(args[1]),height=int.Parse(args[2]);
+ Check(bytes.Length==width*height*4,"Maple RGBA input dimensions");
+ var source=Enumerable.Range(0,width*height).Select(i=>new Color(bytes[i*4],bytes[i*4+1],bytes[i*4+2],bytes[i*4+3])).ToArray();
+ var woodSurface=new Surface[source.Length];
+ for(int y=0;y<height;y++)for(int x=0;x<width;x++)
+ {
+  int i=y*width+x;
+  float u=(x+.5f)/width,v=(y+.5f)/height;
+  // Measured face inset and exposed right flank of the single maple sprite.
+  float dx=Math.Max(Math.Abs(u-.4235f)-.1025f,0);
+  float dy=Math.Max(Math.Abs(v-.534f)-.069f,0)*2/3;
+  float faceCoverage=Math.Clamp((MathF.Sqrt(dx*dx+dy*dy)-.072f)/.008f,0,1);
+  float flankCoverage=Math.Clamp((.686f-u)/.008f,0,1);
+  var pixel=source[i];
+  byte diffuse=(byte)Math.Clamp((pixel.R+pixel.G+pixel.B)/3+30,0,255);
+  woodSurface[i]=new(new(Math.Clamp((u-.20f)/.49f,0,.999f),Math.Clamp((v-.15f)/.68f,0,.999f)),
+   (byte)(220*faceCoverage*flankCoverage),diffuse,0);
+ }
+ var renders=new List<Color[]>();
+ for(int country=0;country<2;country++)
+ {
+  world.SetCountryAppearance(0,country==0?6:9,country==0?12:3,country==0?1:4);
+  var output=RobotFlagComposite.Compose(world,0,source,woodSurface,fieldOnly:true);
+  Check(output.Select(p=>p.A).SequenceEqual(source.Select(p=>p.A)),"Maple alpha changed");
+  for(int i=0;i<source.Length;i++)
+   if(woodSurface[i].Coverage==0) Check(output[i]==source[i],"Protected wood or face changed");
+  var rgba=output.SelectMany(p=>new[]{p.R,p.G,p.B,p.A}).ToArray();
+  File.WriteAllBytes(Path.Combine(args[3],$"maple-{country}.rgba"),rgba);
+  renders.Add(output);
+ }
+ Check(renders[0].Zip(renders[1]).Count(pair=>pair.First!=pair.Second)>width*height/10,
+  "Country change did not affect enough of the painted maple shell");
+ Console.WriteLine("PASS real maple head preserves face, bare flank and alpha while two flags recolor the shell.");
+}
+else if(args.Length==4){
  var bytes=File.ReadAllBytes(args[0]);int width=int.Parse(args[1]),height=int.Parse(args[2]);
  Check(bytes.Length==width*height*4,"RGBA input dimensions");
  var original=Enumerable.Range(0,width*height).Select(i=>new Color(bytes[i*4],bytes[i*4+1],bytes[i*4+2],bytes[i*4+3])).ToArray();

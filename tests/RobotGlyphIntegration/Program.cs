@@ -150,8 +150,19 @@ sealed class GlyphProbe:Game1
    bool captain = index is 2 or 3 or 5;
    var facing = index >= 4 ? BattleFacing.North : west ? BattleFacing.West : BattleFacing.East;
    var soldier = new Robot(80 + index, 0, RobotParts.Complete, captain ? RobotRole.Captain : RobotRole.Soldier);
-   if (!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(100 + 80 * index,330,62,85),soldier,
-        captain ? BattleRole.Captain : BattleRole.Soldier,facing,true,1f})!)
+   var battle = new BattleState(1);
+   var liveUnit = new BattleUnit { Id=soldier.Id, Robot=soldier, Owner=0,
+    Role=captain ? BattleRole.Captain : BattleRole.Soldier, Facing=facing, Rifles=1 };
+   battle.Units.Add(liveUnit);
+   battle.Capture(BattlePhase.Choose);
+   liveUnit.Facing=BattleFacing.South;
+   liveUnit.Rifles=0;
+   battle.Capture(BattlePhase.Consume);
+   var frame = battle.Frames[0].Units.Single();
+   if (frame.Facing!=facing || frame.Rifles!=1 || battle.Frames[1].Units.Single().Rifles!=0)
+    throw new Exception("Historical battle facing or rifle count was overwritten");
+   if (!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(100 + 80 * index,330,62,85),frame.Robot,
+        frame.Role,frame.Facing,frame.Rifles>0,1f})!)
     throw new Exception($"Soldier art failed to load for {facing}");
   }
   batch.End();
@@ -349,6 +360,12 @@ sealed class GlyphProbe:Game1
   globeWorld.SetWorld(0);
   globeWorld.SetPlacement(2);
   globe.ShowSetup(globeWorld,false);
+  int flatTriangles=globeWorld.Cells.Length*200;
+  int terrainTriangles=(int)typeof(WorldPreview).GetField("_primitiveCount",Flags)!.GetValue(globe)!;
+  if (terrainTriangles<=flatTriangles || terrainTriangles>=flatTriangles*5 ||
+      WorldTerrain.Relief(.51f)!=0 || WorldTerrain.Relief(.54f)<=0)
+   throw new Exception($"Unexpected terrain relief mesh size {terrainTriangles}, flat={flatTriangles}");
+  Console.WriteLine($"PASS terrain relief uses {terrainTriangles} triangles, versus {flatTriangles} flat.");
   var globeArea = new Rectangle(65,20,830,500);
   var net = new CubeNet { ShowRobots=false, ShowBatteries=false };
   GraphicsDevice.Clear(new Color(25,36,48));
@@ -362,7 +379,7 @@ sealed class GlyphProbe:Game1
    if (!globePixels.Contains(ink)) throw new Exception($"Missing globe ribbon or puck color {ink}");
   using var globeImage = new Texture2D(GraphicsDevice,960,540);
   globeImage.SetData(globePixels);
-  using (var globeFile = File.Create(Path.Combine(Path.GetDirectoryName(output)!,"globe-surface-pucks.png")))
+  using (var globeFile = File.Create(Path.Combine(Path.GetDirectoryName(output)!,"globe-terrain-relief.png")))
    globeImage.SaveAsPng(globeFile,960,540);
   Console.WriteLine("PASS globe land/sea ribbons and pucks rendered.");
   net.SetCenter(globeWorld,4);
@@ -376,7 +393,7 @@ sealed class GlyphProbe:Game1
   if (!globePixels.Contains(new Color(255,232,153)) || !globePixels.Contains(new Color(164,226,242)))
    throw new Exception("The unfolded map did not draw both flat puck colors");
   globeImage.SetData(globePixels);
-  using (var netFile = File.Create(Path.Combine(Path.GetDirectoryName(output)!,"net-flat-pucks.png")))
+  using (var netFile = File.Create(Path.Combine(Path.GetDirectoryName(output)!,"net-terrain-shadows.png")))
    globeImage.SaveAsPng(netFile,960,540);
   foreach (var puckNode in globeWorld.Nodes.All.Take(10))
   {

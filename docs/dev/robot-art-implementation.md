@@ -340,3 +340,27 @@ Create a single transparent game sprite: the orthographic back view of the exact
 隔離Releaseは警告・エラー各０。全方向の駒を62×85で目視し、格納庫６枠と地星儀の描画回帰も通過。確認画像は NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/pp-battle-wear.png。戦闘再生中の向き切替とPP以外の素材は未検証。
 
 Create one transparent game sprite of this exact toy captain shako in strict orthographic side profile, with the short black visor pointing to image right. Show the same squat black glossy cylinder, centered golden pompom, continuous gold lower band, and only a slim edge of the front flower badge at the right. The front badge must not appear on the side panel. Isolated cap only, transparent background, no head or other objects, clear margin on all sides.
+
+## 2026年11月11日21時48分・戦闘フレームの方向と装備
+
+隔離描画試験に、向きと小銃残数が変わる前後の BattleState.Capture を追加。過去フレームが変わらず、東西北の保存された向き・残数でPP駒を描画できることを確認。製品の DrawRobotBattle が同じフレーム項目を使用していることをコードで照合。隔離Release警告・エラー各０、格納庫６枠と地星儀の回帰も通過。製品コード・実行素材の追加変更なし。全画面の実時間再生とPP以外の実行素材は引き続き未確認。
+
+## 2026年11月11日22時18分・素材別描画の接続点
+
+現行の部位データには素材IDがなく、出身国・安物・高級品・汚損・一体成形の情報がある。通常格納庫のPP素材は分割された正規品の部位で使われ、安物・高級品は既存シルエットへ戻る。戦闘の新しい全身描画は頭・胴・脚が揃う場合に使う。地図の小アイコンも現状は安物・高級品のフラグで描き分ける。旧保存は高級品・一体成形フィールドの欠損を許す。９素材へ接続する際は、素材を既存等級とは独立して部位ごとに扱えるかを、組み替え・分離・旧保存の３経路で確認する。
+
+今回の素材と装備数は相談段階。描画監査のみでゲームコード、能力、保存形式、原画に変更なし。９素材の動的合成を検証する次の対象は、木目を保つメープルの素地と塗装マスク。素材の保存・配布先を決める前でも隔離描画で比較できる。
+
+## 2026年11月11日22時48分・メープルの塗装マスクの画素試験
+
+既存の合成器を使い、木目の明暗を持つ合成画素４点で、露出した木肌と塗装下の木目を２種類の国旗で比較。露出部分は画素が一致し、塗装部分は国旗で変わり、木目の明暗差とアルファが残った。隔離Release警告・エラー各０、既存の国旗320通りも通過。ゲーム描画・素材割当・能力の変更なし。次はメープル原画の素地と実寸の塗装マスクで目視する。試験出力先はNAS tmp/delete-after-2026-11-15/robot-art-implementation/flag-composite/。
+
+## 2026年11月11日23時18分・メープル頭の２国旗比較
+
+head-study-v002のメープルを参照して、組み込みImageGenで無塗装の頭を制作。NAS art-source/robots/maple-head-neutral-v001/maple-head-neutral-v001.png に保存。SHA-256 58F6C15CF04CE2C7C9C8E3D5CFA840E12B4EFBA5AAA4C9A21CCE98F4BD41B686。試験用に顔の丸い輪郭と側面の木肌をマスクで保護し、塗装部分には元の木目の明暗を反映。
+
+隔離Release警告・エラー各０。384×256に縮小した実原画で、保護画素と全画素のアルファ一致、２国旗の塗装差を確認。国旗320通りの回帰も通過。比較画像はNAS tmp/delete-after-2026-11-15/robot-art-implementation/flag-composite/maple-two-flags.png。目視では塗装下にも木目が残る。今回の比較は国旗地のみ。紋章、汚損、実行素材への登録は次回。
+
+生成プロンプト
+
+Create one unpainted pale maple wood toy robot HEAD sprite, based only on the top middle maple head of the reference design sheet. Preserve its three-quarter right view, rounded rectangular shell, pale inset face, two black oval eyes and curved black smile. All red and teal areas are now bare maple matching the right flank. Preserve continuous fine natural maple wood grain, smooth clean satin surface with very soft highlights. No paint, sticker, text, body, winding key, ground or shadow. One centered full object with margins, genuinely transparent background. Production game asset.
