@@ -318,6 +318,9 @@ if(args.Contains("--relay3-normal-trace")){
   Console.WriteLine(JsonSerializer.Serialize(new{relayTrace=phase,turn=w.Population.Turn,
    relay.Count,relay.StorageLimit,ids=relay.Robots.Select(r=>r.Id),
    location26=Array.FindIndex(stock.Nodes,n=>n.Robots.Any(r=>r.Id==26)),
+   nodes=new[]{3,5,7,13}.Select(id=>new{id,w.Nodes.All[id].Owner,w.Nodes.All[id].Functional,w.Nodes.All[id].FunctionHost}),
+   path1=RobotLongDelivery.Path(w,7,13,1),path6=RobotLongDelivery.Path(w,5,3,1),
+   transfers=stock.Transport.LastTransfers.Where(t=>t.Source==3 || t.Target==3 || t.RobotId==26),
    orders=stock.LongDelivery.Orders.Select(o=>new{o.Number,o.Source,o.Target,o.Node,o.CargoId,o.Receiver,o.Status}),
    delivered=stock.LongDelivery.Results.Where(o=>o.Number is 1 or 5 or 6 || o.RobotId==26)
     .Select(o=>new{o.Number,o.Status})}));
