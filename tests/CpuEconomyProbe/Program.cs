@@ -199,4 +199,84 @@ foreach(var option in args.Where(a=>a.StartsWith("--target-supply="))){
  localDirect=FunctionalDeliveryRoutes.Connected(w,n.Id,target)
  }).ToArray();
  Console.WriteLine(JsonSerializer.Serialize(new{targetSupply=target,owner,root=w.Relations.Root(owner),routes}));
+}foreach(var option in args.Where(a=>a.StartsWith("--allied-exits="))){
+ int source=int.Parse(option.Split('=')[1]),owner=w.Nodes.All[source].Owner;
+ var exits=w.Nodes.All.Where(n=>n.Functional && n.Owner>=0 && n.Id!=source && w.Relations.Allied(owner,n.Owner)).Select(n=>new{
+ target=n.Id,owner=n.Owner,path=RobotLongDelivery.Path(w,source,n.Id,owner),free=stock.Nodes[n.Id].StorageLimit-stock.Nodes[n.Id].Count,
+ disposal=stock.Workshops[n.Id].DisposalFacilities.Any(f=>f.HasDisposalFactory),computerEndpointAuthority=n.Owner==owner
+ }).Where(n=>n.path.Length>1).ToArray();
+ Console.WriteLine(JsonSerializer.Serialize(new{alliedExits=source,owner,exits}));
+}if(args.Contains("--relay-head-test")){
+ // A real reservation/advance on the deserialized copy, never the original save.
+ var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+ var delivery=stock.LongDelivery;
+ var reserve=typeof(RobotLongDelivery).GetMethod("ReserveComputer",flags)!;
+ var advance=typeof(RobotLongDelivery).GetMethod("Advance",flags)!;
+ int before=stock.Nodes[156].Count;
+ var cargo=stock.Nodes[34].Robots.Single(r=>r.Id==495);
+ var physical=cargo.ConnectedParts(RobotParts.Head);
+ try{
+  var order=(LongPartOrder)reserve.Invoke(delivery,new object[]{w,34,156,495L,RobotParts.Head,92L,3,0})!;
+  advance.Invoke(delivery,new object[]{w});
+  if(order.Node!=34 || order.Started || !order.Status.Contains("満杯") || stock.Nodes[156].Count!=before || !stock.Nodes[34].Robots.Any(r=>r.Id==495))
+   throw new Exception("Head shipment must wait at the full relay without losing cargo.");
+  Console.WriteLine(JsonSerializer.Serialize(new{relayHeadTest="PASS_WAIT",order.Status,order.Node,order.Started,physical=physical.ToString()}));
+ }catch(System.Reflection.TargetInvocationException e) when(e.InnerException is InvalidOperationException){
+  if((physical&stock.Nodes[156].Robots.Single(r=>r.Id==92).Parts)==0)throw;
+  Console.WriteLine(JsonSerializer.Serialize(new{relayHeadTest="PASS_REJECT_CONNECTED",physical=physical.ToString(),reason=e.InnerException.Message}));
+ }
+ var reverse=(LongPartOrder)reserve.Invoke(delivery,new object[]{w,156,34,404L,RobotParts.Legs,495L,3,0})!;
+ advance.Invoke(delivery,new object[]{w});
+ if(reverse.Node!=156 || reverse.Started || !reverse.Status.Contains("満杯") || !stock.Nodes[156].Robots.Any(r=>r.Id==404))throw new Exception("Reverse assembly delivery must wait at relay157.");
+ Console.WriteLine(JsonSerializer.Serialize(new{reverseAssembly="PASS_WAIT",reverse.Status,reverse.Node,reverse.Started,path=RobotLongDelivery.Path(w,156,34,3)}));}if(args.Contains("--relay-transfer-test")){
+ var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+ var transfers=w.Campaign.FunctionTransfers;
+ var graph=w.Nodes.All.Select(n=>w.Routes.Neighbors(n).Select(r=>w.Nodes.At(r.Target,r.Entry).Id).Distinct().ToArray()).ToArray();
+ bool enclosed=ComputerFunctionTransfers.EnclosedPocket(graph,157,34,id=>w.Nodes.All[id].Owner==3 && !battles.LockedNode(id));
+ int queen=w.Nodes.Current(3)?.Id??-1;
+ var foreign=stock.Nodes[157].Robots.Single(r=>r.Id==393);
+ bool reserve=(bool)typeof(NodeFunctionTransfers).GetMethod("ReserveComputer",flags)!.Invoke(transfers,new object[]{w,157,34,3})!;
+ Console.WriteLine(JsonSerializer.Serialize(new{relayTransfer=reserve,enclosed,queen,foreignNative=foreign.NativeParts(3),persuadable=foreign.PersuadableParts(3).ToString(),neighbors=graph[157]}));
+ if(reserve){
+  typeof(NodeFunctionTransfers).GetMethod("Resolve",flags)!.Invoke(transfers,new object[]{w});
+  var path=RobotLongDelivery.Path(w,156,34,3);
+  var order=(LongPartOrder)typeof(RobotLongDelivery).GetMethod("ReserveComputer",flags)!.Invoke(stock.LongDelivery,new object[]{w,156,34,404L,RobotParts.Legs,495L,3,0})!;
+  typeof(RobotLongDelivery).GetMethod("Advance",flags)!.Invoke(stock.LongDelivery,new object[]{w});
+  var merged=stock.Nodes[34].Robots.Single(r=>r.Id==495);
+  if(path.Length!=2 || merged.Parts!=RobotParts.Complete || stock.Nodes[156].Robots.Any(r=>r.Id==404) || stock.LongDelivery.Orders.Contains(order))throw new Exception("Transfer should bypass relay and complete shipment.");
+  stock.Check();
+  Console.WriteLine(JsonSerializer.Serialize(new{relayTransferResult="PASS",path,merged.Id,parts=merged.Parts.ToString(),merged.CanFight,eligible=stock.Training[3].Eligible(merged),frontFree=stock.Nodes[156].StorageLimit-stock.Nodes[156].Count}));
+ }
+}foreach(var option in args.Where(a=>a.StartsWith("--node-state="))){
+ int id=int.Parse(option.Split('=')[1]);var node=w.Nodes.All[id];var store=stock.Nodes[id];
+ Console.WriteLine(JsonSerializer.Serialize(new{nodeState=id,node.Owner,node.Functional,node.FunctionHost,node.FunctionUnits,store.Count,store.TotalCapacity,store.ReservedReturns,reserved=stock.Workshops[id].ReservedSlots,
+ robots=store.Robots.Select(r=>new{r.Id,r.Owner,r.CanFight,r.DefenseOnly}),incomingReturns=stock.ReturningRobots.Where(r=>r.Node==id)}));
+}foreach(var option in args.Where(a=>a.StartsWith("--target-force="))){
+ int target=int.Parse(option.Split('=')[1]);
+ var orders=new List<March>();ComputerJointAttacks.Plan(w,orders,true);
+ var sources=w.Nodes.All.Where(n=>n.Functional && n.Owner>=0 && battles.CanAttackFrom(w,n.Owner,n.Id,target)).Select(n=>new{
+ node=n.Id,owner=n.Owner,root=w.Relations.Root(n.Owner),ready=battles.SelectableRobots(w,n.Owner,n.Id,false).Select(r=>r.Id),
+ guard=stock.Nodes[n.Id].Robots.Any(r=>r.Owner==n.Owner && r.DefenseOnly && r.CanFight),
+ defense=battles.DefendingRobots(w,n.Owner,target),failed=battles.Encounters.Where(e=>e.Finished && e.Target==target && e.Battles.FirstOrDefault()?.Winner is not >=0).SelectMany(e=>e.Battles).Select(b=>b.Units.Count(u=>w.Relations.Allied(u.Owner,n.Owner))).DefaultIfEmpty(0).Max()
+ }).ToArray();
+ Console.WriteLine(JsonSerializer.Serialize(new{targetForce=target,owner=w.Nodes.All[target].Owner,sources,orders=orders.Where(o=>o.TargetNode==target)}));
+}foreach(var option in args.Where(a=>a.StartsWith("--locate-robots="))){
+ var ids=option.Split('=')[1].Split(',').Select(long.Parse).ToHashSet();
+ Console.WriteLine(JsonSerializer.Serialize(new{locateRobots=ids,nodes=stock.Nodes.SelectMany((store,n)=>store.Robots.Where(r=>ids.Contains(r.Id)).Select(r=>new{node=n,nodeOwner=w.Nodes.All[n].Owner,r.Id,r.Owner,r.CanFight,r.DefenseOnly,r.LongDeliveryNumber,r.ReturnHomeCommander})),
+ deliveries=stock.LongDelivery.Orders.Where(o=>ids.Contains(o.CargoId) || ids.Contains(o.RobotId))}));
+}
+if(args.Contains("--supply225-test")){
+ var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+ var delivery=stock.LongDelivery;
+ var reserve=typeof(RobotLongDelivery).GetMethod("ReserveComputer",flags)!;
+ var advance=typeof(RobotLongDelivery).GetMethod("Advance",flags)!;
+ var reinforcement=stock.Nodes[216].Robots.Single(r=>r.Id==349);
+ var outgoing=stock.Nodes[225].Robots.Single(r=>r.Id==1330);
+ var guards=stock.Nodes[216].Robots.Where(r=>r.Id!=349 && r.Owner==15 && r.CanFight).Select(r=>r.Id).ToArray();
+ reserve.Invoke(delivery,new object[]{w,225,106,outgoing.Id,outgoing.Parts,null,15,4});
+ reserve.Invoke(delivery,new object[]{w,216,225,reinforcement.Id,reinforcement.Parts,null,15,7});
+ advance.Invoke(delivery,new object[]{w});
+ if(!stock.Nodes[106].Robots.Any(r=>r.Id==1330) || !stock.Nodes[225].Robots.Any(r=>r.Id==349))throw new Exception("Supply chain did not deliver both robots.");
+ stock.Check();
+ Console.WriteLine(JsonSerializer.Serialize(new{supply225="PASS",remaining216=guards,reinforcement=reinforcement.Id,native=reinforcement.NativeParts(15),uses=reinforcement.CombatParts(15),rifles=reinforcement.CombatRifles(15)}));
 }

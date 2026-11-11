@@ -239,11 +239,12 @@ public partial class Game1
             if(opacity<=0)continue;
             var physical=unit.Role==BattleRole.Queen?null:unit.Robot??battle.Units.Concat(battle.Armies.SelectMany(a=>a.Waiting)).FirstOrDefault(u=>u.Id==unit.Id)?.Robot;
             if(physical!=null && BattleIntroActive)
-                foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
-                    if((physical.Parts&part)!=0)
-                        DrawRobotGlyph(r,physical.Origin(part),part,physical.Role==RobotRole.Captain,
-                            opacity*BattlePartOpacity(physical.IsDamaged(part) || physical.Origin(part)==unit.Owner),damaged:physical.IsDamaged(part),cheap:physical.IsCheap(part),premium:physical.IsPremium(part));
+                DrawBattleRobotParts(r, physical, unit.Owner, opacity);
             float pieceOpacity=opacity*(physical==null?1:BattlePieceOpacity);
+            bool queenArt = unit.Role == BattleRole.Queen && DrawQueenArt(r, unit.Facing, unit.Owner, pieceOpacity);
+            bool soldierArt = pieceOpacity > 0 &&
+                DrawBattleSoldierArt(r, physical, unit.Role, unit.Facing, unit.Rifles > 0, pieceOpacity);
+            if (!queenArt && !soldierArt)
             foreach(var patch in BattlePieceArt.Pieces[BattlePieceArt.Index(unit.Role,unit.Facing)])
             {
                 var b=patch.Bounds;
@@ -254,14 +255,13 @@ public partial class Game1
                 var damageArea=new Rectangle(r.X,r.Y+partTop*r.Height/48,r.Width,Math.Max(1,(partBottom-partTop)*r.Height/48));
                 if(physical!=null && patch.Ink==0)
                 {
-                    color=_setup.OwnerColor(physical.Origin(part));
-                    DrawBattleUniformPatch(area,r,damageArea,physical,unit.Owner,color,part,pieceOpacity);
+                    DrawBattleUniformPatch(area, r, damageArea, physical, part, pieceOpacity);
                     continue;
                 }
                 _ui.Box(area,color*pieceOpacity);
             }
-            if(physical!=null)DrawCountryEmblem(new(r.X+r.Width/3,r.Y+r.Height*27/48,r.Width/3,r.Width/3),unit.Owner,pieceOpacity);
-            if(physical?.ShoeOwner>=0)RobotWorkArt.DrawShoes(_ui,r,_setup.OwnerColor(physical.ShoeOwner),pieceOpacity);
+            if(physical!=null && !soldierArt)DrawCountryEmblem(new(r.X+r.Width/3,r.Y+r.Height*27/48,r.Width/3,r.Width/3),unit.Owner,pieceOpacity);
+            if(physical?.ShoeOwner>=0)RobotWorkArt.DrawWindupKey(_ui,r,pieceOpacity);
             if(unit.Role==BattleRole.Queen)
             {
                 var glow=new Color(255,228,135)*opacity;
