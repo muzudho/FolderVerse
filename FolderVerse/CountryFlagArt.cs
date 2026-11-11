@@ -37,6 +37,14 @@ public static class CountryFlagArt
     {
         if(owner<0 || owner>=world.ActiveCount || area.Width<1 || area.Height<1)return;
         var flag=Fit(area,world.CountryFlagShape(owner));
+        foreach(var patch in Patches(world,owner)){var b=patch.Box;var ink=tint==null?patch.Ink:tint(patch.Ink);
+            int left=flag.X+b.X*flag.Width/36,top=flag.Y+b.Y*flag.Height/24;
+            int right=flag.X+b.Right*flag.Width/36,bottom=flag.Y+b.Bottom*flag.Height/24;
+            if(right>left && bottom>top)ui.Box(new(left,top,right-left,bottom-top),ink*opacity);
+        }
+    }
+    internal static IReadOnlyList<(Rectangle Box,Color Ink)> Patches(WorldSetup world,int owner)
+    {
         // Merge identical vertical spans as well as horizontal runs to keep small flags inexpensive.
         var design=(world.CountryFlagShape(owner),world.CountryPattern(owner),world.ColorIndices[owner]%WorldSetup.Colors.Length,world.CountrySecondaryColor(owner),world.CountryEmblem(owner));
         if(!Cache.TryGetValue(design,out var patches)){
@@ -56,11 +64,7 @@ public static class CountryFlagArt
         foreach(var run in runs)patches.Add((run.Value,run.Key.Ink));
         if(Cache.Count>=256)Cache.Clear();Cache[design]=patches;
         }
-        foreach(var patch in patches){var b=patch.Box;var ink=tint==null?patch.Ink:tint(patch.Ink);
-            int left=flag.X+b.X*flag.Width/36,top=flag.Y+b.Y*flag.Height/24;
-            int right=flag.X+b.Right*flag.Width/36,bottom=flag.Y+b.Bottom*flag.Height/24;
-            if(right>left && bottom>top)ui.Box(new(left,top,right-left,bottom-top),ink*opacity);
-        }
+        return patches;
     }
     public static void Marker(UiPainter ui,WorldSetup world,int owner,Vector2 foot,int width=30,Func<Color,Color> tint=null)
     {

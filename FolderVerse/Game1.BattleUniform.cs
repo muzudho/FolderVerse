@@ -9,7 +9,7 @@ public partial class Game1
     private readonly Texture2D[] _queenTextures = new Texture2D[3];
     private RobotHeadTexture _sideHead, _sideTorso, _sideLegs;
     private RobotHeadTexture _rearHead, _rearTorso, _rearLegs;
-    private Texture2D _rearCaptainCap;
+    private Texture2D _rearCaptainCap, _sideCaptainCap;
     private Texture2D _soldierCapTexture, _captainCapTexture, _toyRifleTexture;
 
     private bool DrawQueenArt(Rectangle area, BattleFacing facing, int owner, float opacity)
@@ -72,10 +72,11 @@ public partial class Game1
         bool rear = facing == BattleFacing.North;
         bool side = facing is BattleFacing.East or BattleFacing.West;
         bool west = facing == BattleFacing.West;
-        var cap = (captain, rear) switch
+        var cap = (captain, rear, side) switch
         {
-            (true, true) => _rearCaptainCap ??= LoadBattleToyTexture("captain-cap-back"),
-            (true, false) => _captainCapTexture ??= LoadBattleToyTexture("captain-cap"),
+            (true, true, _) => _rearCaptainCap ??= LoadBattleToyTexture("captain-cap-back"),
+            (true, _, true) => _sideCaptainCap ??= LoadBattleToyTexture("captain-cap-side"),
+            (true, _, _) => _captainCapTexture ??= LoadBattleToyTexture("captain-cap"),
             _ => _soldierCapTexture ??= LoadBattleToyTexture("soldier-cap")
         };
         var rifle = hasRifle ? (_toyRifleTexture ??= LoadBattleToyTexture("toy-rifle")) : null;
@@ -94,13 +95,15 @@ public partial class Game1
         int capWidth = body.Height * 12 / 25;
         int capHeight = captain ? hatSpace : hatSpace + area.Height / 10;
         var capBounds = new Rectangle(area.Center.X - capWidth / 2, body.Y + 7 - capHeight, capWidth, capHeight);
-        var capCrop = (captain, rear) switch
+        var capCrop = (captain, rear, side) switch
         {
-            (true, true) => new Rectangle(380, 168, 776, 664),
-            (true, false) => new Rectangle(528, 304, 473, 434),
+            (true, true, _) => new Rectangle(380, 168, 776, 664),
+            (true, _, true) => new Rectangle(436, 200, 714, 620),
+            (true, _, _) => new Rectangle(528, 304, 473, 434),
             _ => new Rectangle(196, 156, 913, 859)
         };
-        _spriteBatch.Draw(cap, capBounds, capCrop, Color.White * opacity);
+        _spriteBatch.Draw(cap, capBounds, capCrop, Color.White * opacity, 0, Vector2.Zero,
+            captain && west ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0);
         if (rifle != null)
         {
             int width = Math.Max(4, area.Width / 7);
@@ -172,7 +175,8 @@ public partial class Game1
         _rearLegs?.Dispose();
         _rearHead = _rearTorso = _rearLegs = null;
         _rearCaptainCap?.Dispose();
-        _rearCaptainCap = null;
+        _sideCaptainCap?.Dispose();
+        _rearCaptainCap = _sideCaptainCap = null;
         foreach (var texture in _queenTextures)
             texture?.Dispose();
         Array.Clear(_queenTextures);

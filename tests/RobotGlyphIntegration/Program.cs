@@ -350,7 +350,7 @@ sealed class GlyphProbe:Game1
   globeWorld.SetPlacement(2);
   globe.ShowSetup(globeWorld,false);
   var globeArea = new Rectangle(65,20,830,500);
-  var net = new CubeNet();
+  var net = new CubeNet { ShowRobots=false, ShowBatteries=false };
   GraphicsDevice.Clear(new Color(25,36,48));
   globe.Draw(.55f,-.35f,markers:false,globeView:true,globeFrame:globeArea);
   batch.Begin();
@@ -362,9 +362,30 @@ sealed class GlyphProbe:Game1
    if (!globePixels.Contains(ink)) throw new Exception($"Missing globe ribbon or puck color {ink}");
   using var globeImage = new Texture2D(GraphicsDevice,960,540);
   globeImage.SetData(globePixels);
-  using var globeFile = File.Create(Path.Combine(Path.GetDirectoryName(output)!,"globe-ribbons-pucks.png"));
-  globeImage.SaveAsPng(globeFile,960,540);
+  using (var globeFile = File.Create(Path.Combine(Path.GetDirectoryName(output)!,"globe-surface-pucks.png")))
+   globeImage.SaveAsPng(globeFile,960,540);
   Console.WriteLine("PASS globe land/sea ribbons and pucks rendered.");
+  net.SetCenter(globeWorld,4);
+  net.FitAll(globeArea);
+  GraphicsDevice.Clear(new Color(25,36,48));
+  batch.Begin();
+  net.Draw((UiPainter)Get("_ui"),globeWorld,globeArea,-1,0,objects:false);
+  net.DrawMapObjects((UiPainter)Get("_ui"),globeWorld,globeArea,0);
+  batch.End();
+  GraphicsDevice.GetBackBufferData(globePixels);
+  if (!globePixels.Contains(new Color(255,232,153)) || !globePixels.Contains(new Color(164,226,242)))
+   throw new Exception("The unfolded map did not draw both flat puck colors");
+  globeImage.SetData(globePixels);
+  using (var netFile = File.Create(Path.Combine(Path.GetDirectoryName(output)!,"net-flat-pucks.png")))
+   globeImage.SaveAsPng(netFile,960,540);
+  foreach (var puckNode in globeWorld.Nodes.All.Take(10))
+  {
+   net.VisibleOperationNodes = new(){puckNode.Id};
+   var pointer = net.NodePosition(globeWorld,puckNode,globeArea).ToPoint();
+   if (net.HitNode(globeWorld,globeArea,pointer) != puckNode.Id)
+    throw new Exception($"The unfolded puck at {puckNode.Id} could not be selected");
+  }
+  Console.WriteLine("PASS unfolded land/sea pucks draw and accept center clicks.");
   Exit();
  }
  protected override void UnloadContent(){(Get("_robotHeadTextures") as IDisposable)?.Dispose();batch?.Dispose();pixel?.Dispose();}

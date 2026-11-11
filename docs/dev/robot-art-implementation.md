@@ -332,3 +332,11 @@ Create a production 2D game sprite, a direct orthographic REAR view of the exact
 ### 背面隊長帽の生成プロンプト（組み込みImageGen）
 
 Create a single transparent game sprite: the orthographic back view of the exact toy captain shako in the reference. Keep the squat black cylinder, glossy rolled crown edge, centered golden pompom and continuous gold lower band. Camera faces the rear directly; the front flower badge and forward visor are entirely occluded by the black cap. Show a smooth unmarked black rear wall, with no rear badge, and the gold band. Match the toy lighting and proportions. No head, text, background, shadows or additional objects. Center it with clear margins.
+
+## 2026年11月11日21時18分・横向き隊長帽
+
+組み込みImageGenで右向きの隊長帽を制作。NAS原画 art-source/robots/pp-views-v001/captain-cap-side.png とゲーム素材 Content/Images/Robots/captain-cap-side-v001.png のSHA-256は 9C51063DF8E71FB44FDABF483DFEBAF3FADFBC79000A53D7AB9911239832EC12。左向きでは反転し、つばを進行方向に合わせる。
+
+隔離Releaseは警告・エラー各０。全方向の駒を62×85で目視し、格納庫６枠と地星儀の描画回帰も通過。確認画像は NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/pp-battle-wear.png。戦闘再生中の向き切替とPP以外の素材は未検証。
+
+Create one transparent game sprite of this exact toy captain shako in strict orthographic side profile, with the short black visor pointing to image right. Show the same squat black glossy cylinder, centered golden pompom, continuous gold lower band, and only a slim edge of the front flower badge at the right. The front badge must not appear on the side panel. Isolated cap only, transparent background, no head or other objects, clear margin on all sides.

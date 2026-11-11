@@ -84,7 +84,8 @@ public partial class Game1
             if(!_world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center),cell.Normal,_yaw,_pitch,StatusGlobeArea,out var at))continue;
             float candidate=Vector2.DistanceSquared(at,new(pointer.X,pointer.Y));
             _world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center)+cell.U,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var unit);
-            float radius=_net.GlobePuckRadius(node,Vector2.Distance(at,unit))+4;
+            _world.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center)+cell.V,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var otherUnit);
+            float radius=_net.MapPuckRadius(node,MathF.Max(Vector2.Distance(at,unit),Vector2.Distance(at,otherUnit)))+4;
             if(candidate<=radius*radius && candidate<distance){nearest=node.Id;distance=candidate;}
         }
         // Resolve the visible object first, then check whether the action permits it.
