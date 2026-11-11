@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><TargetFramework>net9.0</TargetFramework><OutputType>Library</OutputType><AssemblyName>FolderVerse</AssemblyName><Version>0.7.0</Version><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup>
+<ItemGroup><Compile Include="../../FolderVerse/*.cs" Exclude="../../FolderVerse/ComputerJointAttacks.cs;../../FolderVerse/Program.cs;../../FolderVerse/AutoSaveStore.cs;../../FolderVerse/RobotCampaign.cs" /><Compile Include="../CpuForceSummaryCandidate/ComputerJointAttacks.cs" /><Compile Include="../CpuForceSummaryCandidate/CpuForceSummary.cs" /><Compile Include="../CpuForceSummaryCandidate/AutoSaveStore.cs" /><Compile Include="RobotCampaign.cs" />
+<Reference Include="MonoGame.Framework"><HintPath>$(PublishedGame)/MonoGame.Framework.dll</HintPath></Reference><Reference Include="StationeryUI"><HintPath>$(PublishedGame)/StationeryUI.dll</HintPath></Reference><Reference Include="StationeryUI.MonoGame"><HintPath>$(PublishedGame)/StationeryUI.MonoGame.dll</HintPath></Reference></ItemGroup>
+</Project>
