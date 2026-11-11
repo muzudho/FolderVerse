@@ -315,3 +315,20 @@ GPU試験Release警告０・エラー０。２部位で国旗切替・透過・�
 Create a production 2D game sprite, a direct orthographic REAR view of the exact same neutral gray glossy injection molded polypropylene toy robot part as the reference. One part only, the robot torso shell with both attached short arms and rounded mitten fists. Plain smooth rounded-square back panel with a subtle molded perimeter seam, no fastener, no head or legs. Match the reference silhouette, proportions, grayscale base and controlled glossy white specular highlights. Clean outer edges; no haze, floor, ground shadows, logos, flag, graphics, weapon, text or other objects. Center the entire part with 10% clear space, genuine transparent background.
 
 Create a production 2D game sprite, a direct orthographic REAR view of the exact same neutral gray glossy injection molded polypropylene toy robot part as the reference. One part only, the joined hips and both short legs with boot heels. Rounded hip shell, symmetric rounded boots showing their heels and soles from behind, a real transparent gap between legs. No torso. Match the reference silhouette, proportions, grayscale base and controlled glossy white specular highlights. Clean outer edges; no haze, floor, ground shadows, logos, flag, graphics, weapon, text or other objects. Center the entire part with 10% clear space, genuine transparent background.
+
+## 2026年11月11日20時48分・北向き戦闘駒
+
+標準品質の分割PP一般兵・隊長に北向きの頭・胴・脚を接続。部位ごとの国旗・汚損を合成し、小銃が残る場合は背面の左腕側に表示。一般兵の黒帽子は正面素材を共用。隊長は金帯とボンボンの背面素材を使用し、前面の帽章とつばは隠れる。
+
+| NAS原画（art-source/robots/pp-views-v001） | ゲーム素材（Content/Images/Robots） |
+| --- | --- |
+| head-back.png | pp-head-back-v001.png |
+| torso-back.png | pp-torso-back-v001.png |
+| legs-back.png | pp-legs-back-v001.png |
+| captain-cap-back.png | captain-cap-back-v001.png |
+
+４点のSHA-256一致を確認。隊長帽のSHA-256は 05BAE4A83DCF16B4F7A161F12401437538D620AEEB0AC5AD514265F66BB59695。隔離Releaseのゲーム・描画試験とも警告とエラー各０。北向きの頭・胴・脚の描画、既存方向と格納庫６枠の回帰を確認。62×85の駒は NAS tmp/delete-after-2026-11-15/robot-art-implementation/glyph-integration/pp-battle-wear.png を目視。左右の隊長帽は正面素材共用の段階。戦闘再生での向き切替とPP以外の素材は未検証。
+
+### 背面隊長帽の生成プロンプト（組み込みImageGen）
+
+Create a single transparent game sprite: the orthographic back view of the exact toy captain shako in the reference. Keep the squat black cylinder, glossy rolled crown edge, centered golden pompom and continuous gold lower band. Camera faces the rear directly; the front flower badge and forward visor are entirely occluded by the black cap. Show a smooth unmarked black rear wall, with no rear badge, and the gold band. Match the toy lighting and proportions. No head, text, background, shadows or additional objects. Center it with clear margins.

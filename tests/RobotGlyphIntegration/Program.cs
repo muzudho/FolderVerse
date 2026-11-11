@@ -144,19 +144,20 @@ sealed class GlyphProbe:Game1
         BattleRole.Soldier,BattleFacing.South,true,1f})!)
     throw new Exception($"Battle art fell back with wear on {wearParts[index]}");
   }
-  for (int index = 0; index < 4; index++)
+  for (int index = 0; index < 6; index++)
   {
    bool west = index % 2 == 1;
-   bool captain = index >= 2;
+   bool captain = index is 2 or 3 or 5;
+   var facing = index >= 4 ? BattleFacing.North : west ? BattleFacing.West : BattleFacing.East;
    var soldier = new Robot(80 + index, 0, RobotParts.Complete, captain ? RobotRole.Captain : RobotRole.Soldier);
    if (!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(100 + 80 * index,330,62,85),soldier,
-        captain ? BattleRole.Captain : BattleRole.Soldier,west ? BattleFacing.West : BattleFacing.East,true,1f})!)
-    throw new Exception("Side soldier art failed to load");
+        captain ? BattleRole.Captain : BattleRole.Soldier,facing,true,1f})!)
+    throw new Exception($"Soldier art failed to load for {facing}");
   }
   batch.End();
   GraphicsDevice.GetBackBufferData(introPixels);
   var background = new Color(25,36,48);
-  for (int index = 0; index < 4; index++)
+  for (int index = 0; index < 6; index++)
   {
    int left = 100 + 80 * index;
    foreach (int y in new[]{363, 385, 405})

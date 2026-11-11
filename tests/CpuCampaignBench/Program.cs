@@ -1,6 +1,20 @@
 using FolderVerse;
 using System.Text.Json;
 using System.Security.Cryptography;
+if (args.Contains("--withdrawal-origin-fixture"))
+{
+    var battle = new BattleState(1);
+    battle.Units.Add(new BattleUnit { Id = 101, Owner = 15, Robot = new Robot(101, 15, RobotParts.Complete), Retreated = true });
+    battle.Units.Add(new BattleUnit { Id = 202, Owner = 15, Robot = new Robot(202, 15, RobotParts.Complete), Retreated = true });
+    battle.Units.Add(new BattleUnit { Id = 303, Owner = 15, Robot = new Robot(303, 15, RobotParts.Complete), Retreated = true });
+    battle.Units.Add(new BattleUnit { Id = 404, Owner = 15, Robot = new Robot(404, 15, RobotParts.Complete), Retreated = true });
+    var origins = new Dictionary<long, int> { [101] = 225, [202] = 216, [303] = 7 };
+    var groups = WithdrawalGroups(battle, 7, origins).ToDictionary(group => group.Key.Source);
+    if (groups.Count != 2 || groups[225].Single().Id != 101 || groups[216].Single().Id != 202)
+        throw new Exception("Withdrawal attribution included residents, pocket units or a different source.");
+    Console.WriteLine("PASS joint withdrawal attribution excludes residents and units without a node origin.");
+    return;
+}
 if(args.Length==0)throw new ArgumentException("Usage: CpuCampaignBench saved-game [turns] [output-copy]");
 object saved=AutoSaveStore.Read<object>(args[0]);var w=saved is WorldSetup direct?direct:(WorldSetup)saved.GetType().GetProperty("World")!.GetValue(saved)!;int steps=args.Length>1?int.Parse(args[1]):20;
 if (args.Contains("--short-segment-fixture"))
@@ -43,15 +57,20 @@ if (requireRepeat && File.Exists(historyInput))
     foreach (var entry in history.Entries)
         repeatedWithdrawals.Add((entry.Source, entry.Target, entry.Owner), (entry.Ids, entry.Turn, entry.Count));
 }
-void RecordWithdrawal(RobotEncounter encounter, int turn, string result, bool continued)
+static IEnumerable<IGrouping<(int Source, int Owner), BattleUnit>> WithdrawalGroups(
+    BattleState battle, int target, IReadOnlyDictionary<long, int> origins)
+    => battle.Units.Where(unit => unit.Robot != null && origins.TryGetValue(unit.Id, out int source) && source != target)
+        .GroupBy(unit => (Source: origins[unit.Id], unit.Owner));
+
+void RecordWithdrawal(RobotEncounter encounter, int turn, string result, bool continued, IReadOnlyDictionary<long, int> origins)
 {
     if (encounter.Kind != BattleKind.Node || result == "ongoing")
         return;
     foreach (var battle in encounter.Battles)
-    foreach (var army in battle.Armies.Where(army => army.HomeNode != encounter.Target))
+    foreach (var group in WithdrawalGroups(battle, encounter.Target, origins))
     {
-        var key = (army.HomeNode, encounter.Target, army.Owner);
-        var units = battle.Units.Where(unit => unit.Owner == army.Owner && unit.Robot != null).ToArray();
+        var key = (group.Key.Source, encounter.Target, group.Key.Owner);
+        var units = group.ToArray();
         if (result != "defender-held" || units.Length is < 1 or > 2 || !units.All(unit => unit.Retreated))
         {
             repeatedWithdrawals.Remove(key);
@@ -63,7 +82,7 @@ void RecordWithdrawal(RobotEncounter encounter, int turn, string result, bool co
         repeatedWithdrawals[key] = (ids, turn, count);
         if (continued)
             Console.WriteLine(JsonSerializer.Serialize(new { trace = "continued-withdrawal", turn, encounter.Id,
-                source = army.HomeNode, target = encounter.Target, owner = army.Owner, ids, count }));
+                source = group.Key.Source, target = encounter.Target, owner = group.Key.Owner, ids, count }));
     }
 }
 void PlanReturnRelief(int step)
@@ -226,6 +245,7 @@ for(int step=1;step<=steps;step++){
         if(outgoing.Except(transfer.Outgoing).Any() || incoming.Except(transfer.Incoming).Any())throw new Exception("Function transfer opened a new hostile approach.");
         Console.WriteLine(JsonSerializer.Serialize(new{trace="transfer-safety",step,transfer.Source,transfer.Target,transfer.Owner,addedHostileApproaches=0}));
     }
+    var origins = new Dictionary<long, int>();
     w.Campaign.BeginMilitary();w.Campaign.Advance(w,-1,0,automaticAll:true,allPlanned:true,deferResolution:orders=>{
         foreach(var instruction in rally){
             int ruler=instruction[0],target=instruction[1];var home=w.Nodes.Current(ruler);
@@ -242,12 +262,25 @@ for(int step=1;step<=steps;step++){
             reserveDefenders=w.Campaign.RobotBattles.Reserves.Count(r=>r.Node==order.TargetNode && r.Robot.CanFight && !w.Relations.Allied(order.Ruler,r.Robot.Owner)),
             equipment=order.RobotIds==null?null:w.Robots.Nodes.Concat(w.Robots.Retinues).SelectMany(s=>s.Robots).Where(r=>order.RobotIds.Contains(r.Id))
                 .Select(r=>new{r.Id,native=r.NativeParts(order.Ruler),uses=r.CombatParts(order.Ruler),rifles=r.CombatRifles(order.Ruler)}).ToArray()}));
+        if (requireRepeat)
+        {
+            foreach (var node in w.Nodes.All)
+            foreach (var robot in w.Robots.Nodes[node.Id].Robots)
+                origins[robot.Id] = node.Id;
+            // In-flight robots are absent from their stores, including when resuming a saved encounter.
+            var campaign = w.Campaign.RobotBattles;
+            var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+            var homes = (Dictionary<long, (RobotStore Store, int Node)>)typeof(RobotCampaign).GetField("_homes", flags)!.GetValue(campaign)!;
+            foreach (var (id, home) in homes)
+                if (ReferenceEquals(home.Store, w.Robots.Nodes[home.Node]))
+                    origins[id] = home.Node;
+        }
         return false;
     });
     foreach(var encounter in w.Campaign.RobotBattles.Encounters.Where(e=>!previousEncounters.Contains(e.Id) ||
         e.Finished && ongoingEncounters.Contains(e.Id))){
         int winner=encounter.Battles.FirstOrDefault()?.Winner??-1;string result=!encounter.Finished?"ongoing":winner<0?"no-winner":encounter.Defender>=0 && previousRoots[winner]==previousRoots[encounter.Defender]?"defender-held":"attacker-won";
-        if (requireRepeat) RecordWithdrawal(encounter, startingTurn + step, result, ongoingEncounters.Contains(encounter.Id));
+        if (requireRepeat) RecordWithdrawal(encounter, startingTurn + step, result, ongoingEncounters.Contains(encounter.Id), origins);
         if (previousEncounters.Contains(encounter.Id)) continue;
         string key=$"{encounter.Kind}:{result}";encounterOutcomes[key]=encounterOutcomes.GetValueOrDefault(key)+1;
         if(traceAll || tracedTargets.Contains(encounter.Target))Console.WriteLine(JsonSerializer.Serialize(new{trace="battle",step,encounter.Id,encounter.Source,encounter.Target,kind=encounter.Kind.ToString(),result,

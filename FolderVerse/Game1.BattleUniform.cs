@@ -8,6 +8,8 @@ public partial class Game1
 {
     private readonly Texture2D[] _queenTextures = new Texture2D[3];
     private RobotHeadTexture _sideHead, _sideTorso, _sideLegs;
+    private RobotHeadTexture _rearHead, _rearTorso, _rearLegs;
+    private Texture2D _rearCaptainCap;
     private Texture2D _soldierCapTexture, _captainCapTexture, _toyRifleTexture;
 
     private bool DrawQueenArt(Rectangle area, BattleFacing facing, int owner, float opacity)
@@ -57,7 +59,7 @@ public partial class Game1
     private bool DrawBattleSoldierArt(Rectangle area, Robot robot, BattleRole role, BattleFacing facing, bool hasRifle, float opacity)
     {
         if (robot == null || robot.Parts != RobotParts.Complete ||
-            facing is not (BattleFacing.South or BattleFacing.East or BattleFacing.West) ||
+            facing is not (BattleFacing.North or BattleFacing.South or BattleFacing.East or BattleFacing.West) ||
             role is not (BattleRole.Soldier or BattleRole.Captain))
             return false;
 
@@ -67,20 +69,24 @@ public partial class Game1
             return false;
 
         bool captain = role == BattleRole.Captain;
-        var cap = captain
-            ? (_captainCapTexture ??= LoadBattleToyTexture("captain-cap"))
-            : (_soldierCapTexture ??= LoadBattleToyTexture("soldier-cap"));
+        bool rear = facing == BattleFacing.North;
+        bool side = facing is BattleFacing.East or BattleFacing.West;
+        bool west = facing == BattleFacing.West;
+        var cap = (captain, rear) switch
+        {
+            (true, true) => _rearCaptainCap ??= LoadBattleToyTexture("captain-cap-back"),
+            (true, false) => _captainCapTexture ??= LoadBattleToyTexture("captain-cap"),
+            _ => _soldierCapTexture ??= LoadBattleToyTexture("soldier-cap")
+        };
         var rifle = hasRifle ? (_toyRifleTexture ??= LoadBattleToyTexture("toy-rifle")) : null;
         if (cap == null || hasRifle && rifle == null)
             return false;
 
         int hatSpace = area.Height / 4;
         var body = new Rectangle(area.X, area.Y + hatSpace, area.Width, area.Height - hatSpace);
-        bool side = facing != BattleFacing.South;
-        bool west = facing == BattleFacing.West;
-        if (side)
+        if (side || rear)
         {
-            if (!DrawSideRobotArt(body, robot, west, opacity))
+            if (!DrawOrientedRobotArt(body, robot, rear, west, opacity))
                 return false;
         }
         else
@@ -88,13 +94,18 @@ public partial class Game1
         int capWidth = body.Height * 12 / 25;
         int capHeight = captain ? hatSpace : hatSpace + area.Height / 10;
         var capBounds = new Rectangle(area.Center.X - capWidth / 2, body.Y + 7 - capHeight, capWidth, capHeight);
-        var capCrop = captain ? new Rectangle(528, 304, 473, 434) : new Rectangle(196, 156, 913, 859);
+        var capCrop = (captain, rear) switch
+        {
+            (true, true) => new Rectangle(380, 168, 776, 664),
+            (true, false) => new Rectangle(528, 304, 473, 434),
+            _ => new Rectangle(196, 156, 913, 859)
+        };
         _spriteBatch.Draw(cap, capBounds, capCrop, Color.White * opacity);
         if (rifle != null)
         {
             int width = Math.Max(4, area.Width / 7);
             int offset = side ? area.Width / 9 : area.Width / 4;
-            int x = west ? area.Center.X - offset - width : area.Center.X + offset;
+            int x = west || rear ? area.Center.X - offset - width : area.Center.X + offset;
             int y = area.Y + (side ? area.Height / 3 : hatSpace);
             var rifleBounds = new Rectangle(x, y, width, area.Height * 3 / 5);
             _spriteBatch.Draw(rifle, rifleBounds, new Rectangle(176, 104, 361, 1984),
@@ -103,23 +114,33 @@ public partial class Game1
         return true;
     }
 
-    private bool DrawSideRobotArt(Rectangle area, Robot robot, bool west, float opacity)
+    private bool DrawOrientedRobotArt(Rectangle area, Robot robot, bool rear, bool west, float opacity)
     {
-        _sideHead ??= LoadSideRobotArt("head", new(.06f, .15f, .86f, .71f),
-            new(.48f, .56f, .16f, .18f), new(.765f, .374f, .19f, .35f));
-        _sideTorso ??= LoadSideRobotArt("torso", new(424f/1536, 136f/1024, 696f/1536, 792f/1024),
-            new(.32f, .52f, .11f, .17f));
-        _sideLegs ??= LoadSideRobotArt("legs", new(288f/1312, 120f/1199, 712f/1312, 960f/1199),
-            new(.36f, .72f, .17f, .15f));
-        if (_sideHead == null || _sideTorso == null || _sideLegs == null)
-            return false;
-
         float scale = Math.Min(area.Width / 84f, area.Height / 150f);
         int top = area.Center.Y - (int)Math.Round(75 * scale);
         var flip = west ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
-        Draw(_sideLegs, RobotParts.Legs, new(55, 25, 141, 205), 103, 35, 47);
-        Draw(_sideTorso, RobotParts.Body, new(70, 34, 117, 198), 53, 46, 55);
-        Draw(_sideHead, RobotParts.Head, new(15, 38, 220, 182), 0, 71, 59);
+        if (rear)
+        {
+            _rearHead ??= LoadOrientedRobotArt("head-back", new(.06f, .15f, .86f, .71f), new(.48f, .56f, .16f, .18f));
+            _rearTorso ??= LoadOrientedRobotArt("torso-back", new(128f/1536, 128f/1024, 1272f/1536, 800f/1024), new(.42f, .40f, .16f, .20f));
+            _rearLegs ??= LoadOrientedRobotArt("legs-back", new(240f/1536, 104f/1024, 1048f/1536, 832f/1024), new(.59f, .64f, .14f, .19f));
+            if (_rearHead == null || _rearTorso == null || _rearLegs == null)
+                return false;
+            Draw(_rearLegs, RobotParts.Legs, new(40, 26, 175, 208), 102, 58, 48);
+            Draw(_rearTorso, RobotParts.Body, new(21, 32, 213, 200), 54, 84, 54);
+            Draw(_rearHead, RobotParts.Head, new(16, 38, 220, 180), 0, 72, 59);
+        }
+        else
+        {
+            _sideHead ??= LoadOrientedRobotArt("head-side", new(.06f, .15f, .86f, .71f), new(.48f, .56f, .16f, .18f), new(.765f, .374f, .19f, .35f));
+            _sideTorso ??= LoadOrientedRobotArt("torso-side", new(424f/1536, 136f/1024, 696f/1536, 792f/1024), new(.32f, .52f, .11f, .17f));
+            _sideLegs ??= LoadOrientedRobotArt("legs-side", new(288f/1312, 120f/1199, 712f/1312, 960f/1199), new(.36f, .72f, .17f, .15f));
+            if (_sideHead == null || _sideTorso == null || _sideLegs == null)
+                return false;
+            Draw(_sideLegs, RobotParts.Legs, new(55, 25, 141, 205), 103, 35, 47);
+            Draw(_sideTorso, RobotParts.Body, new(70, 34, 117, 198), 53, 46, 55);
+            Draw(_sideHead, RobotParts.Head, new(15, 38, 220, 182), 0, 71, 59);
+        }
         return true;
 
         void Draw(RobotHeadTexture cache, RobotParts part, Rectangle crop, int y, int width, int height)
@@ -133,10 +154,10 @@ public partial class Game1
         }
     }
 
-    private RobotHeadTexture LoadSideRobotArt(string part, RobotHeadSurface.RectangleF paint,
+    private RobotHeadTexture LoadOrientedRobotArt(string part, RobotHeadSurface.RectangleF paint,
         RobotHeadSurface.RectangleF sticker, RobotHeadSurface.RectangleF? protectedFace = null)
     {
-        string path = Path.Combine(AppContext.BaseDirectory, "Content", "Images", "Robots", $"pp-{part}-side-v001.png");
+        string path = Path.Combine(AppContext.BaseDirectory, "Content", "Images", "Robots", $"pp-{part}-v001.png");
         return File.Exists(path) ? new(GraphicsDevice, path, CountryEmblemArt.Tiles, paint, sticker, protectedFace) : null;
     }
 
@@ -146,6 +167,12 @@ public partial class Game1
         _sideTorso?.Dispose();
         _sideLegs?.Dispose();
         _sideHead = _sideTorso = _sideLegs = null;
+        _rearHead?.Dispose();
+        _rearTorso?.Dispose();
+        _rearLegs?.Dispose();
+        _rearHead = _rearTorso = _rearLegs = null;
+        _rearCaptainCap?.Dispose();
+        _rearCaptainCap = null;
         foreach (var texture in _queenTextures)
             texture?.Dispose();
         Array.Clear(_queenTextures);

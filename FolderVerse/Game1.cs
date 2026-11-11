@@ -727,6 +727,7 @@ public partial class Game1 : Game
     {
         _robotHeadTextures?.EndFrame(); _robotTorsoTextures?.EndFrame(); _robotLegTextures?.EndFrame();
         _sideHead?.EndFrame(); _sideTorso?.EndFrame(); _sideLegs?.EndFrame();
+        _rearHead?.EndFrame(); _rearTorso?.EndFrame(); _rearLegs?.EndFrame();
         if(IsOpeningScreen){DrawOpeningFrame(gameTime);base.Draw(gameTime);return;}
         if(_autoPaused){DrawAutoPause();base.Draw(gameTime);return;}
         _setup.Robots.PartPlanning.Invalidate();
