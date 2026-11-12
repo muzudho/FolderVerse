@@ -102,7 +102,7 @@ if(args.Length==5 && args[4]=="--maple")
   "Country change did not affect enough of the painted maple shell");
  Console.WriteLine("PASS real maple head preserves face, bare flank and alpha while two flags recolor the shell.");
 }
-else if(args.Length==4 || args.Length==5 && args[4] is ("--paper" or "--paper-torso" or "--paper-legs" or "--paper-side" or "--paper-back" or "--paper-torso-side" or "--paper-legs-side" or "--paper-torso-back" or "--paper-legs-back" or "--cardboard" or "--cardboard-torso" or "--cardboard-legs" or "--cardboard-side" or "--cardboard-back" or "--cardboard-torso-side" or "--cardboard-legs-side" or "--cardboard-torso-back" or "--cardboard-legs-back" or "--foam" or "--foam-torso" or "--foam-legs")){
+else if(args.Length==4 || args.Length==5 && args[4] is ("--paper" or "--paper-torso" or "--paper-legs" or "--paper-side" or "--paper-back" or "--paper-torso-side" or "--paper-legs-side" or "--paper-torso-back" or "--paper-legs-back" or "--cardboard" or "--cardboard-torso" or "--cardboard-legs" or "--cardboard-side" or "--cardboard-back" or "--cardboard-torso-side" or "--cardboard-legs-side" or "--cardboard-torso-back" or "--cardboard-legs-back" or "--foam" or "--foam-torso" or "--foam-legs" or "--foam-side" or "--foam-back")){
  bool cardboard=args.Length==5 && args[4].StartsWith("--cardboard");
  bool foam=args.Length==5 && args[4].StartsWith("--foam");
  bool paper=args.Length==5 && !cardboard && !foam;
@@ -113,14 +113,16 @@ else if(args.Length==4 || args.Length==5 && args[4] is ("--paper" or "--paper-to
   args.Length==5 && args[4].Contains("-legs")?RobotParts.Legs:RobotParts.Head;
  var facing=args.Length==5 && args[4].EndsWith("-side")?BattleFacing.East:
   args.Length==5 && args[4].EndsWith("-back")?BattleFacing.North:BattleFacing.South;
- var surface=foam?RobotHeadSurface.Foam(original,width,height,part):cardboard?(part==RobotParts.Head?RobotHeadSurface.CardboardHead(original,width,height,facing):
+ var surface=foam?RobotHeadSurface.Foam(original,width,height,part,facing):cardboard?(part==RobotParts.Head?RobotHeadSurface.CardboardHead(original,width,height,facing):
   RobotHeadSurface.CardboardBody(original,width,height,part,facing)):
   paper?RobotHeadSurface.Paper(original,width,height,part,facing):RobotHeadSurface.Polypropylene(original,width,height);
  if(foam){
   int AtFoam(int x,int y)=>(y*height/1024)*width+x*width/1536;
-  var (painted,bare)=part switch {
-   RobotParts.Body=>(new[]{(700,550),(300,520),(1170,520)},new[]{(768,240),(220,700),(1250,710),(20,20)}),
-   RobotParts.Legs=>(new[]{(550,550),(950,550)},new[]{(755,590),(550,780),(950,810),(20,20)}),
+  var (painted,bare)=(part,facing) switch {
+   (RobotParts.Body,_)=>(new[]{(700,550),(300,520),(1170,520)},new[]{(768,240),(220,700),(1250,710),(20,20)}),
+   (RobotParts.Legs,_)=>(new[]{(550,550),(950,550)},new[]{(755,590),(550,780),(950,810),(20,20)}),
+   (RobotParts.Head,BattleFacing.East)=>(new[]{(620,430),(900,560)},new[]{(1120,520),(1190,648),(768,110),(20,20)}),
+   (RobotParts.Head,BattleFacing.North)=>(new[]{(768,500),(620,630)},new[]{(768,230),(325,550),(1190,550),(20,20)}),
    _=>(new[]{(650,290)},new[]{(491,558),(829,558),(658,638),(671,377),(20,20)})
   };
   foreach(var (x,y) in bare)

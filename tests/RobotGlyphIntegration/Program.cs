@@ -431,6 +431,48 @@ sealed class GlyphProbe:Game1
     throw new Exception($"The unfolded puck at {puckNode.Id} could not be selected");
   }
   Console.WriteLine("PASS unfolded land/sea pucks draw and accept center clicks.");
+  var scenicType=typeof(CubeNet).Assembly.GetType("FolderVerse.ScenicRoutes")!;
+  var throughRoutes=scenicType.GetMethod("ThroughRoutes",BindingFlags.Static|BindingFlags.NonPublic)!;
+  var edges=new (int,int)[]{(0,1),(1,2),(1,3),(3,4),(4,1),(2,5),(6,7)};
+  var functional=new[]{true,false,true,false,false,false,false,false};
+  bool[] Through()=> (bool[])throughRoutes.Invoke(null,new object[]{functional,edges})!;
+  if(!Through().SequenceEqual(new[]{true,true,false,false,false,false,false}))
+   throw new Exception("An empty through stop must stay solid while dead ends and attached empty loops become dotted");
+  functional[4]=true;
+  if(!Through().SequenceEqual(new[]{true,true,true,true,true,false,false}))
+   throw new Exception("Reactivating a stop must restore both ways through its loop");
+  net.VisibleOperationNodes=null;
+  foreach(var scenicNode in globeWorld.Nodes.All) scenicNode.FunctionUnits=0;
+  Color[] ScenicFrame(bool onGlobe,float time,string name)
+  {
+   GraphicsDevice.Clear(new Color(25,36,48));
+   if(onGlobe)globe.Draw(.55f,-.35f,markers:false,globeView:true,globeFrame:globeArea);
+   batch.Begin();
+   if(onGlobe)net.DrawGlobeLayers((UiPainter)Get("_ui"),globeWorld,globe,globeArea,.55f,-.35f,time);
+   else net.Draw((UiPainter)Get("_ui"),globeWorld,globeArea,-1,time,objects:false);
+   batch.End();
+   var frame=new Color[960*540];
+   GraphicsDevice.GetBackBufferData(frame);
+   if(name!=null){
+    globeImage.SetData(frame);
+    using var file=File.Create(Path.Combine(Path.GetDirectoryName(output)!,name));
+    globeImage.SaveAsPng(file,960,540);
+   }
+   return frame;
+  }
+  foreach(bool onGlobe in new[]{true,false}){
+   var first=ScenicFrame(onGlobe,0,onGlobe?"globe-scenic-routes.png":"net-scenic-routes.png");
+   var later=ScenicFrame(onGlobe,2.5f,null);
+   foreach(var ink in new Color[]{new(255,230,140),new(111,228,255),new(181,133,63),new(190,77,56)})
+    if(!first.Contains(ink) && !later.Contains(ink))throw new Exception($"Missing scenic route or vehicle ink {ink}, globe={onGlobe}");
+   if(first.SequenceEqual(later))throw new Exception("Scenic vehicles must move between frames");
+  }
+  foreach(var scenicNode in globeWorld.Nodes.All) scenicNode.FunctionUnits=1;
+  var restoredRoutes=ScenicFrame(true,0,null);
+  if(!restoredRoutes.Contains(new Color(255,216,99)) || !restoredRoutes.Contains(new Color(108,213,245)) ||
+     restoredRoutes.Contains(new Color(181,133,63)))
+   throw new Exception("Changing node functions must invalidate the scenic display");
+  Console.WriteLine("PASS scenic routes retain through paths, animate land and sea vehicles in both views and refresh with node functions.");
   var materialWorld=(WorldSetup)Get("_setup");
   materialWorld.EquipmentMode=RobotEquipmentMode.Materials;
   GraphicsDevice.Clear(new Color(25,36,48));

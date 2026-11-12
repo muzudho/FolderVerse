@@ -6,6 +6,12 @@ using Microsoft.Xna.Framework;
 
 public sealed partial class CubeNet
 {
+    private ScenicRoutes _scenicRoutes;
+    private void RefreshScenicRoutes(WorldSetup world)
+    {
+        if (ShowRoutes && !DirectoryOnly && (_scenicRoutes == null || !_scenicRoutes.Matches(world)))
+            _scenicRoutes = new(world);
+    }
     public HashSet<int> VisibleOperationNodes {get;set;}
     public int[] NodeOwnerSnapshot {get;set;}
     public int DisplayedNodeOwner(Node node)=>NodeOwnerSnapshot!=null && node.Id<NodeOwnerSnapshot.Length?NodeOwnerSnapshot[node.Id]:node.Owner;
@@ -82,9 +88,16 @@ public sealed partial class CubeNet
                 .Where(p=>world.Nodes.Current(p.Ruler)?.Center!=world.ConquerorPoints[p.Ruler])
                 .SelectMany(p=>Enumerable.Range(0,4).Select(d=>world.Routes.ForRuler(p.Ruler,d))).Where(r=>r!=null);
             var ribbons = globeRibbon ? new List<(Vector2 Center, float Length, float Angle, bool Sea)>() : null;
+            var vehicles = new List<ScenicRoutes.Vehicle>();
             var offset=WorldTerrain.Offset(world.WorldSeed);
             foreach(var route in world.Routes.DisplayPaths(cell).Concat(active))
             {
+                if (!DirectoryOnly && _scenicRoutes != null &&
+                    _scenicRoutes.TryDraw(route,pulse,DrawScenicDash,out var vehicle))
+                {
+                    if (vehicle is { } toy) vehicles.Add(toy);
+                    continue;
+                }
                 var curve=world.Routes.Curve(cell,route);
                 for(int i=1;i<curve.Length;i++)
                 {
@@ -111,7 +124,22 @@ public sealed partial class CubeNet
                     ui.Tile(r.Center,new(r.Length,6),r.Angle,
                         SearchTint(r.Sea ? new Color(108,213,245) : new Color(255,216,99),r.Center));
             }
+            foreach (var vehicle in vehicles)
+                DrawScenicVehicle(ui,world.Cells[cell],vehicle,project,globeRibbon,
+                    color=>SearchTint(color,project(vehicle.At)));
             if(drawNodes)DrawNodeMarkers(ui,world,cell,project,pulse);
+
+            void DrawScenicDash(Vector3 from, Vector3 to, bool sea)
+            {
+                var a = project(from); var b = project(to);
+                var delta = b-a;
+                if (delta.LengthSquared() < .001f) return;
+                var center = (a+b)/2;
+                var angle = MathF.Atan2(delta.Y,delta.X);
+                var ink = sea ? new Color(111,228,255) : new Color(255,230,140);
+                ui.Tile(center,new(delta.Length()+.5f,globeRibbon ? 5 : 4),angle,SearchTint(new Color(38,53,56),center));
+                ui.Tile(center,new(delta.Length(),globeRibbon ? 3 : 2),angle,SearchTint(ink,center));
+            }
         }
     }
     private void DrawNodeMarkers(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse)

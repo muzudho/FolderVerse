@@ -51,16 +51,19 @@ public static class RobotHeadSurface
     public static RobotFlagComposite.Surface[] FoamHead(Color[] neutral, int width, int height)
         => Foam(neutral, width, height, RobotParts.Head);
 
-    public static RobotFlagComposite.Surface[] Foam(Color[] neutral, int width, int height, RobotParts part)
+    public static RobotFlagComposite.Surface[] Foam(Color[] neutral, int width, int height, RobotParts part,
+        BattleFacing facing = BattleFacing.South)
     {
         if (width < 1 || height < 1 || neutral == null || (long)width * height != neutral.Length)
             throw new ArgumentException("Foam image dimensions do not match its pixels.");
 
-        var uv = part switch
+        var uv = (part, facing) switch
         {
-            RobotParts.Head => new RectangleF(216,129,1050,740),
-            RobotParts.Body => new RectangleF(175,264,1155,511),
-            RobotParts.Legs => new RectangleF(433,478,658,188),
+            (RobotParts.Head, BattleFacing.East) => new RectangleF(303,176,731,673),
+            (RobotParts.Head, BattleFacing.North) => new RectangleF(390,288,747,502),
+            (RobotParts.Head, _) => new RectangleF(216,129,1050,740),
+            (RobotParts.Body, _) => new RectangleF(175,264,1155,511),
+            (RobotParts.Legs, _) => new RectangleF(433,478,658,188),
             _ => throw new ArgumentOutOfRangeException(nameof(part))
         };
         var result = new RobotFlagComposite.Surface[neutral.Length];
@@ -75,10 +78,12 @@ public static class RobotHeadSurface
             // The inset face remains bare. The brightest bead tops retain more white foam.
             float dx = Math.Max(Math.Abs(px - 671) - 231, 0);
             float dy = Math.Max(Math.Abs(py - 562) - 99, 0);
-            float distance = part switch
+            float distance = (part, facing) switch
             {
-                RobotParts.Head => new Vector2(dx, dy).Length() - 91,
-                RobotParts.Body => Math.Max(Panel(px, py, 710, 550, 280, 214, 70),
+                (RobotParts.Head, BattleFacing.East) => Panel(px,py,668.5f,512.5f,365.5f,336.5f,156),
+                (RobotParts.Head, BattleFacing.North) => Panel(px,py,763.5f,539,373.5f,251,133),
+                (RobotParts.Head, _) => new Vector2(dx, dy).Length() - 91,
+                (RobotParts.Body, _) => Math.Max(Panel(px, py, 710, 550, 280, 214, 70),
                     Math.Max(Panel(px, py, 302, 538, 127, 110, 94), Panel(px, py, 1174, 541, 132, 110, 94))),
                 _ => Math.Max(Panel(px, py, 575, 575, 135, 88, 46), Panel(px, py, 938, 575, 137, 88, 46))
             };

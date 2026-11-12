@@ -745,3 +745,20 @@ NAS foam-views-v001 の foam-head-neutral-v001.png を Content/Images/Robots/ �
 NAS art-source/robots/foam-views-v001 の foam-torso-neutral-v001.png と foam-legs-neutral-v001.png を Content/Images/Robots/ へ同名登録し、両方のSHA-256一致を確認。素材９種モードの共通描画と正面戦闘駒で胴脚の国旗、胸と右すねの紋章、着色面の汚損を合成する。横・背面に発泡スチロール部位がある戦闘駒は簡易描画。キャッシュは描画後と終了時に解放する。
 
 最終隔離Releaseと描画プローブは警告・エラー各０。発泡スチロール全身、汚損による画素差と全アルファ一致、顔の保護点、格納庫６枠の入力と配送ドラッグ、戦闘201フレームの回帰が通過。960×540の画像で粒、絆創膏、脚間と靴を目視。縮小した戦闘駒では紋章の細部は判別しにくい。比較画像 foam-glyph.png と probe.log はNAS tmp/delete-after-2026-11-15/robot-art-implementation/foam-body-game-1802/。次は横・背面の素地。
+
+## 2026年11月12日18時18分・発泡スチロール頭の横・背面原画
+
+ImageGenで正面頭の白い粒と紙製頭の角度を参照し、透明背景の横・背面頭を個別に制作。横は右端の片目と口、背面は無地のはめ込み面。NAS art-source/robots/foam-views-v001/ に保存し、生成元とSHA-256一致を確認した。
+
+| 原画 | 寸法 | SHA-256 |
+| --- | --- | --- |
+| foam-head-side-v001.png | 1536×1024 | 703327B8BEC4D608D560C3D282AC5F22B1A87B87A129E5A3CC3957F2BC00EB2C |
+| foam-head-back-v001.png | 1536×1024 | D7F0A090B5C76893351C188B21BBA6ABF63AE39D9F3C1C86E741ABE1BF93C016 |
+
+左上、頭上、左余白、素地のアルファは横が0/0/0/253、背面が1/1/0/253。次は顔の保護と国旗マスク、暗色背景で外周確認。実行素材登録と描画試験は未実施。
+
+## 2026年11月12日18時33分・発泡スチロール頭の横・背面国旗マスク
+
+NAS foam-views-v001 の foam-head-side-v001.png と foam-head-back-v001.png にそれぞれ丸角マスクとUVを設定。横は右端の目・口のはめ込み面、背面は無地パネル周囲の粒を保護した。発泡スチロール共通の粒の明暗と塗りむらを使う。
+
+隔離Releaseはゲームと合成プローブとも警告・エラー各０。初回のプローブビルドは参照DLL指定が不足し、ゲームの隔離ビルド後に参照先を指定して通過。国旗320組、実原画の２旗、保護画素と全アルファの一致、既存正面の２旗のRGBAバイト一致を確認。暗色背景の42～150px幅で横顔と白い縁を目視し、最小幅では粒の細部が弱い。NAS tmp/delete-after-2026-11-15/robot-art-implementation/foam-head-mask-1833/ の Side、Back、dark-preview.png。次は紋章と汚損、横・背面戦闘駒への登録。
