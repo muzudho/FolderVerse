@@ -129,11 +129,13 @@ public partial class Game1
     private bool UsesFoamArt(Robot robot, RobotParts part) =>
         _setup.EquipmentMode == RobotEquipmentMode.Materials && robot.Material(part) == RobotMaterial.Foam;
     private bool UsesFoamHeadArt(Robot robot) => UsesFoamArt(robot, RobotParts.Head);
-    private RobotHeadTexture LoadFoamArt(string name, RobotParts part, RobotHeadSurface.RectangleF sticker)
+    private RobotHeadTexture LoadFoamArt(string name, RobotParts part, RobotHeadSurface.RectangleF sticker,
+        BattleFacing facing = BattleFacing.South)
     {
-        string path = Path.Combine(AppContext.BaseDirectory, "Content", "Images", "Robots", $"foam-{name}-neutral-v001.png");
+        string view = facing switch { BattleFacing.East => "side", BattleFacing.North => "back", _ => "neutral" };
+        string path = Path.Combine(AppContext.BaseDirectory, "Content", "Images", "Robots", $"foam-{name}-{view}-v001.png");
         return File.Exists(path) ? new(GraphicsDevice, path, CountryEmblemArt.Tiles,
-            stickerBounds: sticker, foamPart: part) : null;
+            stickerBounds: sticker, foamPart: part, foamFacing: facing) : null;
     }
     private RobotHeadTexture FrontHeadTexture(Robot robot)=>UsesFoamHeadArt(robot)?_foamHeadTextures:
         UsesPaperHeadArt(robot)?_paperHeadTextures:

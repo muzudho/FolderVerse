@@ -10,6 +10,7 @@ public partial class Game1
     private RobotHeadTexture _sideHead, _sideTorso, _sideLegs;
     private RobotHeadTexture _rearHead, _rearTorso, _rearLegs;
     private RobotHeadTexture _cardboardSideHead, _cardboardRearHead;
+    private RobotHeadTexture _foamSideHead, _foamRearHead;
     private RobotHeadTexture _cardboardSideTorso, _cardboardSideLegs;
     private RobotHeadTexture _cardboardRearTorso, _cardboardRearLegs;
     private RobotHeadTexture _mapleSideHead, _mapleRearHead, _mapleRearTorso, _mapleRearLegs;
@@ -124,8 +125,9 @@ public partial class Game1
 
     private bool DrawOrientedRobotArt(Rectangle area, Robot robot, bool rear, bool west, float opacity)
     {
-        if (UsesFoamHeadArt(robot) || UsesFoamArt(robot, RobotParts.Body) || UsesFoamArt(robot, RobotParts.Legs))
+        if (UsesFoamArt(robot, RobotParts.Body) || UsesFoamArt(robot, RobotParts.Legs))
             return false;
+        bool foam = UsesFoamHeadArt(robot);
         bool cardboardTorso = UsesCardboardArt(robot, RobotParts.Body);
         bool cardboardLegs = UsesCardboardArt(robot, RobotParts.Legs);
         bool cardboard = UsesCardboardHeadArt(robot);
@@ -140,7 +142,8 @@ public partial class Game1
         bool mapleLegs = UsesMapleArt(robot, RobotParts.Legs);
         if (rear)
         {
-            var head = cardboard
+            var head = foam ? _foamRearHead ??= LoadFoamArt("head", RobotParts.Head, new(.52f,.49f,.14f,.18f), BattleFacing.North)
+                : cardboard
                 ? _cardboardRearHead ??= LoadCardboardArt("head", RobotParts.Head, new(.54f,.53f,.13f,.16f), BattleFacing.North)
                 : paper ? _paperRearHead ??= LoadOrientedPaperArt("head-back", RobotParts.Head, BattleFacing.North, new(.56f,.55f,.10f,.13f)) : maple
                 ? _mapleRearHead ??= LoadOrientedRobotArt("head-back", new(.20f, .15f, .61f, .72f), new(.50f, .54f, .15f, .19f), maplePart: RobotParts.Head)
@@ -163,11 +166,12 @@ public partial class Game1
                 return false;
             Draw(legs, RobotParts.Legs, cardboardLegs ? new(56,35,145,185) : paperLegs ? new(58,38,140,182) : mapleLegs ? new(40, 26, 176, 209) : new(40, 26, 175, 208), 102, 58, 48);
             Draw(torso, RobotParts.Body, cardboardTorso ? new(14,50,229,157) : paperTorso ? new(18,57,220,145) : mapleTorso ? new(14, 32, 224, 201) : new(21, 32, 213, 200), 54, 84, 54);
-            Draw(head, RobotParts.Head, cardboard ? new(39,25,178,201) : paper ? new(49, 37, 158, 184) : maple ? new(49, 35, 160, 190) : new(16, 38, 220, 180), 0, 72, 59);
+            Draw(head, RobotParts.Head, foam ? new(43,29,170,194) : cardboard ? new(39,25,178,201) : paper ? new(49, 37, 158, 184) : maple ? new(49, 35, 160, 190) : new(16, 38, 220, 180), 0, 72, 59);
         }
         else
         {
-            var head = cardboard
+            var head = foam ? _foamSideHead ??= LoadFoamArt("head", RobotParts.Head, new(.50f,.48f,.14f,.18f), BattleFacing.East)
+                : cardboard
                 ? _cardboardSideHead ??= LoadCardboardArt("head", RobotParts.Head, new(.53f,.53f,.13f,.16f), BattleFacing.East)
                 : paper ? _paperSideHead ??= LoadOrientedPaperArt("head-side", RobotParts.Head, BattleFacing.East, new(.56f,.55f,.10f,.13f)) : maple
                 ? _mapleSideHead ??= LoadOrientedRobotArt("head-side", new(.17f, .10f, .49f, .78f), new(.42f, .55f, .15f, .19f), maplePart: RobotParts.Head)
@@ -188,7 +192,7 @@ public partial class Game1
                 return false;
             Draw(legs, RobotParts.Legs, cardboardLegs ? new(39,29,166,187) : paperLegs ? new(53,32,140,172) : mapleLegs ? new(55, 29, 140, 183) : new(55, 25, 141, 205), 103, 35, 47);
             Draw(torso, RobotParts.Body, cardboardTorso ? new(29,37,199,177) : paperTorso ? new(30,37,196,179) : mapleTorso ? new(62, 32, 133, 201) : new(70, 34, 117, 198), 53, 46, 55);
-            Draw(head, RobotParts.Head, cardboard ? new(42,25,169,202) : paper ? new(47, 25, 158, 201) : maple ? new(40, 24, 170, 207) : new(15, 38, 220, 182), 0, 71, 59);
+            Draw(head, RobotParts.Head, foam ? new(43,25,162,204) : cardboard ? new(42,25,169,202) : paper ? new(47, 25, 158, 201) : maple ? new(40, 24, 170, 207) : new(15, 38, 220, 182), 0, 71, 59);
         }
         return true;
 
@@ -227,6 +231,9 @@ public partial class Game1
     {
         _foamHeadTextures?.Dispose();
         _foamHeadTextures = null;
+        _foamSideHead?.Dispose();
+        _foamRearHead?.Dispose();
+        _foamSideHead = _foamRearHead = null;
         _foamTorsoTextures?.Dispose();
         _foamTorsoTextures = null;
         _foamLegTextures?.Dispose();

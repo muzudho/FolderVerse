@@ -8,6 +8,16 @@ public sealed record PlannedPartMove(long Number,int Owner,int Source,int Target
     public RobotParts ExpectedSource {get;init;}
     public RobotParts ExpectedTarget {get;init;}
     public bool PromoteCaptain {get;init;}
+    public WorkerLaneSettings WorkerLane {get;init;}
+}
+public sealed record WorkerLaneSettings(int Plan,int RestEvery,int RestTurns,bool DoNotRepeat)
+{
+    internal void Apply(RobotWorkshop line)
+    {
+        if (Plan >= 0 && Plan < line.PlanCount) line.SelectPlan(Plan);
+        line.SetRest(RestEvery,RestTurns);
+        line.SetDoNotRepeat(DoNotRepeat);
+    }
 }
 public sealed record PartPlanResult(long Number,int Owner,int Target,string Status);
 public sealed class RobotPartPlanning
@@ -29,6 +39,14 @@ public sealed class RobotPartPlanning
         int index=Orders.FindLastIndex(o=>o.Owner==owner);if(index<0)return false;Orders.RemoveAt(index);return true;
     }
     public void Invalidate()=>_preview=null;
+    internal PlannedPartMove WorkerReservation(long id) =>
+        Orders.LastOrDefault(o=>o.RobotId==id && o.Role!=HangarReservation.None) is
+            {Role:HangarReservation.Worker} order ? order : null;
+    internal void SetWorkerLane(long id, RobotWorkshop lane)
+    {
+        if (WorkerReservation(id) is not { } order) return;
+        Orders[Orders.IndexOf(order)]=order with {WorkerLane=new(lane.SelectedPlan,lane.RestEvery,lane.RestTurns,lane.DoNotRepeat)};
+    }
     public RobotWorld Preview(WorldSetup world)
     {
         var hash=new HashCode();hash.Add(world.Population.Turn);hash.Add(world.Campaign.Phase);
@@ -203,6 +221,15 @@ public sealed class RobotPartPlanning
             world.Campaign.RewriteReservations(m=>m.DeliveryMembers==null?m:m with {DeliveryMembers=m.DeliveryMembers.Select(member=>member.RobotId==role.RobotId && !member.PartNumbers.Contains(role.Number)?member with {Cancelled=true}:member).ToArray()});
         world.Robots.Transport.AppendPlannedTransfers(shipments);
         for(int n=0;n<world.Robots.Nodes.Length;n++)world.Robots.SyncWorkers(n);
+        foreach(var order in Orders.Where(o=>o.WorkerLane!=null && WorkerReservation(o.RobotId)==o &&
+            LastResults.Any(r=>r.Number==o.Number && r.Status=="実施完了")))
+        {
+            long bound=Bind(order.RobotId);
+            long id=CompletedRobots.GetValueOrDefault(bound,bound);
+            var workshop=world.Robots.Workshops[order.Target];
+            for(int lane=workshop.BaseLineCount;lane<workshop.ProductionLines.Length;lane++)
+                if(workshop.WorkerAt(lane)==id)order.WorkerLane.Apply(workshop.ProductionLines[lane]);
+        }
         Orders.Clear();world.Robots.FinishPlannedAssembly(world);world.Robots.Check();
     }
 }

@@ -733,6 +733,13 @@ sealed class GlyphProbe:Game1
   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(510,110,62,85),foam,
       BattleRole.Soldier,BattleFacing.South,true,1f})!)
    throw new Exception("Front soldier failed to draw foam parts");
+  var foamHeadOnly=foam with { BodyMaterial=RobotMaterial.Maple, LegsMaterial=RobotMaterial.Paper };
+  for(int i=0;i<directions.Length;i++){
+   var oriented=foamHeadOnly with {HeadOrigin=i%2,DamagedParts=i==0?0:RobotParts.Head};
+   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(120+180*i,290,88,125),oriented,
+       BattleRole.Soldier,directions[i],true,1f})!)
+    throw new Exception($"Foam head failed to draw facing {directions[i]}");
+  }
   batch.End();
   var foamArt=(RobotHeadTexture)Get("_foamHeadTextures");
   foamArt.Get(materialWorld,0).GetData(firstFlag);
@@ -746,6 +753,14 @@ sealed class GlyphProbe:Game1
    partArt.Get(materialWorld,0,true).GetData(secondFlag);
    if(firstFlag.SequenceEqual(secondFlag) || !firstFlag.Select(c=>c.A).SequenceEqual(secondFlag.Select(c=>c.A)))
     throw new Exception($"Foam wear must change paint and preserve alpha: {name}");
+  }
+  foreach(string name in new[]{"_foamSideHead","_foamRearHead"}){
+   var art=(RobotHeadTexture)Get(name);
+   art.Get(materialWorld,0).GetData(firstFlag);
+   art.Get(materialWorld,0,true).GetData(secondFlag);
+   if(firstFlag.SequenceEqual(secondFlag) || !firstFlag.Select(c=>c.A).SequenceEqual(secondFlag.Select(c=>c.A)) ||
+      name=="_foamSideHead" && firstFlag[130*size+188]!=secondFlag[130*size+188])
+    throw new Exception($"Oriented foam wear must preserve the face and alpha: {name}");
   }
   GraphicsDevice.GetBackBufferData(globePixels);
   globeImage.SetData(globePixels);

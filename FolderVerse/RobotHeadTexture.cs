@@ -27,7 +27,8 @@ public sealed class RobotHeadTexture:IDisposable
         RobotHeadSurface.RectangleF? bodyBounds = null, RobotHeadSurface.RectangleF? stickerBounds = null,
         RobotHeadSurface.RectangleF? protectedFace = null, RobotParts? maplePart = null, RobotParts? paperPart = null,
         BattleFacing paperFacing = BattleFacing.South, RobotParts? cardboardPart = null,
-        BattleFacing cardboardFacing = BattleFacing.South, RobotParts? foamPart = null)
+        BattleFacing cardboardFacing = BattleFacing.South, RobotParts? foamPart = null,
+        BattleFacing foamFacing = BattleFacing.South)
     {
         _device=device??throw new ArgumentNullException(nameof(device));
         _emblems=emblems??throw new ArgumentNullException(nameof(emblems));
@@ -37,7 +38,7 @@ public sealed class RobotHeadTexture:IDisposable
         _neutral=new Color[Resolution*Resolution];
         for(int y=0;y<Resolution;y++)for(int x=0;x<Resolution;x++)
             _neutral[y*Resolution+x]=pixels[Math.Min(source.Height-1,(2*y+1)*source.Height/(2*Resolution))*source.Width+Math.Min(source.Width-1,(2*x+1)*source.Width/(2*Resolution))];
-        _surface = foamPart is { } foam ? RobotHeadSurface.Foam(_neutral, Resolution, Resolution, foam)
+        _surface = foamPart is { } foam ? RobotHeadSurface.Foam(_neutral, Resolution, Resolution, foam, foamFacing)
             : cardboardPart is { } cardboard
             ? cardboard == RobotParts.Head ? RobotHeadSurface.CardboardHead(_neutral, Resolution, Resolution, cardboardFacing)
                 : RobotHeadSurface.CardboardBody(_neutral, Resolution, Resolution, cardboard, cardboardFacing)
@@ -50,7 +51,7 @@ public sealed class RobotHeadTexture:IDisposable
             (int)(Resolution * sticker.Width), (int)(Resolution * sticker.Height));
         _bandage = foamPart switch
         {
-            RobotParts.Head => new(.35f,.27f),
+            RobotParts.Head => foamFacing == BattleFacing.South ? new(.35f,.27f) : new(.35f,.45f),
             RobotParts.Body => new(.36f,.44f),
             RobotParts.Legs => new(.35f,.53f),
             _ => cardboardPart switch

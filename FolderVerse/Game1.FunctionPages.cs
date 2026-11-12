@@ -23,15 +23,21 @@ public partial class Game1
     }
     private static Rectangle FactoryPagePrevious=>new(660,926,62,30);
     private static Rectangle FactoryPageNext=>new(802,926,62,30);
+    private int FactoryPageCount()
+    {
+        var factory=PlanningWorkshop(_populationNode);
+        int displayed=Math.Min(factory.LineLimit,factory.ProductionLines.Length+PendingFactoryWorkers(factory).Length);
+        return Math.Max(1,(displayed+2)/3);
+    }
     private bool FactoryPageClick(Point p)
     {
         if(!FactoryPagePrevious.Contains(p) && !FactoryPageNext.Contains(p))return false;
-        int pages=Math.Max(1,(PlanningWorkshop(_populationNode).ProductionLines.Length+2)/3);
+        int pages=FactoryPageCount();
         _factoryPage=Math.Clamp(_factoryPage+(FactoryPagePrevious.Contains(p)?-1:1),0,pages-1);_factoryDropDown=_factoryPlanLine=-1;return true;
     }
     private void DrawFactoryPages()
     {
-        int pages=Math.Max(1,(PlanningWorkshop(_populationNode).ProductionLines.Length+2)/3);if(pages<=1)return;
+        int pages=FactoryPageCount();if(pages<=1)return;
         _ui.Button(FactoryPagePrevious,"←",Muted,.4f);_ui.Button(FactoryPageNext,"→",Muted,.4f);
         _ui.Center($"{_factoryPage+1}/{pages}",new(722,926,80,30),.35f,Cream);
     }
