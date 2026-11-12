@@ -28,12 +28,19 @@ public sealed partial class RobotWorkshop
         foreach(long id in _workerLines.Keys.Where(id=>!ids.Contains(id)).ToArray())_workerLines.Remove(id);
         foreach(var worker in workers){
             if(!_workerLines.TryGetValue(worker.Id,out var line)){
-                line=new RobotWorkshop{_materialCatalogueOffset=_materialCatalogueOffset};line.GenerateWorkerPlans(worker,worldSeed,node,country,false);line.SelectPlan(0);_workerLines[worker.Id]=line;
+                line=CreateWorkerLine(worker,worldSeed,node,country);_workerLines[worker.Id]=line;
             }else if(line._workerPlans==null)line.GenerateWorkerPlans(worker,worldSeed,node,country,true);
         }
         ProductionLines=ProductionLines.Take(BaseLineCount).Concat(_workerLines.OrderBy(p=>p.Key).Select(p=>p.Value)).Take(LineLimit).ToArray();
     }
     public RobotWorkshop[] ProductionLines {get;private set;}
+    internal RobotWorkshop CreateWorkerLine(Robot worker,int worldSeed,int node,int country)
+    {
+        var line=new RobotWorkshop{_materialCatalogueOffset=_materialCatalogueOffset};
+        line.GenerateWorkerPlans(worker,worldSeed,node,country,false);
+        line.SelectPlan(0);
+        return line;
+    }
     public RobotWorkshop(){ProductionLines=new[]{this};}
     internal void RemoveProductionLines(){ProductionLines=System.Array.Empty<RobotWorkshop>();_baseLineCount=0;_workerLines=null;Manufacturing=false;ProductionAge=WaitingProductionTurns=0;}
     private int? _materialCatalogueOffset;

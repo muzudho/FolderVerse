@@ -61,6 +61,7 @@ public sealed partial class TerrainRoutes
     }
     public RoutePortal[] Portals(int cell,int direction)=>_portals[cell][direction];
     public RouteStep[] DisplayPaths(int cell)=>_display[cell];
+    internal RouteStep[][] DisplayPathSnapshot => _display;
     private Point EdgePoint(int cell,Vector3 edgePosition)
     {
         var c=_world.Cells[cell];return new(Math.Clamp((int)MathF.Floor(Vector3.Dot(edgePosition-c.Origin,c.U)*10),0,9),Math.Clamp((int)MathF.Floor(Vector3.Dot(edgePosition-c.Origin,c.V)*10),0,9));

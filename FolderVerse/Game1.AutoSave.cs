@@ -53,7 +53,7 @@ public partial class Game1
             next.Robots.DirectDelivery.ReconcileDestinations(next);
             if(next.Salvage.LegacyPlacementPending)next.Salvage.Initialize(next);
             foreach(var battle in next.Campaign.RobotBattles.Encounters.SelectMany(e=>e.Battles).Concat(next.Campaign.RobotBattles.Scenes).Distinct()){
-                battle.Allied=next.Relations.Allied;battle.Check();
+                battle.Allied=next.Relations.Allied;battle.IsFactionRoot=next.Relations.CanWinConquest;battle.Check();
             }
             next.Robots.ConfigureFactories(next);ResetInspector();_setup=next;_tutorialAttackGuide=false;_tutorialLastMessage=-1;_tutorialAttackAchieved=next.TutorialMapBeforeWar?next.TutorialAttackCompleted:next.TutorialStep==1 && _tutorialAchievements?.Has(TutorialAchievements.FirstAttack)==true;_domesticViews.Clear();foreach(var view in saved.Views)_domesticViews.Add(view.Key,view.Value);
             if(_tutorialAttackAchieved && !next.TutorialMapBeforeWar && !next.TutorialCompletionShown)next.TutorialCompletionPending=true;

@@ -37,6 +37,42 @@ sealed class SaveGame:Game1{
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_conquestOverviewEnabled",false);Set("_autoSavePath",path);Set("_autoSaveEnabled",true);if(File.Exists(path))File.Delete(path);
   var w=(WorldSetup)Get("_setup");w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);var net=(CubeNet)Get("_net");var world=(WorldPreview)Get("_world");world.ShowSetup(w,true);net.Home(w);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
   int source=w.Nodes.Current(0).Id;var factory=w.Robots.Workshops[source];for(int seed=0;factory.ProductionLines.Length==0;seed++)factory.GenerateLines(seed);
+  factory.LimitLines(1);factory.LimitLines(3);
+  var worker=w.Robots.Create(0,RobotParts.Complete);
+  w.Robots.Nodes[source].Add(worker);
+  Call("OpenNodeInspector",source);Call("OpenNodeFactory");
+  Check(w.Robots.PartPlanning.ReserveRole(w,source,worker.Id,HangarReservation.Worker,0),"Worker reservation is accepted");
+  Check(((Robot[])Call("PendingFactoryWorkers",factory)).Single().Id==worker.Id &&
+      factory.ProductionLines.Length==1,"Factory shows the pending worker without opening a live lane early");
+  Check(w.Robots.PartPlanning.Undo(0) && ((Robot[])Call("PendingFactoryWorkers",factory)).Length==0,
+      "Undo immediately removes the pending factory worker");
+  Check(w.Robots.PartPlanning.ReserveRole(w,source,worker.Id,HangarReservation.Worker,0),"Worker can be reserved again");
+  var pending=(Robot[])Call("PendingFactoryWorkers",factory);
+  var projected=((RobotWorkshop[])Call("FactoryScreenLines",factory,pending))[1];
+  var production=(Rectangle)typeof(Game1).GetMethod("FactoryRobotButton",BindingFlags.NonPublic|BindingFlags.Static)!
+      .Invoke(null,new object[]{1,projected.ProductionPeriod})!;
+  var planButton=(Rectangle)typeof(Game1).GetMethod("FactoryPlanButton",BindingFlags.NonPublic|BindingFlags.Static)!
+      .Invoke(null,new object[]{2})!;
+  Call("NodeFactoryClick",production.Center);Call("NodeFactoryClick",planButton.Center);
+  projected=((RobotWorkshop[])Call("FactoryScreenLines",factory,pending))[1];
+  Check(projected.SelectedPlan==2 && factory.ProductionLines.Length==1,"Actual factory controls set the pending product");
+  var repeatButton=(Rectangle)Call("FactoryNoRepeatButton",projected);
+  Call("NodeFactoryClick",repeatButton.Center);
+  var restButton=(Rectangle)Call("FactoryDropButton",1,projected);
+  Call("NodeFactoryClick",restButton.Center);
+  var restOption=(Rectangle)Call("FactoryDropOption",1,3,projected);
+  Call("NodeFactoryClick",restOption.Center);
+  var draftSave=AutoSaveStore.Capture(w.Robots.PartPlanning.Orders.Single());
+  var draft=AutoSaveStore.Restore<PlannedPartMove>(draftSave);
+  Check(draft.WorkerLane?.Plan==2 && draft.WorkerLane.RestTurns==4 && draft.WorkerLane.DoNotRepeat,
+      "Planned production settings survive a save round trip");
+  foreach(var entry in draftSave.Objects)entry.Fields?.Remove("<WorkerLane>k__BackingField");
+  Check(AutoSaveStore.Restore<PlannedPartMove>(draftSave).WorkerLane==null,"Older reservations retain their defaults");
+  typeof(RobotPartPlanning).GetMethod("Resolve",F)!.Invoke(w.Robots.PartPlanning,new object[]{w});
+  Check(factory.ProductionLines.Length==2 && factory.WorkerAt(1)==worker.Id &&
+      ((Robot[])Call("PendingFactoryWorkers",factory)).Length==0,"Confirmed worker has one editable lane");
+  Check(factory.ProductionLines[1].SelectedPlan==2 && factory.ProductionLines[1].RestTurns==4 && factory.ProductionLines[1].DoNotRepeat,
+      "The confirmed lane uses its planned settings");
   Call("OpenNodeInspector",source);Call("OpenNodeFactory");Set("_factoryDropDown",0);Call("CloseNodeInspector");Call("UpdateDomesticSlide",1f);Check(!(bool)Get("_nodeFactoryOpen") && (int)Get("_factoryDropDown")==-1,"Closing clears stale factory modal");
   Set("_nodeFactoryOpen",true);Set("_factoryDropDown",0);Set("_populationNode",-1);Set("_populationCell",-1);Call("NodeDialogClick",new Point(200,500),new KeyboardState());Check(!(bool)Call("NodeFactoryClick",new Point(200,500)),"Invalid node cannot index factory arrays");Call("ResetInspector");
   net.ShowBatteries=false;net.ShowOtherCountries=false;world.GlobeZoom=2.5f;world.GlobePan=new(.04f,-.02f);Set("_globeDragSlide",true);Set("_netDragRotate",true);world.ManualOrientation=Quaternion.CreateFromYawPitchRoll(.1f,.2f,.3f);

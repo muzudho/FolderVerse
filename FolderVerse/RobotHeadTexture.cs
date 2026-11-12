@@ -25,7 +25,11 @@ public sealed class RobotHeadTexture:IDisposable
 
     public RobotHeadTexture(GraphicsDevice device,string path,Func<int,IReadOnlyList<Rectangle>> emblems,
         RobotHeadSurface.RectangleF? bodyBounds = null, RobotHeadSurface.RectangleF? stickerBounds = null,
-        RobotHeadSurface.RectangleF? protectedFace = null, RobotParts? maplePart = null)
+        RobotHeadSurface.RectangleF? protectedFace = null, RobotParts? maplePart = null, RobotParts? paperPart = null,
+        BattleFacing paperFacing = BattleFacing.South, RobotParts? cardboardPart = null,
+        BattleFacing cardboardFacing = BattleFacing.South, RobotParts? foamPart = null,
+        BattleFacing foamFacing = BattleFacing.South, RobotParts? polystyrenePart = null,
+        BattleFacing polystyreneFacing = BattleFacing.South)
     {
         _device=device??throw new ArgumentNullException(nameof(device));
         _emblems=emblems??throw new ArgumentNullException(nameof(emblems));
@@ -35,19 +39,47 @@ public sealed class RobotHeadTexture:IDisposable
         _neutral=new Color[Resolution*Resolution];
         for(int y=0;y<Resolution;y++)for(int x=0;x<Resolution;x++)
             _neutral[y*Resolution+x]=pixels[Math.Min(source.Height-1,(2*y+1)*source.Height/(2*Resolution))*source.Width+Math.Min(source.Width-1,(2*x+1)*source.Width/(2*Resolution))];
-        _surface = maplePart is {} part ? RobotHeadSurface.Maple(_neutral,Resolution,Resolution,part) : bodyBounds is { } bounds
+        _surface = polystyrenePart is { } polystyrene
+            ? polystyrene == RobotParts.Head ? RobotHeadSurface.PolystyreneHead(_neutral, Resolution, Resolution, polystyreneFacing)
+                : RobotHeadSurface.PolystyreneBody(_neutral, Resolution, Resolution, polystyrene, polystyreneFacing)
+            : foamPart is { } foam ? RobotHeadSurface.Foam(_neutral, Resolution, Resolution, foam, foamFacing)
+            : cardboardPart is { } cardboard
+            ? cardboard == RobotParts.Head ? RobotHeadSurface.CardboardHead(_neutral, Resolution, Resolution, cardboardFacing)
+                : RobotHeadSurface.CardboardBody(_neutral, Resolution, Resolution, cardboard, cardboardFacing)
+            : paperPart is { } paper ? RobotHeadSurface.Paper(_neutral, Resolution, Resolution, paper, paperFacing)
+            : maplePart is {} part ? RobotHeadSurface.Maple(_neutral,Resolution,Resolution,part,bodyBounds) : bodyBounds is { } bounds
             ? RobotHeadSurface.PolypropyleneBody(_neutral, Resolution, Resolution, bounds, protectedFace)
             : RobotHeadSurface.Polypropylene(_neutral, Resolution, Resolution);
         var sticker = stickerBounds ?? new RobotHeadSurface.RectangleF(.70f, .59f, .15f, .16f);
         _sticker = new((int)(Resolution * sticker.X), (int)(Resolution * sticker.Y),
             (int)(Resolution * sticker.Width), (int)(Resolution * sticker.Height));
-        _bandage = maplePart switch
+        _bandage = polystyrenePart switch
+        {
+            RobotParts.Head => polystyreneFacing == BattleFacing.South ? new(.38f,.27f) : new(.38f,.47f),
+            RobotParts.Body => new(.39f,.46f),
+            RobotParts.Legs => new(.34f,.50f),
+            _ => foamPart switch
+        {
+            RobotParts.Head => foamFacing == BattleFacing.South ? new(.35f,.27f) : new(.35f,.45f),
+            RobotParts.Body => foamFacing == BattleFacing.East ? new(.34f,.50f) : new(.36f,.44f),
+            RobotParts.Legs => foamFacing == BattleFacing.East ? new(.40f,.53f) : new(.35f,.53f),
+            _ => cardboardPart switch
+        {
+            RobotParts.Head => cardboardFacing == BattleFacing.South ? new(.37f,.36f) : new(.37f,.46f),
+            RobotParts.Body => new(.36f,.44f),
+            RobotParts.Legs => cardboardFacing == BattleFacing.East ? new(.34f,.48f) : new(.33f,.50f),
+            _ => paperPart switch
+        {
+            RobotParts.Body => new(.40f,.48f),
+            RobotParts.Legs => paperFacing==BattleFacing.East ? new(.38f,.47f) : new(.37f,.57f),
+            RobotParts.Head => paperFacing==BattleFacing.South ? new(.36f,.36f) : new(.40f,.49f),
+            _ => maplePart switch
         {
             RobotParts.Body=>new(.29f,.44f),
             RobotParts.Legs=>new(.36f,.53f),
             _=>bodyBounds == null ? new(.57f,.32f) : new(.36f,.64f)
-        };
-        _wearCoverage = maplePart.HasValue ? (byte)220 : (byte)255;
+        }}}}};
+        _wearCoverage = foamPart.HasValue ? (byte)135 : maplePart.HasValue ? (byte)220 : (byte)255;
     }
     public Texture2D Get(WorldSetup world,int owner,bool worn=false,bool mirrorSticker=false)
     {
@@ -73,7 +105,7 @@ public sealed class RobotHeadTexture:IDisposable
         for (int x = 0; x < Resolution; x++)
         {
             int index = y * Resolution + x;
-            if (_surface[index].Coverage != _wearCoverage || pixels[index].A == 0 || _sticker.Contains(x, y))
+            if (_surface[index].Coverage < _wearCoverage || pixels[index].A == 0 || _sticker.Contains(x, y))
                 continue;
 
             float dx = x - _bandage.X * Resolution;

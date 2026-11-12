@@ -33,6 +33,7 @@ public sealed class BattleUnit
     public BattleFacing Facing;
     public int Daggers=3,Rifles=4,Shields=3;
     public bool Fallen,Retreated,Retreating;
+    public bool QueenFellToEnemy;
     public bool ResumeAfterRetreatOverlap;
     public BattleLesson WitnessedLessons;
     public bool Active=>!Fallen && !Retreated;
@@ -80,6 +81,7 @@ public sealed partial class BattleState
     public int FlagDefenseTurns,FlagCaptureTurns;
     public Dictionary<int,int> NewspaperRanks {get;}=new();
     public Func<int,int,bool> Allied {get;set;}=(a,b)=>a==b;
+    internal Func<int,bool> IsFactionRoot {get;set;}
     public BattleState(int seed,BattleRules rules=null)
     {Rules=rules??new();if(Rules.FlagCaptureTurns<1 || Rules.FlagDefenseTurns<1 || Rules.NoWillTurns<1 || Rules.SegmentTurns<1 || Rules.PersuasionRadius<0 || Rules.PersuasionPercent<0 || Rules.PersuasionPercent>100)throw new ArgumentException("Invalid battle rules.");Random=new(seed);}
     public static Point Forward(BattleFacing facing)=>facing switch{BattleFacing.North=>new(0,-1),BattleFacing.East=>new(1,0),BattleFacing.South=>new(0,1),_=>new(-1,0)};

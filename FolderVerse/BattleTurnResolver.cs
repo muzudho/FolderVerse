@@ -131,6 +131,8 @@ public static partial class BattleTurnResolver
         {
             var h=hits[u.Id];if(h.Dagger+h.Rifle+h.Side==0)continue;
             if(h.HostileHit && blockedEscapes.Contains(u.Id))BattleLessons.Witness(battle,BattleLesson.ClearEscape);
+            if (u.Role == BattleRole.Queen)
+                u.QueenFellToEnemy = h.HostileHit;
             u.Fallen=true;battle.Events.Add(new(battle.Turn,BattlePhase.Fall,u.Id,"転倒"));
             if(h.HostileHit)willing.Add(u.Owner);
         }

@@ -23,7 +23,13 @@ public partial class Game1
     private int HangarReservationCountry(Robot robot)=>_hangarReservation==HangarReservation.Defense || robot?.DefenseFlag!=null?_setup.PlayerSlot:robot?.Owner??_setup.PlayerSlot;
     private bool HangarReservationAccessible(Robot robot)=>robot!=null && !VisitingForeignHangar && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) && (_hangarReservation==HangarReservation.Defense || CanManageNodeFactory(robot.Owner));
     private bool HangarReservationEnabled(Robot robot)=>HangarReservationAccessible(robot) && PlanningStock.CanSetReservation(HangarPlanningNode,robot,_hangarReservation,HangarReservationCountry(robot));
-    private const int HangarSlotsPerPage=6;
+    private const int HangarColumns=3, HangarSlotsPerPage=6;
+    private int HangarStartSlot=>_hangarPage*HangarColumns;
+    private System.Collections.Generic.IEnumerable<int> VisibleAssemblySlots()=>
+        Enumerable.Range(HangarStartSlot,Math.Max(0,Math.Min(HangarSlotsPerPage,_hangarSlots.Length-HangarStartSlot)));
+    private Rectangle AssemblyCell(int slot)=>HangarCell(slot-HangarStartSlot);
+    private Rectangle AssemblyRobotBounds(int slot)=>HangarRobotBounds(slot-HangarStartSlot);
+    private Rectangle AssemblyPartBounds(int slot,int row)=>HangarPartBounds(slot-HangarStartSlot,row);
     private static System.Collections.Generic.IEnumerable<int> VisibleHangarSlots(int capacity,int page)=>Enumerable.Range(Math.Min(capacity,Math.Max(0,page)*HangarSlotsPerPage),Math.Max(0,Math.Min(HangarSlotsPerPage,capacity-Math.Max(0,page)*HangarSlotsPerPage)));
     private static Rectangle HangarCell(int slot)=>new(84+(slot%HangarSlotsPerPage)%3*264,300+(slot%HangarSlotsPerPage)/3*270,252,260);
     private static Rectangle HangarRobotBounds(int slot)
@@ -54,7 +60,7 @@ public partial class Game1
     private void OpenNodeAssembly()
     {
         if(!InspectableNode(_populationNode))return;
-        _hangarPage=0;_hangarTrainingCountry=-1;_hangarAbandonMode=false;_hangarReturnHomeMode=false;
+        _hangarPage=0;_hangarScrollDirection=0;_hangarTrainingCountry=-1;_hangarAbandonMode=false;_hangarReturnHomeMode=false;
         _nodeOfficeOpen=false;_lastNodeTab=3;
         _nodeAssemblyOpen=true;_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;
         _hangarDrag=null;_hangarReservation=HangarReservation.None;_hangarMessage="";Array.Clear(_hangarSlots);
@@ -81,9 +87,9 @@ public partial class Game1
         if(click && HangarAbandonButton.Contains(_pointer) && HangarPlanningNode==_populationNode && _setup.Nodes.All[_populationNode].Owner==_setup.PlayerSlot){_hangarAbandonMode=!_hangarAbandonMode;_hangarReservation=HangarReservation.None;_hangarDrag=null;return;}
         if(click && _hangarAbandonMode){
             var stock=PlanningStock.Nodes[HangarPlanningNode];SyncHangarSlots();
-            foreach(int i in VisibleHangarSlots(_hangarSlots.Length,_hangarPage))if(HangarCell(i).Contains(_pointer)){
+            foreach(int i in VisibleAssemblySlots())if(AssemblyCell(i).Contains(_pointer)){
                 var robot=stock.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[i]);if(robot==null)return;
-                var parts=robot.Parts;for(int row=0;row<3;row++)if(HangarPartBounds(i,row).Contains(_pointer))parts=robot.ConnectedParts(HangarPart(row));
+                var parts=robot.Parts;for(int row=0;row<3;row++)if(AssemblyPartBounds(i,row).Contains(_pointer))parts=robot.ConnectedParts(HangarPart(row));
                 if(robot.Owner!=_setup.PlayerSlot || (parts&robot.Parts)!=parts || new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(parts&p)!=0 && _setup.Robots.PartLocked(_populationNode,robot,p)) || _setup.Campaign.RobotBattles.LockedNode(_populationNode))_hangarMessage="予約・所有国・戦闘状況を確認してください";
                 else _salvageAbandonConfirmation=(_populationNode,robot.Id,parts);
                 return;
@@ -103,12 +109,13 @@ public partial class Game1
         }
         var store=PlanningStock.Nodes[HangarPlanningNode];
         SyncHangarSlots();
+        UpdateHangarDragScroll(mouse.LeftButton==ButtonState.Pressed);
         if(click)
         {
-            foreach(int slot in VisibleHangarSlots(_hangarSlots.Length,_hangarPage))
+            foreach(int slot in VisibleAssemblySlots())
             {
                 var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);if(robot==null)continue;
-                var cell=HangarCell(slot);
+                var cell=AssemblyCell(slot);
                 if(_hangarReservation!=HangarReservation.None && cell.Contains(_pointer)){
                     bool accepted=HangarReservationEnabled(robot) && _setup.Robots.PartPlanning.ReserveRole(_setup,_populationNode,robot.Id,_hangarReservation,HangarReservationCountry(robot));
                     if(accepted){
@@ -127,13 +134,13 @@ public partial class Game1
                     return;
                 }
                 if(!CanOpenHangar || _setup.Campaign.RobotBattles.LockedNode(_populationNode))continue;
-                for(int row=0;row<3;row++)if(HangarPartBounds(slot,row).Contains(_pointer) && (robot.Parts&HangarPart(row))!=0 && CanMoveHangarPart(robot,HangarPart(row)))
-                {_hangarDrag=robot.Id;_hangarPart=robot.ConnectedParts(HangarPart(row));_hangarSource=slot;_hangarGrabOffset=_pointer-HangarRobotBounds(slot).Location;_hangarMessage=robot.IntegratedParts!=0?"一体型は結合したまま移動します":"同じパーツがある区画へドロップすると交換";return;}
+                for(int row=0;row<3;row++)if(AssemblyPartBounds(slot,row).Contains(_pointer) && (robot.Parts&HangarPart(row))!=0 && CanMoveHangarPart(robot,HangarPart(row)))
+                {_hangarDrag=robot.Id;_hangarPart=robot.ConnectedParts(HangarPart(row));_hangarSource=slot;_hangarGrabOffset=_pointer-AssemblyRobotBounds(slot).Location;_hangarMessage=robot.IntegratedParts!=0?"一体型は結合したまま移動します":"同じパーツがある区画へドロップすると交換";return;}
             }
         }
         if(!_hangarDrag.HasValue || mouse.LeftButton!=ButtonState.Released || _previousMouse.LeftButton!=ButtonState.Pressed)return;
         long source=_hangarDrag.Value;_hangarDrag=null;
-        int destination=VisibleHangarSlots(_hangarSlots.Length,_hangarPage).FirstOrDefault(i=>HangarCell(i).Contains(_pointer),-1);
+        int destination=VisibleAssemblySlots().FirstOrDefault(i=>AssemblyCell(i).Contains(_pointer),-1);
         if(destination<0){_hangarMessage="ドラッグを取り消しました";return;}
         try
         {
@@ -161,8 +168,8 @@ public partial class Game1
         SyncHangarSlots();
         var workshop=PlanningWorkshop(_populationNode);var store=PlanningStock.Nodes[HangarPlanningNode];
         _ui.Box(new(54,150,850,825),new(27,49,62));
-        _ui.Text($"格納庫 {store.Count}/{store.TotalCapacity}",new(84,285),.28f,Cream);
-        _ui.Text(HangarPlanningNode==_populationNode?"入荷・機能移転・組替後の予定":"移転先での格納・組替予定",new(84,266),.28f,Cream);DrawHangarUndo();
+        _ui.Text($"格納庫 {store.Count}/{store.TotalCapacity}",new(84,256),.28f,Cream);
+        _ui.Text(HangarPlanningNode==_populationNode?"入荷・機能移転・組替後の予定":"移転先での格納・組替予定",new(232,256),.28f,Cream);DrawHangarUndo();
 
 
         bool manage=DomesticOperationsAllowed && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
@@ -171,15 +178,15 @@ public partial class Game1
         string hover=VisitingForeignHangar?"滞在中：自国パーツ同士の交換・空き部位への移動ができます":CanOpenHangar?"頭・胴・脚をつかんで、格納庫の区画へドラッグ＆ドロップ":"他国の地点：自分の征服者がいる地点では自国パーツを動かせます";
         if(reservationMode)hover="区画をクリック：予約 / 同じ国の同じ予約は解除 / 続けて選択できます";
         if(!DomesticOperationsAllowed)hover="軍事フェーズ：格納庫は閲覧のみ / 組立・配送は次の内政フェーズで操作できます";
-        foreach(int slot in VisibleHangarSlots(_hangarSlots.Length,_hangarPage))
+        foreach(int slot in VisibleAssemblySlots())
         {
-            var cell=HangarCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
+            var cell=AssemblyCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
             bool cellHover=reservationMode && cell.Contains(_pointer) && occupant!=null;
             bool canReserve=_hangarReturnHomeMode?CanSelectReturnHome(occupant):reservationMode && HangarReservationEnabled(occupant);
             _ui.Box(cell,cellHover?(canReserve?new Color(48,78,94):new Color(67,40,44)):new Color(18,35,46));
             for(int row=0;row<3;row++)
             {
-                var bounds=HangarPartBounds(slot,row);var part=HangarPart(row);bool enabled=!reservationMode && HangarPlaceEnabled(occupant,part);
+                var bounds=AssemblyPartBounds(slot,row);var part=HangarPart(row);bool enabled=!reservationMode && HangarPlaceEnabled(occupant,part);
                 _ui.Box(bounds,enabled?new Color(48,78,94):new Color(9,19,26));
                 if(enabled)
                 {
@@ -192,17 +199,17 @@ public partial class Game1
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);var incoming=_setup.Robots.DirectDelivery.Orders.Where(o=>o.Target==_populationNode && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot)).ToArray();foreach(var order in incoming)
             {
                 var original=_setup.Robots.Nodes[order.Source].Robots.FirstOrDefault(r=>r.Id==order.RobotId);
-                if(original!=null)DrawRobotGlyph(HangarRobotBounds(slot),original.Slice(order.Part),whiteOutline:true,opacity:.5f);
+                if(original!=null)DrawRobotGlyph(AssemblyRobotBounds(slot),original.Slice(order.Part),whiteOutline:true,opacity:.5f);
                 _ui.Center("到着予定："+PartsLabel(order.Part),new(cell.X,cell.Y+236,cell.Width,22),.27f,Cream);
             }
             // Draw opaque labels after every glyph, including disabled/occupied slots.
             if(robot==null){DrawHangarDeliveryTags(slot,incoming,occupant);continue;}
             robot=HomePersuasionRobot(robot);
-            DrawRobotGlyph(HangarRobotBounds(slot),robot,whiteOutline:true,partOpacity:part=>reservationMode?(canReserve?1:.45f):HangarPlaceEnabled(occupant,part)?1:.22f);
+            DrawRobotGlyph(AssemblyRobotBounds(slot),robot,whiteOutline:true,partOpacity:part=>reservationMode?(canReserve?1:.45f):HangarPlaceEnabled(occupant,part)?1:.22f);
             DrawHangarDeliveryTags(slot,incoming,occupant);
             for(int row=0;!reservationMode && row<3;row++)
             {
-                var bounds=HangarPartBounds(slot,row);var part=HangarPart(row);
+                var bounds=AssemblyPartBounds(slot,row);var part=HangarPart(row);
                 if(!CanMoveHangarPart(robot,part) || !bounds.Contains(_pointer) || (robot.Parts&part)==0)continue;
                 hoveringPart=true;
                 bool movable=CanMoveHangarPart(robot,part);
@@ -272,7 +279,7 @@ public partial class Game1
         for(int row=0;row<3;row++){
             bool incoming=orders.Any(o=>(o.Part&HangarPart(row))!=0);
             bool outgoing=robot!=null && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Source==_populationNode && o.RobotId==robot.Id && (o.Part&HangarPart(row))!=0);
-            var part=HangarPartBounds(slot,row);
+            var part=AssemblyPartBounds(slot,row);
             if(incoming)DrawHangarDeliveryTag(part,"入荷予定");
             if(outgoing)DrawHangarDeliveryTag(part,"出荷予定",incoming);
             else if(robot!=null && (robot.Parts&HangarPart(row))!=0 && _setup.Robots.DirectDelivery.FailedPart(_populationNode,robot.Id,HangarPart(row)))DrawHangarDeliveryTag(part,"出荷失敗",incoming);
@@ -309,7 +316,7 @@ public partial class Game1
     private void SyncHangarSlots()
     {
         Array.Resize(ref _hangarSlots,PlanningStock.Nodes[HangarPlanningNode].TotalCapacity);
-        _hangarPage=Math.Min(_hangarPage,HangarPageCount(HangarPlanningNode)-1);
+        _hangarPage=Math.Min(_hangarPage,HangarLastRow);
         var robots=PlanningStock.Nodes[HangarPlanningNode].Robots;
         for(int i=0;i<_hangarSlots.Length;i++)if(_hangarSlots[i].HasValue && !robots.Any(r=>r.Id==_hangarSlots[i]))_hangarSlots[i]=null;
         foreach(var robot in robots)if(!_hangarSlots.Contains(robot.Id)){int slot=Array.FindIndex(_hangarSlots,id=>!id.HasValue);if(slot>=0)_hangarSlots[slot]=robot.Id;}

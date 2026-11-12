@@ -3,8 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+public enum LongDeliveryOrigin { Unknown, Manual, Computer }
+
 public sealed record LongPartOrder(long Number,int Commander,int Source,int Target,long RobotId,RobotParts Parts,long? Receiver)
 {
+    public LongDeliveryOrigin Origin {get;init;}
     public int Node {get;set;}
     public long CargoId {get;set;}
     public bool Started {get;set;}
@@ -68,7 +71,8 @@ public sealed class RobotLongDelivery
         if(receiver.HasValue){var other=world.Nodes[target].Robots.SingleOrDefault(r=>r.Id==receiver);
             if(other==null || other.Owner!=robot.Owner || (other.Parts&parts)!=0 || world.AssemblyLocked(target,other) || Orders.Any(o=>o.Target==target && o.Receiver==receiver && (o.Parts&parts)!=0))throw new InvalidOperationException("受取先のロボットにその部位を追加できません。");}
         if(!receiver.HasValue && !Orders.Any(o=>o.Target==target && !o.Receiver.HasValue && o.TargetSlot==targetSlot))_slotArrivals.Remove((target,targetSlot,robot.Owner));
-        var order=new LongPartOrder(_next++,commander,source,target,id,parts,receiver){Node=source,CargoId=id,TargetSlot=targetSlot};
+        var order=new LongPartOrder(_next++,commander,source,target,id,parts,receiver){
+            Node=source,CargoId=id,TargetSlot=targetSlot,Origin=authority?LongDeliveryOrigin.Manual:LongDeliveryOrigin.Computer};
         Orders.Add(order);world.Nodes[source].Replace(world.Nodes[source].Robots.Select(r=>r.Id==id?r with {LongDeliveryNumber=r.LongDeliveryNumber??order.Number}:r));world.PartPlanning.Invalidate();return order;
     }
     public bool Cancel(RobotWorld world,long number,string reason="予約を取り消しました")

@@ -239,3 +239,67 @@ foreach(bool trained in new[]{false,true}){
     }
 }
 Console.WriteLine("PASS: blocked escape and learned sidestep for soldiers and queens against dagger and rifle.");
+
+BattleUnit Queen(BattleState board, int x, int y)
+{
+    var queen = new BattleUnit { Id = -1, Owner = 0, Role = BattleRole.Queen, Position = new(x, y),
+        Facing = BattleFacing.South, Daggers = 0, Rifles = 0, Shields = 0 };
+    board.Units.Add(queen);
+    return queen;
+}
+
+// The normal defeat and campaign return qualify only a combat capture.
+var queenWorld = new WorldSetup();
+queenWorld.SetWorld(123); queenWorld.SetCast(456); queenWorld.SetPlacement(789); queenWorld.SelectPlayer(0);
+queenWorld.HumanPlayers.Add(0);
+var queenBoard = Board();
+var fallenQueen = Queen(queenBoard, 4, 4);
+var queenShooter = Unit(queenBoard, 50001, 1, 4, 7, BattleFacing.North);
+Turn(queenBoard, (queenShooter, Point.Zero, BattleFacing.North, BattleWeapon.Rifle));
+Check(fallenQueen.Fallen && fallenQueen.QueenFellToEnemy && queenBoard.Winner == 1, "Untrained queen can be defeated");
+var queenSave = AutoSaveStore.Capture(queenBoard);
+var savedQueenBoard = AutoSaveStore.Restore<BattleState>(queenSave);
+var returnUnits = typeof(RobotCampaign).GetMethod("ReturnUnits", BindingFlags.Instance | BindingFlags.NonPublic)!;
+returnUnits.Invoke(queenWorld.Campaign.RobotBattles, new object[]{queenWorld, new RobotEncounter { Target = 1 },
+    savedQueenBoard, savedQueenBoard.Units.Where(u => u.Role == BattleRole.Queen)});
+Check(queenWorld.Relations.Pending.Any(p => p.Ruler == 0 && p.Victor == 1), "The normal disposition still receives the captive");
+Check(queenWorld.Lessons.Research().SequenceEqual(new[] { new LessonAward(0, BattleLesson.QueenCaptured),
+    new LessonAward(1, BattleLesson.QueenCaptured) }), "Both roots research the capture");
+Check(queenWorld.Lessons.Research().Length == 0, "Capture research is awarded once");
+foreach(var entry in queenSave.Objects) entry.Fields?.Remove("QueenFellToEnemy");
+Check(!AutoSaveStore.Restore<BattleState>(queenSave).Units.Single(u => u.Role == BattleRole.Queen).QueenFellToEnemy,
+    "Legacy saves do not invent a combat capture");
+
+foreach(bool isRoot in new[] { false, true })
+{
+    var board = Board();
+    board.Lessons[0] = BattleLesson.QueenCaptured;
+    typeof(BattleState).GetProperty("IsFactionRoot", BindingFlags.Instance | BindingFlags.NonPublic)!
+        .SetValue(board, (Func<int, bool>)(_ => isRoot));
+    var queen = Queen(board, 4, 4);
+    var rifle = Unit(board, 50002, 1, 4, 7, BattleFacing.North);
+    BattleTurnResolver.Advance(board, new Dictionary<long, BattleAction> {
+        [rifle.Id] = new(Point.Zero, BattleFacing.North, BattleWeapon.Rifle) });
+    Check(isRoot ? queen.Active && queen.Retreating && queen.Position.X != 4 : queen.Fallen,
+        "Only a trained faction root sidesteps the shot and begins retreat");
+}
+
+var persuasionBoard = Board();
+persuasionBoard.Lessons[0] = BattleLesson.QueenCaptured;
+var safeQueen = Queen(persuasionBoard, 5, 4);
+var persuasionTarget = Unit(persuasionBoard, 50003, 1, 4, 7, BattleFacing.North);
+BattleTurnResolver.Advance(persuasionBoard, new Dictionary<long, BattleAction> {
+    [persuasionTarget.Id] = new(Point.Zero, BattleFacing.North) });
+Check(!safeQueen.Retreating && safeQueen.Position == new Point(5, 4) &&
+    persuasionBoard.Persuasions.Any(p => p.Queen == safeQueen.Id && p.Target == persuasionTarget.Id),
+    "A safe root still persuades from within range");
+for (int x = 0; x < persuasionBoard.BoardSize; x++)
+    persuasionBoard.Walls.Add(new Point(x, 2));
+BattleAi.Choose(persuasionBoard, safeQueen);
+Check(safeQueen.Retreating, "An impassable wall cuts the retreat route even outside enemy attack range");
+var emptyFlagBoard = Board(BattleKind.Node);
+emptyFlagBoard.Lessons[0] = BattleLesson.QueenCaptured;
+var flagQueen = Queen(emptyFlagBoard, 5, 3);
+Check(BattleAi.Choose(emptyFlagBoard, flagQueen).Step == new Point(0, 1) && !flagQueen.Retreating,
+    "A protected queen can still take an empty flag along a safe route");
+Console.WriteLine("PASS: queen combat capture and research, save compatibility, root-only retreat and safe persuasion.");

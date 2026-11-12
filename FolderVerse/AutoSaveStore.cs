@@ -108,9 +108,10 @@ public static class AutoSaveStore
                     if(type==typeof(WorldSetup) && field.Name=="PolarAxis"){field.SetValue(value,1);continue;}
                     if(type==typeof(WorldSetup) && new[]{"TutorialMapStage","TutorialMapRotations","TutorialMapNotices","TutorialMapEdgeChanged","TutorialMapBeforeWar","TutorialAttackCompleted","TutorialPocketIntroShown"}.Contains(field.Name))continue;
                     if(type==typeof(WorldSetup) && field.Name=="<Lessons>k__BackingField"){field.SetValue(value,new BattleLessons());continue;}
+                    if(type==typeof(PlannedPartMove) && field.Name=="<WorkerLane>k__BackingField")continue;
                     if(type==typeof(WorldSetup) && field.Name=="<Salvage>k__BackingField"){field.SetValue(value,new SalvagePlan{LegacyPlacementPending=true});continue;}
                     if(type==typeof(BattleState) && field.Name=="Lessons"){field.SetValue(value,new BattleLesson[WorldSetup.CastCount]);continue;}
-                    if(type==typeof(BattleUnit) && field.Name=="WitnessedLessons")continue;
+                    if(type==typeof(BattleUnit) && field.Name is "WitnessedLessons" or "QueenFellToEnemy")continue;
                     if(type==typeof(RobotCampaign) && field.Name=="_homeOwners"){field.SetValue(value,new Dictionary<long,int>());continue;}
                     if(type==typeof(Robot) && (field.Name=="<LastBattlePersuasionTurn>k__BackingField" || field.Name=="<LastDomesticPersuasionTurn>k__BackingField")){field.SetValue(value,-1);continue;}
                     if(type==typeof(RobotWorld) && field.Name=="<DomesticPersuasionTurns>k__BackingField"){field.SetValue(value,new Dictionary<int,int>());continue;}
@@ -167,6 +168,7 @@ public static class AutoSaveStore
                     if((type==typeof(BattleState) && (field.Name=="FlagCaptureTurns" || field.Name=="FlagDefenseTurns")) ||
                        (type==typeof(BattleFrame) && (field.Name=="<FlagCaptureTurns>k__BackingField" || field.Name=="<FlagDefenseTurns>k__BackingField")))continue;
                     if(type==typeof(March) && field.Name=="<RobotIds>k__BackingField")continue;
+                    if(type==typeof(LongPartOrder) && field.Name=="<Origin>k__BackingField")continue;
                     if(type==typeof(BattleState) && field.Name=="<Persuasions>k__BackingField"){field.SetValue(value,new List<BattlePersuasion>());continue;}
                     if(type==typeof(BattleState) && field.Name=="<Fortifications>k__BackingField"){field.SetValue(value,new List<BattleFortification>());continue;}
                     if(type==typeof(BattleState) && field.Name=="<GateHits>k__BackingField"){field.SetValue(value,new List<BattleGateHit>());continue;}

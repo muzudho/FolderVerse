@@ -114,6 +114,7 @@ public sealed partial class CubeNet
     }
     private void DrawUnrotated(UiPainter ui,WorldSetup setup,Rectangle panel,int focused,float pulse)
     {
+        RefreshScenicRoutes(setup);
         _robotBadges.Clear();
         if(IsAnimating){DrawAnimation(ui,setup,panel,pulse);return;}
         var fit=Fit(panel);var offset=WorldTerrain.Offset(setup.WorldSeed);

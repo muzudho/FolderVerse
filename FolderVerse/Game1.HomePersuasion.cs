@@ -61,10 +61,10 @@ public partial class Game1
         _ui.Box(new(1000,180,850,140),Cream);_ui.Tile(new(1400,325),new(28,28),MathHelper.PiOver4,Cream);
         string text=HomePersuasionMessage;
         _ui.Center(text,new(1020,200,810,100),Math.Min(.6f,800/_font.MeasureString(text).X),Muted);
-        for(int slot=0;slot<_hangarSlots.Length;slot++)
+        foreach(int slot in VisibleAssemblySlots())
         {
             var result=_homePersuasion.FirstOrDefault(e=>e.Before.Id==_hangarSlots[slot]);if(result==null)continue;
-            var cell=HangarCell(slot);cell.Offset(NodeInspectorOffset,0);
+            var cell=AssemblyCell(slot);cell.Offset(NodeInspectorOffset,0);
             if(_homePersuasionAge>=1 && _homePersuasionAge<4)
             {
                 int bounce=(int)(Math.Sin(_homePersuasionAge*7+slot)*4);

@@ -732,8 +732,26 @@ public partial class Game1 : Game
     protected override void Draw(GameTime gameTime)
     {
         _robotHeadTextures?.EndFrame(); _robotTorsoTextures?.EndFrame(); _robotLegTextures?.EndFrame();
+        _polystyreneSideHead?.EndFrame();
+        _polystyreneSideTorso?.EndFrame();
+        _polystyreneSideLegs?.EndFrame();
+        _polystyreneRearHead?.EndFrame();
+        _polystyreneHeadTextures?.EndFrame();
+        _polystyreneTorsoTextures?.EndFrame();
+        _polystyreneLegTextures?.EndFrame();
+        _foamHeadTextures?.EndFrame(); _foamTorsoTextures?.EndFrame(); _foamLegTextures?.EndFrame();
+        _foamSideHead?.EndFrame(); _foamRearHead?.EndFrame();
+        _foamSideTorso?.EndFrame(); _foamSideLegs?.EndFrame();
+        _foamRearTorso?.EndFrame(); _foamRearLegs?.EndFrame();
         _mapleHeadTextures?.EndFrame();
+        _paperHeadTextures?.EndFrame();
+        _paperSideHead?.EndFrame(); _paperRearHead?.EndFrame();
+        _paperSideTorso?.EndFrame(); _paperSideLegs?.EndFrame();
+        _paperTorsoTextures?.EndFrame(); _paperLegTextures?.EndFrame();
         _mapleTorsoTextures?.EndFrame(); _mapleLegTextures?.EndFrame();
+        _mapleSideHead?.EndFrame(); _mapleRearHead?.EndFrame();
+        _mapleSideTorso?.EndFrame(); _mapleSideLegs?.EndFrame();
+        _mapleRearTorso?.EndFrame(); _mapleRearLegs?.EndFrame();
         _sideHead?.EndFrame(); _sideTorso?.EndFrame(); _sideLegs?.EndFrame();
         _rearHead?.EndFrame(); _rearTorso?.EndFrame(); _rearLegs?.EndFrame();
         if(IsOpeningScreen){DrawOpeningFrame(gameTime);base.Draw(gameTime);return;}

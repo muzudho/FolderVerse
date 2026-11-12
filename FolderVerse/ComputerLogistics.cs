@@ -10,6 +10,7 @@ public static class ComputerLogistics
     {
         if(w.Campaign.Phase!=CampaignPhase.Domestic)return;
         var manual=w.ManualRulers().ToHashSet();var stock=w.Robots;var battles=w.Campaign.RobotBattles;
+        ReviewUnstartedDeliveries(w, manual, automaticAll);
         bool Busy(int node)=>battles.LockedNode(node) || w.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node || o.Target==node) ||
             stock.PartPlanning.Orders.Any(o=>o.Source==node || o.Target==node) || stock.PendingEdits.Any(o=>o.Node==node) ||
             stock.DirectDelivery.Orders.Any(o=>o.Source==node || o.Target==node) || w.Campaign.PlannedOrders.Any(o=>o.SourceNode==node || o.TargetNode==node);
@@ -108,5 +109,33 @@ public static class ComputerLogistics
                 }
             }
         }
+    }
+
+    private static void ReviewUnstartedDeliveries(WorldSetup world, HashSet<int> manual, bool automaticAll)
+    {
+        var stock = world.Robots;
+        var delivery = stock.LongDelivery;
+        var candidates = delivery.Orders.Where(order =>
+            order.Origin == LongDeliveryOrigin.Computer && !order.Started && order.Receiver.HasValue &&
+            world.Relations.CanAct(order.Commander) && (automaticAll || !manual.Contains(order.Commander)) &&
+            stock.Transport.LastTransfers.Any(transfer =>
+                transfer.Source == order.Target && transfer.RobotId == order.Receiver)).ToArray();
+        if (candidates.Length == 0) return;
+
+        var battles = world.Campaign.RobotBattles;
+        var fighting = battles.Encounters.Where(encounter => !encounter.Finished)
+            .SelectMany(encounter => encounter.Battles.SelectMany(battle =>
+                battle.Units.Concat(battle.Armies.SelectMany(army => army.Waiting)))
+                .Where(unit => !encounter.ReturnedWanderers.Contains(unit.Id)))
+            .Select(unit => unit.Robot);
+        var survivingIds = stock.Nodes.Concat(stock.Retinues).SelectMany(store => store.Robots)
+            .Concat(stock.ProductionIntakes.Select(intake => intake.Product))
+            .Concat(stock.ReturningRobots.Select(journey => journey.Robot))
+            .Concat(battles.Reserves.Select(reserve => reserve.Robot)).Concat(fighting)
+            .Where(robot => robot != null).Select(robot => robot.Id).ToHashSet();
+
+        foreach (var order in candidates)
+            if (!survivingIds.Contains(order.Receiver.Value))
+                delivery.Cancel(stock, order.Number, "受取先がなくなったため出荷前に解除");
     }
 }

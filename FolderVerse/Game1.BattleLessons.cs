@@ -56,7 +56,10 @@ public partial class Game1
         _ui.Box(new(box.X+8,box.Y+10,box.Width,box.Height),new Color(5,16,25)*.45f);
         _ui.Box(box,owned?new Color(250,243,219):new Color(175,186,187));
         _ui.Box(new(box.X+12,box.Y+12,box.Width-24,9),accent);
-        if(lesson==BattleLesson.ClearEscape){
+        if(lesson==BattleLesson.QueenCaptured){
+            LessonText("戦訓#15 クイーンが戦場に出てきて",new(box.X+18,box.Y+21,box.Width-36,30),.48f,ink);
+            LessonText("倒されて捕獲された。",new(box.X+18,box.Y+49,box.Width-36,30),.48f,ink);
+        }else if(lesson==BattleLesson.ClearEscape){
             LessonText("戦訓#11 盾が無くなったので逃げようと思ったら",new(box.X+18,box.Y+21,box.Width-36,30),.48f,ink);
             LessonText("味方が壁になって逃げれず倒れた。",new(box.X+18,box.Y+49,box.Width-36,30),.48f,ink);
         }else if(lesson is BattleLesson.LeaveFiringLine or BattleLesson.ShieldSupport or BattleLesson.CloseForDagger or BattleLesson.CollisionTempo or BattleLesson.RelieveFront or BattleLesson.WaitingDaggerSafety or BattleLesson.CornerEscape){
@@ -67,12 +70,17 @@ public partial class Game1
         _ui.Box(new(box.X+30,box.Y+120,box.Width-60,235),new Color(224,224,202));
         float diagramScale=Math.Min(1,(box.Width-60)/360f);
         void DiagramBox(Rectangle r,Color color)=>_ui.Box(new(cx+(int)((r.X-cx)*diagramScale),cy+(int)((r.Y-cy)*diagramScale),Math.Max(1,(int)(r.Width*diagramScale)),Math.Max(1,(int)(r.Height*diagramScale))),color);
-        void Robot(int x,int y,BattleFacing facing,Color color)
+        void Robot(int x,int y,BattleFacing facing,Color color,BattleRole role=BattleRole.Soldier)
         {
-            foreach(var patch in BattlePieceArt.Pieces[BattlePieceArt.Index(BattleRole.Soldier,facing)])
+            foreach(var patch in BattlePieceArt.Pieces[BattlePieceArt.Index(role,facing)])
                 DiagramBox(new(x+patch.Bounds.X*2,y+patch.Bounds.Y*2,patch.Bounds.Width*2,patch.Bounds.Height*2),color);
         }
-        if(lesson is BattleLesson.PursuitLoop or BattleLesson.RifleSpacing){
+        if(lesson==BattleLesson.QueenCaptured){
+            Robot(cx-65,cy-65,BattleFacing.East,accent,BattleRole.Queen);
+            Robot(cx+90,cy+5,BattleFacing.West,new Color(170,106,79));
+            LessonText("← 退却口",new(box.X+30,box.Y+290,box.Width-60,45),.55f,ink);
+            LessonText("射線を避け、退却路を確保",new(box.X+30,box.Y+360,box.Width-60,42),.48f,ink);
+        }else if(lesson is BattleLesson.PursuitLoop or BattleLesson.RifleSpacing){
             if(lesson==BattleLesson.PursuitLoop){
                 Robot(cx-90,cy-70,BattleFacing.South,accent);Robot(cx+50,cy+10,BattleFacing.North,new Color(170,106,79));
                 LessonText("→ ↓ ← ↑",new(box.X+30,box.Y+290,box.Width-60,45),.7f,ink);
@@ -137,6 +145,7 @@ public partial class Game1
             LessonText("射線と、その両隣を確認",new(box.X+30,box.Y+360,box.Width-60,42),.52f,ink);
         }
         string[] lines=lesson switch {
+            BattleLesson.QueenCaptured=>new[]{"戦場で倒され、捕獲されたときに研究できる。","陣営のボスは短剣の間合いと射線を避ける。","退却路が通る位置から説得する。","安全な退却路を失ったら、退却を始める。"},
             BattleLesson.PursuitLoop=>new[]{"短剣持ちの敵と斜めに追い合い、４手で元に戻った。","目撃した兵は退却し、戦訓を持ち帰る。","研究後は片方が待ち、追跡をずらす。","小銃の間合いを作る戦訓とは別。"},
             BattleLesson.RifleSpacing=>new[]{"短剣切れで追い合い、40手などで元に戻った。","目撃した兵は退却し、戦訓を持ち帰る。","研究後は隣接した敵から一歩離れ、射撃を狙う。","斜めの追跡をずらす戦訓とは別。"},
             BattleLesson.EmptyHome=>new[]{"守備兵がいない国旗を倒した側が習得。","内政では全員を出撃させず、留守番を残す。","留守番には守備専用予約を付ける。","手下・自動操縦でも適用する。"},
@@ -152,7 +161,7 @@ public partial class Game1
             BattleLesson.CloseForDagger=>new[]{"撃ち返されるのを警戒して立ち止まった。","短剣があれば、敵を向いたまま前進。","隣接したら短剣で攻撃する。"},
             _=>new[]{"仲間に攻撃が命中した。","射線に仲間がいれば小銃を撃たない。","両隣から射線を向く仲間にも注意。"}};
         for(int i=0;i<lines.Length;i++)LessonText(lines[i],new(box.X+24,box.Y+423+i*43,box.Width-48,40),.48f,ink);
-        LessonText(lesson==BattleLesson.EmptyHome?"国旗を倒した側が取得 / 内政の判断に適用":owned?"取得済み / 自国の兵隊ロボットに適用":"未取得 / 生き残った目撃者が持ち帰る",new(box.X+24,box.Bottom-73,box.Width-48,45),.46f,owned?accent:ink);
+        LessonText(lesson==BattleLesson.QueenCaptured?"両陣営のボスが研究 / ボスのクイーンに適用":lesson==BattleLesson.EmptyHome?"国旗を倒した側が取得 / 内政の判断に適用":owned?"取得済み / 自国の兵隊ロボットに適用":"未取得 / 生き残った目撃者が持ち帰る",new(box.X+24,box.Bottom-73,box.Width-48,45),.46f,owned?accent:ink);
         if(reveal<1)_ui.Box(box,new Color(27,43,55)*(1-reveal));
     }
     private void DrawBattleResearch()

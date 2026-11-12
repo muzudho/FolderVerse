@@ -5,6 +5,7 @@ public sealed partial class CubeNet
 {
     public void DrawGlobeLayers(UiPainter ui,WorldSetup setup,WorldPreview globe,Rectangle panel,float yaw,float pitch,float pulse)
     {
+        RefreshScenicRoutes(setup);
         var offset=WorldTerrain.Offset(setup.WorldSeed);
         foreach(var cell in setup.Cells)
         {

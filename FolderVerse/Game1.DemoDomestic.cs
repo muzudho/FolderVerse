@@ -50,14 +50,14 @@ public partial class Game1
         // Unlike a user's page-button click, revealing the scripted target must
         // keep the held part until DemoAssemblyRelease uses the real input path.
         int focusSlot=_demoDomesticStage is 4 or 7?_demoSourceSlot:_demoDomesticStage is 5 or 6?_demoEmptySlot:-1;
-        if(focusSlot>=0 && focusSlot<_hangarSlots.Length)_hangarPage=focusSlot/HangarSlotsPerPage;
+        if(focusSlot>=0 && focusSlot<_hangarSlots.Length)_hangarPage=Math.Min(focusSlot/HangarColumns,HangarLastRow);
         Point target=_demoDomesticStage switch
         {
             0=>nodePoint,3=>NodeAssemblyTile.Center,
             4=>DemoAssemblySourcePoint(),
-            5=>_demoEmptySlot<0?new(480,540):HangarCell(_demoEmptySlot).Center,
-            6=>_demoEmptySlot<0?new(480,540):HangarPartBounds(_demoEmptySlot,1).Center,
-            7=>_demoSourceSlot<0?new(480,540):HangarCell(_demoSourceSlot).Center,
+            5=>_demoEmptySlot<0?new(480,540):AssemblyCell(_demoEmptySlot).Center,
+            6=>_demoEmptySlot<0?new(480,540):AssemblyPartBounds(_demoEmptySlot,1).Center,
+            7=>_demoSourceSlot<0?new(480,540):AssemblyCell(_demoSourceSlot).Center,
             8=>NodeFactoryTile.Center,9=>FactoryProductionButton(0).Center,10=>FactoryPlanButton(0).Center,
             11 or 16=>InspectorClose.Center,12=>TransportOverviewButton.Center,17=>StrategyToggle.Center,
             18=>MovementButton.Center,13=>destinationPoint,19=>PopulationTurnButton.Center,20=>NodeCheckButton.Center,_=>ConfirmMoveButton.Center

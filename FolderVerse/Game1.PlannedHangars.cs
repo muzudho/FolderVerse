@@ -17,7 +17,7 @@ public partial class Game1
         ? !_setup.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node) && (_setup.Nodes.All[node].Functional || _setup.Campaign.FunctionTransfers.Orders.Any(o=>o.Target==node))
         :_setup.Nodes.All[node].Functional;
     }
-    private static readonly Rectangle HangarUndoButton=new(340,260,258,30);
+    private static readonly Rectangle HangarUndoButton=new(606,252,258,24);
     private int[] PlanningFactorySources(int node)=>DomesticOperationsAllowed?_setup.Campaign.FunctionTransfers.Orders.Where(o=>o.Target==node).Select(o=>o.Source).Prepend(node).ToArray():new[]{node};
     private RobotWorkshop PlanningWorkshop(int node)=>PlanningFactorySources(node).Length==1?_setup.Robots.Workshops[node]:RobotWorkshop.PlanningView(PlanningFactorySources(node).Select(n=>_setup.Robots.Workshops[n]));
     private bool PlanningCanAttackFrom(int owner,int source,int target)=>PlanningFunctional(source) && _setup.Nodes.All[source].Owner==owner && _setup.Campaign.RobotBattles.MarchTargets(_setup,source).Contains(target);

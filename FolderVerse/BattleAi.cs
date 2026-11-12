@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 
-public static class BattleAi
+public static partial class BattleAi
 {
     private static readonly Point[] Steps={new(0,-1),new(1,0),new(0,1),new(-1,0)};
     public static BattleFacing Face(Point delta)=>Math.Abs(delta.X)>Math.Abs(delta.Y)?delta.X>0?BattleFacing.East:BattleFacing.West:delta.Y>0?BattleFacing.South:BattleFacing.North;
@@ -51,6 +51,8 @@ public static class BattleAi
         bool armed=unit.Daggers>0 || unit.Rifles>0;
         bool securingFlag=battle.Kind==BattleKind.Node && !battle.SplitBoard && battle.FlagStanding && !battle.Allied(unit.Owner,battle.Defender) &&
             !battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (a.Waiting.Count>0 || battle.Units.Any(u=>u.Active && u.Owner==a.Owner)));
+        if (!unit.Retreating && ProtectQueen(battle, unit))
+            return ChooseProtectedQueen(battle, unit, enemies, securingFlag);
         if(securingFlag && !unit.Retreating && !army.Withdrawing)return new(Path(battle,unit,battle.Flag)??Point.Zero,Face(battle.Flag-unit.Position));
         if(unit.Role==BattleRole.Captain && !battle.Units.Any(u=>u.Active && u.Owner==unit.Owner && u.Role==BattleRole.Soldier && (u.Daggers>0 || u.Rifles>0)) && !army.Waiting.Any(u=>u.Role==BattleRole.Soldier))unit.Retreating=true;
         if(unit.Role==BattleRole.Soldier && unit.Daggers==0 && unit.Rifles==0 && unit.Shields==0 &&
