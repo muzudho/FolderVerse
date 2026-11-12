@@ -901,3 +901,6 @@ NAS polystyrene-views-v001 の横向き胴脚を Content/Images/Robots/ に同�
 ## 2026年11月13日00時11分・ポリスチレン背面胴脚の国旗マスク
 
 背面原画２点にUVを設定し、胴の留め具と脚間の中央を着色から保護。隔離Releaseはゲーム・合成プローブとも警告とエラー各０。国旗320組と実原画２旗、反射・保護画素・全アルファの一致を確認。原寸プレビューでは外周と脚間に淡い点が残る。次は暗色背景の実寸確認と、必要に応じた実行素材の輪郭調整。その後、紋章・汚損と北向き戦闘駒へ接続する。出力はNAS tmp/delete-after-2026-11-15/robot-art-implementation/polystyrene-back-mask-0011/。
+
+
+2026-11-13 00:26 JST ポリスチレン背面胴脚を Content/Images/Robots/ へ同名登録し、NAS原画とのSHA-256一致を確認。北向き戦闘駒の紋章と汚損を合成。隔離Release警告・エラー各０、描画プローブ終了０。960×540で背面の輪郭と脚間を目視し、原寸で見えた淡い点は戦闘駒サイズで目立たなかった。格納庫６枠と戦闘201フレームの回帰通過。画像・ログはNAS tmp/delete-after-2026-11-15/robot-art-implementation/polystyrene-back-game-0026/。次は未対応素材の素地。

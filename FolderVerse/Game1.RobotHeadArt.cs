@@ -9,7 +9,7 @@ public partial class Game1
     private RobotHeadTexture _foamHeadTextures, _foamTorsoTextures, _foamLegTextures;
     private RobotHeadTexture _polystyreneHeadTextures, _polystyreneTorsoTextures, _polystyreneLegTextures;
     private RobotHeadTexture _polystyreneSideHead, _polystyreneRearHead;
-    private RobotHeadTexture _polystyreneSideTorso, _polystyreneSideLegs;
+    private RobotHeadTexture _polystyreneSideTorso, _polystyreneSideLegs, _polystyreneRearTorso, _polystyreneRearLegs;
     private RobotHeadTexture _mapleHeadTextures;
     private RobotHeadTexture _paperHeadTextures, _paperTorsoTextures, _paperLegTextures;
     private RobotHeadTexture _cardboardHeadTextures, _cardboardTorsoTextures, _cardboardLegTextures;

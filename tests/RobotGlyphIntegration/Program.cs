@@ -776,10 +776,8 @@ sealed class GlyphProbe:Game1
   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(715,110,62,85),polystyrene,
     BattleRole.Soldier,BattleFacing.South,true,1f})!)
    throw new Exception("Front soldier failed to draw polystyrene head");
-  var mixedPolystyrene = foam with { HeadMaterial = RobotMaterial.Polystyrene, DamagedParts = RobotParts.Head };
   for(int i=0;i<directions.Length;i++){
-   var orientedPolystyrene = directions[i] == BattleFacing.North ? mixedPolystyrene : polystyrene;
-   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(570+100*i,290,88,125),orientedPolystyrene,
+   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(570+100*i,290,88,125),polystyrene,
       BattleRole.Soldier,directions[i],true,1f})!)
     throw new Exception($"Polystyrene head failed to draw facing {directions[i]}");
   }
@@ -813,7 +811,7 @@ sealed class GlyphProbe:Game1
   if(firstFlag.SequenceEqual(secondFlag) || firstFlag[142*size+126]!=secondFlag[142*size+126] ||
      firstFlag.Where((pixel,i)=>pixel.A!=secondFlag[i].A).Any())
    throw new Exception("Polystyrene wear must change the shell and preserve face and alpha");
-  foreach(string name in new[]{"_polystyreneTorsoTextures","_polystyreneLegTextures","_polystyreneSideHead","_polystyreneRearHead","_polystyreneSideTorso","_polystyreneSideLegs"}){
+  foreach(string name in new[]{"_polystyreneTorsoTextures","_polystyreneLegTextures","_polystyreneSideHead","_polystyreneRearHead","_polystyreneSideTorso","_polystyreneSideLegs","_polystyreneRearTorso","_polystyreneRearLegs"}){
    var art=(RobotHeadTexture)Get(name);
    art.Get(materialWorld,0).GetData(firstFlag);
    art.Get(materialWorld,0,true).GetData(secondFlag);

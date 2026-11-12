@@ -128,8 +128,6 @@ public partial class Game1
     {
         bool polystyreneTorso = UsesPolystyreneArt(robot, RobotParts.Body);
         bool polystyreneLegs = UsesPolystyreneArt(robot, RobotParts.Legs);
-        if (rear && (polystyreneTorso || polystyreneLegs))
-            return false;
         bool polystyrene = UsesPolystyreneHeadArt(robot);
         bool foamTorso = UsesFoamArt(robot, RobotParts.Body);
         bool foamLegs = UsesFoamArt(robot, RobotParts.Legs);
@@ -155,7 +153,8 @@ public partial class Game1
                 : paper ? _paperRearHead ??= LoadOrientedPaperArt("head-back", RobotParts.Head, BattleFacing.North, new(.56f,.55f,.10f,.13f)) : maple
                 ? _mapleRearHead ??= LoadOrientedRobotArt("head-back", new(.20f, .15f, .61f, .72f), new(.50f, .54f, .15f, .19f), maplePart: RobotParts.Head)
                 : _rearHead ??= LoadOrientedRobotArt("head-back", new(.06f, .15f, .86f, .71f), new(.48f, .56f, .16f, .18f));
-            var torso = foamTorso
+            var torso = polystyreneTorso ? _polystyreneRearTorso ??= LoadPolystyreneArt("torso", RobotParts.Body, new(.52f,.45f,.13f,.17f), BattleFacing.North)
+                : foamTorso
                 ? _foamRearTorso ??= LoadFoamArt("torso", RobotParts.Body, new(.41f,.44f,.14f,.18f), BattleFacing.North)
                 : cardboardTorso
                 ? _cardboardRearTorso ??= LoadCardboardArt("torso", RobotParts.Body, new(.44f,.43f,.15f,.18f), BattleFacing.North)
@@ -164,7 +163,8 @@ public partial class Game1
                 : mapleTorso
                 ? _mapleRearTorso ??= LoadOrientedRobotArt("torso-back", new(.06f, .13f, .86f, .78f), new(.42f, .40f, .16f, .20f), maplePart: RobotParts.Body)
                 : _rearTorso ??= LoadOrientedRobotArt("torso-back", new(128f/1536, 128f/1024, 1272f/1536, 800f/1024), new(.42f, .40f, .16f, .20f));
-            var legs = foamLegs
+            var legs = polystyreneLegs ? _polystyreneRearLegs ??= LoadPolystyreneArt("legs", RobotParts.Legs, new(.64f,.46f,.09f,.12f), BattleFacing.North)
+                : foamLegs
                 ? _foamRearLegs ??= LoadFoamArt("legs", RobotParts.Legs, new(.59f,.49f,.085f,.13f), BattleFacing.North)
                 : cardboardLegs
                 ? _cardboardRearLegs ??= LoadCardboardArt("legs", RobotParts.Legs, new(.60f,.50f,.09f,.14f), BattleFacing.North)
@@ -175,8 +175,8 @@ public partial class Game1
                 : _rearLegs ??= LoadOrientedRobotArt("legs-back", new(240f/1536, 104f/1024, 1048f/1536, 832f/1024), new(.59f, .64f, .14f, .19f));
             if (head == null || torso == null || legs == null)
                 return false;
-            Draw(legs, RobotParts.Legs, foamLegs ? new(57,32,140,191) : cardboardLegs ? new(56,35,145,185) : paperLegs ? new(58,38,140,182) : mapleLegs ? new(40, 26, 176, 209) : new(40, 26, 175, 208), 102, 58, 48);
-            Draw(torso, RobotParts.Body, foamTorso ? new(15,47,224,160) : cardboardTorso ? new(14,50,229,157) : paperTorso ? new(18,57,220,145) : mapleTorso ? new(14, 32, 224, 201) : new(21, 32, 213, 200), 54, 84, 54);
+            Draw(legs, RobotParts.Legs, polystyreneLegs ? new(38,23,181,217) : foamLegs ? new(57,32,140,191) : cardboardLegs ? new(56,35,145,185) : paperLegs ? new(58,38,140,182) : mapleLegs ? new(40, 26, 176, 209) : new(40, 26, 175, 208), 102, 58, 48);
+            Draw(torso, RobotParts.Body, polystyreneTorso ? new(12,31,232,189) : foamTorso ? new(15,47,224,160) : cardboardTorso ? new(14,50,229,157) : paperTorso ? new(18,57,220,145) : mapleTorso ? new(14, 32, 224, 201) : new(21, 32, 213, 200), 54, 84, 54);
             Draw(head, RobotParts.Head, polystyrene ? new(36,26,184,201) : foam ? new(43,29,170,194) : cardboard ? new(39,25,178,201) : paper ? new(49, 37, 158, 184) : maple ? new(49, 35, 160, 190) : new(16, 38, 220, 180), 0, 72, 59);
         }
         else
@@ -249,6 +249,9 @@ public partial class Game1
         _polystyreneSideTorso?.Dispose();
         _polystyreneSideLegs?.Dispose();
         _polystyreneSideTorso = _polystyreneSideLegs = null;
+        _polystyreneRearTorso?.Dispose();
+        _polystyreneRearLegs?.Dispose();
+        _polystyreneRearTorso = _polystyreneRearLegs = null;
         _polystyreneRearHead?.Dispose();
         _polystyreneSideHead = _polystyreneRearHead = null;
         _polystyreneHeadTextures?.Dispose();
