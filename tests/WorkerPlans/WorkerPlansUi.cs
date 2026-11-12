@@ -42,11 +42,17 @@ sealed class WorkerPlansUi:Game1
   if(frame==5){
    w.EquipmentMode=RobotEquipmentMode.Materials;
    typeof(RobotWorkshop).GetMethod("ConfigureMaterialCatalogue",F)!.Invoke(line,new object[]{0,w.EquipmentMode});
+   var recipes=(ProductionPlan[])typeof(RobotWorkshop).GetField("_workerPlans",F)!.GetValue(line)!;
+   recipes[choice]=recipes[choice] with {HeadMaterial=RobotMaterial.Foam,BodyMaterial=RobotMaterial.Maple};
+   var recipe=AutoSaveStore.Restore<ProductionPlan>(AutoSaveStore.Capture(line.PlanAt(choice)));
+   Check(recipe.Preview(0).HeadMaterial==RobotMaterial.Foam && recipe.Preview(0).BodyMaterial==RobotMaterial.Maple,
+     "Mixed material recipe survives save and previews each part");
    Check(line.PlanCount==11,"Material album must include all eleven choices");
    Call("OpenNodeFactory");Click(Rect("FactoryRobotButton",1,line.ProductionPeriod).Center);
    Check((int)Get("_factoryPlanLine")==1,"Worker lane opens material album at 540p");
    Check(Rect("FactoryAlbumCard",5).Y==Rect("FactoryAlbumCard",0).Y &&
          Rect("FactoryAlbumCard",6).X==Rect("FactoryAlbumCard",0).X,"Album uses six columns");
+   Set("_pointer",Rect("FactoryAlbumCard",choice).Center);
   }
   if(frame==6){
    Click(Rect("FactoryAlbumCard",10).Center);

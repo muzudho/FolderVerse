@@ -904,3 +904,7 @@ NAS polystyrene-views-v001 の横向き胴脚を Content/Images/Robots/ に同�
 
 
 2026-11-13 00:26 JST ポリスチレン背面胴脚を Content/Images/Robots/ へ同名登録し、NAS原画とのSHA-256一致を確認。北向き戦闘駒の紋章と汚損を合成。隔離Release警告・エラー各０、描画プローブ終了０。960×540で背面の輪郭と脚間を目視し、原寸で見えた淡い点は戦闘駒サイズで目立たなかった。格納庫６枠と戦闘201フレームの回帰通過。画像・ログはNAS tmp/delete-after-2026-11-15/robot-art-implementation/polystyrene-back-game-0026/。次は未対応素材の素地。
+
+## 2026年11月13日00時47分・ソフトビニール製の正面頭原画
+
+v012中段中央を参照し、丸みのある外装、幅広い反射とクリーム色の顔を持つ無地の頭をImageGenで制作。通常用のためぜんまいは付けていない。NAS art-source/robots/soft-vinyl-views-v001/soft-vinyl-head-neutral-v001.png に保存し、生成元とSHA-256一致を確認。1536×1024、9326D89B2D83A1977C5D1B22777970C0FC24872A464D2085406E69A6181B7E5D。左上・頭上・外装・顔のアルファは1/0/254/254。次は顔の保護マスクと、国旗合成後の鈍い光沢・暗色背景の輪郭確認。ゲーム登録と描画試験は未実施。

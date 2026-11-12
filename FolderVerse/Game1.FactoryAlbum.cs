@@ -1,4 +1,5 @@
 namespace FolderVerse;
+using System.Linq;
 using Microsoft.Xna.Framework;
 
 public partial class Game1
@@ -25,8 +26,11 @@ public partial class Game1
         _ui.Box(new(77, 148, 1766, 800), new Color(224, 196, 152));
         _ui.Box(new(94, 157, 1732, 777), paper);
         _ui.Text($"生産ライン {_factoryPlanLine + 1} / 製造候補", new(113, 169), .55f, ink);
+        _ui.Batch.Draw(_robotFactoryIcon, new Rectangle(1162, 166, 31, 31), Color.White);
+        _ui.Text("産業ターン", new(1200, 175), .36f, ink);
         _ui.Text("閉じる：Esc / 枠の外をクリック", new(1400, 175), .36f, ink);
 
+        Robot mixedPreview = null;
         for (int i = 0; i < line.PlanCount; i++)
         {
             var card = FactoryAlbumCard(i);
@@ -44,14 +48,72 @@ public partial class Game1
             }
 
             var plan = line.PlanAt(i);
+            var preview = plan.Preview(node.Owner);
+            var parts = RobotMaterials.Parts.Where(part => (preview.Parts & part) != 0).ToArray();
+            bool mixed = parts.Select(preview.Material).Distinct().Skip(1).Any() ||
+                parts.Select(preview.Origin).Distinct().Skip(1).Any();
+            if (mixed && hover) mixedPreview = preview;
             var hangarSize = HangarRobotBounds(0).Size;
             DrawRobotGlyphCore(new(photo.Center.X - hangarSize.X / 2, photo.Center.Y - hangarSize.Y / 2,
-                hangarSize.X, hangarSize.Y), plan.Preview(node.Owner), whiteOutline: true, opacity: 1,
+                hangarSize.X, hangarSize.Y), preview, whiteOutline: true, opacity: 1,
                 partOpacity: null, showIntegratedMaterial: true);
-            _ui.Center(RobotMaterials.Label(plan.Material), new(card.X + 8, photo.Bottom + 6, card.Width - 16, 32), .40f, ink);
-            _ui.Center(FactoryProductLabel(plan), new(card.X + 8, photo.Bottom + 38, card.Width - 16, 24), .32f, ink);
-            DrawIndustryDuration(plan.Turns, new(card.X + 8, photo.Bottom + 66, card.Width - 16, 27), ink,
-                maxScale: .37f, suffix: " 産業ターン");
+            DrawFactoryAlbumTimeSticker(photo, plan.Turns, ink);
+            _ui.Center(mixed ? "混合品" : RobotMaterials.Label(preview.Material(parts[0])),
+                new(card.X + 8, photo.Bottom + 1, card.Width - 16, 28), .40f, ink);
+            _ui.Center(FactoryProductLabel(plan), new(card.X + 8, photo.Bottom + 29, card.Width - 16, 21), .32f, ink);
+            DrawFactoryAlbumEquipment(card, preview.Equipment(node.Owner, _setup.EquipmentMode), ink);
         }
+        if (mixedPreview != null && line.PlanCount < 12)
+            DrawFactoryAlbumDetails(FactoryAlbumCard(11), mixedPreview, ink);
+    }
+
+    private void DrawFactoryAlbumTimeSticker(Rectangle photo, int turns, Color ink)
+    {
+        const float scale = .46f;
+        int numberWidth = (int)System.Math.Ceiling(IndustryDurationSize(turns, scale).X) + 6;
+        var sticker = new Rectangle(photo.Right - numberWidth - 42, photo.Y + 7, numberWidth + 35, 42);
+        _ui.Box(new(sticker.X + 2, sticker.Y + 3, sticker.Width, sticker.Height), new Color(17, 28, 38));
+        _ui.Box(sticker, new Color(250, 218, 130));
+        DrawIndustryDuration(turns, new(sticker.X + 4, sticker.Y, numberWidth, sticker.Height), ink, scale);
+        _ui.Batch.Draw(_robotFactoryIcon, new Rectangle(sticker.Right - 29, sticker.Y + 8, 26, 26), Color.White);
+    }
+
+    private void DrawFactoryAlbumDetails(Rectangle card, Robot preview, Color ink)
+    {
+        _ui.Box(card, new Color(234, 210, 169));
+        _ui.Text("混合品の内訳", new(card.X + 16, card.Y + 14), .43f, ink);
+        int y = card.Y + 57;
+        foreach (var part in RobotMaterials.Parts)
+        {
+            if ((preview.Parts & part) == 0) continue;
+            int origin = preview.Origin(part);
+            _ui.Text($"{PartsLabel(part)}：{RobotMaterials.Label(preview.Material(part))}",
+                new(card.X + 16, y), .32f, ink);
+            CountryFlagArt.Draw(_ui, _setup, origin, new(card.X + 20, y + 25, 39, 25));
+            _ui.Text($"#{origin + 1}", new(card.X + 65, y + 29), .33f, ink);
+            y += 78;
+        }
+    }
+
+    private void DrawFactoryAlbumEquipment(Rectangle card, RobotEquipment gear, Color ink)
+    {
+        int x = card.X + 38, y = card.Bottom - 23;
+        var shield = new Color(59, 105, 135);
+        _ui.Box(new(x, y, 18, 9), shield);
+        _ui.Box(new(x + 3, y + 9, 12, 4), shield);
+        _ui.Box(new(x + 6, y + 13, 6, 3), shield);
+        _ui.Text(gear.Shields.ToString(), new(x + 24, y - 2), .34f, ink);
+
+        x += 68;
+        _ui.Tile(new(x + 10, y + 6), new(17, 5), -MathHelper.PiOver4, new Color(102, 116, 120));
+        _ui.Tile(new(x + 5, y + 11), new(10, 3), MathHelper.PiOver4, ink);
+        _ui.Tile(new(x + 3, y + 14), new(7, 4), -MathHelper.PiOver4, ink);
+        _ui.Text(gear.Daggers.ToString(), new(x + 24, y - 2), .34f, ink);
+
+        x += 68;
+        _ui.Box(new(x, y + 6, 14, 6), ink);
+        _ui.Box(new(x + 11, y + 5, 11, 3), ink);
+        _ui.Box(new(x + 2, y + 10, 5, 6), ink);
+        _ui.Text(gear.Rifles.ToString(), new(x + 26, y - 2), .34f, ink);
     }
 }

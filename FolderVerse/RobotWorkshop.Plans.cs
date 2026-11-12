@@ -8,10 +8,15 @@ public sealed record ProductionPlan(RobotParts Product,int Turns,bool Cheap=fals
     public RobotParts CheapParts {get;init;}
     public RobotParts PremiumParts {get;init;}
     public RobotMaterial Material {get;init;}
+    public RobotMaterial? HeadMaterial {get;init;}
+    public RobotMaterial? BodyMaterial {get;init;}
+    public RobotMaterial? LegsMaterial {get;init;}
     public RobotParts EffectiveCheapParts=>Cheap?Product:CheapParts&Product;
     public string QualityLabel=>PremiumParts!=0?"高級":EffectiveCheapParts==0?"正規":EffectiveCheapParts==Product?"安い":"正規＋安い";
     public Robot Preview(int owner,long id=0)=>new(id,owner,Product){HeadOrigin=HeadOrigin??owner,BodyOrigin=BodyOrigin??owner,LegsOrigin=LegsOrigin??owner,CheapParts=EffectiveCheapParts,PremiumParts=PremiumParts&Product,IntegratedParts=IntegratedParts,
-        HeadMaterial=(Product&RobotParts.Head)!=0?Material:default,BodyMaterial=(Product&RobotParts.Body)!=0?Material:default,LegsMaterial=(Product&RobotParts.Legs)!=0?Material:default};
+        HeadMaterial=(Product&RobotParts.Head)!=0?HeadMaterial??Material:default,
+        BodyMaterial=(Product&RobotParts.Body)!=0?BodyMaterial??Material:default,
+        LegsMaterial=(Product&RobotParts.Legs)!=0?LegsMaterial??Material:default};
 }
 public sealed partial class RobotWorkshop
 {
