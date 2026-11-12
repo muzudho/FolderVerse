@@ -304,6 +304,18 @@ sealed class GlyphProbe:Game1
   typeof(RobotStore).GetMethod("Replace",Flags)!.Invoke(w.Robots.Nodes[node],new object[]{paperHangar});
   Set("_hangarReservation",HangarReservation.None);
   var assemblyDraw=typeof(Game1).GetMethod("DrawNodeAssembly",Flags)!;
+  for(int page=0;page<=2;page++){
+   Set("_hangarPage",page);
+   GraphicsDevice.Clear(Color.Black);batch.Begin(transformMatrix:Matrix.CreateScale(.5f));
+   assemblyDraw.Invoke(this,null);batch.End();
+   GraphicsDevice.GetBackBufferData(data);
+   bool LeftGuide()=>data[251*960+39].R>140;
+   bool RightGuide()=>data[251*960+434].R>140;
+   if(LeftGuide()!=(page>0) || RightGuide()!=(page<2) ||
+      data[251*960+27].R>60 || data[251*960+446].R>60)
+    throw new Exception("Hangar continuation must fade and only appear beside a reachable page");
+  }
+  Set("_hangarPage",0);
   var withEmblem=new Color[data.Length];
   foreach(int emblem in new[]{1,0}){
    w.SetCountryEmblem(0,emblem);

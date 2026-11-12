@@ -90,6 +90,8 @@ public static class RobotHeadSurface
         {
             (RobotParts.Body, BattleFacing.East) => new RectangleF(405f / 1536, 115f / 1024, 663f / 1536, 810f / 1024),
             (RobotParts.Legs, BattleFacing.East) => new RectangleF(273f / 1312, 127f / 1199, 715f / 1312, 945f / 1199),
+            (RobotParts.Body, BattleFacing.North) => new RectangleF(78f / 1536, 132f / 1024, 1380f / 1536, 742f / 1024),
+            (RobotParts.Legs, BattleFacing.North) => new RectangleF(230f / 1536, 98f / 1024, 1074f / 1536, 853f / 1024),
             (RobotParts.Body, _) => new RectangleF(56f / 1536, 165f / 1024, 1424f / 1536, 685f / 1024),
             (RobotParts.Legs, _) => new RectangleF(272f / 1536, 148f / 1024, 992f / 1536, 772f / 1024),
             _ => throw new ArgumentOutOfRangeException(nameof(part))
@@ -104,6 +106,8 @@ public static class RobotHeadSurface
             {
                 (RobotParts.Body, BattleFacing.East) => px is >= 929 and <= 1000 && py is >= 388 and <= 481,
                 (RobotParts.Legs, BattleFacing.East) => neutral[y * width + x].A < 32,
+                (RobotParts.Body, BattleFacing.North) => (px is >= 409 and <= 497 || px is >= 1040 and <= 1129)
+                    && (py is >= 403 and <= 490 || py is >= 634 and <= 721),
                 (RobotParts.Body, _) => (px is >= 427 and <= 510 || px is >= 1024 and <= 1108)
                     && (py is >= 407 and <= 490 || py is >= 628 and <= 713),
                 _ => px is >= 722 and <= 814 && py >= 400

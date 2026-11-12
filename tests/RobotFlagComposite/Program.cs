@@ -102,7 +102,7 @@ if(args.Length==5 && args[4]=="--maple")
   "Country change did not affect enough of the painted maple shell");
  Console.WriteLine("PASS real maple head preserves face, bare flank and alpha while two flags recolor the shell.");
 }
-else if(args.Length==4 || args.Length==5 && args[4] is ("--paper" or "--paper-torso" or "--paper-legs" or "--paper-side" or "--paper-back" or "--paper-torso-side" or "--paper-legs-side" or "--paper-torso-back" or "--paper-legs-back" or "--cardboard" or "--cardboard-torso" or "--cardboard-legs" or "--cardboard-side" or "--cardboard-back" or "--cardboard-torso-side" or "--cardboard-legs-side" or "--cardboard-torso-back" or "--cardboard-legs-back" or "--foam" or "--foam-torso" or "--foam-legs" or "--foam-side" or "--foam-back" or "--foam-torso-side" or "--foam-legs-side" or "--foam-torso-back" or "--foam-legs-back" or "--polystyrene" or "--polystyrene-torso" or "--polystyrene-legs" or "--polystyrene-side" or "--polystyrene-back" or "--polystyrene-torso-side" or "--polystyrene-legs-side")){
+else if(args.Length==4 || args.Length==5 && args[4] is ("--paper" or "--paper-torso" or "--paper-legs" or "--paper-side" or "--paper-back" or "--paper-torso-side" or "--paper-legs-side" or "--paper-torso-back" or "--paper-legs-back" or "--cardboard" or "--cardboard-torso" or "--cardboard-legs" or "--cardboard-side" or "--cardboard-back" or "--cardboard-torso-side" or "--cardboard-legs-side" or "--cardboard-torso-back" or "--cardboard-legs-back" or "--foam" or "--foam-torso" or "--foam-legs" or "--foam-side" or "--foam-back" or "--foam-torso-side" or "--foam-legs-side" or "--foam-torso-back" or "--foam-legs-back" or "--polystyrene" or "--polystyrene-torso" or "--polystyrene-legs" or "--polystyrene-side" or "--polystyrene-back" or "--polystyrene-torso-side" or "--polystyrene-legs-side" or "--polystyrene-torso-back" or "--polystyrene-legs-back")){
  bool cardboard=args.Length==5 && args[4].StartsWith("--cardboard");
  bool foam=args.Length==5 && args[4].StartsWith("--foam");
  bool polystyrene=args.Length==5 && args[4].StartsWith("--polystyrene");
@@ -123,6 +123,8 @@ else if(args.Length==4 || args.Length==5 && args[4] is ("--paper" or "--paper-to
   var (protectedPoints, paintedPoint, reflectionPoint)=(part,facing) switch {
       (RobotParts.Body,BattleFacing.East)=>(new[]{(963,438),(20,20)},(545,535),(550,220)),
    (RobotParts.Legs,BattleFacing.East)=>(new[]{(20,20),(850,500)},(530,550),(490,738)),
+   (RobotParts.Body,BattleFacing.North)=>(new[]{(453,446),(1083,678),(20,20)},(768,550),(768,356)),
+   (RobotParts.Legs,BattleFacing.North)=>(new[]{(768,600),(768,850),(20,20)},(535,530),(510,646)),
    (RobotParts.Body,_)=>(new[]{(466,450),(1064,669),(20,20)},(768,540),(768,364)),
    (RobotParts.Legs,_)=>(new[]{(768,600),(768,850),(20,20)},(530,535),(530,632)),
    (RobotParts.Head,BattleFacing.East)=>(new[]{(1195,530),(1250,624),(1110,450),(768,169),(20,20)},(768,290),(768,322)),

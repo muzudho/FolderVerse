@@ -178,18 +178,19 @@ public partial class Game1
         string hover=VisitingForeignHangar?"滞在中：自国パーツ同士の交換・空き部位への移動ができます":CanOpenHangar?"頭・胴・脚をつかんで、格納庫の区画へドラッグ＆ドロップ":"他国の地点：自分の征服者がいる地点では自国パーツを動かせます";
         if(reservationMode)hover="区画をクリック：予約 / 同じ国の同じ予約は解除 / 続けて選択できます";
         if(!DomesticOperationsAllowed)hover="軍事フェーズ：格納庫は閲覧のみ / 組立・配送は次の内政フェーズで操作できます";
+        DrawHangarContinuation();
         foreach(int slot in VisibleAssemblySlots())
         {
             var cell=AssemblyCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
             bool cellHover=reservationMode && cell.Contains(_pointer) && occupant!=null;
             bool canReserve=_hangarReturnHomeMode?CanSelectReturnHome(occupant):reservationMode && HangarReservationEnabled(occupant);
-            _ui.Box(cell,cellHover?(canReserve?new Color(48,78,94):new Color(67,40,44)):new Color(18,35,46));
+            DrawHangarBay(cell,cellHover,canReserve);
             for(int row=0;row<3;row++)
             {
                 var bounds=AssemblyPartBounds(slot,row);var part=HangarPart(row);bool enabled=!reservationMode && HangarPlaceEnabled(occupant,part);
-                _ui.Box(bounds,enabled?new Color(48,78,94):new Color(9,19,26));
                 if(enabled)
                 {
+                    _ui.Box(bounds,new Color(48,78,94)*.72f);
                     var edge=_hangarDrag.HasValue && cell.Contains(_pointer)?ControlEdge:ControlEdge*.4f;
                     _ui.Box(new(bounds.X,bounds.Y,bounds.Width,2),edge);_ui.Box(new(bounds.X,bounds.Bottom-2,bounds.Width,2),edge);
                     _ui.Box(new(bounds.X,bounds.Y,2,bounds.Height),edge);_ui.Box(new(bounds.Right-2,bounds.Y,2,bounds.Height),edge);

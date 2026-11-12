@@ -1,6 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$Probe,[Parameter(Mandatory=$true)][string]$Source,[Parameter(Mandatory=$true)][string]$Output,[switch]$Paper,
       [ValidateSet('Head','Torso','Legs','Side','Back','TorsoSide','LegsSide','TorsoBack','LegsBack')][string]$PaperPart='Head',[switch]$Cardboard,
-      [ValidateSet('Head','Torso','Legs','Side','Back','TorsoSide','LegsSide','TorsoBack','LegsBack')][string]$CardboardPart='Head',[switch]$Foam,[ValidateSet('Head','Torso','Legs','Side','Back','TorsoSide','LegsSide','TorsoBack','LegsBack')][string]$FoamPart='Head',[switch]$Polystyrene,[ValidateSet('Head','Torso','Legs','Side','Back','TorsoSide','LegsSide')][string]$PolystyrenePart='Head')
+      [ValidateSet('Head','Torso','Legs','Side','Back','TorsoSide','LegsSide','TorsoBack','LegsBack')][string]$CardboardPart='Head',[switch]$Foam,[ValidateSet('Head','Torso','Legs','Side','Back','TorsoSide','LegsSide','TorsoBack','LegsBack')][string]$FoamPart='Head',[switch]$Polystyrene,[ValidateSet('Head','Torso','Legs','Side','Back','TorsoSide','LegsSide','TorsoBack','LegsBack')][string]$PolystyrenePart='Head')
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.Drawing
 Add-Type -ReferencedAssemblies System.Drawing.Common,System.Drawing.Primitives,System.Private.Windows.GdiPlus,System.Private.Windows.Core -TypeDefinition @'
@@ -34,7 +34,7 @@ $image=[Drawing.Bitmap]::new($Source);$width=$image.Width;$height=$image.Height;
 $raw=Join-Path $Output 'neutral.rgba'
 [RobotProbePng]::Decode($Source,$raw)
 $mode=@()
-if($Polystyrene){$mode+=switch($PolystyrenePart){'Torso'{'--polystyrene-torso'} 'Legs'{'--polystyrene-legs'} 'Side'{'--polystyrene-side'} 'Back'{'--polystyrene-back'} 'TorsoSide'{'--polystyrene-torso-side'} 'LegsSide'{'--polystyrene-legs-side'} default{'--polystyrene'}}}
+if($Polystyrene){$mode+=switch($PolystyrenePart){'Torso'{'--polystyrene-torso'} 'Legs'{'--polystyrene-legs'} 'Side'{'--polystyrene-side'} 'Back'{'--polystyrene-back'} 'TorsoSide'{'--polystyrene-torso-side'} 'LegsSide'{'--polystyrene-legs-side'} 'TorsoBack'{'--polystyrene-torso-back'} 'LegsBack'{'--polystyrene-legs-back'} default{'--polystyrene'}}}
 elseif($Foam){$mode+=switch($FoamPart){'Torso'{'--foam-torso'} 'Legs'{'--foam-legs'} 'Side'{'--foam-side'} 'Back'{'--foam-back'} 'TorsoSide'{'--foam-torso-side'} 'LegsSide'{'--foam-legs-side'} 'TorsoBack'{'--foam-torso-back'} 'LegsBack'{'--foam-legs-back'} default{'--foam'}}}
 elseif($Cardboard){
  $mode+=switch($CardboardPart){'Torso'{'--cardboard-torso'} 'Legs'{'--cardboard-legs'} 'Side'{'--cardboard-side'} 'Back'{'--cardboard-back'} 'TorsoSide'{'--cardboard-torso-side'} 'LegsSide'{'--cardboard-legs-side'} 'TorsoBack'{'--cardboard-torso-back'} 'LegsBack'{'--cardboard-legs-back'} default{'--cardboard'}}
