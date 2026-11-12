@@ -255,6 +255,18 @@ for(int step=1;step<=steps;step++){
     }
     var previousRoots=Enumerable.Range(0,w.ActiveCount).Select(w.Relations.Root).ToArray();
     var previousPowered=w.Relations.Powered.Take(w.ActiveCount).ToArray();
+    var superiors = strategy ? w.Relations.Superiors.Take(w.ActiveCount).ToArray() : null;
+    void TraceSuperiorChanges(string phase)
+    {
+        if (superiors == null) return;
+        var changed = Enumerable.Range(0, w.ActiveCount)
+            .Where(ruler => superiors[ruler] != w.Relations.Superiors[ruler])
+            .Select(ruler => new { ruler, previousSuperior = superiors[ruler],
+                superior = w.Relations.Superiors[ruler], root = w.Relations.Root(ruler) }).ToArray();
+        if (changed.Length > 0)
+            Console.WriteLine(JsonSerializer.Serialize(new { trace = "superiors", step, phase, changed }));
+        Array.Copy(w.Relations.Superiors, superiors, superiors.Length);
+    }
     var previousEncounters=w.Campaign.RobotBattles.Encounters.Select(e=>e.Id).ToHashSet();
     var ongoingEncounters = requireRepeat
         ? w.Campaign.RobotBattles.Encounters.Where(encounter => !encounter.Finished).Select(encounter => encounter.Id).ToHashSet()
@@ -279,6 +291,7 @@ for(int step=1;step<=steps;step++){
         if(outgoing.Except(transfer.Outgoing).Any() || incoming.Except(transfer.Incoming).Any())throw new Exception("Function transfer opened a new hostile approach.");
         Console.WriteLine(JsonSerializer.Serialize(new{trace="transfer-safety",step,transfer.Source,transfer.Target,transfer.Owner,addedHostileApproaches=0}));
     }
+    TraceSuperiorChanges("domestic");
     var origins = new Dictionary<long, int>();
     w.Campaign.BeginMilitary();w.Campaign.Advance(w,-1,0,automaticAll:true,allPlanned:true,deferResolution:orders=>{
         foreach(var instruction in rally){
@@ -321,6 +334,7 @@ for(int step=1;step<=steps;step++){
         }
         return false;
     });
+    TraceSuperiorChanges("military");
     foreach(var encounter in w.Campaign.RobotBattles.Encounters.Where(e=>!previousEncounters.Contains(e.Id) ||
         e.Finished && ongoingEncounters.Contains(e.Id))){
         int winner=encounter.Battles.FirstOrDefault()?.Winner??-1;string result=!encounter.Finished?"ongoing":winner<0?"no-winner":encounter.Defender>=0 && previousRoots[winner]==previousRoots[encounter.Defender]?"defender-held":"attacker-won";

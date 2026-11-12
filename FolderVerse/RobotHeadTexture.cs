@@ -41,7 +41,7 @@ public sealed class RobotHeadTexture:IDisposable
             _neutral[y*Resolution+x]=pixels[Math.Min(source.Height-1,(2*y+1)*source.Height/(2*Resolution))*source.Width+Math.Min(source.Width-1,(2*x+1)*source.Width/(2*Resolution))];
         _surface = polystyrenePart is { } polystyrene
             ? polystyrene == RobotParts.Head ? RobotHeadSurface.PolystyreneHead(_neutral, Resolution, Resolution, polystyreneFacing)
-                : RobotHeadSurface.PolystyreneBody(_neutral, Resolution, Resolution, polystyrene)
+                : RobotHeadSurface.PolystyreneBody(_neutral, Resolution, Resolution, polystyrene, polystyreneFacing)
             : foamPart is { } foam ? RobotHeadSurface.Foam(_neutral, Resolution, Resolution, foam, foamFacing)
             : cardboardPart is { } cardboard
             ? cardboard == RobotParts.Head ? RobotHeadSurface.CardboardHead(_neutral, Resolution, Resolution, cardboardFacing)

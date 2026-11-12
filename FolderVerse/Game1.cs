@@ -733,6 +733,8 @@ public partial class Game1 : Game
     {
         _robotHeadTextures?.EndFrame(); _robotTorsoTextures?.EndFrame(); _robotLegTextures?.EndFrame();
         _polystyreneSideHead?.EndFrame();
+        _polystyreneSideTorso?.EndFrame();
+        _polystyreneSideLegs?.EndFrame();
         _polystyreneRearHead?.EndFrame();
         _polystyreneHeadTextures?.EndFrame();
         _polystyreneTorsoTextures?.EndFrame();

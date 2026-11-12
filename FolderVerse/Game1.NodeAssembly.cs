@@ -168,8 +168,8 @@ public partial class Game1
         SyncHangarSlots();
         var workshop=PlanningWorkshop(_populationNode);var store=PlanningStock.Nodes[HangarPlanningNode];
         _ui.Box(new(54,150,850,825),new(27,49,62));
-        _ui.Text($"格納庫 {store.Count}/{store.TotalCapacity}",new(84,285),.28f,Cream);
-        _ui.Text(HangarPlanningNode==_populationNode?"入荷・機能移転・組替後の予定":"移転先での格納・組替予定",new(84,266),.28f,Cream);DrawHangarUndo();
+        _ui.Text($"格納庫 {store.Count}/{store.TotalCapacity}",new(84,256),.28f,Cream);
+        _ui.Text(HangarPlanningNode==_populationNode?"入荷・機能移転・組替後の予定":"移転先での格納・組替予定",new(232,256),.28f,Cream);DrawHangarUndo();
 
 
         bool manage=DomesticOperationsAllowed && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);

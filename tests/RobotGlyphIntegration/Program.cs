@@ -217,8 +217,8 @@ sealed class GlyphProbe:Game1
   if((int)Get("_hangarPage")!=2)throw new Exception("Second scroll did not show the last row");
   pageClick.Invoke(this,new object[]{new Point(470,844)});
   if((int)Get("_hangarPage")!=2)throw new Exception("Scroll exceeded capacity");
-  pageClick.Invoke(this,new object[]{new Point(736,275)});
-  pageClick.Invoke(this,new object[]{new Point(736,275)});
+  pageClick.Invoke(this,new object[]{new Point(85,288)});
+  pageClick.Invoke(this,new object[]{new Point(863,288)});
   if((int)Get("_hangarPage")!=0)throw new Exception("Previous page did not return to slots0-5");
   Console.WriteLine("PASS actual page-button input: next/previous clamp and held-drag cancellation.");
   var head=new Robot(100001,0,RobotParts.Head);var body=new Robot(100002,0,RobotParts.Body);
@@ -241,7 +241,7 @@ sealed class GlyphProbe:Game1
   if((int)Get("_hangarPage")!=1)throw new Exception("Drag hover repeated too quickly");
   Set("_animationTime",11.4f);input.Invoke(this,new object[]{pressed,false,false});
   if((int)Get("_hangarPage")!=2)throw new Exception("Holding the arrow must repeat after the interval");
-  Set("_pointer",new Point(736,275));input.Invoke(this,new object[]{pressed,false,false});
+  Set("_pointer",new Point(85,288));input.Invoke(this,new object[]{pressed,false,false});
   Set("_animationTime",12f);input.Invoke(this,new object[]{pressed,false,false});
   if((int)Get("_hangarPage")!=1 || (long?)Get("_hangarDrag")!=head.Id)
    throw new Exception("Hovering the up arrow must scroll back with the same dragged part");
@@ -766,7 +766,8 @@ sealed class GlyphProbe:Game1
    throw new Exception("Front soldier failed to draw polystyrene head");
   var mixedPolystyrene = foam with { HeadMaterial = RobotMaterial.Polystyrene, DamagedParts = RobotParts.Head };
   for(int i=0;i<directions.Length;i++){
-   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(570+100*i,290,88,125),mixedPolystyrene,
+   var orientedPolystyrene = directions[i] == BattleFacing.North ? mixedPolystyrene : polystyrene;
+   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(570+100*i,290,88,125),orientedPolystyrene,
       BattleRole.Soldier,directions[i],true,1f})!)
     throw new Exception($"Polystyrene head failed to draw facing {directions[i]}");
   }
@@ -800,7 +801,7 @@ sealed class GlyphProbe:Game1
   if(firstFlag.SequenceEqual(secondFlag) || firstFlag[142*size+126]!=secondFlag[142*size+126] ||
      firstFlag.Where((pixel,i)=>pixel.A!=secondFlag[i].A).Any())
    throw new Exception("Polystyrene wear must change the shell and preserve face and alpha");
-  foreach(string name in new[]{"_polystyreneTorsoTextures","_polystyreneLegTextures","_polystyreneSideHead","_polystyreneRearHead"}){
+  foreach(string name in new[]{"_polystyreneTorsoTextures","_polystyreneLegTextures","_polystyreneSideHead","_polystyreneRearHead","_polystyreneSideTorso","_polystyreneSideLegs"}){
    var art=(RobotHeadTexture)Get(name);
    art.Get(materialWorld,0).GetData(firstFlag);
    art.Get(materialWorld,0,true).GetData(secondFlag);

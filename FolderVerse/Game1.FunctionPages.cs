@@ -6,7 +6,7 @@ public partial class Game1
 {
     private int _hangarPage,_factoryPage;
     private readonly int[] _directPages=new int[2];
-    private static Rectangle HangarUp=>new(612,260,252,34);
+    private static Rectangle HangarUp=>new(HangarDown.X,276,HangarDown.Width,HangarDown.Height);
     private static Rectangle HangarDown=>new(84,833,780,24);
     private int _hangarScrollDirection;
     private float _hangarScrollAt;
@@ -39,17 +39,15 @@ public partial class Game1
         if(HangarLastRow==0)return;
         DrawArrow(HangarUp,-1,_hangarPage>0);
         DrawArrow(HangarDown,1,_hangarPage<HangarLastRow);
-        var counter=HangarUp;
-        counter.X+=64;
-        counter.Width-=64;
-        _ui.Center($"{_hangarPage+1}/{HangarLastRow+1}",counter,.38f,Cream);
+        _ui.Center($"{_hangarPage+1}/{HangarLastRow+1}",
+            new(HangarUp.Right-94,HangarUp.Y,90,HangarUp.Height),.38f,Cream);
 
         void DrawArrow(Rectangle button,int direction,bool enabled)
         {
             var fill=enabled && button.Contains(_pointer)?Accent:Muted;
             var ink=UiPainter.ContrastInk(fill)*(enabled?1f:.4f);
             _ui.Box(button,fill);
-            float x=button.Center.X+(direction<0?-28:0);
+            float x=button.Center.X;
             _ui.Tile(new(x-6,button.Center.Y),new(15,3),direction*MathHelper.PiOver4,ink);
             _ui.Tile(new(x+6,button.Center.Y),new(15,3),-direction*MathHelper.PiOver4,ink);
         }
