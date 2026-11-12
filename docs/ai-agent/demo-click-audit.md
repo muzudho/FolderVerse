@@ -1955,3 +1955,73 @@
 - Game1.Demo.cs／Game1.DemoDomestic.csとDemoUi／DemoInspectorUiを起点に輸送プライマリーと閉鎖の共有矩形を照合。既存出力でALSOFT_DRIVERS=nullの dotnet DirectDeliveryUi.dll（23:56:54〜23:57:04）、DemoInspectorUi.dll（23:57:04〜23:57:16）、DemoChecksUi.dll（23:57:16〜23:57:25）はすべて終了0。輸送プライマリー、退避復帰、左右格納庫と予約保持、工場6計画、展開図／地星儀の1080p／540pで緑赤の分離、赤地点の再選択とスポットライト解除、確定即予約→赤→閉鎖→ターン終了時消去を検査。960×540のdemo-checks-3-6.pngで赤ハンドル上の手、赤チェック、予約1件を目視。
 - 非追跡ProbeCpuSortie.cs.txtの拡張格納庫診断に37体条件を追加。dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore（既存demo-check出力）は警告・エラー0。WORLD=0／CARD19=1／CARD37=1で dotnet DemoAuditCpuSortie.dll（23:57:25〜23:57:30、終了0）。960×540の通常ピッカーでCPUが3ページを送り指定37体を選び、確定で重複予約なし、次の征服者で通常ピッカーを1ページ目から開き、スキップで人間に復帰。audit-card37.pngで3/3、選択37体とカード上の手を目視。各実行の証拠は既存出力内のaudit-2356-各DLL名.log。
 - DEMO-0016のページ切替は固定拡張場面で確認済み。自然AIの大規模出撃、他の専用表示分岐、DEMO-0017の個別組立実演と自然Demo全周は未確認または既報継続。新規採番なし。次回はCPU内政の通常格納庫と個別組立の照合、または自然Demo巡回から続ける。
+
+- 2026-11-12 00:34修正回（完了 00:39:28 JST）。DEMO-0016の通常軍事ルートで最初のクリック前にも専用町名リストが出る挙動を現HEADで再現・修正。960×540で征服者切替後、通常地図と開戦プライマリー上の手を目視。地点27への遷移と演出中Escでの人間復帰を確認。専用表示への退避分岐とDEMO-0017の個別組立実演は継続。詳細は修正記録00:34回。
+
+### 実行履歴：2026-11-12 01:03回
+
+- 開始01:03:05 JST、終了01:05:00 JST。部分点検完了。HEAD=3ad92296a925260b96175a39d3c8cc9683f9f667。開始時関係差分は00:34回のGame1.ComputerMarches.csと両記録。競合するゲーム・検証プロセスなし。ゲームと追跡テスト無変更。
+- Game1.Demo.cs／Game1.DemoDomestic.csとDemoUi／DemoInspectorUiの輸送プライマリー・閉鎖の共有矩形を照合。ALSOFT_DRIVERS=null、既存demo-checkの現行ゲームDLLでDemoInspectorUi.dll（01:03:31〜01:03:45）、DemoUi.dll（01:03:45〜01:03:53）は終了0。輸送、事務所・工場の位置と遷移、地図切替、低FPS相当の縁移動、拒否分岐、エンディング周回を確認。ログaudit-0103-各DLL名.log。
+- DirectDeliveryUi.dll（01:03:21〜01:03:31）は退避復帰・入力抑止を通過し、Program.cs:79の区画ドラッグで終了-532462766。テストが使う旧余白(16,145)は現行DirectPartの脚矩形（セル相対X=6〜95、Y=128〜185）内。最新UIの入力が脚を選ぶのは矩形どおり。既存出力先に検証用コピーのみ作成し、余白を(110,145)、空区画を現ページの5へ更新。Roslynで.NET 9参照を使いコンパイル（CS1701が1件）、dotnet execで現行診断depsfileを用いて実行（01:04:18〜01:04:28、終了0）。左右格納庫、全体と個別のドラッグ、予約保持、540p物理入力を検査し、960×540のdirect-22.pngで現レイアウトを目視。証拠audit-0103-DirectDeliveryUi.log／audit-0103-DirectDeliveryUi-adjusted.log。追跡テストの旧座標は要更新、ゲーム不具合の新規DEMO採番なし。
+- CPU内政はDOMESTIC_ENTRY=1／DOMESTIC_SKIP=1のDemoAuditCpuSortie.dllでAUTO_ENABLED=0（01:03:53〜01:03:57）と1（01:03:57〜01:04:01）、両方終了0。表示オフ・通常・組立前後スキップで各設定の最終個体IDと構成が一致し、人間の既存予約を配送で一度だけ実行、人間へ復帰。960×540で組立無効時の通常格納庫、3パーツと緑チェックを目視（audit-latest-computer-domestic.png、audit-0103-auto-0／1.log）。DEMO-0017の個別ドラッグ実演は既報継続。
+- 次回は直送便の追跡テストの余白座標とページ選択を確認し、緑赤・別配置の通常軍事入口を巡回する。今回、軍事の専用表示、緑赤の全手順、CPU個別組立実演と自然Demo全周は未確認。
+
+- 2026-11-12 01:25修正回（完了 01:27:28 JST）。01:03回で確認した直送便テストの旧座標を修正・検証済み。追跡テストは現行の区画・パーツ矩形から余白を求め、表示ページの空き区画を選ぶ。実行は終了0、960×540で左右格納庫を目視。ゲーム側のDEMO採番なし。詳細は修正記録01:25回。
+
+### 実行履歴：2026-11-12 02:03回
+
+- 開始02:03:36 JST、終了02:04:53 JST。部分点検完了。HEAD=3ad92296a925260b96175a39d3c8cc9683f9f667。関係差分はGame1.ComputerMarches.cs、tests/DirectDeliveryUi/Program.csと両記録。競合するゲーム・検証プロセスなし。ゲーム・テスト無変更。
+- Game1.Demo.cs／Game1.DemoDomestic.csの輸送プライマリーと閉鎖の共有矩形をDemoInspectorUiと照合。既存demo-checkでALSOFT_DRIVERS=null、dotnet DirectDeliveryUi.dll（02:03:52〜02:04:00）、DemoInspectorUi.dll（02:04:00〜02:04:13）、DemoChecksUi.dll（02:04:13〜02:04:22）はすべて終了0。直送便の退避復帰・左右格納庫・区画ドラッグ・予約保持、輸送と工場のクリック位置、緑赤分離、赤地点の再選択・スポットライト解除とターン末消去を検査。960×540のdemo-checks-3-6.pngで赤ハンドル上の手、赤チェック、予約1件を目視。
+- WORLD=1／PHASE_TIMING=1のDemoAuditCpuSortie.dll（02:04:22〜02:04:30、終了0）。960×540のaudit-cpu-phase-leadin.pngでCPU視点へ切替後、専用町名リストのない通常地図と開戦プライマリー上の手を目視。60Hz相当の通常入力で演出開始2.817秒に(410,1022)をクリック、3.833秒に(1311,552)から地点57を選択。DEMO-0016の先頭待機表示とDEMO-0018の演出待ちの修正を別シードで確認。ログはaudit-0203-各DLL名.log。
+- 新規採番なし。今回、CPU軍事は地点選択まで。別シードのピッカー以降・専用表示への退避分岐、CPU内政の個別組立実演と自然Demo全周は未確認または既報継続。次回は同シードで出撃選択の確定・赤・閉鎖・人間復帰から続ける。
+
+### 実行履歴：2026-11-12 02:59回
+
+- 開始02:59:07 JST、終了03:00:24 JST。部分点検完了。HEAD=3ad92296a925260b96175a39d3c8cc9683f9f667。開始時の関係差分はGame1.ComputerMarches.cs、tests/DirectDeliveryUi/Program.csと両記録。競合するゲーム・検証プロセスなし。ゲームと追跡テスト無変更。
+- Game1.Demo.cs／Game1.DemoDomestic.csとDemoInspectorUiの輸送・閉鎖の共有矩形を照合。既存demo-checkでALSOFT_DRIVERS=null、dotnet DirectDeliveryUi.dll（02:59:23〜02:59:33）、DemoInspectorUi.dll（02:59:33〜02:59:48）は終了0。直送便の退避復帰、左右格納庫と予約保持、540pの物理入力、輸送プライマリー、工場・閉鎖を確認。
+- WORLD=1の通常診断で dotnet DemoAuditCpuSortie.dll（02:59:48〜02:59:59、終了0）。CPU征服者1に切り替わり地点57の通常ピッカーを開く。960×540のaudit-latest-computer-confirm.pngでカード上の手と選択表示を目視。個別4クリック、確定後の重複予約なし、赤チェック、閉鎖、表示対象15指示の完了と人間復帰を検査。前回の60Hz相当診断は地点選択まで、今回は以降を段階駆動。
+- dotnet DemoUi.dll（02:59:59〜03:00:05、終了0）。Seed0の固定戦闘を含む巡回で輸送→地図、低FPS相当の縁移動、拒否分岐とエンディング周回を検査。証拠は既存出力内のaudit-0259-各DLL名.log。
+- 新規採番なし。緑赤の分離・赤地点の再選択・消去は02:03回の確認範囲を維持。今回、他の専用表示への退避条件、CPU個別組立実演、自然Demo全周は未確認または既報継続。次回はCPU内政の格納庫と組替予約の照合、または自然Demoの別シードから続ける。
+
+### 実行履歴：2026-11-12 03:58回
+
+- 開始03:58:08 JST、終了03:59:29 JST。部分点検完了。HEAD=3ad92296a925260b96175a39d3c8cc9683f9f667。関係差分はGame1.ComputerMarches.cs、tests/DirectDeliveryUi/Program.csと両記録。競合プロセスなし。ゲームと追跡テスト無変更。
+- Game1.Demo.cs／Game1.DemoDomestic.csとDemoInspectorUiの輸送プライマリー・閉鎖の共有矩形を照合。ALSOFT_DRIVERS=null、既存demo-checkで dotnet DirectDeliveryUi.dll（03:58:23〜03:58:32）、DemoInspectorUi.dll（03:58:32〜03:58:45）、DemoChecksUi.dll（03:58:45〜03:58:54）はすべて終了0。退避復帰、左右格納庫と予約保持、輸送と工場のクリック、緑赤の分離、赤地点の再選択・スポットライト解除、ターン末消去を検査。960×540のdemo-checks-3-6.pngで赤ハンドル上の手、赤チェックと即時予約1件を目視。
+- FOLDERVERSE_DEMO_TEST_SEED=33の dotnet DemoUi.dll（03:58:54〜03:58:59、終了0）。世界／配役／配置129280377／977802721／433009304。輸送→地図、18 FPS相当の縁移動、拒否時の分岐、固定戦闘を含むエンディングからの周回を確認。証拠は既存出力内のaudit-0358-各DLL名.log。
+- 新規採番なし。CPU軍事のWORLD=1の確認範囲は02:59回を参照。今回はCPU軍事の別の退避条件と内政の個別組立実演、固定戦闘を含まない自然Demo全周を未確認。次回はCPU内政の格納庫と組替予約を通常入力と比較する。
+
+### 実行履歴：2026-11-12 04:57回
+
+- 開始04:57:08 JST、終了04:58:17 JST。部分点検完了。HEAD=3ad92296a925260b96175a39d3c8cc9683f9f667。関係差分はGame1.ComputerMarches.cs、tests/DirectDeliveryUi/Program.csと両記録。競合プロセスなし。ゲームと追跡テスト無変更。
+- Game1.Demo.cs／Game1.DemoDomestic.csとDemoInspectorUiの輸送プライマリー・閉鎖の共有矩形を照合。ALSOFT_DRIVERS=null、既存demo-checkで dotnet DirectDeliveryUi.dll（04:57:25〜04:57:34）とDemoInspectorUi.dll（04:57:34〜04:57:47）は終了0。退避復帰、左右格納庫と予約保持、540pの物理入力、輸送・工場・閉鎖のクリックと描画を確認。
+- WORLD=1／FALLBACK=1で dotnet DemoAuditCpuSortie.dll（04:57:47〜04:57:56、終了0）。CPU征服者1、表示対象15指示。最初の表示段階を診断で専用表示へ切り替え、960×540のaudit-war-fallback.pngで町名と手を目視。次の指示が通常ピッカーへ戻り、カード上の手、未選択状態、確定ボタンをaudit-war-return.pngで目視。追加予約0、次の指示index=1／stage=3。自然発生の退避条件は未確認。ログはaudit-0457-各DLL名.log。
+- 新規採番なし。CPU個別組立実演はDEMO-0017継続。04:28修正記録の予定在庫照合により、組立前でも通常格納庫には完成予定個体が見える。今回はCPU内政と緑赤の全経路、自然Demo全周を再実行せず。次回はCPU内政の表示オンオフの在庫と実描画、または別シードのDemo巡回から続ける。
+
+### 実行履歴：2026-11-12 07:04回
+
+- 起動要求07:04:10 JST。検証機の時計で実行開始07:03:24、終了07:04:22 JST。部分点検完了。HEAD=3ad92296a925260b96175a39d3c8cc9683f9f667。関係差分はGame1.ComputerMarches.cs、tests/DirectDeliveryUi/Program.csと両記録。競合プロセスなし。ゲームと追跡テスト無変更。
+- Game1.Demo.cs／Game1.DemoDomestic.csの輸送プライマリーと閉鎖の共有矩形を照合。ALSOFT_DRIVERS=null、既存demo-checkの dotnet DirectDeliveryUi.dll、DemoInspectorUi.dll、DemoChecksUi.dll は終了0。直送便の退避復帰、左右格納庫、予約保持と540pの入力、輸送プライマリーと閉鎖、緑赤の表示分離と開戦予約の順序、ターン末消去を検査。
+- DOMESTIC_ENTRY=1／DOMESTIC_SKIP=1／AUTO_ENABLED=0の dotnet DemoAuditCpuSortie.dll は終了0。組立無効では通常格納庫の予定と実在庫に頭・胴・脚が別々に残り、操作表示オフ・オン・組立前後のスキップで個体IDと在庫が一致。人間の既存予約を配送で一度だけ処理し、人間へ復帰。960×540のaudit-latest-computer-domestic.pngで通常格納庫と緑チェックを目視。証拠は既存出力内audit-0704-各DLL名.log。
+- 新規採番なし。今回は自動組立無効の固定条件。自動組立有効は04:28修正記録、CPU軍事の専用表示は04:57回を参照。個別ドラッグ実演はDEMO-0017継続、自然Demo全周は未確認。次回は別シードのDemo巡回または軍事のスキップなし遷移から続ける。
+
+### 実行履歴：2026-11-12 08:03回
+
+- 開始08:03:42 JST、終了08:04:51 JST。部分点検完了。HEAD=3ad92296a925260b96175a39d3c8cc9683f9f667。関係差分はGame1.ComputerMarches.cs、tests/DirectDeliveryUi/Program.csと両記録。競合プロセスなし。ゲーム・追跡テスト無変更。
+- Game1.Demo.cs／Game1.DemoDomestic.csとDemoInspectorUiの輸送プライマリー・閉鎖の共有矩形を照合。ALSOFT_DRIVERS=nullで既存demo-checkの dotnet DirectDeliveryUi.dll（08:03:58〜08:04:04）、DemoInspectorUi.dll（08:04:04〜08:04:18）は終了0。退避復帰、左右格納庫と予約保持、540p入力、輸送と工場のクリック・閉鎖を確認。
+- WORLD=2の通常診断で dotnet DemoAuditCpuSortie.dll（08:04:18〜08:04:31、終了0）。CPU征服者9へ切替後に予定地点27を通常ピッカーで開き、4体を個別選択。確定後の重複予約なし、赤チェック、閉鎖、表示対象15指示をスキップなしで完了して人間へ復帰。960×540のaudit-latest-computer-confirm.pngでカード上の手と選択表示を目視。ログは既存出力内のaudit-0803-各DLL名.log。
+- 新規採番なし。緑赤の表示分離・赤地点の再選択・ターン末消去は07:04回以前を参照。今回の未確認は自然発生する軍事専用表示、DEMO-0017の個別組立実演、自然Demo全周。次回は別シードのDemo巡回または軍事の自然な専用表示条件の検査から続ける。
+
+### 実行履歴：2026-11-12 08:56回
+
+- 開始08:56:43 JST、終了08:57:51 JST。部分点検完了。HEAD=3ad92296a925260b96175a39d3c8cc9683f9f667。関係差分はGame1.ComputerMarches.cs、tests/DirectDeliveryUi/Program.csと両記録。競合プロセスなし。ゲーム・追跡テスト無変更。
+- Game1.Demo.cs／Game1.DemoDomestic.csとDemoInspectorUiの輸送・閉鎖の共有矩形を照合。ALSOFT_DRIVERS=null、既存demo-checkの dotnet DirectDeliveryUi.dll（08:56:58〜08:57:05）、DemoInspectorUi.dll（08:57:05〜08:57:19）は終了0。退避復帰、左右格納庫と予約保持、540pの入力、輸送プライマリーと工場・閉鎖を確認。
+- FOLDERVERSE_DEMO_TEST_SEED=20の dotnet DemoUi.dll（08:57:19〜08:57:26、終了0）。世界／配役／配置970412988／848972489／1018591594。初回輸送と地図への復帰、18 FPS相当の縁移動、拒否分岐、固定戦闘を含むエンディングからの周回を検査。
+- LEGAL_QUEEN=1／QUEEN540=1の dotnet DemoAuditCpuSortie.dll（08:57:26〜08:57:30、終了0）。固定の合法なクイーン指示で地点91、通常ピッカー、クイーン参加の切替、確定と赤チェックを確認。960×540のaudit-legal-queen.pngで赤チェックと閉鎖へ移った手を目視。証拠は既存出力内audit-0856-各DLL名.log。
+- 新規採番なし。自然発生する軍事専用表示、CPU個別組立実演（DEMO-0017）、自然Demo全周は未確認または既報継続。緑赤全経路は07:04回を参照。次回は通常軍事で複数の出撃元を切り替える場面、またはCPU内政から続ける。
+
+### 実行履歴：2026-11-13 00:10回
+
+- 起動要求00:10:11、終了00:11:31 JST。部分点検完了。HEAD=3ad92296a925260b96175a39d3c8cc9683f9f667。関係差分はGame1.ComputerMarches.cs、tests/DirectDeliveryUi/Program.csと両記録。競合プロセスなし。ゲーム・追跡テスト無変更。既存demo-checkの保持期限を11月13日へ延長し再利用。
+- ALSOFT_DRIVERS=nullで dotnet DirectDeliveryUi.dll（00:10:34〜00:10:44）、DemoInspectorUi.dll（00:10:44〜00:11:00）、DemoChecksUi.dll（00:11:00〜00:11:07）はすべて終了0。直送便の退避復帰、左右格納庫・予約保持、輸送プライマリー、事務所と工場のクリック・閉鎖、展開図／地星儀の1080p／540pで緑赤分離、赤地点の再選択とスポットライト解除、予約確定からターン終了時の消去までを確認。
+- CARD19=1／CARD37=1の dotnet DemoAuditCpuSortie.dll（00:11:07〜00:11:10、終了0）。固定拡張格納庫で通常ピッカー3ページを通して37体を選択。重複予約なし、次の征服者の通常ピッカー、スキップによる人間復帰。960×540のaudit-card37.pngで3/3、選択37体とカード上の手を目視。ログは既存出力内のaudit-0010-各DLL名.log。
+- 新規採番なし。自然発生の軍事専用表示、自然Demo全周、DEMO-0017個別組立実演は未確認または既報継続。次回はCPU内政の格納庫・組立と通常入力の照合、または自然Demoの別シードから続ける。

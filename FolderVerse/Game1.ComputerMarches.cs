@@ -20,6 +20,10 @@ public partial class Game1
     private static readonly Rectangle ComputerMarchTarget=new(82,264,694,50);
     private static readonly Rectangle ComputerMarchOrder=new(82,331,694,50);
 
+    private static bool CanPreviewComputerMarch(March order)=>order.Peaceful ||
+        order is {Queen:true, Fighters:>=0} or {PocketOnly:true, Fighters:>0} or
+            {Queen:false, PocketOnly:false, SourceNode:>=0, Fighters:>0};
+
     private bool ShowComputerMarches(IReadOnlyList<March> orders)
     {
         if(_demoActive)return false;
@@ -51,8 +55,7 @@ public partial class Game1
         UpdateDomesticSlide((float)elapsed);
         _computerMarchAge+=elapsed;
         var order=_visibleComputerMarches[_computerMarchIndex];
-        if(!skip && _computerWarStage>=0 &&
-            (order.Peaceful || order is {Queen:true, Fighters:>=0} || order is {PocketOnly:true, Fighters:>0} || order is {Queen:false, PocketOnly:false, SourceNode:>=0, Fighters:>0}))
+        if(!skip && _computerWarStage>=0 && CanPreviewComputerMarch(order))
         {
             if(_computerMarchAge<1)return true;
             if(AdvanceComputerWarPreview(order)){_computerMarchAge=0;return true;}
@@ -172,9 +175,20 @@ public partial class Game1
     private void DrawComputerMarches(Matrix transform)
     {
         if(_computerMarches==null)return;
+        var order=_visibleComputerMarches[_computerMarchIndex];
+        if(_computerWarStage==0 && CanPreviewComputerMarch(order))
+        {
+            if(!order.Peaceful && _computerMarchAge>=ComputerViewLeadIn)
+            {
+                _spriteBatch.Begin(transformMatrix:transform);
+                DrawDemoHand(WarButton.Center.ToVector2(),0);
+                _spriteBatch.End();
+            }
+            return;
+        }
         if(_computerWarStage>0)
         {
-            if(_computerWarStage==6 || (_computerWarStage==1 && _visibleComputerMarches[_computerMarchIndex].Peaceful))return;
+            if(_computerWarStage==6 || (_computerWarStage==1 && order.Peaceful))return;
             _spriteBatch.Begin(transformMatrix:transform);
             // Once the modal opens, the source button is behind it.
             if(_invasionPicker>=0)DrawDemoHand(_computerWarClick.ToVector2(),Math.Clamp(.4f-(float)_computerMarchAge,0,.4f));
@@ -184,7 +198,6 @@ public partial class Game1
             _spriteBatch.End();
             return;
         }
-        var order=_visibleComputerMarches[_computerMarchIndex];
         string target=_setup.Nodes.DisplayName(_setup.Nodes.All[order.TargetNode]);
         int sourceId=order.SourceNode>=0?order.SourceNode:_setup.Nodes.Current(order.Ruler)?.Id??-1;
         string source=sourceId>=0?_setup.Nodes.DisplayName(_setup.Nodes.All[sourceId]):"現在地";

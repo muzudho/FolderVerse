@@ -493,3 +493,26 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 - ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_CARD19=1で dotnet DemoAuditCpuSortie.dll（23:30:53〜23:30:58、終了0、fix-card19.log）。960×540の固定拡張格納庫で通常入力の次・前ページ、19体目の選択、選択の保持と取消を検査。CPUは通常画面で指定19体すべてを選択し、確定後の追加予約0、次の征服者3の1ページ目、スキップ後の人間復帰を確認。audit-card19.pngを目視し、2/2、選択19体、カード上の手と確定ボタンを確認。
 - 同DLLの通常診断（CARD19未設定、WORLD=0、23:31:07〜23:31:18）と dotnet DemoChecksUi.dll（23:31:18〜23:31:25）は終了0。表示オンオフ、征服者切替、出撃・和平と人間復帰、展開図／地星儀の1080p・540pで緑赤ハンドルから確定即予約・閉鎖・ターン終了と消去を回帰確認。証拠fix-card19-DemoAuditCpuSortie.log、fix-card19-DemoChecksUi.log。git diff --check成功。
 - 19体は固定場面。自然AIの19体以上、3ページ以上の実描画、無効指示等の専用表示分岐、DEMO-0017個別組立実演、全自然Demoは未確認または既存の制約を継続。
+
+## 2026-11-12 00:34修正回
+
+- 開始00:34:35、完了 00:39:28 JST。対象DEMO-0016。HEAD=3ad92296a925260b96175a39d3c8cc9683f9f667。開始時のゲームC#・関連テスト・両記録に未コミット差分なし、競合プロセスなし。
+- 現HEADのWORLD=0／PHASE_TIMING=1を60Hz相当の通常入力で進め、初回クリック前の演出開始2.200秒で通常地図に専用の目標・出撃元リストが重なることを960×540で再現（fix-leadin-before.png、fix-leadin-before.log）。非追跡ProbeCpuSortie.cs.txtに待機中の描画採取を追加。
+- 変更はFolderVerse/Game1.ComputerMarches.cs。通常操作の対象判定を更新・描画で共有し、初回クリック待ちの通常軍事では町名リストを描かず、開戦の操作直前にWarButtonの中心へ手を表示。通常操作に進めない指示の専用表示は維持。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages と修正後の --no-restore はいずれも警告・エラー0。先に古い復元情報でビルドした診断はMonoGame.Framework 3.8.6.1を起動時に読み込めず、上記ローカルソースで両プロジェクトを同じ版へ復元して解消。既存demo-checkの期限を11月12日へ延長し再利用。
+- ALSOFT_DRIVERS=null、WORLD=0で dotnet DemoAuditCpuSortie.dll のphase、skip、fallback、normalと dotnet DemoChecksUi.dll を実行し、すべて終了0。audit-cpu-phase-leadin.pngの960×540（2.650秒）で専用リストが消え、通常の開戦プライマリーに手が重なることを目視。実クリックは2.817秒、地点27の選択は3.833秒。Escは演出開始0.250秒で人間復帰。制御退避では専用表示の描画と次指示の通常ピッカーへの遷移、予約0→0を確認。証拠fix-leadin-phase／skip／fallback／normal／checks.logとaudit-war-fallback.png。
+- 通常CPU診断で表示オンオフ・征服者切替・出撃と和平・人間復帰、DemoChecksUiで展開図／地星儀の1080p／540pの緑赤と予約・閉鎖・ターン末消去を回帰確認。固定シードの診断。別配置の退避条件、自然Demo全周、DEMO-0017の個別組立は未確認または既報継続。
+
+## 2026-11-12 01:25修正回
+
+- 開始01:25:36、完了 01:27:28 JST。対象は01:03点検で確認したDirectDeliveryUiの旧レイアウト座標（ゲーム不具合IDなし）。HEAD=3ad92296a925260b96175a39d3c8cc9683f9f667。開始時の関係差分はGame1.ComputerMarches.csと両記録。競合プロセスなし。
+- 変更はtests/DirectDeliveryUi/Program.cs。旧座標で脚をつかみ区画全体のドラッグ検査に失敗することを再現（fix-direct-fixture-before.log、終了-532462766）。区画全体をつかむ位置を、現行の区画とパーツ矩形の右側の余白から算出。空区画の検査は表示中のページから空きスロットを選ぶ。ゲームコード変更なし。
+- dotnet build tests/DirectDeliveryUi --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages -p:OutputPath=D:/github.com/muzudho/FolderVerse/artifacts/tmp/delete-after-2026-11-12/demo-check/ -v quiet --disable-build-servers は警告・エラー0。
+- ALSOFT_DRIVERS=nullで既存出力先の dotnet DirectDeliveryUi.dll（01:26:37〜01:26:45）、DemoInspectorUi.dll（01:26:45〜01:26:59）、DemoChecksUi.dll（01:26:59〜01:27:07）はすべて終了0。退避復帰、区画全体と部品のドラッグ、左右格納庫、540pの入力、予約保持、輸送プライマリー、工場・閉鎖、緑赤の表示分離とターン末消去を確認。960×540のdirect-22.pngで左右各6区画を目視。証拠fix-direct-fixture-各DLL名.log。git diff --check成功。
+- 検証は固定場面。自然Demo全周とDEMO-0017のCPU個別組立実演は引き続き点検対象。
+
+## 2026-11-12 04:28修正回
+
+- 開始04:28:39、終了 04:29:45 JST。DEMO-0017の実装は保留、未対応を継続。HEAD=3ad92296a925260b96175a39d3c8cc9683f9f667。関係差分はGame1.ComputerMarches.cs、tests/DirectDeliveryUi/Program.csと両記録。競合プロセスなし。ゲーム・追跡テスト変更なし。
+- 非追跡診断で、通常格納庫を開いた直後に実在庫は頭・胴・脚の3個体、通常格納庫が参照する組替後の予定在庫は完成1体であることを確認。既存予約は人間の1件。自動組立有効時は個別パーツが通常格納庫の入力対象に現れないため、現行のドラッグをそのまま呼ぶだけでは既存AI指示の実演にならない。自動組立設定と配送順序を保った実装が残る。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore（既存demo-check出力、警告・エラー0）。ALSOFT_DRIVERS=null、DOMESTIC_ENTRY=1、DOMESTIC_SKIP=1、AUTO_ENABLED=1で dotnet DemoAuditCpuSortie.dll は終了0。表示オフ・通常・組立前後のスキップで完成個体ID1、人間の予約が配送で一度だけ反映、人間に復帰。証拠fix-scope-forecast.log。個別ドラッグの実描画検証は未実施。

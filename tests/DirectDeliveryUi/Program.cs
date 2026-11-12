@@ -12,6 +12,12 @@ class Checks:Game1{
  static void Check(bool ok,string text){if(!ok)throw new Exception(text);}
  static Rectangle Part(int side,int slot,int row)=>(Rectangle)typeof(Game1).GetMethod("DirectPart",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{side,slot,row})!;
  static Rectangle Cell(int side,int slot)=>(Rectangle)typeof(Game1).GetMethod("DirectCell",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{side,slot})!;
+ static Point CellMargin(int side,int slot){
+  var cell=Cell(side,slot);
+  int partsRight=Enumerable.Range(0,3).Max(row=>Part(side,slot,row).Right);
+  Check(partsRight<cell.Right,"Cell has a whole-robot drag area beside the parts");
+  return new Point(partsRight+(cell.Right-partsRight)/2,cell.Center.Y);
+ }
  static MouseState Mouse(Point p,ButtonState state)=>new(p.X,p.Y,0,state,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
  void Drag(int side,int slot,int row,int destinationSide,int destinationSlot){var from=Part(side,slot,row).Center;Set("_pointer",from);Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);var to=Cell(destinationSide,destinationSlot).Center;Set("_previousMouse",Mouse(from,ButtonState.Pressed));Set("_pointer",to);Call("DirectPairInput",Mouse(to,ButtonState.Released),false,false);Set("_previousMouse",new MouseState());}
  protected override void LoadContent(){
@@ -75,16 +81,19 @@ class Checks:Game1{
   Drag(0,0,1,0,1);Check(Preview().Nodes[a].Count==2 && w.Robots.Nodes[a].Count==1 && w.Robots.PartPlanning.Orders.Count==2,"Local assembly is also deferred and appears in preview");
   var doc=AutoSaveStore.Capture(w);Check(AutoSaveStore.Restore<WorldSetup>(doc).Robots.PartPlanning.Orders.Count==2,"Planning reservations are saved");
   Undo();Undo();Check(w.Robots.PartPlanning.Orders.Count==0 && Preview().Nodes[a].Robots.Single().Parts==RobotParts.Complete,"Undo restores the complete preview robot");
-  void Whole(int fromSlot,int toSide,int toSlot){var from=Cell(0,fromSlot).Location+new Point(16,145);Set("_pointer",from);Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);var to=Cell(toSide,toSlot).Center;Set("_previousMouse",Mouse(from,ButtonState.Pressed));Set("_pointer",to);Call("DirectPairInput",Mouse(to,ButtonState.Released),false,false);}
+  void Whole(int fromSlot,int toSide,int toSlot){var from=CellMargin(0,fromSlot);Set("_pointer",from);Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);var to=Cell(toSide,toSlot).Center;Set("_previousMouse",Mouse(from,ButtonState.Pressed));Set("_pointer",to);Call("DirectPairInput",Mouse(to,ButtonState.Released),false,false);}
   Whole(0,0,2);Check(((long?[][])Get("_directSlots"))[0][2]==original && w.Robots.Nodes[a].Robots.Single().Parts==RobotParts.Complete,"Cell drag within pane repositions complete robot");
   Set("_pointer",Part(0,2,0).Center);Check((RobotParts)Call("DirectHoverPart",0,2)==RobotParts.Head,"Part hover selects only head");
-  Set("_pointer",Cell(0,2).Location+new Point(16,145));Check((RobotParts)Call("DirectHoverPart",0,2)==0,"Cell margin hover selects whole cell");
+  Set("_pointer",CellMargin(0,2));Check((RobotParts)Call("DirectHoverPart",0,2)==0,"Cell margin hover selects whole cell");
   Whole(2,1,0);Check(w.Robots.PartPlanning.Orders.Count==0 && w.Robots.Nodes[a].Robots.Single().Parts==RobotParts.Complete,"Whole robot conflicting with destination leaves no partial reservations");
   Whole(2,1,1);Check(w.Robots.PartPlanning.Orders.Count==1 && w.Robots.PartPlanning.Orders[0].Parts==RobotParts.Complete,"Whole cell cross-pane drag reserves all parts atomically");
   Check(((System.Collections.IDictionary)Get("_workReservationEffects")).Contains(original),"Accepted delivery starts work animation without ending further input");
   Set("_directDrag",(0,original,RobotParts.Head));Set("_pointer",close.Center);
   Call("DirectPairInput",Mouse(close.Center,ButtonState.Pressed),true,false);Check((bool)Get("_directPairOpen"),"Close button cannot activate while carrying a part");Set("_directDrag",null!);
-  var empty=Cell(0,11).Location+new Point(16,145);Set("_pointer",empty);
+  var leftSlots=((long?[][])Get("_directSlots"))[0];
+  int page=((int[])Get("_directPages"))[0];
+  var visibleSlots=(IEnumerable<int>)typeof(Game1).GetMethod("VisibleHangarSlots",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{leftSlots.Length,page})!;
+  var empty=CellMargin(0,visibleSlots.First(slot=>!leftSlots[slot].HasValue));Set("_pointer",empty);
   Call("DirectPairInput",Mouse(empty,ButtonState.Pressed),true,false);
   var guidance=(string)Get("_directMessage");var font=(SpriteFont)Get("_font");
   Check(guidance.Contains("パーツ単位") && font.Characters.Contains('単') && font.MeasureString(guidance).X>0,"Empty-slot guidance has every glyph required for rendering");
