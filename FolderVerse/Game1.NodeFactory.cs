@@ -75,6 +75,21 @@ public partial class Game1
         {
             if(index>=liveCount)_setup.Robots.PartPlanning.SetWorkerLane(pending[index-liveCount].Id,lines[index]);
         }
+        if (FactoryAlbumOpen)
+        {
+            int line = _factoryPlanLine;
+            _factoryPlanLine = -1;
+            if (line >= lines.Length || !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) ||
+                _setup.Campaign.RobotBattles.LockedNode(_populationNode)) return true;
+            for (int i = 0; i < lines[line].PlanCount; i++)
+            {
+                if (!FactoryAlbumCard(i).Contains(pointer)) continue;
+                lines[line].SelectPlan(i);
+                SavePending(line);
+                break;
+            }
+            return true;
+        }
         if(FactoryPageClick(pointer))return true;
         if(_factoryLine<0 || _factoryLine>=lines.Length){_factoryLine=0;_factoryDropDown=-1;}
         if(_factoryPlanLine>=lines.Length)_factoryPlanLine=-1;
@@ -155,7 +170,7 @@ public partial class Game1
         if(pending.Length>displayed-factory.ProductionLines.Length)
             _ui.Text("工場作業員の交代予定あり",new(160,857),.38f,Accent);
         _ui.Text($"産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn)}   /   蛍光灯：現在位置　緑：生産　黄：休暇　赤：空き枠待ち",new(160,248),.25f,Cream);
-        if(_factoryPlanLine>=0 && _factoryPlanLine<displayed){
+        if(!FactoryAlbumOpen && _factoryPlanLine>=0 && _factoryPlanLine<displayed){
             var line=lines[_factoryPlanLine];_ui.Box(new(84,360,790,590),new(22,40,54));
             string catalogue=_setup.EquipmentMode==RobotEquipmentMode.Materials?"素材別の製造候補":"正規・安い・一体型"+(line.PlanCount>11?"・高級":"");
             _ui.Text($"生産ライン {_factoryPlanLine+1} / {catalogue}",new(160,374),.45f,Cream);

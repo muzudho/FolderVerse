@@ -223,6 +223,12 @@ public partial class Game1 : Game
         bool captureChord=keyboard.IsKeyDown(Keys.P) && (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
         if(active && captureChord && !previousChord)_screenshots.Request();
+        if (IsStatusScreen && FactoryAlbumOpen)
+        {
+            if (escape) _factoryPlanLine = -1;
+            else if (click) NodeFactoryClick(_pointer);
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
         if(IsStatusScreen && active && FactionPickerInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && active && (click || escape) && ReservationDirectoryInput(_pointer,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && active && (click || escape) && (click || _directMap || _mapOverlayMenu || _functionTransferMap) && MapOverlayClick(_pointer,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -791,6 +797,12 @@ public partial class Game1 : Game
             }
         }
         if(_seedDialog.IsOpen) { _spriteBatch.Begin(transformMatrix:transform); _seedDialog.Draw(_ui); _spriteBatch.End(); }
+        if (IsStatusScreen && FactoryAlbumOpen)
+        {
+            _spriteBatch.Begin(transformMatrix:transform);
+            DrawFactoryAlbum();
+            _spriteBatch.End();
+        }
         // Read the finished game frame before the save notification is drawn.
         if(_screenshots.CaptureAfterDraw(GraphicsDevice))StartScreenshotFeedback(gameTime.TotalGameTime.TotalSeconds);
         if(_screenshots.MessageSeconds>0)

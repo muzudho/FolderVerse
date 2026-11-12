@@ -17,9 +17,10 @@ public partial class Game1
     private RobotHeadTexture _robotTorsoTextures;
     private RobotHeadTexture _robotLegTextures;
 
-    private RobotHeadTexture FindRobotBodyArt(Rectangle area, Robot robot, RobotParts part, bool allowCaptain = false)
+    private RobotHeadTexture FindRobotBodyArt(Rectangle area, Robot robot, RobotParts part, bool allowCaptain = false,
+        bool showIntegratedMaterial = false)
     {
-        if (area.Width < 48 || (robot.Role != RobotRole.Soldier && !(allowCaptain && robot.Role == RobotRole.Captain)) || robot.IntegratedParts != 0 ||
+        if (area.Width < 48 || (robot.Role != RobotRole.Soldier && !(allowCaptain && robot.Role == RobotRole.Captain)) || !showIntegratedMaterial && robot.IntegratedParts != 0 ||
             (robot.Parts & part) == 0)
             return null;
 
@@ -175,10 +176,10 @@ public partial class Game1
         string path=Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots",$"maple-{name}-neutral-v001.png");
         return File.Exists(path)?new(GraphicsDevice,path,CountryEmblemArt.Tiles,stickerBounds:sticker,maplePart:part):null;
     }
-    private bool HasRobotHeadArt(Rectangle area,Robot robot,bool allowCaptain=false)
+    private bool HasRobotHeadArt(Rectangle area,Robot robot,bool allowCaptain=false,bool showIntegratedMaterial=false)
     {
         if(area.Width<48 || (robot.Role!=RobotRole.Soldier && !(allowCaptain && robot.Role==RobotRole.Captain)) || (robot.Parts&RobotParts.Head)==0 ||
-            robot.IntegratedParts!=0)return false;
+            !showIntegratedMaterial && robot.IntegratedParts!=0)return false;
         if(UsesMapleArt(robot,RobotParts.Head))
         {
             _mapleHeadTextures??=LoadMapleArt("head",RobotParts.Head,new(.61f,.61f,.09f,.14f));

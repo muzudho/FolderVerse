@@ -34,10 +34,28 @@ sealed class WorkerPlansUi:Game1
   if(frame==3){line.SelectPlan(3);Click(Rect("FactoryRobotButton",1,1).Center);Check((int)Get("_factoryPlanLine")==1,"Half-size real click opens the worker catalogue");Set("_pointer",Rect("FactoryPlanButton",choice).Center);}
   if(frame==4){
    Click(Rect("FactoryPlanButton",choice).Center);Check(line.SelectedPlan==choice,"Half-size real click selects the expected mixed plan");var recipe=line.PlanAt(choice);
+   // This fixture advances only industry; use immediate storage instead of the domestic intake queue.
+   w.Robots.ProductionIntakeEnabled=false;
    for(int turn=0;turn<recipe.Turns;turn++)w.Robots.AdvanceIndustry(n=>w.Nodes.All[n].Owner);
    Fixture.Same(recipe,w.Robots.Nodes[node].Robots.Single(r=>r.Id!=workerId));Call("OpenNodeAssembly");
   }
+  if(frame==5){
+   w.EquipmentMode=RobotEquipmentMode.Materials;
+   typeof(RobotWorkshop).GetMethod("ConfigureMaterialCatalogue",F)!.Invoke(line,new object[]{0,w.EquipmentMode});
+   Check(line.PlanCount==11,"Material album must include all eleven choices");
+   Call("OpenNodeFactory");Click(Rect("FactoryRobotButton",1,line.ProductionPeriod).Center);
+   Check((int)Get("_factoryPlanLine")==1,"Worker lane opens material album at 540p");
+   Check(Rect("FactoryAlbumCard",5).Y==Rect("FactoryAlbumCard",0).Y &&
+         Rect("FactoryAlbumCard",6).X==Rect("FactoryAlbumCard",0).X,"Album uses six columns");
+  }
+  if(frame==6){
+   Click(Rect("FactoryAlbumCard",10).Center);
+   Check(line.SelectedPlan==10 && (int)Get("_factoryPlanLine")==-1,"Right-side album click selects the exact plan");
+   Click(Rect("FactoryRobotButton",1,line.ProductionPeriod).Center);
+   Click(Rect("FactoryAlbumCard",3).Center);
+   Check(!line.Manufacturing && (int)Get("_factoryPlanLine")==-1,"Album can turn production off");
+  }
   base.Draw(time);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"worker-plans-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);
-  if(frame++==4){Console.WriteLine("PASS: real worker-lane catalogue clicks, mixed quality/foreign previews, 1080p/540p and matching manufactured parts in the hangar.");Exit();}
+  if(frame++==6){Console.WriteLine("PASS: legacy catalogue and 540p material album clicks, exact worker recipes, and stopping production.");Exit();}
  }
 }
