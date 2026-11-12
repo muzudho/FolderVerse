@@ -41,7 +41,8 @@ Console.WriteLine(JsonSerializer.Serialize(new{w.WorldSeed,w.CastSeed,w.Placemen
     waitingProducts=nodes.SelectMany(n=>n.waiting).GroupBy(l=>l.product).ToDictionary(g=>g.Key,g=>g.Count()),
     delivery=stock.LongDelivery.Orders.GroupBy(o=>o.Status).ToDictionary(g=>g.Key,g=>g.Count())}));
 foreach(var node in nodes.OrderByDescending(n=>n.waiting.Length).ThenBy(n=>n.node))Console.WriteLine(JsonSerializer.Serialize(node));
-foreach(int source in args.Skip(1).Where(a=>!a.StartsWith("--")).Select(int.Parse)){
+int originOption=Array.IndexOf(args,"--relay3-origin-save");
+foreach(int source in args.Where((arg,index)=>index>0 && index!=originOption+1 && !arg.StartsWith("--")).Select(int.Parse)){
     int owner=w.Nodes.All[source].Owner;
     bool Busy(int node)=>battles.LockedNode(node) || w.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node || o.Target==node) ||
         stock.PartPlanning.Orders.Any(o=>o.Source==node || o.Target==node) || stock.PendingEdits.Any(o=>o.Node==node) ||
@@ -299,6 +300,25 @@ if(args.Contains("--relay3-release-test")){
   throw new InvalidOperationException("Expected assembly in place while the first order remains blocked.");
  var target=stock.Nodes[destination];
  var outgoing=(LongPartOrder)reserve.Invoke(delivery,new object[]{w,relay,destination,completed.Id,completed.Parts,null,owner,target.Count})!;
+ if(originOption>=0){
+  string roundTripPath=args[originOption+1];
+  if(File.Exists(roundTripPath))throw new IOException("Expected a new round-trip path.");
+  if(first.Origin!=LongDeliveryOrigin.Unknown || outgoing.Origin!=LongDeliveryOrigin.Computer ||
+     !delivery.Cancel(stock,outgoing.Number))throw new InvalidOperationException("Unexpected order origin.");
+  w.SelectPlayer(owner);
+  var manual=delivery.Reserve(w,relay,destination,completed.Id,completed.Parts,null,owner,target.Count);
+  AutoSaveStore.Write(roundTripPath,saved);
+  var reloaded=AutoSaveStore.Read<object>(roundTripPath);
+  var restoredWorld=reloaded is WorldSetup setup?setup:(WorldSetup)reloaded.GetType().GetProperty("World")!.GetValue(reloaded)!;
+  var restored=restoredWorld.Robots.LongDelivery;
+  if(restored.Orders.Single(o=>o.Number==first.Number).Origin!=LongDeliveryOrigin.Unknown ||
+     restored.Orders.Single(o=>o.Number==manual.Number).Origin!=LongDeliveryOrigin.Manual ||
+     restored.Results.Single(o=>o.Number==outgoing.Number).Origin!=LongDeliveryOrigin.Computer)
+   throw new InvalidOperationException("Long delivery origin did not survive round trip.");
+  restoredWorld.Robots.Check();
+  Console.WriteLine(JsonSerializer.Serialize(new{longDeliveryOrigin="PASS",turn=w.Population.Turn}));
+  return;
+ }
  advance.Invoke(delivery,new object[]{w});
  if(delivery.Orders.Contains(outgoing) || !target.Robots.Any(r=>r.Id==26) || !store.HasSpace || first.Started)
   throw new InvalidOperationException("Expected the later departure to free one slot after the first order had been checked.");
@@ -317,20 +337,144 @@ if(args.Contains("--relay3-normal-trace")){
   var relay=stock.Nodes[3];
   Console.WriteLine(JsonSerializer.Serialize(new{relayTrace=phase,turn=w.Population.Turn,
    relay.Count,relay.StorageLimit,ids=relay.Robots.Select(r=>r.Id),
+   movable=relay.Robots.Where(r=>r.Owner==1 && r.Parts!=RobotParts.Complete &&
+    stock.CanShip(3,r) && !stock.AssemblyLocked(3,r)).Select(r=>new{r.Id,parts=r.Parts.ToString()}),
+   exits=RobotLongDelivery.Neighbors(w,3,1,true).Where(id=>w.Nodes.All[id].Owner==1)
+    .Select(id=>new{id,free=stock.Nodes[id].StorageLimit-stock.Nodes[id].Count,
+     reserved=stock.Workshops[id].ReservedSlots,disposal=stock.Workshops[id].DisposalFacilities.Any(f=>f.HasDisposalFactory),
+     receivers=stock.Nodes[id].Robots.Where(r=>r.Owner==1 && r.Parts!=RobotParts.Complete &&
+      !stock.AssemblyLocked(id,r)).Select(r=>new{r.Id,parts=r.Parts.ToString()})}),
    location26=Array.FindIndex(stock.Nodes,n=>n.Robots.Any(r=>r.Id==26)),
+   receivers13=stock.Nodes[13].Robots.Where(r=>r.Id is 64 or 65).Select(r=>new{r.Id,r.CanFight}),
    nodes=new[]{3,5,7,13}.Select(id=>new{id,w.Nodes.All[id].Owner,w.Nodes.All[id].Functional,w.Nodes.All[id].FunctionHost}),
    path1=RobotLongDelivery.Path(w,7,13,1),path6=RobotLongDelivery.Path(w,5,3,1),
+   destination5=new{stock.Nodes[5].Count,stock.Nodes[5].TotalCapacity,stock.Nodes[5].ReservedReturns,
+    stock.Workshops[5].ReservedSlots,orders=stock.LongDelivery.Orders.Where(o=>o.Target==5)
+     .Select(o=>new{o.Number,o.CargoId,o.TargetSlot,o.Receiver})},
    transfers=stock.Transport.LastTransfers.Where(t=>t.Source==3 || t.Target==3 || t.RobotId==26),
+   battles=w.Campaign.RobotBattles.Scenes.Where(b=>b.TargetNode==3)
+    .Select(b=>new{b.Id,b.Winner,b.Finished,b.Defender,b.SourceNode,
+     armies=b.Armies.Select(a=>new{a.Owner,a.HomeNode}),
+     first=b.Frames.FirstOrDefault()?.Units.Select(u=>new{u.Id,u.Owner,role=u.Role.ToString(),u.Shields,u.Daggers,u.Rifles}),
+     entrants=b.Frames.SelectMany(f=>f.Units).DistinctBy(u=>u.Id).Select(u=>new{u.Id,u.Owner,role=u.Role.ToString()})}),
    orders=stock.LongDelivery.Orders.Select(o=>new{o.Number,o.Source,o.Target,o.Node,o.CargoId,o.Receiver,o.Status}),
-   delivered=stock.LongDelivery.Results.Where(o=>o.Number is 1 or 5 or 6 || o.RobotId==26)
+   delivered=stock.LongDelivery.Results.Where(o=>o.Number is 1 or 5 or 6 || o.RobotId is 26 or 35)
     .Select(o=>new{o.Number,o.Status})}));
  }
  Trace("initial");
+ bool receiverConsumed=false;
  for(int step=0;step<4;step++){
   if(w.Campaign.Phase!=CampaignPhase.Domestic)
    throw new InvalidOperationException("Expected a domestic phase.");
+  if(receiverConsumed && args.Contains("--relay3-review-consumed")){
+   var pending=stock.LongDelivery.Orders.Single(o=>o.Number==1 && !o.Started);
+   if(!stock.LongDelivery.Cancel(stock,pending.Number,"組立済みの受取先を再確認して解除"))
+    throw new InvalidOperationException("Expected pending delivery cancellation.");
+   Console.WriteLine(JsonSerializer.Serialize(new{reviewConsumed="CANCELLED",turn=w.Population.Turn}));
+  }
+  if(step==1 && args.Contains("--relay3-guard26")){
+   if(!stock.PartPlanning.ReserveRole(w,3,26,HangarReservation.Defense,1))
+    throw new InvalidOperationException("The standard defense reservation was rejected.");
+  }
+  if(step==1 && args.Contains("--relay3-merge65")){
+   var robot=stock.Nodes[3].Robots.Single(r=>r.Id==35);
+   int slot=Array.FindIndex(stock.Nodes[13].Robots.ToArray(),r=>r.Id==65);
+   var reserve=typeof(RobotLongDelivery).GetMethod("ReserveComputer",
+    System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
+   reserve.Invoke(stock.LongDelivery,new object[]{w,3,13,robot.Id,robot.Parts,65L,1,slot});
+  }
+  if(step==1 && args.Contains("--relay3-ship26")){
+   var robot=stock.Nodes[3].Robots.Single(r=>r.Id==26 && r.CanFight);
+   var reserve=typeof(RobotLongDelivery).GetMethod("ReserveComputer",
+    System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
+   int slot=Enumerable.Range(stock.Nodes[5].Count,stock.Nodes[5].TotalCapacity-stock.Nodes[5].Count)
+    .FirstOrDefault(i=>!stock.LongDelivery.Orders.Any(o=>o.Target==5 && o.Receiver==null && o.TargetSlot==i),-1);
+   if(slot>=0)reserve.Invoke(stock.LongDelivery,new object[]{w,3,5,robot.Id,robot.Parts,null,1,slot});
+   Console.WriteLine(JsonSerializer.Serialize(new{ship26Slot=slot,turn=w.Population.Turn}));
+  }
+  if(step==2){
+   if(args.Contains("--relay3-auto-review") || args.Contains("--relay3-manual-review")){
+    var orders=stock.LongDelivery.Orders;
+    int index=orders.FindIndex(order=>order.Number==1);
+    orders[index]=orders[index] with {Origin=args.Contains("--relay3-manual-review")
+     ?LongDeliveryOrigin.Manual:LongDeliveryOrigin.Computer};
+   }
+   if(args.Contains("--relay3-guard63") &&
+      !stock.PartPlanning.ReserveRole(w,13,63,HangarReservation.Defense,1))
+    throw new InvalidOperationException("The defense reservation for robot 63 was rejected.");
+   foreach(var (option,parts) in new[]{
+    ("--relay3-hold-complete",RobotParts.Complete),("--relay3-hold-legs",RobotParts.Legs)}){
+    if(!args.Contains(option))continue;
+    var weights=stock.Transport.Plan(13,1,parts);
+    if(!weights.Any(weight=>weight.Target==3))
+     throw new InvalidOperationException($"Expected a route from 13 to 3 for {parts}.");
+    stock.Transport.SetPlan(13,1,parts,weights.Where(weight=>weight.Target!=3));
+   }
+  }
+  if(step==3 && (args.Contains("--relay3-auto-review") || args.Contains("--relay3-manual-review") ||
+                args.Contains("--relay3-unknown-review"))){
+   // The historical commander cannot act here. Exercise the planner with an active commander.
+   w.Relations.Powered[1]=true;
+   w.Relations.Pending.RemoveAll(captive=>captive.Ruler==1);
+  }
   w.Campaign.FinishDomestic(w,true,deferDelivery:()=>{Trace("planned");return false;});
+  if(step==3 && (args.Contains("--relay3-manual-review") || args.Contains("--relay3-unknown-review"))){
+   var retained=stock.LongDelivery.Orders.Single(order=>order.Number==1);
+   Console.WriteLine(JsonSerializer.Serialize(new{retained=retained.Origin.ToString(),turn=w.Population.Turn}));
+  }
+  if(step==3 && args.Contains("--relay3-auto-review")){
+   Console.WriteLine(JsonSerializer.Serialize(new{reviewCanAct=w.Relations.CanAct(1),
+    orders=stock.LongDelivery.Orders.Select(order=>new{order.Number,order.Origin}),
+    results=stock.LongDelivery.Results.Select(order=>new{order.Number,order.Status})}));
+   if(!stock.LongDelivery.Results.Any(order=>order.Number==1 && order.Status=="受取先がなくなったため出荷前に解除") ||
+      !stock.Nodes[7].Robots.Any(robot=>robot.Id==5 && !robot.LongDeliveryNumber.HasValue) ||
+      !stock.LongDelivery.Orders.Any(order=>order.Number==6))
+    throw new InvalidOperationException("Expected automatic cancellation of only the stale CPU order.");
+   Console.WriteLine(JsonSerializer.Serialize(new{autoReview="PASS",turn=w.Population.Turn}));
+  }
   Trace("delivered");
+  if(step==2 && args.Contains("--relay3-review-consumed")){
+   var campaignBattles=w.Campaign.RobotBattles;
+   var stored=stock.Nodes.Concat(stock.Retinues).SelectMany(store=>store.Robots);
+   var fighting=campaignBattles.Encounters.Where(e=>!e.Finished).SelectMany(e=>e.Battles)
+    .SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Select(unit=>unit.Robot);
+   bool receiverExists=stored.Concat(stock.ProductionIntakes.Select(intake=>intake.Product))
+    .Concat(stock.ReturningRobots.Select(journey=>journey.Robot)).Concat(campaignBattles.Reserves.Select(reserve=>reserve.Robot))
+    .Concat(fighting).Any(robot=>robot?.Id==64);
+   bool shipped=stock.Transport.LastTransfers.Any(t=>t.Source==13 && t.RobotId==64 && t.Parts==RobotParts.Legs);
+   receiverConsumed=shipped && !receiverExists;
+   Console.WriteLine(JsonSerializer.Serialize(new{receiverId=64,shipped,receiverExists,turn=w.Population.Turn}));
+   if(!receiverConsumed)throw new InvalidOperationException("Expected the shipped receiver to lose its original ID.");
+  }
+  if(step==2 && args.Contains("--relay3-stale-receiver")){
+   var order=stock.LongDelivery.Orders.Single(o=>o.Number==1);
+   if(order.Node!=7 || order.Receiver!=64 || stock.Nodes[13].Robots.Any(r=>r.Id==64))
+    throw new InvalidOperationException("Expected waiting cargo and a missing receiver.");
+   stock.Transport.Resolve(stock,new[]{new RobotShipment(3,13,63,RobotParts.Complete)},
+    (a,b)=>FunctionalDeliveryRoutes.Connected(w,a,b));
+   var advance=typeof(RobotLongDelivery).GetMethod("Advance",
+    System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
+   if(args.Contains("--relay3-cancel-stale")){
+    if(!stock.LongDelivery.Cancel(stock,order.Number,"受取先不在のため出発前に解除"))
+     throw new InvalidOperationException("Expected cancellation before departure.");
+    advance.Invoke(stock.LongDelivery,new object[]{w});
+    if(!stock.Nodes[7].Robots.Any(r=>r.Id==5 && r.LongDeliveryNumber==null) ||
+       !stock.Nodes[3].Robots.Any(r=>r.Id==43) ||
+       !stock.LongDelivery.Results.Any(o=>o.Number==6 && o.Status=="配達完了"))
+     throw new InvalidOperationException("Expected cargo to stay at its origin and delivery 6 to arrive.");
+    stock.Check();
+    Console.WriteLine(JsonSerializer.Serialize(new{staleReceiver="CANCEL_BEFORE_DEPARTURE_PASS",cargo5Node=7,cargo43Node=3}));
+   }else{
+   advance.Invoke(stock.LongDelivery,new object[]{w});
+   if(order.Node!=3 || !order.Started)throw new InvalidOperationException("Expected cargo to enter the relay.");
+   advance.Invoke(stock.LongDelivery,new object[]{w});
+   if(stock.LongDelivery.Orders.Contains(order) || !order.Status.StartsWith("受取先が変わった") ||
+      !stock.Nodes[3].Robots.Any(r=>r.Id==order.CargoId && r.LongDeliveryNumber==null))
+    throw new InvalidOperationException("Expected receiver cancellation and unlocked cargo at relay.");
+   stock.Check();
+   Console.WriteLine(JsonSerializer.Serialize(new{staleReceiver="PASS",order.Node,order.CargoId,order.Status}));
+   }
+  }
   w.Campaign.BeginMilitary();
   w.Campaign.Advance(w,-1,0,automaticAll:true,allPlanned:true);
   stock.Check();

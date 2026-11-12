@@ -1,4 +1,6 @@
-param([Parameter(Mandatory=$true)][string]$Probe,[Parameter(Mandatory=$true)][string]$Source,[Parameter(Mandatory=$true)][string]$Output,[switch]$Paper)
+param([Parameter(Mandatory=$true)][string]$Probe,[Parameter(Mandatory=$true)][string]$Source,[Parameter(Mandatory=$true)][string]$Output,[switch]$Paper,
+      [ValidateSet('Head','Torso','Legs','Side','Back','TorsoSide','LegsSide','TorsoBack','LegsBack')][string]$PaperPart='Head',[switch]$Cardboard,
+      [ValidateSet('Head','Torso','Legs','Side','Back','TorsoSide','LegsSide','TorsoBack','LegsBack')][string]$CardboardPart='Head',[switch]$Foam,[ValidateSet('Head','Torso','Legs')][string]$FoamPart='Head')
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.Drawing
 Add-Type -ReferencedAssemblies System.Drawing.Common,System.Drawing.Primitives,System.Private.Windows.GdiPlus,System.Private.Windows.Core -TypeDefinition @'
@@ -32,7 +34,13 @@ $image=[Drawing.Bitmap]::new($Source);$width=$image.Width;$height=$image.Height;
 $raw=Join-Path $Output 'neutral.rgba'
 [RobotProbePng]::Decode($Source,$raw)
 $mode=@()
-if($Paper){$mode+='--paper'}
+if($Foam){$mode+=switch($FoamPart){'Torso'{'--foam-torso'} 'Legs'{'--foam-legs'} default{'--foam'}}}
+elseif($Cardboard){
+ $mode+=switch($CardboardPart){'Torso'{'--cardboard-torso'} 'Legs'{'--cardboard-legs'} 'Side'{'--cardboard-side'} 'Back'{'--cardboard-back'} 'TorsoSide'{'--cardboard-torso-side'} 'LegsSide'{'--cardboard-legs-side'} 'TorsoBack'{'--cardboard-torso-back'} 'LegsBack'{'--cardboard-legs-back'} default{'--cardboard'}}
+}
+elseif($Paper){
+ $mode+=switch($PaperPart){'Torso'{'--paper-torso'} 'Legs'{'--paper-legs'} 'Side'{'--paper-side'} 'Back'{'--paper-back'} 'TorsoSide'{'--paper-torso-side'} 'LegsSide'{'--paper-legs-side'} 'TorsoBack'{'--paper-torso-back'} 'LegsBack'{'--paper-legs-back'} default{'--paper'}}
+}
 & dotnet $Probe $raw $width $height $Output @mode
 if($LASTEXITCODE -ne 0){throw 'Composite rendering checks failed'}
 foreach($i in 0,1){[RobotProbePng]::Encode((Join-Path $Output "head-$i.rgba"),(Join-Path $Output "head-$i.png"),$width,$height)}

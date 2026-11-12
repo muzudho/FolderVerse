@@ -277,6 +277,34 @@ sealed class GlyphProbe:Game1
   typeof(Game1).GetMethod("DrawNodeAssembly",Flags)!.Invoke(this,null);batch.End();
   var data=new Color[960*540];GraphicsDevice.GetBackBufferData(data);using var image=new Texture2D(GraphicsDevice,960,540);image.SetData(data);using(var f=File.Create(output))image.SaveAsPng(f,960,540);
   w.Robots.PartPlanning.Orders.Clear();w.Robots.PartPlanning.Invalidate();
+  var originalMode=w.EquipmentMode;
+  int originalEmblem=w.CountryEmblem(0);
+  w.EquipmentMode=RobotEquipmentMode.Materials;
+  var paperHangar=complete.Select((robot,index)=>robot with {
+   HeadMaterial=RobotMaterial.Paper,BodyMaterial=RobotMaterial.Paper,LegsMaterial=RobotMaterial.Paper,
+   DamagedParts=index%2==0?(RobotParts)0:RobotParts.Complete
+  }).ToArray();
+  typeof(RobotStore).GetMethod("Replace",Flags)!.Invoke(w.Robots.Nodes[node],new object[]{paperHangar});
+  Set("_hangarReservation",HangarReservation.None);
+  var assemblyDraw=typeof(Game1).GetMethod("DrawNodeAssembly",Flags)!;
+  var withEmblem=new Color[data.Length];
+  foreach(int emblem in new[]{1,0}){
+   w.SetCountryEmblem(0,emblem);
+   GraphicsDevice.Clear(new Color(25,36,48));batch.Begin(transformMatrix:Matrix.CreateScale(.5f));
+   assemblyDraw.Invoke(this,null);batch.End();
+   GraphicsDevice.GetBackBufferData(emblem==1?withEmblem:data);
+  }
+  for(int slot=0;slot<6;slot++){
+   var bounds=(Rectangle)cell.Invoke(null,new object[]{slot})!;
+   int changed=Enumerable.Range(bounds.Top/2,bounds.Height/2).Sum(y=>
+    Enumerable.Range(bounds.Left/2,bounds.Width/2).Count(x=>withEmblem[y*960+x]!=data[y*960+x]));
+   if(changed==0)throw new Exception($"Paper emblem not visible in hangar slot {slot}");
+  }
+  image.SetData(withEmblem);
+  using(var f=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"paper-hangar.png")))image.SaveAsPng(f,960,540);
+  w.SetCountryEmblem(0,originalEmblem);
+  w.EquipmentMode=originalMode;
+  Console.WriteLine("PASS paper emblems affect pixels in all six actual hangar cells at 960x540.");
   typeof(RobotStore).GetMethod("SetCapacity",Flags)!.Invoke(w.Robots.Nodes[node],new object[]{7});
   var foreign=new Robot(300001,1,RobotParts.Complete);
   typeof(RobotStore).GetMethod("Replace",Flags)!.Invoke(w.Robots.Nodes[node],new object[]{new[]{foreign}});
@@ -586,11 +614,21 @@ sealed class GlyphProbe:Game1
   var paper = new Robot(700,0,RobotParts.Head){HeadMaterial=RobotMaterial.Paper};
   draw.Invoke(this,new object[]{new Rectangle(100,110,84,150),paper,false,1f,null});
   draw.Invoke(this,new object[]{new Rectangle(300,110,84,150),paper with {HeadOrigin=1},false,1f,null});
-  var paperSoldier=paper with {Parts=RobotParts.Complete};
+  var paperSoldier=paper with {Parts=RobotParts.Complete, BodyMaterial=RobotMaterial.Paper, LegsMaterial=RobotMaterial.Paper};
+  draw.Invoke(this,new object[]{new Rectangle(100,270,84,150),paperSoldier,false,1f,null});
+  draw.Invoke(this,new object[]{new Rectangle(300,270,84,150),paperSoldier with {DamagedParts=RobotParts.Complete},false,1f,null});
   if (!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(510,110,62,85),paperSoldier,
        BattleRole.Soldier,BattleFacing.South,true,1f})!)
    throw new Exception("Front soldier failed to use paper head artwork");
+  for(int index=0;index<directions.Length;index++){
+   var orientedPaper=paperSoldier with {BodyOrigin=index%2,LegsOrigin=index%2, DamagedParts=index==1?RobotParts.Complete:0};
+   if (!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(480+120*index,270,62,85),
+        orientedPaper with {HeadOrigin=index%2},BattleRole.Soldier,directions[index],true,1f})!)
+    throw new Exception($"Oriented soldier failed to use paper artwork facing {directions[index]}");
+  }
   batch.End();
+  if(Get("_paperSideHead")==null || Get("_paperRearHead")==null)
+   throw new Exception("Oriented paper head textures were not loaded");
   var paperArt=(RobotHeadTexture)Get("_paperHeadTextures");
   paperArt.Get(materialWorld,0).GetData(firstFlag);
   paperArt.Get(materialWorld,1).GetData(secondFlag);
@@ -599,11 +637,71 @@ sealed class GlyphProbe:Game1
       firstFlag[142*size+110].A==0 || firstFlag[142*size+110]!=secondFlag[142*size+110] ||
       firstFlag[140*size+184].A==0 || firstFlag[140*size+184]!=secondFlag[140*size+184])
    throw new Exception("Paper head flags must preserve face, fold and alpha");
+  foreach(string name in new[]{"_paperTorsoTextures","_paperLegTextures","_paperSideTorso","_paperSideLegs","_paperRearTorso","_paperRearLegs"}){
+   var partArt=(RobotHeadTexture)Get(name);
+   partArt.Get(materialWorld,0).GetData(firstFlag);
+   partArt.Get(materialWorld,0,true).GetData(secondFlag);
+   if(firstFlag.SequenceEqual(secondFlag) || !firstFlag.Select(p=>p.A).SequenceEqual(secondFlag.Select(p=>p.A)))
+    throw new Exception("Paper body wear must preserve alpha and change painted pixels");
+  }
   GraphicsDevice.GetBackBufferData(globePixels);
   globeImage.SetData(globePixels);
   using(var paperFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"paper-glyph.png")))
    globeImage.SaveAsPng(paperFile,960,540);
   Console.WriteLine("PASS paper head in shared glyph and front soldier preserves face, fold and alpha.");
+  GraphicsDevice.Clear(background);
+  batch.Begin();
+  var cardboard = new Robot(701,0,RobotParts.Complete){
+   HeadMaterial=RobotMaterial.Cardboard,BodyMaterial=RobotMaterial.Cardboard,LegsMaterial=RobotMaterial.Cardboard};
+  draw.Invoke(this,new object[]{new Rectangle(100,110,84,150),cardboard,false,1f,null});
+  draw.Invoke(this,new object[]{new Rectangle(300,110,84,150),
+   cardboard with {HeadOrigin=1,BodyOrigin=1,LegsOrigin=1,DamagedParts=RobotParts.Complete},false,1f,null});
+  if (!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(510,110,62,85),cardboard,
+       BattleRole.Soldier,BattleFacing.South,true,1f})!)
+   throw new Exception("Front soldier failed to draw cardboard parts");
+  for(int index=0;index<directions.Length;index++){
+   var oriented=cardboard with {HeadOrigin=index%2,BodyOrigin=index%2,LegsOrigin=index%2,
+       DamagedParts=index==1?RobotParts.Complete:0};
+   if (!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(480+120*index,270,62,85),
+        oriented,BattleRole.Soldier,directions[index],true,1f})!)
+    throw new Exception($"Soldier failed to draw cardboard head facing {directions[index]}");
+  }
+  batch.End();
+  foreach(string name in new[]{"_cardboardHeadTextures","_cardboardTorsoTextures","_cardboardLegTextures",
+      "_cardboardSideHead","_cardboardRearHead","_cardboardSideTorso","_cardboardSideLegs",
+      "_cardboardRearTorso","_cardboardRearLegs"}){
+   var cardboardArt=(RobotHeadTexture)Get(name);
+   cardboardArt.Get(materialWorld,0).GetData(firstFlag);
+   cardboardArt.Get(materialWorld,0,true).GetData(secondFlag);
+   if(firstFlag.SequenceEqual(secondFlag) || !firstFlag.Select(p=>p.A).SequenceEqual(secondFlag.Select(p=>p.A)))
+    throw new Exception($"Cardboard wear must change paint and preserve alpha: {name}");
+  }
+  GraphicsDevice.GetBackBufferData(globePixels);
+  globeImage.SetData(globePixels);
+  using(var cardboardFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"cardboard-glyph.png")))
+   globeImage.SaveAsPng(cardboardFile,960,540);
+  Console.WriteLine("PASS full cardboard shared glyph and front soldier with alpha-preserving wear.");
+  GraphicsDevice.Clear(background);
+  batch.Begin();
+  var foam=new Robot(702,0,RobotParts.Complete){HeadMaterial=RobotMaterial.Foam};
+  draw.Invoke(this,new object[]{new Rectangle(100,110,84,150),foam,false,1f,null});
+  draw.Invoke(this,new object[]{new Rectangle(300,110,84,150),
+   foam with {HeadOrigin=1,DamagedParts=RobotParts.Head},false,1f,null});
+  if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(510,110,62,85),foam,
+      BattleRole.Soldier,BattleFacing.South,true,1f})!)
+   throw new Exception("Front soldier failed to draw foam head");
+  batch.End();
+  var foamArt=(RobotHeadTexture)Get("_foamHeadTextures");
+  foamArt.Get(materialWorld,0).GetData(firstFlag);
+  foamArt.Get(materialWorld,0,true).GetData(secondFlag);
+  if(firstFlag.SequenceEqual(secondFlag) || !firstFlag.Select(p=>p.A).SequenceEqual(secondFlag.Select(p=>p.A)) ||
+     firstFlag[139*size+82]!=secondFlag[139*size+82])
+   throw new Exception("Foam wear must change the shell and preserve face and alpha");
+  GraphicsDevice.GetBackBufferData(globePixels);
+  globeImage.SetData(globePixels);
+  using(var foamFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"foam-glyph.png")))
+   globeImage.SaveAsPng(foamFile,960,540);
+  Console.WriteLine("PASS foam head in shared glyph and front soldier with protected face and alpha.");
   Exit();
  }
  protected override void UnloadContent(){(Get("_robotHeadTextures") as IDisposable)?.Dispose();batch?.Dispose();pixel?.Dispose();}

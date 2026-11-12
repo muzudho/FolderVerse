@@ -734,6 +734,9 @@ public partial class Game1 : Game
         _robotHeadTextures?.EndFrame(); _robotTorsoTextures?.EndFrame(); _robotLegTextures?.EndFrame();
         _mapleHeadTextures?.EndFrame();
         _paperHeadTextures?.EndFrame();
+        _paperSideHead?.EndFrame(); _paperRearHead?.EndFrame();
+        _paperSideTorso?.EndFrame(); _paperSideLegs?.EndFrame();
+        _paperTorsoTextures?.EndFrame(); _paperLegTextures?.EndFrame();
         _mapleTorsoTextures?.EndFrame(); _mapleLegTextures?.EndFrame();
         _mapleSideHead?.EndFrame(); _mapleRearHead?.EndFrame();
         _mapleSideTorso?.EndFrame(); _mapleSideLegs?.EndFrame();
