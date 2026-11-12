@@ -56,7 +56,7 @@ public partial class Game1
         }
         return false;
     }
-    private Point DemoAssemblySourcePoint()=>_demoSourceSlot<0?Point.Zero:HangarPartBounds(_demoSourceSlot,_demoAssemblyPart==RobotParts.Head?0:_demoAssemblyPart==RobotParts.Body?1:2).Center;
+    private Point DemoAssemblySourcePoint()=>_demoSourceSlot<0?Point.Zero:AssemblyPartBounds(_demoSourceSlot,_demoAssemblyPart==RobotParts.Head?0:_demoAssemblyPart==RobotParts.Body?1:2).Center;
     private void DemoAssemblyPress()
     {
         var pressed=new MouseState(0,0,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);

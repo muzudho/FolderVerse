@@ -27,7 +27,7 @@ public partial class Game1
         if(!_hangarReturnHomeMode || !click)return false;
         if(HangarAssemblyButton.Contains(_pointer) || HangarAbandonButton.Contains(_pointer) || Enumerable.Range(0,4).Any(i=>HangarReservationButton(i).Contains(_pointer))){_hangarReturnHomeMode=false;return false;}
         var store=PlanningStock.Nodes[HangarPlanningNode];SyncHangarSlots();
-        foreach(int slot in VisibleHangarSlots(_hangarSlots.Length,_hangarPage))if(HangarCell(slot).Contains(_pointer)){
+        foreach(int slot in VisibleAssemblySlots())if(AssemblyCell(slot).Contains(_pointer)){
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
             if(robot!=null){
                 bool accepted=_setup.Robots.ToggleReturnHome(_setup,robot.Id,_setup.PlayerSlot,out _hangarMessage);
