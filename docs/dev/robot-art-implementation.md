@@ -739,3 +739,9 @@ NAS foam-views-v001 の foam-head-neutral-v001.png を Content/Images/Robots/ �
 ## 2026年11月12日17時47分・発泡スチロール胴脚の縮小確認
 
 17時31分の斜め縞合成を暗色背景（RGB 24, 30, 40）に置き、素材画像の幅126、84、42pxの３段階で目視した。胴の外周に目立つ半透明の縁は見えず、幅42pxでも胸・袖と脚間を判別できた。小さい表示では粒の細部が弱くなる。比較画像はNAS tmp/delete-after-2026-11-15/robot-art-implementation/foam-body-mask-1731/foam-dark-scale-preview.png。今回は縮小比較のみ。次は同じ原画を実行素材へ登録し、紋章・汚損を共通描画へ接続して格納庫と戦闘の実寸で確認する。
+
+## 2026年11月12日18時02分・発泡スチロール製の正面全身
+
+NAS art-source/robots/foam-views-v001 の foam-torso-neutral-v001.png と foam-legs-neutral-v001.png を Content/Images/Robots/ へ同名登録し、両方のSHA-256一致を確認。素材９種モードの共通描画と正面戦闘駒で胴脚の国旗、胸と右すねの紋章、着色面の汚損を合成する。横・背面に発泡スチロール部位がある戦闘駒は簡易描画。キャッシュは描画後と終了時に解放する。
+
+最終隔離Releaseと描画プローブは警告・エラー各０。発泡スチロール全身、汚損による画素差と全アルファ一致、顔の保護点、格納庫６枠の入力と配送ドラッグ、戦闘201フレームの回帰が通過。960×540の画像で粒、絆創膏、脚間と靴を目視。縮小した戦闘駒では紋章の細部は判別しにくい。比較画像 foam-glyph.png と probe.log はNAS tmp/delete-after-2026-11-15/robot-art-implementation/foam-body-game-1802/。次は横・背面の素地。

@@ -124,7 +124,7 @@ public partial class Game1
 
     private bool DrawOrientedRobotArt(Rectangle area, Robot robot, bool rear, bool west, float opacity)
     {
-        if (UsesFoamHeadArt(robot))
+        if (UsesFoamHeadArt(robot) || UsesFoamArt(robot, RobotParts.Body) || UsesFoamArt(robot, RobotParts.Legs))
             return false;
         bool cardboardTorso = UsesCardboardArt(robot, RobotParts.Body);
         bool cardboardLegs = UsesCardboardArt(robot, RobotParts.Legs);
@@ -227,6 +227,10 @@ public partial class Game1
     {
         _foamHeadTextures?.Dispose();
         _foamHeadTextures = null;
+        _foamTorsoTextures?.Dispose();
+        _foamTorsoTextures = null;
+        _foamLegTextures?.Dispose();
+        _foamLegTextures = null;
         _cardboardSideHead?.Dispose();
         _cardboardRearHead?.Dispose();
         _cardboardSideHead = _cardboardRearHead = null;

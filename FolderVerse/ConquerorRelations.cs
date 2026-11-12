@@ -84,9 +84,14 @@ public sealed partial class ConquerorRelations
     public int[] Party(WorldSetup world)=>Leader<0?Array.Empty<int>():Forest(world).Where(r=>CanAct(r.Ruler) && Controls(r.Ruler) && (!world.HumanPlayers.Contains(r.Ruler) || r.Ruler==Leader)).Select(r=>r.Ruler).ToArray();
     public bool CanAct(int ruler)=>Powered[ruler] && !Pending.Any(p=>p.Ruler==ruler);
     public bool Accepts(WorldSetup world,int ruler)=>world.Looks[ruler].Keywords.Personality is not (3 or 9 or 11);
-    public void Capture(WorldSetup world,int ruler,int victor,int node)
+    public void Capture(WorldSetup world,int ruler,int victor,int node,bool queenFellToEnemy=false)
     {
         if(ruler==victor || Allied(ruler,victor) || !Powered[ruler] || Pending.Any(p=>p.Ruler==ruler))return;
+        if (queenFellToEnemy)
+        {
+            world.Lessons.QueueResearch(Root(ruler), BattleLesson.QueenCaptured);
+            world.Lessons.QueueResearch(Root(victor), BattleLesson.QueenCaptured);
+        }
         if(Allied(victor,Leader) || world.HumanPlayers.Any(h=>Allied(victor,h)) || world.HumanPlayers.Contains(ruler))
         {if(!Pending.Any(p=>p.Ruler==ruler)){Pending.Add(new(ruler,victor,node));Message="処遇を選んでください";}}
         else if(!Allied(ruler,Leader) && !world.HumanPlayers.Any(h=>Allied(ruler,h))){

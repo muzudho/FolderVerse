@@ -303,7 +303,7 @@ public sealed partial class RobotCampaign
     }
     private BattleState NewState(WorldSetup world,RobotEncounter e)
     {
-        var state=new BattleState(world.PlacementSeed^e.Id^_nextBattle,Rules){Id=_nextBattle++,GlobalTurn=world.Population.Turn,Kind=e.Kind,SourceNode=e.Source,TargetNode=e.Target,Defender=e.Defender,Allied=world.Relations.Allied,EquipmentMode=world.EquipmentMode};
+        var state=new BattleState(world.PlacementSeed^e.Id^_nextBattle,Rules){Id=_nextBattle++,GlobalTurn=world.Population.Turn,Kind=e.Kind,SourceNode=e.Source,TargetNode=e.Target,Defender=e.Defender,Allied=world.Relations.Allied,IsFactionRoot=world.Relations.CanWinConquest,EquipmentMode=world.EquipmentMode};
         state.Lessons=(BattleLesson[])world.Lessons.Owned.Clone();
         foreach(var rank in world.Relations.ProvisionalRanking(world))state.NewspaperRanks[rank.Ruler]=rank.Rank;
         var target=world.Nodes.All[e.Target];
@@ -336,7 +336,7 @@ public sealed partial class RobotCampaign
     }
     private void RunSegment(WorldSetup world,RobotEncounter e)
     {
-        foreach(var state in e.Battles){state.Lessons=(BattleLesson[])world.Lessons.Owned.Clone();if(state.GlobalTurn!=world.Population.Turn)state.PersuadedUnits.Clear();state.GlobalTurn=world.Population.Turn;state.Events.Clear();state.Frames.Clear();state.Attacks.Clear();state.GateHits.Clear();state.Persuasions.Clear();}
+        foreach(var state in e.Battles){state.IsFactionRoot=world.Relations.CanWinConquest;state.Lessons=(BattleLesson[])world.Lessons.Owned.Clone();if(state.GlobalTurn!=world.Population.Turn)state.PersuadedUnits.Clear();state.GlobalTurn=world.Population.Turn;state.Events.Clear();state.Frames.Clear();state.Attacks.Clear();state.GateHits.Clear();state.Persuasions.Clear();}
         foreach(var state in e.Battles)foreach(var army in state.Armies.Where(a=>e.WithdrawalOwners.Contains(a.Owner))){
             army.Withdrawing=true;
             foreach(var unit in state.Units.Where(u=>u.Owner==army.Owner && u.Active))unit.Retreating=true;
@@ -468,7 +468,7 @@ public sealed partial class RobotCampaign
             var army=state.Army(unit.Owner);int home=army.HomeNode;
             if(unit.Role==BattleRole.Queen)
             {
-                if(unit.Fallen){int victor=e.LostHomes.GetValueOrDefault(unit.Owner,state.Winner);if(victor>=0)world.Relations.Capture(world,unit.Owner,victor,e.Target);continue;}
+                if(unit.Fallen){int victor=e.LostHomes.GetValueOrDefault(unit.Owner,state.Winner);if(victor>=0)world.Relations.Capture(world,unit.Owner,victor,e.Target,unit.QueenFellToEnemy);continue;}
                 int location=e.Kind==BattleKind.Node && world.Nodes.All[e.Target].Functional && state.Winner>=0 && world.Relations.Allied(unit.Owner,state.Winner)?e.Target:home;
                 if(army.Wanderer && unit.Retreated && location==e.Target)
                 {

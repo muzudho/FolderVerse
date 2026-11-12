@@ -5,12 +5,13 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 
 [Flags]
-public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8,ShieldSupport=16,CloseForDagger=32,CollisionTempo=64,RelieveFront=128,WaitingDaggerSafety=256,CornerEscape=512,ClearEscape=1024,EmptyHome=2048,PursuitLoop=4096,RifleSpacing=8192 }
+public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8,ShieldSupport=16,CloseForDagger=32,CollisionTempo=64,RelieveFront=128,WaitingDaggerSafety=256,CornerEscape=512,ClearEscape=1024,EmptyHome=2048,PursuitLoop=4096,RifleSpacing=8192,QueenCaptured=16384 }
 public sealed record LessonAward(int Owner,BattleLesson Lesson);
 public sealed partial class BattleLessons
 {
-    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine,BattleLesson.ShieldSupport,BattleLesson.CloseForDagger,BattleLesson.CollisionTempo,BattleLesson.RelieveFront,BattleLesson.WaitingDaggerSafety,BattleLesson.CornerEscape,BattleLesson.ClearEscape,BattleLesson.EmptyHome,BattleLesson.PursuitLoop,BattleLesson.RifleSpacing};
+    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine,BattleLesson.ShieldSupport,BattleLesson.CloseForDagger,BattleLesson.CollisionTempo,BattleLesson.RelieveFront,BattleLesson.WaitingDaggerSafety,BattleLesson.CornerEscape,BattleLesson.ClearEscape,BattleLesson.EmptyHome,BattleLesson.PursuitLoop,BattleLesson.RifleSpacing,BattleLesson.QueenCaptured};
     public static string Title(BattleLesson lesson)=>lesson switch {
+        BattleLesson.QueenCaptured=>"戦訓#15 クイーンが戦場に出てきて倒されて捕獲された。",
         BattleLesson.PursuitLoop=>"戦訓#13 斜めに追いかけ合って元に戻った",
         BattleLesson.RifleSpacing=>"戦訓#14 小銃の間合いを作れず追い続けた",
         BattleLesson.FlagCourtesy=>"戦訓#1 国旗でお見合い",
@@ -28,10 +29,15 @@ public sealed partial class BattleLessons
     public BattleLesson[] Owned {get;}=new BattleLesson[WorldSetup.CastCount];
     public List<LessonAward> Pending {get;}=new();
     public void Reset(){Array.Clear(Owned);Pending.Clear();}
+    internal void QueueResearch(int owner, BattleLesson lesson)
+    {
+        if ((Owned[owner] & lesson) == 0 && !Pending.Any(a => a.Owner == owner && a.Lesson == lesson))
+            Pending.Add(new(owner, lesson));
+    }
     public void BringHome(BattleUnit unit)
     {
         if(unit.Fallen || unit.Role==BattleRole.Queen || unit.Robot==null)return;
-        foreach(var lesson in All)if((unit.WitnessedLessons&lesson)!=0 && (Owned[unit.Owner]&lesson)==0 && !Pending.Any(a=>a.Owner==unit.Owner && a.Lesson==lesson))Pending.Add(new(unit.Owner,lesson));
+        foreach(var lesson in All)if((unit.WitnessedLessons&lesson)!=0)QueueResearch(unit.Owner,lesson);
         unit.WitnessedLessons=BattleLesson.None;
     }
     public LessonAward[] Research()

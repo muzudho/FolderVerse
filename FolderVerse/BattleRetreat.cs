@@ -34,6 +34,11 @@ public static class BattleRetreat
     public static void ClearPaths(BattleState battle,BattleUnit[] units,Dictionary<long,BattleAction> actions)
     {
         foreach(var unit in units.Where(u=>u.Retreating)){
+            if (BattleAi.ProtectQueen(battle, unit) && BattleAi.SafeQueenRetreat(battle, unit) is { } safe)
+            {
+                actions[unit.Id] = new(safe, safe == Point.Zero ? unit.Facing : BattleAi.Face(safe));
+                continue;
+            }
             var queue=new Queue<Point>();queue.Enqueue(unit.Position);
             var first=new Dictionary<Point,Point>{{unit.Position,Point.Zero}};Point? move=null;
             bool central=battle.BoardSize==BattleState.Size && battle.Army(unit.Owner).Side==4;

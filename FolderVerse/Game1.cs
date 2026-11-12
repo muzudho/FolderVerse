@@ -732,6 +732,7 @@ public partial class Game1 : Game
     protected override void Draw(GameTime gameTime)
     {
         _robotHeadTextures?.EndFrame(); _robotTorsoTextures?.EndFrame(); _robotLegTextures?.EndFrame();
+        _foamHeadTextures?.EndFrame(); _foamTorsoTextures?.EndFrame(); _foamLegTextures?.EndFrame();
         _mapleHeadTextures?.EndFrame();
         _paperHeadTextures?.EndFrame();
         _paperSideHead?.EndFrame(); _paperRearHead?.EndFrame();

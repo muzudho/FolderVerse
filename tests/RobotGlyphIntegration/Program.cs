@@ -683,13 +683,14 @@ sealed class GlyphProbe:Game1
   Console.WriteLine("PASS full cardboard shared glyph and front soldier with alpha-preserving wear.");
   GraphicsDevice.Clear(background);
   batch.Begin();
-  var foam=new Robot(702,0,RobotParts.Complete){HeadMaterial=RobotMaterial.Foam};
+  var foam=new Robot(702,0,RobotParts.Complete){
+   HeadMaterial=RobotMaterial.Foam,BodyMaterial=RobotMaterial.Foam,LegsMaterial=RobotMaterial.Foam};
   draw.Invoke(this,new object[]{new Rectangle(100,110,84,150),foam,false,1f,null});
   draw.Invoke(this,new object[]{new Rectangle(300,110,84,150),
-   foam with {HeadOrigin=1,DamagedParts=RobotParts.Head},false,1f,null});
+   foam with {HeadOrigin=1,BodyOrigin=1,LegsOrigin=1,DamagedParts=RobotParts.Complete},false,1f,null});
   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(510,110,62,85),foam,
       BattleRole.Soldier,BattleFacing.South,true,1f})!)
-   throw new Exception("Front soldier failed to draw foam head");
+   throw new Exception("Front soldier failed to draw foam parts");
   batch.End();
   var foamArt=(RobotHeadTexture)Get("_foamHeadTextures");
   foamArt.Get(materialWorld,0).GetData(firstFlag);
@@ -697,11 +698,18 @@ sealed class GlyphProbe:Game1
   if(firstFlag.SequenceEqual(secondFlag) || !firstFlag.Select(p=>p.A).SequenceEqual(secondFlag.Select(p=>p.A)) ||
      firstFlag[139*size+82]!=secondFlag[139*size+82])
    throw new Exception("Foam wear must change the shell and preserve face and alpha");
+  foreach(string name in new[]{"_foamTorsoTextures","_foamLegTextures"}){
+   var partArt=(RobotHeadTexture)Get(name);
+   partArt.Get(materialWorld,0).GetData(firstFlag);
+   partArt.Get(materialWorld,0,true).GetData(secondFlag);
+   if(firstFlag.SequenceEqual(secondFlag) || !firstFlag.Select(c=>c.A).SequenceEqual(secondFlag.Select(c=>c.A)))
+    throw new Exception($"Foam wear must change paint and preserve alpha: {name}");
+  }
   GraphicsDevice.GetBackBufferData(globePixels);
   globeImage.SetData(globePixels);
   using(var foamFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"foam-glyph.png")))
    globeImage.SaveAsPng(foamFile,960,540);
-  Console.WriteLine("PASS foam head in shared glyph and front soldier with protected face and alpha.");
+  Console.WriteLine("PASS full foam shared glyph and front soldier with protected face and alpha.");
   Exit();
  }
  protected override void UnloadContent(){(Get("_robotHeadTextures") as IDisposable)?.Dispose();batch?.Dispose();pixel?.Dispose();}
