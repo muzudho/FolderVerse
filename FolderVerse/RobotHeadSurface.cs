@@ -48,6 +48,75 @@ public static class RobotHeadSurface
 
     public readonly record struct RectangleF(float X, float Y, float Width, float Height);
 
+    public static RobotFlagComposite.Surface[] PolystyreneHead(Color[] neutral, int width, int height,
+        BattleFacing facing = BattleFacing.South)
+    {
+        var bounds = facing switch
+        {
+            BattleFacing.East => new RectangleF(262f / 1536, 108f / 1024, 878f / 1536, 796f / 1024),
+            BattleFacing.North => new RectangleF(222f / 1536, 110f / 1024, 1090f / 1536, 796f / 1024),
+            _ => new RectangleF(230f / 1536, 112f / 1024, 1070f / 1536, 790f / 1024)
+        };
+        RectangleF? face = facing == BattleFacing.South
+            ? new(417f / 1536, 374f / 1024, 686f / 1536, 396f / 1024) : null;
+        var result = PolypropyleneBody(neutral, width, height, bounds, face);
+        for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+        {
+            float px = (x + .5f) * 1536 / width;
+            float py = (y + .5f) * 1024 / height;
+            bool latchColumn = facing switch
+            {
+                BattleFacing.East => px is >= 1075 and <= 1147,
+                BattleFacing.North => px is >= 270 and <= 350 || px is >= 1183 and <= 1264,
+                _ => px is >= 273 and <= 348 || px is >= 1175 and <= 1252
+            };
+            bool latch = latchColumn && (py is >= 415 and <= 508 || py is >= 670 and <= 765);
+            bool upperSeam = px is >= 448 and <= 1088 && py is >= 163 and <= 176;
+            bool sideFace = facing == BattleFacing.East && px >= 1143 && py is >= 345 and <= 756;
+            if (latch || upperSeam || sideFace)
+            {
+                int index = y * width + x;
+                result[index] = result[index] with { Coverage = 0 };
+            }
+        }
+        return result;
+    }
+
+    public static RobotFlagComposite.Surface[] PolystyreneBody(Color[] neutral, int width, int height, RobotParts part,
+        BattleFacing facing = BattleFacing.South)
+    {
+        var bounds = (part, facing) switch
+        {
+            (RobotParts.Body, BattleFacing.East) => new RectangleF(405f / 1536, 115f / 1024, 663f / 1536, 810f / 1024),
+            (RobotParts.Legs, BattleFacing.East) => new RectangleF(273f / 1312, 127f / 1199, 715f / 1312, 945f / 1199),
+            (RobotParts.Body, _) => new RectangleF(56f / 1536, 165f / 1024, 1424f / 1536, 685f / 1024),
+            (RobotParts.Legs, _) => new RectangleF(272f / 1536, 148f / 1024, 992f / 1536, 772f / 1024),
+            _ => throw new ArgumentOutOfRangeException(nameof(part))
+        };
+        var result = PolypropyleneBody(neutral, width, height, bounds);
+        for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+        {
+            float px = (x + .5f) * 1536 / width;
+            float py = (y + .5f) * 1024 / height;
+            bool bare = (part, facing) switch
+            {
+                (RobotParts.Body, BattleFacing.East) => px is >= 929 and <= 1000 && py is >= 388 and <= 481,
+                (RobotParts.Legs, BattleFacing.East) => neutral[y * width + x].A < 32,
+                (RobotParts.Body, _) => (px is >= 427 and <= 510 || px is >= 1024 and <= 1108)
+                    && (py is >= 407 and <= 490 || py is >= 628 and <= 713),
+                _ => px is >= 722 and <= 814 && py >= 400
+            };
+            if (bare)
+            {
+                int index = y * width + x;
+                result[index] = result[index] with { Coverage = 0 };
+            }
+        }
+        return result;
+    }
+
     public static RobotFlagComposite.Surface[] FoamHead(Color[] neutral, int width, int height)
         => Foam(neutral, width, height, RobotParts.Head);
 
@@ -62,6 +131,10 @@ public static class RobotHeadSurface
             (RobotParts.Head, BattleFacing.East) => new RectangleF(303,176,731,673),
             (RobotParts.Head, BattleFacing.North) => new RectangleF(390,288,747,502),
             (RobotParts.Head, _) => new RectangleF(216,129,1050,740),
+            (RobotParts.Body, BattleFacing.North) => new RectangleF(456,354,550,396),
+            (RobotParts.Legs, BattleFacing.North) => new RectangleF(438,463,664,198),
+            (RobotParts.Body, BattleFacing.East) => new RectangleF(405,344,641,405),
+            (RobotParts.Legs, BattleFacing.East) => new RectangleF(495,482,441,177),
             (RobotParts.Body, _) => new RectangleF(175,264,1155,511),
             (RobotParts.Legs, _) => new RectangleF(433,478,658,188),
             _ => throw new ArgumentOutOfRangeException(nameof(part))
@@ -83,6 +156,13 @@ public static class RobotHeadSurface
                 (RobotParts.Head, BattleFacing.East) => Panel(px,py,668.5f,512.5f,365.5f,336.5f,156),
                 (RobotParts.Head, BattleFacing.North) => Panel(px,py,763.5f,539,373.5f,251,133),
                 (RobotParts.Head, _) => new Vector2(dx, dy).Length() - 91,
+                (RobotParts.Body, BattleFacing.North) => Panel(px,py,731,552,275,198,65),
+                (RobotParts.Legs, BattleFacing.North) => Math.Max(Panel(px,py,556,562,118,99,43),
+                    Panel(px,py,973,562,129,99,43)),
+                (RobotParts.Body, BattleFacing.East) => Math.Max(Panel(px,py,868,548,177,198,82),
+                    Panel(px,py,517,530,111,89,74)),
+                (RobotParts.Legs, BattleFacing.East) => Math.Max(Panel(px,py,602,572,107,88,55),
+                    Panel(px,py,846,548,90,66,43)),
                 (RobotParts.Body, _) => Math.Max(Panel(px, py, 710, 550, 280, 214, 70),
                     Math.Max(Panel(px, py, 302, 538, 127, 110, 94), Panel(px, py, 1174, 541, 132, 110, 94))),
                 _ => Math.Max(Panel(px, py, 575, 575, 135, 88, 46), Panel(px, py, 938, 575, 137, 88, 46))

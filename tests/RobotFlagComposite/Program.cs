@@ -102,10 +102,11 @@ if(args.Length==5 && args[4]=="--maple")
   "Country change did not affect enough of the painted maple shell");
  Console.WriteLine("PASS real maple head preserves face, bare flank and alpha while two flags recolor the shell.");
 }
-else if(args.Length==4 || args.Length==5 && args[4] is ("--paper" or "--paper-torso" or "--paper-legs" or "--paper-side" or "--paper-back" or "--paper-torso-side" or "--paper-legs-side" or "--paper-torso-back" or "--paper-legs-back" or "--cardboard" or "--cardboard-torso" or "--cardboard-legs" or "--cardboard-side" or "--cardboard-back" or "--cardboard-torso-side" or "--cardboard-legs-side" or "--cardboard-torso-back" or "--cardboard-legs-back" or "--foam" or "--foam-torso" or "--foam-legs" or "--foam-side" or "--foam-back")){
+else if(args.Length==4 || args.Length==5 && args[4] is ("--paper" or "--paper-torso" or "--paper-legs" or "--paper-side" or "--paper-back" or "--paper-torso-side" or "--paper-legs-side" or "--paper-torso-back" or "--paper-legs-back" or "--cardboard" or "--cardboard-torso" or "--cardboard-legs" or "--cardboard-side" or "--cardboard-back" or "--cardboard-torso-side" or "--cardboard-legs-side" or "--cardboard-torso-back" or "--cardboard-legs-back" or "--foam" or "--foam-torso" or "--foam-legs" or "--foam-side" or "--foam-back" or "--foam-torso-side" or "--foam-legs-side" or "--foam-torso-back" or "--foam-legs-back" or "--polystyrene" or "--polystyrene-torso" or "--polystyrene-legs" or "--polystyrene-side" or "--polystyrene-back" or "--polystyrene-torso-side" or "--polystyrene-legs-side")){
  bool cardboard=args.Length==5 && args[4].StartsWith("--cardboard");
  bool foam=args.Length==5 && args[4].StartsWith("--foam");
- bool paper=args.Length==5 && !cardboard && !foam;
+ bool polystyrene=args.Length==5 && args[4].StartsWith("--polystyrene");
+ bool paper=args.Length==5 && !cardboard && !foam && !polystyrene;
  var bytes=File.ReadAllBytes(args[0]);int width=int.Parse(args[1]),height=int.Parse(args[2]);
  Check(bytes.Length==width*height*4,"RGBA input dimensions");
  var original=Enumerable.Range(0,width*height).Select(i=>new Color(bytes[i*4],bytes[i*4+1],bytes[i*4+2],bytes[i*4+3])).ToArray();
@@ -113,12 +114,34 @@ else if(args.Length==4 || args.Length==5 && args[4] is ("--paper" or "--paper-to
   args.Length==5 && args[4].Contains("-legs")?RobotParts.Legs:RobotParts.Head;
  var facing=args.Length==5 && args[4].EndsWith("-side")?BattleFacing.East:
   args.Length==5 && args[4].EndsWith("-back")?BattleFacing.North:BattleFacing.South;
- var surface=foam?RobotHeadSurface.Foam(original,width,height,part,facing):cardboard?(part==RobotParts.Head?RobotHeadSurface.CardboardHead(original,width,height,facing):
+ var surface=polystyrene?(part==RobotParts.Head?RobotHeadSurface.PolystyreneHead(original,width,height,facing):RobotHeadSurface.PolystyreneBody(original,width,height,part,facing)):foam?RobotHeadSurface.Foam(original,width,height,part,facing):cardboard?(part==RobotParts.Head?RobotHeadSurface.CardboardHead(original,width,height,facing):
   RobotHeadSurface.CardboardBody(original,width,height,part,facing)):
   paper?RobotHeadSurface.Paper(original,width,height,part,facing):RobotHeadSurface.Polypropylene(original,width,height);
+ if(polystyrene){
+  bool sideLegs=part==RobotParts.Legs && facing==BattleFacing.East;
+  int AtPolystyrene(int x,int y)=>(y*height/(sideLegs?1199:1024))*width+x*width/(sideLegs?1312:1536);
+  var (protectedPoints, paintedPoint, reflectionPoint)=(part,facing) switch {
+      (RobotParts.Body,BattleFacing.East)=>(new[]{(963,438),(20,20)},(545,535),(550,220)),
+   (RobotParts.Legs,BattleFacing.East)=>(new[]{(20,20),(850,500)},(530,550),(490,738)),
+   (RobotParts.Body,_)=>(new[]{(466,450),(1064,669),(20,20)},(768,540),(768,364)),
+   (RobotParts.Legs,_)=>(new[]{(768,600),(768,850),(20,20)},(530,535),(530,632)),
+   (RobotParts.Head,BattleFacing.East)=>(new[]{(1195,530),(1250,624),(1110,450),(768,169),(20,20)},(768,290),(768,322)),
+   (RobotParts.Head,BattleFacing.North)=>(new[]{(310,455),(1220,700),(768,170),(20,20)},(768,550),(768,327)),
+   _=>(new[]{(760,570),(430,570),(1100,570),(310,455),(1210,705),(768,170),(20,20)},(768,293),(768,333))
+  };
+  foreach(var (x,y) in protectedPoints)
+   Check(surface[AtPolystyrene(x,y)].Coverage==0,"Polystyrene face, latches, seam and background must stay uncolored");
+  Check(surface[AtPolystyrene(paintedPoint.Item1,paintedPoint.Item2)].Coverage==255 &&
+   surface[AtPolystyrene(reflectionPoint.Item1,reflectionPoint.Item2)].Reflection>surface[AtPolystyrene(paintedPoint.Item1,paintedPoint.Item2)].Reflection,
+   "Polystyrene shell must accept paint and keep the narrow reflection");
+ }
  if(foam){
   int AtFoam(int x,int y)=>(y*height/1024)*width+x*width/1536;
   var (painted,bare)=(part,facing) switch {
+   (RobotParts.Body,BattleFacing.North)=>(new[]{(731,552)},new[]{(768,300),(768,780),(290,550),(20,20)}),
+   (RobotParts.Legs,BattleFacing.North)=>(new[]{(556,562),(973,562)},new[]{(768,580),(550,780),(768,300),(20,20)}),
+   (RobotParts.Body,BattleFacing.East)=>(new[]{(880,560),(517,530)},new[]{(760,260),(494,700),(880,790),(20,20)}),
+   (RobotParts.Legs,BattleFacing.East)=>(new[]{(602,572),(846,548)},new[]{(760,340),(730,580),(680,780),(20,20)}),
    (RobotParts.Body,_)=>(new[]{(700,550),(300,520),(1170,520)},new[]{(768,240),(220,700),(1250,710),(20,20)}),
    (RobotParts.Legs,_)=>(new[]{(550,550),(950,550)},new[]{(755,590),(550,780),(950,810),(20,20)}),
    (RobotParts.Head,BattleFacing.East)=>(new[]{(620,430),(900,560)},new[]{(1120,520),(1190,648),(768,110),(20,20)}),
@@ -189,7 +212,7 @@ else if(args.Length==4 || args.Length==5 && args[4] is ("--paper" or "--paper-to
   world.SetCountryEmblem(0,country==0?1:5);
   var output=RobotFlagComposite.Compose(world,0,original,surface,fieldOnly:true);
   var tiles=(IReadOnlyList<Rectangle>)tilesMethod.Invoke(null,new object[]{world.CountryEmblem(0)})!;
-  if(!paper && !cardboard && !foam)RobotFlagComposite.Sticker(output,width,height,new((int)(width*.70f),(int)(height*.59f),(int)(width*.15f),(int)(height*.16f)),tiles,WorldSetup.Colors[world.CountrySecondaryColor(0)]);
+  if(!paper && !cardboard && !foam && !polystyrene)RobotFlagComposite.Sticker(output,width,height,new((int)(width*.70f),(int)(height*.59f),(int)(width*.15f),(int)(height*.16f)),tiles,WorldSetup.Colors[world.CountrySecondaryColor(0)]);
   if(paper && facing!=BattleFacing.South && part==RobotParts.Head)
    RobotFlagComposite.Sticker(output,width,height,new(width*56/100,height*55/100,width*10/100,height*13/100),
     tiles,WorldSetup.Colors[world.CountrySecondaryColor(0)]);

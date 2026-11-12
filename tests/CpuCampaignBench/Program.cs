@@ -33,7 +33,12 @@ if (args.Contains("--short-segment-fixture"))
 }
 if(args.Contains("--no-display-leader")){if(!w.ComputerOnly)throw new InvalidOperationException("Capture-routing experiment requires a computer-only copy.");w.Relations.Leader=-1;}
 var tracedTargets=args.Where(a=>a.StartsWith("--trace-target=")).Select(a=>int.Parse(a.Split('=')[1])).ToHashSet();
-bool traceAll=args.Contains("--trace-all");
+var holdAgainst=args.Where(a=>a.StartsWith("--hold-against=")).Select(a=>a.Split('=')[1].Split(':').Select(int.Parse).ToArray()).ToArray();
+if(holdAgainst.Any(h=>h.Length!=3 || h[0]<1 || h[0]>steps || h[1]<0 || h[2]<0 ||
+    h[1]>=w.ActiveCount || h[2]>=w.ActiveCount || h[1]==h[2]))
+    throw new ArgumentException("--hold-against=STEP:RULER:OPPONENT uses a simulation step and zero-based ruler slots.");
+bool strategy=args.Contains("--strategy-report") || holdAgainst.Length>0;
+bool traceAll=args.Contains("--trace-all") || strategy;
 var clearNodes=args.Where(a=>a.StartsWith("--clear-head-node=")).Select(a=>int.Parse(a.Split('=')[1])).ToHashSet();
 var rally=args.Where(a=>a.StartsWith("--rally-ruler=")).Select(a=>a.Split('=')[1].Split(':').Select(int.Parse).ToArray()).ToArray();
 var swaps=args.Where(a=>a.StartsWith("--swap-head=") || a.StartsWith("--swap-head-once="))
@@ -141,6 +146,35 @@ void PlanReturnRelief(int step)
 }
 w.Robots.ConfigureFactories(w);foreach(var battle in w.Campaign.RobotBattles.Encounters.SelectMany(e=>e.Battles))battle.Allied=w.Relations.Allied;
 bool Conquered()=>w.Relations.ProvisionalRanking(w).Any(r=>r.Cells==w.Cells.Length && w.Relations.CanWinConquest(r.Ruler));
+var initialRanks=strategy?StrategyRanks():Array.Empty<StrategyRank>();
+var previousRanks=initialRanks;
+var previousLeaders=TerritoryLeaders(initialRanks);
+int leaderChanges=0, overtakes=0, removedOrders=0;
+StrategyRank[] StrategyRanks()=>w.Relations.ProvisionalRanking(w).Where(r=>w.Relations.CanWinConquest(r.Ruler))
+    .Select(r=>new StrategyRank(r.Ruler,r.Rank,r.Cells,r.Nodes)).ToArray();
+static int[] TerritoryLeaders(StrategyRank[] ranks)
+{
+    if(ranks.Length==0)return Array.Empty<int>();
+    int maximum=ranks.Max(r=>r.Cells);
+    return ranks.Where(r=>r.Cells==maximum).Select(r=>r.Ruler).Order().ToArray();
+}
+if(strategy)
+{
+    var models=initialRanks.Select(r=>{
+        var nodes=w.Nodes.All.Where(n=>n.Owner>=0 && w.Relations.Root(n.Owner)==r.Ruler).ToArray();
+        var units=nodes.SelectMany(n=>w.Robots.Nodes[n.Id].Robots)
+            .Concat(Enumerable.Range(0,w.ActiveCount).Where(i=>w.Relations.Root(i)==r.Ruler).SelectMany(i=>w.Robots.Retinues[i].Robots))
+            .Where(u=>u.CanFight).ToArray();
+        var equipment=units.Select(u=>u.Equipment(u.Owner,w.EquipmentMode)).ToArray();
+        return new {r.Ruler,r.Rank,r.Cells,r.Nodes,completeRobots=units.Length,
+            shields=equipment.Sum(e=>e.Shields),daggers=equipment.Sum(e=>e.Daggers),rifles=equipment.Sum(e=>e.Rifles),
+            productionLanes=nodes.Sum(n=>w.Robots.Workshops[n.Id].ProductionLines.Length)};
+    }).ToArray();
+    Console.WriteLine(JsonSerializer.Serialize(new {trace="strategy-initial",startingTurn,w.WorldSeed,w.CastSeed,w.PlacementSeed,w.FortuneSeed,
+        version=typeof(WorldSetup).Assembly.GetName().Version!.ToString(),equipmentMode=w.EquipmentMode.ToString(),
+        displayLeader=w.Relations.Leader,inputHash=SaveHash(args[0]),modelHash=SaveHash(typeof(WorldSetup).Assembly.Location),
+        probeHash=SaveHash(typeof(StrategyRank).Assembly.Location),holds=holdAgainst,leaders=previousLeaders,factions=models}));
+}
 void Report(int step){var factionSizes=w.Nodes.All.Where(n=>n.Owner>=0).GroupBy(n=>w.Relations.Root(n.Owner)).Select(g=>g.Count()).ToArray();var all=w.Robots.Nodes.SelectMany(n=>n.Robots).ToArray();Console.WriteLine(JsonSerializer.Serialize(new{step,w.WorldSeed,w.CastSeed,w.PlacementSeed,w.FortuneSeed,version=typeof(WorldSetup).Assembly.GetName().Version!.ToString(),totalCells=w.Cells.Length,totalNodes=w.Nodes.All.Length,conquered=Conquered(),largestFactionNodes=factionSizes.DefaultIfEmpty(0).Max(),largestFactionCells=w.Relations.ProvisionalRanking(w).Where(r=>w.Relations.CanWinConquest(r.Ruler)).Select(r=>r.Cells).DefaultIfEmpty(0).Max(),turn=w.Population.Turn,independent=Enumerable.Range(0,w.ActiveCount).Count(o=>w.Relations.CanWinConquest(o)),powered=w.Relations.Powered.Take(w.ActiveCount).Count(p=>p),occupied=all.Length,capacity=w.Robots.Nodes.Sum(n=>n.TotalCapacity),deployable=w.Nodes.All.Where(n=>n.Owner>=0).Sum(n=>w.Campaign.RobotBattles.AvailableFrom(w,n.Owner,n.Id)),blocked=w.Robots.Workshops.Sum(s=>s.ProductionLines.Count(l=>l.Waiting)),disposal=all.Count(r=>r.Disposal),returning=all.Count(r=>r.ReturnHomeCommander.HasValue)+w.Robots.ReturningRobots.Count,longDelivery=w.Robots.LongDelivery.Orders.Count,ongoing=w.Campaign.RobotBattles.Encounters.Count(e=>!e.Finished),maxBattle=w.Campaign.RobotBattles.Encounters.Where(e=>!e.Finished).SelectMany(e=>e.Battles).Select(b=>b.Turn).DefaultIfEmpty(0).Max()}));}
 var attackTargets=new Dictionary<int,int>();var encounterOutcomes=new Dictionary<string,int>();int hostileMarches=0;long committedRobots=0;
 Report(0);
@@ -231,7 +265,7 @@ for(int step=1;step<=steps;step++){
             transferSafety.Add((transfer.Source,transfer.Target,transfer.Owner,
                 w.Campaign.RobotBattles.MarchTargets(w,transfer.Target).Where(t=>w.Nodes.All[t].Owner>=0 && !w.Relations.Allied(transfer.Owner,w.Nodes.All[t].Owner)).ToArray(),
                 w.Nodes.All.Where(n=>n.Functional && n.Owner>=0 && !w.Relations.Allied(transfer.Owner,n.Owner) && w.Campaign.RobotBattles.CanAttackFrom(w,n.Owner,n.Id,transfer.Target)).Select(n=>n.Id).ToArray()));
-        if(args.Contains("--trace-logistics"))Console.WriteLine(JsonSerializer.Serialize(new{trace="logistics",step,
+        if(strategy || args.Contains("--trace-logistics"))Console.WriteLine(JsonSerializer.Serialize(new{trace="logistics",step,
             direct=w.Robots.DirectDelivery.Orders.Select(o=>new{o.Source,o.Target,o.RobotId,o.Part,o.Owner,
                 sourceAvailable=w.Campaign.RobotBattles.AvailableFrom(w,o.Owner,o.Source),targetAvailable=w.Campaign.RobotBattles.AvailableFrom(w,o.Owner,o.Target),
                 sourceCount=w.Robots.Nodes[o.Source].Count,targetCount=w.Robots.Nodes[o.Target].Count,
@@ -257,8 +291,18 @@ for(int step=1;step<=steps;step++){
                 Console.WriteLine(JsonSerializer.Serialize(new{trace="rally",step,ruler,source=home.Id,target=path[1],goal=target}));
             }
         }
+        foreach(var hold in holdAgainst.Where(h=>h[0]==step)){
+            int actor=hold[1],opponent=hold[2];
+            var list=(List<March>)orders;
+            var withheld=list.Where(o=>o.Ruler==actor && !o.Peaceful && w.Nodes.All[o.TargetNode].Owner is int owner &&
+                owner>=0 && !w.Relations.Allied(actor,owner) && w.Relations.Allied(opponent,owner)).ToArray();
+            foreach(var order in withheld)list.Remove(order);
+            removedOrders+=withheld.Length;
+            Console.WriteLine(JsonSerializer.Serialize(new{trace="strategy-hold",step,actor,opponent,withheld}));
+        }
         foreach(var order in orders.Where(o=>!o.Peaceful && w.Nodes.All[o.TargetNode].Owner>=0 && !w.Relations.Allied(o.Ruler,w.Nodes.All[o.TargetNode].Owner))){hostileMarches++;committedRobots+=order.Fighters;attackTargets[order.TargetNode]=attackTargets.GetValueOrDefault(order.TargetNode)+1;}
-        foreach(var order in orders.Where(o=>traceAll || tracedTargets.Contains(o.TargetNode)))Console.WriteLine(JsonSerializer.Serialize(new{trace="order",step,order,defense=w.Campaign.RobotBattles.DefendingRobots(w,order.Ruler,order.TargetNode),
+        foreach(var order in orders.Where(o=>traceAll || tracedTargets.Contains(o.TargetNode)))Console.WriteLine(JsonSerializer.Serialize(new{trace="order",step,order,
+            targetOwner=w.Nodes.All[order.TargetNode].Owner,defense=w.Campaign.RobotBattles.DefendingRobots(w,order.Ruler,order.TargetNode),
             reserveDefenders=w.Campaign.RobotBattles.Reserves.Count(r=>r.Node==order.TargetNode && r.Robot.CanFight && !w.Relations.Allied(order.Ruler,r.Robot.Owner)),
             equipment=order.RobotIds==null?null:w.Robots.Nodes.Concat(w.Robots.Retinues).SelectMany(s=>s.Robots).Where(r=>order.RobotIds.Contains(r.Id))
                 .Select(r=>new{r.Id,native=r.NativeParts(order.Ruler),uses=r.CombatParts(order.Ruler),rifles=r.CombatRifles(order.Ruler)}).ToArray()}));
@@ -289,7 +333,7 @@ for(int step=1;step<=steps;step++){
     }
     if(args.Contains("--trace-relations") && w.Relations.Pending.Count>0)Console.WriteLine(JsonSerializer.Serialize(new{trace="pending",step,captives=w.Relations.Pending}));
     foreach(var captive in w.Relations.Pending.ToArray())w.Relations.Choose(w,captive,w.Relations.Accepts(w,captive.Ruler)?DefeatedChoice.Recruit:w.Relations.CanMercy(w,captive)?DefeatedChoice.Release:DefeatedChoice.RemoveBattery);
-    if(args.Contains("--trace-relations")){
+    if(strategy || args.Contains("--trace-relations")){
         var changed=Enumerable.Range(0,w.ActiveCount).Where(o=>previousRoots[o]!=w.Relations.Root(o) || previousPowered[o]!=w.Relations.Powered[o]).Select(o=>new{
             ruler=o,previousRoot=previousRoots[o],root=w.Relations.Root(o),previousPowered=previousPowered[o],powered=w.Relations.Powered[o],node=w.Nodes.Current(o)?.Id}).ToArray();
         if(changed.Length>0 || step%5==0)Console.WriteLine(JsonSerializer.Serialize(new{trace="relations",step,changed,
@@ -297,9 +341,37 @@ for(int step=1;step<=steps;step++){
     }
     w.Lessons.Research();
     w.Industry.Roll(w.PlacementSeed^w.FortuneSeed);w.Industry.Apply(w);
+    if(strategy)
+    {
+        var current=StrategyRanks();
+        var leaders=TerritoryLeaders(current);
+        var before=previousRanks.ToDictionary(r=>r.Ruler);
+        var rankLosses=current.Where(r=>before.TryGetValue(r.Ruler,out var prior) && r.Rank>prior.Rank)
+            .Select(r=>new{r.Ruler,fromRank=before[r.Ruler].Rank,toRank=r.Rank,fromCells=before[r.Ruler].Cells,toCells=r.Cells}).ToArray();
+        var passed=(from ahead in current from behind in current
+                    where ahead.Cells>behind.Cells && before.TryGetValue(ahead.Ruler,out var oldAhead) &&
+                        before.TryGetValue(behind.Ruler,out var oldBehind) && oldAhead.Cells<oldBehind.Cells
+                    select new{ahead=ahead.Ruler,behind=behind.Ruler}).ToArray();
+        overtakes+=passed.Length;
+        if(!leaders.SequenceEqual(previousLeaders))leaderChanges++;
+        Console.WriteLine(JsonSerializer.Serialize(new{trace="strategy-turn",step,turn=w.Population.Turn,leaders,
+            factions=current,rankLosses,passed,departed=previousRanks.Select(r=>r.Ruler).Except(current.Select(r=>r.Ruler))}));
+        previousRanks=current;previousLeaders=leaders;
+    }
     foreach(var battle in w.Campaign.RobotBattles.Encounters.SelectMany(e=>e.Battles)){battle.Frames.Clear();battle.Events.Clear();battle.Persuasions.Clear();battle.Attacks.Clear();}
     w.Robots.Check();if(step%5==0 || step==steps)Report(step);
     if(Conquered()){if(step%5!=0 && step!=steps)Report(step);break;}
+}
+
+if(strategy)
+{
+    var winner=previousRanks.FirstOrDefault(r=>r.Cells==w.Cells.Length);
+    var start=initialRanks.FirstOrDefault(r=>r.Ruler==winner?.Ruler);
+    int initialMax=initialRanks.Select(r=>r.Cells).DefaultIfEmpty(0).Max();
+    Console.WriteLine(JsonSerializer.Serialize(new{trace="strategy-summary",turn=w.Population.Turn,winner=winner?.Ruler,
+        winnerInitialRank=start?.Rank,winnerInitialCells=start?.Cells,
+        winnerWasInitialTerritoryLeader=start==null?(bool?)null:start.Cells==initialMax,
+        leaderChanges,strictTurnOvertakes=overtakes,removedOrders}));
 }
 
 var functional=w.Nodes.All.Where(n=>n.Functional && n.Owner>=0).ToArray();
@@ -342,3 +414,4 @@ if (args.Length > 2)
 
 sealed record WithdrawalEntry(int Source, int Target, int Owner, long[] Ids, int Turn, int Count);
 sealed record WithdrawalHistory(string SaveHash, WithdrawalEntry[] Entries);
+sealed record StrategyRank(int Ruler,int Rank,int Cells,int Nodes);

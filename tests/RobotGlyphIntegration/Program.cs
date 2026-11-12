@@ -750,12 +750,25 @@ sealed class GlyphProbe:Game1
   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(510,110,62,85),foam,
       BattleRole.Soldier,BattleFacing.South,true,1f})!)
    throw new Exception("Front soldier failed to draw foam parts");
-  var foamHeadOnly=foam with { BodyMaterial=RobotMaterial.Maple, LegsMaterial=RobotMaterial.Paper };
   for(int i=0;i<directions.Length;i++){
-   var oriented=foamHeadOnly with {HeadOrigin=i%2,DamagedParts=i==0?0:RobotParts.Head};
+   var oriented=foam with {
+       HeadOrigin=i%2,BodyOrigin=i%2,LegsOrigin=i%2,
+       DamagedParts=i==0?0:directions[i]==BattleFacing.North?RobotParts.Head:RobotParts.Complete};
    if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(120+180*i,290,88,125),oriented,
        BattleRole.Soldier,directions[i],true,1f})!)
-    throw new Exception($"Foam head failed to draw facing {directions[i]}");
+    throw new Exception($"Foam soldier failed to draw facing {directions[i]}");
+  }
+  var polystyrene = foam with { HeadMaterial = RobotMaterial.Polystyrene, BodyMaterial = RobotMaterial.Polystyrene,
+    LegsMaterial = RobotMaterial.Polystyrene, DamagedParts = RobotParts.Complete };
+  draw.Invoke(this,new object[]{new Rectangle(625,110,84,150),polystyrene,false,1f,null});
+  if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(715,110,62,85),polystyrene,
+    BattleRole.Soldier,BattleFacing.South,true,1f})!)
+   throw new Exception("Front soldier failed to draw polystyrene head");
+  var mixedPolystyrene = foam with { HeadMaterial = RobotMaterial.Polystyrene, DamagedParts = RobotParts.Head };
+  for(int i=0;i<directions.Length;i++){
+   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(570+100*i,290,88,125),mixedPolystyrene,
+      BattleRole.Soldier,directions[i],true,1f})!)
+    throw new Exception($"Polystyrene head failed to draw facing {directions[i]}");
   }
   batch.End();
   var foamArt=(RobotHeadTexture)Get("_foamHeadTextures");
@@ -771,7 +784,7 @@ sealed class GlyphProbe:Game1
    if(firstFlag.SequenceEqual(secondFlag) || !firstFlag.Select(c=>c.A).SequenceEqual(secondFlag.Select(c=>c.A)))
     throw new Exception($"Foam wear must change paint and preserve alpha: {name}");
   }
-  foreach(string name in new[]{"_foamSideHead","_foamRearHead"}){
+  foreach(string name in new[]{"_foamSideHead","_foamRearHead","_foamSideTorso","_foamSideLegs","_foamRearTorso","_foamRearLegs"}){
    var art=(RobotHeadTexture)Get(name);
    art.Get(materialWorld,0).GetData(firstFlag);
    art.Get(materialWorld,0,true).GetData(secondFlag);
@@ -781,6 +794,20 @@ sealed class GlyphProbe:Game1
   }
   GraphicsDevice.GetBackBufferData(globePixels);
   globeImage.SetData(globePixels);
+  var polystyreneArt=(RobotHeadTexture)Get("_polystyreneHeadTextures");
+  polystyreneArt.Get(materialWorld,0).GetData(firstFlag);
+  polystyreneArt.Get(materialWorld,0,true).GetData(secondFlag);
+  if(firstFlag.SequenceEqual(secondFlag) || firstFlag[142*size+126]!=secondFlag[142*size+126] ||
+     firstFlag.Where((pixel,i)=>pixel.A!=secondFlag[i].A).Any())
+   throw new Exception("Polystyrene wear must change the shell and preserve face and alpha");
+  foreach(string name in new[]{"_polystyreneTorsoTextures","_polystyreneLegTextures","_polystyreneSideHead","_polystyreneRearHead"}){
+   var art=(RobotHeadTexture)Get(name);
+   art.Get(materialWorld,0).GetData(firstFlag);
+   art.Get(materialWorld,0,true).GetData(secondFlag);
+   if(firstFlag.SequenceEqual(secondFlag) || !firstFlag.Select(c=>c.A).SequenceEqual(secondFlag.Select(c=>c.A)) ||
+      name=="_polystyreneSideHead" && firstFlag[132*size+200]!=secondFlag[132*size+200])
+    throw new Exception($"Polystyrene wear must change paint and preserve alpha: {name}");
+  }
   using(var foamFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"foam-glyph.png")))
    globeImage.SaveAsPng(foamFile,960,540);
   Console.WriteLine("PASS full foam shared glyph and front soldier with protected face and alpha.");
