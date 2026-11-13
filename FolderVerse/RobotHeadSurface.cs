@@ -8,7 +8,8 @@ public static class RobotHeadSurface
     // Bounds measured on the neutral PP torso and legs. Transparent pixels
     // stay outside the paint mask, including the gaps between the feet.
     public static RobotFlagComposite.Surface[] PolypropyleneBody(
-        Color[] neutral, int width, int height, RectangleF bounds, RectangleF? protectedFace = null)
+        Color[] neutral, int width, int height, RectangleF bounds, RectangleF? protectedFace = null,
+        float faceCornerRadius = .05f)
     {
         if (width < 1 || height < 1 || neutral == null || (long)width * height != neutral.Length)
             throw new ArgumentException("Body image dimensions do not match its pixels.");
@@ -31,7 +32,7 @@ public static class RobotHeadSurface
             float coverage = 1;
             if (protectedFace is { } face)
             {
-                const float radius = .05f;
+                float radius = faceCornerRadius;
                 float dx = Math.Max(Math.Abs(imageX - face.X - face.Width / 2) - (face.Width / 2 - radius), 0);
                 float dy = Math.Max(Math.Abs(imageY - face.Y - face.Height / 2) - (face.Height / 2 - radius), 0);
                 coverage = Math.Clamp((MathF.Sqrt(dx * dx + dy * dy) - radius) / .008f, 0, 1);
@@ -47,6 +48,182 @@ public static class RobotHeadSurface
     }
 
     public readonly record struct RectangleF(float X, float Y, float Width, float Height);
+
+    public static RobotFlagComposite.Surface[] TinplateHead(Color[] neutral, int width, int height,
+        BattleFacing facing = BattleFacing.South)
+    {
+        bool side = facing is BattleFacing.East or BattleFacing.West;
+        var shell = side ? new RectangleF(230f / 1536, 82f / 1024, 1052f / 1536, 850f / 1024)
+            : new RectangleF(234f / 1536, 89f / 1024, 1056f / 1536, 811f / 1024);
+        RectangleF? faceplate = facing == BattleFacing.North ? null
+            : side ? new(1064f / 1536, 331f / 1024, 240f / 1536, 447f / 1024)
+            : new(318f / 1536, 242f / 1024, 891f / 1536, 621f / 1024);
+        var surface = PolypropyleneBody(neutral, width, height, shell, faceplate, faceCornerRadius: side ? .055f : .09f);
+        ApplyTinplateFinish(neutral, surface, protectGold: facing != BattleFacing.South);
+        return surface;
+    }
+
+    public static RobotFlagComposite.Surface[] TinplateBody(Color[] neutral, int width, int height, RobotParts part,
+        BattleFacing facing = BattleFacing.South)
+    {
+        var shell = (part, facing) switch
+        {
+            (RobotParts.Body, BattleFacing.North) => new RectangleF(124f / 1536, 135f / 1024, 1288f / 1536, 759f / 1024),
+            (RobotParts.Legs, BattleFacing.North) => new RectangleF(257f / 1536, 89f / 1024, 1023f / 1536, 844f / 1024),
+            (RobotParts.Body, BattleFacing.East or BattleFacing.West) => new RectangleF(399f / 1536, 109f / 1024, 732f / 1536, 832f / 1024),
+            (RobotParts.Legs, BattleFacing.East or BattleFacing.West) => new RectangleF(383f / 1536, 93f / 1024, 699f / 1536, 856f / 1024),
+            (RobotParts.Body, _) => new RectangleF(130f / 1536, 137f / 1024, 1274f / 1536, 756f / 1024),
+            (RobotParts.Legs, _) => new RectangleF(259f / 1536, 93f / 1024, 1018f / 1536, 839f / 1024),
+            _ => throw new ArgumentOutOfRangeException(nameof(part))
+        };
+        var surface = PolypropyleneBody(neutral, width, height, shell);
+        ApplyTinplateFinish(neutral, surface, protectGold: true);
+        return surface;
+    }
+
+    private static void ApplyTinplateFinish(Color[] neutral, RobotFlagComposite.Surface[] surface, bool protectGold)
+    {
+        for (int i = 0; i < surface.Length; i++)
+        {
+            Color pixel = neutral[i];
+            float light = (pixel.R + pixel.G + pixel.B) / (3f * 255);
+            float edge = Math.Clamp((pixel.A - 24) / 64f, 0, 1);
+            float paint = protectGold ? Math.Clamp((20 - (pixel.R - pixel.B)) / 14f, 0, 1) : 1;
+            surface[i] = surface[i] with
+            {
+                Coverage = (byte)MathF.Round(surface[i].Coverage * edge * paint),
+                Diffuse = Byte(Math.Clamp(light / .82f, 0, 1)),
+                Reflection = Byte(Math.Clamp((light - .72f) / .28f, 0, 1) * .96f)
+            };
+        }
+    }
+
+    public static RobotFlagComposite.Surface[] SiliconeHead(Color[] neutral, int width, int height,
+        BattleFacing facing = BattleFacing.South)
+    {
+        // Measured on the three 1536 × 1024 neutral silicone head sprites.
+        bool side = facing is BattleFacing.East or BattleFacing.West;
+        var shell = facing switch
+        {
+            BattleFacing.East or BattleFacing.West => new RectangleF(250f / 1536, 104f / 1024, 1007f / 1536, 832f / 1024),
+            BattleFacing.North => new RectangleF(281f / 1536, 127f / 1024, 968f / 1536, 768f / 1024),
+            _ => new RectangleF(294f / 1536, 142f / 1024, 938f / 1536, 741f / 1024)
+        };
+        RectangleF? face = side ? new(1064f / 1536, 351f / 1024, 208f / 1536, 412f / 1024)
+            : facing == BattleFacing.South ? new(463f / 1536, 378f / 1024, 589f / 1536, 371f / 1024) : null;
+        var surface = PolypropyleneBody(neutral, width, height, shell, face, faceCornerRadius: side ? .042f : .065f);
+        ApplySiliconeFinish(neutral, surface);
+        return surface;
+    }
+
+    public static RobotFlagComposite.Surface[] SiliconeBody(Color[] neutral, int width, int height, RobotParts part,
+        BattleFacing facing = BattleFacing.South)
+    {
+        var shell = (part, facing) switch
+        {
+            (RobotParts.Body, BattleFacing.North) => new RectangleF(124f / 1536, 130f / 1024, 1286f / 1536, 798f / 1024),
+            (RobotParts.Legs, BattleFacing.North) => new RectangleF(252f / 1536, 112f / 1024, 1020f / 1536, 833f / 1024),
+            (RobotParts.Body, BattleFacing.East or BattleFacing.West) => new RectangleF(412f / 1536, 110f / 1024, 746f / 1536, 846f / 1024),
+            (RobotParts.Legs, BattleFacing.East or BattleFacing.West) => new RectangleF(407f / 1536, 104f / 1024, 691f / 1536, 853f / 1024),
+            (RobotParts.Body, _) => new RectangleF(131f / 1536, 138f / 1024, 1264f / 1536, 774f / 1024),
+            (RobotParts.Legs, _) => new RectangleF(268f / 1536, 141f / 1024, 995f / 1536, 785f / 1024),
+            _ => throw new ArgumentOutOfRangeException(nameof(part))
+        };
+        var surface = PolypropyleneBody(neutral, width, height, shell);
+        ApplySiliconeFinish(neutral, surface, protectShoulders: part == RobotParts.Body,
+            shoulderColorDifference: facing == BattleFacing.South ? 25 : 20);
+        return surface;
+    }
+
+    private static void ApplySiliconeFinish(Color[] neutral, RobotFlagComposite.Surface[] surface,
+        bool protectShoulders = false, int shoulderColorDifference = 25)
+    {
+        for (int i = 0; i < surface.Length; i++)
+        {
+            Color pixel = neutral[i];
+            float light = (pixel.R + pixel.G + pixel.B) / (3f * 255);
+            float edge = Math.Clamp((pixel.A - 24) / 64f, 0, 1);
+            float paint = protectShoulders ? Math.Clamp((shoulderColorDifference - (pixel.R - pixel.B)) / 13f, 0, 1) : 1;
+            surface[i] = surface[i] with
+            {
+                Coverage = (byte)MathF.Round(surface[i].Coverage * edge * paint),
+                Diffuse = Byte(Math.Clamp(light / .80f, 0, 1)),
+                Reflection = Byte(Math.Clamp((light - .64f) / .36f, 0, 1) * .26f)
+            };
+        }
+    }
+
+    public static RobotFlagComposite.Surface[] SoftVinylHead(Color[] neutral, int width, int height,
+        BattleFacing facing = BattleFacing.South)
+    {
+        // Coordinates measured on the three 1536 × 1024 neutral head sprites.
+        bool side = facing is BattleFacing.East or BattleFacing.West;
+        var shell = facing switch
+        {
+            BattleFacing.East or BattleFacing.West => new RectangleF(260f / 1536, 114f / 1024, 993f / 1536, 818f / 1024),
+            BattleFacing.North => new RectangleF(289f / 1536, 144f / 1024, 943f / 1536, 747f / 1024),
+            _ => new RectangleF(302f / 1536, 145f / 1024, 925f / 1536, 735f / 1024)
+        };
+        RectangleF? face = side ? new(1069f / 1536, 360f / 1024, 201f / 1536, 397f / 1024)
+            : facing == BattleFacing.South ? new(465f / 1536, 379f / 1024, 586f / 1536, 367f / 1024) : null;
+        var surface = PolypropyleneBody(neutral, width, height, shell, face, faceCornerRadius: side ? .043f : .065f);
+        ApplySoftVinylFinish(neutral, surface);
+        return surface;
+    }
+
+    public static RobotFlagComposite.Surface[] SoftVinylBody(Color[] neutral, int width, int height, RobotParts part,
+        BattleFacing facing = BattleFacing.South)
+    {
+        bool side = facing is BattleFacing.East or BattleFacing.West;
+        bool rear = facing == BattleFacing.North;
+        var shell = (part, side, rear) switch
+        {
+            (RobotParts.Body, true, _) => new RectangleF(438f / 1536, 148f / 1024, 586f / 1536, 769f / 1024),
+            (RobotParts.Legs, true, _) => new RectangleF(410f / 1536, 105f / 1024, 685f / 1536, 851f / 1024),
+            (RobotParts.Body, _, true) => new RectangleF(106f / 1536, 159f / 1024, 1323f / 1536, 732f / 1024),
+            (RobotParts.Legs, _, true) => new RectangleF(237f / 1536, 119f / 1024, 1058f / 1536, 808f / 1024),
+            (RobotParts.Body, _, _) => new RectangleF(108f / 1536, 168f / 1024, 1317f / 1536, 723f / 1024),
+            (RobotParts.Legs, _, _) => new RectangleF(246f / 1536, 126f / 1024, 1034f / 1536, 795f / 1024),
+            _ => throw new ArgumentOutOfRangeException(nameof(part))
+        };
+        var surface = PolypropyleneBody(neutral, width, height, shell);
+        ApplySoftVinylFinish(neutral, surface, protectCreamTrim: part == RobotParts.Body);
+        if (side && part == RobotParts.Body)
+        {
+            for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
+            {
+                float px = (x + .5f) * 1536 / width;
+                float py = (y + .5f) * 1024 / height;
+                int i = y * width + x;
+                // The strongest highlights on the cream trim are nearly neutral.
+                float shoulder = Vector2.DistanceSquared(new((px - 707) / 124, (py - 342) / 78), Vector2.Zero);
+                float cuff = Vector2.DistanceSquared(new((px - 940) / 74, (py - 674) / 50), Vector2.Zero);
+                float coverage = Math.Min(Math.Clamp((py - 248) / 9, 0, 1), Math.Clamp((839 - py) / 9, 0, 1));
+                coverage *= Math.Clamp((Math.Min(shoulder, cuff) - .82f) / .18f, 0, 1);
+                surface[i] = surface[i] with { Coverage = (byte)MathF.Round(surface[i].Coverage * coverage) };
+            }
+        }
+        return surface;
+    }
+
+    private static void ApplySoftVinylFinish(Color[] neutral, RobotFlagComposite.Surface[] surface,
+        bool protectCreamTrim = false)
+    {
+        for (int i = 0; i < surface.Length; i++)
+        {
+            Color pixel = neutral[i];
+            float light = (pixel.R + pixel.G + pixel.B) / (3f * 255);
+            float edge = Math.Clamp((pixel.A - 24) / 64f, 0, 1);
+            // The neutral chest and sleeves have a much smaller warm-channel spread than the cream trim.
+            float paint = protectCreamTrim ? Math.Clamp((33 - (pixel.R - pixel.B)) / 16f, 0, 1) : 1;
+            surface[i] = surface[i] with
+            {
+                Coverage = (byte)MathF.Round(surface[i].Coverage * edge * paint),
+                Reflection = Byte(Math.Clamp((light - .63f) / .37f, 0, 1) * .68f)
+            };
+        }
+    }
 
     public static RobotFlagComposite.Surface[] PolystyreneHead(Color[] neutral, int width, int height,
         BattleFacing facing = BattleFacing.South)

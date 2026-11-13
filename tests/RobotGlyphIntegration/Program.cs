@@ -781,7 +781,92 @@ sealed class GlyphProbe:Game1
       BattleRole.Soldier,directions[i],true,1f})!)
     throw new Exception($"Polystyrene head failed to draw facing {directions[i]}");
   }
+  var silicone = foam with { HeadMaterial = RobotMaterial.Silicone, BodyMaterial = RobotMaterial.Silicone,
+    LegsMaterial = RobotMaterial.Silicone, DamagedParts = RobotParts.Complete };
+  draw.Invoke(this,new object[]{new Rectangle(12,290,84,150),silicone,false,1f,null});
+  if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(12,445,62,85),silicone,
+    BattleRole.Soldier,BattleFacing.South,true,1f})!)
+   throw new Exception("Silicone front soldier failed to draw");
+  var tinplate = silicone with { HeadMaterial = RobotMaterial.Tin, BodyMaterial = RobotMaterial.Tin,
+    LegsMaterial = RobotMaterial.Tin };
+  draw.Invoke(this,new object[]{new Rectangle(350,280,84,150),tinplate,false,1f,null});
+  if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(350,445,62,85),tinplate,
+    BattleRole.Soldier,BattleFacing.South,true,1f})!)
+   throw new Exception("Tinplate front soldier failed to draw");
+  for(int i=0;i<directions.Length;i++)
+   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(104+80*i,104,62,85),
+     tinplate,
+     BattleRole.Soldier,directions[i],true,1f})!)
+    throw new Exception($"Tinplate head failed to draw facing {directions[i]}");
+  for(int i=0;i<directions.Length;i++){
+   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(110+90*i,420,62,85),silicone,
+      BattleRole.Soldier,directions[i],true,1f})!)
+    throw new Exception($"Silicone soldier failed to draw facing {directions[i]}");
+  }
+  var softVinyl = foam with { HeadMaterial = RobotMaterial.SoftVinyl, BodyMaterial = RobotMaterial.SoftVinyl,
+    LegsMaterial = RobotMaterial.SoftVinyl, DamagedParts = RobotParts.Complete };
+  draw.Invoke(this,new object[]{new Rectangle(785,110,84,150),softVinyl,false,1f,null});
+  if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(880,110,62,85),softVinyl,
+    BattleRole.Soldier,BattleFacing.South,true,1f})!)
+   throw new Exception("Soft vinyl front art must draw");
+  for(int i=0;i<directions.Length;i++){
+   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(450+100*i,420,62,85),softVinyl,
+      BattleRole.Soldier,directions[i],true,1f})!)
+    throw new Exception($"Soft vinyl head failed to draw facing {directions[i]}");
+  }
   batch.End();
+  var tinplateArt=(RobotHeadTexture)Get("_tinplateHeadTextures");
+  tinplateArt.Get(materialWorld,0).GetData(firstFlag);
+  tinplateArt.Get(materialWorld,0,true).GetData(secondFlag);
+  if(firstFlag.SequenceEqual(secondFlag) || firstFlag[137*size+98]!=secondFlag[137*size+98] ||
+     firstFlag[89*size+72]!=secondFlag[89*size+72] ||
+     !firstFlag.Select(p=>p.A).SequenceEqual(secondFlag.Select(p=>p.A)))
+   throw new Exception("Tinplate wear must change the shell and preserve face, fastener and alpha");
+  foreach(var (name, x, y) in new[]{("_tinplateTorsoTextures",87,91),("_tinplateLegTextures",85,68),
+    ("_tinplateSideHead",198,132),("_tinplateRearHead",71,94),
+    ("_tinplateSideTorso",134,104),("_tinplateSideLegs",157,66),
+    ("_tinplateRearTorso",87,91),("_tinplateRearLegs",128,138)}){
+   var art=(RobotHeadTexture)Get(name);
+   art.Get(materialWorld,0).GetData(firstFlag);
+   art.Get(materialWorld,0,true).GetData(secondFlag);
+   if(firstFlag.SequenceEqual(secondFlag) || firstFlag[y*size+x]!=secondFlag[y*size+x] ||
+      !firstFlag.Select(p=>p.A).SequenceEqual(secondFlag.Select(p=>p.A)))
+    throw new Exception($"Tinplate wear must preserve fastener and alpha: {name}");
+  }
+  var siliconeArt=(RobotHeadTexture)Get("_siliconeHeadTextures");
+  siliconeArt.Get(materialWorld,0).GetData(firstFlag);
+  siliconeArt.Get(materialWorld,0,true).GetData(secondFlag);
+  if(firstFlag.SequenceEqual(secondFlag) || firstFlag[137*size+100]!=secondFlag[137*size+100] ||
+     !firstFlag.Select(p=>p.A).SequenceEqual(secondFlag.Select(p=>p.A)))
+   throw new Exception("Silicone wear must change the shell and preserve face and alpha");
+  foreach(string name in new[]{"_siliconeTorsoTextures","_siliconeLegTextures","_siliconeSideHead","_siliconeRearHead",
+     "_siliconeSideTorso","_siliconeSideLegs","_siliconeRearTorso","_siliconeRearLegs"}){
+   var art=(RobotHeadTexture)Get(name);
+   art.Get(materialWorld,0).GetData(firstFlag);
+   art.Get(materialWorld,0,true).GetData(secondFlag);
+   if(firstFlag.SequenceEqual(secondFlag) || !firstFlag.Select(c=>c.A).SequenceEqual(secondFlag.Select(c=>c.A)) ||
+      name=="_siliconeTorsoTextures" && firstFlag[95*size+58]!=secondFlag[95*size+58] ||
+      name=="_siliconeSideTorso" && firstFlag[93*size+155]!=secondFlag[93*size+155] ||
+      name=="_siliconeRearTorso" && firstFlag[95*size+58]!=secondFlag[95*size+58] ||
+      name=="_siliconeSideHead" && firstFlag[132*size+195]!=secondFlag[132*size+195])
+    throw new Exception($"Silicone wear must change paint and preserve face, shoulders and alpha: {name}");
+  }
+  var softVinylArt=(RobotHeadTexture)Get("_softVinylHeadTextures");
+  softVinylArt.Get(materialWorld,0).GetData(firstFlag);
+  softVinylArt.Get(materialWorld,0,true).GetData(secondFlag);
+  if(firstFlag.SequenceEqual(secondFlag) || firstFlag[137*size+100]!=secondFlag[137*size+100] ||
+     !firstFlag.Select(p=>p.A).SequenceEqual(secondFlag.Select(p=>p.A)))
+   throw new Exception("Soft vinyl wear must change the shell and preserve face and alpha");
+  foreach(string name in new[]{"_softVinylTorsoTextures","_softVinylLegTextures","_softVinylSideHead","_softVinylRearHead",
+    "_softVinylSideTorso","_softVinylSideLegs","_softVinylRearTorso","_softVinylRearLegs"}){
+   var art=(RobotHeadTexture)Get(name);
+   art.Get(materialWorld,0).GetData(firstFlag);
+   art.Get(materialWorld,0,true).GetData(secondFlag);
+   if(firstFlag.SequenceEqual(secondFlag) || !firstFlag.Select(c=>c.A).SequenceEqual(secondFlag.Select(c=>c.A)) ||
+      name=="_softVinylTorsoTextures" && firstFlag[55*size+128]!=secondFlag[55*size+128] ||
+      name=="_softVinylSideHead" && firstFlag[137*size+195]!=secondFlag[137*size+195])
+    throw new Exception($"Soft vinyl wear must change paint and preserve trim and alpha: {name}");
+  }
   var foamArt=(RobotHeadTexture)Get("_foamHeadTextures");
   foamArt.Get(materialWorld,0).GetData(firstFlag);
   foamArt.Get(materialWorld,0,true).GetData(secondFlag);
@@ -822,6 +907,33 @@ sealed class GlyphProbe:Game1
   using(var foamFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"foam-glyph.png")))
    globeImage.SaveAsPng(foamFile,960,540);
   Console.WriteLine("PASS full foam shared glyph and front soldier with protected face and alpha.");
+  GraphicsDevice.Clear(new Color(25,36,48));
+  batch.Begin();
+  var materials = Enum.GetValues<RobotMaterial>();
+  for(int column=0;column<materials.Length;column++){
+   var material=materials[column];
+   var sample=foam with { HeadMaterial=material, BodyMaterial=material, LegsMaterial=material };
+   int x=18+column*104;
+   for(int row=0;row<facings.Length;row++){
+    var facing=facings[row];
+    foreach(var role in new[]{BattleRole.Soldier,BattleRole.Captain}){
+     const int portraitWidth=48;
+     int offset=role==BattleRole.Soldier?0:portraitWidth;
+     if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(x+offset,16+row*106,portraitWidth,82),
+       sample,role,facing,role==BattleRole.Soldier,1f})!)
+      throw new Exception($"Missing artwork for {material}, {role}, {facing}");
+    }
+   }
+  }
+  for(int i=0;i<facings.Length;i++)
+   if(!(bool)queen.Invoke(this,new object[]{new Rectangle(18+104*i,441,62,85),facings[i],i%2,1f})!)
+    throw new Exception($"Missing Queen artwork for {facings[i]}");
+  batch.End();
+  GraphicsDevice.GetBackBufferData(globePixels);
+  globeImage.SetData(globePixels);
+  using(var matrix=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"robot-art-matrix.png")))
+   globeImage.SaveAsPng(matrix,960,540);
+  Console.WriteLine("PASS 9 materials × 4 facings × 2 soldier roles, plus 4 Queen facings at 960x540.");
   Exit();
  }
  protected override void UnloadContent(){(Get("_robotHeadTextures") as IDisposable)?.Dispose();batch?.Dispose();pixel?.Dispose();}

@@ -14,12 +14,13 @@ public static class ComputerJointAttacks
         var busy=orders.Where(o=>!o.PocketOnly).Select(o=>o.SourceNode>=0?o.SourceNode:w.Nodes.Current(o.Ruler)?.Id??-1).ToHashSet();
         foreach(int owner in owners)BattleLessons.ReserveHomeGuards(w,owner);
         foreach(var faction in owners.GroupBy(w.Relations.Root).OrderBy(g=>g.Key)){
+            var attackPolicy=w.RulerComputerPolicy(faction.Key);
             var family=faction.ToHashSet();
             var sources=w.Nodes.All.Where(n=>n.Functional && family.Contains(n.Owner) && !busy.Contains(n.Id) && !battle.LockedNode(n.Id))
                 .ToDictionary(n=>n.Id,n=>{
                     var robots=battle.SelectableRobots(w,n.Owner,n.Id,false).Where(r=>!used.Contains(r.Id)).ToArray();
                     bool guard=stock.Nodes[n.Id].Robots.Any(r=>r.Owner==n.Owner && r.DefenseOnly && r.CanFight);
-                    return Prefer(n.Owner,robots).Take(Math.Max(0,robots.Length-(!guard && robots.Length>1?1:0))).ToArray();
+                    return Prefer(n.Owner,robots).Take(robots.Length-w.RulerComputerPolicy(n.Owner).GuardCount(robots.Length,guard)).ToArray();
                 });
             int FailedForce(int target)=>battle.Encounters.Where(e=>e.Finished && e.Target==target)
                 .SelectMany(e=>e.Battles).Where(b=>b.Finished && (b.Winner<0 || !w.Relations.Allied(b.Winner,faction.Key)) &&
@@ -32,7 +33,7 @@ public static class ComputerJointAttacks
                     int defense=battle.DefendingRobots(w,faction.Key,t),required=defense+Math.Max(1,(defense+2)/3);
                     required=Math.Max(required,FailedForce(t)+1);
                     int captives=Enumerable.Range(0,w.ActiveCount).Count(o=>w.Relations.Powered[o] && w.Relations.Root(o)!=faction.Key && w.Nodes.Current(o)?.Id==t);
-                    return new{Target=t,Sources=attackers,Required=required,Score=captives*1000-defense*10+(w.Nodes.All[t].Owner<0?0:50)};
+                    return new{Target=t,Sources=attackers,Required=required,Score=attackPolicy.TargetScore(captives,defense,w.Nodes.All[t].Owner>=0)};
                 }).Where(t=>t.Sources.Sum(s=>sources[s].Length)>=t.Required).OrderByDescending(t=>t.Score).ThenBy(t=>t.Target).ToArray();
             foreach(var target in targets){
                 var available=target.Sources.Where(s=>!busy.Contains(s)).OrderByDescending(s=>sources[s].Length).ThenBy(s=>s).ToArray();

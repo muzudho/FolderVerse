@@ -22,7 +22,7 @@ public static class ComputerLogistics
                 var sources=w.Nodes.All.Where(n=>n.Functional && members.Contains(n.Owner) && !Busy(n.Id)).Select(n=>{
                     int count=battles.SelectableRobots(w,n.Owner,n.Id,false).Length;
                     bool guard=stock.Nodes[n.Id].Robots.Any(r=>r.Owner==n.Owner && r.DefenseOnly && r.CanFight);
-                    return new{Node=n.Id,Owner=n.Owner,Count=Math.Max(0,count-(!guard && count>1?1:0))};
+                    return new{Node=n.Id,Owner=n.Owner,Count=count-w.RulerComputerPolicy(n.Owner).GuardCount(count,guard)};
                 }).Where(s=>s.Count>0).ToArray();
                 var queens=family.Where(o=>w.Nodes.Current(o) is {} n && !battles.LockedNode(n.Id)).ToArray();
                 var targets=sources.SelectMany(s=>battles.MarchTargets(w,s.Node)).Concat(queens.SelectMany(o=>battles.MarchTargets(w,w.Nodes.Current(o)!.Id))).Distinct();

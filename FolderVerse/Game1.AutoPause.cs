@@ -35,6 +35,7 @@ public partial class Game1
         }
         if(!click)return true;
         if(CountrySettingsMenuItem.Contains(_pointer))OpenCountrySettings();
+        else if(ComputerManualMenuItem.Contains(_pointer))OpenComputerManual();
         else if(HierarchyMenuItem.Contains(_pointer))_autoPausePage=1;
         else if(InactiveMenuItem.Contains(_pointer))_autoPausePage=2;
         else if(AutoMenuItem.Contains(_pointer))ResumeAutoPause();
@@ -76,6 +77,7 @@ public partial class Game1
             _ui.Button(QuitMenuItem,"ゲームを止めてタイトル画面に戻る",Muted,.48f);
             _ui.Button(AutoMenuItem,"ゲームを再開する",Muted,.48f);
             _ui.Button(CountrySettingsMenuItem,"人間とコンピューター / 国旗の設定",Muted,.46f);
+            DrawComputerManualMenuItem();
         }
         if(_autoPausePage!=0 && !_countrySettingsOpen)_ui.Button(InactiveBack,"システムメニューへ",Muted,.5f);
         _ui.Button(AutoPauseClose,"×",Muted,.7f);_spriteBatch.End();DrawFullscreenCursor();

@@ -6,6 +6,15 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private RobotHeadTexture _robotHeadTextures;
+    private RobotHeadTexture _tinplateHeadTextures, _tinplateTorsoTextures, _tinplateLegTextures;
+    private RobotHeadTexture _tinplateSideHead, _tinplateRearHead;
+    private RobotHeadTexture _tinplateSideTorso, _tinplateSideLegs, _tinplateRearTorso, _tinplateRearLegs;
+    private RobotHeadTexture _siliconeHeadTextures, _siliconeTorsoTextures, _siliconeLegTextures;
+    private RobotHeadTexture _siliconeSideHead, _siliconeRearHead;
+    private RobotHeadTexture _siliconeSideTorso, _siliconeSideLegs, _siliconeRearTorso, _siliconeRearLegs;
+    private RobotHeadTexture _softVinylHeadTextures, _softVinylTorsoTextures, _softVinylLegTextures;
+    private RobotHeadTexture _softVinylSideHead, _softVinylRearHead;
+    private RobotHeadTexture _softVinylSideTorso, _softVinylSideLegs, _softVinylRearTorso, _softVinylRearLegs;
     private RobotHeadTexture _foamHeadTextures, _foamTorsoTextures, _foamLegTextures;
     private RobotHeadTexture _polystyreneHeadTextures, _polystyreneTorsoTextures, _polystyreneLegTextures;
     private RobotHeadTexture _polystyreneSideHead, _polystyreneRearHead;
@@ -40,6 +49,18 @@ public partial class Game1
             return part == RobotParts.Body
                 ? _foamTorsoTextures ??= LoadFoamArt("torso", part, new(.45f,.43f,.14f,.18f))
                 : _foamLegTextures ??= LoadFoamArt("legs", part, new(.58f,.49f,.085f,.13f));
+        if (UsesTinplateArt(robot, part))
+            return part == RobotParts.Body
+                ? _tinplateTorsoTextures ??= LoadTinplateArt("torso", part, new(.42f,.42f,.16f,.19f))
+                : _tinplateLegTextures ??= LoadTinplateArt("legs", part, new(.59f,.73f,.13f,.13f));
+        if (UsesSiliconeArt(robot, part))
+            return part == RobotParts.Body
+                ? _siliconeTorsoTextures ??= LoadSiliconeArt("torso", part, new(.44f,.44f,.12f,.16f))
+                : _siliconeLegTextures ??= LoadSiliconeArt("legs", part, new(.59f,.73f,.11f,.12f));
+        if (UsesSoftVinylArt(robot, part))
+            return part == RobotParts.Body
+                ? _softVinylTorsoTextures ??= LoadSoftVinylArt("torso", part, new(.44f,.44f,.12f,.16f))
+                : _softVinylLegTextures ??= LoadSoftVinylArt("legs", part, new(.59f,.72f,.11f,.12f));
         if (UsesPolystyreneArt(robot, part))
             return part == RobotParts.Body
                 ? _polystyreneTorsoTextures ??= LoadPolystyreneArt("torso", part, new(.45f,.45f,.13f,.18f))
@@ -63,6 +84,12 @@ public partial class Game1
 
     private Rectangle FrontBodyCrop(Robot robot,RobotParts part)
     {
+        if (UsesTinplateArt(robot, part))
+            return part == RobotParts.Body ? new(21,33,214,192) : new(42,22,172,211);
+        if (UsesSiliconeArt(robot, part))
+            return part == RobotParts.Body ? new(21,34,213,195) : new(43,34,170,199);
+        if (UsesSoftVinylArt(robot, part))
+            return part == RobotParts.Body ? new(17,41,222,183) : new(40,30,175,202);
         if (UsesPolystyreneArt(robot, part))
             return part == RobotParts.Body ? new(8,40,240,173) : new(43,36,170,196);
         if (UsesFoamArt(robot, part))
@@ -104,12 +131,18 @@ public partial class Game1
 
         // Back to front at the waist and neck. Crops are in 256px cache coordinates.
         bool mapleLegs=UsesMapleArt(robot,RobotParts.Legs),mapleTorso=UsesMapleArt(robot,RobotParts.Body);
-        Draw(UsesPolystyreneArt(robot, RobotParts.Legs) ? _polystyreneLegTextures :
+        Draw(UsesTinplateArt(robot, RobotParts.Legs) ? _tinplateLegTextures :
+            UsesSiliconeArt(robot, RobotParts.Legs) ? _siliconeLegTextures :
+            UsesSoftVinylArt(robot, RobotParts.Legs) ? _softVinylLegTextures :
+            UsesPolystyreneArt(robot, RobotParts.Legs) ? _polystyreneLegTextures :
             UsesFoamArt(robot, RobotParts.Legs) ? _foamLegTextures :
             UsesCardboardArt(robot,RobotParts.Legs)?_cardboardLegTextures:
             UsesPaperArt(robot,RobotParts.Legs)?_paperLegTextures:mapleLegs?_mapleLegTextures:_robotLegTextures,
             RobotParts.Legs, FrontBodyCrop(robot,RobotParts.Legs), 102, 58, 48);
-        Draw(UsesPolystyreneArt(robot, RobotParts.Body) ? _polystyreneTorsoTextures :
+        Draw(UsesTinplateArt(robot, RobotParts.Body) ? _tinplateTorsoTextures :
+            UsesSiliconeArt(robot, RobotParts.Body) ? _siliconeTorsoTextures :
+            UsesSoftVinylArt(robot, RobotParts.Body) ? _softVinylTorsoTextures :
+            UsesPolystyreneArt(robot, RobotParts.Body) ? _polystyreneTorsoTextures :
             UsesFoamArt(robot, RobotParts.Body) ? _foamTorsoTextures :
             UsesCardboardArt(robot,RobotParts.Body)?_cardboardTorsoTextures:
             UsesPaperArt(robot,RobotParts.Body)?_paperTorsoTextures:mapleTorso?_mapleTorsoTextures:_robotTorsoTextures,
@@ -161,12 +194,57 @@ public partial class Game1
         return File.Exists(path) ? new(GraphicsDevice, path, CountryEmblemArt.Tiles,
             stickerBounds: sticker, polystyrenePart: part, polystyreneFacing: facing) : null;
     }
-    private RobotHeadTexture FrontHeadTexture(Robot robot)=>UsesPolystyreneHeadArt(robot)?_polystyreneHeadTextures:
+    private bool UsesSoftVinylArt(Robot robot, RobotParts part) => _setup.EquipmentMode == RobotEquipmentMode.Materials
+        && robot.Material(part) == RobotMaterial.SoftVinyl;
+    private bool UsesSoftVinylHeadArt(Robot robot) => UsesSoftVinylArt(robot, RobotParts.Head);
+    private RobotHeadTexture LoadSoftVinylArt(string name, RobotParts part, RobotHeadSurface.RectangleF sticker,
+        BattleFacing facing = BattleFacing.South)
+    {
+        string view = facing switch { BattleFacing.East => "side", BattleFacing.North => "back", _ => "neutral" };
+        string path = Path.Combine(AppContext.BaseDirectory, "Content", "Images", "Robots",
+            $"soft-vinyl-{name}-{view}-v001.png");
+        return File.Exists(path) ? new(GraphicsDevice, path, CountryEmblemArt.Tiles,
+            stickerBounds: sticker, softVinylPart: part, softVinylFacing: facing) : null;
+    }
+    private bool UsesSiliconeArt(Robot robot, RobotParts part) => _setup.EquipmentMode == RobotEquipmentMode.Materials
+        && robot.Material(part) == RobotMaterial.Silicone;
+    private bool UsesSiliconeHeadArt(Robot robot) => UsesSiliconeArt(robot, RobotParts.Head);
+    private RobotHeadTexture LoadSiliconeArt(string name, RobotParts part, RobotHeadSurface.RectangleF sticker,
+        BattleFacing facing = BattleFacing.South)
+    {
+        string view = facing switch { BattleFacing.East => "side", BattleFacing.North => "back", _ => "neutral" };
+        string version = facing == BattleFacing.East && part == RobotParts.Body ? "v002" : "v001";
+        string path = Path.Combine(AppContext.BaseDirectory, "Content", "Images", "Robots",
+            $"silicone-{name}-{view}-{version}.png");
+        return File.Exists(path) ? new(GraphicsDevice, path, CountryEmblemArt.Tiles,
+            stickerBounds: sticker, siliconePart: part, siliconeFacing: facing) : null;
+    }
+    private bool UsesTinplateArt(Robot robot, RobotParts part) => _setup.EquipmentMode == RobotEquipmentMode.Materials
+        && robot.Material(part) == RobotMaterial.Tin;
+    private bool UsesTinplateHeadArt(Robot robot) => UsesTinplateArt(robot, RobotParts.Head);
+
+    private RobotHeadTexture LoadTinplateArt(string name, RobotParts part, RobotHeadSurface.RectangleF sticker,
+        BattleFacing facing = BattleFacing.South)
+    {
+        string view = facing switch { BattleFacing.East => "side", BattleFacing.North => "back", _ => "neutral" };
+        string path = Path.Combine(AppContext.BaseDirectory, "Content", "Images", "Robots",
+            $"tinplate-{name}-{view}-v001.png");
+        return File.Exists(path) ? new(GraphicsDevice, path, CountryEmblemArt.Tiles,
+            stickerBounds: sticker, tinplatePart: part, tinplateFacing: facing) : null;
+    }
+
+    private RobotHeadTexture FrontHeadTexture(Robot robot)=>UsesTinplateHeadArt(robot)?_tinplateHeadTextures:
+        UsesSiliconeHeadArt(robot)?_siliconeHeadTextures:
+        UsesSoftVinylHeadArt(robot)?_softVinylHeadTextures:
+        UsesPolystyreneHeadArt(robot)?_polystyreneHeadTextures:
         UsesFoamHeadArt(robot)?_foamHeadTextures:
         UsesPaperHeadArt(robot)?_paperHeadTextures:
         UsesCardboardHeadArt(robot)?_cardboardHeadTextures:
         UsesMapleArt(robot,RobotParts.Head)?_mapleHeadTextures:_robotHeadTextures;
-    private Rectangle? FrontHeadCrop(Robot robot)=>UsesPolystyreneHeadArt(robot)?new(38,27,180,200):
+    private Rectangle? FrontHeadCrop(Robot robot)=>UsesTinplateHeadArt(robot)?new(38,21,178,206):
+        UsesSiliconeHeadArt(robot)?new(48,35,159,187):
+        UsesSoftVinylHeadArt(robot)?new(49,35,157,186):
+        UsesPolystyreneHeadArt(robot)?new(38,27,180,200):
         UsesFoamHeadArt(robot)?new(34,30,179,189):
         UsesPaperHeadArt(robot)?new(46,51,160,163):
         UsesCardboardHeadArt(robot)?new(23,25,209,207):
@@ -180,6 +258,21 @@ public partial class Game1
     {
         if(area.Width<48 || (robot.Role!=RobotRole.Soldier && !(allowCaptain && robot.Role==RobotRole.Captain)) || (robot.Parts&RobotParts.Head)==0 ||
             !showIntegratedMaterial && robot.IntegratedParts!=0)return false;
+        if (UsesTinplateHeadArt(robot))
+        {
+            _tinplateHeadTextures ??= LoadTinplateArt("head", RobotParts.Head, new(.68f,.13f,.07f,.09f));
+            return _tinplateHeadTextures != null;
+        }
+        if (UsesSiliconeHeadArt(robot))
+        {
+            _siliconeHeadTextures ??= LoadSiliconeArt("head", RobotParts.Head, new(.63f,.74f,.095f,.104f));
+            return _siliconeHeadTextures != null;
+        }
+        if (UsesSoftVinylHeadArt(robot))
+        {
+            _softVinylHeadTextures ??= LoadSoftVinylArt("head", RobotParts.Head, new(.63f,.738f,.095f,.104f));
+            return _softVinylHeadTextures != null;
+        }
         if(UsesMapleArt(robot,RobotParts.Head))
         {
             _mapleHeadTextures??=LoadMapleArt("head",RobotParts.Head,new(.61f,.61f,.09f,.14f));

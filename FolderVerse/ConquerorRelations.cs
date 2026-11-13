@@ -83,7 +83,8 @@ public sealed partial class ConquerorRelations
     public bool Controls(int ruler){if(ruler<0 || Leader<0)return false;for(int steps=0;steps<Capacity && ruler>=0;steps++,ruler=Superiors[ruler])if(ruler==Leader)return true;return false;}
     public int[] Party(WorldSetup world)=>Leader<0?Array.Empty<int>():Forest(world).Where(r=>CanAct(r.Ruler) && Controls(r.Ruler) && (!world.HumanPlayers.Contains(r.Ruler) || r.Ruler==Leader)).Select(r=>r.Ruler).ToArray();
     public bool CanAct(int ruler)=>Powered[ruler] && !Pending.Any(p=>p.Ruler==ruler);
-    public bool Accepts(WorldSetup world,int ruler)=>world.Looks[ruler].Keywords.Personality is not (3 or 9 or 11);
+    public bool Accepts(WorldSetup world,int ruler)=>AcceptsRecruitment(world.Looks[ruler]);
+    internal static bool AcceptsRecruitment(ConquerorLook look)=>look.Keywords.Personality is not (3 or 9 or 11);
     public void Capture(WorldSetup world,int ruler,int victor,int node,bool queenFellToEnemy=false)
     {
         if(ruler==victor || Allied(ruler,victor) || !Powered[ruler] || Pending.Any(p=>p.Ruler==ruler))return;

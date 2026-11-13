@@ -134,6 +134,7 @@ public partial class Game1 : Game
         _pointer=CanvasPoint(mouse);_ui.Pointer=_pointer;
         bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
+        if(ComputerManualInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(AutoPauseInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(ComputerExhibition && !_autoPlay)StartAutoPlay();
         if(AutomaticGame)_autoAge+=gameTime.ElapsedGameTime.TotalSeconds;
@@ -745,6 +746,33 @@ public partial class Game1 : Game
         _polystyreneRearTorso?.EndFrame();
         _polystyreneRearLegs?.EndFrame();
         _polystyreneHeadTextures?.EndFrame();
+        _softVinylHeadTextures?.EndFrame();
+        _siliconeHeadTextures?.EndFrame();
+        _tinplateHeadTextures?.EndFrame();
+        _tinplateSideHead?.EndFrame();
+        _tinplateSideTorso?.EndFrame();
+        _tinplateSideLegs?.EndFrame();
+        _tinplateRearHead?.EndFrame();
+        _tinplateRearTorso?.EndFrame();
+        _tinplateRearLegs?.EndFrame();
+        _tinplateTorsoTextures?.EndFrame();
+        _tinplateLegTextures?.EndFrame();
+        _siliconeSideHead?.EndFrame();
+        _siliconeSideTorso?.EndFrame();
+        _siliconeSideLegs?.EndFrame();
+        _siliconeRearHead?.EndFrame();
+        _siliconeRearTorso?.EndFrame();
+        _siliconeRearLegs?.EndFrame();
+        _siliconeTorsoTextures?.EndFrame();
+        _siliconeLegTextures?.EndFrame();
+        _softVinylTorsoTextures?.EndFrame();
+        _softVinylLegTextures?.EndFrame();
+        _softVinylSideHead?.EndFrame();
+        _softVinylRearHead?.EndFrame();
+        _softVinylSideTorso?.EndFrame();
+        _softVinylSideLegs?.EndFrame();
+        _softVinylRearTorso?.EndFrame();
+        _softVinylRearLegs?.EndFrame();
         _polystyreneTorsoTextures?.EndFrame();
         _polystyreneLegTextures?.EndFrame();
         _foamHeadTextures?.EndFrame(); _foamTorsoTextures?.EndFrame(); _foamLegTextures?.EndFrame();
@@ -763,6 +791,7 @@ public partial class Game1 : Game
         _sideHead?.EndFrame(); _sideTorso?.EndFrame(); _sideLegs?.EndFrame();
         _rearHead?.EndFrame(); _rearTorso?.EndFrame(); _rearLegs?.EndFrame();
         if(IsOpeningScreen){DrawOpeningFrame(gameTime);base.Draw(gameTime);return;}
+        if(_computerManualOpen){DrawComputerManual();base.Draw(gameTime);return;}
         if(_autoPaused){DrawAutoPause();base.Draw(gameTime);return;}
         _setup.Robots.PartPlanning.Invalidate();
         BeginNewspaperToyPatternFrame();if(!_conquestOverview)NotifyPlayerTurn();

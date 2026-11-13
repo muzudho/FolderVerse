@@ -33,11 +33,39 @@ if (args.Contains("--short-segment-fixture"))
 }
 if(args.Contains("--no-display-leader")){if(!w.ComputerOnly)throw new InvalidOperationException("Capture-routing experiment requires a computer-only copy.");w.Relations.Leader=-1;}
 var tracedTargets=args.Where(a=>a.StartsWith("--trace-target=")).Select(a=>int.Parse(a.Split('=')[1])).ToHashSet();
+var tracedStockNodes=args.Where(a=>a.StartsWith("--trace-stock-node=",StringComparison.Ordinal))
+    .Select(a=>int.Parse(a.Split('=')[1])).Distinct().Order().ToArray();
+var tracedQueenRoutes=args.Where(a=>a.StartsWith("--trace-queen-route=",StringComparison.Ordinal))
+    .Select(a=>a.Split('=')[1].Split(':').Select(int.Parse).ToArray()).ToArray();
+if(tracedQueenRoutes.Any(route=>route.Length!=2 || route[0]<0 || route[0]>=w.ActiveCount ||
+    route[1]<0 || route[1]>=w.Nodes.All.Length))
+    throw new ArgumentException("--trace-queen-route=RULER:TARGET uses zero-based IDs.");
+if(tracedStockNodes.Any(node=>node<0 || node>=w.Nodes.All.Length))
+    throw new ArgumentOutOfRangeException("--trace-stock-node");
+void TraceStock(int step,string phase)
+{
+    foreach(int node in tracedStockNodes)
+        Console.WriteLine(JsonSerializer.Serialize(new {trace="stock",step,phase,node,owner=w.Nodes.All[node].Owner,
+            robots=w.Robots.Nodes[node].Robots.OrderBy(r=>r.Id)
+                .Select(r=>new{r.Id,r.Owner,r.Parts,r.Role,r.DamagedParts,r.CanFight}),
+            intakes=w.Robots.ProductionIntakes.Where(i=>i.Source==node || (i.Target??i.Source)==node)
+                .Select(i=>new{i.Source,i.Target,i.Product.Id,i.Product.Parts}),
+            edits=w.Robots.PendingEdits.Where(e=>e.Node==node).Select(e=>new{e.Ids,e.SplitPart}),
+            direct=w.Robots.DirectDelivery.Orders.Where(o=>o.Target==node || o.Source==node)
+                .Select(o=>new{o.Number,o.Source,o.Target,o.RobotId,o.Part,o.TargetSlot}),
+            completed=w.Robots.DirectDelivery.CompletedArrivals.Where(a=>w.Robots.Nodes[node].Robots.Any(r=>r.Id==a.Value)),
+            transfers=w.Robots.Transport.LastTransfers.Where(t=>t.Source==node || t.Target==node)}));
+}
 var holdAgainst=args.Where(a=>a.StartsWith("--hold-against=")).Select(a=>a.Split('=')[1].Split(':').Select(int.Parse).ToArray()).ToArray();
 if(holdAgainst.Any(h=>h.Length!=3 || h[0]<1 || h[0]>steps || h[1]<0 || h[2]<0 ||
     h[1]>=w.ActiveCount || h[2]>=w.ActiveCount || h[1]==h[2]))
     throw new ArgumentException("--hold-against=STEP:RULER:OPPONENT uses a simulation step and zero-based ruler slots.");
-bool strategy=args.Contains("--strategy-report") || holdAgainst.Length>0;
+const string beginnerOption = "--beginner-military=";
+var beginnerActors = args.Where(a => a.StartsWith(beginnerOption, StringComparison.Ordinal))
+    .Select(a => int.Parse(a[beginnerOption.Length..])).Distinct().ToArray();
+if (beginnerActors.Any(actor => actor < 0 || actor >= w.ActiveCount))
+    throw new ArgumentOutOfRangeException(beginnerOption, "Use a zero-based ruler slot.");
+bool strategy=args.Contains("--strategy-report") || holdAgainst.Length>0 || beginnerActors.Length>0;
 bool traceAll=args.Contains("--trace-all") || strategy;
 var clearNodes=args.Where(a=>a.StartsWith("--clear-head-node=")).Select(a=>int.Parse(a.Split('=')[1])).ToHashSet();
 var rally=args.Where(a=>a.StartsWith("--rally-ruler=")).Select(a=>a.Split('=')[1].Split(':').Select(int.Parse).ToArray()).ToArray();
@@ -272,7 +300,9 @@ for(int step=1;step<=steps;step++){
         ? w.Campaign.RobotBattles.Encounters.Where(encounter => !encounter.Finished).Select(encounter => encounter.Id).ToHashSet()
         : new HashSet<int>();
     var transferSafety=new List<(int Source,int Target,int Owner,int[] Outgoing,int[] Incoming)>();
+    TraceStock(step,"before-domestic");
     w.Campaign.FinishDomestic(w,true,deferDelivery:()=>{
+        TraceStock(step,"before-delivery");
         if(args.Contains("--check-transfer-safety"))foreach(var transfer in w.Campaign.FunctionTransfers.Orders)
             transferSafety.Add((transfer.Source,transfer.Target,transfer.Owner,
                 w.Campaign.RobotBattles.MarchTargets(w,transfer.Target).Where(t=>w.Nodes.All[t].Owner>=0 && !w.Relations.Allied(transfer.Owner,w.Nodes.All[t].Owner)).ToArray(),
@@ -292,6 +322,18 @@ for(int step=1;step<=steps;step++){
         Console.WriteLine(JsonSerializer.Serialize(new{trace="transfer-safety",step,transfer.Source,transfer.Target,transfer.Owner,addedHostileApproaches=0}));
     }
     TraceSuperiorChanges("domestic");
+    TraceStock(step,"after-domestic");
+    foreach(var route in tracedQueenRoutes)
+    {
+        int ruler=route[0], target=route[1];
+        int source=w.Nodes.Current(ruler)?.Id??-1;
+        var battles=w.Campaign.RobotBattles;
+        var escort=w.Robots.Retinues[ruler].Robots.Where(w.Robots.Training[ruler].Eligible).Select(r=>r.Id);
+        Console.WriteLine(JsonSerializer.Serialize(new{trace="queen-route",step,ruler,source,target,
+            owner=w.Nodes.All[target].Owner,sourceLocked=source>=0 && battles.LockedNode(source),
+            targetLocked=battles.LockedNode(target),edgeLocked=source>=0 && battles.LockedEdge(source,target),
+            canSortie=battles.CanSortie(w,ruler,target),defense=battles.DefendingRobots(w,ruler,target),escort}));
+    }
     var origins = new Dictionary<long, int>();
     w.Campaign.BeginMilitary();w.Campaign.Advance(w,-1,0,automaticAll:true,allPlanned:true,deferResolution:orders=>{
         foreach(var instruction in rally){
@@ -303,6 +345,42 @@ for(int step=1;step<=steps;step++){
                 list.Add(new(ruler,path[1],0,home.Id,Queen:true,PocketOnly:true,Peaceful:true));
                 Console.WriteLine(JsonSerializer.Serialize(new{trace="rally",step,ruler,source=home.Id,target=path[1],goal=target}));
             }
+        }
+        foreach (int actor in beginnerActors)
+        {
+            var list = (List<March>)orders;
+            var replaced = list.Where(order => order.Ruler == actor && !order.Peaceful).ToArray();
+            list.RemoveAll(order => order.Ruler == actor && !order.Peaceful);
+            var beginnerOrders = new List<March>();
+            var battles = w.Campaign.RobotBattles;
+            if (w.Relations.CanAct(actor))
+            {
+                var reserved = list.SelectMany(order => order.RobotIds ?? Array.Empty<long>()).ToHashSet();
+                var targeted = new HashSet<int>();
+                foreach (var source in w.Nodes.All.Where(node => node.Owner == actor && !battles.LockedNode(node.Id)))
+                {
+                    var troops = battles.SelectableRobots(w, actor, source.Id, false)
+                        .Where(robot => !reserved.Contains(robot.Id)).OrderBy(robot => robot.Id).Take(3).ToArray();
+                    if (troops.Length == 0)
+                        continue;
+                    var target = battles.MarchTargets(w, source.Id)
+                        .Where(node => w.Nodes.All[node].Owner < 0 || !w.Relations.Allied(actor, w.Nodes.All[node].Owner))
+                        .Where(node => !targeted.Contains(node) && !battles.LockedNode(node) &&
+                            !battles.LockedEdge(source.Id, node) && battles.CanAttackFrom(w, actor, source.Id, node))
+                        .Select(node => (Node: node, Defense: battles.DefendingRobots(w, actor, node)))
+                        .Where(choice => choice.Defense < troops.Length)
+                        .OrderBy(choice => choice.Defense).ThenBy(choice => choice.Node).Select(choice => choice.Node)
+                        .FirstOrDefault(-1);
+                    if (target < 0)
+                        continue;
+                    targeted.Add(target);
+                    beginnerOrders.Add(new(actor, target, troops.Length, source.Id, Queen: false,
+                        RobotIds: troops.Select(robot => robot.Id).ToArray()));
+                }
+            }
+            list.AddRange(beginnerOrders);
+            Console.WriteLine(JsonSerializer.Serialize(new { trace = "beginner-military", step, actor,
+                replaced, orders = beginnerOrders }));
         }
         foreach(var hold in holdAgainst.Where(h=>h[0]==step)){
             int actor=hold[1],opponent=hold[2];
@@ -335,6 +413,7 @@ for(int step=1;step<=steps;step++){
         return false;
     });
     TraceSuperiorChanges("military");
+    TraceStock(step,"after-military");
     foreach(var encounter in w.Campaign.RobotBattles.Encounters.Where(e=>!previousEncounters.Contains(e.Id) ||
         e.Finished && ongoingEncounters.Contains(e.Id))){
         int winner=encounter.Battles.FirstOrDefault()?.Winner??-1;string result=!encounter.Finished?"ongoing":winner<0?"no-winner":encounter.Defender>=0 && previousRoots[winner]==previousRoots[encounter.Defender]?"defender-held":"attacker-won";
@@ -383,6 +462,9 @@ if(strategy)
     var start=initialRanks.FirstOrDefault(r=>r.Ruler==winner?.Ruler);
     int initialMax=initialRanks.Select(r=>r.Cells).DefaultIfEmpty(0).Max();
     Console.WriteLine(JsonSerializer.Serialize(new{trace="strategy-summary",turn=w.Population.Turn,winner=winner?.Ruler,
+        winnerCharacter=winner==null?(int?)null:w.Looks[winner.Ruler].BaseId+1,
+        characterAssignments=Enumerable.Range(0,w.ActiveCount).Select(ruler=>new{ruler,
+            character=w.Looks[ruler].BaseId+1,variant=w.Looks[ruler].VariantId+1}),
         winnerInitialRank=start?.Rank,winnerInitialCells=start?.Cells,
         winnerWasInitialTerritoryLeader=start==null?(bool?)null:start.Cells==initialMax,
         leaderChanges,strictTurnOvertakes=overtakes,removedOrders}));
