@@ -61,11 +61,22 @@ if(holdAgainst.Any(h=>h.Length!=3 || h[0]<1 || h[0]>steps || h[1]<0 || h[2]<0 ||
     h[1]>=w.ActiveCount || h[2]>=w.ActiveCount || h[1]==h[2]))
     throw new ArgumentException("--hold-against=STEP:RULER:OPPONENT uses a simulation step and zero-based ruler slots.");
 const string beginnerOption = "--beginner-military=";
+bool beginnerPocket = args.Contains("--beginner-pocket");
+const string guardNeutralOption="--guard-neutral-queen=";
+var guardNeutralRulers=args.Where(a=>a.StartsWith(guardNeutralOption,StringComparison.Ordinal))
+    .Select(a=>int.Parse(a[guardNeutralOption.Length..])).ToHashSet();
+if(guardNeutralRulers.Any(r=>r<0 || r>=w.ActiveCount))throw new ArgumentOutOfRangeException(guardNeutralOption);
 var beginnerActors = args.Where(a => a.StartsWith(beginnerOption, StringComparison.Ordinal))
     .Select(a => int.Parse(a[beginnerOption.Length..])).Distinct().ToArray();
 if (beginnerActors.Any(actor => actor < 0 || actor >= w.ActiveCount))
     throw new ArgumentOutOfRangeException(beginnerOption, "Use a zero-based ruler slot.");
-bool strategy=args.Contains("--strategy-report") || holdAgainst.Length>0 || beginnerActors.Length>0;
+const string skipQueenOption="--skip-queen-order=";
+var skipQueenOrders=args.Where(a=>a.StartsWith(skipQueenOption,StringComparison.Ordinal))
+    .Select(a=>a[skipQueenOption.Length..].Split(':').Select(int.Parse).ToArray()).ToArray();
+if(skipQueenOrders.Any(o=>o.Length!=3 || o[0]<1 || o[0]>steps || o[1]<0 || o[1]>=w.ActiveCount ||
+    o[2]<0 || o[2]>=w.Nodes.All.Length))
+    throw new ArgumentException("--skip-queen-order=STEP:RULER:TARGET uses zero-based ruler and node IDs.");
+bool strategy=args.Contains("--strategy-report") || holdAgainst.Length>0 || beginnerActors.Length>0 || skipQueenOrders.Length>0;
 bool traceAll=args.Contains("--trace-all") || strategy;
 var clearNodes=args.Where(a=>a.StartsWith("--clear-head-node=")).Select(a=>int.Parse(a.Split('=')[1])).ToHashSet();
 var rally=args.Where(a=>a.StartsWith("--rally-ruler=")).Select(a=>a.Split('=')[1].Split(':').Select(int.Parse).ToArray()).ToArray();
@@ -352,6 +363,7 @@ for(int step=1;step<=steps;step++){
             var replaced = list.Where(order => order.Ruler == actor && !order.Peaceful).ToArray();
             list.RemoveAll(order => order.Ruler == actor && !order.Peaceful);
             var beginnerOrders = new List<March>();
+            int sources=0, withoutTroops=0, withoutTargets=0, outnumbered=0;
             var battles = w.Campaign.RobotBattles;
             if (w.Relations.CanAct(actor))
             {
@@ -359,28 +371,72 @@ for(int step=1;step<=steps;step++){
                 var targeted = new HashSet<int>();
                 foreach (var source in w.Nodes.All.Where(node => node.Owner == actor && !battles.LockedNode(node.Id)))
                 {
+                    if(!source.Functional)continue;
+                    sources++;
                     var troops = battles.SelectableRobots(w, actor, source.Id, false)
                         .Where(robot => !reserved.Contains(robot.Id)).OrderBy(robot => robot.Id).Take(3).ToArray();
                     if (troops.Length == 0)
+                    {
+                        withoutTroops++;
                         continue;
-                    var target = battles.MarchTargets(w, source.Id)
+                    }
+                    var candidates = battles.MarchTargets(w, source.Id)
                         .Where(node => w.Nodes.All[node].Owner < 0 || !w.Relations.Allied(actor, w.Nodes.All[node].Owner))
                         .Where(node => !targeted.Contains(node) && !battles.LockedNode(node) &&
                             !battles.LockedEdge(source.Id, node) && battles.CanAttackFrom(w, actor, source.Id, node))
-                        .Select(node => (Node: node, Defense: battles.DefendingRobots(w, actor, node)))
+                        .Select(node => (Node: node, Defense: battles.DefendingRobots(w, actor, node))).ToArray();
+                    var target = candidates
                         .Where(choice => choice.Defense < troops.Length)
                         .OrderBy(choice => choice.Defense).ThenBy(choice => choice.Node).Select(choice => choice.Node)
                         .FirstOrDefault(-1);
                     if (target < 0)
+                    {
+                        if(candidates.Length==0)withoutTargets++;else outnumbered++;
                         continue;
+                    }
                     targeted.Add(target);
                     beginnerOrders.Add(new(actor, target, troops.Length, source.Id, Queen: false,
                         RobotIds: troops.Select(robot => robot.Id).ToArray()));
                 }
+                var home = w.Nodes.Current(actor);
+                if (beginnerPocket && home != null && !list.Any(order => order.Ruler == actor && order.Queen))
+                {
+                    var escort = battles.SelectableRobots(w, actor, home.Id, true)
+                        .Where(robot => !reserved.Contains(robot.Id)).OrderBy(robot => robot.Id).Take(3).ToArray();
+                    var target = battles.MarchTargets(w, home.Id)
+                        .Where(node => !targeted.Contains(node) && !battles.LockedNode(node) &&
+                            !battles.LockedEdge(home.Id,node) && battles.CanSortie(w,actor,node))
+                        .Where(node => w.Nodes.All[node].Owner < 0 || !w.Relations.Allied(actor,w.Nodes.All[node].Owner))
+                        .Select(node => (Node: node, Defense: battles.DefendingRobots(w,actor,node)))
+                        .Where(choice => choice.Defense < escort.Length)
+                        .OrderBy(choice => choice.Defense).ThenBy(choice => choice.Node).FirstOrDefault((-1,0)).Item1;
+                    if(target>=0)
+                        beginnerOrders.Add(new(actor,target,escort.Length,home.Id,Queen:true,PocketOnly:true,
+                            RobotIds:escort.Select(robot=>robot.Id).ToArray()));
+                }
             }
             list.AddRange(beginnerOrders);
             Console.WriteLine(JsonSerializer.Serialize(new { trace = "beginner-military", step, actor,
-                replaced, orders = beginnerOrders }));
+                replaced, orders = beginnerOrders, sources, withoutTroops, withoutTargets, outnumbered }));
+        }
+        foreach(var skip in skipQueenOrders.Where(o=>o[0]==step)){
+            var list=(List<March>)orders;
+            var skipped=list.Where(o=>o.Ruler==skip[1] && o.TargetNode==skip[2] && o.Queen && !o.Peaceful).ToArray();
+            foreach(var order in skipped)list.Remove(order);
+            removedOrders+=skipped.Length;
+            Console.WriteLine(JsonSerializer.Serialize(new{trace="skip-queen-order",step,ruler=skip[1],target=skip[2],skipped}));
+        }
+        if(guardNeutralRulers.Count>0 || args.Contains("--guard-neutral-queen")){
+            var list=(List<March>)orders;
+            var battles=w.Campaign.RobotBattles;
+            var skipped=list.Where(o=>(guardNeutralRulers.Count==0 || guardNeutralRulers.Contains(o.Ruler)) &&
+                o.Queen && !o.Peaceful && o.Fighters==0 && o.RobotIds==null &&
+                w.Nodes.All[o.TargetNode].Owner<0 && w.Nodes.Current(o.Ruler) is {} home &&
+                battles.DefendingRobots(w,o.Ruler,o.TargetNode) is int defense && defense>0 &&
+                defense>=battles.SelectableRobots(w,o.Ruler,home.Id,true).Length).ToArray();
+            foreach(var order in skipped)list.Remove(order);
+            removedOrders+=skipped.Length;
+            if(skipped.Length>0)Console.WriteLine(JsonSerializer.Serialize(new{trace="guard-neutral-queen",step,skipped}));
         }
         foreach(var hold in holdAgainst.Where(h=>h[0]==step)){
             int actor=hold[1],opponent=hold[2];
