@@ -133,15 +133,26 @@ public partial class Game1
     }
 
     private void DrawHangarOverview(RobotStore store)
+        =>DrawHangarTransition(store,new(HangarGridColumns,Math.Max(1,HangarGridRows)),Point.Zero,Point.Zero,HangarIntroProgress);
+
+    private void DrawPersuasionHangarTransition(RobotStore store)
     {
-        var overview=new Point(HangarGridColumns,Math.Max(1,HangarGridRows));
-        float progress=MathHelper.SmoothStep(0,1,HangarIntroProgress);
+        int index=PersuasionStop;
+        var startZoom=index==0?new Point(HangarGridColumns,Math.Max(1,HangarGridRows)):HangarZoom;
+        var start=index==0?Point.Zero:_persuasionStops[index-1];
+        DrawHangarTransition(store,startZoom,start,new(_hangarColumn,_hangarPage),
+            Math.Clamp((float)(PersuasionStopAge/PersuasionPanSeconds),0,1));
+    }
+
+    private void DrawHangarTransition(RobotStore store,Point startZoom,Point from,Point to,float fraction)
+    {
+        float progress=MathHelper.SmoothStep(0,1,fraction);
         var bay=new Color(62,86,96);
         var materials=HangarMaterials(_hangarSlots,store,store.MaplePackages,positions:_maplePositions);
         for(int slot=0;slot<_hangarSlots.Length;slot++)
         {
-            var start=HangarViewCell(slot,overview,0,0);
-            var end=HangarViewCell(slot,HangarZoom,0,0);
+            var start=HangarViewCell(slot,startZoom,from.X,from.Y);
+            var end=HangarViewCell(slot,HangarZoom,to.X,to.Y);
             int x=(int)MathHelper.Lerp(start.X,end.X,progress),y=(int)MathHelper.Lerp(start.Y,end.Y,progress);
             var cell=new Rectangle(x,y,(int)MathHelper.Lerp(start.Width,end.Width,progress),
                 (int)MathHelper.Lerp(start.Height,end.Height,progress));
@@ -150,7 +161,7 @@ public partial class Game1
             _ui.Box(clipped,bay);
             if(clipped!=cell)continue;
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
-            if(robot!=null)DrawRobotGlyph(HangarRobotArea(cell),robot,whiteOutline:true);
+            if(robot!=null)DrawRobotGlyph(HangarRobotArea(cell),HomePersuasionRobot(robot),whiteOutline:true);
             for(int row=0;row<3;row++)if(materials.TryGetValue(slot*3+row,out var package))
                 DrawMaplePackage(HangarCellRegion(cell,80,8+row*60,92,58+(package.Sections-1)*60),package,compact:true);
             DrawHangarSlotNumber(slot,cell,robot,false);

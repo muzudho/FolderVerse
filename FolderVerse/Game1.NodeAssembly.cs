@@ -192,7 +192,9 @@ public partial class Game1
         string hover=VisitingForeignHangar?"滞在中：自国パーツ同士の交換・空き部位への移動ができます":CanOpenHangar?"頭・胴・脚をつかんで、格納庫の区画へドラッグ＆ドロップ":"他国の地点：自分の征服者がいる地点では自国パーツを動かせます";
         if(reservationMode)hover="区画をクリック：予約 / 同じ国の同じ予約は解除 / 続けて選択できます";
         if(!DomesticOperationsAllowed)hover="軍事フェーズ：格納庫は閲覧のみ / 組立・配送は次の内政フェーズで操作できます";
-        if(HangarIntroProgress<1)
+        if(_homePersuasionActive && PersuasionStopAge<PersuasionPanSeconds)
+            DrawPersuasionHangarTransition(store);
+        else if(HangarIntroProgress<1)
             DrawHangarOverview(store);
         else
         {
