@@ -29,7 +29,7 @@ public sealed partial class CubeNet
                 float scale = MathF.Max(Vector2.Distance(at,Project(position+cell.U)),Vector2.Distance(at,Project(position+cell.V)));
                 float radius = MapPuckRadius(node,scale)/MathF.Max(scale,1);
                 if (ShowRoutes) DrawSurfacePuck(ui,setup,node,cell,position,radius,pulse,Project,Tint);
-                DrawSurfaceFlag(ui,setup,DisplayedNodeOwner(node),cell,position,ShowRoutes ? radius*(HasPurposeBuilding(node)?PurposeBuildingScale:1) : 0,Project,Tint);
+                DrawSurfaceFlag(ui,setup,DisplayedNodeOwner(node),cell,position,ShowRoutes ? radius*(HasPurposeBuilding(node)?GlobePurposeBuildingScale:1) : 0,Project,Tint);
             }
         }
         DrawMapSymbols(ui,setup,p=>
@@ -48,6 +48,7 @@ public sealed partial class CubeNet
         return EmphasizedNode(node.Id) ? radius*1.4f : radius;
     }
     private const float PurposeBuildingScale=1.7f;
+    private const float GlobePurposeBuildingScale=PurposeBuildingScale*2;
     private static bool HasPurposeBuilding(Node node)=>node.Functional && node.Purpose!=NodePurpose.General;
 
     private void DrawFlatPuck(UiPainter ui,WorldSetup setup,Node node,Vector2 at,float radius,float pulse,Func<Color,Color> tint)
@@ -107,14 +108,14 @@ public sealed partial class CubeNet
             var radial = cell.U*MathF.Cos(angle)+cell.V*MathF.Sin(angle);
             lower[i] = project(position+radial*radius);
             upper[i] = project(position+radial*radius+cell.Normal*radius*.55f);
-            ring[i] = project(position+radial*radius*(building?PurposeBuildingScale:1)*1.32f);
+            ring[i] = project(position+radial*radius*(building?GlobePurposeBuildingScale:1)*1.32f);
         }
         bool selected = SelectedTarget==node.Id || EmphasizedNode(node.Id);
         bool target = MovementTargets.Contains(node.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(node.Id));
         if (selected || target && MathF.Sin(pulse*6)>=0)
             FillProjectedFace(ui,ring,tint(selected ? Color.White : new Color(255,219,96)));
         if(building)
-            DrawPurposeBuilding(ui,node.Purpose,(x,y,z)=>project(position+radius*PurposeBuildingScale*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
+            DrawPurposeBuilding(ui,node.Purpose,(x,y,z)=>project(position+radius*GlobePurposeBuildingScale*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
         else{
             float winding = Cross(upper[1]-upper[0],upper[2]-upper[1]);
             Span<Vector2> wall = stackalloc Vector2[4];
@@ -131,7 +132,7 @@ public sealed partial class CubeNet
                 DrawHarbor(ui,puckCenter,MathF.Max(4,Vector2.Distance(puckCenter,upper[0])*.65f),tint(rim),DimNode(node.Id));
             }
         }
-        var center = project(position+cell.Normal*radius*(building?.85f:.55f));
+        var center = project(position+cell.Normal*radius*(building?GlobePurposeBuildingScale*.5f:.55f));
         if (AttackTargetMarkers && SelectedTarget==node.Id)
             foreach (float angle in new[]{MathHelper.PiOver4,-MathHelper.PiOver4})
                 ui.Tile(center,new(Vector2.Distance(center,upper[0])*2,2),angle,tint(rim));

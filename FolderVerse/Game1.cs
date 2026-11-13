@@ -178,6 +178,8 @@ public partial class Game1 : Game
             }else _directDrag=null;
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
+        if(IsStatusScreen && FunctionTransferChoiceInput(_pointer,active && click,active && escape))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _directMap && escape){CloseDirectDelivery();_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && ProductionIntakeInput(active && click,active && escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -868,6 +870,7 @@ public partial class Game1 : Game
         }
         if(IsStatusScreen && !_countrySettingsOpen && (_operationSettingsOpen || _operationSettingsSlide>0)){_spriteBatch.Begin(transformMatrix:transform);DrawOperationSettings();_spriteBatch.End();}
         if(_countrySettingsOpen && IsStatusScreen){_spriteBatch.Begin(transformMatrix:transform);DrawCountrySettings();_spriteBatch.End();}
+        if(IsStatusScreen && _transferChoice!=null){_spriteBatch.Begin(transformMatrix:transform);DrawFunctionTransferChoice();_spriteBatch.End();}
         if(_tutorialCaptiveToastSeconds>0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialCaptiveAchievementToast();_spriteBatch.End();}
         DrawAutoSaveNotice(canvas,transform);
         DrawFullscreenCursor();
