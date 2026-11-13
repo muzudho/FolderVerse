@@ -84,7 +84,7 @@ public partial class Game1
         var left=new Rectangle(54,145,850,790);var right=new Rectangle(990,145,870,790);
         _ui.Box(left,new Color(24,45,59));_ui.Box(right,new Color(24,45,59));
         _ui.Center("ロボット製造工場",new(left.X,160,left.Width,48),.65f,Cream);
-        _ui.Text("蛍光灯：現在位置 / 緑：生産　黄：休暇　赤：空き枠待ち",new(80,222),.32f,Cream);
+        _ui.Text("蛍光灯：現在位置 / 緑：生産　黄：休暇　赤：空き枠・原材料待ち",new(80,222),.32f,Cream);
         _ui.Center("格納庫 / 入荷予約",new(right.X,160,right.Width,48),.65f,Cream);
         if(_manufacturingNode<0){_ui.Center("稼働できる工場がありません",new(54,420,1806,60),.6f,Cream);return;}
         var node=_setup.Nodes.All[_manufacturingNode];
@@ -106,8 +106,9 @@ public partial class Game1
             _ui.Center((page*lanesPerPage+item.index+1).ToString(),new(84,y+22,62,96),1.35f,new Color(167,190,194));
             _ui.Text(_setup.Nodes.DisplayName(_setup.Nodes.All[source]),new(160,y-19),.30f,Cream);
             int period=line.Manufacturing?line.ProductionPeriod:3;
+            bool mapleWait=line.WaitingForMaple(_setup.Robots,source);
             double progress=line.LaneProgress;
-            if(_setup.Industry.Pending && line.Manufacturing && !line.Paused && !line.CycleFinished && !line.Waiting){
+            if(_setup.Industry.Pending && line.Manufacturing && !line.Paused && !line.CycleFinished && !line.Waiting && !mapleWait){
                 double increment=Math.Clamp(_manufacturingTickAge/(ManufacturingTickSeconds/IndustryTime.UnitsPerTurn),0,1);
                 progress=Math.Min(progress+increment,line.RestRemaining>0?period+IndustryTime.Whole(line.RestTurns):period);
             }
@@ -119,11 +120,11 @@ public partial class Game1
             var product=FactoryRobotButton(item.index,period);_ui.Box(product,Muted);
             if(line.Manufacturing && !(shipmentAge>=ManufacturingAnticipation && shipmentAge<ManufacturingAnticipation+ManufacturingLampPass))DrawRobotGlyph(product,line.CurrentProductionPlan.Preview(Math.Max(0,owner)),whiteOutline:true);else if(!line.Manufacturing)_ui.Center("×",product,.7f,Cream);
             DrawFactoryLaneOmissions(line,160,y);
-            if(line.Manufacturing)DrawFactoryCaret(caret,y,line);
+            if(line.Manufacturing)DrawFactoryCaret(caret,y,line,mapleWait);
             _ui.Text($"× {line.RestEvery}　休 {line.RestTurns}"+(line.DoNotRepeat?" / 繰り返さない":""),new(160,y+140),.34f,Cream);
             string status=line.CycleFinished?"製造終了":!line.Manufacturing?"製造しない":line.Paused?"一時停止":
                 line.RestRemaining>0?$"休暇 あと {IndustryTime.Format(line.RestRemaining)}":
-                line.Waiting?"格納枠の空きを待っています":$"工期 {IndustryTime.Format(line.ProductionAge)} / {IndustryTime.Format(line.ProductionPeriod)}";
+                mapleWait?"原材料不足 / 楓の木を待っています":line.Waiting?"格納枠の空きを待っています":$"工期 {IndustryTime.Format(line.ProductionAge)} / {IndustryTime.Format(line.ProductionPeriod)}";
             _ui.Text(status,new(480,y+140),.32f,Cream);
         }
         _ui.Center($"製造レーン {page+1}/{pages}",new(54,895,850,30),.32f,Cream);

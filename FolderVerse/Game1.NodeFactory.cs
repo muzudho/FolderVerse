@@ -141,6 +141,7 @@ public partial class Game1
         for(int l=_factoryPage*3;l<Math.Min(displayed,(_factoryPage+1)*3);l++){
             var line=lines[l];int y=284+(l%3)*200,period=line.Manufacturing?line.ProductionPeriod:3;_factoryLine=l;
             bool planned=l>=liveCount;
+            bool mapleWait=line.WaitingForMaple(_setup.Robots,node.Id);
             _ui.Box(new(78,y-24,782,196),l%2==0?new Color(37,63,77):new Color(46,67,79));
             _ui.Center((l+1).ToString(),new(84,y+22,62,96),1.35f,new Color(167,190,194));
             if(!planned)_ui.Button(FactoryIntakeButton(l),"入荷先",Muted,.34f);
@@ -151,7 +152,7 @@ public partial class Game1
             if(line.Manufacturing)DrawRobotGlyph(robot,line.CurrentProductionPlan.Preview(node.Owner),whiteOutline:true);else _ui.Center("×",robot,.7f,Cream);
             DrawFactoryLaneOmissions(line,160,y);
             if(line.Manufacturing){
-                DrawFactoryCaret(caret,y,line);
+                DrawFactoryCaret(caret,y,line,mapleWait);
                 if(!planned && new Rectangle(caret-12,y+27,24,77).Contains(_pointer))hoveredCaret=line;
             }
             int width=productionWidth,mid=160+width/2;_ui.Box(new(160,y+140,width,2),Cream);_ui.Box(new(160,y+135,2,7),Cream);_ui.Box(new(158+width,y+135,2,7),Cream);for(int i=0;i<5;i++){_ui.Box(new(mid-5+i,y+142+i,1,1),Cream);_ui.Box(new(mid+5-i,y+142+i,1,1),Cream);}FactoryDrop(0,line.RestEvery,line);FactoryDrop(1,line.RestTurns,line);
@@ -159,6 +160,7 @@ public partial class Game1
             string status=!line.Manufacturing?"製造しない":line.CycleFinished?"製造終了 / 繰り返さない":line.Paused?"一時停止":line.RestRemaining>0?$"休憩中 あと{IndustryTime.Format(line.RestRemaining)} / 次の完成まで{IndustryTime.Format(line.TurnsUntilNextProduction)}産業ターン":line.Waiting?$"出荷待ち {IndustryTime.Format(line.WaitingProductionTurns)}生産ターン / 格納できるまで停止":$"次の完成まで{IndustryTime.Format(line.TurnsUntilNextProduction)}産業ターン / {line.ProducedSinceRest+1}台目・工期{IndustryTime.Format(line.ProductionAge)}/{IndustryTime.Format(period)}";
             if(line.Manufacturing)status=$"周期 {IndustryTime.Format(line.CycleProgress)} / {IndustryTime.Format(line.CycleTurns)} / "+status;
             if(!string.IsNullOrEmpty(line.IntakeFailure))status=line.IntakeFailure+" / "+status;
+            if(mapleWait)status="原材料不足 / 楓の木を待っています";
             if(line.FunctionOriginNode is int origin)status="参照元："+_setup.Nodes.DisplayName(_setup.Nodes.All[origin])+" / "+status;
             if(planned)status="追加予定 / 内政確定後に稼働";
             _ui.Text(status,new(160,y-19),Math.Min(.3f,690/_font.MeasureString(status).X),Cream);
@@ -172,7 +174,7 @@ public partial class Game1
         DrawNodeTabs();DrawFactoryPages();
         if(pending.Length>displayed-factory.ProductionLines.Length)
             _ui.Text("工場作業員の交代予定あり",new(160,857),.38f,Accent);
-        _ui.Text($"産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn)}   /   蛍光灯：現在位置　緑：生産　黄：休暇　赤：空き枠待ち",new(160,248),.25f,Cream);
+        _ui.Text($"産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn)}   /   蛍光灯：現在位置　緑：生産　黄：休暇　赤：空き枠・原材料待ち",new(160,248),.25f,Cream);
         if(!FactoryAlbumOpen && _factoryPlanLine>=0 && _factoryPlanLine<displayed){
             var line=lines[_factoryPlanLine];_ui.Box(new(84,360,790,590),new(22,40,54));
             string catalogue=_setup.EquipmentMode==RobotEquipmentMode.Materials?"素材別の製造候補":"正規・安い・一体型"+(line.PlanCount>11?"・高級":"");
@@ -207,6 +209,7 @@ public partial class Game1
         }
         if(hoveredCaret!=null && _factoryDropDown<0 && _factoryPlanLine<0){
             string hint=hoveredCaret.CycleFinished?"製造と休暇が終了しました。繰り返さないのチェックを外すと再開します":hoveredCaret.Paused?"一時停止中だよ。再開すると製造が進むよ":hoveredCaret.Waiting?$"{IndustryTime.Format(hoveredCaret.WaitingProductionTurns)}生産ターンも待っていますよ！ 格納できれば出荷するよ":$"あと{IndustryTime.Format(hoveredCaret.TurnsUntilNextProduction)}生産ターンでロボットを製造できるよ";
+            if(hoveredCaret.WaitingForMaple(_setup.Robots,node.Id))hint="原材料不足 / 楓の木を待っています";
             if(hoveredCaret.RestRemaining>0)hint+=$"（休憩あと{IndustryTime.Format(hoveredCaret.RestRemaining)}ターンを含む）";
             const float scale=.38f;
             int hintWidth=(int)Math.Ceiling(_font.MeasureString(hint).X*scale)+24;
@@ -215,10 +218,10 @@ public partial class Game1
             _ui.Text(hint,new(hintBox.X+12,hintBox.Y+9),scale,Cream);
         }
     }
-    private void DrawFactoryCaret(int x,int y,RobotWorkshop line)
+    private void DrawFactoryCaret(int x,int y,RobotWorkshop line,bool mapleWait=false)
     {
         var ink=new Color(16,32,43);
-        var signal=line.CycleFinished?new Color(65,78,83):line.Paused?new Color(167,190,194):line.RestRemaining>0?new Color(255,204,112):line.Waiting?new Color(255,113,105):new Color(102,244,175);
+        var signal=line.CycleFinished?new Color(65,78,83):line.Paused?new Color(167,190,194):line.RestRemaining>0?new Color(255,204,112):line.Waiting || mapleWait?new Color(255,113,105):new Color(102,244,175);
         float pulse=line.CycleFinished?0:.78f+.22f*(.5f+.5f*MathF.Sin(_animationTime*2.4f));
         // A fluorescent tube and its narrow socket share the exact tick center.
         // Keep the glow vertical so it cannot be mistaken for a range on the floor.

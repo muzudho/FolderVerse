@@ -87,6 +87,8 @@ public static class AutoSaveStore
                     if(field.FieldType==typeof(RobotEquipmentMode) || field.FieldType==typeof(RobotMaterial) ||
                         type==typeof(ProductionPlan) && field.FieldType==typeof(RobotMaterial?))continue;
                     if(type==typeof(RobotWorkshop) && field.Name=="_materialCatalogueOffset")continue;
+                    if(type==typeof(RobotWorld) && (field.Name is "_mapleDeposits" or "_mapleShipments") ||
+                        type==typeof(RobotStore) && field.Name=="_maplePackages")continue;
                     if(type==typeof(LongPartOrder) && field.Name=="<TargetSlot>k__BackingField"){field.SetValue(value,-1);continue;}
                     if(type==typeof(RobotLongDelivery) && field.Name=="_slotArrivals"){field.SetValue(value,new Dictionary<(int,int,int),long>());continue;}
                     if(type==typeof(TerrainRoutes) && field.Name=="_packIce")continue;

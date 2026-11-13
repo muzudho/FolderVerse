@@ -142,7 +142,7 @@ public sealed partial class RobotTransport
             if(partner==null)target.Add(robot);
             else{target.Remove(partner);target.Add(partner.Merge(robot,partner.Owner) with {Role=partner.Role==RobotRole.Captain || robot.Role==RobotRole.Captain?RobotRole.Captain:RobotRole.Soldier});}
         }
-        overflow=Enumerable.Range(0,stores.Length).Where(n=>stores[n].Count>world.Nodes[n].StorageLimit).ToList();return stores;
+        overflow=Enumerable.Range(0,stores.Length).Where(n=>stores[n].Count+world.Nodes[n].MaplePackages.Count>world.Nodes[n].StorageLimit).ToList();return stores;
     }
     private void Commit(RobotWorld world,List<RobotShipment> accepted)
     {

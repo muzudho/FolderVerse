@@ -50,7 +50,7 @@ public sealed class RobotPartPlanning
     public RobotWorld Preview(WorldSetup world)
     {
         var hash=new HashCode();hash.Add(world.Population.Turn);hash.Add(world.Campaign.Phase);
-        foreach(var store in world.Robots.Nodes){hash.Add(store.TotalCapacity);hash.Add(store.ReservedReturns);foreach(var robot in store.Robots)hash.Add(robot);}
+        foreach(var store in world.Robots.Nodes){hash.Add(store.TotalCapacity);hash.Add(store.ReservedReturns);foreach(var robot in store.Robots)hash.Add(robot);foreach(var package in store.MaplePackages)hash.Add(package);}
         foreach(var order in world.Campaign.FunctionTransfers.Orders)hash.Add(order);
         foreach(var order in world.Robots.DirectDelivery.Orders)hash.Add(order);
         foreach(var intake in world.Robots.ProductionIntakes)hash.Add(intake);
@@ -66,7 +66,7 @@ public sealed class RobotPartPlanning
             if(!world.Campaign.FunctionTransfers.CanReserve(world,order.Source,order.Target))continue;
             int a=order.Source,b=order.Target;
             copy.Nodes[b].SetCapacity(copy.Nodes[b].TotalCapacity+copy.Nodes[a].TotalCapacity);
-            copy.Nodes[b].Replace(copy.Nodes[b].Robots.Concat(copy.Nodes[a].Robots));copy.Nodes[a].Replace(Array.Empty<Robot>());copy.Nodes[a].SetCapacity(0);
+            copy.Nodes[b].Replace(copy.Nodes[b].Robots.Concat(copy.Nodes[a].Robots));copy.TransferMapleFunctions(a,b);copy.Nodes[a].Replace(Array.Empty<Robot>());copy.Nodes[a].SetCapacity(0);
             copy.Workshops[b].AbsorbFunctions(copy.Workshops[a]);copy.Workshops[a]=RobotWorkshop.EmptyFunctions();
             for(int n=0;n<hosts.Length;n++)if(hosts[n]==a)hosts[n]=b;
         }
@@ -77,7 +77,7 @@ public sealed class RobotPartPlanning
             copy.DirectDelivery.Orders.Add(order with {Source=a,Target=b});
         }
         var direct=Enumerable.Range(0,copy.Nodes.Length).Select(n=>copy.DirectDelivery.Preview(copy,n)).ToArray();
-        for(int n=0;n<copy.Nodes.Length;n++)if(direct[n].Length<=copy.Nodes[n].StorageLimit)copy.Nodes[n].Replace(direct[n]);
+        for(int n=0;n<copy.Nodes.Length;n++)if(direct[n].Length+copy.Nodes[n].MaplePackages.Count<=copy.Nodes[n].StorageLimit)copy.Nodes[n].Replace(direct[n]);
         copy.DirectDelivery.Orders.Clear();
         PreviewResults.Clear();
         foreach(var order in Orders)try{
@@ -197,7 +197,7 @@ public sealed class RobotPartPlanning
         }
         stores[target].Add(output);
         if(order.PromoteCaptain){stores[target].Remove(output);output=output with {Role=RobotRole.Captain};stores[target].Add(output);}
-        if(Enumerable.Range(0,stores.Length).Any(n=>stores[n].Count>stock.Nodes[n].StorageLimit))throw new InvalidOperationException("入荷先の格納枠が不足しています");
+        if(Enumerable.Range(0,stores.Length).Any(n=>stores[n].Count+stock.Nodes[n].MaplePackages.Count>stock.Nodes[n].StorageLimit))throw new InvalidOperationException("入荷先の格納枠が不足しています");
         for(int n=0;n<stores.Length;n++)stock.Nodes[n].Replace(stores[n]);return output.Id;
     }
     internal void Resolve(WorldSetup world)

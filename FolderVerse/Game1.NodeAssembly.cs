@@ -68,7 +68,7 @@ public partial class Game1
         _hangarScrollDirection=0;_hangarTrainingCountry=-1;_hangarAbandonMode=false;_hangarReturnHomeMode=false;
         _nodeOfficeOpen=false;_lastNodeTab=3;
         _nodeAssemblyOpen=true;_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;
-        _hangarDrag=null;_hangarReservation=HangarReservation.None;_hangarMessage="";Array.Clear(_hangarSlots);
+        _hangarDrag=null;_mapleSelected=null;_hangarReservation=HangarReservation.None;_hangarMessage="";Array.Clear(_hangarSlots);
         SyncHangarSlots();
     }
     private void NodeAssemblyInput(MouseState mouse,bool click,bool escape)
@@ -78,6 +78,7 @@ public partial class Game1
     }
     private void NodeAssemblyLocalInput(MouseState mouse,bool click,bool escape)
     {
+        if(_mapleSelected.HasValue && MapleHangarInput(click,escape))return;
         if(!escape && UpdateHangarPan(mouse))return;
         if(escape)_hangarPanning=false;
         if(!escape && UpdateHangarZoom(mouse,click))return;
@@ -117,6 +118,7 @@ public partial class Game1
         }
         var store=PlanningStock.Nodes[HangarPlanningNode];
         SyncHangarSlots();
+        if(MapleHangarInput(click,escape))return;
         UpdateHangarDragScroll(mouse.LeftButton==ButtonState.Pressed);
         if(click)
         {
@@ -150,6 +152,7 @@ public partial class Game1
         long source=_hangarDrag.Value;_hangarDrag=null;
         int destination=VisibleAssemblySlots().FirstOrDefault(i=>AssemblyCell(i).Contains(_pointer),-1);
         if(destination<0){_hangarMessage="ドラッグを取り消しました";return;}
+        if(store.MaplePackages.Any(p=>p.Id==_hangarSlots[destination])){_hangarMessage="この区画には楓の木があります";return;}
         try
         {
             var robot=store.Robots.Single(r=>r.Id==source);
@@ -194,6 +197,12 @@ public partial class Game1
         foreach(int slot in VisibleAssemblySlots())
         {
             var cell=AssemblyCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
+            if(store.MaplePackages.FirstOrDefault(p=>p.Id==_hangarSlots[slot]) is {} package){
+                DrawHangarBay(cell,cell.Contains(_pointer),false);
+                DrawMaplePackage(cell,package);
+                if(cell.Contains(_pointer)){hover="楓の木 / クリックして出荷先を選択";hoveringPart=true;}
+                continue;
+            }
             bool cellHover=reservationMode && cell.Contains(_pointer) && occupant!=null;
             bool canReserve=_hangarReturnHomeMode?CanSelectReturnHome(occupant):reservationMode && HangarReservationEnabled(occupant);
             if(_hangarZoom!=1)
@@ -289,6 +298,7 @@ public partial class Game1
             {DrawHangarDrag(robot);}
         }
         else DrawDeliveryTagHint(new(54,150,850,825));
+        DrawMapleShippingPanel();
     }
     private void DrawHangarDeliveryTags(int slot,DirectPartOrder[] orders,Robot robot)
     {
@@ -334,8 +344,9 @@ public partial class Game1
         Array.Resize(ref _hangarSlots,PlanningStock.Nodes[HangarPlanningNode].TotalCapacity);
         _hangarPage=Math.Clamp(_hangarPage,0,HangarLastRow);
         _hangarColumn=Math.Clamp(_hangarColumn,0,HangarLastColumn);
-        var robots=PlanningStock.Nodes[HangarPlanningNode].Robots;
-        for(int i=0;i<_hangarSlots.Length;i++)if(_hangarSlots[i].HasValue && !robots.Any(r=>r.Id==_hangarSlots[i]))_hangarSlots[i]=null;
-        foreach(var robot in robots)if(!_hangarSlots.Contains(robot.Id)){int slot=Array.FindIndex(_hangarSlots,id=>!id.HasValue);if(slot>=0)_hangarSlots[slot]=robot.Id;}
+        var store=PlanningStock.Nodes[HangarPlanningNode];
+        var occupants=store.Robots.Select(r=>r.Id).Concat(store.MaplePackages.Select(p=>p.Id)).ToArray();
+        for(int i=0;i<_hangarSlots.Length;i++)if(_hangarSlots[i] is long id && !occupants.Contains(id))_hangarSlots[i]=null;
+        foreach(long id in occupants)if(!_hangarSlots.Contains(id)){int slot=Array.FindIndex(_hangarSlots,key=>!key.HasValue);if(slot>=0)_hangarSlots[slot]=id;}
     }
 }

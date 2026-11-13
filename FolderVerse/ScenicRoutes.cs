@@ -9,8 +9,13 @@ internal sealed class ScenicRoutes
 {
     private readonly record struct Leg(int Cell, RouteStep Route, int From, int To);
     private readonly record struct Segment(Vector3 From, Vector3 To, float Start, float Length, bool Sea);
+    private sealed record SeaLeg(int From,int To,float Length,RouteStep[] Routes);
+    private readonly record struct SeaVisit(SeaLeg Leg,bool Reverse,float Start);
+    private sealed record SeaTour(SeaVisit[] Visits,float Duration,float Phase);
+    private const float YachtSpeed=.08f, YachtPause=1.2f;
     internal readonly record struct Vehicle(Vector3 At, Vector3 Forward, bool Sea);
     private readonly Dictionary<RouteStep, (Segment[] Segments, float Length, float Phase)> _paths = new();
+    private readonly Dictionary<RouteStep, List<(SeaLeg Leg, SeaTour Tour)>> _seaTours = new();
     private readonly RouteStep[][] _display;
     private readonly bool[] _functional;
 
@@ -34,6 +39,7 @@ internal sealed class ScenicRoutes
         var pairs = legs.GroupBy(l => (A: Math.Min(l.From,l.To), B: Math.Max(l.From,l.To))).ToArray();
         var through = ThroughRoutes(_functional, pairs.Select(p => p.Key).ToArray());
         var terrainOffset = WorldTerrain.Offset(world.WorldSeed);
+        var seaLegs = new List<SeaLeg>();
         for (int i = 0; i < pairs.Length; i++)
         {
             if (through[i]) continue;
@@ -44,7 +50,8 @@ internal sealed class ScenicRoutes
                 float length = 0;
                 bool join = portal.Key.HasValue && portal.Count() == 2 &&
                     portal.Select(l => l.From).Distinct().Count() == 2;
-                foreach (var leg in portal.OrderBy(l => l.From))
+                var ordered=portal.OrderBy(l=>l.From).ToArray();
+                foreach (var leg in ordered)
                 {
                     var curve = world.Routes.Curve(leg.Cell,leg.Route);
                     if (join && sections.Count == 1) curve = curve.Reverse().ToArray();
@@ -63,6 +70,52 @@ internal sealed class ScenicRoutes
                 float phase = ((pairs[i].Key.A * 17 + pairs[i].Key.B * 31) % 29) * .41f;
                 foreach (var section in sections)
                     _paths.Add(section.Route,(section.Segments,length,phase));
+                if(length>0 && (join || !portal.Key.HasValue && ordered.Length==1) &&
+                    sections.All(s=>s.Segments.All(segment=>segment.Sea)))
+                    seaLegs.Add(new(ordered[0].From,ordered[0].To,length,sections.Select(s=>s.Route).ToArray()));
+            }
+        }
+        BuildSeaTours(seaLegs);
+    }
+
+    private void BuildSeaTours(List<SeaLeg> legs)
+    {
+        var links=new Dictionary<int,List<SeaLeg>>();
+        foreach(var leg in legs)
+            foreach(int endpoint in new[]{leg.From,leg.To})
+            {
+                if(!links.TryGetValue(endpoint,out var adjacent))links.Add(endpoint,adjacent=new());
+                adjacent.Add(leg);
+            }
+        foreach(var (node,adjacent) in links)
+            adjacent.Sort((a,b)=>(a.From==node?a.To:a.From).CompareTo(b.From==node?b.To:b.From));
+        var assigned=new HashSet<SeaLeg>();
+        foreach(var first in legs)
+        {
+            if(assigned.Contains(first))continue;
+            var visits=new List<SeaVisit>();
+            float duration=0;
+            var leg=first;
+            bool reverse=false;
+            // Rotate to the next exit on arrival. Only a dead end sends the yacht back immediately.
+            do
+            {
+                visits.Add(new(leg,reverse,duration));
+                duration+=leg.Length/YachtSpeed+YachtPause;
+                int at=reverse?leg.From:leg.To;
+                var exits=links[at];
+                leg=exits[(exits.IndexOf(leg)+1)%exits.Count];
+                reverse=leg.To==at;
+            }while(!ReferenceEquals(leg,first) || reverse);
+            var tour=new SeaTour(visits.ToArray(),duration,first.From%29*.41f);
+            foreach(var visited in visits.Select(visit=>visit.Leg).Distinct())
+            {
+                assigned.Add(visited);
+                foreach(var route in visited.Routes)
+                {
+                    if(!_seaTours.TryGetValue(route,out var tours))_seaTours.Add(route,tours=new());
+                    tours.Add((visited,tour));
+                }
             }
         }
     }
@@ -138,10 +191,27 @@ internal sealed class ScenicRoutes
         const float spacing = .16f, dashLength = .09f, speed = .13f, pause = .65f;
         float duration = path.Length / speed;
         float period = 2 * (duration + pause);
-        float phase = (time+path.Phase) % period;
+        float phase = period>0?(time+path.Phase) % period:0;
         bool reverse = phase >= duration+pause;
         float offset = Math.Clamp((phase-(reverse ? duration+pause : 0))*speed,0,path.Length);
         float distance = reverse ? path.Length-offset : offset;
+        bool showVehicle=true;
+        if(_seaTours.TryGetValue(route,out var tours))
+        {
+            showVehicle=false;
+            foreach(var sea in tours)
+            {
+                float at=(time+sea.Tour.Phase)%sea.Tour.Duration;
+                int index=Array.FindLastIndex(sea.Tour.Visits,visit=>visit.Start<=at);
+                var visit=sea.Tour.Visits[Math.Max(0,index)];
+                if(!ReferenceEquals(sea.Leg,visit.Leg))continue;
+                showVehicle=true;
+                reverse=visit.Reverse;
+                offset=Math.Clamp((at-visit.Start)*YachtSpeed,0,path.Length);
+                distance=reverse?path.Length-offset:offset;
+                break;
+            }
+        }
         foreach (var segment in path.Segments)
         {
             float end = segment.Start+segment.Length;
@@ -151,7 +221,7 @@ internal sealed class ScenicRoutes
                 float a = Math.Max(segment.Start,start), b = Math.Min(end,start+dashLength);
                 if (b > a) dash(At(a),At(b),segment.Sea);
             }
-            if (distance >= segment.Start && (distance < end || end == path.Length && distance <= end))
+            if (showVehicle && distance >= segment.Start && (distance < end || end == path.Length && distance <= end))
                 vehicle = new(At(distance),Vector3.Normalize(segment.To-segment.From)*(reverse ? -1 : 1),segment.Sea);
         }
         return true;

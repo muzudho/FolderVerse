@@ -74,14 +74,22 @@ public sealed partial class RobotWorkshop
     {
         foreach(var line in ProductionLines){line.CompleteSingleProduction(world,node,owner,ReservedSlots);}
     }
+    public bool WaitingForMaple(RobotWorld world,int node)=>world.MapleSupplyEnabled && Manufacturing &&
+        !Paused && !CycleFinished && RestRemaining==0 && RobotWorld.MapleCost(CurrentProductionPlan.Preview(0))>world.AvailableMaple(node);
     private void CompleteSingleProduction(RobotWorld world,int node,int owner,int reservedSlots)
     {
         if(!Manufacturing || Paused || CycleFinished || owner<0)return;
         if(RestEnabled && RestRemaining>0){if(--RestRemaining==0 && DoNotRepeat)CycleFinished=true;return;}
+        if(WaitingForMaple(world,node))return;
         ProductionAge=Math.Min(ProductionPeriod,ProductionAge+1);
         if(!Waiting)return;
         var product=CurrentProductionPlan.Preview(owner) with {FunctionDisplayNode=FunctionOriginNode};
+        int cost=world.MapleSupplyEnabled?RobotWorld.MapleCost(product):0;
+        var store=world.Nodes[node];
+        var before=cost>0?store.MaplePackages.ToArray():null;
+        if(cost>0)world.SpendMaple(node,cost);
         if(!(world.ProductionIntakeEnabled?world.QueueProduction(this,node,owner,product,reservedSlots):world.TryStoreProduction(node,owner,product,reservedSlots))){
+            if(before!=null)store.SetMaplePackages(before);
             if(WaitingProductionTurns<int.MaxValue)WaitingProductionTurns++;
             return;
         }

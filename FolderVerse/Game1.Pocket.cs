@@ -48,7 +48,7 @@ public partial class Game1
         foreach(bool fromNode in new[]{false,true})
         {
             var store=fromNode?deployed:pocket;
-            for(int i=0;i<store.Count;i++)if(PocketCard(i,fromNode).Contains(_pointer))
+            for(int i=0;i<store.Robots.Count;i++)if(PocketCard(i,fromNode).Contains(_pointer))
             {
                 var robot=store.Robots[i];
                 if(PocketRobotSelectable(robot,fromNode)){_pocketRobot=robot.Id;_pocketFromNode=fromNode;_pocketMessage="";}
@@ -83,7 +83,7 @@ public partial class Game1
             _ui.Text($"{(fromNode?"地点の配備":"自分のポケット")} {store.Count}/12",new(x,185),.5f,Cream);
             for(int i=0;i<12;i++)
             {
-                var card=PocketCard(i,fromNode);_ui.Box(card,new(30,47,59));if(i>=store.Count)continue;var robot=store.Robots[i];
+                var card=PocketCard(i,fromNode);_ui.Box(card,new(30,47,59));if(i>=store.Robots.Count)continue;var robot=store.Robots[i];
                 bool selectable=PocketRobotSelectable(robot,fromNode),hover=selectable && card.Contains(_pointer),own=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(robot.Parts&p)!=0 && robot.Origin(p)==player);
                 _ui.Box(card,hover?new Color(70,103,118):own?Muted:new Color(37,44,53));
                 int work=_setup.Robots.WorkCountry(node.Id,robot);var ownerColor=_setup.OwnerColor(work>=0?work:own?player:robot.Owner);_ui.Box(new(card.X+3,card.Y+3,card.Width-6,23),ownerColor);
@@ -110,7 +110,7 @@ public partial class Game1
         _ui.Text("自国・他国の帯は所属国 / ロボットの色はパーツの製造国です",new(54,741),.46f,Cream);
         foreach(bool fromNode in new[]{false,true}){
             var store=fromNode?_setup.Robots.Nodes[node.Id]:_setup.Robots.Retinues[player];
-            for(int i=0;i<store.Count;i++)if(PocketCard(i,fromNode).Contains(_pointer)){
+            for(int i=0;i<store.Robots.Count;i++)if(PocketCard(i,fromNode).Contains(_pointer)){
                 var robot=store.Robots[i];string name=$"所属 #{robot.Owner+1}　"+_setup.ConquerorNames[robot.Owner]+(robot.Owner==player?" / 自国":" / 他国");
                 _ui.Text(name,new(54,793),System.Math.Min(.55f,1770/_font.MeasureString(name).X),_setup.OwnerColor(robot.Owner));
                 string reason=PocketRobotLockReason(robot,fromNode);

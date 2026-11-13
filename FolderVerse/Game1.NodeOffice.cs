@@ -33,6 +33,8 @@ public partial class Game1
         _ui.Center(NodeOfficeName+" / 地点監督",new(84,644,780,60),.8f,Cream);
         string owner=node.Owner<0?"未征服":_setup.ConquerorNames[node.Owner]+"の配下";
         _ui.Center(owner,new(84,718,780,45),.6f,Cream);
+        if(_setup.Robots.MapleSupplyEnabled && node.Functional && _setup.Robots.MapleDeposit(node.Id)>0)
+            _ui.Center($"楓の木 / 採取できる残り {_setup.Robots.MapleDeposit(node.Id)} 荷",new(84,754,780,24),.34f,Cream);
         _ui.Button(new(84,778,784,48),"放棄品置き場 / "+_setup.Salvage.Items.Count(i=>i.Node==node.Id)+" 件",Muted,.46f);
         var report=_setup.Campaign.SubordinateResults.LastOrDefault(r=>r.Node==node.Id && r.Controller==_setup.TurnPlayer);
         if(report!=null){

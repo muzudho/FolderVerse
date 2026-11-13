@@ -27,9 +27,13 @@ public sealed partial class RobotWorld
         if(target<0 || target>=Nodes.Length || source!=target && IntakeAdjacent?.Invoke(source,target)!=true){line.IntakeFailure="入荷先が同地点・隣接地点ではありません";return false;}
         if(IntakeAllowed?.Invoke(owner,target)==false){line.IntakeFailure="入荷先の機能・所有国を確認してください";return false;}
         int reserved=target==source?reservedSlots:Workshops[target].ReservedSlots;
-        int queued=ProductionIntakes.Count(i=>(i.Target??i.Source)==target);
-        if(Nodes[target].Count+queued>=Nodes[target].StorageLimit-reserved){line.IntakeFailure="入荷先の格納枠が不足しています";return false;}
         var planned=product with {Id=_nextId};
+        var store=Nodes[target].PlanningCopy();
+        bool Locked(Robot robot)=>IntakeReceiverLocked(target,robot);
+        bool merge=!Workshops[target].AutoAssemblyDisabled;
+        foreach(var incoming in ProductionIntakes.Where(i=>(i.Target??i.Source)==target))
+            PlaceIntake(store,incoming.Product,reserved,merge,Locked);
+        if(!PlaceIntake(store,planned,reserved,merge,Locked)){line.IntakeFailure="入荷先の格納枠が不足しています";return false;}
         Create(owner,product.Parts);ProductionIntakes.Add(new(source,line.IntakeTarget,planned,line));return true;
     }
     private int ProductionSource(ProductionIntake intake)=>intake.Source;
@@ -45,7 +49,8 @@ public sealed partial class RobotWorld
     {
         foreach(var intake in ProductionIntakes){
             int source=hosts[ProductionSource(intake)],target=intake.Target??source;
-            if(target>=0 && target<copy.Nodes.Length)PlaceIntake(copy,target,intake.Product,0);
+            if(target>=0 && target<copy.Nodes.Length)
+                PlaceIntake(copy.Nodes[target],intake.Product,copy.Workshops[target].ReservedSlots,!copy.Workshops[target].AutoAssemblyDisabled,r=>IntakeReceiverLocked(target,r) || copy.IntakeReceiverLocked(target,r));
         }
     }
     internal void ResolveProductionIntakes(WorldSetup world)
@@ -57,14 +62,26 @@ public sealed partial class RobotWorld
             if(!connected || !world.Nodes.All[target].Functional || !world.Relations.Allied(intake.Product.Owner,world.Nodes.All[target].Owner) || world.Campaign.RobotBattles.LockedNode(target) || world.Campaign.RobotBattles.LockedEdge(source,target)){
                 intake.Status="入荷待機：経路・所有国・戦闘状況";continue;
             }
-            if(!PlaceIntake(this,target,intake.Product,0)){intake.Status="入荷待機：格納枠不足";continue;}
+            if(!PlaceIntake(Nodes[target],intake.Product,Workshops[target].ReservedSlots,!Workshops[target].AutoAssemblyDisabled,r=>IntakeReceiverLocked(target,r))){intake.Status="入荷待機：格納枠不足";continue;}
             if(source!=target)playback.Add((new(source,target,intake.Product.Id,intake.Product.Parts),intake.Product.Owner));
             ProductionIntakes.Remove(intake);
         }
     }
-    private static bool PlaceIntake(RobotWorld stock,int node,Robot product,int reservedSlots)
+    private bool IntakeReceiverLocked(int node,Robot robot)=>robot.Disposal || robot.Stationed || Workshops[node].IsDisposing(robot.Id) ||
+        PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) ||
+        DirectDelivery.LockedParts(node,robot.Id)!=0 || PartPlanning.Orders.Any(o=>
+            (o.RobotId==robot.Id && (o.ExpectedSource==0 || o.ExpectedSource==robot.Parts)) ||
+            (o.TargetRobotId==robot.Id && (o.ExpectedTarget==0 || o.ExpectedTarget==robot.Parts)));
+
+    private bool PlaceIntake(RobotStore store,Robot product,int reservedSlots,bool merge,Func<Robot,bool> locked)
     {
-        if(node<0 || node>=stock.Nodes.Length || stock.Nodes[node].Count>=stock.Nodes[node].StorageLimit-reservedSlots)return false;
-        stock.Nodes[node].Add(product);return true;
+        if(store.Count<store.StorageLimit-reservedSlots){store.Add(product);return true;}
+        if(store.HasSpace || !merge)return false;
+        var receiver=store.Robots.FirstOrDefault(r=>r.Owner==product.Owner && (r.Parts&product.Parts)==0 && !locked(r) &&
+            ((r.Parts|product.Parts)!=RobotParts.Complete || r.Merge(product,r.Owner).AssemblyCredit(r.Owner)>=Training[r.Owner].RequiredNative));
+        if(receiver==null)return false;
+        var merged=receiver.Merge(product,receiver.Owner);
+        store.Replace(store.Robots.Select(r=>r.Id==receiver.Id?merged:r));
+        return true;
     }
 }

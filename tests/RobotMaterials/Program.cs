@@ -96,3 +96,49 @@ for(int a=0;a<9;a++)for(int b=a;b<9;b++)for(int c=b;c<9;c++)
 }
 Check(groups.Values.Sum()==165 && groups.Count==110 && groups.Values.Count(n=>n>1)==35 && groups.Values.Max()==5,"Equipment catalogue totals changed");
 Console.WriteLine("PASS material arithmetic, merge/slice, legacy, battle entry, factory plans, save compatibility, 165/110 catalogue.");
+
+var supply=new WorldSetup{EquipmentMode=RobotEquipmentMode.Materials};
+supply.SetWorld(0);supply.SetCast(123);supply.SetPlacement(456);supply.SelectPlayer(0);
+foreach(var node in supply.Nodes.All)node.Owner=0;
+var cargo=supply.Robots;
+Check(cargo.MapleSupplyEnabled,"New materials worlds enable maple");
+var forest=supply.Nodes.All.First(n=>cargo.MapleDeposit(n.Id)>0 && FunctionalDeliveryRoutes.Targets(supply,n.Id).Length>0);
+int source=forest.Id,target=FunctionalDeliveryRoutes.Targets(supply,source)[0];
+foreach(var workshop in cargo.Workshops)
+    foreach(var line in workshop.ProductionLines)line.SelectPlan(3);
+int deposit=cargo.MapleDeposit(source);
+for(int i=0;i<IndustryTime.UnitsPerTurn;i++)cargo.AdvanceIndustry(_=>0,n=>n!=source);
+var package=cargo.Nodes[source].MaplePackages.Single();
+Check(package.Units==16 && cargo.MapleDeposit(source)==deposit-1,"Harvesting must exchange one deposit for one load");
+Check(cargo.ReserveMapleShipment(supply,source,target,package.Id),"Adjacent maple shipment unavailable");
+var restoredSupply=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
+Check(restoredSupply.Robots.MapleShipments.Single().PackageId==package.Id && restoredSupply.Robots.Nodes[source].MapleUnits==16,"Maple stock or shipment lost on save");
+var resolveMaple=typeof(RobotWorld).GetMethod("ResolveMapleShipments",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
+resolveMaple.Invoke(cargo,new object[]{supply});
+Check(cargo.Nodes[source].MapleUnits==0 && cargo.Nodes[target].MapleUnits==16 && cargo.MapleShipments.Count==0,"Shipment duplicated or lost cargo");
+var mixedProduct=new Robot(0,0,RobotParts.Complete){HeadMaterial=RobotMaterial.Paper,BodyMaterial=RobotMaterial.Cardboard,LegsMaterial=RobotMaterial.Maple};
+Check(RobotWorld.MapleCost(mixedProduct)==21 && RobotWorld.MapleCost(basic)==0,"Maple requirements do not match occupied parts");
+var mapleFactory=cargo.Workshops[target];
+for(int seed=0;mapleFactory.ProductionLines.Length==0;seed++)mapleFactory.GenerateLines(seed,RobotEquipmentMode.Materials);
+var mapleLine=mapleFactory.ProductionLines[0];
+int paper=Enumerable.Range(0,mapleLine.PlanCount).First(i=>i!=3 && mapleLine.PlanAt(i).Material==RobotMaterial.Paper);
+foreach(var line in mapleFactory.ProductionLines)line.SelectPlan(3);
+mapleLine.SelectPlan(paper);
+int cost=RobotWorld.MapleCost(mapleLine.CurrentProductionPlan.Preview(0));
+Check(mapleLine.WaitingForMaple(cargo,Array.FindIndex(cargo.Nodes,s=>s.MapleUnits==0)),"Empty stock does not show material wait");
+mapleFactory.SetReservedSlots(cargo.Nodes[target].TotalCapacity);
+for(int i=0;i<mapleLine.ProductionPeriod;i++)production.Invoke(mapleFactory,new object[]{cargo,target,0});
+Check(cargo.Nodes[target].MapleUnits==16 && mapleLine.Waiting,"A full intake consumed maple");
+mapleFactory.SetReservedSlots(0);
+production.Invoke(mapleFactory,new object[]{cargo,target,0});
+Check(cargo.Nodes[target].MapleUnits==16-cost && cargo.ProductionIntakes.Any(i=>i.Source==target),"Successful intake did not consume exact maple units");
+Check(supply.Campaign.FunctionTransfers.CanReserve(supply,target,source),"Fixture cannot transfer functions");
+supply.Campaign.FunctionTransfers.Reserve(supply,target,source);
+int remaining=cargo.Nodes[target].MapleUnits;
+Check(cargo.PartPlanning.Preview(supply).Nodes[source].MapleUnits==remaining,"Transfer forecast lost maple stock");
+supply.Campaign.FinishDomestic(supply);
+Check(cargo.Nodes[source].MapleUnits==remaining && cargo.Nodes[target].MapleUnits==0 && cargo.MapleDeposit(target)==0,"Transfer lost stock or left a source open");
+var previousSave=AutoSaveStore.Capture(world);
+foreach(var savedObject in previousSave.Objects){savedObject.Fields?.Remove("_mapleDeposits");savedObject.Fields?.Remove("_mapleShipments");savedObject.Fields?.Remove("_maplePackages");}
+Check(!AutoSaveStore.Restore<WorldSetup>(previousSave).Robots.MapleSupplyEnabled,"An older materials save was opted into maple");
+Console.WriteLine("PASS maple harvesting, cargo shipping, save round-trip, exact recipe, blocked intake and function transfer.");

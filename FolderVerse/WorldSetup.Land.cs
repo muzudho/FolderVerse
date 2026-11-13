@@ -75,6 +75,7 @@ public sealed partial class WorldSetup
         for(int ruler=0;ruler<ActiveCount;ruler++)ConquerorPoints[ruler]=Nodes.Current(ruler).Center;
         Routes.RefreshDisplay();Campaign.Reset();LandPending=false;
         PlaceInitialTin(fortuneSeed);
+        if(TutorialStep==0)Robots.InitializeMapleSupply(this);
         Salvage.Initialize(this);
     }
 

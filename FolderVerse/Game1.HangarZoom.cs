@@ -104,6 +104,7 @@ public partial class Game1
             if(clipped!=cell)continue;
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
             if(robot!=null)DrawRobotGlyph(HangarRobotArea(cell),robot,whiteOutline:true);
+            if(store.MaplePackages.FirstOrDefault(p=>p.Id==_hangarSlots[slot]) is {} package)DrawMaplePackage(cell,package);
             DrawHangarSlotNumber(slot,cell,robot,false);
         }
     }

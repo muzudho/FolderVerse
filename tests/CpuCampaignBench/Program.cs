@@ -449,6 +449,7 @@ for(int step=1;step<=steps;step++){
         }
         foreach(var order in orders.Where(o=>!o.Peaceful && w.Nodes.All[o.TargetNode].Owner>=0 && !w.Relations.Allied(o.Ruler,w.Nodes.All[o.TargetNode].Owner))){hostileMarches++;committedRobots+=order.Fighters;attackTargets[order.TargetNode]=attackTargets.GetValueOrDefault(order.TargetNode)+1;}
         foreach(var order in orders.Where(o=>traceAll || tracedTargets.Contains(o.TargetNode)))Console.WriteLine(JsonSerializer.Serialize(new{trace="order",step,order,
+            root=w.Relations.Root(order.Ruler),resolvedSource=order.SourceNode>=0?order.SourceNode:w.Nodes.Current(order.Ruler)?.Id??-1,
             targetOwner=w.Nodes.All[order.TargetNode].Owner,defense=w.Campaign.RobotBattles.DefendingRobots(w,order.Ruler,order.TargetNode),
             reserveDefenders=w.Campaign.RobotBattles.Reserves.Count(r=>r.Node==order.TargetNode && r.Robot.CanFight && !w.Relations.Allied(order.Ruler,r.Robot.Owner)),
             equipment=order.RobotIds==null?null:w.Robots.Nodes.Concat(w.Robots.Retinues).SelectMany(s=>s.Robots).Where(r=>order.RobotIds.Contains(r.Id))
@@ -469,6 +470,17 @@ for(int step=1;step<=steps;step++){
         return false;
     });
     TraceSuperiorChanges("military");
+    foreach(int target in tracedTargets)
+    {
+        var battle=w.Campaign.RobotBattles;
+        Console.WriteLine(JsonSerializer.Serialize(new{trace="target-marches",step,target,
+            marched=battle.LastQueenMarches.Where(m=>m.Target==target).Select(m=>new{m.Owner,m.Source,m.Target}),
+            encounters=battle.Encounters.Where(e=>e.Target==target || e.MarchDestinations?.ContainsValue(target)==true)
+                .Select(e=>new{e.Id,e.Kind,e.Source,e.Target,e.MarchDestinations}),
+            boards=battle.Scenes.Where(s=>s.TargetNode==target).Select(s=>new{s.Id,s.Turn,s.Winner,
+                armies=s.Armies.Select(a=>new{a.Owner,a.HomeNode,a.Withdrawing}),
+                queens=s.Units.Where(u=>u.Role==BattleRole.Queen).Select(u=>new{u.Owner,u.Fallen,u.Retreated})})}));
+    }
     TraceStock(step,"after-military");
     foreach(var encounter in w.Campaign.RobotBattles.Encounters.Where(e=>!previousEncounters.Contains(e.Id) ||
         e.Finished && ongoingEncounters.Contains(e.Id))){

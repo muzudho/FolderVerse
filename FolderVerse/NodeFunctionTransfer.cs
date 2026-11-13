@@ -54,6 +54,7 @@ public sealed class NodeFunctionTransfers
             var source=w.Robots.Nodes[a];var target=w.Robots.Nodes[b];
             target.SetCapacity(checked(offset+source.TotalCapacity));
             target.Replace(target.Robots.Concat(source.Robots.Select(r=>(r.DefenseOnly?r.WithoutDefenseReservation():r) with {FunctionDisplayNode=r.FunctionDisplayNode??a})).ToArray());
+            w.Robots.TransferMapleFunctions(a,b);
             source.Replace(Array.Empty<Robot>());source.SetCapacity(0);
             w.Robots.Workshops[a].PreserveFunctionOrigin(a);w.Robots.Workshops[b].PreserveFunctionOrigin(b);
             w.Robots.Workshops[b].AbsorbFunctions(w.Robots.Workshops[a]);

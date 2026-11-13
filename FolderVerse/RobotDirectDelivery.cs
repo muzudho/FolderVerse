@@ -100,7 +100,7 @@ public sealed class RobotDirectDelivery
             Ship(source,target,ready,Array.FindIndex(w.Robots.Nodes[target].Robots.ToArray(),r=>r.Id==partialId));
             Ship(target,source,partial,Array.FindIndex(w.Robots.Nodes[source].Robots.ToArray(),r=>r.Id==soldierId));
             var projected=Simulate(w.Robots,Orders,out _,out int invalid);
-            if(invalid>=0 || projected[source].Count!=w.Robots.Nodes[source].Count || projected[target].Count!=w.Robots.Nodes[target].Count)
+            if(invalid>=0 || projected[source].Count!=w.Robots.Nodes[source].Robots.Count || projected[target].Count!=w.Robots.Nodes[target].Robots.Count)
                 throw new InvalidOperationException("Exchange must preserve occupied capacity");
         }catch{Orders.RemoveAll(o=>o.Number>=start);_next=start;Failures.Clear();Failures.AddRange(failures);throw;}
     }
@@ -132,7 +132,7 @@ public sealed class RobotDirectDelivery
         while(active.Count>0){
             var stores=Simulate(world,active,out var groups,out int invalid);
             if(invalid>=0){active[invalid].Status="受取部位待機";active.RemoveAt(invalid);continue;}
-            int overflow=Enumerable.Range(0,stores.Length).FirstOrDefault(n=>stores[n].Count>world.Nodes[n].StorageLimit,-1);
+            int overflow=Enumerable.Range(0,stores.Length).FirstOrDefault(n=>stores[n].Count+world.Nodes[n].MaplePackages.Count>world.Nodes[n].StorageLimit,-1);
             if(overflow>=0){var rejected=active.LastOrDefault(o=>o.Target==overflow);if(rejected==null)throw new InvalidOperationException("Direct delivery capacity invariant.");rejected.Status="空き枠待機";active.Remove(rejected);continue;}
             var transfers=active.Select(o=>new RobotShipment(o.Source,o.Target,o.RobotId,o.Part)).ToArray();world.Transport.RecordDirectTransfers(world,transfers);
             var allocated=new Dictionary<long,long>();foreach(var robot in stores.SelectMany(s=>s).Where(r=>r.Id<0))allocated[robot.Id]=world.Create(robot.Owner,robot.Parts).Id;
