@@ -152,7 +152,10 @@ public partial class Game1
         long source=_hangarDrag.Value;_hangarDrag=null;
         int destination=VisibleAssemblySlots().FirstOrDefault(i=>AssemblyCell(i).Contains(_pointer),-1);
         if(destination<0){_hangarMessage="ドラッグを取り消しました";return;}
-        if(store.MaplePackages.Any(p=>p.Id==_hangarSlots[destination])){_hangarMessage="この区画には楓の木があります";return;}
+        var cargo=HangarMaterials(_hangarSlots,store,store.MaplePackages);
+        if(Enumerable.Range(0,3).Any(row=>MaterialOccupies(cargo,destination,row) && (_hangarPart&HangarPart(row))!=0)){
+            _hangarMessage="この区画には楓の木があります";return;
+        }
         try
         {
             var robot=store.Robots.Single(r=>r.Id==source);
@@ -194,20 +197,16 @@ public partial class Game1
         else
         {
         DrawHangarContinuation();
+        var materials=HangarMaterials(_hangarSlots,store,store.MaplePackages);
         foreach(int slot in VisibleAssemblySlots())
         {
             var cell=AssemblyCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
-            if(store.MaplePackages.FirstOrDefault(p=>p.Id==_hangarSlots[slot]) is {} package){
-                DrawHangarBay(cell,cell.Contains(_pointer),false);
-                DrawMaplePackage(cell,package);
-                if(cell.Contains(_pointer)){hover="楓の木 / クリックして出荷先を選択";hoveringPart=true;}
-                continue;
-            }
             bool cellHover=reservationMode && cell.Contains(_pointer) && occupant!=null;
             bool canReserve=_hangarReturnHomeMode?CanSelectReturnHome(occupant):reservationMode && HangarReservationEnabled(occupant);
             if(_hangarZoom!=1)
             {
                 DrawCompactHangarSlot(slot,cell,occupant);
+                DrawMaterials(slot);
                 continue;
             }
             DrawHangarBay(cell,cellHover,canReserve);
@@ -230,7 +229,7 @@ public partial class Game1
                 _ui.Center("到着予定："+PartsLabel(order.Part),new(cell.X,cell.Y+236,cell.Width,22),.27f,Cream);
             }
             // Draw opaque labels after every glyph, including disabled/occupied slots.
-            if(robot==null){DrawHangarDeliveryTags(slot,incoming,occupant);continue;}
+            if(robot==null){DrawHangarDeliveryTags(slot,incoming,occupant);DrawMaterials(slot);continue;}
             robot=HomePersuasionRobot(robot);
             DrawRobotGlyph(AssemblyRobotBounds(slot),robot,whiteOutline:true,partOpacity:part=>reservationMode?(canReserve?1:.45f):HangarPlaceEnabled(occupant,part)?1:.22f);
             DrawHangarDeliveryTags(slot,incoming,occupant);
@@ -262,6 +261,16 @@ public partial class Game1
             }
             if(robot.FunctionDisplayNode is int origin)_ui.Text("元地点 "+origin,new(cell.X+92,cell.Y+151),.23f,Cream);
             if(cellHover){var edge=canReserve?ControlEdge:new Color(184,102,104);_ui.Box(new(cell.X,cell.Y,cell.Width,3),edge);_ui.Box(new(cell.X,cell.Bottom-3,cell.Width,3),edge);_ui.Box(new(cell.X,cell.Y,3,cell.Height),edge);_ui.Box(new(cell.Right-3,cell.Y,3,cell.Height),edge);}
+            DrawMaterials(slot);
+        }
+        void DrawMaterials(int slot)
+        {
+            for(int row=0;row<3;row++)if(materials.TryGetValue(slot*3+row,out var package)){
+                var bounds=Rectangle.Union(AssemblyPartBounds(slot,row),AssemblyPartBounds(slot,row+package.Sections-1));
+                _ui.Box(bounds,new Color(30,48,60));
+                DrawMaplePackage(bounds,package,compact:true);
+                if(bounds.Contains(_pointer)){hover="楓の木 / クリックして出荷先を選択";hoveringPart=true;}
+            }
         }
         }
         if(!hoveringPart && !_hangarDrag.HasValue){

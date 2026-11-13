@@ -79,7 +79,7 @@ public sealed class RobotPartPlanning
             copy.DirectDelivery.Orders.Add(order with {Source=a,Target=b});
         }
         var direct=Enumerable.Range(0,copy.Nodes.Length).Select(n=>copy.DirectDelivery.Preview(copy,n)).ToArray();
-        for(int n=0;n<copy.Nodes.Length;n++)if(direct[n].Length+copy.Nodes[n].MaplePackages.Count<=copy.Nodes[n].StorageLimit)copy.Nodes[n].Replace(direct[n]);
+        for(int n=0;n<copy.Nodes.Length;n++)if(copy.Nodes[n].OccupiedSlots(direct[n])<=copy.Nodes[n].StorageLimit)copy.Nodes[n].Replace(direct[n]);
         copy.DirectDelivery.Orders.Clear();
         PreviewResults.Clear();
         foreach(var order in Orders)try{
@@ -199,7 +199,7 @@ public sealed class RobotPartPlanning
         }
         stores[target].Add(output);
         if(order.PromoteCaptain){stores[target].Remove(output);output=output with {Role=RobotRole.Captain};stores[target].Add(output);}
-        if(Enumerable.Range(0,stores.Length).Any(n=>stores[n].Count+stock.Nodes[n].MaplePackages.Count>stock.Nodes[n].StorageLimit))throw new InvalidOperationException("入荷先の格納枠が不足しています");
+        if(Enumerable.Range(0,stores.Length).Any(n=>stock.Nodes[n].OccupiedSlots(stores[n])>stock.Nodes[n].StorageLimit))throw new InvalidOperationException("入荷先の格納枠が不足しています");
         for(int n=0;n<stores.Length;n++)stock.Nodes[n].Replace(stores[n]);return output.Id;
     }
     internal void Resolve(WorldSetup world)

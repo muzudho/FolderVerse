@@ -53,7 +53,7 @@ public partial class Game1
             {
                 var card=FactoryAlbumCard(loads-1);
                 _ui.Box(card,loads<=available?new Color(35,53,67):Muted);
-                DrawMaplePackage(new Rectangle(card.X+14,card.Y+12,card.Width-28,208),new MaplePackage(0,16));
+                DrawMaplePackage(new Rectangle(card.X+14,card.Y+12,card.Width-28,208),new MaplePackage(0,loads*16));
                 _ui.Center($"楓の木を採取 ×{loads} 荷",new(card.X,card.Y+222,card.Width,39),.43f,Cream);
                 _ui.Center($"{loads} 産業ターン",new(card.X,card.Y+261,card.Width,26),.35f,Cream);
                 if(loads>available)_ui.Center("採取可能量を超えています",new(card.X,card.Y+289,card.Width,27),.32f,Cream);

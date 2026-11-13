@@ -132,7 +132,7 @@ public sealed class RobotDirectDelivery
         while(active.Count>0){
             var stores=Simulate(world,active,out var groups,out int invalid);
             if(invalid>=0){active[invalid].Status="受取部位待機";active.RemoveAt(invalid);continue;}
-            int overflow=Enumerable.Range(0,stores.Length).FirstOrDefault(n=>stores[n].Count+world.Nodes[n].MaplePackages.Count>world.Nodes[n].StorageLimit,-1);
+            int overflow=Enumerable.Range(0,stores.Length).FirstOrDefault(n=>world.Nodes[n].OccupiedSlots(stores[n])>world.Nodes[n].StorageLimit,-1);
             if(overflow>=0){var rejected=active.LastOrDefault(o=>o.Target==overflow);if(rejected==null)throw new InvalidOperationException("Direct delivery capacity invariant.");rejected.Status="空き枠待機";active.Remove(rejected);continue;}
             var transfers=active.Select(o=>new RobotShipment(o.Source,o.Target,o.RobotId,o.Part)).ToArray();world.Transport.RecordDirectTransfers(world,transfers);
             var allocated=new Dictionary<long,long>();foreach(var robot in stores.SelectMany(s=>s).Where(r=>r.Id<0))allocated[robot.Id]=world.Create(robot.Owner,robot.Parts).Id;

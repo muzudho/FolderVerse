@@ -88,9 +88,9 @@ public sealed partial class RobotWorkshop
     {
         if(MapleRemaining>0)
         {
-            if(Paused || owner<0 || !world.CanHarvestMaple(node))return;
-            if(++MapleProgress==IndustryTime.UnitsPerTurn && world.HarvestMaple(node)){
-                MapleRemaining--;MapleProgress=0;
+            if(Paused || owner<0 || !world.CanHarvestMaple(node,MapleRemaining))return;
+            if(++MapleProgress>=MapleRemaining*IndustryTime.UnitsPerTurn && world.HarvestMaple(node,MapleRemaining)){
+                MapleRemaining=0;MapleProgress=0;
             }
             return;
         }

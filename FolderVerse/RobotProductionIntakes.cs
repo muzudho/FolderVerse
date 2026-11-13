@@ -81,7 +81,9 @@ public sealed partial class RobotWorld
             ((r.Parts|product.Parts)!=RobotParts.Complete || r.Merge(product,r.Owner).AssemblyCredit(r.Owner)>=Training[r.Owner].RequiredNative));
         if(receiver==null)return false;
         var merged=receiver.Merge(product,receiver.Owner);
-        store.Replace(store.Robots.Select(r=>r.Id==receiver.Id?merged:r));
+        var next=store.Robots.Select(r=>r.Id==receiver.Id?merged:r).ToArray();
+        if(store.OccupiedSlots(next)>store.StorageLimit)return false;
+        store.Replace(next);
         return true;
     }
 }

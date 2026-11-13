@@ -7,26 +7,32 @@ using Microsoft.Xna.Framework.Graphics;
 
 public partial class Game1
 {
-    private Texture2D _maplePackageArt;
+    private readonly Texture2D[] _maplePackageArt=new Texture2D[3];
     private long? _mapleSelected;
     private int _mapleDestination;
     private static readonly Rectangle MaplePanel=new(164,422,630,252);
     private static readonly Rectangle MaplePrevious=new(186,497,64,46),MapleNext=new(708,497,64,46);
     private static readonly Rectangle MapleSend=new(186,592,184,50),MapleCancel=new(387,592,184,50),MapleClose=new(588,592,184,50);
 
-    private void DrawMaplePackage(Rectangle cell,MaplePackage package,string status=null,float opacity=1)
+    private void DrawMaplePackage(Rectangle cell,MaplePackage package,string status=null,float opacity=1,bool compact=false)
     {
-        if(_maplePackageArt==null){
-            using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots","maple-package-v001.png"));
-            _maplePackageArt=Texture2D.FromStream(GraphicsDevice,stream);
+        int index=package.Sections-1;
+        if(_maplePackageArt[index]==null){
+            using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots",index==0?"maple-package-v002.png":$"maple-timber-{(index+1)*16}-v001.png"));
+            _maplePackageArt[index]=Texture2D.FromStream(GraphicsDevice,stream);
         }
-        int width=Math.Min(cell.Width*4/5,cell.Height*3/4),height=width*243/288;
+        var art=_maplePackageArt[index];
+        int width=Math.Min(cell.Width*4/5,cell.Height*3/4*art.Width/art.Height),height=width*art.Height/art.Width;
         if(width<1 || height<1)return;
-        _spriteBatch.Draw(_maplePackageArt,new Rectangle(cell.Center.X-width/2,cell.Center.Y-height/2,width,height),Color.White*opacity);
+        _spriteBatch.Draw(art,new Rectangle(cell.Center.X-width/2,cell.Center.Y-height/2,width,height),Color.White*opacity);
+        if(compact){
+            if(cell.Height>=28)_ui.Center($"{package.Units}/48",new(cell.X,cell.Bottom-16,cell.Width,16),Math.Min(.27f,cell.Width/210f),Cream);
+            return;
+        }
         if(cell.Height<65)return;
         bool shipping=_setup.Robots.MapleShipments.Any(o=>o.PackageId==package.Id);
         status??=shipping?"出荷予定":"";
-        _ui.Center($"楓の木 {package.Units}/16"+(status.Length>0?" / "+status:""),new(cell.X,cell.Bottom-30,cell.Width,28),Math.Min(.34f,cell.Width/410f),Cream);
+        _ui.Center($"楓の木 {package.Units}/48"+(status.Length>0?" / "+status:""),new(cell.X,cell.Bottom-30,cell.Width,28),Math.Min(.34f,cell.Width/410f),Cream);
     }
 
     private int[] MapleTargets()=>FunctionalDeliveryRoutes.Targets(_setup,_populationNode).Where(n=>_setup.Nodes.All[n].Owner>=0).ToArray();
@@ -57,8 +63,8 @@ public partial class Game1
         var store=_setup.Robots.Nodes[_populationNode];
         if(store.MaplePackages.Count==0)return false;
         SyncHangarSlots();
-        int slot=VisibleAssemblySlots().FirstOrDefault(i=>AssemblyCell(i).Contains(_pointer),-1);
-        var package=slot<0?null:store.MaplePackages.FirstOrDefault(p=>p.Id==_hangarSlots[slot]);
+        var materials=HangarMaterials(_hangarSlots,PlanningStock.Nodes[HangarPlanningNode],PlanningStock.Nodes[HangarPlanningNode].MaplePackages);
+        var package=materials.FirstOrDefault(p=>VisibleAssemblySlots().Contains(p.Key/3) && Rectangle.Union(AssemblyPartBounds(p.Key/3,p.Key%3),AssemblyPartBounds(p.Key/3,p.Key%3+p.Value.Sections-1)).Contains(_pointer)).Value;
         if(package==null)return false;
         _mapleSelected=package.Id;_mapleDestination=0;
         return true;

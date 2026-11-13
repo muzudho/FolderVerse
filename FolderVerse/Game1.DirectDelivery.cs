@@ -119,7 +119,11 @@ public partial class Game1
         if(!_directDrag.HasValue || mouse.LeftButton!=ButtonState.Released || _previousMouse.LeftButton!=ButtonState.Pressed)return;
         var drag=_directDrag.Value;_directDrag=null;
         for(int side=0;side<2;side++)foreach(int slot in DirectVisibleSlots(side))if(DirectViewCell(side,slot).Contains(_pointer)){
-            try{int source=_directNodes[drag.Side],target=_directNodes[side];var destination=_directSlots[side][slot];if(PlanningStock.Nodes[target].MaplePackages.Any(p=>p.Id==destination))throw new InvalidOperationException("Material occupies this slot.");if(side==drag.Side){if(destination==drag.Robot)return;if(!destination.HasValue && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==target && o.TargetRobotId==null && o.TargetSlot==slot))throw new InvalidOperationException("Arrival slot reserved.");
+            try{int source=_directNodes[drag.Side],target=_directNodes[side];var destination=_directSlots[side][slot];
+                var parts=drag.Part==0?PlanningStock.Nodes[source].Robots.Single(r=>r.Id==drag.Robot).Parts:drag.Part;
+                var cargo=DirectStoredMaterials(side);
+                if(Enumerable.Range(0,3).Any(row=>(parts&HangarPart(row))!=0 && MaterialOccupies(cargo,slot,row)))throw new InvalidOperationException("Material occupies this section.");
+                if(side==drag.Side){if(destination==drag.Robot)return;if(!destination.HasValue && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==target && o.TargetRobotId==null && o.TargetSlot==slot))throw new InvalidOperationException("Arrival slot reserved.");
                     if(drag.Part==0){if(destination.HasValue && PlanningStock.AssemblyLocked(source,PlanningStock.Nodes[source].Robots.Single(r=>r.Id==destination)))throw new InvalidOperationException("Robot is reserved.");int from=Array.IndexOf(_directSlots[side],(long?)drag.Robot);_directSlots[side][from]=destination;_directSlots[side][slot]=drag.Robot;}
                     else {long id=_setup.Robots.PartPlanning.Reserve(_setup,source,target,drag.Robot,drag.Part,destination,_setup.PlayerSlot);_directSlots[side][slot]=id;}_directMessage="格納庫内の組替を予約しました";}
                 else {var robot=PlanningStock.Nodes[source].Robots.Single(r=>r.Id==drag.Robot);_directSlots[side][slot]=_setup.Robots.PartPlanning.Reserve(_setup,source,target,drag.Robot,drag.Part==0?robot.Parts:drag.Part,destination,_setup.PlayerSlot);BeginWorkReservationEffect(robot,robot.Owner);_directMessage="直送便を予約しました / 配送時に実施";}SyncDirectSlots();}
@@ -144,18 +148,13 @@ public partial class Game1
             string mark="目印："+NodeLandmarks.At(_setup,node).Description;
             _ui.Text(mark,new(x+20,241),Math.Min(.35f,520/Math.Max(1,_font.MeasureString(mark).X)),Cream);
             _ui.Text($"予定の格納庫 {store.Count}/{store.TotalCapacity}",new(x+20,274),.32f,Cream);
-            if(store.MapleUnits>0)_ui.Text($"楓の木 {store.MapleUnits}/16",new(x+20,888),.32f,Cream);
+            if(store.MapleUnits>0)_ui.Text($"楓の木 {store.MapleUnits}",new(x+20,888),.32f,Cream);
             var incomingMaterials=DirectIncomingMaterials(side);
+            var storedMaterials=DirectStoredMaterials(side);
             int materialArrivals=_setup.Robots.MapleShipments.Count(o=>o.Target==node);
             if(materialArrivals>0)_ui.Text($"素材の入荷予定 {materialArrivals}件",new(x+20,920),.32f,Accent);
             foreach(int slot in DirectVisibleSlots(side)){
                 var cell=DirectViewCell(side,slot);var robot=store.Robots.FirstOrDefault(r=>r.Id==_directSlots[side][slot]);var hover=DirectHoverPart(side,slot);
-                if(store.MaplePackages.FirstOrDefault(p=>p.Id==_directSlots[side][slot]) is {} package){
-                    DrawHangarBay(cell,cell.Contains(_pointer),false);DrawMaplePackage(cell,package);continue;
-                }
-                if(incomingMaterials.TryGetValue(slot,out var incomingMaterial)){
-                    DrawHangarBay(cell,false,false);DrawMaplePackage(cell,incomingMaterial,"入荷予定",.55f);continue;
-                }
                 bool target=_directDrag.HasValue && cell.Contains(_pointer);bool cellHover=cell.Contains(_pointer) && hover==0;
                 _ui.Box(new(cell.X-2,cell.Y-2,cell.Width+4,cell.Height+4),target?color:new Color(37,64,78));
                 DrawHangarBay(cell,cellHover,target);
@@ -171,6 +170,17 @@ public partial class Game1
                 }
                 for(int row=0;row<3;row++){
                     var part=HangarPart(row);var bounds=DirectViewPart(side,slot,row);
+                    int key=slot*3+row;
+                    if(storedMaterials.TryGetValue(key,out var package)){
+                        DrawMaplePackage(Rectangle.Union(bounds,DirectViewPart(side,slot,row+package.Sections-1)),package,compact:true);
+                        if(cell.Width>=130 && _setup.Robots.MapleShipments.Any(o=>o.PackageId==package.Id))DrawDirectDeliveryTag(bounds,"出荷予定");
+                        continue;
+                    }
+                    if(incomingMaterials.TryGetValue(key,out var incomingMaterial)){
+                        DrawMaplePackage(Rectangle.Union(bounds,DirectViewPart(side,slot,row+incomingMaterial.Sections-1)),incomingMaterial,opacity:.55f,compact:true);
+                        if(cell.Width>=130)DrawDirectDeliveryTag(bounds,"入荷予定");
+                        continue;
+                    }
                     bool incoming=_setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==node && (o.Part&part)!=0 && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot));
                     bool outgoing=robot!=null && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Source==node && o.RobotId==robot.Id && (o.Part&part)!=0);
                     if(cell.Width>=130){

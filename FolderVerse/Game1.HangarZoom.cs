@@ -1,5 +1,6 @@
 namespace FolderVerse;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -36,7 +37,7 @@ public partial class Game1
 
     private static void SyncHangarOccupants(long?[] slots,RobotStore store,Func<int,bool> reserved)
     {
-        var ids=store.Robots.Select(r=>r.Id).Concat(store.MaplePackages.Select(p=>p.Id)).ToHashSet();
+        var ids=store.Robots.Select(r=>r.Id).ToHashSet();
         for(int i=0;i<slots.Length;i++)if(slots[i] is long id && !ids.Contains(id))slots[i]=null;
         foreach(long id in ids.Where(id=>!slots.Contains(id))){
             int slot=Array.FindIndex(slots,item=>!item.HasValue);
@@ -44,6 +45,29 @@ public partial class Game1
             if(slot>=0)slots[slot]=id;
         }
     }
+    private static Dictionary<int,MaplePackage> HangarMaterials(long?[] slots,RobotStore store,IEnumerable<MaplePackage> packages,Func<int,bool> reserved=null)
+    {
+        var robots=store.Robots.ToDictionary(r=>r.Id);
+        var order=Enumerable.Range(0,slots.Length).Where(slot=>reserved?.Invoke(slot)!=true)
+            .OrderBy(slot=>slots[slot].HasValue?0:1).ToArray();
+        var used=new bool[slots.Length*3];
+        foreach(int slot in order)
+            if(slots[slot] is long id && robots.TryGetValue(id,out var robot))
+                for(int row=0;row<3;row++)used[slot*3+row]=(robot.Parts&HangarPart(row))!=0;
+        var result=new Dictionary<int,MaplePackage>();
+        foreach(var package in packages.OrderByDescending(p=>p.Sections)){
+            int sections=package.Sections;
+            int key=order.SelectMany(slot=>Enumerable.Range(0,4-sections).Reverse().Select(row=>slot*3+row))
+                .FirstOrDefault(start=>Enumerable.Range(start,sections).All(index=>!used[index]),-1);
+            if(key<0)continue;
+            result.Add(key,package);
+            for(int i=0;i<sections;i++)used[key+i]=true;
+        }
+        return result;
+    }
+
+    private static bool MaterialOccupies(Dictionary<int,MaplePackage> cargo,int slot,int row)=>
+        cargo.Any(p=>p.Key/3==slot && row>=p.Key%3 && row<p.Key%3+p.Value.Sections);
 
     private bool UpdateHangarPan(MouseState mouse)
     {
@@ -109,6 +133,7 @@ public partial class Game1
         var overview=new Point(HangarGridColumns,Math.Max(1,HangarGridRows));
         float progress=MathHelper.SmoothStep(0,1,HangarIntroProgress);
         var bay=new Color(62,86,96);
+        var materials=HangarMaterials(_hangarSlots,store,store.MaplePackages);
         for(int slot=0;slot<_hangarSlots.Length;slot++)
         {
             var start=HangarViewCell(slot,overview,0,0);
@@ -122,7 +147,8 @@ public partial class Game1
             if(clipped!=cell)continue;
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
             if(robot!=null)DrawRobotGlyph(HangarRobotArea(cell),robot,whiteOutline:true);
-            if(store.MaplePackages.FirstOrDefault(p=>p.Id==_hangarSlots[slot]) is {} package)DrawMaplePackage(cell,package);
+            for(int row=0;row<3;row++)if(materials.TryGetValue(slot*3+row,out var package))
+                DrawMaplePackage(HangarCellRegion(cell,80,8+row*60,92,58+(package.Sections-1)*60),package,compact:true);
             DrawHangarSlotNumber(slot,cell,robot,false);
         }
     }

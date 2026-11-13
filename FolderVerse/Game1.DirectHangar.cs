@@ -83,30 +83,43 @@ public partial class Game1
                 _directMessage=_setup.Robots.ReserveMapleShipment(_setup,source,target,drag.Id)
                     ?"素材の直送を予約しました / 配送時に空き枠を確認"
                     :"素材を出荷できません";
-            else if(DirectVisibleSlots(drag.Side).Contains(drag.Slot) && DirectViewCell(drag.Side,drag.Slot).Contains(_pointer)
+            else if(DirectVisibleSlots(drag.Side).Contains(drag.Slot/3) &&
+                DirectStoredMaterials(drag.Side).TryGetValue(drag.Slot,out var package) &&
+                Rectangle.Union(DirectViewPart(drag.Side,drag.Slot/3,drag.Slot%3),
+                    DirectViewPart(drag.Side,drag.Slot/3,drag.Slot%3+package.Sections-1)).Contains(_pointer)
                 && _setup.Robots.CancelMapleShipment(source,drag.Id))
                 _directMessage="素材の出荷予約を取り消しました";
             return true;
         }
         if(!click || _directDrag.HasValue)return false;
-        for(int side=0;side<2;side++)foreach(int slot in DirectVisibleSlots(side)){
-            if(!DirectViewCell(side,slot).Contains(_pointer))continue;
+        for(int side=0;side<2;side++)foreach(var cargo in DirectStoredMaterials(side)){
+            if(!DirectVisibleSlots(side).Contains(cargo.Key/3) || !Rectangle.Union(DirectViewPart(side,cargo.Key/3,cargo.Key%3),DirectViewPart(side,cargo.Key/3,cargo.Key%3+cargo.Value.Sections-1)).Contains(_pointer))continue;
             int source=_directNodes[side];
-            if(_directSlots[side][slot] is not long id || !_setup.Robots.Nodes[source].MaplePackages.Any(p=>p.Id==id))return false;
-            _directMaterialDrag=(side,slot,id);
+            if(!_setup.Robots.Nodes[source].MaplePackages.Any(p=>p.Id==cargo.Value.Id))return false;
+            _directMaterialDrag=(side,cargo.Key,cargo.Value.Id);
             return true;
         }
         return false;
     }
 
+    private Dictionary<int,MaplePackage> DirectStoredMaterials(int side)
+    {
+        var store=PlanningStock.Nodes[_directNodes[side]];
+        return HangarMaterials(_directSlots[side],store,store.MaplePackages,slot=>DirectMaterialSlotReserved(side,slot));
+    }
+
+    private bool DirectMaterialSlotReserved(int side,int slot)=>_setup.Robots.DirectDelivery.Orders.Any(
+        o=>o.Target==_directNodes[side] && (o.TargetRobotId.HasValue?o.TargetRobotId==_directSlots[side][slot]:o.TargetSlot==slot));
+
     private Dictionary<int,MaplePackage> DirectIncomingMaterials(int side)
     {
         int node=_directNodes[side];
-        var slots=Enumerable.Range(0,_directSlots[side].Length).Where(slot=>!_directSlots[side][slot].HasValue &&
-            !_setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==node && o.TargetRobotId==null && o.TargetSlot==slot));
+        var store=PlanningStock.Nodes[node];
         var incoming=_setup.Robots.MapleShipments.Where(o=>o.Target==node)
             .Select(o=>_setup.Robots.Nodes[o.Source].MaplePackages.FirstOrDefault(p=>p.Id==o.PackageId))
             .OfType<MaplePackage>();
-        return slots.Zip(incoming).ToDictionary(pair=>pair.First,pair=>pair.Second);
+        var stored=DirectStoredMaterials(side);
+        return HangarMaterials(_directSlots[side],store,store.MaplePackages.Concat(incoming),slot=>DirectMaterialSlotReserved(side,slot))
+            .Where(pair=>!stored.Values.Any(p=>p.Id==pair.Value.Id)).ToDictionary(pair=>pair.Key,pair=>pair.Value);
     }
 }

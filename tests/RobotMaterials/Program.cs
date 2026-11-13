@@ -6,6 +6,15 @@ static void Check(bool condition,string message)
 }
 
 var materials=Enum.GetValues<RobotMaterial>();
+var packedStore=new RobotStore();
+const System.Reflection.BindingFlags internalInstance=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+typeof(RobotStore).GetMethod("SetCapacity",internalInstance)!.Invoke(packedStore,new object[]{1});
+var receiveMaple=typeof(RobotStore).GetMethod("TryReceiveMaple",internalInstance)!;
+bool Receive(long id)=>(bool)receiveMaple.Invoke(packedStore,new object[]{new MaplePackage(id,16),0,(Func<long,bool>)(_=>false)})!;
+packedStore.Add(new Robot(100,0,RobotParts.Head));
+Check(Receive(101) && Receive(102) && !Receive(103) && packedStore.Count==1,"Two loads fit beside a head in one bay");
+packedStore.Remove(100);
+Check(Receive(103) && !Receive(104) && packedStore.Count==1,"Three maple loads fit in one empty bay");
 var expected=new RobotEquipment[]{new(3,3,4),new(0,0,1),new(5,1,1),new(2,2,2),new(0,6,2),new(7,1,0),new(8,0,3),new(4,5,3),new(19,22,13)};
 var basic=new Robot(1,0,RobotParts.Complete);
 foreach(var material in materials)
@@ -113,14 +122,15 @@ var harvest=cargo.Workshops[source];
 for(int seed=0;harvest.ProductionLines.Length==0;seed++)harvest.GenerateLines(seed,RobotEquipmentMode.Materials);
 foreach(var line in harvest.ProductionLines)line.SelectPlan(3);
 var harvestLine=harvest.ProductionLines[0];
-harvestLine.SelectMapleHarvest(2);
+harvestLine.SelectMapleHarvest(1);
 harvest.SetReservedSlots(harvest.ReservedSlotLimit);
 for(int i=0;i<IndustryTime.UnitsPerTurn;i++)cargo.AdvanceIndustry(_=>0,n=>n!=source);
 Check(cargo.MapleDeposit(source)==deposit && harvestLine.MapleProgress==0,"A blocked harvest must wait without spending a deposit");
 harvest.SetReservedSlots(0);
 for(int i=0;i<IndustryTime.UnitsPerTurn;i++)cargo.AdvanceIndustry(_=>0,n=>n!=source);
 var package=cargo.Nodes[source].MaplePackages.Single();
-Check(package.Units==16 && cargo.MapleDeposit(source)==deposit-1 && harvestLine.MapleRemaining==1,"Harvesting must exchange one deposit for one load");
+Check(package.Units==16 && cargo.MapleDeposit(source)==deposit-1 && harvestLine.MapleRemaining==0,"Harvesting must exchange one deposit for one load");
+harvestLine.SelectMapleHarvest(1);
 Check(cargo.MapleAvailableToPlan(source,null)==deposit-2,"Harvest orders must share the remaining deposit");
 Check(cargo.ReserveMapleShipment(supply,source,target,package.Id),"Adjacent maple shipment unavailable");
 var restoredSupply=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
@@ -158,3 +168,14 @@ var previousSave=AutoSaveStore.Capture(world);
 foreach(var savedObject in previousSave.Objects){savedObject.Fields?.Remove("_mapleDeposits");savedObject.Fields?.Remove("_mapleShipments");savedObject.Fields?.Remove("_maplePackages");}
 Check(!AutoSaveStore.Restore<WorldSetup>(previousSave).Robots.MapleSupplyEnabled,"An older materials save was opted into maple");
 Console.WriteLine("PASS maple harvesting, cargo shipping, save round-trip, exact recipe, blocked intake and function transfer.");
+
+var timberStore=new RobotStore();
+typeof(RobotStore).GetMethod("SetCapacity",internalInstance)!.Invoke(timberStore,new object[]{1});
+bool ReceiveTimber(long id,int units)=>(bool)receiveMaple.Invoke(timberStore,new object[]{new MaplePackage(id,units),0,(Func<long,bool>)(_=>false)})!;
+timberStore.Add(new Robot(200,0,RobotParts.Body));
+Check(!ReceiveTimber(201,32) && !ReceiveTimber(202,48),"A large timber needs contiguous sections");
+timberStore.Remove(200);
+Check(ReceiveTimber(202,48) && !ReceiveTimber(203,1),"A full timber occupies all three sections");
+typeof(RobotStore).GetMethod("SetMaplePackages",internalInstance)!.Invoke(timberStore,new object[]{new[]{new MaplePackage(202,31)}});
+Check(ReceiveTimber(203,12) && !ReceiveTimber(204,8) && timberStore.MaplePackages.First().Units==31,"Small loads cannot refill a large timber");
+Check(ReceiveTimber(204,4) && timberStore.MaplePackages.Last().Units==16,"Small loads combine up to sixteen");

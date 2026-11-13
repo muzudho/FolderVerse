@@ -242,13 +242,13 @@ public partial class Game1
     {
         var product=FactoryRobotButton(row,IndustryTime.UnitsPerTurn);
         _ui.Box(product,Accent);
-        DrawMaplePackage(product,new MaplePackage(0,16));
+        DrawMaplePackage(product,new MaplePackage(0,line.MapleRemaining*16));
         int deposit=_setup.Robots.MapleDeposit(node);
-        bool waiting=!_setup.Robots.CanHarvestMaple(node);
+        bool waiting=!_setup.Robots.CanHarvestMaple(node,line.MapleRemaining);
         string status=line.Paused?"一時停止":deposit==0?"採取できる埋蔵量がありません":waiting?"格納枠の空きを待っています":"採取中";
         _ui.Text($"採取 / {status} / 予約残り {line.MapleRemaining} 荷",new(160,y-19),.33f,Cream);
         _ui.Text($"楓の木 / 残り埋蔵量 {deposit} 荷",new(400,y+46),.45f,Cream);
-        _ui.Text($"次の入荷まで {IndustryTime.Format(IndustryTime.UnitsPerTurn-line.MapleProgress)} 産業ターン",new(400,y+90),.33f,Cream);
+        _ui.Text($"次の入荷まで {IndustryTime.Format(line.MapleRemaining*IndustryTime.UnitsPerTurn-line.MapleProgress)} 産業ターン",new(400,y+90),.33f,Cream);
         DrawFactoryCaret(160+line.MapleProgress*34,y,line,waiting);
     }
     private void DrawFactoryCaret(int x,int y,RobotWorkshop line,bool mapleWait=false)

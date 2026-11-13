@@ -101,12 +101,12 @@ class Checks:Game1{
   long cargo=w.Robots.Create(0,RobotParts.Head).Id;
   typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(w.Robots.Nodes[a],new object[]{new[]{new MaplePackage(cargo,16)}});
   Call("SyncDirectSlots");
-  int cargoSlot=Array.IndexOf(leftSlots,(long?)cargo);
+  int cargoSlot=((Dictionary<int,MaplePackage>)Call("DirectStoredMaterials",0)).Single(p=>p.Value.Id==cargo).Key;
   var at=Cell(0,0).Center;
   Set("_pointer",at);Set("_previousMouse",new MouseState());
   Call("DirectPairInput",new MouseState(at.X,at.Y,-120,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),false,false);
   Check(((int[])Get("_directZoom")).SequenceEqual(new[]{2,1}),"Wheel zoom changes only the hovered hangar");
-  var from=Cell(0,cargoSlot).Center;var to=Cell(1,0).Center;
+  var from=Part(0,cargoSlot/3,cargoSlot%3).Center;var to=Cell(1,0).Center;
   Set("_pointer",from);Set("_previousMouse",new MouseState());
   Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);
   Set("_pointer",to);Call("DirectPairInput",Mouse(to,ButtonState.Released),false,false);
@@ -122,8 +122,7 @@ class Checks:Game1{
   Call("DirectPairInput",Mouse(from,ButtonState.Released),false,false);
   Check(w.Robots.MapleShipments.Count==0,"Clicking reserved maple cancels delivery");
   ((int[])Get("_directZoom"))[0]=1;
-  leftSlots[Array.IndexOf(leftSlots,(long?)cargo)]=null;
-  leftSlots[3]=cargo;
+
   Check(!((IEnumerable<int>)Call("DirectVisibleSlots",0)).Contains(3),"Default three-column view hides the fourth column");
   Check((bool)Call("DirectPageClick",new Point(520,900)) && ((IEnumerable<int>)Call("DirectVisibleSlots",0)).Contains(3),"Horizontal arrow reveals the cargo column");
   Call("DirectPageClick",new Point(450,900));

@@ -3,7 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public sealed record MaplePackage(long Id,int Units);
+public sealed record MaplePackage(long Id,int Units)
+{
+    public const int Capacity=48;
+    public int Sections=>(Units+RobotWorld.MaplePackageSize-1)/RobotWorld.MaplePackageSize;
+}
 public sealed record MapleShipment(int Owner,int Source,int Target,long PackageId);
 
 public sealed partial class RobotWorld
@@ -38,18 +42,18 @@ public sealed partial class RobotWorld
     public int MapleAvailableToPlan(int node,RobotWorkshop editing)
         =>Math.Max(0,MapleDeposit(node)-Workshops[node].ProductionLines.Where(l=>!ReferenceEquals(l,editing)).Sum(l=>l.MapleRemaining));
 
-    internal bool CanHarvestMaple(int node)
-        =>MapleDeposit(node)>0 && Nodes[node].HasSpace &&
-            Nodes[node].Count+ProductionIntakes.Count(i=>(i.Target??i.Source)==node)<Nodes[node].StorageLimit-Workshops[node].ReservedSlots;
+    private int MapleReservedSlots(int node)=>ProductionIntakes.Count(i=>(i.Target??i.Source)==node)+Workshops[node].ReservedSlots;
+    internal bool CanHarvestMaple(int node,int loads)
+        =>MapleDeposit(node)>=loads && Nodes[node].HasMapleSpace(new(0,loads*MaplePackageSize),MapleReservedSlots(node));
 
-    internal bool HarvestMaple(int node)
+    internal bool HarvestMaple(int node,int loads)
     {
-        if(!CanHarvestMaple(node))return false;
+        if(!CanHarvestMaple(node,loads))return false;
         var store=Nodes[node];
         int reserved=ProductionIntakes.Count(i=>(i.Target??i.Source)==node)+Workshops[node].ReservedSlots;
-        if(!store.TryReceiveMaple(new(_nextId,MaplePackageSize),reserved,id=>MapleShipping(node,id)))return false;
+        if(!store.TryReceiveMaple(new(_nextId,loads*MaplePackageSize),reserved,id=>MapleShipping(node,id)))return false;
         _nextId++;
-        _mapleDeposits[node]--;
+        _mapleDeposits[node]-=loads;
         return true;
     }
 
@@ -95,7 +99,16 @@ public sealed partial class RobotWorld
     {
         if(!MapleSupplyEnabled || world.Campaign.Phase!=CampaignPhase.Domestic || source<0 || source>=Nodes.Length || target<0 || target>=Nodes.Length)return false;
         int owner=world.Nodes.All[source].Owner;
-        if(!world.Relations.Controls(owner) || !CanDeliverMaple(world,owner,source,target) || !Nodes[source].MaplePackages.Any(p=>p.Id==packageId))return false;
+        var package=Nodes[source].MaplePackages.FirstOrDefault(p=>p.Id==packageId);
+        if(!world.Relations.Controls(owner) || !CanDeliverMaple(world,owner,source,target) || package==null)return false;
+        if(package.Sections>1){
+            var targetStore=Nodes[target].PlanningCopy();
+            foreach(var order in MapleShipments.Where(o=>o.Target==target && o.PackageId!=packageId)){
+                var pending=Nodes[order.Source].MaplePackages.FirstOrDefault(p=>p.Id==order.PackageId);
+                if(pending!=null)targetStore.TryReceiveMaple(pending,MapleReservedSlots(target),id=>MapleShipping(target,id));
+            }
+            if(!targetStore.HasMapleSpace(package,MapleReservedSlots(target)))return false;
+        }
         CancelMapleShipment(source,packageId);
         _mapleShipments.Add(new(owner,source,target,packageId));
         return true;
