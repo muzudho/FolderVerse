@@ -41,7 +41,7 @@ public sealed class ToyCounterRenderer
             if(x*x+y*y<=5)batch.DrawString(_font,text,at+new Vector2(x,y),new Color(8,18,29)*(color.A/255f),0,Vector2.Zero,scale,SpriteEffects.None,0);
         batch.DrawString(_font,text,at,color,0,Vector2.Zero,scale,SpriteEffects.None,0);
     }
-    public void Draw(SpriteBatch batch,int count,Rectangle portrait,Color color)
+    public Rectangle Draw(SpriteBatch batch,int count,Rectangle portrait,Color color)
     {
         string number=count.ToString(System.Globalization.CultureInfo.InvariantCulture);
         string unitText=SectorUnit(count);
@@ -55,5 +55,7 @@ public sealed class ToyCounterRenderer
         batch.Draw(_pixel,new Rectangle((int)(right-width-5),(int)(bottom-height-5),(int)Math.Ceiling(width+10),(int)Math.Ceiling(height+10)),new Color(10,25,35,195));
         Ink(batch,number,new Vector2(right-digits.Width*numberScale,bottom-height),numberScale,digits.Top,color);
         Ink(batch,unitText,new Vector2(right-unit.Width*unitScale,bottom-unitHeight),unitScale,unit.Top,color);
+        return new((int)(right-digits.Width*numberScale),(int)(bottom-height),
+            (int)Math.Ceiling(digits.Width*numberScale),(int)Math.Ceiling(numberHeight));
     }
 }

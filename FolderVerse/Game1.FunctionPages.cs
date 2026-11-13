@@ -59,8 +59,8 @@ public partial class Game1
                 _ui.Tile(new(button.Center.X-6,button.Center.Y),new(15,3),sign*MathHelper.PiOver4,ink);
                 _ui.Tile(new(button.Center.X+6,button.Center.Y),new(15,3),-sign*MathHelper.PiOver4,ink);
             }else{
-                _ui.Tile(new(button.Center.X,button.Center.Y-6),new(15,3),-sign*MathHelper.PiOver4,ink);
-                _ui.Tile(new(button.Center.X,button.Center.Y+6),new(15,3),sign*MathHelper.PiOver4,ink);
+                _ui.Tile(new(button.Center.X,button.Center.Y-6),new(15,3),sign*MathHelper.PiOver4,ink);
+                _ui.Tile(new(button.Center.X,button.Center.Y+6),new(15,3),-sign*MathHelper.PiOver4,ink);
             }
         }
     }

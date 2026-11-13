@@ -35,7 +35,8 @@ public partial class Game1
             if(powered && !subordinate){
                 var counterArea=image;
                 if(subordinateCells>0)counterArea.Height=Math.Max(1,counterArea.Height-25);
-                _counter.Draw(_spriteBatch,ranking[ruler].Cells,counterArea,_setup.OwnerColor(ruler));
+                var digits=_counter.Draw(_spriteBatch,ranking[ruler].Cells,counterArea,_setup.OwnerColor(ruler));
+                DrawSectorChange(digits,image,ruler,ranking[ruler].Cells);
             }else{
                 int width=Math.Min(56,image.Width),height=Math.Clamp(image.Height-25,1,28);
                 var badge=new Rectangle(image.Right-width,image.Bottom-height,width,height);

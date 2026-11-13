@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
+    private SectorChangeArt _sectorChangeArt;
     private static Rectangle ConquestRobotWindow=>new(478,145,76,76);
     private void DrawConquestOrientation(Rectangle canvas,Matrix transform,Viewport viewport){
         var toy=ConquestRobotWindow;int radius=toy.Width/2;
@@ -15,11 +16,13 @@ public partial class Game1
         _orientationToy.Draw(0,0,_conquestGlobe.ViewOrientation(0,0));GraphicsDevice.Viewport=viewport;
     }
 
-    private void DrawConquestNumber(Rectangle r,int value,bool reveal){
+    private Rectangle DrawConquestNumber(Rectangle r,int value,bool reveal){
         _ui.Box(r,new Color(111,140,157));_ui.Box(new(r.X+2,r.Y+2,r.Width-4,r.Height-4),new Color(40,56,71));
-        if(!reveal){for(int i=0;i<4;i++)_ui.Box(new(r.X+10+i*(r.Width-20)/4,r.Center.Y-10,Math.Max(4,(r.Width-28)/4),20),new Color(8,16,24));return;}
+        if(!reveal){for(int i=0;i<4;i++)_ui.Box(new(r.X+10+i*(r.Width-20)/4,r.Center.Y-10,Math.Max(4,(r.Width-28)/4),20),new Color(8,16,24));return Rectangle.Empty;}
         string text=value.ToString();var size=_font.MeasureString(text);float scale=Math.Min(.85f,Math.Min((r.Width-18)/size.X,(r.Height-12)/size.Y));
         _ui.Text(text,new(r.Right-10-size.X*scale,r.Center.Y-size.Y*scale/2),scale,Cream);
+        return new((int)(r.Right-10-size.X*scale),r.Center.Y-(int)(size.Y*scale/2),
+            (int)Math.Ceiling(size.X*scale),(int)Math.Ceiling(size.Y*scale));
     }
     private void DrawConquestTally(){
         var tally=_conquestTally;var panel=ConquestFormulaSpace;int x=panel.X,y=panel.Y,ruler=ConquestCard.Ruler;
@@ -35,8 +38,9 @@ public partial class Game1
         DrawConquestNumber(entryBox,tally.Entry,entry);
         _ui.Center("entry no",new(entryBox.X,y+35,entryBox.Width,32),.43f*unit,Cream);
         if(tally.Powered && !tally.Subordinate){
-            DrawConquestNumber(cellsBox,tally.TotalCells,cells);
+            var digits=DrawConquestNumber(cellsBox,tally.TotalCells,cells);
             _ui.Center(ToyCounterRenderer.SectorUnit(tally.TotalCells),new(cellsBox.X,y+156,cellsBox.Width,32),.43f*unit,Cream);
+            if(cells)DrawSectorChange(digits,new(panel.X-42,panel.Y,panel.Width+42,panel.Height),ruler,tally.TotalCells);
             _ui.Center($"× {tally.Scale} +",Token(85,145),.60f*unit,Cream);
         }else if(cells){
             _ui.Center(tally.Powered?"手下 0 pts +":$"脱落 {-tally.Scale} pts +",Token(0,230),.45f*unit,Cream);
@@ -45,11 +49,24 @@ public partial class Game1
         DrawConquestNumber(pointsBox,tally.Score(age),score);
         _ui.Center("points",new(pointsBox.X,y+156,pointsBox.Width,32),.43f*unit,Cream);
         if(cells && tally.SubordinateCells>0)
-            _ui.Center($"（内、手下 {tally.SubordinateCells} {ToyCounterRenderer.SectorUnit(tally.SubordinateCells)}）",new(x+12,y+195,panel.Width-24,28),.30f,Cream);
+            _ui.Center($"（内、手下 {tally.SubordinateCells} {ToyCounterRenderer.SectorUnit(tally.SubordinateCells)}）",new(x+12,y+212,panel.Width-24,28),.30f,Cream);
         _ui.Center("暫定",new(rankBox.X-100,rankBox.Y,90,62),.45f,Cream);
         DrawConquestNumber(rankBox,ConquestCard.Rank,rank);
         _ui.Center("位",new(rankBox.Right+8,rankBox.Y,40,62),.45f,Cream);
         if(main && age>=tally.FaceStart)DrawConquestSubtree(ruler,age-tally.FaceStart);
+    }
+
+    private void DrawSectorChange(Rectangle digits,Rectangle area,int ruler,int currentSectors)
+    {
+        int change=_setup.Campaign.SectorChange(_setup,ruler,currentSectors);
+        if(change==0)return;
+        int size=Math.Min(64,Math.Min(area.Width/2,Math.Max(16,digits.Height*5/4)));
+        int overlap=Math.Max(2,size/8);
+        size=Math.Min(size,digits.Left-area.Left+overlap);
+        if(size<12)return;
+        var badge=new Rectangle(digits.Left-size+overlap,
+            digits.Center.Y-size/2,size,size);
+        (_sectorChangeArt??=new SectorChangeArt(GraphicsDevice)).Draw(_spriteBatch,badge,change);
     }
     private void DrawConquestSubtree(int root,double age){
         var area=ConquestTreeSpace;var entries=new List<(int Ruler,int Depth)>();var queue=new Queue<(int Ruler,int Depth)>();queue.Enqueue((root,0));
