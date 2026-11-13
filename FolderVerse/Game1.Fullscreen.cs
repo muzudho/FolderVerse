@@ -35,10 +35,29 @@ public partial class Game1
     }
     private void DrawFullscreenCursor()
     {
-        IsMouseVisible=!_graphics.IsFullScreen && !_demoActive;
-        if(!_graphics.IsFullScreen || _demoActive)return;
+        bool hand=_hangarPanning && _nodeAssemblyOpen && !_autoPaused;
+        IsMouseVisible=!_graphics.IsFullScreen && !_demoActive && !hand;
+        if((!_graphics.IsFullScreen && !hand) || _demoActive)return;
         var mouse=Mouse.GetState();
+        if(hand){DrawHangarHand(new(mouse.X,mouse.Y));return;}
         DrawMouseArrow(new(mouse.X,mouse.Y));
+    }
+
+    private void DrawHangarHand(Point at)
+    {
+        _spriteBatch.Begin();
+        var palm=new Rectangle(at.X-6,at.Y-1,15,11);
+        var finger=new Rectangle(at.X-1,at.Y-10,5,13);
+        var thumb=new Rectangle(at.X-9,at.Y-4,6,8);
+        foreach(var piece in new[]{palm,finger,thumb})
+            _spriteBatch.Draw(_pixel,piece,Color.Black);
+        foreach(var piece in new[]{palm,finger,thumb})
+        {
+            var fill=piece;
+            fill.Inflate(-1,-1);
+            _spriteBatch.Draw(_pixel,fill,Color.White);
+        }
+        _spriteBatch.End();
     }
     // Physical backbuffer coordinates keep the pointer aligned at every aspect ratio.
     private void DrawMouseArrow(Point at)

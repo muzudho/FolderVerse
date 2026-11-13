@@ -334,6 +334,23 @@ sealed class GlyphProbe:Game1
   pageClick.Invoke(this,new object[]{new Point(66,560)});
   if((int)Get("_hangarColumn")!=0)throw new Exception("Left arrow did not return");
   Console.WriteLine("PASS all six zoom capacities and horizontal slot navigation.");
+  var rightPressed=new Microsoft.Xna.Framework.Input.MouseState(0,0,0,
+   Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,
+   Microsoft.Xna.Framework.Input.ButtonState.Pressed,Microsoft.Xna.Framework.Input.ButtonState.Released,
+   Microsoft.Xna.Framework.Input.ButtonState.Released);
+  Set("_previousMouse",new Microsoft.Xna.Framework.Input.MouseState());
+  Set("_pointer",new Point(500,650));input.Invoke(this,new object[]{rightPressed,false,false});
+  Set("_previousMouse",rightPressed);
+  Set("_pointer",new Point(220,360));input.Invoke(this,new object[]{rightPressed,false,false});
+  if(!(bool)Get("_hangarPanning") || (int)Get("_hangarColumn")!=1 || (int)Get("_hangarPage")!=1)
+   throw new Exception("Right drag must pan the hangar in both axes");
+  Set("_pointer",new Point(-3000,-3000));input.Invoke(this,new object[]{rightPressed,false,false});
+  if((int)Get("_hangarColumn")!=7 || (int)Get("_hangarPage")!=4)
+   throw new Exception("Right drag must clamp at the last column and row");
+  input.Invoke(this,new object[]{new Microsoft.Xna.Framework.Input.MouseState(),false,false});
+  if((bool)Get("_hangarPanning"))throw new Exception("Releasing the right button must stop panning");
+  Set("_hangarColumn",0);Set("_hangarPage",0);
+  Console.WriteLine("PASS right drag pans diagonally, clamps and stops on release.");
   typeof(RobotStore).GetMethod("SetCapacity",Flags)!.Invoke(w.Robots.Nodes[node],new object[]{60});
   Set("_hangarIntroStart",20f);
   foreach(var (frameTime,name) in new[]{(20f,"overview"),(20.1f,"transition"),(20.21f,"basic")}){

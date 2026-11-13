@@ -64,7 +64,7 @@ public partial class Game1
     private void OpenNodeAssembly()
     {
         if(!InspectableNode(_populationNode))return;
-        _hangarPage=_hangarColumn=0;_hangarZoom=1;_hangarZoomAt=0;_hangarIntroStart=_demoActive?float.NegativeInfinity:_animationTime;
+        _hangarPage=_hangarColumn=0;_hangarPanning=false;_hangarZoom=1;_hangarZoomAt=0;_hangarIntroStart=_demoActive?float.NegativeInfinity:_animationTime;
         _hangarScrollDirection=0;_hangarTrainingCountry=-1;_hangarAbandonMode=false;_hangarReturnHomeMode=false;
         _nodeOfficeOpen=false;_lastNodeTab=3;
         _nodeAssemblyOpen=true;_nodeFactoryOpen=_nodeTransportOpen=_nodeDisposalOpen=false;
@@ -78,6 +78,8 @@ public partial class Game1
     }
     private void NodeAssemblyLocalInput(MouseState mouse,bool click,bool escape)
     {
+        if(!escape && UpdateHangarPan(mouse))return;
+        if(escape)_hangarPanning=false;
         if(!escape && UpdateHangarZoom(mouse,click))return;
         if(ReturnHomeHangarInput(click))return;
         if(click && HangarUndoButton.Contains(_pointer)){UndoHangarPlan();return;}

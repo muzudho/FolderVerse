@@ -10,19 +10,47 @@ public partial class Game1
     private static readonly Rectangle HangarViewport=new(84,300,780,530);
     private int _hangarZoom=1,_hangarColumn;
     private float _hangarIntroStart=float.NegativeInfinity,_hangarZoomAt;
+    private bool _hangarPanning;
+    private Point _hangarPanPointer,_hangarPanOrigin;
     private Point HangarZoom=>HangarZoomSizes[_hangarZoom];
     private int HangarGridColumns=>HangarZoomSizes.FirstOrDefault(size=>size.X>=3 &&
         size.X*size.Y>=_hangarSlots.Length,new Point(10,6)).X;
     private int HangarGridRows=>(_hangarSlots.Length+HangarGridColumns-1)/HangarGridColumns;
     private int HangarLastColumn=>Math.Max(0,HangarGridColumns-HangarZoom.X);
     private float HangarIntroProgress=>Math.Clamp((_animationTime-_hangarIntroStart)/.2f,0,1);
+    private Vector2 HangarCellPitch(Point zoom)=>new(
+        HangarViewport.Width/(zoom.X-12f/264),HangarViewport.Height/(zoom.Y-10f/270));
 
     private Rectangle HangarViewCell(int slot,Point zoom,int column,int row)
     {
-        float width=780f/(zoom.X-12f/264),height=530f/(zoom.Y-10f/270);
+        var pitch=HangarCellPitch(zoom);
+        float width=pitch.X,height=pitch.Y;
         int x=slot%HangarGridColumns-column,y=slot/HangarGridColumns-row;
         return new(HangarViewport.X+(int)(x*width),HangarViewport.Y+(int)(y*height),
             (int)(width*252/264),(int)(height*260/270));
+    }
+
+    private bool UpdateHangarPan(MouseState mouse)
+    {
+        if(mouse.RightButton!=ButtonState.Pressed)
+        {
+            _hangarPanning=false;
+            return false;
+        }
+        if(!_hangarPanning)
+        {
+            if(_previousMouse.RightButton==ButtonState.Pressed || mouse.LeftButton==ButtonState.Pressed ||
+                _hangarDrag.HasValue || !HangarViewport.Contains(_pointer))return false;
+            _hangarPanning=true;
+            _hangarIntroStart=float.NegativeInfinity;
+            _hangarPanPointer=_pointer;
+            _hangarPanOrigin=new(_hangarColumn,_hangarPage);
+        }
+        var pitch=HangarCellPitch(HangarZoom);
+        var delta=_hangarPanPointer-_pointer;
+        _hangarColumn=Math.Clamp(_hangarPanOrigin.X+(int)MathF.Round(delta.X/pitch.X),0,HangarLastColumn);
+        _hangarPage=Math.Clamp(_hangarPanOrigin.Y+(int)MathF.Round(delta.Y/pitch.Y),0,HangarLastRow);
+        return true;
     }
 
     private static Rectangle HangarCellRegion(Rectangle cell,int x,int y,int width,int height)=>
