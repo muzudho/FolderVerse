@@ -118,7 +118,7 @@ public sealed partial class RobotWorkshop
     public int CycleProgress=>CycleFinished?CycleTurns:RestEnabled && RestRemaining>0
         ?CycleTurns-RestRemaining
         :(RestEnabled?ProducedSinceRest*ProductionPeriod:0)+ProductionAge;
-    public int TurnsUntilNextProduction=>CycleFinished?0:(RestEnabled?RestRemaining:0)+System.Math.Max(0,ProductionPeriod-ProductionAge);
+    public int TurnsUntilNextProduction=>CycleFinished?0:(RestEnabled?RestRemaining:0)+System.Math.Max(0,(_lastEffectiveProductionPeriod??ProductionPeriod)-ProductionAge);
     public int LaneProgress=>CycleFinished?ProductionPeriod+(RestEnabled?IndustryTime.Whole(RestTurns):0):RestEnabled && RestRemaining>0
         ?ProductionPeriod+IndustryTime.Whole(RestTurns)-RestRemaining
         :Waiting?ProductionPeriod:CycleProgress%ProductionPeriod;

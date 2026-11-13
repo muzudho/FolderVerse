@@ -73,7 +73,9 @@ public sealed partial class CubeNet
         Face(at+new Vector2(0,depth),radius,side);
         Face(at,radius+1,rim);
         Face(at,radius,node.Functional ? top : Color.Lerp(top,rim,.35f));
-        if (node.IsHarbor && node.Functional)
+        if(node.Functional && node.Purpose!=NodePurpose.General)
+            DrawPurposeBuilding(ui,node.Purpose,(x,y,z)=>at+new Vector2(x,y*.68f-z)*radius,tint);
+        if (node.IsHarbor && node.Functional && node.Purpose==NodePurpose.General)
             DrawHarbor(ui,at,radius*.65f,tint(new Color(230,247,250)),DimNode(node.Id));
         CountryFlagArt.Marker(ui,setup,DisplayedNodeOwner(node),at+new Vector2(radius+4,-radius*.68f),
             Math.Clamp((int)(radius*3),24,42),tint);
@@ -116,7 +118,9 @@ public sealed partial class CubeNet
         }
         FillProjectedFace(ui,upper,tint(node.Functional ? top : Color.Lerp(top,rim,.35f)));
         var center = project(position+cell.Normal*radius*.55f);
-        if (node.IsHarbor && node.Functional)
+        if(node.Functional && node.Purpose!=NodePurpose.General)
+            DrawPurposeBuilding(ui,node.Purpose,(x,y,z)=>project(position+radius*(cell.U*x+cell.V*y+cell.Normal*(z+.55f))),tint);
+        if (node.IsHarbor && node.Functional && node.Purpose==NodePurpose.General)
             DrawHarbor(ui,center,MathF.Max(4,Vector2.Distance(center,upper[0])*.65f),tint(rim),DimNode(node.Id));
         if (AttackTargetMarkers && SelectedTarget==node.Id)
             foreach (float angle in new[]{MathHelper.PiOver4,-MathHelper.PiOver4})

@@ -47,7 +47,7 @@ public partial class Game1
         if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length)return Rectangle.Empty;
         var lines=PlanningWorkshop(_populationNode).ProductionLines;
         if(line<0 || line>=lines.Length)return Rectangle.Empty;
-        return FactoryRobotButton(line%3,lines[line].Manufacturing?lines[line].ProductionPeriod:3);
+        return FactoryRobotButton(line%3,lines[line].Manufacturing?lines[line].EffectiveProductionPeriod(_setup.Nodes.All[_populationNode].Purpose):3);
     }
     private static Rectangle FactoryPlanButton(int i)=>new(94+i%4*194,410+i/4*160,180,144);
     private static string FactoryProductLabel(ProductionPlan plan)
@@ -60,7 +60,7 @@ public partial class Game1
     {
         if(field==2)return new(420,884,110,30);
         line??=PlanningWorkshop(_populationNode).ProductionLines[_factoryLine];
-        int width=FactoryProductionWidth(line.Manufacturing?line.ProductionPeriod:3),rest=Math.Min(4,line.RestTurns),y=284+(_factoryLine%3)*200;
+        int width=FactoryProductionWidth(line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[_populationNode].Purpose):3),rest=Math.Min(4,line.RestTurns),y=284+(_factoryLine%3)*200;
         int restLeft=160+width+rest*72/2-34;
         return field==0?new(Math.Min(160+width/2-34,restLeft-72),y+150,68,24):new(restLeft,y+150,68,24);
     }
@@ -121,7 +121,7 @@ public partial class Game1
         if(_factoryPlanLine>=0){int line=_factoryPlanLine;for(int i=0;i<lines[line].PlanCount;i++)if(FactoryPlanButton(i).Contains(pointer)){lines[line].SelectPlan(i);SavePending(line);_factoryPlanLine=-1;return true;}_factoryPlanLine=-1;return true;}
         for(int l=_factoryPage*3;l<Math.Min(lines.Length,(_factoryPage+1)*3);l++){
             if(l<liveCount && lines[l].MapleRemaining==0 && FactoryIntakeButton(l).Contains(pointer)){_intakeLine=lines[l];_intakeNode=_populationNode;_intakePage=0;return true;}
-            var line=lines[l];int period=line.Manufacturing?line.ProductionPeriod:3;
+            var line=lines[l];int period=line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[_populationNode].Purpose):3;
             if(FactoryRobotButton(l%3,period).Contains(pointer) || FactoryRobotArrow(l%3,period).Contains(pointer)){_factoryHarvestPage=false;_factoryPlanLine=l;_factoryLine=l;return true;}
             _factoryLine=l;for(int field=0;field<2;field++)if(FactoryDropButton(field,line).Contains(pointer)){_factoryDropDown=field;return true;}
             if(FactoryNoRepeatButton(line).Contains(pointer)){line.SetDoNotRepeat(!line.DoNotRepeat);SavePending(l);return true;}
@@ -155,7 +155,7 @@ public partial class Game1
             }else{_ui.Box(area,new Color(24,43,54));_ui.Center("空きレーン / 工場作業員予約で追加",area,.45f,Cream*.7f);}
         }
         for(int l=_factoryPage*3;l<Math.Min(displayed,(_factoryPage+1)*3);l++){
-            var line=lines[l];int y=284+(l%3)*200,period=line.Manufacturing?line.ProductionPeriod:3;_factoryLine=l;
+            var line=lines[l];int y=284+(l%3)*200,period=line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[_populationNode].Purpose):3;_factoryLine=l;
             bool planned=l>=liveCount;
             bool mapleWait=line.WaitingForMaple(_setup.Robots,node.Id);
             _ui.Box(new(78,y-24,782,196),l%2==0?new Color(37,63,77):new Color(46,67,79));
@@ -248,7 +248,7 @@ public partial class Game1
         string status=line.Paused?"一時停止":deposit==0?"採取できる埋蔵量がありません":waiting?"格納枠の空きを待っています":"採取中";
         _ui.Text($"採取 / {status} / 予約残り {line.MapleRemaining} 荷",new(160,y-19),.33f,Cream);
         _ui.Text($"楓の木 / 残り埋蔵量 {deposit} 荷",new(400,y+46),.45f,Cream);
-        _ui.Text($"次の入荷まで {IndustryTime.Format(line.MapleRemaining*IndustryTime.UnitsPerTurn-line.MapleProgress)} 産業ターン",new(400,y+90),.33f,Cream);
+        _ui.Text($"次の入荷まで {IndustryTime.Format(Math.Max(0,line.EffectiveHarvestPeriod(_setup.Nodes.All[_populationNode].Purpose)-line.MapleProgress))} 産業ターン",new(400,y+90),.33f,Cream);
         DrawFactoryCaret(160+line.MapleProgress*34,y,line,waiting);
     }
     private void DrawFactoryCaret(int x,int y,RobotWorkshop line,bool mapleWait=false)

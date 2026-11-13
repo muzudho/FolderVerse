@@ -8,6 +8,8 @@ public partial class Game1
 {
     private static readonly Rectangle FunctionTransferMapBanner=new(54,822,810,92);
     private bool _functionTransferMap, _functionTransferRoutesBefore;
+    private bool _factoryOnlyTransfer;
+    private static readonly Rectangle TransferModeButton=new(650,882,214,30);
     private string _functionTransferMessage="";
     private readonly List<FunctionTransferMarker> _functionTransferMarkers=new();
     private sealed record FunctionTransferMarker(int Source,int Target,Vector2 From,Vector2 To,Rectangle Bounds,bool Reserved);
@@ -19,6 +21,7 @@ public partial class Game1
         _functionTransferRoutesBefore=_net.ShowRoutes;
         _statusMenuOpen=false;
         _net.ShowRoutes=true;
+        _factoryOnlyTransfer=false;
         _functionTransferMap=true;
     }
 
@@ -43,6 +46,12 @@ public partial class Game1
     private bool FunctionTransferMapClick(Point pointer)
     {
         if(!_functionTransferMap || !DomesticOperationsAllowed || FunctionTransferMenusOpen || MapTransitionActive || !_statusGlobe && _net.IsAnimating)return false;
+        if(TransferModeButton.Contains(pointer)){
+            _factoryOnlyTransfer=!_factoryOnlyTransfer;
+            _functionTransferMessage="";
+            _functionTransferMarkers.Clear();
+            return true;
+        }
         var marker=HitFunctionTransferMarker(pointer);
         if(marker==null)return false;
         var transfers=_setup.Campaign.FunctionTransfers;
@@ -59,10 +68,10 @@ public partial class Game1
                 _functionTransferMessage+=failed>0?$" / 関連予約 {failed}件は実施できません（格納庫で確認）":" / 関連操作は同地点・隣接地点の予約として継続";
             }
         }
-        else if(!transfers.Orders.Any(o=>o.Source==marker.Source) && transfers.CanReserve(_setup,marker.Source,marker.Target))
+        else if(!transfers.Orders.Any(o=>o.Source==marker.Source) && transfers.CanReserve(_setup,marker.Source,marker.Target,_factoryOnlyTransfer))
         {
-            transfers.Reserve(_setup,marker.Source,marker.Target);
-            _functionTransferMessage=$"{direction} を予約しました（配送時に実施）";
+            transfers.Reserve(_setup,marker.Source,marker.Target,_factoryOnlyTransfer);
+            _functionTransferMessage=$"{direction} / {(_factoryOnlyTransfer?"工場だけ":"全機能")}の移転を予約しました";
         }
         _functionTransferMarkers.Clear();
         return true;
@@ -87,7 +96,7 @@ public partial class Game1
             var node=_setup.Nodes.All[source];
             if(!node.Functional || reservedSources.Contains(source))continue;
             foreach(int target in _setup.Routes.Neighbors(node).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id).Distinct())
-                if(positions.ContainsKey(target) && transfers.CanReserve(_setup,source,target))
+                if(positions.ContainsKey(target) && transfers.CanReserve(_setup,source,target,_factoryOnlyTransfer))
                     AddMarker(source,target,false);
         }
 
@@ -125,6 +134,7 @@ public partial class Game1
         if(hovered!=null)
         {
             DrawFunctionTransferLine(hovered.From,hovered.To,Cream,4);
+            if(!(hovered.Reserved?_setup.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==hovered.Source && o.FactoryOnly):_factoryOnlyTransfer))
             foreach(var (path,threat) in _setup.Campaign.RobotBattles.FunctionTransferRoutes(_setup,hovered.Source,hovered.Target))
             {
                 if(threat)
@@ -169,9 +179,9 @@ public partial class Game1
             : FunctionTransferDirection(hovered.Source,hovered.Target)+(hovered.Reserved?" の予約を取り消す":" に機能を集約する");
         _ui.Box(FunctionTransferMapBanner,background);
         BannerRow(hint,0,Cream);
-        BannerRow("移転先の格納庫は合計60個まで / 配送後、移転元に機能を戻せません",1,Cream);
-        BannerRow(hovered==null?"矢印や書類にカーソルを合わせて移転後の経路と守備地点を確認"
-            :"水色：新たに通れる進軍経路　/　オレンジの矢印：敵の進軍経路と守備地点",2,routeColor);
+        BannerRow(_factoryOnlyTransfer?"工場・作業員を移転 / 格納庫・埋蔵量は現地に残る":"移転先の格納庫は合計60個まで / 配送後、移転元に機能を戻せません",1,Cream);
+        _ui.Text("矢印で予約 / 書類で取消 / Esc で閉じる",new(74,889),.32f,routeColor);
+        _ui.Button(TransferModeButton,_factoryOnlyTransfer?"工場だけの機能移転":"全機能移転",Accent,.34f);
 
         bool VisiblePosition(int id,out Vector2 at)=>OperationPosition(id,out at) && MapViewBounds.Contains(at.ToPoint());
 

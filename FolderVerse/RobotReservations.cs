@@ -38,8 +38,26 @@ public sealed partial class RobotWorld
         store.Replace(store.Robots.Select(r=>ids.Contains(r.Id)?WithoutRole(r):r).ToArray());SyncWorkers(node);return true;
     }
     private int _workerPlanWorldSeed;
+    private Func<int,NodePurpose> _nodePurpose;
+    internal NodePurpose PurposeAt(int node)=>_nodePurpose?.Invoke(node)??NodePurpose.General;
+
+    internal void ApplyNodePurposeReservations(WorldSetup world)
+    {
+        foreach(var node in world.Nodes.All){
+            var role=node.Purpose switch {
+                NodePurpose.Defense=>HangarReservation.Defense,
+                NodePurpose.Frontline=>HangarReservation.Intercept,
+                _=>HangarReservation.None
+            };
+            if(!node.Functional || node.Owner<0 || role==HangarReservation.None)continue;
+            foreach(var robot in Nodes[node.Id].Robots.ToArray())
+                if(robot.Owner==node.Owner && robot.CanFight && !robot.Disposal && CanShip(node.Id,robot))
+                    ToggleReservation(node.Id,robot.Id,role);
+        }
+    }
     public void ConfigureFactories(WorldSetup world)
     {
+        _nodePurpose=node=>world.Nodes.All[node].Purpose;
         ProductionIntakeEnabled=true;
         IntakeAdjacent=(a,b)=>world.Routes.Neighbors(world.Nodes.All[a]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==b);
         IntakeAllowed=(owner,n)=>world.Nodes.All[n].Functional && world.Relations.Allied(owner,world.Nodes.All[n].Owner);

@@ -19,6 +19,53 @@ static (WorldSetup W,int A,int B,int C) Fixture()
 }
 static Robot Add(WorldSetup w,int n,RobotParts parts){var r=w.Robots.Create(0,parts);w.Robots.Nodes[n].Add(r);return r;}
 {
+    var(w,a,b,c)=Fixture();
+    var cargo=Add(w,a,RobotParts.Head);
+    var source=w.Robots.Workshops[a];
+    var lane=source.ProductionLines.Single();
+    lane.Configure(RobotParts.Body,10);
+    w.Robots.AdvanceIndustry(_=>0);
+    var transfer=w.Campaign.FunctionTransfers;
+    transfer.Reserve(w,a,b,factoryOnly:true);
+    Check(w.Robots.PartPlanning.Preview(w).Nodes[a].Robots.Any(r=>r.Id==cargo.Id),"Factory-only preview keeps local cargo");
+    var saved=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));saved.Robots.ConfigureFactories(saved);
+    Check(saved.Campaign.FunctionTransfers.Orders.Single().FactoryOnly,"Factory-only mode survives save");
+    w.Campaign.FinishDomestic(w);
+    Check(w.Nodes.All[a].Purpose==NodePurpose.Relay && w.Nodes.All[a].Functional &&
+        w.Robots.Nodes[a].Robots.Any(r=>r.Id==cargo.Id) && w.Robots.Nodes[a].TotalCapacity==12 &&
+        w.Robots.Workshops[a].LineLimit==0 && w.Robots.Workshops[b].ProductionLines.Contains(lane) &&
+        lane.ProductionAge==1,"Factory-only transfer leaves a usable relay hangar and moves the running lane");
+    saved=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));saved.Robots.ConfigureFactories(saved);
+    Check(saved.Nodes.All[a].Purpose==NodePurpose.Relay && saved.Robots.Workshops[a].LineLimit==0 &&
+        saved.Robots.Workshops[b].ProductionLines.Any(l=>l.FunctionOriginNode==a && l.ProductionAge==1),
+        "Reload keeps relay and relocated lane progress");
+    w.Campaign.BeginMilitary();w.Campaign.Advance(w,-1,0,enemies:false);
+    Check(!transfer.CanReserve(w,c,a) && !transfer.CanReserve(w,c,a,true) &&
+        !transfer.CanReserve(w,a,b,true) && transfer.CanReserve(w,a,b),"A relay can only send a full transfer");
+}
+foreach(var (purpose,duration) in new[]{(NodePurpose.Harvest,11),(NodePurpose.Manufacturing,9),(NodePurpose.General,10)})
+{
+    var(w,a,b,c)=Fixture();
+    w.Nodes.All[a].Purpose=purpose;
+    w.Robots.Workshops[a].ProductionLines.Single().Configure(RobotParts.Head,10);
+    for(int i=1;i<duration;i++)w.Robots.AdvanceIndustry(_=>0);
+    Check(!w.Robots.ProductionIntakes.Any(i=>i.Source==a),"Production must wait for its adjusted duration");
+    w.Robots.AdvanceIndustry(_=>0);
+    Check(w.Robots.ProductionIntakes.Any(i=>i.Source==a),"Production must complete at its adjusted duration");
+}
+{
+    var(w,a,b,c)=Fixture();
+    w.Nodes.All[a].Purpose=NodePurpose.Defense;
+    w.Nodes.All[b].Purpose=NodePurpose.Frontline;
+    var guard=Add(w,a,RobotParts.Complete);
+    var interceptor=Add(w,b,RobotParts.Complete);
+    var spare=Add(w,b,RobotParts.Head);
+    w.Campaign.FinishDomestic(w);
+    Check(w.Robots.Nodes[a].Robots.Single(r=>r.Id==guard.Id).DefenseOnly &&
+        w.Robots.Nodes[b].Robots.Single(r=>r.Id==interceptor.Id).InterceptOnly &&
+        !w.Robots.Nodes[b].Robots.Single(r=>r.Id==spare.Id).Stationed,"Only available complete robots receive automatic roles");
+}
+{
     var(w,a,b,c)=Fixture();Capacity(w.Robots.Nodes[a],48);
     w.Campaign.FunctionTransfers.Reserve(w,b,a);
     Check(!w.Campaign.FunctionTransfers.CanReserve(w,c,a),"Pending transfers count toward the 60-slot ceiling");

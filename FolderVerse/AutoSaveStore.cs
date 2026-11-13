@@ -86,7 +86,9 @@ public static class AutoSaveStore
                     if(type==typeof(ConquestCampaign) && field.Name is "_sectorBaseline" or "_sectorBaselineTurn")continue;
                     if(field.FieldType==typeof(RobotEquipmentMode) || field.FieldType==typeof(RobotMaterial) ||
                         type==typeof(ProductionPlan) && field.FieldType==typeof(RobotMaterial?))continue;
-                    if(type==typeof(RobotWorkshop) && field.Name=="_materialCatalogueOffset")continue;
+                    if(type==typeof(Node) && field.Name==nameof(Node.Purpose) ||
+                        type==typeof(NodeFunctionTransferOrder) && field.Name=="<FactoryOnly>k__BackingField")continue;
+                    if(type==typeof(RobotWorkshop) && field.Name is "_materialCatalogueOffset" or "_lastEffectiveProductionPeriod")continue;
                     if(type==typeof(RobotWorkshop) && (field.Name is "<MapleRemaining>k__BackingField" or "<MapleProgress>k__BackingField"))continue;
                     if(type==typeof(WorkerLaneSettings) && field.Name=="<MapleLoads>k__BackingField")continue;
                     if(type==typeof(RobotWorld) && (field.Name is "_mapleDeposits" or "_mapleShipments") ||

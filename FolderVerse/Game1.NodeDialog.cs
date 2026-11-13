@@ -18,6 +18,7 @@ public partial class Game1
         pointer.X-=NodeInspectorOffset;
         if(_populationCell>=0 && !NodeInspectorBounds.Contains(new Point(pointer.X+NodeInspectorOffset,pointer.Y)))return false;
         if(_nodeFactoryOpen && (_factoryDropDown>=0 || _factoryPlanLine>=0))return NodeFactoryClick(pointer);
+        if(NodePurposeClick(pointer))return true;
         if(NodeAutomationClick(pointer))return true;
         if(_populationCell<0)return false;
         if(NodeOfficeTile.Contains(pointer)){OpenNodeOffice();return true;}

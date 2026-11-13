@@ -4,8 +4,11 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
+public enum NodePurpose { General, Harvest, Manufacturing, Relay, Defense, Frontline }
+
 public sealed class Node
 {
+    public NodePurpose Purpose;
     public int FunctionUnits=1;
     public int FunctionHost=-1;
     public bool Functional=>FunctionUnits>0;
