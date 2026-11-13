@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 
 public partial class Game1
 {
-    private RobotWorld PlanningStock=>DomesticOperationsAllowed?_setup.Robots.PartPlanning.Preview(_setup):_setup.Robots;
+    private RobotWorld PlanningStock=>_computerAssemblyStock ?? (DomesticOperationsAllowed?_setup.Robots.PartPlanning.Preview(_setup):_setup.Robots);
     private bool InspectableNode(int node)=>node>=0 && node<_setup.Nodes.All.Length && _setup.Nodes.All[node].Functional;
     private int HangarPlanningNode=>DomesticOperationsAllowed
         ? _setup.Campaign.FunctionTransfers.Orders.FirstOrDefault(o=>o.Source==_populationNode && _setup.Campaign.FunctionTransfers.CanReserve(_setup,o.Source,o.Target))?.Target??_populationNode

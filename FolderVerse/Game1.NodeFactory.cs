@@ -35,14 +35,18 @@ public partial class Game1
         var factory=PlanningWorkshop(_populationNode);
         return factory.ProductionLines.Length>0 || factory.LineLimit>0 && PendingFactoryWorkers(factory).Length>0;
     }
-    private void OpenNodeFactory(){if(!NodeFactoriesAllowed)return;if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length)return;if(!HasFactoryScreenLines() || !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;_factoryPage=0;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;_nodeOfficeOpen=false;_lastNodeTab=1;}
+    private bool CanOpenNodeFactory=>NodeFactoriesAllowed &&
+        _populationNode>=0 && _populationNode<_setup.Robots.Workshops.Length &&
+        HasFactoryScreenLines() && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
+    private void OpenNodeFactory(){if(!CanOpenNodeFactory)return;_factoryPage=0;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;_nodeOfficeOpen=false;_lastNodeTab=1;}
     private static int FactoryProductionWidth(int period)=>Math.Min(15,Math.Max(1,period))*24;
     private static Rectangle FactoryRobotButton(int line,int period)=>new(160+Math.Max(0,FactoryProductionWidth(period)-72),288+line*200,72,88);
     private static Rectangle FactoryRobotArrow(int line,int period){var r=FactoryRobotButton(line,period);return new(r.Right+2,r.Y+30,24,28);}
     private Rectangle FactoryProductionButton(int line)
     {
         if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length)return Rectangle.Empty;
-        var lines=PlanningWorkshop(_populationNode).ProductionLines;
+        var factory=PlanningWorkshop(_populationNode);
+        var lines=FactoryScreenLines(factory,PendingFactoryWorkers(factory));
         if(line<0 || line>=lines.Length)return Rectangle.Empty;
         return FactoryRobotButton(line%3,lines[line].Manufacturing?lines[line].ProductionPeriod:3);
     }

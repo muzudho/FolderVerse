@@ -23,16 +23,17 @@ public partial class Game1
     private static int HangarScrollDirection(Point p)=>HangarUp.Contains(p)?-1:HangarDown.Contains(p)?1:0;
     private int HangarLastRow=>Math.Max(0,(_hangarSlots.Length-HangarSlotsPerPage+HangarColumns-1)/HangarColumns);
     private void ScrollHangar(int direction)=>_hangarPage=Math.Clamp(_hangarPage+direction,0,HangarLastRow);
-    private void UpdateHangarDragScroll(bool held)
+    private void UpdateHangarDragScroll(bool held)=>UpdateHangarDragScroll(_pointer,held,_animationTime);
+    private void UpdateHangarDragScroll(Point point,bool held,float now)
     {
-        int direction=held && _hangarDrag.HasValue?HangarScrollDirection(_pointer):0;
+        int direction=held && _hangarDrag.HasValue?HangarScrollDirection(point):0;
         if(direction!=_hangarScrollDirection){
             _hangarScrollDirection=direction;
-            _hangarScrollAt=_animationTime+.55f;
+            _hangarScrollAt=now+.55f;
         }
-        if(direction==0 || _animationTime<_hangarScrollAt)return;
+        if(direction==0 || now<_hangarScrollAt)return;
         ScrollHangar(direction);
-        _hangarScrollAt=_animationTime+.75f;
+        _hangarScrollAt=now+.75f;
     }
     private void DrawHangarPages()
     {

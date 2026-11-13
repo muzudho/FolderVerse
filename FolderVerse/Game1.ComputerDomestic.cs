@@ -9,10 +9,111 @@ public partial class Game1
     private Node[] _computerDomesticNodes;
     private int _computerDomesticIndex;
     private double _computerDomesticAge;
-    private bool _computerAssembled;
     private int _computerDomesticStage;
     private Point _computerDomesticPoint;
-    private const double ComputerAssemblyTime=2.35,ComputerDomesticSeconds=5;
+    private double _computerDomesticClickAge;
+    private RobotWorld _computerAssemblyStock;
+    private PlannedPartMove[] _computerAssemblySteps;
+    private PlannedPartMove _computerAssemblyDrop;
+    private int _computerAssemblyIndex;
+    private double _computerAssemblyAge;
+    private Point _computerAssemblyStart;
+    private double _computerAssemblyPageAge;
+    private Point _computerAssemblyEnd;
+
+    private void ClearComputerAssembly()
+    {
+        _computerAssemblyStock=null;
+        _computerAssemblySteps=null;
+        _computerAssemblyDrop=null;
+        _hangarDrag=null;
+        _hangarScrollDirection=0;
+    }
+
+    private bool AdvanceComputerAssembly(double elapsed)
+    {
+        if(_computerAssemblySteps==null)return false;
+        if(_computerAssemblyIndex==_computerAssemblySteps.Length)
+        {
+            ClearComputerAssembly();
+            return false;
+        }
+        var step=_computerAssemblySteps[_computerAssemblyIndex];
+        int target=Array.IndexOf(_hangarSlots,step.TargetRobotId);
+        var offset=new Point(NodeInspectorOffset,0);
+        if(_computerAssemblyDrop==null)
+        {
+            int source=Array.IndexOf(_hangarSlots,(long?)step.RobotId);
+            if(source<0 || target<0)
+            {
+                ClearComputerAssembly();
+                return false;
+            }
+            if(!VisibleAssemblySlots().Contains(source))
+            {
+                var scroll=source<HangarStartSlot?HangarUp:HangarDown;
+                _pointer=scroll.Center+offset;
+                _computerAssemblyPageAge+=elapsed;
+                if(_computerAssemblyPageAge>=.35)
+                {
+                    HangarPageClick(scroll.Center);
+                    _computerAssemblyPageAge=0;
+                }
+                return true;
+            }
+            int row=(step.Parts&RobotParts.Head)!=0?0:(step.Parts&RobotParts.Body)!=0?1:2;
+            _computerAssemblyStart=AssemblyPartBounds(source,row).Center+offset;
+            _computerAssemblyPageAge=0;
+            _pointer=_computerAssemblyStart;
+            DemoAssemblyPress();
+            if(_hangarDrag!=step.RobotId)
+            {
+                ClearComputerAssembly();
+                return false;
+            }
+            _computerAssemblyDrop=step;
+            _computerAssemblyAge=0;
+            return true;
+        }
+        if(!VisibleAssemblySlots().Contains(target))
+        {
+            var scroll=target<HangarStartSlot?HangarUp:HangarDown;
+            _pointer=scroll.Center+offset;
+            _computerAssemblyPageAge+=elapsed;
+            UpdateHangarDragScroll(scroll.Center,true,(float)_computerAssemblyPageAge);
+            _computerAssemblyStart=_pointer;
+            return true;
+        }
+        UpdateHangarDragScroll(Point.Zero,false,0);
+        _computerAssemblyEnd=AssemblyCell(target).Center+offset;
+        _computerAssemblyAge+=elapsed;
+        _pointer=Vector2.Lerp(_computerAssemblyStart.ToVector2(),_computerAssemblyEnd.ToVector2(),
+            Math.Clamp((float)(_computerAssemblyAge/.65),0,1)).ToPoint();
+        if(_computerAssemblyAge<.65)return true;
+        var previous=_previousMouse;
+        _previousMouse=new MouseState(0,0,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
+        try{NodeAssemblyInput(new MouseState(),false,false);}finally{_previousMouse=previous;}
+        if(_computerAssemblyStock.Nodes[step.Target].Robots.FirstOrDefault(robot=>robot.Id==step.TargetRobotId)?.Parts
+            !=(step.ExpectedTarget|step.Parts))
+        {
+            ClearComputerAssembly();
+            return false;
+        }
+        RecordComputerDomesticClick(_pointer);
+        _computerAssemblyDrop=null;
+        _computerAssemblyIndex++;
+        return true;
+    }
+    private const double ComputerDomesticSeconds=5;
+    private const double ComputerHangarClickTime=1.55,ComputerCheckClickTime=3.2,ComputerCloseClickTime=4.2;
+    private Point ComputerHangarPoint=>NodeAssemblyTile.Center+new Point(NodeInspectorOffset,0);
+    private bool CanMarkComputerDomesticNode=>NodeCheckButtonVisible && !NodeChecked(_populationNode);
+
+    private void RecordComputerDomesticClick(Point point)
+    {
+        _computerDomesticPoint=point;
+        _computerDomesticClickAge=_computerDomesticAge;
+    }
 
     private bool ShowsComputerTurn(int ruler)=>!_setup.IsHumanPlayer(ruler) &&
         _setup.ControllerOf(ruler)<0 && _setup.ShowComputerOperations(ruler);
@@ -26,6 +127,7 @@ public partial class Game1
 
     private void ShowComputerView(int ruler)
     {
+        ClearComputerAssembly();
         ResetInspector();
         _setup.SelectTurnRuler(ruler);
         RestorePlayerView();
@@ -33,6 +135,7 @@ public partial class Game1
 
     private void EndComputerView()
     {
+        ClearComputerAssembly();
         ResetInspector();
         _setup.SelectPlayer(_computerViewRuler);
         _setup.Relations.Leader=_computerViewLeader;
@@ -52,7 +155,6 @@ public partial class Game1
         _computerDomesticNodes=nodes;
         _computerDomesticIndex=0;
         _computerDomesticAge=0;
-        _computerAssembled=false;
         BeginComputerView(nodes[0].Owner);
         FocusComputerDomestic(nodes[0]);
         return true;
@@ -61,6 +163,7 @@ public partial class Game1
     private void FocusComputerDomestic(Node node)
     {
         _computerDomesticStage=0;
+        _computerDomesticClickAge=double.NegativeInfinity;
         FocusDemoNode(node);
     }
 
@@ -68,7 +171,6 @@ public partial class Game1
     {
         if(_computerDomesticNodes==null)return false;
         UpdateDomesticSlide((float)elapsed);
-        double previousAge=_computerDomesticAge;
         _computerDomesticAge+=elapsed;
         do
         {
@@ -84,44 +186,51 @@ public partial class Game1
                     {
                         OpenNodeInspector(hit);
                         OpenNodeOffice();
-                        _computerDomesticPoint=point;
+                        RecordComputerDomesticClick(point);
                         _computerDomesticStage=1;
                     }
                 }
             }
-            if(!skip && _computerDomesticStage==1 && _computerDomesticAge>=1.55)
+            if(!skip && _computerDomesticStage==1 && _computerDomesticAge>=ComputerHangarClickTime)
             {
-                var tab=NodeAssemblyTile.Center;
-                _computerDomesticPoint=new(tab.X+NodeInspectorOffset,tab.Y);
+                RecordComputerDomesticClick(ComputerHangarPoint);
                 NodeDialogClick(_computerDomesticPoint,new KeyboardState());
                 _computerDomesticStage=_nodeAssemblyOpen?2:-1;
-            }
-            if(previousAge<ComputerAssemblyTime && (skip || _computerDomesticAge>=ComputerAssemblyTime) &&
-                !_setup.Robots.Workshops[node.Id].AutoAssemblyDisabled &&
-                _setup.Robots.AssemblySelection(node.Id,node.Owner,true) is {} parts)
-            {
-                _computerAssembled=_setup.Robots.Assemble(node.Id,parts,node.Owner)!=null;
-                if(_computerDomesticStage==2 && _computerAssembled)
+                if(_nodeAssemblyOpen)
                 {
-                    SyncHangarSlots();
-                    _hangarMessage="ロボットを組み立てました";
+                    (_computerAssemblyStock,_computerAssemblySteps)=_setup.Robots.PartPlanning.AssemblyPlayback(_setup,HangarPlanningNode);
+                    _computerAssemblyIndex=0;
+                    _computerAssemblyPageAge=0;
+                    _pointer=_computerDomesticPoint;
+                    if(_computerAssemblyStock!=null)
+                    {
+                        Array.Clear(_hangarSlots);
+                        SyncHangarSlots();
+                        return true;
+                    }
                 }
             }
-            if(!skip && _computerDomesticStage==2 && _computerDomesticAge>=3.2)
+            if(!skip && _computerDomesticStage==2 && AdvanceComputerAssembly(elapsed))
             {
-                _computerDomesticPoint=NodeCheckButton.Center;
-                if(!NodeChecked(node.Id))DomesticViewClick(_computerDomesticPoint);
+                _computerDomesticAge=Math.Min(_computerDomesticAge,ComputerCheckClickTime-.1);
+                return true;
+            }
+            if(!skip && _computerDomesticStage==2 && _computerDomesticAge>=ComputerCheckClickTime)
+            {
+                if(CanMarkComputerDomesticNode){
+                    RecordComputerDomesticClick(NodeCheckButton.Center);
+                    DomesticViewClick(_computerDomesticPoint);
+                }
                 _computerDomesticStage=3;
             }
-            if(!skip && _computerDomesticStage==3 && _computerDomesticAge>=4.2)
+            if(!skip && _computerDomesticStage==3 && _computerDomesticAge>=ComputerCloseClickTime)
             {
-                _computerDomesticPoint=InspectorClose.Center;
+                RecordComputerDomesticClick(InspectorClose.Center);
                 DomesticViewClick(_computerDomesticPoint);
                 _computerDomesticStage=4;
             }
             if(!skip && _computerDomesticAge<ComputerDomesticSeconds)return true;
-            _computerDomesticAge=previousAge=0;
-            _computerAssembled=false;
+            _computerDomesticAge=0;
             if(++_computerDomesticIndex==_computerDomesticNodes.Length)break;
             if(!skip)
             {
@@ -134,6 +243,7 @@ public partial class Game1
         foreach(int ruler in _computerDomesticNodes.Select(node=>node.Owner).Distinct())_nodeChecksByPlayer.Remove(ruler);
         _computerDomesticNodes=null;
         EndComputerView();
+        // Apply delivery and automatic assembly in the same order as when playback is off.
         _setup.Campaign.BeginDelivery(_setup);
         FinishDomesticDelivery();
         return true;
@@ -144,20 +254,26 @@ public partial class Game1
         if(_computerDomesticNodes==null)return;
         if(_computerDomesticStage>=0)
         {
-            if(_computerDomesticStage is 0 or 4)return;
-            var target=_computerDomesticStage==3?InspectorClose.Center:_computerDomesticStage==2
-                ?new Point(NodeAssemblyTile.Center.X+NodeInspectorOffset,NodeAssemblyTile.Center.Y)
-                :_computerDomesticPoint;
+            const float swingDuration=.4f;
+            float swing=Math.Clamp(swingDuration-(float)(_computerDomesticAge-_computerDomesticClickAge),0,swingDuration);
+            if(_computerDomesticStage==0 || _computerDomesticStage==4 && swing==0)return;
+            var target=_computerAssemblySteps!=null?_pointer:swing>0?_computerDomesticPoint:_computerDomesticStage switch
+            {
+                1=>ComputerHangarPoint,
+                2 when _computerDomesticAge>=ComputerCheckClickTime-.6 && CanMarkComputerDomesticNode=>NodeCheckButton.Center,
+                3=>InspectorClose.Center,
+                _=>_computerDomesticPoint
+            };
             _spriteBatch.Begin(transformMatrix:transform);
-            DrawDemoHand(target.ToVector2(),0);
+            DrawDemoHand(target.ToVector2(),swing);
             _spriteBatch.End();
             return;
         }
         var node=_computerDomesticNodes[_computerDomesticIndex];
         float age=(float)(_computerDomesticAge-ComputerViewLeadIn);
         string location=_setup.Nodes.DisplayName(node);
-        string action=_computerAssembled?"ロボットを組み立てました":
-            _computerDomesticAge>=ComputerAssemblyTime?"格納庫の確認完了":"格納庫を確認";
+        bool reviewed=_computerDomesticAge>=ComputerCheckClickTime;
+        string action=reviewed?"格納庫の確認完了":"格納庫を確認";
         var transfer=_setup.Campaign.FunctionTransfers.Orders.FirstOrDefault(o=>o.Source==node.Id);
         if(transfer!=null){
             location+=" → "+_setup.Nodes.DisplayName(_setup.Nodes.All[transfer.Target]);
@@ -167,7 +283,7 @@ public partial class Game1
         _ui.Box(ComputerMarchPanel,new Color(18,36,48));
         _ui.Text("コンピューターの操作 / "+_setup.ConquerorNames[node.Owner],new(82,199),.58f,Cream);
         _ui.Button(ComputerMarchTarget,location,Muted,Math.Min(.45f,670/_font.MeasureString(location).X));
-        _ui.Button(ComputerMarchOrder,action,_computerDomesticAge>=ComputerAssemblyTime?Accent:Muted,.45f);
+        _ui.Button(ComputerMarchOrder,action,reviewed?Accent:Muted,.45f);
         _ui.Text("内政フェーズ / Escでスキップ",new(82,403),.39f,Cream);
         if(age>=0)DrawDemoHand(Vector2.SmoothStep(ComputerMarchTarget.Center.ToVector2(),ComputerMarchOrder.Center.ToVector2(),
             Math.Clamp(age/.8f,0,1)),Math.Clamp(1.2f-age,0,.4f));

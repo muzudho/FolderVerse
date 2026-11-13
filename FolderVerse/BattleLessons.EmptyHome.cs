@@ -1,4 +1,5 @@
 namespace FolderVerse;
+using System.Collections.Generic;
 using System.Linq;
 
 public sealed partial class BattleLessons
@@ -15,14 +16,14 @@ public sealed partial class BattleLessons
             Pending.Add(new(attacker.Owner,BattleLesson.EmptyHome));
         }
     }
-    public static int ReserveHomeGuards(WorldSetup w,int owner,int? onlyNode=null)
+    public static int ReserveHomeGuards(WorldSetup w,int owner,int? onlyNode=null,IReadOnlySet<long> sortieIds=null)
     {
         if((w.Lessons.Owned[owner]&BattleLesson.EmptyHome)==0)return 0;
         int count=0;
         foreach(var node in w.Nodes.All.Where(n=>(!onlyNode.HasValue || n.Id==onlyNode.Value) && n.Functional && n.Owner==owner && !w.Campaign.RobotBattles.LockedNode(n.Id))){
             var store=w.Robots.Nodes[node.Id];
             if(store.Robots.Any(r=>r.Owner==owner && r.DefenseOnly && r.CanFight))continue;
-            var robot=store.Robots.Where(r=>r.Owner==owner && !r.Stationed && !w.Robots.AssemblyLocked(node.Id,r) && w.Robots.CanSetReservation(node.Id,r,HangarReservation.Defense,owner))
+            var robot=store.Robots.Where(r=>r.Owner==owner && !r.Stationed && sortieIds?.Contains(r.Id)!=true && !w.Robots.AssemblyLocked(node.Id,r) && w.Robots.CanSetReservation(node.Id,r,HangarReservation.Defense,owner))
                 .OrderBy(r=>r.Equipment(owner,w.EquipmentMode).Daggers).ThenBy(r=>r.Id).FirstOrDefault();
             if(robot!=null && w.Robots.ToggleReservation(node.Id,robot.Id,HangarReservation.Defense,owner))count++;
         }

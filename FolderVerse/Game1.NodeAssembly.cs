@@ -148,6 +148,14 @@ public partial class Game1
             var target=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[destination]);
             if(!CanMoveHangarPart(robot,_hangarPart) || target!=null && !CanMoveHangarPart(target,_hangarPart))throw new InvalidOperationException();
             if(target!=null && (target.Parts&_hangarPart)!=0 && !CanMoveHangarPart(target,_hangarPart))throw new InvalidOperationException();
+            if(_computerAssemblyStock!=null)
+            {
+                if(_computerAssemblyDrop is not { } step || step.RobotId!=source ||
+                    step.Parts!=_hangarPart || step.TargetRobotId!=target?.Id)return;
+                RobotPartPlanning.ApplyAssemblyPlayback(_setup,_computerAssemblyStock,step);
+                SyncHangarSlots();
+                return;
+            }
             long id=_setup.Robots.PartPlanning.Reserve(_setup,_populationNode,_populationNode,source,_hangarPart,_hangarSlots[destination],_setup.PlayerSlot);
             if(destination!=_hangarSource && (id==source || !store.Robots.Any(r=>r.Id==source)))_hangarSlots[_hangarSource]=null;
             _hangarSlots[destination]=id;_hangarMessage="組替を予約しました / 表示は入荷・組替後の予定";

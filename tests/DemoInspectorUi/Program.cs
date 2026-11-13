@@ -33,7 +33,7 @@ sealed class DemoInspectorChecks:Game1{
   if(frame==3){Call("OpenNodeInspector",node);Call("OpenNodeAssembly");Call("UpdateDomesticSlide",1f);Set("_hangarMessage","external \uE000");}
   if(frame==4){Set("_demoDomesticStage",11);Set("_demoDomesticAge",0d);Call("UpdateDemoDomestic",1.8d);Call("UpdateDomesticSlide",1f);}
   if(frame==5){
-   Check((int)Get("_demoDomesticStage")==19,"Domestic inspector close leads to domestic end");
+   Check((int)Get("_demoDomesticStage")==17,"Domestic inspector close leads to my country before movement");
    // Exercise the transport controls independently of the domestic end sequence.
    Set("_demoDomesticStage",12);
    var button=(Rectangle)typeof(Game1).GetProperty("TransportOverviewButton",F)!.GetValue(this)!;
