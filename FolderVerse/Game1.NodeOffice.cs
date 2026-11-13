@@ -19,7 +19,7 @@ public partial class Game1
         var areas=new[]{NodeOfficeTile,NodeFactoryTile,NodeDisposalTile,NodeAssemblyTile};
         string[] labels={NodeOfficeName,"ロボット製造工場","ロボット廃棄計画","ロボット格納庫"};
         bool[] active={_nodeOfficeOpen,_nodeFactoryOpen,_nodeDisposalOpen,_nodeAssemblyOpen};
-        bool[] enabled={true,NodeFactoriesAllowed && _setup.Robots.Workshops[_populationNode].ProductionLines.Length>0 && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner),CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner),CanOpenHangar};
+        bool[] enabled={true,CanOpenNodeFactory,CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner),CanOpenHangar};
         for(int i=0;i<4;i++){
             var r=areas[i];var color=active[i] || enabled[i] && r.Contains(_pointer)?Accent:Muted;
             _ui.Box(r,color);_ui.Center(labels[i],r,.36f,enabled[i]?UiPainter.ContrastInk(color):Cream*.4f);

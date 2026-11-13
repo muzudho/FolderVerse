@@ -81,9 +81,24 @@ public sealed partial class RobotWorkshop
         if(_materialCatalogueOffset is not int offset)return plan;
         int ordinal=index>3?index-1:index;
         var material=(RobotMaterial)((ordinal+offset)%8);
-        int parts=System.Numerics.BitOperations.PopCount((uint)plan.Product);
-        int extra=material==RobotMaterial.Maple?2*parts:0;
-        return plan with {Material=material,Turns=plan.Turns+extra};
+        plan=plan with {Material=material};
+        if(_workerAppointment is { } worker)
+        {
+            RobotMaterial? Inherited(RobotParts part,int phase)
+            {
+                if((worker.Parts&plan.Product&part)==0 || (ordinal+phase)%2!=0)return null;
+                var inherited=worker.Material(part);
+                return inherited==RobotMaterial.Tin?null:inherited;
+            }
+            plan=plan with {HeadMaterial=plan.HeadMaterial??Inherited(RobotParts.Head,0),
+                BodyMaterial=plan.BodyMaterial??Inherited(RobotParts.Body,1),
+                LegsMaterial=plan.LegsMaterial??Inherited(RobotParts.Legs,0)};
+        }
+        int extra=0;
+        if((plan.Product&RobotParts.Head)!=0 && (plan.HeadMaterial??material)==RobotMaterial.Maple)extra+=2;
+        if((plan.Product&RobotParts.Body)!=0 && (plan.BodyMaterial??material)==RobotMaterial.Maple)extra+=2;
+        if((plan.Product&RobotParts.Legs)!=0 && (plan.LegsMaterial??material)==RobotMaterial.Maple)extra+=2;
+        return plan with {Turns=plan.Turns+extra};
     }
     private ProductionPlan BasePlanAt(int index)
     {

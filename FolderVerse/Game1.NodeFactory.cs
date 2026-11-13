@@ -11,6 +11,9 @@ public partial class Game1
     private string _factoryMessage="";
     private static readonly Rectangle NodeFactoryTile=new(282,210,190,40);
     private bool NodeFactoriesAllowed=>_setup.TutorialStep!=1;
+    private bool CanOpenNodeFactory=>NodeFactoriesAllowed && _populationNode>=0 &&
+        _populationNode<_setup.Robots.Workshops.Length && _populationNode<_setup.Nodes.All.Length &&
+        CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) && HasFactoryScreenLines();
     private Robot[] PendingFactoryWorkers(RobotWorkshop factory)
     {
         if(!DomesticOperationsAllowed)return Array.Empty<Robot>();
@@ -35,7 +38,7 @@ public partial class Game1
         var factory=PlanningWorkshop(_populationNode);
         return factory.ProductionLines.Length>0 || factory.LineLimit>0 && PendingFactoryWorkers(factory).Length>0;
     }
-    private void OpenNodeFactory(){if(!NodeFactoriesAllowed)return;if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length)return;if(!HasFactoryScreenLines() || !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;_factoryPage=0;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;_nodeOfficeOpen=false;_lastNodeTab=1;}
+    private void OpenNodeFactory(){if(!CanOpenNodeFactory)return;_factoryPage=0;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;_nodeOfficeOpen=false;_lastNodeTab=1;}
     private static int FactoryProductionWidth(int period)=>Math.Min(15,Math.Max(1,period))*24;
     private static Rectangle FactoryRobotButton(int line,int period)=>new(160+Math.Max(0,FactoryProductionWidth(period)-72),288+line*200,72,88);
     private static Rectangle FactoryRobotArrow(int line,int period){var r=FactoryRobotButton(line,period);return new(r.Right+2,r.Y+30,24,28);}
@@ -241,8 +244,7 @@ public partial class Game1
     private void DrawNodeFactoryTile(bool active)
     {
         if(!NodeFactoriesAllowed)return;
-        if(!HasFactoryScreenLines())return;
-        bool enabled=CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
+        bool enabled=CanOpenNodeFactory;
         _ui.Box(NodeFactoryTile,active || enabled && NodeFactoryTile.Contains(_pointer)?Accent:Muted);
         _ui.Center("ロボット製造工場",NodeFactoryTile,.38f,enabled?(active || NodeFactoryTile.Contains(_pointer)?SelectionInk:Cream):Cream*.4f);
         if(active)_ui.Box(new(NodeFactoryTile.X,NodeFactoryTile.Y,NodeFactoryTile.Width,4),Cream);
