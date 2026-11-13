@@ -10,7 +10,7 @@ public partial class Game1
     private readonly int[] _directZoom={1,1},_directColumn=new int[2],_directRow=new int[2];
     private int _directPanSide=-1;
     private Point _directPanStart,_directPanOrigin;
-    private (int Side,long Id)? _directMaterialDrag;
+    private (int Side,int Slot,long Id)? _directMaterialDrag;
     private static readonly Vector2 DirectHangarGap=new(10f/174,10f/290);
     private static Rectangle DirectHangarViewport(int side)=>new(40+side*1320,300,512,570);
     private int DirectColumns(int side)=>HangarColumnsForCapacity(_directSlots[side].Length);
@@ -83,6 +83,9 @@ public partial class Game1
                 _directMessage=_setup.Robots.ReserveMapleShipment(_setup,source,target,drag.Id)
                     ?"素材の直送を予約しました / 配送時に空き枠を確認"
                     :"素材を出荷できません";
+            else if(DirectVisibleSlots(drag.Side).Contains(drag.Slot) && DirectViewCell(drag.Side,drag.Slot).Contains(_pointer)
+                && _setup.Robots.CancelMapleShipment(source,drag.Id))
+                _directMessage="素材の出荷予約を取り消しました";
             return true;
         }
         if(!click || _directDrag.HasValue)return false;
@@ -90,10 +93,20 @@ public partial class Game1
             if(!DirectViewCell(side,slot).Contains(_pointer))continue;
             int source=_directNodes[side];
             if(_directSlots[side][slot] is not long id || !_setup.Robots.Nodes[source].MaplePackages.Any(p=>p.Id==id))return false;
-            if(_setup.Robots.CancelMapleShipment(source,id))_directMessage="素材の出荷予約を取り消しました";
-            else _directMaterialDrag=(side,id);
+            _directMaterialDrag=(side,slot,id);
             return true;
         }
         return false;
+    }
+
+    private Dictionary<int,MaplePackage> DirectIncomingMaterials(int side)
+    {
+        int node=_directNodes[side];
+        var slots=Enumerable.Range(0,_directSlots[side].Length).Where(slot=>!_directSlots[side][slot].HasValue &&
+            !_setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==node && o.TargetRobotId==null && o.TargetSlot==slot));
+        var incoming=_setup.Robots.MapleShipments.Where(o=>o.Target==node)
+            .Select(o=>_setup.Robots.Nodes[o.Source].MaplePackages.FirstOrDefault(p=>p.Id==o.PackageId))
+            .OfType<MaplePackage>();
+        return slots.Zip(incoming).ToDictionary(pair=>pair.First,pair=>pair.Second);
     }
 }

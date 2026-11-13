@@ -145,10 +145,16 @@ public partial class Game1
             _ui.Text(mark,new(x+20,241),Math.Min(.35f,520/Math.Max(1,_font.MeasureString(mark).X)),Cream);
             _ui.Text($"予定の格納庫 {store.Count}/{store.TotalCapacity}",new(x+20,274),.32f,Cream);
             if(store.MapleUnits>0)_ui.Text($"楓の木 {store.MapleUnits}/16",new(x+20,888),.32f,Cream);
+            var incomingMaterials=DirectIncomingMaterials(side);
+            int materialArrivals=_setup.Robots.MapleShipments.Count(o=>o.Target==node);
+            if(materialArrivals>0)_ui.Text($"素材の入荷予定 {materialArrivals}件",new(x+20,920),.32f,Accent);
             foreach(int slot in DirectVisibleSlots(side)){
                 var cell=DirectViewCell(side,slot);var robot=store.Robots.FirstOrDefault(r=>r.Id==_directSlots[side][slot]);var hover=DirectHoverPart(side,slot);
                 if(store.MaplePackages.FirstOrDefault(p=>p.Id==_directSlots[side][slot]) is {} package){
                     DrawHangarBay(cell,cell.Contains(_pointer),false);DrawMaplePackage(cell,package);continue;
+                }
+                if(incomingMaterials.TryGetValue(slot,out var incomingMaterial)){
+                    DrawHangarBay(cell,false,false);DrawMaplePackage(cell,incomingMaterial,"入荷予定",.55f);continue;
                 }
                 bool target=_directDrag.HasValue && cell.Contains(_pointer);bool cellHover=cell.Contains(_pointer) && hover==0;
                 _ui.Box(new(cell.X-2,cell.Y-2,cell.Width+4,cell.Height+4),target?color:new Color(37,64,78));

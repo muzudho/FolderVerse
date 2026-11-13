@@ -115,6 +115,11 @@ class Checks:Game1{
   typeof(RobotWorld).GetMethod("ResolveMapleShipments",F)!.Invoke(copied.Robots,new object[]{copied});
   Check(copied.Robots.Nodes[a].MapleUnits==0 && copied.Robots.Nodes[b].MapleUnits==16,"Reserved material arrives in the destination hangar");
   Set("_pointer",from);Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);
+  Check(w.Robots.MapleShipments.Count==1,"Picking up reserved maple keeps its reservation");
+  Set("_pointer",to);Call("DirectPairInput",Mouse(to,ButtonState.Released),false,false);
+  Check(((Dictionary<int,MaplePackage>)Call("DirectIncomingMaterials",1)).Values.Any(p=>p.Id==cargo),"Redropping maple preserves its arrival preview");
+  Set("_pointer",from);Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);
+  Call("DirectPairInput",Mouse(from,ButtonState.Released),false,false);
   Check(w.Robots.MapleShipments.Count==0,"Clicking reserved maple cancels delivery");
   ((int[])Get("_directZoom"))[0]=1;
   leftSlots[Array.IndexOf(leftSlots,(long?)cargo)]=null;

@@ -14,7 +14,7 @@ public partial class Game1
     private static readonly Rectangle MaplePrevious=new(186,497,64,46),MapleNext=new(708,497,64,46);
     private static readonly Rectangle MapleSend=new(186,592,184,50),MapleCancel=new(387,592,184,50),MapleClose=new(588,592,184,50);
 
-    private void DrawMaplePackage(Rectangle cell,MaplePackage package)
+    private void DrawMaplePackage(Rectangle cell,MaplePackage package,string status=null,float opacity=1)
     {
         if(_maplePackageArt==null){
             using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots","maple-package-v001.png"));
@@ -22,10 +22,11 @@ public partial class Game1
         }
         int width=Math.Min(cell.Width*4/5,cell.Height*3/4),height=width*243/288;
         if(width<1 || height<1)return;
-        _spriteBatch.Draw(_maplePackageArt,new Rectangle(cell.Center.X-width/2,cell.Center.Y-height/2,width,height),Color.White);
+        _spriteBatch.Draw(_maplePackageArt,new Rectangle(cell.Center.X-width/2,cell.Center.Y-height/2,width,height),Color.White*opacity);
         if(cell.Height<65)return;
         bool shipping=_setup.Robots.MapleShipments.Any(o=>o.PackageId==package.Id);
-        _ui.Center($"楓の木 {package.Units}/16"+(shipping?" / 出荷予定":""),new(cell.X,cell.Bottom-30,cell.Width,28),Math.Min(.34f,cell.Width/410f),Cream);
+        status??=shipping?"出荷予定":"";
+        _ui.Center($"楓の木 {package.Units}/16"+(status.Length>0?" / "+status:""),new(cell.X,cell.Bottom-30,cell.Width,28),Math.Min(.34f,cell.Width/410f),Cream);
     }
 
     private int[] MapleTargets()=>FunctionalDeliveryRoutes.Targets(_setup,_populationNode).Where(n=>_setup.Nodes.All[n].Owner>=0).ToArray();
