@@ -81,9 +81,15 @@ public partial class Game1
                 parts.Select(preview.Origin).Distinct().Skip(1).Any();
             if (mixed && hover) mixedPreview = preview;
             var hangarSize = HangarRobotBounds(0).Size;
-            DrawRobotGlyphCore(new(photo.Center.X - hangarSize.X / 2, photo.Center.Y - hangarSize.Y / 2,
-                hangarSize.X, hangarSize.Y), preview, whiteOutline: true, opacity: 1,
-                partOpacity: null, showIntegratedMaterial: true);
+            var robotBounds=new Rectangle(photo.Center.X-hangarSize.X/2,photo.Center.Y-hangarSize.Y/2,hangarSize.X,hangarSize.Y);
+            if(preview.Parts==RobotParts.Complete && preview.IntegratedParts==0){
+                robotBounds.Inflate(0,-9);
+                foreach(var part in RobotMaterials.Parts){
+                    var bounds=robotBounds;
+                    bounds.Offset(0,part==RobotParts.Head?-9:part==RobotParts.Legs?9:0);
+                    DrawRobotGlyphCore(bounds,preview.Slice(part),true,1,null,true);
+                }
+            }else DrawRobotGlyphCore(robotBounds,preview,true,1,null,true);
             DrawFactoryAlbumTimeSticker(photo, plan.Turns, ink);
             _ui.Center(mixed ? "混合品" : RobotMaterials.Label(preview.Material(parts[0])),
                 new(card.X + 8, photo.Bottom + 1, card.Width - 16, 28), .40f, ink);

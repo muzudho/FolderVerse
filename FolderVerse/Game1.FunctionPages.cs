@@ -30,7 +30,7 @@ public partial class Game1
     }
     private void UpdateHangarDragScroll(bool held)
     {
-        int direction=held && _hangarDrag.HasValue?HangarScrollDirection(_pointer):0;
+        int direction=held && (_hangarDrag.HasValue || _mapleDrag.HasValue)?HangarScrollDirection(_pointer):0;
         if(direction!=_hangarScrollDirection){
             _hangarScrollDirection=direction;
             _hangarScrollAt=_animationTime+.55f;

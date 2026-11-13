@@ -79,6 +79,29 @@ public sealed partial class RobotWorld
 
     private bool MapleShipping(int node,long id)=>_mapleShipments.Any(o=>o.Source==node && o.PackageId==id);
 
+    internal bool RearrangeMaple(WorldSetup world,int node,long sourceId,long? targetId,bool split)
+    {
+        if(!MapleSupplyEnabled || world.Campaign.Phase!=CampaignPhase.Domestic ||
+            !world.Relations.Controls(world.Nodes.All[node].Owner) || world.Campaign.RobotBattles.LockedNode(node))return false;
+        var store=Nodes[node];
+        var source=store.MaplePackages.FirstOrDefault(p=>p.Id==sourceId);
+        if(source==null || source.Sections!=1 || MapleShipping(node,sourceId))return false;
+        var target=store.MaplePackages.FirstOrDefault(p=>p.Id==targetId);
+        if(split){
+            if(targetId.HasValue || source.Units<2 || !store.HasMapleSpace(new(0,1),MapleReservedSlots(node)))return false;
+            int moved=source.Units/2;
+            store.SetMaplePackages(store.MaplePackages.Select(p=>p.Id==sourceId?p with {Units=p.Units-moved}:p)
+                .Append(new(_nextId++,moved)).ToArray());
+            return true;
+        }
+        if(target==null || target.Id==sourceId || target.Sections!=1 || MapleShipping(node,target.Id))return false;
+        int added=Math.Min(source.Units,MaplePackageSize-target.Units);
+        if(added==0)return false;
+        store.SetMaplePackages(store.MaplePackages.Select(p=>p.Id==target.Id?p with {Units=p.Units+added}:
+            p.Id==sourceId?p with {Units=p.Units-added}:p).Where(p=>p.Units>0).ToArray());
+        return true;
+    }
+
     internal void SpendMaple(int node,int units)
     {
         var store=Nodes[node];

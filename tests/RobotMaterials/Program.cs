@@ -179,3 +179,17 @@ Check(ReceiveTimber(202,48) && !ReceiveTimber(203,1),"A full timber occupies all
 typeof(RobotStore).GetMethod("SetMaplePackages",internalInstance)!.Invoke(timberStore,new object[]{new[]{new MaplePackage(202,31)}});
 Check(ReceiveTimber(203,12) && !ReceiveTimber(204,8) && timberStore.MaplePackages.First().Units==31,"Small loads cannot refill a large timber");
 Check(ReceiveTimber(204,4) && timberStore.MaplePackages.Last().Units==16,"Small loads combine up to sixteen");
+{
+    var rearrange=typeof(RobotWorld).GetMethod("RearrangeMaple",internalInstance)!;
+    supply.Campaign.BeginMilitary();
+    supply.Campaign.Advance(supply,-1,0,enemies:false);
+    var setPackages=typeof(RobotStore).GetMethod("SetMaplePackages",internalInstance)!;
+    var local=cargo.Nodes[source];
+    setPackages.Invoke(local,new object[]{new[]{new MaplePackage(901,15),new MaplePackage(902,9),new MaplePackage(903,32)}});
+    bool Arrange(long id,long? into,bool split)=>(bool)rearrange.Invoke(cargo,new object[]{supply,source,id,into,split})!;
+    Check(Arrange(902,901,false) && local.MaplePackages.Single(p=>p.Id==901).Units==16 &&
+        local.MaplePackages.Single(p=>p.Id==902).Units==8,"Manual merge keeps overflow in the source");
+    Check(!Arrange(903,null,true) && !Arrange(902,903,false),"Large timbers stay intact");
+    Check(Arrange(902,null,true) && local.MaplePackages.Last().Units==4 && local.MapleUnits==56,
+        "Splitting a small load preserves the total stock");
+}

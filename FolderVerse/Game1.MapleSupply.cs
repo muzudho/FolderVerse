@@ -1,14 +1,20 @@
 namespace FolderVerse;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 public partial class Game1
 {
     private readonly Texture2D[] _maplePackageArt=new Texture2D[3];
     private long? _mapleSelected;
+    private long? _mapleDrag;
+    private Point _mapleGrab;
+    private bool _mapleMoved,_mapleSplit;
+    private readonly Dictionary<long,int> _maplePositions=new();
     private int _mapleDestination;
     private static readonly Rectangle MaplePanel=new(164,422,630,252);
     private static readonly Rectangle MaplePrevious=new(186,497,64,46),MapleNext=new(708,497,64,46);
@@ -36,7 +42,7 @@ public partial class Game1
     }
 
     private int[] MapleTargets()=>FunctionalDeliveryRoutes.Targets(_setup,_populationNode).Where(n=>_setup.Nodes.All[n].Owner>=0).ToArray();
-    private bool MapleHangarInput(bool click,bool escape)
+    private bool MapleHangarInput(MouseState mouse,bool click,bool escape)
     {
         if(_mapleSelected is long id)
         {
@@ -58,15 +64,57 @@ public partial class Game1
             }
             return true;
         }
-        if(!click || !DomesticOperationsAllowed || _hangarReservation!=HangarReservation.None || _hangarDrag.HasValue ||
+        if(escape || !DomesticOperationsAllowed){
+            bool active=_mapleDrag.HasValue;
+            _mapleDrag=null;
+            return active && escape;
+        }
+        if(!click && !_mapleDrag.HasValue || _hangarReservation!=HangarReservation.None || _hangarDrag.HasValue ||
             HangarPlanningNode!=_populationNode || !_setup.Relations.Controls(_setup.Nodes.All[_populationNode].Owner))return false;
         var store=_setup.Robots.Nodes[_populationNode];
-        if(store.MaplePackages.Count==0)return false;
         SyncHangarSlots();
-        var materials=HangarMaterials(_hangarSlots,PlanningStock.Nodes[HangarPlanningNode],PlanningStock.Nodes[HangarPlanningNode].MaplePackages);
-        var package=materials.FirstOrDefault(p=>VisibleAssemblySlots().Contains(p.Key/3) && Rectangle.Union(AssemblyPartBounds(p.Key/3,p.Key%3),AssemblyPartBounds(p.Key/3,p.Key%3+p.Value.Sections-1)).Contains(_pointer)).Value;
-        if(package==null)return false;
-        _mapleSelected=package.Id;_mapleDestination=0;
+        var forecast=PlanningStock.Nodes[HangarPlanningNode];
+        var materials=HangarMaterials(_hangarSlots,forecast,forecast.MaplePackages,positions:_maplePositions);
+        var hit=materials.FirstOrDefault(p=>VisibleAssemblySlots().Contains(p.Key/3) && Rectangle.Union(AssemblyPartBounds(p.Key/3,p.Key%3),AssemblyPartBounds(p.Key/3,p.Key%3+p.Value.Sections-1)).Contains(_pointer));
+        if(_mapleDrag is not long sourceId){
+            if(hit.Value==null || !store.MaplePackages.Any(p=>p.Id==hit.Value.Id))return false;
+            _mapleDrag=hit.Value.Id;_mapleGrab=_pointer;_mapleMoved=false;
+            var keyboard=Keyboard.GetState();
+            _mapleSplit=keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift);
+            return true;
+        }
+        _mapleMoved|=Vector2.DistanceSquared(_pointer.ToVector2(),_mapleGrab.ToVector2())>36;
+        UpdateHangarDragScroll(mouse.LeftButton==ButtonState.Pressed);
+        if(mouse.LeftButton==ButtonState.Pressed)return true;
+        _mapleDrag=null;
+        if(!_mapleMoved){_mapleSelected=sourceId;_mapleDestination=0;return true;}
+        var source=store.MaplePackages.FirstOrDefault(p=>p.Id==sourceId);
+        if(source==null || _setup.Robots.MapleShipments.Any(o=>o.PackageId==sourceId) ||
+            _setup.Campaign.RobotBattles.LockedNode(_populationNode))return true;
+        if(hit.Value!=null){
+            if(hit.Value.Id!=sourceId)
+                _hangarMessage=!_mapleSplit && _setup.Robots.RearrangeMaple(_setup,_populationNode,sourceId,hit.Value.Id,false)
+                    ?"楓の木をまとめました":"この楓の木はまとめられません";
+            return true;
+        }
+        foreach(int slot in VisibleAssemblySlots())
+        for(int row=0;row<3;row++){
+            if(!AssemblyPartBounds(slot,row).Contains(_pointer))continue;
+            int sections=_mapleSplit?1:source.Sections;
+            var robot=forecast.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
+            if(row+sections>3 || Enumerable.Range(row,sections).Any(r=>MaterialOccupies(materials,slot,r) ||
+                robot!=null && (robot.Parts&HangarPart(r))!=0))return true;
+            long placedId=sourceId;
+            if(_mapleSplit){
+                if(!_setup.Robots.RearrangeMaple(_setup,_populationNode,sourceId,null,true)){
+                    _hangarMessage="この楓の木は分けられません";return true;
+                }
+                placedId=store.MaplePackages.Last().Id;
+            }
+            _maplePositions[placedId]=slot*3+row;
+            _hangarMessage=_mapleSplit?"楓の木を分けました":"楓の木を移動しました";
+            return true;
+        }
         return true;
     }
 

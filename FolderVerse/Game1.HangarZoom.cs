@@ -45,7 +45,8 @@ public partial class Game1
             if(slot>=0)slots[slot]=id;
         }
     }
-    private static Dictionary<int,MaplePackage> HangarMaterials(long?[] slots,RobotStore store,IEnumerable<MaplePackage> packages,Func<int,bool> reserved=null)
+    private static Dictionary<int,MaplePackage> HangarMaterials(long?[] slots,RobotStore store,IEnumerable<MaplePackage> packages,Func<int,bool> reserved=null,
+        IReadOnlyDictionary<long,int> positions=null)
     {
         var robots=store.Robots.ToDictionary(r=>r.Id);
         var order=Enumerable.Range(0,slots.Length).Where(slot=>reserved?.Invoke(slot)!=true)
@@ -55,10 +56,13 @@ public partial class Game1
             if(slots[slot] is long id && robots.TryGetValue(id,out var robot))
                 for(int row=0;row<3;row++)used[slot*3+row]=(robot.Parts&HangarPart(row))!=0;
         var result=new Dictionary<int,MaplePackage>();
-        foreach(var package in packages.OrderByDescending(p=>p.Sections)){
+        foreach(var package in packages.OrderByDescending(p=>p.Sections).ThenByDescending(p=>positions?.ContainsKey(p.Id)==true)){
             int sections=package.Sections;
             int key=order.SelectMany(slot=>Enumerable.Range(0,4-sections).Reverse().Select(row=>slot*3+row))
                 .FirstOrDefault(start=>Enumerable.Range(start,sections).All(index=>!used[index]),-1);
+            if(positions?.TryGetValue(package.Id,out int preferred)==true && preferred>=0 &&
+                order.Contains(preferred/3) && preferred%3+sections<=3 &&
+                Enumerable.Range(preferred,sections).All(index=>!used[index]))key=preferred;
             if(key<0)continue;
             result.Add(key,package);
             for(int i=0;i<sections;i++)used[key+i]=true;
@@ -133,7 +137,7 @@ public partial class Game1
         var overview=new Point(HangarGridColumns,Math.Max(1,HangarGridRows));
         float progress=MathHelper.SmoothStep(0,1,HangarIntroProgress);
         var bay=new Color(62,86,96);
-        var materials=HangarMaterials(_hangarSlots,store,store.MaplePackages);
+        var materials=HangarMaterials(_hangarSlots,store,store.MaplePackages,positions:_maplePositions);
         for(int slot=0;slot<_hangarSlots.Length;slot++)
         {
             var start=HangarViewCell(slot,overview,0,0);
