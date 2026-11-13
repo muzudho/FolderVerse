@@ -25,6 +25,7 @@ public partial class Game1
     {
         DisposeDepartingOpeningPlanet();
         BeginPlayerCount();_openingActive=true;_openingTutorial=tutorial;_openingFixedStart=fixedStart;
+        if(!tutorial && fixedStart==null)_setup.EquipmentMode=RobotEquipmentMode.Materials;
         _openingSkipNarration=false;_openingAge=0;_titleMenuOpen=_tutorialMenuOpen=_autoPlay=_demoActive=_autoPaused=false;
         _tutorialChromeSlide=0;_tutorialGuideClosing=-1;
         _screen=Screen.OpeningBook;

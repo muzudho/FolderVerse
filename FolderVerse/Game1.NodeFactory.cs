@@ -84,8 +84,12 @@ public partial class Game1
             _factoryPlanLine = -1;
             if (line >= lines.Length || !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) ||
                 _setup.Campaign.RobotBattles.LockedNode(_populationNode)) return true;
-            if(_setup.Robots.MapleSupplyEnabled && FactoryHarvestTab.Contains(pointer)){
-                _factoryHarvestPage=!_factoryHarvestPage;_factoryPlanLine=line;return true;
+            if(FactoryStopButton.Contains(pointer)){
+                lines[line].SelectPlan(3);SavePending(line);return true;
+            }
+            if(FactoryHarvestTab.Contains(pointer)){
+                if(_setup.Robots.MapleSupplyEnabled)_factoryHarvestPage=!_factoryHarvestPage;
+                _factoryPlanLine=line;return true;
             }
             if(_factoryHarvestPage){
                 int available=FactoryHarvestAvailable(_populationNode,lines,lines[line]);
@@ -98,7 +102,7 @@ public partial class Game1
             }
             for (int i = 0; i < lines[line].PlanCount; i++)
             {
-                if (!FactoryAlbumCard(i).Contains(pointer)) continue;
+                if (i==3 || !FactoryRecipeCard(i).Contains(pointer)) continue;
                 lines[line].SelectPlan(i);
                 SavePending(line);
                 break;

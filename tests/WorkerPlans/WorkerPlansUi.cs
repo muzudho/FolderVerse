@@ -41,6 +41,7 @@ sealed class WorkerPlansUi:Game1
   }
   if(frame==5){
    w.EquipmentMode=RobotEquipmentMode.Materials;
+   typeof(RobotWorld).GetMethod("InitializeMapleSupply",F)!.Invoke(w.Robots,new object[]{w});
    typeof(RobotWorkshop).GetMethod("ConfigureMaterialCatalogue",F)!.Invoke(line,new object[]{0,w.EquipmentMode});
    var recipes=(ProductionPlan[])typeof(RobotWorkshop).GetField("_workerPlans",F)!.GetValue(line)!;
    recipes[choice]=recipes[choice] with {HeadMaterial=RobotMaterial.Foam,BodyMaterial=RobotMaterial.Maple};
@@ -52,18 +53,22 @@ sealed class WorkerPlansUi:Game1
    Check((int)Get("_factoryPlanLine")==1,"Worker lane opens material album at 540p");
    Check(Rect("FactoryAlbumCard",5).Y==Rect("FactoryAlbumCard",0).Y &&
          Rect("FactoryAlbumCard",6).X==Rect("FactoryAlbumCard",0).X,"Album uses six columns");
-   Set("_pointer",Rect("FactoryAlbumCard",choice).Center);
+   Set("_pointer",Rect("FactoryRecipeCard",choice).Center);
   }
   if(frame==6){
    var upperRight=Rect("FactoryAlbumCard",5);
    Click(new Point(upperRight.Right-8,upperRight.Bottom-8));
-   Check(line.SelectedPlan==5 && (int)Get("_factoryPlanLine")==-1,"Upper-right card selects from its lower corner");
+   Check(line.SelectedPlan==6 && (int)Get("_factoryPlanLine")==-1,"Upper-right card selects from its lower corner");
    Click(Rect("FactoryRobotButton",1,line.ProductionPeriod).Center);
    Check((int)Get("_factoryPlanLine")==1,"Reopen after selecting the upper-right card");
-   Click(Rect("FactoryAlbumCard",10).Center);
+   Click(Rect("FactoryRecipeCard",10).Center);
    Check(line.SelectedPlan==10 && (int)Get("_factoryPlanLine")==-1,"Right-side album click selects the exact plan");
    Click(Rect("FactoryRobotButton",1,line.ProductionPeriod).Center);
-   Click(Rect("FactoryAlbumCard",3).Center);
+   Click(Rect("FactoryAlbumAction",0).Center);
+   Check((bool)Get("_factoryHarvestPage") && (int)Get("_factoryPlanLine")==1,"Harvest button opens the harvest catalogue");
+   Click(Rect("FactoryAlbumAction",0).Center);
+   Check(!(bool)Get("_factoryHarvestPage") && (int)Get("_factoryPlanLine")==1,"Harvest catalogue returns to the manufacturing cards");
+   Click(Rect("FactoryAlbumAction",1).Center);
    Check(!line.Manufacturing && (int)Get("_factoryPlanLine")==-1,"Album can turn production off");
   }
   base.Draw(time);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"worker-plans-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);

@@ -6,7 +6,14 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private bool _factoryHarvestPage;
-    private static readonly Rectangle FactoryHarvestTab=new(690,161,420,44);
+    private static Rectangle FactoryAlbumAction(int row)
+    {
+        var area=FactoryAlbumCard(10);
+        return new(area.X+10,area.Y+32+row*60,area.Width-20,48);
+    }
+    private static Rectangle FactoryHarvestTab=>FactoryAlbumAction(0);
+    private static Rectangle FactoryStopButton=>FactoryAlbumAction(1);
+    private static Rectangle FactoryRecipeCard(int plan)=>FactoryAlbumCard(plan<3?plan:plan-1);
     private int FactoryHarvestAvailable(int node,RobotWorkshop[] lines,RobotWorkshop editing)
         =>Math.Max(0,_setup.Robots.MapleDeposit(node)-lines.Where(l=>!ReferenceEquals(l,editing)).Sum(l=>l.MapleRemaining));
     private bool FactoryAlbumOpen => _nodeFactoryOpen && _factoryPlanLine >= 0 &&
@@ -30,13 +37,15 @@ public partial class Game1
         _ui.Box(new(63, 137, 1794, 830), new Color(56, 36, 37));
         _ui.Box(new(77, 148, 1766, 800), new Color(224, 196, 152));
         _ui.Box(new(94, 157, 1732, 777), paper);
-        _ui.Text($"生産ライン {_factoryPlanLine + 1} / 製造候補", new(113, 169), .55f, ink);
-        _ui.Batch.Draw(_robotFactoryIcon, new Rectangle(1162, 166, 31, 31), Color.White);
-        _ui.Text("産業ターン", new(1200, 175), .36f, ink);
-        _ui.Text("閉じる：Esc / 枠の外をクリック", new(1400, 175), .36f, ink);
+        _ui.Text($"生産ライン {_factoryPlanLine + 1} / "+(_factoryHarvestPage?"素材の採取":"製造候補"), new(113, 169), .55f, ink);
+        var controls=FactoryAlbumCard(10);
+        _ui.Batch.Draw(_robotFactoryIcon,new Rectangle(controls.X+28,controls.Y+170,31,31),Color.White);
+        _ui.Text("産業ターン",new(controls.X+68,controls.Y+176),.39f,ink);
+        _ui.Text("閉じる：Esc／枠の外をクリック",new(controls.X+9,controls.Y+227),.27f,ink);
+        _ui.Button(FactoryStopButton,"製造しない",line.SelectedPlan==3 && line.MapleRemaining==0?Accent:Muted,.45f);
         int deposit=_setup.Robots.MapleDeposit(node.Id);
-        if(_setup.Robots.MapleSupplyEnabled)
-            _ui.Button(FactoryHarvestTab,_factoryHarvestPage?"製造候補へ":$"採取 / 残り埋蔵量 {deposit} 荷",new Color(120,86,64),.38f);
+        _ui.Button(FactoryHarvestTab,_factoryHarvestPage?"製造候補へ":"素材の採取",
+            _setup.Robots.MapleSupplyEnabled?new Color(120,86,64):Muted*.55f,.45f);
         if(_factoryHarvestPage)
         {
             int available=FactoryHarvestAvailable(node.Id,lines,line);
@@ -56,7 +65,8 @@ public partial class Game1
         Robot mixedPreview = null;
         for (int i = 0; i < line.PlanCount; i++)
         {
-            var card = FactoryAlbumCard(i);
+            if(i==3)continue;
+            var card = FactoryRecipeCard(i);
             bool selected = line.SelectedPlan == i;
             bool hover = card.Contains(_pointer);
             _ui.Box(new(card.X + 3, card.Y + 5, card.Width, card.Height), new Color(175, 143, 113));
@@ -64,12 +74,6 @@ public partial class Game1
             _ui.Box(new(card.X + 4, card.Y + 4, card.Width - 8, card.Height - 8), new Color(255, 245, 220));
             var photo = new Rectangle(card.X + 14, card.Y + 14, card.Width - 28, 208);
             _ui.Box(photo, new Color(35, 53, 67));
-            if (i == 3)
-            {
-                _ui.Center("製造しない", photo, .54f, Cream);
-                continue;
-            }
-
             var plan = line.PlanAt(i);
             var preview = plan.Preview(node.Owner);
             var parts = RobotMaterials.Parts.Where(part => (preview.Parts & part) != 0).ToArray();

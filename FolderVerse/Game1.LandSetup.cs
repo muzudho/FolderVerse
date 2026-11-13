@@ -16,7 +16,7 @@ public partial class Game1
     private double _landAge;
     private int _robotScatterPercent=25;
     private bool _fortuneSliderDragging;
-    private static readonly Rectangle FortuneSlider=new(60,435,480,48),FortuneConfirm=new(60,535,480,66);
+    private static readonly Rectangle FortuneSlider=new(60,435,480,48),EquipmentModeButton=new(60,535,480,54),FortuneConfirm=new(60,615,480,66);
     private bool FortuneSettingsAvailable=>_screen==Screen.Fortune && !_demoActive && _setup.TutorialStep==0;
     private Point? _landDrag;
     private int[] _automaticLand=Array.Empty<int>();
@@ -86,6 +86,8 @@ public partial class Game1
         if(_screen==Screen.Fortune)
         {
             if(FortuneSettingsAvailable){
+                if(active && click && EquipmentModeButton.Contains(_pointer))
+                    _setup.EquipmentMode=_setup.EquipmentMode==RobotEquipmentMode.Materials?RobotEquipmentMode.Legacy:RobotEquipmentMode.Materials;
                 if(!active || mouse.LeftButton==ButtonState.Released)_fortuneSliderDragging=false;
                 if(active && click && FortuneSlider.Contains(_pointer))_fortuneSliderDragging=true;
                 if(_fortuneSliderDragging)
@@ -175,6 +177,8 @@ public partial class Game1
                 _ui.Box(new(x-7,FortuneSlider.Top,14,FortuneSlider.Height),Cream);
                 _ui.Text("0",new(60,489),.42f,Cream);
                 _ui.Text("100",new(492,489),.42f,Cream);
+                _ui.Button(EquipmentModeButton,_setup.EquipmentMode==RobotEquipmentMode.Materials?"装備数：素材９種":"装備数：旧仕様",
+                    _setup.EquipmentMode==RobotEquipmentMode.Materials?Accent:Muted,.48f);
                 _ui.Button(FortuneConfirm,"確定して進む",Accent,.58f);
             }else _ui.Text("配備・工場・廃炉・輸送計画を抽選中",new(60,300),.45f,Cream);
             return;
