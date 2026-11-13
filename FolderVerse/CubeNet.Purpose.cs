@@ -6,14 +6,16 @@ public sealed partial class CubeNet
 {
     private static void DrawPurposeBuilding(UiPainter ui,NodePurpose purpose,Func<float,float,float,Vector2> point,Func<Color,Color> tint)
     {
+        float heightScale=purpose is NodePurpose.Defense or NodePurpose.Frontline?1.35f:1f;
+        Vector2 Project(float x,float y,float z)=>point(x,y,z*heightScale);
         var cream=new Color(255,218,151);
         void Face(Color color,params Vector2[] corners)=>FillProjectedFace(ui,corners,tint(color));
         Color Shade(Color color,float strength)=>(color*strength) with { A=255 };
         // Extrude a convex front profile along the ground plane.
         void Extrude(Vector2[] profile,float back,float front,Color color)
         {
-            var a=Array.ConvertAll(profile,p=>point(p.X,back,p.Y));
-            var b=Array.ConvertAll(profile,p=>point(p.X,front,p.Y));
+            var a=Array.ConvertAll(profile,p=>Project(p.X,back,p.Y));
+            var b=Array.ConvertAll(profile,p=>Project(p.X,front,p.Y));
             float winding=Cross(b[1]-b[0],b[2]-b[1]);
             for(int i=0;i<b.Length;i++){
                 int j=(i+1)%b.Length;
@@ -42,17 +44,18 @@ public sealed partial class CubeNet
         }
         void Box(float x,float y,float w,float d,float z,float h,Color color)
         {
-            var a=point(x,y,z+h);var b=point(x+w,y,z+h);
-            var c=point(x+w,y+d,z+h);var e=point(x,y+d,z+h);
-            var bottom=point(x+w/2,y+d/2,z);
-            Side(a,b,point(x,y,z),point(x+w,y,z),.68f);
-            Side(b,c,point(x+w,y,z),point(x+w,y+d,z),.82f);
-            Side(c,e,point(x+w,y+d,z),point(x,y+d,z),.68f);
-            Side(e,a,point(x,y+d,z),point(x,y,z),.82f);
+            var a=Project(x,y,z+h);var b=Project(x+w,y,z+h);
+            var c=Project(x+w,y+d,z+h);var e=Project(x,y+d,z+h);
+            var roofCenter=Project(x+w/2,y+d/2,z+h);
+            Side(a,b,Project(x,y,z),Project(x+w,y,z),.68f);
+            Side(b,c,Project(x+w,y,z),Project(x+w,y+d,z),.82f);
+            Side(c,e,Project(x+w,y+d,z),Project(x,y+d,z),.68f);
+            Side(e,a,Project(x,y+d,z),Project(x,y,z),.82f);
             Face(color,a,b,c,e);
             void Side(Vector2 p,Vector2 q,Vector2 r,Vector2 s,float shade)
             {
-                if(Cross(q-p,bottom-p)*Cross(q-p,r-p)<0)
+                // Compare with the roof interior, which stays on the same side of its edge at any height.
+                if(Cross(q-p,roofCenter-p)*Cross(q-p,r-p)<0)
                     Face((color*shade) with { A=255 },p,q,s,r);
             }
         }
@@ -93,30 +96,41 @@ public sealed partial class CubeNet
                 Roof(-.84f,.84f,0,-.65f,.62f,.71f,.97f,teal);
                 break;
             case NodePurpose.Defense:
-                var blue=new Color(91,133,214);
-                Box(-.75f,-.28f,1.5f,.62f,0,.48f,blue);
-                for(int i=0;i<3;i++)Box(-.32f+i*.24f,.13f,.13f,.21f,.48f,.13f,blue);
+                var blue=new Color(74,109,181);
+                var coping=new Color(143,177,232);
+                var limestone=new Color(243,244,231);
+                Box(-.88f,-.46f,1.76f,.92f,0,.12f,new(46,65,108));
+                Box(-.75f,-.30f,1.5f,.65f,.12f,.46f,limestone);
+                Box(-.43f,-.32f,.86f,.69f,.55f,.07f,coping);
+                for(int i=0;i<3;i++)Box(-.35f+i*.28f,.15f,.15f,.22f,.62f,.13f,coping);
                 foreach(float x in new[]{-.87f,.33f}){
                     Box(x,-.43f,.54f,.86f,0,.13f,Shade(blue,.78f));
-                    Box(x+.04f,-.38f,.46f,.76f,.13f,.62f,blue);
-                    Box(x,-.43f,.54f,.86f,.75f,.1f,blue);
-                    Battlements(x,-.43f,.54f,.20f,.85f,blue);
-                    Battlements(x,.23f,.54f,.20f,.85f,blue);
+                    Box(x+.04f,-.38f,.46f,.76f,.13f,.62f,limestone);
+                    Box(x,-.43f,.54f,.86f,.75f,.1f,coping);
+                    Battlements(x,-.43f,.54f,.20f,.85f,coping);
+                    Battlements(x,.23f,.54f,.20f,.85f,coping);
                     Box(x+.22f,.38f,.10f,.02f,.43f,.21f,Shade(blue,.43f));
                 }
                 break;
             case NodePurpose.Frontline:
                 var orange=new Color(232,119,52);
-                Box(-.47f,-.13f,.94f,1.04f,0,.18f,orange);
-                Box(-.79f,-.59f,.37f,.69f,0,.93f,orange);
-                Box(.42f,-.59f,.37f,.69f,0,.93f,orange);
-                Box(-.79f,-.59f,1.58f,.69f,.78f,.19f,orange);
+                var plaster=new Color(250,240,217);
+                Box(-.80f,-.62f,1.60f,.74f,0,.14f,new(134,66,43));
+                float RampHeight(float y)=>MathHelper.Lerp(.15f,.025f,(y-.06f)/.85f);
+                Vector2 Ramp(float x,float y,float lift=0)=>Project(x,y,RampHeight(y)+lift);
+                Face(Shade(orange,.7f),Project(-.47f,.06f,0),Project(-.47f,.91f,0),Ramp(-.47f,.91f),Ramp(-.47f,.06f));
+                Face(Shade(orange,.8f),Project(.47f,.06f,0),Project(.47f,.91f,0),Ramp(.47f,.91f),Ramp(.47f,.06f));
+                Face(new Color(249,158,86),Ramp(-.47f,.06f),Ramp(.47f,.06f),Ramp(.47f,.91f),Ramp(-.47f,.91f));
+                Box(-.79f,-.59f,.37f,.69f,.14f,.79f,plaster);
+                Box(.42f,-.59f,.37f,.69f,.14f,.79f,plaster);
+                Box(-.79f,-.59f,1.58f,.69f,.78f,.15f,plaster);
+                Box(-.81f,-.61f,1.62f,.73f,.93f,.04f,orange);
                 Battlements(-.79f,-.59f,.37f,.69f,.97f,orange);
                 Battlements(.42f,-.59f,.37f,.69f,.97f,orange);
-                Extrude(new[]{new Vector2(-.42f,.54f),new Vector2(-.20f,.78f),new Vector2(-.42f,.78f)},-.50f,.10f,orange);
-                Extrude(new[]{new Vector2(.42f,.54f),new Vector2(.42f,.78f),new Vector2(.20f,.78f)},-.50f,.10f,orange);
-                Face(cream,point(-.11f,.27f,.19f),point(.11f,.27f,.19f),point(.11f,.56f,.19f),point(-.11f,.56f,.19f));
-                Face(cream,point(-.29f,.56f,.19f),point(.29f,.56f,.19f),point(0,.83f,.19f));
+                Extrude(new[]{new Vector2(-.42f,.54f),new Vector2(-.20f,.78f),new Vector2(-.42f,.78f)},-.59f,.10f,plaster);
+                Extrude(new[]{new Vector2(.42f,.54f),new Vector2(.42f,.78f),new Vector2(.20f,.78f)},-.59f,.10f,plaster);
+                Face(Color.White,Ramp(-.12f,.24f,.01f),Ramp(.12f,.24f,.01f),Ramp(.12f,.55f,.01f),Ramp(-.12f,.55f,.01f));
+                Face(Color.White,Ramp(-.34f,.55f,.01f),Ramp(.34f,.55f,.01f),Ramp(0,.83f,.01f));
                 break;
         }
     }

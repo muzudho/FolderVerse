@@ -27,7 +27,7 @@ public sealed partial class CubeNet
                 var at = Project(position);
                 Color Tint(Color color) => NodeTint(node.Id,color);
                 float scale = MathF.Max(Vector2.Distance(at,Project(position+cell.U)),Vector2.Distance(at,Project(position+cell.V)));
-                float radius = MapPuckRadius(node,scale)/MathF.Max(scale,1);
+                float radius = GlobeNodeRadius(node,scale,globe.GlobeZoom);
                 if (ShowRoutes) DrawSurfacePuck(ui,setup,node,cell,position,radius,pulse,Project,Tint);
                 DrawSurfaceFlag(ui,setup,DisplayedNodeOwner(node),cell,position,ShowRoutes ? radius*(HasPurposeBuilding(node)?GlobePurposeBuildingScale:1) : 0,Project,Tint);
             }
@@ -50,6 +50,16 @@ public sealed partial class CubeNet
     private const float PurposeBuildingScale=1.7f;
     private const float GlobePurposeBuildingScale=PurposeBuildingScale;
     private static bool HasPurposeBuilding(Node node)=>node.Functional && node.Purpose!=NodePurpose.General;
+
+    internal float GlobeNodeRadius(Node node,float projectedUnit,float zoom)
+    {
+        // Size buildings at the reference zoom, then let projection scale them with the globe.
+        float referenceUnit=HasPurposeBuilding(node)?projectedUnit/zoom:projectedUnit;
+        return MapPuckRadius(node,referenceUnit)/MathF.Max(referenceUnit,1);
+    }
+
+    internal float GlobeNodeHitRadius(Node node,float projectedUnit,float zoom)
+        => GlobeNodeRadius(node,projectedUnit,zoom)*projectedUnit*(HasPurposeBuilding(node)?GlobePurposeBuildingScale:1)+4;
 
     private void DrawFlatPuck(UiPainter ui,WorldSetup setup,Node node,Vector2 at,float radius,float pulse,Func<Color,Color> tint)
     {
