@@ -48,7 +48,7 @@ public sealed partial class CubeNet
         return EmphasizedNode(node.Id) ? radius*1.4f : radius;
     }
     private const float PurposeBuildingScale=1.7f;
-    private const float GlobePurposeBuildingScale=PurposeBuildingScale*2;
+    private const float GlobePurposeBuildingScale=PurposeBuildingScale;
     private static bool HasPurposeBuilding(Node node)=>node.Functional && node.Purpose!=NodePurpose.General;
 
     private void DrawFlatPuck(UiPainter ui,WorldSetup setup,Node node,Vector2 at,float radius,float pulse,Func<Color,Color> tint)
