@@ -56,7 +56,10 @@ public partial class Game1
         // Unlike a user's page-button click, revealing the scripted target must
         // keep the held part until DemoAssemblyRelease uses the real input path.
         int focusSlot=_demoDomesticStage is 4 or 7?_demoSourceSlot:_demoDomesticStage is 5 or 6?_demoEmptySlot:-1;
-        if(focusSlot>=0 && focusSlot<_hangarSlots.Length)_hangarPage=Math.Min(focusSlot/HangarColumns,HangarLastRow);
+        if(focusSlot>=0 && focusSlot<_hangarSlots.Length){
+            _hangarPage=Math.Min(focusSlot/HangarGridColumns,HangarLastRow);
+            _hangarColumn=Math.Min(focusSlot%HangarGridColumns,HangarLastColumn);
+        }
         Point target=_demoDomesticStage switch
         {
             0=>nodePoint,3=>NodeAssemblyTile.Center,

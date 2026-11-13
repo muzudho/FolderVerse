@@ -8,10 +8,15 @@ public sealed record ProductionPlan(RobotParts Product,int Turns,bool Cheap=fals
     public RobotParts CheapParts {get;init;}
     public RobotParts PremiumParts {get;init;}
     public RobotMaterial Material {get;init;}
+    public RobotMaterial? HeadMaterial {get;init;}
+    public RobotMaterial? BodyMaterial {get;init;}
+    public RobotMaterial? LegsMaterial {get;init;}
     public RobotParts EffectiveCheapParts=>Cheap?Product:CheapParts&Product;
     public string QualityLabel=>PremiumParts!=0?"高級":EffectiveCheapParts==0?"正規":EffectiveCheapParts==Product?"安い":"正規＋安い";
     public Robot Preview(int owner,long id=0)=>new(id,owner,Product){HeadOrigin=HeadOrigin??owner,BodyOrigin=BodyOrigin??owner,LegsOrigin=LegsOrigin??owner,CheapParts=EffectiveCheapParts,PremiumParts=PremiumParts&Product,IntegratedParts=IntegratedParts,
-        HeadMaterial=(Product&RobotParts.Head)!=0?Material:default,BodyMaterial=(Product&RobotParts.Body)!=0?Material:default,LegsMaterial=(Product&RobotParts.Legs)!=0?Material:default};
+        HeadMaterial=(Product&RobotParts.Head)!=0?HeadMaterial??Material:default,
+        BodyMaterial=(Product&RobotParts.Body)!=0?BodyMaterial??Material:default,
+        LegsMaterial=(Product&RobotParts.Legs)!=0?LegsMaterial??Material:default};
 }
 public sealed partial class RobotWorkshop
 {
@@ -76,9 +81,24 @@ public sealed partial class RobotWorkshop
         if(_materialCatalogueOffset is not int offset)return plan;
         int ordinal=index>3?index-1:index;
         var material=(RobotMaterial)((ordinal+offset)%8);
-        int parts=System.Numerics.BitOperations.PopCount((uint)plan.Product);
-        int extra=material==RobotMaterial.Maple?2*parts:0;
-        return plan with {Material=material,Turns=plan.Turns+extra};
+        plan=plan with {Material=material};
+        if(_workerAppointment is { } worker)
+        {
+            RobotMaterial? Inherited(RobotParts part,int phase)
+            {
+                if((worker.Parts&plan.Product&part)==0 || (ordinal+phase)%2!=0)return null;
+                var inherited=worker.Material(part);
+                return inherited==RobotMaterial.Tin?null:inherited;
+            }
+            plan=plan with {HeadMaterial=plan.HeadMaterial??Inherited(RobotParts.Head,0),
+                BodyMaterial=plan.BodyMaterial??Inherited(RobotParts.Body,1),
+                LegsMaterial=plan.LegsMaterial??Inherited(RobotParts.Legs,0)};
+        }
+        int extra=0;
+        if((plan.Product&RobotParts.Head)!=0 && (plan.HeadMaterial??material)==RobotMaterial.Maple)extra+=2;
+        if((plan.Product&RobotParts.Body)!=0 && (plan.BodyMaterial??material)==RobotMaterial.Maple)extra+=2;
+        if((plan.Product&RobotParts.Legs)!=0 && (plan.LegsMaterial??material)==RobotMaterial.Maple)extra+=2;
+        return plan with {Turns=plan.Turns+extra};
     }
     private ProductionPlan BasePlanAt(int index)
     {
@@ -98,7 +118,7 @@ public sealed partial class RobotWorkshop
     public int CycleProgress=>CycleFinished?CycleTurns:RestEnabled && RestRemaining>0
         ?CycleTurns-RestRemaining
         :(RestEnabled?ProducedSinceRest*ProductionPeriod:0)+ProductionAge;
-    public int TurnsUntilNextProduction=>CycleFinished?0:(RestEnabled?RestRemaining:0)+System.Math.Max(0,ProductionPeriod-ProductionAge);
+    public int TurnsUntilNextProduction=>CycleFinished?0:(RestEnabled?RestRemaining:0)+System.Math.Max(0,(_lastEffectiveProductionPeriod??ProductionPeriod)-ProductionAge);
     public int LaneProgress=>CycleFinished?ProductionPeriod+(RestEnabled?IndustryTime.Whole(RestTurns):0):RestEnabled && RestRemaining>0
         ?ProductionPeriod+IndustryTime.Whole(RestTurns)-RestRemaining
         :Waiting?ProductionPeriod:CycleProgress%ProductionPeriod;
@@ -128,7 +148,8 @@ public sealed partial class RobotWorkshop
     public void SelectPlan(int index)
     {
         if(index<0 || index>=PlanCount)throw new System.ArgumentOutOfRangeException(nameof(index));
-        if(SelectedPlan==index)return;
+        if(SelectedPlan==index && MapleRemaining==0)return;
+        MapleRemaining=MapleProgress=0;
         SelectedPlan=index;Paused=false;CycleFinished=false;RestRemaining=ProducedSinceRest=0;
         if(index==3){Manufacturing=false;ProductionAge=WaitingProductionTurns=0;Paused=false;return;}
         var plan=PlanAt(index);Configure(plan.Product,plan.Turns);CheapProduct=plan.EffectiveCheapParts==plan.Product;IntegratedProduct=plan.IntegratedParts;_selectedProductPlan=plan;SelectedPlan=index;RestEnabled=true;

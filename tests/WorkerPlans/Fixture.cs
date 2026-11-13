@@ -11,6 +11,7 @@ public static class Fixture
   foreach(var line in f.ProductionLines)line.SelectPlan(3);
   f.AutoAssemblyDisabled=true;f.Automation=NodeAutomation.Manual;f.SetReservedSlots(0);
   foreach(var r in w.Robots.Nodes[node].Robots.ToArray())w.Robots.Nodes[node].Remove(r.Id);
+  w.Robots.ProductionIntakeEnabled=false;
   return(w,node);
  }
  public static RobotWorkshop Appoint(WorldSetup w,int node,Robot r){w.Robots.Nodes[node].Add(r);if(!w.Robots.ToggleReservation(node,r.Id,HangarReservation.Worker))throw new Exception("Worker appointment failed");return w.Robots.Workshops[node].ProductionLines.Last();}

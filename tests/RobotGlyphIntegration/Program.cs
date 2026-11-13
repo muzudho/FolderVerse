@@ -214,9 +214,9 @@ sealed class GlyphProbe:Game1
   pageClick.Invoke(this,new object[]{new Point(470,844)});
   if((int)Get("_hangarPage")!=1 || Get("_hangarDrag")!=null)throw new Exception("Down arrow must scroll one row and cancel stale drag");
   pageClick.Invoke(this,new object[]{new Point(470,844)});
-  if((int)Get("_hangarPage")!=2)throw new Exception("Second scroll did not show the last row");
+  if((int)Get("_hangarPage")!=1)throw new Exception("Second scroll did not show the last row");
   pageClick.Invoke(this,new object[]{new Point(470,844)});
-  if((int)Get("_hangarPage")!=2)throw new Exception("Scroll exceeded capacity");
+  if((int)Get("_hangarPage")!=1)throw new Exception("Scroll exceeded capacity");
   pageClick.Invoke(this,new object[]{new Point(85,288)});
   pageClick.Invoke(this,new object[]{new Point(863,288)});
   if((int)Get("_hangarPage")!=0)throw new Exception("Previous page did not return to slots0-5");
@@ -224,11 +224,11 @@ sealed class GlyphProbe:Game1
   var head=new Robot(100001,0,RobotParts.Head);var body=new Robot(100002,0,RobotParts.Body);
   typeof(RobotStore).GetMethod("Replace",Flags)!.Invoke(w.Robots.Nodes[node],new object[]{new[]{head,body}});
   w.Robots.PartPlanning.Invalidate();w.HumanPlayers.Add(0);Set("_nodeAssemblyOpen",true);
-  var mapping=new long?[12];mapping[0]=head.Id;mapping[6]=body.Id;Set("_hangarSlots",mapping);Set("_hangarPage",0);
+  var mapping=new long?[12];mapping[0]=head.Id;mapping[8]=body.Id;Set("_hangarSlots",mapping);Set("_hangarPage",0);
   var input=typeof(Game1).GetMethod("NodeAssemblyLocalInput",Flags)!;
-  var partBox=typeof(Game1).GetMethod("HangarPartBounds",BindingFlags.Static|BindingFlags.NonPublic)!;
+  var partBox=typeof(Game1).GetMethod("AssemblyPartBounds",Flags)!;
   var pressed=new Microsoft.Xna.Framework.Input.MouseState(0,0,0,Microsoft.Xna.Framework.Input.ButtonState.Pressed,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released);
-  Set("_pointer",((Rectangle)partBox.Invoke(null,new object[]{0,0})!).Center);
+  Set("_pointer",((Rectangle)partBox.Invoke(this,new object[]{0,0})!).Center);
   input.Invoke(this,new object[]{pressed,true,false});
   if((long?)Get("_hangarDrag")!=head.Id || (int)Get("_hangarSource")!=0)throw new Exception("Head press selected another robot/slot");
   Set("_pointer",new Point(470,844));Set("_previousMouse",pressed);Set("_animationTime",10f);
@@ -236,32 +236,32 @@ sealed class GlyphProbe:Game1
   Set("_animationTime",10.4f);input.Invoke(this,new object[]{pressed,false,false});
   if((int)Get("_hangarPage")!=0)throw new Exception("Drag hover skipped its initial delay");
   Set("_animationTime",10.6f);input.Invoke(this,new object[]{pressed,false,false});
-  if((int)Get("_hangarPage")!=1 || (long?)Get("_hangarDrag")!=head.Id)throw new Exception("Drag hover must expose slots 3–8 while retaining the source");
+  if((int)Get("_hangarPage")!=1 || (long?)Get("_hangarDrag")!=head.Id)throw new Exception("Drag hover must expose the second row while retaining the source");
   Set("_animationTime",11f);input.Invoke(this,new object[]{pressed,false,false});
   if((int)Get("_hangarPage")!=1)throw new Exception("Drag hover repeated too quickly");
   Set("_animationTime",11.4f);input.Invoke(this,new object[]{pressed,false,false});
-  if((int)Get("_hangarPage")!=2)throw new Exception("Holding the arrow must repeat after the interval");
+  if((int)Get("_hangarPage")!=1)throw new Exception("Holding the arrow must repeat after the interval");
   Set("_pointer",new Point(85,288));input.Invoke(this,new object[]{pressed,false,false});
   Set("_animationTime",12f);input.Invoke(this,new object[]{pressed,false,false});
-  if((int)Get("_hangarPage")!=1 || (long?)Get("_hangarDrag")!=head.Id)
+  if((int)Get("_hangarPage")!=0 || (long?)Get("_hangarDrag")!=head.Id)
    throw new Exception("Hovering the up arrow must scroll back with the same dragged part");
-  Set("_pointer",((Rectangle)cell.Invoke(null,new object[]{3})!).Center);
+  Set("_hangarPage",1);Set("_pointer",((Rectangle)cell.Invoke(null,new object[]{3})!).Center);
   input.Invoke(this,new object[]{new Microsoft.Xna.Framework.Input.MouseState(),false,false});
   var reservation=w.Robots.PartPlanning.Orders.Single();
   if(reservation.RobotId!=head.Id || reservation.TargetRobotId!=body.Id || reservation.Parts!=RobotParts.Head)throw new Exception("Page2 drop reserved wrong source or destination");
   if(Get("_hangarDrag")!=null)throw new Exception("Released drag remained active");
-  Console.WriteLine("PASS held drag waits, scrolls one row, and drops physical slot 0 into physical slot 6.");
+  Console.WriteLine("PASS held drag waits, scrolls one row, and drops physical slot 0 into physical slot 8.");
   w.Robots.PartPlanning.Orders.Clear();w.Robots.PartPlanning.Invalidate();
   var legs = new Robot(100003, 0, RobotParts.Legs);
   typeof(RobotStore).GetMethod("Replace",Flags)!.Invoke(w.Robots.Nodes[node],new object[]{new[]{legs,body}});
   w.Robots.PartPlanning.Invalidate();
-  mapping=new long?[12];mapping[6]=legs.Id;mapping[7]=body.Id;Set("_hangarPage",2);
+  mapping=new long?[12];mapping[8]=legs.Id;mapping[9]=body.Id;Set("_hangarPage",1);
   Set("_hangarSlots", mapping);
-  Set("_pointer", ((Rectangle)partBox.Invoke(null,new object[]{6,2})!).Center);
+  Set("_pointer", ((Rectangle)partBox.Invoke(this,new object[]{8,2})!).Center);
   input.Invoke(this,new object[]{pressed,true,false});
   if ((long?)Get("_hangarDrag") != legs.Id || (RobotParts)Get("_hangarPart") != RobotParts.Legs)
    throw new Exception("Page2 leg press selected another robot or part");
-  Set("_pointer", ((Rectangle)partBox.Invoke(null,new object[]{7,2})!).Center);
+  Set("_pointer", ((Rectangle)partBox.Invoke(this,new object[]{9,2})!).Center);
   GraphicsDevice.Clear(new Color(25,36,48));
   batch.Begin(transformMatrix:Matrix.CreateScale(.5f));
   typeof(Game1).GetMethod("DrawNodeAssembly",Flags)!.Invoke(this,null);
@@ -282,9 +282,10 @@ sealed class GlyphProbe:Game1
    throw new Exception("Page2 leg drop reserved the wrong assembly");
   Console.WriteLine("PASS actual page2 leg drag renders and reserves the selected part.");
   w.Robots.PartPlanning.Orders.Clear();w.Robots.PartPlanning.Invalidate();
+  long?[] PlaceSix(Robot[] robots){var ids=new long?[12];for(int i=0;i<6;i++)ids[i+i/3]=robots[i].Id;return ids;}
   var complete=Enumerable.Range(0,6).Select(i=>new Robot(200001+i,0,RobotParts.Complete)).ToArray();
   typeof(RobotStore).GetMethod("Replace",Flags)!.Invoke(w.Robots.Nodes[node],new object[]{complete});
-  Set("_hangarSlots",complete.Select(r=>(long?)r.Id).Concat(new long?[6]).ToArray());Set("_hangarPage",0);Set("_hangarReservation",HangarReservation.Defense);
+  Set("_hangarSlots",PlaceSix(complete));Set("_hangarPage",0);Set("_hangarReservation",HangarReservation.Defense);
   Set("_pointer",((Rectangle)cell.Invoke(null,new object[]{1})!).Center);
   input.Invoke(this,new object[]{pressed,true,false});
   var preview=w.Robots.PartPlanning.Preview(w);
@@ -304,6 +305,66 @@ sealed class GlyphProbe:Game1
   typeof(RobotStore).GetMethod("Replace",Flags)!.Invoke(w.Robots.Nodes[node],new object[]{paperHangar});
   Set("_hangarReservation",HangarReservation.None);
   var assemblyDraw=typeof(Game1).GetMethod("DrawNodeAssembly",Flags)!;
+  Set("_hangarSlots",new long?[60]);
+  var zoomVisible=typeof(Game1).GetMethod("VisibleAssemblySlots",Flags)!;
+  var assemblyCell=typeof(Game1).GetMethod("AssemblyCell",Flags)!;
+  var limits=new[]{2,6,12,24,40,60};
+  for(int level=0;level<limits.Length;level++){
+   Set("_hangarZoom",level);
+   var visibleSlots=((IEnumerable<int>)zoomVisible.Invoke(this,null)!).ToArray();
+   if(visibleSlots.Length!=limits[level])throw new Exception("Wrong zoom capacity");
+   foreach(int slot in visibleSlots){
+    var bounds=(Rectangle)assemblyCell.Invoke(this,new object[]{slot})!;
+    if(bounds.X<84 || bounds.Y<300 || bounds.Right>864 || bounds.Bottom>830)
+     throw new Exception("Zoom bay outside viewport");
+   }
+  }
+  Set("_hangarZoom",1);
+  Set("_pointer",new Point(100,320));
+  Set("_previousMouse",new Microsoft.Xna.Framework.Input.MouseState());
+  var wheel=new Microsoft.Xna.Framework.Input.MouseState(0,0,-120,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released);
+  input.Invoke(this,new object[]{wheel,false,false});
+  if((int)Get("_hangarZoom")!=2)throw new Exception("Wheel must select the next smaller zoom");
+  input.Invoke(this,new object[]{wheel,false,false});
+  if((int)Get("_hangarZoom")!=2)throw new Exception("Wheel changed zoom during cooldown");
+  Set("_hangarZoom",1);
+  pageClick.Invoke(this,new object[]{new Point(879,560)});
+  if((int)Get("_hangarColumn")!=1 || ((IEnumerable<int>)zoomVisible.Invoke(this,null)!).First()!=1)
+   throw new Exception("Right arrow moved the wrong physical slots");
+  pageClick.Invoke(this,new object[]{new Point(66,560)});
+  if((int)Get("_hangarColumn")!=0)throw new Exception("Left arrow did not return");
+  Console.WriteLine("PASS all six zoom capacities and horizontal slot navigation.");
+  var rightPressed=new Microsoft.Xna.Framework.Input.MouseState(0,0,0,
+   Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,
+   Microsoft.Xna.Framework.Input.ButtonState.Pressed,Microsoft.Xna.Framework.Input.ButtonState.Released,
+   Microsoft.Xna.Framework.Input.ButtonState.Released);
+  Set("_previousMouse",new Microsoft.Xna.Framework.Input.MouseState());
+  Set("_pointer",new Point(500,650));input.Invoke(this,new object[]{rightPressed,false,false});
+  Set("_previousMouse",rightPressed);
+  Set("_pointer",new Point(220,360));input.Invoke(this,new object[]{rightPressed,false,false});
+  if(!(bool)Get("_hangarPanning") || (int)Get("_hangarColumn")!=1 || (int)Get("_hangarPage")!=1)
+   throw new Exception("Right drag must pan the hangar in both axes");
+  Set("_pointer",new Point(-3000,-3000));input.Invoke(this,new object[]{rightPressed,false,false});
+  if((int)Get("_hangarColumn")!=7 || (int)Get("_hangarPage")!=4)
+   throw new Exception("Right drag must clamp at the last column and row");
+  input.Invoke(this,new object[]{new Microsoft.Xna.Framework.Input.MouseState(),false,false});
+  if((bool)Get("_hangarPanning"))throw new Exception("Releasing the right button must stop panning");
+  Set("_hangarColumn",0);Set("_hangarPage",0);
+  Console.WriteLine("PASS right drag pans diagonally, clamps and stops on release.");
+  typeof(RobotStore).GetMethod("SetCapacity",Flags)!.Invoke(w.Robots.Nodes[node],new object[]{60});
+  Set("_hangarIntroStart",20f);
+  foreach(var (frameTime,name) in new[]{(20f,"overview"),(20.1f,"transition"),(20.21f,"basic")}){
+   Set("_animationTime",frameTime);
+   GraphicsDevice.Clear(Color.Black);batch.Begin(transformMatrix:Matrix.CreateScale(.5f));
+   assemblyDraw.Invoke(this,null);batch.End();
+   GraphicsDevice.GetBackBufferData(data);
+   image.SetData(data);
+   using var frame=File.Create(Path.Combine(Path.GetDirectoryName(output)!,$"hangar-{name}.png"));
+   image.SaveAsPng(frame,960,540);
+  }
+  typeof(RobotStore).GetMethod("SetCapacity",Flags)!.Invoke(w.Robots.Nodes[node],new object[]{12});
+  Set("_hangarSlots",PlaceSix(paperHangar));
+  Set("_hangarPage",0);
   var withEmblem=new Color[data.Length];
   foreach(int emblem in new[]{1,0}){
    w.SetCountryEmblem(0,emblem);
@@ -325,16 +386,17 @@ sealed class GlyphProbe:Game1
   typeof(RobotStore).GetMethod("SetCapacity",Flags)!.Invoke(w.Robots.Nodes[node],new object[]{7});
   var foreign=new Robot(300001,1,RobotParts.Complete);
   typeof(RobotStore).GetMethod("Replace",Flags)!.Invoke(w.Robots.Nodes[node],new object[]{new[]{foreign}});
-  var lastPage=new long?[7];lastPage[6]=foreign.Id;Set("_hangarSlots",lastPage);Set("_hangarPage",0);Set("_hangarReturnHomeMode",true);Set("_hangarReservation",HangarReservation.None);
-  Set("_pointer",new Point(470,844));input.Invoke(this,new object[]{pressed,true,false});
-  if((int)Get("_hangarPage")!=1 || !(bool)Get("_hangarReturnHomeMode"))throw new Exception("Return-home mode swallowed next-page click");
-  Set("_pointer",((Rectangle)cell.Invoke(null,new object[]{3})!).Center);input.Invoke(this,new object[]{pressed,true,false});
-  if(w.Robots.Nodes[node].Robots.Single().ReturnHomeCommander!=0)throw new Exception("Return-home click missed last-page robot");
-  Set("_pointer",((Rectangle)cell.Invoke(null,new object[]{4})!).Center);input.Invoke(this,new object[]{pressed,true,false});
+  var lastPage=new long?[7];lastPage[3]=foreign.Id;Set("_hangarSlots",lastPage);Set("_hangarPage",0);Set("_hangarReturnHomeMode",true);Set("_hangarReservation",HangarReservation.None);
+  Set("_pointer",new Point(879,560));input.Invoke(this,new object[]{pressed,true,false});
+  if((int)Get("_hangarColumn")!=1 || !(bool)Get("_hangarReturnHomeMode"))throw new Exception("Return-home mode swallowed right-arrow click");
+  Set("_pointer",((Rectangle)assemblyCell.Invoke(this,new object[]{3})!).Center);input.Invoke(this,new object[]{pressed,true,false});
+  if(w.Robots.Nodes[node].Robots.Single().ReturnHomeCommander!=0)throw new Exception("Return-home click missed the robot");
+  Set("_pointer",((Rectangle)assemblyCell.Invoke(this,new object[]{7})!).Center);input.Invoke(this,new object[]{pressed,true,false});
   if(w.Robots.Nodes[node].Robots.Single().ReturnHomeCommander!=0)throw new Exception("Nonexistent cell toggled visible robot");
-  Set("_pointer",((Rectangle)cell.Invoke(null,new object[]{3})!).Center);input.Invoke(this,new object[]{pressed,true,false});
+  Set("_pointer",((Rectangle)assemblyCell.Invoke(this,new object[]{3})!).Center);input.Invoke(this,new object[]{pressed,true,false});
   if(w.Robots.Nodes[node].Robots.Single().ReturnHomeCommander.HasValue)throw new Exception("Second return-home click failed to cancel");
-  Console.WriteLine("PASS return-home mode scrolls to the partial last row; correct ID toggles; nonexistent cells do nothing.");
+  Set("_hangarColumn",0);
+  Console.WriteLine("PASS return-home mode scrolls right; correct ID toggles; nonexistent cells do nothing.");
   var pairNodes=(int[])Get("_directNodes");pairNodes[0]=node;pairNodes[1]=node;
   var pages=(int[])Get("_directPages");pages[0]=pages[1]=0;
   var directClick=typeof(Game1).GetMethod("DirectPageClick",Flags)!;
@@ -764,14 +826,97 @@ sealed class GlyphProbe:Game1
   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(715,110,62,85),polystyrene,
     BattleRole.Soldier,BattleFacing.South,true,1f})!)
    throw new Exception("Front soldier failed to draw polystyrene head");
-  var mixedPolystyrene = foam with { HeadMaterial = RobotMaterial.Polystyrene, DamagedParts = RobotParts.Head };
   for(int i=0;i<directions.Length;i++){
-   var orientedPolystyrene = directions[i] == BattleFacing.North ? mixedPolystyrene : polystyrene;
-   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(570+100*i,290,88,125),orientedPolystyrene,
+   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(570+100*i,290,88,125),polystyrene,
       BattleRole.Soldier,directions[i],true,1f})!)
     throw new Exception($"Polystyrene head failed to draw facing {directions[i]}");
   }
+  var silicone = foam with { HeadMaterial = RobotMaterial.Silicone, BodyMaterial = RobotMaterial.Silicone,
+    LegsMaterial = RobotMaterial.Silicone, DamagedParts = RobotParts.Complete };
+  draw.Invoke(this,new object[]{new Rectangle(12,290,84,150),silicone,false,1f,null});
+  if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(12,445,62,85),silicone,
+    BattleRole.Soldier,BattleFacing.South,true,1f})!)
+   throw new Exception("Silicone front soldier failed to draw");
+  var tinplate = silicone with { HeadMaterial = RobotMaterial.Tin, BodyMaterial = RobotMaterial.Tin,
+    LegsMaterial = RobotMaterial.Tin };
+  draw.Invoke(this,new object[]{new Rectangle(350,280,84,150),tinplate,false,1f,null});
+  if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(350,445,62,85),tinplate,
+    BattleRole.Soldier,BattleFacing.South,true,1f})!)
+   throw new Exception("Tinplate front soldier failed to draw");
+  for(int i=0;i<directions.Length;i++)
+   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(104+80*i,104,62,85),
+     tinplate,
+     BattleRole.Soldier,directions[i],true,1f})!)
+    throw new Exception($"Tinplate head failed to draw facing {directions[i]}");
+  for(int i=0;i<directions.Length;i++){
+   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(110+90*i,420,62,85),silicone,
+      BattleRole.Soldier,directions[i],true,1f})!)
+    throw new Exception($"Silicone soldier failed to draw facing {directions[i]}");
+  }
+  var softVinyl = foam with { HeadMaterial = RobotMaterial.SoftVinyl, BodyMaterial = RobotMaterial.SoftVinyl,
+    LegsMaterial = RobotMaterial.SoftVinyl, DamagedParts = RobotParts.Complete };
+  draw.Invoke(this,new object[]{new Rectangle(785,110,84,150),softVinyl,false,1f,null});
+  if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(880,110,62,85),softVinyl,
+    BattleRole.Soldier,BattleFacing.South,true,1f})!)
+   throw new Exception("Soft vinyl front art must draw");
+  for(int i=0;i<directions.Length;i++){
+   if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(450+100*i,420,62,85),softVinyl,
+      BattleRole.Soldier,directions[i],true,1f})!)
+    throw new Exception($"Soft vinyl head failed to draw facing {directions[i]}");
+  }
   batch.End();
+  var tinplateArt=(RobotHeadTexture)Get("_tinplateHeadTextures");
+  tinplateArt.Get(materialWorld,0).GetData(firstFlag);
+  tinplateArt.Get(materialWorld,0,true).GetData(secondFlag);
+  if(firstFlag.SequenceEqual(secondFlag) || firstFlag[137*size+98]!=secondFlag[137*size+98] ||
+     firstFlag[89*size+72]!=secondFlag[89*size+72] ||
+     !firstFlag.Select(p=>p.A).SequenceEqual(secondFlag.Select(p=>p.A)))
+   throw new Exception("Tinplate wear must change the shell and preserve face, fastener and alpha");
+  foreach(var (name, x, y) in new[]{("_tinplateTorsoTextures",87,91),("_tinplateLegTextures",85,68),
+    ("_tinplateSideHead",198,132),("_tinplateRearHead",71,94),
+    ("_tinplateSideTorso",134,104),("_tinplateSideLegs",157,66),
+    ("_tinplateRearTorso",87,91),("_tinplateRearLegs",128,138)}){
+   var art=(RobotHeadTexture)Get(name);
+   art.Get(materialWorld,0).GetData(firstFlag);
+   art.Get(materialWorld,0,true).GetData(secondFlag);
+   if(firstFlag.SequenceEqual(secondFlag) || firstFlag[y*size+x]!=secondFlag[y*size+x] ||
+      !firstFlag.Select(p=>p.A).SequenceEqual(secondFlag.Select(p=>p.A)))
+    throw new Exception($"Tinplate wear must preserve fastener and alpha: {name}");
+  }
+  var siliconeArt=(RobotHeadTexture)Get("_siliconeHeadTextures");
+  siliconeArt.Get(materialWorld,0).GetData(firstFlag);
+  siliconeArt.Get(materialWorld,0,true).GetData(secondFlag);
+  if(firstFlag.SequenceEqual(secondFlag) || firstFlag[137*size+100]!=secondFlag[137*size+100] ||
+     !firstFlag.Select(p=>p.A).SequenceEqual(secondFlag.Select(p=>p.A)))
+   throw new Exception("Silicone wear must change the shell and preserve face and alpha");
+  foreach(string name in new[]{"_siliconeTorsoTextures","_siliconeLegTextures","_siliconeSideHead","_siliconeRearHead",
+     "_siliconeSideTorso","_siliconeSideLegs","_siliconeRearTorso","_siliconeRearLegs"}){
+   var art=(RobotHeadTexture)Get(name);
+   art.Get(materialWorld,0).GetData(firstFlag);
+   art.Get(materialWorld,0,true).GetData(secondFlag);
+   if(firstFlag.SequenceEqual(secondFlag) || !firstFlag.Select(c=>c.A).SequenceEqual(secondFlag.Select(c=>c.A)) ||
+      name=="_siliconeTorsoTextures" && firstFlag[95*size+58]!=secondFlag[95*size+58] ||
+      name=="_siliconeSideTorso" && firstFlag[93*size+155]!=secondFlag[93*size+155] ||
+      name=="_siliconeRearTorso" && firstFlag[95*size+58]!=secondFlag[95*size+58] ||
+      name=="_siliconeSideHead" && firstFlag[132*size+195]!=secondFlag[132*size+195])
+    throw new Exception($"Silicone wear must change paint and preserve face, shoulders and alpha: {name}");
+  }
+  var softVinylArt=(RobotHeadTexture)Get("_softVinylHeadTextures");
+  softVinylArt.Get(materialWorld,0).GetData(firstFlag);
+  softVinylArt.Get(materialWorld,0,true).GetData(secondFlag);
+  if(firstFlag.SequenceEqual(secondFlag) || firstFlag[137*size+100]!=secondFlag[137*size+100] ||
+     !firstFlag.Select(p=>p.A).SequenceEqual(secondFlag.Select(p=>p.A)))
+   throw new Exception("Soft vinyl wear must change the shell and preserve face and alpha");
+  foreach(string name in new[]{"_softVinylTorsoTextures","_softVinylLegTextures","_softVinylSideHead","_softVinylRearHead",
+    "_softVinylSideTorso","_softVinylSideLegs","_softVinylRearTorso","_softVinylRearLegs"}){
+   var art=(RobotHeadTexture)Get(name);
+   art.Get(materialWorld,0).GetData(firstFlag);
+   art.Get(materialWorld,0,true).GetData(secondFlag);
+   if(firstFlag.SequenceEqual(secondFlag) || !firstFlag.Select(c=>c.A).SequenceEqual(secondFlag.Select(c=>c.A)) ||
+      name=="_softVinylTorsoTextures" && firstFlag[55*size+128]!=secondFlag[55*size+128] ||
+      name=="_softVinylSideHead" && firstFlag[137*size+195]!=secondFlag[137*size+195])
+    throw new Exception($"Soft vinyl wear must change paint and preserve trim and alpha: {name}");
+  }
   var foamArt=(RobotHeadTexture)Get("_foamHeadTextures");
   foamArt.Get(materialWorld,0).GetData(firstFlag);
   foamArt.Get(materialWorld,0,true).GetData(secondFlag);
@@ -801,7 +946,7 @@ sealed class GlyphProbe:Game1
   if(firstFlag.SequenceEqual(secondFlag) || firstFlag[142*size+126]!=secondFlag[142*size+126] ||
      firstFlag.Where((pixel,i)=>pixel.A!=secondFlag[i].A).Any())
    throw new Exception("Polystyrene wear must change the shell and preserve face and alpha");
-  foreach(string name in new[]{"_polystyreneTorsoTextures","_polystyreneLegTextures","_polystyreneSideHead","_polystyreneRearHead","_polystyreneSideTorso","_polystyreneSideLegs"}){
+  foreach(string name in new[]{"_polystyreneTorsoTextures","_polystyreneLegTextures","_polystyreneSideHead","_polystyreneRearHead","_polystyreneSideTorso","_polystyreneSideLegs","_polystyreneRearTorso","_polystyreneRearLegs"}){
    var art=(RobotHeadTexture)Get(name);
    art.Get(materialWorld,0).GetData(firstFlag);
    art.Get(materialWorld,0,true).GetData(secondFlag);
@@ -812,6 +957,33 @@ sealed class GlyphProbe:Game1
   using(var foamFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"foam-glyph.png")))
    globeImage.SaveAsPng(foamFile,960,540);
   Console.WriteLine("PASS full foam shared glyph and front soldier with protected face and alpha.");
+  GraphicsDevice.Clear(new Color(25,36,48));
+  batch.Begin();
+  var materials = Enum.GetValues<RobotMaterial>();
+  for(int column=0;column<materials.Length;column++){
+   var material=materials[column];
+   var sample=foam with { HeadMaterial=material, BodyMaterial=material, LegsMaterial=material };
+   int x=18+column*104;
+   for(int row=0;row<facings.Length;row++){
+    var facing=facings[row];
+    foreach(var role in new[]{BattleRole.Soldier,BattleRole.Captain}){
+     const int portraitWidth=48;
+     int offset=role==BattleRole.Soldier?0:portraitWidth;
+     if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(x+offset,16+row*106,portraitWidth,82),
+       sample,role,facing,role==BattleRole.Soldier,1f})!)
+      throw new Exception($"Missing artwork for {material}, {role}, {facing}");
+    }
+   }
+  }
+  for(int i=0;i<facings.Length;i++)
+   if(!(bool)queen.Invoke(this,new object[]{new Rectangle(18+104*i,441,62,85),facings[i],i%2,1f})!)
+    throw new Exception($"Missing Queen artwork for {facings[i]}");
+  batch.End();
+  GraphicsDevice.GetBackBufferData(globePixels);
+  globeImage.SetData(globePixels);
+  using(var matrix=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"robot-art-matrix.png")))
+   globeImage.SaveAsPng(matrix,960,540);
+  Console.WriteLine("PASS 9 materials × 4 facings × 2 soldier roles, plus 4 Queen facings at 960x540.");
   Exit();
  }
  protected override void UnloadContent(){(Get("_robotHeadTextures") as IDisposable)?.Dispose();batch?.Dispose();pixel?.Dispose();}

@@ -38,8 +38,33 @@ public sealed partial class RobotWorld
         store.Replace(store.Robots.Select(r=>ids.Contains(r.Id)?WithoutRole(r):r).ToArray());SyncWorkers(node);return true;
     }
     private int _workerPlanWorldSeed;
+    private Func<int,NodePurpose> _nodePurpose;
+    internal NodePurpose PurposeAt(int node)=>_nodePurpose?.Invoke(node)??NodePurpose.General;
+
+    internal void ApplyNodePurposeReservations(WorldSetup world)
+    {
+        var manual=world.ManualRulers().ToHashSet();
+        foreach(var node in world.Nodes.All){
+            var role=node.Purpose switch {
+                NodePurpose.Defense=>HangarReservation.Defense,
+                NodePurpose.Frontline=>HangarReservation.Intercept,
+                _=>HangarReservation.None
+            };
+            if(!node.Functional || node.Owner<0 || role==HangarReservation.None)continue;
+            var stock=Nodes[node.Id].Robots.ToArray();
+            var candidates=stock.Where(robot=>robot.Owner==node.Owner && robot.CanFight &&
+                CanShip(node.Id,robot) && CanSetReservation(node.Id,robot,role));
+            if(!manual.Contains(node.Owner)){
+                // Leave the expedition force available for the military planner.
+                if(stock.Any(r=>r.Owner==node.Owner && (r.DefenseOnly || r.InterceptOnly)))continue;
+                candidates=candidates.Take(candidates.Skip(1).Any()?1:0);
+            }
+            foreach(var robot in candidates)ToggleReservation(node.Id,robot.Id,role);
+        }
+    }
     public void ConfigureFactories(WorldSetup world)
     {
+        _nodePurpose=node=>world.Nodes.All[node].Purpose;
         ProductionIntakeEnabled=true;
         IntakeAdjacent=(a,b)=>world.Routes.Neighbors(world.Nodes.All[a]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==b);
         IntakeAllowed=(owner,n)=>world.Nodes.All[n].Functional && world.Relations.Allied(owner,world.Nodes.All[n].Owner);

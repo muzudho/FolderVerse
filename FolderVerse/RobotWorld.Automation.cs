@@ -42,7 +42,7 @@ public sealed partial class RobotWorld
             var choices=line.WorkerSnapshot==null?new[]{0,1,2,7,8}:Enumerable.Range(0,11).Where(i=>i!=3).ToArray();
             if(line.PlanCount>11)choices=choices.Append(11).ToArray();
             int best=choices.OrderByDescending(Score).ThenBy(i=>line.PlanAt(i).Turns).First();
-            if(line.SelectedPlan!=best && (!line.Manufacturing || line.ProductionAge==0) && (!gentle || !changed)){line.SelectPlan(best);changed=true;}
+            if(line.MapleRemaining==0 && line.SelectedPlan!=best && (!line.Manufacturing || line.ProductionAge==0) && (!gentle || !changed)){line.SelectPlan(best);changed=true;}
             bool nearlyFull=usable==0 || (long)occupied*6>=(long)usable*5;
             int every=nearlyFull?1:Math.Clamp(usable-occupied,1,9),rest=nearlyFull?9:1;
             if((line.RestEvery!=every || line.RestTurns!=rest) && (!gentle || !changed)){

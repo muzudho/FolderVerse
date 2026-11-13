@@ -51,7 +51,6 @@ public partial class Game1 : Game
     private static readonly Rectangle StartButton=new(740,884,440,106),ActionButton=new(1360,750,400,90),RetryButton=new(1360,860,400,80),BackButton=new(100,960,320,65),PreviewArea=new(130,240,1120,680),WorldSeedButton=new(520,960,730,65);
     private static readonly Rectangle CastPreview=new(312,292,1296,540),CastBack=new(54,1020,200,50),CastRetry=new(266,1020,240,50),CastAction=new(518,1020,480,50);
     private static Rectangle SeedButton(int index)=>new(1010+index*286,1020,274,50);
-    private static readonly Rectangle EquipmentModeButton=new(1450,76,405,46);
     private bool IsCastScreen=>_screen>=Screen.CastRolling;
     private bool IsRolling=>_screen is Screen.Rolling or Screen.CastRolling or Screen.PlacementRolling;
     private bool HasTerritories=>_screen is Screen.PlacementRolling or Screen.PlacementReview or Screen.Ready;
@@ -134,6 +133,9 @@ public partial class Game1 : Game
         _pointer=CanvasPoint(mouse);_ui.Pointer=_pointer;
         bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
+        if(!active || !IsStatusScreen || !_nodeAssemblyOpen || mouse.RightButton==ButtonState.Released)
+            _hangarPanning=false;
+        if(ComputerManualInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(AutoPauseInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(ComputerExhibition && !_autoPlay)StartAutoPlay();
         if(AutomaticGame)_autoAge+=gameTime.ElapsedGameTime.TotalSeconds;
@@ -149,6 +151,13 @@ public partial class Game1 : Game
         if(!IsOpeningScreen && !_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         if(IsOpeningScreen){OpeningInput(click,enter,escape,gameTime.ElapsedGameTime.TotalSeconds,keyboard);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        // The full-width album covers the map and inspector controls.
+        if(IsStatusScreen && FactoryAlbumOpen)
+        {
+            if(escape)_factoryPlanLine=-1;
+            else if(click)NodeFactoryClick(_pointer);
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
         if(UpdateSubordinateDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) || UpdateComputerDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) ||
             HandleComputerMarches(gameTime,escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -169,6 +178,8 @@ public partial class Game1 : Game
             }else _directDrag=null;
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
+        if(IsStatusScreen && FunctionTransferChoiceInput(_pointer,active && click,active && escape))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _directMap && escape){CloseDirectDelivery();_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && ProductionIntakeInput(active && click,active && escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -231,7 +242,7 @@ public partial class Game1 : Game
         if(IsStatusScreen && active && click && DomesticViewClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && active && click && HangarTrainingNoticeClick(_pointer))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(IsStatusScreen && _populationCell>=0 && _nodeAssemblyOpen && (NodeInspectorBounds.Contains(_pointer) || _hangarDrag.HasValue || escape))
+        if(IsStatusScreen && _populationCell>=0 && _nodeAssemblyOpen && (NodeInspectorBounds.Contains(_pointer) || _hangarDrag.HasValue || _hangarPanning || escape))
         {if(active)NodeAssemblyInput(mouse,click,escape);else _hangarDrag=null;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Pocket)
         {if(active)PocketInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -387,8 +398,6 @@ public partial class Game1 : Game
         else
         {
             if(CastDuplicateInput(click)){}
-            else if(_screen==Screen.CastReview && click && EquipmentModeButton.Contains(_pointer))
-                _setup.EquipmentMode=_setup.EquipmentMode==RobotEquipmentMode.Legacy?RobotEquipmentMode.Materials:RobotEquipmentMode.Legacy;
             else if(click && CastBack.Contains(_pointer)) { _screen=_openingWorldSelected?Screen.OpeningReview:Screen.Review;_openingActive=_openingWorldSelected; _setup.ClearPlacement(); _world.ShowSetup(_setup,false); }
             else if(click && SeedButton(0).Contains(_pointer))_seedDialog.Open(SeedDialog.Target.World,_setup.WorldSeed);
             else if(click && SeedButton(1).Contains(_pointer))_seedDialog.Open(SeedDialog.Target.Cast,_setup.CastSeed);
@@ -482,9 +491,6 @@ public partial class Game1 : Game
         }
         _ui.Text("人間プレイヤー、コンピュータープレイヤー、国旗は後で変えることができます。",new(54,78),.36f,new(170,206,216));
         if(_screen is Screen.CastRolling or Screen.CastReview)_ui.Button(CastDuplicateButton,(_setup.AllowDuplicateCharacters?"✓ ":"□ ")+"同キャラ有り",_setup.AllowDuplicateCharacters?Accent:Muted,.48f);
-        if(_screen==Screen.CastReview)_ui.Button(EquipmentModeButton,
-            _setup.EquipmentMode==RobotEquipmentMode.Materials?"装備数：素材９種":"装備数：旧仕様",
-            _setup.EquipmentMode==RobotEquipmentMode.Materials?Accent:Muted,.48f);
         _ui.Button(CastBack,"世界へ戻る",Muted,0.48f);
         _ui.Button(CastRetry,_screen is Screen.CastRolling or Screen.CastReview?"人物を再抽選":"配置を再抽選",Muted,0.48f);
         string action=IsRolling?"STOP":_screen==Screen.CastReview?"登場人物を確定 / 区画権利へ":_screen==Screen.PlacementReview?"区画権利を確定":"区画権利を確定済み";
@@ -648,6 +654,7 @@ public partial class Game1 : Game
             using var globeClip=new RasterizerState{ScissorTestEnable=true};
             GraphicsDevice.ScissorRectangle=OrientationClip(canvas);
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
+            if(!_reservationDirectory)DrawConquerorResidences(globeClip);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
             if(!_reservationDirectory){if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();}_spriteBatch.End();
         }
@@ -659,10 +666,11 @@ public partial class Game1 : Game
             _net.SelectedCell=_transportOverview || _net.ShowRoutes?-1:_selectedMapCell;
             _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:(_statusCell>=0?_statusCell:_selectedMapCell),_animationTime,false);_ui.Pointer=mapPointer;_spriteBatch.End();
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clipping);
+            if(!_reservationDirectory)DrawConquerorResidences(clipping);
             _net.DrawMapObjects(_ui,_setup,NetPanel,_animationTime);_spriteBatch.End();
         }
         _spriteBatch.Begin(transformMatrix:transform);
-        if(!_reservationDirectory){DrawConquerorResidences();DrawRegionOffice();DrawSalvageMap();}
+        if(!_reservationDirectory){DrawRegionOffice();DrawSalvageMap();}
         _spriteBatch.End();
         if(!MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
@@ -736,7 +744,36 @@ public partial class Game1 : Game
         _polystyreneSideTorso?.EndFrame();
         _polystyreneSideLegs?.EndFrame();
         _polystyreneRearHead?.EndFrame();
+        _polystyreneRearTorso?.EndFrame();
+        _polystyreneRearLegs?.EndFrame();
         _polystyreneHeadTextures?.EndFrame();
+        _softVinylHeadTextures?.EndFrame();
+        _siliconeHeadTextures?.EndFrame();
+        _tinplateHeadTextures?.EndFrame();
+        _tinplateSideHead?.EndFrame();
+        _tinplateSideTorso?.EndFrame();
+        _tinplateSideLegs?.EndFrame();
+        _tinplateRearHead?.EndFrame();
+        _tinplateRearTorso?.EndFrame();
+        _tinplateRearLegs?.EndFrame();
+        _tinplateTorsoTextures?.EndFrame();
+        _tinplateLegTextures?.EndFrame();
+        _siliconeSideHead?.EndFrame();
+        _siliconeSideTorso?.EndFrame();
+        _siliconeSideLegs?.EndFrame();
+        _siliconeRearHead?.EndFrame();
+        _siliconeRearTorso?.EndFrame();
+        _siliconeRearLegs?.EndFrame();
+        _siliconeTorsoTextures?.EndFrame();
+        _siliconeLegTextures?.EndFrame();
+        _softVinylTorsoTextures?.EndFrame();
+        _softVinylLegTextures?.EndFrame();
+        _softVinylSideHead?.EndFrame();
+        _softVinylRearHead?.EndFrame();
+        _softVinylSideTorso?.EndFrame();
+        _softVinylSideLegs?.EndFrame();
+        _softVinylRearTorso?.EndFrame();
+        _softVinylRearLegs?.EndFrame();
         _polystyreneTorsoTextures?.EndFrame();
         _polystyreneLegTextures?.EndFrame();
         _foamHeadTextures?.EndFrame(); _foamTorsoTextures?.EndFrame(); _foamLegTextures?.EndFrame();
@@ -755,6 +792,7 @@ public partial class Game1 : Game
         _sideHead?.EndFrame(); _sideTorso?.EndFrame(); _sideLegs?.EndFrame();
         _rearHead?.EndFrame(); _rearTorso?.EndFrame(); _rearLegs?.EndFrame();
         if(IsOpeningScreen){DrawOpeningFrame(gameTime);base.Draw(gameTime);return;}
+        if(_computerManualOpen){DrawComputerManual();base.Draw(gameTime);return;}
         if(_autoPaused){DrawAutoPause();base.Draw(gameTime);return;}
         _setup.Robots.PartPlanning.Invalidate();
         BeginNewspaperToyPatternFrame();if(!_conquestOverview)NotifyPlayerTurn();
@@ -789,6 +827,12 @@ public partial class Game1 : Game
             }
         }
         if(_seedDialog.IsOpen) { _spriteBatch.Begin(transformMatrix:transform); _seedDialog.Draw(_ui); _spriteBatch.End(); }
+        if (IsStatusScreen && FactoryAlbumOpen)
+        {
+            _spriteBatch.Begin(transformMatrix:transform);
+            DrawFactoryAlbum();
+            _spriteBatch.End();
+        }
         // Read the finished game frame before the save notification is drawn.
         if(_screenshots.CaptureAfterDraw(GraphicsDevice))StartScreenshotFeedback(gameTime.TotalGameTime.TotalSeconds);
         if(_screenshots.MessageSeconds>0)
@@ -826,13 +870,14 @@ public partial class Game1 : Game
         }
         if(IsStatusScreen && !_countrySettingsOpen && (_operationSettingsOpen || _operationSettingsSlide>0)){_spriteBatch.Begin(transformMatrix:transform);DrawOperationSettings();_spriteBatch.End();}
         if(_countrySettingsOpen && IsStatusScreen){_spriteBatch.Begin(transformMatrix:transform);DrawCountrySettings();_spriteBatch.End();}
+        if(IsStatusScreen && _transferChoice!=null){_spriteBatch.Begin(transformMatrix:transform);DrawFunctionTransferChoice();_spriteBatch.End();}
         if(_tutorialCaptiveToastSeconds>0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialCaptiveAchievementToast();_spriteBatch.End();}
         DrawAutoSaveNotice(canvas,transform);
         DrawFullscreenCursor();
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){DisposeBattleToyArt();_robotHeadTextures?.Dispose();_robotHeadTextures=null;_robotTorsoTextures?.Dispose();_robotTorsoTextures=null;_robotLegTextures?.Dispose();_robotLegTextures=null;_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeTutorialPlanets();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_shipmentChime?.Dispose();_seaWave?.Dispose();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){foreach(var art in _maplePackageArt)art?.Dispose();Array.Clear(_maplePackageArt);_sectorChangeArt?.Dispose();_sectorChangeArt=null;DisposeDepartingOpeningPlanet();DisposeBattleToyArt();_robotHeadTextures?.Dispose();_robotHeadTextures=null;_robotTorsoTextures?.Dispose();_robotTorsoTextures=null;_robotLegTextures?.Dispose();_robotLegTextures=null;_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeTutorialPlanets();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_shipmentChime?.Dispose();_seaWave?.Dispose();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         if(disposing){StopBattleMusic();StopIndustryMusic();StopEndingMusic();DisposeTitleMusic();}

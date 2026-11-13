@@ -39,6 +39,8 @@ public sealed partial class RobotWorld
         var next=store.Robots.Where(r=>r.Id!=sourceId && r.Id!=targetId).ToList();
         if(remaining!=0)next.Add(AfterPartEdit(node,source,source.Slice(remaining),false));else CancelRobotWorkOrders(source);
         if(target!=null)destination=AfterPartEdit(node,target,destination,false);
-        next.Add(destination);CancelChangedDeliveries(node,target==null?new[]{source}:new[]{source,target},next);store.Replace(next);SyncWorkers(node);Check();return destination.Id;
+        next.Add(destination);
+        if(store.OccupiedSlots(next)>store.StorageLimit)throw new InvalidOperationException("Hangar is full.");
+        CancelChangedDeliveries(node,target==null?new[]{source}:new[]{source,target},next);store.Replace(next);SyncWorkers(node);Check();return destination.Id;
     }
 }

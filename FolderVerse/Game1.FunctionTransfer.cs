@@ -7,7 +7,7 @@ public partial class Game1
 {
     private static readonly Rectangle FunctionTransferCancel=new(684,889,184,26);
     private bool FunctionTransferOfficeClick(Point local)=>_nodeOfficeOpen && _populationNode>=0 &&
-        DomesticOperationsAllowed && FunctionTransferCancel.Contains(local) && _setup.Campaign.FunctionTransfers.Cancel(_populationNode);
+        DomesticOperationsAllowed && FunctionTransferCancel.Contains(local) && _setup.Relations.Controls(_setup.Nodes.All[_populationNode].Owner) && _setup.Campaign.FunctionTransfers.Cancel(_populationNode);
 
     private void DrawFunctionTransferOffice()
     {

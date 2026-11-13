@@ -51,7 +51,7 @@ public partial class Game1
             }
             if(!VisibleAssemblySlots().Contains(source))
             {
-                var scroll=source<HangarStartSlot?HangarUp:HangarDown;
+                var scroll=ComputerAssemblyScrollButton(source);
                 _pointer=scroll.Center+offset;
                 _computerAssemblyPageAge+=elapsed;
                 if(_computerAssemblyPageAge>=.35)
@@ -77,7 +77,7 @@ public partial class Game1
         }
         if(!VisibleAssemblySlots().Contains(target))
         {
-            var scroll=target<HangarStartSlot?HangarUp:HangarDown;
+            var scroll=ComputerAssemblyScrollButton(target);
             _pointer=scroll.Center+offset;
             _computerAssemblyPageAge+=elapsed;
             UpdateHangarDragScroll(scroll.Center,true,(float)_computerAssemblyPageAge);
@@ -104,6 +104,14 @@ public partial class Game1
         _computerAssemblyIndex++;
         return true;
     }
+    private Rectangle ComputerAssemblyScrollButton(int slot)
+    {
+        int row=slot/HangarGridColumns;
+        if(row<_hangarPage)return HangarUp;
+        if(row>=_hangarPage+HangarZoom.Y)return HangarDown;
+        return slot%HangarGridColumns<_hangarColumn?HangarLeft:HangarRight;
+    }
+
     private const double ComputerDomesticSeconds=5;
     private const double ComputerHangarClickTime=1.55,ComputerCheckClickTime=3.2,ComputerCloseClickTime=4.2;
     private Point ComputerHangarPoint=>NodeAssemblyTile.Center+new Point(NodeInspectorOffset,0);

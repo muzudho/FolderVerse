@@ -50,13 +50,21 @@ sealed class FunctionTransferUi:Game1
         var first=candidates.First(m=>candidates.Any(n=>n.Source==m.Target && n.Target==m.Source && !n.Bounds.Intersects(m.Bounds)));
         Check((bool)Call("MapOverlayClick",first.Bounds.Center,false),"Map arrow responds");
         var orders=w.Campaign.FunctionTransfers.Orders;
+        Check(orders.Count==0 && Get("_transferChoice")!=null,"Arrow opens the modal before reserving");
+        Check((bool)Call("MapOverlayClick",Point.Zero,true) && Get("_transferChoice")==null && orders.Count==0,"Escape cancels only the modal");
+        Call("BuildFunctionTransferMarkers");
+        Call("MapOverlayClick",first.Bounds.Center,false);
+        Call("MapOverlayClick",new Point(960,575),false);
         Check(orders.Count==1 && orders[0].Source==first.Source && orders[0].Target==first.Target,"Arrow reserves the indicated direction");
         Check((bool)Get("_functionTransferMap"),"Reservation leaves the mode open");
         Call("BuildFunctionTransferMarkers");
         var updated=ReadMarkers();
         Check(!updated.Any(m=>!m.Reserved && (m.Source==first.Source || m.Source==first.Target)),"Reserved source and chain directions are removed");
         var second=updated.First(m=>!m.Reserved);
-        Check((bool)Call("MapOverlayClick",second.Bounds.Center,false) && orders.Count==2,"A second arrow can be reserved immediately");
+        w.Nodes.All[second.Source].Purpose=NodePurpose.Relay;
+        Check((bool)Call("MapOverlayClick",second.Bounds.Center,false) && orders.Count==2 &&
+            Get("_transferChoice")==null && !orders.Last().FactoryOnly,"Relay reserves a full transfer directly");
+        w.Nodes.All[second.Source].Purpose=NodePurpose.General;
         Call("BuildFunctionTransferMarkers");
         var document=ReadMarkers().Single(m=>m.Reserved && m.Source==first.Source);
         Check((bool)Call("MapOverlayClick",document.Bounds.Center,false) && orders.Count==1 && orders[0].Source==second.Source,"Document cancels only its reservation");
@@ -96,14 +104,14 @@ sealed class FunctionTransferUi:Game1
         if(frame==3){Call("EndPlannedTurn");Check(w.Robots.Nodes[b].Count==24 && !w.Nodes.All[a].Functional,"Delivery executes the reservation");}
         if(frame==4){Call("FinishTransport");Call("OpenNodeInspector",b);Call("OpenNodeAssembly");Call("UpdateDomesticSlide",1f);}
         if(frame==5){
-            Check((bool)Call("HangarPageClick",new Point(820,275)),"Hangar page selector responds");
-            Call("SyncHangarSlots");Check((int)Get("_hangarPage")==1 && ((long?[])Get("_hangarSlots")).Skip(12).Any(id=>id.HasValue),"Second hangar page exposes merged stock");
+            Check((bool)Call("HangarPageClick",new Point(820,845)),"Hangar down arrow responds");
+            Call("SyncHangarSlots");Check((int)Get("_hangarPage")==1 && ((long?[])Get("_hangarSlots")).Skip(12).Any(id=>id.HasValue),"Scrolling exposes merged stock");
         }
         if(frame==6){Call("OpenNodeFactory");Check((bool)Call("FactoryPageClick",new Point(820,940)),"Factory page selector responds");Check((int)Get("_factoryPage")==1,"Second factory page is reachable");}
         if(frame==7){
             w.Campaign.Advance(w,-1,0,enemies:false);Call("ResetInspector");Call("OpenDirectMap");Call("OpenDirectPair",b,FunctionalDeliveryRoutes.Targets(w,b).First());Call("UpdateDirectPairTransition",.35f);
             var nodes=(int[])Get("_directNodes");int side=Array.IndexOf(nodes,b);Call("DirectPageClick",new Point(500+side*1320,275));
-            Check(((int[])Get("_directPages"))[side]==1,"Direct-delivery inspector exposes merged second page");
+            Check(((int[])Get("_directRow"))[side]==1,"Direct-delivery inspector scrolls to merged stock");
         }
         base.Draw(new GameTime(TimeSpan.FromSeconds(100+frame*10),TimeSpan.Zero));
         var p=GraphicsDevice.PresentationParameters;var colors=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(colors);

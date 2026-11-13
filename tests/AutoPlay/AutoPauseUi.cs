@@ -57,6 +57,11 @@ sealed class AutoPauseUi:Game1
         if(frame==9){
             Click(new(10,10));
             Check(!(bool)Get("_autoPaused") && !(bool)Get("_autoPlay"),"Fortune clicks do not pause AUTO");
+            var mode=w.EquipmentMode;
+            Click(Bounds("EquipmentModeButton").Center);
+            Check(w.EquipmentMode!=mode && Get("_screen").ToString()=="Fortune","Fortune equipment selection must not confirm the world");
+            Click(Bounds("EquipmentModeButton").Center);
+            Check(w.EquipmentMode==mode,"Fortune can restore the previous equipment mode");
             Click(Bounds("FortuneConfirm").Center);
             Check((bool)Get("_autoPlay") && Get("_screen").ToString()=="WorldStatus","Confirming Fortune starts AUTO after world construction");
             Click(new(10,10));Check((bool)Get("_autoPaused"),"AUTO can be paused after world construction");

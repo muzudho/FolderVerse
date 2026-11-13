@@ -9,6 +9,7 @@ public sealed partial class WorldPreview
 {
     private readonly List<VertexPositionColorNormal> _robotPinMesh=new();
     private VertexPositionColorNormal[] _robotPinVertices=Array.Empty<VertexPositionColorNormal>();
+    private const float RobotPinScale=.5f, BatteryPinScale=1f;
     private static readonly int[][] RobotBoxQuads={new[]{0,1,3,2},new[]{4,6,7,5},new[]{0,4,5,1},new[]{2,3,7,6},new[]{0,2,6,4},new[]{1,5,7,3}};
     public float GlobeZoom {get;set;}=1;
     public Vector3? GlobeAnchor {get;set;}
@@ -122,7 +123,8 @@ public sealed partial class WorldPreview
                     var safe=setup.Routes.WhirlpoolCenter(whirl)+away*clearance-center;u=Vector3.Dot(safe,cell.U);v=Vector3.Dot(safe,cell.V);
                 }
                 void RobotBox(float x,float y,float height,float width,float depth,float extent,Color tint,bool damaged=false,int patternOwner=-1)=>
-                    Box(u+(x-u)*.5f,v+(y-v)*.5f,.008f+(height-.008f)*.5f,width*.5f,depth*.5f,extent*.5f,tint,damaged,patternOwner);
+                    Box(u+(x-u)*RobotPinScale,v+(y-v)*RobotPinScale,.008f+(height-.008f)*RobotPinScale,
+                        width*RobotPinScale,depth*RobotPinScale,extent*RobotPinScale,tint,damaged,patternOwner);
                 void Part(RobotParts part,float x,float y,float height,float width,float depth,float extent){
                     var tint=Color.Lerp(Color.White,setup.OwnerColor(robot.Origin(part)),.48f);
                     bool cheap=robot.IsCheap(part),premium=robot.IsPremium(part);
@@ -138,7 +140,8 @@ public sealed partial class WorldPreview
                 void Emblem(RobotParts part,float baseHeight,float depth,float extent){
                     int owner=robot.Origin(part),emblem=setup.CountryEmblem(owner);
                     var ink=net.NodeTint(node.Id,WorldSetup.Colors[setup.CountrySecondaryColor(owner)]);
-                    float side=.042f,front=v+depth*.25f+.002f,h=.008f+(baseHeight-.008f)*.5f+extent*.25f;
+                    float side=.084f*RobotPinScale,front=v+(depth/2+.004f)*RobotPinScale,
+                        h=.008f+(baseHeight-.008f+extent/2)*RobotPinScale;
                     Vector3 P(float px,float py)=>Point(u+(px-.5f)*side,front,h+(.5f-py)*side);
                     foreach(var tile in CountryEmblemArt.Tiles(emblem)){
                         var a=P(tile.X/32f,tile.Y/32f);var b=P(tile.Right/32f,tile.Y/32f);
@@ -164,8 +167,12 @@ public sealed partial class WorldPreview
                 var delta=point-center;int batterySlot=Enumerable.Range(0,ruler).Count(r=>setup.Relations.Powered[r] && setup.Nodes.Current(r)?.Id==node.Id);
                 float u=Vector3.Dot(delta,cell.U)+.32f,v=Vector3.Dot(delta,cell.V)+batterySlot*.13f;
                 batteryV=v;batteryTilt=BatteryTilt(seconds,ruler);
-                Box(u,v,.005f,.09f,.07f,.18f,setup.OwnerColor(ruler));Box(u,v,.185f,.035f,.035f,.018f,new(240,216,147));
-                for(int i=0;i<3;i++)Box(u,v+.038f,.025f+i*.05f,.06f,.009f,.035f,new(45,112,70));
+                void BatteryBox(float offset,float height,float width,float depth,float extent,Color tint)=>
+                    Box(u,v+offset*BatteryPinScale,.005f+height*BatteryPinScale,
+                        width*BatteryPinScale,depth*BatteryPinScale,extent*BatteryPinScale,tint);
+                BatteryBox(0,0,.09f,.07f,.18f,setup.OwnerColor(ruler));
+                BatteryBox(0,.18f,.035f,.035f,.018f,new(240,216,147));
+                for(int i=0;i<3;i++)BatteryBox(.038f,.02f+i*.05f,.06f,.009f,.035f,new(45,112,70));
                 if(bounds.Intersects(panel))net.AddGlobeBatteryBadge(ruler,bounds);
                 batteryTilt=0;
             }

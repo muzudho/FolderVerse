@@ -23,6 +23,7 @@ public partial class Game1
         robotCombat=_setup.Campaign.UseRobotCombat,pocketSelection=_pocketRobot,pocketFromNode=_pocketFromNode,pocketMessage=_pocketMessage,
         transports=_setup.Robots.Transport.LastTransfers.Count,robotPlaying=_robotPlaying,robotResultAge=_robotResultAge,
         directPairOpen=_directPairOpen,directNodes=_directNodes,directMessage=_directMessage,directOrders=_setup.Robots.DirectDelivery.Orders.ToArray(),transportTransfers=_setup.Robots.Transport.LastTransfers.ToArray(),
+        directMaterialDrag=_directMaterialDrag?.Id,mapleShipments=_setup.Robots.MapleShipments.ToArray(),
         partPlans=_setup.Robots.PartPlanning.Orders.ToArray(),partPlanResults=_setup.Robots.PartPlanning.LastResults.ToArray(),
         productionIntakes=_setup.Robots.ProductionIntakes.Select(i=>new{i.Source,i.Target,i.Product.Id,i.Product.Parts,i.Status}).ToArray(),
         salvagePlan=_salvagePlan,salvageItems=_setup.Salvage.Items.Count,salvageAgents=_setup.Salvage.Agents.Select(a=>new{a.Owner,a.Node,a.Destination,a.Status,load=a.Load,a.Paused,a.Policy}).ToArray(),

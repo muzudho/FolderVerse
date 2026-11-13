@@ -9,17 +9,23 @@ public partial class Game1
     private bool _openingActive,_openingTutorial,_openingSkipNarration,_openingWorldSelected;
     private Action _openingFixedStart;
     private double _openingAge;
+    private const double OpeningPlanetInterval = 6;
+    private const double OpeningPlanetFlight = 8;
+    private WorldPreview _departingOpeningPlanet;
     private static readonly Rectangle OpeningNext=new(710,955,500,70),OpeningBack=new(70,965,280,60),OpeningSkip=new(1500,30,350,50);
     private static readonly Rectangle CastDuplicateButton=new(1450,22,405,48);
     private bool IsOpeningScreen=>_screen is Screen.OpeningBook or Screen.OpeningSpace or Screen.OpeningLottery or Screen.OpeningReview ||
         _openingActive && _screen is Screen.PlayerCount or Screen.ComputerPlayerCount;
     private bool OpeningFixed=>_openingTutorial || _openingFixedStart!=null;
-    private float OpeningStarX=>_screen==Screen.OpeningReview?960:_openingAge<2?MathHelper.Lerp(2250,960,(float)(_openingAge/2)):
-        _openingAge<5?MathHelper.Lerp(960,820,(float)((_openingAge-2)/3)):MathHelper.Lerp(820,-650,(float)((_openingAge-5)/3));
+    private float OpeningStarX=>_screen==Screen.OpeningReview?960:OpeningPlanetX(_openingAge);
+    private static float OpeningPlanetX(double age)=>age<2?MathHelper.Lerp(2250,960,(float)(age/2)):
+        age<5?MathHelper.Lerp(960,820,(float)((age-2)/3)):MathHelper.Lerp(820,-650,(float)((age-5)/3));
     private bool OpeningStarSelectable=>OpeningStarX>=400 && OpeningStarX<=1520;
     private void BeginOpening(bool tutorial,Action fixedStart=null)
     {
+        DisposeDepartingOpeningPlanet();
         BeginPlayerCount();_openingActive=true;_openingTutorial=tutorial;_openingFixedStart=fixedStart;
+        if(!tutorial && fixedStart==null)_setup.EquipmentMode=RobotEquipmentMode.Materials;
         _openingSkipNarration=false;_openingAge=0;_titleMenuOpen=_tutorialMenuOpen=_autoPlay=_demoActive=_autoPaused=false;
         _tutorialChromeSlide=0;_tutorialGuideClosing=-1;
         _screen=Screen.OpeningBook;
@@ -58,7 +64,7 @@ public partial class Game1
         }
         if(back){
             if(_screen==Screen.OpeningReview){_screen=Screen.OpeningLottery;_openingAge=2;}
-            else if(_screen==Screen.OpeningLottery){_screen=Screen.ComputerPlayerCount;}
+            else if(_screen==Screen.OpeningLottery){DisposeDepartingOpeningPlanet();_screen=Screen.ComputerPlayerCount;}
             else if(_screen==Screen.OpeningSpace){_screen=OpeningFixed?Screen.OpeningBook:Screen.ComputerPlayerCount;_openingAge=0;}
             else {_openingActive=false;_screen=Screen.Title;}
             return;
@@ -67,11 +73,23 @@ public partial class Game1
             if(_screen==Screen.OpeningBook){if(OpeningFixed)EnterOpeningSpace();else _screen=Screen.PlayerCount;return;}
             if(_screen==Screen.OpeningSpace){if(OpeningFixed)FinishFixedOpening();else BeginOpeningLottery();return;}
             // Commit the planet the player actually saw, before advancing this frame's clock.
-            if(_screen==Screen.OpeningLottery && OpeningStarSelectable){_screen=Screen.OpeningReview;_openingAge=2;return;}
+            if(_screen==Screen.OpeningLottery && OpeningStarSelectable){DisposeDepartingOpeningPlanet();_screen=Screen.OpeningReview;_openingAge=2;return;}
             if(_screen==Screen.OpeningReview){_openingWorldSelected=true;_openingActive=false;BeginCast();return;}
         }
         _openingAge+=Math.Min(.25,elapsed);
-        if(_screen==Screen.OpeningLottery && _openingAge>=8){_openingAge-=8;SetWorldSeed(_random.Next());}
+        if(_screen==Screen.OpeningLottery && _openingAge>=OpeningPlanetInterval)
+        {
+            _openingAge-=OpeningPlanetInterval;
+            var incoming = _departingOpeningPlanet ?? new WorldPreview(GraphicsDevice);
+            _departingOpeningPlanet = _world;
+            _world = incoming;
+            SetWorldSeed(_random.Next());
+        }
+    }
+    private void DisposeDepartingOpeningPlanet()
+    {
+        _departingOpeningPlanet?.Dispose();
+        _departingOpeningPlanet = null;
     }
     private bool CastDuplicateInput(bool click)
     {
@@ -143,9 +161,16 @@ public partial class Game1
         if(_screen is not (Screen.PlayerCount or Screen.ComputerPlayerCount))_ui.Button(OpeningBack,"戻る / Esc",Muted,.55f);
         _spriteBatch.End();
         if(_screen is Screen.OpeningLottery or Screen.OpeningReview){
-            var frame=new Rectangle(canvas.X+(int)((OpeningStarX-480)*canvas.Width/1920f),canvas.Y+(int)(210*canvas.Height/1080f),(int)(960*canvas.Width/1920f),(int)(565*canvas.Height/1080f));
+            double departingAge = _openingAge + OpeningPlanetInterval;
+            if(_screen==Screen.OpeningLottery && _departingOpeningPlanet!=null && departingAge<OpeningPlanetFlight)
+                DrawPlanet(_departingOpeningPlanet, OpeningPlanetX(departingAge), departingAge);
+            DrawPlanet(_world, OpeningStarX, _openingAge);
+        }
+        void DrawPlanet(WorldPreview planet, float x, double age)
+        {
+            var frame=new Rectangle(canvas.X+(int)((x-480)*canvas.Width/1920f),canvas.Y+(int)(210*canvas.Height/1080f),(int)(960*canvas.Width/1920f),(int)(565*canvas.Height/1080f));
             var clipped=Rectangle.Intersect(frame,canvas);
-            if(clipped.Width>0 && clipped.Height>0){GraphicsDevice.Viewport=new Viewport(clipped);_world.Draw(-.55f+(float)_openingAge*.09f,.3f,(float)_openingAge,false,true,frame);GraphicsDevice.Viewport=viewport;}
+            if(clipped.Width>0 && clipped.Height>0){GraphicsDevice.Viewport=new Viewport(clipped);planet.Draw(-.55f+(float)age*.09f,.3f,(float)age,false,true,frame);GraphicsDevice.Viewport=viewport;}
         }
         if(_screenshots.CaptureAfterDraw(GraphicsDevice))StartScreenshotFeedback(time.TotalGameTime.TotalSeconds);
         DrawScreenshotFeedback(time.TotalGameTime.TotalSeconds);DrawFullscreenCursor();

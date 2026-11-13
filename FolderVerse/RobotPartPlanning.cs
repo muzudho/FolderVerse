@@ -12,8 +12,10 @@ public sealed record PlannedPartMove(long Number,int Owner,int Source,int Target
 }
 public sealed record WorkerLaneSettings(int Plan,int RestEvery,int RestTurns,bool DoNotRepeat)
 {
+    public int MapleLoads {get;init;}
     internal void Apply(RobotWorkshop line)
     {
+        if(MapleLoads>0){line.SelectMapleHarvest(MapleLoads);return;}
         if (Plan >= 0 && Plan < line.PlanCount) line.SelectPlan(Plan);
         line.SetRest(RestEvery,RestTurns);
         line.SetDoNotRepeat(DoNotRepeat);
@@ -45,12 +47,12 @@ public sealed class RobotPartPlanning
     internal void SetWorkerLane(long id, RobotWorkshop lane)
     {
         if (WorkerReservation(id) is not { } order) return;
-        Orders[Orders.IndexOf(order)]=order with {WorkerLane=new(lane.SelectedPlan,lane.RestEvery,lane.RestTurns,lane.DoNotRepeat)};
+        Orders[Orders.IndexOf(order)]=order with {WorkerLane=new(lane.SelectedPlan,lane.RestEvery,lane.RestTurns,lane.DoNotRepeat){MapleLoads=lane.MapleRemaining}};
     }
     public RobotWorld Preview(WorldSetup world)
     {
         var hash=new HashCode();hash.Add(world.Population.Turn);hash.Add(world.Campaign.Phase);
-        foreach(var store in world.Robots.Nodes){hash.Add(store.TotalCapacity);hash.Add(store.ReservedReturns);foreach(var robot in store.Robots)hash.Add(robot);}
+        foreach(var store in world.Robots.Nodes){hash.Add(store.TotalCapacity);hash.Add(store.ReservedReturns);foreach(var robot in store.Robots)hash.Add(robot);foreach(var package in store.MaplePackages)hash.Add(package);}
         foreach(var order in world.Campaign.FunctionTransfers.Orders)hash.Add(order);
         foreach(var order in world.Robots.DirectDelivery.Orders)hash.Add(order);
         foreach(var intake in world.Robots.ProductionIntakes)hash.Add(intake);
@@ -63,10 +65,11 @@ public sealed class RobotPartPlanning
         var copy=world.Robots.PlanningCopy();
         var hosts=Enumerable.Range(0,copy.Nodes.Length).ToArray();
         foreach(var order in world.Campaign.FunctionTransfers.Orders){
-            if(!world.Campaign.FunctionTransfers.CanReserve(world,order.Source,order.Target))continue;
+            if(!world.Campaign.FunctionTransfers.CanReserve(world,order.Source,order.Target,order.FactoryOnly))continue;
             int a=order.Source,b=order.Target;
+            if(order.FactoryOnly){NodeFunctionTransfers.MoveFactory(copy,a,b,preview:true);continue;}
             copy.Nodes[b].SetCapacity(copy.Nodes[b].TotalCapacity+copy.Nodes[a].TotalCapacity);
-            copy.Nodes[b].Replace(copy.Nodes[b].Robots.Concat(copy.Nodes[a].Robots));copy.Nodes[a].Replace(Array.Empty<Robot>());copy.Nodes[a].SetCapacity(0);
+            copy.Nodes[b].Replace(copy.Nodes[b].Robots.Concat(copy.Nodes[a].Robots));copy.TransferMapleFunctions(a,b);copy.Nodes[a].Replace(Array.Empty<Robot>());copy.Nodes[a].SetCapacity(0);
             copy.Workshops[b].AbsorbFunctions(copy.Workshops[a]);copy.Workshops[a]=RobotWorkshop.EmptyFunctions();
             for(int n=0;n<hosts.Length;n++)if(hosts[n]==a)hosts[n]=b;
         }
@@ -77,7 +80,7 @@ public sealed class RobotPartPlanning
             copy.DirectDelivery.Orders.Add(order with {Source=a,Target=b});
         }
         var direct=Enumerable.Range(0,copy.Nodes.Length).Select(n=>copy.DirectDelivery.Preview(copy,n)).ToArray();
-        for(int n=0;n<copy.Nodes.Length;n++)if(direct[n].Length<=copy.Nodes[n].StorageLimit)copy.Nodes[n].Replace(direct[n]);
+        for(int n=0;n<copy.Nodes.Length;n++)if(copy.Nodes[n].OccupiedSlots(direct[n])<=copy.Nodes[n].StorageLimit)copy.Nodes[n].Replace(direct[n]);
         copy.DirectDelivery.Orders.Clear();
         PreviewResults.Clear();
         foreach(var order in Orders)try{
@@ -212,19 +215,22 @@ public sealed class RobotPartPlanning
         }
         stores[target].Add(output);
         if(order.PromoteCaptain){stores[target].Remove(output);output=output with {Role=RobotRole.Captain};stores[target].Add(output);}
-        if(Enumerable.Range(0,stores.Length).Any(n=>stores[n].Count>stock.Nodes[n].StorageLimit))throw new InvalidOperationException("入荷先の格納枠が不足しています");
+        if(Enumerable.Range(0,stores.Length).Any(n=>stock.Nodes[n].OccupiedSlots(stores[n])>stock.Nodes[n].StorageLimit))throw new InvalidOperationException("入荷先の格納枠が不足しています");
         for(int n=0;n<stores.Length;n++)stock.Nodes[n].Replace(stores[n]);return output.Id;
     }
     internal void Resolve(WorldSetup world)
     {
         LastResults.Clear();CompletedRobots.Clear();var copy=world.Robots.PlanningCopy();
         var shipments=new List<(RobotShipment,int)>();
+        var releasedWorkers=new List<(int Node,long Id)>();
         long Bind(long id)=>id<0 && !PlannedId(id)?world.Robots.DirectDelivery.CompletedArrivals.GetValueOrDefault(-id,id):id;
         foreach(var planned in Orders){
             var order=planned with {RobotId=Bind(planned.RobotId),TargetRobotId=planned.TargetRobotId.HasValue?Bind(planned.TargetRobotId.Value):null};
             try{
                 int source=Find(copy,order.RobotId);var before=source>=0?copy.Nodes[source].Robots.First(r=>r.Id==order.RobotId):null;
-                Apply(world,copy,order,true);LastResults.Add(new(order.Number,order.Owner,order.Target,"実施完了"));
+                Apply(world,copy,order,true);
+                if(before?.FactoryWorker==true && order.Role!=HangarReservation.None)releasedWorkers.Add((source,before.Id));
+                LastResults.Add(new(order.Number,order.Owner,order.Target,"実施完了"));
                 if(source>=0 && source!=order.Target && before!=null)shipments.Add((new(source,order.Target,order.RobotId,order.Role==HangarReservation.None?order.Parts:before.Parts),order.Owner));
             }
             catch(InvalidOperationException error){LastResults.Add(new(order.Number,order.Owner,order.Target,error.Message));}
@@ -235,6 +241,7 @@ public sealed class RobotPartPlanning
         foreach(var role in Orders.Where(o=>o.Role!=HangarReservation.None && LastResults.Any(r=>r.Number==o.Number && r.Status=="実施完了")))
             world.Campaign.RewriteReservations(m=>m.DeliveryMembers==null?m:m with {DeliveryMembers=m.DeliveryMembers.Select(member=>member.RobotId==role.RobotId && !member.PartNumbers.Contains(role.Number)?member with {Cancelled=true}:member).ToArray()});
         world.Robots.Transport.AppendPlannedTransfers(shipments);
+        foreach(var (node,id) in releasedWorkers)world.Robots.Workshops[node].ForgetWorkerLine(id);
         for(int n=0;n<world.Robots.Nodes.Length;n++)world.Robots.SyncWorkers(n);
         foreach(var order in Orders.Where(o=>o.WorkerLane!=null && WorkerReservation(o.RobotId)==o &&
             LastResults.Any(r=>r.Number==o.Number && r.Status=="実施完了")))

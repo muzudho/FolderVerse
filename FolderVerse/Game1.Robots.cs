@@ -11,15 +11,18 @@ public partial class Game1
     private void DrawRobotGlyph(Rectangle r,int owner,RobotParts parts,bool captain=false,float opacity=1,bool whiteOutline=false,bool damaged=false,bool cheap=false,RobotParts integrated=0,bool premium=false)
         =>DrawRobotGlyph(r,new Robot(0,owner,parts,captain?RobotRole.Captain:RobotRole.Soldier){IntegratedParts=integrated,DamagedParts=damaged?parts:0,CheapParts=cheap?parts:0,PremiumParts=premium?parts:0},whiteOutline,opacity);
     private void DrawRobotGlyph(Rectangle r,Robot robot,bool whiteOutline=false,float opacity=1,Func<RobotParts,float> partOpacity=null)
+        => DrawRobotGlyphCore(r, robot, whiteOutline, opacity, partOpacity, showIntegratedMaterial: false);
+
+    private void DrawRobotGlyphCore(Rectangle r,Robot robot,bool whiteOutline,float opacity,Func<RobotParts,float> partOpacity,bool showIntegratedMaterial)
     {
         // Outline only the exterior, including for translucent reservations and delivery ghosts.
         var shapes=new System.Collections.Generic.List<(Rectangle Bounds,RobotParts Part,bool Face)>();
         void Shape(Rectangle bounds,RobotParts part,bool face=false){if((robot.Parts&part)!=0)shapes.Add((bounds,part,face));}
         bool headBody=(robot.IntegratedParts&robot.Parts)==(RobotParts.Head|RobotParts.Body);
         bool bodyLegs=(robot.IntegratedParts&robot.Parts)==(RobotParts.Body|RobotParts.Legs);
-        bool artHead=HasRobotHeadArt(r,robot);
-        var torsoArt = FindRobotBodyArt(r, robot, RobotParts.Body);
-        var legsArt = FindRobotBodyArt(r, robot, RobotParts.Legs);
+        bool artHead=HasRobotHeadArt(r,robot,showIntegratedMaterial:showIntegratedMaterial);
+        var torsoArt = FindRobotBodyArt(r, robot, RobotParts.Body, showIntegratedMaterial:showIntegratedMaterial);
+        var legsArt = FindRobotBodyArt(r, robot, RobotParts.Legs, showIntegratedMaterial:showIntegratedMaterial);
         bool completeArt = artHead && torsoArt != null && legsArt != null;
         bool HasArt(RobotParts part) => part switch
         {

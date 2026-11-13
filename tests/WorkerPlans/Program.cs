@@ -2,6 +2,40 @@ using FolderVerse;
 if(args.Contains("--ui")){using var game=new WorkerPlansUi();game.Run();return;}
 static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 bool sawMixed=false;var signatures=new HashSet<string>();
+{
+ var(w,node)=Fixture.Create();
+ w.EquipmentMode=RobotEquipmentMode.Materials;
+ w.Robots.ConfigureFactories(w);
+ var worker=w.Robots.Create(0,RobotParts.Complete) with {
+  HeadMaterial=RobotMaterial.Cardboard,BodyMaterial=RobotMaterial.Cardboard,LegsMaterial=RobotMaterial.Tin};
+ var line=Fixture.Appoint(w,node,worker);
+ var catalogue=Fixture.Catalogue(line);
+ Check(catalogue.Any(p=>p.HeadMaterial==RobotMaterial.Cardboard) &&
+       catalogue.Any(p=>p.BodyMaterial==RobotMaterial.Cardboard),"Worker materials influence both matching parts");
+ Check(catalogue.All(p=>p.LegsMaterial!=RobotMaterial.Tin),"Worker cannot manufacture tinplate");
+ Check(catalogue.Any(p=>p.HeadMaterial==null && (p.Product&RobotParts.Head)!=0),"Worker keeps other material choices");
+ var loaded=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
+ loaded.Robots.ConfigureFactories(loaded);
+ Check(Fixture.Catalogue(loaded.Robots.Workshops[node].ProductionLines.Last()).SequenceEqual(catalogue),
+       "Material catalogue survives reload");
+}
+{
+ var(w,node)=Fixture.Create();
+ var factory=w.Robots.Workshops[node];
+ for(int seed=0;factory.BaseLineCount!=0;seed++)factory.GenerateLines(seed);
+ var worker=w.Robots.Create(0,RobotParts.Complete);
+ w.Robots.Nodes[node].Add(worker);
+ using var game=new Game1();
+ const System.Reflection.BindingFlags flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+ typeof(Game1).GetField("_setup",flags)!.SetValue(game,w);
+ typeof(Game1).GetField("_populationNode",flags)!.SetValue(game,node);
+ var canOpen=typeof(Game1).GetProperty("CanOpenNodeFactory",flags)!;
+ Check(!(bool)canOpen.GetValue(game)!,"Factory with no lanes starts disabled");
+ Check(w.Robots.PartPlanning.ReserveRole(w,node,worker.Id,HangarReservation.Worker,0),"Can reserve first worker");
+ Check(factory.ProductionLines.Length==0 && (bool)canOpen.GetValue(game)!,"Pending worker enables the factory tab");
+ typeof(Game1).GetMethod("OpenNodeFactory",flags)!.Invoke(game,null);
+ Check((bool)typeof(Game1).GetField("_nodeFactoryOpen",flags)!.GetValue(game)!,"Factory tab opens before appointment");
+}
 for(int seed=0;seed<24;seed++){
  var(w,node)=Fixture.Create(seed*37+123);var f=w.Robots.Workshops[node];var baseline=Fixture.Catalogue(f);var worker=w.Robots.Create(0,RobotParts.Complete) with {HeadOrigin=1,BodyOrigin=2,CheapParts=RobotParts.Head};
  var line=Fixture.Appoint(w,node,worker);var catalogue=Fixture.Catalogue(line);
@@ -58,6 +92,7 @@ Check(sawMixed && signatures.Count>2,"Mixed quality is represented and world/loc
   if(field.StartsWith("<") && !e.Type.StartsWith("FolderVerse.ProductionPlan,"))continue;e.Fields.Remove(field);
  }
  var restored=AutoSaveStore.Restore<WorldSetup>(legacy);restored.Robots.ConfigureFactories(restored);var upgraded=restored.Robots.Workshops[node].ProductionLines.Last();
+ restored.Robots.ProductionIntakeEnabled=false;
  Check(upgraded.WorkerSnapshot!=null && upgraded.ProductionAge==1 && upgraded.Product==RobotParts.Head && upgraded.ProductionPeriod==4 && upgraded.CurrentProductionPlan.Preview(0).HeadOrigin==0 && upgraded.SelectedPlan==-1,"Old worker lanes gain deterministic choices without changing the in-progress legacy recipe");
  for(int i=0;i<3;i++)restored.Robots.AdvanceIndustry(n=>restored.Nodes.All[n].Owner);
  Check(restored.Robots.Nodes[node].Robots.Any(r=>r.Id!=worker.Id && r.Parts==RobotParts.Head && r.Origin(RobotParts.Head)==0 && r.CheapParts==0),"Legacy in-progress manufacturing completes unchanged");

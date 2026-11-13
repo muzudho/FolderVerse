@@ -34,6 +34,9 @@ public partial class Game1
             (_directNodes[0],_directNodes[1])=(_directNodes[1],_directNodes[0]);
             (_directSlots[0],_directSlots[1])=(_directSlots[1],_directSlots[0]);
             (_directPages[0],_directPages[1])=(_directPages[1],_directPages[0]);
+            (_directZoom[0],_directZoom[1])=(_directZoom[1],_directZoom[0]);
+            (_directColumn[0],_directColumn[1])=(_directColumn[1],_directColumn[0]);
+            (_directRow[0],_directRow[1])=(_directRow[1],_directRow[0]);
         }
     }
     private static readonly Rectangle DirectPairMapBounds=new(600,200,720,690),DirectPairFitButton=new(800,912,320,44);

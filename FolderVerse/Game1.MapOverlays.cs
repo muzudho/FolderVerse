@@ -34,6 +34,7 @@ public partial class Game1
     private bool MapMarkerMenuAvailable=>!_directPairOpen && !_trainingOpen && _supervisorDialog==0 && !_inspectorFoldersOpen && !_salvageAbandonConfirmation.HasValue && !_hangarDrag.HasValue && !_seedDialog.IsOpen;
     private bool MapOverlayClick(Point p,bool escape)
     {
+        if(FunctionTransferChoiceInput(p,!escape,escape))return true;
         if(!escape && TutorialPrimaryActionClick(p))return true;
         if(!MapMarkerMenuAvailable || InspectorVisible)return false;
         if(escape && _functionTransferMap){CloseFunctionTransferMap();return true;}

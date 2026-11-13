@@ -83,8 +83,16 @@ public static class AutoSaveStore
             else if(Collection(type)){var generic=type.GetGenericTypeDefinition();var add=type.GetMethod(generic==typeof(Queue<>)?"Enqueue":"Add");foreach(int id in entry.Items){if(generic==typeof(HashSet<>) && id>=0)Populate(id);add.Invoke(value,new[]{Read(id)});}}
             else foreach(var field in Fields(type)){
                 if(!entry.Fields.TryGetValue(field.Name,out int id)){
-                    if(field.FieldType==typeof(RobotEquipmentMode) || field.FieldType==typeof(RobotMaterial))continue;
-                    if(type==typeof(RobotWorkshop) && field.Name=="_materialCatalogueOffset")continue;
+                    if(type==typeof(ConquestCampaign) && field.Name is "_sectorBaseline" or "_sectorBaselineTurn")continue;
+                    if(field.FieldType==typeof(RobotEquipmentMode) || field.FieldType==typeof(RobotMaterial) ||
+                        type==typeof(ProductionPlan) && field.FieldType==typeof(RobotMaterial?))continue;
+                    if(type==typeof(Node) && field.Name==nameof(Node.Purpose) ||
+                        type==typeof(NodeFunctionTransferOrder) && field.Name=="<FactoryOnly>k__BackingField")continue;
+                    if(type==typeof(RobotWorkshop) && field.Name is "_materialCatalogueOffset" or "_lastEffectiveProductionPeriod")continue;
+                    if(type==typeof(RobotWorkshop) && (field.Name is "<MapleRemaining>k__BackingField" or "<MapleProgress>k__BackingField"))continue;
+                    if(type==typeof(WorkerLaneSettings) && field.Name=="<MapleLoads>k__BackingField")continue;
+                    if(type==typeof(RobotWorld) && (field.Name is "_mapleDeposits" or "_mapleShipments") ||
+                        type==typeof(RobotStore) && field.Name=="_maplePackages")continue;
                     if(type==typeof(LongPartOrder) && field.Name=="<TargetSlot>k__BackingField"){field.SetValue(value,-1);continue;}
                     if(type==typeof(RobotLongDelivery) && field.Name=="_slotArrivals"){field.SetValue(value,new Dictionary<(int,int,int),long>());continue;}
                     if(type==typeof(TerrainRoutes) && field.Name=="_packIce")continue;
@@ -94,7 +102,7 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorld) && field.Name=="<LongDelivery>k__BackingField"){field.SetValue(value,new RobotLongDelivery());continue;}
                     if(type==typeof(Robot) && field.Name is "<ReturnHomeCommander>k__BackingField" or "<ReturnHomeStatus>k__BackingField")continue;
                     if(type==typeof(RobotWorld) && field.Name=="<ReturningRobots>k__BackingField"){field.SetValue(value,new List<ReturningRobot>());continue;}
-                    if(type==typeof(WorldSetup) && field.Name is "_countryPatterns" or "_countrySecondaryColors" or "_countryEmblems" or "_countryFlagShapes" or "_showComputerOperations")continue;
+                    if(type==typeof(WorldSetup) && field.Name is "_countryPatterns" or "_countrySecondaryColors" or "_countryEmblems" or "_countryFlagShapes" or "_showComputerOperations" or "_computerPolicies")continue;
                     if(type==typeof(ConquerorRelations) && field.Name=="<MercyOffers>k__BackingField"){field.SetValue(value,new List<MercyOffer>());continue;}
                     if(type==typeof(ConquerorRelations) && field.Name=="<MercyResults>k__BackingField"){field.SetValue(value,new List<MercyOutcome>());continue;}
                     if(type==typeof(ConquerorRelations) && field.Name=="<EliminationOrders>k__BackingField"){field.SetValue(value,new int[GameLimits.MaxConquerors]);continue;}

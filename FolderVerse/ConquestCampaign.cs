@@ -29,12 +29,14 @@ public sealed partial class ConquestCampaign
         if(party.Length>0)world.SelectTurnRuler(party[0]);
         ComputerLogistics.Plan(world,automaticAll);
         ComputerFunctionTransfers.Plan(world,automaticAll);
+        ComputerNodePurposes.Plan(world,automaticAll);
         if(deferDelivery?.Invoke()==true)return false;
         BeginDelivery(world);
         return true;
     }
     internal void BeginDelivery(WorldSetup world)
     {
+        CaptureSectorBaseline(world);
         LastCancelledWars.Clear();
         FunctionTransfers.Resolve(world);
         world.Robots.ResolveProductionIntakes(world);
@@ -45,13 +47,27 @@ public sealed partial class ConquestCampaign
         world.Robots.Transport.AppendPlannedTransfers(world.Robots.IntakePlayback);
         world.Robots.PartPlanning.Resolve(world);
         world.Robots.LongDelivery.Advance(world);
+        world.Robots.ResolveMapleShipments(world);
         world.Robots.AdvanceReturnHome(world);
         ResolveDeliverySorties(world);
+        world.Robots.ApplyNodePurposeReservations(world);
         Phase=CampaignPhase.Delivery;Report=$"配送 {world.Robots.Transport.LastTransfers.Count} / 配送後に開戦予約を実行";
     }
     public void BeginMilitary()
     {if(Phase!=CampaignPhase.Delivery)throw new InvalidOperationException("Delivery must finish before military orders.");Phase=CampaignPhase.Military;}
     public int[] PreviousNodeOwners {get;private set;}=Array.Empty<int>();
+    private int[] _sectorBaseline;
+    private int _sectorBaselineTurn;
+    private void CaptureSectorBaseline(WorldSetup world)
+    {
+        if(_sectorBaseline!=null && _sectorBaselineTurn==world.Population.Turn)return;
+        _sectorBaselineTurn=world.Population.Turn;
+        _sectorBaseline=world.Relations.ProvisionalRanking(world).OrderBy(rank=>rank.Ruler)
+            .Select(rank=>Math.Max(0,rank.Cells)).ToArray();
+    }
+    internal int SectorChange(WorldSetup world,int ruler,int currentSectors)=>
+        _sectorBaseline!=null && ruler<_sectorBaseline.Length && _sectorBaselineTurn==world.Population.Turn-1
+            ?Math.Max(0,currentSectors)-_sectorBaseline[ruler]:0;
     public bool OwnershipChanged(Node node)=>PreviousNodeOwners!=null && node.Id<PreviousNodeOwners.Length && PreviousNodeOwners[node.Id]!=node.Owner;
     public bool UseRobotCombat {get;set;}=true;
     public RobotCampaign RobotBattles {get;}=new();
@@ -101,7 +117,7 @@ public sealed partial class ConquestCampaign
         // Switching control does not cancel an already chosen march.
         for(int i=_plannedOrders.Count-1;i>=0;i--)if(world.ControllerOf(_plannedOrders[i].Ruler)<0){_partyOrders.Add(_plannedOrders[i]);_plannedOrders.RemoveAt(i);}
     }
-    public void Reset(){SubordinateResults.Clear();LastCancelledWars.Clear();Phase=CampaignPhase.Domestic;FunctionTransfers.Orders.Clear();FunctionTransfers.LastResults.Clear();_domesticSubmitted.Clear();PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
+    public void Reset(){_sectorBaseline=null;SubordinateResults.Clear();LastCancelledWars.Clear();Phase=CampaignPhase.Domestic;FunctionTransfers.Orders.Clear();FunctionTransfers.LastResults.Clear();_domesticSubmitted.Clear();PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
     public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false,
         Func<IReadOnlyList<March>,bool> deferResolution=null,bool allPlanned=false)
     {
@@ -176,6 +192,7 @@ public sealed partial class ConquestCampaign
     }
     public void Resolve(WorldSetup world,IReadOnlyList<March> orders)
     {
+        CaptureSectorBaseline(world);
         PreviousNodeOwners=world.Nodes.All.Select(n=>n.Owner).ToArray();
         if(UseRobotCombat)
         {

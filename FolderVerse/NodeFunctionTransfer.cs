@@ -5,6 +5,7 @@ using System.Linq;
 
 public sealed record NodeFunctionTransferOrder(int Source,int Target,int Owner)
 {
+    public bool FactoryOnly {get;init;}
     public string Status {get;set;}="予約";
 }
 public sealed class NodeFunctionTransfers
@@ -14,18 +15,29 @@ public sealed class NodeFunctionTransfers
     public List<NodeFunctionTransferOrder> Orders {get;}=new();
     public List<NodeFunctionTransferOrder> LastResults {get;}=new();
     public bool Cancel(int source)=>Orders.RemoveAll(o=>o.Source==source)>0;
-    public bool CanReserve(WorldSetup w,int source,int target)
-        =>Available(w,source,target,true);
+    public bool CanReserve(WorldSetup w,int source,int target,bool factoryOnly=false)
+        =>Available(w,source,target,true,factoryOnly);
     internal IEnumerable<int> ValidSources(WorldSetup w)=>Orders
-        .Where(o=>Available(w,o.Source,o.Target,false) && w.Nodes.All[o.Source].Owner==o.Owner)
+        .Where(o=>!o.FactoryOnly && Available(w,o.Source,o.Target,false,false) && w.Nodes.All[o.Source].Owner==o.Owner)
         .Select(o=>o.Source);
-    private bool Available(WorldSetup w,int source,int target,bool authority)
+    private bool Available(WorldSetup w,int source,int target,bool authority,bool factoryOnly)
     {
         if(w.Campaign.Phase!=CampaignPhase.Domestic || source<0 || target<0 || source>=w.Nodes.All.Length || target>=w.Nodes.All.Length || source==target)return false;
         var a=w.Nodes.All[source];var b=w.Nodes.All[target];var battles=w.Campaign.RobotBattles;
         long capacity=(long)w.Robots.Nodes[target].TotalCapacity+w.Robots.Nodes[source].TotalCapacity+
-            Orders.Where(o=>o.Source!=source && o.Target==target).Sum(o=>(long)w.Robots.Nodes[o.Source].TotalCapacity);
-        if(capacity>MaximumCapacity)return false;
+            Orders.Where(o=>!o.FactoryOnly && o.Source!=source && o.Target==target).Sum(o=>(long)w.Robots.Nodes[o.Source].TotalCapacity);
+        if(b.Purpose==NodePurpose.Relay || factoryOnly && a.Purpose==NodePurpose.Relay)return false;
+        if(factoryOnly){
+            var robots=w.Robots;
+            var workers=robots.Nodes[source].Robots.Where(r=>r.FactoryWorker).ToArray();
+            var incomingWorkers=Orders.Where(o=>o.FactoryOnly && o.Source!=source && o.Target==target)
+                .SelectMany(o=>robots.Nodes[o.Source].Robots.Where(r=>r.FactoryWorker));
+            if(robots.Workshops[source].LineLimit==0 ||
+               workers.Any(r=>robots.PartPlanning.ReservesRobot(r.Id) || robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id))) ||
+               robots.Nodes[target].OccupiedSlots(robots.Nodes[target].Robots.Concat(workers).Concat(incomingWorkers))>
+               robots.Nodes[target].StorageLimit-robots.Workshops[target].ReservedSlots)return false;
+        }
+        else if(capacity>MaximumCapacity)return false;
         return a.Functional && b.Functional && (!authority || w.Relations.Controls(a.Owner) && w.Relations.Controls(b.Owner)) && w.Relations.Allied(a.Owner,b.Owner) &&
             !battles.LockedNode(source) && !battles.LockedNode(target) && !battles.LockedEdge(source,target) &&
             w.Robots.Nodes[source].ReservedReturns==0 && w.Robots.Nodes[target].ReservedReturns==0 &&
@@ -33,33 +45,50 @@ public sealed class NodeFunctionTransfers
             !Orders.Any(o=>o.Source!=source && (o.Source==target || o.Target==source)) &&
             w.Routes.Neighbors(a).Any(r=>w.Nodes.At(r.Target,r.Entry).Id==target);
     }
-    public void Reserve(WorldSetup w,int source,int target)
+    public void Reserve(WorldSetup w,int source,int target,bool factoryOnly=false)
     {
-        if(!CanReserve(w,source,target))throw new InvalidOperationException("Function transfer unavailable.");
-        Cancel(source);Orders.Add(new(source,target,w.Nodes.All[source].Owner));
+        if(!CanReserve(w,source,target,factoryOnly))throw new InvalidOperationException("Function transfer unavailable.");
+        Cancel(source);Orders.Add(new(source,target,w.Nodes.All[source].Owner){FactoryOnly=factoryOnly});
     }
     internal bool ReserveComputer(WorldSetup w,int source,int target,int owner)
     {
-        if(w.Nodes.All[source].Owner!=owner || w.Nodes.All[target].Owner!=owner || !Available(w,source,target,false))return false;
+        if(w.Nodes.All[source].Owner!=owner || w.Nodes.All[target].Owner!=owner || !Available(w,source,target,false,false))return false;
         Orders.Add(new(source,target,owner));return true;
+    }
+    internal static void MoveFactory(RobotWorld robots,int source,int target,bool preview=false)
+    {
+        var from=robots.Nodes[source];var to=robots.Nodes[target];
+        var workers=from.Robots.Where(r=>r.FactoryWorker).ToArray();
+        to.Replace(to.Robots.Concat(workers.Select(r=>r with {FunctionDisplayNode=r.FunctionDisplayNode??source})));
+        from.Replace(from.Robots.Where(r=>!r.FactoryWorker));
+        robots.Workshops[source].MoveProductionTo(robots.Workshops[target],preview?null:source);
     }
     internal void Resolve(WorldSetup w)
     {
         LastResults.Clear();
         foreach(var order in Orders.ToArray()){
-            if(w.Nodes.All[order.Source].Owner!=order.Owner || !Available(w,order.Source,order.Target,false)){
+            if(w.Nodes.All[order.Source].Owner!=order.Owner || !Available(w,order.Source,order.Target,false,order.FactoryOnly)){
                 Orders.Remove(order);LastResults.Add(order with {Status="移転失敗"});continue;
             }
             int a=order.Source,b=order.Target,offset=w.Robots.Nodes[b].TotalCapacity;
             var source=w.Robots.Nodes[a];var target=w.Robots.Nodes[b];
+            if(order.FactoryOnly){
+                MoveFactory(w.Robots,a,b);
+                w.Nodes.All[a].Purpose=NodePurpose.Relay;
+                Orders.Remove(order);LastResults.Add(order with {Status="工場移転完了"});
+                w.Robots.SyncWorkers(b);
+                continue;
+            }
             target.SetCapacity(checked(offset+source.TotalCapacity));
             target.Replace(target.Robots.Concat(source.Robots.Select(r=>(r.DefenseOnly?r.WithoutDefenseReservation():r) with {FunctionDisplayNode=r.FunctionDisplayNode??a})).ToArray());
+            w.Robots.TransferMapleFunctions(a,b);
             source.Replace(Array.Empty<Robot>());source.SetCapacity(0);
             w.Robots.Workshops[a].PreserveFunctionOrigin(a);w.Robots.Workshops[b].PreserveFunctionOrigin(b);
             w.Robots.Workshops[b].AbsorbFunctions(w.Robots.Workshops[a]);
             w.Robots.Workshops[a]=RobotWorkshop.EmptyFunctions();
             w.Nodes.All[b].FunctionUnits=checked(w.Nodes.All[b].FunctionUnits+w.Nodes.All[a].FunctionUnits);w.Nodes.All[a].FunctionUnits=0;
             foreach(var node in w.Nodes.All)if(node.FunctionHost==a)node.FunctionHost=b;
+            w.Nodes.All[a].Purpose=NodePurpose.General;
             w.Nodes.All[a].FunctionHost=b;w.Nodes.All[b].FunctionHost=-1;
             for(int i=0;i<w.Robots.PendingEdits.Count;i++)if(w.Robots.PendingEdits[i].Node==a)w.Robots.PendingEdits[i]=w.Robots.PendingEdits[i] with {Node=b};
             w.Robots.DirectDelivery.RelocateNode(a,b,offset);

@@ -12,6 +12,14 @@ public sealed partial class RobotWorkshop
     public bool Paused {get;set;}
     public bool DoNotRepeat {get;private set;}
     public bool CycleFinished {get;private set;}
+    public int MapleRemaining {get;private set;}
+    public int MapleProgress {get;private set;}
+    public void SelectMapleHarvest(int loads)
+    {
+        if(loads is <1 or >3)throw new ArgumentOutOfRangeException(nameof(loads));
+        SelectPlan(3);
+        MapleRemaining=loads;MapleProgress=0;Paused=false;
+    }
     public void SetDoNotRepeat(bool value)
     {
         DoNotRepeat=value;
@@ -35,14 +43,26 @@ public sealed partial class RobotWorkshop
         if(SupervisorLeaveRemaining>0 && --SupervisorLeaveRemaining==0)Automation=SupervisorReturnPolicy;
     }
     public bool AutoAssemblyDisabled {get;set;}
-    public bool Waiting=>Manufacturing && ProductionAge>=ProductionPeriod;
+    private int? _lastEffectiveProductionPeriod;
+    public bool Waiting=>Manufacturing && ProductionAge>=(_lastEffectiveProductionPeriod??ProductionPeriod);
+    internal static int PurposeDuration(int units,NodePurpose purpose,bool harvest)
+    {
+        int rate=purpose switch {
+            NodePurpose.Harvest=>harvest?9:11,
+            NodePurpose.Manufacturing=>harvest?11:9,
+            _=>10
+        };
+        return (int)Math.Max(1,((long)units*rate+5)/10);
+    }
+    internal int EffectiveProductionPeriod(NodePurpose purpose)=>PurposeDuration(ProductionPeriod,purpose,false);
+    internal int EffectiveHarvestPeriod(NodePurpose purpose)=>PurposeDuration(MapleRemaining*IndustryTime.UnitsPerTurn,purpose,true);
     public int WaitingProductionTurns {get;private set;}
     public int DisposalPeriod {get;private set;}
     public bool HasDisposalFactory {get;private set;}
     public int DisposalAge {get;private set;}
     public long? DisposalTarget {get;private set;}
     public void Configure(RobotParts product,int period)
-    {RobotWorld.Validate(0,product);if(period<1)throw new ArgumentOutOfRangeException(nameof(period));Product=product;_selectedProductPlan=null;CheapProduct=false;IntegratedProduct=0;ProductionPeriod=period;ProductionAge=WaitingProductionTurns=0;Manufacturing=true;CycleFinished=false;SelectedPlan=-1;RestEnabled=false;RestRemaining=ProducedSinceRest=0;}
+    {RobotWorld.Validate(0,product);if(period<1)throw new ArgumentOutOfRangeException(nameof(period));MapleRemaining=MapleProgress=0;Product=product;_selectedProductPlan=null;CheapProduct=false;IntegratedProduct=0;ProductionPeriod=period;ProductionAge=WaitingProductionTurns=0;_lastEffectiveProductionPeriod=null;Manufacturing=true;CycleFinished=false;SelectedPlan=-1;RestEnabled=false;RestRemaining=ProducedSinceRest=0;}
     public void Dispose(RobotStore store,long id)
     {if(store.Robots.Single(r=>r.Id==id).Stationed)throw new InvalidOperationException("Stationed robot is locked.");if(DisposalTarget.HasValue)throw new InvalidOperationException("Disposal lane is busy.");if(!HasDisposalFactory)throw new InvalidOperationException("This node has no disposal factory.");int duration=DisposalTurns(store.Robots.Single(r=>r.Id==id).Parts);if(duration<1 || !store.Robots.Any(r=>r.Id==id))throw new ArgumentException("Invalid disposal order.");DisposalTarget=id;DisposalAge=0;DisposalPeriod=duration;}
     public void ConfigureDisposal()
@@ -74,14 +94,33 @@ public sealed partial class RobotWorkshop
     {
         foreach(var line in ProductionLines){line.CompleteSingleProduction(world,node,owner,ReservedSlots);}
     }
+    public bool WaitingForMaple(RobotWorld world,int node)=>world.MapleSupplyEnabled && Manufacturing &&
+        !Paused && !CycleFinished && RestRemaining==0 && RobotWorld.MapleCost(CurrentProductionPlan.Preview(0))>world.AvailableMaple(node);
     private void CompleteSingleProduction(RobotWorld world,int node,int owner,int reservedSlots)
     {
+        var purpose=world.PurposeAt(node);
+        if(MapleRemaining>0)
+        {
+            if(Paused || owner<0 || !world.CanHarvestMaple(node,MapleRemaining))return;
+            if(++MapleProgress>=EffectiveHarvestPeriod(purpose) && world.HarvestMaple(node,MapleRemaining)){
+                MapleRemaining=0;MapleProgress=0;
+            }
+            return;
+        }
         if(!Manufacturing || Paused || CycleFinished || owner<0)return;
         if(RestEnabled && RestRemaining>0){if(--RestRemaining==0 && DoNotRepeat)CycleFinished=true;return;}
-        ProductionAge=Math.Min(ProductionPeriod,ProductionAge+1);
+        if(WaitingForMaple(world,node))return;
+        int period=EffectiveProductionPeriod(purpose);
+        _lastEffectiveProductionPeriod=period;
+        ProductionAge=ProductionAge>=period?period:ProductionAge+1;
         if(!Waiting)return;
         var product=CurrentProductionPlan.Preview(owner) with {FunctionDisplayNode=FunctionOriginNode};
+        int cost=world.MapleSupplyEnabled?RobotWorld.MapleCost(product):0;
+        var store=world.Nodes[node];
+        var before=cost>0?store.MaplePackages.ToArray():null;
+        if(cost>0)world.SpendMaple(node,cost);
         if(!(world.ProductionIntakeEnabled?world.QueueProduction(this,node,owner,product,reservedSlots):world.TryStoreProduction(node,owner,product,reservedSlots))){
+            if(before!=null)store.SetMaplePackages(before);
             if(WaitingProductionTurns<int.MaxValue)WaitingProductionTurns++;
             return;
         }

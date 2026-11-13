@@ -126,10 +126,17 @@ public partial class Game1
 
     private bool DrawOrientedRobotArt(Rectangle area, Robot robot, bool rear, bool west, float opacity)
     {
+        bool tinplateTorso = UsesTinplateArt(robot, RobotParts.Body);
+        bool tinplateLegs = UsesTinplateArt(robot, RobotParts.Legs);
+        bool tinplate = UsesTinplateHeadArt(robot);
+        bool siliconeTorso = UsesSiliconeArt(robot, RobotParts.Body);
+        bool siliconeLegs = UsesSiliconeArt(robot, RobotParts.Legs);
+        bool silicone = UsesSiliconeHeadArt(robot);
+        bool vinylTorso = UsesSoftVinylArt(robot, RobotParts.Body);
+        bool vinylLegs = UsesSoftVinylArt(robot, RobotParts.Legs);
+        bool softVinyl = UsesSoftVinylHeadArt(robot);
         bool polystyreneTorso = UsesPolystyreneArt(robot, RobotParts.Body);
         bool polystyreneLegs = UsesPolystyreneArt(robot, RobotParts.Legs);
-        if (rear && (polystyreneTorso || polystyreneLegs))
-            return false;
         bool polystyrene = UsesPolystyreneHeadArt(robot);
         bool foamTorso = UsesFoamArt(robot, RobotParts.Body);
         bool foamLegs = UsesFoamArt(robot, RobotParts.Legs);
@@ -148,14 +155,21 @@ public partial class Game1
         bool mapleLegs = UsesMapleArt(robot, RobotParts.Legs);
         if (rear)
         {
-            var head = polystyrene ? _polystyreneRearHead ??= LoadPolystyreneArt("head", RobotParts.Head, new(.50f,.46f,.13f,.17f), BattleFacing.North)
+            var head = tinplate ? _tinplateRearHead ??= LoadTinplateArt("head", RobotParts.Head, new(.53f,.49f,.13f,.16f), BattleFacing.North)
+                : silicone ? _siliconeRearHead ??= LoadSiliconeArt("head", RobotParts.Head, new(.52f,.50f,.12f,.15f), BattleFacing.North)
+                : softVinyl ? _softVinylRearHead ??= LoadSoftVinylArt("head", RobotParts.Head, new(.52f,.49f,.12f,.15f), BattleFacing.North)
+                : polystyrene ? _polystyreneRearHead ??= LoadPolystyreneArt("head", RobotParts.Head, new(.50f,.46f,.13f,.17f), BattleFacing.North)
                 : foam ? _foamRearHead ??= LoadFoamArt("head", RobotParts.Head, new(.52f,.49f,.14f,.18f), BattleFacing.North)
                 : cardboard
                 ? _cardboardRearHead ??= LoadCardboardArt("head", RobotParts.Head, new(.54f,.53f,.13f,.16f), BattleFacing.North)
                 : paper ? _paperRearHead ??= LoadOrientedPaperArt("head-back", RobotParts.Head, BattleFacing.North, new(.56f,.55f,.10f,.13f)) : maple
                 ? _mapleRearHead ??= LoadOrientedRobotArt("head-back", new(.20f, .15f, .61f, .72f), new(.50f, .54f, .15f, .19f), maplePart: RobotParts.Head)
                 : _rearHead ??= LoadOrientedRobotArt("head-back", new(.06f, .15f, .86f, .71f), new(.48f, .56f, .16f, .18f));
-            var torso = foamTorso
+            var torso = tinplateTorso ? _tinplateRearTorso ??= LoadTinplateArt("torso", RobotParts.Body, new(.42f,.42f,.16f,.19f), BattleFacing.North)
+                : siliconeTorso ? _siliconeRearTorso ??= LoadSiliconeArt("torso", RobotParts.Body, new(.44f,.46f,.12f,.16f), BattleFacing.North)
+                : vinylTorso ? _softVinylRearTorso ??= LoadSoftVinylArt("torso", RobotParts.Body, new(.44f,.46f,.12f,.16f), BattleFacing.North)
+                : polystyreneTorso ? _polystyreneRearTorso ??= LoadPolystyreneArt("torso", RobotParts.Body, new(.52f,.45f,.13f,.17f), BattleFacing.North)
+                : foamTorso
                 ? _foamRearTorso ??= LoadFoamArt("torso", RobotParts.Body, new(.41f,.44f,.14f,.18f), BattleFacing.North)
                 : cardboardTorso
                 ? _cardboardRearTorso ??= LoadCardboardArt("torso", RobotParts.Body, new(.44f,.43f,.15f,.18f), BattleFacing.North)
@@ -164,7 +178,11 @@ public partial class Game1
                 : mapleTorso
                 ? _mapleRearTorso ??= LoadOrientedRobotArt("torso-back", new(.06f, .13f, .86f, .78f), new(.42f, .40f, .16f, .20f), maplePart: RobotParts.Body)
                 : _rearTorso ??= LoadOrientedRobotArt("torso-back", new(128f/1536, 128f/1024, 1272f/1536, 800f/1024), new(.42f, .40f, .16f, .20f));
-            var legs = foamLegs
+            var legs = tinplateLegs ? _tinplateRearLegs ??= LoadTinplateArt("legs", RobotParts.Legs, new(.59f,.73f,.13f,.13f), BattleFacing.North)
+                : siliconeLegs ? _siliconeRearLegs ??= LoadSiliconeArt("legs", RobotParts.Legs, new(.59f,.72f,.11f,.12f), BattleFacing.North)
+                : vinylLegs ? _softVinylRearLegs ??= LoadSoftVinylArt("legs", RobotParts.Legs, new(.59f,.72f,.11f,.12f), BattleFacing.North)
+                : polystyreneLegs ? _polystyreneRearLegs ??= LoadPolystyreneArt("legs", RobotParts.Legs, new(.64f,.46f,.09f,.12f), BattleFacing.North)
+                : foamLegs
                 ? _foamRearLegs ??= LoadFoamArt("legs", RobotParts.Legs, new(.59f,.49f,.085f,.13f), BattleFacing.North)
                 : cardboardLegs
                 ? _cardboardRearLegs ??= LoadCardboardArt("legs", RobotParts.Legs, new(.60f,.50f,.09f,.14f), BattleFacing.North)
@@ -175,20 +193,26 @@ public partial class Game1
                 : _rearLegs ??= LoadOrientedRobotArt("legs-back", new(240f/1536, 104f/1024, 1048f/1536, 832f/1024), new(.59f, .64f, .14f, .19f));
             if (head == null || torso == null || legs == null)
                 return false;
-            Draw(legs, RobotParts.Legs, foamLegs ? new(57,32,140,191) : cardboardLegs ? new(56,35,145,185) : paperLegs ? new(58,38,140,182) : mapleLegs ? new(40, 26, 176, 209) : new(40, 26, 175, 208), 102, 58, 48);
-            Draw(torso, RobotParts.Body, foamTorso ? new(15,47,224,160) : cardboardTorso ? new(14,50,229,157) : paperTorso ? new(18,57,220,145) : mapleTorso ? new(14, 32, 224, 201) : new(21, 32, 213, 200), 54, 84, 54);
-            Draw(head, RobotParts.Head, polystyrene ? new(36,26,184,201) : foam ? new(43,29,170,194) : cardboard ? new(39,25,178,201) : paper ? new(49, 37, 158, 184) : maple ? new(49, 35, 160, 190) : new(16, 38, 220, 180), 0, 72, 59);
+            Draw(legs, RobotParts.Legs, tinplateLegs ? new(41,21,173,213) : siliconeLegs ? new(41,27,173,211) : vinylLegs ? new(38,28,180,206) : polystyreneLegs ? new(38,23,181,217) : foamLegs ? new(57,32,140,191) : cardboardLegs ? new(56,35,145,185) : paperLegs ? new(58,38,140,182) : mapleLegs ? new(40, 26, 176, 209) : new(40, 26, 175, 208), 102, 58, 48);
+            Draw(torso, RobotParts.Body, tinplateTorso ? new(20,33,216,192) : siliconeTorso ? new(19,31,217,202) : vinylTorso ? new(16,39,224,185) : polystyreneTorso ? new(12,31,232,189) : foamTorso ? new(15,47,224,160) : cardboardTorso ? new(14,50,229,157) : paperTorso ? new(18,57,220,145) : mapleTorso ? new(14, 32, 224, 201) : new(21, 32, 213, 200), 54, 84, 54);
+            Draw(head, RobotParts.Head, tinplate ? new(38,21,178,206) : silicone ? new(47,31,162,194) : softVinyl ? new(47,35,160,190) : polystyrene ? new(36,26,184,201) : foam ? new(43,29,170,194) : cardboard ? new(39,25,178,201) : paper ? new(49, 37, 158, 184) : maple ? new(49, 35, 160, 190) : new(16, 38, 220, 180), 0, 72, 59);
         }
         else
         {
-            var head = polystyrene ? _polystyreneSideHead ??= LoadPolystyreneArt("head", RobotParts.Head, new(.50f,.46f,.13f,.17f), BattleFacing.East)
+            var head = tinplate ? _tinplateSideHead ??= LoadTinplateArt("head", RobotParts.Head, new(.46f,.49f,.13f,.16f), BattleFacing.East)
+                : silicone ? _siliconeSideHead ??= LoadSiliconeArt("head", RobotParts.Head, new(.54f,.53f,.12f,.15f), BattleFacing.East)
+                : softVinyl ? _softVinylSideHead ??= LoadSoftVinylArt("head", RobotParts.Head, new(.54f,.54f,.12f,.15f), BattleFacing.East)
+                : polystyrene ? _polystyreneSideHead ??= LoadPolystyreneArt("head", RobotParts.Head, new(.50f,.46f,.13f,.17f), BattleFacing.East)
                 : foam ? _foamSideHead ??= LoadFoamArt("head", RobotParts.Head, new(.50f,.48f,.14f,.18f), BattleFacing.East)
                 : cardboard
                 ? _cardboardSideHead ??= LoadCardboardArt("head", RobotParts.Head, new(.53f,.53f,.13f,.16f), BattleFacing.East)
                 : paper ? _paperSideHead ??= LoadOrientedPaperArt("head-side", RobotParts.Head, BattleFacing.East, new(.56f,.55f,.10f,.13f)) : maple
                 ? _mapleSideHead ??= LoadOrientedRobotArt("head-side", new(.17f, .10f, .49f, .78f), new(.42f, .55f, .15f, .19f), maplePart: RobotParts.Head)
                 : _sideHead ??= LoadOrientedRobotArt("head-side", new(.06f, .15f, .86f, .71f), new(.48f, .56f, .16f, .18f), new(.765f, .374f, .19f, .35f));
-            var torso = polystyreneTorso ? _polystyreneSideTorso ??= LoadPolystyreneArt("torso", RobotParts.Body, new(.33f,.45f,.10f,.17f), BattleFacing.East)
+            var torso = tinplateTorso ? _tinplateSideTorso ??= LoadTinplateArt("torso", RobotParts.Body, new(.36f,.41f,.13f,.17f), BattleFacing.East)
+                : siliconeTorso ? _siliconeSideTorso ??= LoadSiliconeArt("torso", RobotParts.Body, new(.37f,.46f,.12f,.16f), BattleFacing.East)
+                : vinylTorso ? _softVinylSideTorso ??= LoadSoftVinylArt("torso", RobotParts.Body, new(.47f,.47f,.11f,.15f), BattleFacing.East)
+                : polystyreneTorso ? _polystyreneSideTorso ??= LoadPolystyreneArt("torso", RobotParts.Body, new(.33f,.45f,.10f,.17f), BattleFacing.East)
                 : foamTorso ? _foamSideTorso ??= LoadFoamArt("torso", RobotParts.Body, new(.54f,.44f,.13f,.17f), BattleFacing.East)
                 : cardboardTorso
                 ? _cardboardSideTorso ??= LoadCardboardArt("torso", RobotParts.Body, new(.34f,.45f,.15f,.18f), BattleFacing.East)
@@ -196,7 +220,10 @@ public partial class Game1
                 ? _paperSideTorso ??= LoadOrientedPaperArt("torso-side", RobotParts.Body, BattleFacing.East, new(.33f,.49f,.14f,.20f))
                 : mapleTorso ? _mapleSideTorso ??= LoadOrientedRobotArt("torso-side", new(.25f, .13f, .50f, .78f), new(.33f, .53f, .12f, .18f), maplePart: RobotParts.Body)
                 : _sideTorso ??= LoadOrientedRobotArt("torso-side", new(424f/1536, 136f/1024, 696f/1536, 792f/1024), new(.32f, .52f, .11f, .17f));
-            var legs = polystyreneLegs ? _polystyreneSideLegs ??= LoadPolystyreneArt("legs", RobotParts.Legs, new(.35f,.44f,.09f,.12f), BattleFacing.East)
+            var legs = tinplateLegs ? _tinplateSideLegs ??= LoadTinplateArt("legs", RobotParts.Legs, new(.37f,.75f,.12f,.13f), BattleFacing.East)
+                : siliconeLegs ? _siliconeSideLegs ??= LoadSiliconeArt("legs", RobotParts.Legs, new(.39f,.71f,.11f,.13f), BattleFacing.East)
+                : vinylLegs ? _softVinylSideLegs ??= LoadSoftVinylArt("legs", RobotParts.Legs, new(.37f,.72f,.10f,.12f), BattleFacing.East)
+                : polystyreneLegs ? _polystyreneSideLegs ??= LoadPolystyreneArt("legs", RobotParts.Legs, new(.35f,.44f,.09f,.12f), BattleFacing.East)
                 : foamLegs ? _foamSideLegs ??= LoadFoamArt("legs", RobotParts.Legs, new(.35f,.51f,.09f,.12f), BattleFacing.East)
                 : cardboardLegs
                 ? _cardboardSideLegs ??= LoadCardboardArt("legs", RobotParts.Legs, new(.30f,.56f,.12f,.10f), BattleFacing.East)
@@ -206,9 +233,9 @@ public partial class Game1
                 : _sideLegs ??= LoadOrientedRobotArt("legs-side", new(288f/1312, 120f/1199, 712f/1312, 960f/1199), new(.36f, .72f, .17f, .15f));
             if (head == null || torso == null || legs == null)
                 return false;
-            Draw(legs, RobotParts.Legs, polystyreneLegs ? new(51,25,144,207) : foamLegs ? new(66,41,122,185) : cardboardLegs ? new(39,29,166,187) : paperLegs ? new(53,32,140,172) : mapleLegs ? new(55, 29, 140, 183) : new(55, 25, 141, 205), 103, 35, 47);
-            Draw(torso, RobotParts.Body, polystyreneTorso ? new(66,28,114,205) : foamTorso ? new(53,44,132,169) : cardboardTorso ? new(29,37,199,177) : paperTorso ? new(30,37,196,179) : mapleTorso ? new(62, 32, 133, 201) : new(70, 34, 117, 198), 53, 46, 55);
-            Draw(head, RobotParts.Head, polystyrene ? new(42,26,171,201) : foam ? new(43,25,162,204) : cardboard ? new(42,25,169,202) : paper ? new(47, 25, 158, 201) : maple ? new(40, 24, 170, 207) : new(15, 38, 220, 182), 0, 71, 59);
+            Draw(legs, RobotParts.Legs, tinplateLegs ? new(63,23,118,214) : siliconeLegs ? new(67,25,118,215) : vinylLegs ? new(67,25,117,216) : polystyreneLegs ? new(51,25,144,207) : foamLegs ? new(66,41,122,185) : cardboardLegs ? new(39,29,166,187) : paperLegs ? new(53,32,140,172) : mapleLegs ? new(55, 29, 140, 183) : new(55, 25, 141, 205), 103, 35, 47);
+            Draw(torso, RobotParts.Body, tinplateTorso ? new(65,26,125,210) : siliconeTorso ? new(67,26,127,214) : vinylTorso ? new(72,35,101,196) : polystyreneTorso ? new(66,28,114,205) : foamTorso ? new(53,44,132,169) : cardboardTorso ? new(29,37,199,177) : paperTorso ? new(30,37,196,179) : mapleTorso ? new(62, 32, 133, 201) : new(70, 34, 117, 198), 53, 46, 55);
+            Draw(head, RobotParts.Head, tinplate ? new(38,19,177,215) : silicone ? new(42,25,168,210) : softVinyl ? new(42,27,168,208) : polystyrene ? new(42,26,171,201) : foam ? new(43,25,162,204) : cardboard ? new(42,25,169,202) : paper ? new(47, 25, 158, 201) : maple ? new(40, 24, 170, 207) : new(15, 38, 220, 182), 0, 71, 59);
         }
         return true;
 
@@ -249,9 +276,51 @@ public partial class Game1
         _polystyreneSideTorso?.Dispose();
         _polystyreneSideLegs?.Dispose();
         _polystyreneSideTorso = _polystyreneSideLegs = null;
+        _polystyreneRearTorso?.Dispose();
+        _polystyreneRearLegs?.Dispose();
+        _polystyreneRearTorso = _polystyreneRearLegs = null;
         _polystyreneRearHead?.Dispose();
         _polystyreneSideHead = _polystyreneRearHead = null;
         _polystyreneHeadTextures?.Dispose();
+        _softVinylHeadTextures?.Dispose();
+        _tinplateHeadTextures?.Dispose();
+        _tinplateSideHead?.Dispose();
+        _tinplateSideTorso?.Dispose();
+        _tinplateSideLegs?.Dispose();
+        _tinplateSideTorso = _tinplateSideLegs = null;
+        _tinplateRearHead?.Dispose();
+        _tinplateRearTorso?.Dispose();
+        _tinplateRearLegs?.Dispose();
+        _tinplateRearTorso = _tinplateRearLegs = null;
+        _tinplateSideHead = _tinplateRearHead = null;
+        _tinplateTorsoTextures?.Dispose();
+        _tinplateLegTextures?.Dispose();
+        _tinplateHeadTextures = _tinplateTorsoTextures = _tinplateLegTextures = null;
+        _siliconeHeadTextures?.Dispose();
+        _siliconeSideHead?.Dispose();
+        _siliconeSideTorso?.Dispose();
+        _siliconeSideLegs?.Dispose();
+        _siliconeSideTorso = _siliconeSideLegs = null;
+        _siliconeRearHead?.Dispose();
+        _siliconeRearTorso?.Dispose();
+        _siliconeRearLegs?.Dispose();
+        _siliconeRearTorso = _siliconeRearLegs = null;
+        _siliconeSideHead = _siliconeRearHead = null;
+        _siliconeTorsoTextures?.Dispose();
+        _siliconeLegTextures?.Dispose();
+        _siliconeHeadTextures = _siliconeTorsoTextures = _siliconeLegTextures = null;
+        _softVinylTorsoTextures?.Dispose();
+        _softVinylLegTextures?.Dispose();
+        _softVinylSideHead?.Dispose();
+        _softVinylRearHead?.Dispose();
+        _softVinylSideTorso?.Dispose();
+        _softVinylSideLegs?.Dispose();
+        _softVinylRearTorso?.Dispose();
+        _softVinylRearLegs?.Dispose();
+        _softVinylRearTorso = _softVinylRearLegs = null;
+        _softVinylSideTorso = _softVinylSideLegs = null;
+        _softVinylSideHead = _softVinylRearHead = null;
+        _softVinylHeadTextures = _softVinylTorsoTextures = _softVinylLegTextures = null;
         _polystyreneTorsoTextures?.Dispose();
         _polystyreneLegTextures?.Dispose();
         _polystyreneHeadTextures = _polystyreneTorsoTextures = _polystyreneLegTextures = null;

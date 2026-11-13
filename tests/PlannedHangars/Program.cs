@@ -63,6 +63,26 @@ foreach(bool adjacent in new[]{false,true}){
     Check(w.Robots.ProductionIntakes.Single().Status.Contains("格納枠") && w.Robots.Nodes[b].Count==12,"Unavailable intake remains queued with explicit reason, without losing its product");
 }
 Console.WriteLine("PASS: forecast-only operations, undo, function-transfer fallback/capacity failure, chained IDs, dependent war cancellation, manufactured local/adjacent intake, immediate-next sortie and save/resume.");
+foreach(bool full in new[]{false,true}){
+    var(w,a,b,c)=Fixture();var head=Add(w,b,RobotParts.Head);
+    w.Robots.Workshops[b].AutoAssemblyDisabled=false;
+    for(int i=1;i<(full?12:11);i++)Add(w,b,RobotParts.Complete);
+    var line=w.Robots.Workshops[a];line.Configure(RobotParts.Body|RobotParts.Legs,1);line.SetDoNotRepeat(true);line.IntakeTarget=b;
+    w.Robots.AdvanceIndustry(n=>w.Nodes.All[n].Owner);
+    Check(w.Robots.ProductionIntakes.Count==1,"Factory rejected compatible empty parts");
+    if(!full)w.Robots.Workshops[b].AutoAssemblyDisabled=true;
+    var forecast=w.Robots.PartPlanning.Preview(w).Nodes[b];
+    if(full)Check(forecast.Count==12 && forecast.Robots.Single(r=>r.Id==head.Id).Parts==RobotParts.Complete,"Full hangar forecast did not fit the incoming parts");
+    else Check(forecast.Count==12 && forecast.Robots.Any(r=>r.Id==w.Robots.ProductionIntakes.Single().Product.Id),"Free-slot booking must preserve its own product ID");
+    if(full){
+        line.Configure(RobotParts.Body,1);line.IntakeTarget=b;
+        w.Robots.AdvanceIndustry(n=>w.Nodes.All[n].Owner);
+        Check(w.Robots.ProductionIntakes.Count==1 && line.Waiting,"A second line double-booked the same empty part");
+    }
+    w.Campaign.FinishDomestic(w);
+    Check(w.Robots.ProductionIntakes.Count==0 && w.Robots.Nodes[b].Robots.Single(r=>r.Id==head.Id).Parts==(full?RobotParts.Complete:RobotParts.Head),"Delivery disagreed with forecast");
+}
+Console.WriteLine("PASS: whole-slot priority, full-hangar partial intake and prevention of double-booking.");
 {
     var(w,a,b,c)=Fixture();w.Nodes.All[b].Owner=1;var line=w.Robots.Workshops[a];line.AutoAssemblyDisabled=false;
     foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}){line.Configure(part,1);line.SetDoNotRepeat(true);w.Robots.AdvanceIndustry(n=>w.Nodes.All[n].Owner);}

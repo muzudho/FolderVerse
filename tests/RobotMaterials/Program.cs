@@ -6,6 +6,15 @@ static void Check(bool condition,string message)
 }
 
 var materials=Enum.GetValues<RobotMaterial>();
+var packedStore=new RobotStore();
+const System.Reflection.BindingFlags internalInstance=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+typeof(RobotStore).GetMethod("SetCapacity",internalInstance)!.Invoke(packedStore,new object[]{1});
+var receiveMaple=typeof(RobotStore).GetMethod("TryReceiveMaple",internalInstance)!;
+bool Receive(long id)=>(bool)receiveMaple.Invoke(packedStore,new object[]{new MaplePackage(id,16),0,(Func<long,bool>)(_=>false)})!;
+packedStore.Add(new Robot(100,0,RobotParts.Head));
+Check(Receive(101) && Receive(102) && !Receive(103) && packedStore.Count==1,"Two loads fit beside a head in one bay");
+packedStore.Remove(100);
+Check(Receive(103) && !Receive(104) && packedStore.Count==1,"Three maple loads fit in one empty bay");
 var expected=new RobotEquipment[]{new(3,3,4),new(0,0,1),new(5,1,1),new(2,2,2),new(0,6,2),new(7,1,0),new(8,0,3),new(4,5,3),new(19,22,13)};
 var basic=new Robot(1,0,RobotParts.Complete);
 foreach(var material in materials)
@@ -96,3 +105,91 @@ for(int a=0;a<9;a++)for(int b=a;b<9;b++)for(int c=b;c<9;c++)
 }
 Check(groups.Values.Sum()==165 && groups.Count==110 && groups.Values.Count(n=>n>1)==35 && groups.Values.Max()==5,"Equipment catalogue totals changed");
 Console.WriteLine("PASS material arithmetic, merge/slice, legacy, battle entry, factory plans, save compatibility, 165/110 catalogue.");
+
+var supply=new WorldSetup{EquipmentMode=RobotEquipmentMode.Materials};
+supply.SetWorld(0);supply.SetCast(123);supply.SetPlacement(456);supply.SelectPlayer(0);
+foreach(var node in supply.Nodes.All)node.Owner=0;
+var cargo=supply.Robots;
+Check(cargo.MapleSupplyEnabled,"New materials worlds enable maple");
+var forest=supply.Nodes.All.First(n=>cargo.MapleDeposit(n.Id)>0 && FunctionalDeliveryRoutes.Targets(supply,n.Id).Length>0);
+int source=forest.Id,target=FunctionalDeliveryRoutes.Targets(supply,source)[0];
+foreach(var workshop in cargo.Workshops)
+    foreach(var line in workshop.ProductionLines)line.SelectPlan(3);
+int deposit=cargo.MapleDeposit(source);
+for(int i=0;i<IndustryTime.UnitsPerTurn;i++)cargo.AdvanceIndustry(_=>0,n=>n!=source);
+Check(cargo.Nodes[source].MapleUnits==0 && cargo.MapleDeposit(source)==deposit,"Idle lanes must not harvest");
+var harvest=cargo.Workshops[source];
+for(int seed=0;harvest.ProductionLines.Length==0;seed++)harvest.GenerateLines(seed,RobotEquipmentMode.Materials);
+foreach(var line in harvest.ProductionLines)line.SelectPlan(3);
+var harvestLine=harvest.ProductionLines[0];
+harvestLine.SelectMapleHarvest(1);
+harvest.SetReservedSlots(harvest.ReservedSlotLimit);
+for(int i=0;i<IndustryTime.UnitsPerTurn;i++)cargo.AdvanceIndustry(_=>0,n=>n!=source);
+Check(cargo.MapleDeposit(source)==deposit && harvestLine.MapleProgress==0,"A blocked harvest must wait without spending a deposit");
+harvest.SetReservedSlots(0);
+for(int i=0;i<IndustryTime.UnitsPerTurn;i++)cargo.AdvanceIndustry(_=>0,n=>n!=source);
+var package=cargo.Nodes[source].MaplePackages.Single();
+Check(package.Units==16 && cargo.MapleDeposit(source)==deposit-1 && harvestLine.MapleRemaining==0,"Harvesting must exchange one deposit for one load");
+harvestLine.SelectMapleHarvest(1);
+Check(cargo.MapleAvailableToPlan(source,null)==deposit-2,"Harvest orders must share the remaining deposit");
+Check(cargo.ReserveMapleShipment(supply,source,target,package.Id),"Adjacent maple shipment unavailable");
+var restoredSupply=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
+Check(restoredSupply.Robots.MapleShipments.Single().PackageId==package.Id && restoredSupply.Robots.Nodes[source].MapleUnits==16,"Maple stock or shipment lost on save");
+Check(restoredSupply.Robots.Workshops[source].ProductionLines[0].MapleRemaining==1,"Harvest order lost on save");
+var resolveMaple=typeof(RobotWorld).GetMethod("ResolveMapleShipments",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
+resolveMaple.Invoke(cargo,new object[]{supply});
+Check(cargo.Nodes[source].MapleUnits==0 && cargo.Nodes[target].MapleUnits==16 && cargo.MapleShipments.Count==0,"Shipment duplicated or lost cargo");
+var mixedProduct=new Robot(0,0,RobotParts.Complete){HeadMaterial=RobotMaterial.Paper,BodyMaterial=RobotMaterial.Cardboard,LegsMaterial=RobotMaterial.Maple};
+Check(RobotWorld.MapleCost(mixedProduct)==21 && RobotWorld.MapleCost(basic)==0,"Maple requirements do not match occupied parts");
+var mapleFactory=cargo.Workshops[target];
+for(int seed=0;mapleFactory.ProductionLines.Length==0;seed++)mapleFactory.GenerateLines(seed,RobotEquipmentMode.Materials);
+var mapleLine=mapleFactory.ProductionLines[0];
+int paper=Enumerable.Range(0,mapleLine.PlanCount).First(i=>i!=3 && mapleLine.PlanAt(i).Material==RobotMaterial.Paper);
+foreach(var line in mapleFactory.ProductionLines)line.SelectPlan(3);
+mapleLine.SelectPlan(paper);
+int cost=RobotWorld.MapleCost(mapleLine.CurrentProductionPlan.Preview(0));
+Check(mapleLine.WaitingForMaple(cargo,Array.FindIndex(cargo.Nodes,s=>s.MapleUnits==0)),"Empty stock does not show material wait");
+mapleFactory.SetReservedSlots(cargo.Nodes[target].TotalCapacity);
+for(int i=0;i<mapleLine.ProductionPeriod;i++)production.Invoke(mapleFactory,new object[]{cargo,target,0});
+Check(cargo.Nodes[target].MapleUnits==16 && mapleLine.Waiting,"A full intake consumed maple");
+mapleFactory.SetReservedSlots(0);
+production.Invoke(mapleFactory,new object[]{cargo,target,0});
+Check(cargo.Nodes[target].MapleUnits==16-cost && cargo.ProductionIntakes.Any(i=>i.Source==target),"Successful intake did not consume exact maple units");
+Check(supply.Campaign.FunctionTransfers.CanReserve(supply,target,source),"Fixture cannot transfer functions");
+supply.Campaign.FunctionTransfers.Reserve(supply,target,source);
+int remaining=cargo.Nodes[target].MapleUnits;
+Check(cargo.PartPlanning.Preview(supply).Nodes[source].MapleUnits==remaining,"Transfer forecast lost maple stock");
+mapleLine.SelectMapleHarvest(2);
+int receivingDeposit=cargo.MapleDeposit(source);
+supply.Campaign.FinishDomestic(supply);
+Check(cargo.Nodes[source].MapleUnits==remaining && cargo.Nodes[target].MapleUnits==0 && cargo.MapleDeposit(target)==0,"Transfer lost stock or left a source open");
+Check(cargo.MapleDeposit(source)==receivingDeposit && cargo.Workshops[source].ProductionLines.Contains(mapleLine) && mapleLine.MapleRemaining==2,"Transfer must move the lane and its order without moving the deposit");
+var previousSave=AutoSaveStore.Capture(world);
+foreach(var savedObject in previousSave.Objects){savedObject.Fields?.Remove("_mapleDeposits");savedObject.Fields?.Remove("_mapleShipments");savedObject.Fields?.Remove("_maplePackages");}
+Check(!AutoSaveStore.Restore<WorldSetup>(previousSave).Robots.MapleSupplyEnabled,"An older materials save was opted into maple");
+Console.WriteLine("PASS maple harvesting, cargo shipping, save round-trip, exact recipe, blocked intake and function transfer.");
+
+var timberStore=new RobotStore();
+typeof(RobotStore).GetMethod("SetCapacity",internalInstance)!.Invoke(timberStore,new object[]{1});
+bool ReceiveTimber(long id,int units)=>(bool)receiveMaple.Invoke(timberStore,new object[]{new MaplePackage(id,units),0,(Func<long,bool>)(_=>false)})!;
+timberStore.Add(new Robot(200,0,RobotParts.Body));
+Check(!ReceiveTimber(201,32) && !ReceiveTimber(202,48),"A large timber needs contiguous sections");
+timberStore.Remove(200);
+Check(ReceiveTimber(202,48) && !ReceiveTimber(203,1),"A full timber occupies all three sections");
+typeof(RobotStore).GetMethod("SetMaplePackages",internalInstance)!.Invoke(timberStore,new object[]{new[]{new MaplePackage(202,31)}});
+Check(ReceiveTimber(203,12) && !ReceiveTimber(204,8) && timberStore.MaplePackages.First().Units==31,"Small loads cannot refill a large timber");
+Check(ReceiveTimber(204,4) && timberStore.MaplePackages.Last().Units==16,"Small loads combine up to sixteen");
+{
+    var rearrange=typeof(RobotWorld).GetMethod("RearrangeMaple",internalInstance)!;
+    supply.Campaign.BeginMilitary();
+    supply.Campaign.Advance(supply,-1,0,enemies:false);
+    var setPackages=typeof(RobotStore).GetMethod("SetMaplePackages",internalInstance)!;
+    var local=cargo.Nodes[source];
+    setPackages.Invoke(local,new object[]{new[]{new MaplePackage(901,15),new MaplePackage(902,9),new MaplePackage(903,32)}});
+    bool Arrange(long id,long? into,bool split)=>(bool)rearrange.Invoke(cargo,new object[]{supply,source,id,into,split})!;
+    Check(Arrange(902,901,false) && local.MaplePackages.Single(p=>p.Id==901).Units==16 &&
+        local.MaplePackages.Single(p=>p.Id==902).Units==8,"Manual merge keeps overflow in the source");
+    Check(!Arrange(903,null,true) && !Arrange(902,903,false),"Large timbers stay intact");
+    Check(Arrange(902,null,true) && local.MaplePackages.Last().Units==4 && local.MapleUnits==56,
+        "Splitting a small load preserves the total stock");
+}

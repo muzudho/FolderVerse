@@ -116,7 +116,27 @@ public sealed class RobotStore
     internal void SetCapacity(int capacity){if(capacity<Count+ReservedReturns)throw new InvalidOperationException("Occupied hangar capacity.");_capacity=capacity;}
     private readonly List<Robot> _robots=new();
     public IReadOnlyList<Robot> Robots=>_robots;
-    public int Count=>_robots.Count;
+    private MaplePackage[] _maplePackages;
+    public IReadOnlyList<MaplePackage> MaplePackages=>_maplePackages??Array.Empty<MaplePackage>();
+    public int MapleUnits=>MaplePackages.Sum(p=>p.Units);
+    public int Count=>MaplePackages.Count==0?_robots.Count:OccupiedSlots(_robots);
+    internal int OccupiedSlots(IEnumerable<Robot> robots)=>OccupiedSlots(robots,MaplePackages);
+    private static int OccupiedSlots(IEnumerable<Robot> robots,IEnumerable<MaplePackage> packages)
+    {
+        int singles=0,pairs=0,whole=0;
+        foreach(var package in packages)
+            switch(package.Sections){case 1:singles++;break;case 2:pairs++;break;case 3:whole++;break;}
+        int count=0,openSections=0;
+        foreach(var robot in robots){
+            count++;
+            int mask=(int)robot.Parts;
+            openSections+=3-System.Numerics.BitOperations.PopCount((uint)mask);
+            if(pairs>0 && robot.Parts is RobotParts.Head or RobotParts.Legs){pairs--;openSections-=2;}
+        }
+        return count+whole+pairs+(Math.Max(0,singles-openSections-pairs)+2)/3;
+    }
+    internal bool HasMapleSpace(MaplePackage package,int reserved)=>
+        OccupiedSlots(_robots,MaplePackages.Append(package))<=StorageLimit-reserved;
     private readonly HashSet<long> _returnReservations=new();
     public int ReservedReturns=>_returnReservations.Count;
     public int StorageLimit=>TotalCapacity-ReservedReturns;
@@ -137,12 +157,29 @@ public sealed class RobotStore
     internal void Replace(IEnumerable<Robot> robots)
     {
         var next=robots.ToArray();
-        if(next.Length>StorageLimit || next.Any(r=>!r.ValidIntegration) || next.Select(r=>r.Id).Distinct().Count()!=next.Length)throw new InvalidOperationException("Invalid robot store.");
+        if(OccupiedSlots(next)>StorageLimit || next.Any(r=>!r.ValidIntegration) || next.Select(r=>r.Id).Distinct().Count()!=next.Length)throw new InvalidOperationException("Invalid robot store.");
         _robots.Clear();_robots.AddRange(next);
     }
     internal RobotStore PlanningCopy()
     {
-        var result=new RobotStore();result.SetCapacity(TotalCapacity);foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);return result;
+        var result=new RobotStore();result.SetCapacity(TotalCapacity);foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);result._maplePackages=_maplePackages;return result;
+    }
+    internal void SetMaplePackages(MaplePackage[] packages)=>_maplePackages=packages;
+    internal bool TryReceiveMaple(MaplePackage package,int reserved,Func<long,bool> shipping)
+    {
+        var packages=MaplePackages.ToArray();
+        int remaining=package.Units;
+        for(int i=0;i<packages.Length && remaining>0;i++)
+        {
+            var current=packages[i];
+            if(package.Sections>1 || current.Sections>1 || shipping(current.Id))continue;
+            int added=Math.Min(RobotWorld.MaplePackageSize-current.Units,remaining);
+            packages[i]=current with {Units=current.Units+added};
+            remaining-=added;
+        }
+        if(remaining>0 && !HasMapleSpace(package with {Units=remaining},reserved))return false;
+        SetMaplePackages(remaining==0?packages:packages.Append(package with {Units=remaining}).ToArray());
+        return true;
     }
 }
 public sealed partial class RobotWorld
@@ -169,6 +206,7 @@ public sealed partial class RobotWorld
         Retinues=Enumerable.Range(0,rulerCount).Select(_=>new RobotStore()).ToArray();
         Workshops=Enumerable.Range(0,nodeCount).Select(_=>new RobotWorkshop()).ToArray();Transport.Reset();PendingEdits.Clear();WorkshopFailures.Clear();
         PartPlanning.Reset();ProductionIntakes.Clear();ProductionIntakeEnabled=false;IntakeAdjacent=null;IntakeAllowed=null;
+        _mapleDeposits=null;_mapleShipments=null;
     }
     public void QueueAssembly(int node,IEnumerable<long> ids,int? owner=null)=>QueueEdit(new(node,ids.ToArray(),null,owner));
     public void QueueSplit(int node,long id,RobotParts part)=>QueueEdit(new(node,new[]{id},part));
@@ -242,12 +280,13 @@ public sealed partial class RobotWorld
     {
         var store=Nodes[node];int limit=store.StorageLimit-reservedSlots;
         bool StoreComplete(Robot[] partners){
-            if(store.Count-partners.Length+1>limit)return false;
             var merged=partners.Aggregate((a,b)=>a.Merge(b,owner)).Merge(product,owner);
             if(merged.Parts!=RobotParts.Complete || merged.AssemblyCredit(owner)<Training[owner].RequiredNative)return false;
             merged=merged with {Role=partners.Any(r=>r.Role==RobotRole.Captain)?RobotRole.Captain:RobotRole.Soldier};
             var ids=partners.Select(r=>r.Id).ToHashSet();
-            store.Replace(store.Robots.Where(r=>!ids.Contains(r.Id)).Append(merged));
+            var next=store.Robots.Where(r=>!ids.Contains(r.Id)).Append(merged).ToArray();
+            if(store.OccupiedSlots(next)>limit)return false;
+            store.Replace(next);
             return true;
         }
         if(!Workshops[node].AutoAssemblyDisabled && product.Parts!=RobotParts.Complete){
@@ -278,6 +317,11 @@ public sealed partial class RobotWorld
     {
         var all=Nodes.Concat(Retinues).SelectMany(s=>s.Robots).Concat(ProductionIntakes.Select(o=>o.Product)).Concat(ReturningRobots.Select(j=>j.Robot)).ToArray();
         if(all.Select(r=>r.Id).Distinct().Count()!=all.Length)throw new InvalidOperationException("Robot has multiple locations.");
+        if(MapleSupplyEnabled){
+            var ids=all.Select(r=>r.Id).ToHashSet();
+            foreach(var package in Nodes.SelectMany(s=>s.MaplePackages))
+                if(package.Units is <1 or >MaplePackage.Capacity || !ids.Add(package.Id))throw new InvalidOperationException("Invalid maple cargo.");
+        }
         foreach(var store in Nodes.Concat(Retinues))if(store.Count>store.StorageLimit)throw new InvalidOperationException("Hangar return capacity exceeded.");
         foreach(var robot in all){Validate(robot.Owner,robot.Parts);if(!robot.ValidIntegration)throw new InvalidOperationException("Invalid integrated parts.");}
     }
