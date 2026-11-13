@@ -10,25 +10,23 @@ public partial class Game1
     private void DrawHangarBay(Rectangle bay, bool hovered, bool canReserve)
     {
         var wall = hovered ? (canReserve ? new Color(54, 89, 102) : new Color(85, 54, 57)) : HangarWall;
-        _ui.Box(bay, wall);
-        _ui.Box(new(bay.X + 16, bay.Y + 32, bay.Width - 32, 128), new Color(30, 48, 60));
-        for (int y = 38; y < 150; y += 14)
-            _ui.Box(new(bay.X + 16, bay.Y + y, bay.Width - 32, 2), wall);
-
-        _ui.Box(new(bay.X, bay.Y + 160, bay.Width, 100), HangarFloor);
-        _ui.Box(new(bay.X, bay.Y + 201, bay.Width, 59), new Color(36, 54, 65));
-        for (int side = -1; side <= 1; side += 2)
-        {
-            int post = side < 0 ? bay.Left : bay.Right - 10;
-            _ui.Box(new(post, bay.Y + 12, 10, 148), new Color(70, 93, 103));
-            _ui.Box(new(post + (side < 0 ? 7 : 0), bay.Y + 12, 3, 148), new Color(27, 46, 57));
-            _ui.Tile(new(bay.Center.X + side * 75, bay.Y + 180), new(47, 3),
-                side * -.9f, HangarGuide);
+        void Box(int x,int y,int width,int height,Color color)=>_ui.Box(HangarCellRegion(bay,x,y,width,height),color);
+        _ui.Box(bay,wall);
+        Box(16,32,220,128,new(30,48,60));
+        for(int y=38;y<150;y+=14)Box(16,y,220,2,wall);
+        Box(0,160,252,100,HangarFloor);
+        Box(0,201,252,59,new(36,54,65));
+        foreach(int post in new[]{0,242}){
+            Box(post,12,10,148,new(70,93,103));
+            Box(post==0?7:242,12,3,148,new(27,46,57));
         }
-        _ui.Box(new(bay.X, bay.Y + 201, bay.Width, 3), HangarGuide);
-        _ui.Box(new(bay.X, bay.Y, bay.Width, 14), new Color(79, 105, 114));
-        _ui.Box(new(bay.X, bay.Y + 14, bay.Width, 6), new Color(32, 51, 62));
-        _ui.Box(new(bay.Center.X - 26, bay.Y + 6, 52, 4), new Color(180, 223, 221));
+        foreach(int side in new[]{-1,1})
+            _ui.Tile(new(bay.Center.X+side*75*bay.Width/252f,bay.Y+180*bay.Height/260f),
+                new(47*bay.Width/252f,3*bay.Height/260f),side*-.9f,HangarGuide);
+        Box(0,201,252,3,HangarGuide);
+        Box(0,0,252,14,new(79,105,114));
+        Box(0,14,252,6,new(32,51,62));
+        Box(100,6,52,4,new(180,223,221));
     }
 
     private void DrawHangarContinuation()

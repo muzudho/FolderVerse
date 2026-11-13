@@ -13,21 +13,36 @@ public partial class Game1
     private bool _hangarPanning;
     private Point _hangarPanPointer,_hangarPanOrigin;
     private Point HangarZoom=>HangarZoomSizes[_hangarZoom];
-    private int HangarGridColumns=>HangarZoomSizes.FirstOrDefault(size=>size.X>=3 &&
-        size.X*size.Y>=_hangarSlots.Length,new Point(10,6)).X;
+    private int HangarGridColumns=>HangarColumnsForCapacity(_hangarSlots.Length);
+    private static int HangarColumnsForCapacity(int capacity)=>HangarZoomSizes.FirstOrDefault(size=>size.X>=3 &&
+        size.X*size.Y>=capacity,new Point(10,6)).X;
     private int HangarGridRows=>(_hangarSlots.Length+HangarGridColumns-1)/HangarGridColumns;
     private int HangarLastColumn=>Math.Max(0,HangarGridColumns-HangarZoom.X);
     private float HangarIntroProgress=>Math.Clamp((_animationTime-_hangarIntroStart)/.2f,0,1);
-    private Vector2 HangarCellPitch(Point zoom)=>new(
-        HangarViewport.Width/(zoom.X-12f/264),HangarViewport.Height/(zoom.Y-10f/270));
+    private Vector2 HangarCellPitch(Point zoom)=>HangarCellPitch(HangarViewport,zoom,new(12f/264,10f/270));
+    private static Vector2 HangarCellPitch(Rectangle viewport,Point zoom,Vector2 gap)=>new(
+        viewport.Width/(zoom.X-gap.X),viewport.Height/(zoom.Y-gap.Y));
 
-    private Rectangle HangarViewCell(int slot,Point zoom,int column,int row)
+    private Rectangle HangarViewCell(int slot,Point zoom,int column,int row)=>
+        HangarViewCell(HangarViewport,HangarCellPitch(zoom),new(12f/264,10f/270),slot,HangarGridColumns,column,row);
+
+    private static Rectangle HangarViewCell(Rectangle viewport,Vector2 pitch,Vector2 gap,int slot,int columns,int column,int row)
     {
-        var pitch=HangarCellPitch(zoom);
         float width=pitch.X,height=pitch.Y;
-        int x=slot%HangarGridColumns-column,y=slot/HangarGridColumns-row;
-        return new(HangarViewport.X+(int)(x*width),HangarViewport.Y+(int)(y*height),
-            (int)(width*252/264),(int)(height*260/270));
+        int x=slot%columns-column,y=slot/columns-row;
+        return new(viewport.X+(int)(x*width),viewport.Y+(int)(y*height),
+            (int)(width*(1-gap.X)+.001f),(int)(height*(1-gap.Y)+.001f));
+    }
+
+    private static void SyncHangarOccupants(long?[] slots,RobotStore store,Func<int,bool> reserved)
+    {
+        var ids=store.Robots.Select(r=>r.Id).Concat(store.MaplePackages.Select(p=>p.Id)).ToHashSet();
+        for(int i=0;i<slots.Length;i++)if(slots[i] is long id && !ids.Contains(id))slots[i]=null;
+        foreach(long id in ids.Where(id=>!slots.Contains(id))){
+            int slot=Array.FindIndex(slots,item=>!item.HasValue);
+            for(int i=slot;i>=0 && i<slots.Length;i++)if(!slots[i].HasValue && !reserved(i)){slot=i;break;}
+            if(slot>=0)slots[slot]=id;
+        }
     }
 
     private bool UpdateHangarPan(MouseState mouse)
@@ -47,11 +62,14 @@ public partial class Game1
             _hangarPanOrigin=new(_hangarColumn,_hangarPage);
         }
         var pitch=HangarCellPitch(HangarZoom);
-        var delta=_hangarPanPointer-_pointer;
-        _hangarColumn=Math.Clamp(_hangarPanOrigin.X+(int)MathF.Round(delta.X/pitch.X),0,HangarLastColumn);
-        _hangarPage=Math.Clamp(_hangarPanOrigin.Y+(int)MathF.Round(delta.Y/pitch.Y),0,HangarLastRow);
+        var scroll=HangarPanOffset(_hangarPanOrigin,_hangarPanPointer-_pointer,pitch,new(HangarLastColumn,HangarLastRow));
+        _hangarColumn=scroll.X;_hangarPage=scroll.Y;
         return true;
     }
+
+    private static Point HangarPanOffset(Point origin,Point delta,Vector2 pitch,Point limit)=>new(
+        Math.Clamp(origin.X+(int)MathF.Round(delta.X/pitch.X),0,limit.X),
+        Math.Clamp(origin.Y+(int)MathF.Round(delta.Y/pitch.Y),0,limit.Y));
 
     private static Rectangle HangarCellRegion(Rectangle cell,int x,int y,int width,int height)=>
         new(cell.X+x*cell.Width/252,cell.Y+y*cell.Height/260,

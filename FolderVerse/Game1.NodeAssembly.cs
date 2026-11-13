@@ -345,8 +345,6 @@ public partial class Game1
         _hangarPage=Math.Clamp(_hangarPage,0,HangarLastRow);
         _hangarColumn=Math.Clamp(_hangarColumn,0,HangarLastColumn);
         var store=PlanningStock.Nodes[HangarPlanningNode];
-        var occupants=store.Robots.Select(r=>r.Id).Concat(store.MaplePackages.Select(p=>p.Id)).ToArray();
-        for(int i=0;i<_hangarSlots.Length;i++)if(_hangarSlots[i] is long id && !occupants.Contains(id))_hangarSlots[i]=null;
-        foreach(long id in occupants)if(!_hangarSlots.Contains(id)){int slot=Array.FindIndex(_hangarSlots,key=>!key.HasValue);if(slot>=0)_hangarSlots[slot]=id;}
+        SyncHangarOccupants(_hangarSlots,store,_=>false);
     }
 }

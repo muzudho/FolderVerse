@@ -88,6 +88,9 @@ public partial class Game1
             _ui.Center(mixed ? "混合品" : RobotMaterials.Label(preview.Material(parts[0])),
                 new(card.X + 8, photo.Bottom + 1, card.Width - 16, 28), .40f, ink);
             _ui.Center(FactoryProductLabel(plan), new(card.X + 8, photo.Bottom + 29, card.Width - 16, 21), .32f, ink);
+            if(_setup.Robots.MapleSupplyEnabled && RobotWorld.MapleCost(preview) is >0 and var mapleCost)
+                _ui.Center($"楓の木 {mapleCost}/16",new(card.X+8,photo.Bottom+50,card.Width-16,26),.32f,
+                    mapleCost>_setup.Robots.AvailableMaple(node.Id)?new Color(150,52,43):ink);
             DrawFactoryAlbumEquipment(card, preview.Equipment(node.Owner, _setup.EquipmentMode), ink);
         }
         if (mixedPreview != null && line.PlanCount < 12)

@@ -10,9 +10,9 @@ class Checks:Game1{
  void Set(string n,object v)=>typeof(Game1).GetField(n,F)!.SetValue(this,v);
  object Call(string n,params object[] args)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,args)!;
  static void Check(bool ok,string text){if(!ok)throw new Exception(text);}
- static Rectangle Part(int side,int slot,int row)=>(Rectangle)typeof(Game1).GetMethod("DirectPart",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{side,slot,row})!;
- static Rectangle Cell(int side,int slot)=>(Rectangle)typeof(Game1).GetMethod("DirectCell",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{side,slot})!;
- static Point CellMargin(int side,int slot){
+ Rectangle Part(int side,int slot,int row)=>(Rectangle)Call("DirectViewPart",side,slot,row);
+ Rectangle Cell(int side,int slot)=>(Rectangle)Call("DirectViewCell",side,slot);
+ Point CellMargin(int side,int slot){
   var cell=Cell(side,slot);
   int partsRight=Enumerable.Range(0,3).Max(row=>Part(side,slot,row).Right);
   Check(partsRight<cell.Right,"Cell has a whole-robot drag area beside the parts");
@@ -91,12 +91,40 @@ class Checks:Game1{
   Set("_directDrag",(0,original,RobotParts.Head));Set("_pointer",close.Center);
   Call("DirectPairInput",Mouse(close.Center,ButtonState.Pressed),true,false);Check((bool)Get("_directPairOpen"),"Close button cannot activate while carrying a part");Set("_directDrag",null!);
   var leftSlots=((long?[][])Get("_directSlots"))[0];
-  int page=((int[])Get("_directPages"))[0];
-  var visibleSlots=(IEnumerable<int>)typeof(Game1).GetMethod("VisibleHangarSlots",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{leftSlots.Length,page})!;
+  var visibleSlots=(IEnumerable<int>)Call("DirectVisibleSlots",0);
   var empty=CellMargin(0,visibleSlots.First(slot=>!leftSlots[slot].HasValue));Set("_pointer",empty);
   Call("DirectPairInput",Mouse(empty,ButtonState.Pressed),true,false);
   var guidance=(string)Get("_directMessage");var font=(SpriteFont)Get("_font");
   Check(guidance.Contains("パーツ単位") && font.Characters.Contains('単') && font.MeasureString(guidance).X>0,"Empty-slot guidance has every glyph required for rendering");
+  w.EquipmentMode=RobotEquipmentMode.Materials;
+  typeof(RobotWorld).GetMethod("InitializeMapleSupply",F)!.Invoke(w.Robots,new object[]{w});
+  long cargo=w.Robots.Create(0,RobotParts.Head).Id;
+  typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(w.Robots.Nodes[a],new object[]{new[]{new MaplePackage(cargo,16)}});
+  Call("SyncDirectSlots");
+  int cargoSlot=Array.IndexOf(leftSlots,(long?)cargo);
+  var at=Cell(0,0).Center;
+  Set("_pointer",at);Set("_previousMouse",new MouseState());
+  Call("DirectPairInput",new MouseState(at.X,at.Y,-120,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),false,false);
+  Check(((int[])Get("_directZoom")).SequenceEqual(new[]{2,1}),"Wheel zoom changes only the hovered hangar");
+  var from=Cell(0,cargoSlot).Center;var to=Cell(1,0).Center;
+  Set("_pointer",from);Set("_previousMouse",new MouseState());
+  Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);
+  Set("_pointer",to);Call("DirectPairInput",Mouse(to,ButtonState.Released),false,false);
+  Check(w.Robots.MapleShipments.Any(o=>o.Source==a && o.Target==b && o.PackageId==cargo),"Dragging maple reserves delivery to the other hangar");
+  var copied=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
+  typeof(RobotWorld).GetMethod("ResolveMapleShipments",F)!.Invoke(copied.Robots,new object[]{copied});
+  Check(copied.Robots.Nodes[a].MapleUnits==0 && copied.Robots.Nodes[b].MapleUnits==16,"Reserved material arrives in the destination hangar");
+  Set("_pointer",from);Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);
+  Check(w.Robots.MapleShipments.Count==0,"Clicking reserved maple cancels delivery");
+  ((int[])Get("_directZoom"))[0]=1;
+  MouseState Pan(Point point)=>new(point.X,point.Y,0,ButtonState.Released,ButtonState.Released,ButtonState.Pressed,ButtonState.Released,ButtonState.Released);
+  Set("_pointer",at);Set("_previousMouse",new MouseState());Call("DirectPairInput",Pan(at),false,false);
+  var moved=at-new Point(0,290);
+  Set("_pointer",moved);Set("_previousMouse",Pan(at));Call("DirectPairInput",Pan(moved),false,false);
+  Check(((int[])Get("_directRow")).SequenceEqual(new[]{1,0}),"Right drag scrolls only the originating hangar");
+  Call("DirectPairInput",new MouseState(),false,false);
+  ((int[])Get("_directRow"))[0]=0;
+  Set("_previousMouse",new MouseState());
  }
   NetFace[] edgeBefore=Array.Empty<NetFace>();int orderBefore;
  void Physical(Point point,double elapsed=0,bool pressed=false){var canvas=(Rectangle)Call("CanvasBounds");var p=new Point(canvas.X+point.X*canvas.Width/1920,canvas.Y+point.Y*canvas.Height/1080);Call("HandleInput",Mouse(p,pressed?ButtonState.Pressed:ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.FromSeconds(30),TimeSpan.FromSeconds(elapsed)),true);}

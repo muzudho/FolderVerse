@@ -12,7 +12,6 @@ public partial class Game1
     private int _hangarScrollDirection;
     private float _hangarScrollAt;
     private int FunctionPageCount(int node)=>Math.Max(1,(PlanningStock.Nodes[node].TotalCapacity+11)/12);
-    private int HangarPageCount(int node)=>Math.Max(1,(PlanningStock.Nodes[node].TotalCapacity+HangarSlotsPerPage-1)/HangarSlotsPerPage);
     private bool HangarPageClick(Point p)
     {
         int direction=HangarScrollDirection(p);
@@ -88,14 +87,14 @@ public partial class Game1
     private bool DirectPageClick(Point p)
     {
         for(int side=0;side<2;side++)foreach(bool next in new[]{false,true})if(DirectPageButton(side,next).Contains(p)){
-            _directDrag=null;_directPages[side]=Math.Clamp(_directPages[side]+(next?1:-1),0,HangarPageCount(_directNodes[side])-1);return true;
+            _directDrag=null;_directRow[side]+=next?1:-1;ClampDirectScroll(side);return true;
         }
         return false;
     }
     private void DrawDirectPages(int side)
     {
-        if(HangarPageCount(_directNodes[side])<=1)return;
-        _ui.Button(DirectPageButton(side,false),"←",Muted,.4f);_ui.Button(DirectPageButton(side,true),"→",Muted,.4f);
-        _ui.Text($"{_directPages[side]+1}/{HangarPageCount(_directNodes[side])}",new(340+side*1320,270),.32f,Cream);
+        if(DirectScrollLimit(side).Y==0)return;
+        _ui.Button(DirectPageButton(side,false),"↑",Muted,.4f);_ui.Button(DirectPageButton(side,true),"↓",Muted,.4f);
+        _ui.Text($"{_directRow[side]+1}/{DirectScrollLimit(side).Y+1}",new(340+side*1320,270),.32f,Cream);
     }
 }

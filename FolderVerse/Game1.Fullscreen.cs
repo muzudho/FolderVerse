@@ -35,7 +35,7 @@ public partial class Game1
     }
     private void DrawFullscreenCursor()
     {
-        bool hand=_hangarPanning && _nodeAssemblyOpen && !_autoPaused;
+        bool hand=(_hangarPanning && _nodeAssemblyOpen || _directPairOpen && _directPanSide>=0) && !_autoPaused;
         IsMouseVisible=!_graphics.IsFullScreen && !_demoActive && !hand;
         if((!_graphics.IsFullScreen && !hand) || _demoActive)return;
         var mouse=Mouse.GetState();
