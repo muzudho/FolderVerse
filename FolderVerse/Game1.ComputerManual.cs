@@ -86,8 +86,14 @@ public partial class Game1
         {
             int character=_computerManualPage*ComputerManualPageSize+index;
             if(character>=ConquerorCatalog.BaseCount)break;
-            _ui.Button(ComputerManualCard(index),$"{character+1:00}  {ConquerorCatalog.Themes[character]}",
-                character==_computerManualCharacter?new Color(68,104,111):Muted,.52f);
+            var card=ComputerManualCard(index);
+            _ui.Button(card,"",character==_computerManualCharacter?new Color(68,104,111):Muted);
+            var portrait=new Rectangle(card.X+8,card.Y+6,68,68);
+            _portraitRenderer.Draw(_spriteBatch,new ConquerorLook(character,0),portrait,faceOnly:true);
+            string name=$"{character+1:00}  {ConquerorCatalog.Themes[character]}";
+            var label=new Rectangle(portrait.Right+8,card.Y,card.Right-portrait.Right-16,card.Height);
+            float scale=Math.Min(.52f,label.Width/_ui.Measure(name,1).X);
+            _ui.Center(name,label,scale,Color.White);
         }
         if(_computerManualPage>0)_ui.Button(ComputerManualPrevious,"前のページ",Muted,.53f);
         if(_computerManualPage+1<ComputerManualPageCount)_ui.Button(ComputerManualNext,"次のページ",Muted,.53f);
