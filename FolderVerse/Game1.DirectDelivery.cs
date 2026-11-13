@@ -39,7 +39,7 @@ public partial class Game1
     private void OpenDirectPair(int a,int b){
         if(!DomesticOperationsAllowed)return;
         if(!DirectNodeAllowed(a) || !DirectNodeAllowed(b) || _setup.Campaign.RobotBattles.LockedNode(a) || _setup.Campaign.RobotBattles.LockedNode(b) || _setup.Campaign.RobotBattles.LockedEdge(a,b))return;
-        bool switching=_directPairOpen;BeginDirectPairTransition(switching);_directNodes[0]=a;_directNodes[1]=b;Array.Clear(_directPages);Array.Fill(_directZoom,1);Array.Clear(_directColumn);Array.Clear(_directRow);_directPanSide=-1;_directMaterialDrag=null;foreach(var slots in _directSlots)Array.Clear(slots);_directPairOpen=true;_directPairClosing=false;_directPairSlide=0;if(!switching)PrepareDirectPairMap();FitDirectPairMap();SyncDirectSlots();_directDrag=null;_directMessage="表示は入荷・組替後の予定 / 操作は予約 / 上のボタンで直前の予約を取消";
+        bool switching=_directPairOpen;BeginDirectPairTransition(switching);_directNodes[0]=a;_directNodes[1]=b;Array.Clear(_directPages);Array.Fill(_directZoom,1);Array.Clear(_directColumn);Array.Clear(_directRow);_directPanSide=-1;_directMaterialDrag=null;foreach(var slots in _directSlots)Array.Clear(slots);foreach(var positions in _directMaterialPositions)positions.Clear();_directPairOpen=true;_directPairClosing=false;_directPairSlide=0;if(!switching)PrepareDirectPairMap();FitDirectPairMap();SyncDirectSlots();_directDrag=null;_directMessage="表示は入荷・組替後の予定 / 操作は予約 / 上のボタンで直前の予約を取消";
     }
     private void SyncDirectSlots()
     {

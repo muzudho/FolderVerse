@@ -106,11 +106,12 @@ class Checks:Game1{
   Set("_pointer",at);Set("_previousMouse",new MouseState());
   Call("DirectPairInput",new MouseState(at.X,at.Y,-120,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),false,false);
   Check(((int[])Get("_directZoom")).SequenceEqual(new[]{2,1}),"Wheel zoom changes only the hovered hangar");
-  var from=Part(0,cargoSlot/3,cargoSlot%3).Center;var to=Cell(1,0).Center;
+  var from=Part(0,cargoSlot/3,cargoSlot%3).Center;var to=Part(1,2,2).Center;
   Set("_pointer",from);Set("_previousMouse",new MouseState());
   Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);
   Set("_pointer",to);Call("DirectPairInput",Mouse(to,ButtonState.Released),false,false);
   Check(w.Robots.MapleShipments.Any(o=>o.Source==a && o.Target==b && o.PackageId==cargo),"Dragging maple reserves delivery to the other hangar");
+  Check(((Dictionary<int,MaplePackage>)Call("DirectIncomingMaterials",1))[8].Id==cargo,"Maple preview follows the drop cell");
   var copied=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
   typeof(RobotWorld).GetMethod("ResolveMapleShipments",F)!.Invoke(copied.Robots,new object[]{copied});
   Check(copied.Robots.Nodes[a].MapleUnits==0 && copied.Robots.Nodes[b].MapleUnits==16,"Reserved material arrives in the destination hangar");
@@ -118,6 +119,16 @@ class Checks:Game1{
   Check(w.Robots.MapleShipments.Count==1,"Picking up reserved maple keeps its reservation");
   Set("_pointer",to);Call("DirectPairInput",Mouse(to,ButtonState.Released),false,false);
   Check(((Dictionary<int,MaplePackage>)Call("DirectIncomingMaterials",1)).Values.Any(p=>p.Id==cargo),"Redropping maple preserves its arrival preview");
+  int adjustedKey=Enumerable.Range(0,18).First(key=>{
+   if(key==8)return false;
+   Set("_pointer",Part(1,key/3,key%3).Center);
+   return (int)Call("DirectMaterialDropKey",1,cargo)==key;
+  });
+  var adjusted=Part(1,adjustedKey/3,adjustedKey%3).Center;
+  Set("_pointer",to);Call("DirectPairInput",Mouse(to,ButtonState.Pressed),true,false);
+  Set("_pointer",adjusted);Call("DirectPairInput",Mouse(adjusted,ButtonState.Released),false,false);
+  Check(((Dictionary<int,MaplePackage>)Call("DirectIncomingMaterials",1))[adjustedKey].Id==cargo &&
+    w.Robots.MapleShipments.Count==1,"Dragging the arrival preview moves it without duplicating the reservation");
   Set("_pointer",from);Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);
   Call("DirectPairInput",Mouse(from,ButtonState.Released),false,false);
   Check(w.Robots.MapleShipments.Count==0,"Clicking reserved maple cancels delivery");

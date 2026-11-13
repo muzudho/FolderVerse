@@ -46,7 +46,7 @@ public partial class Game1
         }
     }
     private static Dictionary<int,MaplePackage> HangarMaterials(long?[] slots,RobotStore store,IEnumerable<MaplePackage> packages,Func<int,bool> reserved=null,
-        IReadOnlyDictionary<long,int> positions=null)
+        IReadOnlyDictionary<long,int> positions=null, IReadOnlyDictionary<int,MaplePackage> occupied=null)
     {
         var robots=store.Robots.ToDictionary(r=>r.Id);
         var order=Enumerable.Range(0,slots.Length).Where(slot=>reserved?.Invoke(slot)!=true)
@@ -56,6 +56,9 @@ public partial class Game1
             if(slots[slot] is long id && robots.TryGetValue(id,out var robot))
                 for(int row=0;row<3;row++)used[slot*3+row]=(robot.Parts&HangarPart(row))!=0;
         var result=new Dictionary<int,MaplePackage>();
+        if(occupied!=null)
+            foreach(var entry in occupied)
+                for(int i=0;i<entry.Value.Sections;i++)used[entry.Key+i]=true;
         foreach(var package in packages.OrderByDescending(p=>p.Sections).ThenByDescending(p=>positions?.ContainsKey(p.Id)==true)){
             int sections=package.Sections;
             int key=order.SelectMany(slot=>Enumerable.Range(0,4-sections).Reverse().Select(row=>slot*3+row))
