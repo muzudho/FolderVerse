@@ -117,6 +117,11 @@ class Checks:Game1{
   Set("_pointer",from);Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);
   Check(w.Robots.MapleShipments.Count==0,"Clicking reserved maple cancels delivery");
   ((int[])Get("_directZoom"))[0]=1;
+  leftSlots[Array.IndexOf(leftSlots,(long?)cargo)]=null;
+  leftSlots[3]=cargo;
+  Check(!((IEnumerable<int>)Call("DirectVisibleSlots",0)).Contains(3),"Default three-column view hides the fourth column");
+  Check((bool)Call("DirectPageClick",new Point(520,900)) && ((IEnumerable<int>)Call("DirectVisibleSlots",0)).Contains(3),"Horizontal arrow reveals the cargo column");
+  Call("DirectPageClick",new Point(450,900));
   MouseState Pan(Point point)=>new(point.X,point.Y,0,ButtonState.Released,ButtonState.Released,ButtonState.Pressed,ButtonState.Released,ButtonState.Released);
   Set("_pointer",at);Set("_previousMouse",new MouseState());Call("DirectPairInput",Pan(at),false,false);
   var moved=at-new Point(0,290);

@@ -144,6 +144,7 @@ public partial class Game1
             string mark="目印："+NodeLandmarks.At(_setup,node).Description;
             _ui.Text(mark,new(x+20,241),Math.Min(.35f,520/Math.Max(1,_font.MeasureString(mark).X)),Cream);
             _ui.Text($"予定の格納庫 {store.Count}/{store.TotalCapacity}",new(x+20,274),.32f,Cream);
+            if(store.MapleUnits>0)_ui.Text($"楓の木 {store.MapleUnits}/16",new(x+20,888),.32f,Cream);
             foreach(int slot in DirectVisibleSlots(side)){
                 var cell=DirectViewCell(side,slot);var robot=store.Robots.FirstOrDefault(r=>r.Id==_directSlots[side][slot]);var hover=DirectHoverPart(side,slot);
                 if(store.MaplePackages.FirstOrDefault(p=>p.Id==_directSlots[side][slot]) is {} package){

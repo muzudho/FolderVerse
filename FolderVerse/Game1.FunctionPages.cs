@@ -84,17 +84,28 @@ public partial class Game1
         _ui.Center($"{_factoryPage+1}/{pages}",new(722,926,80,30),.35f,Cream);
     }
     private static Rectangle DirectPageButton(int side,bool next)=>new(420+side*1320+(next?74:0),264,64,30);
+    private static Rectangle DirectColumnButton(int side,bool next)=>new(420+side*1320+(next?74:0),882,64,30);
     private bool DirectPageClick(Point p)
     {
-        for(int side=0;side<2;side++)foreach(bool next in new[]{false,true})if(DirectPageButton(side,next).Contains(p)){
-            _directDrag=null;_directRow[side]+=next?1:-1;ClampDirectScroll(side);return true;
+        for(int side=0;side<2;side++)foreach(bool next in new[]{false,true}){
+            int step=next?1:-1;
+            if(DirectScrollLimit(side).Y>0 && DirectPageButton(side,next).Contains(p))_directRow[side]+=step;
+            else if(DirectScrollLimit(side).X>0 && DirectColumnButton(side,next).Contains(p))_directColumn[side]+=step;
+            else continue;
+            ClampDirectScroll(side);return true;
         }
         return false;
     }
     private void DrawDirectPages(int side)
     {
-        if(DirectScrollLimit(side).Y==0)return;
-        _ui.Button(DirectPageButton(side,false),"↑",Muted,.4f);_ui.Button(DirectPageButton(side,true),"↓",Muted,.4f);
-        _ui.Text($"{_directRow[side]+1}/{DirectScrollLimit(side).Y+1}",new(340+side*1320,270),.32f,Cream);
+        var limit=DirectScrollLimit(side);
+        if(limit.Y>0){
+            _ui.Button(DirectPageButton(side,false),"↑",Muted,.4f);_ui.Button(DirectPageButton(side,true),"↓",Muted,.4f);
+            _ui.Text($"{_directRow[side]+1}/{limit.Y+1}",new(340+side*1320,270),.32f,Cream);
+        }
+        if(limit.X>0){
+            _ui.Button(DirectColumnButton(side,false),"←",Muted,.4f);_ui.Button(DirectColumnButton(side,true),"→",Muted,.4f);
+            _ui.Text($"{_directColumn[side]+1}/{limit.X+1}",new(340+side*1320,888),.32f,Cream);
+        }
     }
 }
