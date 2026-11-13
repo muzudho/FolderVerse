@@ -151,7 +151,7 @@ public partial class Game1
     {
         float progress=MathHelper.SmoothStep(0,1,fraction);
         var bay=new Color(62,86,96);
-        var materials=HangarMaterials(_hangarSlots,store,store.MaplePackages,positions:_maplePositions);
+        var materials=AssemblyMaterials(store);
         for(int slot=0;slot<_hangarSlots.Length;slot++)
         {
             var start=HangarViewCell(slot,startZoom,from.X,from.Y);
@@ -166,7 +166,8 @@ public partial class Game1
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
             if(robot!=null)DrawRobotGlyph(HangarRobotArea(cell),HomePersuasionRobot(robot),whiteOutline:true);
             for(int row=0;row<3;row++)if(materials.TryGetValue(slot*3+row,out var package))
-                DrawMaplePackage(HangarCellRegion(cell,80,8+row*60,92,58+(package.Sections-1)*60),package,compact:true);
+                DrawMaplePackage(HangarCellRegion(cell,80,8+row*60,92,58+(package.Sections-1)*60),package,
+                    opacity:MapleArrival(package)?.55f:1,compact:true);
             DrawHangarSlotNumber(slot,cell,robot,false);
         }
     }

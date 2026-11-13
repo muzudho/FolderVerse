@@ -29,7 +29,7 @@ public sealed partial class CubeNet
                 float scale = MathF.Max(Vector2.Distance(at,Project(position+cell.U)),Vector2.Distance(at,Project(position+cell.V)));
                 float radius = MapPuckRadius(node,scale)/MathF.Max(scale,1);
                 if (ShowRoutes) DrawSurfacePuck(ui,setup,node,cell,position,radius,pulse,Project,Tint);
-                DrawSurfaceFlag(ui,setup,DisplayedNodeOwner(node),cell,position,ShowRoutes ? radius : 0,Project,Tint);
+                DrawSurfaceFlag(ui,setup,DisplayedNodeOwner(node),cell,position,ShowRoutes ? radius*(HasPurposeBuilding(node)?PurposeBuildingScale:1) : 0,Project,Tint);
             }
         }
         DrawMapSymbols(ui,setup,p=>
@@ -47,6 +47,8 @@ public sealed partial class CubeNet
         if (node.IsHarbor) radius = MathHelper.Clamp(radius*1.3f,7,13);
         return EmphasizedNode(node.Id) ? radius*1.4f : radius;
     }
+    private const float PurposeBuildingScale=1.7f;
+    private static bool HasPurposeBuilding(Node node)=>node.Functional && node.Purpose!=NodePurpose.General;
 
     private void DrawFlatPuck(UiPainter ui,WorldSetup setup,Node node,Vector2 at,float radius,float pulse,Func<Color,Color> tint)
     {
@@ -69,15 +71,18 @@ public sealed partial class CubeNet
         bool target = MovementTargets.Contains(node.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(node.Id));
         if (SelectedTarget==node.Id || EmphasizedNode(node.Id) || target && MathF.Sin(pulse*6)>=0)
             Face(at+new Vector2(0,depth),radius+3,SelectedTarget==node.Id || EmphasizedNode(node.Id) ? Color.White : new Color(255,219,96));
-        Face(at+new Vector2(0,depth),radius+1,rim);
-        Face(at+new Vector2(0,depth),radius,side);
-        Face(at,radius+1,rim);
-        Face(at,radius,node.Functional ? top : Color.Lerp(top,rim,.35f));
-        if(node.Functional && node.Purpose!=NodePurpose.General)
-            DrawPurposeBuilding(ui,node.Purpose,(x,y,z)=>at+new Vector2(x,y*.68f-z)*radius,tint);
-        if (node.IsHarbor && node.Functional && node.Purpose==NodePurpose.General)
-            DrawHarbor(ui,at,radius*.65f,tint(new Color(230,247,250)),DimNode(node.Id));
-        CountryFlagArt.Marker(ui,setup,DisplayedNodeOwner(node),at+new Vector2(radius+4,-radius*.68f),
+        bool building=HasPurposeBuilding(node);
+        if(building)
+            DrawPurposeBuilding(ui,node.Purpose,(x,y,z)=>at+new Vector2(x,y*.68f-z)*radius*PurposeBuildingScale,tint);
+        else{
+            Face(at+new Vector2(0,depth),radius+1,rim);
+            Face(at+new Vector2(0,depth),radius,side);
+            Face(at,radius+1,rim);
+            Face(at,radius,node.Functional ? top : Color.Lerp(top,rim,.35f));
+            if(node.IsHarbor && node.Functional)
+                DrawHarbor(ui,at,radius*.65f,tint(new Color(230,247,250)),DimNode(node.Id));
+        }
+        CountryFlagArt.Marker(ui,setup,DisplayedNodeOwner(node),at+new Vector2(radius*(building?PurposeBuildingScale:1)+4,-radius*.68f),
             Math.Clamp((int)(radius*3),24,42),tint);
         if (AttackTargetMarkers && SelectedTarget==node.Id)
             foreach (float angle in new[]{MathHelper.PiOver4,-MathHelper.PiOver4})
@@ -91,6 +96,7 @@ public sealed partial class CubeNet
         var top = sea ? new Color(164,226,242) : new Color(255,232,153);
         var side = sea ? new Color(52,110,135) : new Color(152,111,53);
         var rim = new Color(24,44,51);
+        bool building=HasPurposeBuilding(node);
         const int sides = 12;
         Span<Vector2> lower = stackalloc Vector2[sides];
         Span<Vector2> upper = stackalloc Vector2[sides];
@@ -101,27 +107,31 @@ public sealed partial class CubeNet
             var radial = cell.U*MathF.Cos(angle)+cell.V*MathF.Sin(angle);
             lower[i] = project(position+radial*radius);
             upper[i] = project(position+radial*radius+cell.Normal*radius*.55f);
-            ring[i] = project(position+radial*radius*1.32f);
+            ring[i] = project(position+radial*radius*(building?PurposeBuildingScale:1)*1.32f);
         }
         bool selected = SelectedTarget==node.Id || EmphasizedNode(node.Id);
         bool target = MovementTargets.Contains(node.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(node.Id));
         if (selected || target && MathF.Sin(pulse*6)>=0)
             FillProjectedFace(ui,ring,tint(selected ? Color.White : new Color(255,219,96)));
-        float winding = Cross(upper[1]-upper[0],upper[2]-upper[1]);
-        Span<Vector2> wall = stackalloc Vector2[4];
-        for (int i=0;i<sides;i++)
-        {
-            int next = (i+1)%sides;
-            if (Cross(upper[next]-upper[i],lower[i]-upper[i])*winding>=0) continue;
-            wall[0]=upper[i];wall[1]=upper[next];wall[2]=lower[next];wall[3]=lower[i];
-            FillProjectedFace(ui,wall,tint(Color.Lerp(side,top,.12f*(1+MathF.Cos(i*MathHelper.TwoPi/sides)))));
+        if(building)
+            DrawPurposeBuilding(ui,node.Purpose,(x,y,z)=>project(position+radius*PurposeBuildingScale*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
+        else{
+            float winding = Cross(upper[1]-upper[0],upper[2]-upper[1]);
+            Span<Vector2> wall = stackalloc Vector2[4];
+            for (int i=0;i<sides;i++)
+            {
+                int next = (i+1)%sides;
+                if (Cross(upper[next]-upper[i],lower[i]-upper[i])*winding>=0) continue;
+                wall[0]=upper[i];wall[1]=upper[next];wall[2]=lower[next];wall[3]=lower[i];
+                FillProjectedFace(ui,wall,tint(Color.Lerp(side,top,.12f*(1+MathF.Cos(i*MathHelper.TwoPi/sides)))));
+            }
+            FillProjectedFace(ui,upper,tint(node.Functional ? top : Color.Lerp(top,rim,.35f)));
+            if(node.IsHarbor && node.Functional){
+                var puckCenter=project(position+cell.Normal*radius*.55f);
+                DrawHarbor(ui,puckCenter,MathF.Max(4,Vector2.Distance(puckCenter,upper[0])*.65f),tint(rim),DimNode(node.Id));
+            }
         }
-        FillProjectedFace(ui,upper,tint(node.Functional ? top : Color.Lerp(top,rim,.35f)));
-        var center = project(position+cell.Normal*radius*.55f);
-        if(node.Functional && node.Purpose!=NodePurpose.General)
-            DrawPurposeBuilding(ui,node.Purpose,(x,y,z)=>project(position+radius*(cell.U*x+cell.V*y+cell.Normal*(z+.55f))),tint);
-        if (node.IsHarbor && node.Functional && node.Purpose==NodePurpose.General)
-            DrawHarbor(ui,center,MathF.Max(4,Vector2.Distance(center,upper[0])*.65f),tint(rim),DimNode(node.Id));
+        var center = project(position+cell.Normal*radius*(building?.85f:.55f));
         if (AttackTargetMarkers && SelectedTarget==node.Id)
             foreach (float angle in new[]{MathHelper.PiOver4,-MathHelper.PiOver4})
                 ui.Tile(center,new(Vector2.Distance(center,upper[0])*2,2),angle,tint(rim));

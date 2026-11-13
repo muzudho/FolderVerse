@@ -34,7 +34,7 @@ public sealed partial class CubeNet
     {HoveredFace=face;HoveredSide=side;return ClickEdge();}
     public Vector2 AnimatedNodePosition(WorldSetup world,Node node,Rectangle panel)
         =>AnimatedSurfacePosition(node.Cell,world.Routes.Position(node.Cell,node.Center),world,panel);
-    private Vector2 AnimatedSurfacePosition(int cell,Vector3 position,WorldSetup world,Rectangle panel)
+    internal Vector2 AnimatedSurfacePosition(int cell,Vector3 position,WorldSetup world,Rectangle panel)
     {
         if(!IsAnimating){var f=Faces.First(f=>f.Face==world.Cells[cell].Face);var fitNow=Fit(panel);return RotateScreen(f.Project(position)*fitNow.Scale+fitNow.Origin,panel);}
         float t=_animationProgress,eased=t*t*(3-2*t),angle=_animationAngle*eased;

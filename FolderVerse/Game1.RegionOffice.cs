@@ -12,7 +12,7 @@ public partial class Game1
     private void DrawRegionOffice()
     {
         int id=RegionOfficeNode;
-        if(id>=0)DrawAdjacentOffice(id,"地域監督 / "+RegionOfficeName,RegionOfficeOnLand,false);
+        if(id>=0)DrawAdjacentOffice(id,"地域監督 / "+RegionOfficeName,RegionOfficeOnLand);
     }
     private bool HasConqueredWorld(int ruler)=>_setup.Cells.Length>0 && _setup.Cells.All(c=>_setup.Nodes.FullOwner(c.Id)==ruler);
     private int ConquerorResidenceNode(int ruler)
@@ -22,17 +22,49 @@ public partial class Game1
         return owned.Where(n=>n.Cell==_setup.Capitals[ruler]).OrderBy(n=>n.Id).FirstOrDefault()?.Id
             ??owned.OrderByDescending(n=>n.Population.Total).ThenBy(n=>n.Id).FirstOrDefault()?.Id??-1;
     }
-    private void DrawConquerorResidences()
+    private void DrawConquerorResidences(RasterizerState clip)
     {
-        if(_salvagePlan)return;
+        if(_salvagePlan || MapTransitionActive || _net.IsAnimating)return;
         int ruler=_reignView?(_strategyRuler>=0?_strategyRuler:_setup.PlayerSlot)
             :_populationNode>=0?_setup.Nodes.All[_populationNode].Owner
             :RegionOfficeNode>=0?_setup.Nodes.All[RegionOfficeNode].Owner:_setup.PlayerSlot;
         if(ruler<0)return;
         int id=ConquerorResidenceNode(ruler);if(id<0)return;
-        DrawAdjacentOffice(id,_setup.ConquerorNames[ruler]+" / 征服者官邸",true,true);
+        var node=_setup.Nodes.All[id];
+        var cell=_setup.Cells[node.Cell];
+        var origin=_setup.Routes.Position(node.Cell,node.Center);
+        const string label="官邸";
+        var size=_font.MeasureString(label);
+        var offset=WorldTerrain.Offset(_setup.WorldSeed);
+        bool Project(Vector3 point,out Vector2 at)
+        {
+            if(_statusGlobe)
+                return _world.ProjectVisible(point,cell.Normal,_yaw,_pitch,StatusGlobeArea,out at,WorldTerrain.ReliefAt(cell,point,offset));
+            at=_net.AnimatedSurfacePosition(node.Cell,point,_setup,NetPanel);
+            return true;
+        }
+        if(!Project(origin,out var anchor) || !MapViewBounds.Contains(anchor.ToPoint()))return;
+        // Project both axes on the map face so the lettering follows its rotation and tilt.
+        if(!Project(origin+cell.U*.1f,out var along) || !Project(origin+cell.V*.1f,out var down))return;
+        var right=along-anchor;var forward=down-anchor;
+        if(right.X<0)right=-right;
+        if(right.X*forward.Y-right.Y*forward.X<0)forward=-forward;
+        if(MathF.Abs(right.X*forward.Y-right.Y*forward.X)<4)return;
+        var center=anchor+forward*1.55f;
+        var x=right*1.65f/size.X;var y=forward*.85f/size.Y;
+        var topLeft=center-(x*size.X+y*size.Y)/2;
+        var ground=Matrix.Identity;
+        ground.M11=x.X;ground.M12=x.Y;ground.M21=y.X;ground.M22=y.Y;
+        ground.Translation=new(topLeft,0);
+        var canvas=CanvasBounds();
+        var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
+        _spriteBatch.End();
+        _spriteBatch.Begin(transformMatrix:ground*transform,rasterizerState:clip);
+        _spriteBatch.DrawString(_font,label,Vector2.Zero,new Color(251,229,181));
+        _spriteBatch.End();
+        _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
     }
-    private void DrawAdjacentOffice(int id,string title,bool onLand,bool residence)
+    private void DrawAdjacentOffice(int id,string title,bool onLand)
     {
         if(id<0 || id>=_setup.Nodes.All.Length || MapTransitionActive || _net.IsAnimating)return;
         var node=_setup.Nodes.All[id];var surface=_setup.Cells[node.Cell];Vector2 at;
@@ -41,7 +73,7 @@ public partial class Game1
         }else at=_net.NodePosition(_setup,node,NetPanel);
         if(!MapViewBounds.Contains(at.ToPoint()))return;
         // Temporary adjacent office annotation, independent of generated world landmarks and saves.
-        var center=new Vector2(Math.Clamp(at.X+(residence?-65:60),MapViewBounds.Left+65,MapViewBounds.Right-65),Math.Clamp(at.Y-62,MapViewBounds.Top+88,MapViewBounds.Bottom-60));
+        var center=new Vector2(Math.Clamp(at.X+60,MapViewBounds.Left+65,MapViewBounds.Right-65),Math.Clamp(at.Y-62,MapViewBounds.Top+88,MapViewBounds.Bottom-60));
         var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         var old=GraphicsDevice.ScissorRectangle;_spriteBatch.End();
         using var clip=new RasterizerState{ScissorTestEnable=true};GraphicsDevice.ScissorRectangle=OrientationClip(canvas);
@@ -59,11 +91,6 @@ public partial class Game1
             Box(0,.1f,1.8f,1.1f,cream);Box(0,-.6f,2,.25f,accent);Box(0,.72f,2.1f,.2f,cream);
             foreach(float x in new[]{-.65f,-.32f,.32f,.65f}){Box(x,.07f,.16f,.65f,cream);Bar(x,-.18f,.12f,.18f,new Color(104,167,195));}
             Box(0,.4f,.28f,.55f,accent);Line(0,-.78f,0,-1.35f,.08f,ink);Box(.3f,-1.2f,.55f,.27f,accent);
-            if(residence){
-                Line(-1,-.78f,0,-1.16f,.2f,ink);Line(0,-1.16f,1,-.78f,.2f,ink);
-                Line(-.9f,-.78f,0,-1.1f,.1f,accent);Line(0,-1.1f,.9f,-.78f,.1f,accent);
-                Box(0,.78f,2.35f,.15f,cream);
-            }
         }else{
             Box(0,-.05f,1.15f,.65f,cream);Box(.28f,-.5f,.3f,.3f,accent);
             foreach(float x in new[]{-.36f,0,.36f})Bar(x,-.12f,.18f,.18f,new Color(104,167,195));

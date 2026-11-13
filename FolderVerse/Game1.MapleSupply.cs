@@ -42,6 +42,17 @@ public partial class Game1
     }
 
     private int[] MapleTargets()=>FunctionalDeliveryRoutes.Targets(_setup,_populationNode).Where(n=>_setup.Nodes.All[n].Owner>=0).ToArray();
+    private Dictionary<int,MaplePackage> AssemblyMaterials(RobotStore store)
+    {
+        var stored=HangarMaterials(_hangarSlots,store,store.MaplePackages,positions:_maplePositions);
+        var incoming=_setup.Robots.MapleShipments.Where(o=>o.Target==HangarPlanningNode)
+            .Select(o=>_setup.Robots.Nodes[o.Source].MaplePackages.FirstOrDefault(p=>p.Id==o.PackageId))
+            .OfType<MaplePackage>();
+        foreach(var pair in HangarMaterials(_hangarSlots,store,incoming,occupied:stored))
+            stored.Add(pair.Key,pair.Value);
+        return stored;
+    }
+    private bool MapleArrival(MaplePackage package)=>_setup.Robots.MapleShipments.Any(o=>o.Target==HangarPlanningNode && o.PackageId==package.Id);
     private bool MapleHangarInput(MouseState mouse,bool click,bool escape)
     {
         if(_mapleSelected is long id)
@@ -74,7 +85,7 @@ public partial class Game1
         var store=_setup.Robots.Nodes[_populationNode];
         SyncHangarSlots();
         var forecast=PlanningStock.Nodes[HangarPlanningNode];
-        var materials=HangarMaterials(_hangarSlots,forecast,forecast.MaplePackages,positions:_maplePositions);
+        var materials=AssemblyMaterials(forecast);
         var hit=materials.FirstOrDefault(p=>VisibleAssemblySlots().Contains(p.Key/3) && Rectangle.Union(AssemblyPartBounds(p.Key/3,p.Key%3),AssemblyPartBounds(p.Key/3,p.Key%3+p.Value.Sections-1)).Contains(_pointer));
         if(_mapleDrag is not long sourceId){
             if(hit.Value==null || !store.MaplePackages.Any(p=>p.Id==hit.Value.Id))return false;

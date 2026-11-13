@@ -652,6 +652,7 @@ public partial class Game1 : Game
             using var globeClip=new RasterizerState{ScissorTestEnable=true};
             GraphicsDevice.ScissorRectangle=OrientationClip(canvas);
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
+            if(!_reservationDirectory)DrawConquerorResidences(globeClip);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
             if(!_reservationDirectory){if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();}_spriteBatch.End();
         }
@@ -663,10 +664,11 @@ public partial class Game1 : Game
             _net.SelectedCell=_transportOverview || _net.ShowRoutes?-1:_selectedMapCell;
             _net.Draw(_ui,_setup,NetPanel,_transportOverview?-1:(_statusCell>=0?_statusCell:_selectedMapCell),_animationTime,false);_ui.Pointer=mapPointer;_spriteBatch.End();
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clipping);
+            if(!_reservationDirectory)DrawConquerorResidences(clipping);
             _net.DrawMapObjects(_ui,_setup,NetPanel,_animationTime);_spriteBatch.End();
         }
         _spriteBatch.Begin(transformMatrix:transform);
-        if(!_reservationDirectory){DrawConquerorResidences();DrawRegionOffice();DrawSalvageMap();}
+        if(!_reservationDirectory){DrawRegionOffice();DrawSalvageMap();}
         _spriteBatch.End();
         if(!MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);

@@ -152,7 +152,7 @@ public partial class Game1
         long source=_hangarDrag.Value;_hangarDrag=null;
         int destination=VisibleAssemblySlots().FirstOrDefault(i=>AssemblyCell(i).Contains(_pointer),-1);
         if(destination<0){_hangarMessage="ドラッグを取り消しました";return;}
-        var cargo=HangarMaterials(_hangarSlots,store,store.MaplePackages,positions:_maplePositions);
+        var cargo=AssemblyMaterials(store);
         if(Enumerable.Range(0,3).Any(row=>MaterialOccupies(cargo,destination,row) && (_hangarPart&HangarPart(row))!=0)){
             _hangarMessage="この区画には楓の木があります";return;
         }
@@ -181,9 +181,16 @@ public partial class Game1
         _deliveryTagHint="";
         SyncHangarSlots();
         var workshop=PlanningWorkshop(_populationNode);var store=PlanningStock.Nodes[HangarPlanningNode];
+        var materials=AssemblyMaterials(store);
         _ui.Box(new(54,150,850,825),new(27,49,62));
         _ui.Text($"格納庫 {store.Count}/{store.TotalCapacity}",new(84,256),.28f,Cream);
-        _ui.Text(HangarPlanningNode==_populationNode?"入荷・機能移転・組替後の予定":"移転先での格納・組替予定",new(232,256),.28f,Cream);DrawHangarUndo();
+        int mapleArrivals=_setup.Robots.MapleShipments.Count(o=>o.Target==HangarPlanningNode);
+        string forecast=HangarPlanningNode==_populationNode?"入荷・機能移転・組替後の予定":"移転先での格納・組替予定";
+        if(mapleArrivals>0){
+            int waiting=mapleArrivals-materials.Values.Count(MapleArrival);
+            forecast=$"楓の木 / 入荷予定 {mapleArrivals} 件"+(waiting>0?$" / 空き待ち {waiting} 件":"");
+        }
+        _ui.Text(forecast,new(232,256),.28f,Cream);DrawHangarUndo();
 
 
         bool manage=DomesticOperationsAllowed && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
@@ -199,7 +206,6 @@ public partial class Game1
         else
         {
         DrawHangarContinuation();
-        var materials=HangarMaterials(_hangarSlots,store,store.MaplePackages,positions:_maplePositions);
         foreach(int slot in VisibleAssemblySlots())
         {
             var cell=AssemblyCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
@@ -270,9 +276,11 @@ public partial class Game1
             for(int row=0;row<3;row++)if(materials.TryGetValue(slot*3+row,out var package)){
                 var bounds=Rectangle.Union(AssemblyPartBounds(slot,row),AssemblyPartBounds(slot,row+package.Sections-1));
                 _ui.Box(bounds,new Color(30,48,60));
-                DrawMaplePackage(bounds,package,opacity:_mapleDrag==package.Id && _mapleMoved?.4f:1,compact:true);
+                bool arrival=MapleArrival(package);
+                DrawMaplePackage(bounds,package,opacity:arrival?.55f:_mapleDrag==package.Id && _mapleMoved?.4f:1,compact:true);
+                if(arrival)DrawDirectDeliveryTag(bounds,"入荷予定");
                 if(bounds.Contains(_pointer)){
-                    hover=package.Sections==1?"楓の木 / ドラッグで移動・合算 / Shift＋ドラッグで分解 / クリックで出荷":"楓の木 / ドラッグで移動 / クリックで出荷";
+                    hover=arrival?"楓の木 / 入荷予約":package.Sections==1?"楓の木 / ドラッグで移動・合算 / Shift＋ドラッグで分解 / クリックで出荷":"楓の木 / ドラッグで移動 / クリックで出荷";
                     hoveringPart=true;
                 }
             }

@@ -112,6 +112,10 @@ class Checks:Game1{
   Set("_pointer",to);Call("DirectPairInput",Mouse(to,ButtonState.Released),false,false);
   Check(w.Robots.MapleShipments.Any(o=>o.Source==a && o.Target==b && o.PackageId==cargo),"Dragging maple reserves delivery to the other hangar");
   Check(((Dictionary<int,MaplePackage>)Call("DirectIncomingMaterials",1))[8].Id==cargo,"Maple preview follows the drop cell");
+  Set("_populationNode",b);
+  Call("SyncHangarSlots");
+  Check(((Dictionary<int,MaplePackage>)Call("AssemblyMaterials",w.Robots.Nodes[b])).Values.Any(p=>p.Id==cargo),
+    "An incoming maple shipment appears in the ordinary destination hangar");
   var copied=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
   typeof(RobotWorld).GetMethod("ResolveMapleShipments",F)!.Invoke(copied.Robots,new object[]{copied});
   Check(copied.Robots.Nodes[a].MapleUnits==0 && copied.Robots.Nodes[b].MapleUnits==16,"Reserved material arrives in the destination hangar");
