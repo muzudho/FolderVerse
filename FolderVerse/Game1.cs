@@ -152,6 +152,13 @@ public partial class Game1 : Game
         if(!IsOpeningScreen && !_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         if(IsOpeningScreen){OpeningInput(click,enter,escape,gameTime.ElapsedGameTime.TotalSeconds,keyboard);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        // The full-width album covers the map and inspector controls.
+        if(IsStatusScreen && FactoryAlbumOpen)
+        {
+            if(escape)_factoryPlanLine=-1;
+            else if(click)NodeFactoryClick(_pointer);
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
         if(UpdateSubordinateDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) || UpdateComputerDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) ||
             HandleComputerMarches(gameTime,escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -226,12 +233,6 @@ public partial class Game1 : Game
         bool captureChord=keyboard.IsKeyDown(Keys.P) && (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
         bool previousChord=_previousKeyboard.IsKeyDown(Keys.P) && (_previousKeyboard.IsKeyDown(Keys.LeftControl) || _previousKeyboard.IsKeyDown(Keys.RightControl));
         if(active && captureChord && !previousChord)_screenshots.Request();
-        if (IsStatusScreen && FactoryAlbumOpen)
-        {
-            if (escape) _factoryPlanLine = -1;
-            else if (click) NodeFactoryClick(_pointer);
-            _previousMouse=mouse;_previousKeyboard=keyboard;return;
-        }
         if(IsStatusScreen && active && FactionPickerInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && active && (click || escape) && ReservationDirectoryInput(_pointer,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && active && (click || escape) && (click || _directMap || _mapOverlayMenu || _functionTransferMap) && MapOverlayClick(_pointer,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}

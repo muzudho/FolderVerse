@@ -55,6 +55,11 @@ sealed class WorkerPlansUi:Game1
    Set("_pointer",Rect("FactoryAlbumCard",choice).Center);
   }
   if(frame==6){
+   var upperRight=Rect("FactoryAlbumCard",5);
+   Click(new Point(upperRight.Right-8,upperRight.Bottom-8));
+   Check(line.SelectedPlan==5 && (int)Get("_factoryPlanLine")==-1,"Upper-right card selects from its lower corner");
+   Click(Rect("FactoryRobotButton",1,line.ProductionPeriod).Center);
+   Check((int)Get("_factoryPlanLine")==1,"Reopen after selecting the upper-right card");
    Click(Rect("FactoryAlbumCard",10).Center);
    Check(line.SelectedPlan==10 && (int)Get("_factoryPlanLine")==-1,"Right-side album click selects the exact plan");
    Click(Rect("FactoryRobotButton",1,line.ProductionPeriod).Center);
