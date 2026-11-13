@@ -29,6 +29,7 @@ public sealed partial class ConquestCampaign
         if(party.Length>0)world.SelectTurnRuler(party[0]);
         ComputerLogistics.Plan(world,automaticAll);
         ComputerFunctionTransfers.Plan(world,automaticAll);
+        ComputerNodePurposes.Plan(world,automaticAll);
         if(deferDelivery?.Invoke()==true)return false;
         BeginDelivery(world);
         return true;

@@ -187,8 +187,8 @@ public partial class Game1
         int mapleArrivals=_setup.Robots.MapleShipments.Count(o=>o.Target==HangarPlanningNode);
         string forecast=HangarPlanningNode==_populationNode?"入荷・機能移転・組替後の予定":"移転先での格納・組替予定";
         if(mapleArrivals>0){
-            int waiting=mapleArrivals-materials.Values.Count(MapleArrival);
-            forecast=$"楓の木 / 入荷予定 {mapleArrivals} 件"+(waiting>0?$" / 空き待ち {waiting} 件":"");
+            int waiting=_setup.Robots.PreviewBlockedMapleArrivals(_setup,HangarPlanningNode,store);
+            forecast=$"楓の木 / 入荷予定 {mapleArrivals} 件"+(waiting>0?$" / 待機 {waiting} 件":"");
         }
         _ui.Text(forecast,new(232,256),.28f,Cream);DrawHangarUndo();
 

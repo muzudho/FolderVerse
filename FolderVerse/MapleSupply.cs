@@ -152,10 +152,23 @@ public sealed partial class RobotWorld
             var pack=source.MaplePackages.FirstOrDefault(p=>p.Id==order.PackageId);
             if(pack==null || world.Nodes.All[order.Source].Owner!=order.Owner){_mapleShipments.Remove(order);continue;}
             if(!CanDeliverMaple(world,order.Owner,order.Source,order.Target))continue;
-            int reserved=ProductionIntakes.Count(i=>(i.Target??i.Source)==order.Target)+Workshops[order.Target].ReservedSlots;
-            if(!target.TryReceiveMaple(pack,reserved,id=>MapleShipping(order.Target,id)))continue;
+            if(!target.TryReceiveMaple(pack,MapleReservedSlots(order.Target),id=>MapleShipping(order.Target,id)))continue;
             source.SetMaplePackages(source.MaplePackages.Where(p=>p.Id!=pack.Id).ToArray());
             _mapleShipments.Remove(order);
         }
+    }
+
+    internal int PreviewBlockedMapleArrivals(WorldSetup world,int node,RobotStore forecast)
+    {
+        var target=forecast.PlanningCopy();
+        int blocked=0;
+        // The hangar forecast already includes manufactured arrivals.
+        int reserved=Workshops[node].ReservedSlots;
+        foreach(var order in MapleShipments.Where(o=>o.Target==node)){
+            var package=Nodes[order.Source].MaplePackages.FirstOrDefault(p=>p.Id==order.PackageId);
+            if(package==null || !CanDeliverMaple(world,order.Owner,order.Source,node) ||
+                !target.TryReceiveMaple(package,reserved,id=>MapleShipping(node,id)))blocked++;
+        }
+        return blocked;
     }
 }

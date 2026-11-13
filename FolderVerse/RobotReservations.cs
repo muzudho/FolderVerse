@@ -43,6 +43,7 @@ public sealed partial class RobotWorld
 
     internal void ApplyNodePurposeReservations(WorldSetup world)
     {
+        var manual=world.ManualRulers().ToHashSet();
         foreach(var node in world.Nodes.All){
             var role=node.Purpose switch {
                 NodePurpose.Defense=>HangarReservation.Defense,
@@ -50,9 +51,15 @@ public sealed partial class RobotWorld
                 _=>HangarReservation.None
             };
             if(!node.Functional || node.Owner<0 || role==HangarReservation.None)continue;
-            foreach(var robot in Nodes[node.Id].Robots.ToArray())
-                if(robot.Owner==node.Owner && robot.CanFight && !robot.Disposal && CanShip(node.Id,robot))
-                    ToggleReservation(node.Id,robot.Id,role);
+            var stock=Nodes[node.Id].Robots.ToArray();
+            var candidates=stock.Where(robot=>robot.Owner==node.Owner && robot.CanFight &&
+                CanShip(node.Id,robot) && CanSetReservation(node.Id,robot,role));
+            if(!manual.Contains(node.Owner)){
+                // Leave the expedition force available for the military planner.
+                if(stock.Any(r=>r.Owner==node.Owner && (r.DefenseOnly || r.InterceptOnly)))continue;
+                candidates=candidates.Take(candidates.Skip(1).Any()?1:0);
+            }
+            foreach(var robot in candidates)ToggleReservation(node.Id,robot.Id,role);
         }
     }
     public void ConfigureFactories(WorldSetup world)

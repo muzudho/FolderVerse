@@ -111,6 +111,15 @@ class Checks:Game1{
   Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);
   Set("_pointer",to);Call("DirectPairInput",Mouse(to,ButtonState.Released),false,false);
   Check(w.Robots.MapleShipments.Any(o=>o.Source==a && o.Target==b && o.PackageId==cargo),"Dragging maple reserves delivery to the other hangar");
+  var forecast=new RobotStore();
+  typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(forecast,new object[]{1});
+  typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(forecast,new object[]{new[]{new MaplePackage(-1,32),new MaplePackage(-2,1)}});
+  var blockedMaple=typeof(RobotWorld).GetMethod("PreviewBlockedMapleArrivals",F)!;
+  Check((int)blockedMaple.Invoke(w.Robots,new object[]{w,b,forecast})! == 1,"Maple preview detects a full hangar when the shipment cannot be absorbed");
+  typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(w.Robots.Nodes[a],new object[]{new[]{new MaplePackage(cargo,8)}});
+  Check((int)blockedMaple.Invoke(w.Robots,new object[]{w,b,forecast})! == 0 && forecast.MapleUnits==33,
+    "Maple preview accepts a merge into a full hangar without mutating its stock");
+  typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(w.Robots.Nodes[a],new object[]{new[]{new MaplePackage(cargo,16)}});
   Check(((Dictionary<int,MaplePackage>)Call("DirectIncomingMaterials",1))[8].Id==cargo,"Maple preview follows the drop cell");
   Set("_populationNode",b);
   Call("SyncHangarSlots");
