@@ -1,4 +1,5 @@
 namespace FolderVerse;
+using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
 
@@ -97,23 +98,35 @@ public partial class Game1
 
     private void DrawFactoryAlbumEquipment(Rectangle card, RobotEquipment gear, Color ink)
     {
-        int x = card.X + 38, y = card.Bottom - 23;
+        DrawEquipmentCounts(new Rectangle(card.X+38,card.Bottom-23,204,20),gear,ink);
+    }
+
+    private void DrawEquipmentCounts(Rectangle area,RobotEquipment gear,Color ink)
+    {
+        int group=area.Width/3;
+        float scale=Math.Min(1,Math.Min(area.Height/20f,group/48f));
+        int x=area.X,y=area.Y+(area.Height-(int)(16*scale))/2;
+        void Box(int dx,int dy,int width,int height,Color color)=>_ui.Box(
+            new(x+(int)(dx*scale),y+(int)(dy*scale),Math.Max(1,(int)(width*scale)),Math.Max(1,(int)(height*scale))),color);
+        void Tile(int dx,int dy,int width,int height,float angle,Color color)=>_ui.Tile(
+            new(x+dx*scale,y+dy*scale),new(width*scale,height*scale),angle,color);
+        void Count(int value,int offset)=>_ui.Text(value.ToString(),new(x+offset*scale,y-2*scale),.34f*scale,ink);
         var shield = new Color(59, 105, 135);
-        _ui.Box(new(x, y, 18, 9), shield);
-        _ui.Box(new(x + 3, y + 9, 12, 4), shield);
-        _ui.Box(new(x + 6, y + 13, 6, 3), shield);
-        _ui.Text(gear.Shields.ToString(), new(x + 24, y - 2), .34f, ink);
+        Box(0,0,18,9,shield);
+        Box(3,9,12,4,shield);
+        Box(6,13,6,3,shield);
+        Count(gear.Shields,22);
 
-        x += 68;
-        _ui.Tile(new(x + 10, y + 6), new(17, 5), -MathHelper.PiOver4, new Color(102, 116, 120));
-        _ui.Tile(new(x + 5, y + 11), new(10, 3), MathHelper.PiOver4, ink);
-        _ui.Tile(new(x + 3, y + 14), new(7, 4), -MathHelper.PiOver4, ink);
-        _ui.Text(gear.Daggers.ToString(), new(x + 24, y - 2), .34f, ink);
+        x += group;
+        Tile(10,6,17,5,-MathHelper.PiOver4,new Color(102,116,120));
+        Tile(5,11,10,3,MathHelper.PiOver4,ink);
+        Tile(3,14,7,4,-MathHelper.PiOver4,ink);
+        Count(gear.Daggers,22);
 
-        x += 68;
-        _ui.Box(new(x, y + 6, 14, 6), ink);
-        _ui.Box(new(x + 11, y + 5, 11, 3), ink);
-        _ui.Box(new(x + 2, y + 10, 5, 6), ink);
-        _ui.Text(gear.Rifles.ToString(), new(x + 26, y - 2), .34f, ink);
+        x += group;
+        Box(0,6,14,6,ink);
+        Box(11,5,11,3,ink);
+        Box(2,10,5,6,ink);
+        Count(gear.Rifles,24);
     }
 }

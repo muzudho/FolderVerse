@@ -8,6 +8,7 @@ public partial class Game1
     private readonly int[] _directPages=new int[2];
     private static Rectangle HangarUp=>new(HangarDown.X,276,HangarDown.Width,HangarDown.Height);
     private static Rectangle HangarDown=>new(84,833,780,24);
+    private static readonly Rectangle HangarLeft=new(56,300,24,530),HangarRight=new(868,300,24,530);
     private int _hangarScrollDirection;
     private float _hangarScrollAt;
     private int FunctionPageCount(int node)=>Math.Max(1,(PlanningStock.Nodes[node].TotalCapacity+11)/12);
@@ -15,14 +16,19 @@ public partial class Game1
     private bool HangarPageClick(Point p)
     {
         int direction=HangarScrollDirection(p);
-        if(direction==0 || HangarLastRow==0)return false;
+        if(direction==0)return false;
         _hangarDrag=null;
         ScrollHangar(direction);
         return true;
     }
-    private static int HangarScrollDirection(Point p)=>HangarUp.Contains(p)?-1:HangarDown.Contains(p)?1:0;
-    private int HangarLastRow=>Math.Max(0,(_hangarSlots.Length-HangarSlotsPerPage+HangarColumns-1)/HangarColumns);
-    private void ScrollHangar(int direction)=>_hangarPage=Math.Clamp(_hangarPage+direction,0,HangarLastRow);
+    private static int HangarScrollDirection(Point p)=>HangarUp.Contains(p)?-1:HangarDown.Contains(p)?1:
+        HangarLeft.Contains(p)?-2:HangarRight.Contains(p)?2:0;
+    private int HangarLastRow=>Math.Max(0,HangarGridRows-HangarZoom.Y);
+    private void ScrollHangar(int direction)
+    {
+        if(Math.Abs(direction)==1)_hangarPage=Math.Clamp(_hangarPage+direction,0,HangarLastRow);
+        else _hangarColumn=Math.Clamp(_hangarColumn+Math.Sign(direction),0,HangarLastColumn);
+    }
     private void UpdateHangarDragScroll(bool held)
     {
         int direction=held && _hangarDrag.HasValue?HangarScrollDirection(_pointer):0;
@@ -36,20 +42,26 @@ public partial class Game1
     }
     private void DrawHangarPages()
     {
-        if(HangarLastRow==0)return;
         DrawArrow(HangarUp,-1,_hangarPage>0);
         DrawArrow(HangarDown,1,_hangarPage<HangarLastRow);
-        _ui.Center($"{_hangarPage+1}/{HangarLastRow+1}",
-            new(HangarUp.Right-94,HangarUp.Y,90,HangarUp.Height),.38f,Cream);
+        DrawArrow(HangarLeft,-2,_hangarColumn>0);
+        DrawArrow(HangarRight,2,_hangarColumn<HangarLastColumn);
+        _ui.Center($"{HangarZoom.X}×{HangarZoom.Y}   {_hangarColumn+1}/{HangarLastColumn+1}  {_hangarPage+1}/{HangarLastRow+1}",
+            new(HangarUp.Right-240,HangarUp.Y,236,HangarUp.Height),.32f,Cream);
 
         void DrawArrow(Rectangle button,int direction,bool enabled)
         {
             var fill=enabled && button.Contains(_pointer)?Accent:Muted;
             var ink=UiPainter.ContrastInk(fill)*(enabled?1f:.4f);
             _ui.Box(button,fill);
-            float x=button.Center.X;
-            _ui.Tile(new(x-6,button.Center.Y),new(15,3),direction*MathHelper.PiOver4,ink);
-            _ui.Tile(new(x+6,button.Center.Y),new(15,3),-direction*MathHelper.PiOver4,ink);
+            int sign=Math.Sign(direction);
+            if(Math.Abs(direction)==1){
+                _ui.Tile(new(button.Center.X-6,button.Center.Y),new(15,3),sign*MathHelper.PiOver4,ink);
+                _ui.Tile(new(button.Center.X+6,button.Center.Y),new(15,3),-sign*MathHelper.PiOver4,ink);
+            }else{
+                _ui.Tile(new(button.Center.X,button.Center.Y-6),new(15,3),-sign*MathHelper.PiOver4,ink);
+                _ui.Tile(new(button.Center.X,button.Center.Y+6),new(15,3),sign*MathHelper.PiOver4,ink);
+            }
         }
     }
     private static Rectangle FactoryPagePrevious=>new(660,926,62,30);

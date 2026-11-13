@@ -33,14 +33,15 @@ public partial class Game1
 
     private void DrawHangarContinuation()
     {
-        const int width = 28;
+        if(_hangarZoom!=1)return;
+        const int width = 22;
         var surround = new Color(27, 49, 62);
         for (int row = 0; row < 2; row++)
         {
             var first = HangarCell(row * HangarColumns);
             var last = HangarCell(row * HangarColumns + HangarColumns - 1);
-            DrawEdge(first.Left - width - 2, first.Y, true, _hangarPage > 0);
-            DrawEdge(last.Right + 2, last.Y, false, _hangarPage < HangarLastRow);
+            DrawEdge(first.Left - width - 2, first.Y, true, _hangarColumn > 0);
+            DrawEdge(last.Right + 2, last.Y, false, _hangarColumn < HangarLastColumn);
         }
 
         void DrawEdge(int x, int y, bool left, bool continues)
