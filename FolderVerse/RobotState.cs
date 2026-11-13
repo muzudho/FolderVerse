@@ -228,7 +228,7 @@ public sealed partial class RobotWorld
     {
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)SyncWorkers(n);
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));Workshops[n].CompleteDisposal(Nodes[n]);}
-        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){HarvestMaple(n,owner(n));Workshops[n].CompleteProduction(this,n,owner(n));Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));if(owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));}
+        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].CompleteProduction(this,n,owner(n));Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));if(owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));}
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)SyncWorkers(n);IndustryTurn++;Check();
     }
     public void Advance(Func<int,int,bool> connected,Func<int,int> owner,int seed,Func<int,bool> locked=null,Func<int,int,bool> canEnter=null,bool industry=true,Func<int,bool> directLocked=null)
@@ -249,7 +249,7 @@ public sealed partial class RobotWorld
             for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true && owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));
             Transport.ResolvePlans(this,connected,seed,locked,canEnter);
         }finally{_arrivalLocked=null;}
-        if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){HarvestMaple(n,owner(n));Workshops[n].CompleteProduction(this,n,owner(n));}
+        if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].CompleteProduction(this,n,owner(n));
         if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true && owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)SyncWorkers(n);

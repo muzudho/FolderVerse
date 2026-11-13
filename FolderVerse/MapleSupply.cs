@@ -35,14 +35,22 @@ public sealed partial class RobotWorld
         if(woodland.Length>0 && !_mapleDeposits.Any(p=>p>0))_mapleDeposits[woodland[0].Id]=4;
     }
 
-    private void HarvestMaple(int node,int owner)
+    public int MapleAvailableToPlan(int node,RobotWorkshop editing)
+        =>Math.Max(0,MapleDeposit(node)-Workshops[node].ProductionLines.Where(l=>!ReferenceEquals(l,editing)).Sum(l=>l.MapleRemaining));
+
+    internal bool CanHarvestMaple(int node)
+        =>MapleDeposit(node)>0 && Nodes[node].HasSpace &&
+            Nodes[node].Count+ProductionIntakes.Count(i=>(i.Target??i.Source)==node)<Nodes[node].StorageLimit-Workshops[node].ReservedSlots;
+
+    internal bool HarvestMaple(int node)
     {
-        if(owner<0 || MapleDeposit(node)==0 || (IndustryTurn+1)%IndustryTime.UnitsPerTurn!=0)return;
+        if(!CanHarvestMaple(node))return false;
         var store=Nodes[node];
         int reserved=ProductionIntakes.Count(i=>(i.Target??i.Source)==node)+Workshops[node].ReservedSlots;
-        if(!store.TryReceiveMaple(new(_nextId,MaplePackageSize),reserved,id=>MapleShipping(node,id)))return;
+        if(!store.TryReceiveMaple(new(_nextId,MaplePackageSize),reserved,id=>MapleShipping(node,id)))return false;
         _nextId++;
         _mapleDeposits[node]--;
+        return true;
     }
 
     internal void TransferMapleFunctions(int source,int target)

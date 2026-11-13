@@ -5,6 +5,10 @@ using Microsoft.Xna.Framework;
 
 public partial class Game1
 {
+    private bool _factoryHarvestPage;
+    private static readonly Rectangle FactoryHarvestTab=new(690,161,420,44);
+    private int FactoryHarvestAvailable(int node,RobotWorkshop[] lines,RobotWorkshop editing)
+        =>Math.Max(0,_setup.Robots.MapleDeposit(node)-lines.Where(l=>!ReferenceEquals(l,editing)).Sum(l=>l.MapleRemaining));
     private bool FactoryAlbumOpen => _nodeFactoryOpen && _factoryPlanLine >= 0 &&
         _setup.EquipmentMode == RobotEquipmentMode.Materials;
 
@@ -30,6 +34,24 @@ public partial class Game1
         _ui.Batch.Draw(_robotFactoryIcon, new Rectangle(1162, 166, 31, 31), Color.White);
         _ui.Text("産業ターン", new(1200, 175), .36f, ink);
         _ui.Text("閉じる：Esc / 枠の外をクリック", new(1400, 175), .36f, ink);
+        int deposit=_setup.Robots.MapleDeposit(node.Id);
+        if(_setup.Robots.MapleSupplyEnabled)
+            _ui.Button(FactoryHarvestTab,_factoryHarvestPage?"製造候補へ":$"採取 / 残り埋蔵量 {deposit} 荷",new Color(120,86,64),.38f);
+        if(_factoryHarvestPage)
+        {
+            int available=FactoryHarvestAvailable(node.Id,lines,line);
+            for(int loads=1;loads<=3;loads++)
+            {
+                var card=FactoryAlbumCard(loads-1);
+                _ui.Box(card,loads<=available?new Color(35,53,67):Muted);
+                DrawMaplePackage(new Rectangle(card.X+14,card.Y+12,card.Width-28,208),new MaplePackage(0,16));
+                _ui.Center($"楓の木を採取 ×{loads} 荷",new(card.X,card.Y+222,card.Width,39),.43f,Cream);
+                _ui.Center($"{loads} 産業ターン",new(card.X,card.Y+261,card.Width,26),.35f,Cream);
+                if(loads>available)_ui.Center("採取可能量を超えています",new(card.X,card.Y+289,card.Width,27),.32f,Cream);
+            }
+            _ui.Text($"残り埋蔵量 {deposit} 荷 / このレーンで予約できる量 {available} 荷",new(113,574),.48f,ink);
+            return;
+        }
 
         Robot mixedPreview = null;
         for (int i = 0; i < line.PlanCount; i++)

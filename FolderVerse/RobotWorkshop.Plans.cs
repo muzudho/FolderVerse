@@ -148,7 +148,8 @@ public sealed partial class RobotWorkshop
     public void SelectPlan(int index)
     {
         if(index<0 || index>=PlanCount)throw new System.ArgumentOutOfRangeException(nameof(index));
-        if(SelectedPlan==index)return;
+        if(SelectedPlan==index && MapleRemaining==0)return;
+        MapleRemaining=MapleProgress=0;
         SelectedPlan=index;Paused=false;CycleFinished=false;RestRemaining=ProducedSinceRest=0;
         if(index==3){Manufacturing=false;ProductionAge=WaitingProductionTurns=0;Paused=false;return;}
         var plan=PlanAt(index);Configure(plan.Product,plan.Turns);CheapProduct=plan.EffectiveCheapParts==plan.Product;IntegratedProduct=plan.IntegratedParts;_selectedProductPlan=plan;SelectedPlan=index;RestEnabled=true;

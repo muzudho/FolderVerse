@@ -91,7 +91,7 @@ public partial class Game1
         string destination=_setup.Nodes.DisplayName(node);
         _ui.Center(destination+" / 今回の納品が最も多い地点",new(54,92,1806,40),.48f,Cream);
         var lines=_setup.Robots.Workshops.SelectMany((w,n)=>w.ProductionLines
-            .Where(l=>(l.IntakeTarget??n)==_manufacturingNode && _setup.Nodes.All[n].Functional)
+            .Where(l=>(l.MapleRemaining>0?n:l.IntakeTarget??n)==_manufacturingNode && _setup.Nodes.All[n].Functional)
             .Select(l=>(Source:n,Line:l))).ToArray();
         const int lanesPerPage=3;
         int pages=Math.Max(1,(lines.Length+lanesPerPage-1)/lanesPerPage);
@@ -104,6 +104,7 @@ public partial class Game1
             int owner=_setup.Nodes.All[source].Owner;
             _ui.Box(new(78,y-24,782,196),item.index%2==0?new Color(37,63,77):new Color(46,67,79));
             _ui.Center((page*lanesPerPage+item.index+1).ToString(),new(84,y+22,62,96),1.35f,new Color(167,190,194));
+            if(line.MapleRemaining>0){DrawFactoryHarvestLane(line,source,item.index,y);continue;}
             _ui.Text(_setup.Nodes.DisplayName(_setup.Nodes.All[source]),new(160,y-19),.30f,Cream);
             int period=line.Manufacturing?line.ProductionPeriod:3;
             bool mapleWait=line.WaitingForMaple(_setup.Robots,source);
