@@ -104,7 +104,7 @@ public partial class Game1
             int owner=_setup.Nodes.All[source].Owner;
             _ui.Box(new(78,y-24,782,286),item.index%2==0?new Color(37,63,77):new Color(46,67,79));
             _ui.Center((page*lanesPerPage+item.index+1).ToString(),new(84,y-12,66,40),.85f,new Color(167,190,194));
-            if(line.MapleRemaining>0){DrawFactoryHarvestLane(line,source,item.index,y);continue;}
+            if(line.HarvestOnly || line.MapleRemaining>0){DrawFactoryHarvestLane(line,source,item.index,y,line.WorkerSnapshot);continue;}
             _ui.Text(_setup.Nodes.DisplayName(_setup.Nodes.All[source]),new(490,y-17),.30f,Cream);
             int period=line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[source].Purpose):3;
             bool mapleWait=line.WaitingForMaple(_setup.Robots,source);

@@ -185,11 +185,13 @@ public partial class Game1
             _ui.Box(new(78,y-24,782,286),l%2==0?new Color(37,63,77):new Color(46,67,79));
             _ui.Center((l+1).ToString(),new(84,y-12,66,40),.85f,new Color(167,190,194));
             if(!planned && !line.HarvestOnly && line.MapleRemaining==0)_ui.Button(FactoryIntakeButton(l-_factoryPage),"入荷先",Muted,.34f);
-            if(line.MapleRemaining>0){
-                DrawFactoryHarvestLane(line,node.Id,l-_factoryPage,y);
+            if(line.HarvestOnly || line.MapleRemaining>0){
+                var harvester=line.WorkerSnapshot;
+                if(harvester==null && (planned?plannedWorkerId:factory.WorkerAt(l)) is long harvesterId)
+                    harvester=_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==harvesterId);
+                DrawFactoryHarvestLane(line,node.Id,l-_factoryPage,y,harvester,planned);
                 continue;
             }
-            if(line.HarvestOnly){_ui.Text(planned?"採取レーン / 予約中":"採取レーン",new(250,y),.48f,Cream);_ui.Button(FactoryRobotButton(l-_factoryPage,3),"採取",Muted,.34f);continue;}
             DrawFactoryConveyor(line,node.Owner,l-_factoryPage,period);
             var product=FactoryConveyorProduct(l-_factoryPage,period,line);
             var arrow=FactoryConveyorArrow(product);
@@ -259,18 +261,30 @@ public partial class Game1
         }
 
     }
-    private void DrawFactoryHarvestLane(RobotWorkshop line,int node,int row,int y)
+    private void DrawFactoryHarvestLane(RobotWorkshop line,int node,int row,int y,Robot worker,bool planned=false)
     {
         var product=FactoryRobotButton(row,3);
+        if(worker!=null)
+        {
+            DrawFactoryWorker(y,worker,harvesting:true);
+            _ui.Text("採取員",new(91,y+58),.27f,Cream);
+        }
+        if(line.MapleRemaining==0)
+        {
+            _ui.Text(planned?"採取レーン / 予約中":"採取レーン",new(250,y),.48f,Cream);
+            _ui.Button(product,"採取",Muted,.34f);
+            return;
+        }
         _ui.Box(product,Accent);
         DrawMaplePackage(product,new MaplePackage(0,line.MapleRemaining*16));
+        if(worker!=null)DrawMaplePackageArt(new Rectangle(219,y+100,66,45),1);
         int deposit=_setup.Robots.MapleDeposit(node);
         bool waiting=!_setup.Robots.CanHarvestMaple(node,line.MapleRemaining);
         string status=line.Paused?"一時停止":deposit==0?"採取できる埋蔵量がありません":waiting?"格納枠の空きを待っています":"採取中";
         _ui.Text($"採取レーン / {status} / 予約残り {line.MapleRemaining} 荷",new(160,y-19),.33f,Cream);
         _ui.Text($"楓の木 / 残り埋蔵量 {deposit} 荷",new(400,y+46),.45f,Cream);
-        _ui.Text($"次の入荷まで {IndustryTime.Format(Math.Max(0,line.EffectiveHarvestPeriod(_setup.Nodes.All[_populationNode].Purpose)-line.MapleProgress))} 産業ターン",new(400,y+90),.33f,Cream);
-        DrawFactoryCaret(160+line.MapleProgress*34,y,line,waiting);
+        _ui.Text($"次の入荷まで {IndustryTime.Format(Math.Max(0,line.EffectiveHarvestPeriod(_setup.Nodes.All[node].Purpose)-line.MapleProgress))} 産業ターン",new(400,y+90),.33f,Cream);
+        DrawFactoryLaneStatus(y,!waiting && !line.Paused,status);
     }
     private void DrawFactoryCaret(int x,int y,RobotWorkshop line,bool mapleWait=false)
     {

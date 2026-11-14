@@ -71,7 +71,7 @@ public partial class Game1
         }
     }
 
-    private void DrawFactoryWorker(int y,Robot worker)
+    private void DrawFactoryWorker(int y,Robot worker,bool harvesting=false)
     {
         if(_factoryWorkerGear==null){
             using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots","factory-worker-gear-v001.png"));
@@ -83,6 +83,14 @@ public partial class Game1
             DrawRobotGlyph(bounds,worker);
 
         _spriteBatch.Draw(_factoryWorkerGear,new Rectangle(177,y+38,66,33),new Rectangle(46,139,622,426),Color.White);
+        if(harvesting)
+        {
+            var orange=new Color(248,132,42);
+            _ui.Tile(new Vector2(207,y+102),new Vector2(29,7),-.83f,orange);
+            _ui.Tile(new Vector2(207,y+102),new Vector2(25,2),-.83f,new Color(255,215,146));
+            _spriteBatch.Draw(_factoryWorkerGear,new Rectangle(222,y+112,32,18),new Rectangle(766,205,644,344),Color.White);
+            return;
+        }
         _spriteBatch.Draw(_factoryWorkerGear,new Rectangle(182,y+128,15,22),new Rectangle(1616,94,409,556),Color.White);
         _spriteBatch.Draw(_factoryWorkerGear,new Rectangle(222,y+116,43,24),new Rectangle(766,205,644,344),Color.White);
     }

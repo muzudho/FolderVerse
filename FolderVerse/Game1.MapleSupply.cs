@@ -24,7 +24,7 @@ public partial class Game1
     {
         int index=sections-1;
         if(_maplePackageArt[index]==null){
-            using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots",index==0?"maple-package-v002.png":$"maple-timber-{(index+1)*16}-v001.png"));
+            using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots",$"raw-maple-{sections}-v001.png"));
             _maplePackageArt[index]=Texture2D.FromStream(GraphicsDevice,stream);
         }
         var art=_maplePackageArt[index];
