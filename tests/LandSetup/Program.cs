@@ -98,10 +98,16 @@ var defaultStock=Scatter(100,RobotEquipmentMode.Materials);
 var fullStock=Scatter(100,RobotEquipmentMode.Materials,100);
 int Loads(RobotStore store)=>store.MaplePackages.Sum(p=>p.Units)/RobotWorld.MaplePackageSize;
 Check(noStock.Robots.Nodes.All(s=>Loads(s)==0),"Zero disables all starter stock");
-Check(defaultStock.Robots.Nodes.Any(s=>Loads(s)==0) && defaultStock.Robots.Nodes.Any(s=>Loads(s)>0),
-    "Default starter stock varies by location");
-Check(fullStock.Robots.Nodes.Any(s=>Loads(s)==3) && fullStock.Robots.Nodes.All(s=>Loads(s)<=3),
-    "Maximum yields three loads when space is available");
+Check(defaultStock.Robots.Nodes.Any(s=>s.HasSpace && Loads(s)==0) &&
+    defaultStock.Robots.Nodes.Any(s=>!s.HasSpace && Loads(s)>0),
+    "Default starter stock leaves some sites unstocked and fills others");
+int EmptySlots(WorldSetup world)=>world.Robots.Nodes.Sum(s=>s.StorageLimit-s.Count);
+int initialEmpty=EmptySlots(noStock);
+Check(initialEmpty-EmptySlots(defaultStock)==(initialEmpty*25+50)/100,
+    "25 fills one quarter of the world's initial empty slots");
+Check(EmptySlots(fullStock)==0,"100 fills every initial empty slot");
+Check(defaultStock.Robots.Nodes.Select(s=>s.Robots.ToArray()).Zip(noStock.Robots.Nodes)
+    .All(pair=>pair.First.SequenceEqual(pair.Second.Robots)),"Raw stock does not change initial robot placement");
 fullStock.Robots.Check();
 var materials=defaultStock;
 materials=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(materials));
@@ -131,11 +137,7 @@ foreach(var (node,worker) in assigned)
           "Released worker can fight and its lane disappears");
 }
 materials.Robots.Check();
-var harvestWorld=Scatter(100,RobotEquipmentMode.Materials);
-Check(harvestWorld.Nodes.All.Any(n=>harvestWorld.Robots.Nodes[n.Id].MaplePackages.Count>0 &&
-    harvestWorld.Robots.Nodes[n.Id].HasSpace &&
-    harvestWorld.Robots.Workshops[n.Id].ProductionLines.Any(l=>l.Manufacturing && !l.WaitingForMaple(harvestWorld.Robots,n.Id))),
-    "Starter stock feeds a production lane and leaves space for output");
+var harvestWorld=Scatter(100,RobotEquipmentMode.Materials,0);
 var stockBeforeHarvest=harvestSites.Select((node,i)=>harvestWorld.Robots.Nodes[node].MaplePackages
     .Where(p=>p.Material==initialMaterials[i]).Sum(p=>p.Units)).ToArray();
 // Isolate harvesting from simultaneous manufacturing intake reservations.
@@ -156,12 +158,14 @@ for(int i=0;i<harvestSites.Length;i++){
 Console.WriteLine("PASS: initial worker lanes, save round trip and release.");
 Console.WriteLine("PASS: initial harvest deposits and stock at maximum robot scatter.");
 
-var competing=Scatter(100,RobotEquipmentMode.Materials);
+var competing=Scatter(100,RobotEquipmentMode.Materials,0);
 int blockedSite=competing.Nodes.All.First(n=>competing.Robots.Workshops[n.Id].ProductionLines.Any(l=>l.HarvestOnly) &&
     competing.Robots.Workshops[n.Id].ProductionLines.Any(l=>!l.HarvestOnly) &&
     FunctionalDeliveryRoutes.Targets(competing,n.Id).Any(t=>competing.Nodes.All[t].Owner==n.Owner && competing.Robots.Nodes[t].HasSpace)).Id;
 var stock=competing.Robots;
 foreach(var workshop in stock.Workshops)workshop.AutoAssemblyDisabled=true;
+foreach(var store in stock.Nodes)
+    foreach(var robot in store.Robots.Where(r=>!r.Stationed).ToArray())store.Remove(robot.Id);
 // Recreate a crowded hangar independently of the starting stock distribution.
 var crowded=stock.Nodes[blockedSite];
 foreach(var loose in crowded.Robots.Where(r=>r.Parts!=RobotParts.Complete).ToArray())crowded.Remove(loose.Id);
