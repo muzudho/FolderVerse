@@ -176,7 +176,23 @@ sealed class WorkerPlansUi:Game1
    Check(factory.ProductionLines[1].HarvestOnly && factory.ProductionLines[1].MapleRemaining==1,
     "The harvest recipe survives confirmation of the role switch");
   }
+  if(frame==12){
+   (w,node)=Fixture.Create();
+   w.EquipmentMode=RobotEquipmentMode.Materials;
+   w.Robots.ConfigureFactories(w);
+   var worker=w.Robots.Create(0,RobotParts.Complete) with {
+    HeadOrigin=1,BodyOrigin=0,LegsOrigin=2,
+    HeadMaterial=RobotMaterial.Foam,BodyMaterial=RobotMaterial.Maple,LegsMaterial=RobotMaterial.Tin};
+   line=Fixture.Appoint(w,node,worker);
+   var snapshot=line.WorkerSnapshot!;
+   foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
+    Check(snapshot.Origin(part)==worker.Origin(part) && snapshot.Material(part)==worker.Material(part),
+     "Factory worker drawing retains each part's origin and material");
+   Set("_setup",w);
+   ((WorldPreview)Get("_world")).ShowSetup(w,true);
+   Call("OpenNodeInspector",node);Call("OpenNodeFactory");Call("UpdateDomesticSlide",1f);
+  }
   base.Draw(time);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"worker-plans-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);
-  if(frame++==11){Console.WriteLine("PASS: material album, hangar, harvest warnings and manufacturing-to-harvest reassignment.");Exit();}
+  if(frame++==12){Console.WriteLine("PASS: material album, hangar, harvest warnings, reassignment and mixed factory worker rendering.");Exit();}
  }
 }

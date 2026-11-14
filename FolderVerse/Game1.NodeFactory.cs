@@ -208,7 +208,7 @@ public partial class Game1
             _ui.Text(status,new(160,y-19),Math.Min(.3f,690/_font.MeasureString(status).X),Cream);
             int intakes=_setup.Robots.ProductionIntakes.Count(o=>ReferenceEquals(o.Line,line));
             if(intakes>0)_ui.Text($"入荷予約 {intakes}件",new(460,y+112),.3f,Accent);
-            if((planned?plannedWorkerId:factory.WorkerAt(l)) is long workerId){var worker=line.WorkerSnapshot??_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==workerId);if(worker!=null){DrawRobotGlyph(new(107,y+54,87,125),worker);_ui.Text("製造作業員",new(674,y+8),.3f,Accent);_ui.Text("ID "+workerId,new(674,y+36),.28f,Cream);if(!planned && line.WorkerSnapshot!=null)_ui.Text("任命時",new(674,y+62),.25f,Cream);}}
+            if((planned?plannedWorkerId:factory.WorkerAt(l)) is long workerId){var worker=line.WorkerSnapshot??_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==workerId);if(worker!=null){DrawFactoryWorker(y,worker);_ui.Text("製造作業員",new(674,y+8),.3f,Accent);_ui.Text("ID "+workerId,new(674,y+36),.28f,Cream);if(!planned && line.WorkerSnapshot!=null)_ui.Text("任命時",new(674,y+62),.25f,Cream);}}
             else _ui.Text("常設レーン",new(674,y+8),.3f,Cream*.7f);
         }
         }
