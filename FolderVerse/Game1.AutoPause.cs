@@ -12,7 +12,7 @@ public partial class Game1
     private bool ComputerExhibition=>!_demoActive && _setup.ComputerOnly && _setup.PlayerSlot>=0 &&
         _screen is Screen.WorldStatus or Screen.Transport or Screen.Battle or Screen.Industry or Screen.BattleResearch or Screen.Disposition;
     private bool BuildingWorld=>_screen is Screen.LandConquest or Screen.Fortune;
-    private bool AutomaticGame=>!_demoActive && !BuildingWorld && (_autoPlay || ComputerExhibition);
+    private bool AutomaticGame=>_screen!=Screen.Title && !_demoActive && !BuildingWorld && (_autoPlay || ComputerExhibition);
     private bool AutoPauseInput(bool click,bool escape)
     {
         if(!_autoPaused){
@@ -41,7 +41,7 @@ public partial class Game1
         else if(InactiveMenuItem.Contains(_pointer))_autoPausePage=2;
         else if(AutoMenuItem.Contains(_pointer))ResumeAutoPause();
         else if(EndingMenuItem.Contains(_pointer)){_autoPaused=false;StartEnding();}
-        else if(QuitMenuItem.Contains(_pointer)){_autoPaused=false;ReturnToTitle();}
+        else if(QuitMenuItem.Contains(_pointer))ReturnToTitle();
         return true;
     }
     private void ResumeAutoPause()

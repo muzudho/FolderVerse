@@ -308,14 +308,14 @@ public partial class Game1 : Game
             else if(IsStatusScreen && _populationCell>=0 && _nodeTransportOpen)_nodeTransportOpen=false;
             else if(IsStatusScreen && _populationCell>=0 && _nodeFactoryOpen)_nodeFactoryOpen=false;
             else if(IsStatusScreen && InspectorVisible)CloseNodeInspector();
-            else if(_screen==Screen.Title)Exit(); else { _screen=Screen.Title; _dragging=false; }
+            else if(_screen==Screen.Title)Exit(); else ReturnToTitle();
         }
         else if(_screen==Screen.Title)
         { if((click && StartButton.Contains(_pointer)) || enter)OpenTitleStartMenu(); }
         else if(_screen==Screen.ComputerPlayerCount)
         {if(click && BackButton.Contains(_pointer))_screen=Screen.PlayerCount;else ComputerPlayerCountInput(click,enter,keyboard);}
         else if(_screen==Screen.PlayerCount)
-        {if(click && BackButton.Contains(_pointer))_screen=Screen.Title;else PlayerCountInput(click,enter,keyboard);}
+        {if(click && BackButton.Contains(_pointer))ReturnToTitle();else PlayerCountInput(click,enter,keyboard);}
         else if(IsStatusScreen)
         {
             if(click && DomesticViewClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -389,7 +389,7 @@ public partial class Game1 : Game
         }
         else if(!IsCastScreen)
         {
-            if(click && BackButton.Contains(_pointer))_screen=Screen.Title;
+            if(click && BackButton.Contains(_pointer))ReturnToTitle();
             else if(click && WorldSeedButton.Contains(_pointer))_seedDialog.Open(SeedDialog.Target.World,_setup.WorldSeed);
             else if((click && ActionButton.Contains(_pointer)) || enter)
             { if(_screen==Screen.Rolling)_screen=Screen.Review; else BeginCast(); }

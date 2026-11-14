@@ -37,7 +37,19 @@ sealed class VerifyEnding:Game1
         Prepare(false,true);Call("UpdateDemo",10d,true,false,false,false,30d);Check(Screen=="Title" && !(bool)Get("_demoActive"),"Demo conquest returns to title and releases demo control");
         Prepare(false,true);Set("_endingBeforeIndustry",false);Set("_demoFinishStage",3);Set("_demoStepAge",8d);Call("UpdateDemo",.5d,true,false,false,false,40d);
         Check(Screen=="Title" && !(bool)Get("_demoActive"),"Timed demo ending also returns to title");
-        Console.WriteLine("PASS: human/exhibition results, same-world resume, automatic play restoration, Enter, once-only ending and demo conquest/time-limit title returns.");Exit();
+        Prepare(true);
+        Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
+        Set("_autoPlay",true);
+        Check((bool)Call("AutoPauseInput",true,false),"Exhibition opens the pause menu");
+        Set("_pointer",new Point(1500,260));
+        Check((bool)Call("AutoPauseInput",true,false) && Screen=="Title","Pause menu exits to title");
+        Check(!w.ComputerOnly && !(bool)Get("_autoPlay") && !(bool)Get("_autoPaused") &&
+            !(bool)Get("_statusMenuOpen"),"Title clears exhibition and automatic menu state");
+        Check(!(bool)Call("AutoPauseInput",true,false),"Title click is available to the start menu");
+        Set("_previousKeyboard",new KeyboardState());
+        Call("HandleInputCore",new MouseState(),new KeyboardState(Keys.Enter),new GameTime(),true);
+        Check((bool)Get("_titleMenuOpen") && !(bool)Get("_statusMenuOpen"),"Enter opens the start menu");
+        Console.WriteLine("PASS: ending resume, demo exit and exhibition pause-menu return to title.");Exit();
     }
     protected override void Update(GameTime time){}
 }

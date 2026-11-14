@@ -37,9 +37,23 @@ public partial class Game1
     }
     private void ReturnToTitle()
     {
-        _autoPaused=false;_autoPausePage=0;
         RecordPetitstellaMedals();
-        StopEndingMusic();StopBattleMusic();ClearAllNodeChecks();
+        _autoPlay=_autoPaused=_autoPauseComputerOnly=false;
+        _autoPausePage=_autoDomesticStage=0;
+        _autoAge=_autoStepAge=_autoDomesticAge=0;
+        _demoActive=_demoIntro=false;
+        _demoFade=-1;
+        _demoFinishStage=_demoWorldRoll=_demoCastRoll=0;
+        _titleIdle=0;
+        _endingBeforeIndustry=_endingWasAutoPlay=false;
+        _openingActive=_openingWorldSelected=false;
+        DisposeDepartingOpeningPlanet();
+        _computerMarches=null;_visibleComputerMarches=null;_computerDomesticNodes=null;
+        ClearComputerAssembly();
+        _computerViewRuler=_computerViewLeader=-1;
+        _countrySettingsOpen=_computerManualOpen=_bgmMenuOpen=false;
+        IsMouseVisible=!_graphics.IsFullScreen;
+        StopEndingMusic();StopBattleMusic();StopIndustryMusic();ClearAllNodeChecks();
         _operationSettingsOpen=false;_operationSettingsSlide=0;
         _dispositionScene=null;_tutorialCaptiveToastSeconds=0;
         FinishConquestOverview();_conquestOverviewTurn=-1;_tutorialMenuOpen=false;_tutorialAttackGuide=false;_tutorialAttackAchieved=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;
@@ -54,6 +68,7 @@ public partial class Game1
         _statusGlobe=true;_net.ShowRoutes=true;_net.ShowRobots=_net.ShowOtherCountries=true;_net.ShowCountryColors=false;_net.ControlledCountryColors=_world.ControlledCountryColors=false;_world.CountryColors=false;_mapDragListOpen=_mapLayerListOpen=_trafficLayerListOpen=false;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.GlobePan=Vector2.Zero;
         _robotPlaying=false;_endingWinner=-1;_endingAge=0;
         _setup.Campaign.Reset();_setup.Relations.Reset();_setup.Robots.Initialize(0,0);_setup.ClearPlacement();
+        _setup.SetPlayerCount(1);
         CheckAutoSave();_screen=Screen.Title;_inputOutcome="game_ended_to_title";
     }
     private void UpdateEnding(double elapsed,bool finish)

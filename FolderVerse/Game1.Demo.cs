@@ -24,8 +24,7 @@ public partial class Game1
         if(_demoFade>=0)
         {
             _demoFade+=(float)elapsed;
-            if(_demoFade>=.8f && _demoActive){_demoActive=false;ReturnToTitle();_titleIdle=0;IsMouseVisible=true;}
-            if(_demoFade>=1.4f)_demoFade=-1;
+            if(_demoFade>=.8f)ReturnToTitle();
             return true;
         }
         if(!_demoActive)
@@ -63,7 +62,6 @@ public partial class Game1
         if(_screen==Screen.Industry){UpdateIndustry(elapsed,false);_demoStepAge=0;return true;}
         if(_screen==Screen.Ending && _demoFinishStage==0){
             UpdateEnding(elapsed,false);
-            if(_screen==Screen.Title){_demoActive=false;_titleIdle=0;IsMouseVisible=true;}
             return true;
         }
         if(_screen==Screen.BattleResearch){UpdateBattleResearch(elapsed,false);_demoStepAge=0;return true;}
@@ -83,7 +81,7 @@ public partial class Game1
                 if(_demoFinishStage<=2)
                 {StatusMenuClick(button.Center);_demoFinishStage++;}
                 else
-                {_demoActive=false;_demoFinishStage=0;_demoWorldRoll=_demoCastRoll=0;ReturnToTitle();_titleIdle=0;IsMouseVisible=true;}
+                ReturnToTitle();
             }
             return true;
         }

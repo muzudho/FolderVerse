@@ -66,7 +66,7 @@ public partial class Game1
             if(_screen==Screen.OpeningReview){_screen=Screen.OpeningLottery;_openingAge=2;}
             else if(_screen==Screen.OpeningLottery){DisposeDepartingOpeningPlanet();_screen=Screen.ComputerPlayerCount;}
             else if(_screen==Screen.OpeningSpace){_screen=OpeningFixed?Screen.OpeningBook:Screen.ComputerPlayerCount;_openingAge=0;}
-            else {_openingActive=false;_screen=Screen.Title;}
+            else ReturnToTitle();
             return;
         }
         if(next){
