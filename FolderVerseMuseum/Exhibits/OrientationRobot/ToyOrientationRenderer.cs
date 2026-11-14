@@ -14,12 +14,20 @@ public sealed partial class ToyOrientationRenderer:IDisposable
     private readonly int _primitives;
     private readonly VertexBuffer _screws;
     private readonly int _screwPrimitives;
-    public ToyOrientationRenderer(GraphicsDevice device)
+    public ToyOrientationRenderer(GraphicsDevice device):this(device,null){}
+    internal ToyOrientationRenderer(GraphicsDevice device,AnimalToy? animal)
     {
         _device=device;_effect=new BasicEffect(device){VertexColorEnabled=true};
         _effect.EnableDefaultLighting();_effect.AmbientLightColor=new Vector3(.48f);
         _effect.SpecularColor=new Vector3(.18f);_effect.SpecularPower=18;
         var mesh=new List<VertexPositionColorNormal>();
+        if(animal is { } kind)mesh.AddRange(AnimalToyMesh.Create(kind));
+        else BuildLegacyToy();
+        var screws=BuildAxisScrews();_screws=new VertexBuffer(device,VertexPositionColorNormal.VertexDeclaration,screws.Length,BufferUsage.WriteOnly);_screws.SetData(screws);_screwPrimitives=screws.Length/3;
+        _mesh=new VertexBuffer(device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);_mesh.SetData(mesh.ToArray());_primitives=mesh.Count/3;
+
+        void BuildLegacyToy()
+        {
         var ivory=new Color(230,218,183);var steel=new Color(83,112,122);
         var teal=new Color(41,146,159);var gold=new Color(241,174,65);
         var dark=new Color(28,46,59);var orange=new Color(230,100,55);
@@ -83,8 +91,7 @@ public sealed partial class ToyOrientationRenderer:IDisposable
         }
         // Chopsticks in the -X hand are deliberately distinct from the bowl.
         foreach(float x in new[]{-.91f,-.78f})Box(new(x,.19f,.13f),new(.045f,.72f,.045f),gold);
-        var screws=BuildAxisScrews();_screws=new VertexBuffer(device,VertexPositionColorNormal.VertexDeclaration,screws.Length,BufferUsage.WriteOnly);_screws.SetData(screws);_screwPrimitives=screws.Length/3;
-        _mesh=new VertexBuffer(device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);_mesh.SetData(mesh.ToArray());_primitives=mesh.Count/3;
+        }
     }
     public void Draw(float yaw,float pitch,Matrix? orientation=null)
     {

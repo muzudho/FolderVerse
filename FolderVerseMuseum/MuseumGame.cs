@@ -8,7 +8,9 @@ internal sealed class MuseumGame : Game
 {
     private readonly GraphicsDeviceManager _graphics;
     private readonly bool _smoke;
-    private ToyOrientationRenderer _robot;
+    private ToyOrientationRenderer[] _robots;
+    private int _exhibit;
+    private static readonly string[] ExhibitNames = { "旧・方向のロボット", "魚型ロボットの玩具", "猿型ロボットの玩具", "犬型ロボットの玩具" };
     private Quaternion _orientation = Quaternion.Identity;
     private MouseState _previousMouse;
     private KeyboardState _previousKeys;
@@ -23,11 +25,20 @@ internal sealed class MuseumGame : Game
             PreferredBackBufferHeight = 620
         };
         Window.AllowUserResizing = true;
-        Window.Title = "FolderVerseMuseum — 旧・方向のロボット | ドラッグ：回転 / X・Y・Z：軸回転 / R：リセット / Esc：閉じる";
+        UpdateTitle();
         IsMouseVisible = true;
     }
 
-    protected override void LoadContent() => _robot = new ToyOrientationRenderer(GraphicsDevice);
+    protected override void LoadContent()
+    {
+        _robots = new[] { new ToyOrientationRenderer(GraphicsDevice),
+            new ToyOrientationRenderer(GraphicsDevice, AnimalToy.Fish),
+            new ToyOrientationRenderer(GraphicsDevice, AnimalToy.Monkey),
+            new ToyOrientationRenderer(GraphicsDevice, AnimalToy.Dog) };
+    }
+
+    private void UpdateTitle() => Window.Title =
+        $"FolderVerseMuseum — {ExhibitNames[_exhibit]} | 1–4：展示 / ドラッグ：回転 / X・Y・Z：軸回転 / R：リセット";
 
     protected override void Update(GameTime gameTime)
     {
@@ -38,6 +49,13 @@ internal sealed class MuseumGame : Game
 
         if (Pressed(Keys.Escape)) Exit();
         if (Pressed(Keys.R)) _orientation = Quaternion.Identity;
+        for (int i = 0; i < ExhibitNames.Length; i++)
+            if (Pressed(Keys.D1 + i))
+            {
+                _exhibit = i;
+                _orientation = Quaternion.Identity;
+                UpdateTitle();
+            }
 
         if (IsActive && mouse.LeftButton == ButtonState.Pressed)
         {
@@ -67,14 +85,15 @@ internal sealed class MuseumGame : Game
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(new Color(19, 38, 51));
-        _robot.Draw(0, 0, Matrix.CreateFromQuaternion(_orientation));
-        if (_smoke) Exit();
+        _robots[_exhibit].Draw(0, 0, Matrix.CreateFromQuaternion(_orientation));
+        if (_smoke && ++_exhibit == _robots.Length) Exit();
         base.Draw(gameTime);
     }
 
     protected override void UnloadContent()
     {
-        _robot?.Dispose();
+        if (_robots != null)
+            foreach (var robot in _robots) robot.Dispose();
         base.UnloadContent();
     }
 }

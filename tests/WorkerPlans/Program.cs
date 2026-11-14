@@ -30,6 +30,11 @@ bool sawMixed=false;var signatures=new HashSet<string>();
   Fixture.Same(plan,arrived);
   foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
    Check(arrived.Material(part)==preview.Material(part),"The delivered robot preserves each material shown in the recipe");
+  var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
+  var savedRobot=restored.Robots.Nodes[node].Robots.Single(r=>r.Id==arrived.Id);
+  Fixture.Same(plan,savedRobot);
+  foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
+   Check(savedRobot.Material(part)==preview.Material(part),"Reload preserves each material of the delivered three-origin robot");
   found=true;
  }
  Check(found,"A worker with parts from three countries can generate a three-origin material recipe");

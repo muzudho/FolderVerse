@@ -18,3 +18,7 @@ dotnet run --project .\FolderVerseMuseum.csproj
 - X・Y・Zで各軸を30度回転。Shiftを押しながらで逆回転
 - Rで初期姿勢に戻す
 - Escで閉じる
+
+## 展示 02–04 · 魚・猿・犬の方向のロボット
+
+`1` で旧型、`2` で魚、`3` で猿、`4` で犬に切り替えます。採用六面図（魚 v005・猿 v002・犬 v006）をもとに、丸い面、碗の内側と底、箸、前足や前びれを立体に起こしました。モデルのソースは `Exhibits/OrientationRobot/AnimalToyMesh.cs` です。
