@@ -6,18 +6,19 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private bool _factoryHarvestPage;
-    private RawMaterial _harvestMaterial;
-    private static Rectangle HarvestMaterialButton(RawMaterial material)=>new(112+(int)material*285,636,268,46);
+    private static readonly Rectangle FactoryAlbumBounds=new(63,137,1794,830);
+    private static Rectangle HarvestAlbumCard(int index)=>new(111+index%8*214,214+index/8*346,202,324);
     private static Rectangle FactoryAlbumAction(int row)
     {
         var area=FactoryAlbumCard(10);
         return new(area.X+10,area.Y+32+row*60,area.Width-20,48);
     }
-    private static Rectangle FactoryHarvestTab=>FactoryAlbumAction(0);
-    private static Rectangle FactoryStopButton=>FactoryAlbumAction(1);
+    private static Rectangle HarvestAlbumAction(int row){var card=HarvestAlbumCard(15);return new(card.X+8,card.Y+32+row*60,card.Width-16,48);}
+    private Rectangle FactoryHarvestTab=>_factoryHarvestPage?HarvestAlbumAction(0):FactoryAlbumAction(0);
+    private Rectangle FactoryStopButton=>_factoryHarvestPage?HarvestAlbumAction(1):FactoryAlbumAction(1);
     private static Rectangle FactoryRecipeCard(int plan)=>FactoryAlbumCard(plan<3?plan:plan-1);
-    private int FactoryHarvestAvailable(int node,RobotWorkshop[] lines,RobotWorkshop editing)
-        =>Math.Max(0,_setup.Robots.RawDeposit(node,_harvestMaterial)-lines.Where(l=>!ReferenceEquals(l,editing) && l.HarvestMaterial==_harvestMaterial).Sum(l=>l.MapleRemaining));
+    private int FactoryHarvestAvailable(int node,RobotWorkshop[] lines,RobotWorkshop editing,RawMaterial material)
+        =>Math.Max(0,_setup.Robots.RawDeposit(node,material)-lines.Where(l=>!ReferenceEquals(l,editing) && l.HarvestMaterial==material).Sum(l=>l.MapleRemaining));
     private bool FactoryAlbumOpen => _nodeFactoryOpen && _factoryPlanLine >= 0 &&
         _setup.EquipmentMode == RobotEquipmentMode.Materials;
 
@@ -36,39 +37,40 @@ public partial class Game1
         var ink = new Color(64, 44, 37);
         var paper = new Color(249, 231, 193);
         _ui.Box(new(0, 0, 1920, 1080), new Color(0, 0, 0, 174));
-        _ui.Box(new(63, 137, 1794, 830), new Color(56, 36, 37));
+        _ui.Box(FactoryAlbumBounds, new Color(56, 36, 37));
         _ui.Box(new(77, 148, 1766, 800), new Color(224, 196, 152));
         _ui.Box(new(94, 157, 1732, 777), paper);
         _ui.Text($"生産ライン {_factoryPlanLine + 1} / "+(_factoryHarvestPage?"素材の採取":"製造候補"), new(113, 169), .55f, ink);
-        var controls=FactoryAlbumCard(10);
+        var controls=_factoryHarvestPage?HarvestAlbumCard(15):FactoryAlbumCard(10);
         _ui.Batch.Draw(_robotFactoryIcon,new Rectangle(controls.X+28,controls.Y+170,31,31),Color.White);
         _ui.Text("産業ターン",new(controls.X+68,controls.Y+176),.39f,ink);
         _ui.Text("閉じる：Esc／枠の外をクリック",new(controls.X+9,controls.Y+227),.27f,ink);
-        _ui.Button(FactoryStopButton,line.HarvestOnly?"採取しない":"製造しない",line.SelectedPlan==3 && line.MapleRemaining==0?Accent:Muted,.45f);
-        int deposit=_setup.Robots.RawDeposit(node.Id,_harvestMaterial);
+        _ui.Button(FactoryStopButton,_factoryHarvestPage?"採取しない":"製造しない",line.SelectedPlan==3 && line.MapleRemaining==0?Accent:Muted,.45f);
         if(!line.HarvestOnly)_ui.Button(FactoryHarvestTab,_factoryHarvestPage?"製造候補へ":"素材の採取",
             _setup.Robots.MapleSupplyEnabled?new Color(120,86,64):Muted*.55f,.45f);
         if(_factoryHarvestPage)
         {
-            string materialName=RobotWorld.RawName(_harvestMaterial);
             foreach(var material in RobotWorld.RawMaterials.Where(_setup.Robots.RawRequired))
-                _ui.Button(HarvestMaterialButton(material),RobotWorld.RawName(material),material==_harvestMaterial?Accent:Muted,.38f);
-            int available=FactoryHarvestAvailable(node.Id,lines,line);
-            string warning=deposit==0?"この地域ではもう採れません":
-                available==0?"他の採取レーンで採り終えます":"この量は採れません";
-            for(int loads=1;loads<=3;loads++)
             {
-                var card=FactoryAlbumCard(loads-1);
-                _ui.Box(card,loads<=available?new Color(35,53,67):Muted);
-                // Show one 60px hangar section per load, with a shared baseline.
-                int height=loads*60;
-                DrawMaplePackageArt(new(card.X+14,card.Y+180-height,card.Width-28,height),loads,alignBottom:true,material:_harvestMaterial);
-                _ui.Center($"{materialName} {loads*RobotWorld.MaplePackageSize}/48",new(card.X,card.Y+183,card.Width,28),.34f,Cream);
-                _ui.Center($"{materialName}を採取 ×{loads} 荷",new(card.X,card.Y+222,card.Width,39),.43f,Cream);
-                _ui.Center($"{loads} 産業ターン",new(card.X,card.Y+261,card.Width,26),.35f,Cream);
-                if(loads>available)DrawHarvestLimitWarning(new(card.X+8,card.Y+287,card.Width-16,29),warning);
+                string name=RobotWorld.RawName(material);
+                int deposit=_setup.Robots.RawDeposit(node.Id,material);
+                int available=FactoryHarvestAvailable(node.Id,lines,line,material);
+                string warning=deposit==0?"この地域ではもう採れません":
+                    available==0?"他の採取レーンで採り終えます":"この量は採れません";
+                for(int loads=1;loads<=3;loads++)
+                {
+                    var card=HarvestAlbumCard((int)material*3+loads-1);
+                    bool selected=line.MapleRemaining==loads && line.HarvestMaterial==material;
+                    _ui.Box(card,selected?Accent:loads<=available?new Color(35,53,67):Muted);
+                    int height=loads*52;
+                    DrawMaplePackageArt(new(card.X+10,card.Y+165-height,card.Width-20,height),loads,alignBottom:true,material:material);
+                    _ui.Center(name,new(card.X,card.Y+168,card.Width,29),.37f,selected?Color.Black:Cream);
+                    _ui.Center($"{loads} 荷 / {loads*RobotWorld.MaplePackageSize}/48",new(card.X,card.Y+200,card.Width,26),.37f,selected?Color.Black:Cream);
+                    _ui.Center($"{loads} 産業ターン",new(card.X,card.Y+230,card.Width,26),.31f,selected?Color.Black:Cream);
+                    _ui.Center($"埋蔵 {deposit} / 予約可能 {available} 荷",new(card.X,card.Y+256,card.Width,24),.29f,selected?Color.Black:Cream);
+                    if(loads>available)DrawHarvestLimitWarning(new(card.X+5,card.Y+287,card.Width-10,29),warning);
+                }
             }
-            _ui.Text($"残り埋蔵量 {deposit} 荷 / このレーンで予約できる量 {available} 荷",new(113,574),.48f,ink);
             return;
         }
 

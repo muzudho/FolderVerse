@@ -69,7 +69,7 @@ sealed class WorkerPlansUi:Game1
    Click(((Rectangle)Call("FactoryProductionButton",1)).Center);
    Click(Rect("FactoryAlbumAction",0).Center);
    Check((bool)Get("_factoryHarvestPage") && (int)Get("_factoryPlanLine")==1,"Harvest button opens the harvest catalogue");
-   Click(Rect("FactoryAlbumAction",0).Center);
+   Click(Rect("HarvestAlbumAction",0).Center);
    Check(!(bool)Get("_factoryHarvestPage") && (int)Get("_factoryPlanLine")==1,"Harvest catalogue returns to the manufacturing cards");
    Click(Rect("FactoryAlbumAction",1).Center);
    Check(!line.Manufacturing && (int)Get("_factoryPlanLine")==-1,"Album can turn production off");
@@ -122,9 +122,15 @@ sealed class WorkerPlansUi:Game1
    deposits[node]=1;
    Set("_nodeFactoryOpen",true);Set("_nodeAssemblyOpen",false);
    Set("_factoryPlanLine",0);Set("_factoryHarvestPage",true);
-   Click(Rect("FactoryAlbumCard",2).Center);
+   Click(Rect("HarvestAlbumCard",2).Center);
    Check((bool)Get("_factoryHarvestPage") && (int)Get("_factoryPlanLine")==0 && w.Robots.Workshops[node].ProductionLines[0].MapleRemaining==0,
     "The harvest warning card stays open and an over-limit click does not schedule collection");
+   var cards=Enumerable.Range(0,16).Select(i=>Rect("HarvestAlbumCard",i)).ToArray();
+   Check(cards.Take(8).All(card=>card.Y==cards[0].Y) && cards[8].X==cards[0].X &&
+     cards.Take(15).All(card=>!card.Intersects(Rect("HarvestAlbumAction",1))),"Eight columns and separate controls");
+   Click(new Point(1700,75));
+   Check((int)Get("_factoryPlanLine")==-1 && !(bool)Get("_nodeAssemblyOpen"),"Outside click closes the modal without changing inspector tabs");
+   Set("_factoryPlanLine",0);
   }
   if(frame==11){
    var factory=w.Robots.Workshops[node];
@@ -173,7 +179,7 @@ sealed class WorkerPlansUi:Game1
    Set("_factoryPlanLine",-1);
    Click(Rect("FactoryRobotButton",1,3).Center);
    Check((int)Get("_factoryPlanLine")==1 && (bool)Get("_factoryHarvestPage"),"Reassigned lane opens the harvest catalogue");
-   Click(Rect("FactoryAlbumCard",0).Center);
+   Click(Rect("HarvestAlbumCard",0).Center);
    w.Campaign.FinishDomestic(w);
    Check(factory.ProductionLines[1].HarvestOnly && factory.ProductionLines[1].MapleRemaining==1,
     "The harvest recipe survives confirmation of the role switch");

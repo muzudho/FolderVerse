@@ -103,13 +103,15 @@ public partial class Game1
             }
             if(_factoryHarvestPage){
                 foreach(var material in RobotWorld.RawMaterials.Where(_setup.Robots.RawRequired))
-                    if(HarvestMaterialButton(material).Contains(pointer)){_harvestMaterial=material;return true;}
-                int available=FactoryHarvestAvailable(_populationNode,lines,lines[line]);
-                for(int loads=1;loads<=3;loads++){
-                    if(!FactoryAlbumCard(loads-1).Contains(pointer))continue;
-                    if(loads>available){_factoryPlanLine=line;return true;}
-                    lines[line].SelectMapleHarvest(loads,_harvestMaterial);SavePending(line);break;
+                for(int loads=1;loads<=3;loads++)
+                {
+                    if(!HarvestAlbumCard((int)material*3+loads-1).Contains(pointer))continue;
+                    if(loads>FactoryHarvestAvailable(_populationNode,lines,lines[line],material)){
+                        _factoryPlanLine=line;return true;
+                    }
+                    lines[line].SelectMapleHarvest(loads,material);SavePending(line);return true;
                 }
+                if(FactoryAlbumBounds.Contains(pointer))_factoryPlanLine=line;
                 return true;
             }
             for (int i = 0; i < lines[line].PlanCount; i++)
@@ -145,7 +147,7 @@ public partial class Game1
             var line=lines[l];int period=line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[_populationNode].Purpose):3;
             bool harvest=line.HarvestOnly || line.MapleRemaining>0;
             var product=harvest?FactoryRobotButton(l-_factoryPage,3):FactoryConveyorProduct(l-_factoryPage,period,line);
-            if(product.Contains(pointer) || !harvest && FactoryConveyorArrow(product).Contains(pointer)){_factoryHarvestPage=harvest;_harvestMaterial=harvest?line.HarvestMaterial:RawMaterial.Maple;_factoryPlanLine=l;_factoryLine=l;return true;}
+            if(product.Contains(pointer) || !harvest && FactoryConveyorArrow(product).Contains(pointer)){_factoryHarvestPage=harvest;_factoryPlanLine=l;_factoryLine=l;return true;}
             if(line.HarvestOnly || line.MapleRemaining>0)continue;
             var track=FactoryHolidayTrack(l-_factoryPage);track.Inflate(6,0);
             if(track.Contains(pointer)){_factoryHolidayLane=l;return true;}
