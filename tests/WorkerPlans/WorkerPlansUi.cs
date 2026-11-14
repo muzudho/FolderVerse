@@ -114,7 +114,16 @@ sealed class WorkerPlansUi:Game1
    Check(slot>=0,"Restored mixed robot has a visible hangar slot");
    Set("_pointer",((Rectangle)Call("AssemblyPartBounds",slot,0)).Center);
   }
+  if(frame==10){
+   var deposits=(int[])typeof(RobotWorld).GetField("_mapleDeposits",F)!.GetValue(w.Robots)!;
+   deposits[node]=1;
+   Set("_nodeFactoryOpen",true);Set("_nodeAssemblyOpen",false);
+   Set("_factoryPlanLine",0);Set("_factoryHarvestPage",true);
+   Click(Rect("FactoryAlbumCard",2).Center);
+   Check((bool)Get("_factoryHarvestPage") && (int)Get("_factoryPlanLine")==0 && w.Robots.Workshops[node].ProductionLines[0].MapleRemaining==0,
+    "The harvest warning card stays open and an over-limit click does not schedule collection");
+  }
   base.Draw(time);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"worker-plans-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);
-  if(frame++==9){Console.WriteLine("PASS: material album, split base recipes, narrow album and restored mixed hangar rendering.");Exit();}
+  if(frame++==10){Console.WriteLine("PASS: material album, split base recipes, narrow album, restored mixed hangar and harvest warning rendering.");Exit();}
  }
 }

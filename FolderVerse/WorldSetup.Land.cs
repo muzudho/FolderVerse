@@ -42,22 +42,40 @@ public sealed partial class WorldSetup
         Robots.Initialize(Nodes.All.Length,ActiveCount);
         if(TutorialStep==0)InitializeTerrainHangars();
         Robots.ConfigureFactories(this);var random=new SeedRandom(fortuneSeed);
+        if(TutorialStep==0)Robots.InitializeMapleSupply(this);
         int scatterRemainder=50;
         foreach(var node in Nodes.All.Where(n=>n.Owner>=0))
         {
-            if(TutorialStep==1 || Routes.NearWhirlpool(node))Robots.Workshops[node.Id].RemoveProductionLines();else Robots.Workshops[node.Id].GenerateLines(fortuneSeed^node.Id*7919,EquipmentMode);
-            if(random.Next(5)==0)Robots.Workshops[node.Id].ConfigureDisposal();
+            var workshop=Robots.Workshops[node.Id];
+            bool hasFactory=TutorialStep!=1 && !Routes.NearWhirlpool(node);
+            if(hasFactory)workshop.GenerateLines(fortuneSeed^node.Id*7919,EquipmentMode);else workshop.RemoveProductionLines();
+            if(random.Next(5)==0)workshop.ConfigureDisposal();
             if(TutorialStep==1){
                 for(int i=0;i<4;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,RobotParts.Complete,RobotRole.Soldier));
             }else{
                 int count=1+random.Next(8);
-                int capacity=Robots.Nodes[node.Id].TotalCapacity;
+                var store=Robots.Nodes[node.Id];
+                int workers=TutorialStep==0?Math.Min(workshop.BaseLineCount,store.TotalCapacity):0;
+                bool harvest=TutorialStep==0 && hasFactory && Robots.MapleDeposit(node.Id)>0 && workshop.LineLimit>0 && store.TotalCapacity>1;
+                if(harvest)workers=Math.Min(Math.Max(2,workers),Math.Min(workshop.LineLimit,store.TotalCapacity-1));
+                if(TutorialStep==0)workshop.RemoveProductionLines();
+                int capacity=Math.Max(0,store.TotalCapacity-workers-(harvest?1:0));
                 int scaled=Math.Min(count,capacity)*(TutorialStep==0?robotScatterPercent:100)+scatterRemainder;
                 int placed=scaled/100;
                 scatterRemainder=scaled%100;
                 for(int i=0;i<count;i++){
                     var parts=(RobotParts)(1+random.Next(7));
                     if(i<placed)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,parts,i==0?RobotRole.Captain:RobotRole.Soldier));
+                }
+                for(int i=0;i<workers;i++){
+                    bool collects=harvest && i==workers-1;
+                    var worker=Robots.Create(node.Owner,RobotParts.Complete) with {FactoryWorker=true,HarvestAssignment=collects};
+                    store.Add(worker);
+                }
+                if(workers>0){
+                    Robots.SyncWorkers(node.Id);
+                    if(harvest)
+                        foreach(var lane in workshop.ProductionLines.Where(l=>l.HarvestOnly))lane.SelectMapleHarvest(1);
                 }
             }
             foreach(var parts in Enumerable.Range(1,7).Select(i=>(RobotParts)i))
@@ -75,7 +93,6 @@ public sealed partial class WorldSetup
         for(int ruler=0;ruler<ActiveCount;ruler++)ConquerorPoints[ruler]=Nodes.Current(ruler).Center;
         Routes.RefreshDisplay();Campaign.Reset();LandPending=false;
         PlaceInitialTin(fortuneSeed);
-        if(TutorialStep==0)Robots.InitializeMapleSupply(this);
         Salvage.Initialize(this);
     }
 

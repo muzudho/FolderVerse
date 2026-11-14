@@ -56,7 +56,7 @@ public partial class Game1
                 DrawMaplePackage(new Rectangle(card.X+14,card.Y+12,card.Width-28,208),new MaplePackage(0,loads*16));
                 _ui.Center($"楓の木を採取 ×{loads} 荷",new(card.X,card.Y+222,card.Width,39),.43f,Cream);
                 _ui.Center($"{loads} 産業ターン",new(card.X,card.Y+261,card.Width,26),.35f,Cream);
-                if(loads>available)_ui.Center("採取可能量を超えています",new(card.X,card.Y+289,card.Width,27),.32f,Cream);
+                if(loads>available)DrawHarvestLimitWarning(new(card.X+8,card.Y+287,card.Width-16,29));
             }
             _ui.Text($"残り埋蔵量 {deposit} 荷 / このレーンで予約できる量 {available} 荷",new(113,574),.48f,ink);
             return;
@@ -103,6 +103,20 @@ public partial class Game1
         }
         if (mixedPreview != null && line.PlanCount < 12)
             DrawFactoryAlbumDetails(FactoryAlbumCard(11), mixedPreview, ink);
+    }
+
+    private void DrawHarvestLimitWarning(Rectangle bounds)
+    {
+        var shadow=bounds;shadow.Offset(4,4);
+        _ui.Box(shadow,Color.Black*.68f);
+        _ui.Box(bounds,new Color(122,65,20));
+        _ui.Box(new(bounds.X+1,bounds.Y+1,bounds.Width-2,bounds.Height-2),new Color(255,219,88));
+        for(int y=1;y<bounds.Height-1;y++)
+            for(int x=y%24-24;x<bounds.Width-1;x+=24){
+                int left=Math.Max(1,x),right=Math.Min(bounds.Width-1,x+12);
+                if(right>left)_ui.Box(new(bounds.X+left,bounds.Y+y,right-left,1),new Color(255,164,58));
+            }
+        _ui.Center("採取可能量を超えています",bounds,.32f,new Color(67,34,13));
     }
 
     private void DrawFactoryAlbumTimeSticker(Rectangle photo, int turns, Color ink)

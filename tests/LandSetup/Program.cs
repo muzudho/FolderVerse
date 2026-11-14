@@ -13,15 +13,16 @@ w.CompleteLand(seed);Check(!w.LandPending && w.Owners.All(i=>i>=0),"completion")
 Check(w.TerritoryCounts.SequenceEqual(w.TerritoryRights),"land conservation");
 Console.WriteLine($"PASS seed {seed}: {w.Cells.Length} cells, {w.Nodes.All.Length} nodes");}
 
-WorldSetup Scatter(int percent)
+WorldSetup Scatter(int percent,RobotEquipmentMode mode=RobotEquipmentMode.Legacy)
 {
-    var w=new WorldSetup();w.SetWorld(1);w.SetCast(2);w.SetTerritoryRights(3);
+    var w=new WorldSetup{EquipmentMode=mode};w.SetWorld(1);w.SetCast(2);w.SetTerritoryRights(3);
     foreach(int ruler in w.LandOrder())
         w.ClaimLand(ruler,w.Cells.Where(c=>w.Owners[c.Id]<0).Take(w.TerritoryRights[ruler]).Select(c=>c.Id).ToArray());
     w.CompleteLand(4,percent);
     return w;
 }
-int baseline=Scatter(100).Robots.Nodes.Sum(s=>s.Count);
+int ScatterCount(WorldSetup world)=>world.Robots.Nodes.Sum(s=>s.Robots.Count(r=>!r.FactoryWorker));
+int baseline=ScatterCount(Scatter(100));
 int[]? initialCapacities=null;
 foreach(int percent in new[]{0,25,100}){
     var w=Scatter(percent);
@@ -32,11 +33,15 @@ foreach(int percent in new[]{0,25,100}){
         int capacity=capacities[node.Id];
         int area=Enumerable.Range(0,100).Count(i=>w.Routes.Terrain(node.Cell,new Point(i%10,i/10))==node.Terrain);
         Check(capacity is >=1 and <=12 && w.Robots.Workshops[node.Id].ReservedSlotLimit==capacity,"Hangar and factory use the same capacity");
+        if(w.Routes.NearWhirlpool(node)){
+            Check(capacity==1,"Whirlpool sites have one slot");
+            continue;
+        }
         if(node.Terrain==TravelTerrain.Land && area==100)Check(capacity is >=8 and <=12,"Entirely flat region draws 8–12");
         if(node.Terrain!=TravelTerrain.Land && area<=50)Check(capacity is >=1 and <=3,"Small sea or mountain area draws 1–3");
         if(node.Terrain!=TravelTerrain.Land && area==100)Check(capacity is >=3 and <=5,"Entirely sea or mountain draws 3–5");
     }
-    Check(w.Robots.Nodes.Sum(s=>s.Count)==(baseline*percent+50)/100,"Scatter scales the total from the same seed");
+    Check(ScatterCount(w)==(baseline*percent+50)/100,"Scatter scales unassigned robots from the same seed");
     for(int ruler=0;ruler<w.ActiveCount;ruler++){
         var pocket=w.Robots.Retinues[ruler];
         Check(pocket.Count==2 && pocket.Robots.All(r=>r.Owner==ruler && r.CanFight && r.NativeParts(ruler)==3 && r.CheapParts==0),"Each pocket starts with two regular native complete robots");
@@ -47,3 +52,27 @@ var fresh=Scatter(0);
 var saved=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(fresh));
 Check(saved.Robots.Nodes.Select(s=>s.TotalCapacity).SequenceEqual(initialCapacities!),"Save restores each exact initial capacity");
 Console.WriteLine("PASS: 0/25/100 scatter and two regular complete pocket robots for every conqueror.");
+
+var materials=Scatter(100,RobotEquipmentMode.Materials);
+materials=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(materials));
+var assigned=materials.Nodes.All.SelectMany(node=>materials.Robots.Nodes[node.Id].Robots
+    .Where(r=>r.FactoryWorker).Select(r=>(Node:node.Id,Robot:r))).ToArray();
+Check(materials.Robots.Workshops.All(w=>w.BaseLineCount==0),"No permanent lanes in a new world");
+Check(assigned.Any(a=>a.Robot.HarvestWorker) && assigned.Any(a=>!a.Robot.HarvestWorker),"Both worker roles are seeded");
+foreach(var (node,worker) in assigned)
+{
+    var workshop=materials.Robots.Workshops[node];
+    var lane=Enumerable.Range(0,workshop.ProductionLines.Length).Single(i=>workshop.WorkerAt(i)==worker.Id);
+    Check(workshop.ProductionLines[lane].HarvestOnly==worker.HarvestWorker,"Worker owns the lane of the assigned kind");
+    if(worker.HarvestWorker)
+        Check(materials.Robots.MapleDeposit(node)>0 && workshop.ProductionLines[lane].MapleRemaining==1,"Harvester starts with a valid order");
+    var role=worker.HarvestWorker?HangarReservation.Harvest:HangarReservation.Worker;
+    int lanesBeforeRelease=workshop.ProductionLines.Length;
+    Check(materials.Robots.ToggleReservation(node,worker.Id,role),"Initial assignment can be released");
+    var released=materials.Robots.Nodes[node].Robots.Single(r=>r.Id==worker.Id);
+    Check(released.CanFight && !released.FactoryWorker &&
+          workshop.ProductionLines.Length==lanesBeforeRelease-1,
+          "Released worker can fight and its lane disappears");
+}
+materials.Robots.Check();
+Console.WriteLine("PASS: initial worker lanes, save round trip and release.");
