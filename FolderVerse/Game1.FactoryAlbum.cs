@@ -53,7 +53,10 @@ public partial class Game1
             {
                 var card=FactoryAlbumCard(loads-1);
                 _ui.Box(card,loads<=available?new Color(35,53,67):Muted);
-                DrawMaplePackage(new Rectangle(card.X+14,card.Y+12,card.Width-28,208),new MaplePackage(0,loads*16));
+                // Show one 60px hangar section per load, with a shared baseline.
+                int height=loads*60;
+                DrawMaplePackageArt(new(card.X+14,card.Y+180-height,card.Width-28,height),loads,alignBottom:true);
+                _ui.Center($"楓の木 {loads*RobotWorld.MaplePackageSize}/48",new(card.X,card.Y+183,card.Width,28),.34f,Cream);
                 _ui.Center($"楓の木を採取 ×{loads} 荷",new(card.X,card.Y+222,card.Width,39),.43f,Cream);
                 _ui.Center($"{loads} 産業ターン",new(card.X,card.Y+261,card.Width,26),.35f,Cream);
                 if(loads>available)DrawHarvestLimitWarning(new(card.X+8,card.Y+287,card.Width-16,29));

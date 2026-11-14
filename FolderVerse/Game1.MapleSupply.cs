@@ -20,9 +20,9 @@ public partial class Game1
     private static readonly Rectangle MaplePrevious=new(186,497,64,46),MapleNext=new(708,497,64,46);
     private static readonly Rectangle MapleSend=new(186,592,184,50),MapleCancel=new(387,592,184,50),MapleClose=new(588,592,184,50);
 
-    private void DrawMaplePackage(Rectangle cell,MaplePackage package,string status=null,float opacity=1,bool compact=false)
+    private void DrawMaplePackageArt(Rectangle cell,int sections,float opacity=1,bool alignBottom=false)
     {
-        int index=package.Sections-1;
+        int index=sections-1;
         if(_maplePackageArt[index]==null){
             using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots",index==0?"maple-package-v002.png":$"maple-timber-{(index+1)*16}-v001.png"));
             _maplePackageArt[index]=Texture2D.FromStream(GraphicsDevice,stream);
@@ -30,7 +30,13 @@ public partial class Game1
         var art=_maplePackageArt[index];
         int width=Math.Min(cell.Width*4/5,cell.Height*3/4*art.Width/art.Height),height=width*art.Height/art.Width;
         if(width<1 || height<1)return;
-        _spriteBatch.Draw(art,new Rectangle(cell.Center.X-width/2,cell.Center.Y-height/2,width,height),Color.White*opacity);
+        int y=alignBottom?cell.Bottom-height:cell.Center.Y-height/2;
+        _spriteBatch.Draw(art,new Rectangle(cell.Center.X-width/2,y,width,height),Color.White*opacity);
+    }
+
+    private void DrawMaplePackage(Rectangle cell,MaplePackage package,string status=null,float opacity=1,bool compact=false)
+    {
+        DrawMaplePackageArt(cell,package.Sections,opacity);
         if(compact){
             if(cell.Height>=28)_ui.Center($"{package.Units}/48",new(cell.X,cell.Bottom-16,cell.Width,16),Math.Min(.27f,cell.Width/210f),Cream);
             return;

@@ -59,6 +59,8 @@ var assigned=materials.Nodes.All.SelectMany(node=>materials.Robots.Nodes[node.Id
     .Where(r=>r.FactoryWorker).Select(r=>(Node:node.Id,Robot:r))).ToArray();
 Check(materials.Robots.Workshops.All(w=>w.BaseLineCount==0),"No permanent lanes in a new world");
 Check(assigned.Any(a=>a.Robot.HarvestWorker) && assigned.Any(a=>!a.Robot.HarvestWorker),"Both worker roles are seeded");
+var harvestSites=assigned.Where(a=>a.Robot.HarvestWorker).Select(a=>a.Node).ToArray();
+var initialDeposits=harvestSites.Select(materials.Robots.MapleDeposit).ToArray();
 foreach(var (node,worker) in assigned)
 {
     var workshop=materials.Robots.Workshops[node];
@@ -75,4 +77,20 @@ foreach(var (node,worker) in assigned)
           "Released worker can fight and its lane disappears");
 }
 materials.Robots.Check();
+var harvestWorld=Scatter(100,RobotEquipmentMode.Materials);
+// Isolate harvesting from simultaneous manufacturing intake reservations.
+foreach(var workshop in harvestWorld.Robots.Workshops)
+    foreach(var lane in workshop.ProductionLines.Where(l=>!l.HarvestOnly))
+        lane.SelectPlan(3);
+for(int unit=0;unit<IndustryTime.UnitsPerTurn;unit++)
+    harvestWorld.Robots.AdvanceIndustry(node=>harvestWorld.Nodes.All[node].Owner);
+for(int i=0;i<harvestSites.Length;i++){
+    int node=harvestSites[i];
+    Check(harvestWorld.Robots.Nodes[node].MapleUnits==RobotWorld.MaplePackageSize &&
+        harvestWorld.Robots.MapleDeposit(node)==initialDeposits[i]-1,
+        $"Initial harvest worker at {node}: stock {harvestWorld.Robots.Nodes[node].MapleUnits}, "+
+        $"deposit {initialDeposits[i]} → {harvestWorld.Robots.MapleDeposit(node)}, "+
+        $"intakes {harvestWorld.Robots.ProductionIntakes.Count(x=>(x.Target??x.Source)==node)}");
+}
 Console.WriteLine("PASS: initial worker lanes, save round trip and release.");
+Console.WriteLine("PASS: initial harvest deposits and stock at maximum robot scatter.");
