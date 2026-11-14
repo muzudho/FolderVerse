@@ -252,7 +252,7 @@ public partial class Game1
             for(int row=0;!reservationMode && row<3;row++)
             {
                 var bounds=AssemblyPartBounds(slot,row);var part=HangarPart(row);
-                if(!CanMoveHangarPart(robot,part) || !bounds.Contains(_pointer) || (robot.Parts&part)==0)continue;
+                if(!bounds.Contains(_pointer) || (robot.Parts&part)==0)continue;
                 hoveringPart=true;
                 bool movable=CanMoveHangarPart(robot,part);
                 var color=movable?ControlEdge:new Color(145,156,166);
@@ -260,7 +260,8 @@ public partial class Game1
                 _ui.Box(new(bounds.X,bounds.Y,2,bounds.Height),color);_ui.Box(new(bounds.Right-2,bounds.Y,2,bounds.Height),color);
                 string material=_setup.EquipmentMode==RobotEquipmentMode.Materials?$"（{RobotMaterials.Label(robot.Material(part))} / 製造国 #{robot.Origin(part)+1}）":
                     robot.IsPremium(part)?"（高級・盾／短剣／小銃＋１）":robot.IsCheap(part)?"（安い）":"";
-                hover=movable?$"{PartsLabel(part)}{material}{(robot.IsDamaged(part)?"（損傷・未所属扱い）":"")}をドラッグ＆ドロップして再配置":"この個体は処理中・予約中、または操作できない所有国です";
+                string detail=$"{PartsLabel(part)}{material}{(robot.IsDamaged(part)?"（損傷・未所属扱い）":"")}";
+                hover=movable?$"{detail}をドラッグ＆ドロップして再配置":$"{detail} / 閲覧のみ";
             }
             DrawDefenseReservationEffect(cell,robot);
             string partsName=PartsLabel(robot)+$" / #{robot.Owner+1}";

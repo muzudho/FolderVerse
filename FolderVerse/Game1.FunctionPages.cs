@@ -66,23 +66,36 @@ public partial class Game1
     }
     private static Rectangle FactoryPagePrevious=>new(660,926,62,30);
     private static Rectangle FactoryPageNext=>new(802,926,62,30);
-    private int FactoryPageCount()
+    private const int FactoryVisibleLanes=2;
+    private int FactoryLaneCount()
     {
         var factory=PlanningWorkshop(_populationNode);
-        int displayed=FactoryScreenLines(factory,out _).Length;
-        return Math.Max(1,(displayed+2)/3);
+        return FactoryScreenLines(factory,out _).Length;
     }
     private bool FactoryPageClick(Point p)
     {
-        if(!FactoryPagePrevious.Contains(p) && !FactoryPageNext.Contains(p))return false;
-        int pages=FactoryPageCount();
-        _factoryPage=Math.Clamp(_factoryPage+(FactoryPagePrevious.Contains(p)?-1:1),0,pages-1);_factoryDropDown=_factoryPlanLine=-1;return true;
+        if(FactoryOverviewActive || FactoryLaneCount()<=FactoryVisibleLanes ||
+            !FactoryPagePrevious.Contains(p) && !FactoryPageNext.Contains(p))return false;
+        ScrollFactoryLanes(FactoryPagePrevious.Contains(p)?-1:1);return true;
+    }
+    private void ScrollFactoryLanes(int delta)
+    {
+        _factoryZoom=0;
+        StopFactoryIntro();
+        _factoryPage=Math.Clamp(_factoryPage+delta,0,Math.Max(0,FactoryLaneCount()-FactoryVisibleLanes));
+        _factoryDropDown=_factoryPlanLine=-1;
     }
     private void DrawFactoryPages()
     {
-        int pages=FactoryPageCount();if(pages<=1)return;
-        _ui.Button(FactoryPagePrevious,"←",Muted,.4f);_ui.Button(FactoryPageNext,"→",Muted,.4f);
-        _ui.Center($"{_factoryPage+1}/{pages}",new(722,926,80,30),.35f,Cream);
+        int count=FactoryLaneCount();if(count<=FactoryVisibleLanes)return;
+        if(FactoryOverviewActive){
+            var size=FactoryZoomSizes[FactoryZoomLevel];
+            _ui.Center($"{size.X} × {size.Y} / {count}",new(660,926,204,30),.35f,Cream);
+            return;
+        }
+        _ui.Button(FactoryPagePrevious,"↑",_factoryPage>0?Accent:Muted,.4f);
+        _ui.Button(FactoryPageNext,"↓",_factoryPage+FactoryVisibleLanes<count?Accent:Muted,.4f);
+        _ui.Center($"{_factoryPage+1}-{_factoryPage+FactoryVisibleLanes}/{count}",new(722,926,80,30),.35f,Cream);
     }
     private static Rectangle DirectPageButton(int side,bool next)=>new(420+side*1320+(next?74:0),264,64,30);
     private static Rectangle DirectColumnButton(int side,bool next)=>new(420+side*1320+(next?74:0),882,64,30);

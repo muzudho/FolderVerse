@@ -95,6 +95,16 @@ foreach(var (purpose,duration) in new[]{(NodePurpose.Harvest,11),(NodePurpose.Ma
     Capacity(w.Robots.Nodes[a],72);
     Check(!w.Campaign.FunctionTransfers.CanReserve(w,b,a) && w.Robots.Nodes[a].TotalCapacity==72,"Legacy oversized storage is preserved but cannot receive another transfer");
 }
+{
+    var(w,a,b,c)=Fixture();
+    w.Robots.Workshops[a].LimitLines(24);
+    w.Robots.Workshops[b].LimitLines(3);
+    w.Robots.Workshops[c].LimitLines(1);
+    Check(w.Campaign.FunctionTransfers.CanReserve(w,b,a,true),"Exactly 27 factory lanes may consolidate");
+    w.Campaign.FunctionTransfers.Reserve(w,b,a,true);
+    Check(!w.Campaign.FunctionTransfers.CanReserve(w,c,a) &&
+        !w.Campaign.FunctionTransfers.CanReserve(w,c,a,true),"Both transfer types count pending lanes toward the cap");
+}
 foreach(bool cancel in new[]{false,true})
 {
     var(w,a,b,c)=Fixture();

@@ -11,6 +11,7 @@ public sealed record NodeFunctionTransferOrder(int Source,int Target,int Owner)
 public sealed class NodeFunctionTransfers
 {
     public const int MaximumCapacity=60;
+    public const int MaximumFactoryLanes=27;
     public static int[] Members(WorldSetup w,int host)=>w.Nodes.All.Where(n=>n.Id==host || n.FunctionHost==host).Select(n=>n.Id).ToArray();
     public List<NodeFunctionTransferOrder> Orders {get;}=new();
     public List<NodeFunctionTransferOrder> LastResults {get;}=new();
@@ -27,6 +28,10 @@ public sealed class NodeFunctionTransfers
         long capacity=(long)w.Robots.Nodes[target].TotalCapacity+w.Robots.Nodes[source].TotalCapacity+
             Orders.Where(o=>!o.FactoryOnly && o.Source!=source && o.Target==target).Sum(o=>(long)w.Robots.Nodes[o.Source].TotalCapacity);
         if(b.Purpose==NodePurpose.Relay || factoryOnly && a.Purpose==NodePurpose.Relay)return false;
+        var workshops=w.Robots.Workshops;
+        int laneCapacity=workshops[target].LineLimit+workshops[source].LineLimit+
+            Orders.Where(o=>o.Source!=source && o.Target==target).Sum(o=>workshops[o.Source].LineLimit);
+        if(laneCapacity>MaximumFactoryLanes)return false;
         if(factoryOnly){
             var robots=w.Robots;
             var workers=robots.Nodes[source].Robots.Where(r=>r.FactoryWorker).ToArray();

@@ -13,7 +13,8 @@ sealed class WorkerPlansUi:Game1
  Rectangle Rect(string n,params object[] args)=>(Rectangle)typeof(Game1).GetMethod(n,BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,args)!;
  void Click(Point point){
   var canvas=(Rectangle)Call("CanvasBounds");var screen=new Point(canvas.X+point.X*canvas.Width/1920,canvas.Y+point.Y*canvas.Height/1080);
-  foreach(var state in new[]{ButtonState.Released,ButtonState.Pressed,ButtonState.Released})Call("HandleInput",new MouseState(screen.X,screen.Y,0,state,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(),true);
+  int wheel=((MouseState)Get("_previousMouse")).ScrollWheelValue;
+  foreach(var state in new[]{ButtonState.Released,ButtonState.Pressed,ButtonState.Released})Call("HandleInput",new MouseState(screen.X,screen.Y,wheel,state,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(),true);
  }
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
@@ -125,6 +126,30 @@ sealed class WorkerPlansUi:Game1
   }
   if(frame==11){
    var factory=w.Robots.Workshops[node];
+   var extra=w.Robots.Create(0,RobotParts.Complete);
+   Fixture.Appoint(w,node,extra).SelectPlan(3);
+   Set("_factoryPlanLine",-1);
+   Call("OpenNodeFactory");
+   Check((bool)typeof(Game1).GetProperty("FactoryOverviewActive",F)!.GetValue(this)!,"Opening starts with all three lanes visible");
+   Set("_factoryIntroStart",(float)Get("_animationTime")-2f);
+   Check(!(bool)typeof(Game1).GetProperty("FactoryOverviewActive",F)!.GetValue(this)!,"Opening animation ends at the two-lane view");
+   var canvas=(Rectangle)Call("CanvasBounds");
+   var wheelPoint=new Point(canvas.X+canvas.Width/6,canvas.Y+canvas.Height/3);
+   void Pan(int y,ButtonState right)=>Call("HandleInput",new MouseState(wheelPoint.X,y,0,ButtonState.Released,ButtonState.Released,right,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(),true);
+   Pan(wheelPoint.Y,ButtonState.Pressed);Pan(wheelPoint.Y-45,ButtonState.Pressed);Pan(wheelPoint.Y-45,ButtonState.Released);
+   Check((int)Get("_factoryPage")==1,"Right drag scrolls the detailed viewport");
+   Click(new Point(691,941));
+   Call("HandleInput",new MouseState(wheelPoint.X,wheelPoint.Y,-120,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(),true);
+   Check((int)Get("_factoryZoom")==1,"Wheel zooms out to three lanes");
+   Click(((Rectangle)Call("FactoryOverviewBounds",2,3)).Center);
+   Check((int)Get("_factoryPage")==1 && (int)Get("_factoryZoom")==0,"Selecting lane three in the overview zooms to its detail");
+   Click(Rect("FactoryRobotButton",1,3).Center);
+   Check((int)Get("_factoryPlanLine")==2,"The second visible row opens lane three");
+   Set("_factoryPlanLine",-1);
+   Click(new Point(691,941));
+   Check((int)Get("_factoryPage")==0,"Up arrow scrolls back to the first two lanes");
+   w.Robots.Nodes[node].Remove(extra.Id);
+   w.Robots.SyncWorkers(node);
    Check(w.Robots.PartPlanning.ReserveRole(w,node,workerId,HangarReservation.Harvest,0),
     "Reserve harvest for the existing manufacturing worker");
    var arguments=new object[]{factory,null};

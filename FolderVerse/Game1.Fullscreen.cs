@@ -35,10 +35,11 @@ public partial class Game1
     }
     private void DrawFullscreenCursor()
     {
-        bool hand=(_hangarPanning && _nodeAssemblyOpen || _directPairOpen && _directPanSide>=0) && !_autoPaused;
+        var mouse=Mouse.GetState();
+        bool hand=(_hangarPanning && _nodeAssemblyOpen || _directPairOpen && _directPanSide>=0 ||
+            _nodeFactoryOpen && _factoryPan.HasValue && mouse.RightButton==ButtonState.Pressed) && !_autoPaused;
         IsMouseVisible=!_graphics.IsFullScreen && !_demoActive && !hand;
         if((!_graphics.IsFullScreen && !hand) || _demoActive)return;
-        var mouse=Mouse.GetState();
         if(hand){DrawHangarHand(new(mouse.X,mouse.Y));return;}
         DrawMouseArrow(new(mouse.X,mouse.Y));
     }
