@@ -639,6 +639,7 @@ public partial class Game1 : Game
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _spriteBatch.End();
         var oldScissor=GraphicsDevice.ScissorRectangle;
+        long factoryMapStart=_factoryDrawStarted!=0?System.Diagnostics.Stopwatch.GetTimestamp():0;
         GraphicsDevice.ScissorRectangle=OrientationClip(canvas);
         if(MapTransitionActive)
         {
@@ -681,6 +682,7 @@ public partial class Game1 : Game
         if(!_reservationDirectory){DrawRegionOffice();DrawSalvageMap();}
         _spriteBatch.End();
         if(!MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
+        if(factoryMapStart!=0)_factoryMapDrawMs=System.Diagnostics.Stopwatch.GetElapsedTime(factoryMapStart).TotalMilliseconds;
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         if(!_reservationDirectory){
         DrawBattleActivity();
@@ -802,6 +804,9 @@ public partial class Game1 : Game
         if(IsOpeningScreen){DrawOpeningFrame(gameTime);base.Draw(gameTime);return;}
         if(_computerManualOpen){DrawComputerManual();base.Draw(gameTime);return;}
         if(_autoPaused){DrawAutoPause();base.Draw(gameTime);return;}
+        if(_factoryOpenedAt.HasValue && IsStatusScreen && _nodeFactoryOpen){
+            _factoryDrawStarted=System.Diagnostics.Stopwatch.GetTimestamp();_factoryMapDrawMs=0;
+        }else{_factoryOpenedAt=null;_factoryDrawStarted=0;}
         _setup.Robots.PartPlanning.Invalidate();
         BeginNewspaperToyPatternFrame();if(!_conquestOverview)NotifyPlayerTurn();
         GraphicsDevice.Clear(new Color(16,35,46)); var viewport=GraphicsDevice.Viewport; var canvas=CanvasBounds();

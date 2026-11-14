@@ -42,15 +42,27 @@ public partial class Game1
         _ui.Box(new(94, 157, 1732, 777), paper);
         _ui.Text($"生産ライン {_factoryPlanLine + 1} / "+(_factoryHarvestPage?"素材の採取":"製造候補"), new(113, 169), .55f, ink);
         var controls=_factoryHarvestPage?HarvestAlbumCard(15):FactoryAlbumCard(10);
-        _ui.Batch.Draw(_robotFactoryIcon,new Rectangle(controls.X+28,controls.Y+170,31,31),Color.White);
-        _ui.Text("産業ターン",new(controls.X+68,controls.Y+176),.39f,ink);
-        _ui.Text("閉じる：Esc／枠の外をクリック",new(controls.X+9,controls.Y+227),.27f,ink);
+        int legendY=controls.Y+255;
+        var materials=RobotWorld.RawMaterials.Where(_setup.Robots.RawRequired).ToArray();
+        var availableStock=materials.ToDictionary(material=>material,
+            material=>_setup.Robots.AvailableRaw(node.Id,material));
+        if(materials.Length>0){
+            _ui.Text("原材料在庫（出荷予約分を除く）",new(controls.X+10,controls.Y+145),.32f,ink);
+            for(int row=0;row<materials.Length;row++){
+                var material=materials[row];
+                _ui.Text($"{RobotWorld.RawName(material)}  {RawLoadLabel(availableStock[material])}",
+                    new(controls.X+10,controls.Y+169+row*16),.26f,ink);
+            }
+        }
+        _ui.Batch.Draw(_robotFactoryIcon,new Rectangle(controls.X+12,legendY,25,25),Color.White);
+        _ui.Text("産業ターン",new(controls.X+45,legendY+3),.39f,ink);
+        _ui.Text("閉じる：Esc／枠の外をクリック",new(controls.X+9,legendY+33),.27f,ink);
         _ui.Button(FactoryStopButton,_factoryHarvestPage?"採取しない":"製造しない",line.SelectedPlan==3 && line.MapleRemaining==0?Accent:Muted,.45f);
         if(!line.HarvestOnly)_ui.Button(FactoryHarvestTab,_factoryHarvestPage?"製造候補へ":"素材の採取",
             _setup.Robots.MapleSupplyEnabled?new Color(120,86,64):Muted*.55f,.45f);
         if(_factoryHarvestPage)
         {
-            foreach(var material in RobotWorld.RawMaterials.Where(_setup.Robots.RawRequired))
+            foreach(var material in materials)
             {
                 string name=RobotWorld.RawName(material);
                 int deposit=_setup.Robots.RawDeposit(node.Id,material);
@@ -84,7 +96,7 @@ public partial class Game1
             _ui.Box(new(card.X + 3, card.Y + 5, card.Width, card.Height), new Color(175, 143, 113));
             _ui.Box(card, selected ? new Color(101, 145, 132) : hover ? new Color(189, 136, 76) : new Color(204, 175, 136));
             _ui.Box(new(card.X + 4, card.Y + 4, card.Width - 8, card.Height - 8), new Color(255, 245, 220));
-            var photo = new Rectangle(card.X + 14, card.Y + 14, card.Width - 28, 208);
+            var photo = new Rectangle(card.X + 14, card.Y + 14, card.Width - 28, 182);
             _ui.Box(photo, new Color(35, 53, 67));
             var plan = line.PlanAt(i);
             var preview = plan.Preview(node.Owner);
@@ -109,18 +121,29 @@ public partial class Game1
                 new(card.X + 8, photo.Bottom + 1, card.Width - 16, 28), .40f, ink);
             _ui.Center(FactoryProductLabel(plan), new(card.X + 8, photo.Bottom + 29, card.Width - 16, 21), .32f, ink);
             int materialRow=0;
-            foreach(var material in RobotWorld.RawMaterials.Where(_setup.Robots.RawRequired))
+            foreach(var material in materials)
             {
                 int cost=RobotWorld.RawCost(preview,material);
                 if(cost==0)continue;
-                _ui.Center($"{RobotWorld.RawName(material)} {cost}/16",
+                _ui.Center($"{RobotWorld.RawName(material)} {RawLoadLabel(cost)}",
                     new(card.X+8,photo.Bottom+46+materialRow++*18,card.Width-16,18),.28f,
-                    cost>_setup.Robots.AvailableRaw(node.Id,material)?new Color(150,52,43):ink);
+                    cost>availableStock[material]?new Color(150,52,43):ink);
             }
             DrawFactoryAlbumEquipment(card, preview.Equipment(node.Owner, _setup.EquipmentMode), ink);
         }
         if (mixedPreview != null && line.PlanCount < 12)
             DrawFactoryAlbumDetails(FactoryAlbumCard(11), mixedPreview, ink);
+    }
+
+    private static string RawLoadLabel(int units)
+    {
+        int denominator=RobotWorld.MaplePackageSize;
+        int whole=units/denominator;
+        int remainder=units%denominator;
+        if(remainder==0)return whole.ToString();
+        // The package size is a power of two, so common factors are all twos.
+        while(remainder%2==0 && denominator%2==0){remainder/=2;denominator/=2;}
+        return whole==0?$"{remainder}/{denominator}":$"{whole} {remainder}/{denominator}";
     }
 
     private void DrawHarvestLimitWarning(Rectangle bounds,string message)

@@ -11,6 +11,9 @@ public partial class Game1
     private bool? _loggedActive;
     private long _lastDragLog;
     private string _lastDisplayed;
+    private long? _factoryOpenedAt;
+    private long _factoryDrawStarted;
+    private double _factoryMapDrawMs;
     public string OperationLogPath=>_operations.FilePath;
     private object OperationState()=>new
     {
@@ -113,6 +116,12 @@ public partial class Game1
     private void LogDisplayedScreen()
     {
         var window=GraphicsDevice.PresentationParameters;
+        if(_factoryDrawStarted!=0){
+            _operations.Write("factory_first_draw",new{node=_populationNode,globe=_statusGlobe,
+                openToDrawMs=_operations.ElapsedMilliseconds-_factoryOpenedAt.GetValueOrDefault(),
+                drawCpuMs=System.Diagnostics.Stopwatch.GetElapsedTime(_factoryDrawStarted).TotalMilliseconds,mapDrawCpuMs=_factoryMapDrawMs});
+            _factoryOpenedAt=null;_factoryDrawStarted=0;
+        }
         string display=$"{_screen}/{_seedDialog.IsOpen}/{_movementOpen}/{_populationCell>=0}/{_statusGlobe}/{_net.ShowRoutes}/{window.BackBufferWidth}/{window.BackBufferHeight}";
         if(display==_lastDisplayed)return;_lastDisplayed=display;
         _operations.Write("screen_displayed",new{state=OperationState(),window=new{width=window.BackBufferWidth,height=window.BackBufferHeight}});

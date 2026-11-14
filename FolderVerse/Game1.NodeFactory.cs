@@ -48,7 +48,7 @@ public partial class Game1
         var factory=PlanningWorkshop(_populationNode);
         return FactoryScreenLines(factory,out _).Length>0;
     }
-    private void OpenNodeFactory(){if(!CanOpenNodeFactory)return;_factoryPage=0;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;_nodeOfficeOpen=false;_lastNodeTab=1;BeginFactoryViewport();}
+    private void OpenNodeFactory(){if(!CanOpenNodeFactory)return;_factoryPage=0;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;_nodeOfficeOpen=false;_lastNodeTab=1;_factoryOpenedAt=_operations.ElapsedMilliseconds;BeginFactoryViewport();}
     private static int FactoryRowY(int row)=>284+row*290;
     private static Rectangle FactoryRobotButton(int line,int period)=>new(301+FactoryConveyorTravel(period),FactoryRowY(line)+67,72,88);
     private Rectangle FactoryProductionButton(int line)
