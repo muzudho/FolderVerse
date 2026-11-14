@@ -1,6 +1,6 @@
 # フォルダーバース
 
-![ぐれーすけーるサークルカット](./art-source/branding/grayscale/grayscale-circle-cut-2026-v002-500.png)  
+![ぐれーすけーるサークルカット](./art-source/branding/grayscale/grayscale-circle-cut-2026-v003-500.png)  
 👆　デジゲー博２０２６には間に合わなかったサークルカットです。  
 
 フォルダーバース（Folder Verse；畳域）は、ニコニコ動画などの生配信で、配信者も視聴者も楽しめる、20分ほどで遊び終わるゲームを目指しています。  

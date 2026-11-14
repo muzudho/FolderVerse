@@ -99,7 +99,17 @@ sealed class WorkerPlansUi:Game1
    graphics.PreferredBackBufferWidth=800;graphics.PreferredBackBufferHeight=450;graphics.ApplyChanges();
    Set("_pointer",Rect("FactoryRecipeCard",split).Center);
   }
+  if(frame==9){
+   var robot=w.Robots.Create(0,RobotParts.Complete) with {
+    HeadOrigin=1,BodyOrigin=2,LegsOrigin=0,
+    HeadMaterial=RobotMaterial.Foam,BodyMaterial=RobotMaterial.Maple,LegsMaterial=RobotMaterial.Silicone};
+   w.Robots.Nodes[node].Add(robot);
+   w=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
+   Check(w.Robots.Nodes[node].Robots.Single(r=>r.Id==robot.Id)==robot,"Reload preserves the three-origin hangar robot");
+   Set("_setup",w);Set("_factoryPlanLine",-1);
+   Call("OpenNodeInspector",node);Call("OpenNodeAssembly");Call("UpdateDomesticSlide",1f);
+  }
   base.Draw(time);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"worker-plans-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);
-  if(frame++==8){Console.WriteLine("PASS: material album, split base recipes, and narrow album rendering.");Exit();}
+  if(frame++==9){Console.WriteLine("PASS: material album, split base recipes, narrow album and restored mixed hangar rendering.");Exit();}
  }
 }

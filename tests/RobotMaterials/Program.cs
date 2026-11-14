@@ -136,6 +136,20 @@ Check(cargo.ReserveMapleShipment(supply,source,target,package.Id),"Adjacent mapl
 var restoredSupply=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
 Check(restoredSupply.Robots.MapleShipments.Single().PackageId==package.Id && restoredSupply.Robots.Nodes[source].MapleUnits==16,"Maple stock or shipment lost on save");
 Check(restoredSupply.Robots.Workshops[source].ProductionLines[0].MapleRemaining==1,"Harvest order lost on save");
+// A reserved load must become available to the destination lane only after delivery.
+var restoredCargo=restoredSupply.Robots;
+var receivingFactory=restoredCargo.Workshops[target];
+for(int seed=0;receivingFactory.ProductionLines.Length==0;seed++)
+    receivingFactory.GenerateLines(seed,RobotEquipmentMode.Materials);
+var receivingLine=receivingFactory.ProductionLines[0];
+int receivingPlan=Enumerable.Range(0,receivingLine.PlanCount)
+    .First(i=>i!=3 && receivingLine.PlanAt(i).Material==RobotMaterial.Paper);
+receivingLine.SelectPlan(receivingPlan);
+Check(receivingLine.WaitingForMaple(restoredCargo,target),"Destination cannot use an undelivered load");
+restoredSupply.Campaign.FinishDomestic(restoredSupply);
+Check(restoredCargo.Nodes[target].MapleUnits==16 && restoredCargo.MapleShipments.Count==0 &&
+    !receivingLine.WaitingForMaple(restoredCargo,target) && receivingLine.ProductionAge==0,
+    "Delivery must release the material wait without spending an industry step");
 var resolveMaple=typeof(RobotWorld).GetMethod("ResolveMapleShipments",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
 resolveMaple.Invoke(cargo,new object[]{supply});
 Check(cargo.Nodes[source].MapleUnits==0 && cargo.Nodes[target].MapleUnits==16 && cargo.MapleShipments.Count==0,"Shipment duplicated or lost cargo");
