@@ -53,6 +53,20 @@ public partial class Game1
         return stored;
     }
     private bool MapleArrival(MaplePackage package)=>_setup.Robots.MapleShipments.Any(o=>o.Target==HangarPlanningNode && o.PackageId==package.Id);
+    private (string Label,Dictionary<long,int> Merged) MapleArrivalLabel(int node,RobotStore store)
+    {
+        var merged=new Dictionary<long,int>();
+        int count=_setup.Robots.MapleShipments.Count(o=>o.Target==node);
+        if(count==0)return ("",merged);
+        var arrival=_setup.Robots.PreviewMapleArrivals(_setup,node,store);
+        var current=store.MaplePackages.ToDictionary(p=>p.Id,p=>p.Units);
+        foreach(var package in arrival.Packages)
+            if(current.TryGetValue(package.Id,out int units) && package.Units>units)
+                merged.Add(package.Id,package.Units-units);
+        int total=merged.Values.Sum();
+        return ($"楓の木 / 入荷予定 {count} 件"+(total>0?$" / 合算 +{total}":"")+
+            (arrival.Blocked>0?$" / 待機 {arrival.Blocked} 件":""),merged);
+    }
     private bool MapleHangarInput(MouseState mouse,bool click,bool escape)
     {
         if(_mapleSelected is long id)

@@ -43,6 +43,22 @@ static Robot Add(WorldSetup w,int n,RobotParts parts){var r=w.Robots.Create(0,pa
     Check(!transfer.CanReserve(w,c,a) && !transfer.CanReserve(w,c,a,true) &&
         !transfer.CanReserve(w,a,b,true) && transfer.CanReserve(w,a,b),"A relay can only send a full transfer");
 }
+foreach(bool factoryOnly in new[]{true,false})
+{
+    var(w,a,b,c)=Fixture();
+    const BindingFlags hidden=BindingFlags.Instance|BindingFlags.NonPublic;
+    w.EquipmentMode=RobotEquipmentMode.Materials;
+    typeof(RobotWorld).GetMethod("InitializeMapleSupply",hidden)!.Invoke(w.Robots,new object[]{w});
+    var package=new MaplePackage(12345,16);
+    typeof(RobotStore).GetMethod("SetMaplePackages",hidden)!.Invoke(w.Robots.Nodes[a],new object[]{new[]{package}});
+    Check(w.Robots.ReserveMapleShipment(w,a,c,package.Id),"Reserve a maple shipment before relocation");
+    w.Campaign.FunctionTransfers.Reserve(w,a,b,factoryOnly);
+    w.Campaign.FinishDomestic(w);
+    int destination=factoryOnly?c:b;
+    Check(w.Robots.Nodes[destination].MaplePackages.Single()==package &&
+        w.Robots.Nodes[a].MaplePackages.Count==0 && w.Robots.Nodes[factoryOnly?b:c].MaplePackages.Count==0 &&
+        w.Robots.MapleShipments.Count==0,"Factory transfer preserves the shipment; full transfer relocates the stock and cancels the shipment");
+}
 foreach(var (purpose,duration) in new[]{(NodePurpose.Harvest,11),(NodePurpose.Manufacturing,9),(NodePurpose.General,10)})
 {
     var(w,a,b,c)=Fixture();

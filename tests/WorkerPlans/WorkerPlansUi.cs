@@ -71,7 +71,35 @@ sealed class WorkerPlansUi:Game1
    Click(Rect("FactoryAlbumAction",1).Center);
    Check(!line.Manufacturing && (int)Get("_factoryPlanLine")==-1,"Album can turn production off");
   }
+  if(frame==7){
+   var basic=w.Robots.Workshops[node].ProductionLines[0];
+   typeof(RobotWorkshop).GetMethod("ConfigureMaterialCatalogue",F)!.Invoke(basic,new object[]{0,w.EquipmentMode});
+   int split=Array.FindIndex(basic.Plans,plan=>plan.Product==RobotParts.Complete && plan.IntegratedParts==0);
+   Check(split>=0,"The base lane contains a split complete recipe");
+   basic.Plans[split]=basic.Plans[split] with {HeadMaterial=RobotMaterial.Foam,BodyMaterial=RobotMaterial.Maple,LegsMaterial=RobotMaterial.Silicone};
+   basic.SelectPlan(3);
+   Click(Rect("FactoryRobotButton",0,1).Center);
+   var mixed=basic.PlanAt(split).Preview(0);
+   Check((int)Get("_factoryPlanLine")==0 && mixed.Parts==RobotParts.Complete && mixed.IntegratedParts==0 &&
+    new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Select(mixed.Material).Distinct().Count()==3,
+    "The base lane shows three separate parts with distinct materials");
+   Set("_pointer",Rect("FactoryRecipeCard",split).Center);
+  }
+  if(frame==8){
+   var basic=w.Robots.Workshops[node].ProductionLines[0];
+   int split=Array.FindIndex(basic.Plans,plan=>plan.Product==RobotParts.Complete && plan.IntegratedParts==0);
+   basic.Plans[split]=basic.Plans[split] with {
+    Turns=65,HeadMaterial=RobotMaterial.Polypropylene,LegsMaterial=RobotMaterial.Polypropylene,
+    HeadOrigin=1,BodyOrigin=2,LegsOrigin=0};
+   var mixed=basic.PlanAt(split).Preview(0);
+   Check(mixed.HeadOrigin==1 && mixed.BodyOrigin==2 && mixed.LegsOrigin==0,
+    "Narrow album fixture previews three different part origins");
+   Check(basic.PlanAt(split).Turns>=30 && basic.PlanAt(split).Turns%3!=0,"Narrow album fixture has a two-digit mixed-number duration");
+   var graphics=(GraphicsDeviceManager)Get("_graphics");
+   graphics.PreferredBackBufferWidth=800;graphics.PreferredBackBufferHeight=450;graphics.ApplyChanges();
+   Set("_pointer",Rect("FactoryRecipeCard",split).Center);
+  }
   base.Draw(time);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"worker-plans-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);
-  if(frame++==6){Console.WriteLine("PASS: legacy catalogue and 540p material album clicks, exact worker recipes, and stopping production.");Exit();}
+  if(frame++==8){Console.WriteLine("PASS: material album, split base recipes, and narrow album rendering.");Exit();}
  }
 }

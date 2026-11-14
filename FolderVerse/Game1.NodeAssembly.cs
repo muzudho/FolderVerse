@@ -184,13 +184,9 @@ public partial class Game1
         var materials=AssemblyMaterials(store);
         _ui.Box(new(54,150,850,825),new(27,49,62));
         _ui.Text($"格納庫 {store.Count}/{store.TotalCapacity}",new(84,256),.28f,Cream);
-        int mapleArrivals=_setup.Robots.MapleShipments.Count(o=>o.Target==HangarPlanningNode);
+        var (mapleLabel,mergedMaple)=MapleArrivalLabel(HangarPlanningNode,store);
         string forecast=HangarPlanningNode==_populationNode?"入荷・機能移転・組替後の予定":"移転先での格納・組替予定";
-        if(mapleArrivals>0){
-            int waiting=_setup.Robots.PreviewBlockedMapleArrivals(_setup,HangarPlanningNode,store);
-            forecast=$"楓の木 / 入荷予定 {mapleArrivals} 件"+(waiting>0?$" / 待機 {waiting} 件":"");
-        }
-        _ui.Text(forecast,new(232,256),.28f,Cream);DrawHangarUndo();
+        _ui.Text(mapleLabel.Length>0?mapleLabel:forecast,new(232,256),.28f,Cream);DrawHangarUndo();
 
 
         bool manage=DomesticOperationsAllowed && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
@@ -279,11 +275,14 @@ public partial class Game1
                 bool arrival=MapleArrival(package);
                 DrawMaplePackage(bounds,package,opacity:arrival?.55f:_mapleDrag==package.Id && _mapleMoved?.4f:1,compact:true);
                 if(arrival)DrawDirectDeliveryTag(bounds,"入荷予定");
+                else if(cellWidthAllowsTag(bounds) && mergedMaple.TryGetValue(package.Id,out int units))
+                    DrawDirectDeliveryTag(bounds,$"合算 +{units}");
                 if(bounds.Contains(_pointer)){
                     hover=arrival?"楓の木 / 入荷予約":package.Sections==1?"楓の木 / ドラッグで移動・合算 / Shift＋ドラッグで分解 / クリックで出荷":"楓の木 / ドラッグで移動 / クリックで出荷";
                     hoveringPart=true;
                 }
             }
+            static bool cellWidthAllowsTag(Rectangle bounds)=>bounds.Width>=75;
         }
         }
         if(!hoveringPart && !_hangarDrag.HasValue){

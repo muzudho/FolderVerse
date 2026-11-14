@@ -114,11 +114,32 @@ class Checks:Game1{
   var forecast=new RobotStore();
   typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(forecast,new object[]{1});
   typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(forecast,new object[]{new[]{new MaplePackage(-1,32),new MaplePackage(-2,1)}});
-  var blockedMaple=typeof(RobotWorld).GetMethod("PreviewBlockedMapleArrivals",F)!;
-  Check((int)blockedMaple.Invoke(w.Robots,new object[]{w,b,forecast})! == 1,"Maple preview detects a full hangar when the shipment cannot be absorbed");
+  var blockedMaple=typeof(RobotWorld).GetMethod("PreviewMapleArrivals",F)!;
+  (int Blocked,MaplePackage[] Packages) PreviewMaple()=>((int,MaplePackage[]))blockedMaple.Invoke(w.Robots,new object[]{w,b,forecast})!;
+  Check(PreviewMaple().Blocked == 1,"Maple preview detects a full hangar when the shipment cannot be absorbed");
   typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(w.Robots.Nodes[a],new object[]{new[]{new MaplePackage(cargo,8)}});
-  Check((int)blockedMaple.Invoke(w.Robots,new object[]{w,b,forecast})! == 0 && forecast.MapleUnits==33,
+  Check(PreviewMaple().Blocked == 0 && PreviewMaple().Packages.Single(p=>p.Id==-2).Units==9 && forecast.MapleUnits==33,
     "Maple preview accepts a merge into a full hangar without mutating its stock");
+  var setMaple=typeof(RobotStore).GetMethod("SetMaplePackages",F)!;
+  long nextCargo=w.Robots.Create(0,RobotParts.Head).Id;
+  setMaple.Invoke(w.Robots.Nodes[a],new object[]{new[]{new MaplePackage(cargo,8),new MaplePackage(nextCargo,4)}});
+  Check(w.Robots.ReserveMapleShipment(w,a,b,nextCargo),"A second small shipment can be reserved");
+  var combined=PreviewMaple();
+  Check(combined.Blocked==0 && combined.Packages.Single(p=>p.Id==-2).Units==13 && forecast.MapleUnits==33,
+    "Two shipments merge into the same small load in reservation order");
+  setMaple.Invoke(w.Robots.Nodes[a],new object[]{new[]{new MaplePackage(cargo,8),new MaplePackage(nextCargo,8)}});
+  combined=PreviewMaple();
+  Check(combined.Blocked==1 && combined.Packages.Single(p=>p.Id==-2).Units==9 && forecast.MapleUnits==33,
+    "A blocked later shipment does not partially merge into the earlier forecast");
+  w.Robots.CancelMapleShipment(a,nextCargo);
+  setMaple.Invoke(w.Robots.Nodes[a],new object[]{new[]{new MaplePackage(cargo,8)}});
+  var originalMaple=w.Robots.Nodes[b].MaplePackages.ToArray();
+  setMaple.Invoke(w.Robots.Nodes[b],new object[]{new[]{new MaplePackage(-2,1)}});
+  Check(w.Robots.ReserveMapleShipment(w,b,a,-2),"The small destination load can be reserved for outgoing delivery");
+  Check(PreviewMaple().Blocked == 1 && forecast.MapleUnits==33,
+    "Maple preview cannot merge into an outgoing load in a full hangar");
+  w.Robots.CancelMapleShipment(b,-2);
+  setMaple.Invoke(w.Robots.Nodes[b],new object[]{originalMaple});
   typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(w.Robots.Nodes[a],new object[]{new[]{new MaplePackage(cargo,16)}});
   Check(((Dictionary<int,MaplePackage>)Call("DirectIncomingMaterials",1))[8].Id==cargo,"Maple preview follows the drop cell");
   Set("_populationNode",b);

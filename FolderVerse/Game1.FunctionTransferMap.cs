@@ -83,7 +83,12 @@ public partial class Game1
         if(!CanChooseTransfer(marker,factoryOnly))return;
         _setup.Campaign.FunctionTransfers.Reserve(_setup,marker.Source,marker.Target,factoryOnly);
         _functionTransferMessage=$"{FunctionTransferDirection(marker.Source,marker.Target)} / {(factoryOnly?"工場だけ":"全機能")}の移転を予約しました";
+        if(!factoryOnly && MapleShipmentsAffectedByTransfer(marker.Source) is >0 and var count)
+            _functionTransferMessage+=$" / 楓の直送予約 {count}件は移転時に取消";
     }
+
+    private int MapleShipmentsAffectedByTransfer(int source)=>
+        _setup.Robots.MapleShipments.Count(order=>order.Source==source || order.Target==source);
 
     private bool FunctionTransferChoiceInput(Point pointer,bool click,bool escape)
     {
@@ -111,6 +116,9 @@ public partial class Game1
         _ui.Center(direction,new(585,425,750,34),Math.Min(.43f,740/Math.Max(1,_font.MeasureString(direction).X)),Cream);
         DrawOption(TransferFactoryButton,"格納庫を残して工場を移転する",true);
         DrawOption(TransferAllButton,"全て移転する",false);
+        int affectedShipments=MapleShipmentsAffectedByTransfer(marker.Source);
+        if(affectedShipments>0 && CanChooseTransfer(marker,false))
+            _ui.Center($"全て移転すると楓の直送予約 {affectedShipments}件が取り消されます",new(585,603,750,29),.34f,Cream);
         _ui.Button(TransferChoiceCancel,"取消 / Esc",Muted,.42f);
 
         void DrawOption(Rectangle bounds,string label,bool factoryOnly)

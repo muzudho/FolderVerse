@@ -158,7 +158,7 @@ public sealed partial class RobotWorld
         }
     }
 
-    internal int PreviewBlockedMapleArrivals(WorldSetup world,int node,RobotStore forecast)
+    internal (int Blocked,MaplePackage[] Packages) PreviewMapleArrivals(WorldSetup world,int node,RobotStore forecast)
     {
         var target=forecast.PlanningCopy();
         int blocked=0;
@@ -169,6 +169,6 @@ public sealed partial class RobotWorld
             if(package==null || !CanDeliverMaple(world,order.Owner,order.Source,node) ||
                 !target.TryReceiveMaple(package,reserved,id=>MapleShipping(node,id)))blocked++;
         }
-        return blocked;
+        return (blocked,target.MaplePackages.ToArray());
     }
 }

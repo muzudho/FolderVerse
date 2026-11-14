@@ -82,6 +82,8 @@ public partial class Game1
             if (mixed && hover) mixedPreview = preview;
             var hangarSize = HangarRobotBounds(0).Size;
             var robotBounds=new Rectangle(photo.Center.X-hangarSize.X/2,photo.Center.Y-hangarSize.Y/2,hangarSize.X,hangarSize.Y);
+            if((preview.Parts&RobotParts.Head)!=0 && plan.Turns>=10*IndustryTime.UnitsPerTurn)
+                robotBounds.Offset(-20,0);
             if(preview.Parts==RobotParts.Complete && preview.IntegratedParts==0){
                 robotBounds.Inflate(0,-9);
                 foreach(var part in RobotMaterials.Parts){
@@ -123,8 +125,9 @@ public partial class Game1
         {
             if ((preview.Parts & part) == 0) continue;
             int origin = preview.Origin(part);
-            _ui.Text($"{PartsLabel(part)}：{RobotMaterials.Label(preview.Material(part))}",
-                new(card.X + 16, y), .32f, ink);
+            string material=$"{PartsLabel(part)}：{RobotMaterials.Label(preview.Material(part))}";
+            float scale=Math.Min(.32f,(card.Width-32)/Math.Max(1,_font.MeasureString(material).X));
+            _ui.Text(material,new(card.X + 16,y),scale,ink);
             CountryFlagArt.Draw(_ui, _setup, origin, new(card.X + 20, y + 25, 39, 25));
             _ui.Text($"#{origin + 1}", new(card.X + 65, y + 29), .33f, ink);
             y += 78;
