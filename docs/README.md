@@ -6,7 +6,7 @@
 
 [リポジトリーのトップ](../README.md)
 
-遊ぶ・調べる場合は、[v0.8.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.8.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
+遊ぶ・調べる場合は、[v0.9.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.9.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
 
 | 読みたい内容 | 入口 |
 | --- | --- |
