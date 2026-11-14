@@ -5,12 +5,13 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 
 [Flags]
-public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8,ShieldSupport=16,CloseForDagger=32,CollisionTempo=64,RelieveFront=128,WaitingDaggerSafety=256,CornerEscape=512,ClearEscape=1024,EmptyHome=2048,PursuitLoop=4096,RifleSpacing=8192,QueenCaptured=16384 }
+public enum BattleLesson { None=0,FlagCourtesy=1,RetreatBackwards=2,FireDiscipline=4,LeaveFiringLine=8,ShieldSupport=16,CloseForDagger=32,CollisionTempo=64,RelieveFront=128,WaitingDaggerSafety=256,CornerEscape=512,ClearEscape=1024,EmptyHome=2048,PursuitLoop=4096,RifleSpacing=8192,QueenCaptured=16384,QueenWithoutTargets=32768 }
 public sealed record LessonAward(int Owner,BattleLesson Lesson);
 public sealed partial class BattleLessons
 {
-    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine,BattleLesson.ShieldSupport,BattleLesson.CloseForDagger,BattleLesson.CollisionTempo,BattleLesson.RelieveFront,BattleLesson.WaitingDaggerSafety,BattleLesson.CornerEscape,BattleLesson.ClearEscape,BattleLesson.EmptyHome,BattleLesson.PursuitLoop,BattleLesson.RifleSpacing,BattleLesson.QueenCaptured};
+    public static readonly BattleLesson[] All={BattleLesson.FlagCourtesy,BattleLesson.RetreatBackwards,BattleLesson.FireDiscipline,BattleLesson.LeaveFiringLine,BattleLesson.ShieldSupport,BattleLesson.CloseForDagger,BattleLesson.CollisionTempo,BattleLesson.RelieveFront,BattleLesson.WaitingDaggerSafety,BattleLesson.CornerEscape,BattleLesson.ClearEscape,BattleLesson.EmptyHome,BattleLesson.PursuitLoop,BattleLesson.RifleSpacing,BattleLesson.QueenCaptured,BattleLesson.QueenWithoutTargets};
     public static string Title(BattleLesson lesson)=>lesson switch {
+        BattleLesson.QueenWithoutTargets=>"戦訓#16 クイーンだけで参戦し、説得相手がおらず退却した。",
         BattleLesson.QueenCaptured=>"戦訓#15 クイーンが戦場に出てきて倒されて捕獲された。",
         BattleLesson.PursuitLoop=>"戦訓#13 斜めに追いかけ合って元に戻った",
         BattleLesson.RifleSpacing=>"戦訓#14 小銃の間合いを作れず追い続けた",
