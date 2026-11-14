@@ -49,6 +49,8 @@ public partial class Game1
         if(_factoryHarvestPage)
         {
             int available=FactoryHarvestAvailable(node.Id,lines,line);
+            string warning=deposit==0?"この地域ではもう採れません":
+                available==0?"他の採取レーンで採り終えます":"この量は採れません";
             for(int loads=1;loads<=3;loads++)
             {
                 var card=FactoryAlbumCard(loads-1);
@@ -59,7 +61,7 @@ public partial class Game1
                 _ui.Center($"楓の木 {loads*RobotWorld.MaplePackageSize}/48",new(card.X,card.Y+183,card.Width,28),.34f,Cream);
                 _ui.Center($"楓の木を採取 ×{loads} 荷",new(card.X,card.Y+222,card.Width,39),.43f,Cream);
                 _ui.Center($"{loads} 産業ターン",new(card.X,card.Y+261,card.Width,26),.35f,Cream);
-                if(loads>available)DrawHarvestLimitWarning(new(card.X+8,card.Y+287,card.Width-16,29));
+                if(loads>available)DrawHarvestLimitWarning(new(card.X+8,card.Y+287,card.Width-16,29),warning);
             }
             _ui.Text($"残り埋蔵量 {deposit} 荷 / このレーンで予約できる量 {available} 荷",new(113,574),.48f,ink);
             return;
@@ -108,7 +110,7 @@ public partial class Game1
             DrawFactoryAlbumDetails(FactoryAlbumCard(11), mixedPreview, ink);
     }
 
-    private void DrawHarvestLimitWarning(Rectangle bounds)
+    private void DrawHarvestLimitWarning(Rectangle bounds,string message)
     {
         var shadow=bounds;shadow.Offset(4,4);
         _ui.Box(shadow,Color.Black*.68f);
@@ -119,7 +121,7 @@ public partial class Game1
                 int left=Math.Max(1,x),right=Math.Min(bounds.Width-1,x+12);
                 if(right>left)_ui.Box(new(bounds.X+left,bounds.Y+y,right-left,1),new Color(255,164,58));
             }
-        _ui.Center("採取可能量を超えています",bounds,.32f,new Color(67,34,13));
+        _ui.Center(message,bounds,.32f,new Color(67,34,13));
     }
 
     private void DrawFactoryAlbumTimeSticker(Rectangle photo, int turns, Color ink)
