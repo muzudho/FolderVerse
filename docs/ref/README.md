@@ -8,7 +8,7 @@
 
 ## 配布版で遊んで調べる
 
-リサーチャーも、[v0.7.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.7.0)をダウンロードして調べられます。[ダウンロードと起動方法](../user/README.md)を参照してください。Visual Studioやソースコードからの実行は必要ありません。
+リサーチャーも、[v0.8.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.8.0)をダウンロードして調べられます。[ダウンロードと起動方法](../user/README.md)を参照してください。Visual Studioやソースコードからの実行は必要ありません。
 
 このフォルダーは開発中の仕様も扱うため、配布版と一致しない記述があります。調査結果には、使用したリリースのバージョン、再現手順、SEED、解像度を残してください。開発中のコードを調査した場合は、そのコミットも記録してください。開発用テストの実行方法は[開発者向け案内](../dev/README.md)へ。
 
