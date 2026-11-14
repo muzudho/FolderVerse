@@ -60,7 +60,7 @@ public partial class Game1
         if(step>=0 && step<5 && step!=_mapSoundStep)
         {
             _mapSoundStep=step;
-            try{_mapCrack?.Play(.65f,0,0);}catch(NoAudioHardwareException error){RecordFailure(error,"map_audio_play");}
+            try{_mapCrack?.Play(.65f*SeGain,0,0);}catch(NoAudioHardwareException error){RecordFailure(error,"map_audio_play");}
         }
         if(progress<1)return;
         _statusGlobe=!_mapUnfold;_mapTransitionAge=-1;_inputOutcome="view_changed";

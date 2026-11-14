@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -34,7 +34,7 @@ public partial class Game1
                 }
                 _newspaperRustle=new SoundEffect(bytes,rate,AudioChannels.Mono);
             }
-            _newspaperRustle.Play(.35f,0,0);
+            _newspaperRustle.Play(.35f*SeGain,0,0);
         }
         catch(NoAudioHardwareException error){RecordFailure(error,"newspaper_audio_init");}
     }

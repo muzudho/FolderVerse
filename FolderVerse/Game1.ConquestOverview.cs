@@ -38,7 +38,7 @@ public partial class Game1
     }
     private void PlayCurtain(){
         if(_conquestAudioUnavailable)return;
-        try{_curtainSound??=ConquestMusic.Curtain();_curtainSound.Play(.55f,0,0);}
+        try{_curtainSound??=ConquestMusic.Curtain();_curtainSound.Play(.55f*SeGain,0,0);}
         catch(NoAudioHardwareException e){_conquestAudioUnavailable=true;RecordFailure(e,"conquest_audio");}
     }
     private void SetConquestCard(){

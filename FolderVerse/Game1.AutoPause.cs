@@ -79,7 +79,7 @@ public partial class Game1
             _ui.Button(AutoMenuItem,"ゲームを再開する",Muted,.48f);
             _ui.Button(CountrySettingsMenuItem,"人間とコンピューター / 国旗の設定",Muted,.46f);
             DrawComputerManualMenuItem();
-            _ui.Button(BgmMenuItem,"BGM音量",Muted,.5f);
+            _ui.Button(BgmMenuItem,"BGM・SE音量",Muted,.5f);
         }
         if(_autoPausePage!=0 && !_countrySettingsOpen)_ui.Button(InactiveBack,"システムメニューへ",Muted,.5f);
         _ui.Button(AutoPauseClose,"×",Muted,.7f);DrawBgmMenu();_spriteBatch.End();DrawFullscreenCursor();

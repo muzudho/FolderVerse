@@ -56,7 +56,7 @@ public partial class Game1
             _ui.Button(AutoMenuItem,"コンピューターに続きをやってもらう",Muted,.48f);
             _ui.Button(CountrySettingsMenuItem,"人間とコンピューター / 国旗の設定",Muted,.46f);
             DrawComputerManualMenuItem();
-            _ui.Button(BgmMenuItem,"BGM音量",Muted,.5f);
+            _ui.Button(BgmMenuItem,"BGM・SE音量",Muted,.5f);
         }
     }
     private void DispositionInput(bool click,bool escape)

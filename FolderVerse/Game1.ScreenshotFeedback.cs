@@ -31,6 +31,7 @@ public partial class Game1
         try
         {
             _shutterInstance.Stop();
+            _shutterInstance.Volume=.72f*SeGain;
             _shutterInstance.Play();
         }
         catch(NoAudioHardwareException error){RecordFailure(error,"screenshot_audio_play");}

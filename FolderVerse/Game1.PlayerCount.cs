@@ -105,7 +105,7 @@ public partial class Game1
                 }
                 _turnChime=new SoundEffect(bytes,rate,AudioChannels.Mono);
             }
-            if(!_demoActive && !_autoPlay)_turnChime.Play(.65f,0,0);
+            if(!_demoActive && !_autoPlay)_turnChime.Play(.65f*SeGain,0,0);
         }
         catch(NoAudioHardwareException error){RecordFailure(error,"turn_chime");}
     }
