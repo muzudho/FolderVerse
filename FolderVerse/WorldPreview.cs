@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 public sealed partial class WorldPreview : IDisposable
 {
+    private const float RegionSeamInset=.018f;
     private readonly GraphicsDevice _device;
     private readonly BasicEffect _effect;
     private VertexBuffer _vertices;
@@ -104,7 +105,7 @@ public sealed partial class WorldPreview : IDisposable
         AddFace(mesh, new Vector3(-half.X, -half.Y, half.Z), Vector3.Forward * depth, Vector3.Right * width, Vector3.Down, depth, width, offset);
         AddFace(mesh, new Vector3(-half.X, -half.Y, half.Z), Vector3.Right * width, Vector3.Up * height, Vector3.Backward, width, height, offset);
         AddFace(mesh, new Vector3(half.X, -half.Y, -half.Z), Vector3.Left * width, Vector3.Up * height, Vector3.Forward, width, height, offset);
-        if(opening!=null)AddOpeningMaples(mesh,opening,offset);
+        if(opening!=null)AddPreviewMaples(mesh,opening,offset);
         _vertices?.Dispose();
         _vertices = new VertexBuffer(_device, VertexPositionColorNormal.VertexDeclaration, mesh.Count, BufferUsage.WriteOnly);
         _vertices.SetData(mesh.ToArray());
@@ -193,11 +194,10 @@ public sealed partial class WorldPreview : IDisposable
             var point=origin+stepU*(x+.5f)+stepV*(y+.5f);
             if(WorldTerrain.IsValley(offset,point,axisU,axisV,half,height))color=WorldTerrain.ValleyColor(color);
             // Each region edge contributes half of the recessed seam.
-            const float inset=.018f;
-            var left=x%detail==0?axisU*inset:Vector3.Zero;
-            var right=x%detail==detail-1?axisU*inset:Vector3.Zero;
-            var bottom=y%detail==0?axisV*inset:Vector3.Zero;
-            var top=y%detail==detail-1?axisV*inset:Vector3.Zero;
+            var left=x%detail==0?axisU*RegionSeamInset:Vector3.Zero;
+            var right=x%detail==detail-1?axisU*RegionSeamInset:Vector3.Zero;
+            var bottom=y%detail==0?axisV*RegionSeamInset:Vector3.Zero;
+            var top=y%detail==detail-1?axisV*RegionSeamInset:Vector3.Zero;
             if(left!=Vector3.Zero || right!=Vector3.Zero || bottom!=Vector3.Zero || top!=Vector3.Zero)
             {
                 var floor=normal*(-.014f-relief);

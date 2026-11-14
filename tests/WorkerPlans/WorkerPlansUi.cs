@@ -6,6 +6,7 @@ using System.Reflection;
 sealed class WorkerPlansUi:Game1
 {
  Color[] workerFlagBaseline=null!;
+ Color[] workerLowerBaseline=null!;
  const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;int frame,node,choice;long workerId;WorldSetup w=null!;RobotWorkshop line=null!;
  object Get(string n)=>typeof(Game1).GetField(n,F)!.GetValue(this)!;
  void Set(string n,object value)=>typeof(Game1).GetField(n,F)!.SetValue(this,value);
@@ -203,8 +204,16 @@ sealed class WorkerPlansUi:Game1
    int x=canvas.X+166*canvas.Width/1920,y=canvas.Y+628*canvas.Height/1080;
    int width=87*canvas.Width/1920,height=48*canvas.Height/1080;
    var head=Enumerable.Range(y,height).SelectMany(row=>pixels.Skip(row*p.BackBufferWidth+x).Take(width)).ToArray();
-   if(frame==12)workerFlagBaseline=head;
-   else Check(!head.SequenceEqual(workerFlagBaseline!),"Changing only the head's country pattern changes the factory worker's head pixels");
+   int lowerTop=canvas.Y+704*canvas.Height/1080;
+   int lowerBottom=canvas.Y+755*canvas.Height/1080;
+   int lowerRight=canvas.X+265*canvas.Width/1920;
+   var lower=Enumerable.Range(lowerTop,lowerBottom-lowerTop)
+    .SelectMany(row=>pixels.Skip(row*p.BackBufferWidth+x).Take(lowerRight-x)).ToArray();
+   if(frame==12){workerFlagBaseline=head;workerLowerBaseline=lower;}
+   else{
+    Check(!head.SequenceEqual(workerFlagBaseline!),"Changing only the head's country pattern changes the factory worker's head pixels");
+    Check(lower.SequenceEqual(workerLowerBaseline),"Changing the head flag preserves lower body, legs and adjacent equipment pixels");
+   }
   }
   if(frame++==13){Console.WriteLine("PASS: material album, hangar, harvest warnings, reassignment and mixed factory worker flag rendering.");Exit();}
  }

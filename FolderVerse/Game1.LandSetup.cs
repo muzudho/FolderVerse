@@ -39,7 +39,7 @@ public partial class Game1
         _fortuneSliderDragging=false;
         _skipOtherLandTurns=false;
         _domesticViews.Clear();_landOrder=_setup.LandOrder();_landTurn=0;_landAge=0;_landSelection.Clear();_landDrag=null;_automaticLand=Array.Empty<int>();
-        _screen=Screen.LandConquest;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.ShowLandConquest(_setup,dimClaimed:true);
+        _screen=Screen.LandConquest;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.ShowLandConquest(_setup,dimClaimed:true,previewMaples:true);
     }
     private int[] AutomaticLand(int ruler)
     {
@@ -85,7 +85,7 @@ public partial class Game1
     private void ConfirmLand()
     {
         _landDrag=null;
-        _setup.ClaimLand(LandRuler,_landSelection.ToArray());_world.ShowLandConquest(_setup,dimClaimed:_landTurn+1<_landOrder.Length);_landSelection.Clear();_landAge=0;_automaticLand=Array.Empty<int>();
+        _setup.ClaimLand(LandRuler,_landSelection.ToArray());_world.ShowLandConquest(_setup,dimClaimed:_landTurn+1<_landOrder.Length,previewMaples:true);_landSelection.Clear();_landAge=0;_automaticLand=Array.Empty<int>();
         if(++_landTurn==_landOrder.Length){_fortuneStartOrientation=Quaternion.CreateFromRotationMatrix(_world.ViewOrientation(_yaw,_pitch));_screen=Screen.Fortune;_world.GlobeAnchor=null;_world.GlobeZoom=1;return;}
     }
     private void UpdateLandSetup(double elapsed,MouseState mouse,bool active,bool click,bool enter)
@@ -199,12 +199,6 @@ public partial class Game1
         foreach(var c in _setup.Cells)
         {
             if(!_world.ProjectVisible(c.Center,c.Normal,_yaw,_pitch,globeArea,out var p))continue;
-            if(selectingLand)
-            {
-                var color=new Color(110,140,150);
-                foreach(var edge in c.Corners.Select((v,i)=>(A:v,B:c.Corners[(i+1)%c.Corners.Length])))
-                    if(_world.ProjectVisible(edge.A,c.Normal,_yaw,_pitch,globeArea,out var a) && _world.ProjectVisible(edge.B,c.Normal,_yaw,_pitch,globeArea,out var b))LandLine(a,b,color,3);
-            }
             int flagOwner=selectingLand && _landSelection.Contains(c.Id)?LandRuler:_setup.Owners[c.Id];
             if(flagOwner>=0)CountryFlagArt.Marker(_ui,_setup,flagOwner,p,38);
             foreach(var route in _setup.Routes.DisplayPaths(c.Id))

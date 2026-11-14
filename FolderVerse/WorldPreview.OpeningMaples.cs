@@ -9,15 +9,30 @@ using Microsoft.Xna.Framework.Graphics;
 public sealed partial class WorldPreview
 {
     internal int OpeningMapleLoads {get;private set;}
+    private (int Seed,int Width,int Height,int Depth,int PolarAxis,TerrainSampler Terrain) _maplePreviewKey;
+    private readonly List<VertexPositionColorNormal> _maplePreviewMesh=new();
+    private int _maplePreviewLoads;
 
-    private void AddOpeningMaples(List<VertexPositionColorNormal> mesh,WorldSetup setup,TerrainSampler terrain)
+    private void AddPreviewMaples(List<VertexPositionColorNormal> mesh,WorldSetup setup,TerrainSampler terrain)
     {
         if(setup.EquipmentMode!=RobotEquipmentMode.Materials)return;
+        var key=(setup.WorldSeed,setup.Width,setup.Height,setup.Depth,setup.PolarAxis,terrain);
+        if(_maplePreviewKey!=key)
+        {
+            _maplePreviewMesh.Clear();
+            _maplePreviewLoads=BuildPreviewMaples(_maplePreviewMesh,setup,terrain);
+            _maplePreviewKey=key;
+        }
+        OpeningMapleLoads=_maplePreviewLoads;
+        mesh.AddRange(_maplePreviewMesh);
+    }
+
+    private static int BuildPreviewMaples(List<VertexPositionColorNormal> mesh,WorldSetup setup,TerrainSampler terrain)
+    {
         var world=setup.CreateGeographyPreview();
         world.Routes.Initialize(world);
         world.Nodes.Initialize(world,geographyOnly:true);
         var deposits=RobotWorld.GenerateMapleDeposits(world);
-        OpeningMapleLoads=deposits.Sum();
         foreach(var node in world.Nodes.All)
         {
             int loads=deposits[node.Id];
@@ -50,6 +65,7 @@ public sealed partial class WorldPreview
                 }
             }
         }
+        return deposits.Sum();
 
         void Triangle(Vector3 a,Vector3 b,Vector3 c,Color color)
         {

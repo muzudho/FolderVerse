@@ -16,8 +16,10 @@ public sealed partial class WorldPreview
         _effect.LightingEnabled=false;
         foreach(var cell in selection)
         {
-            var a=cell.Origin+cell.Normal*(WorldTerrain.MaxRelief+.003f);
-            var b=a+cell.U;var c=b+cell.V;var d=a+cell.V;
+            var a=cell.Origin+cell.Normal*(WorldTerrain.MaxRelief+.003f)+(cell.U+cell.V)*RegionSeamInset;
+            var b=a+cell.U*(1-2*RegionSeamInset);
+            var d=a+cell.V*(1-2*RegionSeamInset);
+            var c=b+d-a;
             _selectionVertices[0]=new(a,tint,cell.Normal);
             _selectionVertices[1]=new(b,tint,cell.Normal);
             _selectionVertices[2]=new(c,tint,cell.Normal);
@@ -46,7 +48,7 @@ public sealed partial class WorldPreview
     public HashSet<int> PresentationCells {get;set;}
     public bool CountryColors {get;set;}
     public bool ControlledCountryColors {get;set;}
-    public void ShowLandConquest(WorldSetup setup,bool exclusive=false,bool dimClaimed=false)
+    public void ShowLandConquest(WorldSetup setup,bool exclusive=false,bool dimClaimed=false,bool previewMaples=false)
     {
         Generate(setup.Width,setup.Height,setup.Depth,setup.WorldSeed,setup.PolarAxis,setup.Terrain.ElevationShift);
         var mesh=new List<VertexPositionColorNormal>();
@@ -62,6 +64,7 @@ public sealed partial class WorldPreview
                     : WorldTerrain.ColorAt(height,cell.Normal,setup.PolarAxis),
                 brightness:Brightness(cell.Id));
         }
+        if(previewMaples)AddPreviewMaples(mesh,setup,offset);
         _vertices.Dispose();
         _vertices=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
         _vertices.SetData(mesh.ToArray());_primitiveCount=mesh.Count/3;
