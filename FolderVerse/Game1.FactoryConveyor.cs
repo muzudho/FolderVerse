@@ -13,7 +13,7 @@ public partial class Game1
     private int _factoryHolidayLane=-1;
     private static Rectangle FactoryHolidayTrack(int row)=>new(420,FactoryRowY(row)+222,270,22);
     private static int FactoryConveyorTravel(int period)=>Math.Min(period,36)*12;
-    private const int FactoryConveyorStart=273;
+    private const int FactoryConveyorStart=327;
     private const int FactoryBeltY=166;
 
     private static Rectangle FactoryConveyorProduct(int row,int period,RobotWorkshop line)
@@ -30,7 +30,7 @@ public partial class Game1
 
     private static Rectangle FactoryConveyorArrow(Rectangle product)=>new(product.Right+4,product.Center.Y-14,28,28);
 
-    private void DrawFactoryConveyor(RobotWorkshop line,int owner,int row,int period,bool waiting)
+    private void DrawFactoryConveyor(RobotWorkshop line,int owner,int row,int period)
     {
         if(_factoryConveyor==null){
             using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots","factory-conveyor-v001.png"));
@@ -44,9 +44,9 @@ public partial class Game1
         int y=FactoryRowY(row);
         int travel=FactoryConveyorTravel(period);
         int start=FactoryConveyorStart,end=start+travel;
-        _spriteBatch.Draw(art,new Rectangle(start-78,y+1,156,9),new Rectangle(154,14,635,34),Color.White);
-        _spriteBatch.Draw(art,new Rectangle(start-28,y+9,56,23),new Rectangle(369,254,230,88),Color.White);
-        _spriteBatch.Draw(_factorySlimConveyor,new Rectangle(208,y+145,55,48),new Rectangle(823,90,510,393),
+        _spriteBatch.Draw(art,new Rectangle(start-78,y-20,156,9),new Rectangle(154,14,635,34),Color.White);
+        _spriteBatch.Draw(art,new Rectangle(start-28,y-12,56,23),new Rectangle(369,254,230,88),Color.White);
+        _spriteBatch.Draw(_factorySlimConveyor,new Rectangle(262,y+145,55,48),new Rectangle(823,90,510,393),
             Color.White,-.16f,new Vector2(255,196),SpriteEffects.FlipHorizontally,0);
         _spriteBatch.Draw(_factorySlimConveyor,new Rectangle(start-22,y+FactoryBeltY,22,34),new Rectangle(20,542,80,112),Color.White);
         for(int offset=0;offset<travel;offset+=36){
@@ -63,7 +63,6 @@ public partial class Game1
         if(line.Manufacturing){
             var product=FactoryConveyorProduct(row,period,line);
             DrawRobotGlyphCore(new(product.X,product.Y,product.Width,122),line.CurrentProductionPlan.Preview(owner),true,1,null,showIntegratedMaterial:true);
-            _ui.Box(new(product.Center.X-15,y+FactoryBeltY-3,30,3),waiting||line.Waiting?new Color(255,113,105):Accent);
         }
     }
 
@@ -73,14 +72,14 @@ public partial class Game1
             using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots","factory-worker-gear-v001.png"));
             _factoryWorkerGear=Texture2D.FromStream(GraphicsDevice,stream);
         }
-        var bounds=new Rectangle(112,y+54,87,125);
+        var bounds=new Rectangle(166,y+54,87,125);
         if(_setup.EquipmentMode!=RobotEquipmentMode.Materials ||
             !DrawOrientedRobotArt(bounds,worker,rear:false,west:false,opacity:1))
             DrawRobotGlyph(bounds,worker);
 
-        _spriteBatch.Draw(_factoryWorkerGear,new Rectangle(123,y+38,66,33),new Rectangle(46,139,622,426),Color.White);
-        _spriteBatch.Draw(_factoryWorkerGear,new Rectangle(128,y+128,15,22),new Rectangle(1616,94,409,556),Color.White);
-        _spriteBatch.Draw(_factoryWorkerGear,new Rectangle(168,y+116,43,24),new Rectangle(766,205,644,344),Color.White);
+        _spriteBatch.Draw(_factoryWorkerGear,new Rectangle(177,y+38,66,33),new Rectangle(46,139,622,426),Color.White);
+        _spriteBatch.Draw(_factoryWorkerGear,new Rectangle(182,y+128,15,22),new Rectangle(1616,94,409,556),Color.White);
+        _spriteBatch.Draw(_factoryWorkerGear,new Rectangle(222,y+116,43,24),new Rectangle(766,205,644,344),Color.White);
     }
 
     private void DrawFactoryHoliday(RobotWorkshop line,int row)

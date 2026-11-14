@@ -184,14 +184,14 @@ public partial class Game1
             bool planned=plannedWorkers.TryGetValue(l,out long plannedWorkerId);
             bool mapleWait=line.WaitingForMaple(_setup.Robots,node.Id);
             _ui.Box(new(78,y-24,782,286),l%2==0?new Color(37,63,77):new Color(46,67,79));
-            _ui.Center((l+1).ToString(),new(84,y+22,62,96),1.35f,new Color(167,190,194));
+            _ui.Center((l+1).ToString(),new(84,y-12,66,40),.85f,new Color(167,190,194));
             if(!planned && !line.HarvestOnly && line.MapleRemaining==0)_ui.Button(FactoryIntakeButton(l-_factoryPage),"入荷先",Muted,.34f);
             if(line.MapleRemaining>0){
                 DrawFactoryHarvestLane(line,node.Id,l-_factoryPage,y);
                 continue;
             }
             if(line.HarvestOnly){_ui.Text(planned?"採取レーン / 予約中":"採取レーン",new(250,y),.48f,Cream);_ui.Button(FactoryRobotButton(l-_factoryPage,3),"採取",Muted,.34f);continue;}
-            DrawFactoryConveyor(line,node.Owner,l-_factoryPage,period,mapleWait);
+            DrawFactoryConveyor(line,node.Owner,l-_factoryPage,period);
             var product=FactoryConveyorProduct(l-_factoryPage,period,line);
             var arrow=FactoryConveyorArrow(product);
             _ui.Button(arrow,"",arrow.Contains(_pointer)?Accent:Muted,.34f);
@@ -205,17 +205,31 @@ public partial class Game1
             if(mapleWait)status="原材料不足 / 楓の木を待っています";
             if(line.FunctionOriginNode is int origin)status="参照元："+_setup.Nodes.DisplayName(_setup.Nodes.All[origin])+" / "+status;
             if(planned)status="追加予定 / 内政確定後に稼働";
-            _ui.Text(status,new(160,y-19),Math.Min(.3f,690/_font.MeasureString(status).X),Cream);
+            bool running=line.Manufacturing && !planned && !line.CycleFinished && !line.Paused &&
+                line.RestRemaining==0 && !line.Waiting && !mapleWait && !_setup.Campaign.RobotBattles.LockedNode(node.Id);
+            if(_setup.Campaign.RobotBattles.LockedNode(node.Id))status="継戦中 / 一時停止";
+            var lamp=running?new Color(91,240,158):new Color(255,113,105);
+            _ui.Box(new(91,y+199,18,18),new Color(13,27,35));
+            _ui.Box(new(94,y+202,12,12),lamp);
+            _ui.Box(new(96,y+203,4,3),Color.Lerp(lamp,Color.White,.55f));
+            _ui.Text(status,new(116,y+200),Math.Min(.32f,570/_font.MeasureString(status).X),Cream);
             int intakes=_setup.Robots.ProductionIntakes.Count(o=>ReferenceEquals(o.Line,line));
             if(intakes>0)_ui.Text($"入荷予約 {intakes}件",new(460,y+112),.3f,Accent);
-            if((planned?plannedWorkerId:factory.WorkerAt(l)) is long workerId){var worker=line.WorkerSnapshot??_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==workerId);if(worker!=null){DrawFactoryWorker(y,worker);_ui.Text("製造作業員",new(674,y+8),.3f,Accent);_ui.Text("ID "+workerId,new(674,y+36),.28f,Cream);if(!planned && line.WorkerSnapshot!=null)_ui.Text("任命時",new(674,y+62),.25f,Cream);}}
-            else _ui.Text("常設レーン",new(674,y+8),.3f,Cream*.7f);
+            if((planned?plannedWorkerId:factory.WorkerAt(l)) is long workerId){
+                var worker=line.WorkerSnapshot??_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==workerId);
+                if(worker!=null){
+                    DrawFactoryWorker(y,worker);
+                    _ui.Text("製造作業員",new(91,y+58),.27f,Cream);
+                    _ui.Text("ID "+workerId,new(91,y+80),.26f,Cream);
+                    if(!planned && line.WorkerSnapshot!=null)_ui.Text("任命時",new(91,y+102),.25f,Cream);
+                }
+            }else _ui.Text("常設レーン",new(91,y+58),.27f,Cream*.7f);
         }
         }
         _factoryLine=savedLine;
         _ui.Text("格納庫は必ず",new(180,888),.43f,Cream);FactoryDrop(2,factory.ReservedSlots);_ui.Text("個空ける",new(552,888),.43f,Cream);
         DrawNodeTabs();DrawFactoryPages();
-        _ui.Text($"産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn)}   /   赤：空き枠・原材料待ち",new(160,248),.25f,Cream);
+        _ui.Text($"産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn)}",new(160,248),.25f,Cream);
         if(!FactoryAlbumOpen && _factoryPlanLine>=0 && _factoryPlanLine<displayed){
             var line=lines[_factoryPlanLine];_ui.Box(new(84,360,790,590),new(22,40,54));
             string catalogue=_setup.EquipmentMode==RobotEquipmentMode.Materials?"素材別の製造候補":"正規・安い・一体型"+(line.PlanCount>11?"・高級":"");
