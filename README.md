@@ -14,7 +14,7 @@
 
 ## ユーザー_すぐ遊びたい人
 
-[v0.8.0 Pre-release（無料試遊版）をダウンロード](https://github.com/muzudho/FolderVerse/releases/tag/v0.8.0)できます。Windows x64向けです。Visual Studioの準備は不要です。
+[v0.9.0 Pre-release（無料試遊版）をダウンロード](https://github.com/muzudho/FolderVerse/releases/tag/v0.9.0)できます。Windows x64向けです。Visual Studioの準備は不要です。
 
 Assetsの `FolderVerse-v0.8.0-win-x64.zip` をすべて展開し、`FolderVerse.exe` を起動してください。
 
