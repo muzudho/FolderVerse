@@ -23,8 +23,10 @@ public partial class Game1
     private static readonly Rectangle LandSkipOthers=new(60,930,450,60);
     private double _landAge;
     private int _robotScatterPercent=25;
-    private bool _fortuneSliderDragging;
-    private static readonly Rectangle FortuneSlider=new(60,435,480,48),EquipmentModeButton=new(60,535,480,54),FortuneConfirm=new(60,615,480,66);
+    private int _rawStockPercent=25;
+    private Rectangle? _fortuneSliderDragging;
+    private static readonly Rectangle FortuneSlider=new(60,435,480,48),RawStockSlider=new(60,560,480,48),
+        EquipmentModeButton=new(60,660,480,54),FortuneConfirm=new(60,740,480,66);
     private bool FortuneSettingsAvailable=>_screen==Screen.Fortune && !_demoActive && _setup.TutorialStep==0;
     private Point? _landDrag;
     private int[] _automaticLand=Array.Empty<int>();
@@ -36,7 +38,8 @@ public partial class Game1
     private void BeginLandConquest()
     {
         _robotScatterPercent=25;
-        _fortuneSliderDragging=false;
+        _rawStockPercent=25;
+        _fortuneSliderDragging=null;
         _skipOtherLandTurns=false;
         _domesticViews.Clear();_landOrder=_setup.LandOrder();_landTurn=0;_landAge=0;_landSelection.Clear();_landDrag=null;_automaticLand=Array.Empty<int>();
         _screen=Screen.LandConquest;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.ShowLandConquest(_setup,dimClaimed:true,previewMaples:true);
@@ -97,16 +100,23 @@ public partial class Game1
             if(FortuneSettingsAvailable){
                 if(active && click && EquipmentModeButton.Contains(_pointer))
                     _setup.EquipmentMode=_setup.EquipmentMode==RobotEquipmentMode.Materials?RobotEquipmentMode.Legacy:RobotEquipmentMode.Materials;
-                if(!active || mouse.LeftButton==ButtonState.Released)_fortuneSliderDragging=false;
-                if(active && click && FortuneSlider.Contains(_pointer))_fortuneSliderDragging=true;
-                if(_fortuneSliderDragging)
-                    _robotScatterPercent=Math.Clamp((int)MathF.Round(100f*(_pointer.X-FortuneSlider.Left)/FortuneSlider.Width),0,100);
+                if(!active || mouse.LeftButton==ButtonState.Released)_fortuneSliderDragging=null;
+                if(active && click){
+                    if(FortuneSlider.Contains(_pointer))_fortuneSliderDragging=FortuneSlider;
+                    if(_setup.EquipmentMode==RobotEquipmentMode.Materials && RawStockSlider.Contains(_pointer))
+                        _fortuneSliderDragging=RawStockSlider;
+                }
+                if(_fortuneSliderDragging is Rectangle slider){
+                    int percent=Math.Clamp((int)MathF.Round(100f*(_pointer.X-slider.Left)/slider.Width),0,100);
+                    if(slider==FortuneSlider)_robotScatterPercent=percent;
+                    else _rawStockPercent=percent;
+                }
             }
             _world.ManualOrientation=WorldPreview.FaceTour(_fortuneStartOrientation,_landAge/5);
             bool complete=FortuneSettingsAvailable
                 ? active && (enter || click && FortuneConfirm.Contains(_pointer))
                 : _landAge>=5;
-            if(complete){_setup.CompleteLand(_random.Next(),_robotScatterPercent);_world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();if(_setup.ComputerOnly)StartAutoPlay();}
+            if(complete){_setup.CompleteLand(_random.Next(),_robotScatterPercent,_rawStockPercent);_world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();if(_setup.ComputerOnly)StartAutoPlay();}
             return;
         }
         if(active && click && LandSkipOthers.Contains(_pointer)){_skipOtherLandTurns=!_skipOtherLandTurns;_landDrag=null;}
@@ -167,13 +177,9 @@ public partial class Game1
             _ui.Text("空から届く運命のロボット",new(60,230),.75f,Color.White);
             if(FortuneSettingsAvailable){
                 _ui.Text("ポケットに正規の完全体を２体",new(60,300),.45f,Cream);
-                _ui.Text($"ロボットの量　{_robotScatterPercent}",new(60,385),.6f,Cream);
-                int x=FortuneSlider.Left+FortuneSlider.Width*_robotScatterPercent/100;
-                _ui.Box(new(FortuneSlider.Left,FortuneSlider.Center.Y-4,FortuneSlider.Width,8),Muted);
-                _ui.Box(new(FortuneSlider.Left,FortuneSlider.Center.Y-4,x-FortuneSlider.Left,8),Accent);
-                _ui.Box(new(x-7,FortuneSlider.Top,14,FortuneSlider.Height),Cream);
-                _ui.Text("0",new(60,489),.42f,Cream);
-                _ui.Text("100",new(492,489),.42f,Cream);
+                DrawFortuneSlider(FortuneSlider,"ロボットの量",_robotScatterPercent);
+                if(_setup.EquipmentMode==RobotEquipmentMode.Materials)
+                    DrawFortuneSlider(RawStockSlider,"格納庫の原材料",_rawStockPercent);
                 _ui.Button(EquipmentModeButton,_setup.EquipmentMode==RobotEquipmentMode.Materials?"装備数：素材９種":"装備数：旧仕様",
                     _setup.EquipmentMode==RobotEquipmentMode.Materials?Accent:Muted,.48f);
                 _ui.Button(FortuneConfirm,"確定して進む",Accent,.58f);
@@ -186,6 +192,17 @@ public partial class Game1
         _ui.Button(LandConfirm,LandHumanTurn?"この土地を獲得":"他国が土地を選択中",LandHumanTurn && _landSelection.Count==_setup.TerritoryRights[LandRuler]?Accent:Muted,.65f);
         _ui.Button(LandSkipOthers,(_skipOtherLandTurns?"✓ ":"□ ")+"自分のターン以外をスキップ",_skipOtherLandTurns?Accent:Muted,.48f);
     }
+    private void DrawFortuneSlider(Rectangle slider,string label,int percent)
+    {
+        _ui.Text($"{label}　{percent}",new(slider.Left,slider.Top-45),.6f,Cream);
+        int x=slider.Left+slider.Width*percent/100;
+        _ui.Box(new(slider.Left,slider.Center.Y-4,slider.Width,8),Muted);
+        _ui.Box(new(slider.Left,slider.Center.Y-4,x-slider.Left,8),Accent);
+        _ui.Box(new(x-7,slider.Top,14,slider.Height),Cream);
+        _ui.Text("0",new(slider.Left,slider.Bottom+6),.42f,Cream);
+        _ui.Text("100",new(slider.Right-48,slider.Bottom+6),.42f,Cream);
+    }
+
     private void DrawLandSetupGlobe(Rectangle canvas,Matrix transform,Viewport viewport)
     {
         bool selectingLand=_screen==Screen.LandConquest;

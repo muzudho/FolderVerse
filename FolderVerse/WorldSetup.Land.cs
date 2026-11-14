@@ -30,11 +30,12 @@ public sealed partial class WorldSetup
         if(!LandPending || ruler<0 || ruler>=ActiveCount || cells.Length!=TerritoryRights[ruler] || cells.Distinct().Count()!=cells.Length || cells.Any(c=>c<0 || c>=Cells.Length || Owners[c]>=0) || Owners.Contains(ruler))throw new ArgumentException("Invalid land claim");
         foreach(int cell in cells)Owners[cell]=ruler;
     }
-    public void CompleteLand(int fortuneSeed,int robotScatterPercent=25)
+    public void CompleteLand(int fortuneSeed,int robotScatterPercent=25,int rawStockPercent=25)
     {
         if(!LandPending || Owners.Any(o=>o<0))throw new InvalidOperationException("Land claims are incomplete");
         if(fortuneSeed<0)throw new ArgumentOutOfRangeException(nameof(fortuneSeed));
         if(robotScatterPercent<0 || robotScatterPercent>100)throw new ArgumentOutOfRangeException(nameof(robotScatterPercent));
+        if(rawStockPercent<0 || rawStockPercent>100)throw new ArgumentOutOfRangeException(nameof(rawStockPercent));
         FortuneSeed=fortuneSeed;
         TerritoryCounts=Enumerable.Range(0,CastCount).Select(o=>Owners.Count(v=>v==o)).ToArray();
         Capitals=Enumerable.Range(0,ActiveCount).Select(o=>Array.IndexOf(Owners,o)).ToArray();ConquerorLocations=(int[])Capitals.Clone();
@@ -65,9 +66,12 @@ public sealed partial class WorldSetup
                 if(harvest)workers=Math.Min(Math.Max(2,workers),Math.Min(workshop.LineLimit,vacant-1));
                 if(TutorialStep==0)workshop.RemoveProductionLines();
                 int harvestSpace=harvest?1:0;
-                bool starterStock=Robots.OtherRawSupplyEnabled && workers>(harvest?1:0) &&
-                    vacant-workers-harvestSpace>=2;
-                int capacity=Math.Max(0,vacant-workers-harvestSpace-(starterStock?2:0));
+                var stockRandom=new SeedRandom(unchecked(fortuneSeed^(node.Id+1)*65537));
+                int loads=TutorialStep==0 && Robots.MapleSupplyEnabled
+                    ?Enumerable.Range(0,3).Count(_=>stockRandom.Next(100)<rawStockPercent):0;
+                int reserved=rawStockPercent==100?0:harvestSpace+(workers>0?1:0);
+                int stockSlots=Math.Min(loads,Math.Max(0,vacant-workers-reserved));
+                int capacity=Math.Max(0,vacant-workers-harvestSpace-stockSlots);
                 int scaled=Math.Min(count,capacity)*(TutorialStep==0?robotScatterPercent:100)+scatterRemainder;
                 int placed=scaled/100;
                 scatterRemainder=scaled%100;
@@ -82,10 +86,10 @@ public sealed partial class WorldSetup
                 }
                 if(workers>0){
                     Robots.SyncWorkers(node.Id);
-                    if(starterStock)PlaceStarterStock(node,harvestSpace);
                     if(harvest)
                         foreach(var lane in workshop.ProductionLines.Where(l=>l.HarvestOnly))lane.SelectMapleHarvest(1,harvestMaterial);
                 }
+                if(loads>0)PlaceStarterStock(node,loads,reserved,stockRandom);
             }
             foreach(var parts in Enumerable.Range(1,7).Select(i=>(RobotParts)i))
             {
@@ -105,24 +109,32 @@ public sealed partial class WorldSetup
         Salvage.Initialize(this);
     }
 
-    private void PlaceStarterStock(Node node,int harvestSpace)
+    private void PlaceStarterStock(Node node,int loads,int reserved,SeedRandom random)
     {
         var store=Robots.Nodes[node.Id];
         var workshop=Robots.Workshops[node.Id];
         foreach(var lane in workshop.ProductionLines.Where(l=>!l.HarvestOnly && l.Manufacturing))
         {
             var product=lane.CurrentProductionPlan.Preview(node.Owner);
-            var inputs=RobotWorld.RawMaterials.Select(m=>(Material:m,Units:RobotWorld.RawCost(product,m)))
+            var inputs=RobotWorld.RawMaterials.Where(Robots.RawRequired)
+                .Select(m=>(Material:m,Units:RobotWorld.RawCost(product,m)))
                 .Where(input=>input.Units>0).ToArray();
             var packages=inputs.Select(input=>new MaplePackage(0,Math.Max(RobotWorld.MaplePackageSize,input.Units))
                 {Material=input.Material}).ToArray();
-            var forecast=new RobotStore();
-            forecast.SetCapacity(store.TotalCapacity);
-            forecast.Replace(store.Robots);
-            if(packages.Length==0 || !packages.All(p=>forecast.TryReceiveMaple(p,harvestSpace+1,_=>false)))continue;
+            int required=packages.Sum(p=>p.Sections);
+            var forecast=store.PlanningCopy();
+            if(required==0 || required>loads || !packages.All(p=>forecast.TryReceiveMaple(p,reserved,_=>false)))continue;
             foreach(var package in packages)Robots.AddStarterRaw(store,package);
+            loads-=required;
             break;
         }
+        if(loads==0)return;
+        var materials=RobotWorld.RawMaterials.Where(Robots.RawRequired).ToArray();
+        var material=materials[random.Next(materials.Length)];
+        var bulk=new MaplePackage(0,loads*RobotWorld.MaplePackageSize){Material=material};
+        if(store.HasMapleSpace(bulk,reserved)){Robots.AddStarterRaw(store,bulk);return;}
+        var single=bulk with {Units=RobotWorld.MaplePackageSize};
+        for(int i=0;i<loads && store.HasMapleSpace(single,reserved);i++)Robots.AddStarterRaw(store,single);
     }
 
     private void PlaceInitialTin(int seed)

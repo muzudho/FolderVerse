@@ -13,12 +13,12 @@ w.CompleteLand(seed);Check(!w.LandPending && w.Owners.All(i=>i>=0),"completion")
 Check(w.TerritoryCounts.SequenceEqual(w.TerritoryRights),"land conservation");
 Console.WriteLine($"PASS seed {seed}: {w.Cells.Length} cells, {w.Nodes.All.Length} nodes");}
 
-WorldSetup Scatter(int percent,RobotEquipmentMode mode=RobotEquipmentMode.Legacy)
+WorldSetup Scatter(int percent,RobotEquipmentMode mode=RobotEquipmentMode.Legacy,int raw=25)
 {
     var w=new WorldSetup{EquipmentMode=mode};w.SetWorld(1);w.SetCast(2);w.SetTerritoryRights(3);
     foreach(int ruler in w.LandOrder())
         w.ClaimLand(ruler,w.Cells.Where(c=>w.Owners[c.Id]<0).Take(w.TerritoryRights[ruler]).Select(c=>c.Id).ToArray());
-    w.CompleteLand(4,percent);
+    w.CompleteLand(4,percent,raw);
     return w;
 }
 int ScatterCount(WorldSetup world)=>world.Robots.Nodes.Sum(s=>s.Robots.Count(r=>!r.FactoryWorker && !r.WarehouseKeeper));
@@ -93,7 +93,17 @@ Check(incoming.TotalCapacity==0 && destination.WarehouseLimit==destinationLimit 
 Console.WriteLine("PASS: full transfer carries keepers into the fixed destination limit.");
 Console.WriteLine("PASS: 0/25/100 scatter and two regular complete pocket robots for every conqueror.");
 
-var materials=Scatter(100,RobotEquipmentMode.Materials);
+var noStock=Scatter(100,RobotEquipmentMode.Materials,0);
+var defaultStock=Scatter(100,RobotEquipmentMode.Materials);
+var fullStock=Scatter(100,RobotEquipmentMode.Materials,100);
+int Loads(RobotStore store)=>store.MaplePackages.Sum(p=>p.Units)/RobotWorld.MaplePackageSize;
+Check(noStock.Robots.Nodes.All(s=>Loads(s)==0),"Zero disables all starter stock");
+Check(defaultStock.Robots.Nodes.Any(s=>Loads(s)==0) && defaultStock.Robots.Nodes.Any(s=>Loads(s)>0),
+    "Default starter stock varies by location");
+Check(fullStock.Robots.Nodes.Any(s=>Loads(s)==3) && fullStock.Robots.Nodes.All(s=>Loads(s)<=3),
+    "Maximum yields three loads when space is available");
+fullStock.Robots.Check();
+var materials=defaultStock;
 materials=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(materials));
 var assigned=materials.Nodes.All.SelectMany(node=>materials.Robots.Nodes[node.Id].Robots
     .Where(r=>r.FactoryWorker).Select(r=>(Node:node.Id,Robot:r))).ToArray();

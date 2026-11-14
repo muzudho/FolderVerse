@@ -50,8 +50,9 @@ public partial class Game1
             _ui.Text("原材料在庫（出荷予約分を除く）",new(controls.X+10,controls.Y+145),.32f,ink);
             for(int row=0;row<materials.Length;row++){
                 var material=materials[row];
-                _ui.Text($"{RobotWorld.RawName(material)}  {RawLoadLabel(availableStock[material])}",
-                    new(controls.X+10,controls.Y+169+row*16),.26f,ink);
+                DrawMixedNumber(availableStock[material],RobotWorld.MaplePackageSize,
+                    new(controls.X+9,controls.Y+163+row*18,controls.Width-18,18),ink,.25f,
+                    prefix:RobotWorld.RawName(material)+"  ");
             }
         }
         _ui.Batch.Draw(_robotFactoryIcon,new Rectangle(controls.X+12,legendY,25,25),Color.White);
@@ -125,25 +126,15 @@ public partial class Game1
             {
                 int cost=RobotWorld.RawCost(preview,material);
                 if(cost==0)continue;
-                _ui.Center($"{RobotWorld.RawName(material)} {RawLoadLabel(cost)}",
-                    new(card.X+8,photo.Bottom+46+materialRow++*18,card.Width-16,18),.28f,
-                    cost>availableStock[material]?new Color(150,52,43):ink);
+                DrawMixedNumber(cost,RobotWorld.MaplePackageSize,
+                    new(card.X+8,photo.Bottom+46+materialRow++*18,card.Width-16,18),
+                    cost>availableStock[material]?new Color(150,52,43):ink,.25f,
+                    prefix:RobotWorld.RawName(material)+"  ");
             }
             DrawFactoryAlbumEquipment(card, preview.Equipment(node.Owner, _setup.EquipmentMode), ink);
         }
         if (mixedPreview != null && line.PlanCount < 12)
             DrawFactoryAlbumDetails(FactoryAlbumCard(11), mixedPreview, ink);
-    }
-
-    private static string RawLoadLabel(int units)
-    {
-        int denominator=RobotWorld.MaplePackageSize;
-        int whole=units/denominator;
-        int remainder=units%denominator;
-        if(remainder==0)return whole.ToString();
-        // The package size is a power of two, so common factors are all twos.
-        while(remainder%2==0 && denominator%2==0){remainder/=2;denominator/=2;}
-        return whole==0?$"{remainder}/{denominator}":$"{whole} {remainder}/{denominator}";
     }
 
     private void DrawHarvestLimitWarning(Rectangle bounds,string message)
