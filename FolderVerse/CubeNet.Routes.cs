@@ -148,6 +148,7 @@ public sealed partial class CubeNet
     private void DrawNodeMarkers(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse)
     {
         if (DirectoryOnly) return;
+        DrawResourceSites(ui,world,cell,project,globe:false);
         DrawLandmarks(ui,world,cell,p=>project(p),pulse);
         foreach (var node in world.Nodes.InCell(cell).Where(n=>NodeVisible(world,n)))
         {

@@ -18,6 +18,7 @@ public sealed partial class CubeNet
             if(!globe.ProjectVisible(cell.Center,cell.Normal,yaw,pitch,panel,out _))continue;
             Vector2 Project(Vector3 p){globe.ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var result);return result;}
             if (ShowRoutes && DirectoryOnly) continue;
+            if (ShowRoutes) DrawResourceSites(ui,setup,cell.Id,Project,globe:true);
             if (ShowRoutes) DrawLandmarks(ui,setup,cell.Id,p=>Project(p),pulse);
             foreach (var node in setup.Nodes.InCell(cell.Id))
             {
