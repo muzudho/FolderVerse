@@ -120,7 +120,7 @@ public partial class Game1
             _ui.Text($"× {line.RestEvery}"+(line.DoNotRepeat?" / 繰り返さない":""),new(190,y+226),.32f,Cream);
             string status=line.CycleFinished?"製造終了":!line.Manufacturing?"製造しない":line.Paused?"一時停止":
                 line.RestRemaining>0?$"休暇 あと {IndustryTime.Format(line.RestRemaining)}":
-                mapleWait?"原材料不足 / 楓の木を待っています":line.Waiting?"格納枠の空きを待っています":$"工期 {IndustryTime.Format(line.ProductionAge)} / {IndustryTime.Format(period)}";
+                mapleWait?$"原材料不足 / {RobotWorld.RawName(line.MissingRawMaterial(_setup.Robots,source).Value)}を待っています":line.Waiting?"格納枠の空きを待っています":$"工期 {IndustryTime.Format(line.ProductionAge)} / {IndustryTime.Format(period)}";
             if(shipment.Arrival!=null)status="入荷予約へ搬送中";
             else if(_setup.Campaign.RobotBattles.LockedNode(source))status="継戦中 / 一時停止";
             DrawFactoryLaneStatus(y,running,status);

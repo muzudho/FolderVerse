@@ -120,7 +120,7 @@ public sealed class RobotStore
     public IReadOnlyList<Robot> Robots=>_robots;
     private MaplePackage[] _maplePackages;
     public IReadOnlyList<MaplePackage> MaplePackages=>_maplePackages??Array.Empty<MaplePackage>();
-    public int MapleUnits=>MaplePackages.Sum(p=>p.Units);
+    public int MapleUnits=>MaplePackages.Where(p=>p.Material==RawMaterial.Maple).Sum(p=>p.Units);
     public int Count=>MaplePackages.Count==0?_robots.Count:OccupiedSlots(_robots);
     internal int OccupiedSlots(IEnumerable<Robot> robots)=>OccupiedSlots(robots,MaplePackages);
     private static int OccupiedSlots(IEnumerable<Robot> robots,IEnumerable<MaplePackage> packages)
@@ -174,7 +174,7 @@ public sealed class RobotStore
         for(int i=0;i<packages.Length && remaining>0;i++)
         {
             var current=packages[i];
-            if(package.Sections>1 || current.Sections>1 || shipping(current.Id))continue;
+            if(package.Material!=current.Material || package.Sections>1 || current.Sections>1 || shipping(current.Id))continue;
             int added=Math.Min(RobotWorld.MaplePackageSize-current.Units,remaining);
             packages[i]=current with {Units=current.Units+added};
             remaining-=added;
@@ -209,7 +209,7 @@ public sealed partial class RobotWorld
         Retinues=Enumerable.Range(0,rulerCount).Select(_=>new RobotStore()).ToArray();
         Workshops=Enumerable.Range(0,nodeCount).Select(_=>new RobotWorkshop()).ToArray();Transport.Reset();PendingEdits.Clear();WorkshopFailures.Clear();
         PartPlanning.Reset();ProductionIntakes.Clear();ProductionIntakeEnabled=false;IntakeAdjacent=null;IntakeAllowed=null;
-        _mapleDeposits=null;_mapleShipments=null;
+        _mapleDeposits=null;_mapleShipments=null;_rawDeposits=null;
     }
     public void QueueAssembly(int node,IEnumerable<long> ids,int? owner=null)=>QueueEdit(new(node,ids.ToArray(),null,owner));
     public void QueueSplit(int node,long id,RobotParts part)=>QueueEdit(new(node,new[]{id},part));

@@ -15,13 +15,14 @@ internal static class ComputerNodePurposes
                 !world.Relations.CanAct(owner) || !automaticAll && manual.Contains(owner) ||
                 battles.LockedNode(id) || robots.Workshops[id].Automation==NodeAutomation.Manual)continue;
             var lines=robots.Workshops[id].ProductionLines;
-            if(robots.MapleSupplyEnabled && robots.AvailableMaple(id)==0 &&
-                lines.Any(line=>line.WaitingForMaple(robots,id)) && !lines.Any(line=>line.MapleRemaining>0) &&
-                robots.MapleAvailableToPlan(id,null)>0 && robots.CanHarvestMaple(id,1))
+            var material=lines.Where(line=>line.WaitingForMaple(robots,id)).Select(line=>line.MissingRawMaterial(robots,id))
+                .FirstOrDefault(m=>m.HasValue && robots.MapleAvailableToPlan(id,null,m.Value)>0 &&
+                    robots.CanHarvestMaple(id,1,m.Value) && !lines.Any(line=>line.MapleRemaining>0 && line.HarvestMaterial==m));
+            if(material.HasValue)
             {
                 var idle=lines.FirstOrDefault(line=>!line.Paused && !line.DoNotRepeat &&
                     !line.Manufacturing && line.MapleRemaining==0);
-                idle?.SelectMapleHarvest(1);
+                idle?.SelectMapleHarvest(1,material.Value);
             }
             bool hostile=battles.MarchTargets(world,id).Any(target=>
                 world.Nodes.All[target].Owner is var enemy && enemy>=0 && !world.Relations.Allied(owner,enemy));

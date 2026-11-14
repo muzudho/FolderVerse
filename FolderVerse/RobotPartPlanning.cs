@@ -12,10 +12,11 @@ public sealed record PlannedPartMove(long Number,int Owner,int Source,int Target
 }
 public sealed record WorkerLaneSettings(int Plan,int RestEvery,int RestTurns,bool DoNotRepeat)
 {
+    public RawMaterial HarvestMaterial {get;init;}
     public int MapleLoads {get;init;}
     internal void Apply(RobotWorkshop line)
     {
-        if(MapleLoads>0){line.SelectMapleHarvest(MapleLoads);return;}
+        if(MapleLoads>0){line.SelectMapleHarvest(MapleLoads,HarvestMaterial);return;}
         if (Plan >= 0 && Plan < line.PlanCount) line.SelectPlan(Plan);
         line.SetRest(RestEvery,RestTurns);
         line.SetDoNotRepeat(DoNotRepeat);
@@ -47,7 +48,7 @@ public sealed class RobotPartPlanning
     internal void SetWorkerLane(long id, RobotWorkshop lane)
     {
         if (WorkerReservation(id) is not { } order) return;
-        Orders[Orders.IndexOf(order)]=order with {WorkerLane=new(lane.SelectedPlan,lane.RestEvery,lane.RestTurns,lane.DoNotRepeat){MapleLoads=lane.MapleRemaining}};
+        Orders[Orders.IndexOf(order)]=order with {WorkerLane=new(lane.SelectedPlan,lane.RestEvery,lane.RestTurns,lane.DoNotRepeat){MapleLoads=lane.MapleRemaining,HarvestMaterial=lane.HarvestMaterial}};
     }
     public RobotWorld Preview(WorldSetup world)
     {

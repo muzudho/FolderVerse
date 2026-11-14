@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private bool _factoryHarvestPage;
+    private RawMaterial _harvestMaterial;
+    private static Rectangle HarvestMaterialButton(RawMaterial material)=>new(112+(int)material*285,636,268,46);
     private static Rectangle FactoryAlbumAction(int row)
     {
         var area=FactoryAlbumCard(10);
@@ -15,7 +17,7 @@ public partial class Game1
     private static Rectangle FactoryStopButton=>FactoryAlbumAction(1);
     private static Rectangle FactoryRecipeCard(int plan)=>FactoryAlbumCard(plan<3?plan:plan-1);
     private int FactoryHarvestAvailable(int node,RobotWorkshop[] lines,RobotWorkshop editing)
-        =>Math.Max(0,_setup.Robots.MapleDeposit(node)-lines.Where(l=>!ReferenceEquals(l,editing)).Sum(l=>l.MapleRemaining));
+        =>Math.Max(0,_setup.Robots.RawDeposit(node,_harvestMaterial)-lines.Where(l=>!ReferenceEquals(l,editing) && l.HarvestMaterial==_harvestMaterial).Sum(l=>l.MapleRemaining));
     private bool FactoryAlbumOpen => _nodeFactoryOpen && _factoryPlanLine >= 0 &&
         _setup.EquipmentMode == RobotEquipmentMode.Materials;
 
@@ -43,11 +45,14 @@ public partial class Game1
         _ui.Text("産業ターン",new(controls.X+68,controls.Y+176),.39f,ink);
         _ui.Text("閉じる：Esc／枠の外をクリック",new(controls.X+9,controls.Y+227),.27f,ink);
         _ui.Button(FactoryStopButton,line.HarvestOnly?"採取しない":"製造しない",line.SelectedPlan==3 && line.MapleRemaining==0?Accent:Muted,.45f);
-        int deposit=_setup.Robots.MapleDeposit(node.Id);
+        int deposit=_setup.Robots.RawDeposit(node.Id,_harvestMaterial);
         if(!line.HarvestOnly)_ui.Button(FactoryHarvestTab,_factoryHarvestPage?"製造候補へ":"素材の採取",
             _setup.Robots.MapleSupplyEnabled?new Color(120,86,64):Muted*.55f,.45f);
         if(_factoryHarvestPage)
         {
+            string materialName=RobotWorld.RawName(_harvestMaterial);
+            foreach(var material in RobotWorld.RawMaterials.Where(_setup.Robots.RawRequired))
+                _ui.Button(HarvestMaterialButton(material),RobotWorld.RawName(material),material==_harvestMaterial?Accent:Muted,.38f);
             int available=FactoryHarvestAvailable(node.Id,lines,line);
             string warning=deposit==0?"この地域ではもう採れません":
                 available==0?"他の採取レーンで採り終えます":"この量は採れません";
@@ -57,9 +62,9 @@ public partial class Game1
                 _ui.Box(card,loads<=available?new Color(35,53,67):Muted);
                 // Show one 60px hangar section per load, with a shared baseline.
                 int height=loads*60;
-                DrawMaplePackageArt(new(card.X+14,card.Y+180-height,card.Width-28,height),loads,alignBottom:true);
-                _ui.Center($"楓の木 {loads*RobotWorld.MaplePackageSize}/48",new(card.X,card.Y+183,card.Width,28),.34f,Cream);
-                _ui.Center($"楓の木を採取 ×{loads} 荷",new(card.X,card.Y+222,card.Width,39),.43f,Cream);
+                DrawMaplePackageArt(new(card.X+14,card.Y+180-height,card.Width-28,height),loads,alignBottom:true,material:_harvestMaterial);
+                _ui.Center($"{materialName} {loads*RobotWorld.MaplePackageSize}/48",new(card.X,card.Y+183,card.Width,28),.34f,Cream);
+                _ui.Center($"{materialName}を採取 ×{loads} 荷",new(card.X,card.Y+222,card.Width,39),.43f,Cream);
                 _ui.Center($"{loads} 産業ターン",new(card.X,card.Y+261,card.Width,26),.35f,Cream);
                 if(loads>available)DrawHarvestLimitWarning(new(card.X+8,card.Y+287,card.Width-16,29),warning);
             }
@@ -101,9 +106,15 @@ public partial class Game1
             _ui.Center(mixed ? "混合品" : RobotMaterials.Label(preview.Material(parts[0])),
                 new(card.X + 8, photo.Bottom + 1, card.Width - 16, 28), .40f, ink);
             _ui.Center(FactoryProductLabel(plan), new(card.X + 8, photo.Bottom + 29, card.Width - 16, 21), .32f, ink);
-            if(_setup.Robots.MapleSupplyEnabled && RobotWorld.MapleCost(preview) is >0 and var mapleCost)
-                _ui.Center($"楓の木 {mapleCost}/16",new(card.X+8,photo.Bottom+50,card.Width-16,26),.32f,
-                    mapleCost>_setup.Robots.AvailableMaple(node.Id)?new Color(150,52,43):ink);
+            int materialRow=0;
+            foreach(var material in RobotWorld.RawMaterials.Where(_setup.Robots.RawRequired))
+            {
+                int cost=RobotWorld.RawCost(preview,material);
+                if(cost==0)continue;
+                _ui.Center($"{RobotWorld.RawName(material)} {cost}/16",
+                    new(card.X+8,photo.Bottom+46+materialRow++*18,card.Width-16,18),.28f,
+                    cost>_setup.Robots.AvailableRaw(node.Id,material)?new Color(150,52,43):ink);
+            }
             DrawFactoryAlbumEquipment(card, preview.Equipment(node.Owner, _setup.EquipmentMode), ink);
         }
         if (mixedPreview != null && line.PlanCount < 12)

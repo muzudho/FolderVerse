@@ -102,11 +102,13 @@ public partial class Game1
                 _factoryPlanLine=line;return true;
             }
             if(_factoryHarvestPage){
+                foreach(var material in RobotWorld.RawMaterials.Where(_setup.Robots.RawRequired))
+                    if(HarvestMaterialButton(material).Contains(pointer)){_harvestMaterial=material;return true;}
                 int available=FactoryHarvestAvailable(_populationNode,lines,lines[line]);
                 for(int loads=1;loads<=3;loads++){
                     if(!FactoryAlbumCard(loads-1).Contains(pointer))continue;
                     if(loads>available){_factoryPlanLine=line;return true;}
-                    lines[line].SelectMapleHarvest(loads);SavePending(line);break;
+                    lines[line].SelectMapleHarvest(loads,_harvestMaterial);SavePending(line);break;
                 }
                 return true;
             }
@@ -143,7 +145,7 @@ public partial class Game1
             var line=lines[l];int period=line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[_populationNode].Purpose):3;
             bool harvest=line.HarvestOnly || line.MapleRemaining>0;
             var product=harvest?FactoryRobotButton(l-_factoryPage,3):FactoryConveyorProduct(l-_factoryPage,period,line);
-            if(product.Contains(pointer) || !harvest && FactoryConveyorArrow(product).Contains(pointer)){_factoryHarvestPage=harvest;_factoryPlanLine=l;_factoryLine=l;return true;}
+            if(product.Contains(pointer) || !harvest && FactoryConveyorArrow(product).Contains(pointer)){_factoryHarvestPage=harvest;_harvestMaterial=harvest?line.HarvestMaterial:RawMaterial.Maple;_factoryPlanLine=l;_factoryLine=l;return true;}
             if(line.HarvestOnly || line.MapleRemaining>0)continue;
             var track=FactoryHolidayTrack(l-_factoryPage);track.Inflate(6,0);
             if(track.Contains(pointer)){_factoryHolidayLane=l;return true;}
@@ -203,7 +205,7 @@ public partial class Game1
             string status=!line.Manufacturing?"製造しない":line.CycleFinished?"製造終了 / 繰り返さない":line.Paused?"一時停止":line.RestRemaining>0?$"休憩中 あと{IndustryTime.Format(line.RestRemaining)} / 次の完成まで{IndustryTime.Format(line.TurnsUntilNextProduction)}産業ターン":line.Waiting?$"出荷待ち {IndustryTime.Format(line.WaitingProductionTurns)}生産ターン / 格納できるまで停止":$"次の完成まで{IndustryTime.Format(line.TurnsUntilNextProduction)}産業ターン / {line.ProducedSinceRest+1}台目・工期{IndustryTime.Format(line.ProductionAge)}/{IndustryTime.Format(period)}";
             if(line.Manufacturing)status=$"周期 {IndustryTime.Format(line.CycleProgress)} / {IndustryTime.Format(line.CycleTurns)} / "+status;
             if(!string.IsNullOrEmpty(line.IntakeFailure))status=line.IntakeFailure+" / "+status;
-            if(mapleWait)status="原材料不足 / 楓の木を待っています";
+            if(mapleWait)status=$"原材料不足 / {RobotWorld.RawName(line.MissingRawMaterial(_setup.Robots,node.Id).Value)}を待っています";
             if(line.FunctionOriginNode is int origin)status="参照元："+_setup.Nodes.DisplayName(_setup.Nodes.All[origin])+" / "+status;
             if(planned)status="追加予定 / 内政確定後に稼働";
             bool running=line.Manufacturing && !planned && !line.CycleFinished && !line.Paused &&
@@ -276,13 +278,13 @@ public partial class Game1
             return;
         }
         _ui.Box(product,Accent);
-        DrawMaplePackage(product,new MaplePackage(0,line.MapleRemaining*16));
-        if(worker!=null)DrawMaplePackageArt(new Rectangle(219,y+100,66,45),1);
-        int deposit=_setup.Robots.MapleDeposit(node);
-        bool waiting=!_setup.Robots.CanHarvestMaple(node,line.MapleRemaining);
+        DrawMaplePackage(product,new MaplePackage(0,line.MapleRemaining*16){Material=line.HarvestMaterial});
+        if(worker!=null)DrawMaplePackageArt(new Rectangle(219,y+100,66,45),1,material:line.HarvestMaterial);
+        int deposit=_setup.Robots.RawDeposit(node,line.HarvestMaterial);
+        bool waiting=!_setup.Robots.CanHarvestMaple(node,line.MapleRemaining,line.HarvestMaterial);
         string status=line.Paused?"一時停止":deposit==0?"採取できる埋蔵量がありません":waiting?"格納枠の空きを待っています":"採取中";
         _ui.Text($"採取レーン / {status} / 予約残り {line.MapleRemaining} 荷",new(160,y-19),.33f,Cream);
-        _ui.Text($"楓の木 / 残り埋蔵量 {deposit} 荷",new(400,y+46),.45f,Cream);
+        _ui.Text($"{RobotWorld.RawName(line.HarvestMaterial)} / 残り埋蔵量 {deposit} 荷",new(400,y+46),.45f,Cream);
         _ui.Text($"次の入荷まで {IndustryTime.Format(Math.Max(0,line.EffectiveHarvestPeriod(_setup.Nodes.All[node].Purpose)-line.MapleProgress))} 産業ターン",new(400,y+90),.33f,Cream);
         DrawFactoryLaneStatus(y,!waiting && !line.Paused,status);
     }

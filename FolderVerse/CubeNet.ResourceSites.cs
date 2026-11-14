@@ -5,8 +5,8 @@ using Microsoft.Xna.Framework;
 
 public sealed partial class CubeNet
 {
-    private enum ResourceSiteKind { Salt,Oil,Gas,Quartz }
-    private sealed record ResourceSite(ResourceSiteKind Kind,Vector3 Position,float Size);
+    internal enum ResourceSiteKind { Salt,Oil,Gas,Quartz }
+    internal sealed record ResourceSite(ResourceSiteKind Kind,Vector3 Position,float Size);
     private (int Seed,SurfaceCell[] Cells,TerrainSampler Terrain) _resourceSiteKey;
     private ResourceSite[][] _resourceSites;
 
@@ -25,11 +25,21 @@ public sealed partial class CubeNet
             var origin=site.Position;
             if(globe)origin+=cell.Normal*WorldTerrain.ReliefAt(world,cell,origin,key.Item3);
             Vector2 Point(float x,float y,float z)=>project(origin+site.Size*(cell.U*x+cell.V*y+(globe?cell.Normal*z:Vector3.Zero)));
-            DrawResourceSite(ui,site.Kind,Point,globe);
+            var node=RobotWorld.SiteNode(world,cell,site.Position);
+            int remaining=node==null || !node.Functional || node.Purpose==NodePurpose.Relay?0:
+                world.Robots.RawDeposit(node.Id,RobotWorld.SiteMaterial(site.Kind));
+            DrawResourceSite(ui,site.Kind,Point,globe,world.Robots.OtherRawSupplyEnabled && remaining==0);
+            if(world.Robots.OtherRawSupplyEnabled && remaining>0 && Vector2.Distance(Point(-.6f,0,0),Point(.6f,0,0))>=34)
+            {
+                var label=Point(0,.65f,0);
+                var bounds=new Rectangle((int)label.X-25,(int)label.Y,50,16);
+                ui.Box(bounds,new Color(62,37,30));
+                ui.Center($"残り{remaining}荷",bounds,.24f,new Color(255,236,181));
+            }
         }
     }
 
-    private static ResourceSite[] ResourceSites(WorldSetup world,SurfaceCell cell,TerrainSampler terrain)
+    internal static ResourceSite[] ResourceSites(WorldSetup world,SurfaceCell cell,TerrainSampler terrain)
     {
         var random=new SeedRandom(world.WorldSeed^cell.Id*7919^0x524553);
         var sites=new System.Collections.Generic.List<ResourceSite>();
@@ -90,7 +100,7 @@ public sealed partial class CubeNet
         }
     }
 
-    private static void DrawResourceSite(UiPainter ui,ResourceSiteKind kind,Func<float,float,float,Vector2> point,bool globe)
+    private static void DrawResourceSite(UiPainter ui,ResourceSiteKind kind,Func<float,float,float,Vector2> point,bool globe,bool depleted)
     {
         var sand=new Color(197,154,101);
         var rock=new Color(78,76,83);
@@ -126,7 +136,8 @@ public sealed partial class CubeNet
                 break;
         }
 
-        void Face(Color color,params Vector2[] vertices)=>FillProjectedFace(ui,vertices,color);
+        void Face(Color color,params Vector2[] vertices)=>FillProjectedFace(ui,vertices,
+            depleted?Color.Lerp(color,new Color(78,76,74),.65f):color);
 
         void Box(float x,float y,float w,float d,float z,float h,Color color)
         {

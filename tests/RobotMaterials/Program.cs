@@ -110,6 +110,46 @@ var supply=new WorldSetup{EquipmentMode=RobotEquipmentMode.Materials};
 supply.SetWorld(0);supply.SetCast(123);supply.SetPlacement(456);supply.SelectPlayer(0);
 foreach(var node in supply.Nodes.All)node.Owner=0;
 var cargo=supply.Robots;
+foreach(var input in new[]{
+    (RawMaterial.Styrene,RobotMaterial.Foam,2),
+    (RawMaterial.Vinyl,RobotMaterial.SoftVinyl,4),
+    (RawMaterial.PP,RobotMaterial.Polypropylene,8),
+    (RawMaterial.Silicone,RobotMaterial.Silicone,8)})
+{
+    var copy=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
+    var rawSite=copy.Nodes.All.FirstOrDefault(n=>copy.Robots.RawDeposit(n.Id,input.Item1)>0);
+    for(int seed=1;rawSite==null && seed<=20;seed++)
+    {
+        copy.SetWorld(seed);copy.SetCast(123);copy.SetPlacement(456);
+        rawSite=copy.Nodes.All.FirstOrDefault(n=>copy.Robots.RawDeposit(n.Id,input.Item1)>0);
+    }
+    var raw=copy.Robots;
+    Check(rawSite!=null,$"Missing generated deposit for {input.Item1}");
+    int node=rawSite!.Id, before=raw.RawDeposit(node,input.Item1);
+    foreach(var robot in raw.Nodes[node].Robots.ToArray())raw.Nodes[node].Remove(robot.Id);
+    var lane=new RobotWorkshop();
+    lane.Configure(RobotParts.Head,1);
+    typeof(RobotWorkshop).GetField("_selectedProductPlan",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!
+        .SetValue(lane,new ProductionPlan(RobotParts.Head,1){Material=input.Item2});
+    production.Invoke(lane,new object[]{raw,node,0});
+    Check(lane.WaitingForMaple(raw,node) && lane.ProductionAge==0,"Missing raw input blocks manufacturing progress");
+    var harvestMethod=typeof(RobotWorld).GetMethod("HarvestMaple",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
+    Check((bool)harvestMethod.Invoke(raw,new object[]{node,1,input.Item1})! &&
+        raw.RawDeposit(node,input.Item1)==before-1 &&
+        raw.Nodes[node].MaplePackages.Single().Material==input.Item1,"Harvest debits the matching deposit and stores the matching cargo");
+    var rawCost=typeof(RobotWorld).GetMethod("RawCost",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic)!;
+    var part=new Robot(0,0,RobotParts.Head){HeadMaterial=input.Item2};
+    Check((int)rawCost.Invoke(null,new object[]{part,input.Item1})! ==input.Item3,"Raw input cost per part");
+    var reload=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(copy));
+    Check(reload.Robots.RawDeposit(node,input.Item1)==before-1 &&
+        reload.Robots.Nodes[node].MaplePackages.Single().Material==input.Item1,"Raw supply survives save and load");
+    for(int tick=0;tick<3 && raw.Nodes[node].MaplePackages.Single().Units==16;tick++)
+        production.Invoke(lane,new object[]{raw,node,copy.Nodes.All[node].Owner});
+    Check(raw.Nodes[node].MaplePackages.Single().Units==16-input.Item3 &&
+        (raw.Nodes[node].Robots.Any(r=>r.HeadMaterial==input.Item2) ||
+         raw.ProductionIntakes.Any(i=>i.Product.HeadMaterial==input.Item2)),
+        "Manufacturing consumes the matching harvested input and produces the selected part");
+}
 Check(cargo.MapleSupplyEnabled,"New materials worlds enable maple");
 var forest=supply.Nodes.All.First(n=>cargo.MapleDeposit(n.Id)>0 && FunctionalDeliveryRoutes.Targets(supply,n.Id).Length>0);
 int source=forest.Id,target=FunctionalDeliveryRoutes.Targets(supply,source)[0];

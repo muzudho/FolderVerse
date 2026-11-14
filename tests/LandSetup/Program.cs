@@ -60,7 +60,8 @@ var assigned=materials.Nodes.All.SelectMany(node=>materials.Robots.Nodes[node.Id
 Check(materials.Robots.Workshops.All(w=>w.BaseLineCount==0),"No permanent lanes in a new world");
 Check(assigned.Any(a=>a.Robot.HarvestWorker) && assigned.Any(a=>!a.Robot.HarvestWorker),"Both worker roles are seeded");
 var harvestSites=assigned.Where(a=>a.Robot.HarvestWorker).Select(a=>a.Node).ToArray();
-var initialDeposits=harvestSites.Select(materials.Robots.MapleDeposit).ToArray();
+var initialMaterials=harvestSites.Select(node=>materials.Robots.Workshops[node].ProductionLines.Single(l=>l.HarvestOnly).HarvestMaterial).ToArray();
+var initialDeposits=harvestSites.Select((node,i)=>materials.Robots.RawDeposit(node,initialMaterials[i])).ToArray();
 var generatedDeposits=materials.Nodes.All.Select(n=>materials.Robots.MapleDeposit(n.Id)).ToArray();
 Check(generatedDeposits.Any(n=>n>=13) && generatedDeposits.Any(n=>n is >=1 and <=3),
     "Material world contains both rich valley deposits and scattered small deposits");
@@ -70,7 +71,7 @@ foreach(var (node,worker) in assigned)
     var lane=Enumerable.Range(0,workshop.ProductionLines.Length).Single(i=>workshop.WorkerAt(i)==worker.Id);
     Check(workshop.ProductionLines[lane].HarvestOnly==worker.HarvestWorker,"Worker owns the lane of the assigned kind");
     if(worker.HarvestWorker)
-        Check(materials.Robots.MapleDeposit(node)>0 && workshop.ProductionLines[lane].MapleRemaining==1,"Harvester starts with a valid order");
+        Check(materials.Robots.RawDeposit(node,workshop.ProductionLines[lane].HarvestMaterial)>0 && workshop.ProductionLines[lane].MapleRemaining==1,"Harvester starts with a valid order");
     var role=worker.HarvestWorker?HangarReservation.Harvest:HangarReservation.Worker;
     int lanesBeforeRelease=workshop.ProductionLines.Length;
     Check(materials.Robots.ToggleReservation(node,worker.Id,role),"Initial assignment can be released");
@@ -89,10 +90,11 @@ for(int unit=0;unit<IndustryTime.UnitsPerTurn;unit++)
     harvestWorld.Robots.AdvanceIndustry(node=>harvestWorld.Nodes.All[node].Owner);
 for(int i=0;i<harvestSites.Length;i++){
     int node=harvestSites[i];
-    Check(harvestWorld.Robots.Nodes[node].MapleUnits==RobotWorld.MaplePackageSize &&
-        harvestWorld.Robots.MapleDeposit(node)==initialDeposits[i]-1,
-        $"Initial harvest worker at {node}: stock {harvestWorld.Robots.Nodes[node].MapleUnits}, "+
-        $"deposit {initialDeposits[i]} → {harvestWorld.Robots.MapleDeposit(node)}, "+
+    int units=harvestWorld.Robots.Nodes[node].MaplePackages.Where(p=>p.Material==initialMaterials[i]).Sum(p=>p.Units);
+    int left=harvestWorld.Robots.RawDeposit(node,initialMaterials[i]);
+    Check(units==RobotWorld.MaplePackageSize && left==initialDeposits[i]-1,
+        $"Initial harvest worker at {node}: stock {units}, "+
+        $"deposit {initialDeposits[i]} → {left}, "+
         $"intakes {harvestWorld.Robots.ProductionIntakes.Count(x=>(x.Target??x.Source)==node)}");
 }
 Console.WriteLine("PASS: initial worker lanes, save round trip and release.");
@@ -102,6 +104,12 @@ var competing=Scatter(100,RobotEquipmentMode.Materials);
 const int blockedSite=26;
 var stock=competing.Robots;
 var harvestLane=stock.Workshops[blockedSite].ProductionLines.Single(l=>l.HarvestOnly);
+// Supply the competing production so this fixture isolates hangar contention.
+var competingLane=stock.Workshops[blockedSite].ProductionLines.First(l=>!l.HarvestOnly);
+competingLane.Configure(RobotParts.Head,1);
+typeof(RobotWorkshop).GetField("_selectedProductPlan",BindingFlags.Instance|BindingFlags.NonPublic)!
+    .SetValue(competingLane,new ProductionPlan(RobotParts.Head,1){Material=RobotMaterial.Tin});
+competingLane.SetDoNotRepeat(true);
 void AdvanceHarvestSite()
 {
     for(int unit=0;unit<IndustryTime.UnitsPerTurn;unit++)

@@ -3,8 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+public enum RawMaterial { Maple, Styrene, Vinyl, PP, Silicone }
+
 public sealed record MaplePackage(long Id,int Units)
 {
+    public RawMaterial Material {get;init;}
     public const int Capacity=48;
     public int Sections=>(Units+RobotWorld.MaplePackageSize-1)/RobotWorld.MaplePackageSize;
 }
@@ -14,6 +17,7 @@ public sealed partial class RobotWorld
 {
     public const int MaplePackageSize=16;
     private int[] _mapleDeposits;
+    private int[][] _rawDeposits;
     private int[] _mapleHarvested;
     private List<MapleShipment> _mapleShipments;
     public bool MapleSupplyEnabled=>_mapleDeposits!=null;
@@ -32,6 +36,7 @@ public sealed partial class RobotWorld
         if(world.EquipmentMode!=RobotEquipmentMode.Materials)return;
         _mapleDeposits=GenerateMapleDeposits(world);
         _mapleShipments=new();
+        InitializeRawDeposits(world);
     }
 
     internal static int[] GenerateMapleDeposits(WorldSetup world)
@@ -58,20 +63,22 @@ public sealed partial class RobotWorld
         return deposits;
     }
 
-    public int MapleAvailableToPlan(int node,RobotWorkshop editing)
-        =>Math.Max(0,MapleDeposit(node)-Workshops[node].ProductionLines.Where(l=>!ReferenceEquals(l,editing)).Sum(l=>l.MapleRemaining));
+    public int MapleAvailableToPlan(int node,RobotWorkshop editing,RawMaterial material=RawMaterial.Maple)
+        =>Math.Max(0,RawDeposit(node,material)-Workshops[node].ProductionLines
+            .Where(l=>!ReferenceEquals(l,editing) && l.HarvestMaterial==material).Sum(l=>l.MapleRemaining));
 
     private int MapleReservedSlots(int node)=>ProductionIntakes.Count(i=>(i.Target??i.Source)==node)+Workshops[node].ReservedSlots;
-    internal bool CanHarvestMaple(int node,int loads)
-        =>MapleDeposit(node)>=loads && Nodes[node].HasMapleSpace(new(0,loads*MaplePackageSize),MapleReservedSlots(node));
+    internal bool CanHarvestMaple(int node,int loads,RawMaterial material=RawMaterial.Maple)
+        =>RawDeposit(node,material)>=loads && Nodes[node].HasMapleSpace(new MaplePackage(0,loads*MaplePackageSize){Material=material},MapleReservedSlots(node));
 
-    internal bool HarvestMaple(int node,int loads)
+    internal bool HarvestMaple(int node,int loads,RawMaterial material=RawMaterial.Maple)
     {
-        if(!CanHarvestMaple(node,loads))return false;
+        if(!CanHarvestMaple(node,loads,material))return false;
         var store=Nodes[node];
         int reserved=ProductionIntakes.Count(i=>(i.Target??i.Source)==node)+Workshops[node].ReservedSlots;
-        if(!store.TryReceiveMaple(new(_nextId,loads*MaplePackageSize),reserved,id=>MapleShipping(node,id)))return false;
+        if(!store.TryReceiveMaple(new MaplePackage(_nextId,loads*MaplePackageSize){Material=material},reserved,id=>MapleShipping(node,id)))return false;
         _nextId++;
+        if(material!=RawMaterial.Maple){_rawDeposits[(int)material-1][node]-=loads;return true;}
         _mapleDeposits[node]-=loads;
         (_mapleHarvested??=new int[Nodes.Length])[node]+=loads;
         return true;
@@ -83,6 +90,7 @@ public sealed partial class RobotWorld
         Nodes[source].SetMaplePackages(Array.Empty<MaplePackage>());
         if(!MapleSupplyEnabled)return;
         _mapleDeposits[source]=0;
+        if(_rawDeposits!=null)foreach(var deposits in _rawDeposits)deposits[source]=0;
         _mapleShipments.RemoveAll(o=>o.Source==source || o.Target==source);
     }
 
@@ -94,8 +102,9 @@ public sealed partial class RobotWorld
         _=>0
     });
 
-    internal int AvailableMaple(int node)=>Nodes[node].MapleUnits-(_mapleShipments?
-        .Where(o=>o.Source==node).Sum(o=>Nodes[node].MaplePackages.FirstOrDefault(p=>p.Id==o.PackageId)?.Units??0)??0);
+    internal int AvailableMaple(int node)=>AvailableRaw(node,RawMaterial.Maple);
+    internal int AvailableRaw(int node,RawMaterial material)=>Nodes[node].MaplePackages.Where(p=>p.Material==material).Sum(p=>p.Units)-(_mapleShipments?
+        .Where(o=>o.Source==node).Sum(o=>Nodes[node].MaplePackages.FirstOrDefault(p=>p.Id==o.PackageId && p.Material==material)?.Units??0)??0);
 
     private bool MapleShipping(int node,long id)=>_mapleShipments.Any(o=>o.Source==node && o.PackageId==id);
 
@@ -108,13 +117,13 @@ public sealed partial class RobotWorld
         if(source==null || source.Sections!=1 || MapleShipping(node,sourceId))return false;
         var target=store.MaplePackages.FirstOrDefault(p=>p.Id==targetId);
         if(split){
-            if(targetId.HasValue || source.Units<2 || !store.HasMapleSpace(new(0,1),MapleReservedSlots(node)))return false;
+            if(targetId.HasValue || source.Units<2 || !store.HasMapleSpace(new MaplePackage(0,1){Material=source.Material},MapleReservedSlots(node)))return false;
             int moved=source.Units/2;
             store.SetMaplePackages(store.MaplePackages.Select(p=>p.Id==sourceId?p with {Units=p.Units-moved}:p)
-                .Append(new(_nextId++,moved)).ToArray());
+                .Append(new MaplePackage(_nextId++,moved){Material=source.Material}).ToArray());
             return true;
         }
-        if(target==null || target.Id==sourceId || target.Sections!=1 || MapleShipping(node,target.Id))return false;
+        if(target==null || target.Id==sourceId || target.Material!=source.Material || target.Sections!=1 || MapleShipping(node,target.Id))return false;
         int added=Math.Min(source.Units,MaplePackageSize-target.Units);
         if(added==0)return false;
         store.SetMaplePackages(store.MaplePackages.Select(p=>p.Id==target.Id?p with {Units=p.Units+added}:
@@ -122,14 +131,14 @@ public sealed partial class RobotWorld
         return true;
     }
 
-    internal void SpendMaple(int node,int units)
+    internal void SpendMaple(int node,int units,RawMaterial material=RawMaterial.Maple)
     {
         var store=Nodes[node];
         var packages=store.MaplePackages.ToArray();
         for(int i=0;i<packages.Length && units>0;i++)
         {
             var pack=packages[i];
-            if(MapleShipping(node,pack.Id))continue;
+            if(pack.Material!=material || MapleShipping(node,pack.Id))continue;
             int spent=Math.Min(pack.Units,units);
             packages[i]=pack with {Units=pack.Units-spent};
             units-=spent;

@@ -56,7 +56,8 @@ public sealed partial class WorldSetup
                 int count=1+random.Next(8);
                 var store=Robots.Nodes[node.Id];
                 int workers=TutorialStep==0?Math.Min(workshop.BaseLineCount,store.TotalCapacity):0;
-                bool harvest=TutorialStep==0 && hasFactory && Robots.MapleDeposit(node.Id)>0 && workshop.LineLimit>0 && store.TotalCapacity>1;
+                var harvestMaterial=RobotWorld.RawMaterials.FirstOrDefault(material=>Robots.RawDeposit(node.Id,material)>0);
+                bool harvest=TutorialStep==0 && hasFactory && Robots.RawDeposit(node.Id,harvestMaterial)>0 && workshop.LineLimit>0 && store.TotalCapacity>1;
                 if(harvest)workers=Math.Min(Math.Max(2,workers),Math.Min(workshop.LineLimit,store.TotalCapacity-1));
                 if(TutorialStep==0)workshop.RemoveProductionLines();
                 int capacity=Math.Max(0,store.TotalCapacity-workers-(harvest?1:0));
@@ -75,7 +76,7 @@ public sealed partial class WorldSetup
                 if(workers>0){
                     Robots.SyncWorkers(node.Id);
                     if(harvest)
-                        foreach(var lane in workshop.ProductionLines.Where(l=>l.HarvestOnly))lane.SelectMapleHarvest(1);
+                        foreach(var lane in workshop.ProductionLines.Where(l=>l.HarvestOnly))lane.SelectMapleHarvest(1,harvestMaterial);
                 }
             }
             foreach(var parts in Enumerable.Range(1,7).Select(i=>(RobotParts)i))
