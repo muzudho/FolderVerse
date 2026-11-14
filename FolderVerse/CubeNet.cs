@@ -129,8 +129,13 @@ public sealed partial class CubeNet
                 if(Vector2.Distance(closest,center)<=circle.Radius+8){detail=40;break;}
             }
             var samples=new float[12,12];
+            var reliefs=new float[12,12];
             for(int sy=-1;sy<=10;sy++)for(int sx=-1;sx<=10;sx++)
-                samples[sx+1,sy+1]=offset.Elevation(cell.Origin+cell.U*((sx+.5f)/10)+cell.V*((sy+.5f)/10));
+            {
+                var point=cell.Origin+cell.U*((sx+.5f)/10)+cell.V*((sy+.5f)/10);
+                float height=samples[sx+1,sy+1]=offset.Elevation(point);
+                reliefs[sx+1,sy+1]=WorldTerrain.Relief(height,WorldTerrain.IsValley(setup,cell,point,height));
+            }
             int leftU=-(int)Vector3.Dot(face.Right,cell.U),leftV=-(int)Vector3.Dot(face.Right,cell.V);
             int aboveU=(int)Vector3.Dot(face.Up,cell.U),aboveV=(int)Vector3.Dot(face.Up,cell.V);
             for(int y=0;y<detail;y++)for(int x=0;x<detail;x++)
@@ -147,10 +152,10 @@ public sealed partial class CubeNet
                 var post=setup.Nodes.At(cell.Id,new Point(x,y));
                 
                 ui.Box(new(px-size/2,py-size/2,size,size),terrain);
-                float relief=WorldTerrain.Relief(elevation);
+                float relief=reliefs[sx+1,sy+1];
                 // Cast a short top-down shadow onto the lower tile, from the left and above.
-                float left=WorldTerrain.Relief(samples[sx+1+leftU,sy+1+leftV]);
-                float above=WorldTerrain.Relief(samples[sx+1+aboveU,sy+1+aboveV]);
+                float left=reliefs[sx+1+leftU,sy+1+leftV];
+                float above=reliefs[sx+1+aboveU,sy+1+aboveV];
                 int shade=Math.Max(1,(int)MathF.Round(fit.Scale*.016f));
                 int subdivisions=detail/10;
                 var within=new Vector2(Vector3.Dot(p-sample,face.Right),-Vector3.Dot(p-sample,face.Up));

@@ -45,7 +45,7 @@ public sealed partial class WorldPreview
                 float angle=i*2.4f;
                 float spread=.025f*MathF.Sqrt(i);
                 var root=center+(cell.U*MathF.Cos(angle)+cell.V*MathF.Sin(angle))*spread;
-                root+=cell.Normal*WorldTerrain.ReliefAt(cell,root,terrain);
+                root+=cell.Normal*WorldTerrain.ReliefAt(world,cell,root,terrain);
                 var collar=root+cell.Normal*.058f;
                 var crown=root+cell.Normal*(.12f+(i%3)*.009f);
                 for(int side=0;side<6;side++)

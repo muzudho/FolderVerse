@@ -176,23 +176,29 @@ public sealed partial class WorldPreview : IDisposable
         var axisV=Vector3.Normalize(v);
         var half=new Vector3(Width,Height,Depth)*.5f;
         var heights=new float[countU+2,countV+2];
+        var reliefs=new float[countU+2,countV+2];
+        var valleys=new bool[countU+2,countV+2];
         for (int y=-1;y<=countV;y++)
         for (int x=-1;x<=countU;x++)
         {
             var point=origin+stepU*(x+.5f)+stepV*(y+.5f);
             bool inside=MathF.Abs(point.X)<=half.X+.001f && MathF.Abs(point.Y)<=half.Y+.001f && MathF.Abs(point.Z)<=half.Z+.001f;
-            heights[x+1,y+1]=inside ? offset.Elevation(point) : 0;
+            if(!inside)continue;
+            float height=offset.Elevation(point);
+            bool valley=WorldTerrain.IsValley(offset,point,axisU,axisV,half,height);
+            heights[x+1,y+1]=height;
+            valleys[x+1,y+1]=valley;
+            reliefs[x+1,y+1]=WorldTerrain.Relief(height,valley);
         }
         for (int y = 0; y < countV; y++)
         for (int x = 0; x < countU; x++)
         {
             float height=heights[x+1,y+1];
-            float relief=WorldTerrain.Relief(height);
+            float relief=reliefs[x+1,y+1];
             var a=origin+stepU*x+stepV*y+normal*relief;
             var b=a+stepU;var c=b+stepV;var d=a+stepV;
             Color color=paint?.Invoke(height,x,y)??WorldTerrain.ColorAt(height,normal,_polarAxis);
-            var point=origin+stepU*(x+.5f)+stepV*(y+.5f);
-            if(WorldTerrain.IsValley(offset,point,axisU,axisV,half,height))color=WorldTerrain.ValleyColor(color);
+            if(valleys[x+1,y+1])color=WorldTerrain.ValleyColor(color);
             // Each region edge contributes half of the recessed seam.
             var left=x%detail==0?axisU*RegionSeamInset:Vector3.Zero;
             var right=x%detail==detail-1?axisU*RegionSeamInset:Vector3.Zero;
@@ -205,14 +211,14 @@ public sealed partial class WorldPreview : IDisposable
             }
             a+=left+bottom;b+=bottom-right;c-=right+top;d+=left-top;
             Quad(a,b,c,d,Dim(color),normal);
-            Wall(a,b,bottom,heights[x+1,y],-axisV);
-            Wall(b,c,right,heights[x+2,y+1],axisU);
-            Wall(c,d,top,heights[x+1,y+2],axisV);
-            Wall(d,a,left,heights[x,y+1],-axisU);
+            Wall(a,b,bottom,reliefs[x+1,y],-axisV);
+            Wall(b,c,right,reliefs[x+2,y+1],axisU);
+            Wall(c,d,top,reliefs[x+1,y+2],axisV);
+            Wall(d,a,left,reliefs[x,y+1],-axisU);
 
             void Wall(Vector3 start,Vector3 end,Vector3 edgeInset,float neighbor,Vector3 outward)
             {
-                float drop=edgeInset!=Vector3.Zero?relief+.014f:relief-WorldTerrain.Relief(neighbor);
+                float drop=edgeInset!=Vector3.Zero?relief+.014f:relief-neighbor;
                 if(drop<=0)return;
                 var down=normal*drop;
                 Quad(start,end,end-down,start-down,Dim(Color.Lerp(color,new Color(49,43,38),.28f)),outward);

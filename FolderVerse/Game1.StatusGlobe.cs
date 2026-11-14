@@ -83,7 +83,7 @@ public partial class Game1
         {
             var cell=_setup.Cells[node.Cell];
             var position=_setup.Routes.Position(node.Cell,node.Center);
-            position+=cell.Normal*WorldTerrain.ReliefAt(cell,position,offset);
+            position+=cell.Normal*WorldTerrain.ReliefAt(_setup,cell,position,offset);
             if(!_world.ProjectVisible(position,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var at))continue;
             float candidate=Vector2.DistanceSquared(at,new(pointer.X,pointer.Y));
             _world.ProjectVisible(position+cell.U,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var unit);

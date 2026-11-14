@@ -27,14 +27,14 @@ public sealed partial class CubeNet
         var cell=world.Cells[node.Cell];
         var grove=MapleGrovePoint(world,node);
         var origin=world.Routes.Position(node.Cell,grove);
-        if(globe)origin+=cell.Normal*WorldTerrain.ReliefAt(cell,origin,world.Terrain);
+        if(globe)origin+=cell.Normal*WorldTerrain.ReliefAt(world,cell,origin,world.Terrain);
         var at=project(origin);
         float size=Math.Clamp(Math.Max(Vector2.Distance(at,project(origin+cell.U)),Vector2.Distance(at,project(origin+cell.V)))*.055f,4,15);
         if(plantings>0){
             var plantingOrigin=world.Routes.Position(node.Cell,grove);
             for(int i=0;i<plantings;i++){
                 var root=plantingOrigin+cell.U*(.075f*(i-1)) - cell.V*.085f;
-                if(globe)root+=cell.Normal*WorldTerrain.ReliefAt(cell,root,world.Terrain);
+                if(globe)root+=cell.Normal*WorldTerrain.ReliefAt(world,cell,root,world.Terrain);
                 var center=project(root);
                 Vector2 Point(float x,float y,float z)=>globe
                     ?project(root+.032f*(cell.U*x+cell.V*y+cell.Normal*z))

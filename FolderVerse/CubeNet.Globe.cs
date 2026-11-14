@@ -10,7 +10,7 @@ public sealed partial class CubeNet
         foreach(var cell in setup.Cells)
         {
             if(!globe.ProjectVisible(cell.Center,cell.Normal,yaw,pitch,panel,out _))continue;
-            Vector2 Project(Vector3 p){globe.ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var result,WorldTerrain.ReliefAt(cell,p,offset));return result;}
+            Vector2 Project(Vector3 p){globe.ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var result,WorldTerrain.ReliefAt(setup,cell,p,offset));return result;}
             DrawCellRoutes(ui,setup,cell.Id,Project,pulse,drawNodes:false,globeRibbon:true);
         }
         foreach(var cell in setup.Cells)
@@ -24,7 +24,7 @@ public sealed partial class CubeNet
                 if (!NodeVisible(setup,node)) continue;
                 if(ShowRoutes)DrawMapleDeposit(ui,setup,node,Project,globe:true);
                 var position = setup.Routes.Position(node.Cell,node.Center);
-                position+=cell.Normal*WorldTerrain.ReliefAt(cell,position,offset);
+                position+=cell.Normal*WorldTerrain.ReliefAt(setup,cell,position,offset);
                 var at = Project(position);
                 Color Tint(Color color) => NodeTint(node.Id,color);
                 float scale = MathF.Max(Vector2.Distance(at,Project(position+cell.U)),Vector2.Distance(at,Project(position+cell.V)));

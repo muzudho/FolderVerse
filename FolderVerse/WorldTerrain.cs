@@ -13,7 +13,7 @@ public readonly record struct TerrainSampler(Vector3 Offset,float ElevationShift
 public static class WorldTerrain
 {
     public const float MountainHeight=0.72f;
-    internal const float MaxRelief=.052f;
+    internal const float MaxRelief=.20f;
     public static Vector3 Offset(int seed)
     {
         var random=new SeedRandom(seed);return new Vector3(random.Unit(),random.Unit(),random.Unit())*100;
@@ -60,21 +60,27 @@ public static class WorldTerrain
         return latitude>=.45f && latitude<.9f && IsValley(world,cell,point,world.Terrain.Elevation(point));
     }
     // Display-only relief in world units. One terrain sample is 0.1 units wide.
-    public static float Relief(float height)=>Kind(height) switch
+    public static float Relief(float height,bool valley=false)
     {
-        TerrainKind.Sea=>0,
-        TerrainKind.Coast=>.014f,
-        TerrainKind.Grassland=>.024f,
-        TerrainKind.Hill=>.036f,
-        _=>MaxRelief
-    };
-    public static float ReliefAt(SurfaceCell cell,Vector3 point,Vector3 offset)=>ReliefAt(cell,point,new TerrainSampler(offset,0));
-    public static float ReliefAt(SurfaceCell cell,Vector3 point,TerrainSampler terrain)
+        if(height<.52f)return 0;
+        float relief=height switch
+        {
+            <.55f=>MathHelper.Lerp(.008f,.024f,(height-.52f)/.03f),
+            <MountainHeight=>MathHelper.Lerp(.024f,.080f,(height-.55f)/.17f),
+            _=>MathHelper.Lerp(.080f,MaxRelief,MathHelper.Clamp((height-MountainHeight)/.20f,0,1))
+        };
+        if(valley)relief-=.022f;
+        // Keep the relief terraced so nearby tiles can share the same level.
+        return Math.Max(.005f,MathF.Round(relief/.005f)*.005f);
+    }
+    public static float ReliefAt(WorldSetup world,SurfaceCell cell,Vector3 point,TerrainSampler terrain)
     {
         var local=point-cell.Origin;
         float u=(MathF.Floor(Vector3.Dot(local,cell.U)*10)+.5f)/10;
         float v=(MathF.Floor(Vector3.Dot(local,cell.V)*10)+.5f)/10;
-        return Relief(terrain.Elevation(cell.Origin+cell.U*u+cell.V*v));
+        var sample=cell.Origin+cell.U*u+cell.V*v;
+        float height=terrain.Elevation(sample);
+        return Relief(height,IsValley(terrain,sample,cell.U,cell.V,new Vector3(world.Width,world.Height,world.Depth)*.5f,height));
     }
     public static Color ColorAt(float height)=>height<0.47f?new(32,112,182):height<0.52f?new(53,155,207):height<0.55f?new(237,211,140):height<0.70f?new(85,164,103):height<MountainHeight?new(167,188,124):height<.77f?new(111,101,96):new(227,235,242);
     public static Color ColorAt(float height,Vector3 normal,int polarAxis=1)

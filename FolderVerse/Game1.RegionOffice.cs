@@ -39,7 +39,7 @@ public partial class Game1
         bool Project(Vector3 point,out Vector2 at)
         {
             if(_statusGlobe)
-                return _world.ProjectVisible(point,cell.Normal,_yaw,_pitch,StatusGlobeArea,out at,WorldTerrain.ReliefAt(cell,point,offset));
+                return _world.ProjectVisible(point,cell.Normal,_yaw,_pitch,StatusGlobeArea,out at,WorldTerrain.ReliefAt(_setup,cell,point,offset));
             at=_net.AnimatedSurfacePosition(node.Cell,point,_setup,NetPanel);
             return true;
         }
