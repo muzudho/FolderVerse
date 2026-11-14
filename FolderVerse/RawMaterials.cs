@@ -20,6 +20,14 @@ public sealed partial class RobotWorld
     public int RawDeposit(int node,RawMaterial material)=>material==RawMaterial.Maple
         ?MapleDeposit(node):_rawDeposits?[(int)material-1][node]??0;
 
+    internal bool HadRawDeposit(WorldSetup world,Node node,RawMaterial material)
+    {
+        if(material==RawMaterial.Maple)return (_mapleHarvested?[node.Id]??0)>0;
+        var cell=world.Cells[node.Cell];
+        return CubeNet.ResourceSites(world,cell,world.Terrain).Any(site=>
+            SiteMaterial(site.Kind)==material && SiteNode(world,cell,site.Position)?.Id==node.Id);
+    }
+
     internal static RawMaterial SiteMaterial(CubeNet.ResourceSiteKind kind)=>kind switch
     {
         CubeNet.ResourceSiteKind.Salt=>RawMaterial.Vinyl,

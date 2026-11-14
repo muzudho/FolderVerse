@@ -65,7 +65,8 @@ public partial class Game1
                 string name=RobotWorld.RawName(material);
                 int deposit=_setup.Robots.RawDeposit(node.Id,material);
                 int available=FactoryHarvestAvailable(node.Id,lines,line,material);
-                string warning=deposit==0?"この地域ではもう採れません":
+                string warning=deposit==0?(_setup.Robots.HadRawDeposit(_setup,node,material)
+                    ?"この地域ではもう採れません":"この地域では採れません"):
                     available==0?"他の採取レーンで採り終えます":"この量は採れません";
                 for(int loads=1;loads<=3;loads++)
                 {
@@ -78,7 +79,10 @@ public partial class Game1
                     _ui.Center($"{loads} 荷 / {loads*RobotWorld.MaplePackageSize}/48",new(card.X,card.Y+200,card.Width,26),.37f,selected?Color.Black:Cream);
                     _ui.Center($"{loads} 産業ターン",new(card.X,card.Y+230,card.Width,26),.31f,selected?Color.Black:Cream);
                     _ui.Center($"埋蔵 {deposit} / 予約可能 {available} 荷",new(card.X,card.Y+256,card.Width,24),.29f,selected?Color.Black:Cream);
-                    if(loads>available)DrawHarvestLimitWarning(new(card.X+5,card.Y+287,card.Width-10,29),warning);
+                    if(loads>available){
+                        _ui.Box(card,Color.Black*.74f);
+                        _ui.Center(warning,new(card.X+5,card.Y+287,card.Width-10,29),.32f,new Color(181,189,196));
+                    }
                 }
             }
             return;
@@ -132,20 +136,6 @@ public partial class Game1
         }
         if (mixedPreview != null && line.PlanCount < 12)
             DrawFactoryAlbumDetails(FactoryAlbumCard(11), mixedPreview, ink);
-    }
-
-    private void DrawHarvestLimitWarning(Rectangle bounds,string message)
-    {
-        var shadow=bounds;shadow.Offset(4,4);
-        _ui.Box(shadow,Color.Black*.68f);
-        _ui.Box(bounds,new Color(122,65,20));
-        _ui.Box(new(bounds.X+1,bounds.Y+1,bounds.Width-2,bounds.Height-2),new Color(255,219,88));
-        for(int y=1;y<bounds.Height-1;y++)
-            for(int x=y%24-24;x<bounds.Width-1;x+=24){
-                int left=Math.Max(1,x),right=Math.Min(bounds.Width-1,x+12);
-                if(right>left)_ui.Box(new(bounds.X+left,bounds.Y+y,right-left,1),new Color(255,164,58));
-            }
-        _ui.Center(message,bounds,.32f,new Color(67,34,13));
     }
 
     private void DrawFactoryAlbumTimeSticker(Rectangle photo, int turns, Color ink)
