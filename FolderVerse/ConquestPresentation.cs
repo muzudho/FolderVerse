@@ -42,9 +42,9 @@ public sealed class ConquestPresentation
     }
     public static Vector3 Environment(WorldSetup w,int ruler){
         var cells=OwnCells(w,ruler).Select(id=>w.Cells[id]).ToArray();if(cells.Length==0)return Vector3.Zero;
-        int sea=0,mountain=0,polar=0,total=0;var offset=WorldTerrain.Offset(w.WorldSeed);
+        int sea=0,mountain=0,polar=0,total=0;var offset=w.Terrain;
         foreach(var c in cells)for(int y=0;y<10;y++)for(int x=0;x<10;x++){
-            var kind=WorldTerrain.Kind(WorldTerrain.Elevation(c.Origin+c.U*((x+.5f)/10)+c.V*((y+.5f)/10),offset));
+            var kind=WorldTerrain.Kind(offset.Elevation(c.Origin+c.U*((x+.5f)/10)+c.V*((y+.5f)/10)));
             if(Math.Abs(c.Normal.Y)>.5f)polar++;if(kind==TerrainKind.Sea)sea++;if(kind==TerrainKind.Mountain)mountain++;total++;
         }
         return new(polar/(float)total,sea/(float)total,mountain/(float)total);

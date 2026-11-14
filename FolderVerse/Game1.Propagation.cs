@@ -119,7 +119,7 @@ public partial class Game1
     {
         _ui.Box(bounds,new Color(24,43,51)*opacity);
         var node=_setup.Nodes.All[battle.TargetNode];var cell=_setup.Cells[node.Cell];
-        float elevation=WorldTerrain.Elevation(_setup.Routes.Position(node.Cell,node.Center),WorldTerrain.Offset(_setup.WorldSeed));
+        float elevation=_setup.Terrain.Elevation(_setup.Routes.Position(node.Cell,node.Center));
         float latitude=_setup.Geographic(cell.Normal).Y;
         var ground=Math.Abs(latitude)>.5f?new Color(161,192,203):elevation<.55f?new Color(163,137,91):new Color(35,64,58);
         for(int y=0;y<battle.BoardSize;y++)for(int x=0;x<battle.BoardSize;x++)

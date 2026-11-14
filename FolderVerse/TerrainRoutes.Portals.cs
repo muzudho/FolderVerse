@@ -68,12 +68,12 @@ public sealed partial class TerrainRoutes
     }
     private void BuildPortals()
     {
-        _portals=_world.Cells.Select(_=>new RoutePortal[4][]).ToArray();var offset=WorldTerrain.Offset(_world.WorldSeed);
+        _portals=_world.Cells.Select(_=>new RoutePortal[4][]).ToArray();var offset=_world.Terrain;
         foreach(var cell in _world.Cells)for(int d=0;d<4;d++)
         {
             int target=_world.Population.Neighbor(_world,cell.Id,d);
             var shared=cell.Corners.Intersect(_world.Cells[target].Corners).OrderBy(p=>p.X).ThenBy(p=>p.Y).ThenBy(p=>p.Z).ToArray();
-            var kinds=Enumerable.Range(0,10).Select(i=>Classify(WorldTerrain.Elevation(Vector3.Lerp(shared[0],shared[1],(i+.5f)/10),offset))).ToArray();
+            var kinds=Enumerable.Range(0,10).Select(i=>Classify(offset.Elevation(Vector3.Lerp(shared[0],shared[1],(i+.5f)/10)))).ToArray();
             var portals=new List<RoutePortal>();
             for(int first=0;first<10;)
             {

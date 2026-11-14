@@ -117,7 +117,7 @@ public sealed partial class CubeNet
         RefreshScenicRoutes(setup);
         _robotBadges.Clear();
         if(IsAnimating){DrawAnimation(ui,setup,panel,pulse);return;}
-        var fit=Fit(panel);var offset=WorldTerrain.Offset(setup.WorldSeed);
+        var fit=Fit(panel);var offset=setup.Terrain;
         foreach(var cell in setup.Cells)
         {
             var face=Faces.First(f=>f.Face==cell.Face);var rect=CellBounds(cell,panel);
@@ -130,7 +130,7 @@ public sealed partial class CubeNet
             }
             var samples=new float[12,12];
             for(int sy=-1;sy<=10;sy++)for(int sx=-1;sx<=10;sx++)
-                samples[sx+1,sy+1]=WorldTerrain.Elevation(cell.Origin+cell.U*((sx+.5f)/10)+cell.V*((sy+.5f)/10),offset);
+                samples[sx+1,sy+1]=offset.Elevation(cell.Origin+cell.U*((sx+.5f)/10)+cell.V*((sy+.5f)/10));
             int leftU=-(int)Vector3.Dot(face.Right,cell.U),leftV=-(int)Vector3.Dot(face.Right,cell.V);
             int aboveU=(int)Vector3.Dot(face.Up,cell.U),aboveV=(int)Vector3.Dot(face.Up,cell.V);
             for(int y=0;y<detail;y++)for(int x=0;x<detail;x++)

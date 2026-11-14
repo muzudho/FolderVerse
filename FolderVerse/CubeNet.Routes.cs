@@ -89,7 +89,7 @@ public sealed partial class CubeNet
                 .SelectMany(p=>Enumerable.Range(0,4).Select(d=>world.Routes.ForRuler(p.Ruler,d))).Where(r=>r!=null);
             var ribbons = globeRibbon ? new List<(Vector2 Center, float Length, float Angle, bool Sea)>() : null;
             var vehicles = new List<ScenicRoutes.Vehicle>();
-            var offset=WorldTerrain.Offset(world.WorldSeed);
+            var offset=world.Terrain;
             foreach(var route in world.Routes.DisplayPaths(cell).Concat(active))
             {
                 if (!DirectoryOnly && _scenicRoutes != null &&
@@ -102,7 +102,7 @@ public sealed partial class CubeNet
                 for(int i=1;i<curve.Length;i++)
                 {
                     var a=project(curve[i-1]);var b=project(curve[i]);var delta=b-a;
-                    float height=WorldTerrain.Elevation((curve[i-1]+curve[i])/2,offset);
+                    float height=offset.Elevation((curve[i-1]+curve[i])/2);
                     if (ribbons != null)
                     {
                         if (delta.LengthSquared() > .001f)

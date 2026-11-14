@@ -48,9 +48,9 @@ public sealed partial class WorldPreview
     public bool ControlledCountryColors {get;set;}
     public void ShowLandConquest(WorldSetup setup,bool exclusive=false,bool dimClaimed=false)
     {
-        Generate(setup.Width,setup.Height,setup.Depth,setup.WorldSeed,setup.PolarAxis);
+        Generate(setup.Width,setup.Height,setup.Depth,setup.WorldSeed,setup.PolarAxis,setup.Terrain.ElevationShift);
         var mesh=new List<VertexPositionColorNormal>();
-        var offset=WorldTerrain.Offset(setup.WorldSeed);
+        var offset=setup.Terrain;
         foreach(var cell in setup.Cells){
             int owner=PresentationOwner.HasValue?ConquestPresentation.ExactCellOwner(setup,cell.Id):exclusive?setup.Nodes.FullOwner(cell.Id):setup.Owners[cell.Id];
             if(PresentationOwner.HasValue && (owner!=PresentationOwner.Value || PresentationCells!=null && !PresentationCells.Contains(cell.Id)))owner=-1;

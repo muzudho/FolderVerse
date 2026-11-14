@@ -5,6 +5,11 @@ using Microsoft.Xna.Framework;
 public enum TerrainKind { Sea,Coast,Grassland,Hill,Mountain }
 public enum PlanetHeadSystem { Fish=0,Monkey=1,Dog=2 }
 
+public readonly record struct TerrainSampler(Vector3 Offset,float ElevationShift)
+{
+    public float Elevation(Vector3 point)=>WorldTerrain.Elevation(point,Offset)+ElevationShift;
+}
+
 public static class WorldTerrain
 {
     public const float MountainHeight=0.72f;
@@ -28,12 +33,13 @@ public static class WorldTerrain
         TerrainKind.Hill=>.036f,
         _=>MaxRelief
     };
-    public static float ReliefAt(SurfaceCell cell,Vector3 point,Vector3 offset)
+    public static float ReliefAt(SurfaceCell cell,Vector3 point,Vector3 offset)=>ReliefAt(cell,point,new TerrainSampler(offset,0));
+    public static float ReliefAt(SurfaceCell cell,Vector3 point,TerrainSampler terrain)
     {
         var local=point-cell.Origin;
         float u=(MathF.Floor(Vector3.Dot(local,cell.U)*10)+.5f)/10;
         float v=(MathF.Floor(Vector3.Dot(local,cell.V)*10)+.5f)/10;
-        return Relief(Elevation(cell.Origin+cell.U*u+cell.V*v,offset));
+        return Relief(terrain.Elevation(cell.Origin+cell.U*u+cell.V*v));
     }
     public static Color ColorAt(float height)=>height<0.47f?new(32,112,182):height<0.52f?new(53,155,207):height<0.55f?new(237,211,140):height<0.70f?new(85,164,103):height<MountainHeight?new(167,188,124):height<.77f?new(111,101,96):new(227,235,242);
     public static Color ColorAt(float height,Vector3 normal,int polarAxis=1)
@@ -59,25 +65,65 @@ public static class WorldTerrain
         return PlanetHeadSystem.Monkey;
     }
 
-    internal static PlanetHeadSystem HeadSystem(SurfaceCell[] cells,int seed)
+    private static float[] SurfaceElevations(SurfaceCell[] cells,TerrainSampler terrain)
     {
-        // Count terrain before assigning the poles. Pack ice forms only on sea
-        // tiles, so those tiles are already included in the sea area.
         const int detail=TerrainRoutes.Detail;
-        var offset=Offset(seed);
-        int sea=0;
+        var heights=new float[cells.Length*detail*detail];
+        int index=0;
         foreach(var cell in cells)
             for(int y=0;y<detail;y++)
                 for(int x=0;x<detail;x++)
-                    if(Kind(Elevation(cell.Origin+cell.U*((x+.5f)/detail)+cell.V*((y+.5f)/detail),offset))==TerrainKind.Sea)
-                        sea++;
-        return HeadSystemForArea(sea,cells.Length*detail*detail);
+                    heights[index++]=terrain.Elevation(cell.Origin+cell.U*((x+.5f)/detail)+cell.V*((y+.5f)/detail));
+        return heights;
     }
-    public static TerrainKind CellKind(SurfaceCell cell,Vector3 offset)
+
+    internal static PlanetHeadSystem HeadSystem(SurfaceCell[] cells,TerrainSampler terrain)
+    {
+        // Pack ice forms on sea tiles and is already included in their area.
+        var heights=SurfaceElevations(cells,terrain);
+        return HeadSystemForArea(Array.FindAll(heights,h=>Kind(h)==TerrainKind.Sea).Length,heights.Length);
+    }
+
+    internal static bool TryFitSeaRange(SurfaceCell[] cells,int seed,double minimum,double maximum,out float shift)
+    {
+        if(!(0<=minimum && minimum<=maximum && maximum<=1))
+            throw new ArgumentOutOfRangeException(nameof(minimum),"Sea bounds must be ordered fractions between zero and one.");
+        var heights=SurfaceElevations(cells,new(Offset(seed),0));
+        Array.Sort(heights);
+        int total=heights.Length;
+        double target=minimum+(maximum-minimum)*new SeedRandom(seed^0x534541).Unit();
+        int desired=(int)Math.Round(total*target);
+        int min=(int)Math.Ceiling(total*Math.Max(minimum,target-.01));
+        int max=(int)Math.Floor(total*Math.Min(maximum,target+.01));
+        if(min/(double)total<minimum)min++;
+        if(max/(double)total>maximum)max--;
+        for(int distance=0;distance<=Math.Max(desired-min,max-desired);distance++)
+        {
+            if(TryCount(desired-distance,out shift) || distance>0 && TryCount(desired+distance,out shift))return true;
+        }
+        shift=0;
+        return false;
+
+        bool TryCount(int count,out float candidate)
+        {
+            candidate=0;
+            if(count<min || count>max)return false;
+            if(count>0 && count<total && heights[count-1]==heights[count])return false;
+            float waterline=count==0?heights[0]-.001f:count==total?heights[^1]+.001f:
+                (float)(((double)heights[count-1]+heights[count])/2);
+            candidate=.52f-waterline;
+            // Check the actual float comparisons on either side of the split.
+            return (count==0 || heights[count-1]+candidate<.52f) &&
+                   (count==total || heights[count]+candidate>=.52f);
+        }
+    }
+
+    public static TerrainKind CellKind(SurfaceCell cell,Vector3 offset)=>CellKind(cell,new TerrainSampler(offset,0));
+    public static TerrainKind CellKind(SurfaceCell cell,TerrainSampler terrain)
     {
         int[] counts=new int[5];
         for(int y=0;y<10;y++)for(int x=0;x<10;x++)
-            counts[(int)Kind(Elevation(cell.Origin+cell.U*((x+0.5f)/10)+cell.V*((y+0.5f)/10),offset))]++;
+            counts[(int)Kind(terrain.Elevation(cell.Origin+cell.U*((x+0.5f)/10)+cell.V*((y+0.5f)/10)))]++;
         int best=0;for(int i=1;i<counts.Length;i++)if(counts[i]>counts[best])best=i;
         return (TerrainKind)best;
     }

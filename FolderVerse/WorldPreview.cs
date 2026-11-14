@@ -41,7 +41,7 @@ public sealed partial class WorldPreview : IDisposable
     }
 
     private int _polarAxis=1;
-    public void Generate(int width, int height, int depth, int seed,int polarAxis=1)
+    public void Generate(int width, int height, int depth, int seed,int polarAxis=1,float elevationShift=0)
     {
         _polarAxis=polarAxis;
         // Rods can reach nine cells and slabs seven, in any axis orientation.
@@ -57,8 +57,7 @@ public sealed partial class WorldPreview : IDisposable
         _markers?.Dispose(); _markers = null; _markerCount = 0;
         var mesh = new List<VertexPositionColorNormal>();
         var half = new Vector3(width, height, depth) * 0.5f;
-        var random = new SeedRandom(seed);
-        var offset = new Vector3(random.Unit(), random.Unit(), random.Unit()) * 100;
+        var offset = new TerrainSampler(WorldTerrain.Offset(seed),elevationShift);
         AddFace(mesh, new Vector3(half.X, -half.Y, -half.Z), Vector3.Up * height, Vector3.Backward * depth, Vector3.Right, height, depth, offset);
         AddFace(mesh, new Vector3(-half.X, -half.Y, half.Z), Vector3.Up * height, Vector3.Forward * depth, Vector3.Left, height, depth, offset);
         AddFace(mesh, new Vector3(-half.X, half.Y, -half.Z), Vector3.Backward * depth, Vector3.Right * width, Vector3.Up, depth, width, offset);
@@ -75,7 +74,7 @@ public sealed partial class WorldPreview : IDisposable
     {
         if(CountryColors && territories)ShowLandConquest(setup,true);
         else {
-            Generate(setup.Width, setup.Height, setup.Depth, setup.WorldSeed,setup.PolarAxis);
+            Generate(setup.Width, setup.Height, setup.Depth, setup.WorldSeed,setup.PolarAxis,setup.Terrain.ElevationShift);
             if(setup.Owners.Length==setup.Cells.Length)BuildWhirlpoolMesh(setup);
         }
         if (!territories || setup.Owners.Length == 0) return;
@@ -124,7 +123,7 @@ public sealed partial class WorldPreview : IDisposable
         _highlight=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
         _highlight.SetData(mesh.ToArray());_highlightCount=mesh.Count/3;
     }
-    private void AddFace(List<VertexPositionColorNormal> mesh, Vector3 origin, Vector3 u, Vector3 v, Vector3 normal, int unitsU, int unitsV, Vector3 offset,
+    private void AddFace(List<VertexPositionColorNormal> mesh, Vector3 origin, Vector3 u, Vector3 v, Vector3 normal, int unitsU, int unitsV, TerrainSampler offset,
         Func<float,int,int,Color> paint=null,float brightness=1f)
     {
         const int detail = 10;
@@ -138,7 +137,7 @@ public sealed partial class WorldPreview : IDisposable
         {
             var point=origin+stepU*(x+.5f)+stepV*(y+.5f);
             bool inside=MathF.Abs(point.X)<=half.X+.001f && MathF.Abs(point.Y)<=half.Y+.001f && MathF.Abs(point.Z)<=half.Z+.001f;
-            heights[x+1,y+1]=inside ? WorldTerrain.Elevation(point,offset) : 0;
+            heights[x+1,y+1]=inside ? offset.Elevation(point) : 0;
         }
         for (int y = 0; y < countV; y++)
         for (int x = 0; x < countU; x++)

@@ -35,7 +35,7 @@ public partial class Game1
         var origin=_setup.Routes.Position(node.Cell,node.Center);
         const string label="官邸";
         var size=_font.MeasureString(label);
-        var offset=WorldTerrain.Offset(_setup.WorldSeed);
+        var offset=_setup.Terrain;
         bool Project(Vector3 point,out Vector2 at)
         {
             if(_statusGlobe)

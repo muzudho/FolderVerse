@@ -24,12 +24,12 @@ public sealed partial class RobotWorld
         if(world.EquipmentMode!=RobotEquipmentMode.Materials)return;
         _mapleDeposits=new int[Nodes.Length];
         _mapleShipments=new();
-        var offset=WorldTerrain.Offset(world.WorldSeed);
+        var offset=world.Terrain;
         var woodland=world.Nodes.All.Where(n=>n.Terrain==TravelTerrain.Land && !n.IsHarbor).Where(node=>
         {
             var cell=world.Cells[node.Cell];
-            return node.Points.Any(p=>WorldTerrain.Kind(WorldTerrain.Elevation(
-                cell.Origin+cell.U*((p.X+.5f)/10)+cell.V*((p.Y+.5f)/10),offset))==TerrainKind.Grassland);
+            return node.Points.Any(p=>WorldTerrain.Kind(offset.Elevation(
+                cell.Origin+cell.U*((p.X+.5f)/10)+cell.V*((p.Y+.5f)/10)))==TerrainKind.Grassland);
         }).ToArray();
         foreach(var node in woodland)
         {

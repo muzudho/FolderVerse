@@ -78,7 +78,7 @@ public partial class Game1
     {
         if(!MapViewBounds.Contains(pointer))return -1;
         int nearest=-1;float distance=float.PositiveInfinity;
-        var offset=WorldTerrain.Offset(_setup.WorldSeed);
+        var offset=_setup.Terrain;
         foreach(var node in _setup.Nodes.All.Where(n=>_net.NodeVisible(_setup,n)))
         {
             var cell=_setup.Cells[node.Cell];

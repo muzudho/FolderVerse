@@ -45,7 +45,7 @@ public sealed partial class WorldPreview
             mesh.Add(new(a,tint,normal));mesh.Add(new(b,tint,normal));mesh.Add(new(c,tint,normal));
         }
         var groups=setup.Robots.FunctionDisplayGroups(setup);
-        var terrainOffset=WorldTerrain.Offset(setup.WorldSeed);
+        var terrainOffset=setup.Terrain;
         foreach(var node in setup.Nodes.All)
         {
             bool nodeVisible=net.NodeVisible(setup,node);

@@ -55,6 +55,51 @@ Check(WorldTerrain.HeadSystemForArea(100,300)==PlanetHeadSystem.Monkey &&
       WorldTerrain.HeadSystemForArea(199,300)==PlanetHeadSystem.Monkey,"From one third to below two thirds sea qualifies as monkey");
 Check(WorldTerrain.HeadSystemForArea(99,300)==PlanetHeadSystem.Dog,"Below one third sea qualifies as dog");
 
+var lottery=new PlanetLottery();
+var lotteryRandom=new Random(20261114);
+var lotteryWorld=new WorldSetup();
+lotteryWorld.SetParticipantCounts(1,19);
+for(int batch=0;batch<12;batch++)
+{
+    var drawn=new int[3];
+    for(int draw=0;draw<9;draw++)
+    {
+        lottery.Draw(lotteryWorld,lotteryRandom);
+        var terrain=lotteryWorld.Terrain;
+        int total=lotteryWorld.Cells.Length*100;
+        int sea=0;
+        foreach(var cell in lotteryWorld.Cells)
+            for(int y=0;y<10;y++)
+                for(int x=0;x<10;x++)
+                    if(WorldTerrain.Kind(terrain.Elevation(cell.Origin+cell.U*((x+.5f)/10)+cell.V*((y+.5f)/10)))==TerrainKind.Sea)
+                        sea++;
+        var system=WorldTerrain.HeadSystemForArea(sea,total);
+        Check((int)system==lotteryWorld.PolarAxis,"Lottery terrain and polar axis disagree");
+        if(batch==0)
+        {
+            lotteryWorld.Routes.Initialize(lotteryWorld);
+            int routeSea=lotteryWorld.Cells.Sum(cell=>Enumerable.Range(0,100)
+                .Count(i=>!lotteryWorld.Routes.Land(cell.Id,new Point(i%10,i/10))));
+            Check(routeSea==sea,"Routes and the lottery must use the same sea tiles");
+        }
+        drawn[(int)system]++;
+    }
+    Check(drawn.All(count=>count==3),"Each completed deck has three stars per head system for the test seeds");
+}
+Check(lotteryWorld.TrySetWorld(123,.59,.61),"A narrow sea band should be reachable");
+var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(lotteryWorld));
+Check(restored.Terrain==lotteryWorld.Terrain && restored.PolarAxis==lotteryWorld.PolarAxis,"Sea adjustment was lost on save");
+var oldSave=AutoSaveStore.Capture(lotteryWorld);
+foreach(var entry in oldSave.Objects)entry.Fields?.Remove("_terrainElevationShift");
+Check(AutoSaveStore.Restore<WorldSetup>(oldSave).Terrain.ElevationShift==0,"Legacy saves must use the original terrain");
+Check(!lotteryWorld.TrySetWorld(456,.123456789,.123456789) && lotteryWorld.WorldSeed==123,
+    "Impossible sea band must leave the current planet intact");
+Check(lotteryWorld.TrySetWorld(123,.59,.61) && lotteryWorld.Terrain==restored.Terrain,
+    "Seed and bounds must reproduce the same terrain");
+lotteryWorld.SetWorld(123);
+Check(lotteryWorld.Terrain.ElevationShift==0,"Unrestricted generation restores the original elevation");
+Console.WriteLine("PASS: 12 shuffled decks, head-system boundaries, seed replay, impossible range and save round-trip.");
+
 const int surveySize=10000, surveySeed=20261114;
 var surveyRandom=new Random(surveySeed);
 world.SetParticipantCounts(1,19); // Default selection on the new-game setup screen.

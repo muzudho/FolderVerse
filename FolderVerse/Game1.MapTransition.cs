@@ -125,7 +125,7 @@ public partial class Game1
             screen=Vector2.Lerp(screen,flat,align);
             return new(screen,0);
         }
-        var terrain=WorldTerrain.Offset(_setup.WorldSeed);
+        var terrain=_setup.Terrain;
         GraphicsDevice.BlendState=BlendState.Opaque;GraphicsDevice.DepthStencilState=DepthStencilState.None;
         using var raster=new RasterizerState{CullMode=CullMode.None,ScissorTestEnable=true};GraphicsDevice.RasterizerState=raster;
         _mapEffect.World=Matrix.Identity;_mapEffect.View=Matrix.Identity;
@@ -146,7 +146,7 @@ public partial class Game1
                 {
                     var a=cell.Origin+cell.U*(x/(float)detail)+cell.V*(y/(float)detail);var b=a+cell.U/detail;var c=b+cell.V/detail;var e=a+cell.V/detail;
                     var faceNormal=Vector3.TransformNormal(Vector3.UnitZ,pose[index]*rotation);
-                    var color=faceNormal.Z<0?new Color(115,119,125):_net.TerrainColor(_setup,cell.Id,WorldTerrain.Elevation((a+c)/2,terrain));
+                    var color=faceNormal.Z<0?new Color(115,119,125):_net.TerrainColor(_setup,cell.Id,terrain.Elevation((a+c)/2));
                     color=_net.FocusTerrain(color,Vector2.Zero,cell.Id);
                     var post=_setup.Nodes.At(cell.Id,new Point(x,y));
                     

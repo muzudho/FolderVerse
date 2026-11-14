@@ -114,6 +114,7 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorld) && field.Name=="_workerPlanWorldSeed")continue;
                     if(type==typeof(RobotTraining) && field.Name=="<WorkerPolicy>k__BackingField"){field.SetValue(value,3);continue;}
                     if(type==typeof(WorldSetup) && field.Name=="PolarAxis"){field.SetValue(value,1);continue;}
+                    if(type==typeof(WorldSetup) && field.Name=="_terrainElevationShift")continue;
                     if(type==typeof(WorldSetup) && new[]{"TutorialMapStage","TutorialMapRotations","TutorialMapNotices","TutorialMapEdgeChanged","TutorialMapBeforeWar","TutorialAttackCompleted","TutorialPocketIntroShown"}.Contains(field.Name))continue;
                     if(type==typeof(WorldSetup) && field.Name=="<Lessons>k__BackingField"){field.SetValue(value,new BattleLessons());continue;}
                     if(type==typeof(PlannedPartMove) && field.Name=="<WorkerLane>k__BackingField")continue;

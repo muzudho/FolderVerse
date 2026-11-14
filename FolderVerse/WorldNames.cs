@@ -34,11 +34,12 @@ public static class WorldNames
         new[]{"モンターニャ","ベルク","コリナ","クエバ"},
         new[]{"モンターニャ","ベルク","コリナ","クエバ"}
     };
-    public static string[] Cities(SurfaceCell[] cells,int seed)
+    public static string[] Cities(SurfaceCell[] cells,int seed)=>Cities(cells,seed,new TerrainSampler(WorldTerrain.Offset(seed),0));
+    internal static string[] Cities(SurfaceCell[] cells,int seed,TerrainSampler terrain)
     {
-        var random=new SeedRandom(seed^0x43A17);var offset=WorldTerrain.Offset(seed);
+        var random=new SeedRandom(seed^0x43A17);
         var names=new string[cells.Length];var used=new HashSet<string>();
-        var kinds=cells.Select(c=>WorldTerrain.CellKind(c,offset)).ToArray();
+        var kinds=cells.Select(c=>WorldTerrain.CellKind(c,terrain)).ToArray();
         foreach(var cell in cells)
         {
             var terms=Land[(int)kinds[cell.Id]];string name;

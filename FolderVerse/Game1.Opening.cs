@@ -12,6 +12,7 @@ public partial class Game1
     private const double OpeningPlanetInterval = 6;
     private const double OpeningPlanetFlight = 8;
     private WorldPreview _departingOpeningPlanet;
+    private readonly PlanetLottery _openingPlanets=new();
     private static readonly Rectangle OpeningNext=new(710,955,500,70),OpeningBack=new(70,965,280,60),OpeningSkip=new(1500,30,350,50);
     private static readonly Rectangle CastDuplicateButton=new(1450,22,405,48);
     private bool IsOpeningScreen=>_screen is Screen.OpeningBook or Screen.OpeningSpace or Screen.OpeningLottery or Screen.OpeningReview ||
@@ -35,7 +36,9 @@ public partial class Game1
     {
         _openingActive=true;_openingWorldSelected=false;_openingAge=2;_screen=Screen.OpeningLottery;
         _world.GlobeAnchor=null;_world.GlobePan=Vector2.Zero;_world.GlobeZoom=1;
-        SetWorldSeed(_random.Next());
+        _openingPlanets.Reset();
+        _openingPlanets.Draw(_setup,_random);
+        _world.ShowSetup(_setup,false);
     }
     private void FinishFixedOpening()
     {
@@ -79,11 +82,12 @@ public partial class Game1
         _openingAge+=Math.Min(.25,elapsed);
         if(_screen==Screen.OpeningLottery && _openingAge>=OpeningPlanetInterval)
         {
+            _openingPlanets.Draw(_setup,_random);
             _openingAge-=OpeningPlanetInterval;
             var incoming = _departingOpeningPlanet ?? new WorldPreview(GraphicsDevice);
             _departingOpeningPlanet = _world;
             _world = incoming;
-            SetWorldSeed(_random.Next());
+            _world.ShowSetup(_setup,false);
         }
     }
     private void DisposeDepartingOpeningPlanet()
