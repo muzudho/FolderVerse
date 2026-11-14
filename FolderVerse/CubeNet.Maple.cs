@@ -18,8 +18,10 @@ public sealed partial class CubeNet
         int plantings=world.Robots.MaplePlantingCount(node.Id);
         if(loads<=0 && plantings==0)return;
         var cell=world.Cells[node.Cell];
-        var grove=node.Points.Where(p=>p!=node.Center && world.Routes.Terrain(node.Cell,p)==TravelTerrain.Land)
-            .OrderByDescending(p=>Vector2.DistanceSquared(p.ToVector2(),node.Center.ToVector2()))
+        var grove=node.Points.Where(p=>world.Routes.Terrain(node.Cell,p)==TravelTerrain.Land)
+            .OrderByDescending(p=>Math.Min(2,Math.Min(Math.Min(p.X,p.Y),TerrainRoutes.Detail-1-Math.Max(p.X,p.Y))))
+            .ThenByDescending(p=>WorldTerrain.IsCoolValley(world,cell,world.Routes.Position(node.Cell,p)))
+            .ThenBy(p=>Math.Abs(Vector2.DistanceSquared(p.ToVector2(),node.Center.ToVector2())-4))
             .FirstOrDefault(node.Center);
         var origin=world.Routes.Position(node.Cell,grove);
         if(globe)origin+=cell.Normal*WorldTerrain.ReliefAt(cell,origin,world.Terrain);

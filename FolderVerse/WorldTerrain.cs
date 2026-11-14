@@ -24,6 +24,41 @@ public static class WorldTerrain
         return Noise(sample)*0.68f+Noise(sample*2.07f)*0.23f+Noise(sample*4.13f)*0.09f;
     }
     public static TerrainKind Kind(float height)=>height<0.52f?TerrainKind.Sea:height<0.55f?TerrainKind.Coast:height<0.70f?TerrainKind.Grassland:height<MountainHeight?TerrainKind.Hill:TerrainKind.Mountain;
+    internal static bool IsValley(TerrainSampler terrain,Vector3 point,Vector3 u,Vector3 v,Vector3 half,float height)
+    {
+        if(Kind(height)!=TerrainKind.Grassland)return false;
+        return BetweenSlopes(u,v) || BetweenSlopes(v,u) ||
+            BetweenSlopes((u+v)*.7071f,(u-v)*.7071f) ||
+            BetweenSlopes((u-v)*.7071f,(u+v)*.7071f);
+
+        bool BetweenSlopes(Vector3 across,Vector3 along)
+        {
+            const float rise=.035f;
+            if(Sample(point+across*.35f)<height+rise || Sample(point-across*.35f)<height+rise)return false;
+            float upstream=Sample(point+along*.2f),downstream=Sample(point-along*.2f);
+            return upstream>=.52f && downstream>=.52f && Math.Min(upstream,downstream)<height+rise;
+        }
+
+        float Sample(Vector3 p)=>Math.Abs(p.X)>half.X+.001f || Math.Abs(p.Y)>half.Y+.001f ||
+            Math.Abs(p.Z)>half.Z+.001f ? 0 : terrain.Elevation(p);
+    }
+
+    internal static Color ValleyColor(Color color)=>Color.Lerp(color,new Color(29,69,68),.35f);
+
+    internal static bool IsValley(WorldSetup world,SurfaceCell cell,Vector3 point,float height)=>
+        IsValley(world.Terrain,point,cell.U,cell.V,new Vector3(world.Width,world.Height,world.Depth)*.5f,height);
+
+    internal static float RelativeLatitude(WorldSetup world,Vector3 point)
+    {
+        var dimensions=new Vector3(world.Width,world.Height,world.Depth);
+        return 2*Math.Abs(PolarComponent(point,world.PolarAxis))/PolarComponent(dimensions,world.PolarAxis);
+    }
+
+    internal static bool IsCoolValley(WorldSetup world,SurfaceCell cell,Vector3 point)
+    {
+        float latitude=RelativeLatitude(world,point);
+        return latitude>=.45f && latitude<.9f && IsValley(world,cell,point,world.Terrain.Elevation(point));
+    }
     // Display-only relief in world units. One terrain sample is 0.1 units wide.
     public static float Relief(float height)=>Kind(height) switch
     {

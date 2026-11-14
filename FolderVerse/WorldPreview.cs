@@ -161,6 +161,8 @@ public sealed partial class WorldPreview : IDisposable
         int countU = unitsU * detail, countV = unitsV * detail;
         var stepU=u/countU;
         var stepV=v/countV;
+        var axisU=Vector3.Normalize(u);
+        var axisV=Vector3.Normalize(v);
         var half=new Vector3(Width,Height,Depth)*.5f;
         var heights=new float[countU+2,countV+2];
         for (int y=-1;y<=countV;y++)
@@ -178,6 +180,8 @@ public sealed partial class WorldPreview : IDisposable
             var a=origin+stepU*x+stepV*y+normal*relief;
             var b=a+stepU;var c=b+stepV;var d=a+stepV;
             Color color=paint?.Invoke(height,x,y)??WorldTerrain.ColorAt(height,normal,_polarAxis);
+            var point=origin+stepU*(x+.5f)+stepV*(y+.5f);
+            if(WorldTerrain.IsValley(offset,point,axisU,axisV,half,height))color=WorldTerrain.ValleyColor(color);
             if (x % detail == 0 || y % detail == 0) color=Color.Lerp(color,new Color(17,47,62),paint==null?.3f:.18f);
             Quad(a,b,c,d,Dim(color),normal);
             Wall(a,b,heights[x+1,y],-Vector3.Normalize(stepV));

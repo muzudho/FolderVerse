@@ -61,6 +61,9 @@ Check(materials.Robots.Workshops.All(w=>w.BaseLineCount==0),"No permanent lanes 
 Check(assigned.Any(a=>a.Robot.HarvestWorker) && assigned.Any(a=>!a.Robot.HarvestWorker),"Both worker roles are seeded");
 var harvestSites=assigned.Where(a=>a.Robot.HarvestWorker).Select(a=>a.Node).ToArray();
 var initialDeposits=harvestSites.Select(materials.Robots.MapleDeposit).ToArray();
+var generatedDeposits=materials.Nodes.All.Select(n=>materials.Robots.MapleDeposit(n.Id)).ToArray();
+Check(generatedDeposits.Any(n=>n>=13) && generatedDeposits.Any(n=>n is >=1 and <=3),
+    "Material world contains both rich valley deposits and scattered small deposits");
 foreach(var (node,worker) in assigned)
 {
     var workshop=materials.Robots.Workshops[node];
@@ -116,8 +119,18 @@ typeof(RobotWorld).GetMethod("ResolveProductionIntakes",BindingFlags.Instance|Bi
     .Invoke(stock,new object[]{competing});
 Check(!stock.ProductionIntakes.Contains(intake) && stock.Nodes[blockedSite].Robots.Any(r=>r.Id==intake.Product.Id),
     "Normal intake resolution places the competing product in the hangar");
-stock.Nodes[blockedSite].Remove(intake.Product.Id);
+int owner=competing.Nodes.All[blockedSite].Owner;
+competing.SelectPlayer(owner);
+competing.SelectTurnRuler(owner);
+int target=FunctionalDeliveryRoutes.Targets(competing,blockedSite).First(n=>
+    competing.Nodes.All[n].Owner==owner && stock.Nodes[n].HasSpace);
+var order=stock.DirectDelivery.Reserve(competing,blockedSite,target,intake.Product.Id,intake.Product.Parts,null,stock.Nodes[target].Count);
+stock.Advance((from,to)=>FunctionalDeliveryRoutes.Connected(competing,from,to),
+    node=>competing.Nodes.All[node].Owner,4,industry:false);
+Check(stock.DirectDelivery.CompletedArrivals.TryGetValue(order.Number,out long arrival) &&
+    stock.Nodes[target].Robots.Any(r=>r.Id==arrival) && stock.Nodes[blockedSite].Robots.All(r=>r.Id!=intake.Product.Id),
+    "Direct delivery ships the competing product and frees its original slot");
 AdvanceHarvestSite();
 Check(harvestLane.MapleRemaining==0 && stock.Nodes[blockedSite].MapleUnits==RobotWorld.MaplePackageSize &&
     stock.MapleDeposit(blockedSite)==remainingDeposit-1,"The same order resumes once hangar space is freed");
-Console.WriteLine("PASS: first harvest resumes after competing intake capacity is freed.");
+Console.WriteLine("PASS: first harvest resumes after the competing product ships by direct delivery.");

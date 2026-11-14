@@ -42,9 +42,14 @@ public sealed partial class RobotWorld
         foreach(var node in woodland)
         {
             var random=new SeedRandom(world.WorldSeed^node.Id*7919^0x4d41504c);
-            if(random.Next(3)==0)_mapleDeposits[node.Id]=4+random.Next(9);
+            bool scattered=random.Next(3)==0;
+            int baseline=scattered?4+random.Next(9):0;
+            var cell=world.Cells[node.Cell];
+            bool coolValley=node.Points.Any(p=>WorldTerrain.IsCoolValley(world,cell,world.Routes.Position(node.Cell,p)));
+            bool equatorial=WorldTerrain.RelativeLatitude(world,world.Routes.Position(node.Cell,node.Center))<.25f;
+            _mapleDeposits[node.Id]=coolValley?13+random.Next(4):equatorial?Math.Min(baseline,1+baseline%3):baseline;
         }
-        if(woodland.Length>0 && !_mapleDeposits.Any(p=>p>0))_mapleDeposits[woodland[0].Id]=4;
+        if(woodland.Length>0 && !_mapleDeposits.Any(p=>p>0))_mapleDeposits[woodland[0].Id]=3;
     }
 
     public int MapleAvailableToPlan(int node,RobotWorkshop editing)
