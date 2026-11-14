@@ -97,10 +97,6 @@ public partial class Game1
             if(FactoryStopButton.Contains(pointer)){
                 lines[line].SelectPlan(3);SavePending(line);return true;
             }
-            if(!lines[line].HarvestOnly && FactoryHarvestTab.Contains(pointer)){
-                if(_setup.Robots.MapleSupplyEnabled)_factoryHarvestPage=!_factoryHarvestPage;
-                _factoryPlanLine=line;return true;
-            }
             if(_factoryHarvestPage){
                 foreach(var material in RobotWorld.RawMaterials.Where(_setup.Robots.RawRequired))
                 for(int loads=1;loads<=3;loads++)
@@ -119,8 +115,9 @@ public partial class Game1
                 if (i==3 || !FactoryRecipeCard(i).Contains(pointer)) continue;
                 lines[line].SelectPlan(i);
                 SavePending(line);
-                break;
+                return true;
             }
+            if(FactoryAlbumBounds.Contains(pointer))_factoryPlanLine=line;
             return true;
         }
         if(FactoryPageClick(pointer))return true;

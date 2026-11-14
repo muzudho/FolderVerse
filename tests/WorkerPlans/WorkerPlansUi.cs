@@ -69,9 +69,8 @@ sealed class WorkerPlansUi:Game1
    Check(line.SelectedPlan==10 && (int)Get("_factoryPlanLine")==-1,"Right-side album click selects the exact plan");
    Click(((Rectangle)Call("FactoryProductionButton",1)).Center);
    Click(Rect("FactoryAlbumAction",0).Center);
-   Check((bool)Get("_factoryHarvestPage") && (int)Get("_factoryPlanLine")==1,"Harvest button opens the harvest catalogue");
-   Click(Rect("HarvestAlbumAction",0).Center);
-   Check(!(bool)Get("_factoryHarvestPage") && (int)Get("_factoryPlanLine")==1,"Harvest catalogue returns to the manufacturing cards");
+   Check(!(bool)Get("_factoryHarvestPage") && (int)Get("_factoryPlanLine")==1 && line.SelectedPlan==10,
+    "The former harvest button area does not change the catalogue or recipe");
    Click(Rect("FactoryAlbumAction",1).Center);
    Check(!line.Manufacturing && (int)Get("_factoryPlanLine")==-1,"Album can turn production off");
   }

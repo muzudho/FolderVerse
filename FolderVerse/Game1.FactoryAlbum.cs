@@ -14,7 +14,6 @@ public partial class Game1
         return new(area.X+10,area.Y+32+row*60,area.Width-20,48);
     }
     private static Rectangle HarvestAlbumAction(int row){var card=HarvestAlbumCard(15);return new(card.X+8,card.Y+32+row*60,card.Width-16,48);}
-    private Rectangle FactoryHarvestTab=>_factoryHarvestPage?HarvestAlbumAction(0):FactoryAlbumAction(0);
     private Rectangle FactoryStopButton=>_factoryHarvestPage?HarvestAlbumAction(1):FactoryAlbumAction(1);
     private static Rectangle FactoryRecipeCard(int plan)=>FactoryAlbumCard(plan<3?plan:plan-1);
     private int FactoryHarvestAvailable(int node,RobotWorkshop[] lines,RobotWorkshop editing,RawMaterial material)
@@ -59,8 +58,6 @@ public partial class Game1
         _ui.Text("産業ターン",new(controls.X+45,legendY+3),.39f,ink);
         _ui.Text("閉じる：Esc／枠の外をクリック",new(controls.X+9,legendY+33),.27f,ink);
         _ui.Button(FactoryStopButton,_factoryHarvestPage?"採取しない":"製造しない",line.SelectedPlan==3 && line.MapleRemaining==0?Accent:Muted,.45f);
-        if(!line.HarvestOnly)_ui.Button(FactoryHarvestTab,_factoryHarvestPage?"製造候補へ":"素材の採取",
-            _setup.Robots.MapleSupplyEnabled?new Color(120,86,64):Muted*.55f,.45f);
         if(_factoryHarvestPage)
         {
             foreach(var material in materials)

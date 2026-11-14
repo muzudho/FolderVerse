@@ -151,11 +151,24 @@ foreach(var input in new[]{
         var ppLoad=raw.Nodes[node].MaplePackages.Single();
         Check(lane.WaitingForMaple(raw,destination) &&
             raw.ReserveMapleShipment(copy,node,destination,ppLoad.Id),"Reserve one PP load while destination waits");
-        typeof(RobotWorld).GetMethod("ResolveMapleShipments",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!
-            .Invoke(raw,new object[]{copy});
+        var resolvePp=typeof(RobotWorld).GetMethod("ResolveMapleShipments",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
+        var destinationStore=raw.Nodes[destination];
+        var blockers=new List<long>();
+        while(destinationStore.HasSpace){
+            var blocker=raw.Create(0,RobotParts.Complete);
+            destinationStore.Add(blocker);
+            blockers.Add(blocker.Id);
+        }
+        resolvePp.Invoke(raw,new object[]{copy});
+        Check(raw.Nodes[node].MaplePackages.Single()==ppLoad &&
+            raw.MapleShipments.Single().PackageId==ppLoad.Id && lane.WaitingForMaple(raw,destination),
+            "A full destination keeps the PP shipment queued and the material at its source");
+        destinationStore.Remove(blockers[^1]);
+        resolvePp.Invoke(raw,new object[]{copy});
         Check(raw.Nodes[node].MaplePackages.Count==0 && raw.MapleShipments.Count==0 &&
             raw.Nodes[destination].MaplePackages.Single()==ppLoad &&
             !lane.WaitingForMaple(raw,destination),"Delivered PP enables the destination lane");
+        foreach(long id in blockers.Take(blockers.Count-1))destinationStore.Remove(id);
         node=destination;
     }
     for(int tick=0;tick<3 && raw.Nodes[node].MaplePackages.Single().Units==16;tick++)
