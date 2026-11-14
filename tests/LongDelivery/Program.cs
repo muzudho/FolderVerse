@@ -51,6 +51,10 @@ static int Target(WorldSetup w)=>w.Nodes.All.OrderByDescending(n=>RobotLongDeliv
     battle.Units.Add(new(){Id=100,Owner=1,Robot=new(100,1,RobotParts.Complete),Fallen=true});var defended=new BattleLessons();defended.ObserveEmptyFlag(battle);Check(defended.Pending.Count==0,"Defeating guards is not an absent-guard lesson");
     var w=Fixture();w.Lessons.Owned[0]|=BattleLesson.EmptyHome;w.Robots.Nodes[0].Add(w.Robots.Create(0,RobotParts.Complete));w.Robots.Nodes[0].Add(w.Robots.Create(0,RobotParts.Complete));
     Check(BattleLessons.ReserveHomeGuards(w,0,0)==1 && w.Robots.Nodes[0].Robots.Count(r=>r.DefenseOnly)==1 && BattleLessons.ReserveHomeGuards(w,0,0)==0,"Learned domestic policy reserves exactly one guard and is idempotent");
+    var sortie=w.Robots.Nodes[0].Robots.Single(r=>r.DefenseOnly);
+    Check(w.Robots.ToggleReservation(0,sortie.Id,HangarReservation.Defense,0),"Release the first guard before reserving its sortie");
+    Check(BattleLessons.ReserveHomeGuards(w,0,0,new HashSet<long>{sortie.Id})==1 &&
+        w.Robots.Nodes[0].Robots.Single(r=>r.DefenseOnly).Id!=sortie.Id,"Automatic defense uses an unreserved robot");
     Check(w.Campaign.RobotBattles.SelectableRobots(w,0,0,false).Length==1,"Only the unreserved soldier may sortie");
 }
 {

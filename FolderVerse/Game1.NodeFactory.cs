@@ -45,7 +45,8 @@ public partial class Game1
     private Rectangle FactoryProductionButton(int line)
     {
         if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length)return Rectangle.Empty;
-        var lines=PlanningWorkshop(_populationNode).ProductionLines;
+        var factory=PlanningWorkshop(_populationNode);
+        var lines=FactoryScreenLines(factory,PendingFactoryWorkers(factory));
         if(line<0 || line>=lines.Length)return Rectangle.Empty;
         return FactoryRobotButton(line%3,lines[line].Manufacturing?lines[line].EffectiveProductionPeriod(_setup.Nodes.All[_populationNode].Purpose):3);
     }

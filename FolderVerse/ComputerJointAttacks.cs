@@ -12,7 +12,7 @@ public static class ComputerJointAttacks
         Robot[] Prefer(int owner,IEnumerable<Robot> robots)=>stock.Training[owner].DeploymentPolicy==3?robots.OrderByDescending(r=>r.Equipment(owner,w.EquipmentMode).Total).ThenBy(r=>r.Id).ToArray():stock.Training[owner].Order(robots).ToArray();
         var used=orders.SelectMany(o=>o.RobotIds??Array.Empty<long>()).ToHashSet();
         var busy=orders.Where(o=>!o.PocketOnly).Select(o=>o.SourceNode>=0?o.SourceNode:w.Nodes.Current(o.Ruler)?.Id??-1).ToHashSet();
-        foreach(int owner in owners)BattleLessons.ReserveHomeGuards(w,owner);
+        foreach(int owner in owners)BattleLessons.ReserveHomeGuards(w,owner,sortieIds:used);
         foreach(var faction in owners.GroupBy(w.Relations.Root).OrderBy(g=>g.Key)){
             var attackPolicy=w.RulerComputerPolicy(faction.Key);
             var family=faction.ToHashSet();

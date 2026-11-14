@@ -47,14 +47,16 @@ sealed class CountrySettingsUi:Game1
    Check(domestic is {Length:>0} && w.PlayerSlot==domestic[0].Owner && w.Campaign.Phase==CampaignPhase.Domestic,
     "CPU view is selected before domestic actions and delivery waits");
    var node=domestic[0];
+   var stock=w.Robots.Nodes[node.Id];
    foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
-    w.Robots.Nodes[node.Id].Add(w.Robots.Create(node.Owner,part));
+    stock.Add(w.Robots.Create(node.Owner,part));
+   var beforePlayback=stock.Robots.ToArray();
    Call("UpdateComputerDomestic",.8d,false);
    Check((int)Get("_populationNode")==node.Id,"CPU selects its projected node");
    Call("UpdateComputerDomestic",.8d,false);
    Check((bool)Get("_nodeAssemblyOpen"),"CPU opens the normal hangar");
    Call("UpdateComputerDomestic",.8d,false);
-   Check((bool)Get("_computerAssembled"),"Assembly completes while the normal hangar is visible");
+   Check(stock.Robots.SequenceEqual(beforePlayback),"Opening and viewing the hangar leaves physical assembly to delivery");
    base.Draw(time);
    var pp=GraphicsDevice.PresentationParameters;
    var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];

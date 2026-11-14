@@ -60,7 +60,7 @@ public sealed class RobotPartPlanning
         int signature=hash.ToHashCode();if(_preview!=null && signature==_signature)return _preview();
         var result=BuildPreview(world);_signature=signature;_preview=()=>result;return result;
     }
-    private RobotWorld BuildPreview(WorldSetup world)
+    private RobotWorld BuildPreview(WorldSetup world, int playbackNode = -1, Action<RobotWorld, PlannedPartMove[]> capture = null)
     {
         var copy=world.Robots.PlanningCopy();
         var hosts=Enumerable.Range(0,copy.Nodes.Length).ToArray();
@@ -89,21 +89,36 @@ public sealed class RobotPartPlanning
             PreviewResults.Add(new(order.Number,order.Owner,order.Target,"実施予定"));
         }catch(InvalidOperationException e){PreviewResults.Add(new(order.Number,order.Owner,order.Target,e.Message));}
         var recipes=new Dictionary<long,PlannedPartMove[]>();copy.PartPlanning.Orders.AddRange(Orders);
+        RobotWorld playbackStock=null;
+        var playbackSteps=capture!=null?new List<PlannedPartMove>():null;
         for(int node=0;node<copy.Nodes.Length;node++){
             int owner=world.Nodes.All[node].Owner;if(owner<0 || copy.Workshops[node].AutoAssemblyDisabled)continue;
             while(copy.AssemblySelection(node,owner) is long[] ids){
                 var pieces=copy.Nodes[node].Robots.Where(r=>ids.Contains(r.Id)).OrderBy(r=>r.Id).ToArray();var anchor=pieces[0];
+                if(node==playbackNode && playbackStock==null)playbackStock=copy.PlanningCopy();
                 var recipe=new List<PlannedPartMove>();
                 foreach(var piece in pieces.Skip(1)){
                     var step=new PlannedPartMove(0,owner,node,node,piece.Id,piece.Parts,anchor.Id){ExpectedSource=piece.Parts,ExpectedTarget=anchor.Parts,PromoteCaptain=pieces.Any(p=>p.Role==RobotRole.Captain)};
                     Apply(world,copy,step,false);recipe.Add(step);anchor=copy.Nodes[node].Robots.Single(r=>r.Id==anchor.Id);
                 }
                 recipes[anchor.Id]=recipe.ToArray();
+                if(node==playbackNode)playbackSteps.AddRange(recipe);
             }
         }
+        if(playbackStock!=null)capture(playbackStock,playbackSteps.ToArray());
         _automaticRecipe=id=>recipes.GetValueOrDefault(id,Array.Empty<PlannedPartMove>());
         return copy;
     }
+    internal (RobotWorld Stock, PlannedPartMove[] Steps) AssemblyPlayback(WorldSetup world,int node)
+    {
+        var planner=new RobotPartPlanning();
+        planner.Orders.AddRange(Orders);
+        (RobotWorld Stock, PlannedPartMove[] Steps) playback=default;
+        planner.BuildPreview(world,node,(stock,steps)=>playback=(stock,steps));
+        return playback;
+    }
+    internal static long ApplyAssemblyPlayback(WorldSetup world,RobotWorld stock,PlannedPartMove step)
+        =>Apply(world,stock,step,false);
     public void EnsureForecastRobot(WorldSetup world,long id)
     {
         Preview(world);var recipe=_automaticRecipe?.Invoke(id)??Array.Empty<PlannedPartMove>();

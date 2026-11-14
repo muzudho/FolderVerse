@@ -28,16 +28,17 @@ public partial class Game1
         if(Math.Abs(direction)==1)_hangarPage=Math.Clamp(_hangarPage+direction,0,HangarLastRow);
         else _hangarColumn=Math.Clamp(_hangarColumn+Math.Sign(direction),0,HangarLastColumn);
     }
-    private void UpdateHangarDragScroll(bool held)
+    private void UpdateHangarDragScroll(bool held)=>UpdateHangarDragScroll(_pointer,held,_animationTime);
+    private void UpdateHangarDragScroll(Point point,bool held,float now)
     {
-        int direction=held && (_hangarDrag.HasValue || _mapleDrag.HasValue)?HangarScrollDirection(_pointer):0;
+        int direction=held && (_hangarDrag.HasValue || _mapleDrag.HasValue)?HangarScrollDirection(point):0;
         if(direction!=_hangarScrollDirection){
             _hangarScrollDirection=direction;
-            _hangarScrollAt=_animationTime+.55f;
+            _hangarScrollAt=now+.55f;
         }
-        if(direction==0 || _animationTime<_hangarScrollAt)return;
+        if(direction==0 || now<_hangarScrollAt)return;
         ScrollHangar(direction);
-        _hangarScrollAt=_animationTime+.75f;
+        _hangarScrollAt=now+.75f;
     }
     private void DrawHangarPages()
     {

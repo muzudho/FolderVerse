@@ -30,6 +30,12 @@ public partial class Game1
         if(_demoDomesticStage==0 && WarPlanningAllowed && _demoMapVisits%2==0)_demoDomesticStage=30;
         if(_demoDomesticStage is >=30 and <=36 && !WarPlanningAllowed)_demoDomesticStage=19;
         if(_demoDomesticStage is >=30 and <=36)return UpdateDemoWarChecks(elapsed);
+        var productionButton=_demoDomesticStage==9 && _nodeFactoryOpen?FactoryProductionButton(0):Rectangle.Empty;
+        if((_demoDomesticStage==8 && !CanOpenNodeFactory) ||
+            (_demoDomesticStage==9 && productionButton.IsEmpty) ||
+            (_demoDomesticStage==10 && (!_nodeFactoryOpen || _factoryPlanLine<0))){
+            _demoDomesticStage=20;_demoDomesticAge=0;
+        }
         if(_demoDomesticStage==20 && (!NodeCheckButtonVisible || NodeChecked(_populationNode))){_demoDomesticStage=11;_demoDomesticAge=0;}
         Point nodePoint=Point.Zero;
         if(_demoDomesticStage==0 && !DemoNodePoint(out nodePoint))return true;
@@ -61,7 +67,7 @@ public partial class Game1
             5=>_demoEmptySlot<0?new(480,540):AssemblyCell(_demoEmptySlot).Center,
             6=>_demoEmptySlot<0?new(480,540):AssemblyPartBounds(_demoEmptySlot,1).Center,
             7=>_demoSourceSlot<0?new(480,540):AssemblyCell(_demoSourceSlot).Center,
-            8=>NodeFactoryTile.Center,9=>FactoryProductionButton(0).Center,10=>FactoryPlanButton(0).Center,
+            8=>NodeFactoryTile.Center,9=>productionButton.Center,10=>FactoryPlanButton(0).Center,
             11 or 16=>InspectorClose.Center,12=>TransportOverviewButton.Center,17=>StrategyToggle.Center,
             18=>MovementButton.Center,13=>destinationPoint,19=>PopulationTurnButton.Center,20=>NodeCheckButton.Center,_=>ConfirmMoveButton.Center
         };
@@ -86,11 +92,14 @@ public partial class Game1
             case 5:
                 if(DemoAssemblyRelease() && PrepareDemoAssemblyDrag()){_demoDomesticStage=3;break;}
                 _demoAssemblySelection=null;_demoDomesticStage=7;break;
-            case 8:_nodeAssemblyOpen=false;OpenNodeFactory();break;
+            case 8:OpenNodeFactory();break;
             case 9:if(_nodeFactoryOpen)NodeDialogClick(target,new KeyboardState());break;
             case 10:if(_nodeFactoryOpen)NodeDialogClick(target,new KeyboardState());_demoDomesticStage=19;break;
             case 20:DomesticViewClick(target);_demoDomesticStage=11;return true;
-            case 11:DomesticViewClick(target);if(DomesticOperationsAllowed)_demoDomesticStage=18;break;
+            case 11:
+                DomesticViewClick(target);
+                _demoDomesticStage=DomesticOperationsAllowed?17:12;
+                return true;
             // Transport planning now lives in the primary actions, outside the node inspector.
             case 12:MapOverlayClick(target,false);_demoDomesticStage=15;break;
             case 16:DomesticViewClick(target);if(_demoActive && _demoMapVisits%2==0)_demoDomesticStage=29;break;

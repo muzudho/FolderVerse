@@ -516,3 +516,434 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 - 開始04:28:39、終了 04:29:45 JST。DEMO-0017の実装は保留、未対応を継続。HEAD=3ad92296a925260b96175a39d3c8cc9683f9f667。関係差分はGame1.ComputerMarches.cs、tests/DirectDeliveryUi/Program.csと両記録。競合プロセスなし。ゲーム・追跡テスト変更なし。
 - 非追跡診断で、通常格納庫を開いた直後に実在庫は頭・胴・脚の3個体、通常格納庫が参照する組替後の予定在庫は完成1体であることを確認。既存予約は人間の1件。自動組立有効時は個別パーツが通常格納庫の入力対象に現れないため、現行のドラッグをそのまま呼ぶだけでは既存AI指示の実演にならない。自動組立設定と配送順序を保った実装が残る。
 - dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore（既存demo-check出力、警告・エラー0）。ALSOFT_DRIVERS=null、DOMESTIC_ENTRY=1、DOMESTIC_SKIP=1、AUTO_ENABLED=1で dotnet DemoAuditCpuSortie.dll は終了0。表示オフ・通常・組立前後のスキップで完成個体ID1、人間の予約が配送で一度だけ反映、人間に復帰。証拠fix-scope-forecast.log。個別ドラッグの実描画検証は未実施。
+
+## 2026-11-13 03:31修正回
+
+- 開始03:31:44、終了03:32:36 JST。対象DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。開始時の関係差分は点検記録のみ。競合プロセスなし。ゲームコードとテストは無変更。個別組立の実演は未対応を継続。
+- 既存demo-checkで ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_ENTRY=1、FOLDERVERSE_AUDIT_DOMESTIC_SKIP=1を設定し、FOLDERVERSE_AUDIT_AUTO_ENABLED=1／0それぞれで dotnet DemoAuditCpuSortie.dll（03:32:08〜03:32:17、両方終了0）。自動組立有効時に実在庫の頭・胴・脚が通常格納庫の予定在庫では完成1体になることを現HEADで再現。有効・無効の各条件で表示オン・オフと組立前後のスキップで最終在庫が一致し、既存の人間予約1件が配送で一度だけ反映された。証拠はfix-domestic-auto-1.log／fix-domestic-auto-0.log。
+- Game1.NodeAssembly.csの通常ドラッグは予定在庫上の個体に対し組替予約を追加し、Game1.ComputerDomestic.csの自動組立は選択済みの実在庫を直接組み立てる。個別ドラッグをそのまま追加すると既存の組立経路と処理が重なるため、今回は再現の確認まで。実描画での通常格納庫と緑チェックは03:19点検を参照。個別ドラッグの実描画は未検証。次回は予定在庫と予約を維持しながら組立前の選択個体を表示できる範囲を確認する。
+
+## 2026-11-13 03:48修正回
+
+- 開始03:48:44、終了03:49:42 JST。対象DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関係差分は点検・修正記録のみ。競合プロセスなし。ゲームコードとテストは無変更。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_ENTRY=1、FOLDERVERSE_AUDIT_DOMESTIC_SKIP=1、FOLDERVERSE_AUDIT_AUTO_ENABLED=1で既存demo-checkの dotnet DemoAuditCpuSortie.dll（03:49:22〜03:49:25、終了0、fix-0348-domestic.log）。実在庫の頭・胴・脚が予定在庫で完成1体となる既報を再現。表示オン・オフと組立前後のスキップで完成IDと既存予約の配送結果が一致。
+- RobotPartPlanning.csの予定在庫は機能移転・入荷・組替を適用してから自動組立を行う。予測上の完成個体に通常のドラッグを行うと、組替予約に加えて予測個体を実現する予約も追加し得る。CPUの実在庫での個体選択には出撃資格の条件があり、予測の組立候補と一致するとは限らない。個別操作の実演は未対応を継続。次回の検証候補は、同じ地点に既存の入荷・組替予約があり、実在庫と予測の候補IDが異なる場面。個別ドラッグの実描画・遷移は今回未検証。
+
+## 2026-11-13 04:09修正回
+
+- 開始04:09:15、終了04:11:41 JST。DEMO-0017の同一地点に既存組替予約がある条件を確認。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。開始時の追跡差分は両記録のみ。競合プロセスなし。ゲームコードと追跡テストは無変更。
+- 非追跡診断ProbeCpuSortie.cs.txtに固定モデルを追加し、既存demo-checkへ dotnet build --no-restore --disable-build-servers（最終実行は警告・エラー0）。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_ASSEMBLY_RESERVED=1で dotnet DemoAuditCpuSortie.dll（04:11:19〜04:11:23、終了0）。既存の1→2の組替がある地点で実在庫の自動組立選択は3・4・5。予定格納庫では同じ選択がすでに完成ID3となり、4・5を個別に操作できない。実在庫を組み立てた後も既存予約は保持され、解決結果1件が実施完了。最終完成IDは2と3。証拠はfix-0409-reserved.log。
+- 固定モデルでの在庫・予約の検証。予測と実在庫の完成先IDが異なる条件、個別ドラッグの実描画、表示オン・オフの遷移はこの追加条件では未確認。個別操作の実演は未対応を継続。
+
+## 2026-11-13 04:28修正回
+
+- 開始04:28:45、完了04:32:01 JST。DEMO-0017の通常格納庫経路でクリック表示を改善。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。開始時の追跡差分は両記録のみ。競合プロセスなし。
+- 03:19点検の960×540実描画では、緑チェックの状態が更新された時点で手が閉じるボタンに表示されていた。修正前の同場面を別シードでも保存（fix-0428-green-before.png）。
+- FolderVerse/Game1.ComputerDomestic.csで地点・通常格納庫タブ・緑ハンドル・閉じる操作のクリック座標と実行時刻を保持し、その位置で最大0.4秒のクリック演出を描画。次の操作前には格納庫タブ・緑ハンドル・閉じるボタンの共有矩形を使って手を表示。緑は表示され未チェックのときにクリックする。組立の決定・実行時刻と予約経路は従来どおり。
+- 既存demo-checkへ dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers（警告・エラー0）。ALSOFT_DRIVERS=nullで dotnet DemoAuditCpuSortie.dll のWORLD=0通常（04:31:11〜04:31:24）、DOMESTIC_ENTRY=1／DOMESTIC_SKIP=1でAUTO_ENABLED=1・0（04:31:24〜04:31:31）、dotnet DemoChecksUi.dll（04:31:31〜04:31:38）はすべて終了0。征服者切替、在庫・予約の一致、スキップ、人間復帰、出撃予約から赤チェック・閉鎖・ターン終了を確認。fix-0428-normal／enabled／disabled／checks.log。
+- 960×540のaudit-latest-computer-domestic-green.pngを目視し、緑ハンドル上の手と地図の緑チェックを同一フレームで確認。CPUの個別パーツドラッグ実演は未対応を継続。今回の実描画は固定シード。
+
+## 2026-11-13 04:48修正回
+
+- 開始04:48:45、終了04:49:56 JST。DEMO-0017の隣接地点からの入荷予約を伴う条件を確認。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関係差分は04:28修正のGame1.ComputerDomestic.csと両記録。競合プロセスなし。今回のゲームコード・追跡テストの追加変更なし。
+- 非追跡診断ProbeCpuSortie.cs.txtを更新し、既存demo-checkへ dotnet build --no-restore --disable-build-servers（警告・エラー0）。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_ASSEMBLY_ARRIVAL=1で dotnet DemoAuditCpuSortie.dll（04:49:35〜04:49:40、終了0）。地点3から地点0に頭ID1の入荷予約がある場面で、実在庫の選択は2・3・4、通常格納庫の予定在庫は頭ID1と完成ID2。既存予約は組立後も保持され、解決時に一度だけ実施完了。証拠はfix-0448-arrival.log。
+- 固定モデルの在庫・予約を検査。予測と実在庫の完成先IDが異なる条件は未確認。個別ドラッグの実描画と画面遷移は未実施。DEMO-0017の個別ドラッグ実演は未対応を継続。
+
+## 2026-11-13 05:11修正回
+
+- 開始05:11:46、終了05:13:18 JST。DEMO-0017の個別組立実演を調べる過程でDEMO-0019を新規再現。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関係差分は04:28修正のGame1.ComputerDomestic.csと両記録。競合プロセスなし。ゲームコードと追跡テストの追加変更なし。
+- 非追跡ProbeCpuSortie.cs.txtに調練条件を追加。既存demo-checkへ dotnet build --no-restore --disable-build-servers（警告・エラー0）。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_ENTRY=1、FOLDERVERSE_AUDIT_DOMESTIC_SKIP=1、FOLDERVERSE_AUDIT_AUTO_ENABLED=1、FOLDERVERSE_AUDIT_ASSEMBLY_POLICY=1で dotnet DemoAuditCpuSortie.dll（05:12:33〜05:12:47、在庫一致のアサーションで終了-532462766）。表示オフでは完成ID1、オンの通常・組立前後スキップでは完成ID2。人間の既存予約は一度だけ解決し人間へ復帰。証拠fix-0511-policy.log。
+- 既存のCPU表示経路は出撃可能な部品の選択を先に組み立て、表示オフでは配送の自動組立に進む。個別操作を追加する前に表示設定による在庫結果の差を扱う必要がある。今回は新規再現まで。対象条件の実画面は未採取。
+
+## 2026-11-13 05:28修正回
+
+- 開始05:28:46、完了05:31:24 JST。対象DEMO-0019。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。開始時の差分は04:28のGame1.ComputerDomestic.csと両記録。競合プロセスなし。修正前の現行差分での再現は05:22点検のaudit-0522-DemoAuditCpuSortie.log／audit-policy-before.png／audit-policy-after.pngを参照。
+- FolderVerse/Game1.ComputerDomestic.csで演出中の先行組立を除き、表示オン・オフ・スキップのいずれも既存のBeginDeliveryで入荷・組立・予約解決を実行。通常格納庫では予定在庫を表示し、専用表示の文言は格納庫確認に合わせた。tests/CountrySettings/CountrySettingsUi.csでは通常格納庫を開いても配送前の実在庫が変わらないことを検査。
+- 既存demo-checkへ dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj と dotnet build tests/CountrySettings/CountrySettings.csproj（--source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers）は警告・エラー0。ALSOFT_DRIVERS=nullで同出力の dotnet DemoAuditCpuSortie.dll（05:30:21〜05:30:43、policy／disabled／normal）、dotnet CountrySettings.dll --ui（05:30:43〜05:30:55）、dotnet DemoChecksUi.dll（05:30:55〜05:31:01）は終了0。
+- 固定調練条件の表示オフ・オン通常・組立表示時刻の前後スキップの全4経路で完成ID1・頭ID2、既存人間予約1件の配送と人間復帰が一致。960×540のfix-policy-after.pngを目視し、予定格納庫の完成ID1が旧組立時刻を過ぎても保持されることを確認。証拠fix-0528-各条件.log。緑赤、出撃予約・閉鎖・ターン末消去も回帰確認。DEMO-0017の個別パーツ操作実演は未対応。
+
+## 2026-11-13 05:49修正回
+
+- 開始05:49:16、終了05:50:15 JST。対象DEMO-0017、DEMO-0019の回帰。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関係差分はGame1.ComputerDomestic.cs、CountrySettingsUi.csと両記録。競合プロセスなし。ゲームコード・追跡テストの追加変更なし。
+- 非追跡診断を既存demo-checkへ再ビルド（dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers、警告・エラー0）。05:28の調練条件にFOLDERVERSE_AUDIT_ASSEMBLY_RECIPE=1を追加し、dotnet DemoAuditCpuSortie.dll（05:49:51〜05:49:57、終了0）。予定在庫が作る完成ID1の組立順は胴ID3→頭ID1、脚ID4→頭胴ID1。既存レシピを読み出しても予約1件は不変。表示オフ・通常・スキップ前後の最終在庫はすべて完成ID1・頭ID2。960×540の通常格納庫描画も実行。証拠fix-0549-recipe.log。
+- 個別ドラッグの実描画は未実施。既存レシピは演出の候補にできるが、EnsureForecastRobotは実予約へ追加するため、操作表示から呼ぶと配送の処理順序が変わり得る。DEMO-0017の個別操作は未対応を継続。DEMO-0019の完了状態に変更なし。
+
+## 2026-11-13 06:11修正回
+
+- 開始06:11:16、終了06:12:07 JST。DEMO-0016の専用表示からの復帰を確認。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関連差分はGame1.ComputerDomestic.cs、CountrySettingsUi.csと両記録。競合プロセスなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=0、FOLDERVERSE_AUDIT_FALLBACK=1で既存demo-checkの dotnet DemoAuditCpuSortie.dll（06:11:38〜06:11:48、終了0）。段階を強制して専用表示を実描画し、次の1指示だけ進んで通常出撃ピッカーへ戻ることを確認。追加予約0、証拠fix-0611-fallback.log、audit-war-fallback.png／audit-war-return.png。
+- この診断では専用表示への自然な退避理由を特定していないため、残る条件を要再確認とする。DEMO-0017の個別組立実演は継続。
+
+## 2026-11-13 06:31修正回
+
+- 開始06:31:47、終了06:32:38 JST。対象DEMO-0016の自然な専用表示への退避。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関係差分はGame1.ComputerDomestic.cs、CountrySettingsUi.csと両記録。競合プロセスなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=6／7で既存demo-checkの dotnet DemoAuditCpuSortie.dll（06:32:03〜06:32:24、両方終了0）。表示対象7／24件。通常出撃選択と確定、赤、閉鎖、和平移動と人間復帰を検査。証拠fix-0631-world-6.log／7.log。最初の和平指示までの段階記録で自然退避を検出せず。和平後の各段階と他のシードはこの診断範囲外。
+- 残る自然退避は要再確認を継続。強制退避の実描画は06:11回を参照。DEMO-0017の個別組立実演は未対応。
+
+## 2026-11-13 07:11修正回
+
+- 開始07:11:17、完了07:15:22 JST。対象DEMO-0020。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。開始時の関係差分はGame1.ComputerDomestic.cs、CountrySettingsUi.csと両記録。競合プロセスなしで開始。修正前の再現は06:59点検のaudit-0659-NaturalTransport.logを参照。
+- FolderVerse/ComputerJointAttacks.csで出撃に使用する個体ID集合を自動守備へ渡し、FolderVerse/BattleLessons.EmptyHome.csの守備候補から除外。tests/LongDelivery/Program.csで予約済み個体を避けて別個体を守備に選ぶことを検査。
+- 既存demo-checkへ dotnet build NaturalTransport.csproj --no-restore および dotnet build tests/LongDelivery --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages。双方に --disable-build-servers を指定。ALSOFT_DRIVERS=nullで dotnet LongDelivery.dll（07:13:27〜07:13:38）、dotnet DemoChecksUi.dll（07:13:38開始）、Seed=20の dotnet NaturalTransport.dll（最終07:14:39〜07:14:54）は終了0。診断の初回集計は同経路の別のクイーン進軍を加算して失敗したため、進軍種別も比較するよう修正。再ビルドでは直前の診断プロセスによるDLLロックでコピーを再試行した。
+- 1920×1080のaudit-natural-domestic-35.pngで赤ハンドル上の手、地図の赤、予約1件を目視。ターン終了時に赤消去、配送後にロボットID18が地点72から71へ移動。地上出撃は1件、取消0件。同じ経路のクイーン進軍は別に1件。証拠fix-0711-NaturalTransport-final.log、fix-0711-LongDelivery.log、fix-0711-DemoChecksUi.log。固定シードの検証。DEMO-0017の個別組立は継続。
+
+## 2026-11-13 07:29修正回
+
+- 開始07:29:18、終了07:30:29 JST。対象DEMO-0016の自然な専用表示への退避。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関係差分は07:11修正までのゲーム・テストと両記録。競合プロセスなし。ゲームコード・追跡テストの追加変更なし。
+- 非追跡診断に最初の和平指示後から終端までの退避記録を追加し、既存demo-checkへ dotnet build --no-restore --disable-build-servers（警告・エラー0）。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=6／7で dotnet DemoAuditCpuSortie.dll（07:29:52〜07:30:14、両方終了0）。通常UIによる和平地点67／142への到着と人間復帰を確認。証拠fix-0729-world-6.log／7.log。
+- 初回通常出撃の検査後から軍事指示列の終端まで自然退避を検出せず。他のシード・配置は要再確認。強制退避の実描画は06:11回。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 07:52修正回
+
+- 開始07:52:18、終了07:53:12 JST。対象DEMO-0016の自然退避。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関係差分は07:11までのゲーム・テストと両記録。競合プロセスなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=9／10で既存demo-checkの dotnet DemoAuditCpuSortie.dll（07:52:37〜07:52:59、両方終了0）。表示対象27／21件。通常出撃・赤、和平地点57／181への到着、人間復帰を確認。通常画面を960×540で描画。証拠fix-0752-world-9.log／10.log。
+- 自然退避は初回出撃検査後から終端まで再現せず、別条件は要再確認。CPUの個別組立実演（DEMO-0017）は未対応を継続。
+
+## 2026-11-13 08:11修正回
+
+- 開始08:11:48、終了08:12:40 JST。対象DEMO-0016の自然退避。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関係差分は07:11までのゲーム・テストと両記録。競合プロセスなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=11／12で既存demo-checkの dotnet DemoAuditCpuSortie.dll（08:12:06〜08:12:27、両方終了0）。表示対象10／16件。通常出撃・赤、和平地点19／94への到着と人間復帰を確認。960×540で通常画面を描画。証拠fix-0811-world-11.log／12.log。
+- 自然退避は初回出撃検査後から終端まで再現せず、対象外指示と別配置は要再確認。CPUの個別組立実演（DEMO-0017）は未対応を継続。
+
+## 2026-11-13 08:29修正回
+
+- 開始08:29:19、終了08:30:40 JST。DEMO-0016の出撃確定直後のスキップを照合。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関連差分は07:11までのゲーム・テストと両記録。競合プロセスなし。ゲームコード・追跡テストの追加変更なし。
+- 非追跡診断を既存demo-checkへ再ビルド（dotnet build --no-restore --disable-build-servers、警告・エラー0）。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=8、FOLDERVERSE_AUDIT_CONFIRM_COMPLETION=normal／skipで dotnet DemoAuditCpuSortie.dll（08:30:02〜08:30:24、両方終了0）。960×540で地点170へ4体を選んで確定、追加予約なし。確定直後の描画から完走またはEscへ分岐し、人間0の内政復帰を確認。
+- 進軍38件の征服者・出撃元・目標が両経路で一致し、取消0・未処理予約0。証拠fix-0829-normal.log／skip.log。進軍ごとの戦闘参加個体は今回比較していない。自然退避は要再確認、DEMO-0017の個別組立は未対応を継続。
+
+## 2026-11-13 08:49修正回
+
+- 開始08:49:19、終了08:50:26 JST。対象DEMO-0016の確定後スキップと戦闘参加個体。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関係差分は07:11までのゲーム・テストと両記録。競合プロセスなし。ゲームコード・追跡テストの追加変更なし。
+- 非追跡診断を既存demo-checkへ再ビルド（dotnet build --no-restore --disable-build-servers、警告・エラー0）。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=9、FOLDERVERSE_AUDIT_CONFIRM_COMPLETION=normal／skipで dotnet DemoAuditCpuSortie.dll（08:49:50〜08:50:11、両方終了0）。通常ピッカー確定直後を描画し、完走とEscで進軍38件、戦闘27場面の目標と盤上・待機のロボットID、取消0件が一致。証拠fix-0849-normal.log／skip.log。
+- このシードの参加個体比較で追加修正なし。DEMO-0016の自然退避は要再確認、DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 09:10修正回
+
+- 開始09:10:19、終了09:11:10 JST。対象DEMO-0016の自然退避。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関係差分は07:11までのゲーム・テストと両記録。競合プロセスなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=13／14で既存demo-checkの dotnet DemoAuditCpuSortie.dll（09:10:33〜09:10:56、両方終了0）。表示対象30／17件、和平は各2件。最初の和平地点176／112への到着、通常出撃と赤、人間復帰、960×540の通常描画を確認。証拠fix-0910-world-13.log／14.log。
+- 初回出撃検査後から指示列終端まで自然退避を検出せず。他の配置・対象外指示は要再確認。後続の和平地点は個別照合していない。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 09:28修正回
+
+- 開始09:28:50、終了09:29:52 JST。対象DEMO-0016の自然退避。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関係差分は07:11までのゲーム・テストと両記録。競合プロセスなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=15／16／17で既存demo-checkの dotnet DemoAuditCpuSortie.dll（09:29:05〜09:29:37、すべて終了0）。表示対象32／8／25件。通常出撃・赤、最初の和平地点115／20への到着、和平なしの人間復帰を確認。960×540の通常描画を実行。証拠fix-0928-world-15.log／16.log／17.log。
+- 15・16の通常出撃検査後から指示列終端まで自然退避を検出せず。17の和平なし分岐では途中段階の退避を採取していない。他の配置・対象外指示は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 09:50修正回
+
+- 開始09:50:20、終了09:51:25 JST。対象DEMO-0016の和平なし指示列の自然退避。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関連差分は07:11までのゲーム・テストと両記録。競合プロセスなし。ゲームコード・追跡テストの追加変更なし。
+- 非追跡診断の和平なし分岐に専用表示への退避検出を追加し、既存demo-checkへ dotnet build --no-restore --disable-build-servers（警告・エラー0）。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=17で dotnet DemoAuditCpuSortie.dll（09:50:57〜09:51:11、終了0）。960×540で通常出撃・赤を描画。初回出撃後から25件の指示列終端まで自然退避0、人間へ復帰。証拠fix-0950-world-17.log。
+- この配置では再現せず。別配置・対象外指示の自然退避は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 10:09修正回
+
+- 開始10:09:20、終了10:09:58 JST。対象DEMO-0017とDEMO-0019の回帰。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関連差分は07:11までのゲーム・テストと両記録。競合プロセスなし。ゲームコードと追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_ENTRY=1、DOMESTIC_SKIP=1、AUTO_ENABLED=1、ASSEMBLY_POLICY=1、ASSEMBLY_RECIPE=1（各FOLDERVERSE_AUDIT_接頭辞）で既存demo-checkの dotnet DemoAuditCpuSortie.dll（10:09:36〜10:09:42、終了0）。960×540で通常格納庫を描画。演出中は実在庫が頭2・胴・脚、予定在庫は完成ID1と頭ID2。表示オフ・通常・前後スキップの配送結果は同じで、既存予約1件の解決と人間復帰を確認。証拠fix-1009-recipe.log。
+- 組立順は予定在庫から読めるが、通常入力の組替予約を追加するとDEMO-0019で修正した処理順に影響する。個別ドラッグを見せる処理と実在庫更新の分離は未実装・未検証。DEMO-0017は継続、DEMO-0019の完了状態に変更なし。
+
+## 2026-11-13 10:31修正回
+
+- 開始10:31:51、終了10:33:01 JST（再現試験）。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関連差分は07:11までのゲーム・テストと両記録。競合プロセスなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=18／19で既存demo-checkの dotnet DemoAuditCpuSortie.dll（10:32:38〜10:33:01、両方終了0）。960×540の通常出撃と赤チェックを確認。18は表示22件・和平0件で、初回出撃の確認後から指示列終端まで自然退避0件、人間へ復帰。19は表示29件・和平1件で、指示0から13まで自然退避の検出なし。和平の専用表示と地点54への到着を確認。証拠fix-1031-world-18.log／19.log。
+- 19の和平以降と、別配置での自然退避は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 10:48修正回
+
+- DEMO-0021完了。開始10:48:51、完了10:52:50 JST。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。変更は FolderVerse/Game1.DemoDomestic.cs、FolderVerse/Game1.NodeFactory.cs、tests/DemoChecksUi/Program.cs と両記録。
+- 修正前は ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=33 の dotnet NaturalTransport.dll で、工場のない地点11で段階8〜10のクリックを再現。工場を開ける条件を通常の工場操作と共有し、ボタンを表示できない段階から緑チェックに進むよう変更。製造ボタンの位置は描画と入力が使用するラインから求める。DemoChecksUiは架空の工場操作を前提にした待機を除去。
+- 既存demo-checkに NaturalTransport.csproj を dotnet build --no-restore --disable-build-servers で出力（警告・エラー0）。Seed33を再実行（10:50:13〜10:50:27、終了0）。960×540で格納庫から段階8→20へ進み、緑チェックの付与とインスペクター閉鎖を確認。DemoInspectorUi.dllは終了0（10:50:40）、1080p／540pで通常工場のプラン選択を確認。
+- DemoChecksUiは最初に古いテストの前提で失敗し、修正後の初回ビルドは古い復元情報でMonoGameのバージョンが不一致。ローカルNuGetキャッシュを RestoreSources に指定して dotnet build tests/DemoChecksUi/DemoChecksUi.csproj --disable-build-servers（警告・エラー0）、dotnet DemoChecksUi.dll（終了0）。展開図／地星儀×1080p／540pで緑赤、出撃予約、閉鎖、ターン末消去を確認。
+- 証拠は既存demo-checkの fix-1048-*.log と audit-natural-540-post-war-green.png／close.png。工場なしの自然巡回はSeed33、予約中の作業員だけがいる製造ラインと全Seedは未検証。既報DEMO-0016／0017の状態は維持。
+
+## 2026-11-13 11:08修正回
+
+- 開始11:08:51、終了11:09:27 JST。対象DEMO-0016の自然退避。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。関連差分は前回までのゲーム・テストと両記録。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=20 で既存demo-checkの dotnet DemoAuditCpuSortie.dll（11:09:03〜11:09:15、終了0）。960×540で通常出撃を描画。表示22件、和平なし。初回出撃確認後から指示列終端まで専用表示への自然退避0件、人間へ復帰。証拠fix-1108-world-20.log。
+- この配置では再現せず。別配置と和平後の自然退避は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 11:29修正回
+
+- 開始11:29:52、終了11:30:41 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。既存のゲーム・テスト差分を保持。開始時にゲーム・dotnet・MSBuildなし。ゲームコードと追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=21／22で既存demo-checkの dotnet DemoAuditCpuSortie.dll（11:30:03〜11:30:11／11:30:11〜11:30:23、両方終了0）。960×540。配置21は表示11件・和平0件で初回出撃確認後から指示列終端まで自然退避0件、人間へ復帰。配置22は表示18件・和平2件で通常出撃の確定と赤、最初の和平の専用表示と地点152への到着を確認。証拠fix-1129-world-21.log／22.log。
+- 配置22の和平は女の子・ポケットのみの既知の専用経路。和平以降の各指示は個別未検証。通常出撃の自然退避は別配置で要再確認、DEMO-0017は個別組立実演の未対応を継続。
+
+## 2026-11-13 11:50修正回
+
+- 開始11:50:22、終了11:51:35 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。既存のゲーム・テスト差分を保持し、ゲームコードと追跡テストの追加変更なし。開始時にゲーム・dotnet・MSBuildなし。
+- 既存demo-checkに dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers（警告・エラー0）。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=19／22 で dotnet DemoAuditCpuSortie.dll（11:50:53〜11:51:06／11:51:06〜11:51:17、両方終了0）。960×540。最初の和平では通常移動画面で地点54／152を選択し、二重予約なしで閉鎖。軍事処理後の地点到着と人間復帰を確認。証拠 fix-1150-world-19.log／22.log。
+- 最初の和平から指示列終端まで、同一指示で通常段階から専用段階へ切り替わる自然退避は検出せず。後続の和平は個別照合せず、別配置・未対応操作は要再確認。DEMO-0017は個別組立実演の未対応を継続。
+
+## 2026-11-13 12:09修正回
+
+- DEMO-0022完了。開始12:09:52、完了12:12:32 JST。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。変更は FolderVerse/Game1.DemoDomestic.cs、tests/DemoInspectorUi/Program.cs、tests/DemoChecksUi/Program.cs と両記録。
+- Seed34の修正前診断で内政の段階11→19を再現。閉鎖処理で次段階を直接指定し、内政では17の「わたしの国」から18の移動へ進むようにした。内政以外は従来の段階12へ進む。
+- NaturalTransport、DemoInspectorUi、DemoChecksUi を既存demo-checkへ dotnet build --disable-build-servers（RestoreSourcesはローカルNuGetキャッシュ、警告・エラー0）。ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=34で dotnet NaturalTransport.dll（12:11:22開始、終了0）。960×540の自然再生で段階11→17→18→13→15→19。地点68の和平予約1件を確認し、確定(707,938)は矩形(570,914,274,48)内。証拠 fix-1209-before.log、fix-1209-NaturalTransport.log、audit-natural-540-post-war-peaceful-reservation.png。
+- dotnet DemoInspectorUi.dll／DemoChecksUi.dll／DemoActionsUi.dllはすべて終了0。1080p／540pで移動入口、出撃予約と赤、閉鎖とターン末消去、和平予約と別操作のターン終了、目的地なしの分岐を確認。自然再生は最初の和平予約までで、その後の全巡回は未検証。既報DEMO-0016／0017は継続。
+
+## 2026-11-13 12:31修正回
+
+- 開始12:31:53、終了12:32:30 JST。対象DEMO-0017とDEMO-0019の回帰。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。開始時にゲーム・dotnet・MSBuildなし。既存のゲーム・テスト差分を保持。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_ 接頭辞の DOMESTIC_ENTRY、DOMESTIC_SKIP、AUTO_ENABLED、ASSEMBLY_POLICY、ASSEMBLY_RECIPE を各1にし、既存demo-checkで dotnet DemoAuditCpuSortie.dll（12:32:11〜12:32:15、終了0）。960×540。格納庫演出中に胴3と脚4を頭1へ付ける予定、配送後に完成個体1と頭2が残ることを確認。操作表示オフ・通常・前後スキップで同じ結果と人間復帰。証拠 fix-1231-recipe.log。
+- 個別ドラッグの実演は未実装。演出中に実際の組替予約を追加すると配送時の共通処理に干渉するため、表示のみのドラッグと在庫更新を分離できる箇所の検討を継続。ゲームコード・追跡テストの変更なし。DEMO-0017／0019の状態は維持。
+
+## 2026-11-13 12:48修正回
+
+- 開始12:48:23、終了12:49:00 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=23 で既存demo-checkの dotnet DemoAuditCpuSortie.dll（12:48:34〜12:48:45、終了0）。表示8件・和平なし。960×540の通常UI描画を行い、初回出撃確認後から指示列終端まで自然退避0件、人間へ復帰。証拠 fix-1248-world-23.log。
+- この配置では再現せず。別配置・未対応操作は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 13:10修正回
+
+- 開始13:10:23、終了13:11:01 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストは追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=24 で既存demo-checkの dotnet DemoAuditCpuSortie.dll（13:10:35〜13:10:45、終了0）。表示19件・和平なし。960×540の通常UI描画、初回出撃確認後から指示列終端まで自然退避0件、人間へ復帰。証拠 fix-1310-world-24.log。
+- この配置では再現せず。別配置・未対応操作は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 13:30修正回
+
+- 開始13:30:54、終了13:31:29 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=25 で既存demo-checkの dotnet DemoAuditCpuSortie.dll（13:31:05〜13:31:15、終了0）。表示30件・和平なし。960×540の通常UI描画、初回出撃確認後から指示列終端まで自然退避0件、人間へ復帰。証拠 fix-1330-world-25.log。
+- この配置では再現せず。別配置・未対応操作は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 13:51修正回
+
+- 開始13:51:54、終了13:52:31 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=26で既存demo-checkの dotnet DemoAuditCpuSortie.dll（13:52:06〜13:52:18、終了0）。表示30件・和平2件。960×540で通常出撃と、最初の和平での地点175選択・到着、人間への復帰を確認。初回出撃確認後から指示列終端まで自然退避の検出なし。証拠 fix-1351-world-26.log。
+- この配置では再現せず。2件目の和平は個別照合していない。別配置・未対応操作は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 14:08修正回
+
+- 開始14:08:24、終了14:09:03 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=27で既存demo-checkの dotnet DemoAuditCpuSortie.dll（14:08:37〜14:08:48、終了0）。表示29件・和平1件。960×540で通常出撃、和平の地点107選択・到着、人間への復帰を確認。初回出撃確認後から指示列終端まで自然退避を検出せず。証拠 fix-1408-world-27.log。
+- この配置では再現せず。別配置・未対応操作は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 14:31修正回
+
+- 開始14:31:25、終了14:32:01 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=28で既存demo-checkの dotnet DemoAuditCpuSortie.dll（14:31:37〜14:31:46、終了0）。表示19件・和平なし。960×540の通常UI描画、初回出撃確認後から指示列終端まで自然退避0件、人間への復帰を確認。証拠 fix-1431-world-28.log。
+- この配置では再現せず。別配置と未対応操作は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 14:50修正回
+
+- 開始14:50:25、終了14:51:14 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。直前の点検は終了済み。赤再クリックの診断失敗は通常プレイで未確認のため修正対象外。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=29で既存demo-checkの dotnet DemoAuditCpuSortie.dll（14:50:38〜14:50:51、終了0）。表示26件・和平なし。960×540の通常UI描画、初回出撃確認後から指示列終端まで自然退避0件、人間への復帰を確認。証拠 fix-1450-world-29.log。
+- この配置では再現せず。別配置と未対応操作は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 15:10修正回
+
+- 開始15:10:25、終了15:11:05 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=30で既存demo-checkの dotnet DemoAuditCpuSortie.dll（15:10:40〜15:10:50、終了0）。表示4件・和平なし。960×540の通常UI描画、初回出撃確認後から指示列終端まで自然退避0件、人間への復帰を確認。証拠 fix-1510-world-30.log。
+- この配置では再現せず。別配置・未対応操作は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 15:28修正回
+
+- 開始15:28:25、終了15:29:03 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=31で既存demo-checkの dotnet DemoAuditCpuSortie.dll（15:28:38〜15:28:48、終了0）。表示19件・和平なし。960×540で通常UIを描画し、初回出撃確認後から指示列終端まで自然退避0件、人間へ復帰。証拠 fix-1528-world-31.log。
+- この配置では再現せず。別配置・未対応操作は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 15:48修正回
+
+- 開始15:48:26、終了15:49:05 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=32で既存demo-checkの dotnet DemoAuditCpuSortie.dll（15:48:39〜15:48:50、終了0）。表示17件・和平1件。960×540で通常出撃、征服者45の和平地点43への選択と到着、人間への復帰を確認。初回出撃確認後から指示列終端まで自然退避を検出せず。証拠 fix-1548-world-32.log。
+- この配置では再現せず。別配置・未対応操作は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 16:10修正回
+
+- 開始16:10:26、終了16:11:09 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=33で既存demo-checkの dotnet DemoAuditCpuSortie.dll（16:10:41〜16:10:55、終了0）。表示38件・和平2件。960×540の通常出撃、征服者9の和平地点105への選択と到着、人間への復帰を確認。初回出撃確認後から指示列終端まで自然退避を検出せず。証拠 fix-1610-world-33.log。
+- この配置では再現せず。2件目の和平は個別照合せず。別配置・未対応操作は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 16:29修正回
+
+- 開始16:29:26、終了16:30:04 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=34で既存demo-checkの dotnet DemoAuditCpuSortie.dll（16:29:38〜16:29:48、終了0）。表示20件・和平1件。960×540で通常出撃、征服者29の和平地点159への選択と到着、人間への復帰を確認。初回出撃確認後から指示列終端まで自然退避を検出せず。証拠 fix-1629-world-34.log。
+- この配置では再現せず。別配置・未対応操作は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 16:51修正回
+
+- 開始16:51:57、終了16:52:37 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=35で既存demo-checkの dotnet DemoAuditCpuSortie.dll（16:52:13〜16:52:24、終了0）。表示19件・和平なし。960×540で通常UIを描画し、初回出撃確認後から指示列終端まで自然退避0件、人間への復帰を確認。証拠 fix-1651-world-35.log。
+- この配置では再現せず。別配置・未対応操作は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 17:09修正回
+
+- 開始17:09:27、終了17:10:02 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。開始時にゲーム・dotnet・MSBuildなし。ゲームコード・追跡テストの追加変更なし。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=37で既存demo-checkの dotnet DemoAuditCpuSortie.dll（17:09:40〜17:09:49、終了0）。表示13件・和平なし。960×540で通常UIを描画し、初回出撃確認後から指示列終端まで自然退避0件、人間への復帰を確認。証拠 fix-1709-world-37.log。
+- この配置では再現せず。別配置・未対応操作は要再確認。DEMO-0017の個別組立実演は未対応を継続。
+
+## 2026-11-13 17:30修正回
+
+- 開始17:30:27、終了17:31:26 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了。ゲームコードと追跡テストの追加変更なし。
+- 既存demo-checkで ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=38 を設定し、dotnet ./DemoAuditCpuSortie.dll を実行（17:30:54〜17:31:03、終了0）。表示27件・和平2件。出撃では個体4体をクリックし、確定後に段階5・赤チェック所有者1へ遷移。960×540の和平専用表示で最初の指示が地点103と一致。証拠は実行出力の「Individual robot clicks: 4」「after confirm: stage=5 red-owner=1」「Peaceful ruler=1 expected=103 current=103」と最終PASS。
+- 通常出撃で既報の退避は今回の出力から再現を確認できず、要再確認。次回は通常出撃の表示開始後に対象が操作不能になる実条件を照合する。2件目の和平の個別遷移とDEMO-0017の個別組立実演は今回未確認。
+
+## 2026-11-13 17:48修正回
+
+- 開始17:48:28、終了17:49:11 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了し、開始時にゲーム・dotnet・MSBuildは検出されなかった。変更ファイルは両記録。
+- 既存 demo-check で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=39、dotnet ./DemoAuditCpuSortie.dll（17:48:44〜17:48:55、終了0）。960×540で征服者17の視点へ切り替わり、地点6の通常出撃選択で4体をクリック、確定後は段階5・赤チェック所有者17。表示6件・和平0件。初回確定後の指示列で自然退避0件、描画と人間への復帰を確認。証拠は実行出力の「No-peaceful batch fallbacks=0」と最終PASS。
+- DEMO-0016は今回の配置で再現せず要再確認。前回点検の退避段階注入は退避の開始条件を通らないため、通常出撃中に対象が操作不能になる条件の再現を継続する。DEMO-0017の個別組立実演は今回未検証で既報継続。
+
+## 2026-11-13 18:10修正回
+
+- 開始18:10:28、終了18:11:04 JST。DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了、開始時にゲーム・dotnet・MSBuildなし。変更は両記録のみ。
+- 既存 demo-check で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=40、dotnet ./DemoAuditCpuSortie.dll（18:10:38〜18:10:48、終了0）。960×540で地点143の通常出撃選択から4体クリック、確定後に段階5・赤チェック所有者11。次指示1〜9への遷移ログは段階0。最初の和平専用表示では征服者49の地点40が期待値と一致。証拠は「after confirm: stage=5 red-owner=11」「Peaceful ruler=49 expected=40 current=40」と最終PASS。
+- 通常出撃で退避が発生する実条件は今回の出力で確認できず、DEMO-0016は要再確認を継続。最初の和平より後の個別遷移、DEMO-0017の個別組立実演は未確認。
+
+## 2026-11-13 18:30修正回
+
+- 開始18:30:28、終了18:31:04 JST。対象DEMO-0016。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検は完了し、開始時にゲーム・dotnet・MSBuildの実行なし。変更は両記録。
+- 既存 demo-check で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=41、dotnet ./DemoAuditCpuSortie.dll（18:30:40〜18:30:49、終了0）。960×540で後続の指示16〜27へ段階0で遷移。最初の和平専用表示で征服者49の地点105が指示と一致。証拠は「Peaceful ruler=49 expected=105 current=105」と最終PASS。
+- この診断で通常出撃が退避へ入る実条件は確認できず、DEMO-0016は要再確認を継続。次回は配置の追加より、再生中の候補消失など退避を起こす条件と次指示への復帰を照合する。DEMO-0017の個別組立実演は今回未検証。
+
+## 2026-11-13 18:51修正回
+
+- 開始18:51:29、終了18:53:21 JST。DEMO-0016、HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は両記録と既存の非追跡診断 ProbeCpuSortie.cs.txt。ゲームコード無変更。
+- 既存 demo-check に dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet。初回はテレメトリのレジストリ参照が拒否され、DOTNET_CLI_TELEMETRY_OPTOUT=1 と既存出力先を DOTNET_CLI_HOME に設定して回避。診断のID配列をlong型に訂正後、警告・エラー0。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=39、FOLDERVERSE_AUDIT_FALLBACK=3 で dotnet ./DemoAuditCpuSortie.dll（18:52:50〜18:53:01、終了0）。960×540で通常の地点クリック後、表示用指示の個体IDだけを存在しない値に差し替えた。通常の候補照合から退避段階-1へ入り移動画面を閉じ、次の征服者19の通常出撃選択（段階3）へ復帰。予約0→0。証拠は実行出力と既存の audit-war-fallback.png／audit-war-return.png。
+- 制御した不一致で退避・復帰を確認。自然発生は要再確認。DEMO-0017の個別組立実演は今回未検証。
+
+## 2026-11-13 19:09修正回
+
+- 開始19:09:59、終了19:10:54 JST。対象DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は両記録。
+- 既存 demo-check で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_ENTRY=1、FOLDERVERSE_AUDIT_DOMESTIC_SKIP=1、FOLDERVERSE_AUDIT_AUTO_ENABLED=1／0 を設定し dotnet ./DemoAuditCpuSortie.dll（19:10:21〜19:10:26／19:10:26〜19:10:30、両方終了0）。表示オフ、通常、早期・後期スキップで、組立オンは完成個体ID1、オフは頭・胴・脚各1体。通常の格納庫が開き、人間に復帰し、既存の人間側予約が配送時に1回だけ反映。オフケースの960×540の描画は既存 audit-latest-computer-domestic.png。
+- 個別組立は未対応を継続。組立オンで格納庫を開いた時点の物理在庫は頭・胴・脚、予測在庫は完成品。通常Demoのドラッグ入力は PlanningStock の表示済みスロットを対象とするため、完成済み予測のままでは元の部品矩形を使えない。次回は配送前の予約を追加せず、予測組立の前後を格納庫で再生する方法を、個体ID・組立方針・スキップ時の在庫と照合する。組立オンの個別ドラッグ描画は今回未確認。
+
+## 2026-11-13 19:28修正回
+
+- 開始19:28:29、終了19:29:20 JST。対象DEMO-0017、HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了。開始時にゲーム・dotnet・MSBuildなし。変更は両記録のみ。
+- 既存 demo-check で ALSOFT_DRIVERS=null、dotnet ./DemoAuditCpuSortie.dll。FOLDERVERSE_AUDIT_ASSEMBLY_ARRIVAL=1（19:28:46〜19:28:48、終了0）は入荷ID1が頭のまま残り、既存在庫のID2が完成。FOLDERVERSE_AUDIT_ASSEMBLY_RESERVED=1（19:28:59〜19:29:03、終了0）は既存予約1→2を含み、解決後はID2とID3が完成。証拠は両実行の最終在庫とPASS。今回は状態診断で個別ドラッグの描画検証は未実施。
+- 前回点検の未対応を継続。物理在庫だけでは入荷・既存予約を反映した組立前の格納庫を再現できない。通常入力の解放は PartPlanning.Reserve に予約を追加するため、同じ入力をそのまま再生する変更は見送った。次回は RobotPartPlanning.BuildPreview の予約反映後・自動組立前の在庫と既存の組立手順から、実予約を増やさずに格納庫の描画と入力を照合できる範囲を検証する。
+
+## 2026-11-13 19:50修正回
+
+- 開始19:50:30、終了19:51:09 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了。開始時にゲーム・dotnet・MSBuildなし。変更は両記録。
+- 既存 demo-check で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_ASSEMBLY_COMPARE=1、dotnet ./DemoAuditCpuSortie.dll（19:50:49〜19:50:53、終了0）。隔離した単純な3部品のケースで、直接組立と2件の組替予約の解決はいずれも所有者0の完成個体ID1。予約を解決時に一度消費することを確認。証拠は両方の個体IDと最終PASS。CPU再生・描画はこのケースの検証範囲外。
+- 前回点検の個別ドラッグ未対応は継続。比較は自動組立を無効にした隔離モデルで、入荷・既存予約・組立方針を含むCPU実演への置換は未検証。次回は予約反映後・組立前の予測在庫で通常格納庫の部品矩形を照合し、表示用の操作が実予約に影響しないことを検証する。ゲームコード無変更。
+
+## 2026-11-13 20:08修正回
+
+- 開始20:08:30、終了20:09:41 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は両記録と既存の非追跡診断 ProbeCpuSortie.cs.txt。ゲームコード無変更。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet は警告・エラー0。DOTNET_CLI_TELEMETRY_OPTOUT=1、DOTNET_CLI_HOME は既存出力先。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／AUTO_ENABLED／ASSEMBLY_POLICY／ASSEMBLY_RECIPE／ASSEMBLY_BOUNDS を各1に設定し dotnet ./DemoAuditCpuSortie.dll（20:09:14〜20:09:21、終了0）。960×540の隔離ケースで、描画中だけ自動組立予測を抑えて通常格納庫を開き、頭ID1・胴ID3・脚ID4の表示スロットと内部部品矩形中心 (474,341)／(738,405)／(210,739) を確認。既存予約1件を保持し、予測復帰後に胴→頭、脚→頭胴の手順と完成個体ID1を照合。表示オフ・通常・スキップで最終在庫一致と人間への復帰を確認。証拠は実行出力と既存 fix-policy-before.png／fix-policy-after.png。
+- 実演の個別押下・解放と段階ごとの組立状態は未対応。次回は組立前の在庫を使った表示用の状態更新を通常格納庫の入力判定へ接続し、実予約を増やさずに描画と照合する。今回の矩形照合は固定ケース・1ページ。
+
+## 2026-11-13 20:30修正回
+
+- 開始20:30:30、終了20:32:21 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は両記録と既存の非追跡診断 ProbeCpuSortie.cs.txt。ゲームコード無変更。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／AUTO_ENABLED／ASSEMBLY_POLICY／ASSEMBLY_RECIPE／ASSEMBLY_BOUNDS／ASSEMBLY_PRESS を各1に設定し dotnet ./DemoAuditCpuSortie.dll。初回（20:31:10〜20:31:23）は受け側の頭ID1も押す診断の前提が成立せず終了-532462766。手順の出発側である胴ID3と脚ID4に絞り再実行（20:31:55〜20:32:02、終了0）。
+- 960×540の通常格納庫の部品矩形中心 (738,405)／(210,739) に入力を渡し、NodeAssemblyInput がID3／4を掴むことと、その状態の描画を確認。画面外解放で取り消し、実予約1件を保持。最終在庫は表示オフ・通常・早期／後期スキップで完成ID1と頭ID2、人間に復帰。証拠は「Ordinary press and cancel selected id=3／4」と最終PASS。
+- 受け側への解放、表示用の中間組立状態、CPUの自動実演は未対応。次回は出発側の押下に続き、受け側の区画へ解放する際の判定と、実予約に書き込まずに中間状態を反映する方法を照合する。
+
+## 2026-11-13 20:50修正回
+
+- 開始20:50:00、終了20:51:09 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は両記録と既存の非追跡診断 ProbeCpuSortie.cs.txt。ゲームコード無変更。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／AUTO_ENABLED／ASSEMBLY_POLICY／ASSEMBLY_RECIPE／ASSEMBLY_BOUNDS／ASSEMBLY_PRESS／ASSEMBLY_DROP を各1に設定し、dotnet ./DemoAuditCpuSortie.dll（20:50:42〜20:50:50、終了0）。
+- 960×540の固定ケースで通常入力を使い、胴ID3と脚ID4をそれぞれ頭ID1の区画中心 (474,430) へドロップ。予測在庫に頭胴／頭脚が現れ、その状態を描画。各ドロップが作った診断用予約は直後に取り消し、元の予約1件と物理在庫を保持。最終在庫は表示オフ・通常・早期／後期スキップで完成ID1と頭ID2、人間へ復帰。証拠は「Receiver center」と最終PASS。
+- この診断はドロップごとに取り消したため、頭胴→完成の連続再生と実予約へ書き込まないCPU組立実演は未対応。次回は表示用の在庫に既存組立手順を順に適用し、通常入力の区画判定と中間描画を照合する。
+
+## 2026-11-13 21:12修正回
+
+- 開始21:12:01、終了21:13:34 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は両記録と既存の非追跡診断 ProbeCpuSortie.cs.txt。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet。診断のローカル変数名の衝突を訂正後、警告・エラー0。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／AUTO_ENABLED／ASSEMBLY_POLICY／ASSEMBLY_RECIPE／ASSEMBLY_BOUNDS／ASSEMBLY_COPY を各1に設定し dotnet ./DemoAuditCpuSortie.dll（21:13:07〜21:13:15、終了0）。960×540の固定ケースで自動組立前の予測在庫を複製し、既存組立手順を適用。通常格納庫で胴ID3→頭ID1、脚ID4→頭胴ID1を順に描画。受け側区画中心 (474,430)、頭胴→完成、予約1→1→1。完成個体は通常予測と一致し、表示オフ・通常・早期／後期スキップの最終在庫と人間への復帰を確認。証拠は「Copied assembly」2行と最終PASS。
+- 診断は複製在庫へ組立手順を直接適用した。CPU再生中に通常入力で押下・解放し、複製在庫へ反映する経路は未対応。次回は通常格納庫のドロップ判定から、再生中の複製在庫への反映を接続する。ゲームコード無変更。
+
+## 2026-11-13 21:31修正回
+
+- 開始21:31:01、終了21:35:08 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了。Game1.ComputerDomestic.cs、Game1.NodeAssembly.cs、Game1.PlannedHangars.cs、RobotPartPlanning.csと既存診断 ProbeCpuSortie.cs.txt を変更。
+- CPU内政で通常格納庫を開いた後、予測の最初の組立手順を再生する。描画と入力の部品・区画矩形を共有し、通常の押下・解放を通す。ドロップは表示用在庫に適用し、配送時の実処理は既存経路で一度行う。対象が同一ページに揃わない場合や通常入力で掴めない場合は通常の結果表示へ戻る。複数組立の連続実演は未対応。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_LIVE=1、AUTO_ENABLED=1／0、および ASSEMBLY_POLICY=1・AUTO_ENABLED=1 で dotnet ./DemoAuditCpuSortie.dll（21:33:11〜21:33:38、各終了0）。960×540で通常の押下と解放、頭胴→完成の描画、実予約1件の保持、人間復帰、表示オフ・通常・早期／後期スキップの最終在庫一致を確認。証拠は Live CPU step 1／2 と各PASS。自動組立オフは3部品を保持。
+- ALSOFT_DRIVERS=null で dotnet ./DemoChecksUi.dll、dotnet ./DemoActionsUi.dll、dotnet ./DirectDeliveryUi.dll、dotnet ./DemoInspectorUi.dll、既定設定の dotnet ./DemoAuditCpuSortie.dll（21:33:38〜21:34:43、各終了0）。緑赤とターン末消去、通常の部品ドロップ、直送便・左右格納庫、プライマリー、CPU軍事と和平を確認。多ページ・複数組立、自然配置の全件、ドラッグ途中でのスキップは未検証。
+
+## 2026-11-13 21:50修正回
+
+- 開始21:50:01、終了21:52:01 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は RobotPartPlanning.cs、既存診断 ProbeCpuSortie.cs.txt、両記録。
+- 21:31回の実装は最初の完成個体の手順だけを取り込んでいた。対象地点の自動組立手順を予測と同じ順序でまとめ、通常格納庫で連続再生する。実処理と予約は既存経路で一度だけ反映。同一ページに出発・到着の区画が収まらない場合は結果表示へ復帰し、その条件での実演は未対応。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_LIVE／ASSEMBLY_SKIP_HELD／AUTO_ENABLED／ASSEMBLY_MULTIPLE=1 で dotnet ./DemoAuditCpuSortie.dll（21:51:01〜21:51:10、終了0）。960×540で頭胴→完成を2体分描画。受け側の内部点 (210,430)／(210,700)、実予約1件を全4操作で保持。表示オフ・通常・早期スキップ・部品を掴んだ後のスキップで完成ID1・4と人間復帰が一致。証拠は Live CPU step 1〜4 と最終PASS。
+- dotnet ./DemoChecksUi.dll（21:51:16〜21:51:22）と dotnet ./DemoActionsUi.dll（21:51:22〜21:51:39）は終了0。緑赤、出撃確定とターン末消去、通常の部品ドロップ・和平予約を確認。複数ページ・全配置は未検証。
+
+## 2026-11-13 22:11修正回
+
+- 開始22:11:32、終了22:13:54 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は Game1.ComputerDomestic.cs、Game1.FunctionPages.cs、既存診断 ProbeCpuSortie.cs.txt、両記録。
+- 出発側が画面外なら通常格納庫の上下ボタンを使い、部品を掴んだ後に受け側が画面外なら通常と同じドラッグ保持スクロールを使う。カーソルの移動先は上下ボタン・現在行の部品・受け側区画の各矩形。ドロップ先の再計算後に通常入力を通し、表示用在庫だけ更新する。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／AUTO_ENABLED／ASSEMBLY_PAGE_LIMIT／ASSEMBLY_SKIP_HELD=1 で dotnet ./DemoAuditCpuSortie.dll（22:12:45〜22:12:53、終了0）。960×540、前回のスロット6の胴を掴み、ページ移動中も保持し、先頭行の頭にドロップして頭胴を描画。実予約1件を保持し、通常・スキップとも完成ID1で人間に復帰。証拠は「Off-page CPU assembly」と最終PASS。
+- 同DLLで ASSEMBLY_LIVE／ASSEMBLY_MULTIPLE=1 の同一ページ2体回帰（22:13:00〜22:13:06）、dotnet ./DemoActionsUi.dll（22:13:06〜22:13:24）、dotnet ./DemoChecksUi.dll（22:13:24〜22:13:32）は各終了0。通常部品ドロップと緑赤・予約・ターン末消去を確認。自然配置の多ページ、逆方向のドラッグ保持スクロール中のスキップは未確認。
+
+## 2026-11-13 22:30修正回
+
+- 開始22:30:32、終了22:31:26 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は既存非追跡診断 ProbeCpuSortie.cs.txt と両記録。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_PAGE_LIMIT／ASSEMBLY_DOWN／ASSEMBLY_REVERSE_SKIP／AUTO_ENABLED=1。dotnet ./DemoAuditCpuSortie.dll（22:31:03〜22:31:09、終了0）。960×540で受け側の頭を診断上スロット6へ置き、胴を掴んだまま下へスクロールして頭胴の描画まで確認。既存予約1件を保持。表示オフ、通常、スキップで完成ID1が一致し、人間へ復帰。証拠は「Off-page CPU assembly: downward=True, held on both pages, receiver head+body, reservations=1」と最終PASS。
+- 固定ケースで下方向の不具合は再現せず、ゲームコード無変更。自然配置の多ページと物理Escは要再確認。次回は診断でスロットを入れ替えず、実在庫の並びから多ページになるケースを照合する。
+
+## 2026-11-13 22:52修正回
+
+- 開始22:52:02、終了22:53:07 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は既存非追跡診断 ProbeCpuSortie.cs.txt と両記録。ゲームコード無変更。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_PAGE_LIMIT／ASSEMBLY_INVENTORY_PAGE／AUTO_ENABLED=1。dotnet ./DemoAuditCpuSortie.dll（22:52:41〜22:52:49、終了0）。
+- 960×540で頭・既存完成品5体・胴・脚をこの順に在庫へ追加し、格納庫の通常割付で胴ID7がスロット6に入ることを確認。スロットは入れ替えず、胴を保持したまま先頭ページへ戻って頭胴を描画。既存予約1件を保持し、表示オフ・通常・スキップで完成ID1〜6、人間への復帰が一致。証拠は「Off-page CPU assembly」と最終PASS。
+- 通常の在庫順を使った固定ケースで不具合は再現せず。CPUが自然に作る在庫、2回目のドロップの個別描画、物理Escは要再確認。次回は通常割付の両ドロップを描画して照合する。
+
+## 2026-11-13 23:00修正回
+
+- 開始23:00:32、終了23:01:38 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は既存非追跡診断 ProbeCpuSortie.cs.txt と両記録。ゲームコード無変更。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_PAGE_LIMIT／ASSEMBLY_INVENTORY_PAGE／AUTO_ENABLED=1。dotnet ./DemoAuditCpuSortie.dll（23:01:11〜23:01:20、終了0）。
+- 960×540で通常スロット割付を使い、胴ID7をページ越しにドロップして頭胴を描画。次に脚ID8を保持し、同じ受け側の内部点 (210,430) にドロップして完成を描画。両操作で既存予約1件を保持。表示オフ・通常・スキップで完成ID1〜6と人間への復帰が一致。証拠は「Off-page CPU assembly」2行と最終PASS。
+- 固定在庫の両ドロップで不具合は再現せず。自然プレイでCPUが作る在庫と物理Escは要再確認。次回は長いドラッグ中に通常入力経由のEscを照合する。
+
+## 2026-11-13 23:09修正回
+
+- 開始23:09:32、終了23:10:40 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は既存非追跡診断 ProbeCpuSortie.cs.txt と両記録。ゲームコード無変更。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_PAGE_LIMIT／ASSEMBLY_INVENTORY_PAGE／ASSEMBLY_REVERSE_SKIP／ASSEMBLY_ESC_INPUT／AUTO_ENABLED=1。dotnet ./DemoAuditCpuSortie.dll（23:10:13〜23:10:22、終了0）。
+- 960×540で通常割付の胴・脚をドロップして頭胴→完成を描画。別試行では部品を保持して下へスクロール中（行1、内部点474,845）に Escape キー状態を HandleInput へ渡した。保持部品と表示用在庫が消え、既存予約を配送で一度だけ反映し、人間へ復帰。表示オフ・通常・スキップで完成ID1〜6が一致。証拠は「Normal Escape input cleared CPU drag」と最終PASS。
+- 固定ケースで通常の入力経路を通過。OSからの物理キー操作と、自然プレイでCPUが作る在庫は要再確認。次回は自然配置のCPU在庫を優先する。
+
+## 2026-11-13 23:28修正回
+
+- 開始23:28:33、終了23:29:49 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は既存非追跡診断 ProbeCpuSortie.cs.txt と両記録。ゲームコード無変更。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_LIVE／ASSEMBLY_PRODUCED／AUTO_ENABLED=1。dotnet ./DemoAuditCpuSortie.dll（23:29:26〜23:29:31、終了0）。
+- CPU地点91の工場計画を診断で頭・胴・脚に順次設定し、組立を一時停止した状態で AdvanceIndustry により生産。部品を直接追加せず、組立を戻して通常内政へ。960×540で頭胴→完成を実描画し、受け側の内部点 (210,430)、既存予約1件の保持、表示オフ・通常・スキップで完成ID1と人間復帰の一致を確認。証拠は「Industry produced」「Live CPU step」と最終PASS。
+- 制御した生産経路では不具合を再現せず。CPU自身が選ぶ工場計画・生産を含む自然プレイと物理Escは要再確認。次回はCPUの自動工場計画で組立候補が生じる配置を照合する。
+
+## 2026-11-13 23:48修正回
+
+- 開始23:48:33、終了23:50:29 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了。開始時にゲーム・dotnet・MSBuildなし。変更は既存非追跡診断 ProbeCpuSortie.cs.txt と両記録。ゲームコード無変更。
+- 既存 demo-check に dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet（警告・エラー0）。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_LIVE／ASSEMBLY_AUTO_PLAN／AUTO_ENABLED=1 で dotnet ./DemoAuditCpuSortie.dll。初回（23:49:17〜23:49:30、終了-532462766）は単独3部品という診断の前提が成立しなかった。再実行（23:50:05〜23:50:10、終了0）では PrepareDomestic と AdvanceIndustry により、tick9に計画8で全種を含む入荷候補を生成したことを確認。証拠は「Auto factory reached full coverage」の出力。
+- 再実行は生産結果を記録した時点で終了し、格納庫の描画・クリック・組立遷移は未検証。DEMO-0017の自動計画由来の組立実演は要再確認。次回は単独3部品を前提とせず、実際の組立候補のIDと部品構成を基準に通常格納庫で再生する。
+
+## 2026-11-14 00:11修正回
+
+- 開始00:11:33、終了00:12:28 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は両記録と既存の非追跡診断。ゲームコード無変更。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet は警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_LIVE／ASSEMBLY_AUTO_PLAN／ASSEMBLY_AUTO_SEED_LEG／AUTO_ENABLED=1 で dotnet ./DemoAuditCpuSortie.dll（00:12:04〜00:12:11、終了0）。
+- 地点91の初期在庫に脚ID1を用意すると、自動工場がtick4で頭胴ID2の入荷を予約。960×540の通常格納庫で組立操作を実行し、受け側の内部点 (210,430) へのドロップで完成ID1を描画。既存予約1件を保持し、表示オフ・通常・早期／後期スキップで最終在庫と人間への復帰が一致。証拠は「Auto factory recipe」「Live CPU step 1」と最終PASS。
+- 自動計画と既存在庫を組み合わせた固定ケースで不具合は再現せず。初期在庫を指定しない自然プレイと物理Escは要再確認。
+
+## 2026-11-14 00:30修正回
+
+- 開始00:30:34、終了00:31:34 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は両記録と既存非追跡診断。ゲームコード無変更。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet（警告・エラー0）。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_LIVE／ASSEMBLY_AUTO_PLAN／AUTO_ENABLED=1、WORLD=43／44／45 で dotnet ./DemoAuditCpuSortie.dll（00:31:07〜00:31:16、各終了0）。
+- 空在庫の単独CPU工場を各120ステップ。WORLD=43は胴のみ、44／45は頭胴・胴脚で、いずれも合法な組立候補なし。証拠は「No legal auto-factory recipe in 120 steps」。この条件で組立再生・描画は未確認。要再確認を継続し、次回は複数工場・通常の初期在庫を維持するケースで照合する。
+
+## 2026-11-14 00:49修正回
+
+- 開始00:49:04、終了00:50:24 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は両記録と既存非追跡診断。ゲームコード無変更。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --no-restore --disable-build-servers -p:OutputPath=既存demo-check -v quiet は診断の読み取り専用プロパティへの代入を除去後、警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_LIVE／ASSEMBLY_AUTO_PLAN／ASSEMBLY_TWO_FACTORIES／AUTO_ENABLED=1。dotnet ./DemoAuditCpuSortie.dll（00:49:59〜00:50:06、終了0）。
+- 診断で地点93の工場に脚の製造・地点91への入荷を設定。地点91の自動工場はtick4に頭胴ID2を生産。物理在庫が空でも、960×540の通常格納庫では入荷予定から組立操作を実行し、内部点 (210,430) へのドロップで完成ID1を描画。既存予約1件は維持され、表示オフ・通常・スキップで完成ID1と人間への復帰が一致。証拠は「Second factory 93 reserved legs at 91」「Live CPU step 1」と最終PASS。
+- 制御した複数工場ケースでは不具合を再現せず。両工場の計画・配送先をCPUが自然に選ぶ条件と物理Escは要再確認。
+
+## 2026-11-14 01:11修正回
+
+- 開始01:11:04、終了01:11:43 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は両記録のみ。
+- 既存 demo-check で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_LIVE／ASSEMBLY_AUTO_PLAN／ASSEMBLY_TWO_FACTORIES／AUTO_ENABLED=1。dotnet ./DemoAuditCpuSortie.dll（01:11:22〜01:11:26、終了0）。960×540で設定済みの隣接工場から脚を入荷し、自動生産の頭胴を受け側 (210,430) で組み立てる描画を再確認。実予約1件を保持し、表示オフ・通常・スキップの完成ID1と人間復帰が一致。証拠は「Second factory 93 reserved legs at 91」「Live CPU step 1」と最終PASS。
+- 入荷先を書き換える通常経路は Game1.ProductionIntakes.cs のUI入力から RobotWorld.SetIntakeTarget へ到達。現行の工場自動化は設定済み入荷先を参照して生産計画を選ぶ。CPU自身が別工場の入荷先を選ぶ前提では再現できず、工場判断の仕様は変更しなかった。自然な既存在庫での組立と物理Escは要再確認。
+
+## 2026-11-14 01:30修正回
+
+- 開始01:30:05、終了01:30:59 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了、開始時にゲーム・dotnet・MSBuildなし。変更は両記録のみ。
+- 既存 demo-check で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_LIVE／ASSEMBLY_AUTO_PLAN／AUTO_ENABLED=1、WORLD=46〜50。dotnet ./DemoAuditCpuSortie.dll（01:30:25開始、各終了0）。
+- 配置49は空の物理在庫から開始し、地点100の単独自動工場がtick100までに脚4体と頭胴1体の入荷を予約。初期部品・製造計画・別工場の入荷先を指定せず、通常格納庫で (210,430) にドロップして完成を描画した。既存予約1件を保持し、表示オフ・通常・スキップ2条件の最終在庫（完成ID1、脚ID2〜4）と人間復帰が一致。証拠は「Auto factory recipe node=100 tick=100」「Live CPU step 1: Complete」と最終PASS。
+- 配置46〜48・50は120ステップ内に合法な組立候補がなく、組立描画は未確認。配置49は地点を選んだ隔離診断で、通常プレイ全体の自然発生と物理Escは要再確認。クリックずれは再現せず、ゲームコードの修正なし。
+
+## 2026-11-14 01:51修正回
+
+- 開始01:51:35、終了01:52:13 JST。DEMO-0017。HEAD=9f134f8847be7c0e365ee4e98632ac8622b27640。先行点検完了。変更は両記録のみ。
+- 既存 demo-check で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／ASSEMBLY_LIVE／ASSEMBLY_AUTO_PLAN／AUTO_ENABLED／ASSEMBLY_ESC_INPUT=1、WORLD=49。dotnet ./DemoAuditCpuSortie.dll（01:51:52〜01:51:57、終了0）。
+- 空在庫から自動生産した脚と頭胴を960×540の通常格納庫でドロップし、完成を描画。別試行では通常の入力処理にEscapeのキー状態を渡し、ドラッグ解除を確認。表示オフ・通常・スキップ・Escapeで完成ID1と脚ID2〜4、人間への復帰が一致し、実演中の既存予約1件を保持。証拠は「Live CPU step 1: Complete」「Normal Escape input cleared CPU drag」と最終PASS。
+- この隔離診断では既報のクリックずれや状態差は再現せず。生産に先立つ通常ターンの連続進行とOSからの物理Escは要再確認。
