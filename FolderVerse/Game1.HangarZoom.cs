@@ -188,7 +188,8 @@ public partial class Game1
             DrawRobotGlyph(AssemblyRobotBounds(slot),HomePersuasionRobot(robot),whiteOutline:true);
             if(robot.CanFight)DrawEquipmentCounts(HangarCellRegion(cell,8,208,236,48),
                 robot.Equipment(robot.Owner,_setup.EquipmentMode),Cream);
-            if(robot.HarvestWorker)DrawHangarReservationLabel(HangarCellRegion(cell,0,170,252,36),robot,"採取員");
+            if(robot.WarehouseKeeper)DrawHangarReservationLabel(HangarCellRegion(cell,0,170,252,36),robot,"倉庫管理人");
+            else if(robot.HarvestWorker)DrawHangarReservationLabel(HangarCellRegion(cell,0,170,252,36),robot,"採取員");
         }
         DrawHangarSlotNumber(slot,cell,robot,robot?.CanFight==true);
     }

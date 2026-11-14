@@ -7,6 +7,7 @@ sealed class WorkerPlansUi:Game1
 {
  Color[] workerFlagBaseline=null!;
  Color[] workerLowerBaseline=null!;
+ Color[] workerBodyBaseline=null!;
  const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;int frame,node,choice;long workerId;WorldSetup w=null!;RobotWorkshop line=null!;
  object Get(string n)=>typeof(Game1).GetField(n,F)!.GetValue(this)!;
  void Set(string n,object value)=>typeof(Game1).GetField(n,F)!.SetValue(this,value);
@@ -209,6 +210,11 @@ sealed class WorkerPlansUi:Game1
    w.SetCountryAppearance(origin,(w.ColorIndices[origin]+1)%WorldSetup.Colors.Length,
     w.CountrySecondaryColor(origin),(w.CountryPattern(origin)+1)%5);
   }
+  if(frame==15){
+   int origin=line.WorkerSnapshot!.Origin(RobotParts.Body);
+   w.SetCountryAppearance(origin,(w.ColorIndices[origin]+3)%WorldSetup.Colors.Length,
+    w.CountrySecondaryColor(origin),(w.CountryPattern(origin)+1)%5);
+  }
   base.Draw(time);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"worker-plans-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);
   if(frame>=12){
    var canvas=(Rectangle)Call("CanvasBounds");
@@ -225,11 +231,22 @@ sealed class WorkerPlansUi:Game1
     Check(!head.SequenceEqual(workerFlagBaseline!),"Changing only the head's country pattern changes the factory worker's head pixels");
     Check(lower.SequenceEqual(workerLowerBaseline),"Changing the head flag preserves lower body, legs and adjacent equipment pixels");
     workerFlagBaseline=head;
-   }else{
+   }else if(frame==14){
     Check(head.SequenceEqual(workerFlagBaseline),"Changing the leg flag preserves head pixels");
     Check(!lower.SequenceEqual(workerLowerBaseline),"Changing the leg flag updates lower worker pixels");
    }
+   if(frame>=14){
+    // The lower edge of the head sprite overlaps the torso. Compare its upper portion separately.
+    var headTop=head.Take(head.Length/2).ToArray();
+    var torso=Enumerable.Range(canvas.Y+675*canvas.Height/1080,28*canvas.Height/1080)
+     .SelectMany(row=>pixels.Skip(row*p.BackBufferWidth+x).Take(width)).ToArray();
+    if(frame==14)workerBodyBaseline=headTop.Concat(torso).ToArray();
+    else{
+     Check(headTop.SequenceEqual(workerBodyBaseline.Take(headTop.Length)),"Changing the torso flag preserves the upper head");
+     Check(!torso.SequenceEqual(workerBodyBaseline.Skip(headTop.Length)),"Changing the torso flag updates the torso pixels");
+    }
+   }
   }
-  if(frame++==14){Console.WriteLine("PASS: material album, hangar, harvest warnings, reassignment and mixed factory worker flag rendering.");Exit();}
+  if(frame++==15){Console.WriteLine("PASS: material album, hangar, harvest warnings, reassignment and mixed factory worker flag rendering.");Exit();}
  }
 }

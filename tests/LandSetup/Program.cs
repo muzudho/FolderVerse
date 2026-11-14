@@ -21,9 +21,9 @@ WorldSetup Scatter(int percent,RobotEquipmentMode mode=RobotEquipmentMode.Legacy
     w.CompleteLand(4,percent);
     return w;
 }
-int ScatterCount(WorldSetup world)=>world.Robots.Nodes.Sum(s=>s.Robots.Count(r=>!r.FactoryWorker));
+int ScatterCount(WorldSetup world)=>world.Robots.Nodes.Sum(s=>s.Robots.Count(r=>!r.FactoryWorker && !r.WarehouseKeeper));
 int baseline=ScatterCount(Scatter(100));
-int[]? initialCapacities=null;
+int[] initialCapacities=null;
 foreach(int percent in new[]{0,25,100}){
     var w=Scatter(percent);
     var capacities=w.Robots.Nodes.Select(s=>s.TotalCapacity).ToArray();
@@ -31,15 +31,12 @@ foreach(int percent in new[]{0,25,100}){
     Check(capacities.SequenceEqual(initialCapacities) && capacities.Distinct().Count()>1,"World seed fixes varied capacities independently of scatter");
     foreach(var node in w.Nodes.All){
         int capacity=capacities[node.Id];
-        int area=Enumerable.Range(0,100).Count(i=>w.Routes.Terrain(node.Cell,new Point(i%10,i/10))==node.Terrain);
-        Check(capacity is >=1 and <=12 && w.Robots.Workshops[node.Id].ReservedSlotLimit==capacity,"Hangar and factory use the same capacity");
-        if(w.Routes.NearWhirlpool(node)){
-            Check(capacity==1,"Whirlpool sites have one slot");
-            continue;
-        }
-        if(node.Terrain==TravelTerrain.Land && area==100)Check(capacity is >=8 and <=12,"Entirely flat region draws 8–12");
-        if(node.Terrain!=TravelTerrain.Land && area<=50)Check(capacity is >=1 and <=3,"Small sea or mountain area draws 1–3");
-        if(node.Terrain!=TravelTerrain.Land && area==100)Check(capacity is >=3 and <=5,"Entirely sea or mountain draws 3–5");
+        var store=w.Robots.Nodes[node.Id];
+        int keepers=store.Robots.Count(r=>r.WarehouseKeeper);
+        Check(store.WarehouseLimit is >=1 and <=60 && keepers<=1 &&
+            capacity==Math.Min(store.WarehouseLimit.Value,1+4*keepers),"Initial capacity is derived from the local limit and keeper");
+        if(w.Routes.NearWhirlpool(node))Check(capacity==1 && keepers==0,"Whirlpool sites have no keeper");
+        else if(node.Terrain!=TravelTerrain.Land)Check(store.WarehouseLimit==4,"Mountain and sea sites cap at four");
     }
     Check(ScatterCount(w)==(baseline*percent+50)/100,"Scatter scales unassigned robots from the same seed");
     for(int ruler=0;ruler<w.ActiveCount;ruler++){
@@ -51,6 +48,49 @@ foreach(int percent in new[]{0,25,100}){
 var fresh=Scatter(0);
 var saved=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(fresh));
 Check(saved.Robots.Nodes.Select(s=>s.TotalCapacity).SequenceEqual(initialCapacities!),"Save restores each exact initial capacity");
+var keeperSite=saved.Nodes.All.First(n=>saved.Robots.Nodes[n.Id].Robots.Any(r=>r.WarehouseKeeper));
+var keeperStore=saved.Robots.Nodes[keeperSite.Id];
+var originalKeeper=keeperStore.Robots.Single(r=>r.WarehouseKeeper);
+var foreign=saved.Robots.Create((keeperSite.Owner+1)%saved.ActiveCount,RobotParts.Complete);
+keeperStore.Add(foreign);
+Check(!saved.Robots.CanSetReservation(keeperSite.Id,originalKeeper,HangarReservation.Warehouse,keeperSite.Owner),
+    "Occupied added capacity prevents releasing the keeper");
+int beforeSwap=keeperStore.TotalCapacity;
+Check(saved.Robots.PartPlanning.ReserveRole(saved,keeperSite.Id,originalKeeper.Id,HangarReservation.WarehouseSwap,keeperSite.Owner,foreign.Id),
+    "Another country's complete robot can be nominated");
+var projected=saved.Robots.PartPlanning.Preview(saved).Nodes[keeperSite.Id];
+Check(projected.TotalCapacity==beforeSwap && projected.Robots.Single(r=>r.WarehouseKeeper).Id==foreign.Id &&
+    keeperStore.Robots.Single(r=>r.WarehouseKeeper).Id==originalKeeper.Id,"Swap preserves capacity and starts as a reservation");
+typeof(RobotPartPlanning).GetMethod("Resolve",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(saved.Robots.PartPlanning,new object[]{saved});
+Check(keeperStore.TotalCapacity==beforeSwap && keeperStore.Robots.Single(r=>r.WarehouseKeeper).Owner==foreign.Owner,
+    "Resolved swap preserves capacity and nationality");
+Console.WriteLine("PASS: warehouse keeper capacity and foreign successor.");
+
+var transferWorld=Scatter(0);
+var transferStock=transferWorld.Robots;
+var transfers=transferWorld.Campaign.FunctionTransfers;
+var transfer = (from target in transferWorld.Nodes.All
+    where target.Terrain==TravelTerrain.Land
+    from route in transferWorld.Routes.Neighbors(target)
+    let source=transferWorld.Nodes.At(route.Target,route.Entry)
+    where source.Owner==target.Owner && transferStock.Nodes[source.Id].Robots.Any(r=>r.WarehouseKeeper)
+    select (source,target)).First(pair=>{
+        transferWorld.SelectPlayer(pair.target.Owner);
+        transferWorld.SelectTurnRuler(pair.target.Owner);
+        return transfers.CanReserve(transferWorld,pair.source.Id,pair.target.Id);
+    });
+var destination=transferStock.Nodes[transfer.target.Id];
+var incoming=transferStock.Nodes[transfer.source.Id];
+int destinationLimit=destination.WarehouseLimit.Value;
+int keeperCount=destination.Robots.Concat(incoming.Robots).Count(r=>r.WarehouseKeeper);
+transfers.Reserve(transferWorld,transfer.source.Id,transfer.target.Id);
+Check(transferStock.PartPlanning.Preview(transferWorld).Nodes[transfer.target.Id].TotalCapacity==
+    Math.Min(destinationLimit,1+4*keeperCount),"Transfer forecast uses the destination limit");
+typeof(NodeFunctionTransfers).GetMethod("Resolve",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(transfers,new object[]{transferWorld});
+Check(incoming.TotalCapacity==0 && destination.WarehouseLimit==destinationLimit &&
+    destination.Robots.Count(r=>r.WarehouseKeeper)==keeperCount &&
+    destination.TotalCapacity==Math.Min(destinationLimit,1+4*keeperCount),"Full transfer moves keepers and retains the destination limit");
+Console.WriteLine("PASS: full transfer carries keepers into the fixed destination limit.");
 Console.WriteLine("PASS: 0/25/100 scatter and two regular complete pocket robots for every conqueror.");
 
 var materials=Scatter(100,RobotEquipmentMode.Materials);
@@ -82,6 +122,12 @@ foreach(var (node,worker) in assigned)
 }
 materials.Robots.Check();
 var harvestWorld=Scatter(100,RobotEquipmentMode.Materials);
+Check(harvestWorld.Nodes.All.Any(n=>harvestWorld.Robots.Nodes[n.Id].MaplePackages.Count>0 &&
+    harvestWorld.Robots.Nodes[n.Id].HasSpace &&
+    harvestWorld.Robots.Workshops[n.Id].ProductionLines.Any(l=>l.Manufacturing && !l.WaitingForMaple(harvestWorld.Robots,n.Id))),
+    "Starter stock feeds a production lane and leaves space for output");
+var stockBeforeHarvest=harvestSites.Select((node,i)=>harvestWorld.Robots.Nodes[node].MaplePackages
+    .Where(p=>p.Material==initialMaterials[i]).Sum(p=>p.Units)).ToArray();
 // Isolate harvesting from simultaneous manufacturing intake reservations.
 foreach(var workshop in harvestWorld.Robots.Workshops)
     foreach(var lane in workshop.ProductionLines.Where(l=>!l.HarvestOnly))
@@ -92,7 +138,7 @@ for(int i=0;i<harvestSites.Length;i++){
     int node=harvestSites[i];
     int units=harvestWorld.Robots.Nodes[node].MaplePackages.Where(p=>p.Material==initialMaterials[i]).Sum(p=>p.Units);
     int left=harvestWorld.Robots.RawDeposit(node,initialMaterials[i]);
-    Check(units==RobotWorld.MaplePackageSize && left==initialDeposits[i]-1,
+    Check(units==stockBeforeHarvest[i]+RobotWorld.MaplePackageSize && left==initialDeposits[i]-1,
         $"Initial harvest worker at {node}: stock {units}, "+
         $"deposit {initialDeposits[i]} → {left}, "+
         $"intakes {harvestWorld.Robots.ProductionIntakes.Count(x=>(x.Target??x.Source)==node)}");
@@ -101,11 +147,22 @@ Console.WriteLine("PASS: initial worker lanes, save round trip and release.");
 Console.WriteLine("PASS: initial harvest deposits and stock at maximum robot scatter.");
 
 var competing=Scatter(100,RobotEquipmentMode.Materials);
-const int blockedSite=26;
+int blockedSite=competing.Nodes.All.First(n=>competing.Robots.Workshops[n.Id].ProductionLines.Any(l=>l.HarvestOnly) &&
+    competing.Robots.Workshops[n.Id].ProductionLines.Any(l=>!l.HarvestOnly) &&
+    FunctionalDeliveryRoutes.Targets(competing,n.Id).Any(t=>competing.Nodes.All[t].Owner==n.Owner && competing.Robots.Nodes[t].HasSpace)).Id;
 var stock=competing.Robots;
+foreach(var workshop in stock.Workshops)workshop.AutoAssemblyDisabled=true;
+// Recreate a crowded hangar independently of the starting stock distribution.
+var crowded=stock.Nodes[blockedSite];
+foreach(var loose in crowded.Robots.Where(r=>r.Parts!=RobotParts.Complete).ToArray())crowded.Remove(loose.Id);
+typeof(RobotStore).GetMethod("SetMaplePackages",BindingFlags.Instance|BindingFlags.NonPublic)!
+    .Invoke(crowded,new object[]{Array.Empty<MaplePackage>()});
+while(crowded.Count<crowded.TotalCapacity-1)
+    crowded.Add(stock.Create(competing.Nodes.All[blockedSite].Owner,RobotParts.Complete));
 var harvestLane=stock.Workshops[blockedSite].ProductionLines.Single(l=>l.HarvestOnly);
 // Supply the competing production so this fixture isolates hangar contention.
 var competingLane=stock.Workshops[blockedSite].ProductionLines.First(l=>!l.HarvestOnly);
+foreach(var lane in stock.Workshops[blockedSite].ProductionLines.Where(l=>!l.HarvestOnly && l!=competingLane))lane.SelectPlan(3);
 competingLane.Configure(RobotParts.Head,1);
 typeof(RobotWorkshop).GetField("_selectedProductPlan",BindingFlags.Instance|BindingFlags.NonPublic)!
     .SetValue(competingLane,new ProductionPlan(RobotParts.Head,1){Material=RobotMaterial.Tin});
@@ -115,11 +172,12 @@ void AdvanceHarvestSite()
     for(int unit=0;unit<IndustryTime.UnitsPerTurn;unit++)
         stock.AdvanceIndustry(node=>competing.Nodes.All[node].Owner,node=>node!=blockedSite);
 }
-int remainingDeposit=stock.MapleDeposit(blockedSite);
+var blockedMaterial=harvestLane.HarvestMaterial;
+int remainingDeposit=stock.RawDeposit(blockedSite,blockedMaterial);
 AdvanceHarvestSite();
 Check(stock.ProductionIntakes.Any(i=>(i.Target??i.Source)==blockedSite) &&
-    stock.Nodes[blockedSite].MapleUnits==0 && stock.MapleDeposit(blockedSite)==remainingDeposit &&
-    harvestLane.MapleRemaining==1,"Manufacturing intake keeps the initial harvest order waiting");
+    stock.Nodes[blockedSite].MaplePackages.Count==0 && stock.RawDeposit(blockedSite,blockedMaterial)==remainingDeposit &&
+    harvestLane.MapleRemaining==1, $"Manufacturing intake keeps harvest waiting at {blockedSite}: {competingLane.IntakeFailure}; loads {harvestLane.MapleRemaining}; slots {crowded.Count}/{crowded.TotalCapacity}; intakes {stock.ProductionIntakes.Count}");
 foreach(var lane in stock.Workshops[blockedSite].ProductionLines.Where(l=>!l.HarvestOnly))
     lane.SelectPlan(3);
 var intake=stock.ProductionIntakes.Single(i=>(i.Target??i.Source)==blockedSite);
@@ -130,15 +188,15 @@ Check(!stock.ProductionIntakes.Contains(intake) && stock.Nodes[blockedSite].Robo
 int owner=competing.Nodes.All[blockedSite].Owner;
 competing.SelectPlayer(owner);
 competing.SelectTurnRuler(owner);
-int target=FunctionalDeliveryRoutes.Targets(competing,blockedSite).First(n=>
+int deliveryTarget=FunctionalDeliveryRoutes.Targets(competing,blockedSite).First(n=>
     competing.Nodes.All[n].Owner==owner && stock.Nodes[n].HasSpace);
-var order=stock.DirectDelivery.Reserve(competing,blockedSite,target,intake.Product.Id,intake.Product.Parts,null,stock.Nodes[target].Count);
+var order=stock.DirectDelivery.Reserve(competing,blockedSite,deliveryTarget,intake.Product.Id,intake.Product.Parts,null,stock.Nodes[deliveryTarget].Count);
 stock.Advance((from,to)=>FunctionalDeliveryRoutes.Connected(competing,from,to),
     node=>competing.Nodes.All[node].Owner,4,industry:false);
 Check(stock.DirectDelivery.CompletedArrivals.TryGetValue(order.Number,out long arrival) &&
-    stock.Nodes[target].Robots.Any(r=>r.Id==arrival) && stock.Nodes[blockedSite].Robots.All(r=>r.Id!=intake.Product.Id),
+    stock.Nodes[deliveryTarget].Robots.Any(r=>r.Id==arrival) && stock.Nodes[blockedSite].Robots.All(r=>r.Id!=intake.Product.Id),
     "Direct delivery ships the competing product and frees its original slot");
 AdvanceHarvestSite();
-Check(harvestLane.MapleRemaining==0 && stock.Nodes[blockedSite].MapleUnits==RobotWorld.MaplePackageSize &&
-    stock.MapleDeposit(blockedSite)==remainingDeposit-1,"The same order resumes once hangar space is freed");
+Check(harvestLane.MapleRemaining==0 && stock.Nodes[blockedSite].MaplePackages.Single().Units==RobotWorld.MaplePackageSize &&
+    stock.RawDeposit(blockedSite,blockedMaterial)==remainingDeposit-1,"The same order resumes once hangar space is freed");
 Console.WriteLine("PASS: first harvest resumes after the competing product ships by direct delivery.");

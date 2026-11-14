@@ -16,13 +16,14 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
     public DefenseFlagReservation DefenseFlag {get;init;}
     public int ShoeOwner=>Parts==RobotParts.Complete && DefenseOnly?DefenseFlag?.Commander??Owner:-1;
     public Robot WithoutDefenseReservation()=>this with {DefenseOnly=false,DefenseFlag=null};
+    public bool WarehouseKeeper {get;init;}
     public bool FactoryWorker {get;init;}
     public bool HarvestAssignment {get;init;}
     public bool HarvestWorker=>FactoryWorker && HarvestAssignment;
     public long? LongDeliveryNumber {get;init;}
     public int? ReturnHomeCommander {get;init;}
     public string ReturnHomeStatus {get;init;}
-    public bool Stationed=>DefenseOnly || InterceptOnly || FactoryWorker || LongDeliveryNumber.HasValue || ReturnHomeCommander.HasValue;
+    public bool Stationed=>WarehouseKeeper || DefenseOnly || InterceptOnly || FactoryWorker || LongDeliveryNumber.HasValue || ReturnHomeCommander.HasValue;
     public RobotParts DamagedParts {get;init;}=0;
     public RobotParts CheapParts {get;init;}=0;
     public RobotParts PremiumParts {get;init;}=0;
@@ -108,13 +109,20 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
         if(!result.ValidIntegration)throw new InvalidOperationException("Incompatible integrated parts.");
         return result with {Owner=result.AssemblyCredit(owner)>0?owner:Owner};
     }
-    public bool CanFight=>!LongDeliveryNumber.HasValue && !ReturnHomeCommander.HasValue && Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
+    public bool CanFight=>!WarehouseKeeper && !LongDeliveryNumber.HasValue && !ReturnHomeCommander.HasValue && Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
 }
 public sealed class RobotStore
 {
     public const int Capacity=12;
     private int? _capacity;
-    public int TotalCapacity=>_capacity??Capacity;
+    private int? _warehouseLimit;
+    public int? WarehouseLimit=>_warehouseLimit;
+    public int TotalCapacity=>CapacityFor(_robots);
+    internal void SetWarehouseLimit(int limit)=>_warehouseLimit=limit;
+    internal int CapacityFor(IEnumerable<Robot> robots)=>_warehouseLimit is int limit && _capacity!=0
+        ?Math.Min(limit,1+4*robots.Count(r=>r.WarehouseKeeper)):_capacity??Capacity;
+    internal bool Fits(IEnumerable<Robot> robots,IEnumerable<MaplePackage> packages,int reserved)
+        =>OccupiedSlots(robots,packages)+reserved<=CapacityFor(robots);
     internal void SetCapacity(int capacity){if(capacity<Count+ReservedReturns)throw new InvalidOperationException("Occupied hangar capacity.");_capacity=capacity;}
     private readonly List<Robot> _robots=new();
     public IReadOnlyList<Robot> Robots=>_robots;
@@ -154,17 +162,19 @@ public sealed class RobotStore
     }
     public Robot Remove(long id)
     {
-        var robot=_robots.Single(r=>r.Id==id);_robots.Remove(robot);return robot;
+        var robot=_robots.Single(r=>r.Id==id);
+        if(robot.WarehouseKeeper)throw new InvalidOperationException("Release the warehouse keeper reservation first.");
+        _robots.Remove(robot);return robot;
     }
     internal void Replace(IEnumerable<Robot> robots)
     {
         var next=robots.ToArray();
-        if(OccupiedSlots(next)>StorageLimit || next.Any(r=>!r.ValidIntegration) || next.Select(r=>r.Id).Distinct().Count()!=next.Length)throw new InvalidOperationException("Invalid robot store.");
+        if(!Fits(next,MaplePackages,ReservedReturns) || next.Any(r=>!r.ValidIntegration) || next.Select(r=>r.Id).Distinct().Count()!=next.Length)throw new InvalidOperationException("Invalid robot store.");
         _robots.Clear();_robots.AddRange(next);
     }
     internal RobotStore PlanningCopy()
     {
-        var result=new RobotStore();result.SetCapacity(TotalCapacity);foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);result._maplePackages=_maplePackages;return result;
+        var result=new RobotStore{_capacity=_capacity,_warehouseLimit=_warehouseLimit};foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);result._maplePackages=_maplePackages;return result;
     }
     internal void SetMaplePackages(MaplePackage[] packages)=>_maplePackages=packages;
     internal bool TryReceiveMaple(MaplePackage package,int reserved,Func<long,bool> shipping)

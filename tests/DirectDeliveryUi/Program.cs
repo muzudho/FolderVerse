@@ -99,7 +99,7 @@ class Checks:Game1{
   w.EquipmentMode=RobotEquipmentMode.Materials;
   typeof(RobotWorld).GetMethod("InitializeMapleSupply",F)!.Invoke(w.Robots,new object[]{w});
   long cargo=w.Robots.Create(0,RobotParts.Head).Id;
-  typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(w.Robots.Nodes[a],new object[]{new[]{new MaplePackage(cargo,16)}});
+  typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(w.Robots.Nodes[a],new object[]{new[]{new MaplePackage(cargo,16){Material=RawMaterial.PP}}});
   Call("SyncDirectSlots");
   int cargoSlot=((Dictionary<int,MaplePackage>)Call("DirectStoredMaterials",0)).Single(p=>p.Value.Id==cargo).Key;
   var at=Cell(0,0).Center;
@@ -110,7 +110,11 @@ class Checks:Game1{
   Set("_pointer",from);Set("_previousMouse",new MouseState());
   Call("DirectPairInput",Mouse(from,ButtonState.Pressed),true,false);
   Set("_pointer",to);Call("DirectPairInput",Mouse(to,ButtonState.Released),false,false);
-  Check(w.Robots.MapleShipments.Any(o=>o.Source==a && o.Target==b && o.PackageId==cargo),"Dragging maple reserves delivery to the other hangar");
+  Check(w.Robots.MapleShipments.Any(o=>o.Source==a && o.Target==b && o.PackageId==cargo),"Dragging PP reserves delivery to the other hangar");
+  var ppPreview=((int Blocked,MaplePackage[] Packages))typeof(RobotWorld).GetMethod("PreviewMapleArrivals",F)!
+    .Invoke(w.Robots,new object[]{w,b,w.Robots.Nodes[b]})!;
+  Check(ppPreview.Blocked==0 && ppPreview.Packages.Any(p=>p.Id==cargo && p.Material==RawMaterial.PP && p.Units==16),
+    "The arrival preview preserves the PP cargo type and amount");
   var forecast=new RobotStore();
   typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(forecast,new object[]{1});
   typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(forecast,new object[]{new[]{new MaplePackage(-1,32),new MaplePackage(-2,1)}});

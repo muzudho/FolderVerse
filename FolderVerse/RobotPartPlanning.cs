@@ -69,9 +69,11 @@ public sealed class RobotPartPlanning
             if(!world.Campaign.FunctionTransfers.CanReserve(world,order.Source,order.Target,order.FactoryOnly))continue;
             int a=order.Source,b=order.Target;
             if(order.FactoryOnly){NodeFunctionTransfers.MoveFactory(copy,a,b,preview:true);continue;}
-            copy.Nodes[b].SetCapacity(copy.Nodes[b].TotalCapacity+copy.Nodes[a].TotalCapacity);
+            if(!copy.Nodes[b].WarehouseLimit.HasValue)copy.Nodes[b].SetCapacity(copy.Nodes[b].TotalCapacity+copy.Nodes[a].TotalCapacity);
             copy.Nodes[b].Replace(copy.Nodes[b].Robots.Concat(copy.Nodes[a].Robots));copy.TransferMapleFunctions(a,b);copy.Nodes[a].Replace(Array.Empty<Robot>());copy.Nodes[a].SetCapacity(0);
-            copy.Workshops[b].AbsorbFunctions(copy.Workshops[a]);copy.Workshops[a]=RobotWorkshop.EmptyFunctions();
+            copy.Workshops[b].AbsorbFunctions(copy.Workshops[a]);
+            if(copy.Nodes[b].WarehouseLimit is int limit)copy.Workshops[b].SetStorageSlotLimit(limit);
+            copy.Workshops[a]=RobotWorkshop.EmptyFunctions();
             for(int n=0;n<hosts.Length;n++)if(hosts[n]==a)hosts[n]=b;
         }
         world.Robots.PreviewProductionIntakes(world,copy,hosts);
@@ -139,11 +141,12 @@ public sealed class RobotPartPlanning
         long result=Apply(world,copy,ProjectedLocalOrder(world,order),false);Orders.Add(order);_next++;return result;
         }catch{Orders.RemoveAll(o=>o.Number>=start);_next=start;Invalidate();throw;}
     }
-    public bool ReserveRole(WorldSetup world,int node,long id,HangarReservation role,int owner)
+    public bool ReserveRole(WorldSetup world,int node,long id,HangarReservation role,int owner,long? successor=null)
     {
         long start=_next;
         EnsureForecastRobot(world,id);
-        var copy=Preview(world).PlanningCopy();var order=new PlannedPartMove(_next,owner,node,node,id,0,null,role);
+        if(successor.HasValue)EnsureForecastRobot(world,successor.Value);
+        var copy=Preview(world).PlanningCopy();var order=new PlannedPartMove(_next,owner,node,node,id,0,successor,role);
         try{Apply(world,copy,ProjectedLocalOrder(world,order),false);Orders.Add(order);_next++;return true;}catch(InvalidOperationException){Orders.RemoveAll(o=>o.Number>=start);_next=start;Invalidate();return false;}
     }
     private static PlannedPartMove RelocateLocalOrder(PlannedPartMove order,int host)=>
@@ -181,6 +184,22 @@ public sealed class RobotPartPlanning
         if(source<0 || target<0 || target>=stock.Nodes.Length)throw new InvalidOperationException("使用する部品がありません");
         var robot=stock.Nodes[source].Robots.Single(r=>r.Id==order.RobotId);
         if(order.ExpectedSource!=0 && robot.Parts!=order.ExpectedSource)throw new InvalidOperationException("前の組替予約が実施されていません");
+        if(order.Role==HangarReservation.WarehouseSwap){
+            var store=stock.Nodes[target];
+            var successor=store.Robots.FirstOrDefault(r=>r.Id==order.TargetRobotId);
+            if(world.Campaign.RobotBattles.LockedNode(target) || source!=target || !robot.WarehouseKeeper || successor==null || successor.Parts!=RobotParts.Complete ||
+               successor.Stationed || successor.Disposal || world.Robots.MarchReserved(target,successor) || stock.ReservationBusy(target,successor.Id))
+                throw new InvalidOperationException("交代先に空いている完全体を選んでください");
+            store.Replace(store.Robots.Select(r=>r.Id==robot.Id?r with {WarehouseKeeper=false}:
+                r.Id==successor.Id?r with {WarehouseKeeper=true}:r));
+            return robot.Id;
+        }
+        if(order.Role==HangarReservation.Warehouse){
+            if(world.Campaign.RobotBattles.LockedNode(target) || world.Robots.MarchReserved(target,robot) || source!=target || !stock.ToggleReservation(target,robot.Id,order.Role,order.Owner))
+                throw new InvalidOperationException("格納庫の使用状況と上限を確認してください");
+            return robot.Id;
+        }
+        if(robot.WarehouseKeeper)throw new InvalidOperationException("倉庫管理人の予約を先に解除してください");
         if(order.Role!=HangarReservation.None){
             bool remove=order.Role switch {HangarReservation.Disposal=>robot.Disposal,HangarReservation.Defense=>robot.DefenseOnly,HangarReservation.Worker=>robot.FactoryWorker && !robot.HarvestWorker,HangarReservation.Harvest=>robot.HarvestWorker,_=>robot.InterceptOnly};
             var next=FreeRole(robot) with {Owner=order.Role==HangarReservation.Defense && !remove?order.Owner:robot.Owner,Disposal=order.Role==HangarReservation.Disposal && !remove,
@@ -195,6 +214,7 @@ public sealed class RobotPartPlanning
         }
         var receiver=order.TargetRobotId.HasValue?stock.Nodes.SelectMany(s=>s.Robots).FirstOrDefault(r=>r.Id==order.TargetRobotId):null;
         if(receiver!=null && order.ExpectedTarget!=0 && receiver.Parts!=order.ExpectedTarget)throw new InvalidOperationException("組立先の前の予約が実施されていません");
+        if(receiver?.WarehouseKeeper==true)throw new InvalidOperationException("倉庫管理人は組み替えできません");
         int receiverNode=receiver==null?target:Find(stock,receiver.Id);
         if(order.TargetRobotId.HasValue && receiver==null)throw new InvalidOperationException("組立先のロボットがありません");
         if(receiver?.Id==robot.Id && source==target)return robot.Id;

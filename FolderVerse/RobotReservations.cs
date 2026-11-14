@@ -2,7 +2,7 @@ namespace FolderVerse;
 using System;
 using System.Linq;
 
-public enum HangarReservation { None,Disposal,Defense,Worker,Intercept,Harvest }
+public enum HangarReservation { None,Disposal,Defense,Worker,Intercept,Harvest,Warehouse,WarehouseSwap }
 public sealed partial class RobotWorld
 {
     public ConquestCampaign Reservations {get;set;}
@@ -16,7 +16,7 @@ public sealed partial class RobotWorld
     public bool AssemblyLocked(int node,Robot robot)=>BaseAssemblyLocked(node,robot) || PartPlanning.ReservesRobot(robot.Id) || DirectDelivery.LockedParts(node,robot.Id)!=0 || _arrivalLocked?.Invoke(robot.Id)==true;
     public bool PartLocked(int node,Robot robot,RobotParts part)=>BaseAssemblyLocked(node,robot) || (DirectDelivery.LockedParts(node,robot.Id)&robot.ConnectedParts(part))!=0;
     public bool CanShip(int node,Robot robot)=>!robot.Stationed && !Workshops[node].IsDisposing(robot.Id) && !PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) && !MarchReserved(node,robot) && !PartPlanning.ReservesRobot(robot.Id) && DirectDelivery.LockedParts(node,robot.Id)==0 && _arrivalLocked?.Invoke(robot.Id)!=true;
-    private bool ReservationBusy(int node,long id)=>Nodes[node].Robots.Any(r=>r.Id==id && (r.ReturnHomeCommander.HasValue || r.LongDeliveryNumber.HasValue)) || Reservations?.RobotBattles.LockedNode(node)==true || Workshops[node].IsDisposing(id) || PendingEdits.Any(e=>e.Ids.Contains(id)) || DirectDelivery.LockedParts(node,id)!=0;
+    internal bool ReservationBusy(int node,long id)=>Nodes[node].Robots.Any(r=>r.Id==id && (r.ReturnHomeCommander.HasValue || r.LongDeliveryNumber.HasValue)) || Reservations?.RobotBattles.LockedNode(node)==true || Workshops[node].IsDisposing(id) || PendingEdits.Any(e=>e.Ids.Contains(id)) || DirectDelivery.LockedParts(node,id)!=0;
     private Robot WithoutRole(Robot robot)=>robot with {Disposal=false,DefenseOnly=false,InterceptOnly=false,FactoryWorker=false,DefenseFlag=null};
     public bool CanReserveSortie(int node,Robot robot)=>!ReservationBusy(node,robot.Id) && Training[robot.Owner].Eligible(WithoutRole(robot));
     private void RemoveMarchReservation(int node,Robot robot)
@@ -103,6 +103,17 @@ public sealed partial class RobotWorld
     {
         if(node<0 || node>=Nodes.Length || robot==null)return false;
         int country=commander??robot.Owner;if(country<0 || country>=Training.Length)return false;
+        var store=Nodes[node];
+        if(kind==HangarReservation.Warehouse){
+            if(store.WarehouseLimit is not int limit || ReservationBusy(node,robot.Id))return false;
+            if(robot.WarehouseKeeper){
+                var next=store.Robots.Select(r=>r.Id==robot.Id?r with {WarehouseKeeper=false}:r);
+                return store.Fits(next,store.MaplePackages,store.ReservedReturns+Workshops[node].ReservedSlots);
+            }
+            return robot.Parts==RobotParts.Complete && !robot.Stationed && !robot.Disposal &&
+                !MarchReserved(node,robot) && store.TotalCapacity<limit;
+        }
+        if(robot.WarehouseKeeper)return false;
         if(robot.DefenseFlag is {} flag && flag.Commander!=country)return false;
         if((robot.Stationed || robot.Disposal || MarchReserved(node,robot)) && robot.Owner!=country)return false;
         var workshop=Workshops[node];
@@ -124,6 +135,10 @@ public sealed partial class RobotWorld
     {
         var store=Nodes[node];var robot=store.Robots.Single(r=>r.Id==id);
         if(!CanSetReservation(node,robot,kind,commander))return false;
+        if(kind==HangarReservation.Warehouse){
+            store.Replace(store.Robots.Select(r=>r.Id==id?r with {WarehouseKeeper=!r.WarehouseKeeper}:r));
+            return true;
+        }
         bool remove=kind==HangarReservation.Disposal?robot.Disposal:kind==HangarReservation.Defense?robot.DefenseOnly:kind==HangarReservation.Intercept?robot.InterceptOnly:robot.FactoryWorker && robot.HarvestWorker==(kind==HangarReservation.Harvest);
         RemoveMarchReservation(node,robot);
         int country=commander??robot.Owner;

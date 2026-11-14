@@ -194,7 +194,7 @@ public partial class Game1
                     var labelArea=new Rectangle(cell.X,cell.Y+cell.Height*208/280,cell.Width,Math.Max(1,cell.Height*24/280));
                     _ui.Center(robot.Id<0?"組替予定":"ID "+robot.Id,labelArea,Math.Min(.32f,cell.Width/510f),Cream);
                     labelArea.Y=cell.Y+cell.Height*242/280;
-                    if(robot.Stationed || robot.Disposal)_ui.Center(robot.HarvestWorker?"採取員":robot.FactoryWorker?"製造作業員":robot.InterceptOnly?"迎撃専用":robot.DefenseOnly?"守備専用":"廃棄予約",labelArea,Math.Min(.24f,cell.Width/680f),color);
+                    if(robot.Stationed || robot.Disposal)_ui.Center(robot.WarehouseKeeper?"倉庫管理人":robot.HarvestWorker?"採取員":robot.FactoryWorker?"製造作業員":robot.InterceptOnly?"迎撃専用":robot.DefenseOnly?"守備専用":"廃棄予約",labelArea,Math.Min(.24f,cell.Width/680f),color);
                     else if(robot.IntegratedParts!=0)_ui.Center(IntegratedLabel(robot.IntegratedParts),labelArea,Math.Min(.24f,cell.Width/680f),Cream);
                 }
             }

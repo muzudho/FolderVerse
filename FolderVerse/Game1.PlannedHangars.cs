@@ -19,7 +19,14 @@ public partial class Game1
     }
     private static readonly Rectangle HangarUndoButton=new(606,252,258,24);
     private int[] PlanningFactorySources(int node)=>DomesticOperationsAllowed?_setup.Campaign.FunctionTransfers.Orders.Where(o=>!o.FactoryOnly && o.Target==node).Select(o=>o.Source).Prepend(node).ToArray():new[]{node};
-    private RobotWorkshop PlanningWorkshop(int node)=>PlanningFactorySources(node).Length==1?_setup.Robots.Workshops[node]:RobotWorkshop.PlanningView(PlanningFactorySources(node).Select(n=>_setup.Robots.Workshops[n]));
+    private RobotWorkshop PlanningWorkshop(int node)
+    {
+        var sources=PlanningFactorySources(node);
+        if(sources.Length==1)return _setup.Robots.Workshops[node];
+        var workshop=RobotWorkshop.PlanningView(sources.Select(n=>_setup.Robots.Workshops[n]));
+        if(_setup.Robots.Nodes[node].WarehouseLimit is int limit)workshop.SetStorageSlotLimit(limit);
+        return workshop;
+    }
     private bool PlanningCanAttackFrom(int owner,int source,int target)=>PlanningFunctional(source) && _setup.Nodes.All[source].Owner==owner && _setup.Campaign.RobotBattles.MarchTargets(_setup,source).Contains(target);
     private int PlanningMoveSource(PlannedPartMove order)
     {

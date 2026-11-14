@@ -27,7 +27,7 @@ public partial class Game1
         RobotWorkArt.DrawFlag(_ui,new Rectangle(cell.Right-49,cell.Top+18,40,64),_setup.OwnerColor(robot.ShoeOwner),wave);
     }
     private string HangarReservationLabel(Robot robot)
-        =>robot.HarvestWorker?"採取員":robot.FactoryWorker?"製造作業員予約":robot.InterceptOnly?"迎撃専用予約":robot.DefenseOnly?"守備専用予約":robot.Disposal?"廃棄予約":_setup.Robots.MarchReserved(_populationNode,robot)?"出撃予約":"";
+        =>robot.WarehouseKeeper?"倉庫管理人":robot.HarvestWorker?"採取員":robot.FactoryWorker?"製造作業員予約":robot.InterceptOnly?"迎撃専用予約":robot.DefenseOnly?"守備専用予約":robot.Disposal?"廃棄予約":_setup.Robots.MarchReserved(_populationNode,robot)?"出撃予約":"";
     private void DrawHangarReservationLabel(Rectangle bounds,Robot robot,string label)
     {
         int country=WorkReservationOwner(robot);if(country<0)country=robot.Owner;

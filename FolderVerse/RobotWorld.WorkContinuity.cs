@@ -66,7 +66,7 @@ public sealed partial class RobotWorld
     private bool PhysicalEditBusy(int node,Robot robot)=>node<0 || node>=Nodes.Length || Reservations?.RobotBattles.LockedNode(node)==true || Workshops[node].IsDisposing(robot.Id) || PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) || _arrivalLocked?.Invoke(robot.Id)==true;
     public bool CanEditReservedPart(int node,Robot robot,int country)
     {
-        if(robot.LongDeliveryNumber.HasValue || robot.ReturnHomeCommander.HasValue || PhysicalEditBusy(node,robot))return false;
+        if(robot.WarehouseKeeper || robot.LongDeliveryNumber.HasValue || robot.ReturnHomeCommander.HasValue || PhysicalEditBusy(node,robot))return false;
         int work=WorkCountry(node,robot);return work<0 || work==country;
     }
     private Robot AfterPartEdit(int node,Robot before,Robot after,bool swap)

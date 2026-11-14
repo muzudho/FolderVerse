@@ -23,6 +23,8 @@ public sealed partial class RobotWorld
     public bool MapleSupplyEnabled=>_mapleDeposits!=null;
     public IReadOnlyList<MapleShipment> MapleShipments=>_mapleShipments??(IReadOnlyList<MapleShipment>)Array.Empty<MapleShipment>();
     public int MapleDeposit(int node)=>_mapleDeposits?[node]??0;
+    internal void AddStarterRaw(RobotStore store,MaplePackage package)=>
+        store.SetMaplePackages(store.MaplePackages.Append(package with {Id=_nextId++}).ToArray());
     public int MaplePlantingCount(int node)=>(_mapleHarvested?[node]??0) switch
     {
         0=>0,

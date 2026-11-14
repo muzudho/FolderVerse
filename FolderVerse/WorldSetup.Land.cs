@@ -55,12 +55,19 @@ public sealed partial class WorldSetup
             }else{
                 int count=1+random.Next(8);
                 var store=Robots.Nodes[node.Id];
-                int workers=TutorialStep==0?Math.Min(workshop.BaseLineCount,store.TotalCapacity):0;
+                if(TutorialStep==0 && !Routes.NearWhirlpool(node) &&
+                   new SeedRandom(unchecked(fortuneSeed^(node.Id+1)*104729)).Next(100)<(node.Terrain==TravelTerrain.Mountain?70:92))
+                    store.Add(Robots.Create(node.Owner,RobotParts.Complete) with {WarehouseKeeper=true});
+                int vacant=store.StorageLimit-store.Count;
+                int workers=TutorialStep==0?Math.Min(workshop.BaseLineCount,Math.Max(0,vacant-2)):0;
                 var harvestMaterial=RobotWorld.RawMaterials.FirstOrDefault(material=>Robots.RawDeposit(node.Id,material)>0);
-                bool harvest=TutorialStep==0 && hasFactory && Robots.RawDeposit(node.Id,harvestMaterial)>0 && workshop.LineLimit>0 && store.TotalCapacity>1;
-                if(harvest)workers=Math.Min(Math.Max(2,workers),Math.Min(workshop.LineLimit,store.TotalCapacity-1));
+                bool harvest=TutorialStep==0 && hasFactory && Robots.RawDeposit(node.Id,harvestMaterial)>0 && workshop.LineLimit>0 && vacant>=3;
+                if(harvest)workers=Math.Min(Math.Max(2,workers),Math.Min(workshop.LineLimit,vacant-1));
                 if(TutorialStep==0)workshop.RemoveProductionLines();
-                int capacity=Math.Max(0,store.TotalCapacity-workers-(harvest?1:0));
+                int harvestSpace=harvest?1:0;
+                bool starterStock=Robots.OtherRawSupplyEnabled && workers>(harvest?1:0) &&
+                    vacant-workers-harvestSpace>=2;
+                int capacity=Math.Max(0,vacant-workers-harvestSpace-(starterStock?2:0));
                 int scaled=Math.Min(count,capacity)*(TutorialStep==0?robotScatterPercent:100)+scatterRemainder;
                 int placed=scaled/100;
                 scatterRemainder=scaled%100;
@@ -75,6 +82,7 @@ public sealed partial class WorldSetup
                 }
                 if(workers>0){
                     Robots.SyncWorkers(node.Id);
+                    if(starterStock)PlaceStarterStock(node,harvestSpace);
                     if(harvest)
                         foreach(var lane in workshop.ProductionLines.Where(l=>l.HarvestOnly))lane.SelectMapleHarvest(1,harvestMaterial);
                 }
@@ -95,6 +103,26 @@ public sealed partial class WorldSetup
         Routes.RefreshDisplay();Campaign.Reset();LandPending=false;
         PlaceInitialTin(fortuneSeed);
         Salvage.Initialize(this);
+    }
+
+    private void PlaceStarterStock(Node node,int harvestSpace)
+    {
+        var store=Robots.Nodes[node.Id];
+        var workshop=Robots.Workshops[node.Id];
+        foreach(var lane in workshop.ProductionLines.Where(l=>!l.HarvestOnly && l.Manufacturing))
+        {
+            var product=lane.CurrentProductionPlan.Preview(node.Owner);
+            var inputs=RobotWorld.RawMaterials.Select(m=>(Material:m,Units:RobotWorld.RawCost(product,m)))
+                .Where(input=>input.Units>0).ToArray();
+            var packages=inputs.Select(input=>new MaplePackage(0,Math.Max(RobotWorld.MaplePackageSize,input.Units))
+                {Material=input.Material}).ToArray();
+            var forecast=new RobotStore();
+            forecast.SetCapacity(store.TotalCapacity);
+            forecast.Replace(store.Robots);
+            if(packages.Length==0 || !packages.All(p=>forecast.TryReceiveMaple(p,harvestSpace+1,_=>false)))continue;
+            foreach(var package in packages)Robots.AddStarterRaw(store,package);
+            break;
+        }
     }
 
     private void PlaceInitialTin(int seed)
@@ -134,18 +162,13 @@ public sealed partial class WorldSetup
         foreach(var region in Nodes.All.GroupBy(node=>(node.Cell,node.Terrain))){
             var (cell,terrain)=region.Key;
             int area=TerrainArea(cell,terrain);
-            double mean=terrain==TravelTerrain.Land
-                ? area<=50 ? 1+area/10.0 : 6+(area-50)*.08
-                : 2+Math.Max(0,area-50)*.04;
             foreach(var node in region){
-                var random=new SeedRandom(unchecked(WorldSeed^(node.Id+1)*7919));
-                int center=(int)mean;
-                if(random.Unit()<mean-center)center++;
-                int spread=Math.Min(terrain==TravelTerrain.Land?2:1,Math.Min(center-1,RobotStore.Capacity-center));
-                int capacity=center+random.Next(2*spread+1)-spread;
-                if(Routes.NearWhirlpool(node))capacity=1;
-                Robots.Nodes[node.Id].SetCapacity(capacity);
-                Robots.Workshops[node.Id].SetStorageSlotLimit(capacity);
+                int limit=terrain==TravelTerrain.Land
+                    ?Math.Min(NodeFunctionTransfers.MaximumCapacity,5+area*55/100)
+                    :4;
+                if(Routes.NearWhirlpool(node))limit=1;
+                Robots.Nodes[node.Id].SetWarehouseLimit(limit);
+                Robots.Workshops[node.Id].SetStorageSlotLimit(limit);
             }
         }
     }

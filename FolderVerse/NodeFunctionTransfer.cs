@@ -42,6 +42,13 @@ public sealed class NodeFunctionTransfers
                robots.Nodes[target].OccupiedSlots(robots.Nodes[target].Robots.Concat(workers).Concat(incomingWorkers))>
                robots.Nodes[target].StorageLimit-robots.Workshops[target].ReservedSlots)return false;
         }
+        else if(w.Robots.Nodes[target].WarehouseLimit.HasValue){
+            var incoming=Orders.Where(o=>!o.FactoryOnly && o.Source!=source && o.Target==target).Select(o=>o.Source).Append(source).Append(target).ToArray();
+            var stores=incoming.Select(n=>w.Robots.Nodes[n]).ToArray();
+            var robots=stores.SelectMany(s=>s.Robots).Concat(Orders.Where(o=>o.FactoryOnly && o.Source!=source && o.Target==target)
+                .SelectMany(o=>w.Robots.Nodes[o.Source].Robots.Where(r=>r.FactoryWorker))).ToArray();
+            if(!w.Robots.Nodes[target].Fits(robots,stores.SelectMany(s=>s.MaplePackages),incoming.Sum(n=>workshops[n].ReservedSlots)))return false;
+        }
         else if(capacity>MaximumCapacity)return false;
         return a.Functional && b.Functional && (!authority || w.Relations.Controls(a.Owner) && w.Relations.Controls(b.Owner)) && w.Relations.Allied(a.Owner,b.Owner) &&
             !battles.LockedNode(source) && !battles.LockedNode(target) && !battles.LockedEdge(source,target) &&
@@ -84,12 +91,13 @@ public sealed class NodeFunctionTransfers
                 w.Robots.SyncWorkers(b);
                 continue;
             }
-            target.SetCapacity(checked(offset+source.TotalCapacity));
+            if(!target.WarehouseLimit.HasValue)target.SetCapacity(checked(offset+source.TotalCapacity));
             target.Replace(target.Robots.Concat(source.Robots.Select(r=>(r.DefenseOnly?r.WithoutDefenseReservation():r) with {FunctionDisplayNode=r.FunctionDisplayNode??a})).ToArray());
             w.Robots.TransferMapleFunctions(a,b);
             source.Replace(Array.Empty<Robot>());source.SetCapacity(0);
             w.Robots.Workshops[a].PreserveFunctionOrigin(a);w.Robots.Workshops[b].PreserveFunctionOrigin(b);
             w.Robots.Workshops[b].AbsorbFunctions(w.Robots.Workshops[a]);
+            if(target.WarehouseLimit is int limit)w.Robots.Workshops[b].SetStorageSlotLimit(limit);
             w.Robots.Workshops[a]=RobotWorkshop.EmptyFunctions();
             w.Nodes.All[b].FunctionUnits=checked(w.Nodes.All[b].FunctionUnits+w.Nodes.All[a].FunctionUnits);w.Nodes.All[a].FunctionUnits=0;
             foreach(var node in w.Nodes.All)if(node.FunctionHost==a)node.FunctionHost=b;

@@ -18,14 +18,22 @@ public partial class Game1
     private string _deliveryTagHint="";
     private static readonly Rectangle NodeAssemblyTile=new(678,210,190,40),HangarAutoCheck=new(84,950,350,24);
     private HangarReservation _hangarReservation;
+    private long? _warehouseSwapKeeper;
+    private bool ShowsHangarReservation(int index)=>index switch {
+        4=>_setup.Robots.MapleSupplyEnabled,
+        5 or 6=>_setup.Robots.Nodes[HangarPlanningNode].WarehouseLimit.HasValue,
+        _=>true
+    };
     private static readonly Rectangle HangarAssemblyButton=new(84,860,135,42);
     private static Rectangle HangarReservationButton(int i)
     {
+        if(i==5)return new(272,908,100,42);
+        if(i==6)return new(374,908,100,42);
         int position=i switch {0=>4,1=>2,2=>0,3=>3,_=>1};
         return new(225+position*130,860,123,42);
     }
     private int HangarReservationCountry(Robot robot)=>_hangarReservation==HangarReservation.Defense || robot?.DefenseFlag!=null?_setup.PlayerSlot:robot?.Owner??_setup.PlayerSlot;
-    private bool HangarReservationAccessible(Robot robot)=>robot!=null && !VisitingForeignHangar && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) && (_hangarReservation==HangarReservation.Defense || CanManageNodeFactory(robot.Owner));
+    private bool HangarReservationAccessible(Robot robot)=>robot!=null && !VisitingForeignHangar && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) && (_hangarReservation is HangarReservation.Defense or HangarReservation.Warehouse || CanManageNodeFactory(robot.Owner));
     private bool HangarReservationEnabled(Robot robot)=>HangarReservationAccessible(robot) && PlanningStock.CanSetReservation(HangarPlanningNode,robot,_hangarReservation,HangarReservationCountry(robot));
     private const int HangarColumns=3, HangarSlotsPerPage=6;
     private System.Collections.Generic.IEnumerable<int> VisibleAssemblySlots()=>
@@ -111,7 +119,8 @@ public partial class Game1
         if(click && NodeAutomationClick(_pointer)){_hangarDrag=null;return;}
         if(escape){if(_hangarDrag.HasValue)_hangarDrag=null;else CloseNodeInspector();return;}
         if(click && HangarAssemblyButton.Contains(_pointer)){_hangarAbandonMode=false;_hangarReservation=HangarReservation.None;_hangarDrag=null;_hangarMessage="";return;}
-        if(click && !VisitingForeignHangar && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))for(int i=0;i<(_setup.Robots.MapleSupplyEnabled?5:4);i++)if(HangarReservationButton(i).Contains(_pointer)){_hangarAbandonMode=false;var kind=(HangarReservation)(i+1);_hangarReservation=_hangarReservation==kind?HangarReservation.None:kind;_hangarDrag=null;return;}
+        if(click && !VisitingForeignHangar && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))for(int i=0;i<7;i++)if(ShowsHangarReservation(i) && HangarReservationButton(i).Contains(_pointer)){_warehouseSwapKeeper=null;_hangarAbandonMode=false;var kind=(HangarReservation)(i+1);_hangarReservation=_hangarReservation==kind?HangarReservation.None:kind;_hangarDrag=null;
+            _hangarMessage=_hangarReservation switch {HangarReservation.WarehouseSwap=>"現在の倉庫管理人を選んでください",HangarReservation.Warehouse=>"任命する完全体か、解除する倉庫管理人を選んでください",_=>""};return;}
         if(click && (NodeOfficeTile.Contains(_pointer) || NodeFactoryTile.Contains(_pointer) || NodeTransportTile.Contains(_pointer) || NodeDisposalTile.Contains(_pointer) || NodeAssemblyTile.Contains(_pointer)))
         {_hangarAbandonMode=false;_hangarDrag=null;NodeDialogClick(new Point(_pointer.X+NodeInspectorOffset,_pointer.Y),new KeyboardState());return;}
         if(click && HangarAutoCheck.Contains(_pointer))
@@ -130,6 +139,15 @@ public partial class Game1
             {
                 var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);if(robot==null)continue;
                 var cell=AssemblyCell(slot);
+                if(_hangarReservation==HangarReservation.WarehouseSwap && cell.Contains(_pointer)){
+                    if(robot.WarehouseKeeper){
+                        _warehouseSwapKeeper=robot.Id;_hangarMessage="後任の完全体ロボットを選んでください";
+                    }else if(_warehouseSwapKeeper is long keeper && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) &&
+                        _setup.Robots.PartPlanning.ReserveRole(_setup,_populationNode,keeper,HangarReservation.WarehouseSwap,_setup.Nodes.All[_populationNode].Owner,robot.Id)){
+                        _warehouseSwapKeeper=null;_hangarMessage="倉庫管理人の交代を予約しました";
+                    }else _hangarMessage=_warehouseSwapKeeper.HasValue?"後任に予約のない完全体を選んでください":"現在の倉庫管理人を選んでください";
+                    return;
+                }
                 if(_hangarReservation!=HangarReservation.None && cell.Contains(_pointer)){
                     bool accepted=HangarReservationEnabled(robot) && _setup.Robots.PartPlanning.ReserveRole(_setup,_populationNode,robot.Id,_hangarReservation,HangarReservationCountry(robot));
                     if(accepted){
@@ -144,7 +162,8 @@ public partial class Game1
                     }else if(_hangarReservation==HangarReservation.Defense && HangarReservationAccessible(robot) && _setup.Robots.ReservationBlockedByTraining(_populationNode,robot,_hangarReservation,HangarReservationCountry(robot))){
                         _hangarTrainingCountry=HangarReservationCountry(robot);_hangarTrainingRobot=robot.Id;
                         _hangarMessage="この国の調練により、自国パーツ 3/3 のロボットだけを戦闘に出します";
-                    }else _hangarMessage="予約国・完全体・自国パーツ・出撃条件・処理中の状態を確認してください";
+                    }else if(_hangarReservation==HangarReservation.Warehouse)_hangarMessage="格納庫の使用状況・上限と、ロボットの予約を確認してください";
+                    else _hangarMessage="予約国・完全体・自国パーツ・出撃条件・処理中の状態を確認してください";
                     return;
                 }
                 if(!CanOpenHangar || _setup.Campaign.RobotBattles.LockedNode(_populationNode))continue;
@@ -308,11 +327,12 @@ public partial class Game1
         _ui.Text(hoveringManagement?hover:_hangarAbandonMode?"部位を選択：パーツを放棄 / 区画の余白：個体を放棄":HangarPlanningFailure.Length>0?HangarPlanningFailure:_hangarMessage.Length>0 && !hoveringPart?_hangarMessage:hover,new(84,838),.32f,Cream);
         _ui.Button(HangarAssemblyButton,"組み立て・分解",DomesticOperationsAllowed && !reservationMode?Accent:Muted,.36f);
         if(!VisitingForeignHangar){
-            string[] labels={"廃棄予約","守備専用予約","製造作業員予約","迎撃専用予約","採取作業員予約"};
-            for(int i=0;i<(_setup.Robots.MapleSupplyEnabled?labels.Length:4);i++){
+            string[] labels={"廃棄予約","守備専用予約","製造作業員予約","迎撃専用予約","採取作業員予約","倉庫管理人予約","倉庫管理人交代"};
+            for(int i=0;i<labels.Length;i++){
+                if(!ShowsHangarReservation(i))continue;
                 var button=HangarReservationButton(i);var color=_hangarReservation==(HangarReservation)(i+1)?Accent:Muted;
                 _ui.Button(button,"",color,.36f);
-                _ui.Center(labels[i],button,.32f,UiPainter.ContrastInk(color));
+                _ui.Center(labels[i],button,i>=5?.24f:.32f,UiPainter.ContrastInk(color));
             }
         }
         if(HangarPlanningNode==_populationNode && _setup.Nodes.All[_populationNode].Owner==_setup.PlayerSlot)_ui.Button(HangarAbandonButton,"放棄",_hangarAbandonMode?Accent:Muted,.42f);
