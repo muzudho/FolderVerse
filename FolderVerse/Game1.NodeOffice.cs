@@ -26,11 +26,23 @@ public partial class Game1
             if(active[i])_ui.Box(new(r.X,r.Y,r.Width,4),Cream);
         }
     }
-    private static readonly (NodePurpose Purpose,string Label)[] NodePurposes={
+    private static readonly (NodePurpose? Purpose,string Label)[] NodePurposes={
         (NodePurpose.General,"自由用途型"),(NodePurpose.Harvest,"採取重点型"),(NodePurpose.Manufacturing,"製造重点型"),
-        (NodePurpose.Relay,"輸送の中継地点"),(NodePurpose.Defense,"防衛特化拠点"),(NodePurpose.Frontline,"攻撃前線")
+        (NodePurpose.Relay,"輸送の中継地点"),(NodePurpose.Defense,"防衛特化拠点"),(NodePurpose.Frontline,"攻撃前線"),(null,"港")
     };
-    private static Rectangle NodePurposeButton(int index)=>new(84+index%3*261,539+index/3*35,255,32);
+    private static Rectangle NodePurposeButton(int index)=>new(84+index*112,531,106,72);
+    private string NodePurposeDisabledReason(Node node,NodePurpose? purpose)
+    {
+        if(purpose==null)return node.IsHarbor?"港は陸と海を結ぶ地点です":"この地点は港ではありません";
+        if(!node.Functional)return "無機能地点では用途を変更できません";
+        if(node.Purpose==NodePurpose.Relay)return "中継地点では全機能移転のみできます";
+        if(purpose==NodePurpose.Relay)return "工場だけを移転すると中継地点になります";
+        if(purpose==NodePurpose.Harvest && !RobotWorld.RawMaterials.Any(m=>_setup.Robots.RawDeposit(node.Id,m)>0))
+            return "この地域では何も採れません";
+        if(!DomesticOperationsAllowed)return "用途を変更できるのは内政中です";
+        if(!_setup.Relations.Controls(node.Owner))return "この地点の用途を変更する権限がありません";
+        return null;
+    }
     private bool NodePurposeClick(Point pointer)
     {
         if(!_nodeOfficeOpen)return false;
@@ -38,8 +50,7 @@ public partial class Game1
         for(int i=0;i<NodePurposes.Length;i++){
             if(!NodePurposeButton(i).Contains(pointer))continue;
             var purpose=NodePurposes[i].Purpose;
-            if(DomesticOperationsAllowed && _setup.Relations.Controls(node.Owner) && node.Functional &&
-                node.Purpose!=NodePurpose.Relay && purpose!=NodePurpose.Relay)node.Purpose=purpose;
+            if(purpose is NodePurpose value && NodePurposeDisabledReason(node,purpose)==null)node.Purpose=value;
             return true;
         }
         return false;
@@ -48,10 +59,14 @@ public partial class Game1
     {
         for(int i=0;i<NodePurposes.Length;i++){
             var (purpose,label)=NodePurposes[i];
-            bool enabled=DomesticOperationsAllowed && _setup.Relations.Controls(node.Owner) && node.Functional &&
-                node.Purpose!=NodePurpose.Relay && purpose!=NodePurpose.Relay;
+            bool enabled=NodePurposeDisabledReason(node,purpose)==null;
+            bool selected=purpose==null?node.IsHarbor:node.Purpose==purpose;
             var area=NodePurposeButton(i);
-            _ui.Button(area,node.Purpose==purpose?"● "+label:label,node.Purpose==purpose?Accent:enabled?Muted:Muted*.55f,.37f);
+            var color=enabled?(selected || area.Contains(_pointer)?Accent:Muted):Muted*.48f;
+            _ui.Button(area,"",color,.3f);
+            if(selected)_ui.Box(new(area.X,area.Y,area.Width,3),enabled?Cream:Cream*.55f);
+            CubeNet.DrawPurposeIcon(_ui,purpose,new(area.Center.X,area.Y+31),node.Terrain==TravelTerrain.Sea,enabled || selected);
+            _ui.Center(label,new(area.X,area.Bottom-24,area.Width,24),.28f,enabled?UiPainter.ContrastInk(color):Cream*.55f);
         }
         string hint=node.Purpose switch {
             NodePurpose.Harvest=>"採取 −10％ / 製造 ＋10％",
@@ -80,5 +95,16 @@ public partial class Game1
             _ui.Text(report.Action,new(84,869),Math.Min(.32f,780/Math.Max(1,_font.MeasureString(report.Action).X)),Cream);
         }
         DrawFunctionTransferOffice();
+        for(int i=0;i<NodePurposes.Length;i++){
+            if(!NodePurposeButton(i).Contains(_pointer))continue;
+            var (purpose,label)=NodePurposes[i];
+            var reason=NodePurposeDisabledReason(node,purpose);
+            if(reason==null)break;
+            var popup=new Rectangle(Math.Clamp(NodePurposeButton(i).Center.X-190,84,488),611,380,76);
+            DrawRulebookPaper(popup);
+            _ui.Text(label,new(popup.X+19,popup.Y+11),.37f,RulebookInk);
+            _ui.Text(reason,new(popup.X+19,popup.Y+37),.32f,RulebookInk);
+            break;
+        }
     }
 }
