@@ -136,7 +136,7 @@ public partial class Game1
             var robot=stock.ElementAtOrDefault(stockPage*12+slot);
             if(robot==null || _manufacturingFlights.Any(f=>f.Arrival.Product.Id==robot.Id))continue;
             bool fresh=!_manufacturingInitial.Contains(robot.Id);
-            DrawRobotGlyph(new(box.X+55,box.Y+12,82,125),robot,whiteOutline:true);
+            DrawManufacturingProduct(new(box.X+55,box.Y+12,82,125),robot);
             _ui.Center(fresh?"今回の入荷予約":_setup.Robots.ProductionIntakes.Any(i=>i.Product.Id==robot.Id)?"入荷予約":"格納済",
                 new(box.X,box.Bottom-42,box.Width,30),.32f,fresh?Accent:Cream);
         }
@@ -156,10 +156,16 @@ public partial class Game1
                 var to=new Vector2(1111+slot%4*207,315+slot%12/4*215);
                 var at=Vector2.Lerp(from,to,MathHelper.SmoothStep(0,1,flight));
                 int width=(int)MathHelper.Lerp(72,82,flight),height=(int)MathHelper.Lerp(88,125,flight);
-                DrawRobotGlyphCore(new((int)at.X-width/2,(int)at.Y-height/2,width,height),arrival.Product,true,1,null,showIntegratedMaterial:true);
+                DrawManufacturingProduct(new((int)at.X-width/2,(int)at.Y-height/2,width,height),arrival.Product);
             }
         }
         _ui.Center("できたパーツは入荷予約へ。次の配送で格納庫に入ります。",new(54,950,1120,60),.43f,Cream);
         if(!_setup.Industry.Pending && _manufacturingFlights.Count==0 && !ComputerExhibition)_ui.Button(IndustryContinue,"次の内政へ",Accent,.65f);
+    }
+
+    private void DrawManufacturingProduct(Rectangle bounds,Robot product)
+    {
+        bool materials=_setup.EquipmentMode==RobotEquipmentMode.Materials;
+        DrawRobotGlyphCore(bounds,product,true,1,null,showIntegratedMaterial:materials,allowCaptain:materials);
     }
 }

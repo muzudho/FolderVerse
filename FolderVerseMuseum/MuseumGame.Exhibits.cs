@@ -82,7 +82,7 @@ internal sealed partial class MuseumGame
             {
                 Center("ロボットパーツ格納庫", new(184, 24, 552, 48), Paper, 1.3f);
                 _parts.Draw(Box, Center, ToCanvas(Mouse.GetState().Position));
-                Center("頭・胴・脚を同じ段へドラッグして入れ替え", new(40, 526, 660, 42), Paper, .95f);
+                Center(_parts.IsIntegrated?"一体型はつながったまま展示":"頭・胴・脚を同じ段へドラッグして入れ替え", new(40, 526, 660, 42), Paper, .95f);
                 Button(Reset, "リセット / R");
             }
         }
@@ -111,7 +111,8 @@ internal sealed partial class MuseumGame
             else OpenPage(Page.Parts);
             return;
         }
-        _parts.CheckSwap();
-        Exit();
+        if(_smokeFrame==6){_parts.CheckSwap();_parts.Input(new Point(470,105),true,false);}
+        else if(_smokeFrame==7)_parts.Input(new Point(730,105),true,false);
+        else Exit();
     }
 }

@@ -5,6 +5,12 @@
     <Size>22</Size>
     <Style>Regular</Style>
     <CharacterRegions>
+      <CharacterRegion><Start>分</Start><End>分</End></CharacterRegion>
+      <CharacterRegion><Start>割</Start><End>割</End></CharacterRegion>
+      <CharacterRegion><Start>一</Start><End>一</End></CharacterRegion>
+      <CharacterRegion><Start>体</Start><End>体</End></CharacterRegion>
+      <CharacterRegion><Start>展</Start><End>展</End></CharacterRegion>
+      <CharacterRegion><Start>示</Start><End>示</End></CharacterRegion>
       <CharacterRegion><Start> </Start><End>~</End></CharacterRegion>
       <CharacterRegion><Start>ぁ</Start><End>ゖ</End></CharacterRegion>
       <CharacterRegion><Start>ァ</Start><End>ー</End></CharacterRegion>

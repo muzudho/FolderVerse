@@ -9,6 +9,10 @@ internal sealed class RobotPartsExhibit
     private static readonly Color[] Paint = { new(193, 96, 84), new(82, 168, 190), new(107, 174, 124) };
     private readonly int[,] _grade = new int[3, 3];
     private (int Bay, int Part)? _drag;
+    private int _view;
+    private static readonly string[] Views = { "分割型", "頭/胴一体型", "胴/脚一体型" };
+    internal bool IsIntegrated => _view != 0;
+    private static Rectangle Tab(int index)=>new(101+index*261,86,218,38);
 
     internal RobotPartsExhibit() => Reset();
     internal void Reset()
@@ -25,6 +29,10 @@ internal sealed class RobotPartsExhibit
     internal void Input(Point at, bool pressed, bool released)
     {
         if (!pressed && !released) return;
+        if(pressed)
+            for(int i=0;i<Views.Length;i++)
+                if(Tab(i).Contains(at)){_view=i;CancelDrag();return;}
+        if(IsIntegrated)return;
         for (int bay = 0; bay < 3; bay++)
             for (int part = 0; part < 3; part++)
             {
@@ -39,10 +47,21 @@ internal sealed class RobotPartsExhibit
     internal void Draw(Action<Rectangle, Color> box, Action<string, Rectangle, Color, float> text, Point pointer)
     {
         var paper = new Color(249, 229, 190);
+        for(int i=0;i<Views.Length;i++){
+            var tab=Tab(i);
+            box(tab,i==_view?new Color(70,118,126):new Color(36,58,71));
+            text(Views[i],tab,paper,.9f);
+        }
         for (int bay = 0; bay < 3; bay++)
         {
-            box(new Rectangle(91 + bay * 261, 104, 238, 399), new Color(36, 58, 71));
-            text((bay + 1).ToString(), new Rectangle(101 + bay * 261, 110, 218, 40), paper, 1);
+            box(new Rectangle(91 + bay * 261, 132, 238, 371), new Color(36, 58, 71));
+            if(IsIntegrated){
+                var area=new Rectangle(101+bay*261,147,218,330);
+                box(area,new Color(24,46,59));
+                text(Grades[bay],new Rectangle(area.X,area.Y+25,area.Width,36),paper,1);
+                DrawPart(box,area.Center,0,bay,_view);
+                continue;
+            }
             for (int part = 0; part < 3; part++)
             {
                 var slot = Slot(bay, part);
@@ -58,13 +77,14 @@ internal sealed class RobotPartsExhibit
     }
 
     // Preserve the original Legacy geometry and gold edging.
-    private static void DrawPart(Action<Rectangle, Color> box, Point center, int part, int grade)
+    private static void DrawPart(Action<Rectangle, Color> box, Point center, int part, int grade,int integrated=0)
     {
         bool cheap = grade == 0, premium = grade == 2;
         var paint = Paint[grade];
         const int width = 96, height = 180;
         int x = center.X - width / 2;
-        int y = center.Y - (part == 0 ? height / 8 : part == 1 ? height / 2 : height * 7 / 8);
+        int y = center.Y - (integrated==1?height/3:integrated==2?height*2/3:
+            part == 0 ? height / 8 : part == 1 ? height / 2 : height * 7 / 8);
         void Fill(Rectangle shape, Color color)
         {
             for (int row = shape.Top; row < shape.Bottom; row++)
@@ -74,19 +94,20 @@ internal sealed class RobotPartsExhibit
                 box(bounds, gold ? Color.Lerp(new Color(255, 215, 100), color, .2f) : color);
             }
         }
-        switch (part)
+        bool Has(int section)=>integrated==0?part==section:section==integrated-1 || section==integrated;
+        if(Has(0))
         {
-            case 0:
                 Fill(new(x + width / 4, y, width / 2, height / 4), new Color(249, 229, 190));
                 Fill(new(x + width / 5 + (cheap ? width / 10 : 0), y, width * (cheap ? 2 : 3) / 5, height / 12), paint);
-                break;
-            case 1:
-                Fill(new(x + width / 6, y + height / 3, width * 2 / 3, height / 3), paint);
-                break;
-            case 2:
-                Fill(new(x + width / 6, y + height * 3 / 4, width / 4, height / 4), paint);
-                Fill(new(x + width * 7 / 12, y + height * 3 / 4, width / 4, height / 4), paint);
-                break;
+        }
+        if(Has(1)){
+            int top=integrated==1?height/4:height/3;
+            Fill(new(x+width/6,y+top,width*2/3,height*2/3-top),paint);
+        }
+        if(Has(2)){
+            int top=integrated==2?height*2/3:height*3/4;
+            Fill(new(x+width/6,y+top,width/4,height-top),paint);
+            Fill(new(x+width*7/12,y+top,width/4,height-top),paint);
         }
     }
 
