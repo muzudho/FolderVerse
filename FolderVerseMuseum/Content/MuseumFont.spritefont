@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Graphics="Microsoft.Xna.Framework.Content.Pipeline.Graphics">
+  <Asset Type="Graphics:FontDescription">
+    <FontName>Yu Gothic</FontName>
+    <Size>22</Size>
+    <Style>Regular</Style>
+    <CharacterRegions>
+      <CharacterRegion><Start> </Start><End>~</End></CharacterRegion>
+      <CharacterRegion><Start>ぁ</Start><End>ゖ</End></CharacterRegion>
+      <CharacterRegion><Start>ァ</Start><End>ー</End></CharacterRegion>
+      <CharacterRegion><Start>・</Start><End>・</End></CharacterRegion>
+      <CharacterRegion><Start>方</Start><End>方</End></CharacterRegion>
+      <CharacterRegion><Start>向</Start><End>向</End></CharacterRegion>
+      <CharacterRegion><Start>安</Start><End>安</End></CharacterRegion>
+      <CharacterRegion><Start>物</Start><End>物</End></CharacterRegion>
+      <CharacterRegion><Start>正</Start><End>正</End></CharacterRegion>
+      <CharacterRegion><Start>規</Start><End>規</End></CharacterRegion>
+      <CharacterRegion><Start>高</Start><End>高</End></CharacterRegion>
+      <CharacterRegion><Start>級</Start><End>級</End></CharacterRegion>
+      <CharacterRegion><Start>頭</Start><End>頭</End></CharacterRegion>
+      <CharacterRegion><Start>胴</Start><End>胴</End></CharacterRegion>
+      <CharacterRegion><Start>脚</Start><End>脚</End></CharacterRegion>
+      <CharacterRegion><Start>格</Start><End>格</End></CharacterRegion>
+      <CharacterRegion><Start>納</Start><End>納</End></CharacterRegion>
+      <CharacterRegion><Start>庫</Start><End>庫</End></CharacterRegion>
+      <CharacterRegion><Start>戻</Start><End>戻</End></CharacterRegion>
+      <CharacterRegion><Start>旧</Start><End>旧</End></CharacterRegion>
+      <CharacterRegion><Start>型</Start><End>型</End></CharacterRegion>
+      <CharacterRegion><Start>回</Start><End>回</End></CharacterRegion>
+      <CharacterRegion><Start>同</Start><End>同</End></CharacterRegion>
+      <CharacterRegion><Start>段</Start><End>段</End></CharacterRegion>
+      <CharacterRegion><Start>入</Start><End>入</End></CharacterRegion>
+      <CharacterRegion><Start>替</Start><End>替</End></CharacterRegion>
+      <CharacterRegion><Start>魚</Start><End>魚</End></CharacterRegion>
+      <CharacterRegion><Start>猿</Start><End>猿</End></CharacterRegion>
+      <CharacterRegion><Start>犬</Start><End>犬</End></CharacterRegion>
+    </CharacterRegions>
+  </Asset>
+</XnaContent>

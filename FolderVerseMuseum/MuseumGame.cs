@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-internal sealed class MuseumGame : Game
+internal sealed partial class MuseumGame : Game
 {
     private readonly GraphicsDeviceManager _graphics;
     private readonly bool _smoke;
@@ -31,6 +31,8 @@ internal sealed class MuseumGame : Game
 
     protected override void LoadContent()
     {
+        Content.RootDirectory = "Content";
+        LoadExhibitInterface();
         _robots = new[] { new ToyOrientationRenderer(GraphicsDevice),
             new ToyOrientationRenderer(GraphicsDevice, AnimalToy.Fish),
             new ToyOrientationRenderer(GraphicsDevice, AnimalToy.Monkey),
@@ -47,7 +49,19 @@ internal sealed class MuseumGame : Game
         var area = GraphicsDevice.Viewport.Bounds;
         bool Pressed(Keys key) => keys.IsKeyDown(key) && _previousKeys.IsKeyUp(key);
 
-        if (Pressed(Keys.Escape)) Exit();
+        if (Pressed(Keys.Escape))
+        {
+            if (_page == Page.Menu) Exit();
+            else OpenPage(Page.Menu);
+        }
+        if (_page != Page.Direction || IsActive && mouse.LeftButton == ButtonState.Pressed &&
+            _previousMouse.LeftButton == ButtonState.Released && ToCanvas(mouse.Position).Y < 76)
+        {
+            UpdateExhibitInterface(mouse, Pressed(Keys.R));
+            _previousMouse = mouse;
+            _previousKeys = keys;
+            return;
+        }
         if (Pressed(Keys.R)) _orientation = Quaternion.Identity;
         for (int i = 0; i < ExhibitNames.Length; i++)
             if (Pressed(Keys.D1 + i))
@@ -85,8 +99,10 @@ internal sealed class MuseumGame : Game
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(new Color(19, 38, 51));
-        _robots[_exhibit].Draw(0, 0, Matrix.CreateFromQuaternion(_orientation));
-        if (_smoke && ++_exhibit == _robots.Length) Exit();
+        if (_page == Page.Direction)
+            _robots[_exhibit].Draw(0, 0, Matrix.CreateFromQuaternion(_orientation));
+        DrawExhibitInterface();
+        if (_smoke) AdvanceSmoke();
         base.Draw(gameTime);
     }
 
@@ -94,6 +110,8 @@ internal sealed class MuseumGame : Game
     {
         if (_robots != null)
             foreach (var robot in _robots) robot.Dispose();
+        _pixel?.Dispose();
+        _batch?.Dispose();
         base.UnloadContent();
     }
 }

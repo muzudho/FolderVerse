@@ -1,0 +1,7 @@
+/platform:DesktopGL
+/profile:Reach
+/compress:False
+#begin MuseumFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/build:MuseumFont.spritefont
