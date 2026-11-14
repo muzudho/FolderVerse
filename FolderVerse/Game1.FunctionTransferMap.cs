@@ -9,7 +9,7 @@ public partial class Game1
     private static readonly Rectangle FunctionTransferMapBanner=new(54,822,810,92);
     private bool _functionTransferMap, _functionTransferRoutesBefore;
     private FunctionTransferMarker _transferChoice;
-    private static readonly Rectangle TransferChoicePanel=new(535,365,850,350), TransferFactoryButton=new(585,470,750,58), TransferAllButton=new(585,545,750,58), TransferChoiceCancel=new(835,632,250,42);
+    private static readonly Rectangle TransferChoicePanel=new(535,365,850,375), TransferFactoryButton=new(585,470,750,58), TransferAllButton=new(585,545,750,58), TransferChoiceCancel=new(835,670,250,42);
     private string _functionTransferMessage="";
     private readonly List<FunctionTransferMarker> _functionTransferMarkers=new();
     private sealed record FunctionTransferMarker(int Source,int Target,Vector2 From,Vector2 To,Rectangle Bounds,bool Reserved);
@@ -118,7 +118,10 @@ public partial class Game1
         DrawOption(TransferAllButton,"全て移転する",false);
         int affectedShipments=MapleShipmentsAffectedByTransfer(marker.Source);
         if(affectedShipments>0 && CanChooseTransfer(marker,false))
-            _ui.Center($"全て移転すると楓の直送予約 {affectedShipments}件が取り消されます",new(585,603,750,29),.34f,Cream);
+        {
+            string warning=$"楓の直送予約 {affectedShipments}件が取り消されます";
+            _ui.Center(warning,new(585,610,750,46),Math.Min(.55f,730/Math.Max(1,_font.MeasureString(warning).X)),Cream);
+        }
         _ui.Button(TransferChoiceCancel,"取消 / Esc",Muted,.42f);
 
         void DrawOption(Rectangle bounds,string label,bool factoryOnly)

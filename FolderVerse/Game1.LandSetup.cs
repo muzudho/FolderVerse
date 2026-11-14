@@ -8,6 +8,14 @@ using Microsoft.Xna.Framework.Input;
 public partial class Game1
 {
     private static readonly Rectangle LandGlobeArea=new(580,170,1280,780),LandConfirm=new(60,840,450,75);
+    private static Rectangle LandGuideBounds
+    {
+        get
+        {
+            var toy=OrientationAreas(LandGlobeArea,false).Toy;
+            return new(toy.Right-354,toy.Bottom+100,400,260);
+        }
+    }
     private readonly HashSet<int> _landSelection=new();
     private int[] _landOrder=Array.Empty<int>();
     private int _landTurn;
@@ -142,7 +150,7 @@ public partial class Game1
         Rotate(mouse,click,active,LandGlobeArea);
         int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
         if(wheel!=0)_world.GlobeZoom=MathHelper.Clamp(_world.GlobeZoom*MathF.Pow(1.2f,wheel/120f),.5f,8);
-        if(click && LandGlobeArea.Contains(_pointer))_landDrag=_pointer;
+        if(click && LandGlobeArea.Contains(_pointer) && !LandGuideBounds.Contains(_pointer))_landDrag=_pointer;
         if(_landDrag.HasValue && mouse.LeftButton==ButtonState.Released)
         {
             var a=_landDrag.Value;var bounds=new Rectangle(Math.Min(a.X,_pointer.X),Math.Min(a.Y,_pointer.Y),Math.Max(2,Math.Abs(a.X-_pointer.X)),Math.Max(2,Math.Abs(a.Y-_pointer.Y)));
@@ -186,8 +194,6 @@ public partial class Game1
         _ui.Text(_setup.ConquerorNames[LandRuler]+" の土地選択",new(60,220),.7f,Color.White);
         _ui.Text("選択 "+_landSelection.Count+" / 権利 "+_setup.TerritoryRights[LandRuler]+" 区画",new(60,310),.65f,_landSelection.Count>_setup.TerritoryRights[LandRuler]?Color.Orange:Cream);
         _portraitRenderer.Draw(_spriteBatch,_setup.Looks[LandRuler],new Rectangle(60,370,450,300),true,forCreation:true);
-        _ui.Text("左ドラッグ：範囲を反転\n右ドラッグ：星を回す\nホイール：拡大・縮小\n飛び地も選択できます",new(60,685),.38f,Color.White);
-        _ui.Text("国旗あり：取得済み / 国旗なし：未取得",new(60,805),.32f,Cream);
         _ui.Button(LandConfirm,LandHumanTurn?"この土地を獲得":"他国が土地を選択中",LandHumanTurn && _landSelection.Count==_setup.TerritoryRights[LandRuler]?Accent:Muted,.65f);
         _ui.Button(LandSkipOthers,(_skipOtherLandTurns?"✓ ":"□ ")+"自分のターン以外をスキップ",_skipOtherLandTurns?Accent:Muted,.48f);
     }
@@ -225,7 +231,23 @@ public partial class Game1
             for(int i=0;i<90*(_setup.TutorialStep==0?_robotScatterPercent:100)/100;i++){float t=(float)((_landAge+i*.071)%1.8/1.8);float x=MathHelper.Lerp(650+(i*173%1100),1080+i*47%310,t);float y=MathHelper.Lerp(-100,460+i*31%200,t);DrawRobotGlyph(new Rectangle((int)x,(int)y,26,46),i%_setup.ActiveCount,(RobotParts)(1+i%7),false,1-t*.3f);}
         DrawLandSetupUi();
         _spriteBatch.End();
-        if(_screen==Screen.LandConquest)DrawOrientationOverlay(LandGlobeArea,canvas,transform);
+        if(selectingLand)
+        {
+            DrawOrientationOverlay(LandGlobeArea,canvas,transform);
+            _spriteBatch.Begin(transformMatrix:transform);
+            DrawLandGuide();
+            _spriteBatch.End();
+        }
+    }
+    private void DrawLandGuide()
+    {
+        var paper=LandGuideBounds;
+        DrawRulebookPaper(paper);
+        int x=paper.X+24;
+        _ui.Text("操作説明",new(x,paper.Y+16),.44f,RulebookRose);
+        _ui.Text("左クリック：地域の選択・解除\n左ドラッグ：範囲内の選択を反転\n右ドラッグ：回転 / ホイール：拡大・縮小\n飛び地も選べます",new(x,paper.Y+48),.38f,RulebookInk);
+        _ui.Text("表示説明",new(x,paper.Y+151),.44f,RulebookRose);
+        _ui.Text("明滅と国旗：選択中\n暗い面と国旗：取得済み\n通常の明るさ：選択できます",new(x,paper.Y+183),.38f,RulebookInk);
     }
     private void LandLine(Vector2 a,Vector2 b,Color color,float width){var d=b-a;_spriteBatch.Draw(_pixel,a,null,color,MathF.Atan2(d.Y,d.X),Vector2.Zero,new Vector2(d.Length(),width),SpriteEffects.None,0);}
 }
