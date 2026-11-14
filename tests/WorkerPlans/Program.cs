@@ -3,6 +3,29 @@ if(args.Contains("--ui")){using var game=new WorkerPlansUi();game.Run();return;}
 static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 bool sawMixed=false;var signatures=new HashSet<string>();
 {
+ bool found=false;
+ for(int seed=0;seed<64 && !found;seed++){
+  var(w,node)=Fixture.Create(123+37*seed);
+  w.EquipmentMode=RobotEquipmentMode.Materials;
+  w.Robots.ConfigureFactories(w);
+  var worker=w.Robots.Create(0,RobotParts.Complete) with {HeadOrigin=1,BodyOrigin=2,LegsOrigin=0,HeadMaterial=RobotMaterial.Foam};
+  var line=Fixture.Appoint(w,node,worker);
+  int choice=Fixture.Options.FirstOrDefault(i=>{
+   var preview=line.PlanAt(i).Preview(0);
+   return preview.Parts==RobotParts.Complete && preview.HeadOrigin==1 && preview.BodyOrigin==2 && preview.LegsOrigin==0;
+  },-1);
+  if(choice<0)continue;
+  var plan=line.PlanAt(choice);
+  line.SelectPlan(choice);
+  var preview=plan.Preview(0);
+  Check(preview.HeadOrigin==1 && preview.BodyOrigin==2 && preview.LegsOrigin==0,
+        "Selecting the generated recipe preserves all three origins");
+  Check(line.CurrentProductionPlan==plan,"The lane stores the generated recipe intact");
+  found=true;
+ }
+ Check(found,"A worker with parts from three countries can generate a three-origin material recipe");
+}
+{
  var(w,node)=Fixture.Create();
  w.EquipmentMode=RobotEquipmentMode.Materials;
  w.Robots.ConfigureFactories(w);

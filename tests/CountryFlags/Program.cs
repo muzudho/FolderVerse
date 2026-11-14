@@ -46,6 +46,12 @@ sealed class FlagGame:Game1
   Color[] Colours(){var viewport=GraphicsDevice.Viewport;using var target=new RenderTarget2D(GraphicsDevice,320,320,false,SurfaceFormat.Color,DepthFormat.Depth24);GraphicsDevice.SetRenderTarget(target);GraphicsDevice.Clear(Color.Black);preview.Draw(.4f,.3f,0,false);GraphicsDevice.SetRenderTarget(null);GraphicsDevice.Viewport=viewport;var pixels=new Color[320*320];target.GetData(pixels);return pixels;}
   var before=Colours();var owners=(int[])w.Owners.Clone();Array.Fill(w.Owners,-1);preview.ShowLandConquest(w);
   Check(before.SequenceEqual(Colours()),"Claimed and unclaimed territory must retain identical terrain colours");Array.Copy(owners,w.Owners,owners.Length);
+  Array.Fill(w.Owners,0);preview.ShowLandConquest(w,dimClaimed:true);
+  var dimmed=Colours();
+  Array.Fill(w.Owners,-1);preview.ShowLandConquest(w,dimClaimed:true);
+  Check(before.SequenceEqual(Colours()),"Unclaimed land retains its normal brightness in land conquest");
+  Check(before.Zip(dimmed).Any(pair=>pair.First.R>pair.Second.R+20),"Claimed terrain is visibly darker");
+  Array.Copy(owners,w.Owners,owners.Length);
  }
  protected override void Draw(GameTime time){
   if(frame==0){
@@ -58,7 +64,7 @@ sealed class FlagGame:Game1
   }else{
    if(frame==1){Call("OpenCountrySettings");Set("_pointer",new Point(1700,580));Call("CountrySettingsInput",true,false);Check(w.CountryFlagShape((int)Get("_countrySettingsRuler"))==3,"Shape button hit target");}
    if(frame==2){Set("_countrySettingsOpen",false);Set("_statusGlobe",true);}
-   if(frame==3){Call("BeginLandConquest");for(int i=0;i<w.Owners.Length;i++)w.Owners[i]=i%3==0?i%w.ActiveCount:-1;((WorldPreview)Get("_world")).ShowLandConquest(w);}
+   if(frame==3){Call("BeginLandConquest");for(int i=0;i<w.Owners.Length;i++)w.Owners[i]=i%3==0?i%w.ActiveCount:-1;((WorldPreview)Get("_world")).ShowLandConquest(w,dimClaimed:true);}
    if(frame==4){var battle=new BattleState(9){TargetNode=w.Nodes.Current(0)!.Id,Defender=0};battle.Armies.Add(new(){Owner=0,Side=4});battle.Capture(BattlePhase.Choose);Set("_robotScenes",new[]{battle});Set("_robotPlayback",new RobotBattlePlayback(new[]{battle}));Call("FinishTransport");Set("_battleIntroAge",10d);Set("_lastCutInPhase","戦闘フェーズ");}
    base.Draw(new GameTime(TimeSpan.FromSeconds(100+frame),TimeSpan.Zero));
   }

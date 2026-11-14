@@ -31,7 +31,7 @@ public partial class Game1
         _fortuneSliderDragging=false;
         _skipOtherLandTurns=false;
         _domesticViews.Clear();_landOrder=_setup.LandOrder();_landTurn=0;_landAge=0;_landSelection.Clear();_landDrag=null;_automaticLand=Array.Empty<int>();
-        _screen=Screen.LandConquest;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.ShowLandConquest(_setup);
+        _screen=Screen.LandConquest;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.ShowLandConquest(_setup,dimClaimed:true);
     }
     private int[] AutomaticLand(int ruler)
     {
@@ -76,7 +76,7 @@ public partial class Game1
     }
     private void ConfirmLand()
     {
-        _setup.ClaimLand(LandRuler,_landSelection.ToArray());_world.ShowLandConquest(_setup);_landSelection.Clear();_landAge=0;_automaticLand=Array.Empty<int>();
+        _setup.ClaimLand(LandRuler,_landSelection.ToArray());_world.ShowLandConquest(_setup,dimClaimed:_landTurn+1<_landOrder.Length);_landSelection.Clear();_landAge=0;_automaticLand=Array.Empty<int>();
         if(++_landTurn==_landOrder.Length){_fortuneStartOrientation=Quaternion.CreateFromRotationMatrix(_world.ViewOrientation(_yaw,_pitch));_screen=Screen.Fortune;_world.GlobeAnchor=null;_world.GlobeZoom=1;return;}
     }
     private void UpdateLandSetup(double elapsed,MouseState mouse,bool active,bool click,bool enter)

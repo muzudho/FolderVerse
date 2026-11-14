@@ -125,7 +125,7 @@ public sealed partial class WorldPreview : IDisposable
         _highlight.SetData(mesh.ToArray());_highlightCount=mesh.Count/3;
     }
     private void AddFace(List<VertexPositionColorNormal> mesh, Vector3 origin, Vector3 u, Vector3 v, Vector3 normal, int unitsU, int unitsV, Vector3 offset,
-        Func<float,int,int,Color> paint=null)
+        Func<float,int,int,Color> paint=null,float brightness=1f)
     {
         const int detail = 10;
         int countU = unitsU * detail, countV = unitsV * detail;
@@ -149,7 +149,7 @@ public sealed partial class WorldPreview : IDisposable
             var b=a+stepU;var c=b+stepV;var d=a+stepV;
             Color color=paint?.Invoke(height,x,y)??WorldTerrain.ColorAt(height,normal,_polarAxis);
             if (x % detail == 0 || y % detail == 0) color=Color.Lerp(color,new Color(17,47,62),paint==null?.3f:.18f);
-            Quad(a,b,c,d,color,normal);
+            Quad(a,b,c,d,Dim(color),normal);
             Wall(a,b,heights[x+1,y],-Vector3.Normalize(stepV));
             Wall(b,c,heights[x+2,y+1],Vector3.Normalize(stepU));
             Wall(c,d,heights[x+1,y+2],Vector3.Normalize(stepV));
@@ -160,9 +160,10 @@ public sealed partial class WorldPreview : IDisposable
                 float drop=relief-WorldTerrain.Relief(neighbor);
                 if(drop<=0)return;
                 var down=normal*drop;
-                Quad(start,end,end-down,start-down,Color.Lerp(color,new Color(49,43,38),.28f),outward);
+                Quad(start,end,end-down,start-down,Dim(Color.Lerp(color,new Color(49,43,38),.28f)),outward);
             }
         }
+        Color Dim(Color color) => brightness == 1f ? color : Color.Lerp(Color.Black,color,brightness);
         void Quad(Vector3 a,Vector3 b,Vector3 c,Vector3 d,Color color,Vector3 facing)
         {
             mesh.Add(new(a,color,facing));mesh.Add(new(b,color,facing));mesh.Add(new(c,color,facing));

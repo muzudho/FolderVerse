@@ -16,7 +16,7 @@ public sealed partial class WorldPreview
     public HashSet<int> PresentationCells {get;set;}
     public bool CountryColors {get;set;}
     public bool ControlledCountryColors {get;set;}
-    public void ShowLandConquest(WorldSetup setup,bool exclusive=false)
+    public void ShowLandConquest(WorldSetup setup,bool exclusive=false,bool dimClaimed=false)
     {
         Generate(setup.Width,setup.Height,setup.Depth,setup.WorldSeed,setup.PolarAxis);
         var mesh=new List<VertexPositionColorNormal>();
@@ -28,7 +28,8 @@ public sealed partial class WorldPreview
             AddFace(mesh,cell.Origin,cell.U,cell.V,cell.Normal,1,1,offset,(height,x,y)=>
                 exclusive && CountryColors && owner>=0
                     ? LandTerritoryColor(setup.CountryMapColor(owner,x,y),WorldTerrain.Kind(height))
-                    : WorldTerrain.ColorAt(height,cell.Normal,setup.PolarAxis));
+                    : WorldTerrain.ColorAt(height,cell.Normal,setup.PolarAxis),
+                brightness:dimClaimed && setup.Owners[cell.Id]>=0?.35f:1f);
         }
         _vertices.Dispose();
         _vertices=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
