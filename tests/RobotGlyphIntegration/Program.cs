@@ -2,14 +2,14 @@ using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
-using var game=new GlyphProbe(args[0]);game.Run();
+using var game=new GlyphProbe(args[0],args.Contains("--gallery"));game.Run();
 sealed class GlyphProbe:Game1
 {
  const BindingFlags Flags=BindingFlags.Instance|BindingFlags.NonPublic;
- readonly string output;SpriteBatch batch=null!;Texture2D pixel=null!;bool drawn;
+ readonly string output;readonly bool galleryOnly;SpriteBatch batch=null!;Texture2D pixel=null!;bool drawn;
  void Set(string name,object value)=>typeof(Game1).GetField(name,Flags)!.SetValue(this,value);
  object Get(string name)=>typeof(Game1).GetField(name,Flags)!.GetValue(this)!;
- public GlyphProbe(string output){this.output=output;var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;}
+ public GlyphProbe(string output,bool galleryOnly){this.output=output;this.galleryOnly=galleryOnly;var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;}
  protected override void LoadContent(){
   // Deliberately omit base.LoadContent: no autosave, achievements, music or game state loading.
   var world=new WorldSetup();world.SetParticipantCounts(1,1);world.SetWorld(0);world.SetPlacement(2);world.SelectTurnRuler(0);world.SetCountryAppearance(0,6,12,1);world.SetCountryEmblem(0,1);Set("_setup",world);
@@ -19,7 +19,7 @@ sealed class GlyphProbe:Game1
  }
  protected override void Update(GameTime time){}
  protected override void Draw(GameTime time){
-  if(drawn)return;drawn=true;GraphicsDevice.Clear(new Color(25,36,48));batch.Begin();
+  if(drawn)return;drawn=true;if(galleryOnly){DrawMaterialGallery();Exit();return;}GraphicsDevice.Clear(new Color(25,36,48));batch.Begin();
   var draw=typeof(Game1).GetMethods(Flags).Single(m=>m.Name=="DrawRobotGlyph" && m.GetParameters().Length==5);
   var robots=new[]{new Robot(0,0,RobotParts.Body),new Robot(0,0,RobotParts.Legs),new Robot(0,0,RobotParts.Complete){HeadOrigin=1},new Robot(0,0,RobotParts.Complete){DamagedParts=RobotParts.Head},new Robot(0,0,RobotParts.Complete){CheapParts=RobotParts.Head},new Robot(0,0,RobotParts.Complete,RobotRole.Captain)};
   for(int i=0;i<robots.Length;i++)
@@ -398,15 +398,17 @@ sealed class GlyphProbe:Game1
   Set("_hangarColumn",0);
   Console.WriteLine("PASS return-home mode scrolls right; correct ID toggles; nonexistent cells do nothing.");
   var pairNodes=(int[])Get("_directNodes");pairNodes[0]=node;pairNodes[1]=node;
+  var directSlots=(long?[][])Get("_directSlots");directSlots[0]=new long?[7];directSlots[1]=new long?[7];
   var pages=(int[])Get("_directPages");pages[0]=pages[1]=0;
+  var columns=(int[])Get("_directColumn");
   var directClick=typeof(Game1).GetMethod("DirectPageClick",Flags)!;
-  directClick.Invoke(this,new object[]{new Point(1840,275)});
-  if(pages[0]!=0 || pages[1]!=1)throw new Exception("Right delivery page changed wrong inspector");
-  directClick.Invoke(this,new object[]{new Point(1840,275)});
-  if(pages[1]!=1)throw new Exception("Right delivery final page exceeded capacity7");
-  directClick.Invoke(this,new object[]{new Point(510,275)});
-  if(pages[0]!=1 || pages[1]!=1)throw new Exception("Left delivery page changed wrong inspector");
-  Console.WriteLine("PASS independent delivery six-slot page buttons and capacity7 final-page clamp.");
+  directClick.Invoke(this,new object[]{new Point(1840,900)});
+  if(columns[0]!=0 || columns[1]!=1)throw new Exception("Right delivery scroll changed wrong inspector");
+  directClick.Invoke(this,new object[]{new Point(1840,900)});
+  if(columns[1]!=1)throw new Exception("Right delivery final column exceeded capacity7");
+  directClick.Invoke(this,new object[]{new Point(510,900)});
+  if(columns[0]!=1 || columns[1]!=1)throw new Exception("Left delivery scroll changed wrong inspector");
+  Console.WriteLine("PASS independent delivery horizontal scrolling and capacity7 final-column clamp.");
   typeof(Game1).GetMethod("SyncLongSlots",Flags)!.Invoke(this,null);pages[0]=pages[1]=0;
   var longPage=typeof(Game1).GetMethod("LongPageClick",Flags)!;
   longPage.Invoke(this,new object[]{new Point(1780,255)});
@@ -420,7 +422,7 @@ sealed class GlyphProbe:Game1
   typeof(RobotStore).GetMethod("Replace",Flags)!.Invoke(w.Robots.Nodes[node],new object[]{new[]{cargo}});
   typeof(RobotStore).GetMethod("Replace",Flags)!.Invoke(w.Robots.Nodes[destination],new object[]{new[]{receiver}});
   w.Robots.PartPlanning.Invalidate();pairNodes[0]=node;pairNodes[1]=destination;
-  var directSlots=(long?[][])Get("_directSlots");directSlots[0]=new long?[7];directSlots[1]=new long?[7];directSlots[0][6]=cargo.Id;directSlots[1][6]=receiver.Id;
+  directSlots[0][6]=cargo.Id;directSlots[1][6]=receiver.Id;
   pages[0]=pages[1]=1;Set("_longChoosingSource",false);Set("_longOrdersOpen",false);
   var longInput=typeof(Game1).GetMethod("LongPairInput",Flags)!;
   var directPart=typeof(Game1).GetMethod("DirectPart",BindingFlags.NonPublic|BindingFlags.Static)!;
@@ -451,10 +453,11 @@ sealed class GlyphProbe:Game1
   Console.WriteLine("PASS six loaded cells, stacked incoming/outgoing labels and independent order cancellation.");
   w.Robots.LongDelivery.Cancel(w.Robots,reverse.Number);
   var directInput=typeof(Game1).GetMethod("DirectPairInput",Flags)!;
-  Set("_pointer",((Rectangle)directPart.Invoke(null,new object[]{0,6,0})!).Center);
+  var directViewPart=typeof(Game1).GetMethod("DirectViewPart",Flags)!;
+  Set("_pointer",((Rectangle)directViewPart.Invoke(this,new object[]{0,6,0})!).Center);
   directInput.Invoke(this,new object[]{pressed,true,false});
   if(Get("_directDrag")==null)throw new Exception("Direct delivery page2 did not pick up cargo");
-  Set("_pointer",((Rectangle)directCell.Invoke(null,new object[]{1,6})!).Center);
+  Set("_pointer",((Rectangle)directViewPart.Invoke(this,new object[]{1,6,0})!).Center);
   Set("_previousMouse",pressed);
   directInput.Invoke(this,new object[]{new Microsoft.Xna.Framework.Input.MouseState(),false,false});
   var directReservation=w.Robots.PartPlanning.Orders.Single();
@@ -957,26 +960,64 @@ sealed class GlyphProbe:Game1
   using(var foamFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"foam-glyph.png")))
    globeImage.SaveAsPng(foamFile,960,540);
   Console.WriteLine("PASS full foam shared glyph and front soldier with protected face and alpha.");
+  DrawMaterialGallery();
+  Exit();
+ }
+ void DrawMaterialGallery(){
+  ((WorldSetup)Get("_setup")).EquipmentMode=RobotEquipmentMode.Materials;
+  var glyph=typeof(Game1).GetMethods(Flags).Single(m=>m.Name=="DrawRobotGlyph" && m.GetParameters().Length==5);
+  var soldierArt=typeof(Game1).GetMethod("DrawBattleSoldierArt",Flags)!;
+  var queen=typeof(Game1).GetMethod("DrawQueenArt",Flags)!;
+  var facings=new[]{BattleFacing.South,BattleFacing.East,BattleFacing.North,BattleFacing.West};
+  var globePixels=new Color[960*540];
+  using var globeImage=new Texture2D(GraphicsDevice,960,540);
   GraphicsDevice.Clear(new Color(25,36,48));
   batch.Begin();
-  var materials = Enum.GetValues<RobotMaterial>();
+  var materials = new[]{RobotMaterial.Paper,RobotMaterial.Foam,RobotMaterial.Cardboard,
+   RobotMaterial.Polystyrene,RobotMaterial.SoftVinyl,RobotMaterial.Polypropylene,
+   RobotMaterial.Silicone,RobotMaterial.Maple,RobotMaterial.Tin};
+  var galleryRobot = new Robot(0,0,RobotParts.Complete);
+  var galleryFont = (SpriteFont)Get("_font");
+  void Label(string caption,int center,int y)
+  {
+   const float scale=.28f;
+   batch.DrawString(galleryFont,caption,new Vector2(center-galleryFont.MeasureString(caption).X*scale/2,y),
+    Color.White,0,Vector2.Zero,scale,SpriteEffects.None,0);
+  }
+  for(int column=0;column<materials.Length;column++)
+  {
+   var material=materials[column];
+   var sample=galleryRobot with {HeadMaterial=material,BodyMaterial=material,LegsMaterial=material};
+   int x=18+column*104;
+   glyph.Invoke(this,new object[]{new Rectangle(x,130,96,180),sample,true,1f,null});
+   Label(RobotMaterials.Label(material),x+48,320);
+  }
+  batch.End();
+  GraphicsDevice.GetBackBufferData(globePixels);
+  globeImage.SetData(globePixels);
+  using(var hangar=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"robot-hangar-nine.png")))
+   globeImage.SaveAsPng(hangar,960,540);
+
+  GraphicsDevice.Clear(new Color(25,36,48));
+  batch.Begin();
   for(int column=0;column<materials.Length;column++){
    var material=materials[column];
-   var sample=foam with { HeadMaterial=material, BodyMaterial=material, LegsMaterial=material };
+   var sample=galleryRobot with { HeadMaterial=material, BodyMaterial=material, LegsMaterial=material };
    int x=18+column*104;
+   Label(RobotMaterials.Label(material),x+48,8);
    for(int row=0;row<facings.Length;row++){
     var facing=facings[row];
     foreach(var role in new[]{BattleRole.Soldier,BattleRole.Captain}){
      const int portraitWidth=48;
      int offset=role==BattleRole.Soldier?0:portraitWidth;
-     if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(x+offset,16+row*106,portraitWidth,82),
+     if(!(bool)soldierArt.Invoke(this,new object[]{new Rectangle(x+offset,36+row*106,portraitWidth,82),
        sample,role,facing,role==BattleRole.Soldier,1f})!)
       throw new Exception($"Missing artwork for {material}, {role}, {facing}");
     }
    }
   }
   for(int i=0;i<facings.Length;i++)
-   if(!(bool)queen.Invoke(this,new object[]{new Rectangle(18+104*i,441,62,85),facings[i],i%2,1f})!)
+   if(!(bool)queen.Invoke(this,new object[]{new Rectangle(18+104*i,453,62,85),facings[i],0,1f})!)
     throw new Exception($"Missing Queen artwork for {facings[i]}");
   batch.End();
   GraphicsDevice.GetBackBufferData(globePixels);
@@ -984,7 +1025,6 @@ sealed class GlyphProbe:Game1
   using(var matrix=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"robot-art-matrix.png")))
    globeImage.SaveAsPng(matrix,960,540);
   Console.WriteLine("PASS 9 materials × 4 facings × 2 soldier roles, plus 4 Queen facings at 960x540.");
-  Exit();
  }
  protected override void UnloadContent(){(Get("_robotHeadTextures") as IDisposable)?.Dispose();batch?.Dispose();pixel?.Dispose();}
 }

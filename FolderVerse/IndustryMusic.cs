@@ -42,8 +42,8 @@ public sealed class IndustryMusic:IDisposable
 {
     private readonly DynamicSoundEffectInstance _stream=new(IndustryMusicScore.Rate,AudioChannels.Mono);
     private readonly IndustryMusicScore _score=new();
-    public void Update(){
-        _stream.Volume=.42f;
+    public void Update(float gain=1){
+        _stream.Volume=.42f*gain;
         while(_stream.PendingBufferCount<3)_stream.SubmitBuffer(_score.Render());
         if(_stream.State==SoundState.Paused)_stream.Resume();else if(_stream.State!=SoundState.Playing)_stream.Play();
     }

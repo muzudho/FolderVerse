@@ -8,8 +8,7 @@ public partial class Game1
     private Rectangle _titleStartButtonSource;
     private bool _titleMenuOpen,_titleMenuKeyboardFocus;
     private int _titleMenuSelection=3;
-    private static Rectangle TitleMenuPaper=>new(765,310,390,550);
-    // Four title actions share the paper menu.
+    private static Rectangle TitleMenuPaper=>new(765,310,390,620);
     private static Rectangle TitleMenuItem(int slot)=>new(815,385+slot*100,290,64);
     private static Color TitleMenuInk=>RulebookInk;
     private void LoadTitleStartAssets(){
@@ -29,7 +28,7 @@ public partial class Game1
         if(_campaignMenuStage>0){CampaignMenuInput(click,enter,escape,keys);return;}
         if(_tutorialMenuOpen){TutorialMenuInput(click,enter,escape,keys);return;}
         if(escape || click && !TitleMenuPaper.Contains(_pointer)){_titleMenuOpen=false;_titleIdle=0;return;}
-        int[] slots=_hasAutoSave?new[]{0,1,2,3}:new[]{0,1,3};
+        int[] slots=_hasAutoSave?new[]{0,1,2,3,4}:new[]{0,1,3,4};
         if(click || _pointer!=CanvasPoint(_previousMouse)){
             _titleMenuKeyboardFocus=false;
             foreach(int slot in slots)if(TitleMenuItem(slot).Contains(_pointer))_titleMenuSelection=slot;
@@ -43,6 +42,7 @@ public partial class Game1
         else if(chosen==1)OpenCampaignMenu();
         else if(chosen==2){_titleMenuOpen=false;if(!ResumeAutoSave())_titleMenuOpen=true;}
         else if(chosen==3){_titleMenuOpen=false;BeginOpening(false);}
+        else if(chosen==4)_bgmMenuOpen=true;
     }
     private void DrawTitleStartMenu(){
         if(_campaignMenuStage>0){DrawCampaignMenu();return;}
@@ -63,12 +63,14 @@ public partial class Game1
             var r=TitleMenuItem(slot);
             bool highlighted=enabled && (r.Contains(_pointer) || _titleMenuKeyboardFocus && _titleMenuSelection==slot);
             if(highlighted){_ui.Box(new(r.X,r.Bottom-5,r.Width,1),TitleMenuInk);_ui.Text("›",new(r.X-14,r.Y+12),.6f,TitleMenuInk);}
-            _ui.Center(text,r,.65f,enabled?TitleMenuInk:new Color(139,129,125));
+            _ui.Center(text,r,System.Math.Min(.65f,r.Width/System.Math.Max(1,_font.MeasureString(text).X)),
+                enabled?TitleMenuInk:new Color(139,129,125));
         }
         Item(0,"遊び方");
         Item(1,"キャンペーンモード");
         Item(2,"続きから",_hasAutoSave);
         Item(3,"最初から");
-        if(_autoSaveError.Length>0)_ui.Center(_autoSaveError,new(795,800,330,45),.26f,TitleMenuInk);
+        Item(4,"＜システムメニュー＞");
+        if(_autoSaveError.Length>0)_ui.Center(_autoSaveError,new(795,860,330,45),.26f,TitleMenuInk);
     }
 }
