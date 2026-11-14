@@ -165,6 +165,9 @@ public partial class Game1
             if(_screen==Screen.OpeningLottery && _departingOpeningPlanet!=null && departingAge<OpeningPlanetFlight)
                 DrawPlanet(_departingOpeningPlanet, OpeningPlanetX(departingAge), departingAge);
             DrawPlanet(_world, OpeningStarX, _openingAge);
+            _spriteBatch.Begin(transformMatrix:transform);
+            DrawOpeningDimensions();
+            _spriteBatch.End();
         }
         void DrawPlanet(WorldPreview planet, float x, double age)
         {
@@ -174,5 +177,47 @@ public partial class Game1
         }
         if(_screenshots.CaptureAfterDraw(GraphicsDevice))StartScreenshotFeedback(time.TotalGameTime.TotalSeconds);
         DrawScreenshotFeedback(time.TotalGameTime.TotalSeconds);DrawFullscreenCursor();
+    }
+    private void DrawOpeningDimensions()
+    {
+        _ui.Center("星の大きさ",new(1490,145,360,44),.52f,Cream);
+
+        // One scale for all three axes, with depth foreshortened in the projection.
+        float unit=132f/Math.Max(_setup.Width,Math.Max(_setup.Height,_setup.Depth));
+        var width=new Vector2(unit*_setup.Width,0);
+        var height=new Vector2(0,unit*_setup.Height);
+        var depth=new Vector2(.56f,-.50f)*(unit*_setup.Depth);
+        var front=new Vector2(1670-(width.X+depth.X)/2,292-(height.Y+depth.Y)/2);
+        var wire=new Color(112,143,161);
+        foreach(var origin in new[]{front,front+depth})
+        {
+            LandLine(origin,origin+width,wire,2);
+            LandLine(origin,origin+height,wire,2);
+            LandLine(origin+width,origin+width+height,wire,2);
+            LandLine(origin+height,origin+height+width,wire,2);
+        }
+        foreach(var corner in new[]{front,front+width,front+height,front+width+height})
+            LandLine(corner,corner+depth,wire,2);
+
+        var widthArrow=front+height+new Vector2(0,18);
+        var heightArrow=front-new Vector2(18,0);
+        var depthArrow=front+width+height+new Vector2(18,6);
+        Dimension(widthArrow,width,$"Width {_setup.Width}",widthArrow+width/2+new Vector2(0,8),new Color(255,200,105));
+        Dimension(heightArrow,height,$"Height {_setup.Height}",heightArrow+height/2-new Vector2(49,10),new Color(160,232,163));
+        Dimension(depthArrow,depth,$"Depth {_setup.Depth}",depthArrow+depth/2+new Vector2(45,2),new Color(142,211,255));
+
+        void Dimension(Vector2 start,Vector2 span,string label,Vector2 position,Color ink)
+        {
+            var end=start+span;
+            var direction=Vector2.Normalize(span);
+            var wing=new Vector2(-direction.Y,direction.X)*5;
+            LandLine(start,end,ink,2);
+            LandLine(start,start+direction*9+wing,ink,2);
+            LandLine(start,start+direction*9-wing,ink,2);
+            LandLine(end,end-direction*9+wing,ink,2);
+            LandLine(end,end-direction*9-wing,ink,2);
+            const float scale=.38f;
+            _ui.Text(label,position-new Vector2(_font.MeasureString(label).X*scale/2,0),scale,ink);
+        }
     }
 }
