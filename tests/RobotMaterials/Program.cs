@@ -143,6 +143,21 @@ foreach(var input in new[]{
     var reload=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(copy));
     Check(reload.Robots.RawDeposit(node,input.Item1)==before-1 &&
         reload.Robots.Nodes[node].MaplePackages.Single().Material==input.Item1,"Raw supply survives save and load");
+    if(input.Item1==RawMaterial.PP){
+        foreach(var location in copy.Nodes.All)location.Owner=0;
+        copy.SelectPlayer(0);
+        copy.SelectTurnRuler(0);
+        int destination=FunctionalDeliveryRoutes.Targets(copy,node).First(n=>raw.Nodes[n].HasSpace);
+        var ppLoad=raw.Nodes[node].MaplePackages.Single();
+        Check(lane.WaitingForMaple(raw,destination) &&
+            raw.ReserveMapleShipment(copy,node,destination,ppLoad.Id),"Reserve one PP load while destination waits");
+        typeof(RobotWorld).GetMethod("ResolveMapleShipments",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!
+            .Invoke(raw,new object[]{copy});
+        Check(raw.Nodes[node].MaplePackages.Count==0 && raw.MapleShipments.Count==0 &&
+            raw.Nodes[destination].MaplePackages.Single()==ppLoad &&
+            !lane.WaitingForMaple(raw,destination),"Delivered PP enables the destination lane");
+        node=destination;
+    }
     for(int tick=0;tick<3 && raw.Nodes[node].MaplePackages.Single().Units==16;tick++)
         production.Invoke(lane,new object[]{raw,node,copy.Nodes.All[node].Owner});
     Check(raw.Nodes[node].MaplePackages.Single().Units==16-input.Item3 &&

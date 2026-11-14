@@ -110,7 +110,7 @@ public sealed partial class CubeNet
     internal float GlobeNodeHitRadius(Node node,float projectedUnit,float zoom)
         => GlobeNodeRadius(node,projectedUnit,zoom)*projectedUnit*(HasPurposeBuilding(node)?GlobePurposeBuildingScale:1)+4;
 
-    private void DrawFlatPuck(UiPainter ui,WorldSetup setup,Node node,Vector2 at,float radius,float pulse,Func<Color,Color> tint)
+    private void DrawFlatPuck(UiPainter ui,WorldSetup setup,Node node,Vector2 at,float radius,float pulse,Func<Color,Color> tint,Func<Vector3,Vector2> project)
     {
         bool sea = !setup.Routes.Land(node.Cell,node.Center);
         var top = sea ? new Color(164,226,242) : new Color(255,232,153);
@@ -131,16 +131,21 @@ public sealed partial class CubeNet
         bool target = MovementTargets.Contains(node.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(node.Id));
         if (SelectedTarget==node.Id || EmphasizedNode(node.Id) || target && MathF.Sin(pulse*6)>=0)
             Face(at+new Vector2(0,depth),radius+3,SelectedTarget==node.Id || EmphasizedNode(node.Id) ? Color.White : new Color(255,219,96));
-        bool building=HasPurposeBuilding(node);
-        if(building)
+        bool building=HasPurposeBuilding(node) || node.IsHarbor && node.Functional;
+        if(node.IsHarbor && building && TryHarborFrame(setup,node,out var shore,out var seaward)){
+            var harborAt=project(shore);
+            var forward=Vector2.Normalize(project(shore+seaward*.1f)-harborAt);
+            var across=new Vector2(forward.Y,-forward.X);
+            DrawHarborPier(ui,(x,y,z)=>harborAt+radius*PurposeBuildingScale*(across*x+forward*y),tint);
+            DrawHarborBadge(ui,harborAt-across*radius*1.45f,radius,tint,ScreenAngle);
+        }
+        else if(building)
             DrawPurposeBuilding(ui,node.Purpose,(x,y,z)=>at+new Vector2(x,y*.68f-z)*radius*PurposeBuildingScale,tint);
         else{
             Face(at+new Vector2(0,depth),radius+1,rim);
             Face(at+new Vector2(0,depth),radius,side);
             Face(at,radius+1,rim);
             Face(at,radius,node.Functional ? top : Color.Lerp(top,rim,.35f));
-            if(node.IsHarbor && node.Functional)
-                DrawHarbor(ui,at,radius*.65f,tint(new Color(230,247,250)),DimNode(node.Id));
         }
         CountryFlagArt.Marker(ui,setup,DisplayedNodeOwner(node),at+new Vector2(radius*(building?PurposeBuildingScale:1)+4,-radius*.68f),
             Math.Clamp((int)(radius*3),24,42),tint);
@@ -156,7 +161,7 @@ public sealed partial class CubeNet
         var top = sea ? new Color(164,226,242) : new Color(255,232,153);
         var side = sea ? new Color(52,110,135) : new Color(152,111,53);
         var rim = new Color(24,44,51);
-        bool building=HasPurposeBuilding(node);
+        bool building=HasPurposeBuilding(node) || node.IsHarbor && node.Functional;
         const int sides = 12;
         Span<Vector2> lower = stackalloc Vector2[sides];
         Span<Vector2> upper = stackalloc Vector2[sides];
@@ -173,7 +178,14 @@ public sealed partial class CubeNet
         bool target = MovementTargets.Contains(node.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(node.Id));
         if (selected || target && MathF.Sin(pulse*6)>=0)
             FillProjectedFace(ui,ring,tint(selected ? Color.White : new Color(255,219,96)));
-        if(building)
+        if(node.IsHarbor && building && TryHarborFrame(setup,node,out var shore,out var seaward)){
+            var across=Vector3.Cross(seaward,cell.Normal);
+            float shoreHeight=WorldTerrain.ReliefAt(setup,cell,Vector3.Lerp(shore,cell.Center,.001f),setup.Terrain);
+            var footing=shore+cell.Normal*shoreHeight;
+            DrawHarborPier(ui,(x,y,z)=>project(footing+radius*GlobePurposeBuildingScale*(across*x+seaward*y+cell.Normal*z)),tint);
+            DrawHarborBadge(ui,project(footing)+new Vector2(-Math.Clamp(radius*Vector2.Distance(project(position),project(position+cell.U))*1.65f,12,44),-12),9,tint);
+        }
+        else if(building)
             DrawPurposeBuilding(ui,node.Purpose,(x,y,z)=>project(position+radius*GlobePurposeBuildingScale*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
         else{
             float winding = Cross(upper[1]-upper[0],upper[2]-upper[1]);
@@ -186,10 +198,6 @@ public sealed partial class CubeNet
                 FillProjectedFace(ui,wall,tint(Color.Lerp(side,top,.12f*(1+MathF.Cos(i*MathHelper.TwoPi/sides)))));
             }
             FillProjectedFace(ui,upper,tint(node.Functional ? top : Color.Lerp(top,rim,.35f)));
-            if(node.IsHarbor && node.Functional){
-                var puckCenter=project(position+cell.Normal*radius*.55f);
-                DrawHarbor(ui,puckCenter,MathF.Max(4,Vector2.Distance(puckCenter,upper[0])*.65f),tint(rim),DimNode(node.Id));
-            }
         }
         var center = project(position+cell.Normal*radius*(building?GlobePurposeBuildingScale*.5f:.55f));
         if (AttackTargetMarkers && SelectedTarget==node.Id)

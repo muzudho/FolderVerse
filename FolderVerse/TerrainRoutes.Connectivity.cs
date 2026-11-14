@@ -12,6 +12,8 @@ public sealed partial class TerrainRoutes
     public int ComponentsBeforeRepair {get;private set;}
     public int ComponentsAfterRepair {get;private set;}
     public IEnumerable<Harbor> Harbors(int cell)=>_harbors.Where(h=>h.Cell==cell);
+    internal IEnumerable<Harbor> HarborConnections(int cell,Point point)=>_harbors.Where(h=>
+        h.Cell==cell && h.Point==point || h.Target==cell && h.Other==point);
     public bool IsHarbor(int cell,Point a,Point b)=>_harborEdges.Contains((cell,Math.Min(Id(a),Id(b)),Math.Max(Id(a),Id(b))));
     private bool NavigableLink(int cell,int a,int b)=>_links[cell][a].Contains(b) &&
         ((Terrain(cell,PointAt(a))==TravelTerrain.Sea)==(Terrain(cell,PointAt(b))==TravelTerrain.Sea) || IsHarbor(cell,PointAt(a),PointAt(b)));

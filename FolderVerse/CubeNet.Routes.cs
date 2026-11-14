@@ -158,15 +158,15 @@ public sealed partial class CubeNet
             var position=world.Routes.Position(cell,node.Center);
             var at=project(position);
             float radius=MapPuckRadius(node,Vector2.Distance(at,project(position+world.Cells[cell].U)));
-            DrawFlatPuck(ui,world,node,at,radius,pulse,color=>NodeTint(node.Id,color));
+            DrawFlatPuck(ui,world,node,at,radius,pulse,color=>NodeTint(node.Id,color),project);
         }
     }
-    private static void DrawHarbor(UiPainter ui,Vector2 at,float radius,Color color,bool dim=false)
+    private static void DrawHarborBadge(UiPainter ui,Vector2 at,float radius,Func<Color,Color> tint,float rotation=0)
     {
-        void Stroke(Vector2 a,Vector2 b,float width,Color tint)
+        void Stroke(Vector2 a,Vector2 b,float width,Color color)
         {
-            a=at+a*radius;b=at+b*radius;var delta=b-a;
-            ui.Tile((a+b)/2,new(delta.Length()+width,width),MathF.Atan2(delta.Y,delta.X),tint);
+            a=at+RotatePoint(a*radius,-rotation);b=at+RotatePoint(b*radius,-rotation);var delta=b-a;
+            ui.Tile((a+b)/2,new(delta.Length()+width,width),MathF.Atan2(delta.Y,delta.X),color);
         }
         void Shape(float width,Color tint)
         {
@@ -175,9 +175,11 @@ public sealed partial class CubeNet
             Stroke(new(0,.7f),new(-.7f,.35f),width,tint);Stroke(new(0,.7f),new(.7f,.35f),width,tint);
             Stroke(new(-.7f,.35f),new(-.7f,.05f),width,tint);Stroke(new(.7f,.35f),new(.7f,.05f),width,tint);
         }
-        var dark=dim?SelectionGlow.Dim(new Color(13,36,44)):new Color(13,36,44);Shape(6,dark);Shape(3,color);
-        var eye=at+new Vector2(0,-.65f)*radius;
-        Disc(ui,eye,radius*.27f+2,dark);Disc(ui,eye,radius*.27f,color);Disc(ui,eye,radius*.12f,dark);
+        var dark=tint(new Color(13,36,44));var light=tint(new Color(247,239,216));
+        Disc(ui,at,radius+3,dark);Disc(ui,at,radius+1,light);
+        Shape(2,dark);
+        var eye=at+RotatePoint(new Vector2(0,-.65f)*radius,-rotation);
+        Disc(ui,eye,radius*.26f,dark);Disc(ui,eye,radius*.12f,light);
     }
     private static void Disc(UiPainter ui,Vector2 center,float radius,Color color,bool dim=false)
     {
