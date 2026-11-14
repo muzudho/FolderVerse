@@ -73,8 +73,17 @@ public sealed partial class WorldPreview : IDisposable
 
     private int _polarAxis=1;
     public void Generate(int width, int height, int depth, int seed,int polarAxis=1,float elevationShift=0)
+        =>Generate(width,height,depth,seed,polarAxis,elevationShift,null);
+
+    internal void ShowOpeningPlanet(WorldSetup setup)
+    {
+        Generate(setup.Width,setup.Height,setup.Depth,setup.WorldSeed,setup.PolarAxis,setup.Terrain.ElevationShift,setup);
+    }
+
+    private void Generate(int width,int height,int depth,int seed,int polarAxis,float elevationShift,WorldSetup opening)
     {
         _polarAxis=polarAxis;
+        OpeningMapleLoads=0;
         // Rods can reach nine cells and slabs seven, in any axis orientation.
         if (width < 1 || width > 9)
             throw new ArgumentOutOfRangeException(nameof(width));
@@ -95,6 +104,7 @@ public sealed partial class WorldPreview : IDisposable
         AddFace(mesh, new Vector3(-half.X, -half.Y, half.Z), Vector3.Forward * depth, Vector3.Right * width, Vector3.Down, depth, width, offset);
         AddFace(mesh, new Vector3(-half.X, -half.Y, half.Z), Vector3.Right * width, Vector3.Up * height, Vector3.Backward, width, height, offset);
         AddFace(mesh, new Vector3(half.X, -half.Y, -half.Z), Vector3.Left * width, Vector3.Up * height, Vector3.Forward, width, height, offset);
+        if(opening!=null)AddOpeningMaples(mesh,opening,offset);
         _vertices?.Dispose();
         _vertices = new VertexBuffer(_device, VertexPositionColorNormal.VertexDeclaration, mesh.Count, BufferUsage.WriteOnly);
         _vertices.SetData(mesh.ToArray());
@@ -182,16 +192,27 @@ public sealed partial class WorldPreview : IDisposable
             Color color=paint?.Invoke(height,x,y)??WorldTerrain.ColorAt(height,normal,_polarAxis);
             var point=origin+stepU*(x+.5f)+stepV*(y+.5f);
             if(WorldTerrain.IsValley(offset,point,axisU,axisV,half,height))color=WorldTerrain.ValleyColor(color);
-            if (x % detail == 0 || y % detail == 0) color=Color.Lerp(color,new Color(17,47,62),paint==null?.3f:.18f);
-            Quad(a,b,c,d,Dim(color),normal);
-            Wall(a,b,heights[x+1,y],-Vector3.Normalize(stepV));
-            Wall(b,c,heights[x+2,y+1],Vector3.Normalize(stepU));
-            Wall(c,d,heights[x+1,y+2],Vector3.Normalize(stepV));
-            Wall(d,a,heights[x,y+1],-Vector3.Normalize(stepU));
-
-            void Wall(Vector3 start,Vector3 end,float neighbor,Vector3 outward)
+            // Each region edge contributes half of the recessed seam.
+            const float inset=.018f;
+            var left=x%detail==0?axisU*inset:Vector3.Zero;
+            var right=x%detail==detail-1?axisU*inset:Vector3.Zero;
+            var bottom=y%detail==0?axisV*inset:Vector3.Zero;
+            var top=y%detail==detail-1?axisV*inset:Vector3.Zero;
+            if(left!=Vector3.Zero || right!=Vector3.Zero || bottom!=Vector3.Zero || top!=Vector3.Zero)
             {
-                float drop=relief-WorldTerrain.Relief(neighbor);
+                var floor=normal*(-.014f-relief);
+                Quad(a+floor,b+floor,c+floor,d+floor,Dim(new Color(33,61,69)),normal);
+            }
+            a+=left+bottom;b+=bottom-right;c-=right+top;d+=left-top;
+            Quad(a,b,c,d,Dim(color),normal);
+            Wall(a,b,bottom,heights[x+1,y],-axisV);
+            Wall(b,c,right,heights[x+2,y+1],axisU);
+            Wall(c,d,top,heights[x+1,y+2],axisV);
+            Wall(d,a,left,heights[x,y+1],-axisU);
+
+            void Wall(Vector3 start,Vector3 end,Vector3 edgeInset,float neighbor,Vector3 outward)
+            {
+                float drop=edgeInset!=Vector3.Zero?relief+.014f:relief-WorldTerrain.Relief(neighbor);
                 if(drop<=0)return;
                 var down=normal*drop;
                 Quad(start,end,end-down,start-down,Dim(Color.Lerp(color,new Color(49,43,38),.28f)),outward);

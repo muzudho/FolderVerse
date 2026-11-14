@@ -126,6 +126,11 @@ public sealed partial class WorldSetup
     public Color OwnerColor(int slot) => slot<0?new Color(155,169,180):Colors[ColorIndices[slot]%Colors.Length];
     private float _terrainElevationShift;
     public TerrainSampler Terrain=>new(WorldTerrain.Offset(WorldSeed),_terrainElevationShift);
+    internal WorldSetup CreateGeographyPreview()=>new()
+    {
+        WorldSeed=WorldSeed,Width=Width,Height=Height,Depth=Depth,Cells=Cells,
+        PolarAxis=PolarAxis,_terrainElevationShift=_terrainElevationShift
+    };
 
     public void SetWorld(int seed)=>TrySetWorld(seed,null);
 

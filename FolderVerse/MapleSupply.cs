@@ -30,8 +30,13 @@ public sealed partial class RobotWorld
     internal void InitializeMapleSupply(WorldSetup world)
     {
         if(world.EquipmentMode!=RobotEquipmentMode.Materials)return;
-        _mapleDeposits=new int[Nodes.Length];
+        _mapleDeposits=GenerateMapleDeposits(world);
         _mapleShipments=new();
+    }
+
+    internal static int[] GenerateMapleDeposits(WorldSetup world)
+    {
+        var deposits=new int[world.Nodes.All.Length];
         var offset=world.Terrain;
         var woodland=world.Nodes.All.Where(n=>n.Terrain==TravelTerrain.Land && !n.IsHarbor).Where(node=>
         {
@@ -47,9 +52,10 @@ public sealed partial class RobotWorld
             var cell=world.Cells[node.Cell];
             bool coolValley=node.Points.Any(p=>WorldTerrain.IsCoolValley(world,cell,world.Routes.Position(node.Cell,p)));
             bool equatorial=WorldTerrain.RelativeLatitude(world,world.Routes.Position(node.Cell,node.Center))<.25f;
-            _mapleDeposits[node.Id]=coolValley?13+random.Next(4):equatorial?Math.Min(baseline,1+baseline%3):baseline;
+            deposits[node.Id]=coolValley?13+random.Next(4):equatorial?Math.Min(baseline,1+baseline%3):baseline;
         }
-        if(woodland.Length>0 && !_mapleDeposits.Any(p=>p>0))_mapleDeposits[woodland[0].Id]=3;
+        if(woodland.Length>0 && !deposits.Any(p=>p>0))deposits[woodland[0].Id]=3;
+        return deposits;
     }
 
     public int MapleAvailableToPlan(int node,RobotWorkshop editing)

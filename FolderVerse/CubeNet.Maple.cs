@@ -11,6 +11,13 @@ public sealed partial class CubeNet
     private static readonly Vector2[] MapleTrees={new(0,0),new(-.85f,.48f),new(.72f,.62f)};
     private static readonly Vector2[] MapleForest={new(-.75f,-.48f),new(.2f,-.65f),new(.86f,-.12f),new(-.9f,.25f),new(0,.08f),new(.68f,.66f),new(-.38f,.76f)};
 
+    internal static Point MapleGrovePoint(WorldSetup world,Node node)=>
+        node.Points.Where(p=>world.Routes.Terrain(node.Cell,p)==TravelTerrain.Land)
+            .OrderByDescending(p=>Math.Min(2,Math.Min(Math.Min(p.X,p.Y),TerrainRoutes.Detail-1-Math.Max(p.X,p.Y))))
+            .ThenByDescending(p=>WorldTerrain.IsCoolValley(world,world.Cells[node.Cell],world.Routes.Position(node.Cell,p)))
+            .ThenBy(p=>Math.Abs(Vector2.DistanceSquared(p.ToVector2(),node.Center.ToVector2())-4))
+            .FirstOrDefault(node.Center);
+
     private void DrawMapleDeposit(UiPainter ui,WorldSetup world,Node node,Func<Vector3,Vector2> project,bool globe)
     {
         int loads=world.Robots.MapleDeposit(node.Id);
@@ -18,11 +25,7 @@ public sealed partial class CubeNet
         int plantings=world.Robots.MaplePlantingCount(node.Id);
         if(loads<=0 && plantings==0)return;
         var cell=world.Cells[node.Cell];
-        var grove=node.Points.Where(p=>world.Routes.Terrain(node.Cell,p)==TravelTerrain.Land)
-            .OrderByDescending(p=>Math.Min(2,Math.Min(Math.Min(p.X,p.Y),TerrainRoutes.Detail-1-Math.Max(p.X,p.Y))))
-            .ThenByDescending(p=>WorldTerrain.IsCoolValley(world,cell,world.Routes.Position(node.Cell,p)))
-            .ThenBy(p=>Math.Abs(Vector2.DistanceSquared(p.ToVector2(),node.Center.ToVector2())-4))
-            .FirstOrDefault(node.Center);
+        var grove=MapleGrovePoint(world,node);
         var origin=world.Routes.Position(node.Cell,grove);
         if(globe)origin+=cell.Normal*WorldTerrain.ReliefAt(cell,origin,world.Terrain);
         var at=project(origin);

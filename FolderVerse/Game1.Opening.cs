@@ -38,7 +38,7 @@ public partial class Game1
         _world.GlobeAnchor=null;_world.GlobePan=Vector2.Zero;_world.GlobeZoom=1;
         _openingPlanets.Reset();
         _openingPlanets.Draw(_setup,_random);
-        _world.ShowSetup(_setup,false);
+        _world.ShowOpeningPlanet(_setup);
     }
     private void FinishFixedOpening()
     {
@@ -87,7 +87,7 @@ public partial class Game1
             var incoming = _departingOpeningPlanet ?? new WorldPreview(GraphicsDevice);
             _departingOpeningPlanet = _world;
             _world = incoming;
-            _world.ShowSetup(_setup,false);
+            _world.ShowOpeningPlanet(_setup);
         }
     }
     private void DisposeDepartingOpeningPlanet()
@@ -157,6 +157,8 @@ public partial class Game1
             }else{
                 _ui.Center(_screen==Screen.OpeningReview?"この星で、すべての陣地を目指そう。":"星抽選フェーズ / どの星の物語にしますか？",new(180,65,1560,75),.8f,Cream);
                 _ui.Center(_world.GlobeName+" / 世界 SEED "+_setup.WorldSeed,new(360,800,1200,60),.6f,Cream);
+                if(_setup.EquipmentMode==RobotEquipmentMode.Materials)
+                    _ui.Center($"楓の埋蔵量　{_world.OpeningMapleLoads}荷",new(360,850,1200,28),.43f,new Color(255,185,113));
                 _ui.Center(_screen==Screen.OpeningReview?"戻ると、この星から選び直せます。":"右から左へ通る星。中央に来た星を［次へ］で選びます。",new(310,870,1300,50),.5f,new Color(173,199,215));
                 _ui.Button(OpeningNext,_screen==Screen.OpeningReview?"この星で進む　次へ":OpeningStarSelectable?"この星を選ぶ　次へ":"星が中央へ来るのを待つ",_screen==Screen.OpeningReview || OpeningStarSelectable?DefaultAccent:Muted,.6f);
             }

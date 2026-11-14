@@ -403,7 +403,7 @@ public partial class Game1 : Game
         else
         {
             if(CastDuplicateInput(click)){}
-            else if(click && CastBack.Contains(_pointer)) { _screen=_openingWorldSelected?Screen.OpeningReview:Screen.Review;_openingActive=_openingWorldSelected; _setup.ClearPlacement(); _world.ShowSetup(_setup,false); }
+            else if(click && CastBack.Contains(_pointer)) { _screen=_openingWorldSelected?Screen.OpeningReview:Screen.Review;_openingActive=_openingWorldSelected; _setup.ClearPlacement(); if(_openingWorldSelected)_world.ShowOpeningPlanet(_setup);else _world.ShowSetup(_setup,false); }
             else if(click && SeedButton(0).Contains(_pointer))_seedDialog.Open(SeedDialog.Target.World,_setup.WorldSeed);
             else if(click && SeedButton(1).Contains(_pointer))_seedDialog.Open(SeedDialog.Target.Cast,_setup.CastSeed);
             else if(HasTerritories && click && SeedButton(2).Contains(_pointer))_seedDialog.Open(SeedDialog.Target.Placement,_setup.PlacementSeed);
