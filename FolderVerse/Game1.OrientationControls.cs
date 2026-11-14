@@ -13,7 +13,7 @@ public partial class Game1
     private Rectangle OrientationControlArea {
         get {
             if(IsStatusScreen)return MapViewBounds;
-            if(_screen==Screen.LandConquest)return LandGlobeArea;
+            if(_screen==Screen.LandConquest)return LandControlsArea;
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;
             return OrientationAreas(area,IsCastScreen && !IsSelectionScreen).Globe;

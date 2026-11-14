@@ -7,13 +7,13 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 public partial class Game1
 {
-    private static readonly Rectangle LandGlobeArea=new(580,170,1280,780),LandConfirm=new(60,840,450,75);
+    private static readonly Rectangle LandGlobeArea=new(320,170,1280,780),LandControlsArea=new(580,170,1280,780),LandConfirm=new(60,840,450,75);
     private static Rectangle LandGuideBounds
     {
         get
         {
-            var toy=OrientationAreas(LandGlobeArea,false).Toy;
-            return new(toy.Right-354,toy.Bottom+100,400,260);
+            var toy=OrientationAreas(LandControlsArea,false).Toy;
+            return new(toy.Right-364,toy.Bottom+100,420,296);
         }
     }
     private readonly HashSet<int> _landSelection=new();
@@ -199,21 +199,22 @@ public partial class Game1
     }
     private void DrawLandSetupGlobe(Rectangle canvas,Matrix transform,Viewport viewport)
     {
-        var frame=OrientationViewport(LandGlobeArea,canvas);
-        GraphicsDevice.Viewport=new Viewport(canvas);
         bool selectingLand=_screen==Screen.LandConquest;
+        var globeArea=selectingLand?LandGlobeArea:LandControlsArea;
+        var frame=OrientationViewport(globeArea,canvas);
+        GraphicsDevice.Viewport=new Viewport(canvas);
         var selectedCells=selectingLand && _landSelection.Count>0 ? _landSelection.Select(id=>_setup.Cells[id]) : null;
         _world.Draw(_yaw,_pitch,_animationTime,false,true,new Rectangle(frame.X,frame.Y,frame.Width,frame.Height),selectedCells);
         GraphicsDevice.Viewport=viewport;
         _spriteBatch.Begin(transformMatrix:transform);
         foreach(var c in _setup.Cells)
         {
-            if(!_world.ProjectVisible(c.Center,c.Normal,_yaw,_pitch,LandGlobeArea,out var p))continue;
+            if(!_world.ProjectVisible(c.Center,c.Normal,_yaw,_pitch,globeArea,out var p))continue;
             if(selectingLand)
             {
                 var color=new Color(110,140,150);
                 foreach(var edge in c.Corners.Select((v,i)=>(A:v,B:c.Corners[(i+1)%c.Corners.Length])))
-                    if(_world.ProjectVisible(edge.A,c.Normal,_yaw,_pitch,LandGlobeArea,out var a) && _world.ProjectVisible(edge.B,c.Normal,_yaw,_pitch,LandGlobeArea,out var b))LandLine(a,b,color,3);
+                    if(_world.ProjectVisible(edge.A,c.Normal,_yaw,_pitch,globeArea,out var a) && _world.ProjectVisible(edge.B,c.Normal,_yaw,_pitch,globeArea,out var b))LandLine(a,b,color,3);
             }
             int flagOwner=selectingLand && _landSelection.Contains(c.Id)?LandRuler:_setup.Owners[c.Id];
             if(flagOwner>=0)CountryFlagArt.Marker(_ui,_setup,flagOwner,p,38);
@@ -221,11 +222,11 @@ public partial class Game1
             {
                 var curve=_setup.Routes.Curve(c.Id,route);
                 for(int i=1;i<curve.Length;i++)
-                    if(_world.ProjectVisible(curve[i-1],c.Normal,_yaw,_pitch,LandGlobeArea,out var a) && _world.ProjectVisible(curve[i],c.Normal,_yaw,_pitch,LandGlobeArea,out var b))LandLine(a,b,new Color(230,200,145),1);
+                    if(_world.ProjectVisible(curve[i-1],c.Normal,_yaw,_pitch,globeArea,out var a) && _world.ProjectVisible(curve[i],c.Normal,_yaw,_pitch,globeArea,out var b))LandLine(a,b,new Color(230,200,145),1);
             }
-            _net.DrawLandmarks(_ui,_setup,c.Id,p=>_world.ProjectVisible(p,c.Normal,_yaw,_pitch,LandGlobeArea,out var at)?at:null,_animationTime,false);
+            _net.DrawLandmarks(_ui,_setup,c.Id,p=>_world.ProjectVisible(p,c.Normal,_yaw,_pitch,globeArea,out var at)?at:null,_animationTime,false);
             foreach(var node in _setup.Nodes.InCell(c.Id).Where(n=>n.IsHarbor))
-                if(_world.ProjectVisible(_setup.Routes.Position(c.Id,node.Center),c.Normal,_yaw,_pitch,LandGlobeArea,out var h))_ui.Box(new((int)h.X-3,(int)h.Y-3,6,6),Cream);        }
+                if(_world.ProjectVisible(_setup.Routes.Position(c.Id,node.Center),c.Normal,_yaw,_pitch,globeArea,out var h))_ui.Box(new((int)h.X-3,(int)h.Y-3,6,6),Cream);        }
         if(_landDrag.HasValue){var a=_landDrag.Value;var b=_pointer;LandLine(new(a.X,a.Y),new(b.X,a.Y),Color.White,2);LandLine(new(b.X,a.Y),new(b.X,b.Y),Color.White,2);LandLine(new(b.X,b.Y),new(a.X,b.Y),Color.White,2);LandLine(new(a.X,b.Y),new(a.X,a.Y),Color.White,2);}
         if(_screen==Screen.Fortune)
             for(int i=0;i<90*(_setup.TutorialStep==0?_robotScatterPercent:100)/100;i++){float t=(float)((_landAge+i*.071)%1.8/1.8);float x=MathHelper.Lerp(650+(i*173%1100),1080+i*47%310,t);float y=MathHelper.Lerp(-100,460+i*31%200,t);DrawRobotGlyph(new Rectangle((int)x,(int)y,26,46),i%_setup.ActiveCount,(RobotParts)(1+i%7),false,1-t*.3f);}
@@ -233,7 +234,7 @@ public partial class Game1
         _spriteBatch.End();
         if(selectingLand)
         {
-            DrawOrientationOverlay(LandGlobeArea,canvas,transform);
+            DrawOrientationOverlay(LandControlsArea,canvas,transform);
             _spriteBatch.Begin(transformMatrix:transform);
             DrawLandGuide();
             _spriteBatch.End();
@@ -243,11 +244,11 @@ public partial class Game1
     {
         var paper=LandGuideBounds;
         DrawRulebookPaper(paper);
-        int x=paper.X+24;
-        _ui.Text("操作説明",new(x,paper.Y+16),.44f,RulebookRose);
-        _ui.Text("左クリック：地域の選択・解除\n左ドラッグ：範囲内の選択を反転\n右ドラッグ：回転 / ホイール：拡大・縮小\n飛び地も選べます",new(x,paper.Y+48),.38f,RulebookInk);
-        _ui.Text("表示説明",new(x,paper.Y+151),.44f,RulebookRose);
-        _ui.Text("明滅と国旗：選択中\n暗い面と国旗：取得済み\n通常の明るさ：選択できます",new(x,paper.Y+183),.38f,RulebookInk);
+        int x=paper.X+32;
+        _ui.Text("操作説明",new(x,paper.Y+30),.44f,RulebookRose);
+        _ui.Text("左クリック：地域の選択・解除\n左ドラッグ：範囲内の選択を反転\n右ドラッグ：回転 / ホイール：拡大・縮小\n飛び地も選べます",new(x,paper.Y+62),.38f,RulebookInk);
+        _ui.Text("表示説明",new(x,paper.Y+171),.44f,RulebookRose);
+        _ui.Text("明滅と国旗：選択中\n暗い面と国旗：取得済み\n通常の明るさ：選択できます",new(x,paper.Y+203),.38f,RulebookInk);
     }
     private void LandLine(Vector2 a,Vector2 b,Color color,float width){var d=b-a;_spriteBatch.Draw(_pixel,a,null,color,MathF.Atan2(d.Y,d.X),Vector2.Zero,new Vector2(d.Length(),width),SpriteEffects.None,0);}
 }
