@@ -7,8 +7,10 @@ public sealed partial class WorldPreview
 {
     private void DrawLandBacklight(IEnumerable<SurfaceCell> selection,float time)
     {
+        // Premultiplied overlay: at the trough, black at 25% leaves 75% of the terrain.
+        // At the crest, the colored light also reads against white ice and bright water.
         float pulse=.5f+.5f*System.MathF.Sin(time*MathHelper.TwoPi/2.4f);
-        Color tint=new Color(64,219,235)*MathHelper.Lerp(.20f,.49f,pulse);
+        Color tint=Color.Lerp(Color.Black*.25f,new Color(64,219,235)*.62f,pulse);
         _device.BlendState=BlendState.AlphaBlend;
         _device.DepthStencilState=DepthStencilState.DepthRead;
         _effect.LightingEnabled=false;

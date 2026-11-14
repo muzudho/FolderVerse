@@ -51,7 +51,10 @@ sealed class FlagGame:Game1
   Array.Fill(w.Owners,-1);preview.ShowLandConquest(w,dimClaimed:true);
   Check(before.SequenceEqual(Colours()),"Unclaimed land retains its normal brightness in land conquest");
   Check(before.Zip(dimmed).Any(pair=>pair.First.R>pair.Second.R+20),"Claimed terrain is visibly darker");
-  Check(!Colours(.6f,w.Cells).SequenceEqual(Colours(1.8f,w.Cells)),"Selected territory backlight pulses");
+  var trough=Colours(1.8f,w.Cells);
+  Check(before.Zip(trough).Any(pair=>pair.First.R>100 && Math.Abs(pair.Second.R-pair.First.R*.75f)<=2),
+        "At the trough the selected terrain dims to 75 percent");
+  Check(!Colours(.6f,w.Cells).SequenceEqual(trough),"Selected territory backlight pulses");
   Array.Copy(owners,w.Owners,owners.Length);
  }
  protected override void Draw(GameTime time){
