@@ -22,6 +22,7 @@ public sealed partial class RobotWorld
             var store=Nodes[node.Id];var random=new SeedRandom(world.PlacementSeed^turn*7919^ruler*104729^0x504552);
             foreach(var robot in store.Robots.OrderBy(r=>r.Owner==ruler?1:0).ThenBy(r=>r.Id).ToArray())
             {
+                if(robot.WarehouseKeeper)continue;
                 var parts=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(p=>(robot.PersuadableParts(ruler)&p)!=0).ToArray();
                 int work=WorkCountry(node.Id,robot);bool foreignShoes=work>=0 && work!=ruler;
                 bool canEnsureNative=robot.NativeParts(ruler)>0 || parts.Length>0;

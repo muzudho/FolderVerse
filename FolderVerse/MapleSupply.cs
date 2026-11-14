@@ -3,8 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+public enum RawMaterial { Maple, Styrene, Vinyl, PP, Silicone }
+
 public sealed record MaplePackage(long Id,int Units)
 {
+    public RawMaterial Material {get;init;}
     public const int Capacity=48;
     public int Sections=>(Units+RobotWorld.MaplePackageSize-1)/RobotWorld.MaplePackageSize;
 }
@@ -14,46 +17,72 @@ public sealed partial class RobotWorld
 {
     public const int MaplePackageSize=16;
     private int[] _mapleDeposits;
+    private int[][] _rawDeposits;
+    private int[] _mapleHarvested;
     private List<MapleShipment> _mapleShipments;
     public bool MapleSupplyEnabled=>_mapleDeposits!=null;
     public IReadOnlyList<MapleShipment> MapleShipments=>_mapleShipments??(IReadOnlyList<MapleShipment>)Array.Empty<MapleShipment>();
     public int MapleDeposit(int node)=>_mapleDeposits?[node]??0;
+    internal void AddStarterRaw(RobotStore store,MaplePackage package)=>
+        store.SetMaplePackages(store.MaplePackages.Append(package with {Id=_nextId++}).ToArray());
+    public int MaplePlantingCount(int node)=>(_mapleHarvested?[node]??0) switch
+    {
+        0=>0,
+        <4=>1,
+        <8=>2,
+        _=>3
+    };
 
     internal void InitializeMapleSupply(WorldSetup world)
     {
         if(world.EquipmentMode!=RobotEquipmentMode.Materials)return;
-        _mapleDeposits=new int[Nodes.Length];
+        _mapleDeposits=GenerateMapleDeposits(world);
         _mapleShipments=new();
-        var offset=WorldTerrain.Offset(world.WorldSeed);
+        InitializeRawDeposits(world);
+    }
+
+    internal static int[] GenerateMapleDeposits(WorldSetup world)
+    {
+        var deposits=new int[world.Nodes.All.Length];
+        var offset=world.Terrain;
         var woodland=world.Nodes.All.Where(n=>n.Terrain==TravelTerrain.Land && !n.IsHarbor).Where(node=>
         {
             var cell=world.Cells[node.Cell];
-            return node.Points.Any(p=>WorldTerrain.Kind(WorldTerrain.Elevation(
-                cell.Origin+cell.U*((p.X+.5f)/10)+cell.V*((p.Y+.5f)/10),offset))==TerrainKind.Grassland);
+            return node.Points.Any(p=>WorldTerrain.Kind(offset.Elevation(
+                cell.Origin+cell.U*((p.X+.5f)/10)+cell.V*((p.Y+.5f)/10)))==TerrainKind.Grassland);
         }).ToArray();
         foreach(var node in woodland)
         {
             var random=new SeedRandom(world.WorldSeed^node.Id*7919^0x4d41504c);
-            if(random.Next(3)==0)_mapleDeposits[node.Id]=4+random.Next(9);
+            bool scattered=random.Next(3)==0;
+            int baseline=scattered?4+random.Next(9):0;
+            var cell=world.Cells[node.Cell];
+            bool coolValley=node.Points.Any(p=>WorldTerrain.IsCoolValley(world,cell,world.Routes.Position(node.Cell,p)));
+            bool equatorial=WorldTerrain.RelativeLatitude(world,world.Routes.Position(node.Cell,node.Center))<.25f;
+            deposits[node.Id]=coolValley?13+random.Next(4):equatorial?Math.Min(baseline,1+baseline%3):baseline;
         }
-        if(woodland.Length>0 && !_mapleDeposits.Any(p=>p>0))_mapleDeposits[woodland[0].Id]=4;
+        if(woodland.Length>0 && !deposits.Any(p=>p>0))deposits[woodland[0].Id]=3;
+        return deposits;
     }
 
-    public int MapleAvailableToPlan(int node,RobotWorkshop editing)
-        =>Math.Max(0,MapleDeposit(node)-Workshops[node].ProductionLines.Where(l=>!ReferenceEquals(l,editing)).Sum(l=>l.MapleRemaining));
+    public int MapleAvailableToPlan(int node,RobotWorkshop editing,RawMaterial material=RawMaterial.Maple)
+        =>Math.Max(0,RawDeposit(node,material)-Workshops[node].ProductionLines
+            .Where(l=>!ReferenceEquals(l,editing) && l.HarvestMaterial==material).Sum(l=>l.MapleRemaining));
 
     private int MapleReservedSlots(int node)=>ProductionIntakes.Count(i=>(i.Target??i.Source)==node)+Workshops[node].ReservedSlots;
-    internal bool CanHarvestMaple(int node,int loads)
-        =>MapleDeposit(node)>=loads && Nodes[node].HasMapleSpace(new(0,loads*MaplePackageSize),MapleReservedSlots(node));
+    internal bool CanHarvestMaple(int node,int loads,RawMaterial material=RawMaterial.Maple)
+        =>RawDeposit(node,material)>=loads && Nodes[node].HasMapleSpace(new MaplePackage(0,loads*MaplePackageSize){Material=material},MapleReservedSlots(node));
 
-    internal bool HarvestMaple(int node,int loads)
+    internal bool HarvestMaple(int node,int loads,RawMaterial material=RawMaterial.Maple)
     {
-        if(!CanHarvestMaple(node,loads))return false;
+        if(!CanHarvestMaple(node,loads,material))return false;
         var store=Nodes[node];
         int reserved=ProductionIntakes.Count(i=>(i.Target??i.Source)==node)+Workshops[node].ReservedSlots;
-        if(!store.TryReceiveMaple(new(_nextId,loads*MaplePackageSize),reserved,id=>MapleShipping(node,id)))return false;
+        if(!store.TryReceiveMaple(new MaplePackage(_nextId,loads*MaplePackageSize){Material=material},reserved,id=>MapleShipping(node,id)))return false;
         _nextId++;
+        if(material!=RawMaterial.Maple){_rawDeposits[(int)material-1][node]-=loads;return true;}
         _mapleDeposits[node]-=loads;
+        (_mapleHarvested??=new int[Nodes.Length])[node]+=loads;
         return true;
     }
 
@@ -63,6 +92,7 @@ public sealed partial class RobotWorld
         Nodes[source].SetMaplePackages(Array.Empty<MaplePackage>());
         if(!MapleSupplyEnabled)return;
         _mapleDeposits[source]=0;
+        if(_rawDeposits!=null)foreach(var deposits in _rawDeposits)deposits[source]=0;
         _mapleShipments.RemoveAll(o=>o.Source==source || o.Target==source);
     }
 
@@ -74,8 +104,9 @@ public sealed partial class RobotWorld
         _=>0
     });
 
-    internal int AvailableMaple(int node)=>Nodes[node].MapleUnits-(_mapleShipments?
-        .Where(o=>o.Source==node).Sum(o=>Nodes[node].MaplePackages.FirstOrDefault(p=>p.Id==o.PackageId)?.Units??0)??0);
+    internal int AvailableMaple(int node)=>AvailableRaw(node,RawMaterial.Maple);
+    internal int AvailableRaw(int node,RawMaterial material)=>Nodes[node].MaplePackages.Where(p=>p.Material==material).Sum(p=>p.Units)-(_mapleShipments?
+        .Where(o=>o.Source==node).Sum(o=>Nodes[node].MaplePackages.FirstOrDefault(p=>p.Id==o.PackageId && p.Material==material)?.Units??0)??0);
 
     private bool MapleShipping(int node,long id)=>_mapleShipments.Any(o=>o.Source==node && o.PackageId==id);
 
@@ -88,13 +119,13 @@ public sealed partial class RobotWorld
         if(source==null || source.Sections!=1 || MapleShipping(node,sourceId))return false;
         var target=store.MaplePackages.FirstOrDefault(p=>p.Id==targetId);
         if(split){
-            if(targetId.HasValue || source.Units<2 || !store.HasMapleSpace(new(0,1),MapleReservedSlots(node)))return false;
+            if(targetId.HasValue || source.Units<2 || !store.HasMapleSpace(new MaplePackage(0,1){Material=source.Material},MapleReservedSlots(node)))return false;
             int moved=source.Units/2;
             store.SetMaplePackages(store.MaplePackages.Select(p=>p.Id==sourceId?p with {Units=p.Units-moved}:p)
-                .Append(new(_nextId++,moved)).ToArray());
+                .Append(new MaplePackage(_nextId++,moved){Material=source.Material}).ToArray());
             return true;
         }
-        if(target==null || target.Id==sourceId || target.Sections!=1 || MapleShipping(node,target.Id))return false;
+        if(target==null || target.Id==sourceId || target.Material!=source.Material || target.Sections!=1 || MapleShipping(node,target.Id))return false;
         int added=Math.Min(source.Units,MaplePackageSize-target.Units);
         if(added==0)return false;
         store.SetMaplePackages(store.MaplePackages.Select(p=>p.Id==target.Id?p with {Units=p.Units+added}:
@@ -102,14 +133,14 @@ public sealed partial class RobotWorld
         return true;
     }
 
-    internal void SpendMaple(int node,int units)
+    internal void SpendMaple(int node,int units,RawMaterial material=RawMaterial.Maple)
     {
         var store=Nodes[node];
         var packages=store.MaplePackages.ToArray();
         for(int i=0;i<packages.Length && units>0;i++)
         {
             var pack=packages[i];
-            if(MapleShipping(node,pack.Id))continue;
+            if(pack.Material!=material || MapleShipping(node,pack.Id))continue;
             int spent=Math.Min(pack.Units,units);
             packages[i]=pack with {Units=pack.Units-spent};
             units-=spent;
@@ -158,7 +189,7 @@ public sealed partial class RobotWorld
         }
     }
 
-    internal int PreviewBlockedMapleArrivals(WorldSetup world,int node,RobotStore forecast)
+    internal (int Blocked,MaplePackage[] Packages) PreviewMapleArrivals(WorldSetup world,int node,RobotStore forecast)
     {
         var target=forecast.PlanningCopy();
         int blocked=0;
@@ -169,6 +200,6 @@ public sealed partial class RobotWorld
             if(package==null || !CanDeliverMaple(world,order.Owner,order.Source,node) ||
                 !target.TryReceiveMaple(package,reserved,id=>MapleShipping(node,id)))blocked++;
         }
-        return blocked;
+        return (blocked,target.MaplePackages.ToArray());
     }
 }

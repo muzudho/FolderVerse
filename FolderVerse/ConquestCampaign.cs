@@ -197,6 +197,7 @@ public sealed partial class ConquestCampaign
         if(UseRobotCombat)
         {
             RobotBattles.Advance(world,orders);
+            NodeFunctionTransfers.RelocateStrandedConquerors(world);
             Phase=CampaignPhase.Domestic;
             Report=$"ロボット輸送 {world.Robots.Transport.LastTransfers.Count} / 観戦 {RobotBattles.Scenes.Count} / 継戦 {RobotBattles.Encounters.Count(e=>!e.Finished)}";
             return;
@@ -271,6 +272,7 @@ public sealed partial class ConquestCampaign
                 if(world.Nodes.Current(ruler).Id==post.Id && !world.Relations.Allied(ruler,winner))
                     world.Relations.Capture(world,ruler,winner,post.Id);
         }
+        NodeFunctionTransfers.RelocateStrandedConquerors(world);
         world.Nodes.Recount();
         string result=orders.Any(o=>o.Ruler==world.PlayerSlot)?
             world.TerritoryCounts[world.PlayerSlot]==0?"あなたは放浪者":world.Nodes.Current(world.PlayerSlot)?.Owner==world.PlayerSlot?"あなたの現在地は自国地点":"あなたの現在地は他国地点":"あなたは待機";

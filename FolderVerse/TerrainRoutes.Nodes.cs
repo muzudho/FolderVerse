@@ -52,7 +52,7 @@ public sealed partial class TerrainRoutes
             target=route.Portal.Position+relative-other.Normal*Vector3.Dot(relative,other.Normal)-cell.Normal*Vector3.Dot(relative,cell.Normal)-other.Normal*Vector3.Dot(relative,cell.Normal);
         }
         var delta=target-Position(source.Cell,source.Center);
-        var north=_world.IsPolarFace(cell.Face)?(Vector3.Dot(cell.Normal,_world.North)>0?Vector3.Backward:Vector3.Forward):_world.North;
+        var north=_world.MapUp(cell.Normal);
         float angle=MathF.Atan2(Vector3.Dot(delta,Vector3.Cross(north,cell.Normal)),Vector3.Dot(delta,north));
         return ((int)MathF.Floor(angle/(MathF.PI/8)+.5f)+16)%16;
     }

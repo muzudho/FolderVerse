@@ -12,13 +12,15 @@ public sealed partial class RobotWorkshop
     public bool Paused {get;set;}
     public bool DoNotRepeat {get;private set;}
     public bool CycleFinished {get;private set;}
+    public bool HarvestOnly {get;private set;}
+    public RawMaterial HarvestMaterial {get;private set;}
     public int MapleRemaining {get;private set;}
     public int MapleProgress {get;private set;}
-    public void SelectMapleHarvest(int loads)
+    public void SelectMapleHarvest(int loads,RawMaterial material=RawMaterial.Maple)
     {
         if(loads is <1 or >3)throw new ArgumentOutOfRangeException(nameof(loads));
         SelectPlan(3);
-        MapleRemaining=loads;MapleProgress=0;Paused=false;
+        HarvestMaterial=material;MapleRemaining=loads;MapleProgress=0;Paused=false;
     }
     public void SetDoNotRepeat(bool value)
     {
@@ -95,19 +97,24 @@ public sealed partial class RobotWorkshop
         foreach(var line in ProductionLines){line.CompleteSingleProduction(world,node,owner,ReservedSlots);}
     }
     public bool WaitingForMaple(RobotWorld world,int node)=>world.MapleSupplyEnabled && Manufacturing &&
-        !Paused && !CycleFinished && RestRemaining==0 && RobotWorld.MapleCost(CurrentProductionPlan.Preview(0))>world.AvailableMaple(node);
+        !Paused && !CycleFinished && RestRemaining==0 && MissingRawMaterial(world,node).HasValue;
+    internal RawMaterial? MissingRawMaterial(RobotWorld world,int node)
+    {
+        var product=CurrentProductionPlan.Preview(0);
+        return RobotWorld.RawMaterials.Where(m=>world.RawRequired(m) && RobotWorld.RawCost(product,m)>world.AvailableRaw(node,m)).Select(m=>(RawMaterial?)m).FirstOrDefault();
+    }
     private void CompleteSingleProduction(RobotWorld world,int node,int owner,int reservedSlots)
     {
         var purpose=world.PurposeAt(node);
         if(MapleRemaining>0)
         {
-            if(Paused || owner<0 || !world.CanHarvestMaple(node,MapleRemaining))return;
-            if(++MapleProgress>=EffectiveHarvestPeriod(purpose) && world.HarvestMaple(node,MapleRemaining)){
+            if(Paused || owner<0 || !world.CanHarvestMaple(node,MapleRemaining,HarvestMaterial))return;
+            if(++MapleProgress>=EffectiveHarvestPeriod(purpose) && world.HarvestMaple(node,MapleRemaining,HarvestMaterial)){
                 MapleRemaining=0;MapleProgress=0;
             }
             return;
         }
-        if(!Manufacturing || Paused || CycleFinished || owner<0)return;
+        if(HarvestOnly || !Manufacturing || Paused || CycleFinished || owner<0)return;
         if(RestEnabled && RestRemaining>0){if(--RestRemaining==0 && DoNotRepeat)CycleFinished=true;return;}
         if(WaitingForMaple(world,node))return;
         int period=EffectiveProductionPeriod(purpose);
@@ -115,12 +122,16 @@ public sealed partial class RobotWorkshop
         ProductionAge=ProductionAge>=period?period:ProductionAge+1;
         if(!Waiting)return;
         var product=CurrentProductionPlan.Preview(owner) with {FunctionDisplayNode=FunctionOriginNode};
-        int cost=world.MapleSupplyEnabled?RobotWorld.MapleCost(product):0;
+
         var store=world.Nodes[node];
-        var before=cost>0?store.MaplePackages.ToArray():null;
-        if(cost>0)world.SpendMaple(node,cost);
+        var before=store.MaplePackages.ToArray();
+        foreach(var material in RobotWorld.RawMaterials.Where(world.RawRequired))
+        {
+            int cost=RobotWorld.RawCost(product,material);
+            if(cost>0)world.SpendMaple(node,cost,material);
+        }
         if(!(world.ProductionIntakeEnabled?world.QueueProduction(this,node,owner,product,reservedSlots):world.TryStoreProduction(node,owner,product,reservedSlots))){
-            if(before!=null)store.SetMaplePackages(before);
+            store.SetMaplePackages(before);
             if(WaitingProductionTurns<int.MaxValue)WaitingProductionTurns++;
             return;
         }

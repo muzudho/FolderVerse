@@ -124,14 +124,21 @@ public sealed partial class WorldSetup
         new(126,71,171), new(181,97,43), new(176,76,139), new(35,138,144), new(217,228,240)
     };
     public Color OwnerColor(int slot) => slot<0?new Color(155,169,180):Colors[ColorIndices[slot]%Colors.Length];
-    public void SetWorld(int seed)
+    private float _terrainElevationShift;
+    public TerrainSampler Terrain=>new(WorldTerrain.Offset(WorldSeed),_terrainElevationShift);
+    internal WorldSetup CreateGeographyPreview()=>new()
     {
-        WorldConquestEndingShown=false;TutorialStep=0;TutorialMapBeforeWar=TutorialAttackCompleted=TutorialPocketIntroShown=false;_presetCastCount=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();Lessons.Reset();
-        TutorialPocketed=TutorialMoved=TutorialPocketNoticeShown=TutorialMoveNoticeShown=false;TutorialPostMoveStage=0;TutorialSortieNoticeShown=TutorialTurnEndNoticeShown=TutorialWarTargetNoticeShown=false;
-        PolarAxis=1;TutorialMapStage=TutorialMapRotations=TutorialMapNotices=0;TutorialMapEdgeChanged=false;
-        WandererPolicies=new WandererPolicy[CastCount];
+        WorldSeed=WorldSeed,Width=Width,Height=Height,Depth=Depth,Cells=Cells,
+        PolarAxis=PolarAxis,_terrainElevationShift=_terrainElevationShift
+    };
+
+    public void SetWorld(int seed)=>TrySetWorld(seed,null);
+
+    public bool TrySetWorld(int seed,double minimumSea,double maximumSea)=>TrySetWorld(seed,(minimumSea,maximumSea));
+
+    private bool TrySetWorld(int seed,(double Minimum,double Maximum)? seaRange)
+    {
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
-        WorldSeed = seed;
         var random = new SeedRandom(seed);
         // Choose the shape first so its frequency is independent of size combinations.
         // Dice : rod : slab : box = 1 : 2 : 4 : 8.
@@ -146,10 +153,24 @@ public sealed partial class WorldSetup
         if(2*(dimensions[0]*dimensions[1]+dimensions[1]*dimensions[2]+dimensions[2]*dimensions[0])<(_participantCountsConfigured?ParticipantCount:PlayerCount))
             dimensions=new[]{4,4,4};
         random.Shuffle(dimensions);
+        var cells=CreateCells(dimensions[0],dimensions[1],dimensions[2]);
+        float shift=0;
+        if(seaRange is { } bounds && !WorldTerrain.TryFitSeaRange(cells,seed,bounds.Minimum,bounds.Maximum,out shift))
+            return false;
+
+        WorldConquestEndingShown=false;TutorialStep=0;TutorialMapBeforeWar=TutorialAttackCompleted=TutorialPocketIntroShown=false;_presetCastCount=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();Lessons.Reset();
+        TutorialPocketed=TutorialMoved=TutorialPocketNoticeShown=TutorialMoveNoticeShown=false;TutorialPostMoveStage=0;TutorialSortieNoticeShown=TutorialTurnEndNoticeShown=TutorialWarTargetNoticeShown=false;
+        TutorialMapStage=TutorialMapRotations=TutorialMapNotices=0;TutorialMapEdgeChanged=false;
+        WandererPolicies=new WandererPolicy[CastCount];
+        WorldSeed=seed;
+        _terrainElevationShift=shift;
         Width = dimensions[0]; Height = dimensions[1]; Depth = dimensions[2];
-        Cells = CreateCells(Width, Height, Depth);
-        CityNames=WorldNames.Cities(Cells,seed);
+        Cells=cells;
+        var terrain=Terrain;
+        PolarAxis=(int)WorldTerrain.HeadSystem(Cells,terrain);
+        CityNames=WorldNames.Cities(Cells,seed,terrain);
         ClearPlacement();
+        return true;
     }
     public bool AllowDuplicateCharacters;
     public void SetCast(int seed)
@@ -190,6 +211,7 @@ public sealed partial class WorldSetup
     {
         SetPlayerCount(1);
         while(true){SetWorld(worldSeed);if(Width==1 && Height==1 && Depth==1 && WorldTerrain.HasSeaAndLand(Cells,WorldSeed))break;worldSeed=worldSeed==int.MaxValue?0:worldSeed+1;}
+        PolarAxis=1;
         SetCast(castSeed);
         for(int i=0;i<6;i++){Portraits[i]=i;Looks[i]=new(i,0);}
         ConquerorFullNames=WorldNames.Conquerors(Looks,castSeed);ConquerorNames=WorldNames.ShortNames(ConquerorFullNames);

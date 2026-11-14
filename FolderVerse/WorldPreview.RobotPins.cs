@@ -45,7 +45,7 @@ public sealed partial class WorldPreview
             mesh.Add(new(a,tint,normal));mesh.Add(new(b,tint,normal));mesh.Add(new(c,tint,normal));
         }
         var groups=setup.Robots.FunctionDisplayGroups(setup);
-        var terrainOffset=WorldTerrain.Offset(setup.WorldSeed);
+        var terrainOffset=setup.Terrain;
         foreach(var node in setup.Nodes.All)
         {
             bool nodeVisible=net.NodeVisible(setup,node);
@@ -54,7 +54,7 @@ public sealed partial class WorldPreview
             var cell=setup.Cells[node.Cell];var robots=groups.GetValueOrDefault(node.Id,new List<Robot>()).Where(r=>nodeVisible && net.ShowRobots && (net.ShowOtherCountries || setup.Relations.Controls(r.Owner))).ToList();
             if(net.ShowRobots && net.ShowBatteries && net.HoveredBattery>=0 && setup.Relations.Powered[net.HoveredBattery] && setup.Nodes.Current(net.HoveredBattery)?.Id==node.Id && (net.ShowOtherCountries || setup.Relations.Controls(net.HoveredBattery)))robots.AddRange(setup.Robots.Retinues[net.HoveredBattery].Robots);
             var center=setup.Routes.Position(node.Cell,node.Center);
-            center+=cell.Normal*WorldTerrain.ReliefAt(cell,center,terrainOffset);
+            center+=cell.Normal*WorldTerrain.ReliefAt(setup,cell,center,terrainOffset);
             var projected=Screen(center);
             if(Vector3.Dot(Vector3.TransformNormal(cell.Normal,orientation),camera-Vector3.Transform(center,orientation))<=0 || projected.Z<0 || projected.Z>1)continue;
             Rectangle bounds=Rectangle.Empty;

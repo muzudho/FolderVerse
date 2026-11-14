@@ -151,8 +151,8 @@ public partial class Game1
             if(store.MapleUnits>0)_ui.Text($"楓の木 {store.MapleUnits}",new(x+20,888),.32f,Cream);
             var incomingMaterials=DirectIncomingMaterials(side);
             var storedMaterials=DirectStoredMaterials(side);
-            int materialArrivals=_setup.Robots.MapleShipments.Count(o=>o.Target==node);
-            if(materialArrivals>0)_ui.Text($"素材の入荷予定 {materialArrivals}件",new(x+20,920),.32f,Accent);
+            var (mapleLabel,mergedMaple)=MapleArrivalLabel(node,store);
+            if(mapleLabel.Length>0)_ui.Text(mapleLabel,new(x+20,920),.32f,Accent);
             foreach(int slot in DirectVisibleSlots(side)){
                 var cell=DirectViewCell(side,slot);var robot=store.Robots.FirstOrDefault(r=>r.Id==_directSlots[side][slot]);var hover=DirectHoverPart(side,slot);
                 bool target=_directDrag.HasValue && cell.Contains(_pointer);bool cellHover=cell.Contains(_pointer) && hover==0;
@@ -174,6 +174,7 @@ public partial class Game1
                     if(storedMaterials.TryGetValue(key,out var package)){
                         DrawMaplePackage(Rectangle.Union(bounds,DirectViewPart(side,slot,row+package.Sections-1)),package,compact:true);
                         if(cell.Width>=130 && _setup.Robots.MapleShipments.Any(o=>o.PackageId==package.Id))DrawDirectDeliveryTag(bounds,"出荷予定");
+                        else if(cell.Width>=130 && mergedMaple.TryGetValue(package.Id,out int units))DrawDirectDeliveryTag(bounds,$"合算 +{units}");
                         continue;
                     }
                     if(incomingMaterials.TryGetValue(key,out var incomingMaterial)){
@@ -193,7 +194,7 @@ public partial class Game1
                     var labelArea=new Rectangle(cell.X,cell.Y+cell.Height*208/280,cell.Width,Math.Max(1,cell.Height*24/280));
                     _ui.Center(robot.Id<0?"組替予定":"ID "+robot.Id,labelArea,Math.Min(.32f,cell.Width/510f),Cream);
                     labelArea.Y=cell.Y+cell.Height*242/280;
-                    if(robot.Stationed || robot.Disposal)_ui.Center(robot.FactoryWorker?"工場作業員":robot.InterceptOnly?"迎撃専用":robot.DefenseOnly?"守備専用":"廃棄予約",labelArea,Math.Min(.24f,cell.Width/680f),color);
+                    if(robot.Stationed || robot.Disposal)_ui.Center(robot.WarehouseKeeper?"倉庫管理人":robot.HarvestWorker?"採取員":robot.FactoryWorker?"製造作業員":robot.InterceptOnly?"迎撃専用":robot.DefenseOnly?"守備専用":"廃棄予約",labelArea,Math.Min(.24f,cell.Width/680f),color);
                     else if(robot.IntegratedParts!=0)_ui.Center(IntegratedLabel(robot.IntegratedParts),labelArea,Math.Min(.24f,cell.Width/680f),Cream);
                 }
             }

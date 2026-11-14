@@ -38,7 +38,7 @@ public partial class Game1
     }
     private void PlayCurtain(){
         if(_conquestAudioUnavailable)return;
-        try{_curtainSound??=ConquestMusic.Curtain();_curtainSound.Play(.55f,0,0);}
+        try{_curtainSound??=ConquestMusic.Curtain();_curtainSound.Play(.55f*SeGain,0,0);}
         catch(NoAudioHardwareException e){_conquestAudioUnavailable=true;RecordFailure(e,"conquest_audio");}
     }
     private void SetConquestCard(){
@@ -90,7 +90,7 @@ public partial class Game1
             duration=_conquestStage switch{0 or 2 or 6 or 8=>.65,1 or 3 or 5 or 7=>1.5,4=>ConquestCardSeconds,_=>0};
         }
         if(_conquestStage is >=2 and <=6 && !_conquestAudioUnavailable && (_conquestStage<5 || _conquestMusic!=null)){
-            try{_conquestMusic??=new();var env=_conquestEnvironment;
+            try{if(_conquestMusic==null){_conquestMusic=new();_conquestMusic.SetGain(BgmGain);}var env=_conquestEnvironment;
                 float volume=_conquestStage==5?(float)(1-_conquestAge/1.5):_conquestStage==6?0:Math.Min(1,(float)(_conquestStage==2?_conquestAge/.65:1));
                 _conquestMusic.Update(env,.36f*volume);
             }catch(NoAudioHardwareException e){_conquestAudioUnavailable=true;RecordFailure(e,"conquest_music");}

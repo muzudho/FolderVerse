@@ -9,7 +9,7 @@ public partial class Game1
     {
         if(_screen!=Screen.Ending){StopEndingMusic();return;}
         if(_endingMusicUnavailable)return;
-        try{_endingMusic??=new();_endingMusic.Update(active);}
+        try{_endingMusic??=new();_endingMusic.Update(active,BgmGain);}
         catch(NoAudioHardwareException error){StopEndingMusic();_endingMusicUnavailable=true;RecordFailure(error,"ending_music");}
     }
 }

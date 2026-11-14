@@ -74,8 +74,8 @@ public sealed class BattleMusic:IDisposable
     private readonly DynamicSoundEffectInstance _stream=new(BattleMusicScore.Rate,AudioChannels.Mono);
     private readonly BattleMusicScore _score;
     public BattleMusic(BattleMusicMood mood){_score=new(mood);}
-    public void Update(BattleMusicMood mood,bool active){
-        _score.SetMood(mood);_stream.Volume=.38f;
+    public void Update(BattleMusicMood mood,bool active,float gain=1){
+        _score.SetMood(mood);_stream.Volume=.38f*gain;
         while(_stream.PendingBufferCount<2)_stream.SubmitBuffer(_score.Render());
         if(_stream.State==SoundState.Paused)_stream.Resume();else if(_stream.State!=SoundState.Playing)_stream.Play();
     }

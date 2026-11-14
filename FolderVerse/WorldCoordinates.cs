@@ -11,7 +11,8 @@ public static class WorldCoordinates
     // The -X/+Z (chopsticks/belly) corner is the meridian. Belly-side columns are positive.
     public static Point At(WorldSetup world,SurfaceCell cell)
     {
-        int w=world.PolarAxis==0?world.Height:world.Width,d=world.Depth,h=world.PolarAxis==0?world.Width:world.Height,p=2*(w+d);
+        var size=world.Geographic(new Vector3(world.Width,world.Height,world.Depth));
+        int w=(int)Math.Abs(size.X),d=(int)Math.Abs(size.Z),h=(int)Math.Abs(size.Y),p=2*(w+d);
         var center=world.Geographic(cell.Center);int face=world.GeographicFace(cell.Face);
         int x=(int)MathF.Floor(center.X+w/2f),z=(int)MathF.Floor(center.Z+d/2f);
         int longitude,latitude;

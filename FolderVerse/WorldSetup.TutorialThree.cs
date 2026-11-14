@@ -8,8 +8,22 @@ public sealed partial class WorldSetup
     public int PolarAxis=1;
     public int TutorialMapStage,TutorialMapRotations,TutorialMapNotices;
     public bool TutorialMapEdgeChanged;
-    public Vector3 North=>PolarAxis==0?Vector3.Right:Vector3.Up;
-    public Vector3 Geographic(Vector3 p)=>PolarAxis==0?new(-p.Y,p.X,p.Z):p;
+    public string HeadSystemName=>((PlanetHeadSystem)PolarAxis) switch
+    {
+        PlanetHeadSystem.Fish=>"魚頭系",
+        PlanetHeadSystem.Dog=>"犬頭系",
+        _=>"猿頭系"
+    };
+    public Vector3 North=>PolarAxis switch {0=>Vector3.Right,2=>Vector3.Backward,_=>Vector3.Up};
+    public Vector3 Geographic(Vector3 p)=>PolarAxis switch
+    {
+        0=>new(-p.Y,p.X,p.Z),
+        2=>new(p.X,p.Z,-p.Y),
+        _=>p
+    };
+    public Vector3 MapUp(Vector3 normal)=>Math.Abs(Vector3.Dot(normal,North))>.5f
+        ? (PolarAxis==2?Vector3.Down:Vector3.Backward)*Math.Sign(Vector3.Dot(normal,North))
+        : North;
     public int GeographicFace(int face)=>Array.IndexOf(CubeNet.Normals,Geographic(CubeNet.Normals[face]));
     public bool IsPolarFace(int face)=>Math.Abs(Vector3.Dot(CubeNet.Normals[face],North))>.5f;
     public string FaceName(int face)=>CubeNet.FaceNames[GeographicFace(face)];

@@ -8,7 +8,7 @@
 
 ## 現在の状況
 
-[v0.7.0 Pre-release（無料試遊版）](https://github.com/muzudho/FolderVerse/releases/tag/v0.7.0)をGitHub Releasesで公開しています。Windows x64向けで、Windows 11を想定しています。ZIPを展開して実行でき、Visual Studioの準備は不要です。
+[v0.9.0 Pre-release（無料試遊版）](https://github.com/muzudho/FolderVerse/releases/tag/v0.9.0)をGitHub Releasesで公開しています。Windows x64向けで、Windows 11を想定しています。ZIPを展開して実行でき、Visual Studioの準備は不要です。
 
 MonoGame製の開発中のゲームです。20分での完走は制作の目標です。既知の問題や検証範囲はリリースページを参照してください。このリポジトリーの資料には、配布版にまだ含まれない開発中の機能も記載しています。
 

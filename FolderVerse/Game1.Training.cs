@@ -28,7 +28,7 @@ public partial class Game1
         _ui.Box(new(420,200,1020,820),new(27,49,62));_ui.Text("調練 / 征服者直属",new(460,240),.8f,Cream);_ui.Button(TrainingClose,"×",Muted,.7f);
         _ui.Text("配備ロボットに求める自国パーツの割合",new(480,310),.58f,Cream);
         _ui.Text("戦闘に出す兵隊ロボット",new(480,500),.58f,Cream);
-        _ui.Text("工場作業員ロボットに求める自国パーツの割合",new(480,690),.58f,Cream);
+        _ui.Text("製造作業員ロボットに求める自国パーツの割合",new(480,690),.58f,Cream);
         for(int f=0;f<3;f++){var r=TrainingField(f);_ui.Button(r,(f==0?AssemblyLabels[policy.AssemblyPolicy]:f==1?DeploymentLabels[policy.DeploymentPolicy]:AssemblyLabels[policy.WorkerPolicy]),Muted,.55f);for(int row=0;row<10;row++)_ui.Box(new(r.Right-30+row,r.Center.Y-4+row,20-row*2,1),Cream);}
         _ui.Text("自国パーツ     盾     短剣     小銃",new(480,840),.40f,Cream);
         _ui.Text("１／３             1          1          1",new(480,880),.40f,Cream);

@@ -25,7 +25,7 @@ public sealed class WorldNodes
     public Node[] All {get;private set;}=Array.Empty<Node>();
     private int[][] _regions;
     private WorldSetup _world;
-    public void Initialize(WorldSetup world)
+    public void Initialize(WorldSetup world,bool geographyOnly=false)
     {
         _world=world;var result=new List<Node>();_regions=world.Cells.Select(_=>Enumerable.Repeat(-1,100).ToArray()).ToArray();
         var harbors=world.Cells.SelectMany(c=>world.Routes.Harbors(c.Id))
@@ -50,11 +50,12 @@ public sealed class WorldNodes
                 }
                 var centroid=new Vector2((float)points.Average(p=>p.X),(float)points.Average(p=>p.Y));
                 var center=points.OrderBy(p=>Vector2.DistanceSquared(new Vector2(p.X,p.Y),centroid)).ThenBy(p=>p.Y*10+p.X).First();
-                result.Add(new(){Id=result.Count,Cell=cell.Id,Owner=world.Owners[cell.Id],Center=center,Points=points.ToArray(),Terrain=terrain,IsHarbor=harbor,
+                result.Add(new(){Id=result.Count,Cell=cell.Id,Owner=geographyOnly?-1:world.Owners[cell.Id],Center=center,Points=points.ToArray(),Terrain=terrain,IsHarbor=harbor,
                     Name=harbor?CoastalNames.For(world.WorldSeed,cell.Id,center):null,Population=new(){Land=terrain!=TravelTerrain.Sea}});
             }
         }
         All=result.ToArray();
+        if(geographyOnly)return;
         foreach(var cell in world.Cells)
         {
             var land=InCell(cell.Id).Where(p=>p.Population.Land).ToArray();int area=land.Sum(p=>p.Points.Length);

@@ -164,7 +164,7 @@ sealed class CheckGame:Game1
         GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();var beforeMotion=Pixels();Save("manufacturing-lane-start");
         Call("UpdateManufacturing",.125d,false);
         GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();var duringMotion=Pixels();Save("manufacturing-lane-moving");
-        Check(w.Robots.IndustryTurn==clock && w.Robots.ProductionIntakes.Count==0 && !beforeMotion.SequenceEqual(duringMotion),"The shared fluorescent tube moves between ticks without producing early");
+        Check(w.Robots.IndustryTurn==clock && w.Robots.ProductionIntakes.Count==0 && !beforeMotion.SequenceEqual(duringMotion),"The product moves on the conveyor between ticks without producing early");
         Call("UpdateManufacturing",.625d,false);
         Check(w.Robots.IndustryTurn==clock+1 && w.Robots.ProductionIntakes.Count==1 && w.Industry.Pending,"One displayed industry turn produces actual queued products");
         var flights=((IEnumerable<(ProductionIntake Arrival,double Started)>)Get("_manufacturingFlights")).ToArray();

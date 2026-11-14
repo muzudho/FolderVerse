@@ -12,7 +12,7 @@ public partial class Game1
     private bool ComputerExhibition=>!_demoActive && _setup.ComputerOnly && _setup.PlayerSlot>=0 &&
         _screen is Screen.WorldStatus or Screen.Transport or Screen.Battle or Screen.Industry or Screen.BattleResearch or Screen.Disposition;
     private bool BuildingWorld=>_screen is Screen.LandConquest or Screen.Fortune;
-    private bool AutomaticGame=>!_demoActive && !BuildingWorld && (_autoPlay || ComputerExhibition);
+    private bool AutomaticGame=>_screen!=Screen.Title && !_demoActive && !BuildingWorld && (_autoPlay || ComputerExhibition);
     private bool AutoPauseInput(bool click,bool escape)
     {
         if(!_autoPaused){
@@ -35,12 +35,13 @@ public partial class Game1
         }
         if(!click)return true;
         if(CountrySettingsMenuItem.Contains(_pointer))OpenCountrySettings();
+        else if(BgmMenuItem.Contains(_pointer))_bgmMenuOpen=true;
         else if(ComputerManualMenuItem.Contains(_pointer))OpenComputerManual();
         else if(HierarchyMenuItem.Contains(_pointer))_autoPausePage=1;
         else if(InactiveMenuItem.Contains(_pointer))_autoPausePage=2;
         else if(AutoMenuItem.Contains(_pointer))ResumeAutoPause();
         else if(EndingMenuItem.Contains(_pointer)){_autoPaused=false;StartEnding();}
-        else if(QuitMenuItem.Contains(_pointer)){_autoPaused=false;ReturnToTitle();}
+        else if(QuitMenuItem.Contains(_pointer))ReturnToTitle();
         return true;
     }
     private void ResumeAutoPause()
@@ -78,8 +79,9 @@ public partial class Game1
             _ui.Button(AutoMenuItem,"ゲームを再開する",Muted,.48f);
             _ui.Button(CountrySettingsMenuItem,"人間とコンピューター / 国旗の設定",Muted,.46f);
             DrawComputerManualMenuItem();
+            _ui.Button(BgmMenuItem,"BGM・SE音量",Muted,.5f);
         }
         if(_autoPausePage!=0 && !_countrySettingsOpen)_ui.Button(InactiveBack,"システムメニューへ",Muted,.5f);
-        _ui.Button(AutoPauseClose,"×",Muted,.7f);_spriteBatch.End();DrawFullscreenCursor();
+        _ui.Button(AutoPauseClose,"×",Muted,.7f);DrawBgmMenu();_spriteBatch.End();DrawFullscreenCursor();
     }
 }

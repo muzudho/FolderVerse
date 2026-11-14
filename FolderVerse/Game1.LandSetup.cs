@@ -7,7 +7,15 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 public partial class Game1
 {
-    private static readonly Rectangle LandGlobeArea=new(580,170,1280,780),LandConfirm=new(60,840,450,75);
+    private static readonly Rectangle LandGlobeArea=new(320,170,1280,780),LandControlsArea=new(580,170,1280,780),LandConfirm=new(60,840,450,75);
+    private static Rectangle LandGuideBounds
+    {
+        get
+        {
+            var toy=OrientationAreas(LandControlsArea,false).Toy;
+            return new(toy.Right-364,toy.Bottom+100,420,296);
+        }
+    }
     private readonly HashSet<int> _landSelection=new();
     private int[] _landOrder=Array.Empty<int>();
     private int _landTurn;
@@ -15,8 +23,10 @@ public partial class Game1
     private static readonly Rectangle LandSkipOthers=new(60,930,450,60);
     private double _landAge;
     private int _robotScatterPercent=25;
-    private bool _fortuneSliderDragging;
-    private static readonly Rectangle FortuneSlider=new(60,435,480,48),EquipmentModeButton=new(60,535,480,54),FortuneConfirm=new(60,615,480,66);
+    private int _rawStockPercent=25;
+    private Rectangle? _fortuneSliderDragging;
+    private static readonly Rectangle FortuneSlider=new(60,435,480,48),RawStockSlider=new(60,560,480,48),
+        EquipmentModeButton=new(60,660,480,54),FortuneConfirm=new(60,740,480,66);
     private bool FortuneSettingsAvailable=>_screen==Screen.Fortune && !_demoActive && _setup.TutorialStep==0;
     private Point? _landDrag;
     private int[] _automaticLand=Array.Empty<int>();
@@ -28,10 +38,11 @@ public partial class Game1
     private void BeginLandConquest()
     {
         _robotScatterPercent=25;
-        _fortuneSliderDragging=false;
+        _rawStockPercent=25;
+        _fortuneSliderDragging=null;
         _skipOtherLandTurns=false;
         _domesticViews.Clear();_landOrder=_setup.LandOrder();_landTurn=0;_landAge=0;_landSelection.Clear();_landDrag=null;_automaticLand=Array.Empty<int>();
-        _screen=Screen.LandConquest;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.ShowLandConquest(_setup);
+        _screen=Screen.LandConquest;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.ShowLandConquest(_setup,dimClaimed:true,previewMaples:true);
     }
     private int[] AutomaticLand(int ruler)
     {
@@ -76,7 +87,8 @@ public partial class Game1
     }
     private void ConfirmLand()
     {
-        _setup.ClaimLand(LandRuler,_landSelection.ToArray());_world.ShowLandConquest(_setup);_landSelection.Clear();_landAge=0;_automaticLand=Array.Empty<int>();
+        _landDrag=null;
+        _setup.ClaimLand(LandRuler,_landSelection.ToArray());_world.ShowLandConquest(_setup,dimClaimed:_landTurn+1<_landOrder.Length,previewMaples:true);_landSelection.Clear();_landAge=0;_automaticLand=Array.Empty<int>();
         if(++_landTurn==_landOrder.Length){_fortuneStartOrientation=Quaternion.CreateFromRotationMatrix(_world.ViewOrientation(_yaw,_pitch));_screen=Screen.Fortune;_world.GlobeAnchor=null;_world.GlobeZoom=1;return;}
     }
     private void UpdateLandSetup(double elapsed,MouseState mouse,bool active,bool click,bool enter)
@@ -88,28 +100,23 @@ public partial class Game1
             if(FortuneSettingsAvailable){
                 if(active && click && EquipmentModeButton.Contains(_pointer))
                     _setup.EquipmentMode=_setup.EquipmentMode==RobotEquipmentMode.Materials?RobotEquipmentMode.Legacy:RobotEquipmentMode.Materials;
-                if(!active || mouse.LeftButton==ButtonState.Released)_fortuneSliderDragging=false;
-                if(active && click && FortuneSlider.Contains(_pointer))_fortuneSliderDragging=true;
-                if(_fortuneSliderDragging)
-                    _robotScatterPercent=Math.Clamp((int)MathF.Round(100f*(_pointer.X-FortuneSlider.Left)/FortuneSlider.Width),0,100);
+                if(!active || mouse.LeftButton==ButtonState.Released)_fortuneSliderDragging=null;
+                if(active && click){
+                    if(FortuneSlider.Contains(_pointer))_fortuneSliderDragging=FortuneSlider;
+                    if(_setup.EquipmentMode==RobotEquipmentMode.Materials && RawStockSlider.Contains(_pointer))
+                        _fortuneSliderDragging=RawStockSlider;
+                }
+                if(_fortuneSliderDragging is Rectangle slider){
+                    int percent=Math.Clamp((int)MathF.Round(100f*(_pointer.X-slider.Left)/slider.Width),0,100);
+                    if(slider==FortuneSlider)_robotScatterPercent=percent;
+                    else _rawStockPercent=percent;
+                }
             }
-            // Visit all six face normals, then gracefully return to the starting pose.
-            var tour=new[]{_fortuneStartOrientation,
-                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,0)),
-                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(-MathHelper.PiOver2,0)),
-                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,MathHelper.PiOver2)),
-                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(MathHelper.Pi,0)),
-                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(MathHelper.PiOver2,0)),
-                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,-MathHelper.PiOver2)),
-                _fortuneStartOrientation};
-            float progress=(float)Math.Clamp(_landAge/5,0,1)*(tour.Length-1);
-            int segment=Math.Min((int)progress,tour.Length-2);
-            float blend=MathHelper.SmoothStep(0,1,progress-segment);
-            _world.ManualOrientation=Quaternion.Slerp(tour[segment],tour[segment+1],blend);
+            _world.ManualOrientation=WorldPreview.FaceTour(_fortuneStartOrientation,_landAge/5);
             bool complete=FortuneSettingsAvailable
                 ? active && (enter || click && FortuneConfirm.Contains(_pointer))
                 : _landAge>=5;
-            if(complete){_setup.CompleteLand(_random.Next(),_robotScatterPercent);_world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();if(_setup.ComputerOnly)StartAutoPlay();}
+            if(complete){_setup.CompleteLand(_random.Next(),_robotScatterPercent,_rawStockPercent);_world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();if(_setup.ComputerOnly)StartAutoPlay();}
             return;
         }
         if(active && click && LandSkipOthers.Contains(_pointer)){_skipOtherLandTurns=!_skipOtherLandTurns;_landDrag=null;}
@@ -142,7 +149,7 @@ public partial class Game1
         Rotate(mouse,click,active,LandGlobeArea);
         int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
         if(wheel!=0)_world.GlobeZoom=MathHelper.Clamp(_world.GlobeZoom*MathF.Pow(1.2f,wheel/120f),.5f,8);
-        if(click && LandGlobeArea.Contains(_pointer))_landDrag=_pointer;
+        if(click && LandGlobeArea.Contains(_pointer) && !LandGuideBounds.Contains(_pointer))_landDrag=_pointer;
         if(_landDrag.HasValue && mouse.LeftButton==ButtonState.Released)
         {
             var a=_landDrag.Value;var bounds=new Rectangle(Math.Min(a.X,_pointer.X),Math.Min(a.Y,_pointer.Y),Math.Max(2,Math.Abs(a.X-_pointer.X)),Math.Max(2,Math.Abs(a.Y-_pointer.Y)));
@@ -170,13 +177,9 @@ public partial class Game1
             _ui.Text("空から届く運命のロボット",new(60,230),.75f,Color.White);
             if(FortuneSettingsAvailable){
                 _ui.Text("ポケットに正規の完全体を２体",new(60,300),.45f,Cream);
-                _ui.Text($"ロボットの量　{_robotScatterPercent}",new(60,385),.6f,Cream);
-                int x=FortuneSlider.Left+FortuneSlider.Width*_robotScatterPercent/100;
-                _ui.Box(new(FortuneSlider.Left,FortuneSlider.Center.Y-4,FortuneSlider.Width,8),Muted);
-                _ui.Box(new(FortuneSlider.Left,FortuneSlider.Center.Y-4,x-FortuneSlider.Left,8),Accent);
-                _ui.Box(new(x-7,FortuneSlider.Top,14,FortuneSlider.Height),Cream);
-                _ui.Text("0",new(60,489),.42f,Cream);
-                _ui.Text("100",new(492,489),.42f,Cream);
+                DrawFortuneSlider(FortuneSlider,"ロボットの量",_robotScatterPercent);
+                if(_setup.EquipmentMode==RobotEquipmentMode.Materials)
+                    DrawFortuneSlider(RawStockSlider,"格納庫の原材料",_rawStockPercent);
                 _ui.Button(EquipmentModeButton,_setup.EquipmentMode==RobotEquipmentMode.Materials?"装備数：素材９種":"装備数：旧仕様",
                     _setup.EquipmentMode==RobotEquipmentMode.Materials?Accent:Muted,.48f);
                 _ui.Button(FortuneConfirm,"確定して進む",Accent,.58f);
@@ -186,42 +189,66 @@ public partial class Game1
         _ui.Text(_setup.ConquerorNames[LandRuler]+" の土地選択",new(60,220),.7f,Color.White);
         _ui.Text("選択 "+_landSelection.Count+" / 権利 "+_setup.TerritoryRights[LandRuler]+" 区画",new(60,310),.65f,_landSelection.Count>_setup.TerritoryRights[LandRuler]?Color.Orange:Cream);
         _portraitRenderer.Draw(_spriteBatch,_setup.Looks[LandRuler],new Rectangle(60,370,450,300),true,forCreation:true);
-        _ui.Text("左ドラッグ：範囲を反転\n右ドラッグ：星を回す\nホイール：拡大・縮小\n飛び地も選択できます",new(60,685),.38f,Color.White);
-        _ui.Text("国旗あり：取得済み / 国旗なし：未取得",new(60,805),.32f,Cream);
         _ui.Button(LandConfirm,LandHumanTurn?"この土地を獲得":"他国が土地を選択中",LandHumanTurn && _landSelection.Count==_setup.TerritoryRights[LandRuler]?Accent:Muted,.65f);
         _ui.Button(LandSkipOthers,(_skipOtherLandTurns?"✓ ":"□ ")+"自分のターン以外をスキップ",_skipOtherLandTurns?Accent:Muted,.48f);
     }
+    private void DrawFortuneSlider(Rectangle slider,string label,int percent)
+    {
+        _ui.Text($"{label}　{percent}",new(slider.Left,slider.Top-45),.6f,Cream);
+        int x=slider.Left+slider.Width*percent/100;
+        _ui.Box(new(slider.Left,slider.Center.Y-4,slider.Width,8),Muted);
+        _ui.Box(new(slider.Left,slider.Center.Y-4,x-slider.Left,8),Accent);
+        _ui.Box(new(x-7,slider.Top,14,slider.Height),Cream);
+        _ui.Text("0",new(slider.Left,slider.Bottom+6),.42f,Cream);
+        _ui.Text("100",new(slider.Right-48,slider.Bottom+6),.42f,Cream);
+    }
+
     private void DrawLandSetupGlobe(Rectangle canvas,Matrix transform,Viewport viewport)
     {
-        var frame=OrientationViewport(LandGlobeArea,canvas);
+        bool selectingLand=_screen==Screen.LandConquest;
+        var globeArea=selectingLand?LandGlobeArea:LandControlsArea;
+        var frame=OrientationViewport(globeArea,canvas);
         GraphicsDevice.Viewport=new Viewport(canvas);
-        _world.Draw(_yaw,_pitch,_animationTime,false,true,new Rectangle(frame.X,frame.Y,frame.Width,frame.Height));GraphicsDevice.Viewport=viewport;
+        var selectedCells=selectingLand && _landSelection.Count>0 ? _landSelection.Select(id=>_setup.Cells[id]) : null;
+        _world.Draw(_yaw,_pitch,_animationTime,false,true,new Rectangle(frame.X,frame.Y,frame.Width,frame.Height),selectedCells);
+        GraphicsDevice.Viewport=viewport;
         _spriteBatch.Begin(transformMatrix:transform);
         foreach(var c in _setup.Cells)
         {
-            if(!_world.ProjectVisible(c.Center,c.Normal,_yaw,_pitch,LandGlobeArea,out var p))continue;
-            if(_setup.Owners[c.Id]>=0 || _landSelection.Contains(c.Id) || _screen==Screen.LandConquest)
-            {
-                var color=_landSelection.Contains(c.Id)?Color.Yellow:_setup.Owners[c.Id]>=0?_setup.OwnerColor(_setup.Owners[c.Id]):new Color(110,140,150);
-                foreach(var edge in c.Corners.Select((v,i)=>(A:v,B:c.Corners[(i+1)%c.Corners.Length])))
-                    if(_world.ProjectVisible(edge.A,c.Normal,_yaw,_pitch,LandGlobeArea,out var a) && _world.ProjectVisible(edge.B,c.Normal,_yaw,_pitch,LandGlobeArea,out var b))LandLine(a,b,color,3);
-            }
-            if(_setup.Owners[c.Id]>=0)CountryFlagArt.Marker(_ui,_setup,_setup.Owners[c.Id],p,38);
+            if(!_world.ProjectVisible(c.Center,c.Normal,_yaw,_pitch,globeArea,out var p))continue;
+            int flagOwner=selectingLand && _landSelection.Contains(c.Id)?LandRuler:_setup.Owners[c.Id];
+            if(flagOwner>=0)CountryFlagArt.Marker(_ui,_setup,flagOwner,p,38);
             foreach(var route in _setup.Routes.DisplayPaths(c.Id))
             {
                 var curve=_setup.Routes.Curve(c.Id,route);
                 for(int i=1;i<curve.Length;i++)
-                    if(_world.ProjectVisible(curve[i-1],c.Normal,_yaw,_pitch,LandGlobeArea,out var a) && _world.ProjectVisible(curve[i],c.Normal,_yaw,_pitch,LandGlobeArea,out var b))LandLine(a,b,new Color(230,200,145),1);
+                    if(_world.ProjectVisible(curve[i-1],c.Normal,_yaw,_pitch,globeArea,out var a) && _world.ProjectVisible(curve[i],c.Normal,_yaw,_pitch,globeArea,out var b))LandLine(a,b,new Color(230,200,145),1);
             }
-            _net.DrawLandmarks(_ui,_setup,c.Id,p=>_world.ProjectVisible(p,c.Normal,_yaw,_pitch,LandGlobeArea,out var at)?at:null,_animationTime,false);
+            _net.DrawLandmarks(_ui,_setup,c.Id,p=>_world.ProjectVisible(p,c.Normal,_yaw,_pitch,globeArea,out var at)?at:null,_animationTime,false);
             foreach(var node in _setup.Nodes.InCell(c.Id).Where(n=>n.IsHarbor))
-                if(_world.ProjectVisible(_setup.Routes.Position(c.Id,node.Center),c.Normal,_yaw,_pitch,LandGlobeArea,out var h))_ui.Box(new((int)h.X-3,(int)h.Y-3,6,6),Cream);        }
-        if(_landDrag.HasValue){var a=_landDrag.Value;var b=_pointer;LandLine(new(a.X,a.Y),new(b.X,a.Y),Color.White,2);LandLine(new(b.X,a.Y),new(b.X,b.Y),Color.White,2);LandLine(new(b.X,b.Y),new(a.X,b.Y),Color.White,2);LandLine(new(a.X,b.Y),new(a.X,a.Y),Color.White,2);}
+                if(_world.ProjectVisible(_setup.Routes.Position(c.Id,node.Center),c.Normal,_yaw,_pitch,globeArea,out var h))_ui.Box(new((int)h.X-3,(int)h.Y-3,6,6),Cream);        }
+        if(selectingLand && _landDrag.HasValue){var a=_landDrag.Value;var b=_pointer;LandLine(new(a.X,a.Y),new(b.X,a.Y),Color.White,2);LandLine(new(b.X,a.Y),new(b.X,b.Y),Color.White,2);LandLine(new(b.X,b.Y),new(a.X,b.Y),Color.White,2);LandLine(new(a.X,b.Y),new(a.X,a.Y),Color.White,2);}
         if(_screen==Screen.Fortune)
             for(int i=0;i<90*(_setup.TutorialStep==0?_robotScatterPercent:100)/100;i++){float t=(float)((_landAge+i*.071)%1.8/1.8);float x=MathHelper.Lerp(650+(i*173%1100),1080+i*47%310,t);float y=MathHelper.Lerp(-100,460+i*31%200,t);DrawRobotGlyph(new Rectangle((int)x,(int)y,26,46),i%_setup.ActiveCount,(RobotParts)(1+i%7),false,1-t*.3f);}
         DrawLandSetupUi();
         _spriteBatch.End();
-        if(_screen==Screen.LandConquest)DrawOrientationOverlay(LandGlobeArea,canvas,transform);
+        if(selectingLand)
+        {
+            DrawOrientationOverlay(LandControlsArea,canvas,transform);
+            _spriteBatch.Begin(transformMatrix:transform);
+            DrawLandGuide();
+            _spriteBatch.End();
+        }
+    }
+    private void DrawLandGuide()
+    {
+        var paper=LandGuideBounds;
+        DrawRulebookPaper(paper);
+        int x=paper.X+32;
+        _ui.Text("操作説明",new(x,paper.Y+30),.44f,RulebookRose);
+        _ui.Text("左クリック：地域の選択・解除\n左ドラッグ：範囲内の選択を反転\n右ドラッグ：回転 / ホイール：拡大・縮小\n飛び地も選べます",new(x,paper.Y+62),.38f,RulebookInk);
+        _ui.Text("表示説明",new(x,paper.Y+171),.44f,RulebookRose);
+        _ui.Text("明滅と国旗：選択中\n暗い面と国旗：取得済み\n通常の明るさ：選択できます",new(x,paper.Y+203),.38f,RulebookInk);
     }
     private void LandLine(Vector2 a,Vector2 b,Color color,float width){var d=b-a;_spriteBatch.Draw(_pixel,a,null,color,MathF.Atan2(d.Y,d.X),Vector2.Zero,new Vector2(d.Length(),width),SpriteEffects.None,0);}
 }

@@ -35,11 +35,11 @@ public partial class Game1
         var origin=_setup.Routes.Position(node.Cell,node.Center);
         const string label="官邸";
         var size=_font.MeasureString(label);
-        var offset=WorldTerrain.Offset(_setup.WorldSeed);
+        var offset=_setup.Terrain;
         bool Project(Vector3 point,out Vector2 at)
         {
             if(_statusGlobe)
-                return _world.ProjectVisible(point,cell.Normal,_yaw,_pitch,StatusGlobeArea,out at,WorldTerrain.ReliefAt(cell,point,offset));
+                return _world.ProjectVisible(point,cell.Normal,_yaw,_pitch,StatusGlobeArea,out at,WorldTerrain.ReliefAt(_setup,cell,point,offset));
             at=_net.AnimatedSurfacePosition(node.Cell,point,_setup,NetPanel);
             return true;
         }

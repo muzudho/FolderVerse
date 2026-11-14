@@ -125,7 +125,7 @@ public sealed partial class CubeNet
         var current=Faces;Faces=_animationTo;var targetFit=Fit(panel);Faces=current;
         fit=(MathHelper.Lerp(fit.Scale,targetFit.Scale,eased),Vector2.Lerp(fit.Origin,targetFit.Origin,eased));
         var pivot=Vector2.Lerp(_oldPivot,_newPivot,eased)+new Vector2(0,-MathF.Sin(t*MathF.PI)*.65f);
-        var offset=WorldTerrain.Offset(world.WorldSeed);
+        var offset=world.Terrain;
         foreach(var cell in world.Cells.OrderBy(c=>_movingFaces.Contains(c.Face)?1:0))
         {
             var face=_animationFrom.First(f=>f.Face==cell.Face);bool moving=_movingFaces.Contains(cell.Face);
@@ -133,7 +133,7 @@ public sealed partial class CubeNet
             const int detail=10;
             for(int y=0;y<detail;y++)for(int x=0;x<detail;x++)
             {
-                var p=cell.Origin+cell.U*((x+.5f)/detail)+cell.V*((y+.5f)/detail);float elevation=WorldTerrain.Elevation(p,offset);
+                var p=cell.Origin+cell.U*((x+.5f)/detail)+cell.V*((y+.5f)/detail);float elevation=offset.Elevation(p);
                 var color=FocusTerrain(TerrainColor(world,cell.Id,elevation,x,y),RotateScreen(Project(p),panel),cell.Id);
                 if(CountryFocus<0 && NodeFocus<0 && RegionFocusCell<0 && !ShowRoutes && cell.Id==SelectedCell)color=SelectionGlow.Brighten(color,(x+.5f)/detail,(y+.5f)/detail,pulse);
                 var post=world.Nodes.At(cell.Id,new Point(x,y));

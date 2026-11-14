@@ -110,9 +110,99 @@ var supply=new WorldSetup{EquipmentMode=RobotEquipmentMode.Materials};
 supply.SetWorld(0);supply.SetCast(123);supply.SetPlacement(456);supply.SelectPlayer(0);
 foreach(var node in supply.Nodes.All)node.Owner=0;
 var cargo=supply.Robots;
+foreach(var input in new[]{
+    (RawMaterial.Styrene,RobotMaterial.Foam,2),
+    (RawMaterial.Vinyl,RobotMaterial.SoftVinyl,4),
+    (RawMaterial.PP,RobotMaterial.Polypropylene,8),
+    (RawMaterial.Silicone,RobotMaterial.Silicone,8)})
+{
+    var copy=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
+    var rawSite=copy.Nodes.All.FirstOrDefault(n=>copy.Robots.RawDeposit(n.Id,input.Item1)>0);
+    for(int seed=1;rawSite==null && seed<=20;seed++)
+    {
+        copy.SetWorld(seed);copy.SetCast(123);copy.SetPlacement(456);
+        rawSite=copy.Nodes.All.FirstOrDefault(n=>copy.Robots.RawDeposit(n.Id,input.Item1)>0);
+    }
+    var raw=copy.Robots;
+    Check(rawSite!=null,$"Missing generated deposit for {input.Item1}");
+    int node=rawSite!.Id, before=raw.RawDeposit(node,input.Item1);
+    foreach(var robot in raw.Nodes[node].Robots.ToArray())raw.Nodes[node].Remove(robot.Id);
+    var lane=new RobotWorkshop();
+    lane.Configure(RobotParts.Head,1);
+    typeof(RobotWorkshop).GetField("_selectedProductPlan",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!
+        .SetValue(lane,new ProductionPlan(RobotParts.Head,1){Material=input.Item2});
+    production.Invoke(lane,new object[]{raw,node,0});
+    Check(lane.WaitingForMaple(raw,node) && lane.ProductionAge==0,"Missing raw input blocks manufacturing progress");
+    var harvestMethod=typeof(RobotWorld).GetMethod("HarvestMaple",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
+    Check((bool)harvestMethod.Invoke(raw,new object[]{node,1,input.Item1})! &&
+        raw.RawDeposit(node,input.Item1)==before-1 &&
+        raw.Nodes[node].MaplePackages.Single().Material==input.Item1,"Harvest debits the matching deposit and stores the matching cargo");
+    var rawCost=typeof(RobotWorld).GetMethod("RawCost",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic)!;
+    var part=new Robot(0,0,RobotParts.Head){HeadMaterial=input.Item2};
+    Check((int)rawCost.Invoke(null,new object[]{part,input.Item1})! ==input.Item3,"Raw input cost per part");
+    var reload=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(copy));
+    Check(reload.Robots.RawDeposit(node,input.Item1)==before-1 &&
+        reload.Robots.Nodes[node].MaplePackages.Single().Material==input.Item1,"Raw supply survives save and load");
+    if(input.Item1==RawMaterial.PP){
+        foreach(var location in copy.Nodes.All)location.Owner=0;
+        copy.SelectPlayer(0);
+        copy.SelectTurnRuler(0);
+        int destination=FunctionalDeliveryRoutes.Targets(copy,node).First(n=>raw.Nodes[n].HasSpace);
+        var ppLoad=raw.Nodes[node].MaplePackages.Single();
+        Check(lane.WaitingForMaple(raw,destination) &&
+            raw.ReserveMapleShipment(copy,node,destination,ppLoad.Id),"Reserve one PP load while destination waits");
+        var resolvePp=typeof(RobotWorld).GetMethod("ResolveMapleShipments",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
+        var destinationStore=raw.Nodes[destination];
+        var blockers=new List<long>();
+        while(destinationStore.HasSpace){
+            var blocker=raw.Create(0,RobotParts.Complete);
+            destinationStore.Add(blocker);
+            blockers.Add(blocker.Id);
+        }
+        resolvePp.Invoke(raw,new object[]{copy});
+        Check(raw.Nodes[node].MaplePackages.Single()==ppLoad &&
+            raw.MapleShipments.Single().PackageId==ppLoad.Id && lane.WaitingForMaple(raw,destination),
+            "A full destination keeps the PP shipment queued and the material at its source");
+        destinationStore.Remove(blockers[^1]);
+        resolvePp.Invoke(raw,new object[]{copy});
+        Check(raw.Nodes[node].MaplePackages.Count==0 && raw.MapleShipments.Count==0 &&
+            raw.Nodes[destination].MaplePackages.Single()==ppLoad &&
+            !lane.WaitingForMaple(raw,destination),"Delivered PP enables the destination lane");
+        foreach(long id in blockers.Take(blockers.Count-1))destinationStore.Remove(id);
+        node=destination;
+    }
+    for(int tick=0;tick<3 && raw.Nodes[node].MaplePackages.Single().Units==16;tick++)
+        production.Invoke(lane,new object[]{raw,node,copy.Nodes.All[node].Owner});
+    Check(raw.Nodes[node].MaplePackages.Single().Units==16-input.Item3 &&
+        (raw.Nodes[node].Robots.Any(r=>r.HeadMaterial==input.Item2) ||
+         raw.ProductionIntakes.Any(i=>i.Product.HeadMaterial==input.Item2)),
+        "Manufacturing consumes the matching harvested input and produces the selected part");
+}
 Check(cargo.MapleSupplyEnabled,"New materials worlds enable maple");
 var forest=supply.Nodes.All.First(n=>cargo.MapleDeposit(n.Id)>0 && FunctionalDeliveryRoutes.Targets(supply,n.Id).Length>0);
 int source=forest.Id,target=FunctionalDeliveryRoutes.Targets(supply,source)[0];
+var workerWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
+var workerStock=workerWorld.Robots;
+var harvestWorkshop=workerStock.Workshops[source];
+harvestWorkshop.LimitLines(harvestWorkshop.BaseLineCount+1);
+foreach(var resident in workerStock.Nodes[source].Robots.ToArray())workerStock.Nodes[source].Remove(resident.Id);
+var harvester=workerStock.Create(0,RobotParts.Complete);
+workerStock.Nodes[source].Add(harvester);
+Check(workerStock.PartPlanning.ReserveRole(workerWorld,source,harvester.Id,HangarReservation.Harvest,0),"Reserve a harvest worker");
+Check(workerStock.PartPlanning.Preview(workerWorld).Nodes[source].Robots.Single().HarvestWorker,"Reservation previews the harvest role");
+workerWorld.Campaign.FinishDomestic(workerWorld);
+var harvestWorkerLine=harvestWorkshop.ProductionLines.Last();
+Check(harvestWorkerLine.HarvestOnly && harvestWorkshop.WorkerAt(harvestWorkshop.ProductionLines.Length-1)==harvester.Id,"Delivery activates a dedicated harvest lane");
+harvestWorkerLine.SelectPlan(0);
+Check(!harvestWorkerLine.Manufacturing,"The harvest worker lane cannot manufacture");
+harvestWorkerLine.SelectMapleHarvest(1);
+for(int i=0;i<IndustryTime.UnitsPerTurn;i++)workerStock.AdvanceIndustry(_=>0,n=>n!=source);
+Check(workerStock.Nodes[source].MapleUnits==16,"The added lane harvests one load through industry");
+var workerReload=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(workerWorld));
+Check(workerReload.Robots.Workshops[source].ProductionLines.Last().HarvestOnly &&
+    workerReload.Robots.Nodes[source].Robots.Single(r=>r.Id==harvester.Id).HarvestWorker,"Harvest assignment survives save and load");
+Check(workerStock.ToggleReservation(source,harvester.Id,HangarReservation.Harvest) &&
+    harvestWorkshop.ProductionLines.Length==harvestWorkshop.BaseLineCount,"Removing the harvest worker removes only their lane");
 foreach(var workshop in cargo.Workshops)
     foreach(var line in workshop.ProductionLines)line.SelectPlan(3);
 int deposit=cargo.MapleDeposit(source);
@@ -130,12 +220,38 @@ harvest.SetReservedSlots(0);
 for(int i=0;i<IndustryTime.UnitsPerTurn;i++)cargo.AdvanceIndustry(_=>0,n=>n!=source);
 var package=cargo.Nodes[source].MaplePackages.Single();
 Check(package.Units==16 && cargo.MapleDeposit(source)==deposit-1 && harvestLine.MapleRemaining==0,"Harvesting must exchange one deposit for one load");
+Check(cargo.MaplePlantingCount(source)==1,"A successful harvest leaves one planting marker");
 harvestLine.SelectMapleHarvest(1);
 Check(cargo.MapleAvailableToPlan(source,null)==deposit-2,"Harvest orders must share the remaining deposit");
 Check(cargo.ReserveMapleShipment(supply,source,target,package.Id),"Adjacent maple shipment unavailable");
 var restoredSupply=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
 Check(restoredSupply.Robots.MapleShipments.Single().PackageId==package.Id && restoredSupply.Robots.Nodes[source].MapleUnits==16,"Maple stock or shipment lost on save");
 Check(restoredSupply.Robots.Workshops[source].ProductionLines[0].MapleRemaining==1,"Harvest order lost on save");
+// A reserved load must become available to the destination lane only after delivery.
+var restoredCargo=restoredSupply.Robots;
+Check(restoredCargo.MaplePlantingCount(source)==1,"Planting markers survive a save round trip");
+var receivingFactory=restoredCargo.Workshops[target];
+for(int seed=0;receivingFactory.ProductionLines.Length==0;seed++)
+    receivingFactory.GenerateLines(seed,RobotEquipmentMode.Materials);
+var receivingLine=receivingFactory.ProductionLines[0];
+int receivingPlan=Enumerable.Range(0,receivingLine.PlanCount)
+    .First(i=>i!=3 && receivingLine.PlanAt(i).Material==RobotMaterial.Paper);
+receivingLine.SelectPlan(receivingPlan);
+Check(receivingLine.WaitingForMaple(restoredCargo,target),"Destination cannot use an undelivered load");
+restoredSupply.Campaign.FinishDomestic(restoredSupply);
+Check(restoredCargo.Nodes[target].MapleUnits==16 && restoredCargo.MapleShipments.Count==0 &&
+    !receivingLine.WaitingForMaple(restoredCargo,target) && receivingLine.ProductionAge==0,
+    "Delivery must release the material wait without spending an industry step");
+var receivingRecipe=receivingLine.CurrentProductionPlan.Preview(0);
+int receivingCost=RobotWorld.MapleCost(receivingRecipe);
+for(int unit=0;unit<receivingLine.ProductionPeriod;unit++)
+    production.Invoke(receivingFactory,new object[]{restoredCargo,target,0});
+var receivingIntake=restoredCargo.ProductionIntakes.Single(i=>ReferenceEquals(i.Line,receivingLine));
+Check(receivingCost>0 && restoredCargo.Nodes[target].MapleUnits==16-receivingCost &&
+    receivingIntake.Product.Parts==receivingRecipe.Parts &&
+    new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(p=>(receivingRecipe.Parts&p)!=0)
+        .All(p=>receivingIntake.Product.Material(p)==receivingRecipe.Material(p)),
+    "The next industry cycle consumes the delivered maple and queues the selected product");
 var resolveMaple=typeof(RobotWorld).GetMethod("ResolveMapleShipments",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
 resolveMaple.Invoke(cargo,new object[]{supply});
 Check(cargo.Nodes[source].MapleUnits==0 && cargo.Nodes[target].MapleUnits==16 && cargo.MapleShipments.Count==0,"Shipment duplicated or lost cargo");
@@ -155,6 +271,37 @@ Check(cargo.Nodes[target].MapleUnits==16 && mapleLine.Waiting,"A full intake con
 mapleFactory.SetReservedSlots(0);
 production.Invoke(mapleFactory,new object[]{cargo,target,0});
 Check(cargo.Nodes[target].MapleUnits==16-cost && cargo.ProductionIntakes.Any(i=>i.Source==target),"Successful intake did not consume exact maple units");
+// Exercise mixed-material production from an empty material store through delivery.
+var waitingNode=source;
+var waitingFactory=cargo.Workshops[waitingNode];
+for(int seed=0;waitingFactory.ProductionLines.Length==0;seed++)waitingFactory.GenerateLines(seed,RobotEquipmentMode.Materials);
+var waitingLine=waitingFactory.ProductionLines[0];
+int mixedChoice=Array.FindIndex(waitingLine.Plans,p=>p.Product==RobotParts.Complete);
+for(int seed=0;mixedChoice<0;seed++){
+    waitingLine.GeneratePlans(seed);
+    mixedChoice=Array.FindIndex(waitingLine.Plans,p=>p.Product==RobotParts.Complete);
+}
+waitingLine.Plans[mixedChoice]=new(RobotParts.Complete,3) {
+    HeadMaterial=RobotMaterial.Paper,BodyMaterial=RobotMaterial.Cardboard,LegsMaterial=RobotMaterial.Maple};
+waitingLine.SelectPlan(mixedChoice);
+production.Invoke(waitingFactory,new object[]{cargo,waitingNode,0});
+Check(waitingLine.WaitingForMaple(cargo,waitingNode) && waitingLine.ProductionAge==0,
+    "Mixed recipe waits without progress when maple is missing");
+Check((bool)receiveMaple.Invoke(cargo.Nodes[waitingNode],new object[]{new MaplePackage(999001,21),0,(Func<long,bool>)(_=>false)})!,
+    "Mixed recipe fixture can receive exactly 21 units");
+Check(cargo.ReserveMapleShipment(supply,waitingNode,target,999001),"Mixed recipe fixture can reserve its only stock for delivery");
+production.Invoke(waitingFactory,new object[]{cargo,waitingNode,0});
+Check(waitingLine.WaitingForMaple(cargo,waitingNode) && waitingLine.ProductionAge==0 &&
+    cargo.Nodes[waitingNode].MapleUnits==21,"Stock reserved for shipping cannot start manufacturing");
+Check(cargo.CancelMapleShipment(waitingNode,999001),"Cancelling delivery makes the stock available again");
+for(int i=0;i<waitingLine.ProductionPeriod;i++)production.Invoke(waitingFactory,new object[]{cargo,waitingNode,0});
+var mixedIntake=cargo.ProductionIntakes.Single(i=>ReferenceEquals(i.Line,waitingLine));
+Check(cargo.Nodes[waitingNode].MapleUnits==0,"Mixed recipe consumes all 21 units");
+typeof(RobotWorld).GetMethod("ResolveProductionIntakes",internalInstance)!.Invoke(cargo,new object[]{supply});
+Check(!cargo.ProductionIntakes.Contains(mixedIntake) &&
+    cargo.Nodes[waitingNode].Robots.Any(r=>r.Id==mixedIntake.Product.Id &&
+        r.Material(RobotParts.Head)==RobotMaterial.Paper && r.Material(RobotParts.Body)==RobotMaterial.Cardboard &&
+        r.Material(RobotParts.Legs)==RobotMaterial.Maple),"Intake places the exact mixed materials in the hangar");
 Check(supply.Campaign.FunctionTransfers.CanReserve(supply,target,source),"Fixture cannot transfer functions");
 supply.Campaign.FunctionTransfers.Reserve(supply,target,source);
 int remaining=cargo.Nodes[target].MapleUnits;

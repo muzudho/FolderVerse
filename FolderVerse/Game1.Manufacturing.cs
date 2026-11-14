@@ -11,7 +11,7 @@ public partial class Game1
     private double _manufacturingAge,_manufacturingTickAge,_manufacturingDoneAge;
     private readonly List<(ProductionIntake Arrival,double Started)> _manufacturingFlights=new();
     private const double ManufacturingTickSeconds=.75;
-    private const double ManufacturingAnticipation=.45,ManufacturingFlightSeconds=1.1,ManufacturingLampPass=.4;
+    private const double ManufacturingAnticipation=.45,ManufacturingFlightSeconds=1.1;
     private HashSet<long> _manufacturingInitial=new();
     private ProductionIntake[] _manufacturingArrivals=Array.Empty<ProductionIntake>();
 
@@ -84,7 +84,7 @@ public partial class Game1
         var left=new Rectangle(54,145,850,790);var right=new Rectangle(990,145,870,790);
         _ui.Box(left,new Color(24,45,59));_ui.Box(right,new Color(24,45,59));
         _ui.Center("ロボット製造工場",new(left.X,160,left.Width,48),.65f,Cream);
-        _ui.Text("蛍光灯：現在位置 / 緑：生産　黄：休暇　赤：空き枠・原材料待ち",new(80,222),.32f,Cream);
+        _ui.Text("緑：稼働中　赤：停止中",new(80,222),.32f,Cream);
         _ui.Center("格納庫 / 入荷予約",new(right.X,160,right.Width,48),.65f,Cream);
         if(_manufacturingNode<0){_ui.Center("稼働できる工場がありません",new(54,420,1806,60),.6f,Cream);return;}
         var node=_setup.Nodes.All[_manufacturingNode];
@@ -93,40 +93,37 @@ public partial class Game1
         var lines=_setup.Robots.Workshops.SelectMany((w,n)=>w.ProductionLines
             .Where(l=>(l.MapleRemaining>0?n:l.IntakeTarget??n)==_manufacturingNode && _setup.Nodes.All[n].Functional)
             .Select(l=>(Source:n,Line:l))).ToArray();
-        const int lanesPerPage=3;
+        const int lanesPerPage=FactoryVisibleLanes;
         int pages=Math.Max(1,(lines.Length+lanesPerPage-1)/lanesPerPage);
         int page=(int)(_manufacturingAge/3)%pages;
         var latest=_manufacturingArrivals.LastOrDefault();
         if(latest!=null){int index=Array.FindIndex(lines,l=>ReferenceEquals(l.Line,latest.Line));if(index>=0)page=index/lanesPerPage;}
         foreach(var item in lines.Skip(page*lanesPerPage).Take(lanesPerPage).Select((value,index)=>(value,index)))
         {
-            var (source,line)=item.value;int y=284+item.index*200;
+            var (source,line)=item.value;int y=FactoryRowY(item.index);
             int owner=_setup.Nodes.All[source].Owner;
-            _ui.Box(new(78,y-24,782,196),item.index%2==0?new Color(37,63,77):new Color(46,67,79));
-            _ui.Center((page*lanesPerPage+item.index+1).ToString(),new(84,y+22,62,96),1.35f,new Color(167,190,194));
-            if(line.MapleRemaining>0){DrawFactoryHarvestLane(line,source,item.index,y);continue;}
-            _ui.Text(_setup.Nodes.DisplayName(_setup.Nodes.All[source]),new(160,y-19),.30f,Cream);
-            int period=line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[_manufacturingNode].Purpose):3;
+            _ui.Box(new(78,y-24,782,286),item.index%2==0?new Color(37,63,77):new Color(46,67,79));
+            _ui.Center((page*lanesPerPage+item.index+1).ToString(),new(84,y-12,66,40),.85f,new Color(167,190,194));
+            if(line.HarvestOnly || line.MapleRemaining>0){DrawFactoryHarvestLane(line,source,item.index,y,line.WorkerSnapshot);continue;}
+            _ui.Text(_setup.Nodes.DisplayName(_setup.Nodes.All[source]),new(490,y-17),.30f,Cream);
+            int period=line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[source].Purpose):3;
             bool mapleWait=line.WaitingForMaple(_setup.Robots,source);
-            double progress=line.LaneProgress;
-            if(_setup.Industry.Pending && line.Manufacturing && !line.Paused && !line.CycleFinished && !line.Waiting && !mapleWait){
-                double increment=Math.Clamp(_manufacturingTickAge/(ManufacturingTickSeconds/IndustryTime.UnitsPerTurn),0,1);
-                progress=Math.Min(progress+increment,line.RestRemaining>0?period+IndustryTime.Whole(line.RestTurns):period);
-            }
-            var shipment=_manufacturingFlights.LastOrDefault(f=>ReferenceEquals(f.Arrival.Line,line));
-            double shipmentAge=shipment.Arrival==null?-1:_manufacturingAge-shipment.Started;
-            if(shipmentAge>=0)progress=period;
-            int caret=DrawFactoryLaneTrack(line,160,y,progress);
-            if(shipmentAge>=0)caret=160+Math.Max(72,FactoryProductionWidth(period))-18+(int)(36*Math.Clamp((shipmentAge-ManufacturingAnticipation)/ManufacturingLampPass,0,1));
-            var product=FactoryRobotButton(item.index,period);_ui.Box(product,Muted);
-            if(line.Manufacturing && !(shipmentAge>=ManufacturingAnticipation && shipmentAge<ManufacturingAnticipation+ManufacturingLampPass))DrawRobotGlyph(product,line.CurrentProductionPlan.Preview(Math.Max(0,owner)),whiteOutline:true);else if(!line.Manufacturing)_ui.Center("×",product,.7f,Cream);
-            DrawFactoryLaneOmissions(line,160,y);
-            if(line.Manufacturing)DrawFactoryCaret(caret,y,line,mapleWait);
-            _ui.Text($"× {line.RestEvery}　休 {line.RestTurns}"+(line.DoNotRepeat?" / 繰り返さない":""),new(160,y+140),.34f,Cream);
+            bool running=_setup.Industry.Pending && _manufacturingFlights.Count==0 && line.Manufacturing && !line.Paused && !line.CycleFinished &&
+                !line.Waiting && !mapleWait && line.RestRemaining==0 && !_setup.Campaign.RobotBattles.LockedNode(source);
+            double increment=running?Math.Clamp(_manufacturingTickAge/(ManufacturingTickSeconds/IndustryTime.UnitsPerTurn),0,1):0;
+            var shipment=_manufacturingFlights.FirstOrDefault(f=>ReferenceEquals(f.Arrival.Line,line));
+            bool inFlight=shipment.Arrival!=null && _manufacturingAge-shipment.Started>=ManufacturingAnticipation;
+            float progress=shipment.Arrival!=null?1:(float)Math.Clamp((line.ProductionAge+increment)/period,0,1);
+            DrawFactoryConveyor(line,Math.Max(0,owner),item.index,period,progress,shipment.Arrival?.Product,inFlight);
+            if(line.WorkerSnapshot is {} worker)DrawFactoryWorker(y,worker);
+            DrawFactoryHoliday(line,item.index);
+            _ui.Text($"× {line.RestEvery}"+(line.DoNotRepeat?" / 繰り返さない":""),new(190,y+226),.32f,Cream);
             string status=line.CycleFinished?"製造終了":!line.Manufacturing?"製造しない":line.Paused?"一時停止":
                 line.RestRemaining>0?$"休暇 あと {IndustryTime.Format(line.RestRemaining)}":
-                mapleWait?"原材料不足 / 楓の木を待っています":line.Waiting?"格納枠の空きを待っています":$"工期 {IndustryTime.Format(line.ProductionAge)} / {IndustryTime.Format(period)}";
-            _ui.Text(status,new(480,y+140),.32f,Cream);
+                mapleWait?$"原材料不足 / {RobotWorld.RawName(line.MissingRawMaterial(_setup.Robots,source).Value)}を待っています":line.Waiting?"格納枠の空きを待っています":$"工期 {IndustryTime.Format(line.ProductionAge)} / {IndustryTime.Format(period)}";
+            if(shipment.Arrival!=null)status="入荷予約へ搬送中";
+            else if(_setup.Campaign.RobotBattles.LockedNode(source))status="継戦中 / 一時停止";
+            DrawFactoryLaneStatus(y,running,status);
         }
         _ui.Center($"製造レーン {page+1}/{pages}",new(54,895,850,30),.32f,Cream);
         var stock=ManufacturingStock();
@@ -139,7 +136,7 @@ public partial class Game1
             var robot=stock.ElementAtOrDefault(stockPage*12+slot);
             if(robot==null || _manufacturingFlights.Any(f=>f.Arrival.Product.Id==robot.Id))continue;
             bool fresh=!_manufacturingInitial.Contains(robot.Id);
-            DrawRobotGlyph(new(box.X+55,box.Y+12,82,125),robot,whiteOutline:true);
+            DrawManufacturingProduct(new(box.X+55,box.Y+12,82,125),robot);
             _ui.Center(fresh?"今回の入荷予約":_setup.Robots.ProductionIntakes.Any(i=>i.Product.Id==robot.Id)?"入荷予約":"格納済",
                 new(box.X,box.Bottom-42,box.Width,30),.32f,fresh?Accent:Cream);
         }
@@ -154,14 +151,21 @@ public partial class Game1
                 int lane=Array.FindIndex(lines,l=>ReferenceEquals(l.Line,arrival.Line));
                 int slot=Array.FindIndex(stock,r=>r.Id==arrival.Product.Id);
                 if(lane<0 || lane/lanesPerPage!=page || slot<0 || slot/12!=stockPage)continue;
-                var from=FactoryRobotButton(lane%lanesPerPage,lines[lane].Line.Manufacturing?lines[lane].Line.EffectiveProductionPeriod(_setup.Nodes.All[_manufacturingNode].Purpose):3).Center.ToVector2();
+                int period=arrival.Line.EffectiveProductionPeriod(_setup.Nodes.All[arrival.Source].Purpose);
+                var from=FactoryConveyorProduct(lane%lanesPerPage,period,arrival.Product.Parts,1).Center.ToVector2();
                 var to=new Vector2(1111+slot%4*207,315+slot%12/4*215);
                 var at=Vector2.Lerp(from,to,MathHelper.SmoothStep(0,1,flight));
                 int width=(int)MathHelper.Lerp(72,82,flight),height=(int)MathHelper.Lerp(88,125,flight);
-                DrawRobotGlyph(new((int)at.X-width/2,(int)at.Y-height/2,width,height),arrival.Product,whiteOutline:true);
+                DrawManufacturingProduct(new((int)at.X-width/2,(int)at.Y-height/2,width,height),arrival.Product);
             }
         }
         _ui.Center("できたパーツは入荷予約へ。次の配送で格納庫に入ります。",new(54,950,1120,60),.43f,Cream);
         if(!_setup.Industry.Pending && _manufacturingFlights.Count==0 && !ComputerExhibition)_ui.Button(IndustryContinue,"次の内政へ",Accent,.65f);
+    }
+
+    private void DrawManufacturingProduct(Rectangle bounds,Robot product)
+    {
+        bool materials=_setup.EquipmentMode==RobotEquipmentMode.Materials;
+        DrawRobotGlyphCore(bounds,product,true,1,null,showIntegratedMaterial:materials,allowCaptain:materials);
     }
 }

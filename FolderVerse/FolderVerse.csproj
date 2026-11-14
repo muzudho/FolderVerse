@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
-    <Version>0.7.0</Version>
+    <Version>0.9.0</Version>
     <RollForward>Major</RollForward>
     <PublishReadyToRun>false</PublishReadyToRun>
     <TieredCompilation>false</TieredCompilation>
@@ -40,6 +40,7 @@
     <None Update="Content/Images/Newspapers/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/NodeSupervisors/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/robot-map-toy-v001.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Content/Images/maple-map-v001.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Robots/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Music/*.wav" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

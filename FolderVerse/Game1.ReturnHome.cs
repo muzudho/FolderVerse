@@ -25,7 +25,7 @@ public partial class Game1
             _hangarMessage="個体をクリック：帰国予約 / 同じ個体で出発前の予約を解除";return true;
         }
         if(!_hangarReturnHomeMode || !click)return false;
-        if(HangarAssemblyButton.Contains(_pointer) || HangarAbandonButton.Contains(_pointer) || Enumerable.Range(0,4).Any(i=>HangarReservationButton(i).Contains(_pointer))){_hangarReturnHomeMode=false;return false;}
+        if(HangarAssemblyAvailable && HangarAssemblyButton.Contains(_pointer) || HangarAbandonButton.Contains(_pointer) || Enumerable.Range(0,7).Any(i=>ShowsHangarReservation(i) && HangarReservationButton(i).Contains(_pointer))){_hangarReturnHomeMode=false;return false;}
         var store=PlanningStock.Nodes[HangarPlanningNode];SyncHangarSlots();
         foreach(int slot in VisibleAssemblySlots())if(AssemblyCell(slot).Contains(_pointer)){
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);

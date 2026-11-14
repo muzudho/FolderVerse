@@ -3,6 +3,43 @@ if(args.Contains("--ui")){using var game=new WorkerPlansUi();game.Run();return;}
 static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 bool sawMixed=false;var signatures=new HashSet<string>();
 {
+ bool found=false;
+ for(int seed=0;seed<64 && !found;seed++){
+  var(w,node)=Fixture.Create(123+37*seed);
+  w.EquipmentMode=RobotEquipmentMode.Materials;
+  w.Robots.ConfigureFactories(w);
+  var worker=w.Robots.Create(0,RobotParts.Complete) with {HeadOrigin=1,BodyOrigin=2,LegsOrigin=0,HeadMaterial=RobotMaterial.Foam};
+  var line=Fixture.Appoint(w,node,worker);
+  int choice=Fixture.Options.FirstOrDefault(i=>{
+   var preview=line.PlanAt(i).Preview(0);
+   return preview.Parts==RobotParts.Complete && preview.HeadOrigin==1 && preview.BodyOrigin==2 && preview.LegsOrigin==0;
+  },-1);
+  if(choice<0)continue;
+  var plan=line.PlanAt(choice);
+  line.SelectPlan(choice);
+  var preview=plan.Preview(0);
+  Check(preview.HeadOrigin==1 && preview.BodyOrigin==2 && preview.LegsOrigin==0,
+        "Selecting the generated recipe preserves all three origins");
+  Check(line.CurrentProductionPlan==plan,"The lane stores the generated recipe intact");
+  Check(!line.WaitingForMaple(w.Robots,node),"The fixture has no raw-material shortage");
+  for(int turn=0;turn<plan.Turns;turn++)w.Robots.AdvanceIndustry(n=>w.Nodes.All[n].Owner);
+  var intake=w.Robots.ProductionIntakes.Single(i=>i.Source==node);
+  w.Campaign.FinishDomestic(w);
+  Check(!w.Robots.ProductionIntakes.Contains(intake),"Delivery resolves the mixed robot intake");
+  var arrived=w.Robots.Nodes[node].Robots.Single(r=>r.Id==intake.Product.Id);
+  Fixture.Same(plan,arrived);
+  foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
+   Check(arrived.Material(part)==preview.Material(part),"The delivered robot preserves each material shown in the recipe");
+  var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
+  var savedRobot=restored.Robots.Nodes[node].Robots.Single(r=>r.Id==arrived.Id);
+  Fixture.Same(plan,savedRobot);
+  foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
+   Check(savedRobot.Material(part)==preview.Material(part),"Reload preserves each material of the delivered three-origin robot");
+  found=true;
+ }
+ Check(found,"A worker with parts from three countries can generate a three-origin material recipe");
+}
+{
  var(w,node)=Fixture.Create();
  w.EquipmentMode=RobotEquipmentMode.Materials;
  w.Robots.ConfigureFactories(w);

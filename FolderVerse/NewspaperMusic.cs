@@ -49,8 +49,8 @@ public sealed class NewspaperMusic:IDisposable
     private readonly DynamicSoundEffectInstance _stream=new(NewspaperMusicScore.Rate,AudioChannels.Mono);
     private readonly NewspaperMusicScore _score;
     public NewspaperMusic(NewspaperMusicMood mood){_score=new(mood);}
-    public void Update(NewspaperMusicMood mood,bool active){
-        _score.Mood=mood;_stream.Volume=.42f;
+    public void Update(NewspaperMusicMood mood,bool active,float gain=1){
+        _score.Mood=mood;_stream.Volume=.42f*gain;
         while(_stream.PendingBufferCount<2)_stream.SubmitBuffer(_score.Render());
         if(_stream.State==SoundState.Paused)_stream.Resume();else if(_stream.State!=SoundState.Playing)_stream.Play();
     }

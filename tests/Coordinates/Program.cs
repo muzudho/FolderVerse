@@ -3,7 +3,9 @@ static void Check(bool value,string message){if(!value)throw new Exception(messa
 var world=new WorldSetup();
 for(int seed=0;seed<64;seed++)
 {
-    world.SetWorld(seed);int perimeter=2*(world.Width+world.Depth);
+    world.SetWorld(seed);
+    world.PolarAxis=1; // Keep the historical monkey-head meridian checks below.
+    int perimeter=2*(world.Width+world.Depth);
     var coordinates=world.Cells.Select(c=>WorldCoordinates.At(world,c)).ToArray();
     Check(coordinates.Distinct().Count()==world.Cells.Length,$"Duplicate coordinate, seed {seed}");
     Check(coordinates.All(c=>c.X>=-perimeter/2 && c.X<perimeter/2),"Signed range changed");

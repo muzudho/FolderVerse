@@ -469,6 +469,8 @@ public sealed partial class RobotCampaign
             if(unit.Role==BattleRole.Queen)
             {
                 if(unit.Fallen){int victor=e.LostHomes.GetValueOrDefault(unit.Owner,state.Winner);if(victor>=0)world.Relations.Capture(world,unit.Owner,victor,e.Target,unit.QueenFellToEnemy);continue;}
+                if(unit.Retreated && (unit.WitnessedLessons & BattleLesson.QueenWithoutTargets)!=0)
+                    world.Lessons.QueueResearch(unit.Owner,BattleLesson.QueenWithoutTargets);
                 int location=e.Kind==BattleKind.Node && world.Nodes.All[e.Target].Functional && state.Winner>=0 && world.Relations.Allied(unit.Owner,state.Winner)?e.Target:home;
                 if(army.Wanderer && unit.Retreated && location==e.Target)
                 {

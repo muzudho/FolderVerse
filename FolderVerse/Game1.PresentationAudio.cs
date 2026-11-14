@@ -36,7 +36,7 @@ public partial class Game1
                 }
                 sound=new SoundEffect(bytes,rate,AudioChannels.Mono);
             }
-            sound.Play(sea?.45f:.55f,0,0);
+            sound.Play((sea?.45f:.55f)*SeGain,0,0);
         }catch(NoAudioHardwareException error){_presentationAudioUnavailable=true;RecordFailure(error,"presentation_audio");}
     }
 

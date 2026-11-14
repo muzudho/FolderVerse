@@ -81,6 +81,7 @@ public partial class Game1 : Game
     private void LogImeState(string stage)=>_operations.Write("ime_state",new{stage,state=WindowsImeDiagnostics.ReadForeground(),visualStudio=WindowsImeDiagnostics.ReadVisualStudio()});
     protected override void LoadContent()
     {
+        LoadBgmSettings();
         _robotAssemblyIcon=Content.Load<Texture2D>("Images/robot-assembly-icon");
         _robotDisposalIcon=Content.Load<Texture2D>("Images/robot-disposal-icon");
         _robotTransportIcon=Content.Load<Texture2D>("Images/robot-transport-icon");
@@ -135,6 +136,14 @@ public partial class Game1 : Game
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
         if(!active || !IsStatusScreen || !_nodeAssemblyOpen || mouse.RightButton==ButtonState.Released)
             _hangarPanning=false;
+        // Consume input before any controls behind the album get a chance to handle it.
+        if(IsStatusScreen && FactoryAlbumOpen)
+        {
+            if(escape)_factoryPlanLine=-1;
+            else if(click)NodeFactoryClick(_pointer);
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
+        if(BgmMenuInput(mouse,keyboard,active,click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(ComputerManualInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(AutoPauseInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(ComputerExhibition && !_autoPlay)StartAutoPlay();
@@ -151,13 +160,6 @@ public partial class Game1 : Game
         if(!IsOpeningScreen && !_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         if(IsOpeningScreen){OpeningInput(click,enter,escape,gameTime.ElapsedGameTime.TotalSeconds,keyboard);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        // The full-width album covers the map and inspector controls.
-        if(IsStatusScreen && FactoryAlbumOpen)
-        {
-            if(escape)_factoryPlanLine=-1;
-            else if(click)NodeFactoryClick(_pointer);
-            _previousMouse=mouse;_previousKeyboard=keyboard;return;
-        }
         if(UpdateSubordinateDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) || UpdateComputerDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) ||
             HandleComputerMarches(gameTime,escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -245,7 +247,7 @@ public partial class Game1 : Game
         if(IsStatusScreen && _populationCell>=0 && _nodeAssemblyOpen && (NodeInspectorBounds.Contains(_pointer) || _hangarDrag.HasValue || _hangarPanning || escape))
         {if(active)NodeAssemblyInput(mouse,click,escape);else _hangarDrag=null;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Pocket)
-        {if(active)PocketInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        {PocketMouseInput(mouse,keyboard,click,escape,active);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Transport)
         {UpdateTransport(elapsed,active && (enter || click && BattleContinue.Contains(_pointer)),gameTime.TotalGameTime.TotalSeconds);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Industry)
@@ -306,17 +308,20 @@ public partial class Game1 : Game
             else if(IsStatusScreen && _populationCell>=0 && _nodeTransportOpen)_nodeTransportOpen=false;
             else if(IsStatusScreen && _populationCell>=0 && _nodeFactoryOpen)_nodeFactoryOpen=false;
             else if(IsStatusScreen && InspectorVisible)CloseNodeInspector();
-            else if(_screen==Screen.Title)Exit(); else { _screen=Screen.Title; _dragging=false; }
+            else if(_screen==Screen.Title)Exit(); else ReturnToTitle();
         }
         else if(_screen==Screen.Title)
         { if((click && StartButton.Contains(_pointer)) || enter)OpenTitleStartMenu(); }
         else if(_screen==Screen.ComputerPlayerCount)
         {if(click && BackButton.Contains(_pointer))_screen=Screen.PlayerCount;else ComputerPlayerCountInput(click,enter,keyboard);}
         else if(_screen==Screen.PlayerCount)
-        {if(click && BackButton.Contains(_pointer))_screen=Screen.Title;else PlayerCountInput(click,enter,keyboard);}
+        {if(click && BackButton.Contains(_pointer))ReturnToTitle();else PlayerCountInput(click,enter,keyboard);}
         else if(IsStatusScreen)
         {
             if(click && DomesticViewClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+            if(active && (FactoryHolidayInput(mouse) || FactoryViewportInput(mouse))){
+                _previousMouse=mouse;_previousKeyboard=keyboard;return;
+            }
             if(_statusGlobe)
             {
                 _statusCell=-1;
@@ -387,7 +392,7 @@ public partial class Game1 : Game
         }
         else if(!IsCastScreen)
         {
-            if(click && BackButton.Contains(_pointer))_screen=Screen.Title;
+            if(click && BackButton.Contains(_pointer))ReturnToTitle();
             else if(click && WorldSeedButton.Contains(_pointer))_seedDialog.Open(SeedDialog.Target.World,_setup.WorldSeed);
             else if((click && ActionButton.Contains(_pointer)) || enter)
             { if(_screen==Screen.Rolling)_screen=Screen.Review; else BeginCast(); }
@@ -398,7 +403,7 @@ public partial class Game1 : Game
         else
         {
             if(CastDuplicateInput(click)){}
-            else if(click && CastBack.Contains(_pointer)) { _screen=_openingWorldSelected?Screen.OpeningReview:Screen.Review;_openingActive=_openingWorldSelected; _setup.ClearPlacement(); _world.ShowSetup(_setup,false); }
+            else if(click && CastBack.Contains(_pointer)) { _screen=_openingWorldSelected?Screen.OpeningReview:Screen.Review;_openingActive=_openingWorldSelected; _setup.ClearPlacement(); if(_openingWorldSelected)_world.ShowOpeningPlanet(_setup);else _world.ShowSetup(_setup,false); }
             else if(click && SeedButton(0).Contains(_pointer))_seedDialog.Open(SeedDialog.Target.World,_setup.WorldSeed);
             else if(click && SeedButton(1).Contains(_pointer))_seedDialog.Open(SeedDialog.Target.Cast,_setup.CastSeed);
             else if(HasTerritories && click && SeedButton(2).Contains(_pointer))_seedDialog.Open(SeedDialog.Target.Placement,_setup.PlacementSeed);
@@ -616,7 +621,10 @@ public partial class Game1 : Game
         }); _ui.Box(new(MapViewBounds.X-20,142,MapViewBounds.Width+40,750),new(20,42,54));
         _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+_setup.FaceName(_net.CenterFace)+" が中心",new(991,156),0.68f,Cream);
         int geographicFace=_setup.GeographicFace(_net.CenterFace);
-        string north=geographicFace==2?"北極面：上は＋Zの基準経線":geographicFace==3?"南極面：上は－Zの基準経線":_setup.PolarAxis==0?"地星の北＝＋X（碗）/ 箸と碗が極":"地星の北＝＋Y / 北を上に";
+        string poleAxis=_setup.PolarAxis switch {0=>"＋X（魚の頭）",2=>"＋Z（犬の頭）",_=>"＋Y（猿の頭）"};
+        string north=geographicFace is 2 or 3
+            ? (geographicFace==2?"北極面":"南極面")+"：上は基準経線"
+            : $"{_setup.HeadSystemName} / 地星の北＝{poleAxis}";
         string orientation=north+" / 回転 "+((int)MathF.Round((_net.Rotation*90+MathHelper.ToDegrees(_net.ScreenAngle))%360+360)%360)+"°";
         _ui.Text(_statusGlobe?MapDragName+(_net.ShowMapSymbols?" / 経番・緯番":""):orientation,new(991,203),.43f,new(177,206,216));
         if(_statusGlobe && _net.ShowMapSymbols)
@@ -631,6 +639,7 @@ public partial class Game1 : Game
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _spriteBatch.End();
         var oldScissor=GraphicsDevice.ScissorRectangle;
+        long factoryMapStart=_factoryDrawStarted!=0?System.Diagnostics.Stopwatch.GetTimestamp():0;
         GraphicsDevice.ScissorRectangle=OrientationClip(canvas);
         if(MapTransitionActive)
         {
@@ -673,6 +682,7 @@ public partial class Game1 : Game
         if(!_reservationDirectory){DrawRegionOffice();DrawSalvageMap();}
         _spriteBatch.End();
         if(!MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
+        if(factoryMapStart!=0)_factoryMapDrawMs=System.Diagnostics.Stopwatch.GetElapsedTime(factoryMapStart).TotalMilliseconds;
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         if(!_reservationDirectory){
         DrawBattleActivity();
@@ -700,6 +710,7 @@ public partial class Game1 : Game
         DrawMoveReservationButton();
         _ui.Button(PocketButton,"ポケット",Accent,.55f);});
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(1064,1037,800,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
+        _warehouseKeeperHovered=false;
         if(_populationCell>=0){
             if(SupervisorNodePanel){_spriteBatch.End();_spriteBatch.Begin(transformMatrix:Matrix.CreateTranslation(920,40,0)*transform);var pointer=_ui.Pointer;_ui.Pointer=new(pointer.X-920,pointer.Y-40);DrawNodeDialog();DrawNodeAutomation();_ui.Pointer=pointer;_spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);}
             else DrawInspector(()=>{DrawNodeDialog();DrawNodeAutomation();});
@@ -711,7 +722,11 @@ public partial class Game1 : Game
         if(_transportOverview){DrawInspector(DrawTransportOverviewPanel);if(_rateTarget>=0)DrawRatePieDialog();}
         if(!_reservationDirectory)DrawWandererLocation();DrawRouteLayerButtons();
         DrawStatusMenu();
-        if(!DrawInvasionUnavailableHint() && !DrawNodeCheckHint() && _supervisorDialog==0 && !_reservationDirectory && !_functionTransferMap)DrawNodeTooltip();
+        if(!DrawInvasionUnavailableHint() && !DrawNodeCheckHint() && _supervisorDialog==0 && !_reservationDirectory && !_functionTransferMap){
+            if(_warehouseKeeperHovered && !_inspectorFoldersOpen && !_mapOverlayMenu)
+                DrawRulebookHint("倉庫管理人","格納庫を４つ増やしてくれています");
+            else DrawNodeTooltip();
+        }
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();DrawWarCancellations();DrawProductionIntakePicker();
         DrawMapOverlayMenu();
         DrawHangarTrainingNotice();
@@ -794,6 +809,9 @@ public partial class Game1 : Game
         if(IsOpeningScreen){DrawOpeningFrame(gameTime);base.Draw(gameTime);return;}
         if(_computerManualOpen){DrawComputerManual();base.Draw(gameTime);return;}
         if(_autoPaused){DrawAutoPause();base.Draw(gameTime);return;}
+        if(_factoryOpenedAt.HasValue && IsStatusScreen && _nodeFactoryOpen){
+            _factoryDrawStarted=System.Diagnostics.Stopwatch.GetTimestamp();_factoryMapDrawMs=0;
+        }else{_factoryOpenedAt=null;_factoryDrawStarted=0;}
         _setup.Robots.PartPlanning.Invalidate();
         BeginNewspaperToyPatternFrame();if(!_conquestOverview)NotifyPlayerTurn();
         GraphicsDevice.Clear(new Color(16,35,46)); var viewport=GraphicsDevice.Viewport; var canvas=CanvasBounds();
@@ -873,6 +891,7 @@ public partial class Game1 : Game
         if(IsStatusScreen && _transferChoice!=null){_spriteBatch.Begin(transformMatrix:transform);DrawFunctionTransferChoice();_spriteBatch.End();}
         if(_tutorialCaptiveToastSeconds>0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialCaptiveAchievementToast();_spriteBatch.End();}
         DrawAutoSaveNotice(canvas,transform);
+        if(_bgmMenuOpen){_spriteBatch.Begin(transformMatrix:transform);DrawBgmMenu();_spriteBatch.End();}
         DrawFullscreenCursor();
         LogDisplayedScreen();
         base.Draw(gameTime);
@@ -880,7 +899,7 @@ public partial class Game1 : Game
     protected override void UnloadContent(){foreach(var art in _maplePackageArt)art?.Dispose();Array.Clear(_maplePackageArt);_sectorChangeArt?.Dispose();_sectorChangeArt=null;DisposeDepartingOpeningPlanet();DisposeBattleToyArt();_robotHeadTextures?.Dispose();_robotHeadTextures=null;_robotTorsoTextures?.Dispose();_robotTorsoTextures=null;_robotLegTextures?.Dispose();_robotLegTextures=null;_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeTutorialPlanets();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_shipmentChime?.Dispose();_seaWave?.Dispose();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
-        if(disposing){StopBattleMusic();StopIndustryMusic();StopEndingMusic();DisposeTitleMusic();}
+        if(disposing){SaveBgmSettings();StopBattleMusic();StopIndustryMusic();StopEndingMusic();DisposeTitleMusic();}
         try{base.Dispose(disposing);}
         finally
         {

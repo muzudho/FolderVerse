@@ -84,6 +84,7 @@ public static class AutoSaveStore
             else foreach(var field in Fields(type)){
                 if(!entry.Fields.TryGetValue(field.Name,out int id)){
                     if(type==typeof(ConquestCampaign) && field.Name is "_sectorBaseline" or "_sectorBaselineTurn")continue;
+                    if(field.FieldType==typeof(RawMaterial) || type==typeof(RobotWorld) && field.Name=="_rawDeposits")continue;
                     if(field.FieldType==typeof(RobotEquipmentMode) || field.FieldType==typeof(RobotMaterial) ||
                         type==typeof(ProductionPlan) && field.FieldType==typeof(RobotMaterial?))continue;
                     if(type==typeof(Node) && field.Name==nameof(Node.Purpose) ||
@@ -114,6 +115,7 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorld) && field.Name=="_workerPlanWorldSeed")continue;
                     if(type==typeof(RobotTraining) && field.Name=="<WorkerPolicy>k__BackingField"){field.SetValue(value,3);continue;}
                     if(type==typeof(WorldSetup) && field.Name=="PolarAxis"){field.SetValue(value,1);continue;}
+                    if(type==typeof(WorldSetup) && field.Name=="_terrainElevationShift")continue;
                     if(type==typeof(WorldSetup) && new[]{"TutorialMapStage","TutorialMapRotations","TutorialMapNotices","TutorialMapEdgeChanged","TutorialMapBeforeWar","TutorialAttackCompleted","TutorialPocketIntroShown"}.Contains(field.Name))continue;
                     if(type==typeof(WorldSetup) && field.Name=="<Lessons>k__BackingField"){field.SetValue(value,new BattleLessons());continue;}
                     if(type==typeof(PlannedPartMove) && field.Name=="<WorkerLane>k__BackingField")continue;
@@ -153,8 +155,9 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorld) && field.Name=="<DirectDelivery>k__BackingField"){field.SetValue(value,new RobotDirectDelivery());continue;}
                     if(type==typeof(RobotTransport) && field.Name=="_directTransfers"){field.SetValue(value,Array.Empty<RobotShipment>());continue;}
                     if(type==typeof(RobotTransport) && field.Name=="_directOwners"){field.SetValue(value,new Dictionary<long,int>());continue;}
-                    if(type==typeof(Robot) && new[]{"<DefenseOnly>k__BackingField","<FactoryWorker>k__BackingField"}.Contains(field.Name))continue;
-                    if(type==typeof(RobotWorkshop) && new[]{"_baseLineCount","_lineLimit","_workerLines"}.Contains(field.Name))continue;
+                    if(type==typeof(Robot) && new[]{"<DefenseOnly>k__BackingField","<FactoryWorker>k__BackingField","<HarvestAssignment>k__BackingField","<WarehouseKeeper>k__BackingField"}.Contains(field.Name))continue;
+                    if(type==typeof(RobotStore) && field.Name=="_warehouseLimit")continue;
+                    if(type==typeof(RobotWorkshop) && new[]{"_baseLineCount","_lineLimit","_workerLines","<HarvestOnly>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(RobotWorkshop) && field.Name=="<WaitingProductionTurns>k__BackingField")continue;
                     if(type==typeof(RobotWorkshop) && field.Name is "<DoNotRepeat>k__BackingField" or "<CycleFinished>k__BackingField")continue;
                     if(type==typeof(RobotWorkshop) && field.Name=="<IntakeTarget>k__BackingField")continue;

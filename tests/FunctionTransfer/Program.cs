@@ -18,6 +18,25 @@ static (WorldSetup W,int A,int B,int C) Fixture()
     return(w,a.Id,b,c);
 }
 static Robot Add(WorldSetup w,int n,RobotParts parts){var r=w.Robots.Create(0,parts);w.Robots.Nodes[n].Add(r);return r;}
+foreach(bool cancelDeparture in new[]{false,true})
+{
+    var(w,a,b,c)=Fixture();
+    for(int ruler=0;ruler<3;ruler++)
+    {
+        w.ConquerorLocations[ruler]=w.Nodes.All[a].Cell;
+        w.ConquerorPoints[ruler]=w.Nodes.All[a].Center;
+    }
+    w.Campaign.Plan(new March(2,c,0,a,PocketOnly:true,Peaceful:true,RobotIds:Array.Empty<long>()));
+    w.Campaign.FunctionTransfers.Reserve(w,a,b);
+    w.Campaign.FinishDomestic(w);
+    Check(w.Nodes.Current(0).Id==b && w.Nodes.Current(1).Id==b,"All occupants without a departure follow the transfer");
+    Check(w.Nodes.Current(2).Id==a && w.Campaign.PlannedOrders.Single(m=>m.Ruler==2).SourceNode==a,
+        "Reserved departure retains its original source through delivery");
+    if(cancelDeparture)w.Campaign.CancelReservation(2,a,true,c);
+    w.Campaign.BeginMilitary();
+    w.Campaign.Advance(w,-1,0,enemies:false,allPlanned:true);
+    Check(w.Nodes.Current(2).Id==(cancelDeparture?b:c),"Conqueror reaches the reserved destination or follows the transfer after cancellation");
+}
 {
     var(w,a,b,c)=Fixture();
     var cargo=Add(w,a,RobotParts.Head);
@@ -42,6 +61,22 @@ static Robot Add(WorldSetup w,int n,RobotParts parts){var r=w.Robots.Create(0,pa
     w.Campaign.BeginMilitary();w.Campaign.Advance(w,-1,0,enemies:false);
     Check(!transfer.CanReserve(w,c,a) && !transfer.CanReserve(w,c,a,true) &&
         !transfer.CanReserve(w,a,b,true) && transfer.CanReserve(w,a,b),"A relay can only send a full transfer");
+}
+foreach(bool factoryOnly in new[]{true,false})
+{
+    var(w,a,b,c)=Fixture();
+    const BindingFlags hidden=BindingFlags.Instance|BindingFlags.NonPublic;
+    w.EquipmentMode=RobotEquipmentMode.Materials;
+    typeof(RobotWorld).GetMethod("InitializeMapleSupply",hidden)!.Invoke(w.Robots,new object[]{w});
+    var package=new MaplePackage(12345,16);
+    typeof(RobotStore).GetMethod("SetMaplePackages",hidden)!.Invoke(w.Robots.Nodes[a],new object[]{new[]{package}});
+    Check(w.Robots.ReserveMapleShipment(w,a,c,package.Id),"Reserve a maple shipment before relocation");
+    w.Campaign.FunctionTransfers.Reserve(w,a,b,factoryOnly);
+    w.Campaign.FinishDomestic(w);
+    int destination=factoryOnly?c:b;
+    Check(w.Robots.Nodes[destination].MaplePackages.Single()==package &&
+        w.Robots.Nodes[a].MaplePackages.Count==0 && w.Robots.Nodes[factoryOnly?b:c].MaplePackages.Count==0 &&
+        w.Robots.MapleShipments.Count==0,"Factory transfer preserves the shipment; full transfer relocates the stock and cancels the shipment");
 }
 foreach(var (purpose,duration) in new[]{(NodePurpose.Harvest,11),(NodePurpose.Manufacturing,9),(NodePurpose.General,10)})
 {
@@ -78,6 +113,16 @@ foreach(var (purpose,duration) in new[]{(NodePurpose.Harvest,11),(NodePurpose.Ma
     Check(!w.Campaign.FunctionTransfers.CanReserve(w,b,a),"61 slots are rejected");
     Capacity(w.Robots.Nodes[a],72);
     Check(!w.Campaign.FunctionTransfers.CanReserve(w,b,a) && w.Robots.Nodes[a].TotalCapacity==72,"Legacy oversized storage is preserved but cannot receive another transfer");
+}
+{
+    var(w,a,b,c)=Fixture();
+    w.Robots.Workshops[a].LimitLines(24);
+    w.Robots.Workshops[b].LimitLines(3);
+    w.Robots.Workshops[c].LimitLines(1);
+    Check(w.Campaign.FunctionTransfers.CanReserve(w,b,a,true),"Exactly 27 factory lanes may consolidate");
+    w.Campaign.FunctionTransfers.Reserve(w,b,a,true);
+    Check(!w.Campaign.FunctionTransfers.CanReserve(w,c,a) &&
+        !w.Campaign.FunctionTransfers.CanReserve(w,c,a,true),"Both transfer types count pending lanes toward the cap");
 }
 foreach(bool cancel in new[]{false,true})
 {

@@ -38,7 +38,7 @@ internal sealed class ScenicRoutes
             }
         var pairs = legs.GroupBy(l => (A: Math.Min(l.From,l.To), B: Math.Max(l.From,l.To))).ToArray();
         var through = ThroughRoutes(_functional, pairs.Select(p => p.Key).ToArray());
-        var terrainOffset = WorldTerrain.Offset(world.WorldSeed);
+        var terrainOffset = world.Terrain;
         var seaLegs = new List<SeaLeg>();
         for (int i = 0; i < pairs.Length; i++)
         {
@@ -61,7 +61,7 @@ internal sealed class ScenicRoutes
                         var a = curve[j-1]; var b = curve[j];
                         float distance = Vector3.Distance(a,b);
                         if (distance < .00001f) continue;
-                        bool sea = WorldTerrain.Elevation((a+b)/2,terrainOffset) < .52f;
+                        bool sea = terrainOffset.Elevation((a+b)/2) < .52f;
                         segments.Add(new(a,b,length,distance,sea));
                         length += distance;
                     }

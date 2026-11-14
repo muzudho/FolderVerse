@@ -13,8 +13,11 @@ public sealed class ConquestMusic:IDisposable
     private Vector3 _environment;
     private const int Rate=22050;
     public ConquestMusic(){_stream=new(Rate,AudioChannels.Mono);}
+    private float _baseVolume;
+    private float _gain=1;
+    public void SetGain(float gain){_gain=gain;_stream.Volume=_baseVolume*gain;}
     public void Update(Vector3 environment,float volume){
-        _environment=Vector3.Lerp(_environment,environment,.08f);_stream.Volume=Math.Clamp(volume,0,.5f);
+        _environment=Vector3.Lerp(_environment,environment,.08f);_baseVolume=Math.Clamp(volume,0,.5f);_stream.Volume=_baseVolume*_gain;
         while(_stream.PendingBufferCount<3)_stream.SubmitBuffer(Render());
         if(_stream.State!=SoundState.Playing)_stream.Play();
     }

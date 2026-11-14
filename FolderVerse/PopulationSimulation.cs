@@ -20,7 +20,7 @@ public sealed partial class PopulationSimulation
     public void Initialize(WorldSetup world)
     {
         Turn=0;var random=new SeedRandom(world.WorldSeed^world.PlacementSeed^0x27491);
-        var offset=WorldTerrain.Offset(world.WorldSeed);
+        var offset=world.Terrain;
         Cells=world.Cells.Select(c=>
         {
             var p=new CellPopulation{Land=WorldTerrain.CellKind(c,offset)!=TerrainKind.Sea};

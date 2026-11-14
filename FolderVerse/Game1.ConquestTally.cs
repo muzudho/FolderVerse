@@ -13,7 +13,7 @@ public partial class Game1
         _spriteBatch.Begin(transformMatrix:transform);
         for(int y=-radius;y<=radius;y++){int half=(int)MathF.Sqrt(radius*radius-y*y);_ui.Box(new(toy.Center.X-half,toy.Center.Y+y,half*2+1,1),new Color(26,51,65,235));}
         _spriteBatch.End();GraphicsDevice.Viewport=OrientationViewport(new(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30),canvas);
-        _orientationToy.Draw(0,0,_conquestGlobe.ViewOrientation(0,0));GraphicsDevice.Viewport=viewport;
+        _orientationToy.Draw((PlanetHeadSystem)_setup.PolarAxis,_conquestGlobe.ViewOrientation(0,0));GraphicsDevice.Viewport=viewport;
     }
 
     private Rectangle DrawConquestNumber(Rectangle r,int value,bool reveal){

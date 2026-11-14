@@ -8,6 +8,13 @@ sealed class JourneyGame:Game1
 {
  const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic,S=BindingFlags.Static|BindingFlags.NonPublic;
  int frame;WorldSetup w=null!;Node home=null!;int originalNodeCount;long pocketRobot;string save="",medalsPath="";TutorialAchievements medals=null!;
+ void DragPocket(Point from,Point to){
+  void Send(Point point,ButtonState state,bool click){
+   var mouse=new MouseState(0,0,0,state,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
+   Set("_pointer",point);Call("PocketMouseInput",mouse,new KeyboardState(),click,false,true);Set("_previousMouse",mouse);
+  }
+  Send(from,ButtonState.Pressed,true);Send(to,ButtonState.Released,false);
+ }
  object Get(string n)=>typeof(Game1).GetField(n,F)!.GetValue(this)!;
  void Set(string n,object v)=>typeof(Game1).GetField(n,F)!.SetValue(this,v);
  object Call(string n,params object[] a)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,a)!;
@@ -42,7 +49,7 @@ sealed class JourneyGame:Game1
   if(frame==2){
    Dismiss();Call("MapOverlayClick",((Rectangle)Call("PrimaryActionBounds",0)).Center,false);Check((bool)Get("_reignView"),"Enabled country button opens actual inspector");Call("UpdateDomesticSlide",1f);Call("OpenPocket");
    int before=w.Robots.Retinues[0].Count;var store=w.Robots.Nodes[w.Nodes.Current(0).Id];int index=Enumerable.Range(0,store.Count).FirstOrDefault(i=>store.Robots[i].CanFight,-1);Check(index>=0,"Pocket fixture retains a robot at home");pocketRobot=store.Robots[index].Id;
-   Set("_pointer",Bounds("PocketCard",index,true).Center);Call("PocketInput",true,false);Set("_pointer",Bounds("PocketTransferButton",true).Center);Call("PocketInput",true,false);
+   DragPocket(Bounds("PocketCard",index,true).Center,Bounds("PocketCard",before,false).Center);
    Check(w.TutorialPocketed && w.Robots.Retinues[0].Count==before+1 && w.Robots.Retinues[0].Robots.Any(r=>r.Id==pocketRobot),"Actual pocket transfer records integrated lesson");Call("PocketInput",false,true);Guide(5);
   }
   if(frame==3){

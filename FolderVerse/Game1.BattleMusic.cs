@@ -22,8 +22,8 @@ public partial class Game1
         if(_screen!=Screen.Battle || _robotScenes.Length==0){StopBattleMusic();return;}
         if(_battleMusicUnavailable)return;
         try{
-            if(_robotSummary){_battleMusic?.Dispose();_battleMusic=null;_newspaperMusic??=new(_newspaperMusicMood);_newspaperMusic.Update(_newspaperMusicMood,active);}
-            else{_newspaperMusic?.Dispose();_newspaperMusic=null;_battleMusicMood=CurrentBattleMusicMood;_battleMusic??=new(_battleMusicMood);_battleMusic.Update(_battleMusicMood,active);}
+            if(_robotSummary){_battleMusic?.Dispose();_battleMusic=null;_newspaperMusic??=new(_newspaperMusicMood);_newspaperMusic.Update(_newspaperMusicMood,active,BgmGain);}
+            else{_newspaperMusic?.Dispose();_newspaperMusic=null;_battleMusicMood=CurrentBattleMusicMood;_battleMusic??=new(_battleMusicMood);_battleMusic.Update(_battleMusicMood,active,BgmGain);}
         }
         catch(NoAudioHardwareException error){StopBattleMusic();_battleMusicUnavailable=true;RecordFailure(error,"battle_music");}
     }

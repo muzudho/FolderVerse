@@ -169,7 +169,14 @@ public static partial class BattleTurnResolver
             army.NoWillCount=defender?0:active?0:army.NoWillCount+1;
             if(army.NoWillCount<battle.Rules.NoWillTurns)continue;
             army.Withdrawing=true;
-            foreach(var u in battle.Units.Where(u=>u.Active && u.Owner==army.Owner))u.Retreating=true;
+            var departing=battle.Units.Where(u=>u.Active && u.Owner==army.Owner).ToArray();
+            if(departing.Length==1 && departing[0].Role==BattleRole.Queen &&
+                !battle.Units.Any(u=>u.Owner==army.Owner && u.Role!=BattleRole.Queen) &&
+                !army.Waiting.Any(u=>u.Active && u.Role!=BattleRole.Queen) &&
+                !HasPersuasionTarget(battle,departing[0]) &&
+                !battle.Persuasions.Any(p=>p.Queen==departing[0].Id))
+                departing[0].WitnessedLessons|=BattleLesson.QueenWithoutTargets;
+            foreach(var u in departing)u.Retreating=true;
             while(army.Waiting.TryDequeue(out var waiting)){waiting.Retreated=true;battle.Units.Add(waiting);}
             battle.Events.Add(new(battle.Turn,BattlePhase.Retreat,0,$"陣営 {army.Owner+1} 戦意喪失 / 撤退"));
         }
@@ -192,18 +199,24 @@ public static partial class BattleTurnResolver
         battle.Events.Add(new(battle.Turn,BattlePhase.Result,0,defended?"国旗の防衛成功":"国旗の奪取成功 / 守備側降伏"));
         return true;
     }
+    private static bool PersuasionTarget(BattleState battle,BattleUnit queen,BattleUnit unit) =>
+        unit.Active && unit.Role!=BattleRole.Queen &&
+        (unit.Owner==queen.Owner?unit.Robot!=null:!battle.Allied(unit.Owner,queen.Owner)) &&
+        (unit.Robot!=null?unit.Robot.LastBattlePersuasionTurn!=battle.GlobalTurn:!battle.PersuadedUnits.Contains(unit.Id)) &&
+        (unit.Robot?.PersuadableParts(queen.Owner)??RobotParts.Complete)!=0;
+
+    internal static bool HasPersuasionTarget(BattleState battle,BattleUnit queen) =>
+        battle.Units.Concat(battle.Armies.SelectMany(army=>army.Waiting)).Any(unit=>PersuasionTarget(battle,queen,unit));
+
     private static void Persuade(BattleState battle)
     {
         foreach(var queen in battle.Units.Where(u=>u.Active && u.Role==BattleRole.Queen).OrderBy(u=>u.Id))
         {
-            foreach(var enemy in battle.Units.Where(u=>u.Active && u.Role!=BattleRole.Queen &&
-                (u.Owner==queen.Owner?u.Robot!=null && u.Robot.PersuadableParts(queen.Owner)!=0:!battle.Allied(u.Owner,queen.Owner))).OrderBy(u=>u.Id).ToArray())
+            foreach(var enemy in battle.Units.Where(u=>PersuasionTarget(battle,queen,u)).OrderBy(u=>u.Id).ToArray())
             {
-                if(enemy.Robot!=null?enemy.Robot.LastBattlePersuasionTurn==battle.GlobalTurn:battle.PersuadedUnits.Contains(enemy.Id))continue;
                 if(Math.Abs(enemy.Position.X-queen.Position.X)+Math.Abs(enemy.Position.Y-queen.Position.Y)>battle.Rules.PersuasionRadius)continue;
                 bool own=enemy.Owner==queen.Owner;
                 var parts=enemy.Robot?.PersuadableParts(queen.Owner)??RobotParts.Complete;
-                if(parts==0)continue;
                 bool success=battle.Random.Next(100)<battle.Rules.PersuasionPercent;
                 success&=own || battle.Units.Count(u=>u.Active && u.Owner==queen.Owner)<battle.Army(queen.Owner).Limit;
                 battle.Persuasions.Add(new(battle.Turn,queen.Id,enemy.Id,queen.Owner,enemy.Owner,queen.Position,enemy.Position,success));

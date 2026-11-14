@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Input;
 
 public partial class Game1
 {
-    private readonly Texture2D[] _maplePackageArt=new Texture2D[3];
+    private readonly Texture2D[] _maplePackageArt=new Texture2D[15];
     private long? _mapleSelected;
     private long? _mapleDrag;
     private Point _mapleGrab;
@@ -20,17 +20,23 @@ public partial class Game1
     private static readonly Rectangle MaplePrevious=new(186,497,64,46),MapleNext=new(708,497,64,46);
     private static readonly Rectangle MapleSend=new(186,592,184,50),MapleCancel=new(387,592,184,50),MapleClose=new(588,592,184,50);
 
-    private void DrawMaplePackage(Rectangle cell,MaplePackage package,string status=null,float opacity=1,bool compact=false)
+    private void DrawMaplePackageArt(Rectangle cell,int sections,float opacity=1,bool alignBottom=false,RawMaterial material=RawMaterial.Maple)
     {
-        int index=package.Sections-1;
+        int index=(int)material*3+sections-1;
         if(_maplePackageArt[index]==null){
-            using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots",index==0?"maple-package-v002.png":$"maple-timber-{(index+1)*16}-v001.png"));
+            using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots",$"raw-{material.ToString().ToLowerInvariant()}-{sections}-v001.png"));
             _maplePackageArt[index]=Texture2D.FromStream(GraphicsDevice,stream);
         }
         var art=_maplePackageArt[index];
         int width=Math.Min(cell.Width*4/5,cell.Height*3/4*art.Width/art.Height),height=width*art.Height/art.Width;
         if(width<1 || height<1)return;
-        _spriteBatch.Draw(art,new Rectangle(cell.Center.X-width/2,cell.Center.Y-height/2,width,height),Color.White*opacity);
+        int y=alignBottom?cell.Bottom-height:cell.Center.Y-height/2;
+        _spriteBatch.Draw(art,new Rectangle(cell.Center.X-width/2,y,width,height),Color.White*opacity);
+    }
+
+    private void DrawMaplePackage(Rectangle cell,MaplePackage package,string status=null,float opacity=1,bool compact=false)
+    {
+        DrawMaplePackageArt(cell,package.Sections,opacity,material:package.Material);
         if(compact){
             if(cell.Height>=28)_ui.Center($"{package.Units}/48",new(cell.X,cell.Bottom-16,cell.Width,16),Math.Min(.27f,cell.Width/210f),Cream);
             return;
@@ -38,7 +44,7 @@ public partial class Game1
         if(cell.Height<65)return;
         bool shipping=_setup.Robots.MapleShipments.Any(o=>o.PackageId==package.Id);
         status??=shipping?"出荷予定":"";
-        _ui.Center($"楓の木 {package.Units}/48"+(status.Length>0?" / "+status:""),new(cell.X,cell.Bottom-30,cell.Width,28),Math.Min(.34f,cell.Width/410f),Cream);
+        _ui.Center($"{RobotWorld.RawName(package.Material)} {package.Units}/48"+(status.Length>0?" / "+status:""),new(cell.X,cell.Bottom-30,cell.Width,28),Math.Min(.34f,cell.Width/410f),Cream);
     }
 
     private int[] MapleTargets()=>FunctionalDeliveryRoutes.Targets(_setup,_populationNode).Where(n=>_setup.Nodes.All[n].Owner>=0).ToArray();
@@ -53,6 +59,20 @@ public partial class Game1
         return stored;
     }
     private bool MapleArrival(MaplePackage package)=>_setup.Robots.MapleShipments.Any(o=>o.Target==HangarPlanningNode && o.PackageId==package.Id);
+    private (string Label,Dictionary<long,int> Merged) MapleArrivalLabel(int node,RobotStore store)
+    {
+        var merged=new Dictionary<long,int>();
+        int count=_setup.Robots.MapleShipments.Count(o=>o.Target==node);
+        if(count==0)return ("",merged);
+        var arrival=_setup.Robots.PreviewMapleArrivals(_setup,node,store);
+        var current=store.MaplePackages.ToDictionary(p=>p.Id,p=>p.Units);
+        foreach(var package in arrival.Packages)
+            if(current.TryGetValue(package.Id,out int units) && package.Units>units)
+                merged.Add(package.Id,package.Units-units);
+        int total=merged.Values.Sum();
+        return ($"原材料 / 入荷予定 {count} 件"+(total>0?$" / 合算 +{total}":"")+
+            (arrival.Blocked>0?$" / 待機 {arrival.Blocked} 件":""),merged);
+    }
     private bool MapleHangarInput(MouseState mouse,bool click,bool escape)
     {
         if(_mapleSelected is long id)
@@ -69,7 +89,7 @@ public partial class Game1
                 if(MapleNext.Contains(_pointer))_mapleDestination=Math.Min(targets.Length-1,_mapleDestination+1);
                 if(MapleSend.Contains(_pointer)){
                     bool reserved=_setup.Robots.ReserveMapleShipment(_setup,_populationNode,targets[_mapleDestination],id);
-                    _hangarMessage=reserved?"楓の木を出荷予約しました":"楓の木を出荷予約できません";
+                    _hangarMessage=reserved?"原材料を出荷予約しました":"原材料を出荷予約できません";
                     _mapleSelected=null;
                 }
             }
@@ -105,7 +125,7 @@ public partial class Game1
         if(hit.Value!=null){
             if(hit.Value.Id!=sourceId)
                 _hangarMessage=!_mapleSplit && _setup.Robots.RearrangeMaple(_setup,_populationNode,sourceId,hit.Value.Id,false)
-                    ?"楓の木をまとめました":"この楓の木はまとめられません";
+                    ?"原材料をまとめました":"この原材料はまとめられません";
             return true;
         }
         foreach(int slot in VisibleAssemblySlots())
@@ -118,12 +138,12 @@ public partial class Game1
             long placedId=sourceId;
             if(_mapleSplit){
                 if(!_setup.Robots.RearrangeMaple(_setup,_populationNode,sourceId,null,true)){
-                    _hangarMessage="この楓の木は分けられません";return true;
+                    _hangarMessage="この原材料は分けられません";return true;
                 }
                 placedId=store.MaplePackages.Last().Id;
             }
             _maplePositions[placedId]=slot*3+row;
-            _hangarMessage=_mapleSplit?"楓の木を分けました":"楓の木を移動しました";
+            _hangarMessage=_mapleSplit?"原材料を分けました":"原材料を移動しました";
             return true;
         }
         return true;
@@ -134,7 +154,7 @@ public partial class Game1
         if(_mapleSelected is not long id)return;
         var targets=MapleTargets();
         _ui.Box(MaplePanel,new Color(21,41,51));
-        _ui.Center("楓の木 / 出荷先",new(186,440,586,40),.56f,Cream);
+        _ui.Center(RobotWorld.RawName(_setup.Robots.Nodes[_populationNode].MaplePackages.FirstOrDefault(p=>p.Id==id)?.Material??RawMaterial.Maple)+" / 出荷先",new(186,440,586,40),.56f,Cream);
         if(targets.Length>0){
             int index=Math.Clamp(_mapleDestination,0,targets.Length-1);
             _ui.Center(_setup.Nodes.DisplayName(_setup.Nodes.All[targets[index]]),new(250,497,458,46),.44f,Cream);

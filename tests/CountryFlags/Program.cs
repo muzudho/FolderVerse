@@ -43,9 +43,23 @@ sealed class FlagGame:Game1
  protected override void Update(GameTime time){}
  void CheckTerrain(){
   using var preview=new WorldPreview(GraphicsDevice);preview.ShowLandConquest(w);
-  Color[] Colours(){var viewport=GraphicsDevice.Viewport;using var target=new RenderTarget2D(GraphicsDevice,320,320,false,SurfaceFormat.Color,DepthFormat.Depth24);GraphicsDevice.SetRenderTarget(target);GraphicsDevice.Clear(Color.Black);preview.Draw(.4f,.3f,0,false);GraphicsDevice.SetRenderTarget(null);GraphicsDevice.Viewport=viewport;var pixels=new Color[320*320];target.GetData(pixels);return pixels;}
+  Color[] Colours(float time=0,IEnumerable<SurfaceCell> selected=null){var viewport=GraphicsDevice.Viewport;using var target=new RenderTarget2D(GraphicsDevice,320,320,false,SurfaceFormat.Color,DepthFormat.Depth24);GraphicsDevice.SetRenderTarget(target);GraphicsDevice.Clear(Color.Black);preview.Draw(.4f,.3f,time,false,landSelection:selected);GraphicsDevice.SetRenderTarget(null);GraphicsDevice.Viewport=viewport;var pixels=new Color[320*320];target.GetData(pixels);return pixels;}
   var before=Colours();var owners=(int[])w.Owners.Clone();Array.Fill(w.Owners,-1);preview.ShowLandConquest(w);
   Check(before.SequenceEqual(Colours()),"Claimed and unclaimed territory must retain identical terrain colours");Array.Copy(owners,w.Owners,owners.Length);
+  Array.Fill(w.Owners,0);preview.ShowLandConquest(w,dimClaimed:true);
+  var dimmed=Colours();
+  var iceColors=new[]{new Color(195,229,242),new Color(219,243,249),new Color(238,251,252)};
+  var icePixels=Enumerable.Range(0,before.Length).Where(i=>iceColors.Contains(before[i])).ToArray();
+  Check(icePixels.Length>0 && icePixels.All(i=>dimmed[i]==Color.Lerp(Color.Black,before[i],.35f)),
+    "Visible pack ice dims to 35 percent with claimed terrain");
+  Array.Fill(w.Owners,-1);preview.ShowLandConquest(w,dimClaimed:true);
+  Check(before.SequenceEqual(Colours()),"Unclaimed land retains its normal brightness in land conquest");
+  Check(before.Zip(dimmed).Any(pair=>pair.First.R>pair.Second.R+20),"Claimed terrain is visibly darker");
+  var trough=Colours(1.8f,w.Cells);
+  Check(before.Zip(trough).Any(pair=>pair.First.R>100 && Math.Abs(pair.Second.R-pair.First.R*.75f)<=2),
+        "At the trough the selected terrain dims to 75 percent");
+  Check(!Colours(.6f,w.Cells).SequenceEqual(trough),"Selected territory backlight pulses");
+  Array.Copy(owners,w.Owners,owners.Length);
  }
  protected override void Draw(GameTime time){
   if(frame==0){
@@ -58,7 +72,7 @@ sealed class FlagGame:Game1
   }else{
    if(frame==1){Call("OpenCountrySettings");Set("_pointer",new Point(1700,580));Call("CountrySettingsInput",true,false);Check(w.CountryFlagShape((int)Get("_countrySettingsRuler"))==3,"Shape button hit target");}
    if(frame==2){Set("_countrySettingsOpen",false);Set("_statusGlobe",true);}
-   if(frame==3){Call("BeginLandConquest");for(int i=0;i<w.Owners.Length;i++)w.Owners[i]=i%3==0?i%w.ActiveCount:-1;((WorldPreview)Get("_world")).ShowLandConquest(w);}
+   if(frame==3){Call("BeginLandConquest");for(int i=0;i<w.Owners.Length;i++)w.Owners[i]=i%3==0?i%w.ActiveCount:-1;((WorldPreview)Get("_world")).ShowLandConquest(w,dimClaimed:true);}
    if(frame==4){var battle=new BattleState(9){TargetNode=w.Nodes.Current(0)!.Id,Defender=0};battle.Armies.Add(new(){Owner=0,Side=4});battle.Capture(BattlePhase.Choose);Set("_robotScenes",new[]{battle});Set("_robotPlayback",new RobotBattlePlayback(new[]{battle}));Call("FinishTransport");Set("_battleIntroAge",10d);Set("_lastCutInPhase","戦闘フェーズ");}
    base.Draw(new GameTime(TimeSpan.FromSeconds(100+frame),TimeSpan.Zero));
   }

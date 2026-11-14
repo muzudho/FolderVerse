@@ -56,6 +56,49 @@ sealed class CheckLongUi:Game1
         var globe=(WorldPreview)Get("_world");Call("FocusGlobePosition",w.Routes.WhirlpoolCenter(w.Routes.Whirlpools[0]));globe.GlobeZoom=2;
         DrawShot("nada-globe",()=>{var batch=(SpriteBatch)Get("_spriteBatch");batch.End();globe.Draw((float)Get("_yaw"),(float)Get("_pitch"),0,false,true);batch.Begin();});
         DrawShot("nada-whirlpool-object",()=>SeaWhirlpoolArt.Draw((UiPainter)Get("_ui"),p=>new Vector2(960,540)+p*350));
+        w.EquipmentMode=RobotEquipmentMode.Materials;
+        typeof(RobotWorld).GetMethod("InitializeMapleSupply",F)!.Invoke(w.Robots,new object[]{w});
+        var maple=w.Nodes.All.First(n=>w.Robots.MapleDeposit(n.Id)>=4);
+        var deposits=(int[])typeof(RobotWorld).GetField("_mapleDeposits",F)!.GetValue(w.Robots)!;
+        var mapleSurface=w.Cells[maple.Cell];
+        var mapleNet=(CubeNet)Get("_net");
+        mapleNet.ShowRoutes=true;
+        mapleNet.ShowOtherCountries=true;
+        mapleNet.SetCenter(w,mapleSurface.Face);
+        Call("FocusGlobePosition",mapleSurface.Center);
+        globe.GlobeZoom=1.2f;
+        foreach(bool isGlobe in new[]{false,true})
+        foreach(int loads in new[]{0,1,2,3,4,12}){
+            deposits[maple.Id]=loads;
+            DrawShot($"maple-{isGlobe}-{loads}",()=>{
+                var ui=(UiPainter)Get("_ui");
+                if(!isGlobe){mapleNet.Draw(ui,w,panel,-1,0);return;}
+                float yaw=(float)Get("_yaw"),pitch=(float)Get("_pitch");
+                ui.Batch.End();globe.Draw(yaw,pitch,0,false,true);ui.Batch.Begin();
+                mapleNet.DrawGlobeLayers(ui,w,globe,panel,yaw,pitch,0);
+            });
+        }
+        foreach(bool isGlobe in new[]{false,true}){
+            var images=new[]{0,1,2,3,4,12}.Select(loads=>Path.Combine(AppContext.BaseDirectory,$"maple-{isGlobe}-{loads}.png"));
+            Check(images.Select(path=>Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))))
+                .Distinct().Count()==6,"Each maple deposit state changes the complete map rendering");
+        }
+        deposits[maple.Id]=0;
+        var harvested=new int[deposits.Length];
+        harvested[maple.Id]=8;
+        typeof(RobotWorld).GetField("_mapleHarvested",F)!.SetValue(w.Robots,harvested);
+        DrawShot("maple-planting-net",()=>mapleNet.Draw((UiPainter)Get("_ui"),w,panel,-1,0));
+        DrawShot("maple-planting-globe",()=>{
+            var ui=(UiPainter)Get("_ui");
+            float yaw=(float)Get("_yaw"),pitch=(float)Get("_pitch");
+            ui.Batch.End();globe.Draw(yaw,pitch,0,false,true);ui.Batch.Begin();
+            mapleNet.DrawGlobeLayers(ui,w,globe,panel,yaw,pitch,0);
+        });
+        foreach(var (name,mode) in new[]{("net",false),("globe",true)})
+            Check(!File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,$"maple-planting-{name}.png"))
+                .SequenceEqual(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,$"maple-{mode}-0.png"))),
+                "Planting scenery remains visible after the deposit is exhausted");
+        w.EquipmentMode=RobotEquipmentMode.Legacy;
         var iceCell=w.Cells.OrderByDescending(c=>Enumerable.Range(0,100).Count(i=>w.Routes.PackIceAt(c.Id,new(i%10,i/10)))).First();
         var iceTexture=(Texture2D)typeof(CubeNet).GetMethod("IceTexture",F)!.Invoke(Get("_net"),new object[]{Get("_ui"),w,iceCell.Id})!;
         DrawShot("polar-ice-floes",()=>((UiPainter)Get("_ui")).Batch.Draw(iceTexture,new Rectangle(600,180,720,720),Color.White));

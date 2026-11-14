@@ -29,8 +29,8 @@ public sealed partial class TerrainRoutes
     }
     public void Initialize(WorldSetup world)
     {
-        _world=world;_packIce=null;_iceWalls=Array.Empty<SeaIceWall>();_cache.Clear();_curves.Clear();var offset=WorldTerrain.Offset(world.WorldSeed);
-        _heights=world.Cells.Select(c=>Enumerable.Range(0,100).Select(i=>WorldTerrain.Elevation(Position(c.Id,PointAt(i)),offset)).ToArray()).ToArray();
+        _world=world;_packIce=null;_iceWalls=Array.Empty<SeaIceWall>();_cache.Clear();_curves.Clear();var offset=world.Terrain;
+        _heights=world.Cells.Select(c=>Enumerable.Range(0,100).Select(i=>offset.Elevation(Position(c.Id,PointAt(i)))).ToArray()).ToArray();
         _links=world.Cells.Select(c=>Enumerable.Range(0,100).Select(_=>new List<int>()).ToArray()).ToArray();
         BuildWhirlpools();BuildMountainPasses();
         foreach(var cell in world.Cells)for(int i=0;i<100;i++)
@@ -82,7 +82,7 @@ public sealed partial class TerrainRoutes
     public RouteStep ForRuler(int ruler,int direction)=>Find(_world.ConquerorLocations[ruler],_world.ConquerorPoints[ruler],direction,false,true);
     public string PointName(int cell,Point p)
     {
-        var c=_world.Cells[cell];var up=_world.IsPolarFace(c.Face)?(Vector3.Dot(c.Normal,_world.North)>0?Vector3.Backward:Vector3.Forward):_world.North;
+        var c=_world.Cells[cell];var up=_world.MapUp(c.Normal);
         var delta=Position(cell,p)-c.Center;float n=Vector3.Dot(delta,up),e=Vector3.Dot(delta,Vector3.Cross(up,c.Normal));
         string name=(n>.16f?"北":n<-.16f?"南":"")+(e>.16f?"東":e<-.16f?"西":"");
         return name.Length==0?"中央":name+"側";

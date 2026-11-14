@@ -9,7 +9,7 @@ public partial class Game1
     {
         if(_screen!=Screen.Industry){StopIndustryMusic();return;}
         if(_industryMusicUnavailable)return;
-        try{_industryMusic??=new();_industryMusic.Update();}
+        try{_industryMusic??=new();_industryMusic.Update(BgmGain);}
         catch(NoAudioHardwareException error){StopIndustryMusic();_industryMusicUnavailable=true;RecordFailure(error,"industry_music");}
     }
 }

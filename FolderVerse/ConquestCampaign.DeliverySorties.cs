@@ -90,7 +90,12 @@ public sealed partial class ConquestCampaign
     private void CancelInvalidWars(WorldSetup world,List<March> orders)
     {
         foreach(var order in orders.ToArray()){
-            if(order.Peaceful || !orders.Contains(order))continue;
+            if(!orders.Contains(order))continue;
+            if(order.Peaceful){
+                if(!world.Relations.CanAct(order.Ruler) || !RobotBattles.CanMarch(world,order.Ruler,order.TargetNode))
+                    orders.Remove(order);
+                continue;
+            }
             int source=order.SourceNode>=0?order.SourceNode:world.Nodes.Current(order.Ruler)?.Id??-1;
             string reason=null;
             if(order.DeliveryMembers?.Any(m=>m.Cancelled)==true)reason="予定メンバーの出撃予約が解除されました";

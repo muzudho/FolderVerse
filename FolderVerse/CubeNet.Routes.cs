@@ -28,6 +28,9 @@ public sealed partial class CubeNet
         int owner=ShowCountryColors?world.Nodes.FullOwner(cell):-1;
         if(ControlledCountryColors && !world.Relations.Controls(owner))owner=-1;
         var color=owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal,world.PolarAxis):WorldPreview.LandTerritoryColor(world.CountryMapColor(owner,x,y),WorldTerrain.Kind(height));
+        var surface=world.Cells[cell];
+        var point=world.Routes.Position(cell,new Point(x,y));
+        if(WorldTerrain.IsValley(world,surface,point,height))color=WorldTerrain.ValleyColor(color);
         return NodeFocus<0 && RegionFocusCell>=0 && cell!=RegionFocusCell?SelectionGlow.Dim(color,FocusBrightness):color;
     }
     public bool ShowRoutes {get;set;}=true; public int HoveredNode {get;set;}=-1; public int InspectedNode {get;set;}=-1;
@@ -69,7 +72,7 @@ public sealed partial class CubeNet
         var physical=surface.Normal*normalDistance+face.Right*p.X-face.Up*p.Y;
         return new(Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.U)*10),0,9),Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.V)*10),0,9));
     }
-    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null,bool globeRibbon=false)
+    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null,bool globeRibbon=false,Action<RoutePortal,bool,Func<Color,Vector2,Color>> joinPortal=null)
     {
         Color SearchTint(Color color,Vector2 at){
             if(!FolderSearchFocus && !AttackTargetSpotlight)return color;
@@ -89,20 +92,22 @@ public sealed partial class CubeNet
                 .SelectMany(p=>Enumerable.Range(0,4).Select(d=>world.Routes.ForRuler(p.Ruler,d))).Where(r=>r!=null);
             var ribbons = globeRibbon ? new List<(Vector2 Center, float Length, float Angle, bool Sea)>() : null;
             var vehicles = new List<ScenicRoutes.Vehicle>();
-            var offset=WorldTerrain.Offset(world.WorldSeed);
+            var offset=world.Terrain;
             foreach(var route in world.Routes.DisplayPaths(cell).Concat(active))
             {
                 if (!DirectoryOnly && _scenicRoutes != null &&
                     _scenicRoutes.TryDraw(route,pulse,DrawScenicDash,out var vehicle))
                 {
                     if (vehicle is { } toy) vehicles.Add(toy);
+                    if(route.Portal!=null)joinPortal?.Invoke(route.Portal,true,SearchTint);
                     continue;
                 }
                 var curve=world.Routes.Curve(cell,route);
+                if(curve.Length>0 && route.Portal!=null)joinPortal?.Invoke(route.Portal,false,SearchTint);
                 for(int i=1;i<curve.Length;i++)
                 {
                     var a=project(curve[i-1]);var b=project(curve[i]);var delta=b-a;
-                    float height=WorldTerrain.Elevation((curve[i-1]+curve[i])/2,offset);
+                    float height=offset.Elevation((curve[i-1]+curve[i])/2);
                     if (ribbons != null)
                     {
                         if (delta.LengthSquared() > .001f)
@@ -145,21 +150,23 @@ public sealed partial class CubeNet
     private void DrawNodeMarkers(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse)
     {
         if (DirectoryOnly) return;
+        DrawResourceSites(ui,world,cell,project,globe:false);
         DrawLandmarks(ui,world,cell,p=>project(p),pulse);
         foreach (var node in world.Nodes.InCell(cell).Where(n=>NodeVisible(world,n)))
         {
+            DrawMapleDeposit(ui,world,node,project,globe:false);
             var position=world.Routes.Position(cell,node.Center);
             var at=project(position);
             float radius=MapPuckRadius(node,Vector2.Distance(at,project(position+world.Cells[cell].U)));
-            DrawFlatPuck(ui,world,node,at,radius,pulse,color=>NodeTint(node.Id,color));
+            DrawFlatPuck(ui,world,node,at,radius,pulse,color=>NodeTint(node.Id,color),project);
         }
     }
-    private static void DrawHarbor(UiPainter ui,Vector2 at,float radius,Color color,bool dim=false)
+    private static void DrawHarborBadge(UiPainter ui,Vector2 at,float radius,Func<Color,Color> tint,float rotation=0)
     {
-        void Stroke(Vector2 a,Vector2 b,float width,Color tint)
+        void Stroke(Vector2 a,Vector2 b,float width,Color color)
         {
-            a=at+a*radius;b=at+b*radius;var delta=b-a;
-            ui.Tile((a+b)/2,new(delta.Length()+width,width),MathF.Atan2(delta.Y,delta.X),tint);
+            a=at+RotatePoint(a*radius,-rotation);b=at+RotatePoint(b*radius,-rotation);var delta=b-a;
+            ui.Tile((a+b)/2,new(delta.Length()+width,width),MathF.Atan2(delta.Y,delta.X),color);
         }
         void Shape(float width,Color tint)
         {
@@ -168,9 +175,11 @@ public sealed partial class CubeNet
             Stroke(new(0,.7f),new(-.7f,.35f),width,tint);Stroke(new(0,.7f),new(.7f,.35f),width,tint);
             Stroke(new(-.7f,.35f),new(-.7f,.05f),width,tint);Stroke(new(.7f,.35f),new(.7f,.05f),width,tint);
         }
-        var dark=dim?SelectionGlow.Dim(new Color(13,36,44)):new Color(13,36,44);Shape(6,dark);Shape(3,color);
-        var eye=at+new Vector2(0,-.65f)*radius;
-        Disc(ui,eye,radius*.27f+2,dark);Disc(ui,eye,radius*.27f,color);Disc(ui,eye,radius*.12f,dark);
+        var dark=tint(new Color(13,36,44));var light=tint(new Color(247,239,216));
+        Disc(ui,at,radius+3,dark);Disc(ui,at,radius+1,light);
+        Shape(2,dark);
+        var eye=at+RotatePoint(new Vector2(0,-.65f)*radius,-rotation);
+        Disc(ui,eye,radius*.26f,dark);Disc(ui,eye,radius*.12f,light);
     }
     private static void Disc(UiPainter ui,Vector2 center,float radius,Color color,bool dim=false)
     {

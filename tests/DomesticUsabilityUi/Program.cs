@@ -1,12 +1,20 @@
 using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using System.Reflection;
 using var game=new UsabilityGame();game.Run();
 sealed class UsabilityGame:Game1
 {
  const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;WorldSetup world=null!;CubeNet net=null!;int frame,node;Robot own=null!,foreign=null!;long transferred;
  Color[] ownHover=null!,foreignBaseline=null!;int target;Rectangle flatBattery;
+ void DragPocket(Point from,Point to){
+  void Send(Point point,ButtonState state,bool click){
+   var mouse=new MouseState(0,0,0,state,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
+   Set("_pointer",point);Call("PocketMouseInput",mouse,new KeyboardState(),click,false,true);Set("_previousMouse",mouse);
+  }
+  Send(from,ButtonState.Pressed,true);Send(to,ButtonState.Released,false);
+ }
  object Get(string n)=>typeof(Game1).GetField(n,F)!.GetValue(this)!;
  void Set(string n,object v)=>typeof(Game1).GetField(n,F)!.SetValue(this,v);
  object Call(string n,params object[] a)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,a)!;
@@ -42,15 +50,15 @@ sealed class UsabilityGame:Game1
   Check(Math.Abs(WorldPreview.BatteryTilt(2,0)-MathHelper.PiOver2)<.0001 && Math.Abs(WorldPreview.BatteryTilt(6,0))<.0001 && Math.Abs(WorldPreview.BatteryTilt(0,0)-WorldPreview.BatteryTilt(8,0))<.0001,"Battery completes a slow eight-second standing/lying cycle");
   foreach(var source in new[]{new Rectangle(0,0,256,192),new Rectangle(40,70,166,170)}){var crop=PortraitRenderer.FaceSource(source);Check(source.Contains(crop) && crop.Width==crop.Height,"Face crop remains square and inside each portrait/atlas tile");}
   foreach(var r in world.Robots.Nodes[node].Robots.ToArray())world.Robots.Nodes[node].Remove(r.Id);
-  own=world.Robots.Create(0,RobotParts.Complete) with {HeadOrigin=1,BodyOrigin=1,LegsOrigin=1};foreign=world.Robots.Create(1,RobotParts.Complete) with {HeadOrigin=0,BodyOrigin=0,LegsOrigin=0};world.Robots.Nodes[node].Add(own);world.Robots.Nodes[node].Add(foreign);
+  own=world.Robots.Create(0,RobotParts.Complete) with {HeadOrigin=1,BodyOrigin=1,LegsOrigin=0};foreign=world.Robots.Create(1,RobotParts.Complete) with {HeadOrigin=1,BodyOrigin=1,LegsOrigin=1};world.Robots.Nodes[node].Add(own);world.Robots.Nodes[node].Add(foreign);
   world.Robots.Retinues[0].Add(world.Robots.Create(0,RobotParts.Head|RobotParts.Body));Set("_conquestOverviewEnabled",false);Set("_tutorialAttackGuide",false);Set("_tutorialIntroShown",true);Persuasion(true);Persuasion(false);
   QuietPlayback();net=(CubeNet)Get("_net");net.Home(world);((WorldPreview)Get("_world")).ShowSetup(world,true);net.ShowBatteries=false;net.ShowOtherCountries=false;
-  Call("OpenPocket");Check((bool)Call("PocketRobotSelectable",own,true) && !(bool)Call("PocketRobotSelectable",foreign,true),"Selection uses owner rather than manufacture colors");
-  Check(!(bool)Call("PocketTransferEnabled",true) && !(bool)Call("PocketTransferEnabled",false),"Transfer is disabled until selection");
-  Click(Rect("PocketCard",1,true).Center);Check(Get("_pocketRobot")==null,"Foreign card cannot be selected even with own-country paint");
-  Click(Rect("PocketCard",0,true).Center);Check((long)Get("_pocketRobot")==own.Id && (bool)Call("PocketTransferEnabled",true) && !(bool)Call("PocketTransferEnabled",false),"Only the selected source direction enables transfer");
-  world.Robots.PendingEdits.Add(new(node,new[]{own.Id},null));Check(!(bool)Call("PocketRobotSelectable",own,true) && !(bool)Call("PocketTransferEnabled",true),"Reserved robot is not highlighted as movable");world.Robots.PendingEdits.Clear();
-  transferred=own.Id;Click(Rect("PocketTransferButton",true).Center);Check(world.Robots.Retinues[0].Robots.Any(r=>r.Id==transferred && r.Owner==0 && r.Origin(RobotParts.Head)==1),"Pocket transfer preserves owner, identity and original paint");
+  Call("OpenPocket");Check((bool)Call("PocketRobotSelectable",own,true) && !(bool)Call("PocketRobotSelectable",foreign,true),"Selection requires at least one home-country part");
+  Check(Get("_pocketRobot")==null,"No initial selection");
+  Click(Rect("PocketCard",1,true).Center);Check(Get("_pocketRobot")==null,"Foreign card without home-country parts cannot be selected");
+  Click(Rect("PocketCard",0,true).Center);Check((long)Get("_pocketRobot")==own.Id,"Only the selected source direction enables transfer");
+  world.Robots.PendingEdits.Add(new(node,new[]{own.Id},null));Check(!(bool)Call("PocketRobotSelectable",own,true),"Reserved robot is not highlighted as movable");world.Robots.PendingEdits.Clear();
+  transferred=own.Id;DragPocket(Rect("PocketCard",0,true).Center,Rect("PocketCard",1,false).Center);Check(world.Robots.Retinues[0].Robots.Any(r=>r.Id==transferred && r.Owner==0 && r.Origin(RobotParts.Head)==1),"Pocket transfer preserves owner, identity and original paint");
   Call("OpenPocket");
   Console.WriteLine("PASS: persuasion closes both ways, owner/origin mismatch, foreign refusal, selection/directional enabling, reserved robot refusal and identity-preserving transfer.");
  }
@@ -64,9 +72,9 @@ sealed class UsabilityGame:Game1
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
   if(frame==0)Pointer(Rect("PocketCard",0,false).Center);
-  if(frame==1){Click(Rect("PocketCard",1,false).Center);Pointer(Rect("PocketTransferButton",false).Center);}
+  if(frame==1){Click(Rect("PocketCard",1,false).Center);Pointer(new Point(100,630));}
   if(frame==2)Pointer(Rect("PocketCard",0,true).Center);
-  if(frame==3){Click(Rect("PocketTransferButton",false).Center);Check(world.Robots.Nodes[node].Robots.Any(r=>r.Id==transferred),"Deployment from the pocket returns to current foreign node");Pointer(Rect("PocketCard",1,true).Center);}
+  if(frame==3){DragPocket(Rect("PocketCard",1,false).Center,Rect("PocketCard",2,true).Center);Check(world.Robots.Nodes[node].Robots.Any(r=>r.Id==transferred),"Deployment from the pocket returns to current foreign node");Pointer(Rect("PocketCard",1,true).Center);}
   if(frame==4 || frame==5){Call("PocketInput",false,true);Screen("WorldStatus");Call("ResetInspector");Set("_domesticSlide",0f);Set("_statusGlobe",frame==4);if(frame==4)Call("FocusStatusGlobe");else{net.Home(world);net.FitNodesAtSource(world,world.Nodes.All[node],(Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!,1f);}Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);net.ShowBatteries=false;net.ShowOtherCountries=false;}
   if(frame==6){Set("_statusGlobe",true);Call("FocusStatusGlobe");Set("_yawAngle",(float)Get("_yawAngle")+MathHelper.Pi);}
   if(frame==7){Set("_statusGlobe",false);net.ShowOtherCountries=true;net.Home(world);Call("OpenMovementWithFit",false);Set("_domesticSlide",1f);Set("_domesticMapLeft",535f);Call("FitDestinationView");Check(!(bool)Call("HasMoveReservation"),"Lamp is off before a confirmed move");target=net.MovementTargets.First();Call("SelectMoveNode",target);Check(((int[])Call("MoveReservationTargets")).Contains(target),"Selected destination immediately gets a bus");}

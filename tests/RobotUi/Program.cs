@@ -2,12 +2,20 @@ using System.Reflection;
 using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 try{using var game=new RobotUiCheck();game.Run();}catch(Exception e){Console.Error.WriteLine(e);Environment.ExitCode=1;}
 sealed class RobotUiCheck:Game1
 {
     const BindingFlags Flags=BindingFlags.Instance|BindingFlags.NonPublic;
     int frame,lastUpdate=-1;WorldSetup world;Node node;BattleState battle;
-    object Get(string name)=>typeof(Game1).GetField(name,Flags)!.GetValue(this)!;
+    void DragPocket(Point from,Point to){
+  void Send(Point point,ButtonState state,bool click){
+   var mouse=new MouseState(0,0,0,state,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
+   Set("_pointer",point);Call("PocketMouseInput",mouse,new KeyboardState(),click,false,true);Set("_previousMouse",mouse);
+  }
+  Send(from,ButtonState.Pressed,true);Send(to,ButtonState.Released,false);
+ }
+ object Get(string name)=>typeof(Game1).GetField(name,Flags)!.GetValue(this)!;
     void Set(string name,object value)=>typeof(Game1).GetField(name,Flags)!.SetValue(this,value);
     void Call(string name,params object[] args)=>typeof(Game1).GetMethod(name,Flags)!.Invoke(this,args);
     static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
@@ -47,18 +55,18 @@ sealed class RobotUiCheck:Game1
             }
             if(frame==2)
             {
-                world.Robots.QueueSplit(node.Id,world.Robots.Nodes[node.Id].Robots[0].Id,RobotParts.Head);world.Robots.Advance((a,b)=>false,_=>0,2);Check(world.Robots.Nodes[node.Id].Count==2,"Split fixture");Call("OpenPocket");Set("_pointer",new Point(1040,250));Call("PocketInput",true,false);Set("_pointer",new Point(1040,637));Call("PocketInput",true,false);
+                world.Robots.QueueSplit(node.Id,world.Robots.Nodes[node.Id].Robots[0].Id,RobotParts.Head);world.Robots.Advance((a,b)=>false,_=>0,2);Check(world.Robots.Nodes[node.Id].Count==2,"Split fixture");Call("OpenPocket");DragPocket(new Point(1040,250),new Point(100,250));
                 Check(world.Robots.Retinues[0].Count==1,"Retinue transfer");Check(Get("_screen").ToString()=="Pocket","Separate pocket screen");
                 var id=world.Robots.Retinues[0].Robots[0].Id;
-                Set("_pointer",new Point(100,250));Call("PocketInput",true,false);Set("_pointer",new Point(100,637));Call("PocketInput",true,false);
+                DragPocket(new Point(100,250),new Point(1040,250));
                 Check(world.Robots.Retinues[0].Count==0 && world.Robots.Nodes[node.Id].Robots.Any(r=>r.Id==id),"Pocket deployment preserves identity");
-                Set("_pointer",new Point(1040+149,250));Call("PocketInput",true,false);Set("_pointer",new Point(1040,637));Call("PocketInput",true,false);
+                DragPocket(new Point(1189,250),new Point(100,250));
                 Check(world.Robots.Retinues[0].Count==1,"Pocket take back");
                 var reserved=world.Robots.Nodes[node.Id].Robots[0];world.Robots.QueueSplit(node.Id,reserved.Id,RobotParts.Body);
-                Set("_pointer",new Point(1040,250));Call("PocketInput",true,false);Set("_pointer",new Point(1040,637));Call("PocketInput",true,false);
+                DragPocket(new Point(1040,250),new Point(100,250));
                 Check(world.Robots.Retinues[0].Count==1 && world.Robots.Nodes[node.Id].Robots.Any(r=>r.Id==reserved.Id),"Reserved robot stays deployed");world.Robots.PendingEdits.Clear();
                 var fillers=new List<long>();while(world.Robots.Retinues[0].Count<12){var robot=world.Robots.Create(0,RobotParts.Head);fillers.Add(robot.Id);world.Robots.Retinues[0].Add(robot);}
-                Call("PocketInput",true,false);Check(world.Robots.Retinues[0].Count==12 && world.Robots.Nodes[node.Id].Count==1,"Full pocket does not remove deployed robot");
+                DragPocket(new Point(1040,250),new Point(100,250));Check(world.Robots.Retinues[0].Count==12 && world.Robots.Nodes[node.Id].Count==1,"Full pocket does not remove deployed robot");
                 foreach(var filler in fillers)world.Robots.Retinues[0].Remove(filler);Call("OpenPocket");
             }
             if(frame==3)

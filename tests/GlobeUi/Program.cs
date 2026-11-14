@@ -20,8 +20,10 @@ sealed class GlobeCheck:Game1
         setup=(WorldSetup)Get("_setup");for(int seed=0;;seed++){setup.SetWorld(seed);if(setup.Width>=3 && setup.Height>=3 && setup.Depth>=3)break;}setup.SetCast(123);setup.SetPlacement(456);setup.SelectPlayer(0);
         globe=(WorldPreview)Get("_world");globe.ShowSetup(setup,true);((CubeNet)Get("_net")).Home(setup);
         Set("_screen",Enum.Parse(typeof(Game1).GetField("_screen",Flags)!.FieldType,"WorldStatus"));
-        CheckNodeHits();
-        CheckGlobeSpin();
+        if(!Environment.GetCommandLineArgs().Contains("--harbor")){
+            CheckNodeHits();
+            CheckGlobeSpin();
+        }
         Set("_yawAngle",0f);Set("_pitchAngle",0f);
         Check(globe.ProjectVisible(new(0,0,setup.Depth/2f),Vector3.Backward,0,0,new(1040,240,790,580),out var center) && Vector2.Distance(center,new(1435,530))<1,"Front projection wrong");
         Check(!globe.ProjectVisible(new(0,0,-setup.Depth/2f),Vector3.Forward,0,0,new(1040,240,790,580),out _),"Back label visible");
@@ -37,6 +39,26 @@ sealed class GlobeCheck:Game1
                 Check(edge.Cell.Neighbors.Any(id=>WorldCoordinates.At(sample,sample.Cells[id]).Y==(latitude==0?-1:0) &&
                     sample.Cells[id].Corners.Contains(edge.A) && sample.Cells[id].Corners.Contains(edge.B)),"Equator edge is not 0/-1 boundary");
             }
+        }
+        var harborFrame=typeof(CubeNet).GetMethod("TryHarborFrame",BindingFlags.Static|BindingFlags.NonPublic)!;
+        foreach(var harbor in setup.Nodes.All.Where(n=>n.IsHarbor))
+        {
+            var args=new object[]{setup,harbor,Vector3.Zero,Vector3.Zero};
+            Check((bool)harborFrame.Invoke(null,args)!,"Harbor must resolve its sea-facing route");
+            var shore=(Vector3)args[2];var seaward=(Vector3)args[3];
+            var land=setup.Routes.Position(harbor.Cell,harbor.Center);
+            Check(Vector3.Dot(shore-land,seaward)>0 &&
+                Math.Abs(Vector3.Dot(seaward,setup.Cells[harbor.Cell].Normal))<.0001f,
+                "Pier must extend from land toward the shoreline along the local face");
+        }
+        if(Environment.GetCommandLineArgs().Contains("--harbor")){
+            var port=setup.Nodes.All.First(n=>n.IsHarbor);
+            var normal=setup.Cells[port.Cell].Normal;
+            Set("_yawAngle",-MathF.Atan2(normal.X,normal.Z));
+            Set("_pitchAngle",MathF.Asin(normal.Y));
+            Set("_statusGlobe",true);
+            ((CubeNet)Get("_net")).ShowRoutes=true;
+            return;
         }
         var panel=new Rectangle(1040,240,790,580);int checkedOffsets=0;
         foreach(var cell in setup.Cells)
@@ -176,6 +198,7 @@ sealed class GlobeCheck:Game1
     }
     protected override void Update(GameTime time)
     {
+        if(Environment.GetCommandLineArgs().Contains("--harbor"))return;
         if(Environment.GetCommandLineArgs().Contains("--node-hits-only")){Exit();return;}
         if(updated==frame)return;updated=frame;
         switch(frame)
@@ -256,6 +279,16 @@ sealed class GlobeCheck:Game1
     protected override void Draw(GameTime time)
     {
         base.Draw(time);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
+        if(Environment.GetCommandLineArgs().Contains("--harbor")){
+            Check(pixels.Contains(new Color(235,112,42)),"Orange pier trim must be visible");
+            using var harborImage=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);
+            harborImage.SetData(pixels);
+            using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"harbor-{frame}.png"));
+            harborImage.SaveAsPng(file,p.BackBufferWidth,p.BackBufferHeight);
+            if(frame++==0)Set("_statusGlobe",false);
+            else{Console.WriteLine("PASS harbor directions and globe/net drawing");Exit();}
+            return;
+        }
         if(frame is 0 or 1)
         {
             bool Has(Color c)=>Enumerable.Range(240,580).Any(y=>Enumerable.Range(1040,790).Any(x=>pixels[y*p.BackBufferWidth+x]==c));

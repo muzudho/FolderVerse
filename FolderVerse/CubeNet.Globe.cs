@@ -1,29 +1,78 @@
 namespace FolderVerse;
 using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 public sealed partial class CubeNet
 {
     public void DrawGlobeLayers(UiPainter ui,WorldSetup setup,WorldPreview globe,Rectangle panel,float yaw,float pitch,float pulse)
     {
         RefreshScenicRoutes(setup);
-        var offset=WorldTerrain.Offset(setup.WorldSeed);
+        var offset=setup.Terrain;
+        var joinedPortals=new HashSet<(int First,int Second,Vector3 Position)>();
         foreach(var cell in setup.Cells)
         {
             if(!globe.ProjectVisible(cell.Center,cell.Normal,yaw,pitch,panel,out _))continue;
-            Vector2 Project(Vector3 p){globe.ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var result,WorldTerrain.ReliefAt(cell,p,offset));return result;}
-            DrawCellRoutes(ui,setup,cell.Id,Project,pulse,drawNodes:false,globeRibbon:true);
+            Vector2 Project(Vector3 p)
+            {
+                // Sample just inside this face when the route ends exactly on its edge.
+                float relief=WorldTerrain.ReliefAt(setup,cell,Vector3.Lerp(p,cell.Center,.001f),offset);
+                globe.ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var result,relief);
+                return result;
+            }
+            DrawCellRoutes(ui,setup,cell.Id,Project,pulse,drawNodes:false,globeRibbon:true,
+                joinPortal:(portal,dashed,tint)=>
+                {
+                    var other=setup.Cells[portal.Target];
+                    if(!globe.ProjectVisible(other.Center,other.Normal,yaw,pitch,panel,out _))return;
+                    var key=(Math.Min(cell.Id,other.Id),Math.Max(cell.Id,other.Id),portal.Position);
+                    if(!joinedPortals.Add(key))return;
+                    var edge=portal.Position;
+                    var a=edge+cell.Normal*WorldTerrain.ReliefAt(setup,cell,Vector3.Lerp(edge,cell.Center,.001f),offset);
+                    var b=edge+other.Normal*WorldTerrain.ReliefAt(setup,other,Vector3.Lerp(edge,other.Center,.001f),offset);
+                    if(Vector3.DistanceSquared(a,b)<.000001f)return;
+                    // The route lifts away from the corner before touching the opposite face.
+                    var crown=edge+(cell.Normal+other.Normal)*(.035f+Math.Max(Vector3.Distance(a,edge),Vector3.Distance(b,edge)));
+                    var sea=portal.Terrain==TravelTerrain.Sea;
+                    var previous=ProjectBridge(a);
+                    for(int i=1;i<=12;i++)
+                    {
+                        float t=i/12f;
+                        var next=ProjectBridge(Vector3.Lerp(Vector3.Lerp(a,crown,t),Vector3.Lerp(crown,b,t),t));
+                        if(!dashed || (i-1)/2%2==0)DrawBridgeSegment(previous,next,sea,dashed,tint);
+                        previous=next;
+                    }
+                    Vector2 ProjectBridge(Vector3 p)
+                    {
+                        globe.ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var at);
+                        return at;
+                    }
+                });
+        }
+
+        void DrawBridgeSegment(Vector2 a,Vector2 b,bool sea,bool dashed,Func<Color,Vector2,Color> tint)
+        {
+            var delta=b-a;
+            if(delta.LengthSquared()<.001f)return;
+            var center=(a+b)/2;
+            float angle=MathF.Atan2(delta.Y,delta.X);
+            ui.Tile(center+new Vector2(0,2),new Vector2(delta.Length()+2,dashed?4:7),angle,
+                tint(sea?new Color(39,107,137):new Color(145,99,33),center));
+            ui.Tile(center,new Vector2(delta.Length()+2,dashed?3:6),angle,
+                tint(sea?new Color(108,213,245):new Color(255,216,99),center));
         }
         foreach(var cell in setup.Cells)
         {
             if(!globe.ProjectVisible(cell.Center,cell.Normal,yaw,pitch,panel,out _))continue;
             Vector2 Project(Vector3 p){globe.ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var result);return result;}
             if (ShowRoutes && DirectoryOnly) continue;
+            if (ShowRoutes) DrawResourceSites(ui,setup,cell.Id,Project,globe:true);
             if (ShowRoutes) DrawLandmarks(ui,setup,cell.Id,p=>Project(p),pulse);
             foreach (var node in setup.Nodes.InCell(cell.Id))
             {
                 if (!NodeVisible(setup,node)) continue;
+                if(ShowRoutes)DrawMapleDeposit(ui,setup,node,Project,globe:true);
                 var position = setup.Routes.Position(node.Cell,node.Center);
-                position+=cell.Normal*WorldTerrain.ReliefAt(cell,position,offset);
+                position+=cell.Normal*WorldTerrain.ReliefAt(setup,cell,position,offset);
                 var at = Project(position);
                 Color Tint(Color color) => NodeTint(node.Id,color);
                 float scale = MathF.Max(Vector2.Distance(at,Project(position+cell.U)),Vector2.Distance(at,Project(position+cell.V)));
@@ -61,7 +110,7 @@ public sealed partial class CubeNet
     internal float GlobeNodeHitRadius(Node node,float projectedUnit,float zoom)
         => GlobeNodeRadius(node,projectedUnit,zoom)*projectedUnit*(HasPurposeBuilding(node)?GlobePurposeBuildingScale:1)+4;
 
-    private void DrawFlatPuck(UiPainter ui,WorldSetup setup,Node node,Vector2 at,float radius,float pulse,Func<Color,Color> tint)
+    private void DrawFlatPuck(UiPainter ui,WorldSetup setup,Node node,Vector2 at,float radius,float pulse,Func<Color,Color> tint,Func<Vector3,Vector2> project)
     {
         bool sea = !setup.Routes.Land(node.Cell,node.Center);
         var top = sea ? new Color(164,226,242) : new Color(255,232,153);
@@ -82,16 +131,21 @@ public sealed partial class CubeNet
         bool target = MovementTargets.Contains(node.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(node.Id));
         if (SelectedTarget==node.Id || EmphasizedNode(node.Id) || target && MathF.Sin(pulse*6)>=0)
             Face(at+new Vector2(0,depth),radius+3,SelectedTarget==node.Id || EmphasizedNode(node.Id) ? Color.White : new Color(255,219,96));
-        bool building=HasPurposeBuilding(node);
-        if(building)
+        bool building=HasPurposeBuilding(node) || node.IsHarbor && node.Functional;
+        if(node.IsHarbor && building && TryHarborFrame(setup,node,out var shore,out var seaward)){
+            var harborAt=project(shore);
+            var forward=Vector2.Normalize(project(shore+seaward*.1f)-harborAt);
+            var across=new Vector2(forward.Y,-forward.X);
+            DrawHarborPier(ui,(x,y,z)=>harborAt+radius*PurposeBuildingScale*(across*x+forward*y),tint);
+            DrawHarborBadge(ui,harborAt-across*radius*1.45f,radius,tint,ScreenAngle);
+        }
+        else if(building)
             DrawPurposeBuilding(ui,node.Purpose,(x,y,z)=>at+new Vector2(x,y*.68f-z)*radius*PurposeBuildingScale,tint);
         else{
             Face(at+new Vector2(0,depth),radius+1,rim);
             Face(at+new Vector2(0,depth),radius,side);
             Face(at,radius+1,rim);
             Face(at,radius,node.Functional ? top : Color.Lerp(top,rim,.35f));
-            if(node.IsHarbor && node.Functional)
-                DrawHarbor(ui,at,radius*.65f,tint(new Color(230,247,250)),DimNode(node.Id));
         }
         CountryFlagArt.Marker(ui,setup,DisplayedNodeOwner(node),at+new Vector2(radius*(building?PurposeBuildingScale:1)+4,-radius*.68f),
             Math.Clamp((int)(radius*3),24,42),tint);
@@ -107,7 +161,7 @@ public sealed partial class CubeNet
         var top = sea ? new Color(164,226,242) : new Color(255,232,153);
         var side = sea ? new Color(52,110,135) : new Color(152,111,53);
         var rim = new Color(24,44,51);
-        bool building=HasPurposeBuilding(node);
+        bool building=HasPurposeBuilding(node) || node.IsHarbor && node.Functional;
         const int sides = 12;
         Span<Vector2> lower = stackalloc Vector2[sides];
         Span<Vector2> upper = stackalloc Vector2[sides];
@@ -124,7 +178,14 @@ public sealed partial class CubeNet
         bool target = MovementTargets.Contains(node.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(node.Id));
         if (selected || target && MathF.Sin(pulse*6)>=0)
             FillProjectedFace(ui,ring,tint(selected ? Color.White : new Color(255,219,96)));
-        if(building)
+        if(node.IsHarbor && building && TryHarborFrame(setup,node,out var shore,out var seaward)){
+            var across=Vector3.Cross(seaward,cell.Normal);
+            float shoreHeight=WorldTerrain.ReliefAt(setup,cell,Vector3.Lerp(shore,cell.Center,.001f),setup.Terrain);
+            var footing=shore+cell.Normal*shoreHeight;
+            DrawHarborPier(ui,(x,y,z)=>project(footing+radius*GlobePurposeBuildingScale*(across*x+seaward*y+cell.Normal*z)),tint);
+            DrawHarborBadge(ui,project(footing)+new Vector2(-Math.Clamp(radius*Vector2.Distance(project(position),project(position+cell.U))*1.65f,12,44),-12),9,tint);
+        }
+        else if(building)
             DrawPurposeBuilding(ui,node.Purpose,(x,y,z)=>project(position+radius*GlobePurposeBuildingScale*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
         else{
             float winding = Cross(upper[1]-upper[0],upper[2]-upper[1]);
@@ -137,10 +198,6 @@ public sealed partial class CubeNet
                 FillProjectedFace(ui,wall,tint(Color.Lerp(side,top,.12f*(1+MathF.Cos(i*MathHelper.TwoPi/sides)))));
             }
             FillProjectedFace(ui,upper,tint(node.Functional ? top : Color.Lerp(top,rim,.35f)));
-            if(node.IsHarbor && node.Functional){
-                var puckCenter=project(position+cell.Normal*radius*.55f);
-                DrawHarbor(ui,puckCenter,MathF.Max(4,Vector2.Distance(puckCenter,upper[0])*.65f),tint(rim),DimNode(node.Id));
-            }
         }
         var center = project(position+cell.Normal*radius*(building?GlobePurposeBuildingScale*.5f:.55f));
         if (AttackTargetMarkers && SelectedTarget==node.Id)

@@ -26,6 +26,21 @@ sealed class RotationGame:Game1{
   Check(rockA!=Matrix.Identity && rockA!=rockB && Math.Abs(rockA.Determinant()-1)<.0001,"Slow cradle is an initial three-dimensional rotation and preserves shape");
   world.GlobeRock=rockB;Check(world.DisplayOrientation(0,0)==world.ViewOrientation(0,0)*rockB && world.ManualOrientation==baseOrientation,"Cradle does not overwrite saved manual orientation");world.GlobeRock=Matrix.Identity;
   var occupied=w.Nodes.All.Where(n=>w.Robots.Nodes[n.Id].Robots.Count>0).Take(2).Select(n=>n.Id).ToArray();
+  using(var target=new RenderTarget2D(GraphicsDevice,256,256,false,SurfaceFormat.Color,DepthFormat.Depth24)){
+   var renderer=(ToyOrientationRenderer)Get("_orientationToy");
+   var previous=GraphicsDevice.GetRenderTargets();
+   var images=new List<Color[]>();
+   var background=new Color(19,38,51);
+   foreach(var kind in Enum.GetValues<PlanetHeadSystem>()){
+    GraphicsDevice.SetRenderTarget(target);
+    GraphicsDevice.Clear(background);
+    renderer.Draw(kind,Matrix.Identity);
+    GraphicsDevice.SetRenderTargets(previous);
+    var pixels=new Color[256*256];target.GetData(pixels);
+    Check(pixels.Any(p=>p!=background) && images.All(other=>!pixels.SequenceEqual(other)),"Each head system renders a distinct toy");
+    images.Add(pixels);
+   }
+  }
   Check(occupied.Length==2,"Visibility fixture has two occupied nodes");
   using(var target=new RenderTarget2D(GraphicsDevice,1920,1080)){
    var previous=GraphicsDevice.GetRenderTargets();GraphicsDevice.SetRenderTarget(target);var batch=(SpriteBatch)Get("_spriteBatch");

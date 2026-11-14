@@ -3,6 +3,13 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Reflection;
+
+var faces=Enumerable.Range(0,6).Select(i=>
+{
+    var pose=Matrix.CreateFromQuaternion(WorldPreview.OpeningFaceTour(i/5d));
+    return CubeNet.Normals.Single(normal=>Vector3.TransformNormal(normal,pose).Z>.999f);
+}).ToArray();
+if(faces.Distinct().Count()!=6)throw new Exception("Opening tour must present all six faces exactly once.");
 static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
 var fixture=new WorldSetup();fixture.SetParticipantCounts(0,60);fixture.SetWorld(1);
 for(int seed=0;seed<100;seed++){fixture.SetCast(seed);Check(fixture.Looks.Select(l=>l.BaseId).Distinct().Count()==60,"Default cast repeats a character");}

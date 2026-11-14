@@ -303,3 +303,33 @@ var flagQueen = Queen(emptyFlagBoard, 5, 3);
 Check(BattleAi.Choose(emptyFlagBoard, flagQueen).Step == new Point(0, 1) && !flagQueen.Retreating,
     "A protected queen can still take an empty flag along a safe route");
 Console.WriteLine("PASS: queen combat capture and research, save compatibility, root-only retreat and safe persuasion.");
+
+var queenOnly = new BattleState(42, new() { NoWillTurns = 1 }) { Kind = BattleKind.Edge, BoardSize = 10 };
+queenOnly.Armies.Add(new() { Owner = 0, HomeNode = 0, Side = 0 });
+queenOnly.Armies.Add(new() { Owner = 1, HomeNode = 1, Side = 2 });
+var returningQueen = Queen(queenOnly, 4, 0);
+queenOnly.Units.Add(new() { Id = 50010, Owner = 1, Role = BattleRole.Queen, Position = new(7, 9) });
+BattleTurnResolver.Advance(queenOnly);
+Check(returningQueen.Retreating && !returningQueen.Retreated, "Untrained queen first waits for ordinary withdrawal");
+for(int turn=0;turn<20 && !returningQueen.Retreated;turn++)BattleTurnResolver.Advance(queenOnly);
+Check(returningQueen.Retreated, "Queen must reach her exit before reporting the lesson");
+returnUnits.Invoke(queenWorld.Campaign.RobotBattles, new object[]{queenWorld, new RobotEncounter { Target = 1 },
+    queenOnly, new[] { returningQueen }});
+Check(queenWorld.Lessons.Research().Single() == new LessonAward(0, BattleLesson.QueenWithoutTargets),
+    "The returning queen teaches her own country");
+
+var learnedBoard = Board();
+learnedBoard.Lessons[0] = BattleLesson.QueenWithoutTargets;
+var learnedQueen = Queen(learnedBoard, 4, 2);
+var friendly = Unit(learnedBoard, 50011, 0, 3, 2);
+var reinforcement = new BattleUnit { Id = 50012, Owner = 1, Role = BattleRole.Captain };
+learnedBoard.Army(1).Waiting.Enqueue(reinforcement);
+BattleAi.Choose(learnedBoard, learnedQueen);
+Check(!learnedQueen.Retreating, "A waiting enemy captain can still give the queen a purpose");
+learnedBoard.Army(1).Waiting.Clear();
+BattleAi.Choose(learnedBoard, learnedQueen);
+Check(learnedQueen.Retreating && !friendly.Retreating && !learnedBoard.Army(0).Withdrawing,
+    "Lacking persuasion targets withdraws the queen alone");
+emptyFlagBoard.Lessons[0] |= BattleLesson.QueenWithoutTargets;
+Check(BattleAi.Choose(emptyFlagBoard, flagQueen).Step == new Point(0, 1) && !flagQueen.Retreating,
+    "The queen can still take an open flag");
