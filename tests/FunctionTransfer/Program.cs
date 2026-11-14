@@ -18,6 +18,25 @@ static (WorldSetup W,int A,int B,int C) Fixture()
     return(w,a.Id,b,c);
 }
 static Robot Add(WorldSetup w,int n,RobotParts parts){var r=w.Robots.Create(0,parts);w.Robots.Nodes[n].Add(r);return r;}
+foreach(bool cancelDeparture in new[]{false,true})
+{
+    var(w,a,b,c)=Fixture();
+    for(int ruler=0;ruler<3;ruler++)
+    {
+        w.ConquerorLocations[ruler]=w.Nodes.All[a].Cell;
+        w.ConquerorPoints[ruler]=w.Nodes.All[a].Center;
+    }
+    w.Campaign.Plan(new March(2,c,0,a,PocketOnly:true,Peaceful:true,RobotIds:Array.Empty<long>()));
+    w.Campaign.FunctionTransfers.Reserve(w,a,b);
+    w.Campaign.FinishDomestic(w);
+    Check(w.Nodes.Current(0).Id==b && w.Nodes.Current(1).Id==b,"All occupants without a departure follow the transfer");
+    Check(w.Nodes.Current(2).Id==a && w.Campaign.PlannedOrders.Single(m=>m.Ruler==2).SourceNode==a,
+        "Reserved departure retains its original source through delivery");
+    if(cancelDeparture)w.Campaign.CancelReservation(2,a,true,c);
+    w.Campaign.BeginMilitary();
+    w.Campaign.Advance(w,-1,0,enemies:false,allPlanned:true);
+    Check(w.Nodes.Current(2).Id==(cancelDeparture?b:c),"Conqueror reaches the reserved destination or follows the transfer after cancellation");
+}
 {
     var(w,a,b,c)=Fixture();
     var cargo=Add(w,a,RobotParts.Head);

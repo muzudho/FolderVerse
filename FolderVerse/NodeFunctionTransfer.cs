@@ -102,10 +102,35 @@ public sealed class NodeFunctionTransfers
             w.Robots.Transport.RelocateNode(a,b);w.Robots.LongDelivery.Relocate(a,b,offset);
             for(int i=0;i<w.Robots.ReturningRobots.Count;i++)if(w.Robots.ReturningRobots[i].Source==a)
                 w.Robots.ReturningRobots[i]=w.Robots.ReturningRobots[i] with {Source=b};
-            w.Campaign.RewriteReservations(m=>!m.PocketOnly && m.SourceNode==a?m with {SourceNode=b}:m);
+            var departing=w.Campaign.PlannedOrders.Where(m=>(m.Queen || m.Peaceful) &&
+                (m.SourceNode<0 || m.SourceNode==a) && m.TargetNode!=a &&
+                w.Nodes.Current(m.Ruler)?.Id==a).Select(m=>m.Ruler).ToHashSet();
+            for(int ruler=0;ruler<w.ActiveCount;ruler++)
+                if(w.Nodes.Current(ruler)?.Id==a && !departing.Contains(ruler))
+                    RelocateConqueror(w,ruler,b);
+            w.Campaign.RewriteReservations(m=>m.SourceNode==a &&
+                (!departing.Contains(m.Ruler) || !m.Queen && !m.PocketOnly && !m.Peaceful)
+                ?m with {SourceNode=b}:m);
             Orders.Remove(order);LastResults.Add(order with {Status="移転完了"});w.Robots.SyncWorkers(b);
         }
         w.Robots.Check();
+    }
+
+    internal static void RelocateStrandedConquerors(WorldSetup w)
+    {
+        for(int ruler=0;ruler<w.ActiveCount;ruler++)
+        {
+            var node=w.Nodes.Current(ruler);
+            if(node is {Functional:false,FunctionHost:>=0} && w.Nodes.All[node.FunctionHost].Functional)
+                RelocateConqueror(w,ruler,node.FunctionHost);
+        }
+    }
+
+    private static void RelocateConqueror(WorldSetup w,int ruler,int target)
+    {
+        var node=w.Nodes.All[target];
+        w.ConquerorLocations[ruler]=node.Cell;
+        w.ConquerorPoints[ruler]=node.Center;
     }
 }
 
