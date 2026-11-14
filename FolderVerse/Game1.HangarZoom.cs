@@ -164,6 +164,7 @@ public partial class Game1
             _ui.Box(clipped,bay);
             if(clipped!=cell)continue;
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
+            TrackWarehouseKeeperHover(cell,robot);
             if(robot!=null)DrawRobotGlyph(HangarRobotArea(cell),HomePersuasionRobot(robot),whiteOutline:true);
             for(int row=0;row<3;row++)if(materials.TryGetValue(slot*3+row,out var package))
                 DrawMaplePackage(HangarCellRegion(cell,80,8+row*60,92,58+(package.Sections-1)*60),package,

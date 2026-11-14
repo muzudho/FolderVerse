@@ -710,6 +710,7 @@ public partial class Game1 : Game
         DrawMoveReservationButton();
         _ui.Button(PocketButton,"ポケット",Accent,.55f);});
         if(!string.IsNullOrEmpty(_setup.Campaign.Report))_ui.Center(_setup.Campaign.Report,new(1064,1037,800,32),Math.Min(.43f,850/_font.MeasureString(_setup.Campaign.Report).X),Cream);
+        _warehouseKeeperHovered=false;
         if(_populationCell>=0){
             if(SupervisorNodePanel){_spriteBatch.End();_spriteBatch.Begin(transformMatrix:Matrix.CreateTranslation(920,40,0)*transform);var pointer=_ui.Pointer;_ui.Pointer=new(pointer.X-920,pointer.Y-40);DrawNodeDialog();DrawNodeAutomation();_ui.Pointer=pointer;_spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);}
             else DrawInspector(()=>{DrawNodeDialog();DrawNodeAutomation();});
@@ -721,7 +722,11 @@ public partial class Game1 : Game
         if(_transportOverview){DrawInspector(DrawTransportOverviewPanel);if(_rateTarget>=0)DrawRatePieDialog();}
         if(!_reservationDirectory)DrawWandererLocation();DrawRouteLayerButtons();
         DrawStatusMenu();
-        if(!DrawInvasionUnavailableHint() && !DrawNodeCheckHint() && _supervisorDialog==0 && !_reservationDirectory && !_functionTransferMap)DrawNodeTooltip();
+        if(!DrawInvasionUnavailableHint() && !DrawNodeCheckHint() && _supervisorDialog==0 && !_reservationDirectory && !_functionTransferMap){
+            if(_warehouseKeeperHovered && !_inspectorFoldersOpen && !_mapOverlayMenu)
+                DrawRulebookHint("倉庫管理人","格納庫を４つ増やしてくれています");
+            else DrawNodeTooltip();
+        }
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();DrawWarCancellations();DrawProductionIntakePicker();
         DrawMapOverlayMenu();
         DrawHangarTrainingNotice();

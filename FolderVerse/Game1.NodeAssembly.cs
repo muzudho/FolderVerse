@@ -9,6 +9,7 @@ public partial class Game1
 {
     private Texture2D _robotAssemblyIcon;
     private bool _nodeAssemblyOpen;
+    private bool _warehouseKeeperHovered;
     private long?[] _hangarSlots=new long?[12];
     private long? _hangarDrag;
     private RobotParts _hangarPart;
@@ -238,6 +239,7 @@ public partial class Game1
         foreach(int slot in VisibleAssemblySlots())
         {
             var cell=AssemblyCell(slot);var occupant=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
+            TrackWarehouseKeeperHover(cell,occupant);
             bool cellHover=reservationMode && cell.Contains(_pointer) && occupant!=null;
             bool canReserve=_hangarReturnHomeMode?CanSelectReturnHome(occupant):reservationMode && HangarReservationEnabled(occupant);
             if(_hangarZoom!=1)
@@ -357,6 +359,12 @@ public partial class Game1
         else DrawDeliveryTagHint(new(54,150,850,825));
         DrawMapleShippingPanel();
     }
+    private void TrackWarehouseKeeperHover(Rectangle cell,Robot robot)
+    {
+        if(robot?.WarehouseKeeper==true && cell.Contains(_pointer) && !_hangarDrag.HasValue && !_mapleDrag.HasValue)
+            _warehouseKeeperHovered=true;
+    }
+
     private void DrawHangarDeliveryTags(int slot,DirectPartOrder[] orders,Robot robot)
     {
         for(int row=0;row<3;row++){
