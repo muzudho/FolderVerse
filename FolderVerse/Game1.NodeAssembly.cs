@@ -254,7 +254,7 @@ public partial class Game1
                 var color=movable?ControlEdge:new Color(145,156,166);
                 _ui.Box(new(bounds.X,bounds.Y,bounds.Width,2),color);_ui.Box(new(bounds.X,bounds.Bottom-2,bounds.Width,2),color);
                 _ui.Box(new(bounds.X,bounds.Y,2,bounds.Height),color);_ui.Box(new(bounds.Right-2,bounds.Y,2,bounds.Height),color);
-                string material=_setup.EquipmentMode==RobotEquipmentMode.Materials?$"（{RobotMaterials.Label(robot.Material(part))}）":
+                string material=_setup.EquipmentMode==RobotEquipmentMode.Materials?$"（{RobotMaterials.Label(robot.Material(part))} / 製造国 #{robot.Origin(part)+1}）":
                     robot.IsPremium(part)?"（高級・盾／短剣／小銃＋１）":robot.IsCheap(part)?"（安い）":"";
                 hover=movable?$"{PartsLabel(part)}{material}{(robot.IsDamaged(part)?"（損傷・未所属扱い）":"")}をドラッグ＆ドロップして再配置":"この個体は処理中・予約中、または操作できない所有国です";
             }
