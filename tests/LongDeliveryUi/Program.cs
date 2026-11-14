@@ -62,16 +62,26 @@ sealed class CheckLongUi:Game1
         var deposits=(int[])typeof(RobotWorld).GetField("_mapleDeposits",F)!.GetValue(w.Robots)!;
         var mapleSurface=w.Cells[maple.Cell];
         var mapleNet=(CubeNet)Get("_net");
-        var mapleDraw=typeof(CubeNet).GetMethod("DrawMapleDeposit",F)!;
+        mapleNet.ShowRoutes=true;
+        mapleNet.ShowOtherCountries=true;
+        mapleNet.SetCenter(w,mapleSurface.Face);
+        Call("FocusGlobePosition",mapleSurface.Center);
+        globe.GlobeZoom=1.2f;
         foreach(bool isGlobe in new[]{false,true})
         foreach(int loads in new[]{0,1,2,3,4,12}){
             deposits[maple.Id]=loads;
-            Vector2 Project(Vector3 p){
-                var d=p-mapleSurface.Center;
-                return new Vector2(960,540)+new Vector2(Vector3.Dot(d,mapleSurface.U),
-                    Vector3.Dot(d,mapleSurface.V)-Vector3.Dot(d,mapleSurface.Normal)*.75f)*400;
-            }
-            DrawShot($"maple-{isGlobe}-{loads}",()=>mapleDraw.Invoke(mapleNet,new object[]{Get("_ui"),w,maple,(Func<Vector3,Vector2>)Project,isGlobe}));
+            DrawShot($"maple-{isGlobe}-{loads}",()=>{
+                var ui=(UiPainter)Get("_ui");
+                if(!isGlobe){mapleNet.Draw(ui,w,panel,-1,0);return;}
+                float yaw=(float)Get("_yaw"),pitch=(float)Get("_pitch");
+                ui.Batch.End();globe.Draw(yaw,pitch,0,false,true);ui.Batch.Begin();
+                mapleNet.DrawGlobeLayers(ui,w,globe,panel,yaw,pitch,0);
+            });
+        }
+        foreach(bool isGlobe in new[]{false,true}){
+            var images=new[]{0,1,2,3,4,12}.Select(loads=>Path.Combine(AppContext.BaseDirectory,$"maple-{isGlobe}-{loads}.png"));
+            Check(images.Select(path=>Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))))
+                .Distinct().Count()==6,"Each maple deposit state changes the complete map rendering");
         }
         w.EquipmentMode=RobotEquipmentMode.Legacy;
         var iceCell=w.Cells.OrderByDescending(c=>Enumerable.Range(0,100).Count(i=>w.Routes.PackIceAt(c.Id,new(i%10,i/10)))).First();
