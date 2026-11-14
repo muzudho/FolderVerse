@@ -1,4 +1,5 @@
 using FolderVerse;
+using Microsoft.Xna.Framework;
 
 static void Check(bool value, string message) { if (!value) throw new Exception(message); }
 const int samples = 2048;
@@ -47,3 +48,31 @@ for (int kind = 0; kind < 4; kind++)
 Check(rodAxes.Count == 3 && slabAxes.Count == 3, "Missing axis orientation");
 Check(longestRod && widestSlab, "New maximum sizes not generated");
 Console.WriteLine($"PASS: {samples} seeds; shape counts {string.Join(", ", counts)}; size limits, axis orientations, seed reproducibility, ruler counts and reciprocal surface seams.");
+
+Check(WorldTerrain.HeadSystemForArea(75,100)==PlanetHeadSystem.Fish,"75% sea must qualify");
+Check(WorldTerrain.HeadSystemForArea(25,100)==PlanetHeadSystem.Dog,"75% land must qualify");
+Check(WorldTerrain.HeadSystemForArea(74,100)==PlanetHeadSystem.Monkey &&
+      WorldTerrain.HeadSystemForArea(26,100)==PlanetHeadSystem.Monkey,"Intermediate shares must qualify as monkey");
+
+const int surveySize=10000, surveySeed=20261114;
+var surveyRandom=new Random(surveySeed);
+world.SetParticipantCounts(1,19); // Default selection on the new-game setup screen.
+var heads=new int[3];
+for(int i=0;i<surveySize;i++)
+{
+    world.SetWorld(surveyRandom.Next());
+    heads[world.PolarAxis]++;
+    if(heads[world.PolarAxis]>48)continue;
+
+    Check(world.Geographic(world.North)==Vector3.Up,"North must map to geographic up");
+    Check(world.Cells.Select(c=>WorldCoordinates.At(world,c)).Distinct().Count()==world.Cells.Length,
+        $"Duplicate geographic coordinate for seed {world.WorldSeed}");
+    foreach(var normal in CubeNet.Normals)
+        Check(Vector3.Dot(world.MapUp(normal),normal)==0,"Map up must lie in the face plane");
+}
+foreach(var system in Enum.GetValues<PlanetHeadSystem>())
+{
+    int count=heads[(int)system];
+    Check(count>0,$"No {system} worlds for coordinate coverage");
+    Console.WriteLine($"{system}: {count}/{surveySize} ({count/(double)surveySize:P2}), survey RNG seed {surveySeed}");
+}

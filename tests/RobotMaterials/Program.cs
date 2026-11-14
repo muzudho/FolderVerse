@@ -155,6 +155,32 @@ Check(cargo.Nodes[target].MapleUnits==16 && mapleLine.Waiting,"A full intake con
 mapleFactory.SetReservedSlots(0);
 production.Invoke(mapleFactory,new object[]{cargo,target,0});
 Check(cargo.Nodes[target].MapleUnits==16-cost && cargo.ProductionIntakes.Any(i=>i.Source==target),"Successful intake did not consume exact maple units");
+// Exercise mixed-material production from an empty material store through delivery.
+var waitingNode=source;
+var waitingFactory=cargo.Workshops[waitingNode];
+for(int seed=0;waitingFactory.ProductionLines.Length==0;seed++)waitingFactory.GenerateLines(seed,RobotEquipmentMode.Materials);
+var waitingLine=waitingFactory.ProductionLines[0];
+int mixedChoice=Array.FindIndex(waitingLine.Plans,p=>p.Product==RobotParts.Complete);
+for(int seed=0;mixedChoice<0;seed++){
+    waitingLine.GeneratePlans(seed);
+    mixedChoice=Array.FindIndex(waitingLine.Plans,p=>p.Product==RobotParts.Complete);
+}
+waitingLine.Plans[mixedChoice]=new(RobotParts.Complete,3) {
+    HeadMaterial=RobotMaterial.Paper,BodyMaterial=RobotMaterial.Cardboard,LegsMaterial=RobotMaterial.Maple};
+waitingLine.SelectPlan(mixedChoice);
+production.Invoke(waitingFactory,new object[]{cargo,waitingNode,0});
+Check(waitingLine.WaitingForMaple(cargo,waitingNode) && waitingLine.ProductionAge==0,
+    "Mixed recipe waits without progress when maple is missing");
+Check((bool)receiveMaple.Invoke(cargo.Nodes[waitingNode],new object[]{new MaplePackage(999001,21),0,(Func<long,bool>)(_=>false)})!,
+    "Mixed recipe fixture can receive exactly 21 units");
+for(int i=0;i<waitingLine.ProductionPeriod;i++)production.Invoke(waitingFactory,new object[]{cargo,waitingNode,0});
+var mixedIntake=cargo.ProductionIntakes.Single(i=>ReferenceEquals(i.Line,waitingLine));
+Check(cargo.Nodes[waitingNode].MapleUnits==0,"Mixed recipe consumes all 21 units");
+typeof(RobotWorld).GetMethod("ResolveProductionIntakes",internalInstance)!.Invoke(cargo,new object[]{supply});
+Check(!cargo.ProductionIntakes.Contains(mixedIntake) &&
+    cargo.Nodes[waitingNode].Robots.Any(r=>r.Id==mixedIntake.Product.Id &&
+        r.Material(RobotParts.Head)==RobotMaterial.Paper && r.Material(RobotParts.Body)==RobotMaterial.Cardboard &&
+        r.Material(RobotParts.Legs)==RobotMaterial.Maple),"Intake places the exact mixed materials in the hangar");
 Check(supply.Campaign.FunctionTransfers.CanReserve(supply,target,source),"Fixture cannot transfer functions");
 supply.Campaign.FunctionTransfers.Reserve(supply,target,source);
 int remaining=cargo.Nodes[target].MapleUnits;

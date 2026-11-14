@@ -618,7 +618,10 @@ public partial class Game1 : Game
         }); _ui.Box(new(MapViewBounds.X-20,142,MapViewBounds.Width+40,750),new(20,42,54));
         _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+_setup.FaceName(_net.CenterFace)+" が中心",new(991,156),0.68f,Cream);
         int geographicFace=_setup.GeographicFace(_net.CenterFace);
-        string north=geographicFace==2?"北極面：上は＋Zの基準経線":geographicFace==3?"南極面：上は－Zの基準経線":_setup.PolarAxis==0?"地星の北＝＋X（碗）/ 箸と碗が極":"地星の北＝＋Y / 北を上に";
+        string poleAxis=_setup.PolarAxis switch {0=>"＋X（碗）",2=>"＋Z",_=>"＋Y"};
+        string north=geographicFace is 2 or 3
+            ? (geographicFace==2?"北極面":"南極面")+"：上は基準経線"
+            : $"{_setup.HeadSystemName} / 地星の北＝{poleAxis}";
         string orientation=north+" / 回転 "+((int)MathF.Round((_net.Rotation*90+MathHelper.ToDegrees(_net.ScreenAngle))%360+360)%360)+"°";
         _ui.Text(_statusGlobe?MapDragName+(_net.ShowMapSymbols?" / 経番・緯番":""):orientation,new(991,203),.43f,new(177,206,216));
         if(_statusGlobe && _net.ShowMapSymbols)

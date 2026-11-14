@@ -21,6 +21,15 @@ bool sawMixed=false;var signatures=new HashSet<string>();
   Check(preview.HeadOrigin==1 && preview.BodyOrigin==2 && preview.LegsOrigin==0,
         "Selecting the generated recipe preserves all three origins");
   Check(line.CurrentProductionPlan==plan,"The lane stores the generated recipe intact");
+  Check(!line.WaitingForMaple(w.Robots,node),"The fixture has no raw-material shortage");
+  for(int turn=0;turn<plan.Turns;turn++)w.Robots.AdvanceIndustry(n=>w.Nodes.All[n].Owner);
+  var intake=w.Robots.ProductionIntakes.Single(i=>i.Source==node);
+  w.Campaign.FinishDomestic(w);
+  Check(!w.Robots.ProductionIntakes.Contains(intake),"Delivery resolves the mixed robot intake");
+  var arrived=w.Robots.Nodes[node].Robots.Single(r=>r.Id==intake.Product.Id);
+  Fixture.Same(plan,arrived);
+  foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
+   Check(arrived.Material(part)==preview.Material(part),"The delivered robot preserves each material shown in the recipe");
   found=true;
  }
  Check(found,"A worker with parts from three countries can generate a three-origin material recipe");

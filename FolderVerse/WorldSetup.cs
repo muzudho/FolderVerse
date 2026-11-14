@@ -128,7 +128,7 @@ public sealed partial class WorldSetup
     {
         WorldConquestEndingShown=false;TutorialStep=0;TutorialMapBeforeWar=TutorialAttackCompleted=TutorialPocketIntroShown=false;_presetCastCount=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();Lessons.Reset();
         TutorialPocketed=TutorialMoved=TutorialPocketNoticeShown=TutorialMoveNoticeShown=false;TutorialPostMoveStage=0;TutorialSortieNoticeShown=TutorialTurnEndNoticeShown=TutorialWarTargetNoticeShown=false;
-        PolarAxis=1;TutorialMapStage=TutorialMapRotations=TutorialMapNotices=0;TutorialMapEdgeChanged=false;
+        TutorialMapStage=TutorialMapRotations=TutorialMapNotices=0;TutorialMapEdgeChanged=false;
         WandererPolicies=new WandererPolicy[CastCount];
         if(seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
         WorldSeed = seed;
@@ -148,6 +148,7 @@ public sealed partial class WorldSetup
         random.Shuffle(dimensions);
         Width = dimensions[0]; Height = dimensions[1]; Depth = dimensions[2];
         Cells = CreateCells(Width, Height, Depth);
+        PolarAxis=(int)WorldTerrain.HeadSystem(Cells,seed);
         CityNames=WorldNames.Cities(Cells,seed);
         ClearPlacement();
     }
@@ -190,6 +191,7 @@ public sealed partial class WorldSetup
     {
         SetPlayerCount(1);
         while(true){SetWorld(worldSeed);if(Width==1 && Height==1 && Depth==1 && WorldTerrain.HasSeaAndLand(Cells,WorldSeed))break;worldSeed=worldSeed==int.MaxValue?0:worldSeed+1;}
+        PolarAxis=1;
         SetCast(castSeed);
         for(int i=0;i<6;i++){Portraits[i]=i;Looks[i]=new(i,0);}
         ConquerorFullNames=WorldNames.Conquerors(Looks,castSeed);ConquerorNames=WorldNames.ShortNames(ConquerorFullNames);

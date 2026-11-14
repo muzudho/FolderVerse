@@ -3,6 +3,8 @@ using System;
 using Microsoft.Xna.Framework;
 
 public enum TerrainKind { Sea,Coast,Grassland,Hill,Mountain }
+public enum PlanetHeadSystem { Fish=0,Monkey=1,Dog=2 }
+
 public static class WorldTerrain
 {
     public const float MountainHeight=0.72f;
@@ -36,10 +38,40 @@ public static class WorldTerrain
     public static Color ColorAt(float height)=>height<0.47f?new(32,112,182):height<0.52f?new(53,155,207):height<0.55f?new(237,211,140):height<0.70f?new(85,164,103):height<MountainHeight?new(167,188,124):height<.77f?new(111,101,96):new(227,235,242);
     public static Color ColorAt(float height,Vector3 normal,int polarAxis=1)
     {
-        if(Math.Abs(polarAxis==0?normal.X:normal.Y)<.5f)return ColorAt(height);
+        if(Math.Abs(PolarComponent(normal,polarAxis))<.5f)return ColorAt(height);
         if(height<.47f)return new(139,185,214);
         if(height<.52f)return new(181,216,234);
         return height>=MountainHeight?new(224,234,243):new(245,249,255);
+    }
+    internal static float PolarComponent(Vector3 point,int polarAxis)=>polarAxis switch
+    {
+        0=>point.X,
+        2=>point.Z,
+        _=>point.Y
+    };
+
+    public static PlanetHeadSystem HeadSystemForArea(int seaSamples,int totalSamples)
+    {
+        if(totalSamples<=0)throw new ArgumentOutOfRangeException(nameof(totalSamples));
+        if(seaSamples<0 || seaSamples>totalSamples)throw new ArgumentOutOfRangeException(nameof(seaSamples));
+        if(4L*seaSamples>=3L*totalSamples)return PlanetHeadSystem.Fish;
+        if(4L*(totalSamples-seaSamples)>=3L*totalSamples)return PlanetHeadSystem.Dog;
+        return PlanetHeadSystem.Monkey;
+    }
+
+    internal static PlanetHeadSystem HeadSystem(SurfaceCell[] cells,int seed)
+    {
+        // Each surface cell has the same area. Count the terrain pixels, including
+        // coast as land, so a mixed cell contributes to both sides.
+        const int detail=TerrainRoutes.Detail;
+        var offset=Offset(seed);
+        int sea=0;
+        foreach(var cell in cells)
+            for(int y=0;y<detail;y++)
+                for(int x=0;x<detail;x++)
+                    if(Kind(Elevation(cell.Origin+cell.U*((x+.5f)/detail)+cell.V*((y+.5f)/detail),offset))==TerrainKind.Sea)
+                        sea++;
+        return HeadSystemForArea(sea,cells.Length*detail*detail);
     }
     public static TerrainKind CellKind(SurfaceCell cell,Vector3 offset)
     {

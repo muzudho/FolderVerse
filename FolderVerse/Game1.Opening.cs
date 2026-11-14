@@ -180,7 +180,7 @@ public partial class Game1
     }
     private void DrawOpeningDimensions()
     {
-        _ui.Center("星の大きさ",new(1490,145,360,44),.52f,Cream);
+        _ui.Center($"星の大きさ / {_setup.HeadSystemName}",new(1490,145,360,44),.52f,Cream);
 
         // One scale for all three axes, with depth foreshortened in the projection.
         float unit=132f/Math.Max(_setup.Width,Math.Max(_setup.Height,_setup.Depth));
