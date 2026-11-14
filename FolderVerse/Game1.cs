@@ -319,7 +319,7 @@ public partial class Game1 : Game
         else if(IsStatusScreen)
         {
             if(click && DomesticViewClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-            if(active && FactoryViewportInput(mouse)){
+            if(active && (FactoryHolidayInput(mouse) || FactoryViewportInput(mouse))){
                 _previousMouse=mouse;_previousKeyboard=keyboard;return;
             }
             if(_statusGlobe)

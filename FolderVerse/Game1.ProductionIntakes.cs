@@ -9,7 +9,7 @@ public partial class Game1
     private int _intakeNode,_intakePage;
     private static readonly Rectangle IntakeClose=new(1430,840,180,50),IntakePrevious=new(350,840,110,50),IntakeNext=new(480,840,110,50);
     private static Rectangle IntakeRow(int i)=>new(350,295+i*62,1260,54);
-    private static Rectangle FactoryIntakeButton(int row)=>new(82,FactoryRowY(row)+138,76,30);
+    private static Rectangle FactoryIntakeButton(int row)=>new(274,FactoryRowY(row)+219,92,28);
     private int[] IntakeChoices=>_setup.Routes.Neighbors(_setup.Nodes.All[_intakeNode]).Select(r=>_setup.Nodes.At(r.Target,r.Entry).Id)
         .Where(n=>PlanningFunctional(n) && CanManageNodeFactory(_setup.Nodes.All[n].Owner)).Distinct().Prepend(-1).ToArray();
     private bool ProductionIntakeInput(bool click,bool escape)

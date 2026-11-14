@@ -94,3 +94,26 @@ for(int i=0;i<harvestSites.Length;i++){
 }
 Console.WriteLine("PASS: initial worker lanes, save round trip and release.");
 Console.WriteLine("PASS: initial harvest deposits and stock at maximum robot scatter.");
+
+var competing=Scatter(100,RobotEquipmentMode.Materials);
+const int blockedSite=26;
+var stock=competing.Robots;
+var harvestLane=stock.Workshops[blockedSite].ProductionLines.Single(l=>l.HarvestOnly);
+void AdvanceHarvestSite()
+{
+    for(int unit=0;unit<IndustryTime.UnitsPerTurn;unit++)
+        stock.AdvanceIndustry(node=>competing.Nodes.All[node].Owner,node=>node!=blockedSite);
+}
+int remainingDeposit=stock.MapleDeposit(blockedSite);
+AdvanceHarvestSite();
+Check(stock.ProductionIntakes.Any(i=>(i.Target??i.Source)==blockedSite) &&
+    stock.Nodes[blockedSite].MapleUnits==0 && stock.MapleDeposit(blockedSite)==remainingDeposit &&
+    harvestLane.MapleRemaining==1,"Manufacturing intake keeps the initial harvest order waiting");
+foreach(var lane in stock.Workshops[blockedSite].ProductionLines.Where(l=>!l.HarvestOnly))
+    lane.SelectPlan(3);
+// Model the competing intake vacating its reserved slot without running other nodes.
+stock.ProductionIntakes.RemoveAll(i=>(i.Target??i.Source)==blockedSite);
+AdvanceHarvestSite();
+Check(harvestLane.MapleRemaining==0 && stock.Nodes[blockedSite].MapleUnits==RobotWorld.MaplePackageSize &&
+    stock.MapleDeposit(blockedSite)==remainingDeposit-1,"The same order resumes once hangar space is freed");
+Console.WriteLine("PASS: first harvest resumes after competing intake capacity is freed.");

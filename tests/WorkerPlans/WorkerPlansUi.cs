@@ -30,9 +30,9 @@ sealed class WorkerPlansUi:Game1
  }
  protected override void Update(GameTime time){}
  protected override void Draw(GameTime time){
-  if(frame==1){Click(Rect("FactoryRobotButton",1,1).Center);Check((int)Get("_factoryPlanLine")==1,"Real factory click opens the additional worker lane catalogue");Set("_pointer",Rect("FactoryPlanButton",choice).Center);}
+  if(frame==1){Click(((Rectangle)Call("FactoryProductionButton",1)).Center);Check((int)Get("_factoryPlanLine")==1,"Real factory click opens the additional worker lane catalogue");Set("_pointer",Rect("FactoryPlanButton",choice).Center);}
   if(frame==2){Click(Rect("FactoryPlanButton",choice).Center);Check(line.SelectedPlan==choice && line.CurrentProductionPlan==line.PlanAt(choice),"Candidate click installs the exact per-part recipe");var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
-  if(frame==3){line.SelectPlan(3);Click(Rect("FactoryRobotButton",1,1).Center);Check((int)Get("_factoryPlanLine")==1,"Half-size real click opens the worker catalogue");Set("_pointer",Rect("FactoryPlanButton",choice).Center);}
+  if(frame==3){line.SelectPlan(3);Click(((Rectangle)Call("FactoryProductionButton",1)).Center);Check((int)Get("_factoryPlanLine")==1,"Half-size real click opens the worker catalogue");Set("_pointer",Rect("FactoryPlanButton",choice).Center);}
   if(frame==4){
    Click(Rect("FactoryPlanButton",choice).Center);Check(line.SelectedPlan==choice,"Half-size real click selects the expected mixed plan");var recipe=line.PlanAt(choice);
    // This fixture advances only industry; use immediate storage instead of the domestic intake queue.
@@ -50,7 +50,7 @@ sealed class WorkerPlansUi:Game1
    Check(recipe.Preview(0).HeadMaterial==RobotMaterial.Foam && recipe.Preview(0).BodyMaterial==RobotMaterial.Maple,
      "Mixed material recipe survives save and previews each part");
    Check(line.PlanCount==11,"Material album must include all eleven choices");
-   Call("OpenNodeFactory");Click(Rect("FactoryRobotButton",1,line.ProductionPeriod).Center);
+   Call("OpenNodeFactory");Click(((Rectangle)Call("FactoryProductionButton",1)).Center);
    Check((int)Get("_factoryPlanLine")==1,"Worker lane opens material album at 540p");
    Check(Rect("FactoryAlbumCard",5).Y==Rect("FactoryAlbumCard",0).Y &&
          Rect("FactoryAlbumCard",6).X==Rect("FactoryAlbumCard",0).X,"Album uses six columns");
@@ -60,11 +60,11 @@ sealed class WorkerPlansUi:Game1
    var upperRight=Rect("FactoryAlbumCard",5);
    Click(new Point(upperRight.Right-8,upperRight.Bottom-8));
    Check(line.SelectedPlan==6 && (int)Get("_factoryPlanLine")==-1,"Upper-right card selects from its lower corner");
-   Click(Rect("FactoryRobotButton",1,line.ProductionPeriod).Center);
+   Click(((Rectangle)Call("FactoryProductionButton",1)).Center);
    Check((int)Get("_factoryPlanLine")==1,"Reopen after selecting the upper-right card");
    Click(Rect("FactoryRecipeCard",10).Center);
    Check(line.SelectedPlan==10 && (int)Get("_factoryPlanLine")==-1,"Right-side album click selects the exact plan");
-   Click(Rect("FactoryRobotButton",1,line.ProductionPeriod).Center);
+   Click(((Rectangle)Call("FactoryProductionButton",1)).Center);
    Click(Rect("FactoryAlbumAction",0).Center);
    Check((bool)Get("_factoryHarvestPage") && (int)Get("_factoryPlanLine")==1,"Harvest button opens the harvest catalogue");
    Click(Rect("FactoryAlbumAction",0).Center);
@@ -79,7 +79,7 @@ sealed class WorkerPlansUi:Game1
    Check(split>=0,"The base lane contains a split complete recipe");
    basic.Plans[split]=basic.Plans[split] with {HeadMaterial=RobotMaterial.Foam,BodyMaterial=RobotMaterial.Maple,LegsMaterial=RobotMaterial.Silicone};
    basic.SelectPlan(3);
-   Click(Rect("FactoryRobotButton",0,1).Center);
+   Click(((Rectangle)Call("FactoryProductionButton",0)).Center);
    var mixed=basic.PlanAt(split).Preview(0);
    Check((int)Get("_factoryPlanLine")==0 && mixed.Parts==RobotParts.Complete && mixed.IntegratedParts==0 &&
     new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Select(mixed.Material).Distinct().Count()==3,
@@ -126,6 +126,18 @@ sealed class WorkerPlansUi:Game1
   }
   if(frame==11){
    var factory=w.Robots.Workshops[node];
+   Set("_factoryPlanLine",-1);
+   var holidayCanvas=(Rectangle)Call("CanvasBounds");
+   var holiday=Rect("FactoryHolidayTrack",0);
+   void DragHoliday(int x,ButtonState button)
+   {
+    var screen=new Point(holidayCanvas.X+x*holidayCanvas.Width/1920,holidayCanvas.Y+holiday.Center.Y*holidayCanvas.Height/1080);
+    Call("HandleInput",new MouseState(screen.X,screen.Y,0,button,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(),true);
+   }
+   DragHoliday(holiday.X+60,ButtonState.Pressed);
+   DragHoliday(holiday.X+150,ButtonState.Pressed);
+   DragHoliday(holiday.X+150,ButtonState.Released);
+   Check(factory.ProductionLines[0].RestTurns==5,"Holiday handle snaps to whole industrial turns");
    var extra=w.Robots.Create(0,RobotParts.Complete);
    Fixture.Appoint(w,node,extra).SelectPlan(3);
    Set("_factoryPlanLine",-1);
@@ -143,7 +155,7 @@ sealed class WorkerPlansUi:Game1
    Check((int)Get("_factoryZoom")==1,"Wheel zooms out to three lanes");
    Click(((Rectangle)Call("FactoryOverviewBounds",2,3)).Center);
    Check((int)Get("_factoryPage")==1 && (int)Get("_factoryZoom")==0,"Selecting lane three in the overview zooms to its detail");
-   Click(Rect("FactoryRobotButton",1,3).Center);
+   Click(Rect("FactoryConveyorArrow",((Rectangle)Call("FactoryProductionButton",2))).Center);
    Check((int)Get("_factoryPlanLine")==2,"The second visible row opens lane three");
    Set("_factoryPlanLine",-1);
    Click(new Point(691,941));
