@@ -12,6 +12,7 @@ public sealed partial class RobotWorkshop
     public bool Paused {get;set;}
     public bool DoNotRepeat {get;private set;}
     public bool CycleFinished {get;private set;}
+    public bool HarvestOnly {get;private set;}
     public int MapleRemaining {get;private set;}
     public int MapleProgress {get;private set;}
     public void SelectMapleHarvest(int loads)
@@ -107,7 +108,7 @@ public sealed partial class RobotWorkshop
             }
             return;
         }
-        if(!Manufacturing || Paused || CycleFinished || owner<0)return;
+        if(HarvestOnly || !Manufacturing || Paused || CycleFinished || owner<0)return;
         if(RestEnabled && RestRemaining>0){if(--RestRemaining==0 && DoNotRepeat)CycleFinished=true;return;}
         if(WaitingForMaple(world,node))return;
         int period=EffectiveProductionPeriod(purpose);

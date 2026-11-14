@@ -32,7 +32,7 @@ public sealed partial class RobotWorkshop
         var ids=workers.Select(r=>r.Id).ToArray();
         foreach(long id in _workerLines.Keys.Where(id=>!ids.Contains(id)).ToArray())_workerLines.Remove(id);
         foreach(var worker in workers){
-            if(!_workerLines.TryGetValue(worker.Id,out var line)){
+            if(!_workerLines.TryGetValue(worker.Id,out var line) || line.HarvestOnly!=worker.HarvestWorker){
                 line=CreateWorkerLine(worker,worldSeed,node,country);_workerLines[worker.Id]=line;
             }else if(line._workerPlans==null)line.GenerateWorkerPlans(worker,worldSeed,node,country,true);
         }
@@ -41,9 +41,9 @@ public sealed partial class RobotWorkshop
     public RobotWorkshop[] ProductionLines {get;private set;}
     internal RobotWorkshop CreateWorkerLine(Robot worker,int worldSeed,int node,int country)
     {
-        var line=new RobotWorkshop{_materialCatalogueOffset=_materialCatalogueOffset};
+        var line=new RobotWorkshop{_materialCatalogueOffset=_materialCatalogueOffset,HarvestOnly=worker.HarvestWorker};
         line.GenerateWorkerPlans(worker,worldSeed,node,country,false);
-        line.SelectPlan(0);
+        line.SelectPlan(line.HarvestOnly?3:0);
         return line;
     }
     public RobotWorkshop(){ProductionLines=new[]{this};}
@@ -148,6 +148,7 @@ public sealed partial class RobotWorkshop
     public void SelectPlan(int index)
     {
         if(index<0 || index>=PlanCount)throw new System.ArgumentOutOfRangeException(nameof(index));
+        if(HarvestOnly && index!=3)return;
         if(SelectedPlan==index && MapleRemaining==0)return;
         MapleRemaining=MapleProgress=0;
         SelectedPlan=index;Paused=false;CycleFinished=false;RestRemaining=ProducedSinceRest=0;

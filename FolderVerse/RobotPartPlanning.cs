@@ -43,7 +43,7 @@ public sealed class RobotPartPlanning
     public void Invalidate()=>_preview=null;
     internal PlannedPartMove WorkerReservation(long id) =>
         Orders.LastOrDefault(o=>o.RobotId==id && o.Role!=HangarReservation.None) is
-            {Role:HangarReservation.Worker} order ? order : null;
+            {} order && RobotWorld.WorkerRole(order.Role) ? order : null;
     internal void SetWorkerLane(long id, RobotWorkshop lane)
     {
         if (WorkerReservation(id) is not { } order) return;
@@ -181,13 +181,14 @@ public sealed class RobotPartPlanning
         var robot=stock.Nodes[source].Robots.Single(r=>r.Id==order.RobotId);
         if(order.ExpectedSource!=0 && robot.Parts!=order.ExpectedSource)throw new InvalidOperationException("前の組替予約が実施されていません");
         if(order.Role!=HangarReservation.None){
-            bool remove=order.Role switch {HangarReservation.Disposal=>robot.Disposal,HangarReservation.Defense=>robot.DefenseOnly,HangarReservation.Worker=>robot.FactoryWorker,_=>robot.InterceptOnly};
+            bool remove=order.Role switch {HangarReservation.Disposal=>robot.Disposal,HangarReservation.Defense=>robot.DefenseOnly,HangarReservation.Worker=>robot.FactoryWorker && !robot.HarvestWorker,HangarReservation.Harvest=>robot.HarvestWorker,_=>robot.InterceptOnly};
             var next=FreeRole(robot) with {Owner=order.Role==HangarReservation.Defense && !remove?order.Owner:robot.Owner,Disposal=order.Role==HangarReservation.Disposal && !remove,
-                DefenseOnly=order.Role==HangarReservation.Defense && !remove,InterceptOnly=order.Role==HangarReservation.Intercept && !remove,FactoryWorker=order.Role==HangarReservation.Worker && !remove,
+                DefenseOnly=order.Role==HangarReservation.Defense && !remove,InterceptOnly=order.Role==HangarReservation.Intercept && !remove,FactoryWorker=RobotWorld.WorkerRole(order.Role) && !remove,HarvestAssignment=order.Role==HangarReservation.Harvest && !remove,
                 DefenseFlag=order.Role==HangarReservation.Defense && !remove?new(order.Owner,target,world.Nodes.All[target].Owner):null};
-            bool eligible=order.Role==HangarReservation.Worker?stock.Training[order.Owner].WorkerEligible(next with {Disposal=false}):stock.Training[order.Owner].Eligible(next with {Disposal=false});
+            bool eligible=RobotWorld.WorkerRole(order.Role)?stock.Training[order.Owner].WorkerEligible(next with {Disposal=false}):stock.Training[order.Owner].Eligible(next with {Disposal=false});
             if(!remove && order.Role!=HangarReservation.Disposal && !eligible)throw new InvalidOperationException("予約する仕事の調練条件を満たしません");
-            if(!remove && order.Role==HangarReservation.Worker && stock.Workshops[target].BaseLineCount+stock.Nodes[target].Robots.Count(r=>r.FactoryWorker && r.Id!=robot.Id)>=stock.Workshops[target].LineLimit)throw new InvalidOperationException("工場作業員のレーンに空きがありません");
+            if(!remove && order.Role==HangarReservation.Harvest && !world.Robots.MapleSupplyEnabled)throw new InvalidOperationException("採取できません");
+            if(!remove && RobotWorld.WorkerRole(order.Role) && stock.Workshops[target].BaseLineCount+stock.Nodes[target].Robots.Count(r=>r.FactoryWorker && r.Id!=robot.Id)>=stock.Workshops[target].LineLimit)throw new InvalidOperationException("作業員のレーンに空きがありません");
             if(source!=target)Apply(world,stock,order with {Parts=robot.Parts,Role=HangarReservation.None},checkRoute);
             stock.Nodes[target].Replace(stock.Nodes[target].Robots.Select(r=>r.Id==robot.Id?next:r));return robot.Id;
         }
@@ -262,6 +263,8 @@ public sealed partial class RobotWorld
     internal RobotWorld PlanningCopy()
     {
         var result=new RobotWorld();result.Initialize(Nodes.Length,Training.Length);result.Training=Training;
+        result._mapleDeposits=_mapleDeposits?.ToArray();
+        result._mapleShipments=_mapleShipments?.ToList();
         for(int n=0;n<Nodes.Length;n++){
             result.Nodes[n]=Nodes[n].PlanningCopy();
             result.Workshops[n].AutoAssemblyDisabled=Workshops[n].AutoAssemblyDisabled;

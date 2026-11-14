@@ -42,9 +42,9 @@ public partial class Game1
         _ui.Batch.Draw(_robotFactoryIcon,new Rectangle(controls.X+28,controls.Y+170,31,31),Color.White);
         _ui.Text("産業ターン",new(controls.X+68,controls.Y+176),.39f,ink);
         _ui.Text("閉じる：Esc／枠の外をクリック",new(controls.X+9,controls.Y+227),.27f,ink);
-        _ui.Button(FactoryStopButton,"製造しない",line.SelectedPlan==3 && line.MapleRemaining==0?Accent:Muted,.45f);
+        _ui.Button(FactoryStopButton,line.HarvestOnly?"採取しない":"製造しない",line.SelectedPlan==3 && line.MapleRemaining==0?Accent:Muted,.45f);
         int deposit=_setup.Robots.MapleDeposit(node.Id);
-        _ui.Button(FactoryHarvestTab,_factoryHarvestPage?"製造候補へ":"素材の採取",
+        if(!line.HarvestOnly)_ui.Button(FactoryHarvestTab,_factoryHarvestPage?"製造候補へ":"素材の採取",
             _setup.Robots.MapleSupplyEnabled?new Color(120,86,64):Muted*.55f,.45f);
         if(_factoryHarvestPage)
         {

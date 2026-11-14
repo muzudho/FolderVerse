@@ -113,6 +113,28 @@ var cargo=supply.Robots;
 Check(cargo.MapleSupplyEnabled,"New materials worlds enable maple");
 var forest=supply.Nodes.All.First(n=>cargo.MapleDeposit(n.Id)>0 && FunctionalDeliveryRoutes.Targets(supply,n.Id).Length>0);
 int source=forest.Id,target=FunctionalDeliveryRoutes.Targets(supply,source)[0];
+var workerWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
+var workerStock=workerWorld.Robots;
+var harvestWorkshop=workerStock.Workshops[source];
+harvestWorkshop.LimitLines(harvestWorkshop.BaseLineCount+1);
+foreach(var resident in workerStock.Nodes[source].Robots.ToArray())workerStock.Nodes[source].Remove(resident.Id);
+var harvester=workerStock.Create(0,RobotParts.Complete);
+workerStock.Nodes[source].Add(harvester);
+Check(workerStock.PartPlanning.ReserveRole(workerWorld,source,harvester.Id,HangarReservation.Harvest,0),"Reserve a harvest worker");
+Check(workerStock.PartPlanning.Preview(workerWorld).Nodes[source].Robots.Single().HarvestWorker,"Reservation previews the harvest role");
+workerWorld.Campaign.FinishDomestic(workerWorld);
+var harvestWorkerLine=harvestWorkshop.ProductionLines.Last();
+Check(harvestWorkerLine.HarvestOnly && harvestWorkshop.WorkerAt(harvestWorkshop.ProductionLines.Length-1)==harvester.Id,"Delivery activates a dedicated harvest lane");
+harvestWorkerLine.SelectPlan(0);
+Check(!harvestWorkerLine.Manufacturing,"The harvest worker lane cannot manufacture");
+harvestWorkerLine.SelectMapleHarvest(1);
+for(int i=0;i<IndustryTime.UnitsPerTurn;i++)workerStock.AdvanceIndustry(_=>0,n=>n!=source);
+Check(workerStock.Nodes[source].MapleUnits==16,"The added lane harvests one load through industry");
+var workerReload=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(workerWorld));
+Check(workerReload.Robots.Workshops[source].ProductionLines.Last().HarvestOnly &&
+    workerReload.Robots.Nodes[source].Robots.Single(r=>r.Id==harvester.Id).HarvestWorker,"Harvest assignment survives save and load");
+Check(workerStock.ToggleReservation(source,harvester.Id,HangarReservation.Harvest) &&
+    harvestWorkshop.ProductionLines.Length==harvestWorkshop.BaseLineCount,"Removing the harvest worker removes only their lane");
 foreach(var workshop in cargo.Workshops)
     foreach(var line in workshop.ProductionLines)line.SelectPlan(3);
 int deposit=cargo.MapleDeposit(source);

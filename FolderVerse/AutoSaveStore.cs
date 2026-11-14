@@ -154,8 +154,8 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorld) && field.Name=="<DirectDelivery>k__BackingField"){field.SetValue(value,new RobotDirectDelivery());continue;}
                     if(type==typeof(RobotTransport) && field.Name=="_directTransfers"){field.SetValue(value,Array.Empty<RobotShipment>());continue;}
                     if(type==typeof(RobotTransport) && field.Name=="_directOwners"){field.SetValue(value,new Dictionary<long,int>());continue;}
-                    if(type==typeof(Robot) && new[]{"<DefenseOnly>k__BackingField","<FactoryWorker>k__BackingField"}.Contains(field.Name))continue;
-                    if(type==typeof(RobotWorkshop) && new[]{"_baseLineCount","_lineLimit","_workerLines"}.Contains(field.Name))continue;
+                    if(type==typeof(Robot) && new[]{"<DefenseOnly>k__BackingField","<FactoryWorker>k__BackingField","<HarvestAssignment>k__BackingField"}.Contains(field.Name))continue;
+                    if(type==typeof(RobotWorkshop) && new[]{"_baseLineCount","_lineLimit","_workerLines","<HarvestOnly>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(RobotWorkshop) && field.Name=="<WaitingProductionTurns>k__BackingField")continue;
                     if(type==typeof(RobotWorkshop) && field.Name is "<DoNotRepeat>k__BackingField" or "<CycleFinished>k__BackingField")continue;
                     if(type==typeof(RobotWorkshop) && field.Name=="<IntakeTarget>k__BackingField")continue;

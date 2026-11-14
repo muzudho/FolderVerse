@@ -17,6 +17,8 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
     public int ShoeOwner=>Parts==RobotParts.Complete && DefenseOnly?DefenseFlag?.Commander??Owner:-1;
     public Robot WithoutDefenseReservation()=>this with {DefenseOnly=false,DefenseFlag=null};
     public bool FactoryWorker {get;init;}
+    public bool HarvestAssignment {get;init;}
+    public bool HarvestWorker=>FactoryWorker && HarvestAssignment;
     public long? LongDeliveryNumber {get;init;}
     public int? ReturnHomeCommander {get;init;}
     public string ReturnHomeStatus {get;init;}
