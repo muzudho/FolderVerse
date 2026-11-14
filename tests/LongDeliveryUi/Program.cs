@@ -56,6 +56,24 @@ sealed class CheckLongUi:Game1
         var globe=(WorldPreview)Get("_world");Call("FocusGlobePosition",w.Routes.WhirlpoolCenter(w.Routes.Whirlpools[0]));globe.GlobeZoom=2;
         DrawShot("nada-globe",()=>{var batch=(SpriteBatch)Get("_spriteBatch");batch.End();globe.Draw((float)Get("_yaw"),(float)Get("_pitch"),0,false,true);batch.Begin();});
         DrawShot("nada-whirlpool-object",()=>SeaWhirlpoolArt.Draw((UiPainter)Get("_ui"),p=>new Vector2(960,540)+p*350));
+        w.EquipmentMode=RobotEquipmentMode.Materials;
+        typeof(RobotWorld).GetMethod("InitializeMapleSupply",F)!.Invoke(w.Robots,new object[]{w});
+        var maple=w.Nodes.All.First(n=>w.Robots.MapleDeposit(n.Id)>=4);
+        var deposits=(int[])typeof(RobotWorld).GetField("_mapleDeposits",F)!.GetValue(w.Robots)!;
+        var mapleSurface=w.Cells[maple.Cell];
+        var mapleNet=(CubeNet)Get("_net");
+        var mapleDraw=typeof(CubeNet).GetMethod("DrawMapleDeposit",F)!;
+        foreach(bool isGlobe in new[]{false,true})
+        foreach(int loads in new[]{0,1,2,3,4,12}){
+            deposits[maple.Id]=loads;
+            Vector2 Project(Vector3 p){
+                var d=p-mapleSurface.Center;
+                return new Vector2(960,540)+new Vector2(Vector3.Dot(d,mapleSurface.U),
+                    Vector3.Dot(d,mapleSurface.V)-Vector3.Dot(d,mapleSurface.Normal)*.75f)*400;
+            }
+            DrawShot($"maple-{isGlobe}-{loads}",()=>mapleDraw.Invoke(mapleNet,new object[]{Get("_ui"),w,maple,(Func<Vector3,Vector2>)Project,isGlobe}));
+        }
+        w.EquipmentMode=RobotEquipmentMode.Legacy;
         var iceCell=w.Cells.OrderByDescending(c=>Enumerable.Range(0,100).Count(i=>w.Routes.PackIceAt(c.Id,new(i%10,i/10)))).First();
         var iceTexture=(Texture2D)typeof(CubeNet).GetMethod("IceTexture",F)!.Invoke(Get("_net"),new object[]{Get("_ui"),w,iceCell.Id})!;
         DrawShot("polar-ice-floes",()=>((UiPainter)Get("_ui")).Batch.Draw(iceTexture,new Rectangle(600,180,720,720),Color.White));

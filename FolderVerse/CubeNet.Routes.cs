@@ -148,6 +148,7 @@ public sealed partial class CubeNet
         DrawLandmarks(ui,world,cell,p=>project(p),pulse);
         foreach (var node in world.Nodes.InCell(cell).Where(n=>NodeVisible(world,n)))
         {
+            DrawMapleDeposit(ui,world,node,project,globe:false);
             var position=world.Routes.Position(cell,node.Center);
             var at=project(position);
             float radius=MapPuckRadius(node,Vector2.Distance(at,project(position+world.Cells[cell].U)));

@@ -115,7 +115,7 @@ public sealed partial class CubeNet
         CountryEmblemArt.Draw(ui,new(r.Center.X-emblemSide/2,emblemTop,emblemSide,emblemSide),emblem,secondary??color,dim?FocusBrightness:1);
     }
     private Texture2D _mapRobotTexture;
-    public void DisposeRobotTexture(){DisposeIceTextures();_mapRobotTexture?.Dispose();_mapRobotTexture=null;}
+    public void DisposeRobotTexture(){DisposeIceTextures();_mapRobotTexture?.Dispose();_mapRobotTexture=null;_mapleMapArt?.Dispose();_mapleMapArt=null;}
     private static Texture2D LoadMapRobot(GraphicsDevice device)
     {
         using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","robot-map-toy-v001.png"));

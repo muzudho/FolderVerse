@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using System.Reflection;
 sealed class WorkerPlansUi:Game1
 {
+ Color[] workerFlagBaseline=null!;
  const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;int frame,node,choice;long workerId;WorldSetup w=null!;RobotWorkshop line=null!;
  object Get(string n)=>typeof(Game1).GetField(n,F)!.GetValue(this)!;
  void Set(string n,object value)=>typeof(Game1).GetField(n,F)!.SetValue(this,value);
@@ -192,7 +193,19 @@ sealed class WorkerPlansUi:Game1
    ((WorldPreview)Get("_world")).ShowSetup(w,true);
    Call("OpenNodeInspector",node);Call("OpenNodeFactory");Call("UpdateDomesticSlide",1f);
   }
+  if(frame==13){
+   int origin=line.WorkerSnapshot!.Origin(RobotParts.Head);
+   w.SetCountryAppearance(origin,w.ColorIndices[origin],w.CountrySecondaryColor(origin),(w.CountryPattern(origin)+1)%5);
+  }
   base.Draw(time);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"worker-plans-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);
-  if(frame++==12){Console.WriteLine("PASS: material album, hangar, harvest warnings, reassignment and mixed factory worker rendering.");Exit();}
+  if(frame>=12){
+   var canvas=(Rectangle)Call("CanvasBounds");
+   int x=canvas.X+166*canvas.Width/1920,y=canvas.Y+628*canvas.Height/1080;
+   int width=87*canvas.Width/1920,height=48*canvas.Height/1080;
+   var head=Enumerable.Range(y,height).SelectMany(row=>pixels.Skip(row*p.BackBufferWidth+x).Take(width)).ToArray();
+   if(frame==12)workerFlagBaseline=head;
+   else Check(!head.SequenceEqual(workerFlagBaseline!),"Changing only the head's country pattern changes the factory worker's head pixels");
+  }
+  if(frame++==13){Console.WriteLine("PASS: material album, hangar, harvest warnings, reassignment and mixed factory worker flag rendering.");Exit();}
  }
 }

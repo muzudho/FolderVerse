@@ -22,6 +22,7 @@ public sealed partial class CubeNet
             foreach (var node in setup.Nodes.InCell(cell.Id))
             {
                 if (!NodeVisible(setup,node)) continue;
+                if(ShowRoutes)DrawMapleDeposit(ui,setup,node,Project,globe:true);
                 var position = setup.Routes.Position(node.Cell,node.Center);
                 position+=cell.Normal*WorldTerrain.ReliefAt(cell,position,offset);
                 var at = Project(position);
