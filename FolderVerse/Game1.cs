@@ -247,7 +247,7 @@ public partial class Game1 : Game
         if(IsStatusScreen && _populationCell>=0 && _nodeAssemblyOpen && (NodeInspectorBounds.Contains(_pointer) || _hangarDrag.HasValue || _hangarPanning || escape))
         {if(active)NodeAssemblyInput(mouse,click,escape);else _hangarDrag=null;_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Pocket)
-        {if(active)PocketInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        {PocketMouseInput(mouse,keyboard,click,escape,active);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Transport)
         {UpdateTransport(elapsed,active && (enter || click && BattleContinue.Contains(_pointer)),gameTime.TotalGameTime.TotalSeconds);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Industry)

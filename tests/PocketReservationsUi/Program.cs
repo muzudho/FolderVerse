@@ -1,6 +1,7 @@
 using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using System.Reflection;
 using var game=new PocketChecks();game.Run();
 sealed class PocketChecks:Game1
@@ -48,6 +49,31 @@ sealed class PocketChecks:Game1
   if(frame++==0){var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();return;}
   Set("_pointer",((Rectangle)typeof(Game1).GetMethod("PocketTransferButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{true})!).Center);Call("PocketInput",true,false);
   Check(world.Robots.Retinues[0].Robots.Any(r=>r.Id==movable),"Normal pocket transfer still succeeds");
+  MouseState Mouse(ButtonState left=ButtonState.Released,ButtonState right=ButtonState.Released,int wheel=0)
+   =>new(0,0,wheel,left,ButtonState.Released,right,ButtonState.Released,ButtonState.Released);
+  void Input(Point point,MouseState mouse,bool click=false){
+   Set("_pointer",point);Call("PocketMouseInput",mouse,new KeyboardState(),click,false,true);Set("_previousMouse",mouse);
+  }
+  Rectangle View(int side,int slot)=>(Rectangle)Call("PocketViewCard",side,slot);
+  Input(View(0,0).Center,Mouse(ButtonState.Pressed),true);
+  Input(View(1,11).Center,Mouse());
+  Check(world.Robots.Nodes[node].Robots.Any(r=>r.Id==movable) && world.Robots.Retinues[0].TotalCapacity==12,
+    "Dragging to an empty location slot deploys the robot and preserves pocket capacity");
+  Input(View(1,11).Center,Mouse(ButtonState.Pressed),true);
+  Input(View(0,5).Center,Mouse());
+  Check(world.Robots.Retinues[0].Robots.Any(r=>r.Id==movable),"Dragging back transfers the robot into the pocket");
+  Input(View(0,0).Center,Mouse(wheel:120));
+  Check(((int[])Get("_pocketZoom")).SequenceEqual(new[]{1,2}),"Wheel zoom is independent for each panel");
+  Point start=View(0,2).Center;
+  Input(start,Mouse(right:ButtonState.Pressed,wheel:120));
+  Input(start-new Point(450,0),Mouse(right:ButtonState.Pressed,wheel:120));
+  Check(((Point[])Get("_pocketScroll"))[0].X==2,"Right drag reveals the pocket's far column");
+  var sample=world.Robots.Retinues[0].Robots.Single(r=>r.Id==movable) with {HeadMaterial=RobotMaterial.Maple};
+  var glyph=new Rectangle(0,0,48,67);
+  world.EquipmentMode=RobotEquipmentMode.Legacy;
+  Check(!(bool)Call("UsesMapleArt",sample,RobotParts.Head),"Legacy pocket does not select maple art");
+  world.EquipmentMode=RobotEquipmentMode.Materials;
+  Check((bool)Call("HasRobotHeadArt",glyph,sample,false,true),"The default pocket glyph size supports material head artwork");
   Console.WriteLine("PASS: reservation reasons, blocked selection and message, normal transfer, full/half-size pocket rendering.");Exit();
  }
 }

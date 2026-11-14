@@ -150,6 +150,16 @@ restoredSupply.Campaign.FinishDomestic(restoredSupply);
 Check(restoredCargo.Nodes[target].MapleUnits==16 && restoredCargo.MapleShipments.Count==0 &&
     !receivingLine.WaitingForMaple(restoredCargo,target) && receivingLine.ProductionAge==0,
     "Delivery must release the material wait without spending an industry step");
+var receivingRecipe=receivingLine.CurrentProductionPlan.Preview(0);
+int receivingCost=RobotWorld.MapleCost(receivingRecipe);
+for(int unit=0;unit<receivingLine.ProductionPeriod;unit++)
+    production.Invoke(receivingFactory,new object[]{restoredCargo,target,0});
+var receivingIntake=restoredCargo.ProductionIntakes.Single(i=>ReferenceEquals(i.Line,receivingLine));
+Check(receivingCost>0 && restoredCargo.Nodes[target].MapleUnits==16-receivingCost &&
+    receivingIntake.Product.Parts==receivingRecipe.Parts &&
+    new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(p=>(receivingRecipe.Parts&p)!=0)
+        .All(p=>receivingIntake.Product.Material(p)==receivingRecipe.Material(p)),
+    "The next industry cycle consumes the delivered maple and queues the selected product");
 var resolveMaple=typeof(RobotWorld).GetMethod("ResolveMapleShipments",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
 resolveMaple.Invoke(cargo,new object[]{supply});
 Check(cargo.Nodes[source].MapleUnits==0 && cargo.Nodes[target].MapleUnits==16 && cargo.MapleShipments.Count==0,"Shipment duplicated or lost cargo");
