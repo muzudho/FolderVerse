@@ -48,14 +48,34 @@ sealed class FunctionTransferUi:Game1
         }).ToArray();
         var candidates=ReadMarkers();
         var first=candidates.First(m=>candidates.Any(n=>n.Source==m.Target && n.Target==m.Source && !n.Bounds.Intersects(m.Bounds)));
+        w.EquipmentMode=RobotEquipmentMode.Materials;
+        typeof(RobotWorld).GetMethod("InitializeMapleSupply",F)!.Invoke(w.Robots,new object[]{w});
+        var package=new MaplePackage(12345,16);
+        typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(w.Robots.Nodes[first.Source],new object[]{new[]{package}});
+        Check(w.Robots.ReserveMapleShipment(w,first.Source,first.Target,package.Id),"Reserve maple before opening the modal");
         Check((bool)Call("MapOverlayClick",first.Bounds.Center,false),"Map arrow responds");
         var orders=w.Campaign.FunctionTransfers.Orders;
         Check(orders.Count==0 && Get("_transferChoice")!=null,"Arrow opens the modal before reserving");
+        Check((int)Call("MapleShipmentsAffectedByTransfer",first.Source)==1,"Full transfer warns about the pending maple shipment");
+        var graphics=(GraphicsDeviceManager)Get("_graphics");
+        int width=graphics.PreferredBackBufferWidth,height=graphics.PreferredBackBufferHeight;
+        graphics.PreferredBackBufferWidth=800;graphics.PreferredBackBufferHeight=450;graphics.ApplyChanges();
+        base.Draw(new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero));
+        var modalPixels=new Color[800*450];GraphicsDevice.GetBackBufferData(modalPixels);
+        using(var image=new Texture2D(GraphicsDevice,800,450)){
+            image.SetData(modalPixels);
+            using var file=File.Create(Path.Combine(AppContext.BaseDirectory,"maple-transfer-modal-800.png"));
+            image.SaveAsPng(file,800,450);
+        }
+        graphics.PreferredBackBufferWidth=width;graphics.PreferredBackBufferHeight=height;graphics.ApplyChanges();
         Check((bool)Call("MapOverlayClick",Point.Zero,true) && Get("_transferChoice")==null && orders.Count==0,"Escape cancels only the modal");
         Call("BuildFunctionTransferMarkers");
         Call("MapOverlayClick",first.Bounds.Center,false);
         Call("MapOverlayClick",new Point(960,575),false);
         Check(orders.Count==1 && orders[0].Source==first.Source && orders[0].Target==first.Target,"Arrow reserves the indicated direction");
+        Check(((string)Get("_functionTransferMessage")).Contains("楓の直送予約 1件"),"Reservation message repeats the warning");
+        w.Robots.CancelMapleShipment(first.Source,package.Id);
+        typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(w.Robots.Nodes[first.Source],new object[]{Array.Empty<MaplePackage>()});
         Check((bool)Get("_functionTransferMap"),"Reservation leaves the mode open");
         Call("BuildFunctionTransferMarkers");
         var updated=ReadMarkers();

@@ -14,9 +14,10 @@ public partial class Game1
     private readonly string _bgmSettingsPath = Path.Combine(Environment.GetFolderPath(
         Environment.SpecialFolder.LocalApplicationData),"FolderVerse","bgm-volume.txt");
     private bool _bgmMenuOpen, _bgmDragging, _bgmChanged;
-    private bool _bgmEnabled = true;
     private int _bgmPercent = 100;
-    private float BgmGain => _bgmEnabled ? _bgmPercent / 100f : 0;
+    private int _bgmRestorePercent = 100;
+    private int _bgmDragStartPercent;
+    private float BgmGain => _bgmPercent / 100f;
 
     private void LoadBgmSettings()
     {
@@ -26,8 +27,8 @@ public partial class Game1
             if (int.TryParse(File.ReadAllText(_bgmSettingsPath),out int value) &&
                 value is >= -100 and <= 100 && value != 0)
             {
-                _bgmEnabled = value > 0;
-                _bgmPercent = Math.Abs(value);
+                _bgmRestorePercent = Math.Abs(value);
+                _bgmPercent = Math.Max(0,value);
             }
         }
         catch (IOException) { }
@@ -41,7 +42,7 @@ public partial class Game1
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_bgmSettingsPath));
-            File.WriteAllText(_bgmSettingsPath,(_bgmEnabled ? _bgmPercent : -_bgmPercent).ToString());
+            File.WriteAllText(_bgmSettingsPath,(_bgmPercent > 0 ? _bgmPercent : -_bgmRestorePercent).ToString());
         }
         catch (IOException error) { RecordFailure(error,"bgm_settings"); }
         catch (UnauthorizedAccessException error) { RecordFailure(error,"bgm_settings"); }
@@ -67,19 +68,25 @@ public partial class Game1
         int next = _bgmPercent;
         if (toggle)
         {
-            _bgmEnabled = !_bgmEnabled;
+            next = _bgmPercent == 0 ? _bgmRestorePercent : 0;
             _bgmDragging = false;
         }
-        if (_bgmEnabled)
+        else
         {
-            if (click && BgmSlider.Contains(_pointer)) _bgmDragging = true;
-            if (_bgmDragging) next = 1 + (int)MathF.Round(99 * Math.Clamp(
+            if (click && BgmSlider.Contains(_pointer))
+            {
+                _bgmDragging = true;
+                _bgmDragStartPercent = _bgmPercent;
+            }
+            if (_bgmDragging) next = (int)MathF.Round(100 * Math.Clamp(
                 (_pointer.X - BgmSlider.Left) / (float)(BgmSlider.Width - 1),0,1));
-            else if (Pressed(Keys.Left)) next = Math.Max(1,next - 1);
+            else if (Pressed(Keys.Left)) next = Math.Max(0,next - 1);
             else if (Pressed(Keys.Right)) next = Math.Min(100,next + 1);
         }
-        if (toggle || next != _bgmPercent)
+        if (next != _bgmPercent)
         {
+            if (next == 0)
+                _bgmRestorePercent = _bgmDragging && _bgmDragStartPercent > 0 ? _bgmDragStartPercent : _bgmPercent;
             _bgmPercent = next;
             _bgmChanged = true;
             _conquestMusic?.SetGain(BgmGain);
@@ -94,13 +101,14 @@ public partial class Game1
         _ui.Box(new(0,0,1920,1080),Color.Black*.65f);
         _ui.Box(BgmPanel,new Color(24,45,57));
         _ui.Center("BGM音量",new(720,350,480,60),.68f,Cream);
-        _ui.Button(BgmToggle,_bgmEnabled ? "BGM　オン" : "BGM　オフ",_bgmEnabled ? Accent : Muted,.52f);
-        _ui.Center(_bgmEnabled ? $"{_bgmPercent}%" : $"オフ（{_bgmPercent}%）",new(730,510,460,40),.48f,Cream);
-        int x = BgmSlider.Left + (int)MathF.Round((BgmSlider.Width - 1) * (_bgmPercent - 1) / 99f);
+        bool enabled = _bgmPercent > 0;
+        _ui.Button(BgmToggle,enabled ? "BGM　オン" : "BGM　オフ",enabled ? Accent : Muted,.52f);
+        _ui.Center($"{_bgmPercent}%",new(730,510,460,40),.48f,Cream);
+        int x = BgmSlider.Left + (int)MathF.Round((BgmSlider.Width - 1) * BgmGain);
         int y = BgmSlider.Center.Y;
         _ui.Box(new(BgmSlider.Left,y-4,BgmSlider.Width,8),Muted);
-        _ui.Box(new(BgmSlider.Left,y-4,x-BgmSlider.Left+1,8),_bgmEnabled ? Accent : Muted);
-        _ui.Box(new(x-8,y-15,16,30),_bgmEnabled ? Cream : Muted);
+        if (enabled) _ui.Box(new(BgmSlider.Left,y-4,x-BgmSlider.Left+1,8),Accent);
+        _ui.Box(new(x-8,y-15,16,30),Cream);
         _ui.Button(BgmBack,"戻る / Esc",Muted,.44f);
     }
 }
