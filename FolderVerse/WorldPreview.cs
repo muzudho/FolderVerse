@@ -30,6 +30,37 @@ public sealed partial class WorldPreview : IDisposable
     public Matrix GlobeRock {get;set;}=Matrix.Identity;
     public Matrix DisplayOrientation(float yaw,float pitch)=>ViewOrientation(yaw,pitch)*GlobeRock;
     public static Matrix Orientation(float yaw,float pitch)=>Matrix.CreateRotationX(pitch)*Matrix.CreateRotationY(yaw);
+    private static readonly Quaternion[] FaceTourPoses={
+        Quaternion.Identity,
+        Quaternion.CreateFromAxisAngle(Vector3.Up,-MathHelper.PiOver2),
+        Quaternion.CreateFromAxisAngle(Vector3.Right,MathHelper.PiOver2),
+        Quaternion.CreateFromAxisAngle(Vector3.Up,MathHelper.Pi),
+        Quaternion.CreateFromAxisAngle(Vector3.Up,MathHelper.PiOver2),
+        Quaternion.CreateFromAxisAngle(Vector3.Right,-MathHelper.PiOver2)
+    };
+    public static Quaternion FaceTour(Quaternion start,double fraction)
+    {
+        float progress=(float)Math.Clamp(fraction,0,1)*(FaceTourPoses.Length+1);
+        int segment=Math.Min((int)progress,FaceTourPoses.Length);
+        var from=segment==0?start:FaceTourPoses[segment-1];
+        var to=segment==FaceTourPoses.Length?start:FaceTourPoses[segment];
+        return Quaternion.Slerp(from,to,MathHelper.SmoothStep(0,1,progress-segment));
+    }
+
+    public static Quaternion OpeningFaceTour(double fraction)
+    {
+        float progress=(float)Math.Clamp(fraction,0,1)*5;
+        int step=Math.Min((int)progress,4);
+        float turn=MathHelper.PiOver2*MathHelper.SmoothStep(0,1,progress-step);
+        if(step==0)return Quaternion.CreateFromAxisAngle(Vector3.Right,turn);
+
+        var pose=Matrix.CreateRotationX(MathHelper.PiOver2)*
+            Matrix.CreateRotationY((step-1)*MathHelper.PiOver2+(step<4?turn:0));
+        // Z is the viewing axis. Rotating around it would roll the same
+        // face in place, so pitch once more to bring the last face forward.
+        if(step==4)pose*=Matrix.CreateRotationX(turn);
+        return Quaternion.CreateFromRotationMatrix(pose);
+    }
 
     public WorldPreview(GraphicsDevice device)
     {

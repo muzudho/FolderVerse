@@ -177,14 +177,19 @@ public partial class Game1
         {
             var frame=new Rectangle(canvas.X+(int)((x-480)*canvas.Width/1920f),canvas.Y+(int)(210*canvas.Height/1080f),(int)(960*canvas.Width/1920f),(int)(565*canvas.Height/1080f));
             var clipped=Rectangle.Intersect(frame,canvas);
-            if(clipped.Width>0 && clipped.Height>0){GraphicsDevice.Viewport=new Viewport(clipped);planet.Draw(-.55f+(float)age*.09f,.3f,(float)age,false,true,frame);GraphicsDevice.Viewport=viewport;}
+            if(clipped.Width<=0 || clipped.Height<=0)return;
+            var previousPose=planet.ManualOrientation;
+            planet.ManualOrientation=WorldPreview.OpeningFaceTour((age-2)/3);
+            GraphicsDevice.Viewport=new Viewport(clipped);
+            try{planet.Draw(0,0,(float)age,false,true,frame);}
+            finally{GraphicsDevice.Viewport=viewport;planet.ManualOrientation=previousPose;}
         }
         if(_screenshots.CaptureAfterDraw(GraphicsDevice))StartScreenshotFeedback(time.TotalGameTime.TotalSeconds);
         DrawScreenshotFeedback(time.TotalGameTime.TotalSeconds);DrawFullscreenCursor();
     }
     private void DrawOpeningDimensions()
     {
-        _ui.Center($"星の大きさ / {_setup.HeadSystemName}",new(1490,145,360,44),.52f,Cream);
+        _ui.Center("星の大きさ",new(1490,145,360,44),.52f,Cream);
 
         // One scale for all three axes, with depth foreshortened in the projection.
         float unit=132f/Math.Max(_setup.Width,Math.Max(_setup.Height,_setup.Depth));

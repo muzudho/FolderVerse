@@ -102,19 +102,7 @@ public partial class Game1
                 if(_fortuneSliderDragging)
                     _robotScatterPercent=Math.Clamp((int)MathF.Round(100f*(_pointer.X-FortuneSlider.Left)/FortuneSlider.Width),0,100);
             }
-            // Visit all six face normals, then gracefully return to the starting pose.
-            var tour=new[]{_fortuneStartOrientation,
-                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,0)),
-                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(-MathHelper.PiOver2,0)),
-                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,MathHelper.PiOver2)),
-                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(MathHelper.Pi,0)),
-                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(MathHelper.PiOver2,0)),
-                Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(0,-MathHelper.PiOver2)),
-                _fortuneStartOrientation};
-            float progress=(float)Math.Clamp(_landAge/5,0,1)*(tour.Length-1);
-            int segment=Math.Min((int)progress,tour.Length-2);
-            float blend=MathHelper.SmoothStep(0,1,progress-segment);
-            _world.ManualOrientation=Quaternion.Slerp(tour[segment],tour[segment+1],blend);
+            _world.ManualOrientation=WorldPreview.FaceTour(_fortuneStartOrientation,_landAge/5);
             bool complete=FortuneSettingsAvailable
                 ? active && (enter || click && FortuneConfirm.Contains(_pointer))
                 : _landAge>=5;
