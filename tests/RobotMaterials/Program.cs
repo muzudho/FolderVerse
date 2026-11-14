@@ -152,6 +152,7 @@ harvest.SetReservedSlots(0);
 for(int i=0;i<IndustryTime.UnitsPerTurn;i++)cargo.AdvanceIndustry(_=>0,n=>n!=source);
 var package=cargo.Nodes[source].MaplePackages.Single();
 Check(package.Units==16 && cargo.MapleDeposit(source)==deposit-1 && harvestLine.MapleRemaining==0,"Harvesting must exchange one deposit for one load");
+Check(cargo.MaplePlantingCount(source)==1,"A successful harvest leaves one planting marker");
 harvestLine.SelectMapleHarvest(1);
 Check(cargo.MapleAvailableToPlan(source,null)==deposit-2,"Harvest orders must share the remaining deposit");
 Check(cargo.ReserveMapleShipment(supply,source,target,package.Id),"Adjacent maple shipment unavailable");
@@ -160,6 +161,7 @@ Check(restoredSupply.Robots.MapleShipments.Single().PackageId==package.Id && res
 Check(restoredSupply.Robots.Workshops[source].ProductionLines[0].MapleRemaining==1,"Harvest order lost on save");
 // A reserved load must become available to the destination lane only after delivery.
 var restoredCargo=restoredSupply.Robots;
+Check(restoredCargo.MaplePlantingCount(source)==1,"Planting markers survive a save round trip");
 var receivingFactory=restoredCargo.Workshops[target];
 for(int seed=0;receivingFactory.ProductionLines.Length==0;seed++)
     receivingFactory.GenerateLines(seed,RobotEquipmentMode.Materials);

@@ -203,6 +203,7 @@ public sealed partial class RobotWorld
     {Validate(owner,parts);return new(_nextId++,owner,parts,role,disposal);}
     public void Initialize(int nodeCount,int rulerCount)
     {
+        _mapleHarvested=null;
         LongDelivery.Reset();ReturningRobots.Clear();_workerPlanWorldSeed=0;DirectDelivery=new();Reservations=null;ReservationSource=null;IndustryTurn=0;DomesticPersuasionTurns.Clear();
         _domesticPreparedTurn=-1;Training=Enumerable.Range(0,rulerCount).Select(_=>new RobotTraining()).ToArray();_nextId=1;Nodes=Enumerable.Range(0,nodeCount).Select(_=>new RobotStore()).ToArray();
         Retinues=Enumerable.Range(0,rulerCount).Select(_=>new RobotStore()).ToArray();

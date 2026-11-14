@@ -83,6 +83,21 @@ sealed class CheckLongUi:Game1
             Check(images.Select(path=>Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))))
                 .Distinct().Count()==6,"Each maple deposit state changes the complete map rendering");
         }
+        deposits[maple.Id]=0;
+        var harvested=new int[deposits.Length];
+        harvested[maple.Id]=8;
+        typeof(RobotWorld).GetField("_mapleHarvested",F)!.SetValue(w.Robots,harvested);
+        DrawShot("maple-planting-net",()=>mapleNet.Draw((UiPainter)Get("_ui"),w,panel,-1,0));
+        DrawShot("maple-planting-globe",()=>{
+            var ui=(UiPainter)Get("_ui");
+            float yaw=(float)Get("_yaw"),pitch=(float)Get("_pitch");
+            ui.Batch.End();globe.Draw(yaw,pitch,0,false,true);ui.Batch.Begin();
+            mapleNet.DrawGlobeLayers(ui,w,globe,panel,yaw,pitch,0);
+        });
+        foreach(var (name,mode) in new[]{("net",false),("globe",true)})
+            Check(!File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,$"maple-planting-{name}.png"))
+                .SequenceEqual(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,$"maple-{mode}-0.png"))),
+                "Planting scenery remains visible after the deposit is exhausted");
         w.EquipmentMode=RobotEquipmentMode.Legacy;
         var iceCell=w.Cells.OrderByDescending(c=>Enumerable.Range(0,100).Count(i=>w.Routes.PackIceAt(c.Id,new(i%10,i/10)))).First();
         var iceTexture=(Texture2D)typeof(CubeNet).GetMethod("IceTexture",F)!.Invoke(Get("_net"),new object[]{Get("_ui"),w,iceCell.Id})!;

@@ -264,6 +264,7 @@ public sealed partial class RobotWorld
     {
         var result=new RobotWorld();result.Initialize(Nodes.Length,Training.Length);result.Training=Training;
         result._mapleDeposits=_mapleDeposits?.ToArray();
+        result._mapleHarvested=_mapleHarvested?.ToArray();
         result._mapleShipments=_mapleShipments?.ToList();
         for(int n=0;n<Nodes.Length;n++){
             result.Nodes[n]=Nodes[n].PlanningCopy();

@@ -14,10 +14,18 @@ public sealed partial class RobotWorld
 {
     public const int MaplePackageSize=16;
     private int[] _mapleDeposits;
+    private int[] _mapleHarvested;
     private List<MapleShipment> _mapleShipments;
     public bool MapleSupplyEnabled=>_mapleDeposits!=null;
     public IReadOnlyList<MapleShipment> MapleShipments=>_mapleShipments??(IReadOnlyList<MapleShipment>)Array.Empty<MapleShipment>();
     public int MapleDeposit(int node)=>_mapleDeposits?[node]??0;
+    public int MaplePlantingCount(int node)=>(_mapleHarvested?[node]??0) switch
+    {
+        0=>0,
+        <4=>1,
+        <8=>2,
+        _=>3
+    };
 
     internal void InitializeMapleSupply(WorldSetup world)
     {
@@ -54,6 +62,7 @@ public sealed partial class RobotWorld
         if(!store.TryReceiveMaple(new(_nextId,loads*MaplePackageSize),reserved,id=>MapleShipping(node,id)))return false;
         _nextId++;
         _mapleDeposits[node]-=loads;
+        (_mapleHarvested??=new int[Nodes.Length])[node]+=loads;
         return true;
     }
 
