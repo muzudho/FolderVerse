@@ -618,7 +618,7 @@ public partial class Game1 : Game
         }); _ui.Box(new(MapViewBounds.X-20,142,MapViewBounds.Width+40,750),new(20,42,54));
         _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+_setup.FaceName(_net.CenterFace)+" が中心",new(991,156),0.68f,Cream);
         int geographicFace=_setup.GeographicFace(_net.CenterFace);
-        string poleAxis=_setup.PolarAxis switch {0=>"＋X（碗）",2=>"＋Z",_=>"＋Y"};
+        string poleAxis=_setup.PolarAxis switch {0=>"＋X（魚の頭）",2=>"＋Z（犬の頭）",_=>"＋Y（猿の頭）"};
         string north=geographicFace is 2 or 3
             ? (geographicFace==2?"北極面":"南極面")+"：上は基準経線"
             : $"{_setup.HeadSystemName} / 地星の北＝{poleAxis}";

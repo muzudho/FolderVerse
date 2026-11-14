@@ -119,6 +119,6 @@ public partial class Game1
         if(OrientationGlobe){
             for(int axis=0;axis<3;axis++){_ui.Text("0",new(reset.X+8+axis*25,reset.Y+4),.5f,AxisColors[axis]);if(axis<2)_ui.Text(",",new(reset.X+23+axis*25,reset.Y+4),.5f,Cream);}
         }
-        if(OrientationGlobe && OrientationResetButton.Contains(_pointer))_ui.Text("頭を上へ、腹を手前へ",new Vector2(toy.Center.X-130,toy.Bottom+66),.3f,Cream);
+        if(OrientationGlobe && OrientationResetButton.Contains(_pointer))_ui.Text("地星儀の向きを戻す",new Vector2(toy.Center.X-130,toy.Bottom+66),.3f,Cream);
     }
 }

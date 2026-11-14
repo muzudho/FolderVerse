@@ -73,7 +73,10 @@ public partial class Game1
         var viewport=GraphicsDevice.Viewport;
         var robotBounds=new Rectangle(toy.X+16+(int)_orientationDragOffset.X,toy.Y+4+(int)_orientationDragOffset.Y,toy.Width-32,toy.Height-30);
         GraphicsDevice.Viewport=OrientationViewport(robotBounds,canvas);
-        _orientationToy.Draw(_yaw,_pitch,OrientationGlobe?(IsStatusScreen?_world.DisplayOrientation(_yaw,_pitch):_world.ViewOrientation(_yaw,_pitch)):_net.BellyOrientation);
+        var pose=OrientationGlobe
+            ? (IsStatusScreen?_world.DisplayOrientation(_yaw,_pitch):_world.ViewOrientation(_yaw,_pitch))
+            : _net.BellyOrientation;
+        _orientationToy.Draw((PlanetHeadSystem)_setup.PolarAxis,pose);
         GraphicsDevice.Viewport=viewport;
         _spriteBatch.Begin(transformMatrix:transform);
         for(int axis=0;axis<3;axis++){
