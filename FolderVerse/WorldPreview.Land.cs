@@ -5,6 +5,34 @@ using Microsoft.Xna.Framework.Graphics;
 
 public sealed partial class WorldPreview
 {
+    private void DrawLandBacklight(IEnumerable<SurfaceCell> selection,float time)
+    {
+        float pulse=.5f+.5f*System.MathF.Sin(time*MathHelper.TwoPi/2.4f);
+        Color tint=new Color(64,219,235)*MathHelper.Lerp(.20f,.49f,pulse);
+        _device.BlendState=BlendState.AlphaBlend;
+        _device.DepthStencilState=DepthStencilState.DepthRead;
+        _effect.LightingEnabled=false;
+        foreach(var cell in selection)
+        {
+            var a=cell.Origin+cell.Normal*(WorldTerrain.MaxRelief+.003f);
+            var b=a+cell.U;var c=b+cell.V;var d=a+cell.V;
+            _selectionVertices[0]=new(a,tint,cell.Normal);
+            _selectionVertices[1]=new(b,tint,cell.Normal);
+            _selectionVertices[2]=new(c,tint,cell.Normal);
+            _selectionVertices[3]=new(a,tint,cell.Normal);
+            _selectionVertices[4]=new(c,tint,cell.Normal);
+            _selectionVertices[5]=new(d,tint,cell.Normal);
+            foreach(var pass in _effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                _device.DrawUserPrimitives(PrimitiveType.TriangleList,_selectionVertices,0,2);
+            }
+        }
+        _effect.LightingEnabled=true;
+        _device.BlendState=BlendState.Opaque;
+        _device.DepthStencilState=DepthStencilState.Default;
+    }
+
     public static Color LandTerritoryColor(Color nation,TerrainKind terrain)=>terrain switch
     {
         TerrainKind.Sea=>Color.Lerp(nation,new Color(78,88,104),.55f),

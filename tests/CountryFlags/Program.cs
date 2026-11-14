@@ -43,7 +43,7 @@ sealed class FlagGame:Game1
  protected override void Update(GameTime time){}
  void CheckTerrain(){
   using var preview=new WorldPreview(GraphicsDevice);preview.ShowLandConquest(w);
-  Color[] Colours(){var viewport=GraphicsDevice.Viewport;using var target=new RenderTarget2D(GraphicsDevice,320,320,false,SurfaceFormat.Color,DepthFormat.Depth24);GraphicsDevice.SetRenderTarget(target);GraphicsDevice.Clear(Color.Black);preview.Draw(.4f,.3f,0,false);GraphicsDevice.SetRenderTarget(null);GraphicsDevice.Viewport=viewport;var pixels=new Color[320*320];target.GetData(pixels);return pixels;}
+  Color[] Colours(float time=0,IEnumerable<SurfaceCell> selected=null){var viewport=GraphicsDevice.Viewport;using var target=new RenderTarget2D(GraphicsDevice,320,320,false,SurfaceFormat.Color,DepthFormat.Depth24);GraphicsDevice.SetRenderTarget(target);GraphicsDevice.Clear(Color.Black);preview.Draw(.4f,.3f,time,false,landSelection:selected);GraphicsDevice.SetRenderTarget(null);GraphicsDevice.Viewport=viewport;var pixels=new Color[320*320];target.GetData(pixels);return pixels;}
   var before=Colours();var owners=(int[])w.Owners.Clone();Array.Fill(w.Owners,-1);preview.ShowLandConquest(w);
   Check(before.SequenceEqual(Colours()),"Claimed and unclaimed territory must retain identical terrain colours");Array.Copy(owners,w.Owners,owners.Length);
   Array.Fill(w.Owners,0);preview.ShowLandConquest(w,dimClaimed:true);
@@ -51,6 +51,7 @@ sealed class FlagGame:Game1
   Array.Fill(w.Owners,-1);preview.ShowLandConquest(w,dimClaimed:true);
   Check(before.SequenceEqual(Colours()),"Unclaimed land retains its normal brightness in land conquest");
   Check(before.Zip(dimmed).Any(pair=>pair.First.R>pair.Second.R+20),"Claimed terrain is visibly darker");
+  Check(!Colours(.6f,w.Cells).SequenceEqual(Colours(1.8f,w.Cells)),"Selected territory backlight pulses");
   Array.Copy(owners,w.Owners,owners.Length);
  }
  protected override void Draw(GameTime time){

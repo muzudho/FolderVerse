@@ -195,18 +195,22 @@ public partial class Game1
     {
         var frame=OrientationViewport(LandGlobeArea,canvas);
         GraphicsDevice.Viewport=new Viewport(canvas);
-        _world.Draw(_yaw,_pitch,_animationTime,false,true,new Rectangle(frame.X,frame.Y,frame.Width,frame.Height));GraphicsDevice.Viewport=viewport;
+        bool selectingLand=_screen==Screen.LandConquest;
+        var selectedCells=selectingLand && _landSelection.Count>0 ? _landSelection.Select(id=>_setup.Cells[id]) : null;
+        _world.Draw(_yaw,_pitch,_animationTime,false,true,new Rectangle(frame.X,frame.Y,frame.Width,frame.Height),selectedCells);
+        GraphicsDevice.Viewport=viewport;
         _spriteBatch.Begin(transformMatrix:transform);
         foreach(var c in _setup.Cells)
         {
             if(!_world.ProjectVisible(c.Center,c.Normal,_yaw,_pitch,LandGlobeArea,out var p))continue;
-            if(_setup.Owners[c.Id]>=0 || _landSelection.Contains(c.Id) || _screen==Screen.LandConquest)
+            if(selectingLand)
             {
-                var color=_landSelection.Contains(c.Id)?Color.Yellow:_setup.Owners[c.Id]>=0?_setup.OwnerColor(_setup.Owners[c.Id]):new Color(110,140,150);
+                var color=new Color(110,140,150);
                 foreach(var edge in c.Corners.Select((v,i)=>(A:v,B:c.Corners[(i+1)%c.Corners.Length])))
                     if(_world.ProjectVisible(edge.A,c.Normal,_yaw,_pitch,LandGlobeArea,out var a) && _world.ProjectVisible(edge.B,c.Normal,_yaw,_pitch,LandGlobeArea,out var b))LandLine(a,b,color,3);
             }
-            if(_setup.Owners[c.Id]>=0)CountryFlagArt.Marker(_ui,_setup,_setup.Owners[c.Id],p,38);
+            int flagOwner=selectingLand && _landSelection.Contains(c.Id)?LandRuler:_setup.Owners[c.Id];
+            if(flagOwner>=0)CountryFlagArt.Marker(_ui,_setup,flagOwner,p,38);
             foreach(var route in _setup.Routes.DisplayPaths(c.Id))
             {
                 var curve=_setup.Routes.Curve(c.Id,route);

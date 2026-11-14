@@ -171,7 +171,8 @@ public sealed partial class WorldPreview : IDisposable
         }
     }
 
-    public void Draw(float yaw, float pitch,float glow=0,bool markers=true,bool globeView=false,Rectangle? globeFrame=null)
+    public void Draw(float yaw, float pitch,float glow=0,bool markers=true,bool globeView=false,Rectangle? globeFrame=null,
+        IEnumerable<SurfaceCell> landSelection=null)
     {
         _device.BlendState = BlendState.Opaque;
         _device.DepthStencilState = DepthStencilState.Default;
@@ -203,6 +204,7 @@ public sealed partial class WorldPreview : IDisposable
             _effect.DiffuseColor=Vector3.One;_effect.LightingEnabled=true;
         }
         if(globeView)DrawCellSelection(glow);
+        if(landSelection!=null)DrawLandBacklight(landSelection,glow);
         if(_markers != null && markers)
         {
             _device.SetVertexBuffer(_markers); _effect.LightingEnabled=false;
