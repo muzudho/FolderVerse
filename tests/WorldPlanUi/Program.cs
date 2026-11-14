@@ -2,10 +2,18 @@ using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
+using Microsoft.Xna.Framework.Input;
 using var game=new PlanGame();game.Run();
 sealed class PlanGame:Game1
 {
  const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;int frame;WorldSetup w=null!;
+ void DragPocket(Point from,Point to){
+  void Send(Point point,ButtonState state,bool click){
+   var mouse=new MouseState(0,0,0,state,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
+   Set("_pointer",point);Call("PocketMouseInput",mouse,new KeyboardState(),click,false,true);Set("_previousMouse",mouse);
+  }
+  Send(from,ButtonState.Pressed,true);Send(to,ButtonState.Released,false);
+ }
  object Get(string n)=>typeof(Game1).GetField(n,F)!.GetValue(this)!;
  void Set(string n,object v)=>typeof(Game1).GetField(n,F)!.SetValue(this,v);
  object Call(string n,params object[] a)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,a)!;
@@ -17,7 +25,7 @@ sealed class PlanGame:Game1
   w.PrepareTutorialStepTwo(123,456,789);w.SelectPlayer(0);w.HumanPlayers.Add(0);Screen("WorldStatus");Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",90d);Set("_tutorialIntroShown",true);
   int home=w.Nodes.Current(0).Id;int next=w.Routes.NodeChoices(0).Select(r=>w.Nodes.At(r.Target,r.Entry).Id).First(n=>n!=home);
   w.Campaign.Resolve(w,new[]{new March(0,next,0,home,true,true,Peaceful:true)});Guide(6);Check(!w.TutorialCompletionShown,"Move alone does not complete step two");Set("_tutorialAttackGuide",false);
-  Call("OpenPocket");int index=w.Robots.Nodes[next].Robots.ToList().FindIndex(r=>r.Owner==0);var card=(Rectangle)typeof(Game1).GetMethod("PocketCard",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{index,true})!;Set("_pointer",card.Center);Call("PocketInput",true,false);Set("_pointer",new Point(1100,630));Call("PocketInput",true,false);
+  Call("OpenPocket");int index=w.Robots.Nodes[next].Robots.ToList().FindIndex(r=>r.Owner==0);var card=(Rectangle)typeof(Game1).GetMethod("PocketCard",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{index,true})!;DragPocket(card.Center,new Point(100,250));
   Screen("WorldStatus");Guide(5);Set("_tutorialAttackGuide",false);Guide(7);Check(w.TutorialCompletionShown,"Move-first order completes after actual pocket transfer");Set("_tutorialAttackGuide",false);Set("_tutorialIntroShown",false);
  }
  protected override void LoadContent()
@@ -35,7 +43,7 @@ sealed class PlanGame:Game1
   Check(!(bool)Call("TransportOverviewClick",new Point(850,1035)) && !(bool)Get("_transportOverview"),"Hidden transport button cannot open its panel");
   // Exercise actual pocket input, rather than setting its achievement flag.
   Call("OpenPocket");var card=(Rectangle)typeof(Game1).GetMethod("PocketCard",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{3,true})!;
-  Check(w.Robots.Nodes[w.Nodes.Current(0).Id].Robots[3].Owner==0,"Own robot on foreign node");Set("_pointer",card.Center);Call("PocketInput",true,false);Set("_pointer",new Point(1100,630));Call("PocketInput",true,false);
+  Check(w.Robots.Nodes[w.Nodes.Current(0).Id].Robots[3].Owner==0,"Own robot on foreign node");DragPocket(card.Center,new Point(100,250));
   Check(w.TutorialPocketed && w.Robots.Retinues[0].Count==1,"Actual pocket transfer records achievement");Screen("WorldStatus");Guide(5);
  }
  protected override void Update(GameTime t){}

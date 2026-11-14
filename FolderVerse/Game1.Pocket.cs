@@ -18,7 +18,6 @@ public partial class Game1
     private readonly long?[][] _pocketSlots=new long?[2][];
     private (int Side,int Slot,Point Start)? _pocketDrag;
     private (int Side,Point Start,Point Origin)? _pocketPan;
-    private static Rectangle PocketTransferButton(bool fromNode)=>new(fromNode?1000:54,615,300,48);
     private string PocketRobotLockReason(Robot robot,bool fromNode)
     {
         if(!new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(robot.Parts&p)!=0 && robot.Origin(p)==_setup.PlayerSlot))return "自国のパーツがありません";
@@ -31,15 +30,6 @@ public partial class Game1
         return world.CanTransferPocket(node,_setup.PlayerSlot,robot)?"":"作業中";
     }
     private bool PocketRobotSelectable(Robot robot,bool fromNode)=>PocketRobotLockReason(robot,fromNode).Length==0;
-    private bool PocketTransferEnabled(bool fromNode)
-    {
-        if(!_pocketRobot.HasValue || _pocketFromNode!=fromNode)return false;
-        int player=_setup.PlayerSlot,node=_setup.Nodes.Current(player).Id;
-        var source=fromNode?_setup.Robots.Nodes[node]:_setup.Robots.Retinues[player];
-        var destination=fromNode?_setup.Robots.Retinues[player]:_setup.Robots.Nodes[node];
-        var robot=source.Robots.FirstOrDefault(r=>r.Id==_pocketRobot);
-        return robot!=null && PocketRobotSelectable(robot,fromNode) && destination.HasSpace;
-    }
     private void PocketOutline(Rectangle box,Color color,int width=3)
     {
         _ui.Box(new(box.X,box.Y,box.Width,width),color);_ui.Box(new(box.X,box.Bottom-width,box.Width,width),color);
@@ -143,9 +133,8 @@ public partial class Game1
                 return;
             }
         }
-        if(_pocketRobot.HasValue && PocketTransferButton(_pocketFromNode).Contains(_pointer))TransferSelectedPocket();
     }
-    private void TransferSelectedPocket(int slot=-1)
+    private void TransferSelectedPocket(int slot)
     {
         if(!_pocketRobot.HasValue)return;
         int player=_setup.PlayerSlot,node=_setup.Nodes.Current(player).Id;
@@ -158,7 +147,7 @@ public partial class Game1
         if(!PocketRobotSelectable(robot,_pocketFromNode))
         {_pocketMessage=PocketRobotLockReason(robot,_pocketFromNode)+"のため移せません";return;}
         _setup.Robots.TransferPocket(node,player,id,_pocketFromNode);_pocketRobot=null;
-        if(slot>=0)_pocketSlots[_pocketFromNode?0:1][slot]=id;
+        _pocketSlots[_pocketFromNode?0:1][slot]=id;
         SyncPocket();
         if(_pocketFromNode && _setup.TutorialPocketCourse && player==0)_setup.TutorialPocketed=true;
         _pocketMessage=_pocketFromNode?"自分のポケットに入れました":"現在地の地点へ配備しました";
@@ -199,13 +188,8 @@ public partial class Game1
                 if(_pocketRobot==robot.Id && _pocketFromNode==fromNode)PocketOutline(card,new(255,220,114),4);
                 else if(hover)PocketOutline(card,Cream);
             }
-            var button=PocketTransferButton(fromNode);bool enabled=PocketTransferEnabled(fromNode),buttonHover=enabled && button.Contains(_pointer);
-            string action=fromNode?"ポケットへ入れる":"地点へ配備";
-            if(enabled)_ui.Button(button,action,buttonHover?new Color(81,173,172):Accent,.5f);
-            else{_ui.Box(button,new(53,65,75));_ui.Center(action,button,.5f,new(163,174,180));}
-            if(buttonHover)PocketOutline(button,Cream);
         }
-        _ui.Text("自分のロボットを選んで、現在地の地点と出し入れできます",new(54,695),.5f,Cream);
+        _ui.Text("ポケットと現在地の空き枠にドラッグして移動できます",new(54,695),.5f,Cream);
         _ui.Text("左ドラッグ：移動 / 右ドラッグ：スクロール / ホイール：拡大・縮小",new(54,741),.46f,Cream);
         foreach(bool fromNode in new[]{false,true}){
             int side=fromNode?1:0;

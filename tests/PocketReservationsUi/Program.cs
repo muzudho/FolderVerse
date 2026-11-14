@@ -37,9 +37,9 @@ sealed class PocketChecks:Game1
   }
   foreach(var own in new[]{defense,intercept,worker,disposal,delivery})Check((bool)Call("PocketRobotSelectable",own,true),"Own commands and part reservations can be overwritten by an immediate pocket transfer");
   Set("_pointer",Card(1).Center);Call("PocketInput",true,false);
-  Check((long?)Get("_pocketRobot")==defense.Id && (bool)Call("PocketTransferEnabled",true),"Own shoes do not prevent pocket selection");
+  Check((long?)Get("_pocketRobot")==defense.Id,"Own shoes do not prevent pocket selection");
   Set("_pointer",Card(0).Center);Call("PocketInput",true,false);
-  Check((bool)Call("PocketTransferEnabled",true),"Unreserved robot remains transferable");
+  Check((long?)Get("_pocketRobot")==movable,"Unreserved robot remains selectable");
  }
  protected override void Update(GameTime time){}
  protected override void Draw(GameTime time){
@@ -47,14 +47,18 @@ sealed class PocketChecks:Game1
   var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
   using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"pocket-reservations-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
   if(frame++==0){var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();return;}
-  Set("_pointer",((Rectangle)typeof(Game1).GetMethod("PocketTransferButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{true})!).Center);Call("PocketInput",true,false);
-  Check(world.Robots.Retinues[0].Robots.Any(r=>r.Id==movable),"Normal pocket transfer still succeeds");
   MouseState Mouse(ButtonState left=ButtonState.Released,ButtonState right=ButtonState.Released,int wheel=0)
    =>new(0,0,wheel,left,ButtonState.Released,right,ButtonState.Released,ButtonState.Released);
   void Input(Point point,MouseState mouse,bool click=false){
    Set("_pointer",point);Call("PocketMouseInput",mouse,new KeyboardState(),click,false,true);Set("_previousMouse",mouse);
   }
   Rectangle View(int side,int slot)=>(Rectangle)Call("PocketViewCard",side,slot);
+  Input(new Point(1100,630),Mouse(ButtonState.Pressed),true);
+  Input(new Point(1100,630),Mouse());
+  Check(world.Robots.Nodes[node].Robots.Any(r=>r.Id==movable),"The old button area cannot transfer a robot");
+  Input(View(1,0).Center,Mouse(ButtonState.Pressed),true);
+  Input(View(0,0).Center,Mouse());
+  Check(world.Robots.Retinues[0].Robots.Any(r=>r.Id==movable),"Dragging transfers the robot into the pocket");
   Input(View(0,0).Center,Mouse(ButtonState.Pressed),true);
   Input(View(1,11).Center,Mouse());
   Check(world.Robots.Nodes[node].Robots.Any(r=>r.Id==movable) && world.Robots.Retinues[0].TotalCapacity==12,
