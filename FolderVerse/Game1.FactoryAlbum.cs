@@ -7,13 +7,13 @@ public partial class Game1
 {
     private bool _factoryHarvestPage;
     private static readonly Rectangle FactoryAlbumBounds=new(63,137,1794,830);
-    private static Rectangle HarvestAlbumCard(int index)=>new(111+index%8*214,214+index/8*346,202,324);
+    private static Rectangle HarvestAlbumCard(int index)=>new(111+index*343,224,320,390);
     private static Rectangle FactoryAlbumAction(int row)
     {
         var area=FactoryAlbumCard(10);
         return new(area.X+10,area.Y+32+row*60,area.Width-20,48);
     }
-    private static Rectangle HarvestAlbumAction(int row){var card=HarvestAlbumCard(15);return new(card.X+8,card.Y+32+row*60,card.Width-16,48);}
+    private static Rectangle HarvestAlbumAction(int row)=>new(1483,642+row*60,300,48);
     private Rectangle FactoryStopButton=>_factoryHarvestPage?HarvestAlbumAction(1):FactoryAlbumAction(1);
     private static Rectangle FactoryRecipeCard(int plan)=>FactoryAlbumCard(plan<3?plan:plan-1);
     private int FactoryHarvestAvailable(int node,RobotWorkshop[] lines,RobotWorkshop editing,RawMaterial material)
@@ -40,7 +40,7 @@ public partial class Game1
         _ui.Box(new(77, 148, 1766, 800), new Color(224, 196, 152));
         _ui.Box(new(94, 157, 1732, 777), paper);
         _ui.Text($"生産ライン {_factoryPlanLine + 1} / "+(_factoryHarvestPage?"素材の採取":"製造候補"), new(113, 169), .55f, ink);
-        var controls=_factoryHarvestPage?HarvestAlbumCard(15):FactoryAlbumCard(10);
+        var controls=_factoryHarvestPage?new Rectangle(1483,642,320,290):FactoryAlbumCard(10);
         int legendY=controls.Y+255;
         var materials=RobotWorld.RawMaterials.Where(_setup.Robots.RawRequired).ToArray();
         var availableStock=materials.ToDictionary(material=>material,
@@ -67,22 +67,17 @@ public partial class Game1
                 int available=FactoryHarvestAvailable(node.Id,lines,line,material);
                 string warning=deposit==0?(_setup.Robots.HadRawDeposit(_setup,node,material)
                     ?"この地域ではもう採れません":"この地域では採れません"):
-                    available==0?"他の採取レーンで採り終えます":"この量は採れません";
-                for(int loads=1;loads<=3;loads++)
-                {
-                    var card=HarvestAlbumCard((int)material*3+loads-1);
-                    bool selected=line.MapleRemaining==loads && line.HarvestMaterial==material;
-                    _ui.Box(card,selected?Accent:loads<=available?new Color(35,53,67):Muted);
-                    int height=loads*52;
-                    DrawMaplePackageArt(new(card.X+10,card.Y+165-height,card.Width-20,height),loads,alignBottom:true,material:material);
-                    _ui.Center(name,new(card.X,card.Y+168,card.Width,29),.37f,selected?Color.Black:Cream);
-                    _ui.Center($"{loads} 荷 / {loads*RobotWorld.MaplePackageSize}/48",new(card.X,card.Y+200,card.Width,26),.37f,selected?Color.Black:Cream);
-                    _ui.Center($"{loads} 産業ターン",new(card.X,card.Y+230,card.Width,26),.31f,selected?Color.Black:Cream);
-                    _ui.Center($"埋蔵 {deposit} / 予約可能 {available} 荷",new(card.X,card.Y+256,card.Width,24),.29f,selected?Color.Black:Cream);
-                    if(loads>available){
-                        _ui.Box(card,Color.Black*.74f);
-                        _ui.Center(warning,new(card.X+5,card.Y+287,card.Width-10,29),.32f,new Color(181,189,196));
-                    }
+                    "他の採取レーンで採り終えます";
+                var card=HarvestAlbumCard((int)material);
+                bool selected=line.MapleRemaining>0 && line.HarvestMaterial==material;
+                _ui.Box(card,selected?Accent:new Color(35,53,67));
+                DrawMaplePackageArt(new(card.X+30,card.Y+38,card.Width-60,225),1,material:material);
+                var label=selected?Color.Black:Cream;
+                _ui.Center(name,new(card.X,card.Y+275,card.Width,40),.48f,label);
+                _ui.Center($"埋蔵 {deposit} / 予約可能 {available} 荷",new(card.X,card.Y+318,card.Width,30),.34f,label);
+                if(available==0){
+                    _ui.Box(card,Color.Black*.74f);
+                    _ui.Center(warning,new(card.X+5,card.Y+353,card.Width-10,29),.34f,new Color(181,189,196));
                 }
             }
             return;

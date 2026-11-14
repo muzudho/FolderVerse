@@ -77,6 +77,7 @@ public partial class Game1
     }
     private Rectangle FactoryDropOption(int field,int index,RobotWorkshop line=null){var r=FactoryDropButton(field,line);int count=field==2?PlanningWorkshop(_populationNode).ReservedSlotLimit+1:9;if(field==2 && count>13){int columns=(count+12)/13,width=784/columns;return new(84+index/13*width,490+index%13*30,width-3,30);}int top=Math.Max(260,r.Y-count*30);return new(r.X,top+index*30,r.Width,30);}
     private Rectangle FactoryNoRepeatButton(RobotWorkshop line)=>new(698,FactoryRowY(_factoryLine-_factoryPage)+188,145,26);
+    private static Rectangle HarvestLoadButton(int row,int loads)=>new(400+(loads-1)*105,FactoryRowY(row)+132,95,35);
     private bool NodeFactoryClick(Point pointer)
     {
         if(!NodeFactoriesAllowed){_nodeFactoryOpen=false;_factoryDropDown=_factoryPlanLine=-1;return false;}
@@ -99,13 +100,16 @@ public partial class Game1
             }
             if(_factoryHarvestPage){
                 foreach(var material in RobotWorld.RawMaterials.Where(_setup.Robots.RawRequired))
-                for(int loads=1;loads<=3;loads++)
                 {
-                    if(!HarvestAlbumCard((int)material*3+loads-1).Contains(pointer))continue;
-                    if(loads>FactoryHarvestAvailable(_populationNode,lines,lines[line],material)){
+                    if(!HarvestAlbumCard((int)material).Contains(pointer))continue;
+                    int available=FactoryHarvestAvailable(_populationNode,lines,lines[line],material);
+                    if(available==0){
                         _factoryPlanLine=line;return true;
                     }
-                    lines[line].SelectMapleHarvest(loads,material);SavePending(line);return true;
+                    if(lines[line].MapleRemaining==0 || lines[line].HarvestMaterial!=material){
+                        lines[line].SelectMapleHarvest(1,material);SavePending(line);
+                    }
+                    return true;
                 }
                 if(FactoryAlbumBounds.Contains(pointer))_factoryPlanLine=line;
                 return true;
@@ -145,7 +149,17 @@ public partial class Game1
             bool harvest=line.HarvestOnly || line.MapleRemaining>0;
             var product=harvest?FactoryRobotButton(l-_factoryPage,3):FactoryConveyorProduct(l-_factoryPage,period,line);
             if(product.Contains(pointer) || !harvest && FactoryConveyorArrow(product).Contains(pointer)){_factoryHarvestPage=harvest;_factoryPlanLine=l;_factoryLine=l;return true;}
-            if(line.HarvestOnly || line.MapleRemaining>0)continue;
+            if(harvest){
+                if(line.MapleRemaining>0)
+                    for(int loads=1;loads<=3;loads++){
+                        if(!HarvestLoadButton(l-_factoryPage,loads).Contains(pointer))continue;
+                        if(loads!=line.MapleRemaining && loads<=FactoryHarvestAvailable(_populationNode,lines,line,line.HarvestMaterial)){
+                            line.SelectMapleHarvest(loads,line.HarvestMaterial);SavePending(l);
+                        }
+                        return true;
+                    }
+                continue;
+            }
             var track=FactoryHolidayTrack(l-_factoryPage);track.Inflate(6,0);
             if(track.Contains(pointer)){_factoryHolidayLane=l;return true;}
             _factoryLine=l;for(int field=0;field<2;field++)if(FactoryDropButton(field,line).Contains(pointer)){_factoryDropDown=field;return true;}
@@ -190,7 +204,8 @@ public partial class Game1
                 var harvester=line.WorkerSnapshot;
                 if(harvester==null && (planned?plannedWorkerId:factory.WorkerAt(l)) is long harvesterId)
                     harvester=_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==harvesterId);
-                DrawFactoryHarvestLane(line,node.Id,l-_factoryPage,y,harvester,planned);
+                DrawFactoryHarvestLane(line,node.Id,l-_factoryPage,y,harvester,planned,
+                    FactoryHarvestAvailable(node.Id,lines,line,line.HarvestMaterial));
                 continue;
             }
             DrawFactoryConveyor(line,node.Owner,l-_factoryPage,period);
@@ -262,7 +277,7 @@ public partial class Game1
         }
 
     }
-    private void DrawFactoryHarvestLane(RobotWorkshop line,int node,int row,int y,Robot worker,bool planned=false)
+    private void DrawFactoryHarvestLane(RobotWorkshop line,int node,int row,int y,Robot worker,bool planned=false,int available=-1)
     {
         var product=FactoryRobotButton(row,3);
         if(worker!=null)
@@ -285,6 +300,8 @@ public partial class Game1
         _ui.Text($"採取レーン / {status} / 予約残り {line.MapleRemaining} 荷",new(160,y-19),.33f,Cream);
         _ui.Text($"{RobotWorld.RawName(line.HarvestMaterial)} / 残り埋蔵量 {deposit} 荷",new(400,y+46),.45f,Cream);
         _ui.Text($"次の入荷まで {IndustryTime.Format(Math.Max(0,line.EffectiveHarvestPeriod(_setup.Nodes.All[node].Purpose)-line.MapleProgress))} 産業ターン",new(400,y+90),.33f,Cream);
+        for(int loads=1;available>=0 && loads<=3;loads++)
+            _ui.Button(HarvestLoadButton(row,loads),$"{loads} 荷",loads>available?Muted*.55f:loads==line.MapleRemaining?Accent:Muted,.34f);
         DrawFactoryLaneStatus(y,!waiting && !line.Paused,status);
     }
     private void DrawFactoryCaret(int x,int y,RobotWorkshop line,bool mapleWait=false)

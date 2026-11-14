@@ -120,14 +120,16 @@ sealed class WorkerPlansUi:Game1
   if(frame==10){
    var deposits=(int[])typeof(RobotWorld).GetField("_mapleDeposits",F)!.GetValue(w.Robots)!;
    deposits[node]=1;
+   var raw=(int[][])typeof(RobotWorld).GetField("_rawDeposits",F)!.GetValue(w.Robots)!;
+   raw[(int)RawMaterial.Vinyl-1][node]=0;
    Set("_nodeFactoryOpen",true);Set("_nodeAssemblyOpen",false);
    Set("_factoryPlanLine",0);Set("_factoryHarvestPage",true);
    Click(Rect("HarvestAlbumCard",2).Center);
    Check((bool)Get("_factoryHarvestPage") && (int)Get("_factoryPlanLine")==0 && w.Robots.Workshops[node].ProductionLines[0].MapleRemaining==0,
     "The harvest warning card stays open and an over-limit click does not schedule collection");
-   var cards=Enumerable.Range(0,16).Select(i=>Rect("HarvestAlbumCard",i)).ToArray();
-   Check(cards.Take(8).All(card=>card.Y==cards[0].Y) && cards[8].X==cards[0].X &&
-     cards.Take(15).All(card=>!card.Intersects(Rect("HarvestAlbumAction",1))),"Eight columns and separate controls");
+   var cards=Enumerable.Range(0,5).Select(i=>Rect("HarvestAlbumCard",i)).ToArray();
+   Check(cards.All(card=>card.Y==cards[0].Y && !card.Intersects(Rect("HarvestAlbumAction",1))) &&
+     cards.Zip(cards.Skip(1)).All(pair=>pair.First.Right<pair.Second.Left),"Five columns and separate controls");
    Click(new Point(1700,75));
    Check((int)Get("_factoryPlanLine")==-1 && !(bool)Get("_nodeAssemblyOpen"),"Outside click closes the modal without changing inspector tabs");
    Set("_factoryPlanLine",0);
@@ -179,9 +181,13 @@ sealed class WorkerPlansUi:Game1
    Set("_factoryPlanLine",-1);
    Click(Rect("FactoryRobotButton",1,3).Center);
    Check((int)Get("_factoryPlanLine")==1 && (bool)Get("_factoryHarvestPage"),"Reassigned lane opens the harvest catalogue");
+   ((int[])typeof(RobotWorld).GetField("_mapleDeposits",F)!.GetValue(w.Robots)!)[node]=3;
    Click(Rect("HarvestAlbumCard",0).Center);
+   Click(Rect("HarvestLoadButton",1,2).Center);
+   lines=(RobotWorkshop[])typeof(Game1).GetMethod("FactoryScreenLines",F)!.Invoke(this,new object[]{factory,null})!;
+   Check(lines[1].MapleRemaining==2,"The harvest lane sets the amount independently of the catalogue");
    w.Campaign.FinishDomestic(w);
-   Check(factory.ProductionLines[1].HarvestOnly && factory.ProductionLines[1].MapleRemaining==1,
+   Check(factory.ProductionLines[1].HarvestOnly && factory.ProductionLines[1].MapleRemaining==2,
     "The harvest recipe survives confirmation of the role switch");
   }
   if(frame==12){
