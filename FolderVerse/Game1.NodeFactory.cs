@@ -160,7 +160,7 @@ public partial class Game1
                 _ui.Box(area,new Color(24,78,110));
                 for(int row=0;row<7;row++)for(int x=area.X+12;x<area.Right-30;x+=64){int wave=(int)(MathF.Sin(x*.05f+row)*5);_ui.Box(new(x,area.Y+20+row*27+wave,34,3),new Color(76,151,178));}
                 _ui.Center("海上 / レーン上限１",area,.5f,Cream);
-            }else{_ui.Box(area,new Color(24,43,54));_ui.Center("空きレーン / 工場作業員予約で追加",area,.45f,Cream*.7f);}
+            }else{_ui.Box(area,new Color(24,43,54));_ui.Center("空きレーン / 製造作業員予約で追加",area,.45f,Cream*.7f);}
         }
         for(int l=_factoryPage*3;l<Math.Min(displayed,(_factoryPage+1)*3);l++){
             var line=lines[l];int y=284+(l%3)*200,period=line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[_populationNode].Purpose):3;_factoryLine=l;
@@ -195,7 +195,7 @@ public partial class Game1
             _ui.Text(status,new(160,y-19),Math.Min(.3f,690/_font.MeasureString(status).X),Cream);
             int intakes=_setup.Robots.ProductionIntakes.Count(o=>ReferenceEquals(o.Line,line));
             if(intakes>0)_ui.Text($"入荷予約 {intakes}件",new(460,y+112),.3f,Accent);
-            if((planned?plannedWorkerId:factory.WorkerAt(l)) is long workerId){var worker=line.WorkerSnapshot??_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==workerId);if(worker!=null){DrawRobotGlyph(new(754,y+8,60,84),worker);_ui.Text("工場作業員",new(674,y+8),.3f,Accent);_ui.Text("ID "+workerId,new(674,y+36),.28f,Cream);if(!planned && line.WorkerSnapshot!=null)_ui.Text("任命時",new(674,y+62),.25f,Cream);}}
+            if((planned?plannedWorkerId:factory.WorkerAt(l)) is long workerId){var worker=line.WorkerSnapshot??_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==workerId);if(worker!=null){DrawRobotGlyph(new(754,y+8,60,84),worker);_ui.Text("製造作業員",new(674,y+8),.3f,Accent);_ui.Text("ID "+workerId,new(674,y+36),.28f,Cream);if(!planned && line.WorkerSnapshot!=null)_ui.Text("任命時",new(674,y+62),.25f,Cream);}}
             else _ui.Text("常設レーン",new(674,y+8),.3f,Cream*.7f);
         }
         _factoryLine=savedLine;

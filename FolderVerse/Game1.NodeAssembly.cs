@@ -307,7 +307,7 @@ public partial class Game1
         _ui.Text(hoveringManagement?hover:_hangarAbandonMode?"部位を選択：パーツを放棄 / 区画の余白：個体を放棄":HangarPlanningFailure.Length>0?HangarPlanningFailure:_hangarMessage.Length>0 && !hoveringPart?_hangarMessage:hover,new(84,838),.32f,Cream);
         _ui.Button(HangarAssemblyButton,"組み立て・分解",DomesticOperationsAllowed && !reservationMode?Accent:Muted,.36f);
         if(!VisitingForeignHangar){
-            string[] labels={"廃棄予約","守備専用予約","工場作業員予約","迎撃専用予約","採取作業員予約"};
+            string[] labels={"廃棄予約","守備専用予約","製造作業員予約","迎撃専用予約","採取作業員予約"};
             for(int i=0;i<(_setup.Robots.MapleSupplyEnabled?labels.Length:4);i++){
                 var button=HangarReservationButton(i);var color=_hangarReservation==(HangarReservation)(i+1)?Accent:Muted;
                 _ui.Button(button,"",color,.36f);
