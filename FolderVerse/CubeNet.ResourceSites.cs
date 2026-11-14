@@ -28,7 +28,11 @@ public sealed partial class CubeNet
             var node=RobotWorld.SiteNode(world,cell,site.Position);
             int remaining=node==null || !node.Functional || node.Purpose==NodePurpose.Relay?0:
                 world.Robots.RawDeposit(node.Id,RobotWorld.SiteMaterial(site.Kind));
-            DrawResourceSite(ui,site.Kind,Point,globe,world.Robots.OtherRawSupplyEnabled && remaining==0);
+            bool depleted=world.Robots.OtherRawSupplyEnabled && remaining==0;
+            DrawResourceSite(site.Kind,globe,(color,vertices)=>FillProjectedFace(ui,
+                vertices.Select(ProjectVertex).ToArray(),depleted?Color.Lerp(color,new Color(78,76,74),.65f):color),
+                globe?ProjectVertex:null);
+            Vector2 ProjectVertex(Vector3 p)=>Point(p.X,p.Y,p.Z);
             if(world.Robots.OtherRawSupplyEnabled && remaining>0 && Vector2.Distance(Point(-.6f,0,0),Point(.6f,0,0))>=34)
             {
                 var label=Point(0,.65f,0);
@@ -100,7 +104,7 @@ public sealed partial class CubeNet
         }
     }
 
-    private static void DrawResourceSite(UiPainter ui,ResourceSiteKind kind,Func<float,float,float,Vector2> point,bool globe,bool depleted)
+    internal static void DrawResourceSite(ResourceSiteKind kind,bool globe,Action<Color,Vector3[]> emit,Func<Vector3,Vector2> project=null)
     {
         var sand=new Color(197,154,101);
         var rock=new Color(78,76,83);
@@ -136,12 +140,13 @@ public sealed partial class CubeNet
                 break;
         }
 
-        void Face(Color color,params Vector2[] vertices)=>FillProjectedFace(ui,vertices,
-            depleted?Color.Lerp(color,new Color(78,76,74),.65f):color);
+        static Vector3 point(float x,float y,float z)=>new(x,y,z);
+        void Face(Color color,params Vector3[] vertices)=>emit(color,vertices);
+
 
         void Box(float x,float y,float w,float d,float z,float h,Color color)
         {
-            Vector2[] top={point(x,y,z+h),point(x+w,y,z+h),point(x+w,y+d,z+h),point(x,y+d,z+h)};
+            Vector3[] top={point(x,y,z+h),point(x+w,y,z+h),point(x+w,y+d,z+h),point(x,y+d,z+h)};
             if(globe)Sides(top,new[]{point(x,y,z),point(x+w,y,z),point(x+w,y+d,z),point(x,y+d,z)},color);
             Face(color,top);
         }
@@ -161,20 +166,21 @@ public sealed partial class CubeNet
                 Face(Shade(color,i%3),peak,rim[i],rim[(i+1)%rim.Length]);
         }
 
-        Vector2[] Ring(float x,float y,float radius,float z,int count)=>
+        Vector3[] Ring(float x,float y,float radius,float z,int count)=>
             Enumerable.Range(0,count).Select(i=>
             {
                 float angle=i*MathHelper.TwoPi/count;
                 return point(x+MathF.Cos(angle)*radius,y+MathF.Sin(angle)*radius,z);
             }).ToArray();
 
-        void Sides(Vector2[] top,Vector2[] bottom,Color color)
+        void Sides(Vector3[] top,Vector3[] bottom,Color color)
         {
-            float winding=Cross(top[1]-top[0],top[2]-top[1]);
+            var screenTop=project==null?null:top.Select(project).ToArray();
+            float winding=screenTop==null?0:Cross(screenTop[1]-screenTop[0],screenTop[2]-screenTop[1]);
             for(int i=0;i<top.Length;i++)
             {
                 int j=(i+1)%top.Length;
-                if(Cross(top[j]-top[i],bottom[i]-top[i])*winding<0)
+                if(screenTop==null || Cross(screenTop[j]-screenTop[i],project(bottom[i])-screenTop[i])*winding<0)
                     Face(Shade(color,i%3),top[i],top[j],bottom[j],bottom[i]);
             }
         }

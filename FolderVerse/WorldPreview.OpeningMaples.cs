@@ -65,6 +65,18 @@ public sealed partial class WorldPreview
                 }
             }
         }
+        foreach(var cell in world.Cells)
+        foreach(var site in CubeNet.ResourceSites(world,cell,terrain))
+        {
+            if(RobotWorld.SiteNode(world,cell,site.Position)==null)continue;
+            var origin=site.Position+cell.Normal*WorldTerrain.ReliefAt(world,cell,site.Position,terrain);
+            CubeNet.DrawResourceSite(site.Kind,true,(color,vertices)=>
+            {
+                for(int i=1;i+1<vertices.Length;i++)
+                    Triangle(Position(vertices[0]),Position(vertices[i]),Position(vertices[i+1]),color);
+            });
+            Vector3 Position(Vector3 p)=>origin+site.Size*(cell.U*p.X+cell.V*p.Y+cell.Normal*p.Z);
+        }
         return deposits.Sum();
 
         void Triangle(Vector3 a,Vector3 b,Vector3 c,Color color)
