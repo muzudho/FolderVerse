@@ -13,16 +13,16 @@ public partial class Game1
     private void DrawRobotGlyph(Rectangle r,Robot robot,bool whiteOutline=false,float opacity=1,Func<RobotParts,float> partOpacity=null)
         => DrawRobotGlyphCore(r, robot, whiteOutline, opacity, partOpacity, showIntegratedMaterial: false);
 
-    private void DrawRobotGlyphCore(Rectangle r,Robot robot,bool whiteOutline,float opacity,Func<RobotParts,float> partOpacity,bool showIntegratedMaterial)
+    private void DrawRobotGlyphCore(Rectangle r,Robot robot,bool whiteOutline,float opacity,Func<RobotParts,float> partOpacity,bool showIntegratedMaterial,bool allowCaptain=false)
     {
         // Outline only the exterior, including for translucent reservations and delivery ghosts.
         var shapes=new System.Collections.Generic.List<(Rectangle Bounds,RobotParts Part,bool Face)>();
         void Shape(Rectangle bounds,RobotParts part,bool face=false){if((robot.Parts&part)!=0)shapes.Add((bounds,part,face));}
         bool headBody=(robot.IntegratedParts&robot.Parts)==(RobotParts.Head|RobotParts.Body);
         bool bodyLegs=(robot.IntegratedParts&robot.Parts)==(RobotParts.Body|RobotParts.Legs);
-        bool artHead=HasRobotHeadArt(r,robot,showIntegratedMaterial:showIntegratedMaterial);
-        var torsoArt = FindRobotBodyArt(r, robot, RobotParts.Body, showIntegratedMaterial:showIntegratedMaterial);
-        var legsArt = FindRobotBodyArt(r, robot, RobotParts.Legs, showIntegratedMaterial:showIntegratedMaterial);
+        bool artHead=HasRobotHeadArt(r,robot,allowCaptain,showIntegratedMaterial);
+        var torsoArt = FindRobotBodyArt(r, robot, RobotParts.Body, allowCaptain,showIntegratedMaterial);
+        var legsArt = FindRobotBodyArt(r, robot, RobotParts.Legs, allowCaptain,showIntegratedMaterial);
         bool completeArt = artHead && torsoArt != null && legsArt != null;
         bool HasArt(RobotParts part) => part switch
         {

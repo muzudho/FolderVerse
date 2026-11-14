@@ -132,8 +132,8 @@ public partial class Game1
             _ui.Box(cell,_directDrag.HasValue && side==1 && cell.Contains(_pointer)?new Color(65,100,115):new Color(18,35,46));
             for(int row=0;row<3;row++)_ui.Box(DirectPart(side,slot,row),new Color(40,63,76));
             var glyph=new Rectangle(cell.X+6,cell.Y+8,90,180);
-            if(robot!=null)DrawRobotGlyph(glyph,robot,whiteOutline:true,partOpacity:p=>_setup.Robots.LongDelivery.Orders.Any(o=>o.CargoId==robot.Id && o.Node==node && (o.Parts&p)!=0)?.35f:1);
-            foreach(var order in incoming){var cargo=_setup.Robots.Nodes[order.Node].Robots.FirstOrDefault(r=>r.Id==order.CargoId);if(cargo!=null && (cargo.Parts&order.Parts)==order.Parts)DrawRobotGlyph(glyph,cargo.Slice(order.Parts),whiteOutline:true,opacity:.5f);}
+            if(robot!=null)DrawLongDeliveryRobot(glyph,robot,partOpacity:p=>_setup.Robots.LongDelivery.Orders.Any(o=>o.CargoId==robot.Id && o.Node==node && (o.Parts&p)!=0)?.35f:1);
+            foreach(var order in incoming){var cargo=_setup.Robots.Nodes[order.Node].Robots.FirstOrDefault(r=>r.Id==order.CargoId);if(cargo!=null && (cargo.Parts&order.Parts)==order.Parts)DrawLongDeliveryRobot(glyph,cargo.Slice(order.Parts),opacity:.5f);}
             for(int row=0;row<3;row++){
                 var part=HangarPart(row);bool arrival=incoming.Any(o=>(o.Parts&part)!=0);
                 bool outgoing=robot!=null && _setup.Robots.LongDelivery.Orders.Any(o=>o.Node==node && o.CargoId==robot.Id && (o.Parts&part)!=0);
@@ -153,8 +153,13 @@ public partial class Game1
             _ui.Center("予約をクリックして取消 / 荷物は現在地点に残ります",new(610,224,700,34),.3f,Cream);_ui.Button(LongOrderPageButton(-1),"前",Muted,.4f);_ui.Button(LongOrderPageButton(1),"次",Muted,.4f);
         }
         _ui.Button(LongOrdersToggle,$"配送予約 {AllLongOrders.Length}件 / {(_longOrdersOpen?"地図に戻る":"一覧と取消")}",Muted,.4f);
-        if(_directDrag.HasValue){var drag=_directDrag.Value;var robot=_setup.Robots.Nodes[_directNodes[0]].Robots.FirstOrDefault(r=>r.Id==drag.Robot);if(robot!=null)DrawRobotGlyph(new(_pointer.X-34,_pointer.Y-51,68,102),robot.Slice(drag.Part),whiteOutline:true,opacity:.8f);}
+        if(_directDrag.HasValue){var drag=_directDrag.Value;var robot=_setup.Robots.Nodes[_directNodes[0]].Robots.FirstOrDefault(r=>r.Id==drag.Robot);if(robot!=null)DrawLongDeliveryRobot(new(_pointer.X-34,_pointer.Y-51,68,102),robot.Slice(drag.Part),opacity:.8f);}
         else DrawDeliveryTagHint(new(20,146,1880,820));
         _ui.Center("１全体ターンに１地点 / 満杯なら待機 / 経路が切れたら荷物を残して解除",new(40,1012,1840,40),.37f,Cream);
+    }
+    private void DrawLongDeliveryRobot(Rectangle bounds,Robot robot,float opacity=1,Func<RobotParts,float> partOpacity=null)
+    {
+        bool materials=_setup.EquipmentMode==RobotEquipmentMode.Materials;
+        DrawRobotGlyphCore(bounds,robot,true,opacity,partOpacity,showIntegratedMaterial:materials,allowCaptain:materials);
     }
 }
