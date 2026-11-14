@@ -111,8 +111,12 @@ Check(stock.ProductionIntakes.Any(i=>(i.Target??i.Source)==blockedSite) &&
     harvestLane.MapleRemaining==1,"Manufacturing intake keeps the initial harvest order waiting");
 foreach(var lane in stock.Workshops[blockedSite].ProductionLines.Where(l=>!l.HarvestOnly))
     lane.SelectPlan(3);
-// Model the competing intake vacating its reserved slot without running other nodes.
-stock.ProductionIntakes.RemoveAll(i=>(i.Target??i.Source)==blockedSite);
+var intake=stock.ProductionIntakes.Single(i=>(i.Target??i.Source)==blockedSite);
+typeof(RobotWorld).GetMethod("ResolveProductionIntakes",BindingFlags.Instance|BindingFlags.NonPublic)!
+    .Invoke(stock,new object[]{competing});
+Check(!stock.ProductionIntakes.Contains(intake) && stock.Nodes[blockedSite].Robots.Any(r=>r.Id==intake.Product.Id),
+    "Normal intake resolution places the competing product in the hangar");
+stock.Nodes[blockedSite].Remove(intake.Product.Id);
 AdvanceHarvestSite();
 Check(harvestLane.MapleRemaining==0 && stock.Nodes[blockedSite].MapleUnits==RobotWorld.MaplePackageSize &&
     stock.MapleDeposit(blockedSite)==remainingDeposit-1,"The same order resumes once hangar space is freed");

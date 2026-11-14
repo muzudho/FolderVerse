@@ -19,10 +19,14 @@ public partial class Game1
     private static Rectangle FactoryConveyorProduct(int row,int period,RobotWorkshop line)
     {
         float progress=line.Manufacturing?Math.Clamp((float)line.ProductionAge/period,0,1):0;
+        return FactoryConveyorProduct(row,period,line.Manufacturing?line.CurrentProductionPlan.Product:0,progress);
+    }
+
+    private static Rectangle FactoryConveyorProduct(int row,int period,RobotParts parts,float progress)
+    {
         int x=FactoryConveyorStart+(int)(FactoryConveyorTravel(period)*progress);
         int height=122;
-        if(line.Manufacturing){
-            var parts=line.CurrentProductionPlan.Product;
+        if(parts!=0){
             if((parts&RobotParts.Legs)==0)height=(parts&RobotParts.Body)==0?44:84;
         }
         return new(x-43,FactoryRowY(row)+FactoryBeltY-height,86,height);
@@ -30,7 +34,7 @@ public partial class Game1
 
     private static Rectangle FactoryConveyorArrow(Rectangle product)=>new(product.Right+4,product.Center.Y-14,28,28);
 
-    private void DrawFactoryConveyor(RobotWorkshop line,int owner,int row,int period)
+    private void DrawFactoryConveyor(RobotWorkshop line,int owner,int row,int period,float? progress=null,Robot completed=null,bool inFlight=false)
     {
         if(_factoryConveyor==null){
             using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots","factory-conveyor-v001.png"));
@@ -60,9 +64,10 @@ public partial class Game1
             _ui.Box(new(x,y+FactoryBeltY+13,1,tick%3==0?5:3),ink);
             if(tick%3==0)_ui.Center((tick/3).ToString(),new(x-12,y+FactoryBeltY+16,24,15),.29f,ink);
         }
-        if(line.Manufacturing){
-            var product=FactoryConveyorProduct(row,period,line);
-            DrawRobotGlyphCore(new(product.X,product.Y,product.Width,122),line.CurrentProductionPlan.Preview(owner),true,1,null,showIntegratedMaterial:true);
+        if(!inFlight && (completed!=null || line.Manufacturing)){
+            var robot=completed??line.CurrentProductionPlan.Preview(owner);
+            var product=progress is float fraction?FactoryConveyorProduct(row,period,robot.Parts,fraction):FactoryConveyorProduct(row,period,line);
+            DrawRobotGlyphCore(new(product.X,product.Y,product.Width,122),robot,true,1,null,showIntegratedMaterial:true);
         }
     }
 
@@ -80,6 +85,15 @@ public partial class Game1
         _spriteBatch.Draw(_factoryWorkerGear,new Rectangle(177,y+38,66,33),new Rectangle(46,139,622,426),Color.White);
         _spriteBatch.Draw(_factoryWorkerGear,new Rectangle(182,y+128,15,22),new Rectangle(1616,94,409,556),Color.White);
         _spriteBatch.Draw(_factoryWorkerGear,new Rectangle(222,y+116,43,24),new Rectangle(766,205,644,344),Color.White);
+    }
+
+    private void DrawFactoryLaneStatus(int y,bool running,string status)
+    {
+        var lamp=running?new Color(91,240,158):new Color(255,113,105);
+        _ui.Box(new(91,y+199,18,18),new Color(13,27,35));
+        _ui.Box(new(94,y+202,12,12),lamp);
+        _ui.Box(new(96,y+203,4,3),Color.Lerp(lamp,Color.White,.55f));
+        _ui.Text(status,new(116,y+200),Math.Min(.32f,570/_font.MeasureString(status).X),Cream);
     }
 
     private void DrawFactoryHoliday(RobotWorkshop line,int row)

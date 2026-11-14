@@ -49,7 +49,6 @@ public partial class Game1
         return FactoryScreenLines(factory,out _).Length>0;
     }
     private void OpenNodeFactory(){if(!CanOpenNodeFactory)return;_factoryPage=0;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;_nodeOfficeOpen=false;_lastNodeTab=1;BeginFactoryViewport();}
-    private static int FactoryProductionWidth(int period)=>Math.Min(15,Math.Max(1,period))*24;
     private static int FactoryRowY(int row)=>284+row*290;
     private static Rectangle FactoryRobotButton(int line,int period)=>new(301+FactoryConveyorTravel(period),FactoryRowY(line)+67,72,88);
     private Rectangle FactoryProductionButton(int line)
@@ -208,11 +207,7 @@ public partial class Game1
             bool running=line.Manufacturing && !planned && !line.CycleFinished && !line.Paused &&
                 line.RestRemaining==0 && !line.Waiting && !mapleWait && !_setup.Campaign.RobotBattles.LockedNode(node.Id);
             if(_setup.Campaign.RobotBattles.LockedNode(node.Id))status="継戦中 / 一時停止";
-            var lamp=running?new Color(91,240,158):new Color(255,113,105);
-            _ui.Box(new(91,y+199,18,18),new Color(13,27,35));
-            _ui.Box(new(94,y+202,12,12),lamp);
-            _ui.Box(new(96,y+203,4,3),Color.Lerp(lamp,Color.White,.55f));
-            _ui.Text(status,new(116,y+200),Math.Min(.32f,570/_font.MeasureString(status).X),Cream);
+            DrawFactoryLaneStatus(y,running,status);
             int intakes=_setup.Robots.ProductionIntakes.Count(o=>ReferenceEquals(o.Line,line));
             if(intakes>0)_ui.Text($"入荷予約 {intakes}件",new(460,y+112),.3f,Accent);
             if((planned?plannedWorkerId:factory.WorkerAt(l)) is long workerId){
@@ -294,14 +289,6 @@ public partial class Game1
         _ui.Box(new(x-3,y+91,6,5),Cream);
         _ui.Box(new(x-2,y+96,4,8),ink);
         _ui.Box(new(x-1,y+96,2,8),Cream);
-    }
-    private void DrawFactoryOmission(int x,int y)
-    {
-        for(int offset=0;offset<=8;offset+=8)for(int row=-8;row<132;row++){
-            int bend=(int)Math.Round(Math.Sin(row*.16)*3);
-            _ui.Box(new(x+offset+bend-2,y+row,7,1),new(27,49,62));
-            _ui.Box(new(x+offset+bend,y+row,2,1),Cream);
-        }
     }
     private void DrawNodeFactoryTile(bool active)
     {
