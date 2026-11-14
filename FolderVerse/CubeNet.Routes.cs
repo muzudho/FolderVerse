@@ -72,7 +72,7 @@ public sealed partial class CubeNet
         var physical=surface.Normal*normalDistance+face.Right*p.X-face.Up*p.Y;
         return new(Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.U)*10),0,9),Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.V)*10),0,9));
     }
-    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null,bool globeRibbon=false)
+    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null,bool globeRibbon=false,Action<RoutePortal,bool,Func<Color,Vector2,Color>> joinPortal=null)
     {
         Color SearchTint(Color color,Vector2 at){
             if(!FolderSearchFocus && !AttackTargetSpotlight)return color;
@@ -99,9 +99,11 @@ public sealed partial class CubeNet
                     _scenicRoutes.TryDraw(route,pulse,DrawScenicDash,out var vehicle))
                 {
                     if (vehicle is { } toy) vehicles.Add(toy);
+                    if(route.Portal!=null)joinPortal?.Invoke(route.Portal,true,SearchTint);
                     continue;
                 }
                 var curve=world.Routes.Curve(cell,route);
+                if(curve.Length>0 && route.Portal!=null)joinPortal?.Invoke(route.Portal,false,SearchTint);
                 for(int i=1;i<curve.Length;i++)
                 {
                     var a=project(curve[i-1]);var b=project(curve[i]);var delta=b-a;

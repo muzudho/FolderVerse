@@ -1,5 +1,6 @@
 namespace FolderVerse;
 using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 public sealed partial class CubeNet
 {
@@ -7,11 +8,57 @@ public sealed partial class CubeNet
     {
         RefreshScenicRoutes(setup);
         var offset=setup.Terrain;
+        var joinedPortals=new HashSet<(int First,int Second,Vector3 Position)>();
         foreach(var cell in setup.Cells)
         {
             if(!globe.ProjectVisible(cell.Center,cell.Normal,yaw,pitch,panel,out _))continue;
-            Vector2 Project(Vector3 p){globe.ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var result,WorldTerrain.ReliefAt(setup,cell,p,offset));return result;}
-            DrawCellRoutes(ui,setup,cell.Id,Project,pulse,drawNodes:false,globeRibbon:true);
+            Vector2 Project(Vector3 p)
+            {
+                // Sample just inside this face when the route ends exactly on its edge.
+                float relief=WorldTerrain.ReliefAt(setup,cell,Vector3.Lerp(p,cell.Center,.001f),offset);
+                globe.ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var result,relief);
+                return result;
+            }
+            DrawCellRoutes(ui,setup,cell.Id,Project,pulse,drawNodes:false,globeRibbon:true,
+                joinPortal:(portal,dashed,tint)=>
+                {
+                    var other=setup.Cells[portal.Target];
+                    if(!globe.ProjectVisible(other.Center,other.Normal,yaw,pitch,panel,out _))return;
+                    var key=(Math.Min(cell.Id,other.Id),Math.Max(cell.Id,other.Id),portal.Position);
+                    if(!joinedPortals.Add(key))return;
+                    var edge=portal.Position;
+                    var a=edge+cell.Normal*WorldTerrain.ReliefAt(setup,cell,Vector3.Lerp(edge,cell.Center,.001f),offset);
+                    var b=edge+other.Normal*WorldTerrain.ReliefAt(setup,other,Vector3.Lerp(edge,other.Center,.001f),offset);
+                    if(Vector3.DistanceSquared(a,b)<.000001f)return;
+                    // The route lifts away from the corner before touching the opposite face.
+                    var crown=edge+(cell.Normal+other.Normal)*(.035f+Math.Max(Vector3.Distance(a,edge),Vector3.Distance(b,edge)));
+                    var sea=portal.Terrain==TravelTerrain.Sea;
+                    var previous=ProjectBridge(a);
+                    for(int i=1;i<=12;i++)
+                    {
+                        float t=i/12f;
+                        var next=ProjectBridge(Vector3.Lerp(Vector3.Lerp(a,crown,t),Vector3.Lerp(crown,b,t),t));
+                        if(!dashed || (i-1)/2%2==0)DrawBridgeSegment(previous,next,sea,dashed,tint);
+                        previous=next;
+                    }
+                    Vector2 ProjectBridge(Vector3 p)
+                    {
+                        globe.ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var at);
+                        return at;
+                    }
+                });
+        }
+
+        void DrawBridgeSegment(Vector2 a,Vector2 b,bool sea,bool dashed,Func<Color,Vector2,Color> tint)
+        {
+            var delta=b-a;
+            if(delta.LengthSquared()<.001f)return;
+            var center=(a+b)/2;
+            float angle=MathF.Atan2(delta.Y,delta.X);
+            ui.Tile(center+new Vector2(0,2),new Vector2(delta.Length()+2,dashed?4:7),angle,
+                tint(sea?new Color(39,107,137):new Color(145,99,33),center));
+            ui.Tile(center,new Vector2(delta.Length()+2,dashed?3:6),angle,
+                tint(sea?new Color(108,213,245):new Color(255,216,99),center));
         }
         foreach(var cell in setup.Cells)
         {
