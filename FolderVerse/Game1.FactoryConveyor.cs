@@ -109,15 +109,18 @@ public partial class Game1
         var track=FactoryHolidayTrack(row);
         _ui.Text("休暇",new(track.X-46,track.Y+2),.28f,Cream);
         _ui.Box(track,new Color(17,34,45));
+        int turns=Math.Clamp(line.RestTurns,1,9);
+        int length=turns*30;
+        _ui.Box(new(track.X,track.Y+4,length,14),new Color(47,67,78));
+        int duration=IndustryTime.Whole(turns);
+        int elapsed=line.RestRemaining>0?Math.Clamp(duration-line.RestRemaining,0,duration):0;
+        if(elapsed>0)
+            _ui.Box(new(track.X,track.Y+4,length*elapsed/duration,14),new Color(85,206,126));
         for(int i=1;i<=9;i++){
             int x=track.X+i*30;
             _ui.Box(new(x-1,track.Y+4,1,14),Cream*.65f);
         }
-        int length=Math.Clamp(line.RestTurns,1,9)*30;
-        _ui.Box(new(track.X,track.Y+8,length,6),Accent);
         _ui.Box(new(track.X+length-6,track.Y,12,22),Cream);
-        string time=IndustryTime.Format(line.RestRemaining);
-        _ui.Center(time,new(track.Right+12,track.Y-1,76,24),.39f,new Color(255,201,90));
     }
 
     private bool FactoryHolidayInput(MouseState mouse)
