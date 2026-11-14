@@ -173,6 +173,11 @@ Check(waitingLine.WaitingForMaple(cargo,waitingNode) && waitingLine.ProductionAg
     "Mixed recipe waits without progress when maple is missing");
 Check((bool)receiveMaple.Invoke(cargo.Nodes[waitingNode],new object[]{new MaplePackage(999001,21),0,(Func<long,bool>)(_=>false)})!,
     "Mixed recipe fixture can receive exactly 21 units");
+Check(cargo.ReserveMapleShipment(supply,waitingNode,target,999001),"Mixed recipe fixture can reserve its only stock for delivery");
+production.Invoke(waitingFactory,new object[]{cargo,waitingNode,0});
+Check(waitingLine.WaitingForMaple(cargo,waitingNode) && waitingLine.ProductionAge==0 &&
+    cargo.Nodes[waitingNode].MapleUnits==21,"Stock reserved for shipping cannot start manufacturing");
+Check(cargo.CancelMapleShipment(waitingNode,999001),"Cancelling delivery makes the stock available again");
 for(int i=0;i<waitingLine.ProductionPeriod;i++)production.Invoke(waitingFactory,new object[]{cargo,waitingNode,0});
 var mixedIntake=cargo.ProductionIntakes.Single(i=>ReferenceEquals(i.Line,waitingLine));
 Check(cargo.Nodes[waitingNode].MapleUnits==0,"Mixed recipe consumes all 21 units");

@@ -49,10 +49,11 @@ Check(rodAxes.Count == 3 && slabAxes.Count == 3, "Missing axis orientation");
 Check(longestRod && widestSlab, "New maximum sizes not generated");
 Console.WriteLine($"PASS: {samples} seeds; shape counts {string.Join(", ", counts)}; size limits, axis orientations, seed reproducibility, ruler counts and reciprocal surface seams.");
 
-Check(WorldTerrain.HeadSystemForArea(75,100)==PlanetHeadSystem.Fish,"75% sea must qualify");
-Check(WorldTerrain.HeadSystemForArea(25,100)==PlanetHeadSystem.Dog,"75% land must qualify");
-Check(WorldTerrain.HeadSystemForArea(74,100)==PlanetHeadSystem.Monkey &&
-      WorldTerrain.HeadSystemForArea(26,100)==PlanetHeadSystem.Monkey,"Intermediate shares must qualify as monkey");
+Check(WorldTerrain.HeadSystemForArea(200,300)==PlanetHeadSystem.Fish &&
+      WorldTerrain.HeadSystemForArea(201,300)==PlanetHeadSystem.Fish,"At least two thirds sea qualifies as fish");
+Check(WorldTerrain.HeadSystemForArea(100,300)==PlanetHeadSystem.Monkey &&
+      WorldTerrain.HeadSystemForArea(199,300)==PlanetHeadSystem.Monkey,"From one third to below two thirds sea qualifies as monkey");
+Check(WorldTerrain.HeadSystemForArea(99,300)==PlanetHeadSystem.Dog,"Below one third sea qualifies as dog");
 
 const int surveySize=10000, surveySeed=20261114;
 var surveyRandom=new Random(surveySeed);

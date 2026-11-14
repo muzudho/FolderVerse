@@ -54,15 +54,15 @@ public static class WorldTerrain
     {
         if(totalSamples<=0)throw new ArgumentOutOfRangeException(nameof(totalSamples));
         if(seaSamples<0 || seaSamples>totalSamples)throw new ArgumentOutOfRangeException(nameof(seaSamples));
-        if(4L*seaSamples>=3L*totalSamples)return PlanetHeadSystem.Fish;
-        if(4L*(totalSamples-seaSamples)>=3L*totalSamples)return PlanetHeadSystem.Dog;
+        if(3L*seaSamples>=2L*totalSamples)return PlanetHeadSystem.Fish;
+        if(3L*seaSamples<totalSamples)return PlanetHeadSystem.Dog;
         return PlanetHeadSystem.Monkey;
     }
 
     internal static PlanetHeadSystem HeadSystem(SurfaceCell[] cells,int seed)
     {
-        // Each surface cell has the same area. Count the terrain pixels, including
-        // coast as land, so a mixed cell contributes to both sides.
+        // Count terrain before assigning the poles. Pack ice forms only on sea
+        // tiles, so those tiles are already included in the sea area.
         const int detail=TerrainRoutes.Detail;
         var offset=Offset(seed);
         int sea=0;
