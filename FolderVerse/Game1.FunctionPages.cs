@@ -69,7 +69,7 @@ public partial class Game1
     private int FactoryPageCount()
     {
         var factory=PlanningWorkshop(_populationNode);
-        int displayed=Math.Min(factory.LineLimit,factory.ProductionLines.Length+PendingFactoryWorkers(factory).Length);
+        int displayed=FactoryScreenLines(factory,out _).Length;
         return Math.Max(1,(displayed+2)/3);
     }
     private bool FactoryPageClick(Point p)

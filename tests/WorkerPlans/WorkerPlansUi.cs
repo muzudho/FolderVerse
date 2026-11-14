@@ -123,7 +123,23 @@ sealed class WorkerPlansUi:Game1
    Check((bool)Get("_factoryHarvestPage") && (int)Get("_factoryPlanLine")==0 && w.Robots.Workshops[node].ProductionLines[0].MapleRemaining==0,
     "The harvest warning card stays open and an over-limit click does not schedule collection");
   }
+  if(frame==11){
+   var factory=w.Robots.Workshops[node];
+   Check(w.Robots.PartPlanning.ReserveRole(w,node,workerId,HangarReservation.Harvest,0),
+    "Reserve harvest for the existing manufacturing worker");
+   var arguments=new object[]{factory,null};
+   var lines=(RobotWorkshop[])typeof(Game1).GetMethod("FactoryScreenLines",F)!.Invoke(this,arguments)!;
+   Check(lines.Length==factory.ProductionLines.Length && lines[1].HarvestOnly && !factory.ProductionLines[1].HarvestOnly,
+    "Pending role switch previews harvest at the same lane index");
+   Set("_factoryPlanLine",-1);
+   Click(Rect("FactoryRobotButton",1,3).Center);
+   Check((int)Get("_factoryPlanLine")==1 && (bool)Get("_factoryHarvestPage"),"Reassigned lane opens the harvest catalogue");
+   Click(Rect("FactoryAlbumCard",0).Center);
+   w.Campaign.FinishDomestic(w);
+   Check(factory.ProductionLines[1].HarvestOnly && factory.ProductionLines[1].MapleRemaining==1,
+    "The harvest recipe survives confirmation of the role switch");
+  }
   base.Draw(time);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"worker-plans-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);
-  if(frame++==10){Console.WriteLine("PASS: material album, split base recipes, narrow album, restored mixed hangar and harvest warning rendering.");Exit();}
+  if(frame++==11){Console.WriteLine("PASS: material album, hangar, harvest warnings and manufacturing-to-harvest reassignment.");Exit();}
  }
 }

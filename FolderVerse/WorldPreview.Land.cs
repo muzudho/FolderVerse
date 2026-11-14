@@ -51,6 +51,7 @@ public sealed partial class WorldPreview
         Generate(setup.Width,setup.Height,setup.Depth,setup.WorldSeed,setup.PolarAxis,setup.Terrain.ElevationShift);
         var mesh=new List<VertexPositionColorNormal>();
         var offset=setup.Terrain;
+        float Brightness(int cell)=>dimClaimed && setup.Owners[cell]>=0?.35f:1f;
         foreach(var cell in setup.Cells){
             int owner=PresentationOwner.HasValue?ConquestPresentation.ExactCellOwner(setup,cell.Id):exclusive?setup.Nodes.FullOwner(cell.Id):setup.Owners[cell.Id];
             if(PresentationOwner.HasValue && (owner!=PresentationOwner.Value || PresentationCells!=null && !PresentationCells.Contains(cell.Id)))owner=-1;
@@ -59,12 +60,12 @@ public sealed partial class WorldPreview
                 exclusive && CountryColors && owner>=0
                     ? LandTerritoryColor(setup.CountryMapColor(owner,x,y),WorldTerrain.Kind(height))
                     : WorldTerrain.ColorAt(height,cell.Normal,setup.PolarAxis),
-                brightness:dimClaimed && setup.Owners[cell.Id]>=0?.35f:1f);
+                brightness:Brightness(cell.Id));
         }
         _vertices.Dispose();
         _vertices=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
         _vertices.SetData(mesh.ToArray());_primitiveCount=mesh.Count/3;
-        BuildWhirlpoolMesh(setup);
+        BuildWhirlpoolMesh(setup,Brightness);
     }
 }
 

@@ -48,6 +48,10 @@ sealed class FlagGame:Game1
   Check(before.SequenceEqual(Colours()),"Claimed and unclaimed territory must retain identical terrain colours");Array.Copy(owners,w.Owners,owners.Length);
   Array.Fill(w.Owners,0);preview.ShowLandConquest(w,dimClaimed:true);
   var dimmed=Colours();
+  var iceColors=new[]{new Color(195,229,242),new Color(219,243,249),new Color(238,251,252)};
+  var icePixels=Enumerable.Range(0,before.Length).Where(i=>iceColors.Contains(before[i])).ToArray();
+  Check(icePixels.Length>0 && icePixels.All(i=>dimmed[i]==Color.Lerp(Color.Black,before[i],.35f)),
+    "Visible pack ice dims to 35 percent with claimed terrain");
   Array.Fill(w.Owners,-1);preview.ShowLandConquest(w,dimClaimed:true);
   Check(before.SequenceEqual(Colours()),"Unclaimed land retains its normal brightness in land conquest");
   Check(before.Zip(dimmed).Any(pair=>pair.First.R>pair.Second.R+20),"Claimed terrain is visibly darker");

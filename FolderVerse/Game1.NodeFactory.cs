@@ -14,29 +14,39 @@ public partial class Game1
     private bool CanOpenNodeFactory=>NodeFactoriesAllowed && _populationNode>=0 &&
         _populationNode<_setup.Robots.Workshops.Length && _populationNode<_setup.Nodes.All.Length &&
         CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) && HasFactoryScreenLines();
-    private Robot[] PendingFactoryWorkers(RobotWorkshop factory)
+    private RobotWorkshop[] FactoryScreenLines(RobotWorkshop factory,out System.Collections.Generic.Dictionary<int,long> planned)
     {
-        if(!DomesticOperationsAllowed)return Array.Empty<Robot>();
-        var assigned=Enumerable.Range(factory.BaseLineCount,factory.ProductionLines.Length-factory.BaseLineCount)
-            .Select(factory.WorkerAt).ToHashSet();
-        return PlanningStock.Nodes[_populationNode].Robots.Where(r=>r.FactoryWorker && !assigned.Contains(r.Id) &&
-                _setup.Robots.PartPlanning.WorkerReservation(r.Id)!=null)
-            .OrderBy(r=>r.Id).ToArray();
-    }
-    private RobotWorkshop[] FactoryScreenLines(RobotWorkshop factory, Robot[] pending)
-    {
+        planned=new();
+        if(!DomesticOperationsAllowed)return factory.ProductionLines;
         var node=_setup.Nodes.All[_populationNode];
-        return factory.ProductionLines.Concat(pending.Take(Math.Max(0,factory.LineLimit-factory.ProductionLines.Length)).Select(worker=>{
+        var reservations=_setup.Robots.PartPlanning;
+        var workers=PlanningStock.Nodes[node.Id].Robots.Where(r=>r.FactoryWorker && reservations.WorkerReservation(r.Id)!=null)
+            .ToDictionary(r=>r.Id);
+        var lines=new System.Collections.Generic.List<RobotWorkshop>();
+        void AddWorker(Robot worker)
+        {
             var line=factory.CreateWorkerLine(worker,_setup.WorldSeed,node.Id,node.Owner);
-            _setup.Robots.PartPlanning.WorkerReservation(worker.Id)?.WorkerLane?.Apply(line);
-            return line;
-        })).ToArray();
+            reservations.WorkerReservation(worker.Id)?.WorkerLane?.Apply(line);
+            lines.Add(line);
+        }
+        for(int i=0;i<factory.ProductionLines.Length;i++){
+            var line=factory.ProductionLines[i];
+            if(factory.WorkerAt(i) is long id && workers.Remove(id,out var worker)){
+                planned.Add(lines.Count,id);
+                AddWorker(worker);
+            }else lines.Add(line);
+        }
+        foreach(var worker in workers.Values.OrderBy(r=>r.Id).Take(Math.Max(0,factory.LineLimit-lines.Count))){
+            planned.Add(lines.Count,worker.Id);
+            AddWorker(worker);
+        }
+        return lines.ToArray();
     }
     private bool CanManageNodeFactory(int owner)=>_setup.ControllerOf(owner)==_setup.TurnPlayer;
     private bool HasFactoryScreenLines()
     {
         var factory=PlanningWorkshop(_populationNode);
-        return factory.ProductionLines.Length>0 || factory.LineLimit>0 && PendingFactoryWorkers(factory).Length>0;
+        return FactoryScreenLines(factory,out _).Length>0;
     }
     private void OpenNodeFactory(){if(!CanOpenNodeFactory)return;_factoryPage=0;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;_nodeOfficeOpen=false;_lastNodeTab=1;}
     private static int FactoryProductionWidth(int period)=>Math.Min(15,Math.Max(1,period))*24;
@@ -46,7 +56,7 @@ public partial class Game1
     {
         if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length)return Rectangle.Empty;
         var factory=PlanningWorkshop(_populationNode);
-        var lines=FactoryScreenLines(factory,PendingFactoryWorkers(factory));
+        var lines=FactoryScreenLines(factory,out _);
         if(line<0 || line>=lines.Length)return Rectangle.Empty;
         return FactoryRobotButton(line%3,lines[line].Manufacturing?lines[line].EffectiveProductionPeriod(_setup.Nodes.All[_populationNode].Purpose):3);
     }
@@ -72,12 +82,10 @@ public partial class Game1
         if(!NodeFactoriesAllowed){_nodeFactoryOpen=false;_factoryDropDown=_factoryPlanLine=-1;return false;}
         if(_populationNode<0 || _populationNode>=_setup.Robots.Workshops.Length || _populationNode>=_setup.Nodes.All.Length){_nodeFactoryOpen=false;_factoryDropDown=_factoryPlanLine=-1;return false;}
         var factory=PlanningWorkshop(_populationNode);
-        var pending=PendingFactoryWorkers(factory);
-        var lines=FactoryScreenLines(factory,pending);
-        int liveCount=factory.ProductionLines.Length;
+        var lines=FactoryScreenLines(factory,out var planned);
         void SavePending(int index)
         {
-            if(index>=liveCount)_setup.Robots.PartPlanning.SetWorkerLane(pending[index-liveCount].Id,lines[index]);
+            if(planned.TryGetValue(index,out long worker))_setup.Robots.PartPlanning.SetWorkerLane(worker,lines[index]);
         }
         if (FactoryAlbumOpen)
         {
@@ -121,7 +129,7 @@ public partial class Game1
         }return true;}
         if(_factoryPlanLine>=0){int line=_factoryPlanLine;for(int i=0;i<lines[line].PlanCount;i++)if(FactoryPlanButton(i).Contains(pointer)){lines[line].SelectPlan(i);SavePending(line);_factoryPlanLine=-1;return true;}_factoryPlanLine=-1;return true;}
         for(int l=_factoryPage*3;l<Math.Min(lines.Length,(_factoryPage+1)*3);l++){
-            if(l<liveCount && !lines[l].HarvestOnly && lines[l].MapleRemaining==0 && FactoryIntakeButton(l).Contains(pointer)){_intakeLine=lines[l];_intakeNode=_populationNode;_intakePage=0;return true;}
+            if(!planned.ContainsKey(l) && !lines[l].HarvestOnly && lines[l].MapleRemaining==0 && FactoryIntakeButton(l).Contains(pointer)){_intakeLine=lines[l];_intakeNode=_populationNode;_intakePage=0;return true;}
             var line=lines[l];int period=line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[_populationNode].Purpose):3;
             if(FactoryRobotButton(l%3,period).Contains(pointer) || FactoryRobotArrow(l%3,period).Contains(pointer)){_factoryHarvestPage=line.HarvestOnly;_factoryPlanLine=l;_factoryLine=l;return true;}
             if(line.HarvestOnly)continue;
@@ -138,10 +146,8 @@ public partial class Game1
     {
         if(!NodeFactoriesAllowed){_nodeFactoryOpen=false;return;}
         var node=_setup.Nodes.All[_populationNode];var factory=PlanningWorkshop(node.Id);
-        var pending=PendingFactoryWorkers(factory);
-        var lines=FactoryScreenLines(factory,pending);
+        var lines=FactoryScreenLines(factory,out var plannedWorkers);
         int displayed=lines.Length;
-        int liveCount=factory.ProductionLines.Length;
         _factoryPage=Math.Clamp(_factoryPage,0,Math.Max(0,(displayed-1)/3));
         _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Box(new(54,150,850,6),_setup.OwnerColor(node.Owner));
 
@@ -158,7 +164,7 @@ public partial class Game1
         }
         for(int l=_factoryPage*3;l<Math.Min(displayed,(_factoryPage+1)*3);l++){
             var line=lines[l];int y=284+(l%3)*200,period=line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[_populationNode].Purpose):3;_factoryLine=l;
-            bool planned=l>=liveCount;
+            bool planned=plannedWorkers.TryGetValue(l,out long plannedWorkerId);
             bool mapleWait=line.WaitingForMaple(_setup.Robots,node.Id);
             _ui.Box(new(78,y-24,782,196),l%2==0?new Color(37,63,77):new Color(46,67,79));
             _ui.Center((l+1).ToString(),new(84,y+22,62,96),1.35f,new Color(167,190,194));
@@ -167,7 +173,7 @@ public partial class Game1
                 DrawFactoryHarvestLane(line,node.Id,l%3,y);
                 continue;
             }
-            if(line.HarvestOnly){_ui.Text("採取レーン",new(160,y),.48f,Cream);_ui.Button(FactoryRobotButton(l%3,3),"採取",Muted,.34f);continue;}
+            if(line.HarvestOnly){_ui.Text(planned?"採取レーン / 予約中":"採取レーン",new(250,y),.48f,Cream);_ui.Button(FactoryRobotButton(l%3,3),"採取",Muted,.34f);continue;}
             int productionWidth=FactoryProductionWidth(period);
             int caret=DrawFactoryLaneTrack(line,160,y);
             var robot=FactoryRobotButton(l%3,period);_ui.Box(robot,_factoryPlanLine==l || robot.Contains(_pointer)?Accent:Muted);
@@ -189,14 +195,12 @@ public partial class Game1
             _ui.Text(status,new(160,y-19),Math.Min(.3f,690/_font.MeasureString(status).X),Cream);
             int intakes=_setup.Robots.ProductionIntakes.Count(o=>ReferenceEquals(o.Line,line));
             if(intakes>0)_ui.Text($"入荷予約 {intakes}件",new(460,y+112),.3f,Accent);
-            if((planned?pending[l-liveCount].Id:factory.WorkerAt(l)) is long workerId){var worker=planned?pending[l-liveCount]:_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==workerId);if(worker!=null){DrawRobotGlyph(new(754,y+8,60,84),line.WorkerSnapshot??worker);_ui.Text("工場作業員",new(674,y+8),.3f,Accent);_ui.Text("ID "+workerId,new(674,y+36),.28f,Cream);if(!planned && line.WorkerSnapshot!=null)_ui.Text("任命時",new(674,y+62),.25f,Cream);}}
+            if((planned?plannedWorkerId:factory.WorkerAt(l)) is long workerId){var worker=line.WorkerSnapshot??_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==workerId);if(worker!=null){DrawRobotGlyph(new(754,y+8,60,84),worker);_ui.Text("工場作業員",new(674,y+8),.3f,Accent);_ui.Text("ID "+workerId,new(674,y+36),.28f,Cream);if(!planned && line.WorkerSnapshot!=null)_ui.Text("任命時",new(674,y+62),.25f,Cream);}}
             else _ui.Text("常設レーン",new(674,y+8),.3f,Cream*.7f);
         }
         _factoryLine=savedLine;
         _ui.Text("格納庫は必ず",new(180,888),.43f,Cream);FactoryDrop(2,factory.ReservedSlots);_ui.Text("個空ける",new(552,888),.43f,Cream);
         DrawNodeTabs();DrawFactoryPages();
-        if(pending.Length>displayed-factory.ProductionLines.Length)
-            _ui.Text("工場作業員の交代予定あり",new(160,857),.38f,Accent);
         _ui.Text($"産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn)}   /   蛍光灯：現在位置　緑：生産　黄：休暇　赤：空き枠・原材料待ち",new(160,248),.25f,Cream);
         if(!FactoryAlbumOpen && _factoryPlanLine>=0 && _factoryPlanLine<displayed){
             var line=lines[_factoryPlanLine];_ui.Box(new(84,360,790,590),new(22,40,54));

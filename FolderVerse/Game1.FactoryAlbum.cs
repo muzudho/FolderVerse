@@ -27,7 +27,7 @@ public partial class Game1
         if (_populationNode < 0 || _populationNode >= _setup.Nodes.All.Length) return;
         var node = _setup.Nodes.All[_populationNode];
         var factory = PlanningWorkshop(node.Id);
-        var lines = FactoryScreenLines(factory, PendingFactoryWorkers(factory));
+        var lines = FactoryScreenLines(factory, out _);
         if (_factoryPlanLine >= lines.Length) return;
         var line = lines[_factoryPlanLine];
 
