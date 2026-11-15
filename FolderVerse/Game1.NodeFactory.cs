@@ -42,7 +42,8 @@ public partial class Game1
         }
         return lines.ToArray();
     }
-    private bool CanManageNodeFactory(int owner)=>_setup.ControllerOf(owner)==_setup.TurnPlayer;
+    private bool CanManageNodeFactory(int owner)=>_setup.ControllerOf(owner)==_setup.TurnPlayer ||
+        (_computerDomesticNodes!=null && owner==_setup.PlayerSlot);
     private bool HasFactoryScreenLines()
     {
         var factory=PlanningWorkshop(_populationNode);
