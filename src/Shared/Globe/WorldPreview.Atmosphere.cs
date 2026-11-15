@@ -14,7 +14,7 @@ public sealed partial class WorldPreview
     private VertexPositionColor[] _cloudVertices=Array.Empty<VertexPositionColor>();
     private static Vector3 AtmosphereAxis(int axis)=>axis switch {0=>Vector3.UnitX,1=>Vector3.UnitY,_=>Vector3.UnitZ};
 
-    internal void DrawAtmosphere(float seconds,float opacity=1)
+    internal void DrawAtmosphere(float seconds,float opacity=1,float cloudSpeedMultiplier=1)
     {
         _atmosphereEffect??=new BasicEffect(_device){VertexColorEnabled=true};
         _atmosphereEffect.World=_effect.World;
@@ -27,7 +27,7 @@ public sealed partial class WorldPreview
         var half=new Vector3(Width,Height,Depth)*.5f;
         var viewTransform=_effect.World*_effect.View;
         DrawShell(half+new Vector3(InnerAtmosphereThickness),.20f);
-        DrawAtmosphereClouds(seconds,opacity);
+        DrawAtmosphereClouds(seconds,opacity,cloudSpeedMultiplier);
         DrawShell(half+new Vector3(AtmosphereThickness),.10f);
         _device.DepthStencilState=DepthStencilState.Default;
 
@@ -70,7 +70,7 @@ public sealed partial class WorldPreview
 
     }
 
-    private void DrawAtmosphereClouds(float seconds,float opacity)
+    private void DrawAtmosphereClouds(float seconds,float opacity,float speedMultiplier)
     {
         var size=new Vector3(Width,Height,Depth)*.5f+new Vector3(InnerAtmosphereThickness);
         var up=AtmosphereAxis(_polarAxis);
@@ -84,7 +84,7 @@ public sealed partial class WorldPreview
         int cloudBands=Math.Clamp((int)MathF.Ceiling(height),3,6);
         int cloudsPerBand=Math.Clamp((int)MathF.Ceiling(perimeter/2.8f),4,20);
         const float speed=.24f;
-        float scroll=(seconds*speed)%perimeter;
+        float scroll=(seconds*speed*speedMultiplier)%perimeter;
         float alpha=opacity*MathHelper.Lerp(.60f,.26f,MathHelper.Clamp((GlobeZoom-1)/2,0,1));
         var bright=new Color(240,250,255)*alpha;
         var shaded=new Color(152,198,226)*alpha;

@@ -402,7 +402,8 @@ public partial class Game1
                 if(handoff.ModelOpacity>0)
                     planet.Draw(0,0,(float)age,false,true,frame,opacity:handoff.ModelOpacity,solidBody:handoff.Tint);
                 if(handoff.Opacity>0)
-                    planet.Draw(0,0,(float)age,false,true,frame,opacity:handoff.Opacity,cloudTime:(float)time.TotalGameTime.TotalSeconds);
+                    planet.Draw(0,0,(float)age,false,true,frame,opacity:handoff.Opacity,
+                        cloudTime:(float)time.TotalGameTime.TotalSeconds,cloudSpeedMultiplier:10);
             }
             finally{GraphicsDevice.Viewport=viewport;planet.ManualOrientation=previousPose;}
         }
