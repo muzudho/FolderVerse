@@ -26,7 +26,7 @@ public partial class Game1
     private int _rawStockPercent=25;
     private Rectangle? _fortuneSliderDragging;
     private static readonly Rectangle FortuneSlider=new(60,435,480,48),RawStockSlider=new(60,560,480,48),
-        EquipmentModeButton=new(60,660,480,54),FortuneConfirm=new(60,740,480,66);
+        FortuneConfirm=new(60,740,480,66);
     private bool FortuneSettingsAvailable=>_screen==Screen.Fortune && !_demoActive && _setup.TutorialStep==0;
     private Point? _landDrag;
     private int[] _automaticLand=Array.Empty<int>();
@@ -37,6 +37,7 @@ public partial class Game1
     private bool LandHumanTurn=>!_setup.ComputerOnly && (_setup.HumanPlayers.Count==0?LandRuler==_setup.PlayerSlot:_setup.HumanPlayers.Contains(LandRuler));
     private void BeginLandConquest()
     {
+        _setup.EquipmentMode=RobotEquipmentMode.Materials;
         _robotScatterPercent=25;
         _rawStockPercent=25;
         _fortuneSliderDragging=null;
@@ -98,12 +99,10 @@ public partial class Game1
         if(_screen==Screen.Fortune)
         {
             if(FortuneSettingsAvailable){
-                if(active && click && EquipmentModeButton.Contains(_pointer))
-                    _setup.EquipmentMode=_setup.EquipmentMode==RobotEquipmentMode.Materials?RobotEquipmentMode.Legacy:RobotEquipmentMode.Materials;
                 if(!active || mouse.LeftButton==ButtonState.Released)_fortuneSliderDragging=null;
                 if(active && click){
                     if(FortuneSlider.Contains(_pointer))_fortuneSliderDragging=FortuneSlider;
-                    if(_setup.EquipmentMode==RobotEquipmentMode.Materials && RawStockSlider.Contains(_pointer))
+                    if(RawStockSlider.Contains(_pointer))
                         _fortuneSliderDragging=RawStockSlider;
                 }
                 if(_fortuneSliderDragging is Rectangle slider){
@@ -176,12 +175,9 @@ public partial class Game1
         if(_screen==Screen.Fortune){
             _ui.Text("空から届く運命のロボット",new(60,230),.75f,Color.White);
             if(FortuneSettingsAvailable){
-                _ui.Text("ポケットに正規の完全体を２体",new(60,300),.45f,Cream);
+                _ui.Text("ポケットにポリプロピレン製の完全体を２体",new(60,300),.45f,Cream);
                 DrawFortuneSlider(FortuneSlider,"ロボットの量",_robotScatterPercent);
-                if(_setup.EquipmentMode==RobotEquipmentMode.Materials)
-                    DrawFortuneSlider(RawStockSlider,"格納庫の原材料",_rawStockPercent);
-                _ui.Button(EquipmentModeButton,_setup.EquipmentMode==RobotEquipmentMode.Materials?"装備数：素材９種":"装備数：旧仕様",
-                    _setup.EquipmentMode==RobotEquipmentMode.Materials?Accent:Muted,.48f);
+                DrawFortuneSlider(RawStockSlider,"格納庫の原材料",_rawStockPercent);
                 _ui.Button(FortuneConfirm,"確定して進む",Accent,.58f);
             }else _ui.Text("配備・工場・廃炉・輸送計画を抽選中",new(60,300),.45f,Cream);
             return;
