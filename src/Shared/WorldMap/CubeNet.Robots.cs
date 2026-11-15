@@ -10,9 +10,24 @@ public sealed record RobotMapBadge(int Node,Rectangle Bounds,bool Detailed);
 public sealed partial class CubeNet
 {
     private readonly List<RobotMapBadge> _robotBadges=new();
+    private readonly List<(int Node,Rectangle Bounds,int Count)> _globeRobotOverflow=new();
     public IReadOnlyList<RobotMapBadge> RobotBadges=>_robotBadges;
-    public void ClearGlobeRobotBadges(){_badgePanel=null;_robotBadges.Clear();}
+    public void ClearGlobeRobotBadges(){_badgePanel=null;_robotBadges.Clear();_globeRobotOverflow.Clear();}
     public void AddGlobeRobotBadge(int node,Rectangle bounds)=>_robotBadges.Add(new(node,bounds,true));
+    internal void AddGlobeRobotOverflow(int node,Vector2 at,int hidden,Rectangle panel)
+    {
+        var bounds=RobotOverflowBounds(at);
+        if(panel.Intersects(bounds))_globeRobotOverflow.Add((node,bounds,hidden));
+    }
+    private void DrawGlobeRobotOverflow(UiPainter ui)
+    {
+        if(!ShowRobots || DirectoryOnly)return;
+        foreach(var (node,bounds,count) in _globeRobotOverflow)
+        {
+            DrawRobotOverflow(ui,bounds,count);
+            AddGlobeRobotBadge(node,bounds);
+        }
+    }
     public int HitRobotBadge(Point pointer){if(_badgePanel.HasValue)pointer=UnrotateScreen(pointer,_badgePanel.Value);return _robotBadges.AsEnumerable().Reverse().Where(b=>b.Bounds.Contains(pointer)).Select(b=>b.Node).DefaultIfEmpty(-1).First();}
     public const float RobotDetailScale=400;
     public void DrawMapObjects(UiPainter ui,WorldSetup world,Rectangle panel,float pulse)
@@ -31,7 +46,7 @@ public sealed partial class CubeNet
         DrawRobotLayer(ui,world,panel,n=>{
             var cell=world.Cells[n.Cell];
             return globe.ProjectVisible(world.Routes.Position(n.Cell,n.Center),cell.Normal,yaw,pitch,panel,out var at)?at:null;
-        },1);
+        },65*globe.GlobeZoom);
     }
     // Even spacing around the node keeps its center and connected roads visible.
     public static Vector2 RobotRingSlot(int index,int count)
@@ -40,31 +55,53 @@ public sealed partial class CubeNet
         float radius=Math.Max(48,count*30/MathHelper.TwoPi);
         return new Vector2(MathF.Cos(angle),MathF.Sin(angle))*radius;
     }
+    public static Vector2 RobotSpiralSlot(int index,float spacing)
+    {
+        const float innerRadius=1.55f;
+        const float growth=1.25f/MathHelper.TwoPi;
+        // Each slot advances by approximately one spacing along the spiral.
+        float radius=MathF.Sqrt(innerRadius*innerRadius+2*growth*index);
+        float angle=MathHelper.PiOver2+(radius-innerRadius)/growth;
+        return new Vector2(MathF.Cos(angle),MathF.Sin(angle))*(radius*spacing);
+    }
+    internal static int VisibleRobotCount(int total,float projectedUnit)=>
+        Math.Min(total,projectedUnit<65?4:projectedUnit<120?8:projectedUnit<200?16:total);
+    private static Rectangle RobotOverflowBounds(Vector2 at)=>new((int)at.X-22,(int)at.Y-11,44,22);
+    private static void DrawRobotOverflow(UiPainter ui,Rectangle box,int count)
+    {
+        ui.Box(box,new Color(16,35,47,230));
+        ui.Center($"+{count}",box,.44f,new Color(255,229,159));
+    }
     private static int MapPartCount(RobotParts parts)=>
         ((parts&RobotParts.Head)!=0?1:0)+((parts&RobotParts.Body)!=0?1:0)+((parts&RobotParts.Legs)!=0?1:0);
     public static float MapObjectHop(double seconds,int index)=>6*MathF.Pow(MathF.Max(0,MathF.Sin((float)(seconds*MathHelper.TwoPi/1.2)+index*.45f)),2);
     private void DrawRobotLayer(UiPainter ui,WorldSetup world,Rectangle panel,Func<Node,Vector2?> project,float scale,float pulse=0)
     {
         _robotBadges.Clear();
+        _globeRobotOverflow.Clear();
         if(!ShowRobots || !world.Campaign.UseRobotCombat)return;
         int current=world.Nodes.Current(world.PlayerSlot)?.Id??-1;
         var groups=world.Robots.FunctionDisplayGroups(world);
         foreach(var node in world.Nodes.All.OrderBy(n=>EmphasizedNode(n.Id)?2:n.Id==current?1:0).ThenBy(n=>n.Id))
         {
             if(!NodeVisible(world,node))continue;
-            var robots=groups.GetValueOrDefault(node.Id,new List<Robot>()).Where(r=>ShowOtherCountries || world.Relations.Controls(r.Owner)).OrderByDescending(r=>MapPartCount(r.Parts)).ToArray();
+            var robots=groups.GetValueOrDefault(node.Id,new List<Robot>()).Where(r=>ShowOtherCountries || world.Relations.Controls(r.Owner)).OrderBy(r=>r.Id).ToArray();
             if(robots.Length==0)continue;
             var point=project(node);if(point==null)continue;
             var at=point.Value;float zoom=1;
-            var cards=robots.Select((robot,i)=>{
-                var offset=RobotRingSlot(i,robots.Length)*zoom;
+            int visible=VisibleRobotCount(robots.Length,scale);
+            var cards=robots.Take(visible).Select((robot,i)=>{
+                var offset=RobotSpiralSlot(i,46)*zoom;
                 return AvoidWhirlpool(new Rectangle((int)(at.X+offset.X-12*zoom),(int)(at.Y+offset.Y-MapPartCount(robot.Parts)*6*zoom),(int)(24*zoom),(int)(MapPartCount(robot.Parts)*12*zoom)));
             }).ToArray();
+            int hidden=robots.Length-visible;
+            var overflow=hidden>0?AvoidWhirlpool(RobotOverflowBounds(at+RobotSpiralSlot(visible,46))):Rectangle.Empty;
             var bounds=cards.Aggregate(Rectangle.Union);
+            if(hidden>0)bounds=Rectangle.Union(bounds,overflow);
             if(!MapViewport(panel).Intersects(bounds))continue;
             // Keep gaps between robots outside the hit area.
             foreach(var card in cards){var hit=card;if(ShowRoutes && EmphasizedNode(node.Id)){hit.Y-=6;hit.Height+=6;}_robotBadges.Add(new(node.Functional?node.Id:node.FunctionHost,hit,true));}
-            for(int i=0;i<robots.Length;i++)
+            for(int i=0;i<visible;i++)
             {
                 var robot=robots[i];var card=cards[i];
                 if(ShowRoutes && EmphasizedNode(node.Id))card.Offset(0,-(int)MapObjectHop(pulse,i));
@@ -80,6 +117,11 @@ public sealed partial class CubeNet
                     row++;
                 }
                 if(robot.ShoeOwner>=0)RobotWorkArt.DrawWindupKey(ui,card);
+            }
+            if(hidden>0 && MapViewport(panel).Intersects(overflow))
+            {
+                DrawRobotOverflow(ui,overflow,hidden);
+                _robotBadges.Add(new(node.Functional?node.Id:node.FunctionHost,overflow,true));
             }
         }
     }

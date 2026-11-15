@@ -109,12 +109,23 @@ public sealed partial class WorldPreview
                     }
                 }
             }
-            for(int slot=0;slot<robots.Count;slot++)
+            robots.Sort((a,b)=>a.Id.CompareTo(b.Id));
+            var screenCenter=new Vector2(projected.X,projected.Y);
+            float ScreenDistance(Vector3 point)
+            {
+                var p=Screen(point);
+                return Vector2.Distance(screenCenter,new(p.X,p.Y));
+            }
+            int visible=robots.Count<=4?robots.Count:CubeNet.VisibleRobotCount(robots.Count,
+                Math.Max(ScreenDistance(center+cell.U),ScreenDistance(center+cell.V)));
+            const float spacing=.115f;
+            int badgeNode=node.Functional?node.Id:node.FunctionHost;
+            for(int slot=0;slot<visible;slot++)
             {
                 hop=emphasized?CubeNet.MapObjectHop(seconds,slot)*.003f:0;
                 bounds=Rectangle.Empty;
-                float angle=-MathHelper.PiOver2+slot*MathHelper.TwoPi/robots.Count,radius=Math.Max(.18f,robots.Count*.12f/MathHelper.TwoPi);
-                float u=MathF.Cos(angle)*radius,v=MathF.Sin(angle)*radius,z=.008f;var robot=robots[slot];
+                var offset=CubeNet.RobotSpiralSlot(slot,spacing);
+                float u=offset.X,v=offset.Y,z=.008f;var robot=robots[slot];
                 foreach(var whirl in setup.Routes.Whirlpools){
                     if(Vector3.Dot(cell.Normal,setup.Cells[whirl.Cell].Normal)<.99f)continue;
                     var delta=center+cell.U*u+cell.V*v-setup.Routes.WhirlpoolCenter(whirl);float clearance=whirl.Radius/10+.10f;
@@ -159,7 +170,17 @@ public sealed partial class WorldPreview
                     RobotBox(u,v+.044f,z+.023f,.04f,.008f,.009f,new(230,102,60));RobotBox(u,v,z+.09f,.01f,.01f,.025f,new(83,112,122));
                 }
                 if(robot.ShoeOwner>=0)foreach(float side in new[]{-1f,1f})RobotBox(u+side*.027f,v+.012f,.008f,.055f,.085f,.025f,setup.OwnerColor(robot.ShoeOwner));
-                if(bounds!=Rectangle.Empty && bounds.Intersects(panel))net.AddGlobeRobotBadge(node.Functional?node.Id:node.FunctionHost,bounds);
+                if(bounds!=Rectangle.Empty && bounds.Intersects(panel))net.AddGlobeRobotBadge(badgeNode,bounds);
+            }
+            if(visible<robots.Count)
+            {
+                var slot=CubeNet.RobotSpiralSlot(visible,spacing);
+                hop=0;
+                var at=Screen(Point(slot.X,slot.Y,.1f));
+                var position=new Vector2(at.X,at.Y);
+                var outward=position-screenCenter;
+                outward=outward.LengthSquared()>1?Vector2.Normalize(outward):Vector2.UnitY;
+                net.AddGlobeRobotOverflow(badgeNode,position+outward*24,robots.Count-visible,panel);
             }
             foreach(int ruler in Enumerable.Range(0,setup.ActiveCount).Where(r=>net.ShowBatteries && setup.Relations.Powered[r] && setup.Nodes.Current(r)?.Id==node.Id && (net.ShowOtherCountries || setup.Relations.Controls(r)) && (net.VisibleOperationBatteries==null || net.VisibleOperationBatteries.Contains(r)))){
                 hop=emphasized || net.HoveredBattery==ruler?CubeNet.MapObjectHop(seconds,ruler)*.003f:0;

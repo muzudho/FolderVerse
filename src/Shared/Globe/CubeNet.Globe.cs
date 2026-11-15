@@ -92,6 +92,7 @@ public sealed partial class CubeNet
             globe.ProjectVisible(p.B,p.Cell.Normal,yaw,pitch,panel,out var b);
             return (a,b);
         });
+        DrawGlobeRobotOverflow(ui);
     }
 
     internal float MapPuckRadius(Node node,float projectedUnit)
