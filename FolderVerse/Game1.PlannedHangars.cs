@@ -7,9 +7,10 @@ public partial class Game1
 {
     private RobotWorld PlanningStock=>_computerAssemblyStock ?? (DomesticOperationsAllowed?_setup.Robots.PartPlanning.Preview(_setup):_setup.Robots);
     private bool InspectableNode(int node)=>node>=0 && node<_setup.Nodes.All.Length && _setup.Nodes.All[node].Functional;
-    private int HangarPlanningNode=>DomesticOperationsAllowed
-        ? _setup.Campaign.FunctionTransfers.Orders.FirstOrDefault(o=>!o.FactoryOnly && o.Source==_populationNode && _setup.Campaign.FunctionTransfers.CanReserve(_setup,o.Source,o.Target))?.Target??_populationNode
-        : _populationNode;
+    private int HangarPlanningNode=>HangarPlanningNodeAt(_populationNode);
+    private int HangarPlanningNodeAt(int node)=>DomesticOperationsAllowed
+        ? _setup.Campaign.FunctionTransfers.Orders.FirstOrDefault(o=>!o.FactoryOnly && o.Source==node && _setup.Campaign.FunctionTransfers.CanReserve(_setup,o.Source,o.Target))?.Target??node
+        : node;
     private bool PlanningFunctional(int node)
     {
         if(node<0 || node>=_setup.Nodes.All.Length)return false;

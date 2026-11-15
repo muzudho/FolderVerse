@@ -3268,3 +3268,274 @@
 - 開始02:40:00、終了02:40 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。本記録のみ追記。
 - 02:40:17に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=103` で起動、終了0。960×540でCPU5視点から地点91を通常UIで選択し、2体をクリックして確定後に赤チェック。16指示を退避0件で描画し、人間へ復帰。証拠は `selected=91 target=91`、`Individual robot clicks: 2`、`No-peaceful batch fallbacks=0` と最終PASS。
 - 新規採番なし。プライマリーは01:01回、直送便・左右格納庫は00:38回を参照。今回の実行で起伏による投影差と物理Escは未確認。次回は地星儀の段階0直後に同一カメラで投影点と当たり判定を比較する。
+
+### 実行履歴：2026-11-15 02:58回
+
+- 開始02:58:31、終了03:00:54 JST。マージ後の部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。開始時にゲームC#・テスト・両記録の未コミット差分と未解決の競合なし。Git LFSの起動エラーにより画像差分は未確認。変更は本記録のみ。
+- 指定NASの接続を確認し、`dotnet build tests/DemoInspectorUi/DemoInspectorUi.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-16/demo-audit --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers -v quiet` は警告・エラー0。03:00:11に同出力の `DemoInspectorUi.exe` を `ALSOFT_DRIVERS=null` で起動し、終了0。
+- 1920×1080／960×540で、直送便プライマリー、インスペクターの閉鎖、工場6プランの実矩形と製造開始を確認。例は論理クリック(327,428)と矩形(284,406,86,44)、`manufacturing=True` と最終PASS。新規採番なし。
+- 次回は同じNAS出力先で `DirectDeliveryUi` と `DemoChecksUi` を現HEADからビルドし、直送便の退避復帰・左右格納庫と赤チェックの手順を確認する。これらとCPU軍事の地星儀の投影差、物理Escはマージ後の実行未確認。
+
+### 実行履歴：2026-11-15 03:20回
+
+- 開始03:20:01、終了03:21:54 JST。マージ後の部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。開始時の関係差分は前回の点検記録のみ。未解決のGit競合なし。
+- 既存NAS出力 `Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-16/demo-audit` へ `dotnet build` で `DirectDeliveryUi` と `DemoChecksUi` を順にビルドし、双方とも警告・エラー0。出力先に `--artifacts-path`、復元元に `artifacts/nuget-feed` と `C:/Users/muzud/.nuget/packages`、`--disable-build-servers -v quiet` を指定。
+- 03:20:58から `ALSOFT_DRIVERS=null` で両検証を順に実行。直送便は960×540で退避復帰、移動中の入力抑止、左右格納庫、トラック連続操作、予約保持を確認し4件のPASS。緑赤チェックは地図・地星儀の1920×1080／960×540で、地点9を選択して出撃確定・即予約・赤チェック・閉鎖・ターン終了へ進み、スポットライト解除と表示分離・消去を確認。証拠は4シナリオと最終PASS、連続実行の終了コード0。
+- 新規採番なし。プライマリーは02:58回を参照。マージ後の赤チェック後の地点再選択、CPU軍事の投影差と物理Escは未確認。次回は `ProbeCheckedClick` の再選択から再開する。
+
+### 実行履歴：2026-11-15 03:38回
+
+- 開始03:38:31、終了03:40:02 JST。マージ後の部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。開始時の関係差分は過去2回の点検記録のみ。未解決のGit競合なし。変更は本記録のみ。
+- 既存NAS出力 `Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-16/demo-audit` へ `dotnet build artifacts/demo-click-audit/ProbeCheckedClick.csproj --artifacts-path <同出力先> --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers -v quiet`。警告・エラー0。03:39:34に同出力の `ProbeCheckedClick.exe` を `ALSOFT_DRIVERS=null` で起動、終了0。
+- 展開図・地星儀の1920×1080／960×540で、赤チェック後の地点9を実ピクセル(1440,552)／(720,276)から標準入力処理で再選択し、赤と出撃予約を保持。証拠は4件の `PASS: red checked target re-click` と、開戦順序・表示分離・ターン末消去の最終PASS。
+- 新規採番なし。プライマリーは02:58回、直送便の退避復帰と左右格納庫は03:20回。CPU軍事の地星儀投影差と物理Escはマージ後未確認。次回はCPU検証を同一出力先でビルドし、地点選択と視点切替から再開する。
+
+### 実行履歴：2026-11-15 03:58回
+
+- 開始03:58:32、終了04:00:07 JST。マージ後の部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。開始時の関係差分は点検記録のみ。ゲームコード変更なし。
+- 既存NAS出力 `Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-16/demo-audit` へ `dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path <同出力先> --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers -v quiet`。警告・エラー0。03:59:29に `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=103` で同出力の `DemoAuditCpuSortie.exe` を起動し、終了0。
+- 960×540でCPU5視点に切り替わり、地点91で通常の出撃選択から2体をクリックし、確定後に赤チェック。和平なし16指示で退避0件、人間に復帰。証拠は `selected=91 target=91`、`after confirm: stage=5 red-owner=5`、`No-peaceful batch fallbacks=0` と最終PASS。
+- 新規採番なし。CPU地星儀の投影差、格納庫での組み立てと物理Escはマージ後未確認。次回は組み立ての通常再生とスキップ比較から再開する。優先UIは02:58回と03:20回、赤チェック後の再選択は03:38回を参照。
+
+### 実行履歴：2026-11-15 04:19回
+
+- 開始04:19:32、終了04:20:33 JST。CPU格納庫の点検はアサーションで中断。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。開始時の関係差分は点検記録のみ。ゲームコード変更なし。
+- 04:19:51に03:58回のNAS出力 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null` と `FOLDERVERSE_AUDIT_` 接頭辞の `DOMESTIC_SKIP`、`DOMESTIC_ENTRY`、`AUTO_ENABLED`、`ASSEMBLY_LIVE`、`ASSEMBLY_INVENTORY_PAGE`、`ASSEMBLY_ESC_INPUT` を各1にして起動。960×540の固定場面。期待は組み立て表示中に既存の人間側部品予約1件を保持すること。実際は開始前に `orders=1`、最初の組み立て完了ログより前に `Scroll preserves real reservations`（`ProbeCpuSortie.cs.txt:141`）で停止。終了コード -532462766。
+- 予約の件数・内容と再生段階を失敗時に出す診断が必要。スクロールによる消失と、再生の早期終了に伴う予約解決を切り分けられていないため、DEMO-0017の要再確認として扱い、新規採番なし。次回は失敗時の予約とフェーズを照合する。組み立て完了・スキップ比較・物理Escと地星儀の投影差は未確認。優先UIは02:58回と03:20回を参照。
+
+- 04:30修正回（04:32 JST終了）。DEMO-0017の04:19回と同条件で、診断の装備モードを組み立て可能な `Materials` に指定すると、960×540で部品予約1件を維持して頭胴→完成まで描画し、通常再生・早期スキップ・Escキー状態注入後の在庫と人間への復帰が一致。04:19回のアサーション失敗は旧モードを使った固定場面の問題として扱う。物理Escと通常プレイからの自然開始は要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-15 04:41回
+
+- 開始04:41:32、終了04:43 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。関連差分は既存の診断設定と両記録。今回の変更は本記録のみ。
+- NASの既存 `DemoAuditCpuSortie.dll` を `dotnet` で実行。`ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=49`、同接頭辞の `DOMESTIC_SKIP`、`DOMESTIC_ENTRY`、`AUTO_ENABLED`、`ASSEMBLY_LIVE`、`ASSEMBLY_AUTO_PLAN`、`ASSEMBLY_ESC_INPUT` を各1。04:41:54の実行は120ステップで組み立て可能な組合せが揃わず、診断が終了0で早期終了。自然開始は未確認。
+- 04:42:24に `FOLDERVERSE_AUDIT_ASSEMBLY_AUTO_SEED_LEG=1` を追加した対照条件で終了0。960×540で自動生産の頭胴を脚に組み付け、論理点(210,430)で完成を描画。人間側予約1件を保持し、表示オフ・通常・スキップの在庫と人間復帰が一致。証拠は `Auto factory recipe node=100 tick=4`、`Live CPU step 1: Complete`、最終PASS。
+- 新規採番なし。次回は補助部品なしで現行の生産条件から組み立て候補が揃う場面を探す。物理Escと地星儀の投影差は未確認。優先UIは02:58回、03:20回と03:38回を参照。
+
+### 実行履歴：2026-11-15 05:01回
+
+- 開始05:01:03、終了05:02 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。既存差分は診断設定と両記録。本記録のみ追記。
+- 既存NASの `DemoAuditCpuSortie.dll` を `dotnet` で再利用。`ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=46`、同接頭辞の `DOMESTIC_SKIP`、`DOMESTIC_ENTRY`、`AUTO_ENABLED`、`ASSEMBLY_LIVE`、`ASSEMBLY_AUTO_PLAN` を各1。単独工場の05:01:20実行では120ステップで組み立て可能な組合せが揃わず終了0。組み立て開始は未確認。
+- 05:01:50に `ASSEMBLY_TWO_FACTORIES=1` を追加。隣接工場76から地点75へ脚の入荷予約が入り、地点75で自動生産した頭胴と組み立てた。部品を在庫へ直接加えず、960×540で論理点(210,430)に完成を描画。人間側予約1件を保持し、表示オフ・通常・スキップで完成1体と人間復帰が一致。終了0。証拠は `Second factory 76 reserved legs at 75`、`Live CPU step 1: Complete` と最終PASS。
+- 新規採番なし。工場と入荷経路は診断で設定。通常プレイからの自然開始、物理Escと地星儀の投影差は未確認。次回は工場を自動設定する通常ターンからの開始を確認する。優先UIは02:58回、03:20回と03:38回を参照。
+
+### 実行履歴：2026-11-15 05:21回
+
+- 開始05:21:03、終了05:22:21 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。既存の追跡差分は両記録のみ。変更は本記録のみ。
+- 既存のNAS出力先 `Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-16/demo-audit` に `dotnet build tests/DemoUi/DemoUi.csproj --artifacts-path <同出力先> --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers -v quiet`。警告・エラー0。05:21:52に `ALSOFT_DRIVERS=null`、`FOLDERVERSE_DEMO_TEST_SEED=36` で `DemoUi.exe` を起動、終了0。
+- 初回直送便と地図への復帰で論理クリック(256,998)。地星儀・展開図切替、18 FPSの辺移動、拒否時分岐、終了ループとラベル描画を確認。証拠は `first transport`、`map follow-up` と最終PASS。実解像度は実行ログに出ず未確認。
+- 新規採番なし。プライマリーは02:58回、退避復帰と左右格納庫は03:20回、赤チェック後の地点再選択は03:38回を参照。CPU格納庫の通常ターンからの開始、地星儀の投影差、物理Escは未実施。次回は素材モードの通常ターンからCPUの組み立てが始まる条件を確認する。
+
+### 実行履歴：2026-11-15 05:40回
+
+- 開始05:40:33、終了05:41:25 JST。部分点検完了。HEAD 5fdc97aced7388d121cfc468df4531a5282fa284。追跡差分のうち C#・プロジェクトファイルに変更なし、点検・修正記録に既存差分あり。全体の差分取得は Git LFS の起動制限で失敗。
+- 05:40:58に ALSOFT_DRIVERS=null で既存ローカル出力 dotnet artifacts/tmp/delete-after-2026-11-16/demo-audit-local/bin/DemoInspectorUi/debug/DemoInspectorUi.dll を実行し、終了0。1080p・540pで6種類の製造期間と工場プランの矩形内クリック、プラン切り替えと製造開始、直送便プライマリー、地点監督、閉じる演出、わたしの国からの移動を確認。証拠は click={X:268 Y:332} bounds={X:232 Y:288 Width:72 Height:88}、factory-plan-after=0 manufacturing=True、最終PASS。
+- 新規採番なし。既存の優先経路は03:20回と05:21回を参照。CPU格納庫の通常ターンからの開始、CPU地星儀の投影差と物理Escは未確認。次回は素材モードの通常ターンから組み立てが始まる条件の点検に戻る。ゲームコード変更なし。
+
+### 実行履歴：2026-11-15 05:58回
+
+- 開始05:58:34、終了05:59:26 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。C#・プロジェクトファイルの追跡差分なし。既存の両記録と、LFSフィルターを無効にしたstatusで差分候補となる素材は保持した。
+- 05:58:51と05:59:00に `ALSOFT_DRIVERS=null`、既存ローカル出力 `artifacts/tmp/delete-after-2026-11-16/demo-audit-local/bin` の `DemoChecksUi/debug/DemoChecksUi.dll` と `DirectDeliveryUi/debug/DirectDeliveryUi.dll` を順に `dotnet` で実行。両方終了0。新規ビルドなし。
+- DemoChecksUiは1080p・540pの展開図と地星儀で地点9へのクリック、出撃確定と即予約、赤チェック、閉鎖、終了、進軍を確認。緑と赤のハンドル操作、モード別保持、ターン終了での消去も確認。証拠は各scenarioのPASSと最終PASS。
+- DirectDeliveryUiは操作ボタンの退避・復帰、退避・移動中の入力抑制、閉じる操作、左右格納庫、予約保持と描画を確認。540pの展開図・地星儀連続操作は `PASS: animated main/pair/return cameras`、左右格納庫は `PASS: edge trucks` の行を参照。
+- 新規採番なし。プライマリーと工場は05:40回を参照。CPU組み立ての通常ターンからの開始、CPU軍事の地星儀での位置合わせ、物理Escは未確認。次回は素材モードの通常ターンから組み立てが始まる条件に戻る。ゲームコード変更なし。
+
+### 実行履歴：2026-11-15 06:19回
+
+- 開始06:19:34、終了06:20:18 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。C#・プロジェクトファイルの追跡差分なし。既存の両記録を保持し、本記録のみ追記。
+- 06:19:54に `ALSOFT_DRIVERS=null`、`FOLDERVERSE_DEMO_TEST_SEED=34` で既存ローカル出力 `dotnet artifacts/tmp/delete-after-2026-11-16/demo-audit-local/bin/DemoUi/debug/DemoUi.dll` を実行し、終了0。論理(256,998)で初回直送便と地図への復帰、展開図・地星儀切替、18 FPSでの辺移動、拒否時分岐と終了ループの描画を確認。証拠は first transport、map follow-up、最終PASS。実解像度はログに出ず未確認。
+- CPU組み立ての既存診断を調べた。自動生産の診断は所有者・工場設定を先に与えるため、通常ターンからの開始を立証できない。今回NASの既存診断出力は通常権限から参照できず、ローカル診断はマージ前の出力だったため、CPU経路の再検証に使っていない。
+- 新規採番なし。優先UIの描画・遷移は05:40回と05:58回を参照。次回は通常ターンから素材モードのCPUが工場を設定し、組み立てへ進む場面を確認する。CPU軍事の地星儀での位置合わせと物理Escも未確認。
+
+### 実行履歴：2026-11-15 06:39回
+
+- 開始06:39:04、終了06:40:33 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。コードとテストの追跡差分なし。既存の両記録とLFS素材の差分候補を保持。
+- 権限付きの読み取りでNASの既存出力を参照できた。06:39:49に `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=104` で `dotnet Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-16/demo-audit/bin/DemoAuditCpuSortie/debug/DemoAuditCpuSortie.dll` を起動。終了0。新規ビルドなし。
+- 960×540の軍事固定場面でCPU17視点に切り替わり、地点82の通常出撃選択で4体をクリック、確定後に赤チェックを付け、人間へ復帰。証拠は `selected=82 target=82`、`Individual robot clicks: 4`、`after confirm: stage=5 red-owner=17` と最終PASS。和平なしの16指示で町名リストへの退避0件。内政の地点選択・格納庫・閉鎖の段階もログに出た。通常プレイからの自動組み立て開始はこの固定場面では未確認。
+- 新規採番なし。優先UIは05:40回と05:58回を参照。次回は素材モードの通常ターンで工場設定と組み立て開始をつなぐ。CPU軍事の地星儀と物理Escも未確認。ゲームコード変更なし。
+
+### 実行履歴：2026-11-15 07:01回
+
+- 開始07:01:35、終了07:02:31 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。コード・テストに追跡差分なし。既存の両記録とLFS素材の差分候補を保持し、本記録のみ追記。
+- 07:02:01に `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=104`、同接頭辞の `DOMESTIC_SKIP`、`DOMESTIC_ENTRY`、`AUTO_ENABLED`、`ASSEMBLY_LIVE`、`ASSEMBLY_AUTO_PLAN` を各1にして、06:39回と同じNASの `DemoAuditCpuSortie.dll` を `dotnet` で起動。終了0。新規ビルドなし。
+- 補助部品を追加しない単独工場の診断では、120ステップで「頭胴」と「胴脚」の入荷予約が交互に積まれ、完成可能な組み合わせが揃わず早期終了した。証拠は `No legal auto-factory recipe in 120 steps` と `pending=Body, Head;Legs, Body`。組み立ての表示・クリックには未到達のため、その解像度での確認結果なし。
+- 新規採番なし。次回は単独工場で入荷予約が解決した後も部品構成が続くか、通常の内政・配送を通して確認する。CPU軍事の地星儀と物理Escは未確認。優先UIは05:40回と05:58回を参照。
+
+### 実行履歴：2026-11-15 07:21回
+
+- 開始07:21:35、終了07:22:28 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。追跡差分は両記録とLFS素材の差分候補。今回の変更は本記録のみ。
+- 07:21:56に `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_ASSEMBLY_ARRIVAL=1` で06:39回と同じNASの `DemoAuditCpuSortie.dll` を `dotnet` で実行。終了0。地点3から地点0への頭部の入荷予約を保ったまま、地点0の既存在庫2・3・4で組み立て、解決後の在庫は頭部1と完成品2。証拠は `live selection=2,3,4` と `PASS: final stock=1:Head,2:Complete`。予約解決1件をアサーションで確認。
+- 既存在庫を設定して予約解決を直接呼ぶ対照診断。通常の内政・配送を通した単独工場の組み立て開始、クリックと描画、実解像度はこの診断では未確認。次回は素材モードで単独工場の生産から配送後の在庫を追う。CPU地星儀と物理Escも未確認。優先UIは05:40回・05:58回を参照。新規採番なし。
+
+### 実行履歴：2026-11-15 07:38回
+
+- 開始07:38:35、終了07:39:14 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。C#・テストの追跡差分なし。既存の両記録とLFS素材の差分候補を保持。
+- 07:38:53に `ALSOFT_DRIVERS=null`、`FOLDERVERSE_DEMO_TEST_SEED=37` で06:19回と同じローカルの `DemoUi.dll` を `dotnet` で実行し、終了0。初回直送便と地図復帰時の論理クリック(256,998)、展開図・地星儀切替、18 FPSの辺移動、拒否分岐、終了ループの描画を確認。証拠は first transport、map follow-up と最終PASS。実解像度はログに出ず未確認。
+- 単独工場の続きをコードで照合した。通常の内政終了では `FinishDomestic` がCPU操作表示を呼び、表示後の `BeginDelivery` が製造入荷を解決してから部品計画を解決する。07:01回の予約だけを積む診断では、次の内政に入った時点での在庫を確認できない。次回はこの順序で実行し、配送後の在庫と次ターンの格納庫での操作を追う。
+- 新規採番なし。通常ターンからのCPU組み立て開始、CPU軍事の地星儀と物理Escは未確認。優先UIは05:40回・05:58回を参照。ゲームコード変更なし。
+
+### 実行履歴：2026-11-15 08:00回
+
+- 開始08:00:35、終了08:02:16 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。ゲームコードと追跡テストは変更なし。既存の非追跡診断 `artifacts/demo-click-audit/ProbeCpuSortie.cs.txt` に、3ステップごとに製造入荷を解決する任意の条件を追加。
+- 既存NAS出力先に `dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path <06:39回と同じ出力先> --no-restore --disable-build-servers -p:UseAppHost=false -v quiet`。成功、警告1（旧EXEの削除拒否）、エラー0。08:01:38に07:01回と同じ環境変数に `FOLDERVERSE_AUDIT_ASSEMBLY_RESOLVE_INTAKES=1` を追加し、診断DLLを `dotnet` で実行。終了0。
+- 世界104の単独工場では、入荷処理後の実在庫でも頭胴・胴脚が交互に並んだ。証拠は `Resolved intakes after tick=11 stock=Body, Head;Legs, Body` と `No legal auto-factory recipe in 120 steps`。組み立てに未到達のため、クリック・描画とその解像度は未確認。今回は製造入荷の解決のみを実行しており、通常のターン全体は未実施。
+- 新規採番なし。次回は通常の内政・配送・軍事を通過する場面で、単一部品が入荷する条件と次ターンの組み立てを追う。CPU軍事の地星儀と物理Escも未確認。優先UIの実描画は05:40回と05:58回を参照。
+
+### 実行履歴：2026-11-15 08:19回
+
+- 開始08:19:06、終了08:19:51 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。追跡差分は両記録とLFS素材の差分候補。本記録のみ追記。
+- 08:19:21に08:00回と同じNASの診断DLL、環境変数、単独工場条件で `FOLDERVERSE_AUDIT_WORLD=46` に変更して実行。終了0。入荷後は `stock=Body, Head;Legs, Body`、120ステップで組み立て候補なし。世界104と同じ部品構成で、組み立てのクリック・描画と解像度は未確認。
+- 新規採番なし。次回は世界違いの同一診断を繰り返す前に、通常の内政・配送・軍事を通す再現条件を作る。CPU軍事の地星儀と物理Escも未確認。優先UIは05:40回と05:58回を参照。
+
+### 実行履歴：2026-11-15 08:39回
+
+- 開始08:39:06、終了08:40:43 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。ゲームコードと追跡テストは変更なし。既存の非追跡診断 `artifacts/demo-click-audit/ProbeCpuSortie.cs.txt` に内政・配送・軍事・産業の順で進める条件を追加。既存の記録差分とLFS素材を保持。
+- 08:00回と同じNAS出力先・コマンドで再ビルド。警告1（旧EXEの削除拒否）、エラー0。08:40:10に `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=46`、同接頭辞の `DOMESTIC_SKIP`、`AUTO_ENABLED`、`ASSEMBLY_AUTO_PLAN`、`ASSEMBLY_CAMPAIGN` を各1にして同じ診断DLLを実行、終了0。
+- 単独工場を設定した固定場面で、`FinishDomestic` →配送→`BeginMilitary` →`Advance` →産業を12回実行。敵軍事命令は無効。地点75には頭胴だけが入荷し、組み立て候補は空。証拠は `Delivery round=11 owner=1 stock=Body, Head` から始まる在庫行と `Campaign assembly candidate at node=75:`。組み立てのクリック・描画と解像度は未確認。
+- 新規採番なし。次回は同じフェーズ進行で隣接工場から脚が入荷する条件を当て、次の内政に組み立て候補が出たら通常の格納庫表示まで追う。CPU地星儀と物理Escは未確認。優先UIは05:40回と05:58回を参照。
+
+### 実行履歴：2026-11-15 08:59回
+
+- 開始08:59:06、終了08:59:58 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。ゲームコード・追跡テストの差分なし。既存の両記録とLFS素材の差分候補を保持し、本記録のみ追記。
+- 08:59:22に08:39回と同じ環境・NASの診断DLLで `FOLDERVERSE_AUDIT_ASSEMBLY_TWO_FACTORIES=1` を追加して実行。終了0。世界46の二工場固定場面で、工場76から地点75へ脚が入り、配送1・3・4・5・7回目の在庫に完成品が現れた（回番号は0から）。証拠は `Second factory 76 reserved legs at 75`、`Delivery round=1 owner=1 stock=Legs;Legs;Legs;Legs;Legs;Legs;Complete`。
+- 配送前に実在庫から探した組み立て候補は空。今回の診断は操作表示を呼ばず配送後に在庫を観測したため、格納庫のクリック・描画・解像度は未確認。次回は配送1回目の直前に操作表示を有効にし、製造入荷予定を含む組み立て表示と配送後の在庫を照合する。新規採番なし。CPU軍事の地星儀と物理Escも未確認。優先UIは05:40回・05:58回を参照。
+
+### 実行履歴：2026-11-15 09:20回
+
+- 開始09:20:37、終了09:23:43 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。ゲームコード・追跡テストの差分なし。既存の非追跡診断に配送前のCPU操作表示と描画を追加。本記録以外の追跡ファイルは変更なし。
+- 08:00回と同じNAS出力先・コマンドでビルド2回。各警告1（旧EXEの削除拒否）、エラー0。08:59回の条件に `FOLDERVERSE_AUDIT_ASSEMBLY_CAMPAIGN_SHOW=1` を追加し、09:21:30に起動。診断が格納庫のアニメーション時計を進めておらず、配送・人間復帰アサーションで停止。時計を0.25秒ずつ進めるようにした再実行は09:22:57起動、終了0。
+- 世界46の二工場固定場面では、通常の内政終了からCPU操作表示に入り、960×540で組み立て用在庫を使った描画を5フレーム実行。人間への復帰と配送遷移をアサーションで確認。配送後の在庫は表示オフの08:59回と同じ脚6個と完成品1体。証拠は `Campaign playback assembly frames=5 viewport=960x540`、`Delivery round=1 owner=1 stock=Legs;Legs;Legs;Legs;Legs;Legs;Complete`。
+- 新規採番なし。次回はこの条件でドラッグ・ドロップ座標と仮在庫の完成を照合し、通常の新規プレイからの開始も引き続き確認する。CPU軍事の地星儀と物理Escは未確認。優先UIは05:40回・05:58回を参照。
+
+### 実行履歴：2026-11-15 09:39回
+
+- 開始09:39:07、終了09:40:34 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。ゲームコード・追跡テストの差分なし。既存の非追跡診断にドロップ先矩形と仮在庫を照合するアサーションを追加。本記録以外の追跡ファイルは変更なし。
+- 08:00回と同じNAS出力先・コマンドで再ビルド。警告1（旧EXEの削除拒否）、エラー0。09:39:57に09:20回と同条件の世界46・二工場・操作表示オンで再実行、終了0。
+- 960×540で5フレーム描画。論理始点(474,611)、終点(210,430)は格納庫セル(84,300,252,260)内。通常入力のドロップ後に仮在庫の対象が完成し、人間へ復帰して配送の実在庫は脚6個と完成品1体。証拠は `Campaign drag={X:474 Y:611} drop={X:210 Y:430} bounds={X:84 Y:300 Width:252 Height:260} result=Complete`。始点の部品矩形は独立に照合していない。
+- 新規採番なし。次回は始点の部品矩形と表示オン・スキップの一致を同じ場面で照合。新規プレイからの自然開始、CPU軍事の地星儀、物理Escは未確認。優先UIは05:40回・05:58回を参照。
+
+### 実行履歴：2026-11-15 09:59回
+
+- 開始09:59:07、終了10:00:40 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。コードと追跡テストに差分なし。既存の非追跡診断にドラッグ始点の照合を追加し、既存の点検・修正記録とLFS素材を保持。
+- 08:00回と同じNAS出力先・コマンドでビルド。警告1（旧EXEの削除拒否）、エラー0。09:59:59に09:20回と同じ世界46・二工場・操作表示オンの条件で起動、終了0。
+- 960×540の描画で、論理始点(474,611)は部品矩形(423,580,102,62)内。通常入力が個体6を保持。終点(210,430)は格納庫セル(84,300,252,260)内で、仮在庫の対象が完成。人間へ復帰し、配送後の実在庫は脚6個と完成品1体。証拠は `Campaign press={X:474 Y:611} bounds={X:423 Y:580 Width:102 Height:62} robot=6` と `result=Complete`。
+- 新規採番なし。次回は同じ二工場場面でスキップ後の在庫と人間復帰を比較。新規プレイからの自然開始、CPU軍事の地星儀、物理Escは未確認。優先UIは05:40回と05:58回を参照。
+
+### 実行履歴：2026-11-15 10:21回
+
+- 開始10:21:38、終了10:23:10 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。ゲームコード・追跡テストに差分なし。既存の非追跡診断に、部品をつかんだ直後のEsc入力を追加。
+- 08:00回と同じNAS出力先・コマンドでビルド。警告1（旧EXEの削除拒否）、エラー0。10:22:32に09:59回の条件に `FOLDERVERSE_AUDIT_ASSEMBLY_CAMPAIGN_ESCAPE=1` を追加し、診断DLLを実行、終了0。
+- 960×540でCPUが論理(474,611)で個体6をつかんだ直後、通常入力処理にEscのキー状態を渡した。ドラッグとCPU操作表示が終了し、人間に復帰して配送へ遷移。配送後は脚6個と完成品1体で、09:59回の通常再生、08:59回の表示オフと一致。証拠は `Campaign Escape cleared the held part`、`viewport=960x540`、`Delivery round=1` の在庫行。
+- 新規採番なし。新規プレイからの自然開始、CPU軍事の地星儀での位置合わせ、物理Escは未確認。次回はCPU軍事の地星儀で投影された地点と実際の選択を照合。優先UIは05:40回と05:58回を参照。
+
+### 実行履歴：2026-11-15 10:42回
+
+- 開始10:42:08、終了10:44:26 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。既存の非追跡診断にCPU軍事の地星儀ヒットと実選択の照合を追加。ゲームコード・追跡テストの差分なし。
+- 08:00回と同じNAS出力先・コマンドでビルド。警告1（旧EXEの削除拒否）、エラー0。10:43:41に `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=104`、`FOLDERVERSE_AUDIT_GLOBE_MATCH=1` で既存NASの診断DLLを実行し、終了0。
+- 960×540でCPU17の視点に切り替わり、地星儀上の論理(1271,552)をクリック。投影後のヒット、選択先、指示先はいずれも地点82。通常の出撃選択、確定後の赤チェック、人間への復帰を確認。和平なし16指示で町名リストへの退避0件。証拠は `CPU globe click={X:1271 Y:552} hit=82 target=82 viewport=960x540`、`after confirm: stage=5 red-owner=17`、最終PASS。
+- 新規採番なし。CPU軍事の別配置・解像度での地星儀、町名リストへの自然退避、新規プレイからの組み立て開始、物理Escは未確認。次回は地星儀の別配置と画面拡縮を確認する。優先UIは05:40回・05:58回を参照。
+
+### 実行履歴：2026-11-15 11:01回
+
+- 開始11:01:08、終了11:02:09 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。コード・追跡テストに差分なし。既存の両記録とLFS素材の差分候補を保持し、本記録のみ追記。
+- 11:01:26に10:42回と同じNASの診断DLLを `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_GLOBE_MATCH=1`、`FOLDERVERSE_AUDIT_WORLD=103` で起動。終了0。新規ビルドなし。
+- 960×540でCPU5の視点に切り替わり、地星儀上の論理(1194,552)のヒットと実選択が指示先の地点91に一致。通常の出撃選択、確定後の赤チェック、人間への復帰を確認。町名リストへの退避0件。証拠は `hit=91 target=91 viewport=960x540`、`after confirm: stage=5 red-owner=5`、最終PASS。
+- 新規採番なし。次回はCPU軍事の地星儀を別解像度で照合。自然退避、新規プレイからのCPU組み立て開始、物理Escは未確認。優先UIは05:40回・05:58回を参照。
+
+### 実行履歴：2026-11-15 11:18回
+
+- 開始11:18:39、終了11:20:18 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。既存の非追跡診断に軍事開始直前の1920×1080設定を追加。ゲームコード・追跡テストの差分なし。本記録のみ追記。
+- 08:00回と同じNAS出力先・コマンドでビルド。警告1（旧EXEの削除拒否）、エラー0。11:19:29に11:01回の世界103の条件に `FOLDERVERSE_AUDIT_GLOBE_1080=1` を追加して診断DLLを起動。終了0。
+- 1920×1080で、CPU5の視点に切り替わり、地星儀の論理(1194,552)のヒットと実選択が指示先の地点91に一致。通常の出撃選択、確定後の赤チェック、人間への復帰を確認。960×540の11:01回と同じ結果。証拠は `hit=91 target=91 viewport=1920x1080`、`after confirm: stage=5 red-owner=5`、最終PASS。
+- 新規採番なし。今回の町名リストへの退避は0件で、自然退避は未確認。次回は通常UIを外れる指示の自然発生条件を追う。新規プレイからのCPU組み立て開始、物理Escも未確認。優先UIは05:40回・05:58回を参照。
+
+### 実行履歴：2026-11-15 11:41回
+
+- 開始11:41:39、終了11:42:46 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。ゲームコード・追跡テストに差分なし。既存の両記録とLFS素材の差分候補を保持。本記録のみ追記。
+- 11:41:56に10:42回と同じNASの診断DLLを `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=105` で起動。終了0。診断既定の960×540。CPU1へ切り替わり、指示地点234が通常出撃選択に渡り、人間へ復帰。証拠は `selected=234 target=234` と最終PASS。
+- 表示対象12指示に和平・女王・ポケット限定・出撃元欠落・戦力なしは各0件。町名リストへの自然退避は0件。既存の候補不一致診断は個体IDを差し替える固定条件で、今回の自然発生の証拠には含めていない。新規採番なし。
+- 次回は配置の変更だけに頼らず、通常のAI判断を維持して対象や出撃元が変化するターンを追う。新規プレイからの組み立て開始と物理Escも未確認。優先UIは05:40回・05:58回、地星儀の両解像度は11:01回・11:18回を参照。
+
+### 実行履歴：2026-11-15 12:00回
+
+- 開始12:00:09、終了12:01:14 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。ゲームコード・追跡テストに差分なし。既存の両記録とLFS素材の差分候補を保持し、本記録のみ追記。
+- 12:00:28に11:41回と同じNASの診断DLLを `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=105`、`FOLDERVERSE_AUDIT_FALLBACK=3` で実行。終了0。診断の960×540固定場面。最初の通常地点選択後、再生用の指示の候補IDを差し替え、町名リストへの退避を再現。移動画面が閉じ、次の指示でCPU17の通常出撃選択に進み、予約件数は0のまま。証拠は `Candidate mismatch entered stage -1 through the normal preview`、`Fallback next index=1 stage=3 ruler=17 reservations=0/0`。描画は既存NAS出力先の `audit-war-fallback.png` と `audit-war-return.png`。
+- 新規採番なし。固定診断は次のCPUの出撃選択で終了するため、この退避を含む指示列の人間への復帰・最終解決は未確認。候補不一致の自然発生、新規プレイからの組み立て開始と物理Escも未確認。次回は通常AIの指示を複数ターン進めて自然退避を追う。優先UIは05:40回と05:58回を参照。
+
+### 実行履歴：2026-11-15 12:18回
+
+- 開始12:18:40、終了12:20:19 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。ゲームコードと追跡テストの差分なし。既存の非追跡診断に退避を含む指示列の完了まで追う条件を追加。
+- 08:00回と同じNAS出力先・コマンドでビルド。警告1（旧EXEの削除拒否）、エラー0。12:19:31に12:00回と同じ世界105・候補差し替え条件に `FOLDERVERSE_AUDIT_FALLBACK_FINISH=1` を加えて診断DLLを実行。終了0。
+- 960×540で、候補不一致時の町名リストへの退避、次のCPU17での通常出撃選択、全指示後の人間への復帰と内政遷移を確認。予約は0件のまま。証拠は `Fallback next index=1 stage=3 ruler=17 reservations=0/0`、`Fallback finished phase=Domestic player=0 reservations=0 viewport=960x540`。指示ごとの最終戦闘結果は照合していない。
+- 新規採番なし。自然退避は未確認。次回は出撃候補を書き換えない条件で、複数ターンのCPU判断と実行を追う。新規プレイからの組み立て開始と物理Escも未確認。優先UIは05:40回・05:58回を参照。
+
+### 実行履歴：2026-11-15 12:39回
+
+- 開始12:39:10、終了12:40:52 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。既存の非追跡診断に2回目の軍事を追う条件を追加。ゲームコード・追跡テストは変更なし。
+- 08:00回と同じNAS出力先・コマンドでビルド。警告1（旧EXEの削除拒否）、エラー0。12:40:03に `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=105`、`FOLDERVERSE_AUDIT_SECOND_MILITARY=1` で実行し、終了0。
+- 960×540の固定初期場面から、AIの指示・候補を差し替えず1回目の軍事、産業、次の内政・配送、2回目の軍事を進めた。表示対象は12件と17件。いずれも町名リストへの自然退避0件で、2回目も人間の内政に戻った。証拠は `Second military visible=17 fallbacks=0 player=0 phase=Domestic` と最終PASS。2回目はクリックごとの矩形を記録していない。
+- 新規採番なし。自然退避は未確認。次回は和平指示を含む別配置の連続ターンを追う。新規プレイからのCPU組み立て開始・物理Escも未確認。優先UIは05:40回と05:58回を参照。
+
+### 実行履歴：2026-11-15 13:01回
+
+- 開始13:01:10、終了13:02:15 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。既存差分は両記録とLFS素材候補。本記録のみ追記。
+- 13:01:28に12:39回と同じNASの診断DLLを `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=61` で実行。終了0。診断既定の960×540で通常出撃確定後にCPU1の赤チェック、和平移動でCPU39が指示先48へ到着、人間への復帰を確認。表示対象22件、和平2件。証拠は `after confirm: stage=5 red-owner=1`、`Peaceful ruler=39 expected=48 current=48` と最終PASS。
+- 新規採番なし。和平を含むこの診断は1回目の軍事まで。自然退避、和平を含む連続ターン、CPU組み立ての自然開始と物理Escは未確認。次回は和平ありの診断を2回目の軍事まで延長し、変更していないAI指示と退避の有無を追う。優先UIは05:40回・05:58回を参照。ゲームコード変更なし。
+
+### 実行履歴：2026-11-15 13:22回
+
+- 開始13:22:10、終了13:23:53 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。既存の非追跡診断から2回目の軍事の検査を再利用し、和平を含む分岐でも呼ぶようにした。ゲームコード・追跡テストは変更なし。
+- 08:00回と同じNAS出力先・ビルドコマンド。警告1（旧EXEの削除拒否）、エラー0。13:23:03に `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=61`、`FOLDERVERSE_AUDIT_SECOND_MILITARY=1` で診断DLLを実行。終了0。
+- 960×540で第1軍事は表示対象22件、和平2件。CPU39が指示先48へ到着。AIの指示を差し替えず次の産業・内政・配送を進め、第2軍事の表示対象16件で町名リストへの退避0件、人間の内政に復帰。証拠は `Peaceful ruler=39 expected=48 current=48`、`Second military visible=16 fallbacks=0 player=0 phase=Domestic` と最終PASS。第2軍事の全クリック矩形と和平件数は未記録。
+- 新規採番なし。町名リストへの自然退避、新規プレイからのCPU組み立て開始、物理Escは未確認。次回は新規プレイの素材モードで、CPUが組み立てを始める在庫とターンを追う。優先UIは05:40回・05:58回を参照。
+
+### DEMO-0023：素材モードの新規領土診断で軍事解決中に格納庫例外が発生
+
+- 状態は未解決。2026-11-15 13:38:11～13:40:02 JST、HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。ゲームコード・追跡テストの差分なし。既存の非追跡診断 `artifacts/demo-click-audit/ProbeCpuSortie.cs.txt` に新規領土の条件を追加。
+- 再現手順は08:00回と同じNAS出力先・コマンドで既存診断をビルドし、`ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=46`、`FOLDERVERSE_AUDIT_NEW_LAND_ASSEMBLY=1` で診断DLLを実行。素材モード、人間1・CPU59、領土シード456、運勢789。空き区画を番号順に割り当てて `CompleteLand` を呼び、内政・配送・軍事をモデルの入口から進める。診断が在庫や出撃指示を差し替える処理はない。描画前の例外につき実解像度は未確認。
+- 期待は軍事を解決して次の内政に進むこと。実際は13:39:13起動の実行が終了コード -532462766。証拠は `InvalidOperationException: Robot store is full or ID is duplicated.` と `RobotStore.Add (RobotState.cs:160) → RobotCampaign.PlaceWinner (RobotCampaign.cs:531) → ReturnUnits → Complete → ConquestCampaign.Advance`。満杯とID重複のどちらが原因か、例外が発生したターン、通常UIから同じ場面へ到達するかは未確認。
+
+### 実行履歴：2026-11-15 13:38回
+
+- 開始13:38:11、終了13:40:02 JST。CPU組み立て点検は軍事解決の例外で中断。既存NASへのビルドは警告1（旧EXEの削除拒否）、エラー0。ゲームコードは変更なし。組み立て開始・クリック・描画、自然退避と物理Escは未確認。
+- 次回はDEMO-0023を同条件で再現し、格納庫容量、ロボットID、帰還元・勝利地点を確認する。その後、CPU組み立て点検を再開。優先UIは05:40回と05:58回を参照。
+
+- DEMO-0023は固定診断の停止を修正・検証済み（13:52:34 JST）。同条件で軍事解決を含む8周を通過し、RobotCampaign回帰と別配置の実描画も成功。元配置への通常UI経由の到達と組み立ての自然開始は要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-15 14:00回
+
+- 開始14:00:11、終了14:01:03 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。関係差分は既存のDEMO-0023修正（RobotCampaign.cs）と両記録。ゲームコード・テストは変更せず、本記録のみ追記。
+- `ALSOFT_DRIVERS=null` で05:40回・05:58回と同じローカルの `DemoInspectorUi.dll`（14:00:24）と `DirectDeliveryUi.dll`（14:00:38）を順に `dotnet` で実行し、両方終了0。既存出力を使い、DEMO-0023差分を含む再ビルドは行っていない。
+- 1080p・540pで工場の実矩形をクリックしてプラン変更・製造開始、地点監督・閉じる・輸送プライマリー・移動を確認。直送便では退避復帰、移動中の入力抑制、左右格納庫と予約保持、540pの展開図・地星儀の連続操作を確認。証拠は `factory-plan-after=0 manufacturing=True` と両診断の最終PASS。
+- 新規採番なし。DEMO-0023の修正後のCPU軍事回帰は13:48修正記録を参照。元の配置への通常UI経由の到達、CPU組み立ての自然開始、軍事の自然退避、物理Escは未確認。次回は修正済みNAS出力で素材モードの領土・運勢条件を変え、組み立て候補を追う。
+
+### 実行履歴：2026-11-15 14:18回
+
+- 開始14:18:41、終了14:19:41 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。関係差分は既存のDEMO-0023修正（RobotCampaign.cs）と両記録。今回の変更は本記録のみ。
+- 14:19:01に13:48修正回のNAS診断DLLを `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=61`、`FOLDERVERSE_AUDIT_NEW_LAND_ASSEMBLY=1` で実行。終了0。素材モード、領土456・運勢789の別世界で内政・配送・軍事・産業を8周通過。証拠は `No new land assembly candidate in eight rounds`。新規ビルドなし。
+- 組み立て候補が現れず、格納庫のクリック・描画・実解像度は未確認。新規採番なし。次回は世界シードに加えて領土・運勢を変え、標準の新規領土処理で生成された在庫から候補を探す。軍事の自然退避、元配置への通常UI経由の到達、物理Escも未確認。優先UIは14:00回と05:58回を参照。
+
+### 実行履歴：2026-11-15 14:38回
+
+- 開始14:38:12、終了14:39:50 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。既存のDEMO-0023修正、両記録と素材差分を保持。既存の非追跡診断に領土・運勢シード指定と自動組み立て予定の照合を追加。ゲームコード変更なし。
+- 08:00回と同じNAS出力先・コマンドでビルド。警告1（旧EXEの削除拒否）、エラー0。14:39:15に `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_` 接頭辞の `WORLD=61`、`LAND_SEED=457`、`FORTUNE_SEED=790`、`NEW_LAND_ASSEMBLY=1`、`NEW_LAND_PREVIEW=1` で診断DLLを実行し、終了0。
+- 標準の領土確定で生成した在庫の8周で、実在庫の組み立て候補と入荷予定を含む自動組み立て計画の双方を探索。どちらにも候補が現れなかった。証拠は `No new land assembly candidate in eight rounds`。格納庫クリック・描画・解像度は未確認。
+- 新規採番なし。次回は通常の運勢設定で選べる初期ロボット配置率も変えて候補を探す。元配置への通常UI経由の到達、軍事の自然退避、物理Escは未確認。優先UIは14:00回と05:58回を参照。
+
+### 実行履歴：2026-11-15 14:59回
+
+- 開始14:59:42、終了15:01:03 JST。部分点検完了。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。既存のDEMO-0023修正と両記録・素材差分を保持。非追跡診断に初期ロボット配置率の指定を追加。ゲームコード変更なし。
+- 08:00回と同じNAS出力先・コマンドでビルド。警告1（旧EXEの削除拒否）、エラー0。15:00:27に14:38回と同じ世界61・領土457・運勢790に `FOLDERVERSE_AUDIT_SCATTER=100` を追加して診断DLLを実行。終了0。
+- 標準の領土確定で生成した初期在庫から、最初の内政でCPU30の地点1に自動組み立て予定を確認。証拠は `New land planned assembly round=0 owner=30 node=1 stock=Complete;Complete;Legs, Head;Body;Head`。予定を検出した時点で診断を終えたため、CPU操作表示、クリック矩形、描画・解像度、配送後の実在庫は未確認。
+- 新規採番なし。次回はこの配置でCPU30の操作表示をオンにし、通常の内政終了から選ばれる地点と格納庫の操作・配送後在庫を照合。軍事の自然退避、元配置への通常UI経由の到達、物理Escは未確認。優先UIは14:00回と05:58回を参照。
+
+### DEMO-0024：新規領土のCPU操作表示が組み立て予定の地点を開かない
+
+- 未解決。2026-11-15 15:18:42～15:20:26 JST。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。既存のゲームコード差分はDEMO-0023のRobotCampaign.cs。今回のゲームコード変更なし。対象は `Game1.ComputerDomestic.cs` の `ShowComputerDomestic` における地点選択。
+- 再現は非追跡診断 `artifacts/demo-click-audit/ProbeCpuSortie.cs.txt` を08:00回と同じNAS出力先にビルドし、14:59回と同じ世界61・領土457・運勢790・初期配置率100%条件に `FOLDERVERSE_AUDIT_NEW_LAND_SHOW=1` を追加。CPU30の操作表示をオンにし、新規領土の最初の内政を `FinishDomestic` から進める。描画960×540。
+- 期待は、CPUの自動組み立て予定がある地点1の格納庫を開き、カーソルと組み立て結果を見せること。実際はCPU30の視点へ切り替わったが表示対象は地点0のみ。組み立て再生0フレーム・0ドロップのまま人間に復帰し、配送後に地点1の在庫は `Complete;Complete;Head`。証拠は `New land playback player=30 nodes=0 planned=1` と `frames=0 drops=0 viewport=960x540`。地点選択で参照する実在庫の候補、機能移転の優先、配送予定を含む計画のどれが差を生んだかは要切り分け。DEMO-0017で確認済みの格納庫ドラッグとは別に、表示地点の選択で再現した問題。
+
+### 実行履歴：2026-11-15 15:18回
+
+- 開始15:18:42、終了15:20:26 JST。部分点検完了。既存診断に新規領土からの操作表示・描画と人間復帰の確認を追加。既存NASへのビルドは警告1（旧EXEの削除拒否）、エラー0。15:19:33起動、終了0。新規採番はDEMO-0024。
+- 次回修正回は同条件で再現し、機能移転予定と工場入荷を含む組み立て候補で地点選択が一致するかを確認する。この配置でのドラッグ矩形、DEMO-0023の元配置への通常UI経由の到達、自然退避、物理Escは未確認。優先UIは14:00回・05:58回を参照。

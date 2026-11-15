@@ -156,16 +156,18 @@ public partial class Game1
         if(_demoActive)return false;
         var nodes=_setup.Nodes.All.Where(node=>node.Owner>=0 && ShowsComputerTurn(node.Owner) &&
             _setup.Relations.CanAct(node.Owner) && !_setup.Campaign.RobotBattles.LockedNode(node.Id))
-            .GroupBy(node=>node.Owner).OrderBy(group=>group.Key)
-            .Select(group=>group.OrderByDescending(node=>_setup.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node.Id))
-                .ThenByDescending(node=>_setup.Robots.AssemblySelection(node.Id,node.Owner,true)!=null).First())
             .ToArray();
         if(nodes.Length==0)return false;
-        _computerDomesticNodes=nodes;
+        var assemblyNodes=HangarAssemblyAvailable?_setup.Robots.PartPlanning.AutomaticAssemblyNodes(_setup):null;
+        _computerDomesticNodes=nodes.GroupBy(node=>node.Owner).OrderBy(group=>group.Key)
+            .Select(group=>group.OrderByDescending(node=>assemblyNodes?.Contains(HangarPlanningNodeAt(node.Id))==true)
+                .ThenByDescending(node=>_setup.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node.Id))
+                .ThenByDescending(node=>_setup.Robots.AssemblySelection(node.Id,node.Owner,true)!=null).First())
+            .ToArray();
         _computerDomesticIndex=0;
         _computerDomesticAge=0;
-        BeginComputerView(nodes[0].Owner);
-        FocusComputerDomestic(nodes[0]);
+        BeginComputerView(_computerDomesticNodes[0].Owner);
+        FocusComputerDomestic(_computerDomesticNodes[0]);
         return true;
     }
 
