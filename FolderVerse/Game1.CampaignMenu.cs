@@ -57,7 +57,6 @@ public partial class Game1
     {
         int human=_campaignCharacters[0],computer=_campaignCharacters[1];
         BeginPlayerCount();_autoPlay=_demoActive=false;_statusMenuOpen=false;
-        _setup.EquipmentMode=RobotEquipmentMode.Materials;
         if(_campaignScenario==2)_setup.PrepareCampaignThreeKingdoms(_random.Next(),_random.Next(),_random.Next(),_random.Next(),_campaignCharacters);
         else _setup.PrepareCampaignDuel(_random.Next(),_random.Next(),_random.Next(),_random.Next(),human,computer);
         _world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();

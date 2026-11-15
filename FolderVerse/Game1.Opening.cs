@@ -49,11 +49,7 @@ public partial class Game1
     private void BeginOpening(bool tutorial,Action fixedStart=null)
     {
         BeginPlayerCount();_openingActive=true;_openingTutorial=tutorial;_openingFixedStart=fixedStart;
-        if(!tutorial && fixedStart==null)
-        {
-            _setup.EquipmentMode=RobotEquipmentMode.Materials;
-            WorldTerrain.EarthPalette=false;
-        }
+        if(!tutorial && fixedStart==null)WorldTerrain.EarthPalette=false;
         _openingSkipNarration=false;_openingAge=0;_titleMenuOpen=_tutorialMenuOpen=_autoPlay=_demoActive=_autoPaused=false;
         _tutorialChromeSlide=0;_tutorialGuideClosing=-1;
         _screen=Screen.OpeningBook;

@@ -5,6 +5,7 @@ public sealed partial class WorldSetup
 {
     public void PrepareTutorialStepTwo(int worldSeed,int castSeed,int placementSeed)
     {
+        EquipmentMode=RobotEquipmentMode.Materials;
         SetPlayerCount(1);
         while(true){SetWorld(worldSeed);if(Width==1 && Height==2 && Depth==1)break;worldSeed=worldSeed==int.MaxValue?0:worldSeed+1;}
         PolarAxis=1;
@@ -24,8 +25,9 @@ public sealed partial class WorldSetup
         foreach(var node in Nodes.All)
         {
             Robots.Workshops[node.Id].RemoveProductionLines();
-            // The four unclaimed cells have no country, hence no national cheap robots.
-            if(node.Owner>=0)for(int i=0;i<3;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,RobotParts.Complete) with {CheapParts=RobotParts.Complete});
+            // Only claimed cells receive local cardboard robots.
+            if(node.Owner>=0)for(int i=0;i<3;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,RobotParts.Complete) with {
+                HeadMaterial=RobotMaterial.Cardboard,BodyMaterial=RobotMaterial.Cardboard,LegsMaterial=RobotMaterial.Cardboard});
             Robots.Nodes[node.Id].Add(Robots.Create(0,RobotParts.Complete));
         }
         for(int ruler=0;ruler<7;ruler++)ConquerorPoints[ruler]=Nodes.Current(ruler).Center;
