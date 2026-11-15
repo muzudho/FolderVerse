@@ -26,7 +26,7 @@ public static class ComputerJointAttacks
                 .SelectMany(e=>e.Battles).Where(b=>b.Finished && (b.Winner<0 || !w.Relations.Allied(b.Winner,faction.Key)) &&
                     b.Armies.Any(a=>family.Contains(a.Owner) && a.HomeNode!=target && a.Withdrawing && a.NoWillCount>=b.Rules.NoWillTurns))
                 .Select(b=>b.Units.Count(u=>family.Contains(u.Owner) && u.Robot!=null)+b.Armies.Where(a=>family.Contains(a.Owner)).Sum(a=>a.Waiting.Count(u=>u.Robot!=null))).DefaultIfEmpty(0).Max();
-            var targets=sources.Where(p=>p.Value.Length>0).SelectMany(p=>battle.MarchTargets(w,p.Key)).Distinct()
+            var targets=sources.Where(p=>p.Value.Length>0).SelectMany(p=>battle.AttackTargets(w,w.Nodes.All[p.Key].Owner,p.Key)).Distinct()
                 .Where(t=>!battle.LockedNode(t) && (w.Nodes.All[t].Owner<0 || w.Relations.Root(w.Nodes.All[t].Owner)!=faction.Key))
                 .Select(t=>{
                     var attackers=sources.Where(p=>p.Value.Length>0 && battle.CanAttackFrom(w,w.Nodes.All[p.Key].Owner,p.Key,t)).Select(p=>p.Key).ToArray();
@@ -51,7 +51,7 @@ public static class ComputerJointAttacks
             // Individually weak retinues must not hide a jointly viable assault.
             var escorts=faction.Where(o=>!orders.Any(m=>m.Ruler==o && m.Queen) && w.Nodes.Current(o) is {} home && !battle.LockedNode(home.Id))
                 .ToDictionary(o=>o,o=>Prefer(o,battle.SelectableRobots(w,o,w.Nodes.Current(o)!.Id,true).Where(r=>!used.Contains(r.Id))));
-            var escortTargets=escorts.Where(p=>p.Value.Length>0).SelectMany(p=>battle.MarchTargets(w,w.Nodes.Current(p.Key)!.Id)).Distinct()
+            var escortTargets=escorts.Where(p=>p.Value.Length>0).SelectMany(p=>battle.AttackTargets(w,p.Key,w.Nodes.Current(p.Key)!.Id)).Distinct()
                 .Where(t=>w.Nodes.All[t].Owner>=0 && !w.Relations.Allied(faction.Key,w.Nodes.All[t].Owner) && !battle.LockedNode(t) && !orders.Any(o=>o.TargetNode==t && family.Contains(o.Ruler)))
                 .Select(t=>new{Target=t,Members=escorts.Where(p=>p.Value.Length>0 && battle.CanSortie(w,p.Key,t)).Select(p=>p.Key).ToArray(),Defense=battle.DefendingRobots(w,faction.Key,t)})
                 .OrderBy(t=>t.Defense).ThenBy(t=>t.Target).ToArray();
@@ -66,7 +66,7 @@ public static class ComputerJointAttacks
                 }
             }
             // Combine hangar troops and pocket escorts when neither force is sufficient alone.
-            var mixedTargets=sources.Where(p=>p.Value.Length>0 && !busy.Contains(p.Key)).SelectMany(p=>battle.MarchTargets(w,p.Key)).Distinct()
+            var mixedTargets=sources.Where(p=>p.Value.Length>0 && !busy.Contains(p.Key)).SelectMany(p=>battle.AttackTargets(w,w.Nodes.All[p.Key].Owner,p.Key)).Distinct()
                 .Where(t=>w.Nodes.All[t].Owner>=0 && !w.Relations.Allied(faction.Key,w.Nodes.All[t].Owner) && !battle.LockedNode(t) && !orders.Any(o=>o.TargetNode==t && family.Contains(o.Ruler)))
                 .OrderByDescending(t=>Enumerable.Range(0,w.ActiveCount).Count(o=>w.Relations.Powered[o] && !w.Relations.Allied(o,faction.Key) && w.Nodes.Current(o)?.Id==t)).ThenBy(t=>t).ToArray();
             foreach(int target in mixedTargets){
@@ -90,7 +90,7 @@ public static class ComputerJointAttacks
             // making endless peaceful visits to an enemy that cannot be conquered.
             var distance=new Dictionary<int,int>();var queue=new Queue<int>();
             foreach(var node in w.Nodes.All.Where(n=>n.Functional && n.Owner>=0 && w.Relations.Root(n.Owner)==faction.Key))
-                if(battle.MarchTargets(w,node.Id).Any(t=>w.Nodes.All[t].Owner<0 || w.Relations.Root(w.Nodes.All[t].Owner)!=faction.Key)){distance[node.Id]=0;queue.Enqueue(node.Id);}
+                if(battle.AttackTargets(w,node.Owner,node.Id).Any(t=>w.Nodes.All[t].Owner<0 || w.Relations.Root(w.Nodes.All[t].Owner)!=faction.Key)){distance[node.Id]=0;queue.Enqueue(node.Id);}
             while(queue.TryDequeue(out int at))foreach(int next in RobotLongDelivery.Neighbors(w,at,faction.Key))if(distance.TryAdd(next,distance[at]+1))queue.Enqueue(next);
             foreach(int owner in faction.OrderBy(o=>o)){
                 if(orders.Any(o=>o.Ruler==owner && o.Queen))continue;var home=w.Nodes.Current(owner);if(home==null || battle.LockedNode(home.Id))continue;

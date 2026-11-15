@@ -131,6 +131,69 @@ sealed class GlyphProbe:Game1
   using(var paneFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"long-delivery-delivered.png")))
    capture.SaveAsPng(paneFile,960,540);
   Console.WriteLine("PASS final long delivery preserves the integrated pair and captain in the destination hangar.");
+  var compactBounds=new Rectangle(40,40,28,52);
+  int capHeight=compactBounds.Height/4;
+  // The captain reserves the top quarter for the cap and fits the body below it.
+  var soldierBounds=new Rectangle(100,compactBounds.Y+capHeight,compactBounds.Width,compactBounds.Height-capHeight);
+  GraphicsDevice.Clear(background);
+  batch.Begin();
+  delivery.Invoke(this,new object[]{compactBounds,deliveredCaptain,1f,null});
+  delivery.Invoke(this,new object[]{soldierBounds,deliveredCaptain with {Role=RobotRole.Soldier},1f,null});
+  batch.End();
+  GraphicsDevice.GetBackBufferData(pixels);
+  int capPixels=0;
+  for(int y=compactBounds.Top;y<compactBounds.Bottom;y++)
+   for(int x=compactBounds.Left;x<compactBounds.Right;x++){
+    int index=y*960+x;
+    if(pixels[index]==pixels[index+60])continue;
+    if(y>=compactBounds.Center.Y)throw new Exception("Captain cap changed pixels below the head.");
+    capPixels++;
+   }
+  if(capPixels<10)throw new Exception("The delivered captain cap is missing at compact hangar size.");
+  capture.SetData(pixels);
+  using(var compactFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"long-delivery-compact-captain.png")))
+   capture.SaveAsPng(compactFile,960,540);
+  Console.WriteLine($"PASS delivered compact captain: {capPixels} pixels changed in the upper half.");
+
+  int directTarget=route[1];
+  stock.Workshops[directTarget].AutoAssemblyDisabled=true;
+  var outgoingPair=integrated with {Id=stock.Create(0,integrated.Parts).Id};
+  var outgoingCaptain=captain with {Id=stock.Create(0,captain.Parts).Id};
+  stock.Nodes[route[0]].Add(outgoingPair);
+  stock.Nodes[route[0]].Add(outgoingCaptain);
+  stock.DirectDelivery.ReserveParts(world,route[0],directTarget,outgoingPair.Id,outgoingPair.Parts,null,0);
+  stock.DirectDelivery.ReserveParts(world,route[0],directTarget,outgoingCaptain.Id,outgoingCaptain.Parts,null,1);
+  int turn=world.Population.Turn;
+  world.Campaign.Advance(world,-1,0,enemies:false);
+  if(world.Population.Turn!=turn+1 || stock.DirectDelivery.Orders.Count!=0 || stock.Nodes[route[0]].Count!=0)
+   throw new Exception("The two direct shipments did not arrive on the next global turn.");
+  var directPair=stock.Nodes[directTarget].Robots.Single(robot=>robot.Parts==integrated.Parts);
+  var directCaptain=stock.Nodes[directTarget].Robots.Single(robot=>robot.Parts==captain.Parts);
+  if(directPair.IntegratedParts!=integrated.Parts || directPair.HeadMaterial!=RobotMaterial.Cardboard ||
+     directPair.BodyMaterial!=RobotMaterial.Cardboard || directCaptain.Role!=RobotRole.Captain ||
+     directCaptain.HeadMaterial!=RobotMaterial.Maple || directCaptain.BodyMaterial!=RobotMaterial.Maple ||
+     directCaptain.LegsMaterial!=RobotMaterial.Maple)
+   throw new Exception("Direct arrival lost materials, integration or rank.");
+  var pairBounds=new Rectangle(96,40,28,52);
+  var expectedPixels=new Color[pixels.Length];
+  RenderCompact(deliveredPair,deliveredCaptain,expectedPixels);
+  RenderCompact(directPair,directCaptain,pixels);
+  if(!pixels.SequenceEqual(expectedPixels))
+   throw new Exception("Direct and long delivery changed the same materials' hangar artwork.");
+  capture.SetData(pixels);
+  using(var directFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"direct-delivery-compact-arrivals.png")))
+   capture.SaveAsPng(directFile,960,540);
+  Console.WriteLine("PASS direct delivery preserves the integrated cardboard pair and maple captain, with identical compact art.");
+
+  void RenderCompact(Robot pair,Robot chief,Color[] target)
+  {
+   GraphicsDevice.Clear(background);
+   batch.Begin();
+   delivery.Invoke(this,new object[]{pairBounds,pair,1f,null});
+   delivery.Invoke(this,new object[]{compactBounds,chief,1f,null});
+   batch.End();
+   GraphicsDevice.GetBackBufferData(target);
+  }
  }
  protected override void Draw(GameTime time){
   if(drawn)return;drawn=true;if(shipmentsOnly){CheckShipmentArt();Exit();return;}if(galleryOnly){DrawMaterialGallery();Exit();return;}GraphicsDevice.Clear(new Color(25,36,48));batch.Begin();

@@ -12,6 +12,21 @@ public partial class Game1
     private string WarReservationLabel=>WarReservationCount==0?"開戦予約（なし）":$"開戦予約（{WarReservationCount}件）";
     private void DrawWarReservationMarkers()
     {
+        if(_warPlanning && _selectedMoveNode>=0 && !MapTransitionActive && !_net.IsAnimating)
+        {
+            var shown=new HashSet<(int,int)>();
+            foreach(var row in _invasionSources.Where(row=>
+                _setup.Nodes.All[row.Node].Purpose==NodePurpose.Frontline && InvasionRobots(row).Length>0))
+            {
+                var path=_setup.Campaign.RobotBattles.OutpostAttackPath(_setup,row.Owner,row.Node,_selectedMoveNode);
+                if(path==null)continue;
+                for(int i=1;i<path.Length;i++)
+                    if(shown.Add((path[i-1],path[i])) &&
+                        OperationPosition(path[i-1],out var from) && OperationPosition(path[i],out var to) &&
+                        MapViewBounds.Contains(from.ToPoint()) && MapViewBounds.Contains(to.ToPoint()))
+                        DrawFunctionTransferLine(from,to,new Color(255,219,96),3);
+            }
+        }
         foreach(int id in _setup.Campaign.PlannedOrders.Where(o=>!o.Peaceful && CanPlanRuler(o.Ruler) && (o.Queen || o.Fighters>0) && EnemyTarget(o.TargetNode)).Select(o=>o.TargetNode).Distinct())
         {
             if(!_net.NodeVisible(_setup,_setup.Nodes.All[id]) || !OperationPosition(id,out var at))continue;
@@ -39,7 +54,7 @@ public partial class Game1
         if(!WarPlanningAllowed)return;
         _withdrawalEncounter=-1;CloseMovement();OpenMovementWithFit(false);_warPlanning=true;_net.HoverSuppressedNode=-1;_net.AttackTargetMarkers=true;_net.RevealMovementTargets=true;_net.MovementTargets.Clear();
         foreach(var node in _setup.Nodes.All.Where(n=>PlanningFunctional(n.Id) && CanPlanRuler(n.Owner)))
-            foreach(int target in _setup.Campaign.RobotBattles.MarchTargets(_setup,node.Id))
+            foreach(int target in _setup.Campaign.RobotBattles.AttackTargets(_setup,node.Owner,node.Id))
                 if(EnemyTarget(target))_net.MovementTargets.Add(target);
         foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler))
             foreach(int target in InvasionTargets(ruler))if(EnemyTarget(target))_net.MovementTargets.Add(target);
@@ -53,7 +68,7 @@ public partial class Game1
         // Use the picker's own eligibility rules while retaining all clickable destinations.
         foreach(var node in _setup.Nodes.All.Where(n=>PlanningFunctional(n.Id) && CanPlanRuler(n.Owner))){
             if(InvasionRobots(new(){Owner=node.Owner,Node=node.Id}).Length==0)continue;
-            foreach(int target in _setup.Campaign.RobotBattles.MarchTargets(_setup,node.Id))
+            foreach(int target in _setup.Campaign.RobotBattles.AttackTargets(_setup,node.Owner,node.Id))
                 if(_net.MovementTargets.Contains(target))_net.AttackHighlightTargets.Add(target);
         }
         foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler)){
@@ -67,7 +82,7 @@ public partial class Game1
         if(ReferenceEquals(_nodeChecksWorld,_setup) && _nodeChecksTurn==_setup.Population.Turn && _warChecksByPlayer.TryGetValue(NodeCheckPlayer,out var checkedTargets))
             _net.AttackHighlightTargets.ExceptWith(checkedTargets);
     }
-    private IEnumerable<int> InvasionTargets(int ruler)=>_setup.Campaign.RobotBattles.MarchTargets(_setup,_setup.Nodes.Current(ruler)?.Id??-1)
+    private IEnumerable<int> InvasionTargets(int ruler)=>_setup.Campaign.RobotBattles.AttackTargets(_setup,ruler,_setup.Nodes.Current(ruler)?.Id??-1)
         .Append(_setup.Nodes.Current(ruler)?.Id??-1).Where(id=>id>=0 && _setup.Campaign.RobotBattles.CanSortie(_setup,ruler,id)).Distinct();
     private bool CanPlanRuler(int ruler)=>ruler>=0 && (_computerMarches!=null?ruler==_setup.PlayerSlot:_setup.ControllerOf(ruler)==_setup.TurnPlayer) && _setup.Relations.Powered[ruler] && !_setup.Relations.Pending.Any(p=>p.Ruler==ruler);
     private bool EnemyTarget(int id)=>_setup.Nodes.All[id].Owner<0 || !_setup.Relations.Allied(_setup.PlayerSlot,_setup.Nodes.All[id].Owner);

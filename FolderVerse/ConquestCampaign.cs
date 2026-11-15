@@ -27,9 +27,9 @@ public sealed partial class ConquestCampaign
         }
         _domesticSubmitted.Clear();
         if(party.Length>0)world.SelectTurnRuler(party[0]);
+        ComputerNodePurposes.Plan(world,automaticAll);
         ComputerLogistics.Plan(world,automaticAll);
         ComputerFunctionTransfers.Plan(world,automaticAll);
-        ComputerNodePurposes.Plan(world,automaticAll);
         if(deferDelivery?.Invoke()==true)return false;
         BeginDelivery(world);
         return true;
@@ -174,7 +174,7 @@ public sealed partial class ConquestCampaign
                 foreach(var node in world.Nodes.All.Where(n=>n.Owner==ruler && !orders.Any(o=>o.Ruler==ruler && (o.SourceNode==n.Id || o.Queen && home?.Id==n.Id))))
                 {
                     int available=RobotBattles.AvailableFrom(world,ruler,node.Id);if(available==0 || random.Next(100)>=35)continue;
-                    var targets=RobotBattles.MarchTargets(world,node.Id).Select(id=>world.Nodes.All[id]).Where(n=>n.Owner>=0 && !world.Relations.Allied(ruler,n.Owner)).ToArray();
+                    var targets=RobotBattles.AttackTargets(world,ruler,node.Id).Select(id=>world.Nodes.All[id]).Where(n=>n.Owner>=0 && !world.Relations.Allied(ruler,n.Owner)).ToArray();
                     if(targets.Length>0)orders.Add(new(ruler,targets[random.Next(targets.Length)].Id,available,node.Id,false));
                 }
             }

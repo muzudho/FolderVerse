@@ -25,7 +25,7 @@ public static class ComputerLogistics
                     return new{Node=n.Id,Owner=n.Owner,Count=count-w.RulerComputerPolicy(n.Owner).GuardCount(count,guard)};
                 }).Where(s=>s.Count>0).ToArray();
                 var queens=family.Where(o=>w.Nodes.Current(o) is {} n && !battles.LockedNode(n.Id)).ToArray();
-                var targets=sources.SelectMany(s=>battles.MarchTargets(w,s.Node)).Concat(queens.SelectMany(o=>battles.MarchTargets(w,w.Nodes.Current(o)!.Id))).Distinct();
+                var targets=sources.SelectMany(s=>battles.AttackTargets(w,s.Owner,s.Node)).Concat(queens.SelectMany(o=>battles.AttackTargets(w,o,w.Nodes.Current(o)!.Id))).Distinct();
                 foreach(int target in targets.Where(t=>!battles.LockedNode(t) && (w.Nodes.All[t].Owner<0 || !w.Relations.Allied(family.Key,w.Nodes.All[t].Owner)))){
                     int defense=battles.DefendingRobots(w,family.Key,target);
                     if(w.Nodes.All[target].Owner<0 && defense==0 && queens.Any(o=>battles.CanMarch(w,o,target)))return true;
@@ -39,7 +39,7 @@ public static class ComputerLogistics
         bool stalled=!AnyViableAttack();
         foreach(int owner in Enumerable.Range(0,w.ActiveCount).Where(o=>w.Relations.CanAct(o) && (automaticAll || !manual.Contains(o)))){
             var nodes=w.Nodes.All.Where(n=>n.Functional && n.Owner==owner && !Busy(n.Id)).ToArray();
-            var front=nodes.Where(n=>battles.MarchTargets(w,n.Id).Any(t=>w.Nodes.All[t].Owner>=0 && !w.Relations.Allied(owner,w.Nodes.All[t].Owner))).Select(n=>n.Id).ToHashSet();
+            var front=nodes.Where(n=>battles.AttackTargets(w,owner,n.Id).Any(t=>w.Nodes.All[t].Owner>=0 && !w.Relations.Allied(owner,w.Nodes.All[t].Owner))).Select(n=>n.Id).ToHashSet();
             // Stage surplus troops closer to a front even when its hangars are full.
             // Reverse delivery edges keep this distance valid for the shipping direction.
             var incoming=new Dictionary<int,List<int>>();

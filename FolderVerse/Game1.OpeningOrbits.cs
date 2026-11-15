@@ -76,21 +76,26 @@ public partial class Game1
         _=>Matrix.Identity
     };
 
+    private static (float Pan,float Zoom) OpeningOrbitCamera(float age)
+    {
+        float progress=Math.Clamp(Math.Min(age/(float)OpeningZoomInEnd,
+            (float)((OpeningOverviewStart-age)/(OpeningOverviewStart-OpeningZoomOutStart))),0,1);
+        const float panShare=.45f;
+        return (MathHelper.SmoothStep(0,1,progress/panShare),
+            MathHelper.SmoothStep(0,1,(progress-panShare)/(1-panShare)));
+    }
+
     private OpeningGlobeHandoff? DrawOpeningOrbits(float age,bool intro,float modelBlend=1)
     {
-        float approach=intro?0:Math.Min(
-            MathHelper.SmoothStep(0,1,age/(float)OpeningZoomInEnd),
-            MathHelper.SmoothStep(1,0,(float)((age-OpeningZoomOutStart)/(OpeningOverviewStart-OpeningZoomOutStart))));
+        float cameraAge=age+(intro?0:(float)OpeningExitOffset);
+        var (pan,approach)=intro?(0f,0f):OpeningOrbitCamera(cameraAge);
         float globeBlend=intro?0:Math.Min(
             MathHelper.SmoothStep(0,1,(float)((age-OpeningZoomInEnd)/(OpeningGlobeReady-OpeningZoomInEnd))),
-            MathHelper.SmoothStep(1,0,(float)((age-OpeningGlobeEnd)/(OpeningZoomOutStart-OpeningGlobeEnd))));
+            MathHelper.SmoothStep(1,0,(float)((cameraAge-OpeningGlobeEnd)/(OpeningZoomOutStart-OpeningGlobeEnd))));
         float opacity=intro?modelBlend:1;
         float longest=Math.Max(_setup.Width,Math.Max(_setup.Height,_setup.Depth));
         float scale=MathHelper.Lerp(5.1f,345/(longest*.65f),approach);
-        float roll=MathF.Atan(.26f)*approach;
-        float cos=MathF.Cos(roll),sin=MathF.Sin(roll);
-        Vector2 Rotate(Vector2 v)=>new(v.X*cos-v.Y*sin,v.X*sin+v.Y*cos);
-        float elapsed=intro?age:(float)(OrbitOverviewSeconds+_openingOrbitRound*OpeningPlanetInterval+age);
+        float elapsed=intro?age:(float)(OrbitOverviewSeconds+_openingOrbitRound*OpeningPlanetInterval+_openingOrbitTimeOffset+age);
         int focus=_openingOrbitRound%OpeningOrbitSizes.Length;
         var center=OpeningOrbitCenter;
         OpeningGlobeHandoff? handoff=null;
@@ -98,7 +103,8 @@ public partial class Game1
             stackalloc (Vector3,Vector3,Color,float,int)[17];
         Span<(Vector3 A,Vector3 B,Vector3 C,Vector3 D,Color Tint)> rails=stackalloc (Vector3,Vector3,Vector3,Vector3,Color)[16];
         var candidates=_openingOrbitCandidates.ToArray();
-        bodies[0]=(Vector3.Zero,new Vector3(16),new Color(255,182,64),0,1);
+        float sunVisibility=1-pan;
+        bodies[0]=(Vector3.Zero,new Vector3(16),new Color(255,182,64)*sunVisibility,0,1);
         for(int i=0;i<OpeningOrbitSizes.Length;i++)
         {
             // Refill the orbit vacated on each pass. Its neighbours continue moving.
@@ -138,12 +144,14 @@ public partial class Game1
             bodies[i+1]=(point,MiniatureSize(candidate,i),tint*(replacementFade*(1-useCloseModel)),spin,polarAxis);
             if(i==focus)
             {
-                center+=(OpeningFocusCenter-Project(point))*approach;
+                center+=(OpeningFocusCenter-Project(point))*pan;
                 if(useCloseModel>0)
                 {
                     var pose=Quaternion.CreateFromRotationMatrix(OpeningPolarAlignment(polarAxis)
                         *Matrix.CreateRotationY(spin)*Matrix.CreateFromYawPitchRoll(.48f,.42f,0));
-                    pose=WorldPreview.FaceTour(pose,(age-OpeningGlobeReady)/(OpeningGlobeEnd-OpeningGlobeReady));
+                    double tourAge=_openingRejectedAt??age;
+                    var face=WorldPreview.OpeningFaceTour((tourAge-OpeningGlobeReady)/(OpeningGlobeEnd-OpeningGlobeReady));
+                    pose=Quaternion.Slerp(pose,face,globeBlend);
                     handoff=new OpeningGlobeHandoff(Project(point),MathHelper.Lerp(.72f,1,useCloseModel),globeBlend,
                         useCloseModel*(1-globeBlend),tint,pose);
                 }
@@ -174,7 +182,7 @@ public partial class Game1
             bodies[VisibleOpeningOrbits+1+i]=(point,MiniatureSize(candidate,i),tint*ink,
                 OpeningOrbitSpin(elapsed,VisibleOpeningOrbits+i),candidate?.PolarAxis??1);
         }
-        DrawOpeningSunGlow(Project(Vector3.Zero),scale,opacity);
+        if(sunVisibility>0)DrawOpeningSunGlow(Project(Vector3.Zero),scale,opacity*sunVisibility);
         foreach(var rail in rails)
         {
             DrawOpeningOrbitRail(Project(rail.A),Project(rail.B),rail.Tint);
@@ -187,7 +195,7 @@ public partial class Game1
         foreach(var body in bodies)DrawBody(body.Position,body.Size,body.Tint*opacity,body.Spin,body.PolarAxis);
         return handoff;
 
-        Vector2 Project(Vector3 point)=>center+Rotate(OpeningOrbitProjection(point))*scale;
+        Vector2 Project(Vector3 point)=>center+OpeningOrbitProjection(point)*scale;
         static float Depth(Vector3 p)=>p.Z-p.X*.57f+p.Y*.4f;
         static Vector3 MiniatureSize(WorldSetup candidate,int slot)=>candidate==null?
             new Vector3(4+slot%3,4+(slot+1)%3,4+(slot+2)%3)*.5f:

@@ -11,8 +11,48 @@ sealed class RotationGame:Game1{
  object Call(string n,params object[] args)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,args)!;
  void Check(bool ok,string message){if(!ok)throw new Exception(message);}
  WorldSetup w=null!;CubeNet net=null!;WorldPreview world=null!;int frame;
+ readonly bool spiralOnly=Environment.GetCommandLineArgs().Contains("--robot-spiral");
+ void CheckRobotSpiral()
+ {
+  var slots=Enumerable.Range(0,60).Select(i=>CubeNet.RobotSpiralSlot(i,46)).ToArray();
+  Check(slots[0].Length()>48 && slots.Zip(slots.Skip(1)).All(p=>p.First.Length()<p.Second.Length()),
+      "Spiral slots leave the node clear and move steadily outward");
+  Check(slots.Zip(slots.Skip(1)).All(p=>Vector2.Distance(p.First,p.Second)>43),
+      "Adjacent spiral slots retain enough space for robot cards");
+  var node=w.Nodes.All.First(n=>n.Functional && w.Cells[n.Cell].Normal==Vector3.Backward);
+  w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);
+  typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(w.Robots.Nodes[node.Id],new object[]{60});
+  for(int i=0;i<60;i++)w.Robots.Nodes[node.Id].Add(w.Robots.Create(0,RobotParts.Complete));
+  net.ShowRobots=net.ShowOtherCountries=true;net.ShowBatteries=false;net.ShowRoutes=false;
+  var batch=(SpriteBatch)Get("_spriteBatch");var ui=(UiPainter)Get("_ui");
+  var panel=new Rectangle(0,0,1200,800);
+  using var target=new RenderTarget2D(GraphicsDevice,panel.Width,panel.Height,false,SurfaceFormat.Color,DepthFormat.Depth24);
+  GraphicsDevice.SetRenderTarget(target);
+  var drawLayer=typeof(CubeNet).GetMethod("DrawRobotLayer",F)!;
+  batch.Begin();drawLayer.Invoke(net,new object[]{ui,w,panel,(Func<Node,Vector2?>)(n=>n==node?panel.Center.ToVector2():null),30f,0f});batch.End();
+  var flat=net.RobotBadges.ToArray();
+  Check(flat.Length==5 && net.HitRobotBadge(flat[^1].Bounds.Center)==node.Id,"Flat overview shows four robots and a clickable remainder");
+  batch.Begin();drawLayer.Invoke(net,new object[]{ui,w,panel,(Func<Node,Vector2?>)(n=>n==node?panel.Center.ToVector2():null),250f,0f});batch.End();
+  Check(net.RobotBadges.Count==60 && net.RobotBadges.Take(4).SequenceEqual(flat.Take(4)),
+      "Zooming in reveals the full spiral without moving the inner robots");
+  world.ManualOrientation=Quaternion.Identity;world.GlobeZoom=.4f;
+  world.GlobeAnchor=w.Routes.Position(node.Cell,node.Center);
+  world.Draw(0,0,0,false,true);
+  world.DrawRobotPins(w,net,0,0,panel);
+  Check(net.RobotBadges.Count==4,"Globe overview keeps four physical pins");
+  batch.Begin();net.DrawGlobeLayers(ui,w,world,panel,0,0,0);batch.End();
+  Check(net.RobotBadges.Count==5 && net.HitRobotBadge(net.RobotBadges[^1].Bounds.Center)==node.Id,
+      "The globe remainder opens the same node as its physical pins");
+  GraphicsDevice.SetRenderTarget(null);
+  Console.WriteLine("PASS: stable spiral spacing, 60-slot map expansion and clickable globe and net remainders.");
+ }
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
+  if(spiralOnly){
+   w=(WorldSetup)Get("_setup");w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);
+   world=(WorldPreview)Get("_world");world.ShowSetup(w,true);net=(CubeNet)Get("_net");net.Home(w);
+   CheckRobotSpiral();return;
+  }
   for(int axis=0;axis<3;axis++){
    var direction=ToyOrientationRenderer.AxisDirection(axis);var screw=ToyOrientationRenderer.ScrewCenter(axis);
    Check(Vector3.Dot(screw,direction)<-2 && Vector3.Cross(screw,direction).LengthSquared()<.00001f,"Each screw is separated along its negative axis");
@@ -199,6 +239,7 @@ sealed class RotationGame:Game1{
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
+  if(spiralOnly){Exit();return;}
   var batch=(SpriteBatch)Get("_spriteBatch");
   if(frame==0){Set("_operationSettingsOpen",true);Set("_operationSettingsSlide",1f);Set("_mapDragListOpen",true);}
   if(frame==1){Set("_statusGlobe",false);Set("_mapDragListOpen",true);}

@@ -16,6 +16,7 @@ public partial class Game1
     private readonly int[] _pocketZoom={2,2};
     private readonly Point[] _pocketScroll=new Point[2];
     private readonly long?[][] _pocketSlots=new long?[2][];
+    private Dictionary<int,MaplePackage> _pocketHangarMaterials=new();
     private (int Side,int Slot,Point Start)? _pocketDrag;
     private (int Side,Point Start,Point Origin)? _pocketPan;
     private string PocketRobotLockReason(Robot robot,bool fromNode)
@@ -37,18 +38,21 @@ public partial class Game1
     }
     private static Rectangle PocketCard(int index,bool fromNode)
     {var card=RobotCard(index);if(fromNode)card.X+=946;return card;}
-    private static Rectangle PocketViewport(int side)=>new(PocketCard(0,side==1).X,220,882,294);
-    private Vector2 PocketPitch(int side)=>HangarCellPitch(PocketViewport(side),PocketZoomSizes[_pocketZoom[side]],PocketGap);
+    private bool ExpandedPocketHangar=>_pocketSlots[1]?.Length>12;
+    private Rectangle PocketViewport(int side)=>new(PocketCard(0,side==1).X,220,882,side==1 && ExpandedPocketHangar?447:294);
+    private Point PocketZoomSize(int side)=>side==1 && ExpandedPocketHangar && _pocketZoom[side]==2
+        ?new Point(6,3):PocketZoomSizes[_pocketZoom[side]];
+    private Vector2 PocketPitch(int side)=>HangarCellPitch(PocketViewport(side),PocketZoomSize(side),PocketGap);
     private Rectangle PocketViewCard(int side,int slot)=>HangarViewCell(PocketViewport(side),PocketPitch(side),PocketGap,
         slot,6,_pocketScroll[side].X,_pocketScroll[side].Y);
     private Point PocketLimit(int side)
     {
-        var zoom=PocketZoomSizes[_pocketZoom[side]];
+        var zoom=PocketZoomSize(side);
         return new(6-zoom.X,Math.Max(0,(_pocketSlots[side].Length+5)/6-zoom.Y));
     }
     private IEnumerable<int> PocketVisible(int side)
     {
-        var zoom=PocketZoomSizes[_pocketZoom[side]];
+        var zoom=PocketZoomSize(side);
         var scroll=_pocketScroll[side];
         for(int y=0;y<zoom.Y;y++)for(int x=0;x<zoom.X;x++){
             int slot=(scroll.Y+y)*6+scroll.X+x;
@@ -66,7 +70,11 @@ public partial class Game1
             var limit=PocketLimit(side);
             _pocketScroll[side]=new(Math.Clamp(_pocketScroll[side].X,0,limit.X),Math.Clamp(_pocketScroll[side].Y,0,limit.Y));
         }
+        var hangar=PocketStore(1);
+        _pocketHangarMaterials=HangarMaterials(_pocketSlots[1],hangar,hangar.MaplePackages);
     }
+    private Rectangle PocketHangarArrow(bool down)=>new(down?1786:1000,PocketViewport(1).Bottom+4,96,24);
+    private bool PocketHangarHasMaterial(int slot)=>_pocketHangarMaterials.Keys.Any(section=>section/3==slot);
     private int PocketHit(int side)=>PocketVisible(side).FirstOrDefault(i=>PocketViewCard(side,i).Contains(_pointer),-1);
     private Robot PocketOccupant(int side,int slot)=>slot<0?null:PocketStore(side).Robots.FirstOrDefault(r=>r.Id==_pocketSlots[side][slot]);
     private void PocketMouseInput(MouseState mouse,KeyboardState keys,bool click,bool escape,bool active)
@@ -74,6 +82,14 @@ public partial class Game1
         if(!active){_pocketDrag=null;_pocketPan=null;return;}
         SyncPocket();
         if(escape || click && InactiveBack.Contains(_pointer)){_pocketDrag=null;_pocketPan=null;PocketInput(click,escape);return;}
+        if(click && PocketLimit(1).Y>0)
+        {
+            int direction=PocketHangarArrow(false).Contains(_pointer)?-1:PocketHangarArrow(true).Contains(_pointer)?1:0;
+            if(direction!=0){
+                _pocketScroll[1].Y=Math.Clamp(_pocketScroll[1].Y+direction,0,PocketLimit(1).Y);
+                return;
+            }
+        }
         int side=PocketViewport(0).Contains(_pointer)?0:PocketViewport(1).Contains(_pointer)?1:-1;
         if(mouse.RightButton==ButtonState.Released)_pocketPan=null;
         if(_pocketDrag==null && side>=0 && mouse.RightButton==ButtonState.Pressed && _previousMouse.RightButton==ButtonState.Released)
@@ -96,6 +112,7 @@ public partial class Game1
             if(Vector2.DistanceSquared(drag.Start.ToVector2(),_pointer.ToVector2())<=36 || side<0)return;
             int slot=PocketHit(side);
             if(slot<0)return;
+            if(side==1 && PocketHangarHasMaterial(slot)){_pocketMessage="原材料のない空き枠を選んでください";return;}
             if(PocketOccupant(drag.Side,drag.Slot)?.Id!=_pocketRobot)return;
             if(side==drag.Side){
                 var slots=_pocketSlots[side];
@@ -165,18 +182,46 @@ public partial class Game1
         {
             var store=fromNode?_setup.Robots.Nodes[node.Id]:_setup.Robots.Retinues[player];int x=fromNode?1000:54;
             int side=fromNode?1:0;
-            _ui.Text($"{(fromNode?"地点の配備":"自分のポケット")} {store.Count}/{store.TotalCapacity}",new(x,185),.5f,Cream);
+            _ui.Text($"{(fromNode?"現在地のロボット格納庫":"自分のポケット")} {store.Count}/{store.TotalCapacity}",new(x,185),.5f,Cream);
+            if(fromNode)
+            {
+                var plan=_setup.Robots.PartPlanning;
+                if(plan.Orders.Any(o=>o.Target==node.Id && o.Role==HangarReservation.Warehouse))
+                {
+                    int planned=plan.Preview(_setup).Nodes[node.Id].TotalCapacity;
+                    if(planned!=store.TotalCapacity)
+                        _ui.Text($"倉庫管理人の予約確定後：{planned}枠",new(x,151),.38f,Cream);
+                }
+                if(PocketLimit(side).Y>0)
+                {
+                    int row=_pocketScroll[side].Y;
+                    int lastRow=Math.Min(row+PocketZoomSize(side).Y,(store.TotalCapacity+5)/6);
+                    _ui.Button(PocketHangarArrow(false),"▲ 上",row>0?Accent:Muted,.33f);
+                    _ui.Button(PocketHangarArrow(true),"▼ 下",row<PocketLimit(side).Y?Accent:Muted,.33f);
+                    _ui.Center($"表示 {row+1}～{lastRow} / {(store.TotalCapacity+5)/6} 段",
+                        new(1096,PocketViewport(side).Bottom+4,690,24),.37f,Cream);
+                }
+            }
             foreach(int i in PocketVisible(side))
             {
                 var card=PocketViewCard(side,i);var robot=PocketOccupant(side,i);
-                _ui.Box(card,new(30,47,59));
-                if(robot==null){_ui.Center((i+1).ToString(),new(card.X,card.Bottom-25,card.Width,22),.28f,Cream*.65f);continue;}
+                if(fromNode)DrawHangarBay(card,card.Contains(_pointer),robot==null && !PocketHangarHasMaterial(i) || robot!=null && PocketRobotSelectable(robot,true));
+                else _ui.Box(card,new(30,47,59));
+                if(robot==null){
+                    if(fromNode)
+                        foreach(var item in _pocketHangarMaterials.Where(p=>p.Key/3==i))
+                            DrawMaplePackage(HangarCellRegion(card,50,18+item.Key%3*62,152,62*item.Value.Sections),item.Value,compact:true);
+                    _ui.Center((i+1).ToString(),new(card.X,card.Bottom-25,card.Width,22),.28f,Cream*.65f);
+                    continue;
+                }
                 bool selectable=PocketRobotSelectable(robot,fromNode),hover=selectable && card.Contains(_pointer),own=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(robot.Parts&p)!=0 && robot.Origin(p)==player);
-                _ui.Box(card,hover?new Color(70,103,118):own?Muted:new Color(37,44,53));
+                if(!fromNode)_ui.Box(card,hover?new Color(70,103,118):own?Muted:new Color(37,44,53));
                 int work=_setup.Robots.WorkCountry(node.Id,robot);var ownerColor=_setup.OwnerColor(work>=0?work:own?player:robot.Owner);_ui.Box(new(card.X+3,card.Y+3,card.Width-6,23),ownerColor);
-                _ui.Center(work>=0?$"仕事 #{work+1}":own?"自国パーツあり":"自国パーツなし",new(card.X+3,card.Y+3,card.Width-6,23),.30f,UiPainter.ContrastInk(ownerColor));
+                _ui.Center(robot.WarehouseKeeper?"倉庫管理人":work>=0?$"仕事 #{work+1}":own?"自国パーツあり":"自国パーツなし",new(card.X+3,card.Y+3,card.Width-6,23),.30f,UiPainter.ContrastInk(ownerColor));
                 int height=Math.Min(160,card.Height-74),width=Math.Max(48,height*2/3);
-                DrawRobotGlyphCore(new(card.Center.X-width/2,card.Y+27,width,height),robot,true,selectable?1:.38f,null,true);
+                var robotBounds=new Rectangle(card.Center.X-width/2,card.Y+27,width,height);
+                if(fromNode)DrawHangarRobot(robotBounds,robot,selectable?1:.38f);
+                else DrawRobotGlyphCore(robotBounds,robot,true,selectable?1:.38f,null,true);
                 _ui.Center(PartsLabel(robot),new(card.X,card.Bottom-45,card.Width,24),System.Math.Min(.34f,(card.Width-8)/System.Math.Max(1,_font.MeasureString(PartsLabel(robot)).X)),selectable?Cream:Cream*.55f);
                 _ui.Center("ID "+robot.Id,new(card.X,card.Bottom-24,card.Width,18),.28f,Cream);
                 string reason=PocketRobotLockReason(robot,fromNode);

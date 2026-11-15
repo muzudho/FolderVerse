@@ -150,10 +150,15 @@ sealed class CheckGame:Game1
         var route=w.Routes.Neighbors(source)[0];var target=w.Nodes.At(route.Target,route.Entry);
         var factory=w.Robots.Workshops[source.Id];
         for(int seed=0;factory.ProductionLines.Length==0;seed++)factory.GenerateLines(seed);
-        var producer=factory.ProductionLines[0];producer.Configure(RobotParts.Complete,1);producer.IntakeTarget=target.Id;
+        var arguments=Environment.GetCommandLineArgs();
+        bool bodyLegs=arguments.Contains("--integrated-body-legs");
+        bool integratedProduct=bodyLegs || arguments.Contains("--integrated-product");
+        var productParts=bodyLegs ? RobotParts.Body|RobotParts.Legs :
+            integratedProduct ? RobotParts.Head|RobotParts.Body : RobotParts.Complete;
+        var producer=factory.ProductionLines[0];producer.Configure(productParts,1);producer.IntakeTarget=target.Id;
         typeof(RobotWorkshop).GetField("_selectedProductPlan",F)!.SetValue(producer,
-            new ProductionPlan(RobotParts.Complete,1){Material=RobotMaterial.Cardboard});
-        w.Robots.Nodes[target.Id].Add(w.Robots.Create(0,RobotParts.Head));
+            new ProductionPlan(productParts,1,IntegratedParts:integratedProduct ? productParts : 0){Material=RobotMaterial.Cardboard});
+        w.Robots.Nodes[target.Id].Add(w.Robots.Create(0,bodyLegs ? RobotParts.Body : RobotParts.Head));
         w.Industry.Reset();w.Industry.Queue(1);
         int seed26=Enumerable.Range(0,100000).First(seed=>{
             var wheel=IndustryCycle.CreateWheel(seed,1);
@@ -176,6 +181,21 @@ sealed class CheckGame:Game1
         Call("UpdateManufacturing",.9d,false);
         Check(w.Robots.IndustryTurn==clock+1,"Production waits while the button product is flying");
         GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();Save("manufacturing-in-flight");
+        if(integratedProduct)
+        {
+            var product=flights.Single().Arrival.Product;
+            var outerPart=bodyLegs ? RobotParts.Legs : RobotParts.Head;
+            Check(product.Parts==productParts && product.IntegratedParts==productParts &&
+                product.Material(outerPart)==RobotMaterial.Cardboard && product.BodyMaterial==RobotMaterial.Cardboard,
+                "The real production flight carries the selected integrated cardboard pair");
+            var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
+            typeof(RobotWorld).GetMethod("ResolveProductionIntakes",F)!.Invoke(restored.Robots,new object[]{restored});
+            Check(restored.Robots.Nodes[target.Id].Robots.Single(r=>r.Id==product.Id)==product,
+                "The integrated pair arrives with the same ID, materials and integrated parts");
+            CheckArrivedIntegrationArt(batch,restored,target.Id,product);
+            Console.WriteLine($"PASS: integrated cardboard {productParts} production, flight and restored arrival.");
+            return;
+        }
         var originalFlightPixels=Pixels();
         var flightQueue=(List<(ProductionIntake Arrival,double Started)>)Get("_manufacturingFlights");
         var flight=flightQueue.Single();
@@ -259,6 +279,38 @@ sealed class CheckGame:Game1
             .Count(x=>cardboardPixels[y*stride+x]!=maplePixels[y*stride+x]))>100,
             "The arrived product's material changes the pixels in its small hangar slot");
         Console.WriteLine("PASS: most productive adjacent intake, one-turn production, visible delivery, capacity and no forecast mutation.");
+    }
+    private void CheckArrivedIntegrationArt(SpriteBatch batch,WorldSetup restored,int node,Robot product)
+    {
+        var store=restored.Robots.Nodes[node];
+        typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(store,new object[]{60});
+        Set("_setup",restored);
+        Set("_populationNode",node);
+        Call("OpenNodeAssembly");
+        Set("_hangarZoom",5);
+        Set("_hangarIntroStart",float.NegativeInfinity);
+        var slots=(long?[])Get("_hangarSlots");
+        int index=Array.IndexOf(slots,product.Id);
+        Check(index>=0,"The integrated product appears in the destination hangar");
+        var bounds=(Rectangle)Call("AssemblyRobotBounds",index);
+        Check(bounds.Width<48 && ((IEnumerable<int>)Call("VisibleAssemblySlots")).Count()==60,
+            "The integrated product is visible at the smallest hangar zoom");
+        Color[] Capture(string name)
+        {
+            GraphicsDevice.Clear(new Color(16,35,46));
+            batch.Begin();Call("DrawNodeAssembly");batch.End();
+            Save(name);
+            return Pixels();
+        }
+        var joined=Capture("manufacturing-arrived-integrated");
+        store.Remove(product.Id);
+        store.Add(product with {IntegratedParts=0});
+        var split=Capture("manufacturing-arrived-split");
+        int stride=GraphicsDevice.PresentationParameters.BackBufferWidth;
+        var changed=Enumerable.Range(0,joined.Length).Where(i=>joined[i]!=split[i]).ToArray();
+        Check(changed.Length>20 && changed.All(i=>bounds.Contains(i%stride,i/stride)),
+            "Changing the integration changes the artwork inside only the arrived product slot");
+        Console.WriteLine($"PASS: integration changed {changed.Length} pixels in the small arrived slot.");
     }
     private void CheckMercyUi(SpriteBatch batch)
     {

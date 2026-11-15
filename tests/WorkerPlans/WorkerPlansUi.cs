@@ -170,6 +170,19 @@ sealed class WorkerPlansUi:Game1
    Set("_factoryPlanLine",-1);
    Click(new Point(691,941));
    Check((int)Get("_factoryPage")==0,"Up arrow scrolls back to the first two lanes");
+   Check(w.Robots.ToggleReservation(node,workerId,HangarReservation.Harvest,0),"Appoint the worker to harvest");
+   var actualHarvest=factory.ProductionLines[1];
+   var otherLane=factory.ProductionLines[2];
+   Check(w.Robots.PartPlanning.ReserveRole(w,node,workerId,HangarReservation.Harvest,0),
+    "Reserve release of the active harvest worker");
+   var preview=(RobotWorkshop[])typeof(Game1).GetMethod("FactoryScreenLines",F)!.Invoke(this,new object[]{factory,null})!;
+   Check(preview.Length==2 && ReferenceEquals(preview[1],otherLane) && actualHarvest.HarvestOnly &&
+    ReferenceEquals(factory.ProductionLines[1],actualHarvest),
+    "Release removes only the forecast harvest lane and keeps the confirmed lane until turn resolution");
+   Check(w.Robots.PartPlanning.Undo(0),"Undo the worker release");
+   preview=(RobotWorkshop[])typeof(Game1).GetMethod("FactoryScreenLines",F)!.Invoke(this,new object[]{factory,null})!;
+   Check(ReferenceEquals(preview[1],actualHarvest),"Undo restores the same harvest lane");
+   Check(w.Robots.ToggleReservation(node,workerId,HangarReservation.Worker,0),"Restore the manufacturing worker fixture");
    w.Robots.Nodes[node].Remove(extra.Id);
    w.Robots.SyncWorkers(node);
    Check(w.Robots.PartPlanning.ReserveRole(w,node,workerId,HangarReservation.Harvest,0),

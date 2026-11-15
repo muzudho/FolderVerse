@@ -2,6 +2,39 @@ using FolderVerse;
 using System.Reflection;
 using Microsoft.Xna.Framework;
 static void Check(bool value,string message){if(!value)throw new Exception(message);}
+if(args.Contains("--cpu-outpost"))
+{
+    var world=Fixture();
+    world.EquipmentMode=RobotEquipmentMode.Materials;
+    var battle=world.Campaign.RobotBattles;
+    var routes=world.Nodes.All.Where(n=>n.Functional)
+        .ToDictionary(n=>n.Id,n=>battle.MarchTargets(world,n.Id).ToHashSet());
+    var chain=routes.SelectMany(source=>source.Value.SelectMany(via=>routes[via]
+        .Where(target=>target!=source.Key && !source.Value.Contains(target))
+        .Select(target=>(Source:source.Key,Via:via,Target:target)))).First();
+    world.Nodes.All[chain.Via].Owner=1;
+    world.Nodes.All[chain.Target].Owner=2;
+    world.Relations.SetSuperior(1,0);
+    var source=world.Nodes.All[chain.Source];
+    source.Purpose=NodePurpose.General;
+    world.Robots.Workshops[source.Id].Automation=NodeAutomation.Gentle;
+    for(int i=0;i<3;i++)
+        world.Robots.Nodes[source.Id].Add(world.Robots.Create(0,RobotParts.Complete));
+    Check(!battle.CanAttackFrom(world,0,source.Id,chain.Target),"The CPU fixture starts beyond direct attack range");
+    Check(world.Campaign.FinishDomestic(world,automaticAll:true),"The CPU completes domestic planning");
+    Check(source.Purpose==NodePurpose.Frontline,
+        $"The CPU establishes an outpost to reach a target beyond an allied site: {source.Purpose}, functional={source.Functional}, eligible={battle.SelectableRobots(world,0,source.Id,false).Length}");
+    var orders=new List<March>();
+    ComputerJointAttacks.Plan(world,orders,true);
+    var attack=orders.Single(o=>!o.Queen && o.SourceNode==source.Id && o.TargetNode==chain.Target);
+    Check(attack.Fighters>0 && battle.CanAttackFrom(world,0,source.Id,chain.Target),
+        "The CPU reserves a valid attack from the new outpost");
+    world.Campaign.Resolve(world,orders);
+    Check(battle.LastMarches.Contains((0,source.Id,chain.Target)) && world.Nodes.All[chain.Via].Owner==1,
+        "The CPU executes the attack without moving ownership of the intermediate site");
+    Console.WriteLine("PASS: CPU creates an outpost and attacks two locations away through an allied site.");
+    return;
+}
 if(args.Length>0 && args[0]=="--create-world"){
     int seed=int.Parse(args[1]),players=int.Parse(args[2]);
     var fresh=new WorldSetup{EquipmentMode=args.Contains("--materials")?RobotEquipmentMode.Materials:RobotEquipmentMode.Legacy};

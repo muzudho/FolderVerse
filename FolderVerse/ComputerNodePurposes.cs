@@ -24,11 +24,13 @@ internal static class ComputerNodePurposes
                     !line.Manufacturing && line.MapleRemaining==0);
                 idle?.SelectMapleHarvest(1,material.Value);
             }
-            bool hostile=battles.MarchTargets(world,id).Any(target=>
-                world.Nodes.All[target].Owner is var enemy && enemy>=0 && !world.Relations.Allied(owner,enemy));
             int available=battles.SelectableRobots(world,owner,id,false).Length;
-            if(hostile && available>=2)
+            bool Hostile(int target)=>world.Nodes.All[target].Owner is var enemy && enemy>=0 && !world.Relations.Allied(owner,enemy);
+            bool hostile=available>=2 && battles.MarchTargets(world,id).Any(Hostile);
+            if(hostile)
                 node.Purpose=world.Nodes.Current(owner)?.Id==id?NodePurpose.Defense:NodePurpose.Frontline;
+            else if(available>=2 && battles.PotentialOutpostTargets(world,owner,id).Any(target=>Hostile(target) && !battles.LockedNode(target)))
+                node.Purpose=NodePurpose.Frontline;
             else if(lines.Any(line=>line.MapleRemaining>0))
                 node.Purpose=NodePurpose.Harvest;
             else if(lines.Any(line=>line.Manufacturing && !line.Paused && !line.CycleFinished && !line.WaitingForMaple(robots,id)))

@@ -233,7 +233,8 @@ public sealed partial class WorldPreview : IDisposable
     }
 
     public void Draw(float yaw, float pitch,float glow=0,bool markers=true,bool globeView=false,Rectangle? globeFrame=null,
-        IEnumerable<SurfaceCell> landSelection=null,float opacity=1,Color? solidBody=null)
+        IEnumerable<SurfaceCell> landSelection=null,float opacity=1,Color? solidBody=null,float? cloudTime=null,
+        bool deferAtmosphere=false,float cloudSpeedMultiplier=1)
     {
         _device.BlendState = opacity<1?BlendState.AlphaBlend:BlendState.Opaque;
         _effect.Alpha=opacity;
@@ -279,6 +280,7 @@ public sealed partial class WorldPreview : IDisposable
             foreach(var pass in _effect.CurrentTechnique.Passes) { pass.Apply(); _device.DrawPrimitives(PrimitiveType.TriangleList,0,_markerCount); }
             _effect.LightingEnabled=true;
         }
+        if(globeView && !deferAtmosphere)DrawAtmosphere(cloudTime??glow,opacity,cloudSpeedMultiplier);
         _effect.Alpha=1;
     }
 
@@ -318,5 +320,5 @@ public sealed partial class WorldPreview : IDisposable
         screen=new(projected.X,projected.Y);
         return Vector3.Dot(facing,camera-transformed)>0 && projected.Z>=0 && projected.Z<=1;
     }
-    public void Dispose() { _whirlpoolMesh?.Dispose();_vertices?.Dispose(); _markers?.Dispose();_highlight?.Dispose(); _effect.Dispose(); }
+    public void Dispose() { _atmosphereEffect?.Dispose();_whirlpoolMesh?.Dispose();_vertices?.Dispose(); _markers?.Dispose();_highlight?.Dispose(); _effect.Dispose(); }
 }

@@ -20,7 +20,9 @@ public partial class Game1
         if(!DomesticOperationsAllowed)return factory.ProductionLines;
         var node=_setup.Nodes.All[_populationNode];
         var reservations=_setup.Robots.PartPlanning;
-        var workers=PlanningStock.Nodes[node.Id].Robots.Where(r=>r.FactoryWorker && reservations.WorkerReservation(r.Id)!=null)
+        var roleChanges=reservations.Orders.Where(o=>o.Role!=HangarReservation.None).Select(o=>o.RobotId).ToHashSet();
+        var forecast=PlanningStock.Nodes[node.Id].Robots.Where(r=>r.FactoryWorker).ToDictionary(r=>r.Id);
+        var workers=forecast.Values.Where(r=>reservations.WorkerReservation(r.Id)!=null)
             .ToDictionary(r=>r.Id);
         var lines=new System.Collections.Generic.List<RobotWorkshop>();
         void AddWorker(Robot worker)
@@ -31,10 +33,17 @@ public partial class Game1
         }
         for(int i=0;i<factory.ProductionLines.Length;i++){
             var line=factory.ProductionLines[i];
-            if(factory.WorkerAt(i) is long id && workers.Remove(id,out var worker)){
-                planned.Add(lines.Count,id);
-                AddWorker(worker);
-            }else lines.Add(line);
+            if(factory.WorkerAt(i) is long id)
+            {
+                if(roleChanges.Contains(id) && !forecast.ContainsKey(id))continue;
+                if(workers.Remove(id,out var worker))
+                {
+                    planned.Add(lines.Count,id);
+                    AddWorker(worker);
+                    continue;
+                }
+            }
+            lines.Add(line);
         }
         foreach(var worker in workers.Values.OrderBy(r=>r.Id).Take(Math.Max(0,factory.LineLimit-lines.Count))){
             planned.Add(lines.Count,worker.Id);
@@ -197,13 +206,14 @@ public partial class Game1
         for(int l=_factoryPage;l<Math.Min(displayed,_factoryPage+FactoryVisibleLanes);l++){
             var line=lines[l];int y=FactoryRowY(l-_factoryPage),period=line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[_populationNode].Purpose):3;_factoryLine=l;
             bool planned=plannedWorkers.TryGetValue(l,out long plannedWorkerId);
+            long? workerId=planned?plannedWorkerId:line.WorkerSnapshot?.Id??factory.WorkerAt(Array.IndexOf(factory.ProductionLines,line));
             bool mapleWait=line.WaitingForMaple(_setup.Robots,node.Id);
             _ui.Box(new(78,y-24,782,286),l%2==0?new Color(37,63,77):new Color(46,67,79));
             _ui.Center((l+1).ToString(),new(84,y-12,66,40),.85f,new Color(167,190,194));
             if(!planned && !line.HarvestOnly && line.MapleRemaining==0)_ui.Button(FactoryIntakeButton(l-_factoryPage),"入荷先",Muted,.34f);
             if(line.HarvestOnly || line.MapleRemaining>0){
                 var harvester=line.WorkerSnapshot;
-                if(harvester==null && (planned?plannedWorkerId:factory.WorkerAt(l)) is long harvesterId)
+                if(harvester==null && workerId is long harvesterId)
                     harvester=_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==harvesterId);
                 DrawFactoryHarvestLane(line,node.Id,l-_factoryPage,y,harvester,planned,
                     FactoryHarvestAvailable(node.Id,lines,line,line.HarvestMaterial));
@@ -229,12 +239,12 @@ public partial class Game1
             DrawFactoryLaneStatus(y,running,status);
             int intakes=_setup.Robots.ProductionIntakes.Count(o=>ReferenceEquals(o.Line,line));
             if(intakes>0)_ui.Text($"入荷予約 {intakes}件",new(460,y+112),.3f,Accent);
-            if((planned?plannedWorkerId:factory.WorkerAt(l)) is long workerId){
-                var worker=line.WorkerSnapshot??_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==workerId);
+            if(workerId is long manufacturerId){
+                var worker=line.WorkerSnapshot??_setup.Robots.Nodes[node.Id].Robots.FirstOrDefault(r=>r.Id==manufacturerId);
                 if(worker!=null){
                     DrawFactoryWorker(y,worker);
                     _ui.Text("製造作業員",new(91,y+58),.27f,Cream);
-                    _ui.Text("ID "+workerId,new(91,y+80),.26f,Cream);
+                    _ui.Text("ID "+manufacturerId,new(91,y+80),.26f,Cream);
                     if(!planned && line.WorkerSnapshot!=null)_ui.Text("任命時",new(91,y+102),.25f,Cream);
                 }
             }else _ui.Text("常設レーン",new(91,y+58),.27f,Cream*.7f);

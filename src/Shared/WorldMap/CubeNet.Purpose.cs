@@ -7,17 +7,24 @@ public sealed partial class CubeNet
     internal static void DrawPurposeIcon(UiPainter ui,NodePurpose? purpose,Vector2 at,bool sea,bool enabled)
     {
         Color Tint(Color color)=>enabled?color:Color.Lerp(color,new Color(25,34,40),.7f);
-        Vector2 Project(float x,float y,float z)=>at+new Vector2(x*18+y*8,y*9-x*4-z*18);
+        float scale=purpose is NodePurpose.Defense or NodePurpose.Frontline?.8f:1f;
+        Vector2 Project(float x,float y,float z)=>at+new Vector2(x*18+y*8,y*9-x*4-z*18)*scale;
         if(purpose==null)DrawHarborPier(ui,Project,Tint);
         else if(purpose==NodePurpose.General){
             var top=Tint(sea?new Color(164,226,242):new Color(255,232,153));
             Disc(ui,at+new Vector2(0,3),12,Tint(sea?new Color(52,110,135):new Color(152,111,53)));
             Disc(ui,at,12,top);
         }
-        else DrawPurposeBuilding(ui,purpose.Value,Project,Tint);
+        else DrawPurposeBuilding(ui,purpose.Value,sea,Project,Tint);
     }
 
-    private static void DrawPurposeBuilding(UiPainter ui,NodePurpose purpose,Func<float,float,float,Vector2> point,Func<Color,Color> tint)
+    private static Vector3? PurposeFlagAnchor(Node node)=>!node.Functional || node.IsHarbor ? null : node.Purpose switch {
+        NodePurpose.Defense=>new Vector3(-.75f,0,1.11f*1.35f),
+        NodePurpose.Frontline=>new Vector3(0,-.12f,1.48f*1.35f),
+        _=>null
+    };
+
+    private static void DrawPurposeBuilding(UiPainter ui,NodePurpose purpose,bool sea,Func<float,float,float,Vector2> point,Func<Color,Color> tint)
     {
         float heightScale=purpose is NodePurpose.Defense or NodePurpose.Frontline?1.35f:1f;
         Vector2 Project(float x,float y,float z)=>point(x,y,z*heightScale);
@@ -49,12 +56,6 @@ public sealed partial class CubeNet
             }
             Extrude(profile,front-.42f,front,wood);
         }
-        void Battlements(float x,float y,float width,float depth,float height,Color color)
-        {
-            float tooth=width/3;
-            Box(x,y,tooth,depth,height,.14f,color);
-            Box(x+2*tooth,y,tooth,depth,height,.14f,color);
-        }
         void Box(float x,float y,float w,float d,float z,float h,Color color)
         {
             var a=Project(x,y,z+h);var b=Project(x+w,y,z+h);
@@ -74,6 +75,37 @@ public sealed partial class CubeNet
         }
         switch(purpose)
         {
+            case NodePurpose.General:
+                // A floating civilian settlement drawn from the same surface frame as the other buildings.
+                var floats=new Color(45,105,104);
+                var planks=new Color(180,119,75);
+                var walls=new Color(246,218,173);
+                var glass=new Color(47,90,102);
+                void House(float x,float y,Color roof)
+                {
+                    Box(x-.07f,y-.06f,.70f,.68f,0,.16f,floats);
+                    Box(x-.09f,y-.08f,.74f,.72f,.16f,.08f,planks);
+                    Box(x,y,.56f,.51f,.24f,.43f,walls);
+                    Roof(x-.065f,x+.625f,x+.28f,y-.06f,y+.58f,.67f,.92f,roof);
+                    Box(x+.08f,y+.51f,.12f,.02f,.43f,.13f,glass);
+                    Box(x+.32f,y+.51f,.13f,.02f,.24f,.26f,Shade(planks,.60f));
+                    Box(x+.56f,y+.12f,.018f,.15f,.43f,.12f,glass);
+                    Box(x+.40f,y+.04f,.10f,.11f,.75f,.18f,roof);
+                }
+                House(-.73f,-.60f,new Color(200,99,77));
+                House(.11f,-.70f,new Color(117,153,98));
+                for(int i=0;i<4;i++)Box(-.79f+i*.38f,-.04f,.30f,.46f,0,.17f,floats);
+                for(int i=0;i<12;i++)Box(-.82f+i*.138f,-.04f,.13f,.46f,.17f,.065f,Shade(planks,.9f+i%3*.05f));
+                Box(-.18f,.37f,.37f,.40f,.03f,.14f,floats);
+                for(int i=0;i<4;i++)Box(-.19f,.38f+i*.102f,.39f,.095f,.17f,.065f,planks);
+                foreach(float x in new[]{-.76f,.68f})
+                {
+                    Box(x,.31f,.085f,.07f,.235f,.14f,Shade(planks,.72f));
+                    Box(x-.014f,.30f,.11f,.09f,.375f,.03f,walls);
+                }
+                Box(.22f,.24f,.10f,.10f,.235f,.07f,new(188,98,68));
+                Box(.205f,.23f,.13f,.12f,.305f,.08f,new(118,163,74));
+                break;
             case NodePurpose.Harvest:
                 var olive=new Color(117,139,58);
                 Box(-.79f,-.68f,1.58f,1.4f,0,.09f,olive);
@@ -109,41 +141,45 @@ public sealed partial class CubeNet
                 Roof(-.84f,.84f,0,-.65f,.62f,.71f,.97f,teal);
                 break;
             case NodePurpose.Defense:
-                var blue=new Color(74,109,181);
-                var coping=new Color(143,177,232);
-                var limestone=new Color(243,244,231);
-                Box(-.88f,-.46f,1.76f,.92f,0,.12f,new(46,65,108));
-                Box(-.75f,-.30f,1.5f,.65f,.12f,.46f,limestone);
-                Box(-.43f,-.32f,.86f,.69f,.55f,.07f,coping);
-                for(int i=0;i<3;i++)Box(-.35f+i*.28f,.15f,.15f,.22f,.62f,.13f,coping);
-                foreach(float x in new[]{-.87f,.33f}){
-                    Box(x,-.43f,.54f,.86f,0,.13f,Shade(blue,.78f));
-                    Box(x+.04f,-.38f,.46f,.76f,.13f,.62f,limestone);
-                    Box(x,-.43f,.54f,.86f,.75f,.1f,coping);
-                    Battlements(x,-.43f,.54f,.20f,.85f,coping);
-                    Battlements(x,.23f,.54f,.20f,.85f,coping);
-                    Box(x+.22f,.38f,.10f,.02f,.43f,.21f,Shade(blue,.43f));
+                var coping=new Color(106,128,159);
+                var limestone=new Color(246,231,195);
+                foreach(float x in new[]{-.92f,.25f})
+                {
+                    if(sea)
+                        for(int i=0;i<3;i++)Box(x+i*.23f,-.49f,.22f,.98f,0,.19f,new(61,83,111));
+                    Box(x,-.31f,.67f,.62f,.15f,.46f,limestone);
+                    for(int i=0;i<3;i++)Box(x+i*.23f,-.32f,.14f,.64f,.61f,.12f,coping);
                 }
+                foreach(float x in new[]{-.96f,.54f})
+                {
+                    Box(x,-.43f,.42f,.86f,.16f,.67f,limestone);
+                    Box(x-.025f,-.46f,.47f,.92f,.83f,.13f,coping);
+                    Roof(x-.025f,x+.445f,x+.21f,-.45f,.45f,.96f,1.11f,coping);
+                }
+                if(!sea)
+                    Box(-.26f,-.30f,.52f,.60f,.57f,.16f,limestone);
                 break;
             case NodePurpose.Frontline:
-                var orange=new Color(232,119,52);
-                var plaster=new Color(250,240,217);
-                Box(-.80f,-.62f,1.60f,.74f,0,.14f,new(134,66,43));
-                float RampHeight(float y)=>MathHelper.Lerp(.15f,.025f,(y-.06f)/.85f);
-                Vector2 Ramp(float x,float y,float lift=0)=>Project(x,y,RampHeight(y)+lift);
-                Face(Shade(orange,.7f),Project(-.47f,.06f,0),Project(-.47f,.91f,0),Ramp(-.47f,.91f),Ramp(-.47f,.06f));
-                Face(Shade(orange,.8f),Project(.47f,.06f,0),Project(.47f,.91f,0),Ramp(.47f,.91f),Ramp(.47f,.06f));
-                Face(new Color(249,158,86),Ramp(-.47f,.06f),Ramp(.47f,.06f),Ramp(.47f,.91f),Ramp(-.47f,.91f));
-                Box(-.79f,-.59f,.37f,.69f,.14f,.79f,plaster);
-                Box(.42f,-.59f,.37f,.69f,.14f,.79f,plaster);
-                Box(-.79f,-.59f,1.58f,.69f,.78f,.15f,plaster);
-                Box(-.81f,-.61f,1.62f,.73f,.93f,.04f,orange);
-                Battlements(-.79f,-.59f,.37f,.69f,.97f,orange);
-                Battlements(.42f,-.59f,.37f,.69f,.97f,orange);
-                Extrude(new[]{new Vector2(-.42f,.54f),new Vector2(-.20f,.78f),new Vector2(-.42f,.78f)},-.59f,.10f,plaster);
-                Extrude(new[]{new Vector2(.42f,.54f),new Vector2(.42f,.78f),new Vector2(.20f,.78f)},-.59f,.10f,plaster);
-                Face(Color.White,Ramp(-.12f,.24f,.01f),Ramp(.12f,.24f,.01f),Ramp(.12f,.55f,.01f),Ramp(-.12f,.55f,.01f));
-                Face(Color.White,Ramp(-.34f,.55f,.01f),Ramp(.34f,.55f,.01f),Ramp(0,.83f,.01f));
+                var orange=new Color(237,125,48);
+                var plaster=new Color(250,234,204);
+                var hull=new Color(75,108,133);
+                Box(-.53f,-.53f,1.06f,sea?1.59f:1.36f,0,.14f,sea?hull:cream);
+                Box(-.50f,-.50f,.23f,.73f,.14f,.79f,plaster);
+                Box(.27f,-.50f,.23f,.73f,.14f,.79f,plaster);
+                Box(-.27f,-.50f,.54f,.17f,.14f,.54f,Shade(plaster,.49f));
+                Box(-.50f,-.50f,1,.73f,.68f,.51f,plaster);
+                Roof(-.59f,.59f,0,-.57f,.30f,1.19f,1.48f,orange);
+                Box(-.32f,.22f,.64f,.17f,.66f,.10f,orange);
+                for(int i=0;i<2;i++)Box(-.23f+i*.32f,.23f,.13f,.015f,.87f,.17f,Shade(plaster,.44f));
+                if(sea)
+                {
+                    for(int i=0;i<3;i++)Box(-.49f,.36f+i*.23f,.98f,.20f,.14f,.035f,cream);
+                    Box(.61f,.31f,.35f,.66f,.02f,.13f,orange);
+                    Box(.66f,.41f,.25f,.32f,.15f,.12f,plaster);
+                    Face(orange,Project(.61f,.97f,.15f),Project(.96f,.97f,.15f),Project(.785f,1.21f,.15f));
+                }
+                else
+                    Face(cream,Project(-.28f,.23f,.15f),Project(.28f,.23f,.15f),Project(.28f,.86f,.02f),Project(-.28f,.86f,.02f));
                 break;
         }
     }

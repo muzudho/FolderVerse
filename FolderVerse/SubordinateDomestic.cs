@@ -48,10 +48,10 @@ public static class SubordinateDomestic
             }
             actions.Add(w.Robots.PartPlanning.Orders.Count>before?"製造を調整・組立を予約":"製造・格納庫を確認");
             var soldiers=w.Campaign.DeliverySortieRobots(w,owner,node).Where(r=>!r.Stationed && !r.Disposal).ToArray();
-            // Keep one complete robot home. Only attack a weaker visible neighboring force.
+            // Keep one complete robot home and attack only a weaker reachable force.
             int stay=w.Robots.PartPlanning.Preview(w).Nodes[node].Robots.Any(r=>r.Owner==owner && r.DefenseOnly && r.CanFight)?0:1;
             var outgoing=soldiers.Take(Math.Max(0,soldiers.Length-stay)).Select(r=>r.Id).ToArray();
-            int target=w.Campaign.RobotBattles.MarchTargets(w,node).Where(id=>{
+            int target=w.Campaign.RobotBattles.AttackTargets(w,owner,node).Where(id=>{
                 var enemy=w.Nodes.All[id];
                 if(enemy.Owner<0 || w.Relations.Allied(owner,enemy.Owner) || w.Campaign.RobotBattles.LockedNode(id) || w.Campaign.PlannedOrders.Any(o=>o.TargetNode==id))return false;
                 int defense=w.Robots.Nodes[id].Robots.Count(r=>r.Parts==RobotParts.Complete && !r.Disposal);
