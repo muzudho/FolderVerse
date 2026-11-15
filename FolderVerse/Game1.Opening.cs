@@ -13,6 +13,7 @@ public partial class Game1
     private const double OpeningPlanetInterval = 6;
     private const double OpeningPlanetFlight = 8;
     private const double GalaxyApproachSeconds = 4.5;
+    private const double OrbitOverviewSeconds = 2.75;
     private const double BookUnfoldSeconds = .8;
     private const double BookRevealSeconds = 1.85;
     private static readonly Rectangle OpeningCanvas = new(0,0,1920,1080);
@@ -22,6 +23,7 @@ public partial class Game1
     private static readonly (Vector2 Position, Color Tint, float Size)[] OpeningGalaxyStars = CreateOpeningGalaxy();
     private Texture2D _openingReadingTable;
     private WorldPreview _departingOpeningPlanet;
+    private int _openingOrbitRound;
     private readonly PlanetLottery _openingPlanets=new();
     private static readonly Rectangle OpeningNext=new(710,955,500,70),OpeningBack=new(70,965,280,60),OpeningSkip=new(1500,30,350,50);
     private static readonly Rectangle CastDuplicateButton=new(1450,22,405,48);
@@ -45,7 +47,10 @@ public partial class Game1
     private void EnterOpeningSpace(){_screen=Screen.OpeningSpace;_openingAge=0;}
     private void BeginOpeningLottery()
     {
-        _openingActive=true;_openingWorldSelected=false;_openingAge=_openingSkipNarration?0:-GalaxyApproachSeconds;_screen=Screen.OpeningLottery;
+        _openingActive=true;_openingWorldSelected=false;
+        _openingAge=_openingSkipNarration?0:-GalaxyApproachSeconds-OrbitOverviewSeconds;
+        _openingOrbitRound=0;
+        _screen=Screen.OpeningLottery;
         _world.GlobeAnchor=null;_world.GlobePan=Vector2.Zero;_world.GlobeZoom=1;
         _openingPlanets.Reset();
         _openingPlanets.Draw(_setup,_random);
@@ -99,6 +104,7 @@ public partial class Game1
         if(_screen==Screen.OpeningLottery && _openingAge>=OpeningPlanetInterval)
         {
             _openingPlanets.Draw(_setup,_random);
+            _openingOrbitRound++;
             _openingAge-=OpeningPlanetInterval;
             var incoming = _departingOpeningPlanet ?? new WorldPreview(GraphicsDevice);
             _departingOpeningPlanet = _world;
@@ -121,12 +127,12 @@ public partial class Game1
     private void OpeningStars(Rectangle area)
     {
         _ui.Box(area,OpeningSpaceInk);
-        float scale=Math.Min(area.Width/1920f,area.Height/1080f);
-        for(int i=0;i<135;i++){
+        for(int i=0;i<270;i++){
             float x=(float)((i*367.0+1920*100-_openingAge*(18+i%5*14))%1920),y=85+i*173%780;
-            int size=Math.Max(1,(int)((i%9==0?4:2)*scale));
-            var star=new Rectangle(area.X+(int)(x*area.Width/1920),area.Y+(int)(y*area.Height/1080),size,size);
-            _ui.Box(Rectangle.Intersect(star,area),new Color(180+i%60,190+i%50,225)*(.35f+i%4*.15f));
+            int size=i%9==0?4:2;
+            var star=new Rectangle((int)x,(int)y,size,size);
+            if(area.Intersects(star))
+                _ui.Box(Rectangle.Intersect(star,area),new Color(180+i%60,190+i%50,225)*(.35f+i%4*.15f));
         }
     }
     private static (Vector2 Position, Color Tint, float Size)[] CreateOpeningGalaxy()
@@ -172,7 +178,7 @@ public partial class Game1
     }
     private void DrawOpeningGalaxy()
     {
-        float progress=(float)(1+_openingAge/GalaxyApproachSeconds);
+        float progress=(float)(1+(_openingAge+OrbitOverviewSeconds)/GalaxyApproachSeconds);
         float zoom=150*MathF.Pow(11,MathHelper.SmoothStep(0,1,progress));
         float opacity=MathHelper.SmoothStep(0,1,progress/.15f)
             *(1-MathHelper.SmoothStep(0,1,(progress-.76f)/.24f));
@@ -278,9 +284,11 @@ public partial class Game1
                 }
             }else if(OpeningGalaxyApproach){
                 OpeningStars(OpeningCanvas);
-                DrawOpeningGalaxy();
+                if(_openingAge<-OrbitOverviewSeconds)DrawOpeningGalaxy();
+                else DrawOpeningOrbits((float)(_openingAge+OrbitOverviewSeconds),true);
             }else{
                 OpeningStars(OpeningCanvas);
+                if(_screen==Screen.OpeningLottery)DrawOpeningOrbits((float)_openingAge,false);
                 _ui.Center(_screen==Screen.OpeningReview?"この星で、すべての陣地を目指そう。":"星抽選フェーズ / どの星の物語にしますか？",new(180,65,1560,75),.8f,Cream);
                 _ui.Center(_world.GlobeName+" / 世界 SEED "+_setup.WorldSeed,new(360,800,1200,60),.6f,Cream);
                 if(_setup.EquipmentMode==RobotEquipmentMode.Materials)
