@@ -78,6 +78,24 @@ sealed class PocketChecks:Game1
   Check(!(bool)Call("UsesMapleArt",sample,RobotParts.Head),"Legacy pocket does not select maple art");
   world.EquipmentMode=RobotEquipmentMode.Materials;
   Check((bool)Call("HasRobotHeadArt",glyph,sample,false,true),"The default pocket glyph size supports material head artwork");
+  world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);
+  world.Robots.ConfigureFactories(world);
+  var hangar=world.Robots.Nodes[node];
+  var pocket=world.Robots.Retinues[0];
+  var passenger=world.Robots.Create(0,RobotParts.Complete);
+  pocket.Add(passenger);
+  for(int i=0;i<5;i++)hangar.Add(world.Robots.Create(0,RobotParts.Complete) with {WarehouseKeeper=true});
+  typeof(RobotStore).GetMethod("SetWarehouseLimit",F)!.Invoke(hangar,new object[]{21});
+  Call("OpenPocket");
+  Check(hangar.TotalCapacity==21 && pocket.TotalCapacity==12,"Warehouse keepers expand only the location hangar");
+  var visible=(IEnumerable<int>)Call("PocketVisible",1);
+  Check(visible.Contains(12) && visible.Last()==17,"The expanded hangar opens with a third visible row");
+  Input(((Rectangle)Call("PocketHangarArrow",true)).Center,Mouse(ButtonState.Pressed),true);
+  Input(((Rectangle)Call("PocketHangarArrow",true)).Center,Mouse());
+  Check(visible.Last()==20,"The down arrow reveals the final expanded slot");
+  Input(View(0,0).Center,Mouse(ButtonState.Pressed),true);
+  Input(View(1,20).Center,Mouse());
+  Check(hangar.Robots.Any(r=>r.Id==passenger.Id) && pocket.Count==0,"Drag and drop works in the last keeper-added slot");
   Console.WriteLine("PASS: reservation reasons, blocked selection and message, normal transfer, full/half-size pocket rendering.");Exit();
  }
 }
