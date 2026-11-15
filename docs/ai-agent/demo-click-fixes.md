@@ -1203,3 +1203,11 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 - 13:50:57に同じDLLを `FOLDERVERSE_AUDIT_WORLD=103`、`FOLDERVERSE_AUDIT_GLOBE_MATCH=1`、`ALSOFT_DRIVERS=null` で実行。終了0。960×540で地星儀クリック、地点91の選択、赤チェック、人間への復帰、実描画を確認。別の既存UI場面での回帰検証。
 - `dotnet build tests/RobotCampaign/RobotCampaign.csproj --artifacts-path <同NAS出力先> --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers -p:UseAppHost=false -v quiet` は警告・エラー0。13:52:02に同出力先の `bin/RobotCampaign/debug/RobotCampaign.dll` を `dotnet` で実行、終了0。満杯時の交換、帰還予約、複数シードを含む既存検査がPASS。
 - 元の例外の交換個体IDと、元の配置に通常UIから到達する条件は未確認。固定診断で確認した停止は解消し、CPU組み立ての自然開始は要再確認。
+
+## 2026-11-15 15:51修正回
+
+- DEMO-0024の対照条件で見つかった格納庫操作の停止を修正。開始15:51:43、終了15:59:23 JST。HEAD `2f82f8ba15f67d37b6cd85e6d077e9834f474640`。差分は `FolderVerse/Game1.NodeFactory.cs`、既存の非追跡診断 `artifacts/demo-click-audit/ProbeCpuSortie.cs.txt`、両記録。
+- 世界61・領土457・運勢790・初期配置率100%で `FOLDERVERSE_AUDIT_NEW_LAND_ASSEMBLY=1`、`NEW_LAND_PREVIEW=1`、`NEW_LAND_SHOW=1`、`NEW_LAND_RULER=22`（すべて同接頭辞）。15:53:36の修正前診断で地点50が選ばれ、部品201のスロット2と対象スロット1は表示範囲内だった。部品自体は編集可能だが、CPU22は人間の操作担当者を持たず、自領の格納庫を操作する権限の判定で拒否され、ドロップ0回。
+- CPU内政の操作表示中だけ、表示中の征服者が所有する地点を既存の管理権判定で扱う。通常入力の部品・予約・ドロップの判定と、実在庫へ反映する配送処理を共有する。
+- 08:00回と同じNAS出力先で診断プロジェクトをビルド。警告1（旧EXEの削除拒否）、エラー0。`ALSOFT_DRIVERS=null` と上記条件で診断DLLを `dotnet` で実行。15:58:10の通常再生で960×540の描画、部品201の取得、対象200へのドロップ1回、人間への復帰と配送遷移を確認。15:58:27は `NEW_LAND_SKIP=1` でドラッグ中に再生をスキップ、15:58:43は `NEW_LAND_OFF=1` で表示オフ。すべて終了0。地点50の配送後在庫は3条件とも `199:Complete;202:Complete;200:Complete`。
+- 最初の修正後診断の例外は、消費済みの部品を診断が再参照したため。診断を修正して再実行した。元のCPU30ではAI計画後に組み立て予定がなく、地点選択の不具合は要再確認。物理Escと元配置への通常UI経由の到達は未確認。
