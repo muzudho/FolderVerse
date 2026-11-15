@@ -31,6 +31,8 @@
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content/Content.mgcb" />
+    <Compile Include="../src/Shared/Hangar/*.cs" LinkBase="Shared/Hangar" />
+    <Compile Include="../src/Shared/Globe/*.cs" LinkBase="Shared/Globe" />
     <None Update="Content/Images/Portraits/*/manifest.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Portraits/v3-standardized/selected-versions.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Portraits/active-version.txt" CopyToOutputDirectory="PreserveNewest" />
@@ -45,7 +47,7 @@
     <None Update="Content/Music/*.wav" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Target Name="CheckStaticFontCoverage" BeforeTargets="PrepareForBuild" Condition="'$(DesignTimeBuild)' != 'true'">
-    <Exec Command="dotnet run --project &quot;$(MSBuildProjectDirectory)/../tools/FontCoverage/FontCoverage.csproj&quot; --no-launch-profile --configuration &quot;$(Configuration)&quot; -- &quot;$(MSBuildProjectDirectory)&quot;"
+    <Exec Command="dotnet run --project &quot;$(MSBuildProjectDirectory)/../tools/FontCoverage/FontCoverage.csproj&quot; --no-launch-profile --configuration &quot;$(Configuration)&quot; -- &quot;$(MSBuildProjectDirectory)&quot; &quot;$(MSBuildProjectDirectory)/../src/Shared&quot;"
           WorkingDirectory="$(MSBuildProjectDirectory)/.." UseUtf8Encoding="Always" StdOutEncoding="utf-8" StdErrEncoding="utf-8" />
   </Target>
 </Project>

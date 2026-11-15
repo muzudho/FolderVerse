@@ -93,15 +93,25 @@ sealed class GlyphProbe:Game1
   var nodes=(int[])Get("_directNodes");
   nodes[0]=route[0];nodes[1]=route[^1];
   typeof(Game1).GetMethod("SyncLongSlots",Flags)!.Invoke(this,null);
-  GraphicsDevice.Clear(background);
-  batch.Begin(transformMatrix:Matrix.CreateTranslation(-1320,0,0));
-  typeof(Game1).GetMethod("DrawLongPane",Flags)!.Invoke(this,new object[]{1});
-  batch.End();
-  GraphicsDevice.GetBackBufferData(pixels);
+  void DrawArrivals(Color[] destination){
+   GraphicsDevice.Clear(background);
+   batch.Begin(transformMatrix:Matrix.CreateTranslation(-1320,0,0));
+   typeof(Game1).GetMethod("DrawLongPane",Flags)!.Invoke(this,new object[]{1});
+   batch.End();
+   GraphicsDevice.GetBackBufferData(destination);
+  }
+  DrawArrivals(pixels);
   capture.SetData(pixels);
-  using var paneFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"long-delivery-arrivals.png"));
-  capture.SaveAsPng(paneFile,960,540);
-  Console.WriteLine("PASS long delivery pane drew two reserved material arrivals.");
+  using(var paneFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"long-delivery-arrivals.png")))
+   capture.SaveAsPng(paneFile,960,540);
+  typeof(RobotLongDelivery).GetMethod("Advance",Flags)!.Invoke(stock.LongDelivery,new object[]{world});
+  if(stock.LongDelivery.Orders.Count!=2 || stock.LongDelivery.Orders.Any(order=>!order.Started || order.Node!=route[1]))
+   throw new Exception("Both shipments must advance to the intermediate hangar.");
+  var relayPixels=new Color[pixels.Length];
+  DrawArrivals(relayPixels);
+  if(!pixels.SequenceEqual(relayPixels))
+   throw new Exception("The destination preview changed after the cargo reached the intermediate hangar.");
+  Console.WriteLine("PASS both long delivery material arrivals are pixel-identical after the first hop.");
  }
  protected override void Draw(GameTime time){
   if(drawn)return;drawn=true;if(shipmentsOnly){CheckShipmentArt();Exit();return;}if(galleryOnly){DrawMaterialGallery();Exit();return;}GraphicsDevice.Clear(new Color(25,36,48));batch.Begin();

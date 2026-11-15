@@ -14,12 +14,6 @@ public partial class Game1
     private void DrawRobotGlyph(Rectangle r,Robot robot,bool whiteOutline=false,float opacity=1,Func<RobotParts,float> partOpacity=null)
         => DrawRobotGlyphCore(r, robot, whiteOutline, opacity, partOpacity, showIntegratedMaterial: false);
 
-    private void DrawHangarRobot(Rectangle bounds,Robot robot,float opacity=1,Func<RobotParts,float> partOpacity=null)
-    {
-        bool materials=_setup.EquipmentMode==RobotEquipmentMode.Materials;
-        DrawRobotGlyphCore(bounds,robot,true,opacity,partOpacity,showIntegratedMaterial:materials,allowCaptain:materials);
-    }
-
     private void DrawRobotGlyphCore(Rectangle r,Robot robot,bool whiteOutline,float opacity,Func<RobotParts,float> partOpacity,bool showIntegratedMaterial,bool allowCaptain=false)
     {
         // Outline only the exterior, including for translucent reservations and delivery ghosts.

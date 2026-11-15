@@ -1,13 +1,11 @@
 namespace FolderVerse;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 public partial class Game1
 {
-    private static readonly Point[] HangarZoomSizes={new(2,1),new(3,2),new(4,3),new(6,4),new(8,5),new(10,6)};
     private static readonly Rectangle HangarViewport=new(84,300,780,530);
     private int _hangarZoom=1,_hangarColumn;
     private float _hangarIntroStart=float.NegativeInfinity,_hangarZoomAt;
@@ -15,66 +13,12 @@ public partial class Game1
     private Point _hangarPanPointer,_hangarPanOrigin;
     private Point HangarZoom=>HangarZoomSizes[_hangarZoom];
     private int HangarGridColumns=>HangarColumnsForCapacity(_hangarSlots.Length);
-    private static int HangarColumnsForCapacity(int capacity)=>HangarZoomSizes.FirstOrDefault(size=>size.X>=3 &&
-        size.X*size.Y>=capacity,new Point(10,6)).X;
     private int HangarGridRows=>(_hangarSlots.Length+HangarGridColumns-1)/HangarGridColumns;
     private int HangarLastColumn=>Math.Max(0,HangarGridColumns-HangarZoom.X);
     private float HangarIntroProgress=>Math.Clamp((_animationTime-_hangarIntroStart)/.2f,0,1);
     private Vector2 HangarCellPitch(Point zoom)=>HangarCellPitch(HangarViewport,zoom,new(12f/264,10f/270));
-    private static Vector2 HangarCellPitch(Rectangle viewport,Point zoom,Vector2 gap)=>new(
-        viewport.Width/(zoom.X-gap.X),viewport.Height/(zoom.Y-gap.Y));
-
     private Rectangle HangarViewCell(int slot,Point zoom,int column,int row)=>
         HangarViewCell(HangarViewport,HangarCellPitch(zoom),new(12f/264,10f/270),slot,HangarGridColumns,column,row);
-
-    private static Rectangle HangarViewCell(Rectangle viewport,Vector2 pitch,Vector2 gap,int slot,int columns,int column,int row)
-    {
-        float width=pitch.X,height=pitch.Y;
-        int x=slot%columns-column,y=slot/columns-row;
-        return new(viewport.X+(int)(x*width),viewport.Y+(int)(y*height),
-            (int)(width*(1-gap.X)+.001f),(int)(height*(1-gap.Y)+.001f));
-    }
-
-    private static void SyncHangarOccupants(long?[] slots,RobotStore store,Func<int,bool> reserved)
-    {
-        var ids=store.Robots.Select(r=>r.Id).ToHashSet();
-        for(int i=0;i<slots.Length;i++)if(slots[i] is long id && !ids.Contains(id))slots[i]=null;
-        foreach(long id in ids.Where(id=>!slots.Contains(id))){
-            int slot=Array.FindIndex(slots,item=>!item.HasValue);
-            for(int i=slot;i>=0 && i<slots.Length;i++)if(!slots[i].HasValue && !reserved(i)){slot=i;break;}
-            if(slot>=0)slots[slot]=id;
-        }
-    }
-    private static Dictionary<int,MaplePackage> HangarMaterials(long?[] slots,RobotStore store,IEnumerable<MaplePackage> packages,Func<int,bool> reserved=null,
-        IReadOnlyDictionary<long,int> positions=null, IReadOnlyDictionary<int,MaplePackage> occupied=null)
-    {
-        var robots=store.Robots.ToDictionary(r=>r.Id);
-        var order=Enumerable.Range(0,slots.Length).Where(slot=>reserved?.Invoke(slot)!=true)
-            .OrderBy(slot=>slots[slot].HasValue?0:1).ToArray();
-        var used=new bool[slots.Length*3];
-        foreach(int slot in order)
-            if(slots[slot] is long id && robots.TryGetValue(id,out var robot))
-                for(int row=0;row<3;row++)used[slot*3+row]=(robot.Parts&HangarPart(row))!=0;
-        var result=new Dictionary<int,MaplePackage>();
-        if(occupied!=null)
-            foreach(var entry in occupied)
-                for(int i=0;i<entry.Value.Sections;i++)used[entry.Key+i]=true;
-        foreach(var package in packages.OrderByDescending(p=>p.Sections).ThenByDescending(p=>positions?.ContainsKey(p.Id)==true)){
-            int sections=package.Sections;
-            int key=order.SelectMany(slot=>Enumerable.Range(0,4-sections).Reverse().Select(row=>slot*3+row))
-                .FirstOrDefault(start=>Enumerable.Range(start,sections).All(index=>!used[index]),-1);
-            if(positions?.TryGetValue(package.Id,out int preferred)==true && preferred>=0 &&
-                order.Contains(preferred/3) && preferred%3+sections<=3 &&
-                Enumerable.Range(preferred,sections).All(index=>!used[index]))key=preferred;
-            if(key<0)continue;
-            result.Add(key,package);
-            for(int i=0;i<sections;i++)used[key+i]=true;
-        }
-        return result;
-    }
-
-    private static bool MaterialOccupies(Dictionary<int,MaplePackage> cargo,int slot,int row)=>
-        cargo.Any(p=>p.Key/3==slot && row>=p.Key%3 && row<p.Key%3+p.Value.Sections);
 
     private bool UpdateHangarPan(MouseState mouse)
     {
@@ -96,21 +40,6 @@ public partial class Game1
         var scroll=HangarPanOffset(_hangarPanOrigin,_hangarPanPointer-_pointer,pitch,new(HangarLastColumn,HangarLastRow));
         _hangarColumn=scroll.X;_hangarPage=scroll.Y;
         return true;
-    }
-
-    private static Point HangarPanOffset(Point origin,Point delta,Vector2 pitch,Point limit)=>new(
-        Math.Clamp(origin.X+(int)MathF.Round(delta.X/pitch.X),0,limit.X),
-        Math.Clamp(origin.Y+(int)MathF.Round(delta.Y/pitch.Y),0,limit.Y));
-
-    private static Rectangle HangarCellRegion(Rectangle cell,int x,int y,int width,int height)=>
-        new(cell.X+x*cell.Width/252,cell.Y+y*cell.Height/260,
-            Math.Max(1,width*cell.Width/252),Math.Max(1,height*cell.Height/260));
-
-    private static Rectangle HangarRobotArea(Rectangle cell)
-    {
-        float scale=Math.Min(cell.Width/252f,cell.Height/260f);
-        int width=Math.Max(1,(int)(100*scale));
-        return new(cell.Center.X-width/2,cell.Y+(int)(12*scale),width,Math.Max(1,(int)(180*scale)));
     }
 
     private bool UpdateHangarZoom(MouseState mouse,bool click)

@@ -53,7 +53,6 @@ public partial class Game1
     private static Rectangle HangarCell(int slot)=>new(84+(slot%HangarSlotsPerPage)%3*264,300+(slot%HangarSlotsPerPage)/3*270,252,260);
     private static Rectangle HangarRobotBounds(int slot)
     {var cell=HangarCell(slot);return new(cell.X+76,cell.Y+12,100,180);}
-    private static RobotParts HangarPart(int row)=>row==0?RobotParts.Head:row==1?RobotParts.Body:RobotParts.Legs;
     private bool VisitingForeignHangar=>_setup.Nodes.All[_populationNode].Owner>=0 && !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) &&
         _setup.Relations.CanAct(_setup.PlayerSlot) && _setup.Nodes.Current(_setup.PlayerSlot)?.Id==_populationNode;
     private bool CanOpenHangar=>InspectableNode(_populationNode) && (_setup.Nodes.All[_populationNode].Owner<0 || CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) || VisitingForeignHangar);
