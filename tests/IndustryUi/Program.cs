@@ -173,9 +173,28 @@ sealed class CheckGame:Game1
         var flights=((IEnumerable<(ProductionIntake Arrival,double Started)>)Get("_manufacturingFlights")).ToArray();
         Check(flights.Length==1,"Shipment pauses production so every departure remains visible");
         GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();Save("manufacturing-delivery");
-        Call("UpdateManufacturing",.55d,false);
+        Call("UpdateManufacturing",.9d,false);
         Check(w.Robots.IndustryTurn==clock+1,"Production waits while the button product is flying");
         GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();Save("manufacturing-in-flight");
+        var originalFlightPixels=Pixels();
+        var flightQueue=(List<(ProductionIntake Arrival,double Started)>)Get("_manufacturingFlights");
+        var flight=flightQueue.Single();
+        var mapleFlight=flight.Arrival.Product with
+        {
+            HeadMaterial=RobotMaterial.Maple,BodyMaterial=RobotMaterial.Maple,LegsMaterial=RobotMaterial.Maple
+        };
+        flightQueue[0]=(flight.Arrival with {Product=mapleFlight},flight.Started);
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();Save("manufacturing-in-flight-maple");
+        var alternateFlightPixels=Pixels();
+        flightQueue[0]=flight;
+        var flightChanges=Enumerable.Range(0,originalFlightPixels.Length)
+            .Where(i=>originalFlightPixels[i]!=alternateFlightPixels[i]).ToArray();
+        int flightStride=GraphicsDevice.PresentationParameters.BackBufferWidth;
+        Check(flightChanges.Length>100 &&
+            flightChanges.Max(i=>i%flightStride)-flightChanges.Min(i=>i%flightStride)<82 &&
+            flightChanges.Max(i=>i/flightStride)-flightChanges.Min(i=>i/flightStride)<125,
+            "Changing only the airborne product changes its material artwork within one flight sprite");
+        Console.WriteLine($"PASS: material changed {flightChanges.Length} airborne product pixels.");
         for(int i=0;w.Industry.Pending && i<100;i++)Call("UpdateManufacturing",.75d,false);
         Check(w.Robots.ProductionIntakes.Count==11 && (int)Get("_manufacturingReceived")==33 &&
             w.Robots.IndustryTurn==clock+26 && w.Robots.Nodes[target.Id].Count==1,"Capacity and exactly-once production match the intake reservation rule");

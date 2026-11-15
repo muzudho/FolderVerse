@@ -82,13 +82,15 @@ public static class WorldTerrain
         float height=terrain.Elevation(sample);
         return Relief(height,IsValley(terrain,sample,cell.U,cell.V,new Vector3(world.Width,world.Height,world.Depth)*.5f,height));
     }
-    public static Color ColorAt(float height)=>height<0.47f?new(32,112,182):height<0.52f?new(53,155,207):height<0.55f?new(237,211,140):height<0.70f?new(85,164,103):height<MountainHeight?new(167,188,124):height<.77f?new(111,101,96):new(227,235,242);
+    internal static Color MountainColor(float height)=>Color.Lerp(new Color(101,99,133),
+        new Color(152,151,182),MathHelper.Clamp((height-MountainHeight)/.16f,0,1));
+    public static Color ColorAt(float height)=>height<0.47f?new(32,112,182):height<0.52f?new(53,155,207):height<0.55f?new(237,211,140):height<0.70f?new(85,164,103):height<MountainHeight?new(167,188,124):MountainColor(height);
     public static Color ColorAt(float height,Vector3 normal,int polarAxis=1)
     {
         if(Math.Abs(PolarComponent(normal,polarAxis))<.5f)return ColorAt(height);
         if(height<.47f)return new(139,185,214);
         if(height<.52f)return new(181,216,234);
-        return height>=MountainHeight?new(224,234,243):new(245,249,255);
+        return height>=MountainHeight?MountainColor(height):new(245,249,255);
     }
     internal static float PolarComponent(Vector3 point,int polarAxis)=>polarAxis switch
     {

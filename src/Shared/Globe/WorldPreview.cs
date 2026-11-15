@@ -233,9 +233,10 @@ public sealed partial class WorldPreview : IDisposable
     }
 
     public void Draw(float yaw, float pitch,float glow=0,bool markers=true,bool globeView=false,Rectangle? globeFrame=null,
-        IEnumerable<SurfaceCell> landSelection=null)
+        IEnumerable<SurfaceCell> landSelection=null,float opacity=1)
     {
-        _device.BlendState = BlendState.Opaque;
+        _device.BlendState = opacity<1?BlendState.AlphaBlend:BlendState.Opaque;
+        _effect.Alpha=opacity;
         _device.DepthStencilState = DepthStencilState.Default;
         _device.RasterizerState = RasterizerState.CullNone;
         _effect.World = globeView?GlobeOrientation(yaw,pitch):ViewOrientation(yaw,pitch);
@@ -272,6 +273,7 @@ public sealed partial class WorldPreview : IDisposable
             foreach(var pass in _effect.CurrentTechnique.Passes) { pass.Apply(); _device.DrawPrimitives(PrimitiveType.TriangleList,0,_markerCount); }
             _effect.LightingEnabled=true;
         }
+        _effect.Alpha=1;
     }
     public bool ProjectVisible(Vector3 point,Vector3 normal,float yaw,float pitch,Rectangle area,out Vector2 screen,float normalOffset=0)
     {

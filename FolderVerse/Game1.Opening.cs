@@ -10,12 +10,12 @@ public partial class Game1
     private bool _openingActive,_openingTutorial,_openingSkipNarration,_openingWorldSelected;
     private Action _openingFixedStart;
     private double _openingAge;
-    private const double OpeningPlanetInterval = 6;
-    private const double OpeningPlanetFlight = 8;
+    private const double OpeningZoomInEnd=1.5, OpeningGlobeReady=2, OpeningGlobeEnd=5;
+    private const double OpeningZoomOutStart=5.5, OpeningOverviewStart=7, OpeningOverviewHold=2;
+    private const double OpeningPlanetInterval=OpeningOverviewStart+OpeningOverviewHold;
     private const double GalaxyApproachSeconds = 4.5;
     private const double OrbitOverviewSeconds = 2.75;
     private const float GalaxyModelBlendSeconds = .65f;
-    private const float OpeningPlanetEntryX = 2400;
     private const double BookUnfoldSeconds = .8;
     private const double BookRevealSeconds = 1.85;
     private static readonly Rectangle OpeningCanvas = new(0,0,1920,1080);
@@ -24,7 +24,6 @@ public partial class Game1
     private static readonly Color BookCloth = new(38,76,89);
     private static readonly (Vector2 Position, Color Tint, float Size)[] OpeningGalaxyStars = CreateOpeningGalaxy();
     private Texture2D _openingReadingTable;
-    private WorldPreview _departingOpeningPlanet;
     private int _openingOrbitRound;
     private readonly PlanetLottery _openingPlanets=new();
     private static readonly Rectangle OpeningNext=new(710,955,500,70),OpeningBack=new(70,965,280,60),OpeningSkip=new(1500,30,350,50);
@@ -33,13 +32,9 @@ public partial class Game1
         _openingActive && _screen is Screen.PlayerCount or Screen.ComputerPlayerCount;
     private bool OpeningFixed=>_openingTutorial || _openingFixedStart!=null;
     private bool OpeningGalaxyApproach=>_screen==Screen.OpeningLottery && _openingAge<0;
-    private float OpeningStarX=>_screen==Screen.OpeningReview?960:OpeningPlanetX(_openingAge);
-    private static float OpeningPlanetX(double age)=>age<2?MathHelper.Lerp(OpeningPlanetEntryX,960,(float)(age/2)):
-        age<5?MathHelper.Lerp(960,820,(float)((age-2)/3)):MathHelper.Lerp(820,-650,(float)((age-5)/3));
-    private bool OpeningStarSelectable=>!OpeningGalaxyApproach && OpeningStarX>=400 && OpeningStarX<=1520;
+    private bool OpeningStarSelectable=>_openingAge>=OpeningGlobeReady && _openingAge<OpeningGlobeEnd;
     private void BeginOpening(bool tutorial,Action fixedStart=null)
     {
-        DisposeDepartingOpeningPlanet();
         BeginPlayerCount();_openingActive=true;_openingTutorial=tutorial;_openingFixedStart=fixedStart;
         if(!tutorial && fixedStart==null)_setup.EquipmentMode=RobotEquipmentMode.Materials;
         _openingSkipNarration=false;_openingAge=0;_titleMenuOpen=_tutorialMenuOpen=_autoPlay=_demoActive=_autoPaused=false;
@@ -90,7 +85,7 @@ public partial class Game1
         }
         if(back){
             if(_screen==Screen.OpeningReview){_screen=Screen.OpeningLottery;_openingAge=2;}
-            else if(_screen==Screen.OpeningLottery){DisposeDepartingOpeningPlanet();_screen=Screen.ComputerPlayerCount;}
+            else if(_screen==Screen.OpeningLottery){_screen=Screen.ComputerPlayerCount;}
             else if(_screen==Screen.OpeningSpace){_screen=OpeningFixed?Screen.OpeningBook:Screen.ComputerPlayerCount;_openingAge=0;}
             else ReturnToTitle();
             return;
@@ -99,7 +94,7 @@ public partial class Game1
             if(_screen==Screen.OpeningBook){if(OpeningFixed)EnterOpeningSpace();else _screen=Screen.PlayerCount;return;}
             if(_screen==Screen.OpeningSpace && _openingAge>=BookRevealSeconds){if(OpeningFixed)FinishFixedOpening();else BeginOpeningLottery();return;}
             // Commit the planet the player actually saw, before advancing this frame's clock.
-            if(_screen==Screen.OpeningLottery && OpeningStarSelectable){DisposeDepartingOpeningPlanet();_screen=Screen.OpeningReview;_openingAge=2;return;}
+            if(_screen==Screen.OpeningLottery && OpeningStarSelectable){_screen=Screen.OpeningReview;_openingAge=2;return;}
             if(_screen==Screen.OpeningReview){_openingWorldSelected=true;_openingActive=false;BeginCast();return;}
         }
         _openingAge+=Math.Min(.25,elapsed);
@@ -109,16 +104,8 @@ public partial class Game1
             AdvanceOpeningOrbitCandidates();
             _openingOrbitRound++;
             _openingAge-=OpeningPlanetInterval;
-            var incoming = _departingOpeningPlanet ?? new WorldPreview(GraphicsDevice);
-            _departingOpeningPlanet = _world;
-            _world = incoming;
             _world.ShowOpeningPlanet(_setup);
         }
-    }
-    private void DisposeDepartingOpeningPlanet()
-    {
-        _departingOpeningPlanet?.Dispose();
-        _departingOpeningPlanet = null;
     }
     private bool CastDuplicateInput(bool click)
     {
@@ -266,6 +253,7 @@ public partial class Game1
     {
         GraphicsDevice.Clear(new Color(3,8,18));var viewport=GraphicsDevice.Viewport;var canvas=CanvasBounds();if(canvas.Width<=0 || canvas.Height<=0)return;
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
+        OpeningGlobeHandoff? globeHandoff=null;
         _spriteBatch.Begin(samplerState:SamplerState.LinearClamp,transformMatrix:transform);
         _ui.Box(new(0,0,1920,1080),new Color(3,8,18));
         if(_screen is Screen.PlayerCount or Screen.ComputerPlayerCount){
@@ -291,39 +279,47 @@ public partial class Game1
                 float modelAge=(float)(_openingAge+OrbitOverviewSeconds);
                 float modelBlend=MathHelper.SmoothStep(0,1,modelAge/GalaxyModelBlendSeconds);
                 if(modelBlend<1)DrawOpeningGalaxy(modelAge,modelBlend);
-                if(modelBlend>0)DrawOpeningOrbits(modelAge,true,modelBlend);
+                if(modelBlend>0)globeHandoff=DrawOpeningOrbits(modelAge,true,modelBlend);
             }else{
                 OpeningStars(OpeningCanvas);
-                if(_screen==Screen.OpeningLottery)DrawOpeningOrbits((float)_openingAge,false);
+                if(_screen==Screen.OpeningLottery)globeHandoff=DrawOpeningOrbits((float)_openingAge,false);
                 _ui.Center(_screen==Screen.OpeningReview?"この星で、すべての陣地を目指そう。":"星抽選フェーズ / どの星の物語にしますか？",new(180,65,1560,75),.8f,Cream);
                 _ui.Center(_world.GlobeName+" / 世界 SEED "+_setup.WorldSeed,new(360,800,1200,60),.6f,Cream);
                 if(_setup.EquipmentMode==RobotEquipmentMode.Materials)
                     _ui.Center($"楓の埋蔵量　{_world.OpeningMapleLoads}荷",new(360,850,1200,28),.43f,new Color(255,185,113));
-                _ui.Center(_screen==Screen.OpeningReview?"戻ると、この星から選び直せます。":"右から左へ通る星。中央に来た星を［次へ］で選びます。",new(310,870,1300,50),.5f,new Color(173,199,215));
-                _ui.Button(OpeningNext,_screen==Screen.OpeningReview?"この星で進む　次へ":OpeningStarSelectable?"この星を選ぶ　次へ":"星が中央へ来るのを待つ",_screen==Screen.OpeningReview || OpeningStarSelectable?DefaultAccent:Muted,.6f);
+                _ui.Center(_screen==Screen.OpeningReview?"戻ると、この星から選び直せます。":"中央に映った星を［次へ］で選びます。",new(310,870,1300,50),.5f,new Color(173,199,215));
+                _ui.Button(OpeningNext,_screen==Screen.OpeningReview?"この星で進む　次へ":OpeningStarSelectable?"この星を選ぶ　次へ":"次の星を待つ",_screen==Screen.OpeningReview || OpeningStarSelectable?DefaultAccent:Muted,.6f);
             }
         }
         if(_screen is Screen.OpeningBook or Screen.OpeningSpace || OpeningGalaxyApproach)_ui.Button(OpeningSkip,"オープニングをスキップ",Muted,.48f);
         if(_screen is not (Screen.PlayerCount or Screen.ComputerPlayerCount))_ui.Button(OpeningBack,"戻る / Esc",Muted,.55f);
         _spriteBatch.End();
-        if((_screen is Screen.OpeningLottery or Screen.OpeningReview) && !OpeningGalaxyApproach){
-            double departingAge = _openingAge + OpeningPlanetInterval;
-            if(_screen==Screen.OpeningLottery && _departingOpeningPlanet!=null && departingAge<OpeningPlanetFlight)
-                DrawPlanet(_departingOpeningPlanet, OpeningPlanetX(departingAge), departingAge);
-            DrawPlanet(_world, OpeningStarX, _openingAge);
+        if(_screen==Screen.OpeningReview)
+            DrawPlanet(_world,2,new OpeningGlobeHandoff(OpeningFocusCenter,1,1));
+        else if(globeHandoff is { } focused)
+            DrawPlanet(_world,_openingAge,focused);
+        if(_screen==Screen.OpeningReview || _screen==Screen.OpeningLottery && OpeningStarSelectable)
+        {
             _spriteBatch.Begin(transformMatrix:transform);
             DrawOpeningDimensions();
             _spriteBatch.End();
         }
-        void DrawPlanet(WorldPreview planet, float x, double age)
+        void DrawPlanet(WorldPreview planet,double age,OpeningGlobeHandoff handoff)
         {
-            var frame=new Rectangle(canvas.X+(int)((x-480)*canvas.Width/1920f),canvas.Y+(int)(210*canvas.Height/1080f),(int)(960*canvas.Width/1920f),(int)(565*canvas.Height/1080f));
+            if(handoff.Opacity<=0)return;
+            float size=handoff.Size;
+            float x=handoff.Center.X,y=handoff.Center.Y;
+            var frame=new Rectangle(canvas.X+(int)((x-480*size)*canvas.Width/1920f),
+                canvas.Y+(int)((y-282.5f*size)*canvas.Height/1080f),
+                (int)(960*size*canvas.Width/1920f),(int)(565*size*canvas.Height/1080f));
             var clipped=Rectangle.Intersect(frame,canvas);
             if(clipped.Width<=0 || clipped.Height<=0)return;
             var previousPose=planet.ManualOrientation;
             planet.ManualOrientation=WorldPreview.OpeningFaceTour((age-2)/3);
+            var modelPose=Quaternion.CreateFromYawPitchRoll(.48f,.42f,0);
+            planet.ManualOrientation=Quaternion.Slerp(modelPose,planet.ManualOrientation.Value,handoff.Opacity);
             GraphicsDevice.Viewport=new Viewport(clipped);
-            try{planet.Draw(0,0,(float)age,false,true,frame);}
+            try{planet.Draw(0,0,(float)age,false,true,frame,opacity:handoff.Opacity);}
             finally{GraphicsDevice.Viewport=viewport;planet.ManualOrientation=previousPose;}
         }
         if(_screenshots.CaptureAfterDraw(GraphicsDevice))StartScreenshotFeedback(time.TotalGameTime.TotalSeconds);
