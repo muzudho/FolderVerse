@@ -1264,3 +1264,13 @@ RobotGlyphIntegration の配送回帰を最終到着まで延長。９素材モ�
 2026-11-15 14:17 JST 産業フェーズの飛行中だけ段ボールからメープルへ差し替えると、同じ飛行位置で4504画素が変化し、差分は１体の矩形内。元の段ボール機を入荷・60枠表示する回帰も通過。固定DLL SHA-256 31A7AB8F018E645D40D6501F616B12BFCD2B762CA140CC49461DDA389AF0775B。NAS tmp/delete-after-2026-11-15/industry-flight-pixels-1417/。次は飛行中の一体型の連結部分を確認。
 
 2026-11-15 15:14 JST 産業フェーズの飛行中の描画で、同じ段ボールの頭・胴を一体型と分割型に差し替えて比較。連結部と外形に2486画素差があり、両方の飛行を目視。元の完成体の入荷まで既存回帰も通過。試験の飛行データだけの差し替えにつき、一体型製品の実製造・入荷は未検証。ビルド警告・エラー０。固定DLL SHA-256 231FDD42485F170F07F1FB1F330FC08156F066137A2F0DD46D8230173488B7AB。NAS tmp/delete-after-2026-11-15/industry-flight-pixels-1417/。次は頭胴一体型の製造設定から入荷確定まで通す。
+
+2026-11-15 16:10 JST ９素材描画。産業フェーズで段ボールの頭胴一体型を実際に製造し、飛行中の機体の素材と一体型部位を照合。飛行中に相当する保存データを復元し、入荷確定後の機体が同じID・パーツ・素材・一体型部位を保持することを確認。IndustryUi --manufacturing-lanes --integrated-product と既存の完成体回帰は通過、ビルド警告・エラー０。固定DLL SHA-256 FCCF847D37246C6A6CAAEF5C42C665056F4563020B82EC6BCE2B84CEAD07E9C9。NAS tmp/delete-after-2026-11-15/industry-integrated-arrival-1610/。次は胴脚一体型も同じ経路で確認する。
+
+2026-11-15 17:10 JST ９素材描画。産業フェーズの胴脚一体型の回帰を追加。段ボール製の胴脚を実製造し、飛行時の素材と一体型の部位を照合。入荷待ち状態を保存形式で復元し、入荷確定後にも同じ機体ID・素材・一体型部位を確認した。IndustryUi --manufacturing-lanes --integrated-body-legs 通過、警告・エラー０。固定DLL SHA-256 FCCF847D37246C6A6CAAEF5C42C665056F4563020B82EC6BCE2B84CEAD07E9C9。NAS tmp/delete-after-2026-11-15/industry-integrated-body-legs-1710/。次は入荷後の小枠で胴脚一体型と分割型の描画差を照合する。
+
+2026-11-15 18:18 JST ９素材描画。実製造・入荷した段ボール胴脚一体型を通常格納庫の10×６表示で描画。同じIDと素材のまま一体型指定だけを外した比較で、小枠内の414画素が変わり、枠外は全画素一致。IndustryUi --manufacturing-lanes --integrated-body-legs 通過、警告・エラー０。固定DLL SHA-256 FCCF847D37246C6A6CAAEF5C42C665056F4563020B82EC6BCE2B84CEAD07E9C9。NAS tmp/delete-after-2026-11-15/industry-arrival-small-art-1818/。次は同じ小枠で頭胴一体型を確認する。
+
+2026-11-15 19:16 JST ９素材描画。製造・飛行・保存復元を通じて実入荷した段ボール頭胴一体型を、10×６表示の格納庫で確認。同じID・素材で一体型指定だけを外すと対象枠内398画素が変化し、枠外は全画素一致。IndustryUi --manufacturing-lanes --integrated-product 通過。固定DLL SHA-256 FCCF847D37246C6A6CAAEF5C42C665056F4563020B82EC6BCE2B84CEAD07E9C9。NAS tmp/delete-after-2026-11-15/industry-head-body-small-art-1916/。次は輸送後の隊長を小枠で描画して帽子の差を確認する。
+
+2026-11-15 20:12 JST ９素材描画。長距離便を完了したメープル製隊長を共通格納庫描画で28×52に表示。帽子の余白分だけ同じ大きさに揃えた一般兵と比較し、上半分の170画素に帽子の差、下半分は全画素一致。乗継・最終到着の既存回帰も通過。RobotGlyphIntegration --shipments、警告・エラー０。固定DLL SHA-256 FCCF847D37246C6A6CAAEF5C42C665056F4563020B82EC6BCE2B84CEAD07E9C9。NAS tmp/delete-after-2026-11-15/long-delivery-compact-captain-2012/。次は直送の一体型と隊長を実到着まで確認する。

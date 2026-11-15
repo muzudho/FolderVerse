@@ -170,6 +170,10 @@ foreach(var input in new[]{
         copy=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(copy));
         raw=copy.Robots;
         destinationStore=raw.Nodes[destination];
+        var previewPp=typeof(RobotWorld).GetMethod("PreviewMapleArrivals",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
+        var blockedPp=((int Blocked,MaplePackage[] Packages))previewPp.Invoke(raw,new object[]{copy,destination,destinationStore})!;
+        Check(blockedPp.Blocked==1 && blockedPp.Packages.Length==0,
+            "The restored PP shipment is forecast to wait while the destination is full");
         resolvePp.Invoke(raw,new object[]{copy});
         Check(!destinationStore.HasSpace && destinationStore.MaplePackages.Count==0 &&
             raw.Nodes[node].MaplePackages.Single()==ppLoad && raw.MapleShipments.Single().PackageId==ppLoad.Id,
@@ -182,6 +186,10 @@ foreach(var input in new[]{
         Check(capacityBeforeAppointment==1 && destinationStore.TotalCapacity==4 &&
             destinationStore.Robots.Any(r=>r.Id==blockers[^1] && r.WarehouseKeeper),
             "Resolving the appointment expands capacity without removing a robot");
+        var arrivingPp=((int Blocked,MaplePackage[] Packages))previewPp.Invoke(raw,new object[]{copy,destination,destinationStore})!;
+        Check(arrivingPp.Blocked==0 && arrivingPp.Packages.Single()==ppLoad &&
+            destinationStore.MaplePackages.Count==0 && raw.MapleShipments.Single().PackageId==ppLoad.Id,
+            "After capacity expands, the forecast shows the same PP cargo without committing its delivery");
         resolvePp.Invoke(raw,new object[]{copy});
         Check(raw.Nodes[node].MaplePackages.Count==0 && raw.MapleShipments.Count==0 &&
             raw.Nodes[destination].MaplePackages.Single()==ppLoad &&
@@ -256,12 +264,16 @@ Check(cargo.ReserveMapleShipment(supply,source,target,package.Id),"Adjacent mapl
 var restoredSupply=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
 Check(restoredSupply.Robots.MapleShipments.Single().PackageId==package.Id && restoredSupply.Robots.Nodes[source].MapleUnits==16,"Maple stock or shipment lost on save");
 Check(restoredSupply.Robots.Workshops[source].ProductionLines[0].MapleRemaining==1,"Harvest order lost on save");
+foreach(var (largeUnits,secondUnits,firstMaterial,secondMaterial) in new[]{
+    (32,32,RawMaterial.Maple,RawMaterial.Maple),(48,48,RawMaterial.Maple,RawMaterial.Maple),
+    (32,48,RawMaterial.Maple,RawMaterial.Maple),(48,32,RawMaterial.Maple,RawMaterial.Maple),
+    (32,32,RawMaterial.Maple,RawMaterial.PP),(32,32,RawMaterial.PP,RawMaterial.Maple)})
 {
     var largeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
     var largeStock=largeWorld.Robots;
     largeStock.CancelMapleShipment(source,package.Id);
-    var timber=package with {Units=48};
-    var secondTimber=timber with {Id=timber.Id+1000000};
+    var timber=package with {Units=largeUnits,Material=firstMaterial};
+    var secondTimber=timber with {Id=timber.Id+1000000,Units=secondUnits,Material=secondMaterial};
     typeof(RobotStore).GetMethod("SetMaplePackages",internalInstance)!
         .Invoke(largeStock.Nodes[source],new object[]{new[]{timber,secondTimber}});
     var store=largeStock.Nodes[target];
@@ -275,20 +287,64 @@ Check(restoredSupply.Robots.Workshops[source].ProductionLines[0].MapleRemaining=
     Check(largeStock.ReserveMapleShipment(largeWorld,source,target,timber.Id) &&
         !largeStock.ReserveMapleShipment(largeWorld,source,target,secondTimber.Id),
         "Only one large shipment can book the last whole slot");
+    store.Remove(added[^2]);
+    Check(largeStock.ReserveMapleShipment(largeWorld,source,target,secondTimber.Id),
+        "A second whole slot allows the later reservation");
+    store.Add(new Robot(added[^2],0,RobotParts.Complete));
     var preview=typeof(RobotWorld).GetMethod("PreviewMapleArrivals",internalInstance)!;
     var forecast=((int Blocked,MaplePackage[] Packages))preview.Invoke(largeStock,new object[]{largeWorld,target,store})!;
-    Check(forecast.Blocked==0 && forecast.Packages.Single()==timber && store.MaplePackages.Count==0,
+    Check(forecast.Blocked==1 && forecast.Packages.Single()==timber && store.MaplePackages.Count==0,
         "Preview shows the first shipment without modifying the destination");
     store.Add(new Robot(added[^1],0,RobotParts.Complete));
     var resolve=typeof(RobotWorld).GetMethod("ResolveMapleShipments",internalInstance)!;
     resolve.Invoke(largeStock,new object[]{largeWorld});
-    Check(largeStock.MapleShipments.Single().PackageId==timber.Id &&
+    Check(largeStock.MapleShipments.Count==2 &&
         largeStock.Nodes[source].MaplePackages.Contains(timber) && store.MaplePackages.Count==0,
         "A large shipment waits intact when the destination fills after booking");
+    largeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(largeWorld));
+    largeStock=largeWorld.Robots;
+    store=largeStock.Nodes[target];
     store.Remove(added[^1]);
+    store.Add(new Robot(added[^1],0,RobotParts.Head|RobotParts.Body));
+    forecast=((int Blocked,MaplePackage[] Packages))preview.Invoke(largeStock,new object[]{largeWorld,target,store})!;
+    Check(forecast.Blocked==2 && forecast.Packages.Length==0,
+        "After restore one empty section cannot receive a two- or three-section parcel");
     resolve.Invoke(largeStock,new object[]{largeWorld});
-    Check(largeStock.MapleShipments.Count==0 && largeStock.Nodes[source].MaplePackages.Single()==secondTimber &&
+    Check(largeStock.MapleShipments.Count==2 &&
+        largeStock.Nodes[source].MaplePackages.Contains(timber) && store.MaplePackages.Count==0,
+        "The same large parcel remains at the source after retrying with insufficient room");
+    store.Remove(added[^1]);
+    if(largeUnits!=secondUnits || firstMaterial!=secondMaterial)
+    {
+        store.Add(new Robot(added[^1],0,RobotParts.Head));
+        var twoSection=largeUnits==32 ? timber : secondTimber;
+        var waiting=largeUnits==48 ? timber : secondTimber;
+        forecast=((int Blocked,MaplePackage[] Packages))preview.Invoke(largeStock,new object[]{largeWorld,target,store})!;
+        Check(forecast.Blocked==1 && forecast.Packages.Single()==twoSection && store.MaplePackages.Count==0,
+            "With two free sections, only the first restored shipment that fits is forecast");
+        resolve.Invoke(largeStock,new object[]{largeWorld});
+        Check(store.MaplePackages.Single()==twoSection && largeStock.Nodes[source].MaplePackages.Single()==waiting &&
+            largeStock.MapleShipments.Single().PackageId==waiting.Id,"Delivery preserves the waiting cargo and agrees with the forecast");
+        store.Remove(added[^2]);
+        forecast=((int Blocked,MaplePackage[] Packages))preview.Invoke(largeStock,new object[]{largeWorld,target,store})!;
+        Check(forecast.Blocked==0 && forecast.Packages.SequenceEqual(new[]{twoSection,waiting}),
+            "A whole slot forecasts the remaining parcel");
+        resolve.Invoke(largeStock,new object[]{largeWorld});
+        Check(largeStock.MapleShipments.Count==0 && largeStock.Nodes[source].MaplePackages.Count==0 &&
+            store.MaplePackages.SequenceEqual(forecast.Packages),"Both mixed-size shipments arrive intact exactly once");
+        continue;
+    }
+    forecast=((int Blocked,MaplePackage[] Packages))preview.Invoke(largeStock,new object[]{largeWorld,target,store})!;
+    Check(forecast.Blocked==1 && forecast.Packages.Single()==timber && store.MaplePackages.Count==0,
+        "After restore the first reservation alone is forecast for the reopened slot");
+    resolve.Invoke(largeStock,new object[]{largeWorld});
+    Check(largeStock.MapleShipments.Single().PackageId==secondTimber.Id && largeStock.Nodes[source].MaplePackages.Single()==secondTimber &&
         store.MaplePackages.Single()==timber,"The same large shipment arrives intact when a whole slot opens");
+    store.Remove(added[^2]);
+    resolve.Invoke(largeStock,new object[]{largeWorld});
+    Check(largeStock.MapleShipments.Count==0 && largeStock.Nodes[source].MaplePackages.Count==0 &&
+        store.MaplePackages.SequenceEqual(new[]{timber,secondTimber}),
+        "The later reservation arrives intact when the next slot opens");
 }
 foreach(int secondUnits in new[]{8,12})
 {

@@ -131,6 +131,29 @@ sealed class GlyphProbe:Game1
   using(var paneFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"long-delivery-delivered.png")))
    capture.SaveAsPng(paneFile,960,540);
   Console.WriteLine("PASS final long delivery preserves the integrated pair and captain in the destination hangar.");
+  var compactBounds=new Rectangle(40,40,28,52);
+  int capHeight=compactBounds.Height/4;
+  // The captain reserves the top quarter for the cap and fits the body below it.
+  var soldierBounds=new Rectangle(100,compactBounds.Y+capHeight,compactBounds.Width,compactBounds.Height-capHeight);
+  GraphicsDevice.Clear(background);
+  batch.Begin();
+  delivery.Invoke(this,new object[]{compactBounds,deliveredCaptain,1f,null});
+  delivery.Invoke(this,new object[]{soldierBounds,deliveredCaptain with {Role=RobotRole.Soldier},1f,null});
+  batch.End();
+  GraphicsDevice.GetBackBufferData(pixels);
+  int capPixels=0;
+  for(int y=compactBounds.Top;y<compactBounds.Bottom;y++)
+   for(int x=compactBounds.Left;x<compactBounds.Right;x++){
+    int index=y*960+x;
+    if(pixels[index]==pixels[index+60])continue;
+    if(y>=compactBounds.Center.Y)throw new Exception("Captain cap changed pixels below the head.");
+    capPixels++;
+   }
+  if(capPixels<10)throw new Exception("The delivered captain cap is missing at compact hangar size.");
+  capture.SetData(pixels);
+  using(var compactFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"long-delivery-compact-captain.png")))
+   capture.SaveAsPng(compactFile,960,540);
+  Console.WriteLine($"PASS delivered compact captain: {capPixels} pixels changed in the upper half.");
  }
  protected override void Draw(GameTime time){
   if(drawn)return;drawn=true;if(shipmentsOnly){CheckShipmentArt();Exit();return;}if(galleryOnly){DrawMaterialGallery();Exit();return;}GraphicsDevice.Clear(new Color(25,36,48));batch.Begin();
