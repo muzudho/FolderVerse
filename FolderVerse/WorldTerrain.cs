@@ -92,6 +92,21 @@ public static class WorldTerrain
         if(height<.52f)return new(181,216,234);
         return height>=MountainHeight?MountainColor(height):new(245,249,255);
     }
+    internal static bool EarthPalette {get;set;}
+    internal static Color MapColorAt(float height,Vector3 normal,int polarAxis,int seed)
+    {
+        var color=ColorAt(height,normal,polarAxis);
+        if(EarthPalette || height>=MountainHeight || Math.Abs(PolarComponent(normal,polarAxis))>=.5f)
+            return color;
+        var tint=((uint)seed%4) switch
+        {
+            0=>height<.52f?new Color(54,181,157):new Color(203,152,96),
+            1=>height<.52f?new Color(126,116,193):new Color(182,139,154),
+            2=>height<.52f?new Color(46,157,187):new Color(152,179,84),
+            _=>height<.52f?new Color(72,105,181):new Color(102,170,145)
+        };
+        return Color.Lerp(color,tint,height<.47f?.58f:.45f);
+    }
     internal static float PolarComponent(Vector3 point,int polarAxis)=>polarAxis switch
     {
         0=>point.X,

@@ -35,13 +35,53 @@ sealed class OpeningGame:Game1
  void Skip(){Set("_pointer",new Point(1675,55));Call("OpeningInput",true,false,false,0d,new KeyboardState());}
  void Click(Point point){var c=(Rectangle)Call("CanvasBounds");int x=c.X+(int)Math.Round(point.X*c.Width/1920d),y=c.Y+(int)Math.Round(point.Y*c.Height/1080d);Set("_previousMouse",new MouseState());Set("_previousKeyboard",new KeyboardState());foreach(var button in new[]{ButtonState.Pressed,ButtonState.Released})Call("HandleInput",new MouseState(x,y,0,button,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero),true);}
  WorldSetup Setup=>(WorldSetup)Get("_setup");
- protected override void LoadContent(){Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Call("BeginOpening",false,null!);Screen("OpeningBook");}
+ string PaletteFixture=>Path.Combine(AppContext.BaseDirectory,"test-terrain-palette.txt");
+ protected override void LoadContent()
+ {
+  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");
+  base.LoadContent();
+  Set("_terrainPalettePath",PaletteFixture);
+  File.WriteAllText(PaletteFixture,"planet");
+  Call("LoadTerrainPalette");
+  var spin=typeof(Game1).GetMethod("OpeningOrbitSpin",F|BindingFlags.Static)!;
+  float Angle(float time)=>(float)spin.Invoke(null,new object[]{time,0})!;
+  Check(Angle(0)==Angle(.6f) && Angle(1.35f)==MathHelper.PiOver2 && Angle(1.35f)==Angle(1.9f),
+      "Orbit models must pause between quarter turns");
+  var alignment=typeof(Game1).GetMethod("OpeningPolarAlignment",F|BindingFlags.Static)!;
+  var axes=new[]{Vector3.UnitX,Vector3.UnitY,Vector3.UnitZ};
+  for(int axis=0;axis<axes.Length;axis++)
+  {
+   var pose=(Matrix)alignment.Invoke(null,new object[]{axis})!*Matrix.CreateRotationY(Angle(1.35f));
+   Check(Vector3.Distance(Vector3.TransformNormal(axes[axis],pose),Vector3.Up)<.001f,
+      "Every head system must spin around the up axis of the orbit model");
+  }
+  var longOrbit=typeof(Game1).GetMethod("HasLongOpeningOrbit",F|BindingFlags.Static)!;
+  Check(Enumerable.Range(0,60).Where(i=>(bool)longOrbit.Invoke(null,new object[]{i})!).SequenceEqual(new[]{19,39,59}),
+      "One long orbit must appear per twenty candidates");
+  Call("BeginOpening",false,null!);Screen("OpeningBook");
+ }
+ void CheckPalette()
+ {
+  int seed=Setup.WorldSeed;
+  var colorAt=typeof(WorldTerrain).GetMethod("MapColorAt",F|BindingFlags.Static)!;
+  Color Sea(int n)=>(Color)colorAt.Invoke(null,new object[]{.45f,Vector3.UnitZ,1,n})!;
+  Check(Sea(0)!=Sea(1),"Planet palette must vary by seed");
+  Capture("opening-palette-planet");
+  Click(new Point(1540,990));
+  Check(File.ReadAllText(PaletteFixture)=="earth" && Sea(0)==Sea(1) && Setup.WorldSeed==seed,
+     "The opening checkbox must apply one Earth palette without changing the candidate");
+  Capture("opening-palette-earth");
+  Set("_statusMenuOpen",true);
+  Check((bool)Call("StatusMenuClick",new Point(1590,544)) && File.ReadAllText(PaletteFixture)=="planet" && Sea(0)!=Sea(1),
+     "The system menu must update the same persistent preference");
+  Set("_statusMenuOpen",false);
+ }
  protected override void Update(GameTime time){}
  protected override void Draw(GameTime time){
   if(frame==1){Input(enter:true);Screen("PlayerCount");}
   if(frame==2){Set("_requestedPlayers",0);Input(enter:true);Screen("ComputerPlayerCount");Set("_requestedComputers",20);Input(enter:true);Screen("OpeningSpace");Check(Setup.ParticipantCount==20,"Participant settings lost");}
   if(frame==3){Input(enter:true);Screen("OpeningSpace");Input(elapsed:.25);Input(elapsed:.25);Capture("opening-page");for(int i=0;i<3;i++)Input(elapsed:.25);Capture("opening-page-zoom");FinishReveal();Capture("opening-space");Input(enter:true);Screen("OpeningLottery");seed=Setup.WorldSeed;Check((double)Get("_openingAge")<0,"Galaxy approach must precede the first planet");Input(enter:true);Screen("OpeningLottery");for(int i=0;i<10;i++)Input(elapsed:.25);Capture("opening-galaxy");for(int i=0;i<12;i++){Input(elapsed:.25);if((double)Get("_openingAge")==-2.5)Capture("opening-galaxy-model-blend");}Check((double)Get("_openingAge")<0,"Orbit overview must precede the first planet");Capture("opening-orbits");while((double)Get("_openingAge")<0){Input(elapsed:.25);}Check((double)Get("_openingAge")==0,"The overview must end at the beginning of the regular selection interval");}
-  if(frame==4){for(int i=0;i<8;i++){Input(elapsed:.25);if(i==5)Capture("opening-orbits-approach");if(i==6)Capture("opening-globe-handoff");}Check(Setup.WorldSeed==seed,"First planet changed on entry");Input(enter:true);Screen("OpeningReview");for(int i=0;i<50;i++)Input(elapsed:1);Check(Setup.WorldSeed==seed,"Review rerolls the selected world");}
+  if(frame==4){for(int i=0;i<8;i++){Input(elapsed:.25);if(i==5)Capture("opening-orbits-approach");if(i==6)Capture("opening-globe-handoff");}Check(Setup.WorldSeed==seed,"First planet changed on entry");CheckPalette();Input(enter:true);Screen("OpeningReview");for(int i=0;i<50;i++)Input(elapsed:1);Check(Setup.WorldSeed==seed,"Review rerolls the selected world");}
   if(frame==5){Input(back:true);Screen("OpeningLottery");Check(Setup.WorldSeed==seed,"Back loses selected world");var queue=(Queue<WorldSetup>)Get("_openingOrbitCandidates");Check(queue.Count==12,"Eight orbit worlds and four future worlds must be queued");int nextSeed=queue.ElementAt(1).WorldSeed;Set("_openingAge",6.75d);Input(elapsed:.25);Capture("opening-orbits-hold");for(int i=0;i<7;i++)Input(elapsed:.25);Check(Setup.WorldSeed==seed,"The current candidate stays during the two-second overview");Input(enter:true);Screen("OpeningLottery");Input(elapsed:.25);Check(Setup.WorldSeed==nextSeed && ((WorldSetup[])Get("_passedOpeningOrbits"))[0].WorldSeed==seed,"Orbit candidates must advance in order and retain the passed world");Check((double)Get("_openingAge")<1,"Passing planets do not advance");Check((int)Get("_openingOrbitRound")==1,"Passing the first planet must replace one orbit");Check(((WorldPreview)Get("_world")).Seed==nextSeed,"The globe must update only when the overview ends");Input(enter:true);Screen("OpeningLottery");}
   if(frame==6){Set("_openingAge",2d);int selected=Setup.WorldSeed;Input(enter:true);Screen("OpeningReview");Check(Setup.WorldSeed==selected,"Selection must keep the focused world");Input(enter:true);Screen("CastRolling");Check(!Setup.AllowDuplicateCharacters,"New game enables duplicate characters");Check(Setup.EquipmentMode==RobotEquipmentMode.Materials,"New game defaults to nine materials");Click(new Point(1650,99));Check(Setup.EquipmentMode==RobotEquipmentMode.Materials,"Cast rolling no longer changes equipment mode");}
   if(frame==6){Click(new Point(1650,45));Check(Setup.AllowDuplicateCharacters,"Toggle does not enable duplicate characters");Click(new Point(1650,45));Check(!Setup.AllowDuplicateCharacters && Setup.Looks.Select(l=>l.BaseId).Distinct().Count()==Setup.Looks.Length,"Turning off does not restore unique characters");seed=Setup.WorldSeed;Click(new Point(150,1040));Screen("OpeningReview");Check(Setup.WorldSeed==seed,"Cast back loses the chosen planet");}

@@ -82,6 +82,7 @@ public partial class Game1 : Game
     protected override void LoadContent()
     {
         LoadBgmSettings();
+        LoadTerrainPalette();
         _robotAssemblyIcon=Content.Load<Texture2D>("Images/robot-assembly-icon");
         _robotDisposalIcon=Content.Load<Texture2D>("Images/robot-disposal-icon");
         _robotTransportIcon=Content.Load<Texture2D>("Images/robot-transport-icon");

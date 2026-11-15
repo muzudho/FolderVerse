@@ -61,7 +61,7 @@ public sealed partial class WorldPreview
             AddFace(mesh,cell.Origin,cell.U,cell.V,cell.Normal,1,1,offset,(height,x,y)=>
                 exclusive && CountryColors && owner>=0
                     ? LandTerritoryColor(setup.CountryMapColor(owner,x,y),WorldTerrain.Kind(height))
-                    : WorldTerrain.ColorAt(height,cell.Normal,setup.PolarAxis),
+                    : WorldTerrain.MapColorAt(height,cell.Normal,setup.PolarAxis,setup.WorldSeed),
                 brightness:Brightness(cell.Id));
         }
         if(previewMaples)AddPreviewMaples(mesh,setup,offset);

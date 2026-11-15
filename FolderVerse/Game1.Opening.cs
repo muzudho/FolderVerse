@@ -25,6 +25,7 @@ public partial class Game1
     private static readonly (Vector2 Position, Color Tint, float Size)[] OpeningGalaxyStars = CreateOpeningGalaxy();
     private Texture2D _openingReadingTable;
     private int _openingOrbitRound;
+    private Quaternion _openingReviewPose=Quaternion.Identity;
     private readonly PlanetLottery _openingPlanets=new();
     private static readonly Rectangle OpeningNext=new(710,955,500,70),OpeningBack=new(70,965,280,60),OpeningSkip=new(1500,30,350,50);
     private static readonly Rectangle CastDuplicateButton=new(1450,22,405,48);
@@ -60,6 +61,12 @@ public partial class Game1
     }
     private void OpeningInput(bool click,bool enter,bool escape,double elapsed,KeyboardState keys)
     {
+        if(_screen is Screen.OpeningLottery or Screen.OpeningReview && !OpeningGalaxyApproach &&
+            click && OpeningPaletteButton.Contains(_pointer))
+        {
+            ToggleTerrainPalette();
+            return;
+        }
         bool next=enter || click && OpeningNext.Contains(_pointer),back=escape || click && OpeningBack.Contains(_pointer);
         if(OpeningGalaxyApproach && click && OpeningSkip.Contains(_pointer))
         {
@@ -289,13 +296,14 @@ public partial class Game1
                     _ui.Center($"楓の埋蔵量　{_world.OpeningMapleLoads}荷",new(360,850,1200,28),.43f,new Color(255,185,113));
                 _ui.Center(_screen==Screen.OpeningReview?"戻ると、この星から選び直せます。":"中央に映った星を［次へ］で選びます。",new(310,870,1300,50),.5f,new Color(173,199,215));
                 _ui.Button(OpeningNext,_screen==Screen.OpeningReview?"この星で進む　次へ":OpeningStarSelectable?"この星を選ぶ　次へ":"次の星を待つ",_screen==Screen.OpeningReview || OpeningStarSelectable?DefaultAccent:Muted,.6f);
+                DrawTerrainPaletteButton(OpeningPaletteButton);
             }
         }
         if(_screen is Screen.OpeningBook or Screen.OpeningSpace || OpeningGalaxyApproach)_ui.Button(OpeningSkip,"オープニングをスキップ",Muted,.48f);
         if(_screen is not (Screen.PlayerCount or Screen.ComputerPlayerCount))_ui.Button(OpeningBack,"戻る / Esc",Muted,.55f);
         _spriteBatch.End();
         if(_screen==Screen.OpeningReview)
-            DrawPlanet(_world,2,new OpeningGlobeHandoff(OpeningFocusCenter,1,1));
+            DrawPlanet(_world,2,new OpeningGlobeHandoff(OpeningFocusCenter,1,1,0,Color.White,_openingReviewPose));
         else if(globeHandoff is { } focused)
             DrawPlanet(_world,_openingAge,focused);
         if(_screen==Screen.OpeningReview || _screen==Screen.OpeningLottery && OpeningStarSelectable)
@@ -306,7 +314,7 @@ public partial class Game1
         }
         void DrawPlanet(WorldPreview planet,double age,OpeningGlobeHandoff handoff)
         {
-            if(handoff.Opacity<=0)return;
+            if(handoff.Opacity<=0 && handoff.ModelOpacity<=0)return;
             float size=handoff.Size;
             float x=handoff.Center.X,y=handoff.Center.Y;
             var frame=new Rectangle(canvas.X+(int)((x-480*size)*canvas.Width/1920f),
@@ -315,11 +323,16 @@ public partial class Game1
             var clipped=Rectangle.Intersect(frame,canvas);
             if(clipped.Width<=0 || clipped.Height<=0)return;
             var previousPose=planet.ManualOrientation;
-            planet.ManualOrientation=WorldPreview.OpeningFaceTour((age-2)/3);
-            var modelPose=Quaternion.CreateFromYawPitchRoll(.48f,.42f,0);
-            planet.ManualOrientation=Quaternion.Slerp(modelPose,planet.ManualOrientation.Value,handoff.Opacity);
+            planet.ManualOrientation=handoff.Pose;
+            if(_screen==Screen.OpeningLottery && OpeningStarSelectable)_openingReviewPose=handoff.Pose;
             GraphicsDevice.Viewport=new Viewport(clipped);
-            try{planet.Draw(0,0,(float)age,false,true,frame,opacity:handoff.Opacity);}
+            try
+            {
+                if(handoff.ModelOpacity>0)
+                    planet.Draw(0,0,(float)age,false,true,frame,opacity:handoff.ModelOpacity,solidBody:handoff.Tint);
+                if(handoff.Opacity>0)
+                    planet.Draw(0,0,(float)age,false,true,frame,opacity:handoff.Opacity);
+            }
             finally{GraphicsDevice.Viewport=viewport;planet.ManualOrientation=previousPose;}
         }
         if(_screenshots.CaptureAfterDraw(GraphicsDevice))StartScreenshotFeedback(time.TotalGameTime.TotalSeconds);

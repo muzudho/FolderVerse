@@ -54,7 +54,22 @@ public partial class Game1
         new(point.X+point.Z*.57f,-point.Y+point.Z*.56f-point.X*.26f);
 
     private static readonly Vector2 OpeningFocusCenter=new(960,492.5f);
-    private readonly record struct OpeningGlobeHandoff(Vector2 Center,float Size,float Opacity);
+    private readonly record struct OpeningGlobeHandoff(Vector2 Center,float Size,float Opacity,
+        float ModelOpacity,Color Tint,Quaternion Pose);
+
+    private static float OpeningOrbitSpin(float elapsed,int slot)
+    {
+        float time=(elapsed+slot*.19f)/1.35f;
+        float quarter=MathF.Floor(time);
+        return (quarter%4+MathHelper.SmoothStep(0,1,(time-quarter-.55f)/.45f))*MathHelper.PiOver2;
+    }
+    private static bool HasLongOpeningOrbit(int candidateIndex)=>candidateIndex>=0 && candidateIndex%20==19;
+    private static Matrix OpeningPolarAlignment(int polarAxis)=>polarAxis switch
+    {
+        0=>Matrix.CreateRotationZ(MathHelper.PiOver2),
+        2=>Matrix.CreateRotationX(-MathHelper.PiOver2),
+        _=>Matrix.Identity
+    };
 
     private OpeningGlobeHandoff? DrawOpeningOrbits(float age,bool intro,float modelBlend=1)
     {
@@ -74,17 +89,20 @@ public partial class Game1
         int focus=_openingOrbitRound%OpeningOrbitSizes.Length;
         var center=OpeningOrbitCenter;
         OpeningGlobeHandoff? handoff=null;
-        Span<(Vector3 Position,Vector3 Size,Color Tint)> bodies=stackalloc (Vector3,Vector3,Color)[17];
+        Span<(Vector3 Position,Vector3 Size,Color Tint,float Spin,int PolarAxis)> bodies=
+            stackalloc (Vector3,Vector3,Color,float,int)[17];
         Span<(Vector3 A,Vector3 B,Vector3 C,Vector3 D,Color Tint)> rails=stackalloc (Vector3,Vector3,Vector3,Vector3,Color)[16];
         var candidates=_openingOrbitCandidates.ToArray();
-        bodies[0]=(Vector3.Zero,new Vector3(16),new Color(255,182,64));
+        bodies[0]=(Vector3.Zero,new Vector3(16),new Color(255,182,64),0,1);
         for(int i=0;i<OpeningOrbitSizes.Length;i++)
         {
             // Refill the orbit vacated on each pass. Its neighbours continue moving.
             int replacement=(_openingOrbitRound+OpeningOrbitSizes.Length-1-i)/OpeningOrbitSizes.Length;
             var (x,y,z)=OpeningOrbitSizes[i];
+            int offset=(i-focus+VisibleOpeningOrbits)%VisibleOpeningOrbits;
             x+=replacement%3*2;
             z-=replacement%3*2;
+            if(HasLongOpeningOrbit(_openingOrbitRound+offset)){x=108;z=21;}
             float legX=2*x,legZ=2*z;
             float perimeter=2*(legX+legZ);
             float distance=(elapsed*(10+i*2.3f)+i*37+replacement*53)%perimeter;
@@ -101,16 +119,29 @@ public partial class Game1
                 i==(_openingOrbitRound-1)%OpeningOrbitSizes.Length?
                 MathHelper.SmoothStep(0,1,age/.55f):1;
             float ink=opacity*replacementFade;
-            int offset=(i-focus+VisibleOpeningOrbits)%VisibleOpeningOrbits;
             var candidate=offset<candidates.Length?candidates[offset]:null;
             var tint=MiniatureColor(candidate,i);
             var rail=Color.Lerp(tint,Color.White,.26f)*(ink*(i==focus?.94f:.62f)*(1-.7f*globeBlend));
-            float bodyFade=i==focus?1-globeBlend:1;
-            bodies[i+1]=(point,MiniatureSize(candidate,i),tint*(replacementFade*bodyFade));
+            float spin=OpeningOrbitSpin(elapsed,i);
+            if(i==focus && !intro)
+            {
+                float focusedSpin=OpeningOrbitSpin(elapsed-age+(float)OpeningZoomInEnd,i);
+                spin+=MathHelper.WrapAngle(focusedSpin-spin)*approach;
+            }
+            float useCloseModel=i==focus?MathHelper.SmoothStep(0,1,(approach-.72f)/.28f):0;
+            int polarAxis=candidate?.PolarAxis??1;
+            bodies[i+1]=(point,MiniatureSize(candidate,i),tint*(replacementFade*(1-useCloseModel)),spin,polarAxis);
             if(i==focus)
             {
                 center+=(OpeningFocusCenter-Project(point))*approach;
-                if(globeBlend>0)handoff=new OpeningGlobeHandoff(OpeningFocusCenter,1,globeBlend);
+                if(useCloseModel>0)
+                {
+                    var pose=Quaternion.CreateFromRotationMatrix(OpeningPolarAlignment(polarAxis)
+                        *Matrix.CreateRotationY(spin)*Matrix.CreateFromYawPitchRoll(.48f,.42f,0));
+                    pose=WorldPreview.FaceTour(pose,(age-OpeningGlobeReady)/(OpeningGlobeEnd-OpeningGlobeReady));
+                    handoff=new OpeningGlobeHandoff(Project(point),MathHelper.Lerp(.72f,1,useCloseModel),globeBlend,
+                        useCloseModel*(1-globeBlend),tint,pose);
+                }
             }
             rails[i]=(a,b,c,d,rail);
         }
@@ -122,6 +153,7 @@ public partial class Game1
             int historySlot=(_openingOrbitRound+ExtraOpeningOrbits-1-order)%ExtraOpeningOrbits;
             var candidate=future?(candidateIndex<candidates.Length?candidates[candidateIndex]:null):_passedOpeningOrbits[historySlot];
             float x=62+i*3,z=65+i*2,y=future?-11-order*4:13+order*4;
+            if(HasLongOpeningOrbit(_openingOrbitRound+(future?candidateIndex:-1-order))){x=108;z=21;}
             float pastOpacity=.28f-order*.07f;
             float ink=opacity*(future?.53f-order*.07f:
                 MathHelper.SmoothStep(pastOpacity,pastOpacity-.07f,age/(float)OpeningPlanetInterval));
@@ -134,7 +166,8 @@ public partial class Game1
                 phase<3?Vector3.Lerp(c,d,phase-2):Vector3.Lerp(d,a,phase-3);
             Color tint=MiniatureColor(candidate,i);
             rails[VisibleOpeningOrbits+i]=(a,b,c,d,Color.Lerp(tint,Color.White,.26f)*(ink*(1-.7f*globeBlend)));
-            bodies[VisibleOpeningOrbits+1+i]=(point,MiniatureSize(candidate,i),tint*ink);
+            bodies[VisibleOpeningOrbits+1+i]=(point,MiniatureSize(candidate,i),tint*ink,
+                OpeningOrbitSpin(elapsed,VisibleOpeningOrbits+i),candidate?.PolarAxis??1);
         }
         DrawOpeningSunGlow(Project(Vector3.Zero),scale,opacity);
         foreach(var rail in rails)
@@ -146,7 +179,7 @@ public partial class Game1
         }
 
         bodies.Sort((a,b)=>Depth(a.Position).CompareTo(Depth(b.Position)));
-        foreach(var body in bodies)DrawBody(body.Position,body.Size,body.Tint*opacity);
+        foreach(var body in bodies)DrawBody(body.Position,body.Size,body.Tint*opacity,body.Spin,body.PolarAxis);
         return handoff;
 
         Vector2 Project(Vector3 point)=>center+Rotate(OpeningOrbitProjection(point))*scale;
@@ -157,17 +190,23 @@ public partial class Game1
         static Color MiniatureColor(WorldSetup candidate,int slot)=>
             OpeningOrbitColors[(candidate?.WorldSeed??slot)%OpeningOrbitColors.Length];
 
-        void DrawBody(Vector3 position,Vector3 size,Color color)
+        void DrawBody(Vector3 position,Vector3 size,Color color,float spin,int polarAxis)
         {
+            if(color.A==0)return;
             Vector3 h=size/2;
-            var a=Project(position+new Vector3(-h.X,h.Y,-h.Z));
-            var b=Project(position+new Vector3(h.X,h.Y,-h.Z));
-            var c=Project(position+new Vector3(h.X,h.Y,h.Z));
-            var d=Project(position+new Vector3(-h.X,h.Y,h.Z));
-            var drop=Rotate(new Vector2(0,size.Y*scale));
-            DrawOpeningOrbitFace(a,d,d+drop,a+drop,color*.78f);
-            DrawOpeningOrbitFace(d,c,c+drop,d+drop,color*.59f);
-            DrawOpeningOrbitFace(a,b,c,d,color);
+            var rotation=OpeningPolarAlignment(polarAxis)*Matrix.CreateRotationY(spin);
+            foreach(var normal in CubeNet.Normals)
+            {
+                var facing=Vector3.TransformNormal(normal,rotation);
+                if(Depth(facing)<=.001f)continue;
+                var axis=Vector3.Cross(Math.Abs(normal.Y)>.5f?Vector3.UnitZ:Vector3.UnitY,normal);
+                var u=axis*h;
+                var v=Vector3.Cross(normal,axis)*h;
+                var mid=normal*h;
+                var shade=facing.Y>.5f?1:.57f+.22f*Math.Abs(facing.X);
+                DrawOpeningOrbitFace(Corner(mid-u-v),Corner(mid+u-v),Corner(mid+u+v),Corner(mid-u+v),color*shade);
+            }
+            Vector2 Corner(Vector3 point)=>Project(position+Vector3.Transform(point,rotation));
         }
     }
 

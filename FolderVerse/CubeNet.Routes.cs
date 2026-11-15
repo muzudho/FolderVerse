@@ -27,7 +27,7 @@ public sealed partial class CubeNet
     {
         int owner=ShowCountryColors?world.Nodes.FullOwner(cell):-1;
         if(ControlledCountryColors && !world.Relations.Controls(owner))owner=-1;
-        var color=owner<0?WorldTerrain.ColorAt(height,world.Cells[cell].Normal,world.PolarAxis):WorldPreview.LandTerritoryColor(world.CountryMapColor(owner,x,y),WorldTerrain.Kind(height));
+        var color=owner<0?WorldTerrain.MapColorAt(height,world.Cells[cell].Normal,world.PolarAxis,world.WorldSeed):WorldPreview.LandTerritoryColor(world.CountryMapColor(owner,x,y),WorldTerrain.Kind(height));
         var surface=world.Cells[cell];
         var point=world.Routes.Position(cell,new Point(x,y));
         if(WorldTerrain.IsValley(world,surface,point,height))color=WorldTerrain.ValleyColor(color);
