@@ -523,10 +523,18 @@ public sealed partial class RobotCampaign
         // Pocket robots retain their own hangar; their conqueror's location can change separately.
         if(_retinueIds.Remove(robot.Id) || ReferenceEquals(home.Store,destination)){if(home.Store.HasSpace)home.Store.Add(robot);else Reserves.Add((home.Node,robot));return;}
         if(destination.HasSpace){destination.Add(robot);return;}
-        var swapped=destination.Robots.Where(r=>staying?.Contains(r.Id)!=true && !r.Stationed && !world.Robots.Workshops[target].IsDisposing(r.Id) && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))
-            .OrderByDescending(r=>r.NativeParts(robot.Owner)).ThenBy(r=>r.Id).FirstOrDefault();
+        var swapped=home.Store.HasSpace?destination.Robots
+            .Where(r=>staying?.Contains(r.Id)!=true && !r.Stationed && !r.WarehouseKeeper &&
+                !world.Robots.Workshops[target].IsDisposing(r.Id) && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))
+            .OrderByDescending(r=>r.NativeParts(robot.Owner)).ThenBy(r=>r.Id)
+            .FirstOrDefault(r=>{
+                // Removing a partial robot can leave its slot occupied by maple packages.
+                var remaining=destination.Robots.Where(stored=>stored.Id!=r.Id).ToArray();
+                return destination.OccupiedSlots(remaining)<destination.StorageLimit &&
+                    destination.Fits(remaining.Append(robot),destination.MaplePackages,destination.ReservedReturns) &&
+                    home.Store.Fits(home.Store.Robots.Append(r),home.Store.MaplePackages,home.Store.ReservedReturns);
+            }):null;
         if(swapped==null){if(home.Store.HasSpace)home.Store.Add(robot);else Reserves.Add((home.Node,robot));return;}
-        if(!home.Store.HasSpace){Reserves.Add((home.Node,robot));return;}
         destination.Remove(swapped.Id);
         home.Store.Add(swapped.Materialize() with {Owner=robot.Owner});destination.Add(robot);
     }

@@ -112,6 +112,15 @@ public sealed class RobotPartPlanning
         _automaticRecipe=id=>recipes.GetValueOrDefault(id,Array.Empty<PlannedPartMove>());
         return copy;
     }
+    internal HashSet<int> AutomaticAssemblyNodes(WorldSetup world)
+    {
+        var planner=new RobotPartPlanning();
+        planner.Orders.AddRange(Orders);
+        var stock=planner.BuildPreview(world);
+        return Enumerable.Range(0,stock.Nodes.Length)
+            .Where(node=>stock.Nodes[node].Robots.Any(robot=>planner._automaticRecipe(robot.Id).Length>0))
+            .ToHashSet();
+    }
     internal (RobotWorld Stock, PlannedPartMove[] Steps) AssemblyPlayback(WorldSetup world,int node)
     {
         var planner=new RobotPartPlanning();

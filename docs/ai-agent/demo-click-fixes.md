@@ -1187,3 +1187,19 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 - 開始15:11:50、終了15:13 JST。DEMO-0016。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。15:00点検の合法な女王固定場面は通常UIで通過済み。変更は記録のみ。
 - 15:12:12、既存ローカル出力で `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=84` を設定して `DemoAuditCpuSortie.exe` を実行。終了0。960×540でCPU1が地点100の通常出撃選択から4体をクリックし、確定後の赤チェックと人間への復帰を確認。和平なしの13指示で自然退避0件。証拠は `Individual robot clicks: 4`、`after confirm: stage=5 red-owner=1`、`No-peaceful batch fallbacks=0`。
 - 今回の条件では自然退避を再現せず、要再確認を維持。物理Escは未実施。
+
+## 2026-11-15 04:30修正回
+
+- 開始04:30:02、終了04:32 JST。DEMO-0017、HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。変更は既存の非追跡診断 `artifacts/demo-click-audit/ProbeCpuSortie.cs.txt` と両記録。ゲームコード変更なし。
+- 04:19回の固定場面は既定の `Legacy` を使い、マージ後の格納庫では通常入力の部品ドラッグが `Materials` に限定される。組み立て診断の初期化で `Materials` を指定し、予約アサーションにフェーズ・予約件数・段階を追加した。
+- `dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-16/demo-audit --no-restore --disable-build-servers -v quiet` は既存EXEのコピーが拒否された。`-p:UseAppHost=false` を付けた再実行は警告1（既存EXEへのアクセス拒否）・エラー0。既存出力のDLLを `dotnet` で直接実行した。
+- 04:31:36起動、終了0。`ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_` 接頭辞の `DOMESTIC_SKIP`、`DOMESTIC_ENTRY`、`AUTO_ENABLED`、`ASSEMBLY_LIVE`、`ASSEMBLY_INVENTORY_PAGE`、`ASSEMBLY_ESC_INPUT` を各1。960×540で2段階の組み立てを描画し、人間側の部品予約1件を保持。表示オフ・通常・早期スキップ・Esc入力の比較で在庫と人間への復帰が一致。証拠は `Live CPU step 2: Complete at {X:210 Y:430}, real reservations=1`、`Normal Escape input cleared CPU drag` と最終PASS。物理Escと通常プレイからの自然開始は要再確認。
+
+## 2026-11-15 13:48修正回
+
+- DEMO-0023。開始13:48:41、終了13:52:34 JST。HEAD `5fdc97aced7388d121cfc468df4531a5282fa284`。変更は `FolderVerse/RobotCampaign.cs` と両記録。
+- 13:49:08に点検と同じ世界46・素材モードで再実行し、勝者の格納時に `RobotStore.Add` の例外を再現。交換処理は候補1体を除けば空くと仮定していた。メープル梱包の詰め直しを含む占有数と、交換後の両格納庫の容量を変更前に確認し、倉庫番は交換対象から除外した。入る候補の中では従来の優先順。交換できなければ既存の帰還元・予備隊経路を使う。
+- 08:00回と同じNASで診断をビルド。警告1（旧EXE削除拒否）、エラー0。13:50:29に `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=46`、`FOLDERVERSE_AUDIT_NEW_LAND_ASSEMBLY=1` で診断DLLを再実行。終了0、軍事解決を含む8周を通過。組み立て候補は現れず、そのUIは未確認。
+- 13:50:57に同じDLLを `FOLDERVERSE_AUDIT_WORLD=103`、`FOLDERVERSE_AUDIT_GLOBE_MATCH=1`、`ALSOFT_DRIVERS=null` で実行。終了0。960×540で地星儀クリック、地点91の選択、赤チェック、人間への復帰、実描画を確認。別の既存UI場面での回帰検証。
+- `dotnet build tests/RobotCampaign/RobotCampaign.csproj --artifacts-path <同NAS出力先> --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers -p:UseAppHost=false -v quiet` は警告・エラー0。13:52:02に同出力先の `bin/RobotCampaign/debug/RobotCampaign.dll` を `dotnet` で実行、終了0。満杯時の交換、帰還予約、複数シードを含む既存検査がPASS。
+- 元の例外の交換個体IDと、元の配置に通常UIから到達する条件は未確認。固定診断で確認した停止は解消し、CPU組み立ての自然開始は要再確認。
