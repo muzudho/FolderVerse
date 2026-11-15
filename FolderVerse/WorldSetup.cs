@@ -158,19 +158,28 @@ public sealed partial class WorldSetup
         if(seaRange is { } bounds && !WorldTerrain.TryFitSeaRange(cells,seed,bounds.Minimum,bounds.Maximum,out shift))
             return false;
 
+        ApplyWorldGeography(seed,dimensions[0],dimensions[1],dimensions[2],cells,shift);
+        return true;
+    }
+
+    internal void ApplyLotteryGeography(WorldSetup candidate)=>
+        ApplyWorldGeography(candidate.WorldSeed,candidate.Width,candidate.Height,candidate.Depth,
+            candidate.Cells,candidate._terrainElevationShift);
+
+    private void ApplyWorldGeography(int seed,int width,int height,int depth,SurfaceCell[] cells,float shift)
+    {
         WorldConquestEndingShown=false;TutorialStep=0;TutorialMapBeforeWar=TutorialAttackCompleted=TutorialPocketIntroShown=false;_presetCastCount=0;TutorialCompletionPending=TutorialCompletionShown=false;Industry.Reset();Lessons.Reset();
         TutorialPocketed=TutorialMoved=TutorialPocketNoticeShown=TutorialMoveNoticeShown=false;TutorialPostMoveStage=0;TutorialSortieNoticeShown=TutorialTurnEndNoticeShown=TutorialWarTargetNoticeShown=false;
         TutorialMapStage=TutorialMapRotations=TutorialMapNotices=0;TutorialMapEdgeChanged=false;
         WandererPolicies=new WandererPolicy[CastCount];
         WorldSeed=seed;
         _terrainElevationShift=shift;
-        Width = dimensions[0]; Height = dimensions[1]; Depth = dimensions[2];
+        Width=width; Height=height; Depth=depth;
         Cells=cells;
         var terrain=Terrain;
         PolarAxis=(int)WorldTerrain.HeadSystem(Cells,terrain);
         CityNames=WorldNames.Cities(Cells,seed,terrain);
         ClearPlacement();
-        return true;
     }
     public bool AllowDuplicateCharacters;
     public void SetCast(int seed)

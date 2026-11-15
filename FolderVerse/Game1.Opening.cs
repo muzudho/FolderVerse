@@ -53,7 +53,7 @@ public partial class Game1
         _screen=Screen.OpeningLottery;
         _world.GlobeAnchor=null;_world.GlobePan=Vector2.Zero;_world.GlobeZoom=1;
         _openingPlanets.Reset();
-        _openingPlanets.Draw(_setup,_random);
+        ResetOpeningOrbitCandidates();
         _world.ShowOpeningPlanet(_setup);
     }
     private void FinishFixedOpening()
@@ -101,9 +101,10 @@ public partial class Game1
             if(_screen==Screen.OpeningReview){_openingWorldSelected=true;_openingActive=false;BeginCast();return;}
         }
         _openingAge+=Math.Min(.25,elapsed);
+        if(_screen==Screen.OpeningLottery && elapsed>0)PrepareOpeningOrbitCandidate();
         if(_screen==Screen.OpeningLottery && _openingAge>=OpeningPlanetInterval)
         {
-            _openingPlanets.Draw(_setup,_random);
+            AdvanceOpeningOrbitCandidates();
             _openingOrbitRound++;
             _openingAge-=OpeningPlanetInterval;
             var incoming = _departingOpeningPlanet ?? new WorldPreview(GraphicsDevice);
