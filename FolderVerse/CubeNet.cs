@@ -106,13 +106,13 @@ public sealed partial class CubeNet
         }
         return "";
     }
-    public void Draw(UiPainter ui,WorldSetup setup,Rectangle panel,int focused,float pulse,bool objects=true)
+    public void Draw(UiPainter ui,WorldSetup setup,Rectangle panel,int focused,float pulse,bool objects=true,bool geographyOnly=false)
     {
         _drawing=true;_badgePanel=panel;
-        try{DrawUnrotated(ui,setup,panel,focused,pulse);}finally{_drawing=false;}
+        try{DrawUnrotated(ui,setup,panel,focused,pulse,geographyOnly);}finally{_drawing=false;}
         if(objects)DrawMapObjects(ui,setup,panel,pulse);
     }
-    private void DrawUnrotated(UiPainter ui,WorldSetup setup,Rectangle panel,int focused,float pulse)
+    private void DrawUnrotated(UiPainter ui,WorldSetup setup,Rectangle panel,int focused,float pulse,bool geographyOnly)
     {
         RefreshScenicRoutes(setup);
         _robotBadges.Clear();
@@ -149,8 +149,6 @@ public sealed partial class CubeNet
                 float elevation=samples[sx+1,sy+1];
                 Color terrain=FocusTerrain(TerrainColor(setup,cell.Id,elevation,x*10/detail,y*10/detail),RotateScreen(new Vector2(px,py),panel),cell.Id);
                 if(CountryFocus<0 && NodeFocus<0 && RegionFocusCell<0 && !ShowRoutes && cell.Id==SelectedCell)terrain=SelectionGlow.Brighten(terrain,(x+.5f)/detail,(y+.5f)/detail,pulse);
-                var post=setup.Nodes.At(cell.Id,new Point(x,y));
-                
                 ui.Box(new(px-size/2,py-size/2,size,size),terrain);
                 float relief=reliefs[sx+1,sy+1];
                 // Cast a short top-down shadow onto the lower tile, from the left and above.
@@ -164,6 +162,15 @@ public sealed partial class CubeNet
                     ui.Box(new(x0,y0,Math.Min(size,shade),size),Color.Lerp(terrain,new Color(27,41,49),.27f));
                 if(above>relief && within.Y<=-.05f+.051f/subdivisions)
                     ui.Box(new(x0,y0,size,Math.Min(size,shade)),Color.Lerp(terrain,new Color(27,41,49),.27f));
+            }
+            if(geographyOnly)
+            {
+                var seam=new Color(20,42,52);
+                ui.Box(new(rect.X,rect.Y,rect.Width,1),seam);
+                ui.Box(new(rect.X,rect.Y,1,rect.Height),seam);
+                ui.Box(new(rect.Right-1,rect.Y,1,rect.Height),seam);
+                ui.Box(new(rect.X,rect.Bottom-1,rect.Width,1),seam);
+                continue;
             }
             int owner=setup.Nodes.FullOwner(cell.Id);Color color=owner<0?new Color(170,181,191):setup.OwnerColor(owner);
             int thickness=owner==setup.PlayerSlot?3:2;
@@ -187,6 +194,7 @@ public sealed partial class CubeNet
                 ui.Box(new(rect.Left,rect.Top,3,rect.Height),Color.White);ui.Box(new(rect.Right-3,rect.Top,3,rect.Height),Color.White);
             }
         }
+        if(geographyOnly)return;
         DrawMapSymbols(ui,setup,p=>
         {
             var face=Faces.First(f=>f.Face==p.Cell.Face);

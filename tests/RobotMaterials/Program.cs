@@ -404,8 +404,28 @@ foreach(bool fillsLastSection in new[]{false,true})
         Check(forecast.Packages.Length==0 && mergeIntakeStock.MapleShipments.Single().PackageId==package.Id &&
             mergeIntakeStock.Nodes[source].MaplePackages.Contains(package),
             "The last section goes to the manufactured body and the same raw load waits at the source");
+        mergeIntakeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(mergeIntakeWorld));
+        mergeIntakeStock=mergeIntakeWorld.Robots;
+        store=mergeIntakeStock.Nodes[target];
+        var preview=typeof(RobotWorld).GetMethod("PreviewMapleArrivals",internalInstance)!;
+        var restoredForecast=((int Blocked,MaplePackage[] Packages))preview.Invoke(mergeIntakeStock,
+            new object[]{mergeIntakeWorld,target,mergeIntakeStock.PartPlanning.Preview(mergeIntakeWorld).Nodes[target]})!;
+        Check(restoredForecast.Blocked==1 && restoredForecast.Packages.Length==0 &&
+            store.Robots.Single(r=>r.Id==receiver.Id).Parts==RobotParts.Complete,
+            "Restore preserves the completed robot and forecasts that the raw load still waits");
+        var resolve=typeof(RobotWorld).GetMethod("ResolveMapleShipments",internalInstance)!;
+        resolve.Invoke(mergeIntakeStock,new object[]{mergeIntakeWorld});
+        Check(mergeIntakeStock.MapleShipments.Single().PackageId==package.Id &&
+            mergeIntakeStock.Nodes[source].MaplePackages.Contains(package) && store.MaplePackages.Count==0,
+            "Retry while full keeps the same reservation and does not move the restored raw load");
         store.Remove(store.Robots.First(r=>r.Id!=receiver.Id).Id);
-        typeof(RobotWorld).GetMethod("ResolveMapleShipments",internalInstance)!.Invoke(mergeIntakeStock,new object[]{mergeIntakeWorld});
+        restoredForecast=((int Blocked,MaplePackage[] Packages))preview.Invoke(mergeIntakeStock,
+            new object[]{mergeIntakeWorld,target,mergeIntakeStock.PartPlanning.Preview(mergeIntakeWorld).Nodes[target]})!;
+        Check(restoredForecast.Blocked==0 && restoredForecast.Packages.Single()==package && store.MaplePackages.Count==0,
+            "The opened slot forecasts the restored parcel exactly once");
+        resolve.Invoke(mergeIntakeStock,new object[]{mergeIntakeWorld});
+        Check(!mergeIntakeStock.Nodes[source].MaplePackages.Contains(package),
+            "Completing the restored reservation removes the original raw load from its source");
     }
     Check(mergeIntakeStock.MapleShipments.Count==0 && store.MaplePackages.Single()==package,
         "The original raw load arrives once space is available");

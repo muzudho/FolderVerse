@@ -61,6 +61,11 @@ public partial class Game1
     }
     private void OpeningInput(bool click,bool enter,bool escape,double elapsed,KeyboardState keys)
     {
+        if(_screen==Screen.OpeningReview && click && OpeningInspectionToggle.Contains(_pointer))
+        {
+            ToggleOpeningInspectionMap();
+            return;
+        }
         if(_screen is Screen.OpeningLottery or Screen.OpeningReview && !OpeningGalaxyApproach &&
             click && OpeningPaletteButton.Contains(_pointer))
         {
@@ -101,7 +106,11 @@ public partial class Game1
             if(_screen==Screen.OpeningBook){if(OpeningFixed)EnterOpeningSpace();else _screen=Screen.PlayerCount;return;}
             if(_screen==Screen.OpeningSpace && _openingAge>=BookRevealSeconds){if(OpeningFixed)FinishFixedOpening();else BeginOpeningLottery();return;}
             // Commit the planet the player actually saw, before advancing this frame's clock.
-            if(_screen==Screen.OpeningLottery && OpeningStarSelectable){_screen=Screen.OpeningReview;_openingAge=2;return;}
+            if(_screen==Screen.OpeningLottery && OpeningStarSelectable)
+            {
+                _openingInspectionUnfolded=_openingInspectionDragging=false;
+                _screen=Screen.OpeningReview;_openingAge=2;return;
+            }
             if(_screen==Screen.OpeningReview){_openingWorldSelected=true;_openingActive=false;BeginCast();return;}
         }
         _openingAge+=Math.Min(.25,elapsed);
@@ -290,11 +299,19 @@ public partial class Game1
             }else{
                 OpeningStars(OpeningCanvas);
                 if(_screen==Screen.OpeningLottery)globeHandoff=DrawOpeningOrbits((float)_openingAge,false);
+                if(_screen==Screen.OpeningReview)
+                {
+                    if(_openingInspectionUnfolded)_openingInspectionNet.Draw(_ui,_setup,OpeningInspectionMap,-1,0,
+                        objects:false,geographyOnly:true);
+                    _ui.Button(OpeningInspectionToggle,_openingInspectionUnfolded?"組立 / 地星儀":"展開 / 展開図",Muted,.48f);
+                }
                 _ui.Center(_screen==Screen.OpeningReview?"この星で、すべての陣地を目指そう。":"星抽選フェーズ / どの星の物語にしますか？",new(180,65,1560,75),.8f,Cream);
                 _ui.Center(_world.GlobeName+" / 世界 SEED "+_setup.WorldSeed,new(360,800,1200,60),.6f,Cream);
                 if(_setup.EquipmentMode==RobotEquipmentMode.Materials)
                     _ui.Center($"楓の埋蔵量　{_world.OpeningMapleLoads}荷",new(360,850,1200,28),.43f,new Color(255,185,113));
-                _ui.Center(_screen==Screen.OpeningReview?"戻ると、この星から選び直せます。":"中央に映った星を［次へ］で選びます。",new(310,870,1300,50),.5f,new Color(173,199,215));
+                _ui.Center(_screen==Screen.OpeningReview?
+                    (_openingInspectionUnfolded?"［組立］で地星儀に戻ります。":"右ドラッグで地星儀を回転できます。"):
+                    "中央に映った星を［次へ］で選びます。",new(310,870,1300,50),.5f,new Color(173,199,215));
                 _ui.Button(OpeningNext,_screen==Screen.OpeningReview?"この星で進む　次へ":OpeningStarSelectable?"この星を選ぶ　次へ":"次の星を待つ",_screen==Screen.OpeningReview || OpeningStarSelectable?DefaultAccent:Muted,.6f);
                 DrawTerrainPaletteButton(OpeningPaletteButton);
             }
@@ -302,7 +319,7 @@ public partial class Game1
         if(_screen is Screen.OpeningBook or Screen.OpeningSpace || OpeningGalaxyApproach)_ui.Button(OpeningSkip,"オープニングをスキップ",Muted,.48f);
         if(_screen is not (Screen.PlayerCount or Screen.ComputerPlayerCount))_ui.Button(OpeningBack,"戻る / Esc",Muted,.55f);
         _spriteBatch.End();
-        if(_screen==Screen.OpeningReview)
+        if(_screen==Screen.OpeningReview && !_openingInspectionUnfolded)
             DrawPlanet(_world,2,new OpeningGlobeHandoff(OpeningFocusCenter,1,1,0,Color.White,_openingReviewPose));
         else if(globeHandoff is { } focused)
             DrawPlanet(_world,_openingAge,focused);
@@ -312,6 +329,7 @@ public partial class Game1
             DrawOpeningDimensions();
             _spriteBatch.End();
         }
+        if(_screen==Screen.OpeningReview)DrawOpeningInspectionToy(canvas,transform);
         void DrawPlanet(WorldPreview planet,double age,OpeningGlobeHandoff handoff)
         {
             if(handoff.Opacity<=0 && handoff.ModelOpacity<=0)return;
