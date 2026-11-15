@@ -116,7 +116,7 @@ sealed class GlyphProbe:Game1
   for(int hop=2;hop<route.Length;hop++)advance.Invoke(stock.LongDelivery,new object[]{world});
   if(stock.LongDelivery.Orders.Count!=0)
    throw new Exception("Long deliveries were not completed after the final hop.");
-  var warehouse=stock.Nodes[route[^1]];
+  var warehouse=stock.Nodes[route[^1]].Robots;
   var deliveredPair=warehouse.Single(robot=>robot.Id==integrated.Id);
   var deliveredCaptain=warehouse.Single(robot=>robot.Id==captain.Id);
   if(deliveredPair.Parts!=integrated.Parts || deliveredPair.IntegratedParts!=integrated.IntegratedParts ||

@@ -27,7 +27,7 @@ public partial class Game1
         _openingActive && _screen is Screen.PlayerCount or Screen.ComputerPlayerCount;
     private bool OpeningFixed=>_openingTutorial || _openingFixedStart!=null;
     private float OpeningStarX=>_screen==Screen.OpeningReview?960:OpeningPlanetX(_openingAge);
-    private static float OpeningPlanetX(double age)=>age<2?MathHelper.Lerp(2250,960,(float)(age/2)):
+    private static float OpeningPlanetX(double age)=>age<2?MathHelper.Lerp(2400,960,(float)(age/2)):
         age<5?MathHelper.Lerp(960,820,(float)((age-2)/3)):MathHelper.Lerp(820,-650,(float)((age-5)/3));
     private bool OpeningStarSelectable=>OpeningStarX>=400 && OpeningStarX<=1520;
     private void BeginOpening(bool tutorial,Action fixedStart=null)
@@ -42,7 +42,7 @@ public partial class Game1
     private void EnterOpeningSpace(){_screen=Screen.OpeningSpace;_openingAge=0;}
     private void BeginOpeningLottery()
     {
-        _openingActive=true;_openingWorldSelected=false;_openingAge=2;_screen=Screen.OpeningLottery;
+        _openingActive=true;_openingWorldSelected=false;_openingAge=0;_screen=Screen.OpeningLottery;
         _world.GlobeAnchor=null;_world.GlobePan=Vector2.Zero;_world.GlobeZoom=1;
         _openingPlanets.Reset();
         _openingPlanets.Draw(_setup,_random);
