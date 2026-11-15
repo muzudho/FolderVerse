@@ -75,6 +75,37 @@ public sealed partial class CubeNet
         }
         switch(purpose)
         {
+            case NodePurpose.General:
+                // A floating civilian settlement drawn from the same surface frame as the other buildings.
+                var floats=new Color(45,105,104);
+                var planks=new Color(180,119,75);
+                var walls=new Color(246,218,173);
+                var glass=new Color(47,90,102);
+                void House(float x,float y,Color roof)
+                {
+                    Box(x-.07f,y-.06f,.70f,.68f,0,.16f,floats);
+                    Box(x-.09f,y-.08f,.74f,.72f,.16f,.08f,planks);
+                    Box(x,y,.56f,.51f,.24f,.43f,walls);
+                    Roof(x-.065f,x+.625f,x+.28f,y-.06f,y+.58f,.67f,.92f,roof);
+                    Box(x+.08f,y+.51f,.12f,.02f,.43f,.13f,glass);
+                    Box(x+.32f,y+.51f,.13f,.02f,.24f,.26f,Shade(planks,.60f));
+                    Box(x+.56f,y+.12f,.018f,.15f,.43f,.12f,glass);
+                    Box(x+.40f,y+.04f,.10f,.11f,.75f,.18f,roof);
+                }
+                House(-.73f,-.60f,new Color(200,99,77));
+                House(.11f,-.70f,new Color(117,153,98));
+                for(int i=0;i<4;i++)Box(-.79f+i*.38f,-.04f,.30f,.46f,0,.17f,floats);
+                for(int i=0;i<12;i++)Box(-.82f+i*.138f,-.04f,.13f,.46f,.17f,.065f,Shade(planks,.9f+i%3*.05f));
+                Box(-.18f,.37f,.37f,.40f,.03f,.14f,floats);
+                for(int i=0;i<4;i++)Box(-.19f,.38f+i*.102f,.39f,.095f,.17f,.065f,planks);
+                foreach(float x in new[]{-.76f,.68f})
+                {
+                    Box(x,.31f,.085f,.07f,.235f,.14f,Shade(planks,.72f));
+                    Box(x-.014f,.30f,.11f,.09f,.375f,.03f,walls);
+                }
+                Box(.22f,.24f,.10f,.10f,.235f,.07f,new(188,98,68));
+                Box(.205f,.23f,.13f,.12f,.305f,.08f,new(118,163,74));
+                break;
             case NodePurpose.Harvest:
                 var olive=new Color(117,139,58);
                 Box(-.79f,-.68f,1.58f,1.4f,0,.09f,olive);

@@ -396,7 +396,7 @@ public partial class Game1
             var previousPose=planet.ManualOrientation;
             planet.ManualOrientation=handoff.Pose;
             if(_screen==Screen.OpeningLottery && OpeningStarSelectable)_openingReviewPose=handoff.Pose;
-            GraphicsDevice.Viewport=new Viewport(clipped);
+            GraphicsDevice.Viewport=new Viewport(canvas);
             try
             {
                 if(handoff.ModelOpacity>0)

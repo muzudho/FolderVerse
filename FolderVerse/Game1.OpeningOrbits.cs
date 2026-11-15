@@ -149,7 +149,9 @@ public partial class Game1
                 {
                     var pose=Quaternion.CreateFromRotationMatrix(OpeningPolarAlignment(polarAxis)
                         *Matrix.CreateRotationY(spin)*Matrix.CreateFromYawPitchRoll(.48f,.42f,0));
-                    pose=WorldPreview.FaceTour(pose,(age-OpeningGlobeReady)/(OpeningGlobeEnd-OpeningGlobeReady));
+                    double tourAge=_openingRejectedAt??age;
+                    var face=WorldPreview.OpeningFaceTour((tourAge-OpeningGlobeReady)/(OpeningGlobeEnd-OpeningGlobeReady));
+                    pose=Quaternion.Slerp(pose,face,globeBlend);
                     handoff=new OpeningGlobeHandoff(Project(point),MathHelper.Lerp(.72f,1,useCloseModel),globeBlend,
                         useCloseModel*(1-globeBlend),tint,pose);
                 }

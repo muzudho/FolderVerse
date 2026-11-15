@@ -256,6 +256,12 @@ public sealed partial class WorldPreview : IDisposable
             _effect.Alpha=1;
             return;
         }
+        if(globeView)
+        {
+            DrawAtmosphere(opacity);
+            _device.BlendState=opacity<1?BlendState.AlphaBlend:BlendState.Opaque;
+            _device.DepthStencilState=DepthStencilState.Default;
+        }
         _device.SetVertexBuffer(_vertices);
         foreach (var pass in _effect.CurrentTechnique.Passes)
         {
@@ -318,5 +324,5 @@ public sealed partial class WorldPreview : IDisposable
         screen=new(projected.X,projected.Y);
         return Vector3.Dot(facing,camera-transformed)>0 && projected.Z>=0 && projected.Z<=1;
     }
-    public void Dispose() { _whirlpoolMesh?.Dispose();_vertices?.Dispose(); _markers?.Dispose();_highlight?.Dispose(); _effect.Dispose(); }
+    public void Dispose() { _atmosphereEffect?.Dispose();_whirlpoolMesh?.Dispose();_vertices?.Dispose(); _markers?.Dispose();_highlight?.Dispose(); _effect.Dispose(); }
 }

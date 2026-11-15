@@ -106,6 +106,48 @@ sealed class OpeningGame:Game1
   Check((bool)Get("_statusGlobe"),"Domestic assembly must switch back to the globe");
  }
  WorldSetup Setup=>(WorldSetup)Get("_setup");
+ void CheckWaterVillage()
+ {
+  var node=Setup.Nodes.All.First(n=>n.Terrain==TravelTerrain.Sea);
+  var cell=Setup.Cells[node.Cell];
+  var position=Setup.Routes.Position(node.Cell,node.Center);
+  Vector2 Project(Vector3 point)
+  {
+   var delta=point-position;
+   float x=Vector3.Dot(delta,cell.U),y=Vector3.Dot(delta,cell.V),z=Vector3.Dot(delta,cell.Normal);
+   return new Vector2(180,138)+new Vector2(x+.5f*y,.48f*y-.25f*x-z)*105;
+  }
+  var draw=typeof(CubeNet).GetMethod("DrawSurfacePuck",F)!;
+  var net=(CubeNet)Get("_net");var batch=(SpriteBatch)Get("_spriteBatch");
+  var before=GraphicsDevice.GetRenderTargets();
+  using var target=new RenderTarget2D(GraphicsDevice,360,240);
+  var (units,host)=(node.FunctionUnits,node.FunctionHost);
+  Color[] Render()
+  {
+   GraphicsDevice.SetRenderTarget(target);
+   GraphicsDevice.Clear(new Color(33,107,130));
+   batch.Begin();
+   draw.Invoke(net,new object[]{Get("_ui"),Setup,node,cell,position,.78f,0f,
+       (Func<Vector3,Vector2>)Project,(Func<Color,Color>)(c=>c)});
+   batch.End();
+   GraphicsDevice.SetRenderTargets(before);
+   var pixels=new Color[360*240];target.GetData(pixels);return pixels;
+  }
+  try
+  {
+   node.FunctionUnits=0;node.FunctionHost=-1;
+   var ordinary=Render();
+   node.FunctionHost=Setup.Nodes.All.First(n=>n.Id!=node.Id && n.Functional).Id;
+   var village=Render();
+   Check(ordinary.Zip(village).Count(pair=>pair.First!=pair.Second)>1000,
+      "A relocated sea site renders a floating settlement");
+   using var image=new Texture2D(GraphicsDevice,360,240);
+   image.SetData(village);
+   using var output=File.Create(Path.Combine(AppContext.BaseDirectory,"water-village.png"));
+   image.SaveAsPng(output,360,240);
+  }
+  finally{(node.FunctionUnits,node.FunctionHost)=(units,host);}
+ }
  void CheckRequestAnotherStory()
  {
   Set("_openingAge",OpeningTime("OpeningGlobeReady"));
@@ -215,7 +257,7 @@ sealed class OpeningGame:Game1
   if(frame==7){Call("BeginOpening",false,null!);Skip();Screen("PlayerCount");Input(enter:true);Input(enter:true);Screen("OpeningLottery");Check((double)Get("_openingAge")==0,"Skip must bypass the galaxy approach");Call("BeginOpening",false,(Action)(()=>callback=true));Input(enter:true);Screen("OpeningSpace");FinishReveal();Input(enter:true);Check(callback,"Fixed campaign callback lost");Call("BeginOpening",true,null!);Skip();Screen("WorldStatus");Check(Setup.TutorialStep==1,"Tutorial fixed-world start lost");CheckDomesticMapTransition();Set("_globeSettingsOpen",true);Capture("globe-settings");Set("_globeSettingsOpen",false);Call("BeginOpening",false,null!);Input(back:true);Screen("Title");}
   if(frame==5)CheckRequestAnotherStory();
   if(frame<7)Capture($"opening-{frame}");
-  if(frame++==7){Console.WriteLine("PASS: storybook, mandatory counts, space, moving planet selection/confirmation/back, narration skip, fixed tutorial/campaign, default unique characters and duplicate toggle.");Exit();}
+  if(frame++==7){CheckWaterVillage();Console.WriteLine("PASS: storybook, mandatory counts, space, moving planet selection/confirmation/back, narration skip, fixed tutorial/campaign, default unique characters, duplicate toggle and relocated water village.");Exit();}
  }
  void Capture(string name){base.Draw(new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero));var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,name+".png"));image.SaveAsPng(file,image.Width,image.Height);}
 }
