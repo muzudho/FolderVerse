@@ -28,7 +28,7 @@ public partial class Game1
     }
     private static readonly (NodePurpose? Purpose,string Label)[] NodePurposes={
         (NodePurpose.General,"自由用途型"),(NodePurpose.Harvest,"採取重点型"),(NodePurpose.Manufacturing,"製造重点型"),
-        (NodePurpose.Relay,"輸送の中継地点"),(NodePurpose.Defense,"防衛特化拠点"),(NodePurpose.Frontline,"攻撃前線"),(null,"港")
+        (NodePurpose.Relay,"輸送の中継地点"),(NodePurpose.Defense,"城壁"),(NodePurpose.Frontline,"詰所"),(null,"港")
     };
     private static Rectangle NodePurposeButton(int index)=>new(84+index*112,531,106,72);
     private string NodePurposeDisabledReason(Node node,NodePurpose? purpose)
@@ -98,7 +98,7 @@ public partial class Game1
         for(int i=0;i<NodePurposes.Length;i++){
             if(!NodePurposeButton(i).Contains(_pointer))continue;
             var (purpose,label)=NodePurposes[i];
-            var reason=NodePurposeDisabledReason(node,purpose);
+            var reason=NodePurposeDisabledReason(node,purpose) ?? (purpose==NodePurpose.Frontline?"自国・同盟国の地点を１つ経由して、２地点先まで開戦できます。":null);
             if(reason==null)break;
             var popup=new Rectangle(Math.Clamp(NodePurposeButton(i).Center.X-190,84,488),611,380,76);
             DrawRulebookPaper(popup);

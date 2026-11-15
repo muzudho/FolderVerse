@@ -57,7 +57,7 @@ public sealed partial class RobotCampaign
         bool deployed=Encounters.Where(e=>!e.Finished).SelectMany(e=>e.Battles).SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Any(u=>u.Owner==ruler && u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated);
         bool atEnemy=node!=null && node.Id==target && node.Owner>=0 && !world.Relations.Allied(ruler,node.Owner);
         return node!=null && target>=0 && target<world.Nodes.All.Length && world.Nodes.All[target].Functional && !deployed && !LockedNode(node.Id) &&
-            (localAttack && atEnemy || MarchTargets(world,node.Id).Contains(target));
+            (localAttack && atEnemy || (localAttack?AttackTargets(world,ruler,node.Id):MarchTargets(world,node.Id)).Contains(target));
     }
     private static int Source(WorldSetup world,March order)=>order.SourceNode>=0?order.SourceNode:world.Nodes.Current(order.Ruler).Id;
     public int AvailableFrom(WorldSetup world,int owner,int source)
@@ -78,7 +78,7 @@ public sealed partial class RobotCampaign
         return store.Robots.Where(r=>r.Owner==owner && world.Robots.Training[owner].Eligible(r) && !r.Stationed && world.Robots.DirectDelivery.LockedParts(source,r.Id)==0 && (pocket || !world.Robots.Workshops[source].IsDisposing(r.Id) && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)))).ToArray();
     }
     public bool CanAttackFrom(WorldSetup world,int owner,int source,int target)
-        =>source>=0 && source<world.Nodes.All.Length && target>=0 && target<world.Nodes.All.Length && world.Nodes.All[source].Functional && world.Nodes.All[source].Owner==owner && MarchTargets(world,source).Contains(target);
+        =>source>=0 && source<world.Nodes.All.Length && target>=0 && target<world.Nodes.All.Length && world.Nodes.All[source].Functional && world.Nodes.All[source].Owner==owner && AttackTargets(world,owner,source).Contains(target);
     public void RequestWithdrawal(WorldSetup world,int encounterId,int owner,bool requested=true)
     {
         var encounter=Encounters.Single(e=>e.Id==encounterId && !e.Finished);
@@ -90,7 +90,8 @@ public sealed partial class RobotCampaign
             ? encounter.MarchDestinations!=null
                 ? encounter.Battles.Any(b=>b.Armies.Any(a=>a.HomeNode==source && a.Owner==world.Nodes.All[source].Owner))
                 : source==encounter.Source || source==encounter.Target
-            : MarchTargets(world,source).Contains(encounter.Target);
+            : source>=0 && source<world.Nodes.All.Length &&
+                AttackTargets(world,world.Nodes.All[source].Owner,source).Contains(encounter.Target);
 
     public void SendReinforcement(WorldSetup world,int owner,int source,int encounterId)
     {
@@ -148,7 +149,7 @@ public sealed partial class RobotCampaign
             if(world.TutorialPocketCourse && visit.Ruler==0 && source[visit]!=visit.TargetNode)world.TutorialMoved=true;
         }
         var marchEdges=orders.Where(o=>!o.Peaceful).ToDictionary(o=>o,o=>{
-            var path=MarchPath(world,source[o],o.TargetNode);
+            var path=AttackPath(world,o.Ruler,source[o],o.TargetNode);
             return path.Zip(path.Skip(1),(from,to)=>(From:from,To:to)).ToArray();
         });
         foreach(var first in orders.OrderBy(o=>o.Ruler))
@@ -173,13 +174,17 @@ public sealed partial class RobotCampaign
         {
             int target=group.Key;var node=world.Nodes.All[target];var existing=Encounters.FirstOrDefault(e=>!e.Finished && e.Kind==BattleKind.Node && e.Target==target);
             var hostile=group.Where(o=>!o.Peaceful && node.Owner>=0 && !world.Relations.Allied(o.Ruler,node.Owner) && (troops[o].Count>0 || o.Queen)).ToArray();
+            int InterceptOrigin(March order)=>marchEdges[order].Skip(1).Any(edge=>world.Nodes.All[edge.From].Functional)
+                ? marchEdges[order][^1].From : source[order];
             bool alreadyIntercepting=Encounters.Any(e=>!e.Finished && e.InterceptOwner>=0 && e.Target==target);
-            if(existing==null && !alreadyIntercepting && hostile.Length>0 && hostile.All(o=>source[o]!=target) && hostile.Select(o=>source[o]).Distinct().Count()==1){
+            if(existing==null && !alreadyIntercepting && hostile.Length>0 && hostile.All(o=>source[o]!=target) && hostile.Select(InterceptOrigin).Distinct().Count()==1){
                 var interceptors=world.Robots.Nodes[target].Robots.Where(r=>r.InterceptOnly && world.Relations.Allied(r.Owner,node.Owner) && world.Robots.Training[r.Owner].Eligible(r) && world.Robots.DirectDelivery.LockedParts(target,r.Id)==0 && !world.Robots.Workshops[target].IsDisposing(r.Id) && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id))).ToArray();
                 if(interceptors.Length>0){
                     var interceptArmies=hostile.GroupBy(o=>o.Ruler).Select(g=>(g.Key,source[g.FirstOrDefault(o=>o.Queen)??g.First()],g.SelectMany(o=>troops[o]).ToList(),g.Any(o=>o.Queen))).ToList();
                     foreach(var defenders in interceptors.GroupBy(r=>r.Owner)){foreach(var robot in defenders)Depart(world,target,robot);interceptArmies.Add((defenders.Key,target,defenders.ToList(),false));}
-                    var interception=CreateEncounter(world,BattleKind.Edge,source[hostile[0]],target,-1,interceptArmies.ToArray());interception.InterceptOwner=node.Owner;
+                    int approach=InterceptOrigin(hostile[0]);
+                    var interception=CreateEncounter(world,BattleKind.Edge,approach,target,-1,interceptArmies.ToArray(),
+                        hostile.Select(o=>o.Ruler).Distinct().ToDictionary(owner=>owner,_=>approach));interception.InterceptOwner=node.Owner;
                     Encounters.Add(interception);
                     // Friendly arrivals do not add an enemy approach and must still reach their destination.
                     foreach(var arrival in group.Where(o=>!hostile.Contains(o))){var staying=troops[arrival].Select(r=>r.Id).ToHashSet();foreach(var robot in troops[arrival])PlaceWinner(world,target,robot,source[arrival],staying);if(arrival.Queen)Move(world,arrival.Ruler,target);}
@@ -208,7 +213,9 @@ public sealed partial class RobotCampaign
                 continue;
             }
             if(node.Owner>=0 && !armies.Any(a=>a.Owner==node.Owner))armies.Add((node.Owner,target,new List<Robot>(),false));
-            var encounter=CreateEncounter(world,BattleKind.Node,target,target,node.Owner,armies.ToArray());Encounters.Add(encounter);
+            var approaches=group.Where(o=>!o.Peaceful && marchEdges[o].Length>0).GroupBy(o=>o.Ruler)
+                .ToDictionary(g=>g.Key,g=>marchEdges[g.FirstOrDefault(o=>o.Queen)??g.First()][^1].From);
+            var encounter=CreateEncounter(world,BattleKind.Node,target,target,node.Owner,armies.ToArray(),approaches);Encounters.Add(encounter);
         }
         // Residents waiting outside full stores can be used as reinforcements at their own node.
         foreach(var reserve in Reserves.ToArray())

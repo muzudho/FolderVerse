@@ -26,6 +26,39 @@ public sealed partial class RobotCampaign
     public IEnumerable<int> MarchTargets(WorldSetup world,int source)=>
         MarchRoutes(world,source).Keys.Where(id=>IsMarchTarget(world,source,id,null));
 
+    public IEnumerable<int> AttackTargets(WorldSetup world,int owner,int source)
+    {
+        var routes=MarchRoutes(world,source);
+        var adjacent=routes.Keys.Where(id=>IsMarchTarget(world,source,id,null));
+        return adjacent.Concat(OutpostRoutes(world,owner,source,routes).Keys);
+    }
+
+    private Dictionary<int,int[]> OutpostRoutes(WorldSetup world,int owner,int source,Dictionary<int,int> adjacent)
+    {
+        var result=new Dictionary<int,int[]>();
+        if(source<0 || source>=world.Nodes.All.Length || owner<0 || LockedNode(source))return result;
+        var outpost=world.Nodes.All[source];
+        if(!outpost.Functional || outpost.Owner!=owner || outpost.Purpose!=NodePurpose.Frontline)return result;
+        foreach(int via in adjacent.Keys.Where(id=>IsMarchTarget(world,source,id,null)).OrderBy(id=>id))
+        {
+            var ally=world.Nodes.All[via];
+            if(ally.Owner<0 || !world.Relations.Allied(owner,ally.Owner))continue;
+            var onward=MarchRoutes(world,via);
+            foreach(int target in onward.Keys)
+            {
+                if(!IsMarchTarget(world,via,target,null) || target==source || adjacent.ContainsKey(target) ||
+                    LockedEdge(source,target) || result.ContainsKey(target))continue;
+                int defender=world.Nodes.All[target].Owner;
+                if(defender>=0 && world.Relations.Allied(owner,defender))continue;
+                result.Add(target,MarchPath(adjacent,via).Concat(MarchPath(onward,target).Skip(1)).ToArray());
+            }
+        }
+        return result;
+    }
+
+    internal int[] OutpostAttackPath(WorldSetup world,int owner,int source,int target)=>
+        OutpostRoutes(world,owner,source,MarchRoutes(world,source)).GetValueOrDefault(target);
+
     private static bool MarchEndpoint(WorldSetup world,int node,ISet<int> emptied)=>
         world.Nodes.All[node].Functional && !(emptied?.Contains(node)??false);
 
@@ -55,11 +88,15 @@ public sealed partial class RobotCampaign
         }
     }
 
-    private int[] MarchPath(WorldSetup world,int source,int target)
+    private int[] AttackPath(WorldSetup world,int owner,int source,int target)
     {
         if(source==target)return new[]{source};
-        return MarchPath(MarchRoutes(world,source),target);
+        var routes=MarchRoutes(world,source);
+        return routes.ContainsKey(target)?MarchPath(routes,target):OutpostRoutes(world,owner,source,routes)[target];
     }
+
+    private int[] MarchPath(WorldSetup world,int source,int target)=>
+        source==target?new[]{source}:MarchPath(MarchRoutes(world,source),target);
 
     private static int[] MarchPath(Dictionary<int,int> previous,int target)
     {

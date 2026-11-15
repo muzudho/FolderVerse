@@ -332,6 +332,27 @@ foreach(var (largeUnits,secondUnits,firstMaterial,secondMaterial) in new[]{
         resolve.Invoke(largeStock,new object[]{largeWorld});
         Check(largeStock.MapleShipments.Count==0 && largeStock.Nodes[source].MaplePackages.Count==0 &&
             store.MaplePackages.SequenceEqual(forecast.Packages),"Both mixed-size shipments arrive intact exactly once");
+        if(firstMaterial!=secondMaterial)
+        {
+            // Removing the head leaves its raw cargo occupying that slot.
+            store.Remove(added[^1]);
+            var productionBlocker=store.Robots.FirstOrDefault(r=>r.Parts==RobotParts.Complete && !r.Stationed);
+            if(productionBlocker!=null)store.Remove(productionBlocker.Id);
+            Check(store.HasSpace,"The receiving hangar must have room for the manufactured head");
+            var material=firstMaterial==RawMaterial.Maple ? RobotMaterial.Paper : RobotMaterial.Polypropylene;
+            int recipeUnits=firstMaterial==RawMaterial.Maple ? 1 : 8;
+            var receiver=new RobotWorkshop();
+            receiver.Configure(RobotParts.Head,1);
+            typeof(RobotWorkshop).GetField("_selectedProductPlan",internalInstance)!
+                .SetValue(receiver,new ProductionPlan(RobotParts.Head,1){Material=material});
+            for(int tick=0;tick<3 && store.MaplePackages.Contains(twoSection);tick++)
+                production.Invoke(receiver,new object[]{largeStock,target,largeWorld.Nodes.All[target].Owner});
+            Check(store.MaplePackages.Single(p=>p.Id==twoSection.Id)==(twoSection with {Units=twoSection.Units-recipeUnits}) &&
+                store.MaplePackages.Single(p=>p.Id==waiting.Id)==waiting &&
+                (store.Robots.Any(r=>r.HeadMaterial==material) ||
+                 largeStock.ProductionIntakes.Any(i=>ReferenceEquals(i.Line,receiver) && i.Product.HeadMaterial==material)),
+                "Production uses only the matching delivered raw material and preserves the other parcel");
+        }
         continue;
     }
     forecast=((int Blocked,MaplePackage[] Packages))preview.Invoke(largeStock,new object[]{largeWorld,target,store})!;

@@ -78,7 +78,11 @@ public sealed partial class CubeNet
                 float scale = MathF.Max(Vector2.Distance(at,Project(position+cell.U)),Vector2.Distance(at,Project(position+cell.V)));
                 float radius = GlobeNodeRadius(node,scale,globe.GlobeZoom);
                 if (ShowRoutes) DrawSurfacePuck(ui,setup,node,cell,position,radius,pulse,Project,Tint);
-                DrawSurfaceFlag(ui,setup,DisplayedNodeOwner(node),cell,position,ShowRoutes ? radius*(HasPurposeBuilding(node)?GlobePurposeBuildingScale:1) : 0,Project,Tint);
+                var roof=ShowRoutes?PurposeFlagAnchor(node):null;
+                if(roof is Vector3 anchor)
+                    position+=radius*GlobePurposeBuildingScale*(cell.U*anchor.X+cell.V*anchor.Y+cell.Normal*anchor.Z);
+                DrawSurfaceFlag(ui,setup,DisplayedNodeOwner(node),cell,position,
+                    ShowRoutes && roof==null ? radius*(HasPurposeBuilding(node)?GlobePurposeBuildingScale:1) : 0,Project,Tint,roof!=null);
             }
         }
         DrawMapSymbols(ui,setup,p=>
@@ -140,14 +144,17 @@ public sealed partial class CubeNet
             DrawHarborBadge(ui,harborAt-across*radius*1.45f,radius,tint,ScreenAngle);
         }
         else if(building)
-            DrawPurposeBuilding(ui,node.Purpose,(x,y,z)=>at+new Vector2(x,y*.68f-z)*radius*PurposeBuildingScale,tint);
+            DrawPurposeBuilding(ui,node.Purpose,sea,(x,y,z)=>at+new Vector2(x,y*.68f-z)*radius*PurposeBuildingScale,tint);
         else{
             Face(at+new Vector2(0,depth),radius+1,rim);
             Face(at+new Vector2(0,depth),radius,side);
             Face(at,radius+1,rim);
             Face(at,radius,node.Functional ? top : Color.Lerp(top,rim,.35f));
         }
-        CountryFlagArt.Marker(ui,setup,DisplayedNodeOwner(node),at+new Vector2(radius*(building?PurposeBuildingScale:1)+4,-radius*.68f),
+        var flagFoot=PurposeFlagAnchor(node) is Vector3 roof
+            ? at+new Vector2(roof.X,roof.Y*.68f-roof.Z)*radius*PurposeBuildingScale
+            : at+new Vector2(radius*(building?PurposeBuildingScale:1)+4,-radius*.68f);
+        CountryFlagArt.Marker(ui,setup,DisplayedNodeOwner(node),flagFoot,
             Math.Clamp((int)(radius*3),24,42),tint);
         if (AttackTargetMarkers && SelectedTarget==node.Id)
             foreach (float angle in new[]{MathHelper.PiOver4,-MathHelper.PiOver4})
@@ -186,7 +193,7 @@ public sealed partial class CubeNet
             DrawHarborBadge(ui,project(footing)+new Vector2(-Math.Clamp(radius*Vector2.Distance(project(position),project(position+cell.U))*1.65f,12,44),-12),9,tint);
         }
         else if(building)
-            DrawPurposeBuilding(ui,node.Purpose,(x,y,z)=>project(position+radius*GlobePurposeBuildingScale*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
+            DrawPurposeBuilding(ui,node.Purpose,sea,(x,y,z)=>project(position+radius*GlobePurposeBuildingScale*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
         else{
             float winding = Cross(upper[1]-upper[0],upper[2]-upper[1]);
             Span<Vector2> wall = stackalloc Vector2[4];
@@ -206,14 +213,14 @@ public sealed partial class CubeNet
     }
 
     private static void DrawSurfaceFlag(UiPainter ui,WorldSetup world,int owner,SurfaceCell cell,Vector3 position,float radius,
-        Func<Vector3,Vector2> project,Func<Color,Color> tint)
+        Func<Vector3,Vector2> project,Func<Color,Color> tint,bool roofMounted=false)
     {
         if (owner<0 || owner>=world.ActiveCount) return;
         var vertical = project(position+cell.Normal)-project(position);
         var across = MathF.Abs(Cross(project(position+cell.U)-project(position),vertical)) >=
                      MathF.Abs(Cross(project(position+cell.V)-project(position),vertical)) ? cell.U : cell.V;
         if (Cross(project(position+across)-project(position),vertical)>0) across=-across;
-        var foot=position+across*(radius+.025f);
+        var foot=roofMounted?position:position+across*(radius+.025f);
         const float poleHeight=.28f;
         var apex=foot+cell.Normal*poleHeight;
         var a=project(foot);var b=project(apex);var pole=b-a;

@@ -28,7 +28,7 @@ public partial class Game1
         if(_setup.Robots.Nodes[node].WarehouseLimit is int limit)workshop.SetStorageSlotLimit(limit);
         return workshop;
     }
-    private bool PlanningCanAttackFrom(int owner,int source,int target)=>PlanningFunctional(source) && _setup.Nodes.All[source].Owner==owner && _setup.Campaign.RobotBattles.MarchTargets(_setup,source).Contains(target);
+    private bool PlanningCanAttackFrom(int owner,int source,int target)=>PlanningFunctional(source) && _setup.Nodes.All[source].Owner==owner && _setup.Campaign.RobotBattles.AttackTargets(_setup,owner,source).Contains(target);
     private int PlanningMoveSource(PlannedPartMove order)
     {
         int source=Array.FindIndex(_setup.Robots.Nodes,s=>s.Robots.Any(r=>r.Id==order.RobotId));

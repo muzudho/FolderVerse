@@ -10,6 +10,42 @@ WorldSetup World(int seed=0)
 }
 void Place(WorldSetup w,int owner,Node node){node.Owner=owner;w.ConquerorLocations[owner]=node.Cell;w.ConquerorPoints[owner]=node.Center;}
 void Add(WorldSetup w,Node node,int owner,int count){for(int i=0;i<count;i++)w.Robots.Nodes[node.Id].Add(w.Robots.Create(owner,RobotParts.Complete));}
+if(args.Contains("--outpost"))
+{
+    var fixture=World();
+    var campaign=fixture.Campaign.RobotBattles;
+    var chain=fixture.Nodes.All.Where(n=>n.Functional)
+        .SelectMany(from=>campaign.MarchTargets(fixture,from.Id).SelectMany(via=>
+            campaign.MarchTargets(fixture,via).Where(to=>to!=from.Id && !campaign.MarchTargets(fixture,from.Id).Contains(to))
+                .Select(to=>(From:from.Id,Via:via,To:to)))).First();
+    foreach(var node in fixture.Nodes.All)node.Owner=2;
+    var outpost=fixture.Nodes.All[chain.From];
+    Place(fixture,0,outpost);
+    fixture.Nodes.All[chain.Via].Owner=1;
+    fixture.Relations.SetSuperior(1,0);
+    Check(!campaign.CanAttackFrom(fixture,0,chain.From,chain.To),"A general site cannot attack through an ally");
+    outpost.Purpose=NodePurpose.Frontline;
+    Check(campaign.CanAttackFrom(fixture,0,chain.From,chain.To) && campaign.CanSortie(fixture,0,chain.To) &&
+        !campaign.CanMarch(fixture,0,chain.To),"An outpost extends combat, while peaceful movement keeps its normal range");
+    fixture.Nodes.All[chain.Via].Owner=2;
+    Check(!campaign.CanAttackFrom(fixture,0,chain.From,chain.To),"An enemy cannot be used as an intermediate site");
+    fixture.Nodes.All[chain.Via].Owner=0;
+    Check(campaign.CanAttackFrom(fixture,0,chain.From,chain.To),"A site in the same country can be used");
+    fixture.Nodes.All[chain.Via].Owner=1;
+    campaign.Encounters.Add(new RobotEncounter{Kind=BattleKind.Node,Target=chain.Via});
+    Check(!campaign.CanAttackFrom(fixture,0,chain.From,chain.To),"An active battlefield blocks an outpost route");
+    campaign.Encounters.Clear();
+    Add(fixture,outpost,0,1);
+    Add(fixture,fixture.Nodes.All[chain.To],2,1);
+    var robot=fixture.Robots.Nodes[chain.From].Robots.Single();
+    campaign.Rules=new(){SegmentTurns=1,NoWillTurns=1000,PersuasionPercent=0};
+    fixture.Campaign.Resolve(fixture,new[]{new March(0,chain.To,1,chain.From,false,false,new[]{robot.Id})});
+    Check(campaign.Encounters.Any(e=>e.Target==chain.To && e.Battles.Any(b=>b.Armies.Any(a=>a.Owner==0 && a.HomeNode==chain.From))) &&
+        fixture.Nodes.All[chain.Via].Owner==1,"The attack reaches the target without changing the allied site's ownership or the army's home");
+    campaign.Check(fixture);
+    Console.WriteLine("PASS: outpost attack through own or allied sites, blocked routes and battle arrival.");
+    return;
+}
 var w=World();var a=w.Nodes.All.First(n=>w.Routes.Neighbors(n).Length>0);var route=w.Routes.Neighbors(a)[0];var b=w.Nodes.At(route.Target,route.Entry);Place(w,0,a);b.Owner=-1;Add(w,a,0,3);
 var people=a.Population.People[0];w.Campaign.Advance(w,b.Id,2,false);Check(w.Population.Turn==1 && b.Owner==0 && w.Nodes.Current(0).Id==b.Id,"Neutral flag raising / turn");Check(a.Population.People[0]==people,"Robots do not consume population");Check(w.Robots.Nodes[a.Id].Count==1 && w.Robots.Nodes[b.Id].Count==2,"Robot march count");
 w=World();a=w.Nodes.All.First(n=>w.Routes.Neighbors(n).Length>0);route=w.Routes.Neighbors(a)[0];b=w.Nodes.At(route.Target,route.Entry);Place(w,0,a);Place(w,1,b);Add(w,a,0,3);Add(w,b,1,3);w.Campaign.RobotBattles.Rules=new(){SegmentTurns=1,NoWillTurns=1000,PersuasionPercent=0};
