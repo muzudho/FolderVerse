@@ -156,18 +156,24 @@ public partial class Game1
             _directPairWorld.FocusCircles.Clear();_directPairWorld.FocusCircles.AddRange(_directPairNet.FocusCircles);
             _directPairWorld.FocusCircleArea=panel;_directPairWorld.FocusCircleYaw=_directPairYaw;_directPairWorld.FocusCirclePitch=_directPairPitch;
             var viewport=GraphicsDevice.Viewport;
-            GraphicsDevice.Viewport=OrientationViewport(panel,canvas);
-            _directPairWorld.Draw(_directPairYaw,_directPairPitch,_animationTime,false,true);
+            var globeViewport=OrientationViewport(panel,canvas);
+            GraphicsDevice.Viewport=globeViewport;
+            _directPairWorld.Draw(_directPairYaw,_directPairPitch,_animationTime,false,true,deferAtmosphere:true);
             _directPairWorld.DrawRobotPins(_setup,_directPairNet,_directPairYaw,_directPairPitch,panel,_animationTime);
             GraphicsDevice.Viewport=viewport;
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
             _directPairNet.DrawGlobeLayers(_ui,_setup,_directPairWorld,panel,_directPairYaw,_directPairPitch,_animationTime);
+            _spriteBatch.End();
+            GraphicsDevice.Viewport=globeViewport;
+            _directPairWorld.DrawAtmosphere(_animationTime);
+            GraphicsDevice.Viewport=viewport;
         }else{
             _spriteBatch.Begin(transformMatrix:_directPairNet.ScreenTransform(panel)*transform,rasterizerState:clip);
             _directPairNet.Draw(_ui,_setup,panel,-1,_animationTime,false);_spriteBatch.End();
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);_directPairNet.DrawMapObjects(_ui,_setup,panel,_animationTime);
+            _spriteBatch.End();
         }
-        _spriteBatch.End();GraphicsDevice.ScissorRectangle=old;_spriteBatch.Begin(transformMatrix:transform);
+        GraphicsDevice.ScissorRectangle=old;_spriteBatch.Begin(transformMatrix:transform);
         for(int side=0;side<2 && DirectPairEase>=1;side++){
             if(_longDeliveryMode && _longChoosingSource && side==0)continue;
             var at=points[side];var edge=new Vector2(side==0?580:1340,Math.Clamp(at.Y,250,860));

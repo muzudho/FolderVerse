@@ -653,11 +653,12 @@ public partial class Game1 : Game
         {
             var viewport=GraphicsDevice.Viewport;
             var areas=OrientationAreas(NetPanel,false);
-            GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
+            var globeViewport=OrientationViewport(areas.Globe,canvas);
+            GraphicsDevice.Viewport=globeViewport;
             _net.RegionFocusCell=_world.RegionFocusCell=RegionMapFocusCell;
             _net.SelectedCell=_world.SelectedCell=_transportOverview || _net.ShowRoutes?-1:_selectedMapCell;
             _world.SelectionSetup=_setup;
-            _world.Draw(_yaw,_pitch,_animationTime,false,true);
+            _world.Draw(_yaw,_pitch,_animationTime,false,true,deferAtmosphere:true);
             _net.HoveredBattery=_net.HitBattery(_pointer);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1;
             if(!_reservationDirectory)_world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe,_animationTime);
@@ -667,6 +668,11 @@ public partial class Game1 : Game
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
             if(!_reservationDirectory)DrawConquerorResidences(globeClip);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1; _net.DrawGlobeLayers(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
+            _spriteBatch.End();
+            GraphicsDevice.Viewport=globeViewport;
+            _world.DrawAtmosphere(_animationTime);
+            GraphicsDevice.Viewport=viewport;
+            _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
             if(!_reservationDirectory){if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();}_spriteBatch.End();
         }
         else using(var clipping=new RasterizerState{ScissorTestEnable=true})

@@ -334,17 +334,24 @@ foreach(var (largeUnits,secondUnits,firstMaterial,secondMaterial) in new[]{
             store.MaplePackages.SequenceEqual(forecast.Packages),"Both mixed-size shipments arrive intact exactly once");
         if(firstMaterial!=secondMaterial)
         {
-            // Removing the head leaves its raw cargo occupying that slot.
-            store.Remove(added[^1]);
-            var productionBlocker=store.Robots.FirstOrDefault(r=>r.Parts==RobotParts.Complete && !r.Stationed);
-            if(productionBlocker!=null)store.Remove(productionBlocker.Id);
-            Check(store.HasSpace,"The receiving hangar must have room for the manufactured head");
             var material=firstMaterial==RawMaterial.Maple ? RobotMaterial.Paper : RobotMaterial.Polypropylene;
             int recipeUnits=firstMaterial==RawMaterial.Maple ? 1 : 8;
             var receiver=new RobotWorkshop();
             receiver.Configure(RobotParts.Head,1);
             typeof(RobotWorkshop).GetField("_selectedProductPlan",internalInstance)!
                 .SetValue(receiver,new ProductionPlan(RobotParts.Head,1){Material=material});
+            var delivered=store.MaplePackages.ToArray();
+            Check(!store.HasSpace,"The newly delivered cargo occupies the remaining capacity");
+            for(int tick=0;tick<3;tick++)
+                production.Invoke(receiver,new object[]{largeStock,target,largeWorld.Nodes.All[target].Owner});
+            Check(receiver.WaitingProductionTurns>0 && store.MaplePackages.SequenceEqual(delivered) &&
+                !largeStock.ProductionIntakes.Any(i=>ReferenceEquals(i.Line,receiver)),
+                "Blocked production restores both parcels and does not queue a product");
+            // Removing the head leaves its raw cargo occupying that slot.
+            store.Remove(added[^1]);
+            var productionBlocker=store.Robots.FirstOrDefault(r=>r.Parts==RobotParts.Complete && !r.Stationed);
+            if(productionBlocker!=null)store.Remove(productionBlocker.Id);
+            Check(store.HasSpace,"The receiving hangar must have room for the manufactured head");
             for(int tick=0;tick<3 && store.MaplePackages.Contains(twoSection);tick++)
                 production.Invoke(receiver,new object[]{largeStock,target,largeWorld.Nodes.All[target].Owner});
             Check(store.MaplePackages.Single(p=>p.Id==twoSection.Id)==(twoSection with {Units=twoSection.Units-recipeUnits}) &&

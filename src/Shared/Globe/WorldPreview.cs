@@ -233,7 +233,8 @@ public sealed partial class WorldPreview : IDisposable
     }
 
     public void Draw(float yaw, float pitch,float glow=0,bool markers=true,bool globeView=false,Rectangle? globeFrame=null,
-        IEnumerable<SurfaceCell> landSelection=null,float opacity=1,Color? solidBody=null)
+        IEnumerable<SurfaceCell> landSelection=null,float opacity=1,Color? solidBody=null,float? cloudTime=null,
+        bool deferAtmosphere=false)
     {
         _device.BlendState = opacity<1?BlendState.AlphaBlend:BlendState.Opaque;
         _effect.Alpha=opacity;
@@ -255,12 +256,6 @@ public sealed partial class WorldPreview : IDisposable
             DrawOpeningSolidBody(tint);
             _effect.Alpha=1;
             return;
-        }
-        if(globeView)
-        {
-            DrawAtmosphere(opacity);
-            _device.BlendState=opacity<1?BlendState.AlphaBlend:BlendState.Opaque;
-            _device.DepthStencilState=DepthStencilState.Default;
         }
         _device.SetVertexBuffer(_vertices);
         foreach (var pass in _effect.CurrentTechnique.Passes)
@@ -285,6 +280,7 @@ public sealed partial class WorldPreview : IDisposable
             foreach(var pass in _effect.CurrentTechnique.Passes) { pass.Apply(); _device.DrawPrimitives(PrimitiveType.TriangleList,0,_markerCount); }
             _effect.LightingEnabled=true;
         }
+        if(globeView && !deferAtmosphere)DrawAtmosphere(cloudTime??glow,opacity);
         _effect.Alpha=1;
     }
 

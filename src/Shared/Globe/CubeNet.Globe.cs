@@ -103,6 +103,8 @@ public sealed partial class CubeNet
     }
     private const float PurposeBuildingScale=1.7f;
     private const float GlobePurposeBuildingScale=PurposeBuildingScale;
+    private const float GlobeObjectHeight=.20f;
+    private const float RoofFlagPoleHeight=.065f;
     private static bool HasPurposeBuilding(Node node)=>node.Functional && node.Purpose!=NodePurpose.General;
     private static bool HasWaterVillage(Node node)=>node.Terrain==TravelTerrain.Sea && !node.Functional && node.FunctionHost>=0;
     private static bool HasGlobeBuilding(Node node)=>HasPurposeBuilding(node) || HasWaterVillage(node);
@@ -111,7 +113,13 @@ public sealed partial class CubeNet
     {
         // Size buildings at the reference zoom, then let projection scale them with the globe.
         float referenceUnit=HasGlobeBuilding(node)?projectedUnit/zoom:projectedUnit;
-        return MapPuckRadius(node,referenceUnit)/MathF.Max(referenceUnit,1);
+        float radius=MapPuckRadius(node,referenceUnit)/MathF.Max(referenceUnit,1);
+        if(!HasGlobeBuilding(node))return radius;
+        if(PurposeFlagAnchor(node) is Vector3 roof)
+            return Math.Min(radius,(GlobeObjectHeight-RoofFlagPoleHeight)/(GlobePurposeBuildingScale*roof.Z));
+        // The factory chimney is the tallest of the remaining building models.
+        const float maxModelHeight=1.278f;
+        return Math.Min(radius,GlobeObjectHeight/(GlobePurposeBuildingScale*maxModelHeight));
     }
 
     internal float GlobeNodeHitRadius(Node node,float projectedUnit,float zoom)
@@ -228,20 +236,21 @@ public sealed partial class CubeNet
                      MathF.Abs(Cross(project(position+cell.V)-project(position),vertical)) ? cell.U : cell.V;
         if (Cross(project(position+across)-project(position),vertical)>0) across=-across;
         var foot=roofMounted?position:position+across*(radius+.025f);
-        const float poleHeight=.28f;
+        float poleHeight=roofMounted?RoofFlagPoleHeight:GlobeObjectHeight;
+        float clothHeight=roofMounted?.046f:.115f;
         var apex=foot+cell.Normal*poleHeight;
         var a=project(foot);var b=project(apex);var pole=b-a;
         ui.Tile((a+b)/2,new(pole.Length(),2),MathF.Atan2(pole.Y,pole.X),tint(new Color(232,218,177)));
 
         int shape=world.CountryFlagShape(owner);
-        float width=shape==2 ? .115f : shape==1 ? .23f : .173f;
+        float width=(shape==2 ? .115f : shape==1 ? .23f : .173f)*(roofMounted?.65f:1);
         var origin=apex+across*.008f;
         // A shallow fold gives the flag two planar facets; the shared artwork follows both.
         var crease=Vector3.Normalize(Vector3.Cross(across,cell.Normal))*.022f;
         Vector2 Point(int x,int y)
         {
             float u=x/36f;
-            return project(origin+across*(width*u)-cell.Normal*(.115f*y/24f)+crease*(1-MathF.Abs(2*u-1)));
+            return project(origin+across*(width*u)-cell.Normal*(clothHeight*y/24f)+crease*(1-MathF.Abs(2*u-1)));
         }
         foreach (var (box,ink) in CountryFlagArt.Patches(world,owner))
         {
