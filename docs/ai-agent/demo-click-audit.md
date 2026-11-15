@@ -2728,3 +2728,543 @@
 - 新規採番なし。次回は配置49で確認済みのCPU組立を通常のターン進行から照合する。軍事の自然退避、物理Esc、スポットライトの単独ピクセル比較、全Seedは未確認。
 
 - 01:51修正回（終了01:52:13 JST）。DEMO-0017は配置49の自動生産から格納庫の描画と通常入力経由のEscapeによるドラッグ解除まで確認。通常ターンの連続進行と物理Escは要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 01:59回
+
+- 開始01:59:05、終了02:05:37 JST。マージ後の部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。開始時に競合・ゲームプロセス・未コミット差分なし。比較元205a1940から Game1.DemoDomestic.cs、Game1.ComputerDomestic.cs、Game1.FunctionPages.cs、Game1.NodeFactory.cs が変更。点検記録のみ追記。
+- NASの tmp/delete-after-2026-11-16/demo-audit を再生成可能な出力先として使用。dotnet build tests/<対象>/<対象>.csproj --artifacts-path <同出力先> -v quiet で DemoInspectorUi、DirectDeliveryUi、DemoChecksUi は警告・エラー0。ALSOFT_DRIVERS=null、各DLLの出力先で dotnet <対象DLL> を順次実行。
+- DemoInspectorUi（02:01:01〜02:01:37、終了0）は1080p／540pで工場6プランの実矩形と製造遷移、プライマリー、閉じる描画を確認。例は論理クリック (268,332) と矩形 (232,288,72,88)。DirectDeliveryUi（02:01:37〜02:02:04、終了0）は540pで直送便の退避・復帰、左右格納庫、予約保持と描画を確認。証拠は各PASS。
+- DemoChecksUi（02:02:04〜02:02:26、終了0）は1080p／540pの地図・地星儀でハンドルの緑赤クリック、即予約→赤チェック→閉じる→ターン終了、表示分離、赤チェック地点がスポットライト対象から外れることとターン末消去を確認。証拠は4条件のPASS。
+- DemoUiのNASビルドは02:01:52開始後に進行出力がなく、02:05:18に今回のビルドプロセスのみ終了。巡回は未実施。新規採番なし。次回は同じNAS出力先でDemoUiのビルド段階を切り分け、マージ後のCPU軍事・格納庫の縦横移動とドラッグ中スキップ、赤チェック後の地点再クリックを照合する。
+
+- 02:08修正回はNAS確認待ちで検証を中断。DEMO-0017のマージ後の格納庫再生は要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 02:19回
+
+- 開始02:19:05、終了02:21:40 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。関係する未コミット差分は点検・修正記録のみ。先行修正は中断済み。ゲームコード無変更。
+- NASは通常・権限付きの確認とも応答待ち。Cドライブの空き約200 GBを確認し、必要なビルドを artifacts/tmp/delete-after-2026-11-16/demo-audit-local に出力。接続復旧後に参照とハッシュを確認して移す。既存資料は保持。
+- 通常のNuGet復元はNU1801／NU1101で終了1。既存キャッシュを使った dotnet build tests/DemoUi/DemoUi.csproj --artifacts-path artifacts/tmp/delete-after-2026-11-16/demo-audit-local --disable-build-servers -p:NuGetAudit=false --source artifacts/tmp/delete-after-2026-11-13/demo-check/.nuget/packages -v quiet は警告・エラー0。
+- ALSOFT_DRIVERS=null で dotnet DemoUi.dll。マージ後のSeed0で直送便→地図復帰（論理クリック (256,998)）、地図・地星儀の切替、18 FPSの辺移動、拒否時分岐、終了ループとDemoラベルの描画を確認。証拠は first transport、map follow-up、最終PASS。画面解像度は今回の出力から未確認。
+- 新規採番なし。プライマリー・左右格納庫・緑赤の詳細は同じHEADでの01:59回を参照。次回はCPU軍事の通常・専用表示、格納庫の縦横移動とドラッグ中スキップ、赤チェック後の再クリックを照合する。
+
+- 02:30修正回。DEMO-0017はマージ後の格納庫導入アニメーションとCPU押下の競合を修正。画面外からのドロップ2回と保持中Escapeを960×540で検証済み。通常プレイ全体での自然発生と物理Escは要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 02:40回
+
+- 開始02:40:36、終了02:41:35 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。関係するゲーム差分は既存の Game1.ComputerDomestic.cs の格納庫導入待ち。今回の変更は既存診断 ProbeCpuSortie.cs.txt と点検記録。
+- 初回診断はゲームの更新を直接呼び、描画側のアニメーション時間が停止したまま格納庫導入待ちに達した。診断の時間を更新間隔と同じだけ進めて再実行。既存 demo-audit-local で dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path artifacts/tmp/delete-after-2026-11-16/demo-audit-local --disable-build-servers --no-restore -v quiet は警告・エラー0。
+- ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=45 で dotnet DemoAuditCpuSortie.dll は終了0。CPU内政で征服者の画面切替→地点→格納庫→緑チェック→閉じると人間への復帰を確認。軍事は征服者15の地点72で個体4回のクリックと確定後の段階5・赤チェックを確認。征服者17の和平は既報の960×540専用表示で目標74と反映先74が一致。証拠は段階ログ、「Individual robot clicks: 4」「Peaceful ruler=17 expected=74 current=74」と最終PASS。
+- 新規採番なし。プライマリー・直送便・左右格納庫の実描画は01:59回の記録を参照し、今回の再実行範囲には含めない。次回は赤チェック後の地点再クリック、CPU軍事の自然退避、物理Escを照合する。
+
+- 02:49修正回。DEMO-0017の導入待ち修正後、配置49でCPU工場の自動生産から通常格納庫の組み立てまで再確認。通常プレイ全体と物理Escは要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 02:58回
+
+- 開始02:58:06、終了02:58:29 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。関連差分は既存の Game1.ComputerDomestic.cs の格納庫導入待ち。点検記録のみ更新。
+- 既存の期限付き出力 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=39、FOLDERVERSE_AUDIT_FALLBACK=3 により dotnet DemoAuditCpuSortie.dll を実行し、終了0。960×540のCPU軍事で、通常の地点選択後に候補不一致を注入。専用表示の段階−1から次の征服者19の通常出撃選択の段階3に復帰し、予約件数は0→0。証拠は「Candidate mismatch entered stage -1 through the normal preview」「Fallback next index=1 stage=3 ruler=19 reservations=0/0」。
+- 新規採番なし。候補不一致の自然発生、赤チェック後の再クリックと物理Escは今回未確認。プライマリー・直送便・左右格納庫は01:59回の実描画を参照。次回は赤チェック後の地点再クリックから再開する。
+
+- 03:10修正回。DEMO-0016は配置39で候補不一致を注入しない場合、通常出撃から人間復帰まで完了。自然な候補不一致は再現せず要再確認。和平の専用表示は既報のまま。詳細は修正記録。
+
+### 実行履歴：2026-11-14 03:20回
+
+- 開始03:20:06、終了03:21:15 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 期限付き出力 demo-audit-local と既存NuGetキャッシュを再利用。dotnet build tests/DemoChecksUi/DemoChecksUi.csproj と dotnet build artifacts/demo-click-audit/ProbeCheckedClick.csproj に同じ --artifacts-path、--disable-build-servers、-p:NuGetAudit=false、--source を指定し、両方とも警告・エラー0。ALSOFT_DRIVERS=null で各DLLを実行し終了0。
+- 1920×1080／960×540の地図と地星儀で緑赤のハンドルクリック、即予約→赤チェック→閉じる→ターン終了、表示分離、スポットライト対象からの除外とターン末消去を確認。赤チェック済みの地点9を画面点 (1440,552)／(720,276) で再クリックできた。証拠は4条件の「red checked target re-click」と各最終PASS。
+- 新規採番なし。直送便・プライマリー・左右格納庫の詳細は01:59回、CPU軍事は03:10回を参照。自然な軍事退避と物理Escは今回未確認。次回は配置を変えた軍事指示列の退避条件から再開する。
+
+- 03:29修正回。DEMO-0016は配置43の通常出撃から人間復帰まで確認。自然な候補不一致は再現せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 03:41回
+
+- 開始03:41:37、終了03:42:03 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 期限付き出力 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=44 により dotnet DemoAuditCpuSortie.dll を実行し、終了0。征服者13の地点91で通常出撃選択から個体4体をクリックし、確定後の段階5と赤チェックを確認。続く征服者55の女の子・ポケットのみの和平指示は、960×540の既報の専用表示を経て、目標73と反映先73が一致。証拠は「Individual robot clicks: 4」「after confirm: stage=5 red-owner=13」「Peaceful ruler=55 expected=73 current=73」と最終PASS。
+- 新規採番なし。直送便・左右格納庫・プライマリーは01:59回、赤チェック後の再クリックは03:20回を参照。今回の軍事指示列では候補不一致による自然退避を確認せず。次回は和平以外の退避条件と格納庫ドラッグ中の物理Escを照合する。
+
+- 03:48修正回。DEMO-0016は配置46の通常出撃から人間復帰まで確認し、自然な候補不一致は再現せず。03:41回の和平は診断コードを再照合すると通常移動UIで、「Dedicated peaceful preview」はキャプチャのログ名。和平の実際の退避条件は要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 04:00回
+
+- 開始04:00:07、終了04:00:35 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。関係差分は既存の Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 期限付き既存出力 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=47 を指定し dotnet DemoAuditCpuSortie.dll を実行、終了0。960×540で征服者15の地点109への通常出撃選択、個体4体のクリックと確定後の段階5・赤チェックを確認。征服者19の和平は通常移動UIで地点219を選び、確定で重複予約を作らず、反映先219と人間への復帰を確認。証拠は「Actual peaceful order ruler=19 target=219」「Peaceful ruler=19 expected=219 current=219」と最終PASS。
+- 新規採番なし。自然な専用表示への退避は今回の診断ログに出ず、発生条件は未確認。直送便・左右格納庫・プライマリーは01:59回、赤チェック後の再クリックは03:20回を参照。次回は格納庫ドラッグ中の物理Escと別配置の退避条件から再開する。
+
+- 04:11修正回。DEMO-0016は配置48の通常出撃から人間復帰まで確認。自然な候補不一致は再現せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 04:20回
+
+- 開始04:20:07、終了04:20:33 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。関係差分は既存の Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=49 により dotnet DemoAuditCpuSortie.dll を実行、終了0。CPU内政の征服者切替・地点選択・通常格納庫を経て軍事へ進み、征服者1の地点97の通常出撃選択で個体2体をクリック。確定後の赤チェック、和平なし16指示の描画と人間への復帰を確認。証拠は「Individual robot clicks: 2」「after confirm: stage=5 red-owner=1」「No-peaceful batch fallbacks=0」と最終PASS。画面は診断設定の960×540。
+- 新規採番なし。自然退避はこの指示列では未発生。物理Escは未実施。プライマリー・直送便・左右格納庫は01:59回、赤チェック後の再クリックは03:20回を参照。次回は物理EscとCPUが実際に専用表示へ退避する条件を照合する。
+
+- 04:28修正回。DEMO-0016は配置50の通常出撃から人間復帰まで確認。自然な候補不一致は再現せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 04:40回
+
+- 開始04:40:08、終了04:40:31 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。点検記録のみ更新。
+- 期限付き既存出力 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=51 により dotnet DemoAuditCpuSortie.dll を実行し、終了0。960×540でCPUの視点切替・格納庫を経て、征服者7が地点32を選択し通常出撃で個体4体をクリック、確定後に赤チェック。和平なしの4指示を描画し、人間に復帰。証拠は「Individual robot clicks: 4」「after confirm: stage=5 red-owner=7」「No-peaceful batch fallbacks=0」と最終PASS。
+- 新規採番なし。直送便・左右格納庫・プライマリーは01:59回、赤チェック後の再クリックは03:20回を参照。自然な軍事退避と物理Escは未確認。次回は格納庫ドラッグ中のスキップを再照合し、物理Escと自然退避を区別して記録する。
+
+- 04:52修正回。DEMO-0017は画面外の胴・脚を組み立て、保持中の通常入力経由Escapeと人間復帰を再確認。物理Escと通常プレイ全体は要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 04:58回
+
+- 開始04:58:38、終了04:59:02 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。関係差分は既存の Game1.ComputerDomestic.cs の格納庫導入待ち。点検記録のみ更新。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_DOMESTIC_SKIP／DOMESTIC_ENTRY／AUTO_ENABLED／ASSEMBLY_LIVE／ASSEMBLY_INVENTORY_PAGE／ASSEMBLY_SKIP_HELD=1 により dotnet DemoAuditCpuSortie.dll を実行、終了0。960×540で通常格納庫をスクロールし、胴と脚を順に組み立てて既存予約1件を保持。別試行では部品ID7を保持した状態でスキップし、完成6体の在庫が表示オフ・通常再生・早期スキップと一致し、人間へ復帰。証拠は「Skipping held CPU part 7 at {X:738 Y:675}」と最終PASS。
+- 新規採番なし。物理Escと軍事の自然退避は未確認。プライマリー・直送便・左右格納庫は01:59回、緑赤と再クリックは03:20回、軍事は04:40回を参照。次回は物理Escまたは自然な軍事退避を再現できる条件を確認する。
+
+- 05:09修正回。DEMO-0016は配置52の通常出撃から人間復帰まで確認。候補不一致は自然発生せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 05:20回
+
+- 開始05:20:38、終了05:21:04 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。関係する既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=53 により dotnet DemoAuditCpuSortie.dll を実行し、終了0。960×540でCPU内政の視点切替、地点選択、格納庫、緑チェック、閉じるを経て軍事へ遷移。征服者17が地点202の通常出撃選択で3体をクリックし、確定後に赤チェック。和平なし15指示を退避0件で完了して人間に復帰。証拠は「Individual robot clicks: 3」「after confirm: stage=5 red-owner=17」「No-peaceful batch fallbacks=0」と最終PASS。
+- 新規採番なし。プライマリー・直送便・左右格納庫は01:59回、緑赤と地点の再クリックは03:20回の実描画を参照。物理Escと自然退避は今回未確認。次回は再現条件を限定して格納庫の物理Escか専用表示への退避を照合する。
+
+- 05:30修正回。DEMO-0016は配置54の通常出撃から人間復帰まで確認。候補不一致は自然発生せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 05:39回
+
+- 開始05:39:39、終了05:40:04 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。関係差分は既存の Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=55 により dotnet DemoAuditCpuSortie.dll を実行、終了0。960×540で征服者切替・通常格納庫を経て、征服者7が地点26の通常出撃選択で個体4体をクリック、確定後に赤チェック。和平なし12指示を退避0件で描画し、人間に復帰。証拠は「Individual robot clicks: 4」「after confirm: stage=5 red-owner=7」「No-peaceful batch fallbacks=0」と最終PASS。
+- 新規採番なし。プライマリー・直送便・左右格納庫は01:59回、緑赤と再クリックは03:20回を参照。物理Escと自然退避は今回未確認。次回は通常出撃の配置追加より、実キーボード入力または退避条件の照合を優先する。
+
+- 05:52修正回。DEMO-0016は配置56で通常出撃と通常UIでの和平、予約件数と人間復帰を確認。自然退避は再現せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 06:02回
+
+- 開始06:02:09、終了06:03:18 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。関係差分は既存の Game1.ComputerDomestic.cs の格納庫導入待ち。点検記録のみ更新。
+- 期限付き既存出力 demo-audit-local と既存NuGetキャッシュを再利用。dotnet build tests/DemoInspectorUi/DemoInspectorUi.csproj と dotnet build tests/DirectDeliveryUi/DirectDeliveryUi.csproj に --artifacts-path artifacts/tmp/delete-after-2026-11-16/demo-audit-local、--disable-build-servers、-p:NuGetAudit=false、--source artifacts/tmp/delete-after-2026-11-13/demo-check/.nuget/packages、-v quiet を指定。両方とも警告・エラー0。ALSOFT_DRIVERS=null で各DLLを実行し終了0。
+- DemoInspectorUiは1080p／540pでプライマリー、工場6プラン、インスペクター閉じる描画と製造遷移を確認。例は論理クリック (220,332) と矩形 (184,288,72,88)、製造開始後 manufacturing=True。DirectDeliveryUiは540pで直送便の退避・復帰、地図／地星儀の連続トラッククリック、移動中の入力抑止、左右格納庫と予約保持を確認。証拠は各PASS。
+- 新規採番なし。緑赤と再クリックは03:20回、CPU軍事と和平は05:52回、保持中のスキップは04:58回を参照。今回のEscapeは診断入力。次回は物理Escか専用表示への自然退避を再現できる条件を確認する。
+
+- 06:09修正回。DEMO-0018は軍事フェーズ演出中の通常入力経由Escapeで人間の内政へ復帰することを再確認。物理Escとスキップなしの開始時刻は今回未確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 06:21回
+
+- 開始06:21:09、終了06:21:35 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。関係差分は既存の Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=56、FOLDERVERSE_AUDIT_PHASE_TIMING=1 により dotnet DemoAuditCpuSortie.dll を実行、終了0。DEMO-0018のスキップなし条件を960×540で確認。1.8秒の演出後、2.817秒で開戦プライマリーを論理点 (410,1022) で操作し、3.833秒で論理点 (1271,552) の地点74を選択。証拠は段階1・2のログと既存の audit-cpu-phase-entry.png。演出中の先行操作は再現せず。
+- 新規採番なし。今回の診断は地点選択まで。直送便・プライマリー・左右格納庫は06:02回、出撃確定以降と和平は05:52回、緑赤と再クリックは03:20回を参照。次回は物理Escと自然な軍事退避を照合する。
+
+- 06:30修正回。DEMO-0018は配置47でも軍事演出終了後に開戦ボタンと地点を操作。演出中の先行操作は再現せず。物理Escと他の演出時間・実FPS条件は要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 06:41回
+
+- 開始06:41:40、終了06:42:05 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。関係差分は既存の Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 期限付き既存出力 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=57 により dotnet DemoAuditCpuSortie.dll を実行、終了0。960×540で征服者7が地点150の通常出撃選択で個体2体をクリックし、確定後に赤チェック。13件の軍事指示を経て、征服者57が通常移動UIで地点103を選び、確定時の予約数を維持。反映先103と人間への復帰を確認。証拠は「Individual robot clicks: 2」「after confirm: stage=5 red-owner=7」「Peaceful ruler=57 expected=103 current=103」と最終PASS。
+- 新規採番なし。自然退避は今回発生せず、物理Escは未実施。直送便・左右格納庫・プライマリーは06:02回、緑赤と再クリックは03:20回を参照。次回は通常移動に入れない条件か実キーボード入力を検証する。
+
+- 06:51修正回。DEMO-0016は配置58で通常出撃から人間復帰まで確認。候補不一致の自然発生は要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 07:00回
+
+- 開始07:00:10、終了07:00:36 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。関係差分は既存の Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 期限付き既存出力 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=59 により dotnet DemoAuditCpuSortie.dll を実行、終了0。960×540でCPUの視点切替と通常格納庫を経て、征服者15が地点68の通常出撃選択で4体をクリック。確定後に赤チェックを付け、和平なしの12指示を退避0件で描画し、人間へ復帰。証拠は「Individual robot clicks: 4」「after confirm: stage=5 red-owner=15」「No-peaceful batch fallbacks=0」と最終PASS。
+- 新規採番なし。プライマリー・直送便・左右格納庫は06:02回、緑赤と再クリックは03:20回を参照。自然退避と物理Escは今回未確認。次回は自然退避の候補条件か格納庫の実キーボード入力を照合する。
+
+- 07:09修正回。DEMO-0016は配置60で通常出撃と通常UIの和平を経て人間に復帰。自然な候補不一致は再現せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 07:22回
+
+- 開始07:22:10、終了07:22:36 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。点検記録のみ更新。
+- 期限付き既存出力 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=61 により dotnet DemoAuditCpuSortie.dll を実行、終了0。960×540でCPU内政の視点切替と通常格納庫、軍事で征服者1が地点128を選び通常出撃の個体4体をクリック、確定後に赤チェック。23指示中3件が和平。最初の和平は征服者3が通常移動UIで地点73を選び、確定時の予約件数を維持して実行後に地点73に到着。証拠は「after confirm: stage=5 red-owner=1」「Peaceful ruler=3 expected=73 current=73」と人間復帰を含む最終PASS。
+- 新規採番なし。自然退避はログに出ず発生条件は未確認。物理Escも未実施。直送便・左右格納庫・プライマリーは06:02回、緑赤と再クリックは03:20回を参照。次回は物理Escと専用表示への退避条件を照合する。
+
+- 07:32修正回。DEMO-0016の診断で先頭指示が和平の場合の誤判定を修正。配置62で通常移動UIの地点選択、重複予約のない確定、到着と人間復帰を確認。ゲームコード変更なし。詳細は修正記録。
+
+### 実行履歴：2026-11-14 07:40回
+
+- 開始07:40:11、終了07:40:37 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=63 により dotnet DemoAuditCpuSortie.dll を実行、終了0。07:32の診断変更後も、先頭が出撃の場合に960×540で征服者23が地点77を選び、通常の出撃選択で個体2体をクリックし、確定後に赤チェックを付けることを確認。和平なし10指示を退避0件で描画し、人間に復帰。証拠は「Individual robot clicks: 2」「after confirm: stage=5 red-owner=23」「No-peaceful batch fallbacks=0」と最終PASS。
+- 新規採番なし。自然な退避と物理Escは未確認。プライマリー・直送便・左右格納庫は06:02回、緑赤と再クリックは03:20回を参照。次回は実キーボード入力と自然退避の条件を照合する。
+
+- 07:51修正回。DEMO-0016は配置64で同一征服者の出撃から和平への切替と人間復帰を確認。自然な退避は再現せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 08:00回
+
+- 開始08:00:11、終了08:00:29 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。関係差分は既存の Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null により dotnet ProbeCheckedClick.dll を実行、終了0。地図・地星儀の1080p／540pで緑赤の実クリック、即予約→赤チェック→閉じる→ターン終了、表示分離とターン末消去を確認。赤チェック済みの地点9は画面点 (1440,552)／(720,276) で再クリックできた。証拠は「red checked target re-click」4条件と最終PASS。
+- 新規採番なし。直送便・左右格納庫・プライマリーは06:02回、CPUの通常出撃から和平への切替は07:51回を参照。自然退避と物理Escは今回未確認。次回はCPU軍事で退避が起きる指示条件か、格納庫ドラッグ中の実キーボード入力を照合する。
+
+- 08:09修正回。DEMO-0016は配置64の出撃確定直後から通常再生とEscapeによるスキップを比較し、進軍・取消・戦闘参加個体・人間復帰が一致。物理Escと自然退避は要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 08:21回
+
+- 開始08:21:41、終了08:22:08 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=65 により dotnet DemoAuditCpuSortie.dll を実行し終了0。960×540で征服者7が地点152の通常出撃選択から4体をクリック、確定後に赤チェック。次の同じ征服者の和平は通常移動UIで地点161を選び、重複予約なしで到着。22指示の再生後に人間へ復帰。証拠は「Individual robot clicks: 4」「Peaceful ruler=7 expected=161 current=161」と最終PASS。
+- 新規採番なし。自然な専用表示への退避と物理Escは未確認。プライマリー・直送便・左右格納庫は06:02回、緑赤と再クリックは08:00回を参照。次回は物理Escか退避発生条件を確認する。
+
+- 08:29修正回。DEMO-0016は配置66で通常出撃から人間復帰まで確認。自然な候補不一致は再現せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 08:39回
+
+- 開始08:39:42、終了08:40:03 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=67 により dotnet DemoAuditCpuSortie.dll を実行し、終了0。960×540でCPU内政の地点・格納庫から軍事へ移行し、征服者7が地点46を選択。通常の出撃選択で4体をクリックし、確定後の赤チェックを確認。和平なし8指示を退避0件で描画し、人間へ復帰。証拠は「Individual robot clicks: 4」「after confirm: stage=5 red-owner=7」「No-peaceful batch fallbacks=0」と最終PASS。
+- 新規採番なし。プライマリー・直送便・左右格納庫は06:02回、緑赤と再クリックは08:00回を参照。自然退避と物理Escは未確認。次回は物理Escか候補不一致の発生条件を照合する。
+
+- 08:51修正回。DEMO-0016は配置68で通常出撃と地点ID 0への和平移動を確認。自然な候補不一致は再現せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 09:01回
+
+- 開始09:01:12、終了09:01:54 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。開始時にゲーム・同一診断のプロセスなし。関係差分は既存の Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=69 により dotnet DemoAuditCpuSortie.dll を実行し、終了0。960×540で征服者19が地点92の通常出撃選択で個体4体をクリックし、確定後に赤チェック。和平なし13指示を退避0件で描画し、人間へ復帰。証拠は「Individual robot clicks: 4」「after confirm: stage=5 red-owner=19」「No-peaceful batch fallbacks=0」と最終PASS。
+- 新規採番なし。直送便・左右格納庫・プライマリーは06:02回、緑赤と再クリックは08:00回を参照。自然退避と物理Escは未確認。次回は退避の発生条件を限定した診断か、格納庫ドラッグ中の実キーボード入力を照合する。
+
+- 09:08修正回。DEMO-0016は配置70で通常出撃から人間復帰まで確認。候補不一致は自然発生せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 09:18回
+
+- 開始09:18:42、終了09:19:24 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null により dotnet DirectDeliveryUi.dll と dotnet DemoInspectorUi.dll を順次実行し、各終了0。540pで直送便の退避・復帰、左右格納庫、地図／地星儀の連続クリック、移動中の入力抑止と予約保持を確認。1080p／540pでプライマリー、工場6プラン、閉じる描画と製造遷移を確認。例は論理クリック (268,332) と矩形 (232,288,72,88)、クリック後 manufacturing=True。証拠は各PASS。
+- 新規採番なし。緑赤と再クリックは08:00回、CPU軍事は09:08回を参照。物理Escと専用表示への自然退避は今回未確認。次回はこの2条件の確認を優先する。
+
+- 09:30修正回。DEMO-0016は配置71で通常出撃と和平移動を確認。自然な退避は再現せず、物理Escとともに要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 09:41回
+
+- 開始09:41:13、終了09:41:38 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=72 により dotnet DemoAuditCpuSortie.dll を実行、終了0。960×540でCPU内政の地点選択と格納庫を経て、征服者17が地点182の通常出撃選択で個体3体をクリック。確定後に赤チェック、和平なし17指示を退避0件で描画、人間へ復帰。証拠は「Individual robot clicks: 3」「after confirm: stage=5 red-owner=17」「No-peaceful batch fallbacks=0」と最終PASS。
+- 新規採番なし。直送便・左右格納庫・プライマリーは09:18回、緑赤と再クリックは08:00回を参照。自然退避と物理Escは今回未確認。次回はこれらの再現条件の確認を優先する。
+
+- 09:50修正回。DEMO-0016は配置73で通常出撃と和平移動、予約件数の維持と人間復帰を確認。自然な退避は再現せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 09:59回
+
+- 開始09:59:43、終了10:00:08 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。関連差分は既存の Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=74 により dotnet DemoAuditCpuSortie.dll を実行、終了0。960×540で征服者1が地点142の通常出撃選択で個体2体をクリックし、確定後に赤チェック。和平なしの17指示を退避0件で描画し、人間に復帰。証拠は「Individual robot clicks: 2」「after confirm: stage=5 red-owner=1」「No-peaceful batch fallbacks=0」と最終PASS。
+- 新規採番なし。プライマリー・直送便・左右格納庫は09:18回、緑赤と再クリックは08:00回を参照。物理Escと専用表示への自然退避は未確認。次回は同じ通常出撃診断の配置追加より、退避条件と実キーボード入力の照合を優先する。
+
+- 10:12修正回。DEMO-0016は配置74で候補不一致を注入し、専用表示から同じ征服者の次指示へ復帰して予約数を維持することを確認。自然発生は要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 10:18回
+
+- 開始10:18:43、終了10:19:03 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。点検記録のみ更新。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null により dotnet DemoUi.dll を実行、終了0。Seed 0で直送便から地図へ復帰し、地図と地星儀の切替、18 FPSの辺移動、拒否時の分岐、終了ループとラベル描画を確認。証拠は「first transport」「map follow-up」の論理クリック (256,998) と最終PASS。実解像度は今回のログから未確認。
+- 新規採番なし。プライマリー・左右格納庫は09:18回、緑赤と再クリックは08:00回、CPU軍事の候補不一致を注入した結果は10:12回を参照。自然な退避と物理Escは未確認。次回は自然な退避条件または格納庫の実キーボード入力を照合する。
+
+- 10:31修正回。DEMO-0016は配置74で出撃確定直後の通常入力経由Escapeを確認し、人間復帰と予約残数0を確認。自然な退避と物理Escは要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 10:39回
+
+- 開始10:39:14、終了10:39:40 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。点検記録のみ更新。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=74、FOLDERVERSE_AUDIT_CONFIRM_COMPLETION=normal により dotnet DemoAuditCpuSortie.dll を実行、終了0。960×540で個体2体をクリックして通常出撃を確定し、再生継続後に人間の内政へ復帰。10:31回のスキップと予約残数0および復帰先が一致。証拠は「Individual robot clicks: 2」「Completion skip=False ruler=0 phase=Domestic planned=0」。この回は進軍・戦闘個体の逐一比較までは未実施。
+- 新規採番なし。直送便・左右格納庫・プライマリーは09:18回、緑赤と再クリックは08:00回を参照。物理Escと自然退避は未確認。次回は物理Escか退避発生条件の照合を優先する。
+
+- 10:51修正回。DEMO-0016は配置74で出撃確定直後の通常再生とEscapeを比較し、進軍・取消・戦闘参加個体の詳細まで一致。物理Escと自然退避は要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 10:59回
+
+- 開始10:59:44、終了11:00:07 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。点検記録のみ更新。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=12 により dotnet DemoUi.dll を実行、終了0。直送便から地図への復帰、地図・地星儀切替、18 FPSの辺移動、拒否時分岐、終了ループとラベル描画を確認。証拠は「first transport」「map follow-up」の論理クリック (256,998) と最終PASS。解像度は実行ログから未確認。
+- 新規採番なし。プライマリー・左右格納庫は09:18回、緑赤と再クリックは08:00回、CPU軍事の出撃確定後は10:51回を参照。自然な退避と物理Escは未確認。次回はその発生条件または通常UIでの実キーボード入力から再開する。
+
+- 11:09修正回。DEMO-0016は配置75で通常出撃、同じ征服者の和平移動、人間復帰を確認。自然退避は再現せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 11:19回
+
+- 開始11:19:14、終了11:19:38 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=20 により dotnet DemoUi.dll を実行、終了0。DEMO-0015の既報Seedで初回直送便から地図への復帰を確認。地図・地星儀切替、18 FPSの辺移動、拒否時分岐、終了ループとラベル描画も通過。証拠は「first transport」「map follow-up」の論理クリック (256,998) と最終PASS。実解像度は今回のログから未確認。
+- 新規採番なし。プライマリー・左右格納庫は09:18回、緑赤と再クリックは08:00回、CPUの和平移動は11:09回を参照。自然退避と物理Escは未確認。次回は候補不一致の発生条件か実キーボード入力を確認する。
+
+- 11:31修正回。DEMO-0016は配置76で通常出撃・赤チェックから別の征服者の和平を経て人間に復帰。自然退避は再現せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 11:40回
+
+- 開始11:40:15、終了11:40:40 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=1 により dotnet DemoUi.dll を実行し、終了0。初回直送便から地図への復帰、地図・地星儀の切替、18 FPSの辺移動、拒否時分岐、終了ループとラベル描画を確認。証拠は「first transport」「map follow-up」の論理クリック (256,998) と最終PASS。実解像度はログから未確認。
+- 新規採番なし。プライマリー・左右格納庫は09:18回、緑赤と再クリックは08:00回、CPU出撃・和平は11:31回を参照。物理Escと自然退避は今回未確認。次回は通常格納庫の実キーボード入力またはCPU退避条件から再開する。
+
+- 11:49修正回。DEMO-0016は配置76で候補不一致を注入し、専用表示から別の征服者の通常出撃選択への復帰と予約数の維持を確認。自然発生は要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 12:01回
+
+- 開始12:01:45、終了12:02:06 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null により dotnet ProbeCheckedClick.dll を実行し終了0。地図・地星儀の1920×1080／960×540で緑・赤ハンドルのクリック、出撃確定と即予約→赤チェック→閉じる→ターン終了、表示分離とターン末消去を確認。赤チェック後の地点9を画面点 (1440,552)／(720,276) で再クリックできた。証拠は4条件の「red checked target re-click」と最終PASS。
+- 新規採番なし。プライマリー・直送便・左右格納庫は09:18回、CPU軍事の制御した退避は11:49回を参照。自然退避と物理Escは未確認。次回はこの2条件から再開する。
+
+- 12:08修正回。DEMO-0016は配置77で通常出撃・赤チェック、同じ征服者の和平移動と人間復帰を確認。自然退避は再現せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 12:20回
+
+- 開始12:20:45、終了12:21:13 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。点検記録のみ更新。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null により dotnet DemoInspectorUi.dll を実行し、終了0。1080p／540pで輸送プライマリー、地点監督、閉じるアニメーション、工場6プランの実矩形と製造開始を確認。証拠はクリック (292,332) と矩形 (256,288,72,88)、クリック後の manufacturing=True、および最終PASS。
+- 新規採番なし。直送便の退避・復帰と左右格納庫は09:18回、緑赤と再クリックは12:01回、CPUの出撃・和平は12:08回を参照。物理Escと自然な軍事退避は今回未確認。次回はこの2条件を優先する。
+
+- 12:30修正回。DEMO-0016は配置77で出撃確定直後の通常入力経由Escapeと人間復帰、予約残数0を確認。物理Escと自然退避は要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 12:39回
+
+- 開始12:39:16、終了12:39:45 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=78 により dotnet DemoAuditCpuSortie.dll を実行し、終了0。960×540でCPUの視点切替と通常格納庫を経て、征服者17が地点70への通常出撃で個体4体をクリック。確定後に赤チェックを付け、和平なし15指示を退避0件で描画して人間に復帰。証拠は「Individual robot clicks: 4」「after confirm: stage=5 red-owner=17」「No-peaceful batch fallbacks=0」と最終PASS。
+- 新規採番なし。直送便・左右格納庫は09:18回、プライマリーは12:20回、緑赤と再クリックは12:01回を参照。自然退避と物理Escは未確認。次回は通常出撃の配置追加より、この2条件の照合を優先する。
+
+- 12:50修正回。DEMO-0016は配置78の候補不一致注入で、専用表示から次の征服者の通常出撃選択へ復帰し、予約数を維持。自然発生と物理Escは要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 12:59回
+
+- 開始12:59:48、終了13:00:16 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=79 により dotnet DemoAuditCpuSortie.dll を実行、終了0。960×540でCPU内政の地点選択・格納庫を経て、征服者17が地点77への通常出撃で個体4体をクリックし、確定後に赤チェック。和平なし11指示を退避0件で描画して人間に復帰。証拠は「Individual robot clicks: 4」「after confirm: stage=5 red-owner=17」「No-peaceful batch fallbacks=0」と最終PASS。
+- 新規採番なし。直送便・左右格納庫は09:18回、プライマリーは12:20回、緑赤と再クリックは12:01回を参照。自然退避と物理Escは今回未確認。次回は実キーボード入力か自然退避の発生条件を確認する。
+
+- 13:09修正回。DEMO-0016は配置79で候補不一致を注入し、専用表示から次の征服者の通常出撃選択に戻り、予約が増えないことを確認。自然発生は要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 13:19回
+
+- 開始13:19:18、終了13:19:40 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null により dotnet DirectDeliveryUi.dll を実行、終了0。540pで直送便の退避・復帰、移動中の入力抑止、左右格納庫、地図と地星儀の連続トラッククリック、予約保持と描画を確認。証拠は「animated main/pair/return cameras」「two hangars, reservations and rendering」を含む4件のPASS。
+- 新規採番なし。プライマリーは12:20回、緑赤と再クリックは12:01回、軍事の候補不一致を注入した場合は13:09回を参照。今回のEscapeは診断入力で、物理Escと自然退避は未確認。次回は通常格納庫の実キーボード入力か自然退避の発生条件から再開する。
+
+- 13:29修正回。DEMO-0016は配置80で通常出撃・赤チェック・人間復帰を確認。自然退避は再現せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 13:41回
+
+- 開始13:41:48、終了13:42:16 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=81 により dotnet DemoAuditCpuSortie.dll を実行、終了0。960×540で征服者1が地点84の通常出撃選択で個体4体をクリックし、確定後に赤チェック。征服者19の和平は通常移動UIで地点152を選び、予約を増やさず到着し、人間へ復帰。証拠は「Individual robot clicks: 4」「after confirm: stage=5 red-owner=1」「Peaceful ruler=19 expected=152 current=152」と最終PASS。
+- 新規採番なし。直送便・左右格納庫は13:19回、プライマリーは12:20回、緑赤と再クリックは12:01回を参照。物理Escと自然退避は今回未確認。次回は候補不一致が自然発生する条件または通常格納庫の実キーボード入力を照合する。
+
+- 13:48修正回。DEMO-0016は配置82で通常出撃・赤チェック、同じ征服者の和平、人間復帰を確認。自然退避は再現せず要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 13:59回
+
+- 開始13:59:48、終了14:00:12 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null により dotnet ProbeCheckedClick.dll を実行、終了0。地図・地星儀の1080p／540pで緑赤の実クリック、即予約→赤チェック→閉じる→ターン終了、表示分離とターン末消去を確認。赤チェック済み地点9を画面点 (1440,552)／(720,276) で再クリックできた。証拠は4条件の「red checked target re-click」と最終PASS。
+- 新規採番なし。プライマリーは12:20回、直送便と左右格納庫は13:19回、CPU軍事は13:48回を参照。物理Escと自然退避は今回未確認。次回は通常格納庫の実キーボード入力かCPUの候補不一致条件を照合する。
+
+- 14:11修正回。DEMO-0017は画面外部品の組み立てと保持中の通常入力経由Escapeで、予約保持・在庫一致・人間復帰を再確認。物理Escは要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 14:18回
+
+- 開始14:18:49、終了14:19:12 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=83 により dotnet DemoAuditCpuSortie.dll を実行し、終了0。960×540で征服者17が地点91の通常出撃選択で4体をクリックし、確定後に赤チェック。和平なし14指示を退避0件で描画し、人間へ復帰。証拠は「Individual robot clicks: 4」「after confirm: stage=5 red-owner=17」「No-peaceful batch fallbacks=0」と最終PASS。
+- 新規採番なし。プライマリーは12:20回、直送便・左右格納庫は13:19回、緑赤と再クリックは13:59回を参照。物理Escと自然退避は未確認。次回は通常格納庫の実キーボード入力または候補不一致の自然発生条件を照合する。
+
+- 14:29修正回。DEMO-0016は配置83で出撃確定後の通常再生と通常入力経由Escapeを比較し、進軍・取消・戦闘参加個体と人間への復帰が一致。物理Escと自然退避は要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-14 14:38回
+
+- 開始14:38:19、終了14:38:44 JST。部分点検完了。HEAD=be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa。先行修正完了。既存ゲーム差分は Game1.ComputerDomestic.cs の格納庫導入待ち。変更は点検記録のみ。
+- 既存 demo-audit-local で ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=34 により dotnet DemoUi.dll を実行、終了0。初回直送便から地図への復帰、地図・地星儀切替、18 FPSの辺移動、拒否時分岐、終了ループとラベル描画を確認。証拠は「first transport」「map follow-up」の論理クリック (256,998) と最終PASS。実解像度は今回のログから未確認。
+- 新規採番なし。プライマリーは12:20回、左右格納庫は13:19回、緑赤と再クリックは13:59回、CPUの出撃確定後のスキップ比較は14:29回を参照。物理Escと自然退避は今回未確認。次回はこれらの再現条件を優先する。
+### 実行履歴 2026-11-14 14:49 修正回
+
+- 開始 14:49 JST、終了 14:52 JST。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。関係する既存差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。
+- CPU軍事の候補不一致を seed 83 の既存描画診断で確認。通常UIで地点を選択後、候補IDを差し替えるモード3で代替表示へ入り、次の指示へ1件だけ進んだ。予約件数は 0→0、終了コード0。自然発生条件と物理Escは引き続き未確認。
+- モード2は女王を設定するだけで即座に代替表示へ進む前提の検証で、指示番号のアサーションに失敗した。ゲーム不具合としては再現未確認。次回は女王の通常経路と、自然に候補不一致が起きる条件を確認する。
+
+### 実行履歴：2026-11-14 15:00回
+
+- 開始15:00:50、終了15:02 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。ゲーム側の既存差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。今回の変更は本記録のみ。
+- 15:01:43に既存の `DemoAuditCpuSortie.exe` を起動。`ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_LEGAL_QUEEN=1`、`FOLDERVERSE_AUDIT_QUEEN540=1`、`FOLDERVERSE_AUDIT_QUEEN_ESCORTS=1`。960×540の固定場面でCPU1の敵所有地点91から通常の出撃選択、女王の切替、確定、実ハンドルの赤チェック、閉鎖と人間への復帰を確認。女王の実戦参加は1回。終了コード0。証拠は `PASS: legal queen target=91 owner=0, normal picker, queen toggle, confirmation and red check succeeded` と同出力先の `audit-legal-queen.png`。
+- DEMO-0016の既報範囲で新規採番なし。プライマリー、直送便、左右インスペクターと緑赤の表示分離は今回未実施。次回は自然発生の候補不一致と物理Escから再開する。
+
+- 15:11修正回。DEMO-0016は世界84の13指示で通常出撃と人間への復帰を確認。自然退避は再現せず、物理Escは未実施のため要再確認を維持。詳細は修正記録。
+
+### 実行履歴：2026-11-14 15:21回
+
+- 開始15:21:20、終了15:22:32 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。ゲーム側の既存差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 既存 `demo-audit-local` で `ALSOFT_DRIVERS=null` により `DemoInspectorUi.exe`（15:21:35起動、終了0）を実行。1080pと540pで直送便プライマリーのクリックと遷移、閉鎖アニメーション、工場6プランの実矩形と製造開始を確認。証拠は論理クリック (268,332) と矩形 (232,288,72,88)、製造開始ログ、最終PASS。
+- 同じ出力先の `DirectDeliveryUi.exe`（15:22:10起動、終了0）で540pの退避・復帰、移動中の入力抑止、地図・地星儀のトラック連続操作、左右格納庫、予約保持と描画を確認。証拠は `PASS: edge trucks, hidden ordinary-inspector markers, selected overlay opening and return, two hangars, reservations and rendering.` を含む4件のPASS。
+- 新規採番なし。今回の未確認は緑赤のチェックとCPU経路、自然退避、物理Esc。次回は `DemoChecksUi` の開戦確定から赤チェック、閉鎖とターン末消去を照合する。
+
+### 実行履歴：2026-11-14 15:41回
+
+- 開始15:41:50、終了15:42:28 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 既存の `DemoChecksUi.exe` を15:42:06に `ALSOFT_DRIVERS=null` で起動し、終了0。地図・地星儀の1920×1080／960×540で、実ハンドル矩形内の緑赤クリック、地点9の選択→出撃選択確定と即予約→赤チェック→閉鎖→ターン終了、緑赤の表示分離、赤のスポットライト解除、ターン末消去、配送後の予約実行を照合。証拠は4シナリオのPASSと最終PASS。
+- 新規採番なし。プライマリー・直送便・左右格納庫は15:21回で確認。今回は赤チェック後の地点再クリック、CPU経路、自然退避と物理Escが未実施。次回は赤チェック後の再クリックから確認する。
+
+### 実行履歴：2026-11-14 15:59回
+
+- 開始15:59:20、終了16:00:01 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。変更は本記録のみ。
+- 15:59:43に既存の `ProbeCheckedClick.exe` を `ALSOFT_DRIVERS=null` で起動し、終了0。地図・地星儀の1920×1080／960×540の4条件で、赤チェック後にスポットライトが外れた地点9を実ピクセル(1440,552)／(720,276)で再選択し、赤チェックと出撃予約を保持した。固定場面でDemo入力を一時解除して通常の入力処理にマウス状態を渡した結果。証拠は4件の `PASS: red checked target re-click` と最終PASS。
+- 新規採番なし。プライマリー・直送便・左右格納庫は15:21回を参照。自然再生からの再クリック、CPUの自然退避と物理Escは今回未実施。次回はCPUの自然退避条件と物理Escを確認する。
+
+### 実行履歴：2026-11-14 16:21回
+
+- 開始16:21:51、終了16:22:23 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 16:22:07に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=85` で起動、終了0。CPU1の通常出撃で4体をクリックし、確定後に赤チェック。11指示のうち和平1件はCPU37視点へ切替後、地点19を通常の移動UIで選択。960×540で描画し、確定で画面が閉じ、予約が重複せず、到着地点19と人間復帰を確認。証拠は `Individual robot clicks: 4`、`Actual peaceful order ruler=37 target=19`、`Peaceful ruler=37 expected=19 current=19` と最終PASS。
+- 新規採番なし。自然退避は今回のログに現れず、物理Escは未実施。次回は物理Esc、または自然に候補不一致となる条件を確認する。プライマリー・直送便・左右格納庫は15:21回を参照。
+
+### 実行履歴：2026-11-14 16:41回
+
+- 開始16:41:51、終了16:42 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 16:42:07に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_` 接頭辞の `DOMESTIC_SKIP`、`DOMESTIC_ENTRY`、`AUTO_ENABLED`、`ASSEMBLY_LIVE`、`ASSEMBLY_INVENTORY_PAGE`、`ASSEMBLY_ESC_INPUT` を各1にして起動、終了0。960×540の固定場面で格納庫の頭胴→完成を論理点(210,430)で描画。予約1件を維持し、通常再生とスキップで完成6体と人間復帰が一致した。証拠は `Live CPU step 1`、`Live CPU step 2`、`Normal Escape input cleared CPU drag` と最終PASS。
+- 新規採番なし。Escapeは通常入力へのキー状態注入で、物理キーは未確認。次回は物理EscまたはCPU軍事の自然退避から再開する。直送便などは15:21回、赤チェック再選択は15:59回を参照。
+
+### 実行履歴：2026-11-14 17:00回
+
+- 開始17:00:51 JST、終了17:02 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。本記録のみ追記。
+- 17:01:17に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=86` で起動。960×540でCPU3の出撃確定後に赤チェック、CPU23視点で地点36を通常移動UIから選択し、人間へ復帰。証拠は9指示・和平1件、`after confirm: stage=5 red-owner=3`、`Actual peaceful order ruler=23 target=36` と最終PASS。自然退避のログなし。
+- 新規採番なし。`Game1.ComputerMarches.cs` の段階1で、対象を投影できない場合や地図のヒット先が一致しない場合に代替表示へ移る経路を確認。次回はこの条件の実行時再現と物理Escから再開する。優先UIは15:21回と15:59回を参照。
+
+### 実行履歴：2026-11-14 17:19回
+
+- 開始17:19:22、終了17:19:55 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 17:19:38に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=87` で起動、終了0。960×540の描画診断で和平指示まで12件進み、CPU37が通常移動UIから地点4を選択して到着、人間へ復帰。証拠は `Next instruction 11->12 stage=0`、`Peaceful ruler=37 expected=4 current=4` と最終PASS。
+- 新規採番なし。自然退避の再現と物理Escは未確認。次回は地点の投影またはヒット判定に失敗する条件を再現し、代替表示への切替を照合する。プライマリー・直送便・左右格納庫は15:21回を参照。
+
+### 実行履歴：2026-11-14 17:40回
+
+- 開始17:40:52、終了17:41:30 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。本記録のみ追記。
+- 17:41:07に既存 `DemoUi.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_DEMO_TEST_SEED=35` で起動、終了0。初回直送便から地図への復帰、地図・地星儀切替、18 FPSの辺移動、拒否時分岐と終了ループを確認。証拠は `first transport` と `map follow-up` の論理クリック(256,998)、および描画検査の最終PASS。実解像度はログに出ず未確認。
+- 新規採番なし。プライマリー・左右格納庫は15:21回、赤チェック後の再クリックは15:59回を参照。自然退避と物理Escは今回未実施。次回はCPUの地点投影・ヒット判定による代替表示を確認する。
+
+### 実行履歴：2026-11-14 17:58回
+
+- 開始17:58:22、終了17:58:55 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。変更は点検記録のみ。
+- 17:58:38に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=88` で起動、終了0。960×540の描画診断でCPU21が通常UIから4体を選び、確定後に赤チェック。CPU43が通常移動UIから地点95を選び、到着後に人間へ復帰。証拠は `Individual robot clicks: 4`、`after confirm: stage=5 red-owner=21`、`Peaceful ruler=43 expected=95 current=95` と最終PASS。
+- 新規採番なし。自然退避は再現せず、物理Escは未実施。次回は地点投影または地図ヒット不一致を起こす条件を検証する。プライマリー・左右格納庫は15:21回、赤チェック後の再選択は15:59回を参照。
+
+### 実行履歴：2026-11-14 18:20回
+
+- 開始18:20:53、終了18:21:24 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 18:21:08に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=89` で起動、終了0。960×540の診断でCPU19が地点143を通常UIで選び、4体をクリックし、確定後に赤チェック。和平なしの13指示を描画し、人間へ復帰。証拠は `stage=3 picker=0 selected=143 target=143`、`Individual robot clicks: 4`、`No-peaceful batch fallbacks=0` と最終PASS。
+- 新規採番なし。世界89では自然退避を再現せず、物理Escは未実施。次回は地点投影または地図ヒット不一致が発生する場面を絞る。優先UIは15:21回、赤チェック後の再選択は15:59回を参照。
+
+### 実行履歴：2026-11-14 18:41回
+
+- 開始18:41:53、終了18:42:26 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 18:42:11に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=90` で起動、終了0。960×540でCPU35視点へ切替後、通常移動UIで地点186を選び、到着と人間への復帰を確認。証拠は `Actual peaceful order ruler=35 target=186`、`Peaceful ruler=35 expected=186 current=186` と最終PASS。
+- 新規採番なし。地点投影・ヒット不一致による自然退避は再現を確認できず、物理Escは未実施。次回は地図の向きと対象位置を変えた固定場面でヒット判定を照合する。優先UIは15:21回、赤チェック後の再選択は15:59回を参照。
+
+### 実行履歴：2026-11-14 19:02回
+
+- 開始19:02:23、終了19:02:54 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 19:02:40に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=91` で起動、終了0。4指示の先頭が和平移動となる場面で、CPU11へ先に視点が切り替わり、地点128の選択・描画・確定、人間への復帰を確認。証拠は `CPU view=11` と `PASS: first peaceful order ruler=11 target=128, normal movement and human return`。この分岐は実解像度をログに出さない。
+- 新規採番なし。自然退避、地図の向きを変えた固定場面と物理Escは未実施。次回はその固定場面のヒット判定から再開する。優先UIは15:21回、赤チェック後の再選択は15:59回を参照。
+
+### 実行履歴：2026-11-14 19:18回
+
+- 開始19:18:24、終了19:18:58 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 19:18:41に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=92` で起動、終了0。960×540でCPU5視点へ先に切り替わり、地点14を選択、通常の出撃選択で4体をクリックし、確定後に赤チェック。和平なし13指示で退避0件、人間へ復帰。証拠は `stage=3 picker=0 selected=14 target=14`、`after confirm: stage=5 red-owner=5` と最終PASS。
+- 新規採番なし。地図の向きを変更した固定場面、自然退避と物理Escは未実施。次回は段階1の地図ヒットが対象と一致しない固定場面から確認する。優先UIは15:21回、赤チェック後の再選択は15:59回を参照。
+
+### 実行履歴：2026-11-14 19:40回
+
+- 開始19:40:24、終了19:41:10 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 既存 `demo-audit-local` で `ALSOFT_DRIVERS=null`、`DirectDeliveryUi.exe`（19:40:40起動、終了0）。960×540で直送便の退避復帰、回転した辺の文字とトラックの位置、展開図・地星儀の連続操作、左右格納庫と予約保持を確認。証拠は4件のPASS。
+- 続けて `DemoInspectorUi.exe`（19:40:52起動、終了0）。1920×1080／960×540で直送便プライマリー、インスペクターの閉鎖、工場6プランの実矩形と製造遷移を確認。証拠は論理クリック(268,332)と矩形(232,288,72,88)、製造開始ログ、最終PASS。
+- 新規採番なし。赤チェック後の再選択は15:59回を参照。CPU軍事の地図ヒット不一致と自然退避、物理Escは今回未実施。次回はCPU軍事の地図ヒット判定から再開する。
+
+### 実行履歴：2026-11-14 20:01回
+
+- 開始20:01:24、終了20:01:56 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。本記録のみ追記。
+- 20:01:41に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=93` で起動、終了0。960×540でCPU3が通常UIから地点69を選択し、出撃選択で4体をクリック、確定後に赤チェック。和平なし9指示で退避0件、人間に復帰。証拠は `selected=69 target=69`、`after confirm: stage=5 red-owner=3` と最終PASS。
+- 新規採番なし。地図の向きを変更した固定場面、自然退避、物理Escは未確認。次回は段階1の地図ヒットが対象と一致しない固定場面で、代替表示と次の指示への遷移を照合する。優先UIは19:40回を参照。
+
+### 実行履歴：2026-11-14 20:21回
+
+- 開始20:21:25、終了20:21:58 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 20:21:42に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=94` で起動、終了0。960×540でCPU5が通常UIで地点86を選び、2体をクリックして確定後に赤チェック。和平なし14指示で退避0件、人間へ復帰。証拠は `selected=86 target=86`、`Individual robot clicks: 2`、`after confirm: stage=5 red-owner=5` と最終PASS。
+- 新規採番なし。地図の向きを変える固定場面、自然退避、物理Escは未実施。次回は段階1のヒット不一致を固定場面で再現し、代替表示と次の指示への遷移を確認する。優先UIは19:40回を参照。
+
+### 実行履歴：2026-11-14 20:39回
+
+- 開始20:39:55、終了20:40:29 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 20:40:14に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=95` で起動、終了0。960×540でCPU11が地点29の通常出撃選択で4体をクリックし、確定後に赤チェック。CPU19へ切り替わり、通常移動で地点156に到着後、人間へ復帰。証拠は `selected=29 target=29`、`after confirm: stage=5 red-owner=11`、`Peaceful ruler=19 expected=156 current=156` と最終PASS。
+- 新規採番なし。地図の向きを変える固定場面、自然退避と物理Escは未確認。次回は地図ヒット不一致の固定場面を準備する。優先UIは19:40回、赤チェック後の再選択は15:59回を参照。
+
+### 実行履歴：2026-11-14 20:58回
+
+- 開始20:58:55、終了20:59:26 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 20:59:14に既存 `DemoChecksUi.exe` を `ALSOFT_DRIVERS=null` で起動、終了0。地図・地星儀の1920×1080／960×540で、実ハンドルの緑赤クリック、地点9の選択から出撃確定・即予約・赤チェック・閉鎖・ターン終了、表示分離と赤チェック地点のスポットライト解除、ターン末消去を確認。証拠は4シナリオのPASSと最終PASS。
+- 新規採番なし。赤チェック後の再選択は15:59回、優先UIは19:40回を参照。CPU軍事のヒット不一致による退避と物理Escは今回未実施。次回はCPUの地点選択段階から再開する。
+
+### 実行履歴：2026-11-14 21:20回
+
+- 開始21:20:55、終了21:21:37 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 21:21:16に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=94`、`FOLDERVERSE_AUDIT_FALLBACK=3` で起動、終了0。通常UIで地点を選択した後にロボット候補IDを意図的に不一致にすると、専用表示へ移り、次の指示の出撃選択まで復帰。予約0件を維持した。証拠は `Candidate mismatch entered stage -1 through the normal preview`、`Fallback next index=1 stage=3 ruler=5 reservations=0/0` と既存出力先の `audit-war-fallback.png`、`audit-war-return.png`。
+- DEMO-0016の既報範囲で新規採番なし。今回の条件は出撃候補IDの不一致。地点投影・地図ヒット不一致、自然退避、物理Escは未確認。次回は地点選択段階の固定場面を優先する。プライマリー・直送便・左右格納庫は19:40回を参照。
+
+### 実行履歴：2026-11-14 21:39回
+
+- 開始21:39:56、終了21:40:27 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 21:40:18に既存 `ProbeCheckedClick.exe` を `ALSOFT_DRIVERS=null` で起動、終了0。展開図・地星儀の1920×1080／960×540で、赤チェック後に地点9を通常入力へ渡したウィンドウ座標(1440,552)／(720,276)から再選択し、赤と出撃予約を保持。証拠は4件の `PASS: red checked target re-click`、開戦順序とターン末消去の最終PASS。
+- 新規採番なし。CPUの地図ヒット不一致は `Game1.ComputerMarches.cs` の段階1で対象投影と候補ヒットを比較することをコードで確認した。今回の実行はDemoの再クリック。CPU側の固定場面、自然退避と物理Escは未実施。次回はCPU側の段階1から再開する。優先UIは19:40回を参照。
+
+### 実行履歴：2026-11-14 21:59回
+
+- 開始21:59:26、終了22:00:00 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 21:59:44に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=96` で起動、終了0。960×540のCPU軍事診断で先行8指示から和平指示へ進み、CPU35が通常移動UIから地点197を選んで到着し、人間へ復帰した。証拠は `Next instruction 7->8 stage=0`、`Peaceful ruler=35 expected=197 current=197` と最終PASS。
+- 新規採番なし。地図の向きを変えた固定場面、自然退避、物理Escは未実施。次回は段階1で投影点と地図ヒットの差を検証する。優先UIは19:40回、赤チェック後の再選択は21:39回を参照。
+
+### 実行履歴：2026-11-14 22:18回
+
+- 開始22:18:56、終了22:19:30 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 22:19:13に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=96`、`FOLDERVERSE_AUDIT_PHASE_TIMING=1`、`FOLDERVERSE_AUDIT_PHASE_SKIP=1` で起動、終了0。CPU視点で軍事カットインを描画後、開始0.250秒に通常入力へEscapeキー状態を渡し、再生を終了して人間の内政に復帰。証拠は `Escape at age=.250 restored human=0 phase=Domestic`。実解像度はこの分岐のログで未確認。
+- 新規採番なし。物理Esc、地点投影・地図ヒット不一致と自然退避は未実施。次回は段階1の地点投影とヒット判定を固定場面で照合する。優先UIは19:40回、赤チェック後の再選択は21:39回を参照。
+
+### 実行履歴：2026-11-14 22:40回
+
+- 開始22:40:27、終了22:40:59 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 22:40:43に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=97` で起動、終了0。960×540でCPU17へ視点切替後、地点190を通常UIで選択。3体をクリックして確定後に赤チェックを付け、和平なしの13指示を退避0件で描画し人間に復帰した。証拠は `selected=190 target=190`、`after confirm: stage=5 red-owner=17`、`No-peaceful batch fallbacks=0` と最終PASS。
+- 新規採番なし。地図の向きを変えた固定場面、地図ヒット不一致による自然退避、物理Escは未実施。次回は対象地点と地図ヒットが異なる固定場面から再開する。優先UIは19:40回、赤チェック後の再選択は21:39回を参照。
+
+### 実行履歴：2026-11-14 23:00回
+
+- 開始23:00:27、終了23:00:55 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 23:00:43に既存 `DemoUi.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_DEMO_TEST_SEED=36` で起動、終了0。初回直送便から地図への復帰、地球儀・展開図の切替、18 FPSの辺移動、拒否時分岐、終了ループとラベル描画を確認。証拠は `first transport` と `map follow-up` の論理クリック(256,998)および最終PASS。実解像度は実行ログで未確認。
+- 新規採番なし。プライマリー・左右格納庫は19:40回、赤チェック後の再選択は21:39回を参照。CPU軍事の地図ヒット不一致、自然退避と物理Escは未実施。次回はCPU地点選択の段階1を確認する。
+
+### 実行履歴：2026-11-14 23:19回
+
+- 開始23:19:57、終了23:20:31 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 23:20:15に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=98` で起動、終了0。960×540でCPU7が通常UIから地点37を選び、4体をクリックして確定後に赤チェック。CPU15へ切替後、和平移動で地点172に到着し、人間へ復帰。証拠は `selected=37 target=37`、`after confirm: stage=5 red-owner=7`、`Peaceful ruler=15 expected=172 current=172` と最終PASS。
+- 新規採番なし。CPU地点選択の正常経路を照合。地図ヒット不一致の固定場面、自然退避と物理Escは未確認。次回は固定場面を用意して段階1から代替表示への切替を検証する。優先UIは19:40回、赤チェック後の再選択は21:39回を参照。
+
+### 実行履歴：2026-11-14 23:38回
+
+- 開始23:38:28、終了23:39 JST。コード照合まで完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。変更は点検記録のみ。
+- CPU軍事段階1では `OperationPosition` の投影点をクリックに使う。地星儀では、同メソッド（`Game1.DestinationMap.cs:82`）は経路座標をそのまま投影し、`HitGlobeNode`（`Game1.StatusGlobe.cs:77`）は地形の起伏を足した座標を投影して最寄りの地点を判定する。双方の比較箇所は `Game1.ComputerMarches.cs:100`。投影座標の差はコードで確認したが、クリックの誤判定に至るかは未確認。新規採番なし。
+- 実描画と解像度、自然退避、物理Escは今回未確認。次回は地星儀で対象と近接地点を含む固定場面を作り、両投影のピクセル差、ヒット先、代替表示の有無を測る。優先UIは19:40回、赤チェック後の再選択は21:39回を参照。
+### 実行履歴：2026-11-15 00:01回
+
+- 開始00:01:58、終了00:02 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。本記録のみ追記。
+- `ALSOFT_DRIVERS=null` で既存の `ProbeCheckedClick.exe` を実行し、終了0。展開図・地星儀の1920×1080／960×540で、赤チェック後に地点9をウィンドウ座標(1440,552)／(720,276)から再選択し、赤チェックと出撃予約を保持。証拠は4件の再クリックPASSと最終PASS。
+- 新規採番なし。今回の固定場面は人間側の通常入力。CPU軍事の投影差が誤判定を起こす場面と物理Escは未確認。次回は地星儀で起伏のある近接地点を使い、段階1のクリック点とヒット先を測る。プライマリー・直送便・左右格納庫は11月14日19:40回を参照。
+### 実行履歴：2026-11-15 00:18回
+
+- 開始00:18:58、終了00:19:30 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 00:19:15に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=99` で起動、終了0。960×540でCPU17が地点61の通常出撃選択で4体をクリックし、確定後に赤チェック。和平なし14指示で退避0件、人間へ復帰。証拠は `selected=61 target=61`、`after confirm: stage=5 red-owner=17`、`No-peaceful batch fallbacks=0` と最終PASS。
+- 新規採番なし。プライマリー・直送便・左右格納庫は11月14日19:40回、赤チェック後の再選択は00:01回を参照。地星儀の投影差による誤判定と物理Escは未確認。次回は起伏のある近接地点でクリック点とヒット先を比較する。
+
+### 実行履歴：2026-11-15 00:38回
+
+- 開始00:38:28、終了00:39 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。
+- 00:38:47に既存 `DirectDeliveryUi.exe` を `ALSOFT_DRIVERS=null` で起動、終了0。960×540で直送便の退避・復帰、隠れた操作や移動中の入力抑止、地星儀と展開図のトラック連続クリック、左右格納庫、予約保持と描画を確認。証拠は4件のPASS。
+- 新規採番なし。今回は直送便のみ。プライマリーは11月14日19:40回を参照。CPU軍事の投影差による誤判定と物理Escは未確認。次回は起伏のある地点の投影点とヒット先の比較から再開する。
+
+### 実行履歴：2026-11-15 01:01回
+
+- 開始01:01:29、終了01:02 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 01:01:49に既存 `DemoInspectorUi.exe` を `ALSOFT_DRIVERS=null` で起動、終了0。1920×1080／960×540で、直送便プライマリーの実矩形と遷移、インスペクター閉鎖、工場6プランの選択と製造開始を照合。証拠は論理クリック(268,332)、矩形(232,288,72,88)、`manufacturing=True` と最終PASS。
+- 新規採番なし。直送便の退避復帰・左右格納庫は00:38回を参照。CPU軍事の起伏による投影差・誤判定と物理Escは未確認。次回は地星儀上でクリック点とヒット先を照合する。
+
+### 実行履歴：2026-11-15 01:19回
+
+- 開始01:19:29、終了01:20:01 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。本記録のみ追記。
+- 01:19:45に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=100` で起動、終了0。960×540でCPU45の視点に切り替わり、地点38の通常出撃選択で4体をクリック。確定後に赤チェックし、和平なし2指示を退避0件で描画して人間に復帰。証拠は `selected=38 target=38`、`after confirm: stage=5 red-owner=45`、`No-peaceful batch fallbacks=0` と最終PASS。
+- 新規採番なし。プライマリーは01:01回、直送便と左右格納庫は00:38回を参照。地星儀の投影差による誤判定と物理Escは未確認。次回は起伏のある地点の投影位置と地星儀のヒット先を同じ画面で比較する。
+
+### 実行履歴：2026-11-15 01:38回
+
+- 開始01:38:29、終了01:38:59 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。本記録のみ追記。
+- 01:38:47に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=101` で起動、終了0。960×540でCPU5へ先に視点を切り替え、地点118を通常UIで選択し、2体をクリックして確定後に赤チェック。和平なし7指示を退避0件で描画して人間に復帰。証拠は `selected=118 target=118`、`Individual robot clicks: 2`、`after confirm: stage=5 red-owner=5` と最終PASS。
+- 新規採番なし。直送便と左右格納庫は00:38回、プライマリーは01:01回を参照。起伏のある地星儀の投影差によるヒット不一致と物理Escは未実施。次回は対象地点と近接地点を含む地星儀の固定場面を優先する。
+
+### 実行履歴：2026-11-15 01:59回
+
+- 開始01:59:00、終了01:59 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- 01:59:16に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=102` で起動、終了0。960×540でCPU5視点から地点28を通常UIで選択し、2体をクリックして確定後に赤チェック。10指示を退避0件で描画して人間へ復帰。証拠は `selected=28 target=28`、`after confirm: stage=5 red-owner=5`、`No-peaceful batch fallbacks=0` と最終PASS。
+- 新規採番なし。プライマリーは01:01回、直送便・左右格納庫は00:38回を参照。地星儀の起伏による投影差と物理Escは今回未確認。次回は地星儀上でカーソルの投影点と地形を含むヒット位置を比較する。
+
+### 実行履歴：2026-11-15 02:18回
+
+- 開始02:18:30、終了02:19 JST。部分点検完了（コード照合）。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。点検記録のみ追記。
+- CPU軍事段階1の再現条件を絞った。段階0で `FocusDemoNode` が地星儀の手動回転を解除し、ズームを1へ戻す。さらに `FocusGlobePosition` が対象の経路座標をアンカーにし、`GlobeOrientation` が回転後のアンカーのX・Yを差し引く。根拠は `Game1.ComputerMarches.cs:98`、`Game1.DemoDomesticActions.cs:27`、`Game1.StatusGlobe.cs:106`、`WorldPreview.RobotPins.cs:24`。段階0より前の回転・拡大だけでは段階1の条件として残らない。
+- 新規採番なし。実描画・解像度、CPUのヒット不一致と物理Escは未確認。次回は段階0の直後に同じ視点で、起伏のある対象と近接地点の投影点・ヒット先を比較する。プライマリーは01:01回、直送便と左右格納庫は00:38回を参照。
+
+### 実行履歴：2026-11-15 02:40回
+
+- 開始02:40:00、終了02:40 JST。部分点検完了。HEAD `be2f63aa76d079d0f44ba1b49a9f7e5acb086cfa`。既存ゲーム差分は `Game1.ComputerDomestic.cs` の格納庫導入待機。本記録のみ追記。
+- 02:40:17に既存 `DemoAuditCpuSortie.exe` を `ALSOFT_DRIVERS=null`、`FOLDERVERSE_AUDIT_WORLD=103` で起動、終了0。960×540でCPU5視点から地点91を通常UIで選択し、2体をクリックして確定後に赤チェック。16指示を退避0件で描画し、人間へ復帰。証拠は `selected=91 target=91`、`Individual robot clicks: 2`、`No-peaceful batch fallbacks=0` と最終PASS。
+- 新規採番なし。プライマリーは01:01回、直送便・左右格納庫は00:38回を参照。今回の実行で起伏による投影差と物理Escは未確認。次回は地星儀の段階0直後に同一カメラで投影点と当たり判定を比較する。

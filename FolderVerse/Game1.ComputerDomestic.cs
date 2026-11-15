@@ -33,6 +33,7 @@ public partial class Game1
     private bool AdvanceComputerAssembly(double elapsed)
     {
         if(_computerAssemblySteps==null)return false;
+        if(HangarIntroProgress<1)return true;
         if(_computerAssemblyIndex==_computerAssemblySteps.Length)
         {
             ClearComputerAssembly();
