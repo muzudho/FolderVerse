@@ -142,6 +142,7 @@ sealed class CheckGame:Game1
     private void CheckManufacturingDelivery(SpriteBatch batch)
     {
         w.SetWorld(1);w.SetCast(2);w.SetPlacement(3);w.SelectPlayer(0);
+        w.EquipmentMode=RobotEquipmentMode.Materials;
         foreach(var node in w.Nodes.All)node.Owner=0;
         w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);w.Robots.ConfigureFactories(w);
         foreach(var shop in w.Robots.Workshops){shop.AutoAssemblyDisabled=true;shop.SetReservedSlots(0);foreach(var line in shop.ProductionLines)line.SelectPlan(3);}
@@ -150,6 +151,8 @@ sealed class CheckGame:Game1
         var factory=w.Robots.Workshops[source.Id];
         for(int seed=0;factory.ProductionLines.Length==0;seed++)factory.GenerateLines(seed);
         var producer=factory.ProductionLines[0];producer.Configure(RobotParts.Complete,1);producer.IntakeTarget=target.Id;
+        typeof(RobotWorkshop).GetField("_selectedProductPlan",F)!.SetValue(producer,
+            new ProductionPlan(RobotParts.Complete,1){Material=RobotMaterial.Cardboard});
         w.Robots.Nodes[target.Id].Add(w.Robots.Create(0,RobotParts.Head));
         w.Industry.Reset();w.Industry.Queue(1);
         int seed26=Enumerable.Range(0,100000).First(seed=>{
@@ -176,6 +179,13 @@ sealed class CheckGame:Game1
         for(int i=0;w.Industry.Pending && i<100;i++)Call("UpdateManufacturing",.75d,false);
         Check(w.Robots.ProductionIntakes.Count==11 && (int)Get("_manufacturingReceived")==33 &&
             w.Robots.IndustryTurn==clock+26 && w.Robots.Nodes[target.Id].Count==1,"Capacity and exactly-once production match the intake reservation rule");
+        var flown=flights.Single().Arrival.Product;
+        Check(flown.HeadMaterial==RobotMaterial.Cardboard && flown.BodyMaterial==RobotMaterial.Cardboard &&
+            flown.LegsMaterial==RobotMaterial.Cardboard,"Flight carries the selected material");
+        var intakeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
+        typeof(RobotWorld).GetMethod("ResolveProductionIntakes",F)!.Invoke(intakeWorld.Robots,new object[]{intakeWorld});
+        Check(intakeWorld.Robots.Nodes[target.Id].Robots.Single(r=>r.Id==flown.Id)==flown,
+            "The exact product shown in flight reaches the destination hangar");
         var glyph=typeof(Game1).GetMethods(F).Single(m=>m.Name=="DrawRobotGlyph" && m.GetParameters().Length==5);
         GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();
         for(int pattern=0;pattern<5;pattern++){
@@ -189,6 +199,30 @@ sealed class CheckGame:Game1
         var shape=new Rectangle(0,0,80,100);
         Check(RobotPartSilhouette.Row(shape,50,false,true).Width<RobotPartSilhouette.Row(shape,20,false,true).Width &&
             RobotPartSilhouette.Row(shape,0,true).Width<shape.Width,"Premium parts have a narrow middle; cheap parts have rounded corners");
+        var arrivedStore=intakeWorld.Robots.Nodes[target.Id];
+        typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(arrivedStore,new object[]{60});
+        Set("_setup",intakeWorld);
+        Set("_populationNode",target.Id);
+        Call("OpenNodeAssembly");
+        Set("_hangarZoom",5);
+        Set("_hangarIntroStart",float.NegativeInfinity);
+        var visible=((IEnumerable<int>)Call("VisibleAssemblySlots")).ToArray();
+        Check(visible.Length==60,"The zoomed-out hangar exposes all sixty slots");
+        var slots=(long?[])Get("_hangarSlots");
+        int arrivedSlot=Array.IndexOf(slots,flown.Id);
+        Check(arrivedSlot>=0,"The flown product has a visible hangar slot");
+        var robotArea=(Rectangle)Call("AssemblyRobotBounds",arrivedSlot);
+        Check(robotArea.Width<48,"The zoomed-out product exercises the small art path");
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawNodeAssembly");batch.End();
+        var cardboardPixels=Pixels();Save("manufacturing-arrived-60-slots");
+        arrivedStore.Remove(flown.Id);
+        arrivedStore.Add(flown with {HeadMaterial=RobotMaterial.Maple,BodyMaterial=RobotMaterial.Maple,LegsMaterial=RobotMaterial.Maple});
+        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawNodeAssembly");batch.End();
+        var maplePixels=Pixels();
+        int stride=GraphicsDevice.PresentationParameters.BackBufferWidth;
+        Check(Enumerable.Range(robotArea.Top,robotArea.Height).Sum(y=>Enumerable.Range(robotArea.Left,robotArea.Width)
+            .Count(x=>cardboardPixels[y*stride+x]!=maplePixels[y*stride+x]))>100,
+            "The arrived product's material changes the pixels in its small hangar slot");
         Console.WriteLine("PASS: most productive adjacent intake, one-turn production, visible delivery, capacity and no forecast mutation.");
     }
     private void CheckMercyUi(SpriteBatch batch)

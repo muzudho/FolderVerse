@@ -2,14 +2,14 @@ using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
-using var game=new GlyphProbe(args[0],args.Contains("--gallery"));game.Run();
+using var game=new GlyphProbe(args[0],args.Contains("--gallery"),args.Contains("--shipments"));game.Run();
 sealed class GlyphProbe:Game1
 {
  const BindingFlags Flags=BindingFlags.Instance|BindingFlags.NonPublic;
- readonly string output;readonly bool galleryOnly;SpriteBatch batch=null!;Texture2D pixel=null!;bool drawn;
+ readonly string output;readonly bool galleryOnly;readonly bool shipmentsOnly;SpriteBatch batch=null!;Texture2D pixel=null!;bool drawn;
  void Set(string name,object value)=>typeof(Game1).GetField(name,Flags)!.SetValue(this,value);
  object Get(string name)=>typeof(Game1).GetField(name,Flags)!.GetValue(this)!;
- public GlyphProbe(string output,bool galleryOnly){this.output=output;this.galleryOnly=galleryOnly;var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;}
+ public GlyphProbe(string output,bool galleryOnly,bool shipmentsOnly){this.output=output;this.galleryOnly=galleryOnly;this.shipmentsOnly=shipmentsOnly;var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;}
  protected override void LoadContent(){
   // Deliberately omit base.LoadContent: no autosave, achievements, music or game state loading.
   var world=new WorldSetup();world.SetParticipantCounts(1,1);world.SetWorld(0);world.SetPlacement(2);world.SelectTurnRuler(0);world.SetCountryAppearance(0,6,12,1);world.SetCountryEmblem(0,1);Set("_setup",world);
@@ -18,8 +18,93 @@ sealed class GlyphProbe:Game1
   var type=typeof(Game1).GetField("_ui",Flags)!.FieldType;Set("_ui",Activator.CreateInstance(type,batch,pixel,font)!);
  }
  protected override void Update(GameTime time){}
+ void CheckShipmentArt(){
+  var world=(WorldSetup)Get("_setup");
+  world.EquipmentMode=RobotEquipmentMode.Materials;
+  var delivery=typeof(Game1).GetMethod("DrawHangarRobot",Flags)!;
+  var manufacturing=typeof(Game1).GetMethod("DrawManufacturingProduct",Flags)!;
+  var background=new Color(25,36,48);
+  GraphicsDevice.Clear(background);
+  batch.Begin();
+  var materials=new[]{RobotMaterial.Cardboard,RobotMaterial.Maple};
+  var parts=new[]{RobotParts.Head|RobotParts.Body,RobotParts.Body|RobotParts.Legs,RobotParts.Complete};
+  for(int row=0;row<parts.Length;row++)
+   for(int i=0;i<materials.Length;i++){
+    var material=materials[i];
+    var robot=new Robot(0,0,parts[row],row==2?RobotRole.Captain:RobotRole.Soldier){
+     HeadMaterial=material,BodyMaterial=material,LegsMaterial=material,
+     IntegratedParts=row==2?0:parts[row]};
+    var bounds=new Rectangle(45+i*160,15+row*170,100,155);
+    delivery.Invoke(this,new object[]{bounds,robot,1f,null});
+    manufacturing.Invoke(this,new object[]{new Rectangle(bounds.X+480,bounds.Y,bounds.Width,bounds.Height),robot});
+   }
+  for(int i=0;i<materials.Length;i++){
+   var material=materials[i];
+   var compact=new Robot(0,0,RobotParts.Complete){
+    HeadMaterial=material,BodyMaterial=material,LegsMaterial=material};
+   delivery.Invoke(this,new object[]{new Rectangle(340+i*50,20,28,52),compact,1f,null});
+  }
+  batch.End();
+  var pixels=new Color[960*540];
+  GraphicsDevice.GetBackBufferData(pixels);
+  int compactDifferences=0;
+  for(int y=20;y<72;y++)
+   for(int x=340;x<368;x++){
+    int index=y*960+x;
+    if(pixels[index]!=background && pixels[index+50]!=background && pixels[index]!=pixels[index+50])
+     compactDifferences++;
+   }
+  if(compactDifferences<100)throw new Exception("Compact hangar glyph lost its material artwork.");
+  Console.WriteLine($"PASS compact hangar: {compactDifferences} shared-coverage pixels changed by material.");
+  if(!Enumerable.Range(365,20).Any(y=>Enumerable.Range(65,60).Any(x=>pixels[y*960+x]!=background)))
+   throw new Exception("Captain cap is missing above the robot head.");
+  for(int row=0;row<parts.Length;row++){
+   int differences=0;
+   for(int y=15+row*170;y<170+row*170;y++)
+    for(int x=45;x<145;x++){
+     int index=y*960+x;
+     if(pixels[index]!=pixels[index+480] || pixels[index+160]!=pixels[index+640])
+      throw new Exception($"Delivery and manufacturing differ for {parts[row]}");
+     if(pixels[index]!=background && pixels[index+160]!=background && pixels[index]!=pixels[index+160])differences++;
+    }
+   if(differences<100)throw new Exception($"Material artwork did not change for {parts[row]}");
+   Console.WriteLine($"PASS {parts[row]}: {differences} shared-coverage pixels changed by material.");
+  }
+  using var capture=new Texture2D(GraphicsDevice,960,540);
+  capture.SetData(pixels);
+  using(var file=File.Create(output))capture.SaveAsPng(file,960,540);
+
+  foreach(var node in world.Nodes.All)node.Owner=0;
+  world.SelectPlayer(0);
+  world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);
+  var route=world.Nodes.All.SelectMany(source=>world.Nodes.All
+   .Where(target=>target.Id!=source.Id)
+   .Select(target=>RobotLongDelivery.Path(world,source.Id,target.Id,0)))
+   .First(path=>path.Length>2);
+  var stock=world.Robots;
+  var integrated=stock.Create(0,parts[0]) with {
+   HeadMaterial=RobotMaterial.Cardboard,BodyMaterial=RobotMaterial.Cardboard,IntegratedParts=parts[0]};
+  var captain=stock.Create(0,RobotParts.Complete,RobotRole.Captain) with {
+   HeadMaterial=RobotMaterial.Maple,BodyMaterial=RobotMaterial.Maple,LegsMaterial=RobotMaterial.Maple};
+  stock.Nodes[route[0]].Add(integrated);
+  stock.Nodes[route[0]].Add(captain);
+  stock.LongDelivery.Reserve(world,route[0],route[^1],integrated.Id,integrated.Parts,null,0,0);
+  stock.LongDelivery.Reserve(world,route[0],route[^1],captain.Id,captain.Parts,null,0,1);
+  var nodes=(int[])Get("_directNodes");
+  nodes[0]=route[0];nodes[1]=route[^1];
+  typeof(Game1).GetMethod("SyncLongSlots",Flags)!.Invoke(this,null);
+  GraphicsDevice.Clear(background);
+  batch.Begin(transformMatrix:Matrix.CreateTranslation(-1320,0,0));
+  typeof(Game1).GetMethod("DrawLongPane",Flags)!.Invoke(this,new object[]{1});
+  batch.End();
+  GraphicsDevice.GetBackBufferData(pixels);
+  capture.SetData(pixels);
+  using var paneFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"long-delivery-arrivals.png"));
+  capture.SaveAsPng(paneFile,960,540);
+  Console.WriteLine("PASS long delivery pane drew two reserved material arrivals.");
+ }
  protected override void Draw(GameTime time){
-  if(drawn)return;drawn=true;if(galleryOnly){DrawMaterialGallery();Exit();return;}GraphicsDevice.Clear(new Color(25,36,48));batch.Begin();
+  if(drawn)return;drawn=true;if(shipmentsOnly){CheckShipmentArt();Exit();return;}if(galleryOnly){DrawMaterialGallery();Exit();return;}GraphicsDevice.Clear(new Color(25,36,48));batch.Begin();
   var draw=typeof(Game1).GetMethods(Flags).Single(m=>m.Name=="DrawRobotGlyph" && m.GetParameters().Length==5);
   var robots=new[]{new Robot(0,0,RobotParts.Body),new Robot(0,0,RobotParts.Legs),new Robot(0,0,RobotParts.Complete){HeadOrigin=1},new Robot(0,0,RobotParts.Complete){DamagedParts=RobotParts.Head},new Robot(0,0,RobotParts.Complete){CheapParts=RobotParts.Head},new Robot(0,0,RobotParts.Complete,RobotRole.Captain)};
   for(int i=0;i<robots.Length;i++)

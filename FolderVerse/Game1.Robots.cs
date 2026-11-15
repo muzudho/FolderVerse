@@ -4,6 +4,7 @@ using System;
 
 public partial class Game1
 {
+    private static readonly Rectangle FrontCaptainCapCrop=new(528,304,473,434);
     private static Rectangle RobotCard(int index)=>new(54+index%6*149,220+index/6*153,137,141);
     private static string PartsLabel(RobotParts parts)=>((parts&RobotParts.Head)!=0?"頭":"")+((parts&RobotParts.Body)!=0?"胴":"")+((parts&RobotParts.Legs)!=0?"脚":"");
     private static string IntegratedLabel(RobotParts parts)=>parts==(RobotParts.Head|RobotParts.Body)?"頭／胴一体型":parts==(RobotParts.Body|RobotParts.Legs)?"胴／脚一体型":"";
@@ -12,6 +13,12 @@ public partial class Game1
         =>DrawRobotGlyph(r,new Robot(0,owner,parts,captain?RobotRole.Captain:RobotRole.Soldier){IntegratedParts=integrated,DamagedParts=damaged?parts:0,CheapParts=cheap?parts:0,PremiumParts=premium?parts:0},whiteOutline,opacity);
     private void DrawRobotGlyph(Rectangle r,Robot robot,bool whiteOutline=false,float opacity=1,Func<RobotParts,float> partOpacity=null)
         => DrawRobotGlyphCore(r, robot, whiteOutline, opacity, partOpacity, showIntegratedMaterial: false);
+
+    private void DrawHangarRobot(Rectangle bounds,Robot robot,float opacity=1,Func<RobotParts,float> partOpacity=null)
+    {
+        bool materials=_setup.EquipmentMode==RobotEquipmentMode.Materials;
+        DrawRobotGlyphCore(bounds,robot,true,opacity,partOpacity,showIntegratedMaterial:materials,allowCaptain:materials);
+    }
 
     private void DrawRobotGlyphCore(Rectangle r,Robot robot,bool whiteOutline,float opacity,Func<RobotParts,float> partOpacity,bool showIntegratedMaterial,bool allowCaptain=false)
     {
@@ -23,6 +30,16 @@ public partial class Game1
         bool artHead=HasRobotHeadArt(r,robot,allowCaptain,showIntegratedMaterial);
         var torsoArt = FindRobotBodyArt(r, robot, RobotParts.Body, allowCaptain,showIntegratedMaterial);
         var legsArt = FindRobotBodyArt(r, robot, RobotParts.Legs, allowCaptain,showIntegratedMaterial);
+        var cap=artHead && robot.Role==RobotRole.Captain
+            ?(_captainCapTexture??=LoadBattleToyTexture("captain-cap")):null;
+        Rectangle capBounds=default;
+        if(cap!=null){
+            int capHeight=r.Height/4;
+            int capWidth=(r.Height-capHeight)*12/25;
+            int overlap=Math.Max(1,r.Height/16);
+            capBounds=new(r.Center.X-capWidth/2,r.Y+overlap,capWidth,capHeight);
+            r=new(r.X,r.Y+capHeight,r.Width,r.Height-capHeight);
+        }
         bool completeArt = artHead && torsoArt != null && legsArt != null;
         bool HasArt(RobotParts part) => part switch
         {
@@ -93,6 +110,7 @@ public partial class Game1
                 DrawRobotBodyPart(legsArt, new(r.X, r.Y + legsTop, r.Width, legsBottom - legsTop), robot, RobotParts.Legs, Alpha(RobotParts.Legs));
             if(!HasArt(emblemPart))DrawCountryEmblem(new(emblemX-emblemSize/2,emblemY,emblemSize,emblemSize),robot.Origin(emblemPart),Alpha(emblemPart));
         }
+        if(cap!=null)_spriteBatch.Draw(cap,capBounds,FrontCaptainCapCrop,Color.White*Alpha(RobotParts.Head));
         foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((robot.Parts&part)!=0){
             float alpha=Alpha(part);bool damaged=robot.IsDamaged(part);
             if(damaged && !HasArt(part)){

@@ -163,10 +163,10 @@ public partial class Game1
                 }
                 var head=DirectViewPart(side,slot,0);
                 var joinedGlyph=new Rectangle(head.X,head.Y,head.Width,Math.Max(1,180*cell.Height/280));
-                if(robot!=null)DrawRobotGlyph(joinedGlyph,robot,whiteOutline:true,partOpacity:part=>(_setup.Robots.DirectDelivery.LockedParts(node,robot.Id)&part)!=0?.35f:1);
+                if(robot!=null)DrawHangarRobot(joinedGlyph,robot,partOpacity:part=>(_setup.Robots.DirectDelivery.LockedParts(node,robot.Id)&part)!=0?.35f:1);
                 foreach(var order in _setup.Robots.DirectDelivery.Orders.Where(o=>o.Target==node && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot))){
                     var original=PlanningStock.Nodes[order.Source].Robots.FirstOrDefault(r=>r.Id==order.RobotId);
-                    if(original!=null)DrawRobotGlyph(joinedGlyph,original with {Parts=order.Part,IntegratedParts=original.IntegratedParts&order.Part},whiteOutline:true,opacity:.5f);
+                    if(original!=null)DrawHangarRobot(joinedGlyph,original with {Parts=order.Part,IntegratedParts=original.IntegratedParts&order.Part},opacity:.5f);
                 }
                 for(int row=0;row<3;row++){
                     var part=HangarPart(row);var bounds=DirectViewPart(side,slot,row);
@@ -220,7 +220,7 @@ public partial class Game1
         _ui.Center(status,new(20,1046,1880,25),Math.Min(.32f,1840/Math.Max(1,_font.MeasureString(status).X)),Accent);
         DrawNodeCheckHint();
         if(!_directDrag.HasValue)DrawDeliveryTagHint(new(0,0,1920,1080));
-        if(_directDrag is {} drag){var robot=PlanningStock.Nodes[_directNodes[drag.Side]].Robots.FirstOrDefault(r=>r.Id==drag.Robot);if(robot!=null){var selected=drag.Part==0?robot.Parts:drag.Part;var bounds=new Rectangle(_pointer.X-34,_pointer.Y-34,68,102);DrawRobotGlyph(bounds,robot with {Parts=selected,IntegratedParts=robot.IntegratedParts&selected},whiteOutline:true);}}
+        if(_directDrag is {} drag){var robot=PlanningStock.Nodes[_directNodes[drag.Side]].Robots.FirstOrDefault(r=>r.Id==drag.Robot);if(robot!=null){var selected=drag.Part==0?robot.Parts:drag.Part;var bounds=new Rectangle(_pointer.X-34,_pointer.Y-34,68,102);DrawHangarRobot(bounds,robot with {Parts=selected,IntegratedParts=robot.IntegratedParts&selected});}}
         if(_directMaterialDrag is {} material && _setup.Robots.Nodes[_directNodes[material.Side]].MaplePackages.FirstOrDefault(p=>p.Id==material.Id) is {} cargo)
             DrawMaplePackage(new(_pointer.X-55,_pointer.Y-46,110,92),cargo);
     }

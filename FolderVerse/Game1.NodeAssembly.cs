@@ -264,13 +264,13 @@ public partial class Game1
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);var incoming=_setup.Robots.DirectDelivery.Orders.Where(o=>o.Target==_populationNode && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot)).ToArray();foreach(var order in incoming)
             {
                 var original=_setup.Robots.Nodes[order.Source].Robots.FirstOrDefault(r=>r.Id==order.RobotId);
-                if(original!=null)DrawRobotGlyph(AssemblyRobotBounds(slot),original.Slice(order.Part),whiteOutline:true,opacity:.5f);
+                if(original!=null)DrawHangarRobot(AssemblyRobotBounds(slot),original.Slice(order.Part),opacity:.5f);
                 _ui.Center("到着予定："+PartsLabel(order.Part),new(cell.X,cell.Y+236,cell.Width,22),.27f,Cream);
             }
             // Draw opaque labels after every glyph, including disabled/occupied slots.
             if(robot==null){DrawHangarDeliveryTags(slot,incoming,occupant);DrawMaterials(slot);continue;}
             robot=HomePersuasionRobot(robot);
-            DrawRobotGlyph(AssemblyRobotBounds(slot),robot,whiteOutline:true,partOpacity:part=>reservationMode?(canReserve?1:.45f):!HangarAssemblyAvailable || HangarPlaceEnabled(occupant,part)?1:.22f);
+            DrawHangarRobot(AssemblyRobotBounds(slot),robot,partOpacity:part=>reservationMode?(canReserve?1:.45f):!HangarAssemblyAvailable || HangarPlaceEnabled(occupant,part)?1:.22f);
             DrawHangarDeliveryTags(slot,incoming,occupant);
             for(int row=0;HangarAssemblyAvailable && !reservationMode && row<3;row++)
             {
@@ -402,7 +402,7 @@ public partial class Game1
     {
         var origin=_pointer-_hangarGrabOffset;
         var bounds=new Rectangle(origin,AssemblyRobotBounds(_hangarSource).Size);
-        DrawRobotGlyph(bounds,robot with {Parts=_hangarPart,IntegratedParts=robot.IntegratedParts&_hangarPart},whiteOutline:true);
+        DrawHangarRobot(bounds,robot with {Parts=_hangarPart,IntegratedParts=robot.IntegratedParts&_hangarPart});
     }
     private void SyncHangarSlots()
     {

@@ -165,7 +165,7 @@ public partial class Game1
             if(clipped!=cell)continue;
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
             TrackWarehouseKeeperHover(cell,robot);
-            if(robot!=null)DrawRobotGlyph(HangarRobotArea(cell),HomePersuasionRobot(robot),whiteOutline:true);
+            if(robot!=null)DrawHangarRobot(HangarRobotArea(cell),HomePersuasionRobot(robot));
             for(int row=0;row<3;row++)if(materials.TryGetValue(slot*3+row,out var package))
                 DrawMaplePackage(HangarCellRegion(cell,80,8+row*60,92,58+(package.Sections-1)*60),package,
                     opacity:MapleArrival(package)?.55f:1,compact:true);
@@ -186,7 +186,7 @@ public partial class Game1
         }
         if(robot!=null)
         {
-            DrawRobotGlyph(AssemblyRobotBounds(slot),HomePersuasionRobot(robot),whiteOutline:true);
+            DrawHangarRobot(AssemblyRobotBounds(slot),HomePersuasionRobot(robot));
             if(robot.CanFight)DrawEquipmentCounts(HangarCellRegion(cell,8,208,236,48),
                 robot.Equipment(robot.Owner,_setup.EquipmentMode),Cream);
             if(robot.WarehouseKeeper)DrawHangarReservationLabel(HangarCellRegion(cell,0,170,252,36),robot,"倉庫管理人");
