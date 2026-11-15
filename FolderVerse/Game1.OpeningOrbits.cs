@@ -49,21 +49,27 @@ public partial class Game1
         new(111,180,223),new(196,149,222),new(117,199,156),new(232,156,110),
         new(127,157,232),new(212,193,131),new(224,143,167),new(139,205,211)
     };
+    private static readonly Vector2 OpeningOrbitCenter=new(960,520);
+    private static Vector2 OpeningOrbitProjection(Vector3 point)=>
+        new(point.X+point.Z*.57f,-point.Y+point.Z*.56f-point.X*.26f);
 
-    private void DrawOpeningOrbits(float age,bool intro)
+    private void DrawOpeningOrbits(float age,bool intro,float modelBlend=1)
     {
         float zoomIn=intro?MathHelper.SmoothStep(0,1,(age-1.4f)/1.35f):
             (_openingOrbitRound>0?MathHelper.SmoothStep(1,0,age/1.25f):0)
             +MathHelper.SmoothStep(0,1,(age-5)/1f);
-        float opacity=intro?MathHelper.SmoothStep(0,1,age/.35f)*(1-zoomIn):
+        float opacity=intro?modelBlend*(1-MathHelper.SmoothStep(0,1,(zoomIn-.68f)/.32f)):
             .72f*zoomIn;
         if(opacity<=0)return;
 
         float approach=intro?zoomIn:1-zoomIn;
-        float scale=MathHelper.Lerp(5.1f,7f,approach);
+        float scale=MathHelper.Lerp(5.1f,9f,approach);
+        float roll=.58f*approach;
+        float cos=MathF.Cos(roll),sin=MathF.Sin(roll);
+        Vector2 Rotate(Vector2 v)=>new(v.X*cos-v.Y*sin,v.X*sin+v.Y*cos);
         float elapsed=intro?age:(float)(OrbitOverviewSeconds+_openingOrbitRound*OpeningPlanetInterval+age);
         int focus=_openingOrbitRound%OpeningOrbitSizes.Length;
-        var center=new Vector2(960,520);
+        var center=OpeningOrbitCenter;
         Span<(Vector3 Position,Vector3 Size,Color Tint)> bodies=stackalloc (Vector3,Vector3,Color)[17];
         Span<(Vector3 A,Vector3 B,Vector3 C,Vector3 D,Color Tint)> rails=stackalloc (Vector3,Vector3,Vector3,Vector3,Color)[16];
         var candidates=_openingOrbitCandidates.ToArray();
@@ -94,13 +100,20 @@ public partial class Game1
             var rail=new Color(241,246,255)*(ink*(i==focus?.94f:.62f));
             int offset=(i-focus+VisibleOpeningOrbits)%VisibleOpeningOrbits;
             var candidate=offset<candidates.Length?candidates[offset]:null;
-            bodies[i+1]=(point,MiniatureSize(candidate,i),MiniatureColor(candidate,i)*replacementFade);
+            float bodyFade=!intro && i==focus?MathHelper.SmoothStep(0,1,(age-4.7f)/.55f):1;
+            bodies[i+1]=(point,MiniatureSize(candidate,i),MiniatureColor(candidate,i)*(replacementFade*bodyFade));
             if(i==focus)
             {
                 Vector3 direction=distance<legX?Vector3.UnitX:distance<legX+legZ?Vector3.UnitZ:
                     distance<2*legX+legZ?-Vector3.UnitX:-Vector3.UnitZ;
                 Vector2 lookAhead=Project(point+direction*14)-center;
                 center-=Vector2.Clamp(lookAhead,new Vector2(-175,-105),new Vector2(175,105))*approach;
+                if(intro)
+                {
+                    // Hand off to the full globe at its entry point, beyond the right edge.
+                    var destination=new Vector2(OpeningPlanetEntryX,492.5f);
+                    center+=(destination-Project(point))*MathHelper.SmoothStep(0,1,(approach-.38f)/.62f);
+                }
             }
             rails[i]=(a,b,c,d,rail);
         }
@@ -127,21 +140,20 @@ public partial class Game1
         }
         foreach(var rail in rails)
         {
-            LandLine(Project(rail.A),Project(rail.B),rail.Tint,2);
-            LandLine(Project(rail.B),Project(rail.C),rail.Tint,2);
-            LandLine(Project(rail.C),Project(rail.D),rail.Tint,2);
-            LandLine(Project(rail.D),Project(rail.A),rail.Tint,2);
+            DrawOpeningOrbitRail(Project(rail.A),Project(rail.B),rail.Tint);
+            DrawOpeningOrbitRail(Project(rail.B),Project(rail.C),rail.Tint);
+            DrawOpeningOrbitRail(Project(rail.C),Project(rail.D),rail.Tint);
+            DrawOpeningOrbitRail(Project(rail.D),Project(rail.A),rail.Tint);
         }
 
         bodies.Sort((a,b)=>Depth(a.Position).CompareTo(Depth(b.Position)));
         foreach(var body in bodies)DrawBody(body.Position,body.Size,body.Tint*opacity);
 
-        Vector2 Project(Vector3 point)=>center+new Vector2(
-            point.X+point.Z*.57f, -point.Y+point.Z*.56f-point.X*.26f)*scale;
+        Vector2 Project(Vector3 point)=>center+Rotate(OpeningOrbitProjection(point))*scale;
         static float Depth(Vector3 p)=>p.Z-p.X*.57f+p.Y*.4f;
         static Vector3 MiniatureSize(WorldSetup candidate,int slot)=>candidate==null?
-            new Vector3(4+slot%3,4+(slot+1)%3,4+(slot+2)%3):
-            new Vector3(candidate.Width,candidate.Height,candidate.Depth)*.8f+new Vector3(3);
+            new Vector3(4+slot%3,4+(slot+1)%3,4+(slot+2)%3)*.5f:
+            new Vector3(candidate.Width,candidate.Height,candidate.Depth)*.4f+new Vector3(1.5f);
         static Color MiniatureColor(WorldSetup candidate,int slot)=>
             OpeningOrbitColors[(candidate?.WorldSeed??slot)%OpeningOrbitColors.Length];
 
@@ -152,10 +164,28 @@ public partial class Game1
             var b=Project(position+new Vector3(h.X,h.Y,-h.Z));
             var c=Project(position+new Vector3(h.X,h.Y,h.Z));
             var d=Project(position+new Vector3(-h.X,h.Y,h.Z));
-            var drop=new Vector2(0,size.Y*scale);
+            var drop=Rotate(new Vector2(0,size.Y*scale));
             DrawOpeningOrbitFace(a,d,d+drop,a+drop,color*.78f);
             DrawOpeningOrbitFace(d,c,c+drop,d+drop,color*.59f);
             DrawOpeningOrbitFace(a,b,c,d,color);
+        }
+    }
+
+    private void DrawOpeningOrbitRail(Vector2 from,Vector2 to,Color tint)
+    {
+        var delta=to-from;
+        float first=0,last=1;
+        if(Clip(from.X,delta.X,OpeningCanvas.Width-2)
+            && Clip(from.Y,delta.Y,OpeningCanvas.Height-2))
+            LandLine(from+delta*first,from+delta*last,tint,2);
+
+        bool Clip(float start,float travel,float limit)
+        {
+            if(travel==0)return start>=2 && start<=limit;
+            float a=(2-start)/travel,b=(limit-start)/travel;
+            first=Math.Max(first,Math.Min(a,b));
+            last=Math.Min(last,Math.Max(a,b));
+            return first<last;
         }
     }
 

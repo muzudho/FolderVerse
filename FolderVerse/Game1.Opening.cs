@@ -14,6 +14,8 @@ public partial class Game1
     private const double OpeningPlanetFlight = 8;
     private const double GalaxyApproachSeconds = 4.5;
     private const double OrbitOverviewSeconds = 2.75;
+    private const float GalaxyModelBlendSeconds = .65f;
+    private const float OpeningPlanetEntryX = 2400;
     private const double BookUnfoldSeconds = .8;
     private const double BookRevealSeconds = 1.85;
     private static readonly Rectangle OpeningCanvas = new(0,0,1920,1080);
@@ -32,7 +34,7 @@ public partial class Game1
     private bool OpeningFixed=>_openingTutorial || _openingFixedStart!=null;
     private bool OpeningGalaxyApproach=>_screen==Screen.OpeningLottery && _openingAge<0;
     private float OpeningStarX=>_screen==Screen.OpeningReview?960:OpeningPlanetX(_openingAge);
-    private static float OpeningPlanetX(double age)=>age<2?MathHelper.Lerp(2400,960,(float)(age/2)):
+    private static float OpeningPlanetX(double age)=>age<2?MathHelper.Lerp(OpeningPlanetEntryX,960,(float)(age/2)):
         age<5?MathHelper.Lerp(960,820,(float)((age-2)/3)):MathHelper.Lerp(820,-650,(float)((age-5)/3));
     private bool OpeningStarSelectable=>!OpeningGalaxyApproach && OpeningStarX>=400 && OpeningStarX<=1520;
     private void BeginOpening(bool tutorial,Action fixedStart=null)
@@ -177,15 +179,16 @@ public partial class Game1
             _=>new Vector2(-1,-along*.66f)
         };
     }
-    private void DrawOpeningGalaxy()
+    private void DrawOpeningGalaxy(float modelAge,float modelBlend)
     {
-        float progress=(float)(1+(_openingAge+OrbitOverviewSeconds)/GalaxyApproachSeconds);
-        float zoom=150*MathF.Pow(11,MathHelper.SmoothStep(0,1,progress));
-        float opacity=MathHelper.SmoothStep(0,1,progress/.15f)
-            *(1-MathHelper.SmoothStep(0,1,(progress-.76f)/.24f));
+        float progress=MathHelper.Clamp((float)(1+modelAge/GalaxyApproachSeconds),0,1);
+        float zoom=150*MathF.Pow(2.65f,MathHelper.SmoothStep(0,1,progress));
+        float opacity=MathHelper.SmoothStep(0,1,progress/.15f)*(1-modelBlend);
+        float tilt=MathHelper.SmoothStep(0,1,(progress-.40f)/.60f);
         foreach(var star in OpeningGalaxyStars)
         {
-            Vector2 point=new Vector2(960,525)+star.Position*zoom;
+            var projected=OpeningOrbitProjection(new Vector3(star.Position.X,0,star.Position.Y/.66f));
+            Vector2 point=OpeningOrbitCenter+Vector2.Lerp(star.Position,projected,tilt)*zoom;
             int size=Math.Clamp((int)(star.Size*MathF.Sqrt(zoom/265)),1,7);
             var bounds=new Rectangle((int)point.X-size/2,(int)point.Y-size/2,size,size);
             if(OpeningCanvas.Intersects(bounds))
@@ -285,8 +288,10 @@ public partial class Game1
                 }
             }else if(OpeningGalaxyApproach){
                 OpeningStars(OpeningCanvas);
-                if(_openingAge<-OrbitOverviewSeconds)DrawOpeningGalaxy();
-                else DrawOpeningOrbits((float)(_openingAge+OrbitOverviewSeconds),true);
+                float modelAge=(float)(_openingAge+OrbitOverviewSeconds);
+                float modelBlend=MathHelper.SmoothStep(0,1,modelAge/GalaxyModelBlendSeconds);
+                if(modelBlend<1)DrawOpeningGalaxy(modelAge,modelBlend);
+                if(modelBlend>0)DrawOpeningOrbits(modelAge,true,modelBlend);
             }else{
                 OpeningStars(OpeningCanvas);
                 if(_screen==Screen.OpeningLottery)DrawOpeningOrbits((float)_openingAge,false);
