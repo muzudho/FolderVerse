@@ -104,7 +104,8 @@ sealed class GlyphProbe:Game1
   capture.SetData(pixels);
   using(var paneFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"long-delivery-arrivals.png")))
    capture.SaveAsPng(paneFile,960,540);
-  typeof(RobotLongDelivery).GetMethod("Advance",Flags)!.Invoke(stock.LongDelivery,new object[]{world});
+  var advance=typeof(RobotLongDelivery).GetMethod("Advance",Flags)!;
+  advance.Invoke(stock.LongDelivery,new object[]{world});
   if(stock.LongDelivery.Orders.Count!=2 || stock.LongDelivery.Orders.Any(order=>!order.Started || order.Node!=route[1]))
    throw new Exception("Both shipments must advance to the intermediate hangar.");
   var relayPixels=new Color[pixels.Length];
@@ -112,6 +113,24 @@ sealed class GlyphProbe:Game1
   if(!pixels.SequenceEqual(relayPixels))
    throw new Exception("The destination preview changed after the cargo reached the intermediate hangar.");
   Console.WriteLine("PASS both long delivery material arrivals are pixel-identical after the first hop.");
+  for(int hop=2;hop<route.Length;hop++)advance.Invoke(stock.LongDelivery,new object[]{world});
+  if(stock.LongDelivery.Orders.Count!=0)
+   throw new Exception("Long deliveries were not completed after the final hop.");
+  var warehouse=stock.Nodes[route[^1]];
+  var deliveredPair=warehouse.Single(robot=>robot.Id==integrated.Id);
+  var deliveredCaptain=warehouse.Single(robot=>robot.Id==captain.Id);
+  if(deliveredPair.Parts!=integrated.Parts || deliveredPair.IntegratedParts!=integrated.IntegratedParts ||
+     deliveredPair.HeadMaterial!=RobotMaterial.Cardboard || deliveredPair.BodyMaterial!=RobotMaterial.Cardboard ||
+     deliveredCaptain.Role!=RobotRole.Captain || deliveredCaptain.Parts!=RobotParts.Complete ||
+     deliveredCaptain.HeadMaterial!=RobotMaterial.Maple || deliveredCaptain.BodyMaterial!=RobotMaterial.Maple ||
+     deliveredCaptain.LegsMaterial!=RobotMaterial.Maple)
+   throw new Exception("Final arrival lost its materials, integration or role.");
+  typeof(Game1).GetMethod("SyncLongSlots",Flags)!.Invoke(this,null);
+  DrawArrivals(pixels);
+  capture.SetData(pixels);
+  using(var paneFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"long-delivery-delivered.png")))
+   capture.SaveAsPng(paneFile,960,540);
+  Console.WriteLine("PASS final long delivery preserves the integrated pair and captain in the destination hangar.");
  }
  protected override void Draw(GameTime time){
   if(drawn)return;drawn=true;if(shipmentsOnly){CheckShipmentArt();Exit();return;}if(galleryOnly){DrawMaterialGallery();Exit();return;}GraphicsDevice.Clear(new Color(25,36,48));batch.Begin();

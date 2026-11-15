@@ -1,5 +1,6 @@
 namespace FolderVerse;
 using System;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -11,6 +12,13 @@ public partial class Game1
     private double _openingAge;
     private const double OpeningPlanetInterval = 6;
     private const double OpeningPlanetFlight = 8;
+    private const double BookUnfoldSeconds = .8;
+    private const double BookRevealSeconds = 1.85;
+    private static readonly Rectangle OpeningCanvas = new(0,0,1920,1080);
+    private static readonly Rectangle OpeningBookBounds = new(487,372,230,350);
+    private static readonly Color OpeningSpaceInk = new(3,8,18);
+    private static readonly Color BookCloth = new(38,76,89);
+    private Texture2D _openingReadingTable;
     private WorldPreview _departingOpeningPlanet;
     private readonly PlanetLottery _openingPlanets=new();
     private static readonly Rectangle OpeningNext=new(710,955,500,70),OpeningBack=new(70,965,280,60),OpeningSkip=new(1500,30,350,50);
@@ -74,7 +82,7 @@ public partial class Game1
         }
         if(next){
             if(_screen==Screen.OpeningBook){if(OpeningFixed)EnterOpeningSpace();else _screen=Screen.PlayerCount;return;}
-            if(_screen==Screen.OpeningSpace){if(OpeningFixed)FinishFixedOpening();else BeginOpeningLottery();return;}
+            if(_screen==Screen.OpeningSpace && _openingAge>=BookRevealSeconds){if(OpeningFixed)FinishFixedOpening();else BeginOpeningLottery();return;}
             // Commit the planet the player actually saw, before advancing this frame's clock.
             if(_screen==Screen.OpeningLottery && OpeningStarSelectable){DisposeDepartingOpeningPlanet();_screen=Screen.OpeningReview;_openingAge=2;return;}
             if(_screen==Screen.OpeningReview){_openingWorldSelected=true;_openingActive=false;BeginCast();return;}
@@ -102,36 +110,82 @@ public partial class Game1
         _setup.SetCast(_setup.CastSeed);_world.ShowSetup(_setup,false);_rollTime=0;
         return true;
     }
-    private void OpeningStars()
+    private void OpeningStars(Rectangle area)
     {
+        _ui.Box(area,OpeningSpaceInk);
+        float scale=Math.Min(area.Width/1920f,area.Height/1080f);
         for(int i=0;i<135;i++){
             float x=(float)((i*367.0+1920*100-_openingAge*(18+i%5*14))%1920),y=85+i*173%780;
-            int size=i%9==0?4:2;_ui.Box(new((int)x,(int)y,size,size),new Color(180+i%60,190+i%50,225)*(.35f+i%4*.15f));
+            int size=Math.Max(1,(int)((i%9==0?4:2)*scale));
+            var star=new Rectangle(area.X+(int)(x*area.Width/1920),area.Y+(int)(y*area.Height/1080),size,size);
+            _ui.Box(Rectangle.Intersect(star,area),new Color(180+i%60,190+i%50,225)*(.35f+i%4*.15f));
         }
     }
-    private void StoryBook(Rectangle box,float open=0)
+    private void OpeningReadingTable()
     {
-        // Warm spotlight and layered paper are code-drawn, so the book stays sharp at any window size.
-        for(int layer=15;layer>0;layer--){
-            int rx=box.Width/2+80+layer*10,ry=box.Height/2+35+layer*6;
-            for(int y=-ry;y<ry;y+=10){int width=(int)(rx*MathF.Sqrt(Math.Max(0,1-y*y/(float)(ry*ry))));
-                _ui.Box(new(box.Center.X-width,box.Center.Y+y,width*2,10),new Color(181,150,87)*.018f);}
+        if(_openingReadingTable==null)
+        {
+            using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Setup","opening-reading-table-v001.png"));
+            _openingReadingTable=Texture2D.FromStream(GraphicsDevice,stream);
         }
+        _spriteBatch.Draw(_openingReadingTable,OpeningCanvas,Color.White);
+    }
+    private void StoryBook(Rectangle box)
+    {
         _ui.Box(new(box.X+18,box.Y+22,box.Width,box.Height),new Color(0,0,0,140));
         _ui.Box(box,new Color(104,65,78));
         _ui.Box(new(box.X+10,box.Y+9,box.Width-20,box.Height-18),Cream);
         for(int i=0;i<4;i++)_ui.Box(new(box.X+16,box.Bottom-16-i*4,box.Width-26,2),new Color(176,153,121));
-        _ui.Box(new(box.X+17,box.Y+12,box.Width-34,box.Height-40),new Color(38,76,89));
+        _ui.Box(new(box.X+17,box.Y+12,box.Width-34,box.Height-40),BookCloth);
         _ui.Box(new(box.X+18,box.Y+13,15,box.Height-42),new Color(26,51,64));
-        if(open>0){
-            int spread=(int)(box.Width*.42f*open);
-            _ui.Box(new(box.Center.X-spread,box.Y+22,spread*2,box.Height-55),new Color(248,235,206));
-            _ui.Box(new(box.Center.X-2,box.Y+22,4,box.Height-55),new Color(174,146,115));
-        }else{
-            _ui.Center("FOLDER VERSE",new(box.X+30,box.Y+55,box.Width-60,55),.68f,Cream);
-            if(_marginStar!=null)_spriteBatch.Draw(_marginStar,new Rectangle(box.Center.X-75,box.Center.Y-55,150,150),Color.White);
-            _ui.Center("星をめぐる絵本",new(box.X+25,box.Bottom-105,box.Width-50,45),.55f,Cream);
+        float widthRatio=box.Width/(float)OpeningBookBounds.Width;
+        _ui.Center("FOLDER VERSE",new(box.X,box.Y+55,box.Width,55),.55f*widthRatio,Cream);
+        int starWidth=(int)(130*widthRatio);
+        if(_marginStar!=null)_spriteBatch.Draw(_marginStar,new Rectangle(box.Center.X-starWidth/2,box.Center.Y-55,starWidth,130),Color.White);
+        _ui.Center("星をめぐる絵本",new(box.X,box.Bottom-105,box.Width,45),.55f*widthRatio,Cream);
+    }
+    private void DrawOpeningSpaceReveal()
+    {
+        if(_openingAge>=BookRevealSeconds)
+        {
+            OpeningStars(OpeningCanvas);
+            return;
         }
+        OpeningReadingTable();
+        var cover=OpeningBookBounds;
+        var page=new Rectangle(cover.X+19,cover.Y+17,cover.Width-38,cover.Height-40);
+        if(_openingAge<=0)
+        {
+            StoryBook(cover);
+            return;
+        }
+
+        float sweep=MathF.Cos(MathHelper.Pi*MathHelper.SmoothStep(0,1,(float)(_openingAge/BookUnfoldSeconds)));
+        int leftWidth=(int)(cover.Width*Math.Max(0,-sweep));
+        var spread=new Rectangle(cover.X-leftWidth,cover.Y,cover.Width+leftWidth,cover.Height);
+        _ui.Box(new(spread.X+18,spread.Y+22,spread.Width,spread.Height),new Color(0,0,0,140));
+        _ui.Box(spread,new Color(104,65,78));
+        _ui.Box(new(spread.X+8,spread.Y+8,spread.Width-16,spread.Height-18),Cream);
+        _ui.Box(new(cover.X-2,cover.Y+8,4,cover.Height-18),new Color(174,146,115));
+        if(sweep>0)
+        {
+            int width=(int)(cover.Width*sweep);
+            OpeningStars(page);
+            if(width>40)
+            {
+                StoryBook(new Rectangle(cover.X,cover.Y,width,cover.Height));
+            }
+            else if(width>0)
+                _ui.Box(new Rectangle(cover.X,cover.Y,width,cover.Height),BookCloth);
+            return;
+        }
+
+        float zoom=MathHelper.SmoothStep(0,1,(float)((_openingAge-BookUnfoldSeconds)/(BookRevealSeconds-BookUnfoldSeconds)));
+        OpeningStars(new Rectangle(
+            (int)MathHelper.Lerp(page.X,0,zoom),
+            (int)MathHelper.Lerp(page.Y,0,zoom),
+            (int)MathHelper.Lerp(page.Width,OpeningCanvas.Width,zoom),
+            (int)MathHelper.Lerp(page.Height,OpeningCanvas.Height,zoom)));
     }
     private void DrawOpeningFrame(GameTime time)
     {
@@ -140,21 +194,25 @@ public partial class Game1
         _spriteBatch.Begin(samplerState:SamplerState.LinearClamp,transformMatrix:transform);
         _ui.Box(new(0,0,1920,1080),new Color(3,8,18));
         if(_screen is Screen.PlayerCount or Screen.ComputerPlayerCount){
-            StoryBook(new(140,300,400,510));if(_screen==Screen.PlayerCount)DrawPlayerCount();else DrawComputerPlayerCount();
+            OpeningReadingTable();
+            StoryBook(OpeningBookBounds);if(_screen==Screen.PlayerCount)DrawPlayerCount();else DrawComputerPlayerCount();
         }else if(_screen==Screen.OpeningBook){
+            OpeningReadingTable();
             _ui.Center("これは、ひとつの星の、すべての陣地を手に入れるお話。",new(170,100,1580,85),.82f,Cream);
-            StoryBook(new(680,270,560,440));
+            StoryBook(OpeningBookBounds);
             _ui.Center(OpeningFixed?"ひとりで読む、練習のお話を開きましょう。":"この絵本を読む＜大きなお子様＞は、何人いますか？",new(250,785,1420,70),.65f,Cream);
             _ui.Button(OpeningNext,OpeningFixed?"絵本を開く":"人数を選ぶ　次へ",DefaultAccent,.65f);
         }else{
-            OpeningStars();
             if(_screen==Screen.OpeningSpace){
-                if(_openingAge<1.2)StoryBook(new(730,315,460,350),MathHelper.SmoothStep(0,1,(float)(_openingAge/1.2)));
+                DrawOpeningSpaceReveal();
+                if(_openingAge>=BookRevealSeconds){
                 _ui.Center("絵本を開くと、宇宙が有りました。",new(180,195,1560,90),.95f,Cream);
                 _ui.Center("そこには、わたしたちの知っている地球とは違う星が、いくつも有りました。",new(140,690,1640,70),.6f,Cream);
                 _ui.Center("どの星にも、見覚えのある顔。でも、征服者の名前や国は星ごとに違います。",new(140,790,1640,55),.48f,new Color(173,199,215));
                 _ui.Button(OpeningNext,OpeningFixed?"このお話を始める":"星を見に行く　次へ",DefaultAccent,.65f);
+                }
             }else{
+                OpeningStars(OpeningCanvas);
                 _ui.Center(_screen==Screen.OpeningReview?"この星で、すべての陣地を目指そう。":"星抽選フェーズ / どの星の物語にしますか？",new(180,65,1560,75),.8f,Cream);
                 _ui.Center(_world.GlobeName+" / 世界 SEED "+_setup.WorldSeed,new(360,800,1200,60),.6f,Cream);
                 if(_setup.EquipmentMode==RobotEquipmentMode.Materials)
