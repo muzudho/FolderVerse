@@ -23,7 +23,23 @@ h.Frames.Add(Frame(10,10,0));
 void AssertHeadline(BattleFrame f,string expected){var actual=NewspaperBattleOutcome.Headline(h,f,names,0,false,false);if(actual!=expected)throw new Exception(actual+" != "+expected);}
 AssertHeadline(Frame(10,10,0),"ルナ国側から開戦！");h.Kind=BattleKind.Edge;AssertHeadline(Frame(10,10,0),"ルナ国、レイン国衝突！");
 AssertHeadline(Frame(21,10,1),"ルナ国勝勢！");AssertHeadline(Frame(20,10,1),"ルナ国優勢！");AssertHeadline(Frame(11,10,1),"ルナ国優勢！");AssertHeadline(Frame(10,10,1),"戦力拮抗！");
-Console.WriteLine("PASS: opening, edge clash, >2x superiority, 10% advantage, balance; no final-state spoiler");using var game=new CheckGame();game.Run();
+Console.WriteLine("PASS: opening, edge clash, >2x superiority, 10% advantage, balance; no final-state spoiler");
+h.Finished=true;h.Kind=BattleKind.Node;h.Winner=1;
+h.Units.Add(new BattleUnit{Id=1,Owner=0,Retreated=true});
+h.Allied=(a,c)=>a==c || a==2 && c==1 || a==1 && c==2;
+void National(int country,bool resolved,string expected){
+ var actual=NewspaperBattleOutcome.NationalHeadline(h,country,resolved);
+ if(actual!=expected)throw new Exception(actual+" != "+expected);
+}
+National(0,true,"わが軍が撤退 / 敵軍が勝利");
+National(1,true,"わが軍、侵攻を撃退");
+National(2,true,"同盟軍が勝利");
+National(3,true,"他国軍の戦闘が終結");
+National(0,false,"わが軍の戦況 / 交戦中");
+h.Units[0].Retreated=false;h.Units[0].Fallen=true;
+National(0,true,"わが軍が敗北");
+h.Winner=-1;National(0,true,"わが軍の戦闘が終結 / 勝者なし");
+using var game=new CheckGame();game.Run();
 class CheckGame:Game1
 {
  const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;
@@ -33,8 +49,8 @@ class CheckGame:Game1
  BattleState battle;BattleFrame frame;
  protected override void LoadContent()
  {
-  Content.RootDirectory=Path.GetFullPath("FolderVerse/bin/NewspaperOutcomePreview/Content");
-  var setup=(WorldSetup)Get("_setup");setup.SetWorld(10);setup.SetCast(1);setup.SetPlacement(1);setup.SelectPlayer(0);
+  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");
+  var setup=(WorldSetup)Get("_setup");setup.SetParticipantCounts(1,15);setup.SetWorld(10);setup.SetCast(1);setup.SetPlacement(1);setup.SelectPlayer(0);
   var batch=new SpriteBatch(GraphicsDevice);var pixel=new Texture2D(GraphicsDevice,1,1);pixel.SetData(new[]{Color.White});var font=Content.Load<SpriteFont>("UiFont");
   Set("_spriteBatch",batch);Set("_pixel",pixel);Set("_font",font);Set("_ui",new UiPainter(batch,pixel,font));
   battle=new BattleState(1){Finished=true,Winner=1,Defender=0,TargetNode=0};
@@ -45,7 +61,7 @@ class CheckGame:Game1
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t)
  {
-  foreach(int edition in new[]{0,3,6})
+  foreach(int edition in new[]{0,3,6,NewspaperProfiles.NationalEdition})
   {
    GraphicsDevice.Clear(new Color(24,43,51));Set("_newspaperIssue",null);Set("_newspaperEdition",edition);var batch=(SpriteBatch)Get("_spriteBatch");batch.Begin();Set("_newspaperSlideAge",edition==6?.35:1.0);Set("_newspaperPrevious",0);Call("DrawBattleNewspaper",battle,frame);batch.End();
    var pixels=new Color[GraphicsDevice.Viewport.Width*GraphicsDevice.Viewport.Height];GraphicsDevice.GetBackBufferData(pixels);
@@ -63,6 +79,20 @@ class CheckGame:Game1
   sb.Begin();Call("DrawBattleNewspaper",battle,frame);sb.End();
   var refreshed=Get("_newspaperIssue");if(ReferenceEquals(issue,refreshed))throw new Exception("Next issue not refreshed");
   if(!((System.Collections.Generic.HashSet<int>)refreshed.GetType().GetProperty("Eliminated")!.GetValue(refreshed)!).Contains(0))throw new Exception("Cross stamp missing");
+  var world=(WorldSetup)Get("_setup");
+  world.SelectPlayer(11);
+  Set("_robotScenes",new[]{battle});
+  Set("_newspaperEdition",NewspaperProfiles.NationalEdition);
+  GraphicsDevice.Clear(new Color(24,43,51));
+  sb.Begin();Call("DrawRobotBattleSummary");sb.End();
+  var pp=GraphicsDevice.PresentationParameters;
+  var summary=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(summary);
+  using(var texture=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight)){
+   texture.SetData(summary);
+   using var output=File.Create(Path.Combine(AppContext.BaseDirectory,"national-summary-entry-12.png"));
+   texture.SaveAsPng(output,texture.Width,texture.Height);
+  }
+  Console.WriteLine("PASS: national headlines for defender, retreat, defeat, ally, observer and ongoing; one- and two-digit mastheads drawn.");
   Console.WriteLine("PASS: published headline frozen, next issue refreshed, elimination stamp at 90%, no future elimination spoiler");
   Console.WriteLine("PASS: partisan, objective and WANTED newspapers rendered, including headline glyphs");Exit();
  }

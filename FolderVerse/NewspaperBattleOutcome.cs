@@ -3,6 +3,31 @@ using System;
 using System.Linq;
 public static class NewspaperBattleOutcome
 {
+    public static string NationalHeadline(BattleState battle, int country, bool resolved)
+    {
+        var army = battle.Armies.FirstOrDefault(a => a.Owner == country);
+        bool allyInBattle = battle.Armies.Any(a => a.Owner != country && battle.Allied(country, a.Owner));
+        string subject = army != null ? "わが軍" : allyInBattle ? "同盟軍" : "他国軍";
+        var units = army == null ? Array.Empty<BattleUnit>() :
+            battle.Units.Concat(army.Waiting).Where(u => u.Owner == country).ToArray();
+        bool withdrew = army != null && units.Any(u => u.Retreated) &&
+            units.All(u => u.Fallen || u.Retreated);
+
+        if (!resolved) return subject + "の戦況 / 交戦中";
+        if (battle.Winner < 0)
+            return withdrew ? "わが軍が撤退 / 勝者なし" : subject + "の戦闘が終結 / 勝者なし";
+        if (battle.Winner == country)
+        {
+            bool repelled = battle.Kind == BattleKind.Node && battle.Defender == country &&
+                battle.FlagStanding && battle.Armies.Any(a => !battle.Allied(country, a.Owner));
+            return repelled ? "わが軍、侵攻を撃退" : "わが軍が勝利";
+        }
+        if (battle.Allied(country, battle.Winner))
+            return withdrew ? "わが軍は撤退、同盟軍が勝利" : "同盟軍が勝利";
+        if (army == null) return allyInBattle ? "同盟軍が敗北" : "他国軍の戦闘が終結";
+        return withdrew ? "わが軍が撤退 / 敵軍が勝利" : "わが軍が敗北";
+    }
+
     public static string Caption(BattleState battle,int owner,bool favorsArmy)
     {
         if(battle.Winner>=0 && battle.Allied(owner,battle.Winner))return "勝利！";

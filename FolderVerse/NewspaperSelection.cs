@@ -19,6 +19,10 @@ public static class NewspaperSelection
         if(battle.Winner>=0 && counts.Any(c=>c.Key!=battle.Winner && c.Value>counts.GetValueOrDefault(battle.Winner)))score+=30;
         // Publishers emphasize different aspects without changing the underlying result.
         if(edition==0 && battle.Armies.Any(a=>a.Owner==player))score+=35;
+        if(edition==NewspaperProfiles.NationalEdition && player>=0){
+            if(battle.Armies.Any(a=>a.Owner==player))score+=1000;
+            else if(battle.Armies.Any(a=>battle.Allied(player,a.Owner)))score+=500;
+        }
         if(edition==2 && battle.Winner>=0 && low(battle.Winner))score+=25;
         if(edition==3)score+=Math.Min(30,units.Count(u=>u.Fallen));
         if(edition==5 && units.Any(u=>u.Role==BattleRole.Queen))score+=25;

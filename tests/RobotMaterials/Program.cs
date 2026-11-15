@@ -376,6 +376,28 @@ foreach(int secondUnits in new[]{8,12})
     Check(intakeStock.MapleShipments.Count==0 && store.MaplePackages.Single()==package,
         "The same raw shipment arrives when another slot opens");
 }
+{
+    var mergeIntakeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
+    var mergeIntakeStock=mergeIntakeWorld.Robots;
+    var store=mergeIntakeStock.Nodes[target];
+    var receiver=mergeIntakeStock.Create(0,RobotParts.Head);
+    store.Add(receiver);
+    while(store.HasSpace)store.Add(mergeIntakeStock.Create(0,RobotParts.Complete));
+    var body=mergeIntakeStock.Create(0,RobotParts.Body);
+    mergeIntakeStock.ProductionIntakes.Add(new(source,target,body,mergeIntakeStock.Workshops[source].ProductionLines[0]));
+    var planned=mergeIntakeStock.PartPlanning.Preview(mergeIntakeWorld).Nodes[target];
+    var forecast=((int Blocked,MaplePackage[] Packages))typeof(RobotWorld).GetMethod("PreviewMapleArrivals",internalInstance)!
+        .Invoke(mergeIntakeStock,new object[]{mergeIntakeWorld,target,planned})!;
+    Check(planned.Robots.Single(r=>r.Id==receiver.Id).Parts==(RobotParts.Head|RobotParts.Body) &&
+        forecast.Blocked==0 && forecast.Packages.Single()==package && store.MaplePackages.Count==0,
+        "Forecast fits the manufactured body and a raw load in the same occupied slot");
+    typeof(RobotWorld).GetMethod("ResolveProductionIntakes",internalInstance)!.Invoke(mergeIntakeStock,new object[]{mergeIntakeWorld});
+    typeof(RobotWorld).GetMethod("ResolveMapleShipments",internalInstance)!.Invoke(mergeIntakeStock,new object[]{mergeIntakeWorld});
+    Check(mergeIntakeStock.ProductionIntakes.Count==0 && mergeIntakeStock.MapleShipments.Count==0 &&
+        store.Robots.Single(r=>r.Id==receiver.Id).Parts==(RobotParts.Head|RobotParts.Body) &&
+        store.MaplePackages.Single()==package && store.Count==store.TotalCapacity,
+        "Both deliveries fit the occupied slot as forecast");
+}
 // A reserved load must become available to the destination lane only after delivery.
 var restoredCargo=restoredSupply.Robots;
 Check(restoredCargo.MaplePlantingCount(source)==1,"Planting markers survive a save round trip");

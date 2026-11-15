@@ -13,7 +13,8 @@ public partial class Game1
     private static readonly Rectangle NewspaperSwitch=new(1128,750,704,28);
     private (BattleArmy[] Armies,int Page,int Pages) NewspaperArmyPage(BattleState battle,int patron,bool biased)
     {
-        var ordered=battle.Armies.OrderBy(a=>biased && a.Owner==patron?0:1).ToArray();
+        bool prioritizePatron=biased || _newspaperEdition==NewspaperProfiles.NationalEdition;
+        var ordered=battle.Armies.OrderBy(a=>prioritizePatron && a.Owner==patron?0:1).ToArray();
         int pages=Math.Max(1,(ordered.Length-(biased?1:0)+(biased?3:4))/(biased?4:5));
         int page=Math.Clamp((int)(_newspaperClock*pages/10),0,pages-1);
         return(biased?ordered.Take(1).Concat(ordered.Skip(1+page*4).Take(4)).ToArray():ordered.Skip(page*5).Take(5).ToArray(),page,pages);
@@ -61,7 +62,9 @@ public partial class Game1
         _ui.Box(new(1120,281,720,2),ink);_ui.Box(new(1120,286,720,1),ink);
         int patron=_newspaperEdition==0?(battle.Armies.FirstOrDefault(a=>a.Owner==_setup.PlayerSlot)?.Owner??battle.Armies[0].Owner):battle.Defender;
         if(patron<0 || patron>=_setup.Looks.Length)patron=battle.Armies[0].Owner;
-        string affiliation=profile.FavorsArmy?$"#{patron+1} 陣営 / {profile.Label}":$"Point {battle.TargetNode+1} / {profile.Label}";
+        string affiliation=issue.Country>=0?$"#{issue.Country+1} {issue.Names[issue.Country]}国 / {profile.Label}":
+            profile.FavorsArmy?$"#{patron+1} 陣営 / {profile.Label}":$"Point {battle.TargetNode+1} / {profile.Label}";
+        if(issue.Country>=0)patron=issue.Country;
         var armyPage=NewspaperArmyPage(battle,patron,profile.FavorsArmy);
         _ui.Center($"{affiliation} / 第 {issue.Turn} 号"+(armyPage.Pages>1?$" / 参戦{battle.Armies.Count}軍 {armyPage.Page+1}/{armyPage.Pages}":""),new(1128,293,704,24),.35f,ink);
         _newspaperPortraits??=new NewspaperPortraitRenderer(Content);
