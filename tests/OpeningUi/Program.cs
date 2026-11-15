@@ -44,9 +44,12 @@ sealed class OpeningGame:Game1
   File.WriteAllText(PaletteFixture,"planet");
   Call("LoadTerrainPalette");
   var spin=typeof(Game1).GetMethod("OpeningOrbitSpin",F|BindingFlags.Static)!;
-  float Angle(float time)=>(float)spin.Invoke(null,new object[]{time,0})!;
+  float Angle(float time,int slot=0)=>(float)spin.Invoke(null,new object[]{time,slot})!;
   Check(Angle(0)==Angle(.6f) && Angle(1.35f)==MathHelper.PiOver2 && Angle(1.35f)==Angle(1.9f),
       "Orbit models must pause between quarter turns");
+  Check(Angle(.89f-.19f,1)>1.5f && Angle(.89f-.76f,4)==0 &&
+      Math.Abs(Angle(.88f-.30f-.19f,1)-Angle(2.1f-.30f-.76f,4))<.001f,
+      "Fast and slow planets use different stops and the same quarter-turn motion");
   var alignment=typeof(Game1).GetMethod("OpeningPolarAlignment",F|BindingFlags.Static)!;
   var axes=new[]{Vector3.UnitX,Vector3.UnitY,Vector3.UnitZ};
   for(int axis=0;axis<axes.Length;axis++)
@@ -66,15 +69,32 @@ sealed class OpeningGame:Game1
   var colorAt=typeof(WorldTerrain).GetMethod("MapColorAt",F|BindingFlags.Static)!;
   Color Sea(int n)=>(Color)colorAt.Invoke(null,new object[]{.45f,Vector3.UnitZ,1,n})!;
   Check(Sea(0)!=Sea(1),"Planet palette must vary by seed");
+  var modelTint=typeof(WorldTerrain).GetMethod("PlanetModelTint",F|BindingFlags.Static)!;
+  Color land=(Color)colorAt.Invoke(null,new object[]{.63f,Vector3.UnitZ,1,seed})!;
+  Check((Color)modelTint.Invoke(null,new object[]{seed})! == land,
+      "The orbit model and the planet's grassland must share a color");
   Capture("opening-palette-planet");
+  var planetPixels=GlobePixels();
   Click(new Point(1540,990));
   Check(File.ReadAllText(PaletteFixture)=="earth" && Sea(0)==Sea(1) && Setup.WorldSeed==seed,
      "The opening checkbox must apply one Earth palette without changing the candidate");
   Capture("opening-palette-earth");
+  Check(GlobePixels().Zip(planetPixels).Count(pair=>pair.First!=pair.Second)>100,
+      "The displayed globe must visibly change, independently of the checkbox");
   Set("_statusMenuOpen",true);
   Check((bool)Call("StatusMenuClick",new Point(1590,544)) && File.ReadAllText(PaletteFixture)=="planet" && Sea(0)!=Sea(1),
      "The system menu must update the same persistent preference");
   Set("_statusMenuOpen",false);
+  Color[] GlobePixels()
+  {
+   var p=GraphicsDevice.PresentationParameters;
+   var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];
+   GraphicsDevice.GetBackBufferData(pixels);
+   var canvas=(Rectangle)Call("CanvasBounds");
+   int left=canvas.X+canvas.Width*3/8,top=canvas.Y+canvas.Height/3;
+   return Enumerable.Range(top,canvas.Height/4)
+      .SelectMany(y=>pixels.Skip(y*p.BackBufferWidth+left).Take(canvas.Width/4)).ToArray();
+  }
  }
  protected override void Update(GameTime time){}
  protected override void Draw(GameTime time){

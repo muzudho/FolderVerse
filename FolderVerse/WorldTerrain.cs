@@ -93,19 +93,34 @@ public static class WorldTerrain
         return height>=MountainHeight?MountainColor(height):new(245,249,255);
     }
     internal static bool EarthPalette {get;set;}
+    private static readonly (Color Sea,Color Land)[] PlanetPalettes =
+    {
+        (new(33,133,157),new(206,150,91)),
+        (new(106,68,164),new(205,164,220)),
+        (new(30,124,97),new(138,202,140)),
+        (new(163,71,49),new(239,176,107)),
+        (new(56,79,162),new(142,168,235)),
+        (new(151,107,41),new(220,204,136)),
+        (new(161,65,108),new(239,162,174)),
+        (new(18,130,143),new(151,218,216))
+    };
+    private static (Color Sea,Color Land) PlanetPalette(int seed)=>PlanetPalettes[(uint)seed%PlanetPalettes.Length];
+    internal static Color PlanetModelTint(int seed)=>PlanetPalette(seed).Land;
+
     internal static Color MapColorAt(float height,Vector3 normal,int polarAxis,int seed)
     {
-        var color=ColorAt(height,normal,polarAxis);
-        if(EarthPalette || height>=MountainHeight || Math.Abs(PolarComponent(normal,polarAxis))>=.5f)
-            return color;
-        var tint=((uint)seed%4) switch
+        if(EarthPalette || height>=MountainHeight)return ColorAt(height,normal,polarAxis);
+        var (sea,land)=PlanetPalette(seed);
+        if(Math.Abs(PolarComponent(normal,polarAxis))>=.5f)
+            return Color.Lerp(ColorAt(height,normal,polarAxis),height<.52f?sea:land,.34f);
+        return height switch
         {
-            0=>height<.52f?new Color(54,181,157):new Color(203,152,96),
-            1=>height<.52f?new Color(126,116,193):new Color(182,139,154),
-            2=>height<.52f?new Color(46,157,187):new Color(152,179,84),
-            _=>height<.52f?new Color(72,105,181):new Color(102,170,145)
+            <.47f=>Color.Lerp(sea,Color.Black,.21f),
+            <.52f=>Color.Lerp(sea,Color.White,.16f),
+            <.55f=>Color.Lerp(land,new Color(252,230,169),.55f),
+            <.70f=>land,
+            _=>Color.Lerp(land,new Color(90,82,89),.25f)
         };
-        return Color.Lerp(color,tint,height<.47f?.58f:.45f);
     }
     internal static float PolarComponent(Vector3 point,int polarAxis)=>polarAxis switch
     {

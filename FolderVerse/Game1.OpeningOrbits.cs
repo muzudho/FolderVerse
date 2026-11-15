@@ -57,11 +57,16 @@ public partial class Game1
     private readonly record struct OpeningGlobeHandoff(Vector2 Center,float Size,float Opacity,
         float ModelOpacity,Color Tint,Quaternion Pose);
 
+    private static readonly float[] OpeningSpinPeriods={1.35f,.88f,1.84f,1.12f,2.1f,1.57f,1.02f,1.73f};
     private static float OpeningOrbitSpin(float elapsed,int slot)
     {
-        float time=(elapsed+slot*.19f)/1.35f;
-        float quarter=MathF.Floor(time);
-        return (quarter%4+MathHelper.SmoothStep(0,1,(time-quarter-.55f)/.45f))*MathHelper.PiOver2;
+        const float turnSeconds=.60f;
+        float period=OpeningSpinPeriods[slot%OpeningSpinPeriods.Length];
+        float time=elapsed+slot*.19f;
+        float quarter=MathF.Floor(time/period);
+        float sinceStop=time-quarter*period;
+        float turn=(sinceStop-(period-turnSeconds))/turnSeconds;
+        return (quarter%4+MathHelper.SmoothStep(0,1,turn))*MathHelper.PiOver2;
     }
     private static bool HasLongOpeningOrbit(int candidateIndex)=>candidateIndex>=0 && candidateIndex%20==19;
     private static Matrix OpeningPolarAlignment(int polarAxis)=>polarAxis switch
@@ -187,8 +192,8 @@ public partial class Game1
         static Vector3 MiniatureSize(WorldSetup candidate,int slot)=>candidate==null?
             new Vector3(4+slot%3,4+(slot+1)%3,4+(slot+2)%3)*.5f:
             new Vector3(candidate.Width,candidate.Height,candidate.Depth)*.65f;
-        static Color MiniatureColor(WorldSetup candidate,int slot)=>
-            OpeningOrbitColors[(candidate?.WorldSeed??slot)%OpeningOrbitColors.Length];
+        static Color MiniatureColor(WorldSetup candidate,int slot)=>candidate==null?
+            OpeningOrbitColors[slot%OpeningOrbitColors.Length]:WorldTerrain.PlanetModelTint(candidate.WorldSeed);
 
         void DrawBody(Vector3 position,Vector3 size,Color color,float spin,int polarAxis)
         {
