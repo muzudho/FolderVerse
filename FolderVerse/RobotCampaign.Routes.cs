@@ -33,12 +33,15 @@ public sealed partial class RobotCampaign
         return adjacent.Concat(OutpostRoutes(world,owner,source,routes).Keys);
     }
 
-    private Dictionary<int,int[]> OutpostRoutes(WorldSetup world,int owner,int source,Dictionary<int,int> adjacent)
+    internal IEnumerable<int> PotentialOutpostTargets(WorldSetup world,int owner,int source)=>
+        OutpostRoutes(world,owner,source,MarchRoutes(world,source),planning:true).Keys;
+
+    private Dictionary<int,int[]> OutpostRoutes(WorldSetup world,int owner,int source,Dictionary<int,int> adjacent,bool planning=false)
     {
         var result=new Dictionary<int,int[]>();
         if(source<0 || source>=world.Nodes.All.Length || owner<0 || LockedNode(source))return result;
         var outpost=world.Nodes.All[source];
-        if(!outpost.Functional || outpost.Owner!=owner || outpost.Purpose!=NodePurpose.Frontline)return result;
+        if(!outpost.Functional || outpost.Owner!=owner || !planning && outpost.Purpose!=NodePurpose.Frontline)return result;
         foreach(int via in adjacent.Keys.Where(id=>IsMarchTarget(world,source,id,null)).OrderBy(id=>id))
         {
             var ally=world.Nodes.All[via];
