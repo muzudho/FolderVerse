@@ -53,7 +53,6 @@ public partial class Game1
     private static Rectangle HangarCell(int slot)=>new(84+(slot%HangarSlotsPerPage)%3*264,300+(slot%HangarSlotsPerPage)/3*270,252,260);
     private static Rectangle HangarRobotBounds(int slot)
     {var cell=HangarCell(slot);return new(cell.X+76,cell.Y+12,100,180);}
-    private static RobotParts HangarPart(int row)=>row==0?RobotParts.Head:row==1?RobotParts.Body:RobotParts.Legs;
     private bool VisitingForeignHangar=>_setup.Nodes.All[_populationNode].Owner>=0 && !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) &&
         _setup.Relations.CanAct(_setup.PlayerSlot) && _setup.Nodes.Current(_setup.PlayerSlot)?.Id==_populationNode;
     private bool CanOpenHangar=>InspectableNode(_populationNode) && (_setup.Nodes.All[_populationNode].Owner<0 || CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) || VisitingForeignHangar);
@@ -264,13 +263,13 @@ public partial class Game1
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);var incoming=_setup.Robots.DirectDelivery.Orders.Where(o=>o.Target==_populationNode && (o.TargetRobotId.HasValue?o.TargetRobotId==robot?.Id:o.TargetSlot==slot)).ToArray();foreach(var order in incoming)
             {
                 var original=_setup.Robots.Nodes[order.Source].Robots.FirstOrDefault(r=>r.Id==order.RobotId);
-                if(original!=null)DrawRobotGlyph(AssemblyRobotBounds(slot),original.Slice(order.Part),whiteOutline:true,opacity:.5f);
+                if(original!=null)DrawHangarRobot(AssemblyRobotBounds(slot),original.Slice(order.Part),opacity:.5f);
                 _ui.Center("到着予定："+PartsLabel(order.Part),new(cell.X,cell.Y+236,cell.Width,22),.27f,Cream);
             }
             // Draw opaque labels after every glyph, including disabled/occupied slots.
             if(robot==null){DrawHangarDeliveryTags(slot,incoming,occupant);DrawMaterials(slot);continue;}
             robot=HomePersuasionRobot(robot);
-            DrawRobotGlyph(AssemblyRobotBounds(slot),robot,whiteOutline:true,partOpacity:part=>reservationMode?(canReserve?1:.45f):!HangarAssemblyAvailable || HangarPlaceEnabled(occupant,part)?1:.22f);
+            DrawHangarRobot(AssemblyRobotBounds(slot),robot,partOpacity:part=>reservationMode?(canReserve?1:.45f):!HangarAssemblyAvailable || HangarPlaceEnabled(occupant,part)?1:.22f);
             DrawHangarDeliveryTags(slot,incoming,occupant);
             for(int row=0;HangarAssemblyAvailable && !reservationMode && row<3;row++)
             {
@@ -402,7 +401,7 @@ public partial class Game1
     {
         var origin=_pointer-_hangarGrabOffset;
         var bounds=new Rectangle(origin,AssemblyRobotBounds(_hangarSource).Size);
-        DrawRobotGlyph(bounds,robot with {Parts=_hangarPart,IntegratedParts=robot.IntegratedParts&_hangarPart},whiteOutline:true);
+        DrawHangarRobot(bounds,robot with {Parts=_hangarPart,IntegratedParts=robot.IntegratedParts&_hangarPart});
     }
     private void SyncHangarSlots()
     {

@@ -7,6 +7,8 @@ public sealed partial class WorldSetup
     public int[] TerritoryRights {get;private set;}=new int[CastCount];
     public bool LandPending {get;private set;}
     public int FortuneSeed {get;private set;}
+    public NationalNewspaper NationalNewspaperFor(int entryNumber) =>
+        NationalNewspapers.ForEntry(FortuneSeed, entryNumber);
     public void SetTerritoryRights(int seed)
     {
         Salvage.Reset();

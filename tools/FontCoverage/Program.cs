@@ -4,10 +4,10 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 if(args.Contains("--self-test")){SelfTest();return 0;}
-if(args.Length<1){Console.Error.WriteLine("Usage: FontCoverage <game-directory> [--update]");return 2;}
+if(args.Length<1){Console.Error.WriteLine("Usage: FontCoverage <game-directory> [additional-source-directory ...] [--update]");return 2;}
 var root=Path.GetFullPath(args[0]);var fontPath=Path.Combine(root,"Content","UiFont.spritefont");
 var uses=new SortedDictionary<char,(string File,int Line)>();var counterUses=new SortedDictionary<char,(string File,int Line)>();
-foreach(var path in Sources(root)){
+foreach(var path in Sources(root).Concat(args.Skip(1).Where(arg=>arg!="--update").SelectMany(Sources))){
     var tree=CSharpSyntaxTree.ParseText(File.ReadAllText(path),new CSharpParseOptions(LanguageVersion.Preview),path);
     Collect(tree.GetRoot(),uses,path);
     foreach(var call in tree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>())
@@ -25,7 +25,7 @@ if(args.Contains("--update") && missing.Length>0){
 }
 int errors=Report(missing,uses,fontPath);
 var counterPath=Path.Combine(root,"Content","ToyCounterFont.spritefont");errors+=Report(Missing(counterUses,XDocument.Load(counterPath,LoadOptions.PreserveWhitespace)),counterUses,counterPath);
-if(errors>0){Console.Error.WriteLine("Register glyphs with: dotnet run --project tools/FontCoverage -- FolderVerse --update");return 1;}
+if(errors>0){Console.Error.WriteLine("Register glyphs with: dotnet run --project tools/FontCoverage -- FolderVerse src/Shared --update");return 1;}
 Console.WriteLine($"FontCoverage: PASS ({uses.Count} static characters; UI and counter fonts).");return 0;
 
 static IEnumerable<string> Sources(string root){

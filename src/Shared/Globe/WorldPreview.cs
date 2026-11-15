@@ -197,7 +197,7 @@ public sealed partial class WorldPreview : IDisposable
             float relief=reliefs[x+1,y+1];
             var a=origin+stepU*x+stepV*y+normal*relief;
             var b=a+stepU;var c=b+stepV;var d=a+stepV;
-            Color color=paint?.Invoke(height,x,y)??WorldTerrain.ColorAt(height,normal,_polarAxis);
+            Color color=paint?.Invoke(height,x,y)??WorldTerrain.MapColorAt(height,normal,_polarAxis,Seed);
             if(valleys[x+1,y+1])color=WorldTerrain.ValleyColor(color);
             // Each region edge contributes half of the recessed seam.
             var left=x%detail==0?axisU*RegionSeamInset:Vector3.Zero;
@@ -233,9 +233,10 @@ public sealed partial class WorldPreview : IDisposable
     }
 
     public void Draw(float yaw, float pitch,float glow=0,bool markers=true,bool globeView=false,Rectangle? globeFrame=null,
-        IEnumerable<SurfaceCell> landSelection=null)
+        IEnumerable<SurfaceCell> landSelection=null,float opacity=1,Color? solidBody=null)
     {
-        _device.BlendState = BlendState.Opaque;
+        _device.BlendState = opacity<1?BlendState.AlphaBlend:BlendState.Opaque;
+        _effect.Alpha=opacity;
         _device.DepthStencilState = DepthStencilState.Default;
         _device.RasterizerState = RasterizerState.CullNone;
         _effect.World = globeView?GlobeOrientation(yaw,pitch):ViewOrientation(yaw,pitch);
@@ -248,6 +249,12 @@ public sealed partial class WorldPreview : IDisposable
             _effect.Projection=GlobeProjection(f.Width/(float)f.Height)
                 *Matrix.CreateScale(f.Width/(float)v.Width,f.Height/(float)v.Height,1)
                 *Matrix.CreateTranslation((f.Center.X-v.X)*2f/v.Width-1,1-(f.Center.Y-v.Y)*2f/v.Height,0);
+        }
+        if(solidBody is { } tint)
+        {
+            DrawOpeningSolidBody(tint);
+            _effect.Alpha=1;
+            return;
         }
         _device.SetVertexBuffer(_vertices);
         foreach (var pass in _effect.CurrentTechnique.Passes)
@@ -271,6 +278,31 @@ public sealed partial class WorldPreview : IDisposable
             _device.SetVertexBuffer(_markers); _effect.LightingEnabled=false;
             foreach(var pass in _effect.CurrentTechnique.Passes) { pass.Apply(); _device.DrawPrimitives(PrimitiveType.TriangleList,0,_markerCount); }
             _effect.LightingEnabled=true;
+        }
+        _effect.Alpha=1;
+    }
+
+    private readonly VertexPositionColorNormal[] _openingSolidBody=new VertexPositionColorNormal[36];
+    private void DrawOpeningSolidBody(Color tint)
+    {
+        var half=new Vector3(Width,Height,Depth)*.5f;
+        int index=0;
+        foreach(var normal in CubeNet.Normals)
+        {
+            var u=Vector3.Cross(Math.Abs(normal.Y)>.5f?Vector3.UnitZ:Vector3.UnitY,normal)*half;
+            var v=Vector3.Normalize(Vector3.Cross(normal,u))*half;
+            var mid=normal*half;
+            var a=new VertexPositionColorNormal(mid-u-v,tint,normal);
+            var b=new VertexPositionColorNormal(mid+u-v,tint,normal);
+            var c=new VertexPositionColorNormal(mid+u+v,tint,normal);
+            var d=new VertexPositionColorNormal(mid-u+v,tint,normal);
+            _openingSolidBody[index++]=a;_openingSolidBody[index++]=b;_openingSolidBody[index++]=c;
+            _openingSolidBody[index++]=a;_openingSolidBody[index++]=c;_openingSolidBody[index++]=d;
+        }
+        foreach(var pass in _effect.CurrentTechnique.Passes)
+        {
+            pass.Apply();
+            _device.DrawUserPrimitives(PrimitiveType.TriangleList,_openingSolidBody,0,12);
         }
     }
     public bool ProjectVisible(Vector3 point,Vector3 normal,float yaw,float pitch,Rectangle area,out Vector2 screen,float normalOffset=0)

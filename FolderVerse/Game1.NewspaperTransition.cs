@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Audio;
 
 public partial class Game1
 {
-    private sealed record NewspaperIssue(BattleState Battle,int Edition,int Turn,string Headline,string[] Names,HashSet<int> Eliminated);
+    private sealed record NewspaperIssue(BattleState Battle,int Edition,int Turn,string Headline,string[] Names,HashSet<int> Eliminated,int Country,bool Resolved);
     private NewspaperIssue _newspaperIssue,_newspaperPreviousIssue;
     private int _newspaperPrevious;
     private double _newspaperSlideAge=1;
@@ -40,16 +40,21 @@ public partial class Game1
     }
     private void DrawBattleNewspaper(BattleState battle,BattleFrame frame)
     {
-        if(_newspaperIssue==null || !ReferenceEquals(_newspaperIssue.Battle,battle))
+        int country=_newspaperEdition==NewspaperProfiles.NationalEdition?NationalNewspaperCountry:-1;
+        bool resolved=battle.Finished && (battle.Frames.Count==0 || ReferenceEquals(frame,battle.Frames[^1]));
+        bool newBattle=_newspaperIssue!=null && !ReferenceEquals(_newspaperIssue.Battle,battle);
+        if(_newspaperIssue==null || newBattle || _newspaperIssue.Edition!=_newspaperEdition ||
+            country>=0 && (_newspaperIssue.Resolved!=resolved || _newspaperIssue.Country!=country))
         {
-            if(_newspaperIssue!=null){_newspaperPreviousIssue=_newspaperIssue;_newspaperSlideAge=0;_newspaperClock=0;}
+            if(newBattle){_newspaperPreviousIssue=_newspaperIssue;_newspaperSlideAge=0;_newspaperClock=0;}
             var profile=NewspaperProfiles.All[_newspaperEdition];
             int patron=_newspaperEdition==0?(battle.Armies.FirstOrDefault(a=>a.Owner==_setup.PlayerSlot)?.Owner??battle.Armies[0].Owner):battle.Defender;
             if(patron<0 || patron>=_setup.Looks.Length)patron=battle.Armies[0].Owner;
-            bool resolved=battle.Finished && (battle.Frames.Count==0 || ReferenceEquals(frame,battle.Frames[^1]));
             var names=(string[])_setup.ConquerorNames.Clone();
             var eliminated=battle.Armies.Where(a=>NewspaperBattleOutcome.Eliminated(battle,frame,a.Owner,resolved)).Select(a=>a.Owner).ToHashSet();
-            _newspaperIssue=new(battle,_newspaperEdition,_setup.Population.Turn,NewspaperBattleOutcome.Headline(battle,frame,names,patron,profile.FavorsArmy,resolved),names,eliminated);
+            string headline=country>=0?NewspaperBattleOutcome.NationalHeadline(battle,country,resolved):
+                NewspaperBattleOutcome.Headline(battle,frame,names,patron,profile.FavorsArmy,resolved);
+            _newspaperIssue=new(battle,_newspaperEdition,_setup.Population.Turn,headline,names,eliminated,country,resolved);
         }
         if(_newspaperSlideAge>=NewspaperSlideSeconds || _newspaperPreviousIssue==null){DrawBattleNewspaperSheet(_newspaperIssue);return;}
         var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);

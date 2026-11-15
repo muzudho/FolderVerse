@@ -40,7 +40,7 @@ public sealed partial class WorldPreview
     public static Color LandTerritoryColor(Color nation,TerrainKind terrain)=>terrain switch
     {
         TerrainKind.Sea=>Color.Lerp(nation,new Color(78,88,104),.55f),
-        TerrainKind.Mountain=>Color.Lerp(nation,new Color(250,247,240),.72f),
+        TerrainKind.Mountain=>Color.Lerp(nation,WorldTerrain.MountainColor(.80f),.72f),
         _=>Color.Lerp(Color.Lerp(nation,new Color(190,190,180),.22f),new Color(250,247,240),.32f)
     };
 
@@ -61,7 +61,7 @@ public sealed partial class WorldPreview
             AddFace(mesh,cell.Origin,cell.U,cell.V,cell.Normal,1,1,offset,(height,x,y)=>
                 exclusive && CountryColors && owner>=0
                     ? LandTerritoryColor(setup.CountryMapColor(owner,x,y),WorldTerrain.Kind(height))
-                    : WorldTerrain.ColorAt(height,cell.Normal,setup.PolarAxis),
+                    : WorldTerrain.MapColorAt(height,cell.Normal,setup.PolarAxis,setup.WorldSeed),
                 brightness:Brightness(cell.Id));
         }
         if(previewMaples)AddPreviewMaples(mesh,setup,offset);

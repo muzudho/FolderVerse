@@ -47,7 +47,6 @@ public partial class Game1
         _titleIdle=0;
         _endingBeforeIndustry=_endingWasAutoPlay=false;
         _openingActive=_openingWorldSelected=false;
-        DisposeDepartingOpeningPlanet();
         _computerMarches=null;_visibleComputerMarches=null;_computerDomesticNodes=null;
         ClearComputerAssembly();
         _computerViewRuler=_computerViewLeader=-1;

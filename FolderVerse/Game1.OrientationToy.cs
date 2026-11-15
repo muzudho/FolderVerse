@@ -63,21 +63,11 @@ public partial class Game1
     private void DrawOrientationOverlay(Rectangle area,Rectangle canvas,Matrix transform)
     {
         var areas=OrientationAreas(area,false);var toy=areas.Toy;
-        _spriteBatch.Begin(transformMatrix:transform);
-        int radius=toy.Width/2;
-        for(int y=-radius;y<=radius;y++){
-            int half=(int)MathF.Sqrt(radius*radius-y*y);
-            _ui.Box(new(toy.Center.X-half,toy.Center.Y+y,half*2+1,1),new Color(26,51,65,235));
-        }
-        _spriteBatch.End();
-        var viewport=GraphicsDevice.Viewport;
         var robotBounds=new Rectangle(toy.X+16+(int)_orientationDragOffset.X,toy.Y+4+(int)_orientationDragOffset.Y,toy.Width-32,toy.Height-30);
-        GraphicsDevice.Viewport=OrientationViewport(robotBounds,canvas);
         var pose=OrientationGlobe
             ? (IsStatusScreen?_world.DisplayOrientation(_yaw,_pitch):_world.ViewOrientation(_yaw,_pitch))
             : _net.BellyOrientation;
-        _orientationToy.Draw((PlanetHeadSystem)_setup.PolarAxis,pose);
-        GraphicsDevice.Viewport=viewport;
+        DrawOrientationToyBody(toy,robotBounds,canvas,transform,pose);
         _spriteBatch.Begin(transformMatrix:transform);
         for(int axis=0;axis<3;axis++){
             var at=_orientationToy.ProjectScrew(axis,robotBounds);var away=at-toy.Center.ToVector2();
@@ -86,5 +76,19 @@ public partial class Game1
         }
         DrawOrientationControls(toy);
         _spriteBatch.End();
+    }
+    private void DrawOrientationToyBody(Rectangle toy,Rectangle robotBounds,Rectangle canvas,Matrix transform,Matrix pose)
+    {
+        _spriteBatch.Begin(transformMatrix:transform);
+        int radius=toy.Width/2;
+        for(int y=-radius;y<=radius;y++){
+            int half=(int)MathF.Sqrt(radius*radius-y*y);
+            _ui.Box(new(toy.Center.X-half,toy.Center.Y+y,half*2+1,1),new Color(26,51,65,235));
+        }
+        _spriteBatch.End();
+        var viewport=GraphicsDevice.Viewport;
+        GraphicsDevice.Viewport=OrientationViewport(robotBounds,canvas);
+        try{_orientationToy.Draw((PlanetHeadSystem)_setup.PolarAxis,pose);}
+        finally{GraphicsDevice.Viewport=viewport;}
     }
 }

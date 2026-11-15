@@ -1,5 +1,6 @@
 namespace FolderVerse;
 using System;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -9,22 +10,32 @@ public partial class Game1
     private bool _openingActive,_openingTutorial,_openingSkipNarration,_openingWorldSelected;
     private Action _openingFixedStart;
     private double _openingAge;
-    private const double OpeningPlanetInterval = 6;
-    private const double OpeningPlanetFlight = 8;
-    private WorldPreview _departingOpeningPlanet;
+    private const double OpeningZoomInEnd=1.5, OpeningGlobeReady=2, OpeningGlobeEnd=5;
+    private const double OpeningZoomOutStart=5.5, OpeningOverviewStart=7, OpeningOverviewHold=2;
+    private const double OpeningPlanetInterval=OpeningOverviewStart+OpeningOverviewHold;
+    private const double GalaxyApproachSeconds = 4.5;
+    private const double OrbitOverviewSeconds = 2.75;
+    private const float GalaxyModelBlendSeconds = .65f;
+    private const double BookUnfoldSeconds = .8;
+    private const double BookRevealSeconds = 1.85;
+    private static readonly Rectangle OpeningCanvas = new(0,0,1920,1080);
+    private static readonly Rectangle OpeningBookBounds = new(487,372,230,350);
+    private static readonly Color OpeningSpaceInk = new(3,8,18);
+    private static readonly Color BookCloth = new(38,76,89);
+    private static readonly (Vector2 Position, Color Tint, float Size)[] OpeningGalaxyStars = CreateOpeningGalaxy();
+    private Texture2D _openingReadingTable;
+    private int _openingOrbitRound;
+    private Quaternion _openingReviewPose=Quaternion.Identity;
     private readonly PlanetLottery _openingPlanets=new();
     private static readonly Rectangle OpeningNext=new(710,955,500,70),OpeningBack=new(70,965,280,60),OpeningSkip=new(1500,30,350,50);
     private static readonly Rectangle CastDuplicateButton=new(1450,22,405,48);
     private bool IsOpeningScreen=>_screen is Screen.OpeningBook or Screen.OpeningSpace or Screen.OpeningLottery or Screen.OpeningReview ||
         _openingActive && _screen is Screen.PlayerCount or Screen.ComputerPlayerCount;
     private bool OpeningFixed=>_openingTutorial || _openingFixedStart!=null;
-    private float OpeningStarX=>_screen==Screen.OpeningReview?960:OpeningPlanetX(_openingAge);
-    private static float OpeningPlanetX(double age)=>age<2?MathHelper.Lerp(2250,960,(float)(age/2)):
-        age<5?MathHelper.Lerp(960,820,(float)((age-2)/3)):MathHelper.Lerp(820,-650,(float)((age-5)/3));
-    private bool OpeningStarSelectable=>OpeningStarX>=400 && OpeningStarX<=1520;
+    private bool OpeningGalaxyApproach=>_screen==Screen.OpeningLottery && _openingAge<0;
+    private bool OpeningStarSelectable=>_openingAge>=OpeningGlobeReady && _openingAge<OpeningGlobeEnd;
     private void BeginOpening(bool tutorial,Action fixedStart=null)
     {
-        DisposeDepartingOpeningPlanet();
         BeginPlayerCount();_openingActive=true;_openingTutorial=tutorial;_openingFixedStart=fixedStart;
         if(!tutorial && fixedStart==null)_setup.EquipmentMode=RobotEquipmentMode.Materials;
         _openingSkipNarration=false;_openingAge=0;_titleMenuOpen=_tutorialMenuOpen=_autoPlay=_demoActive=_autoPaused=false;
@@ -34,10 +45,13 @@ public partial class Game1
     private void EnterOpeningSpace(){_screen=Screen.OpeningSpace;_openingAge=0;}
     private void BeginOpeningLottery()
     {
-        _openingActive=true;_openingWorldSelected=false;_openingAge=2;_screen=Screen.OpeningLottery;
+        _openingActive=true;_openingWorldSelected=false;
+        _openingAge=_openingSkipNarration?0:-GalaxyApproachSeconds-OrbitOverviewSeconds;
+        _openingOrbitRound=0;
+        _screen=Screen.OpeningLottery;
         _world.GlobeAnchor=null;_world.GlobePan=Vector2.Zero;_world.GlobeZoom=1;
         _openingPlanets.Reset();
-        _openingPlanets.Draw(_setup,_random);
+        ResetOpeningOrbitCandidates();
         _world.ShowOpeningPlanet(_setup);
     }
     private void FinishFixedOpening()
@@ -47,7 +61,28 @@ public partial class Game1
     }
     private void OpeningInput(bool click,bool enter,bool escape,double elapsed,KeyboardState keys)
     {
+        if(_screen==Screen.OpeningReview && MapTransitionActive)
+        {
+            UpdateMapTransition((float)elapsed);
+            return;
+        }
+        if(_screen==Screen.OpeningReview && click && OpeningInspectionToggle.Contains(_pointer))
+        {
+            ToggleOpeningInspectionMap();
+            return;
+        }
+        if(_screen is Screen.OpeningLottery or Screen.OpeningReview && !OpeningGalaxyApproach &&
+            click && OpeningPaletteButton.Contains(_pointer))
+        {
+            ToggleTerrainPalette();
+            return;
+        }
         bool next=enter || click && OpeningNext.Contains(_pointer),back=escape || click && OpeningBack.Contains(_pointer);
+        if(OpeningGalaxyApproach && click && OpeningSkip.Contains(_pointer))
+        {
+            _openingAge=0;
+            return;
+        }
         if(_screen is Screen.OpeningBook or Screen.OpeningSpace && click && OpeningSkip.Contains(_pointer)){
             _openingSkipNarration=true;
             if(OpeningFixed){FinishFixedOpening();return;}
@@ -67,33 +102,31 @@ public partial class Game1
         }
         if(back){
             if(_screen==Screen.OpeningReview){_screen=Screen.OpeningLottery;_openingAge=2;}
-            else if(_screen==Screen.OpeningLottery){DisposeDepartingOpeningPlanet();_screen=Screen.ComputerPlayerCount;}
+            else if(_screen==Screen.OpeningLottery){_screen=Screen.ComputerPlayerCount;}
             else if(_screen==Screen.OpeningSpace){_screen=OpeningFixed?Screen.OpeningBook:Screen.ComputerPlayerCount;_openingAge=0;}
             else ReturnToTitle();
             return;
         }
         if(next){
             if(_screen==Screen.OpeningBook){if(OpeningFixed)EnterOpeningSpace();else _screen=Screen.PlayerCount;return;}
-            if(_screen==Screen.OpeningSpace){if(OpeningFixed)FinishFixedOpening();else BeginOpeningLottery();return;}
+            if(_screen==Screen.OpeningSpace && _openingAge>=BookRevealSeconds){if(OpeningFixed)FinishFixedOpening();else BeginOpeningLottery();return;}
             // Commit the planet the player actually saw, before advancing this frame's clock.
-            if(_screen==Screen.OpeningLottery && OpeningStarSelectable){DisposeDepartingOpeningPlanet();_screen=Screen.OpeningReview;_openingAge=2;return;}
+            if(_screen==Screen.OpeningLottery && OpeningStarSelectable)
+            {
+                _openingInspectionUnfolded=_openingInspectionDragging=false;
+                _screen=Screen.OpeningReview;_openingAge=2;return;
+            }
             if(_screen==Screen.OpeningReview){_openingWorldSelected=true;_openingActive=false;BeginCast();return;}
         }
         _openingAge+=Math.Min(.25,elapsed);
+        if(_screen==Screen.OpeningLottery && elapsed>0)PrepareOpeningOrbitCandidate();
         if(_screen==Screen.OpeningLottery && _openingAge>=OpeningPlanetInterval)
         {
-            _openingPlanets.Draw(_setup,_random);
+            AdvanceOpeningOrbitCandidates();
+            _openingOrbitRound++;
             _openingAge-=OpeningPlanetInterval;
-            var incoming = _departingOpeningPlanet ?? new WorldPreview(GraphicsDevice);
-            _departingOpeningPlanet = _world;
-            _world = incoming;
             _world.ShowOpeningPlanet(_setup);
         }
-    }
-    private void DisposeDepartingOpeningPlanet()
-    {
-        _departingOpeningPlanet?.Dispose();
-        _departingOpeningPlanet = null;
     }
     private bool CastDuplicateInput(bool click)
     {
@@ -102,88 +135,229 @@ public partial class Game1
         _setup.SetCast(_setup.CastSeed);_world.ShowSetup(_setup,false);_rollTime=0;
         return true;
     }
-    private void OpeningStars()
+    private void OpeningStars(Rectangle area)
     {
-        for(int i=0;i<135;i++){
+        _ui.Box(area,OpeningSpaceInk);
+        for(int i=0;i<270;i++){
             float x=(float)((i*367.0+1920*100-_openingAge*(18+i%5*14))%1920),y=85+i*173%780;
-            int size=i%9==0?4:2;_ui.Box(new((int)x,(int)y,size,size),new Color(180+i%60,190+i%50,225)*(.35f+i%4*.15f));
+            int size=i%9==0?4:2;
+            var star=new Rectangle((int)x,(int)y,size,size);
+            if(area.Intersects(star))
+                _ui.Box(Rectangle.Intersect(star,area),new Color(180+i%60,190+i%50,225)*(.35f+i%4*.15f));
         }
     }
-    private void StoryBook(Rectangle box,float open=0)
+    private static (Vector2 Position, Color Tint, float Size)[] CreateOpeningGalaxy()
     {
-        // Warm spotlight and layered paper are code-drawn, so the book stays sharp at any window size.
-        for(int layer=15;layer>0;layer--){
-            int rx=box.Width/2+80+layer*10,ry=box.Height/2+35+layer*6;
-            for(int y=-ry;y<ry;y+=10){int width=(int)(rx*MathF.Sqrt(Math.Max(0,1-y*y/(float)(ry*ry))));
-                _ui.Box(new(box.Center.X-width,box.Center.Y+y,width*2,10),new Color(181,150,87)*.018f);}
+        const int armStars=1800;
+        var stars=new (Vector2,Color,float)[2300];
+        var random=new Random(5029);
+        for(int i=0;i<stars.Length;i++)
+        {
+            float radius=(float)random.NextDouble();
+            float turns;
+            Color tint;
+            if(i<armStars)
+            {
+                radius=MathF.Sqrt(radius);
+                float scatter=((float)random.NextDouble()-.5f)*(.24f+.42f*(1-radius));
+                turns=i%3/3f+radius*1.45f+scatter*.18f;
+                tint=Color.Lerp(new Color(255,204,140),new Color(122,176,255),radius);
+            }
+            else
+            {
+                radius=.23f*radius;
+                turns=(float)random.NextDouble();
+                tint=Color.Lerp(new Color(255,249,213),new Color(255,184,106),radius/.23f);
+            }
+            float brightness=.22f+.63f*(float)random.NextDouble();
+            stars[i]=(OpeningGalaxyRectangle(turns)*radius,tint*brightness,
+                1f+2f*(float)random.NextDouble());
         }
+        return stars;
+    }
+    private static Vector2 OpeningGalaxyRectangle(float turns)
+    {
+        float edge=(turns-MathF.Floor(turns))*4f;
+        float along=2*(edge-MathF.Floor(edge))-1;
+        return (int)edge switch
+        {
+            0=>new Vector2(along,-.66f),
+            1=>new Vector2(1,along*.66f),
+            2=>new Vector2(-along,.66f),
+            _=>new Vector2(-1,-along*.66f)
+        };
+    }
+    private void DrawOpeningGalaxy(float modelAge,float modelBlend)
+    {
+        float progress=MathHelper.Clamp((float)(1+modelAge/GalaxyApproachSeconds),0,1);
+        float zoom=150*MathF.Pow(2.65f,MathHelper.SmoothStep(0,1,progress));
+        float opacity=MathHelper.SmoothStep(0,1,progress/.15f)*(1-modelBlend);
+        float tilt=MathHelper.SmoothStep(0,1,(progress-.40f)/.60f);
+        foreach(var star in OpeningGalaxyStars)
+        {
+            var projected=OpeningOrbitProjection(new Vector3(star.Position.X,0,star.Position.Y/.66f));
+            Vector2 point=OpeningOrbitCenter+Vector2.Lerp(star.Position,projected,tilt)*zoom;
+            int size=Math.Clamp((int)(star.Size*MathF.Sqrt(zoom/265)),1,7);
+            var bounds=new Rectangle((int)point.X-size/2,(int)point.Y-size/2,size,size);
+            if(OpeningCanvas.Intersects(bounds))
+                _ui.Box(Rectangle.Intersect(OpeningCanvas,bounds),star.Tint*opacity);
+        }
+        _ui.Center("銀河系",new(700,871,520,52),.62f,Cream*opacity);
+    }
+    private void OpeningReadingTable()
+    {
+        if(_openingReadingTable==null)
+        {
+            using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Setup","opening-reading-table-v001.png"));
+            _openingReadingTable=Texture2D.FromStream(GraphicsDevice,stream);
+        }
+        _spriteBatch.Draw(_openingReadingTable,OpeningCanvas,Color.White);
+    }
+    private void StoryBook(Rectangle box)
+    {
         _ui.Box(new(box.X+18,box.Y+22,box.Width,box.Height),new Color(0,0,0,140));
         _ui.Box(box,new Color(104,65,78));
         _ui.Box(new(box.X+10,box.Y+9,box.Width-20,box.Height-18),Cream);
         for(int i=0;i<4;i++)_ui.Box(new(box.X+16,box.Bottom-16-i*4,box.Width-26,2),new Color(176,153,121));
-        _ui.Box(new(box.X+17,box.Y+12,box.Width-34,box.Height-40),new Color(38,76,89));
+        _ui.Box(new(box.X+17,box.Y+12,box.Width-34,box.Height-40),BookCloth);
         _ui.Box(new(box.X+18,box.Y+13,15,box.Height-42),new Color(26,51,64));
-        if(open>0){
-            int spread=(int)(box.Width*.42f*open);
-            _ui.Box(new(box.Center.X-spread,box.Y+22,spread*2,box.Height-55),new Color(248,235,206));
-            _ui.Box(new(box.Center.X-2,box.Y+22,4,box.Height-55),new Color(174,146,115));
-        }else{
-            _ui.Center("FOLDER VERSE",new(box.X+30,box.Y+55,box.Width-60,55),.68f,Cream);
-            if(_marginStar!=null)_spriteBatch.Draw(_marginStar,new Rectangle(box.Center.X-75,box.Center.Y-55,150,150),Color.White);
-            _ui.Center("星をめぐる絵本",new(box.X+25,box.Bottom-105,box.Width-50,45),.55f,Cream);
+        float widthRatio=box.Width/(float)OpeningBookBounds.Width;
+        _ui.Center("FOLDER VERSE",new(box.X,box.Y+55,box.Width,55),.55f*widthRatio,Cream);
+        int starWidth=(int)(130*widthRatio);
+        if(_marginStar!=null)_spriteBatch.Draw(_marginStar,new Rectangle(box.Center.X-starWidth/2,box.Center.Y-55,starWidth,130),Color.White);
+        _ui.Center("星をめぐる絵本",new(box.X,box.Bottom-105,box.Width,45),.55f*widthRatio,Cream);
+    }
+    private void DrawOpeningSpaceReveal()
+    {
+        if(_openingAge>=BookRevealSeconds)
+        {
+            OpeningStars(OpeningCanvas);
+            return;
         }
+        OpeningReadingTable();
+        var cover=OpeningBookBounds;
+        var page=new Rectangle(cover.X+19,cover.Y+17,cover.Width-38,cover.Height-40);
+        if(_openingAge<=0)
+        {
+            StoryBook(cover);
+            return;
+        }
+
+        float sweep=MathF.Cos(MathHelper.Pi*MathHelper.SmoothStep(0,1,(float)(_openingAge/BookUnfoldSeconds)));
+        int leftWidth=(int)(cover.Width*Math.Max(0,-sweep));
+        var spread=new Rectangle(cover.X-leftWidth,cover.Y,cover.Width+leftWidth,cover.Height);
+        _ui.Box(new(spread.X+18,spread.Y+22,spread.Width,spread.Height),new Color(0,0,0,140));
+        _ui.Box(spread,new Color(104,65,78));
+        _ui.Box(new(spread.X+8,spread.Y+8,spread.Width-16,spread.Height-18),Cream);
+        _ui.Box(new(cover.X-2,cover.Y+8,4,cover.Height-18),new Color(174,146,115));
+        if(sweep>0)
+        {
+            int width=(int)(cover.Width*sweep);
+            OpeningStars(page);
+            if(width>40)
+            {
+                StoryBook(new Rectangle(cover.X,cover.Y,width,cover.Height));
+            }
+            else if(width>0)
+                _ui.Box(new Rectangle(cover.X,cover.Y,width,cover.Height),BookCloth);
+            return;
+        }
+
+        float zoom=MathHelper.SmoothStep(0,1,(float)((_openingAge-BookUnfoldSeconds)/(BookRevealSeconds-BookUnfoldSeconds)));
+        OpeningStars(new Rectangle(
+            (int)MathHelper.Lerp(page.X,0,zoom),
+            (int)MathHelper.Lerp(page.Y,0,zoom),
+            (int)MathHelper.Lerp(page.Width,OpeningCanvas.Width,zoom),
+            (int)MathHelper.Lerp(page.Height,OpeningCanvas.Height,zoom)));
     }
     private void DrawOpeningFrame(GameTime time)
     {
         GraphicsDevice.Clear(new Color(3,8,18));var viewport=GraphicsDevice.Viewport;var canvas=CanvasBounds();if(canvas.Width<=0 || canvas.Height<=0)return;
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
+        OpeningGlobeHandoff? globeHandoff=null;
         _spriteBatch.Begin(samplerState:SamplerState.LinearClamp,transformMatrix:transform);
         _ui.Box(new(0,0,1920,1080),new Color(3,8,18));
         if(_screen is Screen.PlayerCount or Screen.ComputerPlayerCount){
-            StoryBook(new(140,300,400,510));if(_screen==Screen.PlayerCount)DrawPlayerCount();else DrawComputerPlayerCount();
+            OpeningReadingTable();
+            StoryBook(OpeningBookBounds);if(_screen==Screen.PlayerCount)DrawPlayerCount();else DrawComputerPlayerCount();
         }else if(_screen==Screen.OpeningBook){
+            OpeningReadingTable();
             _ui.Center("これは、ひとつの星の、すべての陣地を手に入れるお話。",new(170,100,1580,85),.82f,Cream);
-            StoryBook(new(680,270,560,440));
+            StoryBook(OpeningBookBounds);
             _ui.Center(OpeningFixed?"ひとりで読む、練習のお話を開きましょう。":"この絵本を読む＜大きなお子様＞は、何人いますか？",new(250,785,1420,70),.65f,Cream);
             _ui.Button(OpeningNext,OpeningFixed?"絵本を開く":"人数を選ぶ　次へ",DefaultAccent,.65f);
         }else{
-            OpeningStars();
             if(_screen==Screen.OpeningSpace){
-                if(_openingAge<1.2)StoryBook(new(730,315,460,350),MathHelper.SmoothStep(0,1,(float)(_openingAge/1.2)));
+                DrawOpeningSpaceReveal();
+                if(_openingAge>=BookRevealSeconds){
                 _ui.Center("絵本を開くと、宇宙が有りました。",new(180,195,1560,90),.95f,Cream);
                 _ui.Center("そこには、わたしたちの知っている地球とは違う星が、いくつも有りました。",new(140,690,1640,70),.6f,Cream);
                 _ui.Center("どの星にも、見覚えのある顔。でも、征服者の名前や国は星ごとに違います。",new(140,790,1640,55),.48f,new Color(173,199,215));
                 _ui.Button(OpeningNext,OpeningFixed?"このお話を始める":"星を見に行く　次へ",DefaultAccent,.65f);
+                }
+            }else if(OpeningGalaxyApproach){
+                OpeningStars(OpeningCanvas);
+                float modelAge=(float)(_openingAge+OrbitOverviewSeconds);
+                float modelBlend=MathHelper.SmoothStep(0,1,modelAge/GalaxyModelBlendSeconds);
+                if(modelBlend<1)DrawOpeningGalaxy(modelAge,modelBlend);
+                if(modelBlend>0)globeHandoff=DrawOpeningOrbits(modelAge,true,modelBlend);
             }else{
+                OpeningStars(OpeningCanvas);
+                if(_screen==Screen.OpeningLottery)globeHandoff=DrawOpeningOrbits((float)_openingAge,false);
+                if(_screen==Screen.OpeningReview)
+                {
+                    if(_openingInspectionUnfolded && !MapTransitionActive)_openingInspectionNet.Draw(_ui,_setup,OpeningInspectionMap,-1,0,
+                        objects:false,geographyOnly:true);
+                    _ui.Button(OpeningInspectionToggle,_openingInspectionUnfolded?"組立 / 地星儀":"展開 / 展開図",Muted,.48f);
+                }
                 _ui.Center(_screen==Screen.OpeningReview?"この星で、すべての陣地を目指そう。":"星抽選フェーズ / どの星の物語にしますか？",new(180,65,1560,75),.8f,Cream);
                 _ui.Center(_world.GlobeName+" / 世界 SEED "+_setup.WorldSeed,new(360,800,1200,60),.6f,Cream);
                 if(_setup.EquipmentMode==RobotEquipmentMode.Materials)
                     _ui.Center($"楓の埋蔵量　{_world.OpeningMapleLoads}荷",new(360,850,1200,28),.43f,new Color(255,185,113));
-                _ui.Center(_screen==Screen.OpeningReview?"戻ると、この星から選び直せます。":"右から左へ通る星。中央に来た星を［次へ］で選びます。",new(310,870,1300,50),.5f,new Color(173,199,215));
-                _ui.Button(OpeningNext,_screen==Screen.OpeningReview?"この星で進む　次へ":OpeningStarSelectable?"この星を選ぶ　次へ":"星が中央へ来るのを待つ",_screen==Screen.OpeningReview || OpeningStarSelectable?DefaultAccent:Muted,.6f);
+                _ui.Center(_screen==Screen.OpeningReview?
+                    (_openingInspectionUnfolded?"［組立］で地星儀に戻ります。":"右ドラッグで地星儀を回転できます。"):
+                    "中央に映った星を［次へ］で選びます。",new(310,870,1300,50),.5f,new Color(173,199,215));
+                _ui.Button(OpeningNext,_screen==Screen.OpeningReview?"この星で進む　次へ":OpeningStarSelectable?"この星を選ぶ　次へ":"次の星を待つ",_screen==Screen.OpeningReview || OpeningStarSelectable?DefaultAccent:Muted,.6f);
+                DrawTerrainPaletteButton(OpeningPaletteButton);
             }
         }
-        if(_screen is Screen.OpeningBook or Screen.OpeningSpace)_ui.Button(OpeningSkip,"オープニングをスキップ",Muted,.48f);
+        if(_screen is Screen.OpeningBook or Screen.OpeningSpace || OpeningGalaxyApproach)_ui.Button(OpeningSkip,"オープニングをスキップ",Muted,.48f);
         if(_screen is not (Screen.PlayerCount or Screen.ComputerPlayerCount))_ui.Button(OpeningBack,"戻る / Esc",Muted,.55f);
         _spriteBatch.End();
-        if(_screen is Screen.OpeningLottery or Screen.OpeningReview){
-            double departingAge = _openingAge + OpeningPlanetInterval;
-            if(_screen==Screen.OpeningLottery && _departingOpeningPlanet!=null && departingAge<OpeningPlanetFlight)
-                DrawPlanet(_departingOpeningPlanet, OpeningPlanetX(departingAge), departingAge);
-            DrawPlanet(_world, OpeningStarX, _openingAge);
+        if(_screen==Screen.OpeningReview && MapTransitionActive)
+            DrawOpeningInspectionTransition(canvas);
+        else if(_screen==Screen.OpeningReview && !_openingInspectionUnfolded)
+            DrawPlanet(_world,2,new OpeningGlobeHandoff(OpeningFocusCenter,1,1,0,Color.White,_openingReviewPose));
+        else if(globeHandoff is { } focused)
+            DrawPlanet(_world,_openingAge,focused);
+        if(_screen==Screen.OpeningReview || _screen==Screen.OpeningLottery && OpeningStarSelectable)
+        {
             _spriteBatch.Begin(transformMatrix:transform);
             DrawOpeningDimensions();
             _spriteBatch.End();
         }
-        void DrawPlanet(WorldPreview planet, float x, double age)
+        if(_screen==Screen.OpeningReview)DrawOpeningInspectionToy(canvas,transform);
+        void DrawPlanet(WorldPreview planet,double age,OpeningGlobeHandoff handoff)
         {
-            var frame=new Rectangle(canvas.X+(int)((x-480)*canvas.Width/1920f),canvas.Y+(int)(210*canvas.Height/1080f),(int)(960*canvas.Width/1920f),(int)(565*canvas.Height/1080f));
+            if(handoff.Opacity<=0 && handoff.ModelOpacity<=0)return;
+            float size=handoff.Size;
+            float x=handoff.Center.X,y=handoff.Center.Y;
+            var frame=new Rectangle(canvas.X+(int)((x-480*size)*canvas.Width/1920f),
+                canvas.Y+(int)((y-282.5f*size)*canvas.Height/1080f),
+                (int)(960*size*canvas.Width/1920f),(int)(565*size*canvas.Height/1080f));
             var clipped=Rectangle.Intersect(frame,canvas);
             if(clipped.Width<=0 || clipped.Height<=0)return;
             var previousPose=planet.ManualOrientation;
-            planet.ManualOrientation=WorldPreview.OpeningFaceTour((age-2)/3);
+            planet.ManualOrientation=handoff.Pose;
+            if(_screen==Screen.OpeningLottery && OpeningStarSelectable)_openingReviewPose=handoff.Pose;
             GraphicsDevice.Viewport=new Viewport(clipped);
-            try{planet.Draw(0,0,(float)age,false,true,frame);}
+            try
+            {
+                if(handoff.ModelOpacity>0)
+                    planet.Draw(0,0,(float)age,false,true,frame,opacity:handoff.ModelOpacity,solidBody:handoff.Tint);
+                if(handoff.Opacity>0)
+                    planet.Draw(0,0,(float)age,false,true,frame,opacity:handoff.Opacity);
+            }
             finally{GraphicsDevice.Viewport=viewport;planet.ManualOrientation=previousPose;}
         }
         if(_screenshots.CaptureAfterDraw(GraphicsDevice))StartScreenshotFeedback(time.TotalGameTime.TotalSeconds);

@@ -20,19 +20,24 @@ public partial class Game1
     {
         if(MapTransitionActive)return;
         _mapDragListOpen=false;
-        _mapUnfold=_statusGlobe;
+        bool unfold=_statusGlobe;
         _net.CancelAnimation();
-        if(_mapUnfold)
+        if(unfold)
         {
             int selected=HitGlobeCell(new Point(StatusGlobeArea.Center.X,StatusGlobeArea.Center.Y));
             if(selected<0)selected=_setup.Cells.OrderByDescending(c=>Vector3.Transform(c.Center,_world.DisplayOrientation(_yaw,_pitch)).Z).First().Id;
             _statusCell=selected;_net.SetCenter(_setup,_setup.Cells[selected].Face);_net.ResetView();
             _net.Drag(Vector2.TransformNormal(-_net.Faces[0].Project(_setup.Cells[selected].Center)*_net.Fit(NetPanel).Scale,Matrix.CreateRotationZ(_net.ScreenAngle)));
         }
-        if(_mapUnfold && DestinationOperation){_statusGlobe=false;FitDestinationView();_statusGlobe=true;}
-        var face=_net.Faces[0];var normal=CubeNet.Normals[face.Face];
+        if(unfold && DestinationOperation){_statusGlobe=false;FitDestinationView();_statusGlobe=true;}
+        BeginMapTransitionAnimation(_net,_world.DisplayOrientation(_yaw,_pitch),unfold);
+    }
+    private void BeginMapTransitionAnimation(CubeNet net,Matrix globeOrientation,bool unfold)
+    {
+        _mapUnfold=unfold;
+        var face=net.Faces[0];var normal=CubeNet.Normals[face.Face];
         var basis=new Matrix(face.Right.X,face.Right.Y,face.Right.Z,0,face.Up.X,face.Up.Y,face.Up.Z,0,normal.X,normal.Y,normal.Z,0,0,0,0,1);
-        _mapOrientation=Quaternion.CreateFromRotationMatrix(basis*_world.DisplayOrientation(_yaw,_pitch));
+        _mapOrientation=Quaternion.CreateFromRotationMatrix(basis*globeOrientation);
         _mapTransitionAge=0;_mapSoundStep=-1;_dragging=_mapDragging=false;_globePressedCell=-1;
         _mapEffect??=new BasicEffect(GraphicsDevice){VertexColorEnabled=true};
         if(_mapCrack==null)
@@ -63,15 +68,18 @@ public partial class Game1
             try{_mapCrack?.Play(.65f*SeGain,0,0);}catch(NoAudioHardwareException error){RecordFailure(error,"map_audio_play");}
         }
         if(progress<1)return;
-        _statusGlobe=!_mapUnfold;_mapTransitionAge=-1;_inputOutcome="view_changed";
+        if(_screen==Screen.OpeningReview)_openingInspectionUnfolded=_mapUnfold;
+        else _statusGlobe=!_mapUnfold;
+        _mapTransitionAge=-1;_inputOutcome="view_changed";
     }
-    private void DrawMapTransition()
+    private void DrawMapTransition()=>DrawMapHinges(_net,NetPanel,StatusGlobeArea);
+    private void DrawMapHinges(CubeNet net,Rectangle panel,Rectangle area)
     {
         float progress=MathHelper.Clamp(_mapTransitionAge/MapTransitionDuration,0,1);
         float unfold=_mapUnfold?progress:1-progress;
         float Ease(float t){t=MathHelper.Clamp(t,0,1);return t*t*(3-2*t);}
         // Derive hinges from the current net, including faces rearranged by edge clicks.
-        var faces=_net.Faces;
+        var faces=net.Faces;
         var parent=Enumerable.Repeat(-1,6).ToArray();var traversal=new List<int>{0};
         for(int n=0;n<traversal.Count;n++)
         {
@@ -101,7 +109,7 @@ public partial class Game1
         float align=Ease(unfold*6-5);
         var rotation=Matrix.CreateFromQuaternion(Quaternion.Slerp(_mapOrientation,Quaternion.Identity,align));
         float radius=new Vector3(_setup.Width,_setup.Height,_setup.Depth).Length()*.5f+.4f;
-        var area=StatusGlobeArea;var fit=_net.Fit(NetPanel);
+        var fit=net.Fit(panel);
         var view=Matrix.CreateLookAt(new(0,0,radius*3.3f),Vector3.Zero,Vector3.Up);
         var projection=Matrix.CreatePerspectiveFieldOfView(2*MathF.Atan(MathF.Tan(MathHelper.ToRadians(21))/_world.GlobeZoom),area.Width/(float)area.Height,.1f,100);
         var viewport=new Viewport(area);
@@ -111,7 +119,7 @@ public partial class Game1
             return Vector3.Transform(Vector3.Transform(new Vector3(flat.X,-flat.Y,0),pose[index])+new Vector3(0,0,d/2*(1-align)),rotation);
         }
         var corners=faces.SelectMany((f,index)=>new[]{new Vector3(f.Center.X-f.Width/2,-f.Center.Y-f.Height/2,0),new Vector3(f.Center.X+f.Width/2,-f.Center.Y+f.Height/2,0),new Vector3(f.Center.X-f.Width/2,-f.Center.Y+f.Height/2,0),new Vector3(f.Center.X+f.Width/2,-f.Center.Y-f.Height/2,0)}.Select(p=>Vector3.Transform(Vector3.Transform(p,pose[index])+new Vector3(0,0,d/2*(1-align)),rotation))).ToArray();
-        float extent=Math.Max(corners.Max(p=>Math.Abs(p.X))/ (NetPanel.Width*.43f),corners.Max(p=>Math.Abs(p.Y))/(NetPanel.Height*.43f));
+        float extent=Math.Max(corners.Max(p=>Math.Abs(p.X))/(panel.Width*.43f),corners.Max(p=>Math.Abs(p.Y))/(panel.Height*.43f));
         float scale=extent>0?Math.Min(fit.Scale,1/extent):fit.Scale;
         Vector3 Project(int index,Vector3 point)
         {
@@ -119,8 +127,8 @@ public partial class Game1
             var anchor=Vector3.Transform(_world.GlobeAnchor??Vector3.Zero,_world.ViewOrientation(_yaw,_pitch));
             var perspective=viewport.Project(shaped-new Vector3(anchor.X,anchor.Y,0)*(1-align),projection,view,Matrix.Identity);
             perspective.X+=_world.GlobePan.X*area.Width*(1-align);perspective.Y+=_world.GlobePan.Y*area.Height*(1-align);
-            var flat=_net.RotateScreen(faces[index].Project(point)*fit.Scale+fit.Origin,NetPanel);
-            var fitted=new Vector2(NetPanel.Center.X+shaped.X*scale,NetPanel.Center.Y-shaped.Y*scale);
+            var flat=net.RotateScreen(faces[index].Project(point)*fit.Scale+fit.Origin,panel);
+            var fitted=new Vector2(panel.Center.X+shaped.X*scale,panel.Center.Y-shaped.Y*scale);
             var screen=Vector2.Lerp(new(perspective.X,perspective.Y),fitted,Ease(unfold*6));
             screen=Vector2.Lerp(screen,flat,align);
             return new(screen,0);
@@ -146,10 +154,8 @@ public partial class Game1
                 {
                     var a=cell.Origin+cell.U*(x/(float)detail)+cell.V*(y/(float)detail);var b=a+cell.U/detail;var c=b+cell.V/detail;var e=a+cell.V/detail;
                     var faceNormal=Vector3.TransformNormal(Vector3.UnitZ,pose[index]*rotation);
-                    var color=faceNormal.Z<0?new Color(115,119,125):_net.TerrainColor(_setup,cell.Id,terrain.Elevation((a+c)/2));
-                    color=_net.FocusTerrain(color,Vector2.Zero,cell.Id);
-                    var post=_setup.Nodes.At(cell.Id,new Point(x,y));
-                    
+                    var color=faceNormal.Z<0?new Color(115,119,125):net.TerrainColor(_setup,cell.Id,terrain.Elevation((a+c)/2),x,y);
+                    color=net.FocusTerrain(color,Vector2.Zero,cell.Id);
                     foreach(var p in new[]{a,b,c,a,c,e})vertices.Add(new(Project(index,p),color));
                 }
             }

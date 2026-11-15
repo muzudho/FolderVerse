@@ -29,7 +29,7 @@ public partial class Game1
     private RobotHeadTexture FindRobotBodyArt(Rectangle area, Robot robot, RobotParts part, bool allowCaptain = false,
         bool showIntegratedMaterial = false)
     {
-        if (area.Width < 48 || (robot.Role != RobotRole.Soldier && !(allowCaptain && robot.Role == RobotRole.Captain)) || !showIntegratedMaterial && robot.IntegratedParts != 0 ||
+        if ((!showIntegratedMaterial && area.Width < 48) || (robot.Role != RobotRole.Soldier && !(allowCaptain && robot.Role == RobotRole.Captain)) || !showIntegratedMaterial && robot.IntegratedParts != 0 ||
             (robot.Parts & part) == 0)
             return null;
 
@@ -256,7 +256,7 @@ public partial class Game1
     }
     private bool HasRobotHeadArt(Rectangle area,Robot robot,bool allowCaptain=false,bool showIntegratedMaterial=false)
     {
-        if(area.Width<48 || (robot.Role!=RobotRole.Soldier && !(allowCaptain && robot.Role==RobotRole.Captain)) || (robot.Parts&RobotParts.Head)==0 ||
+        if((!showIntegratedMaterial && area.Width<48) || (robot.Role!=RobotRole.Soldier && !(allowCaptain && robot.Role==RobotRole.Captain)) || (robot.Parts&RobotParts.Head)==0 ||
             !showIntegratedMaterial && robot.IntegratedParts!=0)return false;
         if (UsesTinplateHeadArt(robot))
         {

@@ -7,12 +7,12 @@ using Microsoft.Xna.Framework.Input;
 public partial class Game1
 {
     private static readonly Rectangle BgmMenuItem = new(1320,462,538,52);
-    private static readonly Rectangle BgmPanel = new(560,355,800,370);
+    private static readonly Rectangle BgmPanel = new(560,355,800,420);
     private static readonly Rectangle BgmToggle = new(610,458,210,56);
     private static readonly Rectangle SeToggle = new(610,542,210,56);
     private static readonly Rectangle BgmSlider = new(848,463,350,46);
     private static readonly Rectangle SeSlider = new(848,547,350,46);
-    private static readonly Rectangle BgmBack = new(830,640,260,54);
+    private static readonly Rectangle BgmBack = new(830,689,260,54);
     private readonly string _bgmSettingsPath = Path.Combine(Environment.GetFolderPath(
         Environment.SpecialFolder.LocalApplicationData),"FolderVerse","bgm-volume.txt");
     private bool _bgmMenuOpen, _bgmDragging, _bgmChanged;
@@ -71,6 +71,11 @@ public partial class Game1
             SaveBgmSettings();
         }
         if (!active) return true;
+        if(_screen==Screen.Title && click && TitlePaletteButton.Contains(_pointer))
+        {
+            ToggleTerrainPalette();
+            return true;
+        }
         if (escape || click && (BgmBack.Contains(_pointer) || !BgmPanel.Contains(_pointer)))
         {
             _bgmMenuOpen = _bgmDragging = _seDragging = false;
@@ -154,5 +159,6 @@ public partial class Game1
         DrawVolumeSlider(SeSlider,_sePercent);
         _ui.Center($"{_sePercent}%",new(1218,SeSlider.Y,100,SeSlider.Height),.48f,Cream);
         _ui.Button(BgmBack,"戻る / Esc",Muted,.44f);
+        if(_screen==Screen.Title)DrawTerrainPaletteButton(TitlePaletteButton);
     }
 }

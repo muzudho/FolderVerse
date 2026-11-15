@@ -106,7 +106,7 @@ public partial class Game1
         {
             (true, true, _) => new Rectangle(380, 168, 776, 664),
             (true, _, true) => new Rectangle(436, 200, 714, 620),
-            (true, _, _) => new Rectangle(528, 304, 473, 434),
+            (true, _, _) => FrontCaptainCapCrop,
             _ => new Rectangle(196, 156, 913, 859)
         };
         _spriteBatch.Draw(cap, capBounds, capCrop, Color.White * opacity, 0, Vector2.Zero,

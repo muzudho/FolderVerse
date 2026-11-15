@@ -148,11 +148,15 @@ foreach(var input in new[]{
         copy.SelectPlayer(0);
         copy.SelectTurnRuler(0);
         int destination=FunctionalDeliveryRoutes.Targets(copy,node).First(n=>raw.Nodes[n].HasSpace);
+        var destinationStore=raw.Nodes[destination];
+        foreach(var resident in destinationStore.Robots.ToArray())destinationStore.Remove(resident.Id);
+        // Model a narrow site where the limit allows only three of the keeper's extra slots.
+        typeof(RobotStore).GetMethod("SetWarehouseLimit",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!
+            .Invoke(destinationStore,new object[]{4});
         var ppLoad=raw.Nodes[node].MaplePackages.Single();
         Check(lane.WaitingForMaple(raw,destination) &&
             raw.ReserveMapleShipment(copy,node,destination,ppLoad.Id),"Reserve one PP load while destination waits");
         var resolvePp=typeof(RobotWorld).GetMethod("ResolveMapleShipments",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
-        var destinationStore=raw.Nodes[destination];
         var blockers=new List<long>();
         while(destinationStore.HasSpace){
             var blocker=raw.Create(0,RobotParts.Complete);
@@ -163,11 +167,36 @@ foreach(var input in new[]{
         Check(raw.Nodes[node].MaplePackages.Single()==ppLoad &&
             raw.MapleShipments.Single().PackageId==ppLoad.Id && lane.WaitingForMaple(raw,destination),
             "A full destination keeps the PP shipment queued and the material at its source");
-        destinationStore.Remove(blockers[^1]);
+        copy=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(copy));
+        raw=copy.Robots;
+        destinationStore=raw.Nodes[destination];
+        resolvePp.Invoke(raw,new object[]{copy});
+        Check(!destinationStore.HasSpace && destinationStore.MaplePackages.Count==0 &&
+            raw.Nodes[node].MaplePackages.Single()==ppLoad && raw.MapleShipments.Single().PackageId==ppLoad.Id,
+            "Restoring a full destination preserves the PP cargo and its pending shipment");
+        int capacityBeforeAppointment=destinationStore.TotalCapacity;
+        Check(raw.PartPlanning.ReserveRole(copy,destination,blockers[^1],HangarReservation.Warehouse,0),
+            "Reserve a warehouse keeper at the full destination");
+        typeof(RobotPartPlanning).GetMethod("Resolve",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!
+            .Invoke(raw.PartPlanning,new object[]{copy});
+        Check(capacityBeforeAppointment==1 && destinationStore.TotalCapacity==4 &&
+            destinationStore.Robots.Any(r=>r.Id==blockers[^1] && r.WarehouseKeeper),
+            "Resolving the appointment expands capacity without removing a robot");
         resolvePp.Invoke(raw,new object[]{copy});
         Check(raw.Nodes[node].MaplePackages.Count==0 && raw.MapleShipments.Count==0 &&
             raw.Nodes[destination].MaplePackages.Single()==ppLoad &&
             !lane.WaitingForMaple(raw,destination),"Delivered PP enables the destination lane");
+        var releaseWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(copy));
+        var releaseStock=releaseWorld.Robots;
+        var releaseStore=releaseStock.Nodes[destination];
+        var keeper=releaseStore.Robots.Single(r=>r.WarehouseKeeper);
+        Check(!releaseStock.CanSetReservation(destination,keeper,HangarReservation.Warehouse,0),
+            "An arrived PP package prevents shrinking the hangar to one slot");
+        typeof(RobotWorld).GetMethod("SpendMaple",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!
+            .Invoke(releaseStock,new object[]{destination,ppLoad.Units,RawMaterial.PP});
+        Check(releaseStock.ToggleReservation(destination,keeper.Id,HangarReservation.Warehouse,0) &&
+            releaseStore.TotalCapacity==1 && releaseStore.Robots.Single().Id==keeper.Id,
+            "After consuming the last PP, the keeper can release the added slots");
         foreach(long id in blockers.Take(blockers.Count-1))destinationStore.Remove(id);
         node=destination;
     }
@@ -227,6 +256,180 @@ Check(cargo.ReserveMapleShipment(supply,source,target,package.Id),"Adjacent mapl
 var restoredSupply=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
 Check(restoredSupply.Robots.MapleShipments.Single().PackageId==package.Id && restoredSupply.Robots.Nodes[source].MapleUnits==16,"Maple stock or shipment lost on save");
 Check(restoredSupply.Robots.Workshops[source].ProductionLines[0].MapleRemaining==1,"Harvest order lost on save");
+{
+    var largeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
+    var largeStock=largeWorld.Robots;
+    largeStock.CancelMapleShipment(source,package.Id);
+    var timber=package with {Units=48};
+    var secondTimber=timber with {Id=timber.Id+1000000};
+    typeof(RobotStore).GetMethod("SetMaplePackages",internalInstance)!
+        .Invoke(largeStock.Nodes[source],new object[]{new[]{timber,secondTimber}});
+    var store=largeStock.Nodes[target];
+    var added=new List<long>();
+    while(store.HasSpace){
+        var blocker=largeStock.Create(0,RobotParts.Complete);
+        store.Add(blocker);
+        added.Add(blocker.Id);
+    }
+    store.Remove(added[^1]);
+    Check(largeStock.ReserveMapleShipment(largeWorld,source,target,timber.Id) &&
+        !largeStock.ReserveMapleShipment(largeWorld,source,target,secondTimber.Id),
+        "Only one large shipment can book the last whole slot");
+    var preview=typeof(RobotWorld).GetMethod("PreviewMapleArrivals",internalInstance)!;
+    var forecast=((int Blocked,MaplePackage[] Packages))preview.Invoke(largeStock,new object[]{largeWorld,target,store})!;
+    Check(forecast.Blocked==0 && forecast.Packages.Single()==timber && store.MaplePackages.Count==0,
+        "Preview shows the first shipment without modifying the destination");
+    store.Add(new Robot(added[^1],0,RobotParts.Complete));
+    var resolve=typeof(RobotWorld).GetMethod("ResolveMapleShipments",internalInstance)!;
+    resolve.Invoke(largeStock,new object[]{largeWorld});
+    Check(largeStock.MapleShipments.Single().PackageId==timber.Id &&
+        largeStock.Nodes[source].MaplePackages.Contains(timber) && store.MaplePackages.Count==0,
+        "A large shipment waits intact when the destination fills after booking");
+    store.Remove(added[^1]);
+    resolve.Invoke(largeStock,new object[]{largeWorld});
+    Check(largeStock.MapleShipments.Count==0 && largeStock.Nodes[source].MaplePackages.Single()==secondTimber &&
+        store.MaplePackages.Single()==timber,"The same large shipment arrives intact when a whole slot opens");
+}
+foreach(int secondUnits in new[]{8,12})
+{
+    var mergeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
+    var mergeStock=mergeWorld.Robots;
+    var first=package with {Units=8};
+    var second=first with {Id=first.Id+1000000,Units=secondUnits};
+    typeof(RobotStore).GetMethod("SetMaplePackages",internalInstance)!
+        .Invoke(mergeStock.Nodes[source],new object[]{new[]{first,second}});
+    var store=mergeStock.Nodes[target];
+    long lastBlocker=0;
+    while(store.Count<store.TotalCapacity-1){
+        var blocker=mergeStock.Create(0,RobotParts.Complete);
+        store.Add(blocker);
+        lastBlocker=blocker.Id;
+    }
+    Check(mergeStock.ReserveMapleShipment(mergeWorld,source,target,second.Id),
+        "Reserve a second partial load for the same destination");
+    var mergedPackage=first with {Units=16};
+    bool overflow=secondUnits>8;
+    var otherCargo=overflow?new[]{
+        new MaplePackage(second.Id+1,16){Material=RawMaterial.PP},
+        new MaplePackage(second.Id+2,16){Material=RawMaterial.PP}
+    }:Array.Empty<MaplePackage>();
+    typeof(RobotStore).GetMethod("SetMaplePackages",internalInstance)!.Invoke(store,new object[]{otherCargo});
+    var preview=typeof(RobotWorld).GetMethod("PreviewMapleArrivals",internalInstance)!;
+    var forecast=((int Blocked,MaplePackage[] Packages))preview.Invoke(mergeStock,new object[]{mergeWorld,target,store})!;
+    var forecastPackage=overflow?first:mergedPackage;
+    Check(forecast.Blocked==(overflow?1:0) && forecast.Packages.SequenceEqual(otherCargo.Append(forecastPackage)) &&
+        store.MaplePackages.SequenceEqual(otherCargo),
+        "The arrival preview accounts for whether the two loads fit together");
+    var resolve=typeof(RobotWorld).GetMethod("ResolveMapleShipments",internalInstance)!;
+    resolve.Invoke(mergeStock,new object[]{mergeWorld});
+    if(overflow){
+        Check(store.MaplePackages.SequenceEqual(otherCargo.Append(first)) && mergeStock.Nodes[source].MaplePackages.Single()==second &&
+            mergeStock.MapleShipments.Single().PackageId==second.Id,
+            "The second load waits intact when its remainder has no room");
+        store.Remove(lastBlocker);
+        resolve.Invoke(mergeStock,new object[]{mergeWorld});
+        Check(store.MaplePackages.SequenceEqual(otherCargo.Append(mergedPackage).Append(second with {Units=secondUnits-8})) &&
+            mergeStock.MapleShipments.Count==0 && mergeStock.Nodes[source].MaplePackages.Count==0,
+            "A free slot allows the second load to arrive, conserving its remainder");
+        continue;
+    }
+    Check(mergeStock.MapleShipments.Count==0 && mergeStock.Nodes[source].MaplePackages.Count==0 &&
+        store.MaplePackages.Single()==mergedPackage && !store.HasSpace,
+        "Delivery merges the loads into one full package in the last slot");
+}
+{
+    var intakeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
+    var intakeStock=intakeWorld.Robots;
+    var store=intakeStock.Nodes[target];
+    var deployed=intakeStock.Create(0,RobotParts.Complete);
+    store.Add(deployed);
+    typeof(RobotStore).GetMethod("Depart",internalInstance)!.Invoke(store,new object[]{deployed.Id});
+    long blockerId=0;
+    while(store.Count<store.StorageLimit-1){
+        var blocker=intakeStock.Create(0,RobotParts.Complete);
+        store.Add(blocker);
+        blockerId=blocker.Id;
+    }
+    var product=intakeStock.Create(0,RobotParts.Complete);
+    intakeStock.ProductionIntakes.Add(new(source,target,product,intakeStock.Workshops[source].ProductionLines[0]));
+    var preview=typeof(RobotWorld).GetMethod("PreviewMapleArrivals",internalInstance)!;
+    var plannedStore=intakeStock.PartPlanning.Preview(intakeWorld).Nodes[target];
+    var forecast=((int Blocked,MaplePackage[] Packages))preview.Invoke(intakeStock,new object[]{intakeWorld,target,plannedStore})!;
+    Check(plannedStore.ReservedReturns==1 && plannedStore.Robots.Any(r=>r.Id==product.Id) &&
+        forecast.Blocked==1 && forecast.Packages.Length==0,
+        "The hangar forecast keeps separate slots for the returning robot and the manufactured arrival");
+    var resolveCargo=typeof(RobotWorld).GetMethod("ResolveMapleShipments",internalInstance)!;
+    resolveCargo.Invoke(intakeStock,new object[]{intakeWorld});
+    Check(intakeStock.MapleShipments.Single().PackageId==package.Id && store.MaplePackages.Count==0,
+        "A pending manufactured arrival protects its slot during raw delivery");
+    typeof(RobotWorld).GetMethod("ResolveProductionIntakes",internalInstance)!.Invoke(intakeStock,new object[]{intakeWorld});
+    Check(intakeStock.ProductionIntakes.Count==0 && store.Robots.Any(r=>r.Id==product.Id),
+        "The manufactured robot arrives in its reserved slot");
+    typeof(RobotStore).GetMethod("ReleaseReturn",internalInstance)!.Invoke(store,new object[]{deployed.Id});
+    store.Add(deployed);
+    Check(store.ReservedReturns==0 && !store.HasSpace,"The returning robot fills its reserved slot");
+    resolveCargo.Invoke(intakeStock,new object[]{intakeWorld});
+    Check(intakeStock.MapleShipments.Single().PackageId==package.Id && store.MaplePackages.Count==0,
+        "Returning does not let the waiting raw shipment displace either robot");
+    store.Remove(blockerId);
+    resolveCargo.Invoke(intakeStock,new object[]{intakeWorld});
+    Check(intakeStock.MapleShipments.Count==0 && store.MaplePackages.Single()==package,
+        "The same raw shipment arrives when another slot opens");
+}
+foreach(bool fillsLastSection in new[]{false,true})
+{
+    var mergeIntakeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
+    var mergeIntakeStock=mergeIntakeWorld.Robots;
+    var store=mergeIntakeStock.Nodes[target];
+    var receiver=mergeIntakeStock.Create(0,fillsLastSection?RobotParts.Head|RobotParts.Legs:RobotParts.Head);
+    store.Add(receiver);
+    while(store.HasSpace)store.Add(mergeIntakeStock.Create(0,RobotParts.Complete));
+    var body=mergeIntakeStock.Create(0,RobotParts.Body);
+    mergeIntakeStock.ProductionIntakes.Add(new(source,target,body,mergeIntakeStock.Workshops[source].ProductionLines[0]));
+    var planned=mergeIntakeStock.PartPlanning.Preview(mergeIntakeWorld).Nodes[target];
+    var forecast=((int Blocked,MaplePackage[] Packages))typeof(RobotWorld).GetMethod("PreviewMapleArrivals",internalInstance)!
+        .Invoke(mergeIntakeStock,new object[]{mergeIntakeWorld,target,planned})!;
+    var combined=receiver.Parts|RobotParts.Body;
+    Check(planned.Robots.Single(r=>r.Id==receiver.Id).Parts==combined &&
+        forecast.Blocked==(fillsLastSection?1:0) && store.MaplePackages.Count==0,
+        "Forecast accounts for the manufactured body before assigning a section to the raw load");
+    typeof(RobotWorld).GetMethod("ResolveProductionIntakes",internalInstance)!.Invoke(mergeIntakeStock,new object[]{mergeIntakeWorld});
+    typeof(RobotWorld).GetMethod("ResolveMapleShipments",internalInstance)!.Invoke(mergeIntakeStock,new object[]{mergeIntakeWorld});
+    Check(mergeIntakeStock.ProductionIntakes.Count==0 &&
+        store.Robots.Single(r=>r.Id==receiver.Id).Parts==combined &&
+        store.MaplePackages.SequenceEqual(forecast.Packages) && store.Count==store.TotalCapacity,
+        "Production and raw deliveries agree with the forecast");
+    if(fillsLastSection)
+    {
+        Check(forecast.Packages.Length==0 && mergeIntakeStock.MapleShipments.Single().PackageId==package.Id &&
+            mergeIntakeStock.Nodes[source].MaplePackages.Contains(package),
+            "The last section goes to the manufactured body and the same raw load waits at the source");
+        mergeIntakeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(mergeIntakeWorld));
+        mergeIntakeStock=mergeIntakeWorld.Robots;
+        store=mergeIntakeStock.Nodes[target];
+        var preview=typeof(RobotWorld).GetMethod("PreviewMapleArrivals",internalInstance)!;
+        var restoredForecast=((int Blocked,MaplePackage[] Packages))preview.Invoke(mergeIntakeStock,
+            new object[]{mergeIntakeWorld,target,mergeIntakeStock.PartPlanning.Preview(mergeIntakeWorld).Nodes[target]})!;
+        Check(restoredForecast.Blocked==1 && restoredForecast.Packages.Length==0 &&
+            store.Robots.Single(r=>r.Id==receiver.Id).Parts==RobotParts.Complete,
+            "Restore preserves the completed robot and forecasts that the raw load still waits");
+        var resolve=typeof(RobotWorld).GetMethod("ResolveMapleShipments",internalInstance)!;
+        resolve.Invoke(mergeIntakeStock,new object[]{mergeIntakeWorld});
+        Check(mergeIntakeStock.MapleShipments.Single().PackageId==package.Id &&
+            mergeIntakeStock.Nodes[source].MaplePackages.Contains(package) && store.MaplePackages.Count==0,
+            "Retry while full keeps the same reservation and does not move the restored raw load");
+        store.Remove(store.Robots.First(r=>r.Id!=receiver.Id).Id);
+        restoredForecast=((int Blocked,MaplePackage[] Packages))preview.Invoke(mergeIntakeStock,
+            new object[]{mergeIntakeWorld,target,mergeIntakeStock.PartPlanning.Preview(mergeIntakeWorld).Nodes[target]})!;
+        Check(restoredForecast.Blocked==0 && restoredForecast.Packages.Single()==package && store.MaplePackages.Count==0,
+            "The opened slot forecasts the restored parcel exactly once");
+        resolve.Invoke(mergeIntakeStock,new object[]{mergeIntakeWorld});
+        Check(!mergeIntakeStock.Nodes[source].MaplePackages.Contains(package),
+            "Completing the restored reservation removes the original raw load from its source");
+    }
+    Check(mergeIntakeStock.MapleShipments.Count==0 && store.MaplePackages.Single()==package,
+        "The original raw load arrives once space is available");
+}
 // A reserved load must become available to the destination lane only after delivery.
 var restoredCargo=restoredSupply.Robots;
 Check(restoredCargo.MaplePlantingCount(source)==1,"Planting markers survive a save round trip");

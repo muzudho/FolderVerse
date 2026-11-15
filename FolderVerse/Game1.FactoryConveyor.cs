@@ -67,7 +67,9 @@ public partial class Game1
         if(!inFlight && (completed!=null || line.Manufacturing)){
             var robot=completed??line.CurrentProductionPlan.Preview(owner);
             var product=progress is float fraction?FactoryConveyorProduct(row,period,robot.Parts,fraction):FactoryConveyorProduct(row,period,line);
-            DrawRobotGlyphCore(new(product.X,product.Y,product.Width,122),robot,true,1,null,showIntegratedMaterial:true);
+            var bounds=new Rectangle(product.X,product.Y,product.Width,122);
+            if(completed!=null)DrawManufacturingProduct(bounds,completed);
+            else DrawRobotGlyphCore(bounds,robot,true,1,null,showIntegratedMaterial:true);
         }
     }
 
