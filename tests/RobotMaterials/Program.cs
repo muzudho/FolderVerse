@@ -589,6 +589,37 @@ Check(!cargo.ProductionIntakes.Contains(mixedIntake) &&
     cargo.Nodes[waitingNode].Robots.Any(r=>r.Id==mixedIntake.Product.Id &&
         r.Material(RobotParts.Head)==RobotMaterial.Paper && r.Material(RobotParts.Body)==RobotMaterial.Cardboard &&
         r.Material(RobotParts.Legs)==RobotMaterial.Maple),"Intake places the exact mixed materials in the hangar");
+
+// Both ingredients of one product must roll back together if its intake is full.
+var recipeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(supply));
+var recipeStock=recipeWorld.Robots;
+var recipeFactory=recipeStock.Workshops[waitingNode];
+var recipeLine=recipeFactory.ProductionLines[0];
+recipeLine.Plans[mixedChoice]=recipeLine.Plans[mixedChoice] with {HeadMaterial=RobotMaterial.Polypropylene};
+recipeLine.SelectPlan(3);
+recipeLine.SelectPlan(mixedChoice);
+var waitingStore=recipeStock.Nodes[waitingNode];
+Check((bool)receiveMaple.Invoke(waitingStore,new object[]{new MaplePackage(999002,21),0,(Func<long,bool>)(_=>false)})! &&
+    (bool)receiveMaple.Invoke(waitingStore,new object[]{new MaplePackage(999003,16){Material=RawMaterial.PP},0,(Func<long,bool>)(_=>false)})!,
+    "The two-ingredient fixture stores Maple and PP separately");
+var beforeMixedIntake=waitingStore.MaplePackages.ToArray();
+recipeFactory.SetReservedSlots(waitingStore.TotalCapacity);
+for(int i=0;i<recipeLine.ProductionPeriod;i++)production.Invoke(recipeFactory,new object[]{recipeStock,waitingNode,0});
+Check(recipeLine.Waiting && recipeLine.WaitingProductionTurns>0 &&
+    !recipeStock.ProductionIntakes.Any(i=>ReferenceEquals(i.Line,recipeLine)) &&
+    waitingStore.MaplePackages.SequenceEqual(beforeMixedIntake),
+    "A blocked mixed intake restores the exact packages for both ingredients");
+recipeFactory.SetReservedSlots(0);
+production.Invoke(recipeFactory,new object[]{recipeStock,waitingNode,0});
+var resumedMixed=recipeStock.ProductionIntakes.Single(i=>ReferenceEquals(i.Line,recipeLine));
+Check(waitingStore.MapleUnits==1 && waitingStore.MaplePackages.Single(p=>p.Material==RawMaterial.PP).Units==8 &&
+    resumedMixed.Product.HeadMaterial==RobotMaterial.Polypropylene &&
+    resumedMixed.Product.BodyMaterial==RobotMaterial.Cardboard && resumedMixed.Product.LegsMaterial==RobotMaterial.Maple,
+    "The same lane retries once and consumes 20 Maple and 8 PP for the mixed product");
+typeof(RobotWorld).GetMethod("ResolveProductionIntakes",internalInstance)!.Invoke(recipeStock,new object[]{recipeWorld});
+Check(waitingStore.Robots.Any(r=>r.Id==resumedMixed.Product.Id && r.HeadMaterial==RobotMaterial.Polypropylene),
+    "The retried mixed product arrives in the destination hangar");
+Console.WriteLine("PASS a single Maple/PP recipe rolls back both ingredients when blocked and consumes both on retry.");
 Check(supply.Campaign.FunctionTransfers.CanReserve(supply,target,source),"Fixture cannot transfer functions");
 supply.Campaign.FunctionTransfers.Reserve(supply,target,source);
 int remaining=cargo.Nodes[target].MapleUnits;
