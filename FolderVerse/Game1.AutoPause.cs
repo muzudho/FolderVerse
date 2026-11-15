@@ -36,7 +36,7 @@ public partial class Game1
         if(!click)return true;
         if(CountrySettingsMenuItem.Contains(_pointer))OpenCountrySettings();
         else if(BgmMenuItem.Contains(_pointer))_bgmMenuOpen=true;
-        else if(TerrainPaletteMenuItem.Contains(_pointer))ToggleTerrainPalette();
+        else if(GlobeSettingsMenuItem.Contains(_pointer))_globeSettingsOpen=true;
         else if(ComputerManualMenuItem.Contains(_pointer))OpenComputerManual();
         else if(HierarchyMenuItem.Contains(_pointer))_autoPausePage=1;
         else if(InactiveMenuItem.Contains(_pointer))_autoPausePage=2;
@@ -81,9 +81,9 @@ public partial class Game1
             _ui.Button(CountrySettingsMenuItem,"人間とコンピューター / 国旗の設定",Muted,.46f);
             DrawComputerManualMenuItem();
             _ui.Button(BgmMenuItem,"BGM・SE音量",Muted,.5f);
-            DrawTerrainPaletteButton(TerrainPaletteMenuItem);
+            _ui.Button(GlobeSettingsMenuItem,"地星設定",Muted,.5f);
         }
         if(_autoPausePage!=0 && !_countrySettingsOpen)_ui.Button(InactiveBack,"システムメニューへ",Muted,.5f);
-        _ui.Button(AutoPauseClose,"×",Muted,.7f);DrawBgmMenu();_spriteBatch.End();DrawFullscreenCursor();
+        _ui.Button(AutoPauseClose,"×",Muted,.7f);DrawBgmMenu();DrawGlobeSettings();_spriteBatch.End();DrawFullscreenCursor();
     }
 }

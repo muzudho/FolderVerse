@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Input;
 public partial class Game1
 {
     private static readonly Rectangle OpeningInspectionMap=new(170,180,1260,595);
+    private static readonly Rectangle OpeningInspectionGlobe=new(480,210,960,565);
     private static readonly Rectangle OpeningInspectionToggle=new(1510,695,320,54);
     private static readonly Rectangle OpeningInspectionToy=new(1557,437,226,226);
     private readonly CubeNet _openingInspectionNet=new()
@@ -17,7 +18,7 @@ public partial class Game1
 
     private void OpeningInspectionDrag(MouseState mouse,bool active)
     {
-        if(_screen!=Screen.OpeningReview || _openingInspectionUnfolded || !active ||
+        if(_screen!=Screen.OpeningReview || _openingInspectionUnfolded || MapTransitionActive || !active ||
             mouse.RightButton!=ButtonState.Pressed)
         {
             _openingInspectionDragging=false;
@@ -36,12 +37,29 @@ public partial class Game1
     private void ToggleOpeningInspectionMap()
     {
         _openingInspectionDragging=false;
-        _openingInspectionUnfolded=!_openingInspectionUnfolded;
-        if(!_openingInspectionUnfolded)return;
-        int face=Enumerable.Range(0,CubeNet.Normals.Length)
-            .OrderByDescending(i=>Vector3.Transform(CubeNet.Normals[i],_openingReviewPose).Z).First();
-        _openingInspectionNet.SetCenter(_setup,face);
-        _openingInspectionNet.FitAll(OpeningInspectionMap);
+        var pose=Matrix.CreateFromQuaternion(_openingReviewPose)*_world.GlobeRock;
+        if(!_openingInspectionUnfolded)
+        {
+            int face=Enumerable.Range(0,CubeNet.Normals.Length)
+                .OrderByDescending(i=>Vector3.TransformNormal(CubeNet.Normals[i],pose).Z).First();
+            _openingInspectionNet.SetCenter(_setup,face);
+            _openingInspectionNet.FitAll(OpeningInspectionMap);
+        }
+        BeginMapTransitionAnimation(_openingInspectionNet,pose,!_openingInspectionUnfolded);
+    }
+
+    private void DrawOpeningInspectionTransition(Rectangle canvas)
+    {
+        var viewport=GraphicsDevice.Viewport;
+        var scissor=GraphicsDevice.ScissorRectangle;
+        GraphicsDevice.Viewport=new Viewport(canvas);
+        GraphicsDevice.ScissorRectangle=OrientationViewport(OpeningInspectionMap,canvas).Bounds;
+        try{DrawMapHinges(_openingInspectionNet,OpeningInspectionMap,OpeningInspectionGlobe);}
+        finally
+        {
+            GraphicsDevice.Viewport=viewport;
+            GraphicsDevice.ScissorRectangle=scissor;
+        }
     }
 
     private void DrawOpeningInspectionToy(Rectangle canvas,Matrix transform)

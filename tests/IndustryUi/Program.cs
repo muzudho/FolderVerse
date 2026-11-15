@@ -195,6 +195,22 @@ sealed class CheckGame:Game1
             flightChanges.Max(i=>i/flightStride)-flightChanges.Min(i=>i/flightStride)<125,
             "Changing only the airborne product changes its material artwork within one flight sprite");
         Console.WriteLine($"PASS: material changed {flightChanges.Length} airborne product pixels.");
+        var pair=flight.Arrival.Product.Slice(RobotParts.Head|RobotParts.Body);
+        var integrated=pair with {IntegratedParts=pair.Parts};
+        Color[] DrawPairFlight(Robot product,string name)
+        {
+            flightQueue[0]=(flight.Arrival with {Product=product},flight.Started);
+            GraphicsDevice.Clear(new Color(16,35,46));
+            batch.Begin();Call("DrawManufacturing");batch.End();
+            Save(name);
+            return Pixels();
+        }
+        var joinedPixels=DrawPairFlight(integrated,"manufacturing-in-flight-head-body-integrated");
+        var splitPixels=DrawPairFlight(pair with {IntegratedParts=0},"manufacturing-in-flight-head-body-split");
+        flightQueue[0]=flight;
+        int joinedDifferences=joinedPixels.Zip(splitPixels).Count(pixel=>pixel.First!=pixel.Second);
+        Check(joinedDifferences>100,"A flying head/body pair must show its integrated shape");
+        Console.WriteLine($"PASS: integrated head/body changed {joinedDifferences} airborne pixels.");
         for(int i=0;w.Industry.Pending && i<100;i++)Call("UpdateManufacturing",.75d,false);
         Check(w.Robots.ProductionIntakes.Count==11 && (int)Get("_manufacturingReceived")==33 &&
             w.Robots.IndustryTurn==clock+26 && w.Robots.Nodes[target.Id].Count==1,"Capacity and exactly-once production match the intake reservation rule");

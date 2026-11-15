@@ -35,7 +35,7 @@ public partial class Game1
         if(_statusMenuOpen && AutoMenuItem.Contains(point)){StartAutoPlay();return true;}
         if(_statusMenuOpen && CountrySettingsMenuItem.Contains(point)){OpenCountrySettings();return true;}
         if(_statusMenuOpen && BgmMenuItem.Contains(point)){_bgmMenuOpen=true;return true;}
-        if(_statusMenuOpen && TerrainPaletteMenuItem.Contains(point)){ToggleTerrainPalette();return true;}
+        if(_statusMenuOpen && GlobeSettingsMenuItem.Contains(point)){_globeSettingsOpen=true;return true;}
         if(_statusMenuOpen && ComputerManualMenuItem.Contains(point)){OpenComputerManual();return true;}
         if(_statusMenuOpen && EndingMenuItem.Contains(point)){StartEnding();return true;}
         if(_statusMenuOpen && QuitMenuItem.Contains(point)){ReturnToTitle();return true;}
@@ -58,7 +58,7 @@ public partial class Game1
             _ui.Button(CountrySettingsMenuItem,"人間とコンピューター / 国旗の設定",Muted,.46f);
             DrawComputerManualMenuItem();
             _ui.Button(BgmMenuItem,"BGM・SE音量",Muted,.5f);
-            DrawTerrainPaletteButton(TerrainPaletteMenuItem);
+            _ui.Button(GlobeSettingsMenuItem,"地星設定",Muted,.5f);
         }
     }
     private void DispositionInput(bool click,bool escape)

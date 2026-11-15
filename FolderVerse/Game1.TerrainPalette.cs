@@ -6,7 +6,6 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private static readonly Rectangle OpeningPaletteButton=new(1230,955,620,70);
-    private static readonly Rectangle TerrainPaletteMenuItem=new(1320,518,538,52);
     private static readonly Rectangle TitlePaletteButton=new(610,606,700,53);
     private readonly string _terrainPalettePath=Path.Combine(Environment.GetFolderPath(
         Environment.SpecialFolder.LocalApplicationData),"FolderVerse","terrain-palette.txt");

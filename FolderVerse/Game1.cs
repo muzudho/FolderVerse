@@ -145,6 +145,7 @@ public partial class Game1 : Game
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(BgmMenuInput(mouse,keyboard,active,click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(GlobeSettingsInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(ComputerManualInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(AutoPauseInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(ComputerExhibition && !_autoPlay)StartAutoPlay();
@@ -893,6 +894,7 @@ public partial class Game1 : Game
         if(_tutorialCaptiveToastSeconds>0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialCaptiveAchievementToast();_spriteBatch.End();}
         DrawAutoSaveNotice(canvas,transform);
         if(_bgmMenuOpen){_spriteBatch.Begin(transformMatrix:transform);DrawBgmMenu();_spriteBatch.End();}
+        if(_globeSettingsOpen){_spriteBatch.Begin(transformMatrix:transform);DrawGlobeSettings();_spriteBatch.End();}
         DrawFullscreenCursor();
         LogDisplayedScreen();
         base.Draw(gameTime);

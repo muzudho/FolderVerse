@@ -61,6 +61,11 @@ public partial class Game1
     }
     private void OpeningInput(bool click,bool enter,bool escape,double elapsed,KeyboardState keys)
     {
+        if(_screen==Screen.OpeningReview && MapTransitionActive)
+        {
+            UpdateMapTransition((float)elapsed);
+            return;
+        }
         if(_screen==Screen.OpeningReview && click && OpeningInspectionToggle.Contains(_pointer))
         {
             ToggleOpeningInspectionMap();
@@ -301,7 +306,7 @@ public partial class Game1
                 if(_screen==Screen.OpeningLottery)globeHandoff=DrawOpeningOrbits((float)_openingAge,false);
                 if(_screen==Screen.OpeningReview)
                 {
-                    if(_openingInspectionUnfolded)_openingInspectionNet.Draw(_ui,_setup,OpeningInspectionMap,-1,0,
+                    if(_openingInspectionUnfolded && !MapTransitionActive)_openingInspectionNet.Draw(_ui,_setup,OpeningInspectionMap,-1,0,
                         objects:false,geographyOnly:true);
                     _ui.Button(OpeningInspectionToggle,_openingInspectionUnfolded?"組立 / 地星儀":"展開 / 展開図",Muted,.48f);
                 }
@@ -319,7 +324,9 @@ public partial class Game1
         if(_screen is Screen.OpeningBook or Screen.OpeningSpace || OpeningGalaxyApproach)_ui.Button(OpeningSkip,"オープニングをスキップ",Muted,.48f);
         if(_screen is not (Screen.PlayerCount or Screen.ComputerPlayerCount))_ui.Button(OpeningBack,"戻る / Esc",Muted,.55f);
         _spriteBatch.End();
-        if(_screen==Screen.OpeningReview && !_openingInspectionUnfolded)
+        if(_screen==Screen.OpeningReview && MapTransitionActive)
+            DrawOpeningInspectionTransition(canvas);
+        else if(_screen==Screen.OpeningReview && !_openingInspectionUnfolded)
             DrawPlanet(_world,2,new OpeningGlobeHandoff(OpeningFocusCenter,1,1,0,Color.White,_openingReviewPose));
         else if(globeHandoff is { } focused)
             DrawPlanet(_world,_openingAge,focused);

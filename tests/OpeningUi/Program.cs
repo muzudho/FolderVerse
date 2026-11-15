@@ -46,11 +46,19 @@ sealed class OpeningGame:Game1
   Check(Math.Abs(Quaternion.Dot(originalPose,rotated))<.99f,"Right drag must rotate the inspected planet");
   Capture("opening-inspection-globe");
   Click(new Point(1650,720));
+  Check((float)Get("_mapTransitionAge")>=0,"Unfold must start the hinge animation");
+  Input(enter:true,elapsed:1.1);
+  Screen("OpeningReview");
+  Capture("opening-inspection-unfolding");
+  Input(elapsed:3);
   Check((bool)Get("_openingInspectionUnfolded") &&
     ((CubeNet)Get("_openingInspectionNet")).Faces.Select(f=>f.Face).Distinct().Count()==6,
     "Unfold must expose the six faces before land placement");
   Capture("opening-inspection-net");
   Click(new Point(1650,720));
+  Input(elapsed:1.7);
+  Capture("opening-inspection-folding");
+  Input(elapsed:2.1);
   Check(!(bool)Get("_openingInspectionUnfolded") && rotated==(Quaternion)Get("_openingReviewPose") &&
     Setup.WorldSeed==originalSeed,"Assembly must keep the inspected star and viewing angle");
   void Drag(Point point,ButtonState right)
@@ -108,8 +116,13 @@ sealed class OpeningGame:Game1
   Check(GlobePixels().Zip(planetPixels).Count(pair=>pair.First!=pair.Second)>100,
       "The displayed globe must visibly change, independently of the checkbox");
   Set("_statusMenuOpen",true);
-  Check((bool)Call("StatusMenuClick",new Point(1590,544)) && File.ReadAllText(PaletteFixture)=="planet" && Sea(0)!=Sea(1),
+  Check((bool)Call("StatusMenuClick",new Point(1590,544)) && (bool)Get("_globeSettingsOpen"),
+     "The system menu must open the globe settings");
+  Click(new Point(960,675));
+  Check(File.ReadAllText(PaletteFixture)=="planet" && Sea(0)!=Sea(1),
      "The system menu must update the same persistent preference");
+  Click(new Point(960,750));
+  Check(!(bool)Get("_globeSettingsOpen"),"The globe settings modal must close");
   Set("_statusMenuOpen",false);
   Color[] GlobePixels()
   {
@@ -131,7 +144,7 @@ sealed class OpeningGame:Game1
   if(frame==5){Input(back:true);Screen("OpeningLottery");Check(Setup.WorldSeed==seed,"Back loses selected world");var queue=(Queue<WorldSetup>)Get("_openingOrbitCandidates");Check(queue.Count==12,"Eight orbit worlds and four future worlds must be queued");int nextSeed=queue.ElementAt(1).WorldSeed;Set("_openingAge",6.75d);Input(elapsed:.25);Capture("opening-orbits-hold");for(int i=0;i<7;i++)Input(elapsed:.25);Check(Setup.WorldSeed==seed,"The current candidate stays during the two-second overview");Input(enter:true);Screen("OpeningLottery");Input(elapsed:.25);Check(Setup.WorldSeed==nextSeed && ((WorldSetup[])Get("_passedOpeningOrbits"))[0].WorldSeed==seed,"Orbit candidates must advance in order and retain the passed world");Check((double)Get("_openingAge")<1,"Passing planets do not advance");Check((int)Get("_openingOrbitRound")==1,"Passing the first planet must replace one orbit");Check(((WorldPreview)Get("_world")).Seed==nextSeed,"The globe must update only when the overview ends");Input(enter:true);Screen("OpeningLottery");}
   if(frame==6){Set("_openingAge",2d);int selected=Setup.WorldSeed;Input(enter:true);Screen("OpeningReview");Check(Setup.WorldSeed==selected,"Selection must keep the focused world");Input(enter:true);Screen("CastRolling");Check(!Setup.AllowDuplicateCharacters,"New game enables duplicate characters");Check(Setup.EquipmentMode==RobotEquipmentMode.Materials,"New game defaults to nine materials");Click(new Point(1650,99));Check(Setup.EquipmentMode==RobotEquipmentMode.Materials,"Cast rolling no longer changes equipment mode");}
   if(frame==6){Click(new Point(1650,45));Check(Setup.AllowDuplicateCharacters,"Toggle does not enable duplicate characters");Click(new Point(1650,45));Check(!Setup.AllowDuplicateCharacters && Setup.Looks.Select(l=>l.BaseId).Distinct().Count()==Setup.Looks.Length,"Turning off does not restore unique characters");seed=Setup.WorldSeed;Click(new Point(150,1040));Screen("OpeningReview");Check(Setup.WorldSeed==seed,"Cast back loses the chosen planet");}
-  if(frame==7){Call("BeginOpening",false,null!);Skip();Screen("PlayerCount");Input(enter:true);Input(enter:true);Screen("OpeningLottery");Check((double)Get("_openingAge")==0,"Skip must bypass the galaxy approach");Call("BeginOpening",false,(Action)(()=>callback=true));Input(enter:true);Screen("OpeningSpace");FinishReveal();Input(enter:true);Check(callback,"Fixed campaign callback lost");Call("BeginOpening",true,null!);Skip();Screen("WorldStatus");Check(Setup.TutorialStep==1,"Tutorial fixed-world start lost");Call("BeginOpening",false,null!);Input(back:true);Screen("Title");}
+  if(frame==7){Call("BeginOpening",false,null!);Skip();Screen("PlayerCount");Input(enter:true);Input(enter:true);Screen("OpeningLottery");Check((double)Get("_openingAge")==0,"Skip must bypass the galaxy approach");Call("BeginOpening",false,(Action)(()=>callback=true));Input(enter:true);Screen("OpeningSpace");FinishReveal();Input(enter:true);Check(callback,"Fixed campaign callback lost");Call("BeginOpening",true,null!);Skip();Screen("WorldStatus");Check(Setup.TutorialStep==1,"Tutorial fixed-world start lost");Set("_globeSettingsOpen",true);Capture("globe-settings");Set("_globeSettingsOpen",false);Call("BeginOpening",false,null!);Input(back:true);Screen("Title");}
   if(frame<7)Capture($"opening-{frame}");
   if(frame++==7){Console.WriteLine("PASS: storybook, mandatory counts, space, moving planet selection/confirmation/back, narration skip, fixed tutorial/campaign, default unique characters and duplicate toggle.");Exit();}
  }
