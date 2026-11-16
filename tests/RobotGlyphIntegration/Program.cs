@@ -163,23 +163,31 @@ sealed class GlyphProbe:Game1
   stock.Nodes[route[0]].Add(outgoingCaptain);
   stock.DirectDelivery.ReserveParts(world,route[0],directTarget,outgoingPair.Id,outgoingPair.Parts,null,0);
   stock.DirectDelivery.ReserveParts(world,route[0],directTarget,outgoingCaptain.Id,outgoingCaptain.Parts,null,1);
-  int turn=world.Population.Turn;
-  world.Campaign.Advance(world,-1,0,enemies:false);
-  if(world.Population.Turn!=turn+1 || stock.DirectDelivery.Orders.Count!=0 || stock.Nodes[route[0]].Count!=0)
-   throw new Exception("The two direct shipments did not arrive on the next global turn.");
-  var directPair=stock.Nodes[directTarget].Robots.Single(robot=>robot.Parts==integrated.Parts);
-  var directCaptain=stock.Nodes[directTarget].Robots.Single(robot=>robot.Parts==captain.Parts);
-  if(directPair.IntegratedParts!=integrated.Parts || directPair.HeadMaterial!=RobotMaterial.Cardboard ||
-     directPair.BodyMaterial!=RobotMaterial.Cardboard || directCaptain.Role!=RobotRole.Captain ||
-     directCaptain.HeadMaterial!=RobotMaterial.Maple || directCaptain.BodyMaterial!=RobotMaterial.Maple ||
-     directCaptain.LegsMaterial!=RobotMaterial.Maple)
-   throw new Exception("Direct arrival lost materials, integration or rank.");
+  var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(world));
+  if(restored.EquipmentMode!=RobotEquipmentMode.Materials ||
+    !restored.Robots.DirectDelivery.Orders.SequenceEqual(stock.DirectDelivery.Orders))
+   throw new Exception("The saved world lost its material mode or direct orders.");
   var pairBounds=new Rectangle(96,40,28,52);
   var expectedPixels=new Color[pixels.Length];
   RenderCompact(deliveredPair,deliveredCaptain,expectedPixels);
-  RenderCompact(directPair,directCaptain,pixels);
-  if(!pixels.SequenceEqual(expectedPixels))
-   throw new Exception("Direct and long delivery changed the same materials' hangar artwork.");
+  foreach(var pending in new[]{world,restored})
+  {
+   var pendingStock=pending.Robots;
+   int turn=pending.Population.Turn;
+   pending.Campaign.Advance(pending,-1,0,enemies:false);
+   if(pending.Population.Turn!=turn+1 || pendingStock.DirectDelivery.Orders.Count!=0 || pendingStock.Nodes[route[0]].Count!=0)
+    throw new Exception("The two direct shipments did not arrive on the next global turn.");
+   var directPair=pendingStock.Nodes[directTarget].Robots.Single(robot=>robot.Parts==integrated.Parts);
+   var directCaptain=pendingStock.Nodes[directTarget].Robots.Single(robot=>robot.Parts==captain.Parts);
+   if(directPair.IntegratedParts!=integrated.Parts || directPair.HeadMaterial!=RobotMaterial.Cardboard ||
+      directPair.BodyMaterial!=RobotMaterial.Cardboard || directCaptain.Role!=RobotRole.Captain ||
+      directCaptain.HeadMaterial!=RobotMaterial.Maple || directCaptain.BodyMaterial!=RobotMaterial.Maple ||
+      directCaptain.LegsMaterial!=RobotMaterial.Maple)
+    throw new Exception("Direct arrival lost materials, integration or rank.");
+   RenderCompact(directPair,directCaptain,pixels);
+   if(!pixels.SequenceEqual(expectedPixels))
+    throw new Exception("Direct and long delivery changed the same materials' hangar artwork.");
+  }
   capture.SetData(pixels);
   using(var directFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"direct-delivery-compact-arrivals.png")))
    capture.SaveAsPng(directFile,960,540);

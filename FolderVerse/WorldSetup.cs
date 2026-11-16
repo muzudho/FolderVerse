@@ -218,6 +218,7 @@ public sealed partial class WorldSetup
     // Tutorial uses the normal world/terrain and cast systems, with a smaller preset.
     public void PrepareTutorialStepOne(int worldSeed,int castSeed,int placementSeed)
     {
+        EquipmentMode=RobotEquipmentMode.Materials;
         SetPlayerCount(1);
         while(true){SetWorld(worldSeed);if(Width==1 && Height==1 && Depth==1 && WorldTerrain.HasSeaAndLand(Cells,WorldSeed))break;worldSeed=worldSeed==int.MaxValue?0:worldSeed+1;}
         PolarAxis=1;

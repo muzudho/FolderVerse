@@ -29,6 +29,7 @@ public sealed partial class WorldSetup
     public string FaceName(int face)=>CubeNet.FaceNames[GeographicFace(face)];
     public void PrepareTutorialStepThree(int worldSeed,int castSeed,int placementSeed)
     {
+        EquipmentMode=RobotEquipmentMode.Materials;
         SetPlayerCount(1);
         while(true){SetWorld(worldSeed);if(Width==3 && Height==1 && Depth==2)break;worldSeed=worldSeed==int.MaxValue?0:worldSeed+1;}
         PolarAxis=0;_presetCastCount=7;SetCast(castSeed);

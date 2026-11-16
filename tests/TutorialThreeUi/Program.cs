@@ -13,6 +13,20 @@ var portalB=portalA with {Direction=1};
 var portalRoutes=new Dictionary<RouteStep,int>{{new RouteStep(1,new(0,1),new(1,0),sharedPath){Portal=portalA},1},{new RouteStep(1,new(0,1),new(1,0),sharedPath){Portal=portalB},2}};
 var portalCopy=AutoSaveStore.Restore<Dictionary<RouteStep,int>>(AutoSaveStore.Capture(portalRoutes));Check(portalCopy.Count==2 && portalCopy.All(p=>portalCopy.ContainsKey(p.Key)) && portalCopy.Keys.Select(p=>p.Portal.Direction).Order().SequenceEqual(new[]{0,1}),"Route keys differing only by portal restore before hashing");
 var world=new WorldSetup();world.PrepareTutorialStepThree(123,456,789);
+Check(world.EquipmentMode==RobotEquipmentMode.Materials,"The map lesson starts with the material rules");
+var battleLesson=new WorldSetup();
+battleLesson.PrepareTutorialStepOne(123,456,789);
+battleLesson.CompleteLand(90);
+Check(battleLesson.EquipmentMode==RobotEquipmentMode.Materials &&
+ battleLesson.Robots.Nodes.SelectMany(store=>store.Robots).All(r=>r.Equipment(r.Owner,battleLesson.EquipmentMode)==new RobotEquipment(3,3,4)),
+ "The first lesson uses complete polypropylene soldiers");
+var pocketLesson=new WorldSetup();
+pocketLesson.PrepareTutorialStepTwo(123,456,789);
+var localRobots=pocketLesson.Robots.Nodes.SelectMany(store=>store.Robots).Where(r=>r.Owner!=0).ToArray();
+Check(pocketLesson.EquipmentMode==RobotEquipmentMode.Materials && localRobots.Length>0 &&
+ localRobots.All(r=>r.CheapParts==0 && r.HeadMaterial==RobotMaterial.Cardboard &&
+  r.BodyMaterial==RobotMaterial.Cardboard && r.LegsMaterial==RobotMaterial.Cardboard),
+ "The pocket lesson spawns local cardboard robots without legacy quality flags");
 Check(world.Width==3 && world.Height==1 && world.Depth==2 && world.Cells.Length==22 && world.PolarAxis==0,"3x1x2 slab with chopsticks/bowl poles");
 Check(world.TutorialStep==3 && world.ActiveCount==7 && world.Looks.Take(7).Select(l=>l.BaseId).SequenceEqual(Enumerable.Range(0,7)),"Seven specific characters");
 Check(!world.LandPending && world.Owners.All(o=>o>=0 && o<7) && world.TerritoryCounts.Sum()==22 && world.Robots.Nodes.Any(s=>s.Robots.Any(r=>r.Parts!=RobotParts.Complete)),"Normal random territory and mixed robot generation");
