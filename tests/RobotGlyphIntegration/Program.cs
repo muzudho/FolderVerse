@@ -504,6 +504,51 @@ sealed class GlyphProbe:Game1
      blockedStock.Nodes[rawOrder.Target].MaplePackages.Single()!=ppRemainder)
    throw new Exception("The restored PP shipment must arrive exactly once after a bay opens.");
   Console.WriteLine("PASS the full destination keeps its PP shipment on save/restore and receives it once a bay opens.");
+  var keeperWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(rawDispatchWorld));
+  var keeperStock=keeperWorld.Robots;
+  var keeperTarget=keeperStock.Nodes[rawOrder.Target];
+  var keeper=keeperStock.Create(rawOrder.Owner,RobotParts.Complete);
+  typeof(RobotStore).GetMethod("SetMaplePackages",Flags)!.Invoke(keeperTarget,new object[]{Array.Empty<MaplePackage>()});
+  typeof(RobotStore).GetMethod("Replace",Flags)!.Invoke(keeperTarget,new object[]{new[]{keeper}});
+  typeof(RobotStore).GetMethod("SetWarehouseLimit",Flags)!.Invoke(keeperTarget,new object[]{5});
+  if(keeperTarget.StorageLimit!=1 || keeperTarget.HasSpace)throw new Exception("The destination needs exactly one occupied bay before appointment.");
+  resolveRaw.Invoke(keeperStock,new object[]{keeperWorld});
+  CheckBlocked(keeperStock);
+  var ppFactory=keeperStock.Workshops[rawOrder.Target];
+  for(int seed=0;ppFactory.ProductionLines.Length==0;seed++)
+   ppFactory.GenerateLines(seed,RobotEquipmentMode.Materials);
+  foreach(var shop in keeperStock.Workshops)
+   foreach(var existing in shop.ProductionLines)existing.Paused=true;
+  var ppLine=ppFactory.ProductionLines[0];
+  ppLine.Configure(RobotParts.Head,2);
+  ppLine.SetDoNotRepeat(true);
+  ppLine.Paused=false;
+  keeperStock.AdvanceIndustry(n=>keeperWorld.Nodes.All[n].Owner);
+  if(!ppLine.WaitingForMaple(keeperStock,rawOrder.Target) || ppLine.ProductionAge!=0)
+   throw new Exception("The PP line must wait without progressing while the shipment is blocked.");
+  if(!keeperStock.PartPlanning.ReserveRole(keeperWorld,rawOrder.Target,keeper.Id,HangarReservation.Warehouse,rawOrder.Owner) ||
+     keeperTarget.StorageLimit!=1)throw new Exception("Warehouse assignment should only expand capacity when the reservation is executed.");
+  keeperWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(keeperWorld));
+  keeperStock=keeperWorld.Robots;
+  keeperStock.ConfigureFactories(keeperWorld);
+  CheckBlocked(keeperStock);
+  if(!keeperWorld.Campaign.FinishDomestic(keeperWorld) || keeperStock.Nodes[rawOrder.Target].StorageLimit!=5 ||
+     !keeperStock.Nodes[rawOrder.Target].Robots.Single(r=>r.Id==keeper.Id).WarehouseKeeper || keeperStock.MapleShipments.Count!=0 ||
+     keeperStock.Nodes[rawOrder.Source].MaplePackages.Any(p=>p.Id==ppRemainder.Id) ||
+     keeperStock.Nodes[rawOrder.Target].MaplePackages.Single()!=ppRemainder)
+   throw new Exception("The restored appointment must open four bays before the waiting PP is delivered in the same phase.");
+  Console.WriteLine("PASS restored warehouse appointment expands one bay to five and completes the waiting PP delivery in the same phase.");
+  ppLine=keeperStock.Workshops[rawOrder.Target].ProductionLines[0];
+  if(ppLine.WaitingForMaple(keeperStock,rawOrder.Target) || ppLine.ProductionAge!=0)
+   throw new Exception("The delivered PP must clear the material wait without advancing industry during delivery.");
+  keeperStock.AdvanceIndustry(n=>keeperWorld.Nodes.All[n].Owner);
+  if(ppLine.ProductionAge!=1)throw new Exception("The PP line did not resume on the first industry unit.");
+  keeperStock.AdvanceIndustry(n=>keeperWorld.Nodes.All[n].Owner);
+  var ppProduct=keeperStock.ProductionIntakes.Single(intake=>intake.Source==rawOrder.Target).Product;
+  if(ppProduct.Parts!=RobotParts.Head || ppProduct.Material(RobotParts.Head)!=RobotMaterial.Polypropylene ||
+     keeperStock.Nodes[rawOrder.Target].MaplePackages.Any(p=>p.Material==RawMaterial.PP))
+   throw new Exception("The restored line must use exactly eight delivered PP units to manufacture one PP head.");
+  Console.WriteLine("PASS delivered PP resumes its restored line and eight units produce exactly one PP head.");
   if(!rawDispatchWorld.Campaign.FinishDomestic(rawDispatchWorld) ||
      rawDispatchStock.Nodes[directTarget].Robots.Single(robot=>robot.Id==ppHead.Id)!=ppHead ||
      rawDispatchStock.Nodes[directTarget].MaplePackages.Any(raw=>raw.Id==ppRemainder.Id) ||

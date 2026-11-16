@@ -52,14 +52,16 @@ public sealed partial class RobotWorld
             var node=SiteNode(world,cell,site.Position);
             if(node==null)continue;
             var material=SiteMaterial(site.Kind);
-            _rawDeposits[(int)material-1][node.Id]+=material switch
-            {
-                RawMaterial.Vinyl=>Math.Clamp((int)MathF.Round(site.Size*48),6,10),
-                RawMaterial.PP=>8,
-                _=>6
-            };
+            _rawDeposits[(int)material-1][node.Id]+=SiteLoads(site.Kind,site.Size);
         }
     }
+
+    internal static int SiteLoads(CubeNet.ResourceSiteKind kind,float size)=>kind switch
+    {
+        CubeNet.ResourceSiteKind.Salt=>Math.Clamp((int)MathF.Round(size*48),6,10),
+        CubeNet.ResourceSiteKind.Gas=>8,
+        _=>6
+    };
 
     internal static int RawCost(Robot product,RawMaterial material)=>material==RawMaterial.Maple?MapleCost(product):
         RobotMaterials.Parts.Where(p=>(product.Parts&p)!=0).Sum(p=>(material,product.Material(p)) switch

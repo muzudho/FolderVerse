@@ -30,6 +30,8 @@ public partial class Game1
     private bool FortuneSettingsAvailable=>_screen==Screen.Fortune && !_demoActive && _setup.TutorialStep==0;
     private Point? _landDrag;
     private int[] _automaticLand=Array.Empty<int>();
+    private ComputerLandPlanner _computerLandPlanner;
+    private string _automaticLandRemark="";
     private int _automaticLandIndex;
     private int[][] _automaticLandRectangles=Array.Empty<int[]>();
     private float _landStartYaw,_landStartPitch;
@@ -42,22 +44,17 @@ public partial class Game1
         _rawStockPercent=25;
         _fortuneSliderDragging=null;
         _skipOtherLandTurns=false;
+        _computerLandPlanner=null;
+        _automaticLandRemark="";
         _domesticViews.Clear();_landOrder=_setup.LandOrder();_landTurn=0;_landAge=0;_landSelection.Clear();_landDrag=null;_automaticLand=Array.Empty<int>();
         _screen=Screen.LandConquest;_world.GlobeZoom=1;_world.GlobeAnchor=null;_world.ShowLandConquest(_setup,dimClaimed:true,previewMaples:true);
     }
     private int[] AutomaticLand(int ruler)
     {
-        var random=new SeedRandom(_setup.PlacementSeed^ruler*7919);
-        var available=_setup.Cells.Where(c=>_setup.Owners[c.Id]<0).Select(c=>c.Id).ToList();
-        var chosen=new List<int>();
-        int first=available[random.Next(available.Count)];chosen.Add(first);available.Remove(first);
-        while(chosen.Count<_setup.TerritoryRights[ruler])
-        {
-            var frontier=chosen.SelectMany(id=>_setup.Cells[id].Neighbors).Where(available.Contains).Distinct().ToArray();
-            int next=frontier.Length>0?frontier[random.Next(frontier.Length)]:available[random.Next(available.Count)];
-            chosen.Add(next);available.Remove(next);
-        }
-        return chosen.ToArray();
+        _computerLandPlanner ??= new ComputerLandPlanner(_setup);
+        var selection=_computerLandPlanner.Select(ruler);
+        _automaticLandRemark=ComputerLandPlanner.Remark(_setup.Looks[ruler].BaseId,selection.FirstChoiceTaken);
+        return selection.Cells;
     }
     private Quaternion _landStartOrientation;
     private Quaternion _fortuneStartOrientation;
@@ -185,6 +182,8 @@ public partial class Game1
         _ui.Text(_setup.ConquerorNames[LandRuler]+" の土地選択",new(60,220),.7f,Color.White);
         _ui.Text("選択 "+_landSelection.Count+" / 権利 "+_setup.TerritoryRights[LandRuler]+" 区画",new(60,310),.65f,_landSelection.Count>_setup.TerritoryRights[LandRuler]?Color.Orange:Cream);
         _portraitRenderer.Draw(_spriteBatch,_setup.Looks[LandRuler],new Rectangle(60,370,450,300),true,forCreation:true);
+        if(!LandHumanTurn && _automaticLand.Length>0 && _automaticLandRemark.Length>0)
+            _ui.Text(_automaticLandRemark,new(60,717),.50f,Cream);
         _ui.Button(LandConfirm,LandHumanTurn?"この土地を獲得":"他国が土地を選択中",LandHumanTurn && _landSelection.Count==_setup.TerritoryRights[LandRuler]?Accent:Muted,.65f);
         _ui.Button(LandSkipOthers,(_skipOtherLandTurns?"✓ ":"□ ")+"自分のターン以外をスキップ",_skipOtherLandTurns?Accent:Muted,.48f);
     }

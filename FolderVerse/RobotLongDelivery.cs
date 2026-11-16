@@ -109,6 +109,17 @@ public sealed class RobotLongDelivery
             }
             if(receiver==null && !destination.HasSpace){order.Status="次の地点の格納庫が満杯のため待機";continue;}
             var cargo=(order.Started?robot:robot.Slice(order.Parts)) with {LongDeliveryNumber=order.Number};
+            if(receiver!=null)
+            {
+                // Combining parts can consume sections already shared by raw materials.
+                var merged=receiver.Merge(cargo with {LongDeliveryNumber=null},receiver.Owner);
+                var afterArrival=destination.Robots.Select(r=>r.Id==receiver.Id?merged:r);
+                if(!destination.Fits(afterArrival,destination.MaplePackages,destination.ReservedReturns))
+                {
+                    order.Status="受取先の格納庫が満杯のため待機";
+                    continue;
+                }
+            }
             if(!order.Started && order.Parts!=robot.Parts){
                 cargo=cargo with {Id=world.Create(robot.Owner,cargo.Parts).Id};
                 long? remainingOrder=Orders.Where(o=>o.Number!=order.Number && o.CargoId==robot.Id && o.Node==order.Node).Select(o=>(long?)o.Number).FirstOrDefault();

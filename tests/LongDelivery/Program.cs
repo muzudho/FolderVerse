@@ -5,6 +5,27 @@ static void Tick(WorldSetup w)=>typeof(RobotLongDelivery).GetMethod("Advance",Bi
 static WorldSetup Fixture(){var w=new WorldSetup();w.SetParticipantCounts(1,1);w.SetWorld(1);w.SetCast(2);w.SetPlacement(3);w.SelectPlayer(0);w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);w.Robots.ConfigureFactories(w);foreach(var node in w.Nodes.All)node.Owner=0;return w;}
 static int Target(WorldSetup w)=>w.Nodes.All.OrderByDescending(n=>RobotLongDelivery.Path(w,0,n.Id,0).Length).First().Id;
 {
+    var w=Fixture();w.EquipmentMode=RobotEquipmentMode.Materials;
+    int target=Target(w),source=RobotLongDelivery.Path(w,0,target,0)[^2];
+    var cargo=w.Robots.Create(0,RobotParts.Body);
+    var receiver=w.Robots.Create(0,RobotParts.Head);
+    var destination=w.Robots.Nodes[target];
+    w.Robots.Nodes[source].Add(cargo);destination.Add(receiver);
+    typeof(RobotStore).GetMethod("SetCapacity",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(destination,new object[]{1});
+    var package=new MaplePackage(1000,32);
+    var setPackages=typeof(RobotStore).GetMethod("SetMaplePackages",BindingFlags.Instance|BindingFlags.NonPublic)!;
+    setPackages.Invoke(destination,new object[]{new[]{package}});
+    var order=w.Robots.LongDelivery.Reserve(w,source,target,cargo.Id,RobotParts.Body,receiver.Id,0);
+    Tick(w);
+    Check(order.Status.Contains("満杯") && w.Robots.Nodes[source].Robots.Single().Id==cargo.Id &&
+        destination.Robots.Single().Parts==RobotParts.Head && destination.MaplePackages.Single()==package,
+        "A parcel waits intact when assembly would displace stored materials");
+    setPackages.Invoke(destination,new object[]{Array.Empty<MaplePackage>()});
+    Tick(w);
+    Check(w.Robots.LongDelivery.Orders.Count==0 && destination.Robots.Single().Parts==(RobotParts.Head|RobotParts.Body),
+        "The waiting parcel merges after the materials free their sections");
+}
+{
     var w=Fixture();int target=Target(w);var path=RobotLongDelivery.Path(w,0,target,0);Check(path.Length>2,"Fixture is a multi-hop route");
     var robot=w.Robots.Create(0,RobotParts.Complete) with {CheapParts=RobotParts.Head,PremiumParts=RobotParts.Body};w.Robots.Nodes[0].Add(robot);
     var order=w.Robots.LongDelivery.Reserve(w,0,target,robot.Id,RobotParts.Head,null,0);

@@ -220,6 +220,7 @@ sealed class CheckGame:Game1
         var arguments=Environment.GetCommandLineArgs();
         bool bodyLegs=arguments.Contains("--integrated-body-legs");
         bool mixedProduct=arguments.Contains("--mixed-integrated-product");
+        bool mergeIntake=arguments.Contains("--merge-intake");
         bool integratedProduct=bodyLegs || mixedProduct || arguments.Contains("--integrated-product");
         var productParts=bodyLegs ? RobotParts.Body|RobotParts.Legs :
             integratedProduct ? RobotParts.Head|RobotParts.Body : RobotParts.Complete;
@@ -230,7 +231,13 @@ sealed class CheckGame:Game1
                 Material=RobotMaterial.Cardboard,
                 BodyMaterial=mixedProduct ? RobotMaterial.Polypropylene : null
             });
-        w.Robots.Nodes[target.Id].Add(w.Robots.Create(0,bodyLegs ? RobotParts.Body : RobotParts.Head));
+        var receiver=w.Robots.Create(0,mergeIntake?RobotParts.Legs:bodyLegs?RobotParts.Body:RobotParts.Head) with {LegsMaterial=RobotMaterial.Silicone};
+        w.Robots.Nodes[target.Id].Add(receiver);
+        if(mergeIntake){
+            Check(mixedProduct && !bodyLegs,"Merge fixture expects a mixed head/body product");
+            typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(w.Robots.Nodes[target.Id],new object[]{1});
+            w.Robots.Workshops[target.Id].AutoAssemblyDisabled=false;
+        }
         w.Industry.Reset();w.Industry.Queue(1);
         int seed26=Enumerable.Range(0,100000).First(seed=>{
             var wheel=IndustryCycle.CreateWheel(seed,1);
@@ -279,6 +286,25 @@ sealed class CheckGame:Game1
                 Console.WriteLine($"PASS: changing only the airborne body material changed {changed.Length} pixels.");
             }
             var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
+            if(mergeIntake){
+                var expected=receiver.Merge(product,receiver.Owner);
+                var preview=restored.Robots.PartPlanning.Preview(restored).Nodes[target.Id].Robots.Single();
+                typeof(RobotWorld).GetMethod("ResolveProductionIntakes",F)!.Invoke(restored.Robots,new object[]{restored});
+                var merged=restored.Robots.Nodes[target.Id].Robots.Single();
+                Check(restored.Robots.ProductionIntakes.Count==0 && preview==expected && merged==expected &&
+                      merged.Id==receiver.Id && merged.Parts==RobotParts.Complete && merged.IntegratedParts==productParts &&
+                      merged.HeadMaterial==RobotMaterial.Cardboard && merged.BodyMaterial==RobotMaterial.Polypropylene &&
+                      merged.LegsMaterial==RobotMaterial.Silicone,"A full hangar merges into the receiver without losing any materials or the pair");
+                var bounds=new Rectangle(160,100,28,52);
+                Set("_setup",restored);
+                GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawHangarRobot",bounds,preview,1f,null!);batch.End();
+                var previewPixels=Pixels();
+                GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawHangarRobot",bounds,merged,1f,null!);batch.End();Save("manufacturing-merged-arrival");
+                Check(previewPixels.SequenceEqual(Pixels()),"The merged preview and arrival match in the compact hangar renderer");
+                Set("_setup",w);
+                Console.WriteLine("PASS: restored intake merged mixed head/body into silicone legs in one full bay; compact art matches preview.");
+                return;
+            }
             typeof(RobotWorld).GetMethod("ResolveProductionIntakes",F)!.Invoke(restored.Robots,new object[]{restored});
             var delivered=restored.Robots.Nodes[target.Id].Robots.Single(r=>r.Id==product.Id);
             Check(delivered==product,
