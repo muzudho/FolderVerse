@@ -3845,3 +3845,10 @@
 
 - 開始07:41:07、終了07:41 JST。HEAD `d623412c25dd3961a170e963520fa0d71420f1e0`。開始時の差分は点検記録のみ。先行の `NaturalTransport.dll`（PID 17060）の残存をコマンド行で確認し中断。重複起動・新規採番・ゲームコード変更なし。
 - クリック・実描画・解像度は未検証。次回は先行診断の終了を確認し、地点11の再クリック後の赤チェックと出撃予約の保持、インスペクター閉鎖からターン終了・進軍までを照合する。
+
+### 実行履歴：2026-11-17 08:02回
+
+- 開始08:02:07 JST。HEAD `4620e675987fcde833f0c35a1dc02051ad2409a4`。開始時に未コミット差分なし。先行の NaturalTransport（PID 17060）の終了とNAS接続を確認し再開。前回ビルドから内政・直送便・地図に関係するコミット差分があるため現HEADで検証を開始した。
+- `dotnet build tests/DemoInspectorUi/DemoInspectorUi.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers -p:NuGetAudit=false -p:UseAppHost=false -v quiet` を実行。PID 21964、終了時点でビルド結果未取得のため点検を中断。DirectDeliveryUi、DemoChecksUi、クリック・実描画・解像度は未確認。新規採番・ゲームコード変更なし。
+- 次回は当該ビルドと後続ビルドの終了を確認し、成功した検証DLLから再開。地点11の赤チェック後の再選択と予約保持、閉鎖から進軍までの自然経路は未確認。
+- 点検終了 08:06:45 JST。
