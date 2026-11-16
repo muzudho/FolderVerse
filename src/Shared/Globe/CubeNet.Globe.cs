@@ -81,7 +81,7 @@ public sealed partial class CubeNet
                 var roof=ShowRoutes?PurposeFlagAnchor(node):null;
                 if(roof is Vector3 anchor)
                     position+=radius*GlobePurposeBuildingScale*(cell.U*anchor.X+cell.V*anchor.Y+cell.Normal*anchor.Z);
-                float flagOffset=HasFacilityPlatform(node)?FacilityPlatformScale:
+                float flagOffset=HasFacilityPlatform(node)?FacilityFlagOffset:
                     HasGlobeBuilding(node)?GlobePurposeBuildingScale:1;
                 DrawSurfaceFlag(ui,setup,DisplayedNodeOwner(node),cell,position,
                     ShowRoutes && roof==null ? radius*flagOffset : 0,Project,Tint,roof!=null);
@@ -110,7 +110,9 @@ public sealed partial class CubeNet
     private static bool HasPurposeBuilding(Node node)=>node.Functional && node.Purpose!=NodePurpose.General;
     private static bool HasGlobeBuilding(Node node)=>HasCivilianSettlement(node);
     private static bool HasFacilityPlatform(Node node)=>node.Functional && node.Purpose==NodePurpose.General && !node.IsHarbor;
-    private const float FacilityPlatformScale=2.15f;
+    private const float FacilityPlatformScale=2.15f*.90f;
+    private const float FacilityModelScale=.85f*2;
+    private const float FacilityFlagOffset=3.2f;
 
     internal float GlobeNodeRadius(Node node,float projectedUnit,float zoom)
     {
@@ -132,11 +134,16 @@ public sealed partial class CubeNet
     private static void DrawNodeFacilities(UiPainter ui,WorldSetup world,Node node,
         Func<float,float,float,Vector2> project,Func<Color,Color> tint)
     {
+        if(HasFacilityPlatform(node)){
+            DrawFacilities(ui,world,node,true,(x,y,z)=>
+                project(-.95f+x*FacilityModelScale,y*FacilityModelScale,z*FacilityModelScale),tint);
+            DrawFacilities(ui,world,node,false,(x,y,z)=>
+                project(1.75f+x*FacilityModelScale,y*FacilityModelScale,z*FacilityModelScale),tint);
+            return;
+        }
         DrawFacilities(ui,world,node,true,(x,y,z)=>project(-.95f+x*.85f,y*.85f,z*.85f),tint);
         if(!node.Functional)return;
-        if(HasFacilityPlatform(node))
-            DrawFacilities(ui,world,node,false,(x,y,z)=>project(.80f+x*.85f,y*.85f,z*.85f),tint);
-        else if(node.IsHarbor || RelocatedFacilityGroups(node)>0)
+        if(node.IsHarbor || RelocatedFacilityGroups(node)>0)
             DrawFacilities(ui,world,node,false,(x,y,z)=>project(.85f+x*.66f,.78f+y*.66f,z*.66f),tint);
     }
 
@@ -183,7 +190,7 @@ public sealed partial class CubeNet
             at+new Vector2(x+y*.34f,y*.58f-x*.14f-z)*radius,tint);
         var flagFoot=PurposeFlagAnchor(node) is Vector3 roof
             ? at+new Vector2(roof.X,roof.Y*.68f-roof.Z)*radius*PurposeBuildingScale
-            : at+new Vector2(Math.Max(platformRadius,radius*PurposeBuildingScale)+4,-radius*.68f);
+            : at+new Vector2(radius*(HasFacilityPlatform(node)?FacilityFlagOffset:PurposeBuildingScale)+4,-radius*.68f);
         CountryFlagArt.Marker(ui,setup,DisplayedNodeOwner(node),flagFoot,
             Math.Clamp((int)(radius*3),24,42),tint);
         if (AttackTargetMarkers && SelectedTarget==node.Id)
