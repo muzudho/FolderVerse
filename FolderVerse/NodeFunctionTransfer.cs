@@ -86,6 +86,8 @@ public sealed class NodeFunctionTransfers
             var source=w.Robots.Nodes[a];var target=w.Robots.Nodes[b];
             if(order.FactoryOnly){
                 MoveFactory(w.Robots,a,b);
+                w.Nodes.All[b].IncomingFactories+=1+w.Nodes.All[a].IncomingFactories;
+                w.Nodes.All[a].IncomingFactories=0;
                 w.Nodes.All[a].Purpose=NodePurpose.Relay;
                 Orders.Remove(order);LastResults.Add(order with {Status="工場移転完了"});
                 w.Robots.SyncWorkers(b);
@@ -100,6 +102,8 @@ public sealed class NodeFunctionTransfers
             if(target.WarehouseLimit is int limit)w.Robots.Workshops[b].SetStorageSlotLimit(limit);
             w.Robots.Workshops[a]=RobotWorkshop.EmptyFunctions();
             w.Nodes.All[b].FunctionUnits=checked(w.Nodes.All[b].FunctionUnits+w.Nodes.All[a].FunctionUnits);w.Nodes.All[a].FunctionUnits=0;
+            w.Nodes.All[b].IncomingFactories+=w.Nodes.All[a].IncomingFactories;
+            w.Nodes.All[a].IncomingFactories=0;
             foreach(var node in w.Nodes.All)if(node.FunctionHost==a)node.FunctionHost=b;
             w.Nodes.All[a].Purpose=NodePurpose.General;
             w.Nodes.All[a].FunctionHost=b;w.Nodes.All[b].FunctionHost=-1;

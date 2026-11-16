@@ -75,7 +75,7 @@ public partial class Game1
         }
         if(!MercyConfirm.Contains(_pointer))return true;
         if(_mercyOfferInput){
-            if(!_setup.Relations.SetMercyOffer(_setup,_mercyCaptive,value)){_mercyMessage="機能移転のまとまりを分割できません。＋／－で譲渡できる数を選んでください";return true;}
+            if(!_setup.Relations.SetMercyOffer(_setup,_mercyCaptive,value)){_mercyMessage="施設移転のまとまりを分割できません。＋／－で譲渡できる数を選んでください";return true;}
             if(HumanMercyVictor(_mercyCaptive) && !_autoPlay && !_demoActive)BeginMercyInput(_mercyCaptive,false);
             else CompleteMercy(_setup.Relations.ComputerMercyDemand(_setup,_mercyCaptive));
         }else CompleteMercy(value);

@@ -11,6 +11,7 @@ public sealed class Node
     public NodePurpose Purpose;
     public int FunctionUnits=1;
     public int FunctionHost=-1;
+    public int IncomingFactories;
     public bool Functional=>FunctionUnits>0;
     public int Id,Cell,Owner;
     public Point Center;

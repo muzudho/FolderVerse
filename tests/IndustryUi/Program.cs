@@ -21,16 +21,19 @@ sealed class CheckGame:Game1
             var wheel=IndustryCycle.CreateWheel(seed,1);var colors=(Color[])typeof(Game1).GetMethod("IndustryColors",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{wheel})!;
             for(int i=0;i<colors.Length;i++)Check(colors[i]!=colors[(i+1)%colors.Length],"Adjacent roulette colors differ including last/first seam");
         }
+        const BindingFlags wheelFields=BindingFlags.Static|BindingFlags.NonPublic;
+        var wheelCenter=(Vector2)typeof(Game1).GetField("IndustryWheelCenter",wheelFields)!.GetValue(null)!;
+        var wheelRadius=(float)typeof(Game1).GetField("IndustryWheelRadius",wheelFields)!.GetRawConstantValue()!;
         for(int seed=0;seed<100;seed++){
             w.Industry.Reset();w.Industry.Queue(1);w.Industry.Roll(seed);
-            var reference=((string Text,Rectangle Bounds,float Scale,bool Backplate)[])Call("IndustryLabelLayout",new Vector2(1170,625),255f,0f);
+            var reference=((string Text,Rectangle Bounds,float Scale,bool Backplate)[])Call("IndustryLabelLayout",wheelCenter,wheelRadius,0f);
             for(int turn=0;turn<12;turn++){
-                var labels=((string Text,Rectangle Bounds,float Scale,bool Backplate)[])Call("IndustryLabelLayout",new Vector2(1170,625),255f,turn*MathHelper.TwoPi/12);
+                var labels=((string Text,Rectangle Bounds,float Scale,bool Backplate)[])Call("IndustryLabelLayout",wheelCenter,wheelRadius,turn*MathHelper.TwoPi/12);
                 for(int i=0;i<labels.Length;i++){
                     var r=labels[i].Bounds;
-                    Check(r.Size==reference[i].Bounds.Size && Math.Abs(Vector2.Distance(r.Center.ToVector2(),new(1170,625))-Vector2.Distance(reference[i].Bounds.Center.ToVector2(),new(1170,625)))<2,"Rotating labels retain their size and radial position");
+                    Check(r.Size==reference[i].Bounds.Size && Math.Abs(Vector2.Distance(r.Center.ToVector2(),wheelCenter)-Vector2.Distance(reference[i].Bounds.Center.ToVector2(),wheelCenter))<2,"Rotating labels retain their size and radial position");
                     Check(r.Width>0 && !labels[i].Text.Contains('+'),"Wheel uses mixed fractions without an addition sign");
-                    foreach(var p in new[]{new Vector2(r.Left,r.Top),new Vector2(r.Right,r.Top),new Vector2(r.Left,r.Bottom),new Vector2(r.Right,r.Bottom)})Check(Vector2.Distance(p,new(1170,625))<255,"Every label corner stays inside the roulette");
+                    foreach(var p in new[]{new Vector2(r.Left,r.Top),new Vector2(r.Right,r.Top),new Vector2(r.Left,r.Bottom),new Vector2(r.Right,r.Bottom)})Check(Vector2.Distance(p,wheelCenter)<wheelRadius,"Every label corner stays inside the roulette");
                     for(int j=0;j<i;j++)Check(!r.Intersects(labels[j].Bounds),$"Labels overlap: seed={seed},angle={turn},items={i}/{j}");
                 }
             }
@@ -59,6 +62,9 @@ sealed class CheckGame:Game1
     protected override void Draw(GameTime time)
     {
         var batch=(SpriteBatch)Get("_spriteBatch");
+        if(Environment.GetCommandLineArgs().Contains("--harbor-pick")){
+            CheckHarborPicking();Exit();return;
+        }
         if(Environment.GetCommandLineArgs().Contains("--mercy")){
             CheckMercyUi(batch);Exit();return;
         }
@@ -139,6 +145,67 @@ sealed class CheckGame:Game1
         }
         Console.WriteLine("PASS: industry entry without battle, font, wheel/result screens, prayer/surprise mobs, exactly-once application, return and cheap factory menu.");Exit();
     }
+    private void CheckHarborPicking()
+    {
+        const BindingFlags staticMethods=BindingFlags.Static|BindingFlags.NonPublic;
+        var net=(CubeNet)Get("_net");
+        var globe=(WorldPreview)Get("_world");
+        net.Home(w);
+        net.ShowRoutes=true;
+        globe.ShowSetup(w,true);
+        var panel=(Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!;
+        var globePanel=(Rectangle)typeof(Game1).GetProperty("StatusGlobeArea",F)!.GetValue(this)!;
+        var frame=typeof(CubeNet).GetMethod("TryHarborFrame",staticMethods)!;
+        var footing=typeof(CubeNet).GetMethod("HarborFooting",staticMethods)!;
+        var flatRadius=typeof(CubeNet).GetMethod("MapPuckRadius",F)!;
+        var globeRadius=typeof(CubeNet).GetMethod("GlobeNodeRadius",F)!;
+        var globeHitRadius=typeof(CubeNet).GetMethod("GlobeNodeHitRadius",F)!;
+        bool flatHit=false,globeHit=false;
+        foreach(var node in w.Nodes.All.Where(n=>n.IsHarbor && n.Functional))
+        {
+            object[] values={w,node,Vector3.Zero,Vector3.Zero};
+            if(!(bool)frame.Invoke(null,values)!)continue;
+            var shore=(Vector3)values[2];
+            var seaward=(Vector3)values[3];
+            var cell=w.Cells[node.Cell];
+            var land=w.Routes.Position(node.Cell,node.Center);
+            if(!flatHit){
+                net.SetCenter(w,cell.Face);
+                net.FitNodesAtSource(w,node,panel,2);
+                net.ScreenAngle=.47f;
+                var fit=net.Fit(panel);
+                var face=net.Faces.First(f=>f.Face==cell.Face);
+                var direction=Vector2.Normalize(face.Project(shore+seaward)-face.Project(shore));
+                var across=new Vector2(direction.Y,-direction.X);
+                float radius=(float)flatRadius.Invoke(net,new object[]{node,fit.Scale})!;
+                var tip=net.RotateScreen(face.Project(shore)*fit.Scale+fit.Origin+
+                    1.7f*radius*(direction*1.11f+across*.20f),panel).ToPoint();
+                if(panel.Contains(tip) && Vector2.Distance(net.NodePosition(w,node,panel),tip.ToVector2())>radius+4){
+                    Check(net.HitNode(w,panel,tip)==node.Id,"The pier deck selects its port on the rotated net");
+                    Check(net.HitNode(w,panel,tip,Array.Empty<int>())==-1,"A blocked port cannot redirect to a neighbor");
+                    flatHit=true;
+                }
+            }
+            if(!globeHit){
+                Call("FocusGlobePosition",land);
+                float yaw=(float)Get("_yawAngle"),pitch=(float)Get("_pitchAngle");
+                if(!globe.ProjectVisible(land,cell.Normal,yaw,pitch,globePanel,out var at))continue;
+                Vector2 Project(Vector3 p){globe.ProjectVisible(p,cell.Normal,yaw,pitch,globePanel,out var xy);return xy;}
+                float scale=Math.Max(Vector2.Distance(at,Project(land+cell.U)),Vector2.Distance(at,Project(land+cell.V)));
+                float radius=(float)globeRadius.Invoke(net,new object[]{node,scale,globe.GlobeZoom})!;
+                float puckHit=(float)globeHitRadius.Invoke(net,new object[]{node,scale,globe.GlobeZoom})!;
+                var ground=(Vector3)footing.Invoke(null,new object[]{w,cell,shore})!;
+                var tip=Project(ground+1.7f*radius*(seaward*1.11f+Vector3.Cross(seaward,cell.Normal)*.20f+cell.Normal*.40f)).ToPoint();
+                if(globePanel.Contains(tip) && Vector2.Distance(at,tip.ToVector2())>puckHit+2){
+                    Check((int)Call("HitGlobeNode",tip,null!)==node.Id,"The pier deck selects its port on the globe");
+                    globeHit=true;
+                }
+            }
+            if(flatHit && globeHit)break;
+        }
+        Check(flatHit && globeHit,"Both tests exercised the pier outside the old node hit circle");
+        Console.WriteLine("PASS: selecting the pier outside the old hit circle works in both map views.");
+    }
     private void CheckManufacturingDelivery(SpriteBatch batch)
     {
         w.SetWorld(1);w.SetCast(2);w.SetPlacement(3);w.SelectPlayer(0);
@@ -152,13 +219,32 @@ sealed class CheckGame:Game1
         for(int seed=0;factory.ProductionLines.Length==0;seed++)factory.GenerateLines(seed);
         var arguments=Environment.GetCommandLineArgs();
         bool bodyLegs=arguments.Contains("--integrated-body-legs");
-        bool integratedProduct=bodyLegs || arguments.Contains("--integrated-product");
+        bool mixedProduct=arguments.Contains("--mixed-integrated-product");
+        bool mergeIntake=arguments.Contains("--merge-intake");
+        bool foreignReceiver=arguments.Contains("--foreign-receiver");
+        bool integratedProduct=bodyLegs || mixedProduct || arguments.Contains("--integrated-product");
         var productParts=bodyLegs ? RobotParts.Body|RobotParts.Legs :
             integratedProduct ? RobotParts.Head|RobotParts.Body : RobotParts.Complete;
         var producer=factory.ProductionLines[0];producer.Configure(productParts,1);producer.IntakeTarget=target.Id;
         typeof(RobotWorkshop).GetField("_selectedProductPlan",F)!.SetValue(producer,
-            new ProductionPlan(productParts,1,IntegratedParts:integratedProduct ? productParts : 0){Material=RobotMaterial.Cardboard});
-        w.Robots.Nodes[target.Id].Add(w.Robots.Create(0,bodyLegs ? RobotParts.Body : RobotParts.Head));
+            new ProductionPlan(productParts,1,IntegratedParts:integratedProduct ? productParts : 0)
+            {
+                Material=RobotMaterial.Cardboard,
+                BodyMaterial=mixedProduct ? RobotMaterial.Polypropylene : null
+            });
+        var receiverParts=mergeIntake?(bodyLegs?RobotParts.Head:RobotParts.Legs):
+            bodyLegs?RobotParts.Body:RobotParts.Head;
+        var receiver=w.Robots.Create(0,receiverParts);
+        if(mergeIntake)
+            receiver=bodyLegs?receiver with {HeadMaterial=RobotMaterial.Silicone,HeadOrigin=foreignReceiver?1:0}:
+                receiver with {LegsMaterial=RobotMaterial.Silicone,LegsOrigin=foreignReceiver?1:0};
+        w.Robots.Nodes[target.Id].Add(receiver);
+        if(mergeIntake){
+            Check(mixedProduct,"Merge fixture expects a mixed integrated product");
+            if(foreignReceiver)w.Robots.Training[0].AssemblyPolicy=1;
+            typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(w.Robots.Nodes[target.Id],new object[]{1});
+            w.Robots.Workshops[target.Id].AutoAssemblyDisabled=false;
+        }
         w.Industry.Reset();w.Industry.Queue(1);
         int seed26=Enumerable.Range(0,100000).First(seed=>{
             var wheel=IndustryCycle.CreateWheel(seed,1);
@@ -185,15 +271,122 @@ sealed class CheckGame:Game1
         {
             var product=flights.Single().Arrival.Product;
             var outerPart=bodyLegs ? RobotParts.Legs : RobotParts.Head;
+            var expectedBody=mixedProduct ? RobotMaterial.Polypropylene : RobotMaterial.Cardboard;
             Check(product.Parts==productParts && product.IntegratedParts==productParts &&
-                product.Material(outerPart)==RobotMaterial.Cardboard && product.BodyMaterial==RobotMaterial.Cardboard,
-                "The real production flight carries the selected integrated cardboard pair");
+                product.Material(outerPart)==RobotMaterial.Cardboard && product.BodyMaterial==expectedBody,
+                "The real production flight carries the selected materials and integrated parts");
+            if(mixedProduct)
+            {
+                var mixedPixels=Pixels();
+                var queuedFlights=(List<(ProductionIntake Arrival,double Started)>)Get("_manufacturingFlights");
+                var original=queuedFlights.Single();
+                queuedFlights[0]=(original.Arrival with {Product=product with {BodyMaterial=RobotMaterial.Cardboard}},original.Started);
+                GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();
+                Save("manufacturing-in-flight-cardboard-body");
+                var cardboardBodyPixels=Pixels();
+                queuedFlights[0]=original;
+                int flightWidth=GraphicsDevice.PresentationParameters.BackBufferWidth;
+                var changed=Enumerable.Range(0,mixedPixels.Length).Where(i=>mixedPixels[i]!=cardboardBodyPixels[i]).ToArray();
+                Check(changed.Length>100 && changed.Max(i=>i%flightWidth)-changed.Min(i=>i%flightWidth)<82 &&
+                    changed.Max(i=>i/flightWidth)-changed.Min(i=>i/flightWidth)<125,
+                    "Changing only the integrated product's body material affects pixels within a single flight sprite");
+                Console.WriteLine($"PASS: changing only the airborne body material changed {changed.Length} pixels.");
+            }
             var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
+            if(mergeIntake){
+                if(foreignReceiver && arguments.Contains("--strict-intake")){
+                    restored.Robots.Training[0].AssemblyPolicy=0;
+                    restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(restored));
+                    var waiting=restored.Robots.PartPlanning.Preview(restored).Nodes[target.Id].Robots.Single();
+                    var resolve=typeof(RobotWorld).GetMethod("ResolveProductionIntakes",F)!;
+                    resolve.Invoke(restored.Robots,new object[]{restored});
+                    var pending=restored.Robots.ProductionIntakes.Single();
+                    Check(waiting==receiver && restored.Robots.Nodes[target.Id].Robots.Single()==receiver &&
+                          pending.Product==product && pending.Status.Contains("格納枠不足"),
+                          "A three-native-part policy keeps the foreign receiver separate and its product pending");
+                    var expanded=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(restored));
+                    var expandedBay=expanded.Robots.Nodes[target.Id];
+                    typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(expandedBay,new object[]{2});
+                    var separateForecast=expanded.Robots.PartPlanning.Preview(expanded).Nodes[target.Id].Robots;
+                    Check(separateForecast.Count==2 && separateForecast.Contains(receiver) && separateForecast.Contains(product),
+                        "Opening a bay forecasts the integrated product and the foreign part separately");
+                    resolve.Invoke(expanded.Robots,new object[]{expanded});
+                    Check(expanded.Robots.ProductionIntakes.Count==0 && expandedBay.Robots.SequenceEqual(separateForecast),
+                        "With a free bay, strict assembly delivers the unchanged product under its original ID");
+                    Set("_setup",expanded);
+                    var separateBounds=new Rectangle(160,100,28,52);
+                    GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();
+                    Call("DrawHangarRobot",separateBounds,separateForecast.Single(r=>r.Id==product.Id),1f,null!);
+                    batch.End();var separatePixels=Pixels();
+                    GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();
+                    Call("DrawHangarRobot",separateBounds,expandedBay.Robots.Single(r=>r.Id==product.Id),1f,null!);
+                    batch.End();Save("manufacturing-separate-arrival");
+                    Check(separatePixels.SequenceEqual(Pixels()),"Separate arrival artwork matches its compact forecast");
+                    Set("_setup",w);
+                    Console.WriteLine("PASS: opening a bay admits the waiting integrated product separately under the strict policy.");
+                    restored.Robots.Training[0].AssemblyPolicy=1;
+                    restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(restored));
+                    Console.WriteLine("PASS: strict assembly keeps the mixed intake pending until the policy allows it.");
+                }
+                var expected=receiver.Merge(product,receiver.Owner);
+                var preview=restored.Robots.PartPlanning.Preview(restored).Nodes[target.Id].Robots.Single();
+                typeof(RobotWorld).GetMethod("ResolveProductionIntakes",F)!.Invoke(restored.Robots,new object[]{restored});
+                var merged=restored.Robots.Nodes[target.Id].Robots.Single();
+                Check(restored.Robots.ProductionIntakes.Count==0 && preview==expected && merged==expected &&
+                      merged.Id==receiver.Id && merged.Parts==RobotParts.Complete && merged.IntegratedParts==productParts &&
+                      merged.HeadMaterial==(bodyLegs?RobotMaterial.Silicone:RobotMaterial.Cardboard) &&
+                      merged.BodyMaterial==RobotMaterial.Polypropylene &&
+                      merged.LegsMaterial==(bodyLegs?RobotMaterial.Cardboard:RobotMaterial.Silicone),
+                      "A full hangar merges into the receiver without losing any materials or the pair");
+                Check(merged.Origin(receiverParts)==(foreignReceiver?1:0) &&
+                    merged.AssemblyCredit(merged.Owner)==(foreignReceiver?2:3),
+                    "The merged arrival preserves the receiver's nationality and native assembly credit");
+                var bounds=new Rectangle(160,100,28,52);
+                Set("_setup",restored);
+                GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawHangarRobot",bounds,preview,1f,null!);batch.End();
+                var previewPixels=Pixels();
+                GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawHangarRobot",bounds,merged,1f,null!);batch.End();Save("manufacturing-merged-arrival");
+                Check(previewPixels.SequenceEqual(Pixels()),"The merged preview and arrival match in the compact hangar renderer");
+                var expectedEquipment=new RobotEquipment(4,1,3);
+                Check(preview.CanFight && merged.CanFight &&
+                    preview.Equipment(preview.Owner,restored.EquipmentMode)==expectedEquipment &&
+                    merged.Equipment(merged.Owner,restored.EquipmentMode)==expectedEquipment,
+                    "The complete mixed robot displays four shields, one dagger and three rifles");
+                var equipmentBounds=new Rectangle(160,160,150,20);
+                void DrawEquipment(RobotEquipment gear)
+                {
+                    GraphicsDevice.Clear(new Color(16,35,46));
+                    batch.Begin();Call("DrawEquipmentCounts",equipmentBounds,gear,Color.White);batch.End();
+                }
+                DrawEquipment(expectedEquipment);
+                var expectedEquipmentPixels=Pixels();
+                DrawEquipment(merged.Equipment(merged.Owner,restored.EquipmentMode));
+                Check(expectedEquipmentPixels.SequenceEqual(Pixels()),"The arrived robot's equipment icons and numbers match the mixed-material counts");
+                Save("manufacturing-merged-equipment");
+                Set("_setup",w);
+                Console.WriteLine($"PASS: restored intake merged {productParts} into {receiverParts} in one full bay; compact art matches preview.");
+                Console.WriteLine("PASS: mixed arrival equipment displays 4 shields, 1 dagger and 3 rifles.");
+                return;
+            }
             typeof(RobotWorld).GetMethod("ResolveProductionIntakes",F)!.Invoke(restored.Robots,new object[]{restored});
-            Check(restored.Robots.Nodes[target.Id].Robots.Single(r=>r.Id==product.Id)==product,
+            var delivered=restored.Robots.Nodes[target.Id].Robots.Single(r=>r.Id==product.Id);
+            Check(delivered==product,
                 "The integrated pair arrives with the same ID, materials and integrated parts");
+            if(mixedProduct){
+                foreach(var bounds in new[]{new Rectangle(160,100,82,125),new Rectangle(160,100,28,52)}){
+                    Set("_setup",w);
+                    GraphicsDevice.Clear(new Color(16,35,46));
+                    batch.Begin();Call("DrawManufacturingProduct",bounds,product);batch.End();
+                    var airborne=Pixels();
+                    Set("_setup",restored);
+                    GraphicsDevice.Clear(new Color(16,35,46));
+                    batch.Begin();Call("DrawHangarRobot",bounds,delivered,1f,null!);batch.End();
+                    Check(airborne.SequenceEqual(Pixels()),"The flight and hangar draw the mixed product identically at equal dimensions");
+                }
+                Console.WriteLine("PASS: flight and restored hangar artwork match at both compared sizes.");
+            }
             CheckArrivedIntegrationArt(batch,restored,target.Id,product);
-            Console.WriteLine($"PASS: integrated cardboard {productParts} production, flight and restored arrival.");
+            Console.WriteLine($"PASS: integrated {productParts} production, flight and restored arrival (cardboard / {expectedBody}).");
             return;
         }
         var originalFlightPixels=Pixels();

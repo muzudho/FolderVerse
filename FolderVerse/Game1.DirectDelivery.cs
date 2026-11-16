@@ -112,8 +112,14 @@ public partial class Game1
         }
         for(int side=0;side<2;side++)foreach(int slot in DirectVisibleSlots(side))if(DirectViewCell(side,slot).Contains(_pointer)){
             int node=_directNodes[side];var robot=PlanningStock.Nodes[node].Robots.FirstOrDefault(r=>r.Id==_directSlots[side][slot]);
-            if(robot!=null && CanManageNodeFactory(robot.Owner) && !_setup.Campaign.RobotBattles.LockedNode(node) && !PlanningStock.AssemblyLocked(node,robot))_directDrag=(side,robot.Id,(RobotParts)0);
-            else _directMessage="その区画は操作できません / パーツ単位での操作を確認してください";
+            // The preview already includes earlier assembly reservations. A complete
+            // unit shown there can be queued as a whole after those reservations.
+            if(robot!=null && CanManageNodeFactory(robot.Owner) && !_setup.Campaign.RobotBattles.LockedNode(node) &&
+                !PlanningStock.AssemblyLocked(node,robot,allowPlannedAssembly:robot.Parts==RobotParts.Complete))
+                _directDrag=(side,robot.Id,(RobotParts)0);
+            else _directMessage=robot?.Stationed==true || robot?.Disposal==true
+                ?"その機体は予約中です / 先に予約を解除してください"
+                :"その区画は一括移動できません";
             return;
         }}
         if(!_directDrag.HasValue || mouse.LeftButton!=ButtonState.Released || _previousMouse.LeftButton!=ButtonState.Pressed)return;
@@ -122,12 +128,12 @@ public partial class Game1
             try{int source=_directNodes[drag.Side],target=_directNodes[side];var destination=_directSlots[side][slot];
                 var parts=drag.Part==0?PlanningStock.Nodes[source].Robots.Single(r=>r.Id==drag.Robot).Parts:drag.Part;
                 var cargo=DirectStoredMaterials(side);
-                if(Enumerable.Range(0,3).Any(row=>(parts&HangarPart(row))!=0 && MaterialOccupies(cargo,slot,row)))throw new InvalidOperationException("Material occupies this section.");
-                if(side==drag.Side){if(destination==drag.Robot)return;if(!destination.HasValue && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==target && o.TargetRobotId==null && o.TargetSlot==slot))throw new InvalidOperationException("Arrival slot reserved.");
-                    if(drag.Part==0){if(destination.HasValue && PlanningStock.AssemblyLocked(source,PlanningStock.Nodes[source].Robots.Single(r=>r.Id==destination)))throw new InvalidOperationException("Robot is reserved.");int from=Array.IndexOf(_directSlots[side],(long?)drag.Robot);_directSlots[side][from]=destination;_directSlots[side][slot]=drag.Robot;}
+                if(Enumerable.Range(0,3).Any(row=>(parts&HangarPart(row))!=0 && MaterialOccupies(cargo,slot,row)))throw new InvalidOperationException("入荷先の区画に原材料があります");
+                if(side==drag.Side){if(destination==drag.Robot)return;if(!destination.HasValue && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==target && o.TargetRobotId==null && o.TargetSlot==slot))throw new InvalidOperationException("その区画には入荷予約があります");
+                    if(drag.Part==0){if(destination.HasValue && PlanningStock.AssemblyLocked(source,PlanningStock.Nodes[source].Robots.Single(r=>r.Id==destination)))throw new InvalidOperationException("移動先の機体には予約があります");int from=Array.IndexOf(_directSlots[side],(long?)drag.Robot);_directSlots[side][from]=destination;_directSlots[side][slot]=drag.Robot;}
                     else {long id=_setup.Robots.PartPlanning.Reserve(_setup,source,target,drag.Robot,drag.Part,destination,_setup.PlayerSlot);_directSlots[side][slot]=id;}_directMessage="格納庫内の組替を予約しました";}
                 else {var robot=PlanningStock.Nodes[source].Robots.Single(r=>r.Id==drag.Robot);_directSlots[side][slot]=_setup.Robots.PartPlanning.Reserve(_setup,source,target,drag.Robot,drag.Part==0?robot.Parts:drag.Part,destination,_setup.PlayerSlot);BeginWorkReservationEffect(robot,robot.Owner);_directMessage="直送便を予約しました / 配送時に実施";}SyncDirectSlots();}
-            catch(InvalidOperationException){_directMessage="所有国・予約・同じ部位・空き枠を確認してください";}return;
+            catch(InvalidOperationException error){_directMessage=error.Message;}return;
         }
     }
     private void DrawDirectPair(){
@@ -210,7 +216,7 @@ public partial class Game1
         _ui.Button(DirectPairBack,"×",Muted,.8f);
         DrawDirectPairCheckButton();
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);
-        _ui.Center("パーツ・素材をドラッグして予約 / ホイール：ズーム / 右ドラッグ：スクロール",new(20,978,1880,30),.38f,Cream);
+        _ui.Center("格納枠の余白：機体ごと / パーツ・素材：個別 / ホイール：ズーム / 右ドラッグ：スクロール",new(20,978,1880,30),.38f,Cream);
         _ui.Center(_directMessage,new(20,1012,1880,28),.4f,Cream);
         var pending=_setup.Robots.DirectDelivery.Orders.Where(o=>_directNodes.Contains(o.Source) && _directNodes.Contains(o.Target)).ToArray();string status=pending.Length==0?"この２地点の配送予約はありません":string.Join(" / ",pending.Take(6).Select(o=>$"#{o.Number} {(o.Source==_directNodes[0]?"左→右":"右→左")} {PartsLabel(o.Part)} {o.Status}"));
         int planned=_setup.Robots.PartPlanning.Orders.Count(o=>_directNodes.Contains(PlanningMoveSource(o)) && _directNodes.Contains(o.Target));

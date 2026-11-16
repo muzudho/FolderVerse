@@ -47,7 +47,7 @@ public sealed partial class CubeNet
     public Vector2 NodePosition(WorldSetup world,Node node,Rectangle panel)
     {
         var fit=Fit(panel);var face=Faces.First(f=>f.Face==world.Cells[node.Cell].Face);
-        var at=face.Project(world.Routes.Position(node.Cell,node.Center))*fit.Scale+fit.Origin;
+        var at=face.Project(SiteDisplayPosition(world,node,ResourceClearance(world,node.Cell)))*fit.Scale+fit.Origin;
         return _drawing?at:RotateScreen(at,panel);
     }
     public int HitNode(WorldSetup world,Rectangle panel,Point pointer,IEnumerable<int> candidates=null)
@@ -55,12 +55,25 @@ public sealed partial class CubeNet
         if(IsAnimating || !panel.Contains(pointer))return -1;
         var fit=Fit(panel);
         var point=pointer.ToVector2();
+        var clearances=new System.Collections.Generic.Dictionary<int,(Vector3 Position,float Radius)[]>();
         int hit=world.Nodes.All.Where(n=>NodeVisible(world,n)).Select(n=>
         {
-            float radius=MapPuckRadius(n,fit.Scale)+4;
-            float distance=Vector2.DistanceSquared(NodePosition(world,n,panel),point);
-            return (n.Id,Distance:distance<=radius*radius?distance:float.PositiveInfinity);
-        }).Where(n=>float.IsFinite(n.Distance)).OrderBy(n=>n.Distance).ThenBy(n=>n.Id)
+            float puckRadius=MapPuckRadius(n,fit.Scale);
+            float radius=puckRadius*(ShowRoutes && HasFacilityPlatform(n)?FacilityPlatformScale:1)+4;
+            if(!clearances.TryGetValue(n.Cell,out var obstacles))
+                clearances[n.Cell]=obstacles=ResourceClearance(world,n.Cell);
+            var display=SiteDisplayPosition(world,n,obstacles);
+            float distance=Vector2.DistanceSquared(AnimatedSurfacePosition(n.Cell,display,world,panel),point);
+            bool pier=false;
+            if(ShowRoutes && !DirectoryOnly && n.IsHarbor && n.Functional && TryHarborFrame(world,n,out var shore,out var seaward)){
+                var face=Faces.First(f=>f.Face==world.Cells[n.Cell].Face);
+                var at=face.Project(shore)*fit.Scale+fit.Origin;
+                var forward=Vector2.Normalize((face.Project(shore+seaward*.1f)-face.Project(shore))*fit.Scale);
+                var across=new Vector2(forward.Y,-forward.X);
+                pier=HarborPierContains(point,(x,y,z)=>RotateScreen(FlatHarborPoint(at,forward,across,puckRadius,x,y),panel));
+            }
+            return (n.Id,Pier:pier,Distance:pier || distance<=radius*radius?distance:float.PositiveInfinity);
+        }).Where(n=>float.IsFinite(n.Distance)).OrderByDescending(n=>n.Pier).ThenBy(n=>n.Distance).ThenBy(n=>n.Id)
             .Select(n=>n.Id).DefaultIfEmpty(-1).First();        return hit>=0 && (candidates==null || candidates.Contains(hit))?hit:-1;
     }
     public Point MicroPoint(WorldSetup world,int cell,Rectangle panel,Point pointer)
@@ -152,10 +165,11 @@ public sealed partial class CubeNet
         if (DirectoryOnly) return;
         DrawResourceSites(ui,world,cell,project,globe:false);
         DrawLandmarks(ui,world,cell,p=>project(p),pulse);
+        var obstacles=ResourceClearance(world,cell);
         foreach (var node in world.Nodes.InCell(cell).Where(n=>NodeVisible(world,n)))
         {
             DrawMapleDeposit(ui,world,node,project,globe:false);
-            var position=world.Routes.Position(cell,node.Center);
+            var position=SiteDisplayPosition(world,node,obstacles);
             var at=project(position);
             float radius=MapPuckRadius(node,Vector2.Distance(at,project(position+world.Cells[cell].U)));
             DrawFlatPuck(ui,world,node,at,radius,pulse,color=>NodeTint(node.Id,color),project);

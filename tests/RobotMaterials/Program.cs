@@ -603,23 +603,331 @@ Check((bool)receiveMaple.Invoke(waitingStore,new object[]{new MaplePackage(99900
     (bool)receiveMaple.Invoke(waitingStore,new object[]{new MaplePackage(999003,16){Material=RawMaterial.PP},0,(Func<long,bool>)(_=>false)})!,
     "The two-ingredient fixture stores Maple and PP separately");
 var beforeMixedIntake=waitingStore.MaplePackages.ToArray();
+Check(recipeStock.ReserveMapleShipment(recipeWorld,waitingNode,target,999003),
+    "The mixed recipe fixture reserves only its PP cargo for delivery");
+production.Invoke(recipeFactory,new object[]{recipeStock,waitingNode,0});
+Check(recipeLine.WaitingForMaple(recipeStock,waitingNode) && recipeLine.ProductionAge==0 &&
+    waitingStore.MaplePackages.SequenceEqual(beforeMixedIntake) &&
+    !recipeStock.ProductionIntakes.Any(i=>ReferenceEquals(i.Line,recipeLine)),
+    "A reserved PP ingredient blocks the complete recipe without consuming the unreserved maple");
+var reservedRecipe=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(recipeWorld));
+var reservedStock=reservedRecipe.Robots;
+var reservedFactory=reservedStock.Workshops[waitingNode];
+var reservedLine=reservedFactory.ProductionLines[0];
+Check(reservedLine.WaitingForMaple(reservedStock,waitingNode) &&
+    reservedStock.Nodes[waitingNode].MaplePackages.SequenceEqual(beforeMixedIntake) &&
+    reservedStock.CancelMapleShipment(waitingNode,999003),
+    "The restored PP reservation still blocks the recipe and can be cancelled");
+for(int i=0;i<reservedLine.ProductionPeriod;i++)production.Invoke(reservedFactory,new object[]{reservedStock,waitingNode,0});
+Check(reservedStock.ProductionIntakes.Count(i=>ReferenceEquals(i.Line,reservedLine))==1 &&
+    reservedStock.Nodes[waitingNode].MapleUnits==1 &&
+    reservedStock.Nodes[waitingNode].MaplePackages.Single(p=>p.Material==RawMaterial.PP).Units==8,
+    "Cancelling the restored shipment restarts the mixed recipe and consumes both ingredients once");
+var suppliedRecipe=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(recipeWorld));
+var suppliedStock=suppliedRecipe.Robots;
+var suppliedFactory=suppliedStock.Workshops[waitingNode];
+var suppliedLine=suppliedFactory.ProductionLines[0];
+var suppliedStore=suppliedStock.Nodes[waitingNode];
+var heldShipment=suppliedStock.MapleShipments.Single(o=>o.PackageId==999003);
+var heldPackage=suppliedStore.MaplePackages.Single(p=>p.Id==heldShipment.PackageId);
+var freePP=new MaplePackage(999004,16){Material=RawMaterial.PP};
+Check((bool)receiveMaple.Invoke(suppliedStore,new object[]{freePP,0,(Func<long,bool>)(id=>id==heldShipment.PackageId)})!,
+    "The factory receives separate PP stock while its earlier PP cargo is reserved");
+for(int i=0;i<suppliedLine.ProductionPeriod;i++)production.Invoke(suppliedFactory,new object[]{suppliedStock,waitingNode,0});
+Check(suppliedStock.ProductionIntakes.Count(i=>ReferenceEquals(i.Line,suppliedLine))==1 &&
+    suppliedStore.MapleUnits==1 &&
+    suppliedStock.MapleShipments.Contains(heldShipment) && suppliedStore.MaplePackages.Contains(heldPackage) &&
+    suppliedStore.MaplePackages.Single(p=>p.Id==freePP.Id)==(freePP with {Units=8}),
+    "The mixed recipe uses unreserved PP while keeping the reserved shipment and cargo intact");
+var simultaneous=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(suppliedRecipe));
+var simultaneousStock=simultaneous.Robots;
+var productIntake=simultaneousStock.ProductionIntakes.Single(i=>i.Source==waitingNode);
+var productDestination=productIntake.Target??waitingNode;
+int rawDestination=heldShipment.Target;
+Check(productDestination!=rawDestination && simultaneous.Campaign.FinishDomestic(simultaneous),
+    "Domestic confirmation delivers the queued product and the reserved PP to different sites");
+Check(simultaneousStock.ProductionIntakes.All(i=>i.Product.Id!=productIntake.Product.Id) &&
+    simultaneousStock.Nodes[productDestination].Robots.Count(r=>r.Id==productIntake.Product.Id)==1 &&
+    simultaneousStock.MapleShipments.All(o=>o.PackageId!=heldPackage.Id) &&
+    simultaneousStock.Nodes[rawDestination].MaplePackages.Count(p=>p==heldPackage)==1 &&
+    !simultaneousStock.Nodes[waitingNode].MaplePackages.Any(p=>p.Id==heldPackage.Id),
+    "Confirmation delivers both saved reservations exactly once");
+var competing=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(suppliedRecipe));
+var competingStock=competing.Robots;
+var competingIntake=competingStock.ProductionIntakes.Single(i=>i.Source==waitingNode);
+// Product intake needs one adjacent route, while direct material delivery can span relay links.
+int sharedDestination=competing.Routes.Neighbors(competing.Nodes.All[waitingNode])
+    .Select(route=>competing.Nodes.At(route.Target,route.Entry).Id)
+    .First(id=>id!=waitingNode && competing.Nodes.All[id].Functional &&
+        FunctionalDeliveryRoutes.Connected(competing,waitingNode,id));
+Check(competingStock.CancelMapleShipment(waitingNode,heldPackage.Id) &&
+    competingStock.ReserveMapleShipment(competing,waitingNode,sharedDestination,heldPackage.Id),
+    "Retarget the PP shipment to a destination that also accepts production intake");
+competingStock.SetIntakeTarget(competingIntake.Line,sharedDestination);
+var competingStore=competingStock.Nodes[sharedDestination];
+long addedBlocker=0;
+while(competingStore.Count<competingStore.StorageLimit-1)
+{
+    var blocker=competingStock.Create(0,RobotParts.Complete);
+    competingStore.Add(blocker);
+    addedBlocker=blocker.Id;
+}
+Check(addedBlocker!=0 && competingStore.Count==competingStore.StorageLimit-1,
+    "The shared destination has exactly one slot for two pending arrivals");
+Check(competing.Campaign.FinishDomestic(competing) && !competingStore.HasSpace &&
+    competingStore.Robots.Count(r=>r.Id==competingIntake.Product.Id)==1 &&
+    competingStock.ProductionIntakes.All(i=>i.Product.Id!=competingIntake.Product.Id) &&
+    competingStock.MapleShipments.Count(o=>o.PackageId==heldPackage.Id)==1 &&
+    competingStock.Nodes[waitingNode].MaplePackages.Contains(heldPackage) &&
+    !competingStore.MaplePackages.Any(p=>p.Id==heldPackage.Id),
+    "The mixed product takes the last slot and the original PP stays reserved at its source");
+competing=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(competing));
+competingStock=competing.Robots;
+competingStore=competingStock.Nodes[sharedDestination];
+resolveMaple.Invoke(competingStock,new object[]{competing});
+Check(!competingStore.HasSpace &&
+    competingStore.Robots.Count(r=>r.Id==competingIntake.Product.Id)==1 &&
+    competingStock.ProductionIntakes.All(i=>i.Product.Id!=competingIntake.Product.Id) &&
+    competingStock.MapleShipments.Count(o=>o.PackageId==heldPackage.Id && o.Target==sharedDestination)==1 &&
+    competingStock.Nodes[waitingNode].MaplePackages.Contains(heldPackage) &&
+    !competingStore.MaplePackages.Any(p=>p.Id==heldPackage.Id),
+    "Restoring the full destination keeps the delivered product and the waiting PP separate");
+var relocated=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(competing));
+relocated.Campaign.BeginMilitary();
+relocated.Campaign.Advance(relocated,-1,0,enemies:false);
+var relocatedStock=relocated.Robots;
+var transfers=relocated.Campaign.FunctionTransfers;
+int relocationTarget=relocated.Routes.Neighbors(relocated.Nodes.All[sharedDestination])
+    .Select(route=>relocated.Nodes.At(route.Target,route.Entry).Id)
+    .First(id=>id!=waitingNode && transfers.CanReserve(relocated,sharedDestination,id));
+Check(relocatedStock.MapleShipments.Count(o=>o.PackageId==heldPackage.Id && o.Target==sharedDestination)==1,
+    "The restored PP shipment is still pending before the destination moves");
+transfers.Reserve(relocated,sharedDestination,relocationTarget);
+Check(relocated.Campaign.FinishDomestic(relocated) && !relocated.Nodes.All[sharedDestination].Functional &&
+    relocatedStock.Nodes[relocationTarget].Robots.Count(r=>r.Id==competingIntake.Product.Id)==1 &&
+    relocatedStock.MapleShipments.All(o=>o.PackageId!=heldPackage.Id) &&
+    relocatedStock.Nodes[waitingNode].MaplePackages.Count(p=>p==heldPackage)==1 &&
+    !relocatedStock.Nodes[relocationTarget].MaplePackages.Any(p=>p.Id==heldPackage.Id),
+    "Moving the full destination cancels the saved shipment and leaves the PP at its source");
+Check(relocated.Nodes.All[sharedDestination].FunctionHost==relocationTarget &&
+    relocated.Nodes.All[relocationTarget].FunctionUnits>1,
+    "Full transfer leaves a civilian settlement and adds a facility group to its host");
+var relay = AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(competing));
+relay.Campaign.BeginMilitary();
+relay.Campaign.Advance(relay,-1,0,enemies:false);
+var relayStock = relay.Robots;
+var relayStore = relayStock.Nodes[sharedDestination];
+var relayTransfers = relay.Campaign.FunctionTransfers;
+int factoryTarget = relay.Routes.Neighbors(relay.Nodes.All[sharedDestination])
+    .Select(route=>relay.Nodes.At(route.Target,route.Entry).Id)
+    .First(id=>id!=waitingNode && relayTransfers.CanReserve(relay,sharedDestination,id,factoryOnly:true));
+int incomingFactoriesBefore=relay.Nodes.All[factoryTarget].IncomingFactories;
+int sourceFactoriesBefore=relay.Nodes.All[sharedDestination].IncomingFactories;
+Check(relayStock.MapleShipments.Count(o=>o.PackageId==heldPackage.Id && o.Target==sharedDestination)==1,
+    "The restored PP shipment is still pending before the destination factory moves");
+relayTransfers.Reserve(relay,sharedDestination,factoryTarget,factoryOnly:true);
+Check(relay.Campaign.FinishDomestic(relay) && relay.Nodes.All[sharedDestination].Purpose==NodePurpose.Relay &&
+    relayStore.Robots.Count(r=>r.Id==competingIntake.Product.Id)==1 &&
+    !relayStock.Nodes[factoryTarget].MaplePackages.Any(p=>p.Id==heldPackage.Id),
+    "Factory-only transfer leaves the delivered product and the PP destination at the relay");
+Check(relay.Nodes.All[sharedDestination].Functional &&
+    relay.Nodes.All[sharedDestination].IncomingFactories==0 &&
+    relay.Nodes.All[factoryTarget].IncomingFactories==incomingFactoriesBefore+sourceFactoriesBefore+1,
+    "Factory-only transfer moves facility markers and leaves the original hangar operating");
+Check(!relayStore.HasSpace && relayStock.MapleShipments.Count(o=>o.PackageId==heldPackage.Id && o.Target==sharedDestination)==1 &&
+    relayStock.Nodes[waitingNode].MaplePackages.Contains(heldPackage) && !relayStore.MaplePackages.Any(p=>p.Id==heldPackage.Id),
+    "A still-full relay preserves the PP reservation and cargo");
+var waitingAtRelay = relayStock.MapleShipments.Single(o=>o.PackageId==heldPackage.Id);
+relay = AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(relay));
+Check(relay.Nodes.All[factoryTarget].IncomingFactories==incomingFactoriesBefore+sourceFactoriesBefore+1,
+    "Restoring a saved factory transfer retains destination facility markers");
+relayStock = relay.Robots;
+relayStore = relayStock.Nodes[sharedDestination];
+resolveMaple.Invoke(relayStock,new object[]{relay});
+Check(relay.Nodes.All[sharedDestination].Purpose==NodePurpose.Relay && !relayStore.HasSpace &&
+    relayStock.MapleShipments.Single(o=>o.PackageId==heldPackage.Id)==waitingAtRelay &&
+    relayStock.Nodes[waitingNode].MaplePackages.Contains(heldPackage) && !relayStore.MaplePackages.Any(p=>p.Id==heldPackage.Id),
+    "Restoring an already full relay preserves its purpose, its pending shipment and the source package");
+var retiringRelay=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(relay));
+retiringRelay.Campaign.BeginMilitary();
+retiringRelay.Campaign.Advance(retiringRelay,-1,0,enemies:false);
+var retiringStock=retiringRelay.Robots;
+var retiringTransfers=retiringRelay.Campaign.FunctionTransfers;
+int finalHost=retiringRelay.Routes.Neighbors(retiringRelay.Nodes.All[sharedDestination])
+    .Select(route=>retiringRelay.Nodes.At(route.Target,route.Entry).Id)
+    .First(id=>id!=waitingNode && retiringTransfers.CanReserve(retiringRelay,sharedDestination,id));
+Check(retiringStock.MapleShipments.Single(o=>o.PackageId==heldPackage.Id)==waitingAtRelay,
+    "The restored relay still has the same waiting order before its full transfer");
+retiringTransfers.Reserve(retiringRelay,sharedDestination,finalHost);
+Check(retiringRelay.Campaign.FinishDomestic(retiringRelay) &&
+    !retiringRelay.Nodes.All[sharedDestination].Functional &&
+    retiringStock.Nodes[finalHost].Robots.Count(r=>r.Id==competingIntake.Product.Id)==1 &&
+    retiringStock.MapleShipments.All(o=>o.PackageId!=heldPackage.Id) &&
+    retiringStock.Nodes[waitingNode].MaplePackages.Count(p=>p==heldPackage)==1 &&
+    !retiringStock.Nodes[finalHost].MaplePackages.Any(p=>p.Id==heldPackage.Id),
+    "Full transfer of the restored relay cancels the incoming PP and moves only the resident product");
+retiringRelay.Campaign.BeginMilitary();
+retiringRelay.Campaign.Advance(retiringRelay,-1,0,enemies:false);
+Check(!retiringStock.ReserveMapleShipment(retiringRelay,waitingNode,sharedDestination,heldPackage.Id),
+    "An inactive former relay cannot accept a new material shipment");
+int reroutedTarget=retiringRelay.Nodes.All.Where(node=>node.Id!=waitingNode && node.Id!=sharedDestination &&
+    retiringStock.Nodes[node.Id].HasSpace && retiringStock.Nodes[node.Id].MaplePackages.Count==0)
+    .Select(node=>node.Id)
+    .First(id=>retiringStock.ReserveMapleShipment(retiringRelay,waitingNode,id,heldPackage.Id));
+var rebookedShipment=retiringStock.MapleShipments.Single(o=>o.PackageId==heldPackage.Id);
+Check(rebookedShipment.Target==reroutedTarget,"The PP order names the replacement destination");
+retiringRelay=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(retiringRelay));
+retiringStock=retiringRelay.Robots;
+Check(retiringStock.MapleShipments.Single(o=>o.PackageId==heldPackage.Id)==rebookedShipment &&
+    retiringStock.Nodes[waitingNode].MaplePackages.Count(p=>p==heldPackage)==1 &&
+    !retiringRelay.Nodes.All[sharedDestination].Functional,
+    "Restoring a rebooked shipment preserves only the new destination and its source cargo");
+var previewReroute=typeof(RobotWorld).GetMethod("PreviewMapleArrivals",internalInstance)!;
+(int Blocked,MaplePackage[] Packages) PreviewRebookedDestination(int node)=>
+    ((int,MaplePackage[]))previewReroute.Invoke(retiringStock,new object[]{retiringRelay,node,retiringStock.Nodes[node]})!;
+var reroutedForecast=PreviewRebookedDestination(reroutedTarget);
+var retiredForecast=PreviewRebookedDestination(sharedDestination);
+Check(reroutedForecast.Blocked==0 && reroutedForecast.Packages.Single()==heldPackage &&
+    retiredForecast.Blocked==0 && retiredForecast.Packages.Length==0 &&
+    retiringStock.Nodes[reroutedTarget].MaplePackages.Count==0 &&
+    retiringStock.Nodes[waitingNode].MaplePackages.Count(p=>p==heldPackage)==1 &&
+    retiringStock.MapleShipments.Single(o=>o.PackageId==heldPackage.Id)==rebookedShipment,
+    "The restored forecast shows PP only at the new destination without consuming the reservation");
+var fullReroute=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(retiringRelay));
+var fullRerouteStock=fullReroute.Robots;
+var fullRerouteStore=fullRerouteStock.Nodes[reroutedTarget];
+var rerouteBlockers=new List<long>();
+while(fullRerouteStore.HasSpace)
+{
+    var blocker=fullRerouteStock.Create(0,RobotParts.Complete);
+    fullRerouteStore.Add(blocker);
+    rerouteBlockers.Add(blocker.Id);
+}
+Check(rerouteBlockers.Count>0,"The rebooked destination fills after booking");
+fullReroute=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(fullReroute));
+fullRerouteStock=fullReroute.Robots;
+fullRerouteStore=fullRerouteStock.Nodes[reroutedTarget];
+var fullForecast=((int Blocked,MaplePackage[] Packages))previewReroute.Invoke(fullRerouteStock,
+    new object[]{fullReroute,reroutedTarget,fullRerouteStore})!;
+Check(fullForecast.Blocked==1 && fullForecast.Packages.Length==0 &&
+    fullReroute.Campaign.FinishDomestic(fullReroute) &&
+    fullRerouteStock.MapleShipments.Single(o=>o.PackageId==heldPackage.Id)==rebookedShipment &&
+    fullRerouteStock.Nodes[waitingNode].MaplePackages.Count(p=>p==heldPackage)==1 &&
+    fullRerouteStore.MaplePackages.Count==0,
+    "The restored full destination forecasts and preserves the rebooked PP waiting at its source");
+var reroutedLane=new RobotWorkshop();
+reroutedLane.Configure(RobotParts.Head,1);
+typeof(RobotWorkshop).GetField("_selectedProductPlan",internalInstance)!
+    .SetValue(reroutedLane,new ProductionPlan(RobotParts.Head,1){Material=RobotMaterial.Polypropylene});
+production.Invoke(reroutedLane,new object[]{fullRerouteStock,reroutedTarget,0});
+Check(reroutedLane.WaitingForMaple(fullRerouteStock,reroutedTarget) && reroutedLane.ProductionAge==0,
+    "The PP recipe cannot progress while the rebooked shipment is waiting");
+fullRerouteStore.Remove(rerouteBlockers[^1]);
+resolveMaple.Invoke(fullRerouteStock,new object[]{fullReroute});
+Check(fullRerouteStock.MapleShipments.All(o=>o.PackageId!=heldPackage.Id) &&
+    fullRerouteStore.MaplePackages.Single()==heldPackage &&
+    fullRerouteStock.Nodes.Sum(store=>store.MaplePackages.Count(p=>p.Id==heldPackage.Id))==1,
+    "Freeing the rebooked destination delivers the original PP exactly once");
+Check(!reroutedLane.WaitingForMaple(fullRerouteStock,reroutedTarget),"The rebooked PP clears the material wait");
+reroutedLane.SetReservedSlots(fullRerouteStore.TotalCapacity);
+for(int tick=0;tick<reroutedLane.ProductionPeriod;tick++)
+    production.Invoke(reroutedLane,new object[]{fullRerouteStock,reroutedTarget,0});
+Check(reroutedLane.Waiting && reroutedLane.WaitingProductionTurns>0 &&
+    fullRerouteStore.MaplePackages.Single()==heldPackage &&
+    !fullRerouteStock.ProductionIntakes.Any(i=>ReferenceEquals(i.Line,reroutedLane)),
+    "When the destination cannot accept the product, the delivered PP remains intact and production waits");
+reroutedLane.SetReservedSlots(0);
+foreach(long id in rerouteBlockers.SkipLast(1))fullRerouteStore.Remove(id);
+for(int tick=0;tick<3 && fullRerouteStore.MaplePackages.Sum(p=>p.Units)==heldPackage.Units;tick++)
+    production.Invoke(reroutedLane,new object[]{fullRerouteStock,reroutedTarget,0});
+Check(fullRerouteStore.MaplePackages.Single()==(heldPackage with {Units=heldPackage.Units-8}) &&
+    fullRerouteStock.ProductionIntakes.Count(i=>ReferenceEquals(i.Line,reroutedLane) &&
+        i.Product.Parts==RobotParts.Head && i.Product.HeadMaterial==RobotMaterial.Polypropylene)==1,
+    "The restarted route supplies exactly eight units for one PP head");
+var reroutedProduct=fullRerouteStock.ProductionIntakes.Single(i=>ReferenceEquals(i.Line,reroutedLane)).Product;
+fullReroute=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(fullReroute));
+fullRerouteStock=fullReroute.Robots;
+fullRerouteStore=fullRerouteStock.Nodes[reroutedTarget];
+var savedReroutedIntake=fullRerouteStock.ProductionIntakes.Single(i=>i.Product.Id==reroutedProduct.Id);
+Check((savedReroutedIntake.Target??savedReroutedIntake.Source)==reroutedTarget &&
+    savedReroutedIntake.Product.Parts==RobotParts.Head && savedReroutedIntake.Product.HeadMaterial==RobotMaterial.Polypropylene &&
+    !fullRerouteStore.Robots.Any(r=>r.Id==reroutedProduct.Id) &&
+    fullRerouteStore.MaplePackages.Single()==(heldPackage with {Units=heldPackage.Units-8}),
+    "Restoring the reserved PP head keeps the intake and the remaining raw stock separate");
+var reroutedIntakeForecast=fullRerouteStock.PartPlanning.Preview(fullReroute).Nodes[reroutedTarget];
+Check(reroutedIntakeForecast.Robots.Single(r=>r.Id==reroutedProduct.Id)==savedReroutedIntake.Product &&
+    reroutedIntakeForecast.Robots.Count==fullRerouteStore.Robots.Count+1 &&
+    reroutedIntakeForecast.MaplePackages.SequenceEqual(fullRerouteStore.MaplePackages) &&
+    fullRerouteStock.ProductionIntakes.Contains(savedReroutedIntake) &&
+    !fullRerouteStore.Robots.Any(r=>r.Id==reroutedProduct.Id),
+    "The restored forecast places the PP head in the destination store without changing the live intake");
+var resolveReroutedIntakes=typeof(RobotWorld).GetMethod("ResolveProductionIntakes",internalInstance)!;
+resolveReroutedIntakes.Invoke(fullRerouteStock,new object[]{fullReroute});
+resolveReroutedIntakes.Invoke(fullRerouteStock,new object[]{fullReroute});
+Check(fullRerouteStock.ProductionIntakes.All(i=>i.Product.Id!=reroutedProduct.Id) &&
+    fullRerouteStore.Robots.Count(r=>r.Id==reroutedProduct.Id && r.Parts==RobotParts.Head &&
+        r.HeadMaterial==RobotMaterial.Polypropylene)==1 &&
+    fullRerouteStock.Nodes.Sum(store=>store.Robots.Count(r=>r.Id==reroutedProduct.Id))==1 &&
+    fullRerouteStore.Count==reroutedIntakeForecast.Count &&
+    fullRerouteStore.Robots.SequenceEqual(reroutedIntakeForecast.Robots) &&
+    fullRerouteStore.MaplePackages.Single()==(heldPackage with {Units=heldPackage.Units-8}),
+    "The resumed PP head enters the receiving hangar once without a second material debit");
+Check(retiringRelay.Campaign.FinishDomestic(retiringRelay) &&
+    retiringStock.MapleShipments.All(o=>o.PackageId!=heldPackage.Id) &&
+    retiringStock.Nodes[reroutedTarget].MaplePackages.SequenceEqual(reroutedForecast.Packages) &&
+    retiringStock.Nodes.Sum(store=>store.MaplePackages.Count(p=>p.Id==heldPackage.Id))==1,
+    "The cancelled PP cargo can be booked again and lands intact at the new destination exactly once");
+relayStore.Remove(addedBlocker);
+resolveMaple.Invoke(relayStock,new object[]{relay});
+resolveMaple.Invoke(relayStock,new object[]{relay});
+Check(relayStock.MapleShipments.All(o=>o.PackageId!=heldPackage.Id) &&
+    relayStore.MaplePackages.Count(p=>p==heldPackage)==1 &&
+    relayStore.Robots.Count(r=>r.Id==competingIntake.Product.Id)==1 &&
+    !relayStock.Nodes[factoryTarget].MaplePackages.Any(p=>p.Id==heldPackage.Id) &&
+    !relayStock.Nodes[waitingNode].MaplePackages.Any(p=>p.Id==heldPackage.Id),
+    "The restored PP shipment reaches the original hangar exactly once after a factory-only transfer");
+competingStore.Remove(addedBlocker);
+resolveMaple.Invoke(competingStock,new object[]{competing});
+resolveMaple.Invoke(competingStock,new object[]{competing});
+Check(competingStock.MapleShipments.All(o=>o.PackageId!=heldPackage.Id) &&
+    competingStore.MaplePackages.Count(p=>p==heldPackage)==1 &&
+    competingStore.Robots.Count(r=>r.Id==competingIntake.Product.Id)==1,
+    "Freeing one slot admits the waiting PP once without duplicating the product");
+Check(recipeStock.CancelMapleShipment(waitingNode,999003),"Clear the original fixture before testing full intake");
 recipeFactory.SetReservedSlots(waitingStore.TotalCapacity);
 for(int i=0;i<recipeLine.ProductionPeriod;i++)production.Invoke(recipeFactory,new object[]{recipeStock,waitingNode,0});
 Check(recipeLine.Waiting && recipeLine.WaitingProductionTurns>0 &&
     !recipeStock.ProductionIntakes.Any(i=>ReferenceEquals(i.Line,recipeLine)) &&
     waitingStore.MaplePackages.SequenceEqual(beforeMixedIntake),
     "A blocked mixed intake restores the exact packages for both ingredients");
-recipeFactory.SetReservedSlots(0);
-production.Invoke(recipeFactory,new object[]{recipeStock,waitingNode,0});
-var resumedMixed=recipeStock.ProductionIntakes.Single(i=>ReferenceEquals(i.Line,recipeLine));
-Check(waitingStore.MapleUnits==1 && waitingStore.MaplePackages.Single(p=>p.Material==RawMaterial.PP).Units==8 &&
-    resumedMixed.Product.HeadMaterial==RobotMaterial.Polypropylene &&
-    resumedMixed.Product.BodyMaterial==RobotMaterial.Cardboard && resumedMixed.Product.LegsMaterial==RobotMaterial.Maple,
-    "The same lane retries once and consumes 20 Maple and 8 PP for the mixed product");
-typeof(RobotWorld).GetMethod("ResolveProductionIntakes",internalInstance)!.Invoke(recipeStock,new object[]{recipeWorld});
-Check(waitingStore.Robots.Any(r=>r.Id==resumedMixed.Product.Id && r.HeadMaterial==RobotMaterial.Polypropylene),
-    "The retried mixed product arrives in the destination hangar");
-Console.WriteLine("PASS a single Maple/PP recipe rolls back both ingredients when blocked and consumes both on retry.");
+var restoredRecipe=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(recipeWorld));
+foreach(var pendingRecipe in new[]{recipeWorld,restoredRecipe})
+{
+    var pendingStock=pendingRecipe.Robots;
+    var pendingFactory=pendingStock.Workshops[waitingNode];
+    var pendingLine=pendingFactory.ProductionLines[0];
+    var pendingStore=pendingStock.Nodes[waitingNode];
+    int waitingTurns=pendingLine.WaitingProductionTurns;
+    Check(pendingLine.Waiting && waitingTurns>0 && pendingStore.MaplePackages.SequenceEqual(beforeMixedIntake),
+        "The waiting lane and both exact ingredient packages survive save and restore");
+    production.Invoke(pendingFactory,new object[]{pendingStock,waitingNode,0});
+    Check(pendingLine.WaitingProductionTurns==waitingTurns+1 &&
+        !pendingStock.ProductionIntakes.Any(i=>ReferenceEquals(i.Line,pendingLine)) &&
+        pendingStore.MaplePackages.SequenceEqual(beforeMixedIntake),
+        "Retrying while full still queues no product and consumes neither ingredient");
+    pendingFactory.SetReservedSlots(0);
+    production.Invoke(pendingFactory,new object[]{pendingStock,waitingNode,0});
+    var resumedMixed=pendingStock.ProductionIntakes.Single(i=>ReferenceEquals(i.Line,pendingLine));
+    Check(pendingStore.MapleUnits==1 && pendingStore.MaplePackages.Single(p=>p.Material==RawMaterial.PP).Units==8 &&
+        resumedMixed.Product.HeadMaterial==RobotMaterial.Polypropylene &&
+        resumedMixed.Product.BodyMaterial==RobotMaterial.Cardboard && resumedMixed.Product.LegsMaterial==RobotMaterial.Maple,
+        "The same lane retries once and consumes 20 Maple and 8 PP for the mixed product");
+    typeof(RobotWorld).GetMethod("ResolveProductionIntakes",internalInstance)!.Invoke(pendingStock,new object[]{pendingRecipe});
+    Check(!pendingStock.ProductionIntakes.Contains(resumedMixed) &&
+        pendingStore.Robots.Count(r=>r.Id==resumedMixed.Product.Id && r.HeadMaterial==RobotMaterial.Polypropylene)==1,
+        "The retried mixed product arrives exactly once in the destination hangar");
+}
+Console.WriteLine("PASS a single Maple/PP recipe rolls back both ingredients and resumes exactly once before and after save.");
 Check(supply.Campaign.FunctionTransfers.CanReserve(supply,target,source),"Fixture cannot transfer functions");
 supply.Campaign.FunctionTransfers.Reserve(supply,target,source);
 int remaining=cargo.Nodes[target].MapleUnits;

@@ -1,10 +1,14 @@
 namespace FolderVerse;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 
 public partial class Game1
 {
+    private readonly Dictionary<(int Ruler,int Source,int Target),float> _movePreviewStarts=new();
+    private WorldSetup _movePreviewWorld;
+
     private bool HasMoveReservation()=>_setup.Campaign.PlannedOrders.Any(o=>o.Peaceful && CanPlanRuler(o.Ruler));
     private void DrawMoveReservationButton()
     {
@@ -13,38 +17,125 @@ public partial class Game1
         _ui.Box(new(lamp.X-2,lamp.Y-2,20,20),new Color(10,28,35));
         _ui.Box(lamp,HasMoveReservation()?new Color(139,255,158):new Color(64,79,83));
     }
-    private int[] MoveReservationTargets()=>_setup.Campaign.PlannedOrders.Where(o=>o.Peaceful && o.Queen && CanPlanRuler(o.Ruler)).Select(o=>o.TargetNode)
-        .Concat(_movementOpen && !_warPlanning && _selectedMoveNode>=0?new[]{_selectedMoveNode}:Array.Empty<int>()).Distinct().ToArray();
-    // The sword is above the node; the bus is below and to its right.
-    private static Rectangle MoveBusBounds(Vector2 at)=>new((int)at.X+24,(int)at.Y+20,68,36);
-    private Rectangle VisibleMoveBusBounds(Vector2 at)
+
+    private IEnumerable<(int Ruler,int Source,int Target)> MovePreviews()
     {
-        var box=MoveBusBounds(at);
-        box.X=Math.Clamp(box.X,MapViewBounds.Left+16,MapViewBounds.Right-box.Width-16);
-        box.Y=Math.Clamp(box.Y,MapViewBounds.Top+16,MapViewBounds.Bottom-box.Height-42);
-        var sword=new Rectangle((int)at.X-57,(int)at.Y-65,114,61);
-        if(new Rectangle(box.X-13,box.Y-3,94,73).Intersects(sword)){
-            box.X=(int)at.X+(at.X-MapViewBounds.Left<MapViewBounds.Right-at.X?80:-150);
-            box.X=Math.Clamp(box.X,MapViewBounds.Left+16,MapViewBounds.Right-box.Width-16);
+        foreach(var order in _setup.Campaign.PlannedOrders)
+        {
+            if(!order.Peaceful || !order.Queen || !CanPlanRuler(order.Ruler))continue;
+            int source=order.SourceNode>=0?order.SourceNode:_setup.Nodes.Current(order.Ruler)?.Id??-1;
+            if(source>=0)yield return (order.Ruler,source,order.TargetNode);
         }
-        return box;
+        if(_movementOpen && !_warPlanning && _selectedMoveNode>=0 && _setup.Nodes.Current(_setup.PlayerSlot) is Node current)
+            yield return (_setup.PlayerSlot,current.Id,_selectedMoveNode);
     }
+
     private void DrawMoveReservationMarkers()
     {
-        foreach(int id in MoveReservationTargets()){
-            if(!OperationPosition(id,out var at))continue;
-            bool selected=_movementOpen && !_warPlanning && _selectedMoveNode==id;
-            var box=VisibleMoveBusBounds(at);
-            var color=selected?new Color(255,226,126):new Color(128,221,214);
-            var link=new Vector2(box.Left,box.Center.Y)-at;
-            _ui.Tile(at+link/2,new(link.Length(),2),MathF.Atan2(link.Y,link.X),color);
-            _ui.Box(new(box.X-3,box.Y-3,box.Width+6,box.Height+10),new(11,28,40));
-            _ui.Box(box,color);_ui.Box(new(box.X+3,box.Y+3,box.Width-6,4),Cream);
-            for(int i=0;i<4;i++)_ui.Box(new(box.X+6+i*14,box.Y+10,11,13),new(39,77,96));
-            _ui.Box(new(box.Right-7,box.Y+9,4,22),new(39,77,96));
-            _ui.Box(new(box.X+10,box.Bottom-3,12,9),new(20,29,36));_ui.Box(new(box.Right-24,box.Bottom-3,12,9),new(20,29,36));
-            var label=new Rectangle(box.X-13,box.Bottom+10,94,24);_ui.Box(label,new(11,28,40));
-            _ui.Center(selected?"移動先選択中":"移動予約済",label,.27f,color);
+        if(!ReferenceEquals(_movePreviewWorld,_setup))
+        {
+            _movePreviewWorld=_setup;
+            _movePreviewStarts.Clear();
         }
+        var previews=MovePreviews().Distinct().ToArray();
+        foreach(var key in _movePreviewStarts.Keys.Except(previews).ToArray())_movePreviewStarts.Remove(key);
+        if(MapTransitionActive || _net.IsAnimating)return;
+        foreach(var preview in previews)
+        {
+            if(!_movePreviewStarts.TryGetValue(preview,out float start))
+                _movePreviewStarts[preview]=start=_animationTime;
+            var path=_setup.Campaign.RobotBattles.PeacefulMarchPath(_setup,preview.Source,preview.Target);
+            if(path.Length<2)continue;
+            var segments=new List<(int Cell,Vector3 From,Vector3 To,float Length)>();
+            float length=0;
+            void AddLeg(int cell,IEnumerable<Vector3> points)
+            {
+                Vector3? previous=null;
+                foreach(var point in points)
+                {
+                    if(previous is Vector3 from)
+                    {
+                        float distance=Vector3.Distance(from,point);
+                        if(distance>.0001f){segments.Add((cell,from,point,distance));length+=distance;}
+                    }
+                    previous=point;
+                }
+            }
+            for(int i=1;i<path.Length;i++)
+            {
+                var source=_setup.Nodes.All[path[i-1]];
+                var target=_setup.Nodes.All[path[i]];
+                var route=_setup.Routes.Neighbors(source).First(r=>_setup.Nodes.At(r.Target,r.Entry).Id==target.Id);
+                AddLeg(source.Cell,_setup.Routes.Curve(source.Cell,route));
+                if(route.Portal is {} portal)
+                    AddLeg(target.Cell,route.ArrivalPath.Select(p=>_setup.Routes.Position(target.Cell,p)).Prepend(portal.Position));
+            }
+            if(length<=0 || !TryMoveBusDistance(_animationTime-start,length,out float offset))continue;
+            foreach(var leg in segments)
+            {
+                if(offset>leg.Length && leg!=segments[^1]){offset-=leg.Length;continue;}
+                var at=Vector3.Lerp(leg.From,leg.To,Math.Clamp(offset/leg.Length,0,1));
+                DrawMoveBus(preview.Ruler,_setup.Cells[leg.Cell],at,(leg.To-leg.From)/leg.Length);
+                break;
+            }
+        }
+    }
+
+    private static bool TryMoveBusDistance(float age,float length,out float distance)
+    {
+        float travel=Math.Clamp(length/.55f,2.2f,8f);
+        float phase=age%(travel+1.25f);
+        distance=length*Math.Clamp(phase/travel,0,1);
+        return phase<travel+.55f;
+    }
+
+    private void DrawMoveBus(int ruler,SurfaceCell cell,Vector3 at,Vector3 forward)
+    {
+        Vector2 Project(Vector3 p)
+        {
+            if(!_statusGlobe)return _net.AnimatedSurfacePosition(cell.Id,p,_setup,NetPanel);
+            _world.ProjectVisible(p,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var projected);
+            return projected;
+        }
+        if(_statusGlobe && !_world.ProjectVisible(at,cell.Normal,_yaw,_pitch,StatusGlobeArea,out _))return;
+        if(_statusGlobe)
+            at+=cell.Normal*WorldTerrain.ReliefAt(_setup,cell,Vector3.Lerp(at,cell.Center,.001f),_setup.Terrain);
+        var center=Project(at);
+        var onScreen=Project(at+forward*.1f)-center;
+        if(onScreen.LengthSquared()<.01f)return;
+        var heading=Vector2.Normalize(onScreen);
+        var across=Vector3.Cross(cell.Normal,forward);
+        var side=Project(at+across*.1f)-center;
+        var up=_statusGlobe?Project(at+cell.Normal*.1f)-center:new Vector2(0,-10);
+        float scale=Math.Clamp(Math.Max(onScreen.Length(),side.Length()),9,20);
+        float ratio=scale/Math.Max(onScreen.Length(),side.Length());
+        var frontAxis=onScreen*ratio;
+        var sideAxis=side*ratio;
+        var upAxis=up*ratio;
+        if(!_statusGlobe)upAxis=new(0,-scale*.7f);
+        var map=MapViewBounds;
+        map.Inflate(-4,-4);
+        const int chipPadding=LocationChipRadius+6;
+        if(map.Width<chipPadding*2 || map.Height<chipPadding*2 ||
+           !map.Contains(new Rectangle((int)center.X-35,(int)center.Y-34,70,48)))return;
+        var chip=center-heading*42+new Vector2(0,-66+MathF.Sin(_animationTime*4)*3);
+        chip=Vector2.Clamp(chip,new(map.Left+chipPadding,map.Top+chipPadding),new(map.Right-chipPadding,map.Bottom-chipPadding));
+
+        Vector2 Model(float x,float y,float z)=>center+frontAxis*x+sideAxis*y+upAxis*z;
+        var gold=new Color(255,219,141);
+        var hitch=Model(-1.05f,0,.64f);
+        var knot=chip+Vector2.Normalize(hitch-chip)*LocationChipRadius;
+        var sag=(hitch+knot)/2+new Vector2(0,7);
+        var previous=hitch;
+        for(int i=1;i<=8;i++)
+        {
+            float t=i/8f;
+            var point=Vector2.Lerp(Vector2.Lerp(hitch,sag,t),Vector2.Lerp(sag,knot,t),t);
+            var delta=point-previous;
+            _ui.Tile((point+previous)/2,new(delta.Length()+1,2),MathF.Atan2(delta.Y,delta.X),gold);
+            previous=point;
+        }
+        CubeNet.DrawMoveBusModel(_ui,Model,_setup.OwnerColor(ruler));
+        DrawLocationChip(chip,ruler);
     }
 }

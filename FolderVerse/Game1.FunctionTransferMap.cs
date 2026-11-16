@@ -111,7 +111,7 @@ public partial class Game1
         if(_transferChoice is not {} marker)return;
         _ui.Box(new(0,0,1920,1080),new Color(40,40,40,195));
         _ui.Box(TransferChoicePanel,new Color(24,45,57));
-        _ui.Center("機能移転",new(585,382,750,40),.6f,Cream);
+        _ui.Center("施設移転",new(585,382,750,40),.6f,Cream);
         var direction=FunctionTransferDirection(marker.Source,marker.Target);
         _ui.Center(direction,new(585,425,750,34),Math.Min(.43f,740/Math.Max(1,_font.MeasureString(direction).X)),Cream);
         DrawOption(TransferFactoryButton,"格納庫を残して工場を移転する",true);
@@ -232,11 +232,11 @@ public partial class Game1
         if(hovered!=null)DrawMarker(hovered);
 
         string hint=hovered==null
-            ? _functionTransferMessage.Length>0?_functionTransferMessage:"機能移転の予約　/　矢印で移転内容を選択　/　書類で取消　/　Esc で閉じる"
+            ? _functionTransferMessage.Length>0?_functionTransferMessage:"施設移転の予約　/　矢印で移転内容を選択　/　書類で取消　/　Esc で閉じる"
             : FunctionTransferDirection(hovered.Source,hovered.Target)+(hovered.Reserved?" の予約を取り消す":" に機能を集約する");
         _ui.Box(FunctionTransferMapBanner,background);
         BannerRow(hint,0,Cream);
-        BannerRow("全機能移転後の格納庫は合計60個まで",1,Cream);
+        BannerRow("全施設移転後の格納庫は合計60個まで",1,Cream);
         _ui.Text("矢印で移転内容を選択 / 書類で取消 / Esc で閉じる",new(74,889),.32f,routeColor);
 
         bool VisiblePosition(int id,out Vector2 at)=>OperationPosition(id,out at) && MapViewBounds.Contains(at.ToPoint());

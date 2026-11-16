@@ -104,7 +104,8 @@ public partial class Game1
         int selected=_computerManualCharacter;
         _ui.Text($"No.{selected+1:00}  {ConquerorCatalog.Themes[selected]}",new(852,149),.68f,Cream);
         _ui.Text("世界征服ランク（A～Z）　未計測",new(852,222),.58f,Cream);
-        _ui.Text("同じ条件で比較したキャラクター別の成績が未集計です。",new(852,271),.47f,Cream);
+        var landPreference=ComputerLandPlanner.PreferenceFor(selected);
+        _ui.Text($"土地征服の趣向 / {ComputerLandPlanner.Label(landPreference)}（仮）",new(852,271),.47f,Cream);
         var policy=_setup.CharacterComputerPolicy(selected);
         _ui.Text("プレイングスタイルカード",new(852,309),.55f,Cream);
         _ui.Button(ComputerManualAttack,$"攻撃の趣向 / {ComputerAttackNames[(int)policy.AttackPriority]}",Muted,.44f);

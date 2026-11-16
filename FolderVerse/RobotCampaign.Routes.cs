@@ -26,6 +26,13 @@ public sealed partial class RobotCampaign
     public IEnumerable<int> MarchTargets(WorldSetup world,int source)=>
         MarchRoutes(world,source).Keys.Where(id=>IsMarchTarget(world,source,id,null));
 
+    internal int[] PeacefulMarchPath(WorldSetup world,int source,int target)
+    {
+        var routes=MarchRoutes(world,source);
+        return routes.ContainsKey(target) && IsMarchTarget(world,source,target,null)
+            ? MarchPath(routes,target) : Array.Empty<int>();
+    }
+
     public IEnumerable<int> AttackTargets(WorldSetup world,int owner,int source)
     {
         var routes=MarchRoutes(world,source);

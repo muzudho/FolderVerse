@@ -187,6 +187,9 @@ public sealed class RobotPartPlanning
     }
     private static int Find(RobotWorld world,long id)=>Array.FindIndex(world.Nodes,s=>s.Robots.Any(r=>r.Id==id));
     private static Robot FreeRole(Robot r)=>r with {DefenseOnly=false,InterceptOnly=false,FactoryWorker=false,DefenseFlag=null};
+    internal static bool CanUseWarehouseSuccessor(WorldSetup world,RobotWorld stock,int node,Robot robot)=>
+        robot!=null && robot.Parts==RobotParts.Complete && !robot.Stationed && !robot.Disposal &&
+        !world.Robots.MarchReserved(node,robot) && !stock.ReservationBusy(node,robot.Id);
     private static long Apply(WorldSetup world,RobotWorld stock,PlannedPartMove order,bool checkRoute)
     {
         int source=Find(stock,order.RobotId),target=order.Target;
@@ -196,8 +199,8 @@ public sealed class RobotPartPlanning
         if(order.Role==HangarReservation.WarehouseSwap){
             var store=stock.Nodes[target];
             var successor=store.Robots.FirstOrDefault(r=>r.Id==order.TargetRobotId);
-            if(world.Campaign.RobotBattles.LockedNode(target) || source!=target || !robot.WarehouseKeeper || successor==null || successor.Parts!=RobotParts.Complete ||
-               successor.Stationed || successor.Disposal || world.Robots.MarchReserved(target,successor) || stock.ReservationBusy(target,successor.Id))
+            if(world.Campaign.RobotBattles.LockedNode(target) || source!=target || !robot.WarehouseKeeper ||
+               !CanUseWarehouseSuccessor(world,stock,target,successor))
                 throw new InvalidOperationException("交代先に空いている完全体を選んでください");
             store.Replace(store.Robots.Select(r=>r.Id==robot.Id?r with {WarehouseKeeper=false}:
                 r.Id==successor.Id?r with {WarehouseKeeper=true}:r));

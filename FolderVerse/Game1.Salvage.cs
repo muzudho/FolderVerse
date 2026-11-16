@@ -14,7 +14,6 @@ public partial class Game1
     private readonly HashSet<int> _salvageFocusNodes=new();
     private readonly List<(Rectangle Bounds,int Node)> _salvageHits=new();
     private (int Node,long Robot,RobotParts Parts)? _salvageAbandonConfirmation;
-    private static readonly Rectangle HangarAbandonButton=new(480,908,182,42),HangarSalvageButton=new(678,908,190,42);
     private static readonly Rectangle SalvageToggle=new(84,355,200,42),SalvageAgentFocus=new(296,355,250,42),SalvageAll=new(558,355,310,42);
     private static readonly Rectangle SalvageRequest=new(84,916,380,44),SalvagePickUp=new(478,916,390,44);
     private static readonly Rectangle AbandonYes=new(560,646,380,58),AbandonNo=new(980,646,380,58);

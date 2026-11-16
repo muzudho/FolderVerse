@@ -28,6 +28,7 @@ sealed class ReturnGame:Game1
         w.Robots.Nodes[home].Add(robot);w.Robots.Nodes[home].Add(w.Robots.Create(0,RobotParts.Complete));
         Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_conquestOverviewEnabled",false);Set("_autoSaveEnabled",false);
         Call("OpenNodeInspector",home);Set("_domesticSlide",1f);Call("OpenNodeAssembly");
+        Set("_hangarIntroStart",float.NegativeInfinity);
         var button=(Rectangle)typeof(Game1).GetField("HangarReturnHomeButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
         Click(button.Center);Click(new Point(175,380));
         Check(w.Robots.Nodes[home].Robots.Single(r=>r.Id==robot.Id).ReturnHomeCommander==0,"Actual button and cell clicks create a return reservation");

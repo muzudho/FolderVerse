@@ -139,6 +139,7 @@ public static class AutoSaveStore
                     // Defaults for fields introduced after older turn-boundary saves.
                     if(type==typeof(Node) && field.Name=="FunctionUnits"){field.SetValue(value,1);continue;}
                     if(type==typeof(Node) && field.Name=="FunctionHost"){field.SetValue(value,-1);continue;}
+                    if(type==typeof(Node) && field.Name=="IncomingFactories")continue;
                     if(type==typeof(RobotStore) && field.Name=="_capacity")continue;
                     if(type==typeof(Robot) && field.Name=="<FunctionDisplayNode>k__BackingField")continue;
                     if(type==typeof(RobotWorkshop) && new[]{"_disposalAnnexes","TransferredLineLimit","FunctionOriginNode","_storageSlotLimit"}.Contains(field.Name))continue;

@@ -29,11 +29,22 @@ sealed class SalvageChecks:Game1
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_conquestOverview",false);Set("_conquestOverviewEnabled",false);Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);Set("_statusGlobe",false);
   ((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);
   Call("OpenNodeInspector",home);Call("UpdateDomesticSlide",1f);Call("OpenNodeAssembly");
-  HangarClick(Rect("HangarAbandonButton").Center);HangarClick(Rect("HangarPartBounds",0,0).Center);
+  Set("_hangarIntroStart",float.NegativeInfinity);
+  HangarClick(Rect("HangarReservationButton",0).Center);
+  Check((HangarReservation)Get("_hangarReservation")==HangarReservation.Disposal &&
+        (bool)Call("HangarReservationEnabled",r) && !(bool)Call("HangarReservationEnabled",new object[]{null!}),
+        "Disposal pictogram selects the tool and only eligible occupied bays are candidates");
+  HangarClick(Rect("HangarAbandonButton").Center);HangarClick(((Rectangle)Call("AssemblyPartBounds",0,0)).Center);
   Check(Get("_salvageAbandonConfirmation")!=null,"Abandon requires explicit in-game confirmation");Confirm(false);
   Check(w.Salvage.Items.Count==1 && w.Robots.Nodes[home].Robots.Single().Parts==RobotParts.Complete,"Cancel leaves stock untouched");
-  HangarClick(Rect("HangarPartBounds",0,0).Center);Confirm(true);discard=w.Salvage.Items.Single(i=>i.AbandonedBy==0).Id;
+  HangarClick(((Rectangle)Call("AssemblyPartBounds",0,0)).Center);Confirm(true);discard=w.Salvage.Items.Single(i=>i.AbandonedBy==0).Id;
   Check(w.Robots.Nodes[home].Robots.Single().Parts==(RobotParts.Body|RobotParts.Legs) && w.Salvage.Items.Single(i=>i.Id==discard).Robot.IsDamaged(RobotParts.Head),"Confirmed part abandonment updates physical stock and keeps damage");
+  HangarClick(Rect("NodeDisposalTile").Center);
+  Check((bool)Get("_nodeDisposalOpen") && !(bool)Get("_nodeAssemblyOpen"),"Recovery and disposal tab owns the local collection point");
+  Call("NodeDisposalClick",Rect("NodeSalvageButton").Center);
+  Check((bool)Get("_salvageCatalogOpen") && (int)Get("_salvageNodeFilter")==home,"Collection button opens the catalog filtered to this node");
+  Call("SalvageCatalogInput",false,true);
+  Check((bool)Get("_nodeDisposalOpen") && !(bool)Get("_salvageCatalogOpen"),"Closing the catalog returns to recovery and disposal");
   Call("ResetInspector");Call("DrawSalvageMap");Check(((System.Collections.ICollection)Get("_salvageHits")).Count==0,"Default map hides salvage markers and hit targets");
   Point Action(int i)=>((Rectangle)Call("PrimaryActionBounds",i)).Center;
   Call("MapOverlayClick",Action(3),false);Check((bool)Get("_directMap") && !(bool)Get("_salvagePlan"),"One click selects direct delivery");
@@ -50,8 +61,8 @@ sealed class SalvageChecks:Game1
   if(frame==1){PlanClick(Rect("SalvagePickUp").Center);Check(w.Robots.Retinues[0].Robots.Count==1 && !w.Salvage.Items.Any(i=>i.Id==discard),"Local UI pickup places selected goods in pocket");PlanClick(Rect("SalvageToggle").Center);Check(w.Salvage.Agents.Single(a=>a.Owner==0).Paused,"Pause button stops agent");}
   if(frame==2){PlanClick(Rect("SalvageToggle").Center);for(int i=0;i<4;i++){PlanClick(Rect("SalvagePolicyButton",i).Center);Check(w.Salvage.Agents.Single(a=>a.Owner==0).Policy==(SalvagePolicy)i,"All four policy buttons apply");}Set("_salvageSelected",100L);PlanClick(Rect("SalvageRequest").Center);Set("_statusGlobe",true);Call("FocusStatusGlobe");}
   if(frame==3){w.Salvage.Advance(w,1);Set("_salvageFocusTurn",-1);var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();}
-  if(frame==4){Call("OpenNodeInspector",home);Call("UpdateDomesticSlide",1f);Call("OpenNodeAssembly");HangarClick(Rect("HangarAbandonButton").Center);HangarClick(Rect("HangarCell",0).Location+new Point(12,150));Check(Get("_salvageAbandonConfirmation")!=null,"Card margin selects all remaining parts for abandonment");}
-  if(frame==5){Call("ResetInspector");Call("UpdateDomesticSlide",1f);}
+  if(frame==4){Call("OpenNodeInspector",home);Call("UpdateDomesticSlide",1f);Call("OpenNodeAssembly");Set("_hangarIntroStart",float.NegativeInfinity);HangarClick(Rect("HangarAbandonButton").Center);HangarClick(((Rectangle)Call("AssemblyCell",0)).Location+new Point(12,150));Check(Get("_salvageAbandonConfirmation")!=null,"Card margin selects all remaining parts for abandonment");}
+  if(frame==5){Call("OpenNodeDisposal");}
   base.Draw(t);var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
   using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"salvage-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
   if(frame==4){Confirm(true);Check(w.Robots.Nodes[home].Count==0 && w.Salvage.Items.Any(i=>i.AbandonedBy==0 && i.Robot.Parts==(RobotParts.Body|RobotParts.Legs)),"Whole abandonment frees hangar slot");}

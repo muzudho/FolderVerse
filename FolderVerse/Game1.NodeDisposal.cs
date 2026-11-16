@@ -10,6 +10,9 @@ public partial class Game1
     private bool _nodeDisposalOpen;
     private string _nodeDisposalMessage="";
     private static readonly Rectangle NodeDisposalTile=new(480,210,190,40);
+    private static readonly Rectangle NodeSalvageButton=new(790,252,HangarActionSize,HangarActionSize);
+    private static readonly Rectangle NodeRecoveryPlanButton=new(586,300,184,34);
+    private const string NodeDisposalName="ロボット回収・廃棄計画";
     private Robot[] DisposalCandidates()
     {
         var workshop=_setup.Robots.Workshops[_populationNode];
@@ -18,14 +21,16 @@ public partial class Game1
     }
     private void OpenNodeDisposal()
     {
-        if(!CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return;
+        if(!InspectableNode(_populationNode))return;
         _nodeOfficeOpen=false;_lastNodeTab=2;
         _nodeAssemblyOpen=false;_nodeDisposalOpen=true;_nodeFactoryOpen=_nodeTransportOpen=false;_nodeDisposalMessage="";
     }
     private bool NodeDisposalClick(Point pointer)
     {
         if(NodeDisposalTile.Contains(pointer)){_nodeDisposalOpen=false;return true;}
-        if(!CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return true;
+        if(NodeSalvageButton.Contains(pointer)){if(DomesticOperationsAllowed)OpenSalvageCatalog(_populationNode);return true;}
+        if(NodeRecoveryPlanButton.Contains(pointer) && DomesticOperationsAllowed){OpenSalvagePlan(_populationNode);return true;}
+        if(!DomesticOperationsAllowed || !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return true;
         var robots=DisposalCandidates();
         for(int i=0;i<robots.Length;i++)
         {
@@ -40,19 +45,25 @@ public partial class Game1
     }
     private void DrawNodeDisposalTile()
     {
-        bool enabled=CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
+        bool enabled=InspectableNode(_populationNode);
         _ui.Box(NodeDisposalTile,_nodeDisposalOpen || enabled && NodeDisposalTile.Contains(_pointer)?Accent:Muted);
-        _ui.Center("ロボット廃棄計画",NodeDisposalTile,.38f,enabled?(_nodeDisposalOpen || NodeDisposalTile.Contains(_pointer)?SelectionInk:Cream):Cream*.4f);
+        _ui.Center(NodeDisposalName,NodeDisposalTile,.32f,enabled?(_nodeDisposalOpen || NodeDisposalTile.Contains(_pointer)?SelectionInk:Cream):Cream*.4f);
         if(_nodeDisposalOpen)_ui.Box(new(NodeDisposalTile.X,NodeDisposalTile.Y,NodeDisposalTile.Width,4),Cream);
     }
     private void DrawNodeDisposal()
     {
-        var node=_setup.Nodes.All[_populationNode];var workshop=_setup.Robots.Workshops[node.Id];var robots=DisposalCandidates();
+        var node=_setup.Nodes.All[_populationNode];var workshop=_setup.Robots.Workshops[node.Id];
+        bool manage=CanManageNodeFactory(node.Owner);
+        var robots=manage?DisposalCandidates():Array.Empty<Robot>();
         _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Box(new(54,150,850,6),_setup.OwnerColor(node.Owner));
+        DrawHangarAction(NodeSalvageButton,10,DomesticOperationsAllowed);
+        _ui.Button(NodeRecoveryPlanButton,"回収隊の計画",DomesticOperationsAllowed?Accent:Muted,.34f);
+        int abandoned=_setup.Salvage.Items.Count(item=>item.Node==node.Id);
+        _ui.Text($"放棄品 {abandoned} 件",new(84,318),.34f,Cream);
 
-        string status=!workshop.HasDisposalFactory?"この地点に廃棄炉はありません":workshop.DisposalTarget is long id?$"レーン使用中 ID {id} / {IndustryTime.Format(workshop.DisposalAge)}/{IndustryTime.Format(workshop.DisposalPeriod)} 産業ターン":"レーンは空いています / 廃棄フラグ付きの個体が自動で入ります";
-        _ui.Text(status,new(84,260),.43f,Cream);
-        _ui.Text("頭１・胴２・脚２産業ターン / 組み合わせは合計 / ↑↓で順番を変更",new(84,288),.42f,Cream);
+        string status=!manage?"この地点の廃棄順は管理者が変更できます":!workshop.HasDisposalFactory?"この地点に廃棄炉はありません":workshop.DisposalTarget is long id?$"レーン使用中 ID {id} / {IndustryTime.Format(workshop.DisposalAge)}/{IndustryTime.Format(workshop.DisposalPeriod)} 産業ターン":"レーンは空いています / 廃棄フラグ付きの個体が自動で入ります";
+        DrawDisposalInfo(status,260,.43f);
+        if(manage)DrawDisposalInfo("頭１・胴２・脚２産業ターン / 組み合わせは合計 / ↑↓で順番を変更",288,.42f);
         for(int i=0;i<robots.Length;i++)
         {
             int x=84+i/6*388,y=340+i%6*78;var robot=robots[i];_ui.Box(new(x,y,374,68),Muted);
@@ -61,9 +72,12 @@ public partial class Game1
             _ui.Text($"{IndustryTime.Format(RobotWorkshop.DisposalTurns(robot.Parts))} 産業ターン",new(x+58,y+36),.34f,Cream);
             _ui.Button(new(x+274,y+8,42,42),"↑",Muted,.45f);_ui.Button(new(x+324,y+8,42,42),"↓",Muted,.45f);
         }
-        if(robots.Length==0)_ui.Text("廃棄待ちのロボットはいません",new(84,355),.5f,Cream);
+        if(manage && robots.Length==0)_ui.Text("廃棄待ちのロボットはいません",new(84,355),.5f,Cream);
         _ui.Text(_nodeDisposalMessage,new(84,819),.4f,Cream);
         DrawNodeTabs();
+
+        void DrawDisposalInfo(string text,int y,float scale)=>
+            _ui.Text(text,new(84,y),Math.Min(scale,(NodeRecoveryPlanButton.Left-96)/Math.Max(1,_font.MeasureString(text).X)),Cream);
     }
     private void ToggleRobotDisposal(int node,long id)
     {

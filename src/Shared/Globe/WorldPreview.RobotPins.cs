@@ -46,6 +46,7 @@ public sealed partial class WorldPreview
         }
         var groups=setup.Robots.FunctionDisplayGroups(setup);
         var terrainOffset=setup.Terrain;
+        var clearances=new Dictionary<int,(Vector3 Position,float Radius)[]>();
         foreach(var node in setup.Nodes.All)
         {
             bool nodeVisible=net.NodeVisible(setup,node);
@@ -53,7 +54,9 @@ public sealed partial class WorldPreview
             if(!nodeVisible && !ownBattery)continue;
             var cell=setup.Cells[node.Cell];var robots=groups.GetValueOrDefault(node.Id,new List<Robot>()).Where(r=>nodeVisible && net.ShowRobots && (net.ShowOtherCountries || setup.Relations.Controls(r.Owner))).ToList();
             if(net.ShowRobots && net.ShowBatteries && net.HoveredBattery>=0 && setup.Relations.Powered[net.HoveredBattery] && setup.Nodes.Current(net.HoveredBattery)?.Id==node.Id && (net.ShowOtherCountries || setup.Relations.Controls(net.HoveredBattery)))robots.AddRange(setup.Robots.Retinues[net.HoveredBattery].Robots);
-            var center=setup.Routes.Position(node.Cell,node.Center);
+            if(!clearances.TryGetValue(node.Cell,out var obstacles))
+                clearances[node.Cell]=obstacles=net.ResourceClearance(setup,node.Cell);
+            var center=net.SiteDisplayPosition(setup,node,obstacles);
             center+=cell.Normal*WorldTerrain.ReliefAt(setup,cell,center,terrainOffset);
             var projected=Screen(center);
             if(Vector3.Dot(Vector3.TransformNormal(cell.Normal,orientation),camera-Vector3.Transform(center,orientation))<=0 || projected.Z<0 || projected.Z>1)continue;
@@ -120,11 +123,12 @@ public sealed partial class WorldPreview
                 Math.Max(ScreenDistance(center+cell.U),ScreenDistance(center+cell.V)));
             const float spacing=.115f;
             int badgeNode=node.Functional?node.Id:node.FunctionHost;
+            int nextSpiralSlot=0;
             for(int slot=0;slot<visible;slot++)
             {
                 hop=emphasized?CubeNet.MapObjectHop(seconds,slot)*.003f:0;
                 bounds=Rectangle.Empty;
-                var offset=CubeNet.RobotSpiralSlot(slot,spacing);
+                var offset=CubeNet.ResourceSafeRobotSlot(cell,center,spacing,.065f,obstacles,ref nextSpiralSlot);
                 float u=offset.X,v=offset.Y,z=.008f;var robot=robots[slot];
                 foreach(var whirl in setup.Routes.Whirlpools){
                     if(Vector3.Dot(cell.Normal,setup.Cells[whirl.Cell].Normal)<.99f)continue;
@@ -174,7 +178,7 @@ public sealed partial class WorldPreview
             }
             if(visible<robots.Count)
             {
-                var slot=CubeNet.RobotSpiralSlot(visible,spacing);
+                var slot=CubeNet.ResourceSafeRobotSlot(cell,center,spacing,.065f,obstacles,ref nextSpiralSlot);
                 hop=0;
                 var at=Screen(Point(slot.X,slot.Y,.1f));
                 var position=new Vector2(at.X,at.Y);

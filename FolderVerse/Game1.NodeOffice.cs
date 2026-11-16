@@ -17,12 +17,12 @@ public partial class Game1
     }
     private void DrawNodeTabs(){
         var areas=new[]{NodeOfficeTile,NodeFactoryTile,NodeDisposalTile,NodeAssemblyTile};
-        string[] labels={NodeOfficeName,"ロボット製造工場","ロボット廃棄計画","ロボット格納庫"};
+        string[] labels={NodeOfficeName,"ロボット製造工場",NodeDisposalName,"ロボット格納庫"};
         bool[] active={_nodeOfficeOpen,_nodeFactoryOpen,_nodeDisposalOpen,_nodeAssemblyOpen};
-        bool[] enabled={true,CanOpenNodeFactory,CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner),CanOpenHangar};
+        bool[] enabled={true,CanOpenNodeFactory,InspectableNode(_populationNode),CanOpenHangar};
         for(int i=0;i<4;i++){
             var r=areas[i];var color=active[i] || enabled[i] && r.Contains(_pointer)?Accent:Muted;
-            _ui.Box(r,color);_ui.Center(labels[i],r,.36f,enabled[i]?UiPainter.ContrastInk(color):Cream*.4f);
+            _ui.Box(r,color);_ui.Center(labels[i],r,Math.Min(.36f,(r.Width-12)/Math.Max(1,_font.MeasureString(labels[i]).X)),enabled[i]?UiPainter.ContrastInk(color):Cream*.4f);
             if(active[i])_ui.Box(new(r.X,r.Y,r.Width,4),Cream);
         }
     }
@@ -35,7 +35,7 @@ public partial class Game1
     {
         if(purpose==null)return node.IsHarbor?"港は陸と海を結ぶ地点です":"この地点は港ではありません";
         if(!node.Functional)return "無機能地点では用途を変更できません";
-        if(node.Purpose==NodePurpose.Relay)return "中継地点では全機能移転のみできます";
+        if(node.Purpose==NodePurpose.Relay)return "中継地点では全施設移転のみできます";
         if(purpose==NodePurpose.Relay)return "工場だけを移転すると中継地点になります";
         if(purpose==NodePurpose.Harvest && !RobotWorld.RawMaterials.Any(m=>_setup.Robots.RawDeposit(node.Id,m)>0))
             return "この地域では何も採れません";
@@ -71,7 +71,7 @@ public partial class Game1
         string hint=node.Purpose switch {
             NodePurpose.Harvest=>"採取 −10％ / 製造 ＋10％",
             NodePurpose.Manufacturing=>"製造 −10％ / 採取 ＋10％",
-            NodePurpose.Relay=>"工場移転済み / 格納庫を使用可能 / 全機能移転のみ",
+            NodePurpose.Relay=>"工場移転済み / 格納庫を使用可能 / 全施設移転のみ",
             NodePurpose.Defense=>"未予約の完全体に守備専用予約",
             NodePurpose.Frontline=>"未予約の完全体に迎撃予約",
             _=>"用途計画 / 中継地点は工場だけを移転すると設定されます"
@@ -88,7 +88,6 @@ public partial class Game1
         _ui.Center(owner,new(84,718,780,45),.6f,Cream);
         if(_setup.Robots.MapleSupplyEnabled && node.Functional && node.Purpose!=NodePurpose.Relay && _setup.Robots.MapleDeposit(node.Id)>0)
             _ui.Center($"楓の木 / 採取できる残り {_setup.Robots.MapleDeposit(node.Id)} 荷",new(84,754,780,24),.34f,Cream);
-        _ui.Button(new(84,778,784,48),"放棄品置き場 / "+_setup.Salvage.Items.Count(i=>i.Node==node.Id)+" 件",Muted,.46f);
         var report=_setup.Campaign.SubordinateResults.LastOrDefault(r=>r.Node==node.Id && r.Controller==_setup.TurnPlayer);
         if(report!=null){
             _ui.Text($"手下の操作記録 / 全体ターン {report.Turn}",new(84,842),.34f,Cream);

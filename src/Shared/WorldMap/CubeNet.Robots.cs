@@ -37,7 +37,7 @@ public sealed partial class CubeNet
         if(ShowRoutes)foreach(var cell in world.Cells)
             DrawNodeMarkers(ui,world,cell.Id,p=>AnimatedSurfacePosition(cell.Id,p,world,panel),pulse);
         DrawBatteries(ui,world,panel,r=>AnimatedSurfacePosition(world.ConquerorLocations[r],world.Routes.Position(world.ConquerorLocations[r],world.ConquerorPoints[r]),world,panel),pulse);
-        DrawRobotLayer(ui,world,panel,n=>AnimatedNodePosition(world,n,panel),Fit(panel).Scale,pulse);
+        DrawRobotLayer(ui,world,panel,n=>AnimatedNodePosition(world,n,panel),Fit(panel).Scale,pulse,avoidResources:true);
     }
     public void DrawGlobeRobots(UiPainter ui,WorldSetup world,WorldPreview globe,Rectangle panel,float yaw,float pitch)
     {
@@ -75,13 +75,14 @@ public sealed partial class CubeNet
     private static int MapPartCount(RobotParts parts)=>
         ((parts&RobotParts.Head)!=0?1:0)+((parts&RobotParts.Body)!=0?1:0)+((parts&RobotParts.Legs)!=0?1:0);
     public static float MapObjectHop(double seconds,int index)=>6*MathF.Pow(MathF.Max(0,MathF.Sin((float)(seconds*MathHelper.TwoPi/1.2)+index*.45f)),2);
-    private void DrawRobotLayer(UiPainter ui,WorldSetup world,Rectangle panel,Func<Node,Vector2?> project,float scale,float pulse=0)
+    private void DrawRobotLayer(UiPainter ui,WorldSetup world,Rectangle panel,Func<Node,Vector2?> project,float scale,float pulse=0,bool avoidResources=false)
     {
         _robotBadges.Clear();
         _globeRobotOverflow.Clear();
         if(!ShowRobots || !world.Campaign.UseRobotCombat)return;
         int current=world.Nodes.Current(world.PlayerSlot)?.Id??-1;
         var groups=world.Robots.FunctionDisplayGroups(world);
+        var clearances=new Dictionary<int,(Vector3 Position,float Radius)[]>();
         foreach(var node in world.Nodes.All.OrderBy(n=>EmphasizedNode(n.Id)?2:n.Id==current?1:0).ThenBy(n=>n.Id))
         {
             if(!NodeVisible(world,node))continue;
@@ -90,12 +91,23 @@ public sealed partial class CubeNet
             var point=project(node);if(point==null)continue;
             var at=point.Value;float zoom=1;
             int visible=VisibleRobotCount(robots.Length,scale);
+            if(!clearances.TryGetValue(node.Cell,out var obstacles))
+                clearances[node.Cell]=obstacles=avoidResources?ResourceClearance(world,node.Cell):Array.Empty<(Vector3,float)>();
+            var cell=world.Cells[node.Cell];
+            var center=SiteDisplayPosition(world,node,obstacles);
+            int nextSlot=0;
+            Vector2 RobotPosition()
+            {
+                if(obstacles.Length==0)return at+RobotSpiralSlot(nextSlot++,46);
+                var offset=ResourceSafeRobotSlot(cell,center,46/Math.Max(1,scale),18/Math.Max(1,scale),obstacles,ref nextSlot);
+                return AnimatedSurfacePosition(node.Cell,center+cell.U*offset.X+cell.V*offset.Y,world,panel);
+            }
             var cards=robots.Take(visible).Select((robot,i)=>{
-                var offset=RobotSpiralSlot(i,46)*zoom;
-                return AvoidWhirlpool(new Rectangle((int)(at.X+offset.X-12*zoom),(int)(at.Y+offset.Y-MapPartCount(robot.Parts)*6*zoom),(int)(24*zoom),(int)(MapPartCount(robot.Parts)*12*zoom)));
+                var position=RobotPosition();
+                return AvoidWhirlpool(new Rectangle((int)(position.X-12*zoom),(int)(position.Y-MapPartCount(robot.Parts)*6*zoom),(int)(24*zoom),(int)(MapPartCount(robot.Parts)*12*zoom)));
             }).ToArray();
             int hidden=robots.Length-visible;
-            var overflow=hidden>0?AvoidWhirlpool(RobotOverflowBounds(at+RobotSpiralSlot(visible,46))):Rectangle.Empty;
+            var overflow=hidden>0?AvoidWhirlpool(RobotOverflowBounds(RobotPosition())):Rectangle.Empty;
             var bounds=cards.Aggregate(Rectangle.Union);
             if(hidden>0)bounds=Rectangle.Union(bounds,overflow);
             if(!MapViewport(panel).Intersects(bounds))continue;
