@@ -322,6 +322,29 @@ sealed class CheckGame:Game1
                     Call("DrawHangarRobot",separateBounds,expandedBay.Robots.Single(r=>r.Id==product.Id),1f,null!);
                     batch.End();Save("manufacturing-separate-arrival");
                     Check(separatePixels.SequenceEqual(Pixels()),"Separate arrival artwork matches its compact forecast");
+                    var directStock=expanded.Robots;
+                    directStock.ConfigureFactories(expanded);
+                    var direct=directStock.DirectDelivery;
+                    direct.ReserveParts(expanded,target.Id,source.Id,product.Id,productParts,null,0);
+                    expanded=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(expanded));
+                    directStock=expanded.Robots;
+                    directStock.ConfigureFactories(expanded);
+                    direct=directStock.DirectDelivery;
+                    var directForecast=direct.Preview(directStock,source.Id).Single(r=>r.Id==product.Id);
+                    Check(directForecast.IntegratedParts==productParts && directForecast.BodyMaterial==expectedBody &&
+                        directForecast.Material(outerPart)==RobotMaterial.Cardboard,
+                        "The restored direct forecast retains the original product ID, materials and integration");
+                    Check(expanded.Campaign.FinishDomestic(expanded),"Direct delivery completes through the delivery phase");
+                    var directArrival=directStock.Nodes[source.Id].Robots.Single(r=>r.Id==product.Id);
+                    Check(direct.Orders.Count==0 && directArrival==directForecast &&
+                        directStock.Nodes[target.Id].Robots.Single()==receiver,
+                        "Direct delivery leaves the foreign receiver in place and transports the exact manufactured pair");
+                    Set("_setup",expanded);
+                    GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();
+                    Call("DrawHangarRobot",separateBounds,directArrival,1f,null!);
+                    batch.End();Save("manufacturing-direct-arrival");
+                    Check(separatePixels.SequenceEqual(Pixels()),"The manufactured pair looks the same after direct delivery");
+                    Console.WriteLine("PASS: standalone production arrival keeps its ID and compact art through restored direct delivery.");
                     Set("_setup",w);
                     Console.WriteLine("PASS: opening a bay admits the waiting integrated product separately under the strict policy.");
                     restored.Robots.Training[0].AssemblyPolicy=1;
