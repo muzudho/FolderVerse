@@ -6,7 +6,6 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private bool _hangarReturnHomeMode;
-    private static readonly Rectangle HangarReturnHomeButton=new(84,908,182,42);
     private bool CanSelectReturnHome(Robot robot)
     {
         if(robot==null)return false;
@@ -39,8 +38,6 @@ public partial class Game1
     }
     private void DrawReturnHomeHangar()
     {
-        if(!VisitingForeignHangar && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))
-            _ui.Button(HangarReturnHomeButton,"国へ帰らせる予約",_hangarReturnHomeMode?Accent:Muted,.29f);
         var journeys=_setup.Robots.ReturningRobots.Where(j=>j.Source==_populationNode && j.Commander==_setup.PlayerSlot).ToArray();
         if(journeys.Length>0){
             string status=journeys.Any(j=>j.Status==RobotWorld.NoHomeCountry)?RobotWorld.NoHomeCountry:

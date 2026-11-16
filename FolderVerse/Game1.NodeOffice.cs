@@ -17,12 +17,12 @@ public partial class Game1
     }
     private void DrawNodeTabs(){
         var areas=new[]{NodeOfficeTile,NodeFactoryTile,NodeDisposalTile,NodeAssemblyTile};
-        string[] labels={NodeOfficeName,"ロボット製造工場","ロボット廃棄計画","ロボット格納庫"};
+        string[] labels={NodeOfficeName,"ロボット製造工場",NodeDisposalName,"ロボット格納庫"};
         bool[] active={_nodeOfficeOpen,_nodeFactoryOpen,_nodeDisposalOpen,_nodeAssemblyOpen};
-        bool[] enabled={true,CanOpenNodeFactory,CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner),CanOpenHangar};
+        bool[] enabled={true,CanOpenNodeFactory,InspectableNode(_populationNode),CanOpenHangar};
         for(int i=0;i<4;i++){
             var r=areas[i];var color=active[i] || enabled[i] && r.Contains(_pointer)?Accent:Muted;
-            _ui.Box(r,color);_ui.Center(labels[i],r,.36f,enabled[i]?UiPainter.ContrastInk(color):Cream*.4f);
+            _ui.Box(r,color);_ui.Center(labels[i],r,Math.Min(.36f,(r.Width-12)/Math.Max(1,_font.MeasureString(labels[i]).X)),enabled[i]?UiPainter.ContrastInk(color):Cream*.4f);
             if(active[i])_ui.Box(new(r.X,r.Y,r.Width,4),Cream);
         }
     }
@@ -88,7 +88,6 @@ public partial class Game1
         _ui.Center(owner,new(84,718,780,45),.6f,Cream);
         if(_setup.Robots.MapleSupplyEnabled && node.Functional && node.Purpose!=NodePurpose.Relay && _setup.Robots.MapleDeposit(node.Id)>0)
             _ui.Center($"楓の木 / 採取できる残り {_setup.Robots.MapleDeposit(node.Id)} 荷",new(84,754,780,24),.34f,Cream);
-        _ui.Button(new(84,778,784,48),"放棄品置き場 / "+_setup.Salvage.Items.Count(i=>i.Node==node.Id)+" 件",Muted,.46f);
         var report=_setup.Campaign.SubordinateResults.LastOrDefault(r=>r.Node==node.Id && r.Controller==_setup.TurnPlayer);
         if(report!=null){
             _ui.Text($"手下の操作記録 / 全体ターン {report.Turn}",new(84,842),.34f,Cream);
