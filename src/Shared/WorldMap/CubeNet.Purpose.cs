@@ -19,6 +19,9 @@ public sealed partial class CubeNet
     }
 
     private static Vector3? PurposeFlagAnchor(Node node)=>!node.Functional || node.IsHarbor ? null : node.Purpose switch {
+        NodePurpose.Harvest=>new Vector3(0,-.10f,.96f),
+        NodePurpose.Manufacturing=>new Vector3(-.04f,-.10f,.86f),
+        NodePurpose.Relay=>new Vector3(0,-.10f,.97f),
         NodePurpose.Defense=>new Vector3(-.75f,0,1.11f*1.35f),
         NodePurpose.Frontline=>new Vector3(0,-.12f,1.48f*1.35f),
         _=>null

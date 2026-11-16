@@ -9,21 +9,28 @@ public sealed partial class CubeNet
     internal sealed record ResourceSite(ResourceSiteKind Kind,Vector3 Position,float Size);
     private (int Seed,SurfaceCell[] Cells,TerrainSampler Terrain) _resourceSiteKey;
     private ResourceSite[][] _resourceSites;
+    private readonly System.Collections.Generic.Dictionary<Node,Point> _grovePoints=new();
 
-    private void DrawResourceSites(UiPainter ui,WorldSetup world,int cellId,Func<Vector3,Vector2> project,bool globe)
+    private ResourceSite[] DisplayedResourceSites(WorldSetup world,int cellId)
     {
-        if(world.TutorialStep!=0 || world.EquipmentMode!=RobotEquipmentMode.Materials)return;
+        if(world.TutorialStep!=0 || world.EquipmentMode!=RobotEquipmentMode.Materials)return Array.Empty<ResourceSite>();
         var key=(world.WorldSeed,world.Cells,world.Terrain);
         if(_resourceSites==null || _resourceSiteKey!=key)
         {
             _resourceSiteKey=key;
             _resourceSites=world.Cells.Select(cell=>ResourceSites(world,cell,key.Item3)).ToArray();
+            _grovePoints.Clear();
         }
+        return _resourceSites[cellId];
+    }
+
+    private void DrawResourceSites(UiPainter ui,WorldSetup world,int cellId,Func<Vector3,Vector2> project,bool globe)
+    {
         var cell=world.Cells[cellId];
-        foreach(var site in _resourceSites[cellId].OrderBy(s=>project(s.Position).Y))
+        foreach(var site in DisplayedResourceSites(world,cellId).OrderBy(s=>project(s.Position).Y))
         {
             var origin=site.Position;
-            if(globe)origin+=cell.Normal*WorldTerrain.ReliefAt(world,cell,origin,key.Item3);
+            if(globe)origin+=cell.Normal*WorldTerrain.ReliefAt(world,cell,origin,world.Terrain);
             Vector2 Point(float x,float y,float z)=>project(origin+site.Size*(cell.U*x+cell.V*y+(globe?cell.Normal*z:Vector3.Zero)));
             var node=RobotWorld.SiteNode(world,cell,site.Position);
             int remaining=node==null || !node.Functional || node.Purpose==NodePurpose.Relay?0:

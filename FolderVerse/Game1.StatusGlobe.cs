@@ -79,10 +79,13 @@ public partial class Game1
         if(!MapViewBounds.Contains(pointer))return -1;
         int nearest=-1;float distance=float.PositiveInfinity;bool hitPier=false;
         var offset=_setup.Terrain;
+        var clearances=new Dictionary<int,(Vector3 Position,float Radius)[]>();
         foreach(var node in _setup.Nodes.All.Where(n=>_net.NodeVisible(_setup,n)))
         {
             var cell=_setup.Cells[node.Cell];
-            var position=_setup.Routes.Position(node.Cell,node.Center);
+            if(!clearances.TryGetValue(node.Cell,out var obstacles))
+                clearances[node.Cell]=obstacles=_net.ResourceClearance(_setup,node.Cell);
+            var position=_net.SiteDisplayPosition(_setup,node,obstacles);
             position+=cell.Normal*WorldTerrain.ReliefAt(_setup,cell,position,offset);
             if(!_world.ProjectVisible(position,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var at))continue;
             float candidate=Vector2.DistanceSquared(at,new(pointer.X,pointer.Y));

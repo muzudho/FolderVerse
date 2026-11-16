@@ -67,11 +67,12 @@ public sealed partial class CubeNet
             if (ShowRoutes && DirectoryOnly) continue;
             if (ShowRoutes) DrawResourceSites(ui,setup,cell.Id,Project,globe:true);
             if (ShowRoutes) DrawLandmarks(ui,setup,cell.Id,p=>Project(p),pulse);
+            var obstacles=ResourceClearance(setup,cell.Id);
             foreach (var node in setup.Nodes.InCell(cell.Id))
             {
                 if (!NodeVisible(setup,node)) continue;
                 if(ShowRoutes)DrawMapleDeposit(ui,setup,node,Project,globe:true);
-                var position = setup.Routes.Position(node.Cell,node.Center);
+                var position = SiteDisplayPosition(setup,node,obstacles);
                 position+=cell.Normal*WorldTerrain.ReliefAt(setup,cell,position,offset);
                 var at = Project(position);
                 Color Tint(Color color) => NodeTint(node.Id,color);
@@ -81,10 +82,10 @@ public sealed partial class CubeNet
                 var roof=ShowRoutes?PurposeFlagAnchor(node):null;
                 if(roof is Vector3 anchor)
                     position+=radius*GlobePurposeBuildingScale*(cell.U*anchor.X+cell.V*anchor.Y+cell.Normal*anchor.Z);
-                float flagOffset=HasFacilityPlatform(node)?FacilityFlagOffset:
-                    HasGlobeBuilding(node)?GlobePurposeBuildingScale:1;
+                bool centered=ShowRoutes && HasFacilityPlatform(node);
+                float flagOffset=HasGlobeBuilding(node)?GlobePurposeBuildingScale:1;
                 DrawSurfaceFlag(ui,setup,DisplayedNodeOwner(node),cell,position,
-                    ShowRoutes && roof==null ? radius*flagOffset : 0,Project,Tint,roof!=null);
+                    ShowRoutes && roof==null ? radius*flagOffset : 0,Project,Tint,roof!=null,centered);
             }
         }
         DrawMapSymbols(ui,setup,p=>
@@ -112,7 +113,6 @@ public sealed partial class CubeNet
     private static bool HasFacilityPlatform(Node node)=>node.Functional && node.Purpose==NodePurpose.General && !node.IsHarbor;
     private const float FacilityPlatformScale=2.15f*.90f;
     private const float FacilityModelScale=.85f*2;
-    private const float FacilityFlagOffset=3.2f;
 
     internal float GlobeNodeRadius(Node node,float projectedUnit,float zoom)
     {
@@ -120,11 +120,12 @@ public sealed partial class CubeNet
         float referenceUnit=HasGlobeBuilding(node)?projectedUnit/zoom:projectedUnit;
         float radius=MapPuckRadius(node,referenceUnit)/MathF.Max(referenceUnit,1);
         if(!HasGlobeBuilding(node))return radius;
-        if(PurposeFlagAnchor(node) is Vector3 roof)
-            return Math.Min(radius,(GlobeObjectHeight-RoofFlagPoleHeight)/(GlobePurposeBuildingScale*roof.Z));
         // The factory chimney is the tallest of the remaining building models.
         const float maxModelHeight=1.278f;
-        return Math.Min(radius,GlobeObjectHeight/(GlobePurposeBuildingScale*maxModelHeight));
+        radius=Math.Min(radius,GlobeObjectHeight/(GlobePurposeBuildingScale*maxModelHeight));
+        return PurposeFlagAnchor(node) is Vector3 roof
+            ? Math.Min(radius,(GlobeObjectHeight-RoofFlagPoleHeight)/(GlobePurposeBuildingScale*roof.Z))
+            : radius;
     }
 
     internal float GlobeNodeHitRadius(Node node,float projectedUnit,float zoom)
@@ -190,7 +191,7 @@ public sealed partial class CubeNet
             at+new Vector2(x+y*.34f,y*.58f-x*.14f-z)*radius,tint);
         var flagFoot=PurposeFlagAnchor(node) is Vector3 roof
             ? at+new Vector2(roof.X,roof.Y*.68f-roof.Z)*radius*PurposeBuildingScale
-            : at+new Vector2(radius*(HasFacilityPlatform(node)?FacilityFlagOffset:PurposeBuildingScale)+4,-radius*.68f);
+            : HasFacilityPlatform(node)?at:at+new Vector2(radius*PurposeBuildingScale+4,-radius*.68f);
         CountryFlagArt.Marker(ui,setup,DisplayedNodeOwner(node),flagFoot,
             Math.Clamp((int)(radius*3),24,42),tint);
         if (AttackTargetMarkers && SelectedTarget==node.Id)
@@ -254,14 +255,14 @@ public sealed partial class CubeNet
     }
 
     private static void DrawSurfaceFlag(UiPainter ui,WorldSetup world,int owner,SurfaceCell cell,Vector3 position,float radius,
-        Func<Vector3,Vector2> project,Func<Color,Color> tint,bool roofMounted=false)
+        Func<Vector3,Vector2> project,Func<Color,Color> tint,bool roofMounted=false,bool centered=false)
     {
         if (owner<0 || owner>=world.ActiveCount) return;
         var vertical = project(position+cell.Normal)-project(position);
         var across = MathF.Abs(Cross(project(position+cell.U)-project(position),vertical)) >=
                      MathF.Abs(Cross(project(position+cell.V)-project(position),vertical)) ? cell.U : cell.V;
         if (Cross(project(position+across)-project(position),vertical)>0) across=-across;
-        var foot=roofMounted?position:position+across*(radius+.025f);
+        var foot=roofMounted || centered?position:position+across*(radius+.025f);
         float poleHeight=roofMounted?RoofFlagPoleHeight:GlobeObjectHeight;
         float clothHeight=roofMounted?.046f:.115f;
         var apex=foot+cell.Normal*poleHeight;
