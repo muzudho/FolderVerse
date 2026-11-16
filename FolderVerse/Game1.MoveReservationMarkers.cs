@@ -113,17 +113,18 @@ public partial class Game1
         var sideAxis=side*ratio;
         var upAxis=up*ratio;
         if(!_statusGlobe)upAxis=new(0,-scale*.7f);
-        var chip=center-heading*34+new Vector2(0,-45+MathF.Sin(_animationTime*4)*3);
-        const int radius=22;
         var map=MapViewBounds;
         map.Inflate(-4,-4);
-        if(!map.Contains(new Rectangle((int)chip.X-radius-3,(int)chip.Y-radius-3,2*radius+6,2*radius+6)) ||
+        const int chipPadding=LocationChipRadius+6;
+        if(map.Width<chipPadding*2 || map.Height<chipPadding*2 ||
            !map.Contains(new Rectangle((int)center.X-35,(int)center.Y-34,70,48)))return;
+        var chip=center-heading*42+new Vector2(0,-66+MathF.Sin(_animationTime*4)*3);
+        chip=Vector2.Clamp(chip,new(map.Left+chipPadding,map.Top+chipPadding),new(map.Right-chipPadding,map.Bottom-chipPadding));
 
         Vector2 Model(float x,float y,float z)=>center+frontAxis*x+sideAxis*y+upAxis*z;
         var gold=new Color(255,219,141);
         var hitch=Model(-1.05f,0,.64f);
-        var knot=chip+new Vector2(0,radius);
+        var knot=chip+Vector2.Normalize(hitch-chip)*LocationChipRadius;
         var sag=(hitch+knot)/2+new Vector2(0,7);
         var previous=hitch;
         for(int i=1;i<=8;i++)
@@ -135,18 +136,6 @@ public partial class Game1
             previous=point;
         }
         CubeNet.DrawMoveBusModel(_ui,Model,_setup.OwnerColor(ruler));
-        Disc(chip+new Vector2(2,3),radius,new(11,28,40));
-        Disc(chip,radius,gold);
-        Disc(chip,radius-3,_setup.OwnerColor(ruler));
-        DrawLocationChipFace(chip,radius-5,ruler);
-
-        void Disc(Vector2 point,int r,Color color)
-        {
-            for(int y=-r;y<=r;y++)
-            {
-                int half=(int)MathF.Sqrt(r*r-y*y);
-                _ui.Box(new((int)point.X-half,(int)point.Y+y,half*2+1,1),color);
-            }
-        }
+        DrawLocationChip(chip,ruler);
     }
 }
