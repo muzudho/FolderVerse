@@ -442,6 +442,7 @@ sealed class GlyphProbe:Game1
    throw new Exception("Clicking the PP head did not select only the robot part.");
   typeof(Game1).GetField("_directDrag",Flags)!.SetValue(this,null);
   Set("_pointer",Point.Zero);
+  var sharedBaySave=AutoSaveStore.Capture(sharedBayWorld);
   if(!sharedBayWorld.Campaign.FinishDomestic(sharedBayWorld) || sharedBayStock.ProductionIntakes.Count!=0)
    throw new Exception("The shared bay intake did not complete.");
   DrawDirectPanel(alternativePixels);
@@ -450,8 +451,37 @@ sealed class GlyphProbe:Game1
    for(int x=sharedCell.Left/2;x<sharedCell.Right/2;x++)
     if(expectedPixels[y*960+x]!=alternativePixels[y*960+x])
      throw new Exception("The shared PP bay changed after the production intake completed.");
+  var rawDispatchWorld=AutoSaveStore.Restore<WorldSetup>(sharedBaySave);
+  var rawDispatchStock=rawDispatchWorld.Robots;
+  if(!rawDispatchStock.MapleSupplyEnabled)
+   typeof(RobotWorld).GetMethod("InitializeMapleSupply",Flags)!.Invoke(rawDispatchStock,new object[]{rawDispatchWorld});
+  Set("_setup",rawDispatchWorld);
+  foreach(var slots in directSlots)Array.Clear(slots);
+  DrawDirectPanel(alternativePixels);
+  int rawDestinationSide=1-receivingSide;
+  int rawDestinationSlot=Array.IndexOf(directSlots[rawDestinationSide],null);
+  if(rawDestinationSlot<0)throw new Exception("No empty bay for the raw-only shipment.");
+  Set("_pointer",((Rectangle)sharedPart.Invoke(this,new object[]{receivingSide,sharedBaySlot,rawKey%3})!).Center);
+  sharedInput.Invoke(this,new object[]{sharedPressed,true,false});
+  Set("_pointer",((Rectangle)sharedPart.Invoke(this,new object[]{rawDestinationSide,rawDestinationSlot,0})!).Center);
+  Set("_previousMouse",sharedPressed);
+  var sharedReleased=new Microsoft.Xna.Framework.Input.MouseState();
+  sharedInput.Invoke(this,new object[]{sharedReleased,false,false});
+  Set("_previousMouse",sharedReleased);
+  Set("_pointer",Point.Zero);
+  if(rawDispatchStock.MapleShipments.Count!=1)
+   throw new Exception($"Raw-only shipment was not reserved: {Get("_directMessage")}");
+  var rawOrder=rawDispatchStock.MapleShipments.Single();
+  if(rawOrder.PackageId!=ppRemainder.Id || rawOrder.Source!=directTarget || rawOrder.Target!=route[0] ||
+     rawDispatchStock.ProductionIntakes.Single().Product!=ppHead || rawDispatchStock.PartPlanning.Orders.Count!=0)
+   throw new Exception("Dispatching the raw remainder changed the pending head intake.");
+  if(!rawDispatchWorld.Campaign.FinishDomestic(rawDispatchWorld) ||
+     rawDispatchStock.Nodes[directTarget].Robots.Single(robot=>robot.Id==ppHead.Id)!=ppHead ||
+     rawDispatchStock.Nodes[directTarget].MaplePackages.Any(raw=>raw.Id==ppRemainder.Id) ||
+     rawDispatchStock.Nodes[route[0]].MaplePackages.Count(raw=>raw==ppRemainder)!=1)
+   throw new Exception("The head and raw-only shipment did not arrive at their respective destinations.");
   Set("_setup",world);
-  Console.WriteLine("PASS the PP head and raw remainder share a bay without changing its artwork and can be picked separately.");
+  Console.WriteLine("PASS the PP head and raw remainder share a bay and reach separate destinations after dispatching the raw cargo.");
   void TestIntegratedDirectMerge(Robot cargoPair,RobotParts receivePart,int pickupRow)
   {
    var mergeWorld=AutoSaveStore.Restore<WorldSetup>(directFixture);
