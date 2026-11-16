@@ -21,16 +21,19 @@ sealed class CheckGame:Game1
             var wheel=IndustryCycle.CreateWheel(seed,1);var colors=(Color[])typeof(Game1).GetMethod("IndustryColors",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{wheel})!;
             for(int i=0;i<colors.Length;i++)Check(colors[i]!=colors[(i+1)%colors.Length],"Adjacent roulette colors differ including last/first seam");
         }
+        const BindingFlags wheelFields=BindingFlags.Static|BindingFlags.NonPublic;
+        var wheelCenter=(Vector2)typeof(Game1).GetField("IndustryWheelCenter",wheelFields)!.GetValue(null)!;
+        var wheelRadius=(float)typeof(Game1).GetField("IndustryWheelRadius",wheelFields)!.GetRawConstantValue()!;
         for(int seed=0;seed<100;seed++){
             w.Industry.Reset();w.Industry.Queue(1);w.Industry.Roll(seed);
-            var reference=((string Text,Rectangle Bounds,float Scale,bool Backplate)[])Call("IndustryLabelLayout",new Vector2(1170,625),255f,0f);
+            var reference=((string Text,Rectangle Bounds,float Scale,bool Backplate)[])Call("IndustryLabelLayout",wheelCenter,wheelRadius,0f);
             for(int turn=0;turn<12;turn++){
-                var labels=((string Text,Rectangle Bounds,float Scale,bool Backplate)[])Call("IndustryLabelLayout",new Vector2(1170,625),255f,turn*MathHelper.TwoPi/12);
+                var labels=((string Text,Rectangle Bounds,float Scale,bool Backplate)[])Call("IndustryLabelLayout",wheelCenter,wheelRadius,turn*MathHelper.TwoPi/12);
                 for(int i=0;i<labels.Length;i++){
                     var r=labels[i].Bounds;
-                    Check(r.Size==reference[i].Bounds.Size && Math.Abs(Vector2.Distance(r.Center.ToVector2(),new(1170,625))-Vector2.Distance(reference[i].Bounds.Center.ToVector2(),new(1170,625)))<2,"Rotating labels retain their size and radial position");
+                    Check(r.Size==reference[i].Bounds.Size && Math.Abs(Vector2.Distance(r.Center.ToVector2(),wheelCenter)-Vector2.Distance(reference[i].Bounds.Center.ToVector2(),wheelCenter))<2,"Rotating labels retain their size and radial position");
                     Check(r.Width>0 && !labels[i].Text.Contains('+'),"Wheel uses mixed fractions without an addition sign");
-                    foreach(var p in new[]{new Vector2(r.Left,r.Top),new Vector2(r.Right,r.Top),new Vector2(r.Left,r.Bottom),new Vector2(r.Right,r.Bottom)})Check(Vector2.Distance(p,new(1170,625))<255,"Every label corner stays inside the roulette");
+                    foreach(var p in new[]{new Vector2(r.Left,r.Top),new Vector2(r.Right,r.Top),new Vector2(r.Left,r.Bottom),new Vector2(r.Right,r.Bottom)})Check(Vector2.Distance(p,wheelCenter)<wheelRadius,"Every label corner stays inside the roulette");
                     for(int j=0;j<i;j++)Check(!r.Intersects(labels[j].Bounds),$"Labels overlap: seed={seed},angle={turn},items={i}/{j}");
                 }
             }
@@ -59,6 +62,9 @@ sealed class CheckGame:Game1
     protected override void Draw(GameTime time)
     {
         var batch=(SpriteBatch)Get("_spriteBatch");
+        if(Environment.GetCommandLineArgs().Contains("--harbor-pick")){
+            CheckHarborPicking();Exit();return;
+        }
         if(Environment.GetCommandLineArgs().Contains("--mercy")){
             CheckMercyUi(batch);Exit();return;
         }
@@ -138,6 +144,67 @@ sealed class CheckGame:Game1
             Check(Get("_screen").ToString()=="WorldStatus","Industry automatically proceeds during "+mode);Set(mode,false);
         }
         Console.WriteLine("PASS: industry entry without battle, font, wheel/result screens, prayer/surprise mobs, exactly-once application, return and cheap factory menu.");Exit();
+    }
+    private void CheckHarborPicking()
+    {
+        const BindingFlags staticMethods=BindingFlags.Static|BindingFlags.NonPublic;
+        var net=(CubeNet)Get("_net");
+        var globe=(WorldPreview)Get("_world");
+        net.Home(w);
+        net.ShowRoutes=true;
+        globe.ShowSetup(w,true);
+        var panel=(Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!;
+        var globePanel=(Rectangle)typeof(Game1).GetProperty("StatusGlobeArea",F)!.GetValue(this)!;
+        var frame=typeof(CubeNet).GetMethod("TryHarborFrame",staticMethods)!;
+        var footing=typeof(CubeNet).GetMethod("HarborFooting",staticMethods)!;
+        var flatRadius=typeof(CubeNet).GetMethod("MapPuckRadius",F)!;
+        var globeRadius=typeof(CubeNet).GetMethod("GlobeNodeRadius",F)!;
+        var globeHitRadius=typeof(CubeNet).GetMethod("GlobeNodeHitRadius",F)!;
+        bool flatHit=false,globeHit=false;
+        foreach(var node in w.Nodes.All.Where(n=>n.IsHarbor && n.Functional))
+        {
+            object[] values={w,node,Vector3.Zero,Vector3.Zero};
+            if(!(bool)frame.Invoke(null,values)!)continue;
+            var shore=(Vector3)values[2];
+            var seaward=(Vector3)values[3];
+            var cell=w.Cells[node.Cell];
+            var land=w.Routes.Position(node.Cell,node.Center);
+            if(!flatHit){
+                net.SetCenter(w,cell.Face);
+                net.FitNodesAtSource(w,node,panel,2);
+                net.ScreenAngle=.47f;
+                var fit=net.Fit(panel);
+                var face=net.Faces.First(f=>f.Face==cell.Face);
+                var direction=Vector2.Normalize(face.Project(shore+seaward)-face.Project(shore));
+                var across=new Vector2(direction.Y,-direction.X);
+                float radius=(float)flatRadius.Invoke(net,new object[]{node,fit.Scale})!;
+                var tip=net.RotateScreen(face.Project(shore)*fit.Scale+fit.Origin+
+                    1.7f*radius*(direction*1.11f+across*.20f),panel).ToPoint();
+                if(panel.Contains(tip) && Vector2.Distance(net.NodePosition(w,node,panel),tip.ToVector2())>radius+4){
+                    Check(net.HitNode(w,panel,tip)==node.Id,"The pier deck selects its port on the rotated net");
+                    Check(net.HitNode(w,panel,tip,Array.Empty<int>())==-1,"A blocked port cannot redirect to a neighbor");
+                    flatHit=true;
+                }
+            }
+            if(!globeHit){
+                Call("FocusGlobePosition",land);
+                float yaw=(float)Get("_yawAngle"),pitch=(float)Get("_pitchAngle");
+                if(!globe.ProjectVisible(land,cell.Normal,yaw,pitch,globePanel,out var at))continue;
+                Vector2 Project(Vector3 p){globe.ProjectVisible(p,cell.Normal,yaw,pitch,globePanel,out var xy);return xy;}
+                float scale=Math.Max(Vector2.Distance(at,Project(land+cell.U)),Vector2.Distance(at,Project(land+cell.V)));
+                float radius=(float)globeRadius.Invoke(net,new object[]{node,scale,globe.GlobeZoom})!;
+                float puckHit=(float)globeHitRadius.Invoke(net,new object[]{node,scale,globe.GlobeZoom})!;
+                var ground=(Vector3)footing.Invoke(null,new object[]{w,cell,shore})!;
+                var tip=Project(ground+1.7f*radius*(seaward*1.11f+Vector3.Cross(seaward,cell.Normal)*.20f+cell.Normal*.40f)).ToPoint();
+                if(globePanel.Contains(tip) && Vector2.Distance(at,tip.ToVector2())>puckHit+2){
+                    Check((int)Call("HitGlobeNode",tip,null!)==node.Id,"The pier deck selects its port on the globe");
+                    globeHit=true;
+                }
+            }
+            if(flatHit && globeHit)break;
+        }
+        Check(flatHit && globeHit,"Both tests exercised the pier outside the old node hit circle");
+        Console.WriteLine("PASS: selecting the pier outside the old hit circle works in both map views.");
     }
     private void CheckManufacturingDelivery(SpriteBatch batch)
     {

@@ -18,6 +18,7 @@ public partial class Game1
     private int IndustryVisibleLabels=>_industryAge<IndustryLeadSeconds?0:Math.Min(_setup.Industry.Wheel.Count,1+(int)((_industryAge-IndustryLeadSeconds)/IndustryRevealSeconds+1e-8));
     private double IndustryStopSeconds=>IndustryReadSeconds+IndustrySpinSeconds;
     private static readonly Rectangle IndustryContinue=new(1230,935,590,80);
+    private static readonly Rectangle IndustryWheelContinue=new(1645,943,224,68);
     private static readonly Rectangle IndustrySkip=new(1680,40,190,48);
     private void SkipIndustry()
     {
@@ -63,10 +64,10 @@ public partial class Game1
     }
     private static Color[] IndustryColors(IReadOnlyList<IndustrySector> wheel)
     {
-        var palette=new[]{new Color(80,181,176),new Color(219,140,175),new Color(123,155,222),new Color(164,194,98)};
+        var palette=new[]{new Color(161,207,193),new Color(226,145,117),new Color(184,199,142),new Color(245,221,167),new Color(153,191,208)};
         var colors=new Color[wheel.Count];int max=System.Linq.Enumerable.Max(wheel,s=>s.Turns);
         for(int i=0;i<wheel.Count;i++){
-            var color=wheel[i].Turns==0?new Color(126,139,158):wheel[i].Turns==max?new Color(248,194,58):palette[i%2];
+            var color=wheel[i].Turns==0?new Color(180,191,198):wheel[i].Turns==max?new Color(243,186,82):palette[i%palette.Length];
             bool Conflict(Color c)=>i>0 && colors[i-1]==c || i==wheel.Count-1 && i>0 && colors[0]==c;
             if(Conflict(color))foreach(var alternative in palette)if(!Conflict(alternative)){color=alternative;break;}
             colors[i]=color;
@@ -82,40 +83,22 @@ public partial class Game1
         var mob=_setupHost;
         if(stopped && result==0)mob=_industryPrayer??=LoadIndustryMob("prayer");
         else if(stopped && _setup.Industry.Jackpot)mob=_industrySurprise??=LoadIndustryMob("surprised");
-        if(mob!=null)_spriteBatch.Draw(mob,new Rectangle(50,250,480,720),Color.White);
+        if(mob!=null)_spriteBatch.Draw(mob,new Rectangle(88,380,304,456),Color.White);
         string[] lines=!stopped?new[]{"さあ、産業の時間です！","あなたは何台のロボットを製造できるかなー？"}:
-            result==0?new[]{"ロボット不足の征服者のみなさん、ざんねんでした～！","工場はストップだー！","次は製造できるように、祈ってくださーい！"}:
-            _setup.Industry.Jackpot?new[]{"数年に一度の当たり年だあ！？","大穴当てたみなさん、今だ、大チャーンス！"}:
-            new[]{"さあ、工場を動かしましょう！",$"{IndustryTime.Format(result).Replace("+"," ")}産業ターン進みました！"};
-        _ui.Box(new(565,130,1290,205),Cream);_ui.Tile(new(558,270),new(36,36),MathHelper.PiOver4,Cream);
-        for(int i=0;i<lines.Length;i++)_ui.Text(lines[i],new(610,160+i*55),.65f,Muted);
-        var center=new Vector2(1170,625);const float radius=255;
+            result==0?new[]{"工場はストップだー！","次こそ製造できますように！"}:
+            _setup.Industry.Jackpot?new[]{"数年に一度の当たり年だあ！？","今だ、大チャーンス！"}:
+            new[]{"さあ、工場を動かしましょう！"};
+        _ui.Box(new(58,238,470,118),new Color(15,24,32));
+        _ui.Tile(new(217,351),new(32,32),MathHelper.PiOver4,Cream);
+        _ui.Box(new(54,234,470,118),Cream);
+        for(int i=0;i<lines.Length;i++)
+            _ui.Center(lines[i],new(68,248+i*42,442,40),Math.Min(.53f,440/Math.Max(1,_font.MeasureString(lines[i]).X)),new Color(76,49,31));
         float progress=(float)Math.Clamp((_industryAge-IndustryReadSeconds)/IndustrySpinSeconds,0,1);
         float angle=MathHelper.Lerp(_industryStartAngle,_industryStopAngle,1-MathF.Pow(1-progress,4));
-        float cumulative=0;
-        var labels=IndustryLabelLayout(center,radius,angle);
-        var colors=IndustryColors(_setup.Industry.Wheel);
-        for(int i=0;i<_setup.Industry.Wheel.Count;i++)
-        {
-            var sector=_setup.Industry.Wheel[i];float start=angle+cumulative/100*MathHelper.TwoPi;
-            var color=colors[i];
-            if(stopped && i==_setup.Industry.SelectedSector)color=Color.Lerp(color,Color.White,.25f);
-            int steps=sector.Percent*5;
-            for(int k=0;k<=steps;k++)
-            {
-                float a=start+sector.Percent/100f*MathHelper.TwoPi*k/steps;
-                _ui.Tile(center+new Vector2(MathF.Cos(a),MathF.Sin(a))*radius*.5f,new(radius,4),a,color);
-            }
-            cumulative+=sector.Percent;
-        }
-        for(int i=0;i<Math.Min(labels.Length,IndustryVisibleLabels);i++){
-            var label=labels[i];
-            DrawIndustryDuration(_setup.Industry.Wheel[i].Turns,label.Bounds,new Color(19,38,49),label.Scale);
-        }
-        for(int y=0;y<28;y++)_ui.Box(new((int)center.X-28+y,(int)(center.Y-radius)-35+y,56-y*2,1),Cream);
-        if(stopped)DrawIndustryDuration(result,new(800,885,740,65),Cream,.65f,suffix:" 産業ターン");
-        else _ui.Center(_industryAge<IndustryReadSeconds?"ルーレットを見てみよう":"ルーレット回転中",new(800,890,740,45),.8f,Cream);
-        _ui.Text($"全体ターン {_setup.Population.Turn} / 産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn).Replace("+"," ")}",new(565,1000),.5f,Cream);
-        if(stopped){_ui.Button(IndustryContinue,"製造レーン稼働へ",Accent,.7f);DrawPhaseTimer(new(565,1050,1255,12),_industryIdleAge,IndustryIdleSeconds);}
+        DrawAntiqueIndustryWheel(angle,stopped);
+        if(stopped)DrawIndustryDuration(result,new(54,835,470,65),Cream,.65f,suffix:" 産業ターン");
+        else _ui.Center(_industryAge<IndustryReadSeconds?"ルーレットを見てみよう":"ルーレット回転中",new(54,842,470,45),.62f,Cream);
+        _ui.Text($"全体ターン {_setup.Population.Turn} / 産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn).Replace("+"," ")}",new(54,1000),.43f,Cream);
+        if(stopped){_ui.Button(IndustryWheelContinue,"製造レーン稼働へ",Accent,.52f);DrawPhaseTimer(new(565,1050,1255,12),_industryIdleAge,IndustryIdleSeconds);}
     }
 }

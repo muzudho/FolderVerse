@@ -57,10 +57,19 @@ public sealed partial class CubeNet
         var point=pointer.ToVector2();
         int hit=world.Nodes.All.Where(n=>NodeVisible(world,n)).Select(n=>
         {
-            float radius=MapPuckRadius(n,fit.Scale)+4;
+            float puckRadius=MapPuckRadius(n,fit.Scale);
+            float radius=puckRadius+4;
             float distance=Vector2.DistanceSquared(NodePosition(world,n,panel),point);
-            return (n.Id,Distance:distance<=radius*radius?distance:float.PositiveInfinity);
-        }).Where(n=>float.IsFinite(n.Distance)).OrderBy(n=>n.Distance).ThenBy(n=>n.Id)
+            bool pier=false;
+            if(ShowRoutes && !DirectoryOnly && n.IsHarbor && n.Functional && TryHarborFrame(world,n,out var shore,out var seaward)){
+                var face=Faces.First(f=>f.Face==world.Cells[n.Cell].Face);
+                var at=face.Project(shore)*fit.Scale+fit.Origin;
+                var forward=Vector2.Normalize((face.Project(shore+seaward*.1f)-face.Project(shore))*fit.Scale);
+                var across=new Vector2(forward.Y,-forward.X);
+                pier=HarborPierContains(point,(x,y,z)=>RotateScreen(FlatHarborPoint(at,forward,across,puckRadius,x,y),panel));
+            }
+            return (n.Id,Pier:pier,Distance:pier || distance<=radius*radius?distance:float.PositiveInfinity);
+        }).Where(n=>float.IsFinite(n.Distance)).OrderByDescending(n=>n.Pier).ThenBy(n=>n.Distance).ThenBy(n=>n.Id)
             .Select(n=>n.Id).DefaultIfEmpty(-1).First();        return hit>=0 && (candidates==null || candidates.Contains(hit))?hit:-1;
     }
     public Point MicroPoint(WorldSetup world,int cell,Rectangle panel,Point pointer)

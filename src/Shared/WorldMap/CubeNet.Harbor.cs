@@ -27,6 +27,45 @@ public sealed partial class CubeNet
     }
 
     private static void DrawHarborPier(UiPainter ui,Func<float,float,float,Vector2> point,Func<Color,Color> tint)
+        => HarborPierFaces(point,(face,color)=>FillProjectedFace(ui,face,tint(color)));
+
+    private static bool HarborPierContains(Vector2 pointer,Func<float,float,float,Vector2> project)
+    {
+        bool hit=false;
+        HarborPierFaces(project,(face,_)=>{
+            if(hit)return;
+            float area=0;
+            bool positive=false,negative=false;
+            for(int i=0;i<face.Length;i++){
+                var a=face[i];
+                var b=face[(i+1)%face.Length];
+                area+=Cross(a-pointer,b-pointer);
+                var cross=Cross(b-a,pointer-a);
+                positive|=cross>.01f;
+                negative|=cross<-.01f;
+            }
+            hit=Math.Abs(area)>.01f && !(positive && negative);
+        });
+        return hit;
+    }
+
+    private static Vector2 FlatHarborPoint(Vector2 shore,Vector2 forward,Vector2 across,float radius,float x,float y)
+        =>shore+radius*PurposeBuildingScale*(across*x+forward*y);
+
+    private static Vector3 HarborFooting(WorldSetup world,SurfaceCell cell,Vector3 shore)
+        =>shore+cell.Normal*WorldTerrain.ReliefAt(world,cell,Vector3.Lerp(shore,cell.Center,.001f),world.Terrain);
+
+    internal bool HitGlobeHarbor(WorldSetup world,Node node,float radius,Vector2 pointer,Func<Vector3,Vector2> project)
+    {
+        if(!ShowRoutes || DirectoryOnly || !node.IsHarbor || !node.Functional ||
+            !TryHarborFrame(world,node,out var shore,out var seaward))return false;
+        var cell=world.Cells[node.Cell];
+        var footing=HarborFooting(world,cell,shore);
+        var across=Vector3.Cross(seaward,cell.Normal);
+        return HarborPierContains(pointer,(x,y,z)=>project(footing+radius*GlobePurposeBuildingScale*(across*x+seaward*y+cell.Normal*z)));
+    }
+
+    private static void HarborPierFaces(Func<float,float,float,Vector2> point,Action<Vector2[],Color> face)
     {
         var orange=new Color(235,112,42);
         var white=new Color(254,242,222);
@@ -49,11 +88,11 @@ public sealed partial class CubeNet
             Side(b,c,point(right,y,baseZ),point(right,front,baseZ),.68f);
             Side(c,d,point(right,front,baseZ),point(x,front,baseZ),.82f);
             Side(d,a,point(x,front,baseZ),point(x,y,baseZ),.68f);
-            FillProjectedFace(ui,new[]{a,b,c,d},tint(color));
+            face(new[]{a,b,c,d},color);
             void Side(Vector2 p,Vector2 q,Vector2 r,Vector2 s,float shade)
             {
                 if(Cross(q-p,center-p)*Cross(q-p,r-p)<0)
-                    FillProjectedFace(ui,new[]{p,q,s,r},tint((color*shade) with {A=255}));
+                    face(new[]{p,q,s,r},(color*shade) with {A=255});
             }
         }
     }

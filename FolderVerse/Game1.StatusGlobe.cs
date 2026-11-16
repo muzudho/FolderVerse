@@ -77,7 +77,7 @@ public partial class Game1
     private int HitGlobeNode(Point pointer,IEnumerable<int> candidates=null)
     {
         if(!MapViewBounds.Contains(pointer))return -1;
-        int nearest=-1;float distance=float.PositiveInfinity;
+        int nearest=-1;float distance=float.PositiveInfinity;bool hitPier=false;
         var offset=_setup.Terrain;
         foreach(var node in _setup.Nodes.All.Where(n=>_net.NodeVisible(_setup,n)))
         {
@@ -88,8 +88,13 @@ public partial class Game1
             float candidate=Vector2.DistanceSquared(at,new(pointer.X,pointer.Y));
             _world.ProjectVisible(position+cell.U,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var unit);
             _world.ProjectVisible(position+cell.V,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var otherUnit);
-            float radius=_net.GlobeNodeHitRadius(node,MathF.Max(Vector2.Distance(at,unit),Vector2.Distance(at,otherUnit)),_world.GlobeZoom);
-            if(candidate<=radius*radius && candidate<distance){nearest=node.Id;distance=candidate;}
+            float scale=MathF.Max(Vector2.Distance(at,unit),Vector2.Distance(at,otherUnit));
+            float radius=_net.GlobeNodeHitRadius(node,scale,_world.GlobeZoom);
+            Vector2 Project(Vector3 p){_world.ProjectVisible(p,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var xy);return xy;}
+            bool pier=_net.HitGlobeHarbor(_setup,node,_net.GlobeNodeRadius(node,scale,_world.GlobeZoom),pointer.ToVector2(),Project);
+            if(pier && !hitPier || pier==hitPier && (pier || candidate<=radius*radius) && candidate<distance){
+                nearest=node.Id;distance=candidate;hitPier=pier;
+            }
         }
         // Resolve the visible object first, then check whether the action permits it.
         // Candidate filtering must never redirect a click to a neighboring node.

@@ -168,7 +168,7 @@ public sealed partial class CubeNet
             var harborAt=project(shore);
             var forward=Vector2.Normalize(project(shore+seaward*.1f)-harborAt);
             var across=new Vector2(forward.Y,-forward.X);
-            DrawHarborPier(ui,(x,y,z)=>harborAt+radius*PurposeBuildingScale*(across*x+forward*y),tint);
+            DrawHarborPier(ui,(x,y,z)=>FlatHarborPoint(harborAt,forward,across,radius,x,y),tint);
             DrawHarborBadge(ui,harborAt-across*radius*1.45f,radius,tint,ScreenAngle);
         }
         else if(purpose)
@@ -220,8 +220,7 @@ public sealed partial class CubeNet
             FillProjectedFace(ui,ring,tint(selected ? Color.White : new Color(255,219,96)));
         if(node.IsHarbor && purpose && TryHarborFrame(setup,node,out var shore,out var seaward)){
             var across=Vector3.Cross(seaward,cell.Normal);
-            float shoreHeight=WorldTerrain.ReliefAt(setup,cell,Vector3.Lerp(shore,cell.Center,.001f),setup.Terrain);
-            var footing=shore+cell.Normal*shoreHeight;
+            var footing=HarborFooting(setup,cell,shore);
             DrawHarborPier(ui,(x,y,z)=>project(footing+radius*GlobePurposeBuildingScale*(across*x+seaward*y+cell.Normal*z)),tint);
             DrawHarborBadge(ui,project(footing)+new Vector2(-Math.Clamp(radius*Vector2.Distance(project(position),project(position+cell.U))*1.65f,12,44),-12),9,tint);
         }
