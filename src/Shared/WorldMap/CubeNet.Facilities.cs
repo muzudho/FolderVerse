@@ -4,12 +4,12 @@ using Microsoft.Xna.Framework;
 
 public sealed partial class CubeNet
 {
-    private static bool HasCivilianSettlement(Node node)=>!node.Functional && node.FunctionHost>=0;
+    private static bool HasCivilianSettlement(Node node)=>node.Functional || node.FunctionHost>=0;
 
     private static int RelocatedFacilityGroups(Node node)=>node.Functional
         ? Math.Min(3,node.FunctionUnits-1+node.IncomingFactories) : 0;
 
-    private static void DrawFacilities(UiPainter ui,WorldSetup world,Node node,
+    private static void DrawFacilities(UiPainter ui,WorldSetup world,Node node,bool civilian,
         Func<float,float,float,Vector2> project,Func<Color,Color> tint)
     {
         var ground=world.Routes.Position(node.Cell,node.Center);
@@ -86,7 +86,7 @@ public sealed partial class CubeNet
             Roof(x-.04f,y-.04f,.25f,.26f,floor+.56f,.12f,brightRoof);
         }
 
-        if(HasCivilianSettlement(node)){
+        if(civilian){
             if(sea){
                 Box(-.86f,-.36f,1.65f,.70f,.02f,.12f,hull);
                 for(int i=0;i<9;i++)Box(-.86f+i*.185f,-.36f,.174f,.70f,.14f,.035f,timber);
@@ -116,17 +116,17 @@ public sealed partial class CubeNet
             return;
         }
 
-        int groups=RelocatedFacilityGroups(node);
+        int groups=Math.Min(3,RelocatedFacilityGroups(node)+(node.Purpose==NodePurpose.General || node.IsHarbor?1:0));
         for(int i=0;i<groups;i++){
             float x=(i-(groups-1)/2f)*.54f;
-            bool hasWarehouse=i<node.FunctionUnits-1;
+            bool hasWarehouse=i<node.FunctionUnits;
             if(sea){
-                Boat(x,-.41f,hasWarehouse?.83f:.70f,tropical && i==0,hasWarehouse);
+                Boat(x,-.41f,hasWarehouse?.83f:.70f,false,hasWarehouse);
                 continue;
             }
             Box(x-.23f,-.39f,.46f,.78f,0,.055f,timber);
             Box(x-.21f,-.37f,.42f,.73f,.055f,.32f,wall);
-            Roof(x-.24f,-.40f,.48f,.79f,.375f,.16f,hasWarehouse?roof:metal);
+            Roof(x-.24f,-.40f,.48f,.79f,.375f,.16f,hasWarehouse?new Color(83,123,146):metal);
             Box(x+.09f,-.31f,.093f,.11f,.45f,.26f,brightRoof);
             Box(x-.11f,.36f,.22f,.018f,.055f,.20f,cold?amber:glass);
             if(hasWarehouse)

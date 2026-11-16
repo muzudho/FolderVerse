@@ -372,14 +372,6 @@ sealed class GlyphProbe:Game1
      sharedBayStock.ProductionIntakes.Single().Product.Id!=ppHead.Id ||
      !expectedPixels.SequenceEqual(alternativePixels))
    throw new Exception("Restoring the PP intake changed the material section or the forecast head artwork.");
-  if(!sharedBayWorld.Campaign.FinishDomestic(sharedBayWorld) || sharedBayStock.ProductionIntakes.Count!=0)
-   throw new Exception("The shared bay intake did not complete.");
-  DrawDirectPanel(alternativePixels);
-  var sharedCell=(Rectangle)directViewCell.Invoke(this,new object[]{receivingSide,sharedBaySlot})!;
-  for(int y=sharedCell.Top/2;y<sharedCell.Bottom/2;y++)
-   for(int x=sharedCell.Left/2;x<sharedCell.Right/2;x++)
-    if(expectedPixels[y*960+x]!=alternativePixels[y*960+x])
-     throw new Exception("The shared PP bay changed after the production intake completed.");
   var sharedPart=typeof(Game1).GetMethod("DirectViewPart",Flags)!;
   var sharedInput=typeof(Game1).GetMethod("DirectPairInput",Flags)!;
   var sharedPressed=new Microsoft.Xna.Framework.Input.MouseState(0,0,0,Microsoft.Xna.Framework.Input.ButtonState.Pressed,
@@ -399,6 +391,14 @@ sealed class GlyphProbe:Game1
    throw new Exception("Clicking the PP head did not select only the robot part.");
   typeof(Game1).GetField("_directDrag",Flags)!.SetValue(this,null);
   Set("_pointer",Point.Zero);
+  if(!sharedBayWorld.Campaign.FinishDomestic(sharedBayWorld) || sharedBayStock.ProductionIntakes.Count!=0)
+   throw new Exception("The shared bay intake did not complete.");
+  DrawDirectPanel(alternativePixels);
+  var sharedCell=(Rectangle)directViewCell.Invoke(this,new object[]{receivingSide,sharedBaySlot})!;
+  for(int y=sharedCell.Top/2;y<sharedCell.Bottom/2;y++)
+   for(int x=sharedCell.Left/2;x<sharedCell.Right/2;x++)
+    if(expectedPixels[y*960+x]!=alternativePixels[y*960+x])
+     throw new Exception("The shared PP bay changed after the production intake completed.");
   Set("_setup",world);
   Console.WriteLine("PASS the PP head and raw remainder share a bay without changing its artwork and can be picked separately.");
   void TestIntegratedDirectMerge(Robot cargoPair,RobotParts receivePart,int pickupRow)
