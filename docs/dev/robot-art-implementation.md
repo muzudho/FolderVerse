@@ -1274,3 +1274,5 @@ RobotGlyphIntegration の配送回帰を最終到着まで延長。９素材モ�
 2026-11-15 19:16 JST ９素材描画。製造・飛行・保存復元を通じて実入荷した段ボール頭胴一体型を、10×６表示の格納庫で確認。同じID・素材で一体型指定だけを外すと対象枠内398画素が変化し、枠外は全画素一致。IndustryUi --manufacturing-lanes --integrated-product 通過。固定DLL SHA-256 FCCF847D37246C6A6CAAEF5C42C665056F4563020B82EC6BCE2B84CEAD07E9C9。NAS tmp/delete-after-2026-11-15/industry-head-body-small-art-1916/。次は輸送後の隊長を小枠で描画して帽子の差を確認する。
 
 2026-11-15 20:12 JST ９素材描画。長距離便を完了したメープル製隊長を共通格納庫描画で28×52に表示。帽子の余白分だけ同じ大きさに揃えた一般兵と比較し、上半分の170画素に帽子の差、下半分は全画素一致。乗継・最終到着の既存回帰も通過。RobotGlyphIntegration --shipments、警告・エラー０。固定DLL SHA-256 FCCF847D37246C6A6CAAEF5C42C665056F4563020B82EC6BCE2B84CEAD07E9C9。NAS tmp/delete-after-2026-11-15/long-delivery-compact-captain-2012/。次は直送の一体型と隊長を実到着まで確認する。
+
+2026-11-17 00:27 JST ９素材描画。PP胴・段ボール脚の一体型を実製造し、保存復元後の入荷まで確認。胴素材だけを変えると飛行中の1931画素が変化し、同寸法での飛行・到着描画は82×125と28×52で全画素一致。10×６格納庫では一体型指定だけの差が対象枠内414画素で、枠外は一致。IndustryUi --manufacturing-lanes --integrated-body-legs --mixed-integrated-product 通過、警告・エラー０。固定v0.10.0 DLL SHA-256 `43F2243D9B0B1D3335AED967C3205F3FEC8D9FA13C059A94B271BAA720E36012`。NAS `tmp/delete-after-2026-11-17/industry-mixed-body-legs-0027/result.txt`。次は製造品が既存パーツに合流する場合の素材と描画を確認する。
