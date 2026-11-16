@@ -532,6 +532,7 @@ sealed class GlyphProbe:Game1
   keeperStock=keeperWorld.Robots;
   keeperStock.ConfigureFactories(keeperWorld);
   CheckBlocked(keeperStock);
+  var shortWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(keeperWorld));
   if(!keeperWorld.Campaign.FinishDomestic(keeperWorld) || keeperStock.Nodes[rawOrder.Target].StorageLimit!=5 ||
      !keeperStock.Nodes[rawOrder.Target].Robots.Single(r=>r.Id==keeper.Id).WarehouseKeeper || keeperStock.MapleShipments.Count!=0 ||
      keeperStock.Nodes[rawOrder.Source].MaplePackages.Any(p=>p.Id==ppRemainder.Id) ||
@@ -549,6 +550,167 @@ sealed class GlyphProbe:Game1
      keeperStock.Nodes[rawOrder.Target].MaplePackages.Any(p=>p.Material==RawMaterial.PP))
    throw new Exception("The restored line must use exactly eight delivered PP units to manufacture one PP head.");
   Console.WriteLine("PASS delivered PP resumes its restored line and eight units produce exactly one PP head.");
+  var shortStock=shortWorld.Robots;
+  shortStock.ConfigureFactories(shortWorld);
+  var setPackages=typeof(RobotStore).GetMethod("SetMaplePackages",Flags)!;
+  var shortSource=shortStock.Nodes[rawOrder.Source];
+  var shortTarget=shortStock.Nodes[rawOrder.Target];
+  setPackages.Invoke(shortSource,new object[]{shortSource.MaplePackages.Select(p=>p.Id==ppRemainder.Id
+   ?p with {Units=7}:p).ToArray()});
+  if(!shortWorld.Campaign.FinishDomestic(shortWorld) || shortStock.MapleShipments.Count!=0 ||
+     shortTarget.MaplePackages.Single()!=ppRemainder with {Units=7})
+   throw new Exception("The seven-unit delivery must reach the restored destination.");
+  var shortLine=shortStock.Workshops[rawOrder.Target].ProductionLines[0];
+  shortStock.AdvanceIndustry(n=>shortWorld.Nodes.All[n].Owner);
+  if(!shortLine.WaitingForMaple(shortStock,rawOrder.Target) || shortLine.ProductionAge!=0 ||
+     shortTarget.MaplePackages.Single().Units!=7 || shortStock.ProductionIntakes.Any(i=>i.Source==rawOrder.Target))
+   throw new Exception("A one-unit shortfall must preserve the PP and keep the line at zero progress.");
+  shortWorld.Campaign.BeginMilitary();
+  shortWorld.Campaign.Resolve(shortWorld,Array.Empty<March>());
+  var supplement=new MaplePackage(980002,1){Material=RawMaterial.PP};
+  setPackages.Invoke(shortSource,new object[]{shortSource.MaplePackages.Append(supplement).ToArray()});
+  if(!shortStock.ReserveMapleShipment(shortWorld,rawOrder.Source,rawOrder.Target,supplement.Id) ||
+     !shortWorld.Campaign.FinishDomestic(shortWorld) || shortStock.MapleShipments.Count!=0 ||
+     shortTarget.MaplePackages.Single()!=ppRemainder || shortLine.WaitingForMaple(shortStock,rawOrder.Target))
+   throw new Exception("The next shipment must merge the missing unit and clear the material wait.");
+  for(int unit=0;unit<2;unit++)shortStock.AdvanceIndustry(n=>shortWorld.Nodes.All[n].Owner);
+  var supplementedProduct=shortStock.ProductionIntakes.Single(i=>i.Source==rawOrder.Target).Product;
+  if(supplementedProduct.Parts!=RobotParts.Head || supplementedProduct.Material(RobotParts.Head)!=RobotMaterial.Polypropylene ||
+     shortTarget.MaplePackages.Any(p=>p.Material==RawMaterial.PP))
+   throw new Exception("The combined shipments must produce one PP head and use all eight units.");
+  Console.WriteLine("PASS seven PP units remain untouched until a later shipment supplies the missing unit.");
+  var fullWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(blockedWorld));
+  var fullStock=fullWorld.Robots;
+  fullStock.ConfigureFactories(fullWorld);
+  var fullTarget=fullStock.Nodes[rawOrder.Target];
+  var fullFactory=fullStock.Workshops[rawOrder.Target];
+  for(int seed=0;fullFactory.ProductionLines.Length==0;seed++)
+   fullFactory.GenerateLines(seed,RobotEquipmentMode.Materials);
+  foreach(var shop in fullStock.Workshops)
+   foreach(var existing in shop.ProductionLines)existing.Paused=true;
+  var fullLine=fullFactory.ProductionLines[0];
+  fullLine.Configure(RobotParts.Head,1);
+  fullLine.SetDoNotRepeat(true);
+  fullLine.Paused=false;
+  var nineUnits=ppRemainder with {Units=9};
+  setPackages.Invoke(fullTarget,new object[]{new[]{nineUnits}});
+  if(fullTarget.HasSpace || fullLine.WaitingForMaple(fullStock,rawOrder.Target))
+   throw new Exception("The production destination must be full while holding sufficient PP.");
+  var exactWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(fullWorld));
+  var exactStock=exactWorld.Robots;
+  exactStock.ConfigureFactories(exactWorld);
+  var exactTarget=exactStock.Nodes[rawOrder.Target];
+  var exactLine=exactStock.Workshops[rawOrder.Target].ProductionLines[0];
+  int robotsBefore=exactTarget.Robots.Count;
+  setPackages.Invoke(exactTarget,new object[]{new[]{ppRemainder}});
+  if(exactTarget.HasSpace || exactLine.WaitingForMaple(exactStock,rawOrder.Target))
+   throw new Exception("The full bay must contain exactly enough PP.");
+  var remoteWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(exactWorld));
+  exactStock.AdvanceIndustry(n=>exactWorld.Nodes.All[n].Owner);
+  var exactIntake=exactStock.ProductionIntakes.Single(i=>i.Source==rawOrder.Target);
+  if(exactTarget.MaplePackages.Count!=0 || exactTarget.Robots.Count!=robotsBefore ||
+     exactIntake.Product.Parts!=RobotParts.Head ||
+     exactIntake.Product.Material(RobotParts.Head)!=RobotMaterial.Polypropylene || exactLine.WaitingProductionTurns!=0)
+   throw new Exception("Using all eight units must free the bay and queue one PP head immediately.");
+  typeof(RobotWorld).GetMethod("ResolveProductionIntakes",Flags)!.Invoke(exactStock,new object[]{exactWorld});
+  if(exactStock.ProductionIntakes.Count!=0 || exactTarget.HasSpace ||
+     exactTarget.Robots.Count!=robotsBefore+1 || !exactTarget.Robots.Contains(exactIntake.Product))
+   throw new Exception("The product must occupy the bay vacated by the consumed PP.");
+  Console.WriteLine("PASS consuming the exact PP cost frees a bay for the head in a full hangar.");
+  var remoteStock=remoteWorld.Robots;
+  remoteStock.ConfigureFactories(remoteWorld);
+  int plant=rawOrder.Target, intakeNode=rawOrder.Source;
+  var remoteLine=remoteStock.Workshops[plant].ProductionLines[0];
+  remoteStock.ProductionIntakes.Clear();
+  remoteStock.SetIntakeTarget(remoteLine,intakeNode);
+  remoteStock.Workshops[intakeNode].AutoAssemblyDisabled=true;
+  var remoteBay=remoteStock.Nodes[intakeNode];
+  long spaceMaker=-1;
+  while(remoteBay.HasSpace){
+   var filler=remoteStock.Create(rawOrder.Owner,RobotParts.Complete);
+   remoteBay.Add(filler);
+   spaceMaker=filler.Id;
+  }
+  if(spaceMaker<0)throw new Exception("Adjacent intake fixture needs a removable filler.");
+  remoteStock.AdvanceIndustry(n=>remoteWorld.Nodes.All[n].Owner);
+  if(!remoteLine.IntakeFailure.Contains("格納枠") || remoteLine.WaitingProductionTurns!=1 ||
+     remoteStock.ProductionIntakes.Count!=0 || remoteStock.Nodes[plant].MaplePackages.Single()!=ppRemainder)
+   throw new Exception("A full adjacent intake must preserve PP at the factory.");
+  remoteBay.Remove(spaceMaker);
+  var sharedIntakeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(remoteWorld));
+  remoteStock.AdvanceIndustry(n=>remoteWorld.Nodes.All[n].Owner);
+  var remoteIntake=remoteStock.ProductionIntakes.Single();
+  if(remoteIntake.Source!=plant || remoteIntake.Target!=intakeNode ||
+     remoteIntake.Product.Parts!=RobotParts.Head || remoteIntake.Product.HeadMaterial!=RobotMaterial.Polypropylene ||
+     remoteStock.Nodes[plant].MaplePackages.Count!=0)
+   throw new Exception("Opening the adjacent bay must consume eight PP units and reserve a PP head there.");
+  typeof(RobotWorld).GetMethod("ResolveProductionIntakes",Flags)!.Invoke(remoteStock,new object[]{remoteWorld});
+  if(remoteStock.ProductionIntakes.Count!=0 || !remoteBay.Robots.Contains(remoteIntake.Product))
+   throw new Exception("The head must arrive only in the selected adjacent hangar.");
+  Console.WriteLine("PASS a full adjacent intake preserves PP until space opens and then receives the exact product.");
+  var sharedStock=sharedIntakeWorld.Robots;
+  sharedIntakeWorld.Nodes.All[plant].Terrain=TravelTerrain.Land;
+  sharedStock.ConfigureFactories(sharedIntakeWorld);
+  var sharedFactory=sharedStock.Workshops[plant];
+  sharedFactory.LimitLines(2);
+  for(int seed=0;sharedFactory.ProductionLines.Length!=2;seed++)
+   sharedFactory.GenerateLines(seed,RobotEquipmentMode.Materials);
+  var firstLine=sharedFactory.ProductionLines[0];
+  var secondLine=sharedFactory.ProductionLines[1];
+  foreach(var lane in sharedFactory.ProductionLines){
+   lane.Configure(RobotParts.Head,1);
+   lane.SetDoNotRepeat(true);
+   lane.Paused=false;
+   sharedStock.SetIntakeTarget(lane,intakeNode);
+  }
+  var sharedStockSource=sharedStock.Nodes[plant];
+  var sharedStockTarget=sharedStock.Nodes[intakeNode];
+  setPackages.Invoke(sharedStockSource,new object[]{new[]{ppRemainder with {Units=16}}});
+  if(sharedStockTarget.StorageLimit-sharedStockTarget.Count!=1)
+   throw new Exception("The two lines must compete for exactly one free bay.");
+  sharedStock.AdvanceIndustry(n=>sharedIntakeWorld.Nodes.All[n].Owner);
+  var firstIntake=sharedStock.ProductionIntakes.Single();
+  if(firstIntake.Line!=firstLine || firstIntake.Target!=intakeNode || secondLine.WaitingProductionTurns!=1 ||
+     !secondLine.IntakeFailure.Contains("格納枠") || sharedStockSource.MaplePackages.Single()!=ppRemainder)
+   throw new Exception("The first line must claim the bay and the second must preserve its eight PP units.");
+  var firstProduct=firstIntake.Product;
+  sharedIntakeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(sharedIntakeWorld));
+  sharedStock=sharedIntakeWorld.Robots;
+  sharedStock.ConfigureFactories(sharedIntakeWorld);
+  sharedStockSource=sharedStock.Nodes[plant];
+  sharedStockTarget=sharedStock.Nodes[intakeNode];
+  firstLine=sharedStock.Workshops[plant].ProductionLines[0];
+  secondLine=sharedStock.Workshops[plant].ProductionLines[1];
+  firstIntake=sharedStock.ProductionIntakes.Single();
+  if(firstIntake.Line!=firstLine || firstIntake.Product!=firstProduct || firstIntake.Target!=intakeNode ||
+     !firstLine.CycleFinished || secondLine.WaitingProductionTurns!=1 ||
+     !secondLine.IntakeFailure.Contains("格納枠") || sharedStockSource.MaplePackages.Single()!=ppRemainder)
+   throw new Exception("Saving must preserve the first reservation, the second waiting line and the remaining PP.");
+  var resolveIntakes=typeof(RobotWorld).GetMethod("ResolveProductionIntakes",Flags)!;
+  resolveIntakes.Invoke(sharedStock,new object[]{sharedIntakeWorld});
+  if(!sharedStockTarget.Robots.Contains(firstIntake.Product) || sharedStockTarget.HasSpace)
+   throw new Exception("The first intake must occupy the last bay.");
+  sharedStockTarget.Remove(firstIntake.Product.Id);
+  sharedStock.AdvanceIndustry(n=>sharedIntakeWorld.Nodes.All[n].Owner);
+  var secondIntake=sharedStock.ProductionIntakes.Single();
+  if(secondIntake.Line!=secondLine || secondIntake.Target!=intakeNode || secondIntake.Product.Id==firstIntake.Product.Id ||
+     sharedStockSource.MaplePackages.Count!=0)
+   throw new Exception("The second line must use its remaining eight units when the bay opens again.");
+  resolveIntakes.Invoke(sharedStock,new object[]{sharedIntakeWorld});
+  if(sharedStock.ProductionIntakes.Count!=0 || !sharedStockTarget.Robots.Contains(secondIntake.Product))
+   throw new Exception("The second product must reach the same designated bay.");
+  Console.WriteLine("PASS two lines resume in lane order after restoring a reserved adjacent bay and a waiting line.");
+  for(int unit=0;unit<2;unit++)fullStock.AdvanceIndustry(n=>fullWorld.Nodes.All[n].Owner);
+  if(fullTarget.MaplePackages.Single()!=nineUnits || fullLine.WaitingProductionTurns!=2 ||
+     !fullLine.IntakeFailure.Contains("格納枠") || fullStock.ProductionIntakes.Any(i=>i.Source==rawOrder.Target))
+   throw new Exception("Each full-bay retry must preserve all nine units and avoid queuing a product.");
+  fullTarget.Remove(fullTarget.Robots.First(r=>!r.Stationed).Id);
+  fullStock.AdvanceIndustry(n=>fullWorld.Nodes.All[n].Owner);
+  var recoveredProduct=fullStock.ProductionIntakes.Single(i=>i.Source==rawOrder.Target).Product;
+  if(recoveredProduct.Parts!=RobotParts.Head || recoveredProduct.Material(RobotParts.Head)!=RobotMaterial.Polypropylene ||
+     fullTarget.MaplePackages.Single()!=nineUnits with {Units=1} || fullLine.WaitingProductionTurns!=0)
+   throw new Exception("The freed bay must admit a single PP head and charge exactly eight units.");
+  Console.WriteLine("PASS repeated full intake waits preserve PP until a bay opens and exactly eight units are charged.");
   if(!rawDispatchWorld.Campaign.FinishDomestic(rawDispatchWorld) ||
      rawDispatchStock.Nodes[directTarget].Robots.Single(robot=>robot.Id==ppHead.Id)!=ppHead ||
      rawDispatchStock.Nodes[directTarget].MaplePackages.Any(raw=>raw.Id==ppRemainder.Id) ||
