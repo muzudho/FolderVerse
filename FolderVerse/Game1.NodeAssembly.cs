@@ -218,7 +218,7 @@ public partial class Game1
         _ui.Box(new(54,150,850,825),new(27,49,62));
         _ui.Text($"格納庫 {store.Count}/{store.TotalCapacity}",new(84,256),.28f,Cream);
         var (mapleLabel,mergedMaple)=MapleArrivalLabel(HangarPlanningNode,store);
-        string forecast=HangarPlanningNode==_populationNode?"入荷・機能移転・組替後の予定":"移転先での格納・組替予定";
+        string forecast=HangarPlanningNode==_populationNode?"入荷・施設移転・組替後の予定":"移転先での格納・組替予定";
         _ui.Text(mapleLabel.Length>0?mapleLabel:forecast,new(232,256),.28f,Cream);DrawHangarUndo();
 
 

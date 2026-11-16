@@ -82,10 +82,13 @@ sealed class GlyphProbe:Game1
    .Select(target=>RobotLongDelivery.Path(world,source.Id,target.Id,0)))
    .First(path=>path.Length>2);
   var stock=world.Robots;
+  world.SetCountryAppearance(1,12,6,2);
+  world.SetCountryEmblem(1,2);
   var integrated=stock.Create(0,parts[0]) with {
-   HeadMaterial=RobotMaterial.Cardboard,BodyMaterial=RobotMaterial.Cardboard,IntegratedParts=parts[0]};
+   HeadMaterial=RobotMaterial.Cardboard,BodyMaterial=RobotMaterial.Foam,BodyOrigin=1,IntegratedParts=parts[0]};
   var captain=stock.Create(0,RobotParts.Complete,RobotRole.Captain) with {
-   HeadMaterial=RobotMaterial.Maple,BodyMaterial=RobotMaterial.Maple,LegsMaterial=RobotMaterial.Maple};
+   HeadMaterial=RobotMaterial.Maple,BodyMaterial=RobotMaterial.SoftVinyl,LegsMaterial=RobotMaterial.Silicone,
+   HeadOrigin=1,LegsOrigin=1};
   stock.Nodes[route[0]].Add(integrated);
   stock.Nodes[route[0]].Add(captain);
   stock.LongDelivery.Reserve(world,route[0],route[^1],integrated.Id,integrated.Parts,null,0,0);
@@ -104,6 +107,30 @@ sealed class GlyphProbe:Game1
   capture.SetData(pixels);
   using(var paneFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"long-delivery-arrivals.png")))
    capture.SaveAsPng(paneFile,960,540);
+  var alternativePixels=new Color[pixels.Length];
+  var sourceStore=stock.Nodes[route[0]];
+  var directCell=typeof(Game1).GetMethod("DirectCell",BindingFlags.Static|BindingFlags.NonPublic)!;
+  void CheckArrivalVariant(int slot,Robot original,Robot variant){
+   var reservedRobot=sourceStore.Remove(original.Id);
+   sourceStore.Add(variant with {LongDeliveryNumber=reservedRobot.LongDeliveryNumber});
+   DrawArrivals(alternativePixels);
+   sourceStore.Remove(variant.Id);
+   sourceStore.Add(reservedRobot);
+   var cell=(Rectangle)directCell.Invoke(null,new object[]{1,slot})!;
+   cell.Offset(-1320,0);
+   int differences=0;
+   for(int y=0;y<540;y++)
+    for(int x=0;x<960;x++){
+     int index=y*960+x;
+     if(pixels[index]==alternativePixels[index])continue;
+     if(!cell.Contains(x,y))throw new Exception($"Changing slot {slot} altered pixel ({x}, {y}) outside {cell}.");
+     differences++;
+    }
+   if(differences==0)throw new Exception($"Incoming glyph ignored the variant in slot {slot}.");
+  }
+  CheckArrivalVariant(0,integrated,integrated with {IntegratedParts=0});
+  CheckArrivalVariant(1,captain,captain with {Role=RobotRole.Soldier});
+  Console.WriteLine("PASS long delivery arrival preview distinguishes integration and captain role in their own slots.");
   var advance=typeof(RobotLongDelivery).GetMethod("Advance",Flags)!;
   advance.Invoke(stock.LongDelivery,new object[]{world});
   if(stock.LongDelivery.Orders.Count!=2 || stock.LongDelivery.Orders.Any(order=>!order.Started || order.Node!=route[1]))
@@ -119,11 +146,7 @@ sealed class GlyphProbe:Game1
   var warehouse=stock.Nodes[route[^1]].Robots;
   var deliveredPair=warehouse.Single(robot=>robot.Id==integrated.Id);
   var deliveredCaptain=warehouse.Single(robot=>robot.Id==captain.Id);
-  if(deliveredPair.Parts!=integrated.Parts || deliveredPair.IntegratedParts!=integrated.IntegratedParts ||
-     deliveredPair.HeadMaterial!=RobotMaterial.Cardboard || deliveredPair.BodyMaterial!=RobotMaterial.Cardboard ||
-     deliveredCaptain.Role!=RobotRole.Captain || deliveredCaptain.Parts!=RobotParts.Complete ||
-     deliveredCaptain.HeadMaterial!=RobotMaterial.Maple || deliveredCaptain.BodyMaterial!=RobotMaterial.Maple ||
-     deliveredCaptain.LegsMaterial!=RobotMaterial.Maple)
+  if(!SameParts(integrated,deliveredPair) || !SameParts(captain,deliveredCaptain))
    throw new Exception("Final arrival lost its materials, integration or role.");
   typeof(Game1).GetMethod("SyncLongSlots",Flags)!.Invoke(this,null);
   DrawArrivals(pixels);
@@ -156,17 +179,128 @@ sealed class GlyphProbe:Game1
   Console.WriteLine($"PASS delivered compact captain: {capPixels} pixels changed in the upper half.");
 
   int directTarget=route[1];
+  // Home persuasion can change a part's origin and cancel its order before dispatch.
+  world.Campaign.RobotBattles.Rules=new BattleRules{PersuasionPercent=0};
   stock.Workshops[directTarget].AutoAssemblyDisabled=true;
   var outgoingPair=integrated with {Id=stock.Create(0,integrated.Parts).Id};
   var outgoingCaptain=captain with {Id=stock.Create(0,captain.Parts).Id};
   stock.Nodes[route[0]].Add(outgoingPair);
   stock.Nodes[route[0]].Add(outgoingCaptain);
+  var directFixture=AutoSaveStore.Capture(world);
+  nodes[1]=directTarget;
+  ((CubeNet)Get("_directPairNet")).Home(world);
+  typeof(Game1).GetMethod("FitDirectPairMap",Flags)!.Invoke(this,null);
+  int receivingSide=Array.IndexOf(nodes,directTarget);
+  var directSlots=(long?[][])Get("_directSlots");
+  var drawDirectPair=typeof(Game1).GetMethod("DrawDirectPair",Flags)!;
+  var directViewCell=typeof(Game1).GetMethod("DirectViewCell",Flags)!;
+  void DrawDirectPanel(Color[] destination){
+   GraphicsDevice.Clear(background);
+   batch.Begin();drawDirectPair.Invoke(this,null);batch.End();
+   GraphicsDevice.GetBackBufferData(destination);
+  }
+  void DrawPlannedDirectArrivals(Robot pair,Robot leader,Color[] destination){
+   var copy=AutoSaveStore.Restore<WorldSetup>(directFixture);
+   Set("_setup",copy);
+   var source=copy.Robots.Nodes[route[0]];
+   source.Remove(pair.Id);source.Add(pair);
+   source.Remove(leader.Id);source.Add(leader);
+   foreach(var slots in directSlots)Array.Clear(slots);
+   Array.Resize(ref directSlots[receivingSide],copy.Robots.Nodes[directTarget].TotalCapacity);
+   directSlots[receivingSide][0]=copy.Robots.PartPlanning.Reserve(copy,route[0],directTarget,pair.Id,pair.Parts,null,0);
+   directSlots[receivingSide][1]=copy.Robots.PartPlanning.Reserve(copy,route[0],directTarget,leader.Id,leader.Parts,null,0);
+   DrawDirectPanel(destination);
+  }
+  DrawPlannedDirectArrivals(outgoingPair,outgoingCaptain,pixels);
+  var plannedWorld=(WorldSetup)Get("_setup");
+  var plannedSlots=directSlots[receivingSide].Take(2).ToArray();
+  var restoredPlan=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(plannedWorld));
+  Set("_setup",restoredPlan);
+  foreach(var slots in directSlots)Array.Clear(slots);
+  DrawDirectPanel(alternativePixels);
+  if(!plannedSlots.SequenceEqual(directSlots[receivingSide].Take(2)) || !pixels.SequenceEqual(alternativePixels))
+   throw new Exception("Restoring the direct delivery changed the reconstructed arrival slots or rendered preview.");
+  Console.WriteLine("PASS restored direct delivery reconstructs the same arrival slots and preview pixels.");
+  capture.SetData(pixels);
+  using(var paneFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"direct-delivery-arrivals.png")))
+   capture.SaveAsPng(paneFile,960,540);
+  void CheckPlannedArrivalVariant(int slot,Robot pair,Robot leader){
+   DrawPlannedDirectArrivals(pair,leader,alternativePixels);
+   var cell=(Rectangle)directViewCell.Invoke(this,new object[]{receivingSide,slot})!;
+   var other=(Rectangle)directViewCell.Invoke(this,new object[]{receivingSide,1-slot})!;
+   bool Changed(Rectangle area)=>Enumerable.Range(area.Top/2,area.Height/2).Any(y=>
+    Enumerable.Range(area.Left/2,area.Width/2).Any(x=>pixels[y*960+x]!=alternativePixels[y*960+x]));
+   if(!Changed(cell) || Changed(other))throw new Exception($"Direct arrival variant changed the wrong glyph in slot {slot}.");
+  }
+  CheckPlannedArrivalVariant(0,outgoingPair with {IntegratedParts=0},outgoingCaptain);
+  CheckPlannedArrivalVariant(1,outgoingPair,outgoingCaptain with {Role=RobotRole.Soldier});
+  Set("_setup",world);
+  Console.WriteLine("PASS drag-and-drop direct arrival preview distinguishes integration and captain role.");
   stock.DirectDelivery.ReserveParts(world,route[0],directTarget,outgoingPair.Id,outgoingPair.Parts,null,0);
   stock.DirectDelivery.ReserveParts(world,route[0],directTarget,outgoingCaptain.Id,outgoingCaptain.Parts,null,1);
   var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(world));
   if(restored.EquipmentMode!=RobotEquipmentMode.Materials ||
     !restored.Robots.DirectDelivery.Orders.SequenceEqual(stock.DirectDelivery.Orders))
    throw new Exception("The saved world lost its material mode or direct orders.");
+  var persuasion=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(world));
+  var persuasionStock=persuasion.Robots;
+  var sourceNode=persuasion.Nodes.All[route[0]];
+  persuasion.ConquerorLocations[0]=sourceNode.Cell;
+  persuasion.ConquerorPoints[0]=sourceNode.Center;
+  for(int ruler=1;ruler<persuasion.ActiveCount;ruler++)
+   persuasionStock.DomesticPersuasionTurns[ruler]=persuasion.Population.Turn;
+  var bodyLegs=persuasionStock.Create(0,parts[1]) with {
+   BodyMaterial=RobotMaterial.Polystyrene,LegsMaterial=RobotMaterial.Maple,LegsOrigin=1,IntegratedParts=parts[1]};
+  persuasionStock.Nodes[route[0]].Add(bodyLegs);
+  persuasionStock.DirectDelivery.ReserveParts(persuasion,route[0],directTarget,bodyLegs.Id,bodyLegs.Parts,null,2);
+  persuasion.Campaign.RobotBattles.Rules=new BattleRules{PersuasionPercent=100};
+  var persuasionEvents=persuasionStock.PersuadeAtHome(persuasion);
+  var changedPair=persuasionEvents.Single(e=>e.Before.Id==outgoingPair.Id && e.Success);
+  if(changedPair.Before.Origin(RobotParts.Head)!=changedPair.After.Origin(RobotParts.Head) ||
+     changedPair.Before.Origin(RobotParts.Body)==changedPair.After.Origin(RobotParts.Body) ||
+     persuasionStock.DirectDelivery.Orders.Any(o=>o.RobotId==outgoingPair.Id))
+   throw new Exception("Changing only the body's origin must cancel the whole integrated shipment.");
+  var changedBodyLegs=persuasionEvents.Single(e=>e.Before.Id==bodyLegs.Id && e.Success);
+  if(changedBodyLegs.Before.Origin(RobotParts.Body)!=changedBodyLegs.After.Origin(RobotParts.Body) ||
+     changedBodyLegs.Before.Origin(RobotParts.Legs)==changedBodyLegs.After.Origin(RobotParts.Legs) ||
+     persuasionStock.DirectDelivery.Orders.Any(o=>o.RobotId==bodyLegs.Id))
+   throw new Exception("Changing only the legs' origin must cancel the whole integrated shipment.");
+  persuasionStock.DirectDelivery.ReserveParts(persuasion,route[0],directTarget,bodyLegs.Id,RobotParts.Legs,null,0);
+  var rebooked=persuasionStock.DirectDelivery.Orders.Single(o=>o.RobotId==bodyLegs.Id);
+  if(rebooked.Part!=bodyLegs.Parts || rebooked.TargetSlot!=0)
+   throw new Exception("The freed slot must accept a new order for the entire integrated pair.");
+  var changed=persuasionEvents.Single(e=>e.Before.Id==outgoingCaptain.Id && e.Success);
+  var changedPart=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}
+   .Single(part=>changed.Before.Origin(part)!=changed.After.Origin(part));
+  var remainingOrders=persuasionStock.DirectDelivery.Orders.Where(o=>o.RobotId==outgoingCaptain.Id).ToArray();
+  if(remainingOrders.Length!=2 || remainingOrders.Any(o=>o.Part==changedPart))
+   throw new Exception("Persuasion did not cancel exactly the changed captain part.");
+  var forecastCaptain=persuasionStock.DirectDelivery.Preview(persuasionStock,directTarget).Single(r=>r.Role==RobotRole.Captain);
+  if(forecastCaptain.Parts!=(RobotParts.Complete&~changedPart) ||
+    !persuasionStock.DirectDelivery.ArrivalOrders(persuasionStock,directTarget,forecastCaptain.Id)
+     .Order().SequenceEqual(remainingOrders.Select(o=>o.Number).Order()))
+   throw new Exception("The arrival forecast includes the cancelled part.");
+  persuasion=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(persuasion));
+  persuasionStock=persuasion.Robots;
+  var restoredBooking=persuasionStock.DirectDelivery.Orders.Single(o=>o.RobotId==bodyLegs.Id);
+  var forecastBodyLegs=persuasionStock.DirectDelivery.Preview(persuasionStock,directTarget)
+   .Single(r=>r.IntegratedParts==bodyLegs.Parts);
+  if(restoredBooking!=rebooked || persuasionStock.DirectDelivery.Orders.Any(o=>o.RobotId==outgoingPair.Id) ||
+     !SameParts(changedBodyLegs.After,forecastBodyLegs) ||
+     !persuasionStock.DirectDelivery.ArrivalOrders(persuasionStock,directTarget,forecastBodyLegs.Id)
+      .SequenceEqual(new[]{rebooked.Number}))
+   throw new Exception("Restoring the rebooking must preserve the new order number and the reused arrival slot.");
+  persuasion.Campaign.Advance(persuasion,-1,0,enemies:false);
+  var keptPart=persuasionStock.Nodes[route[0]].Robots.Single(r=>r.Id==outgoingCaptain.Id);
+  var actualCaptain=persuasionStock.Nodes[directTarget].Robots.Single(r=>r.Role==RobotRole.Captain);
+  if(!SameParts(changed.After.Slice(changedPart),keptPart) || !SameParts(forecastCaptain,actualCaptain))
+   throw new Exception("Direct arrival after persuasion did not match the forecast and retained part.");
+  var retainedPair=persuasionStock.Nodes[route[0]].Robots.Single(r=>r.Id==outgoingPair.Id);
+  var arrivedBodyLegs=persuasionStock.Nodes[directTarget].Robots.Single(r=>r.Id==bodyLegs.Id);
+  if(!SameParts(changedPair.After,retainedPair) || persuasionStock.Nodes[directTarget].Robots.Count!=2 ||
+     !SameParts(changedBodyLegs.After,arrivedBodyLegs))
+   throw new Exception("The cancelled integrated pair must stay intact at its source.");
+  Console.WriteLine("PASS persuasion cancels only the changed captain part and the arrival forecast matches delivery.");
   var pairBounds=new Rectangle(96,40,28,52);
   var expectedPixels=new Color[pixels.Length];
   RenderCompact(deliveredPair,deliveredCaptain,expectedPixels);
@@ -179,10 +313,7 @@ sealed class GlyphProbe:Game1
     throw new Exception("The two direct shipments did not arrive on the next global turn.");
    var directPair=pendingStock.Nodes[directTarget].Robots.Single(robot=>robot.Parts==integrated.Parts);
    var directCaptain=pendingStock.Nodes[directTarget].Robots.Single(robot=>robot.Parts==captain.Parts);
-   if(directPair.IntegratedParts!=integrated.Parts || directPair.HeadMaterial!=RobotMaterial.Cardboard ||
-      directPair.BodyMaterial!=RobotMaterial.Cardboard || directCaptain.Role!=RobotRole.Captain ||
-      directCaptain.HeadMaterial!=RobotMaterial.Maple || directCaptain.BodyMaterial!=RobotMaterial.Maple ||
-      directCaptain.LegsMaterial!=RobotMaterial.Maple)
+   if(!SameParts(integrated,directPair) || !SameParts(captain,directCaptain))
     throw new Exception("Direct arrival lost materials, integration or rank.");
    RenderCompact(directPair,directCaptain,pixels);
    if(!pixels.SequenceEqual(expectedPixels))
@@ -191,7 +322,234 @@ sealed class GlyphProbe:Game1
   capture.SetData(pixels);
   using(var directFile=File.Create(Path.Combine(Path.GetDirectoryName(output)!,"direct-delivery-compact-arrivals.png")))
    capture.SaveAsPng(directFile,960,540);
-  Console.WriteLine("PASS direct delivery preserves the integrated cardboard pair and maple captain, with identical compact art.");
+  Console.WriteLine("PASS direct delivery preserves mixed materials and origins before and after restore, with identical compact art.");
+
+  var planStock=restoredPlan.Robots;
+  var forecastStore=planStock.PartPlanning.Preview(restoredPlan).Nodes[directTarget];
+  var plannedPair=forecastStore.Robots.Single(robot=>robot.Id==plannedSlots[0]);
+  var plannedCaptain=forecastStore.Robots.Single(robot=>robot.Id==plannedSlots[1]);
+  if(!restoredPlan.Campaign.FinishDomestic(restoredPlan) || planStock.PartPlanning.Orders.Count!=0 ||
+     planStock.PartPlanning.LastResults.Count(result=>result.Status=="実施完了")!=2 ||
+     planStock.Nodes[route[0]].Count!=0 || planStock.Nodes[directTarget].Count!=2)
+   throw new Exception("Restored drag-and-drop plans did not deliver both robots exactly once.");
+  var arrivedPair=planStock.Nodes[directTarget].Robots.Single(robot=>robot.Parts==plannedPair.Parts);
+  var arrivedCaptain=planStock.Nodes[directTarget].Robots.Single(robot=>robot.Parts==plannedCaptain.Parts);
+  if(!SameParts(plannedPair,arrivedPair) || !SameParts(plannedCaptain,arrivedCaptain))
+   throw new Exception("Confirmed drag-and-drop arrivals differ from the restored forecast.");
+  RenderCompact(plannedPair,plannedCaptain,expectedPixels);
+  RenderCompact(arrivedPair,arrivedCaptain,pixels);
+  if(!pixels.SequenceEqual(expectedPixels))
+   throw new Exception("Confirmed drag-and-drop arrival artwork differs from the restored forecast.");
+  Console.WriteLine("PASS restored drag-and-drop plans deliver the same parts, roles and compact artwork as forecast.");
+
+  TestIntegratedDirectMerge(outgoingPair,RobotParts.Legs,0);
+  TestIntegratedDirectMerge(outgoingPair with {
+   Parts=parts[1],IntegratedParts=parts[1],LegsMaterial=RobotMaterial.Maple,LegsOrigin=1},RobotParts.Head,2);
+  var sharedBayWorld=AutoSaveStore.Restore<WorldSetup>(directFixture);
+  var sharedBayStock=sharedBayWorld.Robots;
+  var sharedBayStore=sharedBayStock.Nodes[directTarget];
+  var ppRemainder=new MaplePackage(980001,8){Material=RawMaterial.PP};
+  typeof(RobotStore).GetMethod("SetMaplePackages",Flags)!.Invoke(sharedBayStore,new object[]{new[]{ppRemainder}});
+  var ppHead=sharedBayStock.Create(0,RobotParts.Head) with {HeadMaterial=RobotMaterial.Polypropylene};
+  sharedBayStock.ProductionIntakes.Add(new(directTarget,null,ppHead,new RobotWorkshop()));
+  Set("_setup",sharedBayWorld);
+  foreach(var slots in directSlots)Array.Clear(slots);
+  DrawDirectPanel(expectedPixels);
+  int sharedBaySlot=Array.IndexOf(directSlots[receivingSide],(long?)ppHead.Id);
+  var storedMaterials=typeof(Game1).GetMethod("DirectStoredMaterials",Flags)!;
+  var displayedRaw=(Dictionary<int,MaplePackage>)storedMaterials.Invoke(this,new object[]{receivingSide})!;
+  if(sharedBaySlot<0 || displayedRaw.Single().Key/3!=sharedBaySlot || displayedRaw.Single().Key%3==0 ||
+     displayedRaw.Single().Value!=ppRemainder || sharedBayStore.Robots.Any(robot=>robot.Id==ppHead.Id))
+   throw new Exception("The PP remainder and forecast head do not occupy separate sections of the same bay.");
+  sharedBayWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(sharedBayWorld));
+  sharedBayStock=sharedBayWorld.Robots;
+  sharedBayStore=sharedBayStock.Nodes[directTarget];
+  Set("_setup",sharedBayWorld);
+  foreach(var slots in directSlots)Array.Clear(slots);
+  DrawDirectPanel(alternativePixels);
+  var restoredRaw=(Dictionary<int,MaplePackage>)storedMaterials.Invoke(this,new object[]{receivingSide})!;
+  if(directSlots[receivingSide][sharedBaySlot]!=ppHead.Id || !restoredRaw.Single().Equals(displayedRaw.Single()) ||
+     sharedBayStock.ProductionIntakes.Single().Product.Id!=ppHead.Id ||
+     !expectedPixels.SequenceEqual(alternativePixels))
+   throw new Exception("Restoring the PP intake changed the material section or the forecast head artwork.");
+  if(!sharedBayWorld.Campaign.FinishDomestic(sharedBayWorld) || sharedBayStock.ProductionIntakes.Count!=0)
+   throw new Exception("The shared bay intake did not complete.");
+  DrawDirectPanel(alternativePixels);
+  var sharedCell=(Rectangle)directViewCell.Invoke(this,new object[]{receivingSide,sharedBaySlot})!;
+  for(int y=sharedCell.Top/2;y<sharedCell.Bottom/2;y++)
+   for(int x=sharedCell.Left/2;x<sharedCell.Right/2;x++)
+    if(expectedPixels[y*960+x]!=alternativePixels[y*960+x])
+     throw new Exception("The shared PP bay changed after the production intake completed.");
+  var sharedPart=typeof(Game1).GetMethod("DirectViewPart",Flags)!;
+  var sharedInput=typeof(Game1).GetMethod("DirectPairInput",Flags)!;
+  var sharedPressed=new Microsoft.Xna.Framework.Input.MouseState(0,0,0,Microsoft.Xna.Framework.Input.ButtonState.Pressed,
+   Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,
+   Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released);
+  int rawKey=restoredRaw.Single().Key;
+  Set("_pointer",((Rectangle)sharedPart.Invoke(this,new object[]{receivingSide,sharedBaySlot,rawKey%3})!).Center);
+  sharedInput.Invoke(this,new object[]{sharedPressed,true,false});
+  if(Get("_directMaterialDrag") is not ValueTuple<int,int,long> rawDrag ||
+     rawDrag!=(receivingSide,rawKey,ppRemainder.Id) || Get("_directDrag")!=null)
+   throw new Exception("Clicking the PP remainder did not select only the raw cargo.");
+  typeof(Game1).GetField("_directMaterialDrag",Flags)!.SetValue(this,null);
+  Set("_pointer",((Rectangle)sharedPart.Invoke(this,new object[]{receivingSide,sharedBaySlot,0})!).Center);
+  sharedInput.Invoke(this,new object[]{sharedPressed,true,false});
+  if(Get("_directDrag") is not ValueTuple<int,long,RobotParts> headDrag ||
+     headDrag!=(receivingSide,ppHead.Id,RobotParts.Head) || Get("_directMaterialDrag")!=null)
+   throw new Exception("Clicking the PP head did not select only the robot part.");
+  typeof(Game1).GetField("_directDrag",Flags)!.SetValue(this,null);
+  Set("_pointer",Point.Zero);
+  Set("_setup",world);
+  Console.WriteLine("PASS the PP head and raw remainder share a bay without changing its artwork and can be picked separately.");
+  void TestIntegratedDirectMerge(Robot cargoPair,RobotParts receivePart,int pickupRow)
+  {
+   var mergeWorld=AutoSaveStore.Restore<WorldSetup>(directFixture);
+   var mergeStock=mergeWorld.Robots;
+   mergeStock.Nodes[route[0]].Remove(outgoingPair.Id);
+   mergeStock.Nodes[route[0]].Add(cargoPair);
+   var otherPart=mergeStock.Create(0,receivePart) with {HeadMaterial=RobotMaterial.Maple,LegsMaterial=RobotMaterial.Maple};
+   var receiver=mergeStock.Create(0,receivePart) with {HeadMaterial=RobotMaterial.Silicone,HeadOrigin=1,LegsMaterial=RobotMaterial.Silicone,LegsOrigin=1};
+   mergeStock.Nodes[directTarget].Add(otherPart);
+   mergeStock.Nodes[directTarget].Add(receiver);
+   Set("_setup",mergeWorld);
+   foreach(var slots in directSlots)Array.Clear(slots);
+   DrawDirectPanel(pixels);
+   int mergeSlot=Array.IndexOf(directSlots[receivingSide],(long?)receiver.Id);
+   if(mergeSlot!=1)throw new Exception("The existing part must occupy the second receiving slot.");
+   int shippingSide=1-receivingSide;
+   int pickupSlot=Array.IndexOf(directSlots[shippingSide],(long?)cargoPair.Id);
+   if(pickupSlot<0)throw new Exception("The integrated pair has no shipping slot.");
+   var viewPart=typeof(Game1).GetMethod("DirectViewPart",Flags)!;
+   var input=typeof(Game1).GetMethod("DirectPairInput",Flags)!;
+   var release=new Microsoft.Xna.Framework.Input.MouseState();
+   var pressed=new Microsoft.Xna.Framework.Input.MouseState(0,0,0,Microsoft.Xna.Framework.Input.ButtonState.Pressed,
+    Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,
+    Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released);
+   Set("_pointer",((Rectangle)viewPart.Invoke(this,new object[]{shippingSide,pickupSlot,pickupRow})!).Center);
+   input.Invoke(this,new object[]{pressed,true,false});
+   Set("_pointer",((Rectangle)viewPart.Invoke(this,new object[]{receivingSide,mergeSlot,0})!).Center);
+   Set("_previousMouse",pressed);
+   input.Invoke(this,new object[]{release,false,false});
+   Set("_previousMouse",release);
+   Set("_pointer",Point.Zero);
+   var mergeOrder=mergeStock.PartPlanning.Orders.Single();
+   if(mergeOrder.RobotId!=cargoPair.Id || mergeOrder.TargetRobotId!=receiver.Id || mergeOrder.Parts!=cargoPair.Parts)
+    throw new Exception("Dropping on the second receiving slot selected the wrong assembly.");
+   DrawDirectPanel(expectedPixels);
+   var receivingCell=(Rectangle)directViewCell.Invoke(this,new object[]{receivingSide,mergeSlot})!;
+   bool ReceivingCellChanged(Color[] reference,Color[] comparison)=>
+    Enumerable.Range(receivingCell.Top/2,receivingCell.Height/2).Any(y=>
+     Enumerable.Range(receivingCell.Left/2,receivingCell.Width/2).Any(x=>reference[y*960+x]!=comparison[y*960+x]));
+   if(!ReceivingCellChanged(pixels,expectedPixels))
+    throw new Exception("The assembly forecast did not change the receiving slot on the direct panel.");
+   var forecastMerge=mergeStock.PartPlanning.Preview(mergeWorld).Nodes[directTarget].Robots.Single(robot=>robot.Id==receiver.Id);
+   if(!SameParts(receiver.Merge(cargoPair,0),forecastMerge))
+    throw new Exception("Drag-and-drop forecast lost the integrated pair or the existing part.");
+   var shippingLayout=directSlots[shippingSide].ToArray();
+   mergeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(mergeWorld));
+   mergeStock=mergeWorld.Robots;
+   Set("_setup",mergeWorld);
+   foreach(var slots in directSlots)Array.Clear(slots);
+   DrawDirectPanel(alternativePixels);
+   if(directSlots[receivingSide][mergeSlot]!=receiver.Id || ReceivingCellChanged(expectedPixels,alternativePixels))
+    throw new Exception("Restoring the assembly forecast changed the receiving slot or its artwork.");
+   shippingLayout.CopyTo(directSlots[shippingSide],0);
+   DrawDirectPanel(alternativePixels);
+   if(!expectedPixels.SequenceEqual(alternativePixels))
+    throw new Exception("Restoring the same shipping slot layout did not reproduce the direct panel.");
+   var undoWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(mergeWorld));
+   Set("_setup",undoWorld);
+   Set("_pointer",new Point(960,84));
+   input.Invoke(this,new object[]{pressed,true,false});
+   Set("_pointer",Point.Zero);
+   DrawDirectPanel(alternativePixels);
+   var undoForecast=undoWorld.Robots.PartPlanning.Preview(undoWorld);
+   if(undoWorld.Robots.PartPlanning.Orders.Count!=0 ||
+      !SameParts(cargoPair,undoForecast.Nodes[route[0]].Robots.Single(robot=>robot.Id==cargoPair.Id)) ||
+      !SameParts(receiver,undoForecast.Nodes[directTarget].Robots.Single(robot=>robot.Id==receiver.Id)) ||
+      directSlots[receivingSide][mergeSlot]!=receiver.Id || ReceivingCellChanged(pixels,alternativePixels))
+    throw new Exception("Undoing the restored direct shipment did not restore the source pair and receiving cell.");
+   int rebookSource=Array.IndexOf(directSlots[shippingSide],(long?)cargoPair.Id);
+   int rebookTarget=Array.IndexOf(directSlots[receivingSide],(long?)otherPart.Id);
+   if(rebookSource<0 || rebookTarget!=0)throw new Exception("The cancelled shipment cannot be rebooked into the adjacent slot.");
+   Set("_pointer",((Rectangle)viewPart.Invoke(this,new object[]{shippingSide,rebookSource,pickupRow})!).Center);
+   input.Invoke(this,new object[]{pressed,true,false});
+   Set("_pointer",((Rectangle)viewPart.Invoke(this,new object[]{receivingSide,rebookTarget,0})!).Center);
+   Set("_previousMouse",pressed);
+   input.Invoke(this,new object[]{release,false,false});
+   Set("_previousMouse",release);
+   Set("_pointer",Point.Zero);
+   var rebookedPlan=undoWorld.Robots.PartPlanning.Orders.Single();
+   DrawDirectPanel(expectedPixels);
+   var rebookedCell=(Rectangle)directViewCell.Invoke(this,new object[]{receivingSide,rebookTarget})!;
+   bool RebookedCellChanged(Color[] reference,Color[] comparison)=>
+    Enumerable.Range(rebookedCell.Top/2,rebookedCell.Height/2).Any(y=>
+     Enumerable.Range(rebookedCell.Left/2,rebookedCell.Width/2).Any(x=>reference[y*960+x]!=comparison[y*960+x]));
+   if(!RebookedCellChanged(pixels,expectedPixels) || ReceivingCellChanged(pixels,expectedPixels))
+    throw new Exception("Rebooking changed the wrong receiving slot.");
+   undoWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(undoWorld));
+   Set("_setup",undoWorld);
+   foreach(var slots in directSlots)Array.Clear(slots);
+   DrawDirectPanel(alternativePixels);
+   if(undoWorld.Robots.PartPlanning.Orders.Single()!=rebookedPlan)
+    throw new Exception("Restoring the rebooked delivery changed the order.");
+   void CheckRestoredCell(long robotId,Rectangle beforeCell){
+    int slot=Array.IndexOf(directSlots[receivingSide],(long?)robotId);
+    if(slot<0)throw new Exception($"Restoring the rebooked delivery lost robot {robotId} from the receiving pane.");
+    var afterCell=(Rectangle)directViewCell.Invoke(this,new object[]{receivingSide,slot})!;
+    for(int y=0;y<beforeCell.Height/2;y++)
+     for(int x=0;x<beforeCell.Width/2;x++)
+      if(expectedPixels[(beforeCell.Top/2+y)*960+beforeCell.Left/2+x]!=
+         alternativePixels[(afterCell.Top/2+y)*960+afterCell.Left/2+x])
+       throw new Exception($"Restoring the rebooked delivery changed the receiving artwork for robot {robotId}.");
+   }
+   CheckRestoredCell(otherPart.Id,rebookedCell);
+   CheckRestoredCell(receiver.Id,receivingCell);
+   int restoredReceiverSlot=Array.IndexOf(directSlots[receivingSide],(long?)receiver.Id);
+   int receiverRow=receivePart==RobotParts.Head?0:2;
+   Set("_pointer",((Rectangle)viewPart.Invoke(this,new object[]{receivingSide,restoredReceiverSlot,receiverRow})!).Center);
+   input.Invoke(this,new object[]{pressed,true,false});
+   if(Get("_directDrag") is not ValueTuple<int,long,RobotParts> picked ||
+      picked!=(receivingSide,receiver.Id,receivePart))
+    throw new Exception("Clicking the restored receiver picked a different robot or part.");
+   Set("_previousMouse",pressed);
+   input.Invoke(this,new object[]{release,false,false});
+   Set("_previousMouse",release);
+   Set("_pointer",Point.Zero);
+   if(undoWorld.Robots.PartPlanning.Orders.Single()!=rebookedPlan)
+    throw new Exception("Releasing the restored receiver on itself changed the rebooked order.");
+   if(rebookedPlan.Number==mergeOrder.Number || rebookedPlan.TargetRobotId!=otherPart.Id ||
+      rebookedPlan.RobotId!=cargoPair.Id || rebookedPlan.Parts!=cargoPair.Parts ||
+      !undoWorld.Campaign.FinishDomestic(undoWorld) || undoWorld.Robots.PartPlanning.Orders.Count!=0 ||
+      !SameParts(otherPart.Merge(cargoPair,0),undoWorld.Robots.Nodes[directTarget].Robots.Single(robot=>robot.Id==otherPart.Id)) ||
+      !SameParts(receiver,undoWorld.Robots.Nodes[directTarget].Robots.Single(robot=>robot.Id==receiver.Id)))
+    throw new Exception("Rebooking after undo did not assemble solely in the adjacent receiving slot.");
+   Set("_setup",world);
+   var restoredMerge=mergeStock.PartPlanning.Preview(mergeWorld).Nodes[directTarget].Robots.Single(robot=>robot.Id==receiver.Id);
+   if(mergeStock.PartPlanning.Orders.Single()!=mergeOrder || restoredMerge.Id!=receiver.Id ||
+      !SameParts(forecastMerge,restoredMerge))
+    throw new Exception("Restoring the direct shipment changed its receiver or forecast assembly.");
+   RenderCompact(forecastMerge,plannedCaptain,expectedPixels);
+   RenderCompact(restoredMerge,plannedCaptain,pixels);
+   if(!pixels.SequenceEqual(expectedPixels))
+    throw new Exception("Restoring the direct shipment changed the assembly forecast artwork.");
+   if(!mergeWorld.Campaign.FinishDomestic(mergeWorld) || mergeStock.PartPlanning.Orders.Count!=0 ||
+      mergeStock.Nodes[route[0]].Robots.Any(robot=>robot.Id==cargoPair.Id))
+    throw new Exception("Drag-and-drop did not confirm the integrated shipment.");
+   var confirmedMerge=mergeStock.Nodes[directTarget].Robots.Single(robot=>robot.Id==receiver.Id);
+   if(!SameParts(forecastMerge,confirmedMerge) ||
+      !SameParts(otherPart,mergeStock.Nodes[directTarget].Robots.Single(robot=>robot.Id==otherPart.Id)))
+    throw new Exception("Confirmed assembly changed the receiver, integration, materials or origins.");
+   RenderCompact(confirmedMerge,plannedCaptain,pixels);
+   if(!pixels.SequenceEqual(expectedPixels))
+    throw new Exception("Assembly after direct delivery changed the forecast artwork.");
+   Console.WriteLine("PASS direct arrival into an existing part preserves the integrated pair and mixed compact artwork.");
+  }
+
+  static bool SameParts(Robot expected,Robot actual)=>
+   expected.Parts==actual.Parts && expected.IntegratedParts==actual.IntegratedParts && expected.Role==actual.Role &&
+   new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(part=>(expected.Parts&part)!=0)
+    .All(part=>expected.Material(part)==actual.Material(part) && expected.Origin(part)==actual.Origin(part));
 
   void RenderCompact(Robot pair,Robot chief,Color[] target)
   {

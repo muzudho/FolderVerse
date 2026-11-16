@@ -288,7 +288,7 @@ public partial class Game1
         var transfer=_setup.Campaign.FunctionTransfers.Orders.FirstOrDefault(o=>o.Source==node.Id);
         if(transfer!=null){
             location+=" → "+_setup.Nodes.DisplayName(_setup.Nodes.All[transfer.Target]);
-            action="領地の入口へ機能移転を予約";
+            action="領地の入口へ施設移転を予約";
         }
         _spriteBatch.Begin(transformMatrix:transform);
         _ui.Box(ComputerMarchPanel,new Color(18,36,48));

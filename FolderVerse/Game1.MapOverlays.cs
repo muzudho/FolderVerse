@@ -82,7 +82,7 @@ public partial class Game1
     private void DrawPrimaryActionButtons() => DrawTutorialChrome(()=>DrawPrimaryActionButtonsCore(),false);
     private void DrawPrimaryActionButtonsCore()
     {
-        string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画","地点の機能移転の予約","ロボットパーツ長距離便"};
+        string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画","地点の施設移転の予約","ロボットパーツ長距離便"};
         for(int i=0;i<PrimaryActionCount;i++){
             var r=PrimaryActionBounds(i);if(r.Top>=1080)continue;
             bool enabled=PhasePrimaryActionAllowed(i) && TutorialPrimaryActionAllowed(i) && PrimaryActionInUse(i) && (i is not (3 or 4 or LongMapAction) || TransportOverviewAllowed);
@@ -96,7 +96,7 @@ public partial class Game1
             else {
                 int inset=_setup.CountryPattern(_setup.PlayerSlot)==0?3:14;
                 DrawPrimaryIcon(i,new(r.X+12,r.Y+8,r.Width-24,58),ink);
-                string label=i==3?"パーツ直送便":i==LongMapAction?"パーツ長距離便":i==4?"輸送長期計画":i==FunctionTransferAction?"機能移転":labels[i];
+                string label=i==3?"パーツ直送便":i==LongMapAction?"パーツ長距離便":i==4?"輸送長期計画":i==FunctionTransferAction?"施設移転":labels[i];
                 _ui.Center(label,new(r.X+inset,r.Bottom-28,r.Width-inset*2,24),Math.Min(.34f,(r.Width-inset*2)/_font.MeasureString(label).X),ink);
             }
             if(PrimaryActionInUse(i) && r.Contains(_pointer)){

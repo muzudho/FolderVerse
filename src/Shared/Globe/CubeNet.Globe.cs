@@ -106,8 +106,7 @@ public sealed partial class CubeNet
     private const float GlobeObjectHeight=.20f;
     private const float RoofFlagPoleHeight=.065f;
     private static bool HasPurposeBuilding(Node node)=>node.Functional && node.Purpose!=NodePurpose.General;
-    private static bool HasWaterVillage(Node node)=>node.Terrain==TravelTerrain.Sea && !node.Functional && node.FunctionHost>=0;
-    private static bool HasGlobeBuilding(Node node)=>HasPurposeBuilding(node) || HasWaterVillage(node);
+    private static bool HasGlobeBuilding(Node node)=>HasPurposeBuilding(node) || HasCivilianSettlement(node) || RelocatedFacilityGroups(node)>0;
 
     internal float GlobeNodeRadius(Node node,float projectedUnit,float zoom)
     {
@@ -146,17 +145,26 @@ public sealed partial class CubeNet
         bool target = MovementTargets.Contains(node.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(node.Id));
         if (SelectedTarget==node.Id || EmphasizedNode(node.Id) || target && MathF.Sin(pulse*6)>=0)
             Face(at+new Vector2(0,depth),radius+3,SelectedTarget==node.Id || EmphasizedNode(node.Id) ? Color.White : new Color(255,219,96));
-        bool building=HasPurposeBuilding(node) || node.IsHarbor && node.Functional;
-        if(node.IsHarbor && building && TryHarborFrame(setup,node,out var shore,out var seaward)){
+        bool civilian=HasCivilianSettlement(node);
+        bool purpose=HasPurposeBuilding(node) || node.IsHarbor && node.Functional;
+        bool relocated=RelocatedFacilityGroups(node)>0;
+        bool building=civilian || purpose || relocated;
+        if(civilian || relocated)
+        {
+            var center=at+new Vector2(purpose?-radius*1.65f:0,purpose?radius*.65f:0);
+            float size=radius*PurposeBuildingScale*(purpose?.75f:1f);
+            DrawFacilities(ui,setup,node,(x,y,z)=>center+new Vector2(x+y*.34f,y*.58f-x*.14f-z)*size,tint);
+        }
+        if(node.IsHarbor && purpose && TryHarborFrame(setup,node,out var shore,out var seaward)){
             var harborAt=project(shore);
             var forward=Vector2.Normalize(project(shore+seaward*.1f)-harborAt);
             var across=new Vector2(forward.Y,-forward.X);
             DrawHarborPier(ui,(x,y,z)=>harborAt+radius*PurposeBuildingScale*(across*x+forward*y),tint);
             DrawHarborBadge(ui,harborAt-across*radius*1.45f,radius,tint,ScreenAngle);
         }
-        else if(building)
+        else if(purpose)
             DrawPurposeBuilding(ui,node.Purpose,sea,(x,y,z)=>at+new Vector2(x,y*.68f-z)*radius*PurposeBuildingScale,tint);
-        else{
+        else if(!building){
             Face(at+new Vector2(0,depth),radius+1,rim);
             Face(at+new Vector2(0,depth),radius,side);
             Face(at,radius+1,rim);
@@ -179,8 +187,10 @@ public sealed partial class CubeNet
         var top = sea ? new Color(164,226,242) : new Color(255,232,153);
         var side = sea ? new Color(52,110,135) : new Color(152,111,53);
         var rim = new Color(24,44,51);
-        bool village=HasWaterVillage(node);
-        bool building=village || HasPurposeBuilding(node) || node.IsHarbor && node.Functional;
+        bool civilian=HasCivilianSettlement(node);
+        bool relocated=RelocatedFacilityGroups(node)>0;
+        bool purpose=HasPurposeBuilding(node) || node.IsHarbor && node.Functional;
+        bool building=civilian || relocated || purpose;
         const int sides = 12;
         Span<Vector2> lower = stackalloc Vector2[sides];
         Span<Vector2> upper = stackalloc Vector2[sides];
@@ -197,19 +207,28 @@ public sealed partial class CubeNet
         bool target = MovementTargets.Contains(node.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(node.Id));
         if (selected || target && MathF.Sin(pulse*6)>=0)
             FillProjectedFace(ui,ring,tint(selected ? Color.White : new Color(255,219,96)));
-        if(village)
-            DrawPurposeBuilding(ui,NodePurpose.General,true,(x,y,z)=>
-                project(position+radius*GlobePurposeBuildingScale*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
-        else if(node.IsHarbor && building && TryHarborFrame(setup,node,out var shore,out var seaward)){
+        if(civilian || relocated)
+        {
+            float size=radius*GlobePurposeBuildingScale*(purpose?.75f:1f);
+            var facilityCenter=position;
+            if(purpose){
+                var local=position+radius*GlobePurposeBuildingScale*(-1.1f*cell.U+.65f*cell.V);
+                var ground=Vector3.Lerp(local,cell.Center,.001f);
+                facilityCenter=local+cell.Normal*(WorldTerrain.ReliefAt(setup,cell,ground,setup.Terrain)-
+                    WorldTerrain.ReliefAt(setup,cell,setup.Routes.Position(node.Cell,node.Center),setup.Terrain));
+            }
+            DrawFacilities(ui,setup,node,(x,y,z)=>project(facilityCenter+size*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
+        }
+        if(node.IsHarbor && purpose && TryHarborFrame(setup,node,out var shore,out var seaward)){
             var across=Vector3.Cross(seaward,cell.Normal);
             float shoreHeight=WorldTerrain.ReliefAt(setup,cell,Vector3.Lerp(shore,cell.Center,.001f),setup.Terrain);
             var footing=shore+cell.Normal*shoreHeight;
             DrawHarborPier(ui,(x,y,z)=>project(footing+radius*GlobePurposeBuildingScale*(across*x+seaward*y+cell.Normal*z)),tint);
             DrawHarborBadge(ui,project(footing)+new Vector2(-Math.Clamp(radius*Vector2.Distance(project(position),project(position+cell.U))*1.65f,12,44),-12),9,tint);
         }
-        else if(building)
+        else if(purpose)
             DrawPurposeBuilding(ui,node.Purpose,sea,(x,y,z)=>project(position+radius*GlobePurposeBuildingScale*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
-        else{
+        else if(!building){
             float winding = Cross(upper[1]-upper[0],upper[2]-upper[1]);
             Span<Vector2> wall = stackalloc Vector2[4];
             for (int i=0;i<sides;i++)

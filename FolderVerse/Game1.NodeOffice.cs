@@ -35,7 +35,7 @@ public partial class Game1
     {
         if(purpose==null)return node.IsHarbor?"港は陸と海を結ぶ地点です":"この地点は港ではありません";
         if(!node.Functional)return "無機能地点では用途を変更できません";
-        if(node.Purpose==NodePurpose.Relay)return "中継地点では全機能移転のみできます";
+        if(node.Purpose==NodePurpose.Relay)return "中継地点では全施設移転のみできます";
         if(purpose==NodePurpose.Relay)return "工場だけを移転すると中継地点になります";
         if(purpose==NodePurpose.Harvest && !RobotWorld.RawMaterials.Any(m=>_setup.Robots.RawDeposit(node.Id,m)>0))
             return "この地域では何も採れません";
@@ -71,7 +71,7 @@ public partial class Game1
         string hint=node.Purpose switch {
             NodePurpose.Harvest=>"採取 −10％ / 製造 ＋10％",
             NodePurpose.Manufacturing=>"製造 −10％ / 採取 ＋10％",
-            NodePurpose.Relay=>"工場移転済み / 格納庫を使用可能 / 全機能移転のみ",
+            NodePurpose.Relay=>"工場移転済み / 格納庫を使用可能 / 全施設移転のみ",
             NodePurpose.Defense=>"未予約の完全体に守備専用予約",
             NodePurpose.Frontline=>"未予約の完全体に迎撃予約",
             _=>"用途計画 / 中継地点は工場だけを移転すると設定されます"

@@ -152,12 +152,17 @@ sealed class CheckGame:Game1
         for(int seed=0;factory.ProductionLines.Length==0;seed++)factory.GenerateLines(seed);
         var arguments=Environment.GetCommandLineArgs();
         bool bodyLegs=arguments.Contains("--integrated-body-legs");
-        bool integratedProduct=bodyLegs || arguments.Contains("--integrated-product");
+        bool mixedProduct=arguments.Contains("--mixed-integrated-product");
+        bool integratedProduct=bodyLegs || mixedProduct || arguments.Contains("--integrated-product");
         var productParts=bodyLegs ? RobotParts.Body|RobotParts.Legs :
             integratedProduct ? RobotParts.Head|RobotParts.Body : RobotParts.Complete;
         var producer=factory.ProductionLines[0];producer.Configure(productParts,1);producer.IntakeTarget=target.Id;
         typeof(RobotWorkshop).GetField("_selectedProductPlan",F)!.SetValue(producer,
-            new ProductionPlan(productParts,1,IntegratedParts:integratedProduct ? productParts : 0){Material=RobotMaterial.Cardboard});
+            new ProductionPlan(productParts,1,IntegratedParts:integratedProduct ? productParts : 0)
+            {
+                Material=RobotMaterial.Cardboard,
+                BodyMaterial=mixedProduct ? RobotMaterial.Polypropylene : null
+            });
         w.Robots.Nodes[target.Id].Add(w.Robots.Create(0,bodyLegs ? RobotParts.Body : RobotParts.Head));
         w.Industry.Reset();w.Industry.Queue(1);
         int seed26=Enumerable.Range(0,100000).First(seed=>{
@@ -185,15 +190,16 @@ sealed class CheckGame:Game1
         {
             var product=flights.Single().Arrival.Product;
             var outerPart=bodyLegs ? RobotParts.Legs : RobotParts.Head;
+            var expectedBody=mixedProduct ? RobotMaterial.Polypropylene : RobotMaterial.Cardboard;
             Check(product.Parts==productParts && product.IntegratedParts==productParts &&
-                product.Material(outerPart)==RobotMaterial.Cardboard && product.BodyMaterial==RobotMaterial.Cardboard,
-                "The real production flight carries the selected integrated cardboard pair");
+                product.Material(outerPart)==RobotMaterial.Cardboard && product.BodyMaterial==expectedBody,
+                "The real production flight carries the selected materials and integrated parts");
             var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
             typeof(RobotWorld).GetMethod("ResolveProductionIntakes",F)!.Invoke(restored.Robots,new object[]{restored});
             Check(restored.Robots.Nodes[target.Id].Robots.Single(r=>r.Id==product.Id)==product,
                 "The integrated pair arrives with the same ID, materials and integrated parts");
             CheckArrivedIntegrationArt(batch,restored,target.Id,product);
-            Console.WriteLine($"PASS: integrated cardboard {productParts} production, flight and restored arrival.");
+            Console.WriteLine($"PASS: integrated {productParts} production, flight and restored arrival (cardboard / {expectedBody}).");
             return;
         }
         var originalFlightPixels=Pixels();
