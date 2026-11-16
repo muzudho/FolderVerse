@@ -83,21 +83,26 @@ public partial class Game1
         var mob=_setupHost;
         if(stopped && result==0)mob=_industryPrayer??=LoadIndustryMob("prayer");
         else if(stopped && _setup.Industry.Jackpot)mob=_industrySurprise??=LoadIndustryMob("surprised");
-        if(mob!=null)_spriteBatch.Draw(mob,new Rectangle(88,380,304,456),Color.White);
-        string[] lines=!stopped?new[]{"さあ、産業の時間です！","あなたは何台のロボットを製造できるかなー？"}:
+        if(mob!=null)_spriteBatch.Draw(mob,new Rectangle(158,310,400,600),Color.White);
+        string[] lines=!stopped?new[]{"さあ、産業の時間です！","あなたは何台のロボットを","製造できるかなー？"}:
             result==0?new[]{"工場はストップだー！","次こそ製造できますように！"}:
             _setup.Industry.Jackpot?new[]{"数年に一度の当たり年だあ！？","今だ、大チャーンス！"}:
             new[]{"さあ、工場を動かしましょう！"};
-        _ui.Box(new(58,238,470,118),new Color(15,24,32));
-        _ui.Tile(new(217,351),new(32,32),MathHelper.PiOver4,Cream);
-        _ui.Box(new(54,234,470,118),Cream);
+        var speech=new Rectangle(54,128,608,158);
+        var shadow=speech;
+        shadow.Offset(4,4);
+        _ui.Box(shadow,new Color(15,24,32));
+        _ui.Tile(new(speech.Center.X,speech.Bottom),new(32,32),MathHelper.PiOver4,Cream);
+        _ui.Box(speech,Cream);
+        const int lineHeight=44;
         for(int i=0;i<lines.Length;i++)
-            _ui.Center(lines[i],new(68,248+i*42,442,40),Math.Min(.53f,440/Math.Max(1,_font.MeasureString(lines[i]).X)),new Color(76,49,31));
+            _ui.Center(lines[i],new(speech.X+20,speech.Center.Y-lines.Length*lineHeight/2+i*lineHeight,speech.Width-40,lineHeight),
+                Math.Min(.78f,(speech.Width-40)/Math.Max(1,_font.MeasureString(lines[i]).X)),new Color(76,49,31));
         float progress=(float)Math.Clamp((_industryAge-IndustryReadSeconds)/IndustrySpinSeconds,0,1);
         float angle=MathHelper.Lerp(_industryStartAngle,_industryStopAngle,1-MathF.Pow(1-progress,4));
         DrawAntiqueIndustryWheel(angle,stopped);
-        if(stopped)DrawIndustryDuration(result,new(54,835,470,65),Cream,.65f,suffix:" 産業ターン");
-        else _ui.Center(_industryAge<IndustryReadSeconds?"ルーレットを見てみよう":"ルーレット回転中",new(54,842,470,45),.62f,Cream);
+        if(stopped)DrawIndustryDuration(result,new(54,916,608,65),Cream,.65f,suffix:" 産業ターン");
+        else _ui.Center(_industryAge<IndustryReadSeconds?"ルーレットを見てみよう":"ルーレット回転中",new(54,926,608,45),.62f,Cream);
         _ui.Text($"全体ターン {_setup.Population.Turn} / 産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn).Replace("+"," ")}",new(54,1000),.43f,Cream);
         if(stopped){_ui.Button(IndustryWheelContinue,"製造レーン稼働へ",Accent,.52f);DrawPhaseTimer(new(565,1050,1255,12),_industryIdleAge,IndustryIdleSeconds);}
     }

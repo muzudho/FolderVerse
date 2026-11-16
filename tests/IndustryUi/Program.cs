@@ -280,8 +280,22 @@ sealed class CheckGame:Game1
             }
             var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
             typeof(RobotWorld).GetMethod("ResolveProductionIntakes",F)!.Invoke(restored.Robots,new object[]{restored});
-            Check(restored.Robots.Nodes[target.Id].Robots.Single(r=>r.Id==product.Id)==product,
+            var delivered=restored.Robots.Nodes[target.Id].Robots.Single(r=>r.Id==product.Id);
+            Check(delivered==product,
                 "The integrated pair arrives with the same ID, materials and integrated parts");
+            if(mixedProduct){
+                foreach(var bounds in new[]{new Rectangle(160,100,82,125),new Rectangle(160,100,28,52)}){
+                    Set("_setup",w);
+                    GraphicsDevice.Clear(new Color(16,35,46));
+                    batch.Begin();Call("DrawManufacturingProduct",bounds,product);batch.End();
+                    var airborne=Pixels();
+                    Set("_setup",restored);
+                    GraphicsDevice.Clear(new Color(16,35,46));
+                    batch.Begin();Call("DrawHangarRobot",bounds,delivered,1f,null!);batch.End();
+                    Check(airborne.SequenceEqual(Pixels()),"The flight and hangar draw the mixed product identically at equal dimensions");
+                }
+                Console.WriteLine("PASS: flight and restored hangar artwork match at both compared sizes.");
+            }
             CheckArrivedIntegrationArt(batch,restored,target.Id,product);
             Console.WriteLine($"PASS: integrated {productParts} production, flight and restored arrival (cardboard / {expectedBody}).");
             return;

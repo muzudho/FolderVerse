@@ -8,6 +8,7 @@ sealed class UsabilityGame:Game1
 {
  const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;WorldSetup world=null!;CubeNet net=null!;int frame,node;Robot own=null!,foreign=null!;long transferred;
  Color[] ownHover=null!,foreignBaseline=null!;int target;Rectangle flatBattery;
+ readonly bool moveBusOnly=Environment.GetCommandLineArgs().Contains("--move-bus");
  void DragPocket(Point from,Point to){
   void Send(Point point,ButtonState state,bool click){
    var mouse=new MouseState(0,0,0,state,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
@@ -61,6 +62,7 @@ sealed class UsabilityGame:Game1
   transferred=own.Id;DragPocket(Rect("PocketCard",0,true).Center,Rect("PocketCard",1,false).Center);Check(world.Robots.Retinues[0].Robots.Any(r=>r.Id==transferred && r.Owner==0 && r.Origin(RobotParts.Head)==1),"Pocket transfer preserves owner, identity and original paint");
   Call("OpenPocket");
   Console.WriteLine("PASS: persuasion closes both ways, owner/origin mismatch, foreign refusal, selection/directional enabling, reserved robot refusal and identity-preserving transfer.");
+  if(moveBusOnly){Call("PocketInput",false,true);Screen("WorldStatus");Call("ResetInspector");frame=7;}
  }
  void PersuasionPreview(GameTime time){
   node=world.Nodes.Current(0).Id;var visitor=world.Robots.Create(1,RobotParts.Complete);world.Robots.Nodes[node].Add(visitor);
@@ -77,23 +79,26 @@ sealed class UsabilityGame:Game1
   if(frame==3){DragPocket(Rect("PocketCard",1,false).Center,Rect("PocketCard",2,true).Center);Check(world.Robots.Nodes[node].Robots.Any(r=>r.Id==transferred),"Deployment from the pocket returns to current foreign node");Pointer(Rect("PocketCard",1,true).Center);}
   if(frame==4 || frame==5){Call("PocketInput",false,true);Screen("WorldStatus");Call("ResetInspector");Set("_domesticSlide",0f);Set("_statusGlobe",frame==4);if(frame==4)Call("FocusStatusGlobe");else{net.Home(world);net.FitNodesAtSource(world,world.Nodes.All[node],(Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!,1f);}Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);net.ShowBatteries=false;net.ShowOtherCountries=false;}
   if(frame==6){Set("_statusGlobe",true);Call("FocusStatusGlobe");Set("_yawAngle",(float)Get("_yawAngle")+MathHelper.Pi);}
-  if(frame==7){Set("_statusGlobe",false);net.ShowOtherCountries=true;net.Home(world);Call("OpenMovementWithFit",false);Set("_domesticSlide",1f);Set("_domesticMapLeft",535f);Call("FitDestinationView");Check(!(bool)Call("HasMoveReservation"),"Lamp is off before a confirmed move");target=net.MovementTargets.First();Call("SelectMoveNode",target);Check(((int[])Call("MoveReservationTargets")).Contains(target),"Selected destination immediately gets a bus");}
-  if(frame==8){Call("MovementClick",new Point(700,940),new Microsoft.Xna.Framework.Input.KeyboardState());Check(world.Campaign.PlannedOrders.Any(o=>o.Peaceful && o.TargetNode==target) && ((int[])Call("MoveReservationTargets")).Contains(target),"Confirmed peaceful reservation retains the bus");Check((bool)Call("HasMoveReservation"),"Confirmed peaceful move lights the lamp");world.Campaign.Plan(new(0,target,1,node,false,false,new[]{transferred}));Set("_domesticSlide",0f);Set("_domesticMapLeft",55f);net.Home(world);net.FitNodesAtSource(world,world.Nodes.All[target],(Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!,1f);}
+  if(frame==7){Set("_statusGlobe",false);net.ShowOtherCountries=true;net.Home(world);Call("OpenMovementWithFit",false);Set("_domesticSlide",1f);Set("_domesticMapLeft",535f);Call("FitDestinationView");Check(!(bool)Call("HasMoveReservation"),"Lamp is off before a confirmed move");target=net.MovementTargets.First();Call("SelectMoveNode",target);Check(((IEnumerable<(int Ruler,int Source,int Target)>)Call("MovePreviews")).Contains((0,world.Nodes.Current(0)!.Id,target)),"Selected destination immediately gets a bus");}
+  if(frame==8){Call("MovementClick",new Point(700,940),new Microsoft.Xna.Framework.Input.KeyboardState());Check(world.Campaign.PlannedOrders.Any(o=>o.Peaceful && o.TargetNode==target) && ((IEnumerable<(int Ruler,int Source,int Target)>)Call("MovePreviews")).Contains((0,world.Nodes.Current(0)!.Id,target)),"Confirmed peaceful reservation retains the bus");Check((bool)Call("HasMoveReservation"),"Confirmed peaceful move lights the lamp");world.Campaign.Plan(new(0,target,1,node,false,false,new[]{transferred}));Set("_domesticSlide",0f);Set("_domesticMapLeft",55f);net.Home(world);net.FitNodesAtSource(world,world.Nodes.All[target],(Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!,1f);}
   if(frame==9 || frame==10){Set("_statusGlobe",true);Call("FocusStatusGlobe");net.ShowBatteries=true;net.ShowOtherCountries=false;Set("_animationTime",frame==9?2f:6f);}
   if(frame==11 || frame==12){
    if(frame==11){world.SetWorld(123);world.SetCast(456);world.SetPlacement(789);world.SelectPlayer(0);var harbor=world.Nodes.All.First(n=>n.IsHarbor);harbor.Owner=0;world.ConquerorLocations[0]=harbor.Cell;world.ConquerorPoints[0]=harbor.Center;world.Nodes.Recount();for(int turn=0;turn<2;turn++)world.Population.Advance(world);Check(world.Population.Turn>=2,"Harbor fixture advances through the second global turn");Check(world.TerritoryCounts[0]>0 && world.Nodes.Current(0).IsHarbor,"Fixture is a landed harbor with territory");((WorldPreview)Get("_world")).ShowSetup(world,true);Call("ResetInspector");}
    Set("_statusGlobe",frame==11);if(frame==11)Call("FocusStatusGlobe");else{net.Home(world);net.FitNodesAtSource(world,world.Nodes.Current(0),(Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!,1f);}
    Check((bool)Call("WandererLocationVisible",new object[]{Vector2.Zero}),"Owned harbor retains portrait chip on globe and net");
   }
+  if(moveBusOnly && frame>=8)Set("_animationTime",frame==8?.9f:1.1f);
   base.Draw(t);
   if(frame>=4 && frame<=6){var args=new object[]{Vector2.Zero};Check((bool)Call("WandererLocationVisible",args)==(frame<6),"Wanderer marker respects globe visibility and works with battery/other countries hidden");world.Relations.Powered[0]=false;Check(!(bool)Call("WandererLocationVisible",new object[]{Vector2.Zero}),"No marker for battery removed conqueror");world.Relations.Powered[0]=true;}
-  if(frame==7 || frame==8){var args=new object[]{target,Vector2.Zero};Check((bool)Call("OperationPosition",args),"Bus target is visible");var at=(Vector2)args[1];var map=(Rectangle)typeof(Game1).GetProperty("MapViewBounds",F)!.GetValue(this)!;
-   foreach(var point in new[]{at,new Vector2(map.Left+2,map.Top+2),new Vector2(map.Right-2,map.Top+2),new Vector2(map.Left+2,map.Bottom-2),new Vector2(map.Right-2,map.Bottom-2)}){
-    var bus=(Rectangle)Call("VisibleMoveBusBounds",point);Check(map.Contains(bus) && !bus.Intersects(new Rectangle((int)point.X-57,(int)point.Y-65,114,61)),"Bus stays on screen and apart from sword even at map corners");
-   }
+  if(frame==7){
+   var sample=typeof(Game1).GetMethod("TryMoveBusDistance",BindingFlags.Static|BindingFlags.NonPublic)!;
+   (bool Visible,float Distance) At(float age){object[] args={age,2.2f,0f};return ((bool)sample.Invoke(null,args)!,(float)args[2]);}
+   Check(At(0)==(true,0f) && At(2)==(true,1.1f) && At(4.25f)==(true,2.2f) &&
+      !At(4.8f).Visible && At(5.25f)==(true,0f),"Bus moves only toward the destination, pauses, disappears, then restarts at the source");
   }
-  if(frame==9 || frame==10){var badges=(List<(int Ruler,Rectangle Bounds)>)typeof(CubeNet).GetField("_batteries",F)!.GetValue(net)!;var box=badges.Single(b=>b.Ruler==0).Bounds;if(frame==9)flatBattery=box;else Check(box!=flatBattery,"Battery bounds and hit target follow standing/lying animation");}
+  if(!moveBusOnly && (frame==9 || frame==10)){var badges=(List<(int Ruler,Rectangle Bounds)>)typeof(CubeNet).GetField("_batteries",F)!.GetValue(net)!;var box=badges.Single(b=>b.Ruler==0).Bounds;if(frame==9)flatBattery=box;else Check(box!=flatBattery,"Battery bounds and hit target follow standing/lying animation");}
   var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var texture=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);texture.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"usability-{frame}.png")))texture.SaveAsPng(file,texture.Width,texture.Height);
+  if(moveBusOnly && frame==9){Console.WriteLine("PASS: selected and confirmed movement, one-way bus loop and reservation lamp.");Exit();return;}
   Color[] CardPixels(Rectangle box)=>Enumerable.Range(box.Top,box.Height).SelectMany(y=>Enumerable.Range(box.Left,box.Width).Select(x=>pixels[y*p.BackBufferWidth+x])).ToArray();
   if(frame==0)ownHover=CardPixels(Rect("PocketCard",0,false));
   if(frame==1){Check(!ownHover.SequenceEqual(CardPixels(Rect("PocketCard",0,false))),"Own card changes visibly under hover");foreignBaseline=CardPixels(Rect("PocketCard",0,true));}
@@ -107,6 +112,6 @@ sealed class UsabilityGame:Game1
    graphics.PreferredBackBufferWidth=display.Width;graphics.PreferredBackBufferHeight=display.Height;graphics.ApplyChanges();
    Input(new(),true);Input(f11,true);Input(new(),true);Input(f11,true);
    Check(!graphics.IsFullScreen && !Window.IsBorderless && Window.ClientBounds.Width<display.Width && Window.ClientBounds.Height<display.Height,"Desktop-sized window returns to a visibly smaller bordered window");
-   Console.WriteLine("PASS: F11 fullscreen/windowed, desktop-sized restore, position, border, held key and inactive window.");Console.WriteLine("PASS: hover, animated persuasion closure, quiet-turn playback, portrait chip, offscreen hint, selected/persistent buses, sword separation and animated battery hit bounds rendered.");PersuasionPreview(t);Exit();}
+   Console.WriteLine("PASS: F11 fullscreen/windowed, desktop-sized restore, position, border, held key and inactive window.");Console.WriteLine("PASS: hover, animated persuasion closure, quiet-turn playback, portrait chip, offscreen hint, selected/persistent bus routes and one-way loop and animated battery hit bounds rendered.");PersuasionPreview(t);Exit();}
  }
 }

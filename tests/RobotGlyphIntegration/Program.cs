@@ -475,6 +475,35 @@ sealed class GlyphProbe:Game1
   if(rawOrder.PackageId!=ppRemainder.Id || rawOrder.Source!=directTarget || rawOrder.Target!=route[0] ||
      rawDispatchStock.ProductionIntakes.Single().Product!=ppHead || rawDispatchStock.PartPlanning.Orders.Count!=0)
    throw new Exception("Dispatching the raw remainder changed the pending head intake.");
+  var blockedWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(rawDispatchWorld));
+  var blockedStock=blockedWorld.Robots;
+  var blockedTarget=blockedStock.Nodes[rawOrder.Target];
+  typeof(RobotStore).GetMethod("SetMaplePackages",Flags)!.Invoke(blockedTarget,new object[]{Array.Empty<MaplePackage>()});
+  foreach(var robot in blockedTarget.Robots.Where(r=>r.Parts!=RobotParts.Complete).ToArray())
+   blockedTarget.Remove(robot.Id);
+  long lastFiller=-1;
+  while(blockedTarget.HasSpace){var filler=blockedStock.Create(rawOrder.Owner,RobotParts.Complete);blockedTarget.Add(filler);lastFiller=filler.Id;}
+  if(lastFiller<0)throw new Exception("Fixture needs a removable robot in the destination hangar.");
+  var resolveRaw=typeof(RobotWorld).GetMethod("ResolveMapleShipments",Flags)!;
+  void CheckBlocked(RobotWorld stock)
+  {
+   if(stock.MapleShipments.Single()!=rawOrder || stock.Nodes[rawOrder.Source].MaplePackages.Single(p=>p.Id==ppRemainder.Id)!=ppRemainder ||
+      stock.Nodes[rawOrder.Target].MaplePackages.Count!=0)
+    throw new Exception("A full destination must keep the PP order and cargo at the source.");
+  }
+  resolveRaw.Invoke(blockedStock,new object[]{blockedWorld});
+  CheckBlocked(blockedStock);
+  blockedWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(blockedWorld));
+  blockedStock=blockedWorld.Robots;
+  resolveRaw.Invoke(blockedStock,new object[]{blockedWorld});
+  CheckBlocked(blockedStock);
+  blockedStock.Nodes[rawOrder.Target].Remove(lastFiller);
+  resolveRaw.Invoke(blockedStock,new object[]{blockedWorld});
+  resolveRaw.Invoke(blockedStock,new object[]{blockedWorld});
+  if(blockedStock.MapleShipments.Count!=0 || blockedStock.Nodes[rawOrder.Source].MaplePackages.Any(p=>p.Id==ppRemainder.Id) ||
+     blockedStock.Nodes[rawOrder.Target].MaplePackages.Single()!=ppRemainder)
+   throw new Exception("The restored PP shipment must arrive exactly once after a bay opens.");
+  Console.WriteLine("PASS the full destination keeps its PP shipment on save/restore and receives it once a bay opens.");
   if(!rawDispatchWorld.Campaign.FinishDomestic(rawDispatchWorld) ||
      rawDispatchStock.Nodes[directTarget].Robots.Single(robot=>robot.Id==ppHead.Id)!=ppHead ||
      rawDispatchStock.Nodes[directTarget].MaplePackages.Any(raw=>raw.Id==ppRemainder.Id) ||
