@@ -194,6 +194,23 @@ sealed class CheckGame:Game1
             Check(product.Parts==productParts && product.IntegratedParts==productParts &&
                 product.Material(outerPart)==RobotMaterial.Cardboard && product.BodyMaterial==expectedBody,
                 "The real production flight carries the selected materials and integrated parts");
+            if(mixedProduct)
+            {
+                var mixedPixels=Pixels();
+                var queuedFlights=(List<(ProductionIntake Arrival,double Started)>)Get("_manufacturingFlights");
+                var original=queuedFlights.Single();
+                queuedFlights[0]=(original.Arrival with {Product=product with {BodyMaterial=RobotMaterial.Cardboard}},original.Started);
+                GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();Call("DrawManufacturing");batch.End();
+                Save("manufacturing-in-flight-cardboard-body");
+                var cardboardBodyPixels=Pixels();
+                queuedFlights[0]=original;
+                int flightWidth=GraphicsDevice.PresentationParameters.BackBufferWidth;
+                var changed=Enumerable.Range(0,mixedPixels.Length).Where(i=>mixedPixels[i]!=cardboardBodyPixels[i]).ToArray();
+                Check(changed.Length>100 && changed.Max(i=>i%flightWidth)-changed.Min(i=>i%flightWidth)<82 &&
+                    changed.Max(i=>i/flightWidth)-changed.Min(i=>i/flightWidth)<125,
+                    "Changing only the integrated product's body material affects pixels within a single flight sprite");
+                Console.WriteLine($"PASS: changing only the airborne body material changed {changed.Length} pixels.");
+            }
             var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
             typeof(RobotWorld).GetMethod("ResolveProductionIntakes",F)!.Invoke(restored.Robots,new object[]{restored});
             Check(restored.Robots.Nodes[target.Id].Robots.Single(r=>r.Id==product.Id)==product,

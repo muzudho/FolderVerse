@@ -345,6 +345,57 @@ sealed class GlyphProbe:Game1
   TestIntegratedDirectMerge(outgoingPair,RobotParts.Legs,0);
   TestIntegratedDirectMerge(outgoingPair with {
    Parts=parts[1],IntegratedParts=parts[1],LegsMaterial=RobotMaterial.Maple,LegsOrigin=1},RobotParts.Head,2);
+  foreach(bool assembleFirst in new[]{false,true})
+  {
+   var shipmentWorld=AutoSaveStore.Restore<WorldSetup>(directFixture);
+   var shipmentStock=shipmentWorld.Robots;
+   int source=route[0], shippingSide=1-receivingSide;
+   var robot=outgoingCaptain with {IntegratedParts=0};
+   int earlierOrders=0;
+   if(assembleFirst){
+    shipmentStock.Workshops[source].AutoAssemblyDisabled=true;
+    var assemblyStore=shipmentStock.Nodes[source];
+    assemblyStore.Remove(outgoingPair.Id);
+    assemblyStore.Remove(robot.Id);
+    assemblyStore.Add(robot.Slice(RobotParts.Head|RobotParts.Body));
+    var legs=robot.Slice(RobotParts.Legs) with {Id=shipmentStock.Create(0,RobotParts.Legs).Id};
+    assemblyStore.Add(legs);
+    shipmentStock.PartPlanning.Reserve(shipmentWorld,source,source,legs.Id,RobotParts.Legs,robot.Id,0);
+    earlierOrders=1;
+   }
+   Set("_setup",shipmentWorld);
+   foreach(var slots in directSlots)Array.Clear(slots);
+   Set("_pointer",Point.Zero);
+   DrawDirectPanel(alternativePixels);
+   int sourceSlot=Array.IndexOf(directSlots[shippingSide],(long?)robot.Id);
+   int targetSlot=Array.IndexOf(directSlots[receivingSide],null);
+   if(sourceSlot<0 || targetSlot<0)throw new Exception("Whole-unit drag fixture lacks a visible source or target.");
+   var sourceCell=(Rectangle)directViewCell.Invoke(this,new object[]{shippingSide,sourceSlot})!;
+   var targetCell=(Rectangle)directViewCell.Invoke(this,new object[]{receivingSide,targetSlot})!;
+   var input=typeof(Game1).GetMethod("DirectPairInput",Flags)!;
+   var pressed=new Microsoft.Xna.Framework.Input.MouseState(0,0,0,Microsoft.Xna.Framework.Input.ButtonState.Pressed,
+    Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,
+    Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released);
+   Set("_pointer",new Point(sourceCell.Center.X,sourceCell.Bottom-8));
+   input.Invoke(this,new object[]{pressed,true,false});
+   if(Get("_directDrag") is not ValueTuple<int,long,RobotParts> drag || drag!=(shippingSide,robot.Id,(RobotParts)0))
+    throw new Exception($"Whole-unit drag did not start (assembly pending: {assembleFirst}).");
+   Set("_pointer",targetCell.Center);
+   Set("_previousMouse",pressed);
+   var released=new Microsoft.Xna.Framework.Input.MouseState();
+   input.Invoke(this,new object[]{released,false,false});
+   Set("_previousMouse",released);
+   var orders=shipmentStock.PartPlanning.Orders;
+   if(orders.Count!=earlierOrders+1 || orders.Last().Parts!=RobotParts.Complete || orders.Last().Target!=directTarget ||
+      orders.Last().RobotId!=robot.Id || orders.Last().TargetRobotId.HasValue)
+    throw new Exception("The whole-unit drop did not reserve all three parts together.");
+   if(!shipmentWorld.Campaign.FinishDomestic(shipmentWorld) ||
+      shipmentStock.Nodes[source].Robots.Any(unit=>unit.Id==robot.Id) ||
+      shipmentStock.Nodes[directTarget].Robots.Single(unit=>unit.Id==robot.Id).Parts!=RobotParts.Complete)
+    throw new Exception("The full unit did not reach the receiving bay.");
+  }
+  Set("_pointer",Point.Zero);
+  Console.WriteLine("PASS direct shipping sends all three parts together from the bay, including a pending assembly.");
   var sharedBayWorld=AutoSaveStore.Restore<WorldSetup>(directFixture);
   var sharedBayStock=sharedBayWorld.Robots;
   var sharedBayStore=sharedBayStock.Nodes[directTarget];
