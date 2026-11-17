@@ -4171,3 +4171,10 @@
 - dotnet build tests/DemoInspectorUi/DemoInspectorUi.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal 後、同出力の bin/DemoInspectorUi/debug で ALSOFT_DRIVERS=null、dotnet DemoInspectorUi.dll。初回ビルド21:00ではなく22:00:13 PID 26184→22:00:26終了0、実行22:00:27 PID 8020→22:00:57終了 -532462766。診断が次段階を12と仮定して停止。ログ DemoInspectorUi-transport-followup-{build,run}。
 - 診断の仮定を取り除き、再ビルド22:01:22 PID 2760→22:01:34終了0、警告・エラー0。再実行22:01:34 PID 23088→22:02:05終了0。上限は各ビルド600秒・各診断300秒。証拠は DemoInspectorUi-stage-build-220122 と DemoInspectorUi-stage-run-220134 の両ログ。
 - 21:39回の入口説明を訂正。段階18は内部で12を代入した後、共通の末尾加算により実際は13の移動先選択へ進む。固定場面の実描画診断で stage=13、overview=False、movement=True。輸送概要の独立検証、工場6プランと閉鎖等は1080p/540pの既存診断でPASS。自然Demoの直送便ペアは未確認。次回は他の未確認経路（自然生成のポケットのみの攻撃など）を点検する。
+
+### 実行履歴：2026-11-17 22:20回
+
+- 開始22:20:45、終了 22:21:50 JST。部分点検完了。HEAD 0a14fa16c243eee52032c9a7a1e1840c28cca7ae。開始時の差分はチュートリアル診断・記録と利用者メモ。今回の変更は本記録のみ。新規採番なし。
+- 既存NAS出力 bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=92、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll。22:21:02作成 PID 29296、上限300秒、22:21:32終了0。ログは CpuMilitary-world92-222102.{stdout,stderr}.log。解像度960×540。診断は既存ビルドを使用。
+- 第一軍事44件、第二軍事32件で専用画面への退避なし。ポケット属性付きの1件はCPU9の和平移動で、通常UIで地点14選択 (1275,552) と移動確定 (707,938) を通過し、選択解除後に人間0の内政へ復帰。座標は論理値。
+- 次回は自然生成されたポケットのみの攻撃を別配置で探す。今回の対象地点への到着、物理入力、自然Demoの直送便ペアは未確認。
