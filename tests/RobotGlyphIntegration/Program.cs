@@ -636,8 +636,103 @@ sealed class GlyphProbe:Game1
   if(!remoteLine.IntakeFailure.Contains("格納枠") || remoteLine.WaitingProductionTurns!=1 ||
      remoteStock.ProductionIntakes.Count!=0 || remoteStock.Nodes[plant].MaplePackages.Single()!=ppRemainder)
    throw new Exception("A full adjacent intake must preserve PP at the factory.");
+  remoteWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(remoteWorld));
+  remoteStock=remoteWorld.Robots;
+  remoteStock.ConfigureFactories(remoteWorld);
+  remoteLine=remoteStock.Workshops[plant].ProductionLines[0];
+  remoteBay=remoteStock.Nodes[intakeNode];
+  if(remoteBay.HasSpace || !remoteLine.IntakeFailure.Contains("格納枠") || remoteLine.WaitingProductionTurns!=1 ||
+     remoteStock.ProductionIntakes.Count!=0 || remoteStock.Nodes[plant].MaplePackages.Single()!=ppRemainder)
+   throw new Exception("Restoring must preserve the adjacent bay wait and unconsumed PP.");
   remoteBay.Remove(spaceMaker);
   var sharedIntakeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(remoteWorld));
+  var twoFactoryWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(remoteWorld));
+  var twoFactoryStock=twoFactoryWorld.Robots;
+  int commonBayNode=route[1];
+  int[] plants=new[]{route[0],route[2]}.Order().ToArray();
+  foreach(int factoryNode in plants)
+   twoFactoryWorld.Nodes.All[factoryNode].Terrain=TravelTerrain.Land;
+  twoFactoryStock.ConfigureFactories(twoFactoryWorld);
+  var commonBay=twoFactoryStock.Nodes[commonBayNode];
+  foreach(var robot in commonBay.Robots.ToArray())commonBay.Remove(robot.Id);
+  setPackages.Invoke(commonBay,new object[]{Array.Empty<MaplePackage>()});
+  typeof(RobotStore).GetMethod("SetCapacity",Flags)!.Invoke(commonBay,new object[]{1});
+  twoFactoryStock.Workshops[commonBayNode].AutoAssemblyDisabled=true;
+  foreach(var shop in twoFactoryStock.Workshops)
+   foreach(var lane in shop.ProductionLines)lane.Paused=true;
+  var nextPackageId=twoFactoryStock.Nodes.SelectMany(store=>store.MaplePackages).Select(p=>p.Id).DefaultIfEmpty().Max()+1;
+  foreach(int factoryNode in plants){
+   var shop=twoFactoryStock.Workshops[factoryNode];
+   for(int seed=0;shop.ProductionLines.Length==0 && seed<100;seed++)
+    shop.GenerateLines(seed,RobotEquipmentMode.Materials);
+   var lane=shop.ProductionLines.First();
+   lane.Configure(RobotParts.Head,1);
+   lane.SetDoNotRepeat(true);
+   lane.Paused=false;
+   twoFactoryStock.SetIntakeTarget(lane,commonBayNode);
+   setPackages.Invoke(twoFactoryStock.Nodes[factoryNode],new object[]{new[]{ppRemainder with {Id=nextPackageId++}}});
+  }
+  twoFactoryStock.AdvanceIndustry(n=>twoFactoryWorld.Nodes.All[n].Owner);
+  var firstFactoryIntake=twoFactoryStock.ProductionIntakes.Single();
+  if(firstFactoryIntake.Source!=plants[0] || firstFactoryIntake.Target!=commonBayNode ||
+     twoFactoryStock.Nodes[plants[0]].MaplePackages.Count!=0 ||
+     twoFactoryStock.Nodes[plants[1]].MaplePackages.Single().Units!=8 ||
+     !twoFactoryStock.Workshops[plants[1]].ProductionLines[0].IntakeFailure.Contains("格納枠"))
+   throw new Exception("Separate factories must reserve the last shared bay only once and preserve the waiting factory's PP.");
+  Console.WriteLine("PASS separate factories claim a shared adjacent bay only once.");
+  var firstFactoryProduct=firstFactoryIntake.Product;
+  twoFactoryWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(twoFactoryWorld));
+  twoFactoryStock=twoFactoryWorld.Robots;
+  twoFactoryStock.ConfigureFactories(twoFactoryWorld);
+  commonBay=twoFactoryStock.Nodes[commonBayNode];
+  var waitingFactoryLine=twoFactoryStock.Workshops[plants[1]].ProductionLines[0];
+  if(twoFactoryStock.ProductionIntakes.Single().Product!=firstFactoryProduct ||
+     waitingFactoryLine.WaitingProductionTurns!=1 ||
+     twoFactoryStock.Nodes[plants[1]].MaplePackages.Single().Units!=8)
+   throw new Exception("Restoring must preserve the first product and the second factory's wait and PP.");
+  var resolveIntakes=typeof(RobotWorld).GetMethod("ResolveProductionIntakes",Flags)!;
+  var expandedIntakeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(twoFactoryWorld));
+  var expandedIntakeStock=expandedIntakeWorld.Robots;
+  expandedIntakeStock.ConfigureFactories(expandedIntakeWorld);
+  var expandedIntakeBay=expandedIntakeStock.Nodes[commonBayNode];
+  var intakeKeeper=expandedIntakeStock.Create(rawOrder.Owner,RobotParts.Complete);
+  typeof(RobotStore).GetMethod("SetWarehouseLimit",Flags)!.Invoke(expandedIntakeBay,new object[]{5});
+  expandedIntakeBay.Add(intakeKeeper);
+  if(expandedIntakeBay.HasSpace ||
+     !expandedIntakeStock.PartPlanning.ReserveRole(expandedIntakeWorld,commonBayNode,intakeKeeper.Id,HangarReservation.Warehouse,rawOrder.Owner))
+   throw new Exception("The shared bay must be full with an appointment pending.");
+  expandedIntakeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(expandedIntakeWorld));
+  expandedIntakeStock=expandedIntakeWorld.Robots;
+  expandedIntakeStock.ConfigureFactories(expandedIntakeWorld);
+  if(!expandedIntakeWorld.Campaign.FinishDomestic(expandedIntakeWorld))
+   throw new Exception("Delivery must execute the restored warehouse appointment.");
+  expandedIntakeBay=expandedIntakeStock.Nodes[commonBayNode];
+  if(expandedIntakeBay.StorageLimit!=5 || !expandedIntakeBay.Robots.Single(r=>r.Id==intakeKeeper.Id).WarehouseKeeper ||
+     expandedIntakeStock.ProductionIntakes.Single().Product!=firstFactoryProduct)
+   throw new Exception("The appointment must open bays while holding the first product that waited before it.");
+  expandedIntakeStock.AdvanceIndustry(n=>expandedIntakeWorld.Nodes.All[n].Owner);
+  var expandedSecond=expandedIntakeStock.ProductionIntakes.Single(i=>i.Source==plants[1]);
+  resolveIntakes.Invoke(expandedIntakeStock,new object[]{expandedIntakeWorld});
+  if(expandedIntakeStock.ProductionIntakes.Count!=0 || expandedSecond.Product.Id==firstFactoryProduct.Id ||
+     expandedIntakeStock.Nodes[plants[1]].MaplePackages.Count!=0 ||
+     !expandedIntakeBay.Robots.Contains(firstFactoryProduct) || !expandedIntakeBay.Robots.Contains(expandedSecond.Product))
+   throw new Exception("The expanded bays must admit both factories' products exactly once.");
+  Console.WriteLine("PASS a restored keeper appointment opens shared bays for both factories.");
+  resolveIntakes.Invoke(twoFactoryStock,new object[]{twoFactoryWorld});
+  if(commonBay.HasSpace || !commonBay.Robots.Contains(firstFactoryProduct))
+   throw new Exception("The first factory's product must take the only bay after restoring.");
+  commonBay.Remove(firstFactoryProduct.Id);
+  twoFactoryStock.AdvanceIndustry(n=>twoFactoryWorld.Nodes.All[n].Owner);
+  var secondFactoryIntake=twoFactoryStock.ProductionIntakes.Single();
+  if(secondFactoryIntake.Source!=plants[1] || secondFactoryIntake.Target!=commonBayNode ||
+     secondFactoryIntake.Product.Id==firstFactoryProduct.Id ||
+     secondFactoryIntake.Product.HeadMaterial!=RobotMaterial.Polypropylene ||
+     twoFactoryStock.Nodes[plants[1]].MaplePackages.Count!=0)
+   throw new Exception("The waiting factory must use its PP and schedule one new head in the freed bay.");
+  resolveIntakes.Invoke(twoFactoryStock,new object[]{twoFactoryWorld});
+  if(twoFactoryStock.ProductionIntakes.Count!=0 || commonBay.Robots.Single()!=secondFactoryIntake.Product)
+   throw new Exception("Only the second product should occupy the freed bay.");
+  Console.WriteLine("PASS the second factory resumes after restoration once the shared bay opens.");
   remoteStock.AdvanceIndustry(n=>remoteWorld.Nodes.All[n].Owner);
   var remoteIntake=remoteStock.ProductionIntakes.Single();
   if(remoteIntake.Source!=plant || remoteIntake.Target!=intakeNode ||
@@ -647,7 +742,7 @@ sealed class GlyphProbe:Game1
   typeof(RobotWorld).GetMethod("ResolveProductionIntakes",Flags)!.Invoke(remoteStock,new object[]{remoteWorld});
   if(remoteStock.ProductionIntakes.Count!=0 || !remoteBay.Robots.Contains(remoteIntake.Product))
    throw new Exception("The head must arrive only in the selected adjacent hangar.");
-  Console.WriteLine("PASS a full adjacent intake preserves PP until space opens and then receives the exact product.");
+  Console.WriteLine("PASS a restored full adjacent intake preserves PP until space opens and then receives the exact product.");
   var sharedStock=sharedIntakeWorld.Robots;
   sharedIntakeWorld.Nodes.All[plant].Terrain=TravelTerrain.Land;
   sharedStock.ConfigureFactories(sharedIntakeWorld);
@@ -686,7 +781,6 @@ sealed class GlyphProbe:Game1
      !firstLine.CycleFinished || secondLine.WaitingProductionTurns!=1 ||
      !secondLine.IntakeFailure.Contains("格納枠") || sharedStockSource.MaplePackages.Single()!=ppRemainder)
    throw new Exception("Saving must preserve the first reservation, the second waiting line and the remaining PP.");
-  var resolveIntakes=typeof(RobotWorld).GetMethod("ResolveProductionIntakes",Flags)!;
   resolveIntakes.Invoke(sharedStock,new object[]{sharedIntakeWorld});
   if(!sharedStockTarget.Robots.Contains(firstIntake.Product) || sharedStockTarget.HasSpace)
    throw new Exception("The first intake must occupy the last bay.");
