@@ -53,7 +53,7 @@ public sealed class RobotPartPlanning
     public RobotWorld Preview(WorldSetup world)
     {
         var hash=new HashCode();hash.Add(world.Population.Turn);hash.Add(world.Campaign.Phase);
-        foreach(var store in world.Robots.Nodes){hash.Add(store.TotalCapacity);hash.Add(store.ReservedReturns);foreach(var robot in store.Robots)hash.Add(robot);foreach(var package in store.MaplePackages)hash.Add(package);}
+        foreach(var store in world.Robots.Nodes){hash.Add(store.TotalCapacity);hash.Add(store.WarehouseLimit);hash.Add(store.ReservedReturns);foreach(var robot in store.Robots)hash.Add(robot);foreach(var package in store.MaplePackages)hash.Add(package);}
         foreach(var order in world.Campaign.FunctionTransfers.Orders)hash.Add(order);
         foreach(var order in world.Robots.DirectDelivery.Orders)hash.Add(order);
         foreach(var intake in world.Robots.ProductionIntakes)hash.Add(intake);
@@ -69,7 +69,7 @@ public sealed class RobotPartPlanning
             if(!world.Campaign.FunctionTransfers.CanReserve(world,order.Source,order.Target,order.FactoryOnly))continue;
             int a=order.Source,b=order.Target;
             if(order.FactoryOnly){NodeFunctionTransfers.MoveFactory(copy,a,b,preview:true);continue;}
-            if(!copy.Nodes[b].WarehouseLimit.HasValue)copy.Nodes[b].SetCapacity(copy.Nodes[b].TotalCapacity+copy.Nodes[a].TotalCapacity);
+            NodeFunctionTransfers.MergeHangarCapacity(copy.Nodes[a],copy.Nodes[b]);
             copy.Nodes[b].Replace(copy.Nodes[b].Robots.Concat(copy.Nodes[a].Robots));copy.TransferMapleFunctions(a,b);copy.Nodes[a].Replace(Array.Empty<Robot>());copy.Nodes[a].SetCapacity(0);
             copy.Workshops[b].AbsorbFunctions(copy.Workshops[a]);
             if(copy.Nodes[b].WarehouseLimit is int limit)copy.Workshops[b].SetStorageSlotLimit(limit);

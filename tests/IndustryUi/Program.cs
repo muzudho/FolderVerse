@@ -322,6 +322,94 @@ sealed class CheckGame:Game1
                     Call("DrawHangarRobot",separateBounds,expandedBay.Robots.Single(r=>r.Id==product.Id),1f,null!);
                     batch.End();Save("manufacturing-separate-arrival");
                     Check(separatePixels.SequenceEqual(Pixels()),"Separate arrival artwork matches its compact forecast");
+                    if(arguments.Contains("--long-intake")){
+                        var longWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(expanded));
+                        var path=longWorld.Nodes.All.Where(n=>n.Functional && n.Id!=target.Id)
+                            .Select(n=>RobotLongDelivery.Path(longWorld,target.Id,n.Id,0)).First(p=>p.Length>2);
+                        var longStock=longWorld.Robots;
+                        longStock.LongDelivery.Reserve(longWorld,target.Id,path[^1],product.Id,productParts,null,0);
+                        var panes=(int[])Get("_directNodes");
+                        var oldPanes=panes.ToArray();
+                        panes[0]=target.Id;
+                        panes[1]=path[^1];
+                        Color[] DrawLongForecast(WorldSetup world){
+                            Set("_setup",world);
+                            Call("SyncLongSlots");
+                            GraphicsDevice.Clear(new Color(16,35,46));
+                            batch.Begin(transformMatrix:Matrix.CreateTranslation(-1320,0,0));
+                            Call("DrawLongPane",1);
+                            batch.End();
+                            return Pixels();
+                        }
+                        var forecastPixels=DrawLongForecast(longWorld);
+                        var advanceLong=typeof(RobotLongDelivery).GetMethod("Advance",F)!;
+                        advanceLong.Invoke(longStock.LongDelivery,new object[]{longWorld});
+                        Check(longStock.LongDelivery.Orders.Single().Node==path[1],"The manufactured pair reaches its first relay");
+                        longWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(longWorld));
+                        longStock=longWorld.Robots;
+                        var relayForecastPixels=DrawLongForecast(longWorld);
+                        Check(forecastPixels.SequenceEqual(relayForecastPixels),"Restoring the relay preserves the destination preview pixel for pixel");
+                        Save("manufacturing-long-relay-preview");
+                        var relayOrder=longStock.LongDelivery.Orders.Single();
+                        var relayCargo=longStock.Nodes[relayOrder.Node].Robots.Single(r=>r.Id==relayOrder.CargoId);
+                        Check(relayCargo.IntegratedParts==productParts && relayCargo.BodyMaterial==expectedBody &&
+                            relayCargo.Material(outerPart)==RobotMaterial.Cardboard,"The restored preview reads the right materials and integration from relay cargo");
+                        var relayStore=longStock.Nodes[relayOrder.Node];
+                        relayStore.Remove(relayCargo.Id);
+                        relayStore.Add(relayCargo with {BodyMaterial=RobotMaterial.Foam});
+                        var differentMaterialPixels=DrawLongForecast(longWorld);
+                        relayStore.Remove(relayCargo.Id);
+                        relayStore.Add(relayCargo);
+                        var directCell=typeof(Game1).GetMethod("DirectCell",BindingFlags.Static|BindingFlags.NonPublic)!;
+                        var arrivalCell=(Rectangle)directCell.Invoke(null,new object[]{1,relayOrder.TargetSlot})!;
+                        arrivalCell.Offset(-1320,0);
+                        int backBufferWidth=GraphicsDevice.PresentationParameters.BackBufferWidth;
+                        int materialDifferences=0;
+                        for(int pixel=0;pixel<relayForecastPixels.Length;pixel++){
+                            if(relayForecastPixels[pixel]==differentMaterialPixels[pixel])continue;
+                            Check(arrivalCell.Contains(pixel%backBufferWidth,pixel/backBufferWidth),
+                                "Changing the relay cargo material affects only the receiving bay");
+                            materialDifferences++;
+                        }
+                        Check(materialDifferences>0,"The restored receiving bay displays the relay cargo material");
+                        Console.WriteLine($"PASS: the restored long-delivery forecast changes {materialDifferences} pixels only in its receiving bay.");
+                        Array.Copy(oldPanes,panes,panes.Length);
+                        for(int hop=2;hop<path.Length;hop++)
+                            advanceLong.Invoke(longStock.LongDelivery,new object[]{longWorld});
+                        var longArrival=longStock.Nodes[path[^1]].Robots.Single(r=>r.Id==product.Id);
+                        Check(longStock.LongDelivery.Orders.Count==0 && longArrival.IntegratedParts==productParts &&
+                            longArrival.BodyMaterial==expectedBody && longArrival.Material(outerPart)==RobotMaterial.Cardboard,
+                            "Long delivery retains the manufactured pair after restoring the relay");
+                        Set("_setup",longWorld);
+                        GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();
+                        Call("DrawHangarRobot",separateBounds,longArrival,1f,null!);
+                        batch.End();Save("manufacturing-long-arrival");
+                        Check(separatePixels.SequenceEqual(Pixels()),"The manufactured pair looks the same after long delivery");
+                        Console.WriteLine("PASS: manufactured pair retains its ID and compact art after a restored long delivery relay.");
+                    }
+                    var directStock=expanded.Robots;
+                    directStock.ConfigureFactories(expanded);
+                    var direct=directStock.DirectDelivery;
+                    direct.ReserveParts(expanded,target.Id,source.Id,product.Id,productParts,null,0);
+                    expanded=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(expanded));
+                    directStock=expanded.Robots;
+                    directStock.ConfigureFactories(expanded);
+                    direct=directStock.DirectDelivery;
+                    var directForecast=direct.Preview(directStock,source.Id).Single(r=>r.Id==product.Id);
+                    Check(directForecast.IntegratedParts==productParts && directForecast.BodyMaterial==expectedBody &&
+                        directForecast.Material(outerPart)==RobotMaterial.Cardboard,
+                        "The restored direct forecast retains the original product ID, materials and integration");
+                    Check(expanded.Campaign.FinishDomestic(expanded),"Direct delivery completes through the delivery phase");
+                    var directArrival=directStock.Nodes[source.Id].Robots.Single(r=>r.Id==product.Id);
+                    Check(direct.Orders.Count==0 && directArrival==directForecast &&
+                        directStock.Nodes[target.Id].Robots.Single()==receiver,
+                        "Direct delivery leaves the foreign receiver in place and transports the exact manufactured pair");
+                    Set("_setup",expanded);
+                    GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();
+                    Call("DrawHangarRobot",separateBounds,directArrival,1f,null!);
+                    batch.End();Save("manufacturing-direct-arrival");
+                    Check(separatePixels.SequenceEqual(Pixels()),"The manufactured pair looks the same after direct delivery");
+                    Console.WriteLine("PASS: standalone production arrival keeps its ID and compact art through restored direct delivery.");
                     Set("_setup",w);
                     Console.WriteLine("PASS: opening a bay admits the waiting integrated product separately under the strict policy.");
                     restored.Robots.Training[0].AssemblyPolicy=1;

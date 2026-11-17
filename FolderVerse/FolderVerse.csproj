@@ -34,6 +34,7 @@
     <Compile Include="../src/Shared/Hangar/*.cs" LinkBase="Shared/Hangar" />
     <Compile Include="../src/Shared/Globe/*.cs" LinkBase="Shared/Globe" />
     <Compile Include="../src/Shared/WorldMap/*.cs" LinkBase="Shared/WorldMap" />
+    <Compile Include="../src/Shared/Factory/Lane/*.cs" LinkBase="Shared/Factory/Lane" />
     <None Update="Content/Images/Portraits/*/manifest.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Portraits/v3-standardized/selected-versions.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Portraits/active-version.txt" CopyToOutputDirectory="PreserveNewest" />

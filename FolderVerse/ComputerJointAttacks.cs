@@ -8,6 +8,12 @@ public static class ComputerJointAttacks
     public static void Plan(WorldSetup w,List<March> orders,bool automaticAll=false)
     {
         var manual=w.ManualRulers().ToHashSet();var battle=w.Campaign.RobotBattles;var stock=w.Robots;
+        int DevelopmentValue(int node)
+        {
+            var store=stock.Nodes[node];
+            int lines=w.Nodes.All[node].Purpose==NodePurpose.Relay?0:stock.Workshops[node].LineLimit;
+            return 8*lines+(store.WarehouseLimit??store.TotalCapacity);
+        }
         var owners=Enumerable.Range(0,w.ActiveCount).Where(o=>w.Relations.CanAct(o) && (automaticAll || !manual.Contains(o))).ToHashSet();
         Robot[] Prefer(int owner,IEnumerable<Robot> robots)=>stock.Training[owner].DeploymentPolicy==3?robots.OrderByDescending(r=>r.Equipment(owner,w.EquipmentMode).Total).ThenBy(r=>r.Id).ToArray():stock.Training[owner].Order(robots).ToArray();
         var used=orders.SelectMany(o=>o.RobotIds??Array.Empty<long>()).ToHashSet();
@@ -34,7 +40,8 @@ public static class ComputerJointAttacks
                     required=Math.Max(required,FailedForce(t)+1);
                     int captives=Enumerable.Range(0,w.ActiveCount).Count(o=>w.Relations.Powered[o] && w.Relations.Root(o)!=faction.Key && w.Nodes.Current(o)?.Id==t);
                     return new{Target=t,Sources=attackers,Required=required,Score=attackPolicy.TargetScore(captives,defense,w.Nodes.All[t].Owner>=0)};
-                }).Where(t=>t.Sources.Sum(s=>sources[s].Length)>=t.Required).OrderByDescending(t=>t.Score).ThenBy(t=>t.Target).ToArray();
+                }).Where(t=>t.Sources.Sum(s=>sources[s].Length)>=t.Required).OrderByDescending(t=>t.Score)
+                .ThenByDescending(t=>DevelopmentValue(t.Target)).ThenBy(t=>t.Target).ToArray();
             foreach(var target in targets){
                 var available=target.Sources.Where(s=>!busy.Contains(s)).OrderByDescending(s=>sources[s].Length).ThenBy(s=>s).ToArray();
                 if(available.Sum(s=>sources[s].Length)<target.Required)continue;
@@ -54,7 +61,7 @@ public static class ComputerJointAttacks
             var escortTargets=escorts.Where(p=>p.Value.Length>0).SelectMany(p=>battle.AttackTargets(w,p.Key,w.Nodes.Current(p.Key)!.Id)).Distinct()
                 .Where(t=>w.Nodes.All[t].Owner>=0 && !w.Relations.Allied(faction.Key,w.Nodes.All[t].Owner) && !battle.LockedNode(t) && !orders.Any(o=>o.TargetNode==t && family.Contains(o.Ruler)))
                 .Select(t=>new{Target=t,Members=escorts.Where(p=>p.Value.Length>0 && battle.CanSortie(w,p.Key,t)).Select(p=>p.Key).ToArray(),Defense=battle.DefendingRobots(w,faction.Key,t)})
-                .OrderBy(t=>t.Defense).ThenBy(t=>t.Target).ToArray();
+                .OrderBy(t=>t.Defense).ThenByDescending(t=>DevelopmentValue(t.Target)).ThenBy(t=>t.Target).ToArray();
             foreach(var target in escortTargets){
                 var members=target.Members.Where(o=>!orders.Any(m=>m.Ruler==o && m.Queen)).OrderByDescending(o=>escorts[o].Length).ThenBy(o=>o).ToArray();
                 int needed=Math.Max(target.Defense+Math.Max(1,(target.Defense+2)/3),FailedForce(target.Target)+1);
@@ -68,7 +75,8 @@ public static class ComputerJointAttacks
             // Combine hangar troops and pocket escorts when neither force is sufficient alone.
             var mixedTargets=sources.Where(p=>p.Value.Length>0 && !busy.Contains(p.Key)).SelectMany(p=>battle.AttackTargets(w,w.Nodes.All[p.Key].Owner,p.Key)).Distinct()
                 .Where(t=>w.Nodes.All[t].Owner>=0 && !w.Relations.Allied(faction.Key,w.Nodes.All[t].Owner) && !battle.LockedNode(t) && !orders.Any(o=>o.TargetNode==t && family.Contains(o.Ruler)))
-                .OrderByDescending(t=>Enumerable.Range(0,w.ActiveCount).Count(o=>w.Relations.Powered[o] && !w.Relations.Allied(o,faction.Key) && w.Nodes.Current(o)?.Id==t)).ThenBy(t=>t).ToArray();
+                .OrderByDescending(t=>Enumerable.Range(0,w.ActiveCount).Count(o=>w.Relations.Powered[o] && !w.Relations.Allied(o,faction.Key) && w.Nodes.Current(o)?.Id==t))
+                .ThenByDescending(DevelopmentValue).ThenBy(t=>t).ToArray();
             foreach(int target in mixedTargets){
                 var ground=sources.Where(p=>!busy.Contains(p.Key) && p.Value.Length>0 && battle.CanAttackFrom(w,w.Nodes.All[p.Key].Owner,p.Key,target)).OrderByDescending(p=>p.Value.Length).ThenBy(p=>p.Key).ToArray();
                 var members=escorts.Where(p=>p.Value.Length>0 && !orders.Any(o=>o.Ruler==p.Key && o.Queen) && battle.CanSortie(w,p.Key,target)).OrderByDescending(p=>p.Value.Length).ThenBy(p=>p.Key).ToArray();
@@ -97,9 +105,9 @@ public static class ComputerJointAttacks
                 var choices=battle.MarchTargets(w,home.Id).Where(t=>battle.CanMarch(w,owner,t)).ToArray();
                 var retinue=Prefer(owner,battle.SelectableRobots(w,owner,home.Id,true).Where(r=>!used.Contains(r.Id)));
                 int hostile=choices.Where(t=>w.Nodes.All[t].Owner>=0 && w.Relations.Root(w.Nodes.All[t].Owner)!=faction.Key && battle.DefendingRobots(w,owner,t)<retinue.Length && retinue.Length>FailedForce(t))
-                    .OrderBy(t=>battle.DefendingRobots(w,owner,t)).ThenBy(t=>t).FirstOrDefault(-1);
+                    .OrderBy(t=>battle.DefendingRobots(w,owner,t)).ThenByDescending(DevelopmentValue).ThenBy(t=>t).FirstOrDefault(-1);
                 if(hostile>=0){orders.Add(new(owner,hostile,retinue.Length,home.Id,Queen:true,PocketOnly:true,RobotIds:retinue.Select(r=>r.Id).ToArray()));continue;}
-                int neutral=choices.Where(t=>w.Nodes.All[t].Owner<0).OrderBy(t=>t).FirstOrDefault(-1);
+                int neutral=choices.Where(t=>w.Nodes.All[t].Owner<0).OrderByDescending(DevelopmentValue).ThenBy(t=>t).FirstOrDefault(-1);
                 if(neutral>=0){orders.Add(new(owner,neutral,0));continue;}
                 int move=choices.Where(t=>w.Nodes.All[t].Owner>=0 && w.Relations.Root(w.Nodes.All[t].Owner)==faction.Key && distance.GetValueOrDefault(t,int.MaxValue)<distance.GetValueOrDefault(home.Id,int.MaxValue))
                     .OrderBy(t=>distance[t]).ThenBy(t=>t).FirstOrDefault(-1);

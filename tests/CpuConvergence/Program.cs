@@ -2,6 +2,90 @@ using FolderVerse;
 using System.Reflection;
 using Microsoft.Xna.Framework;
 static void Check(bool value,string message){if(!value)throw new Exception(message);}
+if(args.Contains("--cpu-warehouse"))
+{
+    var world=Fixture();
+    world.EquipmentMode=RobotEquipmentMode.Materials;
+    var stock=world.Robots;
+    var node=world.Nodes.All.First(n=>n.Functional && n.Owner==0);
+    var store=stock.Nodes[node.Id];
+    var setLimit=typeof(RobotStore).GetMethod("SetWarehouseLimit",BindingFlags.Instance|BindingFlags.NonPublic)!;
+    setLimit.Invoke(store,new object[]{9});
+    stock.Workshops[node.Id].Automation=NodeAutomation.Gentle;
+    var candidate=stock.Create(0,RobotParts.Complete);
+    store.Add(candidate);
+    Check(store.Count==1 && store.TotalCapacity==1,"Fixture starts full with room to develop");
+    ComputerLogistics.Plan(world,true);
+    Check(stock.PartPlanning.Orders.All(o=>o.Role!=HangarReservation.Warehouse),"CPU must keep the last deployable fighter");
+    Check(stock.PartPlanning.ReserveRole(world,node.Id,candidate.Id,HangarReservation.Warehouse,0),"Fixture can book a first keeper");
+    typeof(RobotPartPlanning).GetMethod("Resolve",BindingFlags.Instance|BindingFlags.NonPublic)!
+        .Invoke(stock.PartPlanning,new object[]{world});
+    for(int i=0;i<4;i++)store.Add(stock.Create(0,i<2?RobotParts.Complete:RobotParts.Head));
+    setLimit.Invoke(store,new object[]{5});
+    ComputerLogistics.Plan(world,true);
+    Check(stock.PartPlanning.Orders.All(o=>o.Role!=HangarReservation.Warehouse),"A full site at its ceiling cannot expand");
+    setLimit.Invoke(store,new object[]{9});
+    world.SetParticipantCounts(1,2);
+    world.SelectPlayer(0);
+    ComputerLogistics.Plan(world);
+    Check(stock.PartPlanning.Orders.All(o=>o.Role!=HangarReservation.Warehouse),"CPU must leave human locations alone");
+    Check(world.Campaign.FinishDomestic(world,true) && store.TotalCapacity==9 &&
+        store.Robots.Count(r=>r.WarehouseKeeper)==2,"CPU appoints a second keeper at the full expandable site");
+    Console.WriteLine("PASS: CPU expands a full site while respecting manual control, the last fighter and warehouse ceilings.");
+
+    var attackWorld=Fixture();
+    var battle=attackWorld.Campaign.RobotBattles;
+    var approaches=attackWorld.Nodes.All.Where(n=>n.Functional)
+        .Select(n=>(Source:n.Id,Targets:battle.MarchTargets(attackWorld,n.Id).Order().Take(2).ToArray()))
+        .First(p=>p.Targets.Length==2);
+    int smaller=approaches.Targets[0],larger=approaches.Targets[1];
+    attackWorld.Nodes.All[smaller].Owner=attackWorld.Nodes.All[larger].Owner=1;
+    attackWorld.Robots.Workshops[smaller].LimitLines(1);
+    attackWorld.Robots.Workshops[larger].LimitLines(1);
+    setLimit.Invoke(attackWorld.Robots.Nodes[smaller],new object[]{5});
+    setLimit.Invoke(attackWorld.Robots.Nodes[larger],new object[]{9});
+    for(int i=0;i<3;i++)attackWorld.Robots.Nodes[approaches.Source].Add(attackWorld.Robots.Create(0,RobotParts.Complete));
+    void CheckPreferredTarget(string message)
+    {
+        var orders=new List<March>();
+        ComputerJointAttacks.Plan(attackWorld,orders,true);
+        Check(orders.Single(o=>!o.Queen && o.SourceNode==approaches.Source).TargetNode==larger,message);
+    }
+    CheckPreferredTarget("With equal tactical scores and lane limits, the higher warehouse ceiling wins");
+    setLimit.Invoke(attackWorld.Robots.Nodes[larger],new object[]{5});
+    attackWorld.Robots.Workshops[larger].LimitLines(2);
+    CheckPreferredTarget("With equal tactical scores and warehouse ceilings, the higher lane limit wins");
+    Console.WriteLine("PASS: both public capacity limits guide otherwise equal attack choices.");
+
+    foreach(bool factoryOnly in new[]{false,true}){
+        var transferWorld=Fixture();
+        var endpoints=transferWorld.Nodes.All.Where(n=>n.Functional)
+            .SelectMany(n=>transferWorld.Routes.Neighbors(n).Select(route=>(Source:n.Id,Target:transferWorld.Nodes.At(route.Target,route.Entry).Id)))
+            .First(p=>transferWorld.Nodes.All[p.Target].Functional);
+        var transferStock=transferWorld.Robots;
+        var destination=transferStock.Nodes[endpoints.Target];
+        setLimit.Invoke(transferStock.Nodes[endpoints.Source],new object[]{35});
+        setLimit.Invoke(destination,new object[]{34});
+        transferStock.Workshops[endpoints.Source].LimitLines(3);
+        transferStock.Workshops[endpoints.Target].LimitLines(3);
+        var transfers=transferWorld.Campaign.FunctionTransfers;
+        transfers.Reserve(transferWorld,endpoints.Source,endpoints.Target,factoryOnly);
+        int expectedMaximum=factoryOnly?34:60;
+        var forecast=transferStock.PartPlanning.Preview(transferWorld);
+        Check(forecast.Nodes[endpoints.Target].WarehouseLimit==expectedMaximum &&
+            forecast.Workshops[endpoints.Target].LineLimit==6,"Transfer forecast shows the destination limits");
+        typeof(NodeFunctionTransfers).GetMethod("Resolve",BindingFlags.Instance|BindingFlags.NonPublic)!
+            .Invoke(transfers,new object[]{transferWorld});
+        Check(destination.WarehouseLimit==expectedMaximum && destination.TotalCapacity==1 &&
+            transferStock.Workshops[endpoints.Target].LineLimit==6,"Transfer expands the limits without adding undeveloped warehouse bays");
+        var restored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(transferWorld));
+        restored.Robots.ConfigureFactories(restored);
+        Check(restored.Robots.Nodes[endpoints.Target].WarehouseLimit==expectedMaximum &&
+            restored.Robots.Workshops[endpoints.Target].LineLimit==6,"Transfer limits survive a save round trip");
+    }
+    Console.WriteLine("PASS: factory-only and full transfers apply and preserve their capacity limits.");
+    return;
+}
 if(args.Contains("--cpu-outpost"))
 {
     var world=Fixture();
