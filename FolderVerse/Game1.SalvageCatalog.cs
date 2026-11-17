@@ -55,9 +55,11 @@ public partial class Game1
             var item=items[index];var robot=item.Robot;bool selected=item.Id==_salvageSelected;
             _ui.Box(r,selected?new Color(57,81,96):Muted);
             SalvageText("#"+item.Id+(item.RequestedBy==_setup.PlayerSlot?" / 回収依頼済み":""),new(r.X+6,r.Y+4,r.Width-12,24),.32f);
-            DrawRobotGlyph(new(r.Center.X-35,r.Y+34,70,78),robot,whiteOutline:true);
+            DrawHangarRobot(new(r.Center.X-35,r.Y+34,70,78),robot);
             SalvageText(PartsLabel(robot),new(r.X+4,r.Y+119,r.Width-8,24),.33f);
-            SalvageText(robot.DamagedParts!=0?"損傷あり":robot.PremiumParts!=0?"高級 / 無傷":robot.CheapParts!=0?"安い / 無傷":"正規 / 無傷",new(r.X+4,r.Y+144,r.Width-8,20),.3f);
+            var materials=RobotMaterials.Parts.Where(p=>(robot.Parts&p)!=0).Select(robot.Material).Distinct().ToArray();
+            string material=materials.Length==1?RobotMaterials.Label(materials[0]):"混合品";
+            SalvageText(material+" / "+(robot.DamagedParts!=0?"汚損あり":"無傷"),new(r.X+4,r.Y+144,r.Width-8,20),.3f);
             SalvageText(_setup.Nodes.Description(_setup.Nodes.All[item.Node]),new(r.X+4,r.Bottom-25,r.Width-8,22),.28f);
             if(selected)PocketOutline(r,new Color(255,220,114),3);
             else if(r.Contains(_pointer))PocketOutline(r,Cream,2);
