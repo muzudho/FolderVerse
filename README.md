@@ -33,6 +33,7 @@ Assetsの `FolderVerse-v0.11.0-win-x64.zip` をすべて展開し、`FolderVerse
 - [開発を始める](docs/dev/README.md)：Visual Studioでの起動、検証、画像管理。
 - [実装と検証の記録](docs/dev/実装と検証.md)：IMEの調査、グラフィックと画像加工。
 - [実装計画](docs/dev/plan/)・[開発日誌](docs/dev/log/2026/11.md)
+- [チュートリアルのメタ用語一覧](docs/ai-agent/tutorial-meta-glossary.md)
 - [続きはここから](docs/続きはここから.md)：作業を再開する人向け。
 
 ## 一般_このプロジェクトに興味はないが関心はある人

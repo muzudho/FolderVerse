@@ -539,3 +539,16 @@
 - 開始21:57:14、終了 21:59:20 JST。再現と切り分けまで。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。変更は tests/TutorialWarGuidesUi/Program.cs の出撃カード診断ログと本記録。ゲームコード変更なし。採番保留。
 - dotnet build tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/tutorial-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。21:57:46 PID 2776、上限600秒、21:57:59終了0。21:51回と同じ環境変数で既存出力の dotnet TutorialWarGuidesUi.dll。21:57:59 PID 28536、上限300秒、21:58:42終了 -532462766。証拠は TutorialWarGuidesUi-picker-build-215746 と TutorialWarGuidesUi-picker-seed5-215759 のログ。1920×1080。
 - 地点8で出撃元3行、診断上の選択可能候補は2・7・1体。最初の有効範囲内のクリック (122,352) から予約0件。途中で矩形のXが負になるため、クリック中にインスペクター状態が変わった。原因は未確定。次回は描画対象が出撃一覧か撤退画面か、最初のクリックの前後の画面・パネルとガイド状態、入力の分岐を採取する。ターン4以降は未確認。
+
+## 2026-11-17 22:10点検回
+
+- 開始22:10:45、終了 22:12:48 JST。部分点検中断。HEAD 0a14fa16c243eee52032c9a7a1e1840c28cca7ae、開始時Git差分なし。変更は tests/TutorialWarGuidesUi/Program.cs の入力状態ログと本記録。
+- dotnet build tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/tutorial-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。22:11:14 PID 11684→22:11:41終了0、警告・エラー0。同出力で21:51回と同じSeed5・追加出撃・反復設定で dotnet TutorialWarGuidesUi.dll。22:11:41 PID 30688→22:12:25終了 -532462766。上限は600秒と300秒。証拠は TutorialWarGuidesUi-input-state-build-221114、TutorialWarGuidesUi-input-state-seed5-221141 の両ログ、1920×1080の描画。
+- TUT-0006（未解決、診断の操作順）。面5獲得とターン3の地図に復帰後、開戦から地点8を選び、8更新待って出撃カードをクリック。期待は有効な出撃画面から予約すること。実際は初回カードの押下前に説得が開き、移動モードは閉じて選択地点が-1になっていた。カード座標 (305,432) の押下で説得が閉じ、予約は全て0。撤退画面・案内は非表示。診断が説得中にも古い出撃行をクリックすると再現する。ゲームの進行不能は未確認。
+- 次回は説得の操作と閉鎖を通常UIで先に済ませ、開戦・地点の再選択から予約を追う。ターン4、自動終了・征服勲章、タイトルから完了までの単一セッションは未確認。
+
+## 2026-11-17 TUT-0006 改善回
+
+- 完了 22:19:50 JST。HEAD 0a14fa16c243eee52032c9a7a1e1840c28cca7ae。TUT-0006 は完了。変更は tests/TutorialWarGuidesUi/Program.cs と本記録。診断は次ターンの地図を先に描画し、内政の開始演出・説得・インスペクター閉鎖を通常更新で待ってから開戦操作に入る。
+- dotnet build tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/tutorial-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。最初の待機のみの試行は22:17:14ビルド終了0、PID 30264の診断は22:17:59終了 -532462766。描画を先に実行する修正後は22:18:37 PID 2416→22:18:51終了0、警告・エラー0。出力 bin/TutorialWarGuidesUi/debug で22:10回と同じSeed5・追加出撃・反復設定、ALSOFT_DRIVERS=null にて dotnet TutorialWarGuidesUi.dll を実行。22:18:51 PID 17500→22:19:26終了0。上限600秒／300秒。ログは TutorialWarGuidesUi-settle-draw-build-221837 と TutorialWarGuidesUi-settle-draw-seed5-221851。
+- 1920×1080の通常UI入力で地点8へ3か所から計10体を予約し、全機の戦闘参加と取消なしを確認。地点8の獲得、ターン4の地図復帰、手動終了、タイトル復帰、学習勲章の保存まで通過。次回は支配面を増やす後続ターンから続ける。世界征服の自動終了と征服勲章、タイトルから完了までの単一セッション、物理入力は未確認。

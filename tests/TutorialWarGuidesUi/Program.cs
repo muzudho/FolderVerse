@@ -270,6 +270,16 @@ sealed class WarGuideGame:Game1
    int extraTurns=Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_EXTRA_TURN")=="1"?1:0;
    if(extraTurns==1 && Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_REPEAT_TURN")=="1")extraTurns++;
    for(int extraTurn=0;extraTurn<extraTurns;extraTurn++){
+    // The domestic phase can return to the map before its cut-in and persuasion start.
+    double cutInSeconds=Convert.ToDouble(typeof(Game1).GetField("PhaseCutInSeconds",BindingFlags.Static|BindingFlags.NonPublic)!.GetRawConstantValue());
+    base.Draw(new GameTime(TimeSpan.FromSeconds(now),TimeSpan.Zero));
+    for(int tick=0;tick<240 && now-(double)Get("_cutInStarted")<cutInSeconds;tick++)Send(default);
+    Send(default);
+    for(int tick=0;tick<240 && ((bool)Get("_homePersuasionActive") || (bool)Get("_nodeInspectorClosing"));tick++){
+     Send(default);
+     if(tick%20==0)base.Draw(new GameTime(TimeSpan.FromSeconds(now),TimeSpan.Zero));
+    }
+    Check(!(bool)Get("_homePersuasionActive") && !(bool)Get("_nodeInspectorClosing"),"The next turn settles before opening war planning");
     March[] secondOrders=Array.Empty<March>();
     if(Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_EXTRA_WAR")=="1"){
      Click(((Rectangle)Call("PrimaryActionBounds",2)).Center);
@@ -299,7 +309,10 @@ sealed class WarGuideGame:Game1
       foreach(int slot in Enumerable.Range(0,preview.Length).Where(slot=>available.Any(item=>item.Id==preview[slot].Id))){
        var bounds=(Rectangle)card.Invoke(null,new object[]{row.Bounds,slot})!;
        var point=bounds.Center+new Point((int)Call("get_NodeInspectorOffset"),0);
+       string State()=>$"screen={Get("_screen")}, withdrawal={Call("get_SelectedWithdrawal")!=null}, war={Get("_warPlanning")}, movement={Get("_movementOpen")}, selected={Get("_selectedMoveNode")}, guide={Get("_tutorialAttackGuide")}, closing={Get("_nodeInspectorClosing")}, persuasion={Get("_homePersuasionActive")}, map={((Rectangle)Call("get_MapViewBounds")).Contains(point)}";
+       var before=State();
        Click(point);
+       Console.WriteLine($"Sortie click state: before [{before}] after [{State()}]");
        Console.WriteLine($"Sortie card: robot={preview[slot].Id}, click={point}, orders={w.Campaign.PlannedOrders.Count}");
        selectedCount++;
       }
