@@ -28,6 +28,7 @@ public sealed partial class CubeNet
         int owner=ShowCountryColors?world.Nodes.FullOwner(cell):-1;
         if(ControlledCountryColors && !world.Relations.Controls(owner))owner=-1;
         var color=owner<0?WorldTerrain.MapColorAt(height,world.Cells[cell].Normal,world.PolarAxis,world.WorldSeed):WorldPreview.LandTerritoryColor(world.CountryMapColor(owner,x,y),WorldTerrain.Kind(height));
+        color=WorldTerrain.WaterSurfaceColor(world,cell,height,x,y,color);
         var surface=world.Cells[cell];
         var point=surface.Origin+surface.U*((x+.5f)/TerrainRoutes.Detail)+surface.V*((y+.5f)/TerrainRoutes.Detail);
         if(WorldTerrain.IsValley(world,surface,point,height))color=WorldTerrain.ValleyColor(color);

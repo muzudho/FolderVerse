@@ -45,6 +45,18 @@ public static class WorldTerrain
 
     internal static Color ValleyColor(Color color)=>Color.Lerp(color,new Color(29,69,68),.35f);
 
+    internal static Color WaterSurfaceColor(WorldSetup world,int cell,float height,int x,int y,Color color)
+    {
+        if(Kind(height)!=TerrainKind.Sea)return color;
+        bool sea=TerrainRoutes.IsSeaForDisplay(world,cell,x,y);
+        int offset=cell%7;
+        bool ripple=sea
+            ? (y+offset)%4==1 && (x+offset+2*y)%11<7
+            : (y+offset)%3==1 && (x+2*offset+2*y)%7<2;
+        float shallows=sea?0:MathHelper.Clamp((height-.49f)/.03f,0,1)*.05f;
+        return Color.Lerp(color,Color.White,shallows+(ripple?.065f:0));
+    }
+
     internal static bool IsValley(WorldSetup world,SurfaceCell cell,Vector3 point,float height)=>
         IsValley(world.Terrain,point,cell.U,cell.V,new Vector3(world.Width,world.Height,world.Depth)*.5f,height);
 

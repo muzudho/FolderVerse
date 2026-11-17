@@ -17,6 +17,8 @@ public sealed partial class RobotWorld
     };
 
     internal bool OtherRawSupplyEnabled=>_rawDeposits!=null;
+    internal bool OffshoreRawSupplyEnabled {get;private set;}
+    internal bool OffshoreUsesSeaAreaRule {get;private set;}
     public int RawDeposit(int node,RawMaterial material)=>material==RawMaterial.Maple
         ?MapleDeposit(node):_rawDeposits?[(int)material-1][node]??0;
 
@@ -32,7 +34,7 @@ public sealed partial class RobotWorld
     {
         CubeNet.ResourceSiteKind.Salt=>RawMaterial.Vinyl,
         CubeNet.ResourceSiteKind.Oil=>RawMaterial.Styrene,
-        CubeNet.ResourceSiteKind.Gas=>RawMaterial.PP,
+        CubeNet.ResourceSiteKind.Gas or CubeNet.ResourceSiteKind.OffshoreGas=>RawMaterial.PP,
         _=>RawMaterial.Silicone
     };
 
@@ -44,6 +46,8 @@ public sealed partial class RobotWorld
 
     private void InitializeRawDeposits(WorldSetup world)
     {
+        OffshoreRawSupplyEnabled=true;
+        OffshoreUsesSeaAreaRule=true;
         _rawDeposits=RawMaterials.Skip(1).Select(_=>new int[Nodes.Length]).ToArray();
         var terrain=world.Terrain;
         foreach(var cell in world.Cells)
@@ -59,7 +63,7 @@ public sealed partial class RobotWorld
     internal static int SiteLoads(CubeNet.ResourceSiteKind kind,float size)=>kind switch
     {
         CubeNet.ResourceSiteKind.Salt=>Math.Clamp((int)MathF.Round(size*48),6,10),
-        CubeNet.ResourceSiteKind.Gas=>8,
+        CubeNet.ResourceSiteKind.Gas or CubeNet.ResourceSiteKind.OffshoreGas=>8,
         _=>6
     };
 

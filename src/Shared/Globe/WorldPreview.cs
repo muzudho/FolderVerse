@@ -74,14 +74,14 @@ public sealed partial class WorldPreview : IDisposable
 
     private int _polarAxis=1;
     public void Generate(int width, int height, int depth, int seed,int polarAxis=1,float elevationShift=0,bool plane=false)
-        =>Generate(width,height,depth,seed,polarAxis,elevationShift,null,plane);
+        =>Generate(width,height,depth,seed,polarAxis,elevationShift,null,plane:plane);
 
     internal void ShowOpeningPlanet(WorldSetup setup)
     {
-        Generate(setup.Width,setup.Height,setup.Depth,setup.WorldSeed,setup.PolarAxis,setup.Terrain.ElevationShift,setup);
+        Generate(setup.Width,setup.Height,setup.Depth,setup.WorldSeed,setup.PolarAxis,setup.Terrain.ElevationShift,setup,opening:true);
     }
 
-    private void Generate(int width,int height,int depth,int seed,int polarAxis,float elevationShift,WorldSetup opening,bool plane=false)
+    private void Generate(int width,int height,int depth,int seed,int polarAxis,float elevationShift,WorldSetup setup,bool opening=false,bool plane=false)
     {
         _polarAxis=polarAxis;
         OpeningMapleLoads=0;
@@ -98,16 +98,25 @@ public sealed partial class WorldPreview : IDisposable
         _markers?.Dispose(); _markers = null; _markerCount = 0;
         var mesh = new List<VertexPositionColorNormal>();
         var half = new Vector3(width, height, depth) * 0.5f;
-        var offset = new TerrainSampler(WorldTerrain.Offset(seed),elevationShift,plane);
-        AddFace(mesh, new Vector3(-half.X, half.Y, -half.Z), Vector3.Backward * depth, Vector3.Right * width, Vector3.Up, depth, width, offset);
-        if(!plane){
-        AddFace(mesh, new Vector3(half.X, -half.Y, -half.Z), Vector3.Up * height, Vector3.Backward * depth, Vector3.Right, height, depth, offset);
-        AddFace(mesh, new Vector3(-half.X, -half.Y, half.Z), Vector3.Up * height, Vector3.Forward * depth, Vector3.Left, height, depth, offset);
-        AddFace(mesh, new Vector3(-half.X, -half.Y, half.Z), Vector3.Forward * depth, Vector3.Right * width, Vector3.Down, depth, width, offset);
-        AddFace(mesh, new Vector3(-half.X, -half.Y, half.Z), Vector3.Right * width, Vector3.Up * height, Vector3.Backward, width, height, offset);
-        AddFace(mesh, new Vector3(half.X, -half.Y, -half.Z), Vector3.Left * width, Vector3.Up * height, Vector3.Forward, width, height, offset);
+        var offset = setup?.Terrain ?? new TerrainSampler(WorldTerrain.Offset(seed),elevationShift,plane);
+        if(setup!=null)
+            foreach(var cell in setup.Cells)
+                AddFace(mesh,cell.Origin,cell.U,cell.V,cell.Normal,1,1,offset,
+                    (h,x,y)=>WorldTerrain.WaterSurfaceColor(setup,cell.Id,h,x,y,
+                        WorldTerrain.MapColorAt(h,cell.Normal,polarAxis,seed)));
+        else
+        {
+            AddFace(mesh, new Vector3(-half.X, half.Y, -half.Z), Vector3.Backward * depth, Vector3.Right * width, Vector3.Up, depth, width, offset);
+            if(!plane)
+            {
+                AddFace(mesh, new Vector3(half.X, -half.Y, -half.Z), Vector3.Up * height, Vector3.Backward * depth, Vector3.Right, height, depth, offset);
+                AddFace(mesh, new Vector3(-half.X, -half.Y, half.Z), Vector3.Up * height, Vector3.Forward * depth, Vector3.Left, height, depth, offset);
+                AddFace(mesh, new Vector3(-half.X, -half.Y, half.Z), Vector3.Forward * depth, Vector3.Right * width, Vector3.Down, depth, width, offset);
+                AddFace(mesh, new Vector3(-half.X, -half.Y, half.Z), Vector3.Right * width, Vector3.Up * height, Vector3.Backward, width, height, offset);
+                AddFace(mesh, new Vector3(half.X, -half.Y, -half.Z), Vector3.Left * width, Vector3.Up * height, Vector3.Forward, width, height, offset);
+            }
         }
-        if(opening!=null)AddPreviewMaples(mesh,opening,offset);
+        if(opening)AddPreviewMaples(mesh,setup,offset);
         _vertices?.Dispose();
         _vertices = new VertexBuffer(_device, VertexPositionColorNormal.VertexDeclaration, mesh.Count, BufferUsage.WriteOnly);
         _vertices.SetData(mesh.ToArray());
@@ -118,7 +127,7 @@ public sealed partial class WorldPreview : IDisposable
     {
         if(CountryColors && territories)ShowLandConquest(setup,true);
         else {
-            Generate(setup.Width, setup.Height, setup.Depth, setup.WorldSeed,setup.PolarAxis,setup.Terrain.ElevationShift,plane:setup.IsPrimaplana);
+            Generate(setup.Width,setup.Height,setup.Depth,setup.WorldSeed,setup.PolarAxis,setup.Terrain.ElevationShift,setup);
             if(setup.Owners.Length==setup.Cells.Length)BuildWhirlpoolMesh(setup);
         }
         if (!territories || setup.Owners.Length == 0) return;
