@@ -17,7 +17,7 @@ public partial class Game1
     private bool MapTransitionActive=>_mapTransitionAge>=0;
     private void StartMapTransition()
     {
-        if(MapTransitionActive)return;
+        if(MapTransitionActive || _setup.IsPrimaplana)return;
         _mapDragListOpen=false;
         bool unfold=_statusGlobe;
         _net.CancelAnimation();

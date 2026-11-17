@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using Microsoft.Xna.Framework;
 public partial class Game1
@@ -9,7 +9,7 @@ public partial class Game1
     private bool OrientationRotating=>_orientationAge>=0;
     private static readonly Color[] AxisColors={ToyOrientationRenderer.AxisColor(0),ToyOrientationRenderer.AxisColor(1),ToyOrientationRenderer.AxisColor(2)};
     private bool OrientationGlobe=>!IsStatusScreen || _statusGlobe;
-    private bool OrientationControlsVisible=>!IsRolling && (IsStatusScreen || _screen==Screen.LandConquest || _screen>=Screen.Rolling && _screen<=Screen.PlayerReady);
+    private bool OrientationControlsVisible=>!_setup.IsPrimaplana && !IsRolling && (IsStatusScreen || _screen==Screen.LandConquest || _screen>=Screen.Rolling && _screen<=Screen.PlayerReady);
     private Rectangle OrientationControlArea {
         get {
             if(IsStatusScreen)return MapViewBounds;

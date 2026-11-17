@@ -22,6 +22,7 @@ public partial class Game1
     private static Rectangle InsertBatteryButton(int index){var r=InactiveCard(index);return new(r.X+145,r.Y+100,190,60);}
     private void OpenDisposition()
     {
+        if(_setup.IsPrimaplana){ResolvePrimaplanaCaptives();if(TryConquestEnding())return;}
         if(_setup.Relations.Pending.Count>0){_screen=Screen.Disposition;_populationCell=-1;}
     }
     private bool StatusMenuClick(Point point)

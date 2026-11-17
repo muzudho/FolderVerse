@@ -358,7 +358,7 @@ public partial class Game1 : Game
             else if(click && NodeDialogClick(_pointer,keyboard)){}
             else if(click && NetButton(2).Contains(_pointer))FocusCurrentNode();
             else if(click && NetButton(3).Contains(_pointer))FocusInspectorLocation();
-            else if(click && NetButton(4).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
+            else if(!_setup.IsPrimaplana && click && NetButton(4).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
             else if(click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
             else if(click && !pan && !_net.IsAnimating && _net.ClickEdge()){RecordTutorialMapEdge();}
             else if(click && !pan && !_movementOpen && !_net.IsAnimating && (_statusCell>=0 || _net.ShowRoutes))
@@ -621,14 +621,14 @@ public partial class Game1 : Game
         if(!StrategyReadOnly)DrawWandererPolicy();
         if(!InspectingSupervisor && !StrategyReadOnly)_ui.Button(LessonCatalogButton,"戦訓カード",Muted,.45f);
         }); _ui.Box(new(MapViewBounds.X-20,142,MapViewBounds.Width+40,750),new(20,42,54));
-        _ui.Text(_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+_setup.FaceName(_net.CenterFace)+" が中心",new(991,156),0.68f,Cream);
+        _ui.Text(_setup.IsPrimaplana?"プリマプラナの地図":_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+_setup.FaceName(_net.CenterFace)+" が中心",new(991,156),0.68f,Cream);
         int geographicFace=_setup.GeographicFace(_net.CenterFace);
         string poleAxis=_setup.PolarAxis switch {0=>"＋X（魚の頭）",2=>"＋Z（犬の頭）",_=>"＋Y（猿の頭）"};
         string north=geographicFace is 2 or 3
             ? (geographicFace==2?"北極面":"南極面")+"：上は基準経線"
             : $"{_setup.HeadSystemName} / 地星の北＝{poleAxis}";
         string orientation=north+" / 回転 "+((int)MathF.Round((_net.Rotation*90+MathHelper.ToDegrees(_net.ScreenAngle))%360+360)%360)+"°";
-        _ui.Text(_statusGlobe?MapDragName+(_net.ShowMapSymbols?" / 経番・緯番":""):orientation,new(991,203),.43f,new(177,206,216));
+        _ui.Text(_setup.IsPrimaplana?"":_statusGlobe?MapDragName+(_net.ShowMapSymbols?" / 経番・緯番":""):orientation,new(991,203),.43f,new(177,206,216));
         if(_statusGlobe && _net.ShowMapSymbols)
         {
         _ui.Text("経番",new(1450,203),.38f,WorldCoordinates.LongitudeColor);
@@ -689,7 +689,7 @@ public partial class Game1 : Game
         _spriteBatch.Begin(transformMatrix:transform);
         if(!_reservationDirectory){DrawRegionOffice();DrawSalvageMap();}
         _spriteBatch.End();
-        if(!MapTransitionActive)DrawOrientationOverlay(MapViewBounds,canvas,transform);
+        if(!MapTransitionActive && !_setup.IsPrimaplana)DrawOrientationOverlay(MapViewBounds,canvas,transform);
         if(factoryMapStart!=0)_factoryMapDrawMs=System.Diagnostics.Stopwatch.GetElapsedTime(factoryMapStart).TotalMilliseconds;
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         if(!_reservationDirectory){
@@ -703,7 +703,7 @@ public partial class Game1 : Game
         if(_statusGlobe)_ui.Button(NetButton(1),(_globeSpinning?"✓ ":"□ ")+"くるくる回す",_globeSpinning?Accent:Muted,0.45f);
         _ui.Button(NetButton(2),"征服者はどこ？",Accent,0.45f);
         _ui.Button(NetButton(3),"今どこ見てる？",InspectorLocationNode>=0?Accent:Muted,0.45f);
-        if(!_statusGlobe)_ui.Button(NetButton(4),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
+        if(!_statusGlobe && !_setup.IsPrimaplana)_ui.Button(NetButton(4),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
         if(_statusCell>=0 && !InspectorVisible)
         {
             var cell=_setup.Cells[_statusCell];int owner=_setup.Owners[cell.Id];

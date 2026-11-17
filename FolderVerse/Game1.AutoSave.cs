@@ -19,7 +19,7 @@ public partial class Game1
     private double _autoSaveNoticeSeconds;
     private void CheckAutoSave(){_hasAutoSave=_autoSaveEnabled && File.Exists(_autoSavePath);}
     private void AutoSaveDomestic(){
-        if(!_autoSaveEnabled || _demoActive || !IsStatusScreen || DeliveryPlayback || _setup.PlayerSlot<0 || _lastAutoSaveTurn==_setup.Population.Turn)return;
+        if(!_autoSaveEnabled || _demoActive || _setup.IsPrimaplana || !IsStatusScreen || DeliveryPlayback || _setup.PlayerSlot<0 || _lastAutoSaveTurn==_setup.Population.Turn)return;
         try{
             SaveDomesticCamera();
             AutoSaveStore.Write(_autoSavePath,new SavedGame(_setup,new(_domesticViews)));
@@ -66,7 +66,7 @@ public partial class Game1
         }catch(Exception error){ReturnToTitle();_autoSaveError="続きからを開始できません。最初からを選べます。";RecordFailure(error,"autosave_read");return false;}
     }
     private void DeleteCompletedAutoSave(){
-        if(!_autoSaveEnabled || _demoActive)return;
+        if(!_autoSaveEnabled || _demoActive || _setup.IsPrimaplana)return;
         try{File.Delete(_autoSavePath);_hasAutoSave=false;_lastAutoSaveTurn=-1;_operations.Write("autosave_deleted",new{reason="ending_completed"});}
         catch(Exception error){RecordFailure(error,"autosave_delete");}
     }

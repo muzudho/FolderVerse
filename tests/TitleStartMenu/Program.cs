@@ -28,7 +28,7 @@ sealed class MenuGame:Game1{
   Click(960,417);Check((bool)Get("_tutorialMenuOpen"),"How to Play opens tutorial guide");
   Check(!(bool)Call("UpdateDemo",11d,true,false,false,false,11d),"Tutorial guide pauses demo");
   Click(1100,810);Check((bool)Get("_tutorialMenuOpen"),"Unimplemented planets are disabled");
-  Click(730,477);Check(Get("_screen").ToString()=="OpeningBook","First planet opens the tutorial storybook");
+  Click(1012,477);Check(Get("_screen").ToString()=="OpeningBook","Second planet opens the tutorial storybook");
   Click(1675,55);var tutorial=(WorldSetup)Get("_setup");Check(tutorial.TutorialMapBeforeWar,"Skipping the storybook starts the integrated tutorial");
   Check(Get("_screen").ToString()=="WorldStatus" && tutorial.PlayerCount==1 && tutorial.HumanPlayers.SequenceEqual(new[]{0}) && tutorial.PlayerSlot==0,"Step one reaches domestic as No.1");
   Check(tutorial.Width==1 && tutorial.Height==1 && tutorial.Depth==1 && tutorial.ActiveCount==6 && tutorial.Portraits.Take(6).SequenceEqual(Enumerable.Range(0,6)) && tutorial.Looks.Take(6).All(l=>l.VariantId==0),"Dice world and original No.1 through No.6 cast");
@@ -135,7 +135,7 @@ sealed class MenuGame:Game1{
  void DrawBookAudit(GameTime time){
   switch(frame){
    case 1:
-    Click(960,930);Click(960,417);Click(730,477);
+    Click(960,930);Click(960,417);Click(1012,477);
     Check(Get("_screen").ToString()=="OpeningBook","Petitstella opens the book cover");
     break;
    case 2:

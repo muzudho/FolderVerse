@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using Microsoft.Xna.Framework;
 public sealed partial class CubeNet
 {
@@ -7,6 +7,7 @@ public sealed partial class CubeNet
     // including the same eased hinge motion used by the animated net.
     public Matrix BellyOrientation {
         get {
+            if(Faces.Length==1)return Matrix.CreateRotationZ(-ScreenAngle);
             var belly=System.Linq.Enumerable.First(Faces,f=>f.Face==4);
             float angle=System.MathF.Atan2(-belly.Up.X,belly.Right.X)+ScreenAngle;
             if(IsAnimating && _movingFaces.Contains(4)){

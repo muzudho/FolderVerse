@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using Microsoft.Xna.Framework;
 
 public partial class Game1
@@ -28,7 +28,7 @@ public partial class Game1
             }
             return true;
         }
-        if(MapViewButton.Contains(pointer)){StartMapTransition();_inputOutcome="view_transition_started";_dragging=_mapDragging=false;return true;}
+        if(!_setup.IsPrimaplana && MapViewButton.Contains(pointer)){StartMapTransition();_inputOutcome="view_transition_started";_dragging=_mapDragging=false;return true;}
         for(int i=0;i<7;i++)if(RouteLayerButton(i).Contains(pointer))
         {
             CloseReservationDirectory();
@@ -50,6 +50,7 @@ public partial class Game1
         DrawFolderTreeButton();DrawReservationDirectoryButton();
         string[] names={"緯番・経番","電池","赤道","ロボット","他国"};bool[] enabled={_net.ShowMapSymbols,_net.ShowBatteries,_net.ShowEquator,_net.ShowRobots,_net.ShowOtherCountries};int[] indices={0,1,4,5,6};
         for(int i=0;i<5;i++){
+            if(_setup.IsPrimaplana && indices[i] is 0 or 4)continue;
             var r=RouteLayerButton(indices[i]);bool available=indices[i] is 1 or 5 or 6 || MapOverlayAvailable(indices[i]);
             var color=available?Accent:new Color(75,78,83);
             _ui.Button(r,"",color,.5f);
@@ -60,7 +61,7 @@ public partial class Game1
         int mode=_net.ShowCountryColors?1:0,traffic=_net.ShowRoutes?1:0;
         _ui.Button(RouteLayerButton(2),MapLayerNames[mode]+"  v",Accent,.52f);
         DrawSelectionIcon(RouteLayerButton(3),traffic==1);
-        _ui.Button(MapViewButton,_statusGlobe?"展開図":"組立",MapTransitionActive?Muted:Accent,.6f);
+        if(!_setup.IsPrimaplana)_ui.Button(MapViewButton,_statusGlobe?"展開図":"組立",MapTransitionActive?Muted:Accent,.6f);
         if(_mapLayerListOpen)for(int i=0;i<2;i++)_ui.Button(MapLayerOption(i),MapLayerNames[i],i==mode?Accent:Muted,.52f);
         if(_trafficLayerListOpen)for(int i=0;i<2;i++){var r=TrafficLayerOption(i);_ui.Button(r,"",i==traffic?Accent:Muted,.52f);DrawSelectionGlyph(r.X+30,r.Center.Y,i==1,i==traffic?SelectionInk:UiPainter.ContrastInk(Muted));_ui.Text(TrafficLayerNames[i],new(r.X+62,r.Y+15),.4f,i==traffic?SelectionInk:UiPainter.ContrastInk(Muted));}
     }

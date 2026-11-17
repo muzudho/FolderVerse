@@ -9,7 +9,7 @@ public partial class Game1
     private double _endingAge;
     private bool _endingBeforeIndustry;
     private bool _endingWasAutoPlay;
-    private bool EndingReturnsToGame=>!_demoActive && _endingBeforeIndustry;
+    private bool EndingReturnsToGame=>!_demoActive && !_setup.IsPrimaplana && _endingBeforeIndustry;
     private const double EndingSeconds=10;
     private static readonly Rectangle EndingMenuItem=new(1320,182,538,52),QuitMenuItem=new(1320,238,538,52);
     private static readonly Rectangle EndingReturn=new(980,960,824,64),EndingResume=new(116,960,824,64);

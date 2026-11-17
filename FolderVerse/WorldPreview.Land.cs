@@ -50,7 +50,7 @@ public sealed partial class WorldPreview
     public bool ControlledCountryColors {get;set;}
     public void ShowLandConquest(WorldSetup setup,bool exclusive=false,bool dimClaimed=false,bool previewMaples=false)
     {
-        Generate(setup.Width,setup.Height,setup.Depth,setup.WorldSeed,setup.PolarAxis,setup.Terrain.ElevationShift);
+        Generate(setup.Width,setup.Height,setup.Depth,setup.WorldSeed,setup.PolarAxis,setup.Terrain.ElevationShift,plane:setup.IsPrimaplana);
         var mesh=new List<VertexPositionColorNormal>();
         var offset=setup.Terrain;
         float Brightness(int cell)=>dimClaimed && setup.Owners[cell]>=0?.35f:1f;

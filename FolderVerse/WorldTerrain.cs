@@ -5,9 +5,9 @@ using Microsoft.Xna.Framework;
 public enum TerrainKind { Sea,Coast,Grassland,Hill,Mountain }
 public enum PlanetHeadSystem { Fish=0,Monkey=1,Dog=2 }
 
-public readonly record struct TerrainSampler(Vector3 Offset,float ElevationShift)
+public readonly record struct TerrainSampler(Vector3 Offset,float ElevationShift,bool Plane=false)
 {
-    public float Elevation(Vector3 point)=>WorldTerrain.Elevation(point,Offset)+ElevationShift;
+    public float Elevation(Vector3 point)=>Plane ? (point.Z>.46f?.49f:point.Z>.36f?.535f:.59f) : WorldTerrain.Elevation(point,Offset)+ElevationShift;
 }
 
 public static class WorldTerrain

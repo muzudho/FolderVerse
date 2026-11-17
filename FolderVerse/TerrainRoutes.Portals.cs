@@ -72,6 +72,7 @@ public sealed partial class TerrainRoutes
         foreach(var cell in _world.Cells)for(int d=0;d<4;d++)
         {
             int target=_world.Population.Neighbor(_world,cell.Id,d);
+            if(target<0){_portals[cell.Id][d]=Array.Empty<RoutePortal>();continue;}
             var shared=cell.Corners.Intersect(_world.Cells[target].Corners).OrderBy(p=>p.X).ThenBy(p=>p.Y).ThenBy(p=>p.Z).ToArray();
             var kinds=Enumerable.Range(0,10).Select(i=>Classify(offset.Elevation(Vector3.Lerp(shared[0],shared[1],(i+.5f)/10)))).ToArray();
             var portals=new List<RoutePortal>();

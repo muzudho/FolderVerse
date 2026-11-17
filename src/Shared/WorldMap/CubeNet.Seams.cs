@@ -11,7 +11,7 @@ public sealed partial class CubeNet
     public string HoveredSeam=>HoveredFace<0?"":Seam(HoveredFace,OtherFace(Faces.First(f=>f.Face==HoveredFace),HoveredSide));
     public SeamLabel[] SeamLabels(Rectangle panel)
     {
-        if(IsAnimating)return Array.Empty<SeamLabel>();
+        if(IsAnimating || Faces.Length<2)return Array.Empty<SeamLabel>();
         var result=new List<SeamLabel>();var fit=Fit(panel);
         foreach(var face in Faces)for(int side=0;side<4;side++)
         {

@@ -41,7 +41,7 @@ public partial class Game1
     private void SelectMoveNode(int node)
     {
         if(!_net.MovementTargets.Contains(node))return;
-        _withdrawalEncounter=-1;_selectedMoveNode=node;_net.SelectedTarget=node;if(_warPlanning)BuildInvasionSources(node);
+        _withdrawalEncounter=-1;_selectedMoveNode=node;_net.SelectedTarget=node;if(_warPlanning){BuildInvasionSources(node);if(_setup.IsPrimaplana)ReservePrimaplanaAttack();}
     }
     private long AvailableEscort
     {

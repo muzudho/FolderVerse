@@ -552,3 +552,25 @@
 - 完了 22:19:50 JST。HEAD 0a14fa16c243eee52032c9a7a1e1840c28cca7ae。TUT-0006 は完了。変更は tests/TutorialWarGuidesUi/Program.cs と本記録。診断は次ターンの地図を先に描画し、内政の開始演出・説得・インスペクター閉鎖を通常更新で待ってから開戦操作に入る。
 - dotnet build tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/tutorial-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。最初の待機のみの試行は22:17:14ビルド終了0、PID 30264の診断は22:17:59終了 -532462766。描画を先に実行する修正後は22:18:37 PID 2416→22:18:51終了0、警告・エラー0。出力 bin/TutorialWarGuidesUi/debug で22:10回と同じSeed5・追加出撃・反復設定、ALSOFT_DRIVERS=null にて dotnet TutorialWarGuidesUi.dll を実行。22:18:51 PID 17500→22:19:26終了0。上限600秒／300秒。ログは TutorialWarGuidesUi-settle-draw-build-221837 と TutorialWarGuidesUi-settle-draw-seed5-221851。
 - 1920×1080の通常UI入力で地点8へ3か所から計10体を予約し、全機の戦闘参加と取消なしを確認。地点8の獲得、ターン4の地図復帰、手動終了、タイトル復帰、学習勲章の保存まで通過。次回は支配面を増やす後続ターンから続ける。世界征服の自動終了と征服勲章、タイトルから完了までの単一セッション、物理入力は未確認。
+
+## 2026-11-17 22:34:48 JST 改善回
+
+- HEAD d5d2c35f658bc05c81d5444bc77509a35b91df90。開始時のGit差分なし。直近の完了済み検証ではTUT-0006の修正後に地点8の出撃予約・戦闘参加・ターン4の地図復帰まで通過。今回の修正対象なし。確認は既存記録と差分の照合まで。変更は本記録のみ。
+- 次の点検はプチステラのターン4以降から。世界征服の自動終了、征服勲章、タイトルから完了までの単一セッションは未確認。
+
+## 2026-11-17 22:51点検回
+
+- 終了 22:52:28 JST。部分点検完了。HEAD 9e4d089af14f8203205f85cdc46f93aeaa3ba95a。開始時差分はDemo・チュートリアル点検記録と利用者メモ。今回の変更は本記録のみ。
+- 既存NAS出力の TutorialWarGuidesUi/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_TUTORIAL_WAR_SEED=4、FOLDERVERSE_TUTORIAL_EXTRA_TURN=1、FOLDERVERSE_TUTORIAL_EXTRA_WAR=1、FOLDERVERSE_TUTORIAL_PRIORITIZE_CELL=1、FOLDERVERSE_TUTORIAL_REPEAT_TURN=1 として dotnet TutorialWarGuidesUi.dll を実行。22:51:39作成 PID 18960、上限300秒、22:52:10終了0。証拠は TutorialWarGuidesUi-repeat-seed4-225139 の両ログ、1920×1080の描画。再ビルドなし。
+- 地点3へ出撃元12から予約した6体が戦闘に参加。取消なし。ターン4の地図復帰、手動終了・タイトル復帰と学習勲章保存を確認。TUT-0006の再発なし。次回はターン4以降の操作を追う。タイトルから完了までの単一セッション、物理入力、自動終了と征服勲章は未確認。
+
+## 2026-11-17 22:57:26 JST 改善回
+
+- HEAD 9e4d089af14f8203205f85cdc46f93aeaa3ba95a。22:51点検は終了0。別配置でTUT-0006の再発なし。再現済みの未修正項目はなく、今回の変更は本記録のみ。
+- 次回はプチステラのターン4以降を確認する。世界征服の自動終了、征服勲章、タイトルから完了までの単一セッションは未確認。
+
+## 2026-11-17 23:30:03 JST 改善回
+
+- HEAD 9e4d089af14f8203205f85cdc46f93aeaa3ba95a。22:51点検は終了0。TUT-0006は完了済みで、再現済みの未修正項目なし。利用者依頼のプリマプラナ追加差分を確認。今回の変更は本記録のみ。
+- 先行する実装検証では、分離NAS出力 primaplana の ui.out と TitleStartMenu-ui.out がPASS。プリマプラナの開戦から世界征服と、第2のプチステラの開始を確認済み。TutorialThreeUi の追加ビルドは出力が進まず先行回で終了済み。地図レッスンの通しは未確認。今回のビルド・UI起動なし。
+- 次回は現行の2星構成で点検を続ける。プチステラはターン4以降の自動終了と征服勲章、タイトルから完了までの単一セッション、物理入力が未確認。

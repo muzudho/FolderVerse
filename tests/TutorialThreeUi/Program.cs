@@ -69,7 +69,7 @@ sealed class MapLessonGame:Game1
    Call("ReturnToTitle");
    Click(new Point(960,930));
    Click(new Point(960,417));
-   var card=(Rectangle)typeof(Game1).GetMethod("TutorialPlanetCard",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{0})!;
+   var card=(Rectangle)typeof(Game1).GetMethod("TutorialPlanetCard",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{1})!;
    Click(card.Center);
    Check(Get("_screen").ToString()=="OpeningBook","Petitstella opens the storybook");
    Click(new Point(1675,55));

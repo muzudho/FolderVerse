@@ -125,7 +125,8 @@ public sealed partial class WorldSetup
     };
     public Color OwnerColor(int slot) => slot<0?new Color(155,169,180):Colors[ColorIndices[slot]%Colors.Length];
     private float _terrainElevationShift;
-    public TerrainSampler Terrain=>new(WorldTerrain.Offset(WorldSeed),_terrainElevationShift);
+    public bool IsPrimaplana=>TutorialStep==4;
+    public TerrainSampler Terrain=>new(WorldTerrain.Offset(WorldSeed),_terrainElevationShift,IsPrimaplana);
     internal WorldSetup CreateGeographyPreview()=>new()
     {
         WorldSeed=WorldSeed,Width=Width,Height=Height,Depth=Depth,Cells=Cells,
@@ -272,7 +273,7 @@ public sealed partial class WorldSetup
         Routes.RefreshDisplay();
         Campaign.Reset();Salvage.Initialize(this);
     }
-    public static SurfaceCell[] CreateCells(int width, int height, int depth)
+    public static SurfaceCell[] CreateCells(int width, int height, int depth, bool plane=false)
     {
         var cells = new List<SurfaceCell>(); var half = new Vector3(width,height,depth) * 0.5f;
         void Face(int face, Vector3 origin, Vector3 u, Vector3 v, Vector3 normal, int countU, int countV)
@@ -280,12 +281,16 @@ public sealed partial class WorldSetup
             for(int y=0;y<countV;y++) for(int x=0;x<countU;x++) cells.Add(new SurfaceCell {
                 Id=cells.Count, Face=face, X=x, Y=y, Origin=origin+u*x+v*y, U=u, V=v, Normal=normal });
         }
+        if(!plane){
         Face(0,new(half.X,-half.Y,-half.Z),Vector3.Up,Vector3.Backward,Vector3.Right,height,depth);
         Face(1,new(-half.X,-half.Y,half.Z),Vector3.Up,Vector3.Forward,Vector3.Left,height,depth);
-        Face(2,new(-half.X,half.Y,-half.Z),Vector3.Backward,Vector3.Right,Vector3.Up,depth,width);
         Face(3,new(-half.X,-half.Y,half.Z),Vector3.Forward,Vector3.Right,Vector3.Down,depth,width);
         Face(4,new(-half.X,-half.Y,half.Z),Vector3.Right,Vector3.Up,Vector3.Backward,width,height);
         Face(5,new(half.X,-half.Y,-half.Z),Vector3.Left,Vector3.Up,Vector3.Forward,width,height);
+        }
+        Face(2,new(-half.X,half.Y,-half.Z),Vector3.Backward,Vector3.Right,Vector3.Up,depth,width);
+        if(!plane)cells=cells.OrderBy(c=>c.Face).ToList();
+        for(int i=0;i<cells.Count;i++)cells[i].Id=i;
         var edges = new Dictionary<string, int>();
         string Vertex(Vector3 p) => $"{(int)MathF.Round(p.X*2)},{(int)MathF.Round(p.Y*2)},{(int)MathF.Round(p.Z*2)}";
         foreach(var cell in cells)

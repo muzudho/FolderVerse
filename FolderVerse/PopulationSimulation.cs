@@ -41,12 +41,12 @@ public sealed partial class PopulationSimulation
         // Match the shared edge in local north/east coordinates, including cube folds.
         var edge=cell.Corners.Select((a,i)=>new{A=a,B=cell.Corners[(i+1)%4]})
             .OrderByDescending(e=>Vector3.Dot((e.A+e.B)/2-cell.Center,axis)).First();
-        return cell.Neighbors.First(id=>world.Cells[id].Corners.Contains(edge.A) && world.Cells[id].Corners.Contains(edge.B));
+        return cell.Neighbors.FirstOrDefault(id=>world.Cells[id].Corners.Contains(edge.A) && world.Cells[id].Corners.Contains(edge.B),-1);
     }
     public bool CanMigrate(WorldSetup world,int cellId,int direction)
     {
         int target=Neighbor(world,cellId,direction);
-        return Cells[cellId].Land && Cells[target].Land && world.Relations.Allied(world.Owners[cellId],world.Owners[target]) &&
+        return target>=0 && Cells[cellId].Land && Cells[target].Land && world.Relations.Allied(world.Owners[cellId],world.Owners[target]) &&
             world.Routes.Find(cellId,world.Routes.Start(cellId),direction,true)!=null;
     }
     public void AdjustConversion(int cellId,int role,decimal delta)

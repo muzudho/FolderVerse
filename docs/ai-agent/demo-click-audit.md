@@ -4178,3 +4178,17 @@
 - 既存NAS出力 bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=92、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll。22:21:02作成 PID 29296、上限300秒、22:21:32終了0。ログは CpuMilitary-world92-222102.{stdout,stderr}.log。解像度960×540。診断は既存ビルドを使用。
 - 第一軍事44件、第二軍事32件で専用画面への退避なし。ポケット属性付きの1件はCPU9の和平移動で、通常UIで地点14選択 (1275,552) と移動確定 (707,938) を通過し、選択解除後に人間0の内政へ復帰。座標は論理値。
 - 次回は自然生成されたポケットのみの攻撃を別配置で探す。今回の対象地点への到着、物理入力、自然Demoの直送便ペアは未確認。
+
+### 実行履歴：2026-11-17 22:39回
+
+- 開始22:39:16、終了 22:40:25 JST。部分点検完了。HEAD d5d2c35f658bc05c81d5444bc77509a35b91df90。開始時の差分はチュートリアル点検記録のみ。今回の変更は本記録のみ。新規採番なし。
+- 既存NAS出力 bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=95、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll。22:39:38作成 PID 11020、上限300秒、22:40:07終了0。証拠は CpuMilitary-world95-223937.{stdout,stderr}.log。解像度960×540。
+- 第一軍事19件、第二軍事31件で専用画面への退避なし。第二軍事のクイーン付き攻撃6件で各進軍1件・戦闘参加・再生中の予約増加なしを確認。人間0の内政へ復帰。ポケットのみの攻撃は発生せず、物理入力と自然Demoの直送便ペアも未確認。
+- 次回は自然生成のポケットのみの攻撃を別配置で探すか、未確認の直送便経路を点検する。
+
+### 実行履歴：2026-11-17 22:58回
+
+- 開始22:58:45、終了 22:59:53 JST。部分点検完了。HEAD 9e4d089af14f8203205f85cdc46f93aeaa3ba95a。開始時差分は点検記録2件と利用者メモ。今回の変更は本記録のみ、新規採番なし。
+- 既存NAS出力 bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=96、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll。22:59:03作成 PID 6964、上限300秒、22:59:35終了0。証拠は CpuMilitary-world96-225903.{stdout,stderr}.log。診断の設定は960×540、再ビルドなし。
+- 第一軍事35件、第二軍事27件で専用画面への退避なし。クイーン付き攻撃2件の各進軍1件・戦闘参加と、再生中の予約増加なし、人間0の内政復帰を確認。
+- 自然生成のポケットのみの攻撃、自然Demoの直送便ペア画面、物理入力は未確認。次回は直送便の自然巡回か別配置でのポケット攻撃を調べる。

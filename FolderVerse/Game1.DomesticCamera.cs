@@ -39,6 +39,7 @@ public partial class Game1{
    _net.ShowMapSymbols=_net.ShowEquator=_net.ShowRobots=_net.ShowOtherCountries=_net.ShowBatteries=_net.ShowRoutes=true;
    _net.ShowCountryColors=false;FocusCurrentNode();FocusStatusGlobe();
   }
+  if(_setup.IsPrimaplana){_statusGlobe=false;_net.Home(_setup);}
   _world.CountryColors=_net.ShowCountryColors;
   _world.ControlledCountryColors=_net.ControlledCountryColors=!_net.ShowOtherCountries;
   _world.ShowSetup(_setup,true);

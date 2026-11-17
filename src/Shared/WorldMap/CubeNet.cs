@@ -17,6 +17,7 @@ public sealed partial class CubeNet
     public void ResetView(){Zoom=1;Pan=Vector2.Zero;}
     public void FitAll(Rectangle panel,float zoom=1)
     {
+        if(Faces.Length==1){ResetView();Zoom=zoom;return;}
         float left=Faces.Min(f=>f.Center.X-f.Width/2),right=Faces.Max(f=>f.Center.X+f.Width/2);
         float top=Faces.Min(f=>f.Center.Y-f.Height/2),bottom=Faces.Max(f=>f.Center.Y+f.Height/2);
         ResetView();float scale=Math.Min(panel.Width/(right-left),panel.Height/(bottom-top))*.94f;
@@ -53,18 +54,21 @@ public sealed partial class CubeNet
     public void Turn(WorldSetup setup,int direction){CancelAnimation();Rotation=(Rotation+direction+4)%4;Build(setup);}
     public void Move(WorldSetup setup,int direction)
     {
+        if(setup.IsPrimaplana)return;
         CancelAnimation();
         var center=Faces[0];var normal=direction switch{0=>center.Up,1=>center.Right,2=>-center.Up,_=>-center.Right};
         CenterFace=Array.IndexOf(Normals,normal);Build(setup);
     }
     private void Build(WorldSetup setup)
     {
+        if(setup.IsPrimaplana)CenterFace=2;
         Vector3 n=Normals[CenterFace],up=setup.MapUp(n);
         Vector3 right=Vector3.Cross(up,n);
         for(int i=0;i<Rotation;i++){var old=right;right=up;up=-old;}
         var dimensions=new Vector3(setup.Width,setup.Height,setup.Depth);
         float Length(Vector3 axis)=>Vector3.Dot(new Vector3(Math.Abs(axis.X),Math.Abs(axis.Y),Math.Abs(axis.Z)),dimensions);
         float w=Length(right),h=Length(up),d=Length(n);
+        if(setup.IsPrimaplana){Faces=new[]{new NetFace(CenterFace,right,up,Vector2.Zero,w,h)};return;}
         Faces=new[]{
             new NetFace(CenterFace,right,up,Vector2.Zero,w,h),
             new NetFace(Array.IndexOf(Normals,right),-n,up,new((w+d)/2,0),d,h),
@@ -76,6 +80,11 @@ public sealed partial class CubeNet
     }
     public (float Scale,Vector2 Origin) Fit(Rectangle panel)
     {
+        if(Faces.Length==1){
+            var face=Faces[0];
+            float planeScale=Math.Min(panel.Width/face.Width,panel.Height/(face.Height+1))*.82f*Zoom;
+            return (planeScale,new Vector2(panel.Center.X,panel.Center.Y+planeScale/2)+Pan);
+        }
         float left=Faces.Min(f=>f.Center.X-f.Width/2),right=Faces.Max(f=>f.Center.X+f.Width/2);
         float top=Faces.Min(f=>f.Center.Y-f.Height/2),bottom=Faces.Max(f=>f.Center.Y+f.Height/2);
         float scale=Math.Min(panel.Width/(2*Math.Max(Math.Abs(left),Math.Abs(right))),panel.Height/(2*Math.Max(Math.Abs(top),Math.Abs(bottom))));
@@ -118,6 +127,7 @@ public sealed partial class CubeNet
         _robotBadges.Clear();
         if(IsAnimating){DrawAnimation(ui,setup,panel,pulse);return;}
         var fit=Fit(panel);var offset=setup.Terrain;
+
         foreach(var cell in setup.Cells)
         {
             var face=Faces.First(f=>f.Face==cell.Face);var rect=CellBounds(cell,panel);
@@ -200,6 +210,7 @@ public sealed partial class CubeNet
             var face=Faces.First(f=>f.Face==p.Cell.Face);
             return (face.Project(p.A)*fit.Scale+fit.Origin,face.Project(p.B)*fit.Scale+fit.Origin);
         });
+        if(setup.IsPrimaplana)DrawPrimaplanaWaterfall(ui,setup,panel,fit.Scale);
         if(!DirectoryOnly){DrawHoveredEdge(ui,panel);DrawSeamLabels(ui,panel);}
     }
 }

@@ -21,14 +21,17 @@ public partial class Game1
             try{if(_tutorialAchievements==null)LoadTutorialAchievements();if(_tutorialAchievements==null)throw new InvalidDataException("Achievement store unavailable.");_tutorialAchievements.Clear();_tutorialAttackAchieved=false;_tutorialAchievementError="";}
             catch(Exception e){_tutorialAchievementError="勲章の記録を消去できませんでした";RecordFailure(e,"achievement_clear");}return;
         }
-        if(click || _pointer!=CanvasPoint(_previousMouse))for(int i=0;i<6;i++)if(TutorialPlanetCard(i).Contains(_pointer))_tutorialPlanetSelection=i;
+        if(click || _pointer!=CanvasPoint(_previousMouse))for(int i=0;i<TutorialPlanetNames.Length;i++)if(TutorialPlanetCard(i).Contains(_pointer))_tutorialPlanetSelection=i;
         int move=0;
         if(keys.IsKeyDown(Keys.Left) && _previousKeyboard.IsKeyUp(Keys.Left))move=-1;
         if(keys.IsKeyDown(Keys.Right) && _previousKeyboard.IsKeyUp(Keys.Right))move=1;
-        if(keys.IsKeyDown(Keys.Up) && _previousKeyboard.IsKeyUp(Keys.Up))move=-3;
-        if(keys.IsKeyDown(Keys.Down) && _previousKeyboard.IsKeyUp(Keys.Down))move=3;
-        _tutorialPlanetSelection=(_tutorialPlanetSelection+move+6)%6;
-        if(_tutorialPlanetSelection==0 && (enter || click && TutorialPlanetCard(0).Contains(_pointer)))BeginOpening(true);
+        if(keys.IsKeyDown(Keys.Up) && _previousKeyboard.IsKeyUp(Keys.Up))move=-4;
+        if(keys.IsKeyDown(Keys.Down) && _previousKeyboard.IsKeyUp(Keys.Down))move=4;
+        int count=TutorialPlanetNames.Length;
+        _tutorialPlanetSelection=(_tutorialPlanetSelection+move+count)%count;
+        if(_tutorialPlanetSelection<2 && (enter || click && TutorialPlanetCard(_tutorialPlanetSelection).Contains(_pointer))){
+            if(_tutorialPlanetSelection==0)BeginPrimaplanaTutorial();else BeginOpening(true);
+        }
     }
     private void BeginPetitstellaTutorial(){
         BeginTutorialStepOne();_setup.TutorialMapBeforeWar=true;_statusGlobe=true;

@@ -30,9 +30,10 @@ public partial class Game1
     {
         _manufacturingActive=false;
         StopBattleMusic();
+        if(_setup.IsPrimaplana)ResolvePrimaplanaCaptives();
         if(TryConquestEnding())return;
         // Both introductory steps omit the roulette screen, retaining the normal industry processing.
-        if(_setup.TutorialStep is 1 or 2 && _setup.Industry.Pending){
+        if(_setup.TutorialStep is 1 or 2 or 4 && _setup.Industry.Pending){
             _setup.Industry.Roll(_setup.PlacementSeed^_setup.FortuneSeed);_setup.Industry.Apply(_setup);_world.ShowSetup(_setup,true);
         }
         if(!_setup.Industry.Pending){_screen=Screen.WorldStatus;RestoreDomesticCamera();OpenDisposition();return;}
