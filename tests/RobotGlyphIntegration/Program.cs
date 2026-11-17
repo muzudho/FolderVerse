@@ -720,6 +720,25 @@ sealed class GlyphProbe:Game1
      rawContestBay.MaplePackages.Single()!=competingPackage)
    throw new Exception("Freeing the bay must admit the waiting package exactly once.");
   Console.WriteLine("PASS a restored product intake takes the shared bay before a competing raw shipment.");
+  rawContestWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(rawContestWorld));
+  rawContestStock=rawContestWorld.Robots;
+  rawContestStock.ConfigureFactories(rawContestWorld);
+  rawContestBay=rawContestStock.Nodes[commonBayNode];
+  rawContestStock.AdvanceIndustry(n=>rawContestWorld.Nodes.All[n].Owner);
+  if(rawContestStock.ProductionIntakes.Count!=0 || rawContestBay.MaplePackages.Single()!=competingPackage ||
+     rawContestStock.Nodes[plants[1]].MaplePackages.Single().Units!=8 ||
+     !rawContestStock.Workshops[plants[1]].ProductionLines[0].IntakeFailure.Contains("格納枠"))
+   throw new Exception("The restored raw cargo must block the second product without consuming its factory's PP.");
+  setPackages.Invoke(rawContestBay,new object[]{Array.Empty<MaplePackage>()});
+  rawContestStock.AdvanceIndustry(n=>rawContestWorld.Nodes.All[n].Owner);
+  var resumedProduct=rawContestStock.ProductionIntakes.Single();
+  resolveIntakes.Invoke(rawContestStock,new object[]{rawContestWorld});
+  if(resumedProduct.Source!=plants[1] || resumedProduct.Target!=commonBayNode ||
+     rawContestStock.ProductionIntakes.Count!=0 ||
+     rawContestStock.Nodes[plants[1]].MaplePackages.Count!=0 ||
+     rawContestBay.Robots.Single()!=resumedProduct.Product)
+   throw new Exception("Clearing the raw cargo must let the waiting factory produce and deliver once.");
+  Console.WriteLine("PASS restored raw cargo blocks the other factory until its shared bay is cleared.");
   var expandedIntakeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(twoFactoryWorld));
   var expandedIntakeStock=expandedIntakeWorld.Robots;
   expandedIntakeStock.ConfigureFactories(expandedIntakeWorld);

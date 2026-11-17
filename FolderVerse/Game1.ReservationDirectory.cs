@@ -179,7 +179,7 @@ public partial class Game1
             var node=_setup.Nodes.All[hit.Node];
             string hint=DirectoryTurnHint(DirectoryTurnStatus(node.Owner));
             string label=_setup.Nodes.Label(node)+(hint.Length>0?" / "+hint:"")+" / クリックで地点を開く";
-            _ui.Box(new(990,376,710,102),new Color(7,23,35,248));
+            _ui.Box(new(990,376,710,271),new Color(7,23,35,248));
             _ui.Center(label,new(990,376,710,30),Math.Min(.32f,690/_font.MeasureString(label).X),Cream);
             var stock=_setup.Robots;
             var workshop=stock.Workshops[node.Id];
@@ -189,6 +189,14 @@ public partial class Game1
             DrawDirectoryDevelopment(410,"レーン開発",lanes>0?workshop.ProductionLines.Length:0,lanes,lanes);
             DrawDirectoryDevelopment(442,"格納庫開発",node.Functional?store.Count+store.ReservedReturns:0,capacity,
                 node.Functional?store.WarehouseLimit??capacity:0);
+            _ui.Box(new(1002,470,686,1),new Color(79,128,146));
+            _ui.Text("使用は現在の使用量。格納庫の開発は今使える枠数。",new(1002,482),.29f,Cream);
+            _ui.Text("初期のレーン上限は陸３・海１。",new(1002,505),.29f,Cream);
+            _ui.Text($"初期の格納庫上限は陸５～{NodeFunctionTransfers.MaximumCapacity}・海４。大うずの近くは１。",new(1002,528),.29f,Cream);
+            _ui.Text("格納庫は基本１枠。倉庫管理人１体で上限まで４枠追加。",new(1002,551),.29f,Cream);
+            _ui.Text("工場だけの移転でレーン上限を加算。全施設移転では格納庫上限も加算。",new(1002,574),.29f,Cream);
+            _ui.Text($"１地点の最大は {NodeFunctionTransfers.MaximumFactoryLanes} レーン・{NodeFunctionTransfers.MaximumCapacity} 格納庫。上限はどの国からも確認できます。",new(1002,597),.29f,Cream);
+            _ui.Text("CPUは開戦の条件が同じなら、レーンと格納庫の上限が大きい地点を優先。",new(1002,620),.29f,Cream);
             break;
         }
     }

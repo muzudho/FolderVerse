@@ -354,6 +354,25 @@ sealed class CheckGame:Game1
                         var relayCargo=longStock.Nodes[relayOrder.Node].Robots.Single(r=>r.Id==relayOrder.CargoId);
                         Check(relayCargo.IntegratedParts==productParts && relayCargo.BodyMaterial==expectedBody &&
                             relayCargo.Material(outerPart)==RobotMaterial.Cardboard,"The restored preview reads the right materials and integration from relay cargo");
+                        var relayStore=longStock.Nodes[relayOrder.Node];
+                        relayStore.Remove(relayCargo.Id);
+                        relayStore.Add(relayCargo with {BodyMaterial=RobotMaterial.Foam});
+                        var differentMaterialPixels=DrawLongForecast(longWorld);
+                        relayStore.Remove(relayCargo.Id);
+                        relayStore.Add(relayCargo);
+                        var directCell=typeof(Game1).GetMethod("DirectCell",BindingFlags.Static|BindingFlags.NonPublic)!;
+                        var arrivalCell=(Rectangle)directCell.Invoke(null,new object[]{1,relayOrder.TargetSlot})!;
+                        arrivalCell.Offset(-1320,0);
+                        int backBufferWidth=GraphicsDevice.PresentationParameters.BackBufferWidth;
+                        int materialDifferences=0;
+                        for(int pixel=0;pixel<relayForecastPixels.Length;pixel++){
+                            if(relayForecastPixels[pixel]==differentMaterialPixels[pixel])continue;
+                            Check(arrivalCell.Contains(pixel%backBufferWidth,pixel/backBufferWidth),
+                                "Changing the relay cargo material affects only the receiving bay");
+                            materialDifferences++;
+                        }
+                        Check(materialDifferences>0,"The restored receiving bay displays the relay cargo material");
+                        Console.WriteLine($"PASS: the restored long-delivery forecast changes {materialDifferences} pixels only in its receiving bay.");
                         Array.Copy(oldPanes,panes,panes.Length);
                         for(int hop=2;hop<path.Length;hop++)
                             advanceLong.Invoke(longStock.LongDelivery,new object[]{longWorld});
