@@ -28,14 +28,28 @@ sealed class PlanetMedalGame:Game1
    Call("BeginPetitstellaTutorial");w=(WorldSetup)Get("_setup");foreach(var n in w.Nodes.All)n.Owner=1;Call("RecordPetitstellaMedals");Check(!medals.Has(TutorialAchievements.PetitstellaConquest),"Enemy conquest does not award player's medal");
    foreach(var n in w.Nodes.All)n.Owner=0;w.TutorialMapBeforeWar=false;Call("RecordPetitstellaMedals");Check(!medals.Has(TutorialAchievements.PetitstellaConquest),"Ordinary or separate old step cannot award planet conquest");w.TutorialMapBeforeWar=true;
    Set("_demoActive",true);Call("RecordPetitstellaMedals");Check(!medals.Has(TutorialAchievements.PetitstellaConquest),"Demo never awards medals");Set("_demoActive",false);
-   Call("StartEnding");Check(medals.Has(TutorialAchievements.PetitstellaConquest),"World conquest records before ending deletes save");Call("UpdateEnding",0d,true);Menu();
-   medals=new(path);Set("_tutorialAchievements",medals);Check(medals.Has(TutorialAchievements.PetitstellaLessons) && medals.Has(TutorialAchievements.PetitstellaConquest),"Both planet medals survive ending, title and store reload");
+   Call("BeginIndustry");
+   Check(w.WorldConquestEndingShown && Get("_screen").ToString()=="Ending",
+    "The post-battle phase automatically starts the conquest ending");
+   Check(medals.Has(TutorialAchievements.PetitstellaConquest),"World conquest records before leaving the ending");
   }
   if(frame==2){
+   var button=(Rectangle)typeof(Game1).GetField("EndingReturn",S)!.GetValue(null)!;
+   var canvas=(Rectangle)Call("CanvasBounds");
+   int x=canvas.X+(int)Math.Round(button.Center.X*canvas.Width/1920d);
+   int y=canvas.Y+(int)Math.Round(button.Center.Y*canvas.Height/1080d);
+   var time=new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero);
+   foreach(var state in new[]{ButtonState.Released,ButtonState.Pressed,ButtonState.Released})
+    Call("HandleInput",new MouseState(x,y,0,state,0,0,0,0),new KeyboardState(),time,true);
+   Check(Get("_screen").ToString()=="Title","The normal ending button returns to title");
+   Menu();
+   medals=new(path);Set("_tutorialAchievements",medals);Check(medals.Has(TutorialAchievements.PetitstellaLessons) && medals.Has(TutorialAchievements.PetitstellaConquest),"Both planet medals survive ending, title and store reload");
+  }
+  if(frame==3){
    string before=File.ReadAllText(path);Call("RecordPetitstellaMedals");Check(File.ReadAllText(path)==before,"Repeated checks leave achievement timestamps unchanged");
    var r=(Rectangle)typeof(Game1).GetProperty("TutorialClearMedals",S)!.GetValue(null)!;Set("_pointer",r.Center);Call("TutorialMenuInput",true,false,false,new KeyboardState());Check(!medals.Has(TutorialAchievements.PetitstellaLessons) && !medals.Has(TutorialAchievements.PetitstellaConquest),"Existing clear-medals action resets both planet medals");Call("RecordPetitstellaMedals");Check(!medals.Has(TutorialAchievements.PetitstellaLessons) && !medals.Has(TutorialAchievements.PetitstellaConquest),"Stale title world cannot immediately re-award cleared medals");
   }
   base.Draw(new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero));var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"planet-medals-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
-  if(frame++==2){File.Delete(path);File.Delete(save);Set("_autoSaveEnabled",false);Console.WriteLine("PASS: shared/planet separation, all required actions, completed-save backfill, independent player conquest, demo exclusion, existing one/two medal icons, persistence and clearing.");Exit();}
+  if(frame++==3){File.Delete(path);File.Delete(save);Set("_autoSaveEnabled",false);Console.WriteLine("PASS: shared/planet separation, all required actions, completed-save backfill, independent player conquest, demo exclusion, existing one/two medal icons, persistence and clearing.");Exit();}
  }
 }
