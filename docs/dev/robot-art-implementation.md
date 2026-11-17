@@ -1308,3 +1308,5 @@ RobotGlyphIntegration の配送回帰を最終到着まで延長。９素材モ�
 2026-11-17 22:15 JST ９素材描画。共有レーン整理後の固定DLL SHA-256 BD220864A2724A9755C7801377F5CB5235D228289DA9D48F0DBF4E3D74D39564 で、紙の頭・段ボールの胴・メープルの脚を持つ混成機の頭の国籍だけを変更。28×52の隊長と頭の高さを合わせた一般兵で、差はそれぞれ56画素、全て頭の行に収まった。隔離RobotGlyphIntegration --shipments 全件通過、ビルド警告・エラー０。NAS tmp/delete-after-2026-11-17/glyph-captain-flag-2215/result.txt。次は胴と脚の国籍を個別に変更し、部位をまたぐ差がないか確認する。
 
 2026-11-17 23:21 JST ９素材描画。固定DLL SHA-256 BD220864A2724A9755C7801377F5CB5235D228289DA9D48F0DBF4E3D74D39564 で、紙・段ボール・メープル混成隊長を28×52で描画。国籍を胴だけ変更すると77画素（０始まりの29〜37行）、脚だけでは57画素（39〜46行）が変化し、いずれも該当部位内。隔離RobotGlyphIntegration --shipments 全件通過、警告・エラー０。NAS tmp/delete-after-2026-11-17/glyph-captain-body-legs-2321/result.txt。次は新しい地形描画を含む現行DLLで直送便の描画を再確認する。
+
+2026-11-18 00:19 JST ９素材描画。公開v0.12.0の展開DLL SHA-256 0992613CD27B12376C3D57DE43F22E9CAE1EB6ED4366DC23344E7A67D15695BC と同梱Contentで、直送便・長距離便、混成隊長の国旗と一体型、製造品入荷を含む隔離RobotGlyphIntegration --shipments 全件通過。ビルド警告・エラー０。NAS tmp/delete-after-2026-11-18/glyph-release-0019/result.txt。直前の廃品カタログ修正は公開ZIPより後の変更。次は修正版で廃品から回収した混成パーツの到着後描画を確認する。

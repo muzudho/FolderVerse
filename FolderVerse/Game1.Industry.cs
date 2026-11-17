@@ -36,7 +36,7 @@ public partial class Game1
         if(_setup.TutorialStep is 1 or 2 or 4 && _setup.Industry.Pending){
             _setup.Industry.Roll(_setup.PlacementSeed^_setup.FortuneSeed);_setup.Industry.Apply(_setup);_world.ShowSetup(_setup,true);
         }
-        if(!_setup.Industry.Pending){_screen=Screen.WorldStatus;RestoreDomesticCamera();OpenDisposition();return;}
+        if(!_setup.Industry.Pending){FinishIndustry();return;}
         _setup.Industry.Roll(_setup.PlacementSeed^_setup.FortuneSeed);
         int before=0;for(int i=0;i<_setup.Industry.SelectedSector;i++)before+=_setup.Industry.Wheel[i].Percent;
         _industryStartAngle=-MathHelper.PiOver2;
@@ -54,6 +54,10 @@ public partial class Game1
         BeginManufacturing();
     }
     private void FinishIndustry()
+    {
+        if(!BeginDiplomacy())EnterDomesticAfterIndustry();
+    }
+    private void EnterDomesticAfterIndustry()
     {
         _screen=Screen.WorldStatus;_world.ShowSetup(_setup,true);RestoreDomesticCamera();OpenDisposition();
     }
