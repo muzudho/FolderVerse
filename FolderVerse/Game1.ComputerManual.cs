@@ -123,6 +123,7 @@ public partial class Game1
         DrawComputerRuleCard("輸送　後方の余剰機を前線に送り、満杯の格納庫では交換も試みる。",860);
         DrawComputerRuleCard("捕虜　勧誘を優先し、断られたら解放交渉や電池取り外しを選ぶ。",910);
         DrawComputerRuleCard("素材　キャラクター固有の好みは設定されていない。",960);
+        DrawComputerRuleCard("再出撃　敗北したときより兵数を増やす。足りなければ保留し、相手の変化や５ターン経過後に再判断。",1010);
         _spriteBatch.End();
         DrawFullscreenCursor();
     }
