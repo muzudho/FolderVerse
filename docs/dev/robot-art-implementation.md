@@ -1296,3 +1296,11 @@ RobotGlyphIntegration の配送回帰を最終到着まで延長。９素材モ�
 2026-11-17 16:10 JST ９素材描画。現行隔離DLL SHA-256 73CA016B9D99AB8AC0193CCA716CE67AF100FA278D51268C3363AFFFBD2B0F19 で RobotGlyphIntegration --shipments が通過。長距離便の隊長と一体型は第１中継の保存復元前後で入荷予告の全画素が一致し、到着後も隊長と一体型の状態を保持。縮小描画の隊長差は上半分170画素。ビルド警告・エラー０。NAS tmp/delete-after-2026-11-17/glyph-current-captain-1610/result.txt。次は９材質すべての隊長描画を比較する。
 
 2026-11-17 17:14 JST ９素材描画。現行隔離DLL SHA-256 73CA016B9D99AB8AC0193CCA716CE67AF100FA278D51268C3363AFFFBD2B0F19 で長距離到着後の隊長を９素材に差し替え、28×52枠を同素材の一般兵と比較。全９種で隊長帽による差は上半分170画素、下半分は一致し、９素材の下半分はそれぞれ異なる。RobotGlyphIntegration --shipments 全件通過、最終ビルド警告・エラー０。NAS tmp/delete-after-2026-11-17/glyph-nine-captains-1714/{result.txt,nine-compact-captains.png}。９素材の比較は着荷後の描画に限定。次は異素材の頭・胴・脚と隊長帽を組み合わせた縮小描画を検証する。
+
+2026-11-17 18:10 JST ９素材描画。固定DLL SHA-256 73CA016B9D99AB8AC0193CCA716CE67AF100FA278D51268C3363AFFFBD2B0F19 で、頭・胴・脚が異なる隊長９組を28×52で検証。各素材が各部位に１度ずつ出る構成。一般兵との差は全組で上半分170画素、下半分は同一で、９組の下半分はそれぞれ異なった。RobotGlyphIntegration --shipments 全件通過、ビルド警告・エラー０。NAS tmp/delete-after-2026-11-17/glyph-mixed-captains-1810/{result.txt,mixed-compact-captains.png}。混成９組は到着後の描画用として設定。次は同一機体の１部位だけを替え、描画差を確認する。
+
+2026-11-17 19:18 JST ９素材描画。固定DLL SHA-256 73CA016B9D99AB8AC0193CCA716CE67AF100FA278D51268C3363AFFFBD2B0F19 で混成隊長の１部位ずつを変更。28×52の先頭を０行とすると、頭は251画素・12〜26行、胴は246画素・26〜39行、脚は136画素・39〜50行。初回に帽子用の割付13行全体を不変とした判定は、頭の差が12行目に１行入るため修正し、実測行を記録した。帽子の不透明画素だけの不変性は未検証。隔離RobotGlyphIntegration --shipments 全件通過、警告・エラー０。NAS tmp/delete-after-2026-11-17/glyph-captain-single-part-1918/result.txt。次は帽子を単独描画して重なりを照合する。
+
+2026-11-17 20:12 JST ９素材描画。固定DLL SHA-256 73CA016B9D99AB8AC0193CCA716CE67AF100FA278D51268C3363AFFFBD2B0F19 の28×52隊長帽を黒・白背景で単独描画し、頭素材変更と照合。RGBが両背景で完全一致する画素は０、差が最大１の１画素は素材変更で同一。帽子が背景に寄与する171画素中51画素は頭素材変更で差が出た。半透明の帽子が頭と重なる合成結果であり、素材変更で帽子テクスチャ自体が変わることは示さない。隔離RobotGlyphIntegration --shipments 全件通過、最終ビルド警告・エラー０。NAS tmp/delete-after-2026-11-17/glyph-captain-mask-2012/result.txt。次は半透明境界の変化が合成式で説明できるか比較する。
+
+2026-11-17 21:11 JST ９素材描画。共有レーン整理後の固定DLL SHA-256 BD220864A2724A9755C7801377F5CB5235D228289DA9D48F0DBF4E3D74D39564 で、一般兵の素体を隊長と同じ寸法に合わせ、単独の帽子を同位置に重ねると、混成基準・頭変更・胴変更・脚変更の４枠（各28×52）が通常の隊長描画と全画素一致。帽子領域内の頭変更51／171画素は同じ帽子と素体の重ね合わせで再現。隔離RobotGlyphIntegration --shipments 全件通過、警告・エラー０。NAS tmp/delete-after-2026-11-17/glyph-cap-composition-2111/result.txt。次は混成隊長の国旗変更を帽子と別に検証する。
