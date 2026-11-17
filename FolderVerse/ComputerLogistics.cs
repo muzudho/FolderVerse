@@ -108,6 +108,20 @@ public static class ComputerLogistics
                     catch(InvalidOperationException){continue;}
                 }
             }
+            foreach(var node in nodes){
+                int id=node.Id;
+                var store=stock.Nodes[id];
+                var shop=stock.Workshops[id];
+                if(Busy(id) || shop.Automation==NodeAutomation.Manual || store.WarehouseLimit is not int limit ||
+                    store.TotalCapacity>=limit || store.Count+shop.ReservedSlots<store.StorageLimit)continue;
+                var ready=battles.SelectableRobots(w,owner,id,false).Select(r=>r.Id).ToHashSet();
+                var keeper=store.Robots.Where(r=>!r.WarehouseKeeper && !r.FactoryWorker && !r.DefenseOnly && !r.InterceptOnly &&
+                        (ready.Count>1 || !ready.Contains(r.Id)) && !stock.AssemblyLocked(id,r) &&
+                        stock.CanSetReservation(id,r,HangarReservation.Warehouse,owner))
+                    .OrderBy(r=>ready.Contains(r.Id)).ThenBy(r=>r.Equipment(owner,w.EquipmentMode).Total).ThenBy(r=>r.Id)
+                    .FirstOrDefault();
+                if(keeper!=null)stock.PartPlanning.ReserveRole(w,id,keeper.Id,HangarReservation.Warehouse,owner);
+            }
         }
     }
 

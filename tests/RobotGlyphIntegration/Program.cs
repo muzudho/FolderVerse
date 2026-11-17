@@ -672,6 +672,7 @@ sealed class GlyphProbe:Game1
    twoFactoryStock.SetIntakeTarget(lane,commonBayNode);
    setPackages.Invoke(twoFactoryStock.Nodes[factoryNode],new object[]{new[]{ppRemainder with {Id=nextPackageId++}}});
   }
+  var rawContestWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(twoFactoryWorld));
   twoFactoryStock.AdvanceIndustry(n=>twoFactoryWorld.Nodes.All[n].Owner);
   var firstFactoryIntake=twoFactoryStock.ProductionIntakes.Single();
   if(firstFactoryIntake.Source!=plants[0] || firstFactoryIntake.Target!=commonBayNode ||
@@ -691,6 +692,34 @@ sealed class GlyphProbe:Game1
      twoFactoryStock.Nodes[plants[1]].MaplePackages.Single().Units!=8)
    throw new Exception("Restoring must preserve the first product and the second factory's wait and PP.");
   var resolveIntakes=typeof(RobotWorld).GetMethod("ResolveProductionIntakes",Flags)!;
+  var rawContestStock=rawContestWorld.Robots;
+  rawContestStock.ConfigureFactories(rawContestWorld);
+  var competingPackage=ppRemainder with {Id=nextPackageId,Units=48};
+  var rawContestSource=rawContestStock.Nodes[plants[0]];
+  setPackages.Invoke(rawContestSource,new object[]{rawContestSource.MaplePackages.Append(competingPackage).ToArray()});
+  if(!rawContestStock.ReserveMapleShipment(rawContestWorld,plants[0],commonBayNode,competingPackage.Id))
+   throw new Exception("The empty target must allow booking a full-size raw package.");
+  rawContestStock.AdvanceIndustry(n=>rawContestWorld.Nodes.All[n].Owner);
+  var competingProduct=rawContestStock.ProductionIntakes.Single().Product;
+  rawContestWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(rawContestWorld));
+  rawContestStock=rawContestWorld.Robots;
+  rawContestStock.ConfigureFactories(rawContestWorld);
+  var rawContestBay=rawContestStock.Nodes[commonBayNode];
+  if(!rawContestWorld.Campaign.FinishDomestic(rawContestWorld) ||
+     rawContestBay.Robots.Single()!=competingProduct ||
+     rawContestStock.ProductionIntakes.Count!=0 ||
+     rawContestStock.MapleShipments.Single().PackageId!=competingPackage.Id ||
+     rawContestStock.Nodes[plants[0]].MaplePackages.Single()!=competingPackage ||
+     rawContestStock.Nodes[plants[1]].MaplePackages.Single().Units!=8)
+   throw new Exception("The restored product intake must take the bay and leave the PP shipment and second factory waiting.");
+  rawContestBay.Remove(competingProduct.Id);
+  resolveRaw.Invoke(rawContestStock,new object[]{rawContestWorld});
+  resolveRaw.Invoke(rawContestStock,new object[]{rawContestWorld});
+  if(rawContestStock.MapleShipments.Count!=0 ||
+     rawContestStock.Nodes[plants[0]].MaplePackages.Count!=0 ||
+     rawContestBay.MaplePackages.Single()!=competingPackage)
+   throw new Exception("Freeing the bay must admit the waiting package exactly once.");
+  Console.WriteLine("PASS a restored product intake takes the shared bay before a competing raw shipment.");
   var expandedIntakeWorld=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(twoFactoryWorld));
   var expandedIntakeStock=expandedIntakeWorld.Robots;
   expandedIntakeStock.ConfigureFactories(expandedIntakeWorld);

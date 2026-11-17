@@ -21,6 +21,16 @@ public sealed class NodeFunctionTransfers
     internal IEnumerable<int> ValidSources(WorldSetup w)=>Orders
         .Where(o=>!o.FactoryOnly && Available(w,o.Source,o.Target,false,false) && w.Nodes.All[o.Source].Owner==o.Owner)
         .Select(o=>o.Source);
+    private static int MergedWarehouseLimit(IEnumerable<RobotStore> stores)=>
+        Math.Min(MaximumCapacity,stores.Sum(store=>store.WarehouseLimit??store.TotalCapacity));
+
+    internal static void MergeHangarCapacity(RobotStore source,RobotStore target)
+    {
+        if(target.WarehouseLimit.HasValue)
+            target.SetWarehouseLimit(MergedWarehouseLimit(new[]{source,target}));
+        else target.SetCapacity(checked(target.TotalCapacity+source.TotalCapacity));
+    }
+
     private bool Available(WorldSetup w,int source,int target,bool authority,bool factoryOnly)
     {
         if(w.Campaign.Phase!=CampaignPhase.Domestic || source<0 || target<0 || source>=w.Nodes.All.Length || target>=w.Nodes.All.Length || source==target)return false;
@@ -47,7 +57,9 @@ public sealed class NodeFunctionTransfers
             var stores=incoming.Select(n=>w.Robots.Nodes[n]).ToArray();
             var robots=stores.SelectMany(s=>s.Robots).Concat(Orders.Where(o=>o.FactoryOnly && o.Source!=source && o.Target==target)
                 .SelectMany(o=>w.Robots.Nodes[o.Source].Robots.Where(r=>r.FactoryWorker))).ToArray();
-            if(!w.Robots.Nodes[target].Fits(robots,stores.SelectMany(s=>s.MaplePackages),incoming.Sum(n=>workshops[n].ReservedSlots)))return false;
+            int developed=Math.Min(MergedWarehouseLimit(stores),1+4*robots.Count(r=>r.WarehouseKeeper));
+            if(!w.Robots.Nodes[target].Fits(robots,stores.SelectMany(s=>s.MaplePackages),
+               incoming.Sum(n=>workshops[n].ReservedSlots),developed))return false;
         }
         else if(capacity>MaximumCapacity)return false;
         return a.Functional && b.Functional && (!authority || w.Relations.Controls(a.Owner) && w.Relations.Controls(b.Owner)) && w.Relations.Allied(a.Owner,b.Owner) &&
@@ -93,7 +105,7 @@ public sealed class NodeFunctionTransfers
                 w.Robots.SyncWorkers(b);
                 continue;
             }
-            if(!target.WarehouseLimit.HasValue)target.SetCapacity(checked(offset+source.TotalCapacity));
+            MergeHangarCapacity(source,target);
             target.Replace(target.Robots.Concat(source.Robots.Select(r=>(r.DefenseOnly?r.WithoutDefenseReservation():r) with {FunctionDisplayNode=r.FunctionDisplayNode??a})).ToArray());
             w.Robots.TransferMapleFunctions(a,b);
             source.Replace(Array.Empty<Robot>());source.SetCapacity(0);

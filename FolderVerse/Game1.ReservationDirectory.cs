@@ -80,7 +80,7 @@ public partial class Game1
         if(_reservationDirectory)_ui.Button(ReservationDirectoryClose,"×",Muted,.55f);
         if(r.Contains(_pointer)){
             _ui.Box(new(390,136,360,30),new Color(7,23,35));
-            _ui.Center("予約の掲示板 / 地点のロボット数",new(390,136,360,30),.32f,Cream);
+            _ui.Center("掲示板 / 予約と地点の開発状況",new(390,136,360,30),.32f,Cream);
         }
     }
     private void DrawDirectoryRoleIcon(int kind,Rectangle r,Color ink,bool sea=false)
@@ -118,7 +118,15 @@ public partial class Game1
             .OrderByDescending(s=>s.Counts.Any(n=>n>0)).ThenBy(s=>s.Node.Id);
         foreach(var site in sites){
             var node=site.Node;var counts=site.Counts;string status=site.Status;int rows=counts.Count(n=>n>0);
-            if(rows==0 && status.Length==0 || !OperationPosition(node.Id,out var at))continue;
+            if(!node.Functional && rows==0 && status.Length==0 || !OperationPosition(node.Id,out var at))continue;
+            if(rows==0 && status.Length==0){
+                var marker=new Rectangle((int)at.X-7,(int)at.Y-7,14,14);
+                if(map.Contains(marker) && !covered.Any(r=>r.Intersects(marker))){
+                    PrimaryRoundBox(marker,marker.Contains(_pointer)?Cream:new Color(95,153,166));
+                    _directoryHits.Insert(0,(marker,node.Id));
+                }
+                continue;
+            }
             const int height=24;
             string[] amounts=counts.Select((n,i)=>i==4?DirectoryTransportAmount(n):n.ToString()).ToArray();
             int width=rows==0?48:Math.Max(70,32+(int)MathF.Ceiling(amounts.Max(t=>_font.MeasureString(t).X)*.43f));
@@ -165,13 +173,36 @@ public partial class Game1
             DrawDirectoryRoleIcon(i,new(r.X+5,r.Y+5,20,20),ink);
             _ui.Center(DirectoryLabels[i],new(r.X+28,r.Y,r.Width-28,r.Height),.30f,ink);
         }
-        _ui.Text("全地域 / ０は非表示 / 輸送は送り元の直送便予約：頭・胴・脚を各1/3台",new(1000,326),.25f,Cream);
+        _ui.Text("地点の目印にカーソルを合わせると、レーンと格納庫の開発状況を表示",new(1000,326),.25f,Cream);
+        _ui.Text("予約０は非表示 / 輸送は送り元の直送便予約：頭・胴・脚を各1/3台",new(1000,344),.25f,Cream);
         foreach(var hit in _directoryHits.AsEnumerable().Reverse())if(hit.Bounds.Contains(_pointer)){
             var node=_setup.Nodes.All[hit.Node];
             string hint=DirectoryTurnHint(DirectoryTurnStatus(node.Owner));
             string label=_setup.Nodes.Label(node)+(hint.Length>0?" / "+hint:"")+" / クリックで地点を開く";
-            _ui.Box(new(990,376,850,36),new Color(7,23,35));
-            _ui.Center(label,new(990,376,850,36),Math.Min(.32f,830/_font.MeasureString(label).X),Cream);break;
+            _ui.Box(new(990,376,710,102),new Color(7,23,35,248));
+            _ui.Center(label,new(990,376,710,30),Math.Min(.32f,690/_font.MeasureString(label).X),Cream);
+            var stock=_setup.Robots;
+            var workshop=stock.Workshops[node.Id];
+            var store=stock.Nodes[node.Id];
+            int lanes=node.Functional && node.Purpose!=NodePurpose.Relay?workshop.LineLimit:0;
+            int capacity=node.Functional?store.TotalCapacity:0;
+            DrawDirectoryDevelopment(410,"レーン開発",lanes>0?workshop.ProductionLines.Length:0,lanes,lanes);
+            DrawDirectoryDevelopment(442,"格納庫開発",node.Functional?store.Count+store.ReservedReturns:0,capacity,
+                node.Functional?store.WarehouseLimit??capacity:0);
+            break;
         }
+    }
+
+    private void DrawDirectoryDevelopment(int y,string label,int used,int developed,int maximum)
+    {
+        _ui.Text(label,new(1002,y),.32f,Cream);
+        var bar=new Rectangle(1135,y+2,305,16);
+        _ui.Box(bar,new Color(38,64,78));
+        int Width(int amount)=>maximum==0?0:bar.Width*Math.Clamp(amount,0,maximum)/maximum;
+        int developedWidth=Width(developed),usedWidth=Width(used);
+        if(developedWidth>0)_ui.Box(new(bar.X,bar.Y,developedWidth,bar.Height),new Color(79,128,146));
+        if(usedWidth>0)_ui.Box(new(bar.X,bar.Y,usedWidth,bar.Height),new Color(135,218,192));
+        string amounts=label=="格納庫開発"?$"使用 {used} / 開発 {developed} / 上限 {maximum}":$"使用 {used} / 上限 {maximum}";
+        _ui.Text(amounts,new(1450,y),.31f,Cream);
     }
 }

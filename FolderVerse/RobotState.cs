@@ -121,8 +121,8 @@ public sealed class RobotStore
     internal void SetWarehouseLimit(int limit)=>_warehouseLimit=limit;
     internal int CapacityFor(IEnumerable<Robot> robots)=>_warehouseLimit is int limit && _capacity!=0
         ?Math.Min(limit,1+4*robots.Count(r=>r.WarehouseKeeper)):_capacity??Capacity;
-    internal bool Fits(IEnumerable<Robot> robots,IEnumerable<MaplePackage> packages,int reserved)
-        =>OccupiedSlots(robots,packages)+reserved<=CapacityFor(robots);
+    internal bool Fits(IEnumerable<Robot> robots,IEnumerable<MaplePackage> packages,int reserved,int? capacity=null)
+        =>OccupiedSlots(robots,packages)+reserved<=(capacity??CapacityFor(robots));
     internal void SetCapacity(int capacity){if(capacity<Count+ReservedReturns)throw new InvalidOperationException("Occupied hangar capacity.");_capacity=capacity;}
     private readonly List<Robot> _robots=new();
     public IReadOnlyList<Robot> Robots=>_robots;
