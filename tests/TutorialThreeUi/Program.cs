@@ -1,4 +1,4 @@
-﻿using FolderVerse;
+using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -47,10 +47,17 @@ sealed class MapLessonGame:Game1
  object Call(string n,params object[] a)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,a)!;
  object Prop(string n)=>typeof(Game1).GetProperty(n,F)!.GetValue(this)!;
  static void Check(bool ok,string text){if(!ok)throw new Exception(text);}
+ void Click(Point point){
+  var canvas=(Rectangle)Call("CanvasBounds");
+  int x=canvas.X+(int)Math.Round(point.X*canvas.Width/1920d);
+  int y=canvas.Y+(int)Math.Round(point.Y*canvas.Height/1080d);
+  foreach(var state in new[]{ButtonState.Released,ButtonState.Pressed,ButtonState.Released})
+   Call("HandleInput",new MouseState(x,y,0,state,0,0,0,0),new KeyboardState(),new GameTime(),true);
+ }
  void Guide(int id){Call("UpdateTutorialStartGuide",100d);Check((bool)Get("_tutorialAttackGuide") && (int)Get("_tutorialGuideMessage")==id,"Expected map guide "+id);Set("_animationTime",(float)Get("_tutorialGuideStarted")+1);Call("UpdateTutorialChrome",.35f);}
  void Dismiss(){Set("_tutorialAttackGuide",false);Call("UpdateTutorialChrome",.35f);}
  protected override void LoadContent(){
-  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_autoSaveEnabled",false);
+  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_autoSaveEnabled",false);Set("_tutorialAchievements",new TutorialAchievements(Path.Combine(AppContext.BaseDirectory,"map-lesson-achievements.json")));
   Check((bool)Get("_conquestOverviewEnabled"),"Overview remains enabled globally");
   foreach(string begin in new[]{"BeginTutorialStepOne","BeginTutorialStepTwo","BeginTutorialStepThree"}){
    Call(begin);var tutorial=(WorldSetup)Get("_setup");Check((bool)Prop("TutorialPrimaryActionsDisabled")== (tutorial.TutorialStep==3),"Primary actions are disabled only in step three");Check(!(bool)Get("_conquestOverview"),begin+" skips initial conquest overview");
@@ -58,9 +65,17 @@ sealed class MapLessonGame:Game1
   }
   typeof(WorldSetup).GetProperty("TutorialStep")!.SetValue(Get("_setup"),0);Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");Check((bool)Get("_conquestOverview"),"Normal game still starts overview after tutorials");Call("FinishConquestOverview");
 
-  Set("_pointer",((Rectangle)typeof(Game1).GetMethod("TutorialPlanetCard",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{0})!).Center);Call("TutorialMenuInput",true,false,false,new KeyboardState());
-  Set("_pointer",new Point(1000,Journey?552:722));Call("TutorialMenuInput",true,false,false,new KeyboardState());w=(WorldSetup)Get("_setup");net=(CubeNet)Get("_net");
-  Check(w.TutorialStep==(Journey?1:3) && w.TutorialMapBeforeWar==Journey && w.PlayerSlot==0 && w.HumanPlayers.SequenceEqual(new[]{0}) && (bool)Get("_statusGlobe"),"Menu starts step three with player one as No.1 on globe");
+  if(Journey){
+   Call("ReturnToTitle");
+   Click(new Point(960,930));
+   Click(new Point(960,417));
+   var card=(Rectangle)typeof(Game1).GetMethod("TutorialPlanetCard",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{0})!;
+   Click(card.Center);
+   Check(Get("_screen").ToString()=="OpeningBook","Petitstella opens the storybook");
+   Click(new Point(1675,55));
+  }else Call("BeginTutorialStepThree");
+  w=(WorldSetup)Get("_setup");net=(CubeNet)Get("_net");
+  Check(w.TutorialStep==(Journey?1:3) && w.TutorialMapBeforeWar==Journey && w.PlayerSlot==0 && w.HumanPlayers.SequenceEqual(new[]{0}) && (bool)Get("_statusGlobe"),"Map lesson starts with player one as No.1 on globe");
   if(Journey){
    Check(w.Width==1 && w.Height==1 && w.Depth==1 && w.ActiveCount==6,"Integrated tutorial retains step-one dice world and cast");
    for(int i=0;i<6;i++)Check(!(bool)Call("TutorialPrimaryActionAllowed",i),"All primary actions start disabled");

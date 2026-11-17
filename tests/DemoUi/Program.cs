@@ -42,7 +42,16 @@ sealed class DemoCheck:Game1
         Check(Get("_screen").ToString()=="Rolling","Demo did not confirm computer count");
         Check(confirm.Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Computer count click misses confirm");
         bool transport=false;
-        for(int i=0;i<900 && !transport;i++){Tick(1);transport|=Get("_screen").ToString()=="Transport";}
+        bool overview=false,directMap=false,directPair=false;
+        for(int i=0;i<900 && !transport;i++)
+        {
+            Tick(1);
+            transport=Get("_screen").ToString()=="Transport";
+            overview|=(bool)Get("_transportOverview");
+            directMap|=(bool)Get("_directMap");
+            directPair|=(bool)Get("_directPairOpen");
+        }
+        Console.WriteLine($"Natural delivery flags before first transport: overview={overview}, directMap={directMap}, directPair={directPair}");
         Check(transport,$"Demo did not enter propagation: screen={Get("_screen")} age={Get("_demoAge")} stage={Get("_demoDomesticStage")}");
         Console.WriteLine("first transport: "+Snapshot());
         double before=(double)Get("_demoAge");Tick(1,active:false);Check((double)Get("_demoAge")>before,"Inactive demo stopped");
@@ -64,6 +73,9 @@ sealed class DemoCheck:Game1
         for(int i=0;i<1200;i++)
         {
             Tick(1d/18,active:false);
+            overview|=(bool)Get("_transportOverview");
+            directMap|=(bool)Get("_directMap");
+            directPair|=(bool)Get("_directPairOpen");
             if(Get("_screen").ToString()!="WorldStatus")break;
             sawGlobe|=(bool)Get("_statusGlobe");sawNet|=!(bool)Get("_statusGlobe");sawEdgeAnimation|=net.IsAnimating;
             resumedDomestic|=(int)Get("_demoMapStage")>=5 && (int)Get("_demoDomesticStage")>0;
@@ -71,6 +83,7 @@ sealed class DemoCheck:Game1
         }
         Check(sawGlobe && sawNet && sawEdgeAnimation,"Demo did not demonstrate globe/net and edge relocation");
         Check(resumedDomestic,"Demo map explanation did not resume domestic actions");
+        Console.WriteLine($"Follow-up delivery flags: overview={overview}, directMap={directMap}, directPair={directPair}");
         Console.WriteLine("map follow-up: "+Snapshot());
         Check((int)Get("_demoMapVisits")>0,$"Demo map explanation did not resume gameplay: stage={Get("_demoMapStage")} age={Get("_demoMapAge")} screen={Get("_screen")} step={Get("_demoStepAge")}");
         var world=(WorldSetup)Get("_setup");

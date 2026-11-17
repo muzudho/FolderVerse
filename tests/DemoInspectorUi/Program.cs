@@ -48,6 +48,7 @@ sealed class DemoInspectorChecks:Game1{
    Check(button.Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Movement click misses visible button");
   }
   if(frame==9){
+   Console.WriteLine($"Demo movement follow-up: stage={Get("_demoDomesticStage")}, overview={Get("_transportOverview")}, movement={Get("_movementOpen")}");
    Call("ResetInspector");Set("_screen",Enum.Parse(Get("_screen").GetType(),"PlayerCount"));
    Set("_demoActive",true);Set("_demoIntro",false);Set("_demoStepAge",0d);Call("UpdateDemo",2.99d,true,false,false,false,100d);
   }

@@ -95,7 +95,7 @@ class Checks:Game1{
   var empty=CellMargin(0,visibleSlots.First(slot=>!leftSlots[slot].HasValue));Set("_pointer",empty);
   Call("DirectPairInput",Mouse(empty,ButtonState.Pressed),true,false);
   var guidance=(string)Get("_directMessage");var font=(SpriteFont)Get("_font");
-  Check(guidance.Contains("パーツ単位") && font.Characters.Contains('単') && font.MeasureString(guidance).X>0,"Empty-slot guidance has every glyph required for rendering");
+  Check(guidance=="その区画は一括移動できません" && guidance.All(font.Characters.Contains) && font.MeasureString(guidance).X>0,"Empty-slot guidance has every glyph required for rendering");
   w.EquipmentMode=RobotEquipmentMode.Materials;
   typeof(RobotWorld).GetMethod("InitializeMapleSupply",F)!.Invoke(w.Robots,new object[]{w});
   long cargo=w.Robots.Create(0,RobotParts.Head).Id;

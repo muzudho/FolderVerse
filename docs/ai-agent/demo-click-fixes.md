@@ -1211,3 +1211,43 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 - CPU内政の操作表示中だけ、表示中の征服者が所有する地点を既存の管理権判定で扱う。通常入力の部品・予約・ドロップの判定と、実在庫へ反映する配送処理を共有する。
 - 08:00回と同じNAS出力先で診断プロジェクトをビルド。警告1（旧EXEの削除拒否）、エラー0。`ALSOFT_DRIVERS=null` と上記条件で診断DLLを `dotnet` で実行。15:58:10の通常再生で960×540の描画、部品201の取得、対象200へのドロップ1回、人間への復帰と配送遷移を確認。15:58:27は `NEW_LAND_SKIP=1` でドラッグ中に再生をスキップ、15:58:43は `NEW_LAND_OFF=1` で表示オフ。すべて終了0。地点50の配送後在庫は3条件とも `199:Complete;202:Complete;200:Complete`。
 - 最初の修正後診断の例外は、消費済みの部品を診断が再参照したため。診断を修正して再実行した。元のCPU30ではAI計画後に組み立て予定がなく、地点選択の不具合は要再確認。物理Escと元配置への通常UI経由の到達は未確認。
+
+## 2026-11-17 08:25修正回
+
+- DEMO-0025 完了（08:28 JST）。HEAD `c2a8113c61cf724993429c4f4c62db87a4185d4f`。08:21回で同一ゲーム・テストソースの失敗を取得済み。変更は `tests/DirectDeliveryUi/Program.cs` の空き区画アサーションと両記録。現行文言「その区画は一括移動できません」、全文字のフォント収録、計測幅を確認する。
+- `dotnet build tests/DirectDeliveryUi/DirectDeliveryUi.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal`。08:26:35起動・作成、PID 11104、上限600秒。08:27:55終了0、警告・エラー0。
+- `ALSOFT_DRIVERS=null` で同出力の `bin/DirectDeliveryUi/debug/DirectDeliveryUi.dll` を `dotnet` 実行。08:27:55起動・作成、PID 21524、上限300秒。08:28:18終了0。退避・復帰、左右格納庫、予約保持、540pの地星儀・展開図の連続クリック、カメラ遷移と実描画の診断がPASS。証拠は同出力の `DirectDelivery-{build,run}-0825.{stdout,stderr}.log`。
+- 案内文単体の目視、自然Demoの地点11再クリック・予約保持・進軍、CPU30と軍事の自然退避は未確認。
+
+## 2026-11-17 09:26修正回
+
+- DEMO-0016のCPU7地点105を修正。09:26回、完了 09:40:09 JST。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。変更は FolderVerse/Game1.ComputerMarches.cs、FolderVerse/Game1.StatusGlobe.cs、既存の非追跡診断 ProbeCpuSortie.cs.txt、Demo両記録。
+- 世界84・配役123・配置456の修正前診断で39指示中1回の自然退避を再現。内訳の診断ではスライド後、目標105は表示され、許可候補に含まれたが、その表示中心(1310,552)は通常判定で隣の106に当たり、許可候補で絞ると-1。表示位置だけの共有では退避が残った。
+- 地星儀の地点表示位置の計算を通常ヒットテストと共有。中心が対象に当たらない場合に限り近傍の座標を調べ、通常のヒットテストで対象地点が選べる座標を既存の MovementClick に渡す。本件では(1314,548)で目標105を選択し、段階2へ進んだ。実行は既存のAI指示解決経路を使用する。
+- 既存NASの demo-audit で dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。修正前09:27:07 PID 23636→09:27:50、最終09:38:11 PID 22312→09:38:53。いずれも上限600秒、終了0、警告・エラー0。途中の検証診断の名前・リフレクション指定の誤りは修正して再実行した。
+- 同出力の bin/DemoAuditCpuSortie/debug/DemoAuditCpuSortie.dll を ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=84、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 で dotnet 実行。修正前09:27:50 PID 30256→09:28:21、最終09:38:53 PID 26324→09:39:30、上限各300秒、終了0。最終はCPU1の通常出撃と赤チェック、CPU7の地図選択、第一軍事39指示・第二軍事30指示とも専用表示への退避0、人間への復帰を確認。証拠は Cpu7-baseline-*-0926、Cpu7-hit-*-0935、Cpu7-overlap-*-0938 の標準出力・標準エラーと cpu7-target105.png（960×540）。
+- 完了はこの再現条件での地点選択。ほかの重なり、展開図の再回帰、表示オフ・スキップとの最終結果比較、物理Escは今回未確認。通常UIで有効な座標が得られない場合は専用表示を使用。
+
+- 09:43回の追加回帰（09:45:41 JST）。直前の修正と同じDLLを再利用。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=84、FOLDERVERSE_AUDIT_CONFIRM_COMPLETION=normal/skip で、CPU1の出撃画面から通常再生と通常入力処理へのEscapeキー状態注入を比較。両方終了0、上限各300秒。進軍一覧にCPU7の169→105が1件あり、進軍・取消・戦闘参加個体が両方で一致。人間へ復帰し予約残数0。証拠は既存NAS内の Cpu7-{normal,skip}-0944.{stdout,stderr}.log。表示オフ・物理Escは未確認。追加コード変更なし。
+
+## 2026-11-17 11:20修正回
+
+- DEMO-0024の追加検証。終了 11:24:03 JST。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。既存の非追跡診断 ProbeCpuSortie.cs.txt の表示オフ時の在庫出力地点を指定できるようにした。ゲームコードの追加変更なし。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。11:21:29 PID 18212→11:22:55、上限600秒、終了0・警告とエラー0。
+- 11:01点検の世界62・CPU30と同条件で、同出力の DemoAuditCpuSortie.dll を dotnet 実行。FOLDERVERSE_AUDIT_NEW_LAND_STOCK_NODE=3、追加条件は NEW_LAND_OFF=1 または NEW_LAND_SKIP=1（同じ接頭辞）。オフは11:22:55 PID 10284→11:23:15、ドラッグ中スキップは11:23:15 PID 5356→11:23:35。上限各300秒、終了0。
+- 通常・表示オフ・ドラッグ中スキップで配送時の地点3在庫はすべて 12:Complete;15:Body;16:Body;13:Complete。通常再生のドロップ1回に対し、スキップは表示上のドロップ0回でも実行結果が一致。人間に復帰。証拠は Cpu30-world62-{off,skip}-1121.{stdout,stderr}.log と比較元 Cpu30-world62-run-1101.stdout.log。スキップは診断の更新入力。物理Escと世界61・地点1は要再確認。
+
+## 2026-11-17 15:24修正回
+
+- DEMO-0016関連の展開図を再確認。開始15:24:10、終了 15:26:45 JST。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。変更は既存の非追跡診断 ProbeCpuSortie.cs.txt と両記録。ゲームコード変更なし。展開図の原因は要再確認。
+- 診断に地図切替と同じ StartMapTransition／UpdateMapTransition を通してからCPU1の最初の指示を進めるよう変更。960×540・世界84で、地星儀では開けた地点89の出撃画面が展開図では開かず、段階・選択・ピッカーがすべて-1。CPU切替直後に診断から遷移を呼んだため、プレイヤー入力からの到達と退避開始段階は未確認。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。15:24:44起動・作成 PID 29036、上限600秒、15:25:26終了0・警告とエラー0。同出力の bin/DemoAuditCpuSortie/debug/DemoAuditCpuSortie.dll を ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=84、FOLDERVERSE_AUDIT_SECOND_MILITARY=1、FOLDERVERSE_AUDIT_MILITARY_NET=1 で実行。15:25:26要求・15:25:27作成 PID 18348、上限300秒、15:26:11終了-532462766。証拠は CpuMilitary-net-{build,run}-1524.{stdout,stderr}.log。
+- 次回は展開図の地点89で退避直前の座標・有効候補・通常ヒットを採取。15:24回では矩形やヒット判定の修正は未実施。世界84・地星儀の地点105の修正完了は09:26回と14:59点検を参照。
+
+## 2026-11-17 15:45修正回
+
+- DEMO-0016の展開図条件を修正。開始15:45:09、完了 15:49:56 JST。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。変更は FolderVerse/Game1.ComputerMarches.cs とDemo両記録。修正前は15:41点検で通常地図遷移後の世界84・CPU1・地点89を再現。
+- 展開図でインスペクターが開いた後に目標地点が地図範囲の外に出た場合、既存のカメラ調整で狙い直して再投影し、通常ヒット判定と入力で選択する。修正後は論理(1440,552)で地点89を選択し、3体のクリック、確定、赤チェックを960×540の描画付きで確認。CPU7・地点105の地星儀も成功。第一軍事39指示・第二軍事30指示で専用表示への退避0、人間へ復帰。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。15:45:30起動・作成 PID 24640、上限600秒、15:46:53終了0、警告・エラー0。同出力の bin/DemoAuditCpuSortie/debug/DemoAuditCpuSortie.dll を ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=84、FOLDERVERSE_AUDIT_SECOND_MILITARY=1、FOLDERVERSE_AUDIT_MILITARY_NET=1 で実行。15:46:53要求・15:46:54作成 PID 7056、上限300秒、15:47:30終了0。
+- 同じDLL、FOLDERVERSE_AUDIT_CONFIRM_COMPLETION=normal/skip/off。通常15:47:47 PID 29260→15:48:20、スキップ15:48:20要求・15:48:21作成 PID 28720→15:48:51、オフ15:48:51 PID 28988→15:49:22。各上限300秒、全て終了0。進軍・取消・戦闘参加一覧が一致し、人間に復帰、予約残数0。証拠は CpuMilitary-net-fixed-{build,run,normal,skip,off}-1545.{stdout,stderr}.log と audit-latest-computer-confirm.png／audit-latest-cpu-red.png。
+- 展開図の切替は診断から通常遷移処理を呼んだ。物理入力と物理Escは未確認。有効な地点を通常の入力判定で選べない場合は専用表示へ退避する。

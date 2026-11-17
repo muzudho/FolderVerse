@@ -3852,3 +3852,322 @@
 - `dotnet build tests/DemoInspectorUi/DemoInspectorUi.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers -p:NuGetAudit=false -p:UseAppHost=false -v quiet` を実行。PID 21964、終了時点でビルド結果未取得のため点検を中断。DirectDeliveryUi、DemoChecksUi、クリック・実描画・解像度は未確認。新規採番・ゲームコード変更なし。
 - 次回は当該ビルドと後続ビルドの終了を確認し、成功した検証DLLから再開。地点11の赤チェック後の再選択と予約保持、閉鎖から進軍までの自然経路は未確認。
 - 点検終了 08:06:45 JST。
+
+### 実行履歴：2026-11-17 08:21回
+
+- 開始08:21:50、終了08:24 JST。部分点検完了。HEAD `c2a8113c61cf724993429c4f4c62db87a4185d4f`。作業ツリーは既存の非追跡チュートリアル記録のみ。08:02回のビルド結果を回収し、3件とも警告・エラー0。ビルド時のHEADからゲーム・テストソース差分なし。
+- 既存NAS出力の各DLLを `ALSOFT_DRIVERS=null` で順次実行。各上限5分、同出力の `<対象>-0821.stdout.log` と `<対象>-0821.stderr.log` に記録。起動・作成時刻／PID／終了は DemoInspectorUi 08:22:27／28072／08:22:54・0、DirectDeliveryUi 08:22:55／16040／08:23:22・-532462766、DemoChecksUi 08:23:22／30404／08:23:42・0。
+- 1080p・540pで工場プランの実矩形、製造、地点監督・閉じる・輸送プライマリーを確認。展開図・地星儀で緑・赤クリック、即予約、閉鎖・ターン終了、表示モード別保持・消去を確認。直送便は退避復帰と移動中の入力抑制、閉じる・EscまでPASS。その後は下記の診断失敗で中断。
+- 次回は直送便診断が現行メッセージを検査するよう整え、左右格納庫の残りと実描画を再確認する。自然経路の地点11再クリック・予約保持・進軍、CPU30と軍事の自然退避・物理Escは未確認。ゲームコード変更なし。
+
+### DEMO-0025 直送便の空き区画テストが旧文言を要求
+
+- 2026-11-17 08:23:22 JST、上記HEAD・差分。状態は完了（08:28 JSTの修正記録を参照）。対象は `tests/DirectDeliveryUi/Program.cs:98` と `Game1.DirectDelivery.cs` の空き区画案内。
+- 再現は上記のDirectDeliveryUiを実行し、左格納庫の見えている空き区画の余白をクリックする。期待は現行の案内と描画可能な文字を検査して後続へ進むこと。実際はテストが旧文言「パーツ単位」を要求する。現行コードの空き区画案内は「その区画は一括移動できません」で、アサーション `Empty-slot guidance has every glyph required for rendering` が発生する。
+- 証拠は `DirectDeliveryUi-0821.stderr.log` と現行の文言分岐。初期化中に停止したため、この案内の実画面・実解像度は未確認。ゲーム側のクリックずれは未確定。
+
+### 実行履歴：2026-11-17 08:41回
+
+- 開始08:41:20、終了08:42 JST。部分点検完了。HEAD `c2a8113c61cf724993429c4f4c62db87a4185d4f`。開始時の差分は直送便テスト、Demo両記録、非追跡のチュートリアル記録。先行検証との競合なし。ゲームコード変更・新規採番なし。
+- 20:39回の地点11再クリックを静的に照合。NaturalTransport診断は開戦対象をリセットした後、通常入力を送り、移動UIの `_selectedMoveNode` に地点が残ることを要求していた。通常の地点インスペクターを開く経路は `CloseMovement` でこの値を -1 にする。前回ログの「インスペクターが開き、移動選択が -1」と整合するため、このアサーションだけでは赤チェックや予約の消失を判定できない。
+- 次回は再クリック診断でインスペクターの地点、赤チェック、予約件数を個別に確認し、状態を差し替えない自然経路で赤チェック→閉鎖→陣営ターン終了→進軍を追う。今回の実描画・解像度・CPU経路は未確認。優先UIの実行結果は08:21回およびDEMO-0025修正記録を参照。
+
+### 実行履歴：2026-11-17 09:02トリガー
+
+- 実作業開始08:56ごろ、終了 09:01:30 JST（トリガー時刻は09:02:07 JST、実時刻はホスト時計）。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。開始時の差分は直送便テスト、Demo両記録、非追跡チュートリアル記録。先行Demo検証なし。点検記録と既存の検証専用 natural-transport/Program.cs を更新。ゲームコード変更・新規採番なし。
+- 既存の NaturalTransport.csproj を NAS の delete-after-2026-11-17/demo-audit へ dotnet build。ローカルの2ソースで復元し、--disable-build-servers -p:UseAppHost=false を指定。再検証は --no-restore。08:57:27 PID 6048、09:00:16 PID 29300、ともに終了0・警告/エラー0。上限600秒。DLLは ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=0 で実行。上限各300秒、実描画960×540。世界/配役/配置Seed 2099272109/2137491580/1754296375。
+- 自然巡回（08:59:19起動 PID 23472、08:59:51終了0）は地点71を地図で選択し、地点10からの機体28を出撃確定で即予約。赤ハンドル(936,544)が矩形(912,520,48,48)内にあり、赤チェック後はスポットライト解除。閉じる(936,488)も矩形内。陣営のターン終了で赤チェックが消去され、対応する機体の進軍1回・取消0件・地点71到着を確認。
+- 再クリックの初回（08:58:28起動 PID 17756、08:59:19終了 -532462766）は通常入力が地点71を開戦対象に再選択した際、インスペクターだけを期待した診断で失敗。開戦での再選択と通常インスペクターのどちらも地点IDで照合し、赤チェックと予約件数を個別に判定した。再検証（09:00:28起動 PID 27256、09:01:03終了0）は対象をリセットした後に通常入力へ画面座標(720,276)を送り、開戦対象71、赤チェック保持、予約1件を確認。
+- 証拠は同NAS出力の NaturalTransport-*-0902.{stdout,stderr}.log と bin/NaturalTransport/debug/audit-natural-540-post-war-*.png。今回の種では地点11に至らず、再クリックは地点71の開戦モードで確認。直送便・左右インスペクターは08:21回とDEMO-0025の検証を参照。次回は地点11の通常インスペクター経由の再クリック、CPU30の内政・軍事の自然退避と物理Escを続ける。
+
+### 実行履歴：2026-11-17 09:01回
+
+- 開始09:02:02、終了 09:04:45 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。開始時差分はDemo両記録、直送便テスト、非追跡チュートリアル記録。先行同対象プロセスなし。ゲームコード変更・新規採番なし。
+- DEMO-0024を再確認。既存の artifacts/demo-click-audit/DemoAuditCpuSortie.csproj を NAS の delete-after-2026-11-17/demo-audit へ dotnet build（--disable-build-servers -p:NuGetAudit=false -p:UseAppHost=false、ローカル２ソースで復元）。09:02:46起動・作成、PID 28300、上限600秒、09:03:57終了0、警告・エラー0。
+- 同出力の bin/DemoAuditCpuSortie/debug/DemoAuditCpuSortie.dll を dotnet 実行。09:03:57起動・作成、PID 4136、上限300秒、09:04:21終了0。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_ 接頭辞で WORLD=61、LAND_SEED=457、FORTUNE_SEED=790、SCATTER=100、NEW_LAND_ASSEMBLY=1、NEW_LAND_PREVIEW=1、NEW_LAND_SHOW=1、NEW_LAND_RULER=30。
+- 960×540でCPU30に表示切替後、人間に復帰して配送へ進むことを確認。提出前にCPU30地点1の組み立て候補があり、AI計画後はCPU30の地点に組み立て候補が残らず、再生対象は地点0、組み立てフレーム・ドロップとも0。CPU30の地点1選択・格納庫操作は要再確認のまま。証拠は同出力の cpu30-{build,run}-0901.{stdout,stderr}.log。
+- 軍事のソース照合では征服者切替後の通常出撃選択と、対象投影・地図ヒット・出撃候補照合に失敗した場合の専用表示を確認した。軍事の自然退避、物理Esc、地点11の通常インスペクター経由の再クリックは今回未検証。次回はCPU30のAI計画後に組み立てが残る条件の探索、または軍事の自然退避から再開する。優先UIの実描画は直前の09:02トリガーと08:21回・DEMO-0025を参照。
+
+### 実行履歴：2026-11-17 09:22回
+
+- 開始09:23:04、終了 09:25:20 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。開始時の関係差分はDemo両記録、直送便テスト。チュートリアルの作業差分は保持。競合なし。ゲームコード変更なし。
+- 既存の非追跡診断 ProbeCpuSortie.cs.txt で通常オートセーブを無効にし、赤チェック画像の出力を検証DLLと同じNASへ変更。dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。09:23:33起動・作成、PID 17476、上限600秒、09:24:16終了0、警告・エラー0。
+- 同出力の bin/DemoAuditCpuSortie/debug/DemoAuditCpuSortie.dll を ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=84、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 で dotnet 実行。09:24:16起動・作成、PID 7324、上限300秒、09:24:51終了0。配役123・配置456。証拠は同出力の DemoAuditCpuSortie-{build,run}-0923.{stdout,stderr}.log、bin/DemoAuditCpuSortie/debug/audit-no-peace-fallback.png（960×540）。
+- DEMO-0016の専用表示への自然退避を再現したため、この条件の地点選択は未解決として追記する。CPU1は先に画面が切り替わり、通常出撃選択で地点89、機体3体、確定後に赤チェックへ進んだ。可視39指示中、CPU7の出撃元169・目標105だけが地図の地点選択（段階1）で専用表示へ退避。通常UIで地点を選択できることが期待値。候補不一致の注入なし。第二軍事の30指示は自然退避0、人間に復帰。重複採番なし。
+- 次回は同条件のCPU7で投影可否・矩形・実ヒット・入力後の地点IDを採取し、段階1のどの判定で外れたか特定する。物理Escと地点11の通常インスペクター再クリックは未確認。直送便・左右インスペクターとプライマリーは08:21回およびDEMO-0025を参照。
+
+- 09:26修正回（09:40:09 JST完了）。DEMO-0016の世界84・CPU7地点105で、地星儀の表示中心が隣接地点106に当たることを再現。近傍の通常ヒット座標(1314,548)から地点105を選択する修正を実描画で確認し、この条件は完了。第一軍事39指示・第二軍事30指示とも自然退避0、人間に復帰。ほかの配置の自然退避、表示オフ・スキップ比較と物理Escは引き続き要再確認。詳細は修正記録09:26回。
+
+- 09:43回、DEMO-0016の世界84で通常再生とEscape入力を比較し、CPU7の対象進軍1回、同じ取消・戦闘参加個体、人間への復帰、予約残数0を確認。表示オフ・物理Escは要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-17 09:49回
+
+- 開始09:49:33、終了 09:51:26 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分はGame1.ComputerMarches.cs、Game1.StatusGlobe.cs、DirectDeliveryUiとDemo両記録。チュートリアルの既存差分を保持。競合・ゲームコード変更・新規採番なし。
+- 既存NAS出力 delete-after-2026-11-17/demo-audit に dotnet build tests/<対象>/<対象>.csproj --artifacts-path <同出力先> --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。DemoChecksUi は09:49:44 PID 4484→09:49:56、DirectDeliveryUi は09:50:21 PID 11588→09:50:34。上限各600秒、いずれも終了0、警告・エラー0。
+- 同出力の各DLLを ALSOFT_DRIVERS=null で dotnet 実行。DemoChecksUi は09:49:56 PID 10208→09:50:21、DirectDeliveryUi は09:50:34 PID 19724→09:51:02。上限各300秒、終了0。証拠は <対象>-{build,run}-0949.{stdout,stderr}.log。
+- DemoChecksUiは1080p・540pの展開図と地星儀で開戦プライマリー、緑・赤のハンドル、即予約、赤チェック地点のスポットライト解除、閉鎖・ターン終了とモード別の保持・消去を確認。DirectDeliveryUiは540pで退避復帰、移動中の入力抑制、左右格納庫、連続クリックと予約保持を描画付きで確認。
+- 次回はCPU軍事の表示オフ比較、地点11の通常インスペクター再クリック、CPU30の組み立て候補が残る条件、物理Escを継続。今回の検査は固定場面を含み、自然巡回の追加実行はなし。
+
+### 実行履歴：2026-11-17 10:01回
+
+- 開始10:01:40、終了 10:03:00 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は地星儀・CPU軍事、直送便テスト、Demo両記録。既存のチュートリアル差分を保持。競合なし。ゲームコード変更・新規採番なし。
+- dotnet build tests/DemoInspectorUi/DemoInspectorUi.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。10:01:51起動・作成 PID 31464、上限600秒、10:02:03終了0、警告・エラー0。
+- 同出力の bin/DemoInspectorUi/debug/DemoInspectorUi.dll を ALSOFT_DRIVERS=null で dotnet 実行。10:02:03起動・作成 PID 26408、上限300秒、10:02:40終了0。1080pと540pで6種類の工場プランを実矩形から開いて製造状態へ遷移。地点監督、アニメーション付き閉鎖、輸送プライマリー、わたしの国から移動、人数確認の矩形と描画を確認。証拠は DemoInspectorUi-{build,run}-1001.{stdout,stderr}.log および demo-office-*.png。
+- 直送便の退避復帰と左右格納庫・緑赤の操作は09:49回を参照。今回は固定場面の実描画。次回はCPU軍事の表示オフ比較、地点11の通常インスペクター再クリック、CPU30で組み立て候補が残る条件、物理Escを継続。
+
+### 実行履歴：2026-11-17 10:19回
+
+- 開始10:20:04、終了 10:22:53 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は地星儀・CPU軍事・直送便テスト・Demo両記録。既存のチュートリアル差分を保持。ゲームコード変更・競合・新規採番なし。
+- DEMO-0016の表示オフ比較。既存の非追跡診断 ProbeCpuSortie.cs.txt に、同じ内政処理後に軍事の操作表示だけを全CPUでオフにする検証分岐を追加。dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。10:20:31起動・作成 PID 4324、上限600秒、10:21:57終了0、警告・エラー0。
+- 同出力の bin/DemoAuditCpuSortie/debug/DemoAuditCpuSortie.dll を ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=84、FOLDERVERSE_AUDIT_CONFIRM_COMPLETION=off で dotnet 実行。10:21:57起動・作成 PID 21884、上限300秒、10:22:31終了0。960×540の描画付きで軍事の操作表示に入らず人間に復帰し、予約残数0。09:43回のオンと進軍、取消、戦闘参加個体がすべて一致し、CPU7の169→105は1件。証拠は DemoAuditCpuSortie-build-1020 と Cpu7-off-1020 の標準出力・標準エラー、および比較元 Cpu7-normal-0944.stdout.log。
+- プライマリー、直送便、左右格納庫と緑赤は09:49・10:01回を参照。次回は地点11の通常インスペクター再クリック、CPU30の組み立て候補が残る条件、物理Escを継続。世界84の表示オン・オフ比較は確認済み。
+
+### 実行履歴：2026-11-17 10:40回
+
+- 開始10:40:41、終了 10:44:02 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は地星儀・CPU軍事、既存直送便テスト・Demo両記録。チュートリアル差分は保持。競合、ゲームコード変更、新規採番なし。
+- 既存の NaturalTransport 診断に開戦インスペクター閉鎖後の通常地点再クリック条件を追加。dotnet build artifacts/tmp/delete-after-2026-11-13/demo-check/natural-transport/NaturalTransport.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。初回10:41:10 PID 22972→10:41:26、最終10:42:47 PID 20632→10:42:59。上限各600秒、終了0・警告／エラー0。
+- 同出力の bin/NaturalTransport/debug/NaturalTransport.dll を ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=0、FOLDERVERSE_AUDIT_RECLICK=inspector で実行。初回10:41:26 PID 9268→10:42:20、終了 -532462766。診断がマウス押下しか送らず、地星儀の通常地点選択に必要な解放がなかった。押下・解放で再試行（10:42:59 PID 6496→10:43:37、終了0。上限各300秒）。
+- 自然巡回の赤チェック後に閉鎖を完了し、960×540の地星儀で地点71を画面座標(480,276)から通常入力で再クリック。地点71のインスペクターが開き、赤チェックと出撃予約1件を保持。証拠は NaturalTransport-*-1041/1043 の各ログと audit-natural-540-post-war-red-reclick.png。地点11の元配置は今回未再現。直送便・左右格納庫・プライマリーは09:49と10:01回を参照。次回はCPU30で組み立て候補が残る条件、物理Esc、地点11の元配置から継続。
+
+### 実行履歴：2026-11-17 11:01回
+
+- 開始11:01:36、終了 11:03:08 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は地星儀・CPU軍事、直送便テスト・Demo両記録。チュートリアル差分は保持。競合、ゲームコード・診断コードの変更、新規採番なし。
+- DEMO-0024のCPU30配置を比較。10:19回のNAS出力 bin/DemoAuditCpuSortie/debug/DemoAuditCpuSortie.dll を再利用。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_ 接頭辞で WORLD=62/63、LAND_SEED=457、FORTUNE_SEED=790、SCATTER=100、NEW_LAND_ASSEMBLY=1、NEW_LAND_PREVIEW=1、NEW_LAND_SHOW=1、NEW_LAND_RULER=30。世界62は11:01:54 PID 9576→11:02:17、世界63は11:02:17 PID 26084→11:02:37。上限各300秒、終了0。証拠は Cpu30-world{62,63}-run-1101.{stdout,stderr}.log。
+- 世界62ではAI計画後もCPU30の候補が残り、CPU30の画面へ切り替わって地点3の通常格納庫を開いた。960×540の描画付きで部品14の胴を機体13へドロップ1回、人間へ復帰し配送へ進んだ。配送後の地点3は機体13がComplete。世界63ではAI計画後にCPU30の候補が残らず、組み立ては未検証。世界61の地点1は引き続き要再確認。
+- 次回は世界62の表示オン・オフ／スキップで配送後の地点3在庫を比較する。物理Escと地点11の元配置は未確認。直送便・左右格納庫・緑赤・プライマリーは09:49、10:01、10:40回を参照。
+
+- 11:20修正回（11:24:03 JST）。DEMO-0024の世界62・CPU30地点3は通常再生、表示オフ、ドラッグ中スキップで配送時の在庫と人間復帰が一致。世界61の地点1はAI計画後に候補が残らず要再確認、物理Escは未実施。詳細は修正記録。
+
+### 実行履歴：2026-11-17 11:38回
+
+- 開始11:39:11、終了 11:41:12 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は地星儀・CPU軍事、直送便テスト、Demo両記録。既存のチュートリアル差分を保持。ゲーム・テストコード変更、競合、新規採番なし。
+- dotnet build tests/DemoUi/DemoUi.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers -p:NuGetAudit=false -p:UseAppHost=false -v minimal。11:39:23 PID 29356→11:40:22、上限600秒、終了0、警告・エラー0。
+- 同出力の bin/DemoUi/debug/DemoUi.dll を ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=12 で dotnet 実行。11:40:22 PID 21184→11:40:44、上限300秒、終了0。自然巡回で初回配送から地図へ復帰。展開図／地星儀、18 FPSの辺クリック、拒否時の退避、固定戦闘差し替え、エンディングからの再巡回、Demoラベル描画を確認。証拠は DemoUi-{build,run}-1139.{stdout,stderr}.log と demo.png（1920×1080）。
+- プライマリー・直送便・左右格納庫・緑赤は09:49・10:01・10:40回、世界62のCPU内政は11:20回を参照。次回は地点11と世界61・地点1の元配置、物理Esc、未巡回の別Seedを継続する。専用直送便の自然巡回は今回未確認。
+
+### 実行履歴：2026-11-17 12:01回
+
+- 開始12:01:37、終了 12:02:53 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は地星儀・CPU軍事、直送便テスト、Demo両記録。チュートリアルの既存差分を保持。競合・ゲーム／テストコード変更・新規採番なし。
+- 11:38回のNAS出力 bin/DemoUi/debug/DemoUi.dll を再利用し、ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=20/21 で順に dotnet 実行。Seed20は12:01:50 PID 2356→12:02:11、Seed21は12:02:12 PID 3956→12:02:34。上限各300秒、終了0。証拠は DemoUi-seed{20,21}-run-1201.{stdout,stderr}.log と再利用出力 demo.png（1920×1080、最後のSeed21）。
+- 既報DEMO-0015のSeed20、別配置Seed21とも初回配送と地図復帰、地星儀・展開図、18 FPSの辺クリック、拒否時の分岐、固定戦闘の差し替え、終了後の再巡回、Demoラベル描画を確認。プライマリー・直送便・左右格納庫・緑赤は09:49・10:01・10:40回、CPU内政比較は11:20回参照。地点11、世界61のCPU30地点1、物理Esc、専用直送便の自然経路は今回未確認。次回は上記未確認の元条件を優先。
+
+### 実行履歴：2026-11-17 12:11追試
+
+- 開始12:10:44、記録終了 12:12:04 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は地星儀・CPU軍事、直送便テスト、Demo両記録。ゲーム・テストコード変更、新規採番なし。
+- 既存NAS出力の bin/DemoInspectorUi/debug で ALSOFT_DRIVERS=null を設定して dotnet DemoInspectorUi.dll を実行。12:11:13起動・作成 PID 31292、上限300秒、12:11:46終了0。
+- 1920×1080と960×540で工場の現行矩形から開く操作と6種類の生産プラン選択を確認。事務所、閉鎖アニメーション、輸送のプライマリー、自国の移動、人数選択の矩形と描画を含む診断がPASS。証拠は既存NAS出力の DemoInspectorUi-run-121113.{stdout,stderr}.log と同DLL隣の demo-office-*.png。
+- 直送便の退避復帰・左右格納庫・緑赤は09:49・10:01・10:40回、CPU内政は11:20回を参照。自然Demoの地点11、世界61・CPU30地点1、物理Esc、専用直送便の自然経路は今回未確認。次回は元条件での再現を優先。
+
+### 実行履歴：2026-11-17 12:19回
+
+- 開始12:19:06、終了 12:20:06 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は地星儀・CPU軍事、直送便テスト、Demo両記録。ゲーム・テストコード変更、競合、新規採番なし。
+- DEMO-0024の元条件で既存NAS出力の bin/DemoAuditCpuSortie/debug から dotnet DemoAuditCpuSortie.dll を実行。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_ 接頭辞で WORLD=61、LAND_SEED=457、FORTUNE_SEED=790、SCATTER=100、NEW_LAND_ASSEMBLY=1、NEW_LAND_PREVIEW=1、NEW_LAND_SHOW=1、NEW_LAND_RULER=30。起動・作成12:19:23、PID 23620、上限300秒、12:19:47終了0。証拠は Cpu30-world61-run-121923.{stdout,stderr}.log。
+- 計画前にはCPU30の地点1に候補がある。AI計画後にはCPU30の組み立て対象が0件で、960×540の診断で再生フレーム・ドロップとも0。元配置で格納庫操作が始まった場合のカーソルと入力は要再確認。世界62の通常再生とオフ／スキップ比較は11:01・11:20回。
+- プライマリー、直送便退避復帰、左右格納庫、緑赤は09:49・10:01・10:40・12:11回を参照。地点11再クリック、物理Esc、専用直送便自然巡回は今回未確認。次回は地点11の元Seedと到達条件の特定を優先。
+
+### 実行履歴：2026-11-17 12:39回
+
+- 開始12:39:10、終了 12:40:40 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は地星儀・CPU軍事、直送便テスト、Demo両記録。ゲーム・テストコード変更、競合、新規採番なし。
+- 地点11の元記録を照合。11月13日の内政での到達はSeed33、11月16日20:39の赤チェック後の到達はSeed0。既存NAS出力の bin/NaturalTransport/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=33、FOLDERVERSE_AUDIT_RECLICK=inspector として dotnet NaturalTransport.dll を実行。12:39:46起動・作成 PID 22204、上限300秒、12:40:19終了0。
+- 現在のSeed33では和平移動後の開戦目標は地点54。プライマリーと赤ハンドルのクリックは矩形内にあり、出撃確定直後の予約1件を確認。960×540の地星儀で地点54の画面座標(480,276)に通常入力の押下・解放を送り、同地点のインスペクターが開き、赤チェックと予約1件を保持。証拠は NaturalTransport-reclick-seed33-1239.{stdout,stderr}.log と audit-natural-540-post-war-red-reclick.png。
+- 地点11の同条件、再クリック後の閉鎖から進軍まで、物理Esc、専用直送便の自然経路は未確認。次回は11月16日Seed0の実測ログと現在のSeed0の世界・配役・領土Seedを比較する。左右格納庫・直送便退避復帰は09:49・10:01回、CPU操作表示は11:20・12:19回参照。
+
+### 実行履歴：2026-11-17 13:01回
+
+- 開始13:01:38、終了 13:03:20 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は地星儀・CPU軍事、直送便テスト、Demo両記録。ゲーム・テストコード変更、競合、新規採番なし。
+- 既存NAS出力の bin/NaturalTransport/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=0、再クリック分岐なしで dotnet NaturalTransport.dll を実行。13:02:27起動・作成 PID 19572、上限300秒、13:03:00終了0。世界・配役・領土の診断出力は2099272109/2137491580/1754296375で10:43の地点71再クリックと一致。11月16日20:39の地点11は監査記載で確認し、検索した既存出力から元ログを回収できなかった。
+- 960×540の自然経路で地点71の選択、即時予約、赤チェック、閉じるボタンの矩形内クリック、ターン終了で赤消去、配送を経た予約機体28の地点71への進軍を確認。予約機体28の実行1件に加え、同経路の女の子の進軍1件。証拠は NaturalTransport-sortie-1301.{stdout,stderr}.log と audit-natural-540-post-war-sortie-resolved.png。通常入力の地点71再クリックは10:43追試を参照。
+- 元の地点11、再クリックを挟んだ同一セッションの進軍、物理Esc、専用直送便の自然経路は未確認。次回は再クリック後に閉鎖からターン終了まで追う。左右格納庫・退避復帰は09:49・10:01回、CPU表示比較は11:20回参照。
+
+### 実行履歴：2026-11-17 13:22回
+
+- 開始13:22:07、終了 13:23:57 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。既存の地星儀・CPU軍事、直送便テスト等の差分を保持。既存の非追跡NaturalTransport診断に再クリック後も続ける分岐を追加。ゲームコード変更、競合、新規採番なし。
+- dotnet build artifacts/tmp/delete-after-2026-11-13/demo-check/natural-transport/NaturalTransport.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。13:22:46起動・作成 PID 17692、上限600秒、13:22:59終了0、警告・エラー0。同出力の bin/NaturalTransport/debug/NaturalTransport.dll を ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=0、FOLDERVERSE_AUDIT_RECLICK=continue で実行。13:22:59起動・作成 PID 16256、上限300秒、13:23:34終了0。
+- 960×540、地点71。出撃確定で即予約し、赤チェック後にスポットライト解除を確認。診断が閉鎖と地図への焦点合わせを行い、地図座標(480,276)へ通常入力で押下・解放。同地点のインスペクターが開き、赤と予約1件を保持。Demoを再開し、閉じるボタンの矩形内クリック、陣営ターン終了時の赤消去、配送後に予約機体28の進軍1件と取消0を同一セッションで確認。証拠は NaturalTransport-reclick-continue-{build,run}-1322.{stdout,stderr}.log と audit-natural-540-post-war-red-reclick.png／audit-natural-540-post-war-sortie-resolved.png。
+- 地点11の元配置、同経路の物理マウス操作、物理Esc、専用直送便の自然巡回は未確認。次回は専用直送便の自然起動候補から再開。左右格納庫・退避復帰は09:49・10:01回、CPU操作表示の比較は11:20・12:19回参照。
+
+### 実行履歴：2026-11-17 13:41回
+
+- 開始13:41:07、終了 13:42:33 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は地星儀・CPU軍事、直送便テスト、Demo両記録。変更は本記録のみ。競合、新規採番なし。
+- 既存NAS出力の bin/DirectDeliveryUi/debug で ALSOFT_DRIVERS=null を設定して dotnet DirectDeliveryUi.dll を実行。13:41:46起動・作成 PID 28696、上限300秒、13:42:10終了0。プライマリーの比率、退避復帰、移動中の入力抑止、閉じるとEscape、左右格納庫、960×540での実描画・連続クリック・予約保持がPASS。証拠は DirectDelivery-run-1341.{stdout,stderr}.log と同DLL隣の direct-*.png。
+- 専用直送便の自然巡回はソースを照合。Game1.DemoDomestic.csの段階12は TransportOverviewButton（プライマリー4、ロボット輸送長期計画）を使う。通常の直送便地図はGame1.MapOverlays.csのプライマリー3から OpenDirectMap を呼ぶ。確認したDemo巡回にこの直送便ボタンを押す段階はなく、Seedを変えるだけでは同経路の実演に到達する根拠が得られなかった。専用直送便の実演は未確認、通常UI診断に合格。
+- 再クリック後の進軍は13:22回、緑赤・CPU比較は10:40・11:20回参照。地点11の元配置、物理マウス・物理Escは未確認。次回は物理操作と競合しない検証環境を確認するか、CPU軍事の未検証配置へ進む。
+
+### 実行履歴：2026-11-17 14:01回
+
+- 開始14:01:08、終了 14:02:18 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は地星儀・CPU軍事、直送便テスト、Demo両記録。変更は本記録のみ。競合、新規採番なし。
+- 既存NAS出力の bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=85、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll を実行。14:01:24起動・作成 PID 5124、上限300秒、14:01:57終了0。証拠は CpuMilitary-world85-run-1401.{stdout,stderr}.log。
+- CPU9へ画面を切り替え、通常の地点94、出撃選択の機体2体、確定後の赤チェックを描画付きで確認。世界85は第一軍事12指示と第二軍事15指示で専用表示への自然退避0。人間0に復帰し内政へ進行。専用表示が必要になる対照例は世界84の修正前09:22回、表示オフ・スキップ比較は09:43・10:19回参照。
+- 優先プライマリー、直送便退避・復帰と左右格納庫は12:11・13:41回、赤チェック後の再クリックから進軍は13:22回。地点11の元配置、物理Esc、専用直送便の自然実演は未確認。次回は別配置で専用表示への自然退避が残る操作を探す。
+
+### 実行履歴：2026-11-17 14:40回
+
+- 開始14:40:10、終了 14:41:17 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は地星儀・CPU軍事、直送便テスト、Demo両記録。変更は本記録のみ。競合、新規採番なし。
+- 既存NAS出力の bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=86、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll を実行。14:40:27要求、14:40:28作成 PID 6736、上限300秒、14:40:58終了0。証拠は CpuMilitary-world86-run-1440.{stdout,stderr}.log と既存NASの audit-latest-computer-confirm.png、audit-latest-cpu-red.png（960×540）。
+- CPU3へ画面切り替え後、通常地図で地点93、出撃選択の機体4体、確定後の赤チェックを診断で確認。第一軍事12指示・第二軍事13指示で専用表示への退避0。人間0に復帰し内政へ進行。直送便と左右格納庫は13:41回、プライマリーは12:11回、赤チェック後の再クリック・進軍は13:22回参照。
+- 地点11の元配置、物理Esc、専用直送便の自然実演は未確認。次回は退避が残り得る軍事条件か、同じ地点でも見える矩形が変わる別解像度を点検する。
+
+### 実行履歴：2026-11-17 14:59回
+
+- 開始14:59:09、終了 15:00:26 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は地星儀・CPU軍事、直送便テスト、Demo両記録。変更は本記録のみ。競合、新規採番なし。
+- 既存NAS出力の bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=84、FOLDERVERSE_AUDIT_GLOBE_1080=1、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll を実行。14:59:24要求・作成 PID 14784、上限300秒、15:00:02終了0。証拠は CpuMilitary-world84-1080-run-1459.{stdout,stderr}.log と cpu7-target105.png。
+- DEMO-0016の世界84・CPU7地点105。地星儀で中心が隣接地点106に当たる条件に対し、近傍(1314,548)から地点105を選択し、通常操作の段階2へ進んだ。CPU1は地点89の出撃画面で3体を選び赤チェックを反映。第一軍事39指示、第二軍事30指示で専用表示への自然退避0。人間0に復帰し内政へ進行。
+- 直送便退避・復帰と左右格納庫は13:41回、赤チェック後の再クリック・進軍は13:22回。地点11の元配置、物理Esc、専用直送便の自然実演は未確認。次回は地星儀と展開図でのCPU通常操作の対照、または未巡回配置を点検する。
+
+### 実行履歴：2026-11-17 15:19回
+
+- 開始15:19:40、終了 15:21:56 JST。展開図の部分点検は中断。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。既存の地星儀・CPU軍事、直送便テスト等の差分を保持。変更は非追跡診断 artifacts/demo-click-audit/ProbeCpuSortie.cs.txt と本記録。ゲームコード変更・競合・新規採番なし。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。15:20:21起動・作成 PID 26300、上限600秒、15:20:35終了0、警告・エラー0。同出力の bin/DemoAuditCpuSortie/debug/DemoAuditCpuSortie.dll を ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=84、FOLDERVERSE_AUDIT_SECOND_MILITARY=1、FOLDERVERSE_AUDIT_MILITARY_NET=1 で実行。15:20:35起動・作成 PID 5952、上限300秒、15:21:19終了-532462766。証拠は CpuMilitary-net-{build,run}-1519.{stdout,stderr}.log。
+- 960×540の診断でCPU1へ切り替えた直後に内部状態で展開図を指定。期待は地点89を選び通常出撃画面を開くこと。実際は段階-1、選択地点-1、出撃画面-1で停止。DEMO-0016関連の要再確認。通常の地図切り替えと同じ状態だったか、どの段階で専用表示へ移ったかは未取得。次回は通常の展開図切替とカメラ更新を経た再現および投影・ヒット・退避段階の採取から再開。
+- 直送便・左右格納庫は13:41回、赤チェックから再クリック・進軍は13:22回、世界84の地星儀は14:59回参照。地点11の元配置、物理Esc、専用直送便の自然実演は未確認。
+
+- 15:24修正回で通常の地図遷移処理を呼ぶ診断でも地点89の症状を再現。退避直前の投影・ヒットは未取得のため要再確認。詳細は修正記録。
+
+### 実行履歴：2026-11-17 15:41回
+
+- 開始15:41:09、終了 15:44:28 JST。部分点検完了。DEMO-0016の展開図条件を再現し未解決。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。ゲームコード差分は既存の地星儀・CPU軍事等。今回の変更は非追跡 ProbeCpuSortie.cs.txt と本記録。
+- 世界84のCPU1・地点89で地図の通常遷移処理を経て960×540の展開図を描画。開戦直後は論理座標(960,552)で候補・通常ヒットとも地点89。次のCPU更新後は段階-1、投影座標(1920,552)、地図のX範囲1000以上1880未満。期待は表示された地点89を通常選択して出撃画面へ進むこと。実際は選択-1・出撃画面-1で専用表示へ移る。CPU更新はクリック前にインスペクターのスライドを進める。段階0のカメラ調整と段階1の矩形確定の順序を次回修正候補とする。通常の物理入力からCPUの展開図保存状態を作る経路は未確認。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。初回15:41:36 PID 5564→15:42:02、診断内の描画ヘルパーの範囲誤りで終了1。最終15:42:14 PID 22520→15:42:57、終了0・警告とエラー0。上限各600秒。
+- 同出力の bin/DemoAuditCpuSortie/debug/DemoAuditCpuSortie.dll を ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=84、FOLDERVERSE_AUDIT_SECOND_MILITARY=1、FOLDERVERSE_AUDIT_MILITARY_NET=1 で実行。15:42:57起動・作成 PID 19052、上限300秒、15:43:42終了-532462766。証拠は CpuMilitary-net-hit-{build,run}-1541/1542.{stdout,stderr}.log。
+- 優先プライマリー・直送便と左右格納庫は12:11・13:41回、赤チェック再選択と進軍は13:22回。地点11の元配置、物理Esc、専用直送便の実演は未確認。
+
+- DEMO-0016の展開図・世界84・CPU1地点89は 15:49:56 JSTに修正完了。960×540で出撃3体と赤チェック、通常・スキップ・表示オフの実行結果一致、人間復帰を確認。詳細は15:45修正記録。
+
+### 実行履歴：2026-11-17 15:59回
+
+- 開始15:59:15、終了 16:00:23 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分はDEMO-0016の地星儀・展開図、直送便テスト、Demo両記録。今回の変更は本記録のみ。競合・新規採番なし。
+- 15:45修正回の既存NAS出力 bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=84、FOLDERVERSE_AUDIT_SECOND_MILITARY=1、FOLDERVERSE_AUDIT_MILITARY_NET=1、FOLDERVERSE_AUDIT_GLOBE_1080=1 で dotnet DemoAuditCpuSortie.dll を実行。15:59:27起動・作成 PID 29952、上限300秒、16:00:02終了0。
+- 1920×1080の展開図でCPU1・地点89を(1440,552)に再投影し、通常出撃画面で3体を選択、確定後の赤チェックを確認。地星儀のCPU7・地点105も通常選択。第一軍事39指示・第二軍事30指示で専用表示への退避0、人間へ復帰。証拠は CpuMilitary-net-1080-run-1559.{stdout,stderr}.log と audit-latest-computer-confirm.png／audit-latest-cpu-red.png。
+- プライマリーと直送便退避復帰・左右格納庫は12:11・13:41回、赤チェック後の再クリック・進軍は13:22回。地点11の元配置、物理入力、専用直送便の実演は未確認。次回は世界84以外の展開図か、CPUの通常入力の残る分岐を続ける。
+
+### 実行履歴：2026-11-17 16:19回
+
+- 開始16:19:08、終了 16:20:06 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分はDEMO-0016の地星儀・展開図、直送便テスト、Demo両記録。変更は本記録のみ。競合・新規採番なし。
+- 既存NAS出力の bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=85、FOLDERVERSE_AUDIT_SECOND_MILITARY=1、FOLDERVERSE_AUDIT_MILITARY_NET=1 で dotnet DemoAuditCpuSortie.dll を実行。16:19:18起動・作成 PID 5068、上限300秒、16:19:46終了0。
+- 960×540の展開図でCPU9に切り替わり、インスペクターを開いた後に論理(1440,552)で地点94を選択。通常出撃画面で2体の選択と確定、赤チェックを実描画付きで確認。第一軍事12指示、第二軍事15指示で退避0、人間に復帰。証拠は CpuMilitary-net-world85-run-1619.{stdout,stderr}.log と audit-latest-computer-confirm.png／audit-latest-cpu-red.png。
+- 直送便・プライマリー・左右は12:11・13:41回、赤チェック後の再クリック・進軍は13:22回。物理入力、地点11の元配置、専用直送便実演は未確認。次回は展開図のクイーン・ポケット出撃など、通常の格納庫出撃以外を確認する。
+
+### 実行履歴：2026-11-17 16:38回
+
+- 開始16:38:43、終了 16:40:38 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。既存の地星儀・展開図修正、直送便テスト等を保持。今回の変更は非追跡 ProbeCpuSortie.cs.txt と本記録のみ。ゲームコード変更・競合・新規採番なし。
+- CPU1のポケットのみの出撃を合法固定場面で検査。通常の地図切替処理から展開図へ移り、960×540で地点91の通常出撃画面を開く。機体767・768を個別に選択して確定、赤チェックと通常の閉鎖、人間への復帰を確認。予約件数の増加なし。戦闘では指定機体が各1回参加し、クイーン参加なし。証拠は audit-legal-queen.png と下記ログ。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。16:39:09起動・作成 PID 23984、上限600秒、16:39:51終了0、警告・エラー0。同出力の bin/DemoAuditCpuSortie/debug/DemoAuditCpuSortie.dll を ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_ 接頭辞の MILITARY_NET=1、LEGAL_QUEEN=1、QUEEN540=1、QUEEN_ESCORTS=1、POCKET_ONLY=1 で dotnet 実行。16:39:51要求・16:39:52作成 PID 3604、上限300秒、16:40:14終了0。証拠は CpuMilitary-net-pocket-{build,run}-1638.{stdout,stderr}.log。
+- 次回は同じ展開図でクイーン参加ありを確認する。固定場面のため自然AIがポケット出撃を選ぶ条件、物理入力、地点11の元配置、専用直送便の実演は未確認。直送便・左右格納庫は13:41回、赤チェック後再クリック・進軍は13:22回参照。
+
+### 実行履歴：2026-11-17 16:59回
+
+- 開始16:59:41、終了 17:00:34 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分はDEMO-0016、直送便テストとDemo両記録。変更は本記録のみ。ゲームコード変更・競合・新規採番なし。
+- 既存NAS出力の bin/DemoAuditCpuSortie/debug から dotnet DemoAuditCpuSortie.dll を実行。ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_ 接頭辞の MILITARY_NET=1、LEGAL_QUEEN=1、QUEEN540=1、QUEEN_ESCORTS=1。16:59:54起動・作成 PID 30736、上限300秒、17:00:13終了0。証拠は CpuMilitary-net-queen-run-1659.{stdout,stderr}.log と audit-legal-queen.png。
+- 960×540の展開図、CPU1・地点91の固定場面で通常出撃画面を開き、クイーン参加の切替と機体2体の個別選択、確定・赤チェック・閉鎖を確認。再生中の予約件数の増加なし。元のクイーン進軍1件と人間0への復帰を確認。ポケットのみは16:38回。
+- 自然AIで同じ指示が生成される条件、地点11の元配置、物理入力、専用直送便の実演は未確認。次回は自然AIでポケット・クイーンを含む指示が生成される配置か、別の未巡回経路を点検する。直送便・左右は13:41回、緑赤と再クリック・進軍は13:22回等を参照。
+
+### 実行履歴：2026-11-17 17:21回
+
+- 開始17:21:12、終了 17:22:22 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。既存の地星儀・展開図修正、直送便テストと両記録の差分を保持。変更は本記録のみ。ゲームコード変更・競合・新規採番なし。
+- 既存NASの bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=87、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll を実行。17:21:24起動・作成 PID 13688、上限300秒、17:22:01終了0。証拠は CpuMilitary-world87-run-1721.{stdout,stderr}.log と audit-latest-computer-confirm.png／audit-latest-cpu-red.png。
+- 960×540の通常UIでCPU5へ切り替え、地点93・機体4体の選択、確定後の赤チェック、人間への復帰を確認。第一軍事30指示と第二軍事22指示で専用表示への退避0。第一軍事ではポケットのみ・クイーン参加は0件、第二軍事の属性内訳は未採取。固定場面は16:38・16:59回。
+- 次回はポケット・クイーンを自然に含み得る後半のAI計画か、他の未巡回経路を点検する。地点11の元配置、物理入力、専用直送便の自然実演は未確認。プライマリー・直送便・左右は12:11・13:41回、赤チェック後再クリック・進軍は13:22回参照。
+
+### 実行履歴：2026-11-17 17:26開始回
+
+- 開始17:26:38、終了 17:28:00 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は DEMO-0016、直送便テストとDemo両記録。変更は本記録のみ。新規採番なし。
+- 既存NAS出力の bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=89、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll を実行。17:27:12起動・作成 PID 20224、上限300秒、17:27:41終了0。証拠は同ディレクトリの CpuMilitary-world89-run-172712.{stdout,stderr}.log と診断の描画・状態検査。
+- 960×540の通常UIで内政再生を通過後、CPU7・地点23で2体を選択し、確定後に赤チェック。第一軍事30指示と第二軍事27指示で専用表示への退避0。人間0の内政へ復帰。第一軍事ではポケットのみ・クイーン参加は0件、第二軍事の属性内訳は未採取。
+- 次回は第二軍事以降の指示属性を採取し、自然にポケット・クイーンを含む指示を優先する。固定場面は16:38・16:59回。物理入力、地点11の元配置、専用直送便の自然実演は未確認。
+
+### 実行履歴：2026-11-17 17:40回
+
+- 開始17:40 JST、終了 17:41:42 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は既存の tests/DirectDeliveryUi/Program.cs と DEMO-0016。変更は本記録のみ、新規採番なし。
+- 既存NAS出力 bin/DirectDeliveryUi/debug で ALSOFT_DRIVERS=null、dotnet DirectDeliveryUi.dll。17:40:59要求、17:41:00作成 PID 28596、上限300秒、17:41:26終了0。証拠は DirectDelivery-run-174059.{stdout,stderr}.log と同出力の direct-*.png。再ビルドなし。
+- 960×540の描画でプライマリーボタンの比率、直送便の退避・復帰、移動中の入力抑止、地星儀と展開図での連続トラッククリック、左右格納庫と予約保持を確認。診断の閉じる・Escapeも通過。
+- 次回は自然Demoの専用直送便か、第二軍事以降の指示属性を点検する。物理入力、地点11の元配置、自然AIでのポケット・クイーン出撃は未確認。CPU通常UIの前回は17:26回。
+
+### 実行履歴：2026-11-17 17:59回
+
+- 開始17:59 JST、終了 18:00:29 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関連する既存差分は DEMO-0016 と直送便テスト。変更は本記録のみ、新規採番なし。
+- 既存NAS出力 bin/DemoUi/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=22 として dotnet DemoUi.dll を実行。17:59:45起動・作成 PID 11020、上限300秒、18:00:11終了0。証拠は DemoUi-seed22-run-175945.{stdout,stderr}.log と同出力の demo.png。再ビルドなし。
+- 世界・配役・領土は1501772170/1364365674/1589266210。初回配送の論理クリック (256,998) と地図復帰を確認。地星儀・展開図切替、18 FPSの端地点移動、拒否時の退避、戦闘差し替え、エンディングからの再巡回、Demoラベル描画がPASS。解像度は論理1920×1080。
+- 専用直送便の自然実演、地点11の元配置、物理入力、自然AIのポケット・クイーン出撃は未確認。次回は第二軍事以降の指示属性を採取するか、専用直送便の入口を点検する。個別の直送便退避・復帰と左右格納庫は17:40回参照。
+
+### 実行履歴：2026-11-17 18:19回
+
+- 開始18:19 JST、終了 18:21:28 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は DEMO-0016 と直送便テスト。変更は既存診断 ProbeCpuSortie.cs.txt の第二軍事属性ログと本記録。ゲームコード変更・新規採番なし。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。18:19:46起動・作成 PID 14740、上限600秒、18:20:29終了0、警告・エラー0。同出力 bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=89、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll。18:20:29起動・作成 PID 7880、上限300秒、18:21:04終了0。証拠は NAS出力の CpuMilitary-second-attributes-build-181946 と CpuMilitary-second-attributes-world89-182029 の標準出力・標準エラー。
+- 960×540の診断。第一軍事はCPU7・地点23で2体選択と確定後の赤チェック。第二軍事は自然生成27指示のうち Queen フラグ3、PocketOnly フラグ2、和平2（属性ごとの集計）。第二軍事の専用表示への退避0、人間0の内政に復帰。フラグ付き個別指示のクリック矩形・描画・戦闘参加内訳は未採取。
+- 次回は同じ世界89の第二軍事で該当指示の地点と矩形、確定・赤チェック・戦闘参加を個別に追う。物理入力、地点11の元配置、専用直送便の自然実演は未確認。
+
+### 実行履歴：2026-11-17 18:40回
+
+- 開始18:40:12、終了 18:41:58 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は DEMO-0016。変更は既存診断 ProbeCpuSortie.cs.txt と本記録のみ。新規採番なし。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。18:40:45要求・18:40:46作成 PID 9332、上限600秒、18:40:59終了0、警告・エラー0。同出力の bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=89、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll。18:41:00要求・作成 PID 28756、上限300秒、18:41:34終了0。証拠は NAS出力の CpuMilitary-featured-build-184045 と CpuMilitary-featured-world89-184100 の標準出力・標準エラー。
+- 960×540の診断で、第二軍事の PocketOnly 付き2件はいずれも和平移動と判明。CPU19・地点141とCPU23・地点61が地図で選択され、通常の移動確定後に選択解除。自然生成のポケットのみの攻撃は今回の配置に現れなかった。
+- CPU39のクイーン参加攻撃は、CPU39視点で地点123選択 (1255,551)、出撃選択、確定 (1415,822)、赤チェック (936,544)、閉じる (936,488) の順を確認。座標は論理値。確定と赤チェック後に描画処理を実行し、第二軍事27指示は退避0で人間0の内政へ復帰。矩形の個別採取、戦闘でのクイーン参加、物理入力、地点11の元配置、専用直送便の自然実演は未確認。次回は地点123の戦闘参加と予約の重複有無を照合する。
+
+### 実行履歴：2026-11-17 19:00回
+
+- 開始19:00:41、終了 19:02:56 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は DEMO-0016。変更は既存診断 ProbeCpuSortie.cs.txt と本記録。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。19:01:15起動 PID 27292、上限600秒、19:01:57終了0、警告・エラー0。同出力の bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=89、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll。19:01:57要求・19:01:58作成 PID 29460、上限300秒、19:02:30終了0。証拠は NAS出力の CpuMilitary-queen-result-build-190115 と CpuMilitary-queen-result-world89-190157 の両ログ。
+- 960×540の診断。地点123でCPU39の通常の出撃確定、赤チェック、閉鎖を再確認。計画予約の開始・最大・終了件数は0/0/0、記録上のクイーン進軍は1件。地点123の戦闘フレームからCPU39のクイーン機体は取得できず、実戦参加は未確認、採番保留。
+- 次回は地点123に関連する遭遇・迎撃と待機兵を照合して、クイーンが登場する戦闘を特定する。物理入力、地点11の元配置、専用直送便の自然実演は未確認。
+
+### 実行履歴：2026-11-17 19:21回
+
+- 開始19:21:44、終了 19:23:53 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は DEMO-0016。変更は既存診断 ProbeCpuSortie.cs.txt と本記録。新規採番なし。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。19:22:15作成 PID 7624、上限600秒、19:22:57終了0、警告・エラー0。同出力の bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=89、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll。19:22:57作成 PID 24880、上限300秒、19:23:31終了0。証拠は NAS出力の CpuMilitary-queen-encounters-build-192214 と CpuMilitary-queen-encounters-world89-192257 の両ログ。
+- 960×540でCPU39が地点123へ出撃を確定し、赤チェック・閉鎖後に人間へ復帰。クイーン進軍1件、再生の予約件数0/0/0。前回未確認のクイーンは地点123と124の間の終了済み辺戦闘に機体ID -40 として参加し、戦闘フレームは地点124として記録された。進軍後のCPU39の現在地は124、地点123は無所属。
+- 次回は自然生成のポケットのみの攻撃か専用直送便の入口を点検する。今回の辺戦闘の画面操作、物理入力、地点11の元配置、専用直送便の自然実演は未確認。
+
+### 実行履歴：2026-11-17 19:40回
+
+- 開始19:40:50、終了 19:42:16 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は DEMO-0016。変更は本記録のみ、新規採番なし。
+- 既存NAS出力 bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=94、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll。19:41:11起動・作成 PID 16800、上限300秒、19:41:46終了0。証拠は CpuMilitary-second-world94-194111.{stdout,stderr}.log。
+- 960×540。第一軍事39指示に続き、第二軍事35指示で専用表示への退避0、人間の内政へ復帰。クイーン参加攻撃4件では各1件の進軍と戦闘参加を照合し、予約件数0/0/0。第二軍事にポケットのみの攻撃は現れなかった。
+- 次回は自然生成のポケットのみの攻撃を別配置で探すか、専用直送便の入口を点検する。物理入力、地点11の元配置、専用直送便の自然実演は未確認。
+
+### 実行履歴：2026-11-17 19:58回
+
+- 開始19:58:42、終了 19:59:53 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は DEMO-0016。変更は本記録のみ、新規採番なし。
+- 既存NAS出力 bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=93、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll。19:59:00要求・作成 PID 15164、上限300秒、19:59:33終了0。証拠は CpuMilitary-world93-195900.{stdout,stderr}.log。
+- 960×540。第一軍事33指示、第二軍事31指示で専用表示への退避なし、人間0の内政へ復帰。第二軍事でポケット属性付きの1件はCPU3の和平移動。CPU3視点で地点35を選択 (1300,552) し、移動確定 (707,938) 後に選択解除。座標は論理値。
+- 次回は自然生成のポケットのみの攻撃を別配置で探すか、専用直送便の入口を点検する。今回の和平移動の到着確認、物理入力、地点11の元配置、専用直送便の自然実演は未確認。
+
+### 実行履歴：2026-11-17 20:21回
+
+- 開始20:21:14、終了 20:22:41 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は既存の直送便テストと DEMO-0016。変更は本記録のみ、新規採番なし。
+- 既存NAS出力 bin/DemoInspectorUi/debug で ALSOFT_DRIVERS=null として dotnet DemoInspectorUi.dll。20:21:36要求、20:21:37作成 PID 3736、上限300秒、20:22:10終了0。証拠は DemoInspectorUi-run-202136.{stdout,stderr}.log。1080p/540pで工場6プランの矩形と実選択、インスペクター閉鎖、輸送プライマリー、通常の移動入口を描画付きで確認。
+- Game1.DemoDomestic.cs の段階12は TransportOverviewButton（PrimaryActionBounds(4)）を MapOverlayClick に渡し、通常の輸送概要を開く。巡回入口の静的照合では、専用直送便のペア表示へ入る明示的な操作は確認できなかった。直送便の通常UIでの退避復帰・左右格納庫は17:40回を参照。自然実演の有無は引き続き未確認。
+- 次回は専用直送便への入力分岐を通常UI側から照合する。物理入力、地点11の元配置、自然生成のポケットのみの攻撃、世界93での和平移動の到着は未確認。
+
+### 実行履歴：2026-11-17 20:40回
+
+- 開始20:40:42、終了 20:41:51 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は直送便テストと DEMO-0016。変更は本記録のみ、新規採番なし。
+- 既存NAS出力 bin/DirectDeliveryUi/debug で ALSOFT_DRIVERS=null として dotnet DirectDeliveryUi.dll。20:41:03起動・作成 PID 31272、上限300秒、20:41:32終了0。証拠は DirectDelivery-pair-run-204103.{stdout,stderr}.log と direct-*.png。960×540でプライマリーの比率、退避復帰、左右格納庫、地星儀・展開図の連続トラッククリック、予約保持を確認。
+- 通常UIは Game1.MapOverlays.cs のプライマリー第4ボタン（0始まり3）から OpenDirectMap、Game1.DirectDelivery.cs の DirectMapClick で描画済みトラック矩形から OpenDirectPair へ進む。Demoの段階12は第5ボタンの輸送概要。今回の通常UI診断では自然Demoからペア画面へ入る条件は未確認。
+- 次回は自然生成されたポケットのみの攻撃か、自然Demoの輸送概要後の遷移を追う。物理入力、地点11の元配置、世界93での和平移動の到着は未確認。
+
+### 実行履歴：2026-11-17 21:01回
+
+- 開始21:01:45、終了 21:03:24 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は既存の直送便テストと DEMO-0016。変更は tests/DemoUi/Program.cs の状態ログと本記録。新規採番なし。
+- dotnet build tests/DemoUi/DemoUi.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。21:02:22作成 PID 30416、上限600秒、21:02:36終了0、警告・エラー0。同出力 bin/DemoUi/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=22 として dotnet DemoUi.dll。21:02:36作成 PID 18568、上限300秒、21:03:02終了0。証拠は DemoUi-natural-delivery-build-210222 と DemoUi-natural-delivery-seed22-210236 の両ログ、demo.png。
+- 初回配送までの自然巡回を1秒刻みで観測。世界・配役・領土は1501772170/1364365674/1589266210。輸送概要、直送便地図・ペア画面のフラグは観測時すべてFalse。初回配送に到達し、通常のDemo回帰も終了0。カーソルは論理1920×1080で (256,998)。状態ログは初回配送までで、後続の配送には固定場面を含む。
+- 次回は輸送概要が自然に開く内政の配置を1秒未満で追う。自然Demoの直送便ペア、物理入力、地点11の元配置、自然生成のポケットのみの攻撃は引き続き未確認。
+
+### 実行履歴：2026-11-17 21:19回
+
+- 開始21:19:16、終了 21:20:38 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は既存の直送便テストと DEMO-0016。変更は tests/DemoUi/Program.cs の追跡ログと本記録。新規採番なし。
+- dotnet build tests/DemoUi/DemoUi.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal。21:19:43起動 PID 2672、上限600秒、21:19:56終了0、警告・エラー0。ALSOFT_DRIVERS=null、FOLDERVERSE_DEMO_TEST_SEED=22 で同出力 bin/DemoUi/debug の dotnet DemoUi.dll。21:19:56起動 PID 28200、上限300秒、21:20:17終了0。証拠は DemoUi-followup-build-211943 と DemoUi-followup-seed22-211956 の両ログ、demo.png。
+- 初回配送後にテストが地図へ戻した場面から、地星儀・展開図切替と内政再開を18 FPS相当で観測。輸送概要、直送便地図、ペア画面のフラグはいずれもFalse。論理1920×1080。続く軍事・戦闘等の回帰はPASS。自然に配送から地図へ戻る操作そのものは今回の観測外。
+- 次回は段階12に到達する内政の前提を確認する。専用直送便の自然実演、自然生成のポケットのみの攻撃、物理入力、地点11の元配置は未確認。
+
+### 実行履歴：2026-11-17 21:39回
+
+- 開始21:39:46、終了 21:40:23 JST。部分点検完了（コード照合）。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。関係差分は DEMO-0016、DemoUi と直送便診断。変更は本記録のみ。新規採番なし。
+- 輸送概要を狙う段階12への入口を照合。Game1.DemoDomestic.cs の段階18は移動ボタン処理後に12を指定し、段階11は内政以外で12へ分岐する。Game1.DemoDomesticActions.cs の DemoNodePoint も自陣営の戦闘ロック外地点がなければ12を指定する。段階12の実入力は内政フェーズとチュートリアル条件で有効な場合に輸送概要を開く。工場計画を選んだ段階10や出撃予約に成功した段階36は19のターン終了へ進む。
+- 新規実行なし。通常輸送概要のボタンと描画は20:21回、直送便ペアは20:40回の通常UI診断を参照。21:19回の論理1920×1080の観測ではいずれも開かなかった。次回は有効な内政状態で段階18から12へ進んだ直後の矩形・画面を採取する。専用直送便の自然実演、物理入力、自然生成のポケットのみの攻撃は未確認。
+
+### 実行履歴：2026-11-17 21:59回
+
+- 開始21:59:45、終了 22:02:27 JST。部分点検完了。HEAD c2a8113c61cf724993429c4f4c62db87a4185d4f。変更は tests/DemoInspectorUi/Program.cs の状態ログと本記録。ゲームコード変更・新規採番なし。
+- dotnet build tests/DemoInspectorUi/DemoInspectorUi.csproj --artifacts-path Z:/muzudho-with-ai-agent/FolderVerse/tmp/delete-after-2026-11-17/demo-audit --no-restore --disable-build-servers -p:UseAppHost=false -v minimal 後、同出力の bin/DemoInspectorUi/debug で ALSOFT_DRIVERS=null、dotnet DemoInspectorUi.dll。初回ビルド21:00ではなく22:00:13 PID 26184→22:00:26終了0、実行22:00:27 PID 8020→22:00:57終了 -532462766。診断が次段階を12と仮定して停止。ログ DemoInspectorUi-transport-followup-{build,run}。
+- 診断の仮定を取り除き、再ビルド22:01:22 PID 2760→22:01:34終了0、警告・エラー0。再実行22:01:34 PID 23088→22:02:05終了0。上限は各ビルド600秒・各診断300秒。証拠は DemoInspectorUi-stage-build-220122 と DemoInspectorUi-stage-run-220134 の両ログ。
+- 21:39回の入口説明を訂正。段階18は内部で12を代入した後、共通の末尾加算により実際は13の移動先選択へ進む。固定場面の実描画診断で stage=13、overview=False、movement=True。輸送概要の独立検証、工場6プランと閉鎖等は1080p/540pの既存診断でPASS。自然Demoの直送便ペアは未確認。次回は他の未確認経路（自然生成のポケットのみの攻撃など）を点検する。

@@ -10,22 +10,26 @@ sealed class MenuGame:Game1{
  void Set(string n,object v)=>typeof(Game1).GetField(n,F)!.SetValue(this,v);
  object Call(string n,params object[] a)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,a)!;
  void Check(bool ok,string m){if(!ok)throw new Exception(m);}
- void Input(Point canvasPoint,ButtonState button=ButtonState.Released,params Keys[] keys){
+ void Input(Point canvasPoint,ButtonState button=ButtonState.Released,double elapsed=0,params Keys[] keys){
   var canvas=(Rectangle)Call("CanvasBounds");var mouse=new MouseState(canvas.X+canvasPoint.X*canvas.Width/1920,canvas.Y+canvasPoint.Y*canvas.Height/1080,0,button,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
-  Call("HandleInput",mouse,new KeyboardState(keys),new GameTime(),true);
+  Call("HandleInput",mouse,new KeyboardState(keys),new GameTime(TimeSpan.Zero,TimeSpan.FromSeconds(elapsed)),true);
  }
  void Click(int x,int y){Input(new(x,y));Input(new(x,y),ButtonState.Pressed);Input(new(x,y));}
  void Key(Keys key){Input(default,keys:new[]{key});Input(default);}
  string path=Path.Combine(AppContext.BaseDirectory,"menu-save-test","autosave.json.gz");int frame;
+ readonly bool auditBook=Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_BOOK_AUDIT")=="1";
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_conquestOverviewEnabled",false);Set("_autoSavePath",path);Set("_autoSaveEnabled",true);if(File.Exists(path))File.Delete(path);Call("CheckAutoSave");
+  Set("_tutorialAchievements",new TutorialAchievements(Path.Combine(AppContext.BaseDirectory,"menu-save-test","achievements.json")));
+  if(auditBook)return;
   Click(960,930);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title" && (int)Get("_titleMenuSelection")==3,"Start opens menu without save, New Game selected");
   Check(!(bool)Call("UpdateDemo",11d,true,false,false,false,11d),"Idle demo cannot steal open menu");
   Click(960,617);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Unavailable Continue row is inert without save");
   Click(960,417);Check((bool)Get("_tutorialMenuOpen"),"How to Play opens tutorial guide");
   Check(!(bool)Call("UpdateDemo",11d,true,false,false,false,11d),"Tutorial guide pauses demo");
   Click(1100,810);Check((bool)Get("_tutorialMenuOpen"),"Unimplemented planets are disabled");
-  Click(730,477);var tutorial=(WorldSetup)Get("_setup");Check(tutorial.TutorialMapBeforeWar,"First planet directly starts integrated tutorial");
+  Click(730,477);Check(Get("_screen").ToString()=="OpeningBook","First planet opens the tutorial storybook");
+  Click(1675,55);var tutorial=(WorldSetup)Get("_setup");Check(tutorial.TutorialMapBeforeWar,"Skipping the storybook starts the integrated tutorial");
   Check(Get("_screen").ToString()=="WorldStatus" && tutorial.PlayerCount==1 && tutorial.HumanPlayers.SequenceEqual(new[]{0}) && tutorial.PlayerSlot==0,"Step one reaches domestic as No.1");
   Check(tutorial.Width==1 && tutorial.Height==1 && tutorial.Depth==1 && tutorial.ActiveCount==6 && tutorial.Portraits.Take(6).SequenceEqual(Enumerable.Range(0,6)) && tutorial.Looks.Take(6).All(l=>l.VariantId==0),"Dice world and original No.1 through No.6 cast");
   Check(!tutorial.LandPending && tutorial.Owners.Distinct().Count()==6 && tutorial.Robots.Nodes.Length==tutorial.Nodes.All.Length && File.Exists(path),"Normal randomized land, economy, robots and autosave initialized");
@@ -118,17 +122,50 @@ sealed class MenuGame:Game1{
   Key(Keys.Escape);Check(!(bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Escape dismisses menu instead of exiting app");
   Key(Keys.Enter);Check((bool)Get("_titleMenuOpen"),"Enter opens menu");Click(100,500);Check(!(bool)Get("_titleMenuOpen"),"Outside click dismisses menu");
   Click(960,930);Click(960,350);Check((bool)Get("_titleMenuOpen"),"Blank paper has no hidden close button");Key(Keys.Escape);
-  Click(960,930);Click(960,717);Check(Get("_screen").ToString()=="PlayerCount","New Game opens existing player-count flow");
+  Click(960,930);Click(960,717);Check(Get("_screen").ToString()=="OpeningBook","New Game opens the storybook");Click(1675,55);Check(Get("_screen").ToString()=="PlayerCount","New Game opens existing player-count flow");
   var w=(WorldSetup)Get("_setup");w.SetWorld(123);Check(w.TutorialStep==0,"Normal world clears tutorial restrictions");w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);w.Industry.Queue(1);Call("BeginIndustry");Check(Get("_screen").ToString()=="Industry" && w.Industry.Pending,"Normal play retains industrial roulette");w.Industry.Reset();Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("AutoSaveDomestic");Call("ReturnToTitle");
   Click(960,930);Check((int)Get("_titleMenuSelection")==2,"Continue is initial selection with save");Key(Keys.Down);Check((int)Get("_titleMenuSelection")==3,"Arrow key selects New Game");Key(Keys.Up);Check((int)Get("_titleMenuSelection")==2,"Arrow key returns to Continue");Input(new(960,717));Input(new(960,717),keys:new[]{Keys.Up});Input(new(960,717));Check((int)Get("_titleMenuSelection")==2,"Stationary mouse cannot override keyboard selection");Key(Keys.Enter);Check(Get("_screen").ToString()=="WorldStatus","Keyboard Continue restores game");Call("ReturnToTitle");
   var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();
   Click(960,930);Click(960,617);Check(Get("_screen").ToString()=="WorldStatus","Continue hit testing works at 960x540");Call("ReturnToTitle");
   graphics.PreferredBackBufferWidth=1920;graphics.PreferredBackBufferHeight=1080;graphics.ApplyChanges();
-  var savedBytes=File.ReadAllBytes(path);File.WriteAllText(path,"broken");Click(960,930);Click(960,617);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Resume failure retains usable paper menu");Click(960,717);Check(Get("_screen").ToString()=="PlayerCount" && File.ReadAllText(path)=="broken","New Game remains available without deleting unreadable save");File.WriteAllBytes(path,savedBytes);Set("_autoSaveError","");Set("_screen",Enum.Parse(Get("_screen").GetType(),"Title"));Call("OpenTitleStartMenu");
+  var savedBytes=File.ReadAllBytes(path);File.WriteAllText(path,"broken");Click(960,930);Click(960,617);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Resume failure retains usable paper menu");Click(960,717);Check(Get("_screen").ToString()=="OpeningBook","New Game opens the storybook");Click(1675,55);Check(Get("_screen").ToString()=="PlayerCount" && File.ReadAllText(path)=="broken","New Game remains available without deleting unreadable save");File.WriteAllBytes(path,savedBytes);Set("_autoSaveError","");Set("_screen",Enum.Parse(Get("_screen").GetType(),"Title"));Call("OpenTitleStartMenu");
   Console.WriteLine("PASS: Start modal, tutorial guide, four-soldier preset, saved factory restrictions, skipped tutorial industry, extra-bold deboss medallion names and war reservation counts, save-dependent Continue, New Game, keyboard navigation, text-only paper, Escape/outside, demo pause and small-window hit testing.");
  }
  protected override void Update(GameTime t){}
+ void DrawBookAudit(GameTime time){
+  switch(frame){
+   case 1:
+    Click(960,930);Click(960,417);Click(730,477);
+    Check(Get("_screen").ToString()=="OpeningBook","Petitstella opens the book cover");
+    break;
+   case 2:
+    Click(960,990);
+    Check(Get("_screen").ToString()=="OpeningSpace","Open Book takes the reader to the space page");
+    Click(960,990);
+    Check(Get("_screen").ToString()=="OpeningSpace","The space page waits for the reveal");
+    for(int tick=0;tick<8;tick++)Input(default,elapsed:.25);
+    break;
+   case 3:
+    Click(960,990);
+    Check(Get("_screen").ToString()=="WorldStatus" && ((WorldSetup)Get("_setup")).TutorialMapBeforeWar,"Finishing the space page starts the integrated tutorial without skipping");
+    break;
+  }
+  base.Draw(time);
+  var pp=GraphicsDevice.PresentationParameters;
+  var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];
+  GraphicsDevice.GetBackBufferData(pixels);
+  using var image=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);
+  image.SetData(pixels);
+  using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"petitstella-book-{frame}.png")))
+   image.SaveAsPng(file,image.Width,image.Height);
+  if(frame++==3){
+   Call("DeleteCompletedAutoSave");
+   Console.WriteLine($"PASS: title, Petitstella book cover, revealed space page, and tutorial map via ordinary clicks at {image.Width}x{image.Height}.");
+   Exit();
+  }
+ }
  protected override void Draw(GameTime t){
+  if(auditBook){DrawBookAudit(t);return;}
   if(frame==5){Call("BeginTutorialStepOne");Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);}
   if(frame==6){var w=(WorldSetup)Get("_setup");var pair=w.Nodes.All.Where(n=>n.Owner==0).SelectMany(n=>w.Routes.Neighbors(n).Select(r=>(Source:n.Id,Target:w.Nodes.At(r.Target,r.Entry).Id))).First(p=>w.Nodes.All[p.Target].Owner!=0);w.Campaign.Plan(new(0,pair.Target,1,pair.Source,false));}
   if(frame==8){Call("CloseNodeInspector");Call("OpenWarPlanning");var w=(WorldSetup)Get("_setup");int target=((CubeNet)Get("_net")).MovementTargets.First(t=>w.Campaign.RobotBattles.CanMarch(w,0,t) && w.Campaign.RobotBattles.CanAttackFrom(w,0,w.Nodes.Current(0).Id,t));Call("SelectMoveNode",target);Call("UpdateDomesticSlide",1f);}

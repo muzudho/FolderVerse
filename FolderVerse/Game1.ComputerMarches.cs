@@ -98,11 +98,20 @@ public partial class Game1
                 FocusDemoNode(_setup.Nodes.All[order.TargetNode]);
                 return true;
             case 1:
-                if(!OperationPosition(order.TargetNode,out var at))break;
-                _computerWarClick=at.ToPoint();
-                if(!MapViewBounds.Contains(_computerWarClick) ||
-                    (_statusGlobe?HitGlobeNode(_computerWarClick,_net.MovementTargets):
-                        _net.HitNode(_setup,NetPanel,_computerWarClick,_net.MovementTargets))!=order.TargetNode)break;
+                var target=_setup.Nodes.All[order.TargetNode];
+                Vector2 at;
+                if(_statusGlobe)
+                {
+                    var position=GlobeNodeDisplayPosition(target,_net.ResourceClearance(_setup,target.Cell));
+                    if(!_world.ProjectVisible(position,_setup.Cells[target.Cell].Normal,_yaw,_pitch,StatusGlobeArea,out at))break;
+                }
+                else if(!OperationPosition(target.Id,out at))
+                {
+                    // The inspector slide can move the unfolded map after the initial focus.
+                    FocusDemoNode(target);
+                    if(!OperationPosition(target.Id,out at))break;
+                }
+                if(!TryComputerDestinationClick(target.Id,at.ToPoint(),out _computerWarClick))break;
                 MovementClick(_computerWarClick,new KeyboardState());
                 if(_selectedMoveNode==order.TargetNode)return true;
                 break;
@@ -161,6 +170,29 @@ public partial class Game1
         CloseMovement();
         _computerWarStage=-1;
         _computerMarchAge=0;
+        return false;
+    }
+
+    private bool TryComputerDestinationClick(int target,Point center,out Point click)
+    {
+        bool HitsTarget(Point point)=>MapViewBounds.Contains(point) &&
+            (_statusGlobe?HitGlobeNode(point,_net.MovementTargets):
+                _net.HitNode(_setup,NetPanel,point,_net.MovementTargets))==target;
+
+        click=center;
+        if(HitsTarget(center))return true;
+        if(!_statusGlobe)return false;
+        // A neighboring harbor can overlap the center of a visible site.
+        for(int radius=4;radius<=24;radius+=4)
+            for(int y=-1;y<=1;y++)
+                for(int x=-1;x<=1;x++)
+                {
+                    if(x==0 && y==0)continue;
+                    var point=center+new Point(x*radius,y*radius);
+                    if(!HitsTarget(point))continue;
+                    click=point;
+                    return true;
+                }
         return false;
     }
 

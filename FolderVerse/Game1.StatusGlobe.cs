@@ -74,19 +74,24 @@ public partial class Game1
     {
         _yaw=_pitch=0;_net.ScreenAngle=0;_dragging=false;_net.SetCenter(_setup,4);
     }
+    private Vector3 GlobeNodeDisplayPosition(Node node,(Vector3 Position,float Radius)[] obstacles)
+    {
+        var cell=_setup.Cells[node.Cell];
+        var position=_net.SiteDisplayPosition(_setup,node,obstacles);
+        return position+cell.Normal*WorldTerrain.ReliefAt(_setup,cell,position,_setup.Terrain);
+    }
     private int HitGlobeNode(Point pointer,IEnumerable<int> candidates=null)
     {
         if(!MapViewBounds.Contains(pointer))return -1;
         int nearest=-1;float distance=float.PositiveInfinity;bool hitPier=false;
-        var offset=_setup.Terrain;
+
         var clearances=new Dictionary<int,(Vector3 Position,float Radius)[]>();
         foreach(var node in _setup.Nodes.All.Where(n=>_net.NodeVisible(_setup,n)))
         {
             var cell=_setup.Cells[node.Cell];
             if(!clearances.TryGetValue(node.Cell,out var obstacles))
                 clearances[node.Cell]=obstacles=_net.ResourceClearance(_setup,node.Cell);
-            var position=_net.SiteDisplayPosition(_setup,node,obstacles);
-            position+=cell.Normal*WorldTerrain.ReliefAt(_setup,cell,position,offset);
+            var position=GlobeNodeDisplayPosition(node,obstacles);
             if(!_world.ProjectVisible(position,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var at))continue;
             float candidate=Vector2.DistanceSquared(at,new(pointer.X,pointer.Y));
             _world.ProjectVisible(position+cell.U,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var unit);
