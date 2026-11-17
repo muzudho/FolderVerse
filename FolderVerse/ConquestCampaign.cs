@@ -31,6 +31,7 @@ public sealed partial class ConquestCampaign
         ComputerNodePurposes.Plan(world,automaticAll);
         ComputerLogistics.Plan(world,automaticAll);
         ComputerFunctionTransfers.Plan(world,automaticAll);
+        ComputerTrade.Plan(world,automaticAll);
         if(deferDelivery?.Invoke()==true)return false;
         BeginDelivery(world);
         return true;
@@ -118,7 +119,7 @@ public sealed partial class ConquestCampaign
         // Switching control does not cancel an already chosen march.
         for(int i=_plannedOrders.Count-1;i>=0;i--)if(world.ControllerOf(_plannedOrders[i].Ruler)<0){_partyOrders.Add(_plannedOrders[i]);_plannedOrders.RemoveAt(i);}
     }
-    public void Reset(){_sectorBaseline=null;SubordinateResults.Clear();LastCancelledWars.Clear();Phase=CampaignPhase.Domestic;Trade.Offers.Clear();FunctionTransfers.Orders.Clear();FunctionTransfers.LastResults.Clear();_domesticSubmitted.Clear();PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
+    public void Reset(){_sectorBaseline=null;SubordinateResults.Clear();LastCancelledWars.Clear();Phase=CampaignPhase.Domestic;Trade.Offers.Clear();Trade.Replies.Clear();FunctionTransfers.Orders.Clear();FunctionTransfers.LastResults.Clear();_domesticSubmitted.Clear();PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
     public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false,
         Func<IReadOnlyList<March>,bool> deferResolution=null,bool allPlanned=false)
     {

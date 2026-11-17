@@ -132,8 +132,11 @@ public partial class Game1
 
     private bool BeginDiplomacy()
     {
-        if(DueTrade==null || _setup.Industry.Pending)return false;
+        if(DueTrade==null && Trade.Replies.Count==0 || _setup.Industry.Pending)return false;
         _tradeReplies.Clear();_tradeReplyPage=0;
+        foreach(var reply in Trade.Replies)
+            _tradeReplies.Add(TradeEndpointLabel(reply.Offer.From)+" → "+TradeEndpointLabel(reply.Offer.To)+" / "+reply.Result);
+        Trade.Replies.Clear();
         _screen=Screen.Diplomacy;
         ResolveAutomaticTradeReplies();
         if(_autoPlay || _demoActive){_tradeReplies.Clear();return false;}

@@ -7,10 +7,12 @@ using System.Linq;
 public readonly record struct TradeEndpoint(int Ruler,int Node,bool Pocket);
 public readonly record struct TradeCargo(long Id,bool Raw);
 public sealed record TradeOffer(int Turn,TradeEndpoint From,TradeEndpoint To,TradeCargo Give,TradeCargo Want);
+public sealed record TradeReply(TradeOffer Offer,string Result);
 
 public sealed class TradePlan
 {
     public List<TradeOffer> Offers {get;}=new();
+    public List<TradeReply> Replies {get;}=new();
 
     public IEnumerable<TradeEndpoint> Partners(WorldSetup world,TradeEndpoint from)
     {
@@ -66,8 +68,14 @@ public sealed class TradePlan
     }
 
     public bool Book(WorldSetup world,TradeEndpoint from,TradeEndpoint to,TradeCargo give,TradeCargo want)
+        =>BookCore(world,from,to,give,want,false);
+
+    internal bool BookComputer(WorldSetup world,TradeEndpoint from,TradeEndpoint to,TradeCargo give,TradeCargo want)
+        =>BookCore(world,from,to,give,want,true);
+
+    private bool BookCore(WorldSetup world,TradeEndpoint from,TradeEndpoint to,TradeCargo give,TradeCargo want,bool computer)
     {
-        if(world.Industry.Pending || world.Campaign.Phase!=CampaignPhase.Domestic || !world.Relations.Controls(from.Ruler) ||
+        if(world.Industry.Pending || world.Campaign.Phase!=CampaignPhase.Domestic || !computer && !world.Relations.Controls(from.Ruler) ||
             !Partners(world,from).Contains(to) || !Cargo(world,from).Contains(give) || !Cargo(world,to).Contains(want) ||
             Offers.Any(offer=>offer.From==from && offer.Give==give))return false;
         Offers.Add(new(world.Population.Turn,from,to,give,want));
@@ -86,17 +94,23 @@ public sealed class TradePlan
 
     internal bool ComputerAccepts(WorldSetup world,TradeOffer offer)
     {
-        int Value(TradeEndpoint endpoint,TradeCargo cargo)
-        {
-            var robot=Robot(world,endpoint,cargo);
-            return robot!=null?SalvagePlan.PartCount(robot.Parts)*RobotWorld.MaplePackageSize:
-                Package(world,endpoint,cargo)?.Units??0;
-        }
         // A first complete robot can turn a weak neighbor into an immediate threat.
         var wanted=Robot(world,offer.To,offer.Want);
         if(wanted?.Parts==RobotParts.Complete && !world.Relations.Allied(offer.From.Ruler,offer.To.Ruler) &&
             !Store(world,offer.From).Robots.Any(r=>r.Parts==RobotParts.Complete && !r.Stationed))return false;
-        return Value(offer.From,offer.Give)>=Value(offer.To,offer.Want);
+        return ComputerTrade.Value(world,offer.To,offer.From,offer.Give)>=
+            ComputerTrade.Value(world,offer.To,offer.To,offer.Want);
+    }
+
+    internal void ResolveComputerReplies(WorldSetup world)
+    {
+        if(world.Industry.Pending)return;
+        foreach(var offer in Offers.Where(o=>o.Turn<world.Population.Turn).ToArray())
+        {
+            if(Possible(world,offer) && world.ControllerOf(offer.To.Ruler)>=0)continue;
+            Replies.Add(new(offer,Answer(world,offer,Possible(world,offer) && ComputerAccepts(world,offer))));
+        }
+        if(world.ComputerOnly && Replies.Count>200)Replies.RemoveRange(0,Replies.Count-200);
     }
 
     public string Answer(WorldSetup world,TradeOffer offer,bool accept)
