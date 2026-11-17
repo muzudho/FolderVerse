@@ -65,7 +65,9 @@ public partial class Game1
                 string name=RobotWorld.RawName(material);
                 int deposit=_setup.Robots.RawDeposit(node.Id,material);
                 int available=FactoryHarvestAvailable(node.Id,lines,line,material);
-                string warning=deposit==0?(_setup.Robots.HadRawDeposit(_setup,node,material)
+                bool hasWorldDeposit=_setup.Nodes.All.Any(site=>_setup.Robots.RawDeposit(site.Id,material)>0);
+                string warning=!hasWorldDeposit?"この星では採れません":
+                    deposit==0?(_setup.Robots.HadRawDeposit(_setup,node,material)
                     ?"この地域ではもう採れません":"この地域では採れません"):
                     "他の採取レーンで採り終えます";
                 var card=HarvestAlbumCard((int)material);
