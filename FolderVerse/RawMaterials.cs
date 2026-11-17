@@ -18,6 +18,7 @@ public sealed partial class RobotWorld
 
     internal bool OtherRawSupplyEnabled=>_rawDeposits!=null;
     internal bool OffshoreRawSupplyEnabled {get;private set;}
+    internal bool OffshoreUsesSeaAreaRule {get;private set;}
     public int RawDeposit(int node,RawMaterial material)=>material==RawMaterial.Maple
         ?MapleDeposit(node):_rawDeposits?[(int)material-1][node]??0;
 
@@ -46,6 +47,7 @@ public sealed partial class RobotWorld
     private void InitializeRawDeposits(WorldSetup world)
     {
         OffshoreRawSupplyEnabled=true;
+        OffshoreUsesSeaAreaRule=true;
         _rawDeposits=RawMaterials.Skip(1).Select(_=>new int[Nodes.Length]).ToArray();
         var terrain=world.Terrain;
         foreach(var cell in world.Cells)

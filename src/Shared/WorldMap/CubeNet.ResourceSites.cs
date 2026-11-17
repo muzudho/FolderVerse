@@ -7,14 +7,14 @@ public sealed partial class CubeNet
 {
     internal enum ResourceSiteKind { Salt,Oil,Gas,Quartz,OffshoreGas }
     internal sealed record ResourceSite(ResourceSiteKind Kind,Vector3 Position,float Size);
-    private (int Seed,SurfaceCell[] Cells,TerrainSampler Terrain,bool Offshore) _resourceSiteKey;
+    private (int Seed,SurfaceCell[] Cells,TerrainSampler Terrain,bool Offshore,bool UseLargestWaterBody) _resourceSiteKey;
     private ResourceSite[][] _resourceSites;
     private readonly System.Collections.Generic.Dictionary<Node,Point> _grovePoints=new();
 
     private ResourceSite[] DisplayedResourceSites(WorldSetup world,int cellId)
     {
         if(world.TutorialStep!=0 || world.EquipmentMode!=RobotEquipmentMode.Materials)return Array.Empty<ResourceSite>();
-        var key=(world.WorldSeed,world.Cells,world.Terrain,ShowOffshoreSites(world));
+        var key=(world.WorldSeed,world.Cells,world.Terrain,ShowOffshoreSites(world),UseLargestWaterBody(world));
         if(_resourceSites==null || _resourceSiteKey!=key)
         {
             _resourceSiteKey=key;
@@ -99,7 +99,7 @@ public sealed partial class CubeNet
             if(!ShowOffshoreSites(world) || world.IsPolarFace(cell.Face) ||
                 new SeedRandom(world.WorldSeed^cell.Id*7919^0x505047).Next(3)!=0)return;
             var candidates=Enumerable.Range(0,64).Select(i=>new Point(1+i%8,1+i/8))
-                .Where(p=>world.Routes.IsOpenOcean(cell.Id,p) && world.Routes.Walkable(cell.Id,p) &&
+                .Where(p=>world.Routes.IsOpenOcean(cell.Id,p,UseLargestWaterBody(world)) && world.Routes.Walkable(cell.Id,p) &&
                     world.Nodes.At(cell.Id,p) is {Terrain:TravelTerrain.Sea} node && !world.Routes.NearWhirlpool(node))
                 .Select(p=>world.Routes.Position(cell.Id,p))
                 .Where(p=>sites.All(s=>Vector3.DistanceSquared(s.Position,p)>=.28f*.28f))
@@ -128,6 +128,9 @@ public sealed partial class CubeNet
 
     private static bool ShowOffshoreSites(WorldSetup world)=>
         !world.Robots.OtherRawSupplyEnabled || world.Robots.OffshoreRawSupplyEnabled;
+
+    private static bool UseLargestWaterBody(WorldSetup world)=>
+        world.Robots.OtherRawSupplyEnabled && !world.Robots.OffshoreUsesSeaAreaRule;
 
     internal static void DrawResourceSite(ResourceSiteKind kind,bool globe,Action<Color,Vector3[]> emit,Func<Vector3,Vector2> project=null)
     {

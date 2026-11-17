@@ -59,9 +59,9 @@ public sealed partial class WorldPreview
             if(PresentationOwner.HasValue && (owner!=PresentationOwner.Value || PresentationCells!=null && !PresentationCells.Contains(cell.Id)))owner=-1;
             if(exclusive && ControlledCountryColors && !setup.Relations.Controls(owner))owner=-1;
             AddFace(mesh,cell.Origin,cell.U,cell.V,cell.Normal,1,1,offset,(height,x,y)=>
-                exclusive && CountryColors && owner>=0
+                WorldTerrain.WaterSurfaceColor(setup,cell.Id,height,x,y,exclusive && CountryColors && owner>=0
                     ? LandTerritoryColor(setup.CountryMapColor(owner,x,y),WorldTerrain.Kind(height))
-                    : WorldTerrain.MapColorAt(height,cell.Normal,setup.PolarAxis,setup.WorldSeed),
+                    : WorldTerrain.MapColorAt(height,cell.Normal,setup.PolarAxis,setup.WorldSeed)),
                 brightness:Brightness(cell.Id));
         }
         if(previewMaples)AddPreviewMaples(mesh,setup,offset);
