@@ -102,8 +102,7 @@ public partial class Game1
         {
             var (source,line)=item.value;int y=FactoryRowY(item.index);
             int owner=_setup.Nodes.All[source].Owner;
-            _ui.Box(new(78,y-24,782,286),item.index%2==0?new Color(37,63,77):new Color(46,67,79));
-            _ui.Center((page*lanesPerPage+item.index+1).ToString(),new(84,y-12,66,40),.85f,new Color(167,190,194));
+            DrawFactoryLaneFrame(item.index,page*lanesPerPage+item.index+1,item.index);
             if(line.HarvestOnly || line.MapleRemaining>0){DrawFactoryHarvestLane(line,source,item.index,y,line.WorkerSnapshot);continue;}
             _ui.Text(_setup.Nodes.DisplayName(_setup.Nodes.All[source]),new(490,y-17),.30f,Cream);
             int period=line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[source].Purpose):3;
@@ -163,9 +162,4 @@ public partial class Game1
         if(!_setup.Industry.Pending && _manufacturingFlights.Count==0 && !ComputerExhibition)_ui.Button(IndustryContinue,"次の内政へ",Accent,.65f);
     }
 
-    private void DrawManufacturingProduct(Rectangle bounds,Robot product)
-    {
-        bool materials=_setup.EquipmentMode==RobotEquipmentMode.Materials;
-        DrawRobotGlyphCore(bounds,product,true,1,null,showIntegratedMaterial:materials,allowCaptain:materials);
-    }
 }

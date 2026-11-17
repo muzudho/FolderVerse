@@ -3,14 +3,23 @@ using System;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 
 public partial class Game1
 {
     private Texture2D _factoryConveyor;
     private Texture2D _factorySlimConveyor;
     private Texture2D _factoryWorkerGear;
-    private int _factoryHolidayLane=-1;
+    private const int FactoryVisibleLanes=2;
+    private static int FactoryRowY(int row)=>284+row*290;
+    private static Rectangle FactoryLaneBounds(int row)=>new(78,FactoryRowY(row)-24,782,286);
+    private static Rectangle FactoryRobotButton(int row,int period)=>new(301+FactoryConveyorTravel(period),FactoryRowY(row)+67,72,88);
+    private static Rectangle HarvestLoadButton(int row,int loads)=>new(400+(loads-1)*105,FactoryRowY(row)+132,95,35);
+
+    private void DrawFactoryLaneFrame(int row,int laneNumber,int stripeIndex)
+    {
+        _ui.Box(FactoryLaneBounds(row),stripeIndex%2==0?new Color(37,63,77):new Color(46,67,79));
+        _ui.Center(laneNumber.ToString(),new(84,FactoryRowY(row)-12,66,40),.85f,new Color(167,190,194));
+    }
     private static Rectangle FactoryHolidayTrack(int row)=>new(420,FactoryRowY(row)+222,270,22);
     private static int FactoryConveyorTravel(int period)=>Math.Min(period,36)*12;
     private const int FactoryConveyorStart=327;
@@ -125,24 +134,38 @@ public partial class Game1
         _ui.Box(new(track.X+length-6,track.Y,12,22),Cream);
     }
 
-    private bool FactoryHolidayInput(MouseState mouse)
+
+    private void DrawFactoryHarvestLane(RobotWorkshop line,int node,int row,int y,Robot worker,bool planned=false,int available=-1)
     {
-        if(!_nodeFactoryOpen || mouse.LeftButton==ButtonState.Released){
-            _factoryHolidayLane=-1;return false;
+        var product=FactoryRobotButton(row,3);
+        if(worker!=null)
+        {
+            DrawFactoryWorker(y,worker,harvesting:true);
+            _ui.Text("採取員",new(91,y+58),.27f,Cream);
         }
-        if(_factoryHolidayLane<0)return false;
-        var factory=PlanningWorkshop(_populationNode);
-        var lines=FactoryScreenLines(factory,out var planned);
-        if(_factoryHolidayLane>=lines.Length || _setup.Campaign.RobotBattles.LockedNode(_populationNode)){
-            _factoryHolidayLane=-1;return true;
+        if(line.MapleRemaining==0)
+        {
+            _ui.Text(planned?"採取レーン / 予約中":"採取レーン",new(250,y),.48f,Cream);
+            _ui.Button(product,"採取",Muted,.34f);
+            return;
         }
-        var line=lines[_factoryHolidayLane];
-        var track=FactoryHolidayTrack(_factoryHolidayLane-_factoryPage);
-        int turns=Math.Clamp((int)MathF.Round((_pointer.X-track.X)/30f),1,9);
-        if(turns!=line.RestTurns){
-            line.SetRest(line.RestEvery,turns);
-            if(planned.TryGetValue(_factoryHolidayLane,out long worker))_setup.Robots.PartPlanning.SetWorkerLane(worker,line);
-        }
-        return true;
+        _ui.Box(product,Accent);
+        DrawMaplePackage(product,new MaplePackage(0,line.MapleRemaining*16){Material=line.HarvestMaterial});
+        if(worker!=null)DrawMaplePackageArt(new Rectangle(219,y+100,66,45),1,material:line.HarvestMaterial);
+        int deposit=_setup.Robots.RawDeposit(node,line.HarvestMaterial);
+        bool waiting=!_setup.Robots.CanHarvestMaple(node,line.MapleRemaining,line.HarvestMaterial);
+        string status=line.Paused?"一時停止":deposit==0?"採取できる埋蔵量がありません":waiting?"格納枠の空きを待っています":"採取中";
+        _ui.Text($"採取レーン / {status} / 予約残り {line.MapleRemaining} 荷",new(160,y-19),.33f,Cream);
+        _ui.Text($"{RobotWorld.RawName(line.HarvestMaterial)} / 残り埋蔵量 {deposit} 荷",new(400,y+46),.45f,Cream);
+        _ui.Text($"次の入荷まで {IndustryTime.Format(Math.Max(0,line.EffectiveHarvestPeriod(_setup.Nodes.All[node].Purpose)-line.MapleProgress))} 産業ターン",new(400,y+90),.33f,Cream);
+        for(int loads=1;available>=0 && loads<=3;loads++)
+            _ui.Button(HarvestLoadButton(row,loads),$"{loads} 荷",loads>available?Muted*.55f:loads==line.MapleRemaining?Accent:Muted,.34f);
+        DrawFactoryLaneStatus(y,!waiting && !line.Paused,status);
+    }
+
+    private void DrawManufacturingProduct(Rectangle bounds,Robot product)
+    {
+        bool materials=_setup.EquipmentMode==RobotEquipmentMode.Materials;
+        DrawRobotGlyphCore(bounds,product,true,1,null,showIntegratedMaterial:materials,allowCaptain:materials);
     }
 }

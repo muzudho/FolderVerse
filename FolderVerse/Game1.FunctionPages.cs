@@ -66,7 +66,6 @@ public partial class Game1
     }
     private static Rectangle FactoryPagePrevious=>new(660,926,62,30);
     private static Rectangle FactoryPageNext=>new(802,926,62,30);
-    private const int FactoryVisibleLanes=2;
     private int FactoryLaneCount()
     {
         var factory=PlanningWorkshop(_populationNode);
