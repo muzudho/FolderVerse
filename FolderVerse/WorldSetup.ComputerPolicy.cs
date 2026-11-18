@@ -4,6 +4,10 @@ internal enum ComputerAttackPriority { Balanced, Capture, LightDefense }
 
 internal sealed record ComputerPolicy(ComputerAttackPriority AttackPriority,bool KeepGuard)
 {
+    public int ReleaseExhaustedHarvester {get;init;}=75;
+    public int ClearExhaustedHarvestPurpose {get;init;}=75;
+    public int ReleaseUnplannedHarvester {get;init;}=50;
+    public int ClearUnplannedHarvestPurpose {get;init;}=50;
     public int TargetScore(int captives,int defense,bool occupied)=>AttackPriority switch
     {
         ComputerAttackPriority.Capture=>captives*2000-defense*5+(occupied?50:0),
@@ -28,7 +32,12 @@ public sealed partial class WorldSetup
     private ComputerPolicy[] _computerPolicies;
 
     internal ComputerPolicy CharacterComputerPolicy(int character)=>
-        _computerPolicies?[character] ?? DefaultComputerPolicies[character%DefaultComputerPolicies.Length];
+        _computerPolicies?[character] ?? DefaultComputerPolicies[character%DefaultComputerPolicies.Length] with {
+            ReleaseExhaustedHarvester=25+25*(character%4),
+            ClearExhaustedHarvestPurpose=25+25*((character/4)%4),
+            ReleaseUnplannedHarvester=25+25*((character/3)%4),
+            ClearUnplannedHarvestPurpose=25+25*((character/5)%4)
+        };
 
     internal ComputerPolicy RulerComputerPolicy(int ruler)=>CharacterComputerPolicy(Looks[ruler].BaseId);
 

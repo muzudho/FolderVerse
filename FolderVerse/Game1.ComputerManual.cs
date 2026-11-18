@@ -27,6 +27,7 @@ public partial class Game1
     }
 
     private static Rectangle ComputerManualCard(int index)=>new(76+index%2*368,205+index/2*92,354,80);
+    private static Rectangle HarvestPolicyButton(int index)=>new(852+index%2*498,442+index/2*68,480,58);
 
     private bool ComputerManualInput(bool click,bool escape)
     {
@@ -55,6 +56,17 @@ public partial class Game1
             else if(ComputerManualReset.Contains(_pointer))
             {
                 _setup.SetCharacterComputerPolicy(_computerManualCharacter,null);
+                _lastAutoSaveTurn=-1;
+            }
+            for(int i=0;i<4;i++)if(HarvestPolicyButton(i).Contains(_pointer))
+            {
+                int Next(int value)=>(value+25)%125;
+                _setup.SetCharacterComputerPolicy(_computerManualCharacter,i switch {
+                    0=>policy with {ReleaseExhaustedHarvester=Next(policy.ReleaseExhaustedHarvester)},
+                    1=>policy with {ClearExhaustedHarvestPurpose=Next(policy.ClearExhaustedHarvestPurpose)},
+                    2=>policy with {ReleaseUnplannedHarvester=Next(policy.ReleaseUnplannedHarvester)},
+                    _=>policy with {ClearUnplannedHarvestPurpose=Next(policy.ClearUnplannedHarvestPurpose)}
+                });
                 _lastAutoSaveTurn=-1;
             }
             int oldPage=_computerManualPage;
@@ -110,13 +122,20 @@ public partial class Game1
         _ui.Text("プレイングスタイルカード",new(852,309),.55f,Cream);
         _ui.Button(ComputerManualAttack,$"攻撃の趣向 / {ComputerAttackNames[(int)policy.AttackPriority]}",Muted,.44f);
         _ui.Button(ComputerManualGuard,policy.KeepGuard?"出撃元に守備を残す / ON":"出撃元に守備を残す / OFF",Muted,.44f);
-        _ui.Text("捕虜になったときの勧誘への返答",new(852,460),.55f,Cream);
+        string[] harvestLabels={
+            $"埋蔵なし：採取員解除 / {policy.ReleaseExhaustedHarvester}%",
+            $"埋蔵なし：採取重点解除 / {policy.ClearExhaustedHarvestPurpose}%",
+            $"予定なし：採取員解除 / {policy.ReleaseUnplannedHarvester}%",
+            $"予定なし：採取重点解除 / {policy.ClearUnplannedHarvestPurpose}%"};
+        for(int i=0;i<4;i++)_ui.Button(HarvestPolicyButton(i),harvestLabels[i],Muted,.36f);
+        _ui.Text("全体ターンごとに判断 / 予定は製造用と取引用 / クリックで確率を変更",new(852,572),.31f,Cream);
+        _ui.Text("捕虜になったときの勧誘への返答",new(852,603),.48f,Cream);
         for(int variant=0;variant<ConquerorCatalog.VariantsPerBase;variant++)
         {
             var look=new ConquerorLook(selected,variant);
             string response=ConquerorRelations.AcceptsRecruitment(look)?"承諾する":"断る";
             _ui.Text($"{variant+1}　{look.PersonalityName}　―　{response}",
-                new(852+variant/3*480,515+variant%3*62),.49f,Cream);
+                new(852+variant/3*480,645+variant%3*34),.42f,Cream);
         }
         _ui.Text("全キャラクター共通の行動方針",new(852,758),.58f,Cream);
         DrawComputerRuleCard("軍事　守備を見積もり、必要な兵力が揃えば同陣営で共同出撃。",810);

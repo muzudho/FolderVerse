@@ -15,15 +15,18 @@ internal static class ComputerNodePurposes
                 !world.Relations.CanAct(owner) || !automaticAll && manual.Contains(owner) ||
                 battles.LockedNode(id) || robots.Workshops[id].Automation==NodeAutomation.Manual)continue;
             var lines=robots.Workshops[id].ProductionLines;
-            var material=lines.Where(line=>line.WaitingForMaple(robots,id)).Select(line=>line.MissingRawMaterial(robots,id))
-                .FirstOrDefault(m=>m.HasValue && robots.MapleAvailableToPlan(id,null,m.Value)>0 &&
+            var planned=ComputerHarvestManagement.PlannedMaterials(world,id);
+            bool keepHarvest=ComputerHarvestManagement.Review(world,node,planned);
+            RawMaterial? material=planned.OrderBy(m=>(int)m).Cast<RawMaterial?>()
+                .FirstOrDefault(m=>robots.MapleAvailableToPlan(id,null,m.Value)>0 &&
                     robots.CanHarvestMaple(id,1,m.Value) && !lines.Any(line=>line.MapleRemaining>0 && line.HarvestMaterial==m));
             if(material.HasValue)
             {
                 var idle=lines.FirstOrDefault(line=>!line.Paused && !line.DoNotRepeat &&
-                    !line.Manufacturing && line.MapleRemaining==0);
+                    line.HarvestOnly && !line.Manufacturing && line.MapleRemaining==0);
                 idle?.SelectMapleHarvest(1,material.Value);
             }
+            if(keepHarvest)continue;
             int available=battles.SelectableRobots(world,owner,id,false).Length;
             bool Hostile(int target)=>world.Nodes.All[target].Owner is var enemy && enemy>=0 && !world.Relations.Allied(owner,enemy);
             bool hostile=available>=2 && battles.MarchTargets(world,id).Any(Hostile);
@@ -31,7 +34,9 @@ internal static class ComputerNodePurposes
                 node.Purpose=world.Nodes.Current(owner)?.Id==id?NodePurpose.Defense:NodePurpose.Frontline;
             else if(available>=2 && battles.PotentialOutpostTargets(world,owner,id).Any(target=>Hostile(target) && !battles.LockedNode(target)))
                 node.Purpose=NodePurpose.Frontline;
-            else if(lines.Any(line=>line.MapleRemaining>0))
+            else if(lines.Where((line,index)=>robots.Workshops[id].WorkerAt(index) is not long worker ||
+                    !robots.PartPlanning.Orders.Any(o=>o.Target==id && o.RobotId==worker && o.Role==HangarReservation.Harvest))
+                .Any(line=>line.MapleRemaining>0 && planned.Contains(line.HarvestMaterial)))
                 node.Purpose=NodePurpose.Harvest;
             else if(lines.Any(line=>line.Manufacturing && !line.Paused && !line.CycleFinished && !line.WaitingForMaple(robots,id)))
                 node.Purpose=NodePurpose.Manufacturing;
