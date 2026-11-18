@@ -63,7 +63,7 @@ public sealed partial class RobotWorld
                 intake.Status="入荷待機：経路・所有国・戦闘状況";continue;
             }
             if(!PlaceIntake(Nodes[target],intake.Product,Workshops[target].ReservedSlots,!Workshops[target].AutoAssemblyDisabled,r=>IntakeReceiverLocked(target,r))){intake.Status="入荷待機：格納枠不足";continue;}
-            if(source!=target)playback.Add((new(source,target,intake.Product.Id,intake.Product.Parts),intake.Product.Owner));
+            if(source!=target)playback.Add((new RobotShipment(source,target,intake.Product.Id,intake.Product.Parts){Visual=intake.Product},intake.Product.Owner));
             ProductionIntakes.Remove(intake);
         }
     }

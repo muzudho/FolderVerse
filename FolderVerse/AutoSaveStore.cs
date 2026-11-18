@@ -184,6 +184,7 @@ public static class AutoSaveStore
                     if(type==typeof(BattleRules) && field.Name=="<FlagDefenseTurns>k__BackingField"){field.SetValue(value,50);continue;}
                     if((type==typeof(BattleState) && (field.Name=="FlagCaptureTurns" || field.Name=="FlagDefenseTurns")) ||
                        (type==typeof(BattleFrame) && (field.Name=="<FlagCaptureTurns>k__BackingField" || field.Name=="<FlagDefenseTurns>k__BackingField")))continue;
+                    if(type==typeof(RobotShipment) && field.Name=="<Visual>k__BackingField")continue;
                     if(type==typeof(March) && field.Name=="<RobotIds>k__BackingField")continue;
                     if(type==typeof(LongPartOrder) && field.Name=="<Origin>k__BackingField")continue;
                     if(type==typeof(BattleState) && field.Name=="<Persuasions>k__BackingField"){field.SetValue(value,new List<BattlePersuasion>());continue;}
