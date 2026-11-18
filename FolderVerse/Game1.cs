@@ -158,6 +158,7 @@ public partial class Game1 : Game
         if(active && (mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released || mouse.RightButton==ButtonState.Pressed && _previousMouse.RightButton==ButtonState.Released || mouse.ScrollWheelValue!=_previousMouse.ScrollWheelValue || keyboard.GetPressedKeys().Any(k=>_previousKeyboard.IsKeyUp(k)))){
             if(_screen==Screen.Industry)_industryIdleAge=0;
             if(_screen==Screen.Diplomacy)_diplomacyIdleAge=0;
+            if(_screen==Screen.Newspaper)_paperIdle=0;
             if(_screen==Screen.Battle && _robotSummary)_summaryReadAge=0;
         }
         if(!IsOpeningScreen && !_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}

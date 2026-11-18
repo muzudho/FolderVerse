@@ -10,6 +10,7 @@ public partial class Game1
     private int _turnPaperIndex,_paperReadTurn=-1,_paperReadCountry=-1;
     private Screen _paperReturnScreen=Screen.WorldStatus;
     private double _paperAge,_paperIdle;
+    private const double PaperIdleSeconds=8;
     private SoundEffect _paperKnock;
     private static readonly Rectangle PaperPrevious=new(120,940,290,65),PaperNext=new(430,940,290,65),PaperDone=new(1370,940,430,65);
     private bool TryBeginTurnNewspaper()
@@ -26,7 +27,7 @@ public partial class Game1
         double oldAge=_paperAge;_paperAge+=Math.Max(0,elapsed);_paperIdle+=Math.Max(0,elapsed);
         if(oldAge<.45 && _paperAge>=.45)PlayToyPost();
         if(click || enter || escape)_paperIdle=0;
-        if(escape || enter || click && PaperDone.Contains(_pointer) || (_autoPlay || _demoActive || _setup.ComputerOnly) && _paperIdle>=8){FinishTurnNewspaper();return;}
+        if(escape || enter || click && PaperDone.Contains(_pointer) || _paperIdle+1e-8>=PaperIdleSeconds){FinishTurnNewspaper();return;}
         if(!click)return;
         if(_paperAge<2){_paperAge=2;return;}
         int next=PaperPrevious.Contains(_pointer)?Math.Max(0,_turnPaperIndex-1):PaperNext.Contains(_pointer)?Math.Min(_turnPapers.Length-1,_turnPaperIndex+1):_turnPaperIndex;
@@ -81,7 +82,7 @@ public partial class Game1
         }else _ui.Text("朝の配達 / クリックで新聞を広げる",new(580,820),.55f,Cream);
         _ui.Button(PaperPrevious,"前の新聞",Muted,.5f);_ui.Button(PaperNext,"次の新聞",Accent,.5f);
         _ui.Button(PaperDone,_diplomacyPending?"新聞を置いて外交へ":"新聞を置いて内政へ",Accent,.46f);
-        if(_autoPlay || _demoActive || _setup.ComputerOnly)DrawPhaseTimer(new(120,1020,1680,10),_paperIdle,8);
+        DrawPhaseTimer(new(120,1020,1680,10),_paperIdle,PaperIdleSeconds);
     }
     private void NewsLine(string text,int x,int y,int width,float scale,Color color)
         =>_ui.Text(text,new(x,y),Math.Min(scale,width/Math.Max(1,_font.MeasureString(text).X)),color);
