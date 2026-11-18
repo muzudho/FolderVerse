@@ -3,10 +3,24 @@ namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 public partial class Game1
 {
+    private Texture2D _diplomacyRoom;
+    private void DrawDiplomacyRoom()
+    {
+        if(_diplomacyRoom==null){
+            string root=Path.IsPathRooted(Content.RootDirectory)?Content.RootDirectory:Path.Combine(AppContext.BaseDirectory,Content.RootDirectory);
+            using var file=File.OpenRead(Path.Combine(root,"Images","Setup","diplomacy-hall-v002.png"));
+            _diplomacyRoom=Texture2D.FromStream(GraphicsDevice,file);
+        }
+        float scale=Math.Max(1920f/_diplomacyRoom.Width,1080f/_diplomacyRoom.Height);
+        int width=(int)MathF.Ceiling(_diplomacyRoom.Width*scale),height=(int)MathF.Ceiling(_diplomacyRoom.Height*scale);
+        _spriteBatch.Draw(_diplomacyRoom,new Rectangle((1920-width)/2,(1080-height)/2,width,height),Color.White);
+    }
     private bool _tradePlannerOpen;
     private readonly int[] _tradePages=new int[4];
     private TradeEndpoint? _tradeFrom,_tradeTo;
@@ -204,12 +218,16 @@ public partial class Game1
 
     private void DrawDiplomacy()
     {
-        _ui.Box(new(0,0,1920,1080),new Color(16,35,47));
+        DrawDiplomacyRoom();
+        _ui.Box(new(30,20,1860,100),new Color(16,35,47)*.78f);
+        _ui.Box(new(30,878,1860,190),new Color(16,35,47)*.78f);
         _ui.Text("外交フェーズ",new(54,34),.94f,Cream);
         _ui.Text(DueTrade==null?"時間が来ると内政フェーズへ進みます":"時間が来ると辞退して次へ進みます",new(54,898),.43f,Cream);
         DrawPhaseTimer(new(54,1040,1796,12),_diplomacyIdleAge,DiplomacyIdleSeconds);
         if(DueTrade is {} offer)
         {
+            foreach(var row in new[]{new Rectangle(54,158,1796,70),new Rectangle(54,251,1796,70),new Rectangle(54,399,1796,82),new Rectangle(54,510,1796,82)})
+                _ui.Box(row,new Color(16,35,47)*.82f);
             SalvageText("交渉相手  "+TradeEndpointLabel(offer.To),new(54,158,1796,70),.63f);
             SalvageText("申し込み元  "+TradeEndpointLabel(offer.From),new(54,251,1796,70),.56f);
             SalvageText("相手からもらう荷  "+TradeCargoLabel(offer.From,offer.Give),new(54,399,1796,82),.57f);
@@ -219,8 +237,10 @@ public partial class Game1
             return;
         }
         var replies=_tradeReplies.Skip(_tradeReplyPage*TradeRows).Take(TradeRows).ToArray();
-        for(int i=0;i<replies.Length;i++)
+        for(int i=0;i<replies.Length;i++){
+            _ui.Box(new(54,166+i*58,1796,54),new Color(16,35,47)*.82f);
             SalvageText(replies[i],new(54,166+i*58,1796,54),.47f);
+        }
         if(_tradeReplies.Count>TradeRows)
         {
             _ui.Button(TradePager(0,false),"←",Muted,.45f);
