@@ -49,7 +49,7 @@ public sealed partial class RobotWorld
     {
         foreach(var intake in ProductionIntakes){
             int source=hosts[ProductionSource(intake)],target=intake.Target??source;
-            if(target>=0 && target<copy.Nodes.Length)
+            if(target>=0 && target<copy.Nodes.Length && hosts[target]==target && CanReceiveProductionIntake(world,source,target,intake.Product.Owner))
                 PlaceIntake(copy.Nodes[target],intake.Product,copy.Workshops[target].ReservedSlots,!copy.Workshops[target].AutoAssemblyDisabled,r=>IntakeReceiverLocked(target,r) || copy.IntakeReceiverLocked(target,r));
         }
     }
@@ -58,14 +58,20 @@ public sealed partial class RobotWorld
         var playback=new List<(RobotShipment,int)>();_intakePlayback=()=>playback;
         foreach(var intake in ProductionIntakes.ToArray()){
             int source=ProductionSource(intake),target=intake.Target??source;
-            bool connected=source==target || world.Routes.Neighbors(world.Nodes.All[source]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==target);
-            if(!connected || !world.Nodes.All[target].Functional || !world.Relations.Allied(intake.Product.Owner,world.Nodes.All[target].Owner) || world.Campaign.RobotBattles.LockedNode(target) || world.Campaign.RobotBattles.LockedEdge(source,target)){
+            if(!CanReceiveProductionIntake(world,source,target,intake.Product.Owner)){
                 intake.Status="入荷待機：経路・所有国・戦闘状況";continue;
             }
             if(!PlaceIntake(Nodes[target],intake.Product,Workshops[target].ReservedSlots,!Workshops[target].AutoAssemblyDisabled,r=>IntakeReceiverLocked(target,r))){intake.Status="入荷待機：格納枠不足";continue;}
             if(source!=target)playback.Add((new RobotShipment(source,target,intake.Product.Id,intake.Product.Parts){Visual=intake.Product},intake.Product.Owner));
             ProductionIntakes.Remove(intake);
         }
+    }
+    private static bool CanReceiveProductionIntake(WorldSetup world,int source,int target,int owner)
+    {
+        if(source<0 || source>=world.Nodes.All.Length || target<0 || target>=world.Nodes.All.Length)return false;
+        bool connected=source==target || world.Routes.Neighbors(world.Nodes.All[source]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==target);
+        return connected && world.Nodes.All[target].Functional && world.Relations.Allied(owner,world.Nodes.All[target].Owner) &&
+            !world.Campaign.RobotBattles.LockedNode(target) && !world.Campaign.RobotBattles.LockedEdge(source,target);
     }
     private bool IntakeReceiverLocked(int node,Robot robot)=>robot.Disposal || robot.Stationed || Workshops[node].IsDisposing(robot.Id) ||
         PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) ||

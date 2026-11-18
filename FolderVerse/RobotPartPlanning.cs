@@ -57,6 +57,13 @@ public sealed class RobotPartPlanning
         foreach(var order in world.Campaign.FunctionTransfers.Orders)hash.Add(order);
         foreach(var order in world.Robots.DirectDelivery.Orders)hash.Add(order);
         foreach(var intake in world.Robots.ProductionIntakes)hash.Add(intake);
+        if(world.Robots.ProductionIntakes.Count>0){
+            foreach(var node in world.Nodes.All){hash.Add(node.Owner);hash.Add(node.Functional);}
+            foreach(int superior in world.Relations.Superiors)hash.Add(superior);
+            foreach(var encounter in world.Campaign.RobotBattles.Encounters.Where(e=>!e.Finished)){
+                hash.Add(encounter.Kind);hash.Add(encounter.Source);hash.Add(encounter.Target);
+            }
+        }
         foreach(var order in Orders)hash.Add(order);
         int signature=hash.ToHashCode();if(_preview!=null && signature==_signature)return _preview();
         var result=BuildPreview(world);_signature=signature;_preview=()=>result;return result;

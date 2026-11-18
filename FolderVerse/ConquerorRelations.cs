@@ -87,7 +87,7 @@ public sealed partial class ConquerorRelations
     internal static bool AcceptsRecruitment(ConquerorLook look)=>look.Keywords.Personality is not (3 or 9 or 11);
     public void Capture(WorldSetup world,int ruler,int victor,int node,bool queenFellToEnemy=false)
     {
-        if(ruler==victor || Allied(ruler,victor) || !Powered[ruler] || Pending.Any(p=>p.Ruler==ruler))return;
+        if(ruler==victor || Allied(ruler,victor) || !Powered[ruler] || !Powered[victor] || Pending.Any(p=>p.Ruler==ruler))return;
         if (queenFellToEnemy)
         {
             world.Lessons.QueueResearch(Root(ruler), BattleLesson.QueenCaptured);
@@ -108,6 +108,8 @@ public sealed partial class ConquerorRelations
     {
         if(!Pending.Contains(captive))throw new InvalidOperationException("Conqueror disposition is not pending.");
         int ruler=captive.Ruler;
+        if(choice==DefeatedChoice.Recruit && !Powered[captive.Victor])
+        {Message="電池がない征服者の手下にはできません";return false;}
         if(choice==DefeatedChoice.Recruit && !Accepts(world,ruler))
         {Message="手下になることを拒んでいる / 残りの選択肢を選んでください";return false;}
         if(choice==DefeatedChoice.Recruit)
