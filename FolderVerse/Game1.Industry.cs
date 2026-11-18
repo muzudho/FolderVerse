@@ -55,7 +55,7 @@ public partial class Game1
     }
     private void FinishIndustry()
     {
-        if(!BeginDiplomacy())EnterDomesticAfterIndustry();
+        EnterDomesticAfterIndustry();
     }
     private void EnterDomesticAfterIndustry()
     {

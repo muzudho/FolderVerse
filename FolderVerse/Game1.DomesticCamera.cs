@@ -18,7 +18,10 @@ public partial class Game1{
  }
  private void RestoreDomesticCamera(){
   ResetInspector();_domesticSlide=0;RestorePlayerView();
-  if(DomesticOperationsAllowed){PrepareHomePersuasion();AutoSaveDomestic();WriteTurnStatistics();BeginConquestOverview();}
+  if(DomesticOperationsAllowed){
+   _diplomacyPending=!_setup.Industry.Pending && (DueTrade!=null || Trade.Replies.Count>0);
+   PrepareHomePersuasion();AutoSaveDomestic();WriteTurnStatistics();BeginConquestOverview();
+  }
  }
  private void RestorePlayerView(){
   _orientationAge=-1;_mapTransitionAge=-1;_dragging=_mapDragging=false;

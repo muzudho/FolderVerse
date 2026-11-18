@@ -157,11 +157,13 @@ public partial class Game1 : Game
         UpdateFullscreen(keyboard,active);
         if(active && (mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released || mouse.RightButton==ButtonState.Pressed && _previousMouse.RightButton==ButtonState.Released || mouse.ScrollWheelValue!=_previousMouse.ScrollWheelValue || keyboard.GetPressedKeys().Any(k=>_previousKeyboard.IsKeyUp(k)))){
             if(_screen==Screen.Industry)_industryIdleAge=0;
+            if(_screen==Screen.Diplomacy)_diplomacyIdleAge=0;
             if(_screen==Screen.Battle && _robotSummary)_summaryReadAge=0;
         }
         if(!IsOpeningScreen && !_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         if(IsOpeningScreen){OpeningInspectionDrag(mouse,active);OpeningInput(click,enter,escape,gameTime.ElapsedGameTime.TotalSeconds,keyboard);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(TryBeginPendingDiplomacy()){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateSubordinateDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) || UpdateComputerDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) ||
             HandleComputerMarches(gameTime,escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -200,6 +202,7 @@ public partial class Game1 : Game
                 else if(escape)_tradePlannerOpen=false;
                 else if(click)TradePlanner(draw:false,click:true);
             }
+            if(_screen==Screen.Diplomacy)UpdateDiplomacy(active && (click || enter)?0:elapsed);
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(FolderTreeInput(mouse,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}

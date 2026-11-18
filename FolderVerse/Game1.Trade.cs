@@ -14,6 +14,9 @@ public partial class Game1
     private string _tradeMessage="";
     private readonly List<string> _tradeReplies=new();
     private int _tradeReplyPage;
+    private bool _diplomacyPending;
+    private double _diplomacyIdleAge;
+    private double DiplomacyIdleSeconds=>DueTrade==null?8:30;
     private const int TradeRows=11;
     private static readonly Rectangle TradeBack=new(1550,36,305,58),TradeSubmit=new(1430,950,420,70);
     private static readonly Rectangle TradeCancel=new(54,950,440,70),DiplomacyReject=new(1000,950,350,70);
@@ -130,16 +133,23 @@ public partial class Game1
 
     private TradeOffer DueTrade=>Trade.Offers.FirstOrDefault(offer=>offer.Turn<_setup.Population.Turn);
 
+    private bool TryBeginPendingDiplomacy()
+    {
+        if(!_diplomacyPending || _conquestOverview || _screen is not (Screen.WorldStatus or Screen.Disposition))return false;
+        _diplomacyPending=false;
+        return BeginDiplomacy();
+    }
+
     private bool BeginDiplomacy()
     {
         if(DueTrade==null && Trade.Replies.Count==0 || _setup.Industry.Pending)return false;
-        _tradeReplies.Clear();_tradeReplyPage=0;
+        _tradeReplies.Clear();_tradeReplyPage=0;_diplomacyIdleAge=0;
         foreach(var reply in Trade.Replies)
             _tradeReplies.Add(TradeEndpointLabel(reply.Offer.From)+" → "+TradeEndpointLabel(reply.Offer.To)+" / "+reply.Result);
-        Trade.Replies.Clear();
-        _screen=Screen.Diplomacy;
+        Trade.Replies.Clear();_lastAutoSaveTurn=-1;
         ResolveAutomaticTradeReplies();
-        if(_autoPlay || _demoActive){_tradeReplies.Clear();return false;}
+        if(_autoPlay || _demoActive){_tradeReplies.Clear();AutoSaveDomestic();return false;}
+        _screen=Screen.Diplomacy;
         return true;
     }
 
@@ -160,11 +170,13 @@ public partial class Game1
         string detail=TradeEndpointLabel(offer.From)+" → "+TradeEndpointLabel(offer.To)+" / "+
             TradeCargoLabel(offer.From,offer.Give)+" / "+TradeCargoLabel(offer.To,offer.Want);
         string reply=Trade.Answer(_setup,offer,accept);
+        _lastAutoSaveTurn=-1;
         _tradeReplies.Add(detail+" / "+reply);
     }
 
     private void DiplomacyInput(bool click,bool enter)
     {
+        if(click || enter)_diplomacyIdleAge=0;
         if(DueTrade is {} offer)
         {
             if(!click || (!TradeSubmit.Contains(_pointer) && !DiplomacyReject.Contains(_pointer)))return;
@@ -179,10 +191,23 @@ public partial class Game1
         EnterDomesticAfterIndustry();
     }
 
+    private void UpdateDiplomacy(double elapsed)
+    {
+        if(_screen!=Screen.Diplomacy)return;
+        _diplomacyIdleAge+=Math.Max(0,elapsed);
+        if(_diplomacyIdleAge+1e-8<DiplomacyIdleSeconds)return;
+        _diplomacyIdleAge=0;
+        // Silence never authorizes a human player's exchange of cargo.
+        if(DueTrade is {} offer){RecordTradeReply(offer,false);ResolveAutomaticTradeReplies();return;}
+        DiplomacyInput(false,true);
+    }
+
     private void DrawDiplomacy()
     {
         _ui.Box(new(0,0,1920,1080),new Color(16,35,47));
         _ui.Text("外交フェーズ",new(54,34),.94f,Cream);
+        _ui.Text(DueTrade==null?"時間が来ると内政フェーズへ進みます":"時間が来ると辞退して次へ進みます",new(54,898),.43f,Cream);
+        DrawPhaseTimer(new(54,1040,1796,12),_diplomacyIdleAge,DiplomacyIdleSeconds);
         if(DueTrade is {} offer)
         {
             SalvageText("交渉相手  "+TradeEndpointLabel(offer.To),new(54,158,1796,70),.63f);
