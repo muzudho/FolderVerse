@@ -32,6 +32,7 @@ public partial class Game1
     private void ResetInspector(){
         _warCancellationsOpen=false;
         _intakeLine=null;
+        _pendingIntakesOpen=false;
         CloseFunctionTransferMap();
         CloseFolderTreeState();
         CloseReservationDirectory();

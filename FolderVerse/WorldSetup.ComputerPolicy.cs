@@ -8,6 +8,11 @@ internal sealed record ComputerPolicy(ComputerAttackPriority AttackPriority,bool
     public int ClearExhaustedHarvestPurpose {get;init;}=75;
     public int ReleaseUnplannedHarvester {get;init;}=50;
     public int ClearUnplannedHarvestPurpose {get;init;}=50;
+    public int ReleaseUnsuppliedManufacturer {get;init;}=50;
+    public int ClearUnsuppliedFactoryPurpose {get;init;}=50;
+    public int ClearUnstaffedFactoryPurpose {get;init;}=75;
+    public int NearResourceFactoryPreference {get;init;}=50;
+    public int CentralResourceFactoryPreference {get;init;}=50;
     public int TargetScore(int captives,int defense,bool occupied)=>AttackPriority switch
     {
         ComputerAttackPriority.Capture=>captives*2000-defense*5+(occupied?50:0),
@@ -36,7 +41,12 @@ public sealed partial class WorldSetup
             ReleaseExhaustedHarvester=25+25*(character%4),
             ClearExhaustedHarvestPurpose=25+25*((character/4)%4),
             ReleaseUnplannedHarvester=25+25*((character/3)%4),
-            ClearUnplannedHarvestPurpose=25+25*((character/5)%4)
+            ClearUnplannedHarvestPurpose=25+25*((character/5)%4),
+            ReleaseUnsuppliedManufacturer=25+25*((character/2)%4),
+            ClearUnsuppliedFactoryPurpose=25+25*((character/7)%4),
+            ClearUnstaffedFactoryPurpose=25+25*((character/6)%4),
+            NearResourceFactoryPreference=25*(character%5),
+            CentralResourceFactoryPreference=100-25*(character%5)
         };
 
     internal ComputerPolicy RulerComputerPolicy(int ruler)=>CharacterComputerPolicy(Looks[ruler].BaseId);

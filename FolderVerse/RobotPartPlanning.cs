@@ -265,7 +265,7 @@ public sealed class RobotPartPlanning
                 Apply(world,copy,order,true);
                 if(before?.FactoryWorker==true && order.Role!=HangarReservation.None)releasedWorkers.Add((source,before.Id));
                 LastResults.Add(new(order.Number,order.Owner,order.Target,"実施完了"));
-                if(source>=0 && source!=order.Target && before!=null)shipments.Add((new(source,order.Target,order.RobotId,order.Role==HangarReservation.None?order.Parts:before.Parts),order.Owner));
+                if(source>=0 && source!=order.Target && before!=null)shipments.Add((new RobotShipment(source,order.Target,order.RobotId,order.Role==HangarReservation.None?order.Parts:before.Parts){Visual=before.Slice(order.Role==HangarReservation.None?order.Parts:before.Parts)},order.Owner));
             }
             catch(InvalidOperationException error){LastResults.Add(new(order.Number,order.Owner,order.Target,error.Message));}
         }

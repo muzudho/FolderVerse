@@ -1332,3 +1332,18 @@ RobotGlyphIntegration の配送回帰を最終到着まで延長。９素材モ�
 2026-11-18 10:17 JST 配送描画修正候補。RobotShipment.Visualに配送確定時のRobotスナップショットを保存し、通常／直送／長距離／別地点への製造品入荷で捕捉。DrawPropagationは共有DrawHangarRobotを使用し素材・一体型・隊長を表示、９素材セーブのVisual欠落はnull許容。NAS shipment-visual-1017、DLL EB89E4EED1D8F7211E0A60EC8F531FE86B0E802BA6EA77AB55FDD96429A788E3、隔離ビルド・描画・モデル警告エラー０。長距離便の満杯待ち／積荷保存／到着Visual一致、欠落フィールド読込を確認。140×200／28×52は元機と全画素一致、被覆10836／722、旧脚対照差1902／125、目視で帽子・混成素材・国旗保持。直送捕捉と通常部分便の別IDへの合体でもVisual保全。最初のDrawRobotGlyphだと一体型が矩形に戻ったためDrawHangarRobotへ修正。実地図の飛行全体目視・製造品遠隔入荷は未確認。直送バッファがResetで消えない既存懸念を別途記録し、試験は空Commitで分離。元セーブ・実ゲーム・公開物変更なし。次は実24×36の飛行サイズと直送／製造入荷を追加確認。
 
 2026-11-18 11:11 JST 配送Visual追加確認。固定DLL EB89E4EED1D8F7211E0A60EC8F531FE86B0E802BA6EA77AB55FDD96429A788E3、Materials診断123/456/789。実飛行サイズ24×36で被覆342画素、元機と保存Visual全画素一致、旧脚との差61画素・帽子領域不変、目視確認。遠隔製品のQueueProduction→実ResolveProductionIntakes→IntakePlaybackにも素材／一体型／隊長のVisualと保存保持を確認（合成隊長をキューへ渡した試験で自然製造の隊長ではない）。隣接コールバック未設定の初回拒否を診断配置で修正。最終ビルド警告エラー０、NAS tmp/delete-after-2026-11-18/shipment-flight-small-1111/notes.txt。製品追加変更なし。実地図の飛行全体・直送Reserveからの通し試験は未確認、帰国描画のVisual未付与経路も別途点検。
+
+2026-11-18 12:12 JST 直送便の通し確認（記録補完）。NAS tmp/delete-after-2026-11-18/direct-visual-endtoend-1212/Program.cs。固定DLL EB89E4EED1D8F7211E0A60EC8F531FE86B0E802BA6EA77AB55FDD96429A788E3、Materials診断123/456/789。実ReservePartsで頭胴一体型と脚の２物理注文を作成し、予約保存復元→実Resolve→配送Playback公開まで確認。メープル頭・段ボール胴・ソフトビニール脚・隊長・胴汚損の到着属性と、２配送それぞれのVisualが元機Sliceと一致して保存保持。ここではドラッグUI・画素試験は未実施、以前の共有描画比較と区別する。
+
+2026-11-18 13:27 JST 帰国飛行の９素材描画を修正。RobotWorld.ReturnHome.MoveHomeだけRobotShipment.Visual未付与で、DrawPropagationの代替Robot生成に落ちる経路だったため、移動時点のjourney.RobotをVisualへ付ける１行修正。ルート・能力・費用・帰国判定は変更なし。NAS tmp/delete-after-2026-11-18/return-visual-1323/。修正前固定DLL D67B5E01A7556D057F98F5C33E7C9D5F8C19C0759485EB9ACD29B8DDC7C1C94Dは同じ試験でスナップショット欠落を再現し失敗、修正後DLL 00059BC7C35A034CDCD017C0C24B6FFFFA7790FF798C1B8DCB414DEF9376DF08は通過。隔離ゲーム／検証器ビルド警告エラー０。
+
+Materials診断123/456/789の実経路0→1。メープル頭・段ボール胴・ソフトビニール脚、頭胴一体型、胴汚損、隊長、全製造国１の国０保有機をToggleReturnHomeで予約し保存復元。国１の満杯到着先で待機、飛行Visualと積荷Robotの一致、待機保存／追加待機で重複なし、１枠空けると同IDが国１へ１体だけ到着し保存保持を確認。国籍変更以外の物理属性を保全。DrawHangarRobotで元機／保存Visual／実到着機を140×200と実飛行24×36に描画し全画素一致、被覆10836／342画素。脚をシリコーンへ変えた対照は1807／51画素差。comparison.png目視で左３体の国旗・帽子・混成素材一致、右だけ脚素材が異なることを確認。比較は共有描画ヘルパーで、実地図の飛行画面全体は未検証。元セーブ・実ゲーム・公開物変更なし、コミット／プッシュなし。次は残る配送Playback生成経路と実地図画面の統合を点検する。
+
+
+2026-11-18 15:19 JST 部位計画便のVisual欠落を１行修正。全身／頭胴一体型の実Reserve・保存復元・Resolveで混成隊長のSliceと飛行Visual・保存・到着属性一致。Materials診断123/456/789、メープル頭・段ボール胴・ソフトビニール脚・胴汚損。修正前0208A3A7...で再現失敗、修正後1673E0BBB74019955DC64E1C8BD0AAF0917CA3B6A5A76594E18C924768B36F4Cで通過、隔離ゲーム／検証器警告エラー０・実行DLL照合。NAS part-planning-visual-1512。初回診断の余分なTransport.ResolveでPlaybackを消した条件は除外し対照から再実行。今回の画素／実地図全体目視は未実施。次は役割付き他地点予約と受取合体。ルール・元セーブ・実ゲーム・公開物変更なし。
+
+
+2026-11-18 16:25 JST 部位計画便の受取合体を追加回帰。Materials診断123/456/789、最新8226644DAC490CBA58DEB76C94AD1D16545B3263C0602F1E54B69647657EDE1Aを実行先照合。頭胴一体型・混成隊長・胴汚損を既存ソフトビニール脚へ実Reserve→予約保存→Resolveで配送。飛行Visualは元Slice、到着物理属性は受取.Merge(Slice)と全一致し保存保持。全身／空きへの頭胴も再通過、警告エラー０。NAS part-planning-merge-1622。ReserveRoleは通常同地点APIなので他地点役割予約を人工的に通常例と扱わず、今回未実施。画素／実地図全体は未確認、次は地図飛行統合へ。製品追加変更・元セーブ・実ゲーム・公開物変更なし。
+
+
+2026-11-18 17:16 JST 実DrawPropagationの地図統合を確認。Materials診断123/456/789で実PartPlanning.Reserve→Resolveの混成隊長一体型LastTransfersを使用し、配送フェーズ・経路進捗0.5の固定診断状態から1920×1080の展開地図を描画。Visualなし対照で512画素、脚をシリコーンへ変更で53画素差、いずれも飛行24×36（942,689）内だけ・外側差０。map-0.pngとflight-0.pngを目視し隊長帽・素材色・国旗と地図上の機体を確認。実行8226644D...照合・警告エラー０、NAS propagation-map-1712。base.LoadContentを使わず元セーブ／実ゲーム等保護。３固定描画で連続アニメ時間の証明ではなく、直送／長距離／遠隔製造の全経路画面を今回描いたわけではない。製品変更なし、次は必要な配送種別の地図経路サンプルへ。

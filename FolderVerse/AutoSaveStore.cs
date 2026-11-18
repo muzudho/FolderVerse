@@ -189,6 +189,11 @@ public static class AutoSaveStore
                     {field.SetValue(value,75);continue;}
                     if(type==typeof(ComputerPolicy) && field.Name is "<ReleaseUnplannedHarvester>k__BackingField" or "<ClearUnplannedHarvestPurpose>k__BackingField")
                     {field.SetValue(value,50);continue;}
+                    if(type==typeof(ComputerPolicy) && field.Name is "<ReleaseUnsuppliedManufacturer>k__BackingField" or "<ClearUnsuppliedFactoryPurpose>k__BackingField" or
+                        "<NearResourceFactoryPreference>k__BackingField" or "<CentralResourceFactoryPreference>k__BackingField")
+                    {field.SetValue(value,50);continue;}
+                    if(type==typeof(ComputerPolicy) && field.Name=="<ClearUnstaffedFactoryPurpose>k__BackingField")
+                    {field.SetValue(value,75);continue;}
                     if(type==typeof(March) && field.Name=="<RobotIds>k__BackingField")continue;
                     if(type==typeof(LongPartOrder) && field.Name=="<Origin>k__BackingField")continue;
                     if(type==typeof(BattleState) && field.Name=="<Persuasions>k__BackingField"){field.SetValue(value,new List<BattlePersuasion>());continue;}

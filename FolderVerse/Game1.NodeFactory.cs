@@ -58,7 +58,7 @@ public partial class Game1
     private bool HasFactoryScreenLines()
     {
         var factory=PlanningWorkshop(_populationNode);
-        return FactoryScreenLines(factory,out _).Length>0;
+        return FactoryScreenLines(factory,out _).Length>0 || _setup.Robots.ProductionIntakes.Any(i=>i.Source==_populationNode);
     }
     private void OpenNodeFactory(){if(!CanOpenNodeFactory)return;_factoryPage=0;_factoryDropDown=_factoryPlanLine=-1;_factoryLine=0;_factoryMessage="";_nodeAssemblyOpen=_nodeDisposalOpen=_nodeTransportOpen=false;_nodeFactoryOpen=true;_nodeOfficeOpen=false;_lastNodeTab=1;_factoryOpenedAt=_operations.ElapsedMilliseconds;BeginFactoryViewport();}
     private Rectangle FactoryProductionButton(int line)
@@ -147,6 +147,8 @@ public partial class Game1
         if(_factoryPlanLine>=lines.Length)_factoryPlanLine=-1;
         if(!CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return true;
         if(_setup.Campaign.RobotBattles.LockedNode(_populationNode)){_factoryMessage="継戦中は製造計画を変更できません";return true;}
+        if(FactoryPendingIntakesButton.Contains(pointer) && _setup.Robots.ProductionIntakes.Any(i=>i.Source==_populationNode))
+        {_pendingIntakesOpen=true;_intakeNode=_populationNode;_intakePage=0;return true;}
         if(_factoryDropDown>=0){int field=_factoryDropDown;_factoryDropDown=-1;for(int i=0;i<(field==2?factory.ReservedSlotLimit+1:9);i++)if(FactoryDropOption(field,i,field==2?null:lines[_factoryLine]).Contains(pointer)){
             if(field==2)SetPlanningReservedSlots(_populationNode,i);
             else {var line=lines[_factoryLine];if(field==0)line.SetRest(i+1,line.RestTurns);else line.SetRest(line.RestEvery,i+1);SavePending(_factoryLine);}return true;
@@ -249,6 +251,8 @@ public partial class Game1
         }
         }
         _factoryLine=savedLine;
+        int pendingProducts=_setup.Robots.ProductionIntakes.Count(i=>i.Source==_populationNode);
+        if(pendingProducts>0)_ui.Button(FactoryPendingIntakesButton,$"完成品の入荷待ち / {pendingProducts}件",Muted,.38f);
         _ui.Text("格納庫は必ず",new(180,888),.43f,Cream);FactoryDrop(2,factory.ReservedSlots);_ui.Text("個空ける",new(552,888),.43f,Cream);
         DrawNodeTabs();DrawFactoryPages();
         _ui.Text($"産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn)}",new(160,248),.25f,Cream);

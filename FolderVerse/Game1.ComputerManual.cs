@@ -13,8 +13,10 @@ public partial class Game1
     private static readonly Rectangle ComputerManualAttack=new(852,352,480,78);
     private static readonly Rectangle ComputerManualGuard=new(1350,352,480,78);
     private static readonly Rectangle ComputerManualReset=new(76,864,354,60);
+    private static readonly Rectangle ComputerManualManagement=new(1520,300,310,40);
     private static readonly string[] ComputerAttackNames={"バランス","敵の征服者を優先","守備の少ない地点を優先"};
     private bool _computerManualOpen;
+    private bool _computerManualFactory;
     private int _computerManualPage,_computerManualCharacter;
 
     private void DrawComputerManualMenuItem() =>
@@ -58,15 +60,23 @@ public partial class Game1
                 _setup.SetCharacterComputerPolicy(_computerManualCharacter,null);
                 _lastAutoSaveTurn=-1;
             }
-            for(int i=0;i<4;i++)if(HarvestPolicyButton(i).Contains(_pointer))
+            if(ComputerManualManagement.Contains(_pointer))_computerManualFactory=!_computerManualFactory;
+            for(int i=0;i<(_computerManualFactory?5:4);i++)if(HarvestPolicyButton(i).Contains(_pointer))
             {
                 int Next(int value)=>(value+25)%125;
-                _setup.SetCharacterComputerPolicy(_computerManualCharacter,i switch {
+                var changed=_computerManualFactory?i switch {
+                    0=>policy with {ReleaseUnsuppliedManufacturer=Next(policy.ReleaseUnsuppliedManufacturer)},
+                    1=>policy with {ClearUnsuppliedFactoryPurpose=Next(policy.ClearUnsuppliedFactoryPurpose)},
+                    2=>policy with {ClearUnstaffedFactoryPurpose=Next(policy.ClearUnstaffedFactoryPurpose)},
+                    3=>policy with {NearResourceFactoryPreference=Next(policy.NearResourceFactoryPreference)},
+                    _=>policy with {CentralResourceFactoryPreference=Next(policy.CentralResourceFactoryPreference)}
+                }:i switch {
                     0=>policy with {ReleaseExhaustedHarvester=Next(policy.ReleaseExhaustedHarvester)},
                     1=>policy with {ClearExhaustedHarvestPurpose=Next(policy.ClearExhaustedHarvestPurpose)},
                     2=>policy with {ReleaseUnplannedHarvester=Next(policy.ReleaseUnplannedHarvester)},
                     _=>policy with {ClearUnplannedHarvestPurpose=Next(policy.ClearUnplannedHarvestPurpose)}
-                });
+                };
+                _setup.SetCharacterComputerPolicy(_computerManualCharacter,changed);
                 _lastAutoSaveTurn=-1;
             }
             int oldPage=_computerManualPage;
@@ -120,26 +130,33 @@ public partial class Game1
         _ui.Text($"土地征服の趣向 / {ComputerLandPlanner.Label(landPreference)}（仮）",new(852,271),.47f,Cream);
         var policy=_setup.CharacterComputerPolicy(selected);
         _ui.Text("プレイングスタイルカード",new(852,309),.55f,Cream);
+        _ui.Button(ComputerManualManagement,_computerManualFactory?"製造管理 → 採取管理":"採取管理 → 製造管理",Muted,.34f);
         _ui.Button(ComputerManualAttack,$"攻撃の趣向 / {ComputerAttackNames[(int)policy.AttackPriority]}",Muted,.44f);
         _ui.Button(ComputerManualGuard,policy.KeepGuard?"出撃元に守備を残す / ON":"出撃元に守備を残す / OFF",Muted,.44f);
-        string[] harvestLabels={
+        string[] harvestLabels=_computerManualFactory?new[]{
+            $"調達予定なし：製造員解除 / {policy.ReleaseUnsuppliedManufacturer}%",
+            $"調達予定なし：製造重点解除 / {policy.ClearUnsuppliedFactoryPurpose}%",
+            $"製造員なし：製造重点解除 / {policy.ClearUnstaffedFactoryPurpose}%",
+            $"採取場の近くで製造 / {policy.NearResourceFactoryPreference}",
+            $"複数原料の輸送距離を重視 / {policy.CentralResourceFactoryPreference}"
+        }:new[]{
             $"埋蔵なし：採取員解除 / {policy.ReleaseExhaustedHarvester}%",
             $"埋蔵なし：採取重点解除 / {policy.ClearExhaustedHarvestPurpose}%",
             $"予定なし：採取員解除 / {policy.ReleaseUnplannedHarvester}%",
             $"予定なし：採取重点解除 / {policy.ClearUnplannedHarvestPurpose}%"};
-        for(int i=0;i<4;i++)_ui.Button(HarvestPolicyButton(i),harvestLabels[i],Muted,.36f);
-        _ui.Text("全体ターンごとに判断 / 予定は製造用と取引用 / クリックで確率を変更",new(852,572),.31f,Cream);
-        _ui.Text("捕虜になったときの勧誘への返答",new(852,603),.48f,Cream);
+        for(int i=0;i<harvestLabels.Length;i++)_ui.Button(HarvestPolicyButton(i),harvestLabels[i],Muted,.32f);
+        _ui.Text(_computerManualFactory?"入荷・採取・取引予定は待つ / 立地は大きいほど重視":"予定は製造用と取引用 / クリックで確率を変更",new(852,639),.30f,Cream);
+        _ui.Text("捕虜になったときの勧誘への返答",new(852,665),.40f,Cream);
         for(int variant=0;variant<ConquerorCatalog.VariantsPerBase;variant++)
         {
             var look=new ConquerorLook(selected,variant);
             string response=ConquerorRelations.AcceptsRecruitment(look)?"承諾する":"断る";
             _ui.Text($"{variant+1}　{look.PersonalityName}　―　{response}",
-                new(852+variant/3*480,645+variant%3*34),.42f,Cream);
+                new(852+variant/3*480,698+variant%3*20),.31f,Cream);
         }
         _ui.Text("全キャラクター共通の行動方針",new(852,758),.58f,Cream);
         DrawComputerRuleCard("軍事　守備を見積もり、必要な兵力が揃えば同陣営で共同出撃。",810);
-        DrawComputerRuleCard("輸送　後方の余剰機を前線に送り、満杯の格納庫では交換も試みる。",860);
+        DrawComputerRuleCard("輸送　余剰機を前線へ、満杯なら交換。製造の入荷枠不足は留保枠を守り隣接自国へ変更。",860);
         DrawComputerRuleCard("捕虜　勧誘を優先し、断られたら解放交渉や電池取り外しを選ぶ。",910);
         DrawComputerRuleCard("素材　キャラクター固有の好みは設定されていない。",960);
         DrawComputerRuleCard("再出撃　敗北したときより兵数を増やす。足りなければ保留し、相手の変化や５ターン経過後に再判断。",1010);
