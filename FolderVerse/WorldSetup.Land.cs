@@ -39,6 +39,7 @@ public sealed partial class WorldSetup
         if(robotScatterPercent<0 || robotScatterPercent>100)throw new ArgumentOutOfRangeException(nameof(robotScatterPercent));
         if(rawStockPercent<0 || rawStockPercent>100)throw new ArgumentOutOfRangeException(nameof(rawStockPercent));
         FortuneSeed=fortuneSeed;
+        RelayLogisticsEnabled=TutorialStep==0;
         TerritoryCounts=Enumerable.Range(0,CastCount).Select(o=>Owners.Count(v=>v==o)).ToArray();
         Capitals=Enumerable.Range(0,ActiveCount).Select(o=>Array.IndexOf(Owners,o)).ToArray();ConquerorLocations=(int[])Capitals.Clone();
         Population.Initialize(this);Routes.Initialize(this);ConquerorPoints=ConquerorLocations.Select(Routes.Start).ToArray();Nodes.Initialize(this);
@@ -46,11 +47,12 @@ public sealed partial class WorldSetup
         if(TutorialStep==0)InitializeTerrainHangars();
         Robots.ConfigureFactories(this);var random=new SeedRandom(fortuneSeed);
         if(TutorialStep==0)Robots.InitializeMapleSupply(this);
+        if(RelayLogisticsEnabled)InitializeSitePurposes(fortuneSeed);
         int scatterRemainder=50;
         foreach(var node in Nodes.All.Where(n=>n.Owner>=0))
         {
             var workshop=Robots.Workshops[node.Id];
-            bool hasFactory=TutorialStep!=1 && !Routes.NearWhirlpool(node);
+            bool hasFactory=TutorialStep!=1 && node.Purpose!=NodePurpose.Relay && !Routes.NearWhirlpool(node);
             if(hasFactory)workshop.GenerateLines(fortuneSeed^node.Id*7919,EquipmentMode);else workshop.RemoveProductionLines();
             if(random.Next(5)==0)workshop.ConfigureDisposal();
             if(TutorialStep==1){

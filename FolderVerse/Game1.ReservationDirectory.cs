@@ -192,10 +192,10 @@ public partial class Game1
             _ui.Box(new(1002,470,686,1),new Color(79,128,146));
             _ui.Text("使用は現在の使用量。格納庫の開発は今使える枠数。",new(1002,482),.29f,Cream);
             _ui.Text("初期のレーン上限は陸３・海１。",new(1002,505),.29f,Cream);
-            _ui.Text($"初期の格納庫上限は陸５～{NodeFunctionTransfers.MaximumCapacity}・海４。大うずの近くは１。",new(1002,528),.29f,Cream);
-            _ui.Text("格納庫は基本１枠。倉庫管理人１体で上限まで４枠追加。",new(1002,551),.29f,Cream);
+            _ui.Text($"初期の格納庫上限は陸５～{(_setup.RelayLogisticsEnabled?30:NodeFunctionTransfers.MaximumCapacity)}・海４。大うずの近くは１。",new(1002,528),.29f,Cream);
+            _ui.Text(_setup.RelayLogisticsEnabled?"格納庫は基本１枠。管理人で通常４枠、中継７枠追加。":"格納庫は基本１枠。倉庫管理人１体で上限まで４枠追加。",new(1002,551),.29f,Cream);
             _ui.Text("工場だけの移転でレーン上限を加算。全施設移転では格納庫上限も加算。",new(1002,574),.29f,Cream);
-            _ui.Text($"１地点の最大は {NodeFunctionTransfers.MaximumFactoryLanes} レーン・{NodeFunctionTransfers.MaximumCapacity} 格納庫。上限はどの国からも確認できます。",new(1002,597),.29f,Cream);
+            _ui.Text(_setup.RelayLogisticsEnabled?"最大27レーン。格納庫は通常30・中継60。上限はどの国からも確認できます。":$"１地点の最大は {NodeFunctionTransfers.MaximumFactoryLanes} レーン・{NodeFunctionTransfers.MaximumCapacity} 格納庫。上限はどの国からも確認できます。",new(1002,597),.29f,Cream);
             _ui.Text("CPUは開戦の条件が同じなら、レーンと格納庫の上限が大きい地点を優先。",new(1002,620),.29f,Cream);
             break;
         }

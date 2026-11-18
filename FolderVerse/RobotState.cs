@@ -116,11 +116,16 @@ public sealed class RobotStore
     public const int Capacity=12;
     private int? _capacity;
     private int? _warehouseLimit;
+    private bool _logisticsRules,_relayWarehouse;
+    public int WarehouseExpansion=>_relayWarehouse?7:4;
+    internal int WarehouseMaximum=>_logisticsRules && !_relayWarehouse?30:60;
+    internal bool LogisticsRules=>_logisticsRules;
+    internal void SetLogisticsRules(bool relay){_logisticsRules=true;_relayWarehouse=relay;if(_warehouseLimit is int limit)_warehouseLimit=Math.Min(limit,WarehouseMaximum);}
     public int? WarehouseLimit=>_warehouseLimit;
     public int TotalCapacity=>CapacityFor(_robots);
     internal void SetWarehouseLimit(int limit)=>_warehouseLimit=limit;
     internal int CapacityFor(IEnumerable<Robot> robots)=>_warehouseLimit is int limit && _capacity!=0
-        ?Math.Min(limit,1+4*robots.Count(r=>r.WarehouseKeeper)):_capacity??Capacity;
+        ?Math.Min(limit,1+WarehouseExpansion*robots.Count(r=>r.WarehouseKeeper)):_capacity??Capacity;
     internal bool Fits(IEnumerable<Robot> robots,IEnumerable<MaplePackage> packages,int reserved,int? capacity=null)
         =>OccupiedSlots(robots,packages)+reserved<=(capacity??CapacityFor(robots));
     internal void SetCapacity(int capacity){if(capacity<Count+ReservedReturns)throw new InvalidOperationException("Occupied hangar capacity.");_capacity=capacity;}
@@ -174,7 +179,7 @@ public sealed class RobotStore
     }
     internal RobotStore PlanningCopy()
     {
-        var result=new RobotStore{_capacity=_capacity,_warehouseLimit=_warehouseLimit};foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);result._maplePackages=_maplePackages;return result;
+        var result=new RobotStore{_capacity=_capacity,_warehouseLimit=_warehouseLimit,_logisticsRules=_logisticsRules,_relayWarehouse=_relayWarehouse};foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);result._maplePackages=_maplePackages;return result;
     }
     internal void SetMaplePackages(MaplePackage[] packages)=>_maplePackages=packages;
     internal bool TryReceiveMaple(MaplePackage package,int reserved,Func<long,bool> shipping)

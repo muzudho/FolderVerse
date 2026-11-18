@@ -1,0 +1,2 @@
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup><ItemGroup><Compile Include="Render.cs"/><Reference Include="FolderVerse" HintPath="$(GameDll)"/><Reference Include="MonoGame.Framework" HintPath="$(RuntimeDir)/MonoGame.Framework.dll"/></ItemGroup></Project>
+

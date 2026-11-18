@@ -26,13 +26,19 @@ public sealed partial class CubeNet
         return false;
     }
 
-    private static void DrawHarborPier(UiPainter ui,Func<float,float,float,Vector2> point,Func<Color,Color> tint)
-        => HarborPierFaces(point,(face,color)=>FillProjectedFace(ui,face,tint(color)));
+    private static void DrawHarborPier(UiPainter ui,Func<float,float,float,Vector2> point,Func<Color,Color> tint,int grade=0)
+    {
+        for(int i=0;i<=Math.Clamp(grade,0,2);i++)
+            HarborPierFaces((x,y,z)=>point(x+i*.65f,y,z),(face,color)=>FillProjectedFace(ui,face,tint(color)));
+        if(grade>0)DrawDevelopedFacility(ui,NodePurpose.General,false,grade-1,(x,y,z)=>point(x*.45f,-.85f+y*.4f,z*.65f),tint);
+    }
 
-    private static bool HarborPierContains(Vector2 pointer,Func<float,float,float,Vector2> project)
+    private static bool HarborPierContains(Vector2 pointer,Func<float,float,float,Vector2> project,int grade=0)
     {
         bool hit=false;
-        HarborPierFaces(project,(face,_)=>{
+        for(int model=0;model<=Math.Clamp(grade,0,2);model++){
+        int index=model;
+        HarborPierFaces((x,y,z)=>project(x+index*.65f,y,z),(face,_)=>{
             if(hit)return;
             float area=0;
             bool positive=false,negative=false;
@@ -45,7 +51,7 @@ public sealed partial class CubeNet
                 negative|=cross<-.01f;
             }
             hit=Math.Abs(area)>.01f && !(positive && negative);
-        });
+        });}
         return hit;
     }
 
@@ -62,7 +68,7 @@ public sealed partial class CubeNet
         var cell=world.Cells[node.Cell];
         var footing=HarborFooting(world,cell,shore);
         var across=Vector3.Cross(seaward,cell.Normal);
-        return HarborPierContains(pointer,(x,y,z)=>project(footing+radius*GlobePurposeBuildingScale*(across*x+seaward*y+cell.Normal*z)));
+        return HarborPierContains(pointer,(x,y,z)=>project(footing+radius*GlobePurposeBuildingScale*(across*x+seaward*y+cell.Normal*z)),FacilityDevelopment.Grade(world,node));
     }
 
     private static void HarborPierFaces(Func<float,float,float,Vector2> point,Action<Vector2[],Color> face)

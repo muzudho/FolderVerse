@@ -79,7 +79,7 @@ public sealed partial class CubeNet
                 float scale = MathF.Max(Vector2.Distance(at,Project(position+cell.U)),Vector2.Distance(at,Project(position+cell.V)));
                 float radius = GlobeNodeRadius(node,scale,globe.GlobeZoom);
                 if (ShowRoutes) DrawSurfacePuck(ui,setup,node,cell,position,radius,pulse,Project,Tint);
-                var roof=ShowRoutes?PurposeFlagAnchor(node):null;
+                var roof=ShowRoutes?PurposeFlagAnchor(node,FacilityDevelopment.Grade(setup,node)):null;
                 if(roof is Vector3 anchor)
                     position+=radius*GlobePurposeBuildingScale*(cell.U*anchor.X+cell.V*anchor.Y+cell.Normal*anchor.Z);
                 bool centered=ShowRoutes && HasFacilityPlatform(node);
@@ -121,9 +121,9 @@ public sealed partial class CubeNet
         float radius=MapPuckRadius(node,referenceUnit)/MathF.Max(referenceUnit,1);
         if(!HasGlobeBuilding(node))return radius;
         // The factory chimney is the tallest of the remaining building models.
-        const float maxModelHeight=1.278f;
+        const float maxModelHeight=1.8f;
         radius=Math.Min(radius,GlobeObjectHeight/(GlobePurposeBuildingScale*maxModelHeight));
-        return PurposeFlagAnchor(node) is Vector3 roof
+        return PurposeFlagAnchor(node,2) is Vector3 roof
             ? Math.Min(radius,(GlobeObjectHeight-RoofFlagPoleHeight)/(GlobePurposeBuildingScale*roof.Z))
             : radius;
     }
@@ -136,10 +136,8 @@ public sealed partial class CubeNet
         Func<float,float,float,Vector2> project,Func<Color,Color> tint)
     {
         if(HasFacilityPlatform(node)){
-            DrawFacilities(ui,world,node,true,(x,y,z)=>
-                project(-.95f+x*FacilityModelScale,y*FacilityModelScale,z*FacilityModelScale),tint);
-            DrawFacilities(ui,world,node,false,(x,y,z)=>
-                project(1.75f+x*FacilityModelScale,y*FacilityModelScale,z*FacilityModelScale),tint);
+            DrawDevelopedFacility(ui,NodePurpose.General,node.Terrain==TravelTerrain.Sea,FacilityDevelopment.Grade(world,node),
+                (x,y,z)=>project(x*FacilityModelScale,y*FacilityModelScale,z*FacilityModelScale),tint);
             return;
         }
         DrawFacilities(ui,world,node,true,(x,y,z)=>project(-.95f+x*.85f,y*.85f,z*.85f),tint);
@@ -176,11 +174,11 @@ public sealed partial class CubeNet
             var harborAt=project(shore);
             var forward=Vector2.Normalize(project(shore+seaward*.1f)-harborAt);
             var across=new Vector2(forward.Y,-forward.X);
-            DrawHarborPier(ui,(x,y,z)=>FlatHarborPoint(harborAt,forward,across,radius,x,y),tint);
+            DrawHarborPier(ui,(x,y,z)=>FlatHarborPoint(harborAt,forward,across,radius,x,y),tint,FacilityDevelopment.Grade(setup,node));
             DrawHarborBadge(ui,harborAt-across*radius*1.45f,radius,tint,ScreenAngle);
         }
         else if(purpose)
-            DrawPurposeBuilding(ui,node.Purpose,sea,(x,y,z)=>at+new Vector2(x,y*.68f-z)*radius*PurposeBuildingScale,tint);
+            DrawPurposeBuilding(ui,node.Purpose,sea,(x,y,z)=>at+new Vector2(x,y*.68f-z)*radius*PurposeBuildingScale,tint,FacilityDevelopment.Grade(setup,node));
         else if(HasFacilityPlatform(node) || !civilian){
             Face(at+new Vector2(0,depth),platformRadius+1,rim);
             Face(at+new Vector2(0,depth),platformRadius,side);
@@ -189,7 +187,7 @@ public sealed partial class CubeNet
         }
         if(civilian)DrawNodeFacilities(ui,setup,node,(x,y,z)=>
             at+new Vector2(x+y*.34f,y*.58f-x*.14f-z)*radius,tint);
-        var flagFoot=PurposeFlagAnchor(node) is Vector3 roof
+        var flagFoot=PurposeFlagAnchor(node,FacilityDevelopment.Grade(setup,node)) is Vector3 roof
             ? at+new Vector2(roof.X,roof.Y*.68f-roof.Z)*radius*PurposeBuildingScale
             : HasFacilityPlatform(node)?at:at+new Vector2(radius*PurposeBuildingScale+4,-radius*.68f);
         CountryFlagArt.Marker(ui,setup,DisplayedNodeOwner(node),flagFoot,
@@ -229,11 +227,11 @@ public sealed partial class CubeNet
         if(node.IsHarbor && purpose && TryHarborFrame(setup,node,out var shore,out var seaward)){
             var across=Vector3.Cross(seaward,cell.Normal);
             var footing=HarborFooting(setup,cell,shore);
-            DrawHarborPier(ui,(x,y,z)=>project(footing+radius*GlobePurposeBuildingScale*(across*x+seaward*y+cell.Normal*z)),tint);
+            DrawHarborPier(ui,(x,y,z)=>project(footing+radius*GlobePurposeBuildingScale*(across*x+seaward*y+cell.Normal*z)),tint,FacilityDevelopment.Grade(setup,node));
             DrawHarborBadge(ui,project(footing)+new Vector2(-Math.Clamp(radius*Vector2.Distance(project(position),project(position+cell.U))*1.65f,12,44),-12),9,tint);
         }
         else if(purpose)
-            DrawPurposeBuilding(ui,node.Purpose,sea,(x,y,z)=>project(position+radius*GlobePurposeBuildingScale*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
+            DrawPurposeBuilding(ui,node.Purpose,sea,(x,y,z)=>project(position+radius*GlobePurposeBuildingScale*(cell.U*x+cell.V*y+cell.Normal*z)),tint,FacilityDevelopment.Grade(setup,node));
         else if(platform || !civilian){
             float winding = Cross(upper[1]-upper[0],upper[2]-upper[1]);
             Span<Vector2> wall = stackalloc Vector2[4];

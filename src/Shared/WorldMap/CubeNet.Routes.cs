@@ -71,7 +71,7 @@ public sealed partial class CubeNet
                 var at=face.Project(shore)*fit.Scale+fit.Origin;
                 var forward=Vector2.Normalize((face.Project(shore+seaward*.1f)-face.Project(shore))*fit.Scale);
                 var across=new Vector2(forward.Y,-forward.X);
-                pier=HarborPierContains(point,(x,y,z)=>RotateScreen(FlatHarborPoint(at,forward,across,puckRadius,x,y),panel));
+                pier=HarborPierContains(point,(x,y,z)=>RotateScreen(FlatHarborPoint(at,forward,across,puckRadius,x,y),panel),FacilityDevelopment.Grade(world,n));
             }
             return (n.Id,Pier:pier,Distance:pier || distance<=radius*radius?distance:float.PositiveInfinity);
         }).Where(n=>float.IsFinite(n.Distance)).OrderByDescending(n=>n.Pier).ThenBy(n=>n.Distance).ThenBy(n=>n.Id)

@@ -87,6 +87,7 @@ public static class AutoSaveStore
                     if(field.FieldType==typeof(RawMaterial) || type==typeof(RobotWorld) && field.Name=="_rawDeposits")continue;
                     if(field.FieldType==typeof(RobotEquipmentMode) || field.FieldType==typeof(RobotMaterial) ||
                         type==typeof(ProductionPlan) && field.FieldType==typeof(RobotMaterial?))continue;
+                    if(type==typeof(RobotStore) && field.Name is "_logisticsRules" or "_relayWarehouse" || type==typeof(WorldSetup) && field.Name=="<RelayLogisticsEnabled>k__BackingField")continue;
                     if(type==typeof(Node) && field.Name==nameof(Node.Purpose) ||
                         type==typeof(NodeFunctionTransferOrder) && field.Name=="<FactoryOnly>k__BackingField")continue;
                     if(type==typeof(RobotWorkshop) && field.Name is "_materialCatalogueOffset" or "_lastEffectiveProductionPeriod")continue;
