@@ -4192,3 +4192,300 @@
 - 既存NAS出力 bin/DemoAuditCpuSortie/debug で ALSOFT_DRIVERS=null、FOLDERVERSE_AUDIT_WORLD=96、FOLDERVERSE_AUDIT_SECOND_MILITARY=1 として dotnet DemoAuditCpuSortie.dll。22:59:03作成 PID 6964、上限300秒、22:59:35終了0。証拠は CpuMilitary-world96-225903.{stdout,stderr}.log。診断の設定は960×540、再ビルドなし。
 - 第一軍事35件、第二軍事27件で専用画面への退避なし。クイーン付き攻撃2件の各進軍1件・戦闘参加と、再生中の予約増加なし、人間0の内政復帰を確認。
 - 自然生成のポケットのみの攻撃、自然Demoの直送便ペア画面、物理入力は未確認。次回は直送便の自然巡回か別配置でのポケット攻撃を調べる。
+
+### 実行履歴：2026-11-17 23:30回
+
+- 開始23:30:36、終了 23:32:11 JST。部分点検完了。HEAD 9e4d089af14f8203205f85cdc46f93aeaa3ba95a。開始時の関係差分はプリマプラナ実装の共有地図・入力と点検記録。今回の変更は本記録のみ。新規採番なし。
+- Game1.DemoDomestic.cs の段階11・16の閉じる、段階12の輸送概要、段階19のターン終了、段階20の緑チェック、Game1.DemoChecks.cs の段階35・36の赤チェックと閉じるが既存UI矩形の中心を参照することを静的照合。現行差分の地図切替と自動出撃はプリマプラナ条件付き。
+- 既存NAS出力 demo-audit/bin/DirectDeliveryUi/debug で ALSOFT_DRIVERS=null、dotnet DirectDeliveryUi.dll。23:31:24作成 PID 30204、上限300秒、23:31:48終了0。DirectDeliveryUi-followup-233124.{stdout,stderr}.log。960×540の確認を含み、ボタン退避復帰、移動中入力抑止、ペアへの入退場、左右格納庫、予約維持と描画がPASS。現行コードでの再ビルドなし。
+- 次回は現行差分込みのビルドで自然Demoの直送便ペア画面か、別配置のポケットのみの攻撃を点検する。今回の自然巡回、物理マウス入力、チェックの実描画は未確認。
+
+
+### 2026-11-18 00:00 JST Demo audit
+
+- HEAD f5f8109d. Start 00:00:37 JST; end 00:01:11. Partial static check. Initial working changes were the two audit logs and user notes. This round only appended this entry.
+- Compared the merged CubeNet.Routes.cs change with DemoDomestic stages 11/12/16 and DemoChecks stage 36. The merged hunk adds water coloring, while the Demo stages still use InspectorClose and TransportOverviewButton rectangles. No new defect reproduced.
+- The prior NAS-bound dotnet PIDs 25828 and 18852 were still listed. The preceding tutorial audit had no result from its NAS probe. No new build or UI run this round. Merged render, synthetic and physical inputs, natural direct-delivery pair and pocket-only attack remain unverified. Resume on merged build with a responsive NAS or an isolated local output after checking prior process/output status.
+
+
+### 2026-11-18 00:21点検回
+
+- 開始00:21:37、終了 00:22:42 JST。部分点検完了。HEAD f5f8109d。開始時差分は両点検記録と利用者メモ。変更は本記録のみ。新規採番なし。
+- 前回NAS待ちが続いていたため、チュートリアル点検が使用済みの期限11月18日の分離出力 artifacts/tmp/delete-after-2026-11-18/tutorial-audit-local を共有ビルドの再利用先として使用。dotnet build tests/DirectDeliveryUi/DirectDeliveryUi.csproj --artifacts-path <同出力> --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers -p:NuGetAudit=false -p:UseAppHost=false -v:minimal。00:22:07 PID 15100、上限600秒、00:22:14終了0・警告とエラー0。
+- 同出力 bin/DirectDeliveryUi/debug で ALSOFT_DRIVERS=null、dotnet DirectDeliveryUi.dll。00:22:14 PID 33388、上限300秒、00:22:23終了0。DirectDelivery-build-002207 と DirectDelivery-run-002214 の両ログ。960×540を含む描画と入力で、プライマリーボタンの退避復帰、移動中入力の抑止、左右格納庫、連続トラック選択、閉じる／Escapeと予約維持を確認。
+- 次回はマージ後の自然Demoの直送便ペア画面、または別配置のCPUによるポケットのみの攻撃を追う。今回の試験では自然巡回、物理マウス操作、緑赤チェックの描画を未確認。
+
+
+### 2026-11-18 00:40 JST Demo audit
+
+- Start 00:40:38 JST; end 00:41:38. HEAD f5f8109d. Initial changes were the two audit logs and user notes. Partial audit complete, only this log changed.
+- Reused the local tutorial-audit-local output under artifacts/tmp/delete-after-2026-11-18 because NAS output had stalled. dotnet build tests/DemoUi/DemoUi.csproj --artifacts-path <same output> --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers -p:NuGetAudit=false -p:UseAppHost=false -v:minimal. PID 6344 00:41:04 to 00:41:10, limit 600s, exit 0, no warnings or errors. dotnet DemoUi.dll, ALSOFT_DRIVERS=null and FOLDERVERSE_DEMO_TEST_SEED=25, PID 31872 00:41:10 to 00:41:22, limit 300s, exit 0. Evidence: DemoUi-build-004104 and DemoUi-seed25-004110 out/err, demo.png.
+- Natural first transport entered and map returned; overview, directMap and directPair flags were false on both observations. Globe/net, edge relocation, ending loop and label drawing passed. No new defect reproduced. Next: find a naturally reached direct-delivery pair or a different CPU pocket-only attack. Those paths, physical input and check logic were not verified in this run.
+
+
+### 2026-11-18 00:59 JST Demo audit
+
+- Start 00:59:38, end 01:00:31. HEAD f5f8109d. Initial working changes were audit logs and user notes. Only this log changed. No new defect.
+- Reused the 00:40 merged DemoUi build in artifacts/tmp/delete-after-2026-11-18/tutorial-audit-local/bin/DemoUi/debug; no rebuild. ALSOFT_DRIVERS=null, FOLDERVERSE_DEMO_TEST_SEED=26, dotnet DemoUi.dll. PID 740, 01:00:05 to 01:00:14, limit 300s, exit 0. Logs DemoUi-seed26-010005 out/err and demo.png.
+- First transport and subsequent map return passed. overview/directMap/directPair were false at both observations. Globe/net and edge relocation at 18 FPS, fallback, ending loop and demo label passed. Natural direct pair, CPU pocket-only attack, check modes and physical input remain unverified. Next: inspect the Demo route into direct delivery or CPU pocket attack. D free 1300271104 bytes before run; reuse outputs and avoid additional copied build trees.
+
+
+### 2026-11-18 01:19 JST Demo audit
+
+- Start 01:19:08, end 01:19:37. HEAD f5f8109d. Partial static inspection, game code unchanged. Initial differences were audit logs and user notes; only this log appended.
+- Followed DemoDomestic stage 12 into MapOverlayClick and primary action 4. This opens the transport overview. The examined natural Demo path has no explicit OpenDirectPair call, so earlier false directPair observations do not establish correct pair-entry behavior. Inspector close stages continue using the actual InspectorClose rectangle. No new defect reproduced; no duplicate issue ID.
+- No UI run this round. Next audit: trace later overview and direct-delivery input transitions or use the existing CPU sortie diagnostic for pocket-only attacks. Natural pair entry, physical input and full on/off/skip behavior remain unverified.
+
+
+### 2026-11-18 01:40 JST Demo audit
+
+- Start 01:40:38, end 01:41:12. HEAD f5f8109d. Partial static check complete. Initial differences: audit logs, user notes and the tutorial diagnostic turn-count option. Game code unchanged, only this log appended.
+- Traced TransportOverviewClick: route/node clicks select a transport source and instruction editor. DirectDeliveryClick opens OpenDirectPair only from a truck hit in the separate direct-map overlay. Thus the examined stage-12 transport overview path does not provide evidence for a natural direct-pair entry. No new reproduced click defect, no issue ID.
+- No UI run. Next audit should inspect ordinary direct-map primary action and Demo stage coverage together; natural direct-pair entry, CPU pocket-only attack, physical input and on/off/skip comparison remain unverified. Existing DirectDeliveryUi coverage remains limited to its explicit test scenario.
+
+
+### 2026-11-18 01:59 JST Demo audit
+
+- Start 01:59:08, end 01:59:24. HEAD f5f8109d. Partial static inspection complete. Working changes: audit logs, user notes and existing tutorial diagnostic. Game code unchanged; only this log appended.
+- Compared primary action 3 (OpenDirectMap) with natural Demo stage 12 (TransportOverviewButton/primary action 4). The examined stages have no explicit primary-action-3 click before truck selection. DirectDeliveryClick needs an active direct-map truck hit to open the pair. This narrows the missing coverage to the direct-map entry/selection stages; no reproduced coordinate defect or issue ID.
+- No UI run. Next inspect Demo stage coverage for direct-map action and a visible truck, then verify pair arrival/return. Natural pair, CPU pocket-only attacks, physical input and on/off/skip remain unverified. Existing explicit DirectDeliveryUi tests passed at 00:21.
+
+
+### 2026-11-18 02:19 JST Demo audit
+
+- Start 02:19:09, end 02:19:25. HEAD f5f8109d. Partial static check; game code unchanged. Initial working differences: audit records, user notes and the tutorial diagnostic. Only this record appended.
+- Rechecked natural Demo transport stages 11..19 against primary action 3 and 4: stage 12 explicitly selects transport overview, while no explicit direct-map/truck stage exists in this examined branch. Earlier short natural runs therefore did not exercise the two-inspector direct-pair screen. This is an unimplemented or unverified demonstration route, rather than evidence that its click positions work. No newly reproduced coordinate bug or new ID.
+- No UI run. Resume with an actual naturally reached truck selection or inspect other Demo/computer-playback branches for such an entry. Existing manual DirectDeliveryUi path passed, but natural pair, pocket-only attack, physical input and on/off/skip coverage remain unverified.
+
+
+### 2026-11-18 02:39 JST Demo audit
+
+- Start 02:39:09, end 02:39:35. HEAD f5f8109d. Partial static check complete. Initial changes: audit logs, user notes and the tutorial diagnostic. Game code unchanged; this record only.
+- Expanded direct-map/pair entry search to all Game1.Computer*.cs and Game1.Demo*.cs. No explicit OpenDirectMap/OpenDirectPair calls found. Calls through normal input may still reach those methods; therefore this search does not establish total absence of the feature. The known natural stage-12 path selects the separate transport overview.
+- No new coordinate defect; no UI run or new build. D free 1219756032 bytes, so retain existing output reuse. Next audit should use existing CPU operation diagnostics to capture normal-input direct-map or pocket-only paths. Natural pair and on/off/skip/physical coverage remain unverified.
+
+
+### 2026-11-18 02:59 JST Demo audit
+
+- Start 02:59:10, end 03:00:05. HEAD f5f8109d. Partial audit complete. Initial differences: audit records, user notes and tutorial diagnostic. Only this log changed, no product change or new defect.
+- Reused existing DirectDeliveryUi build from local isolated tutorial-audit-local. ALSOFT_DRIVERS=null, dotnet DirectDeliveryUi.dll. PID 34264 02:59:35 to 02:59:48, 300s limit, exit 0. Evidence DirectDelivery-followup-025935.out/err and existing direct-*.png captures. No rebuild due to existing valid merged output and D free 1.19GB.
+- Explicit normal-input scenario passed button frame-out/in, hidden/moving click suppression, left/right hangars, truck pair entry/return, Escape and reservation preservation, including 960x540 rendering. Natural Demo reachability, CPU pocket-only attacks and actual physical mouse/keyboard remain unverified. Next use existing CPU operation diagnostic for the latter paths rather than treating this explicit pair test as natural Demo coverage.
+
+
+### 2026-11-18 03:18 JST Demo audit
+
+- Start 03:18:10, end 03:18:26. HEAD f5f8109d. Partial static check only. Initial working differences: audit logs, user notes and tutorial diagnostic. Game code unchanged; this record only.
+- Reconfirmed green check/close in DemoDomestic and red check/close in DemoChecks use NodeCheckButton.Center and InspectorClose.Center. Static references establish shared rectangle use, not rendered cursor alignment or resulting checks. Existing CPU sortie probe project presence was checked for a later isolated run.
+- No new defect or UI execution this round. Next use CPU sortie/check diagnostic on existing merged output with capacity-aware reuse. Natural direct-pair entry, pocket-only attack, check modes after clicking, turn-end cleanup and physical input remain unverified in this round.
+
+
+### 2026-11-18 03:41 JST Demo audit
+
+- Start 03:41:11, end 03:41:37. HEAD f5f8109d. Partial static check. Initial differences: audit logs, user notes and tutorial diagnostic. Game unchanged; this log only.
+- Located existing DemoAuditCpuSortie project and probe options for future world/second-military conditions. The project currently references the game and copies runtime content per output. D free 1131741184 bytes, so did not create another content copy this round. Existing NAS output still needs connection/result recovery before reuse.
+- No UI execution or new defect. Next: run the CPU probe with shared or existing valid output and trace pocket-only attack plus human return. Natural direct-pair, physical input and on/off/skip coverage remain unverified. Existing DirectDeliveryUi passing scenario cannot substitute for these CPU paths.
+
+
+### 2026-11-18 04:01:13.436621 JST Demo audit
+
+- Start 2026-11-18 04:01:03.779216, end 2026-11-18 04:01:13.436621. HEAD f5f8109d. Reused isolated DemoUi build, seed27, ALSOFT_DRIVERS=null. PID 28760, limit300s, exit 0. Logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\DemoUi-seed27-latest.out and D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\DemoUi-seed27-latest.err.
+- Partial audit completed. Game unchanged. Natural transport/map return, globe/net and ending assertions exercised by existing diagnostic. Natural direct pair, CPU pocket-only attack, on/off/skip and physical input remain unverified. Next: CPU probe with existing shared content.
+
+
+### 2026-11-18 04:20:09.927200 JST Demo audit
+
+- Start/end 2026-11-18 04:20:09.927200 JST. HEAD f5f8109d. Static partial audit completed, game unchanged; audit logs, user notes and tutorial diagnostic differences preserved.
+- CPU probe already supports LEGAL_QUEEN, POCKET_ONLY and QUEEN540 environment options with FOLDERVERSE_AUDIT prefix. This is a constructed legal-queen scenario, so it cannot establish natural pocket-only reachability. Content resolves relative to executable; next isolated probe can reuse an existing valid runtime Content tree instead of copying another tree. No build/UI run or new defect this round.
+- Next: prepare probe output with shared existing Content, run legal pocket-only control then distinguish natural AI orders and human return. Natural direct-pair, physical input and full on/off/skip remain unverified.
+
+
+### 2026-11-18 04:42:45.573057 JST Demo audit
+
+- Start/end 2026-11-18 04:42:45.573057 JST. HEAD f5f8109d. Static partial audit complete. Game unchanged, existing audit/user-note/tutorial diagnostic differences retained.
+- Important probe precondition: POCKET_ONLY alone leaves escortIds empty unless QUEEN_ESCORTS=1 is also supplied. A zero-robot fixture cannot validate real pocket robot clicks or single deployment. Next fixed control must combine LEGAL_QUEEN=1, POCKET_ONLY=1, QUEEN_ESCORTS=1, QUEEN540=1 (FOLDERVERSE_AUDIT prefix) and check each of the two IDs exactly once, no queen, red check and human return.
+- No UI run/new defect. Natural AI pocket-only reachability, direct-pair Demo, on/off/skip and physical input remain unverified. Next prepare minimal probe assembly using existing runtime Content rather than a new copied tree.
+
+
+### 2026-11-18 05:02:33.741773 JST Demo audit
+
+- HEAD f5f8109d. Game unchanged. Reuse existing DemoUi runtime Content/output for CPU probe; BuildProjectReferences=false, existing merged game assembly. C free206GB, D free1.07GB before run; no separate Content tree. Fixed pocket-only control LEGAL_QUEEN/POCKET_ONLY/QUEEN_ESCORTS/QUEEN540=1.
+- build 2026-11-18 05:02:23.326146 to 2026-11-18 05:02:26.348579 PID 30444 limit 600s exit 0; command ['dotnet', 'build', 'artifacts/demo-click-audit/DemoAuditCpuSortie.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--disable-build-servers', '-p:UseAppHost=false', '-p:BuildProjectReferences=false', '-p:OutputPath=D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\', '--source', 'artifacts/nuget-feed', '--source', 'C:/Users/muzud/.nuget/packages', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\pocket-shared-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\pocket-shared-build.err
+- run 2026-11-18 05:02:26.349680 to 2026-11-18 05:02:33.741773 PID 4352 limit 300s exit 0; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\DemoAuditCpuSortie.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\pocket-shared-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\pocket-shared-run.err
+- Partial audit; natural pocket-only reachability, natural direct-pair, on/off/skip and physical input remain unverified. Review logs before classifying any assertion as product defect.
+
+
+### 2026-11-18 05:20:46.429919 JST Demo audit
+
+- Start 2026-11-18 05:20:43.285197, end 2026-11-18 05:20:46.429919. HEAD f5f8109d. Game unchanged; reused shared CPU probe without build. dotnet bin/DemoUi/debug/DemoAuditCpuSortie.dll under existing tutorial-audit-local; ALSOFT_DRIVERS=null; LEGAL_QUEEN/POCKET_ONLY/QUEEN_ESCORTS/QUEEN540/MILITARY_NET=1 with FOLDERVERSE_AUDIT prefix. PID 18888, limit300s, exit 0, TIMEOUT=False. Logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\pocket-net-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\pocket-net-run.err.
+- Fixed 960x540 pocket-only unfold control; natural reachability and physical input remain separate/unverified. On/off/skip and natural direct-pair still unverified. Partial audit completed; inspect any failed assertion before assigning a defect.
+
+
+### 2026-11-18 05:39:26.963702 JST Demo audit
+
+- Start 2026-11-18 05:39:15.130424, end 2026-11-18 05:39:26.963702. HEAD f5f8109d. Game unchanged. Existing shared CPU probe reused without build: dotnet bin/DemoUi/debug/DemoAuditCpuSortie.dll in tutorial-audit-local. ALSOFT_DRIVERS=null; WORLD84/SECOND_MILITARY1/MILITARY_NET1/CONFIRM_COMPLETION normal (FOLDERVERSE_AUDIT prefix). PID 9652 limit300s exit 0 TIMEOUT=False. Logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu84-net-normal.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu84-net-normal.err.
+- Partial merged-HEAD regression of ordinary CPU military map/picker/check/return. Next compare skip/off with same output; this world does not establish natural pocket-only coverage. Natural direct pair and physical input remain unverified.
+
+
+### 2026-11-18 06:01:43.230268 JST Demo audit
+
+- HEAD f5f8109d. Game unchanged; shared existing CPU probe/output reused, no build. World84, second military, normal unfold transition. Compared CONFIRM_COMPLETION skip/off to prior normal, with FOLDERVERSE_AUDIT prefix; ALSOFT_DRIVERS=null, dotnet existing bin/DemoUi/debug/DemoAuditCpuSortie.dll.
+- skip: 2026-11-18 06:01:20.666801 to 2026-11-18 06:01:32.930177, PID 29784, limit300s, exit0, TIMEOUT=False; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu84-net-skip.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu84-net-skip.err
+- off: 2026-11-18 06:01:32.932327 to 2026-11-18 06:01:43.228365, PID 16572, limit300s, exit0, TIMEOUT=False; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu84-net-off.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu84-net-off.err
+- Marches/cancellations/battle participant line equality to normal: {'skip': True, 'off': True}. Review completion lines for human return/planned0. Partial audit complete. Natural pocket-only, natural direct pair and physical input remain unverified. Next target natural pocket-only AI order or check mode/turn-end cleanup using shared runtime.
+
+
+### 2026-11-18 06:21:30.484470 JST Demo audit
+
+- HEAD f5f8109d. Game unchanged; DemoChecksUi built into existing DemoUi shared runtime, BuildProjectReferences=false, existing merged assembly; no new Content tree. ALSOFT_DRIVERS=null.
+- build 2026-11-18 06:21:17.237259 to 2026-11-18 06:21:20.268869 PID 2388 limit600s exit0 TIMEOUT=False; ['dotnet', 'build', 'tests/DemoChecksUi/DemoChecksUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--disable-build-servers', '-p:UseAppHost=false', '-p:BuildProjectReferences=false', '-p:OutputPath=D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\', '--source', 'artifacts/nuget-feed', '--source', 'C:/Users/muzud/.nuget/packages', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\checks-shared-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\checks-shared-build.err
+- run 2026-11-18 06:21:20.269428 to 2026-11-18 06:21:30.483857 PID 9204 limit300s exit0 TIMEOUT=False; ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\DemoChecksUi.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\checks-shared-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\checks-shared-run.err
+- Partial check-mode/input regression; natural direct pair, natural pocket-only and physical input remain unverified. Review checks-shared-run logs before classifying any failure.
+
+
+### 2026-11-18 06:42:41.113224 JST Demo audit
+
+- HEAD f5f8109d. Game unchanged; DemoInspectorUi built with BuildProjectReferences=false into shared DemoUi runtime, no new Content tree. Commands: dotnet build tests/DemoInspectorUi/DemoInspectorUi.csproj --artifacts-path tutorial-audit-local --disable-build-servers -p:UseAppHost=false -p:BuildProjectReferences=false -p:OutputPath=<existing DemoUi/debug> --source artifacts/nuget-feed --source local NuGet cache; dotnet corresponding DLL, ALSOFT_DRIVERS=null.
+- build 2026-11-18 06:42:22.401781 to 2026-11-18 06:42:25.093425 PID33080 limit600s exit0 TIMEOUT=False; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\inspector-shared-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\inspector-shared-build.err
+- run 2026-11-18 06:42:25.093846 to 2026-11-18 06:42:41.112419 PID34424 limit300s exit0 TIMEOUT=False; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\inspector-shared-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\inspector-shared-run.err
+- Scope: factory plans/office/animated close/transport primary/my-country movement/counts,1080p/540p real rendering. Partial audit; natural direct pair/pocket-only and physical input remain unverified. Next use natural CPU pocket order or direct-pair reachability rather than repeat these fixtures.
+
+
+### 2026-11-18 07:01:30.923743 JST Demo audit
+
+- Start 2026-11-18 07:01:17.773611, end 2026-11-18 07:01:30.923743. HEAD f5f8109d. Game unchanged; reused shared CPU diagnostic without build. WORLD103/SECOND_MILITARY1/CONFIRM_COMPLETION normal, FOLDERVERSE_AUDIT prefix; ALSOFT_DRIVERS=null; dotnet existing tutorial-audit-local/bin/DemoUi/debug/DemoAuditCpuSortie.dll. PID14496 limit300s exit0 TIMEOUT=False. Logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu103-normal.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu103-normal.err.
+- Partial alternate-world CPU map/picker regression. Natural pocket-only coverage requires an actual pocket order; review Unsupported attributes count, not just PASS. Natural direct pair and physical input remain unverified. Next follow any pocket-bearing AI order or inspect source conditions if absent.
+
+
+### 2026-11-18 07:19:37 JST Demo static audit
+
+- HEAD f5f8109d; start 07:18, end 2026-11-18 07:19:37. Game unchanged, no build/UI process launched. Initial instructions, both records and Git differences reviewed; user changes retained. Partial static audit completed.
+- Reviewed cpu103-normal.out: visible50, queen0/pocket0, sourceMissing0/noFighters0; target137 selected, picker1, three individual card clicks, human0 Domestic planned0. This is ordinary military coverage only; no natural pocket order occurred.
+- ComputerJointAttacks.cs:59-72 jointly plans pocket escorts when at least two eligible faction members can meet required force; 80-94 mixes insufficient ground and pocket forces; 103-114 plans individual retinue assault or friendly frontward movement. These paths emit Queen=true/PocketOnly=true; they do not establish the Queen=false pocket-only case tested by the fixed fixture. Game1.ComputerMarches supports both forms. No defect confirmed.
+- Next audit: follow naturally planned retinue orders across later turns and distinguish queen participation from pocket-only escort selection; avoid repeated first-turn seeds without such orders. Natural direct-pair route, full remaining Demo traversal and physical input remain unverified. No new DEMO ID; prior fixed tests do not close these gaps.
+
+
+### 2026-11-18 07:40:56.295885 JST Demo audit
+
+- Start 2026-11-18 07:40:42.447208, end 2026-11-18 07:40:56.295885 JST; HEAD f5f8109d. Game unchanged; shared existing CPU probe reused, no build. WORLD103/SECOND_MILITARY1, no CONFIRM_COMPLETION early exit; ALSOFT_DRIVERS=null. Command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\DemoAuditCpuSortie.dll']; PID34592 limit300s exit0 TIMEOUT=False; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu103-second.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu103-second.err.
+- Partial later-military audit; inspect actual Queen/PocketOnly attributes before claiming coverage. Natural direct-pair and physical input remain unverified.
+
+- 2026-11-18 07:41:19.251444 JST outcome: second military visible38, queen2/pocket1/peaceful1, fallbacks0; player0 Domestic. Natural CPU29 pocket+queen peaceful move to154 selected target at(1244,553), then ordinary movement confirm(707,938). Natural CPU31 queen assault35 selected at(1308,552), picker1, confirm(1415,822), red check(936,544), close(936,488); one queen march, queen unit-32 in battle35, reservations0/0/0. This covers natural queen assault and peaceful pocket movement, not Queen=false pocket-only combat. Actual battle targetOwner8: no claim of conquest success. Next compare these later-turn orders with skip/off and inspect natural combat pocket-only if emitted. Partial audit completed; physical input and natural direct-pair remain unverified.
+
+
+### 2026-11-18 08:02:20.926534 JST Demo static audit
+
+- Start08:01 end2026-11-18 08:02:20.926534 JST; HEAD f5f8109d. Initial instructions/records/differences checked, product unchanged; no UI run/build. Partial static audit complete.
+- Direct-pair entry trace: Game1.DemoDomestic stage12 aims at TransportOverviewButton.Center then MapOverlayClick, stage15 uses MovementClick. Normal OpenDirectPair entry is a truck hit in Game1.DirectDelivery.cs:63, pair-map hit in DirectPairMap.cs:90 or long-delivery hit in LongDelivery.cs:45. No dedicated truck/pair selection was found in the inspected Demo files. This is route coverage evidence, not a confirmed inaccessible UI or click defect.
+- Next natural Demo inspection must observe whether transport overview stage transitions ever open direct-map/truck and select a pair; fixed DirectDeliveryUi passing does not establish a natural teaching path. Prior second-military run completed and exited0; later-turn skip/off comparison still requires a diagnostic path that does not early-exit at first confirmation. No new DEMO ID. Natural combat pocket-only, direct-pair and physical input remain unverified.
+
+
+### 2026-11-18 08:21:59.565350 JST Demo audit
+
+- Start 2026-11-18 08:21:45.358116 end 2026-11-18 08:21:59.565350 JST HEAD f5f8109d. Game unchanged; existing shared probe reused. WORLD103 SECOND_MILITARY1 MILITARY_NET1, ALSOFT_DRIVERS=null; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\DemoAuditCpuSortie.dll']; PID3200 limit300s exit0 TIMEOUT=False; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu103-second-net.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu103-second-net.err.
+- Partial unfolded-map later-military audit; inspect actual order attributes before claiming pocket combat coverage. Natural direct-pair and physical input remain unverified.
+
+- 2026-11-18 08:22:20.326180 JST outcome: exit0, second military38 queen2/pocket1/peaceful1, fallbacks0, player0 Domestic. Same CPU29 target154 movement and CPU31 target35 queen assault/red/close, queen march1, reservations0/0/0 as prior control. MILITARY_NET flag establishes initial ordinary map transition only; identical second-stage coordinates do not prove second batch retained unfolded view. Next log _statusGlobe at later featured orders and use ordinary transition there before claiming later unfolded coverage. Skip/off remains unverified for second batch; natural direct-pair and physical input unchanged. Partial audit complete.
+
+- CPU103 mode diagnostic build 2026-11-18 08:41:49.563994 to 2026-11-18 08:41:52.366976 JST PID33708 limit600s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'build', 'artifacts/demo-click-audit/DemoAuditCpuSortie.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--disable-build-servers', '-p:UseAppHost=false', '-p:BuildProjectReferences=false', '-p:OutputPath=D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\', '--source', 'artifacts/nuget-feed', '--source', 'C:/Users/muzud/.nuget/packages', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu103-mode-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu103-mode-build.err.
+
+- CPU103 mode diagnostic run 2026-11-18 08:41:52.367375 to 2026-11-18 08:42:09.279109 JST PID15340 limit300s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\DemoAuditCpuSortie.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu103-mode-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\cpu103-mode-run.err.
+
+
+### 2026-11-18 08:42:29.472457 JST Demo mode audit outcome
+
+- Start08:41 end2026-11-18 08:42:29.472474 JST HEAD f5f8109d. Game unchanged; existing untracked CPU probe adds globe flag to featured-order logs. Shared runtime used, no Content copy. Build/run results above; no TIMEOUT. WORLD103 SECOND_MILITARY1 MILITARY_NET1.
+- Evidence: Second featured order 21: ruler=29 viewed=29 globe=True target=154 queen=True pocket=True peaceful=True stage=1->2 click={X:1244 Y:553} selected=154 picker=-1 red=False | Second featured order 21: ruler=29 viewed=29 globe=True target=154 queen=True pocket=True peaceful=True stage=2->6 click={X:707 Y:938} selected=-1 picker=-1 red=False | Second featured order 23: ruler=31 viewed=31 globe=True target=35 queen=True pocket=False peaceful=False stage=1->2 click={X:1308 Y:552} selected=35 picker=-1 red=False | Second featured order 23: ruler=31 viewed=31 globe=True target=35 queen=True pocket=False peaceful=False stage=2->3 click={X:640 Y:732} selected=35 picker=1 red=False | Second featured order 23: ruler=31 viewed=31 globe=True target=35 queen=True pocket=False peaceful=False stage=3->3 click={X:640 Y:732} selected=35 picker=1 red=False | Second featured order 23: ruler=31 viewed=31 globe=True target=35 queen=True pocket=False peaceful=False stage=3->4 click={X:1415 Y:822} selected=35 picker=-1 red=False | Second featured order 23: ruler=31 viewed=31 globe=True target=35 queen=True pocket=False peaceful=False stage=4->5 click={X:936 Y:544} selected=35 picker=-1 red=True | Second featured order 23: ruler=31 viewed=31 globe=True target=35 queen=True pocket=False peaceful=False stage=5->6 click={X:936 Y:488} selected=35 picker=-1 red=True | Second military visible=38 fallbacks=0 player=0 phase=Domestic.
+- Next use ordinary map transition after second batch begins if globe=True; initial MILITARY_NET does not guarantee persistence. Later-turn skip/off, natural pocket-only combat and direct-pair still unverified; physical input unverified. Partial audit completed, no new DEMO ID.
+
+- Second-net diagnostic build 2026-11-18 09:06:34.433909 to 2026-11-18 09:06:37.441456 JST PID4812 limit600s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'build', 'artifacts/demo-click-audit/DemoAuditCpuSortie.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--disable-build-servers', '-p:UseAppHost=false', '-p:BuildProjectReferences=false', '-p:OutputPath=D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\', '--source', 'artifacts/nuget-feed', '--source', 'C:/Users/muzud/.nuget/packages', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\second-net-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\second-net-build.err.
+
+- Second-net diagnostic run 2026-11-18 09:06:37.441946 to 2026-11-18 09:06:52.608256 JST PID29184 limit300s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\DemoAuditCpuSortie.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\second-net-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\second-net-run.err.
+
+
+### 2026-11-18 09:07:13.799245 JST Demo audit outcome
+
+- Start09:05 end2026-11-18 09:07:13.799261 JST HEAD f5f8109d. Game unchanged; existing diagnostic adds SECOND_NET option using normal map transition after second military begins; runtime Content reused. WORLD103 SECOND_MILITARY1 SECOND_NET1; build/run results above, no TIMEOUT.
+- Evidence: Second featured order 21: ruler=29 viewed=29 globe=True target=154 queen=True pocket=True peaceful=True stage=1->2 click={X:1244 Y:553} selected=154 picker=-1 red=False | Second featured order 21: ruler=29 viewed=29 globe=True target=154 queen=True pocket=True peaceful=True stage=2->6 click={X:707 Y:938} selected=-1 picker=-1 red=False | Second featured order 23: ruler=31 viewed=31 globe=True target=35 queen=True pocket=False peaceful=False stage=1->2 click={X:1308 Y:552} selected=35 picker=-1 red=False | Second featured order 23: ruler=31 viewed=31 globe=True target=35 queen=True pocket=False peaceful=False stage=2->3 click={X:640 Y:732} selected=35 picker=1 red=False | Second featured order 23: ruler=31 viewed=31 globe=True target=35 queen=True pocket=False peaceful=False stage=3->3 click={X:640 Y:732} selected=35 picker=1 red=False | Second featured order 23: ruler=31 viewed=31 globe=True target=35 queen=True pocket=False peaceful=False stage=3->4 click={X:1415 Y:822} selected=35 picker=-1 red=False | Second featured order 23: ruler=31 viewed=31 globe=True target=35 queen=True pocket=False peaceful=False stage=4->5 click={X:936 Y:544} selected=35 picker=-1 red=True | Second featured order 23: ruler=31 viewed=31 globe=True target=35 queen=True pocket=False peaceful=False stage=5->6 click={X:936 Y:488} selected=35 picker=-1 red=True | Second queen result: ruler=31 target=35 marches=1 queens=-32 reservations=0/0/0 | Second military visible=38 fallbacks=0 player=0 phase=Domestic.
+- Partial audit completed. These natural queen assault and peaceful pocket orders now have explicit map-mode evidence; combat pocket-only, second-batch skip/off, natural direct-pair and physical input remain unverified. Next compare later-batch normal/skip/off without first-batch early exit. No new DEMO ID.
+
+- 2026-11-18 09:07:29.515973 JST qualification: featured orders still globe=True despite successful second-batch initial unfold; ruler switching restores globe before CPU29/31. Therefore this run does not cover their unfolded-map execution. Next apply normal transition at the featured ruler/order stage0 after view switch, then verify globe=False at actual selection. Previous paragraph map-mode evidence means observed globe mode only.
+
+
+### 2026-11-18 09:19:15.980750 JST Demo static audit
+
+- Start09:18 end2026-11-18 09:19:15.980750 JST HEAD f5f8109d; specified instructions/records/differences checked, product unchanged, no build/UI run. Partial static audit completed.
+- Game1.ComputerMarches.cs:67-71 changes viewed ruler with ShowComputerView as the instruction advances, before next stage0. Thus a single SECOND_NET transition at batch start cannot guarantee later rulers remain unfolded, consistent with measured globe=True atCPU29/31. Stage0 opens movement/war inspector and focuses target; next audit should transition once at each featured order stage1 before target click, after ruler selection and inspector opening. Log globe=False at actual stage1-to2.
+- No new defect or DEMO ID. Second-batch unfolded queen/pocket execution, skip/off, natural combat pocket-only, direct-pair and physical input remain unverified. Existing successful globe result remains valid.
+
+- Order-net diagnostic build 2026-11-18 09:41:10.758903 to 2026-11-18 09:41:13.682757 JST PID25376 limit600s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'build', 'artifacts/demo-click-audit/DemoAuditCpuSortie.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--disable-build-servers', '-p:UseAppHost=false', '-p:BuildProjectReferences=false', '-p:OutputPath=D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\', '--source', 'artifacts/nuget-feed', '--source', 'C:/Users/muzud/.nuget/packages', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\order-net-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\order-net-build.err.
+
+- Order-net diagnostic run 2026-11-18 09:41:13.683179 to 2026-11-18 09:41:30.606747 JST PID28640 limit300s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\DemoAuditCpuSortie.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\order-net-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\order-net-run.err.
+
+
+### 2026-11-18 09:41:47.452734 JST Demo order-net audit
+
+- Start09:40 end2026-11-18 09:41:47.452750 JST HEAD f5f8109d; product unchanged, existing diagnostic only adds SECOND_ORDER_NET transition at featured-order stage1 after ruler/inspector selection. Shared output reused, no Content copy. WORLD103 SECOND_MILITARY1 SECOND_ORDER_NET1; commands/PIDs/limits/results above, noTIMEOUT.
+- Evidence: Second featured order 21: ruler=29 viewed=29 globe=False target=154 queen=True pocket=True peaceful=True stage=1->2 click={X:1440 Y:552} selected=154 picker=-1 red=False | Second featured order 21: ruler=29 viewed=29 globe=False target=154 queen=True pocket=True peaceful=True stage=2->6 click={X:707 Y:938} selected=-1 picker=-1 red=False | Second featured order 23: ruler=31 viewed=31 globe=False target=35 queen=True pocket=False peaceful=False stage=1->2 click={X:1440 Y:552} selected=35 picker=-1 red=False | Second featured order 23: ruler=31 viewed=31 globe=False target=35 queen=True pocket=False peaceful=False stage=2->3 click={X:640 Y:732} selected=35 picker=1 red=False | Second featured order 23: ruler=31 viewed=31 globe=False target=35 queen=True pocket=False peaceful=False stage=3->3 click={X:640 Y:732} selected=35 picker=1 red=False | Second featured order 23: ruler=31 viewed=31 globe=False target=35 queen=True pocket=False peaceful=False stage=3->4 click={X:1415 Y:822} selected=35 picker=-1 red=False | Second featured order 23: ruler=31 viewed=31 globe=False target=35 queen=True pocket=False peaceful=False stage=4->5 click={X:936 Y:544} selected=35 picker=-1 red=True | Second featured order 23: ruler=31 viewed=31 globe=False target=35 queen=True pocket=False peaceful=False stage=5->6 click={X:936 Y:488} selected=35 picker=-1 red=True | Second queen result: ruler=31 target=35 marches=1 queens=-32 reservations=0/0/0 | Second military visible=38 fallbacks=0 player=0 phase=Domestic.
+- Partial audit completed; natural combat pocket-only, later-turn skip/off, natural direct-pair and physical input remain unverified. No new DEMO ID; next compare actual featured orders and fallback counts against globe control.
+
+
+### 2026-11-18 10:01:51.564316 JST Demo evidence comparison
+
+- Start10:01 end2026-11-18 10:01:51.564316 JST HEAD f5f8109d. Initial instructions/current differences/records checked. Game unchanged; no repeated UI run/build. Compared cpu103-mode-run.out versus order-net-run.out from completed tests.
+- Both: second military38 instructions, fallback0, human0 Domestic; CPU31 target35 queen marches1/unit-32, frame target35, current37/targetOwner8, reservations0/0/0. Actual view differs (globeTrue vsFalse); map/picker/check/close evidence in prior entries. Equality covers these recorded queen outcomes, not entire robot participants or all world state.
+- Next add optional later-order skip/off and full outcome snapshot to existing diagnostic before comparison; existing CONFIRM_COMPLETION exits first batch and cannot supply this. Natural combat pocket-only, direct-pair and physical input still unverified. Partial static audit completed; no new DEMO ID.
+
+- Second comparison build 2026-11-18 10:22:09.418281 to 2026-11-18 10:22:12.200738 JST PID15584 limit600s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'build', 'artifacts/demo-click-audit/DemoAuditCpuSortie.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--disable-build-servers', '-p:UseAppHost=false', '-p:BuildProjectReferences=false', '-p:OutputPath=D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\', '--source', 'artifacts/nuget-feed', '--source', 'C:/Users/muzud/.nuget/packages', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\second-compare-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\second-compare-build.err.
+
+- Second comparison normal 2026-11-18 10:22:12.201220 to 2026-11-18 10:22:29.661623 JST PID13836 limit300s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\DemoAuditCpuSortie.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\second-compare-normal.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\second-compare-normal.err.
+
+- Second comparison skip 2026-11-18 10:22:29.662084 to 2026-11-18 10:22:44.353937 JST PID17960 limit300s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\DemoAuditCpuSortie.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\second-compare-skip.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\second-compare-skip.err.
+
+
+### 2026-11-18 10:23:02.788284 JST Demo second-order skip audit
+
+- Start10:21 end2026-11-18 10:23:02.788303 JST HEAD f5f8109d, game unchanged; existing diagnostic adds SECOND_SKIP at actual second-batch Queen picker stage3 and outcome snapshot. WORLD103 SECOND_MILITARY1 SECOND_ORDER_NET1; skip additionallySECOND_SKIP1. Commands/PIDs/results above, all exit0/noTIMEOUT, shared runtime reused.
+- Normal versus skip second-outcome line equality=True (LastMarches sorted, all node owners, LastQueenMarches sorted). Both restore human0 Domestic. This covers supplied snapshot only, not all state or robot participant IDs; skip uses UpdateComputerMarches skip flag, not physical Escape.
+- Partial audit completed; later-turn display off, natural combat pocket-only/direct-pair and physical input remain unverified. Next capture participant IDs/cancellations if extending equality and test display off from same second batch. No new DEMO ID.
+
+- Second display-off build 2026-11-18 10:46:22.257780 to 2026-11-18 10:46:25.234213 JST PID10948 limit600s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'build', 'artifacts/demo-click-audit/DemoAuditCpuSortie.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--disable-build-servers', '-p:UseAppHost=false', '-p:BuildProjectReferences=false', '-p:OutputPath=D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\', '--source', 'artifacts/nuget-feed', '--source', 'C:/Users/muzud/.nuget/packages', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\second-off-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\second-off-build.err.
+
+- Second display-off run 2026-11-18 10:46:25.234731 to 2026-11-18 10:46:38.820687 JST PID31712 limit300s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\DemoAuditCpuSortie.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\second-off-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\second-off-run.err.
+
+
+### 2026-11-18 10:46:57.874826 JST Demo second display-off outcome
+
+- Start10:40 end2026-11-18 10:46:57.874826 JST HEAD f5f8109d; game unchanged. Existing diagnostic adds SECOND_OFF to toggle computer operations off only before second military. Shared runtime reused; WORLD103 SECOND_MILITARY1 SECOND_OFF1. Commands/PIDs/limits/results above, exit0/noTIMEOUT.
+- Normal/skip/off Second outcome equality=True (sorted LastMarches, all node owners, sorted LastQueenMarches). Display-off batch restores human0 Domestic without preview. Equality still excludes full participants/cancellations and all other world fields. Toggle uses same settings method, not physical UI.
+- Partial audit complete. Natural combat pocket-only/direct-pair, physical input and full participant snapshot remain unverified. Next extend participant/cancellation equality only if needed, otherwise pursue remaining natural route coverage. No new DEMO ID.
+
+
+### 2026-11-18 11:00:50.045917 JST natural Demo audit
+
+- Start2026-11-18 11:00:40.572629 end2026-11-18 11:00:50.045917 JST HEAD f5f8109d; game unchanged, existing DemoUi shared runtime reused. Seed28, ALSOFT_DRIVERS=null; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\DemoUi.dll'] PID31860 limit300s exit0 TIMEOUT=False; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\natural28.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\natural28.err.
+- Partial natural title-to-first-transport and fixture continuation audit. Inspect delivery flags before claiming direct-pair reachability; later stages include diagnostic state resets. No full physical traversal.
+
+- 2026-11-18 11:01:07.109104 JST outcome: Natural delivery flags before first transport: overview=False, directMap=False, directPair=False | Follow-up delivery flags: overview=False, directMap=False, directPair=False | PASS: idle loop, globe/net switching, edge relocation at 18 FPS, refusal fallback, ending loop and demo label rendering.. Natural prefix ended at first transport; direct-pair remains unverified. Next pursue longer natural transport traversal rather than infer from fixture continuation. Partial audit complete, no new DEMO ID.
+
+
+### 2026-11-18 11:20 JST Demo static continuation audit
+
+- Start11:20; end 2026-11-18T11:26:21.017870+09:00; partial static audit completed. HEAD f5f8109d; current diff: audit records, user note, TutorialWarGuidesUi diagnostic only. Game code unchanged. No UI process launched, no resolution or new rendering evidence this round.
+- Rechecked Game1.Demo.cs, Game1.DemoDomestic.cs and tests/DemoUi/Program.cs. Natural prefix in DemoUi stops on first Transport at lines44-56; subsequent regression clears pending, forces WorldStatus and resets map stages at lines59-72. Its follow-up flags cannot establish natural delivery/direct-pair coverage.
+- Game1.Demo.cs advances Transport through UpdateTransport(elapsed,false,now) and resets step age; Game1.DemoDomestic.cs stage12 uses TransportOverviewButton.Center via MapOverlayClick, followed by MovementClick stages15/13. DirectDelivery.cs truck selection line63 opens pair through actual truck Bounds. Static inspection alone does not verify cursor alignment or transitions after first Transport.
+- No new confirmed defect or DEMO ID. Remaining natural post-Transport traversal, direct-pair reachability, pocket-only combat, physical input remain unverified. Next: extend diagnostic natural prefix through delivery/military before fixture mutations, record screen/phase transitions and delivery flags; retain existing runtime to avoid duplicate outputs.
+
+- Planned natural-continue-build limit600s; HEAD f5f8109d; existing local fallback reused, NAS previously unavailable; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\natural-continue-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\natural-continue-build.err.
+- natural-continue-build 2026-11-18 11:41:54.762089+09:00 to 2026-11-18 11:41:57.422363+09:00 PID28496 exit0 TIMEOUT=False command ['dotnet', 'build', 'tests/DemoUi/DemoUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--no-restore', '--disable-build-servers', '-p:UseAppHost=false', '-p:BuildProjectReferences=false', '-v:minimal']
+
+- Planned natural-continue28 limit300s; HEAD f5f8109d; existing local fallback reused, NAS previously unavailable; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\natural-continue28.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\natural-continue28.err.
+- natural-continue28 2026-11-18 11:41:57.423358+09:00 to 2026-11-18 11:42:03.718947+09:00 PID24580 exit3762504530 TIMEOUT=False command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\DemoUi.dll']
+
+- Runtime correction: first run failed ContentLoadException missing robot-assembly-icon.xnb before Demo start. Copied only 770 missing compiled Content files (452627189 bytes) from existing FolderVerse/Content/bin/DesktopGL/Content, no originals modified. Retry 2026-11-18 11:42:38.215379+09:00 to 2026-11-18 11:42:54.400629+09:00 PID19712 limit300s exit0 TIMEOUT=False; logs natural-continue28-retry.out/.err in same output base.
+
+
+### 2026-11-18 11:40 JST natural post-Transport audit outcome
+
+- Start11:40 end 2026-11-18T11:43:15.893742+09:00; partial audit completed. HEAD f5f8109d; game unchanged. tests/DemoUi/Program.cs adds opt-in FOLDERVERSE_DEMO_NATURAL_CONTINUE=1 before fixture resets; ticks normal Demo update at0.25s and draws on screen/phase/turn transitions. Seed28; no forced world/screen/queue changes in this branch. Commands, PID, finite limits and content correction recorded above. Retry exit0, noTIMEOUT. Final PNG resolution (1920, 1080); actual desktop input not tested.
+- Natural progression observed Transport Delivery0 -> Transport Domestic1 -> Battle -> BattleResearch -> Industry -> WorldStatus -> Transport Delivery1 -> turn2 -> Battle -> BattleResearch -> Industry -> WorldStatus -> Transport Delivery2, two subsequent transport entries. No natural progression stall in this bounded sample. Evidence natural-continue28-retry.out/.err and demo.png in existing shared output.
+- overview=False/directMap=False/directPair=False throughout. This seed did not demonstrate direct delivery/pair teaching path; absence of flags is a coverage limitation, not proof of broken UI. No new DEMO ID. Remaining: inspect domestic stage transitions and ordinary truck entry to determine dedicated Demo teaching coverage; pocket-only combat/physical input remain unverified. Next use this opt-in branch to sample stage/button rectangles without fixture mutations. Shared runtime content now supplemented from existing compiled Content; avoid further Content copies.

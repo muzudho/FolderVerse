@@ -574,3 +574,494 @@
 - HEAD 9e4d089af14f8203205f85cdc46f93aeaa3ba95a。22:51点検は終了0。TUT-0006は完了済みで、再現済みの未修正項目なし。利用者依頼のプリマプラナ追加差分を確認。今回の変更は本記録のみ。
 - 先行する実装検証では、分離NAS出力 primaplana の ui.out と TitleStartMenu-ui.out がPASS。プリマプラナの開戦から世界征服と、第2のプチステラの開始を確認済み。TutorialThreeUi の追加ビルドは出力が進まず先行回で終了済み。地図レッスンの通しは未確認。今回のビルド・UI起動なし。
 - 次回は現行の2星構成で点検を続ける。プチステラはターン4以降の自動終了と征服勲章、タイトルから完了までの単一セッション、物理入力が未確認。
+
+## 2026-11-17 23:32点検回
+
+- 開始23:32:36、記録終了 23:34:38 JST。部分点検完了。HEAD 33e2e792fea51ef6d961ce02ae5c1fe7e2e0da50。開始時差分はDemo点検記録のみ。変更は本記録のみ。前回中断した補助診断を既存の分離NAS出力 tutorial-audit で再ビルド。新規採番なし。
+- dotnet build tests/TutorialThreeUi/TutorialThreeUi.csproj --artifacts-path <上記NAS出力> --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers -p:NuGetAudit=false -p:UseAppHost=false -v:minimal。23:33:18 PID 1488、上限600秒、23:33:50までに終了0、警告・エラー0。同出力 bin/TutorialThreeUi/debug の TutorialThreeUi.dll を ALSOFT_DRIVERS=null で dotnet 実行、--journey 指定。23:33:50 PID 4728、上限300秒、終了0。ログ TutorialThreeUi-current-build-233318.err, TutorialThreeUi-current-build-233318.out, TutorialThreeUi-current-journey-233318.err, TutorialThreeUi-current-journey-233318.out。
+- 第2のプチステラをタイトルから選択、絵本をスキップして開始。展開・回転・面の接続・組立・立体の回転とスライド、モブ女の案内、開戦予約とターン終了ボタンの解放、分離セーブの再開を通常の入力処理と描画付きで確認。
+- 次回は開戦とポケット以降、ターン4からの征服進行を追う。世界征服の自動終了・征服勲章、タイトルから完了までの単一セッション、物理操作は未確認。プリマプラナと準備中5星の入口は先行の実装検証を参照。
+ 
+### 2026-11-17 23:35 JST repair review 
+ 
+- HEAD 33e2e792fea51ef6d961ce02ae5c1fe7e2e0da50. Only the two audit logs differed at initial inspection. The 23:32 map lesson and save/resume passed. No reproduced open defect or game code change. 
+- Next: Petitstella war and pocket, conquest after turn 4, automatic ending and conquest medal. Physical input and a single full playthrough remain unverified.
+
+
+## 2026-11-17 23:51点検回
+
+- JST 23:51:06 to 23:52:06. HEAD f5f8109d. Partial static check only. Initial changes: two audit logs and user notes. No game changes. The previous map-lesson PASS predates the merge.
+- NAS access probe returned no result during this review. Prior NAS-bound dotnet PIDs 25828 and 18852 were still listed. No duplicate build or UI launch. D: free 6502674432 bytes. No new defect reproduced.
+- Resume by checking NAS or reusing isolated local output after confirming the prior processes and artifacts. Recheck the merged title entry and Petitstella war/pocket stages, then resume conquest after turn 4. Physical input, complete playthrough, automatic ending and conquest medal remain unverified.
+
+
+## 2026-11-17 23:55:27 JST repair review
+
+- HEAD f5f8109d. The 23:51 review did not reproduce an open defect. No game change, build, or UI launch in this repair round.
+- Next audit: verify the merged title entry and Petitstella war/pocket stages, then conquest after turn 4. Physical input, full playthrough, automatic ending and conquest medal remain unverified.
+
+
+## 2026-11-18 00:10点検回
+
+- 開始00:10:37、終了 00:12:29 JST。HEAD f5f8109d。差分は両点検記録と利用者メモ。ゲームコード変更なし。前回NAS接続の確認結果が得られていないため、D空き6.50 GB・C空き206 GBを確認し、期限11月18日の分離出力 artifacts/tmp/delete-after-2026-11-18/tutorial-audit-local を使用。
+- dotnet build tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj --artifacts-path <同出力> --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers -p:NuGetAudit=false -p:UseAppHost=false -v:minimal。00:11:31 PID 6336、上限600秒、00:11:55終了0、警告とエラー0。bin/TutorialWarGuidesUi/debugで dotnet TutorialWarGuidesUi.dll、ALSOFT_DRIVERS=null、Seed5と追加出撃・反復条件は前回通り。00:11:55 PID 10880、上限300秒、00:12:08終了0。build-001131 と war-seed5-001155 の両ログ、1920×1080の描画。
+- マージ後の開戦案内、出撃確定、ポケット・移動、地点8に3か所から予約した10体の戦闘参加、ターン4への復帰、学習勲章と手動終了後のタイトル復帰を確認。TUT-0006の再発なし。地図レッスン・タイトルからの入口については回帰診断を別途実行する。
+- 次回はターン4以降を追う。全編の単一セッション、物理入力、世界征服による自動終了と征服勲章は未確認。NAS復旧時はローカル出力の参照とハッシュを確認してから移す。
+
+
+## 2026-11-18 00:14:54 JST repair review
+
+- HEAD f5f8109d. The 00:10 audit build and Seed 5 war/pocket diagnostic exited 0. TUT-0006 did not recur. No reproduced open defect. Only this record changed.
+- Next audit: merged title and map lesson regression, then conquest after turn 4. Full playthrough, physical input, automatic ending and conquest medal remain unverified.
+
+
+## 2026-11-18 00:30点検回
+
+- 開始00:30:37、終了 00:31:43 JST。部分点検完了。HEAD f5f8109d。開始差分は両点検記録と利用者メモ。ゲームコード変更なし、新規採番なし。
+- NAS待ちを避け、期限11月18日の既存分離出力 artifacts/tmp/delete-after-2026-11-18/tutorial-audit-local を再利用。dotnet build tests/TutorialThreeUi/TutorialThreeUi.csproj --artifacts-path <同出力> --source artifacts/nuget-feed --source C:/Users/muzud/.nuget/packages --disable-build-servers -p:NuGetAudit=false -p:UseAppHost=false -v:minimal。00:31:04 PID 32700、上限600秒、00:31:10に終了0、警告・エラー0。bin/TutorialThreeUi/debug で ALSOFT_DRIVERS=null、dotnet TutorialThreeUi.dll --journey。00:31:10 PID 33996、上限300秒、00:31:21に終了0。TutorialThree-build-003104 と TutorialThree-journey-003110 の両ログ、描画画像 tutorial-three-0.png から tutorial-three-8.png。
+- マージ後の入力・描画でタイトルの［遊び方］から第2のプチステラへ入り、地図レッスンの全案内、展開・接続・組立、開戦予約／ターン終了の解放と分離セーブ再開を確認。開戦からターン4までは00:10回参照。
+- 次回はターン4以降の征服と自動終了・征服勲章を追う。単一セッションでの全編通し、物理入力、準備中5星のマージ後実行は未確認。
+
+
+## 2026-11-18 00:35:22 JST repair review
+
+- HEAD f5f8109d. The 00:30 merged title/map-lesson diagnostic exited 0. No reproduced open defect. Only this log changed.
+- Next audit: Petitstella conquest after turn 4, automatic ending and conquest medal; full single-session playthrough, physical input and the five unavailable planets also remain unverified after the merge.
+
+
+## 2026-11-18 00:52 JST tutorial audit
+
+- Start 00:52:07, end 00:53:08. HEAD f5f8109d. Initial changes: two audit logs and user notes. Only this record changed; no new defect. Reused isolated local output artifacts/tmp/delete-after-2026-11-18/tutorial-audit-local due to previous NAS stalls.
+- dotnet build tests/TutorialPlanetMenuUi/TutorialPlanetMenuUi.csproj with the same artifacts path, two local package sources, disabled build servers, UseAppHost=false and NuGetAudit=false. PID 34528 00:52:38 to 00:52:44, limit 600s, exit 0, no warnings/errors. dotnet TutorialPlanetMenuUi.dll with ALSOFT_DRIVERS=null, PID 32744 00:52:44 to 00:52:52, limit 300s, exit 0. Logs PlanetMenu-build-005238 and PlanetMenu-run-005244 out/err. Rendered tutorial-planets-0 through 6.
+- Verified seven planet previews, five unavailable entries, Petitstella launch, Primaplana non-wrapping topology, initial robots and world-conquest ending using input processing. This closes the merged five-unavailable-entry regression gap.
+- Next: extend Petitstella beyond turn 4 using the ordinary UI. Its automatic conquest ending, conquest medal, full single-session playthrough and physical input remain unverified.
+
+
+## 2026-11-18 00:53:54 JST repair review
+
+- HEAD f5f8109d. Completed 00:52 audit passed the merged planet menu and both available entries. No reproduced open defect; only this record changed.
+- Next audit: Petitstella beyond turn 4. Automatic conquest ending, conquest medal, full single-session playthrough and physical input remain unverified.
+
+
+## 2026-11-18 01:08 JST tutorial audit
+
+- Start 01:08:38, end 01:09:46. HEAD f5f8109d. Only audit logs and user notes differed. No game change or new defect. Used existing merged TutorialWarGuidesUi build in artifacts/tmp/delete-after-2026-11-18/tutorial-audit-local. No rebuild.
+- ALSOFT_DRIVERS=null, FOLDERVERSE_TUTORIAL_WAR_SEED=6, EXTRA_TURN=1, EXTRA_WAR=1, PRIORITIZE_CELL=1 and REPEAT_TURN=1 under the FOLDERVERSE_TUTORIAL prefix. dotnet TutorialWarGuidesUi.dll, PID 28536, 01:09:11 to 01:09:24, limit 300s, exit 0. Evidence War-seed6-010911.out/err and 1920x1080 captures.
+- Two sources reserved 7 robots for node 5, participants contained all reserved robots and cancellation was empty. Target ended owned by ruler 3; player 0 was subordinate to 4 and held 0/6 complete cells. Reached turn 4, manual ending, title return and saved lesson medal. Diagnostic PASS verifies UI progression, not successful conquest.
+- Existing repeat option is capped at two extra turns, so the requested continuation beyond turn 4 remains unverified. Next audit needs continuation through normal UI or a diagnostic extended to additional bounded turns. Automatic conquest ending, conquest medal and full single-session playthrough remain unverified.
+
+
+## 2026-11-18 01:14:25 JST repair review
+
+- HEAD f5f8109d. Completed 01:08 audit reached turn 4 and lesson medal with no reproduced open defect. No product code changes; this record only.
+- The Seed 6 diagnostic PASS covers input progression; target ownership and conquest were not achieved. Next audit requires a bounded continuation beyond the current two-extra-turn diagnostic limit. Automatic conquest ending and conquest medal remain unverified.
+
+
+## 2026-11-18 01:32 JST tutorial audit
+
+- Start 01:32:08, end 01:33:34. HEAD f5f8109d. Game code unchanged. Initial differences: audit logs and user notes. Added optional FOLDERVERSE_TUTORIAL_EXTRA_TURNS (0..12) to existing diagnostic so it can continue beyond two extra turns; this file and log changed.
+- Reused artifacts/tmp/delete-after-2026-11-18/tutorial-audit-local. dotnet build tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj --artifacts-path <same> --no-restore --disable-build-servers -p:UseAppHost=false -v:minimal, PID 9352 01:32:58 to 01:33:05, 600s limit, exit 0, warnings/errors 0. dotnet TutorialWarGuidesUi.dll, ALSOFT_DRIVERS=null, WAR_SEED=5, EXTRA_TURNS=4, EXTRA_WAR=1, PRIORITIZE_CELL=1 with FOLDERVERSE_TUTORIAL prefix. PID 6440 01:33:05 to 01:33:17, 300s limit, exit 0. Logs extended-build-013258 and extended-run-013305 out/err, 1920x1080 captures.
+- Normal UI input advanced through turn 6. Node 9 was acquired on turn 5, complete cells increased to 2/6. Next attack at node 4 executed, defender retained ownership. Returned to domestic, then manual ending/title and lesson medal passed. Some selected IDs did not appear in participant list although cancellation list was empty; cause not determined, not assigned a product defect.
+- Next: inspect missing IDs 72 and 88 from node 8 to node 9 and continue conquest beyond turn 6. Automatic ending, conquest medal, full single-session playthrough and physical input remain unverified.
+
+
+## 2026-11-18 01:36:40 JST repair investigation
+
+- HEAD f5f8109d. Investigated the 01:32 missing-participant observation statically. RobotCampaign.Advance validates explicit robot IDs before departure and LastMarches stores only owner/source/target. The diagnostic participant query only scans frames whose TargetNode equals the reservation destination. It does not cover route encounters or all reserves/stores. Product defect remains unconfirmed; no issue ID or product change.
+- Need to reproduce with logs covering all encountered targets, transit/reserve robots and destination/source stores for IDs 72 and 88. Existing source/target march count alone cannot establish individual arrival. Continue from the existing extended Seed 5 diagnostic. Only this record changed in this investigation.
+
+
+## 2026-11-18 01:48 JST tutorial audit
+
+- Start 01:48:38, end 01:49:46. HEAD f5f8109d. Only existing diagnostic and this record changed. Added per-reservation trace across all battle target frames and every node store. Game code unchanged.
+- Reused local isolated tutorial-audit-local. dotnet build tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj --artifacts-path <same> --no-restore --disable-build-servers -p:UseAppHost=false -v:minimal; PID 34600 01:49:13 to 01:49:19, limit 600s, exit 0. dotnet TutorialWarGuidesUi.dll with ALSOFT_DRIVERS=null, WAR_SEED=5, EXTRA_TURNS=4, EXTRA_WAR=1, PRIORITIZE_CELL=1 (FOLDERVERSE_TUTORIAL prefix). PID 31680 01:49:19 to 01:49:32, limit 300s, exit 0. Evidence trace-build-014913 and trace-run-014919 out/err, 1920x1080 rendering.
+- IDs 72 and 88 were present in node 8 before their node 9 reservation and in destination store 9 afterward, while absent from the node-9 battle frame list. Their absence from that list does not indicate lost robots. No product bug reproduced; no issue ID. Reached turn 6 and manual ending/lesson medal again.
+- Next: conquest after turn 6 using ordinary UI. Automatic ending and conquest medal, full single-session playthrough and physical input remain unverified.
+
+
+## 2026-11-18 01:57:21 JST repair review
+
+- HEAD f5f8109d. Completed 01:48 audit located reserved IDs 72 and 88 in destination store 9. Their absence from battle frames is insufficient evidence of a product defect. No reproduced open issue or game-code repair. Only this record changed.
+- Next audit: conquest after turn 6, automatic ending and conquest medal. Full single-session playthrough and physical input remain unverified.
+
+
+## 2026-11-18 02:10 JST tutorial audit
+
+- Start 02:10:39, end 02:11:44. HEAD f5f8109d. Existing working differences: audit logs, user notes and extended diagnostic. Only this log changed. No product code change.
+- Used existing isolated local build. dotnet TutorialWarGuidesUi.dll, ALSOFT_DRIVERS=null; FOLDERVERSE_TUTORIAL_WAR_SEED=5, EXTRA_TURNS=8, EXTRA_WAR=1, PRIORITIZE_CELL=1 with same prefix. PID 26184 02:10:58 to 02:11:26, limit 300s, exit 3762504530 (exception), process exited. Logs continuation8-021058.out/err.
+- Last completed progression: Additional turn: 2->3, screen=WorldStatus, phase=Domestic, cells=1/6; Additional turn: 3->4, screen=WorldStatus, phase=Domestic, cells=1/6; Additional turn: 4->5, screen=WorldStatus, phase=Domestic, cells=2/6; Additional turn: 5->6, screen=WorldStatus, phase=Domestic, cells=2/6; Additional turn: 6->7, screen=WorldStatus, phase=Domestic, cells=0/6 . Later node-8 reservation selected 8 robots across 2 sources. The ordinary disposition click failed the diagnostic pending-count assertion. Expected pending count to decrease; actual assertion failed. Product input failure versus unsettled disposition UI is not yet distinguished. Issue ID deferred pending reproduction and state capture.
+- Next: capture disposition button bounds, pending list, active modal and input state before/after the failed click. Continue only after this condition is understood. Automatic conquest ending and medal, full playthrough and physical input remain unverified. Partial audit interrupted.
+
+
+## 2026-11-18 02:16:34 JST repair investigation
+
+- HEAD f5f8109d. Reproduced Seed 5 with EXTRA_TURNS=8. The failed disposition assertion was caused by a human-defeat mercy modal opened during DrawDispositionUi. Existing diagnostic clicked the underlying RemoveBattery rectangle. Added modal detection and ordinary MercyConfirm click to diagnostic only; product unchanged.
+- Existing isolated local output. Build PID 7536 02:15:36 to 02:15:42, 600s limit, exit 0, warnings/errors 0. Diagnostic PID 3968 02:15:42 to 02:16:07, 300s limit, exit 3762504530 and confirmed exited. Logs mercy-build-021536 and mercy-run-021542 out/err.
+- The mercy input was detected (input=True, result=False, pending=1). It advanced to turn 8, but a Disposition result remained and the later map-return assertion failed. Thus diagnostic handling remains incomplete, no completed repair claim and no confirmed product input defect.
+- Next: handle MercyResult when pending count has already reached zero, then verify map return and later turns using ordinary UI. Automatic conquest ending/medal and full playthrough remain unverified.
+
+
+## 2026-11-18 02:28 JST tutorial audit
+
+- Start 02:28:09, end 02:29:16. HEAD f5f8109d. Game unchanged. Diagnostic now clicks MercyConfirm for an outstanding result even after Pending becomes empty. This resolves the diagnostic map-return assertion caused by leaving the result modal open.
+- Existing local isolated output; same build command and Seed5, EXTRA_TURNS=8, EXTRA_WAR=1, PRIORITIZE_CELL=1. Build PID 10300 02:28:43 to 02:28:48, limit 600s, exit 0 with no warnings/errors. Diagnostic PID 32232 02:28:48 to 02:29:02, limit 300s, exit 0. Evidence mercy-result-build-022843 and mercy-result-run-022848 out/err; 1920x1080 captures.
+- Ordinary mercy submission/result click returned to the map and continued through turn 10. Lesson medal and manual ending/title return passed. Complete cells at turn 10 were 0/6, so this confirms input progression, not world conquest. No product defect or issue ID.
+- Next: inspect why repeated attacks do not finish conquest and continue beyond turn 10 with suitable normal-UI decisions. Automatic conquest ending/medal, full single-session playthrough and physical input remain unverified.
+
+
+## 2026-11-18 02:36:23 JST repair review
+
+- HEAD f5f8109d. Completed 02:28 diagnostic passed after normal mercy result confirmation; progressed to turn 10 and manual title return. No reproduced product defect. No product change; this log only.
+- Diagnostic fixes remain uncommitted with prior user edits preserved. Next audit: investigate conquest decision path after turn 10. Automatic conquest ending/medal, physical input and full playthrough remain unverified.
+
+
+## 2026-11-18 02:49 JST tutorial audit
+
+- Start 02:49:09, end 02:49:56. HEAD f5f8109d. Initial differences: audit logs, user notes and existing diagnostic improvements. No product/diagnostic change this round; this log only.
+- Reused isolated local TutorialWarGuidesUi build. dotnet TutorialWarGuidesUi.dll; ALSOFT_DRIVERS=null; FOLDERVERSE_TUTORIAL_WAR_SEED=5, EXTRA_TURNS=12, EXTRA_WAR=1, PRIORITIZE_CELL=1 with same prefix. PID 16920 02:49:26 to 02:49:42, limit 300s, exit 0. Logs continuation12-024926.out/err and 1920x1080 captures.
+- Reached turn 14; mercy/result handling remained functional. Repeated node-8 attacks executed with the selected IDs present in battle frames, but defending ruler 3 retained node 8. Complete cells remained 0/6. Manual ending/title and lesson medal passed. No input defect reproduced.
+- Current bounded diagnostic repeats a losing attack and reaches its 12-extra-turn ceiling. Next audit needs a different normal-UI attack decision or recruitment choice to pursue conquest; repeating this same diagnostic does not close that gap. Automatic conquest ending/medal, full playthrough and physical input remain unverified.
+
+
+## 2026-11-18 02:53:58 JST repair review
+
+- HEAD f5f8109d. Completed 02:49 audit reached turn 14 without a reproduced input defect. Repeated failed conquest is currently a diagnostic decision-path limitation, not an established product bug. No product change; this log only.
+- Next audit must choose a different valid normal-UI target or postwar recruitment outcome instead of repeating the same losing attack. Automatic conquest ending/medal, complete single-session playthrough and physical input remain unverified.
+
+
+## 2026-11-18 03:11 JST tutorial audit
+
+- Start 03:11:40, end 03:13:24. HEAD f5f8109d. Game unchanged. Added optional WEAK_TARGET=1 to diagnostic: order valid candidate targets by complete opposing robot count. Prior user changes retained.
+- Reused local isolated output. Build PID 22904 03:12:33 to 03:12:41, limit 600s, exit 0, warnings/errors 0. Diagnostic PID 34408 03:12:41 to 03:13:08, limit 300s, exception exit 3762504530; process exited. Seed5, EXTRA_TURNS=12, EXTRA_WAR=1, PRIORITIZE_CELL=1, WEAK_TARGET=1 with FOLDERVERSE_TUTORIAL prefix; ALSOFT_DRIVERS=null. Logs weak-target-build-031233 and weak-target-run-031241 out/err.
+- Different attack selection gained node 10 on turn 13. Player 0 was subordinate to ruler 1, complete cells 0/6. On next attempt two highlighted candidates (7 and 0) existed but diagnostic failed to find a visible clickable target. Candidate projection/camera versus actual input problem remains unconfirmed, no issue ID. Partial audit interrupted.
+- Next: capture candidate projection and map bounds for nodes 7 and 0, use ordinary camera controls to bring a valid target on screen. Then continue conquest with postwar choices appropriate to the player state. Automatic ending/medal, full playthrough and physical input remain unverified.
+
+
+## 2026-11-18 03:14:55 JST repair investigation
+
+- HEAD f5f8109d. Reviewed the completed 03:11 diagnostic failure. A visible target is assumed after a single globe/net switch, while projection is rejected outside MapViewBounds. This does not prove a product click failure. No game-code repair or issue ID this round.
+- Next reproduce nodes 7 and 0 with projection/bounds logs, then use normal map pan/zoom or target fitting before selecting. Prior game state had player 0 subordinate to ruler 1, so conquest eligibility must also be checked separately. Automatic conquest ending and medal remain unverified. Only this log changed.
+
+
+## 2026-11-18 03:29 JST tutorial audit
+
+- Start 03:29:40, end 03:31:04. HEAD f5f8109d. Added optional projection log to existing diagnostic; product unchanged. Existing local isolated output reused.
+- Build PID 29760 03:30:13 to 03:30:18, limit 600s, exit 0, warnings/errors 0. Diagnostic PID 33656 03:30:18 to 03:30:45, limit 300s, exception exit 3762504530; process exited. Same Seed5/12 extra turns/weak-target condition plus FOLDERVERSE_TUTORIAL_PROJECTION_LOG=1. Logs projection-build-033012 and projection-run-033018 out/err.
+- Reproduced turn-13 failure with candidates 7 and 0. No projection line appeared after that candidate list, because OperationPosition returned false before the point/bounds log. Thus the previous suggestion that only a point outside MapViewBounds caused failure is unproven. Need to log the false projection branch and view mode. No product input bug or issue ID confirmed.
+- Next: capture visibility/projection failure for both candidates, rotate or refit using ordinary controls, then retry. Conquest ending/medal, full playthrough and physical input remain unverified. Partial audit interrupted.
+
+
+## 2026-11-18 03:33:54 JST repair investigation
+
+- HEAD f5f8109d. Reviewed 03:29 completed failure. No product defect established: the diagnostic never reached click/hit checks for either remaining candidate. No game change, build or repeated run this round; this record only.
+- Next audit must instrument OperationPosition false return with view mode and candidate visibility, then attempt normal camera controls. Do not treat diagnostic inability to project a target as a confirmed click defect. Conquest ending/medal and full playthrough remain unverified.
+
+
+## 2026-11-18 04:10:20.338929 JST audit
+
+- HEAD f5f8109d. Game unchanged; diagnostic rejected-position logging added. Existing isolated output reused. Seed5/12 extra turns/weak target.
+- build 2026-11-18 04:09:45.704327 to 2026-11-18 04:09:51.647154, PID 33972, limit 600, exit 0, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\reject-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\reject-build.err
+- run 2026-11-18 04:09:51.647696 to 2026-11-18 04:10:20.338929, PID 2408, limit 300, exit 3762504530, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\reject-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\reject-run.err
+- Partial audit; full title-to-conquest playthrough, ending/medal and physical input unverified. Next inspect rejected projection and use normal camera controls.
+
+
+## 2026-11-18 04:16:07.274621 JST repair review
+
+- HEAD f5f8109d. Reviewed completed 04:10 audit; no product repair justified. At turn13 globe=False, node7 projects to (1868,-60.5), node0 to (2524.25,508.25), outside map bounds (1000,142,880,820). Diagnostic stopped before clicking; not evidence of input failure. No new TUT ID.
+- No game change or repeated test. Existing diagnostic logs reject-run.out/err preserve evidence. Next audit: ordinary pan/zoom to display candidate and continue. Conquest completion/medal, full playthrough and physical input remain unverified. Review completed 2026-11-18 04:16:07.274621 JST.
+
+
+## 2026-11-18 04:30:29.038921 JST tutorial audit
+
+- HEAD f5f8109d. Static partial audit completed; game unchanged. Read initial instructions, current differences and previous audit.
+- Traced ordinary map camera input: HandleInput permits wheel zoom inside MapViewBounds through ZoomSelectedPoint; DragStatusMap uses right-button motion and MapDragSlide chooses pan versus rotation. Flat-map wheel calls CubeNet.ZoomAt, so the next diagnostic can use normal mouse wheel events rather than changing camera fields. Existing candidate failure occurs before any click.
+- No UI run or new issue ID. Next: extend existing diagnostic to send bounded wheel zoom-out at map center when no candidate is visible, then rerun Seed5 and record target/hit after zoom. Full title-to-conquest, medal/ending, remaining planet entrances and physical input remain unverified. Start/end 2026-11-18 04:30:29.038921 JST.
+
+
+## 2026-11-18 04:52:48.394562 JST tutorial audit
+
+- HEAD f5f8109d. Game unchanged; diagnostic adds at most eight ordinary wheel zoom-out events when flat-map targets are outside view. Persistent wheel state avoids a reverse event on next click. Seed5/12 extra turns/weak target, existing isolated output.
+- build 2026-11-18 04:52:27.660091 to 2026-11-18 04:52:34.519664 PID 8736 limit 600s exit 0; D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\wheel-build.out; D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\wheel-build.err
+- run 2026-11-18 04:52:34.520201 to 2026-11-18 04:52:48.394562 PID 8700 limit 300s exit 0; D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\wheel-run.out; D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\wheel-run.err
+- Partial audit completed. Conquest ending/medal, full title-to-finish playthrough, other entrances and physical input remain unverified. Inspect wheel-run logs for latest continuation before next run.
+
+
+## 2026-11-18 04:56:07.252021 JST repair review
+
+- HEAD f5f8109d. Completed 04:52 audit passed (exit0). Three normal wheel zoom-out events brought node7 into map at (1628,197); normal click, three robot cards, reservation and battle succeeded, node7 became player0-owned, turn14 reached. Thus prior projection assertion was a diagnostic camera limitation, no product repair or new TUT ID.
+- Game unchanged; this record only. Complete cells still0/6 because player0 remains subordinate to ruler1. Next audit must inspect normal independence/conquest decisions before extending the bounded 12-turn diagnostic. Conquest ending/medal and full title-to-finish playthrough remain unverified. Review completed 2026-11-18 04:56:07.252021 JST.
+
+
+## 2026-11-18 05:12:20.809520 JST tutorial audit
+
+- Start/end 2026-11-18 05:12:20.809520 JST. HEAD f5f8109d. Static partial audit completed; game unchanged. Initial audit/user-note/diagnostic differences retained.
+- Confirmed ConquerorRelations.CanWinConquest requires Powered and Superiors[ruler]<0; Calculate cell result is explicitly zero for a subordinate. This explains turn14 player0 subordinate to1 showing0/6 despite gaining node7. No input bug established. Search for Independence-named game method found none; no claim that an independence UI exists.
+- Next audit: inspect mercy submission and defeat choices leading to subordination, select appropriate normal-UI outcome or a fresh bounded run that avoids defeat, then pursue conquest. Full title-to-finish, conquest medal/ending, other entrances and physical input remain unverified. No UI run/new issue ID this round.
+
+
+## 2026-11-18 05:31:25.995002 JST tutorial audit
+
+- Start 2026-11-18 05:31:14.284439, end 2026-11-18 05:31:25.995002. HEAD f5f8109d. Game unchanged; existing isolated wheel-enabled diagnostic reused without build. Seed6/EXTRA_TURNS12/EXTRA_WAR1/PRIORITIZE_CELL1/WEAK_TARGET1; ALSOFT_DRIVERS=null. dotnet existing bin/TutorialWarGuidesUi/debug/TutorialWarGuidesUi.dll. PID 17976, limit300s, exit 0, TIMEOUT=False. Logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\seed6-extended.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\seed6-extended.err.
+- Mercy UI static check: a successful negotiation explicitly returns independent; when no mercy is possible CPU choice may recruit automatically. Do not label any submission as the sole cause of subordination without tracing the captive. Partial audit completed. Full title-to-conquest, ending/medal, other entrances and physical input remain unverified. Next inspect this Seed6 continuation before choosing further normal UI actions.
+
+
+## 2026-11-18 05:50:07.045369 JST tutorial audit
+
+- Start 2026-11-18 05:49:57.755938, end 2026-11-18 05:50:07.045369. HEAD f5f8109d. Game unchanged; reused existing merged TutorialPlanetMenuUi build, no build/new Content tree. dotnet bin/TutorialPlanetMenuUi/debug/TutorialPlanetMenuUi.dll in tutorial-audit-local; ALSOFT_DRIVERS=null. PID 11496, limit300s, exit 0, TIMEOUT=False. Logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\planet-menu-followup.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\planet-menu-followup.err.
+- Scope: seven rendered previews, five disabled entrances, Petitstella launch and starting reinforcements, Primaplana topology/attack conquest, Escape to start menu. Helpers call title/menu handlers directly; not a single physical title-to-Petitstella-conquest playthrough. Petitstella conquest ending/medal remains unverified. Next focus on avoiding player defeat/subordination in ordinary conquest decisions, not repeat this entrance regression. Partial audit completed.
+
+
+## 2026-11-18 06:09:48.094973 JST tutorial audit
+
+- Start/end 2026-11-18 06:09:48.094973 JST. HEAD f5f8109d. Static partial audit complete, game unchanged. Current audit/user-note/diagnostic differences preserved.
+- Diagnostic initially chooses Recruit but additional turns always choose RemoveBattery at the ordinary disposition button. This is a valid input test but not a consistent conquest strategy: it omits recruiting later captured rulers and their factions. Also selects all visible fighters without defending home. No product defect established.
+- Next audit: make later postwar choice optionally Recruit using the same actual DispositionButton rectangle, preserve default regression behavior, then run bounded Seed5 to see whether conquest eligibility is retained. Do not infer success from input PASS. Full title-to-conquest, ending/medal and physical input remain unverified. No UI run/new ID this round.
+
+
+## 2026-11-18 06:31:51.312326 JST tutorial audit
+
+- HEAD f5f8109d. Game unchanged. Diagnostic optionally selects ordinary Recruit disposition when FOLDERVERSE_TUTORIAL_RECRUIT=1; default RemoveBattery preserved. Seed5/12 extra turns/weak-target, existing isolated output reused.
+- build 2026-11-18 06:31:21.643089 to 2026-11-18 06:31:29.133422 PID27300 limit600s exit0 TIMEOUT=False; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\recruit-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\recruit-build.err
+- run 2026-11-18 06:31:29.133967 to 2026-11-18 06:31:51.311586 PID11480 limit300s exit3762504530 TIMEOUT=False; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\recruit-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\recruit-run.err
+- Commands: dotnet build tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj --artifacts-path existing tutorial-audit-local --no-restore --disable-build-servers -p:UseAppHost=false -v:minimal; dotnet corresponding DLL with ALSOFT_DRIVERS=null. Partial audit; conquest ending/medal and full title-to-finish remain unverified until actual outcome inspected.
+
+- 2026-11-18 06:32:03.242301 JST outcome: Recruit-enabled run stopped at disposition pending-count assertion after node8 reservation (7 robots); player0 was still independent, superior array -1,-1,-1,-1,-1,0. Product input failure versus an unavailable Recruit choice is not distinguished. No TUT ID yet. Next inspect captive ruler/victor, Relations.Accepts and rendered choice-enabled state before the click, then choose a valid normal outcome. Process exited; no TIMEOUT.
+
+
+## 2026-11-18 06:36:20.615028 JST repair investigation
+
+- HEAD f5f8109d. Completed 06:31 audit failure reviewed. Game1.Disposition labels Recruit as refused when Relations.Accepts is false; Choose returning false intentionally keeps Pending unchanged. Current diagnostic unconditionally clicks Recruit when option enabled and assumes Pending decreases. Product failure is not established. No game-code repair/new TUT ID.
+- Next diagnostic should log Pending[0] ruler/victor and Accepts after drawing; use Recruit only when accepted, otherwise choose a valid displayed outcome and preserve default test path. Reproduce before treating refusal as a bug. Existing process exited, no TIMEOUT. Conquest ending/medal and full playthrough remain unverified. Static review completed 2026-11-18 06:36:20.615028 JST; record only.
+
+
+## 2026-11-18 06:50:25.164834 JST tutorial audit
+
+- HEAD f5f8109d. Game unchanged. Diagnostic Recruit option checks Relations.Accepts before using the actual button; refusal falls back to ordinary RemoveBattery. Logs ruler/victor/acceptance/choice. Existing isolated output; Seed5/12 extra turns/weak-target/RECRUIT1; ALSOFT_DRIVERS=null.
+- build 2026-11-18 06:49:52.340129 to 2026-11-18 06:49:58.155293 PID24480 limit600s exit0 TIMEOUT=False; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\valid-recruit-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\valid-recruit-build.err
+- run 2026-11-18 06:49:58.155993 to 2026-11-18 06:50:25.164055 PID6972 limit300s exit3762504530 TIMEOUT=False; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\valid-recruit-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\valid-recruit-run.err
+- Commands same existing TutorialWarGuidesUi build/run as06:31. Partial audit, full title-to-conquest and conquest ending/medal remain unverified pending actual outcome. Next inspect valid-recruit-run log before extending.
+
+- 2026-11-18 06:50:40.066276 JST outcome: valid Recruit choices progressed to turn10, independent player0, cells3/6 (superiors -1,0,-1,-1,-1,0). Next candidate12 then failed selectedMoveNode assertion. This is a new unclassified diagnostic observation; need before/after selected node, hit, bounds, modal/slide/cut-in and draw timing before assigning TUT ID. No timeout; process exited. Prior unconditional Recruit failure is no longer the blocker. Resume at turn10 target12 click with these logs; full conquest still unverified.
+
+
+## 2026-11-18 06:55:44.288242 JST repair review
+
+- HEAD f5f8109d. Reviewed completed06:50 audit. Valid Recruit strategy reached independent3/6 at turn10, then target12 selection assertion failed. Current evidence lacks actual selected node, active modal and hit immediately after HandleInput; cannot distinguish normal state transition, timing or product failure. No product repair/new TUT ID this round.
+- Next audit instrument before/after target click with candidate point, actual selection, war/movement flags, tutorial guide/chrome, camera animation and hit. Reuse valid-recruit condition and existing isolated output, verify visible state before deciding a fix. Full conquest ending/medal and full playthrough remain unverified. Static review completed 2026-11-18 06:55:44.288242 JST; record only.
+
+
+## 2026-11-18 07:16:52 JST repair review
+
+- HEAD f5f8109d. Reviewed completed 06:50 audit and 06:55 review; no newer completed reproduction or confirmed unresolved product defect is recorded. Target12 selection remains unclassified because actual post-input selection, modal state and hit are missing. No game-code change, rebuild or duplicate diagnostic run. Existing user and diagnostic differences preserved.
+- Review complete; repair withheld pending evidence, not treated as a passing UI result. Next audit: instrument before/after target12 click and reproduce Seed5 valid-recruit path in existing isolated output. Full title-to-conquest, ending/medal and physical input remain unverified. Start/end 2026-11-18 07:16:52 JST.
+
+- Selection diagnostic build 2026-11-18 07:29:30.544894 to 2026-11-18 07:29:36.764863 JST PID29196 limit600s exit0 TIMEOUT=False; HEAD f5f8109d; command ['dotnet', 'build', 'tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--no-restore', '--disable-build-servers', '-p:UseAppHost=false', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\selection-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\selection-build.err.
+
+- Selection diagnostic run 2026-11-18 07:29:36.765418 to 2026-11-18 07:30:01.192610 JST PID1072 limit300s exit3762504530 TIMEOUT=False; HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\TutorialWarGuidesUi\\debug\\TutorialWarGuidesUi.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\selection-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\selection-run.err.
+
+
+## 2026-11-18 07:30:38.341465 JST tutorial audit outcome
+
+- Start07:28, end2026-11-18 07:30:38.341465 JST; HEAD f5f8109d. Product unchanged; only existing TutorialWarGuidesUi diagnostic gains before/after selection logs. Existing isolated output reused,1920x1080. Build/run results and exact commands recorded above; both processes exited, no TIMEOUT.
+- Seed5 valid Recruit/12 extra turns reproduced target12 failure at turn10, independent3/6. Before and after normal HandleInput click at(1730,361): selected=-1, war/movement true, globe false, guide false, chrome0, domestic1, closing/persuasion false, picker-1, map(1000,142,880,820), net animation false. Previous target11 at(1730,583) selected successfully. Evidence selection-run.out/err in existing tutorial-audit-local.
+- Modal/slide hypotheses above are not supported by this snapshot. Still need ordinary versus candidate-filtered hit immediately before each release/press, canvas transformation, overlapping input controls and screen/cut-in state. No TUT ID yet: diagnostic assertion alone does not establish product failure. Next add these targeted logs at target12 and compare HandleInput dispatch; preserve the same seed.
+- Partial audit interrupted at target12. Full physical START-to-conquest playthrough, ending/medal and title return remain unverified; earlier entrance regression is separate. No game/save changes or publication.
+
+
+## 2026-11-18 07:34:50.032771 JST repair investigation
+
+- HEAD f5f8109d; reviewed completed07:30 reproduction and current differences. No game change or duplicate UI run. MovementClick at Game1.Movement.cs:68-71 uses MapViewBounds and candidate-filtered HitNode, matching FindDestination initial check; a discrepancy during Send/HandleInput remains to be localized. SelectContinuation precedes map selection, so overlapping continuation controls must also be checked. No confirmed repair target or new TUT ID.
+- Next audit capture actual hit at each injected input, CanvasBounds transformed point and SelectContinuation hit/active screen before target12. Existing selection-run evidence retained. Full playthrough/conquest ending/medal still unverified. Static investigation completed; start07:34, end2026-11-18 07:34:50.032771 JST.
+
+- Overlap diagnostic build 2026-11-18 07:52:26.387992 to 2026-11-18 07:52:32.572075 JST PID26256 limit600s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'build', 'tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--no-restore', '--disable-build-servers', '-p:UseAppHost=false', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\overlap-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\overlap-build.err.
+
+- Overlap diagnostic run 2026-11-18 07:52:32.572544 to 2026-11-18 07:52:58.321412 JST PID33596 limit300s exit3762504530 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\TutorialWarGuidesUi\\debug\\TutorialWarGuidesUi.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\overlap-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\overlap-run.err.
+
+
+## 2026-11-18 07:53:25.667120 JST tutorial audit outcome
+
+- Start07:51, end2026-11-18 07:53:25.667138 JST, HEAD f5f8109d,1920x1080. Product unchanged; diagnostic only adds candidate hit, canvas/screen/withdrawal and continuation-overlap logs. Build/run commands, PID, limits and results above; both exited, no TIMEOUT. Seed5 valid Recruit condition reused.
+- Reproduced turn10 target12: normal candidate-filtered HitNode=12 before and after, canvas exactly(0,0,1920,1080), screen WorldStatus, withdrawal=-1, no continuation overlap logged, selected stays-1. This rules out canvas scaling and SelectContinuation overlap in this snapshot. Evidence overlap-run.out/err in existing local output. No new product issue ID until input dispatch/SelectMoveNode eligibility is traced.
+- Next inspect SelectMoveNode rejection criteria for allied source/available fighters, plus HandleInput early returns at point(1730,361). Do not repeat prior modal/canvas hypotheses. Partial audit interrupted; full physical title-to-conquest, completion/medal/title return remain unverified.
+
+
+## 2026-11-18 07:57:56.323113 JST repair investigation
+
+- HEAD f5f8109d; reviewed completed07:53 point12 reproduction and differences. No game repair justified yet. SelectMoveNode has only MovementTargets membership guard, then assigns selection; no allied-source or fighter rejection exists there. Candidate HitNode=12 means that guard should pass if input reaches it unchanged.
+- Located earlier ordinary dispatch in Game1.cs:323 DomesticViewClick, then flat-map TransportOverviewClick, RouteLayerClick, BatteryClick before MovementClick at357. Next audit log corresponding UI rectangles/state at(1730,361), pointer and click edge, and inspect these methods for input consumption. Do not call mutating click handlers just to observe them. No new TUT ID or repeated run; diagnostic evidence retained.
+- Static investigation complete start07:57 end2026-11-18 07:57:56.323113 JST. Full physical title-to-conquest/medal/title return remain unverified. Only this record changed.
+
+- Dispatch diagnostic build 2026-11-18 08:12:43.652844 to 2026-11-18 08:12:50.808903 JST PID7448 limit600s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'build', 'tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--no-restore', '--disable-build-servers', '-p:UseAppHost=false', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\dispatch-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\dispatch-build.err.
+
+- Dispatch diagnostic run 2026-11-18 08:12:50.809350 to 2026-11-18 08:13:15.111976 JST PID29396 limit300s exit3762504530 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\TutorialWarGuidesUi\\debug\\TutorialWarGuidesUi.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\dispatch-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\dispatch-run.err.
+
+
+## 2026-11-18 08:13:45.883131 JST tutorial audit outcome
+
+- Start08:11 end2026-11-18 08:13:45.883131 JST, HEAD f5f8109d,1920x1080; game unchanged. Existing diagnostic/output reused; added dispatch state only. Commands/PIDs/finite limits/results above; no TIMEOUT, processes exited. Seed5 valid Recruit path reproduced target12 failure at turn10 independent3/6.
+- Pointer after click exactly(1730,361), previousMouse released, transportOverview/nodeTransport/mapLayerList/trafficLayerList false both before/after, inputOutcome empty, normal hit12. Thus a stale layer menu or transport panel is not supported as cause. BatteryClick explicitly bypasses when movementOpen. Evidence dispatch-run.out/err.
+- Next inspect DomesticViewClick subhandlers (FactionPicker, NodeCheck, RegionInspector and handle rectangles), FactoryViewportInput and earlier HandleInput gates/pressed event. Product defect still unclassified; no TUT ID. Full physical START-to-conquest, ending/medal/title return remain unverified. Partial audit interrupted at target12; no save/product changes.
+
+
+## 2026-11-18 08:15:22.281207 JST repair investigation
+
+- HEAD f5f8109d; reviewed completed08:13 audit, initial instructions and differences. No game change/new UI run. DomesticViewClick starts with TutorialPrimaryActionClick, which consumes a hit on any primary action disallowed by tutorial or phase. It then checks NodeCheck, folder/read-only regions, policy, close, region inspector and handle. Need rendered bounds/flags before assigning cause.
+- FactoryViewportInput needs open factory and either wheel delta or right press to consume; current diagnostic uses left click and wheel0, so it is a lower priority hypothesis. Next audit capture TutorialPrimaryActionClick via read-only predicate, all PrimaryActionBounds and allowed flags, InspectorHandle/NodeCheck regions, plus press-edge state. Do not alter UI specifications to satisfy diagnostic.
+- Investigation completed start08:14 end2026-11-18 08:15:22.281207 JST. Product defect remains unclassified; full physical playthrough/ending/medal still unverified. Existing dispatch-run evidence preserved.
+
+- Primary-gate diagnostic build 2026-11-18 08:33:04.858501 to 2026-11-18 08:33:11.662044 JST PID15412 limit600s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'build', 'tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--no-restore', '--disable-build-servers', '-p:UseAppHost=false', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\primary-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\primary-build.err.
+
+- Primary-gate diagnostic run 2026-11-18 08:33:11.662554 to 2026-11-18 08:33:38.296115 JST PID14212 limit300s exit3762504530 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\TutorialWarGuidesUi\\debug\\TutorialWarGuidesUi.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\primary-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\primary-run.err.
+
+
+## 2026-11-18 08:34:01.243499 JST tutorial audit outcome
+
+- Start08:32 end2026-11-18 08:34:01.243499 JST; HEAD f5f8109d,1920x1080. Game unchanged; existing diagnostic logs read-only primary predicate and bounds. Build/run results/PIDs/limits above; exited without TIMEOUT. Same Seed5 valid Recruit path reached turn10 independent3/6 then target12 assertion.
+- Primary gate blocked=False before/after, no primary overlap among tested actions0..7; InspectorHandle(904,450,64,170) does not contain point(1730,361). Normal hit remains12, selected remains-1. Evidence primary-run.out/err. Primary gate and handle hypotheses excluded for this snapshot.
+- Next inspect HandleInput before status branch and actual pressed-edge processing, then DomesticViewClick remaining policy/read-only/region predicates. Avoid repeating eliminated geometry/menu checks. No new TUT ID until product failure distinguished from diagnostic state. Partial audit interrupted; full physical START-to-conquest, ending/medal/title return remain unverified.
+
+
+## 2026-11-18 08:38:05.060274 JST repair investigation
+
+- HEAD f5f8109d; initial instructions/current differences/latest completed audit reviewed. No game change or UI rerun. Earlier HandleInput gates found at Game1.cs:229-244: orientation robot/rotation/controls, map transition/spin, faction picker, reservation directory and MapOverlayClick all precede status MovementClick. Prior investigation focused too late in dispatch.
+- OrientationControlClick consumes the entire OrientationToyArea even away from axis buttons. MapViewBounds.Contains and HitNode=12 do not exclude overlay input consumption. Next audit record OrientationToyArea, axis/reset rectangles and visibility at target12, plus faction/reservation flags and press-edge state. If overlay overlap is confirmed, first retry normal pan/zoom to an unobstructed location; do not classify an overlay click as broken node selection.
+- Static investigation complete start08:37 end2026-11-18 08:38:05.060274 JST; no confirmed TUT issue or repair. Full physical title-to-conquest/ending/medal remain unverified.
+
+- Orientation diagnostic build 2026-11-18 08:51:24.005118 to 2026-11-18 08:51:30.431050 JST PID22512 limit600s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'build', 'tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--no-restore', '--disable-build-servers', '-p:UseAppHost=false', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\orientation-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\orientation-build.err.
+
+- Orientation diagnostic run 2026-11-18 08:51:30.431543 to 2026-11-18 08:51:58.182729 JST PID27116 limit300s exit3762504530 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\TutorialWarGuidesUi\\debug\\TutorialWarGuidesUi.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\orientation-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\orientation-run.err.
+
+
+## 2026-11-18 08:52:26.654719 JST tutorial audit outcome
+
+- Start08:50 end2026-11-18 08:52:26.654719 JST HEAD f5f8109d,1920x1080; game unchanged. Existing diagnostic adds read-only orientation bounds, build/run results above; processes exited, no TIMEOUT. Same Seed5 valid Recruit path.
+- Cause localized: target12 projected point(1730,361) lies inside visible OrientationToyArea(1585,272,230,230). OrientationControlClick intentionally consumes the whole toy rectangle before MovementClick; no rotation/map transition active. Normal map hit12 underneath does not make this an unobstructed node click. Evidence orientation-run.out/err. Prior selection assertions are diagnostic overlay avoidance limitations, not confirmed product input failures. No TUT ID.
+- Next update diagnostic candidate picking to exclude visible orientation overlay/reset/axis hit areas, or use ordinary wheel/pan to move target12 clear, then retry and continue conquest. Keep product UI behavior. Partial audit interrupted; full physical START-to-conquest and ending/medal/title return unverified.
+
+
+## 2026-11-18 08:56:16.245712 JST repair review
+
+- HEAD f5f8109d. Completed08:52 audit established target12 diagnostic point is inside visible orientation toy, consumed intentionally before map selection. No confirmed product defect or game-code repair target; no repeat build/run. Previous selection assertion is a diagnostic limitation, not a verified tutorial progression defect.
+- Next audit correct candidate selection to avoid rendered orientation controls and continue using normal camera/input. Keep full title-to-conquest/medal/return unverified until observed. Review completed start08:55 end2026-11-18 08:56:16.245712 JST; only this record changed.
+
+- Uncovered diagnostic build 2026-11-18 09:11:44.416532 to 2026-11-18 09:11:51.536281 JST PID27164 limit600s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'build', 'tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--no-restore', '--disable-build-servers', '-p:UseAppHost=false', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\uncovered-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\uncovered-build.err.
+
+- Uncovered diagnostic run 2026-11-18 09:11:51.536729 to 2026-11-18 09:12:20.389982 JST PID23204 limit300s exit3762504530 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\TutorialWarGuidesUi\\debug\\TutorialWarGuidesUi.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\uncovered-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\uncovered-run.err.
+
+
+## 2026-11-18 09:12:56.133658 JST tutorial audit outcome
+
+- Start09:10 end2026-11-18 09:12:56.133658 JST HEAD f5f8109d,1920x1080; game unchanged. Diagnostic candidate finder now avoids rendered orientation toy/reset/axis rectangles using actual UI bounds. Existing isolated build/runtime reused; finite limits/results above, no TIMEOUT. Seed5 valid Recruit12-extra-turn path.
+- Progress: prior target12 overlay assertion no longer blocks; normal click/reservation/battle path reached turn14, screen=Ending, cells6/6, independent player0. Diagnostic then threw at its unconditional expectation of WorldStatus (Program.cs416), which is incompatible with successful conquest Ending. This is a diagnostic terminal-state assertion, not a product progression failure. Evidence uncovered-run.out/err. No new TUT ID.
+- Next audit accept legitimate Ending in diagnostic, inspect rendered completion message/medal persistence, click actual return-to-title control and confirm title; do not just weaken assertion and claim success. Full physical START-to-finish remains unverified because helper initialization is still used. Partial audit interrupted at automatically entered conquest ending.
+
+
+## 2026-11-18 09:14:39.204410 JST repair review
+
+- HEAD f5f8109d. Reviewed completed09:12 run: automatic Ending at turn14/cells6 of6 is legitimate success; diagnostic expected WorldStatus unconditionally. No product repair target, game changes or repeated test this round. Earlier target12 failure is bypassed by avoiding orientation UI in diagnostic.
+- Next audit verify actual Ending draw, completion/medal and normal return button with isolated achievements. Keep those verification gaps open; full physical title-to-finish remains unverified. Review complete start09:14 end2026-11-18 09:14:39.204410 JST; record only.
+
+- Conquest ending diagnostic build 2026-11-18 09:31:51.413979 to 2026-11-18 09:31:57.254806 JST PID21088 limit600s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'build', 'tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--no-restore', '--disable-build-servers', '-p:UseAppHost=false', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\conquest-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\conquest-build.err.
+
+- Conquest ending diagnostic run 2026-11-18 09:31:57.255315 to 2026-11-18 09:32:12.088982 JST PID33816 limit300s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\TutorialWarGuidesUi\\debug\\TutorialWarGuidesUi.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\conquest-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\conquest-run.err.
+
+
+## 2026-11-18 09:32:43.755622 JST tutorial conquest verification
+
+- Start09:30 end2026-11-18 09:32:43.755622 JST HEAD f5f8109d,1920x1080; game unchanged. Diagnostic handles automatic Ending separately from manual ending, verifies player0 actual6/6 ranking and conquest medal expectation, then uses actual EndingReturn rectangle through normal HandleInput, checks Title, opens START/HowToPlay again and reloads isolated achievements. Existing runtime/output reused; build/run results above, exit0/noTIMEOUT.
+- Seed5 validRecruit12-extra-turn run reached turn14 Ending, winner0, cells6, in-memory conquest medalTrue; disk TutorialAchievements has lessons and conquest medals. Actual draw called for Ending, normal return-to-title and reopened tutorial menu assertions passed. Console still contains historical manual-ending wording; authoritative automatic=True winner0/cells6 log and conditional medal assertion establish scope. Evidence conquest-run.out/err, isolated war-guides-achievements.json and war-guide-8.png(menu after return).
+- Partial audit completed. Ending-specific screenshot/visual text review remains to capture (existing screenshot is after return). Full physical START-to-finish remains unverified: diagnostic initializes tutorial/helpers and injects normal input. No TUT ID/product repair. Next capture and inspect ending frame before return, then address full physical entry traversal separately.
+
+
+## 2026-11-18 09:37:14.515962 JST repair review
+
+- HEAD f5f8109d. Reviewed completed09:32 conquest verification: exit0, automatic winner0/cells6, conquest medal memory/disk and normal return/title/tutorial menu passed. No confirmed unresolved product defect, no game changes or repeated verification this round.
+- Next audit capture Ending-specific frame and review completion text/medal presentation. Full physical title-entry-to-finish remains unverified; do not equate helper-based regression to that requirement. Review complete start09:36 end2026-11-18 09:37:14.515962 JST; record only.
+
+- Ending screenshot diagnostic build 2026-11-18 09:51:09.630403 to 2026-11-18 09:51:15.539167 JST PID2968 limit600s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'build', 'tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--no-restore', '--disable-build-servers', '-p:UseAppHost=false', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\ending-shot-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\ending-shot-build.err.
+
+- Ending screenshot diagnostic run 2026-11-18 09:51:15.539689 to 2026-11-18 09:51:32.070517 JST PID33676 limit300s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\TutorialWarGuidesUi\\debug\\TutorialWarGuidesUi.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\ending-shot-run.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\ending-shot-run.err.
+
+
+## 2026-11-18 09:52:01.864122 JST tutorial ending visual audit
+
+- Start09:50 end2026-11-18 09:52:01.864122 JST HEAD f5f8109d,1920x1080; product unchanged. Diagnostic captures rendered ending before normal return. Existing isolated Seed5 validRecruit run exit0, conquest medal memory/disk and title/menu checks passed; build/run/PIDs/limits recorded above. NoTIMEOUT.
+- Viewed actual ending screenshot: readable world-conqueror heading, Entry01 first place, Katarina portrait/name,6sectors/601points, game-resume and title-return buttons,10second countdown. Title-return button used by ordinary input passed. No new visual defect established. Conquest medal persistence asserted; medal icon presentation in reopened menu still needs direct visual review.
+- Preserved screenshot outside tmp at D:\github.com\muzudho\FolderVerse\artifacts\tutorial-audit\war-guide-ending-latest.png SHA256 d2ecf9784e6b1d9077bbc7bbc28c0086331f7e95338a7d6d56a1832ccb8adad7; source kept in existing run output. NAS unavailable per ongoing fallback, no new Content tree. Partial audit complete. Full physical title-entry-to-finish remains unverified; next review menu medal icon and plan physical-input pass with isolated saves. No TUT ID/game repair.
+
+
+## 2026-11-18 09:54:12.834431 JST repair review
+
+- HEAD f5f8109d. Completed09:52 visual audit found no confirmed product defect; conquest ending text/buttons readable and normal return/medals regression passed. No game changes or duplicate diagnostic.
+- Next audit review reopened menu medal presentation and full physical-input scope. Keep helper-based and physical pass distinct. Review complete start09:53 end2026-11-18 09:54:12.834431 JST; record only.
+
+
+## 2026-11-18 10:11:54.826184 JST tutorial medal visual audit
+
+- Start10:11 end2026-11-18 10:11:54.826184 JST HEAD f5f8109d; instructions/current differences reviewed. Game unchanged, no duplicate UI run/build. Viewed existing ending-shot successful run war-guide-8.png,1920x1080.
+- Reopened HowToPlay menu visibly shows both gold medals on Petitstella02: lessons completion and world conquest; labels readable. Primaplana01 remains first entrance; five unfinished planets03..07 visibly disabled with preparation text. Screenshot from normal title return/START/HowToPlay inputs previously asserted, not a fresh physical session. No new visual defect.
+- Preserved outside tmp at D:\github.com\muzudho\FolderVerse\artifacts\tutorial-audit\war-guide-medals-latest.png SHA256 0d9e6163aacf1a0bea291b9d671842d9c0b8f51fbe055bb8e5208849cd2ddcfb. Partial visual audit completed. Next remaining gap is physical title-entry-to-conquest playthrough with isolated save/achievements; helper-based regression and medal/menu review now covered. No TUT ID/product repair.
+
+
+## 2026-11-18 10:15:47.681629 JST repair review
+
+- HEAD f5f8109d. Latest completed10:11 visual audit shows both Petitstella medals and five disabled unfinished planets, with no confirmed defect. No product change or repeat diagnostic.
+- Review complete start10:15 end2026-11-18 10:15:47.681629 JST. Remaining physical title-to-finish verification stays open; keep helper regression success distinct. Next audit plan isolated physical-input pass. Record only.
+
+
+## 2026-11-18 10:30:08.961710 JST physical-input isolation preparation
+
+- Start10:29 end2026-11-18 10:30:08.961710 JST HEAD f5f8109d; initial instructions/differences reviewed. Game unchanged, no new UI process or build. Static partial audit complete.
+- Normal Program.cs starts Game1 directly and exposes no save-path CLI override. AutoSave, achievements, operation log, statistics, BGM and terrain settings use LocalApplicationData/FolderVerse. No supported SAVE/ACHIEVEMENT environment override found. Simply launching shared FolderVerse.dll would access normal user data, so it was not used for physical testing.
+- Next prepare/reuse a diagnostic launcher that stays on actual Title and isolates all writable stores before normal interaction; retain existing Content and avoid product changes. Existing helper-based conquest, Ending, medals and normal input return remain covered. Physical title-entry-to-finish still unverified; do not claim completion or change normal-save paths. No TUT ID.
+
+
+## 2026-11-18 10:36:40.722681 JST repair review
+
+- HEAD f5f8109d. Latest completed10:30 audit is physical-input isolation preparation, not a reproduced product defect. No game-code repair or repeated UI test. Normal user data remains protected.
+- Review complete start10:36 end2026-11-18 10:36:40.722681 JST. Next audit reuse a title-preserving isolated launcher before physical interaction; helper-based conquest/medals/return remain covered. Record only.
+
+
+## 2026-11-18 10:49:22.001923 JST title launcher preparation
+
+- Start10:48 end2026-11-18 10:49:22.001923 JST HEAD f5f8109d; product unchanged. Prepared untracked artifacts/tutorial-audit/TutorialManualUi.csproj and .cs.txt, reusing game reference and existing Content at runtime. Launcher preserves normal Title/Update/input and routes autosave, achievement, BGM/SE, terrain and operations into manual-tutorial-data; disables statistics. No build/run this round, not validated yet.
+- Existing OperationLog is created by Game1 construction before replacement; must verify its initial output location/fallback and normal-data snapshots before claiming full isolation. Also verify readonly reflection assignments succeed and initial Title remains. Next build into existing shared runtime, bounded smoke run, then use actual desktop input only after data isolation verified. Physical title-to-finish still unverified. Partial preparation completed; no TUT ID/game repair.
+
+
+## 2026-11-18 10:56:16.824150 JST repair review
+
+- HEAD f5f8109d. Latest completed audit prepared an unvalidated isolated title launcher; no new confirmed product defect. No game change, launcher execution or duplicate build in this repair round.
+- Review completed start10:55 end2026-11-18 10:56:16.824150 JST. Next audit validate startup log location, readonly path redirection and unchanged normal-data snapshots before physical interaction. Full physical title-to-finish still unverified. Record only.
+
+- Manual launcher build 2026-11-18 11:11:45.360187 to 2026-11-18 11:11:48.444598 JST PID30016 limit600s exit1 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'build', 'artifacts/tutorial-audit/TutorialManualUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--disable-build-servers', '-p:UseAppHost=false', '-p:BuildProjectReferences=false', '-p:OutputPath=D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\', '--source', 'artifacts/nuget-feed', '--source', 'C:/Users/muzud/.nuget/packages', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\manual-build.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\manual-build.err.
+
+- Manual launcher build2 2026-11-18 11:12:44.205463 to 2026-11-18 11:12:46.490868 JST PID1484 limit600s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'build', 'artifacts/tutorial-audit/TutorialManualUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--no-restore', '--disable-build-servers', '-p:UseAppHost=false', '-p:BuildProjectReferences=false', '-p:OutputPath=D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\', '-v:minimal']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\manual-build2.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\manual-build2.err.
+
+- Manual launcher smoke2 2026-11-18 11:12:46.491360 to 2026-11-18 11:12:52.002122 JST PID31772 limit300s exit0 TIMEOUT=False HEAD f5f8109d; command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\DemoUi\\debug\\TutorialManualUi.dll']; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\manual-smoke2.out, D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\manual-smoke2.err.
+
+
+## 2026-11-18 11:13:08.193128 JST manual launcher smoke audit
+
+- Start11:10 end2026-11-18 11:13:08.193128 JST HEAD f5f8109d; game unchanged. Built existing untracked launcher into shared DemoUi runtime, no Content copy. First build failed because shared assembly lacks public FitWindowOnStartup; removed optional setting in launcher and build2 exit0. Smoke2 exit0, normal Update runs and exits after3seconds. Limits/PIDs/commands recorded above, noTIMEOUT.
+- Smoke output: Initial operations path=D:\github.com\muzudho\FolderVerse\Logs\operations_20261118_111247_865_6fabb95d.jsonl | Manual title ready; isolated data=D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\bin\DemoUi\debug\manual-tutorial-data; PID=31772 | Smoke screen=Title | . Normal LocalApplicationData/FolderVerse non-log files snapshot unchanged (2 files, SHA256+size). Snapshot excludes logs and is not proof all settings writes have been exercised. Readonly path assignments succeeded.
+- Next physical-input run must retain external finite deadline and process identity, verify all stores during save/medal/settings transitions and monitor initial operations log path. Title-only smoke does not validate full isolation across gameplay. Physical START-to-finish still unverified; partial preparation complete.
+
+
+## 2026-11-18 11:29 JST title-launcher persistence review
+
+- Start11:29; end 2026-11-18T11:29:38.859348+09:00; HEAD f5f8109d. Partial static audit completed, product unchanged. Current tracked differences remain audit records, user note and TutorialWarGuidesUi. No game/build/UI process launched; no new resolution/render evidence.
+- Rechecked actual launcher plus Game1.AutoSave.cs and TutorialAchievements.cs. AutoSaveDomestic, ResumeAutoSave and DeleteCompletedAutoSave all use redirected _autoSavePath; achievements Award/Clear use instance _path including atomic .tmp writes. Launcher assigns isolated TutorialAchievements after base.LoadContent and enables autosave only afterward. This is static evidence, not exercised save/medal/settings isolation. Initial OperationLog still constructed before replacement as previously recorded.
+- Computer-use skill entry read and node_repl sky integration identified for next desktop pass; no Windows control performed this round. Next read required guidance/API/confirmations, announce skill use when actual desktop work begins, launch existing TutorialManualUi with finite external deadline and process identity, snapshot normal data and interact START->HowToPlay->Petitstella. Physical title-to-conquest pass remains unverified; helper regression/medals remain separate. No confirmed new defect/TUT ID.
+
+
+## 2026-11-18 11:35 JST repair review
+
+- Start11:35 end 2026-11-18T11:35:11.620724+09:00; HEAD f5f8109d. Latest completed11:29 audit statically checked isolated persistence paths; no confirmed unresolved product defect identified in that audit. No product repair, duplicate build or UI execution in this round.
+- Review completed. Physical START-to-conquest/save/settings isolation verification remains open for next audit, using existing title launcher and finite process deadline. Earlier helper-based conquest/medals success does not close physical-input coverage. User differences preserved; record only.
+
+
+## 2026-11-18 11:52 JST desktop title audit
+
+- Planned existing isolated TutorialManualUi.dll normal desktop input run, limit300s including startup; normal non-log save/settings snapshot retained in orchestrator. No product change; shared runtime reused.
+- Start 2026-11-18 11:52:04.845910+09:00 PID6152 HEAD f5f8109d; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\manual-desktop.out/.err; command dotnet D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\bin\DemoUi\debug\TutorialManualUi.dll
+- End 2026-11-18 11:57:04.986576+09:00 exit1 TIMEOUT=True process exit confirmed; normal non-log snapshot unchanged=True (2 files before, 2 after).

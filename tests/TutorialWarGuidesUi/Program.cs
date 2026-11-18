@@ -1,4 +1,4 @@
-using FolderVerse;
+﻿using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -134,12 +134,13 @@ sealed class WarGuideGame:Game1
   }
   if(frame==8){
    double now=300;
+   int wheelPosition=0;
    void Send(Point point,ButtonState button=ButtonState.Released,KeyboardState keys=default){
     var canvas=(Rectangle)Call("CanvasBounds");
     int x=canvas.X+(int)Math.Round(point.X*canvas.Width/1920d);
     int y=canvas.Y+(int)Math.Round(point.Y*canvas.Height/1080d);
     var time=new GameTime(TimeSpan.FromSeconds(now+=.25),TimeSpan.FromSeconds(.25));
-    Call("HandleInput",new MouseState(x,y,0,button,0,0,0,0),keys,time,true);
+    Call("HandleInput",new MouseState(x,y,wheelPosition,button,0,0,0,0),keys,time,true);
    }
    void Click(Point point){
     Send(point);Send(point,ButtonState.Pressed);Send(point);
@@ -195,15 +196,24 @@ sealed class WarGuideGame:Game1
     targets=targets.OrderBy(id=>remainingByNode[id]);
     Console.WriteLine($"Attack candidates by remaining sites: {string.Join(",",targets.Where(net.AttackHighlightTargets.Contains).Select(id=>$"{id}/{remainingByNode[id]}"))}");
    }
+   if(war && Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_WEAK_TARGET")=="1")
+    targets=targets.OrderBy(id=>w.Robots.Nodes[id].Robots.Count(r=>r.Owner!=0 && r.Parts==RobotParts.Complete));
    foreach(int id in targets){
     if((bool)Get("_warPlanning") && (!net.AttackHighlightTargets.Contains(id) || w.Nodes.All[id].Owner==0))continue;
     var args=new object[]{id,Vector2.Zero};
-    if(!(bool)Call("OperationPosition",args))continue;
+    if(!(bool)Call("OperationPosition",args)){Console.WriteLine($"Rejected id={id} point={args[1]} globe={Get("_statusGlobe")} bounds={Call("get_MapViewBounds")}");continue;}
     var point=((Vector2)args[1]).ToPoint();
+    if(Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_PROJECTION_LOG")=="1")Console.WriteLine($"Candidate projection: id={id} point={point} bounds={Call("get_MapViewBounds")} globe={Get("_statusGlobe")}");
     if(!((Rectangle)Call("get_MapViewBounds")).Contains(point))continue;
     int hit=(bool)Get("_statusGlobe")?(int)Call("HitGlobeNode",point,net.MovementTargets):
      net.HitNode(w,(Rectangle)Call("get_NetPanel"),point,net.MovementTargets);
     if(hit!=id)continue;
+    if((bool)Call("get_OrientationControlsVisible")){
+     var toy=(Rectangle)Call("get_OrientationToyArea");
+     bool covered=toy.Contains(point) || ((Rectangle)Call("get_OrientationResetButton")).Contains(point);
+     for(int axis=(bool)Call("get_OrientationGlobe")?0:2;axis<3;axis++)foreach(int sign in new[]{-1,1})covered|=((Rectangle)Call("AxisButton",toy,axis,sign)).Contains(point);
+     if(covered){Console.WriteLine($"Skip covered candidate={id} point={point}");continue;}
+    }
     candidate=id;mapPoint=point;break;
    }
    }
@@ -269,6 +279,7 @@ sealed class WarGuideGame:Game1
    for(int tick=0;tick<4;tick++)Send(default);
    int extraTurns=Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_EXTRA_TURN")=="1"?1:0;
    if(extraTurns==1 && Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_REPEAT_TURN")=="1")extraTurns++;
+   if(int.TryParse(Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_EXTRA_TURNS"),out int requestedTurns))extraTurns=Math.Clamp(requestedTurns,0,12);
    for(int extraTurn=0;extraTurn<extraTurns;extraTurn++){
     // The domestic phase can return to the map before its cut-in and persuasion start.
     double cutInSeconds=Convert.ToDouble(typeof(Game1).GetField("PhaseCutInSeconds",BindingFlags.Static|BindingFlags.NonPublic)!.GetRawConstantValue());
@@ -291,9 +302,32 @@ sealed class WarGuideGame:Game1
       for(int tick=0;tick<20;tick++)Send(default);
       FindDestination();
      }
+     for(int zoom=0;candidate<0 && zoom<8 && !(bool)Get("_statusGlobe");zoom++){
+      wheelPosition-=120;
+      Send(((Rectangle)Call("get_MapViewBounds")).Center);
+      FindDestination();
+      Console.WriteLine($"Camera zoom-out step={zoom+1} candidate={candidate}");
+     }
      Check(candidate>=0,"A second war target is visible");
      Console.WriteLine($"Second sortie target before combat: target={candidate} owner={w.Nodes.All[candidate].Owner}");
+     void TraceSelection(string label){
+      var toy=(Rectangle)Call("get_OrientationToyArea");
+      Console.WriteLine($"Orientation {label}: visible={Call("get_OrientationControlsVisible")} toy={toy} toyHit={toy.Contains(mapPoint)} reset={Call("get_OrientationResetButton")} rotating={Call("get_OrientationRotating")} transitioning={Call("get_MapTransitionActive")}");
+      Console.WriteLine($"Primary gate {label}: blocked={Call("TutorialPrimaryActionClick",mapPoint)} handle={Call("get_InspectorHandle")} handleHit={((Rectangle)Call("get_InspectorHandle")).Contains(mapPoint)}");
+      for(int action=0;action<8;action++){var rect=(Rectangle)Call("PrimaryActionBounds",action);if(rect.Contains(mapPoint))Console.WriteLine($"Primary overlap action={action} rect={rect} tutorial={Call("TutorialPrimaryActionAllowed",action)} phase={Call("PhasePrimaryActionAllowed",action)}");}
+      Console.WriteLine($"Dispatch {label}: pointer={Get("_pointer")} outcome={Get("_inputOutcome")} transport={Get("_transportOverview")} nodeTransport={Get("_nodeTransportOpen")} mapList={Get("_mapLayerListOpen")} trafficList={Get("_trafficLayerListOpen")} previousMouse={Get("_previousMouse")}");
+      int hit=(bool)Get("_statusGlobe")?(int)Call("HitGlobeNode",mapPoint,net.MovementTargets):net.HitNode(w,(Rectangle)Call("get_NetPanel"),mapPoint,net.MovementTargets);
+      Console.WriteLine($"Input geometry {label}: hit={hit} canvas={Call("CanvasBounds")} screen={Get("_screen")} withdrawal={Get("_withdrawalEncounter")}");
+      foreach(var encounter in w.Campaign.RobotBattles.Encounters.Where(e=>!e.Finished)){
+       var badge=(Rectangle)Call("ContinuationBadge",encounter);
+       var armies=(Array)Call("WithdrawalArmies",encounter);
+       if(badge.Contains(mapPoint))Console.WriteLine($"Continuation overlap: id={encounter.Id} target={encounter.Target} armies={armies.Length} bounds={badge}");
+      }
+      Console.WriteLine($"Selection {label}: target={candidate} point={mapPoint} actual={Get("_selectedMoveNode")} war={Get("_warPlanning")} movement={Get("_movementOpen")} globe={Get("_statusGlobe")} guide={Get("_tutorialAttackGuide")} chrome={Get("_tutorialChromeSlide")} domestic={Get("_domesticSlide")} closing={Get("_nodeInspectorClosing")} persuasion={Get("_homePersuasionActive")} picker={Get("_invasionPicker")} bounds={Call("get_MapViewBounds")} animating={net.IsAnimating}");
+     }
+     TraceSelection("before");
      Click(mapPoint);
+     TraceSelection("after");
      Check((int)Get("_selectedMoveNode")==candidate,"The map selects the second war target");
      for(int tick=0;tick<8;tick++)Send(default);
      base.Draw(new GameTime(TimeSpan.FromSeconds(now),TimeSpan.Zero));
@@ -331,14 +365,28 @@ sealed class WarGuideGame:Game1
     Click(((Rectangle)Call("get_PopulationTurnButton")).Center);
     string screen=Get("_screen").ToString()!;
     for(int tick=0;tick<480;tick++){
+     if(screen=="Disposition" && Get("_dispositionScene")==null && Get("_mercyResult")!=null){
+      var confirm=(Rectangle)typeof(Game1).GetField("MercyConfirm",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+      Click(confirm.Center);
+      screen=Get("_screen").ToString()!;
+      if(screen=="WorldStatus")break;
+     }
      if(screen=="Disposition" && Get("_dispositionScene")==null && w.Relations.Pending.Count>0){
       var button=typeof(Game1).GetMethod("DispositionButton",BindingFlags.Static|BindingFlags.NonPublic)!;
-      var bounds=(Rectangle)button.Invoke(null,new object[]{(int)DefeatedChoice.RemoveBattery})!;
+      var choice=Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_RECRUIT")=="1" && w.Relations.Accepts(w,w.Relations.Pending[0].Ruler)?DefeatedChoice.Recruit:DefeatedChoice.RemoveBattery;
+      var bounds=(Rectangle)button.Invoke(null,new object[]{(int)choice})!;
       int pending=w.Relations.Pending.Count;
+      Console.WriteLine($"Disposition candidate ruler={w.Relations.Pending[0].Ruler} victor={w.Relations.Pending[0].Victor} accepts={w.Relations.Accepts(w,w.Relations.Pending[0].Ruler)} choice={choice}");
       base.Draw(new GameTime(TimeSpan.FromSeconds(now),TimeSpan.Zero));
+      if((bool)Get("_mercyInput") || Get("_mercyResult")!=null){
+       var confirm=(Rectangle)typeof(Game1).GetField("MercyConfirm",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+       Console.WriteLine($"Disposition mercy modal: input={Get("_mercyInput")} result={Get("_mercyResult")!=null} pending={pending}");
+       Click(confirm.Center);
+       continue;
+      }
       Click(bounds.Center);
       Check(w.Relations.Pending.Count<pending,"The disposition button accepts the selected outcome");
-      Console.WriteLine($"Additional turn disposition: choice={DefeatedChoice.RemoveBattery} click={bounds.Center} pending={pending}->{w.Relations.Pending.Count}");
+      Console.WriteLine($"Additional turn disposition: choice={choice} click={bounds.Center} pending={pending}->{w.Relations.Pending.Count}");
      }
      Send(default,keys:tick%2==1 && screen is "Transport" or "Battle" or "BattleResearch"?new KeyboardState(Keys.Enter):default);
      Call("UpdateDispositionScene",.25d);
@@ -355,12 +403,18 @@ sealed class WarGuideGame:Game1
       .SelectMany(battle=>battle.Frames).SelectMany(battleFrame=>battleFrame.Units)
       .Where(unit=>unit.Robot!=null).Select(unit=>$"{unit.Robot.Id}/{unit.Owner}/{unit.Role}").Distinct();
      Console.WriteLine($"Second sortie roles: {string.Join(",",roles)}");
+     foreach(long id in order.RobotIds ?? Array.Empty<long>()){
+      var scenes=w.Campaign.RobotBattles.Scenes.Where(b=>b.Frames.Any(f=>f.Units.Any(u=>u.Robot?.Id==id))).Select(b=>b.TargetNode);
+      var stores=w.Nodes.All.Where(n=>w.Robots.Nodes[n.Id].Robots.Any(r=>r.Id==id)).Select(n=>n.Id);
+      Console.WriteLine($"Reserved robot trace: id={id} scenes={string.Join(",",scenes)} stores={string.Join(",",stores)}");
+     }
      var cancellations=w.Campaign.LastCancelledWars.Where(item=>item.Ruler==order.Ruler && item.Target==order.TargetNode);
      Console.WriteLine($"Second sortie result: ruler={order.Ruler} source={order.SourceNode} target={order.TargetNode} reserved={string.Join(",",order.RobotIds ?? Array.Empty<long>())} marches={marches} participants={string.Join(",",participants)} cancelled={string.Join(",",cancellations.Select(item=>item.Reason))} owner={w.Nodes.All[order.TargetNode].Owner}");
     }
     Console.WriteLine($"Cell ownership after: {CellOwnership()} superiors={string.Join(",",w.Relations.Superiors.Take(w.ActiveCount))}");
     Console.WriteLine($"Additional turn: {turn}->{w.Population.Turn}, screen={screen}, phase={w.Campaign.Phase}, cells={w.Relations.ProvisionalRanking(w).Single(entry=>entry.Ruler==0).Cells}/{w.Cells.Length}");
-    Check(w.Population.Turn>turn && screen=="WorldStatus","The next turn returns to the map after the completed lessons");
+    if(screen=="Ending"){Check(w.Relations.ProvisionalRanking(w).Any(r=>r.Ruler==0 && r.Cells==w.Cells.Length),"Automatic ending follows actual player conquest");break;}
+     Check(w.Population.Turn>turn && screen=="WorldStatus","The next turn returns to the map after the completed lessons");
     for(int tick=0;tick<12;tick++)Send(default);
     bool waitedForPersuasion=(bool)Get("_homePersuasionActive");
     for(int tick=0;tick<240 && (bool)Get("_homePersuasionActive");tick++){
@@ -370,19 +424,25 @@ sealed class WarGuideGame:Game1
     for(int tick=0;tick<4;tick++)Send(default);
     Console.WriteLine($"After additional turn: waitedForPersuasion={waitedForPersuasion}, persuasion={Get("_homePersuasionActive")}, guide={Get("_tutorialAttackGuide")}, chrome={Get("_tutorialChromeSlide")}, retiring={Call("get_StatusMenuRetiring")}");
    }
-   Click(Button("StatusMenuButton").Center);
+   bool conquestEnding=Get("_screen").ToString()=="Ending";
+    if(!conquestEnding){
+    Click(Button("StatusMenuButton").Center);
    Check((bool)Get("_statusMenuOpen"),"System menu opens after the final advice");
    Click(Button("EndingMenuItem").Center);
+    }
+    Console.WriteLine($"Ending verification: automatic={conquestEnding} winner={Get("_endingWinner")} cells={Get("_endingCells")} medal={((TutorialAchievements)Get("_tutorialAchievements")).Has(TutorialAchievements.PetitstellaConquest)}");
    Check(Get("_screen").ToString()=="Ending","The system menu opens the ending");
    base.Draw(new GameTime(TimeSpan.FromSeconds(now),TimeSpan.Zero));
-   Click(Button("EndingReturn").Center);
+   var endingSize=GraphicsDevice.PresentationParameters;var endingPixels=new Color[endingSize.BackBufferWidth*endingSize.BackBufferHeight];GraphicsDevice.GetBackBufferData(endingPixels);
+    using(var endingImage=new Texture2D(GraphicsDevice,endingSize.BackBufferWidth,endingSize.BackBufferHeight))using(var endingFile=File.Create(Path.Combine(AppContext.BaseDirectory,"war-guide-ending.png"))){endingImage.SetData(endingPixels);endingImage.SaveAsPng(endingFile,endingImage.Width,endingImage.Height);}
+    Click(Button("EndingReturn").Center);
    Check(Get("_screen").ToString()=="Title","The ending button returns to the title");
    Click(Button("StartButton").Center);
    Click(new Point(960,417));
    Check((bool)Get("_tutorialMenuOpen"),"How to Play opens again from the title");
    var medalPath=Path.Combine(AppContext.BaseDirectory,"war-guides-achievements.json");
    var medals=new TutorialAchievements(medalPath);
-   Check(medals.Has(TutorialAchievements.PetitstellaLessons) && !medals.Has(TutorialAchievements.PetitstellaConquest),
+   Check(medals.Has(TutorialAchievements.PetitstellaLessons) && medals.Has(TutorialAchievements.PetitstellaConquest)==conquestEnding,
     "The earned lessons medal persists without awarding a conquest medal for a manual ending");
    Console.WriteLine("Post-move advice, manual ending, title return and saved lessons medal confirmed");
   }
