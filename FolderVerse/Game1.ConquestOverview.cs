@@ -130,7 +130,7 @@ public partial class Game1
         if(_conquestStage is 3 or 5)_ui.Box(new(0,0,1920,1080),Color.Black*(float)Math.Clamp(_conquestStage==3?1-_conquestAge/1.5:1-_conquestExitOpacity*(1-_conquestAge/1.5),0,1));
         _ui.Text("世界征服状況フェーズ",new(55,35),.7f,Cream);
         _ui.Center($"全体ターン {_setup.Population.Turn} / 征服者 {_setup.ActiveCount}人 / 敵 {Enumerable.Range(0,_setup.ActiveCount).Count(r=>!_setup.Relations.Allied(r,_setup.PlayerSlot))}人",new(580,35,950,45),.5f,Cream);
-        _ui.Text("Enter / Esc : 内政へ",new(1260,1020),.4f,Cream);
+        _ui.Text(_diplomacyPending?"Enter / Esc : 外交へ":"Enter / Esc : 内政へ",new(1260,1020),.4f,Cream);
         if(!_demoActive && !ComputerExhibition && _conquestStage<5)_ui.Button(ConquestSkipButton,"スキップ",Accent,.55f);
         if(_conquestStage<3 || _conquestStage>=6){
             float cover=_conquestStage switch{0=>(float)(_conquestAge/.65),1 or 7=>1,2 or 8=>1-(float)(_conquestAge/.65),6=>(float)(_conquestAge/.65),_=>0};

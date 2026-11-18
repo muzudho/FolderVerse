@@ -131,7 +131,7 @@ public sealed class RobotLongDelivery
                 if(order.TargetSlot>=0 && !order.Receiver.HasValue)_slotArrivals[(order.Target,order.TargetSlot,cargo.Owner)]=receiver?.Id??cargo.Id;
                 Orders.Remove(order);order.Status="配達完了";Results.Add(order);if(Results.Count>64)Results.RemoveAt(0);
             }else destination.Add(cargo);
-            playback.Add((new(order.Node,next,cargo.Id,cargo.Parts),cargo.Owner));order.Node=next;order.CargoId=cargo.Id;order.Started=true;
+            playback.Add((new RobotShipment(order.Node,next,cargo.Id,cargo.Parts){Visual=cargo},cargo.Owner));order.Node=next;order.CargoId=cargo.Id;order.Started=true;
             if(Orders.Contains(order))order.Status="中継地点で次の配送を待っています";
         }
         if(_slotArrivals.Count>1024)foreach(var key in _slotArrivals.Keys.Where(k=>!Orders.Any(o=>o.Target==k.Node && o.TargetSlot==k.Slot)).Take(_slotArrivals.Count-1024).ToArray())_slotArrivals.Remove(key);

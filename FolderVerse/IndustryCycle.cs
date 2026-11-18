@@ -62,7 +62,7 @@ public sealed class IndustryCycle
         if(!Pending || SelectedSector<0)return false;
         int steps=Math.Min(units,Result-AppliedUnits);
         for(int i=0;i<steps;i++){world.Robots.AdvanceIndustry(n=>world.Nodes.All[n].Owner,world.Campaign.RobotBattles.LockedNode);AppliedUnits++;}
-        if(AppliedUnits==Result)Pending=false;
+        if(AppliedUnits==Result){Pending=false;world.Campaign.Trade.ResolveComputerReplies(world);}
         return true;
     }
 }

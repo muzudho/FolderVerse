@@ -12,6 +12,8 @@ public sealed partial class ConquestCampaign
 {
     public CampaignPhase Phase {get;private set;}
     public NodeFunctionTransfers FunctionTransfers {get;}=new();
+    public TradePlan Trade {get;}=new();
+    public ComputerAttackMemory AttackMemory {get;}=new();
     public List<SubordinateDomesticResult> SubordinateResults {get;}=new();
     private readonly HashSet<int> _domesticSubmitted=new();
     public bool FinishDomestic(WorldSetup world,bool automaticAll=false,Func<bool> deferDelivery=null)
@@ -27,9 +29,11 @@ public sealed partial class ConquestCampaign
         }
         _domesticSubmitted.Clear();
         if(party.Length>0)world.SelectTurnRuler(party[0]);
+        ComputerIntakePlanning.Plan(world,automaticAll);
         ComputerNodePurposes.Plan(world,automaticAll);
         ComputerLogistics.Plan(world,automaticAll);
         ComputerFunctionTransfers.Plan(world,automaticAll);
+        ComputerTrade.Plan(world,automaticAll);
         if(deferDelivery?.Invoke()==true)return false;
         BeginDelivery(world);
         return true;
@@ -117,7 +121,7 @@ public sealed partial class ConquestCampaign
         // Switching control does not cancel an already chosen march.
         for(int i=_plannedOrders.Count-1;i>=0;i--)if(world.ControllerOf(_plannedOrders[i].Ruler)<0){_partyOrders.Add(_plannedOrders[i]);_plannedOrders.RemoveAt(i);}
     }
-    public void Reset(){_sectorBaseline=null;SubordinateResults.Clear();LastCancelledWars.Clear();Phase=CampaignPhase.Domestic;FunctionTransfers.Orders.Clear();FunctionTransfers.LastResults.Clear();_domesticSubmitted.Clear();PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
+    public void Reset(){_sectorBaseline=null;SubordinateResults.Clear();LastCancelledWars.Clear();Phase=CampaignPhase.Domestic;AttackMemory.Reset();Trade.Offers.Clear();Trade.Replies.Clear();FunctionTransfers.Orders.Clear();FunctionTransfers.LastResults.Clear();_domesticSubmitted.Clear();PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
     public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false,
         Func<IReadOnlyList<March>,bool> deferResolution=null,bool allPlanned=false)
     {
@@ -126,6 +130,7 @@ public sealed partial class ConquestCampaign
         Battles.Clear();
         int controller=world.TurnPlayer;var controlled=world.ControlledParty(controller).ToHashSet();
         var orders=_plannedOrders.Where(o=>allPlanned || automaticAll || controlled.Contains(o.Ruler)).ToList();
+        March[] submittedOrders=Array.Empty<March>();
         if(automaticAll || allPlanned){orders.AddRange(_partyOrders);_partyOrders.Clear();_submitted.Clear();}
         if(targetNode>=0)
         {
@@ -148,6 +153,7 @@ public sealed partial class ConquestCampaign
             }
             if(!automaticAll && party.Length<=1)world.SelectTurnRuler(controller);
             var random=new SeedRandom(world.PlacementSeed^world.Population.Turn^0x57421);
+            submittedOrders=orders.ToArray();
             if(UseRobotCombat)ComputerJointAttacks.Plan(world,orders,automaticAll);
             else for(int ruler=0;ruler<world.ActiveCount;ruler++)
             {
@@ -188,6 +194,8 @@ public sealed partial class ConquestCampaign
             var ids=order.RobotIds.Where(available.Contains).Distinct().ToArray();
             if(ids.Length==0 && !order.Queen)orders.RemoveAt(i);else orders[i]=order with {RobotIds=ids,Fighters=ids.Length};
         }
+        if(UseRobotCombat && enemies)AttackMemory.Adjust(world,orders,submittedOrders);
+        else AttackMemory.PendingOrders.Clear();
         if(deferResolution?.Invoke(orders)!=true)Resolve(world,orders);
     }
     public void Resolve(WorldSetup world,IReadOnlyList<March> orders)
@@ -198,6 +206,7 @@ public sealed partial class ConquestCampaign
         {
             RobotBattles.Advance(world,orders);
             NodeFunctionTransfers.RelocateStrandedConquerors(world);
+            AttackMemory.Observe(world,orders);
             Phase=CampaignPhase.Domestic;
             Report=$"ロボット輸送 {world.Robots.Transport.LastTransfers.Count} / 観戦 {RobotBattles.Scenes.Count} / 継戦 {RobotBattles.Encounters.Count(e=>!e.Finished)}";
             return;

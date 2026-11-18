@@ -1308,3 +1308,51 @@ RobotGlyphIntegration の配送回帰を最終到着まで延長。９素材モ�
 2026-11-17 22:15 JST ９素材描画。共有レーン整理後の固定DLL SHA-256 BD220864A2724A9755C7801377F5CB5235D228289DA9D48F0DBF4E3D74D39564 で、紙の頭・段ボールの胴・メープルの脚を持つ混成機の頭の国籍だけを変更。28×52の隊長と頭の高さを合わせた一般兵で、差はそれぞれ56画素、全て頭の行に収まった。隔離RobotGlyphIntegration --shipments 全件通過、ビルド警告・エラー０。NAS tmp/delete-after-2026-11-17/glyph-captain-flag-2215/result.txt。次は胴と脚の国籍を個別に変更し、部位をまたぐ差がないか確認する。
 
 2026-11-17 23:21 JST ９素材描画。固定DLL SHA-256 BD220864A2724A9755C7801377F5CB5235D228289DA9D48F0DBF4E3D74D39564 で、紙・段ボール・メープル混成隊長を28×52で描画。国籍を胴だけ変更すると77画素（０始まりの29〜37行）、脚だけでは57画素（39〜46行）が変化し、いずれも該当部位内。隔離RobotGlyphIntegration --shipments 全件通過、警告・エラー０。NAS tmp/delete-after-2026-11-17/glyph-captain-body-legs-2321/result.txt。次は新しい地形描画を含む現行DLLで直送便の描画を再確認する。
+
+2026-11-18 00:19 JST ９素材描画。公開v0.12.0の展開DLL SHA-256 0992613CD27B12376C3D57DE43F22E9CAE1EB6ED4366DC23344E7A67D15695BC と同梱Contentで、直送便・長距離便、混成隊長の国旗と一体型、製造品入荷を含む隔離RobotGlyphIntegration --shipments 全件通過。ビルド警告・エラー０。NAS tmp/delete-after-2026-11-18/glyph-release-0019/result.txt。直前の廃品カタログ修正は公開ZIPより後の変更。次は修正版で廃品から回収した混成パーツの到着後描画を確認する。
+
+2026-11-18 01:13 JST ９素材回収。固定DLL SHA-256 DD1DACFD748A0F19844AB1F18C93EB45A48EBD19EE457EDC13250A5B0313E438 でメープル頭・段ボール胴の一体型を回収隊が拾い、積荷状態を保存復元して格納庫に搬入。機体ID・素材・製造国・一体型・胴の汚損を保全。警告・エラー０。NAS tmp/delete-after-2026-11-18/salvage-mixed-arrival-0113/result.txt。到着後の画素比較は未実施。次はこの到着機体を格納庫で描画し、回収前の同一素材との一致を検証する。
+
+2026-11-18 02:12 JST ９素材回収描画。固定DLL SHA-256 DD1DACFD748A0F19844AB1F18C93EB45A48EBD19EE457EDC13250A5B0313E438 でメープル頭・段ボール胴の一体型（胴汚損）を回収、積荷保存復元、格納庫入荷後に140×250で描画。回収前の同一物理部品と到着機は被覆14030画素を含め全画素一致。対照で頭だけ発泡スチロールへ変更すると6551画素が変わり、空描画でないことも確認。comparison.pngを目視し、左と中央の国旗・顔・木目・段ボール形状が一致、右の頭素材差を確認。最終ビルド警告・エラー０、正常終了。NAS tmp/delete-after-2026-11-18/salvage-arrival-glyph-0212/{Program.cs,build.txt,result.txt,comparison.png}。初回は検証器のStationeryUI依存参照不足で失敗し、参照追加後に再実行。実ゲーム・元セーブ・製品ソース変更なし。比較は兵の格納庫描画のみ。次は同じ回収経路で隊長の帽子と縮小表示も確認する。
+
+2026-11-18 03:11 JST ９素材回収隊長描画。固定DLL SHA-256 DD1DACFD748A0F19844AB1F18C93EB45A48EBD19EE457EDC13250A5B0313E438。メープル頭・段ボール胴・シリコーン脚、頭胴一体型・胴汚損の隊長を回収し、積荷保存復元から格納庫入荷後に描画。140×200は被覆10822画素、28×52は被覆720画素で、回収前の同一機体と全画素一致。頭だけ発泡スチロールへの対照差は3356／224画素。comparison.pngを目視し、通常と縮小の両方で隊長帽・混成部位・国旗が保持され、頭素材差も確認。最終ビルド警告・エラー０、正常終了。NAS tmp/delete-after-2026-11-18/salvage-captain-glyph-0311/{Program.cs,result.txt,comparison.png}。実ゲーム・元セーブ・製品ソース変更なし。今回の回収国は０、製造国は１。次は回収後の国籍変更と部位交換が帽子と無関係に反映するか確認する。
+
+2026-11-18 04:11 JST ９素材回収隊長の国旗。固定DLL SHA-256 DD1DACFD748A0F19844AB1F18C93EB45A48EBD19EE457EDC13250A5B0313E438。回収・積荷保存復元・入荷後の混成隊長で胴のBodyOriginだけを１→０に変え、異なる２国の模様・紋章を合成。通常140×200で1103画素、縮小28×52で73画素が変化し、帽子の上部領域（通常先頭50行・縮小13行）は全画素不変。回収前と到着後は両サイズで全画素一致。comparison.png目視で胴のみの国旗差と帽子・頭・脚の一致を確認。ビルド警告・エラー０、正常終了。NAS tmp/delete-after-2026-11-18/salvage-captain-body-flag-0411/{Program.cs,result.txt,comparison.png}。BodyOrigin変更は描画診断用で、実際の部位交換操作ではない。製品ソース・実ゲーム変更なし。次は頭胴一体型を保ったまま脚を交換し、素材と国籍の描画差を確認する。
+
+2026-11-18 05:16 JST ９素材回収隊長の脚交換。固定DLL SHA-256 DD1DACFD748A0F19844AB1F18C93EB45A48EBD19EE457EDC13250A5B0313E438。回収・保存復元・格納庫入荷後の隊長をRobotWorld.Splitで頭胴一体型と脚に分け、国０のソフトビニール脚を加えRobotWorld.Assembleで再組立。頭胴の素材・一体型と脚の製造国を検証。回収前／到着後は通常140×200・縮小28×52で全画素一致し、脚交換後との差は1902／125画素。帽子上部領域は両サイズで不変。comparison.pngを目視し、右だけ脚の素材形状・国旗が変わり帽子・頭・胴が同じと確認。ビルド警告・エラー０、正常終了。NAS tmp/delete-after-2026-11-18/salvage-captain-leg-swap-0516/{Program.cs,result.txt,comparison.png}。モデルの即時分解・組立であり予約UIは未通過。製品ソース・実ゲーム変更なし。次はこの再組立機を保存復元し、素材・国籍・一体型と縮小描画が保持されるか確認する。
+
+2026-11-18 06:10 JST ９素材再組立機の保存描画。固定DLL SHA-256 DD1DACFD748A0F19844AB1F18C93EB45A48EBD19EE457EDC13250A5B0313E438。回収後に脚交換した隊長をNAS assembled.fvsへAutoSaveStore.Write/Readし、Robot全属性の等価、ソフトビニール脚・脚の製造国０・隊長役を確認。保存前／読込後は140×200で被覆10836画素、28×52で722画素を含め全画素一致。元のシリコーン脚との対照差は1902／125画素、帽子上部領域不変。comparison.pngを目視し、左と中央の再組立機が同じで、右の旧脚との差も確認。ビルド警告・エラー０、正常終了。NAS tmp/delete-after-2026-11-18/salvage-assembled-save-0610/{Program.cs,result.txt,comparison.png,assembled.fvs}。製品ソース・元セーブ・実ゲーム変更なし。次はこの再組立機を通常配送で送った後も同じ描画が出るか確認する。
+
+2026-11-18 07:19 JST ９素材再組立隊長の通常配送描画。固定DLL DD1DACFD748A0F19844AB1F18C93EB45A48EBD19EE457EDC13250A5B0313E438。回収・脚交換・保存後、Transport.SetPlan 360度の全身配送を保存復元し、実経路0→1でResolvePlans。到着Robot全属性一致、元地点から消失、配送記録あり。140×200／28×52は配送前後全画素一致、被覆10836／722、旧脚対照差1902／125。comparison.png目視で混成素材・国旗・隊長帽を確認。警告エラー０。NAS tmp/delete-after-2026-11-18/reassembled-planned-delivery-0719/notes.txt。診断配置でドラッグUI・飛行演出未検証、製品変更なし。次は長距離便の待機・積荷保存・到着を確認。
+
+2026-11-18 08:16 JST ９素材再組立隊長の長距離配送。固定DLL DD1DACFD748A0F19844AB1F18C93EB45A48EBD19EE457EDC13250A5B0313E438。実経路0→1→2で中継満杯待ちを保存復元、空けて再開し中継積荷も保存復元。到着Robot全属性一致・ID１体のみ・注文０。140×200／28×52は前後全画素一致、被覆10836／722、旧脚対照差1902／125、目視で帽子・素材・国旗保全。最初の診断配置で管理人が容量１を占有したため試験配置を修正、製品不具合ではない。最終警告エラー０。NAS tmp/delete-after-2026-11-18/reassembled-long-delivery-0816/notes.txt。予約モデル試験でドラッグUI・飛行演出未確認、製品変更なし。次は長距離便飛行中の同機体描画を確認。
+
+2026-11-18 09:13 JST ９素材長距離便の飛行経路をソース追跡。RobotLongDelivery.Advance→Transport.AppendPlannedTransfers→Game1.PropagationのPropagationShipmentsへ流れるが、DrawPropagationはOwner/Partsと国旗だけを_net.DrawMapRobotへ渡しており、Robotの素材・一体型・隊長役を渡していない。到着後のDrawHangarRobot一致試験では飛行中の欠落を保証できない。現時点はコード経路上の欠落確認で、実画面の目視再現・修正は未実施。通常配送のCommitでは部分分割・合体によりIDが変わるため、到着後のID検索だけで描画を復元する修正は不十分。次は配送確定時の荷のRobotスナップショットを保持する案を隔離検証し、通常／直送／長距離と保存欠落時を確認した上で共通DrawRobotGlyphへ接続する。製品ソース・実ゲーム・元セーブ変更なし。
+
+2026-11-18 10:17 JST 配送描画修正候補。RobotShipment.Visualに配送確定時のRobotスナップショットを保存し、通常／直送／長距離／別地点への製造品入荷で捕捉。DrawPropagationは共有DrawHangarRobotを使用し素材・一体型・隊長を表示、９素材セーブのVisual欠落はnull許容。NAS shipment-visual-1017、DLL EB89E4EED1D8F7211E0A60EC8F531FE86B0E802BA6EA77AB55FDD96429A788E3、隔離ビルド・描画・モデル警告エラー０。長距離便の満杯待ち／積荷保存／到着Visual一致、欠落フィールド読込を確認。140×200／28×52は元機と全画素一致、被覆10836／722、旧脚対照差1902／125、目視で帽子・混成素材・国旗保持。直送捕捉と通常部分便の別IDへの合体でもVisual保全。最初のDrawRobotGlyphだと一体型が矩形に戻ったためDrawHangarRobotへ修正。実地図の飛行全体目視・製造品遠隔入荷は未確認。直送バッファがResetで消えない既存懸念を別途記録し、試験は空Commitで分離。元セーブ・実ゲーム・公開物変更なし。次は実24×36の飛行サイズと直送／製造入荷を追加確認。
+
+2026-11-18 11:11 JST 配送Visual追加確認。固定DLL EB89E4EED1D8F7211E0A60EC8F531FE86B0E802BA6EA77AB55FDD96429A788E3、Materials診断123/456/789。実飛行サイズ24×36で被覆342画素、元機と保存Visual全画素一致、旧脚との差61画素・帽子領域不変、目視確認。遠隔製品のQueueProduction→実ResolveProductionIntakes→IntakePlaybackにも素材／一体型／隊長のVisualと保存保持を確認（合成隊長をキューへ渡した試験で自然製造の隊長ではない）。隣接コールバック未設定の初回拒否を診断配置で修正。最終ビルド警告エラー０、NAS tmp/delete-after-2026-11-18/shipment-flight-small-1111/notes.txt。製品追加変更なし。実地図の飛行全体・直送Reserveからの通し試験は未確認、帰国描画のVisual未付与経路も別途点検。
+
+2026-11-18 12:12 JST 直送便の通し確認（記録補完）。NAS tmp/delete-after-2026-11-18/direct-visual-endtoend-1212/Program.cs。固定DLL EB89E4EED1D8F7211E0A60EC8F531FE86B0E802BA6EA77AB55FDD96429A788E3、Materials診断123/456/789。実ReservePartsで頭胴一体型と脚の２物理注文を作成し、予約保存復元→実Resolve→配送Playback公開まで確認。メープル頭・段ボール胴・ソフトビニール脚・隊長・胴汚損の到着属性と、２配送それぞれのVisualが元機Sliceと一致して保存保持。ここではドラッグUI・画素試験は未実施、以前の共有描画比較と区別する。
+
+2026-11-18 13:27 JST 帰国飛行の９素材描画を修正。RobotWorld.ReturnHome.MoveHomeだけRobotShipment.Visual未付与で、DrawPropagationの代替Robot生成に落ちる経路だったため、移動時点のjourney.RobotをVisualへ付ける１行修正。ルート・能力・費用・帰国判定は変更なし。NAS tmp/delete-after-2026-11-18/return-visual-1323/。修正前固定DLL D67B5E01A7556D057F98F5C33E7C9D5F8C19C0759485EB9ACD29B8DDC7C1C94Dは同じ試験でスナップショット欠落を再現し失敗、修正後DLL 00059BC7C35A034CDCD017C0C24B6FFFFA7790FF798C1B8DCB414DEF9376DF08は通過。隔離ゲーム／検証器ビルド警告エラー０。
+
+Materials診断123/456/789の実経路0→1。メープル頭・段ボール胴・ソフトビニール脚、頭胴一体型、胴汚損、隊長、全製造国１の国０保有機をToggleReturnHomeで予約し保存復元。国１の満杯到着先で待機、飛行Visualと積荷Robotの一致、待機保存／追加待機で重複なし、１枠空けると同IDが国１へ１体だけ到着し保存保持を確認。国籍変更以外の物理属性を保全。DrawHangarRobotで元機／保存Visual／実到着機を140×200と実飛行24×36に描画し全画素一致、被覆10836／342画素。脚をシリコーンへ変えた対照は1807／51画素差。comparison.png目視で左３体の国旗・帽子・混成素材一致、右だけ脚素材が異なることを確認。比較は共有描画ヘルパーで、実地図の飛行画面全体は未検証。元セーブ・実ゲーム・公開物変更なし、コミット／プッシュなし。次は残る配送Playback生成経路と実地図画面の統合を点検する。
+
+
+2026-11-18 15:19 JST 部位計画便のVisual欠落を１行修正。全身／頭胴一体型の実Reserve・保存復元・Resolveで混成隊長のSliceと飛行Visual・保存・到着属性一致。Materials診断123/456/789、メープル頭・段ボール胴・ソフトビニール脚・胴汚損。修正前0208A3A7...で再現失敗、修正後1673E0BBB74019955DC64E1C8BD0AAF0917CA3B6A5A76594E18C924768B36F4Cで通過、隔離ゲーム／検証器警告エラー０・実行DLL照合。NAS part-planning-visual-1512。初回診断の余分なTransport.ResolveでPlaybackを消した条件は除外し対照から再実行。今回の画素／実地図全体目視は未実施。次は役割付き他地点予約と受取合体。ルール・元セーブ・実ゲーム・公開物変更なし。
+
+
+2026-11-18 16:25 JST 部位計画便の受取合体を追加回帰。Materials診断123/456/789、最新8226644DAC490CBA58DEB76C94AD1D16545B3263C0602F1E54B69647657EDE1Aを実行先照合。頭胴一体型・混成隊長・胴汚損を既存ソフトビニール脚へ実Reserve→予約保存→Resolveで配送。飛行Visualは元Slice、到着物理属性は受取.Merge(Slice)と全一致し保存保持。全身／空きへの頭胴も再通過、警告エラー０。NAS part-planning-merge-1622。ReserveRoleは通常同地点APIなので他地点役割予約を人工的に通常例と扱わず、今回未実施。画素／実地図全体は未確認、次は地図飛行統合へ。製品追加変更・元セーブ・実ゲーム・公開物変更なし。
+
+
+2026-11-18 17:16 JST 実DrawPropagationの地図統合を確認。Materials診断123/456/789で実PartPlanning.Reserve→Resolveの混成隊長一体型LastTransfersを使用し、配送フェーズ・経路進捗0.5の固定診断状態から1920×1080の展開地図を描画。Visualなし対照で512画素、脚をシリコーンへ変更で53画素差、いずれも飛行24×36（942,689）内だけ・外側差０。map-0.pngとflight-0.pngを目視し隊長帽・素材色・国旗と地図上の機体を確認。実行8226644D...照合・警告エラー０、NAS propagation-map-1712。base.LoadContentを使わず元セーブ／実ゲーム等保護。３固定描画で連続アニメ時間の証明ではなく、直送／長距離／遠隔製造の全経路画面を今回描いたわけではない。製品変更なし、次は必要な配送種別の地図経路サンプルへ。
+
+
+2026-11-18 18:26 JST 実地図配送描画を直送・長距離へ追加。Materials診断123/456/789の混成隊長頭胴一体型を、直送ReserveParts→保存→Resolveの２物理配送、２区間長距離Reserve→保存→Advanceの第１区間１配送で描画。Visual欠落対照差493／524画素、脚素材変更差78／53、全て実飛行24×36内・外側差０。長距離地図全体と両flight画像を目視、帽子・国旗・素材を確認。初回長距離の比較は予約番号LongDeliveryNumberを物理差と誤認し、そのメタ情報だけ除いて再通過。固定8226644D...照合・警告エラー０、NAS delivery-map-1820。固定0.5描画で連続時間／長距離全区間の視覚証明ではない。製品変更なし、次は必要なら遠隔製品入荷の地図統合。
+
+2026-11-18 19:40 JST 遠隔製造品の地図飛行を追加検証。QueueProduction→保存→Resolve→AppendPlannedTransfersで到着個体と混成隊長頭胴一体型のVisual一致。実DrawPropagation0.5でVisual欠落512画素／脚素材53差は24×36内だけ、地図・機体を目視。固定12D3F7F9...照合・警告エラー０。NAS remote-intake-map-1940。初回IntakePlaybackからTransportへ渡さない試験側配線を修正した最終結果、レシピ合法性や全時間の証明ではない。製品変更不要。
+
+2026-11-18 20:14 JST 遠隔入荷後の実格納庫描画を確認。Queue→保存→入荷→Transportで到着個体とVisual一致。実DrawHangarBay/Robotで脚素材13186、一体型指定4426、役職118474、胴素材26233画素差は機体360×540内だけ、外側０。基準とPP胴対照を目視。固定12D3F7F9...照合・警告エラー０、NAS remote-arrival-hangar-2014、tests/RemoteArrivalRenderingへ保存。レシピ合法性や全サイズの証明ではない。製品変更不要。
+
+2026-11-18 21:17 JST 遠隔入荷個体を1280×720描画面・機体240×360で検証。脚素材5834/一体型解除2002/役職52782/胴素材11589画素差は機体内のみ・外側０。基準画像で帽子・顔・木目・段ボール断面・国旗紋章を目視、見切れなし。固定12D3F7F9照合・警告エラー０、NAS remote-arrival-small-2117。単体部品の小表示であり実画面全体の小窓レイアウトや入力は未検証。製品変更不要。

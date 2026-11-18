@@ -6,7 +6,7 @@
 
 [リポジトリーのトップ](../README.md)
 
-遊ぶ・調べる場合は、[v0.11.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.11.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
+遊ぶ・調べる場合は、[v0.12.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.12.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
 
 | 読みたい内容 | 入口 |
 | --- | --- |
@@ -30,3 +30,5 @@
 - [産業フェーズと安いパーツ](ref/産業フェーズと安いパーツ.md)
 
 - [順位・旗・チュートリアル勲章の更新（2026-10-18）](dev/2026-10-18-conquest-flags-tutorial.md)
+
+- [地点の増築・中継物流と検証](dev/site-development.md)

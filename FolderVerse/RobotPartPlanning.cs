@@ -53,7 +53,7 @@ public sealed class RobotPartPlanning
     public RobotWorld Preview(WorldSetup world)
     {
         var hash=new HashCode();hash.Add(world.Population.Turn);hash.Add(world.Campaign.Phase);
-        foreach(var store in world.Robots.Nodes){hash.Add(store.TotalCapacity);hash.Add(store.WarehouseLimit);hash.Add(store.ReservedReturns);foreach(var robot in store.Robots)hash.Add(robot);foreach(var package in store.MaplePackages)hash.Add(package);}
+        foreach(var store in world.Robots.Nodes){hash.Add(store.TotalCapacity);hash.Add(store.WarehouseLimit);hash.Add(store.WarehouseExpansion);hash.Add(store.ReservedReturns);foreach(var robot in store.Robots)hash.Add(robot);foreach(var package in store.MaplePackages)hash.Add(package);}
         foreach(var order in world.Campaign.FunctionTransfers.Orders)hash.Add(order);
         foreach(var order in world.Robots.DirectDelivery.Orders)hash.Add(order);
         foreach(var intake in world.Robots.ProductionIntakes)hash.Add(intake);
@@ -66,7 +66,7 @@ public sealed class RobotPartPlanning
         var copy=world.Robots.PlanningCopy();
         var hosts=Enumerable.Range(0,copy.Nodes.Length).ToArray();
         foreach(var order in world.Campaign.FunctionTransfers.Orders){
-            if(!world.Campaign.FunctionTransfers.CanReserve(world,order.Source,order.Target,order.FactoryOnly))continue;
+            if(!world.Campaign.FunctionTransfers.CanApply(world,order))continue;
             int a=order.Source,b=order.Target;
             if(order.FactoryOnly){NodeFunctionTransfers.MoveFactory(copy,a,b,preview:true);continue;}
             NodeFunctionTransfers.MergeHangarCapacity(copy.Nodes[a],copy.Nodes[b]);
@@ -265,7 +265,7 @@ public sealed class RobotPartPlanning
                 Apply(world,copy,order,true);
                 if(before?.FactoryWorker==true && order.Role!=HangarReservation.None)releasedWorkers.Add((source,before.Id));
                 LastResults.Add(new(order.Number,order.Owner,order.Target,"実施完了"));
-                if(source>=0 && source!=order.Target && before!=null)shipments.Add((new(source,order.Target,order.RobotId,order.Role==HangarReservation.None?order.Parts:before.Parts),order.Owner));
+                if(source>=0 && source!=order.Target && before!=null)shipments.Add((new RobotShipment(source,order.Target,order.RobotId,order.Role==HangarReservation.None?order.Parts:before.Parts){Visual=before.Slice(order.Role==HangarReservation.None?order.Parts:before.Parts)},order.Owner));
             }
             catch(InvalidOperationException error){LastResults.Add(new(order.Number,order.Owner,order.Target,error.Message));}
         }

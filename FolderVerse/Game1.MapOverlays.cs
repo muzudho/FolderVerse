@@ -21,7 +21,7 @@ public partial class Game1
         _primaryActionSlide=target>_primaryActionSlide?Math.Min(target,_primaryActionSlide+elapsed/.25f):Math.Max(target,_primaryActionSlide-elapsed/.25f);
     }
     private const int FunctionTransferAction=6;
-    private const int PrimaryActionCount=8;
+    private const int TradeAction=8,PrimaryActionCount=9;
     private static Rectangle PrimaryActionHomeBounds(int index)=>index switch {
         0=>new(54,974,96,96),1=>new(160,926,192,144),
         _=>new(362+((index==7?4:index>=4?index+1:index)-2)*106,974,96,96)
@@ -29,7 +29,7 @@ public partial class Game1
     private Rectangle PrimaryActionBounds(int index){var r=PrimaryActionHomeBounds(index);if(index!=PinnedPrimaryAction)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,_primaryActionSlide));return r;}
     private static Rectangle MapModeCloseButton(int index)=>new(PrimaryActionHomeBounds(index).Right+10,1002,40,40);
     private bool TutorialPrimaryActionsDisabled=>_setup.TutorialStep==3 || _setup.TutorialMapBeforeWar && _setup.TutorialMapStage<6;
-    private bool TutorialPrimaryActionAllowed(int index)=>!TutorialPrimaryActionsDisabled && (!_setup.TutorialMapBeforeWar || index is 1 or 2 || index==0 && _setup.TutorialAttackCompleted);
+    private bool TutorialPrimaryActionAllowed(int index)=>!TutorialPrimaryActionsDisabled && (index!=TradeAction || _setup.TutorialStep==0) && (!_setup.TutorialMapBeforeWar || index is 1 or 2 || index==0 && _setup.TutorialAttackCompleted);
     private bool TutorialPrimaryActionClick(Point p)=>Enumerable.Range(0,PrimaryActionCount).Any(i=>(!TutorialPrimaryActionAllowed(i) || !PhasePrimaryActionAllowed(i)) && PrimaryActionBounds(i).Contains(p));
     private bool MapMarkerMenuAvailable=>!_directPairOpen && !_trainingOpen && _supervisorDialog==0 && !_inspectorFoldersOpen && !_salvageAbandonConfirmation.HasValue && !_hangarDrag.HasValue && !_seedDialog.IsOpen;
     private bool MapOverlayClick(Point p,bool escape)
@@ -57,6 +57,7 @@ public partial class Game1
             else if(i==4 && TransportOverviewAllowed){ResetInspector();OpenTransportOverview();}
             else if(i==5){if(_salvagePlan)ResetInspector();else OpenSalvagePlan();}
             else if(i==FunctionTransferAction){if(_functionTransferMap)CloseFunctionTransferMap();else OpenFunctionTransferMap();}
+            else if(i==TradeAction)OpenTradePlanner();
             return true;
         }
         return FunctionTransferMapClick(p);
@@ -82,7 +83,7 @@ public partial class Game1
     private void DrawPrimaryActionButtons() => DrawTutorialChrome(()=>DrawPrimaryActionButtonsCore(),false);
     private void DrawPrimaryActionButtonsCore()
     {
-        string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画","地点の施設移転の予約","ロボットパーツ長距離便"};
+        string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画","地点の施設移転の予約","ロボットパーツ長距離便","取引"};
         for(int i=0;i<PrimaryActionCount;i++){
             var r=PrimaryActionBounds(i);if(r.Top>=1080)continue;
             bool enabled=PhasePrimaryActionAllowed(i) && TutorialPrimaryActionAllowed(i) && PrimaryActionInUse(i) && (i is not (3 or 4 or LongMapAction) || TransportOverviewAllowed);
@@ -135,6 +136,9 @@ public partial class Game1
             else {Box(.05f,.26f,.48f,.45f);Box(.56f,.43f,.29f,.28f);Box(.12f,.76f,.15f,.16f);Box(.62f,.76f,.15f,.16f);}
             if(kind==LongMapAction){Line(.12f,.04f,.17f,.22f,2);Line(.17f,.22f,.34f,.22f,2);Line(.34f,.22f,.39f,.04f,2);Line(.12f,.04f,.39f,.04f,2);Line(.55f,.04f,.60f,.22f,2);Line(.60f,.22f,.77f,.22f,2);Line(.77f,.22f,.82f,.04f,2);Line(.55f,.04f,.82f,.04f,2);}
             if(kind==4){var c=P(.79f,.24f);for(int a=0;a<360;a+=12){float angle=MathHelper.ToRadians(a);var d=new Vector2(MathF.Cos(angle),MathF.Sin(angle));_ui.Tile(c+d*13,new(3,3),0,ink);}for(int a=-90;a<=0;a+=6){float angle=MathHelper.ToRadians(a);var d=new Vector2(MathF.Cos(angle),MathF.Sin(angle));_ui.Tile(c+d*6,new(13,2),angle,ink);}}
+        }else if(kind==TradeAction){
+            Line(.14f,.34f,.86f,.34f,6);Line(.64f,.12f,.86f,.34f);Line(.64f,.53f,.86f,.34f);
+            Line(.14f,.73f,.86f,.73f,6);Line(.36f,.54f,.14f,.73f);Line(.36f,.92f,.14f,.73f);
         }else if(kind==FunctionTransferAction){
             Line(.20f,.10f,.67f,.10f);Line(.67f,.10f,.80f,.28f);Line(.80f,.28f,.80f,.91f);
             Line(.80f,.91f,.20f,.91f);Line(.20f,.91f,.20f,.10f);

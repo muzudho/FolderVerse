@@ -73,13 +73,14 @@ public sealed partial class RobotWorld
         Reservations=world.Campaign;_reservationFlagOwner=node=>world.Nodes.All[node].Owner;
         for(int node=0;node<Nodes.Length;node++){
             int current=node;
+            if(world.RelayLogisticsEnabled)Nodes[node].SetLogisticsRules(world.Nodes.All[node].Purpose==NodePurpose.Relay);
             Nodes[node].Replace(Nodes[node].Robots.Select(r=>ValidateDefenseFlag(r,n=>world.Nodes.All[n].Owner)).Select(r=>r.DefenseOnly && r.Parts==RobotParts.Complete && r.DefenseFlag==null?r with {DefenseFlag=new(r.Owner,current,world.Nodes.All[current].Owner)}:r).ToArray());
         }
         ReservationSource=owner=>world.Nodes.Current(owner)?.Id??-1;
         foreach(var node in world.Nodes.All){
             var workshop=Workshops[node.Id];
             workshop.ConfigureMaterialCatalogue(world.WorldSeed^node.Id*7919,world.EquipmentMode);
-            workshop.LimitLines(node.Functional?(workshop.TransferredLineLimit??(node.Terrain==TravelTerrain.Sea?1:3)):0);SyncWorkers(node.Id);
+            workshop.LimitLines(node.Functional && node.Purpose!=NodePurpose.Relay?(workshop.TransferredLineLimit??(node.Terrain==TravelTerrain.Sea?1:3)):0);SyncWorkers(node.Id);
         }
         RevalidateWorkReservations();
         foreach(var node in world.Nodes.All)

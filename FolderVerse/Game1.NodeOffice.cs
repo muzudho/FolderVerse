@@ -35,7 +35,7 @@ public partial class Game1
     {
         if(purpose==null)return node.IsHarbor?"港は陸と海を結ぶ地点です":"この地点は港ではありません";
         if(!node.Functional)return "無機能地点では用途を変更できません";
-        if(node.Purpose==NodePurpose.Relay)return "中継地点では全施設移転のみできます";
+        if(node.Purpose==NodePurpose.Relay)return _setup.RelayLogisticsEnabled?"管理人１体で７枠追加。中継同士の全施設移転で上限を足せます（最大60）。工場は受け入れません。":"中継地点では全施設移転のみできます";
         if(purpose==NodePurpose.Relay)return "工場だけを移転すると中継地点になります";
         if(purpose==NodePurpose.Harvest && !RobotWorld.RawMaterials.Any(m=>_setup.Robots.RawDeposit(node.Id,m)>0))
             return "この地域では何も採れません";

@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Input;
 
 public partial class Game1 : Game
 {
-    private enum Screen { Title, PlayerCount, ComputerPlayerCount, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, LandConquest, Fortune, WorldStatus, Battle, Industry, Disposition, InactiveList, Hierarchy, Pocket, Transport, Ending, BattleResearch, LessonCatalog, OpeningBook, OpeningSpace, OpeningLottery, OpeningReview }
+    private enum Screen { Title, PlayerCount, ComputerPlayerCount, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, LandConquest, Fortune, WorldStatus, Battle, Industry, Disposition, InactiveList, Hierarchy, Pocket, Transport, Ending, BattleResearch, LessonCatalog, OpeningBook, OpeningSpace, OpeningLottery, OpeningReview, Diplomacy }
     private readonly GraphicsDeviceManager _graphics;
     private readonly Random _random=new();
     private WorldSetup _setup=new();
@@ -157,11 +157,13 @@ public partial class Game1 : Game
         UpdateFullscreen(keyboard,active);
         if(active && (mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released || mouse.RightButton==ButtonState.Pressed && _previousMouse.RightButton==ButtonState.Released || mouse.ScrollWheelValue!=_previousMouse.ScrollWheelValue || keyboard.GetPressedKeys().Any(k=>_previousKeyboard.IsKeyUp(k)))){
             if(_screen==Screen.Industry)_industryIdleAge=0;
+            if(_screen==Screen.Diplomacy)_diplomacyIdleAge=0;
             if(_screen==Screen.Battle && _robotSummary)_summaryReadAge=0;
         }
         if(!IsOpeningScreen && !_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         if(IsOpeningScreen){OpeningInspectionDrag(mouse,active);OpeningInput(click,enter,escape,gameTime.ElapsedGameTime.TotalSeconds,keyboard);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(TryBeginPendingDiplomacy()){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateSubordinateDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) || UpdateComputerDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) ||
             HandleComputerMarches(gameTime,escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -193,6 +195,16 @@ public partial class Game1 : Game
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds; UpdateDomesticSlide((float)elapsed);
         _animationTime+=(float)elapsed;
+        if(_screen==Screen.Diplomacy || IsStatusScreen && _tradePlannerOpen)
+        {
+            if(active){
+                if(_screen==Screen.Diplomacy)DiplomacyInput(click,enter);
+                else if(escape)_tradePlannerOpen=false;
+                else if(click)TradePlanner(draw:false,click:true);
+            }
+            if(_screen==Screen.Diplomacy)UpdateDiplomacy(active && (click || enter)?0:elapsed);
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
         if(FolderTreeInput(mouse,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_conquestOverview){
             if(_demoActive)UpdateDemo(elapsed,active,click,escape,enter,gameTime.TotalGameTime.TotalSeconds);
@@ -585,6 +597,7 @@ public partial class Game1 : Game
         // Settings use the normal full-canvas logo background without the map
         // or action buttons showing through the transparent content area.
         if(_countrySettingsOpen)return;
+        if(_tradePlannerOpen){TradePlanner(draw:true);return;}
         if(_salvageCatalogOpen){DrawSalvageCatalog();return;}
         if(_directPairOpen){DrawDirectPair();return;}
         _ui.Text(PlanningPhaseLabel,new(54,22),1.1f,Cream);
@@ -732,7 +745,7 @@ public partial class Game1 : Game
         DrawStatusMenu();
         if(!DrawInvasionUnavailableHint() && !DrawNodeCheckHint() && _supervisorDialog==0 && !_reservationDirectory && !_functionTransferMap){
             if(_warehouseKeeperHovered && !_inspectorFoldersOpen && !_mapOverlayMenu)
-                DrawRulebookHint("倉庫管理人","格納庫を４つ増やしてくれています");
+                DrawRulebookHint("倉庫管理人",_populationNode>=0 && _populationNode<_setup.Robots.Nodes.Length && _setup.Robots.Nodes[_populationNode].WarehouseExpansion==7?"中継地点の格納庫を７つ増やしてくれています":"格納庫を４つ増やしてくれています");
             else DrawNodeTooltip();
         }
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();DrawWarCancellations();DrawProductionIntakePicker();
@@ -835,11 +848,11 @@ public partial class Game1 : Game
             _spriteBatch.Begin(transformMatrix:transform);
             _ui.Box(new(0,0,1920,1080),new(16,35,46));
             _spriteBatch.Draw(_titleLogo,new Rectangle(0,0,1920,1080),Color.White*0.14f);
-            if(_screen==Screen.BattleResearch)DrawBattleResearch();else if(_screen==Screen.LessonCatalog)DrawLessonCatalog();else if(_screen==Screen.Industry)DrawIndustry();else if(_screen==Screen.PlayerCount)DrawPlayerCount();else if(_screen==Screen.ComputerPlayerCount)DrawComputerPlayerCount();else if(_screen is Screen.LandConquest or Screen.Fortune)DrawLandSetupUi();else if(_screen==Screen.Ending)DrawEndingUi();else if(_screen==Screen.Transport)DrawTransport();else if(_screen==Screen.Pocket)DrawPocket();else if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
+            if(_screen==Screen.Diplomacy)DrawDiplomacy();else if(_screen==Screen.BattleResearch)DrawBattleResearch();else if(_screen==Screen.LessonCatalog)DrawLessonCatalog();else if(_screen==Screen.Industry)DrawIndustry();else if(_screen==Screen.PlayerCount)DrawPlayerCount();else if(_screen==Screen.ComputerPlayerCount)DrawComputerPlayerCount();else if(_screen is Screen.LandConquest or Screen.Fortune)DrawLandSetupUi();else if(_screen==Screen.Ending)DrawEndingUi();else if(_screen==Screen.Transport)DrawTransport();else if(_screen==Screen.Pocket)DrawPocket();else if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
             {
             if(_screen is Screen.LandConquest or Screen.Fortune)DrawLandSetupGlobe(canvas,transform,viewport);
             else if(_screen==Screen.Battle){if(!_setup.Campaign.UseRobotCombat || _robotPendingFocus<0)DrawBattleGlobe(canvas,transform);}
-            else if(!IsStatusScreen && _screen is not (Screen.Industry or Screen.PlayerCount or Screen.ComputerPlayerCount or Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Pocket or Screen.Transport or Screen.Ending or Screen.BattleResearch or Screen.LessonCatalog))
+            else if(!IsStatusScreen && _screen is not (Screen.Industry or Screen.Diplomacy or Screen.PlayerCount or Screen.ComputerPlayerCount or Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Pocket or Screen.Transport or Screen.Ending or Screen.BattleResearch or Screen.LessonCatalog))
             {
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;

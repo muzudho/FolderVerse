@@ -96,7 +96,7 @@ public sealed partial class RobotWorld
         var step=HomeStep(world,journey.Node,targets,journey.Robot.Id);
         if(step==null){ReturningRobots.Add(journey with {Status=targets.Length==0?NoHomeCountry:"帰国経路が通れないため待機しています。"});return;}
         int next=step.Value.Next,country=step.Value.Country;
-        if(next!=journey.Node)moved.Add((new(journey.Node,next,journey.Robot.Id,journey.Robot.Parts),country));
+        if(next!=journey.Node)moved.Add((new RobotShipment(journey.Node,next,journey.Robot.Id,journey.Robot.Parts){Visual=journey.Robot},country));
         if(world.Nodes.All[next].Owner==country && Nodes[next].HasSpace && !world.Campaign.RobotBattles.LockedNode(next)){
             Nodes[next].Add(journey.Robot with {Owner=country,ReturnHomeCommander=null,ReturnHomeStatus=null,FunctionDisplayNode=null});return;
         }

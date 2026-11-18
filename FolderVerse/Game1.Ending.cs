@@ -39,6 +39,7 @@ public partial class Game1
     {
         RecordPetitstellaMedals();
         _autoPlay=_autoPaused=_autoPauseComputerOnly=false;
+        _tradePlannerOpen=false;_tradeReplies.Clear();
         _autoPausePage=_autoDomesticStage=0;
         _autoAge=_autoStepAge=_autoDomesticAge=0;
         _demoActive=_demoIntro=false;

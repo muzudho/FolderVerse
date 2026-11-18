@@ -87,6 +87,7 @@ public static class AutoSaveStore
                     if(field.FieldType==typeof(RawMaterial) || type==typeof(RobotWorld) && field.Name=="_rawDeposits")continue;
                     if(field.FieldType==typeof(RobotEquipmentMode) || field.FieldType==typeof(RobotMaterial) ||
                         type==typeof(ProductionPlan) && field.FieldType==typeof(RobotMaterial?))continue;
+                    if(type==typeof(RobotStore) && field.Name is "_logisticsRules" or "_relayWarehouse" || type==typeof(WorldSetup) && field.Name=="<RelayLogisticsEnabled>k__BackingField")continue;
                     if(type==typeof(Node) && field.Name==nameof(Node.Purpose) ||
                         type==typeof(NodeFunctionTransferOrder) && field.Name=="<FactoryOnly>k__BackingField")continue;
                     if(type==typeof(RobotWorkshop) && field.Name is "_materialCatalogueOffset" or "_lastEffectiveProductionPeriod")continue;
@@ -166,6 +167,9 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorld) && field.Name=="<PartPlanning>k__BackingField"){field.SetValue(value,new RobotPartPlanning());continue;}
                     if(type==typeof(RobotWorld) && field.Name=="<ProductionIntakes>k__BackingField"){field.SetValue(value,new List<ProductionIntake>());continue;}
                     if(type==typeof(RobotWorld) && field.Name=="<ProductionIntakeEnabled>k__BackingField")continue;
+                    if(type==typeof(ConquestCampaign) && field.Name=="<Trade>k__BackingField"){field.SetValue(value,new TradePlan());continue;}
+                    if(type==typeof(ConquestCampaign) && field.Name=="<AttackMemory>k__BackingField"){field.SetValue(value,new ComputerAttackMemory());continue;}
+                    if(type==typeof(TradePlan) && field.Name=="<Replies>k__BackingField"){field.SetValue(value,new List<TradeReply>());continue;}
                     if(type==typeof(RobotWorld) && field.Name=="<OffshoreRawSupplyEnabled>k__BackingField")continue;
                     if(type==typeof(RobotWorld) && field.Name=="<OffshoreUsesSeaAreaRule>k__BackingField")continue;
                     if(type==typeof(RobotWorld) && field.Name=="<Reservations>k__BackingField")continue;
@@ -181,6 +185,16 @@ public static class AutoSaveStore
                     if(type==typeof(BattleRules) && field.Name=="<FlagDefenseTurns>k__BackingField"){field.SetValue(value,50);continue;}
                     if((type==typeof(BattleState) && (field.Name=="FlagCaptureTurns" || field.Name=="FlagDefenseTurns")) ||
                        (type==typeof(BattleFrame) && (field.Name=="<FlagCaptureTurns>k__BackingField" || field.Name=="<FlagDefenseTurns>k__BackingField")))continue;
+                    if(type==typeof(RobotShipment) && field.Name=="<Visual>k__BackingField")continue;
+                    if(type==typeof(ComputerPolicy) && field.Name is "<ReleaseExhaustedHarvester>k__BackingField" or "<ClearExhaustedHarvestPurpose>k__BackingField")
+                    {field.SetValue(value,75);continue;}
+                    if(type==typeof(ComputerPolicy) && field.Name is "<ReleaseUnplannedHarvester>k__BackingField" or "<ClearUnplannedHarvestPurpose>k__BackingField")
+                    {field.SetValue(value,50);continue;}
+                    if(type==typeof(ComputerPolicy) && field.Name is "<ReleaseUnsuppliedManufacturer>k__BackingField" or "<ClearUnsuppliedFactoryPurpose>k__BackingField" or
+                        "<NearResourceFactoryPreference>k__BackingField" or "<CentralResourceFactoryPreference>k__BackingField")
+                    {field.SetValue(value,50);continue;}
+                    if(type==typeof(ComputerPolicy) && field.Name=="<ClearUnstaffedFactoryPurpose>k__BackingField")
+                    {field.SetValue(value,75);continue;}
                     if(type==typeof(March) && field.Name=="<RobotIds>k__BackingField")continue;
                     if(type==typeof(LongPartOrder) && field.Name=="<Origin>k__BackingField")continue;
                     if(type==typeof(BattleState) && field.Name=="<Persuasions>k__BackingField"){field.SetValue(value,new List<BattlePersuasion>());continue;}

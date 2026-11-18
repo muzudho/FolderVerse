@@ -42,7 +42,8 @@ public sealed class SalvagePlan
                 var r=w.Robots.Create(random.Next(w.ActiveCount),(RobotParts)(1+random.Next(7)));
                 var pairs=new[]{RobotParts.Head|RobotParts.Body,RobotParts.Body|RobotParts.Legs}.Where(p=>(r.Parts&p)==p).ToArray();
                 if(pairs.Length>0 && random.Next(3)==0)r=r with {IntegratedParts=pairs[random.Next(pairs.Length)]};
-                r=r with {CheapParts=random.Next(3)==0?r.Parts:0,DamagedParts=random.Next(5)==0?r.Parts:0};
+                bool cheap=random.Next(3)==0;
+                r=r with {CheapParts=cheap && w.EquipmentMode==RobotEquipmentMode.Legacy?r.Parts:0,DamagedParts=random.Next(5)==0?r.Parts:0};
                 Items.Add(new(_next++,nodes[random.Next(nodes.Length)].Id,r));
             }
         }

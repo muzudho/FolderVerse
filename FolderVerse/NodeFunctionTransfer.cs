@@ -18,6 +18,8 @@ public sealed class NodeFunctionTransfers
     public bool Cancel(int source)=>Orders.RemoveAll(o=>o.Source==source)>0;
     public bool CanReserve(WorldSetup w,int source,int target,bool factoryOnly=false)
         =>Available(w,source,target,true,factoryOnly);
+    internal bool CanApply(WorldSetup w,NodeFunctionTransferOrder order)
+        =>Available(w,order.Source,order.Target,false,order.FactoryOnly) && w.Nodes.All[order.Source].Owner==order.Owner;
     internal IEnumerable<int> ValidSources(WorldSetup w)=>Orders
         .Where(o=>!o.FactoryOnly && Available(w,o.Source,o.Target,false,false) && w.Nodes.All[o.Source].Owner==o.Owner)
         .Select(o=>o.Source);
@@ -27,7 +29,7 @@ public sealed class NodeFunctionTransfers
     internal static void MergeHangarCapacity(RobotStore source,RobotStore target)
     {
         if(target.WarehouseLimit.HasValue)
-            target.SetWarehouseLimit(MergedWarehouseLimit(new[]{source,target}));
+            target.SetWarehouseLimit(Math.Min(target.WarehouseMaximum,MergedWarehouseLimit(new[]{source,target})));
         else target.SetCapacity(checked(target.TotalCapacity+source.TotalCapacity));
     }
 
@@ -37,7 +39,7 @@ public sealed class NodeFunctionTransfers
         var a=w.Nodes.All[source];var b=w.Nodes.All[target];var battles=w.Campaign.RobotBattles;
         long capacity=(long)w.Robots.Nodes[target].TotalCapacity+w.Robots.Nodes[source].TotalCapacity+
             Orders.Where(o=>!o.FactoryOnly && o.Source!=source && o.Target==target).Sum(o=>(long)w.Robots.Nodes[o.Source].TotalCapacity);
-        if(b.Purpose==NodePurpose.Relay || factoryOnly && a.Purpose==NodePurpose.Relay)return false;
+        if(b.Purpose==NodePurpose.Relay && (!w.RelayLogisticsEnabled || a.Purpose!=NodePurpose.Relay || factoryOnly) || factoryOnly && a.Purpose==NodePurpose.Relay)return false;
         var workshops=w.Robots.Workshops;
         int laneCapacity=workshops[target].LineLimit+workshops[source].LineLimit+
             Orders.Where(o=>o.Source!=source && o.Target==target).Sum(o=>workshops[o.Source].LineLimit);
@@ -57,7 +59,7 @@ public sealed class NodeFunctionTransfers
             var stores=incoming.Select(n=>w.Robots.Nodes[n]).ToArray();
             var robots=stores.SelectMany(s=>s.Robots).Concat(Orders.Where(o=>o.FactoryOnly && o.Source!=source && o.Target==target)
                 .SelectMany(o=>w.Robots.Nodes[o.Source].Robots.Where(r=>r.FactoryWorker))).ToArray();
-            int developed=Math.Min(MergedWarehouseLimit(stores),1+4*robots.Count(r=>r.WarehouseKeeper));
+            int developed=Math.Min(Math.Min(w.Robots.Nodes[target].WarehouseMaximum,MergedWarehouseLimit(stores)),1+w.Robots.Nodes[target].WarehouseExpansion*robots.Count(r=>r.WarehouseKeeper));
             if(!w.Robots.Nodes[target].Fits(robots,stores.SelectMany(s=>s.MaplePackages),
                incoming.Sum(n=>workshops[n].ReservedSlots),developed))return false;
         }
@@ -74,14 +76,15 @@ public sealed class NodeFunctionTransfers
         if(!CanReserve(w,source,target,factoryOnly))throw new InvalidOperationException("Function transfer unavailable.");
         Cancel(source);Orders.Add(new(source,target,w.Nodes.All[source].Owner){FactoryOnly=factoryOnly});
     }
-    internal bool ReserveComputer(WorldSetup w,int source,int target,int owner)
+    internal bool ReserveComputer(WorldSetup w,int source,int target,int owner,bool factoryOnly=false)
     {
-        if(w.Nodes.All[source].Owner!=owner || w.Nodes.All[target].Owner!=owner || !Available(w,source,target,false,false))return false;
-        Orders.Add(new(source,target,owner));return true;
+        if(w.Nodes.All[source].Owner!=owner || w.Nodes.All[target].Owner!=owner || !Available(w,source,target,false,factoryOnly))return false;
+        Orders.Add(new(source,target,owner){FactoryOnly=factoryOnly});return true;
     }
     internal static void MoveFactory(RobotWorld robots,int source,int target,bool preview=false)
     {
         var from=robots.Nodes[source];var to=robots.Nodes[target];
+        if(from.LogisticsRules)from.SetLogisticsRules(relay:true);
         var workers=from.Robots.Where(r=>r.FactoryWorker).ToArray();
         to.Replace(to.Robots.Concat(workers.Select(r=>r with {FunctionDisplayNode=r.FunctionDisplayNode??source})));
         from.Replace(from.Robots.Where(r=>!r.FactoryWorker));

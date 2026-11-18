@@ -22,8 +22,10 @@ public partial class Game1
     private SalvageAgent CurrentSalvageAgent=>_setup.Salvage.Agents.FirstOrDefault(a=>a.Owner==_setup.PlayerSlot);
     private SalvageItem[] VisibleSalvageItems()=>_setup.Salvage.Items.Where(i=>_salvageNodeFilter<0 || i.Node==_salvageNodeFilter)
         .OrderByDescending(i=>i.RequestedBy==_setup.PlayerSlot).ThenBy(i=>i.Node).ThenBy(i=>i.Id).ToArray();
-    private string SalvagePartLabel(Robot r)=>(r.IntegratedParts!=0?IntegratedLabel(r.IntegratedParts)+" / ":"")+string.Join("・",new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Where(p=>(r.Parts&p)!=0)
-        .Select(p=>PartsLabel(p)+"（"+(r.IsPremium(p)?"高級":r.IsCheap(p)?"安い":"正規")+"・"+(r.IsDamaged(p)?"損傷":"無傷")+"）"))+(r.IntegratedParts!=0 && r.DamagedParts!=0?" / 実損傷："+PartsLabel(r.DamagedParts):"");
+    private static string SalvagePartLabel(Robot r)=>(r.IntegratedParts!=0?IntegratedLabel(r.IntegratedParts)+" / ":"")+
+        string.Join("・",RobotMaterials.Parts.Where(p=>(r.Parts&p)!=0)
+            .Select(p=>PartsLabel(p)+"（"+RobotMaterials.Label(r.Material(p))+"・"+(r.IsDamaged(p)?"汚損":"無傷")+"）"))+
+        (r.IntegratedParts!=0 && r.DamagedParts!=0?" / 汚損箇所："+PartsLabel(r.DamagedParts):"");
     private void SalvageText(string text,Rectangle r,float scale=.4f)=>_ui.Center(text,r,Math.Min(scale,(r.Width-12)/Math.Max(1,_font.MeasureString(text).X)),Cream);
     private void OpenSalvagePlan(int node=-1)
     {
@@ -104,7 +106,7 @@ public partial class Game1
         SalvageText("地図のカゴをクリックすると、その地点のカタログが開きます",new(84,714,784,30),.35f);
         var selected=_setup.Salvage.Items.FirstOrDefault(i=>i.Id==_salvageSelected);
         if(selected!=null){
-            DrawRobotGlyph(new(112,760,72,82),selected.Robot,whiteOutline:true);
+            DrawHangarRobot(new(112,760,72,82),selected.Robot);
             SalvageText("#"+selected.Id+" / "+PartsLabel(selected.Robot),new(212,758,656,30),.43f);
             SalvageText(_setup.Nodes.DisplayName(_setup.Nodes.All[selected.Node]),new(212,795,656,30),.34f);
             SalvageText(SalvagePartLabel(selected.Robot),new(84,841,784,25),.31f);
