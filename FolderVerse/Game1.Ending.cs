@@ -56,7 +56,7 @@ public partial class Game1
         StopEndingMusic();StopBattleMusic();StopIndustryMusic();ClearAllNodeChecks();
         _operationSettingsOpen=false;_operationSettingsSlide=0;
         _dispositionScene=null;_tutorialCaptiveToastSeconds=0;
-        FinishConquestOverview();_conquestOverviewTurn=-1;_tutorialMenuOpen=false;_tutorialAttackGuide=false;_tutorialAttackAchieved=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;
+        _paperReadTurn=-1;_turnPapers=Array.Empty<TurnNewsArticle>();FinishConquestOverview();_conquestOverviewTurn=-1;_tutorialMenuOpen=false;_tutorialAttackGuide=false;_tutorialAttackAchieved=false;_tutorialAttackPending=false;_tutorialAchievementAge=-1;_tutorialIntroShown=false;_tutorialMessagesOpen=false;
         _campaignMenuStage=0;_titleMenuOpen=false;CancelTransportModal();_domesticViews.Clear();
         _homePersuasionActive=false;_homePersuasion.Clear();_homePersuasionWorld=null;_homePersuasionTurn=-1;
         _homePersuasionResults.Clear();_homePersuasionShown.Clear();
@@ -109,5 +109,3 @@ public partial class Game1
         _ui.Box(new(300,916,(int)(1320*Math.Clamp(1-_endingAge/EndingSeconds,0,1)),14),Accent);
     }
 }
-
-

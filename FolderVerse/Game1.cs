@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Input;
 
 public partial class Game1 : Game
 {
-    private enum Screen { Title, PlayerCount, ComputerPlayerCount, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, LandConquest, Fortune, WorldStatus, Battle, Industry, Disposition, InactiveList, Hierarchy, Pocket, Transport, Ending, BattleResearch, LessonCatalog, OpeningBook, OpeningSpace, OpeningLottery, OpeningReview, Diplomacy }
+    private enum Screen { Title, PlayerCount, ComputerPlayerCount, Rolling, Review, CastRolling, CastReview, PlacementRolling, PlacementReview, Ready, PlayerSelect, PlayerReady, LandConquest, Fortune, WorldStatus, Battle, Industry, Disposition, InactiveList, Hierarchy, Pocket, Transport, Ending, BattleResearch, LessonCatalog, OpeningBook, OpeningSpace, OpeningLottery, OpeningReview, Diplomacy, Newspaper }
     private readonly GraphicsDeviceManager _graphics;
     private readonly Random _random=new();
     private WorldSetup _setup=new();
@@ -158,12 +158,14 @@ public partial class Game1 : Game
         if(active && (mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released || mouse.RightButton==ButtonState.Pressed && _previousMouse.RightButton==ButtonState.Released || mouse.ScrollWheelValue!=_previousMouse.ScrollWheelValue || keyboard.GetPressedKeys().Any(k=>_previousKeyboard.IsKeyUp(k)))){
             if(_screen==Screen.Industry)_industryIdleAge=0;
             if(_screen==Screen.Diplomacy)_diplomacyIdleAge=0;
+            if(_screen==Screen.Newspaper)_paperIdle=0;
             if(_screen==Screen.Battle && _robotSummary)_summaryReadAge=0;
         }
         if(!IsOpeningScreen && !_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         if(IsOpeningScreen){OpeningInspectionDrag(mouse,active);OpeningInput(click,enter,escape,gameTime.ElapsedGameTime.TotalSeconds,keyboard);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(TryBeginPendingDiplomacy()){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(TryBeginTurnNewspaper() || TryBeginPendingDiplomacy()){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(_screen==Screen.Newspaper){TurnNewspaperInput(active && click,active && enter,active && escape,gameTime.ElapsedGameTime.TotalSeconds);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateSubordinateDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) || UpdateComputerDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) ||
             HandleComputerMarches(gameTime,escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -194,6 +196,7 @@ public partial class Game1 : Game
         if(IsStatusScreen && WarCancellationInput(active && click,active && escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds; UpdateDomesticSlide((float)elapsed);
+
         _animationTime+=(float)elapsed;
         if(_screen==Screen.Diplomacy || IsStatusScreen && _tradePlannerOpen)
         {
@@ -848,11 +851,11 @@ public partial class Game1 : Game
             _spriteBatch.Begin(transformMatrix:transform);
             _ui.Box(new(0,0,1920,1080),new(16,35,46));
             _spriteBatch.Draw(_titleLogo,new Rectangle(0,0,1920,1080),Color.White*0.14f);
-            if(_screen==Screen.Diplomacy)DrawDiplomacy();else if(_screen==Screen.BattleResearch)DrawBattleResearch();else if(_screen==Screen.LessonCatalog)DrawLessonCatalog();else if(_screen==Screen.Industry)DrawIndustry();else if(_screen==Screen.PlayerCount)DrawPlayerCount();else if(_screen==Screen.ComputerPlayerCount)DrawComputerPlayerCount();else if(_screen is Screen.LandConquest or Screen.Fortune)DrawLandSetupUi();else if(_screen==Screen.Ending)DrawEndingUi();else if(_screen==Screen.Transport)DrawTransport();else if(_screen==Screen.Pocket)DrawPocket();else if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
+            if(_screen==Screen.Newspaper)DrawTurnNewspaper();else if(_screen==Screen.Diplomacy)DrawDiplomacy();else if(_screen==Screen.BattleResearch)DrawBattleResearch();else if(_screen==Screen.LessonCatalog)DrawLessonCatalog();else if(_screen==Screen.Industry)DrawIndustry();else if(_screen==Screen.PlayerCount)DrawPlayerCount();else if(_screen==Screen.ComputerPlayerCount)DrawComputerPlayerCount();else if(_screen is Screen.LandConquest or Screen.Fortune)DrawLandSetupUi();else if(_screen==Screen.Ending)DrawEndingUi();else if(_screen==Screen.Transport)DrawTransport();else if(_screen==Screen.Pocket)DrawPocket();else if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); _spriteBatch.End();
             {
             if(_screen is Screen.LandConquest or Screen.Fortune)DrawLandSetupGlobe(canvas,transform,viewport);
             else if(_screen==Screen.Battle){if(!_setup.Campaign.UseRobotCombat || _robotPendingFocus<0)DrawBattleGlobe(canvas,transform);}
-            else if(!IsStatusScreen && _screen is not (Screen.Industry or Screen.Diplomacy or Screen.PlayerCount or Screen.ComputerPlayerCount or Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Pocket or Screen.Transport or Screen.Ending or Screen.BattleResearch or Screen.LessonCatalog))
+            else if(!IsStatusScreen && _screen is not (Screen.Industry or Screen.Diplomacy or Screen.Newspaper or Screen.PlayerCount or Screen.ComputerPlayerCount or Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Pocket or Screen.Transport or Screen.Ending or Screen.BattleResearch or Screen.LessonCatalog))
             {
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;
@@ -918,7 +921,7 @@ public partial class Game1 : Game
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){_hangarActionArt?.Dispose();_hangarActionArt=null;DisposeIndustryWheel();_openingReadingTable?.Dispose();_openingReadingTable=null;foreach(var art in _maplePackageArt)art?.Dispose();Array.Clear(_maplePackageArt);_sectorChangeArt?.Dispose();_sectorChangeArt=null;DisposeBattleToyArt();_robotHeadTextures?.Dispose();_robotHeadTextures=null;_robotTorsoTextures?.Dispose();_robotTorsoTextures=null;_robotLegTextures?.Dispose();_robotLegTextures=null;_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeTutorialPlanets();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_shipmentChime?.Dispose();_seaWave?.Dispose();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){_diplomacyRoom?.Dispose();_paperKnock?.Dispose();_hangarActionArt?.Dispose();_hangarActionArt=null;DisposeIndustryWheel();_openingReadingTable?.Dispose();_openingReadingTable=null;foreach(var art in _maplePackageArt)art?.Dispose();Array.Clear(_maplePackageArt);_sectorChangeArt?.Dispose();_sectorChangeArt=null;DisposeBattleToyArt();_robotHeadTextures?.Dispose();_robotHeadTextures=null;_robotTorsoTextures?.Dispose();_robotTorsoTextures=null;_robotLegTextures?.Dispose();_robotLegTextures=null;_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeTutorialPlanets();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_shipmentChime?.Dispose();_seaWave?.Dispose();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         if(disposing){SaveBgmSettings();StopBattleMusic();StopIndustryMusic();StopEndingMusic();DisposeTitleMusic();}

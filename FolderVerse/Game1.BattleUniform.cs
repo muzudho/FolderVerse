@@ -70,9 +70,9 @@ public partial class Game1
             role is not (BattleRole.Soldier or BattleRole.Captain))
             return false;
 
-        if (!HasRobotHeadArt(area, robot, allowCaptain: true) ||
-            FindRobotBodyArt(area, robot, RobotParts.Body, allowCaptain: true) == null ||
-            FindRobotBodyArt(area, robot, RobotParts.Legs, allowCaptain: true) == null)
+        if (!HasRobotHeadArt(area, robot, allowCaptain: true, showIntegratedMaterial: true) ||
+            FindRobotBodyArt(area, robot, RobotParts.Body, allowCaptain: true, showIntegratedMaterial: true) == null ||
+            FindRobotBodyArt(area, robot, RobotParts.Legs, allowCaptain: true, showIntegratedMaterial: true) == null)
             return false;
 
         bool captain = role == BattleRole.Captain;
