@@ -1067,3 +1067,103 @@
 - End 2026-11-18 11:57:04.986576+09:00 exit1 TIMEOUT=True process exit confirmed; normal non-log snapshot unchanged=True (2 files before, 2 after).
 - Interrupted 2026-11-18T22:16:09.350966+09:00 : computer-use list_windows returned a single Folder Verse window2230228, but first get_window_state failed with exact error Computer Use app approval timed out. No screenshot or click obtained. External300s deadline terminated own PID6152 and wait confirmed exit1; later taskkill confirmed no such process. This is automation/approval TIMEOUT, not a reproduced game defect. Normal non-log snapshot unchanged.
 - Last verified stage: isolated launcher started; actual Title screenshot/START not verified. Remaining full desktop playthrough unchanged. Resume when Computer Use app approval is granted, using fresh window selection and existing launcher, no product repair/TUT ID. Skill used: computer-use/SKILL.md and required guidance/API/confirmations.
+
+
+## 2026-11-18 22:19 JST current-HEAD regression refresh
+
+- Desktop approval timeout remains unresolved; do not repeat physical-control requests without approval change. HEAD ed3c02d5; tutorial-specific files unchanged versus f5f8109d but shared UI/world policy changed. Historical helper pass is not current-HEAD proof. Planned bounded build600s into existing local fallback, previous NAS unavailable; no Content tree proliferation.
+- Build 2026-11-18 22:18:34.385438+09:00 to 2026-11-18 22:19:06.083037+09:00 PID23664 exit0 TIMEOUT=False command ['dotnet', 'build', 'tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--no-restore', '--disable-build-servers', '-p:UseAppHost=false', '-v:minimal']; logs current-war-build.out/.err in D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local
+- Planned current-war-run limit300s; seeded helper regression only, isolated test save/achievements; not desktop START traversal.
+- Run 2026-11-18 22:19:30.868803+09:00 to 2026-11-18 22:19:45.733822+09:00 PID33100 exit0 TIMEOUT=False command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\TutorialWarGuidesUi\\debug\\TutorialWarGuidesUi.dll'] env WAR_SEED5 EXTRA_TURNS12 EXTRA_WAR1 PRIORITIZE_CELL1 WEAK_TARGET1 RECRUIT1 (FOLDERVERSE_TUTORIAL_ prefix), ALSOFT_DRIVERS=null; logs current-war-run.out/.err in D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local
+- Outcome 2026-11-18T22:20:04.278728+09:00: build exit0 zero warnings/errors; helper regression run exit0. Post-move guide, target/sortie/turn-end normal input, save/resume and manual Ending->Title->menu lessons medal passed. Current seed differs from historical AI result: after turn14 player0 has5/6 cells, automatic=False, conquest medal=False. Do NOT carry historical6/6 conquest success forward to ed3c02d5. This run did not assert conquest and is not a current conquest pass.
+- Partial audit complete, no reproduced TUT defect. Shared AI policy changes can change seed outcome; next extend bounded helper turn budget or inspect remaining cell before classifying. Full desktop START-to-finish remains blocked by previously reported app-approval timeout; no new desktop request issued. Existing diagnostic artifacts reused, product unchanged.
+
+
+## 2026-11-18 22:23 JST repair review
+
+- Start22:23 end 2026-11-18T22:23:29.947737+09:00; HEAD ed3c02d5. Latest completed current-HEAD regression passed its guide/input/save/manual-ending checks. Seed5 reaching5/6 at turn14 is unconfirmed conquest coverage, not a reproduced progression defect; no repair target or TUT ID inferred. No product change, duplicate run or build.
+- Review complete. Next audit inspect remaining cell/extend finite helper turn budget, retaining actual conquest/medal assertions if reached. Physical START-to-finish and current conquest medal remain unverified; previously reported desktop app-approval issue unchanged, no repeated request. User changes preserved.
+
+- Planned war24-build limit600s HEAD ed3c02d5 logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\war24-build.out/.err; existing local fallback reused.
+- war24-build 2026-11-18 22:30:11.585677+09:00 to 2026-11-18 22:30:14.487222+09:00 PID23244 exit0 TIMEOUT=False command ['dotnet', 'build', 'tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--no-restore', '--disable-build-servers', '-p:UseAppHost=false', '-p:BuildProjectReferences=false', '-v:minimal']
+
+- Planned war24-run limit300s HEAD ed3c02d5 logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\war24-run.out/.err; existing local fallback reused.
+- war24-run 2026-11-18 22:30:14.487720+09:00 to 2026-11-18 22:30:21.711864+09:00 PID448 exit3762504530 TIMEOUT=False command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\TutorialWarGuidesUi\\debug\\TutorialWarGuidesUi.dll']
+
+- Planned war24-build2 limit600s; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\war24-build2.out/.err.
+- war24-build2 2026-11-18 22:30:57.000228+09:00 to 2026-11-18 22:30:59.754916+09:00 PID23180 exit0 TIMEOUT=False command ['dotnet', 'build', 'tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--no-restore', '--disable-build-servers', '-p:UseAppHost=false', '-p:BuildProjectReferences=false', '-v:minimal']
+
+- Planned war24-run2 limit300s; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\war24-run2.out/.err.
+- war24-run2 2026-11-18 22:30:59.755625+09:00 to 2026-11-18 22:31:13.407571+09:00 PID10236 exit0 TIMEOUT=False command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\TutorialWarGuidesUi\\debug\\TutorialWarGuidesUi.dll']
+
+
+## 2026-11-18 22:30 JST extended conquest audit outcome
+
+- Start22:29 end 2026-11-18T22:31:41.653885+09:00 HEAD ed3c02d5; partial audit completed, product unchanged. Diagnostic EXTRA_TURNS cap12->24 and optional FOLDERVERSE_TEST_CONTENT override added in tests/TutorialWarGuidesUi/Program.cs. First run failed before gameplay with missing compiled robot-assembly-icon.xnb after BuildProjectReferences=false build. Reused existing compiled Content via absolute FOLDERVERSE_TEST_CONTENT=D:\github.com\muzudho\FolderVerse\FolderVerse\Content\bin\DesktopGL\Content rather than copying another tree. Build2/run2 exit0, noTIMEOUT; all commands/PIDs/logs above.
+- Run2 env FOLDERVERSE_TUTORIAL_WAR_SEED5 EXTRA_TURNS24 EXTRA_WAR1 PRIORITIZE_CELL1 WEAK_TARGET1 RECRUIT1; normal helper actions reached turn15 automatic Ending, winner0,6/6 cells, conquest medalTrue. Saved lessons/conquest medal assertions and normal ending-return/title/menu assertions passed. Historical turn14 budget limitation resolved for this current seed, no product defect/TUT ID.
+- Visually reviewed1920x1080 automatic ending: World Conqueror heading, first place Entry01, Katarina portrait/name,6sectors601points, return/title controls readable. Preserved outside tmp D:\github.com\muzudho\FolderVerse\artifacts\tutorial-audit\war-guide-ending-current.png SHA256 b5c0058937e30cea68cff56694d821a2228cd5a22aeab655c3257ac27afc63f4. Logs war24-run2.out/.err; misleading historical console text manual ending remains, automatic=True is authoritative.
+- Full physical START-to-finish remains unverified due previously reported Computer Use approval timeout. Helper begins via tutorial method and advances lesson state; success does not close desktop coverage. Next current-menu screenshot/medals review or approved physical pass; no further build needed for unchanged code.
+
+
+## 2026-11-18 22:36 JST repair review
+
+- Start22:36 end 2026-11-18T22:36:28.666107+09:00; HEAD ed3c02d5. Latest completed audit reached automatic conquest at turn15,6/6 cells and saved conquest/lessons medals, then returned to Title/menu. No confirmed unresolved product defect in this result, so no product repair or repeated build/run.
+- Review complete. The previous turn14 limitation was diagnostic coverage only and needed no game change. Physical START-to-finish remains unverified with unchanged previously notified app-approval issue. Next audit reuse current menu evidence or approved desktop input. Existing user/diagnostic changes preserved.
+
+
+## 2026-11-18 22:52 JST current menu visual audit
+
+- Start22:52 end 2026-11-18T22:52:35.901854+09:00 HEAD ed3c02d5; partial visual audit completed. Reused war24-run2 screenshot war-guide-8.png (source mtime 2026-11-18 22:31:13.159288+09:00), no build/game/UI process or product change. Current Git differences: audit records and diagnostic Content/stage/turn-cap updates only.
+- Reviewed1920x1080 HowToPlay after normal ending return/reentry: Petitstella02 shows gold lessons and world-conquest medals, Primaplana01 selected with departure label, remaining03..07 dimmed and each displays unfinished tutorial message. Current screenshot proves rendering only; no new disabled-entry click/keyboard test in this round.
+- Preserved outside tmp D:\github.com\muzudho\FolderVerse\artifacts\tutorial-audit\war-guide-medals-current.png SHA256 459ce97379b948d5fa9bbcff8e13bbfffe31f733f873198b6649902837e49c53. No new TUT defect. Full physical Title START-to-finish remains unverified; existing app-approval timeout unchanged and no repeated request. Next approved physical pass or a specific uncovered input case; do not repeat completed helper conquest/menu checks for unchanged code.
+
+
+## 2026-11-18 22:55 JST repair review
+
+- Start22:55 end 2026-11-18T22:55:59.657471+09:00; HEAD ed3c02d5. Latest completed22:52 menu visual audit confirms both Petitstella medals and five unfinished tiles; no reproduced product defect. No game change or repeated build/test.
+- Review complete. Preserve distinction between screenshot verification and unfinished-entry input behavior. Next audit approved physical pass or targeted uncovered menu input, using isolated data. Existing desktop approval issue unchanged; no repeat request or new TUT ID.
+
+- Planned current-menu-build limit600s HEAD ed3c02d5; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\current-menu-build.out/.err; existing local fallback and compiled Content reused.
+- current-menu-build 2026-11-18 23:10:46.007927+09:00 to 2026-11-18 23:10:48.518720+09:00 PID34276 exit0 TIMEOUT=False command ['dotnet', 'build', 'tests/TutorialPlanetMenuUi/TutorialPlanetMenuUi.csproj', '--artifacts-path', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local', '--no-restore', '--disable-build-servers', '-p:UseAppHost=false', '-p:BuildProjectReferences=false', '-v:minimal']
+
+- Planned current-menu-run limit300s HEAD ed3c02d5; logs D:\github.com\muzudho\FolderVerse\artifacts\tmp\delete-after-2026-11-18\tutorial-audit-local\current-menu-run.out/.err; existing local fallback and compiled Content reused.
+- current-menu-run 2026-11-18 23:10:48.519131+09:00 to 2026-11-18 23:10:56.913123+09:00 PID25252 exit0 TIMEOUT=False command ['dotnet', 'D:\\github.com\\muzudho\\FolderVerse\\artifacts\\tmp\\delete-after-2026-11-18\\tutorial-audit-local\\bin\\TutorialPlanetMenuUi\\debug\\TutorialPlanetMenuUi.dll']
+
+
+## 2026-11-18 23:10 JST current menu input audit
+
+- Start23:10 end 2026-11-18T23:11:17.269415+09:00 HEAD ed3c02d5; partial audit completed, product unchanged. tests/TutorialPlanetMenuUi/Program.cs only adds optional FOLDERVERSE_TEST_CONTENT existing Content override, ALSOFT_DRIVERS=null; no Content copies. Current referenced Game1 DLL SHA256 e3524c53dc94fa1184b2798bda416175472482f687e1c4d662dadd1956d3196e. Commands/PIDs/limits/logs above; build/run exit0, noTIMEOUT, stderr empty.
+- Existing rendered regression passed seven previews/dimensions, cursor navigation, each unfinished03..07 tile mouse-handler click staysTitle, Enter on first unfinished tile stays menu, Petitstella click->storybook skip->integrated WorldStatus with beginner robots, Primaplana flat nonwrapping topology/repeated-attack conquest, Escape back to start menu. These are synthetic handler inputs/helper title-menu entry, not desktop START clicks or full Petitstella lesson traversal. Keyboard Enter verified only first disabled tile, not allfive.
+- Evidence current-menu-run.out/.err and tutorial-planets-0..6.png in existing output bin/TutorialPlanetMenuUi/debug,1920x1080 rendering. No new TUT defect; no repeat of already passed Petitstella conquest regression. Remaining physical title-to-finish blocked by unchanged previously notified Computer Use approval timeout; next approved desktop pass or targeted uncovered input case.
+
+
+## 2026-11-18 23:15 JST repair review
+
+- Start23:15 end 2026-11-18T23:16:01.394092+09:00 HEAD ed3c02d5. Latest completed23:10 menu input/render regression passed five unfinished mouse entries, first disabled Enter, Petitstella entrance and menu return. No confirmed product defect; no product repair, repeated build or UI run.
+- Review complete. Full physical START-to-finish and Enter on remaining four disabled entries remain unverified, separate from passing synthetic inputs. Desktop approval issue unchanged; preserve existing diagnostic/user differences and await a specific uncovered audit case or approved physical pass.
+
+
+## 2026-11-18 23:30 JST unfinished-entry static follow-up
+
+- Start23:30 end 2026-11-18T23:30:54.226923+09:00 HEAD ed3c02d5; partial static audit completed. Instructions/latest audit/Git diff reviewed; unchanged product, existing diagnostic/record changes preserved. No build/UI run or new screenshot.
+- Game1.Tutorial.cs32 gates both Enter and tile-click launch with selection<2; TutorialPlanets.cs42 also renders enabled only for i<2. This explains shared disabled behavior across03..07, but does not convert remaining four Enter cases into runtime passes. Earlier current menu test remains the runtime evidence for allfive mouse entries and first disabled Enter.
+- No new TUT defect. Current helper conquest/medals/menu checks are already passed; do not repeat unchanged broad tests. Full physical title-to-finish still awaits previously reported Computer Use approval; no new approval request issued. Next useful continuation is approved physical pass or changed-code regression, preserving unverified scope.
+
+
+## 2026-11-18 23:35 JST repair review
+
+- Start23:34 end 2026-11-18T23:34:55.399182+09:00 HEAD ed3c02d5. Latest completed23:30 static audit reports shared disabled-entry guard and no confirmed defect. No product repair or repeated validation.
+- Review complete. Existing helper/input/render passes remain valid for their stated scope; physical START-to-finish awaits previously notified desktop approval. No state change or new TUT ID. Next meaningful work requires approved physical input or a new/changed reproducible case.
+
+
+## 2026-11-18 23:52 JST unchanged-state audit
+
+- Start23:52 end 2026-11-18T23:52:35.073823+09:00 HEAD ed3c02d5; review completed, physical playthrough still deferred. AGENTS/README and current differences checked; no new product change, confirmed defect or approval change. Did not repeat passing helper/menu regressions or request desktop control again. No UI process launched.
+- Coverage unchanged: helper conquest6/6/medals/title return passed22:30; rendered menu and synthetic unfinished-entry behavior passed23:10. Physical START-to-finish, normal settings/save transitions throughout desktop session, and Enter on remaining four disabled tiles are not validated. Continue from fresh title window only after desktop control approval, or on a concrete product change; no TUT ID added.
+
+- Repair review 2026-11-18 23:53 to 2026-11-18T23:53:50.041281+09:00 HEAD ed3c02d5: latest completed23:52 review unchanged, no confirmed product target. No repair/build/run; physical START-to-finish remains pending previously notified app approval. Existing coverage and next position unchanged; review complete.
+
+- Unchanged-state audit follow-up2026-11-19 start00:09 end 2026-11-19T00:10:09.221651+09:00 HEAD ed3c02d5: initial instructions/diff reviewed, no product or approval change. Second audit review since23:52 without desktop retry; no new timeout invocation, UI process or regression repetition. Physical title-to-finish remains unverified; resume from isolated Title after approval or on relevant code change. Review complete, no TUT ID.
+
+- Repair review2026-11-19 start00:14 end 2026-11-19T00:14:19.062155+09:00 HEAD ed3c02d5: latest completed00:09 audit unchanged, no confirmed product defect. No game change/build/run; physical START-to-finish remains unverified pending previously reported desktop approval. Review complete; next position and prior successful helper/menu coverage unchanged.
+`n- Approval-reset follow-up 2026-11-19T06:18:38.8542600+09:00: user reported reset; actual Git read succeeded and existing seven modified files preserved. sky.list_windows returned only ChatGPT; get_window_state on that returned window again failed Computer Use app approval timed out. No game launched or input sent, no normal saves touched. Physical START-to-finish remains unverified; no new TUT defect. Audit interrupted at desktop capture approval, resume after app approval is available. Prior helper/render coverage unchanged.

@@ -2,6 +2,7 @@ using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
+using Microsoft.Xna.Framework.Input;
 using var game=new DemoInspectorChecks();game.Run();
 sealed class DemoInspectorChecks:Game1{
  const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;int frame;int node;WorldSetup world=null!;
@@ -10,7 +11,7 @@ sealed class DemoInspectorChecks:Game1{
  object Call(string n,params object[] args)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,args)!;
  static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
  protected override void LoadContent(){
-  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();world=(WorldSetup)Get("_setup");world.SetWorld(123);world.SetCast(456);world.SetPlacement(789);world.SelectPlayer(0);
+  Content.RootDirectory=Environment.GetEnvironmentVariable("FOLDERVERSE_TEST_CONTENT") ?? Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();world=(WorldSetup)Get("_setup");world.SetWorld(123);world.SetCast(456);world.SetPlacement(789);world.SelectPlayer(0);
   ((WorldPreview)Get("_world")).ShowSetup(world,true);((CubeNet)Get("_net")).Home(world);
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_conquestOverview",false);Set("_conquestOverviewEnabled",false);Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);
   Call("ResetInspector");Check((int)Get("_inspectedNode")==-1,"Fixture starts with no inspected supervisor");
@@ -21,7 +22,38 @@ sealed class DemoInspectorChecks:Game1{
   var font=(SpriteFont)Get("_font");Check("伏太峡渓渡谷".All(font.Characters.Contains),"Compiled font includes every previously missing static glyph");Check(font.DefaultCharacter=='?' && !font.Characters.Contains('\uE000'),"Unknown external text has an explicit fallback");Check(font.MeasureString("external \uE000").X>0,"Unknown dynamic glyph cannot throw during measurement");
  }
  protected override void Update(GameTime t){}
+ bool PendingAudit=>Environment.GetEnvironmentVariable("FOLDERVERSE_PENDING_RENDER")=="1";
+ bool PendingCanvas=>Environment.GetEnvironmentVariable("FOLDERVERSE_PENDING_CANVAS")=="1";
+ void PendingClick(Point point){
+  var canvas=(Rectangle)Call("CanvasBounds");int x=canvas.X+(int)Math.Round(point.X*canvas.Width/1920d),y=canvas.Y+(int)Math.Round(point.Y*canvas.Height/1080d);
+  Console.WriteLine($"Canvas before logical={point} canvas={canvas} physical={x},{y} screen={Get("_screen")} factory={Get("_nodeFactoryOpen")} plan={Get("_factoryPlanLine")} slide={Get("_domesticSlide")} persuasion={Get("_homePersuasionActive")} chrome={Get("_tutorialChromeSlide")} phase={Call("get_PlanningPhaseLabel")} cutin={Get("_lastCutInPhase")}/{Get("_cutInStarted")}");
+  foreach(var state in new[]{ButtonState.Released,ButtonState.Pressed,ButtonState.Released})Call("HandleInput",new MouseState(x,y,0,state,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.FromSeconds(100),TimeSpan.FromSeconds(.1)),true);
+  Console.WriteLine($"Canvas after pointer={Get("_pointer")} screen={Get("_screen")} pending={Get("_pendingIntakesOpen")} factory={Get("_nodeFactoryOpen")} slide={Get("_domesticSlide")} persuasion={Get("_homePersuasionActive")}");
+ }
+ void DrawPendingAudit(GameTime t){
+  if(frame==0){
+   if(PendingCanvas){var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();}
+   world.Robots.ProductionIntakes.Clear();
+   for(int i=0;i<10;i++)world.Robots.ProductionIntakes.Add(new ProductionIntake(node,null,new Robot(920000+i,world.PlayerSlot,RobotParts.Head),new RobotWorkshop()));
+   Call("OpenNodeFactory");Set("_intakeNode",node);Set("_intakePage",0);Set("_pendingIntakesOpen",true);
+   if(PendingCanvas){Set("_pendingIntakesOpen",false);Call("UpdateDomesticSlide",1f);var footer=(Rectangle)typeof(Game1).GetField("FactoryPendingIntakesButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;PendingClick(footer.Center);Check((bool)Get("_pendingIntakesOpen"),"Canvas footer click failed");}
+  }
+  if(frame==1){
+   var next=(Rectangle)typeof(Game1).GetField("IntakeNext",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+   if(PendingCanvas)PendingClick(next.Center);else{Set("_pointer",next.Center);Call("ProductionIntakeInput",true,false);}Check((int)Get("_intakePage")==1,"Pending next page did not advance");
+  }
+  if(frame==2){
+   var row=(Rectangle)typeof(Game1).GetMethod("IntakeRow",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{1})!;
+   if(PendingCanvas)PendingClick(row.Center);else{Set("_pointer",row.Center);Call("ProductionIntakeInput",true,false);}
+   Check(!(bool)Get("_pendingIntakesOpen") && ReferenceEquals(Get("_intakeLine"),world.Robots.ProductionIntakes[9].Line),"Rendered second page selected wrong product");
+  }
+  if(frame==3){Call("ProductionIntakeInput",false,true);Check(Get("_intakeLine")==null,"Target picker Escape did not close");Call("ResetInspector");Check(!(bool)Get("_pendingIntakesOpen"),"Reset kept pending list");}
+  base.Draw(t);var size=GraphicsDevice.PresentationParameters;var pixels=new Color[size.BackBufferWidth*size.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
+  using var tex=new Texture2D(GraphicsDevice,size.BackBufferWidth,size.BackBufferHeight);tex.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"pending-render-{frame}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);
+  if(frame++==3){Console.WriteLine("PASS pending rendered pages, second-page product identity, target picker and Escape/reset; synthetic pending fixture.");Exit();}
+ }
  protected override void Draw(GameTime t){
+  if(PendingAudit){DrawPendingAudit(t);return;}
   if(frame==1){Set("_inspectedNode",-1);} // Office must render its explicit node, independent of region supervisor state.
   if(frame==2){
    Set("_inspectedNode",node);Set("_demoDomesticStage",11);Set("_demoDomesticAge",0d);

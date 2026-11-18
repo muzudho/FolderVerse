@@ -18,7 +18,7 @@ sealed class PlanetMenuGame:Game1
  void OpenMenu(){Set("_screen",Enum.Parse(Get("_screen").GetType(),"Title"));Call("OpenTitleStartMenu");Set("_pointer",Bounds("TitleMenuItem",0).Center);Call("TitleStartMenuInput",true,false,false,new KeyboardState(),true);}
  void SkipOpening(){Check(Get("_screen").ToString()=="OpeningBook","Tutorial starts with the storybook");Set("_pointer",new Point(1675,55));Call("OpeningInput",true,false,false,0d,new KeyboardState());}
  protected override void LoadContent(){
-  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_autoSaveEnabled",false);OpenMenu();
+  Content.RootDirectory=Environment.GetEnvironmentVariable("FOLDERVERSE_TEST_CONTENT") ?? Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_autoSaveEnabled",false);OpenMenu();
   Check((bool)Get("_tutorialMenuOpen") && (int)Get("_tutorialPlanetSelection")==0,"How to Play opens seven-planet menu with first selected");
   var sizes=((int X,int Y,int Z)[])typeof(Game1).GetField("TutorialPlanetSizes",S)!.GetValue(null)!;Check(sizes.SequenceEqual(new[]{(3,1,1),(1,1,1),(1,2,1),(2,1,2),(2,2,2),(3,2,2),(3,3,3)}),"All seven requested dimensions match previews");
   var textures=(RenderTarget2D[])Get("_tutorialPlanetTextures");Check(textures.Length==7,"Seven previews exist");foreach(var texture in textures){var pixels=new Color[texture.Width*texture.Height];texture.GetData(pixels);Check(pixels.Count(p=>p.A>0)>100,"Every globe has rendered geometry");}

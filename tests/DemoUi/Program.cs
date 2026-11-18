@@ -56,10 +56,14 @@ sealed class DemoCheck:Game1
         Console.WriteLine("first transport: "+Snapshot());
         if(Environment.GetEnvironmentVariable("FOLDERVERSE_DEMO_NATURAL_CONTINUE")=="1"){
             var naturalWorld=(WorldSetup)Get("_setup");int initialTurn=naturalWorld.Population.Turn;
-            string previous="";int transports=0;bool leftTransport=false;
+            string previous="",previousStage="";int transports=0;bool leftTransport=false;
             for(int i=0;i<2400 && (bool)Get("_demoActive");i++){
                 Tick(.25);string state=$"{Get("_screen")}/{naturalWorld.Campaign.Phase}/{naturalWorld.Population.Turn}";
                 overview|=(bool)Get("_transportOverview");directMap|=(bool)Get("_directMap");directPair|=(bool)Get("_directPairOpen");
+                if(Get("_screen").ToString()=="WorldStatus"){
+                    string stage=$"{Get("_demoDomesticStage")}/{Get("_demoMapStage")}/{Get("_populationNode")}";
+                    if(stage!=previousStage){Console.WriteLine($"Natural stage t={i*.25:F2} stage={stage} pointer={Get("_demoClickPoint")} primary4={typeof(Game1).GetProperty("TransportOverviewButton",Flags)!.GetValue(this)}");previousStage=stage;}
+                }
                 if(state!=previous){Console.WriteLine($"Natural continuation t={i*.25:F2} {state} "+Snapshot());base.Draw(new GameTime());previous=state;}
                 if(Get("_screen").ToString()!="Transport")leftTransport=true;
                 if(leftTransport && Get("_screen").ToString()=="Transport"){transports++;leftTransport=false;}
