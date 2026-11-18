@@ -54,6 +54,20 @@ sealed class DemoCheck:Game1
         Console.WriteLine($"Natural delivery flags before first transport: overview={overview}, directMap={directMap}, directPair={directPair}");
         Check(transport,$"Demo did not enter propagation: screen={Get("_screen")} age={Get("_demoAge")} stage={Get("_demoDomesticStage")}");
         Console.WriteLine("first transport: "+Snapshot());
+        if(Environment.GetEnvironmentVariable("FOLDERVERSE_DEMO_NATURAL_CONTINUE")=="1"){
+            var naturalWorld=(WorldSetup)Get("_setup");int initialTurn=naturalWorld.Population.Turn;
+            string previous="";int transports=0;bool leftTransport=false;
+            for(int i=0;i<2400 && (bool)Get("_demoActive");i++){
+                Tick(.25);string state=$"{Get("_screen")}/{naturalWorld.Campaign.Phase}/{naturalWorld.Population.Turn}";
+                overview|=(bool)Get("_transportOverview");directMap|=(bool)Get("_directMap");directPair|=(bool)Get("_directPairOpen");
+                if(state!=previous){Console.WriteLine($"Natural continuation t={i*.25:F2} {state} "+Snapshot());base.Draw(new GameTime());previous=state;}
+                if(Get("_screen").ToString()!="Transport")leftTransport=true;
+                if(leftTransport && Get("_screen").ToString()=="Transport"){transports++;leftTransport=false;}
+                if(naturalWorld.Population.Turn>=initialTurn+2 && transports>=2)break;
+            }
+            Console.WriteLine($"Natural continuation flags overview={overview} directMap={directMap} directPair={directPair} transports={transports} initialTurn={initialTurn} finalTurn={naturalWorld.Population.Turn}");
+            Console.WriteLine("Natural final: "+Snapshot());checkedDemo=true;return;
+        }
         double before=(double)Get("_demoAge");Tick(1,active:false);Check((double)Get("_demoAge")>before,"Inactive demo stopped");
         var screenField=typeof(Game1).GetField("_screen",Flags)!;
         var regressionWorld=(WorldSetup)Get("_setup");regressionWorld.Relations.Pending.Clear();
