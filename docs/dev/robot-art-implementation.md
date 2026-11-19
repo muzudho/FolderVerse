@@ -1407,3 +1407,21 @@ Materials診断123/456/789の実経路0→1。メープル頭・段ボール胴�
 2026-11-19 22:15 JST 長距離一体型部分便の補完終点合体で、受取が兵だと届いた隊長役職が消える不具合を再現（CB716、役職以外完全一致）。RobotLongDeliveryの予測/適用を共通MergeDeliveredPartsにし直送便と同じ「どちらか隊長なら隊長」へ修正。tests/NineMaterialLongMerge追加。現行隔離DLL AEF4D1E9C241BEFA3491996E0EBC0F50A599C1B905D5B32CEF8D7177923AD103、９素材×２一体型18組の２中継/毎段保存→到着合体/元残部完全一致・注文解除、受取隊長維持/兵同士維持もPASS。警告エラー0・diffcheck正常。NAS nine-material-long-joint-merge-2215/before-failure.txt・fixed-result.txt、重要記録archives/robot-art-implementation/long-delivery-captain-merge-2026-11-19-2215.md。描画/入力は未確認、次は到着格納庫の隊長帽表示。現行詰所救援込みの新DLLを旧CPU比較へ混ぜず迂回案は未採用。元ゲーム/セーブ/公開物/原画変更・コミット等なし。
 2026-11-19 23:17 JST 長距離便補完合体の到着格納庫を描画確認。Materials world123/cast456/placement789診断物流、メープル頭＋段ボール胴/ソフビ脚一体・隊長/胴汚損を実２段Advance/毎保存→兵の頭へ合体しrecord完全一致。実到着機体の隊長帽/素材/国旗をFHD目視、脚素材/接合/兵/胴PP対照４種は13136/4148/118485/26233画素差・機体矩形外０。５確認/ビルド警告エラー０、固定D2E34D89全SHAコピー照合。NAS archives/robot-art-implementation/long-arrival-captain-render-2317に恒久ソース・notes、tmp同名に画像/結果。１混成組の描画で全９素材/実配送飛行UI/入力は未証明。診断Shipmentを実飛行生成証拠と扱わない。製品/元ゲーム/セーブ/原画変更なし。次は長距離便実UIか保存互換の具体条件へ。
 
+
+2026-11-20 00:10 JST ９素材×両一体型隊長18組の第１中継保存後に入荷先owner1へ変更し、実配送取消→再保存を回帰。現在地荷は輸送札解除以外record完全一致、元残部/受取補完品不変・ID重複なし。既存合体18/役職2と計38ケース通過（総括行込みPASS39行）。固定C23全SHA実行コピー記録/警告エラー0、恒久tests/NineMaterialLongMergeとREADME追記、NAS archives/robot-art-implementation/long-captain-captured-target-2026-11-20-0010にnotes/結果、tmp/delete-after-2026-11-20/long-captain-captured-target-0010にビルド。UI/飛行/全切断の証明ではなく製品/原料ルール/元セーブ/稼働エキシビジョン変更なし。次は取消理由UIか複数便の部分取消へ。
+
+
+
+2026-11-20 02:12 JST 九素材混成隊長の長距離２便を第１中継保存→片方取消→保存して他便record不変、次配送で他便到着/取消荷は現在地、両者札解除以外完全一致を９ケース追加。既存38と計47通過（総括込みPASS48行）、固定C23全SHA実行照合/警告エラー0。初回第２便のcommander/targetSlot診断引数誤りでslot重複拒否、targetSlot:1へ訂正し全通過。恒久tests/NineMaterialLongMerge、NAS archives/robot-art-implementation/long-partial-cancel-2026-11-20-0212にソース/result/notes、tmp20同名にビルド。製品/元ゲーム/原料/公開物変更なし。次は取消理由UIか実配送飛行素材へ。
+
+
+2026-11-20 03:13 JST 九素材×両一体型隊長18組の実２段配送からTransport.LastTransfers.Visualを36件検査。cargo.Sliceとrecord完全一致（材質/接合/国籍/隊長/汚損）、段目ごとの輸送札/飛行先も一致。既存計47ケース全通過、固定C23全SHA実行照合/警告エラー0。Game1.Propagationが同Visualを共通DrawHangarRobotへ渡す経路も読取確認、24x36実画素/目視は未検証。NAS archives/robot-art-implementation/long-flight-metadata-2026-11-20-0313にソース/result/notes、tmp20同名ビルド。製品/元ゲーム/原料/保存変更なし。次は実Visual小サイズ描画または取消理由履歴UIへ。
+
+
+2026-11-20 04:19 JST 実完全体２段配送/毎保存から得た混成隊長LastTransfers.Visualを共通DrawHangarRobotで24x36と180x270描画。脚材質/接合なし/兵/胴PPの実寸画素差55/18/525/116、２機体矩形外0、全５確認。目視で実寸隊長帽/色、拡大木目/段ボール/ソフビ確認。固定C23全SHA/警告エラー0。NAS archives/robot-art-implementation/long-flight-small-render-2026-11-20-0419に派生ソース/result/notes、tmp20同名に画像/ビルド。実地図経路/入力/全９素材全姿勢の目視とは別。製品/原画/元保存/稼働ゲーム変更なし。次は取消理由履歴UIの到達性か別表示条件へ。
+
+
+2026-11-20 05:12 JST 実配送由来Visualを起点とする九素材描画対照を24x36/180x270で出力。同隊長/胴脚接合/汚損/国旗、PP対照の実寸差297/292/299/293/285/282/298/285、機体外0。発泡/ブリキを目視、計９確認/固定C23全SHA/警告エラー0。九素材各配送の証明ではなくレンダリング横展開。NAS archives/robot-art-implementation/long-flight-nine-materials-2026-11-20-0512に派生ソース/result/notes、tmp20同名画像/ビルド。製品/原画/元ゲーム/保存変更なし。次は取消理由履歴UIの到達性か異なる実表示条件へ。
+
+
+2026-11-20 06:19 JST 実２段配送/毎保存の混成一体型隊長Visualを実Game1.DrawPropagationのFHD配送地図へ渡し区間中間位置を描画/目視。元入力の通し試験でなく隔離呼出。初回movement false対照はバー等も含むため棄却、同movement trueのLastTransfersのみ空へ訂正し703画素差、計２確認。固定C23全SHA/警告エラー0/stderr空。NAS archives/robot-art-implementation/long-propagation-render-2026-11-20-0619にソース/result/notes、tmp20同名画像/ビルド。製品/原画/元保存/稼働ゲーム変更なし。次は取消理由履歴UI到達性か異なる配送表示条件へ。
