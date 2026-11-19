@@ -7,7 +7,7 @@ public sealed partial class BattleLessons
     public void ObserveEmptyFlag(BattleState battle)
     {
         if(battle.Kind!=BattleKind.Node || battle.Defender<0 || battle.FlagStanding)return;
-        var units=battle.Units.Concat(battle.Armies.SelectMany(a=>a.Waiting)).ToArray();
+        var units=battle.Units.Concat(battle.Armies.SelectMany(a=>a.Waiting.Where(u=>u.ArrivalTurn<=battle.Turn))).ToArray();
         // Fallen or withdrawn defenders still prove that this was a defended battle.
         if(units.Any(u=>u.Robot!=null && battle.Allied(u.Owner,battle.Defender)))return;
         foreach(var flag in battle.Events.Where(e=>e.Phase==BattlePhase.Flag && e.Detail is "旗を倒した" or "国旗を倒した")){

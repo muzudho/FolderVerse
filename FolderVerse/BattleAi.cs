@@ -50,7 +50,7 @@ public static partial class BattleAi
         }
         bool armed=unit.Daggers>0 || unit.Rifles>0;
         bool securingFlag=battle.Kind==BattleKind.Node && !battle.SplitBoard && battle.FlagStanding && !battle.Allied(unit.Owner,battle.Defender) &&
-            !battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (a.Waiting.Count>0 || battle.Units.Any(u=>u.Active && u.Owner==a.Owner)));
+            !battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (battle.ReadyWaiting(a).Any() || battle.Units.Any(u=>u.Active && u.Owner==a.Owner)));
         if (unit.Role == BattleRole.Queen && !unit.Retreating && !securingFlag &&
             !(battle.Kind == BattleKind.Node && !battle.FlagStanding && battle.Allied(unit.Owner, battle.LastFlagOwner)) &&
             (battle.Lessons[unit.Owner] & BattleLesson.QueenWithoutTargets) != 0 &&

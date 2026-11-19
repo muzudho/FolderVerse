@@ -202,6 +202,8 @@ public static class AutoSaveStore
                     if(type==typeof(BattleState) && field.Name=="<GateHits>k__BackingField"){field.SetValue(value,new List<BattleGateHit>());continue;}
                     if(type==typeof(BattleState) && (field.Name=="FortificationsBuilt" || field.Name=="InitialDefenseCount"))continue;
                     if(type==typeof(BattleFrame) && field.Name=="<Fortifications>k__BackingField"){field.SetValue(value,Array.Empty<BattleFortification>());continue;}
+                    if(type==typeof(BattleUnit) && field.Name=="ArrivalTurn")continue;
+                    if(type==typeof(BattleFrame) && field.Name=="<Relief>k__BackingField")continue;
                     if(type==typeof(RobotEncounter) && field.Name=="DefenseCount")continue;
                     throw new InvalidDataException("Autosave field is missing: "+field.Name);
                 }

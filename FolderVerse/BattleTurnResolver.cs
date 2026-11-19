@@ -164,15 +164,16 @@ public static partial class BattleTurnResolver
             // Holding the fallen flag no longer forces evacuation or loss of will.
             active|=battle.Kind==BattleKind.Node && !battle.FlagStanding && battle.Allied(battle.LastFlagOwner,army.Owner);
             active|=battle.Kind==BattleKind.Node && battle.FlagStanding && !defender &&
-                !battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (a.Waiting.Count>0 || battle.Units.Any(u=>u.Active && u.Owner==a.Owner))) &&
+                !battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (battle.ReadyWaiting(a).Any() || battle.Units.Any(u=>u.Active && u.Owner==a.Owner))) &&
                 units.Any(u=>u.Active && !u.Retreating && u.Owner==army.Owner && origin.ContainsKey(u.Id) && u.Position!=origin[u.Id]);
-            army.NoWillCount=defender?0:active?0:army.NoWillCount+1;
+            bool enRoute=army.Waiting.Any(u=>u.Active && u.ArrivalTurn>battle.Turn) && !battle.Units.Any(u=>u.Active && u.Owner==army.Owner);
+            army.NoWillCount=defender || enRoute?0:active?0:army.NoWillCount+1;
             if(army.NoWillCount<battle.Rules.NoWillTurns)continue;
             army.Withdrawing=true;
             var departing=battle.Units.Where(u=>u.Active && u.Owner==army.Owner).ToArray();
             if(departing.Length==1 && departing[0].Role==BattleRole.Queen &&
                 !battle.Units.Any(u=>u.Owner==army.Owner && u.Role!=BattleRole.Queen) &&
-                !army.Waiting.Any(u=>u.Active && u.Role!=BattleRole.Queen) &&
+                !battle.ReadyWaiting(army).Any(u=>u.Role!=BattleRole.Queen) &&
                 !HasPersuasionTarget(battle,departing[0]) &&
                 !battle.Persuasions.Any(p=>p.Queen==departing[0].Id))
                 departing[0].WitnessedLessons|=BattleLesson.QueenWithoutTargets;
@@ -186,15 +187,15 @@ public static partial class BattleTurnResolver
     private static bool FlagVictory(BattleState battle)
     {
         if(battle.Kind!=BattleKind.Node || battle.SplitBoard)return false;
-        bool defended=battle.FlagStanding && battle.FlagDefenseTurns>=battle.Rules.FlagDefenseTurns && battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (a.Waiting.Count>0 || battle.Units.Any(u=>u.Active && u.Owner==a.Owner)));
+        bool defended=battle.FlagStanding && battle.FlagDefenseTurns>=battle.Rules.FlagDefenseTurns && battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (battle.ReadyWaiting(a).Any() || battle.Units.Any(u=>u.Active && u.Owner==a.Owner)));
         bool captured=!battle.FlagStanding && battle.FlagCaptureTurns>=battle.Rules.FlagCaptureTurns;
         // A departed captor cannot receive territory; a surviving ally of that captor may finish capture.
         int captor=battle.Armies.Where(a=>!a.Withdrawing && !battle.Allied(a.Owner,battle.Defender) && battle.Allied(a.Owner,battle.LastFlagOwner) &&
-            (battle.Units.Any(u=>u.Active && u.Owner==a.Owner) || a.Waiting.Count>0))
+            (battle.Units.Any(u=>u.Active && u.Owner==a.Owner) || battle.ReadyWaiting(a).Any()))
             .OrderBy(a=>battle.Allied(a.Owner,battle.LastFlagOwner)?0:1).ThenBy(a=>a.Owner).Select(a=>a.Owner).DefaultIfEmpty(-1).First();
-        bool cleared=!battle.FlagStanding && captor>=0 && !battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (a.Waiting.Count>0 || battle.Units.Any(u=>u.Active && u.Owner==a.Owner)));
+        bool cleared=!battle.FlagStanding && captor>=0 && !battle.Armies.Any(a=>battle.Allied(a.Owner,battle.Defender) && (battle.ReadyWaiting(a).Any() || battle.Units.Any(u=>u.Active && u.Owner==a.Owner)));
         if(!defended && !captured && !cleared)return false;
-        battle.Winner=defended?battle.Defender:captor;battle.Finished=true;
+        battle.Winner=defended?battle.Defender:captor;battle.Finished=true;battle.CancelUnarrivedRelief();
         if(defended)BattleRetreat.AfterFlagDefense(battle);
         battle.Events.Add(new(battle.Turn,BattlePhase.Result,0,defended?"国旗の防衛成功":"国旗の奪取成功 / 守備側降伏"));
         return true;
@@ -206,7 +207,7 @@ public static partial class BattleTurnResolver
         (unit.Robot?.PersuadableParts(queen.Owner)??RobotParts.Complete)!=0;
 
     internal static bool HasPersuasionTarget(BattleState battle,BattleUnit queen) =>
-        battle.Units.Concat(battle.Armies.SelectMany(army=>army.Waiting)).Any(unit=>PersuasionTarget(battle,queen,unit));
+        battle.Units.Concat(battle.Armies.SelectMany(army=>battle.ReadyWaiting(army))).Any(unit=>PersuasionTarget(battle,queen,unit));
 
     private static void Persuade(BattleState battle)
     {
@@ -235,13 +236,14 @@ public static partial class BattleTurnResolver
     public static void Finish(BattleState battle)
     {
         if(battle.Units.Any(u=>u.Active && battle.Army(u.Owner).Withdrawing))return;
-        var remaining=battle.Armies.Where(a=>!a.Withdrawing && (battle.Units.Any(u=>u.Active && u.Owner==a.Owner) || a.Waiting.Count>0)).Select(a=>a.Owner).ToArray();
+        var remaining=battle.Armies.Where(a=>!a.Withdrawing && (battle.Units.Any(u=>u.Active && u.Owner==a.Owner) || battle.ReadyWaiting(a).Any())).Select(a=>a.Owner).ToArray();
         if(remaining.Length==0){battle.Finished=true;battle.Winner=-1;}
         else if(remaining.All(o=>battle.Allied(o,remaining[0])))
         {
             if(battle.Kind==BattleKind.Node && !battle.SplitBoard && battle.FlagStanding && !battle.Allied(remaining[0],battle.Defender))return;
             battle.Finished=true;battle.Winner=battle.Kind==BattleKind.Node && battle.FlagStanding && remaining.Contains(battle.Defender)?battle.Defender:remaining[0];
         }
+        if(battle.Finished)battle.CancelUnarrivedRelief();
         if(battle.Finished)battle.Events.Add(new(battle.Turn,BattlePhase.Result,0,$"勝者 {battle.Winner}"));
     }
 }

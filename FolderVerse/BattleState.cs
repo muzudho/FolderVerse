@@ -12,9 +12,10 @@ public enum BattleTerrain { Field,Sea,Fort,Mountain }
 public sealed record BattleAction(Point Step,BattleFacing Facing,BattleWeapon Weapon=BattleWeapon.None);
 public sealed record BattleEvent(int Turn,BattlePhase Phase,long Unit,string Detail);
 public sealed record BattleUnitView(long Id,int Owner,BattleRole Role,Point Position,BattleFacing Facing,int Daggers,int Rifles,int Shields,bool Fallen,bool Retreated,Robot Robot=null);
-public sealed record BattleFrame(int Turn,BattlePhase Phase,BattleUnitView[] Units,bool FlagStanding,int LastFlagOwner,int FlagDefenseTurns=0,int FlagCaptureTurns=0,BattleFortification[] Fortifications=null);
+public sealed record BattleFrame(int Turn,BattlePhase Phase,BattleUnitView[] Units,bool FlagStanding,int LastFlagOwner,int FlagDefenseTurns=0,int FlagCaptureTurns=0,BattleFortification[] Fortifications=null,BattleReliefView[] Relief=null);
 public sealed record BattlePersuasion(int Turn,long Queen,long Target,int Owner,int PreviousOwner,Point From,Point To,bool Success);
 public sealed record BattleAttack(int Turn,long Attacker,long? Target,Point From,Point To,BattleWeapon Weapon);
+public sealed record BattleReliefView(int Owner,int Count,int Remaining);
 public sealed class BattleRules
 {
     public int NoWillTurns {get;init;}=10;
@@ -38,6 +39,7 @@ public sealed class BattleUnit
     public BattleLesson WitnessedLessons;
     public bool Active=>!Fallen && !Retreated;
     public Robot Robot;
+    public int ArrivalTurn;
 }
 public sealed class BattleArmy
 {
@@ -161,7 +163,7 @@ public sealed partial class BattleState
         Check();
     }
     public Point[] DefaultPattern(int side,int count)=>Region(side).Where(p=>side!=4 || p!=Flag).Take(count).ToArray();
-    public void Capture(BattlePhase phase)=>Frames.Add(new(Turn,phase,phase==BattlePhase.Result && Finished && Frames.LastOrDefault()?.Phase==BattlePhase.Retreat?Frames[^1].Units:Units.Select(u=>new BattleUnitView(u.Id,u.Owner,u.Role,u.Position,u.Facing,u.Daggers,u.Rifles,u.Shields,u.Fallen,u.Retreated,u.Robot)).ToArray(),FlagStanding,LastFlagOwner,FlagDefenseTurns,FlagCaptureTurns,Fortifications.ToArray()));
+    public void Capture(BattlePhase phase)=>Frames.Add(new(Turn,phase,phase==BattlePhase.Result && Finished && Frames.LastOrDefault()?.Phase==BattlePhase.Retreat?Frames[^1].Units:Units.Select(u=>new BattleUnitView(u.Id,u.Owner,u.Role,u.Position,u.Facing,u.Daggers,u.Rifles,u.Shields,u.Fallen,u.Retreated,u.Robot)).ToArray(),FlagStanding,LastFlagOwner,FlagDefenseTurns,FlagCaptureTurns,Fortifications.ToArray(),Armies.SelectMany(a=>a.Waiting).Where(u=>u.Active && u.ArrivalTurn>Turn).GroupBy(u=>(u.Owner,u.ArrivalTurn)).Select(g=>new BattleReliefView(g.Key.Owner,g.Count(),g.Key.ArrivalTurn-Turn)).ToArray()));
     public void InheritHistory(IEnumerable<BattleState> previous)
     {
         var states=previous.OrderBy(b=>b.Id).ToArray();if(states.Length==0)return;
@@ -178,14 +180,29 @@ public sealed partial class BattleState
         bool entered=false;
         foreach(var army in Armies.OrderBy(a=>a.Owner))
         {
-            if(army.Withdrawing || army.Waiting.Count==0 || Units.Count(u=>u.Active && u.Owner==army.Owner && u.Role!=BattleRole.Queen)>=FieldLimit(army) && army.Waiting.Peek().Role!=BattleRole.Queen)continue;
+            var arriving=ReadyWaiting(army).FirstOrDefault();
+            if(army.Withdrawing || arriving==null || Units.Count(u=>u.Active && u.Owner==army.Owner && u.Role!=BattleRole.Queen)>=FieldLimit(army) && arriving.Role!=BattleRole.Queen)continue;
             var cells=ArmyEntrance(army);
             var free=cells.Where(p=>WalkableFor(p,army.Owner)).Where(p=>!Units.Any(u=>u.Active && u.Position==p)).Select(p=>(Point?)p).FirstOrDefault();
             if(free==null)continue;
-            var unit=army.Waiting.Dequeue();unit.Position=free.Value;unit.Facing=Inward(army.Side);Units.Add(unit);entered=true;
+            var unit=arriving;var rest=army.Waiting.Where(u=>!ReferenceEquals(u,unit)).ToArray();army.Waiting.Clear();foreach(var pending in rest)army.Waiting.Enqueue(pending);
+            unit.Position=free.Value;unit.Facing=Inward(army.Side);Units.Add(unit);entered=true;
             Events.Add(new(Turn,BattlePhase.Reinforce,unit.Id,"増援"));
         }
         return entered;
+    }
+    internal void CancelUnarrivedRelief(){foreach(var unit in Armies.SelectMany(a=>a.Waiting).Where(u=>u.ArrivalTurn>Turn))unit.Retreated=true;}
+    public IEnumerable<BattleUnit> ReadyWaiting(BattleArmy army)=>army.Waiting.Where(u=>u.Active && u.ArrivalTurn<=Turn);
+    internal void DeployImmediateRelief(int owner)
+    {
+        var army=Army(owner);
+        int room=Math.Max(0,FieldLimit(army)-Units.Count(u=>u.Active && u.Owner==owner && u.Role!=BattleRole.Queen));
+        foreach(var unit in ReadyWaiting(army).Take(room).ToArray()){
+            var place=ArmyRegion(army).Where(p=>WalkableFor(p,owner) && !Units.Any(u=>u.Active && u.Position==p)).Select(p=>(Point?)p).FirstOrDefault();
+            if(!place.HasValue)break;
+            var rest=army.Waiting.Where(u=>!ReferenceEquals(u,unit)).ToArray();army.Waiting.Clear();foreach(var pending in rest)army.Waiting.Enqueue(pending);
+            unit.Position=place.Value;unit.Facing=Inward(army.Side);Units.Add(unit);
+        }
     }
     public void BuildTerrain(BattleTerrain terrain)
     {
