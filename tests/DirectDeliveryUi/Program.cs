@@ -29,7 +29,9 @@ class Checks:Game1{
   Set("_statusGlobe",false);((CubeNet)Get("_net")).FitAll((Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!,1);Call("OpenDirectMap");
   Rectangle Footer(string name)=>(Rectangle)typeof(Game1).GetProperty(name,F)!.GetValue(this)!;
   var normal=Footer("PopulationTurnButton");
-  Check(normal.Width==192 && normal.Height==144,"End turn uses 2:1.5 units");
+  bool compact=(bool)typeof(Game1).GetProperty("StratagemInterface",F)!.GetValue(this)! && (bool)typeof(Game1).GetProperty("StratagemManualActions",F)!.GetValue(this)!;
+  Check(normal.Width==192 && normal.Height==(compact?96:144),"End turn follows current manual/card layout");
+  Set("_demoActive",true);var demoTurn=Footer("PopulationTurnButton");Check(demoTurn.Width==192 && demoTurn.Height==144,"Demo retains full-height end turn");Set("_demoActive",false);
   for(int i=0;i<PrimaryCount;i++){
    var rect=(Rectangle)Call("PrimaryActionBounds",i);
    Check(rect.Bottom==1070 && (i==1 || rect.Width==rect.Height),"Primary actions share a baseline with square secondary actions");
@@ -37,7 +39,7 @@ class Checks:Game1{
   }
   var delivery=(Rectangle)Call("PrimaryActionBounds",3);
   Check((bool)Call("MapOverlayClick",delivery.Center,false) && (bool)Get("_directMap"),"Active delivery action retains its mode until close");
-  Call("UpdateMapFooter",.125f);var half=Footer("PopulationTurnButton");Check(half.Y>normal.Y && half.Top<1080,"Other actions slide down at the halfway point");
+  Call("UpdateMapFooter",.125f);var half=Footer("PopulationTurnButton");Check(half.Y==normal.Y+110,"Other actions slide down at the halfway point");
   Check((bool)Call("MapOverlayClick",normal.Center,false) && (bool)Get("_directMap"),"Original hidden turn-button location cannot end the turn");
   Check((bool)Call("MapOverlayClick",new Point(half.Center.X,half.Top+10),false) && (bool)Get("_directMap"),"Moving actions cannot activate during frame-out");
   for(int i=0;i<PrimaryCount;i++)if(i!=3){var home=(Rectangle)typeof(Game1).GetMethod("PrimaryActionHomeBounds",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{i})!;Check((bool)Call("MapOverlayClick",home.Center,false) && (bool)Get("_directMap"),"Every inactive home action is suppressed while sliding");}
