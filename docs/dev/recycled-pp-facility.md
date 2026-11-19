@@ -29,3 +29,21 @@ tests/OffshorePPFacilityにモデルと描画ハーネス。Materials world42/ca
 初回の採取試験はAdvanceIndustryを２回しか呼ばず失敗し、１回が1/3産業ターンであることに合わせ３回へ訂正。全体地図試験はCPU専用fixtureの現在プレイヤーが無いため失敗し、診断のみ表示プレイヤーを指定して通過。どちらも製品の修正ではない。
 
 出力はNAS `tmp/delete-after-2026-11-19/recycled-pp-facility/`、重要記録は `archives/recycled-pp-facility/`。実ゲームの全画面入力・全SEED・収束への効果は未検証。元ゲーム・元セーブ・公開物を変更しない。
+
+
+2026-11-20 01:44 JST 海上PP出荷取消→保存復元で注文なし/在庫PP16不変/材料待ち解除、18刻みでPP頭１個・PP8残を追加検証。tests/OffshorePPFacility全40確認、警告0/エラー0。固定C23全SHA実行コピー照合。NAS archives/raw-materials/marine-pp-cancel-restart-2026-11-20-0144にソース/result/notes、tmp20 raw-materials同名に隔離ビルド。製品/稼働ゲーム/元セーブ変更なし。次は出荷先変更と作業員解除または実入荷後の受取製造、UIは別検証。
+
+
+2026-11-20 02:49 JST 海上採取PP16を隣接実製造員へ出荷予約→保存→実ResolveMapleShipments→保存で荷record完全一致/元と注文消滅、受取工場18刻みでPP頭１個/PP8残を確認。診断受取側は容量12/上限60・管理人２の制御fixture、自然世界の容量/CPU判断とは別。tests/OffshorePPFacility全44確認、固定C23全SHA実行照合/警告エラー0。NAS archives/raw-materials/marine-pp-arrival-production-2026-11-20-0249にソース/result/notes、tmp20同名にビルド。製品/元ゲーム/セーブ変更なし。次は出荷先変更と作業員解除/実UI予測へ。
+
+
+2026-11-20 03:46 JST 海上PP由来の完成製品を隣接先へ入荷先変更→製造員解除（実レーン0）→保存復元でも製品record/新入荷先維持、実ResolveProductionIntakesで新地点に１回入荷しPP8残を３確認。tests/OffshorePPFacility全47確認、固定C23全SHA/警告エラー0。受取容量/在庫は制御fixture、実UIクリック/目視は別。NAS archives/raw-materials/redirect-release-2026-11-20-0346にソース/result/notes、tmp20同名ビルド。製品/稼働ゲーム/元保存変更なし。次は入荷先変更と容量予測/理由UI整合へ。
+
+
+2026-11-20 04:46 JST 入荷先変更＋製造員解除後の受取満杯で完成品record維持/未入荷、Status『入荷待機：格納枠不足』。保存復元で理由/PP8残維持、非管理人１機を空けると１回だけ入荷。tests/OffshorePPFacility全49確認、固定C23全SHA/警告エラー0。Game1.ProductionIntakesがStatusを直接表示する読取経路も確認、文字収まり/クリック目視は別。NAS archives/raw-materials/redirect-capacity-reason-2026-11-20-0446にソース/result/notes、tmp20同名ビルド。製品/元ゲーム/保存変更なし。次は経路・所有国・戦闘の別理由またはピッカー目視へ。
+
+
+2026-11-20 05:43 JST 完成品入荷先変更＋製造員解除後の受取Owner=-1で『入荷待機：経路・所有国・戦闘状況』、容量不足と別理由。保存復元で製品record/PP8残維持、Owner0回復で１回入荷を３確認追加。tests/OffshorePPFacility全52確認、固定C23全SHA/警告エラー0/stderr空。所有権変化は制御診断、実UI描画/入力は未確認。NAS archives/raw-materials/redirect-ownership-reason-2026-11-20-0543にソース/result/notes、tmp20同名ビルド。製品/元ゲーム/保存変更なし。次はピッカー実描画/入力または待機表示まとめへ。
+
+
+2026-11-20 06:42 JST PP_WAIT_FIXTURE任意出力をtests/OffshorePPFacilityへ追加、モデル52確認維持。実製造員解除後の入荷待機保存をGame1派生で読み、実DrawProductionIntakePicker一覧/選択をFHD描画/目視、理由と説明が枠内。実ProductionIntakeInputに行中心を渡して一覧→Line選択→同地点Target=null/閉じるを確認、modal消費true、UI４確認。固定C23全SHA/双方警告エラー0/stderr空。NAS archives/raw-materials/intake-picker-2026-11-20-0642にソース/モデル/result/notes、tmp20同名に待機保存/画像/ビルド。OS入力/元ゲーム通し/８件超/全小画面は未確認。製品/元保存/稼働ゲーム変更なし。次は小画面か多件数ページ等へ。
