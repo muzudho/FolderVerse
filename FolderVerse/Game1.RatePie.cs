@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
-    private readonly System.Diagnostics.Stopwatch _rateBlink=System.Diagnostics.Stopwatch.StartNew();
+
     private static readonly Rectangle RateDialogArea=new(1100,190,800,820);
     private static readonly Vector2 RatePieCenter=new(1500,600);
     private static readonly Rectangle RateZeroButton=new(1476,362,48,46);
@@ -129,8 +129,8 @@ public partial class Game1
         }
         float radians=value*MathF.PI/180;Vector2 edge=RatePieCenter+new Vector2(MathF.Sin(radians),-MathF.Cos(radians))*110;
         _ui.Box(new((int)edge.X-7,(int)edge.Y-7,14,14),new Color(255,231,54));
-        // Pulse the selected sector boundary, including its two radial edges.
-        float pulse=.45f+.55f*(.5f+.5f*MathF.Sin((float)_rateBlink.Elapsed.TotalSeconds*MathHelper.TwoPi));
+        // Selection is steady; blinking is reserved for the next guided action.
+        const float pulse=1;
         var outline=new Color(255,231,54)*pulse;
         void Line(Vector2 a,Vector2 b)
         {

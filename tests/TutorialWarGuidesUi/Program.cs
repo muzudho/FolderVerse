@@ -16,6 +16,7 @@ sealed class WarGuideGame:Game1
  void Guide(int id){UpdateGuide();Check((bool)Get("_tutorialAttackGuide") && (int)Get("_tutorialGuideMessage")==id,"Expected guide "+id);Set("_animationTime",(float)Get("_tutorialGuideStarted")+1);}
  void Dismiss(){Set("_tutorialAttackGuide",false);Set("_tutorialGuideClosing",-1f);Set("_tutorialChromeSlide",0f);}
  protected override void LoadContent(){
+  if(Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_GLOW_540")=="1"){var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
   Content.RootDirectory=Environment.GetEnvironmentVariable("FOLDERVERSE_TEST_CONTENT") ?? Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();string medalPath=Path.Combine(AppContext.BaseDirectory,"war-guides-achievements.json");File.Delete(medalPath);Set("_tutorialAchievements",new TutorialAchievements(medalPath));Set("_autoSaveEnabled",false);
   var seedText=Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_WAR_SEED");
   if(int.TryParse(seedText,out int seed))Set("_random",new Random(seed));
@@ -142,6 +143,15 @@ sealed class WarGuideGame:Game1
     var time=new GameTime(TimeSpan.FromSeconds(now+=.25),TimeSpan.FromSeconds(.25));
     Call("HandleInput",new MouseState(x,y,wheelPosition,button,0,0,0,0),keys,time,true);
    }
+   void AuditGlow(string stage, params Rectangle[] expected){
+    Set("_animationTime",(float)now);
+    var actual=((IEnumerable<Rectangle>)Call("TutorialActionTargets")).ToArray();
+    Console.WriteLine($"GLOW {stage}: actual=[{string.Join(";",actual)}] expected=[{string.Join(";",expected)}] guide={Get("_tutorialAttackGuide")} closing={Get("_tutorialGuideClosing")} slide={Get("_tutorialChromeSlide")} persuasion={Get("_homePersuasionActive")} inspectorClosing={Get("_nodeInspectorClosing")}");
+    base.Draw(new GameTime(TimeSpan.FromSeconds(now),TimeSpan.Zero));
+    var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
+    using var texture=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);texture.SetData(pixels);
+    using var output=File.Create(Path.Combine(AppContext.BaseDirectory,$"tutorial-glow-{stage}.png"));texture.SaveAsPng(output,texture.Width,texture.Height);
+   }
    void Click(Point point){
     Send(point);Send(point,ButtonState.Pressed);Send(point);
    }
@@ -151,8 +161,10 @@ sealed class WarGuideGame:Game1
    Check((bool)Get("_reignView"),"The country button opens its inspector");
    for(int step=0;step<4;step++)Send(default);
    var pocket=(Rectangle)typeof(Game1).GetField("PocketButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+   var pocketTarget=pocket;pocketTarget.X+=(int)Call("get_NodeInspectorOffset");AuditGlow("pocket-button",pocketTarget);
    Click(pocket.Center+new Point((int)Call("get_NodeInspectorOffset"),0));
    Check(Get("_screen").ToString()=="Pocket","The pocket button opens the actual exchange screen");
+   AuditGlow("pocket-drag",(Rectangle)Call("PocketViewport",1),(Rectangle)Call("PocketViewport",0));
    var stock=w.Robots.Nodes[w.Nodes.Current(0).Id];
    var slots=(long?[][])Get("_pocketSlots");
    var from=((IEnumerable<int>)Call("PocketVisible",1)).First(i=>slots[1][i] is long id &&
@@ -164,6 +176,7 @@ sealed class WarGuideGame:Game1
    Send(source);Send(source,ButtonState.Pressed);Send(destination,ButtonState.Pressed);Send(destination);
    Check(w.TutorialPocketed && w.Robots.Retinues[0].Robots.Any(robot=>robot.Id==robotId),
     "The usual drag puts a robot in the pocket");
+   AuditGlow("pocket-back",(Rectangle)typeof(Game1).GetField("InactiveBack",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!);
    Send(default,keys:new KeyboardState(Keys.Escape));Send(default);
    Check(Get("_screen").ToString()=="WorldStatus" && w.TutorialPocketNoticeShown && (int)Get("_tutorialGuideMessage")==5,
     "Returning from the pocket shows the completion notice");
@@ -175,6 +188,7 @@ sealed class WarGuideGame:Game1
     for(int step=0;step<4;step++)Send(default);
    }
    Rectangle Button(string name)=>(Rectangle)typeof(Game1).GetField(name,BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+   var moveTarget=Button("MovementButton");moveTarget.X+=(int)Call("get_NodeInspectorOffset");AuditGlow("movement-button",moveTarget);
    Click(Button("MovementButton").Center+new Point((int)Call("get_NodeInspectorOffset"),0));
    Check((bool)Get("_movementOpen"),"The movement reservation button opens the normal map selector");
    for(int step=0;step<4;step++)Send(default);
@@ -226,9 +240,11 @@ sealed class WarGuideGame:Game1
    Check(candidate>=0,"A valid movement destination is visible");
    Click(mapPoint);
    Check((int)Get("_selectedMoveNode")==candidate,"Clicking the map selects the intended destination");
+   var confirmTarget=Button("ConfirmMoveButton");confirmTarget.X+=(int)Call("get_NodeInspectorOffset");AuditGlow("movement-confirm",confirmTarget);
    Click(Button("ConfirmMoveButton").Center+new Point((int)Call("get_NodeInspectorOffset"),0));
    Check(w.Campaign.PlannedOrders.Count(order=>order.Peaceful && order.Ruler==0 && order.TargetNode==candidate)==1,
     "Confirming movement creates one reservation at the selected destination");
+   AuditGlow("movement-reserved",(Rectangle)((bool)Call("get_InspectorVisible")?Call("get_InspectorClose"):Call("PrimaryActionBounds",1)));
    Console.WriteLine($"Movement reservation target={candidate} point={mapPoint}");
    if((bool)Call("get_InspectorVisible")){
     Click(((Rectangle)Call("get_InspectorClose")).Center);
