@@ -69,7 +69,7 @@ public partial class Game1
         var choices=IntakeChoices;
         for(int i=0;i<8;i++){
             int index=_intakePage*8+i;if(index>=choices.Length)break;int node=choices[index];
-            string label=node<0?"同地点（工場の移転に追従）":_setup.Nodes.DisplayName(_setup.Nodes.All[node]);
+            string label=node<0?"同地点（出荷元の格納庫）":_setup.Nodes.DisplayName(_setup.Nodes.All[node]);
             bool selected=node<0?!_intakeLine.IntakeTarget.HasValue:_intakeLine.IntakeTarget==node;
             _ui.Button(IntakeRow(i),(selected?"✓ ":"□ ")+label,selected?Accent:Muted,Math.Min(.48f,1180/_font.MeasureString(label).X));
         }

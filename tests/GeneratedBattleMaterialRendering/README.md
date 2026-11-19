@@ -1,0 +1,7 @@
+# ９素材の実戦生成フレーム描画
+
+実製造入荷の保存・到着Visual一致を確認した機体から、２国各９素材の頭胴一体型を用意する。AddArmy、Deploy、BattleTurnResolver.Advanceで装備と役職を生成し、18物理機体を持つフレームを実DrawRobotBattleで描画する。先頭フレームの画像を出力する。人物画像を含む通常LoadContent全体や入力・長期戦は対象外。
+
+GameDll/RuntimeDirを指定し、AGENTS.mdに従いNASの --artifacts-path へビルドする。実行先DLLを明示コピーしてSHA-256を確認する。FOLDERVERSE_PROBE_CONTENT_BASEはフォント/カタログを含むContentルートの親（末尾区切り付き）、FOLDERVERSE_ART_CONTENT_BASEはContent/Images/Robotsを持つゲームディレクトリー。引数１つはNASの画像出力先。元ゲームを起動しない。
+
+診断用の対戦機体は自国部品由来を持ち、実際の出撃条件を満たす。画像は目視確認する。キャンペーンの実戦経過そのものを保存・再生する試験ではない。
