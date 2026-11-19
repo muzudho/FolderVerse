@@ -147,6 +147,8 @@ public partial class Game1 : Game
             else if(click)NodeFactoryClick(_pointer);
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
+        if(IsStatusScreen && ProductionIntakeInput(active && click,active && escape))
+        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(BgmMenuInput(mouse,keyboard,active,click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(GlobeSettingsInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(ComputerManualInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -192,8 +194,6 @@ public partial class Game1 : Game
         if(IsStatusScreen && FunctionTransferChoiceInput(_pointer,active && click,active && escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _directMap && escape){CloseDirectDelivery();_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(IsStatusScreen && ProductionIntakeInput(active && click,active && escape))
-        {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _invasionPicker>=0)
         {
             if(_demoActive)

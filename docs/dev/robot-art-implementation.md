@@ -1374,3 +1374,31 @@ Materials診断123/456/789の実経路0→1。メープル頭・段ボール胴�
 2026-11-19 05:19 一体型戦場修正の追加確認：頭胴型混成隊長48×72で４方向12描画true、脚/胴８差155〜450画素・外側０、南基準目視。入荷保存Visual一致、固定FC83C532/隔離ビルド通過。NAS battle-headbody-small-0519/notes.txt・画像。実戦UI全体や全素材/帽子は別、追加製品変更なし。
 
 2026-11-19 06:10 一体型戦場の９素材×４方向を確認。頭胴型隊長48×72で36描画true、PP基準32対照は正の素材差・外側０、Tin北/発泡南目視。固定AE9B4526実行先照合/ビルド通過、NAS battle-nine-materials-0610/notes.txt・画像。配送保存は混成１例で９種別の配送試験ではない。追加製品変更なし、全混成/役職/実戦UI全体は未網羅。
+
+2026-11-19 07:18 一体型戦場９素材４方向回帰をtests/IntegratedBattleRenderingへ保存。参照ルート環境変数化/旧ログ名訂正後、AE9B4526照合で36描画/32比較再現、隔離ビルド通過。NAS integrated-battle-regression-0718/notes.txt、テスト移設の検証で追加製品変更なし。全個別配送/実戦UI全体は別。
+
+2026-11-19 08:18 一体型戦場の一般兵描画分岐を隔離確認。既存の到着混成隊長fixtureを保持し、描画引数だけBattleRole.Soldierへ変更（一般兵の配送モデル試験ではない）。頭胴一体型９素材×４向き36描画true、32比較811〜1209画素差・機体外０。arrival-2で兵帽/機体/国旗を目視。AE9B4526F021E2EC432ADC8B38B73168C8FA261A1C49421FC712F761FD7F48F6実行先照合、隔離ビルド警告エラー０。NAS battle-integrated-soldier-0818/result.txt・画像。製品変更/元セーブ/実ゲーム/公開物変更なし。次は役職付き実戦UI全体や胴脚型など未網羅箇所に限定する。
+
+2026-11-19 09:18 ９素材胴脚一体型の一般兵描画分岐を追加検証。混成隊長の胴脚型Queue/保存/到着Visual一致fixtureでBattleRole引数のみSoldier。48×72・９素材４方向36描画true、32比較797〜1209画素差/機体外０、arrival-11側面の兵帽/国旗/部材を目視。AE9B4526実行SHA照合、隔離ビルド警告エラー０、NAS battle-body-legs-soldier-0918/result.txt・notes.txt。一般兵の実配送/実戦UI全体の試験とは別。頭胴/胴脚の小サイズ素材分岐は確認できたため、次は同じ差分検査を繰返さず実戦UI統合や残る素材表現の具体的不具合へ。製品変更/実ゲーム/元セーブ/公開物変更なし。
+
+2026-11-19 10:11 ９素材の戦場描画へ渡すフレーム値を監査。９頭素材×頭胴/胴脚型×一般兵/隊長×４向き＝144例で実EquipRobot→Capture後のRobot/Role/Facing/盾短剣小銃数が元機体と一致し、BattleUnitView単体保存復元も一致。DrawRobotBattleはunit.Robotを優先し未保持時はbattle.Units/WaitingからID検索することを確認。初回BattleState全体の汎用RestoreはFrames空で停止したため、その保存方式を実ゲーム互換と扱わず値レコード試験へ訂正。実戦画面全体/キャンペーン保存の証明は別。AE9B4526実行SHA照合/最終ビルド警告エラー０、NAS battle-frame-materials-1011/result.txt・notes.txt。製品/能力/コスト/元ゲーム変更なし。次は実DrawRobotBattle統合の隔離描画へ。
+
+2026-11-19 11:15 ９素材を実DrawRobotBattle全体へ統合した隔離描画を確認。到着混成隊長fixtureから９素材頭胴一体型・一般兵/隊長・４向きの診断配置を作り、新聞/盤/装備残数を含む1920×1080を目視。胴だけPP対照との2357画素差で全体経路でも素材差を確認。配置・役職・Rifles1は描画用人工値で、実戦装備生成や戦闘進行の証明ではない。AE9B4526実行SHA照合/警告エラー０、NAS battle-ui-material-grid-1115/battle-ui-0.png・result.txt・notes.txt。小画面/全向き各素材の全組は別、製品/実ゲーム/元セーブ/公開物変更なし。次は必要なら小画面か実戦から取得したフレームへ限定。
+
+2026-11-19 12:13 実戦UIの1280×720実バックバッファ検証。前回９素材頭胴型・役職向き混在の診断盤をDrawRobotBattleで描画、仮想1920座標は既存Canvasと同率変換。盤/新聞/下部ボタン/機体を目視し画面内、胴PP対照1057画素差で素材差維持。AE9B4526実行SHA照合/警告エラー０、NAS battle-ui-small-1213/battle-ui-0.png・result.txt・notes.txt。人工フレームで実戦進行/全混成/入力は未検証。製品/実ゲーム/元セーブ/公開物変更なし。次は同サイズ反復でなく実戦生成フレームまたは具体的不具合へ。
+
+2026-11-19 13:13 実戦生成フレームの９素材描画を隔離確認。到着機体を元に２国各９素材の頭胴一体型を用意し、実AddArmy→Deploy→BattleTurnResolver.Advanceで10フレーム/18物理機体を生成、装備数・隊長割当を手置きせずDrawRobotBattleで先頭フレームを1920×1080目視。初回は対戦国の部品由来が他国のみで出撃拒否され、診断の対戦国機体に自国由来を設定して再実行。元ルールを緩和していない。機体/帽子/国旗/装備残数を確認、簡易LoadContentのため全人物画像読込や操作は対象外。AE9B4526実行SHA照合/最終警告エラー０、NAS battle-ui-generated-frame-1313/画像・result.txt・notes.txt。製品/元セーブ/実ゲーム変更なし、全戦闘進行/役職方向全組は別。
+
+2026-11-19 14:14 実戦生成９素材フレームの再検証用ソースをtests/GeneratedBattleMaterialRenderingへ保存。原画/出力は移さず、既存NAS診断を恒久回帰へ移設して実行確認。製造入荷保存/到着Visual一致→実AddArmy/Deploy/Advanceの10frame18機体→DrawRobotBattle画像保存を再現。AE9B4526実行SHA照合/警告エラー０、NAS generated-battle-regression-1414/result.txt・notes.txt。固定DLLの移設検証で新しい製品変更なし。READMEに診断軍/簡易LoadContent/入力未検証とNAS出力手順を明記。元ゲーム/公開物変更なし。
+
+2026-11-19 15:13 胴脚一体型９素材を実戦生成描画へ拡張確認。既存恒久回帰をNASコピーしてIntegrationのみBody|Legsへ変更し、実製造入荷保存/到着Visual一致→AddArmy/Deploy/Advanceの10frame18機体→DrawRobotBattle先頭1920×1080を目視。素材表面/帽子/国旗/装備残数を確認。前回頭胴型の補完で、全戦闘進行/入力/全方向の証明ではない。診断対戦軍は自国由来、簡易LoadContentの人物1未読込は既知範囲。固定AE9B4526全SHA照合/警告エラー０、NAS battle-ui-generated-body-legs-1513/result.txt・battle-ui-0.png・notes.txt。原画生成/製品/元セーブ/実ゲーム変更なし。
+
+2026-11-19 16:13 胴脚一体９素材の実戦生成フレーム終端10/10を描画確認。移動後の機体/装備残数の変化と素材/帽子を目視。初回は診断がframe番号９をround番号に誤指定し範囲外、Playback.Rounds最終＋battleAgeクランプへ訂正して成功、製品不具合とは扱わない。最終ビルド警告エラー０/固定AE9B4526全SHA照合、NAS battle-generated-later-frame-1613/result.txt・battle-ui-0.png・notes.txt。診断軍/簡易LoadContentの範囲で実キャンペーン長期戦/入力は別。原画/ソース/元セーブ/実ゲーム変更なし。次は同フレーム反復より具体的な配送UI回帰等へ。
+
+2026-11-19 17:14 混成胴脚一体隊長の入荷後格納庫を確認。実Queue→保存復元→遠隔入荷Visual=格納機体を確認し、DrawHangarRobotのメープル頭/段ボール胴/ソフビ脚/胴汚損/国旗/隊長帽を目視。脚シリコーン・一体型解除・兵役職・胴PPの対照４組は13136/4148/118485/26233画素差、機体矩形外０。全混成・長距離便入力の網羅ではない。固定CB716FEA全SHA照合/警告エラー０、NAS arrival-body-legs-mixed-1714/result.txt・arrival-0.png・notes.txt。既存回帰のNAS派生のみ、製品/原画/元セーブ/実ゲーム変更なし。
+
+2026-11-19 18:15 ９素材混成隊長の両一体型を長距離便で毎中継保存復元。新規world1/cast2/placement3を全地点国0/空在庫の隔離物流fixtureにし、９素材×２一体型18組を27段ずつ実Reserve/Advance。毎段素材/一体型/隊長/汚損を確認、486中継保存復元後に到着機体record完全一致・予約解放、18組通過。標準収束条件やUI描画/所有変更障害の試験ではない。固定CB716FEA全SHA照合/警告エラー０、NAS nine-material-long-relay-save-1815/result.txt・notes.txt。Legacy試験/製品/元セーブ/実ゲーム変更なし。
+
+2026-11-19 19:17 ９素材混成隊長の一体型部分便を検証。胴だけReserve指定すると頭胴/胴脚の接合範囲へ拡張、実２段Advanceと毎段保存復元後、生成ID以外の到着品は元Slice(joint)完全一致、出荷元残部はSlice(remainder)完全一致、注文解除。９素材×２一体型18組通過。前回の完全体丸ごと27段とは別の分割配送入口。固定CB716FEA全SHA照合/警告エラー０、NAS nine-material-joint-parcel-1917/result.txt・notes.txt。隔離物流fixtureでUI/描画の試験ではなく、Legacy/ルール/製品/元ゲーム変更なし。
+
+2026-11-19 20:17 直送便入口でも９素材混成隊長の一体型部分指定を回帰。DirectDelivery.Reserveの胴指定が接合範囲へ拡張、予約保存復元→RobotWorld.Advance(industry:false)→到着再保存後、到着Slice(joint)/元残部Slice(complement)完全一致・注文解除。９素材×２一体型18組通過。前回長距離便と別経路で、UI/飛行描画/終点合体の今回証明ではない。固定CB716FEA全SHA照合/警告エラー０、NAS nine-material-direct-joint-2017/result.txt・notes.txt。Legacy/製品/元セーブ/実ゲーム変更なし。
