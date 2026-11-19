@@ -140,7 +140,10 @@ public partial class Game1 : Game
         // Consume input before any controls behind the album get a chance to handle it.
         if(IsStatusScreen && FactoryAlbumOpen)
         {
-            if(escape)_factoryPlanLine=-1;
+            if(_demoActive)
+                UpdateDemo(gameTime.ElapsedGameTime.TotalSeconds,active,click,escape,
+                    active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter),gameTime.TotalGameTime.TotalSeconds);
+            else if(escape)_factoryPlanLine=-1;
             else if(click)NodeFactoryClick(_pointer);
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
@@ -192,7 +195,12 @@ public partial class Game1 : Game
         if(IsStatusScreen && ProductionIntakeInput(active && click,active && escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && _invasionPicker>=0)
-        {if(active)InvasionPickerInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        {
+            if(_demoActive)
+                UpdateDemo(gameTime.ElapsedGameTime.TotalSeconds,active,click,escape,enter,gameTime.TotalGameTime.TotalSeconds);
+            else if(active)InvasionPickerInput(click,escape);
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
         if(IsStatusScreen && WarCancellationInput(active && click,active && escape))
         {_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         double elapsed=gameTime.ElapsedGameTime.TotalSeconds; UpdateDomesticSlide((float)elapsed);

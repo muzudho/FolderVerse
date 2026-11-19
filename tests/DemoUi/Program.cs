@@ -7,12 +7,14 @@ sealed class DemoCheck:Game1
 {
     const BindingFlags Flags=BindingFlags.Instance|BindingFlags.NonPublic;
     bool checkedDemo;
+    bool normalInput;
     bool drawn;
     object Get(string n)=>typeof(Game1).GetField(n,Flags)!.GetValue(this)!;
     double now;
     void Tick(double elapsed,bool click=false,bool active=true){
         now+=elapsed;
         typeof(Game1).GetMethod("UpdateDispositionScene",Flags)!.Invoke(this,new object[]{elapsed});
+        if(normalInput){typeof(Game1).GetMethod("HandleInput",Flags)!.Invoke(this,new object[]{new Microsoft.Xna.Framework.Input.MouseState(-1,-1,0,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released,Microsoft.Xna.Framework.Input.ButtonState.Released),new Microsoft.Xna.Framework.Input.KeyboardState(),new GameTime(TimeSpan.FromSeconds(now),TimeSpan.FromSeconds(elapsed)),active});return;}
         typeof(Game1).GetMethod("UpdateDomesticSlide",Flags)!.Invoke(this,new object[]{(float)elapsed});
         typeof(Game1).GetMethod("UpdateDemo",Flags)!.Invoke(this,new object[]{elapsed,active,click,false,false,now});
     }
@@ -30,7 +32,7 @@ sealed class DemoCheck:Game1
         int seed=int.TryParse(Environment.GetEnvironmentVariable("FOLDERVERSE_DEMO_TEST_SEED"),out int requestedSeed)?requestedSeed:0;
         typeof(Game1).GetField("_random",Flags)!.SetValue(this,new Random(seed));
         Console.WriteLine("Demo test random seed="+seed);
-        Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
+        Content.RootDirectory=Environment.GetEnvironmentVariable("FOLDERVERSE_TEST_CONTENT") ?? Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
         Tick(9);Check(!(bool)Get("_demoActive"),"Demo started too soon");Tick(0,true);Tick(9);Check(!(bool)Get("_demoActive"),"Click did not reset title timer");Tick(1);Check((bool)Get("_demoActive"),"Demo did not start at 10 seconds");
         Check(Get("_screen").ToString()=="Title","Intro should remain on title");
         Tick(1.8);Check((float)Get("_demoSwing")>0,"START click swing missing");Tick(.4);Check(Get("_screen").ToString()=="PlayerCount","START intro did not launch player count");
@@ -56,13 +58,19 @@ sealed class DemoCheck:Game1
         Console.WriteLine("first transport: "+Snapshot());
         if(Environment.GetEnvironmentVariable("FOLDERVERSE_DEMO_NATURAL_CONTINUE")=="1"){
             var naturalWorld=(WorldSetup)Get("_setup");int initialTurn=naturalWorld.Population.Turn;
+            normalInput=Environment.GetEnvironmentVariable("FOLDERVERSE_DEMO_NORMAL_INPUT")=="1";bool sawPaper=false;
             string previous="",previousStage="";int transports=0;bool leftTransport=false;
             for(int i=0;i<2400 && (bool)Get("_demoActive");i++){
-                Tick(.25);string state=$"{Get("_screen")}/{naturalWorld.Campaign.Phase}/{naturalWorld.Population.Turn}";
+                Tick(.25);sawPaper|=Get("_screen").ToString()=="Newspaper";string state=$"{Get("_screen")}/{naturalWorld.Campaign.Phase}/{naturalWorld.Population.Turn}";
                 overview|=(bool)Get("_transportOverview");directMap|=(bool)Get("_directMap");directPair|=(bool)Get("_directPairOpen");
                 if(Get("_screen").ToString()=="WorldStatus"){
                     string stage=$"{Get("_demoDomesticStage")}/{Get("_demoMapStage")}/{Get("_populationNode")}";
-                    if(stage!=previousStage){Console.WriteLine($"Natural stage t={i*.25:F2} stage={stage} pointer={Get("_demoClickPoint")} primary4={typeof(Game1).GetProperty("TransportOverviewButton",Flags)!.GetValue(this)}");previousStage=stage;}
+                    if(stage!=previousStage){Console.WriteLine($"Natural stage t={i*.25:F2} stage={stage} pointer={Get("_demoClickPoint")} primary4={typeof(Game1).GetProperty("TransportOverviewButton",Flags)!.GetValue(this)}");previousStage=stage;
+                        if(normalInput && (int)Get("_demoDomesticStage")==35){Check((bool)Get("_demoWarReserved"),"Sortie confirmation did not reserve immediately");Console.WriteLine("Confirmed immediate war reservation count="+naturalWorld.Campaign.PlannedOrders.Count);}
+                        if(normalInput && (int)Get("_demoDomesticStage")==36 && (bool)Get("_demoWarReserved")){var player=(int)typeof(Game1).GetProperty("NodeCheckPlayer",Flags)!.GetValue(this)!;var checks=(System.Collections.Generic.Dictionary<int,System.Collections.Generic.HashSet<int>>)Get("_warChecksByPlayer");Check(checks.TryGetValue(player,out var marked) && marked.Contains((int)Get("_selectedMoveNode")),"Reserved target lacks red check");Console.WriteLine("Confirmed red check before inspector close");}
+
+                        if(normalInput && (int)Get("_demoDomesticStage") is 10 or 19 or 33 or 34 or 35 or 36){base.Draw(new GameTime());var pp=GraphicsDevice.PresentationParameters;var data=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(data);using var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);tex.SetData(data);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"normal-stage-{Get("_demoDomesticStage")}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);}
+                    }
                 }
                 if(state!=previous){Console.WriteLine($"Natural continuation t={i*.25:F2} {state} "+Snapshot());base.Draw(new GameTime());previous=state;}
                 if(Get("_screen").ToString()!="Transport")leftTransport=true;
@@ -70,6 +78,7 @@ sealed class DemoCheck:Game1
                 if(naturalWorld.Population.Turn>=initialTurn+2 && transports>=2)break;
             }
             Console.WriteLine($"Natural continuation flags overview={overview} directMap={directMap} directPair={directPair} transports={transports} initialTurn={initialTurn} finalTurn={naturalWorld.Population.Turn}");
+            if(normalInput){Check(sawPaper,"Normal input continuation never entered newspaper");Check(naturalWorld.Population.Turn>=initialTurn+2 && transports>=2,"Normal input did not resume planning after newspaper");Console.WriteLine("PASS normal input newspaper and subsequent planning/delivery progression");}
             Console.WriteLine("Natural final: "+Snapshot());checkedDemo=true;return;
         }
         double before=(double)Get("_demoAge");Tick(1,active:false);Check((double)Get("_demoAge")>before,"Inactive demo stopped");

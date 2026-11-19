@@ -41,6 +41,7 @@ using var game=new MapLessonGame();game.Run();
 sealed class MapLessonGame:Game1
 {
  bool Journey=>Environment.GetCommandLineArgs().Contains("--journey");
+ int PrimaryCount=>(int)typeof(Game1).GetField("PrimaryActionCount",BindingFlags.Static|BindingFlags.NonPublic)!.GetRawConstantValue()!;
  const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;WorldSetup w=null!;CubeNet net=null!;int frame;
  object Get(string n)=>typeof(Game1).GetField(n,F)!.GetValue(this)!;
  void Set(string n,object value)=>typeof(Game1).GetField(n,F)!.SetValue(this,value);
@@ -57,7 +58,7 @@ sealed class MapLessonGame:Game1
  void Guide(int id){Call("UpdateTutorialStartGuide",100d);Check((bool)Get("_tutorialAttackGuide") && (int)Get("_tutorialGuideMessage")==id,"Expected map guide "+id);Set("_animationTime",(float)Get("_tutorialGuideStarted")+1);Call("UpdateTutorialChrome",.35f);}
  void Dismiss(){Set("_tutorialAttackGuide",false);Call("UpdateTutorialChrome",.35f);}
  protected override void LoadContent(){
-  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_autoSaveEnabled",false);Set("_tutorialAchievements",new TutorialAchievements(Path.Combine(AppContext.BaseDirectory,"map-lesson-achievements.json")));
+  Content.RootDirectory=Environment.GetEnvironmentVariable("FOLDERVERSE_TEST_CONTENT") ?? Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_autoSaveEnabled",false);Set("_tutorialAchievements",new TutorialAchievements(Path.Combine(AppContext.BaseDirectory,"map-lesson-achievements.json")));
   Check((bool)Get("_conquestOverviewEnabled"),"Overview remains enabled globally");
   foreach(string begin in new[]{"BeginTutorialStepOne","BeginTutorialStepTwo","BeginTutorialStepThree"}){
    Call(begin);var tutorial=(WorldSetup)Get("_setup");Check((bool)Prop("TutorialPrimaryActionsDisabled")== (tutorial.TutorialStep==3),"Primary actions are disabled only in step three");Check(!(bool)Get("_conquestOverview"),begin+" skips initial conquest overview");
@@ -78,7 +79,7 @@ sealed class MapLessonGame:Game1
   Check(w.TutorialStep==(Journey?1:3) && w.TutorialMapBeforeWar==Journey && w.PlayerSlot==0 && w.HumanPlayers.SequenceEqual(new[]{0}) && (bool)Get("_statusGlobe"),"Map lesson starts with player one as No.1 on globe");
   if(Journey){
    Check(w.Width==1 && w.Height==1 && w.Depth==1 && w.ActiveCount==6,"Integrated tutorial retains step-one dice world and cast");
-   for(int i=0;i<6;i++)Check(!(bool)Call("TutorialPrimaryActionAllowed",i),"All primary actions start disabled");
+   for(int i=0;i<PrimaryCount;i++)Check(!(bool)Call("TutorialPrimaryActionAllowed",i),"All primary actions start disabled");
   }
   Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",90d);Set("_tutorialAttackGuide",false);Set("_homePersuasionActive",false);Guide(8);
  }
@@ -123,7 +124,7 @@ sealed class MapLessonGame:Game1
    Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==5,"Slide waits for release");Call("DragOrientationRobot",new MouseState(),true,false);Guide(Journey?16:15);Check(w.TutorialMapStage==6 && w.TutorialCompletionShown==!Journey,"Globe drag release unlocks appropriate completion guide");
   }
   if(frame==7){Dismiss();Call("UpdateTutorialStartGuide",100d);Check(!(bool)Get("_tutorialAttackGuide"),"Completion guide is shown once");int turn=w.Population.Turn;var screen=Get("_screen");
-   for(int i=0;i<6;i++){
+   for(int i=0;i<PrimaryCount;i++){
     if(Journey && i is 1 or 2){Check((bool)Call("TutorialPrimaryActionAllowed",i),"War reservation and end turn unlock after all map tasks");continue;}
     var r=(Rectangle)Call("PrimaryActionBounds",i);var canvas=(Rectangle)Call("CanvasBounds");var at=r.Center;
     Set("_previousMouse",new MouseState());Call("HandleInputCore",new MouseState(canvas.X+(int)Math.Round(at.X*canvas.Width/1920d),canvas.Y+(int)Math.Round(at.Y*canvas.Height/1080d),0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero),true);
@@ -141,6 +142,6 @@ sealed class MapLessonGame:Game1
    w=(WorldSetup)Get("_setup");Check(w.TutorialMapBeforeWar && w.TutorialMapStage==6 && (bool)Call("TutorialPrimaryActionAllowed",2) && (bool)Call("TutorialPrimaryActionAllowed",1),"Save preserves integrated mode and unlocked war button");
    Call("UpdateTutorialStartGuide",100d);Check(!(bool)Get("_tutorialAttackGuide"),"Unlock guide does not turn into legacy step-one intro after resume");
   }
-  if(frame++==8){Console.WriteLine((Journey?"PASS: integrated map-first Petitstella, war and end-turn unlock and save/resume; ":"PASS: ")+"menu/No.1, all eight mob guides, actual unfolding, plus/zero/minus, actual alphabet attachment, animation gating, assembly, all seven globe buttons, globe slide release, completion, save progress, all six disabled primary actions and review rendered.");Exit();}
+  if(frame++==8){Console.WriteLine((Journey?"PASS: integrated map-first Petitstella, war and end-turn unlock and save/resume; ":"PASS: ")+"menu/No.1, all eight mob guides, actual unfolding, plus/zero/minus, actual alphabet attachment, animation gating, assembly, all seven globe buttons, globe slide release, completion, save progress, all current disabled primary actions and review rendered.");Exit();}
  }
 }

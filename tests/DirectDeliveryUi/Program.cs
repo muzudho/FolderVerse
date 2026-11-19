@@ -10,6 +10,7 @@ class Checks:Game1{
  void Set(string n,object v)=>typeof(Game1).GetField(n,F)!.SetValue(this,v);
  object Call(string n,params object[] args)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,args)!;
  static void Check(bool ok,string text){if(!ok)throw new Exception(text);}
+ static int PrimaryCount=>(int)typeof(Game1).GetField("PrimaryActionCount",BindingFlags.Static|BindingFlags.NonPublic)!.GetRawConstantValue()!;
  Rectangle Part(int side,int slot,int row)=>(Rectangle)Call("DirectViewPart",side,slot,row);
  Rectangle Cell(int side,int slot)=>(Rectangle)Call("DirectViewCell",side,slot);
  Point CellMargin(int side,int slot){
@@ -24,13 +25,14 @@ class Checks:Game1{
   Content.RootDirectory=Environment.GetEnvironmentVariable("FOLDERVERSE_TEST_CONTENT") ?? Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();w=(WorldSetup)Get("_setup");w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.Relations.Reset();w.SelectPlayer(0);Set("_conquestOverviewEnabled",false);Set("_conquestOverview",false);Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
   var node=w.Nodes.All.First(n=>!w.Routes.Land(n.Cell,n.Center) && w.Routes.Neighbors(n).Any(r=>!w.Routes.Land(w.Nodes.At(r.Target,r.Entry).Cell,w.Nodes.At(r.Target,r.Entry).Center)));var route=w.Routes.Neighbors(node).First(r=>!w.Routes.Land(w.Nodes.At(r.Target,r.Entry).Cell,w.Nodes.At(r.Target,r.Entry).Center));a=node.Id;b=w.Nodes.At(route.Target,route.Entry).Id;Check((bool)Call("DirectSeaRoute",a,b),"Sea connection uses ferry icon");foreach(var n in w.Nodes.All)n.Owner=1;w.Nodes.All[a].Owner=w.Nodes.All[b].Owner=0;w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);w.Robots.ConfigureFactories(w);
   var robot=w.Robots.Create(0,RobotParts.Complete);original=robot.Id;w.Robots.Nodes[a].Add(robot);w.Robots.Nodes[b].Add(w.Robots.Create(0,RobotParts.Legs));((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);
+  Set("_autoSaveEnabled",false);Set("_paperReadTurn",w.Population.Turn);Set("_paperReadCountry",w.PlayerSlot);
   Set("_statusGlobe",false);((CubeNet)Get("_net")).FitAll((Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!,1);Call("OpenDirectMap");
   Rectangle Footer(string name)=>(Rectangle)typeof(Game1).GetProperty(name,F)!.GetValue(this)!;
   var normal=Footer("PopulationTurnButton");
   Check(normal.Width==192 && normal.Height==144,"End turn uses 2:1.5 units");
-  for(int i=0;i<6;i++){
+  for(int i=0;i<PrimaryCount;i++){
    var rect=(Rectangle)Call("PrimaryActionBounds",i);
-   Check(rect.Bottom==1070 && (i==1 || rect.Width==rect.Height),"Primary actions share a baseline with five squares");
+   Check(rect.Bottom==1070 && (i==1 || rect.Width==rect.Height),"Primary actions share a baseline with square secondary actions");
    for(int j=0;j<i;j++)Check(!rect.Intersects((Rectangle)Call("PrimaryActionBounds",j)),"Primary hit bounds never overlap");
   }
   var delivery=(Rectangle)Call("PrimaryActionBounds",3);
@@ -38,8 +40,9 @@ class Checks:Game1{
   Call("UpdateMapFooter",.125f);var half=Footer("PopulationTurnButton");Check(half.Y>normal.Y && half.Top<1080,"Other actions slide down at the halfway point");
   Check((bool)Call("MapOverlayClick",normal.Center,false) && (bool)Get("_directMap"),"Original hidden turn-button location cannot end the turn");
   Check((bool)Call("MapOverlayClick",new Point(half.Center.X,half.Top+10),false) && (bool)Get("_directMap"),"Moving actions cannot activate during frame-out");
+  for(int i=0;i<PrimaryCount;i++)if(i!=3){var home=(Rectangle)typeof(Game1).GetMethod("PrimaryActionHomeBounds",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{i})!;Check((bool)Call("MapOverlayClick",home.Center,false) && (bool)Get("_directMap"),"Every inactive home action is suppressed while sliding");}
   Call("UpdateMapFooter",.125f);
-  for(int i=0;i<6;i++)Check(i==3?((Rectangle)Call("PrimaryActionBounds",i))==delivery:((Rectangle)Call("PrimaryActionBounds",i)).Top>=1080,"Only delivery remains after frame-out");
+  for(int i=0;i<PrimaryCount;i++)Check(i==3?((Rectangle)Call("PrimaryActionBounds",i))==delivery:((Rectangle)Call("PrimaryActionBounds",i)).Top>=1080,"Only delivery remains after frame-out");
   var closeMode=(Rectangle)typeof(Game1).GetMethod("MapModeCloseButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{3})!;
   Check((bool)Call("MapOverlayClick",closeMode.Center,false) && !(bool)Get("_directMap"),"Close beside delivery exits mode");
   Call("UpdateMapFooter",.125f);Check(Footer("PopulationTurnButton").Y==half.Y,"Other actions slide back in halfway");
