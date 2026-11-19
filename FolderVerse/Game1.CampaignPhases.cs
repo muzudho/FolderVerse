@@ -1,6 +1,7 @@
 namespace FolderVerse;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 
 public partial class Game1
@@ -15,6 +16,7 @@ public partial class Game1
     private bool PhasePrimaryActionAllowed(int index)=>index==2?WarPlanningAllowed:index is 3 or 4 or 5 or LongMapAction or FunctionTransferAction or TradeAction?DomesticOperationsAllowed:true;
     private void EndDomesticPhase(bool automaticAll=false)
     {
+        if(!automaticAll && !_setup.Campaign.Stratagems.Commit(_setup,_setup.TurnPlayer,out string reason)){_stratagemMessage=reason;_stratagemManual=false;_stratagemReservationsOpen=false;_stratagemPage=0;_stratagemGroup=-1;_stratagemSelected=(int)_setup.Campaign.Stratagems.Pending.First(p=>p.Controller==_setup.TurnPlayer && reason.Contains(StratagemPlans.Title(p.Match.Kind))).Match.Kind;return;}
         SaveDomesticCamera();
         if(!automaticAll && BeginSubordinateDomestic())return;
         SubmitDomesticPhase(automaticAll);

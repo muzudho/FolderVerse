@@ -167,6 +167,7 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorld) && field.Name=="<PartPlanning>k__BackingField"){field.SetValue(value,new RobotPartPlanning());continue;}
                     if(type==typeof(RobotWorld) && field.Name=="<ProductionIntakes>k__BackingField"){field.SetValue(value,new List<ProductionIntake>());continue;}
                     if(type==typeof(RobotWorld) && field.Name=="<ProductionIntakeEnabled>k__BackingField")continue;
+                    if(type==typeof(ConquestCampaign) && field.Name=="<Stratagems>k__BackingField"){field.SetValue(value,new StratagemPlans());continue;}
                     if(type==typeof(ConquestCampaign) && field.Name=="<Trade>k__BackingField"){field.SetValue(value,new TradePlan());continue;}
                     if(type==typeof(ConquestCampaign) && field.Name=="<AttackMemory>k__BackingField"){field.SetValue(value,new ComputerAttackMemory());continue;}
                     if(type==typeof(TradePlan) && field.Name=="<Replies>k__BackingField"){field.SetValue(value,new List<TradeReply>());continue;}
