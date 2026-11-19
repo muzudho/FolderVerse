@@ -1,4 +1,4 @@
-﻿using FolderVerse;
+using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -16,7 +16,7 @@ sealed class WarGuideGame:Game1
  void Guide(int id){UpdateGuide();Check((bool)Get("_tutorialAttackGuide") && (int)Get("_tutorialGuideMessage")==id,"Expected guide "+id);Set("_animationTime",(float)Get("_tutorialGuideStarted")+1);}
  void Dismiss(){Set("_tutorialAttackGuide",false);Set("_tutorialGuideClosing",-1f);Set("_tutorialChromeSlide",0f);}
  protected override void LoadContent(){
-  Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();string medalPath=Path.Combine(AppContext.BaseDirectory,"war-guides-achievements.json");File.Delete(medalPath);Set("_tutorialAchievements",new TutorialAchievements(medalPath));Set("_autoSaveEnabled",false);
+  Content.RootDirectory=Environment.GetEnvironmentVariable("FOLDERVERSE_TEST_CONTENT") ?? Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();string medalPath=Path.Combine(AppContext.BaseDirectory,"war-guides-achievements.json");File.Delete(medalPath);Set("_tutorialAchievements",new TutorialAchievements(medalPath));Set("_autoSaveEnabled",false);
   var seedText=Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_WAR_SEED");
   if(int.TryParse(seedText,out int seed))Set("_random",new Random(seed));
   Call("BeginPetitstellaTutorial");w=(WorldSetup)Get("_setup");
@@ -279,7 +279,7 @@ sealed class WarGuideGame:Game1
    for(int tick=0;tick<4;tick++)Send(default);
    int extraTurns=Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_EXTRA_TURN")=="1"?1:0;
    if(extraTurns==1 && Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_REPEAT_TURN")=="1")extraTurns++;
-   if(int.TryParse(Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_EXTRA_TURNS"),out int requestedTurns))extraTurns=Math.Clamp(requestedTurns,0,12);
+   if(int.TryParse(Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_EXTRA_TURNS"),out int requestedTurns))extraTurns=Math.Clamp(requestedTurns,0,24);
    for(int extraTurn=0;extraTurn<extraTurns;extraTurn++){
     // The domestic phase can return to the map before its cut-in and persuasion start.
     double cutInSeconds=Convert.ToDouble(typeof(Game1).GetField("PhaseCutInSeconds",BindingFlags.Static|BindingFlags.NonPublic)!.GetRawConstantValue());
