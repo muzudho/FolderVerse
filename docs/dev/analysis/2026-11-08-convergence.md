@@ -3973,3 +3973,6 @@ NAS delivery-battle-link-0016（期限11月19日）、固定3637照合・警告�
 
 2026-11-19 22:58 JST 計略確定→CPU用途計画の順序と配下保護を静的監査。FinishDomesticはカード確定後にCPU用途/物流等を呼ぶが、ManualRulersは人間配下も含み、通常automaticAll=falseのComputerNodePurposes/FactoryManagementはその所有地点を除外する。この２箇所で人間配下のカード用途が自動上書きされる経路は対象外。automaticAll=trueは別経路で、将来CPUカード採用時の優先順位/保護を別検証する必要あり。全物流非干渉/実戦成果を証明したものではない。NAS convergence-analysis/stratagem-controller-audit-2258/notes.txt・source-hashes.json。新規シミュレーション/400再開/共有ソース/ビルド/元ゲーム変更なし。次は本実装固定版の内政一括処理回帰と実選択理由の分離計測。
 
+
+2026-11-19 23:21 JST 初期３計略の実条件を104729/cast271828の旧基準/迂回候補60保存へ新D2E34D89で適用診断。rootごとの独立コピーだけ人間controller露出（SetParticipantCounts1/19）、所有/地形/在庫再生成/Advanceなし。基準６root計14件（出撃2/救援10/集中2）、候補３root計2件（1/1/0）、更に独立コピーで各Reserve全受理。競合を含み同時全実施可能数ではない。10→9→17と10→70→74も出撃候補、既城壁でなく用途変更予約込み。旧状態に新ルールを当てた診断で生成元一致続行や勝利成果ではなく14対2で優劣を付けない。警告エラー0/実行D2E34D897CED89F7DA213E185880D19E88644D6937958CF064D79B98EDD9F2BBコピーSHA一致。NAS archives/convergence-analysis/stratagem-live-state-2321にソース/結果/notes、tmp同名にビルド。60維持/400再開/製品変更なし。次は最新ルール新規同SEED基準と、承認後の採用/確定/実戦果分離へ。
+
