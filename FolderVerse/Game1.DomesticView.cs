@@ -24,7 +24,7 @@ public partial class Game1
     private float _domesticSlide;
     private bool _nodeInspectorClosing;
     private bool InspectorVisible=>_folderTreeOpen || _reignView || _regionCell>=0 || _populationCell>=0 || _movementOpen || _transportOverview || _salvagePlan;
-    private bool DomesticPanelOpen=>InspectorVisible && !_nodeInspectorClosing;
+    private bool DomesticPanelOpen=>(InspectorVisible || StratagemPanelActive) && !_nodeInspectorClosing;
     private int NodeInspectorOffset=>(int)MathF.Round(-960*(1-_domesticSlide));
     private Rectangle NodeInspectorBounds=>new(54+NodeInspectorOffset,150,850,825);
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
@@ -89,6 +89,7 @@ public partial class Game1
     private static readonly Rectangle ReignPortrait=new(56,650,240,240); private Rectangle StrategyToggle=>PrimaryActionBounds(0);
     private bool DomesticViewClick(Point p)
     {
+        if(StratagemInterface && !StratagemManualActions)return false;
         if(TutorialPrimaryActionClick(p))return true;
         if(_trainingOpen || _supervisorDialog>0)return false;
         if(NodeCheckClick(p))return true;

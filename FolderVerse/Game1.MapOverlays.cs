@@ -26,7 +26,7 @@ public partial class Game1
         0=>new(54,974,96,96),1=>new(160,926,192,144),
         _=>new(362+((index==7?4:index>=4?index+1:index)-2)*106,974,96,96)
     };
-    private Rectangle PrimaryActionBounds(int index){var r=PrimaryActionHomeBounds(index);if(index!=PinnedPrimaryAction)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,_primaryActionSlide));return r;}
+    private Rectangle PrimaryActionBounds(int index){var r=PrimaryActionHomeBounds(index);if(index==1 && StratagemInterface && StratagemManualActions)r=new(r.X,974,r.Width,96);if(index!=PinnedPrimaryAction)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,_primaryActionSlide));return r;}
     private static Rectangle MapModeCloseButton(int index)=>new(PrimaryActionHomeBounds(index).Right+10,1002,40,40);
     private bool TutorialPrimaryActionsDisabled=>_setup.TutorialStep==3 || _setup.TutorialMapBeforeWar && _setup.TutorialMapStage<6;
     private bool TutorialPrimaryActionAllowed(int index)=>!TutorialPrimaryActionsDisabled && (index!=TradeAction || _setup.TutorialStep==0) && (!_setup.TutorialMapBeforeWar || index is 1 or 2 || index==0 && _setup.TutorialAttackCompleted);
@@ -36,6 +36,7 @@ public partial class Game1
     {
         if(FunctionTransferChoiceInput(p,!escape,escape))return true;
         if(!escape && TutorialPrimaryActionClick(p))return true;
+        if(StratagemInterface && !StratagemManualActions && MapFooterAction<0)return false;
         if(!MapMarkerMenuAvailable || InspectorVisible)return false;
         if(escape && _functionTransferMap){CloseFunctionTransferMap();return true;}
         if(escape && _directMap){CloseDirectDelivery();return true;}
@@ -83,6 +84,7 @@ public partial class Game1
     private void DrawPrimaryActionButtons() => DrawTutorialChrome(()=>DrawPrimaryActionButtonsCore(),false);
     private void DrawPrimaryActionButtonsCore()
     {
+        if(StratagemInterface && !StratagemManualActions)return;
         string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画","地点の施設移転の予約","ロボットパーツ長距離便","取引"};
         for(int i=0;i<PrimaryActionCount;i++){
             var r=PrimaryActionBounds(i);if(r.Top>=1080)continue;
@@ -93,7 +95,7 @@ public partial class Game1
             var shadow=r;shadow.Y+=4;PrimaryRoundBox(shadow,new Color(7,23,35));PrimaryRoundBox(r,color);
             DrawCountryCornerMarks(r,_setup.PlayerSlot,enabled?1:.3f);
             var ink=UiPainter.ContrastInk(color);
-            if(i==1){_ui.Center("この陣営の",new(r.X,r.Y+32,r.Width,32),.44f,ink);_ui.Center("ターン終了",new(r.X,r.Y+73,r.Width,36),.57f,ink);}
+            if(i==1){int top=r.Height==96?12:32;_ui.Center("この陣営の",new(r.X,r.Y+top,r.Width,32),.44f,ink);_ui.Center("ターン終了",new(r.X,r.Y+top+39,r.Width,36),.57f,ink);}
             else {
                 int inset=_setup.CountryPattern(_setup.PlayerSlot)==0?3:14;
                 DrawPrimaryIcon(i,new(r.X+12,r.Y+8,r.Width-24,58),ink);

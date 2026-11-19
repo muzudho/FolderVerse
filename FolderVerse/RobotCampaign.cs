@@ -178,10 +178,9 @@ public sealed partial class RobotCampaign
                 ? marchEdges[order][^1].From : source[order];
             bool alreadyIntercepting=Encounters.Any(e=>!e.Finished && e.InterceptOwner>=0 && e.Target==target);
             if(existing==null && !alreadyIntercepting && hostile.Length>0 && hostile.All(o=>source[o]!=target) && hostile.Select(InterceptOrigin).Distinct().Count()==1){
-                var interceptors=world.Robots.Nodes[target].Robots.Where(r=>r.InterceptOnly && world.Relations.Allied(r.Owner,node.Owner) && world.Robots.Training[r.Owner].Eligible(r) && world.Robots.DirectDelivery.LockedParts(target,r.Id)==0 && !world.Robots.Workshops[target].IsDisposing(r.Id) && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id))).ToArray();
-                if(interceptors.Length>0){
+                if(world.Nodes.All.Any(origin=>InterceptRobots(world,origin.Id).Any() && ReliefDistances(world,origin.Id).ContainsKey(target))){
                     var interceptArmies=hostile.GroupBy(o=>o.Ruler).Select(g=>(g.Key,source[g.FirstOrDefault(o=>o.Queen)??g.First()],g.SelectMany(o=>troops[o]).ToList(),g.Any(o=>o.Queen))).ToList();
-                    foreach(var defenders in interceptors.GroupBy(r=>r.Owner)){foreach(var robot in defenders)Depart(world,target,robot);interceptArmies.Add((defenders.Key,target,defenders.ToList(),false));}
+                    interceptArmies.Add((node.Owner,target,new List<Robot>(),false));
                     int approach=InterceptOrigin(hostile[0]);
                     var interception=CreateEncounter(world,BattleKind.Edge,approach,target,-1,interceptArmies.ToArray(),
                         hostile.Select(o=>o.Ruler).Distinct().ToDictionary(owner=>owner,_=>approach));interception.InterceptOwner=node.Owner;
@@ -225,6 +224,7 @@ public sealed partial class RobotCampaign
             var encounter=Encounters.FirstOrDefault(e=>!e.Finished && e.Kind==BattleKind.Node && e.Target==reserve.Node);
             if(encounter!=null){AddReinforcement(world,encounter,reserve.Robot.Owner,reserve.Node,new(){reserve.Robot},false);Reserves.Remove(reserve);}
         }
+        DispatchInterceptRelief(world);
         foreach(var encounter in Encounters.Where(e=>!e.Finished).ToArray())
         {JoinWanderers(world,encounter);RunSegment(world,encounter);ReturnRetreatedWanderers(world,encounter);}
         // A node battle later in the same global turn may remove an earlier edge battle's home.
@@ -371,10 +371,16 @@ public sealed partial class RobotCampaign
         bool changed=false;
         foreach(var army in state.Armies)
         {
-            if(encounter.LostHomes.ContainsKey(army.Owner) || world.Relations.Allied(world.Nodes.All[army.HomeNode].Owner,army.Owner))continue;
-            encounter.LostHomes[army.Owner]=world.Nodes.All[army.HomeNode].Owner;changed=true;
-            foreach(var unit in state.Units.Where(u=>u.Owner==army.Owner))unit.Fallen=true;
-            while(army.Waiting.TryDequeue(out var unit)){unit.Fallen=true;state.Units.Add(unit);}
+            foreach(var unit in state.Units.Concat(army.Waiting).Where(u=>u.Active && u.Owner==army.Owner).ToArray()){
+                int home=_homes.TryGetValue(unit.Id,out var origin)?origin.Node:army.HomeNode;
+                if(world.Relations.Allied(world.Nodes.All[home].Owner,unit.Owner))continue;
+                if(unit.Role==BattleRole.Queen)encounter.LostHomes[army.Owner]=world.Nodes.All[home].Owner;
+                unit.Fallen=true;changed=true;
+                if(army.Waiting.Contains(unit)){
+                    var rest=army.Waiting.Where(u=>!ReferenceEquals(u,unit)).ToArray();army.Waiting.Clear();foreach(var pending in rest)army.Waiting.Enqueue(pending);
+                    state.Units.Add(unit);
+                }
+            }
         }
         return changed;
     }
@@ -406,7 +412,7 @@ public sealed partial class RobotCampaign
         }
         PrepareSplitBoards(e);
         // Failed/retreated individuals are returned now; active survivors are only in the new boards.
-        foreach(var state in old)ReturnUnits(world,e,state,state.Units.Where(u=>u.Fallen || u.Retreated));
+        foreach(var state in old)ReturnUnits(world,e,state,state.Units.Concat(state.Armies.SelectMany(a=>a.Waiting)).Where(u=>u.Fallen || u.Retreated));
         return true;
     }
     private void Complete(WorldSetup world,RobotEncounter e)

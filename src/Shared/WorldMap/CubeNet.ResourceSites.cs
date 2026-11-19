@@ -36,7 +36,9 @@ public sealed partial class CubeNet
             int remaining=node==null || !node.Functional || node.Purpose==NodePurpose.Relay?0:
                 world.Robots.RawDeposit(node.Id,RobotWorld.SiteMaterial(site.Kind));
             bool depleted=world.Robots.OtherRawSupplyEnabled && remaining==0;
-            DrawResourceSite(site.Kind,globe,(color,vertices)=>FillProjectedFace(ui,
+            if(!globe && site.Kind==ResourceSiteKind.OffshoreGas)
+                DrawRecycledPPMapArt(ui,Point(0,0,0),Vector2.Distance(Point(-.9f,0,0),Point(.9f,0,0)),depleted);
+            else DrawResourceSite(site.Kind,globe,(color,vertices)=>FillProjectedFace(ui,
                 vertices.Select(ProjectVertex).ToArray(),depleted?Color.Lerp(color,new Color(78,76,74),.65f):color),
                 globe?ProjectVertex:null);
             Vector2 ProjectVertex(Vector3 p)=>Point(p.X,p.Y,p.Z);
@@ -161,24 +163,45 @@ public sealed partial class CubeNet
                 Cylinder(.28f,-.20f,.336f,.45f,.065f,new Color(29,139,150));
                 break;
             case ResourceSiteKind.OffshoreGas:
-                var hull=new Color(31,75,93);
-                var pipe=new Color(26,151,143);
-                var trim=new Color(249,166,49);
-                Box(-.71f,-.58f,1.42f,1.16f,0,.11f,hull);
-                Box(-.73f,-.60f,1.46f,1.20f,.08f,.035f,trim);
-                Box(-.67f,-.54f,1.34f,1.08f,.115f,.035f,hull);
-                Box(.37f,.5f,.31f,.29f,.05f,.09f,white);
-                Tank(-.36f,-.22f);
-                Tank(.20f,-.22f);
-                Box(-.36f,-.27f,.56f,.10f,.53f,.09f,pipe);
-                Box(-.41f,.18f,.87f,.105f,.22f,.105f,pipe);
-                Box(-.41f,.01f,.105f,.27f,.22f,.105f,pipe);
-                Cylinder(.04f,.23f,.09f,.31f,.045f,trim);
-                Box(.31f,.06f,.30f,.34f,.15f,.24f,white);
-                Cylinder(.46f,.23f,.125f,.39f,.19f,new Color(175,224,221));
-                Cylinder(.46f,.23f,.13f,.57f,.055f,pipe);
-                Box(-.66f,.45f,.92f,.045f,.15f,.17f,trim);
-                Box(-.66f,-.5f,.045f,.96f,.15f,.17f,trim);
+                // Keep the existing offshore PP deposit identity and amount. Its
+                // visible source is now collected/reprocessed PP, not a gas tank.
+                var hull=new Color(31,75,93);var pipe=new Color(26,151,143);
+                var trim=new Color(249,151,49);var glass=new Color(139,212,218);
+                Box(-.88f,-.54f,1.76f,1.08f,0,.12f,hull);
+                Box(-.91f,-.57f,1.82f,1.14f,.10f,.10f,white);
+                for(int side=0;side<2;side++)for(int end=0;end<2;end++)
+                    Box(-.91f+end*1.58f,-.58f+side*.98f,.24f,.18f,.12f,.10f,trim);
+                // Sloping mesh elevator brings recovered fragments up to sorting.
+                Face(pipe,point(-.88f,.96f,.04f),point(-.48f,.96f,.04f),point(-.48f,.03f,.45f),point(-.88f,.03f,.45f));
+                for(int step=0;step<8;step++){
+                    float t=step/8f;Box(-.89f,.12f+t*.83f,.43f,.025f,.41f-t*.37f,.025f,white);
+                    if(step%2==0)Box(-.79f+(step%3)*.07f,.14f+t*.78f,.08f,.06f,.44f-t*.37f,.035f,step%4==0?trim:new Color(68,120,213));
+                }
+                Box(-.86f,-.38f,.44f,.42f,.20f,.20f,pipe);
+                Box(-.85f,-.36f,.42f,.37f,.40f,.025f,glass);
+                for(int bin=0;bin<2;bin++){
+                    Box(-.82f+bin*.22f,.18f,.18f,.22f,.20f,.12f,white);
+                    Box(-.80f+bin*.22f,.20f,.14f,.18f,.32f,.02f,bin==0?trim:rock);
+                }
+                // Closed washing drum, recirculation tank and connecting pipes.
+                Drum(-.34f,-.12f,.43f,.66f,.21f,glass);
+                Cylinder(-.11f,-.30f,.19f,.20f,.43f,glass);
+                Cylinder(-.11f,-.30f,.20f,.61f,.045f,white);
+                Box(-.13f,-.34f,.48f,.055f,.65f,.055f,pipe);
+                Box(.30f,-.34f,.055f,.34f,.40f,.30f,pipe);
+                Box(.30f,-.24f,.29f,.47f,.20f,.30f,white);
+                Box(.32f,-.22f,.25f,.43f,.49f,.04f,pipe);
+                Cylinder(.70f,.05f,.15f,.22f,.48f,glass);
+                Cylinder(.70f,.05f,.155f,.69f,.035f,white);
+                for(int pellet=0;pellet<9;pellet++)
+                    Cylinder(.64f+(pellet%3)*.057f,.00f+(pellet/3)*.05f,.027f,.53f,.04f,white);
+                Box(.55f,.015f,.12f,.06f,.41f,.06f,trim);
+                // Railings and mooring bollards retain the toy harbor vocabulary.
+                for(int post=0;post<5;post++){
+                    Box(-.83f+post*.40f,-.51f,.025f,.025f,.20f,.27f,white);
+                    Cylinder(-.82f+post*.40f,.48f,.035f,.20f,.08f,hull);
+                }
+                Box(-.84f,-.52f,1.64f,.035f,.46f,.03f,white);
                 break;
             case ResourceSiteKind.Quartz:
                 Boulder(-.28f,0,.49f,.63f,rock);
@@ -206,14 +229,14 @@ public sealed partial class CubeNet
             Face(color,top);
         }
 
-        void Tank(float x,float y)
+        void Drum(float x,float y,float z,float length,float radius,Color color)
         {
-            Cylinder(x,y,.235f,.15f,.27f,white);
-            Cylinder(x,y,.24f,.27f,.08f,new Color(26,151,143));
-            var shoulder=Ring(x,y,.235f,.42f,16);
-            var cap=Ring(x,y,.13f,.53f,16);
-            if(globe)Sides(cap,shoulder,white);
-            Face(white,cap);
+            Vector3[] End(float at,float r)=>Enumerable.Range(0,16).Select(i=>{
+                float angle=i*MathHelper.TwoPi/16;return point(at,y+MathF.Cos(angle)*r,z+MathF.Sin(angle)*r);
+            }).ToArray();
+            var a=End(x,radius);var b=End(x+length,radius);
+            Sides(b,a,color);Face(new Color(26,151,143),b);Face(new Color(26,151,143),a.Reverse().ToArray());
+            for(int band=0;band<3;band++)Sides(End(x+band*length/2+.025f,radius+.012f),End(x+band*length/2,radius+.012f),white);
         }
 
         void Boulder(float x,float y,float radius,float height,Color color)

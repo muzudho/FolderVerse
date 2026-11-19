@@ -1,0 +1,9 @@
+# 海上再生PP採取場の回帰
+
+GameDllに対象FolderVerse.dll、RuntimeDirにMonoGame.Framework.dllのあるディレクトリーを指定する。モデルはOffshorePPFacility.csproj、描画はUi.csproj。--artifacts-pathをNAS側の作業別期限付きパスへ指定し、実行先へ対象DLLを明示コピーしてSHA256を照合する。
+
+FOLDERVERSE_PROBE_CONTENT_BASEにフォント等の実行素材ルートを指定。モデルの任意PP_FIXTUREは新規診断保存の出力先。UIはPP_FIXTUREにその保存、PP_OUTPUTにNASの画像出力先、FOLDERVERSE_ART_CONTENT_BASEにゲームContentを含むディレクトリーを指定する。
+
+モデルはworld42/cast2/territory3/fortune4の２CPU・25/25。採取場の地形条件・既存PPへの対応・実採取員/製造員と原料消費を31確認。描画は実共通ポリゴン関数の３方向と実地図イラストの３サイズ・枯渇/通常・全体展開図。簡易LoadContentの診断で実ゲームの通し入力ではない。
+
+モデルは１回のAdvanceIndustryが1/3産業ターンであることを前提にする。元セーブや稼働ゲームを使わない。詳しくはdocs/dev/recycled-pp-facility.md。

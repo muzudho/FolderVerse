@@ -112,7 +112,7 @@ public sealed class RobotLongDelivery
             if(receiver!=null)
             {
                 // Combining parts can consume sections already shared by raw materials.
-                var merged=receiver.Merge(cargo with {LongDeliveryNumber=null},receiver.Owner);
+                var merged=MergeDeliveredParts(receiver,cargo with {LongDeliveryNumber=null});
                 var afterArrival=destination.Robots.Select(r=>r.Id==receiver.Id?merged:r);
                 if(!destination.Fits(afterArrival,destination.MaplePackages,destination.ReservedReturns))
                 {
@@ -127,7 +127,7 @@ public sealed class RobotLongDelivery
             }else store.Remove(robot.Id);
             if(next==order.Target){
                 cargo=cargo with {LongDeliveryNumber=null};
-                if(receiver==null)destination.Add(cargo);else destination.Replace(destination.Robots.Select(r=>r.Id==receiver.Id?r.Merge(cargo,r.Owner):r));
+                if(receiver==null)destination.Add(cargo);else destination.Replace(destination.Robots.Select(r=>r.Id==receiver.Id?MergeDeliveredParts(r,cargo):r));
                 if(order.TargetSlot>=0 && !order.Receiver.HasValue)_slotArrivals[(order.Target,order.TargetSlot,cargo.Owner)]=receiver?.Id??cargo.Id;
                 Orders.Remove(order);order.Status="配達完了";Results.Add(order);if(Results.Count>64)Results.RemoveAt(0);
             }else destination.Add(cargo);
@@ -137,6 +137,10 @@ public sealed class RobotLongDelivery
         if(_slotArrivals.Count>1024)foreach(var key in _slotArrivals.Keys.Where(k=>!Orders.Any(o=>o.Target==k.Node && o.TargetSlot==k.Slot)).Take(_slotArrivals.Count-1024).ToArray())_slotArrivals.Remove(key);
         world.Transport.AppendPlannedTransfers(playback);world.PartPlanning.Invalidate();world.Check();
     }
+    // Match direct delivery: combining with a soldier must not erase a captain role.
+    private static Robot MergeDeliveredParts(Robot receiver,Robot cargo)=>receiver.Merge(cargo,receiver.Owner) with {
+        Role=receiver.Role==RobotRole.Captain || cargo.Role==RobotRole.Captain?RobotRole.Captain:RobotRole.Soldier
+    };
 }
 public sealed partial class RobotWorld
 {

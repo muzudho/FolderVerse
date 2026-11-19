@@ -97,9 +97,9 @@ public partial class Game1
         for(int i=0;i<NodePurposes.Length;i++){
             if(!NodePurposeButton(i).Contains(_pointer))continue;
             var (purpose,label)=NodePurposes[i];
-            var reason=NodePurposeDisabledReason(node,purpose) ?? (purpose==NodePurpose.Frontline?"自国・同盟国の地点を１つ経由して、２地点先まで開戦できます。":null);
+            var reason=NodePurposeDisabledReason(node,purpose) ?? (purpose==NodePurpose.Frontline?"自国・同盟国の地点を１つ経由して、２地点先まで開戦できます。\n迎撃予約は２地点先と、その先の辺まで救援します。":null);
             if(reason==null)break;
-            var popup=new Rectangle(Math.Clamp(NodePurposeButton(i).Center.X-190,84,488),611,380,76);
+            var popup=new Rectangle(Math.Clamp(NodePurposeButton(i).Center.X-190,84,488),611,380,100);
             DrawRulebookPaper(popup);
             _ui.Text(label,new(popup.X+19,popup.Y+11),.37f,RulebookInk);
             _ui.Text(reason,new(popup.X+19,popup.Y+37),.32f,RulebookInk);
