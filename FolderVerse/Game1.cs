@@ -915,6 +915,7 @@ public partial class Game1 : Game
         if(_homePersuasionActive){_spriteBatch.Begin(transformMatrix:transform);DrawHomePersuasion();_spriteBatch.End();}
         if(TutorialReviewAvailable){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialMessages();_spriteBatch.End();}
         if(_tutorialAttackGuide || _tutorialGuideClosing>=0){_spriteBatch.Begin(transformMatrix:transform);_tutorialDrawingHost=true;DrawTutorialAttackGuide();_tutorialDrawingHost=false;_spriteBatch.End();}
+        _spriteBatch.Begin(transformMatrix:transform);DrawTutorialActionGlow();_spriteBatch.End();
         if(_wandererPolicyOpen){_spriteBatch.Begin(transformMatrix:transform);DrawWandererPolicyDialog();_spriteBatch.End();}
         if(_screen==Screen.Battle && _tutorialAchievementAge>=0){_spriteBatch.Begin(transformMatrix:transform);DrawTutorialAchievementCutIn();_spriteBatch.End();}
         if(_conquestOverview){_spriteBatch.Begin(transformMatrix:transform);DrawConquestCurtain(1-MathHelper.SmoothStep(0,1,(float)(_conquestAge/.65)));_spriteBatch.End();}

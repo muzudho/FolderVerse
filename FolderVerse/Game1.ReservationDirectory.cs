@@ -63,7 +63,7 @@ public partial class Game1
         foreach(var hit in _directoryHits.AsEnumerable().Reverse())if(hit.Bounds.Contains(p)){OpenNodeInspector(hit.Node);return true;}
         return false;
     }
-    private float DirectoryButtonPulse=>_reservationDirectory ? .16f+.12f*(1+MathF.Sin(_animationTime*MathHelper.TwoPi/2.4f)):0;
+    private float DirectoryButtonPulse=>_reservationDirectory ? .28f:0;
     private void DrawReservationDirectoryButton()
     {
         var r=ReservationDirectoryButton;

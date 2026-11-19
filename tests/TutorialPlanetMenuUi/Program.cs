@@ -30,6 +30,7 @@ sealed class PlanetMenuGame:Game1
   foreach(var mouse in new[]{release,press,release})
    Call("HandleInput",mouse,new KeyboardState(),new GameTime(TimeSpan.FromSeconds(100),TimeSpan.FromSeconds(.5)),true);
  }
+ Rectangle[] GlowTargets()=>((IEnumerable<Rectangle>)Call("TutorialActionTargets")).ToArray();
  void ClickThroughPrimaplana(WorldSetup setup){
   Set("_tutorialAttackGuide",false);
   var net=(CubeNet)Get("_net");
@@ -39,6 +40,7 @@ sealed class PlanetMenuGame:Game1
    Check(targets.Length>0,"An unconquered town is reachable on turn "+turn);
    GameClick(net.NodePosition(setup,setup.Nodes.All[targets[0]],GameBounds("NetPanel")).ToPoint());
    Check(setup.Campaign.PlannedOrders.Any(order=>order.TargetNode==targets[0] && order.Fighters>0),"Selecting a target reserves armed robots");
+   Check(GlowTargets().SequenceEqual(new[]{GameBounds("InspectorClose")}),"Reservation moves guidance to inspector close");
    GameClick(GameBounds("InspectorClose").Center);
    Check(!(bool)typeof(Game1).GetProperty("InspectorVisible",F)!.GetValue(this)!, "The war inspector closed");
    GameClick(((Rectangle)Call("PrimaryActionBounds",1)).Center);
@@ -62,6 +64,9 @@ sealed class PlanetMenuGame:Game1
   if(frame==2){
    Click(Bounds("TutorialPlanetCard",1));SkipOpening();var setup=(WorldSetup)Get("_setup");Check(Get("_screen").ToString()=="WorldStatus" && setup.TutorialStep==1 && setup.TutorialMapBeforeWar && setup.PlayerSlot==0 && !(bool)Get("_tutorialMenuOpen"),"Clicking Petitstella directly starts integrated tutorial");
    Check(setup.Nodes.All.All(n=>setup.Robots.Nodes[n.Id].Count==6),"Direct launch retains beginner reinforcements");
+   Set("_tutorialAttackGuide",false);Set("_tutorialChromeSlide",0f);Set("_cutInStarted",-100d);Set("_lastCutInPhase","内政フェーズ");Set("_statusGlobe",false);setup.TutorialMapStage=1;
+   Check(GlowTargets().Length==3,"Only unfinished map rotation controls glow");setup.TutorialMapRotations=1;Check(GlowTargets().Length==2,"Used rotation control stops glowing");
+   setup.TutorialMapStage=0;setup.TutorialMapRotations=0;Set("_statusGlobe",true);Check(GlowTargets().SequenceEqual(new[]{(Rectangle)typeof(Game1).GetField("MapViewButton",S)!.GetValue(null)!}),"Map lesson points to real view toggle");
   }
   if(frame==3){
    Call("ReturnToTitle");OpenMenu();Input(enter:true);var setup=(WorldSetup)Get("_setup");
@@ -69,11 +74,39 @@ sealed class PlanetMenuGame:Game1
    Check(setup.Cells.Length==3 && setup.Cells.All(cell=>cell.Face==2) && setup.Cells[0].Neighbors.SequenceEqual(new[]{1}) && setup.Cells[2].Neighbors.SequenceEqual(new[]{1}),"Plane has physical edges without wraparound");
    Check(setup.Robots.Retinues[0].Count>=10 && setup.Nodes.All.Where(node=>node.Owner!=0).All(node=>setup.Robots.Nodes[node.Id].Count==0),"Deployment starts with overwhelming strength");
   }
-  if(frame==4){Set("_tutorialAttackGuide",false);Set("_tutorialChromeSlide",0f);}
+  if(frame==4){
+   Check(GlowTargets().SequenceEqual(new[]{new Rectangle(1360,730,400,60)}),"Guide focuses only acknowledgement");
+   Set("_tutorialAttackGuide",false);Set("_tutorialChromeSlide",0f);Set("_cutInStarted",-100d);Set("_lastCutInPhase",(string)typeof(Game1).GetProperty("PlanningPhaseLabel",F)!.GetValue(this)!);
+   Check(GlowTargets().SequenceEqual(new[]{(Rectangle)Call("PrimaryActionBounds",2)}),"Primaplana directs player to war button");
+   Set("_statusMenuOpen",true);Check(GlowTargets().Length==0,"Menu suppresses underlying guidance");Set("_statusMenuOpen",false);
+   Set("_demoActive",true);Check(GlowTargets().Length==0,"Demo never requests human input");Set("_demoActive",false);
+   var guided=(WorldSetup)Get("_setup");int tutorialStep=guided.TutorialStep;typeof(WorldSetup).GetProperty("TutorialStep")!.SetValue(guided,0);Check(GlowTargets().Length==0,"Normal play has no tutorial glow");typeof(WorldSetup).GetProperty("TutorialStep")!.SetValue(guided,tutorialStep);
+   foreach(var overlay in new[]{"_tutorialMessagesOpen","_conquestOverview","_autoPlay"}){
+    Set(overlay,true);Check(GlowTargets().Length==0,$"{overlay} suppresses player guidance");Set(overlay,false);
+    Check(GlowTargets().SequenceEqual(new[]{(Rectangle)Call("PrimaryActionBounds",2)}),$"Closing {overlay} restores current operation guidance");
+   }
+   Console.WriteLine("PASS guided glow acknowledgement/war/menu/Demo/normal-play and review/overview/autoplay gating and restoration");
+   Set("_tutorialGuideClosing",0f);Set("_tutorialChromeSlide",1f);
+   Call("UpdateTutorialChrome",.1f);Check(GlowTargets().Length==0,"Closing guide keeps operation guidance hidden");
+   Call("UpdateTutorialChrome",.3f);Check(GlowTargets().Length==0,"Partially returning controls remain unhighlighted");
+   Call("UpdateTutorialChrome",.1f);Check(GlowTargets().SequenceEqual(new[]{(Rectangle)Call("PrimaryActionBounds",2)}),"Guidance resumes only after controls return");
+   Console.WriteLine("PASS guide closing and partial chrome return suppress glow, final return restores war guidance");
+  }
   if(frame==5)ClickThroughPrimaplana((WorldSetup)Get("_setup"));
   if(frame==6){Call("ReturnToTitle");OpenMenu();Input(escape:true);Check(!(bool)Get("_tutorialMenuOpen") && (bool)Get("_titleMenuOpen"),"Escape returns to start menu");OpenMenu();}
+  if(frame==4)Set("_animationTime",.4f);
   base.Draw(new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero));
   var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);using var image=new Texture2D(GraphicsDevice,p.BackBufferWidth,p.BackBufferHeight);image.SetData(pixels);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"tutorial-planets-{frame}.png")))image.SaveAsPng(file,image.Width,image.Height);
+  if(frame==4){
+   var bright=pixels;Set("_animationTime",1.2f);base.Draw(new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero));
+   var dim=new Color[bright.Length];GraphicsDevice.GetBackBufferData(dim);
+   var war=(Rectangle)Call("PrimaryActionBounds",2);int at=(war.Y*p.BackBufferHeight/1080)*p.BackBufferWidth+war.Center.X*p.BackBufferWidth/1920;
+   Check(bright[at].R>dim[at].R+30,"Guided button visibly pulses between bright and dim rendered frames");
+   var home=(Rectangle)Call("PrimaryActionBounds",0);at=(home.Y*p.BackBufferHeight/1080)*p.BackBufferWidth+home.Center.X*p.BackBufferWidth/1920;
+   Check(bright[at]==dim[at],"Unrelated primary button remains steady");
+   image.SetData(dim);using(var file=File.Create(Path.Combine(AppContext.BaseDirectory,"tutorial-glow-dim.png")))image.SaveAsPng(file,image.Width,image.Height);
+   Console.WriteLine("PASS rendered glow bright/dim and steady unrelated button");
+  }
   if(frame++==6){Console.WriteLine("PASS: seven rendered planets/dimensions, cursor navigation, five disabled planets, Petitstella launch, Primaplana topology, robots and world conquest and Escape back to start menu.");Exit();}
  }
 }

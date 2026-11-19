@@ -294,7 +294,7 @@ public partial class Game1
     {
         var ink=new Color(16,32,43);
         var signal=line.CycleFinished?new Color(65,78,83):line.Paused?new Color(167,190,194):line.RestRemaining>0?new Color(255,204,112):line.Waiting || mapleWait?new Color(255,113,105):new Color(102,244,175);
-        float pulse=line.CycleFinished?0:.78f+.22f*(.5f+.5f*MathF.Sin(_animationTime*2.4f));
+        float pulse=line.CycleFinished?0:1;
         // A fluorescent tube and its narrow socket share the exact tick center.
         // Keep the glow vertical so it cannot be mistaken for a range on the floor.
         _ui.Box(new(x-10,y+29,20,64),Color.Lerp(ink,signal,.12f*pulse));
