@@ -367,6 +367,12 @@ public partial class Game1
         foreach(var unit in frame.Units)
             DrawBattleSupplies(unit,left+unit.Position.X*size+(size-72)/2,top+(unit.Position.Y+1)*size-12,BattlePieceOpacity);
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:battleTransform);
+        // Identity badges stay a readable screen size even on the larger sea board.
+        foreach(var queen in frame.Units.Where(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated)){
+            var anchor=new Vector2(left+queen.Position.X*size+50,top+queen.Position.Y*size+9);
+            var chip=Vector2.Transform(anchor,boardTransform*Matrix.Invert(battleTransform))+new Vector2(22,-16);
+            DrawFaceChip(chip,queen.Owner,22);
+        }
         DrawBattleNewspaper(battle,frame);
         string result=$"全 {_robotPlayback.Rounds[_robotRound].Length} 戦場で１戦闘ターンを同時進行 / 結果は最後に表示";
         var recent=battle.Events.LastOrDefault(e=>e.Turn==frame.Turn && e.Phase==frame.Phase && e.Unit!=0);

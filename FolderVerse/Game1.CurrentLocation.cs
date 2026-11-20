@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -30,32 +30,10 @@ public partial class Game1
             return;
         }
         var gold=new Color(255,231,133);
-        var center=new Vector2(Math.Clamp(at.X-46,MapViewBounds.Left+40,MapViewBounds.Right-40),Math.Clamp(at.Y-56,MapViewBounds.Top+40,MapViewBounds.Bottom-40));
+        var center=new Vector2(Math.Clamp(at.X-94,MapViewBounds.Left+40,MapViewBounds.Right-40),Math.Clamp(at.Y-100,MapViewBounds.Top+40,MapViewBounds.Bottom-40));
         var delta=at-center;_ui.Tile((center+at)/2,new(delta.Length(),2),MathF.Atan2(delta.Y,delta.X),gold);
         DrawLocationChip(center,_setup.PlayerSlot);
     }
 
-    private void DrawLocationChip(Vector2 center,int ruler)
-    {
-        var gold=new Color(255,231,133);
-        void Disc(Vector2 point,int r,Color color){for(int y=-r;y<=r;y++){int half=(int)MathF.Sqrt(Math.Max(0,r*r-y*y));_ui.Box(new((int)point.X-half,(int)point.Y+y,Math.Max(1,half*2),1),color);}}
-        Disc(center+new Vector2(3,5),LocationChipRadius+1,new(6,18,27));Disc(center+new Vector2(0,3),LocationChipRadius,new(142,99,42));Disc(center,LocationChipRadius,gold);Disc(center,32,_setup.OwnerColor(ruler));Disc(center,29,Cream);
-        DrawLocationChipFace(center,27,ruler);
-        var number=new Rectangle((int)center.X-15,(int)center.Y+21,30,19);_ui.Box(number,gold);_ui.Center("#"+(ruler+1),number,.27f,new(52,45,33));
-    }
-    private void DrawLocationChipFace(Vector2 center,int radius,int ruler)
-    {
-        var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
-        var image=new Rectangle((int)center.X-radius,(int)center.Y-radius,radius*2,radius*2);
-        var old=GraphicsDevice.ScissorRectangle;_spriteBatch.End();
-        using(var clip=new RasterizerState{ScissorTestEnable=true}){
-            for(int y=-radius;y<radius;y+=2){
-                int half=(int)MathF.Sqrt(Math.Max(0,radius*radius-y*y));
-                var strip=new Rectangle(canvas.X+(int)((center.X-half)*canvas.Width/1920f),canvas.Y+(int)((center.Y+y)*canvas.Height/1080f),Math.Max(1,(int)(half*2*canvas.Width/1920f)),Math.Max(1,(int)(2*canvas.Height/1080f)));
-                GraphicsDevice.ScissorRectangle=Rectangle.Intersect(strip,canvas);_spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
-                _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],image,faceOnly:true);_spriteBatch.End();
-            }
-        }
-        GraphicsDevice.ScissorRectangle=old;_spriteBatch.Begin(transformMatrix:transform);
-    }
+    private void DrawLocationChip(Vector2 center,int ruler)=>DrawFaceChip(center,ruler,LocationChipRadius,animate:true);
 }

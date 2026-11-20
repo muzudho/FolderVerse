@@ -94,7 +94,7 @@ public partial class Game1
         if(_screen==Screen.Fortune)
         {
             if(FortuneSettingsAvailable)FortuneStockInput(mouse,active,click);
-            _world.ManualOrientation=WorldPreview.FaceTour(_fortuneStartOrientation,_landAge/5);
+            _world.ManualOrientation=Quaternion.Normalize(_fortuneStartOrientation*Quaternion.CreateFromAxisAngle(Vector3.Up,(float)_landAge*.10f));
             bool complete=FortuneSettingsAvailable
                 ? active && (enter || click && FortuneConfirm.Contains(_pointer))
                 : _landAge>=5;
@@ -156,7 +156,7 @@ public partial class Game1
     {
         _ui.Text(_screen==Screen.Fortune?"運否天賦フェーズ":"土地征服フェーズ",new(60,70),1.1f,Cream);
         if(_screen==Screen.Fortune){
-            _ui.Text("空から届く運命のロボット",new(75,175),.58f,Color.White);
+            _ui.Text("ロボットと原材料の初期配置",new(75,175),.58f,Color.White);
             if(FortuneSettingsAvailable){
                 _ui.Text("ポケットは別枠：完全体を２体",new(75,235),.4f,Cream);
                 DrawFortuneStock();
@@ -197,8 +197,7 @@ public partial class Game1
             foreach(var node in _setup.Nodes.InCell(c.Id).Where(n=>n.IsHarbor))
                 if(_world.ProjectVisible(_setup.Routes.Position(c.Id,node.Center),c.Normal,_yaw,_pitch,globeArea,out var h))_ui.Box(new((int)h.X-3,(int)h.Y-3,6,6),Cream);        }
         if(selectingLand && _landDrag.HasValue){var a=_landDrag.Value;var b=_pointer;LandLine(new(a.X,a.Y),new(b.X,a.Y),Color.White,2);LandLine(new(b.X,a.Y),new(b.X,b.Y),Color.White,2);LandLine(new(b.X,b.Y),new(a.X,b.Y),Color.White,2);LandLine(new(a.X,b.Y),new(a.X,a.Y),Color.White,2);}
-        if(_screen==Screen.Fortune)
-            for(int i=0;i<90*(_setup.TutorialStep==0?_robotScatterPercent:100)/100;i++){float t=(float)((_landAge+i*.071)%1.8/1.8);float x=MathHelper.Lerp(650+(i*173%1100),1080+i*47%310,t);float y=MathHelper.Lerp(-100,460+i*31%200,t);DrawRobotGlyph(new Rectangle((int)x,(int)y,26,46),i%_setup.ActiveCount,(RobotParts)(1+i%7),false,1-t*.3f);}
+        if(_screen==Screen.Fortune)DrawFortuneStockScenery(globeArea);
         DrawLandSetupUi();
         _spriteBatch.End();
         if(selectingLand)
