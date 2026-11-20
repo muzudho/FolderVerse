@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System.Linq;
 public sealed record ProductionPlan(RobotParts Product,int Turns,bool Cheap=false,RobotParts IntegratedParts=0)
 {
@@ -149,10 +149,10 @@ public sealed partial class RobotWorkshop
     {
         if(index<0 || index>=PlanCount)throw new System.ArgumentOutOfRangeException(nameof(index));
         if(HarvestOnly && index!=3)return;
-        if(SelectedPlan==index && MapleRemaining==0)return;
+        if(SelectedPlan==index && MapleRemaining==0 && !CycleFinished)return;
         MapleRemaining=MapleProgress=0;
         SelectedPlan=index;Paused=false;CycleFinished=false;RestRemaining=ProducedSinceRest=0;
-        if(index==3){Manufacturing=false;ProductionAge=WaitingProductionTurns=0;Paused=false;return;}
+        if(index==3){ResetRawProgress();Manufacturing=false;ProductionAge=WaitingProductionTurns=0;Paused=false;return;}
         var plan=PlanAt(index);Configure(plan.Product,plan.Turns);CheapProduct=plan.EffectiveCheapParts==plan.Product;IntegratedProduct=plan.IntegratedParts;_selectedProductPlan=plan;SelectedPlan=index;RestEnabled=true;
     }
     public void SetRest(int every,int turns)

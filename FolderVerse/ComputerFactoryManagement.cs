@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,8 +23,8 @@ internal static class ComputerFactoryManagement
 
     internal static bool WaitingWithoutSupply(WorldSetup world,int node,RobotWorkshop line)=>
         line.Manufacturing && !line.Paused && !line.CycleFinished && RobotWorld.RawMaterials.Any(m=>
-            RobotWorld.RawCost(line.CurrentProductionPlan.Preview(world.Nodes.All[node].Owner),m)>world.Robots.AvailableRaw(node,m)) &&
-        !RobotWorld.RawMaterials.Where(m=>RobotWorld.RawCost(line.CurrentProductionPlan.Preview(world.Nodes.All[node].Owner),m)>
+            line.RawRemaining(m)>world.Robots.AvailableRaw(node,m)) &&
+        !RobotWorld.RawMaterials.Where(m=>line.RawRemaining(m)>
             world.Robots.AvailableRaw(node,m)).Any(m=>Incoming(world,node,m));
 
     // Purpose retention is independent of each worker's release roll.

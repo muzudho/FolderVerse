@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 
@@ -10,7 +10,7 @@ public sealed partial class RobotWorkshop
     public int ProductionAge {get;private set;}
     public bool Manufacturing {get;private set;}
     public bool Paused {get;set;}
-    public bool DoNotRepeat {get;private set;}
+    public bool DoNotRepeat {get;private set;}=true;
     public bool CycleFinished {get;private set;}
     public bool HarvestOnly {get;private set;}
     public RawMaterial HarvestMaterial {get;private set;}
@@ -64,7 +64,7 @@ public sealed partial class RobotWorkshop
     public int DisposalAge {get;private set;}
     public long? DisposalTarget {get;private set;}
     public void Configure(RobotParts product,int period)
-    {RobotWorld.Validate(0,product);if(period<1)throw new ArgumentOutOfRangeException(nameof(period));MapleRemaining=MapleProgress=0;Product=product;_selectedProductPlan=null;CheapProduct=false;IntegratedProduct=0;ProductionPeriod=period;ProductionAge=WaitingProductionTurns=0;_lastEffectiveProductionPeriod=null;Manufacturing=true;CycleFinished=false;SelectedPlan=-1;RestEnabled=false;RestRemaining=ProducedSinceRest=0;}
+    {ResetRawProgress();RobotWorld.Validate(0,product);if(period<1)throw new ArgumentOutOfRangeException(nameof(period));MapleRemaining=MapleProgress=0;Product=product;_selectedProductPlan=null;CheapProduct=false;IntegratedProduct=0;ProductionPeriod=period;ProductionAge=WaitingProductionTurns=0;_lastEffectiveProductionPeriod=null;Manufacturing=true;CycleFinished=false;SelectedPlan=-1;RestEnabled=false;RestRemaining=ProducedSinceRest=0;}
     public void Dispose(RobotStore store,long id)
     {if(store.Robots.Single(r=>r.Id==id).Stationed)throw new InvalidOperationException("Stationed robot is locked.");if(DisposalTarget.HasValue)throw new InvalidOperationException("Disposal lane is busy.");if(!HasDisposalFactory)throw new InvalidOperationException("This node has no disposal factory.");int duration=DisposalTurns(store.Robots.Single(r=>r.Id==id).Parts);if(duration<1 || !store.Robots.Any(r=>r.Id==id))throw new ArgumentException("Invalid disposal order.");DisposalTarget=id;DisposalAge=0;DisposalPeriod=duration;}
     public void ConfigureDisposal()
@@ -94,14 +94,17 @@ public sealed partial class RobotWorkshop
     }
     internal void CompleteProduction(RobotWorld world,int node,int owner)
     {
-        foreach(var line in ProductionLines){line.CompleteSingleProduction(world,node,owner,ReservedSlots);}
+        // Release gates at the tick boundary, so lane numbering does not grant an extra tick.
+        var ready=ProductionLines.Where(ReleaseStartCondition).ToArray();
+        foreach(var line in ready){line.CompleteSingleProduction(world,node,owner,ReservedSlots);}
     }
     public bool WaitingForMaple(RobotWorld world,int node)=>world.MapleSupplyEnabled && Manufacturing &&
         !Paused && !CycleFinished && RestRemaining==0 && MissingRawMaterial(world,node).HasValue;
     internal RawMaterial? MissingRawMaterial(RobotWorld world,int node)
     {
         var product=CurrentProductionPlan.Preview(0);
-        return RobotWorld.RawMaterials.Where(m=>world.RawRequired(m) && RobotWorld.RawCost(product,m)>world.AvailableRaw(node,m)).Select(m=>(RawMaterial?)m).FirstOrDefault();
+        int period=EffectiveProductionPeriod(world.PurposeAt(node));
+        return RobotWorld.RawMaterials.Where(m=>world.RawRequired(m) && NextRawCost(m,period)>world.AvailableRaw(node,m)).Select(m=>(RawMaterial?)m).FirstOrDefault();
     }
     private void CompleteSingleProduction(RobotWorld world,int node,int owner,int reservedSlots)
     {
@@ -119,25 +122,26 @@ public sealed partial class RobotWorkshop
         if(WaitingForMaple(world,node))return;
         int period=EffectiveProductionPeriod(purpose);
         _lastEffectiveProductionPeriod=period;
+        _rawConsumed??=new int[Enum.GetValues<RawMaterial>().Length];
+        foreach(var material in RobotWorld.RawMaterials.Where(world.RawRequired)){
+            int cost=NextRawCost(material,period);
+            if(cost>0){world.SpendMaple(node,cost,material);_rawConsumed[(int)material]+=cost;}
+        }
         ProductionAge=ProductionAge>=period?period:ProductionAge+1;
         if(!Waiting)return;
         var product=CurrentProductionPlan.Preview(owner) with {FunctionDisplayNode=FunctionOriginNode};
 
-        var store=world.Nodes[node];
-        var before=store.MaplePackages.ToArray();
-        foreach(var material in RobotWorld.RawMaterials.Where(world.RawRequired))
-        {
-            int cost=RobotWorld.RawCost(product,material);
-            if(cost>0)world.SpendMaple(node,cost,material);
-        }
         if(!(world.ProductionIntakeEnabled?world.QueueProduction(this,node,owner,product,reservedSlots):world.TryStoreProduction(node,owner,product,reservedSlots))){
-            store.SetMaplePackages(before);
             if(WaitingProductionTurns<int.MaxValue)WaitingProductionTurns++;
             return;
         }
         ProductionAge=WaitingProductionTurns=0;
-        if(RestEnabled && ++ProducedSinceRest>=RestEvery){ProducedSinceRest=0;RestRemaining=IndustryTime.Whole(RestTurns);}
-        if(!RestEnabled && DoNotRepeat)CycleFinished=true;
+        ResetRawProgress();
+        if(!RestEnabled || ++ProducedSinceRest>=RestEvery){
+            ProducedSinceRest=0;CompletedBatches++;
+            if(DoNotRepeat)CycleFinished=true;
+            else if(RestEnabled)RestRemaining=IndustryTime.Whole(RestTurns);
+        }
     }
 }
 

@@ -40,6 +40,8 @@ public partial class Game1
         _ui.Box(new(77, 148, 1766, 800), new Color(224, 196, 152));
         _ui.Box(new(94, 157, 1732, 777), paper);
         _ui.Text($"生産ライン {_factoryPlanLine + 1} / "+(_factoryHarvestPage?"素材の採取":"製造候補"), new(113, 169), .55f, ink);
+        if(RobotWorld.RawMaterials.Any(m=>line.RawConsumed(m)>0))
+            _ui.Text("プランを変更しても、消費した原材料は戻りません",new(680,177),.38f,ink);
         var controls=_factoryHarvestPage?new Rectangle(1483,642,320,290):FactoryAlbumCard(10);
         int legendY=controls.Y+255;
         var materials=RobotWorld.RawMaterials.Where(_setup.Robots.RawRequired).ToArray();

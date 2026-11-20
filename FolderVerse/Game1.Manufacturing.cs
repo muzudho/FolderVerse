@@ -108,7 +108,7 @@ public partial class Game1
             int period=line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[source].Purpose):3;
             bool mapleWait=line.WaitingForMaple(_setup.Robots,source);
             bool running=_setup.Industry.Pending && _manufacturingFlights.Count==0 && line.Manufacturing && !line.Paused && !line.CycleFinished &&
-                !line.Waiting && !mapleWait && line.RestRemaining==0 && !_setup.Campaign.RobotBattles.LockedNode(source);
+                !line.Waiting && !line.StartWaiting && !mapleWait && line.RestRemaining==0 && !_setup.Campaign.RobotBattles.LockedNode(source);
             double increment=running?Math.Clamp(_manufacturingTickAge/(ManufacturingTickSeconds/IndustryTime.UnitsPerTurn),0,1):0;
             var shipment=_manufacturingFlights.FirstOrDefault(f=>ReferenceEquals(f.Arrival.Line,line));
             bool inFlight=shipment.Arrival!=null && _manufacturingAge-shipment.Started>=ManufacturingAnticipation;
@@ -116,11 +116,13 @@ public partial class Game1
             DrawFactoryConveyor(line,Math.Max(0,owner),item.index,period,progress,shipment.Arrival?.Product,inFlight);
             if(line.WorkerSnapshot is {} worker)DrawFactoryWorker(y,worker);
             DrawFactoryHoliday(line,item.index);
-            _ui.Text($"× {line.RestEvery}"+(line.DoNotRepeat?" / 繰り返さない":""),new(190,y+226),.32f,Cream);
+            _ui.Text($"× {line.RestEvery}"+(!line.DoNotRepeat?" / 繰り返す":""),new(190,y+226),.32f,Cream);
+            DrawFactoryRawProgress(line,y);
             string status=line.CycleFinished?"製造終了":!line.Manufacturing?"製造しない":line.Paused?"一時停止":
                 line.RestRemaining>0?$"休暇 あと {IndustryTime.Format(line.RestRemaining)}":
                 mapleWait?$"原材料不足 / {RobotWorld.RawName(line.MissingRawMaterial(_setup.Robots,source).Value)}を待っています":line.Waiting?"格納枠の空きを待っています":$"工期 {IndustryTime.Format(line.ProductionAge)} / {IndustryTime.Format(period)}";
             if(shipment.Arrival!=null)status="入荷予約へ搬送中";
+            else if(line.StartWaiting)status=_setup.Robots.Workshops[source].StartConditionLabel(line);
             else if(_setup.Campaign.RobotBattles.LockedNode(source))status="継戦中 / 一時停止";
             DrawFactoryLaneStatus(y,running,status);
         }

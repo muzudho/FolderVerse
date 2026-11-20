@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +17,7 @@ internal static class ComputerHarvestManagement
 
     private static bool Needs(WorldSetup world,int node,RawMaterial material)=>
         world.Robots.Workshops[node].ProductionLines.Any(line=>line.Manufacturing && !line.Paused && !line.CycleFinished &&
-            RobotWorld.RawCost(line.CurrentProductionPlan.Preview(world.Nodes.All[node].Owner),material)>
+            line.RawRemaining(material)>
                 world.Robots.AvailableRaw(node,material));
 
     internal static HashSet<RawMaterial> PlannedMaterials(WorldSetup world,int source)
