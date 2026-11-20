@@ -13,6 +13,7 @@ sealed class OverviewGame:Game1{
  double exitStart,exitMiddle;int frame;WorldSetup world=null!;int[] owners=null!;bool batteries;object originalWorld=null!;
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
+  if(Environment.GetCommandLineArgs().Contains("--auto-only")){CheckGroupedExhibition();Console.WriteLine("PASS: AUTO overview, same-turn guard, explicit disable, and Exhibition rendering.");Exit();return;}
   world=(WorldSetup)Get("_setup");world.PrepareTutorialStepOne(123,456,789);typeof(WorldSetup).GetProperty("TutorialStep")!.SetValue(world,0);world.CompleteLand(90);world.SelectPlayer(0);world.HumanPlayers.Add(0);
   world.Relations.SetSuperior(2,0);world.Relations.SetSuperior(3,2);
   world.HumanPlayers.Add(3);
@@ -215,6 +216,15 @@ sealed class OverviewGame:Game1{
   Console.WriteLine("PASS: normal new game conquest overview, monotonic outro fade, no globe reappearance behind curtain, preserved intro fade, cell paint and static addition formula, lower-rank-first introductions, area portraits, four-second ranking tree, ancestor recalls, exact owner cells, terrain mix, curtain timing, full playback, skip, and preserved game/view state.");Exit();
  }
  void CheckGroupedExhibition(){
+  var autoWorld=new WorldSetup();autoWorld.SetParticipantCounts(1,5);autoWorld.SetWorld(123);autoWorld.SetCast(456);autoWorld.SetPlacement(789);autoWorld.SelectPlayer(0);
+  Set("_setup",autoWorld);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_autoPlay",true);Set("_demoActive",false);Set("_conquestOverviewTurn",-1);
+  Call("BeginConquestOverview");
+  Check(!autoWorld.ComputerOnly && (bool)Get("_conquestOverview"),"Normal human-game AUTO shows conquest overview for spectators");
+  Call("FinishConquestOverview");Call("BeginConquestOverview");
+  Check(!(bool)Get("_conquestOverview"),"AUTO overview still runs only once per global turn");
+  Set("_conquestOverviewTurn",-1);Set("_conquestOverviewEnabled",false);Call("BeginConquestOverview");
+  Check(!(bool)Get("_conquestOverview"),"Explicit presentation disable still skips AUTO overview");
+  Set("_conquestOverviewEnabled",true);
   var exhibition=new WorldSetup();exhibition.SetParticipantCounts(0,60);exhibition.SetWorld(123);exhibition.SetCast(456);exhibition.SetPlacement(789);exhibition.SelectPlayer(0);
   foreach(var node in exhibition.Nodes.All)node.Owner=0;
   for(int ruler=1;ruler<=24;ruler++)exhibition.Relations.Powered[ruler]=false;

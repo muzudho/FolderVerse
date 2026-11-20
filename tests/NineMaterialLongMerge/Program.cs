@@ -41,6 +41,10 @@ foreach(var material in Enum.GetValues<RobotMaterial>())foreach(var joint in new
     w.Nodes.All[target].Owner=1;
     typeof(RobotLongDelivery).GetMethod("Advance",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(w.Robots.LongDelivery,new object[]{w});
     w=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
+    var cancellation=w.Robots.LongDelivery.Results.Single();
+    if(cancellation.Number!=pending.Number||cancellation.CargoId!=transit.Id||cancellation.Node!=at||cancellation.Target!=target||
+       cancellation.Status!="先地点へつながらなくなったため解除 / 荷物は現在地点に残ります")
+        throw new Exception("Saved cancellation result lost destination/current location/reason");
     if(w.Robots.LongDelivery.Orders.Any() || w.Robots.Nodes[at].Robots.Single(r=>r.Id==transit.Id)!=(transit with{LongDeliveryNumber=null}) ||
        w.Robots.Nodes[0].Robots.Single()!=cargo.Slice(RobotParts.Complete&~joint) || w.Robots.Nodes[target].Robots.Single()!=receiver ||
        w.Robots.Nodes.SelectMany(s=>s.Robots).Count(r=>r.Id==transit.Id)!=1)
