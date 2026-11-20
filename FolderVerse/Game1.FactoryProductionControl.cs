@@ -34,7 +34,7 @@ public partial class Game1
             _ui.Button(FactoryStartOption(i),i==0?"今すぐ開始":$"レーン {i} 生産完了後",valid?Accent:Muted,.34f);
         }
     }
-    private void DrawFactoryRawProgress(RobotWorkshop line,int y)
+    private void DrawFactoryRawProgress(RobotWorkshop line,int y,NodePurpose purpose)
     {
         if(!line.Manufacturing)return;
         int row=0;
@@ -45,7 +45,11 @@ public partial class Game1
             int yy=y+35+row++*25;
             _ui.Box(new(478,yy+19,350,4),Muted);
             _ui.Box(new(478,yy+19,350*spent/Math.Max(1,cost),4),new Color(91,205,143));
-            _ui.Text($"{RobotWorld.RawName(material)}  消費 {spent}/16  残り {left}/16",new(478,yy),.30f,Cream);
+            DrawMixedNumber(spent,16,new(478,yy,215,22),Cream,.29f,prefix:RobotWorld.RawName(material)+" 消費 ");
+            DrawMixedNumber(left,16,new(700,yy,135,22),Cream,.29f,prefix:"残り ");
         }
+        var done=line.WorkDone(purpose);
+        DrawMixedNumber((int)done.Numerator,(int)done.Denominator,new(168,y+15,250,26),Cream,.31f,prefix:"仕掛具合 ");
+        DrawIndustryDuration(line.WorkRemaining(purpose),new(168,y+42,250,26),Cream,.31f,prefix:"残り工数 ");
     }
 }

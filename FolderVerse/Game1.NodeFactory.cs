@@ -233,7 +233,7 @@ public partial class Game1
             FactoryDrop(0,line.RestEvery,line);DrawFactoryHoliday(line,l-_factoryPage);
             _ui.Button(FactoryNoRepeatButton(line),(!line.DoNotRepeat?"✓ ":"□ ")+"繰り返す",!line.DoNotRepeat?Accent:Muted,.34f);
             _ui.Button(FactoryStartButton(l-_factoryPage),factory.StartConditionLabel(line),line.StartWaiting?Accent:Muted,.30f);
-            DrawFactoryRawProgress(line,y);
+            DrawFactoryRawProgress(line,y,node.Purpose);
             string status=!line.Manufacturing?"製造しない":line.CycleFinished?"製造終了 / 繰り返さない":line.Paused?"一時停止":line.RestRemaining>0?$"休憩中 あと{IndustryTime.Format(line.RestRemaining)} / 次の完成まで{IndustryTime.Format(line.TurnsUntilNextProduction)}産業ターン":line.Waiting?$"出荷待ち {IndustryTime.Format(line.WaitingProductionTurns)}生産ターン / 格納できるまで停止":$"次の完成まで{IndustryTime.Format(line.TurnsUntilNextProduction)}産業ターン / {line.ProducedSinceRest+1}台目・工期{IndustryTime.Format(line.ProductionAge)}/{IndustryTime.Format(period)}";
             if(line.Manufacturing)status=$"周期 {IndustryTime.Format(line.CycleProgress)} / {IndustryTime.Format(line.CycleTurns)} / "+status;
             if(!string.IsNullOrEmpty(line.IntakeFailure))status=line.IntakeFailure+" / "+status;

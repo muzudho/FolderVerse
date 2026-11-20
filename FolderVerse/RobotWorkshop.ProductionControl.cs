@@ -5,6 +5,12 @@ using System.Collections.Generic;
 
 public sealed partial class RobotWorkshop
 {
+    public WorkProgress WorkDone(NodePurpose purpose)
+    {
+        int period=EffectiveProductionPeriod(purpose);
+        return new(CycleFinished?period:Math.Clamp(ProductionAge,0,period),period);
+    }
+    public int WorkRemaining(NodePurpose purpose)=>CycleFinished?0:Math.Max(0,EffectiveProductionPeriod(purpose)-ProductionAge);
     private int[] _rawConsumed;
     public int RawConsumed(RawMaterial material)=>_rawConsumed?[(int)material]??0;
     public int RawRemaining(RawMaterial material)=>Math.Max(0,RobotWorld.RawCost(CurrentProductionPlan.Preview(0),material)-RawConsumed(material));
