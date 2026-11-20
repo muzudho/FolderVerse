@@ -75,6 +75,17 @@ public partial class Game1
         int side=Math.Min(area.Width,area.Height)*3/4;
         DrawCountryEmblem(new(area.Center.X-side/2,area.Center.Y-side/2,side,side),ruler);
     }
+    private void DrawOperationEye(Point center)
+    {
+        // Almond outline and a pupil: no additional font or image asset is needed.
+        for(int y=-6;y<=6;y++){
+            int half=11-Math.Abs(y)*3/2;
+            _ui.Box(new(center.X-half,center.Y+y,half*2+1,1),Cream);
+            if(Math.Abs(y)<5&&half>2)_ui.Box(new(center.X-half+2,center.Y+y,half*2-3,1),new Color(18,36,48));
+        }
+        PaperOval(new(center.X-4,center.Y-4,9,9),Cream);
+        _ui.Box(new(center.X-1,center.Y-2,3,5),new Color(18,36,48));
+    }
     private void DrawCountrySettings()
     {
         if(!_countrySettingsOpen)return;
@@ -87,7 +98,8 @@ public partial class Game1
             DrawCountrySwatch(new(r.X+4,r.Y+7,36,40),i);
             string name=$"{i+1} {_setup.ConquerorNames[i]}";
             _ui.Text(name,new(r.X+46,r.Y+5),Math.Min(.36f,134/_font.MeasureString(name).X),Cream);
-            _ui.Text(_setup.IsHumanPlayer(i)?"人間":"コンピューター",new(r.X+46,r.Y+30),.29f,Cream);
+            _ui.Text(_setup.IsHumanPlayer(i)?"人間":"コンピューター",new(r.X+46,r.Y+30),.26f,Cream);
+            if(_setup.ShowComputerOperations(i))DrawOperationEye(new(r.Right-17,r.Y+40));
         }
         int ruler=_countrySettingsRuler;
         _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new(1110,160,120,130),false);

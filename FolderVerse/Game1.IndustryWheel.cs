@@ -51,15 +51,18 @@ public partial class Game1
         }
 
         var labels=IndustryLabelLayout(center,radius,angle);
+        float labelPercent=0;
         for(int i=0;i<Math.Min(labels.Length,IndustryVisibleLabels);i++){
             var label=labels[i];
-            if(label.Backplate || stopped && i==_setup.Industry.SelectedSector){
-                var edge=label.Bounds;
-                edge.Inflate(1,1);
-                _ui.Box(edge,new Color(119,78,39));
-                _ui.Box(label.Bounds,Color.Lerp(new Color(255,237,193),_industryEnamelColors[i],.20f));
-            }
+            float rotation=angle+(labelPercent+wheel[i].Percent*.5f)/100*MathHelper.TwoPi+MathHelper.PiOver2;
+            var pivot=new Vector2(label.Bounds.Center.X,label.Bounds.Center.Y);
+            var canvas=CanvasBounds();
+            var canvasTransform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
+            _spriteBatch.End();
+            _spriteBatch.Begin(transformMatrix:Matrix.CreateTranslation(-pivot.X,-pivot.Y,0)*Matrix.CreateRotationZ(rotation)*Matrix.CreateTranslation(pivot.X,pivot.Y,0)*canvasTransform);
             DrawIndustryDuration(wheel[i].Turns,label.Bounds,new Color(56,38,24),label.Scale);
+            _spriteBatch.End();_spriteBatch.Begin(transformMatrix:canvasTransform);
+            labelPercent+=wheel[i].Percent;
         }
         Brass(center+new Vector2(0,3),72);
         Brass(center,60);
