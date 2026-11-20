@@ -66,11 +66,13 @@ public partial class Game1
     private void DrawCountrySwatch(Rectangle area,int ruler,int pattern=-1)
     {
         pattern=pattern<0?_setup.CountryPattern(ruler):pattern;
-        for(int y=0;y<10;y++)for(int x=0;x<10;x++)
+        int grid=pattern==5?24:10;
+        for(int y=0;y<grid;y++)for(int x=0;x<grid;x++)
         {
-            int left=area.X+x*area.Width/10,top=area.Y+y*area.Height/10;
-            var color=WorldSetup.CountryPatternSecondary(pattern,x,y)?WorldSetup.Colors[_setup.CountrySecondaryColor(ruler)]:_setup.OwnerColor(ruler);
-            _ui.Box(new(left,top,area.X+(x+1)*area.Width/10-left,area.Y+(y+1)*area.Height/10-top),color);
+            int left=area.X+x*area.Width/grid,top=area.Y+y*area.Height/grid;
+            bool secondary=pattern==5?WorldSetup.CountryNestedSecondary((x+.5f)*10/grid,(y+.5f)*10/grid):WorldSetup.CountryPatternSecondary(pattern,x,y);
+            var color=secondary?WorldSetup.Colors[_setup.CountrySecondaryColor(ruler)]:_setup.OwnerColor(ruler);
+            _ui.Box(new(left,top,area.X+(x+1)*area.Width/grid-left,area.Y+(y+1)*area.Height/grid-top),color);
         }
         int side=Math.Min(area.Width,area.Height)*3/4;
         DrawCountryEmblem(new(area.Center.X-side/2,area.Center.Y-side/2,side,side),ruler);

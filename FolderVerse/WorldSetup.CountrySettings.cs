@@ -52,7 +52,7 @@ public sealed partial class WorldSetup
         _showComputerOperations??=new bool[CastCount];
         _showComputerOperations[ruler]=!_showComputerOperations[ruler];
     }
-    public static readonly string[] CountryPatternNames={"無地","斜め縞","水玉","格子","市松"};
+    public static readonly string[] CountryPatternNames={"無地","斜め縞","水玉","格子","市松","入れ子"};
     public bool IsHumanPlayer(int ruler)=>!ComputerOnly && (HumanPlayers.Count>0?HumanPlayers.Contains(ruler):ruler==Relations.Leader);
     public void SetHumanPlayer(int ruler,bool human)
     {
@@ -85,7 +85,13 @@ public sealed partial class WorldSetup
     public static bool CountryPatternSecondary(int pattern,int x,int y)
     {
         x=(x%10+10)%10;y=(y%10+10)%10;
-        return pattern switch {1=>CountryStripeSecondary(x,y),2=>x%5==2 && y%5==2,3=>x%5==0 || y%5==0,4=>(x/2+y/2)%2==0,_=>false};
+        return pattern switch {1=>CountryStripeSecondary(x,y),2=>x%5==2 && y%5==2,3=>x%5==2 || y%5==2,4=>(x/2+y/2)%2==0,5=>CountryNestedSecondary(x+.5f,y+.5f),_=>false};
+    }
+    public static bool CountryNestedSecondary(float x,float y)
+    {
+        x=(x%10+10)%10;y=(y%10+10)%10;
+        float edge=Math.Min(Math.Min(x,10-x),Math.Min(y,10-y));
+        return (int)MathF.Floor(edge*2.4f)%2==0;
     }
     public Color CountryMapColor(int ruler,int x,int y)=>ruler<0?OwnerColor(ruler):CountryPatternSecondary(CountryPattern(ruler),x,y)?Colors[CountrySecondaryColor(ruler)]:OwnerColor(ruler);
 }
