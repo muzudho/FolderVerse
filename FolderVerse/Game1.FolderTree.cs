@@ -11,7 +11,7 @@ public partial class Game1
     private int _folderTreeKind=-1,_folderTreeId=-1,_folderTreeOwner=-1;
     private readonly HashSet<int> _expandedFolderCountries=new();
     private (bool Routes,bool Others,bool Controlled,bool WorldControlled)? _folderTreeLayers;
-    private static readonly Rectangle FolderTreeButton=new(54,70,60,60);
+    private static readonly Rectangle FolderTreeButton=new(360,70,60,60);
     private bool FolderTreeFocus=>_folderTreeOpen && !_nodeInspectorClosing && _folderTreeKind>=0;
     private int FolderTreeLocationNode=>_folderTreeKind==2?_folderTreeId:_setup.Nodes.All.FirstOrDefault(n=>_folderTreeKind==1?n.Cell==_folderTreeId:n.Owner==_folderTreeOwner)?.Id??-1;
     private void CloseFolderTreeState()
@@ -128,7 +128,7 @@ public partial class Game1
         PrimaryRoundBox(FolderTreeButton,_folderTreeOpen?Color.Lerp(Accent,Color.White,.2f):Accent,12);
         DrawCountryCornerMarks(FolderTreeButton,_setup.PlayerSlot);
         DrawCountryFolder(new(FolderTreeButton.X+13,FolderTreeButton.Y+21,30,24),_setup.PlayerSlot);
-        if(FolderTreeButton.Contains(_pointer))_ui.Text("所属フォルダーツリー",new(124,98),.38f,Cream);
+        if(FolderTreeButton.Contains(_pointer))_ui.Text("所属フォルダーツリー",new(FolderTreeButton.Right+10,98),.38f,Cream);
     }
     private void DrawFolderTree()
     {

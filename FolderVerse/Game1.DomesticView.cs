@@ -29,6 +29,11 @@ public partial class Game1
     private Rectangle NodeInspectorBounds=>new(54+NodeInspectorOffset,150,850,825);
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
+    private void DrawDomesticPhaseHeading()
+    {
+        CountryFlagArt.Draw(_ui,_setup,_setup.TurnPlayer,new(54,14,168,112));
+        _ui.Text(PlanningPhaseLabel,new(240,22),1.1f,Cream);
+    }
     private void ResetInspector(){
         _warCancellationsOpen=false;
         _intakeLine=null;
@@ -53,10 +58,35 @@ public partial class Game1
     }
     private void OpenStrategyInspector(){ResetInspector();_reignView=true;}
     private void DrawInspector(Action draw){
+        DrawInspectorRails();
         var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         var pointer=_pointer;var hover=_ui.Pointer;_pointer.X-=NodeInspectorOffset;_ui.Pointer=new(hover.X-NodeInspectorOffset,hover.Y);
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:Matrix.CreateTranslation(NodeInspectorOffset,0,0)*transform);
         try{draw();}finally{_pointer=pointer;_ui.Pointer=hover;_spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);}
+    }
+    private void DrawInspectorRails()
+    {
+        int end=NodeInspectorBounds.Left;
+        if(end<=0 || _domesticSlide<=0)return;
+        var metal=new Color(126,165,177);var dark=new Color(25,48,61);
+        var enamel=Color.Lerp(_setup.OwnerColor(_setup.PlayerSlot),metal,.55f);
+        foreach(int y in new[]{252,642}){
+            _ui.Box(new(0,y+6,end+10,44),new Color(5,17,26));
+            PrimaryRoundBox(new(0,y,end+12,42),enamel,8);
+            _ui.Box(new(0,y+5,end+12,3),new Color(214,233,226));
+            _ui.Box(new(0,y+15,end+12,15),dark);
+            for(int x=38;x<end;x+=26){
+                _ui.Box(new(x,y+16,10,13),metal);
+                _ui.Box(new(x+2,y+17,6,2),new Color(222,232,211));
+            }
+            PrimaryRoundBox(new(0,y-9,32,60),new Color(73,103,117),6);
+            foreach(int yy in new[]{y-1,y+36}){
+                _ui.Box(new(10,yy,10,10),new Color(221,190,117));
+                _ui.Box(new(12,yy+4,6,2),dark);
+            }
+            PrimaryRoundBox(new(end-12,y-4,24,50),metal,5);
+            _ui.Box(new(end-5,y+5,5,31),dark);
+        }
     }
     private void DrawInspectorHandle() => DrawTutorialChrome(()=>DrawInspectorHandleCore(),false);
     private void DrawInspectorHandleCore(){
