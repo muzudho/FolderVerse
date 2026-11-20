@@ -66,11 +66,25 @@ public partial class Game1
     private void DrawCountrySwatch(Rectangle area,int ruler,int pattern=-1)
     {
         pattern=pattern<0?_setup.CountryPattern(ruler):pattern;
+        if(pattern==3){
+            _ui.Box(area,_setup.OwnerColor(ruler));
+            var line=WorldSetup.Colors[_setup.CountrySecondaryColor(ruler)];
+            int thickness=Math.Max(1,Math.Min(area.Width,area.Height)/18);
+            for(int i=1;i<=3;i++){
+                int x=area.X+(area.Width-3*thickness)*i/4+(i-1)*thickness;
+                int y=area.Y+(area.Height-3*thickness)*i/4+(i-1)*thickness;
+                _ui.Box(new(x,area.Y,thickness,area.Height),line);
+                _ui.Box(new(area.X,y,area.Width,thickness),line);
+            }
+            int emblemSide=Math.Min(area.Width,area.Height)*3/4;
+            DrawCountryEmblem(new(area.Center.X-emblemSide/2,area.Center.Y-emblemSide/2,emblemSide,emblemSide),ruler);
+            return;
+        }
         int grid=pattern==5?24:10;
         for(int y=0;y<grid;y++)for(int x=0;x<grid;x++)
         {
             int left=area.X+x*area.Width/grid,top=area.Y+y*area.Height/grid;
-            bool secondary=pattern==5?WorldSetup.CountryNestedSecondary((x+.5f)*10/grid,(y+.5f)*10/grid):WorldSetup.CountryPatternSecondary(pattern,x,y);
+            bool secondary=pattern==3?WorldSetup.CountryGridSecondary((x+.5f)*10/grid,(y+.5f)*10/grid):pattern==5?WorldSetup.CountryNestedSecondary((x+.5f)*10/grid,(y+.5f)*10/grid):WorldSetup.CountryPatternSecondary(pattern,x,y);
             var color=secondary?WorldSetup.Colors[_setup.CountrySecondaryColor(ruler)]:_setup.OwnerColor(ruler);
             _ui.Box(new(left,top,area.X+(x+1)*area.Width/grid-left,area.Y+(y+1)*area.Height/grid-top),color);
         }
@@ -89,7 +103,7 @@ public partial class Game1
             }
             _ui.Box(new(cx-4,cy+4,8,2),ink);_ui.Box(new(cx-6,cy+2,2,2),ink);_ui.Box(new(cx+4,cy+2,2,2),ink);
         }else{
-            _ui.Box(new(box.X+1,box.Y+3,box.Width-2,box.Height-6),Cream);
+            _ui.Box(new(box.X+1,box.Y+3,box.Width-2,box.Height-6),new Color(142,153,199));
             _ui.Box(new(cx-7,cy-3,5,2),ink);_ui.Box(new(cx+3,cy-3,5,2),ink);
             _ui.Box(new(cx-4,cy+4,9,2),ink);
             _ui.Box(new(box.X,cy-3,2,6),ink);_ui.Box(new(box.Right-2,cy-3,2,6),ink);
