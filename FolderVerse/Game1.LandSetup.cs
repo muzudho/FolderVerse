@@ -24,9 +24,7 @@ public partial class Game1
     private double _landAge;
     private int _robotScatterPercent=25;
     private int _rawStockPercent=25;
-    private Rectangle? _fortuneSliderDragging;
-    private static readonly Rectangle FortuneSlider=new(60,435,480,48),RawStockSlider=new(60,560,480,48),
-        FortuneConfirm=new(60,740,480,66);
+    private static readonly Rectangle FortuneConfirm=new(75,995,520,60);
     private bool FortuneSettingsAvailable=>_screen==Screen.Fortune && !_demoActive && _setup.TutorialStep==0;
     private Point? _landDrag;
     private int[] _automaticLand=Array.Empty<int>();
@@ -42,7 +40,7 @@ public partial class Game1
         _setup.EquipmentMode=RobotEquipmentMode.Materials;
         _robotScatterPercent=25;
         _rawStockPercent=25;
-        _fortuneSliderDragging=null;
+        _fortuneStockPreview=null;_fortuneStockSeed=-1;_fortuneUniform=false;_fortuneStockKind=0;_fortunePieDragging=false;
         _skipOtherLandTurns=false;
         _computerLandPlanner=null;
         _automaticLandRemark="";
@@ -95,24 +93,12 @@ public partial class Game1
         _landAge+=elapsed;
         if(_screen==Screen.Fortune)
         {
-            if(FortuneSettingsAvailable){
-                if(!active || mouse.LeftButton==ButtonState.Released)_fortuneSliderDragging=null;
-                if(active && click){
-                    if(FortuneSlider.Contains(_pointer))_fortuneSliderDragging=FortuneSlider;
-                    if(RawStockSlider.Contains(_pointer))
-                        _fortuneSliderDragging=RawStockSlider;
-                }
-                if(_fortuneSliderDragging is Rectangle slider){
-                    int percent=Math.Clamp((int)MathF.Round(100f*(_pointer.X-slider.Left)/slider.Width),0,100);
-                    if(slider==FortuneSlider)_robotScatterPercent=percent;
-                    else _rawStockPercent=percent;
-                }
-            }
+            if(FortuneSettingsAvailable)FortuneStockInput(mouse,active,click);
             _world.ManualOrientation=WorldPreview.FaceTour(_fortuneStartOrientation,_landAge/5);
             bool complete=FortuneSettingsAvailable
                 ? active && (enter || click && FortuneConfirm.Contains(_pointer))
                 : _landAge>=5;
-            if(complete){_setup.CompleteLand(_random.Next(),_robotScatterPercent,_rawStockPercent);var morning=_setup.TurnPlayers();if(morning.Length>0)_setup.SelectTurnRuler(morning[0]);_world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();if(_setup.ComputerOnly)StartAutoPlay();}
+            if(complete){if(FortuneSettingsAvailable){EnsureFortuneStockPreview();_setup=_fortuneStockPreview;}else _setup.CompleteLand(_random.Next(),_robotScatterPercent,_rawStockPercent);var morning=_setup.TurnPlayers();if(morning.Length>0)_setup.SelectTurnRuler(morning[0]);_world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();if(_setup.ComputerOnly)StartAutoPlay();}
             return;
         }
         if(active && click && LandSkipOthers.Contains(_pointer)){_skipOtherLandTurns=!_skipOtherLandTurns;_landDrag=null;}
@@ -170,11 +156,10 @@ public partial class Game1
     {
         _ui.Text(_screen==Screen.Fortune?"運否天賦フェーズ":"土地征服フェーズ",new(60,70),1.1f,Cream);
         if(_screen==Screen.Fortune){
-            _ui.Text("空から届く運命のロボット",new(60,230),.75f,Color.White);
+            _ui.Text("空から届く運命のロボット",new(75,175),.58f,Color.White);
             if(FortuneSettingsAvailable){
-                _ui.Text("ポケットにポリプロピレン製の完全体を２体",new(60,300),.45f,Cream);
-                DrawFortuneSlider(FortuneSlider,"ロボットの量",_robotScatterPercent);
-                DrawFortuneSlider(RawStockSlider,"格納庫の原材料",_rawStockPercent);
+                _ui.Text("ポケットは別枠：完全体を２体",new(75,235),.4f,Cream);
+                DrawFortuneStock();
                 _ui.Button(FortuneConfirm,"確定して進む",Accent,.58f);
             }else _ui.Text("配備・工場・廃炉・輸送計画を抽選中",new(60,300),.45f,Cream);
             return;
@@ -187,17 +172,6 @@ public partial class Game1
         _ui.Button(LandConfirm,LandHumanTurn?"この土地を獲得":"他国が土地を選択中",LandHumanTurn && _landSelection.Count==_setup.TerritoryRights[LandRuler]?Accent:Muted,.65f);
         _ui.Button(LandSkipOthers,(_skipOtherLandTurns?"✓ ":"□ ")+"自分のターン以外をスキップ",_skipOtherLandTurns?Accent:Muted,.48f);
     }
-    private void DrawFortuneSlider(Rectangle slider,string label,int percent)
-    {
-        _ui.Text($"{label}　{percent}",new(slider.Left,slider.Top-45),.6f,Cream);
-        int x=slider.Left+slider.Width*percent/100;
-        _ui.Box(new(slider.Left,slider.Center.Y-4,slider.Width,8),Muted);
-        _ui.Box(new(slider.Left,slider.Center.Y-4,x-slider.Left,8),Accent);
-        _ui.Box(new(x-7,slider.Top,14,slider.Height),Cream);
-        _ui.Text("0",new(slider.Left,slider.Bottom+6),.42f,Cream);
-        _ui.Text("100",new(slider.Right-48,slider.Bottom+6),.42f,Cream);
-    }
-
     private void DrawLandSetupGlobe(Rectangle canvas,Matrix transform,Viewport viewport)
     {
         bool selectingLand=_screen==Screen.LandConquest;

@@ -769,7 +769,7 @@ public partial class Game1 : Game
         DrawStatusMenu();
         if(!DrawInvasionUnavailableHint() && !DrawNodeCheckHint() && _supervisorDialog==0 && !_reservationDirectory && !_functionTransferMap){
             if(_warehouseKeeperHovered && !_inspectorFoldersOpen && !_mapOverlayMenu)
-                DrawRulebookHint("倉庫管理人",_populationNode>=0 && _populationNode<_setup.Robots.Nodes.Length && _setup.Robots.Nodes[_populationNode].WarehouseExpansion==7?"中継地点の格納庫を７つ増やしてくれています":"格納庫を４つ増やしてくれています");
+                DrawRulebookHint("倉庫管理人",_populationNode>=0 && _populationNode<_setup.Robots.Nodes.Length && _setup.Robots.Nodes[_populationNode].WarehouseExpansion==7?"格納庫の総数は最大７枠増え、本人を除く空きは最大６枠増えます":"格納庫の総数は最大４枠増え、本人を除く空きは最大３枠増えます");
             else DrawNodeTooltip();
         }
         DrawInspectorHandle();DrawTraining();DrawInvasionPicker();DrawWarCancellations();DrawProductionIntakePicker();
@@ -778,6 +778,7 @@ public partial class Game1 : Game
         DrawFolderTree();DrawInspectorFolders();
         DrawFactionPicker();
         DrawAbandonConfirmation();
+        DrawSimpleDisplayMenu();
 
     }
     private void DrawCastPreviewInfo()

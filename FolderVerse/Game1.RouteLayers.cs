@@ -81,6 +81,11 @@ public partial class Game1
         _ui.Button(RouteLayerButton(2),MapLayerNames[mode]+"  v",Accent,.52f);
         DrawSelectionIcon(RouteLayerButton(3),traffic==1);
         if(!_setup.IsPrimaplana)_ui.Button(MapViewButton,_statusGlobe?"展開図":"組立",MapTransitionActive?Muted:Accent,.6f);
+        if(_mapLayerListOpen)for(int i=0;i<2;i++)_ui.Button(MapLayerOption(i),MapLayerNames[i],i==mode?Accent:Muted,.52f);
+        if(_trafficLayerListOpen)for(int i=0;i<2;i++){var r=TrafficLayerOption(i);_ui.Button(r,"",i==traffic?Accent:Muted,.52f);DrawSelectionGlyph(r.X+30,r.Center.Y,i==1,i==traffic?SelectionInk:UiPainter.ContrastInk(Muted));_ui.Text(TrafficLayerNames[i],new(r.X+62,r.Y+15),.4f,i==traffic?SelectionInk:UiPainter.ContrastInk(Muted));}
+    }
+    private void DrawSimpleDisplayMenu()
+    {
         if(_simpleDisplayOpen){
             string[] items={"経番・緯番を非表示","赤道を非表示","配備ロボットを非表示","電池を非表示","煙を非表示","隣接オブジェクトを非表示","国旗をなびかせない","地形の高低差を無くす"};
             bool[] checkedItems={!_net.ShowMapSymbols,!_net.ShowEquator,!_net.ShowRobots,!_net.ShowBatteries,!_net.ShowSmoke,!_net.ShowAdjacentObjects,!_net.AnimateFlags,WorldTerrain.FlattenRelief};
@@ -90,8 +95,6 @@ public partial class Game1
                 _ui.Text(items[i],new(r.X+42,r.Y+12),.38f,Cream);
             }
         }
-        if(_mapLayerListOpen)for(int i=0;i<2;i++)_ui.Button(MapLayerOption(i),MapLayerNames[i],i==mode?Accent:Muted,.52f);
-        if(_trafficLayerListOpen)for(int i=0;i<2;i++){var r=TrafficLayerOption(i);_ui.Button(r,"",i==traffic?Accent:Muted,.52f);DrawSelectionGlyph(r.X+30,r.Center.Y,i==1,i==traffic?SelectionInk:UiPainter.ContrastInk(Muted));_ui.Text(TrafficLayerNames[i],new(r.X+62,r.Y+15),.4f,i==traffic?SelectionInk:UiPainter.ContrastInk(Muted));}
     }
     private void DrawSelectionIcon(Rectangle rect,bool node)
     {

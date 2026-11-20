@@ -60,9 +60,10 @@ sealed class AutoPauseUi:Game1
             Click(new(300,687));
             Check(w.EquipmentMode==RobotEquipmentMode.Materials && Get("_screen").ToString()=="Fortune",
                 "The former equipment button cannot change or confirm the new game's rules");
-            Click(Bounds("RawStockSlider").Center);
-            Check((int)Get("_rawStockPercent")==50,"The raw material slider stays available in Fortune");
+            Click(new(472,450));Click(new(329,634));
+            Check((int)Get("_rawStockPercent")>0 && (int)Get("_rawStockPercent")+(int)Get("_robotScatterPercent")<=100,"The shared allocation pie stays available in Fortune");
             Click(Bounds("FortuneConfirm").Center);
+            w=(WorldSetup)Get("_setup");
             Check((bool)Get("_autoPlay") && Get("_screen").ToString()=="WorldStatus","Confirming Fortune starts AUTO after world construction");
             Click(new(10,10));Check((bool)Get("_autoPaused"),"AUTO can be paused after world construction");
         }
