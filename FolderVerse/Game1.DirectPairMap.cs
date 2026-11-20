@@ -46,6 +46,7 @@ public partial class Game1
         if(_longDeliveryMode && _longChoosingSource){if(!_directPairGlobe)_directPairNet.FitAll(DirectPairMapBounds);else{_directPairWorld.GlobeZoom=_world.GlobeZoom;_directPairWorld.GlobeAnchor=_world.GlobeAnchor;_directPairWorld.GlobePan=_world.GlobePan;}return;}
         var panel=DirectPairMapBounds;
         _directPairNet.ShowRoutes=true;_directPairNet.ShowOtherCountries=_net.ShowOtherCountries;
+        _directPairNet.ShowSmoke=_net.ShowSmoke;_directPairNet.ShowAdjacentObjects=_net.ShowAdjacentObjects;_directPairNet.AnimateFlags=_net.AnimateFlags;
         _directPairNet.ShowRobots=_net.ShowRobots;_directPairNet.ShowBatteries=_net.ShowBatteries;
         _directPairNet.ShowMapSymbols=false;_directPairNet.ShowCountryColors=_net.ShowCountryColors;
         _directPairNet.CountryFocus=_setup.PlayerSlot;

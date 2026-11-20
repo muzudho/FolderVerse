@@ -16,6 +16,9 @@ public sealed partial class CubeNet
     public int[] NodeOwnerSnapshot {get;set;}
     public int DisplayedNodeOwner(Node node)=>NodeOwnerSnapshot!=null && node.Id<NodeOwnerSnapshot.Length?NodeOwnerSnapshot[node.Id]:node.Owner;
     public bool DirectoryOnly {get;set;}
+    public bool AnimateFlags {get;set;}=true;
+    public bool ShowSmoke {get;set;}=true;
+    public bool ShowAdjacentObjects {get;set;}=true;
     public bool ShowMapSymbols {get;set;}=true;
     public bool ShowEquator {get;set;}=true;
     public bool ShowRobots {get;set;}=true;

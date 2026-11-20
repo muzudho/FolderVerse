@@ -249,6 +249,7 @@ public partial class Game1 : Game
         _net.UpdateAnimation((float)elapsed);
         if(_screen==Screen.Ending)
         {if(active && click && EndingReturn.Contains(_pointer))FinishEndingToTitle();else if(active && click && EndingResume.Contains(_pointer) && (EndingReturnsToGame || _endingAge+elapsed<EndingSeconds))ResumeFromEnding();else UpdateEnding(elapsed,active && (escape || enter));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && _simpleDisplayOpen){if(escape)_simpleDisplayOpen=false;else if(active && click)RouteLayerClick(_pointer);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(StratagemInput(mouse,click,escape,active,elapsed)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(DragOrientationRobot(mouse,active,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool rotating=OrientationRotating;UpdateOrientationRotation((float)elapsed);

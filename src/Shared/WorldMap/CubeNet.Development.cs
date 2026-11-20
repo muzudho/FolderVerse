@@ -63,7 +63,16 @@ public sealed partial class CubeNet
                     if(level>0)Box(x-.025f,y-.025f,baseZ+level*.40f,w+.05f,d+.05f,.045f,edge);
                 }
             }
-            Roof(x-.06f,y-.06f,baseZ+h,w+.12f,d+.12f,top??roof);
+            if(purpose==NodePurpose.Relay)Box(x-.06f,y-.06f,baseZ+h,w+.12f,d+.12f,.07f,new(76,102,132));
+            else if(purpose==NodePurpose.Manufacturing){
+                for(int tooth=0;tooth<3;tooth++){
+                    float xx=x-.06f+tooth*(w+.12f)/3,ww=(w+.12f)/3,z=baseZ+h;
+                    Face(roof,new(xx,y-.06f,z),new(xx+ww,y-.06f,z+.24f),new(xx+ww,y+d+.06f,z+.24f),new(xx,y+d+.06f,z));
+                    Face(glass,new(xx+ww,y-.06f,z),new(xx+ww,y+d+.06f,z),new(xx+ww,y+d+.06f,z+.24f),new(xx+ww,y-.06f,z+.24f));
+                    Face(wall,new(xx,y-.06f,z),new(xx+ww,y-.06f,z),new(xx+ww,y-.06f,z+.24f));
+                    Face(wall,new(xx,y+d+.06f,z),new(xx+ww,y+d+.06f,z+.24f),new(xx+ww,y+d+.06f,z));
+                }
+            }else Roof(x-.06f,y-.06f,baseZ+h,w+.12f,d+.12f,top??roof);
         }
         void Crate(float x,float y){
             Box(x,y,.10f,.23f,.25f,.20f,wood);Box(x+.035f,y-.007f,.105f,.025f,.265f,.20f,edge);Box(x+.17f,y-.007f,.105f,.025f,.265f,.20f,edge);

@@ -85,17 +85,20 @@ public static class CountryFlagArt
                 yield return (new Rectangle(x,y,1,1),Pixel(world,owner,sx,sy));
         }
     }
-    public static void DrawGeographic(UiPainter ui,WorldSetup world,int owner,Rectangle area,Func<Color,Color> tint=null)
+    public static void DrawGeographic(UiPainter ui,WorldSetup world,int owner,Rectangle area,Func<Color,Color> tint=null,float wave=0)
     {
         if(owner<0||owner>=world.ActiveCount)return;
         var flag=Fit(area,world.CountryFlagShape(GeographicBoss(world,owner)));
-        foreach(var (b,c) in GeographicPatches(world,owner)){
+        var patches=GeographicPatches(world,owner);
+        if(wave!=0)patches=patches.SelectMany(p=>Enumerable.Range(p.Box.Left,p.Box.Width).Select(x=>(Box:new Rectangle(x,p.Box.Y,1,p.Box.Height),Ink:p.Ink)));
+        foreach(var (b,c) in patches){
             int left=flag.X+b.Left*flag.Width/36,top=flag.Y+b.Top*flag.Height/24;
             int right=flag.X+b.Right*flag.Width/36,bottom=flag.Y+b.Bottom*flag.Height/24;
-            if(right>left&&bottom>top)ui.Box(new(left,top,right-left,bottom-top),tint==null?c:tint(c));
+            int drift=wave==0?0:(int)MathF.Round(MathF.Sin(wave*1.7f+b.Center.X/36f*5)*b.Center.X/36f*flag.Height*.10f);
+            if(right>left&&bottom>top)ui.Box(new(left,top+drift,right-left,bottom-top),tint==null?c:tint(c));
         }
     }
-    public static void Marker(UiPainter ui,WorldSetup world,int owner,Vector2 foot,int width=30,Func<Color,Color> tint=null,bool geographic=false)
+    public static void Marker(UiPainter ui,WorldSetup world,int owner,Vector2 foot,int width=30,Func<Color,Color> tint=null,bool geographic=false,float wave=0)
     {
         Color Ink(Color c)=>tint==null?c:tint(c);
         int height=(int)(width*.9f),x=(int)foot.X,y=(int)foot.Y;
@@ -104,6 +107,6 @@ public static class CountryFlagArt
         if(owner<0)return;
         ui.Box(new(x,y-height,2,height),Ink(new Color(229,218,185)));
         var area=new Rectangle(x+2,y-height,width,Math.Max(8,height*2/3));
-        if(geographic)DrawGeographic(ui,world,owner,area,tint);else Draw(ui,world,owner,area,1,tint);
+        if(geographic)DrawGeographic(ui,world,owner,area,tint,wave);else Draw(ui,world,owner,area,1,tint);
     }
 }

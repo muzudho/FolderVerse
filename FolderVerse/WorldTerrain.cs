@@ -72,8 +72,10 @@ public static class WorldTerrain
         return latitude>=.45f && latitude<.9f && IsValley(world,cell,point,world.Terrain.Elevation(point));
     }
     // Display-only relief in world units. One terrain sample is 0.1 units wide.
+    public static bool FlattenRelief {get;set;}
     public static float Relief(float height,bool valley=false)
     {
+        if(FlattenRelief)return 0;
         if(height<.52f)return 0;
         float relief=height switch
         {
