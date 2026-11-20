@@ -191,7 +191,7 @@ public sealed partial class CubeNet
             ? at+new Vector2(roof.X,roof.Y*.68f-roof.Z)*radius*PurposeBuildingScale
             : HasFacilityPlatform(node)?at:at+new Vector2(radius*PurposeBuildingScale+4,-radius*.68f);
         CountryFlagArt.Marker(ui,setup,DisplayedNodeOwner(node),flagFoot,
-            Math.Clamp((int)(radius*3),24,42),tint);
+            Math.Clamp((int)(radius*3),24,42),tint,geographic:true);
         if (AttackTargetMarkers && SelectedTarget==node.Id)
             foreach (float angle in new[]{MathHelper.PiOver4,-MathHelper.PiOver4})
                 ui.Tile(at,new(radius*2,2),angle,tint(rim));
@@ -267,7 +267,7 @@ public sealed partial class CubeNet
         var a=project(foot);var b=project(apex);var pole=b-a;
         ui.Tile((a+b)/2,new(pole.Length(),2),MathF.Atan2(pole.Y,pole.X),tint(new Color(232,218,177)));
 
-        int shape=world.CountryFlagShape(owner);
+        int shape=world.CountryFlagShape(CountryFlagArt.GeographicBoss(world,owner));
         float width=(shape==2 ? .115f : shape==1 ? .23f : .173f)*(roofMounted?.65f:1);
         var origin=apex+across*.008f;
         // A shallow fold gives the flag two planar facets; the shared artwork follows both.
@@ -277,7 +277,7 @@ public sealed partial class CubeNet
             float u=x/36f;
             return project(origin+across*(width*u)-cell.Normal*(clothHeight*y/24f)+crease*(1-MathF.Abs(2*u-1)));
         }
-        foreach (var (box,ink) in CountryFlagArt.Patches(world,owner))
+        foreach (var (box,ink) in CountryFlagArt.GeographicPatches(world,owner))
         {
             Patch(box.Left,Math.Min(box.Right,18),box,tint(ink));
             Patch(Math.Max(box.Left,18),box.Right,box,tint(Color.Lerp(ink,Color.Black,.12f)));

@@ -23,7 +23,7 @@ public partial class Game1
         !_demoActive && !_autoPlay && !_setup.ComputerOnly && _setup.ControlledParty(_setup.TurnPlayer).Length>0;
     private bool StratagemManualActions=>_stratagemManual || _stratagemMatches.Length==0 && !StratagemPending.Any();
     private bool StratagemPanelActive=>StratagemInterface && _stratagemSelected>=0 && !InspectorVisible;
-    private IEnumerable<StratagemReservation> StratagemPending=>_setup.Campaign.Stratagems.Pending.Where(p=>p.Controller==_setup.TurnPlayer);
+    private IEnumerable<StratagemReservation> StratagemPending=>_setup.Campaign.Stratagems.Pending.Where(p=>!p.Computer && p.Controller==_setup.TurnPlayer);
     private static readonly Rectangle StratagemTray=new(54,820,1115,146),StratagemPanel=new(54,150,850,680);
     private static readonly Rectangle StratagemEnd=new(1700,984,180,78),StratagemClose=new(845,165,42,42);
     private static readonly Rectangle StratagemReserve=new(550,760,325,48),StratagemPrevious=new(82,705,115,38),StratagemNext=new(745,705,115,38);

@@ -157,7 +157,7 @@ public partial class Game1
                 new(852+variant/3*480,698+variant%3*20),.31f,Cream);
         }
         _ui.Text("全キャラクター共通の行動方針",new(852,758),.58f,Cream);
-        DrawComputerRuleCard("軍事　守備を見積もり、必要な兵力が揃えば同陣営で共同出撃。",810);
+        DrawComputerRuleCard("軍事　兵力と趣向から、城壁越しの出撃・救援・集中攻撃の計略を１つ選択。",810);
         DrawComputerRuleCard("輸送　余剰機を前線へ、満杯なら交換。製造の入荷枠不足は留保枠を守り隣接自国へ変更。",860);
         DrawComputerRuleCard("捕虜　勧誘を優先し、断られたら解放交渉や電池取り外しを選ぶ。",910);
         DrawComputerRuleCard("素材　キャラクター固有の好みは設定されていない。",960);

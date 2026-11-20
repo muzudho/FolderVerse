@@ -87,3 +87,27 @@ foreach(var kind in Enum.GetValues<StratagemKind>()){
     w.Campaign.FinishDomestic(w,deferDelivery:()=>true);
     Check(!plans.Pending.Any() && w.Campaign.PlannedOrders.Count==1 && w.Campaign.Phase==CampaignPhase.Domestic,"faction end commits bundle before deferred delivery");
 }
+
+// CPU authority must not depend on the human controller/Leader selection.
+{
+ var w=Clone(initial);w.SetParticipantCounts(0,2);w.Relations.Leader=-1;foreach(var shop in w.Robots.Workshops)shop.Automation=NodeAutomation.Auto;
+ Check(w.Campaign.Stratagems.Find(w,0).Length==0,"human lookup grants no authority in computer-only world");
+ Check(w.Campaign.Stratagems.FindComputer(w,0).Length>0,"computer-only faction discovers physical opportunities");
+ foreach(var kind in Enum.GetValues<StratagemKind>()){
+  var c=Clone(w);var p=c.Campaign.Stratagems;var m=p.FindComputer(c,0).First(x=>x.Kind==kind);
+  bool reserved=p.ReserveComputer(c,0,m,false,out var cpuReason);Check(reserved,"CPU reserve "+kind+" "+cpuReason);c=Clone(c);p=c.Campaign.Stratagems;
+  Check(p.Pending.Single().Computer,"CPU reservation authority survives save");
+  Check(p.CommitComputer(c,0,false,out _),"CPU commit "+kind);Check(c.Relations.Leader==-1,"CPU does not impersonate human leader");
+ }
+ ComputerStratagems.Plan(w);var d=w.Campaign.StratagemDecisions.Single(x=>x.Ruler==0);
+ Check(d.Candidates>0&&d.Committed==1,"CPU planner commits one actual card");
+ Check(!w.Campaign.Stratagems.Pending.Any(),"CPU bundle fully consumed");
+ var savedCpu=Clone(w);Check(savedCpu.Campaign.StratagemDecisions.Single(x=>x.Ruler==0).Kind==d.Kind,"decision telemetry survives save");
+ int before=w.Campaign.StratagemDecisions.Count;ComputerStratagems.Plan(w);Check(w.Campaign.StratagemDecisions.Count==before,"one decision per faction per turn");
+ w.Campaign.Reset();Check(w.Campaign.StratagemDecisions.Count==0,"new campaign clears old CPU decisions");
+}
+{
+ var w=Clone(initial);ComputerStratagems.Plan(w);
+ Check(w.Campaign.StratagemDecisions.Single(x=>x.Ruler==0).Reason=="manual_control","manual player is protected");
+ Check(!w.Campaign.PlannedOrders.Any(),"CPU never writes manual faction marches");
+}

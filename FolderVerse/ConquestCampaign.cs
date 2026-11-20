@@ -125,7 +125,7 @@ public sealed partial class ConquestCampaign
         // Switching control does not cancel an already chosen march.
         for(int i=_plannedOrders.Count-1;i>=0;i--)if(world.ControllerOf(_plannedOrders[i].Ruler)<0){_partyOrders.Add(_plannedOrders[i]);_plannedOrders.RemoveAt(i);}
     }
-    public void Reset(){_sectorBaseline=null;SubordinateResults.Clear();Stratagems.Pending.Clear();LastCancelledWars.Clear();Phase=CampaignPhase.Domestic;AttackMemory.Reset();Trade.Offers.Clear();Trade.Replies.Clear();FunctionTransfers.Orders.Clear();FunctionTransfers.LastResults.Clear();_domesticSubmitted.Clear();PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
+    public void Reset(){_sectorBaseline=null;SubordinateResults.Clear();Stratagems.Pending.Clear();StratagemDecisions.Clear();LastCancelledWars.Clear();Phase=CampaignPhase.Domestic;AttackMemory.Reset();Trade.Offers.Clear();Trade.Replies.Clear();FunctionTransfers.Orders.Clear();FunctionTransfers.LastResults.Clear();_domesticSubmitted.Clear();PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
     public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false,
         Func<IReadOnlyList<March>,bool> deferResolution=null,bool allPlanned=false)
     {
