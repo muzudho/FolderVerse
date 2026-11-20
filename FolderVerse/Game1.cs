@@ -612,7 +612,8 @@ public partial class Game1 : Game
         if(_tradePlannerOpen){TradePlanner(draw:true);return;}
         if(_salvageCatalogOpen){DrawSalvageCatalog();return;}
         if(_directPairOpen){DrawDirectPair();return;}
-        _ui.Text(PlanningPhaseLabel,new(54,22),1.1f,Cream);
+        CountryFlagArt.Draw(_ui,_setup,_setup.TurnPlayer,new(54,14,96,48));
+        _ui.Text(PlanningPhaseLabel,new(164,22),1.1f,Cream);
         _net.InspectedNode=_populationCell>=0?_populationNode:-1;
         _net.NodeFocus=_world.NodeFocus=!_nodeInspectorClosing && _populationCell>=0?_populationNode:-1;
         int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
