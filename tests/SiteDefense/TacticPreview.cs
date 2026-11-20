@@ -17,7 +17,7 @@ sealed class TacticPreview:Game1
             ui.Text($"{(sea?"海":"陸")} / {4*(grade+1)}",new(x,y),.6f,Color.White);
             for(int i=0;i<4*(grade+1);i++)BattleFortificationArt.Draw(ui,new(x+i%4*55,y+50+i/4*60,52,52),new(new(i%4,i/4),FortificationKind.Wall,0,BattleFacing.North),1,sea);
         }
-        typeof(Game1).GetMethod("DrawAmbushCardPanel",flags)!.Invoke(this,new object[]{new Rectangle(420,910,540,150),8L});batch.End();
+        typeof(Game1).GetMethod("DrawAmbushCardPanel",flags)!.Invoke(this,new object[]{new Rectangle(420,910,540,150),8L,false});batch.End();
         GraphicsDevice.SetRenderTarget(null);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,"site-defense-tactics.png"));output.SaveAsPng(file,1920,1080);
         Console.WriteLine("PASS actual card and land/sea wall rendering");Exit();
     }

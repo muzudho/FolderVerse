@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 
 // Tactics are available before combat; lessons remain experience acquired in combat.
-public static class BattleTactics
+public static partial class BattleTactics
 {
     public const string Ambush="待ち伏せ：戦術カード";
     public static bool UsesAmbush(int character)=>character%6<3;
@@ -35,6 +35,6 @@ public static class BattleTactics
     public static void Observe(BattleState b,BattleUnit[] units,System.Collections.Generic.IReadOnlyDictionary<long,BattleAction> actions)
     {
         foreach(var u in units){var expected=AmbushAction(b,u);if(expected!=null&&actions[u.Id]==expected)
-            b.Events.Add(new(b.Turn,BattlePhase.Choose,u.Id,Ambush));}
+            b.Events.Add(new(b.Turn+1,BattlePhase.Choose,u.Id,Ambush));}
     }
 }

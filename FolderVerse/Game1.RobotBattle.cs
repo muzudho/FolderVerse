@@ -269,7 +269,7 @@ public partial class Game1
                 _ui.Box(new(r.X-5,r.Y-5,r.Width+10,3),glow);
                 _ui.Box(new(r.X-5,r.Bottom+2,r.Width+10,3),glow);
             }
-            bool salute=unit.Role==BattleRole.Captain && !unit.Fallen && frame.Phase is BattlePhase.Place or BattlePhase.Rollback && battle.Events.Any(e=>e.Turn==frame.Turn && e.Unit==unit.Id && e.Detail=="隊形成 / 剣を振り上げた");
+            bool salute=unit.Role==BattleRole.Captain && !unit.Fallen && frame.Phase is BattlePhase.Place or BattlePhase.Rollback && battle.Events.Any(e=>e.Turn==frame.Turn && e.Unit==unit.Id && (e.Detail=="隊形成 / 剣を振り上げた" || e.Detail==BattleTactics.CrossfireSignal));
             if(salute)_ui.Tile(new(r.Right+7,r.Y+3),new(4,28),-.35f,new Color(255,225,125));
             if(_robotPendingFocus<0 && !_robotPendingSummary && !unit.Fallen && !unit.Retreated && frame.Phase is BattlePhase.Receive or BattlePhase.Consume &&
                 battle.Events.Any(e=>e.Turn==frame.Turn && e.Unit==unit.Id && e.Detail=="盾で防いだ")){

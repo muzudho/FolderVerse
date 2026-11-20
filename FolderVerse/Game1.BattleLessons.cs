@@ -56,7 +56,9 @@ public partial class Game1
         _ui.Box(new(box.X+8,box.Y+10,box.Width,box.Height),new Color(5,16,25)*.45f);
         _ui.Box(box,owned?new Color(250,243,219):new Color(175,186,187));
         _ui.Box(new(box.X+12,box.Y+12,box.Width-24,9),accent);
-        if(lesson==BattleLesson.DefenseEndurance){
+        if(lesson==BattleLesson.CrossfireSafety){
+            LessonText(BattleLessons.Title(lesson),new(box.X+18,box.Y+21,box.Width-36,60),.48f,ink);
+        }else if(lesson==BattleLesson.DefenseEndurance){
             LessonText("戦訓#17 旗が危ない中、",new(box.X+18,box.Y+21,box.Width-36,30),.48f,ink);
             LessonText("守備専用が旗から離れた",new(box.X+18,box.Y+49,box.Width-36,30),.48f,ink);
         }else if(lesson==BattleLesson.QueenWithoutTargets){
@@ -81,7 +83,10 @@ public partial class Game1
             foreach(var patch in BattlePieceArt.Pieces[BattlePieceArt.Index(role,facing)])
                 DiagramBox(new(x+patch.Bounds.X*2,y+patch.Bounds.Y*2,patch.Bounds.Width*2,patch.Bounds.Height*2),color);
         }
-        if(lesson==BattleLesson.DefenseEndurance){
+        if(lesson==BattleLesson.CrossfireSafety){
+            Robot(cx-100,cy,BattleFacing.East,accent);Robot(cx,cy-100,BattleFacing.South,accent);Robot(cx,cy,BattleFacing.North,new Color(170,106,79));
+            LessonText("射撃直前に味方の位置を確認",new(box.X+30,box.Y+360,box.Width-60,42),.5f,ink);
+        }else if(lesson==BattleLesson.DefenseEndurance){
             DiagramBox(new(cx+65,cy-85,4,115),ink);DiagramBox(new(cx+68,cy-85,45,28),accent);
             BattleFortificationArt.Draw(_ui,new(cx-45,cy-75,66,66),new(new(0,0),FortificationKind.Wall,0,BattleFacing.North));
             Robot(cx-40,cy,BattleFacing.North,accent);Robot(cx-140,cy-100,BattleFacing.South,new Color(170,106,79));
@@ -160,6 +165,7 @@ public partial class Game1
             LessonText("射線と、その両隣を確認",new(box.X+30,box.Y+360,box.Width-60,42),.52f,ink);
         }
         string[] lines=lesson switch {
+            BattleLesson.CrossfireSafety=>new[]{"クロスファイアの射撃が味方に命中した。","生き残った目撃者が持ち帰り、研究する。","研究後は移動確定後に射線を確認する。","誤射になる射手だけ発砲を見送る。"},
             BattleLesson.DefenseEndurance=>new[]{"旗へ敵が迫る中、守備専用が旗から離れた。","生き残った目撃者が持ち帰り、研究する。","守備専用は壁の内側や味方の援護を使う。","追撃を控え、旗を守って持ちこたえる。"},
             BattleLesson.QueenWithoutTargets=>new[]{"単独参戦で説得相手が見つからず退却。","帰還したクイーンが戦訓を持ち帰る。","研究後はクイーンだけが退却を始める。","国旗を確保できる間は戦場に残る。"},
             BattleLesson.QueenCaptured=>new[]{"戦場で倒され、捕獲されたときに研究できる。","陣営のボスは短剣の間合いと射線を避ける。","退却路が通る位置から説得する。","安全な退却路を失ったら、退却を始める。"},

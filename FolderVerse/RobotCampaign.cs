@@ -313,6 +313,7 @@ public sealed partial class RobotCampaign
         var state=new BattleState(world.PlacementSeed^e.Id^_nextBattle,Rules){Id=_nextBattle++,GlobalTurn=world.Population.Turn,Kind=e.Kind,SourceNode=e.Source,TargetNode=e.Target,Defender=e.Defender,Allied=world.Relations.Allied,IsFactionRoot=world.Relations.CanWinConquest,EquipmentMode=world.EquipmentMode};
         state.Lessons=(BattleLesson[])world.Lessons.Owned.Clone();
         for(int owner=0;owner<world.ActiveCount;owner++)state.AmbushEnabled[owner]=BattleTactics.UsesAmbush(world.Looks[owner].BaseId);
+        for(int owner=0;owner<world.ActiveCount;owner++)state.CrossfireEnabled[owner]=BattleTactics.UsesCrossfire(world.Looks[owner].BaseId);
         foreach(var rank in world.Relations.ProvisionalRanking(world))state.NewspaperRanks[rank.Ruler]=rank.Rank;
         var target=world.Nodes.All[e.Target];
         var terrain=target.Terrain==TravelTerrain.Sea?BattleTerrain.Sea:BattleTerrain.Field;

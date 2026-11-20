@@ -77,6 +77,7 @@ public sealed partial class BattleState
     public int GlobalTurn;
     public BattleLesson[] Lessons=new BattleLesson[WorldSetup.CastCount];
     public bool[] AmbushEnabled=new bool[WorldSetup.CastCount];
+    public bool[] CrossfireEnabled=new bool[WorldSetup.CastCount];
     public HashSet<long> PersuadedUnits {get;}=new();
     public Point Flag=new(6,6);
     public bool FlagStanding=true,Finished;
