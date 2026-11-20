@@ -217,6 +217,18 @@ sealed class WarGuideGame:Game1
     var args=new object[]{id,Vector2.Zero};
     if(!(bool)Call("OperationPosition",args)){Console.WriteLine($"Rejected id={id} point={args[1]} globe={Get("_statusGlobe")} bounds={Call("get_MapViewBounds")}");continue;}
     var point=((Vector2)args[1]).ToPoint();
+    // Validate a point that survives the same physical-pixel conversion as Send.
+    var canvas=(Rectangle)Call("CanvasBounds");
+    Point? reachable=null;
+    foreach(int dy in new[]{0,-1,1})foreach(int dx in new[]{0,-1,1}){
+     int x=(int)Math.Round(point.X*canvas.Width/1920d)+dx;
+     int y=(int)Math.Round(point.Y*canvas.Height/1080d)+dy;
+     var probe=new Point(x*1920/canvas.Width,y*1080/canvas.Height);
+     int actualHit=(bool)Get("_statusGlobe")?(int)Call("HitGlobeNode",probe,net.MovementTargets):net.HitNode(w,(Rectangle)Call("get_NetPanel"),probe,net.MovementTargets);
+     if(reachable==null && actualHit==id)reachable=probe;
+    }
+    if(reachable==null)continue;
+    point=reachable.Value;
     if(Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_PROJECTION_LOG")=="1")Console.WriteLine($"Candidate projection: id={id} point={point} bounds={Call("get_MapViewBounds")} globe={Get("_statusGlobe")}");
     if(!((Rectangle)Call("get_MapViewBounds")).Contains(point))continue;
     int hit=(bool)Get("_statusGlobe")?(int)Call("HitGlobeNode",point,net.MovementTargets):
@@ -340,6 +352,14 @@ sealed class WarGuideGame:Game1
        if(badge.Contains(mapPoint))Console.WriteLine($"Continuation overlap: id={encounter.Id} target={encounter.Target} armies={armies.Length} bounds={badge}");
       }
       Console.WriteLine($"Selection {label}: target={candidate} point={mapPoint} actual={Get("_selectedMoveNode")} war={Get("_warPlanning")} movement={Get("_movementOpen")} globe={Get("_statusGlobe")} guide={Get("_tutorialAttackGuide")} chrome={Get("_tutorialChromeSlide")} domestic={Get("_domesticSlide")} closing={Get("_nodeInspectorClosing")} persuasion={Get("_homePersuasionActive")} picker={Get("_invasionPicker")} bounds={Call("get_MapViewBounds")} animating={net.IsAnimating}");
+     }
+     if(Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_INPUT_PROBE")=="1"){
+      var canvas=(Rectangle)Call("CanvasBounds");
+      var actual=new Point((int)Math.Round(mapPoint.X*canvas.Width/1920d)*1920/canvas.Width,(int)Math.Round(mapPoint.Y*canvas.Height/1080d)*1080/canvas.Height);
+      for(int dy=-2;dy<=2;dy+=2)for(int dx=-2;dx<=2;dx+=2){
+       var probe=actual+new Point(dx,dy);
+       Console.WriteLine($"INPUT PROBE target={candidate} point={probe} hit={Call("HitGlobeNode",probe,net.MovementTargets)}");
+      }
      }
      TraceSelection("before");
      Click(mapPoint);

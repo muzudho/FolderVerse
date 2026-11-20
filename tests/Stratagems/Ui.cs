@@ -50,6 +50,7 @@ sealed class Preview:Game1{
   if(frame++==12){Console.WriteLine("PASS actual card UI, grouped selection, preview, reserve/cancel, manual/fallback and 1280x720 draw");Exit();}
  }
  void DrawFullFlow(GameTime time){
+  time=new GameTime(TimeSpan.FromSeconds(100+frame*10),TimeSpan.FromSeconds(10));
   if(frame==0)Click(new(320,900));
   if(frame==1)Click(new(200,340));
   if(frame==2){Click(new(200,340));Call("UpdateDomesticSlide",1f);}
@@ -63,9 +64,17 @@ sealed class Preview:Game1{
   if(frame==6){Check(((BattleState[])Get("_robotScenes")).Length>0,"committed card produces replay scenes");Call("FinishTransport");Check(Get("_screen").ToString()=="Battle","second transport enters battle replay");}
   if(frame==7){for(int tick=0;tick<2000 && !(bool)Get("_robotSummary");tick++)Call("RobotBattleInput",100d,false,true);
    Check((bool)Get("_robotSummary"),"battle replay reaches result summary through input");}
+  if(frame==8){Call("RobotBattleInput",100d,false,true);Console.WriteLine($"FULL FLOW result continue screen={Get("_screen")}");}
+  if(frame==9){for(int tick=0;tick<100 && Get("_screen").ToString()!="WorldStatus";tick++){
+    string screen=Get("_screen").ToString()!;
+    if(screen=="BattleResearch")Call("UpdateBattleResearch",100d,true);
+    else if(screen=="Industry")Call("UpdateIndustry",100d,true);
+    else if(screen=="Ending"){Check(world.WorldConquestEndingShown,"post-result ending is the conquest branch");Call("UpdateEnding",100d,true);}
+    else throw new Exception("Unexpected post-result screen "+screen);
+   }Check(Get("_screen").ToString()=="WorldStatus","result/research/industry returns to world");Check(!world.Campaign.Stratagems.Pending.Any(),"world return does not recreate consumed card reservation");}
   base.Draw(time);
   if(frame==7){var pp=GraphicsDevice.PresentationParameters;var data=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(data);using var texture=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);texture.SetData(data);using var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("STRATAGEM_OUTPUT")!,"full-flow-summary.png"));texture.SaveAsPng(file,texture.Width,texture.Height);}
-  if(frame++==7){Console.WriteLine("PASS full LoadContent card reservation/end turn/delivery/battle summary route");Exit();}
+  if(frame++==9){Console.WriteLine("PASS full LoadContent card reservation/end turn/delivery/battle summary/world return route");Exit();}
  }
 
 }
