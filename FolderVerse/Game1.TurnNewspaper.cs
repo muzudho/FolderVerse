@@ -74,7 +74,10 @@ public partial class Game1
             NewsLine(article.Headline,350,370,1190,.85f,ink);
             for(int i=0;i<article.Lines.Length;i++)NewsLine(article.Lines[i],350,465+i*60,1190,.46f,ink);
             _ui.Box(new(350,735,1190,2),ink*.35f);
-            if(article.Gained+article.Lost>0){
+            if(article.Commentary?.Length>0){
+                NewsLine("講評 / Commentary",370,752,1160,.45f,ink);
+                for(int i=0;i<Math.Min(3,article.Commentary.Length);i++)NewsLine(article.Commentary[i],370,791+i*31,1160,.38f,ink);
+            }else if(article.Gained+article.Lost>0){
                 _ui.Box(new(380,785,Math.Min(430,article.Gained*28),24),new Color(72,145,111));
                 _ui.Box(new(980,785,Math.Min(430,article.Lost*28),24),new Color(184,82,69));
                 NewsLine($"獲得 {article.Gained} {article.Unit}",380,825,450,.48f,ink);NewsLine($"喪失 {article.Lost} {article.Unit}",980,825,450,.48f,ink);
