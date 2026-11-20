@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 
@@ -21,7 +21,7 @@ internal static class ComputerTrade
         if(raw==null)return 0;
         bool needed=!recipient.Pocket && world.Robots.Workshops[recipient.Node].ProductionLines.Any(line=>
             line.Manufacturing && !line.Paused && !line.CycleFinished &&
-            RobotWorld.RawCost(line.CurrentProductionPlan.Preview(recipient.Ruler),raw.Material)>
+            line.RawRemaining(raw.Material)>
                 world.Robots.AvailableRaw(recipient.Node,raw.Material));
         return raw.Units+(needed?32:0);
     }
@@ -31,7 +31,7 @@ internal static class ComputerTrade
         if(world.Industry.Pending || world.TutorialStep!=0)return;
         var trade=world.Campaign.Trade;
         var manual=world.ManualRulers().ToHashSet();
-        for(int ruler=0;ruler<world.ActiveCount;ruler++)
+        foreach(int ruler in WorldDayCycle.Order(world,Enumerable.Range(0,world.ActiveCount)))
         {
             if(!world.Relations.CanAct(ruler) || !automaticAll && manual.Contains(ruler) ||
                 trade.Offers.Any(o=>o.From.Ruler==ruler))continue;

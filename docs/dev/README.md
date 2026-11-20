@@ -50,3 +50,11 @@ UIの検証はウィンドウを開いて描画・操作を確認し、自動終
 
 - [CPU強化と世界征服の停滞調査](analysis/2026-11-08-convergence.md)
 - [計略カード：初期３枚と予約・取消の検証](stratagem-cards.md)
+
+- [地点守備・待ち伏せ戦術・守備の戦訓](site-defense.md)
+
+- [新聞の講評（Commentary）](newspaper-commentary.md)
+
+- [クロスファイア戦術と誤射の戦訓](crossfire.md)
+
+- [地点ごとの戦場配置](site-battle-layouts.md)

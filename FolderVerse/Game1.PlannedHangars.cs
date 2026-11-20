@@ -44,7 +44,9 @@ public partial class Game1
     private void UndoHangarPlan()
     {
         var latest=_setup.Robots.PartPlanning.Orders.LastOrDefault(o=>CanManageNodeFactory(o.Owner));
-        bool undone=latest!=null && _setup.Robots.PartPlanning.Undo(latest.Owner);_hangarDrag=null;
+        var resume=_setup.Robots.PartPlanning.WorkpieceResumes.LastOrDefault(o=>CanManageNodeFactory(o.Owner));
+        int owner=resume!=null && (latest==null || resume.Number>latest.Number)?resume.Owner:latest?.Owner??-1;
+        bool undone=owner>=0 && _setup.Robots.PartPlanning.Undo(owner);_hangarDrag=null;
         _hangarMessage=undone?"直前の組替・直送・仕事の予約を取り消しました":"取り消せる予約はありません";
     }
     private void DrawHangarUndo()

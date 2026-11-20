@@ -66,7 +66,7 @@ public partial class Game1
             profile.FavorsArmy?$"#{patron+1} 陣営 / {profile.Label}":$"Point {battle.TargetNode+1} / {profile.Label}";
         if(issue.Country>=0)patron=issue.Country;
         var armyPage=NewspaperArmyPage(battle,patron,profile.FavorsArmy);
-        _ui.Center($"{affiliation} / 第 {issue.Turn} 号"+(armyPage.Pages>1?$" / 参戦{battle.Armies.Count}軍 {armyPage.Page+1}/{armyPage.Pages}":""),new(1128,293,704,24),.35f,ink);
+        _ui.Center($"{affiliation} / {TurnNewspaper.DayLabel(issue.Turn)}"+(armyPage.Pages>1?$" / 参戦{battle.Armies.Count}軍 {armyPage.Page+1}/{armyPage.Pages}":""),new(1128,293,704,24),.35f,ink);
         _newspaperPortraits??=new NewspaperPortraitRenderer(Content);
         string headline=issue.Headline;
         _ui.Center(headline,new(1128,325,704,62),Math.Min(1.05f,690/_font.MeasureString(headline).X),ink);

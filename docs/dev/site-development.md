@@ -18,3 +18,5 @@ CubeNet.Developmentの共通ポリゴン形状を地星儀と展開図で使う�
 CPUは隣接する中継を、工場等の接続が多い側へ集約する。余っている工場容量を稼働工場へ移し、資材のある安全な中継点を残す選択も行う。手動管理・進行中の輸送や部品操作・戦闘・容量・レーン上限は既存の予約可否で守る。これはまだ最適戦略の保証ではない。
 
 45モデル回帰、隔離ビルド警告エラー０、FontCoverage1038字、24モデル２角度・海陸と実地図描画を確認。回帰はtests/SiteDevelopment。NAS art-source/facility-gradesに採用原画と実描画見本。詳細・解析比較・ハッシュはNAS tmp/delete-after-2026-11-18/site-development/notes.md。
+
+城壁グレードの戦場効果は壁4/8/12個。[地点守備・戦術・戦訓](site-defense.md)を参照。

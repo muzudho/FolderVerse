@@ -118,7 +118,7 @@ public partial class Game1
         const int chipPadding=LocationChipRadius+6;
         if(map.Width<chipPadding*2 || map.Height<chipPadding*2 ||
            !map.Contains(new Rectangle((int)center.X-35,(int)center.Y-34,70,48)))return;
-        var chip=center-heading*42+new Vector2(0,-66+MathF.Sin(_animationTime*4)*3);
+        var chip=center-heading*68+new Vector2(0,-100+MathF.Sin(_animationTime*2)*3);
         chip=Vector2.Clamp(chip,new(map.Left+chipPadding,map.Top+chipPadding),new(map.Right-chipPadding,map.Bottom-chipPadding));
 
         Vector2 Model(float x,float y,float z)=>center+frontAxis*x+sideAxis*y+upAxis*z;

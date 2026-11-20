@@ -23,12 +23,12 @@ public partial class Game1
         !_demoActive && !_autoPlay && !_setup.ComputerOnly && _setup.ControlledParty(_setup.TurnPlayer).Length>0;
     private bool StratagemManualActions=>_stratagemManual || _stratagemMatches.Length==0 && !StratagemPending.Any();
     private bool StratagemPanelActive=>StratagemInterface && _stratagemSelected>=0 && !InspectorVisible;
-    private IEnumerable<StratagemReservation> StratagemPending=>_setup.Campaign.Stratagems.Pending.Where(p=>p.Controller==_setup.TurnPlayer);
-    private static readonly Rectangle StratagemTray=new(54,820,1115,146),StratagemPanel=new(54,150,850,680);
+    private IEnumerable<StratagemReservation> StratagemPending=>_setup.Campaign.Stratagems.Pending.Where(p=>!p.Computer && p.Controller==_setup.TurnPlayer);
+    private static readonly Rectangle StratagemTray=new(360,820,1115,146),StratagemPanel=new(54,150,850,680);
     private static readonly Rectangle StratagemEnd=new(1700,984,180,78),StratagemClose=new(845,165,42,42);
     private static readonly Rectangle StratagemReserve=new(550,760,325,48),StratagemPrevious=new(82,705,115,38),StratagemNext=new(745,705,115,38);
     private StratagemKind[] StratagemCards=>Enum.GetValues<StratagemKind>().Where(k=>_stratagemMatches.Any(m=>m.Kind==k) || StratagemPending.Any(p=>p.Match.Kind==k)).ToArray();
-    private static Rectangle StratagemCard(int slot,bool expanded)=>new(265+slot*194,expanded?724:854,180,expanded?240:110);
+    private static Rectangle StratagemCard(int slot,bool expanded)=>new(571+slot*194,expanded?724:854,180,expanded?240:110);
     private static Color StratagemColor(StratagemKind kind)=>StratagemPlans.Category(kind) switch{
         StratagemCategory.Defense=>new(34,118,72),StratagemCategory.Transport=>new(38,126,195),
         StratagemCategory.Harvest=>new(111,208,174),StratagemCategory.Manufacturing=>new(36,49,100),_=>new(172,48,45)};
@@ -72,9 +72,9 @@ public partial class Game1
             int wheel=mouse.ScrollWheelValue-_previousMouse.ScrollWheelValue;
             if(wheel!=0)_stratagemOffset=Math.Clamp(_stratagemOffset-Math.Sign(wheel),0,max);
             if(click){
-                if(new Rectangle(1080,854,32,110).Contains(_pointer)){_stratagemOffset=Math.Max(0,_stratagemOffset-1);return true;}
-                if(new Rectangle(1120,854,32,110).Contains(_pointer)){_stratagemOffset=Math.Min(max,_stratagemOffset+1);return true;}
-                if(new Rectangle(64,854,180,110).Contains(_pointer)){_stratagemManual=true;_stratagemSelected=-1;_stratagemPreview=null;return true;}
+                if(new Rectangle(1386,854,32,110).Contains(_pointer)){_stratagemOffset=Math.Max(0,_stratagemOffset-1);return true;}
+                if(new Rectangle(1426,854,32,110).Contains(_pointer)){_stratagemOffset=Math.Min(max,_stratagemOffset+1);return true;}
+                if(new Rectangle(370,854,180,110).Contains(_pointer)){_stratagemManual=true;_stratagemSelected=-1;_stratagemPreview=null;return true;}
                 for(int slot=0;slot<4 && slot+_stratagemOffset<cards.Length;slot++)if(StratagemCard(slot,slot==_stratagemHover).Contains(_pointer)){
                     ResetInspector();_stratagemSelected=(int)cards[slot+_stratagemOffset];_stratagemManual=false;_stratagemPage=0;_stratagemGroup=-1;_stratagemPreview=null;_stratagemMessage="";_stratagemReservationsOpen=false;return true;
                 }
@@ -177,30 +177,30 @@ public partial class Game1
             }
         }
         DrawStratagemMapPreview();
-        PrimaryRoundBox(StratagemTray,new Color(43,34,28),12);
-        _ui.Text($"計略 / 予約 {StratagemPending.Count()}件",new(65,823),.37f,Cream);
-        _ui.Button(new(64,854,180,110),"マニュアル操作",_stratagemManual?Accent:Muted,.4f);
+        PrimaryRoundBox(StratagemTray,new Color(43,34,28)*.48f,12);
+        _ui.Text($"計略 / 予約 {StratagemPending.Count()}件",new(371,823),.37f,Cream);
+        _ui.Button(new(370,854,180,110),"マニュアル操作",_stratagemManual?Accent:Muted,.4f);
         var cards=StratagemCards;_stratagemOffset=Math.Clamp(_stratagemOffset,0,Math.Max(0,cards.Length-4));
-        if(cards.Length==0)_ui.Text("計略がありません",new(300,880),.55f,Cream);
+        if(cards.Length==0)_ui.Text("計略がありません",new(606,880),.55f,Cream);
         int hover=-1;
         for(int slot=0;slot<4 && slot+_stratagemOffset<cards.Length;slot++){
             bool expanded=!StratagemPanelActive && (StratagemCard(slot,false).Contains(_pointer) || _stratagemHover==slot && StratagemCard(slot,true).Contains(_pointer));
             if(expanded)hover=slot;
             var kind=cards[slot+_stratagemOffset];var bounds=StratagemCard(slot,expanded);
-            PrimaryRoundBox(new(bounds.X+3,bounds.Y+4,bounds.Width,bounds.Height),new Color(8,18,25),10);
-            PrimaryRoundBox(bounds,new Color(216,173,92),10);PrimaryRoundBox(new(bounds.X+3,bounds.Y+3,bounds.Width-6,bounds.Height-6),new Color(250,236,205),8);
+            PrimaryRoundBox(new(bounds.X+3,bounds.Y+4,bounds.Width,bounds.Height),new Color(8,18,25)*.2f,10);
+            PrimaryRoundBox(bounds,new Color(216,173,92)*.65f,10);PrimaryRoundBox(new(bounds.X+3,bounds.Y+3,bounds.Width-6,bounds.Height-6),new Color(250,236,205)*.65f,8);
             _ui.Box(new(bounds.X+6,bounds.Y+7,bounds.Width-12,27),StratagemColor(kind));
             _ui.Center(StratagemPlans.Title(kind),new(bounds.X+8,bounds.Y+8,bounds.Width-16,25),.32f,Color.White);
             var picture=new Rectangle(bounds.X+7,bounds.Y+38,bounds.Width-14,bounds.Height-66);
             if(expanded){int width=picture.Height*3/4;picture.X+=(picture.Width-width)/2;picture.Width=width;}
-            DrawStratagemImage(StratagemArt(kind),picture,1);
+            DrawStratagemImage(StratagemArt(kind),picture,.82f);
             int matches=_stratagemMatches.Count(m=>m.Kind==kind);
             _ui.Center($"使える配置 {matches}件",new(bounds.X+7,bounds.Bottom-26,bounds.Width-14,22),.31f,ink);
         }
         _stratagemHover=hover;
-        _ui.Button(new(1080,854,32,110),"<",_stratagemOffset>0?Accent:Muted,.4f);
-        _ui.Button(new(1120,854,32,110),">",_stratagemOffset+4<cards.Length?Accent:Muted,.4f);
-        _ui.Text(cards.Length==0?"":$"計略 {_stratagemOffset+1}～{Math.Min(cards.Length,_stratagemOffset+4)} / {cards.Length}種類",new(970,824),.3f,Cream);
+        _ui.Button(new(1386,854,32,110),"<",_stratagemOffset>0?Accent:Muted,.4f);
+        _ui.Button(new(1426,854,32,110),">",_stratagemOffset+4<cards.Length?Accent:Muted,.4f);
+        _ui.Text(cards.Length==0?"":$"計略 {_stratagemOffset+1}～{Math.Min(cards.Length,_stratagemOffset+4)} / {cards.Length}種類",new(1276,824),.3f,Cream);
         if(!StratagemManualActions)_ui.Button(StratagemEnd,"この陣営のターン終了",Accent,.4f);
     }
     private string StratagemNodeName(int node)=>$"地点{node+1} "+_setup.Nodes.All[node].Name;

@@ -25,10 +25,15 @@ public partial class Game1
     private bool _nodeInspectorClosing;
     private bool InspectorVisible=>_folderTreeOpen || _reignView || _regionCell>=0 || _populationCell>=0 || _movementOpen || _transportOverview || _salvagePlan;
     private bool DomesticPanelOpen=>(InspectorVisible || StratagemPanelActive) && !_nodeInspectorClosing;
-    private int NodeInspectorOffset=>(int)MathF.Round(-960*(1-_domesticSlide));
+    private int NodeInspectorOffset=>(int)MathF.Round(-960*(1-_domesticSlide)+306*_domesticSlide);
     private Rectangle NodeInspectorBounds=>new(54+NodeInspectorOffset,150,850,825);
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
+    private void DrawDomesticPhaseHeading()
+    {
+        CountryFlagArt.Draw(_ui,_setup,_setup.TurnPlayer,new(54,14,168,112));
+        _ui.Text(PlanningPhaseLabel,new(240,22),1.1f,Cream);
+    }
     private void ResetInspector(){
         _warCancellationsOpen=false;
         _intakeLine=null;
@@ -53,10 +58,35 @@ public partial class Game1
     }
     private void OpenStrategyInspector(){ResetInspector();_reignView=true;}
     private void DrawInspector(Action draw){
+        DrawInspectorRails();
         var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         var pointer=_pointer;var hover=_ui.Pointer;_pointer.X-=NodeInspectorOffset;_ui.Pointer=new(hover.X-NodeInspectorOffset,hover.Y);
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:Matrix.CreateTranslation(NodeInspectorOffset,0,0)*transform);
         try{draw();}finally{_pointer=pointer;_ui.Pointer=hover;_spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);}
+    }
+    private void DrawInspectorRails()
+    {
+        int end=NodeInspectorBounds.Left;
+        if(end<=0 || _domesticSlide<=0)return;
+        var metal=new Color(126,165,177);var dark=new Color(25,48,61);
+        var enamel=Color.Lerp(_setup.OwnerColor(_setup.PlayerSlot),metal,.55f);
+        foreach(int y in new[]{252,642}){
+            _ui.Box(new(0,y+6,end+10,44),new Color(5,17,26));
+            PrimaryRoundBox(new(0,y,end+12,42),enamel,8);
+            _ui.Box(new(0,y+5,end+12,3),new Color(214,233,226));
+            _ui.Box(new(0,y+15,end+12,15),dark);
+            for(int x=38;x<end;x+=26){
+                _ui.Box(new(x,y+16,10,13),metal);
+                _ui.Box(new(x+2,y+17,6,2),new Color(222,232,211));
+            }
+            PrimaryRoundBox(new(0,y-9,32,60),new Color(73,103,117),6);
+            foreach(int yy in new[]{y-1,y+36}){
+                _ui.Box(new(10,yy,10,10),new Color(221,190,117));
+                _ui.Box(new(12,yy+4,6,2),dark);
+            }
+            PrimaryRoundBox(new(end-12,y-4,24,50),metal,5);
+            _ui.Box(new(end-5,y+5,5,31),dark);
+        }
     }
     private void DrawInspectorHandle() => DrawTutorialChrome(()=>DrawInspectorHandleCore(),false);
     private void DrawInspectorHandleCore(){
@@ -107,17 +137,24 @@ public partial class Game1
 
         return false;
     }
-    private Vector2 PlayerMedallionCenter=>new(ReignPortrait.Center.X+(InspectorVisible?(int)(960*_domesticSlide):0),ReignPortrait.Center.Y);
-    private Vector2 OperationMedallionCenter=>PlayerMedallionCenter+new Vector2(_setup.PlayerSlot==_setup.TurnPlayer?0:320,0);
+    private Vector2 PlayerMedallionCenter=>new(176,916);
+    private Vector2 OperationMedallionCenter=>_setup.PlayerSlot==_setup.TurnPlayer?PlayerMedallionCenter:new Vector2(270,755);
     private void DrawDomesticPortrait()
     {
         int player=_setup.TurnPlayer;DrawRulerMedallion(player,PlayerMedallionCenter);
-        _ui.Center(_setup.ComputerOnly?"Exhibition / 観戦中":_setup.PlayerSlot==player?"あなたの陣営 / 操作中":"あなたの陣営のターン",new((int)PlayerMedallionCenter.X-145,600,290,30),.36f,Cream);
+        _ui.Center(_setup.ComputerOnly?"Exhibition / 観戦中":_setup.PlayerSlot==player?"あなたの陣営 / 操作中":"あなたの陣営のターン",new(25,736,190,24),.30f,Cream);
         if(_setup.PlayerSlot!=player){
-            DrawRulerMedallion(_setup.PlayerSlot,OperationMedallionCenter);
-            _ui.Center("操作中の手下",new((int)OperationMedallionCenter.X-145,600,290,30),.36f,Cream);
+            DrawSmallOperationMedallion(_setup.PlayerSlot,OperationMedallionCenter);
+            _ui.Center("操作中の手下",new(205,688,125,18),.24f,Cream);
         }
         if(FactionTree().Length>1)_ui.Button(FactionPickerButton,"▼",Accent,.65f);
+    }
+    private void DrawSmallOperationMedallion(int ruler,Vector2 center)
+    {
+        var ring=new Rectangle((int)center.X-49,(int)center.Y-49,98,98);
+        PaperOval(ring,_setup.OwnerColor(ruler));ring.Inflate(-3,-3);PaperOval(ring,Cream);
+        // The inset square's corners fit inside the round medal.
+        _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new((int)center.X-32,(int)center.Y-32,64,64),_setup.Relations.Powered[ruler],faceOnly:true);
     }
     private void DrawRulerMedallion(int ruler,Vector2 center)
     {

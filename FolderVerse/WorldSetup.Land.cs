@@ -32,14 +32,16 @@ public sealed partial class WorldSetup
         if(!LandPending || ruler<0 || ruler>=ActiveCount || cells.Length!=TerritoryRights[ruler] || cells.Distinct().Count()!=cells.Length || cells.Any(c=>c<0 || c>=Cells.Length || Owners[c]>=0) || Owners.Contains(ruler))throw new ArgumentException("Invalid land claim");
         foreach(int cell in cells)Owners[cell]=ruler;
     }
-    public void CompleteLand(int fortuneSeed,int robotScatterPercent=25,int rawStockPercent=25)
+    public void CompleteLand(int fortuneSeed,int robotScatterPercent=25,int rawStockPercent=25,InitialStockSettings initialStock=null)
     {
         if(!LandPending || Owners.Any(o=>o<0))throw new InvalidOperationException("Land claims are incomplete");
         if(fortuneSeed<0)throw new ArgumentOutOfRangeException(nameof(fortuneSeed));
         if(robotScatterPercent<0 || robotScatterPercent>100)throw new ArgumentOutOfRangeException(nameof(robotScatterPercent));
         if(rawStockPercent<0 || rawStockPercent>100)throw new ArgumentOutOfRangeException(nameof(rawStockPercent));
         FortuneSeed=fortuneSeed;
+        InitialStock=null;
         RelayLogisticsEnabled=TutorialStep==0;
+        bool sharedStock=TutorialStep==0 && EquipmentMode==RobotEquipmentMode.Materials;
         TerritoryCounts=Enumerable.Range(0,CastCount).Select(o=>Owners.Count(v=>v==o)).ToArray();
         Capitals=Enumerable.Range(0,ActiveCount).Select(o=>Array.IndexOf(Owners,o)).ToArray();ConquerorLocations=(int[])Capitals.Clone();
         Population.Initialize(this);Routes.Initialize(this);ConquerorPoints=ConquerorLocations.Select(Routes.Start).ToArray();Nodes.Initialize(this);
@@ -76,7 +78,7 @@ public sealed partial class WorldSetup
                 scatterRemainder=scaled%100;
                 for(int i=0;i<count;i++){
                     var parts=(RobotParts)(1+random.Next(7));
-                    if(i<placed)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,parts,i==0?RobotRole.Captain:RobotRole.Soldier));
+                    if(i<placed && !sharedStock)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,parts,i==0?RobotRole.Captain:RobotRole.Soldier));
                 }
                 for(int i=0;i<workers;i++){
                     bool collects=harvest && i==workers-1;
@@ -98,38 +100,15 @@ public sealed partial class WorldSetup
                 Robots.Transport.SetPlan(node.Id,node.Owner,parts,weights,false);
             }
         }
-        if(TutorialStep==0 && Robots.MapleSupplyEnabled && rawStockPercent>0)
-            PlaceStarterStock(fortuneSeed,rawStockPercent);
         if(TutorialStep==0)
             for(int ruler=0;ruler<ActiveCount;ruler++)
                 for(int i=0;i<2;i++)Robots.Retinues[ruler].Add(Robots.Create(ruler,RobotParts.Complete));
+        if(sharedStock)
+            RebuildInitialStock(initialStock??new(robotScatterPercent,rawStockPercent,fortuneSeed^0x494E4954));
         for(int ruler=0;ruler<ActiveCount;ruler++)ConquerorPoints[ruler]=Nodes.Current(ruler).Center;
         Routes.RefreshDisplay();Campaign.Reset();LandPending=false;
-        PlaceInitialTin(fortuneSeed);
-        Salvage.Initialize(this);
-    }
-
-    private void PlaceStarterStock(int fortuneSeed,int percent)
-    {
-        var random=new SeedRandom(fortuneSeed^0x524157);
-        var materials=RobotWorld.RawMaterials.Where(Robots.RawRequired).ToArray();
-        var sites=Nodes.All.Where(n=>n.Owner>=0 && Robots.Nodes[n.Id].HasSpace).ToArray();
-        int remaining=(sites.Sum(n=>Robots.Nodes[n.Id].StorageLimit-Robots.Nodes[n.Id].Count)*percent+50)/100;
-        random.Shuffle(sites);
-        foreach(var node in sites){
-            if(remaining==0)break;
-            var store=Robots.Nodes[node.Id];
-            int slots=Math.Min(remaining,store.StorageLimit-store.Count);
-            var products=Robots.Workshops[node.Id].ProductionLines.Where(l=>!l.HarvestOnly && l.Manufacturing)
-                .Select(l=>l.CurrentProductionPlan.Preview(node.Owner)).ToArray();
-            var needs=materials.Select(m=>(Material:m,Cost:products.Sum(p=>RobotWorld.RawCost(p,m))))
-                .Where(input=>input.Cost>0).OrderByDescending(input=>input.Cost).Select(input=>input.Material).ToArray();
-            for(int slot=0;slot<slots;slot++){
-                var material=slot<needs.Length?needs[slot]:materials[random.Next(materials.Length)];
-                Robots.AddStarterRaw(store,new MaplePackage(0,MaplePackage.Capacity){Material=material});
-            }
-            remaining-=slots;
-        }
+        if(!sharedStock)PlaceInitialTin(fortuneSeed);
+        if(!sharedStock)Salvage.Initialize(this);
     }
 
     private void PlaceInitialTin(int seed)
@@ -141,7 +120,8 @@ public sealed partial class WorldSetup
         {
             // One of each part at most, on separate sites, independent of the world generation RNG.
             var candidates=Nodes.All.Where(n=>n.Owner>=0 && n.Functional && !used.Contains(n.Id))
-                .Select(n=>(n.Id,Robot:Robots.Nodes[n.Id].Robots.FirstOrDefault(r=>r.Parts==part)))
+                .Select(n=>(n.Id,Robot:Robots.Nodes[n.Id].Robots.FirstOrDefault(r=>InitialStock!=null
+                    ?(r.Parts&part)!=0 && !r.WarehouseKeeper && !r.FactoryWorker:r.Parts==part)))
                 .Where(candidate=>candidate.Robot!=null).ToArray();
             if(candidates.Length==0)continue;
             var (node,robot)=candidates[random.Next(candidates.Length)];

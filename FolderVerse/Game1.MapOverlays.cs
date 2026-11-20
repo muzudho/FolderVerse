@@ -8,6 +8,13 @@ public partial class Game1
 {
     private bool _mapOverlayMenu;
     private Rectangle MapFooterBounds(Rectangle bounds)=>bounds;
+    private void DrawMapNavigationButtons()
+    {
+        if(_statusGlobe)_ui.Button(NetButton(1),(_globeSpinning?"✓ ":"□ ")+"くるくる回す",_globeSpinning?Accent:Muted,.45f);
+        _ui.Button(NetButton(2),"征服者はどこ？",Accent,.45f);
+        _ui.Button(NetButton(3),"今どこ見てる？",InspectorLocationNode>=0?Accent:Muted,.45f);
+        if(!_statusGlobe && !_setup.IsPrimaplana)_ui.Button(NetButton(4),_setup.TerritoryCounts[_setup.PlayerSlot]>0?"首都の面へ":"現在地の面へ",Muted,.48f);
+    }
     private const int DirectMapAction=3,LongMapAction=7;
     private float _primaryActionSlide;
     private int _lastMapFooterAction=-1;
@@ -23,8 +30,8 @@ public partial class Game1
     private const int FunctionTransferAction=6;
     private const int TradeAction=8,PrimaryActionCount=9;
     private static Rectangle PrimaryActionHomeBounds(int index)=>index switch {
-        0=>new(54,974,96,96),1=>new(160,926,192,144),
-        _=>new(362+((index==7?4:index>=4?index+1:index)-2)*106,974,96,96)
+        0=>new(360,974,96,96),1=>new(466,926,192,144),
+        _=>new(668+((index==7?4:index>=4?index+1:index)-2)*106,974,96,96)
     };
     private Rectangle PrimaryActionBounds(int index){var r=PrimaryActionHomeBounds(index);if(index==1 && StratagemInterface && StratagemManualActions)r=new(r.X,974,r.Width,96);if(index!=PinnedPrimaryAction)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,_primaryActionSlide));return r;}
     private static Rectangle MapModeCloseButton(int index)=>new(PrimaryActionHomeBounds(index).Right+10,1002,40,40);

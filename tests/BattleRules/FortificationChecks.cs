@@ -88,7 +88,7 @@ static class FortificationChecks
    w.Nodes.Recount();w.Robots.ConfigureFactories(w);w.Campaign.RobotBattles.Rules=new(){SegmentTurns=1,NoWillTurns=100,FlagDefenseTurns=500,PersuasionPercent=0};
    w.Campaign.Resolve(w,new[]{new March(0,target.Id,3,source.Id,false,false,ids.ToArray())});
    var state=w.Campaign.RobotBattles.Encounters.Single(e=>e.Kind==BattleKind.Node && e.Target==target.Id).Battles.Single();
-   Check(state.InitialDefenseCount==3 && state.Fortifications.Count==3,"Actual node encounter snapshots all three defense reservations before departure");
+   Check(state.InitialDefenseCount==0 && state.Fortifications.Count==4 && state.Fortifications.All(f=>f.Kind==FortificationKind.Tree),"Ordinary node has four trees regardless of three defense reservations");
    var original=state.Fortifications.ToArray();foreach(var u in state.Units.Where(u=>u.Robot?.DefenseOnly==true))u.Fallen=true;
    state.BuildFortifications(0);Check(state.Fortifications.SequenceEqual(original),"Fallen defense robots do not remove their constructions");
   }

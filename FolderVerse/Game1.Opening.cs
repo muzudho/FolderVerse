@@ -158,7 +158,7 @@ public partial class Game1
     }
     private void OpeningStars(Rectangle area)
     {
-        _ui.Box(area,OpeningSpaceInk);
+        DrawSpaceBackdrop(area);
         for(int i=0;i<270;i++){
             float x=(float)((i*367.0+1920*100-_openingAge*(18+i%5*14))%1920),y=85+i*173%780;
             int size=i%9==0?4:2;
@@ -390,6 +390,8 @@ public partial class Game1
             var clipped=Rectangle.Intersect(frame,canvas);
             if(clipped.Width<=0 || clipped.Height<=0)return;
             var previousPose=planet.ManualOrientation;
+            planet.DaylightWorld=_setup;
+            planet.DawnMeridian=WorldDayCycle.Wrap((float)time.TotalGameTime.TotalSeconds/90);
             planet.ManualOrientation=handoff.Pose;
             if(_screen==Screen.OpeningLottery && OpeningStarSelectable)_openingReviewPose=handoff.Pose;
             GraphicsDevice.Viewport=new Viewport(canvas);

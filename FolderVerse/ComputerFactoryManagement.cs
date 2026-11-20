@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ internal static class ComputerFactoryManagement
 {
     internal static bool Managed(WorldSetup world,Node node,bool automaticAll)=>node.Functional && node.Purpose!=NodePurpose.Relay &&
         node.Owner>=0 && world.Relations.CanAct(node.Owner) && (automaticAll || !world.ManualRulers().Contains(node.Owner)) &&
-        !world.Campaign.RobotBattles.LockedNode(node.Id) && world.Robots.Workshops[node.Id].Automation!=NodeAutomation.Manual &&
+        !world.Robots.PartPlanning.WorkpieceResumes.Any(o=>o.Node==node.Id) && !world.Campaign.RobotBattles.LockedNode(node.Id) && world.Robots.Workshops[node.Id].Automation!=NodeAutomation.Manual &&
         !world.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node.Id || o.Target==node.Id);
 
     internal static bool Incoming(WorldSetup world,int node,RawMaterial material)
@@ -23,8 +23,8 @@ internal static class ComputerFactoryManagement
 
     internal static bool WaitingWithoutSupply(WorldSetup world,int node,RobotWorkshop line)=>
         line.Manufacturing && !line.Paused && !line.CycleFinished && RobotWorld.RawMaterials.Any(m=>
-            RobotWorld.RawCost(line.CurrentProductionPlan.Preview(world.Nodes.All[node].Owner),m)>world.Robots.AvailableRaw(node,m)) &&
-        !RobotWorld.RawMaterials.Where(m=>RobotWorld.RawCost(line.CurrentProductionPlan.Preview(world.Nodes.All[node].Owner),m)>
+            line.RawRemaining(m)>world.Robots.AvailableRaw(node,m)) &&
+        !RobotWorld.RawMaterials.Where(m=>line.RawRemaining(m)>
             world.Robots.AvailableRaw(node,m)).Any(m=>Incoming(world,node,m));
 
     // Purpose retention is independent of each worker's release roll.

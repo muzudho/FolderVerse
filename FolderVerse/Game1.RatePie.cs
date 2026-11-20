@@ -16,6 +16,18 @@ public partial class Game1
     private readonly Dictionary<int,Texture2D> _ratePieIcons=new();
     private static string RateLabel(int degrees)=>$"{degrees*100/360f:0.#}% ({degrees}°)";
     private static int PointerDegrees(Point p)=>(int)Math.Round((Math.Atan2(p.X-RatePieCenter.X,RatePieCenter.Y-p.Y)+Math.PI*2)%(Math.PI*2)*180/Math.PI);
+    private void DrawSharedRatePie(Vector2 center,int radius,(float Degrees,Color Color)[] segments)
+    {
+        for(int y=-radius;y<=radius;y+=2){
+            int extent=(int)Math.Sqrt(radius*radius-y*y),start=-extent;Color previous=Color.Transparent;
+            for(int x=-extent;x<=extent+1;x++){
+                Color color=Color.Transparent;
+                if(x<=extent){double angle=(Math.Atan2(x,-y)+Math.PI*2)%(Math.PI*2)*180/Math.PI;float sum=0;foreach(var seg in segments){sum+=seg.Degrees;if(angle<sum){color=seg.Color;break;}}}
+                if(x==-extent){previous=color;continue;}
+                if(color!=previous){_ui.Box(new((int)center.X+start,(int)center.Y+y,x-start,2),previous);start=x;previous=color;}
+            }
+        }
+    }
     private static Rectangle RatePresetBounds(int row,int column)
     {
         float angle=(column+1)*MathHelper.TwoPi/RateDivisions[row];
@@ -105,18 +117,7 @@ public partial class Game1
         var segments=new List<(int Degrees,Color Color,int Number)>{(value,Accent,_rateTarget)};
         foreach(var rule in TransportRules.Where(r=>r.Number!=_rateTarget))segments.Add((rule.Degrees,new Color(80+(rule.Number*37)%120,110+(rule.Number*17)%100,150),rule.Number));
         segments.Add((_setup.Robots.Transport.RestDegrees(_populationNode,TransportOwner),new Color(105,115,125),0));
-        // One small scanline run per sector; no new graphics resources per frame.
-        for(int y=-110;y<=110;y+=2)
-        {
-            int extent=(int)Math.Sqrt(110*110-y*y),start=-extent;Color previous=Color.Transparent;
-            for(int x=-extent;x<=extent+1;x++)
-            {
-                Color color=Color.Transparent;
-                if(x<=extent){double angle=(Math.Atan2(x,-y)+Math.PI*2)%(Math.PI*2)*180/Math.PI;int sum=0;foreach(var seg in segments){sum+=seg.Degrees;if(angle<sum){color=seg.Color;break;}}}
-                if(x==-extent){previous=color;continue;}
-                if(color!=previous){_ui.Box(new((int)RatePieCenter.X+start,(int)RatePieCenter.Y+y,x-start,2),previous);start=x;previous=color;}
-            }
-        }
+        DrawSharedRatePie(RatePieCenter,110,segments.Select(s=>((float)s.Degrees,s.Color)).ToArray());
         // Tiny 1-degree sectors cannot fit a readable label; the color key retains every number.
         for(int i=0;i<segments.Count;i++){var seg=segments[i];var r=seg.Number==0?new Rectangle(1130,322,190,22):new Rectangle(1130+i%8*92,275+i/8*21,88,19);_ui.Box(new(r.X,r.Y+4,7,10),seg.Color);_ui.Text((seg.Number==0?"#0 休憩":"#"+seg.Number)+" "+(seg.Degrees*100/360f).ToString("0.#")+"%",new(r.X+10,r.Y),.28f,Cream);}
         float sectorStart=0;var labels=new List<Rectangle>();

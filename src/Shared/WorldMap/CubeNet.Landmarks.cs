@@ -6,6 +6,7 @@ public sealed partial class CubeNet
 {
     public void DrawLandmarks(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2?> project,float time,bool respectVisibility=true)
     {
+        if(!ShowAdjacentObjects)return;
         foreach(var node in world.Nodes.InCell(cell)){
             if(respectVisibility && !NodeVisible(world,node))continue;
             var mark=NodeLandmarks.At(world,node.Id);var center=project(mark.Position);var origin=project(world.Routes.Position(cell,node.Center));

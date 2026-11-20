@@ -85,7 +85,7 @@ public sealed partial class CubeNet
                 bool centered=ShowRoutes && HasFacilityPlatform(node);
                 float flagOffset=HasGlobeBuilding(node)?GlobePurposeBuildingScale:1;
                 DrawSurfaceFlag(ui,setup,DisplayedNodeOwner(node),cell,position,
-                    ShowRoutes && roof==null ? radius*flagOffset : 0,Project,Tint,roof!=null,centered);
+                    ShowRoutes && roof==null ? radius*flagOffset : 0,Project,Tint,roof!=null,centered,AnimateFlags?pulse:0);
             }
         }
         DrawMapSymbols(ui,setup,p=>
@@ -185,13 +185,14 @@ public sealed partial class CubeNet
             Face(at,platformRadius+1,rim);
             Face(at,platformRadius,node.Functional ? top : Color.Lerp(top,rim,.35f));
         }
+        if(purpose)DrawFactorySmoke(ui,node,FacilityDevelopment.Grade(setup,node),pulse,(x,y,z)=>at+new Vector2(x,y*.68f-z)*radius*PurposeBuildingScale,tint);
         if(civilian)DrawNodeFacilities(ui,setup,node,(x,y,z)=>
             at+new Vector2(x+y*.34f,y*.58f-x*.14f-z)*radius,tint);
         var flagFoot=PurposeFlagAnchor(node,FacilityDevelopment.Grade(setup,node)) is Vector3 roof
             ? at+new Vector2(roof.X,roof.Y*.68f-roof.Z)*radius*PurposeBuildingScale
             : HasFacilityPlatform(node)?at:at+new Vector2(radius*PurposeBuildingScale+4,-radius*.68f);
         CountryFlagArt.Marker(ui,setup,DisplayedNodeOwner(node),flagFoot,
-            Math.Clamp((int)(radius*3),24,42),tint);
+            Math.Clamp((int)(radius*3),24,42),tint,geographic:true,wave:AnimateFlags?pulse:0);
         if (AttackTargetMarkers && SelectedTarget==node.Id)
             foreach (float angle in new[]{MathHelper.PiOver4,-MathHelper.PiOver4})
                 ui.Tile(at,new(radius*2,2),angle,tint(rim));
@@ -200,6 +201,9 @@ public sealed partial class CubeNet
     private void DrawSurfacePuck(UiPainter ui,WorldSetup setup,Node node,SurfaceCell cell,Vector3 position,float radius,float pulse,
         Func<Vector3,Vector2> project,Func<Color,Color> tint)
     {
+        float hour=DawnMeridian is {} dawn?WorldDayCycle.Hour(setup,cell,dawn):12;
+        var originalTint=tint;
+        if(DawnMeridian.HasValue)tint=c=>originalTint(WorldDayCycle.Tint(c,hour));
         bool sea = !setup.Routes.Land(node.Cell,node.Center);
         var top = sea ? new Color(164,226,242) : new Color(255,232,153);
         var side = sea ? new Color(52,110,135) : new Color(152,111,53);
@@ -244,8 +248,17 @@ public sealed partial class CubeNet
             }
             FillProjectedFace(ui,upper,tint(node.Functional ? top : Color.Lerp(top,rim,.35f)));
         }
+        if(purpose)DrawFactorySmoke(ui,node,FacilityDevelopment.Grade(setup,node),pulse,(x,y,z)=>project(position+radius*GlobePurposeBuildingScale*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
         if(civilian)DrawNodeFacilities(ui,setup,node,(x,y,z)=>
             project(position+radius*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
+        if(DawnMeridian.HasValue && WorldDayCycle.Daylight(hour)<.5f && (purpose || civilian || platform)){
+            float scale=purpose?GlobePurposeBuildingScale:1;
+            for(int i=0;i<3;i++){
+                Vector2 Window(float x,float z)=>project(position+radius*scale*(cell.U*x-cell.V*.31f+cell.Normal*z));
+                float x=-.22f+i*.18f;
+                FillProjectedFace(ui,new[]{Window(x,.22f),Window(x+.09f,.22f),Window(x+.09f,.35f),Window(x,.35f)},originalTint(new Color(255,222,128)));
+            }
+        }
         var center = project(position+cell.Normal*radius*(platform?0:purpose?GlobePurposeBuildingScale*.5f:.34f));
         if (AttackTargetMarkers && SelectedTarget==node.Id)
             foreach (float angle in new[]{MathHelper.PiOver4,-MathHelper.PiOver4})
@@ -253,7 +266,7 @@ public sealed partial class CubeNet
     }
 
     private static void DrawSurfaceFlag(UiPainter ui,WorldSetup world,int owner,SurfaceCell cell,Vector3 position,float radius,
-        Func<Vector3,Vector2> project,Func<Color,Color> tint,bool roofMounted=false,bool centered=false)
+        Func<Vector3,Vector2> project,Func<Color,Color> tint,bool roofMounted=false,bool centered=false,float flagTime=0)
     {
         if (owner<0 || owner>=world.ActiveCount) return;
         var vertical = project(position+cell.Normal)-project(position);
@@ -267,7 +280,7 @@ public sealed partial class CubeNet
         var a=project(foot);var b=project(apex);var pole=b-a;
         ui.Tile((a+b)/2,new(pole.Length(),2),MathF.Atan2(pole.Y,pole.X),tint(new Color(232,218,177)));
 
-        int shape=world.CountryFlagShape(owner);
+        int shape=world.CountryFlagShape(CountryFlagArt.GeographicBoss(world,owner));
         float width=(shape==2 ? .115f : shape==1 ? .23f : .173f)*(roofMounted?.65f:1);
         var origin=apex+across*.008f;
         // A shallow fold gives the flag two planar facets; the shared artwork follows both.
@@ -275,9 +288,9 @@ public sealed partial class CubeNet
         Vector2 Point(int x,int y)
         {
             float u=x/36f;
-            return project(origin+across*(width*u)-cell.Normal*(clothHeight*y/24f)+crease*(1-MathF.Abs(2*u-1)));
+            return project(origin+across*(width*u)-cell.Normal*(clothHeight*y/24f)+crease*((1-MathF.Abs(2*u-1))+(flagTime==0?0:MathF.Sin(flagTime*1.7f+u*5)*u*.8f)));
         }
-        foreach (var (box,ink) in CountryFlagArt.Patches(world,owner))
+        foreach (var (box,ink) in CountryFlagArt.GeographicPatches(world,owner))
         {
             Patch(box.Left,Math.Min(box.Right,18),box,tint(ink));
             Patch(Math.Max(box.Left,18),box.Right,box,tint(Color.Lerp(ink,Color.Black,.12f)));

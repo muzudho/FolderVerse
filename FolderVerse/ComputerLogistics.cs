@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +11,11 @@ public static class ComputerLogistics
         if(w.Campaign.Phase!=CampaignPhase.Domestic)return;
         var manual=w.ManualRulers().ToHashSet();var stock=w.Robots;var battles=w.Campaign.RobotBattles;
         ReviewUnstartedDeliveries(w, manual, automaticAll);
-        bool Busy(int node)=>battles.LockedNode(node) || w.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node || o.Target==node) ||
-            stock.PartPlanning.Orders.Any(o=>o.Source==node || o.Target==node) || stock.PendingEdits.Any(o=>o.Node==node) ||
+        bool Busy(int node)=>ComputerStratagems.ProtectedSite(w,node) || battles.LockedNode(node) || w.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node || o.Target==node) ||
+            stock.PartPlanning.WorkpieceResumes.Any(o=>o.Node==node) || stock.PartPlanning.Orders.Any(o=>o.Source==node || o.Target==node) || stock.PendingEdits.Any(o=>o.Node==node) ||
             stock.DirectDelivery.Orders.Any(o=>o.Source==node || o.Target==node) || w.Campaign.PlannedOrders.Any(o=>o.SourceNode==node || o.TargetNode==node);
         bool AnyViableAttack(){
-            var automated=Enumerable.Range(0,w.ActiveCount).Where(o=>w.Relations.CanAct(o) && (automaticAll || !manual.Contains(o))).ToHashSet();
+            var automated=WorldDayCycle.Order(w,Enumerable.Range(0,w.ActiveCount).Where(o=>w.Relations.CanAct(o) && (automaticAll || !manual.Contains(o)))).ToHashSet();
             if(w.Campaign.PlannedOrders.Any(o=>automated.Contains(o.Ruler) && !o.Peaceful && (w.Nodes.All[o.TargetNode].Owner<0 || !w.Relations.Allied(o.Ruler,w.Nodes.All[o.TargetNode].Owner))))return true;
             foreach(var family in automated.GroupBy(w.Relations.Root)){
                 var members=family.ToHashSet();
@@ -37,7 +37,7 @@ public static class ComputerLogistics
             return false;
         }
         bool stalled=!AnyViableAttack();
-        foreach(int owner in Enumerable.Range(0,w.ActiveCount).Where(o=>w.Relations.CanAct(o) && (automaticAll || !manual.Contains(o)))){
+        foreach(int owner in WorldDayCycle.Order(w,Enumerable.Range(0,w.ActiveCount).Where(o=>w.Relations.CanAct(o) && (automaticAll || !manual.Contains(o))))){
             var nodes=w.Nodes.All.Where(n=>n.Functional && n.Owner==owner && !Busy(n.Id)).ToArray();
             var front=nodes.Where(n=>battles.AttackTargets(w,owner,n.Id).Any(t=>w.Nodes.All[t].Owner>=0 && !w.Relations.Allied(owner,w.Nodes.All[t].Owner))).Select(n=>n.Id).ToHashSet();
             // Stage surplus troops closer to a front even when its hangars are full.

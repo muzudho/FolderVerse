@@ -42,7 +42,7 @@ public static class HeadlessRunner
             w.CompleteLand(fortune,scatter,raw);
             using(var assembly=File.OpenRead(typeof(WorldSetup).Assembly.Location))
                 Write(new{kind="start",seed,castSeed=cast,rightsSeed=rights,fortuneSeed=fortune,players,maxTurns,robotScatter=scatter,rawStock=raw,
-                    equipmentMode=w.EquipmentMode.ToString(),w.RelayLogisticsEnabled,rawEnabled=w.Robots.MapleSupplyEnabled,
+                    equipmentMode=w.EquipmentMode.ToString(),w.RelayLogisticsEnabled,rawEnabled=w.Robots.MapleSupplyEnabled,initialStock=w.InitialStock,
                     version=typeof(WorldSetup).Assembly.GetName().Version?.ToString(),dllSha256=Convert.ToHexString(SHA256.HashData(assembly)),
                     characters=w.Looks.Take(w.ActiveCount).Select(l=>l.BaseId),
                     initial=w.Robots.Nodes.Select((s,n)=>new{node=n,s.Count,s.TotalCapacity,s.WarehouseLimit,keepers=s.Robots.Count(r=>r.WarehouseKeeper),rawUnits=s.MaplePackages.Sum(p=>p.Units)})});
@@ -51,6 +51,7 @@ public static class HeadlessRunner
             for(int step=0;step<maxTurns && !won;step++){
                 w.Robots.PrepareDomestic(w.Population.Turn,(a,b)=>FunctionalDeliveryRoutes.Connected(w,a,b),n=>w.Nodes.All[n].Owner,w.Campaign.RobotBattles.LockedNode);
                 if(!w.Campaign.FinishDomestic(w,automaticAll:true))throw new InvalidOperationException("Domestic phase did not finish.");
+                Write(new{kind="stratagem",turn=w.Population.Turn,decisions=w.Campaign.StratagemDecisions});
                 w.Campaign.BeginMilitary();w.Campaign.Advance(w,-1,0,automaticAll:true,allPlanned:true);won=Won();
                 if(!won){w.Industry.Roll(w.PlacementSeed^w.FortuneSeed);w.Industry.Apply(w);}
                 if(w.Population.Turn%20==0 || won)Write(new{kind="checkpoint",turn=w.Population.Turn,won,ranking=w.Relations.ProvisionalRanking(w).Select(r=>new{r.Ruler,r.Cells,r.Rank})});

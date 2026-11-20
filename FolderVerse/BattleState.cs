@@ -76,6 +76,8 @@ public sealed partial class BattleState
     public List<BattlePersuasion> Persuasions {get;}=new();
     public int GlobalTurn;
     public BattleLesson[] Lessons=new BattleLesson[WorldSetup.CastCount];
+    public bool[] AmbushEnabled=new bool[WorldSetup.CastCount];
+    public bool[] CrossfireEnabled=new bool[WorldSetup.CastCount];
     public HashSet<long> PersuadedUnits {get;}=new();
     public Point Flag=new(6,6);
     public bool FlagStanding=true,Finished;
@@ -89,10 +91,11 @@ public sealed partial class BattleState
     public static Point Forward(BattleFacing facing)=>facing switch{BattleFacing.North=>new(0,-1),BattleFacing.East=>new(1,0),BattleFacing.South=>new(0,1),_=>new(-1,0)};
     public static bool Inside(Point p)=>p.X>=0 && p.X<Size && p.Y>=0 && p.Y<Size;
     public bool Contains(Point p)=>p.X>=0 && p.X<BoardSize && p.Y>=0 && p.Y<BoardSize;
-    public bool BlocksShot(Point p)=>!Contains(p) || GateAt(p)!=null || Walls.Contains(p) && !MoatAt(p) && !(Terrain==BattleTerrain.Sea && SeaClearWater.Contains(p));
+    public bool BlocksShot(Point p)=>!Contains(p) || GateAt(p)!=null || Walls.Contains(p) && !SiteWater.Contains(p) && !MoatAt(p) && !(Terrain==BattleTerrain.Sea && SeaClearWater.Contains(p));
     public bool WallPassesShot(Point p,BattleFacing facing)
     {
         if(!Walls.Contains(p))return false;
+        if(Fortifications.Any(f=>f.Position==p && f.Kind==FortificationKind.Tree))return true;
         int code=WallShotDirections.GetValueOrDefault(p);
         if(code<0 || code>8)return false;
         return facing switch {BattleFacing.East=>code%3==1,BattleFacing.West=>code%3==2,BattleFacing.South=>code/3==1,_=>code/3==2};
@@ -173,7 +176,7 @@ public sealed partial class BattleState
         var flag=states.Where(b=>b.Kind==BattleKind.Node && !b.SplitBoard).OrderByDescending(b=>b.Turn).FirstOrDefault();
         var fortState=states.FirstOrDefault(b=>b.FortificationsBuilt);
         if(fortState!=null)InheritFortifications(fortState);
-        if(flag!=null){FlagStanding=flag.FlagStanding;LastFlagOwner=flag.LastFlagOwner;FlagDefenseTurns=flag.FlagDefenseTurns;FlagCaptureTurns=flag.FlagCaptureTurns;}
+        if(flag!=null){Flag=flag.Flag;SiteProfile=flag.SiteProfile;FlagStanding=flag.FlagStanding;LastFlagOwner=flag.LastFlagOwner;FlagDefenseTurns=flag.FlagDefenseTurns;FlagCaptureTurns=flag.FlagCaptureTurns;}
     }
     public bool Reinforce()
     {
@@ -206,7 +209,7 @@ public sealed partial class BattleState
     }
     public void BuildTerrain(BattleTerrain terrain)
     {
-        ResetFortifications();Terrain=terrain;Walls.Clear();WallShotDirections.Clear();
+        ResetFortifications();Terrain=terrain;Walls.Clear();WallShotDirections.Clear();SiteWater.Clear();SiteRocks.Clear();SiteLayoutApplied=false;
         if(terrain==BattleTerrain.Field){
             LayoutName="平地";Flag=new(BoardSize/2,BoardSize/2);
         }

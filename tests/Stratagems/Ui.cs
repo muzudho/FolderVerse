@@ -20,22 +20,22 @@ sealed class Preview:Game1{
  protected override void Update(GameTime time){}
  protected override void Draw(GameTime time){
   if(fullFlow){DrawFullFlow(time);return;}
-  if(frame==0){Set("_pointer",new Point(320,900));ui.Pointer=new(320,900);}
-  if(frame==1)Click(new(320,900));
+  if(frame==0){Set("_pointer",new Point(320,900));ui.Pointer=new(626,900);}
+  if(frame==1)Click(new(626,900));
   if(frame==2)Click(new(200,340));
   if(frame==3){Click(new(200,340));for(int step=0;step<20;step++)Call("UpdateDomesticSlide",.05f);Check((bool)Call("StratagemInput",new MouseState(),true,false,true,.01d),"panel input blocked");}
   if(frame==4){Click(new(700,780));Check(world.Campaign.Stratagems.Pending.Count==1&&!world.Campaign.PlannedOrders.Any(),"reserve remains deferred");}
   if(frame==5){Click(new(200,250));Check(world.Campaign.Stratagems.Pending.Count==0,"cancel bundle");}
-  if(frame==6){Click(new(150,900));for(int step=0;step<20;step++)Call("UpdateDomesticSlide",.05f);Check((bool)typeof(Game1).GetProperty("StratagemManualActions",F)!.GetValue(this)!,"manual button exposes existing actions");}
+  if(frame==6){Click(new(456,900));for(int step=0;step<20;step++)Call("UpdateDomesticSlide",.05f);Check((bool)typeof(Game1).GetProperty("StratagemManualActions",F)!.GetValue(this)!,"manual button exposes existing actions");}
   if(frame==7){foreach(var store in world.Robots.Nodes)typeof(RobotStore).GetMethod("Replace",F)!.Invoke(store,new object[]{Array.Empty<Robot>()});Call("RefreshStratagems");Check(((Array)Get("_stratagemMatches")).Length==0 && (bool)typeof(Game1).GetProperty("StratagemManualActions",F)!.GetValue(this)!,"no-match fallback exposes manual actions");}
   if(frame==8){var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=1280;graphics.PreferredBackBufferHeight=720;graphics.ApplyChanges();}
-  if(frame==9){world=AutoSaveStore.Read<WorldSetup>(Environment.GetEnvironmentVariable("STRATAGEM_FIXTURE")!);Set("_setup",world);net.Home(world);Call("RefreshStratagems");Click(new(320,900));Click(new(200,340));Click(new(200,340));for(int step=0;step<20;step++)Call("UpdateDomesticSlide",.05f);}
-  if(frame==10){foreach(var node in world.Nodes.All.Where(n=>n.Owner==0 && n.Id%17==0).Take(8))node.Owner=1;foreach(var node in world.Nodes.All.Where(n=>n.Owner==0))while(world.Robots.Nodes[node.Id].Count<3)world.Robots.Nodes[node.Id].Add(world.Robots.Create(0,RobotParts.Complete));Call("RefreshStratagems");Click(new(320,900));var groups=(int[])typeof(Game1).GetProperty("StratagemGroups",F)!.GetValue(this)!;Check(groups.Length>6,"two-level list contains multiple target pages");Click(new(800,725));Check((int)Get("_stratagemPage")==1,"next candidate page");}
+  if(frame==9){world=AutoSaveStore.Read<WorldSetup>(Environment.GetEnvironmentVariable("STRATAGEM_FIXTURE")!);Set("_setup",world);net.Home(world);Call("RefreshStratagems");Click(new(626,900));Click(new(200,340));Click(new(200,340));for(int step=0;step<20;step++)Call("UpdateDomesticSlide",.05f);}
+  if(frame==10){foreach(var node in world.Nodes.All.Where(n=>n.Owner==0 && n.Id%17==0).Take(8))node.Owner=1;foreach(var node in world.Nodes.All.Where(n=>n.Owner==0))while(world.Robots.Nodes[node.Id].Count<3)world.Robots.Nodes[node.Id].Add(world.Robots.Create(0,RobotParts.Complete));Call("RefreshStratagems");Click(new(626,900));var groups=(int[])typeof(Game1).GetProperty("StratagemGroups",F)!.GetValue(this)!;Check(groups.Length>6,"two-level list contains multiple target pages");Click(new(800,725));Check((int)Get("_stratagemPage")==1,"next candidate page");}
   if(frame==11){Click(new(200,340));Check((int)Get("_stratagemGroup")>=0 && (int)Get("_stratagemPage")==0,"page selection opens exact target combinations");}
   if(frame==12){var plans=world.Campaign.Stratagems;var first=plans.Find(world,0).First(m=>m.Kind==StratagemKind.WallSortie);Check(plans.Reserve(world,0,first,out _),"first UI pending bundle");var next=plans.Find(world,0).First(m=>m.Kind==first.Kind);Check(plans.Reserve(world,0,next,out _),"second UI pending bundle");long keep=plans.Pending[1].Id;Call("RefreshStratagems");Click(new(200,250));Check((bool)Get("_stratagemReservationsOpen"),"open multiple reservation list");Click(new(200,340));Check(plans.Pending.Single().Id==keep,"cancel chosen first bundle, preserve second");
    var close=(Rectangle)typeof(Game1).GetField("StratagemClose",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;Click(close.Center);
    Check((int)Get("_stratagemSelected")<0 && plans.Pending.Single().Id==keep,"close clears selection and preserves reservation");
-   Click(new(320,900));Check((int)Get("_stratagemSelected")>=0,"card reopens after close");
+   Click(new(626,900));Check((int)Get("_stratagemSelected")>=0,"card reopens after close");
    Check((bool)Call("StratagemInput",new MouseState(),false,true,true,.01d),"Escape consumed by card panel");
    Check((int)Get("_stratagemSelected")<0 && plans.Pending.Single().Id==keep,"Escape closes panel and preserves reservation");
    var pending=plans.Pending.Single();var changed=pending.Match.Troops.First(t=>t.Reservation==HangarReservation.None);
@@ -51,7 +51,7 @@ sealed class Preview:Game1{
  }
  void DrawFullFlow(GameTime time){
   time=new GameTime(TimeSpan.FromSeconds(100+frame*10),TimeSpan.FromSeconds(10));
-  if(frame==0)Click(new(320,900));
+  if(frame==0)Click(new(626,900));
   if(frame==1)Click(new(200,340));
   if(frame==2){Click(new(200,340));Call("UpdateDomesticSlide",1f);}
   if(frame==3){Click(new(700,780));Check(world.Campaign.Stratagems.Pending.Count==1 && !world.Campaign.PlannedOrders.Any(),"full load reserve remains deferred");}

@@ -68,15 +68,6 @@ public partial class Game1
             CubeNet.DrawPurposeIcon(_ui,purpose,new(area.Center.X,area.Y+31),node.Terrain==TravelTerrain.Sea,enabled || selected);
             _ui.Center(label,new(area.X,area.Bottom-24,area.Width,24),.28f,enabled?UiPainter.ContrastInk(color):Cream*.55f);
         }
-        string hint=node.Purpose switch {
-            NodePurpose.Harvest=>"採取 −10％ / 製造 ＋10％",
-            NodePurpose.Manufacturing=>"製造 −10％ / 採取 ＋10％",
-            NodePurpose.Relay=>"工場移転済み / 格納庫を使用可能 / 全施設移転のみ",
-            NodePurpose.Defense=>"未予約の完全体に守備専用予約",
-            NodePurpose.Frontline=>"未予約の完全体に迎撃予約",
-            _=>"用途計画 / 中継地点は工場だけを移転すると設定されます"
-        };
-        _ui.Center(hint,new(84,610,784,26),.34f,Cream);
     }
     private void DrawNodeOffice(){
         _ui.Box(new(54,150,850,825),new Color(27,49,62));DrawNodeTabs();
@@ -97,12 +88,32 @@ public partial class Game1
         for(int i=0;i<NodePurposes.Length;i++){
             if(!NodePurposeButton(i).Contains(_pointer))continue;
             var (purpose,label)=NodePurposes[i];
-            var reason=NodePurposeDisabledReason(node,purpose) ?? (purpose==NodePurpose.Frontline?"自国・同盟国の地点を１つ経由して、２地点先まで開戦できます。\n迎撃予約は２地点先と、その先の辺まで救援します。":null);
-            if(reason==null)break;
-            var popup=new Rectangle(Math.Clamp(NodePurposeButton(i).Center.X-190,84,488),611,380,100);
+            string[] hints={
+                "メリットもデメリットも無いよ。",
+                "原材料の採取が１０％速くなる代わりに、ロボット製造が１０％遅くなるよ。",
+                "ロボット製造が１０％速くなる代わりに、原材料の採取が１０％遅くなるよ。",
+                "格納庫が多くなるけど、工場の機能は永久に無くなるよ。工場だけ施設移転するとこれになるよ。",
+                "守りやすい戦場になるよ。",
+                "だいたい２地点先ぐらいまで進撃や迎撃、救援ができるようになるよ。",
+                "陸と海の境目はこれだよ。メリットもデメリットも無いよ。"
+            };
+            var reason=NodePurposeDisabledReason(node,purpose);
+            var lines=new System.Collections.Generic.List<string>();
+            void Wrap(string text){
+                string line="";
+                foreach(char c in text){
+                    if(c=='\n'){lines.Add(line);line="";continue;}
+                    if(_font.MeasureString(line+c).X*.38f>730){lines.Add(line);line="";}
+                    line+=c;
+                }
+                if(line.Length>0)lines.Add(line);
+            }
+            Wrap(hints[i]);
+            if(reason!=null && reason!="工場だけを移転すると中継地点になります" && reason!="港は陸と海を結ぶ地点です")Wrap(reason);
+            var popup=new Rectangle(74,611,804,Math.Max(130,64+lines.Count*30));
             DrawRulebookPaper(popup);
-            _ui.Text(label,new(popup.X+19,popup.Y+11),.37f,RulebookInk);
-            _ui.Text(reason,new(popup.X+19,popup.Y+37),.32f,RulebookInk);
+            _ui.Text(label,new(popup.X+32,popup.Y+16),.44f,RulebookInk);
+            for(int row=0;row<lines.Count;row++)_ui.Text(lines[row],new(popup.X+32,popup.Y+56+row*30),.38f,RulebookInk);
             break;
         }
     }

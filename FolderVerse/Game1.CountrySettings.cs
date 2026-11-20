@@ -66,14 +66,59 @@ public partial class Game1
     private void DrawCountrySwatch(Rectangle area,int ruler,int pattern=-1)
     {
         pattern=pattern<0?_setup.CountryPattern(ruler):pattern;
-        for(int y=0;y<10;y++)for(int x=0;x<10;x++)
+        if(pattern==3){
+            _ui.Box(area,_setup.OwnerColor(ruler));
+            var line=WorldSetup.Colors[_setup.CountrySecondaryColor(ruler)];
+            int thickness=Math.Max(1,Math.Min(area.Width,area.Height)/18);
+            for(int i=1;i<=3;i++){
+                int x=area.X+(area.Width-3*thickness)*i/4+(i-1)*thickness;
+                int y=area.Y+(area.Height-3*thickness)*i/4+(i-1)*thickness;
+                _ui.Box(new(x,area.Y,thickness,area.Height),line);
+                _ui.Box(new(area.X,y,area.Width,thickness),line);
+            }
+            int emblemSide=Math.Min(area.Width,area.Height)*3/4;
+            DrawCountryEmblem(new(area.Center.X-emblemSide/2,area.Center.Y-emblemSide/2,emblemSide,emblemSide),ruler);
+            return;
+        }
+        int grid=pattern==5?24:10;
+        for(int y=0;y<grid;y++)for(int x=0;x<grid;x++)
         {
-            int left=area.X+x*area.Width/10,top=area.Y+y*area.Height/10;
-            var color=WorldSetup.CountryPatternSecondary(pattern,x,y)?WorldSetup.Colors[_setup.CountrySecondaryColor(ruler)]:_setup.OwnerColor(ruler);
-            _ui.Box(new(left,top,area.X+(x+1)*area.Width/10-left,area.Y+(y+1)*area.Height/10-top),color);
+            int left=area.X+x*area.Width/grid,top=area.Y+y*area.Height/grid;
+            bool secondary=pattern==3?WorldSetup.CountryGridSecondary((x+.5f)*10/grid,(y+.5f)*10/grid):pattern==5?WorldSetup.CountryNestedSecondary((x+.5f)*10/grid,(y+.5f)*10/grid):WorldSetup.CountryPatternSecondary(pattern,x,y);
+            var color=secondary?WorldSetup.Colors[_setup.CountrySecondaryColor(ruler)]:_setup.OwnerColor(ruler);
+            _ui.Box(new(left,top,area.X+(x+1)*area.Width/grid-left,area.Y+(y+1)*area.Height/grid-top),color);
         }
         int side=Math.Min(area.Width,area.Height)*3/4;
         DrawCountryEmblem(new(area.Center.X-side/2,area.Center.Y-side/2,side,side),ruler);
+    }
+    private void DrawControllerFace(Rectangle box,bool human)
+    {
+        int cx=box.Center.X,cy=box.Center.Y;
+        var ink=new Color(18,36,48);
+        if(human){
+            PaperOval(new(box.X+1,box.Y+1,box.Width-2,box.Height-2),Cream);
+            // Curved smiling eyes and mouth, kept inside the square footprint.
+            foreach(int x in new[]{cx-5,cx+5}){
+                _ui.Box(new(x-2,cy-3,2,3),ink);_ui.Box(new(x,cy-5,2,2),ink);_ui.Box(new(x+2,cy-3,2,3),ink);
+            }
+            _ui.Box(new(cx-4,cy+4,8,2),ink);_ui.Box(new(cx-6,cy+2,2,2),ink);_ui.Box(new(cx+4,cy+2,2,2),ink);
+        }else{
+            _ui.Box(new(box.X+1,box.Y+3,box.Width-2,box.Height-6),new Color(142,153,199));
+            _ui.Box(new(cx-7,cy-3,5,2),ink);_ui.Box(new(cx+3,cy-3,5,2),ink);
+            _ui.Box(new(cx-4,cy+4,9,2),ink);
+            _ui.Box(new(box.X,cy-3,2,6),ink);_ui.Box(new(box.Right-2,cy-3,2,6),ink);
+        }
+    }
+    private void DrawOperationEye(Point center)
+    {
+        // Almond outline and a pupil: no additional font or image asset is needed.
+        for(int y=-6;y<=6;y++){
+            int half=11-Math.Abs(y)*3/2;
+            _ui.Box(new(center.X-half,center.Y+y,half*2+1,1),Cream);
+            if(Math.Abs(y)<5&&half>2)_ui.Box(new(center.X-half+2,center.Y+y,half*2-3,1),new Color(18,36,48));
+        }
+        PaperOval(new(center.X-4,center.Y-4,9,9),Cream);
+        _ui.Box(new(center.X-1,center.Y-2,3,5),new Color(18,36,48));
     }
     private void DrawCountrySettings()
     {
@@ -87,7 +132,8 @@ public partial class Game1
             DrawCountrySwatch(new(r.X+4,r.Y+7,36,40),i);
             string name=$"{i+1} {_setup.ConquerorNames[i]}";
             _ui.Text(name,new(r.X+46,r.Y+5),Math.Min(.36f,134/_font.MeasureString(name).X),Cream);
-            _ui.Text(_setup.IsHumanPlayer(i)?"人間":"コンピューター",new(r.X+46,r.Y+30),.29f,Cream);
+            DrawControllerFace(new(r.X+46,r.Y+29,23,23),_setup.IsHumanPlayer(i));
+            if(_setup.ShowComputerOperations(i))DrawOperationEye(new(r.Right-17,r.Y+40));
         }
         int ruler=_countrySettingsRuler;
         _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new(1110,160,120,130),false);

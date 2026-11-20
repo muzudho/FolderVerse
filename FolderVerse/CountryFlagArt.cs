@@ -31,6 +31,8 @@ public static class CountryFlagArt
         if(mark)return WorldSetup.Colors[world.CountrySecondaryColor(owner)];
         if(outline)return new(12,23,31);
         if(world.CountryPattern(owner)==1)return WorldSetup.CountryStripeSecondary((x+.5f)*10/36,(y+.5f)*10/24)?WorldSetup.Colors[world.CountrySecondaryColor(owner)]:world.OwnerColor(owner);
+        if(world.CountryPattern(owner)==3)return WorldSetup.CountryGridSecondary((x+.5f)*10/36,(y+.5f)*10/24)?WorldSetup.Colors[world.CountrySecondaryColor(owner)]:world.OwnerColor(owner);
+        if(world.CountryPattern(owner)==5)return WorldSetup.CountryNestedSecondary((x+.5f)*10/36,(y+.5f)*10/24)?WorldSetup.Colors[world.CountrySecondaryColor(owner)]:world.OwnerColor(owner);
         return world.CountryMapColor(owner,x*10/36,y*10/24);
     }
     public static void Draw(UiPainter ui,WorldSetup world,int owner,Rectangle area,float opacity=1,Func<Color,Color> tint=null)
@@ -66,7 +68,37 @@ public static class CountryFlagArt
         }
         return patches;
     }
-    public static void Marker(UiPainter ui,WorldSetup world,int owner,Vector2 foot,int width=30,Func<Color,Color> tint=null)
+    // Map flags describe faction control; unit uniforms retain their original nationality.
+    public static int GeographicBoss(WorldSetup world,int owner)=>owner<0?owner:world.Relations.Root(owner);
+    public static IEnumerable<(Rectangle Box,Color Ink)> GeographicPatches(WorldSetup world,int owner)
+    {
+        int boss=GeographicBoss(world,owner),shape=world.CountryFlagShape(boss);
+        foreach(var patch in Patches(world,boss))yield return patch;
+        if(boss==owner)yield break;
+        int start=shape==3?0:18;
+        // Half width by half height = one quarter of the rectangular flag area.
+        // Pennants use the lower hoist corner, clipped to the outer silhouette.
+        for(int y=12;y<24;y++)for(int x=start;x<start+18;x++)
+        {
+            int sx=(x-start)*2,sy=(y-12)*2;
+            if(Contains(shape,x,y)&&Contains(world.CountryFlagShape(owner),sx,sy))
+                yield return (new Rectangle(x,y,1,1),Pixel(world,owner,sx,sy));
+        }
+    }
+    public static void DrawGeographic(UiPainter ui,WorldSetup world,int owner,Rectangle area,Func<Color,Color> tint=null,float wave=0)
+    {
+        if(owner<0||owner>=world.ActiveCount)return;
+        var flag=Fit(area,world.CountryFlagShape(GeographicBoss(world,owner)));
+        var patches=GeographicPatches(world,owner);
+        if(wave!=0)patches=patches.SelectMany(p=>Enumerable.Range(p.Box.Left,p.Box.Width).Select(x=>(Box:new Rectangle(x,p.Box.Y,1,p.Box.Height),Ink:p.Ink)));
+        foreach(var (b,c) in patches){
+            int left=flag.X+b.Left*flag.Width/36,top=flag.Y+b.Top*flag.Height/24;
+            int right=flag.X+b.Right*flag.Width/36,bottom=flag.Y+b.Bottom*flag.Height/24;
+            int drift=wave==0?0:(int)MathF.Round(MathF.Sin(wave*1.7f+b.Center.X/36f*5)*b.Center.X/36f*flag.Height*.10f);
+            if(right>left&&bottom>top)ui.Box(new(left,top+drift,right-left,bottom-top),tint==null?c:tint(c));
+        }
+    }
+    public static void Marker(UiPainter ui,WorldSetup world,int owner,Vector2 foot,int width=30,Func<Color,Color> tint=null,bool geographic=false,float wave=0)
     {
         Color Ink(Color c)=>tint==null?c:tint(c);
         int height=(int)(width*.9f),x=(int)foot.X,y=(int)foot.Y;
@@ -75,6 +107,6 @@ public static class CountryFlagArt
         if(owner<0)return;
         ui.Box(new(x,y-height,2,height),Ink(new Color(229,218,185)));
         var area=new Rectangle(x+2,y-height,width,Math.Max(8,height*2/3));
-        Draw(ui,world,owner,area,1,tint);
+        if(geographic)DrawGeographic(ui,world,owner,area,tint,wave);else Draw(ui,world,owner,area,1,tint);
     }
 }

@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,11 +10,11 @@ public static class ComputerFunctionTransfers
         if(world.Campaign.Phase!=CampaignPhase.Domestic)return;
         var manual=world.ManualRulers().ToHashSet();
         var graph=world.Nodes.All.Select(n=>world.Routes.Neighbors(n).Select(r=>world.Nodes.At(r.Target,r.Entry).Id).Distinct().ToArray()).ToArray();
-        for(int owner=0;owner<world.ActiveCount;owner++){
+        foreach(int owner in WorldDayCycle.Order(world,Enumerable.Range(0,world.ActiveCount))){
             if(!world.Relations.CanAct(owner) || !automaticAll && manual.Contains(owner))continue;
             if(world.Campaign.FunctionTransfers.Orders.Any(o=>o.Owner==owner))continue;
-            bool Busy(int id)=>world.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==id || o.Target==id) ||
-                world.Robots.PartPlanning.Orders.Any(o=>o.Source==id || o.Target==id) ||
+            bool Busy(int id)=>ComputerStratagems.ProtectedSite(world,id) || world.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==id || o.Target==id) ||
+                world.Robots.PartPlanning.WorkpieceResumes.Any(o=>o.Node==id) || world.Robots.PartPlanning.Orders.Any(o=>o.Source==id || o.Target==id) ||
                 world.Robots.DirectDelivery.Orders.Any(o=>o.Source==id || o.Target==id) ||
                 world.Robots.LongDelivery.Orders.Any(o=>o.Source==id || o.Target==id || o.Node==id) ||
                 world.Robots.PendingEdits.Any(o=>o.Node==id) ||

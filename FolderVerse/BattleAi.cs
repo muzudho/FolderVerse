@@ -10,8 +10,10 @@ public static partial class BattleAi
     public static BattleFacing Face(Point delta)=>Math.Abs(delta.X)>Math.Abs(delta.Y)?delta.X>0?BattleFacing.East:BattleFacing.West:delta.Y>0?BattleFacing.South:BattleFacing.North;
     public static BattleAction Choose(BattleState battle,BattleUnit unit)
     {
+        if(BattleTactics.AmbushAction(battle,unit) is {} ambush)return ambush;
         var action=ChooseCore(battle,unit);
-        if(!unit.Retreating && unit.Role==BattleRole.Soldier && action.Weapon==BattleWeapon.None){
+        if(!unit.Retreating && unit.Role==BattleRole.Soldier && action.Weapon==BattleWeapon.None &&
+            !(BattleLessons.EnduranceGuard(battle,unit) && BattleLessons.Has(battle,unit,BattleLesson.DefenseEndurance))){
             var enemy=battle.Units.Where(u=>u.Active && !battle.Allied(u.Owner,unit.Owner)).OrderBy(u=>Distance(u.Position,unit.Position)).ThenBy(u=>u.Id).FirstOrDefault();
             if(enemy!=null){
                 var delta=unit.Position-enemy.Position;int distance=Distance(unit.Position,enemy.Position);
@@ -69,6 +71,8 @@ public static partial class BattleAi
             var exit=army.Side switch{0=>new Point(unit.Position.X,-1),1=>new Point(battle.BoardSize,unit.Position.Y),2=>new Point(unit.Position.X,battle.BoardSize),4=>battle.Flag,_=>new Point(-1,unit.Position.Y)};
             var step=Path(battle,unit,exit)??new Point(0,0);return new(step,Face(exit-unit.Position));
         }
+        if(BattleLessons.EnduranceGuard(battle,unit) && BattleLessons.Has(battle,unit,BattleLesson.DefenseEndurance))
+            return BattleLessons.EnduranceAction(battle,unit,enemies);
         if(enemy!=null && unit.Role!=BattleRole.Queen && armed)
         {
             var delta=enemy.Position-unit.Position;var facing=Face(delta);int distance=Distance(enemy.Position,unit.Position);

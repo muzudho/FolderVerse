@@ -84,6 +84,7 @@ public sealed partial class WorldPreview : IDisposable
     private void Generate(int width,int height,int depth,int seed,int polarAxis,float elevationShift,WorldSetup setup,bool opening=false,bool plane=false)
     {
         _polarAxis=polarAxis;
+        DaylightWorld=null;
         OpeningMapleLoads=0;
         // Rods can reach nine cells and slabs seven, in any axis orientation.
         if (width < 1 || width > 9)
@@ -119,7 +120,8 @@ public sealed partial class WorldPreview : IDisposable
         if(opening)AddPreviewMaples(mesh,setup,offset);
         _vertices?.Dispose();
         _vertices = new VertexBuffer(_device, VertexPositionColorNormal.VertexDeclaration, mesh.Count, BufferUsage.WriteOnly);
-        _vertices.SetData(mesh.ToArray());
+        _daySource=mesh.ToArray();_dayWorking=null;_dayPhases=null;_dayWasEnabled=false;_lastDawn=float.NaN;
+        _vertices.SetData(_daySource);
         _primitiveCount = mesh.Count / 3;
     }
 
@@ -247,6 +249,7 @@ public sealed partial class WorldPreview : IDisposable
         IEnumerable<SurfaceCell> landSelection=null,float opacity=1,Color? solidBody=null,float? cloudTime=null,
         bool deferAtmosphere=false,float cloudSpeedMultiplier=1)
     {
+        ApplyDaylight();
         _device.BlendState = opacity<1?BlendState.AlphaBlend:BlendState.Opaque;
         _effect.Alpha=opacity;
         _device.DepthStencilState = DepthStencilState.Default;

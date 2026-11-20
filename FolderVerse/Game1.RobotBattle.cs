@@ -145,6 +145,7 @@ public partial class Game1
         _ui.Button(RobotBattlePrevious,"前の戦場",Muted,.5f);_ui.Button(RobotBattleNext,"次の戦場",Muted,.5f);
         BattleInfo($"{(battle.SplitBoard?"分割野戦":battle.Kind==BattleKind.Edge?"辺戦":"節戦")} / Point {battle.TargetNode+1} / {battle.Terrain} / 戦闘ターン {frame.Turn} / {PhaseLabel(frame.Phase)}",112,.5f);
         if(frame.Relief?.Length>0)BattleInfo(string.Join(" / ",frame.Relief.Select(r=>$"救援予定 {r.Count}体 / あと{r.Remaining}戦闘ターン")),132,.35f);
+        if(battle.SiteLayoutApplied && battle.SiteProfile is {} site){BattleInfo($"地形：{site.Name} / 地点 {site.Area}ドット / 近くの水 {site.LocalWater}・山 {site.LocalMountains}",154,.34f);BattleInfo(site.Description,177,.34f);}
         const int left=40,top=40,size=100;
         var battleCanvas=CanvasBounds();var battleTransform=Matrix.CreateScale(battleCanvas.Width/1920f,battleCanvas.Height/1080f,1)*Matrix.CreateTranslation(battleCanvas.X,battleCanvas.Y,0);
         var boardTransform=Matrix.CreateTranslation(-left,-top,0)*Matrix.CreateScale(10f/battle.BoardSize)*Matrix.CreateTranslation(left,top,0)*SeaBoardTransform(battle)*battleTransform;
@@ -157,10 +158,10 @@ public partial class Game1
             var tile=new Rectangle(left+fort.Position.X*size,top+fort.Position.Y*size,size-2,size-2);
             var hit=battle.GateHits.LastOrDefault(h=>h.Turn==frame.Turn && h.Position==fort.Position);
             if(hit!=null && fortImpact>=0){var away=fort.Position-hit.From;float amount=MathF.Sin(fortImpact*MathHelper.Pi)*7;tile.Offset((int)(Math.Sign(away.X)*amount),(int)(Math.Sign(away.Y)*amount));}
-            BattleFortificationArt.Draw(_ui,tile,fort);
+            BattleFortificationArt.Draw(_ui,tile,fort,sea:battle.Terrain==BattleTerrain.Sea);
         }
         // Draw over terrain, using the same facing and turn as rifle playback.
-        foreach(var wall in battle.Walls)foreach(BattleFacing facing in Enum.GetValues<BattleFacing>())
+        foreach(var wall in battle.Walls.Where(p=>!battle.Fortifications.Any(f=>f.Position==p && f.Kind==FortificationKind.Tree)))foreach(BattleFacing facing in Enum.GetValues<BattleFacing>())
         {
             if(!battle.WallPassesShot(wall,facing))continue;
             var step=BattleState.Forward(facing);var forward=new Vector2(step.X,step.Y);
@@ -269,7 +270,7 @@ public partial class Game1
                 _ui.Box(new(r.X-5,r.Y-5,r.Width+10,3),glow);
                 _ui.Box(new(r.X-5,r.Bottom+2,r.Width+10,3),glow);
             }
-            bool salute=unit.Role==BattleRole.Captain && !unit.Fallen && frame.Phase is BattlePhase.Place or BattlePhase.Rollback && battle.Events.Any(e=>e.Turn==frame.Turn && e.Unit==unit.Id && e.Detail=="隊形成 / 剣を振り上げた");
+            bool salute=unit.Role==BattleRole.Captain && !unit.Fallen && frame.Phase is BattlePhase.Place or BattlePhase.Rollback && battle.Events.Any(e=>e.Turn==frame.Turn && e.Unit==unit.Id && (e.Detail=="隊形成 / 剣を振り上げた" || e.Detail==BattleTactics.CrossfireSignal));
             if(salute)_ui.Tile(new(r.Right+7,r.Y+3),new(4,28),-.35f,new Color(255,225,125));
             if(_robotPendingFocus<0 && !_robotPendingSummary && !unit.Fallen && !unit.Retreated && frame.Phase is BattlePhase.Receive or BattlePhase.Consume &&
                 battle.Events.Any(e=>e.Turn==frame.Turn && e.Unit==unit.Id && e.Detail=="盾で防いだ")){
@@ -366,6 +367,12 @@ public partial class Game1
         foreach(var unit in frame.Units)
             DrawBattleSupplies(unit,left+unit.Position.X*size+(size-72)/2,top+(unit.Position.Y+1)*size-12,BattlePieceOpacity);
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:battleTransform);
+        // Identity badges stay a readable screen size even on the larger sea board.
+        foreach(var queen in frame.Units.Where(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated)){
+            var anchor=new Vector2(left+queen.Position.X*size+50,top+queen.Position.Y*size+9);
+            var chip=Vector2.Transform(anchor,boardTransform*Matrix.Invert(battleTransform))+new Vector2(22,-16);
+            DrawFaceChip(chip,queen.Owner,22);
+        }
         DrawBattleNewspaper(battle,frame);
         string result=$"全 {_robotPlayback.Rounds[_robotRound].Length} 戦場で１戦闘ターンを同時進行 / 結果は最後に表示";
         var recent=battle.Events.LastOrDefault(e=>e.Turn==frame.Turn && e.Phase==frame.Phase && e.Unit!=0);
@@ -397,6 +404,7 @@ public partial class Game1
             _ui.Button(RobotResultPause,_robotPlaying?"一時停止":"再開",Muted,.5f);
         }
         _ui.Button(BattleContinue,_robotPendingFocus>=0?"戦場を切り替える":!end?"このターンを進める":"次の戦闘ターンへ",Accent,.55f);
+        DrawAmbushCard(battle,frameIndex);
     }
     private void BattleInfo(string text,int y,float scale)
         =>_ui.Text(text,new(1120,y),Math.Min(scale,720/_font.MeasureString(text).X),Cream);

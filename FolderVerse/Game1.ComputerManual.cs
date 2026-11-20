@@ -126,6 +126,8 @@ public partial class Game1
         int selected=_computerManualCharacter;
         _ui.Text($"No.{selected+1:00}  {ConquerorCatalog.Themes[selected]}",new(852,149),.68f,Cream);
         _ui.Text("世界征服ランク（A～Z）　未計測",new(852,222),.58f,Cream);
+        _ui.Text(BattleTactics.UsesAmbush(selected)?"戦術 / 待ち伏せ：使用する（条件成立時に自動）":"戦術 / 待ち伏せ：使用しない",new(852,247),.31f,Cream);
+        _ui.Text(BattleTactics.UsesCrossfire(selected)?"クロスファイア：使用する":"クロスファイア：使用しない",new(1350,247),.31f,Cream);
         var landPreference=ComputerLandPlanner.PreferenceFor(selected);
         _ui.Text($"土地征服の趣向 / {ComputerLandPlanner.Label(landPreference)}（仮）",new(852,271),.47f,Cream);
         var policy=_setup.CharacterComputerPolicy(selected);
@@ -155,7 +157,7 @@ public partial class Game1
                 new(852+variant/3*480,698+variant%3*20),.31f,Cream);
         }
         _ui.Text("全キャラクター共通の行動方針",new(852,758),.58f,Cream);
-        DrawComputerRuleCard("軍事　守備を見積もり、必要な兵力が揃えば同陣営で共同出撃。",810);
+        DrawComputerRuleCard("軍事　兵力と趣向から、城壁越しの出撃・救援・集中攻撃の計略を１つ選択。",810);
         DrawComputerRuleCard("輸送　余剰機を前線へ、満杯なら交換。製造の入荷枠不足は留保枠を守り隣接自国へ変更。",860);
         DrawComputerRuleCard("捕虜　勧誘を優先し、断られたら解放交渉や電池取り外しを選ぶ。",910);
         DrawComputerRuleCard("素材　キャラクター固有の好みは設定されていない。",960);

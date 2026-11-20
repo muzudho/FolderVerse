@@ -7,7 +7,7 @@ public partial class Game1
 {
     private bool _factionPickerOpen;
     private int _factionPickerPage;
-    private Rectangle FactionPickerButton=>new((int)(OperationMedallionCenter.X+MedallionRadius+10),(int)OperationMedallionCenter.Y-24,52,48);
+    private Rectangle FactionPickerButton=>new(276,640,44,42);
     private Rectangle FactionPickerPanel=>new(Math.Clamp(FactionPickerButton.Right+12,720,1340),190,540,560);
     private Rectangle FactionPickerRow(int row)=>new(FactionPickerPanel.X+12,FactionPickerPanel.Y+60+row*52,516,50);
     private (int Ruler,int Depth)[] FactionTree()

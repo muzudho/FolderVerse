@@ -13,7 +13,9 @@ public static partial class BattleTurnResolver
         battle.Check();var units=battle.Units.Where(u=>u.Active).OrderBy(u=>u.Id).ToArray();
         foreach(var u in units.Where(u=>battle.Army(u.Owner).Withdrawing))u.Retreating=true;
         var actions=units.ToDictionary(u=>u.Id,u=>orders!=null && orders.TryGetValue(u.Id,out var action)?action:BattleAi.Choose(battle,u));
-        if(orders==null)BattleLessons.ObservePursuit(battle,units,actions);
+        var crossfire=orders==null?BattleTactics.PlanCrossfire(battle,units,actions):Array.Empty<CrossfirePlan>();
+        if(orders==null)BattleTactics.Observe(battle,units,actions);
+        if(orders==null){BattleLessons.ObservePursuit(battle,units,actions);BattleLessons.ObserveDefenseEndurance(battle,units,actions);}
         else battle.PursuitHistory.Clear();
         foreach(var unit in units)
         {
@@ -66,6 +68,24 @@ public static partial class BattleTurnResolver
             if(soldiers.Any(a=>soldiers.Any(b=>a.Id!=b.Id && BattleAi.Distance(a.Position,b.Position)==1)))battle.Events.Add(new(battle.Turn,BattlePhase.Place,captain.Id,"隊形成 / 剣を振り上げた"));
         }
         var hits=units.ToDictionary(u=>u.Id,_=>new Hits());var willing=new HashSet<int>();
+        var crossfireShooters=new HashSet<long>();
+        foreach(var plan in crossfire){
+            var captain=units.Single(u=>u.Id==plan.Captain);
+            foreach(long id in new[]{plan.Horizontal,plan.Vertical}){
+                var shooter=units.Single(u=>u.Id==id);if(!shooter.Active||actions[id].Weapon!=BattleWeapon.Rifle)continue;
+                bool invalid=!captain.Active||captain.Retreating||!BattleTactics.SeesFocus(battle,captain.Position,plan.Focus);
+                var target=AttackTarget(battle,units,shooter,BattleWeapon.Rifle,out _);
+                bool friendly=target!=null&&battle.Allied(shooter.Owner,target.Owner);
+                if(invalid||BattleLessons.Has(battle,shooter,BattleLesson.CrossfireSafety)&&friendly){
+                    actions[id]=actions[id] with {Weapon=BattleWeapon.None};continue;
+                }
+                crossfireShooters.Add(id);
+            }
+            if(crossfireShooters.Contains(plan.Horizontal)||crossfireShooters.Contains(plan.Vertical)){
+                battle.Events.Add(new(battle.Turn,BattlePhase.Place,captain.Id,BattleTactics.CrossfireSignal));
+                battle.Events.Add(new(battle.Turn,BattlePhase.Choose,captain.Id,BattleTactics.Crossfire));
+            }
+        }
         battle.Capture(BattlePhase.Rollback);
         battle.Events.Add(new(battle.Turn,BattlePhase.Attack,0,"同時攻撃"));
         battle.Capture(BattlePhase.Attack);
@@ -87,6 +107,8 @@ public static partial class BattleTurnResolver
             }
             if(weapon==BattleWeapon.Rifle && sideDaggerExposures.Contains((attacker.Id,target.Id)))BattleLessons.Witness(battle,BattleLesson.LeaveFiringLine);
             if(battle.Allied(attacker.Owner,target.Owner))BattleLessons.Witness(battle,BattleLesson.FireDiscipline);
+            if(weapon==BattleWeapon.Rifle&&crossfireShooters.Contains(attacker.Id)&&battle.Allied(attacker.Owner,target.Owner))
+                BattleLessons.Witness(battle,BattleLesson.CrossfireSafety);
             if(weapon==BattleWeapon.Dagger && actions[attacker.Id].Step==Point.Zero && battle.Allied(attacker.Owner,target.Owner) && origin[target.Id]!=target.Position &&
                 units.Any(enemy=>!battle.Allied(attacker.Owner,enemy.Owner) && origin[enemy.Id]==origin[attacker.Id]+step && enemy.Position!=origin[enemy.Id] &&
                     (enemy.Position.X-origin[enemy.Id].X)*step.X+(enemy.Position.Y-origin[enemy.Id].Y)*step.Y==0))

@@ -15,7 +15,7 @@ public sealed partial class RobotWorld
     }
     public bool WorkQualified(Robot robot,int country)
     {
-        if(country<0 || country>=Training.Length || robot.Parts!=RobotParts.Complete || robot.NativeParts(country)==0)return false;
+        if(country<0 || country>=Training.Length || robot.IsWorkpiece || robot.Parts!=RobotParts.Complete || robot.NativeParts(country)==0)return false;
         var candidate=WithoutRole(robot).Materialize() with {Owner=country};
         return robot.FactoryWorker?Training[country].WorkerEligible(candidate):Training[country].Eligible(candidate);
     }
@@ -84,6 +84,7 @@ public sealed partial class RobotWorld
     {
         if((before.Parts&parts)!=(after.Parts&parts))return false;
         foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((parts&part)!=0 && (before.Parts&part)!=0){
+            if(before.Work(part)!=after.Work(part) || before.Material(part)!=after.Material(part))return false;
             if(before.Origin(part)!=after.Origin(part) || before.IsCheap(part)!=after.IsCheap(part) || before.IsPremium(part)!=after.IsPremium(part) || (before.DamagedParts&part)!=(after.DamagedParts&part) || before.IsDamaged(part)!=after.IsDamaged(part) || before.ConnectedParts(part)!=after.ConnectedParts(part))return false;
         }
         return true;

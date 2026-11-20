@@ -83,6 +83,12 @@ public static class AutoSaveStore
             else if(Collection(type)){var generic=type.GetGenericTypeDefinition();var add=type.GetMethod(generic==typeof(Queue<>)?"Enqueue":"Add");foreach(int id in entry.Items){if(generic==typeof(HashSet<>) && id>=0)Populate(id);add.Invoke(value,new[]{Read(id)});}}
             else foreach(var field in Fields(type)){
                 if(!entry.Fields.TryGetValue(field.Name,out int id)){
+                    if(type==typeof(RobotPartPlanning) && field.Name=="<WorkpieceResumes>k__BackingField"){field.SetValue(value,new List<WorkpieceResumeOrder>());continue;}
+                    if(type==typeof(PlannedPartMove) && field.Name=="<CombineWorkpieces>k__BackingField")continue;
+                    if(type==typeof(Robot) && new[]{"<HeadWork>k__BackingField","<BodyWork>k__BackingField","<LegsWork>k__BackingField"}.Contains(field.Name))continue;
+                    if(type==typeof(RobotWorkshop) && new[]{"_activeWorkpiece","_interruptedWorkpieces","_workpieceOwner"}.Contains(field.Name))continue;
+                    if(type==typeof(RobotWorkshop) && new[]{"_rawConsumed","<CompletedBatches>k__BackingField","<StartAfterWorker>k__BackingField","<StartAfterBatch>k__BackingField"}.Contains(field.Name))continue;
+                    if(type==typeof(WorkerLaneSettings) && new[]{"<StartAfterWorker>k__BackingField","<StartAfterBatch>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(ConquestCampaign) && field.Name is "_sectorBaseline" or "_sectorBaselineTurn")continue;
                     if(field.FieldType==typeof(RawMaterial) || type==typeof(RobotWorld) && field.Name=="_rawDeposits")continue;
                     if(field.FieldType==typeof(RobotEquipmentMode) || field.FieldType==typeof(RobotMaterial) ||
@@ -202,8 +208,15 @@ public static class AutoSaveStore
                     if(type==typeof(BattleState) && field.Name=="<Fortifications>k__BackingField"){field.SetValue(value,new List<BattleFortification>());continue;}
                     if(type==typeof(BattleState) && field.Name=="<GateHits>k__BackingField"){field.SetValue(value,new List<BattleGateHit>());continue;}
                     if(type==typeof(BattleState) && (field.Name=="FortificationsBuilt" || field.Name=="InitialDefenseCount"))continue;
+                    if(type==typeof(BattleFortification) && field.Name=="<OverWater>k__BackingField")continue;
                     if(type==typeof(BattleFrame) && field.Name=="<Fortifications>k__BackingField"){field.SetValue(value,Array.Empty<BattleFortification>());continue;}
                     if(type==typeof(BattleUnit) && field.Name=="ArrivalTurn")continue;
+                    if(type==typeof(BattleState) && field.Name=="AmbushEnabled"){field.SetValue(value,new bool[WorldSetup.CastCount]);continue;}
+                    if(type==typeof(BattleState) && field.Name=="CrossfireEnabled"){field.SetValue(value,new bool[WorldSetup.CastCount]);continue;}
+                    if(type==typeof(BattleState) && (field.Name=="SiteProfile"||field.Name=="SiteLayoutApplied"))continue;
+                    if(type==typeof(BattleState) && (field.Name=="SiteWater"||field.Name=="SiteRocks")){field.SetValue(value,new HashSet<Point>());continue;}
+                    if(type==typeof(StratagemReservation) && field.Name=="<Computer>k__BackingField")continue;
+                    if(type==typeof(ConquestCampaign) && field.Name=="<StratagemDecisions>k__BackingField"){field.SetValue(value,new List<ComputerStratagemDecision>());continue;}
                     if(type==typeof(BattleFrame) && field.Name=="<Relief>k__BackingField")continue;
                     if(type==typeof(RobotEncounter) && field.Name=="DefenseCount")continue;
                     throw new InvalidDataException("Autosave field is missing: "+field.Name);

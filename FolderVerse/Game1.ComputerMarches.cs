@@ -27,7 +27,7 @@ public partial class Game1
     private bool ShowComputerMarches(IReadOnlyList<March> orders)
     {
         if(_demoActive)return false;
-        var visible=orders.Where(order=>ShowsComputerTurn(order.Ruler)).OrderBy(order=>order.Ruler).ToArray();
+        var visible=orders.Where(order=>ShowsComputerTurn(order.Ruler)).OrderBy(order=>WorldDayCycle.DawnPhase(_setup,order.Ruler)).ThenBy(order=>order.Ruler).ToArray();
         if(visible.Length==0)return false;
         _computerMarches=orders;
         _visibleComputerMarches=visible;

@@ -50,7 +50,7 @@ public partial class Game1
         }
         var article=_turnPapers[_turnPaperIndex];
         _ui.Text("新聞フェーズ / 朝刊",new(80,40),.8f,Cream);
-        _ui.Text($"全体ターン {_setup.Population.Turn} / {_turnPaperIndex+1} 紙目・全 {_turnPapers.Length} 紙",new(990,58),.45f,Cream);
+        _ui.Text($"{TurnNewspaper.DayLabel(_setup.Population.Turn)} / {_turnPaperIndex+1} 紙目・全 {_turnPapers.Length} 紙",new(990,58),.45f,Cream);
         DrawToyPost(article.Country,_paperAge);
         // A toy cup and saucer stay outside the readable paper.
         PaperOval(new(1625,212,185,56),new Color(42,31,25)*.4f);
@@ -70,16 +70,24 @@ public partial class Game1
         if(t>=.99f){
             DrawNationalNewspaperMasthead(new(475,174,960,100),article.Country+1);
             _ui.Box(new(350,285,1210,4),ink);
-            NewsLine($"第{article.Country+1}国 / {_setup.ConquerorNames[article.Country]}国の視点 / {article.Kind}",350,305,1200,.44f,ink);
+            NewsLine($"{TurnNewspaper.DayLabel(_setup.Population.Turn)} 朝刊 / 第{article.Country+1}国 / {_setup.ConquerorNames[article.Country]}国の視点 / {article.Kind}",350,305,1200,.44f,ink);
             NewsLine(article.Headline,350,370,1190,.85f,ink);
             for(int i=0;i<article.Lines.Length;i++)NewsLine(article.Lines[i],350,465+i*60,1190,.46f,ink);
             _ui.Box(new(350,735,1190,2),ink*.35f);
-            if(article.Gained+article.Lost>0){
+            if(article.Commentary?.Length>0){
+                NewsLine("講評 / Commentary",370,752,1160,.45f,ink);
+                for(int i=0;i<Math.Min(3,article.Commentary.Length);i++)NewsLine(article.Commentary[i],370,791+i*31,1160,.38f,ink);
+            }else if(article.Gained+article.Lost>0){
                 _ui.Box(new(380,785,Math.Min(430,article.Gained*28),24),new Color(72,145,111));
                 _ui.Box(new(980,785,Math.Min(430,article.Lost*28),24),new Color(184,82,69));
                 NewsLine($"獲得 {article.Gained} {article.Unit}",380,825,450,.48f,ink);NewsLine($"喪失 {article.Lost} {article.Unit}",980,825,450,.48f,ink);
             }else NewsLine("結果は記録、予定は変更あり、予想は『もしこうなら』。",370,790,1160,.44f,ink);
         }else _ui.Text("朝の配達 / クリックで新聞を広げる",new(580,820),.55f,Cream);
+        // The reader stays fixed while the displayed newspaper's country changes.
+        int reader=_paperReadCountry>=0&&_paperReadCountry<_setup.ActiveCount?_paperReadCountry:_setup.PlayerSlot;
+        DrawRulerMedallion(reader,new Vector2(1755,580));
+        _ui.Center("新聞を読んでいる人",new(1605,750,300,30),.42f,Cream);
+        _ui.Center($"#{reader+1} / 内政のターン",new(1605,788,300,30),.4f,Cream);
         _ui.Button(PaperPrevious,"前の新聞",Muted,.5f);_ui.Button(PaperNext,"次の新聞",Accent,.5f);
         _ui.Button(PaperDone,_diplomacyPending?"新聞を置いて外交へ":"新聞を置いて内政へ",Accent,.46f);
         DrawPhaseTimer(new(120,1020,1680,10),_paperIdle,PaperIdleSeconds);

@@ -103,7 +103,7 @@ public partial class Game1
         DrawBattleTerrain(battle,bounds,opacity);
         foreach(var fort in battle.Fortifications)
             if(fort.Kind!=FortificationKind.Gate || fort.Health>0)
-                BattleFortificationArt.Draw(_ui,BattleTerrainTile(bounds,battle.BoardSize,fort.Position),fort,opacity);
+                BattleFortificationArt.Draw(_ui,BattleTerrainTile(bounds,battle.BoardSize,fort.Position),fort,opacity,battle.Terrain==BattleTerrain.Sea);
     }
 
     private static Rectangle BattleTerrainTile(Rectangle bounds,int size,Point p)
@@ -121,6 +121,10 @@ public partial class Game1
         float elevation=_setup.Terrain.Elevation(_setup.Routes.Position(node.Cell,node.Center));
         float latitude=_setup.Geographic(cell.Normal).Y;
         var ground=Math.Abs(latitude)>.5f?new Color(161,192,203):elevation<.55f?new Color(163,137,91):new Color(35,64,58);
+        if(!WorldTerrain.EarthPalette)
+            ground=Color.Lerp(Color.Black,WorldTerrain.MapColorAt(elevation,cell.Normal,_setup.PolarAxis,_setup.WorldSeed),.55f);
+        var water=WorldTerrain.EarthPalette?new Color(28,88,125):
+            Color.Lerp(Color.Black,WorldTerrain.MapColorAt(.46f,cell.Normal,_setup.PolarAxis,_setup.WorldSeed),.7f);
         for(int y=0;y<battle.BoardSize;y++)for(int x=0;x<battle.BoardSize;x++)
         {
             var p=new Point(x,y);
@@ -128,16 +132,17 @@ public partial class Game1
             bool wall=battle.Walls.Contains(p) && !battle.Fortifications.Any(f=>f.Position==p);
             if(battle.Terrain!=BattleTerrain.Sea)
             {
+                if(battle.SiteWater.Contains(p)){_ui.Box(tile,water*opacity);_ui.Box(new(tile.X+tile.Width/5,tile.Center.Y,tile.Width*3/5,Math.Max(1,tile.Height/30)),Color.LightBlue*.4f*opacity);continue;}
                 _ui.Box(tile,ground*opacity);
-                if(wall)BattleObstacleArt.Draw(_ui,tile,battle.Terrain==BattleTerrain.Mountain
+                if(wall)BattleObstacleArt.Draw(_ui,tile,battle.SiteRocks.Contains(p)||battle.Terrain==BattleTerrain.Mountain
                     ?BattleObstacleStyle.Rock:BattleObstacleArt.Style(false,false,elevation,latitude),opacity);
                 continue;
             }
-            _ui.Box(tile,new Color(28,88,125)*opacity);
+            _ui.Box(tile,water*opacity);
             if(wall)
             {
                 if(!battle.SeaClearWater.Contains(p))
-                    BattleObstacleArt.Draw(_ui,tile,BattleObstacleArt.Style(true,false,elevation,latitude),opacity);
+                    BattleObstacleArt.Draw(_ui,tile,battle.SiteRocks.Contains(p)?BattleObstacleStyle.Rock:BattleObstacleArt.Style(true,false,elevation,latitude),opacity);
                 continue;
             }
             bool bridge=battle.SeaLogs.Contains(p);

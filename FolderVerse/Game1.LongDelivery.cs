@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 public partial class Game1
 {
-    private bool _longDeliveryMode,_longChoosingSource,_longOrdersOpen;
+    private bool _longDeliveryMode,_longChoosingSource,_longOrdersOpen,_longOrderHistory;
     private int _longSource=-1,_longTarget=-1,_longOrderPage;
     private readonly List<(Rectangle Bounds,int Node)> _longMarkers=new();
     private readonly HashSet<int> _longSourceCandidates=new();
@@ -16,9 +16,12 @@ public partial class Game1
     private static Rectangle LongPageButton(int side,int direction)=>new(220+side*1320+(direction<0?0:222),242,120,32);
     private static Rectangle LongOrderButton(int index)=>new(610,270+index*65,700,58);
     private static Rectangle LongOrderPageButton(int direction)=>new(direction<0?610:1160,840,150,42);
+    private static Rectangle LongOrderTab(bool history)=>new(history?970:610,224,340,34);
     private LongPartOrder[] AllLongOrders=>_setup.Robots.LongDelivery.Orders.Where(o=>o.Commander==_setup.PlayerSlot).ToArray();
-    private LongPartOrder[] VisibleLongOrders{get{_longOrderPage=Math.Clamp(_longOrderPage,0,Math.Max(0,(AllLongOrders.Length-1)/8));return AllLongOrders.Skip(_longOrderPage*8).Take(8).ToArray();}}
-    private void OpenLongDeliveryMap(){OpenDirectMap();if(!_directMap)return;_longDeliveryMode=true;_longSource=_longTarget=-1;_longChoosingSource=_longOrdersOpen=false;_longOrderPage=0;}
+    private LongPartOrder[] LongOrderResults=>_setup.Robots.LongDelivery.Results.Where(o=>o.Commander==_setup.PlayerSlot).Reverse().ToArray();
+    private LongPartOrder[] DisplayedLongOrders=>_longOrderHistory?LongOrderResults:AllLongOrders;
+    private LongPartOrder[] VisibleLongOrders{get{_longOrderPage=Math.Clamp(_longOrderPage,0,Math.Max(0,(DisplayedLongOrders.Length-1)/8));return DisplayedLongOrders.Skip(_longOrderPage*8).Take(8).ToArray();}}
+    private void OpenLongDeliveryMap(){OpenDirectMap();if(!_directMap)return;_longDeliveryMode=true;_longSource=_longTarget=-1;_longChoosingSource=_longOrdersOpen=_longOrderHistory=false;_longOrderPage=0;}
     private bool LongDestination(int node)=>DirectNodeAllowed(node) && !_setup.Campaign.RobotBattles.LockedNode(node) && (_longTarget<0 || _longSourceCandidates.Contains(node));
     private void FindLongSources(int target)
     {
@@ -89,8 +92,12 @@ public partial class Game1
         if(escape || click && (DirectPairBack.Contains(_pointer) || LongCancelButton(1).Contains(_pointer) || !_longChoosingSource && LongCancelButton(0).Contains(_pointer))){LongBack();return;}
         if(click && LongOrdersToggle.Contains(_pointer)){_longOrdersOpen=!_longOrdersOpen;_directDrag=null;return;}
         if(_longOrdersOpen){
-            if(!click)return;foreach(int direction in new[]{-1,1})if(LongOrderPageButton(direction).Contains(_pointer)){_longOrderPage=Math.Clamp(_longOrderPage+direction,0,Math.Max(0,(AllLongOrders.Length-1)/8));return;}
-            var orders=VisibleLongOrders;for(int i=0;i<orders.Length;i++)if(LongOrderButton(i).Contains(_pointer)){_setup.Robots.LongDelivery.Cancel(_setup.Robots,orders[i].Number);_directMessage="長距離便を取り消しました / 荷物は現在地点に残ります";return;}return;
+            if(!click)return;
+            foreach(bool history in new[]{false,true})if(LongOrderTab(history).Contains(_pointer)){_longOrderHistory=history;_longOrderPage=0;return;}
+            foreach(int direction in new[]{-1,1})if(LongOrderPageButton(direction).Contains(_pointer)){_longOrderPage=Math.Clamp(_longOrderPage+direction,0,Math.Max(0,(DisplayedLongOrders.Length-1)/8));return;}
+            var orders=VisibleLongOrders;for(int i=0;i<orders.Length;i++)if(LongOrderButton(i).Contains(_pointer)){
+                if(_longOrderHistory){_directMessage=orders[i].Status;return;}
+                _setup.Robots.LongDelivery.Cancel(_setup.Robots,orders[i].Number);_directMessage="長距離便を取り消しました / 荷物は現在地点に残ります";return;}return;
         }
         if(click && LongPageClick(_pointer))return;
         if(_longChoosingSource){
@@ -148,13 +155,25 @@ public partial class Game1
         SyncLongSlots();_deliveryTagHint="";_ui.Box(new(0,0,1920,1080),new Color(14,29,40));DrawDirectPairMap();
         _ui.Text("ロボットパーツ長距離便",new(36,26),.85f,Cream);_ui.Button(DirectPairBack,"×",Muted,.55f);_ui.Center(_directMessage,new(40,76,1840,32),.4f,Cream);
         if(!_longChoosingSource)DrawLongPane(0);DrawLongPane(1);
-        if(_longOrdersOpen){_ui.Box(new(600,220,720,670),new Color(20,42,54));var orders=VisibleLongOrders;
-            for(int i=0;i<orders.Length;i++){var order=orders[i];var r=LongOrderButton(i);_ui.Box(r,Muted);_ui.Text($"#{order.Number} 地点{order.Source+1} → {order.Target+1} / 現在 {order.Node+1}",new(r.X+12,r.Y+5),.32f,Cream);_ui.Text(order.Status,new(r.X+12,r.Y+32),.29f,Cream);}
-            _ui.Center("予約をクリックして取消 / 荷物は現在地点に残ります",new(610,224,700,34),.3f,Cream);_ui.Button(LongOrderPageButton(-1),"前",Muted,.4f);_ui.Button(LongOrderPageButton(1),"次",Muted,.4f);
-        }
-        _ui.Button(LongOrdersToggle,$"配送予約 {AllLongOrders.Length}件 / {(_longOrdersOpen?"地図に戻る":"一覧と取消")}",Muted,.4f);
+        if(_longOrdersOpen)DrawLongOrderList();
+        _ui.Button(LongOrdersToggle,$"配送 {AllLongOrders.Length}件 / 完了・解除 {LongOrderResults.Length}件 / {(_longOrdersOpen?"地図に戻る":"一覧")}",Muted,.4f);
         if(_directDrag.HasValue){var drag=_directDrag.Value;var robot=_setup.Robots.Nodes[_directNodes[0]].Robots.FirstOrDefault(r=>r.Id==drag.Robot);if(robot!=null)DrawHangarRobot(new(_pointer.X-34,_pointer.Y-51,68,102),robot.Slice(drag.Part),opacity:.8f);}
         else DrawDeliveryTagHint(new(20,146,1880,820));
         _ui.Center("１全体ターンに１地点 / 満杯なら待機 / 経路が切れたら荷物を残して解除",new(40,1012,1840,40),.37f,Cream);
+    }
+    private void DrawLongOrderList()
+    {
+        _ui.Box(new(600,220,720,670),new Color(20,42,54));var orders=VisibleLongOrders;
+        _ui.Button(LongOrderTab(false),$"進行中 {AllLongOrders.Length}件",_longOrderHistory?Muted:Accent,.4f);
+        _ui.Button(LongOrderTab(true),$"完了・解除 {LongOrderResults.Length}件",_longOrderHistory?Accent:Muted,.4f);
+        for(int i=0;i<orders.Length;i++){
+            var order=orders[i];var r=LongOrderButton(i);_ui.Box(r,Muted);
+            _ui.Text($"#{order.Number} 地点{order.Source+1} → {order.Target+1} / 現在 {order.Node+1} / 荷物ID {order.CargoId}",new(r.X+12,r.Y+5),.29f,Cream);
+            _ui.Text(order.Status,new(r.X+12,r.Y+32),.29f,Cream);
+        }
+        if(orders.Length==0)_ui.Center(_longOrderHistory?"完了・解除した配送はありません":"進行中の配送はありません",new(610,390,700,50),.4f,Cream);
+        _ui.Center(_longOrderHistory?"完了・解除の記録 / クリックしても予約は変更しません":"予約をクリックして取消 / 荷物は現在地点に残ります",new(610,795,700,34),.3f,Cream);
+        _ui.Button(LongOrderPageButton(-1),"前",Muted,.4f);_ui.Button(LongOrderPageButton(1),"次",Muted,.4f);
+        _ui.Center($"{_longOrderPage+1} / {Math.Max(1,(DisplayedLongOrders.Length+7)/8)}",new(780,840,360,42),.4f,Cream);
     }
 }

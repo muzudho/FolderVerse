@@ -29,4 +29,15 @@ public sealed partial class CubeNet
 
     private static void DrawPurposeBuilding(UiPainter ui,NodePurpose purpose,bool sea,Func<float,float,float,Vector2> point,Func<Color,Color> tint,int grade=0)
         =>DrawDevelopedFacility(ui,purpose,sea,grade,point,tint);
-}
+    private void DrawFactorySmoke(UiPainter ui,Node node,int grade,float time,Func<float,float,float,Vector2> project,Func<Color,Color> tint)
+    {
+        if(!ShowSmoke||node.Purpose!=NodePurpose.Manufacturing||!node.Functional)return;
+        float width=1.45f+grade*.23f;
+        for(int i=0;i<4;i++){
+            float age=((time*.35f+i*.25f+node.Id*.07f)%1+1)%1;
+            var at=project(width/2-.16f+age*.22f,-.32f,1.10f+age*.65f);
+            var side=project(width/2-.16f+age*.22f+.10f+age*.08f,-.32f,1.10f+age*.65f);
+            float radius=Math.Max(1,Vector2.Distance(at,side));
+            Disc(ui,at,radius,tint(new Color(205,216,220))*(.48f*(1-age)));
+        }
+    }}

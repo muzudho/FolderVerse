@@ -14,6 +14,7 @@ public sealed partial class ConquestCampaign
     public NodeFunctionTransfers FunctionTransfers {get;}=new();
     public TradePlan Trade {get;}=new();
     public StratagemPlans Stratagems {get;}=new();
+    public List<ComputerStratagemDecision> StratagemDecisions {get;}=new();
     public ComputerAttackMemory AttackMemory {get;}=new();
     public List<SubordinateDomesticResult> SubordinateResults {get;}=new();
     private readonly HashSet<int> _domesticSubmitted=new();
@@ -33,6 +34,7 @@ public sealed partial class ConquestCampaign
         if(party.Length>0)world.SelectTurnRuler(party[0]);
         ComputerIntakePlanning.Plan(world,automaticAll);
         ComputerNodePurposes.Plan(world,automaticAll);
+        ComputerStratagems.Plan(world,automaticAll);
         ComputerLogistics.Plan(world,automaticAll);
         ComputerFunctionTransfers.Plan(world,automaticAll);
         ComputerTrade.Plan(world,automaticAll);
@@ -123,7 +125,7 @@ public sealed partial class ConquestCampaign
         // Switching control does not cancel an already chosen march.
         for(int i=_plannedOrders.Count-1;i>=0;i--)if(world.ControllerOf(_plannedOrders[i].Ruler)<0){_partyOrders.Add(_plannedOrders[i]);_plannedOrders.RemoveAt(i);}
     }
-    public void Reset(){_sectorBaseline=null;SubordinateResults.Clear();Stratagems.Pending.Clear();LastCancelledWars.Clear();Phase=CampaignPhase.Domestic;AttackMemory.Reset();Trade.Offers.Clear();Trade.Replies.Clear();FunctionTransfers.Orders.Clear();FunctionTransfers.LastResults.Clear();_domesticSubmitted.Clear();PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
+    public void Reset(){_sectorBaseline=null;SubordinateResults.Clear();Stratagems.Pending.Clear();StratagemDecisions.Clear();LastCancelledWars.Clear();Phase=CampaignPhase.Domestic;AttackMemory.Reset();Trade.Offers.Clear();Trade.Replies.Clear();FunctionTransfers.Orders.Clear();FunctionTransfers.LastResults.Clear();_domesticSubmitted.Clear();PreviousNodeOwners=Array.Empty<int>();Report="";Battles.Clear();_partyOrders.Clear();_plannedOrders.Clear();_submitted.Clear();RobotBattles.Reset();}
     public void Advance(WorldSetup world,int targetNode,long fighters,bool enemies=true,bool automaticAll=false,
         Func<IReadOnlyList<March>,bool> deferResolution=null,bool allPlanned=false)
     {
@@ -157,7 +159,7 @@ public sealed partial class ConquestCampaign
             var random=new SeedRandom(world.PlacementSeed^world.Population.Turn^0x57421);
             submittedOrders=orders.ToArray();
             if(UseRobotCombat)ComputerJointAttacks.Plan(world,orders,automaticAll);
-            else for(int ruler=0;ruler<world.ActiveCount;ruler++)
+            else foreach(int ruler in WorldDayCycle.Order(world,Enumerable.Range(0,world.ActiveCount)))
             {
                 if(!automaticAll && world.ManualRulers().Contains(ruler) || !world.Relations.CanAct(ruler))continue;
                 if(UseRobotCombat)BattleLessons.ReserveHomeGuards(world,ruler);
@@ -209,6 +211,7 @@ public sealed partial class ConquestCampaign
             RobotBattles.Advance(world,orders);
             NodeFunctionTransfers.RelocateStrandedConquerors(world);
             AttackMemory.Observe(world,orders);
+            var morningPlayers=world.TurnPlayers();if(morningPlayers.Length>0)world.SelectTurnRuler(morningPlayers[0]);
             Phase=CampaignPhase.Domestic;
             Report=$"ロボット輸送 {world.Robots.Transport.LastTransfers.Count} / 観戦 {RobotBattles.Scenes.Count} / 継戦 {RobotBattles.Encounters.Count(e=>!e.Finished)}";
             return;
@@ -289,6 +292,7 @@ public sealed partial class ConquestCampaign
             world.TerritoryCounts[world.PlayerSlot]==0?"あなたは放浪者":world.Nodes.Current(world.PlayerSlot)?.Owner==world.PlayerSlot?"あなたの現在地は自国地点":"あなたの現在地は他国地点":"あなたは待機";
         int cellsWon=world.Cells.Count(c=>world.Nodes.FullOwner(c.Id)>=0 && world.Nodes.FullOwner(c.Id)!=previousFull[c.Id]);
         Report=$"{result} / 戦闘 {Battles.Count} 件 / 地点確保 {conquests} / 区画征服 {cellsWon}";
+        var nextMorning=world.TurnPlayers();if(nextMorning.Length>0)world.SelectTurnRuler(nextMorning[0]);
         Phase=CampaignPhase.Domestic;
     }
 }

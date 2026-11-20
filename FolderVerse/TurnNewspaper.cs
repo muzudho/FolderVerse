@@ -3,11 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public sealed record TurnNewsArticle(int Country,string Kind,string Headline,string[] Lines,int Gained=0,int Lost=0,string Unit="地点");
+public sealed record TurnNewsArticle(int Country,string Kind,string Headline,string[] Lines,int Gained=0,int Lost=0,string Unit="地点",string[] Commentary=null);
 
 // A newspaper reports observations; a conditional outlook never predicts a certain winner.
 public static class TurnNewspaper
 {
+    // This world's calendar has neither years nor months. Keep the full turn internally.
+    public static string DayLabel(int turn)=>$"{(Math.Max(0,turn)%100+1)%100:00}日";
     public static TurnNewsArticle[] Build(WorldSetup w,int reader)
     {
         var articles=new List<TurnNewsArticle>();
@@ -60,7 +62,7 @@ public static class TurnNewspaper
         int Priority(TurnNewsArticle a)=>a.Kind=="今日の外交予定"?100:
             a.Headline.Contains("連絡網")?90:a.Kind=="昨日の戦闘結果"?80:
             a.Unit=="地域"?75:a.Kind=="昨日の出来事"?70:10;
-        return articles.GroupBy(a=>a.Country).Select(g=>g.OrderByDescending(Priority).First()).ToArray();
+        return articles.GroupBy(a=>a.Country).Select(g=>g.OrderByDescending(Priority).First() with {Commentary=NewspaperCommentary.Build(w,g.Key,reader)}).ToArray();
     }
     public static int Connections(WorldSetup w,int country,int[] owners)
     {

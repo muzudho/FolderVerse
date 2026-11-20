@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -146,7 +146,7 @@ public partial class Game1
                     if(accepted){
                         var reserved=PlanningStock.Nodes[HangarPlanningNode].Robots.Single(r=>r.Id==robot.Id);
                         _workReservationEffects.Remove(robot.Id);
-                        if(_hangarReservation==HangarReservation.Defense && reserved.DefenseOnly){BeginDefenseReservationEffect(reserved);_hangarMessage="国旗で守備専用予約 / 靴を履いて仕事中";}
+                        if(_hangarReservation==HangarReservation.Defense && reserved.DefenseOnly){BeginDefenseReservationEffect(reserved);_hangarMessage="守備専用予約を設定しました";}
                         else{
                             _defenseReservationEffects.Remove(robot.Id);
                             if(reserved.InterceptOnly || reserved.FactoryWorker)BeginWorkReservationEffect(reserved,reserved.Owner);
@@ -161,7 +161,7 @@ public partial class Game1
                 }
                 if(!CanOpenHangar || _setup.Campaign.RobotBattles.LockedNode(_populationNode))continue;
                 for(int row=0;row<3;row++)if(AssemblyPartBounds(slot,row).Contains(_pointer) && (robot.Parts&HangarPart(row))!=0 && CanMoveHangarPart(robot,HangarPart(row)))
-                {_hangarDrag=robot.Id;_hangarPart=robot.ConnectedParts(HangarPart(row));_hangarSource=slot;_hangarGrabOffset=_pointer-AssemblyRobotBounds(slot).Location;_hangarMessage=robot.IntegratedParts!=0?"一体型は結合したまま移動します":"同じパーツがある区画へドロップすると交換";return;}
+                {_hangarDrag=robot.Id;_hangarPart=robot.ConnectedParts(HangarPart(row));_hangarSource=slot;_hangarGrabOffset=_pointer-AssemblyRobotBounds(slot).Location;_hangarMessage=robot.IsWorkpiece?"仕掛品：通常は部位交換 / Shift＋同じ部位へドロップで加工をまとめる":robot.IntegratedParts!=0?"一体型は結合したまま移動します":"同じパーツがある区画へドロップすると交換";return;}
             }
         }
         if(!_hangarDrag.HasValue || mouse.LeftButton!=ButtonState.Released || _previousMouse.LeftButton!=ButtonState.Pressed)return;
@@ -186,7 +186,8 @@ public partial class Game1
                 SyncHangarSlots();
                 return;
             }
-            long id=_setup.Robots.PartPlanning.Reserve(_setup,_populationNode,_populationNode,source,_hangarPart,_hangarSlots[destination],_setup.PlayerSlot);
+            bool combine=Keyboard.GetState().IsKeyDown(Keys.LeftShift) || Keyboard.GetState().IsKeyDown(Keys.RightShift);
+            long id=_setup.Robots.PartPlanning.Reserve(_setup,_populationNode,_populationNode,source,_hangarPart,_hangarSlots[destination],_setup.PlayerSlot,combineWorkpieces:combine && robot.IsWorkpiece && target?.IsWorkpiece==true);
             if(destination!=_hangarSource && (id==source || !store.Robots.Any(r=>r.Id==source)))_hangarSlots[_hangarSource]=null;
             _hangarSlots[destination]=id;_hangarMessage="組替を予約しました / 表示は入荷・組替後の予定";
         }
