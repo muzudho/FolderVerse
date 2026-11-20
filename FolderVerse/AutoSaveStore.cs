@@ -207,6 +207,8 @@ public static class AutoSaveStore
                     if(type==typeof(BattleUnit) && field.Name=="ArrivalTurn")continue;
                     if(type==typeof(BattleState) && field.Name=="AmbushEnabled"){field.SetValue(value,new bool[WorldSetup.CastCount]);continue;}
                     if(type==typeof(BattleState) && field.Name=="CrossfireEnabled"){field.SetValue(value,new bool[WorldSetup.CastCount]);continue;}
+                    if(type==typeof(BattleState) && (field.Name=="SiteProfile"||field.Name=="SiteLayoutApplied"))continue;
+                    if(type==typeof(BattleState) && (field.Name=="SiteWater"||field.Name=="SiteRocks")){field.SetValue(value,new HashSet<Point>());continue;}
                     if(type==typeof(BattleFrame) && field.Name=="<Relief>k__BackingField")continue;
                     if(type==typeof(RobotEncounter) && field.Name=="DefenseCount")continue;
                     throw new InvalidDataException("Autosave field is missing: "+field.Name);

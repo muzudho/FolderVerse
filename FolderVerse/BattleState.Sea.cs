@@ -9,7 +9,7 @@ public sealed partial class BattleState
     public HashSet<Point> SeaClearWater {get;}=new();
     public void BuildSeaLayout(int pattern,int rotation=0)
     {
-        ResetFortifications();Terrain=BattleTerrain.Sea;Walls.Clear();WallShotDirections.Clear();SeaLogs.Clear();SeaClearWater.Clear();
+        ResetFortifications();Terrain=BattleTerrain.Sea;Walls.Clear();WallShotDirections.Clear();SeaLogs.Clear();SeaClearWater.Clear();SiteWater.Clear();SiteRocks.Clear();SiteLayoutApplied=false;
         if(BoardSize==Size){
             EntrySides=new[]{0,1,2,3};Flag=new(6,6);
             for(int y=0;y<Size;y++)for(int x=0;x<Size;x++){Walls.Add(new(x,y));SeaClearWater.Add(new(x,y));}

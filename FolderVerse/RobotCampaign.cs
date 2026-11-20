@@ -268,7 +268,7 @@ public sealed partial class RobotCampaign
             if(sizes.Count>1){state.SplitBoard=true;state.Kind=BattleKind.Edge;state.Defender=-1;state.BuildTerrain(world.Nodes.All[target].Terrain==TravelTerrain.Sea?BattleTerrain.Sea:BattleTerrain.Field);}
             foreach(var a in sorted.Skip(offset).Take(size))
                 state.AddArmy(a.Owner,a.Home,a.Robots,a.Queen,SeaApproach(world,e,approaches?.GetValueOrDefault(a.Owner,a.Home)??a.Home));
-            state.ChooseLayout();state.Deploy();state.BuildSiteFortifications(e.DefenseCount);e.Battles.Add(state);offset+=size;
+            state.ChooseLayout();state.PrepareSiteFlag();state.Deploy();state.BuildSiteFortifications(e.DefenseCount);state.ApplySiteLayout();e.Battles.Add(state);offset+=size;
         }
         return e;
     }
@@ -322,6 +322,7 @@ public sealed partial class RobotCampaign
             else if(world.TerrainArea(target.Cell,TravelTerrain.Land)<100)terrain=BattleTerrain.Fort;
         }
         state.BuildTerrain(terrain);
+        if(e.Kind==BattleKind.Node)state.SiteProfile=BattleSiteProfile.FromWorld(world,target);
         return state;
     }
     private void AddReinforcement(WorldSetup world,RobotEncounter e,int owner,int home,List<Robot> robots,bool queen)
@@ -410,7 +411,7 @@ public sealed partial class RobotCampaign
                 foreach(var unit in g.OrderBy(u=>u.Role==BattleRole.Queen?1:0).ThenBy(u=>u.Id))army.Waiting.Enqueue(unit);
             }
             state.ChooseLayout();
-            state.InheritHistory(old);state.Deploy();state.BuildSiteFortifications(e.DefenseCount);e.Battles.Add(state);i+=capacity;
+            state.PrepareSiteFlag();state.InheritHistory(old);state.Deploy();state.BuildSiteFortifications(e.DefenseCount);state.ApplySiteLayout();e.Battles.Add(state);i+=capacity;
         }
         PrepareSplitBoards(e);
         // Failed/retreated individuals are returned now; active survivors are only in the new boards.

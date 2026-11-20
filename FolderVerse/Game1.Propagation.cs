@@ -132,8 +132,9 @@ public partial class Game1
             bool wall=battle.Walls.Contains(p) && !battle.Fortifications.Any(f=>f.Position==p);
             if(battle.Terrain!=BattleTerrain.Sea)
             {
+                if(battle.SiteWater.Contains(p)){_ui.Box(tile,water*opacity);_ui.Box(new(tile.X+tile.Width/5,tile.Center.Y,tile.Width*3/5,Math.Max(1,tile.Height/30)),Color.LightBlue*.4f*opacity);continue;}
                 _ui.Box(tile,ground*opacity);
-                if(wall)BattleObstacleArt.Draw(_ui,tile,battle.Terrain==BattleTerrain.Mountain
+                if(wall)BattleObstacleArt.Draw(_ui,tile,battle.SiteRocks.Contains(p)||battle.Terrain==BattleTerrain.Mountain
                     ?BattleObstacleStyle.Rock:BattleObstacleArt.Style(false,false,elevation,latitude),opacity);
                 continue;
             }
@@ -141,7 +142,7 @@ public partial class Game1
             if(wall)
             {
                 if(!battle.SeaClearWater.Contains(p))
-                    BattleObstacleArt.Draw(_ui,tile,BattleObstacleArt.Style(true,false,elevation,latitude),opacity);
+                    BattleObstacleArt.Draw(_ui,tile,battle.SiteRocks.Contains(p)?BattleObstacleStyle.Rock:BattleObstacleArt.Style(true,false,elevation,latitude),opacity);
                 continue;
             }
             bool bridge=battle.SeaLogs.Contains(p);

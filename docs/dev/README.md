@@ -56,3 +56,5 @@ UIの検証はウィンドウを開いて描画・操作を確認し、自動終
 - [新聞の講評（Commentary）](newspaper-commentary.md)
 
 - [クロスファイア戦術と誤射の戦訓](crossfire.md)
+
+- [地点ごとの戦場配置](site-battle-layouts.md)

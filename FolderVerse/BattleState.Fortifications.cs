@@ -38,7 +38,7 @@ public sealed partial class BattleState
         var candidates=(from y in Enumerable.Range(1,BoardSize-2) from x in Enumerable.Range(1,BoardSize-2)
             let p=new Point(x,y) where (Walkable(p) || Terrain==BattleTerrain.Sea && SeaClearWater.Contains(p) &&
                 Enum.GetValues<BattleFacing>().Any(face=>Walkable(p-Forward(face)))) && !protectedCells.Contains(p) && !SeaLogs.Contains(p)
-            orderby Math.Abs(BattleAi.Distance(p,Flag)-3),y,x select p).ToList();
+            orderby Math.Abs(BattleAi.Distance(p,Flag)-(SiteProfile?.Kind==BattleSiteKind.Open?4:SiteProfile?.Kind==BattleSiteKind.Narrow?2:3)),y,x select p).ToList();
         for(int i=0;i<count;i++){
             var facing=(BattleFacing)(i%4);Point? chosen=null;
             foreach(var p in candidates.OrderBy(p=>BattleAi.Face(p-Flag)==facing?0:1)){
