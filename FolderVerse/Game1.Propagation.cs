@@ -121,6 +121,10 @@ public partial class Game1
         float elevation=_setup.Terrain.Elevation(_setup.Routes.Position(node.Cell,node.Center));
         float latitude=_setup.Geographic(cell.Normal).Y;
         var ground=Math.Abs(latitude)>.5f?new Color(161,192,203):elevation<.55f?new Color(163,137,91):new Color(35,64,58);
+        if(!WorldTerrain.EarthPalette)
+            ground=Color.Lerp(Color.Black,WorldTerrain.MapColorAt(elevation,cell.Normal,_setup.PolarAxis,_setup.WorldSeed),.55f);
+        var water=WorldTerrain.EarthPalette?new Color(28,88,125):
+            Color.Lerp(Color.Black,WorldTerrain.MapColorAt(.46f,cell.Normal,_setup.PolarAxis,_setup.WorldSeed),.7f);
         for(int y=0;y<battle.BoardSize;y++)for(int x=0;x<battle.BoardSize;x++)
         {
             var p=new Point(x,y);
@@ -133,7 +137,7 @@ public partial class Game1
                     ?BattleObstacleStyle.Rock:BattleObstacleArt.Style(false,false,elevation,latitude),opacity);
                 continue;
             }
-            _ui.Box(tile,new Color(28,88,125)*opacity);
+            _ui.Box(tile,water*opacity);
             if(wall)
             {
                 if(!battle.SeaClearWater.Contains(p))
