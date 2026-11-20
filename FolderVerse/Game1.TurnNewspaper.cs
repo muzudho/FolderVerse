@@ -83,6 +83,11 @@ public partial class Game1
                 NewsLine($"獲得 {article.Gained} {article.Unit}",380,825,450,.48f,ink);NewsLine($"喪失 {article.Lost} {article.Unit}",980,825,450,.48f,ink);
             }else NewsLine("結果は記録、予定は変更あり、予想は『もしこうなら』。",370,790,1160,.44f,ink);
         }else _ui.Text("朝の配達 / クリックで新聞を広げる",new(580,820),.55f,Cream);
+        // The reader stays fixed while the displayed newspaper's country changes.
+        int reader=_paperReadCountry>=0&&_paperReadCountry<_setup.ActiveCount?_paperReadCountry:_setup.PlayerSlot;
+        DrawRulerMedallion(reader,new Vector2(1755,580));
+        _ui.Center("新聞を読んでいる人",new(1605,750,300,30),.42f,Cream);
+        _ui.Center($"#{reader+1} / 内政のターン",new(1605,788,300,30),.4f,Cream);
         _ui.Button(PaperPrevious,"前の新聞",Muted,.5f);_ui.Button(PaperNext,"次の新聞",Accent,.5f);
         _ui.Button(PaperDone,_diplomacyPending?"新聞を置いて外交へ":"新聞を置いて内政へ",Accent,.46f);
         DrawPhaseTimer(new(120,1020,1680,10),_paperIdle,PaperIdleSeconds);
