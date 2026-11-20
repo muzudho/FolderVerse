@@ -125,7 +125,7 @@ sealed class GlobeCheck:Game1
         var original=globe.ManualOrientation;
         var button=(Rectangle)typeof(Game1).GetMethod("NetButton",Flags)!.Invoke(this,new object[]{1})!;
         var focus=(Rectangle)typeof(Game1).GetMethod("NetButton",Flags)!.Invoke(this,new object[]{2})!;
-        Check(button.Right<focus.Left,"Spin toggle must be left of conqueror focus");
+        Check(button.Left==focus.Left && button.Bottom<focus.Top,"Spin toggle must be above conqueror focus in the right column");
         Click(button.Center);
         Check((bool)Get("_globeSpinning"),"Spin toggle did not turn on through normal input");
         var before=globe.ViewOrientation((float)Get("_yawAngle"),(float)Get("_pitchAngle"));

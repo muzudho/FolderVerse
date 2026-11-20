@@ -39,7 +39,7 @@ public partial class Game1 : Game
     private readonly CubeNet _net=new();
     private int _statusCell=-1;
     private Rectangle MapViewBounds=>new((int)MathHelper.Lerp(40,1306,_domesticSlide),142,(int)MathHelper.Lerp(1840,574,_domesticSlide),820); private static readonly Rectangle StatusProceed=new(518,1020,480,50);
-    private Rectangle NetButton(int i)=>MapFooterBounds(new(984+i*177,InspectorVisible?990:912,166,50));
+    private Rectangle NetButton(int i)=>new(1734,650+(i-1)*58,166,50);
     private bool IsStatusScreen=>_screen==Screen.WorldStatus;
     private Rectangle SelectionGlobe=>_selectionTiles.Length==0?Rectangle.Empty:_selectionTiles[^1].Bounds;
     private bool IsSelectionScreen=>_screen is Screen.PlayerSelect or Screen.PlayerReady;
@@ -345,6 +345,17 @@ public partial class Game1 : Game
         {if(click && BackButton.Contains(_pointer))ReturnToTitle();else PlayerCountInput(click,enter,keyboard);}
         else if(IsStatusScreen)
         {
+            if(click && NetButton(2).Contains(_pointer)){
+                if(_statusGlobe)FocusStatusGlobe();else FocusCurrentNode();
+                _previousMouse=mouse;_previousKeyboard=keyboard;return;
+            }
+            if(click && NetButton(3).Contains(_pointer)){
+                FocusInspectorLocation();_previousMouse=mouse;_previousKeyboard=keyboard;return;
+            }
+            if(click && !_statusGlobe && !_setup.IsPrimaplana && NetButton(4).Contains(_pointer)){
+                _net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
+                _previousMouse=mouse;_previousKeyboard=keyboard;return;
+            }
             if(click && DomesticViewClick(_pointer)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
             if(active && (FactoryHolidayInput(mouse) || FactoryViewportInput(mouse))){
                 _previousMouse=mouse;_previousKeyboard=keyboard;return;
@@ -728,12 +739,9 @@ public partial class Game1 : Game
         }else DrawReservationDirectory();
         DrawNodeCheckMarkers(MapViewBounds);
         string location="征服者現在地　"+_setup.Routes.LocationLabel(player);
-        _ui.Text(location,new(InspectorVisible?1276:991,InspectorVisible?770:831),Math.Min(0.48f,(InspectorVisible?600:870)/_font.MeasureString(location).X),Cream);
+        _ui.Text(location,new(InspectorVisible?1276:991,InspectorVisible?770:831),Math.Min(0.48f,(NetButton(1).Left-12-(InspectorVisible?1276:991))/_font.MeasureString(location).X),Cream);
         _ui.Text(MapTransitionActive?(_mapUnfold?"展開中：５つの面を順番に開く":"組立中：５つの面を順番に閉じる"):"右ドラッグ："+(MapDragSlide?"スライド":"回転")+" / ホイール：拡縮",new(InspectorVisible?1276:991,InspectorVisible?810:865),InspectorVisible?.27f:0.37f,new(177,206,216));
-        if(_statusGlobe)_ui.Button(NetButton(1),(_globeSpinning?"✓ ":"□ ")+"くるくる回す",_globeSpinning?Accent:Muted,0.45f);
-        _ui.Button(NetButton(2),"征服者はどこ？",Accent,0.45f);
-        _ui.Button(NetButton(3),"今どこ見てる？",InspectorLocationNode>=0?Accent:Muted,0.45f);
-        if(!_statusGlobe && !_setup.IsPrimaplana)_ui.Button(NetButton(4),_setup.TerritoryCounts[player]>0?"首都の面へ":"現在地の面へ",Muted,0.48f);
+        DrawMapNavigationButtons();
         if(_statusCell>=0 && !InspectorVisible)
         {
             var cell=_setup.Cells[_statusCell];int owner=_setup.Owners[cell.Id];
