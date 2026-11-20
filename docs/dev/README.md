@@ -20,6 +20,8 @@ dotnet run --project FolderVerse/FolderVerse.csproj
 
 ## 実装・検証
 
+- [解析用ヘッドレスモード](headless-mode.md)：画面なしのCPUシミュレーションと結果保存。
+
 - [実装と検証の記録](実装と検証.md)：IME、画像、クロップ、ロゴ。
 - [ゲームの仕組み](../ref/ゲームの仕組み.md)：ルールと表示仕様。
 - [実装計画](plan/)・[開発日誌](log/2026/10.md)
