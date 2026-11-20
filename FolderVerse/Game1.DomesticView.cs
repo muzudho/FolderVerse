@@ -25,7 +25,7 @@ public partial class Game1
     private bool _nodeInspectorClosing;
     private bool InspectorVisible=>_folderTreeOpen || _reignView || _regionCell>=0 || _populationCell>=0 || _movementOpen || _transportOverview || _salvagePlan;
     private bool DomesticPanelOpen=>(InspectorVisible || StratagemPanelActive) && !_nodeInspectorClosing;
-    private int NodeInspectorOffset=>(int)MathF.Round(-960*(1-_domesticSlide));
+    private int NodeInspectorOffset=>(int)MathF.Round(-960*(1-_domesticSlide)+306*_domesticSlide);
     private Rectangle NodeInspectorBounds=>new(54+NodeInspectorOffset,150,850,825);
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
@@ -107,17 +107,24 @@ public partial class Game1
 
         return false;
     }
-    private Vector2 PlayerMedallionCenter=>new(ReignPortrait.Center.X+(InspectorVisible?(int)(960*_domesticSlide):0),ReignPortrait.Center.Y);
-    private Vector2 OperationMedallionCenter=>PlayerMedallionCenter+new Vector2(_setup.PlayerSlot==_setup.TurnPlayer?0:320,0);
+    private Vector2 PlayerMedallionCenter=>new(176,916);
+    private Vector2 OperationMedallionCenter=>_setup.PlayerSlot==_setup.TurnPlayer?PlayerMedallionCenter:new Vector2(270,755);
     private void DrawDomesticPortrait()
     {
         int player=_setup.TurnPlayer;DrawRulerMedallion(player,PlayerMedallionCenter);
-        _ui.Center(_setup.ComputerOnly?"Exhibition / 観戦中":_setup.PlayerSlot==player?"あなたの陣営 / 操作中":"あなたの陣営のターン",new((int)PlayerMedallionCenter.X-145,600,290,30),.36f,Cream);
+        _ui.Center(_setup.ComputerOnly?"Exhibition / 観戦中":_setup.PlayerSlot==player?"あなたの陣営 / 操作中":"あなたの陣営のターン",new(25,736,190,24),.30f,Cream);
         if(_setup.PlayerSlot!=player){
-            DrawRulerMedallion(_setup.PlayerSlot,OperationMedallionCenter);
-            _ui.Center("操作中の手下",new((int)OperationMedallionCenter.X-145,600,290,30),.36f,Cream);
+            DrawSmallOperationMedallion(_setup.PlayerSlot,OperationMedallionCenter);
+            _ui.Center("操作中の手下",new(205,688,125,18),.24f,Cream);
         }
         if(FactionTree().Length>1)_ui.Button(FactionPickerButton,"▼",Accent,.65f);
+    }
+    private void DrawSmallOperationMedallion(int ruler,Vector2 center)
+    {
+        var ring=new Rectangle((int)center.X-49,(int)center.Y-49,98,98);
+        PaperOval(ring,_setup.OwnerColor(ruler));ring.Inflate(-3,-3);PaperOval(ring,Cream);
+        // The inset square's corners fit inside the round medal.
+        _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new((int)center.X-32,(int)center.Y-32,64,64),_setup.Relations.Powered[ruler],faceOnly:true);
     }
     private void DrawRulerMedallion(int ruler,Vector2 center)
     {

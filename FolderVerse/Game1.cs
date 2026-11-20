@@ -38,7 +38,7 @@ public partial class Game1 : Game
     private float _animationTime;
     private readonly CubeNet _net=new();
     private int _statusCell=-1;
-    private Rectangle MapViewBounds=>new((int)MathHelper.Lerp(40,1000,_domesticSlide),142,(int)MathHelper.Lerp(1840,880,_domesticSlide),820); private static readonly Rectangle StatusProceed=new(518,1020,480,50);
+    private Rectangle MapViewBounds=>new((int)MathHelper.Lerp(40,1306,_domesticSlide),142,(int)MathHelper.Lerp(1840,574,_domesticSlide),820); private static readonly Rectangle StatusProceed=new(518,1020,480,50);
     private Rectangle NetButton(int i)=>MapFooterBounds(new(984+i*177,InspectorVisible?990:912,166,50));
     private bool IsStatusScreen=>_screen==Screen.WorldStatus;
     private Rectangle SelectionGlobe=>_selectionTiles.Length==0?Rectangle.Empty:_selectionTiles[^1].Bounds;
