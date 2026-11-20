@@ -126,6 +126,7 @@ public partial class Game1
         int selected=_computerManualCharacter;
         _ui.Text($"No.{selected+1:00}  {ConquerorCatalog.Themes[selected]}",new(852,149),.68f,Cream);
         _ui.Text("世界征服ランク（A～Z）　未計測",new(852,222),.58f,Cream);
+        _ui.Text(BattleTactics.UsesAmbush(selected)?"戦術 / 待ち伏せ：使用する（条件成立時に自動）":"戦術 / 待ち伏せ：使用しない",new(852,247),.31f,Cream);
         var landPreference=ComputerLandPlanner.PreferenceFor(selected);
         _ui.Text($"土地征服の趣向 / {ComputerLandPlanner.Label(landPreference)}（仮）",new(852,271),.47f,Cream);
         var policy=_setup.CharacterComputerPolicy(selected);

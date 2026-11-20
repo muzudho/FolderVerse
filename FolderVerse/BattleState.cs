@@ -76,6 +76,7 @@ public sealed partial class BattleState
     public List<BattlePersuasion> Persuasions {get;}=new();
     public int GlobalTurn;
     public BattleLesson[] Lessons=new BattleLesson[WorldSetup.CastCount];
+    public bool[] AmbushEnabled=new bool[WorldSetup.CastCount];
     public HashSet<long> PersuadedUnits {get;}=new();
     public Point Flag=new(6,6);
     public bool FlagStanding=true,Finished;
@@ -93,6 +94,7 @@ public sealed partial class BattleState
     public bool WallPassesShot(Point p,BattleFacing facing)
     {
         if(!Walls.Contains(p))return false;
+        if(Fortifications.Any(f=>f.Position==p && f.Kind==FortificationKind.Tree))return true;
         int code=WallShotDirections.GetValueOrDefault(p);
         if(code<0 || code>8)return false;
         return facing switch {BattleFacing.East=>code%3==1,BattleFacing.West=>code%3==2,BattleFacing.South=>code/3==1,_=>code/3==2};

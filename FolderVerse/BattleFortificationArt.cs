@@ -4,8 +4,9 @@ using Microsoft.Xna.Framework;
 
 public static class BattleFortificationArt
 {
-    public static void Draw(UiPainter ui,Rectangle tile,BattleFortification fort,float opacity=1)
+    public static void Draw(UiPainter ui,Rectangle tile,BattleFortification fort,float opacity=1,bool sea=false)
     {
+        if(fort.Kind==FortificationKind.Tree){BattleObstacleArt.Draw(ui,tile,sea?BattleObstacleStyle.Barrel:BattleObstacleStyle.Tree,opacity);return;}
         if(fort.Kind==FortificationKind.Barrel){BattleObstacleArt.Draw(ui,tile,BattleObstacleStyle.Barrel,opacity);return;}
         Vector2 P(float x,float y){var p=new Vector2(x-.5f,y-.5f);for(int i=0;i<(int)fort.Facing;i++)p=new(-p.Y,p.X);return new Vector2(tile.Center.X,tile.Center.Y)+p*tile.Width;}
         void Line(float x,float y,float xx,float yy,float width,Color color){var a=P(x,y);var b=P(xx,yy);var d=b-a;ui.Tile((a+b)/2,new(d.Length(),width*tile.Width),MathF.Atan2(d.Y,d.X),color*opacity);}
@@ -17,6 +18,7 @@ public static class BattleFortificationArt
             for(int i=0;i<3;i++)Line(.23f,.29f+i*.2f,.77f,.29f+i*.2f,.025f,new Color(102,202,220));return;
         }
         if(fort.Kind==FortificationKind.Wall){
+            if(sea)ui.Box(new(tile.X+tile.Width/10,tile.Y+tile.Height*3/4,tile.Width*4/5,Math.Max(1,tile.Height/8)),new Color(151,101,52)*opacity);
             Line(.14f,.5f,.86f,.5f,.47f,dark);Line(.17f,.47f,.83f,.47f,.37f,new Color(143,151,149));
             Line(.16f,.29f,.84f,.29f,.06f,new Color(201,204,185));
             for(int i=0;i<3;i++)Line(.27f+i*.23f,.33f,.27f+i*.23f,.63f,.025f,new Color(75,88,88));return;

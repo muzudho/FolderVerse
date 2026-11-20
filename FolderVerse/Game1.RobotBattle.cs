@@ -157,10 +157,10 @@ public partial class Game1
             var tile=new Rectangle(left+fort.Position.X*size,top+fort.Position.Y*size,size-2,size-2);
             var hit=battle.GateHits.LastOrDefault(h=>h.Turn==frame.Turn && h.Position==fort.Position);
             if(hit!=null && fortImpact>=0){var away=fort.Position-hit.From;float amount=MathF.Sin(fortImpact*MathHelper.Pi)*7;tile.Offset((int)(Math.Sign(away.X)*amount),(int)(Math.Sign(away.Y)*amount));}
-            BattleFortificationArt.Draw(_ui,tile,fort);
+            BattleFortificationArt.Draw(_ui,tile,fort,sea:battle.Terrain==BattleTerrain.Sea);
         }
         // Draw over terrain, using the same facing and turn as rifle playback.
-        foreach(var wall in battle.Walls)foreach(BattleFacing facing in Enum.GetValues<BattleFacing>())
+        foreach(var wall in battle.Walls.Where(p=>!battle.Fortifications.Any(f=>f.Position==p && f.Kind==FortificationKind.Tree)))foreach(BattleFacing facing in Enum.GetValues<BattleFacing>())
         {
             if(!battle.WallPassesShot(wall,facing))continue;
             var step=BattleState.Forward(facing);var forward=new Vector2(step.X,step.Y);
@@ -397,6 +397,7 @@ public partial class Game1
             _ui.Button(RobotResultPause,_robotPlaying?"一時停止":"再開",Muted,.5f);
         }
         _ui.Button(BattleContinue,_robotPendingFocus>=0?"戦場を切り替える":!end?"このターンを進める":"次の戦闘ターンへ",Accent,.55f);
+        DrawAmbushCard(battle,frameIndex);
     }
     private void BattleInfo(string text,int y,float scale)
         =>_ui.Text(text,new(1120,y),Math.Min(scale,720/_font.MeasureString(text).X),Cream);

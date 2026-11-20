@@ -103,7 +103,7 @@ public partial class Game1
         DrawBattleTerrain(battle,bounds,opacity);
         foreach(var fort in battle.Fortifications)
             if(fort.Kind!=FortificationKind.Gate || fort.Health>0)
-                BattleFortificationArt.Draw(_ui,BattleTerrainTile(bounds,battle.BoardSize,fort.Position),fort,opacity);
+                BattleFortificationArt.Draw(_ui,BattleTerrainTile(bounds,battle.BoardSize,fort.Position),fort,opacity,battle.Terrain==BattleTerrain.Sea);
     }
 
     private static Rectangle BattleTerrainTile(Rectangle bounds,int size,Point p)

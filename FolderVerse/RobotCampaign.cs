@@ -251,7 +251,7 @@ public sealed partial class RobotCampaign
             int index=Array.FindIndex(armies,a=>a.Owner==defender);
             if(index>=0){var army=armies[index];army.Queen=true;foreach(var robot in world.Robots.Retinues[defender].Robots.Where(world.Robots.Training[defender].Eligible).ToArray()){Depart(world,target,robot,true);army.Robots.Add(robot);}armies[index]=army;}
         }
-        var e=new RobotEncounter{Id=_nextBattle++,Kind=kind,Source=source,Target=target,Defender=defender,DefenseCount=kind==BattleKind.Node?Math.Min(12,armies.Where(a=>a.Home==target && world.Relations.Allied(a.Owner,defender)).SelectMany(a=>a.Robots).Count(r=>r.DefenseOnly)):0};
+        var e=new RobotEncounter{Id=_nextBattle++,Kind=kind,Source=source,Target=target,Defender=defender,DefenseCount=kind==BattleKind.Node && defender>=0 && world.Nodes.All[target].Purpose==NodePurpose.Defense?4*(FacilityDevelopment.Grade(world,world.Nodes.All[target])+1):0};
         // Stable route/source ordering puts nearby invasion groups in the same board.
         int Bearing(int home)
         {
@@ -268,7 +268,7 @@ public sealed partial class RobotCampaign
             if(sizes.Count>1){state.SplitBoard=true;state.Kind=BattleKind.Edge;state.Defender=-1;state.BuildTerrain(world.Nodes.All[target].Terrain==TravelTerrain.Sea?BattleTerrain.Sea:BattleTerrain.Field);}
             foreach(var a in sorted.Skip(offset).Take(size))
                 state.AddArmy(a.Owner,a.Home,a.Robots,a.Queen,SeaApproach(world,e,approaches?.GetValueOrDefault(a.Owner,a.Home)??a.Home));
-            state.ChooseLayout();state.Deploy();state.BuildFortifications(e.DefenseCount);e.Battles.Add(state);offset+=size;
+            state.ChooseLayout();state.Deploy();state.BuildSiteFortifications(e.DefenseCount);e.Battles.Add(state);offset+=size;
         }
         return e;
     }
@@ -312,6 +312,7 @@ public sealed partial class RobotCampaign
     {
         var state=new BattleState(world.PlacementSeed^e.Id^_nextBattle,Rules){Id=_nextBattle++,GlobalTurn=world.Population.Turn,Kind=e.Kind,SourceNode=e.Source,TargetNode=e.Target,Defender=e.Defender,Allied=world.Relations.Allied,IsFactionRoot=world.Relations.CanWinConquest,EquipmentMode=world.EquipmentMode};
         state.Lessons=(BattleLesson[])world.Lessons.Owned.Clone();
+        for(int owner=0;owner<world.ActiveCount;owner++)state.AmbushEnabled[owner]=BattleTactics.UsesAmbush(world.Looks[owner].BaseId);
         foreach(var rank in world.Relations.ProvisionalRanking(world))state.NewspaperRanks[rank.Ruler]=rank.Rank;
         var target=world.Nodes.All[e.Target];
         var terrain=target.Terrain==TravelTerrain.Sea?BattleTerrain.Sea:BattleTerrain.Field;
@@ -408,7 +409,7 @@ public sealed partial class RobotCampaign
                 foreach(var unit in g.OrderBy(u=>u.Role==BattleRole.Queen?1:0).ThenBy(u=>u.Id))army.Waiting.Enqueue(unit);
             }
             state.ChooseLayout();
-            state.InheritHistory(old);state.Deploy();state.BuildFortifications(e.DefenseCount);e.Battles.Add(state);i+=capacity;
+            state.InheritHistory(old);state.Deploy();state.BuildSiteFortifications(e.DefenseCount);e.Battles.Add(state);i+=capacity;
         }
         PrepareSplitBoards(e);
         // Failed/retreated individuals are returned now; active survivors are only in the new boards.
