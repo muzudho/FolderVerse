@@ -146,7 +146,7 @@ public partial class Game1
                     if(accepted){
                         var reserved=PlanningStock.Nodes[HangarPlanningNode].Robots.Single(r=>r.Id==robot.Id);
                         _workReservationEffects.Remove(robot.Id);
-                        if(_hangarReservation==HangarReservation.Defense && reserved.DefenseOnly){BeginDefenseReservationEffect(reserved);_hangarMessage="国旗で守備専用予約 / 靴を履いて仕事中";}
+                        if(_hangarReservation==HangarReservation.Defense && reserved.DefenseOnly){BeginDefenseReservationEffect(reserved);_hangarMessage="守備専用予約を設定しました";}
                         else{
                             _defenseReservationEffects.Remove(robot.Id);
                             if(reserved.InterceptOnly || reserved.FactoryWorker)BeginWorkReservationEffect(reserved,reserved.Owner);
