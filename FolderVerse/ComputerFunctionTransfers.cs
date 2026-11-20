@@ -13,7 +13,7 @@ public static class ComputerFunctionTransfers
         for(int owner=0;owner<world.ActiveCount;owner++){
             if(!world.Relations.CanAct(owner) || !automaticAll && manual.Contains(owner))continue;
             if(world.Campaign.FunctionTransfers.Orders.Any(o=>o.Owner==owner))continue;
-            bool Busy(int id)=>world.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==id || o.Target==id) ||
+            bool Busy(int id)=>ComputerStratagems.ProtectedSite(world,id) || world.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==id || o.Target==id) ||
                 world.Robots.PartPlanning.Orders.Any(o=>o.Source==id || o.Target==id) ||
                 world.Robots.DirectDelivery.Orders.Any(o=>o.Source==id || o.Target==id) ||
                 world.Robots.LongDelivery.Orders.Any(o=>o.Source==id || o.Target==id || o.Node==id) ||

@@ -51,6 +51,7 @@ public static class HeadlessRunner
             for(int step=0;step<maxTurns && !won;step++){
                 w.Robots.PrepareDomestic(w.Population.Turn,(a,b)=>FunctionalDeliveryRoutes.Connected(w,a,b),n=>w.Nodes.All[n].Owner,w.Campaign.RobotBattles.LockedNode);
                 if(!w.Campaign.FinishDomestic(w,automaticAll:true))throw new InvalidOperationException("Domestic phase did not finish.");
+                Write(new{kind="stratagem",turn=w.Population.Turn,decisions=w.Campaign.StratagemDecisions});
                 w.Campaign.BeginMilitary();w.Campaign.Advance(w,-1,0,automaticAll:true,allPlanned:true);won=Won();
                 if(!won){w.Industry.Roll(w.PlacementSeed^w.FortuneSeed);w.Industry.Apply(w);}
                 if(w.Population.Turn%20==0 || won)Write(new{kind="checkpoint",turn=w.Population.Turn,won,ranking=w.Relations.ProvisionalRanking(w).Select(r=>new{r.Ruler,r.Cells,r.Rank})});

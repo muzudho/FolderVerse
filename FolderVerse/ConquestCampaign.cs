@@ -14,6 +14,7 @@ public sealed partial class ConquestCampaign
     public NodeFunctionTransfers FunctionTransfers {get;}=new();
     public TradePlan Trade {get;}=new();
     public StratagemPlans Stratagems {get;}=new();
+    public List<ComputerStratagemDecision> StratagemDecisions {get;}=new();
     public ComputerAttackMemory AttackMemory {get;}=new();
     public List<SubordinateDomesticResult> SubordinateResults {get;}=new();
     private readonly HashSet<int> _domesticSubmitted=new();
@@ -33,6 +34,7 @@ public sealed partial class ConquestCampaign
         if(party.Length>0)world.SelectTurnRuler(party[0]);
         ComputerIntakePlanning.Plan(world,automaticAll);
         ComputerNodePurposes.Plan(world,automaticAll);
+        ComputerStratagems.Plan(world,automaticAll);
         ComputerLogistics.Plan(world,automaticAll);
         ComputerFunctionTransfers.Plan(world,automaticAll);
         ComputerTrade.Plan(world,automaticAll);

@@ -11,7 +11,7 @@ public static class ComputerLogistics
         if(w.Campaign.Phase!=CampaignPhase.Domestic)return;
         var manual=w.ManualRulers().ToHashSet();var stock=w.Robots;var battles=w.Campaign.RobotBattles;
         ReviewUnstartedDeliveries(w, manual, automaticAll);
-        bool Busy(int node)=>battles.LockedNode(node) || w.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node || o.Target==node) ||
+        bool Busy(int node)=>ComputerStratagems.ProtectedSite(w,node) || battles.LockedNode(node) || w.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node || o.Target==node) ||
             stock.PartPlanning.Orders.Any(o=>o.Source==node || o.Target==node) || stock.PendingEdits.Any(o=>o.Node==node) ||
             stock.DirectDelivery.Orders.Any(o=>o.Source==node || o.Target==node) || w.Campaign.PlannedOrders.Any(o=>o.SourceNode==node || o.TargetNode==node);
         bool AnyViableAttack(){

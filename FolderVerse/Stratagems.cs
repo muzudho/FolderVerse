@@ -11,7 +11,7 @@ public sealed record StratagemMatch(StratagemKind Kind,int Target,int Wall,Strat
 {
     public string Key=>$"{Kind}:{Target}:{Wall}:"+string.Join(",",Sites.Select(s=>s.Node));
 }
-public sealed record StratagemReservation(long Id,int Controller,StratagemMatch Match);
+public sealed record StratagemReservation(long Id,int Controller,StratagemMatch Match,bool Computer=false);
 
 // A card owns a deferred bundle, never a replacement for existing manual orders.
 public sealed class StratagemPlans
@@ -23,9 +23,19 @@ public sealed class StratagemPlans
     public static StratagemCategory Category(StratagemKind kind)=>kind==StratagemKind.WallRelief?StratagemCategory.Defense:StratagemCategory.Attack;
     public bool Cancel(long id,int controller)=>Pending.RemoveAll(p=>p.Id==id && p.Controller==controller)>0;
     public StratagemMatch[] Find(WorldSetup w,int controller)
+        =>FindCore(w,w.ControlledParty(controller));
+    internal static int[] ComputerParty(WorldSetup w,int ruler,bool automaticAll)
+    {
+        if(ruler<0||ruler>=w.ActiveCount||w.Relations.Root(ruler)!=ruler)return Array.Empty<int>();
+        var manual=w.ManualRulers().ToHashSet();
+        return Enumerable.Range(0,w.ActiveCount).Where(owner=>w.Relations.CanAct(owner)&&w.Relations.Root(owner)==ruler&&(automaticAll||!manual.Contains(owner))).ToArray();
+    }
+    public StratagemMatch[] FindComputer(WorldSetup w,int ruler,bool automaticAll=false)
+        =>FindCore(w,ComputerParty(w,ruler,automaticAll));
+    private StratagemMatch[] FindCore(WorldSetup w,IEnumerable<int> owners)
     {
         if(w.Campaign.Phase!=CampaignPhase.Domestic)return Array.Empty<StratagemMatch>();
-        var party=w.ControlledParty(controller).ToHashSet();
+        var party=owners.ToHashSet();
         var battle=w.Campaign.RobotBattles;
         var claimed=Pending.SelectMany(p=>p.Match.Sites.Select(s=>s.Node)).ToHashSet();
         var busy=w.Campaign.PlannedOrders.Where(o=>!o.PocketOnly).Select(o=>o.SourceNode>=0?o.SourceNode:w.Nodes.Current(o.Ruler)?.Id??-1).ToHashSet();
@@ -67,14 +77,18 @@ public sealed class StratagemPlans
         return result.OrderBy(m=>m.Kind).ThenBy(m=>m.Target).ThenBy(m=>m.Key).ToArray();
     }
     public bool Reserve(WorldSetup w,int controller,StratagemMatch match,out string reason)
+        =>ReserveCore(w,controller,match,false,false,out reason);
+    public bool ReserveComputer(WorldSetup w,int ruler,StratagemMatch match,bool automaticAll,out string reason)
+        =>ReserveCore(w,ruler,match,true,automaticAll,out reason);
+    private bool ReserveCore(WorldSetup w,int controller,StratagemMatch match,bool computer,bool automaticAll,out string reason)
     {
-        var current=Find(w,controller).FirstOrDefault(m=>m.Key==match.Key);
+        var current=(computer?FindComputer(w,controller,automaticAll):Find(w,controller)).FirstOrDefault(m=>m.Key==match.Key);
         if(current==null || !SameTroops(current,match)){reason="配置や予約が変わりました。候補を選び直してください";return false;}
-        if(!Valid(w,controller,current,out reason))return false;
-        Pending.Add(new(_next++,controller,current));return true;
+        if(!Valid(w,controller,current,out reason,computer,automaticAll))return false;
+        Pending.Add(new(_next++,controller,current,computer));return true;
     }
     private static bool SameTroops(StratagemMatch a,StratagemMatch b)=>a.Troops.SequenceEqual(b.Troops) && a.Sites.SequenceEqual(b.Sites);
-    private bool Valid(WorldSetup w,int controller,StratagemMatch match,out string reason)
+    private bool Valid(WorldSetup w,int controller,StratagemMatch match,out string reason,bool computer=false,bool automaticAll=false)
     {
         reason="";
         bool Fail(){return false;}
@@ -82,10 +96,11 @@ public sealed class StratagemPlans
         if(match.Target<0 || match.Target>=w.Nodes.All.Length || w.Campaign.RobotBattles.LockedNode(match.Target)){
             reason="目標地点が戦闘中、または存在しません";return false;
         }
-        var controlled=w.ControlledParty(controller).ToHashSet();
+        var controlled=(computer?ComputerParty(w,controller,automaticAll):w.ControlledParty(controller)).ToHashSet();
         foreach(var site in match.Sites){
             if(site.Node<0 || site.Node>=w.Nodes.All.Length){reason="対象地点がありません";return false;}
             var n=w.Nodes.All[site.Node];
+            if(computer&&w.Robots.Workshops[n.Id].Automation==NodeAutomation.Manual){reason="手動管理の地点です";return false;}
             if(!n.Functional || !controlled.Contains(n.Owner) || n.Purpose!=site.Before || w.Campaign.RobotBattles.LockedNode(n.Id) ||
                 w.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==n.Id || o.Target==n.Id) ||
                 w.Campaign.PlannedOrders.Any(o=>!o.PocketOnly && (o.SourceNode>=0?o.SourceNode:w.Nodes.Current(o.Ruler)?.Id??-1)==n.Id)){
@@ -123,9 +138,13 @@ public sealed class StratagemPlans
     }
     // Validation precedes every mutation. A stale bundle stays cancellable, with no partial apply.
     public bool Commit(WorldSetup w,int controller,out string reason)
+        =>CommitCore(w,controller,false,false,out reason);
+    public bool CommitComputer(WorldSetup w,int ruler,bool automaticAll,out string reason)
+        =>CommitCore(w,ruler,true,automaticAll,out reason);
+    private bool CommitCore(WorldSetup w,int controller,bool computer,bool automaticAll,out string reason)
     {
-        var batch=Pending.Where(p=>p.Controller==controller).ToArray();
-        foreach(var plan in batch)if(!Valid(w,controller,plan.Match,out reason)){
+        var batch=Pending.Where(p=>p.Controller==controller&&p.Computer==computer).ToArray();
+        foreach(var plan in batch)if(!Valid(w,controller,plan.Match,out reason,computer,automaticAll)){
             reason=$"予約{plan.Id} {Title(plan.Match.Kind)} / {reason}";return false;
         }
         foreach(var plan in batch){
@@ -135,6 +154,6 @@ public sealed class StratagemPlans
                     !w.Robots.ToggleReservation(troop.Node,troop.Before.Id,troop.Reservation,troop.Before.Owner))throw new InvalidOperationException("Validated stratagem reservation failed.");
             foreach(var order in plan.Match.Marches)w.Campaign.Plan(order);
         }
-        Pending.RemoveAll(p=>p.Controller==controller);reason="";return true;
+        Pending.RemoveAll(p=>p.Controller==controller&&p.Computer==computer);reason="";return true;
     }
 }
