@@ -1,4 +1,4 @@
-namespace FolderVerse;
+﻿namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ public static class ComputerLogistics
         var manual=w.ManualRulers().ToHashSet();var stock=w.Robots;var battles=w.Campaign.RobotBattles;
         ReviewUnstartedDeliveries(w, manual, automaticAll);
         bool Busy(int node)=>ComputerStratagems.ProtectedSite(w,node) || battles.LockedNode(node) || w.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node || o.Target==node) ||
-            stock.PartPlanning.Orders.Any(o=>o.Source==node || o.Target==node) || stock.PendingEdits.Any(o=>o.Node==node) ||
+            stock.PartPlanning.WorkpieceResumes.Any(o=>o.Node==node) || stock.PartPlanning.Orders.Any(o=>o.Source==node || o.Target==node) || stock.PendingEdits.Any(o=>o.Node==node) ||
             stock.DirectDelivery.Orders.Any(o=>o.Source==node || o.Target==node) || w.Campaign.PlannedOrders.Any(o=>o.SourceNode==node || o.TargetNode==node);
         bool AnyViableAttack(){
             var automated=WorldDayCycle.Order(w,Enumerable.Range(0,w.ActiveCount).Where(o=>w.Relations.CanAct(o) && (automaticAll || !manual.Contains(o)))).ToHashSet();

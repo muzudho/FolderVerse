@@ -7,7 +7,7 @@ internal static class ComputerFactoryManagement
 {
     internal static bool Managed(WorldSetup world,Node node,bool automaticAll)=>node.Functional && node.Purpose!=NodePurpose.Relay &&
         node.Owner>=0 && world.Relations.CanAct(node.Owner) && (automaticAll || !world.ManualRulers().Contains(node.Owner)) &&
-        !world.Campaign.RobotBattles.LockedNode(node.Id) && world.Robots.Workshops[node.Id].Automation!=NodeAutomation.Manual &&
+        !world.Robots.PartPlanning.WorkpieceResumes.Any(o=>o.Node==node.Id) && !world.Campaign.RobotBattles.LockedNode(node.Id) && world.Robots.Workshops[node.Id].Automation!=NodeAutomation.Manual &&
         !world.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node.Id || o.Target==node.Id);
 
     internal static bool Incoming(WorldSetup world,int node,RawMaterial material)

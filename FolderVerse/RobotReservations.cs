@@ -65,6 +65,8 @@ public sealed partial class RobotWorld
     }
     public void ConfigureFactories(WorldSetup world)
     {
+        _collectInterrupted=()=>CollectInterruptedWorkpieces(world);
+        CollectInterruptedWorkpieces(world);
         _nodePurpose=node=>world.Nodes.All[node].Purpose;
         ProductionIntakeEnabled=true;
         IntakeAdjacent=(a,b)=>world.Routes.Neighbors(world.Nodes.All[a]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==b);
@@ -104,6 +106,7 @@ public sealed partial class RobotWorld
     private bool CanSetReservationCore(int node,Robot robot,HangarReservation kind,int? commander,bool ignoreTraining)
     {
         if(node<0 || node>=Nodes.Length || robot==null)return false;
+        if(robot.IsWorkpiece && kind!=HangarReservation.Disposal)return false;
         int country=commander??robot.Owner;if(country<0 || country>=Training.Length)return false;
         var store=Nodes[node];
         if(kind==HangarReservation.Warehouse){

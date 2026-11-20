@@ -138,6 +138,14 @@ public partial class Game1 : Game
         if(!active || !IsStatusScreen || !_nodeAssemblyOpen || mouse.RightButton==ButtonState.Released)
             _hangarPanning=false;
         // Consume input before any controls behind the album get a chance to handle it.
+        if(IsStatusScreen && _nodeFactoryOpen && _workpieceLane>=0){
+            if(escape)_workpieceLane=-1;else if(click)NodeFactoryClick(_pointer);
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
+        if(IsStatusScreen && _nodeFactoryOpen && _factoryStartLane>=0){
+            if(escape)_factoryStartLane=-1;else if(click)NodeFactoryClick(new Point(_pointer.X-NodeInspectorOffset,_pointer.Y));
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
         if(IsStatusScreen && FactoryAlbumOpen)
         {
             if(_demoActive)
@@ -895,6 +903,11 @@ public partial class Game1 : Game
         {
             _spriteBatch.Begin(transformMatrix:transform);
             DrawFactoryAlbum();
+            _spriteBatch.End();
+        }
+        if(IsStatusScreen && _nodeFactoryOpen && _workpieceLane>=0){
+            _spriteBatch.Begin(transformMatrix:transform);
+            DrawFactoryWorkpieceOverlay();
             _spriteBatch.End();
         }
         // Read the finished game frame before the save notification is drawn.

@@ -8,7 +8,7 @@ public enum RobotParts { Legs=1, Body=2, Head=4, Complete=7 }
 public enum RobotRole { Soldier, Captain }
 public sealed record RobotWorkshopEdit(int Node,long[] Ids,RobotParts? SplitPart,int? Owner=null);
 public sealed record DefenseFlagReservation(int Commander,int Node,int FlagOwner);
-public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=RobotRole.Soldier,bool Disposal=false)
+public sealed partial record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=RobotRole.Soldier,bool Disposal=false)
 {
     public int? FunctionDisplayNode {get;init;}
     public bool InterceptOnly {get;init;}
@@ -51,7 +51,8 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
         return Materialize() with {Parts=selected,DamagedParts=DamagedParts&selected,CheapParts=CheapParts&selected&~PremiumParts,PremiumParts=PremiumParts&selected,IntegratedParts=IntegratedParts&selected,DefenseFlag=selected==RobotParts.Complete?DefenseFlag:null,
             HeadMaterial=(selected&RobotParts.Head)!=0?HeadMaterial:default,
             BodyMaterial=(selected&RobotParts.Body)!=0?BodyMaterial:default,
-            LegsMaterial=(selected&RobotParts.Legs)!=0?LegsMaterial:default};
+            LegsMaterial=(selected&RobotParts.Legs)!=0?LegsMaterial:default,
+            HeadWork=(selected&RobotParts.Head)!=0?HeadWork:null,BodyWork=(selected&RobotParts.Body)!=0?BodyWork:null,LegsWork=(selected&RobotParts.Legs)!=0?LegsWork:null};
     }
     public int LastBattlePersuasionTurn {get;init;}=-1;
     public int LastDomesticPersuasionTurn {get;init;}=-1;
@@ -82,6 +83,7 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
     public int CombatRifles(int owner)=>(NativeParts(owner)==3?4:Math.Max(NativeParts(owner),CanFight?1:0))+PremiumBonus;
     public RobotEquipment Equipment(int owner,RobotEquipmentMode mode)
     {
+        if(IsWorkpiece)return new(0,0,0);
         if(mode==RobotEquipmentMode.Legacy)
         {
             int melee=CombatParts(owner);
@@ -105,11 +107,14 @@ public sealed record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=Rob
         result=result with {PremiumParts=(PremiumParts&Parts&~other.Parts)|(other.PremiumParts&other.Parts),
             HeadMaterial=(other.Parts&RobotParts.Head)!=0?other.HeadMaterial:HeadMaterial,
             BodyMaterial=(other.Parts&RobotParts.Body)!=0?other.BodyMaterial:BodyMaterial,
-            LegsMaterial=(other.Parts&RobotParts.Legs)!=0?other.LegsMaterial:LegsMaterial};
+            LegsMaterial=(other.Parts&RobotParts.Legs)!=0?other.LegsMaterial:LegsMaterial,
+            HeadWork=(other.Parts&RobotParts.Head)!=0?other.HeadWork:HeadWork,
+            BodyWork=(other.Parts&RobotParts.Body)!=0?other.BodyWork:BodyWork,
+            LegsWork=(other.Parts&RobotParts.Legs)!=0?other.LegsWork:LegsWork};
         if(!result.ValidIntegration)throw new InvalidOperationException("Incompatible integrated parts.");
         return result with {Owner=result.AssemblyCredit(owner)>0?owner:Owner};
     }
-    public bool CanFight=>!WarehouseKeeper && !LongDeliveryNumber.HasValue && !ReturnHomeCommander.HasValue && Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
+    public bool CanFight=>!IsWorkpiece && !WarehouseKeeper && !LongDeliveryNumber.HasValue && !ReturnHomeCommander.HasValue && Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
 }
 public sealed class RobotStore
 {
@@ -261,6 +266,7 @@ public sealed partial class RobotWorld
     // One simulation step is 1/3 displayed industry turn.
     public void AdvanceIndustry(Func<int,int> owner,Func<int,bool> locked=null)
     {
+        _collectInterrupted?.Invoke();
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)SyncWorkers(n);
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));Workshops[n].CompleteDisposal(Nodes[n]);}
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].CompleteProduction(this,n,owner(n));Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));if(owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));}

@@ -83,6 +83,10 @@ public static class AutoSaveStore
             else if(Collection(type)){var generic=type.GetGenericTypeDefinition();var add=type.GetMethod(generic==typeof(Queue<>)?"Enqueue":"Add");foreach(int id in entry.Items){if(generic==typeof(HashSet<>) && id>=0)Populate(id);add.Invoke(value,new[]{Read(id)});}}
             else foreach(var field in Fields(type)){
                 if(!entry.Fields.TryGetValue(field.Name,out int id)){
+                    if(type==typeof(RobotPartPlanning) && field.Name=="<WorkpieceResumes>k__BackingField"){field.SetValue(value,new List<WorkpieceResumeOrder>());continue;}
+                    if(type==typeof(PlannedPartMove) && field.Name=="<CombineWorkpieces>k__BackingField")continue;
+                    if(type==typeof(Robot) && new[]{"<HeadWork>k__BackingField","<BodyWork>k__BackingField","<LegsWork>k__BackingField"}.Contains(field.Name))continue;
+                    if(type==typeof(RobotWorkshop) && new[]{"_activeWorkpiece","_interruptedWorkpieces","_workpieceOwner"}.Contains(field.Name))continue;
                     if(type==typeof(RobotWorkshop) && new[]{"_rawConsumed","<CompletedBatches>k__BackingField","<StartAfterWorker>k__BackingField","<StartAfterBatch>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(WorkerLaneSettings) && new[]{"<StartAfterWorker>k__BackingField","<StartAfterBatch>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(ConquestCampaign) && field.Name is "_sectorBaseline" or "_sectorBaselineTurn")continue;

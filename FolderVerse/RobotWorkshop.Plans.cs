@@ -30,9 +30,10 @@ public sealed partial class RobotWorkshop
     internal void SetWorkers(Robot[] workers,int worldSeed,int node,int country){
         _baseLineCount??=ProductionLines.Length;_workerLines??=new();
         var ids=workers.Select(r=>r.Id).ToArray();
-        foreach(long id in _workerLines.Keys.Where(id=>!ids.Contains(id)).ToArray())_workerLines.Remove(id);
+        foreach(long id in _workerLines.Keys.Where(id=>!ids.Contains(id)).ToArray()){RetireWorkerWorkpiece(_workerLines[id]);_workerLines.Remove(id);}
         foreach(var worker in workers){
             if(!_workerLines.TryGetValue(worker.Id,out var line) || line.HarvestOnly!=worker.HarvestWorker){
+                if(line!=null)RetireWorkerWorkpiece(line);
                 line=CreateWorkerLine(worker,worldSeed,node,country);_workerLines[worker.Id]=line;
             }else if(line._workerPlans==null)line.GenerateWorkerPlans(worker,worldSeed,node,country,true);
         }

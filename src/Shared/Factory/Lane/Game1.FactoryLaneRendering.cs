@@ -74,7 +74,7 @@ public partial class Game1
             if(tick%3==0)_ui.Center((tick/3).ToString(),new(x-12,y+FactoryBeltY+16,24,15),.29f,ink);
         }
         if(!inFlight && (completed!=null || line.Manufacturing)){
-            var robot=completed??line.CurrentProductionPlan.Preview(owner);
+            var robot=completed??line.ActiveWorkpiece??line.CurrentProductionPlan.Preview(owner);
             var product=progress is float fraction?FactoryConveyorProduct(row,period,robot.Parts,fraction):FactoryConveyorProduct(row,period,line);
             var bounds=new Rectangle(product.X,product.Y,product.Width,122);
             if(completed!=null)DrawManufacturingProduct(bounds,completed);

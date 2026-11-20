@@ -16,7 +16,7 @@ public sealed partial class RobotWorkshop
     internal static RobotWorkshop EmptyFunctions(){var w=new RobotWorkshop();w.RemoveProductionLines();w._lineLimit=-1;w._storageSlotLimit=0;return w;}
     internal static RobotWorkshop PlanningView(System.Collections.Generic.IEnumerable<RobotWorkshop> sources)
     {var result=EmptyFunctions();foreach(var source in sources)result.AbsorbFunctions(source);return result;}
-    internal void ForgetWorkerLine(long id)=>_workerLines?.Remove(id);
+    internal void ForgetWorkerLine(long id){if(_workerLines?.TryGetValue(id,out var line)==true){RetireWorkerWorkpiece(line);_workerLines.Remove(id);}}
     internal void MoveProductionTo(RobotWorkshop destination,int? source)
     {
         if(source.HasValue)foreach(var line in ProductionLines)line.FunctionOriginNode??=source;

@@ -119,6 +119,8 @@ public sealed partial class RobotWorkshop
         }
         if(HarvestOnly || !Manufacturing || Paused || CycleFinished || owner<0)return;
         if(RestEnabled && RestRemaining>0){if(--RestRemaining==0 && DoNotRepeat)CycleFinished=true;return;}
+        _workpieceOwner=owner;
+        if(_activeWorkpiece!=null){AdvanceWorkpiece(world,node,owner,reservedSlots);return;}
         if(WaitingForMaple(world,node))return;
         int period=EffectiveProductionPeriod(purpose);
         _lastEffectiveProductionPeriod=period;
@@ -136,7 +138,7 @@ public sealed partial class RobotWorkshop
             return;
         }
         ProductionAge=WaitingProductionTurns=0;
-        ResetRawProgress();
+        ResetRawProgress(false);
         if(!RestEnabled || ++ProducedSinceRest>=RestEvery){
             ProducedSinceRest=0;CompletedBatches++;
             if(DoNotRepeat)CycleFinished=true;

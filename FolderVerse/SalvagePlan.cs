@@ -21,6 +21,11 @@ public sealed class SalvageAgent
 }
 public sealed class SalvagePlan
 {
+    internal void AddWorkpiece(WorldSetup w,int node,Robot robot)
+    {
+        var cargo=Stopped(robot) with {Id=w.Robots.Create(Math.Max(0,robot.Owner),robot.Parts).Id};
+        Items.Add(new(_next++,node,cargo,robot.Owner));
+    }
     public const int Capacity=6;
     public List<SalvageItem> Items {get;}=new();
     public List<SalvageAgent> Agents {get;}=new();

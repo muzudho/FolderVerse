@@ -5,6 +5,7 @@ using System.Linq;
 
 public sealed record PlannedPartMove(long Number,int Owner,int Source,int Target,long RobotId,RobotParts Parts,long? TargetRobotId,HangarReservation Role=HangarReservation.None)
 {
+    public bool CombineWorkpieces {get;init;}
     public RobotParts ExpectedSource {get;init;}
     public RobotParts ExpectedTarget {get;init;}
     public bool PromoteCaptain {get;init;}
@@ -26,7 +27,7 @@ public sealed record WorkerLaneSettings(int Plan,int RestEvery,int RestTurns,boo
     }
 }
 public sealed record PartPlanResult(long Number,int Owner,int Target,string Status);
-public sealed class RobotPartPlanning
+public sealed partial class RobotPartPlanning
 {
     private long _next=1;
     private Func<RobotWorld> _preview;
@@ -38,11 +39,13 @@ public sealed class RobotPartPlanning
     public Dictionary<long,long> CompletedRobots {get;}=new();
     public static long OutputId(long number)=>long.MinValue+number;
     public static bool PlannedId(long id)=>id<long.MinValue/2;
-    public bool ReservesRobot(long id)=>Orders.Any(o=>o.RobotId==id || o.TargetRobotId==id || OutputId(o.Number)==id);
-    public void Reset(){_next=1;Orders.Clear();LastResults.Clear();PreviewResults.Clear();CompletedRobots.Clear();Invalidate();}
+    public bool ReservesRobot(long id)=>WorkpieceResumes.Any(o=>o.RobotId==id) || Orders.Any(o=>o.RobotId==id || o.TargetRobotId==id || OutputId(o.Number)==id);
+    public void Reset(){_next=1;Orders.Clear();WorkpieceResumes.Clear();LastResults.Clear();PreviewResults.Clear();CompletedRobots.Clear();Invalidate();}
     public bool Undo(int owner)
     {
-        int index=Orders.FindLastIndex(o=>o.Owner==owner);if(index<0)return false;Orders.RemoveAt(index);return true;
+        int index=Orders.FindLastIndex(o=>o.Owner==owner);var resume=WorkpieceResumes.LastOrDefault(o=>o.Owner==owner);
+        if(resume!=null && (index<0 || resume.Number>Orders[index].Number)){WorkpieceResumes.Remove(resume);Invalidate();return true;}
+        if(index<0)return false;Orders.RemoveAt(index);Invalidate();return true;
     }
     public void Invalidate()=>_preview=null;
     internal PlannedPartMove WorkerReservation(long id) =>
@@ -58,6 +61,7 @@ public sealed class RobotPartPlanning
         var hash=new HashCode();hash.Add(world.Population.Turn);hash.Add(world.Campaign.Phase);
         foreach(var store in world.Robots.Nodes){hash.Add(store.TotalCapacity);hash.Add(store.WarehouseLimit);hash.Add(store.WarehouseExpansion);hash.Add(store.ReservedReturns);foreach(var robot in store.Robots)hash.Add(robot);foreach(var package in store.MaplePackages)hash.Add(package);}
         foreach(var order in world.Campaign.FunctionTransfers.Orders)hash.Add(order);
+        foreach(var order in WorkpieceResumes)hash.Add(order);
         foreach(var order in world.Robots.DirectDelivery.Orders)hash.Add(order);
         foreach(var intake in world.Robots.ProductionIntakes)hash.Add(intake);
         if(world.Robots.ProductionIntakes.Count>0){
@@ -96,6 +100,7 @@ public sealed class RobotPartPlanning
         for(int n=0;n<copy.Nodes.Length;n++)if(copy.Nodes[n].OccupiedSlots(direct[n])<=copy.Nodes[n].StorageLimit)copy.Nodes[n].Replace(direct[n]);
         copy.DirectDelivery.Orders.Clear();
         PreviewResults.Clear();
+        foreach(var pending in WorkpieceResumes){int source=Array.FindIndex(copy.Nodes,s=>s.Robots.Any(r=>r.Id==pending.RobotId));if(source>=0){copy.Nodes[source].Remove(pending.RobotId);PreviewResults.Add(new(pending.Number,pending.Owner,source,"仕掛品の再開予定"));}}
         foreach(var order in Orders)try{
             int host=order.Target>=0 && order.Target<hosts.Length?hosts[order.Target]:order.Target;
             Apply(world,copy,RelocateLocalOrder(order,host),false);
@@ -147,7 +152,7 @@ public sealed class RobotPartPlanning
         foreach(var step in recipe)Orders.Add(step with {Number=_next++});
         if(recipe.Length>0)Invalidate();
     }
-    public long Reserve(WorldSetup world,int source,int target,long id,RobotParts parts,long? targetId,int owner)
+    public long Reserve(WorldSetup world,int source,int target,long id,RobotParts parts,long? targetId,int owner,bool combineWorkpieces=false)
     {
         if(!world.Relations.Controls(owner))throw new InvalidOperationException("操作できる国ではありません");
         if(targetId==id)return id;
@@ -156,7 +161,7 @@ public sealed class RobotPartPlanning
         EnsureForecastRobot(world,id);if(targetId.HasValue)EnsureForecastRobot(world,targetId.Value);
         var copy=Preview(world).PlanningCopy();
         var inputs=copy.Nodes.SelectMany(s=>s.Robots).ToArray();
-        var order=new PlannedPartMove(_next,owner,source,target,id,parts,targetId){ExpectedSource=inputs.FirstOrDefault(r=>r.Id==id)?.Parts??0,ExpectedTarget=inputs.FirstOrDefault(r=>r.Id==targetId)?.Parts??0};
+        var order=new PlannedPartMove(_next,owner,source,target,id,parts,targetId){ExpectedSource=inputs.FirstOrDefault(r=>r.Id==id)?.Parts??0,ExpectedTarget=inputs.FirstOrDefault(r=>r.Id==targetId)?.Parts??0,CombineWorkpieces=combineWorkpieces};
         long result=Apply(world,copy,ProjectedLocalOrder(world,order),false);Orders.Add(order);_next++;return result;
         }catch{Orders.RemoveAll(o=>o.Number>=start);_next=start;Invalidate();throw;}
     }
@@ -198,7 +203,7 @@ public sealed class RobotPartPlanning
     private static int Find(RobotWorld world,long id)=>Array.FindIndex(world.Nodes,s=>s.Robots.Any(r=>r.Id==id));
     private static Robot FreeRole(Robot r)=>r with {DefenseOnly=false,InterceptOnly=false,FactoryWorker=false,DefenseFlag=null};
     internal static bool CanUseWarehouseSuccessor(WorldSetup world,RobotWorld stock,int node,Robot robot)=>
-        robot!=null && robot.Parts==RobotParts.Complete && !robot.Stationed && !robot.Disposal &&
+        robot!=null && !robot.IsWorkpiece && robot.Parts==RobotParts.Complete && !robot.Stationed && !robot.Disposal &&
         !world.Robots.MarchReserved(node,robot) && !stock.ReservationBusy(node,robot.Id);
     private static long Apply(WorldSetup world,RobotWorld stock,PlannedPartMove order,bool checkRoute)
     {
@@ -245,6 +250,7 @@ public sealed class RobotPartPlanning
         if(checkRoute && (world.Campaign.RobotBattles.LockedNode(source) || world.Campaign.RobotBattles.LockedNode(target) || world.Campaign.RobotBattles.LockedEdge(source,target)))throw new InvalidOperationException("戦闘中のため入荷できません");
         if((source!=target || receiverNode!=target) && !world.Relations.Allied(order.Owner,world.Nodes.All[target].Owner) || !robot.CanSeparate(order.Parts))throw new InvalidOperationException("所有国・一体型の部位を確認してください");
         if((robot.Parts&order.Parts)!=order.Parts || receiver!=null && (receiver.Disposal!=robot.Disposal || !receiver.CanSeparate(receiver.Parts&order.Parts)))throw new InvalidOperationException("組み替える部位が合いません");
+        if(order.CombineWorkpieces){if(source!=target || receiverNode!=source || receiver==null)throw new InvalidOperationException("同じ格納庫地点の仕掛品を選んでください");return stock.ConsolidateWorkpieceParts(source,robot.Id,receiver.Id,order.Parts,order.Owner);}
         var stores=stock.Nodes.Select(s=>s.Robots.ToList()).ToArray();stores[source].Remove(robot);
         if(receiver!=null)stores[receiverNode].Remove(receiver);
         Robot output;
@@ -296,7 +302,7 @@ public sealed class RobotPartPlanning
             for(int lane=workshop.BaseLineCount;lane<workshop.ProductionLines.Length;lane++)
                 if(workshop.WorkerAt(lane)==id)order.WorkerLane.Apply(workshop.ProductionLines[lane]);
         }
-        Orders.Clear();world.Robots.FinishPlannedAssembly(world);world.Robots.Check();
+        Orders.Clear();ResolveWorkpieceResumes(world);world.Robots.CollectInterruptedWorkpieces(world);world.Robots.FinishPlannedAssembly(world);world.Robots.Check();
     }
 }
 

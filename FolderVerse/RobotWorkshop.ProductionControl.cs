@@ -7,16 +7,17 @@ public sealed partial class RobotWorkshop
 {
     public WorkProgress WorkDone(NodePurpose purpose)
     {
+        if(_activeWorkpiece?.IsWorkpiece==true)return RobotMaterials.Parts.Where(p=>_activeWorkpiece.Work(p)!=null).Select(p=>_activeWorkpiece.Work(p).Progress).Aggregate((a,b)=>a.Numerator*b.Denominator<=b.Numerator*a.Denominator?a:b);
         int period=EffectiveProductionPeriod(purpose);
         return new(CycleFinished?period:Math.Clamp(ProductionAge,0,period),period);
     }
-    public int WorkRemaining(NodePurpose purpose)=>CycleFinished?0:Math.Max(0,EffectiveProductionPeriod(purpose)-ProductionAge);
+    public int WorkRemaining(NodePurpose purpose)=>_activeWorkpiece!=null?RobotMaterials.Parts.Select(p=>_activeWorkpiece.Work(p)?.Remaining??0).Max():CycleFinished?0:Math.Max(0,EffectiveProductionPeriod(purpose)-ProductionAge);
     private int[] _rawConsumed;
     public int RawConsumed(RawMaterial material)=>_rawConsumed?[(int)material]??0;
     public int RawRemaining(RawMaterial material)=>Math.Max(0,RobotWorld.RawCost(CurrentProductionPlan.Preview(0),material)-RawConsumed(material));
-    private void ResetRawProgress()=>_rawConsumed=null;
+    private void ResetRawProgress(bool preserve=true){if(preserve)PreserveInterruptedWorkpiece();_rawConsumed=null;IntakeFailure="";}
     private int NextRawCost(RawMaterial material,int period)
-        =>Math.Max(0,(int)((long)RobotWorld.RawCost(CurrentProductionPlan.Preview(0),material)*Math.Min(period,ProductionAge+1)/period)-RawConsumed(material));
+        =>_activeWorkpiece!=null?WorkpieceStepCost(material):Math.Max(0,(int)((long)RobotWorld.RawCost(CurrentProductionPlan.Preview(0),material)*Math.Min(period,ProductionAge+1)/period)-RawConsumed(material));
     public long CompletedBatches {get;private set;}
     public long? StartAfterWorker {get;private set;}
     public long StartAfterBatch {get;private set;}
