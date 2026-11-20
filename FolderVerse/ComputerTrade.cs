@@ -31,7 +31,7 @@ internal static class ComputerTrade
         if(world.Industry.Pending || world.TutorialStep!=0)return;
         var trade=world.Campaign.Trade;
         var manual=world.ManualRulers().ToHashSet();
-        for(int ruler=0;ruler<world.ActiveCount;ruler++)
+        foreach(int ruler in WorldDayCycle.Order(world,Enumerable.Range(0,world.ActiveCount)))
         {
             if(!world.Relations.CanAct(ruler) || !automaticAll && manual.Contains(ruler) ||
                 trade.Offers.Any(o=>o.From.Ruler==ruler))continue;

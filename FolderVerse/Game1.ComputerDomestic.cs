@@ -159,7 +159,7 @@ public partial class Game1
             .ToArray();
         if(nodes.Length==0)return false;
         var assemblyNodes=HangarAssemblyAvailable?_setup.Robots.PartPlanning.AutomaticAssemblyNodes(_setup):null;
-        _computerDomesticNodes=nodes.GroupBy(node=>node.Owner).OrderBy(group=>group.Key)
+        _computerDomesticNodes=nodes.GroupBy(node=>node.Owner).OrderBy(group=>WorldDayCycle.DawnPhase(_setup,group.Key)).ThenBy(group=>(group.Key+_setup.ActiveCount-_setup.Population.Turn%_setup.ActiveCount)%_setup.ActiveCount)
             .Select(group=>group.OrderByDescending(node=>assemblyNodes?.Contains(HangarPlanningNodeAt(node.Id))==true)
                 .ThenByDescending(node=>_setup.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==node.Id))
                 .ThenByDescending(node=>_setup.Robots.AssemblySelection(node.Id,node.Owner,true)!=null).First())

@@ -112,7 +112,7 @@ public partial class Game1
             bool complete=FortuneSettingsAvailable
                 ? active && (enter || click && FortuneConfirm.Contains(_pointer))
                 : _landAge>=5;
-            if(complete){_setup.CompleteLand(_random.Next(),_robotScatterPercent,_rawStockPercent);_world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();if(_setup.ComputerOnly)StartAutoPlay();}
+            if(complete){_setup.CompleteLand(_random.Next(),_robotScatterPercent,_rawStockPercent);var morning=_setup.TurnPlayers();if(morning.Length>0)_setup.SelectTurnRuler(morning[0]);_world.ShowSetup(_setup,true);_statusCell=_populationCell=-1;_screen=Screen.WorldStatus;RestoreDomesticCamera();if(_setup.ComputerOnly)StartAutoPlay();}
             return;
         }
         if(active && click && LandSkipOthers.Contains(_pointer)){_skipOtherLandTurns=!_skipOtherLandTurns;_landDrag=null;}

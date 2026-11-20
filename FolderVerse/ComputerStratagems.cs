@@ -15,7 +15,7 @@ public static class ComputerStratagems
         var log=w.Campaign.StratagemDecisions;
         if(log.Any(d=>d.Turn!=w.Population.Turn))log.Clear();
         var plans=w.Campaign.Stratagems;var battle=w.Campaign.RobotBattles;
-        foreach(int ruler in Enumerable.Range(0,w.ActiveCount).Where(w.Relations.CanAct).Select(w.Relations.Root).Distinct().Order()){
+        foreach(int ruler in WorldDayCycle.Order(w,Enumerable.Range(0,w.ActiveCount).Where(w.Relations.CanAct).Select(w.Relations.Root).Distinct())){
             var prior=log.FirstOrDefault(d=>d.Ruler==ruler);
             if(prior!=null){if(automaticAll&&prior.Reason=="manual_control")log.Remove(prior);else continue;}
             var party=StratagemPlans.ComputerParty(w,ruler,automaticAll);

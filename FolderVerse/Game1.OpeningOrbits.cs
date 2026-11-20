@@ -133,10 +133,11 @@ public partial class Game1
             var candidate=offset<candidates.Length?candidates[offset]:null;
             var tint=MiniatureColor(candidate,i);
             var rail=Color.Lerp(tint,Color.White,.26f)*(ink*(i==focus?.94f:.62f)*(1-.7f*globeBlend));
-            float spin=OpeningOrbitSpin(elapsed,i);
+            int spinDirection=WorldDayCycle.RotationDirection(candidate??_setup);
+            float spin=OpeningOrbitSpin(elapsed,i)*spinDirection;
             if(i==focus && !intro)
             {
-                float focusedSpin=OpeningOrbitSpin(elapsed-age+(float)OpeningZoomInEnd,i);
+                float focusedSpin=OpeningOrbitSpin(elapsed-age+(float)OpeningZoomInEnd,i)*spinDirection;
                 spin+=MathHelper.WrapAngle(focusedSpin-spin)*approach;
             }
             float useCloseModel=i==focus?MathHelper.SmoothStep(0,1,(approach-.72f)/.28f):0;

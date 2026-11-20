@@ -159,7 +159,7 @@ public sealed partial class ConquestCampaign
             var random=new SeedRandom(world.PlacementSeed^world.Population.Turn^0x57421);
             submittedOrders=orders.ToArray();
             if(UseRobotCombat)ComputerJointAttacks.Plan(world,orders,automaticAll);
-            else for(int ruler=0;ruler<world.ActiveCount;ruler++)
+            else foreach(int ruler in WorldDayCycle.Order(world,Enumerable.Range(0,world.ActiveCount)))
             {
                 if(!automaticAll && world.ManualRulers().Contains(ruler) || !world.Relations.CanAct(ruler))continue;
                 if(UseRobotCombat)BattleLessons.ReserveHomeGuards(world,ruler);
@@ -211,6 +211,7 @@ public sealed partial class ConquestCampaign
             RobotBattles.Advance(world,orders);
             NodeFunctionTransfers.RelocateStrandedConquerors(world);
             AttackMemory.Observe(world,orders);
+            var morningPlayers=world.TurnPlayers();if(morningPlayers.Length>0)world.SelectTurnRuler(morningPlayers[0]);
             Phase=CampaignPhase.Domestic;
             Report=$"ロボット輸送 {world.Robots.Transport.LastTransfers.Count} / 観戦 {RobotBattles.Scenes.Count} / 継戦 {RobotBattles.Encounters.Count(e=>!e.Finished)}";
             return;
@@ -291,6 +292,7 @@ public sealed partial class ConquestCampaign
             world.TerritoryCounts[world.PlayerSlot]==0?"あなたは放浪者":world.Nodes.Current(world.PlayerSlot)?.Owner==world.PlayerSlot?"あなたの現在地は自国地点":"あなたの現在地は他国地点":"あなたは待機";
         int cellsWon=world.Cells.Count(c=>world.Nodes.FullOwner(c.Id)>=0 && world.Nodes.FullOwner(c.Id)!=previousFull[c.Id]);
         Report=$"{result} / 戦闘 {Battles.Count} 件 / 地点確保 {conquests} / 区画征服 {cellsWon}";
+        var nextMorning=world.TurnPlayers();if(nextMorning.Length>0)world.SelectTurnRuler(nextMorning[0]);
         Phase=CampaignPhase.Domestic;
     }
 }

@@ -685,6 +685,9 @@ public partial class Game1 : Game
             _net.RegionFocusCell=_world.RegionFocusCell=RegionMapFocusCell;
             _net.SelectedCell=_world.SelectedCell=_transportOverview || _net.ShowRoutes?-1:_selectedMapCell;
             _world.SelectionSetup=_setup;
+            _world.DaylightWorld=_setup;
+            _world.DawnMeridian=WorldDayCycle.DawnPhase(_setup,_setup.PlayerSlot);
+            _net.DawnMeridian=_world.DawnMeridian;
             _world.Draw(_yaw,_pitch,_animationTime,false,true,deferAtmosphere:true);
             _net.HoveredBattery=_net.HitBattery(_pointer);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1;

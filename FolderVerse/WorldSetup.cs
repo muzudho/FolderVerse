@@ -89,7 +89,7 @@ public sealed partial class WorldSetup
     public int[] ControlledParty(int player)=>Relations.Forest(this).Where(e=>ControllerOf(e.Ruler)==player && Relations.CanAct(e.Ruler)).Select(e=>e.Ruler).ToArray();
     public int[] ManualRulers()=>Relations.Forest(this).Where(e=>ControllerOf(e.Ruler)>=0 && Relations.CanAct(e.Ruler))
         .OrderBy(e=>HumanPlayers.Count==0?0:HumanPlayers.IndexOf(ControllerOf(e.Ruler))).Select(e=>e.Ruler).ToArray();
-    public int[] TurnPlayers()=>ComputerOnly?Array.Empty<int>():HumanPlayers.Count==0?new[]{TurnPlayer}:HumanPlayers.Where(h=>ControlledParty(h).Length>0).ToArray();
+    public int[] TurnPlayers()=>ComputerOnly?Array.Empty<int>():WorldDayCycle.Order(this,HumanPlayers.Count==0?new[]{TurnPlayer}:HumanPlayers.Where(h=>ControlledParty(h).Length>0));
     public void SelectTurnRuler(int ruler)
     {
         int controller=ControllerOf(ruler);

@@ -390,6 +390,8 @@ public partial class Game1
             var clipped=Rectangle.Intersect(frame,canvas);
             if(clipped.Width<=0 || clipped.Height<=0)return;
             var previousPose=planet.ManualOrientation;
+            planet.DaylightWorld=_setup;
+            planet.DawnMeridian=WorldDayCycle.Wrap((float)time.TotalGameTime.TotalSeconds/90);
             planet.ManualOrientation=handoff.Pose;
             if(_screen==Screen.OpeningLottery && OpeningStarSelectable)_openingReviewPose=handoff.Pose;
             GraphicsDevice.Viewport=new Viewport(canvas);
