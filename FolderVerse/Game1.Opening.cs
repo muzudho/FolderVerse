@@ -158,7 +158,7 @@ public partial class Game1
     }
     private void OpeningStars(Rectangle area)
     {
-        _ui.Box(area,OpeningSpaceInk);
+        DrawSpaceBackdrop(area);
         for(int i=0;i<270;i++){
             float x=(float)((i*367.0+1920*100-_openingAge*(18+i%5*14))%1920),y=85+i*173%780;
             int size=i%9==0?4:2;

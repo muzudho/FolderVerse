@@ -8,6 +8,8 @@ public sealed record TurnNewsArticle(int Country,string Kind,string Headline,str
 // A newspaper reports observations; a conditional outlook never predicts a certain winner.
 public static class TurnNewspaper
 {
+    // This world's calendar has neither years nor months. Keep the full turn internally.
+    public static string DayLabel(int turn)=>$"{(Math.Max(0,turn)%100+1)%100:00}日";
     public static TurnNewsArticle[] Build(WorldSetup w,int reader)
     {
         var articles=new List<TurnNewsArticle>();

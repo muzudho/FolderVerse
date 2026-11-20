@@ -50,7 +50,7 @@ public partial class Game1
         }
         var article=_turnPapers[_turnPaperIndex];
         _ui.Text("新聞フェーズ / 朝刊",new(80,40),.8f,Cream);
-        _ui.Text($"全体ターン {_setup.Population.Turn} / {_turnPaperIndex+1} 紙目・全 {_turnPapers.Length} 紙",new(990,58),.45f,Cream);
+        _ui.Text($"{TurnNewspaper.DayLabel(_setup.Population.Turn)} / {_turnPaperIndex+1} 紙目・全 {_turnPapers.Length} 紙",new(990,58),.45f,Cream);
         DrawToyPost(article.Country,_paperAge);
         // A toy cup and saucer stay outside the readable paper.
         PaperOval(new(1625,212,185,56),new Color(42,31,25)*.4f);
@@ -70,7 +70,7 @@ public partial class Game1
         if(t>=.99f){
             DrawNationalNewspaperMasthead(new(475,174,960,100),article.Country+1);
             _ui.Box(new(350,285,1210,4),ink);
-            NewsLine($"第{article.Country+1}国 / {_setup.ConquerorNames[article.Country]}国の視点 / {article.Kind}",350,305,1200,.44f,ink);
+            NewsLine($"{TurnNewspaper.DayLabel(_setup.Population.Turn)} 朝刊 / 第{article.Country+1}国 / {_setup.ConquerorNames[article.Country]}国の視点 / {article.Kind}",350,305,1200,.44f,ink);
             NewsLine(article.Headline,350,370,1190,.85f,ink);
             for(int i=0;i<article.Lines.Length;i++)NewsLine(article.Lines[i],350,465+i*60,1190,.46f,ink);
             _ui.Box(new(350,735,1190,2),ink*.35f);
