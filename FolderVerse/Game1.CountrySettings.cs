@@ -75,6 +75,24 @@ public partial class Game1
         int side=Math.Min(area.Width,area.Height)*3/4;
         DrawCountryEmblem(new(area.Center.X-side/2,area.Center.Y-side/2,side,side),ruler);
     }
+    private void DrawControllerFace(Rectangle box,bool human)
+    {
+        int cx=box.Center.X,cy=box.Center.Y;
+        var ink=new Color(18,36,48);
+        if(human){
+            PaperOval(new(box.X+1,box.Y+1,box.Width-2,box.Height-2),Cream);
+            // Curved smiling eyes and mouth, kept inside the square footprint.
+            foreach(int x in new[]{cx-5,cx+5}){
+                _ui.Box(new(x-2,cy-3,2,3),ink);_ui.Box(new(x,cy-5,2,2),ink);_ui.Box(new(x+2,cy-3,2,3),ink);
+            }
+            _ui.Box(new(cx-4,cy+4,8,2),ink);_ui.Box(new(cx-6,cy+2,2,2),ink);_ui.Box(new(cx+4,cy+2,2,2),ink);
+        }else{
+            _ui.Box(new(box.X+1,box.Y+3,box.Width-2,box.Height-6),Cream);
+            _ui.Box(new(cx-7,cy-3,5,2),ink);_ui.Box(new(cx+3,cy-3,5,2),ink);
+            _ui.Box(new(cx-4,cy+4,9,2),ink);
+            _ui.Box(new(box.X,cy-3,2,6),ink);_ui.Box(new(box.Right-2,cy-3,2,6),ink);
+        }
+    }
     private void DrawOperationEye(Point center)
     {
         // Almond outline and a pupil: no additional font or image asset is needed.
@@ -98,7 +116,7 @@ public partial class Game1
             DrawCountrySwatch(new(r.X+4,r.Y+7,36,40),i);
             string name=$"{i+1} {_setup.ConquerorNames[i]}";
             _ui.Text(name,new(r.X+46,r.Y+5),Math.Min(.36f,134/_font.MeasureString(name).X),Cream);
-            _ui.Text(_setup.IsHumanPlayer(i)?"人間":"コンピューター",new(r.X+46,r.Y+30),.26f,Cream);
+            DrawControllerFace(new(r.X+46,r.Y+29,23,23),_setup.IsHumanPlayer(i));
             if(_setup.ShowComputerOperations(i))DrawOperationEye(new(r.Right-17,r.Y+40));
         }
         int ruler=_countrySettingsRuler;
