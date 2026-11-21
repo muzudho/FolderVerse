@@ -4933,3 +4933,26 @@ End_JST=2026-11-21 05:31:15.557381
 - 通常入力/更新後はMapViewBounds/NetPanelとも(40,142,1840,820)、地点0=(1214.0149,638.71497)、地点3=(1233.2849,523.095)、双方visible=true、trucks=1。右ドラッグだけでなく通常更新に伴うインスペクター退避/表示範囲復帰も含むため、パン単独効果とは断定しない。従来fixtureの直接呼出/更新省略条件での失敗と切り分け、製品DEMO採番なし。
 - 後続の左右格納庫/予約維持・540p地星儀/展開図の連続トラッククリック・退避/復帰カメラ・回転した継ぎ目文字の実入力/アニメーション描画までPASS。540p左右格納庫画像を目視、C作業領域artifacts/demo-click-audit/direct-5e19a288-540.png、SHA256 0432da64910a14f8caa5801e4827e5c6dd4c195757b7b5f4172b3b50f16fa233。NAS復旧後参照/ハッシュ確認移行。
 - HEAD前後5e19a288不変。06:02の後続未確認は今回の任意条件範囲では解消。自然Demo専用直送便・CPU朝順/全条件・OS実入力通しは未確認を維持。利用者差分/通常セーブ保護、コミット・プッシュ・公開なし。次回は自然Demo/CPU未確認条件を優先し同条件反復なし。
+
+## 2026-11-21 13:09 最終処分場の大幅変更確認（利用者依頼）
+
+- 現行HEAD5135aa54740a1fc9c762f3826c670167da5097a9。仕様コミット5a888987と確定仕様docs/設計/最終処分場とスクラップ.md、docs/dev/final-disposal.md、中核Scrap/解体/配送/回収/格納庫UIと既存差分を確認。利用者個人チャットの変更は保護。旧HEADの成功を流用せず、製品を再ビルド。
+- 新規通常ゲームだけScrapRulesEnabledを有効化、既存セーブ/チュートリアルは従来ルール。最終処分場は港/大渦と分離して最低１つ、恒久施設/最低１格納庫を残す。解体進捗と製造仕掛品を分離し、スクラップは九分率、通常原料は十六分率。配送前に滞在期限処理、廃棄は１地点１全体ターン１格納庫分。
+- 出力は既存C共用folderverse-audit（保持期限11/22 JST）を再利用。C空き199620100096 bytes。NAS再接続確認は短い子プロセス期限でも戻らず、自分の確認セッションを中断してローカルへ継続。元資料は変更/削除せず、NAS復旧後は参照とハッシュを照合して移す。
+- dotnet build FolderVerse/FolderVerse.csproj --artifacts-path C共用folderverse-audit -p:UseAppHost=false、PID3772、13:12:21–48、上限600秒exit0/警告0/エラー0。ログdisposal-current-build.log。FinalDisposal/Workpieces/ProgressiveProductionを同出力bin/FolderVerse/debugへPublishedGame指定して各ビルド600秒上限exit0、ログdisposal-{名前}-build.log。
+- dotnet 同出力/bin/{名前}/debug/{名前}.dll、GAME_RUNTIME=同出力bin/FolderVerse/debug、各上限300秒。FinalDisposal PID11080 13:13:09–20、108 assertions PASS。Workpieces PID28628 13:13:20–53、367 PASS。ProgressiveProduction PID17632 13:13:53–56、24 PASS。全exit0/TIMEOUTなし・終了回収済み。ログdisposal-{名前}-run.log。
+- 独立描画ハーネスC作業領域artifacts/demo-click-audit/FinalDisposalUiを作成（製品無変更・通常セーブ/統計無効、独立ワールド）。初回はSDL未配置、次はPortrait素材基準ディレクトリ不足で実行失敗。既存同一SDL/OpenALをハッシュ照合して配置、素材基準をCゲーム出力へ設定しネイティブ参照を明示。最終ビルドdisposal-ui-native-build.log exit0、最終実行PID10288 13:17:12–19、上限300秒exit0、disposal-ui-native-run.log。準備段階の失敗ログは保持し製品不具合と混同しない。
+- 実描画1080p/540pでスクラップ2/9束を通常HandleInputから廃棄予約→現物保持→取消、Escape閉じるをPASS。２解像度を目視、C作業領域artifacts/demo-click-audit/final-disposal-5135aa54-{1080,540}.png。SHA256順89e76424bd50a5f8616d2493a36b04060a8f4d5f1c7426ca3c70a051a09c4cd1、417899183d1ef44b86449f23f6dc14bde493d37e7db59fd75b0086885ac0f3ec。
+- 範囲完了13:18 JST、HEAD前後5135aa54不変。今回確認範囲で新しい再現済み製品不具合なし。CPUの解体/搬出活用や長期収束、自然Demo全巡回、OS実入力通しは未確認。製品変更・コミット・プッシュ・公開なし。次回はこの新HEADを基準に未確認の自然経路を点検。
+
+- 2026-11-21 13:19 点検回（終了13:21 JST、実施範囲完了）：指示ハッシュ/HEAD5135aa54/差分・両記録照合。最終処分場を取り込んだ新HEADでDemoUiの自然巡回を回帰。通常セーブ/統計を分離した既存診断、ゲームコード変更なし。
+- dotnet build tests/DemoUi/DemoUi.csproj --artifacts-path C共用folderverse-audit -p:UseAppHost=false、PID10900、13:19:30–38、上限600秒exit0/警告0/エラー0。dotnet 同出力/bin/DemoUi/debug/DemoUi.dll、PID2296、13:19:54–13:20:07、上限300秒exit0。SEED12/NATURAL_CONTINUE1/NORMAL_INPUT1、Content同出力FolderVerse/debug/Content、ALSOFT_DRIVERS=null。ログdemo-disposal-build.log/demo-disposal-run.log、TIMEOUTなし・終了回収済み。
+- 通常HandleInput経由の新聞→内政復帰、turn0→2・配送２回、段階30→36の地図地点/出撃選択/確定即予約１件/赤チェック/インスペクター閉じる→陣営終了をPASS。実ワールドseed992459907/cast934883396/place883376777。直送便overview/directMap/directPairはfalseのため専用経路の成功とは扱わない。最終処分場自体の自然Demo実演・CPU朝順/計略/全状態・全Seed/OS入力は未確認を維持。
+- HEAD前後5135aa54不変、新DEMO・製品/診断変更なし。C共用出力保持11/22、利用者差分/通常セーブ保護、コミット・プッシュ・公開なし。次回は未確認の専用直送便またはCPU条件から。
+
+- 2026-11-21 13:21–13:22 点検回：指示ハッシュ/HEAD5135aa54/製品差分不変、直近自然Demo診断終了済み。13:20成功条件は反復しない。Game1.ComputerDomestic.csの通常格納庫/組立経路を静的照合し、ComputerHangarPoint・部位ドラッグ開始/終了・ページ操作の画面表示点にNodeInspectorOffsetが加算され、BeginComputerView/ShowComputerViewが操作する征服者へ先に切り替えることを確認。専用工場/解体の新操作まで再生する保証ではない。新DEMO・ゲーム変更なし。静的範囲完了、CPU表示ON/OFF/スキップ・人間復帰の新HEAD実行は未確認、次回はその条件へ。通常セーブ/利用者差分保護、コミット・プッシュ・公開なし。
+
+- 2026-11-21 13:40 点検回（終了13:43 JST、部分範囲完了）：指示ハッシュ/HEAD5135aa54/両記録・差分照合。未確認だったCPU内政の表示OFF/通常/早期スキップ/部品保持中Escape比較を既存DemoAuditCpuSortieで実行。DOMESTIC_SKIP/DOMESTIC_ENTRY/AUTO_ENABLED/ASSEMBLY_SKIP_HELD/ASSEMBLY_ESC_INPUT各1、Content=C共用FolderVerse/debug/Content、ALSOFT_DRIVERS=null。固定３部位+人間予約fixtureで、通常世界生成や最終処分場のCPU活用条件ではない。
+- dotnet build artifacts/demo-click-audit/DemoAuditCpuSortie.csproj --artifacts-path C共用folderverse-audit -p:UseAppHost=false、各上限600秒exit0。dotnet 同出力/bin/DemoAuditCpuSortie/debug/DemoAuditCpuSortie.dll、初回PID26324 13:41:13–25、状態ログ追加後PID31544 13:42:12–25、各上限300秒exit3762504530。TIMEOUTなし・終了回収済み。ログcpu-domestic-current-build/run.log、cpu-domestic-probe-build/run.log。
+- OFFではComplete１体・Deliveryまで進行。ONは通常格納庫が開き、人間予約を保持、forecast=Completeまで通過したが、「Playback restores human and advances delivery」で停止。状態はplayer1/WorldStatus/Domestic、再生active、stage2/age3.1/steps有、HangarIntroProgress=0。Game1.HangarZoom.cs:18は(_animationTime-_hangarIntroStart)/.2、既存固定診断はUpdateを空にしてUpdateComputerDomesticだけを繰り返すため時刻が進まない。製品の進行不能と確定せず診断の時刻前提不足として要再確認、新DEMOなし。
+- 追加変更はProbeCpuSortie.cs.txtの終了状態Consoleログ１行のみ、ゲーム変更なし。次回改善は通常の時刻更新を模擬/実行して格納庫導入を終えた条件で再比較し、ON完走/途中Escape/人間復帰・在庫ID同一を確認する。初回失敗以降は未確認を維持。HEAD5135aa54、C既存出力保持11/22、通常セーブ/利用者変更保護、コミット・プッシュ・公開なし。
