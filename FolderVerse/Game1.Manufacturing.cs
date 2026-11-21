@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -114,7 +114,7 @@ public partial class Game1
             bool inFlight=shipment.Arrival!=null && _manufacturingAge-shipment.Started>=ManufacturingAnticipation;
             float progress=shipment.Arrival!=null?1:(float)Math.Clamp((line.ProductionAge+increment)/period,0,1);
             DrawFactoryConveyor(line,Math.Max(0,owner),item.index,period,progress,shipment.Arrival?.Product,inFlight);
-            if(line.WorkerSnapshot is {} worker)DrawFactoryWorker(y,worker);
+            if(line.DismantleOnly)continue;if(line.WorkerSnapshot is {} worker)DrawFactoryWorker(y,worker);
             DrawFactoryHoliday(line,item.index);
             _ui.Text($"× {line.RestEvery}"+(!line.DoNotRepeat?" / 繰り返す":""),new(190,y+226),.32f,Cream);
             DrawFactoryRawProgress(line,y,_setup.Nodes.All[source].Purpose);

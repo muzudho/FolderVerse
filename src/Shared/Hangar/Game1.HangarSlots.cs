@@ -33,12 +33,12 @@ public partial class Game1
             foreach(var entry in occupied)
                 for(int i=0;i<entry.Value.Sections;i++)used[entry.Key+i]=true;
         foreach(var package in packages.OrderByDescending(p=>p.Sections).ThenByDescending(p=>positions?.ContainsKey(p.Id)==true)){
-            int sections=package.Sections;
+            int sections=package.Sections;bool Compatible(int start)=>package.Material==RawMaterial.Scrap?!slots[start/3].HasValue && !result.Any(p=>p.Key/3==start/3 && p.Value.Material!=RawMaterial.Scrap) && occupied?.Any(p=>p.Key/3==start/3 && p.Value.Material!=RawMaterial.Scrap)!=true:!result.Any(p=>p.Key/3==start/3 && p.Value.Material==RawMaterial.Scrap) && occupied?.Any(p=>p.Key/3==start/3 && p.Value.Material==RawMaterial.Scrap)!=true;
             int key=order.SelectMany(slot=>Enumerable.Range(0,4-sections).Reverse().Select(row=>slot*3+row))
-                .FirstOrDefault(start=>Enumerable.Range(start,sections).All(index=>!used[index]),-1);
+                .FirstOrDefault(start=>Enumerable.Range(start,sections).All(index=>!used[index]) && Compatible(start),-1);
             if(positions?.TryGetValue(package.Id,out int preferred)==true && preferred>=0 &&
                 order.Contains(preferred/3) && preferred%3+sections<=3 &&
-                Enumerable.Range(preferred,sections).All(index=>!used[index]))key=preferred;
+                Enumerable.Range(preferred,sections).All(index=>!used[index]) && Compatible(preferred))key=preferred;
             if(key<0)continue;
             result.Add(key,package);
             for(int i=0;i<sections;i++)used[key+i]=true;

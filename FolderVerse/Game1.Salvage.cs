@@ -22,7 +22,7 @@ public partial class Game1
     private SalvageAgent CurrentSalvageAgent=>_setup.Salvage.Agents.FirstOrDefault(a=>a.Owner==_setup.PlayerSlot);
     private SalvageItem[] VisibleSalvageItems()=>_setup.Salvage.Items.Where(i=>_salvageNodeFilter<0 || i.Node==_salvageNodeFilter)
         .OrderByDescending(i=>i.RequestedBy==_setup.PlayerSlot).ThenBy(i=>i.Node).ThenBy(i=>i.Id).ToArray();
-    private static string SalvagePartLabel(Robot r)=>(r.IntegratedParts!=0?IntegratedLabel(r.IntegratedParts)+" / ":"")+
+    private static string SalvagePartLabel(Robot r)=>r.RecoveredRaw!=null?PartsLabel(r):(r.IsDismantling?"解体の仕掛品 / ":r.IsWorkpiece?"製造の仕掛品 / ":"")+(r.IntegratedParts!=0?IntegratedLabel(r.IntegratedParts)+" / ":"")+
         string.Join("・",RobotMaterials.Parts.Where(p=>(r.Parts&p)!=0)
             .Select(p=>PartsLabel(p)+"（"+RobotMaterials.Label(r.Material(p))+"・"+(r.IsDamaged(p)?"汚損":"無傷")+"）"))+
         (r.IntegratedParts!=0 && r.DamagedParts!=0?" / 汚損箇所："+PartsLabel(r.DamagedParts):"");
@@ -151,7 +151,7 @@ public partial class Game1
         if(_salvageAbandonConfirmation is not {} selection)return false;
         if(escape || click && AbandonNo.Contains(_pointer)){_salvageAbandonConfirmation=null;return true;}
         if(click && AbandonYes.Contains(_pointer)){
-            try{_setup.Salvage.Abandon(_setup,_setup.PlayerSlot,selection.Node,selection.Robot,selection.Parts);_hangarMessage="停止して放棄しました / 放棄品置き場で確認できます";}
+            try{if(_setup.Robots.ScrapRulesEnabled)_setup.Robots.Discarding.Reserve(_setup,selection.Node,_setup.PlayerSlot,selection.Robot,selection.Parts);else _setup.Salvage.Abandon(_setup,_setup.PlayerSlot,selection.Node,selection.Robot,selection.Parts);_hangarMessage=_setup.Robots.ScrapRulesEnabled?"カゴへの廃棄を予約しました":"停止して放棄しました / 放棄品置き場で確認できます";}
             catch(InvalidOperationException){_hangarMessage="予約・所有国・戦闘状況を確認してください";}
             _salvageAbandonConfirmation=null;_hangarAbandonMode=false;_salvageFocusTurn=-1;SyncHangarSlots();
         }

@@ -115,7 +115,7 @@ public partial class Game1
         var direction=FunctionTransferDirection(marker.Source,marker.Target);
         _ui.Center(direction,new(585,425,750,34),Math.Min(.43f,740/Math.Max(1,_font.MeasureString(direction).X)),Cream);
         DrawOption(TransferFactoryButton,"格納庫を残して工場を移転する",true);
-        DrawOption(TransferAllButton,"全て移転する",false);
+        DrawOption(TransferAllButton,_setup.Nodes.All[marker.Source].PermanentLandmark?"永続施設と１格納庫を残して移転する":"全て移転する",false);
         int affectedShipments=MapleShipmentsAffectedByTransfer(marker.Source);
         if(affectedShipments>0 && CanChooseTransfer(marker,false))
         {

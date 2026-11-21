@@ -44,7 +44,7 @@ public sealed partial class ConquestCampaign
     }
     internal void BeginDelivery(WorldSetup world)
     {
-        CaptureSectorBaseline(world);
+        world.Robots.ProcessFinalDisposal(world);world.Robots.Discarding.Resolve(world);CaptureSectorBaseline(world);
         LastCancelledWars.Clear();
         FunctionTransfers.Resolve(world);
         world.Robots.ResolveProductionIntakes(world);
@@ -204,7 +204,7 @@ public sealed partial class ConquestCampaign
     }
     public void Resolve(WorldSetup world,IReadOnlyList<March> orders)
     {
-        CaptureSectorBaseline(world);
+        world.Robots.ProcessFinalDisposal(world);world.Robots.Discarding.Resolve(world);CaptureSectorBaseline(world);
         PreviousNodeOwners=world.Nodes.All.Select(n=>n.Owner).ToArray();
         if(UseRobotCombat)
         {

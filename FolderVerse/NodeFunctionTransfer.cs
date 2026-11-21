@@ -26,11 +26,11 @@ public sealed class NodeFunctionTransfers
     private static int MergedWarehouseLimit(IEnumerable<RobotStore> stores)=>
         Math.Min(MaximumCapacity,stores.Sum(store=>store.WarehouseLimit??store.TotalCapacity));
 
-    internal static void MergeHangarCapacity(RobotStore source,RobotStore target)
+    internal static void MergeHangarCapacity(RobotStore source,RobotStore target,bool keepSource=false)
     {
         if(target.WarehouseLimit.HasValue)
-            target.SetWarehouseLimit(Math.Min(target.WarehouseMaximum,MergedWarehouseLimit(new[]{source,target})));
-        else target.SetCapacity(checked(target.TotalCapacity+source.TotalCapacity));
+            target.SetWarehouseLimit(Math.Min(target.WarehouseMaximum,MergedWarehouseLimit(new[]{source,target})-(keepSource?1:0)));
+        else target.SetCapacity(checked(target.TotalCapacity+source.TotalCapacity-(keepSource?1:0)));
     }
 
     private bool Available(WorldSetup w,int source,int target,bool authority,bool factoryOnly)
@@ -39,14 +39,14 @@ public sealed class NodeFunctionTransfers
         var a=w.Nodes.All[source];var b=w.Nodes.All[target];var battles=w.Campaign.RobotBattles;
         long capacity=(long)w.Robots.Nodes[target].TotalCapacity+w.Robots.Nodes[source].TotalCapacity+
             Orders.Where(o=>!o.FactoryOnly && o.Source!=source && o.Target==target).Sum(o=>(long)w.Robots.Nodes[o.Source].TotalCapacity);
-        if(b.Purpose==NodePurpose.Relay && (!w.RelayLogisticsEnabled || a.Purpose!=NodePurpose.Relay || factoryOnly) || factoryOnly && a.Purpose==NodePurpose.Relay)return false;
+        if(a.PermanentLandmark && !factoryOnly && w.Robots.Nodes[source].TotalCapacity==1 && w.Robots.Nodes[source].Count==0 && w.Robots.Workshops[source].LineLimit==0)return false;if(b.Purpose==NodePurpose.Relay && (!w.RelayLogisticsEnabled || a.Purpose!=NodePurpose.Relay || factoryOnly) || factoryOnly && a.Purpose==NodePurpose.Relay)return false;
         var workshops=w.Robots.Workshops;
         int laneCapacity=workshops[target].LineLimit+workshops[source].LineLimit+
             Orders.Where(o=>o.Source!=source && o.Target==target).Sum(o=>workshops[o.Source].LineLimit);
         if(laneCapacity>MaximumFactoryLanes)return false;
         if(factoryOnly){
             var robots=w.Robots;
-            var workers=robots.Nodes[source].Robots.Where(r=>r.FactoryWorker).ToArray();
+            var workers=robots.Nodes[source].Robots.Where(r=>r.FactoryWorker || robots.Workshops[source].IsDisposing(r.Id)).ToArray();
             var incomingWorkers=Orders.Where(o=>o.FactoryOnly && o.Source!=source && o.Target==target)
                 .SelectMany(o=>robots.Nodes[o.Source].Robots.Where(r=>r.FactoryWorker));
             if(robots.Workshops[source].LineLimit==0 ||
@@ -85,9 +85,9 @@ public sealed class NodeFunctionTransfers
     {
         var from=robots.Nodes[source];var to=robots.Nodes[target];
         if(from.LogisticsRules)from.SetLogisticsRules(relay:true);
-        var workers=from.Robots.Where(r=>r.FactoryWorker).ToArray();
+        var workers=from.Robots.Where(r=>r.FactoryWorker || robots.Workshops[source].IsDisposing(r.Id)).ToArray();
         to.Replace(to.Robots.Concat(workers.Select(r=>r with {FunctionDisplayNode=r.FunctionDisplayNode??source})));
-        from.Replace(from.Robots.Where(r=>!r.FactoryWorker));
+        var moving=workers.Select(r=>r.Id).ToHashSet();from.Replace(from.Robots.Where(r=>!moving.Contains(r.Id)));
         robots.Workshops[source].MoveProductionTo(robots.Workshops[target],preview?null:source);
     }
     internal void Resolve(WorldSetup w)
@@ -100,28 +100,28 @@ public sealed class NodeFunctionTransfers
             int a=order.Source,b=order.Target,offset=w.Robots.Nodes[b].TotalCapacity;
             var source=w.Robots.Nodes[a];var target=w.Robots.Nodes[b];
             if(order.FactoryOnly){
-                MoveFactory(w.Robots,a,b);
+                MoveFactory(w.Robots,a,b);if(w.Nodes.All[a].PermanentLandmark)source.SetLogisticsRules(relay:false);
                 w.Nodes.All[b].IncomingFactories+=1+w.Nodes.All[a].IncomingFactories;
                 w.Nodes.All[a].IncomingFactories=0;
-                w.Nodes.All[a].Purpose=NodePurpose.Relay;
+                if(!w.Nodes.All[a].PermanentLandmark)w.Nodes.All[a].Purpose=NodePurpose.Relay;
                 Orders.Remove(order);LastResults.Add(order with {Status="工場移転完了"});
                 w.Robots.SyncWorkers(b);
                 continue;
             }
-            MergeHangarCapacity(source,target);
+            MergeHangarCapacity(source,target,w.Nodes.All[a].PermanentLandmark);
             target.Replace(target.Robots.Concat(source.Robots.Select(r=>(r.DefenseOnly?r.WithoutDefenseReservation():r) with {FunctionDisplayNode=r.FunctionDisplayNode??a})).ToArray());
             w.Robots.TransferMapleFunctions(a,b);
-            source.Replace(Array.Empty<Robot>());source.SetCapacity(0);
+            source.Replace(Array.Empty<Robot>());source.SetCapacity(w.Nodes.All[a].PermanentLandmark?1:0);if(w.Nodes.All[a].PermanentLandmark)source.SetWarehouseLimit(1);
             w.Robots.Workshops[a].PreserveFunctionOrigin(a);w.Robots.Workshops[b].PreserveFunctionOrigin(b);
             w.Robots.Workshops[b].AbsorbFunctions(w.Robots.Workshops[a]);
             if(target.WarehouseLimit is int limit)w.Robots.Workshops[b].SetStorageSlotLimit(limit);
             w.Robots.Workshops[a]=RobotWorkshop.EmptyFunctions();
-            w.Nodes.All[b].FunctionUnits=checked(w.Nodes.All[b].FunctionUnits+w.Nodes.All[a].FunctionUnits);w.Nodes.All[a].FunctionUnits=0;
+            w.Nodes.All[b].FunctionUnits=checked(w.Nodes.All[b].FunctionUnits+w.Nodes.All[a].FunctionUnits-(w.Nodes.All[a].PermanentLandmark?1:0));w.Nodes.All[a].FunctionUnits=w.Nodes.All[a].PermanentLandmark?1:0;
             w.Nodes.All[b].IncomingFactories+=w.Nodes.All[a].IncomingFactories;
             w.Nodes.All[a].IncomingFactories=0;
             foreach(var node in w.Nodes.All)if(node.FunctionHost==a)node.FunctionHost=b;
-            w.Nodes.All[a].Purpose=NodePurpose.General;
-            w.Nodes.All[a].FunctionHost=b;w.Nodes.All[b].FunctionHost=-1;
+            if(!w.Nodes.All[a].PermanentLandmark)w.Nodes.All[a].Purpose=NodePurpose.General;else w.Robots.Workshops[a].SetStorageSlotLimit(1);
+            w.Nodes.All[a].FunctionHost=w.Nodes.All[a].PermanentLandmark?-1:b;w.Nodes.All[b].FunctionHost=-1;
             for(int i=0;i<w.Robots.PendingEdits.Count;i++)if(w.Robots.PendingEdits[i].Node==a)w.Robots.PendingEdits[i]=w.Robots.PendingEdits[i] with {Node=b};
             w.Robots.DirectDelivery.RelocateNode(a,b,offset);
             w.Robots.PartPlanning.RelocateLocalOrders(a,b);

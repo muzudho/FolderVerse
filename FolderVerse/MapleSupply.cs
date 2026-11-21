@@ -3,13 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public enum RawMaterial { Maple, Styrene, Vinyl, PP, Silicone }
+public enum RawMaterial { Maple, Styrene, Vinyl, PP, Silicone, Scrap }
 
 public sealed record MaplePackage(long Id,int Units)
 {
     public RawMaterial Material {get;init;}
+    // Scrap uses ninths of a hangar, rather than sixteenths of raw material.
+    public ScrapLot[] ScrapLots {get;init;}
+    public int UnitCapacity=>Material==RawMaterial.Scrap?3:Capacity;
+    public int MergeCapacity=>Material==RawMaterial.Scrap?3:RobotWorld.MaplePackageSize;
     public const int Capacity=48;
-    public int Sections=>(Units+RobotWorld.MaplePackageSize-1)/RobotWorld.MaplePackageSize;
+    public int Sections=>Material==RawMaterial.Scrap?1:(Units+RobotWorld.MaplePackageSize-1)/RobotWorld.MaplePackageSize;
 }
 public sealed record MapleShipment(int Owner,int Source,int Target,long PackageId);
 
@@ -88,7 +92,7 @@ public sealed partial class RobotWorld
 
     internal void TransferMapleFunctions(int source,int target)
     {
-        Nodes[target].SetMaplePackages(Nodes[target].MaplePackages.Concat(Nodes[source].MaplePackages).ToArray());
+        Nodes[target].SetMaplePackages(Nodes[target].MaplePackages.Concat(Nodes[source].MaplePackages.Select(p=>ScrapCargo.Arrive(p,target,Nodes[target].ScrapTurn))).ToArray());
         Nodes[source].SetMaplePackages(Array.Empty<MaplePackage>());
         if(!MapleSupplyEnabled)return;
         _mapleDeposits[source]=0;
@@ -108,7 +112,7 @@ public sealed partial class RobotWorld
     internal int AvailableRaw(int node,RawMaterial material)=>Nodes[node].MaplePackages.Where(p=>p.Material==material).Sum(p=>p.Units)-(_mapleShipments?
         .Where(o=>o.Source==node).Sum(o=>Nodes[node].MaplePackages.FirstOrDefault(p=>p.Id==o.PackageId && p.Material==material)?.Units??0)??0);
 
-    private bool MapleShipping(int node,long id)=>_mapleShipments.Any(o=>o.Source==node && o.PackageId==id);
+    private bool MapleShipping(int node,long id)=>Discarding.Reserved(id) || _mapleShipments!=null && _mapleShipments.Any(o=>o.Source==node && o.PackageId==id);
 
     internal bool RearrangeMaple(WorldSetup world,int node,long sourceId,long? targetId,bool split)
     {
@@ -116,20 +120,20 @@ public sealed partial class RobotWorld
             !world.Relations.Controls(world.Nodes.All[node].Owner) || world.Campaign.RobotBattles.LockedNode(node))return false;
         var store=Nodes[node];
         var source=store.MaplePackages.FirstOrDefault(p=>p.Id==sourceId);
-        if(source==null || source.Sections!=1 || MapleShipping(node,sourceId))return false;
+        if(source==null || Discarding.Reserved(sourceId) || source.Sections!=1 || MapleShipping(node,sourceId))return false;
         var target=store.MaplePackages.FirstOrDefault(p=>p.Id==targetId);
         if(split){
             if(targetId.HasValue || source.Units<2 || !store.HasMapleSpace(new MaplePackage(0,1){Material=source.Material},MapleReservedSlots(node)))return false;
             int moved=source.Units/2;
-            store.SetMaplePackages(store.MaplePackages.Select(p=>p.Id==sourceId?p with {Units=p.Units-moved}:p)
-                .Append(new MaplePackage(_nextId++,moved){Material=source.Material}).ToArray());
+            store.SetMaplePackages(store.MaplePackages.Select(p=>p.Id==sourceId?(p.Material==RawMaterial.Scrap?ScrapCargo.Portion(p,0,p.Units-moved):p with {Units=p.Units-moved}):p)
+                .Append(source.Material==RawMaterial.Scrap?ScrapCargo.Portion(source,source.Units-moved,moved) with {Id=_nextId++}:new MaplePackage(_nextId++,moved){Material=source.Material}).ToArray());
             return true;
         }
-        if(target==null || target.Id==sourceId || target.Material!=source.Material || target.Sections!=1 || MapleShipping(node,target.Id))return false;
-        int added=Math.Min(source.Units,MaplePackageSize-target.Units);
+        if(target==null || Discarding.Reserved(target.Id) || target.Id==sourceId || target.Material!=source.Material || target.Sections!=1 || MapleShipping(node,target.Id))return false;
+        int added=Math.Min(source.Units,target.MergeCapacity-target.Units);
         if(added==0)return false;
-        store.SetMaplePackages(store.MaplePackages.Select(p=>p.Id==target.Id?p with {Units=p.Units+added}:
-            p.Id==sourceId?p with {Units=p.Units-added}:p).Where(p=>p.Units>0).ToArray());
+        store.SetMaplePackages(store.MaplePackages.Select(p=>p.Id==target.Id?(p.Material==RawMaterial.Scrap?ScrapCargo.Join(p,ScrapCargo.Portion(source,0,added)):p with {Units=p.Units+added}):
+            p.Id==sourceId?(p.Material==RawMaterial.Scrap?ScrapCargo.Portion(p,added,p.Units-added):p with {Units=p.Units-added}):p).Where(p=>p.Units>0).ToArray());
         return true;
     }
 
@@ -154,7 +158,7 @@ public sealed partial class RobotWorld
         if(!MapleSupplyEnabled || world.Campaign.Phase!=CampaignPhase.Domestic || source<0 || source>=Nodes.Length || target<0 || target>=Nodes.Length)return false;
         int owner=world.Nodes.All[source].Owner;
         var package=Nodes[source].MaplePackages.FirstOrDefault(p=>p.Id==packageId);
-        if(!world.Relations.Controls(owner) || !CanDeliverMaple(world,owner,source,target) || package==null)return false;
+        if(Discarding.Reserved(packageId) || !world.Relations.Controls(owner) || !CanDeliverMaple(world,owner,source,target) || package==null)return false;
         if(package.Sections>1){
             var targetStore=Nodes[target].PlanningCopy();
             foreach(var order in MapleShipments.Where(o=>o.Target==target && o.PackageId!=packageId)){

@@ -45,7 +45,7 @@ public partial class Game1
 
     private void DrawFactoryConveyor(RobotWorkshop line,int owner,int row,int period,float? progress=null,Robot completed=null,bool inFlight=false)
     {
-        if(_factoryConveyor==null){
+        if(line.DismantleOnly){DrawDismantlingLane(line,Math.Max(0,Array.FindIndex(_setup.Robots.Workshops,s=>Array.IndexOf(s.ProductionLines,line)>=0)),row,line.WorkerSnapshot?.Id);return;}if(_factoryConveyor==null){
             using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots","factory-conveyor-v001.png"));
             _factoryConveyor=Texture2D.FromStream(GraphicsDevice,stream);
         }

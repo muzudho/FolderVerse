@@ -42,7 +42,7 @@ public static class HeadlessRunner
             w.CompleteLand(fortune,scatter,raw);
             using(var assembly=File.OpenRead(typeof(WorldSetup).Assembly.Location))
                 Write(new{kind="start",seed,castSeed=cast,rightsSeed=rights,fortuneSeed=fortune,players,maxTurns,robotScatter=scatter,rawStock=raw,
-                    equipmentMode=w.EquipmentMode.ToString(),w.RelayLogisticsEnabled,rawEnabled=w.Robots.MapleSupplyEnabled,initialStock=w.InitialStock,
+                    equipmentMode=w.EquipmentMode.ToString(),w.RelayLogisticsEnabled,rawEnabled=w.Robots.MapleSupplyEnabled,scrapRules=w.Robots.ScrapRulesEnabled,finalDisposalNodes=w.Nodes.All.Where(n=>n.HasFinalDisposal).Select(n=>n.Id),initialStock=w.InitialStock,
                     version=typeof(WorldSetup).Assembly.GetName().Version?.ToString(),dllSha256=Convert.ToHexString(SHA256.HashData(assembly)),
                     characters=w.Looks.Take(w.ActiveCount).Select(l=>l.BaseId),
                     initial=w.Robots.Nodes.Select((s,n)=>new{node=n,s.Count,s.TotalCapacity,s.WarehouseLimit,keepers=s.Robots.Count(r=>r.WarehouseKeeper),rawUnits=s.MaplePackages.Sum(p=>p.Units)})});

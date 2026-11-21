@@ -103,7 +103,7 @@ public sealed partial class RobotWorld
     }
     public bool CanResumeWorkpiece(WorldSetup world,int node,RobotWorkshop line,Robot robot)
     {
-        if(node<0 || node>=Nodes.Length || !Workshops[node].ProductionLines.Contains(line) || robot==null || !robot.IsWorkpiece || robot.Owner!=world.Nodes.All[node].Owner || AssemblyLocked(node,robot) || world.Campaign.RobotBattles.LockedNode(node) || line.HarvestOnly || DirectDelivery.Orders.Any(o=>o.Target==node && o.TargetRobotId==robot.Id) || LongDelivery.Orders.Any(o=>o.Target==node && o.Receiver==robot.Id))return false;
+        if(node<0 || node>=Nodes.Length || !Workshops[node].ProductionLines.Contains(line) || robot==null || !robot.IsWorkpiece || robot.Owner!=world.Nodes.All[node].Owner || AssemblyLocked(node,robot) || world.Campaign.RobotBattles.LockedNode(node) || line.HarvestOnly || line.DismantleOnly || robot.IsDismantling || DirectDelivery.Orders.Any(o=>o.Target==node && o.TargetRobotId==robot.Id) || LongDelivery.Orders.Any(o=>o.Target==node && o.Receiver==robot.Id))return false;
         return Enumerable.Range(0,line.PlanCount).Where(i=>i!=3).Select(line.PlanAt).Any(plan=>{
             var preview=plan.Preview(robot.Owner);return preview.Parts==robot.Parts && preview.IntegratedParts==robot.IntegratedParts && RobotMaterials.Parts.Where(p=>(robot.Parts&p)!=0).All(p=>preview.Material(p)==robot.Material(p));});
     }

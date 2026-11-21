@@ -13,7 +13,7 @@ public sealed partial class RobotWorkshop
     }
     public int WorkRemaining(NodePurpose purpose)=>_activeWorkpiece!=null?RobotMaterials.Parts.Select(p=>_activeWorkpiece.Work(p)?.Remaining??0).Max():CycleFinished?0:Math.Max(0,EffectiveProductionPeriod(purpose)-ProductionAge);
     private int[] _rawConsumed;
-    public int RawConsumed(RawMaterial material)=>_rawConsumed?[(int)material]??0;
+    public int RawConsumed(RawMaterial material)=>_rawConsumed!=null && (int)material>=0 && (int)material<_rawConsumed.Length?_rawConsumed[(int)material]:0;
     public int RawRemaining(RawMaterial material)=>Math.Max(0,RobotWorld.RawCost(CurrentProductionPlan.Preview(0),material)-RawConsumed(material));
     private void ResetRawProgress(bool preserve=true){if(preserve)PreserveInterruptedWorkpiece();_rawConsumed=null;IntakeFailure="";}
     private int NextRawCost(RawMaterial material,int period)

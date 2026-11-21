@@ -1,5 +1,8 @@
 # ドキュメント案内
 
+- [最終処分場・解体・スクラップ](設計/最終処分場とスクラップ.md) / [実装と検証](dev/final-disposal.md)
+- [FRR：戦力更新力の解析方針](dev/analysis/force-renewal-rate.md)
+
 - [海上プラスチック再生採取場：PP採取と描画](dev/recycled-pp-facility.md)
 
 - [計略カード：候補一覧、一括予約・取消と地図プレビュー](dev/stratagem-cards.md)

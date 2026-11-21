@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -9,7 +9,7 @@ public partial class Game1
     private Rectangle WorkpieceOpen(int row)=>new(91,FactoryRowY(row)+19,72,28);
     private static Rectangle WorkpieceCard(int i)=>new(110+i%6*286,220+i/6*325,268,300);
     private static readonly Rectangle WorkpiecePrevious=new(110,902,180,40),WorkpieceNext=new(1620,902,180,40);
-    private Robot[] WorkpieceCandidates()=>_setup.Robots.Nodes[_populationNode].Robots.Where(r=>r.IsWorkpiece).OrderBy(r=>r.Id).ToArray();
+    private Robot[] WorkpieceCandidates()=>_setup.Robots.Nodes[_populationNode].Robots.Where(r=>r.IsWorkpiece&&!r.IsDismantling).OrderBy(r=>r.Id).ToArray();
     private void DrawFactoryWorkpieceOverlay(){if(_populationNode>=0 && _populationNode<_setup.Robots.Workshops.Length)DrawFactoryWorkpieces(FactoryScreenLines(PlanningWorkshop(_populationNode),out _));}
     private bool FactoryWorkpieceClick(Point pointer,RobotWorkshop[] lines)
     {

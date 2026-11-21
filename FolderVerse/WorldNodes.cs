@@ -4,7 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
-public enum NodePurpose { General, Harvest, Manufacturing, Relay, Defense, Frontline }
+public enum NodePurpose { General, Harvest, Manufacturing, Relay, Defense, Frontline, FinalDisposal }
 
 public sealed class Node
 {
@@ -18,6 +18,9 @@ public sealed class Node
     public Point[] Points;
     public TravelTerrain Terrain;
     public bool IsHarbor;
+    public bool HasFinalDisposal;
+    public bool PermanentFacilityRules;
+    public bool PermanentLandmark=>HasFinalDisposal || IsHarbor && PermanentFacilityRules;
     public string Name;
     public CellPopulation Population=new();
 }
@@ -95,7 +98,7 @@ public sealed class WorldNodes
     {
         var coordinate=WorldCoordinates.At(_world,_world.Cells[p.Cell]);
         string name=p.IsHarbor?p.Name+$"（{coordinate.X},{coordinate.Y}）":WorldCoordinates.Label(_world,p.Cell);
-        return name+" / "+Description(p);
+        return name+" / "+Description(p)+(p.HasFinalDisposal?" / 最終処分場":"");
     }
     public string Description(Node p)=>(p.IsHarbor?"海港":TerrainRoutes.TerrainName(p.Terrain))+"地点・"+_world.Routes.PointName(p.Cell,p.Center)+(_world.Routes.NearWhirlpool(p)?"・灘付近":"");
     public int FullOwner(int cell)

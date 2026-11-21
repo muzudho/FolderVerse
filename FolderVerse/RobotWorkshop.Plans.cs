@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System.Linq;
 public sealed record ProductionPlan(RobotParts Product,int Turns,bool Cheap=false,RobotParts IntegratedParts=0)
 {
@@ -25,26 +25,26 @@ public sealed partial class RobotWorkshop
     private System.Collections.Generic.Dictionary<long,RobotWorkshop> _workerLines;
     public int LineLimit=>_lineLimit<0?0:_lineLimit==0?3:_lineLimit;
     public int BaseLineCount=>_baseLineCount??ProductionLines.Length;
-    public long? WorkerAt(int line)=>line<BaseLineCount?null:_workerLines?.Keys.OrderBy(id=>id).Skip(line-BaseLineCount).Select(id=>(long?)id).FirstOrDefault();
+    public long? WorkerAt(int line)=>line<BaseLineCount || line>=ProductionLines.Length?null:_workerLines?.Where(p=>ReferenceEquals(p.Value,ProductionLines[line])).Select(p=>(long?)p.Key).FirstOrDefault();
     public void LimitLines(int limit){_lineLimit=limit==0?-1:limit;_baseLineCount=System.Math.Min(BaseLineCount,limit);ProductionLines=ProductionLines.Take(_baseLineCount.Value).ToArray();}
     internal void SetWorkers(Robot[] workers,int worldSeed,int node,int country){
         _baseLineCount??=ProductionLines.Length;_workerLines??=new();
         var ids=workers.Select(r=>r.Id).ToArray();
         foreach(long id in _workerLines.Keys.Where(id=>!ids.Contains(id)).ToArray()){RetireWorkerWorkpiece(_workerLines[id]);_workerLines.Remove(id);}
         foreach(var worker in workers){
-            if(!_workerLines.TryGetValue(worker.Id,out var line) || line.HarvestOnly!=worker.HarvestWorker){
+            if(!_workerLines.TryGetValue(worker.Id,out var line) || line.HarvestOnly!=worker.HarvestWorker || line.DismantleOnly!=worker.DismantlingWorker){
                 if(line!=null)RetireWorkerWorkpiece(line);
                 line=CreateWorkerLine(worker,worldSeed,node,country);_workerLines[worker.Id]=line;
             }else if(line._workerPlans==null)line.GenerateWorkerPlans(worker,worldSeed,node,country,true);
         }
-        ProductionLines=ProductionLines.Take(BaseLineCount).Concat(_workerLines.OrderBy(p=>p.Key).Select(p=>p.Value)).Take(LineLimit).ToArray();
+        ProductionLines=ProductionLines.Take(BaseLineCount).Concat(_workerLines.OrderBy(p=>p.Key).Select(p=>p.Value).Where(l=>!l.DismantleOnly)).Take(LineLimit).Concat(_workerLines.OrderBy(p=>p.Key).Select(p=>p.Value).Where(l=>l.DismantleOnly)).ToArray();
     }
     public RobotWorkshop[] ProductionLines {get;private set;}
     internal RobotWorkshop CreateWorkerLine(Robot worker,int worldSeed,int node,int country)
     {
-        var line=new RobotWorkshop{_materialCatalogueOffset=_materialCatalogueOffset,HarvestOnly=worker.HarvestWorker};
+        var line=new RobotWorkshop{_materialCatalogueOffset=_materialCatalogueOffset,HarvestOnly=worker.HarvestWorker,DismantleOnly=worker.DismantlingWorker};
         line.GenerateWorkerPlans(worker,worldSeed,node,country,false);
-        line.SelectPlan(line.HarvestOnly?3:0);
+        line.SelectPlan(line.HarvestOnly || line.DismantleOnly?3:0);if(line.DismantleOnly)line.ConfigureDisposal();
         return line;
     }
     public RobotWorkshop(){ProductionLines=new[]{this};}

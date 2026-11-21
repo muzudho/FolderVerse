@@ -49,14 +49,14 @@ public sealed partial class WorldSetup
         if(TutorialStep==0)InitializeTerrainHangars();
         Robots.ConfigureFactories(this);var random=new SeedRandom(fortuneSeed);
         if(TutorialStep==0)Robots.InitializeMapleSupply(this);
-        if(RelayLogisticsEnabled)InitializeSitePurposes(fortuneSeed);
+        if(RelayLogisticsEnabled)InitializeSitePurposes(fortuneSeed);InitializeFinalDisposal();
         int scatterRemainder=50;
         foreach(var node in Nodes.All.Where(n=>n.Owner>=0))
         {
             var workshop=Robots.Workshops[node.Id];
             bool hasFactory=TutorialStep!=1 && node.Purpose!=NodePurpose.Relay && !Routes.NearWhirlpool(node);
             if(hasFactory)workshop.GenerateLines(fortuneSeed^node.Id*7919,EquipmentMode);else workshop.RemoveProductionLines();
-            if(random.Next(5)==0)workshop.ConfigureDisposal();
+            if(random.Next(5)==0 && TutorialStep!=0)workshop.ConfigureDisposal();
             if(TutorialStep==1){
                 for(int i=0;i<4;i++)Robots.Nodes[node.Id].Add(Robots.Create(node.Owner,RobotParts.Complete,RobotRole.Soldier));
             }else{

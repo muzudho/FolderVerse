@@ -11,6 +11,7 @@ internal static class ComputerTrade
         var robot=trade.Robot(world,source,cargo);
         if(robot!=null)
         {
+            if(robot.IsDismantling || robot.RecoveredRaw!=null)return 0;
             int value=SalvagePlan.PartCount(robot.Parts)*16;
             if(robot.Parts==RobotParts.Complete)return value+32;
             bool completes=store.Robots.Any(other=>other.Id!=robot.Id && !other.Stationed && !other.Disposal &&
@@ -18,7 +19,7 @@ internal static class ComputerTrade
             return value+(completes?48:0);
         }
         var raw=trade.Package(world,source,cargo);
-        if(raw==null)return 0;
+        if(raw==null || raw.Material==RawMaterial.Scrap)return 0;
         bool needed=!recipient.Pocket && world.Robots.Workshops[recipient.Node].ProductionLines.Any(line=>
             line.Manufacturing && !line.Paused && !line.CycleFinished &&
             line.RawRemaining(raw.Material)>

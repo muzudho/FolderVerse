@@ -28,13 +28,13 @@ public partial class Game1
     }
     private static readonly (NodePurpose? Purpose,string Label)[] NodePurposes={
         (NodePurpose.General,"自由用途型"),(NodePurpose.Harvest,"採取重点型"),(NodePurpose.Manufacturing,"製造重点型"),
-        (NodePurpose.Relay,"輸送の中継地点"),(NodePurpose.Defense,"城壁"),(NodePurpose.Frontline,"詰所"),(null,"港")
+        (NodePurpose.Relay,"輸送の中継地点"),(NodePurpose.Defense,"城壁"),(NodePurpose.Frontline,"詰所"),(null,"港"),(NodePurpose.FinalDisposal,"最終処分場")
     };
-    private static Rectangle NodePurposeButton(int index)=>new(84+index*112,531,106,72);
+    private static Rectangle NodePurposeButton(int index)=>new(84+index*98,531,92,72);
     private string NodePurposeDisabledReason(Node node,NodePurpose? purpose)
     {
-        if(purpose==null)return node.IsHarbor?"港は陸と海を結ぶ地点です":"この地点は港ではありません";
-        if(!node.Functional)return "無機能地点では用途を変更できません";
+        if(purpose==NodePurpose.FinalDisposal)return node.HasFinalDisposal?"最終処分場の用途は変更できません":"この地点に最終処分場はありません";if(purpose==null)return node.IsHarbor?"港は陸と海を結ぶ地点です":"この地点は港ではありません";
+        if(node.PermanentLandmark)return "ランドマークの用途は変更できません";if(!node.Functional)return "無機能地点では用途を変更できません";
         if(node.Purpose==NodePurpose.Relay)return _setup.RelayLogisticsEnabled?"管理人１体で７枠追加。中継同士の全施設移転で上限を足せます（最大60）。工場は受け入れません。":"中継地点では全施設移転のみできます";
         if(purpose==NodePurpose.Relay)return "工場だけを移転すると中継地点になります";
         if(purpose==NodePurpose.Harvest && !RobotWorld.RawMaterials.Any(m=>_setup.Robots.RawDeposit(node.Id,m)>0))
@@ -60,7 +60,7 @@ public partial class Game1
         for(int i=0;i<NodePurposes.Length;i++){
             var (purpose,label)=NodePurposes[i];
             bool enabled=NodePurposeDisabledReason(node,purpose)==null;
-            bool selected=purpose==null?node.IsHarbor:node.Purpose==purpose;
+            bool selected=purpose==null?node.IsHarbor:!node.IsHarbor && node.Purpose==purpose;
             var area=NodePurposeButton(i);
             var color=enabled?(selected || area.Contains(_pointer)?Accent:Muted):Muted*.48f;
             _ui.Button(area,"",color,.3f);
@@ -95,7 +95,7 @@ public partial class Game1
                 "格納庫が多くなるけど、工場の機能は永久に無くなるよ。工場だけ施設移転するとこれになるよ。",
                 "守りやすい戦場になるよ。",
                 "だいたい２地点先ぐらいまで進撃や迎撃、救援ができるようになるよ。",
-                "陸と海の境目はこれだよ。メリットもデメリットも無いよ。"
+                "陸と海の境目はこれだよ。メリットもデメリットも無いよ。","１全体ターンで格納庫に置いてあるスクラップを自動処分してくれるよ"
             };
             var reason=NodePurposeDisabledReason(node,purpose);
             var lines=new System.Collections.Generic.List<string>();

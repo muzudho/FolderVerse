@@ -8,14 +8,14 @@ using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
     private const int HangarActionSize=68;
-    private static Rectangle HangarActionBounds(int index)=>new(84+index*79,862,HangarActionSize,HangarActionSize);
+    private static Rectangle HangarActionBounds(int index)=>new(84+index*71,862,HangarActionSize,HangarActionSize);
     private static readonly Rectangle HangarAssemblyButton=HangarActionBounds(0),
         HangarReturnHomeButton=HangarActionBounds(6),HangarAbandonButton=HangarActionBounds(9);
     private static readonly int[] ReservationActions={5,3,1,4,2,7,8};
     private static Rectangle HangarReservationButton(int index)=>HangarActionBounds(ReservationActions[index]);
     private static readonly string[] HangarActionNames={
         "組み立て・分解","製造作業員予約","採取作業員予約","守備専用予約","迎撃専用予約",
-        "廃棄予約","国へ帰らせる予約","倉庫管理人予約","倉庫管理人交代","放棄","放棄品置き場"
+        "解体予約","国へ帰らせる予約","倉庫管理人予約","倉庫管理人交代","廃棄（カゴ）","放棄品置き場","解体作業員予約"
     };
     private Texture2D _hangarActionArt;
 
@@ -25,16 +25,16 @@ public partial class Game1
     private bool CanAbandonFromHangar(Robot robot,RobotParts parts)=>CanUseHangarAbandon &&
         robot.Owner==_setup.PlayerSlot && parts!=0 && (robot.Parts&parts)==parts &&
         !_setup.Campaign.RobotBattles.LockedNode(_populationNode) &&
-        !Enumerable.Range(0,3).Select(HangarPart).Any(part=>(parts&part)!=0 && _setup.Robots.PartLocked(_populationNode,robot,part)) &&
+        (_setup.Robots.CanMoveDismantling(_populationNode,robot,parts) || !Enumerable.Range(0,3).Select(HangarPart).Any(part=>(parts&part)!=0 && _setup.Robots.PartLocked(_populationNode,robot,part))) &&
         (parts!=robot.Parts || !_setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==_populationNode && o.TargetRobotId==robot.Id));
 
     private bool CanChooseWarehouseSwap(Robot robot)=>robot!=null && DomesticOperationsAllowed &&
         CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) && !_setup.Campaign.RobotBattles.LockedNode(_populationNode) &&
         (robot.WarehouseKeeper || _warehouseSwapKeeper.HasValue && RobotPartPlanning.CanUseWarehouseSuccessor(_setup,PlanningStock,HangarPlanningNode,robot));
 
-    private void DrawHangarActions(bool manage,bool assemblyMode)
+    private static readonly Rectangle DismantlerButton=HangarActionBounds(10); private void DrawHangarActions(bool manage,bool assemblyMode)
     {
-        if(HangarAssemblyAvailable)DrawHangarAction(HangarAssemblyButton,0,DomesticOperationsAllowed && CanOpenHangar,assemblyMode);
+        if(_setup.Robots.ScrapRulesEnabled && !VisitingForeignHangar)DrawHangarAction(DismantlerButton,11,manage,_hangarReservation==HangarReservation.Dismantler);if(HangarAssemblyAvailable)DrawHangarAction(HangarAssemblyButton,0,DomesticOperationsAllowed && CanOpenHangar,assemblyMode);
         if(!VisitingForeignHangar)
         {
             for(int i=0;i<ReservationActions.Length;i++)
@@ -56,9 +56,9 @@ public partial class Game1
         var frame=bounds;frame.Inflate(2,2);
         if(enabled && (active || bounds.Contains(_pointer)))
             PrimaryRoundBox(frame,active?new Color(255,223,148):Cream*.65f,12);
-        _spriteBatch.Draw(_hangarActionArt,bounds,new Rectangle(index*96,0,96,96),
+        _spriteBatch.Draw(_hangarActionArt,bounds,new Rectangle((index==11?1:index)*96,0,96,96),
             enabled?Color.White:new Color(122,131,139));
-        string label=HangarActionNames[index];
+        if(index==11){var badge=new Rectangle(bounds.Right-25,bounds.Bottom-25,23,23);_ui.Box(badge,new Color(65,81,98));_ui.Center("解",badge,.38f,Cream);}string label=HangarActionNames[index];
         _ui.Center(label,new(bounds.X-4,bounds.Bottom+3,bounds.Width+8,17),
             Math.Min(.30f,(bounds.Width+8)/Math.Max(1,_font.MeasureString(label).X)),enabled?Cream:Cream*.55f);
     }

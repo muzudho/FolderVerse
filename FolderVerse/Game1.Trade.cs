@@ -66,7 +66,7 @@ public partial class Game1
         var robot=Trade.Robot(_setup,endpoint,cargo);
         if(robot!=null)return $"ID {cargo.Id} / "+SalvagePartLabel(robot);
         var package=Trade.Package(_setup,endpoint,cargo);
-        return package==null?$"ID {cargo.Id}":$"{RobotWorld.RawName(package.Material)} {package.Units}/{MaplePackage.Capacity}";
+        return package==null?$"ID {cargo.Id}":$"{RobotWorld.RawName(package.Material)} "+(package.Material==RawMaterial.Scrap?new WorkProgress(package.Units,9)+" 格納庫":$"{package.Units}/{MaplePackage.Capacity}");
     }
 
     private void TradePlanner(bool draw,bool click=false)

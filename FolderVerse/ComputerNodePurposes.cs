@@ -30,7 +30,7 @@ internal static class ComputerNodePurposes
                     line.HarvestOnly && !line.Manufacturing && line.MapleRemaining==0);
                 idle?.SelectMapleHarvest(1,material.Value);
             }
-            if(keepHarvest || keepFactory)continue;
+            if(node.PermanentLandmark || keepHarvest || keepFactory)continue;
             int available=battles.SelectableRobots(world,owner,id,false).Length;
             bool Hostile(int target)=>world.Nodes.All[target].Owner is var enemy && enemy>=0 && !world.Relations.Allied(owner,enemy);
             bool hostile=available>=2 && battles.MarchTargets(world,id).Any(Hostile);
