@@ -28,16 +28,17 @@ public partial class Game1
         _primaryActionSlide=target>_primaryActionSlide?Math.Min(target,_primaryActionSlide+elapsed/.25f):Math.Max(target,_primaryActionSlide-elapsed/.25f);
     }
     private const int FunctionTransferAction=6;
-    private const int TradeAction=8,PrimaryActionCount=9;
+    private const int TradeAction=8,StratagemAction=9,PrimaryActionCount=10;
     private static Rectangle PrimaryActionHomeBounds(int index)=>index switch {
-        0=>new(360,974,96,96),1=>new(466,926,192,144),
+        0=>new(562,974,96,96),1=>new(360,974,192,96),
         _=>new(668+((index==7?4:index>=4?index+1:index)-2)*106,974,96,96)
     };
-    private Rectangle PrimaryActionBounds(int index){var r=PrimaryActionHomeBounds(index);if(index==1 && StratagemInterface && StratagemManualActions)r=new(r.X,974,r.Width,96);if(index!=PinnedPrimaryAction)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,_primaryActionSlide));return r;}
+    private Rectangle PrimaryActionBounds(int index){var r=PrimaryActionHomeBounds(index);if(index==1 && StratagemInterface && StratagemManualActions)r=new(r.X,974,r.Width,96);if(index!=PinnedPrimaryAction)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,_primaryActionSlide));if(StratagemInterface && index!=1)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,Math.Clamp(_stratagemTrayBlend*2,0,1)));return r;}
     private static Rectangle MapModeCloseButton(int index)=>new(PrimaryActionHomeBounds(index).Right+10,1002,40,40);
     private bool TutorialPrimaryActionsDisabled=>_setup.TutorialStep==3 || _setup.TutorialMapBeforeWar && _setup.TutorialMapStage<6;
     private bool TutorialPrimaryActionAllowed(int index)=>!TutorialPrimaryActionsDisabled && (index!=TradeAction || _setup.TutorialStep==0) && (!_setup.TutorialMapBeforeWar || index is 1 or 2 || index==0 && _setup.TutorialAttackCompleted);
-    private bool TutorialPrimaryActionClick(Point p)=>Enumerable.Range(0,PrimaryActionCount).Any(i=>(!TutorialPrimaryActionAllowed(i) || !PhasePrimaryActionAllowed(i)) && PrimaryActionBounds(i).Contains(p));
+    private int AvailablePrimaryActionCount=>StratagemInterface?PrimaryActionCount:PrimaryActionCount-1;
+    private bool TutorialPrimaryActionClick(Point p)=>Enumerable.Range(0,AvailablePrimaryActionCount).Any(i=>(!TutorialPrimaryActionAllowed(i) || !PhasePrimaryActionAllowed(i)) && PrimaryActionBounds(i).Contains(p));
     private bool MapMarkerMenuAvailable=>!_directPairOpen && !_trainingOpen && _supervisorDialog==0 && !_inspectorFoldersOpen && !_salvageAbandonConfirmation.HasValue && !_hangarDrag.HasValue && !_seedDialog.IsOpen;
     private bool MapOverlayClick(Point p,bool escape)
     {
@@ -54,9 +55,9 @@ public partial class Game1
             return true;
         }
         if(_directMap && PrimaryActionBounds(MapFooterAction).Contains(p))return true;
-        if(Enumerable.Range(0,PrimaryActionCount).Any(i=>!PrimaryActionInUse(i) &&
+        if(Enumerable.Range(0,AvailablePrimaryActionCount).Any(i=>!PrimaryActionInUse(i) &&
             (PrimaryActionHomeBounds(i).Contains(p) || PrimaryActionBounds(i).Contains(p))))return true;
-        for(int i=0;i<PrimaryActionCount;i++)if(PrimaryActionBounds(i).Contains(p)){
+        for(int i=0;i<AvailablePrimaryActionCount;i++)if(PrimaryActionBounds(i).Contains(p)){
             if(i==0)OpenStrategyInspector();
             else if(i==1){ResetInspector();EndPlannedTurn();}
             else if(i==2){ResetInspector();OpenWarPlanning();}
@@ -66,6 +67,7 @@ public partial class Game1
             else if(i==5){if(_salvagePlan)ResetInspector();else OpenSalvagePlan();}
             else if(i==FunctionTransferAction){if(_functionTransferMap)CloseFunctionTransferMap();else OpenFunctionTransferMap();}
             else if(i==TradeAction)OpenTradePlanner();
+            else if(i==StratagemAction && StratagemInterface){_stratagemManual=false;_stratagemHover=-1;}
             return true;
         }
         return FunctionTransferMapClick(p);
@@ -91,9 +93,9 @@ public partial class Game1
     private void DrawPrimaryActionButtons() => DrawTutorialChrome(()=>DrawPrimaryActionButtonsCore(),false);
     private void DrawPrimaryActionButtonsCore()
     {
-        if(StratagemInterface && !StratagemManualActions)return;
-        string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画","地点の施設移転の予約","ロボットパーツ長距離便","取引"};
+        string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画","地点の施設移転の予約","ロボットパーツ長距離便","取引","計略"};
         for(int i=0;i<PrimaryActionCount;i++){
+            if(i==StratagemAction && !StratagemInterface || i!=1 && StratagemInterface && _stratagemTrayBlend>=.5f)continue;
             var r=PrimaryActionBounds(i);if(r.Top>=1080)continue;
             bool enabled=PhasePrimaryActionAllowed(i) && TutorialPrimaryActionAllowed(i) && PrimaryActionInUse(i) && (i is not (3 or 4 or LongMapAction) || TransportOverviewAllowed);
             var color=_setup.OwnerColor(_setup.PlayerSlot);
@@ -121,7 +123,9 @@ public partial class Game1
         Vector2 P(float x,float y)=>new(r.X+x*r.Width,r.Y+y*r.Height);
         void Line(float x,float y,float xx,float yy,float width=4){var a=P(x,y);var b=P(xx,yy);var d=b-a;_ui.Tile((a+b)/2,new(d.Length(),width),MathF.Atan2(d.Y,d.X),ink);}
         void Box(float x,float y,float w,float h)=>_ui.Box(new((int)P(x,y).X,(int)P(x,y).Y,(int)(w*r.Width),(int)(h*r.Height)),ink);
-        if(kind==0){
+        if(kind==StratagemAction){
+            Box(.12f,.08f,.55f,.75f);Box(.33f,.2f,.55f,.75f);
+        }else if(kind==0){
             // Project the live owned cells through an independent, unzoomed copy of the current net.
             var faces=_net.Faces;if(faces.Length==0)return;
             var ownedCells=_setup.Nodes.All.Where(n=>n.Owner==_setup.PlayerSlot).Select(n=>n.Cell).ToHashSet();
