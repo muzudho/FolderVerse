@@ -1495,3 +1495,6 @@ Materials診断123/456/789の実経路0→1。メープル頭・段ボール胴�
 
 
 2026-11-21 19:18 JST 直送予約先の敵国化→失敗→再試行の境界１条件PASS。固定配布v0.13.0 A6A10CBA0EF44A9DFCA44F2697686A307D6440031A00268B80D600C05A34C73E、新規通常世界1/cast2/rights492471852/fortune1544938375/2人/25・25/ScrapRules=true由来。PP頭/段ボール胴脚・頭胴一体型・隊長・汚損・混合国籍・人工進捗の直送を予約後、受取地点を敵国1へ変更して実ReconcileDestinations。注文解除/失敗札『出荷失敗』/出荷ロック解除/双方在庫record不変を確認。保存復元後に同国へ戻し再予約すると失敗札が消え、実Resolveの飛行Visual・合体・元残部・再保存が一致。所有変更は制御fixtureで自然戦闘の再現や実UIではなく全９素材網羅でもない。NAS archives/robot-art-implementation/direct-enemy-reconcile-2026-11-21-1918、再生成tmp/delete-after-2026-11-22/robot-art-implementation/direct-enemy-1918。exit0、製品/公開物/実ゲーム/元保存/個人差分無変更、コミット・プッシュなし。
+
+
+2026-11-21 20:21 JST 新しい明示未所属Origin=-2を含む一体型直送の失敗・再予約境界１条件PASS。開発DLL BE0A6A2A170B3BE5AD0DA67E01A65609786D5C14D8E9598A73D1909608F82121（新初期容量/国旗別管理人/２ハンドルUI、旧配布A6Aと分離）。新規世界1/cast2/rights492471852/fortune1544938375/2人/Materials25・25/ScrapRules=true由来。PP頭/段ボール胴脚・頭胴一体型・隊長・汚損・人工仕掛進捗、頭国0/胴脚未所属で、受取敵国化Reconcile→保存→再予約→実Resolveの飛行Visual/合体/元残部/再保存recordが一致。未所属を所有者の国旗へ戻さず保持する互換確認で、自然戦闘や画素表示の検証ではない。NAS archives/robot-art-implementation/neutral-direct-2026-11-21-2021、再生成tmp/delete-after-2026-11-22/robot-art-implementation/neutral-direct-2021。exit0、製品/公開物/実ゲーム/元保存/個人差分無変更、コミット・プッシュなし。

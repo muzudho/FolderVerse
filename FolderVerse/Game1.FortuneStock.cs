@@ -10,7 +10,7 @@ public partial class Game1
     private int _fortuneStockSeed=-1,_fortuneDistributionSeed,_fortuneStockKind;
     private bool _fortunePieDragging,_fortuneUniform;
     private static readonly Vector2 FortunePieCenter=new(210,425);
-    private static readonly Rectangle FortuneDistribution=new(75,704,520,170);
+    private static readonly Rectangle FortuneDistribution=new(75,630,520,244);
     private static readonly Rectangle FortuneRandomize=new(75,947,320,48),FortuneUniform=new(405,947,190,48);
     private static Rectangle FortuneStockKey(int i)=>new(350,320+i*54,245,48);
     private static readonly Rectangle FortuneRandomShare=new(75,565,520,34);
@@ -45,18 +45,12 @@ public partial class Game1
         EnsureFortuneStockPreview();
         if(!active || mouse.LeftButton==ButtonState.Released)_fortunePieDragging=false;
         if(active && click){
-            for(int i=1;i<4;i++)if(FortuneStockKey(i).Contains(_pointer))_fortuneStockKind=i-1;
-            if(FortuneHandle(_fortuneStockKind).Contains(_pointer))_fortunePieDragging=true;
+            for(int kind=0;kind<2;kind++)if(FortuneHandle(kind).Contains(_pointer)){_fortuneStockKind=kind;_fortunePieDragging=true;break;}
             if(FortuneRandomShare.Contains(_pointer)){
                 var stock=_fortuneStockPreview.InitialStock;
                 int minimum=(int)Math.Ceiling(100d*stock.FixedRobotUnits/Math.Max(1,stock.CapacityUnits));
                 int available=100-minimum,a=_random.Next(available+1),b=_random.Next(available+1);
                 _robotScatterPercent=minimum+Math.Min(a,b);_rawStockPercent=Math.Abs(a-b);RebuildFortuneStock();
-            }
-            for(int i=0;i<5;i++)if(new Rectangle(75+i*104,610,92,48).Contains(_pointer)){
-                var stock=_fortuneStockPreview.InitialStock;
-                int fixedPercent=(int)Math.Ceiling(100d*stock.FixedRobotUnits/Math.Max(1,stock.CapacityUnits));
-                SetFortuneStockPercent(_fortuneStockKind==0?Math.Min(100,fixedPercent+i*25):i*25);
             }
             if(FortuneRandomize.Contains(_pointer)){_fortuneUniform=false;_fortuneDistributionSeed=_random.Next();RebuildFortuneStock();}
             if(FortuneUniform.Contains(_pointer)){_fortuneUniform=true;RebuildFortuneStock();}
@@ -78,7 +72,7 @@ public partial class Game1
     {
         var s=_fortuneStockPreview.InitialStock;float total=Math.Max(1,s.CapacityUnits);
         float angle=(kind==0?s.RobotUnits:s.RobotUnits+s.RawUnits)/total*MathHelper.TwoPi;
-        var p=FortunePieCenter+new Vector2(MathF.Sin(angle),-MathF.Cos(angle))*108;
+        var p=FortunePieCenter+new Vector2(MathF.Sin(angle),-MathF.Cos(angle))*(kind==0?88:126);
         return new((int)p.X-11,(int)p.Y-11,22,22);
     }
     private void DrawFortuneStockScenery(Rectangle globeArea)
@@ -111,20 +105,26 @@ public partial class Game1
         DrawSharedRatePie(FortunePieCenter,108,new[]{(fixedShare*360,FortuneFixedColor),((robot-fixedShare)*360,FortuneRobotColor),(raw*360,FortuneRawColor),((1-robot-raw)*360,FortuneEmptyColor)});
         var names=new[]{"固定ロボット","追加ロボット","原材料","空き"};var colors=new[]{FortuneFixedColor,FortuneRobotColor,FortuneRawColor,FortuneEmptyColor};var shares=new[]{fixedShare,robot-fixedShare,raw,1-robot-raw};
         for(int i=0;i<4;i++){
-            var key=FortuneStockKey(i);_ui.Button(key,$"{names[i]}  {shares[i]*100:0.#}%",i>0 && _fortuneStockKind==i-1?Accent:Muted,.43f);
+            var key=FortuneStockKey(i);_ui.Center($"{names[i]}  {shares[i]*100:0.#}%",key,.43f,Cream);
             _ui.Box(new(key.X+7,key.Y+9,7,key.Height-18),colors[i]);
         }
-        var handle=FortuneHandle(_fortuneStockKind);_ui.Box(handle,Cream);_ui.Box(new(handle.X+4,handle.Y+4,14,14),Accent);
-        _ui.Text("成分を選び、四角をドラッグ",new(75,540),.32f,Cream);
-        _ui.Button(FortuneRandomShare,"割合ランダム変更",Accent,.43f);
-        for(int i=0;i<5;i++){
-            var b=new Rectangle(75+i*104,610,92,48);_ui.Button(b,$"{i*25}%",Muted,.38f);
-            _spriteBatch.Draw(RatePieIcon(i*90,4),new Rectangle(b.X+2,b.Y+13,22,22),Color.White);
+        for(int kind=0;kind<2;kind++){
+            var color=kind==0?FortuneRobotColor:FortuneRawColor;float radius=kind==0?88:126;
+            for(int segment=0;segment<96;segment++){
+                float a=segment*MathHelper.TwoPi/96,b=(segment+1)*MathHelper.TwoPi/96;
+                Line(FortunePieCenter+new Vector2(MathF.Sin(a),-MathF.Cos(a))*radius,FortunePieCenter+new Vector2(MathF.Sin(b),-MathF.Cos(b))*radius,color*.5f);
+            }
+            var handle=FortuneHandle(kind);_ui.Box(handle,Cream);var inner=handle;inner.Inflate(-3,-3);_ui.Box(inner,color);
+            float percent=(kind==0?robot-fixedShare:raw)*100;
+            _ui.Center($"{percent:0.#}%",new(handle.Center.X-35,handle.Bottom+21>545?handle.Y-20:handle.Bottom+3,70,18),.30f,Cream);
         }
-        _ui.Text($"全 {stock.CapacityUnits/3} 格納庫 / 1/3枠ずつ配分",new(75,674),.37f,Cream);
-        // Every site uses the same 0..60 scale; undeveloped capacity is not usable empty space.
+        _ui.Text("２つの四角をドラッグして割合を変更",new(75,550),.30f,Cream);
+        _ui.Button(FortuneRandomShare,"割合ランダム変更",Accent,.43f);
+        _ui.Text($"全 {stock.CapacityUnits/3} 格納庫 / 1/3枠ずつ配分",new(75,606),.37f,Cream);
+        // Scale to the largest site limit in this world; unavailable capacity stays transparent.
         var sites=stock.Sites.OrderBy(s=>_fortuneStockPreview.Robots.Nodes[s.Node].WarehouseLimit??s.CapacityUnits/3).ThenBy(s=>s.Node).ToArray();
-        int Y(float bays)=>FortuneDistribution.Bottom-(int)Math.Round(Math.Clamp(bays,0,60)/60*FortuneDistribution.Height);
+        float maximum=Math.Max(1,sites.Select(s=>Math.Max(s.CapacityUnits/3f,_fortuneStockPreview.Robots.Nodes[s.Node].WarehouseLimit??s.CapacityUnits/3f)).DefaultIfEmpty(1).Max());
+        int Y(float bays)=>FortuneDistribution.Bottom-(int)Math.Round(Math.Clamp(bays,0,maximum)/maximum*FortuneDistribution.Height);
         for(int i=0;i<sites.Length;i++){
             var site=sites[i];
             int x=FortuneDistribution.X+i*FortuneDistribution.Width/sites.Length;
@@ -146,7 +146,7 @@ public partial class Game1
             if(right>x){Line(new(x,Y(capacity)),new(right,Y(capacity)),Cream*.7f);Line(new(x,Y(limit)),new(right,Y(limit)),Cream);}
         }
         Line(new(FortuneDistribution.Left,FortuneDistribution.Top),new(FortuneDistribution.Right,FortuneDistribution.Top),Cream*.35f);
-        _ui.Text("60",new(28,696),.27f,Cream);_ui.Text("0",new(28,855),.27f,Cream);
+        _ui.Text($"{maximum:0}",new(28,FortuneDistribution.Top-8),.27f,Cream);_ui.Text("0",new(28,FortuneDistribution.Bottom-19),.27f,Cream);
         _ui.Text("地点の上限が少ない → 多い / 高さ：格納庫数",new(75,882),.29f,Cream);
         _ui.Text("下から：固定 / 追加ロボット / 原材料 / 空き",new(75,904),.26f,Cream);
         _ui.Text("グレーの斜線：未開放 / 透明：地点の上限外",new(75,924),.26f,Cream);

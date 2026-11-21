@@ -4401,3 +4401,6 @@ NAS delivery-battle-link-0016（期限11月19日）、固定3637照合・警告�
 
 
 2026-11-21 20:02 JST 利用者承認の初期空き地形予算/港按分/国旗別管理人効果を含む新ルールの基準試行を取得。DLL FBA0C4656F3EFC2FBE38B55218DB0B1F5213D63F7778CAE045C67DF86F87A017（開発ビルド、配布v0.13.0 A6Aとは別）。実HeadlessRunner、SEED42/cast8/rights492471852/fortune1544938375/20CPU/Materials初期25・25/原料・ScrapRules有効、初期0→400で未征服・解析打切り/収束未判定。最大根13/9地域、15.78秒/exit0/stderr空。前のA6A・SEED42候補75征服と初期容量・在庫が違うのでCPU候補の改善悪化比較に使わない。今回は製品の現行判断そのままでNAS試作の有限完工員解除/原料需要便を注入していない。初期各地点の上限/在庫/管理人数はstart行に記録、新規世界の初期空き条件を基準として以後の対照を揃える。NAS archives/convergence-analysis/flag-warehouse-baseline42-2026-11-21-2002（world/全ログ/dllhash）、元保存を延長せず400で停止。製品/公開物/実ゲーム/元保存/個人差分変更なし、コミット・プッシュなし。
+
+
+2026-11-21 20:16 JST 新初期容量/国旗別管理人DLL FBA0C4656F3EFC2FBE38B55218DB0B1F5213D63F7778CAE045C67DF86F87A017でNAS判断候補を同SEED42新規0→400比較。cast8/rights492471852/fortune1544938375/20CPU/Materials25・25/原料・ScrapRules有効。候補は有限完工員解除＋合算予測つき原料需要便だが、原料便の予約は０件。この世界では補給候補が働いたと主張できず、差分の主対象は完工員解除。候補400未征服・解析打切り/収束未判定、最大根12/11地域（17.93秒）に対し現行基準は根13/9地域。地域数だけで収束改善/遊びの良否とはしない。両方400止め、元保存延長なし。NAS archives/convergence-analysis/flag-warehouse-candidate42-2026-11-21-2016、再生成tmp/delete-after-2026-11-22/convergence-analysis/flag-warehouse-candidate42-2016。exit0/stderr空、候補本体未採用。次は現在の容量条件で原料便が提案されない理由（前線除外・所有・需要・受取）を切り分けるか、別SEEDで現行基準を取る。製品/公開物/実ゲーム/元保存/個人差分変更なし、コミット・プッシュなし。
