@@ -23,9 +23,10 @@ public partial class Game1
         _fortuneDistributionSeed=_fortuneStockSeed^0x494E4954;
         _fortuneStockPreview=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(_setup));
         _fortuneStockPreview.CompleteLand(_fortuneStockSeed,0,0,new(0,0,_fortuneDistributionSeed));
-        int minimum=(int)Math.Floor(100d*_fortuneStockPreview.InitialStock.FixedRobotUnits/Math.Max(1,_fortuneStockPreview.InitialStock.CapacityUnits));
-        _robotScatterPercent=Math.Max(_robotScatterPercent,minimum);
-        _rawStockPercent=Math.Min(_rawStockPercent,100-_robotScatterPercent);
+        double fixedPercent=100d*_fortuneStockPreview.InitialStock.FixedRobotUnits/Math.Max(1,_fortuneStockPreview.InitialStock.CapacityUnits);
+        double additional=Math.Min(12.5,(100-fixedPercent)/2);
+        _robotScatterPercent=(int)Math.Round(fixedPercent+additional);
+        _rawStockPercent=Math.Min((int)Math.Round(additional),100-_robotScatterPercent);
         RebuildFortuneStock();
     }
     private void RebuildFortuneStock()=>_fortuneStockPreview.RebuildInitialStock(new(_robotScatterPercent,_rawStockPercent,_fortuneDistributionSeed,_fortuneUniform));
@@ -137,19 +138,14 @@ public partial class Game1
             Band(fixedBays,fixedBays+robots,FortuneRobotColor);
             Band(fixedBays+robots,fixedBays+robots+rawBays,FortuneRawColor);
             Band(fixedBays+robots+rawBays,capacity,FortuneEmptyColor);
-            Band(capacity,limit,FortuneEmptyColor);
-            int hatchTop=Y(limit),hatchBottom=Y(capacity),height=hatchBottom-hatchTop;
-            for(int start=x-height;start<right;start+=8){
-                int from=Math.Max(0,x-start),to=Math.Min(height,right-start);
-                if(to>from)Line(new(start+from,hatchBottom-from),new(start+to,hatchBottom-to),Cream*.35f);
-            }
+            Band(capacity,limit,new Color(106,90,205));
             if(right>x){Line(new(x,Y(capacity)),new(right,Y(capacity)),Cream*.7f);Line(new(x,Y(limit)),new(right,Y(limit)),Cream);}
         }
         Line(new(FortuneDistribution.Left,FortuneDistribution.Top),new(FortuneDistribution.Right,FortuneDistribution.Top),Cream*.35f);
         _ui.Text($"{maximum:0}",new(28,FortuneDistribution.Top-8),.27f,Cream);_ui.Text("0",new(28,FortuneDistribution.Bottom-19),.27f,Cream);
         _ui.Text("地点の上限が少ない → 多い / 高さ：格納庫数",new(75,882),.29f,Cream);
         _ui.Text("下から：固定 / 追加ロボット / 原材料 / 空き",new(75,904),.26f,Cream);
-        _ui.Text("グレーの斜線：未開放 / 透明：地点の上限外",new(75,924),.26f,Cream);
+        _ui.Text("スレートブルー：未開放 / 透明：地点の上限外",new(75,924),.26f,Cream);
         _ui.Button(FortuneRandomize,"分布ランダム変更",Accent,.43f);_ui.Button(FortuneUniform,"均等",_fortuneUniform?Accent:Muted,.43f);
         if(new Rectangle(60,270,550,785).Contains(_pointer))DrawRulebookHint("初期配置の設定","分からなかったら、そのまま確定して進んでください");
         void Line(Vector2 a,Vector2 b,Color color){var d=b-a;if(d.LengthSquared()>0)_ui.Tile((a+b)/2,new(d.Length(),2),MathF.Atan2(d.Y,d.X),color);}
