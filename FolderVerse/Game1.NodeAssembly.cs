@@ -89,7 +89,7 @@ public partial class Game1
         if(escape)_hangarPanning=false;
         if(!escape && UpdateHangarZoom(mouse,click))return;
         if(ReturnHomeHangarInput(click))return;
-        if(click && DomesticOperationsAllowed && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) && _setup.Robots.ScrapRulesEnabled && !VisitingForeignHangar && DismantlerButton.Contains(_pointer)){_hangarReservation=_hangarReservation==HangarReservation.Dismantler?HangarReservation.None:HangarReservation.Dismantler;_hangarDrag=null;return;}if(click && HangarUndoButton.Contains(_pointer)){UndoHangarPlan();return;}
+        if(click && DomesticOperationsAllowed && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) && _setup.Robots.ScrapRulesEnabled && !VisitingForeignHangar && DismantlerButton.Contains(_pointer)){_hangarReservation=_hangarReservation==HangarReservation.Dismantler?HangarReservation.None:HangarReservation.Dismantler;_hangarDrag=null;_warehouseSwapKeeper=null;_hangarReturnHomeMode=false;_hangarAbandonMode=false;return;}if(click && HangarUndoButton.Contains(_pointer)){UndoHangarPlan();return;}
         if(click && HangarPageClick(_pointer))return;
         if(!DomesticOperationsAllowed){
             _hangarDrag=null;_hangarReservation=HangarReservation.None;_hangarAbandonMode=false;
@@ -218,7 +218,7 @@ public partial class Game1
         bool hoveringPart=false;
         bool reservationMode=_hangarReservation!=HangarReservation.None || _hangarReturnHomeMode || _hangarAbandonMode;
         string hover=!HangarAssemblyAvailable?"旧仕様のパーツは閲覧できます":VisitingForeignHangar?"滞在中：自国パーツ同士の交換・空き部位への移動ができます":CanOpenHangar?"頭・胴・脚をつかんで、格納庫の区画へドラッグ＆ドロップ":"他国の地点：自分の征服者がいる地点では自国パーツを動かせます";
-        if(reservationMode)hover="区画をクリック：予約 / 同じ国の同じ予約は解除 / 続けて選択できます";
+        if(reservationMode)hover="光っている格納庫をクリック：予約・解除 / 続けて選択できます";
         if(!DomesticOperationsAllowed)hover="軍事フェーズ：格納庫は閲覧のみ / 組立・配送は次の内政フェーズで操作できます";
         if(_homePersuasionActive && PersuasionStopAge<PersuasionPanSeconds)
             DrawPersuasionHangarTransition(store);
@@ -271,7 +271,7 @@ public partial class Game1
                 _ui.Center("到着予定："+PartsLabel(order.Part),new(cell.X,cell.Y+236,cell.Width,22),.27f,Cream);
             }
             // Draw opaque labels after every glyph, including disabled/occupied slots.
-            if(robot==null){DrawHangarDeliveryTags(slot,incoming,occupant);DrawMaterials(slot);if(canAssemble)DrawHangarCandidate(cell);continue;}
+            if(robot==null){DrawHangarDeliveryTags(slot,incoming,occupant);DrawMaterials(slot);DrawHangarSelectionTargets(slot,cell,occupant,canReserve,canAssemble);continue;}
             robot=HomePersuasionRobot(robot);
             DrawHangarRobot(AssemblyRobotBounds(slot),robot,partOpacity:part=>reservationMode?(canReserve?1:.45f):!HangarAssemblyAvailable || HangarPlaceEnabled(occupant,part)?1:.22f);
             DrawHangarDeliveryTags(slot,incoming,occupant);
@@ -303,7 +303,7 @@ public partial class Game1
             }
             if(robot.FunctionDisplayNode is int origin)_ui.Text("元地点 "+origin,new(cell.X+92,cell.Y+151),.23f,Cream);
             DrawMaterials(slot);
-            if(canReserve || canAssemble)DrawHangarCandidate(cell);
+            DrawHangarSelectionTargets(slot,cell,occupant,canReserve,canAssemble);
             if(cellHover){var edge=canReserve?ControlEdge:new Color(184,102,104);_ui.Box(new(cell.X,cell.Y,cell.Width,3),edge);_ui.Box(new(cell.X,cell.Bottom-3,cell.Width,3),edge);_ui.Box(new(cell.X,cell.Y,3,cell.Height),edge);_ui.Box(new(cell.Right-3,cell.Y,3,cell.Height),edge);}
         }
         void DrawMaterials(int slot)
@@ -313,6 +313,7 @@ public partial class Game1
                 _ui.Box(bounds,new Color(30,48,60));
                 bool arrival=MapleArrival(package);
                 DrawMaplePackage(bounds,package,opacity:arrival?.55f:_mapleDrag==package.Id && _mapleMoved?.4f:1,compact:true);
+                if(!reservationMode && !arrival && CanOpenHangar && !_hangarDrag.HasValue)DrawHangarCandidate(bounds);
                 if(arrival)DrawDirectDeliveryTag(bounds,"入荷予定");
                 else if(cellWidthAllowsTag(bounds) && mergedMaple.TryGetValue(package.Id,out int units))
                     DrawDirectDeliveryTag(bounds,$"合算 +{units}");
