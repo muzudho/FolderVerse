@@ -67,8 +67,9 @@ public sealed class SalvagePlan
         if(node<0 || node>=w.Nodes.All.Length || w.Nodes.All[node].Owner!=owner || w.Campaign.RobotBattles.LockedNode(node))throw new InvalidOperationException("Abandonment is unavailable here.");
         var store=w.Robots.Nodes[node];var robot=store.Robots.SingleOrDefault(r=>r.Id==id);
         if(robot!=null)parts=robot.ConnectedParts(parts);
-        if(robot==null || robot.Owner!=owner || parts==0 || (parts&robot.Parts)!=parts || new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(parts&p)!=0 && w.Robots.PartLocked(node,robot,p)))throw new InvalidOperationException("Reserved parts cannot be abandoned.");
+        if(robot==null || robot.Owner!=owner || parts==0 || (parts&robot.Parts)!=parts || !w.Robots.CanMoveDismantling(node,robot,parts) && new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(parts&p)!=0 && w.Robots.PartLocked(node,robot,p)))throw new InvalidOperationException("Reserved parts cannot be abandoned.");
         var cargo=Stopped(robot).Slice(parts);
+        if(w.Robots.ScrapRulesEnabled)w.Robots.Discarding.Consume(node,w.Population.Turn,PartCount(parts)*3);
         var remaining=robot.Parts&~parts;
         if(remaining==0 && w.Robots.DirectDelivery.Orders.Any(o=>o.Target==node && o.TargetRobotId==id))throw new InvalidOperationException("An incoming delivery requires its arrival anchor.");
         if(remaining==0)store.Remove(id);
@@ -112,7 +113,7 @@ public sealed class SalvagePlan
     public bool PickUp(WorldSetup w,int owner,long id)
     {
         var item=Items.FirstOrDefault(i=>i.Id==id);var current=w.Nodes.Current(owner);
-        if(item==null || current?.Id!=item.Node || w.Campaign.RobotBattles.LockedNode(item.Node) || !w.Robots.Retinues[owner].HasSpace)return false;
+        if(item==null || item.Robot.RecoveredRaw!=null || current?.Id!=item.Node || w.Campaign.RobotBattles.LockedNode(item.Node) || !w.Robots.Retinues[owner].HasSpace)return false;
         w.Robots.Retinues[owner].Add(Stopped(item.Robot) with {Owner=owner});Items.Remove(item);return true;
     }
     private SalvagePolicy EffectivePolicy(WorldSetup w,SalvageAgent a)
@@ -152,7 +153,7 @@ public sealed class SalvagePlan
     }
     public void Advance(WorldSetup w,int turn,Func<int,bool> incomingBattle=null)
     {
-        if(LastTurn==turn)return;LastTurn=turn;EnsureAgents(w);
+        if(LastTurn==turn)return;LastTurn=turn;for(int n=0;n<w.Robots.Nodes.Length;n++){w.Robots.Nodes[n].ScrapNode=n;w.Robots.Nodes[n].ScrapTurn=turn;}EnsureAgents(w);
         _incomingBattle=incomingBattle;
         try{
         foreach(var a in Agents.OrderBy(a=>a.Owner)){
@@ -166,7 +167,7 @@ public sealed class SalvagePlan
             if(a.Node==choice.Node){
                 if(choice.Unload){
                     var store=w.Robots.Nodes[a.Node];
-                    foreach(var robot in a.Cargo.ToArray())if(store.HasSpace){store.Add(Stopped(robot) with {Owner=a.Owner});a.Cargo.Remove(robot);}
+                    foreach(var robot in a.Cargo.ToArray()){if(robot.RecoveredRaw is {} raw){if(!store.TryReceiveMaple(raw,0,_=>false))continue;}else{if(!store.HasSpace)continue;store.Add(Stopped(robot) with {Owner=a.Owner});}a.Cargo.Remove(robot);}
                     if(a.Cargo.Count==0)a.CargoAge=0;
                 }else foreach(var item in Items.Where(i=>i.Node==a.Node && (i.AbandonedBy!=a.Owner || i.RequestedBy==a.Owner)).OrderByDescending(i=>i.RequestedBy==a.Owner).ThenBy(i=>i.Id).ToArray()){
                     if(a.Load+PartCount(item.Robot.Parts)>Capacity)continue;

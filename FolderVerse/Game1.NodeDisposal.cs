@@ -31,7 +31,7 @@ public partial class Game1
         if(NodeSalvageButton.Contains(pointer)){if(DomesticOperationsAllowed)OpenSalvageCatalog(_populationNode);return true;}
         if(NodeRecoveryPlanButton.Contains(pointer) && DomesticOperationsAllowed){OpenSalvagePlan(_populationNode);return true;}
         if(!DomesticOperationsAllowed || !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return true;
-        var robots=DisposalCandidates();
+        if(_setup.Robots.ScrapRulesEnabled){ScrapDisposalClick(pointer);return true;}var robots=DisposalCandidates();
         for(int i=0;i<robots.Length;i++)
         {
             int x=84+i/6*388,y=340+i%6*78;
@@ -52,7 +52,7 @@ public partial class Game1
     }
     private void DrawNodeDisposal()
     {
-        var node=_setup.Nodes.All[_populationNode];var workshop=_setup.Robots.Workshops[node.Id];
+        if(_setup.Robots.ScrapRulesEnabled){DrawScrapDisposal();return;}var node=_setup.Nodes.All[_populationNode];var workshop=_setup.Robots.Workshops[node.Id];
         bool manage=CanManageNodeFactory(node.Owner);
         var robots=manage?DisposalCandidates():Array.Empty<Robot>();
         _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Box(new(54,150,850,6),_setup.OwnerColor(node.Owner));

@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using Microsoft.Xna.Framework;
 using System;
 using System.Linq;
@@ -9,7 +9,7 @@ public partial class Game1
     private static Rectangle RobotCard(int index)=>new(54+index%6*149,220+index/6*153,137,141);
     private static string PartsLabel(RobotParts parts)=>((parts&RobotParts.Head)!=0?"頭":"")+((parts&RobotParts.Body)!=0?"胴":"")+((parts&RobotParts.Legs)!=0?"脚":"");
     private static string IntegratedLabel(RobotParts parts)=>parts==(RobotParts.Head|RobotParts.Body)?"頭／胴一体型":parts==(RobotParts.Body|RobotParts.Legs)?"胴／脚一体型":"";
-    private static string PartsLabel(Robot robot)=>(robot.IsWorkpiece?"仕掛品 / ":"")+(robot.IntegratedParts==0?PartsLabel(robot.Parts):IntegratedLabel(robot.IntegratedParts)+((robot.Parts&~robot.IntegratedParts)!=0?"＋"+PartsLabel(robot.Parts&~robot.IntegratedParts):""));
+    private static string PartsLabel(Robot robot)=>robot.RecoveredRaw is {} raw?$"スクラップ {new WorkProgress(raw.Units,9)} 格納庫":(robot.IsDismantling?"解体の仕掛品 / ":robot.IsWorkpiece?"製造の仕掛品 / ":"")+(robot.IntegratedParts==0?PartsLabel(robot.Parts):IntegratedLabel(robot.IntegratedParts)+((robot.Parts&~robot.IntegratedParts)!=0?"＋"+PartsLabel(robot.Parts&~robot.IntegratedParts):""));
     private void DrawRobotGlyph(Rectangle r,int owner,RobotParts parts,bool captain=false,float opacity=1,bool whiteOutline=false,bool damaged=false,bool cheap=false,RobotParts integrated=0,bool premium=false)
         =>DrawRobotGlyph(r,new Robot(0,owner,parts,captain?RobotRole.Captain:RobotRole.Soldier){IntegratedParts=integrated,DamagedParts=damaged?parts:0,CheapParts=cheap?parts:0,PremiumParts=premium?parts:0},whiteOutline,opacity);
     private void DrawRobotGlyph(Rectangle r,Robot robot,bool whiteOutline=false,float opacity=1,Func<RobotParts,float> partOpacity=null)
@@ -17,7 +17,7 @@ public partial class Game1
 
     private void DrawRobotGlyphCore(Rectangle r,Robot robot,bool whiteOutline,float opacity,Func<RobotParts,float> partOpacity,bool showIntegratedMaterial,bool allowCaptain=false)
     {
-        // Outline only the exterior, including for translucent reservations and delivery ghosts.
+        if(robot.RecoveredRaw!=null){DrawScrapArt(r,opacity);return;}if(robot.IsDismantling)opacity*=.6f; // Outline only the exterior, including for translucent reservations and delivery ghosts.
         var shapes=new System.Collections.Generic.List<(Rectangle Bounds,RobotParts Part,bool Face)>();
         void Shape(Rectangle bounds,RobotParts part,bool face=false){if((robot.Parts&part)!=0)shapes.Add((bounds,part,face));}
         bool headBody=(robot.IntegratedParts&robot.Parts)==(RobotParts.Head|RobotParts.Body);
@@ -120,8 +120,25 @@ public partial class Game1
             RobotWorkArt.DrawWindupKey(_ui, r, Alpha(RobotParts.Head),
                 robot.ShoeOwner >= 0 ? DefenseShoeProgress(robot) : WorkShoeProgress(robot));
         DrawWorkReservationEffect(r,robot,opacity);
+        if(robot.IsDismantling){
+            int total=RobotWorkshop.DisposalTurns(robot.Parts),done=Math.Min(total,robot.DismantlingAge.Value);
+            int h=Math.Max(3,r.Height/16);var bar=new Rectangle(r.X,r.Bottom-h,r.Width,h);
+            _ui.Box(bar,new Color(39,43,49)*opacity);
+            _ui.Box(new(bar.X,bar.Y,Math.Max(1,bar.Width*done/total),bar.Height),new Color(244,139,66)*opacity);
+            if(r.Width>=96)_ui.Center("解体",new(r.X,r.Bottom-h-24,r.Width,24),.28f,Cream*opacity);
+            return;
+        }
         foreach(var part in RobotMaterials.Parts.Where(p=>(robot.Parts&p)!=0 && robot.Work(p)!=null)){
             int y=part==RobotParts.Head?r.Y:part==RobotParts.Body?r.Y+r.Height/3:r.Y+r.Height*2/3;
+            if(r.Width<96){
+                var progress=robot.Work(part).Progress;
+                int height=Math.Clamp(r.Height/34,2,4);
+                var track=new Rectangle(r.X,y+r.Height/3-height,Math.Max(1,r.Width),height);
+                _ui.Box(track,new Color(38,45,52)*opacity);
+                int filled=(int)(track.Width*progress.Numerator/progress.Denominator);
+                if(filled>0)_ui.Box(new(track.X,track.Y,filled,track.Height),new Color(255,193,76)*opacity);
+                continue;
+            }
             var work=robot.Work(part);var band=new Rectangle(r.X,y+r.Height/6,Math.Max(1,r.Width),Math.Max(8,r.Height/9));
             _ui.Box(band,new Color(38,45,52)*opacity);
             for(int x=band.X;x<band.Right;x+=8)_ui.Box(new(x,band.Y,Math.Min(3,band.Right-x),Math.Max(1,band.Height/4)),new Color(255,193,76)*opacity);

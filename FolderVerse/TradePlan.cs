@@ -63,7 +63,7 @@ public sealed class TradePlan
                     : world.Robots.CanShip(endpoint.Node,robot)))
                 yield return new(robot.Id,false);
         foreach(var pack in store.MaplePackages)
-            if(endpoint.Pocket || !world.Robots.MapleShipments.Any(order=>order.Source==endpoint.Node && order.PackageId==pack.Id))
+            if(!world.Robots.Discarding.Reserved(pack.Id) && (endpoint.Pocket || !world.Robots.MapleShipments.Any(order=>order.Source==endpoint.Node && order.PackageId==pack.Id)))
                 yield return new(pack.Id,true);
     }
 
@@ -131,8 +131,8 @@ public sealed class TradePlan
         if(leftRobot!=null)rightRobots.Add(leftRobot.Materialize() with {Owner=offer.To.Ruler});
         var leftPackages=left.MaplePackages.Where(p=>p.Id!=leftRaw?.Id).ToList();
         var rightPackages=right.MaplePackages.Where(p=>p.Id!=rightRaw?.Id).ToList();
-        if(rightRaw!=null)leftPackages.Add(rightRaw);
-        if(leftRaw!=null)rightPackages.Add(leftRaw);
+        if(rightRaw!=null)leftPackages.Add(ScrapCargo.Arrive(rightRaw,offer.From.Pocket?-1:offer.From.Node,world.Population.Turn));
+        if(leftRaw!=null)rightPackages.Add(ScrapCargo.Arrive(leftRaw,offer.To.Pocket?-1:offer.To.Node,world.Population.Turn));
 
         int Reserved(TradeEndpoint endpoint,RobotStore store)=>store.ReservedReturns+(endpoint.Pocket?0:
             world.Robots.Workshops[endpoint.Node].ReservedSlots+

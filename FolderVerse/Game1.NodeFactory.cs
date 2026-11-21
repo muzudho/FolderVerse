@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -159,7 +159,7 @@ public partial class Game1
             else {var line=lines[_factoryLine];if(field==0)line.SetRest(i+1,line.RestTurns);else line.SetRest(line.RestEvery,i+1);SavePending(_factoryLine);}return true;
         }return true;}
         if(_factoryPlanLine>=0){int line=_factoryPlanLine;for(int i=0;i<lines[line].PlanCount;i++)if(FactoryPlanButton(i).Contains(pointer)){_setup.Robots.PartPlanning.CancelWorkpieceResume(lines[line],_setup.Nodes.All[_populationNode].Owner);lines[line].SelectPlan(i);_setup.Robots.CollectInterruptedWorkpieces(_setup);SavePending(line);_factoryPlanLine=-1;return true;}_factoryPlanLine=-1;return true;}
-        for(int l=_factoryPage;l<Math.Min(lines.Length,_factoryPage+FactoryVisibleLanes);l++){
+        for(int l=_factoryPage;l<Math.Min(lines.Length,_factoryPage+FactoryVisibleLanes);l++){if(lines[l].DismantleOnly)continue;
             if(!planned.ContainsKey(l) && !lines[l].HarvestOnly && lines[l].MapleRemaining==0 && FactoryIntakeButton(l-_factoryPage).Contains(pointer)){_intakeLine=lines[l];_intakeNode=_populationNode;_intakePage=0;return true;}
             var line=lines[l];int period=line.Manufacturing?line.EffectiveProductionPeriod(_setup.Nodes.All[_populationNode].Purpose):3;
             bool harvest=line.HarvestOnly || line.MapleRemaining>0;
@@ -216,7 +216,7 @@ public partial class Game1
             bool planned=plannedWorkers.TryGetValue(l,out long plannedWorkerId);
             long? workerId=planned?plannedWorkerId:line.WorkerSnapshot?.Id??factory.WorkerAt(Array.IndexOf(factory.ProductionLines,line));
             bool mapleWait=line.WaitingForMaple(_setup.Robots,node.Id);
-            DrawFactoryLaneFrame(l-_factoryPage,l+1,l);
+            DrawFactoryLaneFrame(l-_factoryPage,l+1,l);if(line.DismantleOnly){DrawDismantlingLane(line,node.Id,l-_factoryPage,workerId);continue;}
             if(!planned && !line.HarvestOnly && line.MapleRemaining==0)_ui.Button(FactoryIntakeButton(l-_factoryPage),"入荷先",Muted,.34f);
             if(line.HarvestOnly || line.MapleRemaining>0){
                 var harvester=line.WorkerSnapshot;

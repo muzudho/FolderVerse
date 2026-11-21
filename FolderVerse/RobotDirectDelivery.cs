@@ -58,7 +58,7 @@ public sealed class RobotDirectDelivery
         long start=_next;
         var failures=Failures.ToArray();
         try{
-            var robot=setup.Robots.Nodes[source].Robots.Single(r=>r.Id==id);parts=robot.ConnectedParts(parts);
+            var robot=setup.Robots.Nodes[source].Robots.Single(r=>r.Id==id);parts=robot.ConnectedParts(parts);if(robot.IsDismantling){Reserve(setup,source,target,id,parts,targetId,slot);return;}
             foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})if((parts&part)!=0){var order=Reserve(setup,source,target,id,part,targetId,slot);parts&=~order.Part;}
         }
         catch{Orders.RemoveAll(o=>o.Number>=start);_next=start;Failures.Clear();Failures.AddRange(failures);throw;}
@@ -72,9 +72,9 @@ public sealed class RobotDirectDelivery
         if(part==0 || (part&~RobotParts.Complete)!=0 || source<0 || source>=world.Nodes.Length || target<0 || target>=world.Nodes.Length || source==target || slot<0 || slot>=world.Nodes[target].TotalCapacity || !setup.Nodes.All[source].Functional || !setup.Nodes.All[target].Functional)throw new InvalidOperationException("Invalid direct delivery.");
         if(battles.LockedNode(source) || battles.LockedNode(target) || !FunctionalDeliveryRoutes.Connected(setup,source,target))throw new InvalidOperationException("Route unavailable.");
         var robot=world.Nodes[source].Robots.SingleOrDefault(r=>r.Id==id);
-        if(robot!=null){part=robot.ConnectedParts(part);if(part is not (RobotParts.Head or RobotParts.Body or RobotParts.Legs) && robot.IntegratedParts!=part)throw new InvalidOperationException("Select one physical unit.");}
-        if(robot==null || !Controls(robot.Owner) || !Controls(setup.Nodes.All[source].Owner) || !Controls(setup.Nodes.All[target].Owner) || (robot.Parts&part)==0 || world.BaseAssemblyLocked(source,robot) || (LockedParts(source,id)&part)!=0)throw new InvalidOperationException("Part unavailable.");
-        var outgoing=Orders.Where(o=>o.Source==source && o.RobotId==id).Aggregate(part,(mask,o)=>mask|o.Part);
+        if(robot!=null){part=robot.ConnectedParts(part);if(part is not (RobotParts.Head or RobotParts.Body or RobotParts.Legs) && robot.IntegratedParts!=part && !(robot.IsDismantling && part==robot.Parts))throw new InvalidOperationException("Select one physical unit.");}
+        if(robot==null || !Controls(robot.Owner) || !Controls(setup.Nodes.All[source].Owner) || !Controls(setup.Nodes.All[target].Owner) || (robot.Parts&part)==0 || world.BaseAssemblyLocked(source,robot) && !world.CanMoveDismantling(source,robot,part) || (LockedParts(source,id)&part)!=0)throw new InvalidOperationException("Part unavailable.");
+        if(robot.IsDismantling && targetId.HasValue || Orders.Any(o=>o.Target==target && o.TargetSlot==slot && (robot.IsDismantling || world.Nodes[o.Source].Robots.Any(r=>r.Id==o.RobotId && r.IsDismantling))))throw new InvalidOperationException("解体の仕掛品は別の格納庫へ移してください");var outgoing=Orders.Where(o=>o.Source==source && o.RobotId==id).Aggregate(part,(mask,o)=>mask|o.Part);
         if((outgoing&robot.Parts)==robot.Parts && Orders.Any(o=>o.Target==source && o.TargetRobotId==id))throw new InvalidOperationException("Arrival anchor must remain.");
         if(targetId is long receiver){var destination=world.Nodes[target].Robots.SingleOrDefault(r=>r.Id==receiver);if(destination==null || destination.Owner!=robot.Owner || (destination.Parts&part)!=0 || world.BaseAssemblyLocked(target,destination) || (LockedParts(target,receiver)&part)!=0 || Orders.Where(o=>o.Source==target && o.RobotId==receiver).Aggregate((RobotParts)0,(mask,o)=>mask|o.Part)==destination.Parts)throw new InvalidOperationException("Destination part unavailable.");}
         else if(Orders.Any(o=>o.Target==target && o.TargetRobotId==null && o.TargetSlot==slot && ((o.Part&part)!=0 || o.Owner!=robot.Owner)))throw new InvalidOperationException("Arrival slot already reserved.");
@@ -126,7 +126,7 @@ public sealed class RobotDirectDelivery
             var source=world.Nodes[order.Source].Robots.SingleOrDefault(r=>r.Id==order.RobotId);
             var destination=order.TargetRobotId is long id?world.Nodes[order.Target].Robots.SingleOrDefault(r=>r.Id==id):null;
             if(source==null || source.Owner!=order.Owner || !source.CanSeparate(order.Part) || order.TargetRobotId.HasValue && (destination==null || destination.Owner!=order.Owner || (destination.Parts&order.Part)!=0)){Orders.Remove(order);continue;}
-            if(locked?.Invoke(order.Source)==true || locked?.Invoke(order.Target)==true || !connected(order.Source,order.Target) || canEnter?.Invoke(order.Owner,order.Source)==false || canEnter?.Invoke(order.Owner,order.Target)==false || world.BaseAssemblyLocked(order.Source,source) || destination!=null && world.BaseAssemblyLocked(order.Target,destination)){order.Status="継戦・経路待機";continue;}
+            if(locked?.Invoke(order.Source)==true || locked?.Invoke(order.Target)==true || !connected(order.Source,order.Target) || canEnter?.Invoke(order.Owner,order.Source)==false || canEnter?.Invoke(order.Owner,order.Target)==false || world.BaseAssemblyLocked(order.Source,source) && !world.CanMoveDismantling(order.Source,source,order.Part,true) || destination!=null && world.BaseAssemblyLocked(order.Target,destination)){order.Status="継戦・経路待機";continue;}
             order.Status="受取待機";active.Add(order);
         }
         while(active.Count>0){

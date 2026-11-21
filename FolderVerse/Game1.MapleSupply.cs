@@ -22,7 +22,7 @@ public partial class Game1
 
     private void DrawMaplePackageArt(Rectangle cell,int sections,float opacity=1,bool alignBottom=false,RawMaterial material=RawMaterial.Maple)
     {
-        int index=(int)material*3+sections-1;
+        if(material==RawMaterial.Scrap){DrawScrapArt(cell,opacity);return;}int index=(int)material*3+sections-1;
         if(_maplePackageArt[index]==null){
             using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Robots",$"raw-{material.ToString().ToLowerInvariant()}-{sections}-v001.png"));
             _maplePackageArt[index]=Texture2D.FromStream(GraphicsDevice,stream);
@@ -38,13 +38,13 @@ public partial class Game1
     {
         DrawMaplePackageArt(cell,package.Sections,opacity,material:package.Material);
         if(compact){
-            if(cell.Height>=28)_ui.Center($"{package.Units}/48",new(cell.X,cell.Bottom-16,cell.Width,16),Math.Min(.27f,cell.Width/210f),Cream);
+            if(cell.Height>=28)_ui.Center($"{package.Units}/{(package.Material==RawMaterial.Scrap?9:48)}",new(cell.X,cell.Bottom-16,cell.Width,16),Math.Min(.27f,cell.Width/210f),Cream);
             return;
         }
         if(cell.Height<65)return;
         bool shipping=_setup.Robots.MapleShipments.Any(o=>o.PackageId==package.Id);
         status??=shipping?"出荷予定":"";
-        _ui.Center($"{RobotWorld.RawName(package.Material)} {package.Units}/48"+(status.Length>0?" / "+status:""),new(cell.X,cell.Bottom-30,cell.Width,28),Math.Min(.34f,cell.Width/410f),Cream);
+        _ui.Center($"{RobotWorld.RawName(package.Material)} {package.Units}/{(package.Material==RawMaterial.Scrap?9:48)}"+(status.Length>0?" / "+status:""),new(cell.X,cell.Bottom-30,cell.Width,28),Math.Min(.34f,cell.Width/410f),Cream);
     }
 
     private int[] MapleTargets()=>FunctionalDeliveryRoutes.Targets(_setup,_populationNode).Where(n=>_setup.Nodes.All[n].Owner>=0).ToArray();
@@ -120,7 +120,7 @@ public partial class Game1
         _mapleDrag=null;
         if(!_mapleMoved){_mapleSelected=sourceId;_mapleDestination=0;return true;}
         var source=store.MaplePackages.FirstOrDefault(p=>p.Id==sourceId);
-        if(source==null || _setup.Robots.MapleShipments.Any(o=>o.PackageId==sourceId) ||
+        if(source==null || _setup.Robots.Discarding.Reserved(sourceId) || _setup.Robots.MapleShipments.Any(o=>o.PackageId==sourceId) ||
             _setup.Campaign.RobotBattles.LockedNode(_populationNode))return true;
         if(hit.Value!=null){
             if(hit.Value.Id!=sourceId)
@@ -133,7 +133,7 @@ public partial class Game1
             if(!AssemblyPartBounds(slot,row).Contains(_pointer))continue;
             int sections=_mapleSplit?1:source.Sections;
             var robot=forecast.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[slot]);
-            if(row+sections>3 || Enumerable.Range(row,sections).Any(r=>MaterialOccupies(materials,slot,r) ||
+            if(source.Material==RawMaterial.Scrap && robot!=null || source.Material!=RawMaterial.Scrap && materials.Any(p=>p.Key/3==slot && p.Value.Material==RawMaterial.Scrap))return true;if(row+sections>3 || Enumerable.Range(row,sections).Any(r=>MaterialOccupies(materials,slot,r) ||
                 robot!=null && (robot.Parts&HangarPart(r))!=0))return true;
             long placedId=sourceId;
             if(_mapleSplit){

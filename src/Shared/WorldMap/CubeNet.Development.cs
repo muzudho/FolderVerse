@@ -83,7 +83,7 @@ public sealed partial class CubeNet
         // Seams in the toy paving and floating pontoons remain visible at medium zoom.
         for(int i=1;i<6;i++)Box(-width/2,.80f-i*.24f,.102f,width,.012f,.008f,new(230,219,192));
         if(sea)foreach(float xx in new[]{-width/2,width/2-.12f})Box(xx,-.62f,-.10f,.12f,1.38f,.11f,new(48,75,93));
-        if(purpose==NodePurpose.Relay){
+        if(purpose==NodePurpose.FinalDisposal){Building(-.36f,-.50f,.72f,.55f,1,false,new Color(65,109,110));for(int i=0;i<=grade;i++){Box(-width/2+i*.45f,.17f,.10f,.38f,.45f,.23f,new Color(100,119,135));Box(-width/2+i*.45f,.17f,.33f,.38f,.45f,.035f,new Color(232,184,77));}Box(.32f,-.40f,.10f,.12f,.12f,.60f,new Color(232,184,77));}else if(purpose==NodePurpose.Relay){
             int bays=1+Math.Min(grade,3);float bw=width/bays;
             for(int i=0;i<bays;i++)Building(-width/2+i*bw,-.57f,bw-.035f,.68f,1,true);
             if(grade>=4)Building(width/2-.44f,.12f,.42f,.51f,1);

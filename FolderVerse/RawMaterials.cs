@@ -6,20 +6,21 @@ using Microsoft.Xna.Framework;
 
 public sealed partial class RobotWorld
 {
-    public static readonly IReadOnlyList<RawMaterial> RawMaterials = Array.AsReadOnly(Enum.GetValues<RawMaterial>());
+    public static readonly IReadOnlyList<RawMaterial> RawMaterials = Array.AsReadOnly(Enum.GetValues<RawMaterial>().Where(m=>m!=RawMaterial.Scrap).ToArray());
     public static string RawName(RawMaterial material)=>material switch
     {
         RawMaterial.Styrene=>"スチレン系樹脂",
         RawMaterial.Vinyl=>"軟質ビニール原料",
         RawMaterial.PP=>"PP樹脂ペレット",
         RawMaterial.Silicone=>"シリコーン生地",
+        RawMaterial.Scrap=>"スクラップ",
         _=>"楓の木"
     };
 
     internal bool OtherRawSupplyEnabled=>_rawDeposits!=null;
     internal bool OffshoreRawSupplyEnabled {get;private set;}
     internal bool OffshoreUsesSeaAreaRule {get;private set;}
-    public int RawDeposit(int node,RawMaterial material)=>material==RawMaterial.Maple
+    public int RawDeposit(int node,RawMaterial material)=>material==RawMaterial.Scrap?0:material==RawMaterial.Maple
         ?MapleDeposit(node):_rawDeposits?[(int)material-1][node]??0;
 
     internal bool HadRawDeposit(WorldSetup world,Node node,RawMaterial material)
@@ -78,5 +79,5 @@ public sealed partial class RobotWorld
             _=>0
         });
 
-    internal bool RawRequired(RawMaterial material)=>material==RawMaterial.Maple?MapleSupplyEnabled:OtherRawSupplyEnabled;
+    internal bool RawRequired(RawMaterial material)=>material!=RawMaterial.Scrap && (material==RawMaterial.Maple?MapleSupplyEnabled:OtherRawSupplyEnabled);
 }

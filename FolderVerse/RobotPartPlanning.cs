@@ -60,7 +60,7 @@ public sealed partial class RobotPartPlanning
     {
         var hash=new HashCode();hash.Add(world.Population.Turn);hash.Add(world.Campaign.Phase);
         foreach(var store in world.Robots.Nodes){hash.Add(store.TotalCapacity);hash.Add(store.WarehouseLimit);hash.Add(store.WarehouseExpansion);hash.Add(store.ReservedReturns);foreach(var robot in store.Robots)hash.Add(robot);foreach(var package in store.MaplePackages)hash.Add(package);}
-        foreach(var order in world.Campaign.FunctionTransfers.Orders)hash.Add(order);
+        foreach(var order in world.Robots.Discarding.Orders)hash.Add(order);foreach(var order in world.Campaign.FunctionTransfers.Orders)hash.Add(order);
         foreach(var order in WorkpieceResumes)hash.Add(order);
         foreach(var order in world.Robots.DirectDelivery.Orders)hash.Add(order);
         foreach(var intake in world.Robots.ProductionIntakes)hash.Add(intake);
@@ -82,13 +82,13 @@ public sealed partial class RobotPartPlanning
         foreach(var order in world.Campaign.FunctionTransfers.Orders){
             if(!world.Campaign.FunctionTransfers.CanApply(world,order))continue;
             int a=order.Source,b=order.Target;
-            if(order.FactoryOnly){NodeFunctionTransfers.MoveFactory(copy,a,b,preview:true);continue;}
-            NodeFunctionTransfers.MergeHangarCapacity(copy.Nodes[a],copy.Nodes[b]);
-            copy.Nodes[b].Replace(copy.Nodes[b].Robots.Concat(copy.Nodes[a].Robots));copy.TransferMapleFunctions(a,b);copy.Nodes[a].Replace(Array.Empty<Robot>());copy.Nodes[a].SetCapacity(0);
+            if(order.FactoryOnly){NodeFunctionTransfers.MoveFactory(copy,a,b,preview:true);if(world.Nodes.All[a].PermanentLandmark)copy.Nodes[a].SetLogisticsRules(relay:false);continue;}
+            NodeFunctionTransfers.MergeHangarCapacity(copy.Nodes[a],copy.Nodes[b],world.Nodes.All[a].PermanentLandmark);
+            copy.Nodes[b].Replace(copy.Nodes[b].Robots.Concat(copy.Nodes[a].Robots));copy.TransferMapleFunctions(a,b);copy.Nodes[a].Replace(Array.Empty<Robot>());copy.Nodes[a].SetCapacity(world.Nodes.All[a].PermanentLandmark?1:0);if(world.Nodes.All[a].PermanentLandmark)copy.Nodes[a].SetWarehouseLimit(1);
             copy.Workshops[b].AbsorbFunctions(copy.Workshops[a]);
             if(copy.Nodes[b].WarehouseLimit is int limit)copy.Workshops[b].SetStorageSlotLimit(limit);
             copy.Workshops[a]=RobotWorkshop.EmptyFunctions();
-            for(int n=0;n<hosts.Length;n++)if(hosts[n]==a)hosts[n]=b;
+            for(int n=0;n<hosts.Length;n++)if(hosts[n]==a && (n!=a || !world.Nodes.All[a].PermanentLandmark))hosts[n]=b;
         }
         world.Robots.PreviewProductionIntakes(world,copy,hosts);
         foreach(var order in world.Robots.DirectDelivery.Orders){
@@ -203,7 +203,7 @@ public sealed partial class RobotPartPlanning
     private static int Find(RobotWorld world,long id)=>Array.FindIndex(world.Nodes,s=>s.Robots.Any(r=>r.Id==id));
     private static Robot FreeRole(Robot r)=>r with {DefenseOnly=false,InterceptOnly=false,FactoryWorker=false,DefenseFlag=null};
     internal static bool CanUseWarehouseSuccessor(WorldSetup world,RobotWorld stock,int node,Robot robot)=>
-        robot!=null && !robot.IsWorkpiece && robot.Parts==RobotParts.Complete && !robot.Stationed && !robot.Disposal &&
+        robot!=null && !robot.IsWorkpiece && !robot.IsDismantling && robot.RecoveredRaw==null && robot.Parts==RobotParts.Complete && !robot.Stationed && !robot.Disposal &&
         !world.Robots.MarchReserved(node,robot) && !stock.ReservationBusy(node,robot.Id);
     private static long Apply(WorldSetup world,RobotWorld stock,PlannedPartMove order,bool checkRoute)
     {
@@ -228,14 +228,14 @@ public sealed partial class RobotPartPlanning
         }
         if(robot.WarehouseKeeper)throw new InvalidOperationException("倉庫管理人の予約を先に解除してください");
         if(order.Role!=HangarReservation.None){
-            bool remove=order.Role switch {HangarReservation.Disposal=>robot.Disposal,HangarReservation.Defense=>robot.DefenseOnly,HangarReservation.Worker=>robot.FactoryWorker && !robot.HarvestWorker,HangarReservation.Harvest=>robot.HarvestWorker,_=>robot.InterceptOnly};
+            bool remove=order.Role switch {HangarReservation.Disposal=>robot.Disposal,HangarReservation.Defense=>robot.DefenseOnly,HangarReservation.Worker=>robot.FactoryWorker && !robot.HarvestWorker && !robot.DismantlingWorker,HangarReservation.Dismantler=>robot.FactoryWorker && robot.DismantlingWorker,HangarReservation.Harvest=>robot.HarvestWorker,_=>robot.InterceptOnly};
             var next=FreeRole(robot) with {Owner=order.Role==HangarReservation.Defense && !remove?order.Owner:robot.Owner,Disposal=order.Role==HangarReservation.Disposal && !remove,
-                DefenseOnly=order.Role==HangarReservation.Defense && !remove,InterceptOnly=order.Role==HangarReservation.Intercept && !remove,FactoryWorker=RobotWorld.WorkerRole(order.Role) && !remove,HarvestAssignment=order.Role==HangarReservation.Harvest && !remove,
+                DefenseOnly=order.Role==HangarReservation.Defense && !remove,InterceptOnly=order.Role==HangarReservation.Intercept && !remove,FactoryWorker=RobotWorld.WorkerRole(order.Role) && !remove,HarvestAssignment=order.Role==HangarReservation.Harvest && !remove,DismantlingWorker=order.Role==HangarReservation.Dismantler && !remove,
                 DefenseFlag=order.Role==HangarReservation.Defense && !remove?new(order.Owner,target,world.Nodes.All[target].Owner):null};
             bool eligible=RobotWorld.WorkerRole(order.Role)?stock.Training[order.Owner].WorkerEligible(next with {Disposal=false}):stock.Training[order.Owner].Eligible(next with {Disposal=false});
             if(!remove && order.Role!=HangarReservation.Disposal && !eligible)throw new InvalidOperationException("予約する仕事の調練条件を満たしません");
-            if(!remove && order.Role==HangarReservation.Harvest && !world.Robots.MapleSupplyEnabled)throw new InvalidOperationException("採取できません");
-            if(!remove && RobotWorld.WorkerRole(order.Role) && stock.Workshops[target].BaseLineCount+stock.Nodes[target].Robots.Count(r=>r.FactoryWorker && r.Id!=robot.Id)>=stock.Workshops[target].LineLimit)throw new InvalidOperationException("作業員のレーンに空きがありません");
+            if(!remove && order.Role==HangarReservation.Dismantler && (!stock.ScrapRulesEnabled || world.Nodes.All[target].Purpose==NodePurpose.Relay || stock.Workshops[target].LineLimit==0))throw new InvalidOperationException("この地点に工場はありません");if(!remove && order.Role==HangarReservation.Harvest && !world.Robots.MapleSupplyEnabled)throw new InvalidOperationException("採取できません");
+            if(!remove && RobotWorld.WorkerRole(order.Role) && order.Role!=HangarReservation.Dismantler && stock.Workshops[target].BaseLineCount+stock.Nodes[target].Robots.Count(r=>r.FactoryWorker && !r.DismantlingWorker && r.Id!=robot.Id)>=stock.Workshops[target].LineLimit)throw new InvalidOperationException("作業員のレーンに空きがありません");
             if(source!=target)Apply(world,stock,order with {Parts=robot.Parts,Role=HangarReservation.None},checkRoute);
             stock.Nodes[target].Replace(stock.Nodes[target].Robots.Select(r=>r.Id==robot.Id?next:r));return robot.Id;
         }
@@ -313,7 +313,7 @@ public sealed partial class RobotWorld
     {
         var result=new RobotWorld();result.Initialize(Nodes.Length,Training.Length);result.Training=Training;
         result._mapleDeposits=_mapleDeposits?.ToArray();
-        result._mapleHarvested=_mapleHarvested?.ToArray();
+        result.Discarding.Orders.AddRange(Discarding.Orders);result.ScrapRulesEnabled=ScrapRulesEnabled;result._mapleHarvested=_mapleHarvested?.ToArray();
         result._mapleShipments=_mapleShipments?.ToList();
         for(int n=0;n<Nodes.Length;n++){
             result.Nodes[n]=Nodes[n].PlanningCopy();

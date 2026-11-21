@@ -118,8 +118,8 @@ public partial class Game1
             DrawHangarRobot(AssemblyRobotBounds(slot),HomePersuasionRobot(robot));
             if(robot.CanFight)DrawEquipmentCounts(HangarCellRegion(cell,8,208,236,48),
                 robot.Equipment(robot.Owner,_setup.EquipmentMode),Cream);
-            if(robot.WarehouseKeeper)DrawHangarReservationLabel(HangarCellRegion(cell,0,170,252,36),robot,"倉庫管理人");
-            else if(robot.HarvestWorker)DrawHangarReservationLabel(HangarCellRegion(cell,0,170,252,36),robot,"採取員");
+            if(_setup.Robots.Discarding.Reserved(robot.Id))DrawHangarReservationLabel(HangarCellRegion(cell,0,170,252,36),robot,"廃棄予定");else if(robot.WarehouseKeeper)DrawHangarReservationLabel(HangarCellRegion(cell,0,170,252,36),robot,"倉庫管理人");
+            else if(robot.DismantlingWorker)DrawHangarReservationLabel(HangarCellRegion(cell,0,170,252,36),robot,"解体員");else if(robot.HarvestWorker)DrawHangarReservationLabel(HangarCellRegion(cell,0,170,252,36),robot,"採取員");
         }
         DrawHangarSlotNumber(slot,cell,robot,robot?.CanFight==true);
     }

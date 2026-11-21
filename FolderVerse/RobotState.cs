@@ -114,7 +114,7 @@ public sealed partial record Robot(long Id,int Owner,RobotParts Parts,RobotRole 
         if(!result.ValidIntegration)throw new InvalidOperationException("Incompatible integrated parts.");
         return result with {Owner=result.AssemblyCredit(owner)>0?owner:Owner};
     }
-    public bool CanFight=>!IsWorkpiece && !WarehouseKeeper && !LongDeliveryNumber.HasValue && !ReturnHomeCommander.HasValue && Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
+    public bool CanFight=>RecoveredRaw==null && !IsWorkpiece && !IsDismantling && !WarehouseKeeper && !LongDeliveryNumber.HasValue && !ReturnHomeCommander.HasValue && Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
 }
 public sealed class RobotStore
 {
@@ -136,6 +136,7 @@ public sealed class RobotStore
     internal void SetCapacity(int capacity){if(capacity<Count+ReservedReturns)throw new InvalidOperationException("Occupied hangar capacity.");_capacity=capacity;}
     private readonly List<Robot> _robots=new();
     public IReadOnlyList<Robot> Robots=>_robots;
+    internal int ScrapNode=-1,ScrapTurn;
     private MaplePackage[] _maplePackages;
     public IReadOnlyList<MaplePackage> MaplePackages=>_maplePackages??Array.Empty<MaplePackage>();
     public int MapleUnits=>MaplePackages.Where(p=>p.Material==RawMaterial.Maple).Sum(p=>p.Units);
@@ -143,6 +144,8 @@ public sealed class RobotStore
     internal int OccupiedSlots(IEnumerable<Robot> robots)=>OccupiedSlots(robots,MaplePackages);
     private static int OccupiedSlots(IEnumerable<Robot> robots,IEnumerable<MaplePackage> packages)
     {
+        int scrap=packages.Where(p=>p.Material==RawMaterial.Scrap).Sum(p=>p.Sections);
+        packages=packages.Where(p=>p.Material!=RawMaterial.Scrap);
         int singles=0,pairs=0,whole=0;
         foreach(var package in packages)
             switch(package.Sections){case 1:singles++;break;case 2:pairs++;break;case 3:whole++;break;}
@@ -153,7 +156,7 @@ public sealed class RobotStore
             openSections+=3-System.Numerics.BitOperations.PopCount((uint)mask);
             if(pairs>0 && robot.Parts is RobotParts.Head or RobotParts.Legs){pairs--;openSections-=2;}
         }
-        return count+whole+pairs+(Math.Max(0,singles-openSections-pairs)+2)/3;
+        return count+whole+pairs+(Math.Max(0,singles-openSections-pairs)+2)/3+(scrap+2)/3;
     }
     internal bool HasMapleSpace(MaplePackage package,int reserved)=>
         OccupiedSlots(_robots,MaplePackages.Append(package))<=StorageLimit-reserved;
@@ -184,23 +187,24 @@ public sealed class RobotStore
     }
     internal RobotStore PlanningCopy()
     {
-        var result=new RobotStore{_capacity=_capacity,_warehouseLimit=_warehouseLimit,_logisticsRules=_logisticsRules,_relayWarehouse=_relayWarehouse};foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);result._maplePackages=_maplePackages;return result;
+        var result=new RobotStore{_capacity=_capacity,_warehouseLimit=_warehouseLimit,_logisticsRules=_logisticsRules,_relayWarehouse=_relayWarehouse,ScrapNode=ScrapNode,ScrapTurn=ScrapTurn};foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);result._maplePackages=_maplePackages;return result;
     }
     internal void SetMaplePackages(MaplePackage[] packages)=>_maplePackages=packages;
     internal bool TryReceiveMaple(MaplePackage package,int reserved,Func<long,bool> shipping)
     {
+        package=ScrapCargo.Arrive(package,ScrapNode,ScrapTurn);
         var packages=MaplePackages.ToArray();
         int remaining=package.Units;
         for(int i=0;i<packages.Length && remaining>0;i++)
         {
             var current=packages[i];
             if(package.Material!=current.Material || package.Sections>1 || current.Sections>1 || shipping(current.Id))continue;
-            int added=Math.Min(RobotWorld.MaplePackageSize-current.Units,remaining);
-            packages[i]=current with {Units=current.Units+added};
+            int added=Math.Min(current.MergeCapacity-current.Units,remaining);
+            packages[i]=package.Material==RawMaterial.Scrap?ScrapCargo.Join(current,ScrapCargo.Portion(package,package.Units-remaining,added)):current with {Units=current.Units+added};
             remaining-=added;
         }
         if(remaining>0 && !HasMapleSpace(package with {Units=remaining},reserved))return false;
-        SetMaplePackages(remaining==0?packages:packages.Append(package with {Units=remaining}).ToArray());
+        SetMaplePackages(remaining==0?packages:packages.Append(package.Material==RawMaterial.Scrap?ScrapCargo.Portion(package,package.Units-remaining,remaining):package with {Units=remaining}).ToArray());
         return true;
     }
 }
@@ -224,7 +228,7 @@ public sealed partial class RobotWorld
     public void Initialize(int nodeCount,int rulerCount)
     {
         _mapleHarvested=null;
-        LongDelivery.Reset();ReturningRobots.Clear();_workerPlanWorldSeed=0;DirectDelivery=new();Reservations=null;ReservationSource=null;IndustryTurn=0;DomesticPersuasionTurns.Clear();
+        Discarding.Reset();ScrapRulesEnabled=false;LongDelivery.Reset();ReturningRobots.Clear();_workerPlanWorldSeed=0;DirectDelivery=new();Reservations=null;ReservationSource=null;IndustryTurn=0;DomesticPersuasionTurns.Clear();
         _domesticPreparedTurn=-1;Training=Enumerable.Range(0,rulerCount).Select(_=>new RobotTraining()).ToArray();_nextId=1;Nodes=Enumerable.Range(0,nodeCount).Select(_=>new RobotStore()).ToArray();
         Retinues=Enumerable.Range(0,rulerCount).Select(_=>new RobotStore()).ToArray();
         Workshops=Enumerable.Range(0,nodeCount).Select(_=>new RobotWorkshop()).ToArray();Transport.Reset();PendingEdits.Clear();WorkshopFailures.Clear();
@@ -268,13 +272,13 @@ public sealed partial class RobotWorld
     {
         _collectInterrupted?.Invoke();
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)SyncWorkers(n);
-        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));Workshops[n].CompleteDisposal(Nodes[n]);}
-        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].CompleteProduction(this,n,owner(n));Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));if(owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));}
+        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)) || DirectDelivery.LockedParts(n,id)!=0 || PartPlanning.ReservesRobot(id) || Discarding.Reserved(id));Workshops[n].CompleteDisposal(Nodes[n],this,n);}
+        for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].CompleteProduction(this,n,owner(n));Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)) || DirectDelivery.LockedParts(n,id)!=0 || PartPlanning.ReservesRobot(id) || Discarding.Reserved(id));if(owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));}
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)SyncWorkers(n);IndustryTurn++;Check();
     }
     public void Advance(Func<int,int,bool> connected,Func<int,int> owner,int seed,Func<int,bool> locked=null,Func<int,int,bool> canEnter=null,bool industry=true,Func<int,bool> directLocked=null)
     {
-        if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));Workshops[n].CompleteDisposal(Nodes[n]);}
+        if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true){Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)) || DirectDelivery.LockedParts(n,id)!=0 || PartPlanning.ReservesRobot(id) || Discarding.Reserved(id));Workshops[n].CompleteDisposal(Nodes[n],this,n);}
         WorkshopFailures.Clear();
         foreach(var edit in PendingEdits.ToArray())
         {
@@ -291,7 +295,7 @@ public sealed partial class RobotWorld
             Transport.ResolvePlans(this,connected,seed,locked,canEnter);
         }finally{_arrivalLocked=null;}
         if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].CompleteProduction(this,n,owner(n));
-        if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)));
+        if(industry)for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)Workshops[n].StartDisposal(Nodes[n],id=>PendingEdits.Any(e=>e.Ids.Contains(id)) || DirectDelivery.LockedParts(n,id)!=0 || PartPlanning.ReservesRobot(id) || Discarding.Reserved(id));
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true && owner(n)>=0 && !Workshops[n].AutoAssemblyDisabled)AutoAssemble(n,owner(n));
         for(int n=0;n<Nodes.Length;n++)if(locked?.Invoke(n)!=true)SyncWorkers(n);
         if(industry)IndustryTurn++;Check();
@@ -344,7 +348,7 @@ public sealed partial class RobotWorld
         if(MapleSupplyEnabled){
             var ids=all.Select(r=>r.Id).ToHashSet();
             foreach(var package in Nodes.SelectMany(s=>s.MaplePackages))
-                if(package.Units is <1 or >MaplePackage.Capacity || !ids.Add(package.Id))throw new InvalidOperationException("Invalid maple cargo.");
+                if(package.Units<1 || package.Units>package.UnitCapacity || package.Material==RawMaterial.Scrap && ScrapCargo.Lots(package).Sum(l=>l.Units)!=package.Units || !ids.Add(package.Id))throw new InvalidOperationException("Invalid maple cargo.");
         }
         foreach(var store in Nodes.Concat(Retinues))if(store.Count>store.StorageLimit)throw new InvalidOperationException("Hangar return capacity exceeded.");
         foreach(var robot in all){Validate(robot.Owner,robot.Parts);if(!robot.ValidIntegration)throw new InvalidOperationException("Invalid integrated parts.");}

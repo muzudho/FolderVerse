@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -89,7 +89,7 @@ public partial class Game1
         if(escape)_hangarPanning=false;
         if(!escape && UpdateHangarZoom(mouse,click))return;
         if(ReturnHomeHangarInput(click))return;
-        if(click && HangarUndoButton.Contains(_pointer)){UndoHangarPlan();return;}
+        if(click && DomesticOperationsAllowed && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) && _setup.Robots.ScrapRulesEnabled && !VisitingForeignHangar && DismantlerButton.Contains(_pointer)){_hangarReservation=_hangarReservation==HangarReservation.Dismantler?HangarReservation.None:HangarReservation.Dismantler;_hangarDrag=null;return;}if(click && HangarUndoButton.Contains(_pointer)){UndoHangarPlan();return;}
         if(click && HangarPageClick(_pointer))return;
         if(!DomesticOperationsAllowed){
             _hangarDrag=null;_hangarReservation=HangarReservation.None;_hangarAbandonMode=false;
@@ -169,7 +169,7 @@ public partial class Game1
         int destination=VisibleAssemblySlots().FirstOrDefault(i=>AssemblyCell(i).Contains(_pointer),-1);
         if(destination<0){_hangarMessage="ドラッグを取り消しました";return;}
         var cargo=AssemblyMaterials(store);
-        if(Enumerable.Range(0,3).Any(row=>MaterialOccupies(cargo,destination,row) && (_hangarPart&HangarPart(row))!=0)){
+        if(cargo.Any(p=>p.Key/3==destination && p.Value.Material==RawMaterial.Scrap) || Enumerable.Range(0,3).Any(row=>MaterialOccupies(cargo,destination,row) && (_hangarPart&HangarPart(row))!=0)){
             _hangarMessage="この区画には楓の木があります";return;
         }
         try

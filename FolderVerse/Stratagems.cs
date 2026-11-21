@@ -101,7 +101,7 @@ public sealed class StratagemPlans
             if(site.Node<0 || site.Node>=w.Nodes.All.Length){reason="対象地点がありません";return false;}
             var n=w.Nodes.All[site.Node];
             if(computer&&w.Robots.Workshops[n.Id].Automation==NodeAutomation.Manual){reason="手動管理の地点です";return false;}
-            if(!n.Functional || !controlled.Contains(n.Owner) || n.Purpose!=site.Before || w.Campaign.RobotBattles.LockedNode(n.Id) ||
+            if(n.PermanentLandmark && site.After!=site.Before || !n.Functional || !controlled.Contains(n.Owner) || n.Purpose!=site.Before || w.Campaign.RobotBattles.LockedNode(n.Id) ||
                 w.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==n.Id || o.Target==n.Id) ||
                 w.Campaign.PlannedOrders.Any(o=>!o.PocketOnly && (o.SourceNode>=0?o.SourceNode:w.Nodes.Current(o.Ruler)?.Id??-1)==n.Id)){
                 reason="地点の用途・所有国・予約が変わりました";return false;

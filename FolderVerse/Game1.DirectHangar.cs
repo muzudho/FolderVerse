@@ -134,7 +134,7 @@ public partial class Game1
             if(!DirectViewCell(side,slot).Contains(_pointer) || DirectMaterialSlotReserved(side,slot))continue;
             int row=Enumerable.Range(0,3).FirstOrDefault(r=>DirectViewPart(side,slot,r).Contains(_pointer),-1);
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_directSlots[side][slot]);
-            bool Fits(int start)=>start+package.Sections<=3 && Enumerable.Range(start,package.Sections).All(r=>
+            bool Fits(int start)=>(package.Material==RawMaterial.Scrap?robot==null && !cargo.Any(p=>p.Key/3==slot && p.Value.Material!=RawMaterial.Scrap):!cargo.Any(p=>p.Key/3==slot && p.Value.Material==RawMaterial.Scrap)) && start+package.Sections<=3 && Enumerable.Range(start,package.Sections).All(r=>
                 !MaterialOccupies(cargo,slot,r) && (robot==null || (robot.Parts&HangarPart(r))==0));
             if(row>=0 && Fits(row))return slot*3+row;
             if(row<0)for(int r=0;r<3;r++)if(Fits(r))return slot*3+r;

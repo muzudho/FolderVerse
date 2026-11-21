@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -120,7 +120,7 @@ internal static class ComputerFactoryManagement
             }
             foreach(var choice in choices.OrderByDescending(x=>x.Score).ThenBy(x=>x.Node.Id))
                 if(stock.PartPlanning.ReserveRole(world,choice.Node.Id,choice.Worker.Id,HangarReservation.Worker,choice.Node.Owner))
-                {choice.Line.SelectPlan(choice.Plan);stock.PartPlanning.SetWorkerLane(choice.Worker.Id,choice.Line);choice.Node.Purpose=NodePurpose.Manufacturing;break;}
+                {choice.Line.SelectPlan(choice.Plan);stock.PartPlanning.SetWorkerLane(choice.Worker.Id,choice.Line);if(!choice.Node.PermanentLandmark)choice.Node.Purpose=NodePurpose.Manufacturing;break;}
         }
     }
 }

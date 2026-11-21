@@ -15,7 +15,7 @@ public sealed partial class RobotWorld
     }
     public bool WorkQualified(Robot robot,int country)
     {
-        if(country<0 || country>=Training.Length || robot.IsWorkpiece || robot.Parts!=RobotParts.Complete || robot.NativeParts(country)==0)return false;
+        if(country<0 || country>=Training.Length || robot.IsWorkpiece || robot.IsDismantling || robot.Parts!=RobotParts.Complete || robot.NativeParts(country)==0)return false;
         var candidate=WithoutRole(robot).Materialize() with {Owner=country};
         return robot.FactoryWorker?Training[country].WorkerEligible(candidate):Training[country].Eligible(candidate);
     }
@@ -66,7 +66,7 @@ public sealed partial class RobotWorld
     private bool PhysicalEditBusy(int node,Robot robot)=>node<0 || node>=Nodes.Length || Reservations?.RobotBattles.LockedNode(node)==true || Workshops[node].IsDisposing(robot.Id) || PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) || _arrivalLocked?.Invoke(robot.Id)==true;
     public bool CanEditReservedPart(int node,Robot robot,int country)
     {
-        if(robot.WarehouseKeeper || robot.LongDeliveryNumber.HasValue || robot.ReturnHomeCommander.HasValue || PhysicalEditBusy(node,robot))return false;
+        if(robot.IsDismantling || robot.WarehouseKeeper || robot.LongDeliveryNumber.HasValue || robot.ReturnHomeCommander.HasValue || PhysicalEditBusy(node,robot))return false;
         int work=WorkCountry(node,robot);return work<0 || work==country;
     }
     private Robot AfterPartEdit(int node,Robot before,Robot after,bool swap)
@@ -98,7 +98,7 @@ public sealed partial class RobotWorld
         });
     }
     public bool CanTransferPocket(int node,int country,Robot robot)
-        =>country>=0 && country<Retinues.Length && new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(robot.Parts&p)!=0 && robot.Origin(p)==country) && CanEditReservedPart(node,robot,country);
+        =>country>=0 && country<Retinues.Length && new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(robot.Parts&p)!=0 && robot.Origin(p)==country) && (CanEditReservedPart(node,robot,country) || CanMoveDismantling(node,robot,robot.Parts));
     public void TransferPocket(int node,int country,long id,bool fromNode)
     {
         RevalidateWorkReservations();

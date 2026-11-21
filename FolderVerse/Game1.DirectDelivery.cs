@@ -115,7 +115,7 @@ public partial class Game1
             // The preview already includes earlier assembly reservations. A complete
             // unit shown there can be queued as a whole after those reservations.
             if(robot!=null && CanManageNodeFactory(robot.Owner) && !_setup.Campaign.RobotBattles.LockedNode(node) &&
-                !PlanningStock.AssemblyLocked(node,robot,allowPlannedAssembly:robot.Parts==RobotParts.Complete))
+                (!PlanningStock.AssemblyLocked(node,robot,allowPlannedAssembly:robot.Parts==RobotParts.Complete) || PlanningStock.CanMoveDismantling(node,robot,robot.Parts)))
                 _directDrag=(side,robot.Id,(RobotParts)0);
             else _directMessage=robot?.Stationed==true || robot?.Disposal==true
                 ?"その機体は予約中です / 先に予約を解除してください"
@@ -128,7 +128,7 @@ public partial class Game1
             try{int source=_directNodes[drag.Side],target=_directNodes[side];var destination=_directSlots[side][slot];
                 var parts=drag.Part==0?PlanningStock.Nodes[source].Robots.Single(r=>r.Id==drag.Robot).Parts:drag.Part;
                 var cargo=DirectStoredMaterials(side);
-                if(Enumerable.Range(0,3).Any(row=>(parts&HangarPart(row))!=0 && MaterialOccupies(cargo,slot,row)))throw new InvalidOperationException("入荷先の区画に原材料があります");
+                if(cargo.Any(p=>p.Key/3==slot && p.Value.Material==RawMaterial.Scrap) || Enumerable.Range(0,3).Any(row=>(parts&HangarPart(row))!=0 && MaterialOccupies(cargo,slot,row)))throw new InvalidOperationException("入荷先の区画に原材料があります");
                 if(side==drag.Side){if(destination==drag.Robot)return;if(!destination.HasValue && _setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==target && o.TargetRobotId==null && o.TargetSlot==slot))throw new InvalidOperationException("その区画には入荷予約があります");
                     if(drag.Part==0){if(destination.HasValue && PlanningStock.AssemblyLocked(source,PlanningStock.Nodes[source].Robots.Single(r=>r.Id==destination)))throw new InvalidOperationException("移動先の機体には予約があります");int from=Array.IndexOf(_directSlots[side],(long?)drag.Robot);_directSlots[side][from]=destination;_directSlots[side][slot]=drag.Robot;}
                     else {long id=_setup.Robots.PartPlanning.Reserve(_setup,source,target,drag.Robot,drag.Part,destination,_setup.PlayerSlot);_directSlots[side][slot]=id;}_directMessage="格納庫内の組替を予約しました";}
