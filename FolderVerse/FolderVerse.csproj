@@ -32,7 +32,7 @@
   <ItemGroup>
     <MonoGameContentReference Include="Content/Content.mgcb" />
     <Compile Include="../src/Shared/Balloon/*.cs" LinkBase="Shared/Balloon" />
-    <Compile Include="../src/Shared/CharacterHud/*.cs" LinkBase="Shared/CharacterHud" />
+    <Compile Include="../src/Shared/Layouts/*.cs" LinkBase="Shared/Layouts" />
     <Compile Include="../src/Shared/Hangar/*.cs" LinkBase="Shared/Hangar" />
     <Compile Include="../src/Shared/FaceChip/*.cs" LinkBase="Shared/FaceChip" />
     <Compile Include="../src/Shared/Globe/*.cs" LinkBase="Shared/Globe" />
