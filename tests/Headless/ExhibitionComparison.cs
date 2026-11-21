@@ -53,6 +53,8 @@ sealed class ExhibitionComparison(string outputDirectory) : Game1
         Set("_skipOtherLandTurns", true);
         Call("UpdateLandSetup", 0d, new MouseState(), true, false, false);
         Call("UpdateLandSetup", 5d, new MouseState(), true, false, true);
+        world = (WorldSetup)Get("_setup"); // Fortune confirmation may replace the preview world.
+        if (CurrentScreen != "WorldStatus") throw new InvalidOperationException("Exhibition setup did not reach WorldStatus.");
         Compare("initial fortune seed", initial.GetProperty("fortuneSeed").GetInt32(), world.FortuneSeed);
         Compare("initial characters", initial.GetProperty("characters").Deserialize<int[]>(), world.Looks.Take(4).Select(l => l.BaseId));
         Compare("initial stocks", initial.GetProperty("initial"),
