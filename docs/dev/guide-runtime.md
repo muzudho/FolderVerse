@@ -34,3 +34,6 @@ JSONは埋め込みリソースなので変更後はビルドする。未知/未
 最初の描画試験は配布版の古いフォントを読んで「嬢」「険」で失敗した。新規ビルドしたUIフォントを隔離試験へ渡した後に全項目を再実行して通過。色替えの矩形境界が服に出た初稿は、衣服の中立色を連続して扱う形へ修正した。
 
 証拠はNAS `archives/diagnostics/guide-runtime-2026-11-21/`。再生成ビルドは`tmp/delete-after-2026-11-22/guide-runtime`、`guide-runtime-tests`、`guide-runtime-font`。実行中ゲーム・元保存・公開物を操作せず独立ハーネスで確認した。通常の新聞/外交から連続して実ゲームを通す試遊は未実施。
+
+
+2026-11-21 ガイド表示時の全面76％暗幕を廃止。左側（x0～960/y150以下）の操作欄だけを背景色で覆い、右の地星儀は既存描画の明るさを保持。立ち絵と太もも名札を維持し、台詞欄をy640へ下げて高さ280、行間45、ページ操作y940へ移動。右半分上部を地星儀のために空ける。独立UIで実WorldPreviewと４ガイドを描き、右上地星儀画素が案内描画前後で不変を４条件検査、合計22検査PASS。ビルド警告エラー０/FontCoverage PASS。NAS archives/diagnostics/guide-visible-globe-2026-11-21、tmp/delete-after-2026-11-22/guide-visible-globe と guide-visible-globe-tests。実ゲーム・元保存・公開物無操作。

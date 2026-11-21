@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using System.Text.RegularExpressions;
 using Microsoft.Xna.Framework;
@@ -47,6 +47,29 @@ public sealed class UiPainter
         static double Linear(byte value){double c=value/255d;return c<=.04045?c/12.92:Math.Pow((c+.055)/1.055,2.4);}
         double luminance=.2126*Linear(background.R)+.7152*Linear(background.G)+.0722*Linear(background.B);
         return (luminance+.05)/.05>=1.05/(luminance+.05)?new Color(12,18,24):Color.White;
+    }
+    // Selection fills the face; pointer focus adds a raised toy frame only.
+    public void StateButton(Rectangle rect,string label,Color accent,Color neutral,bool selected,bool hovered,bool enabled=true,bool attention=false,float seconds=0,float scale=.5f)
+    {
+        var face=selected?accent:enabled?neutral:neutral*.48f;
+        Box(new(rect.X,rect.Y+4,rect.Width,rect.Height),new Color(7,23,35));
+        Box(rect,face);
+        if(enabled && hovered)ToyActionFrame(rect,accent);
+        if(enabled && attention){
+            float glow=.28f+.32f*(1+MathF.Sin(seconds*3))/2;
+            var outer=rect;outer.Inflate(3,3);ToyActionFrame(outer,Color.Lerp(accent,Color.White,glow));
+        }
+        Center(label,rect,scale,enabled || selected?ContrastInk(face):Color.White*.55f);
+    }
+    public void ToyActionFrame(Rectangle rect,Color color)
+    {
+        const int inset=5,edge=3;
+        // Stepped corners, a bright upper lip and a shaded lower lip resemble a molded toy rim.
+        Box(new(rect.X+inset,rect.Y,rect.Width-2*inset,edge),Color.Lerp(color,Color.White,.4f));
+        Box(new(rect.X+inset,rect.Bottom-edge,rect.Width-2*inset,edge),Color.Lerp(color,Color.Black,.25f));
+        Box(new(rect.X,rect.Y+inset,edge,rect.Height-2*inset),color);
+        Box(new(rect.Right-edge,rect.Y+inset,edge,rect.Height-2*inset),color);
+        foreach(int x in new[]{rect.X+edge,rect.Right-inset})foreach(int y in new[]{rect.Y+edge,rect.Bottom-inset})Box(new(x,y,2,2),color);
     }
     public void Button(Rectangle rect,string label,Color color,float scale=0.7f)
     {

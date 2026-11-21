@@ -48,3 +48,5 @@
 - [ガイド名の元ネタと生成器](dev/guide-names.md)
 
 - [内政開始時のガイド・台詞の編集](dev/guide-runtime.md)
+
+- [ボタンの状態表現](dev/button-states.md)：選択の塗り、操作対象の玩具枠、案内の明滅。
