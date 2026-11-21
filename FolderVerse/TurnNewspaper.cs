@@ -58,11 +58,14 @@ public static class TurnNewspaper
                 "急所を失えば、在庫が多くても届かなくなる可能性があります。",
                 "これは条件付きの見通しです。勝利の保証や確率ではありません。"}));
         }
-        // One national publisher chooses one lead story, rather than filling every section.
-        int Priority(TurnNewsArticle a)=>a.Kind=="今日の外交予定"?100:
-            a.Headline.Contains("連絡網")?90:a.Kind=="昨日の戦闘結果"?80:
-            a.Unit=="地域"?75:a.Kind=="昨日の出来事"?70:10;
-        return articles.GroupBy(a=>a.Country).Select(g=>g.OrderByDescending(Priority).First() with {Commentary=NewspaperCommentary.Build(w,g.Key,reader)}).ToArray();
+        // Each topic is one face of its national paper; commentary is a separate face.
+        var faces=new List<TurnNewsArticle>();
+        foreach(int country in Enumerable.Range(0,w.ActiveCount).OrderBy(c=>c==reader?0:1).ThenBy(c=>c)){
+            faces.AddRange(articles.Where(a=>a.Country==country));
+            var commentary=NewspaperCommentary.Build(w,country,reader);
+            if(commentary.Length>0)faces.Add(new(country,"講評","わが国の動きを振り返る",commentary));
+        }
+        return faces.ToArray();
     }
     public static int Connections(WorldSetup w,int country,int[] owners)
     {

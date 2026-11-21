@@ -19,6 +19,7 @@ public partial class Game1
             _setup.Industry.Pending || (_paperReadTurn==_setup.Population.Turn && _paperReadCountry==_setup.PlayerSlot) || _setup.TutorialStep>0)return false;
         _paperReadTurn=_setup.Population.Turn;_paperReadCountry=_setup.PlayerSlot;_paperReturnScreen=_screen;
         _turnPapers=TurnNewspaper.Build(_setup,_setup.PlayerSlot);_turnPaperIndex=0;_paperAge=_paperIdle=0;
+        if(_turnPapers.Length>0)SelectPaperCountry(_turnPapers[0].Country);
         if(_turnPapers.Length==0)return false;
         _screen=Screen.Newspaper;return true;
     }
@@ -30,8 +31,22 @@ public partial class Game1
         if(escape || enter || click && PaperDone.Contains(_pointer) || _paperIdle+1e-8>=PaperIdleSeconds){FinishTurnNewspaper();return;}
         if(!click)return;
         if(_paperAge<2){_paperAge=2;return;}
-        int next=PaperPrevious.Contains(_pointer)?Math.Max(0,_turnPaperIndex-1):PaperNext.Contains(_pointer)?Math.Min(_turnPapers.Length-1,_turnPaperIndex+1):_turnPaperIndex;
-        if(next!=_turnPaperIndex){bool same=_turnPapers[next].Country==_turnPapers[_turnPaperIndex].Country;_turnPaperIndex=next;_paperAge=same?2:0;}
+        var faces=CurrentPaperFaces;
+        for(int i=0;i<faces.Length;i++)if(PaperFacePreview(i).Contains(_pointer)){
+            _turnPaperIndex=faces[i];_paperAge=2;return;
+        }
+        var countries=_turnPapers.Select(a=>a.Country).Distinct().ToArray();
+        int current=Array.IndexOf(countries,_turnPapers[_turnPaperIndex].Country);
+        int next=PaperPrevious.Contains(_pointer)?Math.Max(0,current-1):PaperNext.Contains(_pointer)?Math.Min(countries.Length-1,current+1):current;
+        if(next!=current){SelectPaperCountry(countries[next]);_paperAge=0;}
+
+    }
+    private int[] CurrentPaperFaces=>Enumerable.Range(0,_turnPapers.Length).Where(i=>_turnPapers[i].Country==_turnPapers[_turnPaperIndex].Country).ToArray();
+    private static Rectangle PaperFacePreview(int index)=>new(350+index%6*198,775+index/6*52,188,46);
+    private void SelectPaperCountry(int country)
+    {
+        var faces=Enumerable.Range(0,_turnPapers.Length).Where(i=>_turnPapers[i].Country==country).ToArray();
+        _turnPaperIndex=faces[Random.Shared.Next(faces.Length)];
     }
     private void FinishTurnNewspaper()
     {
@@ -49,8 +64,11 @@ public partial class Game1
             for(int j=0;j<4;j++)_ui.Box(new(90+j*440,164+i*86,270,1),new Color(105,70,49));
         }
         var article=_turnPapers[_turnPaperIndex];
+        var faces=CurrentPaperFaces;
+        var countries=_turnPapers.Select(a=>a.Country).Distinct().ToArray();
+        int face=Array.IndexOf(faces,_turnPaperIndex)+1;
         _ui.Text("新聞フェーズ / 朝刊",new(80,40),.8f,Cream);
-        _ui.Text($"{TurnNewspaper.DayLabel(_setup.Population.Turn)} / {_turnPaperIndex+1} 紙目・全 {_turnPapers.Length} 紙",new(990,58),.45f,Cream);
+        _ui.Text($"{TurnNewspaper.DayLabel(_setup.Population.Turn)} / {Array.IndexOf(countries,article.Country)+1} 紙目・全 {countries.Length} 紙 / {face}面",new(990,58),.45f,Cream);
         DrawToyPost(article.Country,_paperAge);
         // A toy cup and saucer stay outside the readable paper.
         PaperOval(new(1625,212,185,56),new Color(42,31,25)*.4f);
@@ -63,25 +81,30 @@ public partial class Game1
         double reveal=Math.Clamp((_paperAge-.7)/1.3,0,1);float t=MathHelper.SmoothStep(0,1,(float)reveal);
         var sheet=new Rectangle((int)MathHelper.Lerp(235,310,t),(int)MathHelper.Lerp(260,155,t),(int)MathHelper.Lerp(190,1290,t),(int)MathHelper.Lerp(100,740,t));
         if(_paperAge>=.7){
-            _ui.Box(new(sheet.X+12,sheet.Y+14,sheet.Width,sheet.Height),Color.Black*.3f);ToyPaperBox(sheet,paper);
+            _ui.Box(new(sheet.X+18,sheet.Y+20,sheet.Width,sheet.Height),Color.Black*.3f);
+            for(int layer=Math.Min(3,faces.Length-1);layer>0;layer--)ToyPaperBox(new(sheet.X+layer*5,sheet.Y+layer*5,sheet.Width,sheet.Height),Color.Lerp(paper,ink,.08f*layer));
+            ToyPaperBox(sheet,paper);
             _ui.Box(new(sheet.Center.X-1,sheet.Y+8,2,sheet.Height-16),new Color(215,194,155)*.35f);
             _ui.Box(new(sheet.X+8,sheet.Bottom-8,sheet.Width-16,2),new Color(196,176,139));
         }
         if(t>=.99f){
             DrawNationalNewspaperMasthead(new(475,174,960,100),article.Country+1);
             _ui.Box(new(350,285,1210,4),ink);
-            NewsLine($"{TurnNewspaper.DayLabel(_setup.Population.Turn)} 朝刊 / 第{article.Country+1}国 / {_setup.ConquerorNames[article.Country]}国の視点 / {article.Kind}",350,305,1200,.44f,ink);
+            NewsLine($"{TurnNewspaper.DayLabel(_setup.Population.Turn)} 朝刊 / 第{article.Country+1}国 / {_setup.ConquerorNames[article.Country]}国の視点 / {face}面：{article.Kind}",350,305,1200,.44f,ink);
             NewsLine(article.Headline,350,370,1190,.85f,ink);
-            for(int i=0;i<article.Lines.Length;i++)NewsLine(article.Lines[i],350,465+i*60,1190,.46f,ink);
-            _ui.Box(new(350,735,1190,2),ink*.35f);
-            if(article.Commentary?.Length>0){
-                NewsLine("講評 / Commentary",370,752,1160,.45f,ink);
-                for(int i=0;i<Math.Min(3,article.Commentary.Length);i++)NewsLine(article.Commentary[i],370,791+i*31,1160,.38f,ink);
-            }else if(article.Gained+article.Lost>0){
-                _ui.Box(new(380,785,Math.Min(430,article.Gained*28),24),new Color(72,145,111));
-                _ui.Box(new(980,785,Math.Min(430,article.Lost*28),24),new Color(184,82,69));
-                NewsLine($"獲得 {article.Gained} {article.Unit}",380,825,450,.48f,ink);NewsLine($"喪失 {article.Lost} {article.Unit}",980,825,450,.48f,ink);
-            }else NewsLine("結果は記録、予定は変更あり、予想は『もしこうなら』。",370,790,1160,.44f,ink);
+            for(int i=0;i<article.Lines.Length;i++)NewsLine(article.Lines[i],350,445+i*54,1190,.46f,ink);
+            if(article.Gained+article.Lost>0){
+                _ui.Box(new(380,690,Math.Min(430,article.Gained*28),18),new Color(72,145,111));
+                _ui.Box(new(980,690,Math.Min(430,article.Lost*28),18),new Color(184,82,69));
+                NewsLine($"獲得 {article.Gained} {article.Unit}",380,718,450,.42f,ink);NewsLine($"喪失 {article.Lost} {article.Unit}",980,718,450,.42f,ink);
+            }
+            NewsLine("読みたい面をクリック",350,749,1180,.35f,ink);
+            for(int i=0;i<faces.Length;i++){
+                var preview=PaperFacePreview(i);bool selected=faces[i]==_turnPaperIndex;
+                ToyPaperBox(preview,selected?new Color(220,193,135):new Color(239,221,183));
+                NewsLine($"{i+1}面 / {_turnPapers[faces[i]].Kind}",preview.X+8,preview.Y+5,preview.Width-16,.31f,ink);
+                NewsLine(_turnPapers[faces[i]].Headline,preview.X+8,preview.Y+25,preview.Width-16,.25f,ink);
+            }
         }else _ui.Text("朝の配達 / クリックで新聞を広げる",new(580,820),.55f,Cream);
         // The reader stays fixed while the displayed newspaper's country changes.
         int reader=_paperReadCountry>=0&&_paperReadCountry<_setup.ActiveCount?_paperReadCountry:_setup.PlayerSlot;
