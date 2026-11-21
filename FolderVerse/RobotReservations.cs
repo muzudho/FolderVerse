@@ -115,7 +115,7 @@ public sealed partial class RobotWorld
                 var next=store.Robots.Select(r=>r.Id==robot.Id?r with {WarehouseKeeper=false}:r);
                 return store.Fits(next,store.MaplePackages,store.ReservedReturns+Workshops[node].ReservedSlots);
             }
-            return robot.Parts==RobotParts.Complete && !robot.Stationed && !robot.Disposal &&
+            return robot.Parts==RobotParts.Complete && robot.HasAffiliatedParts && !robot.Stationed && !robot.Disposal &&
                 !MarchReserved(node,robot) && (store.TotalCapacity<limit || ScrapRulesEnabled && limit==1);
         }
         if(robot.WarehouseKeeper)return false;

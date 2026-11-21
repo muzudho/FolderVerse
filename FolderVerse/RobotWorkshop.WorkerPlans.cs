@@ -44,9 +44,9 @@ public sealed partial class RobotWorkshop
                 var options=Enumerable.Range(0,11).Where(i=>i!=3 && (plans[i].Product&part)!=0).ToArray();
                 new SeedRandom(seed^0x71259^(int)part).Shuffle(options);
                 foreach(int i in options.Take(options.Length/2))plans[i]=part switch{
-                    RobotParts.Head=>plans[i] with {HeadOrigin=worker.Origin(part)},
-                    RobotParts.Body=>plans[i] with {BodyOrigin=worker.Origin(part)},
-                    _=>plans[i] with {LegsOrigin=worker.Origin(part)}
+                    RobotParts.Head=>plans[i] with {HeadOrigin=worker.StoredOrigin(part)},
+                    RobotParts.Body=>plans[i] with {BodyOrigin=worker.StoredOrigin(part)},
+                    _=>plans[i] with {LegsOrigin=worker.StoredOrigin(part)}
                 };
             }
         }

@@ -75,7 +75,9 @@ public sealed partial record Robot(long Id,int Owner,RobotParts Parts,RobotRole 
     public int HeadOrigin {get;init;}=-1;
     public int BodyOrigin {get;init;}=-1;
     public int LegsOrigin {get;init;}=-1;
-    public int Origin(RobotParts part)=>part switch{RobotParts.Head=>HeadOrigin<0?Owner:HeadOrigin,RobotParts.Body=>BodyOrigin<0?Owner:BodyOrigin,_=>LegsOrigin<0?Owner:LegsOrigin};
+    public int Origin(RobotParts part)=>part switch{RobotParts.Head=>HeadOrigin==-1?Owner:Math.Max(-1,HeadOrigin),RobotParts.Body=>BodyOrigin==-1?Owner:Math.Max(-1,BodyOrigin),_=>LegsOrigin==-1?Owner:Math.Max(-1,LegsOrigin)};
+    public bool HasAffiliatedParts=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(Parts&p)!=0 && Affiliation(p)>=0);
+    public int LargestFlagGroup=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Select(Affiliation).Where(o=>o>=0).GroupBy(o=>o).Select(g=>g.Count()).DefaultIfEmpty(0).Max();
     public int NativeParts(int owner)=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Count(p=>(Parts&p)!=0 && owner>=0 && Affiliation(p)==owner);
     public int RegularNativeParts(int owner)=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Count(p=>(Parts&p)!=0 && !IsCheap(p) && Origin(p)==owner);
     public int AssemblyCredit(int owner)=>NativeParts(owner);
@@ -98,11 +100,12 @@ public sealed partial record Robot(long Id,int Owner,RobotParts Parts,RobotRole 
         }
         return new(shields/3,daggers/3,rifles/3);
     }
-    public Robot Materialize()=>this with {HeadOrigin=Origin(RobotParts.Head),BodyOrigin=Origin(RobotParts.Body),LegsOrigin=Origin(RobotParts.Legs),DamagedParts=DamagedParts&Parts,CheapParts=CheapParts&Parts&~PremiumParts,PremiumParts=PremiumParts&Parts};
+    internal int StoredOrigin(RobotParts part)=>Origin(part)<0?-2:Origin(part);
+    public Robot Materialize()=>this with {HeadOrigin=StoredOrigin(RobotParts.Head),BodyOrigin=StoredOrigin(RobotParts.Body),LegsOrigin=StoredOrigin(RobotParts.Legs),DamagedParts=DamagedParts&Parts,CheapParts=CheapParts&Parts&~PremiumParts,PremiumParts=PremiumParts&Parts};
     public Robot Merge(Robot other,int owner)
     {
         if(!ValidIntegration || !other.ValidIntegration || !CanSeparate(other.Parts&Parts))throw new InvalidOperationException("Cannot replace only half of integrated parts.");
-        var result=Materialize() with {Parts=Parts|other.Parts,LastBattlePersuasionTurn=Math.Max(LastBattlePersuasionTurn,other.LastBattlePersuasionTurn),LastDomesticPersuasionTurn=Math.Max(LastDomesticPersuasionTurn,other.LastDomesticPersuasionTurn),DamagedParts=(DamagedParts&Parts&~other.Parts)|(other.DamagedParts&other.Parts),CheapParts=(CheapParts&Parts&~other.Parts)|(other.CheapParts&other.Parts),HeadOrigin=(other.Parts&RobotParts.Head)!=0?other.Origin(RobotParts.Head):Origin(RobotParts.Head),BodyOrigin=(other.Parts&RobotParts.Body)!=0?other.Origin(RobotParts.Body):Origin(RobotParts.Body),LegsOrigin=(other.Parts&RobotParts.Legs)!=0?other.Origin(RobotParts.Legs):Origin(RobotParts.Legs)};
+        var result=Materialize() with {Parts=Parts|other.Parts,LastBattlePersuasionTurn=Math.Max(LastBattlePersuasionTurn,other.LastBattlePersuasionTurn),LastDomesticPersuasionTurn=Math.Max(LastDomesticPersuasionTurn,other.LastDomesticPersuasionTurn),DamagedParts=(DamagedParts&Parts&~other.Parts)|(other.DamagedParts&other.Parts),CheapParts=(CheapParts&Parts&~other.Parts)|(other.CheapParts&other.Parts),HeadOrigin=(other.Parts&RobotParts.Head)!=0?other.StoredOrigin(RobotParts.Head):StoredOrigin(RobotParts.Head),BodyOrigin=(other.Parts&RobotParts.Body)!=0?other.StoredOrigin(RobotParts.Body):StoredOrigin(RobotParts.Body),LegsOrigin=(other.Parts&RobotParts.Legs)!=0?other.StoredOrigin(RobotParts.Legs):StoredOrigin(RobotParts.Legs)};
         result=result with {IntegratedParts=(IntegratedParts&~other.Parts)|other.IntegratedParts};
         result=result with {PremiumParts=(PremiumParts&Parts&~other.Parts)|(other.PremiumParts&other.Parts),
             HeadMaterial=(other.Parts&RobotParts.Head)!=0?other.HeadMaterial:HeadMaterial,
@@ -122,6 +125,9 @@ public sealed class RobotStore
     private int? _capacity;
     private int? _warehouseLimit;
     private bool _logisticsRules,_relayWarehouse;
+    private bool _flagWarehouseRules;
+    internal void EnableFlagWarehouseRules()=>_flagWarehouseRules=true;
+    internal int WarehouseContribution(Robot r)=>_flagWarehouseRules?(r.LargestFlagGroup==0?1:_relayWarehouse?1+2*r.LargestFlagGroup:1+r.LargestFlagGroup):WarehouseExpansion;
     public int WarehouseExpansion=>_relayWarehouse?7:4;
     internal int WarehouseMaximum=>_logisticsRules && !_relayWarehouse?30:60;
     internal bool LogisticsRules=>_logisticsRules;
@@ -130,7 +136,7 @@ public sealed class RobotStore
     public int TotalCapacity=>CapacityFor(_robots);
     internal void SetWarehouseLimit(int limit)=>_warehouseLimit=limit;
     internal int CapacityFor(IEnumerable<Robot> robots)=>_warehouseLimit is int limit && _capacity!=0
-        ?Math.Min(limit,1+WarehouseExpansion*robots.Count(r=>r.WarehouseKeeper)):_capacity??Capacity;
+        ?Math.Min(limit,1+robots.Where(r=>r.WarehouseKeeper).Sum(WarehouseContribution)):_capacity??Capacity;
     internal bool Fits(IEnumerable<Robot> robots,IEnumerable<MaplePackage> packages,int reserved,int? capacity=null)
         =>OccupiedSlots(robots,packages)+reserved<=(capacity??CapacityFor(robots));
     internal void SetCapacity(int capacity){if(capacity<Count+ReservedReturns)throw new InvalidOperationException("Occupied hangar capacity.");_capacity=capacity;}
@@ -187,7 +193,7 @@ public sealed class RobotStore
     }
     internal RobotStore PlanningCopy()
     {
-        var result=new RobotStore{_capacity=_capacity,_warehouseLimit=_warehouseLimit,_logisticsRules=_logisticsRules,_relayWarehouse=_relayWarehouse,ScrapNode=ScrapNode,ScrapTurn=ScrapTurn};foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);result._maplePackages=_maplePackages;return result;
+        var result=new RobotStore{_capacity=_capacity,_warehouseLimit=_warehouseLimit,_logisticsRules=_logisticsRules,_relayWarehouse=_relayWarehouse,_flagWarehouseRules=_flagWarehouseRules,ScrapNode=ScrapNode,ScrapTurn=ScrapTurn};foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);result._maplePackages=_maplePackages;return result;
     }
     internal void SetMaplePackages(MaplePackage[] packages)=>_maplePackages=packages;
     internal bool TryReceiveMaple(MaplePackage package,int reserved,Func<long,bool> shipping)

@@ -181,6 +181,7 @@ public sealed partial class WorldSetup
         PolarAxis=(int)WorldTerrain.HeadSystem(Cells,terrain);
         CityNames=WorldNames.Cities(Cells,seed,terrain);
         ClearPlacement();
+        Routes.Initialize(this);Nodes.Initialize(this,geographyOnly:true);
     }
     public bool AllowDuplicateCharacters;
     public void SetCast(int seed)

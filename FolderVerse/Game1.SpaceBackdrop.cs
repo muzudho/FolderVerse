@@ -8,7 +8,7 @@ public partial class Game1
     private Texture2D _spaceBackdrop;
 
     // A fixed, unlit scenic layer. Never consumes the world's generation random stream.
-    private void DrawSpaceBackdrop(Rectangle area)
+    private void DrawSpaceBackdrop(Rectangle area, Rectangle? canvas = null)
     {
         if(_spaceBackdrop==null){
             const int width=960,height=540;
@@ -36,10 +36,20 @@ public partial class Game1
             _spaceBackdrop.SetData(pixels);
         }
         // Source crop preserves the nebula's aspect ratio even in narrow inspector map views.
-        float aspect=area.Width/(float)Math.Max(1,area.Height);
+        var frame=canvas??area;
+        float aspect=frame.Width/(float)Math.Max(1,frame.Height);
         int sw=_spaceBackdrop.Width,sh=_spaceBackdrop.Height;
         if(aspect<sw/(float)sh)sw=Math.Max(1,(int)(sh*aspect));else sh=Math.Max(1,(int)(sw/aspect));
         var source=new Rectangle((_spaceBackdrop.Width-sw)/2,(_spaceBackdrop.Height-sh)/2,sw,sh);
+        if(canvas.HasValue)
+        {
+            // The book reveals a window onto one fixed universe, rather than resizing it.
+            int left=source.X+(int)MathF.Round((area.Left-frame.Left)*sw/(float)frame.Width);
+            int top=source.Y+(int)MathF.Round((area.Top-frame.Top)*sh/(float)frame.Height);
+            int right=source.X+(int)MathF.Round((area.Right-frame.Left)*sw/(float)frame.Width);
+            int bottom=source.Y+(int)MathF.Round((area.Bottom-frame.Top)*sh/(float)frame.Height);
+            source=new Rectangle(left,top,Math.Max(1,right-left),Math.Max(1,bottom-top));
+        }
         _spriteBatch.Draw(_spaceBackdrop,area,source,Color.White);
     }
 

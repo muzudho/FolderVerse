@@ -14,6 +14,7 @@ public sealed class Node
     public int IncomingFactories;
     public bool Functional=>FunctionUnits>0;
     public int Id,Cell,Owner;
+    public int InitialEmptyGoal,InitialHangarLimit;
     public Point Center;
     public Point[] Points;
     public TravelTerrain Terrain;
@@ -59,6 +60,7 @@ public sealed class WorldNodes
             }
         }
         All=result.ToArray();
+        InitialHangarPlanning.Assign(world,All);
         if(geographyOnly)return;
         foreach(var cell in world.Cells)
         {

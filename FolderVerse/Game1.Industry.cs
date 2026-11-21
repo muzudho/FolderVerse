@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 public partial class Game1
 {
-    private Texture2D _industrySurprise,_industryPrayer;
+    private Texture2D _industrySurprise,_industryPrayer,_industryRoom,_industryWall;
     private double _industryAge,_industryIdleAge;
     private const double IndustryIdleSeconds=5;
     private float _industryStartAngle,_industryStopAngle;
@@ -83,27 +83,26 @@ public partial class Game1
     {
         if(_manufacturingActive){DrawManufacturing();return;}
         bool stopped=_industryAge>=IndustryStopSeconds;int result=_setup.Industry.Result;
+        if(_industryWall==null){using var wall=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Setup","industry-roulette-wall-v001.png"));_industryWall=Texture2D.FromStream(GraphicsDevice,wall);}
+        PortraitHudLayout.DrawMainBackground(_spriteBatch,_industryWall);
+        if(_industryRoom==null){using var room=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Setup","industry-roulette-room-v001.png"));_industryRoom=Texture2D.FromStream(GraphicsDevice,room);}
+        PortraitHudLayout.DrawBackground(_spriteBatch,_industryRoom);
+        PortraitHudLayout.DrawSplitter(_ui);
         _ui.Text("産業フェーズ",new(54,28),1.1f,Cream);
         if(!stopped && !ComputerExhibition)_ui.Button(IndustrySkip,"スキップ",Accent,.55f);
         var mob=_setupHost;
         if(stopped && result==0)mob=_industryPrayer??=LoadIndustryMob("prayer");
         else if(stopped && _setup.Industry.Jackpot)mob=_industrySurprise??=LoadIndustryMob("surprised");
-        if(mob!=null)_spriteBatch.Draw(mob,new Rectangle(158,310,400,600),Color.White);
+        if(mob!=null)_spriteBatch.Draw(mob,PortraitHudLayout.Character,Color.White);
         string[] lines=!stopped?new[]{"さあ、産業の時間です！","あなたは何台のロボットを","製造できるかなー？"}:
             result==0?new[]{"工場はストップだー！","次こそ製造できますように！"}:
             _setup.Industry.Jackpot?new[]{"数年に一度の当たり年だあ！？","今だ、大チャーンス！"}:
             new[]{"さあ、工場を動かしましょう！"};
-        var speech=new Rectangle(54,128,608,158);
-        var shadow=speech;
-        shadow.Offset(4,4);
-        _ui.Box(shadow,new Color(15,24,32));
-        _ui.Tile(new(speech.Center.X,speech.Bottom),new(32,32),MathHelper.PiOver4,Cream);
-        _ui.Box(speech,Cream);
-        const int lineHeight=44;
-        for(int i=0;i<lines.Length;i++)
-            _ui.Center(lines[i],new(speech.X+20,speech.Center.Y-lines.Length*lineHeight/2+i*lineHeight,speech.Width-40,lineHeight),
-                Math.Min(.78f,(speech.Width-40)/Math.Max(1,_font.MeasureString(lines[i]).X)),new Color(76,49,31));
-        float progress=(float)Math.Clamp((_industryAge-IndustryReadSeconds)/IndustrySpinSeconds,0,1);
+        var speech=new Rectangle(500,40,900,320);
+        DrawSpeechBalloon(speech);
+        var textArea=BalloonRenderer.TextArea(speech);
+        float scale=Math.Min(.68f,textArea.Width/Math.Max(1,System.Linq.Enumerable.Max(lines,l=>_font.MeasureString(l).X)));
+        PortraitHudLayout.CenterLines(_ui,_font,lines,textArea,scale,new Color(57,52,48));        float progress=(float)Math.Clamp((_industryAge-IndustryReadSeconds)/IndustrySpinSeconds,0,1);
         float angle=MathHelper.Lerp(_industryStartAngle,_industryStopAngle,1-MathF.Pow(1-progress,4));
         DrawAntiqueIndustryWheel(angle,stopped);
         if(stopped)DrawIndustryDuration(result,new(54,916,608,65),Cream,.65f,suffix:" 産業ターン");

@@ -62,9 +62,8 @@ public partial class Game1
             bool enabled=NodePurposeDisabledReason(node,purpose)==null;
             bool selected=purpose==null?node.IsHarbor:!node.IsHarbor && node.Purpose==purpose;
             var area=NodePurposeButton(i);
-            var color=enabled?(selected || area.Contains(_pointer)?Accent:Muted):Muted*.48f;
-            _ui.Button(area,"",color,.3f);
-            if(selected)_ui.Box(new(area.X,area.Y,area.Width,3),enabled?Cream:Cream*.55f);
+            var color=selected?Accent:enabled?Muted:Muted*.48f;
+            _ui.StateButton(area,"",Accent,Muted,selected,area.Contains(_pointer),enabled);
             CubeNet.DrawPurposeIcon(_ui,purpose,new(area.Center.X,area.Y+31),node.Terrain==TravelTerrain.Sea,enabled || selected);
             _ui.Center(label,new(area.X,area.Bottom-24,area.Width,24),.28f,enabled?UiPainter.ContrastInk(color):Cream*.55f);
         }

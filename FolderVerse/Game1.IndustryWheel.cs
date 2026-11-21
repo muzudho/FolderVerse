@@ -7,9 +7,9 @@ using Microsoft.Xna.Framework.Graphics;
 
 public partial class Game1
 {
-    private static readonly Rectangle IndustryCabinetBounds=new(710,20,1040,1040);
-    private static readonly Vector2 IndustryWheelCenter=new(1222,489);
-    private const float IndustryWheelRadius=345;
+    private static readonly Rectangle IndustryCabinetBounds=new(1010,170,880,880);
+    private static readonly Vector2 IndustryWheelCenter=new(1443,567);
+    private const float IndustryWheelRadius=292;
     private Texture2D _industryCabinet,_industryEnamel,_industryBrass;
     private IReadOnlyList<IndustrySector> _industryEnamelWheel;
 
@@ -76,7 +76,7 @@ public partial class Game1
     private Color[] _industryEnamelColors;
     private void DisposeIndustryWheel()
     {
-        _industryCabinet?.Dispose();
+        _industryCabinet?.Dispose();_industryRoom?.Dispose();_industryRoom=null;_industryWall?.Dispose();_industryWall=null;
         _industryEnamel?.Dispose();
         _industryBrass?.Dispose();
         _industryCabinet=_industryEnamel=_industryBrass=null;

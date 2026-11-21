@@ -124,7 +124,7 @@ public partial class Game1
     private static readonly Rectangle ReignPortrait=new(56,650,240,240); private Rectangle StrategyToggle=>PrimaryActionBounds(0);
     private bool DomesticViewClick(Point p)
     {
-        if(StratagemInterface && !StratagemManualActions)return false;
+        if(StratagemInterface && !StratagemManualActions && !InspectorVisible)return false;
         if(TutorialPrimaryActionClick(p))return true;
         if(_trainingOpen || _supervisorDialog>0)return false;
         if(NodeCheckClick(p))return true;

@@ -1,5 +1,6 @@
 # ドキュメント案内
 
+- [v0.14.0 リリースノート](dev/release-v0.14.0.md)
 - [v0.13.0 リリースノート](dev/release-v0.13.0.md)
 
 - [最終処分場・解体・スクラップ](設計/最終処分場とスクラップ.md) / [実装と検証](dev/final-disposal.md)
@@ -15,7 +16,7 @@
 
 [リポジトリーのトップ](../README.md)
 
-遊ぶ・調べる場合は、[v0.13.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.13.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
+遊ぶ・調べる場合は、[v0.14.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.14.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
 
 | 読みたい内容 | 入口 |
 | --- | --- |
@@ -44,3 +45,11 @@
 - [運否天賦の共有初期在庫・円グラフと分布](dev/initial-stock.md)
 
 - [朝刊・新聞フェーズ：各国視点の記事と玩具ポスト](dev/turn-newspaper.md)
+
+- [ガイド名の元ネタと生成器](dev/guide-names.md)
+
+- [内政開始時のガイド・台詞の編集](dev/guide-runtime.md)
+
+- [ボタンの状態表現](dev/button-states.md)：選択の塗り、操作対象の玩具枠、案内の明滅。
+
+- [人物HUDの画面規格](dev/portrait-hud.md)：左640×1080、名札中心（160,720）、共通吹き出し。
