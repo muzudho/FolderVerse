@@ -193,7 +193,7 @@ public sealed class RobotStore
     }
     internal RobotStore PlanningCopy()
     {
-        var result=new RobotStore{_capacity=_capacity,_warehouseLimit=_warehouseLimit,_logisticsRules=_logisticsRules,_relayWarehouse=_relayWarehouse,ScrapNode=ScrapNode,ScrapTurn=ScrapTurn};foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);result._maplePackages=_maplePackages;return result;
+        var result=new RobotStore{_capacity=_capacity,_warehouseLimit=_warehouseLimit,_logisticsRules=_logisticsRules,_relayWarehouse=_relayWarehouse,_flagWarehouseRules=_flagWarehouseRules,ScrapNode=ScrapNode,ScrapTurn=ScrapTurn};foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);result._maplePackages=_maplePackages;return result;
     }
     internal void SetMaplePackages(MaplePackage[] packages)=>_maplePackages=packages;
     internal bool TryReceiveMaple(MaplePackage package,int reserved,Func<long,bool> shipping)
