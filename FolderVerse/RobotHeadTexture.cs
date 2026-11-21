@@ -111,13 +111,13 @@ public sealed class RobotHeadTexture:IDisposable
     public Texture2D Get(WorldSetup world,int owner,bool worn=false,bool mirrorSticker=false)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
-        if(world==null || owner<0 || owner>=world.ActiveCount)throw new ArgumentOutOfRangeException(nameof(owner));
-        var key=(world.CountryFlagShape(owner),world.CountryPattern(owner),world.ColorIndices[owner]%WorldSetup.Colors.Length,world.CountrySecondaryColor(owner),world.CountryEmblem(owner),worn,mirrorSticker);
+        if(world==null || owner < -1 || owner>=world.ActiveCount)throw new ArgumentOutOfRangeException(nameof(owner));
+        var key=owner<0?(-1,-1,-1,-1,-1,worn,mirrorSticker):(world.CountryFlagShape(owner),world.CountryPattern(owner),world.ColorIndices[owner]%WorldSetup.Colors.Length,world.CountrySecondaryColor(owner),world.CountryEmblem(owner),worn,mirrorSticker);
         if(_textures.TryGetValue(key,out var existing))return existing;
-        var pixels=RobotFlagComposite.Compose(world,owner,_neutral,_surface,fieldOnly:true);
+        var pixels=owner<0?(Color[])_neutral.Clone():RobotFlagComposite.Compose(world,owner,_neutral,_surface,fieldOnly:true);
         if (worn)
             ApplyWear(pixels);
-        RobotFlagComposite.Sticker(pixels,Resolution,Resolution,_sticker,_emblems(world.CountryEmblem(owner)),WorldSetup.Colors[world.CountrySecondaryColor(owner)],mirrorSticker);
+        if(owner>=0)RobotFlagComposite.Sticker(pixels,Resolution,Resolution,_sticker,_emblems(world.CountryEmblem(owner)),WorldSetup.Colors[world.CountrySecondaryColor(owner)],mirrorSticker);
         // SpriteBatch's normal AlphaBlend expects premultiplied colours.
         for(int i=0;i<pixels.Length;i++){var p=pixels[i];pixels[i]=Color.FromNonPremultiplied(p.R,p.G,p.B,p.A);}
         var texture=new Texture2D(_device,Resolution,Resolution);

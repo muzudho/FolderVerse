@@ -103,6 +103,7 @@ public sealed partial class WorldSetup
         if(TutorialStep==0)
             for(int ruler=0;ruler<ActiveCount;ruler++)
                 for(int i=0;i<2;i++)Robots.Retinues[ruler].Add(Robots.Create(ruler,RobotParts.Complete));
+        if(sharedStock)foreach(var node in Nodes.All.Where(n=>n.Owner>=0 && n.Functional))InitialHangarPlanning.FitKeepers(this,node);
         if(sharedStock)
             RebuildInitialStock(initialStock??new(robotScatterPercent,rawStockPercent,fortuneSeed^0x494E4954));
         for(int ruler=0;ruler<ActiveCount;ruler++)ConquerorPoints[ruler]=Nodes.Current(ruler).Center;
@@ -146,18 +147,10 @@ public sealed partial class WorldSetup
 
     private void InitializeTerrainHangars()
     {
-        foreach(var region in Nodes.All.GroupBy(node=>(node.Cell,node.Terrain))){
-            var (cell,terrain)=region.Key;
-            int area=TerrainArea(cell,terrain);
-            foreach(var node in region){
-                int limit=terrain==TravelTerrain.Land
-                    ?Math.Min(NodeFunctionTransfers.MaximumCapacity,5+area*55/100)
-                    :4;
-                if(Routes.NearWhirlpool(node))limit=1;
-                Robots.Nodes[node.Id].SetWarehouseLimit(limit);
-                Robots.Workshops[node.Id].SetStorageSlotLimit(limit);
-            }
+        foreach(var node in Nodes.All){
+            var store=Robots.Nodes[node.Id];store.EnableFlagWarehouseRules();
+            store.SetWarehouseLimit(node.InitialHangarLimit);
+            Robots.Workshops[node.Id].SetStorageSlotLimit(node.InitialHangarLimit);
         }
     }
 }
-

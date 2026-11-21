@@ -1492,3 +1492,6 @@ Materials診断123/456/789の実経路0→1。メープル頭・段ボール胴�
 
 
 2026-11-21 17:12 JST 直送の取消後に同地点の別受取ロボットへ変更する境界を１条件PASS。固定配布v0.13.0 A6A10CBA0EF44A9DFCA44F2697686A307D6440031A00268B80D600C05A34C73E、新規通常世界1/cast2/rights492471852/fortune1544938375/2人/25・25/ScrapRules=true由来。PP頭/段ボール胴脚・頭胴一体型・隊長・汚損・混合国籍・人工部位進捗を取消→保存復元→別受取IDへ再予約→実Resolve。旧受取record不変、新受取合体/飛行Visual/元残部/再保存一致。初期空の隣接格納庫には２枠以上がなくfixture探索失敗、SetCapacityだけでも管理人なしでは容量が増えずAdd失敗したため、受取上限５と実管理人１体を用意して検証。実装不具合と区別し、自然初期容量・全９素材・実UIの網羅とはしない。NAS archives/robot-art-implementation/direct-receiver-change-2026-11-21-1712、再生成tmp/delete-after-2026-11-22/robot-art-implementation/direct-receiver-change-1712。製品/公開物/実ゲーム/元保存/個人差分無変更、コミット・プッシュなし。次は別の具体的な未検証境界を選び、この取消/変更の反復は不要。
+
+
+2026-11-21 19:18 JST 直送予約先の敵国化→失敗→再試行の境界１条件PASS。固定配布v0.13.0 A6A10CBA0EF44A9DFCA44F2697686A307D6440031A00268B80D600C05A34C73E、新規通常世界1/cast2/rights492471852/fortune1544938375/2人/25・25/ScrapRules=true由来。PP頭/段ボール胴脚・頭胴一体型・隊長・汚損・混合国籍・人工進捗の直送を予約後、受取地点を敵国1へ変更して実ReconcileDestinations。注文解除/失敗札『出荷失敗』/出荷ロック解除/双方在庫record不変を確認。保存復元後に同国へ戻し再予約すると失敗札が消え、実Resolveの飛行Visual・合体・元残部・再保存が一致。所有変更は制御fixtureで自然戦闘の再現や実UIではなく全９素材網羅でもない。NAS archives/robot-art-implementation/direct-enemy-reconcile-2026-11-21-1918、再生成tmp/delete-after-2026-11-22/robot-art-implementation/direct-enemy-1918。exit0、製品/公開物/実ゲーム/元保存/個人差分無変更、コミット・プッシュなし。

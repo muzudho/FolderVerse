@@ -203,7 +203,7 @@ public sealed partial class RobotPartPlanning
     private static int Find(RobotWorld world,long id)=>Array.FindIndex(world.Nodes,s=>s.Robots.Any(r=>r.Id==id));
     private static Robot FreeRole(Robot r)=>r with {DefenseOnly=false,InterceptOnly=false,FactoryWorker=false,DefenseFlag=null};
     internal static bool CanUseWarehouseSuccessor(WorldSetup world,RobotWorld stock,int node,Robot robot)=>
-        robot!=null && !robot.IsWorkpiece && !robot.IsDismantling && robot.RecoveredRaw==null && robot.Parts==RobotParts.Complete && !robot.Stationed && !robot.Disposal &&
+        robot!=null && robot.HasAffiliatedParts && !robot.IsWorkpiece && !robot.IsDismantling && robot.RecoveredRaw==null && robot.Parts==RobotParts.Complete && !robot.Stationed && !robot.Disposal &&
         !world.Robots.MarchReserved(node,robot) && !stock.ReservationBusy(node,robot.Id);
     private static long Apply(WorldSetup world,RobotWorld stock,PlannedPartMove order,bool checkRoute)
     {

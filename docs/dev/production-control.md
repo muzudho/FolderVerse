@@ -62,3 +62,6 @@ NAS `archives/diagnostics/production-progress-2026-11-21` に25項目のモデ�
 
 
 2026-11-21 18:51 JST 原料合算の途中失敗で在庫が減増しないことを５原料30項目PASS。配布v0.13.0固定A6A10CBA0EF44A9DFCA44F2697686A307D6440031A00268B80D600C05A34C73E、１格納庫のモデルfixtureに15unitsの対象原料＋別２原料各16units。対象２units入荷は１unitだけ合算すれば残りが溢れる条件でTryReceiveMaple=false、元３荷record/合計47units不変を確認。対象１unitなら合算だけで受取成功、３荷のまま合計48units。楓/スチレン/軟質ビニール/PP/シリコーンで確認、スクラップ・実配送フェーズ・保存/UIは対象外。HasMapleSpace単独の拒否と、TryReceiveMapleによる合算成功は異なるため、CPU予測はPlanningCopyでTryReceiveMapleを使う方が正確という次の検討根拠。NAS archives/raw-materials/raw-merge-rollback-2026-11-21-1851、再生成tmp/delete-after-2026-11-22/raw-materials/raw-merge-rollback-1851。exit0、製品/公開物/実ゲーム/元保存/個人差分無変更、コミット・プッシュなし。
+
+
+2026-11-21 19:49 JST 原料の出荷予約束と空き枠予約を区別する合算境界５原料30項目PASS。固定配布v0.13.0 A6A10CBA0EF44A9DFCA44F2697686A307D6440031A00268B80D600C05A34C73E、前18:51同様の１格納庫47unitsモデルfixture。合算先15units束がshippingなら１unit入荷を拒否し元record不変。一方、reserved=1でも未出荷の既存束へ全量合算できる１unitは受取成功・合計48、追加格納庫を消費しない。最初は予約枠が合算も拒否すると誤った期待で失敗、実装は新規荷を追加する場合だけHasMapleSpaceで予約枠を確認するため現行挙動として修正。途中のテスト置換ミスも直し最終30PASS/exit0。仕様変更・不具合修正ではなく現行モデル挙動の確認で、予約数量全体の妥当性/実配送/保存/UIは対象外。NAS archives/raw-materials/raw-merge-reserved-2026-11-21-1949、再生成tmp/delete-after-2026-11-22/raw-materials/raw-merge-reserved-1949。初期空き保証なし・有機能１枠維持の最新確定は保持し、按分未確定部分を実装せず、製品/公開物/実ゲーム/元保存/個人差分無変更、コミット・プッシュなし。

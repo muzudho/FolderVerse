@@ -155,7 +155,8 @@ public partial class Game1
                     }else if(_hangarReservation==HangarReservation.Defense && HangarReservationAccessible(robot) && _setup.Robots.ReservationBlockedByTraining(_populationNode,robot,_hangarReservation,HangarReservationCountry(robot))){
                         _hangarTrainingCountry=HangarReservationCountry(robot);_hangarTrainingRobot=robot.Id;
                         _hangarMessage="この国の調練により、自国パーツ 3/3 のロボットだけを戦闘に出します";
-                    }else if(_hangarReservation==HangarReservation.Warehouse)_hangarMessage="格納庫の使用状況・上限と、ロボットの予約を確認してください";
+                    }else if(_hangarReservation==HangarReservation.Warehouse && !robot.WarehouseKeeper && !robot.HasAffiliatedParts)_hangarMessage="所属のあるパーツが１つ以上必要です";
+                    else if(_hangarReservation==HangarReservation.Warehouse)_hangarMessage="格納庫の使用状況・上限と、ロボットの予約を確認してください";
                     else _hangarMessage="予約国・完全体・自国パーツ・出撃条件・処理中の状態を確認してください";
                     return;
                 }
@@ -284,7 +285,8 @@ public partial class Game1
                 var color=movable?ControlEdge:new Color(145,156,166);
                 _ui.Box(new(bounds.X,bounds.Y,bounds.Width,2),color);_ui.Box(new(bounds.X,bounds.Bottom-2,bounds.Width,2),color);
                 _ui.Box(new(bounds.X,bounds.Y,2,bounds.Height),color);_ui.Box(new(bounds.Right-2,bounds.Y,2,bounds.Height),color);
-                string material=$"（{RobotMaterials.Label(robot.Material(part))} / 製造国 #{robot.Origin(part)+1}）";
+                string affiliation=robot.Origin(part)<0?"未所属":"製造国 #"+(robot.Origin(part)+1);
+                string material=$"（{RobotMaterials.Label(robot.Material(part))} / {affiliation}）";
                 string detail=$"{PartsLabel(part)}{material}{(robot.IsDamaged(part)?"（損傷・未所属扱い）":"")}";
                 hover=movable?$"{detail}をドラッグ＆ドロップして再配置":$"{detail} / 閲覧のみ";
             }
