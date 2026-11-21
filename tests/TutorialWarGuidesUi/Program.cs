@@ -147,6 +147,7 @@ sealed class WarGuideGame:Game1
    void AuditGlow(string stage, params Rectangle[] expected){
     Set("_animationTime",(float)now);
     var actual=((IEnumerable<Rectangle>)Call("TutorialActionTargets")).ToArray();
+    Check(actual.SequenceEqual(expected),"Guidance follows the next usable operation: "+stage);
     Console.WriteLine($"GLOW {stage}: actual=[{string.Join(";",actual)}] expected=[{string.Join(";",expected)}] guide={Get("_tutorialAttackGuide")} closing={Get("_tutorialGuideClosing")} slide={Get("_tutorialChromeSlide")} persuasion={Get("_homePersuasionActive")} inspectorClosing={Get("_nodeInspectorClosing")}");
     base.Draw(new GameTime(TimeSpan.FromSeconds(now),TimeSpan.Zero));
     var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
@@ -377,6 +378,7 @@ sealed class WarGuideGame:Game1
       var available=(Robot[])Call("InvasionRobots",sources[row.Index]!);
       var preview=(Robot[])Call("InvasionPreviewRobots",sources[row.Index]!);
       Console.WriteLine($"Sortie row: index={row.Index}, available={available.Length}, previews={preview.Length}, bounds={row.Bounds}");
+      if(Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_SOURCE_PROBE")=="1")foreach(var robot in preview)Console.WriteLine($"Source eligibility: row={row.Index} robot={robot.Id} selectable={available.Any(item=>item.Id==robot.Id)} owner={robot.Owner} eligible={w.Robots.Training[robot.Owner].Eligible(robot)} stationed={robot.Stationed} canFight={robot.CanFight} damaged={robot.DamagedParts} sourceLocked={w.Campaign.RobotBattles.LockedNode((int)sources[row.Index]!.GetType().GetField("Node")!.GetValue(sources[row.Index])!)} label={Call("InvasionReservationLabel",sources[row.Index]!,robot)}");
       foreach(int slot in Enumerable.Range(0,preview.Length).Where(slot=>available.Any(item=>item.Id==preview[slot].Id))){
        var bounds=(Rectangle)card.Invoke(null,new object[]{row.Bounds,slot})!;
        var point=bounds.Center+new Point((int)Call("get_NodeInspectorOffset"),0);
@@ -388,8 +390,21 @@ sealed class WarGuideGame:Game1
        selectedCount++;
       }
      }
+     if(selectedCount==0){
+      foreach(var row in rows.ToArray()){
+       var queenSource=sources[row.Index]!;
+       if(!(bool)queenSource.GetType().GetField("Queen")!.GetValue(queenSource)!)continue;
+       var queenBounds=(Rectangle)typeof(Game1).GetMethod("InvasionQueenAt",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{row.Bounds})!;
+       if(Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_QUEEN_GLOW_ONLY")=="1"){
+        Console.WriteLine($"Queen guidance observation: completion={w.TutorialCompletionShown} review={Call("get_TutorialReviewAvailable")} attackRequired={Call("get_TutorialAttackRequired")} targets={string.Join(";",(IEnumerable<Rectangle>)Call("TutorialActionTargets"))} queen={queenBounds} offset={Call("get_NodeInspectorOffset")}");
+        base.Draw(new GameTime(TimeSpan.FromSeconds(now),TimeSpan.Zero));var qp=GraphicsDevice.PresentationParameters;var queenPixels=new Color[qp.BackBufferWidth*qp.BackBufferHeight];GraphicsDevice.GetBackBufferData(queenPixels);using var queenImage=new Texture2D(GraphicsDevice,qp.BackBufferWidth,qp.BackBufferHeight);queenImage.SetData(queenPixels);using var output=File.Create(Path.Combine(AppContext.BaseDirectory,"queen-guidance.png"));queenImage.SaveAsPng(output,queenImage.Width,queenImage.Height);Console.WriteLine("OBSERVATION complete, no conquest assertion for this scope");Exit();return;
+       }
+       Click(queenBounds.Center+new Point((int)Call("get_NodeInspectorOffset"),0));
+       Console.WriteLine("No selectable robots: used normal queen participation button");break;
+      }
+     }
      secondOrders=w.Campaign.PlannedOrders.Where(order=>!order.Peaceful && order.TargetNode==candidate).ToArray();
-     Check(selectedCount>0 && secondOrders.Sum(order=>order.RobotIds?.Length ?? 0)==selectedCount,"The second attack reserves all visible selected cards");
+     Check((selectedCount>0 || secondOrders.Any(order=>order.Queen)) && secondOrders.Sum(order=>order.RobotIds?.Length ?? 0)==selectedCount,"The second attack reserves actual selected robots or a legal queen-only order");
      Console.WriteLine($"Second sortie sources={secondOrders.Length}, selected robots={selectedCount}");
      Console.WriteLine($"Second sortie local garrison: {string.Join(",",w.Robots.Nodes[candidate].Robots.Select(robot=>$"{robot.Id}/{robot.Owner}"))}");
      Console.WriteLine($"Second sortie reserved: target={candidate}, point={mapPoint}");
