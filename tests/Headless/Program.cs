@@ -1,6 +1,14 @@
 using FolderVerse;
 using System.Text.Json;
 
+if (args is ["--compare-exhibition", var outputDirectory])
+{
+    using var game = new ExhibitionComparison(outputDirectory);
+    game.Run();
+    Environment.ExitCode = game.Differences ? 1 : 0;
+    return;
+}
+
 void Check(bool ok,string message){if(!ok)throw new Exception(message);Console.WriteLine("PASS "+message);}
 var error=new StringWriter();
 Check(HeadlessRunner.Run(new[]{"--headless","--max-turns","401"},new StringWriter(),error)==2,"Reject analysis budget above400");
