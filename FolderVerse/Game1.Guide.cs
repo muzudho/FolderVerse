@@ -11,8 +11,9 @@ public partial class Game1
     private GuideBriefing _guideBriefing;
     private WorldSetup _guideWorld;
     private int _guidePage,_guideRuler;
-    private Texture2D _guidePortrait,_guideNameplate,_guideBalloon,_guideScenery;
+    private Texture2D _guidePortrait,_guideNameplate,_guideScenery;
     private int _guideSceneryKind=-1;
+    private BalloonRenderer _speechBalloon;
     private string _guidePortraitKey;
     private static readonly string[] GuideBodies={"elevator","stewardess","waitress","concierge"};
     private static readonly Rectangle GuideNext=new(1320,320,240,60);
@@ -52,25 +53,15 @@ public partial class Game1
         if(_guideBriefing==null || !IsStatusScreen || !ReferenceEquals(_guideWorld,_setup))return;
         var roster=_setup.EnsureGuides();
         EnsureGuidePortrait(roster.Bodies[_guideRuler],_guideRuler);
-        _spriteBatch.Draw(_guidePortrait,new Rectangle(70,88,600,900),Color.White);
+        _spriteBatch.Draw(_guidePortrait,PortraitHudLayout.Character,Color.White);
         _guideNameplate??=LoadGuideImage("character-nameplate-v001.png");
-        _spriteBatch.Draw(_guideNameplate,new Rectangle(230,640,280,94),Color.White);
+        _spriteBatch.Draw(_guideNameplate,PortraitHudLayout.Nameplate,Color.White);
         var ink=new Color(57,52,48);
-        _ui.Center(GuideMessages.Text("role"),new(245,668,58,35),.34f,ink);
+        PortraitHudLayout.CenterLines(_ui,_font,new[]{GuideMessages.Text("role")},PortraitHudLayout.RoleText,.34f,ink);
         string name=roster.Names[_guideRuler];float nameScale=Math.Min(.46f,345/Math.Max(1,_font.MeasureString(name).X));
-        int split=name.Length;while(split>1 && _font.MeasureString(name[..split]).X*nameScale>178)split--;
-        if(split==name.Length)_ui.Center(name,new(312,668,178,35),nameScale,ink);
-        else {
-            split=(name.Length+1)/2;
-            _ui.Text(name[..split],new(401-_font.MeasureString(name[..split]).X*nameScale/2,666),nameScale,ink);
-            _ui.Text(name[split..],new(401-_font.MeasureString(name[split..]).X*nameScale/2,686),nameScale,ink);
-        }
-        EnsureGuideBalloon();
-        var balloon=new Rectangle(500,40,1380,420);
-        var shadow=balloon;shadow.Offset(14,18);_spriteBatch.Draw(_guideBalloon,shadow,Color.Black*.18f);
-        shadow.Offset(5,5);_spriteBatch.Draw(_guideBalloon,shadow,Color.Black*.10f);
-        _spriteBatch.Draw(_guideBalloon,balloon,Color.White);
-        var lines=_guideBriefing.Pages[_guidePage];
+        string[] names=_font.MeasureString(name).X*nameScale<=178?new[]{name}:new[]{name[..((name.Length+1)/2)],name[((name.Length+1)/2)..]};
+        PortraitHudLayout.CenterLines(_ui,_font,names,PortraitHudLayout.NameText,nameScale,ink);
+        DrawSpeechBalloon(new(500,40,1380,420));        var lines=_guideBriefing.Pages[_guidePage];
         for(int i=0;i<lines.Length;i++)NewsLine(lines[i],830,115+i*43,850,.48f,ink);
         bool last=_guidePage==_guideBriefing.Pages.Length-1;
         _ui.StateButton(GuideNext,GuideMessages.Text(last?"finish":"next"),Accent,Muted,false,GuideNext.Contains(_pointer),attention:true,seconds:_animationTime,scale:.46f);
@@ -88,8 +79,7 @@ public partial class Game1
             int cell=_setup.ConquerorLocations[_guideRuler];
             int kind=node!=null?NodeSupervisors.For(node,_setup.Cells[node.Cell].Face):_setup.Cells[cell].Face is 2 or 3?8:_setup.Routes.Terrain(cell,_setup.ConquerorPoints[_guideRuler])==TravelTerrain.Sea?5:3;
             if(kind!=_guideSceneryKind){_guideScenery?.Dispose();_guideScenery=LoadGuideImage("background-"+NodeSupervisors.Kinds[kind]+"-v001.png");_guideSceneryKind=kind;}
-            var area=new Rectangle(0,0,640,1080);
-            _spriteBatch.Draw(_guideScenery,area,PortraitRenderer.FitSource(new(0,0,_guideScenery.Width,_guideScenery.Height),area),Color.White);
+            PortraitHudLayout.DrawBackground(_spriteBatch,_guideScenery);
         }
         var canvas=CanvasBounds();var viewport=GraphicsDevice.Viewport;
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
@@ -100,19 +90,11 @@ public partial class Game1
         GraphicsDevice.Viewport=viewport;_spriteBatch.Begin(transformMatrix:transform);
         DrawGuide();
     }
-    private void EnsureGuideBalloon()
+    private void DrawSpeechBalloon(Rectangle bounds)
     {
-        if(_guideBalloon!=null)return;
-        const int width=1380,height=420;var pixels=new Color[width*height];
-        static float Cross(Vector2 a,Vector2 b)=>a.X*b.Y-a.Y*b.X;
-        var a=new Vector2(15,270);var b=new Vector2(220,185);var c=new Vector2(240,300);
-        for(int y=0;y<height;y++)for(int x=0;x<width;x++){
-            float dx=(x-750)/620f,dy=(y-200)/190f;float edge=(1-dx*dx-dy*dy)*150;
-            var p=new Vector2(x,y);bool tail=Cross(b-a,p-a)>=0&&Cross(c-b,p-b)>=0&&Cross(a-c,p-c)>=0;
-            float alpha=tail?1:Math.Clamp(edge,0,1);pixels[y*width+x]=new Color(255,253,247)*alpha;
-        }
-        _guideBalloon=new Texture2D(GraphicsDevice,width,height);_guideBalloon.SetData(pixels);
-    }    private Texture2D LoadGuideImage(string name)
+        _speechBalloon??=new BalloonRenderer(GraphicsDevice);_speechBalloon.Draw(_spriteBatch,bounds);
+    }
+    private Texture2D LoadGuideImage(string name)
     {
         using var file=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Guides",name));
         var image=Texture2D.FromStream(GraphicsDevice,file);
@@ -141,5 +123,5 @@ public partial class Game1
         }
         _guidePortrait.SetData(pixels);
     }
-    private void DisposeGuide(){_guidePortrait?.Dispose();_guideNameplate?.Dispose();_guideBalloon?.Dispose();_guideScenery?.Dispose();}
+    private void DisposeGuide(){_guidePortrait?.Dispose();_guideNameplate?.Dispose();_speechBalloon?.Dispose();_guideScenery?.Dispose();}
 }

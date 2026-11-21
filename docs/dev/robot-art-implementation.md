@@ -1501,3 +1501,6 @@ Materials診断123/456/789の実経路0→1。メープル頭・段ボール胴�
 
 
 2026-11-21 22:13 JST 明示未所属パーツを含む一体型直送の失敗→再予約→飛行→合体→保存を９素材×頭胴/胴脚の18条件へ拡張し全PASS。固定DLL 3B2AD06DB55D6B344677328C2392F8B01F81B609CDC5074251E373FE89E8F703（新初期容量/国旗別管理人・予測フラグ修正後、公開A6Aとは分離）。新規世界1/cast2/rights492471852/fortune1544938375/2人/Materials25・25/ScrapRules有効由来の制御fixture、頭PP/胴９素材/脚段ボール、隊長・汚損・人工仕掛進捗、頭国0/胴脚Origin=-2。受取敵国化でReconcileが予約解除/失敗札/ロック解除/在庫不変、保存後所有復帰→再予約で失敗札消去。実ResolveのVisual==source.Slice、合体後recordと元残部、再保存復元が完全一致。以前の１条件より素材/継ぎ目を拡張したモデル互換確認で、自然戦闘・描画画素・実UI・完成製造品は未検証。NAS archives/robot-art-implementation/neutral-direct-all9-2026-11-21-2213（固定DLL/コード/result.log）、tmp/delete-after-2026-11-22/robot-art-implementation/neutral-direct-all9-2213。exit0、製品/実ゲーム/元保存/公開物/個人差分無変更、コミット・プッシュなし。
+
+
+2026-11-21 23:24 JST 明示未所属を含む９素材×頭胴/胴脚一体型18条件の長距離便を固定DLL 3B2AD06DB55D6B344677328C2392F8B01F81B609CDC5074251E373FE89E8F703で検証し全PASS。新規世界1/cast2/rights492471852/fortune1544938375/2人/Materials25・25/ScrapRules有効由来の制御fixture。頭PP/胴９素材/脚段ボール、隊長・汚損・人工仕掛進捗、頭国0/胴脚Origin=-2。手動Reserve→保存復元→実Advance（隣接する１経路区間）→受取相手へ合体→再保存復元で、材料/国籍/隊長/汚損/部位進捗と元残部recordが一致し配達完了。今回は多区間中継・経路破断・飛行画素・実UIを検証したものではない。NAS archives/robot-art-implementation/neutral-long-all9-2026-11-21-2324、tmp/delete-after-2026-11-22/robot-art-implementation/neutral-long-all9-2324。製品/実ゲーム/元保存/公開物/個人差分無変更、コミット・プッシュなし。次は多区間中継時のVisualと、受取先変更後に荷が現在地へ残る境界を分けて検証する。
