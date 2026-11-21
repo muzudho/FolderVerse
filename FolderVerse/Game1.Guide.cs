@@ -2,6 +2,7 @@ namespace FolderVerse;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -10,11 +11,11 @@ public partial class Game1
     private GuideBriefing _guideBriefing;
     private WorldSetup _guideWorld;
     private int _guidePage,_guideRuler;
-    private Texture2D _guidePortrait,_guideNameplate;
+    private Texture2D _guidePortrait,_guideNameplate,_guideBalloon,_guideScenery;
+    private int _guideSceneryKind=-1;
     private string _guidePortraitKey;
     private static readonly string[] GuideBodies={"elevator","stewardess","waitress","concierge"};
-    private static readonly Rectangle GuidePrevious=new(700,940,180,64),GuideNext=new(900,940,240,64),
-        GuideAction=new(1160,940,600,64),GuideSkip=new(1480,1015,330,52);
+    private static readonly Rectangle GuideNext=new(1320,320,240,60);
 
     private bool GuideInput(bool active,bool click,bool enter,bool escape)
     {
@@ -30,17 +31,14 @@ public partial class Game1
             return true; // Do not pass the click that closed the previous phase into the guide.
         }
         if(!active)return true;
-        if(escape || click && GuideSkip.Contains(_pointer)){FinishGuide();return true;}
-        if(click && GuidePrevious.Contains(_pointer)){_guidePage=Math.Max(0,_guidePage-1);return true;}
+        if(escape){FinishGuide();return true;}
         bool last=_guidePage==_guideBriefing.Pages.Length-1;
-        if(last && click && GuideAction.Contains(_pointer)){
-            int node=_guideBriefing.OfficeNode;FinishGuide();
-            if(node>=0 && node<_setup.Nodes.All.Length && _setup.Nodes.All[node].Owner==_guideRuler){OpenNodeInspector(node);OpenNodeOffice();}
-            else {ResetInspector();RefreshStratagems();_stratagemManual=false;_stratagemSelected=-1;}
-            return true;
-        }
         if(enter || click && GuideNext.Contains(_pointer)){
-            if(last)FinishGuide();else _guidePage++;
+            if(last){
+                int node=_guideBriefing.OfficeNode;FinishGuide();
+                if(node>=0 && node<_setup.Nodes.All.Length && _setup.Nodes.All[node].Owner==_guideRuler){OpenNodeInspector(node);OpenNodeOffice();}
+                else {ResetInspector();RefreshStratagems();_stratagemManual=false;_stratagemSelected=-1;}
+            }else _guidePage++;
         }
         return true;
     }
@@ -54,25 +52,67 @@ public partial class Game1
         if(_guideBriefing==null || !IsStatusScreen || !ReferenceEquals(_guideWorld,_setup))return;
         var roster=_setup.EnsureGuides();
         EnsureGuidePortrait(roster.Bodies[_guideRuler],_guideRuler);
-        // Cover the left controls only; keep the live globe on the right unobscured.
-        _ui.Box(new(0,150,960,930),new Color(16,35,46));
         _spriteBatch.Draw(_guidePortrait,new Rectangle(70,88,600,900),Color.White);
         _guideNameplate??=LoadGuideImage("character-nameplate-v001.png");
-        _spriteBatch.Draw(_guideNameplate,new Rectangle(90,620,560,187),Color.White);
+        _spriteBatch.Draw(_guideNameplate,new Rectangle(230,640,280,94),Color.White);
         var ink=new Color(57,52,48);
-        _ui.Center(GuideMessages.Text("role"),new(121,676,115,69),.34f,ink);
-        _ui.Center(roster.Names[_guideRuler],new(255,676,357,69),Math.Min(.46f,345/Math.Max(1,_font.MeasureString(roster.Names[_guideRuler]).X)),ink);
-        ToyPaperBox(new(700,640,1100,280),new Color(250,236,202));
+        _ui.Center(GuideMessages.Text("role"),new(245,668,58,35),.34f,ink);
+        string name=roster.Names[_guideRuler];float nameScale=Math.Min(.46f,345/Math.Max(1,_font.MeasureString(name).X));
+        int split=name.Length;while(split>1 && _font.MeasureString(name[..split]).X*nameScale>178)split--;
+        if(split==name.Length)_ui.Center(name,new(312,668,178,35),nameScale,ink);
+        else {
+            split=(name.Length+1)/2;
+            _ui.Text(name[..split],new(401-_font.MeasureString(name[..split]).X*nameScale/2,666),nameScale,ink);
+            _ui.Text(name[split..],new(401-_font.MeasureString(name[split..]).X*nameScale/2,686),nameScale,ink);
+        }
+        EnsureGuideBalloon();
+        var balloon=new Rectangle(500,40,1380,420);
+        var shadow=balloon;shadow.Offset(14,18);_spriteBatch.Draw(_guideBalloon,shadow,Color.Black*.18f);
+        shadow.Offset(5,5);_spriteBatch.Draw(_guideBalloon,shadow,Color.Black*.10f);
+        _spriteBatch.Draw(_guideBalloon,balloon,Color.White);
         var lines=_guideBriefing.Pages[_guidePage];
-        for(int i=0;i<lines.Length;i++)NewsLine(lines[i],740,670+i*45,1020,.50f,ink);
-        _ui.Center(GuideMessages.Page("progress",new Dictionary<string,string>{["page"]=(_guidePage+1).ToString(),["pages"]=_guideBriefing.Pages.Length.ToString()})[0],new(740,870,1020,30),.4f,ink);
-        _ui.Button(GuidePrevious,GuideMessages.Text("previous"),Muted,.5f);
+        for(int i=0;i<lines.Length;i++)NewsLine(lines[i],830,115+i*43,850,.48f,ink);
         bool last=_guidePage==_guideBriefing.Pages.Length-1;
         _ui.StateButton(GuideNext,GuideMessages.Text(last?"finish":"next"),Accent,Muted,false,GuideNext.Contains(_pointer),attention:true,seconds:_animationTime,scale:.46f);
-        if(last)_ui.Button(GuideAction,GuideMessages.Text(_guideBriefing.OfficeNode>=0?"officeButton":"cardsButton"),Accent,.52f);
-        _ui.Button(GuideSkip,GuideMessages.Text("skip"),Muted,.4f);
+        float light=.35f+.65f*(1+MathF.Sin(_animationTime*3))/2;
+        _ui.Box(new(1331,341,18,18),new Color(20,55,38));
+        _ui.Box(new(1334,344,12,12),Color.Lerp(new Color(35,105,63),new Color(170,255,186),light));
     }
-    private Texture2D LoadGuideImage(string name)
+    private bool GuideVisible=>_guideBriefing!=null && ReferenceEquals(_guideWorld,_setup);
+    private void DrawGuideScene()
+    {
+        // An HUD scene: scenery is limited to the left third, the right remains a live globe.
+        DrawSpaceBackdrop(new(0,0,1920,1080));
+        var node=_setup.Nodes.Current(_guideRuler)??_setup.Nodes.All.FirstOrDefault(n=>n.Cell==_setup.ConquerorLocations[_guideRuler]);
+        {
+            int cell=_setup.ConquerorLocations[_guideRuler];
+            int kind=node!=null?NodeSupervisors.For(node,_setup.Cells[node.Cell].Face):_setup.Cells[cell].Face is 2 or 3?8:_setup.Routes.Terrain(cell,_setup.ConquerorPoints[_guideRuler])==TravelTerrain.Sea?5:3;
+            if(kind!=_guideSceneryKind){_guideScenery?.Dispose();_guideScenery=LoadGuideImage("background-"+NodeSupervisors.Kinds[kind]+"-v001.png");_guideSceneryKind=kind;}
+            var area=new Rectangle(0,0,640,1080);
+            _spriteBatch.Draw(_guideScenery,area,PortraitRenderer.FitSource(new(0,0,_guideScenery.Width,_guideScenery.Height),area),Color.White);
+        }
+        var canvas=CanvasBounds();var viewport=GraphicsDevice.Viewport;
+        var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
+        _spriteBatch.End();GraphicsDevice.Viewport=OrientationViewport(new(960,170,920,850),canvas);
+        _world.SelectionSetup=_setup;_world.DaylightWorld=_setup;
+        _world.DawnMeridian=WorldDayCycle.DawnPhase(_setup,_guideRuler);
+        _world.Draw(_yaw,_pitch,_animationTime,false,true);
+        GraphicsDevice.Viewport=viewport;_spriteBatch.Begin(transformMatrix:transform);
+        DrawGuide();
+    }
+    private void EnsureGuideBalloon()
+    {
+        if(_guideBalloon!=null)return;
+        const int width=1380,height=420;var pixels=new Color[width*height];
+        static float Cross(Vector2 a,Vector2 b)=>a.X*b.Y-a.Y*b.X;
+        var a=new Vector2(15,270);var b=new Vector2(220,185);var c=new Vector2(240,300);
+        for(int y=0;y<height;y++)for(int x=0;x<width;x++){
+            float dx=(x-750)/620f,dy=(y-200)/190f;float edge=(1-dx*dx-dy*dy)*150;
+            var p=new Vector2(x,y);bool tail=Cross(b-a,p-a)>=0&&Cross(c-b,p-b)>=0&&Cross(a-c,p-c)>=0;
+            float alpha=tail?1:Math.Clamp(edge,0,1);pixels[y*width+x]=new Color(255,253,247)*alpha;
+        }
+        _guideBalloon=new Texture2D(GraphicsDevice,width,height);_guideBalloon.SetData(pixels);
+    }    private Texture2D LoadGuideImage(string name)
     {
         using var file=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Guides",name));
         var image=Texture2D.FromStream(GraphicsDevice,file);
@@ -101,5 +141,5 @@ public partial class Game1
         }
         _guidePortrait.SetData(pixels);
     }
-    private void DisposeGuide(){_guidePortrait?.Dispose();_guideNameplate?.Dispose();}
+    private void DisposeGuide(){_guidePortrait?.Dispose();_guideNameplate?.Dispose();_guideBalloon?.Dispose();_guideScenery?.Dispose();}
 }

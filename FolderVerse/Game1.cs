@@ -627,6 +627,7 @@ public partial class Game1 : Game
     }
     private void DrawStatusUi()
     {
+        if(GuideVisible){DrawGuideScene();return;}
         // Settings use the normal full-canvas logo background without the map
         // or action buttons showing through the transparent content area.
         if(_countrySettingsOpen)return;
@@ -877,6 +878,7 @@ public partial class Game1 : Game
         if(_screen==Screen.Title)_spriteBatch.Draw(_titleScreen,canvas,Color.White); _spriteBatch.End();
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         if(_conquestOverview && _conquestStage<8){DrawConquestOverview(canvas,transform,viewport);if(_demoActive || AutomaticGame)DrawDemoOverlay(transform);DrawAutoSaveNotice(canvas,transform);DrawFullscreenCursor();base.Draw(gameTime);return;}
+        if(IsStatusScreen && GuideVisible){_spriteBatch.Begin(transformMatrix:transform);DrawGuideScene();_spriteBatch.End();DrawFullscreenCursor();LogDisplayedScreen();base.Draw(gameTime);return;}
         if(_screen==Screen.Title){_spriteBatch.Begin(transformMatrix:transform);DrawTitleStartMenu();_spriteBatch.End();}
         if(_screen!=Screen.Title)
         {
