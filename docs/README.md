@@ -1,5 +1,7 @@
 # ドキュメント案内
 
+- [v0.13.0 リリースノート](dev/release-v0.13.0.md)
+
 - [最終処分場・解体・スクラップ](設計/最終処分場とスクラップ.md) / [実装と検証](dev/final-disposal.md)
 - [FRR：戦力更新力の解析方針](dev/analysis/force-renewal-rate.md)
 
@@ -13,7 +15,7 @@
 
 [リポジトリーのトップ](../README.md)
 
-遊ぶ・調べる場合は、[v0.12.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.12.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
+遊ぶ・調べる場合は、[v0.13.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.13.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
 
 | 読みたい内容 | 入口 |
 | --- | --- |
