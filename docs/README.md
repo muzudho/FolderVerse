@@ -44,3 +44,7 @@
 - [運否天賦の共有初期在庫・円グラフと分布](dev/initial-stock.md)
 
 - [朝刊・新聞フェーズ：各国視点の記事と玩具ポスト](dev/turn-newspaper.md)
+
+- [ガイド名の元ネタと生成器](dev/guide-names.md)
+
+- [内政開始時のガイド・台詞の編集](dev/guide-runtime.md)

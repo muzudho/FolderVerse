@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -12,6 +13,14 @@ foreach(var path in Sources(root).Concat(args.Skip(1).Where(arg=>arg!="--update"
     Collect(tree.GetRoot(),uses,path);
     foreach(var call in tree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>())
         if(call.Expression is MemberAccessExpressionSyntax member && member.Expression is IdentifierNameSyntax name && name.Identifier.ValueText=="_counter" && member.Name.Identifier.ValueText=="DrawText" && call.ArgumentList.Arguments.Count>1)Collect(call.ArgumentList.Arguments[1],counterUses,path);
+}
+foreach(var source in args.Where(arg=>arg!="--update")){
+    string directory=Path.Combine(Path.GetFullPath(source),"Messages");
+    if(!Directory.Exists(directory))continue;
+    foreach(var path in Directory.EnumerateFiles(directory,"*.json",SearchOption.AllDirectories)){
+        using var json=JsonDocument.Parse(File.ReadAllText(path));
+        CollectJson(json.RootElement,uses,path);
+    }
 }
 // Counter font accepts numeric formatted values as well as the source literals at its call sites.
 foreach(char c in "0123456789%.")counterUses.TryAdd(c,("numeric counter contract",1));
@@ -34,6 +43,11 @@ static IEnumerable<string> Sources(string root){
         if(new[]{"bin","obj",".git"}.Contains(Path.GetFileName(directory),StringComparer.OrdinalIgnoreCase))continue;
         foreach(var file in Sources(directory))yield return file;
     }
+}
+static void CollectJson(JsonElement value,SortedDictionary<char,(string File,int Line)> uses,string path){
+    if(value.ValueKind==JsonValueKind.String){foreach(char c in value.GetString()??"")if(!char.IsControl(c))uses.TryAdd(c,(path,1));}
+    else if(value.ValueKind==JsonValueKind.Array){foreach(var child in value.EnumerateArray())CollectJson(child,uses,path);}
+    else if(value.ValueKind==JsonValueKind.Object){foreach(var property in value.EnumerateObject())CollectJson(property.Value,uses,path);}
 }
 static void Collect(SyntaxNode root,SortedDictionary<char,(string File,int Line)> uses,string file,int lineOffset=0){
     foreach(var token in root.DescendantTokens()){
@@ -76,5 +90,6 @@ static void SelfTest(){
     Check(Missing(uses,font).Contains('単'),"Missing static glyphs must fail even if a fallback exists");
     foreach(char c in uses.Keys)font.Descendants("CharacterRegions").Single().Add(new XElement("CharacterRegion",new XElement("Start",c),new XElement("End",c)));
     Check(Missing(uses,font).Length==0,"Registered glyphs must pass");
+    using(var json=JsonDocument.Parse("{\"page\":[\"嬢険\"]}")){CollectJson(json.RootElement,uses,"messages.json");Check(uses.ContainsKey('嬢')&&uses.ContainsKey('険'),"JSON message text must be checked");}
     Console.WriteLine("PASS: regular/escaped/verbatim/raw/interpolated/char syntax, comment exclusion, strict missing-glyph detection and registration.");
 }
