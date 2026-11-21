@@ -6,12 +6,15 @@ using Microsoft.Xna.Framework;
 
 public partial class Game1
 {
+    private bool TutorialCanPocketRobot=>_setup.Nodes.Current(_setup.PlayerSlot) is { } node &&
+        _setup.Robots.Nodes[node.Id].Robots.Any(robot=>PocketRobotSelectable(robot,true));
+
     // Derive guidance from live input state; never keep a stale screen coordinate.
     private IEnumerable<Rectangle> TutorialActionTargets()
     {
         if(!TutorialReviewAvailable || _autoPlay || _demoActive || _conquestOverview || _tutorialMessagesOpen || _statusMenuOpen)return Array.Empty<Rectangle>();
         if(_tutorialAttackGuide)return new[]{new Rectangle(1360,730,400,60)};
-        if(_screen==Screen.Pocket && !_tutorialAttackGuide && _tutorialGuideClosing<0) return _setup.TutorialPocketed?new[]{InactiveBack}:new[]{PocketViewport(1),PocketViewport(0)};
+        if(_screen==Screen.Pocket && !_tutorialAttackGuide && _tutorialGuideClosing<0) return _setup.TutorialPocketed || !TutorialCanPocketRobot?new[]{InactiveBack}:new[]{PocketViewport(1),PocketViewport(0)};
         if(!IsStatusScreen || _tutorialGuideClosing>=0 || _tutorialChromeSlide>0 || _tutorialAchievementAge>=0 ||
             _homePersuasionActive || _lastCutInPhase!=PlanningPhaseLabel || _animationTime-_cutInStarted<PhaseCutInSeconds ||
             MapTransitionActive || _net.IsAnimating || _nodeInspectorClosing)return Array.Empty<Rectangle>();
@@ -37,7 +40,7 @@ public partial class Game1
                 if(_setup.Campaign.PlannedOrders.Any(order=>order.Peaceful && order.Ruler==0))
                     return InspectorVisible?new[]{InspectorClose}:new[]{PrimaryActionBounds(1)};
                 if(!_reignView)return InspectorVisible?new[]{InspectorClose}:new[]{StrategyToggle};
-                return new[]{InspectorScreenBounds(_setup.TutorialPocketed?MovementButton:PocketButton)};
+                return new[]{InspectorScreenBounds(_setup.TutorialPocketed || !TutorialCanPocketRobot?MovementButton:PocketButton)};
             }
             return _setup.TutorialCompletionShown && !InspectorVisible?new[]{StatusMenuButton}:Array.Empty<Rectangle>();
         }

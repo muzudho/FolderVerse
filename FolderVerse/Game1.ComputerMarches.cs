@@ -118,7 +118,7 @@ public partial class Game1
             case 2:
                 if(order.Peaceful)
                 {
-                    _computerWarClick=ConfirmMoveButton.Center;
+                    _computerWarClick=InspectorScreenBounds(ConfirmMoveButton).Center;
                     MovementClick(_computerWarClick,new KeyboardState());
                     if(_movementOpen)break;
                     _computerWarStage=6;
