@@ -59,3 +59,6 @@ NAS `archives/diagnostics/production-progress-2026-11-21` に25項目のモデ�
 
 
 2026-11-21 17:47 JST スクラップで満杯の入荷待機から入荷先を変える境界11項目PASS。固定v0.13.0 A6A10CBA0EF44A9DFCA44F2697686A307D6440031A00268B80D600C05A34C73E、新規世界42/cast8/rights492471852/fortune1544938375/2CPU/25・25/ScrapRules有効由来の制御fixture。実BeginDeliveryでPP頭が『入荷待機：格納枠不足』となった後、SetIntakeTargetで元の工場へ変更→Status『入荷予約』へ更新→保存復元→実ResolveProductionIntakesで同じ製品IDが新入荷先へ１件到着、旧受取先の新着スクラップは不変、PP追加消費なし。UIはpending[0].Statusをそのまま描くコードでこの理由更新と対応、実画面操作/画素検証はしていない。NAS archives/raw-materials/blocked-intake-retarget-2026-11-21-1747、再生成tmp/delete-after-2026-11-22/raw-materials/blocked-retarget-1747。最終exit0、製品/公開物/実ゲーム/元保存/個人差分無変更、コミット・プッシュなし。次は未検証の具体的条件に進め、この待機変更を再反復しない。
+
+
+2026-11-21 18:51 JST 原料合算の途中失敗で在庫が減増しないことを５原料30項目PASS。配布v0.13.0固定A6A10CBA0EF44A9DFCA44F2697686A307D6440031A00268B80D600C05A34C73E、１格納庫のモデルfixtureに15unitsの対象原料＋別２原料各16units。対象２units入荷は１unitだけ合算すれば残りが溢れる条件でTryReceiveMaple=false、元３荷record/合計47units不変を確認。対象１unitなら合算だけで受取成功、３荷のまま合計48units。楓/スチレン/軟質ビニール/PP/シリコーンで確認、スクラップ・実配送フェーズ・保存/UIは対象外。HasMapleSpace単独の拒否と、TryReceiveMapleによる合算成功は異なるため、CPU予測はPlanningCopyでTryReceiveMapleを使う方が正確という次の検討根拠。NAS archives/raw-materials/raw-merge-rollback-2026-11-21-1851、再生成tmp/delete-after-2026-11-22/raw-materials/raw-merge-rollback-1851。exit0、製品/公開物/実ゲーム/元保存/個人差分無変更、コミット・プッシュなし。
