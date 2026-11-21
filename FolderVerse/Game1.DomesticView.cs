@@ -26,6 +26,11 @@ public partial class Game1
     private bool InspectorVisible=>_folderTreeOpen || _reignView || _regionCell>=0 || _populationCell>=0 || _movementOpen || _transportOverview || _salvagePlan;
     private bool DomesticPanelOpen=>(InspectorVisible || StratagemPanelActive) && !_nodeInspectorClosing;
     private int NodeInspectorOffset=>(int)MathF.Round(-960*(1-_domesticSlide)+306*_domesticSlide);
+    private Rectangle InspectorScreenBounds(Rectangle bounds)
+    {
+        bounds.X+=NodeInspectorOffset;
+        return bounds;
+    }
     private Rectangle NodeInspectorBounds=>new(54+NodeInspectorOffset,150,850,825);
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);

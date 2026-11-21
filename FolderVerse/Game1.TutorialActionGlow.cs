@@ -32,12 +32,12 @@ public partial class Game1
             if(_setup.TutorialPocketCourse && !_setup.TutorialCompletionShown){
                 if(_movementOpen){
                     if(_selectedMoveNode<0)return Array.Empty<Rectangle>();
-                    var confirm=ConfirmMoveButton;confirm.X+=NodeInspectorOffset;return new[]{confirm};
+                    return new[]{InspectorScreenBounds(ConfirmMoveButton)};
                 }
                 if(_setup.Campaign.PlannedOrders.Any(order=>order.Peaceful && order.Ruler==0))
                     return InspectorVisible?new[]{InspectorClose}:new[]{PrimaryActionBounds(1)};
                 if(!_reignView)return InspectorVisible?new[]{InspectorClose}:new[]{StrategyToggle};
-                var next=_setup.TutorialPocketed?MovementButton:PocketButton;next.X+=NodeInspectorOffset;return new[]{next};
+                return new[]{InspectorScreenBounds(_setup.TutorialPocketed?MovementButton:PocketButton)};
             }
             return _setup.TutorialCompletionShown && !InspectorVisible?new[]{StatusMenuButton}:Array.Empty<Rectangle>();
         }

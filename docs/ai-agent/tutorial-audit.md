@@ -1429,3 +1429,32 @@
 - Game1.AutoSave.cs:14はLocalApplicationData/FolderVerse/autosave.json.gzを既定とするため、Cの通常ゲームDLLをそのまま起動しても通常セーブの分離にならないことを確認。次回は製品無変更の独立ランチャーで保存先/勲章/ログを分離してから、START→遊び方のOS入力を行う。今回の通し操作は未確認、新TUT/ゲーム変更なし。既存C出力と点検済み条件を再利用し増殖を避ける。コミット・プッシュ・公開なし。終了JST：2026-11-21 02:10:21.049169
 
 - 2026-11-21 02:30 点検開始：指示/HEADfdc107c6/製品差分不変。Cのartifacts/tutorial-audit/OsTutorialへ製品無変更の独立ランチャーを作成。LoadContent前は通常セーブ/勲章読込を無効、後はexe隣のos-audit-save.gz/achievementsへ切替、統計無効、操作ログもCのexe隣。通常UI/OS入力を使い、300秒実時間watchdogで自分の検証だけ終了。C共用出力へビルド600秒、os-build.log。製品コード/通常セーブは変更しない。
+
+- 2026-11-21 05:31 点検回：開始05:31:51 JST、HEAD5e19a288f04a598b8523a605cf77119c8e8da164。AGENTS/READMEハッシュ不変、前回fdc107c6からの大幅改造と利用者個人資料の編集中を保護。旧HEADの成功を流用せずTutorialPlanetMenuUiをC共用出力で再ビルド。PID704、05:32:17–23、上限600秒exit0/警告0/エラー0。実行PID28124、05:32:35–49、上限300秒exit3762504530。入口７星/未制作５星のマウス・Enter起動抑止、発光の適用条件・明暗描画はPASS後、プリマプラナ最初の目標クリックで予約なしとして停止。
+- tests/TutorialPlanetMenuUi/Program.csに任意FOLDERVERSE_TUTORIAL_MENU_PROBEログのみ追加し切り分け。再ビルドPID12444、05:34:10–15 exit0、再実行PID24964、05:34:28–42 exit3762504530。全上限600/300秒内、TIMEOUTなし・終了回収済み。C共用ログnew-head-menu-build.log/new-head-menu-run.log/new-head-menu-probe-build.log/new-head-menu-probe-run.log。
+- 前クリックはturn0/target1/(1841,736)/net.HitNode=1/war=true/movement=true/slide1、後selected=-1/orders0。新NetButton(2)は(1734,708,166,50)で当該点を覆い、診断は地図のヒットだけでUI被覆を検査せず地点を決めている。これだけで製品の地点選択不具合と確定せず「要再確認」。新TUT番号なし。プリマプラナ征服/最終復帰は新HEAD未確認。次回は通常の地図パン/別の見えている敵地点選択と描画・入力優先順位を照合し、診断の選点不足と自然操作の障害を区別する。OS入力通しも未確認。ゲームコード変更なし、テストは任意ログのみ、HEAD前後不変、コミット・プッシュ・公開なし。終了JST：2026-11-21 05:35:41.759469
+
+- 2026-11-21 05:35 改善回：開始05:35:51 JST、診断修正完了。対象は05:31完了済み点検のプリマプラナ診断選点不足（製品TUT番号なし）。HEAD5e19a288/指示ハッシュ不変。変更はtests/TutorialPlanetMenuUi/Program.csのみ。敵地点候補を実MapViewBounds・実HitNode・実NetButton1–4の矩形で照合し、被覆された場合は通常HandleInputの右ドラッグで120pxずつ最大4回地図をパンしてから選択。製品UI/兵力/AI判断は変更しない。
+- 被覆除外だけの初回ビルドPID31020、05:36:46–50 exit0、実行PID20764、05:37:03–17 exit3762504530（見える候補なし）。通常パン追加後のビルドPID20944、05:38:29–34 exit0/警告0/エラー0、実行PID13132、05:38:47–53 exit0。ビルド600秒/UI300秒上限内、TIMEOUTなし・全終了回収済み。C共用folderverse-audit内menu-visible-build.log/menu-visible-run.log/menu-pan-build.log/menu-pan-run.log。diff --check成功。
+- 通常パン後は最初の敵地点1が(1721,736)でヒットしselected1/orders1、次ターン地点2も(1505,736)でselected2/orders1。２回の即予約と戦闘でプリマプラナ世界征服、終了後のタイトル/開始メニュー復帰までPASS。入口７星/未制作５星/発光条件もPASS。05:31の要再確認は診断のUI被覆未考慮として解消し、製品不具合とは登録しない。
+- 固定fixtureの通常入力関数を使う回帰であり、OS実入力通し・新プレイヤーがパンを発見できるかの学習性評価・全Seedは未確認。新HEADのプチステラ全制覇も別途未確認。利用者個人資料差分と通常セーブを保護。ゲームコード変更・コミット・プッシュ・公開なし。終了JST：2026-11-21 05:39:36.225189
+
+- 2026-11-21 05:52 点検開始：AGENTS/READMEハッシュ・HEAD5e19a288・差分・最新記録確認。DEMO-0029共有UI修正は05:49完了し検証終了回収済み。現行HEAD+同修正で未確認のプチステラ通しをTutorialWarGuidesUiで補完する。seed5、追加最大24ターン、追加開戦/採用/地域優先、弱体化なし。通常セーブと勲章を分離。C共用folderverse-audit（NAS無応答/D容量制約、保持11/22）へビルド600秒・UI300秒、ログtutorial-new-build.log/tutorial-new-run.log。STARTからのOS実入力通しではなく固定fixture診断。ゲーム変更なし。
+
+- 05:53 結果：ビルドPID8092、05:52:01–06、上限600秒exit0。実行PID29552、05:52:19–37、上限300秒exit3762504530、TIMEOUTなし・終了回収済み。案内22/20、６体の通常入力選択・出撃即予約、陣営終了→配送→戦闘→結果→地図復帰とポケット案内4まで通過。現行初期Seedはworld726643723/cast610783965/placement564707973。
+- Program.cs:170の「現在地からポケットに入れるロボットをFirstで探す」で候補なし。描画を目視し現在地Point14の格納庫0/12・ポケット0/12を確認。初回出撃で６体全員を出したため、固定診断のポケット先行前提は現行製造仕様で成立しない。案内4には「どちらが先でも大丈夫」と移動先行も明記されているため、これだけで製品の進行不能とは判定せず要再確認・新TUTなし。追加兵力を注入せず、次回は案内に沿って移動先行→実在庫地点でポケットの経路か、出撃選択で一部を残す経路を確認する。
+- 証拠C作業領域artifacts/tutorial-audit/pocket-empty-5e19a288.png（実描画1920×1080）。今回の移動/最終制覇/完了・勲章・タイトル復帰は未確認で、旧HEADの成功を流用しない。STARTからのOS入力と残る５星の新しい実操作も未実施（05:39の現HEAD入口診断成功は別条件）。HEAD前後5e19a288不変、05:49共有UI修正以外のゲーム/診断変更なし。点検範囲完了、通し検証は上記で中断。通常セーブ/利用者差分保護、コミット・プッシュ・公開なし。終了2026-11-21 05:54 JST。
+
+- 2026-11-21 05:56 改善開始：05:52完了点検の診断前提不足を対象。HEAD5e19a288・指示ハッシュ・差分不変、先行診断終了済み。tests/TutorialWarGuidesUi/Program.csの初回通常出撃選択で現存兵力を一体残し、後続ポケット学習に使用する。追加兵力/敵弱体化/製品変更なし。旧全員出撃の空在庫条件は未解消扱いを維持。C共用出力でビルド600秒/UI300秒、ログtutorial-keep-build.log/tutorial-keep-run.log、seed5/24ターン/追加開戦・採用・地域優先、OS入力通しとは区別。
+
+- 改善結果完了2026-11-21 05:57 JST（製品TUT番号なし、診断前提の改善）。ビルド：dotnet build tests/TutorialWarGuidesUi/TutorialWarGuidesUi.csproj --artifacts-path C共用folderverse-audit -p:UseAppHost=false、PID16664、05:56:02–07、上限600秒exit0/警告0/エラー0。実行：dotnet 同出力/bin/TutorialWarGuidesUi/debug/TutorialWarGuidesUi.dll、PID30140、05:56:20–34、上限300秒exit0、TIMEOUTなし・終了回収済み。条件は開始記録どおり、Content同出力FolderVerse/debug/Content、ALSOFT_DRIVERS=null。
+- 一体を残す通常出撃選択から戦闘→ポケットの通常ドラッグ→移動予約/実行→追加開戦・採用を経てturn10で６地域制覇、自動Ending/勝者0/征服勲章true、学習勲章保存・タイトル復帰までPASS。HEAD前後5e19a288不変、diag diff --check成功。敵弱体化・兵力追加なし。
+- Ending画像1920×1080を目視し、世界征服者/6 sectors/ゲームへ戻る・終了してタイトルへ戻る表示を確認。C作業領域artifacts/tutorial-audit/ending-5e19a288.png、SHA256 f129baabf08e982072cc2fc2bf474d154d78847c765954fea420a01f3d163bca。NAS復旧後は参照/ハッシュ確認して移行。空在庫証拠pocket-empty-5e19a288.pngのSHA256 f63020ea83fe5ab9d240ab78bfe2b9473f7ec39731245d1a574f9e1d773deddd。
+- 05:52の失敗は兵力全員出撃を前提にした診断として切り分け。全員出撃後の移動先行経路・初心者への空在庫時の説明の十分さは未確認を維持し、正常扱いしない。STARTからOS実入力通し・全Seed・新３仕様の自然学習も未確認。変更は診断２行と本記録のみ、製品変更/コミット・プッシュ・公開なし、利用者差分と通常セーブ保護。
+
+- 2026-11-21 06:10 点検回（開始06:09、終了06:12 JST、部分点検完了）：AGENTS/READMEハッシュ・HEAD5e19a288・差分/最新記録照合、先行共有UI診断終了済み。05:57プチステラ成功条件は反復せず、新３仕様の対象条件を確認。Game1.Stratagems.cs:22のStratagemInterfaceはTutorialStep==0かつ非Demo/非AUTOを条件にするため、現行チュートリアルでは通常手動計略カードは対象外。これは仕様条件として記録し、未実装の案内を推測で追加しない。
+- RawMaterialsはOffshoreRawSupplyEnabled/OffshoreUsesSeaAreaRuleを有効化しOffshoreGas→PP供給を定義。既存tests/OffshorePPFacilityのモデル診断を現行DLLで補完。dotnet build tests/OffshorePPFacility/OffshorePPFacility.csproj --artifacts-path C共用folderverse-audit -p:UseAppHost=false -p:GameDll=同出力/bin/FolderVerse/debug/FolderVerse.dll -p:RuntimeDir=同出力/bin/FolderVerse/debug、PID24300、06:11:04–05、上限600秒exit0/警告0/エラー0。dotnet 同出力/bin/OffshorePPFacility/debug/OffshorePPFacility.dll、FOLDERVERSE_PROBE_CONTENT_BASE=同出力/bin/FolderVerse/debug、PID6512、06:11:17–24、上限300秒exit0、52 PASS、TIMEOUTなし・終了回収済み。ログoffshore-model-build.log/offshore-model-run.log。
+- 海上採取の予約、１回の採取16PP・消費１回、満杯待ち/保存復帰、出荷原料保護、取消、受取製造、権限/容量待ちと重複なしをモデルで確認。施設の自然出現・実UI設置/選択/採取操作・チュートリアル案内の適否は未確認。二地点先迎撃はRobotCampaignのReliefDistances/InterceptOriginによる成立処理を確認しただけで新HEAD実行未確認。
+- C共用出力を維持（NAS無応答/D容量制約、保持11/22）、製品/診断コード変更なし。STARTからOS実入力通し、全員出撃後の移動先行、残る５星の新しい実画面操作は未実施・未確認を維持。新TUTなし。通常セーブ/利用者差分保護、コミット・プッシュ・公開なし。
+
+- 2026-11-21 06:17 改善回：06:16–06:17 JST確認完了。AGENTS/READMEハッシュ・HEAD5e19a288・現在差分と06:12完了点検を照合。新たな再現済み製品不具合なし、追加修正・同条件再ビルドなし。05:57の診断改善と06:12海上PPモデル成功はそれぞれの条件に限定し、OS実入力・空在庫時の移動先行・新仕様自然UIの未確認を維持。利用者差分/通常セーブを保護、コミット・プッシュ・公開なし。次回点検は未確認の実操作経路を優先。

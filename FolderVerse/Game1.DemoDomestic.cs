@@ -62,14 +62,14 @@ public partial class Game1
         }
         Point target=_demoDomesticStage switch
         {
-            0=>nodePoint,3=>NodeAssemblyTile.Center,
+            0=>nodePoint,3=>InspectorScreenBounds(NodeAssemblyTile).Center,
             4=>DemoAssemblySourcePoint(),
             5=>_demoEmptySlot<0?new(480,540):AssemblyCell(_demoEmptySlot).Center,
             6=>_demoEmptySlot<0?new(480,540):AssemblyPartBounds(_demoEmptySlot,1).Center,
             7=>_demoSourceSlot<0?new(480,540):AssemblyCell(_demoSourceSlot).Center,
-            8=>NodeFactoryTile.Center,9=>productionButton.Center,10=>FactoryPlanButton(0).Center,
+            8=>InspectorScreenBounds(NodeFactoryTile).Center,9=>InspectorScreenBounds(productionButton).Center,10=>InspectorScreenBounds(FactoryPlanButton(0)).Center,
             11 or 16=>InspectorClose.Center,12=>TransportOverviewButton.Center,17=>StrategyToggle.Center,
-            18=>MovementButton.Center,13=>destinationPoint,19=>PopulationTurnButton.Center,20=>NodeCheckButton.Center,_=>ConfirmMoveButton.Center
+            18=>InspectorScreenBounds(MovementButton).Center,13=>destinationPoint,19=>PopulationTurnButton.Center,20=>NodeCheckButton.Center,_=>InspectorScreenBounds(ConfirmMoveButton).Center
         };
         if(_demoSwing<=0)_demoCursor=Vector2.Lerp(_demoCursor,new(target.X,target.Y),1-MathF.Exp(-(float)elapsed*4));
         if(_hangarDrag.HasValue)_pointer=new((int)_demoCursor.X,(int)_demoCursor.Y);

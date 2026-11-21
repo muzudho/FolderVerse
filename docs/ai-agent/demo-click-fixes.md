@@ -1355,3 +1355,22 @@ DEMO-0012を完了へ更新。全Seed／人数、直送便専用Demo、利用者
 - 2026-11-20 07:03 マージ後修正回：開始07:03:36 JST、終了2026-11-20T16:07:31.3407699+09:00、確認範囲完了。既読AGENTS/READMEハッシュ不変、両記録/差分/競合確認、HEADebdda804。06:59完了済み点検は製品不変・共有矩形維持、新たな再現済み不具合なし。07:20完了済みポケット2機540p診断も個別ID・予約重複なし・赤チェック・閉じる・人間復帰PASS、新たな製品修正対象なし。07:41完了済みポケット描画目視にも新規不具合なし。08:01/08:20/08:40/09:00/09:19/09:40/09:58/10:22/10:40/11:00/11:20/11:40/12:00/12:19/12:39/13:01/13:18/13:39/13:59/14:20/14:42/15:02/15:20/15:39/16:02の完了済み変更なし静的点検も新規不具合なし。07:03/07:26/07:46/08:06/08:24/08:43/09:04/09:25/09:45/10:05/10:27/10:43/11:04/11:24/11:45/12:04/12:24/12:43/13:05/13:23/13:45/14:03/14:24/14:44/15:04/15:24/15:47/16:07の確認を集約。10:05回も指示/HEAD/関係差分不変・実行競合なし、追加の再現済み修正対象なし。09:45回もHEAD/製品差分不変・競合なし、追加修正対象なし。09:25回も製品/関係差分不変、修正対象追加なし。09:04回はHEAD/既存差分不変、残存検証なし。既存修正/診断差分は利用者のマージへ取り込まれた状態を保護。今回の製品/テスト修正・ビルド・同条件検証なし。自然直送便Demo・CPU全個別ID/全状態・ポケット専用・OS入力等の未確認は保持し、次の具体的点検で新問題が再現した場合に最小修正。コミット・プッシュ・公開なし。
 
 - 2026-11-20 21:07 修正回：開始21:07:13 JST、終了2026-11-20T21:07:49.2253702+09:00、変更確認完了。AGENTS/READMEハッシュ不変、HEADは別作業のマージでfdc107c603e216ecb8889cc0ad8222ea10503c21へ更新。既存点検/診断の6ファイル差分はマージに取り込まれ、未コミットは利用者の個人用チャット資料6行のみ。製品差分はヘッドレス入口/Runner追加とConquestOverviewの自動プレイ抑止条件削除。チュートリアル除外条件は維持。旧ebdda804での自然Demo成功は新HEADの回帰成功とは扱わない。新たな再現済み修正対象なし、製品変更・ビルドなし、起動競合なし。次回点検は自動プレイで征服概要を表示する現行仕様とDemoの復帰を現HEADで確認し、古い抑止条件へ戻さない。自然直送便/CPU全状態/OS入力は未確認保持。利用者のマージ/資料差分・通常セーブ保護、コミット・プッシュ・公開なし。
+
+## 2026-11-21 05:44 DEMO-0029 修正回
+
+- 開始05:44 JST、HEAD5e19a288。AGENTS/README/両記録/差分を確認。先行点検は完了、関連dotnet/ゲームプロセスなし。利用者個人資料と既存チュートリアル診断変更を保護。
+- 同HEAD分離診断で移動予約の不遷移を再現（PID8148、05:45:39–52、上限300秒exit3762504530、demo29-before.log）。実描画矩形への変換を共有し、Demoの内政インスペクター内ボタンと既存案内発光へ適用する。UI配置/AI判断は変えない。
+- NAS無応答・D容量不足の既存制約に従いC共用folderverse-audit出力を使用、保持期限11/22 JST。ビルド600秒、実描画診断300秒。ログdemo29-build.log/demo29-after.log。修正中。
+
+- 修正完了2026-11-21 05:49 JST。変更：Game1.DomesticView.csにInspectorScreenBoundsを共有、Game1.DemoDomestic.csの組立/工場タブ・生産品/候補・移動/確定へ適用、Game1.TutorialActionGlow.csの既存変換も共有。tests/DemoInspectorUi/Program.csは画面座標と確定予約一件を検査。UI配置・AI判断は維持。
+- dotnet build tests/DemoInspectorUi/DemoInspectorUi.csproj --artifacts-path C共用folderverse-audit -p:UseAppHost=false。PID30764 05:46:48–56、最終6540 05:48:36–41、各上限600秒exit0/警告0/エラー0。dotnet 同出力/bin/DemoInspectorUi/debug/DemoInspectorUi.dll。PID24712 05:47:08–22、最終16676 05:48:54–05:49:07、各上限300秒exit0。TIMEOUTなし・終了回収済み。Content同出力/bin/FolderVerse/debug/Content、ALSOFT_DRIVERS=null。ログdemo29-build.log/demo29-after.log/demo29-confirm-build.log/demo29-confirm-run.log。
+- 国表示→移動予約が通常入力で開く。確定カーソルも実矩形内、和平予約が正確に一件追加。移動先選択はSelectMoveNodeでfixture準備し自然地図選択通しとは区別。工場６計画の候補を開く→計画0を通常入力で選択→manufacturing=trueを1080p/540pでPASS。役場・閉じる・輸送プライマリー・人数遷移もPASS。
+- 1080pの移動/工場候補画面を目視。C作業領域artifacts/demo-click-audit/DEMO-0029-fixed-5e19a288-{8,11,23}.png保存。SHA256順：03934967716176392cbaeba5d9d8dce7f9acaf8a19188130b9038a0ece303060、933bd21dc3f9b968be9fbc4f4cc41d349a116ed380431b7ad00c95384b8a9929、dc0dc5c754e403ac385ba191f17e5c5afdcb77bc3e9bbb130c6e3d17709c79c9。NAS復旧後は参照/ハッシュ確認して移行。
+- HEAD前後5e19a288不変。４コード/診断ファイルのgit diff --check成功。DEMO-0029完了。OS実入力・自然Demo全巡回・組立ドラッグ全分岐・CPU朝順/計略/迎撃/浮体採取の新HEAD全経路は未確認。通常セーブ/利用者差分保護、コミット・プッシュ・公開なし。
+
+- 2026-11-21 06:06 修正回の切り分け（完了06:09 JST）：AGENTS/READMEハッシュ・HEAD5e19a288・両記録/差分照合、先行診断終了済み。06:02要再確認のDirectDeliveryUiへFOLDERVERSE_DIRECT_PROBE任意ログのみ追加（tests/DirectDeliveryUi/Program.cs）。製品変更なし。
+- 同じ失敗を再現。dotnet build tests/DirectDeliveryUi/DirectDeliveryUi.csproj --artifacts-path C共用folderverse-audit -p:UseAppHost=false、上限600秒exit0。dotnet 同出力/bin/DirectDeliveryUi/debug/DirectDeliveryUi.dll、FOLDERVERSE_DIRECT_PROBE=1、Content同出力FolderVerse/debug/Content、ALSOFT_DRIVERS=null、PID20184 06:07:19–34、上限300秒exit3762504530。TIMEOUTなし、終了回収済み。ログdirect-probe-build.log/direct-probe-run.log。
+- 観測map=true/pair=false/animating=false/transition=false。実MapViewBounds=(1306,142,574,820)だが診断がFitAllするNetPanel=(1171,142,1840,820)。対象地点0は(1985.0149,638.71497)、地点3は(2004.2849,523.095)で、両方OperationPosition=false。画面外に投影されたfixtureを「トラックが必ず見える」とする前提が不適切と判明。単なる待ち時間不足ではない。
+- 製品の不具合と確定せず要再確認を維持。次回は通常のパン/画角操作で対象ルートを表示範囲へ入れた条件で後続の左右格納庫・540p連続トラックを確認する。無条件にUIの配置や描画条件を戻さない。関連コード/利用者差分/通常セーブ保護、コミット・プッシュ・公開なし。
+
+- 2026-11-21 06:25 修正回：06:24–06:25 JST確認完了。指示ハッシュ/HEAD5e19a288/関係差分不変。06:24完了点検のDirectDeliveryUiは通常入力・更新を含む任意条件で後続までPASSし、06:09の要再確認を診断の画角/更新前提として切り分け。製品の修正対象は新たに確認されていないため、ゲーム変更・重複検証なし。DEMO-0029は05:49完了を維持。自然Demo専用直送便・CPU朝順/全条件・OS実入力通しは未確認。利用者変更/通常セーブ保護、コミット・プッシュ・公開なし。

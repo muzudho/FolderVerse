@@ -4902,3 +4902,34 @@
 - 2026-11-21 02:03 結果：ポケット表示OFFの隔離診断完了。ビルドPID17192、02:01:52–59 JST、上限600秒exit0/警告0/エラー0。実行PID11436、02:02:14–20、上限300秒exit0、TIMEOUTなし・終了回収済み。C共用出力cpu-pocket-off-build.log/cpu-pocket-off.log。表示OFFで再生開始なし、player0維持/予約0/再生null、実参加307,308,309,744,745、指定744/745各1回・女王不参加をPASS。01:44途中Escapeの実参加ID列と一致。ただし全所有/在庫/勝敗状態の比較、通常完走との同HEAD同条件の全状態照合、自然Campaign.Advance経由は未確認。描画フレームは経るが表示OFFのため軍事操作の描画を確認したとは扱わない。HEAD前後fdc107c6不変、製品変更・新DEMOなし。診断の任意分岐追加のみ、通常セーブ・利用者差分保護、コミット・プッシュ・公開なし。次回は未確認の全状態照合または自然軍事経路。終了JST：2026-11-21 02:02:49.313655
 
 - 2026-11-21 02:19 点検回：開始02:19:18 JST、比較境界の静的範囲完了。指示/HEADfdc107c6/製品差分不変。Game1.CampaignPhases.csのOpenMilitaryPhaseはCampaign.BeginMilitary→Campaign.Advance(allPlanned:true,deferResolution:ShowComputerMarches)→再生なし時FinishMilitaryAdvance。表示ONの終端もGame1.ComputerMarches.cs:79で同関数を呼ぶ。02:03のOFF診断は固定注文をResolveに渡す局所検査であり、BeginMilitary/AdvanceのCPU判断・他注文生成まで含む自然経路ではないことを再確認。次回全状態比較では初期world/cast/placement/注文とBeginMilitary後の境界を揃え、各経路でFinishMilitaryAdvance後の同じ時点を比較する必要がある。追加ビルド/実操作なし、新DEMO/製品変更なし。既存成功の反復なし、自然軍事・全状態・OS入力未確認を維持。利用者差分/通常セーブ保護、コミット・プッシュ・公開なし。終了JST：2026-11-21 02:20:13.799176
+
+## 2026-11-21 05:26 新しい大幅改造の調査
+
+- 利用者の「大幅改造したので調べて」に従い、HEAD 5e19a288f04a598b8523a605cf77119c8e8da164を確認。前回fdc107c6との差は165ファイル（3999追加/381削除）。仕掛品/加工合成/再開予約、製造の段階原料消費・開始条件、朝順の受付とCPU判断順、CPU計略、左インスペクター/地図/ナビゲーション配置を優先照合。AGENTS/README不変。開始時ツリーはclean、終了時の利用者個人資料編集中を保護。旧HEADの成功を新HEADへ流用しない。
+- 旧OS入力ランチャー起動はnode_repl継続がexpiredとなり結果未取得。その後返却窓に検証ゲームなし、OsTutorialプロセスも未検出。OS入力は未実施。旧ランチャーを新HEAD実画面検証に使わない。
+
+### DEMO-0029：国インスペクター移動予約のDemoクリックが306px左にずれる（完了：2026-11-21 05:49 JST）
+
+- 再現：新HEADでtests/DemoInspectorUiをビルド/実行。役場→閉じる→輸送概要→閉じる→国表示まで進め、UpdateDomesticSlide(1f)後にDemoDomestic段階18をUpdateDemoDomestic(1.8d)で実行。
+- 期待：描画された［移動予約］の中央をクリックし、国インスペクターから移動予約へ遷移する。
+- 実際：段階18はMovementButton.Center=(377,938)のまま。NodeInspectorOffsetは全開時306となり、実描画矩形は(588,912,190,52)、中央(683,938)。MovementClickは地図外座標からoffsetを差し引くため旧位置クリックがボタンに当たらず、movement=false/reignView=trueのまま。Program.cs:87で「Demo did not open movement through the country inspector」。1920×1080。
+- 関係：Game1.DomesticView.csの新NodeInspectorOffset、Game1.DemoDomestic.csの段階18、Game1.Movement.csの入力変換。TutorialActionGlowは既にoffsetを加えており、UI配置を戻す必要はない。修正回では描画/入力と同じ変換済み矩形をDemoから参照し、インスペクター内の確定ボタン等も照合する。
+- 証拠：C作業領域artifacts/demo-click-audit/DEMO-0029-5e19a288.pngを目視、SHA256 534020b1ed586d7443993233de879b471373d4c55e6b9e4875ff22ea94c1af93（元demo-office-7.pngと一致）。NAS復旧後に参照/ハッシュ確認して移行。
+- ビルド：dotnet build tests/DemoInspectorUi/DemoInspectorUi.csproj --artifacts-path C共用folderverse-audit -p:UseAppHost=false、PID17616、05:26:33–05:27:08 JST、上限600秒exit0/警告0/エラー0。実行PID19708、05:27:31–49、上限300秒exit3762504530。両ログnew-head-inspector-build.log/new-head-inspector-run.log。TIMEOUTなし・終了回収済み。失敗以降の工場６プラン/540p回帰は未確認。
+- 仕掛品モデルは新HEAD DLLをPublishedGameとしてtests/Workpiecesをビルド、PID25432、05:27:55–57、上限600秒exit0。実行PID24836、05:29:01–29、上限300秒exit0、367 assertions PASS。ログnew-head-workpieces-build.log/new-head-workpieces-run.log。加工/回収/保存/再開等のモデル範囲であり、新UI全操作や自然プレイ全条件の保証ではない。
+- 調査範囲完了、ゲーム/テストコード変更なし。HEAD前後5e19a288不変。新HEADのチュートリアル通し・朝順CPU自然経路・新仕掛品UI全分岐は未確認。次回修正はDEMO-0029の最小修正と実描画/後続遷移、次回点検はこの未確認範囲から。通常セーブ・利用者差分保護、コミット・プッシュ・公開なし。
+End_JST=2026-11-21 05:31:15.557381
+
+- 2026-11-21 05:49 修正完了：DEMO-0029は共有InspectorScreenBoundsで現行描画位置へ追従。移動開始/確定予約一件と工場６計画の通常入力遷移を実描画診断でPASS（1080p/540p工場、移動1080p）。詳細・ログ・証拠・未確認範囲はdemo-click-fixes.mdの05:44修正回。自然全巡回やOS入力まで完了したとは扱わない。
+
+- 2026-11-21 06:00 点検開始：指示ハッシュ/HEAD5e19a288/関係差分確認。05:49修正/05:57チュートリアル診断終了済み。大幅改造後未確認のDirectDeliveryUiでプライマリー・直送便退避復帰・左右格納庫と540p地図を照合。C共用folderverse-auditを再利用（NAS無応答/D容量制約、保持11/22）、ビルド600秒/診断300秒、ログdirect-new-build.log/direct-new-run.log。固定fixtureと自然Demo専用直送便経路を区別。ゲーム変更なし。
+
+- 2026-11-21 06:02 点検結果：ビルドPID28076、05:59:53–59 JST、上限600秒exit0/警告0/エラー0。実行PID10752、06:00:12–28、上限300秒exit3762504530、TIMEOUTなし・終了回収済み。プライマリー比率・退避復帰アニメーション・移動中/非表示入力抑止・閉じる/EscapeはPASS。Program.cs:226で「Selecting direct delivery restores truck markers」に停止。
+- 再現条件：通常インスペクターを開く→NetPanelへFitAll→次フレームOpenDirectMap→描画後にtrucks.Count>0を要求。現行DrawDirectTrucksは遷移中/地図アニメーション中・MapViewBounds外のルート中点を除外する。OpenDirectMapはResetInspectorするが、この診断は更新を待たず、狭いインスペクター時のFitAll位置をそのまま使う。原因はまだ実状態ログで特定していないため「要再確認」、製品バグ採番なし。次回は実MapViewBounds/NetPanel/アニメーション状態/ルート中点を照合し、通常更新と適切な画角で復帰するか確認する。
+- 工場/移動の05:49修正済み結果とは別の条件。失敗以降の540p・連続トラック/左右切替・カメラ保持・継ぎ目描画は新HEADで未確認。先行fixture部分の成功を自然Demo専用直送便の保証にしない。HEAD5e19a288維持、ゲーム/診断コード変更なし。点検範囲完了、後続実行は中断。ログC共用direct-new-build.log/direct-new-run.logを保持。通常セーブ/利用者差分保護、コミット・プッシュ・公開なし。開始表記06:00は実ビルド開始05:59:53を含む。終了06:02 JST。
+
+- 2026-11-21 06:20 点検回（終了06:24 JST、部分範囲完了）：AGENTS/READMEハッシュ・HEAD5e19a288・差分/両記録照合。06:09要再確認の画角条件を継続点検。tests/DirectDeliveryUi/Program.csへFOLDERVERSE_DIRECT_PAN任意診断のみ追加し、OpenDirectMap後に通常HandleInputで右ドラッグ/解放と更新を最大４回送る。ゲームコード変更なし、AI/予約/地形は変更しない。
+- dotnet build tests/DirectDeliveryUi/DirectDeliveryUi.csproj --artifacts-path C共用folderverse-audit -p:UseAppHost=false、PID2980、06:22:11–18、上限600秒exit0/警告0/エラー0。dotnet 同出力/bin/DirectDeliveryUi/debug/DirectDeliveryUi.dll、DIRECT_PAN/PROBE各1、Content同出力FolderVerse/debug/Content、ALSOFT_DRIVERS=null、PID3192、06:22:30–39、上限300秒exit0。TIMEOUTなし・終了回収済み。ログdirect-pan-build.log/direct-pan-run.log、NAS/D制約と保持11/22は継続。
+- 通常入力/更新後はMapViewBounds/NetPanelとも(40,142,1840,820)、地点0=(1214.0149,638.71497)、地点3=(1233.2849,523.095)、双方visible=true、trucks=1。右ドラッグだけでなく通常更新に伴うインスペクター退避/表示範囲復帰も含むため、パン単独効果とは断定しない。従来fixtureの直接呼出/更新省略条件での失敗と切り分け、製品DEMO採番なし。
+- 後続の左右格納庫/予約維持・540p地星儀/展開図の連続トラッククリック・退避/復帰カメラ・回転した継ぎ目文字の実入力/アニメーション描画までPASS。540p左右格納庫画像を目視、C作業領域artifacts/demo-click-audit/direct-5e19a288-540.png、SHA256 0432da64910a14f8caa5801e4827e5c6dd4c195757b7b5f4172b3b50f16fa233。NAS復旧後参照/ハッシュ確認移行。
+- HEAD前後5e19a288不変。06:02の後続未確認は今回の任意条件範囲では解消。自然Demo専用直送便・CPU朝順/全条件・OS実入力通しは未確認を維持。利用者差分/通常セーブ保護、コミット・プッシュ・公開なし。次回は自然Demo/CPU未確認条件を優先し同条件反復なし。

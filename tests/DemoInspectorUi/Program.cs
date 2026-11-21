@@ -20,6 +20,7 @@ sealed class DemoInspectorChecks:Game1{
   Call("UpdateDomesticSlide",1f);
   node=(int)Get("_populationNode");Check(node>=0 && (int)Get("_inspectedNode")==node && (bool)Get("_nodeOfficeOpen"),"Demo opens the office with synchronized node and supervisor IDs");
   var font=(SpriteFont)Get("_font");Check("伏太峡渓渡谷".All(font.Characters.Contains),"Compiled font includes every previously missing static glyph");Check(font.DefaultCharacter=='?' && !font.Characters.Contains('\uE000'),"Unknown external text has an explicit fallback");Check(font.MeasureString("external \uE000").X>0,"Unknown dynamic glyph cannot throw during measurement");
+  if(Environment.GetEnvironmentVariable("FOLDERVERSE_DEMO_FACTORY_ONLY")=="1")frame=11;
  }
  protected override void Update(GameTime t){}
  bool PendingAudit=>Environment.GetEnvironmentVariable("FOLDERVERSE_PENDING_RENDER")=="1";
@@ -85,10 +86,17 @@ sealed class DemoInspectorChecks:Game1{
   if(frame==8){
    var button=(Rectangle)typeof(Game1).GetField("MovementButton",F|BindingFlags.Static)!.GetValue(null)!;
    Call("UpdateDemoDomestic",1.8d);Check((bool)Get("_movementOpen") && !(bool)Get("_reignView"),"Demo did not open movement through the country inspector");
-   Check(button.Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Movement click misses visible button");
+   Check(((Rectangle)Call("InspectorScreenBounds",button)).Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Movement click misses visible button");
   }
   if(frame==9){
    Console.WriteLine($"Demo movement follow-up: stage={Get("_demoDomesticStage")}, overview={Get("_transportOverview")}, movement={Get("_movementOpen")}");
+   var destination=((CubeNet)Get("_net")).MovementTargets.First();
+   Call("SelectMoveNode",destination);Set("_demoDomesticStage",15);Set("_demoDomesticAge",0d);
+   int orders=world.Campaign.PlannedOrders.Count;
+   Call("UpdateDemoDomestic",1.8d);
+   var confirm=(Rectangle)typeof(Game1).GetField("ConfirmMoveButton",F|BindingFlags.Static)!.GetValue(null)!;
+   Check(((Rectangle)Call("InspectorScreenBounds",confirm)).Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Demo movement confirmation misses visible button");
+   Check(!(bool)Get("_movementOpen") && world.Campaign.PlannedOrders.Count==orders+1 && world.Campaign.PlannedOrders.Any(o=>o.Peaceful && o.TargetNode==destination),"Demo movement confirmation creates exactly one peaceful reservation");
    Call("ResetInspector");Set("_screen",Enum.Parse(Get("_screen").GetType(),"PlayerCount"));
    Set("_demoActive",true);Set("_demoIntro",false);Set("_demoStepAge",0d);Call("UpdateDemo",2.99d,true,false,false,false,100d);
   }
@@ -104,12 +112,12 @@ sealed class DemoInspectorChecks:Game1{
    if((frame-11)%2==0){
     Call("ResetInspector");Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("OpenNodeInspector",node);Call("OpenNodeFactory");Call("UpdateDomesticSlide",1f);
     var line=world.Robots.Workshops[node].ProductionLines[0];line.SelectPlan(plans[step%plans.Length]);
-    var expected=(Rectangle)Call("FactoryProductionButton",0);Set("_demoDomesticStage",9);Set("_demoDomesticAge",0d);Call("UpdateDemoDomestic",1.8d);
+    var expected=(Rectangle)Call("InspectorScreenBounds",Call("FactoryProductionButton",0));Set("_demoDomesticStage",9);Set("_demoDomesticAge",0d);Call("UpdateDemoDomestic",1.8d);
     Check(expected.Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Demo factory click follows actual period and disabled production");Check((int)Get("_factoryPlanLine")==0,"Demo factory click opens plan menu through normal input");
     Console.WriteLine($"factory-plan-before={line.SelectedPlan} period={line.ProductionPeriod} click={Get("_demoClickPoint")} bounds={expected}");
    }else{
     var expected=(Rectangle)typeof(Game1).GetMethod("FactoryPlanButton",F|BindingFlags.Static)!.Invoke(null,new object[]{0})!;Set("_demoDomesticAge",0d);Call("UpdateDemoDomestic",1.8d);
-    Check(expected.Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Demo candidate click matches drawn rectangle");
+    Check(((Rectangle)Call("InspectorScreenBounds",expected)).Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Demo candidate click matches drawn rectangle");
     var line=world.Robots.Workshops[node].ProductionLines[0];Check((int)Get("_factoryPlanLine")==-1 && line.SelectedPlan==0 && line.Manufacturing,"Demo really selects plan zero and resumes production");
     Console.WriteLine($"factory-plan-after={line.SelectedPlan} manufacturing={line.Manufacturing}");
    }

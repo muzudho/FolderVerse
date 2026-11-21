@@ -30,6 +30,13 @@ sealed class PlanetMenuGame:Game1
   foreach(var mouse in new[]{release,press,release})
    Call("HandleInput",mouse,new KeyboardState(),new GameTime(TimeSpan.FromSeconds(100),TimeSpan.FromSeconds(.5)),true);
  }
+ void GamePanLeft(){
+  var area=GameBounds("MapViewBounds");var from=area.Center;var to=new Point(from.X-120,from.Y);
+  var start=MouseAt(from);var end=MouseAt(to);
+  var down=new MouseState(start.X,start.Y,0,ButtonState.Released,ButtonState.Released,ButtonState.Pressed,ButtonState.Released,ButtonState.Released);
+  var drag=new MouseState(end.X,end.Y,0,ButtonState.Released,ButtonState.Released,ButtonState.Pressed,ButtonState.Released,ButtonState.Released);
+  foreach(var mouse in new[]{start,down,drag,end})Call("HandleInput",mouse,new KeyboardState(),new GameTime(TimeSpan.FromSeconds(100),TimeSpan.FromSeconds(.5)),true);
+ }
  Rectangle[] GlowTargets()=>((IEnumerable<Rectangle>)Call("TutorialActionTargets")).ToArray();
  void ClickThroughPrimaplana(WorldSetup setup){
   Set("_tutorialAttackGuide",false);
@@ -38,8 +45,20 @@ sealed class PlanetMenuGame:Game1
    GameClick(((Rectangle)Call("PrimaryActionBounds",2)).Center);
    var targets=net.MovementTargets.Where(id=>setup.Nodes.All[id].Owner>=0 && !setup.Relations.Allied(0,setup.Nodes.All[id].Owner)).ToArray();
    Check(targets.Length>0,"An unconquered town is reachable on turn "+turn);
-   GameClick(net.NodePosition(setup,setup.Nodes.All[targets[0]],GameBounds("NetPanel")).ToPoint());
-   Check(setup.Campaign.PlannedOrders.Any(order=>order.TargetNode==targets[0] && order.Fighters>0),"Selecting a target reserves armed robots");
+   int[] VisibleTargets()=>targets.Where(id=>{
+    var point=net.NodePosition(setup,setup.Nodes.All[id],GameBounds("NetPanel")).ToPoint();
+    return GameBounds("MapViewBounds").Contains(point) && net.HitNode(setup,GameBounds("NetPanel"),point,net.MovementTargets)==id &&
+     !Enumerable.Range(1,4).Any(i=>((Rectangle)Call("NetButton",i)).Contains(point));
+   }).ToArray();
+   var visibleTargets=VisibleTargets();
+   for(int pan=0;visibleTargets.Length==0 && pan<4;pan++){GamePanLeft();visibleTargets=VisibleTargets();}
+   Check(visibleTargets.Length>0,"An enemy town has an unobscured clickable map point on turn "+turn);
+   int target=visibleTargets[0];
+   var targetPoint=net.NodePosition(setup,setup.Nodes.All[target],GameBounds("NetPanel")).ToPoint();
+   if(Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_MENU_PROBE")=="1")Console.WriteLine($"Primaplana before click turn={turn} target={target} point={targetPoint} hit={net.HitNode(setup,GameBounds("NetPanel"),targetPoint,net.MovementTargets)} screen={Get("_screen")} war={Get("_warPlanning")} movement={Get("_movementOpen")} slide={Get("_domesticSlide")}");
+   GameClick(targetPoint);
+   if(Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_MENU_PROBE")=="1")Console.WriteLine($"Primaplana after click screen={Get("_screen")} selected={Get("_selectedMoveNode")} pointer={Get("_pointer")} slide={Get("_domesticSlide")} guide={Get("_tutorialAttackGuide")} orders={setup.Campaign.PlannedOrders.Count}");
+   Check(setup.Campaign.PlannedOrders.Any(order=>order.TargetNode==target && order.Fighters>0),"Selecting a target reserves armed robots");
    Check(GlowTargets().SequenceEqual(new[]{GameBounds("InspectorClose")}),"Reservation moves guidance to inspector close");
    GameClick(GameBounds("InspectorClose").Center);
    Check(!(bool)typeof(Game1).GetProperty("InspectorVisible",F)!.GetValue(this)!, "The war inspector closed");

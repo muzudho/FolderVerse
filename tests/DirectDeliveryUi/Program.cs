@@ -222,8 +222,28 @@ class Checks:Game1{
    var trucks=(List<(Rectangle Bounds,int A,int B)>)Get("_directTrucks");
    Check(trucks.Count==0 && !(bool)Get("_directMap"),"Ordinary inspector leaves direct-delivery markers hidden");
    Call("OpenDirectMap");
+   if(Environment.GetEnvironmentVariable("FOLDERVERSE_DIRECT_PAN")=="1"){
+    var view=(Rectangle)Call("get_MapViewBounds");var canvas=(Rectangle)Call("CanvasBounds");
+    for(int step=0;step<4;step++){
+     var first=new object[]{a,Vector2.Zero};var second=new object[]{b,Vector2.Zero};
+     typeof(Game1).GetMethod("OperationPosition",F)!.Invoke(this,first);typeof(Game1).GetMethod("OperationPosition",F)!.Invoke(this,second);
+     var middle=((Vector2)first[1]+(Vector2)second[1])/2;
+     if(view.Contains(middle.ToPoint()))break;
+     var start=view.Center;var end=start+new Point((int)Math.Clamp(view.Center.X-middle.X,-180,180),0);
+     void SendPan(Point point,ButtonState right){
+      int x=canvas.X+point.X*canvas.Width/1920,y=canvas.Y+point.Y*canvas.Height/1080;
+      Call("HandleInput",new MouseState(x,y,0,ButtonState.Released,ButtonState.Released,right,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.FromSeconds(100),TimeSpan.FromSeconds(.1)),true);
+     }
+     SendPan(start,ButtonState.Released);SendPan(start,ButtonState.Pressed);SendPan(end,ButtonState.Pressed);SendPan(end,ButtonState.Released);
+    }
+   }
   }
-  if(frame==6){var trucks=(List<(Rectangle Bounds,int A,int B)>)Get("_directTrucks");Check(trucks.Count>0,"Selecting direct delivery restores truck markers");Call("DirectMapClick",trucks[0].Bounds.Center);Check((bool)Get("_directPairOpen"),"Selected overlay truck opens the pair");var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
+  if(frame==6){var trucks=(List<(Rectangle Bounds,int A,int B)>)Get("_directTrucks");
+   if(Environment.GetEnvironmentVariable("FOLDERVERSE_DIRECT_PROBE")=="1"){
+    Console.WriteLine($"Direct probe: map={Get("_directMap")} pair={Get("_directPairOpen")} bounds={Call("get_MapViewBounds")} panel={Call("get_NetPanel")} animating={((CubeNet)Get("_net")).IsAnimating} transition={Call("get_MapTransitionActive")} trucks={trucks.Count}");
+    foreach(var id in new[]{a,b}){var args=new object[]{id,Vector2.Zero};var ok=typeof(Game1).GetMethod("OperationPosition",F)!.Invoke(this,args);Console.WriteLine($"Direct node={id} position={args[1]} visible={ok}");}
+   }
+   Check(trucks.Count>0,"Selecting direct delivery restores truck markers");Call("DirectMapClick",trucks[0].Bounds.Center);Check((bool)Get("_directPairOpen"),"Selected overlay truck opens the pair");var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();}
   if(frame==7){Call("DirectPairInput",new MouseState(),false,true);Check((bool)Get("_directPairClosing"),"Back starts the reverse transition");Call("UpdateDirectPairTransition",.35f);Check(!(bool)Get("_directPairOpen") && (bool)Get("_directMap"),"Back retains the selected direct-delivery overlay");}
   if(frame==8){
    Set("_statusGlobe",true);var globe=(WorldPreview)Get("_world");globe.ManualOrientation=null;

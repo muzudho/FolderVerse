@@ -56,7 +56,8 @@ sealed class WarGuideGame:Game1
     foreach(var state in new[]{ButtonState.Released,ButtonState.Pressed,ButtonState.Released})
      Call("HandleInput",new MouseState(x,y,0,state,0,0,0,0),new KeyboardState(),time,true);
    }
-   int count=Math.Min(available.Length,18);
+   // Keep one existing robot at home for the following pocket lesson.
+   int count=Math.Min(Math.Max(1,available.Length-1),18);
    for(int slot=0;slot<count;slot++)
     Pick(((Rectangle)bounds.Invoke(null,new object[]{slot})!).Center);
    Pick(done.Center);
