@@ -1,5 +1,6 @@
 # ドキュメント案内
 
+- [v0.14.0 リリースノート](dev/release-v0.14.0.md)
 - [v0.13.0 リリースノート](dev/release-v0.13.0.md)
 
 - [最終処分場・解体・スクラップ](設計/最終処分場とスクラップ.md) / [実装と検証](dev/final-disposal.md)
@@ -15,7 +16,7 @@
 
 [リポジトリーのトップ](../README.md)
 
-遊ぶ・調べる場合は、[v0.13.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.13.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
+遊ぶ・調べる場合は、[v0.14.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.14.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
 
 | 読みたい内容 | 入口 |
 | --- | --- |
