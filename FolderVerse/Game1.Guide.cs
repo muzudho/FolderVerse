@@ -88,6 +88,7 @@ public partial class Game1
         _world.DawnMeridian=WorldDayCycle.DawnPhase(_setup,_guideRuler);
         _world.Draw(_yaw,_pitch,_animationTime,false,true);
         GraphicsDevice.Viewport=viewport;_spriteBatch.Begin(transformMatrix:transform);
+        PortraitHudLayout.DrawSplitter(_ui);
         DrawGuide();
     }
     private void DrawSpeechBalloon(Rectangle bounds)

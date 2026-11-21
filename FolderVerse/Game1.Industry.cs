@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 public partial class Game1
 {
-    private Texture2D _industrySurprise,_industryPrayer,_industryRoom;
+    private Texture2D _industrySurprise,_industryPrayer,_industryRoom,_industryWall;
     private double _industryAge,_industryIdleAge;
     private const double IndustryIdleSeconds=5;
     private float _industryStartAngle,_industryStopAngle;
@@ -83,9 +83,11 @@ public partial class Game1
     {
         if(_manufacturingActive){DrawManufacturing();return;}
         bool stopped=_industryAge>=IndustryStopSeconds;int result=_setup.Industry.Result;
-        DrawSpaceBackdrop(new(0,0,1920,1080));
+        if(_industryWall==null){using var wall=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Setup","industry-roulette-wall-v001.png"));_industryWall=Texture2D.FromStream(GraphicsDevice,wall);}
+        PortraitHudLayout.DrawMainBackground(_spriteBatch,_industryWall);
         if(_industryRoom==null){using var room=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Setup","industry-roulette-room-v001.png"));_industryRoom=Texture2D.FromStream(GraphicsDevice,room);}
         PortraitHudLayout.DrawBackground(_spriteBatch,_industryRoom);
+        PortraitHudLayout.DrawSplitter(_ui);
         _ui.Text("産業フェーズ",new(54,28),1.1f,Cream);
         if(!stopped && !ComputerExhibition)_ui.Button(IndustrySkip,"スキップ",Accent,.55f);
         var mob=_setupHost;

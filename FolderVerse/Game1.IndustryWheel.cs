@@ -76,7 +76,7 @@ public partial class Game1
     private Color[] _industryEnamelColors;
     private void DisposeIndustryWheel()
     {
-        _industryCabinet?.Dispose();_industryRoom?.Dispose();_industryRoom=null;
+        _industryCabinet?.Dispose();_industryRoom?.Dispose();_industryRoom=null;_industryWall?.Dispose();_industryWall=null;
         _industryEnamel?.Dispose();
         _industryBrass?.Dispose();
         _industryCabinet=_industryEnamel=_industryBrass=null;

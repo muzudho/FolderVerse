@@ -14,7 +14,7 @@
 | 名札の役割欄 | X=35/Y=699、58×42 |
 | 名札の名前欄 | X=102/Y=699、178×42 |
 
-背景はアスペクト比を変えず中央を切り出す。人物は背景と独立したHUD。キャラクターを背景へ焼き込まない。右側は地星儀やルーレットなど、その画面で見せたいものに使う。
+背景はアスペクト比を変えず中央を切り出す。人物は背景と独立したHUD。キャラクターを背景へ焼き込まない。右側はX=640/Y=0、1280×1080。地星儀やルーレットなど、その画面で見せたいものに使う。
 
 `src/Shared/CharacterHud/PortraitHudLayout.cs`へ寸法・背景描画・文字の縦中央揃えを集約した。文字はフォントの行送り領域ではなく、各グリフの描画範囲で中央を求める。名前のフォントサイズは前版を維持し、幅に収まらない場合は２行、行間２pxとして全体を縦中央へ置く。現時点の産業司会には固有名を追加しておらず、名札はガイドに表示する。
 
@@ -26,6 +26,11 @@
 
 ## 背景と検証
 
-ガイドは現在地の監督原画から人物を除いた14背景を使う。産業フェーズは採用済みの`Content/Images/Setup/industry-roulette-room-v001.png`を使う。原画と制作プロンプトはNAS archives/artwork/guides/backgrounds-2026-11-21-v001。
+ガイドは現在地の監督原画から人物を除いた14背景を使う。産業フェーズは左に採用済みの`Content/Images/Setup/industry-roulette-room-v001.png`、右に人物・盤なしの`industry-roulette-wall-v001.png`を使う。右に宇宙は描かない。原画と制作プロンプトはNAS archives/artwork/guides/backgrounds-2026-11-21-v001。
 
 独立描画で４ガイドと、産業ルーレットの読み上げ/回転中/０/大当たりの計８状態を生成。31モデル・素材読込・寸法検査PASS、製品ビルド警告エラー０。ガイドの名札、産業の司会・吹き出し・盤・タイマーを目視確認。証拠はNAS archives/diagnostics/portrait-hud-standard-2026-11-21、再生成ビルドはtmp/delete-after-2026-11-22/portrait-hud-standard・portrait-hud-tests。実ゲームや元セーブ、公開物は操作していない。
+## 左右の境界
+
+異なる背景同士の継ぎ目はPortraitHudLayout.DrawSplitterで覆う。X=640を中心に幅24pxの青緑・金縁の玩具テープとステッチを描き、右下に薄い影を付ける。人物・吹き出しより後ろ、背景より手前。装飾なので入力判定は持たない。現在はガイド/産業ルーレット双方へ適用。右背景もアスペクト比を保って切り出す。壁原画はbuilt-in image_genでルーレット室から盤と台座を除き制作、NAS原画とゲーム画像のSHA256を照合済み。
+
+追加検証：NAS archives/diagnostics/roulette-wall-splitter-2026-11-21。８画面の境界画素と右1280×1080寸法を含む40検査PASS、ビルド警告エラー０。tmp/delete-after-2026-11-22/roulette-wall-splitter・roulette-wall-tests・roulette-wall-assets。

@@ -71,3 +71,6 @@ NAS `archives/diagnostics/production-progress-2026-11-21` に25項目のモデ�
 
 
 2026-11-21 21:43 JST 国旗別管理人の交代相当の容量変化と原料予測を通常/中継24項目PASS。固定DLL 3B2AD06DB55D6B344677328C2392F8B01F81B609CDC5074251E373FE89E8F703。外国の同旗３部位管理人で通常５/中継８枠、PPで残枠満杯時に２部位を明示未所属へ変えた管理人へのReplaceは実体/PlanningCopy双方拒否し原料・ロボットrecord不変。原料を移した条件では通常３/中継４枠へ縮小でき、コピー上だけ３部位へ戻すと増枠し入荷可能、元格納庫の容量・原料を変えない。予約UIや実交代命令/保存/実配送は未検証、モデルの原子的な容量保護と予測独立性の確認で製品修正なし。NAS archives/raw-materials/flag-keeper-swap-capacity-2026-11-21-2143（固定DLL/ソース/結果）、tmp/delete-after-2026-11-22/raw-materials/flag-keeper-swap-2143。exit0。最新UI既定は追加/原料約12.5％に変更済みで、25・25の既存シミュレーションとは別条件として維持。元保存/実ゲーム/公開物/個人差分無変更、コミット・プッシュなし。
+
+
+2026-11-21 23:44 JST 原材料２便と確保空き１枠の境界を制御fixtureで検証、11項目PASS。固定3B2AD06DB55D6B344677328C2392F8B01F81B609CDC5074251E373FE89E8F703、新規世界1/cast2/rights492471852/fortune1544938375/2人/Materials25・25/ScrapRules有効由来。通常同旗管理人で容量5、受取側占有3＋ReservedSlots1。１便目予約true・２便目false、在庫と最初の予約は不変。取消後に別原料を再予約→保存復元→実ResolveMapleShipmentsで到着、占有4/5で１枠確保維持、未配送荷は元地点に残り追加便は拒否。CPU23:31の容量仮定誤りとは別に、製品の正常な保護を確認したもの。実UIの理由メッセージは汎用『出荷予約できません』のままで、詳細理由との対応は未検証。NAS archives/raw-materials/reserved-raw-boundary-2026-11-21-2344、tmp/delete-after-2026-11-22/raw-materials/reserved-raw-boundary-2344。準備コマンドの括弧誤りは修正して再実行、exit0。製品/実ゲーム/元保存/公開物/個人差分無変更、コミット・プッシュなし。
