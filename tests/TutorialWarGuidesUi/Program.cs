@@ -222,12 +222,12 @@ sealed class WarGuideGame:Game1
      .SelectMany(nodes=>nodes.Select(node=>(node.Id,Remaining:nodes.Count(other=>!IsInHumanFaction(other.Owner)))))
      .ToDictionary(item=>item.Id,item=>item.Remaining);
     targets=targets.OrderBy(id=>remainingByNode[id]);
-    Console.WriteLine($"Attack candidates by remaining sites: {string.Join(",",targets.Where(net.AttackHighlightTargets.Contains).Select(id=>$"{id}/{remainingByNode[id]}"))}");
+    Console.WriteLine($"Attack candidates by remaining sites: {string.Join(",",targets.Where(net.ActionTargetNodes.Contains).Select(id=>$"{id}/{remainingByNode[id]}"))}");
    }
    if(war && Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_WEAK_TARGET")=="1")
     targets=targets.OrderBy(id=>w.Robots.Nodes[id].Robots.Count(r=>r.Owner!=0 && r.Parts==RobotParts.Complete));
    foreach(int id in targets){
-    if((bool)Get("_warPlanning") && (!net.AttackHighlightTargets.Contains(id) || w.Nodes.All[id].Owner==0))continue;
+    if((bool)Get("_warPlanning") && (!net.ActionTargetNodes.Contains(id) || w.Nodes.All[id].Owner==0))continue;
     var args=new object[]{id,Vector2.Zero};
     if(!(bool)Call("OperationPosition",args)){Console.WriteLine($"Rejected id={id} point={args[1]} globe={Get("_statusGlobe")} bounds={Call("get_MapViewBounds")}");continue;}
     var point=((Vector2)args[1]).ToPoint();

@@ -1,5 +1,7 @@
 # ドキュメント案内
 
+- [地星儀・展開図：３配色、選択タイルとHUDの輪](設計/地星儀と展開図のUIルール.md)
+
 - [表示ブレーカー：18 FPSと重い表示の自動OFF](dev/display-breaker.md)
 
 - [パフォーマンス表示：FPS・処理時間の読み方](dev/performance-overlay.md)

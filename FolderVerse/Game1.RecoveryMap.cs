@@ -39,7 +39,7 @@ public partial class Game1
         if(!_recoveryGlobe){at=_recoveryNet.AnimatedNodePosition(_setup,n,RecoveryPanel);return true;}
         return _recoveryWorld.ProjectVisible(RecoverySurfacePosition(id),_setup.Cells[n.Cell].Normal,RecoveryYaw,RecoveryPitch,RecoveryPanel,out at);
     }
-    private float RecoverySpotlightRadius(int id,Vector2 center){
+    private float RecoveryHitRadius(int id,Vector2 center){
         if(!_recoveryGlobe)return Math.Max(32,_recoveryNet.Fit(RecoveryPanel).Scale*.55f);
         var n=_setup.Nodes.All[id];var cell=_setup.Cells[n.Cell];var point=RecoverySurfacePosition(id);float radius=32;
         for(int i=0;i<12;i++)foreach(float height in new[]{0f,.25f}){
@@ -53,50 +53,22 @@ public partial class Game1
         if(!_recoveryGlobe)return _recoveryNet.HitNode(_setup,RecoveryPanel,_pointer,candidates);
         int nearest=-1;float distance=float.MaxValue;
         foreach(var n in _setup.Nodes.All){if(!RecoveryMapPosition(n.Id,out var at))continue;float d=Vector2.DistanceSquared(at,_pointer.ToVector2());
-            if(d<=MathF.Pow(Math.Min(40,RecoverySpotlightRadius(n.Id,at)),2)&&d<distance){nearest=n.Id;distance=d;}}
+            if(d<=MathF.Pow(Math.Min(40,RecoveryHitRadius(n.Id,at)),2)&&d<distance){nearest=n.Id;distance=d;}}
         return candidates.Contains(nearest)?nearest:-1;
-    }
-    private void DrawRecoveryNetMask(){
-        var spans=new List<(int Left,int Right)>();
-        var ink=new Color(16,35,46)*(1-_recoveryNet.FocusBrightness);
-        for(int y=RecoveryPanel.Top;y<RecoveryPanel.Bottom;y++){
-            spans.Clear();
-            foreach(var circle in _recoveryNet.FocusCircles){
-                float dy=y+.5f-circle.Center.Y;
-                if(Math.Abs(dy)>=circle.Radius)continue;
-                float half=MathF.Sqrt(circle.Radius*circle.Radius-dy*dy);
-                int left=Math.Max(RecoveryPanel.Left,(int)MathF.Floor(circle.Center.X-half));
-                int right=Math.Min(RecoveryPanel.Right,(int)MathF.Ceiling(circle.Center.X+half));
-                if(right>left)spans.Add((left,right));
-            }
-            spans.Sort((a,b)=>a.Left.CompareTo(b.Left));int x=RecoveryPanel.Left;
-            foreach(var span in spans){
-                if(span.Right<=x)continue;
-                if(span.Left>x)_ui.Box(new(x,y,span.Left-x,1),ink);
-                x=Math.Max(x,span.Right);
-            }
-            if(x<RecoveryPanel.Right)_ui.Box(new(x,y,RecoveryPanel.Right-x,1),ink);
-        }
     }
     private void DrawRecoveryMapSurface(Rectangle canvas,Matrix transform,RasterizerState clip){
         if(_recoveryGlobe){
-            _recoveryWorld.SelectionSetup=_setup;_recoveryWorld.AttackTargetSpotlight=true;_recoveryWorld.FocusBrightness=_recoveryNet.FocusBrightness;
-            _recoveryWorld.FocusCircles.Clear();_recoveryWorld.FocusCircles.AddRange(_recoveryNet.FocusCircles);
-            _recoveryWorld.FocusCircleArea=RecoveryPanel;_recoveryWorld.FocusCircleYaw=RecoveryYaw;_recoveryWorld.FocusCirclePitch=RecoveryPitch;
+            _recoveryWorld.SelectionSetup=_setup;_recoveryWorld.DaylightWorld=_setup;
+            _recoveryWorld.DawnMeridian=WorldDayCycle.DawnPhase(_setup,_setup.PlayerSlot);
+            _recoveryWorld.HighlightTiles.Clear();_recoveryWorld.HighlightTiles.UnionWith(_recoveryNet.HighlightTiles);
             var viewport=GraphicsDevice.Viewport;GraphicsDevice.Viewport=OrientationViewport(RecoveryPanel,canvas);
-            _recoveryWorld.Draw(RecoveryYaw,RecoveryPitch,_animationTime,false,true,deferAtmosphere:true);GraphicsDevice.Viewport=viewport;
+            _recoveryWorld.Draw(RecoveryYaw,RecoveryPitch,_animationTime,false,true,deferAtmosphere:true,clip:GraphicsDevice.ScissorRectangle);GraphicsDevice.Viewport=viewport;
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
             _recoveryNet.DrawGlobeLayers(_ui,_setup,_recoveryWorld,RecoveryPanel,RecoveryYaw,RecoveryPitch,_animationTime);_spriteBatch.End();
             GraphicsDevice.Viewport=OrientationViewport(RecoveryPanel,canvas);_recoveryWorld.DrawAtmosphere(_animationTime);GraphicsDevice.Viewport=viewport;
         }else{
-            // Draw the complete map first; the selection mask is a HUD overlay, not terrain lighting.
-            bool spotlight=_recoveryNet.AttackTargetSpotlight;
-            _recoveryNet.AttackTargetSpotlight=false;
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
-            try{_recoveryNet.Draw(_ui,_setup,RecoveryPanel,-1,_animationTime,objects:false);}
-            finally{_recoveryNet.AttackTargetSpotlight=spotlight;}
-            DrawRecoveryNetMask();
-            _recoveryNet.DrawMapObjects(_ui,_setup,RecoveryPanel,_animationTime);_spriteBatch.End();
+            _recoveryNet.Draw(_ui,_setup,RecoveryPanel,-1,_animationTime);_spriteBatch.End();
         }
     }
 }

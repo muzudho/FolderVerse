@@ -38,14 +38,14 @@ sealed class InvasionUiCheck:Game1
             Call("RefreshWarTargetHighlights");var net=(CubeNet)Get("_net");var panel=(Rectangle)typeof(Game1).GetProperty("NetPanel",Flags)!.GetValue(this)!;
             net.SetCenter(world,world.Cells[home.Cell].Face);net.FitNodesAtSource(world,home,panel,8);net.Drag(new Vector2(1430,550)-net.NodePosition(world,target,panel));
             if(!(bool)Call("MovementClick",net.NodePosition(world,target,panel).ToPoint(),new Microsoft.Xna.Framework.Input.KeyboardState()) || (int)Get("_selectedMoveNode")!=target.Id)throw new Exception("Empty destination must still accept actual map clicks");
-            Call("PrepareDestinationMap");Call("UpdateNodeFocusCircle");net.HoveredNode=target.Id;
-            if(!net.MovementTargets.Contains(target.Id) || net.AttackHighlightTargets.Contains(target.Id) || net.EmphasizedNode(target.Id) || !net.NodeVisible(world,target))throw new Exception("Empty destination stays visible/clickable without emphasis");
+            Call("PrepareDestinationMap");Call("UpdateMapInteractionState");net.HoveredNode=target.Id;
+            if(!net.MovementTargets.Contains(target.Id) || net.ActionTargetNodes.Contains(target.Id) || net.EmphasizedNode(target.Id) || !net.NodeVisible(world,target))throw new Exception("Empty destination stays visible/clickable without emphasis");
             var rows=(System.Collections.IList)Get("_invasionSources");if(rows.Count==0 || ((Robot[])Call("InvasionRobots",rows[0]!)).Length!=0)throw new Exception("Empty sortie source must remain inspectable");Call("OpenInvasionPicker",0);
         }
         if(Environment.GetCommandLineArgs().Contains("--local-attack")){
             world.Campaign.Reset();world.Campaign.FinishDomestic(world);world.Campaign.BeginMilitary();world.ConquerorLocations[0]=target.Cell;world.ConquerorPoints[0]=target.Center;foreach(var r in world.Robots.Retinues[0].Robots.ToArray())world.Robots.Retinues[0].Remove(r.Id);
             Call("OpenWarPlanning");var net=(CubeNet)Get("_net");
-            if(!net.MovementTargets.Contains(target.Id) || !net.AttackHighlightTargets.Contains(target.Id) || net.HoverSuppressedNode==target.Id)throw new Exception("Hostile current node must be selectable and highlighted even with empty pocket");
+            if(!net.MovementTargets.Contains(target.Id) || !net.ActionTargetNodes.Contains(target.Id) || net.HoverSuppressedNode==target.Id)throw new Exception("Hostile current node must be selectable and highlighted even with empty pocket");
             Call("SelectMoveNode",target.Id);var rows=(System.Collections.IList)Get("_invasionSources");int queen=Enumerable.Range(0,rows.Count).Single(i=>(bool)rows[i]!.GetType().GetField("Queen")!.GetValue(rows[i])! && (int)rows[i]!.GetType().GetField("Owner")!.GetValue(rows[i])! ==0);Call("OpenInvasionPicker",queen);
             Set("_pointer",new Point(450,730));Call("InvasionPickerInput",true,false);
         }
@@ -68,14 +68,14 @@ sealed class InvasionUiCheck:Game1
             if(EmptySortie && frame==1){
                 Set("_invasionPicker",-1);foreach(var entry in emptySortieStores)foreach(var robot in entry.Robots)entry.Store.Add(robot);
                 Call("RefreshWarTargetHighlights");var net=(CubeNet)Get("_net");net.HoveredNode=target.Id;
-                if(!net.AttackHighlightTargets.Contains(target.Id) || !net.EmphasizedNode(target.Id))throw new Exception("Restoring robots refreshes emphasis without closing war planning");
+                if(!net.ActionTargetNodes.Contains(target.Id) || !net.EmphasizedNode(target.Id))throw new Exception("Restoring robots refreshes emphasis without closing war planning");
             }
 
             if(frame==0 && Environment.GetCommandLineArgs().Contains("--war-targets")){
-                var net=(CubeNet)Get("_net");var globe=(WorldPreview)Get("_world");Call("PrepareDestinationMap");Call("UpdateNodeFocusCircle");
-                if(!net.AttackTargetSpotlight || !globe.AttackTargetSpotlight || net.FocusBrightness!=.65f)throw new Exception("War spotlight begins before choosing a target at 65% brightness");
+                var net=(CubeNet)Get("_net");var globe=(WorldPreview)Get("_world");Call("PrepareDestinationMap");Call("UpdateMapInteractionState");
+                if(!net.RestrictNodeActions || !globe.RestrictNodeActions || net.FocusBrightness!=.65f)throw new Exception("War spotlight begins before choosing a target at 65% brightness");
                 foreach(var node in world.Nodes.All){
-                    bool attackable=net.AttackHighlightTargets.Contains(node.Id);net.HoveredNode=node.Id;
+                    bool attackable=net.ActionTargetNodes.Contains(node.Id);net.HoveredNode=node.Id;
                     if(net.EmphasizedNode(node.Id)!=attackable || net.DimNode(node.Id)==attackable)throw new Exception("Only attackable nodes can hover-emphasize and stay bright");
                     var white=net.NodeTint(node.Id,Color.White);if(attackable?white!=Color.White:Math.Abs(white.R-166)>1)throw new Exception("Non-target node tint must be 35% darker");
                     if(!net.NodeVisible(world,node))throw new Exception("Non-target nodes remain visible for context");
@@ -85,20 +85,20 @@ sealed class InvasionUiCheck:Game1
             if(frame==1 && !EmptySortie){Call("SelectMoveNode",target.Id);var net=(CubeNet)Get("_net");var panel=(Rectangle)typeof(Game1).GetProperty("NetPanel",Flags)!.GetValue(this)!;net.SetCenter(world,world.Cells[home.Cell].Face);net.FitNodesAtSource(world,home,panel,8);var middle=(net.NodePosition(world,home,panel)+net.NodePosition(world,target,panel))/2;net.Drag(new Vector2(1430,550)-middle);}
             if(frame==1 && Environment.GetCommandLineArgs().Contains("--war-targets")){
                 var net=(CubeNet)Get("_net");var globe=(WorldPreview)Get("_world");
-                Call("PrepareDestinationMap");Call("UpdateNodeFocusCircle");
+                Call("PrepareDestinationMap");Call("UpdateMapInteractionState");
                 var targets=net.MovementTargets.ToArray();
                 if(targets.Length<2 || targets.Any(id=>!net.NodeVisible(world,world.Nodes.All[id])))throw new Exception("Every attackable target must remain visible after selection");
                 if(net.NodeFocus!=target.Id || globe.NodeFocus!=target.Id || net.CountryFocus!=-1 || Math.Abs(net.FocusBrightness-.65f)>.001f || net.DimNode(target.Id))throw new Exception("Selected target must have a spotlight with 35% outside dimming");
                 foreach(var source in world.Nodes.All.Where(n=>n.Owner>=0 && world.ControllerOf(n.Owner)==world.TurnPlayer && world.Campaign.RobotBattles.CanAttackFrom(world,n.Owner,n.Id,target.Id)))
                     if(!net.DimNode(source.Id))throw new Exception("Own sortie sources stay dim outside attackable target spotlight");
-                foreach(int id in net.AttackHighlightTargets)if(net.DimNode(id))throw new Exception("All attackable destinations stay bright after selection");
+                foreach(int id in net.ActionTargetNodes)if(net.DimNode(id))throw new Exception("All attackable destinations stay bright after selection");
                 net.HoveredNode=home.Id;if(net.EmphasizedNode(home.Id))throw new Exception("Own node hover stays quiet after target selection");
                 int next=targets.First(id=>id!=target.Id);
                 var panel=(Rectangle)typeof(Game1).GetProperty("NetPanel",Flags)!.GetValue(this)!;
                 net.Drag(new Vector2(1430,550)-net.NodePosition(world,world.Nodes.All[next],panel));
                 var at=net.NodePosition(world,world.Nodes.All[next],panel).ToPoint();
                 if(!(bool)Call("MovementClick",at,new Microsoft.Xna.Framework.Input.KeyboardState()) || (int)Get("_selectedMoveNode")!=next)throw new Exception("Clicking another map target must switch directly without reset");
-                Call("PrepareDestinationMap");Call("UpdateNodeFocusCircle");
+                Call("PrepareDestinationMap");Call("UpdateMapInteractionState");
                 if(net.NodeFocus!=next || globe.NodeFocus!=next || targets.Any(id=>!net.NodeVisible(world,world.Nodes.All[id])))throw new Exception("Spotlight must follow selection while keeping targets visible");
                 if(!world.Campaign.PlannedOrders.Any(o=>o.TargetNode==target.Id))throw new Exception("Switching selection must preserve confirmed reservations");
             }
@@ -148,8 +148,8 @@ sealed class InvasionUiCheck:Game1
             if(frame==21){Set("_homePersuasion",((List<DomesticPersuasion>)Get("_homePersuasion")).Where(e=>e.Before.Owner==e.Ruler).ToList());Set("_homePersuasionAge",5d);}
             if(frame==22){Call("UpdateHomePersuasion",4d,false,100d);if((bool)Get("_homePersuasionActive"))throw new Exception("Domestic persuasion did not finish");}
             if(frame==2 && Environment.GetCommandLineArgs().Contains("--war-targets")){
-                var net=(CubeNet)Get("_net");var globe=(WorldPreview)Get("_world");Set("_statusGlobe",true);Call("FocusStatusGlobe");Set("_selectedMoveNode",-1);net.SelectedTarget=-1;Call("PrepareDestinationMap");Call("UpdateNodeFocusCircle");
-                if(!globe.AttackTargetSpotlight || !net.AttackTargetSpotlight || globe.FocusBrightness!=.65f || globe.FocusCircles.Count==0)throw new Exception("Globe uses the same target spotlight before selection");
+                var net=(CubeNet)Get("_net");var globe=(WorldPreview)Get("_world");Set("_statusGlobe",true);Call("FocusStatusGlobe");Set("_selectedMoveNode",-1);net.SelectedTarget=-1;Call("PrepareDestinationMap");Call("UpdateMapInteractionState");
+                if(!net.RestrictNodeActions || net.ActionTargetNodes.Count==0)throw new Exception("Globe uses the same target spotlight before selection");
                 var area=(Rectangle)typeof(Game1).GetProperty("StatusGlobeArea",Flags)!.GetValue(this)!;
                 if(!globe.ProjectVisible(world.Routes.Position(home.Cell,home.Center),world.Cells[home.Cell].Normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),area,out var at))throw new Exception("Own-hover globe fixture is visible");
                 Set("_pointer",at.ToPoint());net.HoveredNode=home.Id;if(net.EmphasizedNode(home.Id) || !net.DimNode(home.Id))throw new Exception("Own globe node cannot be emphasized");
@@ -158,8 +158,8 @@ sealed class InvasionUiCheck:Game1
                 if(hoverPixels.Any(p=>p.A!=0))throw new Exception("Own globe hover draws no highlight brackets");
             }
             if(frame==3 && Environment.GetCommandLineArgs().Contains("--war-targets")){
-                var net=(CubeNet)Get("_net");var globe=(WorldPreview)Get("_world");Call("CloseMovement");Call("UpdateNodeFocusCircle");net.HoveredNode=home.Id;
-                if(net.AttackTargetSpotlight || globe.AttackTargetSpotlight || net.DimNode(home.Id) || !net.EmphasizedNode(home.Id))throw new Exception("Closing war planning restores ordinary own-node hover and brightness");
+                var net=(CubeNet)Get("_net");var globe=(WorldPreview)Get("_world");Call("CloseMovement");Call("UpdateMapInteractionState");net.HoveredNode=home.Id;
+                if(net.RestrictNodeActions || globe.RestrictNodeActions || net.DimNode(home.Id) || !net.EmphasizedNode(home.Id))throw new Exception("Closing war planning restores ordinary own-node hover and brightness");
             }
             Set("_lastCutInPhase",frame>=3 && !Environment.GetCommandLineArgs().Contains("--war-targets")?"戦闘フェーズ":"内政フェーズ");Set("_cutInPhase","");Set("_animationTime",frame*.2f);
             base.Draw(time);

@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 public partial class Game1
 {
-    private Texture2D _primaryActionArt;
+    private Texture2D _primaryActionArt,_guideActionArt;
     private static Rectangle PrimaryActionArtBounds(Rectangle r)=>new(r.Center.X-32,r.Y+8,64,64);
     private void DrawPrimaryActionCaption(Rectangle r,string label,Color ink){
         var text=new Rectangle(r.X+24,r.Bottom-24,r.Width-28,20);
@@ -30,6 +30,20 @@ public partial class Game1
         _=>throw new ArgumentOutOfRangeException(nameof(action))
     };
     private void DrawPrimaryActionArt(int action,Rectangle bounds,bool enabled){
+        var tint=Color.Lerp(_setup.OwnerColor(_setup.PlayerSlot),Cream,.80f)*(enabled?1:.35f);
+        if(action==-1){
+            if(_guideActionArt==null){
+                using var guideFile=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Ui","guide-welcome-neutral-v001.png"));
+                _guideActionArt=Texture2D.FromStream(GraphicsDevice,guideFile);
+                var guidePixels=new Color[_guideActionArt.Width*_guideActionArt.Height];_guideActionArt.GetData(guidePixels);
+                for(int i=0;i<guidePixels.Length;i++){
+                    var c=guidePixels[i];int gray=(int)MathF.Round((c.R*.2126f+c.G*.7152f+c.B*.0722f)*c.A/255);
+                    guidePixels[i]=new Color(gray,gray,gray,c.A);
+                }
+                _guideActionArt.SetData(guidePixels);
+            }
+            _spriteBatch.Draw(_guideActionArt,bounds,tint);return;
+        }
         if(_primaryActionArt==null){
             using var file=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Ui","primary-actions-neutral-atlas-v001.png"));
             _primaryActionArt=Texture2D.FromStream(GraphicsDevice,file);
@@ -40,7 +54,6 @@ public partial class Game1
         }
         int index=PrimaryActionArtIndex(action),width=_primaryActionArt.Width/4,height=_primaryActionArt.Height/3;
         var source=new Rectangle(index%4*width,index/4*height,width,height);
-        var tint=Color.Lerp(_setup.OwnerColor(_setup.PlayerSlot),Cream,.80f)*(enabled?1:.35f);
         _spriteBatch.Draw(_primaryActionArt,bounds,source,tint);
     }
 }

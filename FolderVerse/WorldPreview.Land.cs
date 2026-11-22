@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 public sealed partial class WorldPreview
 {
+    private readonly VertexPositionColorNormal[] _selectionVertices=new VertexPositionColorNormal[6];
     private void DrawLandBacklight(IEnumerable<SurfaceCell> selection,float time)
     {
         // Premultiplied overlay: at the trough, black at 25% leaves 75% of the terrain.

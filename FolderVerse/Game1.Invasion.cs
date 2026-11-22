@@ -63,24 +63,24 @@ public partial class Game1
     }
     private void RefreshWarTargetHighlights()
     {
-        _net.AttackHighlightTargets.Clear();
+        _net.ActionTargetNodes.Clear();
         if(!_movementOpen || !_warPlanning)return;
         // Use the picker's own eligibility rules while retaining all clickable destinations.
         foreach(var node in _setup.Nodes.All.Where(n=>PlanningFunctional(n.Id) && CanPlanRuler(n.Owner))){
             if(InvasionRobots(new(){Owner=node.Owner,Node=node.Id}).Length==0)continue;
             foreach(int target in _setup.Campaign.RobotBattles.AttackTargets(_setup,node.Owner,node.Id))
-                if(_net.MovementTargets.Contains(target))_net.AttackHighlightTargets.Add(target);
+                if(_net.MovementTargets.Contains(target))_net.ActionTargetNodes.Add(target);
         }
         foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler)){
             int source=_setup.Nodes.Current(ruler)?.Id??-1;
             if(source<0)continue;
             // A conqueror already in hostile territory can start a persuasion-only attack.
-            if(_net.MovementTargets.Contains(source) && _setup.Campaign.RobotBattles.CanSortie(_setup,ruler,source))_net.AttackHighlightTargets.Add(source);
+            if(_net.MovementTargets.Contains(source) && _setup.Campaign.RobotBattles.CanSortie(_setup,ruler,source))_net.ActionTargetNodes.Add(source);
             if(InvasionRobots(new(){Owner=ruler,Node=source,Queen=true}).Length==0)continue;
-            foreach(int target in InvasionTargets(ruler))if(_net.MovementTargets.Contains(target))_net.AttackHighlightTargets.Add(target);
+            foreach(int target in InvasionTargets(ruler))if(_net.MovementTargets.Contains(target))_net.ActionTargetNodes.Add(target);
         }
         if(ReferenceEquals(_nodeChecksWorld,_setup) && _nodeChecksTurn==_setup.Population.Turn && _warChecksByPlayer.TryGetValue(NodeCheckPlayer,out var checkedTargets))
-            _net.AttackHighlightTargets.ExceptWith(checkedTargets);
+            _net.ActionTargetNodes.ExceptWith(checkedTargets);
     }
     private IEnumerable<int> InvasionTargets(int ruler)=>_setup.Campaign.RobotBattles.AttackTargets(_setup,ruler,_setup.Nodes.Current(ruler)?.Id??-1)
         .Append(_setup.Nodes.Current(ruler)?.Id??-1).Where(id=>id>=0 && _setup.Campaign.RobotBattles.CanSortie(_setup,ruler,id)).Distinct();

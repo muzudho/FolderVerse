@@ -7,6 +7,7 @@ public sealed partial class CubeNet
     public void DrawGlobeLayers(UiPainter ui,WorldSetup setup,WorldPreview globe,Rectangle panel,float yaw,float pitch,float pulse)
     {
         using var measure=new WorldPreview.DrawCpuScope();
+        AppearanceTime=pulse;
         RefreshScenicRoutes(setup);
         var offset=setup.Terrain;
         var joinedPortals=new HashSet<(int First,int Second,Vector3 Position)>();
@@ -97,6 +98,12 @@ public sealed partial class CubeNet
             return (a,b);
         });
         DrawGlobeRobotOverflow(ui);
+        foreach(var node in setup.Nodes.All){
+            if(!NodeVisible(setup,node) || !NodeNeedsRing(node.Id))continue;
+            var cell=setup.Cells[node.Cell];var point=SiteDisplayPosition(setup,node,ResourceClearance(setup,node.Cell));
+            float relief=WorldTerrain.ReliefAt(setup,cell,point,setup.Terrain);
+            if(globe.ProjectVisible(point,cell.Normal,yaw,pitch,panel,out var at,relief))DrawNodeHud(ui,node.Id,at,24);
+        }
     }
 
     internal float MapPuckRadius(Node node,float projectedUnit)
@@ -165,10 +172,8 @@ public sealed partial class CubeNet
                 ui.Tile(center+new Vector2(0,y),new(width,1.1f),0,tint(color));
             }
         }
-        bool target = MovementTargets.Contains(node.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(node.Id));
+        bool target = MovementTargets.Contains(node.Id) && (!RestrictNodeActions || ActionTargetNodes.Contains(node.Id));
         float platformRadius=HasFacilityPlatform(node)?radius*FacilityPlatformScale:radius;
-        if (SelectedTarget==node.Id || EmphasizedNode(node.Id) || target && MathF.Sin(pulse*6)>=0)
-            Face(at+new Vector2(0,depth),platformRadius+3,SelectedTarget==node.Id || EmphasizedNode(node.Id) ? Color.White : new Color(255,219,96));
         bool civilian=HasCivilianSettlement(node);
         bool purpose=HasPurposeBuilding(node) || node.IsHarbor && node.Functional;
         if(node.IsHarbor && purpose && TryHarborFrame(setup,node,out var shore,out var seaward)){
@@ -225,9 +230,7 @@ public sealed partial class CubeNet
             ring[i] = project(position+radial*Math.Max(platformRadius,purpose?radius*GlobePurposeBuildingScale:radius)*1.32f);
         }
         bool selected = SelectedTarget==node.Id || EmphasizedNode(node.Id);
-        bool target = MovementTargets.Contains(node.Id) && (!AttackTargetSpotlight || AttackHighlightTargets.Contains(node.Id));
-        if (selected || target && MathF.Sin(pulse*6)>=0)
-            FillProjectedFace(ui,ring,tint(selected ? Color.White : new Color(255,219,96)));
+        bool target = MovementTargets.Contains(node.Id) && (!RestrictNodeActions || ActionTargetNodes.Contains(node.Id));
         if(node.IsHarbor && purpose && TryHarborFrame(setup,node,out var shore,out var seaward)){
             var across=Vector3.Cross(seaward,cell.Normal);
             var footing=HarborFooting(setup,cell,shore);

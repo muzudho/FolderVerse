@@ -647,6 +647,7 @@ public partial class Game1 : Game
         _net.InspectedNode=_populationCell>=0?_populationNode:-1;
         _net.NodeFocus=_world.NodeFocus=!_nodeInspectorClosing && _populationCell>=0?_populationNode:-1;
         int player=_setup.PlayerSlot,capital=_setup.Capitals[player];Color color=_setup.OwnerColor(player);
+        DrawSpaceBackdrop(DomesticSpaceBounds);
         if(_reignView)DrawInspector(()=>{
         int ruler=_strategyRuler>=0?_strategyRuler:_setup.PlayerSlot,rulerCapital=_setup.Capitals[ruler];Color rulerColor=_setup.OwnerColor(ruler);
         _ui.Box(new(54,150,850,825),new(27,49,62));var image=new Rectangle(212,260,518,320);
@@ -676,7 +677,7 @@ public partial class Game1 : Game
         _ui.Center("完全占領　"+fully+" sector / 地点 "+System.Linq.Enumerable.Count(_setup.Nodes.All,p=>p.Owner==ruler),new(90,820,760,32),0.6f,Cream);
         if(!StrategyReadOnly)DrawWandererPolicy();
         if(!InspectingSupervisor && !StrategyReadOnly)_ui.Button(LessonCatalogButton,"戦訓カード",Muted,.45f);
-        }); DrawSpaceBackdrop(new(MapViewBounds.X-20,142,MapViewBounds.Width+40,750));
+        });
         _ui.Text(_setup.IsPrimaplana?"プリマプラナの地図":_statusGlobe?_world.GlobeName+(_net.ShowMapSymbols?" / 経番・緯番":""):_world.GlobeName+"の展開図 / "+_setup.FaceName(_net.CenterFace)+" が中心",new(991,156),0.68f,Cream);
         int geographicFace=_setup.GeographicFace(_net.CenterFace);
         string poleAxis=_setup.PolarAxis switch {0=>"＋X（魚の頭）",2=>"＋Z（犬の頭）",_=>"＋Y（猿の頭）"};
@@ -692,7 +693,7 @@ public partial class Game1 : Game
         }
         _ui.Text("△：山頂 / 錨：港",new(1590,203),.38f,new(255,204,83));
         PrepareDestinationMap();
-        UpdateNodeFocusCircle();
+        UpdateMapInteractionState();
         var canvas=CanvasBounds();
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _spriteBatch.End();
@@ -717,7 +718,7 @@ public partial class Game1 : Game
             _world.DaylightWorld=_setup;
             _world.DawnMeridian=WorldDayCycle.DawnPhase(_setup,_setup.PlayerSlot);
             _net.DawnMeridian=_world.DawnMeridian;
-            _world.Draw(_yaw,_pitch,_animationTime,false,true,deferAtmosphere:true);
+            _world.Draw(_yaw,_pitch,_animationTime,false,true,deferAtmosphere:true,clip:OrientationClip(canvas));
             _net.HoveredBattery=_net.HitBattery(_pointer);
             _net.HoveredNode=_net.ShowRoutes?HitGlobeNode(_pointer):-1;
             if(!_reservationDirectory)_world.DrawRobotPins(_setup,_net,_yaw,_pitch,areas.Globe,_animationTime);
@@ -977,7 +978,7 @@ public partial class Game1 : Game
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){_spaceBackdrop?.Dispose();_spaceBackdrop=null;_diplomacyRoom?.Dispose();_paperKnock?.Dispose();_recoveryWorld?.Dispose();_recoveryWorld=null;_primaryActionArt?.Dispose();_primaryActionArt=null;_hangarActionArt?.Dispose();_hangarActionArt=null;DisposeIndustryWheel();_openingReadingTable?.Dispose();_openingReadingTable=null;foreach(var art in _maplePackageArt)art?.Dispose();Array.Clear(_maplePackageArt);_sectorChangeArt?.Dispose();_sectorChangeArt=null;DisposeBattleToyArt();_robotHeadTextures?.Dispose();_robotHeadTextures=null;_robotTorsoTextures?.Dispose();_robotTorsoTextures=null;_robotLegTextures?.Dispose();_robotLegTextures=null;_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeGuide();DisposeTutorialPlanets();FinishConquestOverview();DisposeBroadcastArt();_conquestScenery?.Dispose();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposePaperScenes();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_shipmentChime?.Dispose();_seaWave?.Dispose();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){_spaceBackdrop?.Dispose();_spaceBackdrop=null;_diplomacyRoom?.Dispose();_paperKnock?.Dispose();_recoveryWorld?.Dispose();_recoveryWorld=null;_primaryActionArt?.Dispose();_primaryActionArt=null;_guideActionArt?.Dispose();_guideActionArt=null;_hangarActionArt?.Dispose();_hangarActionArt=null;DisposeIndustryWheel();_openingReadingTable?.Dispose();_openingReadingTable=null;foreach(var art in _maplePackageArt)art?.Dispose();Array.Clear(_maplePackageArt);_sectorChangeArt?.Dispose();_sectorChangeArt=null;DisposeBattleToyArt();_robotHeadTextures?.Dispose();_robotHeadTextures=null;_robotTorsoTextures?.Dispose();_robotTorsoTextures=null;_robotLegTextures?.Dispose();_robotLegTextures=null;_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeGuide();DisposeTutorialPlanets();FinishConquestOverview();DisposeBroadcastArt();_conquestScenery?.Dispose();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposePaperScenes();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_shipmentChime?.Dispose();_seaWave?.Dispose();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         if(disposing){SaveBgmSettings();StopBattleMusic();StopIndustryMusic();StopEndingMusic();DisposeTitleMusic();}

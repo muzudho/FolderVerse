@@ -23,7 +23,7 @@ public sealed partial class WorldPreview
         _atmosphereEffect.Projection=_effect.Projection;
         _device.BlendState=BlendState.AlphaBlend;
         _device.DepthStencilState=DepthStencilState.DepthRead;
-        _device.RasterizerState=RasterizerState.CullNone;
+        ApplyMapClip();
 
         var half=new Vector3(Width,Height,Depth)*.5f;
         var viewTransform=_effect.World*_effect.View;

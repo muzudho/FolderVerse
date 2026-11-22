@@ -4,7 +4,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
-    private Rectangle OrientationClip(Rectangle canvas)=>new(canvas.X+(int)(MapViewBounds.X*canvas.Width/1920f),canvas.Y+(int)(MapViewBounds.Y*canvas.Height/1080f),(int)(MapViewBounds.Width*canvas.Width/1920f),(int)(MapViewBounds.Height*canvas.Height/1080f));
+    private static readonly Rectangle DomesticSpaceBounds=new(0,142,1920,750);
+    private Rectangle OrientationClip(Rectangle canvas){
+        var area=Rectangle.Intersect(MapViewBounds,DomesticSpaceBounds);
+        return new(canvas.X+(int)(area.X*canvas.Width/1920f),canvas.Y+(int)(area.Y*canvas.Height/1080f),(int)(area.Width*canvas.Width/1920f),(int)(area.Height*canvas.Height/1080f));
+    }
     private float _domesticMapLeft=55;
     private float MeasureDomesticMapLeft(){
         var basis=new Rectangle(40,142,1840,820);float left=float.PositiveInfinity;

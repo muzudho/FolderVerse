@@ -18,13 +18,13 @@ public partial class Game1
         Point target=Point.Zero;
         if(_demoDomesticStage==30){_demoWarReserved=false;target=WarButton.Center;}
         if(_demoDomesticStage==31){
-            foreach(int id in _net.AttackHighlightTargets){
+            foreach(int id in _net.ActionTargetNodes){
                 if(!OperationPosition(id,out var at))continue;var p=at.ToPoint();
                 if((_statusGlobe?HitGlobeNode(p,_net.MovementTargets):_net.HitNode(_setup,NetPanel,p,_net.MovementTargets))==id){target=p;break;}
             }
             if(target==Point.Zero){
-                if(_net.AttackHighlightTargets.Count==0){CloseNodeInspector();_demoDomesticStage=17;}
-                else FocusDemoNode(_setup.Nodes.All[_net.AttackHighlightTargets.OrderBy(id=>id).First()]);
+                if(_net.ActionTargetNodes.Count==0){CloseNodeInspector();_demoDomesticStage=17;}
+                else FocusDemoNode(_setup.Nodes.All[_net.ActionTargetNodes.OrderBy(id=>id).First()]);
                 _demoDomesticAge=0;return true;
             }
         }

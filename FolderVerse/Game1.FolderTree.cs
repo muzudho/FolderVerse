@@ -24,7 +24,7 @@ public partial class Game1
         if(_folderTreeOpen){
             _net.FolderSearchFocus=false;_net.FocusBrightness=_world.FocusBrightness=.65f;
             _net.NodeFocus=_world.NodeFocus=_net.CountryFocus=_world.CountryFocus=_net.RegionFocusCell=_world.RegionFocusCell=-1;
-            _net.FocusCircles.Clear();_world.FocusCircles.Clear();_net.FocusCircleNodes.Clear();
+            _net.EnabledNodes.Clear();
         }
         _folderTreeOpen=false;_folderTreeKind=_folderTreeId=_folderTreeOwner=-1;
     }

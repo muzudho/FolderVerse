@@ -10,6 +10,8 @@ public sealed partial class WorldPreview : IDisposable
     private const float RegionSeamInset=.018f;
     private readonly GraphicsDevice _device;
     private readonly BasicEffect _effect;
+    private RasterizerState _mapClipRasterizer;
+    private Rectangle? _activeMapClip;
     private VertexBuffer _vertices;
     private int _primitiveCount;
     private VertexBuffer _markers;
@@ -120,7 +122,7 @@ public sealed partial class WorldPreview : IDisposable
         if(opening)AddPreviewMaples(mesh,setup,offset);
         _vertices?.Dispose();
         _vertices = new VertexBuffer(_device, VertexPositionColorNormal.VertexDeclaration, mesh.Count, BufferUsage.WriteOnly);
-        _daySource=mesh.ToArray();_dayWorking=null;_dayPhases=null;_dayWasEnabled=false;_lastDawn=float.NaN;
+        _dayTileMap=null;_daySource=mesh.ToArray();_dayWorking=null;_dayPhases=null;_dayWasEnabled=false;_lastDawn=float.NaN;
         _vertices.SetData(_daySource);
         _primitiveCount = mesh.Count / 3;
     }
@@ -256,14 +258,15 @@ public sealed partial class WorldPreview : IDisposable
     }
     public void Draw(float yaw, float pitch,float glow=0,bool markers=true,bool globeView=false,Rectangle? globeFrame=null,
         IEnumerable<SurfaceCell> landSelection=null,float opacity=1,Color? solidBody=null,float? cloudTime=null,
-        bool deferAtmosphere=false,float cloudSpeedMultiplier=1)
+        bool deferAtmosphere=false,float cloudSpeedMultiplier=1,Rectangle? clip=null)
     {
         using var measure=new DrawCpuScope();
+        _activeMapClip=clip;
         ApplyDaylight();
         _device.BlendState = opacity<1?BlendState.AlphaBlend:BlendState.Opaque;
         _effect.Alpha=opacity;
         _device.DepthStencilState = DepthStencilState.Default;
-        _device.RasterizerState = RasterizerState.CullNone;
+        ApplyMapClip();
         _effect.World = globeView?GlobeOrientation(yaw,pitch):ViewOrientation(yaw,pitch);
         float radius = new Vector3(Width, Height, Depth).Length() * 0.5f + (_markers == null ? 0 : 0.4f);
         _effect.View = Matrix.CreateLookAt(new Vector3(0, 0, radius * 3.3f), Vector3.Zero, Vector3.Up);
@@ -296,7 +299,7 @@ public sealed partial class WorldPreview : IDisposable
             foreach(var pass in _effect.CurrentTechnique.Passes){pass.Apply();_device.DrawPrimitives(PrimitiveType.TriangleList,0,_highlightCount);}
             _effect.DiffuseColor=Vector3.One;_effect.LightingEnabled=true;
         }
-        if(globeView)DrawCellSelection(glow);
+
         if(landSelection!=null)DrawLandBacklight(landSelection,glow);
         if(_markers != null && markers)
         {
@@ -344,5 +347,11 @@ public sealed partial class WorldPreview : IDisposable
         screen=new(projected.X,projected.Y);
         return Vector3.Dot(facing,camera-transformed)>0 && projected.Z>=0 && projected.Z<=1;
     }
-    public void Dispose() { _atmosphereEffect?.Dispose();_whirlpoolMesh?.Dispose();_vertices?.Dispose(); _markers?.Dispose();_highlight?.Dispose(); _effect.Dispose(); }
+    private void ApplyMapClip(){
+        if(_activeMapClip is {} clip){
+            _mapClipRasterizer??=new RasterizerState{CullMode=CullMode.None,ScissorTestEnable=true};
+            _device.RasterizerState=_mapClipRasterizer;_device.ScissorRectangle=clip;
+        }else _device.RasterizerState=RasterizerState.CullNone;
+    }
+    public void Dispose() {_mapClipRasterizer?.Dispose(); _atmosphereEffect?.Dispose();_whirlpoolMesh?.Dispose();_vertices?.Dispose(); _markers?.Dispose();_highlight?.Dispose(); _effect.Dispose(); }
 }

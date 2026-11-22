@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
 public sealed partial class WorldPreview
 {
     public WorldSetup DaylightWorld {get;set;}
@@ -11,18 +10,18 @@ public sealed partial class WorldPreview
     private VertexPositionColorNormal[] _daySource,_dayWorking;
     private float[] _dayPhases;
     private float _lastDawn=float.NaN;
-    private bool _dayWasEnabled,_dayHadSpotlight;
-
+    private bool _dayWasEnabled;
+    private MapTerrainTile[] _dayTileMap;
+    private readonly HashSet<MapTerrainTile> _lastHighlightTiles=new();
+    private int _lastSelectedCell=-1;
     private void ApplyDaylight()
     {
         if(_daySource==null)return;
-        if(DaylightWorld==null){
-            if(_dayWasEnabled)_vertices.SetData(_daySource);
-            _dayWasEnabled=false;_dayHadSpotlight=false;return;
-        }
-        bool spotlight=SelectionSetup!=null && (CountryFocus>=0 || NodeFocus>=0 || AttackTargetSpotlight);
-        // Focus circles follow camera movement even when the time of day is unchanged.
-        if(_dayWasEnabled && _lastDawn==DawnMeridian && !spotlight && !_dayHadSpotlight)return;
+        var setup=DaylightWorld??SelectionSetup;
+        bool daylight=DaylightWorld!=null;
+        if(setup==null){if(_dayWasEnabled)_vertices.SetData(_daySource);_dayWasEnabled=false;return;}
+        if(_dayWasEnabled && _lastDawn==(daylight?DawnMeridian:float.MinValue) && _lastSelectedCell==SelectedCell && _lastHighlightTiles.SetEquals(HighlightTiles))return;
+        if(daylight){
         if(_dayPhases==null){
             _dayPhases=new float[_daySource.Length];
             var poles=new Dictionary<(int Side,int X,int Z),float>();
@@ -39,15 +38,30 @@ public sealed partial class WorldPreview
                 _dayPhases[i]=Math.Abs(normal.Y)>.5f && poles.TryGetValue(key,out float phase)?phase:WorldDayCycle.PhaseAt(DaylightWorld,vertex.Position);
             }
         }
+
+        }
+        if(_dayTileMap==null){
+            _dayTileMap=new MapTerrainTile[_daySource.Length];
+            for(int i=0;i<_daySource.Length;i+=6){
+                var center=Vector3.Zero;for(int j=0;j<6;j++)center+=_daySource[i+j].Position/6;
+                var tile=new MapTerrainTile(-1,0,0);
+                foreach(var cell in setup.Cells){
+                    if(Vector3.Dot(cell.Normal,_daySource[i].Normal)<.99f)continue;
+                    var delta=center-cell.Origin;float u=Vector3.Dot(delta,cell.U),v=Vector3.Dot(delta,cell.V);
+                    if(u<0 || u>=1 || v<0 || v>=1 || Math.Abs(Vector3.Dot(delta,cell.Normal))>WorldTerrain.MaxRelief+.02f)continue;
+                    tile=MapTerrainTile.At(cell,center);break;
+                }
+                for(int j=0;j<6;j++)_dayTileMap[i+j]=tile;
+            }
+        }
         _dayWorking??=new VertexPositionColorNormal[_daySource.Length];
         for(int i=0;i<_daySource.Length;i++){
-            var v=_daySource[i];float hour=WorldDayCycle.Wrap(DawnMeridian-_dayPhases[i]+8/24f)*24;
-            var night=WorldDayCycle.Tint(v.Color,hour);
-            float outside=1;
-            if(spotlight && ProjectVisible(v.Position,v.Normal,FocusCircleYaw,FocusCirclePitch,FocusCircleArea,out var at))
-                foreach(var circle in FocusCircles)outside=Math.Min(outside,SelectionGlow.OutsideCircle(at,circle.Center,circle.Radius));
-            v.Color=Color.Lerp(v.Color,night,outside);_dayWorking[i]=v;
+            var v=_daySource[i];var tile=_dayTileMap[i];
+            v.Color=MapTerrainColors.ForTile(v.Color,tile.Cell>=0 && (HighlightTiles.Contains(tile) || tile.Cell==SelectedCell));
+            if(daylight){float hour=WorldDayCycle.Wrap(DawnMeridian-_dayPhases[i]+8/24f)*24;v.Color=WorldDayCycle.Tint(v.Color,hour);}
+            _dayWorking[i]=v;
         }
-        _vertices.SetData(_dayWorking);_lastDawn=DawnMeridian;_dayWasEnabled=true;_dayHadSpotlight=spotlight;
+        _vertices.SetData(_dayWorking);_lastDawn=daylight?DawnMeridian:float.MinValue;_dayWasEnabled=true;
+        _lastSelectedCell=SelectedCell;_lastHighlightTiles.Clear();_lastHighlightTiles.UnionWith(HighlightTiles);
     }
 }

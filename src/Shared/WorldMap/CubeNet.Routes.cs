@@ -36,18 +36,20 @@ public sealed partial class CubeNet
         var surface=world.Cells[cell];
         var point=surface.Origin+surface.U*((x+.5f)/TerrainRoutes.Detail)+surface.V*((y+.5f)/TerrainRoutes.Detail);
         if(WorldTerrain.IsValley(world,surface,point,height))color=WorldTerrain.ValleyColor(color);
-        return NodeFocus<0 && RegionFocusCell>=0 && cell!=RegionFocusCell?SelectionGlow.Dim(color,FocusBrightness):color;
+        color=MapTerrainColors.ForTile(color,HighlightTiles.Contains(new(cell,x,y)) || SelectedCell==cell);
+        if(DawnMeridian is {} dawn)color=WorldDayCycle.Tint(color,WorldDayCycle.Hour(world,world.Cells[cell],dawn));
+        return color;
     }
     public bool ShowRoutes {get;set;}=true; public int HoveredNode {get;set;}=-1; public int InspectedNode {get;set;}=-1;
     public bool AttackTargetMarkers {get;set;}
-    public bool AttackTargetSpotlight {get;set;}
+    public bool RestrictNodeActions {get;set;}
     public int HoverSuppressedNode {get;set;}=-1;
     public HashSet<int> VisibleOperationBatteries {get;set;}
     public bool RevealMovementTargets {get;set;}
     public bool NodeVisible(WorldSetup world,Node node)=>(VisibleOperationNodes==null || VisibleOperationNodes.Contains(node.Id)) && (ShowOtherCountries || DisplayedNodeOwner(node)<0 || world.Relations.Controls(DisplayedNodeOwner(node)) || RevealMovementTargets && MovementTargets.Contains(node.Id));
-    public bool EmphasizedNode(int id)=>id!=HoverSuppressedNode && (AttackTargetSpotlight?AttackHighlightTargets.Contains(id):CountryFocus<0 && NodeFocus<0) && (HoveredNode==id || InspectedNode==id);
+    public bool EmphasizedNode(int id)=>false; // Hover is a HUD ring, never a change in object geometry.
     public HashSet<int> MovementTargets {get;}=new();
-    public HashSet<int> AttackHighlightTargets {get;}=new();
+    public HashSet<int> ActionTargetNodes {get;}=new();
     public int SelectedTarget {get;set;}=-1;
     public Vector2 NodePosition(WorldSetup world,Node node,Rectangle panel)
     {
@@ -92,11 +94,7 @@ public sealed partial class CubeNet
     }
     private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null,bool globeRibbon=false,Action<RoutePortal,bool,Func<Color,Vector2,Color>> joinPortal=null)
     {
-        Color SearchTint(Color color,Vector2 at){
-            if(!FolderSearchFocus && !AttackTargetSpotlight)return color;
-            if(RegionFocusCell>=0)return cell==RegionFocusCell?color:SelectionGlow.Dim(color,FocusBrightness);
-            return FocusTerrain(color,focusPoint?.Invoke(at)??at,cell);
-        }
+        Color SearchTint(Color color,Vector2 at)=>color;
         foreach(var peak in world.Routes.Peaks(cell))
         {
             var point=world.Routes.Position(cell,peak);var surface=world.Cells[cell];

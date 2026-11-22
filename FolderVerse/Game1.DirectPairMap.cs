@@ -141,21 +141,21 @@ public partial class Game1
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         _ui.Box(panel,new Color(20,42,54));
         _ui.Center(_directPairGlobe?"地図ビュー / 地星儀":"地図ビュー / 展開図",new(panel.X,165,panel.Width,30),.48f,Cream);
-        _directPairNet.FocusCircles.Clear();_directPairNet.FocusCircleNodes.Clear();
+        _directPairNet.EnabledNodes.Clear();_directPairNet.SelectedNodes.Clear();
         var points=new Vector2[2];
         for(int side=0;side<2;side++){
             if(_longDeliveryMode && _longChoosingSource && side==0)continue;
             int id=_directNodes[side];var at=DirectPairPosition(id);points[side]=at;
             int count=_directPairNet.ShowRobots?_setup.Robots.Nodes[id].Count:0;float radius=count>0?Math.Max(48,count*30/MathHelper.TwoPi)+38:32;
-            _directPairNet.FocusCircles.Add(new(at,radius));_directPairNet.FocusCircleNodes.Add(id);
+            _directPairNet.EnabledNodes.Add(id);_directPairNet.SelectedNodes.Add(id);
         }
-        foreach(var node in _setup.Nodes.All){var at=DirectPairPosition(node.Id);if(_directPairNet.FocusCircles.Any(c=>Vector2.DistanceSquared(at,c.Center)<=c.Radius*c.Radius))_directPairNet.FocusCircleNodes.Add(node.Id);}
+        _directPairNet.PrepareTerrainHighlights(_setup);
         var old=GraphicsDevice.ScissorRectangle;_spriteBatch.End();
         using var clip=new RasterizerState{ScissorTestEnable=true};
         GraphicsDevice.ScissorRectangle=new(canvas.X+(int)(panel.X*canvas.Width/1920f),canvas.Y+(int)(panel.Y*canvas.Height/1080f),(int)(panel.Width*canvas.Width/1920f),(int)(panel.Height*canvas.Height/1080f));
         if(_directPairGlobe){
-            _directPairWorld.FocusCircles.Clear();_directPairWorld.FocusCircles.AddRange(_directPairNet.FocusCircles);
-            _directPairWorld.FocusCircleArea=panel;_directPairWorld.FocusCircleYaw=_directPairYaw;_directPairWorld.FocusCirclePitch=_directPairPitch;
+            _directPairWorld.SelectionSetup=_setup;
+            _directPairWorld.HighlightTiles.Clear();_directPairWorld.HighlightTiles.UnionWith(_directPairNet.HighlightTiles);
             var viewport=GraphicsDevice.Viewport;
             var globeViewport=OrientationViewport(panel,canvas);
             GraphicsDevice.Viewport=globeViewport;
