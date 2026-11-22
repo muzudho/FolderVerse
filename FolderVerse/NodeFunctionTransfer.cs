@@ -52,7 +52,7 @@ public sealed class NodeFunctionTransfers
             if(robots.Workshops[source].LineLimit==0 ||
                workers.Any(r=>robots.PartPlanning.ReservesRobot(r.Id) || robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id))) ||
                robots.Nodes[target].OccupiedSlots(robots.Nodes[target].Robots.Concat(workers).Concat(incomingWorkers))>
-               robots.Nodes[target].StorageLimit-robots.Workshops[target].ReservedSlots)return false;
+               robots.Nodes[target].StorageLimit)return false;
         }
         else if(w.Robots.Nodes[target].WarehouseLimit.HasValue){
             var incoming=Orders.Where(o=>!o.FactoryOnly && o.Source!=source && o.Target==target).Select(o=>o.Source).Append(source).Append(target).ToArray();
@@ -61,7 +61,7 @@ public sealed class NodeFunctionTransfers
                 .SelectMany(o=>w.Robots.Nodes[o.Source].Robots.Where(r=>r.FactoryWorker))).ToArray();
             int developed=Math.Min(Math.Min(w.Robots.Nodes[target].WarehouseMaximum,MergedWarehouseLimit(stores)),1+robots.Where(r=>r.WarehouseKeeper).Sum(w.Robots.Nodes[target].WarehouseContribution));
             if(!w.Robots.Nodes[target].Fits(robots,stores.SelectMany(s=>s.MaplePackages),
-               incoming.Sum(n=>workshops[n].ReservedSlots),developed))return false;
+               0,developed))return false;
         }
         else if(capacity>MaximumCapacity)return false;
         return a.Functional && b.Functional && (!authority || w.Relations.Controls(a.Owner) && w.Relations.Controls(b.Owner)) && w.Relations.Allied(a.Owner,b.Owner) &&
@@ -114,13 +114,12 @@ public sealed class NodeFunctionTransfers
             source.Replace(Array.Empty<Robot>());source.SetCapacity(w.Nodes.All[a].PermanentLandmark?1:0);if(w.Nodes.All[a].PermanentLandmark)source.SetWarehouseLimit(1);
             w.Robots.Workshops[a].PreserveFunctionOrigin(a);w.Robots.Workshops[b].PreserveFunctionOrigin(b);
             w.Robots.Workshops[b].AbsorbFunctions(w.Robots.Workshops[a]);
-            if(target.WarehouseLimit is int limit)w.Robots.Workshops[b].SetStorageSlotLimit(limit);
             w.Robots.Workshops[a]=RobotWorkshop.EmptyFunctions();
             w.Nodes.All[b].FunctionUnits=checked(w.Nodes.All[b].FunctionUnits+w.Nodes.All[a].FunctionUnits-(w.Nodes.All[a].PermanentLandmark?1:0));w.Nodes.All[a].FunctionUnits=w.Nodes.All[a].PermanentLandmark?1:0;
             w.Nodes.All[b].IncomingFactories+=w.Nodes.All[a].IncomingFactories;
             w.Nodes.All[a].IncomingFactories=0;
             foreach(var node in w.Nodes.All)if(node.FunctionHost==a)node.FunctionHost=b;
-            if(!w.Nodes.All[a].PermanentLandmark)w.Nodes.All[a].Purpose=NodePurpose.General;else w.Robots.Workshops[a].SetStorageSlotLimit(1);
+            if(!w.Nodes.All[a].PermanentLandmark)w.Nodes.All[a].Purpose=NodePurpose.General;
             w.Nodes.All[a].FunctionHost=w.Nodes.All[a].PermanentLandmark?-1:b;w.Nodes.All[b].FunctionHost=-1;
             for(int i=0;i<w.Robots.PendingEdits.Count;i++)if(w.Robots.PendingEdits[i].Node==a)w.Robots.PendingEdits[i]=w.Robots.PendingEdits[i] with {Node=b};
             w.Robots.DirectDelivery.RelocateNode(a,b,offset);

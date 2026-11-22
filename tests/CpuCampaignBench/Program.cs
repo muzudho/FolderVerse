@@ -545,11 +545,11 @@ var diagnostics=new{
     turn=w.Population.Turn,fronts=fronts.Count,
     rearDefenders=functional.Where(n=>!fronts.Contains(n.Id)).Sum(n=>w.Robots.Nodes[n.Id].Robots.Count(r=>r.DefenseOnly && r.CanFight)),
     frontDefenders=functional.Where(n=>fronts.Contains(n.Id)).Sum(n=>w.Robots.Nodes[n.Id].Robots.Count(r=>r.DefenseOnly && r.CanFight)),
-    physicalFree=functional.Sum(n=>w.Robots.Nodes[n.Id].StorageLimit-w.Robots.Nodes[n.Id].Count),productionBuffers=functional.Sum(n=>w.Robots.Workshops[n.Id].ReservedSlots),
+    physicalFree=functional.Sum(n=>w.Robots.Nodes[n.Id].StorageLimit-w.Robots.Nodes[n.Id].Count),productionBuffers=functional.Sum(n=>0),
     waitingReturns=w.Robots.ReturningRobots.GroupBy(j=>j.Status).ToDictionary(g=>g.Key,g=>g.Count()),
     waitingDelivery=w.Robots.LongDelivery.Orders.GroupBy(o=>o.Status).ToDictionary(g=>g.Key,g=>g.Count()),
     longResults=w.Robots.LongDelivery.Results.GroupBy(o=>o.Status).ToDictionary(g=>g.Key,g=>g.Count()),
-    sources=functional.Select(n=>new{node=n.Id,owner=n.Owner,front=fronts.Contains(n.Id),count=w.Robots.Nodes[n.Id].Count,capacity=w.Robots.Nodes[n.Id].StorageLimit,buffer=w.Robots.Workshops[n.Id].ReservedSlots,blocked=w.Robots.Workshops[n.Id].ProductionLines.Count(l=>l.Waiting),available=w.Campaign.RobotBattles.AvailableFrom(w,n.Owner,n.Id)}).Where(n=>n.blocked>0).OrderByDescending(n=>n.blocked).Take(8).ToArray()
+    sources=functional.Select(n=>new{node=n.Id,owner=n.Owner,front=fronts.Contains(n.Id),count=w.Robots.Nodes[n.Id].Count,capacity=w.Robots.Nodes[n.Id].StorageLimit,buffer=0,blocked=w.Robots.Workshops[n.Id].ProductionLines.Count(l=>l.Waiting),available=w.Campaign.RobotBattles.AvailableFrom(w,n.Owner,n.Id)}).Where(n=>n.blocked>0).OrderByDescending(n=>n.blocked).Take(8).ToArray()
 };
 Console.WriteLine(JsonSerializer.Serialize(new{diagnostics}));
 Console.WriteLine(JsonSerializer.Serialize(new{hostileMarches,committedRobots,encounterOutcomes,repeatedTargets=attackTargets.OrderByDescending(p=>p.Value).Take(10).Select(p=>new{target=p.Key,marches=p.Value})}));

@@ -10,7 +10,7 @@ try{foreach(var materials in new[]{new[]{RobotMaterial.Maple,RobotMaterial.Polys
  int Cost(RawMaterial m)=>(int)typeof(RobotWorld).GetMethod("RawCost",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{preview,m})!;
  var needs=RobotWorld.RawMaterials.Where(m=>Cost(m)>0).ToArray();var packages=needs.Select((m,i)=>new MaplePackage(990000+i,48){Material=m}).ToArray();packages[^1]=packages[^1] with{Units=Cost(needs[^1])-1};
  typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(store,new object[]{packages});
- var line=r.Workshops[node].ProductionLines.Single();line.Configure(RobotParts.Complete,3);line.SetDoNotRepeat(true);typeof(RobotWorkshop).GetField("_selectedProductPlan",F)!.SetValue(line,plan);r.Workshops[node].SetReservedSlots(0);line.SetReservedSlots(0);
+ var line=r.Workshops[node].ProductionLines.Single();line.Configure(RobotParts.Complete,3);line.SetDoNotRepeat(true);typeof(RobotWorkshop).GetField("_selectedProductPlan",F)!.SetValue(line,plan);
  var before=store.MaplePackages.ToArray();for(int i=0;i<9;i++)r.AdvanceIndustry(n=>w.Nodes.All[n].Owner,n=>n!=node);
  if(!store.MaplePackages.SequenceEqual(before)||line.ProductionAge!=0||r.ProductionIntakes.Count!=0)throw new Exception("Missing ingredient consumed others or advanced");
  packages[^1]=packages[^1] with{Units=48};typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(store,new object[]{packages});

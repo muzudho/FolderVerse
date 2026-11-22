@@ -104,7 +104,7 @@ typeof(RobotWorld).GetField("_nodePurpose",F)!.SetValue(w.Robots,(Func<int,NodeP
 // Use the appointed catalogue recipe, including its real duration and raw cost.
 var product=manufacture.CurrentProductionPlan.Preview(0);
 int cost=(int)typeof(RobotWorld).GetMethod("RawCost",S)!.Invoke(null,new object[]{product,RawMaterial.PP})!;
-manufacture.SetDoNotRepeat(true);manufacture.SetRest(1,1);manufacture.SetReservedSlots(0);
+manufacture.SetDoNotRepeat(true);manufacture.SetRest(1,1);
 int period=(int)typeof(RobotWorkshop).GetMethod("EffectiveProductionPeriod",F)!.Invoke(manufacture,new object[]{w.Nodes.All[source].Purpose})!;
 for(int tick=0;tick<period;tick++)w.Robots.AdvanceIndustry(n=>w.Nodes.All[n].Owner,n=>n!=source);
 Check(w.Robots.ProductionIntakes.Count==1 && w.Robots.Nodes[source].MaplePackages.Sum(p=>p.Units)==16-cost,$"Reappointed manufacturing: period={period}, age={manufacture.ProductionAge}, cost={cost}, raw={w.Robots.Nodes[source].MaplePackages.Sum(p=>p.Units)}, intakes={w.Robots.ProductionIntakes.Count}, failure={manufacture.IntakeFailure}, rest={manufacture.RestRemaining}");

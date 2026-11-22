@@ -14,6 +14,12 @@ using Microsoft.Xna.Framework;
 // Only game-domain data, basic values and known collection types may be reconstructed.
 public static class AutoSaveStore
 {
+    public const int CurrentVersion=3;
+    public const int MinimumSupportedVersion=1;
+    public const string IncompatibleMessage="このセーブファイルは読め込めなくなりました";
+    public sealed class IncompatibleSaveException:Exception{
+        public IncompatibleSaveException():base(IncompatibleMessage){}
+    }
     public sealed class Entry {
         public string Type {get;set;}="";
         public string Scalar {get;set;}
@@ -22,7 +28,7 @@ public static class AutoSaveStore
         public Dictionary<string,int> Fields {get;set;}
     }
     public sealed class Document {
-        public int Version {get;set;}=2;
+        public int Version {get;set;}
         public int Root {get;set;}
         public List<Entry> Objects {get;set;}=new();
     }
@@ -43,7 +49,7 @@ public static class AutoSaveStore
         return playback?Activator.CreateInstance(field.FieldType):field.GetValue(owner);
     }
     public static Document Capture(object root){
-        var doc=new Document();var ids=new Dictionary<object,int>(ReferenceEqualityComparer.Instance);
+        var doc=new Document{Version=CurrentVersion};var ids=new Dictionary<object,int>(ReferenceEqualityComparer.Instance);
         int Visit(object value){
             if(value==null)return -1;
             var type=value.GetType();if(!Allowed(type))throw new InvalidDataException("Unsupported save type: "+type.FullName);
@@ -61,7 +67,8 @@ public static class AutoSaveStore
         doc.Root=Visit(root);return doc;
     }
     public static T Restore<T>(Document doc){
-        if(doc.Version is not (1 or 2) || doc.Objects.Count==0 || doc.Objects.Count>2000000)throw new InvalidDataException("Unsupported autosave format.");
+        if(doc.Version<MinimumSupportedVersion || doc.Version>CurrentVersion)throw new IncompatibleSaveException();
+        if(doc.Objects.Count==0 || doc.Objects.Count>2000000)throw new InvalidDataException("Invalid autosave object count.");
         var values=new object[doc.Objects.Count];var types=new Type[values.Length];
         for(int i=0;i<values.Length;i++){
             var entry=doc.Objects[i];var type=Type.GetType(entry.Type,false);if(type==null || !Allowed(type))throw new InvalidDataException("Invalid save type.");types[i]=type;
@@ -153,7 +160,7 @@ public static class AutoSaveStore
                     if(type==typeof(Node) && field.Name=="IncomingFactories")continue;
                     if(type==typeof(RobotStore) && field.Name=="_capacity")continue;
                     if(type==typeof(Robot) && field.Name=="<FunctionDisplayNode>k__BackingField")continue;
-                    if(type==typeof(RobotWorkshop) && new[]{"_disposalAnnexes","TransferredLineLimit","FunctionOriginNode","_storageSlotLimit"}.Contains(field.Name))continue;
+                    if(type==typeof(RobotWorkshop) && new[]{"_disposalAnnexes","TransferredLineLimit","FunctionOriginNode"}.Contains(field.Name))continue;
                     if(type==typeof(ConquestCampaign) && field.Name=="<FunctionTransfers>k__BackingField"){field.SetValue(value,new NodeFunctionTransfers());continue;}
                     if(type==typeof(ConquestCampaign) && field.Name=="<SubordinateResults>k__BackingField"){field.SetValue(value,new List<SubordinateDomesticResult>());continue;}
                     if(type==typeof(ConquestCampaign) && field.Name=="_domesticSubmitted"){field.SetValue(value,new HashSet<int>());continue;}
@@ -223,7 +230,7 @@ public static class AutoSaveStore
                     if(type==typeof(ConquestCampaign) && field.Name=="<StratagemDecisions>k__BackingField"){field.SetValue(value,new List<ComputerStratagemDecision>());continue;}
                     if(type==typeof(BattleFrame) && field.Name=="<Relief>k__BackingField")continue;
                     if(type==typeof(RobotEncounter) && field.Name=="DefenseCount")continue;
-                    throw new InvalidDataException("Autosave field is missing: "+field.Name);
+                    throw new IncompatibleSaveException();
                 }
                 var restored=Read(id);
                 if(doc.Version==1 && restored is int duration && (

@@ -212,7 +212,7 @@ sealed class CheckGame:Game1
         w.EquipmentMode=RobotEquipmentMode.Materials;
         foreach(var node in w.Nodes.All)node.Owner=0;
         w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);w.Robots.ConfigureFactories(w);
-        foreach(var shop in w.Robots.Workshops){shop.AutoAssemblyDisabled=true;shop.SetReservedSlots(0);foreach(var line in shop.ProductionLines)line.SelectPlan(3);}
+        foreach(var shop in w.Robots.Workshops){shop.AutoAssemblyDisabled=true;foreach(var line in shop.ProductionLines)line.SelectPlan(3);}
         var source=w.Nodes.All.First(n=>w.Routes.Neighbors(n).Length>0);
         var route=w.Routes.Neighbors(source)[0];var target=w.Nodes.At(route.Target,route.Entry);
         var factory=w.Robots.Workshops[source.Id];

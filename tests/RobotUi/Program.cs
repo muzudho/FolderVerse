@@ -279,7 +279,7 @@ sealed class RobotUiCheck:Game1
                 Click(100,370);var factory=world.Robots.Workshops[node.Id];
                 Check(factory.SelectedPlan==0 && factory.Product==factory.Plans[0].Product,"Factory posted plan selected");
                 Click(200,570);Click(260,660);Click(780,770);
-                Check(factory.RestEvery==3 && factory.RestTurns==4 && factory.ReservedSlots==12,"Factory policy selectors");
+                Check(factory.RestEvery==3 && factory.RestTurns==4 && 0==12,"Factory policy selectors");
                 Click(500,438);Check(!factory.Manufacturing && factory.SelectedPlan==3,"Factory no production plan");            }
             if(frame==24)
             {

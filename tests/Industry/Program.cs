@@ -60,10 +60,10 @@ for(int tick=1;tick<=12;tick++){
 }
 timelineWorld.AdvanceIndustry(n=>0);timeline.SetRest(2,3);
 Check(timeline.CycleProgress==1 && timeline.CycleTurns==13,"Changing repeat/rest preserves current robot progress and recomputes timeline");
-timeline.SetReservedSlots(12);timelineWorld.AdvanceIndustry(n=>0);
+typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(timelineWorld.Nodes[0],new object[]{timelineWorld.Nodes[0].Count});timelineWorld.AdvanceIndustry(n=>0);
 Check(timeline.Waiting && timeline.CycleProgress==2 && timeline.TurnsUntilNextProduction==0,"Capacity wait holds caret at completion without claiming another work turn");
 timelineWorld.AdvanceIndustry(n=>0);Check(timeline.CycleProgress==2,"Capacity wait keeps caret stationary");
-timeline.SetReservedSlots(0);timelineWorld.AdvanceIndustry(n=>0);
+typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(timelineWorld.Nodes[0],new object[]{12});timelineWorld.AdvanceIndustry(n=>0);
 Check(!timeline.Waiting && timeline.CycleProgress==2 && timeline.ProducedSinceRest==1,"Releasing capacity produces at the same completion boundary");
 var repeatWorld=new RobotWorld();repeatWorld.Initialize(1,1);
 var repeatLane=repeatWorld.Workshops[0];repeatLane.Configure(RobotParts.Head,4);repeatLane.SetRest(9,1);repeatLane.AutoAssemblyDisabled=true;
@@ -84,10 +84,10 @@ RobotWorld ProductionWorld(params RobotParts[] products){
     }
     return result;
 }
-var shipping=ProductionWorld(RobotParts.Head,RobotParts.Body|RobotParts.Legs);shipping.Workshops[0].SetReservedSlots(11);
+var shipping=ProductionWorld(RobotParts.Head,RobotParts.Body|RobotParts.Legs);typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(shipping.Nodes[0],new object[]{1});
 for(int tick=0;tick<4;tick++)shipping.AdvanceIndustry(n=>0);
 Check(shipping.Nodes[0].Count==1 && shipping.Nodes[0].Robots.Single().Parts==RobotParts.Complete,"Sequential delivery completes a robot with only one available slot");
-var noLookahead=ProductionWorld(RobotParts.Head,RobotParts.Body,RobotParts.Legs);noLookahead.Workshops[0].SetReservedSlots(11);
+var noLookahead=ProductionWorld(RobotParts.Head,RobotParts.Body,RobotParts.Legs);typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(noLookahead.Nodes[0],new object[]{1});
 for(int tick=0;tick<6;tick++)noLookahead.AdvanceIndustry(n=>0);
 var held=noLookahead.Workshops[0].ProductionLines[1];
 Check(noLookahead.Nodes[0].Robots.Single().Parts==RobotParts.Head && held.WaitingProductionTurns==3 && held.LaneProgress==4,"No lookahead or partial merge: lower lane stores first and later lanes wait at completion for three ticks");
@@ -103,15 +103,15 @@ var oldRecipe=AutoSaveStore.Capture(new ProductionPlan(RobotParts.Complete,4));o
 Check(AutoSaveStore.Restore<ProductionPlan>(oldRecipe).Turns==12,"Legacy four-turn recipe still takes four displayed turns");
 var oldSector=AutoSaveStore.Capture(new IndustrySector(8,10));oldSector.Version=1;
 Check(AutoSaveStore.Restore<IndustrySector>(oldSector).Turns==24,"Pending legacy roulette sectors keep their displayed duration");
-noLookahead.Workshops[0].SetReservedSlots(10);noLookahead.AdvanceIndustry(n=>0);
+typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(noLookahead.Nodes[0],new object[]{2});noLookahead.AdvanceIndustry(n=>0);
 Check(noLookahead.Nodes[0].Robots.Single().Parts==RobotParts.Complete && held.WaitingProductionTurns==0,"New space permits body delivery, then legs merge with both stored parts in the same tick");
-var disabled=ProductionWorld(RobotParts.Head,RobotParts.Body|RobotParts.Legs);disabled.Workshops[0].SetReservedSlots(11);disabled.Workshops[0].AutoAssemblyDisabled=true;
+var disabled=ProductionWorld(RobotParts.Head,RobotParts.Body|RobotParts.Legs);typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(disabled.Nodes[0],new object[]{1});disabled.Workshops[0].AutoAssemblyDisabled=true;
 for(int tick=0;tick<4;tick++)disabled.AdvanceIndustry(n=>0);
 Check(disabled.Workshops[0].ProductionLines[1].WaitingProductionTurns==1 && disabled.Nodes[0].Robots.Single().Parts==RobotParts.Head,"Auto assembly opt-out prevents direct delivery merges");
 var bulk=ProductionWorld(RobotParts.Head,RobotParts.Body|RobotParts.Legs);
 for(int tick=0;tick<47;tick++)bulk.AdvanceIndustry(n=>0);
 Check(bulk.Nodes[0].Count==11 && bulk.Nodes[0].Robots.All(r=>r.Parts==RobotParts.Complete) && bulk.Workshops[0].ProductionLines.Take(2).All(l=>l.ProductionAge==3),"A 47-turn batch follows individual sequential deliveries without skipping progress");
-var lockedProduct=ProductionWorld(RobotParts.Body|RobotParts.Legs);lockedProduct.Workshops[0].SetReservedSlots(11);
+var lockedProduct=ProductionWorld(RobotParts.Body|RobotParts.Legs);typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(lockedProduct.Nodes[0],new object[]{1});
 lockedProduct.Nodes[0].Add(lockedProduct.Create(0,RobotParts.Head) with {Disposal=true});
 for(int tick=0;tick<4;tick++)lockedProduct.AdvanceIndustry(n=>0);
 Check(lockedProduct.Workshops[0].Waiting && lockedProduct.Nodes[0].Robots.Single().Parts==RobotParts.Head,"Reserved parts are excluded from direct production assembly");

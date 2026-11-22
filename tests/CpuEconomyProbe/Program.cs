@@ -11,7 +11,7 @@ var nodes=w.Nodes.All.Where(n=>n.Functional && n.Owner>=0).Select(n=>{
         .Where(p=>(p.a.Parts&p.b.Parts)==0 && !stock.AssemblyLocked(n.Id,p.a) && !stock.AssemblyLocked(n.Id,p.b))
         .Count(p=>p.a.Merge(p.b,n.Owner).AssemblyCredit(n.Owner)>=stock.Training[n.Owner].RequiredNative);
     return new{node=n.Id,owner=n.Owner,front=Front(n),count=store.Count,capacity=store.StorageLimit,
-        reserved=shop.ReservedSlots,policy=shop.Automation.ToString(),shop.AutoAssemblyDisabled,
+        reserved=0,policy=shop.Automation.ToString(),shop.AutoAssemblyDisabled,
         disposals=shop.DisposalFacilities.Select(f=>new{f.HasDisposalFactory,f.DisposalTarget,f.DisposalAge,f.DisposalPeriod}),
         disposalReservations=robots.Count(r=>r.Disposal),
         complete=robots.Count(r=>r.Parts==RobotParts.Complete),fighters=robots.Count(r=>r.CanFight),
@@ -24,7 +24,7 @@ var nodes=w.Nodes.All.Where(n=>n.Functional && n.Owner>=0).Select(n=>{
         waiting=shop.ProductionLines.Where(l=>l.Waiting).Select(l=>{
             int target=l.IntakeTarget??n.Id;var dest=stock.Nodes[target];
             return new{product=l.Product.ToString(),target,full=dest.Count>=dest.StorageLimit,
-                atReservedLimit=dest.Count>=dest.StorageLimit-stock.Workshops[target].ReservedSlots,
+                atReservedLimit=dest.Count>=dest.StorageLimit-0,
                 l.WaitingProductionTurns,l.Paused,l.CycleFinished};
         }).ToArray()};
 }).ToArray();
@@ -250,7 +250,7 @@ foreach(var option in args.Where(a=>a.StartsWith("--target-supply="))){
  }
 }foreach(var option in args.Where(a=>a.StartsWith("--node-state="))){
  int id=int.Parse(option.Split('=')[1]);var node=w.Nodes.All[id];var store=stock.Nodes[id];
- Console.WriteLine(JsonSerializer.Serialize(new{nodeState=id,node.Owner,node.Functional,node.FunctionHost,node.FunctionUnits,store.Count,store.TotalCapacity,store.ReservedReturns,reserved=stock.Workshops[id].ReservedSlots,
+ Console.WriteLine(JsonSerializer.Serialize(new{nodeState=id,node.Owner,node.Functional,node.FunctionHost,node.FunctionUnits,store.Count,store.TotalCapacity,store.ReservedReturns,reserved=0,
  robots=store.Robots.Select(r=>new{r.Id,r.Owner,r.CanFight,r.DefenseOnly}),incomingReturns=stock.ReturningRobots.Where(r=>r.Node==id)}));
 }foreach(var option in args.Where(a=>a.StartsWith("--target-force="))){
  int target=int.Parse(option.Split('=')[1]);
@@ -341,7 +341,7 @@ if(args.Contains("--relay3-normal-trace")){
     stock.CanShip(3,r) && !stock.AssemblyLocked(3,r)).Select(r=>new{r.Id,parts=r.Parts.ToString()}),
    exits=RobotLongDelivery.Neighbors(w,3,1,true).Where(id=>w.Nodes.All[id].Owner==1)
     .Select(id=>new{id,free=stock.Nodes[id].StorageLimit-stock.Nodes[id].Count,
-     reserved=stock.Workshops[id].ReservedSlots,disposal=stock.Workshops[id].DisposalFacilities.Any(f=>f.HasDisposalFactory),
+     reserved=0,disposal=stock.Workshops[id].DisposalFacilities.Any(f=>f.HasDisposalFactory),
      receivers=stock.Nodes[id].Robots.Where(r=>r.Owner==1 && r.Parts!=RobotParts.Complete &&
       !stock.AssemblyLocked(id,r)).Select(r=>new{r.Id,parts=r.Parts.ToString()})}),
    location26=Array.FindIndex(stock.Nodes,n=>n.Robots.Any(r=>r.Id==26)),
@@ -349,7 +349,7 @@ if(args.Contains("--relay3-normal-trace")){
    nodes=new[]{3,5,7,13}.Select(id=>new{id,w.Nodes.All[id].Owner,w.Nodes.All[id].Functional,w.Nodes.All[id].FunctionHost}),
    path1=RobotLongDelivery.Path(w,7,13,1),path6=RobotLongDelivery.Path(w,5,3,1),
    destination5=new{stock.Nodes[5].Count,stock.Nodes[5].TotalCapacity,stock.Nodes[5].ReservedReturns,
-    stock.Workshops[5].ReservedSlots,orders=stock.LongDelivery.Orders.Where(o=>o.Target==5)
+    removedEmptyBuffer=0,orders=stock.LongDelivery.Orders.Where(o=>o.Target==5)
      .Select(o=>new{o.Number,o.CargoId,o.TargetSlot,o.Receiver})},
    transfers=stock.Transport.LastTransfers.Where(t=>t.Source==3 || t.Target==3 || t.RobotId==26),
    battles=w.Campaign.RobotBattles.Scenes.Where(b=>b.TargetNode==3)

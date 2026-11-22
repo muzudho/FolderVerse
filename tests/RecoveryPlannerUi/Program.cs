@@ -13,8 +13,8 @@ sealed class RecoveryUi(string output):Game1{
  protected override void Draw(GameTime t){
  using var image=new RenderTarget2D(GraphicsDevice,1920,1080);GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(Color.Black);batch.Begin();Call("DrawRecoveryPlanner");batch.End();GraphicsDevice.SetRenderTarget(null);using(var file=File.Create(Path.Combine(output,"recovery-"+frame+".png")))image.SaveAsPng(file,1920,1080);
  switch(frame){
- case 0:Click(1700,1020);Check((int)Get("_recoveryStage")==6&&!(bool)Get("_recoveryLocation"),"first question chooses receiving hangar");break;
- case 1:Click(1400,50);Check((bool)Get("_recoveryGlobe"),"receiving map can switch to globe");break;
+ case 0:Click(1700,1020);Check((int)Get("_recoveryStage")==6&&!(bool)Get("_recoveryLocation"),"first question chooses receiving hangar");Set("_pointer",MapPoint(home));break;
+ case 1:Check(((CubeNet)Get("_recoveryNet")).FocusCircles.Count==1&&((CubeNet)Get("_recoveryNet")).AttackHighlightTargets.Count>1,"many selectable buildings stay bright without multiple spotlights");Click(1400,50);Check((bool)Get("_recoveryGlobe"),"receiving map can switch to globe");break;
  case 2:var receiving=MapPoint(goal);Click(receiving.X,receiving.Y);Check((int)Get("_recoveryDestination")==goal&&(bool)Get("_recoveryLocation"),"globe click opens receiving hangar");break;
  case 3:Click(800,400);Check(((List<long>)Get("_recoveryWorkers")).Count==0&&(int)Get("_recoverySource")==-1,"receiving hangar is inspection only");Click(1700,1020);Check((int)Get("_recoveryStage")==1,"receiving hangar proceeds to desired goods");break;
  case 4:Click(900,230);Check((int)Get("_recoveryQuestion")==1,"specific goods opens shape selection");break;

@@ -204,7 +204,8 @@ public sealed partial class CubeNet
     {
         float hour=DawnMeridian is {} dawn?WorldDayCycle.Hour(setup,cell,dawn):12;
         var originalTint=tint;
-        if(DawnMeridian.HasValue)tint=c=>originalTint(WorldDayCycle.Tint(c,hour));
+        bool spotlight=(CountryFocus>=0 || NodeFocus>=0 || AttackTargetSpotlight || FolderSearchFocus) && !DimNode(node.Id);
+        if(DawnMeridian.HasValue && !spotlight)tint=c=>originalTint(WorldDayCycle.Tint(c,hour));
         bool sea = !setup.Routes.Land(node.Cell,node.Center);
         var top = sea ? new Color(164,226,242) : new Color(255,232,153);
         var side = sea ? new Color(52,110,135) : new Color(152,111,53);

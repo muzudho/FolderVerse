@@ -17,7 +17,7 @@ WorldSetup Fixture(){
  var r=w.Robots;var s=r.Nodes[n];Raw(s);Call(s,"Replace",(object)Array.Empty<Robot>());Call(s,"SetWarehouseLimit",60);
  s.Add(r.Create(0,RobotParts.Complete) with {WarehouseKeeper=true});
  var worker=r.Create(0,RobotParts.Complete);s.Add(worker);
- r.Workshops[n]=new RobotWorkshop();Call(r.Workshops[n],"RemoveProductionLines");r.ConfigureFactories(w);r.Workshops[n].SetReservedSlots(0);
+ r.Workshops[n]=new RobotWorkshop();Call(r.Workshops[n],"RemoveProductionLines");r.ConfigureFactories(w);
  Check(r.ToggleReservation(n,worker.Id,HangarReservation.Dismantler,0),"appoint dismantler");
  r.PrepareDomestic(w.Population.Turn,(a,b)=>false,_=>0,_=>true);
  return(n,worker.Id);

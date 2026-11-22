@@ -9,7 +9,7 @@ public static class Fixture
   int node=w.Nodes.All.First(n=>n.Terrain!=TravelTerrain.Sea).Id;w.Nodes.All[node].Owner=0;
   var f=w.Robots.Workshops[node];f.LimitLines(3);for(int n=0;f.BaseLineCount!=1;n++)f.GenerateLines(n);
   foreach(var line in f.ProductionLines)line.SelectPlan(3);
-  f.AutoAssemblyDisabled=true;f.Automation=NodeAutomation.Manual;f.SetReservedSlots(0);
+  f.AutoAssemblyDisabled=true;f.Automation=NodeAutomation.Manual;
   foreach(var r in w.Robots.Nodes[node].Robots.ToArray())w.Robots.Nodes[node].Remove(r.Id);
   w.Robots.ProductionIntakeEnabled=false;
   return(w,node);

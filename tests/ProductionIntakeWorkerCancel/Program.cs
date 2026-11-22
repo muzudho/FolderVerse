@@ -43,7 +43,7 @@ w=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));raw=w.Robots;
 typeof(RobotPartPlanning).GetMethod("Resolve",F)!.Invoke(raw.PartPlanning,new object[]{w});
 var final=raw.Workshops[source.Id].ProductionLines.Single();
 if(final.HarvestOnly || final.ProductionAge!=0 || final.MapleProgress!=0 || raw.Nodes[source.Id].MaplePackages.Single().Units!=16 || raw.ProductionIntakes.Count!=0)throw new Exception("Final manufacturing inherited old progress");
-final.Configure(RobotParts.Head,3);final.SetDoNotRepeat(true);final.SetReservedSlots(0);raw.Workshops[source.Id].SetReservedSlots(0);
+final.Configure(RobotParts.Head,3);final.SetDoNotRepeat(true);
 typeof(RobotWorkshop).GetField("_selectedProductPlan",F)!.SetValue(final,new ProductionPlan(RobotParts.Head,3){Material=RobotMaterial.Polypropylene});
 for(int i=0;i<2;i++)raw.AdvanceIndustry(n=>w.Nodes.All[n].Owner,n=>n!=source.Id);
 if(raw.Nodes[source.Id].MaplePackages.Single().Units!=16 || raw.ProductionIntakes.Count!=0)throw new Exception("Reused old manufacturing progress");

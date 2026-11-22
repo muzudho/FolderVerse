@@ -150,7 +150,6 @@ public sealed partial class WorldSetup
         foreach(var node in Nodes.All){
             var store=Robots.Nodes[node.Id];store.EnableFlagWarehouseRules();
             store.SetWarehouseLimit(node.InitialHangarLimit);
-            Robots.Workshops[node.Id].SetStorageSlotLimit(node.InitialHangarLimit);
         }
     }
 }

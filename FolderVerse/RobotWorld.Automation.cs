@@ -28,7 +28,7 @@ public sealed partial class RobotWorld
             if(line.DoNotRepeat)continue;
             int destination=line.IntakeTarget is int target && target>=0 && target<Nodes.Length?target:node;
             var store=Nodes[destination];
-            int usable=Math.Max(0,store.StorageLimit-Workshops[destination].ReservedSlots);
+            int usable=Math.Max(0,store.StorageLimit);
             int occupied=store.Count+ProductionIntakes.Count(i=>(i.Target??i.Source)==destination);
             if(!destinationCounts.TryGetValue(destination,out var counts)){
                 var inventory=store.Robots.Concat(ProductionIntakes.Where(i=>(i.Target??i.Source)==destination).Select(i=>i.Product)).Where(r=>!r.Disposal).ToArray();
@@ -51,15 +51,9 @@ public sealed partial class RobotWorld
             for(int j=0;j<3;j++)if((line.Product&parts[j])!=0 && line.CurrentProductionPlan.Preview(owner).Origin(parts[j])==owner)counts[j]++;
         }
         if(workshop.AutoAssemblyDisabled && (!gentle || !changed)){workshop.AutoAssemblyDisabled=false;changed=true;}
-        int capacity=Nodes[node].StorageLimit;
-        int reserveTarget=Math.Min(workshop.ReservedSlotLimit,Math.Min(Math.Max(0,capacity-1),(capacity+5)/6));
-        if(workshop.ReservedSlots!=reserveTarget && (!gentle || !changed)){
-            workshop.SetReservedSlots(gentle?workshop.ReservedSlots+Math.Sign(reserveTarget-workshop.ReservedSlots):reserveTarget);
-            changed=true;
-        }
         if(!adjustTransport)return;
-        double Fullness(int n)=>(Nodes[n].Count+ProductionIntakes.Count(i=>(i.Target??i.Source)==n))/(double)Math.Max(1,Nodes[n].StorageLimit-Workshops[n].ReservedSlots);
-        var targets=Enumerable.Range(0,Nodes.Length).Where(n=>n!=node && Nodes[n].Count+ProductionIntakes.Count(i=>(i.Target??i.Source)==n)<Nodes[n].StorageLimit-Workshops[n].ReservedSlots &&
+        double Fullness(int n)=>(Nodes[n].Count+ProductionIntakes.Count(i=>(i.Target??i.Source)==n))/(double)Math.Max(1,Nodes[n].StorageLimit);
+        var targets=Enumerable.Range(0,Nodes.Length).Where(n=>n!=node && Nodes[n].Count+ProductionIntakes.Count(i=>(i.Target??i.Source)==n)<Nodes[n].StorageLimit &&
             (nodeOwner==null || nodeOwner(n)==owner) && connected(node,n) && locked?.Invoke(n)!=true && Fullness(n)<Fullness(node)).OrderBy(Fullness).ThenBy(n=>n).Take(2).ToArray();
         // A complete soldier may only be dispatched when its ruler's training permits it.
         if(!stock.Any(r=>r.Owner==owner && Training[owner].Eligible(r)))targets=Array.Empty<int>();

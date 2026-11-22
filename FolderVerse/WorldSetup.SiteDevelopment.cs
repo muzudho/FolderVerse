@@ -17,7 +17,6 @@ public sealed partial class WorldSetup
             }
             var store=Robots.Nodes[node.Id];store.SetLogisticsRules(node.Purpose==NodePurpose.Relay);
             if(node.Purpose==NodePurpose.Relay){Robots.Workshops[node.Id].RemoveProductionLines();Robots.Workshops[node.Id].LimitLines(0);Robots.Workshops[node.Id].Automation=NodeAutomation.Auto;}
-            Robots.Workshops[node.Id].SetStorageSlotLimit(store.WarehouseLimit??store.TotalCapacity);
         }
     }
 }

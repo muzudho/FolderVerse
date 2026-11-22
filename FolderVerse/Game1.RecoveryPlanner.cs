@@ -139,7 +139,10 @@ public partial class Game1
         var choices=RecoveryWorkerChoices;var catalog=RecoveryCatalog;
         var availableNodes=(_recoveryStage==6?RecoveryRecipientNodes:source?choices.Where(p=>!p.Pocket).Select(p=>p.Node):catalog.Select(c=>c.Node)).ToHashSet();
         _recoveryNet.AttackTargetSpotlight=true;_recoveryNet.FocusBrightness=.22f;_recoveryNet.FocusCircles.Clear();_recoveryNet.AttackHighlightTargets.Clear();
-        foreach(int id in availableNodes){if(!RecoveryMapPosition(id,out var center))continue;_recoveryNet.FocusCircles.Add(new(center,RecoverySpotlightRadius(id,center)));_recoveryNet.AttackHighlightTargets.Add(id);}
+        _recoveryNet.AttackHighlightTargets.UnionWith(availableNodes);
+        int spotlightNode=HitRecoveryMap(availableNodes);
+        if(spotlightNode<0){int selected=_recoveryStage==6?_recoveryDestination:source?_recoverySource:-1;if(availableNodes.Contains(selected))spotlightNode=selected;}
+        if(spotlightNode>=0 && RecoveryMapPosition(spotlightNode,out var center))_recoveryNet.FocusCircles.Add(new(center,RecoverySpotlightRadius(spotlightNode,center)));
         var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         var old=GraphicsDevice.ScissorRectangle;_spriteBatch.End();
         using(var clip=new RasterizerState{ScissorTestEnable=true}){

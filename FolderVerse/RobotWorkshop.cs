@@ -98,7 +98,7 @@ public sealed partial class RobotWorkshop
     {
         // Release gates at the tick boundary, so lane numbering does not grant an extra tick.
         var ready=ProductionLines.Where(ReleaseStartCondition).ToArray();
-        foreach(var line in ready){line.CompleteSingleProduction(world,node,owner,ReservedSlots);}
+        foreach(var line in ready){line.CompleteSingleProduction(world,node,owner,0);}
     }
     public bool WaitingForMaple(RobotWorld world,int node)=>world.MapleSupplyEnabled && Manufacturing &&
         !Paused && !CycleFinished && RestRemaining==0 && MissingRawMaterial(world,node).HasValue;
