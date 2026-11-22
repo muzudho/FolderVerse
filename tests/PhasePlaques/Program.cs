@@ -29,7 +29,7 @@ sealed class PlaqueProbe(string output):Game1
   Check(folder.X==360&&directory.X>folder.Right&&directory.Right<680,"folder X stays fixed and reservation button clears title plaque");
   var controls=new[]{(Rectangle)typeof(Game1).GetField("SimpleDisplayButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!,(Rectangle)typeof(Game1).GetField("MapViewButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!,(Rectangle)Call("RouteLayerButton",6),(Rectangle)Call("RouteLayerButton",2),(Rectangle)Call("RouteLayerButton",3)};
   Check(controls.SelectMany((b,i)=>controls.Skip(i+1).Select(c=>!b.Intersects(c))).All(ok=>ok)&&controls.All(b=>b.Left>=1260&&b.Right<=1858),"map control rows have no overlaps and share right-side alignment");
-  CheckOpeningDaylight();
+  if(Environment.GetEnvironmentVariable("PHASE_HEADER_FOCUS")!="1")CheckOpeningDaylight();
   foreach(string screen in new[]{"PlayerCount","ComputerPlayerCount","Rolling","Review","CastRolling","CastReview","PlacementRolling","PlacementReview","Ready","PlayerSelect","PlayerReady","LandConquest","Fortune","WorldStatus","Industry","Newspaper","Diplomacy","Transport","Battle","BattleResearch","LessonCatalog","OpeningBook","OpeningSpace","OpeningLottery","OpeningReview"}){
    Screen(screen);var value=typeof(Game1).GetProperty("CurrentPhasePlaque",F)!.GetValue(this);Check(value!=null,"phase mapped: "+screen);
   }
@@ -82,9 +82,39 @@ sealed class PlaqueProbe(string output):Game1
  void Capture(string name,Action draw){
   using var target=new RenderTarget2D(GraphicsDevice,1920,1080);GraphicsDevice.SetRenderTarget(target);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();draw();Call("DrawPhasePlaque");batch.End();GraphicsDevice.SetRenderTarget(null);using var file=File.Create(Path.Combine(output,name+".png"));target.SaveAsPng(file,1920,1080);
  }
+ void CheckHeaderScreens(){
+  Screen("WorldStatus");Color[] expected=null;
+  foreach(bool hintFirst in new[]{false,true}){
+   using var target=new RenderTarget2D(GraphicsDevice,1920,1080);GraphicsDevice.SetRenderTarget(target);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();
+   if(hintFirst)Call("DrawRulebookHint","地点の説明","目印とロボットの説明を表示します。");
+   Call("DrawPhasePlaque");
+   if(!hintFirst){Call("DrawRulebookHint","地点の説明","目印とロボットの説明を表示します。");Call("DrawPopupHints");}
+   batch.End();GraphicsDevice.SetRenderTarget(null);var pixels=new Color[1920*1080];target.GetData(pixels);
+   if(expected==null)expected=pixels;else Check(expected.SequenceEqual(pixels),"popup hints render in front of plaque regardless of request order");
+   using var file=File.Create(Path.Combine(output,"26-popup-foreground-"+hintFirst+".png"));target.SaveAsPng(file,1920,1080);
+  }
+  Screen("Industry");Set("_manufacturingNode",w.Nodes.Current(0).Id);Set("_manufacturingActive",true);Capture("05-manufacturing",()=>Call("DrawManufacturing"));Set("_manufacturingActive",false);
+  Screen("Battle");Set("_robotSummary",true);
+  var summaryPlaque=((string,string,int))typeof(Game1).GetProperty("CurrentPhasePlaque",F)!.GetValue(this)!;
+  Check(summaryPlaque.Item1=="新聞"&&summaryPlaque.Item3==3,"battle results use newspaper plaque instead of combat plaque");
+  var fixedPlate=(Rectangle)typeof(Game1).GetField("PhasePlaqueBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  foreach(string name in new[]{"SummaryMastheadBounds","SummaryHeadlineBounds"})Check(!fixedPlate.Intersects((Rectangle)typeof(Game1).GetField(name,BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!),"summary newspaper clears fixed plaque: "+name);
+  var scenes=Enumerable.Range(0,63).Select(i=>new BattleState(i%w.Nodes.All.Length){Finished=true,Winner=i%2}).ToArray();
+  foreach(var scene in scenes){scene.Armies.Add(new(){Owner=0});scene.Armies.Add(new(){Owner=1});for(int i=0;i<w.ActiveCount;i++)scene.NewspaperRanks[i]=i+1;}
+  Set("_robotScenes",scenes);
+  for(int edition=0;edition<NewspaperProfiles.All.Length;edition++){Set("_newspaperEdition",edition);Capture("23-battle-paper-"+edition,()=>Call("DrawRobotBattleSummary"));}
+  Set("_newspaperEdition",0);Set("_robotSummary",false);
+  Check((((string,string,int))typeof(Game1).GetProperty("CurrentPhasePlaque",F)!.GetValue(this)!).Item1=="戦闘","live combat keeps its combat plaque");
+  var propagation=(Rectangle)typeof(Game1).GetField("PropagationMapPanel",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;Check(propagation.Top>=180&&propagation.Bottom<=960&&!fixedPlate.Intersects(propagation),"propagation overview fits below plaque and above footer");
+  Screen("Transport");Set("_robotScenes",Array.Empty<BattleState>());Call("BeginPropagation");Capture("24-propagation-map",()=>Call("DrawPropagation",-1,0f,true));
+
+  Screen("Battle");var battle=new BattleState(1){TargetNode=w.Nodes.Current(0).Id,Defender=0,Terrain=BattleTerrain.Sea};battle.Armies.Add(new(){Owner=0,Side=0});battle.Armies.Add(new(){Owner=1,Side=1});battle.Units.Add(new(){Id=1,Owner=0,Position=new(4,4),Robot=new Robot(1,0,RobotParts.Complete)});battle.Capture(BattlePhase.Choose);Set("_robotScenes",new[]{battle});Set("_robotPlayback",new RobotBattlePlayback(new[]{battle}));Set("_battleWave",0);Set("_robotRound",0);Set("_robotPlaying",false);Capture("25-battle-board",()=>Call("DrawRobotBattle"));
+  var board=(Rectangle)typeof(Game1).GetField("RobotBattleBoardBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;Check(board.Width==board.Height&&board.Top>=180&&board.Bottom<=1040&&!fixedPlate.Intersects(board),"battle board stays square below fixed plaque");
+ }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
   if(frame++>0){Exit();return;}
+  if(Environment.GetEnvironmentVariable("PHASE_HEADER_FOCUS")=="1"){CheckHeaderScreens();Exit();return;}
   Screen("OpeningBook");
   using(var opening=new RenderTarget2D(GraphicsDevice,1920,1080)){
    GraphicsDevice.SetRenderTarget(opening);Call("DrawOpeningFrame",new GameTime(TimeSpan.FromSeconds(4),TimeSpan.Zero));GraphicsDevice.SetRenderTarget(null);using var file=File.Create(Path.Combine(output,"00-opening-book.png"));opening.SaveAsPng(file,1920,1080);
@@ -125,12 +155,24 @@ sealed class PlaqueProbe(string output):Game1
   Screen("LessonCatalog");Capture("12-lesson-catalog",()=>Call("DrawLessonCatalog"));
   Screen("Hierarchy");Capture("13-hierarchy",()=>Call("DrawHierarchyUi"));
   Screen("Pocket");Capture("14-pocket",()=>Call("DrawPocket"));
+  CheckHeaderScreens();
   Screen("Newspaper");Set("_turnPapers",TurnNewspaper.Build(w,0));Set("_turnPaperIndex",0);Set("_paperReadCountry",0);Call("BeginPaperScenes");Set("_paperAge",10d);Capture("10-newspaper",()=>Call("DrawTurnNewspaper"));
   Screen("WorldStatus");Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");Set("_conquestStage",4);Set("_conquestAge",0d);
   using(var broadcast=new RenderTarget2D(GraphicsDevice,1920,1080)){
    GraphicsDevice.SetRenderTarget(broadcast);Call("DrawConquestOverview",new Rectangle(0,0,1920,1080),Matrix.Identity,GraphicsDevice.Viewport);GraphicsDevice.SetRenderTarget(null);using var file=File.Create(Path.Combine(output,"11-conquest-broadcast.png"));broadcast.SaveAsPng(file,1920,1080);
   }
+  var lower=(Rectangle)typeof(Game1).GetField("ConquestLowerSpeech",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  foreach(string name in new[]{"ConquestBoard","ConquestFormulaSpace","ConquestGlobeArea"}){
+   var exhibit=(Rectangle)typeof(Game1).GetProperty(name,F|BindingFlags.Static)!.GetValue(this)!;
+   Check(exhibit.Bottom<lower.Top,"lower speech clears exhibit: "+name);
+  }
+  Check(lower.Bottom<970 && (bool)typeof(Game1).GetProperty("ConquestSpeechBelow",F)!.GetValue(this)!,"broadcast lower speech clears caption and progress bar");
+  foreach(int ruler in Enumerable.Range(0,w.ActiveCount))((HashSet<int>)Get("_conquestRevealed")).Add(ruler);
+  foreach(var item in new[]{("11-conquest-score",Math.Max(0,(double)typeof(Game1).GetProperty("ConquestStudioEnd",F)!.GetValue(this)!-.05)),("11-conquest-ranking",(double)typeof(Game1).GetProperty("ConquestStudioEnd",F)!.GetValue(this)!+1)}){
+   Set("_conquestAge",item.Item2);using var shot=new RenderTarget2D(GraphicsDevice,1920,1080);GraphicsDevice.SetRenderTarget(shot);Call("DrawConquestOverview",new Rectangle(0,0,1920,1080),Matrix.Identity,GraphicsDevice.Viewport);GraphicsDevice.SetRenderTarget(null);using var file=File.Create(Path.Combine(output,item.Item1+".png"));shot.SaveAsPng(file,1920,1080);
+  }
   Set("_conquestStage",3);
+  Check(!(bool)typeof(Game1).GetProperty("ConquestSpeechBelow",F)!.GetValue(this)!,"opening greeting keeps its upper speech position");
   using(var intro=new RenderTarget2D(GraphicsDevice,1920,1080)){
    GraphicsDevice.SetRenderTarget(intro);Call("DrawConquestOverview",new Rectangle(0,0,1920,1080),Matrix.Identity,GraphicsDevice.Viewport);GraphicsDevice.SetRenderTarget(null);using var file=File.Create(Path.Combine(output,"11-conquest-intro.png"));intro.SaveAsPng(file,1920,1080);
   }

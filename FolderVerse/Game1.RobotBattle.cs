@@ -124,6 +124,7 @@ public partial class Game1
             if(width>0)_ui.Box(new((int)(center.X-width),(int)center.Y+y,Math.Max(1,(int)(width*2)),2),Color.White*opacity);
         }
     }
+    private static readonly Rectangle RobotBattleBoardBounds=new(40,180,850,850);
     private void DrawRobotBattle()
     {
         if(_robotSummary){DrawRobotBattleSummary();return;}
@@ -148,7 +149,7 @@ public partial class Game1
         if(battle.SiteLayoutApplied && battle.SiteProfile is {} site){BattleInfo($"地形：{site.Name} / 地点 {site.Area}ドット / 近くの水 {site.LocalWater}・山 {site.LocalMountains}",154,.34f);BattleInfo(site.Description,177,.34f);}
         const int left=40,top=40,size=100;
         var battleCanvas=CanvasBounds();var battleTransform=Matrix.CreateScale(battleCanvas.Width/1920f,battleCanvas.Height/1080f,1)*Matrix.CreateTranslation(battleCanvas.X,battleCanvas.Y,0);
-        var boardTransform=Matrix.CreateTranslation(-left,-top,0)*Matrix.CreateScale(10f/battle.BoardSize)*Matrix.CreateTranslation(left,top,0)*SeaBoardTransform(battle)*battleTransform;
+        var boardTransform=Matrix.CreateTranslation(-left,-top,0)*Matrix.CreateScale(10f/battle.BoardSize)*Matrix.CreateTranslation(left,top,0)*SeaBoardTransform(battle)*Matrix.CreateTranslation(-40,-40,0)*Matrix.CreateScale(.85f)*Matrix.CreateTranslation(RobotBattleBoardBounds.X,RobotBattleBoardBounds.Y,0)*battleTransform;
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:boardTransform);
 
         DrawBattleTerrain(battle,new(left,top,size*battle.BoardSize,size*battle.BoardSize),1);
@@ -407,7 +408,7 @@ public partial class Game1
         DrawAmbushCard(battle,frameIndex);
     }
     private void BattleInfo(string text,int y,float scale)
-        =>_ui.Text(text,new(1120,y),Math.Min(scale,720/_font.MeasureString(text).X),Cream);
+        =>_ui.Text(text,new(y<=132?1260:1120,y),Math.Min(scale,(y<=132?580:720)/_font.MeasureString(text).X),Cream);
     private void DrawTransport()
     {
         DrawPropagation(_robotScenes.Length>0?_battleWave:-1,PropagationComplete?.6f+.4f*(float)(_transportAge/2):.6f*_propagationTravel.Values.DefaultIfEmpty(0).Average(),true);

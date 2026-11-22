@@ -89,7 +89,10 @@ public partial class Game1
         if(_manufacturingNode<0){_ui.Center("稼働できる工場がありません",new(54,420,1806,60),.6f,Cream);return;}
         var node=_setup.Nodes.All[_manufacturingNode];
         string destination=_setup.Nodes.DisplayName(node);
-        _ui.Center(destination+" / 今回の納品が最も多い地点",new(1260,88,590,55),.38f,Cream);
+        _ui.Center("今回の納品が最も多い地点",new(54,70,580,48),.43f,Cream);
+        var destinationLines=destination.Split(" / ",2);
+        float destinationScale=Math.Min(.38f,574/Math.Max(1,destinationLines.Max(line=>_font.MeasureString(line).X)));
+        PortraitHudLayout.CenterLines(_ui,_font,destinationLines,new Rectangle(1260,88,590,55),destinationScale,Cream);
         var lines=_setup.Robots.Workshops.SelectMany((w,n)=>w.ProductionLines
             .Where(l=>(l.MapleRemaining>0?n:l.IntakeTarget??n)==_manufacturingNode && _setup.Nodes.All[n].Functional)
             .Select(l=>(Source:n,Line:l))).ToArray();

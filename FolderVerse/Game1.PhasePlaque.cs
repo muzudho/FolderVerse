@@ -28,6 +28,7 @@ public partial class Game1
         Screen.Newspaper=>("新聞","朝刊",3),
         Screen.Diplomacy=>("外交","取引の返事",8),
         Screen.Transport=>("伝播",DeliveryPlayback?"配送":"出兵",7),
+        Screen.Battle when _setup.Campaign.UseRobotCombat && _robotSummary=>("新聞","戦況まとめ",3),
         Screen.Battle=>("戦闘","ロボット戦",5),
         Screen.BattleResearch=>("戦闘研究","戦訓カード",6),
         Screen.LessonCatalog=>("戦闘研究","戦訓図鑑",6),
@@ -39,7 +40,7 @@ public partial class Game1
         Screen.Disposition=>("内政","捕虜の処遇",1),
         _=>null
     };
-    private void DrawPhasePlaque(){if(CurrentPhasePlaque is {} label)DrawPhasePlaqueLabel(label.Main,label.Sub,label.Icon);}
+    private void DrawPhasePlaque(){if(CurrentPhasePlaque is {} label)DrawPhasePlaqueLabel(label.Main,label.Sub,label.Icon);DrawPopupHints();}
     private void DrawPhasePlaqueLabel(string main,string sub,int icon){
         Texture2D Load(string name){
             using var stream=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Ui",name));

@@ -4638,3 +4638,9 @@ NAS delivery-battle-link-0016（期限11月19日）、固定3637照合・警告�
 
 
 2026-11-23 02:46 JST 固定006B・20261130の24終了、11ポケット頭1570＋胴脚1489を実在庫非変更でMerge仮計算。完全体credit2/RequiredNative1/Eligible=true、作業員・固定・長距離・帰国・仕掛品なし。由来不足や訓練だけでは未組立を説明できない。Nodesの自動組立にRetinues走査なし、ポケット操作API・計画ロック・趣向は未監査なので即不具合とせず。24診断停止・元121成功維持、元不変・Check／警告エラー０・製品変更なし。NAS archives/convergence-analysis/sixth-pocket-assembly-audit-2026-11-23-0246。次はCPUポケット管理と合法な人間操作APIを確認。
+
+
+2026-11-23 03:02 JST ポケット取引評価を読取監査。24記録の11ポケット頭1570はOrigin12のみでCanTransferPocketの自国由来条件を満たさず、ポケット同側操作は並替えのみ・自動組立はNodesのみ。一方ComputerTrade.ValueはPocketでも補完部品ありなら+48し合法組立／移送手段を見ない。完成見込み評価の不一致候補、当該選択の決定因果は未証明。ルール変更せず外部評価候補で比較する余地。NAS archives/convergence-analysis/pocket-trade-value-read-audit-2026-11-23-0302。製品変更・新進行なし、元121収束維持。次は固定Value対照か合法経路考慮候補比較。
+
+
+2026-11-23 03:15 JST 固定006B・20261130の24終了/11ポケット現在node181で実ComputerTrade.Value呼出し。頭1570=64(基礎16+48)、胴脚1489=80(32+48)、実CanTransferPocketは頭false/胴脚true。実行不能な頭移送と完成ボーナスの併存を数値確認。ただし24保有価値で9/23提案選択因果は未証明。24診断停止・元121収束維持、元不変・Check／警告エラー０・製品変更なし。NAS archives/convergence-analysis/pocket-trade-value-probe-2026-11-23-0315。次は合法経路を考慮する外部候補を同初期比較。

@@ -391,8 +391,9 @@ public partial class Game1
         const float scale=.38f;
         int width=(int)Math.Ceiling(_font.MeasureString(_deliveryTagHint).X*scale)+24;
         var box=new Rectangle(Math.Clamp(_pointer.X+18,area.Left+8,area.Right-width-8),Math.Clamp(_pointer.Y-48,area.Top+8,area.Bottom-46),width,38);
-        _ui.Box(box,Cream);_ui.Box(new(box.X+2,box.Y+2,box.Width-4,box.Height-4),new Color(16,32,43));
-        _ui.Text(_deliveryTagHint,new(box.X+12,box.Y+9),scale,Cream);
+        if(!_directPairOpen)box.X+=NodeInspectorOffset;
+        string hint=_deliveryTagHint;QueuePopupHint(()=>{_ui.Box(box,Cream);_ui.Box(new(box.X+2,box.Y+2,box.Width-4,box.Height-4),new Color(16,32,43));
+        _ui.Text(hint,new(box.X+12,box.Y+9),scale,Cream);});
     }
     private void DrawHangarDrag(Robot robot)
     {

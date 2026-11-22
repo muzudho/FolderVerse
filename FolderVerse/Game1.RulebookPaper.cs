@@ -52,9 +52,9 @@ public partial class Game1
     private static Rectangle RulebookHintArea=>new(500,4,1040,128);
     private void DrawRulebookHint(string title,string description)
     {
-        var r=RulebookHintArea;DrawRulebookPaper(r);
+        QueuePopupHint(()=>{var r=RulebookHintArea;DrawRulebookPaper(r);
         _ui.Text(title,new(r.X+24,r.Y+20),.46f,RulebookInk);
         _ui.Box(new(r.X+24,r.Y+51,r.Width-48,1),RulebookInk*.5f);
-        _ui.Text(description,new(r.X+24,r.Y+65),System.Math.Min(.38f,(r.Width-48)/System.Math.Max(1,_font.MeasureString(description).X)),RulebookInk);
+        _ui.Text(description,new(r.X+24,r.Y+65),System.Math.Min(.38f,(r.Width-48)/System.Math.Max(1,_font.MeasureString(description).X)),RulebookInk);});
     }
 }

@@ -7,6 +7,8 @@ public partial class Game1
 {
     private Texture2D _conquestScenery;
     private string _conquestSceneryKey;
+    private bool ConquestSpeechBelow=>_conquestStage is 4 or 5;
+    private static readonly Rectangle ConquestLowerSpeech=new(500,730,1380,220);
     private static Rectangle ConquestRelationsButton=>new(1630,28,250,48);
     private void DrawConquestBroadcastBackground()
     {
@@ -14,7 +16,7 @@ public partial class Game1
             PortraitHudLayout.DrawMainBackground(_spriteBatch,BroadcastArt("annex"));
             DrawBroadcastBoard(4,ConquestFormulaSpace);
             _ui.Center("スタジオ別室 / 得点計算",new(1530,148,350,42),.42f,Cream);
-            _ui.Box(new(870,850,150,70),new Color(202,165,99));
+            _ui.Box(new(870,640,150,50),new Color(202,165,99));
         }else _spriteBatch.Draw(_conquestFocusedBackdrop,PortraitHudLayout.MainPanel,Color.White);
         PortraitHudLayout.DrawBackground(_spriteBatch,BroadcastArt("studio"));
         PortraitHudLayout.DrawSplitter(_ui);
@@ -38,14 +40,14 @@ public partial class Game1
     private void DrawConquestLocationBoard()
     {
         DrawBroadcastBoard(BroadcastBoardKind,ConquestBoard);
-        _ui.Box(new(920,752,720,36),new Color(35,54,59));
+        _ui.Box(new(920,665,720,36),new Color(35,54,59));
     }
     private void DrawConquestLocationCaption()
     {
         var node=_conquestBroadcast.Location>=0?_setup.Nodes.All[_conquestBroadcast.Location]:null;
         string title=node==null?"現地中継":_setup.Nodes.DisplayName(node)+(ConquestLocationSceneryKey(node) is "harbor" or "polar"?" / 屋外中継":" / 室内中継");
-        _ui.Box(new(700,955,1150,40),new Color(23,42,48)*.85f);
-        _ui.Center(title,new(715,957,1120,36),Math.Min(.43f,1100/Math.Max(1,_font.MeasureString(title).X)),Cream);
+        _ui.Box(new(700,970,1150,25),new Color(23,42,48)*.85f);
+        _ui.Center(title,new(715,970,1120,25),Math.Min(.43f,1100/Math.Max(1,_font.MeasureString(title).X)),Cream);
     }
     private void DrawConquestBroadcastHost()
     {
@@ -63,8 +65,9 @@ public partial class Game1
             int page=(int)(Math.Max(0,_conquestAge-(ConquestDetailedCard?ConquestStudioEnd:0))/3)%2;
             lines=System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Take(System.Linq.Enumerable.Skip(lines,page*3),3));
         }
-        var speech=SizeSpeechBalloon(new Rectangle(500,172,1000,260),lines);DrawSpeechBalloon(speech);
-        var area=BalloonRenderer.TextArea(speech);
+        var speech=ConquestSpeechBelow?ConquestLowerSpeech:SizeSpeechBalloon(new Rectangle(500,172,1000,260),lines);DrawSpeechBalloon(speech);
+        // The broad lower oval has room for three fixed-size lines without covering the exhibits.
+        var area=ConquestSpeechBelow?new Rectangle(820,speech.Y+38,820,132):BalloonRenderer.TextArea(speech);
         DrawSpeechParagraph(lines,area);
     }
 }
