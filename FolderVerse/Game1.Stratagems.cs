@@ -190,7 +190,7 @@ public partial class Game1
         DrawStratagemMapPreview();
         PrimaryRoundBox(StratagemTray,new Color(43,34,28)*.48f,12);
         _ui.Text($"計略 / 予約 {StratagemPending.Count()}件",new(573,823+StratagemTrayOffset),.37f,Cream);
-        _ui.Button(StratagemTrayBounds(new(370,854,180,110)),"マニュアル操作",_stratagemManual?Accent:Muted,.4f);
+        _ui.Button(StratagemTrayBounds(new(370,854,180,110)),"マニュアル操作",Accent,.4f);
         var cards=StratagemCards;_stratagemOffset=Math.Clamp(_stratagemOffset,0,Math.Max(0,cards.Length-4));
         if(cards.Length==0)_ui.Text("計略がありません",new(808,880+StratagemTrayOffset),.55f,Cream);
         int hover=-1;

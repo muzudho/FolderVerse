@@ -74,7 +74,7 @@ public partial class Game1
             _ui.Text(GameOverSpectating?"Game Over / 一時停止":_autoPauseComputerOnly?"Exhibition / 一時停止":"AUTO / 一時停止",new(80,88),.8f,Cream);
             _ui.Text("×でゲームを再開",new(80,154),.5f,Cream);
             _ui.Text($"人間 {_setup.PlayerCount} 人 / コンピューター {_setup.ComputerPlayerCount} 人",new(80,220),.5f,Cream);
-            _ui.Button(StatusMenuButton,"＜システムメニュー＞",Muted,.52f);
+            _ui.Button(StatusMenuButton,"＜システムメニュー＞",_setup.OwnerColor(_setup.PlayerSlot),.52f);
             _ui.Button(InactiveMenuItem,"電池を戻す",Muted,.5f);
             _ui.Button(HierarchyMenuItem,"征服者の関係図 / 暫定順位",Muted,.5f);
             _ui.Button(EndingMenuItem,"ここでゲームをエンディングにする",Muted,.48f);

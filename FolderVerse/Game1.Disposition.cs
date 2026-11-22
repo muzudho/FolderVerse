@@ -49,7 +49,7 @@ public partial class Game1
         if(MapFooterAction>=0 || _primaryActionSlide>0)_statusMenuOpen=false;
         if(_primaryActionSlide>=1)return;
         var button=StatusMenuButton;button.Y-=(int)MathF.Round(100*MathHelper.SmoothStep(0,1,_primaryActionSlide));
-        _ui.Button(button,"＜システムメニュー＞",Muted,.52f);
+        _ui.Button(button,"＜システムメニュー＞",Accent,.52f);
         if(_statusMenuOpen)
         {
             _ui.Button(InactiveMenuItem,"電池を戻す",Muted,.5f);

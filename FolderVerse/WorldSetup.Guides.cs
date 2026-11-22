@@ -46,6 +46,8 @@ public static class GuideNarration
         var pages=new List<string[]>();
         if(introduction){pages.Add(GuideMessages.Page("introduction",values));pages.Add(GuideMessages.Page("overview",values));pages.Add(GuideMessages.Page("safety",values));}
         else pages.Add(GuideMessages.Page("daily",values));
+        pages.Add(GuideMessages.Page("securePocket",values));
+        pages.Add(GuideMessages.Page("securePocketCaution",values));
         pages.Add(GuideMessages.Page(node==null?"cards":"defense",values));
         return new(pages.ToArray(),node?.Id??-1);
     }

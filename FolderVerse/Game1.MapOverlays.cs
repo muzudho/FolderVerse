@@ -12,10 +12,10 @@ public partial class Game1
     private Rectangle MapFooterBounds(Rectangle bounds)=>bounds;
     private void DrawMapNavigationButtons()
     {
-        if(_statusGlobe)_ui.Button(NetButton(1),(_globeSpinning?"✓ ":"□ ")+"くるくる回す",_globeSpinning?Accent:Muted,.45f);
+        if(_statusGlobe)_ui.Button(NetButton(1),(_globeSpinning?"✓ ":"□ ")+"くるくる回す",Accent,.45f);
         _ui.Button(NetButton(2),"征服者はどこ？",Accent,.45f);
         _ui.Button(NetButton(3),"今どこ見てる？",InspectorLocationNode>=0?Accent:Muted,.45f);
-        if(!_statusGlobe && !_setup.IsPrimaplana)_ui.Button(NetButton(4),_setup.TerritoryCounts[_setup.PlayerSlot]>0?"首都の面へ":"現在地の面へ",Muted,.48f);
+        if(!_statusGlobe && !_setup.IsPrimaplana)_ui.Button(NetButton(4),_setup.TerritoryCounts[_setup.PlayerSlot]>0?"首都の面へ":"現在地の面へ",Accent,.48f);
     }
     private const int DirectMapAction=3,LongMapAction=7;
     private float _primaryActionSlide;

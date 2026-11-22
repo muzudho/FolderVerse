@@ -1,0 +1,26 @@
+using FolderVerse;
+using Microsoft.Xna.Framework;
+if(args.Contains("--ui")){using var preview=new LessonAndControlsPreview();preview.Run();return;}
+static void Check(bool ok,string message){if(!ok)throw new Exception(message);Console.WriteLine("PASS "+message);}
+static (BattleState B,BattleUnit Y,BattleUnit X,BattleUnit Enemy) Board(bool trained=false,int sx=1,int sy=1,int ally=0){
+ var b=new BattleState(42,new(){NoWillTurns=100,PersuasionPercent=0}){Kind=BattleKind.Edge,Defender=1,BoardSize=13};b.Armies.Add(new(){Owner=0,HomeNode=0});b.Armies.Add(new(){Owner=1,HomeNode=1,Side=2});if(ally==2){b.Armies.Add(new(){Owner=2,HomeNode=2,Side=0,EntrySlot=0});b.Allied=(a,c)=>a==c||a!=1&&c!=1;}
+ BattleUnit Add(long id,int owner,Point p){var u=new BattleUnit{Id=id,Owner=owner,Position=p,Facing=BattleFacing.South,Robot=new(id,owner,RobotParts.Complete)};b.Units.Add(u);return u;}
+ var y=Add(1001,0,new(5,5));var x=Add(1002,ally,new(5+sx,5+sy));var enemy=Add(1003,1,new(12,12));if(trained)b.Lessons[0]=BattleLesson.LateralCourtesy;return(b,y,x,enemy);
+}
+static void Turn(BattleState b,BattleUnit y,BattleUnit x,Point ys,Point xs){var actions=b.Units.Where(u=>u.Active).ToDictionary(u=>u.Id,u=>new BattleAction(Point.Zero,u.Facing));actions[y.Id]=new(ys,BattleAi.Face(ys));actions[x.Id]=new(xs,BattleAi.Face(xs));BattleTurnResolver.Advance(b,actions);}
+var (b,y,x,enemy)=Board();Turn(b,y,x,new(0,1),new(-1,0));Check(y.Position==new Point(5,5)&&x.Position==new Point(6,6),"untrained crossing still physically collides and rolls back");Check((y.WitnessedLessons&BattleLesson.LateralCourtesy)!=0&&(enemy.WitnessedLessons&BattleLesson.LateralCourtesy)!=0,"actual failed crossing grants the normal eyewitness qualification");
+var ledger=new BattleLessons();y.Retreated=true;ledger.BringHome(y);Check((ledger.Owned[0]&BattleLesson.LateralCourtesy)==0&&ledger.Pending.Single().Lesson==BattleLesson.LateralCourtesy,"lesson is brought home as pending research");ledger.Research();Check((ledger.Owned[0]&BattleLesson.LateralCourtesy)!=0&&ledger.Research().Length==0,"research learns the lesson once");var restored=AutoSaveStore.Restore<BattleLessons>(AutoSaveStore.Capture(ledger));Check(restored.Owned[0]==ledger.Owned[0],"new lesson survives save graph roundtrip");
+foreach(int sx in new[]{-1,1})foreach(int sy in new[]{-1,1}){
+ (b,y,x,enemy)=Board(true,sx,sy);Turn(b,y,x,new(0,sy),new(-sx,0));Check(y.Position==new Point(5,5)&&x.Position==new Point(5,5+sy),"horizontal ally passes first for crossing "+sx+","+sy);Check((y.WitnessedLessons&BattleLesson.LateralCourtesy)==0,"avoided collision grants no new qualification");
+ Turn(b,y,x,new(0,sy),new(-sx,0));Check(y.Position==new Point(5,5+sy)&&x.Position==new Point(5-sx,5+sy),"vertical ally advances on the following turn rather than repeatedly yielding");
+}
+(b,y,x,enemy)=Board(true,ally:2);Turn(b,y,x,new(0,1),new(-1,0));Check(x.Position==new Point(5,6)&&y.Position==new Point(5,5),"trained robot can yield to an untrained allied country");
+(b,y,x,enemy)=Board();b.Lessons[0]=BattleLesson.None;b.Armies.Add(new(){Owner=2,HomeNode=2,Side=0,EntrySlot=0});x.Owner=2;b.Allied=(a,c)=>a==c||a!=1&&c!=1;b.Lessons[2]=BattleLesson.LateralCourtesy;Turn(b,y,x,new(0,1),new(-1,0));Check(x.Position==new Point(6,6)&&y.Position==new Point(5,5),"horizontal robot cannot grant an untrained vertical ally its lesson");
+(b,y,x,enemy)=Board(true);enemy.Position=new(7,5);Turn(b,y,x,new(0,1),new(-1,0));Check(x.Position==new Point(6,6)&&y.Position==new Point(5,5)&&(y.WitnessedLessons&BattleLesson.LateralCourtesy)==0,"nearby enemy keeps combat decisions outside this lesson");
+(b,y,x,enemy)=Board(true);b.Kind=BattleKind.Node;b.Flag=new(5,6);Turn(b,y,x,new(0,1),new(-1,0));Check(x.Position==new Point(6,6)&&y.Position==new Point(5,5)&&(y.WitnessedLessons&BattleLesson.LateralCourtesy)==0,"flag entry retains the separate flag courtesy rules");
+(b,y,x,enemy)=Board(true);b.Walls.Add(new(5,6));Turn(b,y,x,new(0,1),new(-1,0));Check(y.Position==new Point(5,5)&&x.Position==new Point(6,6)&&(y.WitnessedLessons&BattleLesson.LateralCourtesy)==0,"blocked terrain is not mistaken for a crossing lesson");
+(b,y,x,enemy)=Board(true);y.Retreating=true;var plan=b.Units.ToDictionary(u=>u.Id,u=>new BattleAction(Point.Zero,u.Facing));plan[y.Id]=new(new(0,1),BattleFacing.South);plan[x.Id]=new(new(-1,0),BattleFacing.West);BattleLessons.ApplyLateralCourtesy(b,b.Units.ToArray(),plan);Check(plan[y.Id].Step==new Point(0,1),"retreat movement is never held by courtesy");
+(b,y,x,enemy)=Board();x.Owner=1;enemy.Position=new(12,12);Turn(b,y,x,new(0,1),new(-1,0));Check((y.WitnessedLessons&BattleLesson.LateralCourtesy)==0,"enemy collision does not become an allied crossing lesson");
+Check(BattleLessons.All.Distinct().Count()==BattleLessons.All.Length&&BattleLessons.All.Contains(BattleLesson.LateralCourtesy)&&BattleLessons.Title(BattleLesson.LateralCourtesy).StartsWith("戦訓#19"),"catalog includes distinct lesson nineteen");Console.WriteLine("PASS lateral courtesy acquisition and movement integration");
+
+var guide=GuideMessages.Page("securePocket");var caution=GuideMessages.Page("securePocketCaution");Check(guide.Length==4&&caution.Length==4&&guide.Any(l=>l.Contains("外へ通じる道"))&&caution.Any(l=>l.Contains("海路")),"guide explains limited entrances, external routes and supply caution");

@@ -58,7 +58,10 @@ public partial class Game1
         _ui.Box(new(box.X+8,box.Y+10,box.Width,box.Height),new Color(5,16,25)*.45f);
         _ui.Box(box,owned?new Color(250,243,219):new Color(175,186,187));
         _ui.Box(new(box.X+12,box.Y+12,box.Width-24,9),accent);
-        if(lesson==BattleLesson.CrossfireSafety){
+        if(lesson==BattleLesson.LateralCourtesy){
+            LessonText("戦訓#19 敵が近くにいない場所で、",new(box.X+18,box.Y+21,box.Width-36,30),.48f,ink);
+            LessonText("斜め前の味方と衝突して進めなかった",new(box.X+18,box.Y+49,box.Width-36,30),.48f,ink);
+        }else if(lesson==BattleLesson.CrossfireSafety){
             LessonText(BattleLessons.Title(lesson),new(box.X+18,box.Y+21,box.Width-36,60),.48f,ink);
         }else if(lesson==BattleLesson.DefenseEndurance){
             LessonText("戦訓#17 旗が危ない中、",new(box.X+18,box.Y+21,box.Width-36,30),.48f,ink);
@@ -85,7 +88,12 @@ public partial class Game1
             foreach(var patch in BattlePieceArt.Pieces[BattlePieceArt.Index(role,facing)])
                 DiagramBox(new(x+patch.Bounds.X*2,y+patch.Bounds.Y*2,patch.Bounds.Width*2,patch.Bounds.Height*2),color);
         }
-        if(lesson==BattleLesson.CrossfireSafety){
+        if(lesson==BattleLesson.LateralCourtesy){
+            DiagramBox(new(cx-72,cy-6,52,52),new Color(181,191,165));
+            Robot(cx-70,cy-95,BattleFacing.South,accent);Robot(cx+42,cy-4,BattleFacing.West,accent);
+            DiagramBox(new(cx-10,cy+12,55,4),ink);DiagramBox(new(cx-12,cy+8,8,12),ink);
+            LessonText("横に進む味方を先に通す",new(box.X+30,box.Y+360,box.Width-60,42),.5f,ink);
+        }else if(lesson==BattleLesson.CrossfireSafety){
             Robot(cx-100,cy,BattleFacing.East,accent);Robot(cx,cy-100,BattleFacing.South,accent);Robot(cx,cy,BattleFacing.North,new Color(170,106,79));
             LessonText("射撃直前に味方の位置を確認",new(box.X+30,box.Y+360,box.Width-60,42),.5f,ink);
         }else if(lesson==BattleLesson.DefenseEndurance){
@@ -167,6 +175,7 @@ public partial class Game1
             LessonText("射線と、その両隣を確認",new(box.X+30,box.Y+360,box.Width-60,42),.52f,ink);
         }
         string[] lines=lesson switch {
+            BattleLesson.LateralCourtesy=>new[]{"前へ進むと、横から来た味方と衝突した。","生き残った目撃者が持ち帰り、研究する。","敵が近くにいなければ、横移動を先に通す。","縦移動は１手待つ。国旗と退却は別の判断。"},
             BattleLesson.CrossfireSafety=>new[]{"クロスファイアの射撃が味方に命中した。","生き残った目撃者が持ち帰り、研究する。","研究後は移動確定後に射線を確認する。","誤射になる射手だけ発砲を見送る。"},
             BattleLesson.DefenseEndurance=>new[]{"旗へ敵が迫る中、守備専用が旗から離れた。","生き残った目撃者が持ち帰り、研究する。","守備専用は壁の内側や味方の援護を使う。","追撃を控え、旗を守って持ちこたえる。"},
             BattleLesson.QueenWithoutTargets=>new[]{"単独参戦で説得相手が見つからず退却。","帰還したクイーンが戦訓を持ち帰る。","研究後はクイーンだけが退却を始める。","国旗を確保できる間は戦場に残る。"},
