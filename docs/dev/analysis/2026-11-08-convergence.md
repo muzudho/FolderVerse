@@ -4587,3 +4587,6 @@ NAS delivery-battle-link-0016（期限11月19日）、固定3637照合・警告�
 
 
 2026-11-22 22:14 JST 別の新規20261128/cast12/20CPU自然Materials25/25・raw/relay/scrap有効、固定006Bを累計400上限で実行。150地域・初期容量2308/在庫1686/管理人656/原料27696。142全体ターンで#15(Ruler14)が150/150・CanWinConquest=true、収束成功で停止。元保存不変・Check／警告エラー０・製品変更なし。NAS archives/convergence-analysis/natural-fourth-world-2026-11-22-2214。32地域81ターンとは条件が違い速度改善としない。次は未決着条件の障害または終盤類型の調査へ。
+
+
+2026-11-22 22:31 JST 20261128/cast12の既存142到達ログを読取突合。８同ID前線完全化のうち４は同ターン長距離の最終実ID一致、３は同地点の不足部位と一致する製造入荷消化（合流候補、確定前）、１は未分類。61ターンはrootAtStart9→完了Owner16で所有変化の確認が必要。完全化８を交換FRR８とせず、新たなゲーム進行／製品変更なし。NAS archives/convergence-analysis/frr-completion-channel-audit-2026-11-22-2231。次は製造３候補の合流先IDと所有変化を配送段階別に確認。

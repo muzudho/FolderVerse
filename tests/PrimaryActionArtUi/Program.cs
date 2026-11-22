@@ -20,7 +20,7 @@ sealed class PrimaryArtUi(string output):Game1{
   batch=new(GraphicsDevice);var pixel=new Texture2D(GraphicsDevice,1,1);pixel.SetData(new[]{Color.White});Set("_spriteBatch",batch);Set("_pixel",pixel);
   Content.RootDirectory=Path.Combine(Environment.GetEnvironmentVariable("OLD_RUNTIME")!,"Content");var font=Content.Load<SpriteFont>("UiFont");Set("_font",font);Set("_ui",new UiPainter(batch,pixel,font));
   var guide=Rect("GuideCallBounds");var end=(Rectangle)Call("PrimaryActionBounds",1);var medal=new Rectangle(26,766,300,300);
-  Check(guide.Width==96&&end.Width==192&&guide.Right<end.Left,"guide standard width and end turn double width");
+  Check(guide.Width==96&&end.Width==144&&guide.Right<end.Left,"guide standard width and end turn one-and-a-half width");
   Check(!guide.Intersects(medal),"guide does not overlap full portrait medal");
   var all=new List<Rectangle>{guide};for(int i=0;i<10;i++){var r=(Rectangle)Call("PrimaryActionBounds",i);Check(r.Right<=1920&&!r.Intersects(medal)&&all.All(a=>!a.Intersects(r)),"primary button separated and inside canvas "+i);all.Add(r);}
  }

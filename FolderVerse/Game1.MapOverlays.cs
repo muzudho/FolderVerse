@@ -32,8 +32,8 @@ public partial class Game1
     private const int FunctionTransferAction=6;
     private const int TradeAction=8,StratagemAction=9,PrimaryActionCount=10;
     private static Rectangle PrimaryActionHomeBounds(int index)=>index switch {
-        0=>new(668,974,96,96),1=>new(466,974,192,96),
-        _=>new(774+(index switch{7=>2,4=>3,5=>4,6=>5,8=>6,9=>7,_=>index-2})*106,974,96,96)
+        0=>new(620,974,96,96),1=>new(466,974,144,96),
+        _=>new(726+(index switch{7=>2,4=>3,5=>4,6=>5,8=>6,9=>7,_=>index-2})*106,974,96,96)
     };
     private Rectangle PrimaryActionBounds(int index){var r=PrimaryActionHomeBounds(index);if(index==1 && StratagemInterface && StratagemManualActions)r=new(r.X,974,r.Width,96);if(index!=PinnedPrimaryAction)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,_primaryActionSlide));if(StratagemInterface && index!=1)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,Math.Clamp(_stratagemTrayBlend*2,0,1)));return r;}
     private static Rectangle MapModeCloseButton(int index)=>new(PrimaryActionHomeBounds(index).Right+10,1002,40,40);
