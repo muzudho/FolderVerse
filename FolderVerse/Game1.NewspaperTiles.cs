@@ -10,14 +10,18 @@ public partial class Game1
     private FallingTilePattern _paperTilePattern;
     private FallingTileRenderer _paperTileRenderer;
     private RenderTarget2D _paperOldScene,_paperNextScene;
-    private SoundEffect _paperTileSound;
+    private SoundEffect _paperTileSound,_paperRunnerSound;
+    private Robot _paperRunner;
+    private RenderTarget2D _paperRunnerImage;
+    private bool _paperRunnerEntered;
     private int _paperLastTileBeat=-1;
     private bool _paperTileAudioUnavailable;
     private void ResetPaperTileSnapshots(){_paperOldScene?.Dispose();_paperNextScene?.Dispose();_paperOldScene=_paperNextScene=null;}
     private void DrawPaperScenes()
     {
+        PreparePaperRunner();
         float age=(float)(_paperAge-PaperTilesStart);
-        if(age<0){DrawPaperScenery(false);return;}
+        if(age<0){DrawPaperScenery(false);DrawPaperRunner();return;}
         if(age>=FallingTilePattern.DurationSeconds){DrawPaperScenery(true);return;}
         // Both full scenes are ready behind the screen-panel effect. Keep the HUD live.
         _spriteBatch.End();var viewport=GraphicsDevice.Viewport;var targets=GraphicsDevice.GetRenderTargets();var canvas=CanvasBounds();
@@ -40,9 +44,11 @@ public partial class Game1
             GraphicsDevice.SetRenderTargets(targets);GraphicsDevice.Viewport=viewport;
             _spriteBatch.Begin(transformMatrix:transform);
         }
+        DrawPaperRunner();
     }
     private void UpdatePaperTileSound()
     {
+        UpdatePaperRunnerSound();
         double age=_paperAge-PaperTilesStart;
         if(_paperTileAudioUnavailable || SeGain<=0 || age<0 || age>=FallingTilePattern.DurationSeconds)return;
         int beat=(int)(age/.12);if(beat==_paperLastTileBeat)return;_paperLastTileBeat=beat;

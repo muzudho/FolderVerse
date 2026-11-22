@@ -14,7 +14,7 @@ public partial class Game1
     private void BeginPaperScenes()
     {
         // Presentation randomness must not consume the simulation's random sequence.
-        ResetPaperTileSnapshots();_paperTilePattern=new FallingTilePattern(Random.Shared.Next());_paperLastTileBeat=-1;
+        BeginPaperRunner();ResetPaperTileSnapshots();_paperTilePattern=new FallingTilePattern(Random.Shared.Next());_paperLastTileBeat=-1;
         _paperMailboxKind=Random.Shared.Next(PaperMailboxKinds.Length);
         _paperBreakfast=Random.Shared.Next(2)==0;_paperCarrying=Random.Shared.Next(2)==0;
     }
@@ -62,5 +62,5 @@ public partial class Game1
         }
         PortraitHudLayout.DrawSplitter(_ui);
     }
-    private void DisposePaperScenes(){ResetPaperTileSnapshots();_paperTileRenderer?.Dispose();_paperTileSound?.Dispose();foreach(var image in _paperSceneArt.Values)image.Dispose();_paperSceneArt.Clear();}
+    private void DisposePaperScenes(){ResetPaperTileSnapshots();_paperTileRenderer?.Dispose();_paperTileSound?.Dispose();ResetPaperRunner();foreach(var image in _paperSceneArt.Values)image.Dispose();_paperSceneArt.Clear();}
 }
