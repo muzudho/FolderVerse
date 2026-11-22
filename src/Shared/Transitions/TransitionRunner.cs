@@ -7,13 +7,15 @@ using Microsoft.Xna.Framework;
 // Read-only casting and screen-space movement; never move the real inventory.
 public static class TransitionRunner
 {
-    public const float LeadSeconds=.45f,DurationSeconds=FallingTilePattern.ReleaseSeconds;
+    public const float PauseAtSeconds=.42f,PauseSeconds=.7f;
+    public const float LeadSeconds=.45f+PauseSeconds,DurationSeconds=FallingTilePattern.ReleaseSeconds+PauseSeconds;
+    public static float MotionTime(float age)=>age<PauseAtSeconds?age:age<PauseAtSeconds+PauseSeconds?PauseAtSeconds:age-PauseSeconds;
     public static Robot Select(IEnumerable<Robot> robots,int country,int seed)
     {
         var choices=robots.Where(r=>r.Owner==country && r.Parts==RobotParts.Complete && !r.IsWorkpiece && !r.IsDismantling && r.RecoveredRaw==null).ToArray();
         return choices.Length==0?null:choices[new Random(seed).Next(choices.Length)];
     }
-    public static Vector2 Position(float age)=>new(MathHelper.Lerp(-100,2020,age/DurationSeconds),760-Math.Abs(MathF.Sin(age*24))*13);
+    public static Vector2 Position(float age){float motion=MotionTime(age);return new(MathHelper.Lerp(-100,2020,motion/FallingTilePattern.ReleaseSeconds),760-Math.Abs(MathF.Sin(motion*24))*13);}
     public static byte[] EntryPcm(RobotMaterial material)
     {
         const int rate=22050,count=rate*28/100;var pcm=new byte[count*2];var random=new Random(129);

@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 public partial class Game1
 {
-    private const double PaperTilesStart=4.5;
+    private const double PaperTilesStart=5.2;
     private FallingTilePattern _paperTilePattern;
     private FallingTileRenderer _paperTileRenderer;
     private RenderTarget2D _paperOldScene,_paperNextScene;

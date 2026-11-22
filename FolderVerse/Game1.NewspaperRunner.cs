@@ -37,7 +37,7 @@ public partial class Game1
     {
         float age=(float)(_paperAge-PaperTilesStart)+TransitionRunner.LeadSeconds;
         if(age<0 || age>TransitionRunner.DurationSeconds || _paperRunnerImage==null)return;
-        var foot=TransitionRunner.Position(age);float stride=MathF.Sin(age*24);
+        var foot=TransitionRunner.Position(age);float stride=MathF.Sin(TransitionRunner.MotionTime(age)*24);
         _ui.Tile(new(foot.X,766),new(100,12),0,new Color(0,0,0)*.22f);
         // Keep a body/legs integrated mould rigid. Other legs alternate like a toy's crank.
         if(_paperRunner!=null && _paperRunner.IntegratedParts!=(RobotParts.Body|RobotParts.Legs)){
