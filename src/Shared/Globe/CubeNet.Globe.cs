@@ -202,10 +202,8 @@ public sealed partial class CubeNet
     private void DrawSurfacePuck(UiPainter ui,WorldSetup setup,Node node,SurfaceCell cell,Vector3 position,float radius,float pulse,
         Func<Vector3,Vector2> project,Func<Color,Color> tint)
     {
-        float hour=DawnMeridian is {} dawn?WorldDayCycle.Hour(setup,cell,dawn):12;
+        // Buildings and flags use EnabledColor/DisabledColor, never the day/night tint.
         var originalTint=tint;
-        bool spotlight=(CountryFocus>=0 || NodeFocus>=0 || AttackTargetSpotlight || FolderSearchFocus) && !DimNode(node.Id);
-        if(DawnMeridian.HasValue && !spotlight)tint=c=>originalTint(WorldDayCycle.Tint(c,hour));
         bool sea = !setup.Routes.Land(node.Cell,node.Center);
         var top = sea ? new Color(164,226,242) : new Color(255,232,153);
         var side = sea ? new Color(52,110,135) : new Color(152,111,53);
@@ -253,6 +251,7 @@ public sealed partial class CubeNet
         if(purpose)DrawFactorySmoke(ui,node,FacilityDevelopment.Grade(setup,node),pulse,(x,y,z)=>project(position+radius*GlobePurposeBuildingScale*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
         if(civilian)DrawNodeFacilities(ui,setup,node,(x,y,z)=>
             project(position+radius*(cell.U*x+cell.V*y+cell.Normal*z)),tint);
+        float hour=DawnMeridian is {} dawn?WorldDayCycle.Hour(setup,cell,dawn):12;
         if(DawnMeridian.HasValue && WorldDayCycle.Daylight(hour)<.5f && (purpose || civilian || platform)){
             float scale=purpose?GlobePurposeBuildingScale:1;
             for(int i=0;i<3;i++){

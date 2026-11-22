@@ -19,6 +19,15 @@ doc.Version=2;int id=doc.Objects.Count;doc.Objects.Add(new(){Type=typeof(int).As
 var old=AutoSaveStore.Restore<RobotWorld>(doc);Check(old.Nodes[0].StorageLimit==9&&(bool)Call(old,"CanHarvestMaple",0,1,RawMaterial.Maple),"version two buffer setting is ignored without losing usable capacity");
 foreach(int version in new[]{0,-1,AutoSaveStore.CurrentVersion+1}){var unsupported=AutoSaveStore.Capture(robots);unsupported.Version=version;bool rejected=false;try{AutoSaveStore.Restore<RobotWorld>(unsupported);}catch(AutoSaveStore.IncompatibleSaveException e){rejected=e.Message=="このセーブファイルは読め込めなくなりました";}Check(rejected,"unsupported version is rejected with requested message "+version);}
 var missing=JsonSerializer.Deserialize<AutoSaveStore.Document>("{\"Root\":0,\"Objects\":[]}")!;Check(missing.Version==0,"missing version never pretends to be current");
+var normal=new Color(200,140,80,120);var palette=MapNodeColors.FromEnabled(normal);var map=new CubeNet{AttackTargetSpotlight=true};map.AttackHighlightTargets.Add(1);
+Check(map.NodeTint(1,normal)==palette.EnabledColor&&map.NodeTint(2,normal)==palette.DisabledColor&&palette.DisabledColor.A==normal.A,"enabled and disabled palettes preserve normal color and transparency");
+Check(palette.DisabledColor.R>palette.DisabledColor.G&&palette.DisabledColor.G>palette.DisabledColor.B&&palette.DisabledColor.R-palette.DisabledColor.B<(normal.R-normal.B)/3,"disabled palette reduces saturation while retaining hue");
+var white=MapNodeColors.FromEnabled(Color.White).DisabledColor;Check(white.R>=190&&white.R==white.G&&white.G==white.B,"disabled palette dims white modestly without changing neutrality");
+var highlight=palette.HighlightColor;
+Check(highlight.R>normal.R&&(highlight.R-highlight.B)/(float)highlight.R>(normal.R-normal.B)/(float)normal.R&&highlight.A==normal.A,"highlight increases brightness and saturation and preserves alpha");
+map.HoveredNode=1;Check(map.NodeTint(1,normal)==highlight,"hover uses highlight palette");map.HoveredNode=2;Check(map.NodeTint(2,normal)==palette.DisabledColor,"unavailable object cannot become highlighted");map.HoveredNode=-1;
+Check(MapNodeColors.FromEnabled(Color.White).HighlightColor==Color.White,"highlight safely clamps fully bright colors");
+map.DawnMeridian=.7f;map.FocusBrightness=.9f;Check(map.NodeTint(1,normal)==palette.EnabledColor&&map.NodeTint(2,normal)==palette.DisabledColor,"node palettes are independent of time and spotlight brightness");
 string output=args[0];Directory.CreateDirectory(output);string path=Path.Combine(output,"current-save.json.gz");AutoSaveStore.Write(path,robots);Check(AutoSaveStore.Read<RobotWorld>(path).Nodes[0].Count==8,"version three gzip save roundtrip");
 var future=AutoSaveStore.Capture(robots);future.Version=AutoSaveStore.CurrentVersion+1;string futurePath=Path.Combine(output,"future-save.json.gz");using(var zip=new GZipStream(File.Create(futurePath),CompressionLevel.Fastest))JsonSerializer.Serialize(zip,future);
 using var game=new BufferUi(output,futurePath);game.Run();

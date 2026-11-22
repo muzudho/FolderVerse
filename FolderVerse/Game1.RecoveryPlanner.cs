@@ -142,6 +142,7 @@ public partial class Game1
         _recoveryNet.AttackHighlightTargets.UnionWith(availableNodes);
         int spotlightNode=HitRecoveryMap(availableNodes);
         if(spotlightNode<0){int selected=_recoveryStage==6?_recoveryDestination:source?_recoverySource:-1;if(availableNodes.Contains(selected))spotlightNode=selected;}
+        _recoveryNet.HoveredNode=spotlightNode;
         if(spotlightNode>=0 && RecoveryMapPosition(spotlightNode,out var center))_recoveryNet.FocusCircles.Add(new(center,RecoverySpotlightRadius(spotlightNode,center)));
         var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
         var old=GraphicsDevice.ScissorRectangle;_spriteBatch.End();
@@ -154,8 +155,9 @@ public partial class Game1
         int hovered=source?HitRecoveryMap(_setup.Nodes.All.Select(n=>n.Id)):-1;
         foreach(var n in _setup.Nodes.All){if(!RecoveryMapPosition(n.Id,out var at)||!RecoveryPanel.Contains(at.ToPoint()))continue;
             bool available=availableNodes.Contains(n.Id);
-            if(available){_ui.Box(new((int)at.X-5,(int)at.Y-5,10,10),new Color(255,214,93));_ui.Text(n.Id.ToString(),at+new Vector2(18,-9),.32f,Cream);}
-            else if(source&&_recoveryStage!=6&&n.Owner==_setup.PlayerSlot&&hovered==n.Id)_ui.Text("回収に向かえるロボットがいません",new(1020,920),.32f,Cream);
+            if(available)_ui.Box(new((int)at.X-5,(int)at.Y-5,10,10),new Color(255,214,93));
+            _ui.Text(n.Id.ToString(),at+new Vector2(18,-9),.32f,_recoveryNet.NodeTint(n.Id,Cream));
+            if(!available&&source&&_recoveryStage!=6&&n.Owner==_setup.PlayerSlot&&hovered==n.Id)_ui.Text("回収に向かえるロボットがいません",new(1020,920),.32f,Cream);
         }
     }
     private void DrawRecoveryPlanner()
