@@ -115,10 +115,11 @@ public partial class Game1
             int index=_folderScroll+(p.Y-298)/56;
             if(index<_inspectorFolderRows.Count){
                 var row=_inspectorFolderRows[index];int x=132+Math.Min(row.Depth,10)*25;
-                if(row.Kind<2 && p.X>=x && p.X<x+24){
+                if(row.Kind<2 && p.X>=x && p.X<x+60){
                     var expanded=row.Kind==0?_expandedFolderCountries:_expandedFolderRegions;
                     if(!expanded.Add(row.Id))expanded.Remove(row.Id);BuildFolderTree();
-                }else FocusFolderTreeRow(index);
+                    _inputOutcome="folder_tree_expansion_changed";
+                }else{FocusFolderTreeRow(index);_inputOutcome="folder_tree_map_focused";}
             }
         }
         return click || wheel!=0;
@@ -151,7 +152,7 @@ public partial class Game1
                 DrawFolderNodeCheck(row.Kind,row.Id,new(90,y+12,28,28));
                 _ui.Text(row.Label,new(x+64,y+15),Math.Min(.42f,(850-x-64)/Math.Max(1,_font.MeasureString(row.Label).X)),Cream);
             }
-            _ui.Text("ホイール：スクロール / ＋：展開 / 名前：地図で探す",new(90,863),.32f,Cream);
+            _ui.Text("ホイール：スクロール / ＋・フォルダー：展開",new(90,863),.32f,Cream);
             if(_inspectorFolderRows.Count>10){
                 int height=Math.Max(24,5600/_inspectorFolderRows.Count),top=298+_folderScroll*(560-height)/(_inspectorFolderRows.Count-10);
                 _ui.Box(new(874,298,5,560),Muted);_ui.Box(new(874,top,5,height),Accent);

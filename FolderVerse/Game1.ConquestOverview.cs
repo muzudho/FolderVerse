@@ -127,6 +127,11 @@ public partial class Game1
         if(_conquestStage==4)DrawPhaseTimer(new(700,1000,1150,8),_conquestAge,ConquestCardSeconds);
         _spriteBatch.End();
     }
+    private void DrawConquestTransition(){
+        float progress=MathHelper.SmoothStep(0,1,(float)(_conquestAge/.65));
+        float cover=_conquestStage switch{0 or 6=>progress,1 or 7=>1,2 or 8=>1-progress,_=>0};
+        DrawConquestCurtain(cover);
+    }
     private void DrawConquestCurtain(float cover){
         int width=(int)(960*cover);
         for(int side=0;side<2;side++)for(int x=0;x<width;x+=8){
