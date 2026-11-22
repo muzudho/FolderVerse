@@ -77,6 +77,7 @@ public sealed partial class CubeNet
     public static float MapObjectHop(double seconds,int index)=>6*MathF.Pow(MathF.Max(0,MathF.Sin((float)(seconds*MathHelper.TwoPi/1.2)+index*.45f)),2);
     private void DrawRobotLayer(UiPainter ui,WorldSetup world,Rectangle panel,Func<Node,Vector2?> project,float scale,float pulse=0,bool avoidResources=false)
     {
+        using var cost=new RenderFeatureCost.Scope(2,ShowRobots);
         _robotBadges.Clear();
         _globeRobotOverflow.Clear();
         if(!ShowRobots || !world.Campaign.UseRobotCombat)return;

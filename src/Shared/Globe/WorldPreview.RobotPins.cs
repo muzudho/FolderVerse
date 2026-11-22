@@ -32,7 +32,7 @@ public sealed partial class WorldPreview
     {
         using var measure=new WorldPreview.DrawCpuScope();
         net.ClearGlobeRobotBadges();net.ClearGlobeBatteries();
-        if(!setup.Campaign.UseRobotCombat)return;
+        if(!setup.Campaign.UseRobotCombat||(!net.ShowRobots&&!net.ShowBatteries))return;
         var mesh=_robotPinMesh;mesh.Clear();
         var corners=new Vector3[8];
         var orientation=GlobeOrientation(yaw,pitch);
@@ -120,6 +120,7 @@ public sealed partial class WorldPreview
                 var p=Screen(point);
                 return Vector2.Distance(screenCenter,new(p.X,p.Y));
             }
+            long robotCost=System.Diagnostics.Stopwatch.GetTimestamp();
             int visible=robots.Count<=4?robots.Count:CubeNet.VisibleRobotCount(robots.Count,
                 Math.Max(ScreenDistance(center+cell.U),ScreenDistance(center+cell.V)));
             const float spacing=.115f;
@@ -187,6 +188,8 @@ public sealed partial class WorldPreview
                 outward=outward.LengthSquared()>1?Vector2.Normalize(outward):Vector2.UnitY;
                 net.AddGlobeRobotOverflow(badgeNode,position+outward*24,robots.Count-visible,panel);
             }
+            if(net.ShowRobots)RenderFeatureCost.Milliseconds[2]+=System.Diagnostics.Stopwatch.GetElapsedTime(robotCost).TotalMilliseconds;
+            using var batteryCost=new RenderFeatureCost.Scope(3,net.ShowBatteries);
             foreach(int ruler in Enumerable.Range(0,setup.ActiveCount).Where(r=>net.ShowBatteries && setup.Relations.Powered[r] && setup.Nodes.Current(r)?.Id==node.Id && (net.ShowOtherCountries || setup.Relations.Controls(r)) && (net.VisibleOperationBatteries==null || net.VisibleOperationBatteries.Contains(r)))){
                 hop=emphasized || net.HoveredBattery==ruler?CubeNet.MapObjectHop(seconds,ruler)*.003f:0;
                 bounds=Rectangle.Empty;var point=setup.Routes.Position(setup.ConquerorLocations[ruler],setup.ConquerorPoints[ruler]);

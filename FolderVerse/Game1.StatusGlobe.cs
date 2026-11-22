@@ -144,6 +144,7 @@ public partial class Game1
     }
     private void DrawStatusGlobeCoordinates()
     {
+        using var cost=new RenderFeatureCost.Scope(0,_net.ShowMapSymbols);
         if(!_net.ShowMapSymbols)return;
         var occupied=new List<Rectangle>();
         var labels=new List<(int Cell,Vector2 Foot,Vector2 Tip,Rectangle Bounds,string Longitude,string Latitude)>();

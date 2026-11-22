@@ -70,6 +70,7 @@ public partial class Game1 : Game
     public Game1()
     {
         _graphics=new GraphicsDeviceManager(this) { PreferredBackBufferWidth=1920,PreferredBackBufferHeight=1080,PreferredDepthStencilFormat=DepthFormat.Depth24 };
+        IsFixedTimeStep=true;TargetElapsedTime=TimeSpan.FromSeconds(1d/18);_graphics.SynchronizeWithVerticalRetrace=false;
         InactiveSleepTime=TimeSpan.Zero;
         Content.RootDirectory="Content"; Window.Title="Folder Verse"; Window.AllowUserResizing=true; IsMouseVisible=true;
         _operations.Write("ime_state",new{stage="before_game",state=ImeBeforeGame,visualStudio=ImeVisualStudioBeforeGame});
@@ -817,9 +818,10 @@ public partial class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
-        long start=System.Diagnostics.Stopwatch.GetTimestamp();WorldPreview.DrawCpuMilliseconds=0;
-        DrawScene(gameTime);
+        long start=System.Diagnostics.Stopwatch.GetTimestamp();WorldPreview.DrawCpuMilliseconds=0;RenderFeatureCost.BeginFrame();
+        ApplyDisplayBreakerLatches();DrawScene(gameTime);
         _framePerformance.Draw(start/(double)System.Diagnostics.Stopwatch.Frequency,System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds,WorldPreview.DrawCpuMilliseconds);
+        UpdateDisplayBreaker(start/(double)System.Diagnostics.Stopwatch.Frequency,System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds);
         DrawPerformanceUi();
     }
     private void DrawScene(GameTime gameTime)

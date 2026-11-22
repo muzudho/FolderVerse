@@ -269,6 +269,7 @@ public sealed partial class CubeNet
     private static void DrawSurfaceFlag(UiPainter ui,WorldSetup world,int owner,SurfaceCell cell,Vector3 position,float radius,
         Func<Vector3,Vector2> project,Func<Color,Color> tint,bool roofMounted=false,bool centered=false,float flagTime=0)
     {
+        using var cost=new RenderFeatureCost.Scope(6,flagTime!=0);
         if (owner<0 || owner>=world.ActiveCount) return;
         var vertical = project(position+cell.Normal)-project(position);
         var across = MathF.Abs(Cross(project(position+cell.U)-project(position),vertical)) >=

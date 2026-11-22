@@ -1,5 +1,7 @@
 # ドキュメント案内
 
+- [表示ブレーカー：18 FPSと重い表示の自動OFF](dev/display-breaker.md)
+
 - [パフォーマンス表示：FPS・処理時間の読み方](dev/performance-overlay.md)
 
 - [廃品回収：実物ロボットの予約、ポケット貸出と帰還](dev/salvage-expeditions.md)
