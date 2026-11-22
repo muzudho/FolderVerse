@@ -30,10 +30,10 @@ public partial class Game1
     private void DrawHierarchyUi()
     {
         _ui.Text("征服者の関係図 / 暫定順位",new(54,25),.9f,Cream);
-        _ui.Text($"自分と配下の合計 / 点数 = 区画数 × {ConquerorRelations.RankingScale(_setup.ActiveCount)} + Entry No. / 電池無し = -100 + Entry No.",new(54,78),.43f,new(178,210,219));
+        _ui.Text($"自分と配下の合計 / 点数 = 区画数 × {ConquerorRelations.RankingScale(_setup.ActiveCount)} + Entry No. / 電池無し = -100 + Entry No.",new(54,160),.43f,new(178,210,219));
         var forest=_setup.Relations.RankedForest(_setup);
         var ranks=forest.OrderBy(e=>e.Ruler).Select(e=>e.Rank).ToArray();
-        var positions=HierarchyLayout.Arrange(_setup.Relations.Superiors.Take(_setup.ActiveCount).ToArray(),ranks,new(54,130,1806,840));
+        var positions=HierarchyLayout.Arrange(_setup.Relations.Superiors.Take(_setup.ActiveCount).ToArray(),ranks,new(54,208,1806,762));
         foreach(var parent in forest)
         {
             var kids=forest.Where(e=>_setup.Relations.Superiors[e.Ruler]==parent.Ruler).ToArray();if(kids.Length==0)continue;

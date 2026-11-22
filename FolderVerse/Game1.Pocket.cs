@@ -180,7 +180,7 @@ public partial class Game1
         _ui.Text("ポケットのロボットは自分と一緒に移動します",new(54,112),.55f,Cream);
         _ui.Text("通常のロボット輸送長期計画の対象にはなりません",new(54,160),.5f,Cream);
         string label="現在地："+_setup.Nodes.Label(node);
-        _ui.Text(label,new(1000,112),System.Math.Min(.5f,830/_font.MeasureString(label).X),Cream);
+        _ui.Text(label,new(1260,112),System.Math.Min(.5f,590/_font.MeasureString(label).X),Cream);
         foreach(bool fromNode in new[]{false,true})
         {
             var store=fromNode?_setup.Robots.Nodes[node.Id]:_setup.Robots.Retinues[player];int x=fromNode?1000:54;

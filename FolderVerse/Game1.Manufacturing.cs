@@ -89,7 +89,7 @@ public partial class Game1
         if(_manufacturingNode<0){_ui.Center("稼働できる工場がありません",new(54,420,1806,60),.6f,Cream);return;}
         var node=_setup.Nodes.All[_manufacturingNode];
         string destination=_setup.Nodes.DisplayName(node);
-        _ui.Center(destination+" / 今回の納品が最も多い地点",new(54,92,1806,40),.48f,Cream);
+        _ui.Center(destination+" / 今回の納品が最も多い地点",new(1260,88,590,55),.38f,Cream);
         var lines=_setup.Robots.Workshops.SelectMany((w,n)=>w.ProductionLines
             .Where(l=>(l.MapleRemaining>0?n:l.IntakeTarget??n)==_manufacturingNode && _setup.Nodes.All[n].Functional)
             .Select(l=>(Source:n,Line:l))).ToArray();

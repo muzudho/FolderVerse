@@ -13,7 +13,7 @@ public partial class Game1
     private int _lessonCatalogPage;
     private const int LessonCardsPerPage=3;
     private int LessonCatalogPages=>(BattleLessons.All.Length+LessonCardsPerPage-1)/LessonCardsPerPage;
-    private static readonly Rectangle LessonCatalogPrevious=new(720,120,140,44),LessonCatalogNext=new(1060,120,140,44);
+    private static readonly Rectangle LessonCatalogPrevious=new(720,150,140,38),LessonCatalogNext=new(1060,150,140,38);
     private void LessonCatalogInput(bool click,bool escape){
         if(escape || click && LessonBack.Contains(_pointer)){_screen=Screen.WorldStatus;return;}
         if(!click)return;
@@ -231,11 +231,11 @@ public partial class Game1
         LessonText(_setup.ConquerorNames[_setup.PlayerSlot]+" の戦訓",new(1260,20,580,58),.48f,_setup.OwnerColor(_setup.PlayerSlot));
         _lessonCatalogPage=Math.Clamp(_lessonCatalogPage,0,LessonCatalogPages-1);
         _ui.Button(LessonCatalogPrevious,"← 前へ",_lessonCatalogPage>0?Accent:Muted,.45f);
-        _ui.Center($"{_lessonCatalogPage+1} / {LessonCatalogPages}",new(860,120,200,44),.5f,Cream);
+        _ui.Center($"{_lessonCatalogPage+1} / {LessonCatalogPages}",new(860,150,200,38),.5f,Cream);
         _ui.Button(LessonCatalogNext,"次へ →",_lessonCatalogPage+1<LessonCatalogPages?Accent:Muted,.45f);
         for(int slot=0;slot<LessonCardsPerPage;slot++){
             int i=_lessonCatalogPage*LessonCardsPerPage+slot;if(i>=BattleLessons.All.Length)break;
-            var lesson=BattleLessons.All[i];int width=1810/LessonCardsPerPage;DrawLessonCard(lesson,new(55+slot*width,180,width-20,710),(_setup.Lessons.Owned[_setup.PlayerSlot]&lesson)!=0);
+            var lesson=BattleLessons.All[i];int width=1810/LessonCardsPerPage;DrawLessonCard(lesson,new(55+slot*width,200,width-20,690),(_setup.Lessons.Owned[_setup.PlayerSlot]&lesson)!=0);
         }
         _ui.Button(LessonBack,"国インスペクターへ戻る / Esc",Muted,.55f);
     }

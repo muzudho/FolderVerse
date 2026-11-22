@@ -31,8 +31,10 @@ sealed class PlaqueProbe(string output):Game1
   Check(subtitle.Width<=240&&subtitle.Height>=34&&icon.Width>=140&&icon.Bottom>128,"subtitle is shorter and taller; illustration protrudes beyond frame");
   var breaker=(Rectangle)typeof(Game1).GetField("SimpleDisplayButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
   Check(breaker.Left>=1240,"display controls clear the enlarged header");
+  Check(boundsForIcon().Top>icon.Top&&boundsForIcon().Bottom>=icon.Bottom-12,"plate moves down around icon rather than hanging icon below it");
+  Rectangle boundsForIcon()=>(Rectangle)typeof(Game1).GetField("PhasePlaqueBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
   Check(title.Center.X==subtitle.Center.X&&icon.Width==icon.Height,"titles share their center and icon uses a square without stretching");
-  var bounds=(Rectangle)typeof(Game1).GetField("PhasePlaqueBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;Check(bounds.Center.X==960&&bounds.Top>=12&&bounds.Bottom<=132&&bounds.Right<1510,"header shares body center and has generous height with top margin");
+  var bounds=(Rectangle)typeof(Game1).GetField("PhasePlaqueBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;Check(bounds.Center.X==960&&bounds.Top>=12&&bounds.Bottom<=150&&bounds.Right<1510,"header shares body center and has generous height with top margin");
  }
  void CheckOpeningDaylight(){
   using var preview=new WorldPreview(GraphicsDevice);
@@ -74,6 +76,13 @@ sealed class PlaqueProbe(string output):Game1
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
   if(frame++>0){Exit();return;}
+  Screen("OpeningBook");
+  using(var opening=new RenderTarget2D(GraphicsDevice,1920,1080)){
+   GraphicsDevice.SetRenderTarget(opening);Call("DrawOpeningFrame",new GameTime(TimeSpan.FromSeconds(4),TimeSpan.Zero));GraphicsDevice.SetRenderTarget(null);using var file=File.Create(Path.Combine(output,"00-opening-book.png"));opening.SaveAsPng(file,1920,1080);
+  }
+  var body=(Rectangle)typeof(Game1).GetField("OpeningIntroTextBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  var plaque=(Rectangle)typeof(Game1).GetField("PhasePlaqueBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  Check(body.Center.X==plaque.Center.X&&body.Top>=plaque.Bottom+24,"opening paragraph is centered below plaque with a clear gap");
   Screen("PlayerCount");Capture("01-player-count",()=>Call("DrawPlayerCount"));
   Screen("CastReview");Capture("02-cast",()=>Call("DrawCastUi"));
   Screen("WorldStatus");Set("_guideWorld",w);Set("_guideRuler",0);Set("_guideBriefing",GuideNarration.Build(w,0,true));Capture("03-guide",()=>Call("DrawGuideScene"));Set("_guideBriefing",null!);

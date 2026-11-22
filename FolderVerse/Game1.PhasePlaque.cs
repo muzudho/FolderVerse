@@ -9,9 +9,9 @@ public partial class Game1
     private Texture2D _phasePlaqueFrame,_phasePlaqueIcons,_phasePlaqueSubtitle;
     private Rectangle _phasePlaqueFrameSource,_phasePlaqueSubtitleSource;
     // Logical 1920x1080 coordinates. Shared screen center; allow the square illustration to protrude above the frame.
-    private static readonly Rectangle PhasePlaqueBounds=new(680,16,560,112);
+    private static readonly Rectangle PhasePlaqueBounds=new(680,36,560,112);
     private static readonly Rectangle PhasePlaqueIconBounds=new(690,-4,164,164);
-    private static readonly Rectangle PhasePlaqueTitleBounds=new(834,34,292,48),PhasePlaqueSubtitleBounds=new(860,88,240,34);
+    private static readonly Rectangle PhasePlaqueTitleBounds=new(834,54,292,48),PhasePlaqueSubtitleBounds=new(860,108,240,34);
     private (string Main,string Sub,int Icon)? CurrentPhasePlaque=>_screen switch {
         Screen.Title or Screen.Ending=>null,
         Screen.OpeningBook=>("世界構築","物語を開く",0),
@@ -106,7 +106,7 @@ public partial class Game1
     }
     private void DrawPhaseBackdropLogo(){
         // Translate the watermark without changing its aspect ratio; clip the part below the canvas.
-        const int top=144,height=1080-top;
+        const int top=176,height=1080-top;
         var source=new Rectangle(0,0,_titleLogo.Width,(int)MathF.Round(_titleLogo.Height*height/1080f));
         _spriteBatch.Draw(_titleLogo,new Rectangle(0,top,1920,height),source,Color.White*.14f);
     }
