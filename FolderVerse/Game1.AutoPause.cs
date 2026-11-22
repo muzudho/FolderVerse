@@ -9,7 +9,8 @@ public partial class Game1
     private bool _autoPauseComputerOnly;
     private int _autoPausePage;
     private static readonly Rectangle AutoPauseClose=new(1230,20,60,46);
-    private bool ComputerExhibition=>!_demoActive && _setup.ComputerOnly && _setup.PlayerSlot>=0 &&
+    private bool GameOverSpectating=>!_setup.ComputerOnly && _setup.PlayerSlot>=0 && !_setup.HasSurvivingHumanController;
+    private bool ComputerExhibition=>!_demoActive && (_setup.ComputerOnly || GameOverSpectating) && _setup.PlayerSlot>=0 &&
         _screen is Screen.WorldStatus or Screen.Transport or Screen.Battle or Screen.Industry or Screen.BattleResearch or Screen.Disposition;
     private bool BuildingWorld=>_screen is Screen.LandConquest or Screen.Fortune;
     private bool AutomaticGame=>_screen!=Screen.Title && !_demoActive && !BuildingWorld && (_autoPlay || ComputerExhibition);
@@ -70,7 +71,7 @@ public partial class Game1
         else if(_autoPausePage==1)DrawHierarchyUi();
         else if(_autoPausePage==2)DrawInactiveUi();
         else{
-            _ui.Text(_autoPauseComputerOnly?"Exhibition / 一時停止":"AUTO / 一時停止",new(80,88),.8f,Cream);
+            _ui.Text(GameOverSpectating?"Game Over / 一時停止":_autoPauseComputerOnly?"Exhibition / 一時停止":"AUTO / 一時停止",new(80,88),.8f,Cream);
             _ui.Text("×でゲームを再開",new(80,154),.5f,Cream);
             _ui.Text($"人間 {_setup.PlayerCount} 人 / コンピューター {_setup.ComputerPlayerCount} 人",new(80,220),.5f,Cream);
             _ui.Button(StatusMenuButton,"＜システムメニュー＞",Muted,.52f);

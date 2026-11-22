@@ -164,6 +164,7 @@ public partial class Game1 : Game
         if(BgmMenuInput(mouse,keyboard,active,click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(GlobeSettingsInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(ComputerManualInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        UpdateGameOverSpectating();
         if(AutoPauseInput(click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(ComputerExhibition && !_autoPlay)StartAutoPlay();
         if(AutomaticGame)_autoAge+=gameTime.ElapsedGameTime.TotalSeconds;

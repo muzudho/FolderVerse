@@ -64,6 +64,8 @@ public sealed partial class WorldSetup
     // Older saves and tutorial callers retain the original, terrain-limited cast.
     private bool _participantCountsConfigured;
     public bool ComputerOnly=>_participantCountsConfigured && PlayerCount==0;
+    // A captive still has a chance to return; game over begins only after battery removal.
+    public bool HasSurvivingHumanController=>Enumerable.Range(0,ActiveCount).Any(r=>IsHumanPlayer(r) && Relations.Powered[r]);
     public int ParticipantCount=>_participantCountsConfigured?PlayerCount+ComputerPlayerCount:Math.Max(20,PlayerCount);
     public void SetParticipantCounts(int humans,int computers)
     {
@@ -89,7 +91,7 @@ public sealed partial class WorldSetup
     public int[] ControlledParty(int player)=>Relations.Forest(this).Where(e=>ControllerOf(e.Ruler)==player && Relations.CanAct(e.Ruler)).Select(e=>e.Ruler).ToArray();
     public int[] ManualRulers()=>Relations.Forest(this).Where(e=>ControllerOf(e.Ruler)>=0 && Relations.CanAct(e.Ruler))
         .OrderBy(e=>HumanPlayers.Count==0?0:HumanPlayers.IndexOf(ControllerOf(e.Ruler))).Select(e=>e.Ruler).ToArray();
-    public int[] TurnPlayers()=>ComputerOnly?Array.Empty<int>():WorldDayCycle.Order(this,HumanPlayers.Count==0?new[]{TurnPlayer}:HumanPlayers.Where(h=>ControlledParty(h).Length>0));
+    public int[] TurnPlayers()=>ComputerOnly?Array.Empty<int>():WorldDayCycle.Order(this,(HumanPlayers.Count==0?new[]{TurnPlayer}:HumanPlayers.AsEnumerable()).Where(h=>ControlledParty(h).Length>0));
     public void SelectTurnRuler(int ruler)
     {
         int controller=ControllerOf(ruler);
