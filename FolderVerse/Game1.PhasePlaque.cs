@@ -8,8 +8,10 @@ public partial class Game1
 {
     private Texture2D _phasePlaqueFrame,_phasePlaqueIcons;
     private Rectangle _phasePlaqueFrameSource;
-    // Logical 1920x1080 coordinates. Below this 80px header, map controls start at y=82.
-    private static readonly Rectangle PhasePlaqueBounds=new(696,0,420,80);
+    // Logical 1920x1080 coordinates. Shared screen center; leave a 12px top margin.
+    private static readonly Rectangle PhasePlaqueBounds=new(680,12,560,98);
+    private static readonly Rectangle PhasePlaqueIconBounds=new(734,17,88,88);
+    private static readonly Rectangle PhasePlaqueTitleBounds=new(835,24,288,40),PhasePlaqueSubtitleBounds=new(807,73,344,22);
     private (string Main,string Sub,int Icon)? CurrentPhasePlaque=>_screen switch {
         Screen.Title or Screen.Ending=>null,
         Screen.OpeningBook=>("世界構築","物語を開く",0),
@@ -55,18 +57,19 @@ public partial class Game1
             _phasePlaqueFrameSource=right>=left?new Rectangle(left,top,right-left+1,bottom-top+1):_phasePlaqueFrame.Bounds;
         }
         _phasePlaqueIcons??=Load("phase-plaque-icons-v001.png");
-        var plate=new Rectangle(696,1,420,78);
+        var plate=PhasePlaqueBounds;
         var accent=DomesticTheme?_setup.OwnerColor(_setup.PlayerSlot):DefaultAccent;
         // A national-color backing rim; the title itself stays ivory and readable.
         DrawPhasePlaqueFrame(new Rectangle(plate.X-1,plate.Y,plate.Width+2,plate.Height),accent);
         DrawPhasePlaqueFrame(plate,Color.White);
         int cw=_phasePlaqueIcons.Width/3,ch=_phasePlaqueIcons.Height/3;
-        _spriteBatch.Draw(_phasePlaqueIcons,new Rectangle(746,4,72,72),new Rectangle(icon%3*cw,icon/3*ch,cw,ch),Color.White);
+        _spriteBatch.Draw(_phasePlaqueIcons,PhasePlaqueIconBounds,new Rectangle(icon%3*cw,icon/3*ch,cw,ch),Color.White);
         var ink=new Color(57,43,30);
-        var title=new Rectangle(828,9,244,34);var subtitle=new Rectangle(812,49,232,19);
+        var title=PhasePlaqueTitleBounds;var subtitle=PhasePlaqueSubtitleBounds;
         float Fit(string text,Rectangle area,float maximum)=>Math.Min(maximum,(area.Width-8)/Math.Max(1,_font.MeasureString(text).X));
-        PortraitHudLayout.CenterLines(_ui,_font,new[]{main},title,Fit(main,title,.68f),ink);
-        PortraitHudLayout.CenterLines(_ui,_font,new[]{sub},subtitle,Fit(sub,subtitle,.31f),ink);
+        // One scalar for both axes: Japanese full-width glyphs are never stretched to fit the plate.
+        PortraitHudLayout.CenterLines(_ui,_font,new[]{main},title,Fit(main,title,.76f),ink);
+        PortraitHudLayout.CenterLines(_ui,_font,new[]{sub},subtitle,Fit(sub,subtitle,.40f),ink);
     }
     private static (Rectangle Source,Rectangle Target)[] PhasePlaqueSegments(Rectangle source,Rectangle target){
         // Preserve the cloud lobes, rivets and rounded subtitle ends at a uniform scale.
@@ -84,7 +87,7 @@ public partial class Game1
     }
     private void DrawPhaseBackdropLogo(){
         // Translate the watermark without changing its aspect ratio; clip the part below the canvas.
-        const int top=112,height=1080-top;
+        const int top=144,height=1080-top;
         var source=new Rectangle(0,0,_titleLogo.Width,(int)MathF.Round(_titleLogo.Height*height/1080f));
         _spriteBatch.Draw(_titleLogo,new Rectangle(0,top,1920,height),source,Color.White*.14f);
     }

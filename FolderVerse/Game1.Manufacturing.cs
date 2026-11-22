@@ -80,7 +80,7 @@ public partial class Game1
     {
 
         _ui.Center($"今回の産業ターン　{IndustryTime.Format(_setup.Industry.AppliedUnits)} / {IndustryTime.Format(_setup.Industry.Result)}",
-            new(1140,35,710,50),.6f,Cream);
+            new(1260,35,590,50),.48f,Cream);
         var left=new Rectangle(54,145,850,790);var right=new Rectangle(990,145,870,790);
         _ui.Box(left,new Color(24,45,59));_ui.Box(right,new Color(24,45,59));
         _ui.Center("ロボット製造工場",new(left.X,160,left.Width,48),.65f,Cream);

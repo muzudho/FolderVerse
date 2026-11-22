@@ -140,8 +140,8 @@ public partial class Game1
         }
         var battle=_robotScenes[_battleWave];int frameIndex=RobotFrameIndex(battle);
         var frame=battle.Frames.Count==0?new BattleFrame(battle.Turn,BattlePhase.Result,Array.Empty<BattleUnitView>(),battle.FlagStanding,battle.LastFlagOwner):battle.Frames[frameIndex];
-        _ui.Text($"自動戦闘 / 全体ターン {_setup.Population.Turn}",new(1120,24),.65f,Cream);
-        _ui.Text($"同時進行 {_robotRound+1}/{_robotPlayback.Rounds.Length} / 戦場 {_battleWave+1}/{_robotScenes.Length} / {battle.Armies.Count}軍",new(1120,68),.55f,Cream);
+        _ui.Text($"自動戦闘 / 全体ターン {_setup.Population.Turn}",new(1260,24),.52f,Cream);
+        _ui.Text($"同時進行 {_robotRound+1}/{_robotPlayback.Rounds.Length} / 戦場 {_battleWave+1}/{_robotScenes.Length} / {battle.Armies.Count}軍",new(1260,68),.43f,Cream);
         _ui.Button(RobotBattlePrevious,"前の戦場",Muted,.5f);_ui.Button(RobotBattleNext,"次の戦場",Muted,.5f);
         BattleInfo($"{(battle.SplitBoard?"分割野戦":battle.Kind==BattleKind.Edge?"辺戦":"節戦")} / Point {battle.TargetNode+1} / {battle.Terrain} / 戦闘ターン {frame.Turn} / {PhaseLabel(frame.Phase)}",112,.5f);
         if(frame.Relief?.Length>0)BattleInfo(string.Join(" / ",frame.Relief.Select(r=>$"救援予定 {r.Count}体 / あと{r.Remaining}戦闘ターン")),132,.35f);

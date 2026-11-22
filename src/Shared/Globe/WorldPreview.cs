@@ -119,10 +119,11 @@ public sealed partial class WorldPreview : IDisposable
                 AddFace(mesh, new Vector3(half.X, -half.Y, -half.Z), Vector3.Left * width, Vector3.Up * height, Vector3.Forward, width, height, offset);
             }
         }
+        int terrainVertexCount=mesh.Count;
         if(opening)AddPreviewMaples(mesh,setup,offset);
         _vertices?.Dispose();
         _vertices = new VertexBuffer(_device, VertexPositionColorNormal.VertexDeclaration, mesh.Count, BufferUsage.WriteOnly);
-        _dayTileMap=null;_daySource=mesh.ToArray();_dayWorking=null;_dayPhases=null;_dayWasEnabled=false;_lastDawn=float.NaN;
+        ResetDaylightMesh(mesh.ToArray(),terrainVertexCount);
         _vertices.SetData(_daySource);
         _primitiveCount = mesh.Count / 3;
     }

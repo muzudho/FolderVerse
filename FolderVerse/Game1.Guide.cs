@@ -16,7 +16,7 @@ public partial class Game1
     private BalloonRenderer _speechBalloon;
     private string _guidePortraitKey;
     private static readonly string[] GuideBodies={"elevator","stewardess","waitress","concierge"};
-    private static readonly Rectangle GuideNext=new(1320,380,240,60);
+    private static readonly Rectangle GuideNext=new(1320,412,240,60);
 
     private bool CanRecallGuide=>IsStatusScreen && DomesticOperationsAllowed && !_autoPlay && !_demoActive && !_setup.ComputerOnly && _setup.TutorialStep==0 &&
         _setup.ControllerOf(_setup.PlayerSlot)>=0 && _setup.Relations.CanAct(_setup.PlayerSlot) && !_conquestOverview && !_diplomacyPending && !_setup.Industry.Pending && _subordinateNodes==null && _computerDomesticNodes==null;
@@ -91,13 +91,13 @@ public partial class Game1
         string name=roster.Names[_guideRuler];float nameScale=Math.Min(.46f,345/Math.Max(1,_font.MeasureString(name).X));
         string[] names=_font.MeasureString(name).X*nameScale<=178?new[]{name}:new[]{name[..((name.Length+1)/2)],name[((name.Length+1)/2)..]};
         PortraitHudLayout.CenterLines(_ui,_font,names,PortraitHudLayout.NameText,nameScale,ink);
-        DrawSpeechBalloon(new(500,100,1380,420));        var lines=_guideBriefing.Pages[_guidePage];
-        for(int i=0;i<lines.Length;i++)NewsLine(lines[i],830,175+i*43,850,.48f,ink);
+        DrawSpeechBalloon(new(500,132,1380,420));        var lines=_guideBriefing.Pages[_guidePage];
+        for(int i=0;i<lines.Length;i++)NewsLine(lines[i],830,207+i*43,850,.48f,ink);
         bool last=_guidePage==_guideBriefing.Pages.Length-1;
         _ui.StateButton(GuideNext,GuideMessages.Text(last?"finish":"next"),Accent,Muted,false,GuideNext.Contains(_pointer),attention:true,seconds:_animationTime,scale:.46f);
         float light=.35f+.65f*(1+MathF.Sin(_animationTime*3))/2;
-        _ui.Box(new(1331,401,18,18),new Color(20,55,38));
-        _ui.Box(new(1334,404,12,12),Color.Lerp(new Color(35,105,63),new Color(170,255,186),light));
+        _ui.Box(new(1331,433,18,18),new Color(20,55,38));
+        _ui.Box(new(1334,436,12,12),Color.Lerp(new Color(35,105,63),new Color(170,255,186),light));
     }
     private bool GuideVisible=>_guideBriefing!=null && ReferenceEquals(_guideWorld,_setup);
     private void DrawGuideScene()

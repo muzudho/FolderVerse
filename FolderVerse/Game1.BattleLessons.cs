@@ -228,7 +228,7 @@ public partial class Game1
     private void DrawLessonCatalog()
     {
         _ui.Text("戦訓カード",new(80,45),1.1f,Cream);
-        LessonText(_setup.ConquerorNames[_setup.PlayerSlot]+" の戦訓",new(1140,20,700,58),.48f,_setup.OwnerColor(_setup.PlayerSlot));
+        LessonText(_setup.ConquerorNames[_setup.PlayerSlot]+" の戦訓",new(1260,20,580,58),.48f,_setup.OwnerColor(_setup.PlayerSlot));
         _lessonCatalogPage=Math.Clamp(_lessonCatalogPage,0,LessonCatalogPages-1);
         _ui.Button(LessonCatalogPrevious,"← 前へ",_lessonCatalogPage>0?Accent:Muted,.45f);
         _ui.Center($"{_lessonCatalogPage+1} / {LessonCatalogPages}",new(860,120,200,44),.5f,Cream);

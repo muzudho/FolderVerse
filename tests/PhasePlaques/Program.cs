@@ -20,11 +20,50 @@ sealed class PlaqueProbe(string output):Game1
   var fontContent=new ContentManager(Services,Environment.GetEnvironmentVariable("UI_FONT_ROOT")!);var font=fontContent.Load<SpriteFont>("UiFont");Set("_font",font);batch=(SpriteBatch)Get("_spriteBatch");Set("_ui",new UiPainter(batch,(Texture2D)Get("_pixel"),font));
   w=(WorldSetup)Get("_setup");w.SetParticipantCounts(1,1);w.SetWorld(42);w.SetCast(8);w.SetTerritoryRights(2);var planner=new ComputerLandPlanner(w);foreach(int r in w.LandOrder())w.ClaimLand(r,planner.Select(r,null).Cells);w.CompleteLand(3,25,25);w.HumanPlayers.Add(0);w.SelectTurnRuler(0);
   ((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);
+  CheckOpeningDaylight();
   foreach(string screen in new[]{"PlayerCount","ComputerPlayerCount","Rolling","Review","CastRolling","CastReview","PlacementRolling","PlacementReview","Ready","PlayerSelect","PlayerReady","LandConquest","Fortune","WorldStatus","Industry","Newspaper","Diplomacy","Transport","Battle","BattleResearch","LessonCatalog","OpeningBook","OpeningSpace","OpeningLottery","OpeningReview"}){
    Screen(screen);var value=typeof(Game1).GetProperty("CurrentPhasePlaque",F)!.GetValue(this);Check(value!=null,"phase mapped: "+screen);
   }
   Screen("Title");Check(typeof(Game1).GetProperty("CurrentPhasePlaque",F)!.GetValue(this)==null,"title keeps its own logo");
-  var bounds=(Rectangle)typeof(Game1).GetField("PhasePlaqueBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;Check(bounds.Left>=640&&bounds.Bottom<=82&&bounds.Right<1510,"shared header stays in right pane above map controls and outside system menu");
+  var title=(Rectangle)typeof(Game1).GetField("PhasePlaqueTitleBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  var subtitle=(Rectangle)typeof(Game1).GetField("PhasePlaqueSubtitleBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  var icon=(Rectangle)typeof(Game1).GetField("PhasePlaqueIconBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  Check(title.Center.X==subtitle.Center.X&&icon.Width==icon.Height,"titles share their center and icon uses a square without stretching");
+  var bounds=(Rectangle)typeof(Game1).GetField("PhasePlaqueBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;Check(bounds.Center.X==960&&bounds.Top>=12&&bounds.Bottom<=112&&bounds.Right<1510,"header shares body center, has top margin and clears map controls");
+ }
+ void CheckOpeningDaylight(){
+  using var preview=new WorldPreview(GraphicsDevice);
+  object Read(string n)=>typeof(WorldPreview).GetField(n,F)!.GetValue(preview)!;
+  foreach(int seed in new[]{1924187616,42,1}){
+   var world=new WorldSetup{EquipmentMode=RobotEquipmentMode.Materials};world.SetWorld(seed);
+   typeof(WorldPreview).GetMethod("ShowOpeningPlanet",F)!.Invoke(preview,new object[]{world});
+   if(seed==1924187616){
+    var source=(VertexPositionColorNormal[])Read("_daySource");var extended=source.Concat(source.TakeLast(3)).ToArray();
+    var oldBuffer=(VertexBuffer)Read("_vertices");var buffer=new VertexBuffer(GraphicsDevice,VertexPositionColorNormal.VertexDeclaration,extended.Length,BufferUsage.WriteOnly);buffer.SetData(extended);
+    typeof(WorldPreview).GetField("_vertices",F)!.SetValue(preview,buffer);oldBuffer.Dispose();
+    var reset=typeof(WorldPreview).GetMethod("ResetDaylightMesh",F);
+    if(reset!=null)reset.Invoke(preview,new object[]{extended,(int)Read("_dayTerrainVertexCount")});
+    else {typeof(WorldPreview).GetField("_daySource",F)!.SetValue(preview,extended);}
+    Check(extended.Length%6==3,"regression includes an unpaired three-vertex model triangle");
+   }
+   preview.DaylightWorld=world;preview.DawnMeridian=.4f;
+   // This is the original crash path: opening resource models append non-quad triangles.
+   typeof(WorldPreview).GetMethod("ApplyDaylight",F)!.Invoke(preview,null);
+   Validate("opening seed "+seed);
+   world.SetParticipantCounts(1,1);world.SetCast(8);world.SetPlacement(1);
+   preview.ShowLandConquest(world,previewMaples:true);preview.DaylightWorld=world;
+   typeof(WorldPreview).GetMethod("ApplyDaylight",F)!.Invoke(preview,null);
+   Validate("land preview seed "+seed);
+  }
+  void Validate(string label){
+   var source=(VertexPositionColorNormal[])Read("_daySource");var working=(VertexPositionColorNormal[])Read("_dayWorking");var tiles=(MapTerrainTile[])Read("_dayTileMap");int terrain=(int)Read("_dayTerrainVertexCount");
+   Check(source.Length==((VertexBuffer)Read("_vertices")).VertexCount&&source.Length==tiles.Length&&source.Length==working.Length,"daylight cache matches actual mesh: "+label);
+   Check(terrain%6==0&&terrain<source.Length&&tiles.Skip(terrain).All(t=>t.Cell<0),"triangular resource models never enter six-vertex terrain mapping: "+label);
+   var colors=working.Skip(terrain).Select(v=>v.Color).ToArray();preview.SelectedCell=0;preview.DawnMeridian=.41f;typeof(WorldPreview).GetMethod("ApplyDaylight",F)!.Invoke(preview,null);
+   var phases=(float[])Read("_dayPhases");
+   for(int i=terrain;i<source.Length;i++){float hour=WorldDayCycle.Wrap(preview.DawnMeridian-phases[i]+8/24f)*24;if(working[i].Color!=WorldDayCycle.Tint(source[i].Color,hour))throw new Exception("Terrain highlight recolored a resource model");}
+   Check(true,"resource model keeps own palette under daylight: "+label);
+  }
  }
  void Capture(string name,Action draw){
   using var target=new RenderTarget2D(GraphicsDevice,1920,1080);GraphicsDevice.SetRenderTarget(target);GraphicsDevice.Clear(new Color(16,35,46));batch.Begin();draw();Call("DrawPhasePlaque");batch.End();GraphicsDevice.SetRenderTarget(null);using var file=File.Create(Path.Combine(output,name+".png"));target.SaveAsPng(file,1920,1080);
@@ -56,10 +95,10 @@ sealed class PlaqueProbe(string output):Game1
    Call("DrawPhasePlaqueLabel","世界征服状況","朝の放送",4);batch.End();GraphicsDevice.SetRenderTarget(null);using var file=File.Create(Path.Combine(output,"09-conquest-"+size.X+".png"));target.SaveAsPng(file,size.X,size.Y);
   }
   var icons=(Texture2D)Get("_phasePlaqueIcons");var pixels=new Color[icons.Width*icons.Height];icons.GetData(pixels);Check(pixels[0].A<=1&&pixels[0].R==0&&pixels[0].G==0&&pixels[0].B==0,"icon atlas transparent corners cannot leak colored RGB");
-  var source=(Rectangle)Get("_phasePlaqueFrameSource");var targetBox=new Rectangle(696,1,420,78);
+  var source=(Rectangle)Get("_phasePlaqueFrameSource");var targetBox=(Rectangle)typeof(Game1).GetField("PhasePlaqueBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
   var segments=((Rectangle Source,Rectangle Target)[])typeof(Game1).GetMethod("PhasePlaqueSegments",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{source,targetBox})!;
-  Check(segments.Sum(s=>s.Target.Width)==420&&segments[0].Target.Right==segments[1].Target.Left&&segments[1].Target.Right==segments[2].Target.Left,"cloud frame slices cover header without seams or overlaps");
-  Check(Math.Abs(segments[0].Target.Width/(float)segments[0].Source.Width-78f/source.Height)<.002,"cloud lobes preserve uniform scale instead of vertical compression");
+  Check(segments.Sum(s=>s.Target.Width)==targetBox.Width&&segments[0].Target.Right==segments[1].Target.Left&&segments[1].Target.Right==segments[2].Target.Left,"cloud frame slices cover header without seams or overlaps");
+  Check(Math.Abs(segments[0].Target.Width/(float)segments[0].Source.Width-targetBox.Height/(float)source.Height)<.002,"cloud lobes preserve uniform scale instead of vertical compression");
   Console.WriteLine("PASS phase plaques real scene rendering and screen mapping");Exit();
  }
 }

@@ -4629,3 +4629,6 @@ NAS delivery-battle-link-0016（期限11月19日）、固定3637照合・警告�
 
 
 2026-11-23 01:59 JST 固定006B・20261130の最初の原料交換を実ID追跡。1産業後、4/node7のStyrene931と0/node8のMaple897が交換され、10まで897はnode7/16units・931はnode8/16units。node8は8終了でOwner13へ。1/5は両製造レーンなし、10はnode8脚レーンAge0。観測点で即時消費・搬出なし、将来価値や趣向を否定せず成立＝製造寄与としない。10診断停止・元121収束維持、元不変・Check／警告エラー０・製品変更なし。NAS archives/convergence-analysis/sixth-trade-raw-followup-2026-11-23-0159。次は長期利用か実ロボット交換の後続実戦。
+
+
+2026-11-23 02:14 JST 固定006B・20261130の成立原料交換２荷を121征服まで追跡。Maple897/node7、Styrene931/node8は各観測点で16units維持、終端Owner2/13。直接製造利用を確認できない２例であり全52成立の価値や間接効果を否定しない。121/#20/110地域再現、元不変・Check／警告エラー０・製品変更なし。NAS archives/convergence-analysis/sixth-trade-raw-long-followup-2026-11-23-0214。次は２荷再追跡を終え、成立ロボット交換の実戦投入を１例確認。

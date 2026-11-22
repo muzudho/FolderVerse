@@ -13,7 +13,7 @@ public partial class Game1
         if(ConquestStudioCut){
             PortraitHudLayout.DrawMainBackground(_spriteBatch,BroadcastArt("annex"));
             DrawBroadcastBoard(4,ConquestFormulaSpace);
-            _ui.Center("スタジオ別室 / 得点計算",new(1100,290,730,48),.57f,Cream);
+            _ui.Center("スタジオ別室 / 得点計算",new(1100,320,730,30),.57f,Cream);
             _ui.Box(new(870,850,150,70),new Color(202,165,99));
         }else _spriteBatch.Draw(_conquestFocusedBackdrop,PortraitHudLayout.MainPanel,Color.White);
         PortraitHudLayout.DrawBackground(_spriteBatch,BroadcastArt("studio"));
@@ -63,7 +63,7 @@ public partial class Game1
             int page=(int)(Math.Max(0,_conquestAge-(ConquestDetailedCard?ConquestStudioEnd:0))/3)%2;
             lines=System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Take(System.Linq.Enumerable.Skip(lines,page*3),3));
         }
-        var speech=new Rectangle(500,90,1000,180);DrawSpeechBalloon(speech);
+        var speech=new Rectangle(500,132,1000,180);DrawSpeechBalloon(speech);
         var area=BalloonRenderer.TextArea(speech);
         float scale=Math.Min(.55f,Math.Min(area.Width/Math.Max(1,System.Linq.Enumerable.Max(lines,l=>_font.MeasureString(l).X)),area.Height/(float)(lines.Length*_font.LineSpacing)));
         PortraitHudLayout.CenterLines(_ui,_font,lines,area,scale,ink);

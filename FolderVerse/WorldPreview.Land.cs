@@ -65,10 +65,12 @@ public sealed partial class WorldPreview
                     : WorldTerrain.MapColorAt(height,cell.Normal,setup.PolarAxis,setup.WorldSeed)),
                 brightness:Brightness(cell.Id));
         }
+        int terrainVertexCount=mesh.Count;
         if(previewMaples)AddPreviewMaples(mesh,setup,offset);
         _vertices.Dispose();
         _vertices=new VertexBuffer(_device,VertexPositionColorNormal.VertexDeclaration,mesh.Count,BufferUsage.WriteOnly);
-        _vertices.SetData(mesh.ToArray());_primitiveCount=mesh.Count/3;
+        ResetDaylightMesh(mesh.ToArray(),terrainVertexCount);
+        _vertices.SetData(_daySource);_primitiveCount=mesh.Count/3;
         BuildWhirlpoolMesh(setup,Brightness);
     }
 }

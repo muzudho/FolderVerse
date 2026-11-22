@@ -12,6 +12,12 @@ public sealed partial class WorldPreview
     private float _lastDawn=float.NaN;
     private bool _dayWasEnabled;
     private MapTerrainTile[] _dayTileMap;
+    private int _dayTerrainVertexCount;
+    private void ResetDaylightMesh(VertexPositionColorNormal[] source,int terrainVertexCount){
+        _daySource=source;_dayTerrainVertexCount=terrainVertexCount;
+        _dayTileMap=null;_dayWorking=null;_dayPhases=null;_dayWasEnabled=false;_lastDawn=float.NaN;
+        _lastSelectedCell=-1;_lastHighlightTiles.Clear();
+    }
     private readonly HashSet<MapTerrainTile> _lastHighlightTiles=new();
     private int _lastSelectedCell=-1;
     private void ApplyDaylight()
@@ -42,7 +48,9 @@ public sealed partial class WorldPreview
         }
         if(_dayTileMap==null){
             _dayTileMap=new MapTerrainTile[_daySource.Length];
-            for(int i=0;i<_daySource.Length;i+=6){
+            Array.Fill(_dayTileMap,new MapTerrainTile(-1,0,0));
+            // Only the terrain prefix consists of six-vertex quads; models contain arbitrary triangles.
+            for(int i=0;i+6<=_dayTerrainVertexCount;i+=6){
                 var center=Vector3.Zero;for(int j=0;j<6;j++)center+=_daySource[i+j].Position/6;
                 var tile=new MapTerrainTile(-1,0,0);
                 foreach(var cell in setup.Cells){
@@ -57,7 +65,7 @@ public sealed partial class WorldPreview
         _dayWorking??=new VertexPositionColorNormal[_daySource.Length];
         for(int i=0;i<_daySource.Length;i++){
             var v=_daySource[i];var tile=_dayTileMap[i];
-            v.Color=MapTerrainColors.ForTile(v.Color,tile.Cell>=0 && (HighlightTiles.Contains(tile) || tile.Cell==SelectedCell));
+            if(i<_dayTerrainVertexCount)v.Color=MapTerrainColors.ForTile(v.Color,tile.Cell>=0 && (HighlightTiles.Contains(tile) || tile.Cell==SelectedCell));
             if(daylight){float hour=WorldDayCycle.Wrap(DawnMeridian-_dayPhases[i]+8/24f)*24;v.Color=WorldDayCycle.Tint(v.Color,hour);}
             _dayWorking[i]=v;
         }

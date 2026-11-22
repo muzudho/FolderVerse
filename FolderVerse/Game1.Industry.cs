@@ -99,7 +99,7 @@ public partial class Game1
             result==0?new[]{"工場はストップだー！","次こそ製造できますように！"}:
             _setup.Industry.Jackpot?new[]{"数年に一度の当たり年だあ！？","今だ、大チャーンス！"}:
             new[]{"さあ、工場を動かしましょう！"};
-        var speech=new Rectangle(500,100,900,320);
+        var speech=new Rectangle(500,132,900,320);
         DrawSpeechBalloon(speech);
         var textArea=BalloonRenderer.TextArea(speech);
         float scale=Math.Min(.68f,textArea.Width/Math.Max(1,System.Linq.Enumerable.Max(lines,l=>_font.MeasureString(l).X)));
