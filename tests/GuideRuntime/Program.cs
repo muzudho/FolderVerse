@@ -15,7 +15,7 @@ sealed class GuideProbe:Game1{
  void CheckNavigation(){
  Call("ResetInspector");Set("_domesticSlide",0f);Set("_primaryActionSlide",0f);
  var button=(Rectangle)typeof(Game1).GetProperty("GuideCallBounds",F)!.GetValue(this)!;
- Check(button.Right<360&&button.Bottom==1070,"recall primary button is left of turn end");
+ Check(button.X>=330&&button.Right<466&&button.Width==96&&button.Bottom==1070,"recall primary button is left of turn end");
  Check((bool)Call("MapOverlayClick",button.Center,false)&&Get("_guideBriefing")!=null,"primary action recalls guide after same-day dismissal");
  Call("GuideInput",true,false,false,true);Check(!(bool)Call("GuideInput",true,false,false,false),"recall preserves automatic once-per-day behavior");
  var net=(CubeNet)Get("_net");net.Home(w);
