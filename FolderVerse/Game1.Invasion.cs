@@ -59,7 +59,7 @@ public partial class Game1
         foreach(int ruler in Enumerable.Range(0,_setup.ActiveCount).Where(CanPlanRuler))
             foreach(int target in InvasionTargets(ruler))if(EnemyTarget(target))_net.MovementTargets.Add(target);
         RefreshWarTargetHighlights();
-        _invasionSources.Clear();_invasionPage=0;_invasionPicker=-1;
+        _invasionSources.Clear();_invasionPage=0;_invasionPicker=-1;_net.KeepFlagsEnabled=true;
     }
     private void RefreshWarTargetHighlights()
     {
@@ -119,17 +119,17 @@ public partial class Game1
     }
     private bool InvasionClick(Point p)
     {
-        if(SelectedWithdrawal!=null)return WithdrawalClick(p) || new Rectangle(54,150,850,825).Contains(p);
-        if(new Rectangle(84,850,110,42).Contains(p)){_invasionPage=Math.Max(0,_invasionPage-1);return true;}
-        if(new Rectangle(210,850,110,42).Contains(p)){_invasionPage=Math.Min(InvasionPageStarts().Count-1,_invasionPage+1);return true;}
-        if(new Rectangle(570,850,274,42).Contains(p)){ResetInvasionTarget();return true;}
+        if(SelectedWithdrawal!=null)return WithdrawalClick(p) || WarInspectorLocalBounds.Contains(p);
+        if(InvasionPrevious.Contains(p)){_invasionPage=Math.Max(0,_invasionPage-1);return true;}
+        if(InvasionNext.Contains(p)){_invasionPage=Math.Min(InvasionPageStarts().Count-1,_invasionPage+1);return true;}
+        if(InvasionChangeTarget.Contains(p)){ResetInvasionTarget();return true;}
         foreach(var layout in InvasionVisibleRows())
         {
             int index=layout.Index;
             var row=_invasionSources[index];
             if(row.Queen && InvasionQueenAt(layout.Bounds).Contains(p)){row.Selected=!row.Selected;if(_computerMarches==null)ReserveInvasion(row);return true;}
             var robots=InvasionPreviewRobots(row);var available=InvasionRobots(row);
-            for(int slot=0;slot<robots.Length;slot++)if(InvasionCardAt(layout.Bounds,slot).Contains(p))
+            for(int slot=layout.FirstSlot;slot<layout.FirstSlot+layout.SlotCount;slot++)if(InvasionCardAt(layout.Bounds,slot-layout.FirstSlot).Contains(p))
             {
                 if(available.Any(a=>a.Id==robots[slot].Id)){
                     if(!row.Robots.Remove(robots[slot].Id)){row.Robots.Add(robots[slot].Id);BeginWorkReservationEffect(robots[slot],row.Owner);}
@@ -195,7 +195,7 @@ public partial class Game1
     private string InvasionTargetLabel=>_selectedMoveNode<0?"地図上で攻めることができる目標が光っています。　目標をクリックしてください。":"侵攻先："+_setup.Nodes.DisplayName(_setup.Nodes.All[_selectedMoveNode]);
     private void DrawInvasionPanel()
     {
-        _ui.Box(new(54,150,850,825),new Color(27,49,62));
+        _ui.Box(WarInspectorLocalBounds,new Color(27,49,62));
         _ui.Text("開戦・増援の予約",new(84,177),.8f,Cream);
         _ui.Button(new(620,177,224,42),"前回の開戦中止",Muted,.4f);
         if(SelectedWithdrawal!=null){DrawWithdrawal();return;}
@@ -210,9 +210,9 @@ public partial class Game1
             if(!source.Queen)_ui.Text($"選択中 {source.Robots.Count}体",new(r.X+420,r.Y+8),.34f,Cream);
             if(source.Queen)_ui.Button(InvasionQueenAt(r),(source.Selected?"✓ クイーンも参加":"□ クイーンも参加")+$" / {source.Robots.Count}体",source.Selected?Accent:Muted,.34f);
             var robots=InvasionPreviewRobots(source);var available=InvasionRobots(source);
-            for(int slot=0;slot<robots.Length;slot++)
+            for(int slot=layout.FirstSlot;slot<layout.FirstSlot+layout.SlotCount;slot++)
             {
-                var card=InvasionCardAt(r,slot);var robot=robots[slot];bool selected=source.Robots.Contains(robot.Id);
+                var card=InvasionCardAt(r,slot-layout.FirstSlot);var robot=robots[slot];bool selected=source.Robots.Contains(robot.Id);
                 _ui.Box(card,selected?Accent:new Color(19,35,46));
                 DrawRobotGlyph(new(card.X+4,card.Y+3,26,31),robot,whiteOutline:true);
                 string reservation=InvasionReservationLabel(source,robot);
@@ -226,9 +226,10 @@ public partial class Game1
             }
             if(robots.Length==0)_ui.Text("完成ロボットなし",new(r.X+10,r.Y+40),.34f,Cream);
         }
-        _ui.Button(new(84,850,110,42),"←",Muted,.5f);_ui.Button(new(210,850,110,42),"→",Muted,.5f);
-        if(_selectedMoveNode>=0)_ui.Button(new(570,850,274,42),"目標を選び直す",Muted,.48f);
-        _ui.Text("ロボットをクリックして出撃予約 / 地図の別の目標で切替",new(84,900),.35f,Cream);
-        _ui.Text("直送便の配送後に実行 / １体でも出撃できなければ予定全体を中止",new(84,938),.34f,Cream);
+        _ui.Button(InvasionPrevious,"←",Muted,.5f);_ui.Button(InvasionNext,"→",Muted,.5f);
+        _ui.Center($"{_invasionPage+1} / {InvasionPages().Count}",new(330,584,220,36),.4f,Cream);
+        if(_selectedMoveNode>=0)_ui.Button(InvasionChangeTarget,"目標を選び直す",Muted,.48f);
+        _ui.Text("ロボットをクリックして出撃予約 / 地図の別の目標で切替",new(84,632),.35f,Cream);
+        _ui.Text("直送便の配送後に実行 / １体でも出撃できなければ予定全体を中止",new(84,650),.34f,Cream);
     }
 }

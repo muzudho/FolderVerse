@@ -662,7 +662,7 @@ sealed class CheckGame:Game1
         var sources=(System.Collections.IList)Get("_invasionSources");
         int index=Enumerable.Range(0,sources.Count).Single(i=>!(bool)sources[i]!.GetType().GetField("Queen")!.GetValue(sources[i])! && (int)sources[i]!.GetType().GetField("Node")!.GetValue(sources[i])! ==home.Id);
         Set("_invasionPage",(int)Call("InvasionPageForSource",index));
-        var layouts=((IEnumerable<(int Index,int Row,Rectangle Bounds)>)Call("InvasionVisibleRows")).ToArray();
+        var layouts=(((System.Collections.IEnumerable)Call("InvasionVisibleRows")).Cast<object>().Select(l=>(Index:(int)l.GetType().GetProperty("Index")!.GetValue(l)!,Row:(int)l.GetType().GetProperty("Row")!.GetValue(l)!,Bounds:(Rectangle)l.GetType().GetProperty("Bounds")!.GetValue(l)!))).ToArray();
         var bounds=layouts.Single(l=>l.Index==index).Bounds;
         Rectangle Card(int slot)=>(Rectangle)typeof(Game1).GetMethod("InvasionCardAt",F|BindingFlags.Static)!.Invoke(null,new object[]{bounds,slot})!;
         Check(Card(0).X==Card(12).X && Card(59).Bottom<=bounds.Bottom && Card(59).Bottom<850,"60 robots fit in 12 columns and five rows above the controls");
@@ -673,7 +673,7 @@ sealed class CheckGame:Game1
         Check(w.Campaign.PlannedOrders.Single(o=>o.SourceNode==home.Id && !o.PocketOnly).RobotIds!.Length==60,"An expanded hangar may reserve all 60 robots");
         int queen=Enumerable.Range(0,sources.Count).Single(i=>(bool)sources[i]!.GetType().GetField("Queen")!.GetValue(sources[i])! && (int)sources[i]!.GetType().GetField("Owner")!.GetValue(sources[i])! ==0);
         Set("_invasionPage",(int)Call("InvasionPageForSource",queen));
-        var queenBounds=((IEnumerable<(int Index,int Row,Rectangle Bounds)>)Call("InvasionVisibleRows")).Single(l=>l.Index==queen).Bounds;
+        var queenBounds=(((System.Collections.IEnumerable)Call("InvasionVisibleRows")).Cast<object>().Select(l=>(Index:(int)l.GetType().GetProperty("Index")!.GetValue(l)!,Row:(int)l.GetType().GetProperty("Row")!.GetValue(l)!,Bounds:(Rectangle)l.GetType().GetProperty("Bounds")!.GetValue(l)!))).Single(l=>l.Index==queen).Bounds;
         var toggle=(Rectangle)typeof(Game1).GetMethod("InvasionQueenAt",F|BindingFlags.Static)!.Invoke(null,new object[]{queenBounds})!;
         Call("InvasionClick",toggle.Center);Check(w.Campaign.PlannedOrders.Any(o=>o.PocketOnly && o.Queen),"Queen participation is selectable directly in the list");
         Call("InvasionClick",toggle.Center);Check(!w.Campaign.PlannedOrders.Any(o=>o.PocketOnly),"Queen participation can be cancelled directly in the list");

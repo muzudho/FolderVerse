@@ -59,6 +59,7 @@ public partial class Game1
     }
     private void EnterDomesticAfterIndustry()
     {
+        _conquestEntryFromIndustry=_screen==Screen.Industry;
         _screen=Screen.WorldStatus;_world.ShowSetup(_setup,true);RestoreDomesticCamera();OpenDisposition();
     }
     private Texture2D LoadIndustryMob(string name)

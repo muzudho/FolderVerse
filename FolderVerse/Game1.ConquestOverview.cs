@@ -9,7 +9,7 @@ public partial class Game1
     private bool _conquestOverviewEnabled=true;
     private int _conquestOverviewTurn=-1,_conquestStage,_conquestCard;
     private double _conquestAge;
-    private bool _conquestOverview,_conquestExitPrepared;
+    private bool _conquestOverview,_conquestExitPrepared,_conquestEntryFromIndustry;
     private float _conquestExitOpacity;
     private ConquestTally _conquestTally;
     private int _conquestPainted;
@@ -75,7 +75,8 @@ public partial class Game1
     }
     private void UpdateConquestOverview(double elapsed,bool skip){
         if(_conquestRelations)return;
-        if(skip && _conquestStage<5){_conquestExitOpacity=_conquestStage==3?(float)Math.Clamp(_conquestAge/1.5,0,1):_conquestStage==4?1:0;_conquestStage=5;_conquestAge=0;}
+        if(skip && _conquestStage==0){_conquestExitOpacity=0;_conquestStage=6;_conquestAge=0;PlayCurtain();}
+        else if(skip && _conquestStage<5){_conquestExitOpacity=_conquestStage==3?(float)Math.Clamp(_conquestAge/1.5,0,1):_conquestStage==4?1:0;_conquestStage=5;_conquestAge=0;}
         _conquestAge+=Math.Min(elapsed,.25);
         double duration=_conquestStage switch{0 or 2 or 6 or 8=>.65,1 or 3 or 5 or 7=>1.5,4=>ConquestCardSeconds,_=>0};
         if(_conquestStage==4){
@@ -101,7 +102,8 @@ public partial class Game1
             _conquestAge-=duration;
             if(_conquestStage==4 && ++_conquestCard<_conquestPresentation.Cards.Length)SetConquestCard();
             else{_conquestAge=0;_conquestStage++;if(_conquestStage==5){_conquestCard=Math.Min(_conquestCard,_conquestPresentation.Cards.Length-1);}
-                if(_conquestStage==7)PrepareConquestExitScene();
+                if(_conquestStage==1)_conquestEntryFromIndustry=false;
+                if(_conquestStage==7){_conquestEntryFromIndustry=false;PrepareConquestExitScene();}
                 if(_conquestStage is 2 or 6 or 8)PlayCurtain();if(_conquestStage>8){FinishConquestOverview();return;}}
             duration=_conquestStage switch{0 or 2 or 6 or 8=>.65,1 or 3 or 5 or 7=>1.5,4=>ConquestCardSeconds,_=>0};
         }
@@ -113,6 +115,15 @@ public partial class Game1
         }
     }
     private void DrawConquestOverview(Rectangle canvas,Matrix transform,Viewport viewport){
+        // Close the curtain over the previous scene, before revealing the new broadcast.
+        if(_conquestStage==0 || _conquestStage==6 && _conquestEntryFromIndustry){
+            if(_conquestEntryFromIndustry){
+                var nextScreen=_screen;_screen=Screen.Industry;
+                _spriteBatch.Begin(transformMatrix:transform);
+                try{DrawIndustry();}finally{_spriteBatch.End();_screen=nextScreen;}
+            }
+            return;
+        }
         if(_conquestStage>=7 && _screen==Screen.Newspaper){_spriteBatch.Begin(transformMatrix:transform);DrawTurnNewspaper();_spriteBatch.End();return;}
         GraphicsDevice.Clear(new Color(34,56,67));
         if(!_conquestRelations && !ConquestStudioCut)EnsureConquestFocusedBackdrop();

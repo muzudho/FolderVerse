@@ -34,11 +34,13 @@ public partial class Game1
             if(_demoWarSource<0){_demoDomesticStage=36;_demoDomesticAge=0;return true;}
             _invasionPage=InvasionPageForSource(_demoWarSource);
             var row=_invasionSources[_demoWarSource];
-            var bounds=InvasionVisibleRows().Single(layout=>layout.Index==_demoWarSource).Bounds;
+
             var robots=InvasionRobots(row);var previews=InvasionPreviewRobots(row);
             int slot=robots.Length>0?Array.FindIndex(previews,robot=>robot.Id==robots[0].Id):-1;
             if(robots.Length>0 && slot<0){_demoDomesticStage=36;_demoDomesticAge=0;return true;}
-            target=InspectorScreenBounds(slot>=0?InvasionCardAt(bounds,slot):InvasionQueenAt(bounds)).Center;
+            _invasionPage=InvasionPageForRobot(_demoWarSource,Math.Max(0,slot));
+            var layout=InvasionVisibleRows().Single(layout=>layout.Index==_demoWarSource);
+            target=InspectorScreenBounds(slot>=0?InvasionCardAt(layout.Bounds,slot-layout.FirstSlot):InvasionQueenAt(layout.Bounds)).Center;
         }
         if(_demoDomesticStage is 33 or 34){_demoDomesticStage=35;_demoDomesticAge=0;return true;}
         if(_demoDomesticStage==35){

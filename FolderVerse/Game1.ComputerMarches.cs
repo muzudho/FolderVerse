@@ -194,8 +194,9 @@ public partial class Game1
     private Point ComputerWarSelectionPoint()
     {
         if(!_computerWarCards.TryPeek(out int card))return NodeCheckButton.Center;
-        var bounds=InvasionVisibleRows().Single(row=>row.Index==_computerWarSource).Bounds;
-        return InspectorScreenBounds(card<0?InvasionQueenAt(bounds):InvasionCardAt(bounds,card)).Center;
+        _invasionPage=InvasionPageForRobot(_computerWarSource,Math.Max(0,card));
+        var row=InvasionVisibleRows().Single(row=>row.Index==_computerWarSource);
+        return InspectorScreenBounds(card<0?InvasionQueenAt(row.Bounds):InvasionCardAt(row.Bounds,card-row.FirstSlot)).Center;
     }
 
     private void DrawComputerMarches(Matrix transform)

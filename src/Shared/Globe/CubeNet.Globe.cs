@@ -87,7 +87,7 @@ public sealed partial class CubeNet
                 bool centered=ShowRoutes && HasFacilityPlatform(node);
                 float flagOffset=HasGlobeBuilding(node)?GlobePurposeBuildingScale:1;
                 DrawSurfaceFlag(ui,setup,DisplayedNodeOwner(node),cell,position,
-                    ShowRoutes && roof==null ? radius*flagOffset : 0,Project,Tint,roof!=null,centered,AnimateFlags?pulse:0);
+                    ShowRoutes && roof==null ? radius*flagOffset : 0,Project,c=>NodeFlagTint(node.Id,c),roof!=null,centered,AnimateFlags?pulse:0);
             }
         }
         DrawMapSymbols(ui,setup,p=>
@@ -181,7 +181,7 @@ public sealed partial class CubeNet
             DrawFacilities(ui,world,node,false,(x,y,z)=>project(.85f+x*.66f,.78f+y*.66f,z*.66f),tint);
     }
 
-    private void DrawFlatPuck(UiPainter ui,WorldSetup setup,Node node,Vector2 at,float radius,float pulse,Func<Color,Color> tint,Func<Vector3,Vector2> project)
+    private void DrawFlatPuck(UiPainter ui,WorldSetup setup,Node node,Vector2 at,float radius,float pulse,Func<Color,Color> tint,Func<Vector3,Vector2> project,Func<Color,Color> flagTint=null)
     {
         bool sea = !setup.Routes.Land(node.Cell,node.Center);
         var top = sea ? new Color(164,226,242) : new Color(255,232,153);
@@ -225,7 +225,7 @@ public sealed partial class CubeNet
             ? at+new Vector2(roof.X,roof.Y*.68f-roof.Z)*radius*PurposeBuildingScale
             : HasFacilityPlatform(node)?at:at+new Vector2(radius*PurposeBuildingScale+4,-radius*.68f);
         CountryFlagArt.Marker(ui,setup,DisplayedNodeOwner(node),flagFoot,
-            Math.Clamp((int)(radius*3),24,42),tint,geographic:true,wave:AnimateFlags?pulse:0);
+            Math.Clamp((int)(radius*3),24,42),flagTint??tint,geographic:true,wave:AnimateFlags?pulse:0);
         if (AttackTargetMarkers && SelectedTarget==node.Id)
             foreach (float angle in new[]{MathHelper.PiOver4,-MathHelper.PiOver4})
                 ui.Tile(at,new(radius*2,2),angle,tint(rim));

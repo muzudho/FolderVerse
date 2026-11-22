@@ -40,6 +40,8 @@ public sealed partial class CubeNet
     public HashSet<int> SelectedNodes {get;}=new();
     public HashSet<int> AttentionNodes {get;}=new();
     public HashSet<MapTerrainTile> HighlightTiles {get;}=new();
+    public bool KeepFlagsEnabled {get;set;}
+    public Color NodeFlagTint(int id,Color color)=>KeepFlagsEnabled?color:NodeTint(id,color);
     public float AppearanceTime {get;set;}
     public bool DimNode(int id)=>RestrictNodeActions?!ActionTargetNodes.Contains(id):
         (CountryFocus>=0 || NodeFocus>=0 || FolderSearchFocus) && id!=NodeFocus && !EnabledNodes.Contains(id);

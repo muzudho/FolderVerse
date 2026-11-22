@@ -66,7 +66,7 @@ sealed class MenuGame:Game1{
   var targetLabel=(string)typeof(Game1).GetProperty("InvasionTargetLabel",F)!.GetValue(this)!;
   Check(targetLabel=="侵攻先："+tutorial.Nodes.DisplayName(tutorial.Nodes.All[invasionTarget]) && !targetLabel.Contains("Node "),"Invasion target uses human-readable node name without numeric ID");
   int hangarRow=Array.FindIndex(rows,r=>!(bool)queenField.GetValue(r)!);Set("_invasionPage",Call("InvasionPageForSource",hangarRow));
-  var sourceBounds=((IEnumerable<(int Index,int Row,Rectangle Bounds)>)Call("InvasionVisibleRows")).Single(row=>row.Index==hangarRow).Bounds;
+  var sourceBounds=(((System.Collections.IEnumerable)Call("InvasionVisibleRows")).Cast<object>().Select(l=>(Index:(int)l.GetType().GetProperty("Index")!.GetValue(l)!,Row:(int)l.GetType().GetProperty("Row")!.GetValue(l)!,Bounds:(Rectangle)l.GetType().GetProperty("Bounds")!.GetValue(l)!))).Single(row=>row.Index==hangarRow).Bounds;
   var soldierCard=(Rectangle)typeof(Game1).GetMethod("InvasionCardAt",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{sourceBounds,0})!;
   Call("InvasionClick",soldierCard.Center);
   Check(tutorial.Campaign.PlannedOrders.Count==1 && tutorial.Campaign.PlannedOrders[0].Fighters==1 && (string)label.GetValue(this)! =="開戦予約（1件）","First-turn inline robot selection reserves a soldier and updates label");

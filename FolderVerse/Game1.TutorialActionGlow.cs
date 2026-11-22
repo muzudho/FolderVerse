@@ -57,8 +57,8 @@ public partial class Game1
             foreach(var layout in InvasionVisibleRows()){
                 var row=_invasionSources[layout.Index];var robots=InvasionPreviewRobots(row);
                 var available=InvasionRobots(row).Select(robot=>robot.Id).ToHashSet();
-                for(int slot=0;slot<robots.Length;slot++)if(available.Contains(robots[slot].Id) && !row.Robots.Contains(robots[slot].Id)){
-                    var r=InvasionCardAt(layout.Bounds,slot);r.X+=NodeInspectorOffset;choices.Add(r);
+                for(int slot=layout.FirstSlot;slot<layout.FirstSlot+layout.SlotCount;slot++)if(available.Contains(robots[slot].Id) && !row.Robots.Contains(robots[slot].Id)){
+                    var r=InvasionCardAt(layout.Bounds,slot-layout.FirstSlot);r.X+=NodeInspectorOffset;choices.Add(r);
                 }
             }
             return choices.Count>0?choices:TutorialHasAttackReservation?new[]{InspectorClose}:Array.Empty<Rectangle>();

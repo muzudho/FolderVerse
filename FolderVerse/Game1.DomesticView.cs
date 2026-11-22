@@ -29,13 +29,15 @@ public partial class Game1
     private bool _nodeInspectorClosing;
     private bool InspectorVisible=>_folderTreeOpen || _reignView || _regionCell>=0 || _populationCell>=0 || _movementOpen || _transportOverview || _salvagePlan;
     private bool DomesticPanelOpen=>(InspectorVisible || StratagemPanelActive) && !_nodeInspectorClosing;
-    private int NodeInspectorOffset=>(int)MathF.Round(-960*(1-_domesticSlide)+306*_domesticSlide);
+    private bool CompactWarInspector=>_movementOpen && _warPlanning;
+    private static readonly Rectangle WarInspectorLocalBounds=new(54,150,850,520);
+    private int NodeInspectorOffset=>(int)MathF.Round(-960*(1-_domesticSlide)+(CompactWarInspector?-30:306)*_domesticSlide);
     private Rectangle InspectorScreenBounds(Rectangle bounds)
     {
         bounds.X+=NodeInspectorOffset;
         return bounds;
     }
-    private Rectangle NodeInspectorBounds=>new(54+NodeInspectorOffset,150,850,825);
+    private Rectangle NodeInspectorBounds=>new(54+NodeInspectorOffset,150,850,CompactWarInspector?WarInspectorLocalBounds.Height:825);
     private Rectangle InspectorHandle=>new(904+NodeInspectorOffset,450,64,170);
     private Rectangle InspectorClose=>new(912+NodeInspectorOffset,464,48,48);
     private void DrawDomesticPhaseHeading()
@@ -150,7 +152,7 @@ public partial class Game1
     private Vector2 OperationMedallionCenter=>_setup.PlayerSlot==_setup.TurnPlayer?PlayerMedallionCenter:new Vector2(270,755);
     private void DrawDomesticPortrait()
     {
-        int player=_setup.TurnPlayer;DrawRulerMedallion(player,PlayerMedallionCenter);
+        int player=_setup.TurnPlayer;DrawDomesticMedallion(player,PlayerMedallionCenter);
         _ui.Center(_setup.ComputerOnly?"Exhibition / 観戦中":_setup.PlayerSlot==player?"あなたの陣営 / 操作中":"あなたの陣営のターン",new(25,736,190,24),.30f,Cream);
         if(_setup.PlayerSlot!=player){
             DrawSmallOperationMedallion(_setup.PlayerSlot,OperationMedallionCenter);
@@ -165,22 +167,5 @@ public partial class Game1
         // The inset square's corners fit inside the round medal.
         _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],new((int)center.X-32,(int)center.Y-32,64,64),_setup.Relations.Powered[ruler],faceOnly:true);
     }
-    private void DrawRulerMedallion(int ruler,Vector2 center)
-    {
-        var r=new Rectangle((int)center.X-120,(int)center.Y-120,240,240);
-        DrawPortraitMedallion(center,_setup.OwnerColor(ruler),ruler);
-        var image=new Rectangle((int)(center.X-MedallionPortraitRadius),(int)(center.Y-MedallionPortraitRadius),(int)(MedallionPortraitRadius*2),(int)(MedallionPortraitRadius*2));
-        var canvas=CanvasBounds();var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
-        _spriteBatch.End();var old=GraphicsDevice.ScissorRectangle;
-        using(var clip=new RasterizerState{ScissorTestEnable=true}){
-            for(int y=-(int)MedallionPortraitRadius;y<(int)MedallionPortraitRadius;y+=2){
-                int half=(int)MathF.Sqrt(Math.Max(0,MedallionPortraitRadius*MedallionPortraitRadius-y*y));
-                GraphicsDevice.ScissorRectangle=new(canvas.X+(int)((r.Center.X-half)*canvas.Width/1920f),canvas.Y+(int)((r.Center.Y+y)*canvas.Height/1080f),Math.Max(1,(int)(half*2*canvas.Width/1920f)),Math.Max(1,(int)(2*canvas.Height/1080f)));
-                _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
-                _portraitRenderer.Draw(_spriteBatch,_setup.Looks[ruler],image,_setup.Relations.Powered[ruler]);_spriteBatch.End();
-            }
-        }
-        GraphicsDevice.ScissorRectangle=old;_spriteBatch.Begin(transformMatrix:transform);
-        DrawPortraitMedallionName(center,_setup.ConquerorFullNames[ruler],_setup.OwnerColor(ruler));
-    }
+    private void DrawRulerMedallion(int ruler,Vector2 center)=>DrawSouvenirCoin(ruler,center,new(false,1,0));
 }

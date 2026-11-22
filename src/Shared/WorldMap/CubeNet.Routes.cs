@@ -175,7 +175,7 @@ public sealed partial class CubeNet
             var position=SiteDisplayPosition(world,node,obstacles);
             var at=project(position);
             float radius=MapPuckRadius(node,Vector2.Distance(at,project(position+world.Cells[cell].U)));
-            DrawFlatPuck(ui,world,node,at,radius,pulse,color=>NodeTint(node.Id,color),project);
+            DrawFlatPuck(ui,world,node,at,radius,pulse,color=>NodeTint(node.Id,color),project,color=>NodeFlagTint(node.Id,color));
         }
     }
     private static void DrawHarborBadge(UiPainter ui,Vector2 at,float radius,Func<Color,Color> tint,float rotation=0)

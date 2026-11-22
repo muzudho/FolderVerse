@@ -382,7 +382,7 @@ sealed class WarGuideGame:Game1
      for(int tick=0;tick<8;tick++)Send(default);
      base.Draw(new GameTime(TimeSpan.FromSeconds(now),TimeSpan.Zero));
      var sources=(System.Collections.IList)Get("_invasionSources");
-     var rows=(IEnumerable<(int Index,int Row,Rectangle Bounds)>)Call("InvasionVisibleRows");
+     var rows=((System.Collections.IEnumerable)Call("InvasionVisibleRows")).Cast<object>().Select(l=>(Index:(int)l.GetType().GetProperty("Index")!.GetValue(l)!,Row:(int)l.GetType().GetProperty("Row")!.GetValue(l)!,Bounds:(Rectangle)l.GetType().GetProperty("Bounds")!.GetValue(l)!));
      Console.WriteLine($"Sortie picker inspection: target={candidate}, sources={sources.Count}, rows={rows.Count()}, inspectorSlide={Get("_domesticSlide")}");
      var card=typeof(Game1).GetMethod("InvasionCardAt",BindingFlags.Static|BindingFlags.NonPublic)!;
      int selectedCount=0;

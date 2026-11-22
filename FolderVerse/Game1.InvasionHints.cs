@@ -35,8 +35,8 @@ public partial class Game1
         foreach(var layout in InvasionVisibleRows()){
             int index=layout.Index;
             var source=_invasionSources[index];var robots=InvasionPreviewRobots(source);
-            for(int slot=0;slot<robots.Length;slot++){
-                if(!InvasionCardAt(layout.Bounds,slot).Contains(point))continue;
+            for(int slot=layout.FirstSlot;slot<layout.FirstSlot+layout.SlotCount;slot++){
+                if(!InvasionCardAt(layout.Bounds,slot-layout.FirstSlot).Contains(point))continue;
                 var reasons=InvasionUnavailableReasons(source,robots[slot]);if(reasons.Length==0)return false;
                 var r=RulebookHintArea;r.Height=Math.Max(r.Height,84+reasons.Length*29);DrawRulebookPaper(r);
                 _ui.Text($"ロボット ID {robots[slot].Id}：出撃できない理由",new(r.X+24,r.Y+20),.46f,RulebookInk);

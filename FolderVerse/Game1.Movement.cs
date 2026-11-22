@@ -29,7 +29,7 @@ public partial class Game1
     }
     private void CloseMovement()
     {
-        _net.ActionTargetNodes.Clear();
+        _net.ActionTargetNodes.Clear();_net.KeepFlagsEnabled=false;
         _net.HoverSuppressedNode=-1;
         _net.RestrictNodeActions=_world.RestrictNodeActions=false;
         _invasionPicker=-1;_net.AttackTargetMarkers=false;_net.VisibleOperationNodes=null;_net.VisibleOperationBatteries=null;
@@ -76,7 +76,7 @@ public partial class Game1
         else if(new Rectangle(190,339,94,60).Contains(pointer))_escort=Math.Min(AvailableEscort,_escort+step);
         else if(new Rectangle(305,339,200,60).Contains(pointer))_escort=AvailableEscort;
         else if(new Rectangle(519,339,200,60).Contains(pointer))_escort=0;
-        return new Rectangle(54,150,850,825).Contains(pointer);
+        return (CompactWarInspector?WarInspectorLocalBounds:new Rectangle(54,150,850,825)).Contains(pointer);
     }
     private void DrawMovementPanel()
     {

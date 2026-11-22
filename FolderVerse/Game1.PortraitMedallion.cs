@@ -9,13 +9,13 @@ public partial class Game1
 {
     private Texture2D _medallionRing;
     private readonly Dictionary<Color,Texture2D> _medallionRings=new();
-    private const float MedallionNameRadius=132; // Lettering moved outward by 2 px; the metal ring stays in place.
+    private const float MedallionNameRadius=124; // Lettering moved outward by 2 px; the metal ring stays in place.
     private const float MedallionBandWidth=22*1.2f;
     private const float MedallionBandInner=132-MedallionBandWidth/2;
     private const float MedallionBandOuter=132+MedallionBandWidth/2;
     private const float MedallionPortraitRadius=MedallionBandInner-3;
     private const float MedallionRadius=MedallionBandOuter+3;
-    private const float MedallionFontScale=.36f*1.2f;
+    private const float MedallionFontScale=.36f;
     private const float MedallionLetterGap=MathHelper.Pi/36; // Extra five degrees between glyph bounds.
     private static string MedallionName(string fullName)=>string.Join(" ",fullName.Replace('・',' ').Split(new[]{' ','　'},StringSplitOptions.RemoveEmptyEntries));
     private void DrawPortraitMedallion(Vector2 center,Color nation,int owner=-1){
