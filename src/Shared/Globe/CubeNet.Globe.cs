@@ -6,6 +6,7 @@ public sealed partial class CubeNet
 {
     public void DrawGlobeLayers(UiPainter ui,WorldSetup setup,WorldPreview globe,Rectangle panel,float yaw,float pitch,float pulse)
     {
+        using var measure=new WorldPreview.DrawCpuScope();
         RefreshScenicRoutes(setup);
         var offset=setup.Terrain;
         var joinedPortals=new HashSet<(int First,int Second,Vector3 Position)>();

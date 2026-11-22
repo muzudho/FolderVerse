@@ -35,6 +35,7 @@ public partial class Game1
         }
         if(!click)return true;
         if(CountrySettingsMenuItem.Contains(_pointer))OpenCountrySettings();
+        else if(PerformanceMenuItem.Contains(_pointer))_performanceVisible=true;
         else if(BgmMenuItem.Contains(_pointer))_bgmMenuOpen=true;
         else if(GlobeSettingsMenuItem.Contains(_pointer))_globeSettingsOpen=true;
         else if(ComputerManualMenuItem.Contains(_pointer))OpenComputerManual();
@@ -82,6 +83,7 @@ public partial class Game1
             DrawComputerManualMenuItem();
             _ui.Button(BgmMenuItem,"BGM・SE音量",Muted,.5f);
             _ui.Button(GlobeSettingsMenuItem,"地星設定",Muted,.5f);
+            _ui.Button(PerformanceMenuItem,"パフォーマンス表示",Muted,.5f);
         }
         if(_autoPausePage!=0 && !_countrySettingsOpen)_ui.Button(InactiveBack,"システムメニューへ",Muted,.5f);
         _ui.Button(AutoPauseClose,"×",Muted,.7f);DrawBgmMenu();DrawGlobeSettings();_spriteBatch.End();DrawFullscreenCursor();

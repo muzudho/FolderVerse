@@ -245,10 +245,20 @@ public sealed partial class WorldPreview : IDisposable
         }
     }
 
+    public static double DrawCpuMilliseconds {get;set;}
+    private static int _drawMeasureDepth;
+    internal readonly struct DrawCpuScope:System.IDisposable
+    {
+        private readonly long _start;
+        private readonly bool _outer;
+        public DrawCpuScope(){_outer=_drawMeasureDepth++==0;_start=_outer?System.Diagnostics.Stopwatch.GetTimestamp():0;}
+        public void Dispose(){_drawMeasureDepth--;if(_outer)DrawCpuMilliseconds+=System.Diagnostics.Stopwatch.GetElapsedTime(_start).TotalMilliseconds;}
+    }
     public void Draw(float yaw, float pitch,float glow=0,bool markers=true,bool globeView=false,Rectangle? globeFrame=null,
         IEnumerable<SurfaceCell> landSelection=null,float opacity=1,Color? solidBody=null,float? cloudTime=null,
         bool deferAtmosphere=false,float cloudSpeedMultiplier=1)
     {
+        using var measure=new DrawCpuScope();
         ApplyDaylight();
         _device.BlendState = opacity<1?BlendState.AlphaBlend:BlendState.Opaque;
         _effect.Alpha=opacity;

@@ -128,11 +128,13 @@ public partial class Game1 : Game
         }
         _rollTime=0; _dragging=false;
     }
-    protected override void Update(GameTime gameTime)
+    protected override void Update(GameTime gameTime){long start=System.Diagnostics.Stopwatch.GetTimestamp();try{UpdateScene(gameTime);}finally{_framePerformance.Update(System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds);}}
+    private void UpdateScene(GameTime gameTime)
     { _autoSaveNoticeSeconds=Math.Max(0,_autoSaveNoticeSeconds-gameTime.ElapsedGameTime.TotalSeconds);HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive);if(!_autoPaused){UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds);UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);}UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);UpdateIndustryMusic();UpdateEndingMusic(IsActive);base.Update(gameTime); }
     private void HandleInputCore(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
     {
         _pointer=CanvasPoint(mouse);_ui.Pointer=_pointer;
+        if(PerformanceUiInput(mouse,keyboard,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
         if(IsStatusScreen && _recoveryOpen){if(active)RecoveryPlannerInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -814,6 +816,13 @@ public partial class Game1 : Game
     }
 
     protected override void Draw(GameTime gameTime)
+    {
+        long start=System.Diagnostics.Stopwatch.GetTimestamp();WorldPreview.DrawCpuMilliseconds=0;
+        DrawScene(gameTime);
+        _framePerformance.Draw(start/(double)System.Diagnostics.Stopwatch.Frequency,System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds,WorldPreview.DrawCpuMilliseconds);
+        DrawPerformanceUi();
+    }
+    private void DrawScene(GameTime gameTime)
     {
         _robotHeadTextures?.EndFrame(); _robotTorsoTextures?.EndFrame(); _robotLegTextures?.EndFrame();
         _polystyreneSideHead?.EndFrame();

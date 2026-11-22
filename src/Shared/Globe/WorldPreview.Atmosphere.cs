@@ -16,6 +16,7 @@ public sealed partial class WorldPreview
 
     internal void DrawAtmosphere(float seconds,float opacity=1,float cloudSpeedMultiplier=1)
     {
+        using var measure=new WorldPreview.DrawCpuScope();
         _atmosphereEffect??=new BasicEffect(_device){VertexColorEnabled=true};
         _atmosphereEffect.World=_effect.World;
         _atmosphereEffect.View=_effect.View;

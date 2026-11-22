@@ -42,7 +42,7 @@ public partial class Game1
         else if(chosen==1)OpenCampaignMenu();
         else if(chosen==2){_titleMenuOpen=false;if(!ResumeAutoSave())_titleMenuOpen=true;}
         else if(chosen==3){_titleMenuOpen=false;BeginOpening(false);}
-        else if(chosen==4)_bgmMenuOpen=true;
+        else if(chosen==4)_titleSystemMenuOpen=true;
     }
     private void DrawTitleStartMenu(){
         if(_campaignMenuStage>0){DrawCampaignMenu();return;}

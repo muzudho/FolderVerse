@@ -35,6 +35,7 @@ public partial class Game1
         {CloseMovement();_statusMenuOpen=false;_screen=Screen.Hierarchy;return true;}
         if(_statusMenuOpen && AutoMenuItem.Contains(point)){StartAutoPlay();return true;}
         if(_statusMenuOpen && CountrySettingsMenuItem.Contains(point)){OpenCountrySettings();return true;}
+        if(_statusMenuOpen && PerformanceMenuItem.Contains(point)){_performanceVisible=true;_statusMenuOpen=false;return true;}
         if(_statusMenuOpen && BgmMenuItem.Contains(point)){_bgmMenuOpen=true;return true;}
         if(_statusMenuOpen && GlobeSettingsMenuItem.Contains(point)){_globeSettingsOpen=true;return true;}
         if(_statusMenuOpen && ComputerManualMenuItem.Contains(point)){OpenComputerManual();return true;}
@@ -60,6 +61,7 @@ public partial class Game1
             DrawComputerManualMenuItem();
             _ui.Button(BgmMenuItem,"BGM・SE音量",Muted,.5f);
             _ui.Button(GlobeSettingsMenuItem,"地星設定",Muted,.5f);
+            _ui.Button(PerformanceMenuItem,"パフォーマンス表示",Muted,.5f);
         }
     }
     private void DispositionInput(bool click,bool escape)

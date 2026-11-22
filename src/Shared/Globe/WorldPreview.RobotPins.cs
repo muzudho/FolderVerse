@@ -30,6 +30,7 @@ public sealed partial class WorldPreview
     public static float BatteryTilt(double seconds,int ruler)=>(float)((Math.Sin(seconds*MathHelper.TwoPi/8+ruler*.7)+1)*MathHelper.PiOver4);
     public void DrawRobotPins(WorldSetup setup,CubeNet net,float yaw,float pitch,Rectangle panel,double seconds=0)
     {
+        using var measure=new WorldPreview.DrawCpuScope();
         net.ClearGlobeRobotBadges();net.ClearGlobeBatteries();
         if(!setup.Campaign.UseRobotCombat)return;
         var mesh=_robotPinMesh;mesh.Clear();
