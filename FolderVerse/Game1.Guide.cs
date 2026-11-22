@@ -73,7 +73,7 @@ public partial class Game1
     private void DrawGuideScene()
     {
         // An HUD scene: scenery is limited to the left third, the right remains a live globe.
-        DrawSpaceBackdrop(new(0,0,1920,1080));
+        DrawSpaceBackdrop(PortraitHudLayout.MainPanel);
         var node=_setup.Nodes.Current(_guideRuler)??_setup.Nodes.All.FirstOrDefault(n=>n.Cell==_setup.ConquerorLocations[_guideRuler]);
         {
             int cell=_setup.ConquerorLocations[_guideRuler];
@@ -83,11 +83,19 @@ public partial class Game1
         }
         var canvas=CanvasBounds();var viewport=GraphicsDevice.Viewport;
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
-        _spriteBatch.End();GraphicsDevice.Viewport=OrientationViewport(new(960,170,920,850),canvas);
-        _world.SelectionSetup=_setup;_world.DaylightWorld=_setup;
-        _world.DawnMeridian=WorldDayCycle.DawnPhase(_setup,_guideRuler);
-        _world.Draw(_yaw,_pitch,_animationTime,false,true);
-        GraphicsDevice.Viewport=viewport;_spriteBatch.Begin(transformMatrix:transform);
+        _spriteBatch.End();
+        float zoom=_world.GlobeZoom;var anchor=_world.GlobeAnchor;var pan=_world.GlobePan;
+        try{
+            GraphicsDevice.Viewport=OrientationViewport(PortraitHudLayout.MainPanel,canvas);
+            // An overview camera, independent from the domestic inspector's zoom/pan.
+            _world.GlobeZoom=.72f;_world.GlobeAnchor=null;_world.GlobePan=new Vector2(0,.06f);
+            _world.SelectionSetup=_setup;_world.DaylightWorld=_setup;
+            _world.DawnMeridian=WorldDayCycle.DawnPhase(_setup,_guideRuler);
+            _world.Draw(_yaw,_pitch,_animationTime,false,true);
+        }finally{
+            _world.GlobeZoom=zoom;_world.GlobeAnchor=anchor;_world.GlobePan=pan;
+            GraphicsDevice.Viewport=viewport;_spriteBatch.Begin(transformMatrix:transform);
+        }
         PortraitHudLayout.DrawSplitter(_ui);
         DrawGuide();
     }

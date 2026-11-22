@@ -12,11 +12,8 @@ public partial class Game1
     {
         var show=_conquestBroadcast;var node=show.Location>=0?_setup.Nodes.All[show.Location]:null;
         if(ConquestStudioCut){
-            _ui.Box(PortraitHudLayout.MainPanel,new Color(74,104,117));
-            for(int x=665;x<1920;x+=180)_ui.Box(new(x,85,5,900),new Color(96,130,139));
-            _ui.Box(new(640,860,1280,220),new Color(151,117,79));
-            _ui.Box(new(1230,340,650,510),new Color(151,103,53));
-            _ui.Box(new(1240,350,630,490),new Color(31,56,62));
+            PortraitHudLayout.DrawMainBackground(_spriteBatch,BroadcastArt("annex"));
+            DrawBroadcastBoard(1,ConquestFormulaSpace);
             _ui.Center("スタジオ別室 / 得点計算",new(1100,230,730,56),.57f,Cream);
             _ui.Box(new(870,850,150,70),new Color(202,165,99));
         }else if(node!=null){
@@ -30,21 +27,8 @@ public partial class Game1
             if(show.Outdoor && key!="harbor" && key!="polar")DrawConquestOutdoor(node);
             else PortraitHudLayout.DrawMainBackground(_spriteBatch,_conquestScenery);
         }else DrawConquestOutdoor(null);
-        // Dedicated indoor morning studio, separate from the remote location.
-        _ui.Box(PortraitHudLayout.Background,new Color(77,126,137));
-        for(int x=20;x<640;x+=100)_ui.Box(new(x,0,4,870),new Color(124,169,171));
-        _ui.Box(new(0,860,640,220),new Color(150,111,78));
-        _ui.Box(new(32,120,540,650),new Color(231,211,160));
-        _ui.Box(new(44,132,516,626),new Color(117,162,163));
-        _ui.Center("おはよう！ 世界のようす",new(55,870,530,50),.48f,Cream);
-        _ui.Box(new(55,945,185,44),new Color(145,57,62));
-        _ui.Center("放送中",new(55,945,185,44),.43f,Cream);
+        PortraitHudLayout.DrawBackground(_spriteBatch,BroadcastArt("studio"));
         PortraitHudLayout.DrawSplitter(_ui);
-        if(!ConquestStudioCut){
-            string title=node==null?"現地中継":_setup.Nodes.DisplayName(node)+(show.Outdoor?" / 屋外中継":" / 室内中継");
-            _ui.Box(new(720,230,1140,38),new Color(23,42,48)*.85f);
-            _ui.Center(title,new(735,232,1110,34),Math.Min(.43f,1090/Math.Max(1,_font.MeasureString(title).X)),Cream);
-        }
     }
     private void DrawConquestOutdoor(Node node)
     {
@@ -63,14 +47,15 @@ public partial class Game1
     }
     private void DrawConquestLocationBoard()
     {
-        var r=ConquestBoard;bool electric=!_conquestBroadcast.Outdoor;
-        var rim=electric?new Color(68,84,91):new Color(153,105,57);
-        _ui.Box(new(r.X-8,r.Y+12,r.Width+32,r.Height+32),Color.Black*.22f);
-        _ui.Box(new(r.X-16,r.Y-16,r.Width+32,r.Height+32),rim);
-        _ui.Box(r,electric?new Color(21,42,49):new Color(224,203,157));
-        if(!electric)for(int y=r.Y+9;y<r.Bottom;y+=30)_ui.Box(new(r.X,y,r.Width,1),new Color(174,143,100)*.25f);
-        foreach(int x in new[]{r.X+25,r.Right-25})foreach(int y in new[]{r.Y-9,r.Bottom+9})_ui.Box(new(x,y,8,8),new Color(229,217,180));
-        _ui.Box(new(800,980,1020,34),new Color(35,54,59));
+        DrawBroadcastBoard(BroadcastBoardKind,ConquestBoard);
+        _ui.Box(new(920,752,720,36),new Color(35,54,59));
+    }
+    private void DrawConquestLocationCaption()
+    {
+        var node=_conquestBroadcast.Location>=0?_setup.Nodes.All[_conquestBroadcast.Location]:null;
+        string title=node==null?"現地中継":_setup.Nodes.DisplayName(node)+(_conquestBroadcast.Outdoor?" / 屋外中継":" / 室内中継");
+        _ui.Box(new(700,955,1150,40),new Color(23,42,48)*.85f);
+        _ui.Center(title,new(715,957,1120,36),Math.Min(.43f,1100/Math.Max(1,_font.MeasureString(title).X)),Cream);
     }
     private void DrawConquestBroadcastHost()
     {

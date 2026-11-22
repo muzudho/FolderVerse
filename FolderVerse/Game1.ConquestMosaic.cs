@@ -7,9 +7,9 @@ public partial class Game1
 {
     private OverviewTile[] _conquestTiles=Array.Empty<OverviewTile>();
     private readonly HashSet<int> _conquestRevealed=new();
-    private static Rectangle ConquestBoard=>new(820,280,980,700); // Inside: 7:5.
+    private static Rectangle ConquestBoard=>new(930,245,700,500); // Inside: 7:5.
     private static Rectangle ConquestMapSpace=>new(680,280,550,580);
-    private static Rectangle ConquestFormulaSpace=>new(1250,380,610,410);
+    private static Rectangle ConquestFormulaSpace=>new(1260,370,560,400);
     private static Rectangle ConquestTreeSpace=>Rectangle.Empty;
     private void DrawConquestMosaic(){
         DrawConquestLocationBoard();
@@ -51,9 +51,10 @@ public partial class Game1
             _ui.Box(new(r.X+4,r.Y+4,r.Width-8,25),Color.Black*.7f);
             _ui.Center(label,new(r.X+4,r.Y+4,r.Width-8,25),Math.Min(.35f,(r.Width-12)/_font.MeasureString(label).X),Cream);
         }
+        DrawConquestLocationCaption();
         int eliminated=Enumerable.Range(0,_setup.ActiveCount).Count(r=>!_setup.Relations.Powered[r]);
         int followers=Enumerable.Range(0,_setup.ActiveCount).Count(r=>_setup.Relations.Powered[r] && _setup.Relations.Superiors[r]>=0);
-        _ui.Center($"脱落 {eliminated}名 / 手下 {followers}名",new(820,982,980,30),.40f,Cream);
+        _ui.Center($"脱落 {eliminated}名 / 手下 {followers}名",new(930,755,700,30),.40f,Cream);
     }
     private void DrawConquestQuestion(Rectangle image){
         var measure=_font.MeasureString("?");
