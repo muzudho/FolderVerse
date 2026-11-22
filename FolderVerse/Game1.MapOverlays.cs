@@ -7,6 +7,8 @@ using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
     private bool _mapOverlayMenu;
+    private Rectangle GuideCallBounds{get{var end=PrimaryActionBounds(1);return new(end.X-202,end.Y,192,end.Height);}}
+    private bool GuideCallVisible=>CanRecallGuide && !InspectorVisible && MapFooterAction<0 && _primaryActionSlide==0;
     private Rectangle MapFooterBounds(Rectangle bounds)=>bounds;
     private void DrawMapNavigationButtons()
     {
@@ -44,6 +46,7 @@ public partial class Game1
     {
         if(FunctionTransferChoiceInput(p,!escape,escape))return true;
         if(!escape && TutorialPrimaryActionClick(p))return true;
+        if(GuideCallVisible && MapMarkerMenuAvailable && !escape && GuideCallBounds.Contains(p)){RecallGuide();return true;}
         if(StratagemInterface && !StratagemManualActions && MapFooterAction<0)return false;
         if(!MapMarkerMenuAvailable || InspectorVisible)return false;
         if(escape && _functionTransferMap){CloseFunctionTransferMap();return true;}
@@ -93,6 +96,11 @@ public partial class Game1
     private void DrawPrimaryActionButtons() => DrawTutorialChrome(()=>DrawPrimaryActionButtonsCore(),false);
     private void DrawPrimaryActionButtonsCore()
     {
+        if(GuideCallVisible){
+            var r=GuideCallBounds;var color=_setup.OwnerColor(_setup.PlayerSlot);if(r.Contains(_pointer))color=Color.Lerp(color,Color.White,.22f);
+            var shadow=r;shadow.Y+=4;PrimaryRoundBox(shadow,new Color(7,23,35));PrimaryRoundBox(r,color);DrawCountryCornerMarks(r,_setup.PlayerSlot,1);
+            var ink=UiPainter.ContrastInk(color);_ui.Center("ガイドを呼ぶ",r,.45f,ink);
+        }
         string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収","地点の施設移転の予約","ロボットパーツ長距離便","取引","計略"};
         for(int i=0;i<PrimaryActionCount;i++){
             if(i==StratagemAction && !StratagemInterface || i!=1 && StratagemInterface && _stratagemTrayBlend>=.5f)continue;

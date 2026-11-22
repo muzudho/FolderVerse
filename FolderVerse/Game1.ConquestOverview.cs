@@ -9,7 +9,7 @@ public partial class Game1
     private bool _conquestOverviewEnabled=true;
     private int _conquestOverviewTurn=-1,_conquestStage,_conquestCard;
     private double _conquestAge;
-    private bool _conquestOverview;
+    private bool _conquestOverview,_conquestExitPrepared;
     private float _conquestExitOpacity;
     private ConquestTally _conquestTally;
     private int _conquestPainted;
@@ -34,7 +34,7 @@ public partial class Game1
     private void BeginConquestOverview(){
         if(_setup.TutorialStep is 1 or 2 or 3 or 4 || !_conquestOverviewEnabled || _conquestOverviewTurn==_setup.Population.Turn)return;
         _conquestOverviewTurn=_setup.Population.Turn;_conquestPresentation=new(_setup);_conquestCard=0;_conquestStage=0;_conquestAge=0;_conquestOverview=true;_conquestExitOpacity=1;
-        _conquestRevealed.Clear();_conquestRelations=false;_conquestBroadcast=new(_setup);
+        _conquestExitPrepared=false;_conquestRevealed.Clear();_conquestRelations=false;_conquestBroadcast=new(_setup);
         var ranking=_setup.Relations.ProvisionalRanking(_setup).OrderBy(r=>r.Ruler).ToArray();
         var contenders=ranking.Where(r=>_setup.Relations.CanWinConquest(r.Ruler)).ToArray();
         _conquestTiles=contenders.Length==0?Array.Empty<OverviewTile>():
@@ -62,6 +62,13 @@ public partial class Game1
         float pitch=MathF.Atan2(normal.Y,MathF.Sqrt(normal.X*normal.X+normal.Z*normal.Z));
         var v=Vector3.Transform(normal,Matrix.CreateRotationX(pitch));
         return Quaternion.CreateFromRotationMatrix(WorldPreview.Orientation(-MathF.Atan2(v.X,v.Z),pitch));
+    }
+    private void PrepareConquestExitScene(){
+        if(_conquestExitPrepared)return;
+        _conquestExitPrepared=true;
+        // The curtain is fully closed. Prepare the next scene without releasing the input lock.
+        _conquestOverview=false;
+        try{TryBeginTurnNewspaper();}finally{_conquestOverview=true;}
     }
     private void FinishConquestOverview(){
         _conquestOverview=false;_conquestMusic?.Dispose();_conquestMusic=null;
@@ -94,6 +101,7 @@ public partial class Game1
             _conquestAge-=duration;
             if(_conquestStage==4 && ++_conquestCard<_conquestPresentation.Cards.Length)SetConquestCard();
             else{_conquestAge=0;_conquestStage++;if(_conquestStage==5){_conquestCard=Math.Min(_conquestCard,_conquestPresentation.Cards.Length-1);}
+                if(_conquestStage==7)PrepareConquestExitScene();
                 if(_conquestStage is 2 or 6 or 8)PlayCurtain();if(_conquestStage>8){FinishConquestOverview();return;}}
             duration=_conquestStage switch{0 or 2 or 6 or 8=>.65,1 or 3 or 5 or 7=>1.5,4=>ConquestCardSeconds,_=>0};
         }
@@ -105,6 +113,7 @@ public partial class Game1
         }
     }
     private void DrawConquestOverview(Rectangle canvas,Matrix transform,Viewport viewport){
+        if(_conquestStage>=7 && _screen==Screen.Newspaper){_spriteBatch.Begin(transformMatrix:transform);DrawTurnNewspaper();_spriteBatch.End();return;}
         GraphicsDevice.Clear(new Color(34,56,67));
         if(!_conquestRelations && !ConquestStudioCut)EnsureConquestFocusedBackdrop();
         _spriteBatch.Begin(transformMatrix:transform);

@@ -182,6 +182,14 @@ public partial class Game1 : Game
         if(!IsOpeningScreen && !_tutorialAttackGuide && _tutorialAchievementAge<0 && _tutorialChromeSlide>0){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool enter=active && keyboard.IsKeyDown(Keys.Enter) && _previousKeyboard.IsKeyUp(Keys.Enter);
         if(IsOpeningScreen){OpeningInspectionDrag(mouse,active);OpeningInput(click,enter,escape,gameTime.ElapsedGameTime.TotalSeconds,keyboard);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(_conquestOverview){
+            _animationTime+=(float)gameTime.ElapsedGameTime.TotalSeconds;
+            if(_conquestRelations){if(active && (escape || click && InactiveBack.Contains(_pointer)))_conquestRelations=false;}
+            else if(_conquestStage<6 && active && click && ConquestRelationsButton.Contains(_pointer))_conquestRelations=true;
+            else if(_demoActive)UpdateDemo(gameTime.ElapsedGameTime.TotalSeconds,active,click,escape,enter,gameTime.TotalGameTime.TotalSeconds);
+            else UpdateConquestOverview(gameTime.ElapsedGameTime.TotalSeconds,active && (enter || escape || click && ConquestSkipButton.Contains(_pointer)));
+            _previousMouse=mouse;_previousKeyboard=keyboard;return;
+        }
         if(TryBeginTurnNewspaper() || TryBeginPendingDiplomacy()){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_screen==Screen.Newspaper){TurnNewspaperInput(active && click,active && enter,active && escape,gameTime.ElapsedGameTime.TotalSeconds);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateSubordinateDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) || UpdateComputerDomestic(gameTime.ElapsedGameTime.TotalSeconds,escape) ||
@@ -231,13 +239,6 @@ public partial class Game1 : Game
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(FolderTreeInput(mouse,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(_conquestOverview){
-            if(_conquestRelations){if(active && (escape || click && InactiveBack.Contains(_pointer)))_conquestRelations=false;}
-            else if(active && click && ConquestRelationsButton.Contains(_pointer))_conquestRelations=true;
-            else if(_demoActive)UpdateDemo(elapsed,active,click,escape,enter,gameTime.TotalGameTime.TotalSeconds);
-            else UpdateConquestOverview(elapsed,active && (enter || escape || click && ConquestSkipButton.Contains(_pointer)));
-            _previousMouse=mouse;_previousKeyboard=keyboard;return;
-        }
         if(WandererPolicyInput(active && click,active && escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         UpdateTutorialStartGuide(gameTime.TotalGameTime.TotalSeconds);
         if(_tutorialAttackGuide){

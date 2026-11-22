@@ -18,6 +18,36 @@ public partial class Game1
     private static readonly string[] GuideBodies={"elevator","stewardess","waitress","concierge"};
     private static readonly Rectangle GuideNext=new(1320,320,240,60);
 
+    private bool CanRecallGuide=>IsStatusScreen && DomesticOperationsAllowed && !_autoPlay && !_demoActive && !_setup.ComputerOnly && _setup.TutorialStep==0 &&
+        _setup.ControllerOf(_setup.PlayerSlot)>=0 && _setup.Relations.CanAct(_setup.PlayerSlot) && !_conquestOverview && !_diplomacyPending && !_setup.Industry.Pending && _subordinateNodes==null && _computerDomesticNodes==null;
+    private void RecallGuide(){
+        if(!CanRecallGuide)return;
+        _guideWorld=_setup;_guideRuler=_setup.PlayerSlot;_guidePage=0;
+        _guideBriefing=GuideNarration.Build(_setup,_guideRuler,!_setup.EnsureGuides().Introduced[_guideRuler]);
+    }
+    private void FocusGuideOffice(int id){
+        OpenNodeInspector(id);OpenNodeOffice();
+        // The guide replaces the map; reveal the office with its final camera already in place.
+        _domesticSlide=1;_inspectorCenterPending=false;_inspectorCenterAge=-1;
+        _orientationAge=_mapTransitionAge=-1;_globeSpinning=false;
+        var node=_setup.Nodes.All[id];var cell=_setup.Cells[node.Cell];
+        var point=_setup.Routes.Position(node.Cell,node.Center);
+        _net.ShowRoutes=true;_globeSelectedNode=id;
+        if(_statusGlobe){
+            _domesticMapLeft=55+480*_domesticSlide;FocusGlobePosition(point);
+            _world.ManualOrientation=Quaternion.CreateFromRotationMatrix(Matrix.CreateFromQuaternion(ConquestFace(cell.Normal))*Matrix.CreateRotationX(.60f)*Matrix.CreateRotationY(-.35f));
+            _world.GlobeZoom=1;
+            if(_world.ProjectVisible(point,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var center) &&
+                _world.ProjectVisible(point+cell.U*.5f,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var edge))
+                _world.GlobeZoom=MathHelper.Clamp(140/Math.Max(1,Vector2.Distance(center,edge)),2,16);
+            if(_world.ProjectVisible(point,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var at)){
+                var delta=MapViewBounds.Center.ToVector2()-at;
+                _world.GlobePan+=new Vector2(delta.X/StatusGlobeArea.Width,delta.Y/StatusGlobeArea.Height);
+            }
+        }else{
+            _net.SetCenter(_setup,cell.Face);_net.FitNodesAtSource(_setup,node,NetPanel,4);FocusInspectorLocation();
+        }
+    }
     private bool GuideInput(bool active,bool click,bool enter,bool escape)
     {
         if(!IsStatusScreen || !DomesticOperationsAllowed || _autoPlay || _demoActive || _setup.ComputerOnly || _setup.TutorialStep>0){_guideBriefing=null;return false;}
@@ -37,7 +67,7 @@ public partial class Game1
         if(enter || click && GuideNext.Contains(_pointer)){
             if(last){
                 int node=_guideBriefing.OfficeNode;FinishGuide();
-                if(node>=0 && node<_setup.Nodes.All.Length && _setup.Nodes.All[node].Owner==_guideRuler){OpenNodeInspector(node);OpenNodeOffice();}
+                if(node>=0 && node<_setup.Nodes.All.Length && _setup.Nodes.All[node].Owner==_guideRuler){FocusGuideOffice(node);}
                 else {ResetInspector();RefreshStratagems();_stratagemManual=false;_stratagemSelected=-1;}
             }else _guidePage++;
         }
