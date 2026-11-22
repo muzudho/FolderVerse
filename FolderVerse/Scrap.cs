@@ -64,7 +64,7 @@ public sealed partial class RobotWorld
         // The original cargo stays in its hangar until the conversion can commit atomically.
         var forecast=store.PlanningCopy();
         forecast.Replace(forecast.Robots.Where(r=>r.Id!=robot.Id));
-        if(!forecast.TryReceiveMaple(scrap,Workshops[node].ReservedSlots,id=>MapleShipping(node,id) || Discarding.Reserved(id)))return false;
+        if(!forecast.TryReceiveMaple(scrap,0,id=>MapleShipping(node,id) || Discarding.Reserved(id)))return false;
         store.Replace(store.Robots.Where(r=>r.Id!=robot.Id));
         store.SetMaplePackages(forecast.MaplePackages.ToArray());_nextId++;
         return true;

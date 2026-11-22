@@ -117,6 +117,7 @@ public sealed partial class CubeNet
     }
     public void Draw(UiPainter ui,WorldSetup setup,Rectangle panel,int focused,float pulse,bool objects=true,bool geographyOnly=false)
     {
+        AppearanceTime=pulse;PrepareTerrainHighlights(setup);
         _drawing=true;_badgePanel=panel;
         try{DrawUnrotated(ui,setup,panel,focused,pulse,geographyOnly);}finally{_drawing=false;}
         if(objects)DrawMapObjects(ui,setup,panel,pulse);
@@ -133,11 +134,7 @@ public sealed partial class CubeNet
             var face=Faces.First(f=>f.Face==cell.Face);var rect=CellBounds(cell,panel);
             if(ScreenAngle==0 && !rect.Intersects(MapViewport(panel)))continue;
             int detail=10;
-            foreach(var circle in FocusCircles){
-                var center=UnrotateScreen(circle.Center.ToPoint(),panel).ToVector2();
-                var closest=Vector2.Clamp(center,new Vector2(rect.Left,rect.Top),new Vector2(rect.Right,rect.Bottom));
-                if(Vector2.Distance(closest,center)<=circle.Radius+8){detail=40;break;}
-            }
+
             var samples=new float[12,12];
             var reliefs=new float[12,12];
             for(int sy=-1;sy<=10;sy++)for(int sx=-1;sx<=10;sx++)
@@ -158,7 +155,6 @@ public sealed partial class CubeNet
                 var sample=cell.Origin+cell.U*((sx+.5f)/10)+cell.V*((sy+.5f)/10);
                 float elevation=samples[sx+1,sy+1];
                 Color terrain=FocusTerrain(TerrainColor(setup,cell.Id,elevation,x*10/detail,y*10/detail),RotateScreen(new Vector2(px,py),panel),cell.Id);
-                if(CountryFocus<0 && NodeFocus<0 && RegionFocusCell<0 && !ShowRoutes && cell.Id==SelectedCell)terrain=SelectionGlow.Brighten(terrain,(x+.5f)/detail,(y+.5f)/detail,pulse);
                 ui.Box(new(px-size/2,py-size/2,size,size),terrain);
                 float relief=reliefs[sx+1,sy+1];
                 // Cast a short top-down shadow onto the lower tile, from the left and above.

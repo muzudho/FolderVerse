@@ -25,7 +25,6 @@ public partial class Game1
         var sources=PlanningFactorySources(node);
         if(sources.Length==1)return _setup.Robots.Workshops[node];
         var workshop=RobotWorkshop.PlanningView(sources.Select(n=>_setup.Robots.Workshops[n]));
-        if(_setup.Robots.Nodes[node].WarehouseLimit is int limit)workshop.SetStorageSlotLimit(limit);
         return workshop;
     }
     private bool PlanningCanAttackFrom(int owner,int source,int target)=>PlanningFunctional(source) && _setup.Nodes.All[source].Owner==owner && _setup.Campaign.RobotBattles.AttackTargets(_setup,owner,source).Contains(target);
@@ -34,12 +33,6 @@ public partial class Game1
         int source=Array.FindIndex(_setup.Robots.Nodes,s=>s.Robots.Any(r=>r.Id==order.RobotId));
         if(source<0)source=order.Source;
         return _setup.Campaign.FunctionTransfers.Orders.FirstOrDefault(o=>!o.FactoryOnly && o.Source==source)?.Target??source;
-    }
-    private void SetPlanningReservedSlots(int node,int count)
-    {
-        foreach(int source in PlanningFactorySources(node)){
-            var shop=_setup.Robots.Workshops[source];int assigned=Math.Min(count,shop.ReservedSlotLimit);shop.SetReservedSlots(assigned);count-=assigned;
-        }
     }
     private void UndoHangarPlan()
     {

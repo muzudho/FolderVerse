@@ -1,9 +1,20 @@
 # ドキュメント案内
 
+- [フェーズ看板：右ペーン共通の玩具プレートと差し替えサブ札](設計/フェーズ看板.md)
+
+- [征服者の記念メダル：表裏・順位別の金属・内政開始の回転](設計/征服者の記念メダル.md)
+
+- [地星儀・展開図：３配色、選択タイルとHUDの輪](設計/地星儀と展開図のUIルール.md)
+
+- [表示ブレーカー：18 FPSと重い表示の自動OFF](dev/display-breaker.md)
+
+- [パフォーマンス表示：FPS・処理時間の読み方](dev/performance-overlay.md)
+
 - [廃品回収：実物ロボットの予約、ポケット貸出と帰還](dev/salvage-expeditions.md)
 
 - [世界征服状況：朝の番組と局アナ](dev/conquest-broadcast.md)
 
+- [v0.15.0 リリースノート](dev/release-v0.15.0.md)
 - [v0.14.0 リリースノート](dev/release-v0.14.0.md)
 - [v0.13.0 リリースノート](dev/release-v0.13.0.md)
 
@@ -20,7 +31,7 @@
 
 [リポジトリーのトップ](../README.md)
 
-遊ぶ・調べる場合は、[v0.14.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.14.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
+遊ぶ・調べる場合は、[v0.15.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.15.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
 
 | 読みたい内容 | 入口 |
 | --- | --- |

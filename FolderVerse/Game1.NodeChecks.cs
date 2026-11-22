@@ -78,12 +78,12 @@ public partial class Game1
     {
         if(_trainingOpen || _supervisorDialog>0 || _invasionPicker>=0 || _inspectorFoldersOpen || _folderTreeOpen || _factionPickerOpen || _hangarDrag.HasValue)return false;
         if(NodeCheckButtonVisible && !_nodeInspectorClosing && NodeCheckButton.Contains(_pointer)){
-            var r=RulebookHintArea;DrawRulebookPaper(r);_ui.Text(WarCheckMode?"開戦予約のチェック":"地点のチェック",new(r.X+24,r.Y+20),.46f,RulebookInk);
+            QueuePopupHint(()=>{var r=RulebookHintArea;DrawRulebookPaper(r);_ui.Text(WarCheckMode?"開戦予約のチェック":"地点のチェック",new(r.X+24,r.Y+20),.46f,RulebookInk);
             _ui.Box(new(r.X+24,r.Y+51,r.Width-48,1),RulebookInk*.5f);
             string hint=WarCheckMode?"開戦予約モードの地図に赤いチェックマークを付けます。ターン終了時に消えます。好きなようにお使いください。":NodeCheckButtonHint;
             int split=hint.IndexOf('。')+1;
             _ui.Text(hint[..split],new(r.X+24,r.Y+65),.38f,RulebookInk);
-            _ui.Text(hint[split..],new(r.X+24,r.Y+93),.38f,RulebookInk);return true;
+            _ui.Text(hint[split..],new(r.X+24,r.Y+93),.38f,RulebookInk);});return true;
         }
         if(_nodeCheckHits.Any(h=>h.Bounds.Contains(_pointer))){DrawRulebookHint(WarCheckMode?"開戦予約のチェック":"地点のチェック",WarCheckMode?"チェックマークはあなたが付けました。":NodeCheckMarkerHint);return true;}
         return false;

@@ -52,9 +52,9 @@ sealed class SalvageChecks:Game1
   Call("MapOverlayClick",Action(5),false);Check((bool)Get("_salvagePlan") && !(bool)Get("_directMap"),"One click opens recovery plan exclusively");Call("UpdateDomesticSlide",1f);
   Set("_salvageSelected",discard);PlanClick(Rect("SalvageRequest").Center);
   Check(w.Salvage.Items.Single(i=>i.Id==discard).RequestedBy==0,"UI requests self-abandoned goods");
-  var net=(CubeNet)Get("_net");Call("UpdateNodeFocusCircle");var color=new Color(200,160,120);
-  Check(net.CountryFocus==0 && net.FocusCells.Count==0 && net.FocusCircleNodes.Contains(home),"Recovery spotlight includes agent, goods and accepting home");
-  Check(net.FocusTerrain(color,new Vector2(-10000))==new Color(130,104,78),"Everything outside recovery circles is dimmed 35 percent");
+  var net=(CubeNet)Get("_net");Call("UpdateMapInteractionState");var color=new Color(200,160,120);
+  Check(net.CountryFocus==0 && net.FocusCells.Count==0 && net.EnabledNodes.Contains(home),"Recovery spotlight includes agent, goods and accepting home");
+  Check(net.FocusTerrain(color,new Vector2(-10000))==color,"Recovery focus never dims surrounding terrain");
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){

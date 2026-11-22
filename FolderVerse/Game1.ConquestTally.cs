@@ -16,46 +16,44 @@ public partial class Game1
         _orientationToy.Draw((PlanetHeadSystem)_setup.PolarAxis,_conquestGlobe.ViewOrientation(0,0));GraphicsDevice.Viewport=viewport;
     }
 
-    private static readonly Color ConquestMarkerInk=new(40,57,76);
-    private Rectangle DrawConquestNumber(Rectangle r,int value,bool reveal){
-        if(!reveal)return Rectangle.Empty;
-        string text=value.ToString();var size=_font.MeasureString(text);float scale=Math.Min(.85f,Math.Min((r.Width-18)/size.X,(r.Height-12)/size.Y));
-        _ui.Text(text,new(r.Right-10-size.X*scale,r.Center.Y-size.Y*scale/2),scale,ConquestMarkerInk);
-        return new((int)(r.Right-10-size.X*scale),r.Center.Y-(int)(size.Y*scale/2),
-            (int)Math.Ceiling(size.X*scale),(int)Math.Ceiling(size.Y*scale));
-    }
-    private void DrawConquestTally(){
-        var tally=_conquestTally;var panel=ConquestFormulaSpace;int x=panel.X,y=panel.Y,ruler=ConquestCard.Ruler;
-        double age=_conquestStage==3?0:_conquestStage==5?tally.Duration:_conquestAge;
-        bool main=!ConquestCard.Reminder,cells=main && age>=tally.CellsStart,entry=main && age>=tally.EntryStart;
-        bool score=main && age>=tally.ScoreStart,rank=main && age>=tally.RankStart;
-        _ui.Box(new(x,y,4,panel.Height),_setup.OwnerColor(ruler));
-        // Keep the arithmetic on one baseline; units sit above/below their counters.
-        float unit=(panel.Width-24)/500f;int line=y+75;
-        Rectangle Token(int start,int width)=>new(x+12+(int)(start*unit),line,Math.Max(1,(int)(width*unit)-3),76);
-        var cellsBox=Token(0,85);var entryBox=Token(230,85);var pointsBox=Token(355,145);
-        var rankBox=new Rectangle(x+panel.Width/2-40,y+245,135,62);
-        DrawConquestNumber(entryBox,tally.Entry,entry);
-        _ui.Center("entry no",new(entryBox.X,y+35,entryBox.Width,32),.43f*unit,ConquestMarkerInk);
-        if(tally.Powered && !tally.Subordinate){
-            var digits=DrawConquestNumber(cellsBox,tally.TotalCells,cells);
-            _ui.Center(ToyCounterRenderer.SectorUnit(tally.TotalCells),new(cellsBox.X,y+156,cellsBox.Width,32),.43f*unit,ConquestMarkerInk);
-            if(cells)DrawSectorChange(digits,new(panel.X-42,panel.Y,panel.Width+42,panel.Height),ruler,tally.TotalCells);
-            _ui.Center($"× {tally.Scale} +",Token(85,145),.60f*unit,ConquestMarkerInk);
-        }else if(cells){
-            _ui.Center(tally.Powered?"手下 0 pts +":$"脱落 {-tally.Scale} pts +",Token(0,230),.45f*unit,ConquestMarkerInk);
+    private void DrawConquestTerritoryFlags(){
+        if(!ConquestStudioCut || _conquestGlobe.PresentationCells==null)return;
+        foreach(int id in _conquestGlobe.PresentationCells){
+            var cell=_setup.Cells[id];
+            if(_conquestGlobe.ProjectVisible(cell.Center,cell.Normal,0,0,ConquestGlobeArea,out var at) && ConquestGlobeArea.Contains(at.ToPoint()))
+                CountryFlagArt.Marker(_ui,_setup,ConquestCard.Ruler,at,32);
         }
-        _ui.Center("=",Token(315,40),.75f*unit,ConquestMarkerInk);
-        DrawConquestNumber(pointsBox,tally.Score(age),score);
-        _ui.Center("points",new(pointsBox.X,y+156,pointsBox.Width,32),.43f*unit,ConquestMarkerInk);
-        if(cells && tally.SubordinateCells>0)
-            _ui.Center($"（内、手下 {tally.SubordinateCells} {ToyCounterRenderer.SectorUnit(tally.SubordinateCells)}）",new(x+12,y+212,panel.Width-24,28),.30f,ConquestMarkerInk);
-        _ui.Center("暫定",new(rankBox.X-100,rankBox.Y,90,62),.45f,ConquestMarkerInk);
-        DrawConquestNumber(rankBox,ConquestCard.Rank,rank);
-        _ui.Center("位",new(rankBox.Right+8,rankBox.Y,40,62),.45f,ConquestMarkerInk);
-
     }
+    private static readonly Color ConquestMarkerInk=new(40,57,76);
+    private void DrawConquestTally(){
+        var tally=_conquestTally;var panel=ConquestFormulaSpace;
+        double age=_conquestStage==3?0:_conquestStage==5?tally.Duration:_conquestAge;
+        if(ConquestCard.Reminder)return;
+        if(age>=tally.CellsStart){
+            if(tally.Powered && !tally.Subordinate){
+                string detail=tally.SubordinateCells>0?$"（内、手下 {tally.SubordinateCells} {ToyCounterRenderer.SectorUnit(tally.SubordinateCells)}）":"";
+                Line(0,(tally.TotalCells.ToString(),.95f),(ToyCounterRenderer.SectorUnit(tally.TotalCells),.48f),(detail,.32f));
+            }else Line(0,(tally.Powered?"手下":"脱落",.55f));
+        }
+        if(age>=tally.MultiplyStart)
+            Line(1,tally.Powered && !tally.Subordinate?($"× {tally.Scale}",.78f):($"{(tally.Powered?0:-tally.Scale)} points",.65f));
+        if(age>=tally.EntryStart)Line(2,("＋ entry no",.52f),(tally.Entry.ToString(),.95f));
+        if(age>=tally.ScoreStart)Line(3,("＝",.72f),(tally.Score(age).ToString(),.95f),("points",.48f));
+        if(age>=tally.RankStart)Line(4,("暫定",.52f),(ConquestCard.Rank.ToString(),.95f),("位",.52f));
 
+        // Keep each number and its label together, including the subordinate breakdown.
+        void Line(int row,params (string Text,float Scale)[] tokens){
+            const float gap=8;
+            float width=tokens.Sum(t=>_font.MeasureString(t.Text).X*t.Scale)+gap*Math.Max(0,tokens.Length-1);
+            float fit=Math.Min(1,(panel.Width-44)/Math.Max(1,width));
+            float at=panel.X+22,centerY=panel.Y+42+row*70;
+            foreach(var token in tokens){
+                var size=_font.MeasureString(token.Text);float scale=token.Scale*fit;
+                _ui.Text(token.Text,new(at,centerY-size.Y*scale/2),scale,ConquestMarkerInk);
+                at+=size.X*scale+gap*fit;
+            }
+        }
+    }
     private void DrawSectorChange(Rectangle digits,Rectangle area,int ruler,int currentSectors)
     {
         int change=_setup.Campaign.SectorChange(_setup,ruler,currentSectors);

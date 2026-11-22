@@ -25,6 +25,7 @@ public sealed partial class CubeNet
     private void DrawMapSymbols(UiPainter ui,WorldSetup world,
         Func<(SurfaceCell Cell,Vector3 A,Vector3 B),(Vector2 A,Vector2 B)?> project)
     {
+        using var cost=new RenderFeatureCost.Scope(1,ShowEquator);
         if(!ShowEquator)return;
         foreach(var edge in EquatorEdges(world))
         {

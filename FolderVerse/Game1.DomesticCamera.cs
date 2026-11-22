@@ -19,6 +19,7 @@ public partial class Game1{
  private void RestoreDomesticCamera(){
   ResetInspector();_domesticSlide=0;RestorePlayerView();
   if(DomesticOperationsAllowed){
+   QueueDomesticMedallion();
    _diplomacyPending=!_setup.Industry.Pending && (DueTrade!=null || Trade.Replies.Count>0);
    PrepareHomePersuasion();AutoSaveDomestic();WriteTurnStatistics();BeginConquestOverview();
   }

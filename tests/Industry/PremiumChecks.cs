@@ -32,7 +32,7 @@ static class PremiumChecks
         }
         Check(rare is >=60 and <=140,"Premium catalogue is rare across 1000 seeds");
         var robots=new RobotWorld();robots.Initialize(2,1);
-        selected.AutoAssemblyDisabled=true;selected.SetReservedSlots(0);selected.SelectPlan(11);robots.Workshops[0]=selected;
+        selected.AutoAssemblyDisabled=true;selected.SelectPlan(11);robots.Workshops[0]=selected;
         for(int i=1;i<selected.ProductionPeriod;i++)robots.AdvanceIndustry(_=>0);
         Check(robots.Nodes[0].Count==0,"Premium production waits for the full rare-part cost");
         var loaded=AutoSaveStore.Restore<RobotWorld>(AutoSaveStore.Capture(robots));loaded.AdvanceIndustry(_=>0);

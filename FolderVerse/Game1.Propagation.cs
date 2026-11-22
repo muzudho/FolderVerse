@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private readonly CubeNet _propagationNet=new();
-    private static readonly Rectangle PropagationBattleBounds=new(40,40,1000,1000);
+    private static readonly Rectangle PropagationBattleBounds=new(40,180,850,850);
     private Vector2 PropagationBadgeCenter(int scene,Rectangle panel)
     {
         var battle=_robotScenes[scene];

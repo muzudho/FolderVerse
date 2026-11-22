@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "file": "primary-actions-neutral-atlas-v001.png",
+  "columns": 4,
+  "rows": 3,
+  "cellSize": 362,
+  "pixelSize": [
+    1448,
+    1086
+  ],
+  "format": "RGBA PNG, achromatic straight alpha master",
+  "runtime": "Premultiply on upload; tint icon with nation/cream blend; button background uses nation color.",
+  "labelsOutsideArt": true,
+  "flagCorners": "Top right and bottom left are reserved by the runtime icon and caption bounds.",
+  "cells": [
+    "guide",
+    "end-turn",
+    "war-reservation",
+    "direct-parts",
+    "long-distance-parts",
+    "transport-plan",
+    "salvage",
+    "facility-relocation",
+    "trade",
+    "stratagem",
+    null,
+    null
+  ],
+  "dynamicMap": "My country remains runtime generated; intentionally absent from atlas.",
+  "source": "\\\\TAKAHASHI-NAS\\Share\\muzudho-with-ai-agent\\FolderVerse\\art-source\\ui\\primary-actions-v001",
+  "sha256": "58D5409C0DAA258FAC4AF8C3910F8F0ADEB1F8FEA094C31E223101904EA82F9A"
+}

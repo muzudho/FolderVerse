@@ -4,6 +4,8 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 public partial class Game1
 {
+    private static readonly Rectangle SummaryMastheadBounds=new(54,36,580,82);
+    private static readonly Rectangle SummaryHeadlineBounds=new(54,154,1798,42);
     private double _summaryReadAge;
     private const double SummaryReadSeconds=6;
     private int _summaryReadPapers;
@@ -33,17 +35,17 @@ public partial class Game1
         var paper=_newspaperEdition==5?new Color(245,235,220):new Color(238,225,199);
         var ink=new Color(58,49,42);
         _ui.Box(new(40,20,1830,986),paper);
-        DrawNewspaperMasthead(_newspaperEdition,new(470,28,980,80));
-        _ui.Box(new(54,119,1798,3),ink);
-        _ui.Center("今号の戦況 / 注目の戦闘",new(54,124,1000,42),.7f,ink);
+        DrawNewspaperMasthead(_newspaperEdition,SummaryMastheadBounds);
+        _ui.Box(new(54,148,1798,3),ink);
+        _ui.Center("今号の戦況 / 注目の戦闘",SummaryHeadlineBounds,.7f,ink);
         var selected=NewspaperSelection.Select(_robotScenes,_newspaperEdition,_setup.PlayerSlot,9);
         string publication=country>=0?$"{_setup.ConquerorNames[country]}国 / {profile.Label}":profile.Label;
-        _ui.Text(publication+$" / 全 {_robotScenes.Length} 戦場 / 掲載 {selected.Length} 件",new(54,175),.5f,ink);
+        _ui.Text(publication+$" / 全 {_robotScenes.Length} 戦場 / 掲載 {selected.Length} 件",new(54,202),.5f,ink);
         
         _newspaperPortraits??=new NewspaperPortraitRenderer(Content);
         for(int at=0;at<Math.Min(3,selected.Length);at++){
             int i=selected[at];var b=_robotScenes[i];
-            int x=62+(at%3)*598,y=226+(at/3)*332;
+            int x=62+(at%3)*598,y=250+(at/3)*332;
             _ui.Box(new(x,y,576,312),ink*.06f);
             string name=b.Winner>=0?_setup.ConquerorNames[b.Winner]+"国":"勝者なし";
             string outcome=country>=0?NewspaperBattleOutcome.NationalHeadline(b,country,b.Finished):
@@ -69,7 +71,7 @@ public partial class Game1
         for(int at=3;at<selected.Length;at++){var b=_robotScenes[selected[at]];string winner=b.Winner>=0?_setup.ConquerorNames[b.Winner]+"国":"勝者なし";
             string outcome=country>=0?NewspaperBattleOutcome.NationalHeadline(b,country,b.Finished):
                 !b.Finished?"継戦":b.Winner>=0?winner+" 勝利":winner;
-            _ui.Text($"戦況短信 / 戦場 {selected[at]+1}：{outcome}",new(72,570+(at-3)*42),.46f,ink);
+            _ui.Text($"戦況短信 / 戦場 {selected[at]+1}：{outcome}",new(72,594+(at-3)*42),.46f,ink);
         }
         int omitted=_robotScenes.Length-selected.Length;
         _ui.Text($"戦況短信：その他 {omitted} 戦場 / 終結 {_robotScenes.Count(b=>b.Finished)} / 継戦 {_robotScenes.Count(b=>!b.Finished)}",new(62,895),.38f,ink);

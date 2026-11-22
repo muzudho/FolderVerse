@@ -15,7 +15,8 @@ public sealed class ConquestTally
     public double TourSeconds {get;}
     public double CountEnd=>Compact?0:TourSeconds+Math.Max(0,TotalCells-Cells.Length)*.18;
     public double CellsStart=>Compact?0:.35;
-    public double EntryStart=>Compact?0:CellsStart+1;
+    public double MultiplyStart=>Compact?0:CellsStart+1;
+    public double EntryStart=>Compact?0:MultiplyStart+1;
     public double ScoreStart=>Compact?0:EntryStart+1;
     public double ConvertStart=>ScoreStart;
     public double RankStart=>Compact?0:ScoreStart+1;

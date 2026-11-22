@@ -73,7 +73,7 @@ public sealed partial class RobotWorld
         =>Math.Max(0,RawDeposit(node,material)-Workshops[node].ProductionLines
             .Where(l=>!ReferenceEquals(l,editing) && l.HarvestMaterial==material).Sum(l=>l.MapleRemaining));
 
-    private int MapleReservedSlots(int node)=>ProductionIntakes.Count(i=>(i.Target??i.Source)==node)+Workshops[node].ReservedSlots;
+    private int MapleReservedSlots(int node)=>ProductionIntakes.Count(i=>(i.Target??i.Source)==node);
     internal bool CanHarvestMaple(int node,int loads,RawMaterial material=RawMaterial.Maple)
         =>RawDeposit(node,material)>=loads && Nodes[node].HasMapleSpace(new MaplePackage(0,loads*MaplePackageSize){Material=material},MapleReservedSlots(node));
 
@@ -81,7 +81,7 @@ public sealed partial class RobotWorld
     {
         if(!CanHarvestMaple(node,loads,material))return false;
         var store=Nodes[node];
-        int reserved=ProductionIntakes.Count(i=>(i.Target??i.Source)==node)+Workshops[node].ReservedSlots;
+        int reserved=ProductionIntakes.Count(i=>(i.Target??i.Source)==node);
         if(!store.TryReceiveMaple(new MaplePackage(_nextId,loads*MaplePackageSize){Material=material},reserved,id=>MapleShipping(node,id)))return false;
         _nextId++;
         if(material!=RawMaterial.Maple){_rawDeposits[(int)material-1][node]-=loads;return true;}
@@ -198,7 +198,7 @@ public sealed partial class RobotWorld
         var target=forecast.PlanningCopy();
         int blocked=0;
         // The hangar forecast already includes manufactured arrivals.
-        int reserved=Workshops[node].ReservedSlots;
+        int reserved=0;
         foreach(var order in MapleShipments.Where(o=>o.Target==node)){
             var package=Nodes[order.Source].MaplePackages.FirstOrDefault(p=>p.Id==order.PackageId);
             if(package==null || !CanDeliverMaple(world,order.Owner,order.Source,node) ||

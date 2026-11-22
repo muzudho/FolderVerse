@@ -37,8 +37,8 @@ class Checks:Game1{
   Set("_statusGlobe",false);((CubeNet)Get("_net")).FitAll((Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!,1);Call("OpenDirectMap");
   Rectangle Footer(string name)=>(Rectangle)typeof(Game1).GetProperty(name,F)!.GetValue(this)!;
   var normal=Footer("PopulationTurnButton");
-  Check(normal.Width==192 && normal.Height==96,"End turn follows current shared 192x96 layout");
-  Set("_demoActive",true);var demoTurn=Footer("PopulationTurnButton");Check(demoTurn.Width==192 && demoTurn.Height==96,"Demo shares the current end-turn layout");Set("_demoActive",false);
+  Check(normal.Width==144 && normal.Height==96,"End turn follows current shared 144x96 layout");
+  Set("_demoActive",true);var demoTurn=Footer("PopulationTurnButton");Check(demoTurn.Width==144 && demoTurn.Height==96,"Demo shares the current end-turn layout");Set("_demoActive",false);
   for(int i=0;i<PrimaryCount;i++){
    var rect=(Rectangle)Call("PrimaryActionBounds",i);
    Check(rect.Bottom==1070 && (i==1 || rect.Width==rect.Height),"Primary actions share a baseline with square secondary actions");

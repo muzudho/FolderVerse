@@ -23,6 +23,7 @@ public sealed partial class CubeNet
     }
     private void DrawBatteries(UiPainter ui,WorldSetup world,Rectangle panel,Func<int,Vector2?> project,float pulse)
     {
+        using var cost=new RenderFeatureCost.Scope(3,ShowBatteries);
         _batteries.Clear();if(!ShowBatteries)return;
         foreach(int ruler in Enumerable.Range(0,world.ActiveCount))
         {

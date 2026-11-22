@@ -16,6 +16,8 @@ public sealed record RecoveryChoice(RecoveryTarget Target,int Node,Robot Robot,R
 public sealed class RecoveryMission
 {
     public long Id;public int Owner,Source,Node,PreviousNode,Destination=-1;
+    // Null preserves the source/pocket return rule used by older saves.
+    public int? DeliveryNode;
     public bool Pocket,Pending=true,ReturnRequested,Returning,PocketFallback,Finished;
     public Robot Worker;
     public string Status="出発予約";
@@ -56,12 +58,12 @@ public sealed partial class SalvagePlan
         }
         return Array.Empty<int>();
     }
-    public RecoveryChoice[] RecoveryChoices(WorldSetup w,int start,RecoveryFilter filter)
+    public RecoveryChoice[] RecoveryChoices(WorldSetup w,int start,RecoveryFilter filter,int? deliveryNode=null)
     {
         if(filter.Error.Length>0)return Array.Empty<RecoveryChoice>();
         var result=new List<RecoveryChoice>();
         foreach(var item in Items){
-            bool reachable=RecoveryPath(w,start,item.Node).Length>0;if(!filter.IncludeUnreachable&&!reachable)continue;
+            bool reachable=RecoveryPath(w,start,item.Node).Length>0&&(!deliveryNode.HasValue||RecoveryPath(w,item.Node,deliveryNode.Value).Length>0);if(!filter.IncludeUnreachable&&!reachable)continue;
             int distance=RecoveryPath(w,start,item.Node,true).Length;distance=distance==0?int.MaxValue:distance-1;
             var r=item.Robot;
             bool Match(RobotParts parts)=>(filter.AllowDamaged||(r.EffectiveDamagedParts&parts)==0)&&(filter.Anything||RobotMaterials.Parts.Where(p=>(parts&p)!=0).All(p=>filter.Materials.Contains(r.Material(p))));
@@ -77,7 +79,7 @@ public sealed partial class SalvagePlan
     }
     private static IEnumerable<RobotParts> Units(Robot r){if(r.IntegratedParts!=0)yield return r.IntegratedParts;foreach(var p in RobotMaterials.Parts)if((r.Parts&p)!=0&&(r.IntegratedParts&p)==0)yield return p;}
     private static RecoveryShape Shape(RobotParts p)=>p switch{RobotParts.Head=>RecoveryShape.Head,RobotParts.Body=>RecoveryShape.Body,RobotParts.Legs=>RecoveryShape.Legs,RobotParts.Head|RobotParts.Body=>RecoveryShape.HeadBody,RobotParts.Body|RobotParts.Legs=>RecoveryShape.BodyLegs,_=>RecoveryShape.Complete};
-    public RecoveryMission ReserveExpedition(WorldSetup w,int owner,int source,bool pocket,long workerId,IEnumerable<RecoveryTarget> targets)
+    public RecoveryMission ReserveExpedition(WorldSetup w,int owner,int source,bool pocket,long workerId,IEnumerable<RecoveryTarget> targets,int? deliveryNode=null)
     {
         if(owner<0||owner>=w.ActiveCount||!w.Relations.CanAct(owner))throw new InvalidOperationException("この征服者は出発予約できません");
         EnableExpeditions(w);
@@ -85,10 +87,11 @@ public sealed partial class SalvagePlan
         var selected=targets.Distinct().ToArray();if(selected.Length==0)throw new InvalidOperationException("回収する品を１つ以上選んでください");
         foreach(var group in selected.GroupBy(t=>t.Item)){RobotParts used=0;foreach(var t in group){var item=Items.FirstOrDefault(i=>i.Id==t.Item);if(item==null||(used&t.Parts)!=0||(item.Robot.Parts&t.Parts)!=t.Parts||!item.Robot.CanSeparate(t.Parts))throw new InvalidOperationException("品物が変わりました。選び直してください");used|=t.Parts;}}
         if(source<0||source>=w.Nodes.All.Length||pocket&&w.Nodes.Current(owner)?.Id!=source)throw new InvalidOperationException("出発地点を確認してください");
+        if(deliveryNode is int goal && (goal<0||goal>=w.Nodes.All.Length||!w.Nodes.All[goal].Functional||w.Nodes.All[goal].Owner!=owner))throw new InvalidOperationException("受け取り先は自国の機能する地点を選んでください");
         var store=pocket?w.Robots.Retinues[owner]:w.Robots.Nodes[source];var worker=store.Robots.FirstOrDefault(r=>r.Id==workerId);
         if(worker==null||!EligibleWorker(w,owner,source,pocket,worker))throw new InvalidOperationException("予約のない自国の完全体を選んでください");
         var bag=w.Robots.Retinues[owner];if(Missions.Count(m=>m.Owner==owner&&!m.Finished)>=6||1+selected.Length>bag.StorageLimit-bag.Count+(pocket?1:0))throw new InvalidOperationException("ポケットに本人と荷物の貸出枠が足りません");
-        var mission=new RecoveryMission{Id=_next++,Owner=owner,Source=source,Node=source,PreviousNode=source,Pocket=pocket,Worker=worker,Targets=selected.ToList()};
+        var mission=new RecoveryMission{Id=_next++,Owner=owner,Source=source,Node=source,PreviousNode=source,Pocket=pocket,DeliveryNode=deliveryNode,Worker=worker,Targets=selected.ToList()};
         store.Replace(store.Robots.Select(r=>r.Id==workerId?r with{SalvageReserved=true}:r));Missions.Add(mission);RefreshLoans(w,mission);return mission;
     }
     private void RefreshLoans(WorldSetup w,RecoveryMission m)
@@ -143,7 +146,8 @@ public sealed partial class SalvagePlan
         bool Fits(int n)=>w.Nodes.All[n].Functional&&w.Robots.Nodes[n].StorageLimit-w.Robots.Nodes[n].Count>=1+m.Cargo.Count;
         if(eliminated){int country=w.Nodes.Current(m.Owner)?.Owner??-1;if(country<0)country=w.Nodes.All[m.Source].Owner;destination=w.Nodes.All.Where(n=>n.Functional&&country>=0&&n.Owner==country&&Fits(n.Id)).Select(n=>new{n.Id,Path=RecoveryPath(w,m.Node,n.Id,false,incoming)}).Where(p=>p.Path.Length>0).OrderBy(p=>p.Path.Length).ThenBy(p=>p.Id).Select(p=>p.Id).FirstOrDefault(-1);}
         else{
-            if(!m.Pocket&&!m.PocketFallback&&Fits(m.Source)&&RecoveryPath(w,m.Node,m.Source,false,incoming).Length>0)destination=m.Source;
+            int goal=m.DeliveryNode??m.Source;bool pocketGoal=m.DeliveryNode==null&&m.Pocket;
+            if(!pocketGoal&&!m.PocketFallback&&(!m.DeliveryNode.HasValue||w.Nodes.All[goal].Owner==m.Owner)&&Fits(goal)&&RecoveryPath(w,m.Node,goal,false,incoming).Length>0)destination=goal;
             else {m.PocketFallback=true;destination=w.Nodes.Current(m.Owner)?.Id??-1;bag=true;}
         }
         m.Destination=destination;var path=RecoveryPath(w,m.Node,destination,false,incoming);

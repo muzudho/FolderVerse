@@ -16,7 +16,15 @@ public partial class Game1
     private bool PhasePrimaryActionAllowed(int index)=>index==2?WarPlanningAllowed:index is 3 or 4 or 5 or LongMapAction or FunctionTransferAction or TradeAction?DomesticOperationsAllowed:true;
     private void EndDomesticPhase(bool automaticAll=false)
     {
-        if(!automaticAll && !_setup.Campaign.Stratagems.Commit(_setup,_setup.TurnPlayer,out string reason)){_stratagemMessage=reason;_stratagemManual=false;_stratagemReservationsOpen=false;_stratagemPage=0;_stratagemGroup=-1;_stratagemSelected=(int)_setup.Campaign.Stratagems.Pending.First(p=>p.Controller==_setup.TurnPlayer && reason.Contains(StratagemPlans.Title(p.Match.Kind))).Match.Kind;return;}
+        if(!automaticAll){
+            var cancelled=_setup.Campaign.Stratagems.CancelInvalid(_setup,_setup.TurnPlayer);
+            if(cancelled.Length>0){
+                _stratagemCancelledNotice=cancelled;_stratagemSelected=-1;_stratagemPreview=null;
+                _inputOutcome="stratagem_cancelled";_operations.Write("stratagem_cancelled",new{controller=_setup.TurnPlayer,reasons=cancelled});
+                _lastAutoSaveTurn=-1;AutoSaveDomestic();return;
+            }
+        }
+        if(!automaticAll && !_setup.Campaign.Stratagems.Commit(_setup,_setup.TurnPlayer,out string reason)){_inputOutcome="turn_end_blocked_stratagem";_operations.Write("turn_end_blocked_stratagem",new{controller=_setup.TurnPlayer,reason,pending=_setup.Campaign.Stratagems.Pending.Where(p=>p.Controller==_setup.TurnPlayer).ToArray()});_stratagemMessage=reason;_stratagemManual=false;_stratagemReservationsOpen=false;_stratagemPage=0;_stratagemGroup=-1;_stratagemSelected=(int)_setup.Campaign.Stratagems.Pending.First(p=>p.Controller==_setup.TurnPlayer && reason.Contains(StratagemPlans.Title(p.Match.Kind))).Match.Kind;return;}
         SaveDomesticCamera();
         if(!automaticAll && BeginSubordinateDomestic())return;
         SubmitDomesticPhase(automaticAll);

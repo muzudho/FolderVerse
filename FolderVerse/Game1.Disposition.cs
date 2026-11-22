@@ -35,6 +35,7 @@ public partial class Game1
         {CloseMovement();_statusMenuOpen=false;_screen=Screen.Hierarchy;return true;}
         if(_statusMenuOpen && AutoMenuItem.Contains(point)){StartAutoPlay();return true;}
         if(_statusMenuOpen && CountrySettingsMenuItem.Contains(point)){OpenCountrySettings();return true;}
+        if(_statusMenuOpen && PerformanceMenuItem.Contains(point)){_performanceVisible=true;_statusMenuOpen=false;return true;}
         if(_statusMenuOpen && BgmMenuItem.Contains(point)){_bgmMenuOpen=true;return true;}
         if(_statusMenuOpen && GlobeSettingsMenuItem.Contains(point)){_globeSettingsOpen=true;return true;}
         if(_statusMenuOpen && ComputerManualMenuItem.Contains(point)){OpenComputerManual();return true;}
@@ -48,7 +49,7 @@ public partial class Game1
         if(MapFooterAction>=0 || _primaryActionSlide>0)_statusMenuOpen=false;
         if(_primaryActionSlide>=1)return;
         var button=StatusMenuButton;button.Y-=(int)MathF.Round(100*MathHelper.SmoothStep(0,1,_primaryActionSlide));
-        _ui.Button(button,"＜システムメニュー＞",Muted,.52f);
+        _ui.Button(button,"＜システムメニュー＞",Accent,.52f);
         if(_statusMenuOpen)
         {
             _ui.Button(InactiveMenuItem,"電池を戻す",Muted,.5f);
@@ -60,6 +61,7 @@ public partial class Game1
             DrawComputerManualMenuItem();
             _ui.Button(BgmMenuItem,"BGM・SE音量",Muted,.5f);
             _ui.Button(GlobeSettingsMenuItem,"地星設定",Muted,.5f);
+            _ui.Button(PerformanceMenuItem,"パフォーマンス表示",Muted,.5f);
         }
     }
     private void DispositionInput(bool click,bool escape)

@@ -35,14 +35,14 @@ public partial class Game1
         foreach(var layout in InvasionVisibleRows()){
             int index=layout.Index;
             var source=_invasionSources[index];var robots=InvasionPreviewRobots(source);
-            for(int slot=0;slot<robots.Length;slot++){
-                if(!InvasionCardAt(layout.Bounds,slot).Contains(point))continue;
+            for(int slot=layout.FirstSlot;slot<layout.FirstSlot+layout.SlotCount;slot++){
+                if(!InvasionCardAt(layout.Bounds,slot-layout.FirstSlot).Contains(point))continue;
                 var reasons=InvasionUnavailableReasons(source,robots[slot]);if(reasons.Length==0)return false;
-                var r=RulebookHintArea;r.Height=Math.Max(r.Height,84+reasons.Length*29);DrawRulebookPaper(r);
-                _ui.Text($"ロボット ID {robots[slot].Id}：出撃できない理由",new(r.X+24,r.Y+20),.46f,RulebookInk);
+                var r=RulebookHintArea;r.Height=Math.Max(r.Height,84+reasons.Length*29);long robotId=robots[slot].Id;QueuePopupHint(()=>{DrawRulebookPaper(r);
+                _ui.Text($"ロボット ID {robotId}：出撃できない理由",new(r.X+24,r.Y+20),.46f,RulebookInk);
                 _ui.Box(new(r.X+24,r.Y+51,r.Width-48,1),RulebookInk*.5f);
                 for(int line=0;line<reasons.Length;line++)_ui.Text(reasons[line],new(r.X+24,r.Y+65+line*29),Math.Min(.38f,(r.Width-48)/Math.Max(1,_font.MeasureString(reasons[line]).X)),RulebookInk);
-                return true;
+                });return true;
             }
         }
         return false;

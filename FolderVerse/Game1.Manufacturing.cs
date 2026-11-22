@@ -78,9 +78,9 @@ public partial class Game1
 
     private void DrawManufacturing()
     {
-        _ui.Text("製造レーン稼働フェーズ",new(54,28),.9f,Cream);
+
         _ui.Center($"今回の産業ターン　{IndustryTime.Format(_setup.Industry.AppliedUnits)} / {IndustryTime.Format(_setup.Industry.Result)}",
-            new(950,35,900,50),.6f,Cream);
+            new(1260,35,590,50),.48f,Cream);
         var left=new Rectangle(54,145,850,790);var right=new Rectangle(990,145,870,790);
         _ui.Box(left,new Color(24,45,59));_ui.Box(right,new Color(24,45,59));
         _ui.Center("ロボット製造工場",new(left.X,160,left.Width,48),.65f,Cream);
@@ -89,7 +89,10 @@ public partial class Game1
         if(_manufacturingNode<0){_ui.Center("稼働できる工場がありません",new(54,420,1806,60),.6f,Cream);return;}
         var node=_setup.Nodes.All[_manufacturingNode];
         string destination=_setup.Nodes.DisplayName(node);
-        _ui.Center(destination+" / 今回の納品が最も多い地点",new(54,92,1806,40),.48f,Cream);
+        _ui.Center("今回の納品が最も多い地点",new(54,70,580,48),.43f,Cream);
+        var destinationLines=destination.Split(" / ",2);
+        float destinationScale=Math.Min(.38f,574/Math.Max(1,destinationLines.Max(line=>_font.MeasureString(line).X)));
+        PortraitHudLayout.CenterLines(_ui,_font,destinationLines,new Rectangle(1260,88,590,55),destinationScale,Cream);
         var lines=_setup.Robots.Workshops.SelectMany((w,n)=>w.ProductionLines
             .Where(l=>(l.MapleRemaining>0?n:l.IntakeTarget??n)==_manufacturingNode && _setup.Nodes.All[n].Functional)
             .Select(l=>(Source:n,Line:l))).ToArray();

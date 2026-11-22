@@ -110,9 +110,9 @@ public partial class Game1
             Wrap(hints[i]);
             if(reason!=null && reason!="工場だけを移転すると中継地点になります" && reason!="港は陸と海を結ぶ地点です")Wrap(reason);
             var popup=new Rectangle(74,611,804,Math.Max(130,64+lines.Count*30));
-            DrawRulebookPaper(popup);
+            popup.X+=NodeInspectorOffset;QueuePopupHint(()=>{DrawRulebookPaper(popup);
             _ui.Text(label,new(popup.X+32,popup.Y+16),.44f,RulebookInk);
-            for(int row=0;row<lines.Count;row++)_ui.Text(lines[row],new(popup.X+32,popup.Y+56+row*30),.38f,RulebookInk);
+            for(int row=0;row<lines.Count;row++)_ui.Text(lines[row],new(popup.X+32,popup.Y+56+row*30),.38f,RulebookInk);});
             break;
         }
     }

@@ -24,7 +24,7 @@ public partial class Game1
         if(_folderTreeOpen){
             _net.FolderSearchFocus=false;_net.FocusBrightness=_world.FocusBrightness=.65f;
             _net.NodeFocus=_world.NodeFocus=_net.CountryFocus=_world.CountryFocus=_net.RegionFocusCell=_world.RegionFocusCell=-1;
-            _net.FocusCircles.Clear();_world.FocusCircles.Clear();_net.FocusCircleNodes.Clear();
+            _net.EnabledNodes.Clear();
         }
         _folderTreeOpen=false;_folderTreeKind=_folderTreeId=_folderTreeOwner=-1;
     }
@@ -129,7 +129,7 @@ public partial class Game1
         PrimaryRoundBox(FolderTreeButton,_folderTreeOpen?Color.Lerp(Accent,Color.White,.2f):Accent,12);
         DrawCountryCornerMarks(FolderTreeButton,_setup.PlayerSlot);
         DrawCountryFolder(new(FolderTreeButton.X+13,FolderTreeButton.Y+21,30,24),_setup.PlayerSlot);
-        if(FolderTreeButton.Contains(_pointer))_ui.Text("所属フォルダーツリー",new(FolderTreeButton.Right+10,98),.38f,Cream);
+        if(FolderTreeButton.Contains(_pointer))_ui.Text("所属フォルダーツリー",new(FolderTreeButton.X,38),.38f,Cream);
     }
     private void DrawFolderTree()
     {

@@ -86,7 +86,6 @@ public sealed partial class RobotPartPlanning
             NodeFunctionTransfers.MergeHangarCapacity(copy.Nodes[a],copy.Nodes[b],world.Nodes.All[a].PermanentLandmark);
             copy.Nodes[b].Replace(copy.Nodes[b].Robots.Concat(copy.Nodes[a].Robots));copy.TransferMapleFunctions(a,b);copy.Nodes[a].Replace(Array.Empty<Robot>());copy.Nodes[a].SetCapacity(world.Nodes.All[a].PermanentLandmark?1:0);if(world.Nodes.All[a].PermanentLandmark)copy.Nodes[a].SetWarehouseLimit(1);
             copy.Workshops[b].AbsorbFunctions(copy.Workshops[a]);
-            if(copy.Nodes[b].WarehouseLimit is int limit)copy.Workshops[b].SetStorageSlotLimit(limit);
             copy.Workshops[a]=RobotWorkshop.EmptyFunctions();
             for(int n=0;n<hosts.Length;n++)if(hosts[n]==a && (n!=a || !world.Nodes.All[a].PermanentLandmark))hosts[n]=b;
         }

@@ -50,8 +50,9 @@ Check(all.Select(m=>m.Key).Distinct().Count()==all.Length,"candidate keys are un
     var purposes=w.Nodes.All.Select(n=>n.Purpose).ToArray();var changed=next!.Troops.First();
     Check(w.Robots.ToggleReservation(changed.Node,changed.Before.Id,HangarReservation.Defense),"manual conflict in second bundle");
     Check(!w.Campaign.Stratagems.Commit(w,0,out _) && !w.Campaign.PlannedOrders.Any() && w.Nodes.All.Select(n=>n.Purpose).SequenceEqual(purposes),"whole batch validated before first bundle applies");
-    long keep=w.Campaign.Stratagems.Pending[1].Id;w.Campaign.Stratagems.Cancel(w.Campaign.Stratagems.Pending[0].Id,0);
-    Check(w.Campaign.Stratagems.Pending.Single().Id==keep,"individual cancellation preserves another bundle");
+    long keep=w.Campaign.Stratagems.Pending[0].Id;
+    Check(w.Campaign.Stratagems.CancelInvalid(w,0).Length==1 && w.Campaign.Stratagems.Pending.Single().Id==keep,"whole batch cancels invalid reservation and keeps valid reservation");
+    Check(w.Campaign.Stratagems.CancelInvalid(w,0).Length==0,"cancellation never repeats for valid remaining reservation");
     Console.WriteLine($"INFO {many.Length} candidates in {watch.ElapsedMilliseconds}ms");
 }
 foreach(var kind in Enum.GetValues<StratagemKind>()){
@@ -74,7 +75,9 @@ foreach(var kind in Enum.GetValues<StratagemKind>()){
     var troop=match.Troops.First(t=>t.Reservation==HangarReservation.None);
     Check(w.Robots.ToggleReservation(troop.Node,troop.Before.Id,HangarReservation.Defense),"manual change after card reservation");
     Check(!plans.Commit(w,0,out var reason) && reason.Length>0 && !w.Campaign.PlannedOrders.Any() && match.Sites.All(s=>w.Nodes.All[s.Node].Purpose==s.Before),"stale bundle rejected before any partial purpose/order mutation");
-    plans.Cancel(plans.Pending.Single().Id,0);Check(w.Robots.Nodes[troop.Node].Robots.Single(r=>r.Id==troop.Before.Id).DefenseOnly,"cancel preserves unrelated manual change");
+    Check(plans.CancelInvalid(w,0).Length==1 && !plans.Pending.Any(),"invalid human reservation cancels once");
+    Check(plans.CancelInvalid(w,0).Length==0 && plans.Commit(w,0,out _),"acknowledged cancellation cannot block next turn attempt");
+    Check(w.Robots.Nodes[troop.Node].Robots.Single(r=>r.Id==troop.Before.Id).DefenseOnly,"cancel preserves unrelated manual change");
 }
 {
     var w=Clone(initial);var plans=w.Campaign.Stratagems;var match=plans.Find(w,0).First(m=>m.Kind==StratagemKind.ConcentratedAttack);

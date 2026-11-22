@@ -25,9 +25,9 @@ static class NoRepeatChecks
         var legacy=AutoSaveStore.Capture(restored);
         foreach(var item in legacy.Objects){item.Fields?.Remove("<DoNotRepeat>k__BackingField");item.Fields?.Remove("<CycleFinished>k__BackingField");}
         var old=AutoSaveStore.Restore<RobotWorld>(legacy);Check(!old.Workshops[0].DoNotRepeat && !old.Workshops[0].CycleFinished,"Old saves retain normal repeating behavior");
-        w=World(1,1);line=w.Workshops[0];line.SetReservedSlots(12);Tick(w,4);
+        w=World(1,1);line=w.Workshops[0];typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(w.Nodes[0],new object[]{0});Tick(w,4);
         Check(line.Waiting && !line.CycleFinished && w.Nodes[0].Count==0,"Full hangar does not falsely complete a one-cycle run");
-        line.SetReservedSlots(0);Tick(w,1);Check(w.Nodes[0].Count==1 && line.RestRemaining==3,"Freed capacity starts final rest after actual shipment");
+        typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(w.Nodes[0],new object[]{12});Tick(w,1);Check(w.Nodes[0].Count==1 && line.RestRemaining==3,"Freed capacity starts final rest after actual shipment");
         Tick(w,3);Check(line.CycleFinished,"Deferred shipment still stops after rest");
         w=World(1,1);line=w.Workshops[0];Tick(w,3);
         var mid=AutoSaveStore.Restore<RobotWorld>(AutoSaveStore.Capture(w));Tick(mid,2);Check(mid.Workshops[0].CycleFinished && mid.Nodes[0].Count==1,"Mid-rest save resumes the final two ticks only");

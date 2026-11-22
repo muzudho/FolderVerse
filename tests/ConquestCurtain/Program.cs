@@ -7,6 +7,13 @@ sealed class CurtainUi(string output):Game1{
  Set("_setup",w);batch=new(GraphicsDevice);var pixel=new Texture2D(GraphicsDevice,1,1);pixel.SetData(new[]{Color.White});Set("_spriteBatch",batch);Set("_pixel",pixel);Content.RootDirectory=Path.Combine(Environment.GetEnvironmentVariable("OLD_RUNTIME")!,"Content");Set("_portraitRenderer",new PortraitRenderer(Content));var fonts=new Microsoft.Xna.Framework.Content.ContentManager(Services,Path.Combine(Environment.GetEnvironmentVariable("PROBE_FONT")!,"Content"));var font=fonts.Load<SpriteFont>("UiFont");Set("_font",font);Set("_ui",Activator.CreateInstance(typeof(Game1).GetField("_ui",F)!.FieldType,batch,pixel,font)!);Set("_conquestAudioUnavailable",true);Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("BeginConquestOverview");} protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
  var cases=new[]{(0,0d,false),(0,.325d,false),(1,.5d,true),(2,.325d,false),(3,0d,false),(6,.325d,false),(7,.5d,true),(8,.325d,false),(8,.65d,false)};
+ if(frame==6){
+ Set("_conquestStage",6);Set("_conquestAge",.65d);Call("UpdateConquestOverview",0d,false);
+ if(Get("_screen").ToString()!="Newspaper"||!(bool)Get("_conquestOverview"))throw new Exception("Newspaper must be selected behind fully closed exit curtain");
+ Call("HandleInput",new Microsoft.Xna.Framework.Input.MouseState(),new Microsoft.Xna.Framework.Input.KeyboardState(),new GameTime(TimeSpan.FromSeconds(1),TimeSpan.FromSeconds(.1)),true);
+ if((double)Get("_paperAge")!=0)throw new Exception("Newspaper timer must wait until curtain is open");
+ Console.WriteLine("PASS newspaper selected under closed curtain; reading timer and input locked during opening");
+ }
  var item=cases[frame];Set("_conquestStage",item.Item1);Set("_conquestAge",item.Item2);
  using var image=new RenderTarget2D(GraphicsDevice,1920,1080);GraphicsDevice.SetRenderTarget(image);base.Draw(t);
  var pixels=new Color[1920*1080];image.GetData(pixels);int red=pixels.Count(c=>c.R>c.G*3&&c.R>c.B*2);
@@ -18,6 +25,10 @@ sealed class CurtainUi(string output):Game1{
  if(++frame==cases.Length){var node=w.Nodes.All[((ConquestBroadcast)Get("_conquestBroadcast")).Location];string key=(string)Call("ConquestLocationSceneryKey",node);if(key!=(string)Get("_conquestSceneryKey"))throw new Exception("Location image mismatch");Console.WriteLine("PASS actual location image loaded: "+key);CheckFolderTree();Exit();}
  }
  void CheckFolderTree(){
+ Set("_conquestStage",8);Set("_conquestAge",.65d);Call("UpdateConquestOverview",0d,false);
+ if((bool)Get("_conquestOverview")||Get("_screen").ToString()!="Newspaper")throw new Exception("Open exit curtain must leave newspaper active");
+ Console.WriteLine("PASS curtain finishes on newspaper without broadcast frame");
+ Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
  Set("_world",new WorldPreview(GraphicsDevice));Set("_conquestOverview",false);Call("OpenFolderTree");Set("_domesticSlide",1f);Set("_folderScroll",0);
  var expanded=(System.Collections.Generic.HashSet<int>)Get("_expandedFolderCountries");
  if(!expanded.Contains(0))throw new Exception("Country must start expanded");

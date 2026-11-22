@@ -250,10 +250,10 @@ for(int seed=0;harvest.ProductionLines.Length==0;seed++)harvest.GenerateLines(se
 foreach(var line in harvest.ProductionLines)line.SelectPlan(3);
 var harvestLine=harvest.ProductionLines[0];
 harvestLine.SelectMapleHarvest(1);
-harvest.SetReservedSlots(harvest.ReservedSlotLimit);
+typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(cargo.Nodes[source],new object[]{cargo.Nodes[source].Count});
 for(int i=0;i<IndustryTime.UnitsPerTurn;i++)cargo.AdvanceIndustry(_=>0,n=>n!=source);
 Check(cargo.MapleDeposit(source)==deposit && harvestLine.MapleProgress==0,"A blocked harvest must wait without spending a deposit");
-harvest.SetReservedSlots(0);
+typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(cargo.Nodes[source],new object[]{12});
 for(int i=0;i<IndustryTime.UnitsPerTurn;i++)cargo.AdvanceIndustry(_=>0,n=>n!=source);
 var package=cargo.Nodes[source].MaplePackages.Single();
 Check(package.Units==16 && cargo.MapleDeposit(source)==deposit-1 && harvestLine.MapleRemaining==0,"Harvesting must exchange one deposit for one load");
@@ -552,10 +552,10 @@ foreach(var line in mapleFactory.ProductionLines)line.SelectPlan(3);
 mapleLine.SelectPlan(paper);
 int cost=RobotWorld.MapleCost(mapleLine.CurrentProductionPlan.Preview(0));
 Check(mapleLine.WaitingForMaple(cargo,Array.FindIndex(cargo.Nodes,s=>s.MapleUnits==0)),"Empty stock does not show material wait");
-mapleFactory.SetReservedSlots(cargo.Nodes[target].TotalCapacity);
+typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(cargo.Nodes[target],new object[]{cargo.Nodes[target].Count});
 for(int i=0;i<mapleLine.ProductionPeriod;i++)production.Invoke(mapleFactory,new object[]{cargo,target,0});
 Check(cargo.Nodes[target].MapleUnits==16 && mapleLine.Waiting,"A full intake consumed maple");
-mapleFactory.SetReservedSlots(0);
+typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(cargo.Nodes[target],new object[]{12});
 production.Invoke(mapleFactory,new object[]{cargo,target,0});
 Check(cargo.Nodes[target].MapleUnits==16-cost && cargo.ProductionIntakes.Any(i=>i.Source==target),"Successful intake did not consume exact maple units");
 // Exercise mixed-material production from an empty material store through delivery.
@@ -829,14 +829,14 @@ Check(fullRerouteStock.MapleShipments.All(o=>o.PackageId!=heldPackage.Id) &&
     fullRerouteStock.Nodes.Sum(store=>store.MaplePackages.Count(p=>p.Id==heldPackage.Id))==1,
     "Freeing the rebooked destination delivers the original PP exactly once");
 Check(!reroutedLane.WaitingForMaple(fullRerouteStock,reroutedTarget),"The rebooked PP clears the material wait");
-reroutedLane.SetReservedSlots(fullRerouteStore.TotalCapacity);
+typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(fullRerouteStore,new object[]{fullRerouteStore.Count});
 for(int tick=0;tick<reroutedLane.ProductionPeriod;tick++)
     production.Invoke(reroutedLane,new object[]{fullRerouteStock,reroutedTarget,0});
 Check(reroutedLane.Waiting && reroutedLane.WaitingProductionTurns>0 &&
     fullRerouteStore.MaplePackages.Single()==heldPackage &&
     !fullRerouteStock.ProductionIntakes.Any(i=>ReferenceEquals(i.Line,reroutedLane)),
     "When the destination cannot accept the product, the delivered PP remains intact and production waits");
-reroutedLane.SetReservedSlots(0);
+typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(fullRerouteStore,new object[]{12});
 foreach(long id in rerouteBlockers.SkipLast(1))fullRerouteStore.Remove(id);
 for(int tick=0;tick<3 && fullRerouteStore.MaplePackages.Sum(p=>p.Units)==heldPackage.Units;tick++)
     production.Invoke(reroutedLane,new object[]{fullRerouteStock,reroutedTarget,0});
@@ -894,7 +894,7 @@ Check(competingStock.MapleShipments.All(o=>o.PackageId!=heldPackage.Id) &&
     competingStore.Robots.Count(r=>r.Id==competingIntake.Product.Id)==1,
     "Freeing one slot admits the waiting PP once without duplicating the product");
 Check(recipeStock.CancelMapleShipment(waitingNode,999003),"Clear the original fixture before testing full intake");
-recipeFactory.SetReservedSlots(waitingStore.TotalCapacity);
+typeof(RobotStore).GetMethod("SetCapacity",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(waitingStore,new object[]{waitingStore.Count});
 for(int i=0;i<recipeLine.ProductionPeriod;i++)production.Invoke(recipeFactory,new object[]{recipeStock,waitingNode,0});
 Check(recipeLine.Waiting && recipeLine.WaitingProductionTurns>0 &&
     !recipeStock.ProductionIntakes.Any(i=>ReferenceEquals(i.Line,recipeLine)) &&
@@ -915,7 +915,7 @@ foreach(var pendingRecipe in new[]{recipeWorld,restoredRecipe})
         !pendingStock.ProductionIntakes.Any(i=>ReferenceEquals(i.Line,pendingLine)) &&
         pendingStore.MaplePackages.SequenceEqual(beforeMixedIntake),
         "Retrying while full still queues no product and consumes neither ingredient");
-    pendingFactory.SetReservedSlots(0);
+
     production.Invoke(pendingFactory,new object[]{pendingStock,waitingNode,0});
     var resumedMixed=pendingStock.ProductionIntakes.Single(i=>ReferenceEquals(i.Line,pendingLine));
     Check(pendingStore.MapleUnits==1 && pendingStore.MaplePackages.Single(p=>p.Material==RawMaterial.PP).Units==8 &&

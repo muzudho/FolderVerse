@@ -37,8 +37,9 @@ public partial class Game1
     }
     private void ReturnToTitle()
     {
+        ResetDomesticMedallionEntry();
         RecordPetitstellaMedals();
-        _autoPlay=_autoPaused=_autoPauseComputerOnly=false;
+        _autoPlay=_autoPaused=_autoPauseComputerOnly=_gameOverAutoPlay=false;
         _tradePlannerOpen=false;_tradeReplies.Clear();
         _autoPausePage=_autoDomesticStage=0;
         _autoAge=_autoStepAge=_autoDomesticAge=0;

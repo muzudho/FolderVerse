@@ -136,6 +136,15 @@ public sealed class StratagemPlans
         }
         return true;
     }
+    public string[] CancelInvalid(WorldSetup w,int controller)
+    {
+        var cancelled=new System.Collections.Generic.List<string>();
+        foreach(var plan in Pending.Where(p=>p.Controller==controller && !p.Computer).ToArray())
+            if(!Valid(w,controller,plan.Match,out var reason)){
+                Pending.Remove(plan);cancelled.Add($"{Title(plan.Match.Kind)} / {reason}");
+            }
+        return cancelled.ToArray();
+    }
     // Validation precedes every mutation. A stale bundle stays cancellable, with no partial apply.
     public bool Commit(WorldSetup w,int controller,out string reason)
         =>CommitCore(w,controller,false,false,out reason);

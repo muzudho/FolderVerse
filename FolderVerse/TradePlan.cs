@@ -135,7 +135,6 @@ public sealed class TradePlan
         if(leftRaw!=null)rightPackages.Add(ScrapCargo.Arrive(leftRaw,offer.To.Pocket?-1:offer.To.Node,world.Population.Turn));
 
         int Reserved(TradeEndpoint endpoint,RobotStore store)=>store.ReservedReturns+(endpoint.Pocket?0:
-            world.Robots.Workshops[endpoint.Node].ReservedSlots+
             world.Robots.ProductionIntakes.Count(intake=>(intake.Target??intake.Source)==endpoint.Node));
         if(!left.Fits(leftRobots,leftPackages,Reserved(offer.From,left)) ||
             !right.Fits(rightRobots,rightPackages,Reserved(offer.To,right)))return "不成立 / 格納庫の空き不足";

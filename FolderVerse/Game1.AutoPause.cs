@@ -9,7 +9,8 @@ public partial class Game1
     private bool _autoPauseComputerOnly;
     private int _autoPausePage;
     private static readonly Rectangle AutoPauseClose=new(1230,20,60,46);
-    private bool ComputerExhibition=>!_demoActive && _setup.ComputerOnly && _setup.PlayerSlot>=0 &&
+    private bool GameOverSpectating=>!_setup.ComputerOnly && _setup.PlayerSlot>=0 && !_setup.HasSurvivingHumanController;
+    private bool ComputerExhibition=>!_demoActive && (_setup.ComputerOnly || GameOverSpectating) && _setup.PlayerSlot>=0 &&
         _screen is Screen.WorldStatus or Screen.Transport or Screen.Battle or Screen.Industry or Screen.BattleResearch or Screen.Disposition;
     private bool BuildingWorld=>_screen is Screen.LandConquest or Screen.Fortune;
     private bool AutomaticGame=>_screen!=Screen.Title && !_demoActive && !BuildingWorld && (_autoPlay || ComputerExhibition);
@@ -35,6 +36,7 @@ public partial class Game1
         }
         if(!click)return true;
         if(CountrySettingsMenuItem.Contains(_pointer))OpenCountrySettings();
+        else if(PerformanceMenuItem.Contains(_pointer))_performanceVisible=true;
         else if(BgmMenuItem.Contains(_pointer))_bgmMenuOpen=true;
         else if(GlobeSettingsMenuItem.Contains(_pointer))_globeSettingsOpen=true;
         else if(ComputerManualMenuItem.Contains(_pointer))OpenComputerManual();
@@ -69,10 +71,10 @@ public partial class Game1
         else if(_autoPausePage==1)DrawHierarchyUi();
         else if(_autoPausePage==2)DrawInactiveUi();
         else{
-            _ui.Text(_autoPauseComputerOnly?"Exhibition / 一時停止":"AUTO / 一時停止",new(80,88),.8f,Cream);
+            _ui.Text(GameOverSpectating?"Game Over / 一時停止":_autoPauseComputerOnly?"Exhibition / 一時停止":"AUTO / 一時停止",new(80,88),.8f,Cream);
             _ui.Text("×でゲームを再開",new(80,154),.5f,Cream);
             _ui.Text($"人間 {_setup.PlayerCount} 人 / コンピューター {_setup.ComputerPlayerCount} 人",new(80,220),.5f,Cream);
-            _ui.Button(StatusMenuButton,"＜システムメニュー＞",Muted,.52f);
+            _ui.Button(StatusMenuButton,"＜システムメニュー＞",_setup.OwnerColor(_setup.PlayerSlot),.52f);
             _ui.Button(InactiveMenuItem,"電池を戻す",Muted,.5f);
             _ui.Button(HierarchyMenuItem,"征服者の関係図 / 暫定順位",Muted,.5f);
             _ui.Button(EndingMenuItem,"ここでゲームをエンディングにする",Muted,.48f);
@@ -82,6 +84,7 @@ public partial class Game1
             DrawComputerManualMenuItem();
             _ui.Button(BgmMenuItem,"BGM・SE音量",Muted,.5f);
             _ui.Button(GlobeSettingsMenuItem,"地星設定",Muted,.5f);
+            _ui.Button(PerformanceMenuItem,"パフォーマンス表示",Muted,.5f);
         }
         if(_autoPausePage!=0 && !_countrySettingsOpen)_ui.Button(InactiveBack,"システムメニューへ",Muted,.5f);
         _ui.Button(AutoPauseClose,"×",Muted,.7f);DrawBgmMenu();DrawGlobeSettings();_spriteBatch.End();DrawFullscreenCursor();

@@ -11,7 +11,7 @@ static class CapacityChecks
             var f=w.Workshops[0];f.GenerateLines(123);f.Configure(RobotParts.Head,3);f.Automation=NodeAutomation.Auto;
             w.AdjustNode(0,0,(_,_)=>false);w.AdjustNode(0,0,(_,_)=>false);
             Check(f.ProductionLines.Length>0 && f.ProductionLines[0].RestTurns==sample.RestTurns,"Rest follows the actual storage capacity");
-            Check(f.ReservedSlots==sample.Reserve,"Reserved empty slots scale with actual capacity");
+            Check(w.Nodes[0].StorageLimit==sample.Size,"Automation does not withhold empty hangar slots");
         }
         foreach(bool reverse in new[]{false,true}){
             var w=new RobotWorld();w.Initialize(2,1);Capacity(w.Nodes[reverse?1:0],60);

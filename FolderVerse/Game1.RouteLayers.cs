@@ -3,33 +3,27 @@ using Microsoft.Xna.Framework;
 
 public partial class Game1
 {
-    private static Rectangle RouteLayerButton(int index)=>index switch {0=>new(780,82,184,48),4=>new(972,82,112,48),5=>new(1092,82,140,48),1=>new(1240,82,112,48),6=>new(1360,82,112,48),2=>new(1480,82,190,48),_=>new(1678,82,180,48)};
+    private static Rectangle RouteLayerButton(int index)=>index switch {6=>new(1260,146,112,44),2=>new(1384,146,220,44),3=>new(1616,146,242,44),_=>new(1260,86,300,48)};
     private bool MapOverlayAvailable(int index)=>!MapTransitionActive && !OrientationRotating && !_net.IsAnimating && (index!=0 || _statusGlobe);
 
-    private static readonly Rectangle MapViewButton=new(1674,136,184,48);
+    private static readonly Rectangle MapViewButton=new(1572,86,286,48);
     private int _selectedMapCell=-1;
     private bool _simpleDisplayOpen;
-    private static readonly Rectangle SimpleDisplayButton=new(780,82,360,48);
-    private static Rectangle SimpleDisplayOption(int i)=>new(780,134+i*44,360,44);
+    private static readonly Rectangle SimpleDisplayButton=new(1260,86,300,48);
+    private static Rectangle SimpleDisplayOption(int i)=>new(1260,234+i*44,650,44);
     private bool _mapLayerListOpen;
     private bool _trafficLayerListOpen;
     private static readonly string[] MapLayerNames={"地形","国区画色分け"};
     private static readonly string[] TrafficLayerNames={"地域を選択","地点を選択"};
-    private static Rectangle MapLayerOption(int i)=>new(1480,134+i*52,190,52);
-    private static Rectangle TrafficLayerOption(int i)=>new(1638,134+i*52,220,52);
+    private static Rectangle MapLayerOption(int i)=>new(1384,202+i*52,220,52);
+    private static Rectangle TrafficLayerOption(int i)=>new(1616,202+i*52,242,52);
     private bool RouteLayerClick(Point pointer)
     {
         if(_simpleDisplayOpen){
+            if(DisplayBreakerAutomaticRow.Contains(pointer)){_displayBreaker.Automatic=!_displayBreaker.Automatic;return true;}
             for(int i=0;i<8;i++)if(SimpleDisplayOption(i).Contains(pointer)){
-                if(i==0)_net.ShowMapSymbols=!_net.ShowMapSymbols;
-                if(i==1)_net.ShowEquator=!_net.ShowEquator;
-                if(i==2){_net.ShowRobots=!_net.ShowRobots;_net.ClearGlobeRobotBadges();}
-                if(i==3)_net.ShowBatteries=!_net.ShowBatteries;
-                if(i==4)_net.ShowSmoke=!_net.ShowSmoke;
-                if(i==5)_net.ShowAdjacentObjects=!_net.ShowAdjacentObjects;
-                if(i==6)_net.AnimateFlags=!_net.AnimateFlags;
-                if(i==7){WorldTerrain.FlattenRelief=!WorldTerrain.FlattenRelief;_world.ShowSetup(_setup,true);_net.ClearGlobeRobotBadges();}
-                return true;
+                bool enabled=!DisplayFeatureEnabled(i);SetDisplayFeature(i,enabled);
+                _displayBreaker.Manual(i,enabled,DisplayClock);return true;
             }
             _simpleDisplayOpen=false;return true;
         }
@@ -72,13 +66,13 @@ public partial class Game1
             var r=RouteLayerButton(indices[i]);bool available=indices[i] is 1 or 5 or 6 || MapOverlayAvailable(indices[i]);
             var color=available?Accent:new Color(75,78,83);
             _ui.Button(r,"",color,.5f);
-            _ui.Text(names[i],new(r.X+28,r.Y+14),i==0?.47f:.5f,available?UiPainter.ContrastInk(color):new Color(155,158,163));
-            _ui.Box(new(r.X+9,r.Y+18,12,12),new Color(23,30,36));
-            _ui.Box(new(r.X+11,r.Y+20,8,8),!available?new Color(105,108,113):enabled[i]?new Color(114,255,143):new Color(38,65,48));
+            PortraitHudLayout.CenterLines(_ui,_font,new[]{names[i]},new Rectangle(r.X+28,r.Y,r.Width-30,r.Height),.42f,available?UiPainter.ContrastInk(color):new Color(155,158,163));
+            _ui.Box(new(r.X+9,r.Center.Y-6,12,12),new Color(23,30,36));
+            _ui.Box(new(r.X+11,r.Center.Y-4,8,8),!available?new Color(105,108,113):enabled[i]?new Color(114,255,143):new Color(38,65,30));
         }
-        _ui.Button(SimpleDisplayButton,"簡易表示  v",Accent,.52f);
+        _ui.Button(SimpleDisplayButton,"表示ブレーカー  v",Accent,.48f);
         int mode=_net.ShowCountryColors?1:0,traffic=_net.ShowRoutes?1:0;
-        _ui.Button(RouteLayerButton(2),MapLayerNames[mode]+"  v",Accent,.52f);
+        _ui.Button(RouteLayerButton(2),MapLayerNames[mode]+"  v",Accent,.42f);
         DrawSelectionIcon(RouteLayerButton(3),traffic==1);
         if(!_setup.IsPrimaplana)_ui.Button(MapViewButton,_statusGlobe?"展開図":"組立",MapTransitionActive?Muted:Accent,.6f);
         if(_mapLayerListOpen)for(int i=0;i<2;i++)_ui.Button(MapLayerOption(i),MapLayerNames[i],i==mode?Accent:Muted,.52f);
@@ -87,13 +81,21 @@ public partial class Game1
     private void DrawSimpleDisplayMenu()
     {
         if(_simpleDisplayOpen){
-            string[] items={"経番・緯番を非表示","赤道を非表示","配備ロボットを非表示","電池を非表示","煙を非表示","隣接オブジェクトを非表示","国旗をなびかせない","地形の高低差を無くす"};
-            bool[] checkedItems={!_net.ShowMapSymbols,!_net.ShowEquator,!_net.ShowRobots,!_net.ShowBatteries,!_net.ShowSmoke,!_net.ShowAdjacentObjects,!_net.AnimateFlags,WorldTerrain.FlattenRelief};
-            for(int i=0;i<items.Length;i++){
-                var r=SimpleDisplayOption(i);_ui.Button(r,"",Muted,.4f);
-                _ui.Box(new(r.X+12,r.Y+13,18,18),Cream);_ui.Box(new(r.X+14,r.Y+15,14,14),checkedItems[i]?new Color(82,189,133):new Color(18,36,48));
-                _ui.Text(items[i],new(r.X+42,r.Y+12),.38f,Cream);
+            _ui.Button(DisplayBreakerAutomaticRow,"",Muted,.4f);
+            DrawBreakerCheck(DisplayBreakerAutomaticRow,_displayBreaker.Automatic);
+            _ui.Text("自動OFF / 目標18 FPS",new(1302,158),.4f,Cream);
+            _ui.Box(new(1260,190,650,44),new Color(23,43,56));
+            _ui.Text("表示項目",new(1302,202),.38f,Cream);_ui.Text("CPU ms/frame",new(1650,202),.35f,Cream);
+            for(int i=0;i<8;i++){
+                var r=SimpleDisplayOption(i);_ui.Button(r,"",Muted,.4f);DrawBreakerCheck(r,DisplayFeatureEnabled(i));
+                _ui.Text(DisplayFeatureNames[i],new(r.X+42,r.Y+12),.38f,Cream);
+                string timing=i==7?"－（個別計測なし）":_displayBreaker.LastCost[i].ToString("F2",System.Globalization.CultureInfo.InvariantCulture)+" ms";
+                if(_displayBreaker.Tripped[i])timing+=" / 自動OFF";
+                _ui.Text(timing,new(r.X+380,r.Y+12),.32f,Cream);
             }
+            _ui.Box(new(1260,586,650,70),new Color(23,43,56));
+            _ui.Text("旗の時間は旗全体。高低差は手動切替。",new(1274,595),.31f,Cream);
+            _ui.Text(_breakerMessage.Length>0?_breakerMessage:"自動ではONに戻りません / 手動ON後10秒は保護",new(1274,625),.30f,Cream);
         }
     }
     private void DrawSelectionIcon(Rectangle rect,bool node)

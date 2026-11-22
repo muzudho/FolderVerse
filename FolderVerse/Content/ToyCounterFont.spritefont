@@ -4,19 +4,8 @@
 <FontName>Comic Sans MS</FontName><Size>64</Size><Spacing>0</Spacing>
 <UseKerning>true</UseKerning><Style>Bold</Style>
 <CharacterRegions>
-<CharacterRegion><Start>b</Start><End>b</End></CharacterRegion>
-<CharacterRegion><Start>h</Start><End>i</End></CharacterRegion>
-<CharacterRegion><Start>n</Start><End>n</End></CharacterRegion>
-<CharacterRegion><Start>x</Start><End>x</End></CharacterRegion>
-<CharacterRegion><Start>0</Start><End>9</End></CharacterRegion>
-<CharacterRegion><Start>D</Start><End>E</End></CharacterRegion>
-<CharacterRegion><Start>M</Start><End>M</End></CharacterRegion>
-<CharacterRegion><Start>O</Start><End>O</End></CharacterRegion>
-<CharacterRegion><Start>c</Start><End>c</End></CharacterRegion>
-<CharacterRegion><Start>e</Start><End>e</End></CharacterRegion>
-<CharacterRegion><Start>l</Start><End>l</End></CharacterRegion>
-<CharacterRegion><Start>o</Start><End>o</End></CharacterRegion>
-<CharacterRegion><Start>r</Start><End>t</End></CharacterRegion>
-<CharacterRegion><Start>%</Start><End>%</End></CharacterRegion><CharacterRegion><Start>.</Start><End>.</End></CharacterRegion><CharacterRegion><Start>A</Start><End>A</End></CharacterRegion><CharacterRegion><Start>T</Start><End>T</End></CharacterRegion><CharacterRegion><Start>U</Start><End>U</End></CharacterRegion></CharacterRegions>
+<!-- Overlay labels (AUTO / Exhibition / Game Over) use printable ASCII. -->
+<CharacterRegion><Start>&#32;</Start><End>&#126;</End></CharacterRegion>
+</CharacterRegions>
 </Asset>
 </XnaContent>

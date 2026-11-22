@@ -58,6 +58,7 @@ public static partial class BattleTurnResolver
                 origin[a.Id]+actions[a.Id].Step==origin[b.Id]+actions[b.Id].Step && !origin.Values.Contains(origin[a.Id]+actions[a.Id].Step) &&
                 battle.WalkableFor(origin[a.Id]+actions[a.Id].Step,a.Owner) && battle.WalkableFor(origin[b.Id]+actions[b.Id].Step,b.Owner))))
             BattleLessons.Witness(battle,BattleLesson.CollisionTempo);
+        BattleLessons.ObserveLateralCollision(battle,units,actions,origin,blocked);
         if(battle.Kind==BattleKind.Node && flagEntrants.Length>=2 && flagEntrants.All(u=>blocked.Contains(u.Id) && u.Position!=battle.Flag))BattleLessons.Witness(battle,BattleLesson.FlagCourtesy);
         foreach(var u in units.Where(u=>u.Active && u.ResumeAfterRetreatOverlap))if(!units.Any(other=>other.Active && other.Id!=u.Id && !other.Retreating && other.Position==u.Position)){
             u.ResumeAfterRetreatOverlap=false;if(!battle.Army(u.Owner).Withdrawing)u.Retreating=false;

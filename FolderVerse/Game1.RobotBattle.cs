@@ -124,6 +124,7 @@ public partial class Game1
             if(width>0)_ui.Box(new((int)(center.X-width),(int)center.Y+y,Math.Max(1,(int)(width*2)),2),Color.White*opacity);
         }
     }
+    private static readonly Rectangle RobotBattleBoardBounds=new(40,180,850,850);
     private void DrawRobotBattle()
     {
         if(_robotSummary){DrawRobotBattleSummary();return;}
@@ -140,15 +141,15 @@ public partial class Game1
         }
         var battle=_robotScenes[_battleWave];int frameIndex=RobotFrameIndex(battle);
         var frame=battle.Frames.Count==0?new BattleFrame(battle.Turn,BattlePhase.Result,Array.Empty<BattleUnitView>(),battle.FlagStanding,battle.LastFlagOwner):battle.Frames[frameIndex];
-        _ui.Text($"自動戦闘 / 全体ターン {_setup.Population.Turn}",new(1120,24),.65f,Cream);
-        _ui.Text($"同時進行 {_robotRound+1}/{_robotPlayback.Rounds.Length} / 戦場 {_battleWave+1}/{_robotScenes.Length} / {battle.Armies.Count}軍",new(1120,68),.55f,Cream);
+        _ui.Text($"自動戦闘 / 全体ターン {_setup.Population.Turn}",new(1260,24),.52f,Cream);
+        _ui.Text($"同時進行 {_robotRound+1}/{_robotPlayback.Rounds.Length} / 戦場 {_battleWave+1}/{_robotScenes.Length} / {battle.Armies.Count}軍",new(1260,68),.43f,Cream);
         _ui.Button(RobotBattlePrevious,"前の戦場",Muted,.5f);_ui.Button(RobotBattleNext,"次の戦場",Muted,.5f);
         BattleInfo($"{(battle.SplitBoard?"分割野戦":battle.Kind==BattleKind.Edge?"辺戦":"節戦")} / Point {battle.TargetNode+1} / {battle.Terrain} / 戦闘ターン {frame.Turn} / {PhaseLabel(frame.Phase)}",112,.5f);
         if(frame.Relief?.Length>0)BattleInfo(string.Join(" / ",frame.Relief.Select(r=>$"救援予定 {r.Count}体 / あと{r.Remaining}戦闘ターン")),132,.35f);
         if(battle.SiteLayoutApplied && battle.SiteProfile is {} site){BattleInfo($"地形：{site.Name} / 地点 {site.Area}ドット / 近くの水 {site.LocalWater}・山 {site.LocalMountains}",154,.34f);BattleInfo(site.Description,177,.34f);}
         const int left=40,top=40,size=100;
         var battleCanvas=CanvasBounds();var battleTransform=Matrix.CreateScale(battleCanvas.Width/1920f,battleCanvas.Height/1080f,1)*Matrix.CreateTranslation(battleCanvas.X,battleCanvas.Y,0);
-        var boardTransform=Matrix.CreateTranslation(-left,-top,0)*Matrix.CreateScale(10f/battle.BoardSize)*Matrix.CreateTranslation(left,top,0)*SeaBoardTransform(battle)*battleTransform;
+        var boardTransform=Matrix.CreateTranslation(-left,-top,0)*Matrix.CreateScale(10f/battle.BoardSize)*Matrix.CreateTranslation(left,top,0)*SeaBoardTransform(battle)*Matrix.CreateTranslation(-40,-40,0)*Matrix.CreateScale(.85f)*Matrix.CreateTranslation(RobotBattleBoardBounds.X,RobotBattleBoardBounds.Y,0)*battleTransform;
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:boardTransform);
 
         DrawBattleTerrain(battle,new(left,top,size*battle.BoardSize,size*battle.BoardSize),1);
@@ -407,10 +408,10 @@ public partial class Game1
         DrawAmbushCard(battle,frameIndex);
     }
     private void BattleInfo(string text,int y,float scale)
-        =>_ui.Text(text,new(1120,y),Math.Min(scale,720/_font.MeasureString(text).X),Cream);
+        =>_ui.Text(text,new(y<=132?1260:1120,y),Math.Min(scale,(y<=132?580:720)/_font.MeasureString(text).X),Cream);
     private void DrawTransport()
     {
         DrawPropagation(_robotScenes.Length>0?_battleWave:-1,PropagationComplete?.6f+.4f*(float)(_transportAge/2):.6f*_propagationTravel.Values.DefaultIfEmpty(0).Average(),true);
-        _ui.Text(DeliveryPlayback?"伝播フェーズ / 配送":"伝播フェーズ / 出兵",new(55,16),.6f,Cream);
+
     }
 }

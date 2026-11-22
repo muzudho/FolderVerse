@@ -33,14 +33,14 @@ public partial class Game1
     }
     private void DrawPlayerCount()
     {
-        _ui.Text("＜大きなお子様＞の人数確認フェーズ",new(54,28),1f,Cream);
+
         if(!_openingActive && _setupHost!=null)_spriteBatch.Draw(_setupHost,new Rectangle(100,180,500,750),Color.White);
-        _ui.Box(new(680,130,1180,230),Cream);
-        _ui.Tile(new(675,240),new(45,45),MathHelper.PiOver4,Cream);
+        _ui.Box(new(680,172,1180,210),Cream);
+        _ui.Tile(new(675,282),new(45,45),MathHelper.PiOver4,Cream);
         string greeting=_openingActive?"この絵本を読む＜大きなお子様＞は、何人いますか？":"さあ、＜大きなお子様＞のみなさん＜画面＞の前に集まってください。";
-        _ui.Text(greeting,new(730,155),Math.Min(.65f,1080/_font.MeasureString(greeting).X),Muted);
-        _ui.Text("準備はよろしいですか？",new(730,225),.65f,Muted);
-        _ui.Text("このゲームをお遊びになる人数を選んでください。",new(730,300),.65f,Muted);
+        _ui.Text(greeting,new(730,197),Math.Min(.65f,1080/_font.MeasureString(greeting).X),Muted);
+        _ui.Text("準備はよろしいですか？",new(730,257),.65f,Muted);
+        _ui.Text("このゲームをお遊びになる人数を選んでください。",new(730,322),.65f,Muted);
         for(int i=0;i<=GameLimits.MaxPlayers;i++)_ui.Button(PlayerCountOption(i),i.ToString(),_requestedPlayers==i?Accent:Muted,.65f);
         _ui.Center($"＜{_requestedPlayers}人＞ / 推定プレイ時間は{MetaTime(_requestedPlayers)}です。",new(690,800,1160,55),.7f,Cream);
         _ui.Button(PlayerCountConfirm,"よろしいですか？　次へ",Accent,.65f);
@@ -58,12 +58,12 @@ public partial class Game1
     }
     private void DrawComputerPlayerCount()
     {
-        _ui.Text("＜コンピュータープレイヤー＞の人数確認フェーズ",new(54,28),.85f,Cream);
+
         if(!_openingActive && _setupHost!=null)_spriteBatch.Draw(_setupHost,new Rectangle(100,180,500,750),Color.White);
-        _ui.Box(new(680,130,1180,230),Cream);
-        _ui.Tile(new(675,240),new(45,45),MathHelper.PiOver4,Cream);
-        _ui.Text("一緒に遊ぶ＜コンピュータープレイヤー＞の人数を",new(730,170),.65f,Muted);
-        _ui.Text("選んでください。合計60人まで参加できます。",new(730,260),.65f,Muted);
+        _ui.Box(new(680,172,1180,210),Cream);
+        _ui.Tile(new(675,282),new(45,45),MathHelper.PiOver4,Cream);
+        _ui.Text("一緒に遊ぶ＜コンピュータープレイヤー＞の人数を",new(730,212),.65f,Muted);
+        _ui.Text("選んでください。合計60人まで参加できます。",new(730,302),.65f,Muted);
         int maximum=GameLimits.MaxPlayers-_requestedPlayers;
         for(int i=0;i<=maximum;i++)_ui.Button(PlayerCountOption(i),i.ToString(),_requestedComputers==i?Accent:Muted,.65f);
         _ui.Center($"＜大きなお子様 {_requestedPlayers}人 ＋ コンピューター {_requestedComputers}人 / 合計 {_requestedPlayers+_requestedComputers}人＞",new(690,800,1160,55),.55f,Cream);

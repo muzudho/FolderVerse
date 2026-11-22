@@ -9,7 +9,7 @@ public partial class Game1
     private bool _reservationDirectory;
     private (bool Symbols,bool Equator,bool Robots,bool Batteries,bool Countries,bool Routes,bool Others,bool GlobeCountries) _directoryBefore;
     private readonly List<(Rectangle Bounds,int Node)> _directoryHits=new();
-    private static readonly Rectangle ReservationDirectoryButton=new(632,70,60,60),ReservationDirectoryClose=new(700,82,40,40);
+    private static readonly Rectangle ReservationDirectoryButton=new(444,70,60,60),ReservationDirectoryClose=new(516,82,40,40);
     private static readonly Color[] DirectoryColors={new(187,43,48),new(174,218,76),new(39,128,69),new(193,145,12),new(135,218,242),new(174,180,187)};
     private static readonly string[] DirectoryLabels={"出撃予約","迎撃予約","守備専用予約","製造作業員予約","輸送予約","廃棄予約"};
     private int[] ReservationDirectoryCounts(int node)
@@ -79,8 +79,8 @@ public partial class Game1
         }
         if(_reservationDirectory)_ui.Button(ReservationDirectoryClose,"×",Muted,.55f);
         if(r.Contains(_pointer)){
-            _ui.Box(new(390,136,360,30),new Color(7,23,35));
-            _ui.Center("掲示板 / 予約と地点の開発状況",new(390,136,360,30),.32f,Cream);
+            _ui.Box(new(360,34,310,30),new Color(7,23,35));
+            _ui.Center("掲示板 / 予約と地点の開発状況",new(360,34,310,30),.32f,Cream);
         }
     }
     private void DrawDirectoryRoleIcon(int kind,Rectangle r,Color ink,bool sea=false)

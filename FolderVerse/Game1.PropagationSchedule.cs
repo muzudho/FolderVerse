@@ -14,7 +14,7 @@ public partial class Game1
     private bool _propagationCentering;
     private float _propagationFromScale,_propagationToScale;
     private Vector2 _propagationFromPan,_propagationToPan;
-    private static readonly Rectangle PropagationMapPanel=new(40,100,1840,860);
+    private static readonly Rectangle PropagationMapPanel=new(60,190,1800,750);
     private const double PropagationCenterSeconds=.6;
     private bool PropagationComplete=>_propagationTravel.Values.All(t=>t>=1) && !_propagationNet.IsAnimating && !_propagationCentering;
     private void BeginPropagation()

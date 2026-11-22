@@ -6,14 +6,16 @@ using Microsoft.Xna.Framework;
 
 public readonly record struct CharacterTile(int Slot,int X,int Y,int Side)
 {
+    public Rectangle Canvas {get;init;}
     public Rectangle Bounds
     {
         get
         {
-            int left=54+X*1806/CharacterSelectionLayout.Columns;
-            int top=112+Y*900/CharacterSelectionLayout.Rows;
-            return new(left,top,54+(X+Side)*1806/CharacterSelectionLayout.Columns-left,
-                112+(Y+Side)*900/CharacterSelectionLayout.Rows-top);
+            var area=Canvas.Width>0 && Canvas.Height>0?Canvas:new Rectangle(54,112,1806,900);
+            int left=area.X+X*area.Width/CharacterSelectionLayout.Columns;
+            int top=area.Y+Y*area.Height/CharacterSelectionLayout.Rows;
+            return new(left,top,area.X+(X+Side)*area.Width/CharacterSelectionLayout.Columns-left,
+                area.Y+(Y+Side)*area.Height/CharacterSelectionLayout.Rows-top);
         }
     }
 }

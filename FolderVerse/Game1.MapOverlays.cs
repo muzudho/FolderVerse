@@ -7,13 +7,15 @@ using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
     private bool _mapOverlayMenu;
+    private Rectangle GuideCallBounds{get{var end=PrimaryActionBounds(1);return new(end.X-106,end.Y,96,end.Height);}}
+    private bool GuideCallVisible=>CanRecallGuide && !InspectorVisible && MapFooterAction<0 && _primaryActionSlide==0;
     private Rectangle MapFooterBounds(Rectangle bounds)=>bounds;
     private void DrawMapNavigationButtons()
     {
-        if(_statusGlobe)_ui.Button(NetButton(1),(_globeSpinning?"✓ ":"□ ")+"くるくる回す",_globeSpinning?Accent:Muted,.45f);
+        if(_statusGlobe)_ui.Button(NetButton(1),(_globeSpinning?"✓ ":"□ ")+"くるくる回す",Accent,.45f);
         _ui.Button(NetButton(2),"征服者はどこ？",Accent,.45f);
         _ui.Button(NetButton(3),"今どこ見てる？",InspectorLocationNode>=0?Accent:Muted,.45f);
-        if(!_statusGlobe && !_setup.IsPrimaplana)_ui.Button(NetButton(4),_setup.TerritoryCounts[_setup.PlayerSlot]>0?"首都の面へ":"現在地の面へ",Muted,.48f);
+        if(!_statusGlobe && !_setup.IsPrimaplana)_ui.Button(NetButton(4),_setup.TerritoryCounts[_setup.PlayerSlot]>0?"首都の面へ":"現在地の面へ",Accent,.48f);
     }
     private const int DirectMapAction=3,LongMapAction=7;
     private float _primaryActionSlide;
@@ -30,8 +32,8 @@ public partial class Game1
     private const int FunctionTransferAction=6;
     private const int TradeAction=8,StratagemAction=9,PrimaryActionCount=10;
     private static Rectangle PrimaryActionHomeBounds(int index)=>index switch {
-        0=>new(562,974,96,96),1=>new(360,974,192,96),
-        _=>new(668+((index==7?4:index>=4?index+1:index)-2)*106,974,96,96)
+        0=>new(668,974,96,96),1=>new(466,974,192,96),
+        _=>new(774+(index switch{7=>2,4=>3,5=>4,6=>5,8=>6,9=>7,_=>index-2})*106,974,96,96)
     };
     private Rectangle PrimaryActionBounds(int index){var r=PrimaryActionHomeBounds(index);if(index==1 && StratagemInterface && StratagemManualActions)r=new(r.X,974,r.Width,96);if(index!=PinnedPrimaryAction)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,_primaryActionSlide));if(StratagemInterface && index!=1)r.Y+=(int)MathF.Round(220*MathHelper.SmoothStep(0,1,Math.Clamp(_stratagemTrayBlend*2,0,1)));return r;}
     private static Rectangle MapModeCloseButton(int index)=>new(PrimaryActionHomeBounds(index).Right+10,1002,40,40);
@@ -44,6 +46,7 @@ public partial class Game1
     {
         if(FunctionTransferChoiceInput(p,!escape,escape))return true;
         if(!escape && TutorialPrimaryActionClick(p))return true;
+        if(GuideCallVisible && MapMarkerMenuAvailable && !escape && GuideCallBounds.Contains(p)){RecallGuide();return true;}
         if(StratagemInterface && !StratagemManualActions && MapFooterAction<0)return false;
         if(!MapMarkerMenuAvailable || InspectorVisible)return false;
         if(escape && _functionTransferMap){CloseFunctionTransferMap();return true;}
@@ -93,6 +96,11 @@ public partial class Game1
     private void DrawPrimaryActionButtons() => DrawTutorialChrome(()=>DrawPrimaryActionButtonsCore(),false);
     private void DrawPrimaryActionButtonsCore()
     {
+        if(GuideCallVisible){
+            var r=GuideCallBounds;var color=_setup.OwnerColor(_setup.PlayerSlot);if(r.Contains(_pointer))color=Color.Lerp(color,Color.White,.22f);
+            DrawPrimaryActionSurface(r,color);DrawPrimaryActionArt(-1,PrimaryActionArtBounds(r),true);
+            DrawPrimaryActionCaption(r,"ガイドを呼ぶ",UiPainter.ContrastInk(color));DrawCountryCornerMarks(r,_setup.PlayerSlot,1);
+        }
         string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収","地点の施設移転の予約","ロボットパーツ長距離便","取引","計略"};
         for(int i=0;i<PrimaryActionCount;i++){
             if(i==StratagemAction && !StratagemInterface || i!=1 && StratagemInterface && _stratagemTrayBlend>=.5f)continue;
@@ -101,16 +109,13 @@ public partial class Game1
             var color=_setup.OwnerColor(_setup.PlayerSlot);
             if(!enabled)color=Color.Lerp(color,new Color(45,49,54),.75f);
             else if((i==FunctionTransferAction && _functionTransferMap) || r.Contains(_pointer))color=Color.Lerp(color,Color.White,.22f);
-            var shadow=r;shadow.Y+=4;PrimaryRoundBox(shadow,new Color(7,23,35));PrimaryRoundBox(r,color);
-            DrawCountryCornerMarks(r,_setup.PlayerSlot,enabled?1:.3f);
+            DrawPrimaryActionSurface(r,color);
             var ink=UiPainter.ContrastInk(color);
-            if(i==1){int top=r.Height==96?12:32;_ui.Center("この陣営の",new(r.X,r.Y+top,r.Width,32),.44f,ink);_ui.Center("ターン終了",new(r.X,r.Y+top+39,r.Width,36),.57f,ink);}
-            else {
-                int inset=_setup.CountryPattern(_setup.PlayerSlot)==0?3:14;
-                DrawPrimaryIcon(i,new(r.X+12,r.Y+8,r.Width-24,58),ink);
-                string label=i==3?"パーツ直送便":i==LongMapAction?"パーツ長距離便":i==4?"輸送長期計画":i==FunctionTransferAction?"施設移転":labels[i];
-                _ui.Center(label,new(r.X+inset,r.Bottom-28,r.Width-inset*2,24),Math.Min(.34f,(r.Width-inset*2)/_font.MeasureString(label).X),ink);
-            }
+            if(i==0)DrawPrimaryIcon(0,new(r.X+12,r.Y+8,r.Width-24,58),ink);
+            else DrawPrimaryActionArt(i,PrimaryActionArtBounds(r),enabled);
+            string label=i==1?"この陣営のターン終了":i==3?"パーツ直送便":i==LongMapAction?"パーツ長距離便":i==4?"輸送長期計画":i==FunctionTransferAction?"施設移転":labels[i];
+            DrawPrimaryActionCaption(r,label,ink);
+            DrawCountryCornerMarks(r,_setup.PlayerSlot,enabled?1:.3f);
             if(PrimaryActionInUse(i) && r.Contains(_pointer)){
                 string hint=labels[i]+(!PhasePrimaryActionAllowed(i)?i==2?"（軍事フェーズで操作できます）":"（内政フェーズで操作できます）":!enabled?"（このステップでは利用できません）":i==2?$"（{WarReservationCount}件）":i==1?DomesticOperationsAllowed?"（全員の内政終了後に配送・開戦）":"（全員の軍事終了後に開戦）":"");
                 var box=new Rectangle(InspectorVisible?1000:54,884,760,34);_ui.Box(box,new Color(7,23,35));_ui.Center(hint,box,.36f,Cream);

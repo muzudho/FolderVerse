@@ -81,11 +81,10 @@ public partial class Game1
     }
     private Rectangle FactoryDropButton(int field,RobotWorkshop line=null)
     {
-        if(field==2)return new(420,884,110,30);
         int y=FactoryRowY(_factoryLine-_factoryPage);
         return field==0?new(190,y+219,76,28):new(290,y+219,76,28);
     }
-    private Rectangle FactoryDropOption(int field,int index,RobotWorkshop line=null){var r=FactoryDropButton(field,line);int count=field==2?PlanningWorkshop(_populationNode).ReservedSlotLimit+1:9;if(field==2 && count>13){int columns=(count+12)/13,width=784/columns;return new(84+index/13*width,490+index%13*30,width-3,30);}int top=Math.Max(260,r.Y-count*30);return new(r.X,top+index*30,r.Width,30);}
+    private Rectangle FactoryDropOption(int field,int index,RobotWorkshop line=null){var r=FactoryDropButton(field,line);int top=Math.Max(260,r.Y-9*30);return new(r.X,top+index*30,r.Width,30);}
     private Rectangle FactoryNoRepeatButton(RobotWorkshop line)=>new(698,FactoryRowY(_factoryLine-_factoryPage)+188,145,26);
     private bool NodeFactoryClick(Point pointer)
     {
@@ -154,9 +153,8 @@ public partial class Game1
         if(_setup.Campaign.RobotBattles.LockedNode(_populationNode)){_factoryMessage="継戦中は製造計画を変更できません";return true;}
         if(FactoryPendingIntakesButton.Contains(pointer) && _setup.Robots.ProductionIntakes.Any(i=>i.Source==_populationNode))
         {_pendingIntakesOpen=true;_intakeNode=_populationNode;_intakePage=0;return true;}
-        if(_factoryDropDown>=0){int field=_factoryDropDown;_factoryDropDown=-1;for(int i=0;i<(field==2?factory.ReservedSlotLimit+1:9);i++)if(FactoryDropOption(field,i,field==2?null:lines[_factoryLine]).Contains(pointer)){
-            if(field==2)SetPlanningReservedSlots(_populationNode,i);
-            else {var line=lines[_factoryLine];if(field==0)line.SetRest(i+1,line.RestTurns);else line.SetRest(line.RestEvery,i+1);SavePending(_factoryLine);}return true;
+        if(_factoryDropDown>=0){int field=_factoryDropDown;_factoryDropDown=-1;for(int i=0;i<9;i++)if(FactoryDropOption(field,i,lines[_factoryLine]).Contains(pointer)){
+            {var line=lines[_factoryLine];if(field==0)line.SetRest(i+1,line.RestTurns);else line.SetRest(line.RestEvery,i+1);SavePending(_factoryLine);}return true;
         }return true;}
         if(_factoryPlanLine>=0){int line=_factoryPlanLine;for(int i=0;i<lines[line].PlanCount;i++)if(FactoryPlanButton(i).Contains(pointer)){_setup.Robots.PartPlanning.CancelWorkpieceResume(lines[line],_setup.Nodes.All[_populationNode].Owner);lines[line].SelectPlan(i);_setup.Robots.CollectInterruptedWorkpieces(_setup);SavePending(line);_factoryPlanLine=-1;return true;}_factoryPlanLine=-1;return true;}
         for(int l=_factoryPage;l<Math.Min(lines.Length,_factoryPage+FactoryVisibleLanes);l++){if(lines[l].DismantleOnly)continue;
@@ -183,7 +181,6 @@ public partial class Game1
             if(FactoryStartButton(l-_factoryPage).Contains(pointer)){_factoryStartLane=l;return true;}
             if(FactoryNoRepeatButton(line).Contains(pointer)){line.SetDoNotRepeat(!line.DoNotRepeat);SavePending(l);return true;}
         }
-        if(FactoryDropButton(2).Contains(pointer))_factoryDropDown=2;
         if(NodeFactoryTile.Contains(pointer))_nodeFactoryOpen=false;
         return new Rectangle(54,150,850,825).Contains(pointer);
     }
@@ -267,7 +264,6 @@ public partial class Game1
         _factoryLine=savedLine;
         int pendingProducts=_setup.Robots.ProductionIntakes.Count(i=>i.Source==_populationNode);
         if(pendingProducts>0)_ui.Button(FactoryPendingIntakesButton,$"完成品の入荷待ち / {pendingProducts}件",Muted,.38f);
-        _ui.Text("格納庫は必ず",new(180,888),.43f,Cream);FactoryDrop(2,factory.ReservedSlots);_ui.Text("個空ける",new(552,888),.43f,Cream);
         DrawNodeTabs();DrawFactoryPages();
         _ui.Text($"産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn)}",new(160,248),.25f,Cream);
         if(!FactoryAlbumOpen && _factoryPlanLine>=0 && _factoryPlanLine<displayed){
@@ -297,11 +293,11 @@ public partial class Game1
         }
         if(_factoryMessage.Length>0)_ui.Text(_factoryMessage,new(94,920),.32f,Cream);
         DrawFactoryStartMenu(factory,lines);
-        if(_factoryDropDown==2 || _factoryDropDown>=0 && _factoryLine>=0 && _factoryLine<displayed){
-            int field=_factoryDropDown,count=field==2?PlanningWorkshop(_populationNode).ReservedSlotLimit+1:9;
+        if(_factoryDropDown>=0 && _factoryLine>=0 && _factoryLine<displayed){
+            int field=_factoryDropDown,count=9;
             for(int i=0;i<count;i++){
-                var option=FactoryDropOption(field,i,field==2?null:lines[_factoryLine]);
-                _ui.Button(option,(field==0?"× ":field==1?"休 ":"")+(field==2?i:i+1),Accent,.40f);
+                var option=FactoryDropOption(field,i,lines[_factoryLine]);
+                _ui.Button(option,(field==0?"× ":field==1?"休 ":"")+(i+1),Accent,.40f);
             }
         }
 

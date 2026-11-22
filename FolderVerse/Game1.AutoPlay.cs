@@ -6,6 +6,22 @@ public partial class Game1
 {
     private static readonly Rectangle AutoMenuItem=new(1320,294,538,52);
     private bool _autoPlay;
+    private bool _gameOverAutoPlay;
+    private string AutomaticLabel=>GameOverSpectating?"Game Over":ComputerExhibition?"Exhibition":"AUTO";
+    private void UpdateGameOverSpectating()
+    {
+        if(_demoActive || _setup.PlayerSlot<0 || BuildingWorld || _screen is Screen.Title or Screen.Ending)return;
+        if(GameOverSpectating && ComputerExhibition && !_autoPlay){
+            _gameOverAutoPlay=true;_guideBriefing=null;StartAutoPlay();
+            _operations.Write("game_over_spectating",new{turn=_setup.Population.Turn});
+        }
+        else if(_gameOverAutoPlay && !GameOverSpectating){
+            _gameOverAutoPlay=false;_autoPlay=false;_autoDomesticStage=0;_autoDomesticAge=0;
+            if(IsStatusScreen && _setup.TurnPlayers().FirstOrDefault(-1) is int human && human>=0){
+                _setup.SelectTurnRuler(human);ResetInspector();RestoreDomesticCamera();
+            }
+        }
+    }
     private double _autoAge,_autoStepAge;
     private int _autoDomesticStage;
     private double _autoDomesticAge;
@@ -82,7 +98,7 @@ public partial class Game1
         float time=(float)(_autoAge%9);if(time>=2.4f)return;
         float fade=Math.Clamp(Math.Min(time/.25f,(2.4f-time)/.4f),0,1);
         _spriteBatch.Begin(transformMatrix:transform);
-        string label=ComputerExhibition?"Exhibition":"AUTO";
+        string label=AutomaticLabel;
         for(int i=0;i<label.Length;i++){
             int jump=(int)(Math.Abs(MathF.Sin(time*5-i*.5f))*16);
             _counter.DrawText(_spriteBatch,label[i].ToString(),new(960-label.Length*25+i*50,510-jump,46,48),(i%2==0?new Color(255,187,214):new Color(185,230,231))*fade);

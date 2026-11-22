@@ -7,13 +7,10 @@ public sealed partial class RobotWorkshop
     private RobotWorkshop[] _disposalAnnexes;
     internal int? TransferredLineLimit;
     public int? FunctionOriginNode;
-    private int? _storageSlotLimit;
-    public int ReservedSlotLimit=>_storageSlotLimit??RobotStore.Capacity;
-    internal void SetStorageSlotLimit(int limit)=>_storageSlotLimit=limit;
     internal void PreserveFunctionOrigin(int node){TransferredLineLimit=LineLimit;foreach(var line in ProductionLines)line.FunctionOriginNode??=node;}
     public RobotWorkshop[] DisposalFacilities=>new[]{this}.Concat(_disposalAnnexes??Array.Empty<RobotWorkshop>()).Concat(ProductionLines.Where(l=>l!=this && l.DismantleOnly)).Distinct().ToArray();
     public bool IsDisposing(long id)=>DisposalFacilities.Any(f=>f.DisposalTarget==id);
-    internal static RobotWorkshop EmptyFunctions(){var w=new RobotWorkshop();w.RemoveProductionLines();w._lineLimit=-1;w._storageSlotLimit=0;return w;}
+    internal static RobotWorkshop EmptyFunctions(){var w=new RobotWorkshop();w.RemoveProductionLines();w._lineLimit=-1;return w;}
     internal static RobotWorkshop PlanningView(System.Collections.Generic.IEnumerable<RobotWorkshop> sources)
     {var result=EmptyFunctions();foreach(var source in sources)result.AbsorbFunctions(source);return result;}
     internal void ForgetWorkerLine(long id){if(_workerLines?.TryGetValue(id,out var line)==true){RetireWorkerWorkpiece(line);_workerLines.Remove(id);}}
@@ -43,7 +40,6 @@ public sealed partial class RobotWorkshop
     internal void AbsorbFunctions(RobotWorkshop other)
     {
         AbsorbProduction(other);
-        _storageSlotLimit=checked(ReservedSlotLimit+other.ReservedSlotLimit);ReservedSlots=checked(ReservedSlots+other.ReservedSlots);
         _disposalAnnexes=(_disposalAnnexes??Array.Empty<RobotWorkshop>()).Concat(other.DisposalFacilities.Where(f=>!f.DismantleOnly)).ToArray();
         AutoAssemblyDisabled|=other.AutoAssemblyDisabled;
         _materialCatalogueOffset??=other._materialCatalogueOffset;

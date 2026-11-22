@@ -112,7 +112,6 @@ public sealed partial class RobotWorkshop
     public int RestTurns {get;private set;}=1;
     public int RestRemaining {get;private set;}
     public int ProducedSinceRest {get;private set;}
-    public int ReservedSlots {get;private set;}
     public bool RestEnabled {get;private set;}=true;
     public int CycleProductionTurns=>ProductionPeriod*(RestEnabled?RestEvery:1);
     public int CycleTurns=>CycleProductionTurns+(RestEnabled?IndustryTime.Whole(RestTurns):0);
@@ -161,8 +160,6 @@ public sealed partial class RobotWorkshop
         if(every<1 || every>9 || turns<1 || turns>9)throw new System.ArgumentOutOfRangeException();
         if(RestEnabled && RestEvery==every && RestTurns==turns)return;RestEvery=every;RestTurns=turns;RestEnabled=true;RestRemaining=ProducedSinceRest=0;
     }
-    public void SetReservedSlots(int count)
-    {if(count<0 || count>ReservedSlotLimit)throw new System.ArgumentOutOfRangeException(nameof(count));ReservedSlots=count;}
 }
 
 

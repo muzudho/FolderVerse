@@ -113,7 +113,7 @@ public static class ComputerLogistics
                 var store=stock.Nodes[id];
                 var shop=stock.Workshops[id];
                 if(Busy(id) || shop.Automation==NodeAutomation.Manual || store.WarehouseLimit is not int limit ||
-                    store.TotalCapacity>=limit || store.Count+shop.ReservedSlots<store.StorageLimit)continue;
+                    store.TotalCapacity>=limit || store.Count<store.StorageLimit)continue;
                 var ready=battles.SelectableRobots(w,owner,id,false).Select(r=>r.Id).ToHashSet();
                 var keeper=store.Robots.Where(r=>!r.WarehouseKeeper && !r.FactoryWorker && !r.DefenseOnly && !r.InterceptOnly &&
                         (ready.Count>1 || !ready.Contains(r.Id)) && !stock.AssemblyLocked(id,r) &&

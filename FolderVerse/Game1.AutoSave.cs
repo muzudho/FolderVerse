@@ -63,7 +63,7 @@ public partial class Game1
             _battleAge=0;_notifiedTurn=(-1,-1);_screen=Screen.WorldStatus;RecordPetitstellaMedals();
             _world.ShowSetup(_setup,true);_lastAutoSaveTurn=_setup.Population.Turn;RestoreDomesticCamera();OpenDisposition();if(_setup.ComputerOnly)StartAutoPlay();
             _autoSaveError="";_operations.Write("autosave_resumed",new{turn=_lastAutoSaveTurn});return true;
-        }catch(Exception error){ReturnToTitle();_autoSaveError="続きからを開始できません。最初からを選べます。";RecordFailure(error,"autosave_read");return false;}
+        }catch(Exception error){ReturnToTitle();_autoSaveError=error is AutoSaveStore.IncompatibleSaveException?AutoSaveStore.IncompatibleMessage:"続きからを開始できません。最初からを選べます。";RecordFailure(error,"autosave_read");return false;}
     }
     private void DeleteCompletedAutoSave(){
         if(!_autoSaveEnabled || _demoActive || _setup.IsPrimaplana)return;

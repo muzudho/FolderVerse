@@ -10,7 +10,7 @@ internal static class ComputerIntakePlanning {
     var product=line.CurrentProductionPlan.Preview(n.Owner);int current=line.IntakeTarget??n.Id;if(Fits(current,product))continue;
     var target=w.Routes.Neighbors(n).Select(t=>w.Nodes.At(t.Target,t.Entry)).DistinctBy(t=>t.Id)
      .Where(t=>t.Id!=current && t.Functional && t.Owner==n.Owner && !w.Campaign.RobotBattles.LockedNode(t.Id) && !w.Campaign.RobotBattles.LockedEdge(n.Id,t.Id) && !w.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==t.Id||o.Target==t.Id))
-     .OrderByDescending(t=>r.Nodes[t.Id].StorageLimit-r.Nodes[t.Id].Count-r.Workshops[t.Id].ReservedSlots).ThenBy(t=>t.Id).FirstOrDefault(t=>Fits(t.Id,product));
+     .OrderByDescending(t=>r.Nodes[t.Id].StorageLimit-r.Nodes[t.Id].Count).ThenBy(t=>t.Id).FirstOrDefault(t=>Fits(t.Id,product));
     if(target==null)continue;r.SetIntakeTarget(line,target.Id);if(!forecast.TryGetValue(target.Id,out var booked))forecast[target.Id]=booked=new();booked.Add(product with {Id=long.MaxValue-serial++});
    }
   }

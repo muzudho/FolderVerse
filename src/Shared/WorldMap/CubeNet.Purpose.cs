@@ -31,6 +31,7 @@ public sealed partial class CubeNet
         =>DrawDevelopedFacility(ui,purpose,sea,grade,point,tint);
     private void DrawFactorySmoke(UiPainter ui,Node node,int grade,float time,Func<float,float,float,Vector2> project,Func<Color,Color> tint)
     {
+        using var cost=new RenderFeatureCost.Scope(4,ShowSmoke&&node.Purpose==NodePurpose.Manufacturing&&node.Functional);
         if(!ShowSmoke||node.Purpose!=NodePurpose.Manufacturing||!node.Functional)return;
         float width=1.45f+grade*.23f;
         for(int i=0;i<4;i++){

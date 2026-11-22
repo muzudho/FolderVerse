@@ -13,7 +13,7 @@ public partial class Game1
     private Texture2D _industryCabinet,_industryEnamel,_industryBrass;
     private IReadOnlyList<IndustrySector> _industryEnamelWheel;
 
-    private void DrawAntiqueIndustryWheel(float angle,bool stopped)
+    private void DrawAntiqueIndustryWheel(float angle)
     {
         var wheel=_setup.Industry.Wheel;
         var center=IndustryWheelCenter;
@@ -27,26 +27,14 @@ public partial class Game1
             _industryEnamelWheel=wheel;
         }
         float half=_industryEnamel.Width*.5f;
-        _spriteBatch.Draw(_industryEnamel,center,null,Color.White,angle,new(half),364/half,SpriteEffects.None,0);
+        // Extend just under the irregular inner brass rim, never beyond the wooden cabinet.
+        _spriteBatch.Draw(_industryEnamel,center,null,Color.White,angle,new(half),(radius+12)/half,SpriteEffects.None,0);
         _spriteBatch.Draw(_industryCabinet,IndustryCabinetBounds,Color.White);
 
         float percent=0;
         for(int i=0;i<wheel.Count;i++){
             float boundary=angle+percent/100*MathHelper.TwoPi;
             Brass(center+Direction(boundary)*(radius-15),15);
-            if(stopped && i==_setup.Industry.SelectedSector){
-                float end=boundary+wheel[i].Percent/100f*MathHelper.TwoPi;
-                // An inset highlight stays visible even when the winning sector is only 1%.
-                float edgeRadius=radius-30;
-                int segments=Math.Max(2,wheel[i].Percent);
-                var previous=center+Direction(boundary)*edgeRadius;
-                for(int part=1;part<=segments;part++){
-                    var next=center+Direction(MathHelper.Lerp(boundary,end,part/(float)segments))*edgeRadius;
-                    var edge=next-previous;
-                    _ui.Tile((next+previous)/2,new(edge.Length()+1,4),MathF.Atan2(edge.Y,edge.X),new Color(255,252,229));
-                    previous=next;
-                }
-            }
             percent+=wheel[i].Percent;
         }
 

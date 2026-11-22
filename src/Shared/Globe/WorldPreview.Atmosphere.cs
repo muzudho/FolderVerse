@@ -16,13 +16,14 @@ public sealed partial class WorldPreview
 
     internal void DrawAtmosphere(float seconds,float opacity=1,float cloudSpeedMultiplier=1)
     {
+        using var measure=new WorldPreview.DrawCpuScope();
         _atmosphereEffect??=new BasicEffect(_device){VertexColorEnabled=true};
         _atmosphereEffect.World=_effect.World;
         _atmosphereEffect.View=_effect.View;
         _atmosphereEffect.Projection=_effect.Projection;
         _device.BlendState=BlendState.AlphaBlend;
         _device.DepthStencilState=DepthStencilState.DepthRead;
-        _device.RasterizerState=RasterizerState.CullNone;
+        ApplyMapClip();
 
         var half=new Vector3(Width,Height,Depth)*.5f;
         var viewTransform=_effect.World*_effect.View;

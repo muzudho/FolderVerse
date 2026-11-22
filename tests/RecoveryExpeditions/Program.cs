@@ -59,4 +59,39 @@ void Step(WorldSetup w,int turn)=>w.Salvage.Advance(w,turn);
 if(args.Length>0){
  var w=AutoSaveStore.Read<WorldSetup>(args[0]);w.Robots.Check();var missions=w.Salvage.Missions;Check(w.Salvage.ExpeditionsEnabled&&missions.Count>0,"campaign CPU uses real recovery workers");Check(missions.Any(m=>m.Finished),"campaign CPU completes recovery and return");foreach(int owner in Enumerable.Range(0,w.ActiveCount)){Check(w.Salvage.LoanCount(owner)<=12,"campaign pocket loan cap country "+owner);foreach(var m in missions.Where(m=>m.Owner==owner&&!m.Finished))Check(m.LoanCount==1+m.Cargo.Count+m.Targets.Count,"campaign active loan matches worker cargo and remaining targets");}var away=missions.Where(m=>!m.Finished&&!m.Pending).SelectMany(m=>m.Cargo.Append(m.Worker));var physical=w.Robots.Nodes.Concat(w.Robots.Retinues).SelectMany(s=>s.Robots).Concat(away).Concat(w.Salvage.Items.Select(i=>i.Robot)).ToArray();Check(physical.Select(r=>r.Id).Distinct().Count()==physical.Length,"campaign physical robots have no duplicate store mission or basket IDs");Console.WriteLine("CPU missions="+missions.Count+" finished="+missions.Count(m=>m.Finished)+" active="+missions.Count(m=>!m.Finished));
 }
+
+{
+ var w=Fixture();int source=Home(w);int goal=w.Nodes.All.Where(n=>n.Functional&&n.Id!=source).Select(n=>new{n.Id,Path=w.Salvage.RecoveryPath(w,source,n.Id)}).Where(n=>n.Path.Length>0).OrderBy(n=>n.Path.Length).First().Id;
+ var worker=Worker(w,source);var goods=Goods(w,source);var m=w.Salvage.ReserveExpedition(w,0,source,false,worker.Id,new[]{new RecoveryTarget(goods.Id,goods.Robot.Parts)},goal);
+ Check(m.Source==source&&m.DeliveryNode==goal,"source and receiving hangar are independent");
+ w=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));m=w.Salvage.Missions.Single();Check(m.DeliveryNode==goal,"independent receiving destination survives save");
+ w.Salvage.CommitExpeditions(w);for(int t=1;t<100&&!m.Finished;t++)Step(w,t);
+ Check(m.Finished&&w.Robots.Nodes[goal].Robots.Count==2&&w.Robots.Nodes[source].Robots.Count==0&&w.Salvage.LoanCount(0)==0,"worker and recovered cargo finish at receiving hangar rather than source");
+}
+{
+ var w=Fixture();int source=Home(w);int goal=w.Nodes.All.Where(n=>n.Functional&&n.Id!=source).First().Id;
+ var worker=Worker(w,source);var goods=Goods(w,source);var m=w.Salvage.ReserveExpedition(w,0,source,false,worker.Id,new[]{new RecoveryTarget(goods.Id,goods.Robot.Parts)},goal);
+ w.Nodes.All[goal].Owner=1;w.Salvage.CommitExpeditions(w);for(int t=1;t<100&&!m.Finished;t++)Step(w,t);
+ Check(m.Finished&&m.PocketFallback&&w.Robots.Retinues[0].Robots.Count==2&&w.Robots.Nodes[goal].Robots.Count==0,"lost receiving hangar falls back to pocket without delivering into hostile storage");
+}
+{
+ var w=Fixture();int source=Home(w);int goal=w.Nodes.All.First(n=>n.Functional&&n.Id!=source).Id;var goods=Goods(w,source);
+ w.Campaign.RobotBattles.Encounters.Add(new(){Kind=BattleKind.Node,Target=goal});
+ Check(w.Salvage.RecoveryChoices(w,source,new RecoveryFilter()).Any(c=>c.Target.Item==goods.Id)&&w.Salvage.RecoveryChoices(w,source,new RecoveryFilter(),goal).Length==0,"reachable-only checks delivery leg as well as collection leg");
+ Check(w.Salvage.RecoveryChoices(w,source,new RecoveryFilter{IncludeUnreachable=true},goal).Any(c=>!c.Reachable),"include unreachable keeps goods with blocked delivery leg visible");
+}
+{
+ var w=Fixture();int source=Home(w);int goal=w.Nodes.All.Where(n=>n.Functional&&n.Id!=source).Select(n=>new{n.Id,Path=w.Salvage.RecoveryPath(w,source,n.Id)}).Where(n=>n.Path.Length>0).OrderBy(n=>n.Path.Length).First().Id;
+ var worker=Worker(w,source,true);var goods=Goods(w,source);var m=w.Salvage.ReserveExpedition(w,0,source,true,worker.Id,new[]{new RecoveryTarget(goods.Id,goods.Robot.Parts)},goal);
+ w.Salvage.CommitExpeditions(w);for(int t=1;t<100&&!m.Finished;t++)Step(w,t);
+ Check(m.Finished&&!m.PocketFallback&&w.Robots.Nodes[goal].Robots.Count==2&&w.Robots.Retinues[0].Robots.Count==0,"pocket worker can deliver to a different receiving hangar");
+}
+{
+ var w=Fixture();int source=Home(w);int goal=w.Nodes.All.First(n=>n.Functional&&n.Id!=source).Id;var worker=Worker(w,source);var goods=Goods(w,source);
+ w.Salvage.ReserveExpedition(w,0,source,false,worker.Id,new[]{new RecoveryTarget(goods.Id,goods.Robot.Parts)},goal);
+ var snap=AutoSaveStore.Capture(w);foreach(var obj in snap.Objects.Where(o=>o.Fields!=null))obj.Fields.Remove("DeliveryNode");w=AutoSaveStore.Restore<WorldSetup>(snap);var m=w.Salvage.Missions.Single();
+ Check(m.DeliveryNode==null,"save without delivery destination retains legacy default");
+ w.Salvage.CommitExpeditions(w);for(int t=1;t<100&&!m.Finished;t++)Step(w,t);
+ Check(m.Finished&&w.Robots.Nodes[source].Robots.Count==2&&w.Robots.Nodes[goal].Robots.Count==0,"legacy mission still returns to original source");
+}
 Console.WriteLine("PASS checks="+checks);

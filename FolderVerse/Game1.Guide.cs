@@ -16,8 +16,38 @@ public partial class Game1
     private BalloonRenderer _speechBalloon;
     private string _guidePortraitKey;
     private static readonly string[] GuideBodies={"elevator","stewardess","waitress","concierge"};
-    private static readonly Rectangle GuideNext=new(1320,320,240,60);
+    private static readonly Rectangle GuideNext=new(1320,456,240,60);
 
+    private bool CanRecallGuide=>IsStatusScreen && DomesticOperationsAllowed && !_autoPlay && !_demoActive && !_setup.ComputerOnly && _setup.TutorialStep==0 &&
+        _setup.ControllerOf(_setup.PlayerSlot)>=0 && _setup.Relations.CanAct(_setup.PlayerSlot) && !_conquestOverview && !_diplomacyPending && !_setup.Industry.Pending && _subordinateNodes==null && _computerDomesticNodes==null;
+    private void RecallGuide(){
+        if(!CanRecallGuide)return;
+        _guideWorld=_setup;_guideRuler=_setup.PlayerSlot;_guidePage=0;
+        _guideBriefing=GuideNarration.Build(_setup,_guideRuler,!_setup.EnsureGuides().Introduced[_guideRuler]);
+    }
+    private void FocusGuideOffice(int id){
+        OpenNodeInspector(id);OpenNodeOffice();
+        // The guide replaces the map; reveal the office with its final camera already in place.
+        _domesticSlide=1;_inspectorCenterPending=false;_inspectorCenterAge=-1;
+        _orientationAge=_mapTransitionAge=-1;_globeSpinning=false;
+        var node=_setup.Nodes.All[id];var cell=_setup.Cells[node.Cell];
+        var point=_setup.Routes.Position(node.Cell,node.Center);
+        _net.ShowRoutes=true;_globeSelectedNode=id;
+        if(_statusGlobe){
+            _domesticMapLeft=55+480*_domesticSlide;FocusGlobePosition(point);
+            _world.ManualOrientation=Quaternion.CreateFromRotationMatrix(Matrix.CreateFromQuaternion(ConquestFace(cell.Normal))*Matrix.CreateRotationX(.60f)*Matrix.CreateRotationY(-.35f));
+            _world.GlobeZoom=1;
+            if(_world.ProjectVisible(point,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var center) &&
+                _world.ProjectVisible(point+cell.U*.5f,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var edge))
+                _world.GlobeZoom=MathHelper.Clamp(140/Math.Max(1,Vector2.Distance(center,edge)),2,16);
+            if(_world.ProjectVisible(point,cell.Normal,_yaw,_pitch,StatusGlobeArea,out var at)){
+                var delta=MapViewBounds.Center.ToVector2()-at;
+                _world.GlobePan+=new Vector2(delta.X/StatusGlobeArea.Width,delta.Y/StatusGlobeArea.Height);
+            }
+        }else{
+            _net.SetCenter(_setup,cell.Face);_net.FitNodesAtSource(_setup,node,NetPanel,4);FocusInspectorLocation();
+        }
+    }
     private bool GuideInput(bool active,bool click,bool enter,bool escape)
     {
         if(!IsStatusScreen || !DomesticOperationsAllowed || _autoPlay || _demoActive || _setup.ComputerOnly || _setup.TutorialStep>0){_guideBriefing=null;return false;}
@@ -37,7 +67,7 @@ public partial class Game1
         if(enter || click && GuideNext.Contains(_pointer)){
             if(last){
                 int node=_guideBriefing.OfficeNode;FinishGuide();
-                if(node>=0 && node<_setup.Nodes.All.Length && _setup.Nodes.All[node].Owner==_guideRuler){OpenNodeInspector(node);OpenNodeOffice();}
+                if(node>=0 && node<_setup.Nodes.All.Length && _setup.Nodes.All[node].Owner==_guideRuler){FocusGuideOffice(node);}
                 else {ResetInspector();RefreshStratagems();_stratagemManual=false;_stratagemSelected=-1;}
             }else _guidePage++;
         }
@@ -61,13 +91,13 @@ public partial class Game1
         string name=roster.Names[_guideRuler];float nameScale=Math.Min(.46f,345/Math.Max(1,_font.MeasureString(name).X));
         string[] names=_font.MeasureString(name).X*nameScale<=178?new[]{name}:new[]{name[..((name.Length+1)/2)],name[((name.Length+1)/2)..]};
         PortraitHudLayout.CenterLines(_ui,_font,names,PortraitHudLayout.NameText,nameScale,ink);
-        DrawSpeechBalloon(new(500,40,1380,420));        var lines=_guideBriefing.Pages[_guidePage];
-        for(int i=0;i<lines.Length;i++)NewsLine(lines[i],830,115+i*43,850,.48f,ink);
+        DrawSpeechBalloon(new(500,176,1380,420));        var lines=_guideBriefing.Pages[_guidePage];
+        DrawSpeechParagraph(lines,new Rectangle(830,251,850,180),false);
         bool last=_guidePage==_guideBriefing.Pages.Length-1;
         _ui.StateButton(GuideNext,GuideMessages.Text(last?"finish":"next"),Accent,Muted,false,GuideNext.Contains(_pointer),attention:true,seconds:_animationTime,scale:.46f);
         float light=.35f+.65f*(1+MathF.Sin(_animationTime*3))/2;
-        _ui.Box(new(1331,341,18,18),new Color(20,55,38));
-        _ui.Box(new(1334,344,12,12),Color.Lerp(new Color(35,105,63),new Color(170,255,186),light));
+        _ui.Box(new(1331,477,18,18),new Color(20,55,38));
+        _ui.Box(new(1334,480,12,12),Color.Lerp(new Color(35,105,63),new Color(170,255,186),light));
     }
     private bool GuideVisible=>_guideBriefing!=null && ReferenceEquals(_guideWorld,_setup);
     private void DrawGuideScene()

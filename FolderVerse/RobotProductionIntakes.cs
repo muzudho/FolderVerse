@@ -26,7 +26,7 @@ public sealed partial class RobotWorld
         line.IntakeFailure="";
         if(target<0 || target>=Nodes.Length || source!=target && IntakeAdjacent?.Invoke(source,target)!=true){line.IntakeFailure="入荷先が同地点・隣接地点ではありません";return false;}
         if(IntakeAllowed?.Invoke(owner,target)==false){line.IntakeFailure="入荷先の機能・所有国を確認してください";return false;}
-        int reserved=target==source?reservedSlots:Workshops[target].ReservedSlots;
+        int reserved=0;
         var planned=product with {Id=_nextId};
         var store=Nodes[target].PlanningCopy();
         bool Locked(Robot robot)=>IntakeReceiverLocked(target,robot);
@@ -50,7 +50,7 @@ public sealed partial class RobotWorld
         foreach(var intake in ProductionIntakes){
             int source=hosts[ProductionSource(intake)],target=intake.Target??source;
             if(target>=0 && target<copy.Nodes.Length && hosts[target]==target && CanReceiveProductionIntake(world,source,target,intake.Product.Owner))
-                PlaceIntake(copy.Nodes[target],intake.Product,copy.Workshops[target].ReservedSlots,!copy.Workshops[target].AutoAssemblyDisabled,r=>IntakeReceiverLocked(target,r) || copy.IntakeReceiverLocked(target,r));
+                PlaceIntake(copy.Nodes[target],intake.Product,0,!copy.Workshops[target].AutoAssemblyDisabled,r=>IntakeReceiverLocked(target,r) || copy.IntakeReceiverLocked(target,r));
         }
     }
     internal void ResolveProductionIntakes(WorldSetup world)
@@ -61,7 +61,7 @@ public sealed partial class RobotWorld
             if(!CanReceiveProductionIntake(world,source,target,intake.Product.Owner)){
                 intake.Status="入荷待機：経路・所有国・戦闘状況";continue;
             }
-            if(!PlaceIntake(Nodes[target],intake.Product,Workshops[target].ReservedSlots,!Workshops[target].AutoAssemblyDisabled,r=>IntakeReceiverLocked(target,r))){intake.Status="入荷待機：格納枠不足";continue;}
+            if(!PlaceIntake(Nodes[target],intake.Product,0,!Workshops[target].AutoAssemblyDisabled,r=>IntakeReceiverLocked(target,r))){intake.Status="入荷待機：格納枠不足";continue;}
             if(source!=target)playback.Add((new RobotShipment(source,target,intake.Product.Id,intake.Product.Parts){Visual=intake.Product},intake.Product.Owner));
             ProductionIntakes.Remove(intake);
         }

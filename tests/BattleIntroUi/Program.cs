@@ -37,7 +37,7 @@ sealed class IntroGame:Game1{
    var at=(Vector2)Call("PropagationBadgeCenter",0,area);
    if(age==0)initialBadge=at;
    if(age==.5){Check(Vector2.Distance(initialBadge,at)<.01f,"Badge fades before zooming");var color=preview[(int)(at.Y*info.BackBufferHeight/1080f)*info.BackBufferWidth+(int)(at.X*info.BackBufferWidth/1920f)];Check(Math.Abs(color.R-color.G)<25 && Math.Abs(color.G-color.B)<25,"Board is grey before zoom starts");}
-   if(age==2)Check(Vector2.Distance(at,new Vector2(540,540))<1,"Zoom ends aligned with battle board");
+   if(age==2)Check(Vector2.Distance(at,((Rectangle)typeof(Game1).GetField("PropagationBattleBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!).Center.ToVector2())<1,"Zoom ends aligned with battle board");
    using var tex=new Texture2D(GraphicsDevice,info.BackBufferWidth,info.BackBufferHeight);tex.SetData(preview);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"preview-{age:0.00}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);
   }
   var captures=new List<Color[]>();

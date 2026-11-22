@@ -5,9 +5,9 @@ using Microsoft.Xna.Framework;
 // Small map pictograms share the existing flat, outlined map rendering.
 public static class LandmarkArt
 {
-    public static void Draw(UiPainter ui,LandmarkKind kind,Vector2 at,float size,float time=0,float brightness=1)
+    public static void Draw(UiPainter ui,LandmarkKind kind,Vector2 at,float size,float time=0,float brightness=1,Func<Color,Color> palette=null)
     {
-        Color Tint(Color color)=>new Color(color.R*brightness/255,color.G*brightness/255,color.B*brightness/255,color.A/255f);
+        Color Tint(Color color)=>palette?.Invoke(color)??new Color(color.R*brightness/255,color.G*brightness/255,color.B*brightness/255,color.A/255f);
         var ink=new Color(15,31,39);var cream=new Color(247,224,174);var wood=new Color(166,111,63);var green=new Color(78,158,95);var red=new Color(230,100,83);
         Vector2 P(float x,float y)=>at+new Vector2(x,y)*size;
         void Bar(float x,float y,float w,float h,Color color,float angle=0)=>ui.Tile(P(x,y),new Vector2(w,h)*size,angle,Tint(color));
