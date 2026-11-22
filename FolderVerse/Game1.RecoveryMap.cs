@@ -66,6 +66,8 @@ public partial class Game1
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
             _recoveryNet.DrawGlobeLayers(_ui,_setup,_recoveryWorld,RecoveryPanel,RecoveryYaw,RecoveryPitch,_animationTime);_spriteBatch.End();
             GraphicsDevice.Viewport=OrientationViewport(RecoveryPanel,canvas);_recoveryWorld.DrawAtmosphere(_animationTime);GraphicsDevice.Viewport=viewport;
+            _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
+            _recoveryNet.DrawGlobeHud(_ui,_setup,_recoveryWorld,RecoveryPanel,RecoveryYaw,RecoveryPitch,_animationTime);_spriteBatch.End();
         }else{
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
             _recoveryNet.Draw(_ui,_setup,RecoveryPanel,-1,_animationTime);_spriteBatch.End();

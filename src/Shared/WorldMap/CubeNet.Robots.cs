@@ -38,7 +38,7 @@ public sealed partial class CubeNet
             DrawNodeMarkers(ui,world,cell.Id,p=>AnimatedSurfacePosition(cell.Id,p,world,panel),pulse);
         DrawBatteries(ui,world,panel,r=>AnimatedSurfacePosition(world.ConquerorLocations[r],world.Routes.Position(world.ConquerorLocations[r],world.ConquerorPoints[r]),world,panel),pulse);
         DrawRobotLayer(ui,world,panel,n=>AnimatedNodePosition(world,n,panel),Fit(panel).Scale,pulse,avoidResources:true);
-        foreach(var node in world.Nodes.All)if(NodeVisible(world,node) && NodeNeedsRing(node.Id))DrawNodeHud(ui,node.Id,AnimatedNodePosition(world,node,panel),24);
+        foreach(var node in world.Nodes.All)if(NodeVisible(world,node) && NodeNeedsRing(node.Id))DrawNodeHud(ui,node.Id,NetHudRing(world,node,panel));
     }
     public void DrawGlobeRobots(UiPainter ui,WorldSetup world,WorldPreview globe,Rectangle panel,float yaw,float pitch)
     {

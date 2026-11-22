@@ -733,6 +733,7 @@ public partial class Game1 : Game
             _world.DrawAtmosphere(_animationTime);
             GraphicsDevice.Viewport=viewport;
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:globeClip);
+            _net.DrawGlobeHud(_ui,_setup,_world,areas.Globe,_yaw,_pitch,_animationTime);
             if(!_reservationDirectory){if(!_transportOverview)DrawGlobeCellHover();DrawStatusGlobeCoordinates();}_spriteBatch.End();
         }
         else using(var clipping=new RasterizerState{ScissorTestEnable=true})

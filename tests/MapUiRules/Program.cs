@@ -21,7 +21,7 @@ sealed class RulesGame(string output):Game1
   globe=(WorldPreview)Get("_world");globe.ShowSetup(w,false);globe.SelectionSetup=w;globe.DaylightWorld=w;globe.DawnMeridian=.5f;
   net=(CubeNet)Get("_net");net.Home(w);net.ShowRobots=false;net.ShowBatteries=false;
   batch=(SpriteBatch)Get("_spriteBatch");Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_animationTime",10f);
-  Set("_domesticSlide",0f);CheckAppearance();CheckTerrain();CheckRing();CheckClipping();
+  Set("_domesticSlide",0f);CheckAppearance();CheckTerrain();CheckRing();CheckRingZoom();CheckClipping();
  }
  void CheckAppearance(){
   var map=new CubeNet{RestrictNodeActions=true};map.ActionTargetNodes.Add(node);var normal=new Color(180,120,60);var palette=MapNodeColors.FromEnabled(normal);
@@ -55,6 +55,20 @@ sealed class RulesGame(string output):Game1
   var ui=(UiPainter)Get("_ui");Color[] Draw(float time){using var image=new RenderTarget2D(GraphicsDevice,320,240);GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(new Color(16,35,47));batch.Begin();MapHud.DrawRing(ui,new(160,120),60,time);batch.End();GraphicsDevice.SetRenderTarget(null);var pixels=new Color[320*240];image.GetData(pixels);return pixels;}
   var a=Draw(0);var b=Draw(1);Check(a[120*320+160]==new Color(16,35,47)&&a[0]==new Color(16,35,47),"HUD ring has transparent center and no spotlight disk");Check(!a.SequenceEqual(b),"HUD ring animates on screen without scene lighting");
  }
+ void CheckRingZoom(){
+  var minimum=MapHud.Enclose(Vector2.Zero,Vector2.One);Check(minimum.Radii.X>=34&&minimum.Radii.Y>=26,"HUD ring retains readable minimum area");
+  var panel=new Rectangle(40,142,1840,750);float zoom=globe.GlobeZoom;
+  var target=w.Nodes.All.First(n=>net.TryGlobeHudRing(w,n,globe,panel,0,0,out _));
+  globe.GlobeZoom=.5f;Check(net.TryGlobeHudRing(w,target,globe,panel,0,0,out var small),"zoomed-out object ring is visible");
+  globe.GlobeZoom=8;Check(net.TryGlobeHudRing(w,target,globe,panel,0,0,out var large),"zoomed-in object ring is visible");
+  Check(large.Radii.X*large.Radii.Y>small.Radii.X*small.Radii.Y*2,"globe HUD ring follows projected building size rather than fixed pixels");
+  globe.GlobeZoom=zoom;
+  var saved=net.CaptureView();var flatSmall=net.NetHudRing(w,target,panel);net.ZoomAt(panel,panel.Center,2400);var flatLarge=net.NetHudRing(w,target,panel);
+  Check(flatLarge.Radii.X*flatLarge.Radii.Y>flatSmall.Radii.X*flatSmall.Radii.Y,"net HUD ring follows drawn building extent");net.RestoreView(saved);
+  using var image=new RenderTarget2D(GraphicsDevice,640,360);GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(new Color(111,228,255));batch.Begin();MapHud.DrawRing((UiPainter)Get("_ui"),new MapHudRing(new(320,180),new(120,75)),.5f);batch.End();GraphicsDevice.SetRenderTarget(null);
+  var pixels=new Color[640*360];image.GetData(pixels);Check(pixels.Any(c=>c.R>c.B+35)&&pixels.Any(c=>c.R<70&&c.B<90),"warm ring and dark outline remain distinct against sea-route cyan");
+  using var file=File.Create(Path.Combine(output,"hud-ring-on-sea-route.png"));image.SaveAsPng(file,640,360);
+ }
  void CheckClipping(){
   using var image=new RenderTarget2D(GraphicsDevice,1920,1080);GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(Color.Magenta);var clip=new Rectangle(500,200,800,500);
   globe.Draw(0,0,10,false,true,deferAtmosphere:true,clip:clip);typeof(WorldPreview).GetMethod("DrawAtmosphere",F)!.Invoke(globe,new object[]{10f,1f,1f});GraphicsDevice.SetRenderTarget(null);
@@ -65,13 +79,26 @@ sealed class RulesGame(string output):Game1
  protected override void Update(GameTime time){}
  protected override void Draw(GameTime time){
   using var image=new RenderTarget2D(GraphicsDevice,1920,1080);GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(new Color(16,35,47));batch.Begin();Call("DrawStatusUi");batch.End();GraphicsDevice.SetRenderTarget(null);
-  string name=frame==0?"domestic-full-space":frame==1?"domestic-inspector-space":"domestic-net-hud";using(var file=File.Create(Path.Combine(output,name+".png")))image.SaveAsPng(file,1920,1080);
+  string name=frame==0?"domestic-full-space":frame==1?"domestic-inspector-space":frame==2?"domestic-globe-zoom-ring":"domestic-net-hud";using(var file=File.Create(Path.Combine(output,name+".png")))image.SaveAsPng(file,1920,1080);
   if(frame==0){
    var art=(Texture2D)Get("_guideActionArt");var icon=new Color[art.Width*art.Height];art.GetData(icon);
    Check(icon[0].A==0&&icon.Any(c=>c.A>200)&&icon.All(c=>c.R==c.G&&c.G==c.B),"adopted guide icon is transparent neutral art ready for nation tint");
   }
   var pixels=new Color[1920*1080];image.GetData(pixels);Check(pixels[380*1920]!=new Color(16,35,47)&&pixels[380*1920+1919]!=new Color(16,35,47),"space reaches both screen edges "+name);
-  if(frame==0){Call("OpenNodeInspector",node);Set("_domesticSlide",1f);Call("FocusInspectorLocation");}else if(frame==1){Set("_statusGlobe",false);Set("_pointer",net.AnimatedNodePosition(w,w.Nodes.All[node],new Rectangle(40,142,1840,820)).ToPoint());}else{Console.WriteLine("PASS map UI rules and domestic space rendering");Exit();}
+  void Hover(){
+   var site=w.Nodes.All[node];Vector2 at;
+   if((bool)Get("_statusGlobe")){
+    var area=(Rectangle)typeof(Game1).GetProperty("StatusGlobeArea",F)!.GetValue(this)!;
+    var obstacles=typeof(CubeNet).GetMethod("ResourceClearance",F)!.Invoke(net,new object[]{w,site.Cell});
+    var point=(Vector3)typeof(CubeNet).GetMethod("SiteDisplayPosition",F)!.Invoke(net,new object[]{w,site,obstacles!})!;point+=w.Cells[site.Cell].Normal*WorldTerrain.ReliefAt(w,w.Cells[site.Cell],point,w.Terrain);
+    globe.ProjectVisible(point,w.Cells[site.Cell].Normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),area,out at);
+   }else{var panel=(Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!;at=net.AnimatedNodePosition(w,site,panel);}
+   Set("_pointer",at.ToPoint());((UiPainter)Get("_ui")).Pointer=at.ToPoint();
+  }
+  if(frame==0){Call("OpenNodeInspector",node);Set("_domesticSlide",1f);Call("FocusInspectorLocation");Hover();}
+  else if(frame==1){globe.GlobeZoom*=3;Call("FocusInspectorLocation");Hover();}
+  else if(frame==2){Set("_statusGlobe",false);Call("FocusInspectorLocation");Hover();}
+  else{Console.WriteLine("PASS map UI rules and domestic space rendering");Exit();}
   frame++;
  }
 }

@@ -168,6 +168,8 @@ public partial class Game1
             GraphicsDevice.Viewport=globeViewport;
             _directPairWorld.DrawAtmosphere(_animationTime);
             GraphicsDevice.Viewport=viewport;
+            _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
+            _directPairNet.DrawGlobeHud(_ui,_setup,_directPairWorld,panel,_directPairYaw,_directPairPitch,_animationTime);_spriteBatch.End();
         }else{
             _spriteBatch.Begin(transformMatrix:_directPairNet.ScreenTransform(panel)*transform,rasterizerState:clip);
             _directPairNet.Draw(_ui,_setup,panel,-1,_animationTime,false);_spriteBatch.End();

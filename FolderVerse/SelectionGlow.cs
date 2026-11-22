@@ -62,8 +62,8 @@ public sealed partial class CubeNet
             HighlightTiles.Add(MapTerrainTile.At(setup.Cells[node.Cell],position));
         }
     }
-    private void DrawNodeHud(UiPainter ui,int id,Vector2 at,float radius){
-        if(NodeNeedsRing(id))MapHud.DrawRing(ui,at,radius,AppearanceTime,AttentionNodes.Contains(id));
+    private void DrawNodeHud(UiPainter ui,int id,MapHudRing ring){
+        if(NodeNeedsRing(id))MapHud.DrawRing(ui,ring,AppearanceTime,AttentionNodes.Contains(id));
     }
     public int RegionFocusCell {get;set;}=-1;
     public int SelectedCell {get;set;}=-1;

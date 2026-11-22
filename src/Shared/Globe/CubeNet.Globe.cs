@@ -98,12 +98,39 @@ public sealed partial class CubeNet
             return (a,b);
         });
         DrawGlobeRobotOverflow(ui);
-        foreach(var node in setup.Nodes.All){
-            if(!NodeVisible(setup,node) || !NodeNeedsRing(node.Id))continue;
-            var cell=setup.Cells[node.Cell];var point=SiteDisplayPosition(setup,node,ResourceClearance(setup,node.Cell));
-            float relief=WorldTerrain.ReliefAt(setup,cell,point,setup.Terrain);
-            if(globe.ProjectVisible(point,cell.Normal,yaw,pitch,panel,out var at,relief))DrawNodeHud(ui,node.Id,at,24);
+    }
+    // HUD is composited after atmosphere, so clouds cannot wash out the ring.
+    public void DrawGlobeHud(UiPainter ui,WorldSetup setup,WorldPreview globe,Rectangle panel,float yaw,float pitch,float time){
+        AppearanceTime=time;
+        foreach(var node in setup.Nodes.All)
+            if(NodeVisible(setup,node) && NodeNeedsRing(node.Id) && TryGlobeHudRing(setup,node,globe,panel,yaw,pitch,out var ring))DrawNodeHud(ui,node.Id,ring);
+    }
+
+    public bool TryGlobeHudRing(WorldSetup setup,Node node,WorldPreview globe,Rectangle panel,float yaw,float pitch,out MapHudRing ring){
+        var cell=setup.Cells[node.Cell];var point=SiteDisplayPosition(setup,node,ResourceClearance(setup,node.Cell));
+        point+=cell.Normal*WorldTerrain.ReliefAt(setup,cell,point,setup.Terrain);
+        ring=default;
+        if(!globe.ProjectVisible(point,cell.Normal,yaw,pitch,panel,out var at))return false;
+        Vector2 Project(Vector3 p){globe.ProjectVisible(p,cell.Normal,yaw,pitch,panel,out var result);return result;}
+        float unit=Math.Max(Vector2.Distance(at,Project(point+cell.U)),Vector2.Distance(at,Project(point+cell.V)));
+        float radius=GlobeNodeRadius(node,unit,globe.GlobeZoom);
+        ring=NodeHudEnvelope(node,(x,y,z)=>Project(point+radius*(cell.U*x+cell.V*y+cell.Normal*z)));
+        return true;
+    }
+    // Enclose the building silhouette, not only the foot of its flagpole.
+    private static MapHudRing NodeHudEnvelope(Node node,Func<float,float,float,Vector2> project){
+        float extent=HasFacilityPlatform(node)?FacilityPlatformScale:PurposeBuildingScale*1.5f;
+        float height=HasFacilityPlatform(node)?FacilityModelScale*1.4f:PurposeBuildingScale*1.8f;
+        var min=new Vector2(float.PositiveInfinity);var max=new Vector2(float.NegativeInfinity);
+        foreach(float x in new[]{-extent,extent})foreach(float y in new[]{-extent,extent})foreach(float z in new[]{0f,height}){
+            var at=project(x,y,z);min=Vector2.Min(min,at);max=Vector2.Max(max,at);
         }
+        return MapHud.Enclose(min,max);
+    }
+    public MapHudRing NetHudRing(WorldSetup setup,Node node,Rectangle panel){
+        var at=AnimatedNodePosition(setup,node,panel);float radius=MapPuckRadius(node,Fit(panel).Scale);
+        // Flat building artwork uses the same local x/y/z basis as DrawFlatPuck.
+        return NodeHudEnvelope(node,(x,y,z)=>at+new Vector2(x,y*.68f-z)*radius);
     }
 
     internal float MapPuckRadius(Node node,float projectedUnit)
