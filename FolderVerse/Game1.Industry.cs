@@ -104,7 +104,7 @@ public partial class Game1
         float scale=Math.Min(.68f,textArea.Width/Math.Max(1,System.Linq.Enumerable.Max(lines,l=>_font.MeasureString(l).X)));
         PortraitHudLayout.CenterLines(_ui,_font,lines,textArea,scale,new Color(57,52,48));        float progress=(float)Math.Clamp((_industryAge-IndustryReadSeconds)/IndustrySpinSeconds,0,1);
         float angle=MathHelper.Lerp(_industryStartAngle,_industryStopAngle,1-MathF.Pow(1-progress,4));
-        DrawAntiqueIndustryWheel(angle,stopped);
+        DrawAntiqueIndustryWheel(angle);
         if(stopped)DrawIndustryDuration(result,new(54,916,608,65),Cream,.65f,suffix:" 産業ターン");
         else _ui.Center(_industryAge<IndustryReadSeconds?"ルーレットを見てみよう":"ルーレット回転中",new(54,926,608,45),.62f,Cream);
         _ui.Text($"全体ターン {_setup.Population.Turn} / 産業ターン累計 {IndustryTime.Format(_setup.Robots.IndustryTurn).Replace("+"," ")}",new(54,1000),.43f,Cream);
