@@ -46,7 +46,7 @@
 - [地点の増築・中継物流と検証](dev/site-development.md)
 - [運否天賦の共有初期在庫・円グラフと分布](dev/initial-stock.md)
 
-- [朝刊・新聞フェーズ：各国視点の記事と玩具ポスト](dev/turn-newspaper.md)
+- [朝刊・新聞フェーズ：配達と朝食の１：２画面・各国の記事](dev/turn-newspaper.md)
 
 - [ガイド名の元ネタと生成器](dev/guide-names.md)
 
