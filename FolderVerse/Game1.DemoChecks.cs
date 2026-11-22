@@ -32,14 +32,15 @@ public partial class Game1
             _demoWarSource=Enumerable.Range(0,_invasionSources.Count).FirstOrDefault(i=>InvasionRobots(_invasionSources[i]).Length>0,-1);
             if(_demoWarSource<0)_demoWarSource=_invasionSources.FindIndex(r=>r.Queen);
             if(_demoWarSource<0){_demoDomesticStage=36;_demoDomesticAge=0;return true;}
-            _invasionPage=InvasionPageForSource(_demoWarSource);var button=InvasionVisibleRows().Single(row=>row.Index==_demoWarSource).Bounds.Center;target=new(button.X+NodeInspectorOffset,button.Y);
+            _invasionPage=InvasionPageForSource(_demoWarSource);
+            var row=_invasionSources[_demoWarSource];
+            var bounds=InvasionVisibleRows().Single(layout=>layout.Index==_demoWarSource).Bounds;
+            var robots=InvasionRobots(row);var previews=InvasionPreviewRobots(row);
+            int slot=robots.Length>0?Array.FindIndex(previews,robot=>robot.Id==robots[0].Id):-1;
+            if(robots.Length>0 && slot<0){_demoDomesticStage=36;_demoDomesticAge=0;return true;}
+            target=InspectorScreenBounds(slot>=0?InvasionCardAt(bounds,slot):InvasionQueenAt(bounds)).Center;
         }
-        if(_demoDomesticStage is 33 or 34){
-            if(_invasionPicker<0){_demoDomesticStage=32;_demoDomesticAge=0;return true;}
-            var robots=InvasionRobots(_invasionSources[_invasionPicker]);
-            if(_demoDomesticStage==33 && robots.Length==0 && _invasionQueenDraft)_demoDomesticStage=34;
-            target=_demoDomesticStage==34?InvasionPickerDone.Center:robots.Length>0?InvasionRobotCard(0).Center:InvasionQueenToggle.Center;
-        }
+        if(_demoDomesticStage is 33 or 34){_demoDomesticStage=35;_demoDomesticAge=0;return true;}
         if(_demoDomesticStage==35){
             EnsureNodeCheckContext();bool marked=_warChecksByPlayer.TryGetValue(NodeCheckPlayer,out var checks) && checks.Contains(_selectedMoveNode);
             if(!_demoWarReserved || !NodeCheckButtonVisible || marked){_demoDomesticStage=36;_demoDomesticAge=0;return true;}
@@ -50,10 +51,8 @@ public partial class Game1
         switch(_demoDomesticStage){
             case 30:MapOverlayClick(target,false);break;
             case 31:MovementClick(target,new KeyboardState());if(_selectedMoveNode<0)return true;break;
-            case 32:OpenInvasionPicker(_demoWarSource);break;
-            case 33:InvasionPickerInput(true,false);break;
-            case 34:
-                InvasionPickerInput(true,false);
+            case 32:
+                InvasionClick(new Point(target.X-NodeInspectorOffset,target.Y));
                 _demoWarReserved=_setup.Campaign.PlannedOrders.Any(o=>!o.Peaceful && o.TargetNode==_selectedMoveNode && CanPlanRuler(o.Ruler) && (o.Queen || o.Fighters>0));break;
             case 35:DomesticViewClick(target);break;
             case 36:DomesticViewClick(target);_demoDomesticStage=_demoWarReserved?19:17;return true;

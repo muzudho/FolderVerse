@@ -66,6 +66,7 @@ sealed class DemoCheck:Game1
                 if(Get("_screen").ToString()=="WorldStatus"){
                     string stage=$"{Get("_demoDomesticStage")}/{Get("_demoMapStage")}/{Get("_populationNode")}";
                     if(stage!=previousStage){Console.WriteLine($"Natural stage t={i*.25:F2} stage={stage} pointer={Get("_demoClickPoint")} primary4={typeof(Game1).GetProperty("TransportOverviewButton",Flags)!.GetValue(this)}");previousStage=stage;
+                        if(normalInput && (int)Get("_demoDomesticStage")==33){Check((int)Get("_invasionPicker")<0,"Demo opened obsolete sortie picker");Check((bool)Get("_demoWarReserved"),"Inline card did not reserve immediately");Console.WriteLine("PASS inline sortie card without obsolete picker");}
                         if(normalInput && (int)Get("_demoDomesticStage")==35){Check((bool)Get("_demoWarReserved"),"Sortie confirmation did not reserve immediately");Console.WriteLine("Confirmed immediate war reservation count="+naturalWorld.Campaign.PlannedOrders.Count);}
                         if(normalInput && (int)Get("_demoDomesticStage")==36 && (bool)Get("_demoWarReserved")){var player=(int)typeof(Game1).GetProperty("NodeCheckPlayer",Flags)!.GetValue(this)!;var checks=(System.Collections.Generic.Dictionary<int,System.Collections.Generic.HashSet<int>>)Get("_warChecksByPlayer");Check(checks.TryGetValue(player,out var marked) && marked.Contains((int)Get("_selectedMoveNode")),"Reserved target lacks red check");Console.WriteLine("Confirmed red check before inspector close");}
 

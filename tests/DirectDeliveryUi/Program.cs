@@ -26,12 +26,19 @@ class Checks:Game1{
   var node=w.Nodes.All.First(n=>!w.Routes.Land(n.Cell,n.Center) && w.Routes.Neighbors(n).Any(r=>!w.Routes.Land(w.Nodes.At(r.Target,r.Entry).Cell,w.Nodes.At(r.Target,r.Entry).Center)));var route=w.Routes.Neighbors(node).First(r=>!w.Routes.Land(w.Nodes.At(r.Target,r.Entry).Cell,w.Nodes.At(r.Target,r.Entry).Center));a=node.Id;b=w.Nodes.At(route.Target,route.Entry).Id;Check((bool)Call("DirectSeaRoute",a,b),"Sea connection uses ferry icon");foreach(var n in w.Nodes.All)n.Owner=1;w.Nodes.All[a].Owner=w.Nodes.All[b].Owner=0;w.Robots.Initialize(w.Nodes.All.Length,w.ActiveCount);w.Robots.ConfigureFactories(w);
   var robot=w.Robots.Create(0,RobotParts.Complete);original=robot.Id;w.Robots.Nodes[a].Add(robot);w.Robots.Nodes[b].Add(w.Robots.Create(0,RobotParts.Legs));((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);
   Set("_autoSaveEnabled",false);Set("_paperReadTurn",w.Population.Turn);Set("_paperReadCountry",w.PlayerSlot);
+  Call("HandleInput",new MouseState(),new KeyboardState(),new GameTime(),true);
+  if((bool)Call("get_GuideVisible")){
+   Call("HandleInput",new MouseState(),new KeyboardState(Keys.Escape),new GameTime(),true);
+   Call("HandleInput",new MouseState(),new KeyboardState(),new GameTime(),true);
+   Check(!(bool)Call("get_GuideVisible"),"Initial guide finishes before direct-mode fixture");
+  }
+  // Direct-mode fixture starts after the manual-action tray transition.
+  Set("_stratagemManual",true);Set("_stratagemTrayBlend",0f);
   Set("_statusGlobe",false);((CubeNet)Get("_net")).FitAll((Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!,1);Call("OpenDirectMap");
   Rectangle Footer(string name)=>(Rectangle)typeof(Game1).GetProperty(name,F)!.GetValue(this)!;
   var normal=Footer("PopulationTurnButton");
-  bool compact=(bool)typeof(Game1).GetProperty("StratagemInterface",F)!.GetValue(this)! && (bool)typeof(Game1).GetProperty("StratagemManualActions",F)!.GetValue(this)!;
-  Check(normal.Width==192 && normal.Height==(compact?96:144),"End turn follows current manual/card layout");
-  Set("_demoActive",true);var demoTurn=Footer("PopulationTurnButton");Check(demoTurn.Width==192 && demoTurn.Height==144,"Demo retains full-height end turn");Set("_demoActive",false);
+  Check(normal.Width==192 && normal.Height==96,"End turn follows current shared 192x96 layout");
+  Set("_demoActive",true);var demoTurn=Footer("PopulationTurnButton");Check(demoTurn.Width==192 && demoTurn.Height==96,"Demo shares the current end-turn layout");Set("_demoActive",false);
   for(int i=0;i<PrimaryCount;i++){
    var rect=(Rectangle)Call("PrimaryActionBounds",i);
    Check(rect.Bottom==1070 && (i==1 || rect.Width==rect.Height),"Primary actions share a baseline with square secondary actions");

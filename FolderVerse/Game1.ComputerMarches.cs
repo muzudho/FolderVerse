@@ -12,6 +12,7 @@ public partial class Game1
     private int _computerMarchIndex;
     private double _computerMarchAge;
     private int _computerWarStage;
+    private int _computerWarSource;
     private Point _computerWarClick;
     private readonly Queue<int> _computerWarCards=new();
     private int _computerViewRuler,_computerViewLeader;
@@ -129,30 +130,24 @@ public partial class Game1
                 if(source<0)break;
                 var robots=InvasionRobots(_invasionSources[source]);
                 var ids=order.RobotIds??robots.Take((int)order.Fighters).Select(robot=>robot.Id).ToArray();
-                var cards=ids.Select(id=>Array.FindIndex(robots,robot=>robot.Id==id)).ToArray();
-                if(ids.Length!=order.Fighters || cards.Distinct().Count()!=cards.Length || cards.Any(i=>i<0))break;
+                var previews=InvasionPreviewRobots(_invasionSources[source]);
+                var cards=ids.Select(id=>Array.FindIndex(previews,robot=>robot.Id==id)).ToArray();
+                if(ids.Length!=order.Fighters || cards.Distinct().Count()!=cards.Length || cards.Any(i=>i<0) || ids.Any(id=>!robots.Any(robot=>robot.Id==id)))break;
+                _computerWarSource=source;
                 _invasionPage=InvasionPageForSource(source);
-                var local=InvasionVisibleRows().Single(row=>row.Index==source).Bounds.Center;
-                _computerWarClick=new Point(local.X+NodeInspectorOffset,local.Y);
-                OpenInvasionPicker(source);
-                if(_invasionPicker<0)break;
-                _invasionDraft.Clear();
-                if(pocket)_invasionQueenDraft=false;
+                // Selection is a visual replay; the original batch owns reservation/execution.
+                _invasionSources[source].Robots.Clear();_invasionSources[source].Count=0;_invasionSources[source].Selected=false;
                 _computerWarCards.Clear();
                 if(order.Queen)_computerWarCards.Enqueue(-1);
                 foreach(int index in cards.OrderBy(index=>index))_computerWarCards.Enqueue(index);
-                _computerWarClick=ComputerWarPickerPoint();
+                _computerWarClick=ComputerWarSelectionPoint();
                 return true;
             case 3:
-                _computerWarClick=_pointer=ComputerWarPickerPoint();
-                if(_computerWarCards.TryPeek(out int card))
-                {
-                    if(card<0 || card/InvasionCardsPerPage==_invasionPickerPage)_computerWarCards.Dequeue();
-                    InvasionPickerInput(true,false);
-                    _computerWarStage--;
-                    return true;
-                }
-                InvasionPickerInput(true,false);
+                if(_computerWarCards.Count==0)return true;
+                _computerWarClick=_pointer=ComputerWarSelectionPoint();
+                if(!InvasionClick(new Point(_pointer.X-NodeInspectorOffset,_pointer.Y)))break;
+                _computerWarCards.Dequeue();
+                _computerWarStage--;
                 return true;
             case 4:
                 _computerWarClick=NodeCheckButton.Center;
@@ -196,12 +191,11 @@ public partial class Game1
         return false;
     }
 
-    private Point ComputerWarPickerPoint()
+    private Point ComputerWarSelectionPoint()
     {
-        if(!_computerWarCards.TryPeek(out int card))return InvasionPickerDone.Center;
-        if(card<0)return InvasionQueenToggle.Center;
-        if(card/InvasionCardsPerPage>_invasionPickerPage)return InvasionPickerNext.Center;
-        return InvasionRobotCard(card%InvasionCardsPerPage).Center;
+        if(!_computerWarCards.TryPeek(out int card))return NodeCheckButton.Center;
+        var bounds=InvasionVisibleRows().Single(row=>row.Index==_computerWarSource).Bounds;
+        return InspectorScreenBounds(card<0?InvasionQueenAt(bounds):InvasionCardAt(bounds,card)).Center;
     }
 
     private void DrawComputerMarches(Matrix transform)
@@ -222,7 +216,7 @@ public partial class Game1
         {
             if(_computerWarStage==6 || (_computerWarStage==1 && order.Peaceful))return;
             _spriteBatch.Begin(transformMatrix:transform);
-            // Once the modal opens, the source button is behind it.
+            // Cursor follows the same inline cards and handle buttons as normal input.
             if(_invasionPicker>=0)DrawDemoHand(_computerWarClick.ToVector2(),Math.Clamp(.4f-(float)_computerMarchAge,0,.4f));
             else if(_computerWarStage==4)DrawDemoHand(NodeCheckButton.Center.ToVector2(),0);
             else if(_computerWarStage==5)DrawDemoHand(InspectorClose.Center.ToVector2(),0);
