@@ -227,8 +227,10 @@ public partial class Game1 : Game
         }
         if(FolderTreeInput(mouse,click,escape,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(_conquestOverview){
-            if(_demoActive)UpdateDemo(elapsed,active,click,escape,enter,gameTime.TotalGameTime.TotalSeconds);
-            else UpdateConquestOverview(elapsed,enter || escape || click && ConquestSkipButton.Contains(_pointer));
+            if(_conquestRelations){if(active && (escape || click && InactiveBack.Contains(_pointer)))_conquestRelations=false;}
+            else if(active && click && ConquestRelationsButton.Contains(_pointer))_conquestRelations=true;
+            else if(_demoActive)UpdateDemo(elapsed,active,click,escape,enter,gameTime.TotalGameTime.TotalSeconds);
+            else UpdateConquestOverview(elapsed,active && (enter || escape || click && ConquestSkipButton.Contains(_pointer)));
             _previousMouse=mouse;_previousKeyboard=keyboard;return;
         }
         if(WandererPolicyInput(active && click,active && escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
@@ -877,7 +879,7 @@ public partial class Game1 : Game
         DrawWindowMargins(viewport.Width,viewport.Height,canvas);
         if(_screen==Screen.Title)_spriteBatch.Draw(_titleScreen,canvas,Color.White); _spriteBatch.End();
         var transform=Matrix.CreateScale(canvas.Width/1920f,canvas.Height/1080f,1)*Matrix.CreateTranslation(canvas.X,canvas.Y,0);
-        if(_conquestOverview && _conquestStage<8){DrawConquestOverview(canvas,transform,viewport);if(_demoActive || AutomaticGame)DrawDemoOverlay(transform);DrawAutoSaveNotice(canvas,transform);DrawFullscreenCursor();base.Draw(gameTime);return;}
+        if(_conquestOverview){DrawConquestOverview(canvas,transform,viewport);if(_demoActive || AutomaticGame)DrawDemoOverlay(transform);DrawAutoSaveNotice(canvas,transform);DrawFullscreenCursor();base.Draw(gameTime);return;}
         if(IsStatusScreen && GuideVisible){_spriteBatch.Begin(transformMatrix:transform);DrawGuideScene();_spriteBatch.End();DrawFullscreenCursor();LogDisplayedScreen();base.Draw(gameTime);return;}
         if(_screen==Screen.Title){_spriteBatch.Begin(transformMatrix:transform);DrawTitleStartMenu();_spriteBatch.End();}
         if(_screen!=Screen.Title)
@@ -961,7 +963,7 @@ public partial class Game1 : Game
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){_spaceBackdrop?.Dispose();_spaceBackdrop=null;_diplomacyRoom?.Dispose();_paperKnock?.Dispose();_hangarActionArt?.Dispose();_hangarActionArt=null;DisposeIndustryWheel();_openingReadingTable?.Dispose();_openingReadingTable=null;foreach(var art in _maplePackageArt)art?.Dispose();Array.Clear(_maplePackageArt);_sectorChangeArt?.Dispose();_sectorChangeArt=null;DisposeBattleToyArt();_robotHeadTextures?.Dispose();_robotHeadTextures=null;_robotTorsoTextures?.Dispose();_robotTorsoTextures=null;_robotLegTextures?.Dispose();_robotLegTextures=null;_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeGuide();DisposeTutorialPlanets();FinishConquestOverview();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_shipmentChime?.Dispose();_seaWave?.Dispose();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){_spaceBackdrop?.Dispose();_spaceBackdrop=null;_diplomacyRoom?.Dispose();_paperKnock?.Dispose();_hangarActionArt?.Dispose();_hangarActionArt=null;DisposeIndustryWheel();_openingReadingTable?.Dispose();_openingReadingTable=null;foreach(var art in _maplePackageArt)art?.Dispose();Array.Clear(_maplePackageArt);_sectorChangeArt?.Dispose();_sectorChangeArt=null;DisposeBattleToyArt();_robotHeadTextures?.Dispose();_robotHeadTextures=null;_robotTorsoTextures?.Dispose();_robotTorsoTextures=null;_robotLegTextures?.Dispose();_robotLegTextures=null;_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeGuide();DisposeTutorialPlanets();FinishConquestOverview();_conquestScenery?.Dispose();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_shipmentChime?.Dispose();_seaWave?.Dispose();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         if(disposing){SaveBgmSettings();StopBattleMusic();StopIndustryMusic();StopEndingMusic();DisposeTitleMusic();}

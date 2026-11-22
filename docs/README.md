@@ -1,5 +1,7 @@
 # ドキュメント案内
 
+- [世界征服状況：朝の番組と局アナ](dev/conquest-broadcast.md)
+
 - [v0.14.0 リリースノート](dev/release-v0.14.0.md)
 - [v0.13.0 リリースノート](dev/release-v0.13.0.md)
 

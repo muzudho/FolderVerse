@@ -89,7 +89,7 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorkshop) && new[]{"_activeWorkpiece","_interruptedWorkpieces","_workpieceOwner"}.Contains(field.Name))continue;
                     if(type==typeof(RobotWorkshop) && new[]{"_rawConsumed","<CompletedBatches>k__BackingField","<StartAfterWorker>k__BackingField","<StartAfterBatch>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(WorkerLaneSettings) && new[]{"<StartAfterWorker>k__BackingField","<StartAfterBatch>k__BackingField"}.Contains(field.Name))continue;
-                    if(type==typeof(ConquestCampaign) && field.Name is "_sectorBaseline" or "_sectorBaselineTurn")continue;
+                    if(type==typeof(ConquestCampaign) && field.Name is "_sectorBaseline" or "_sectorBaselineTurn" or "_rankBaseline")continue;
                     if(field.FieldType==typeof(RawMaterial) || type==typeof(RobotWorld) && field.Name=="_rawDeposits")continue;
                     if(field.FieldType==typeof(RobotEquipmentMode) || field.FieldType==typeof(RobotMaterial) ||
                         type==typeof(ProductionPlan) && field.FieldType==typeof(RobotMaterial?))continue;

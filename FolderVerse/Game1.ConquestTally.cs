@@ -53,7 +53,7 @@ public partial class Game1
         _ui.Center("暫定",new(rankBox.X-100,rankBox.Y,90,62),.45f,Cream);
         DrawConquestNumber(rankBox,ConquestCard.Rank,rank);
         _ui.Center("位",new(rankBox.Right+8,rankBox.Y,40,62),.45f,Cream);
-        if(main && age>=tally.FaceStart)DrawConquestSubtree(ruler,age-tally.FaceStart);
+
     }
 
     private void DrawSectorChange(Rectangle digits,Rectangle area,int ruler,int currentSectors)
