@@ -208,7 +208,7 @@ public partial class Game1
             int? hovered=null;
             for(int i=0;i<owners.Length;i++){
                 var box=new Rectangle(950+i%columns*(side+10),410+i/columns*(side+10),side,side);
-                DrawRulerFaceCard(owners[i],box,own:owners[i]==_setup.PlayerSlot);
+                DrawConquerorSquareChip(owners[i],box,own:owners[i]==_setup.PlayerSlot);
                 if(box.Contains(_pointer))hovered=owners[i];
             }
             if(hovered is int ruler)_ui.Center($"#{ruler+1} / {_setup.ConquerorNames[ruler]}",new(950,890,850,38),.55f,Cream);

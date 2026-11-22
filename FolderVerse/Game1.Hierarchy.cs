@@ -48,7 +48,7 @@ public partial class Game1
         foreach(var entry in forest.OrderBy(e=>_setup.HumanPlayers.Contains(e.Ruler)||e.Ruler==_setup.PlayerSlot?1:0))
         {
             int ruler=entry.Ruler;var box=positions[ruler];bool own=_setup.HumanPlayers.Contains(ruler)||ruler==_setup.PlayerSlot;
-            DrawRulerFaceCard(ruler,box,entry.Rank,own);
+            DrawConquerorSquareChip(ruler,box,entry.Rank,own);
         }
         _ui.Button(InactiveBack,"ゲームへ戻る",Muted,.58f);
     }
