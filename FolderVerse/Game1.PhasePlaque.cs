@@ -60,5 +60,11 @@ public partial class Game1
         PortraitHudLayout.CenterLines(_ui,_font,new[]{main},title,Fit(main,title,.68f),ink);
         PortraitHudLayout.CenterLines(_ui,_font,new[]{sub},subtitle,Fit(sub,subtitle,.38f),ink);
     }
+    private void DrawPhaseBackdropLogo(){
+        // Translate the watermark without changing its aspect ratio; clip the part below the canvas.
+        const int top=112,height=1080-top;
+        var source=new Rectangle(0,0,_titleLogo.Width,(int)MathF.Round(_titleLogo.Height*height/1080f));
+        _spriteBatch.Draw(_titleLogo,new Rectangle(0,top,1920,height),source,Color.White*.14f);
+    }
     private void DisposePhasePlaques(){_phasePlaqueFrame?.Dispose();_phasePlaqueIcons?.Dispose();_phasePlaqueFrame=_phasePlaqueIcons=null;}
 }

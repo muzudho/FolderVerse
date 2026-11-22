@@ -40,6 +40,7 @@ sealed class PlaqueProbe(string output):Game1
   Screen("Diplomacy");Capture("06-diplomacy",()=>Call("DrawDiplomacy"));
   Screen("BattleResearch");Capture("07-research",()=>Call("DrawBattleResearch"));
   Screen("WorldStatus");Capture("08-domestic-header",()=>{Call("DrawDomesticPhaseHeading");Call("DrawStatusMenuCore");Call("DrawMapNavigationButtons");Call("DrawRouteLayerButtons");});
+  Screen("LandConquest");Capture("15-background-logo",()=>Call("DrawPhaseBackdropLogo"));
   Screen("LessonCatalog");Capture("12-lesson-catalog",()=>Call("DrawLessonCatalog"));
   Screen("Hierarchy");Capture("13-hierarchy",()=>Call("DrawHierarchyUi"));
   Screen("Pocket");Capture("14-pocket",()=>Call("DrawPocket"));

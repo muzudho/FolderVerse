@@ -904,7 +904,7 @@ public partial class Game1 : Game
         {
             _spriteBatch.Begin(transformMatrix:transform);
             _ui.Box(new(0,0,1920,1080),new(16,35,46));
-            _spriteBatch.Draw(_titleLogo,new Rectangle(0,0,1920,1080),Color.White*0.14f);
+            DrawPhaseBackdropLogo();
             if(_screen==Screen.Newspaper)DrawTurnNewspaper();else if(_screen==Screen.Diplomacy)DrawDiplomacy();else if(_screen==Screen.BattleResearch)DrawBattleResearch();else if(_screen==Screen.LessonCatalog)DrawLessonCatalog();else if(_screen==Screen.Industry)DrawIndustry();else if(_screen==Screen.PlayerCount)DrawPlayerCount();else if(_screen==Screen.ComputerPlayerCount)DrawComputerPlayerCount();else if(_screen is Screen.LandConquest or Screen.Fortune)DrawLandSetupUi();else if(_screen==Screen.Ending)DrawEndingUi();else if(_screen==Screen.Transport)DrawTransport();else if(_screen==Screen.Pocket)DrawPocket();else if(_screen==Screen.Hierarchy)DrawHierarchyUi();else if(_screen==Screen.Disposition)DrawDispositionUi();else if(_screen==Screen.InactiveList)DrawInactiveUi();else if(_screen==Screen.Battle)DrawBattleUi();else if(IsStatusScreen)DrawStatusUi();else if(IsSelectionScreen)DrawSelectionUi();else if(IsCastScreen)DrawCastUi();else DrawWorldUi(); DrawPhasePlaque(); _spriteBatch.End();
             {
             if(_screen is Screen.LandConquest or Screen.Fortune)DrawLandSetupGlobe(canvas,transform,viewport);
