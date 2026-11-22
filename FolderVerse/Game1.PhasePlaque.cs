@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
     private Texture2D _phasePlaqueFrame,_phasePlaqueIcons;
+    private Rectangle _phasePlaqueFrameSource;
     // Logical 1920x1080 coordinates. Below this 80px header, map controls start at y=82.
     private static readonly Rectangle PhasePlaqueBounds=new(696,0,420,80);
     private (string Main,string Sub,int Icon)? CurrentPhasePlaque=>_screen switch {
@@ -46,19 +47,40 @@ public partial class Game1
             for(int i=0;i<pixels.Length;i++){var c=pixels[i];pixels[i]=new Color((byte)(c.R*c.A/255),(byte)(c.G*c.A/255),(byte)(c.B*c.A/255),c.A);}
             texture.SetData(pixels);return texture;
         }
-        _phasePlaqueFrame??=Load("phase-plaque-frame-v001.png");_phasePlaqueIcons??=Load("phase-plaque-icons-v001.png");
-        var plate=new Rectangle(752,2,358,78);
+        if(_phasePlaqueFrame==null){
+            _phasePlaqueFrame=Load("phase-plaque-frame-v002-cloud.png");
+            var pixels=new Color[_phasePlaqueFrame.Width*_phasePlaqueFrame.Height];_phasePlaqueFrame.GetData(pixels);
+            int left=_phasePlaqueFrame.Width,top=_phasePlaqueFrame.Height,right=-1,bottom=-1;
+            for(int y=0;y<_phasePlaqueFrame.Height;y++)for(int x=0;x<_phasePlaqueFrame.Width;x++)if(pixels[y*_phasePlaqueFrame.Width+x].A>=32){left=Math.Min(left,x);right=Math.Max(right,x);top=Math.Min(top,y);bottom=Math.Max(bottom,y);}
+            _phasePlaqueFrameSource=right>=left?new Rectangle(left,top,right-left+1,bottom-top+1):_phasePlaqueFrame.Bounds;
+        }
+        _phasePlaqueIcons??=Load("phase-plaque-icons-v001.png");
+        var plate=new Rectangle(696,1,420,78);
         var accent=DomesticTheme?_setup.OwnerColor(_setup.PlayerSlot):DefaultAccent;
         // A national-color backing rim; the title itself stays ivory and readable.
-        _spriteBatch.Draw(_phasePlaqueFrame,new Rectangle(plate.X-2,plate.Y-1,plate.Width+4,plate.Height+2),accent);
-        _spriteBatch.Draw(_phasePlaqueFrame,plate,Color.White);
+        DrawPhasePlaqueFrame(new Rectangle(plate.X-1,plate.Y,plate.Width+2,plate.Height),accent);
+        DrawPhasePlaqueFrame(plate,Color.White);
         int cw=_phasePlaqueIcons.Width/3,ch=_phasePlaqueIcons.Height/3;
-        _spriteBatch.Draw(_phasePlaqueIcons,new Rectangle(696,-2,96,82),new Rectangle(icon%3*cw,icon/3*ch,cw,ch),Color.White);
+        _spriteBatch.Draw(_phasePlaqueIcons,new Rectangle(746,4,72,72),new Rectangle(icon%3*cw,icon/3*ch,cw,ch),Color.White);
         var ink=new Color(57,43,30);
-        var title=new Rectangle(797,9,268,36);var subtitle=new Rectangle(839,54,186,22);
+        var title=new Rectangle(828,9,244,34);var subtitle=new Rectangle(812,49,232,19);
         float Fit(string text,Rectangle area,float maximum)=>Math.Min(maximum,(area.Width-8)/Math.Max(1,_font.MeasureString(text).X));
         PortraitHudLayout.CenterLines(_ui,_font,new[]{main},title,Fit(main,title,.68f),ink);
-        PortraitHudLayout.CenterLines(_ui,_font,new[]{sub},subtitle,Fit(sub,subtitle,.38f),ink);
+        PortraitHudLayout.CenterLines(_ui,_font,new[]{sub},subtitle,Fit(sub,subtitle,.31f),ink);
+    }
+    private static (Rectangle Source,Rectangle Target)[] PhasePlaqueSegments(Rectangle source,Rectangle target){
+        // Preserve the cloud lobes, rivets and rounded subtitle ends at a uniform scale.
+        // Only the flat central 20% changes width.
+        int cap=source.Width*2/5;
+        int width=Math.Min(target.Width/2,(int)MathF.Round(cap*target.Height/(float)source.Height));
+        return new[]{
+            (new Rectangle(source.X,source.Y,cap,source.Height),new Rectangle(target.X,target.Y,width,target.Height)),
+            (new Rectangle(source.X+cap,source.Y,source.Width-2*cap,source.Height),new Rectangle(target.X+width,target.Y,target.Width-2*width,target.Height)),
+            (new Rectangle(source.Right-cap,source.Y,cap,source.Height),new Rectangle(target.Right-width,target.Y,width,target.Height))};
+    }
+    private void DrawPhasePlaqueFrame(Rectangle target,Color tint){
+        foreach(var segment in PhasePlaqueSegments(_phasePlaqueFrameSource,target))
+            if(segment.Target.Width>0)_spriteBatch.Draw(_phasePlaqueFrame,segment.Target,segment.Source,tint);
     }
     private void DrawPhaseBackdropLogo(){
         // Translate the watermark without changing its aspect ratio; clip the part below the canvas.

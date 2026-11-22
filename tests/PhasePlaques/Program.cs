@@ -56,6 +56,10 @@ sealed class PlaqueProbe(string output):Game1
    Call("DrawPhasePlaqueLabel","世界征服状況","朝の放送",4);batch.End();GraphicsDevice.SetRenderTarget(null);using var file=File.Create(Path.Combine(output,"09-conquest-"+size.X+".png"));target.SaveAsPng(file,size.X,size.Y);
   }
   var icons=(Texture2D)Get("_phasePlaqueIcons");var pixels=new Color[icons.Width*icons.Height];icons.GetData(pixels);Check(pixels[0].A<=1&&pixels[0].R==0&&pixels[0].G==0&&pixels[0].B==0,"icon atlas transparent corners cannot leak colored RGB");
+  var source=(Rectangle)Get("_phasePlaqueFrameSource");var targetBox=new Rectangle(696,1,420,78);
+  var segments=((Rectangle Source,Rectangle Target)[])typeof(Game1).GetMethod("PhasePlaqueSegments",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{source,targetBox})!;
+  Check(segments.Sum(s=>s.Target.Width)==420&&segments[0].Target.Right==segments[1].Target.Left&&segments[1].Target.Right==segments[2].Target.Left,"cloud frame slices cover header without seams or overlaps");
+  Check(Math.Abs(segments[0].Target.Width/(float)segments[0].Source.Width-78f/source.Height)<.002,"cloud lobes preserve uniform scale instead of vertical compression");
   Console.WriteLine("PASS phase plaques real scene rendering and screen mapping");Exit();
  }
 }
