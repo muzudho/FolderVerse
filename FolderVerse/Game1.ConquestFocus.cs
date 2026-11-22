@@ -5,8 +5,8 @@ using Microsoft.Xna.Framework.Graphics;
 
 public partial class Game1
 {
-    // Standard deviation in 1920x1080 logical display pixels, calibrated to the approved Blur50 reference.
-    private const float ConquestBackgroundSigmaPixels=7f;
+    // Standard deviation in 1920x1080 logical display pixels, reduced from 7px to 3px after user review.
+    private const float ConquestBackgroundSigmaPixels=3f;
     private const float ConquestBlurRenderScale=.5f;
     private Texture2D _conquestFocusedBackdrop;
     private string _conquestFocusKey;

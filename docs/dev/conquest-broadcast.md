@@ -48,3 +48,4 @@ NAS archives/diagnostics/conquest-whiteboard-2026-11-22に製品DLL・検証ホ�
 共通アルゴリズムは src/Shared/Images/GaussianBlur.cs、背景のキャプチャとキャッシュは Game1.ConquestFocus.cs。右ペーンを半解像度でキャプチャし、入力画像のσ=3.5pxで処理後、元の表示サイズへ戻す。地点・背景種別・屋内外が同じ間は処理済みテクスチャを再利用。変更時と破棄時に古いテクスチャを解放する。ぼかし済みPNGをゲーム素材として増やさない。
 
 Releaseビルド警告0・エラー0。均一色・ゼロσ・インパルスの拡散・対称性・端の扱い・入力非変更・不正σと既存画面を含む36チェック、7画面を確認。現地の板と写真は鮮明、背景だけがぼけることを目視。NAS archives/diagnostics/conquest-background-blur-2026-11-22 にハーネス・ログ・画像、再生成ビルドは tmp/delete-after-2026-11-23/conquest-background-blur。実行中ゲームと保存データは操作しない。
+追補：利用者の表示確認でσ7pxは強すぎたため、現行値をフルHD基準σ3pxへ変更（半解像度処理σ1.5px、半径5px）。
