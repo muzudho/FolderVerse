@@ -35,4 +35,11 @@ public partial class Game1
         int width=Math.Max(1,(int)(100*scale));
         return new(cell.Center.X-width/2,cell.Y+(int)(12*scale),width,Math.Max(1,(int)(180*scale)));
     }
+    // Geometry only: the cap never enlarges a cell or a draggable part region.
+    private static Rectangle HangarCaptainCapBounds(Rectangle robot)
+    {
+        int height=Math.Max(1,robot.Height/3),width=Math.Max(1,robot.Height*12/25);
+        int overlap=Math.Max(1,robot.Height/12);
+        return new(robot.Center.X-width/2,robot.Y-height+overlap,width,height);
+    }
 }

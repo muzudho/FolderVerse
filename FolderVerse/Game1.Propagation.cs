@@ -58,6 +58,11 @@ public partial class Game1
             _ui.Box(new((int)at.X-5,(int)at.Y-18,10,9),Cream);_ui.Box(new((int)at.X-7,(int)at.Y-7,14,17),_setup.OwnerColor(agent.Owner));
             _ui.Text("回収隊",at+new Vector2(10,-18),.27f,Cream);
         }
+        if(movement && !DeliveryPlayback)foreach(var mission in _setup.Salvage.Missions.Where(m=>!m.Pending && m.PreviousNode!=m.Node && _setup.Relations.Controls(m.Owner))){
+            var at=Vector2.Lerp(NodeAt(mission.PreviousNode),NodeAt(mission.Node),PropagationTravel(mission.PreviousNode,mission.Node));
+            DrawHangarRobot(new((int)at.X-12,(int)at.Y-32,24,36),mission.Worker);
+            _ui.Text("回収班",at+new Vector2(14,-20),.27f,Cream);
+        }
         foreach(var march in movement && !DeliveryPlayback?_setup.Campaign.RobotBattles.LastMarches:Enumerable.Empty<(int Owner,int Source,int Target)>())
         {
             var at=Vector2.Lerp(NodeAt(march.Source),NodeAt(march.Target),PropagationMarchTravel(march.Owner,march.Source,march.Target));

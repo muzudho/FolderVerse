@@ -29,11 +29,7 @@ public partial class Game1
     private void SalvageText(string text,Rectangle r,float scale=.4f)=>_ui.Center(text,r,Math.Min(scale,(r.Width-12)/Math.Max(1,_font.MeasureString(text).X)),Cream);
     private void OpenSalvagePlan(int node=-1)
     {
-        ResetInspector();_salvageRoutesBefore=_net.ShowRoutes;_net.ShowRoutes=true;_salvagePlan=true;
-        _salvageNodeFilter=node;_salvagePage=0;_salvageMessage="";_salvageFocusTurn=-1;
-        _setup.Salvage.EnsureAgents(_setup);if(CurrentSalvageAgent is {} a)_setup.Salvage.Preview(_setup,a);
-        _salvageSelected=VisibleSalvageItems().FirstOrDefault()?.Id??-1;
-        CenterSalvageNode(node>=0?node:CurrentSalvageAgent?.Node??-1);
+        OpenRecoveryPlanner(node);
     }
     private void CenterSalvageNode(int id)
     {

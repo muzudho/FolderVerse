@@ -7,20 +7,16 @@ public partial class Game1
 {
     private OverviewTile[] _conquestTiles=Array.Empty<OverviewTile>();
     private readonly HashSet<int> _conquestRevealed=new();
-    private static Rectangle ConquestGridBounds(int x,int y,int w,int h)=>new(54+x*1806/28,112+y*900/20,(x+w)*1806/28-x*1806/28,(y+h)*900/20-y*900/20);
-    private static Rectangle ConquestMapSpace=>ConquestGridBounds(0,0,8,8);
-    private static Rectangle ConquestFormulaSpace=>ConquestGridBounds(0,8,8,8);
-    private static Rectangle ConquestTreeSpace=>ConquestGridBounds(0,16,8,4);
+    private static Rectangle ConquestBoard=>new(930,245,700,500); // Inside: 7:5.
+    private static Rectangle ConquestMapSpace=>new(680,280,550,580);
+    private static Rectangle ConquestFormulaSpace=>new(1260,370,560,400);
+    private static Rectangle ConquestTreeSpace=>Rectangle.Empty;
     private void DrawConquestMosaic(){
-        for(int y=0;y<20;y++)for(int x=0;x<28;x++){
-            var cell=ConquestGridBounds(x,y,1,1);_ui.Box(cell,new Color(19,30,43));
-            _ui.Box(new(cell.X,cell.Y,cell.Width,y%4==0?2:1),new Color(51,69,86));
-            _ui.Box(new(cell.X,cell.Y,x%4==0?2:1,cell.Height),new Color(51,69,86));
-        }
+        DrawConquestLocationBoard();
         var ranking=_setup.Relations.ProvisionalRanking(_setup).ToDictionary(r=>r.Ruler);
         bool calculating=!ConquestCard.Reminder && (_conquestStage==3 || _conquestStage==4 && _conquestAge<_conquestTally.FaceStart);
         foreach(var tile in _conquestTiles.Where(t=>_conquestRevealed.Contains(t.Slot) || calculating && t.Slot==ConquestCard.Ruler)){
-            int ruler=tile.Slot;var r=tile.Bounds;bool focus=ruler==ConquestCard.Ruler;
+            int ruler=tile.Slot;var board=ConquestBoard;var r=new Rectangle(board.X+(tile.X-8)*board.Width/20,board.Y+tile.Y*board.Height/20,tile.Width*board.Width/20,tile.Height*board.Height/20);bool focus=ruler==ConquestCard.Ruler;
             bool pending=focus && calculating;
             bool revealed=_conquestRevealed.Contains(ruler) && !pending;
             _ui.Box(r,focus && !calculating?new Color(255,228,140):pending?new Color(35,46,59):_setup.OwnerColor(ruler));
@@ -55,11 +51,10 @@ public partial class Game1
             _ui.Box(new(r.X+4,r.Y+4,r.Width-8,25),Color.Black*.7f);
             _ui.Center(label,new(r.X+4,r.Y+4,r.Width-8,25),Math.Min(.35f,(r.Width-12)/_font.MeasureString(label).X),Cream);
         }
-        _ui.Box(ConquestMapSpace,Color.Black);_ui.Box(ConquestFormulaSpace,new Color(25,34,46));_ui.Box(ConquestTreeSpace,new Color(19,30,43));
+        DrawConquestLocationCaption();
         int eliminated=Enumerable.Range(0,_setup.ActiveCount).Count(r=>!_setup.Relations.Powered[r]);
         int followers=Enumerable.Range(0,_setup.ActiveCount).Count(r=>_setup.Relations.Powered[r] && _setup.Relations.Superiors[r]>=0);
-        _ui.Box(new(54,976,ConquestTreeSpace.Width,36),new Color(8,21,31));
-        _ui.Center($"脱落 {eliminated}名　/　手下 {followers}名",new(54,976,ConquestTreeSpace.Width,36),.42f,Cream);
+        _ui.Center($"脱落 {eliminated}名 / 手下 {followers}名",new(930,755,700,30),.40f,Cream);
     }
     private void DrawConquestQuestion(Rectangle image){
         var measure=_font.MeasureString("?");

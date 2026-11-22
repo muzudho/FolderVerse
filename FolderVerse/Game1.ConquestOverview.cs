@@ -23,11 +23,18 @@ public partial class Game1
     private static Rectangle ConquestGlobeArea{get{var r=ConquestMapSpace;return new(r.X+8,r.Y+28,r.Width-16,r.Height-36);}}
     private static Rectangle ConquestSkipButton=>new(1680,1018,190,48);
     private ConquestPresentation.Card ConquestCard=>_conquestPresentation.Cards[_conquestCard];
-    private double ConquestCardSeconds=>ConquestCard.Reminder?.8:_conquestTally.Duration;
+    private double ConquestStudioEnd=>Math.Max(_conquestTally.FaceStart,_conquestTally.CountEnd);
+    private bool ConquestDetailedCard=>!ConquestCard.Reminder && ConquestBroadcast.Detailed(_setup,ConquestCard.Ruler,ConquestCard.Rank);
+    private double ConquestCardSeconds=>ConquestCard.Reminder?.8:
+        (ConquestDetailedCard?Math.Max(_conquestTally.Duration,ConquestStudioEnd+4):_conquestTally.Duration)+(_conquestBroadcast.Changed(ConquestCard.Ruler)?4:0);
+    private ConquestBroadcast _conquestBroadcast;
+    private bool _conquestRelations;
+    private bool ConquestStudioCut=>_conquestStage==4 && !ConquestCard.Reminder &&
+        ConquestDetailedCard && _conquestAge<ConquestStudioEnd;
     private void BeginConquestOverview(){
         if(_setup.TutorialStep is 1 or 2 or 3 or 4 || !_conquestOverviewEnabled || _conquestOverviewTurn==_setup.Population.Turn)return;
         _conquestOverviewTurn=_setup.Population.Turn;_conquestPresentation=new(_setup);_conquestCard=0;_conquestStage=0;_conquestAge=0;_conquestOverview=true;_conquestExitOpacity=1;
-        _conquestRevealed.Clear();
+        _conquestRevealed.Clear();_conquestRelations=false;_conquestBroadcast=new(_setup);
         var ranking=_setup.Relations.ProvisionalRanking(_setup).OrderBy(r=>r.Ruler).ToArray();
         var contenders=ranking.Where(r=>_setup.Relations.CanWinConquest(r.Ruler)).ToArray();
         _conquestTiles=contenders.Length==0?Array.Empty<OverviewTile>():
@@ -42,7 +49,7 @@ public partial class Game1
         catch(NoAudioHardwareException e){_conquestAudioUnavailable=true;RecordFailure(e,"conquest_audio");}
     }
     private void SetConquestCard(){
-        _conquestTally=new(_setup,ConquestCard,!ConquestCard.Reminder && !ConquestPresentation.Detailed(_setup,ConquestCard.Ruler,ConquestCard.Rank));
+        _conquestTally=new(_setup,ConquestCard,!ConquestCard.Reminder && !ConquestBroadcast.Detailed(_setup,ConquestCard.Ruler,ConquestCard.Rank));
         if(!_conquestTally.Compact)_conquestEnvironment=ConquestPresentation.Environment(_setup,ConquestCard.Ruler);
         _conquestPainted=_conquestTally.Compact?_conquestTally.Cells.Length:0;
         if(_conquestTally.Compact)_conquestRevealed.Add(ConquestCard.Ruler);
@@ -60,6 +67,7 @@ public partial class Game1
         _conquestOverview=false;_conquestMusic?.Dispose();_conquestMusic=null;
     }
     private void UpdateConquestOverview(double elapsed,bool skip){
+        if(_conquestRelations)return;
         if(skip && _conquestStage<5){_conquestExitOpacity=_conquestStage==3?(float)Math.Clamp(_conquestAge/1.5,0,1):_conquestStage==4?1:0;_conquestStage=5;_conquestAge=0;}
         _conquestAge+=Math.Min(elapsed,.25);
         double duration=_conquestStage switch{0 or 2 or 6 or 8=>.65,1 or 3 or 5 or 7=>1.5,4=>ConquestCardSeconds,_=>0};
@@ -97,45 +105,26 @@ public partial class Game1
         }
     }
     private void DrawConquestOverview(Rectangle canvas,Matrix transform,Viewport viewport){
-        GraphicsDevice.Clear(Color.Black);
-        if(_conquestStage is 3 or 4 or 5){_spriteBatch.Begin(transformMatrix:transform);DrawConquestMosaic();_spriteBatch.End();}
-        if(_conquestStage is 3 or 4 || _conquestStage==5 && _conquestExitOpacity>0){
-            GraphicsDevice.Viewport=OrientationViewport(ConquestGlobeArea,canvas);_conquestGlobe.Draw(0,0,0,false,true);GraphicsDevice.Viewport=viewport;
-            DrawConquestOrientation(canvas,transform,viewport);
+        GraphicsDevice.Clear(new Color(34,56,67));
+        if(!_conquestRelations && !ConquestStudioCut)EnsureConquestFocusedBackdrop();
+        _spriteBatch.Begin(transformMatrix:transform);
+        if(_conquestRelations){DrawHierarchyUi();_spriteBatch.End();return;}
+        DrawConquestBroadcastBackground();
+        if(!ConquestStudioCut)DrawConquestMosaic();
+        _spriteBatch.End();
+        if(ConquestStudioCut){
+            GraphicsDevice.Viewport=OrientationViewport(ConquestGlobeArea,canvas);
+            _conquestGlobe.Draw(0,0,0,false,true);GraphicsDevice.Viewport=viewport;
         }
         _spriteBatch.Begin(transformMatrix:transform);
-        if(_conquestStage is 3 or 4 or 5 && _conquestGlobe.PresentationCells!=null)
-            foreach(int id in _conquestGlobe.PresentationCells){var cell=_setup.Cells[id];
-                if(_conquestGlobe.ProjectVisible(cell.Center,cell.Normal,0,0,ConquestGlobeArea,out var flagAt))
-                    CountryFlagArt.Marker(_ui,_setup,ConquestCard.Ruler,flagAt,32);
-            }
-        if(_conquestStage==4){
-            int ruler=ConquestCard.Ruler;var color=_setup.OwnerColor(ruler);
-            foreach(var node in _setup.Nodes.All.Where(n=>n.Owner==ruler)){
-                var cell=_setup.Cells[node.Cell];if(!_conquestGlobe.ProjectVisible(_setup.Routes.Position(node.Cell,node.Center),cell.Normal,0,0,ConquestGlobeArea,out var pos,.03f))continue;
-                _ui.Box(new((int)pos.X-6,(int)pos.Y-6,12,12),Color.Black*.7f);_ui.Box(new((int)pos.X-5,(int)pos.Y-5,10,10),Color.White);_ui.Box(new((int)pos.X-3,(int)pos.Y-3,6,6),color);
-            }
-            if(ruler<_setup.ConquerorLocations.Length){
-                int location=_setup.ConquerorLocations[ruler];var cell=_setup.Cells[location];
-                if(_conquestGlobe.ProjectVisible(_setup.Routes.Position(location,_setup.ConquerorPoints[ruler]),cell.Normal,0,0,ConquestGlobeArea,out var at,.055f)){
-                    _ui.Tile(at,new(21,21),MathHelper.PiOver4,Color.Black*.7f);
-                    _ui.Tile(at,new(16,16),MathHelper.PiOver4,new Color(255,229,120));
-                    _ui.Box(new((int)at.X+12,(int)at.Y-20,94,34),Color.Black*.65f);
-                    _ui.Text("現在地",at+new Vector2(18,-16),.32f,Cream);
-                }
-            }
-
-        }
-        if(_conquestStage is 3 or 4 or 5)DrawConquestTally();
-        if(_conquestStage is 3 or 5)_ui.Box(new(0,0,1920,1080),Color.Black*(float)Math.Clamp(_conquestStage==3?1-_conquestAge/1.5:1-_conquestExitOpacity*(1-_conquestAge/1.5),0,1));
-        _ui.Text("世界征服状況フェーズ",new(55,35),.7f,Cream);
-        _ui.Center($"全体ターン {_setup.Population.Turn} / 征服者 {_setup.ActiveCount}人 / 敵 {Enumerable.Range(0,_setup.ActiveCount).Count(r=>!_setup.Relations.Allied(r,_setup.PlayerSlot))}人",new(580,35,950,45),.5f,Cream);
-        _ui.Text("Enter / Esc : 朝刊へ",new(1260,1020),.4f,Cream);
-        if(!_demoActive && !ComputerExhibition && _conquestStage<5)_ui.Button(ConquestSkipButton,"スキップ",Accent,.55f);
-        if(_conquestStage<3 || _conquestStage>=6){
-            float cover=_conquestStage switch{0=>(float)(_conquestAge/.65),1 or 7=>1,2 or 8=>1-(float)(_conquestAge/.65),6=>(float)(_conquestAge/.65),_=>0};
-            DrawConquestCurtain(MathHelper.SmoothStep(0,1,Math.Clamp(cover,0,1)));
-        }
+        if(ConquestStudioCut)DrawConquestTally();
+        DrawConquestBroadcastHost();
+        _ui.Text("世界征服状況フェーズ / 朝の放送",new(30,24),.57f,Cream);
+        _ui.Box(new(1530,95,350,45),new Color(23,42,48)*.85f);_ui.Center($"{TurnNewspaper.DayLabel(_setup.Population.Turn)} / 全体ターン {_setup.Population.Turn}",new(1530,95,350,45),.38f,Cream);
+        _ui.Button(ConquestRelationsButton,"所属関係図",Muted,.46f);
+        _ui.Text("Enter / Esc : 朝刊へ",new(1230,1028),.35f,Cream);
+        if(!_demoActive && !ComputerExhibition && _conquestStage<5)_ui.Button(ConquestSkipButton,"スキップ",Accent,.5f);
+        if(_conquestStage==4)DrawPhaseTimer(new(700,1000,1150,8),_conquestAge,ConquestCardSeconds);
         _spriteBatch.End();
     }
     private void DrawConquestCurtain(float cover){

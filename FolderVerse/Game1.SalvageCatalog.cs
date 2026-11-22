@@ -15,12 +15,7 @@ public partial class Game1
     private static Rectangle SalvageCatalogCard(int i)=>new(54+i%8*228,192+i/8*204,216,192);
     private void OpenSalvageCatalog(int node=-1)
     {
-        _salvageNodeFilter=node;_salvagePage=0;_salvageMessage="";_mapOverlayMenu=false;
-        var items=VisibleSalvageItems();
-        int selected=Array.FindIndex(items,i=>i.Id==_salvageSelected);
-        if(selected<0)_salvageSelected=items.FirstOrDefault()?.Id??-1;
-        else _salvagePage=selected/SalvageCatalogPageSize;
-        _salvageCatalogOpen=true;
+        OpenRecoveryPlanner(node);
     }
     private bool CanPickUpSalvage(SalvageItem item)=>item!=null && _setup.Nodes.Current(_setup.PlayerSlot)?.Id==item.Node && _setup.Robots.Retinues[_setup.PlayerSlot].HasSpace && !_setup.Campaign.RobotBattles.LockedNode(item.Node);
     private string SalvageProvenance(SalvageItem item)=>item==null?"廃品を選択してください":"放棄元："+(item.AbandonedBy<0?"初期配置（放棄元なし）":_setup.ConquerorNames[item.AbandonedBy])+" / "+(item.RequestedBy==_setup.PlayerSlot?"回収依頼済み":item.AbandonedBy==_setup.PlayerSlot?"手動の回収依頼で拾い直せます":"未所属の回収品");

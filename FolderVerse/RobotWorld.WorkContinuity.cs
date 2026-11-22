@@ -98,7 +98,7 @@ public sealed partial class RobotWorld
         });
     }
     public bool CanTransferPocket(int node,int country,Robot robot)
-        =>country>=0 && country<Retinues.Length && new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(robot.Parts&p)!=0 && robot.Origin(p)==country) && (CanEditReservedPart(node,robot,country) || CanMoveDismantling(node,robot,robot.Parts));
+        =>!robot.SalvageReserved && country>=0 && country<Retinues.Length && new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(robot.Parts&p)!=0 && robot.Origin(p)==country) && (CanEditReservedPart(node,robot,country) || CanMoveDismantling(node,robot,robot.Parts));
     public void TransferPocket(int node,int country,long id,bool fromNode)
     {
         RevalidateWorkReservations();

@@ -34,3 +34,5 @@
 異なる背景同士の継ぎ目はPortraitHudLayout.DrawSplitterで覆う。X=640を中心に幅24pxの青緑・金縁の玩具テープとステッチを描き、右下に薄い影を付ける。人物・吹き出しより後ろ、背景より手前。装飾なので入力判定は持たない。現在はガイド/産業ルーレット双方へ適用。右背景もアスペクト比を保って切り出す。壁原画はbuilt-in image_genでルーレット室から盤と台座を除き制作、NAS原画とゲーム画像のSHA256を照合済み。
 
 追加検証：NAS archives/diagnostics/roulette-wall-splitter-2026-11-21。８画面の境界画素と右1280×1080寸法を含む40検査PASS、ビルド警告エラー０。tmp/delete-after-2026-11-22/roulette-wall-splitter・roulette-wall-tests・roulette-wall-assets。
+
+2026-11-22 ガイドの右側を共通MainPanel（640,0,1280,1080）全体の地星儀ビューへ変更。宇宙背景も右全体に描き、旧960,170,920,850の小窓を廃止。ガイド中だけGlobeZoom=.72、GlobeAnchor=null、GlobePan=(0,.06)として星全体を見せ、finallyで元のズーム・注視点・パン・Viewportを復帰。内政で5倍へ拡大・移動していてもガイドへ持ち込まない。既存の人物・背景・吹き出しの位置は維持。NAS conquest-broadcast-artのガイド画像とカメラ復帰検証を参照。

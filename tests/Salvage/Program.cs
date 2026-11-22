@@ -47,7 +47,7 @@ Check(restored.Salvage.LegacyPlacementPending,"Legacy recovery placement is sche
 var foreignDrop=new SalvageItem(103,far,w.Robots.Create(1,RobotParts.Head));plan.Items.Add(foreignDrop);
 Check(!plan.CanRecover(w,0,foreignDrop) && !plan.Request(w,0,foreignDrop.Id),"Recovery cannot trespass into enemy territory");
 var created=new WorldSetup();created.SetWorld(123);created.SetCast(456);created.SetPlacement(789);
-Check(created.Salvage.Items.Count>0 && created.Salvage.Items.All(i=>i.AbandonedBy==-1) && created.Salvage.Agents.Count==created.ActiveCount,"Initial goods are unowned and every landed country has one agent");
+Check(created.Salvage.Items.Count>0 && created.Salvage.Items.All(i=>i.AbandonedBy==-1) && created.Salvage.ExpeditionsEnabled && created.Salvage.Agents.Count==0,"Initial goods are unowned and new worlds require real recovery workers");
 Console.WriteLine("PASS: abandonment, provenance/quality/damage, pickup, recovery policies and bounded movement, pauses/capacity, enemy borders and current/legacy saves.");
 
 (w,home,far)=Fixture();plan=w.Salvage;agent=plan.Agents.Single();agent.Policy=SalvagePolicy.Bulk;

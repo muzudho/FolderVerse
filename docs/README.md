@@ -1,5 +1,9 @@
 # ドキュメント案内
 
+- [廃品回収：実物ロボットの予約、ポケット貸出と帰還](dev/salvage-expeditions.md)
+
+- [世界征服状況：朝の番組と局アナ](dev/conquest-broadcast.md)
+
 - [v0.14.0 リリースノート](dev/release-v0.14.0.md)
 - [v0.13.0 リリースノート](dev/release-v0.13.0.md)
 
@@ -44,7 +48,7 @@
 - [地点の増築・中継物流と検証](dev/site-development.md)
 - [運否天賦の共有初期在庫・円グラフと分布](dev/initial-stock.md)
 
-- [朝刊・新聞フェーズ：各国視点の記事と玩具ポスト](dev/turn-newspaper.md)
+- [朝刊・新聞フェーズ：配達と朝食の１：２画面・各国の記事](dev/turn-newspaper.md)
 
 - [ガイド名の元ネタと生成器](dev/guide-names.md)
 

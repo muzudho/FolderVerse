@@ -32,6 +32,8 @@
   <ItemGroup>
     <MonoGameContentReference Include="Content/Content.mgcb" />
     <Compile Include="../src/Shared/Balloon/*.cs" LinkBase="Shared/Balloon" />
+    <Compile Include="../src/Shared/Images/*.cs" LinkBase="Shared/Images" />
+    <Compile Include="../src/Shared/Transitions/*.cs" LinkBase="Shared/Transitions" />
     <Compile Include="../src/Shared/Layouts/*.cs" LinkBase="Shared/Layouts" />
     <Compile Include="../src/Shared/Hangar/*.cs" LinkBase="Shared/Hangar" />
     <Compile Include="../src/Shared/FaceChip/*.cs" LinkBase="Shared/FaceChip" />
@@ -40,6 +42,7 @@
     <Compile Include="../src/Shared/Factory/Lane/*.cs" LinkBase="Shared/Factory/Lane" />
     <Compile Include="../src/Shared/Messages/Guide/*.cs" LinkBase="Shared/Messages/Guide" />
     <EmbeddedResource Include="../src/Shared/Messages/Guide/Domestic.json" LogicalName="FolderVerse.GuideMessages.json" />
+    <None Update="Content/Images/ConquestBroadcast/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Guides/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Portraits/*/manifest.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Portraits/v3-standardized/selected-versions.json" CopyToOutputDirectory="PreserveNewest" />
@@ -47,6 +50,7 @@
     <None Update="Content/Images/Portraits/newspaper/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Mobs/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Setup/*.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Content/Images/Newspaper/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/Newspapers/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/NodeSupervisors/*.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Content/Images/robot-map-toy-v001.png" CopyToOutputDirectory="PreserveNewest" />

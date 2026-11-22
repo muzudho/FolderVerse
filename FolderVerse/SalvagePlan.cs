@@ -19,7 +19,7 @@ public sealed class SalvageAgent
     public int[] Route=Array.Empty<int>();
     public int Load=>Cargo.Sum(r=>SalvagePlan.PartCount(r.Parts));
 }
-public sealed class SalvagePlan
+public sealed partial class SalvagePlan
 {
     internal void AddWorkpiece(WorldSetup w,int node,Robot robot)
     {
@@ -34,7 +34,7 @@ public sealed class SalvagePlan
     public int LastTurn=-1;
     public bool LegacyPlacementPending;
     public static int PartCount(RobotParts parts)=>new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Count(p=>(parts&p)!=0);
-    public void Reset(){Items.Clear();Agents.Clear();_next=1;LastTurn=-1;LegacyPlacementPending=false;}
+    public void Reset(){Items.Clear();Agents.Clear();Missions.Clear();ExpeditionsEnabled=false;_next=1;LastTurn=-1;LegacyPlacementPending=false;}
     private static Robot Stopped(Robot r)=>r.Materialize() with {Disposal=false,DefenseOnly=false,InterceptOnly=false,FactoryWorker=false};
     public void Initialize(WorldSetup w)
     {
@@ -52,10 +52,11 @@ public sealed class SalvagePlan
                 Items.Add(new(_next++,nodes[random.Next(nodes.Length)].Id,r));
             }
         }
-        EnsureAgents(w);
+        EnableExpeditions(w);
     }
     public void EnsureAgents(WorldSetup w)
     {
+        if(ExpeditionsEnabled)return;
         for(int owner=0;owner<w.ActiveCount;owner++){
             if(Agents.Any(a=>a.Owner==owner))continue;
             var home=w.Nodes.All.Where(n=>n.Owner==owner).OrderByDescending(n=>w.Capitals.Length>owner && n.Cell==w.Capitals[owner]).ThenBy(n=>n.Id).FirstOrDefault();
@@ -153,6 +154,7 @@ public sealed class SalvagePlan
     }
     public void Advance(WorldSetup w,int turn,Func<int,bool> incomingBattle=null)
     {
+        if(ExpeditionsEnabled){AdvanceExpeditions(w,turn,incomingBattle);return;}
         if(LastTurn==turn)return;LastTurn=turn;for(int n=0;n<w.Robots.Nodes.Length;n++){w.Robots.Nodes[n].ScrapNode=n;w.Robots.Nodes[n].ScrapTurn=turn;}EnsureAgents(w);
         _incomingBattle=incomingBattle;
         try{

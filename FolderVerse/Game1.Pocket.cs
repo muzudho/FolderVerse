@@ -21,6 +21,7 @@ public partial class Game1
     private (int Side,Point Start,Point Origin)? _pocketPan;
     private string PocketRobotLockReason(Robot robot,bool fromNode)
     {
+        if(robot.SalvageReserved)return "廃品回収班の出発予約";
         if(!new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(robot.Parts&p)!=0 && robot.Origin(p)==_setup.PlayerSlot))return "自国のパーツがありません";
         int node=_setup.Nodes.Current(_setup.PlayerSlot).Id;var world=_setup.Robots;
         if(_setup.Campaign.RobotBattles.LockedNode(node))return "継戦中";
@@ -30,6 +31,7 @@ public partial class Game1
         if(edit!=null)return edit.SplitPart.HasValue?"分解予約":"組立予約";
         return world.CanTransferPocket(node,_setup.PlayerSlot,robot)?"":"作業中";
     }
+    private bool RecoveryLoanSlot(int side,int slot)=>side==0&&slot>=0&&_pocketSlots[0]!=null&&Enumerable.Range(0,_pocketSlots[0].Length).Where(i=>_pocketSlots[0][i]==null).TakeLast(_setup.Salvage.Missions.Where(m=>m.Owner==_setup.PlayerSlot&&!m.Finished).Sum(m=>m.LoanTokens.Count)).Contains(slot);
     private bool PocketRobotSelectable(Robot robot,bool fromNode)=>PocketRobotLockReason(robot,fromNode).Length==0;
     private void PocketOutline(Rectangle box,Color color,int width=3)
     {
@@ -112,6 +114,7 @@ public partial class Game1
             if(Vector2.DistanceSquared(drag.Start.ToVector2(),_pointer.ToVector2())<=36 || side<0)return;
             int slot=PocketHit(side);
             if(slot<0)return;
+            if(RecoveryLoanSlot(side,slot)){_pocketMessage="廃品回収班に貸出中です";return;}
             if(side==1 && PocketHangarHasMaterial(slot)){_pocketMessage="原材料のない空き枠を選んでください";return;}
             if(PocketOccupant(drag.Side,drag.Slot)?.Id!=_pocketRobot)return;
             if(side==drag.Side){
@@ -208,6 +211,7 @@ public partial class Game1
                 if(fromNode)DrawHangarBay(card,card.Contains(_pointer),robot==null && !PocketHangarHasMaterial(i) || robot!=null && PocketRobotSelectable(robot,true));
                 else _ui.Box(card,new(30,47,59));
                 if(robot==null){
+                    if(RecoveryLoanSlot(side,i)){_ui.Box(new(card.X+12,card.Y+35,card.Width-24,70),new Color(247,234,196));_ui.Center("貸出中",new(card.X+12,card.Y+42,card.Width-24,30),.5f,new Color(60,55,46));_ui.Center("廃品回収班予備",new(card.X+12,card.Y+77,card.Width-24,23),.28f,new Color(60,55,46));continue;}
                     if(fromNode)
                         foreach(var item in _pocketHangarMaterials.Where(p=>p.Key/3==i))
                             DrawMaplePackage(HangarCellRegion(card,50,18+item.Key%3*62,152,62*item.Value.Sections),item.Value,compact:true);
@@ -216,12 +220,11 @@ public partial class Game1
                 }
                 bool selectable=PocketRobotSelectable(robot,fromNode),hover=selectable && card.Contains(_pointer),own=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(robot.Parts&p)!=0 && robot.Origin(p)==player);
                 if(!fromNode)_ui.Box(card,hover?new Color(70,103,118):own?Muted:new Color(37,44,53));
-                int work=_setup.Robots.WorkCountry(node.Id,robot);var ownerColor=_setup.OwnerColor(work>=0?work:own?player:robot.Owner);_ui.Box(new(card.X+3,card.Y+3,card.Width-6,23),ownerColor);
-                _ui.Center(robot.WarehouseKeeper?"倉庫管理人":work>=0?$"仕事 #{work+1}":own?"自国パーツあり":"自国パーツなし",new(card.X+3,card.Y+3,card.Width-6,23),.30f,UiPainter.ContrastInk(ownerColor));
                 int height=Math.Min(160,card.Height-74),width=Math.Max(48,height*2/3);
                 var robotBounds=new Rectangle(card.Center.X-width/2,card.Y+27,width,height);
-                if(fromNode)DrawHangarRobot(robotBounds,robot,selectable?1:.38f);
-                else DrawRobotGlyphCore(robotBounds,robot,true,selectable?1:.38f,null,true);
+                DrawHangarRobot(robotBounds,robot,selectable?1:.38f);
+                int work=_setup.Robots.WorkCountry(node.Id,robot);var ownerColor=_setup.OwnerColor(work>=0?work:own?player:robot.Owner);_ui.Box(new(card.X+3,card.Y+3,card.Width-6,23),ownerColor);
+                _ui.Center(robot.WarehouseKeeper?"倉庫管理人":work>=0?$"仕事 #{work+1}":own?"自国パーツあり":"自国パーツなし",new(card.X+3,card.Y+3,card.Width-6,23),.30f,UiPainter.ContrastInk(ownerColor));
                 _ui.Center(PartsLabel(robot),new(card.X,card.Bottom-45,card.Width,24),System.Math.Min(.34f,(card.Width-8)/System.Math.Max(1,_font.MeasureString(PartsLabel(robot)).X)),selectable?Cream:Cream*.55f);
                 _ui.Center("ID "+robot.Id,new(card.X,card.Bottom-24,card.Width,18),.28f,Cream);
                 string reason=PocketRobotLockReason(robot,fromNode);
