@@ -16,6 +16,14 @@ public partial class Game1
         _orientationToy.Draw((PlanetHeadSystem)_setup.PolarAxis,_conquestGlobe.ViewOrientation(0,0));GraphicsDevice.Viewport=viewport;
     }
 
+    private void DrawConquestTerritoryFlags(){
+        if(!ConquestStudioCut || _conquestGlobe.PresentationCells==null)return;
+        foreach(int id in _conquestGlobe.PresentationCells){
+            var cell=_setup.Cells[id];
+            if(_conquestGlobe.ProjectVisible(cell.Center,cell.Normal,0,0,ConquestGlobeArea,out var at) && ConquestGlobeArea.Contains(at.ToPoint()))
+                CountryFlagArt.Marker(_ui,_setup,ConquestCard.Ruler,at,32);
+        }
+    }
     private static readonly Color ConquestMarkerInk=new(40,57,76);
     private void DrawConquestTally(){
         var tally=_conquestTally;var panel=ConquestFormulaSpace;

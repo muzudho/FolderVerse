@@ -126,7 +126,7 @@ public partial class Game1
             _conquestGlobe.Draw(0,0,0,false,true);GraphicsDevice.Viewport=viewport;
         }
         _spriteBatch.Begin(transformMatrix:transform);
-        if(ConquestStudioCut)DrawConquestTally();
+        if(ConquestStudioCut){DrawConquestTerritoryFlags();DrawConquestTally();}
         DrawConquestBroadcastHost();
         _ui.Text("世界征服状況フェーズ / 朝の放送",new(30,24),.57f,Cream);
         _ui.Box(new(1530,95,350,45),new Color(23,42,48)*.85f);_ui.Center($"{TurnNewspaper.DayLabel(_setup.Population.Turn)} / 全体ターン {_setup.Population.Turn}",new(1530,95,350,45),.38f,Cream);
