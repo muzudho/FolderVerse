@@ -69,7 +69,8 @@ public partial class Game1
         foreach(var segment in PhasePlaqueCapsuleSegments(_phasePlaqueSubtitleSource,PhasePlaqueSubtitleBounds))
             if(segment.Target.Width>0)_spriteBatch.Draw(_phasePlaqueSubtitle,segment.Target,segment.Source,Color.White);
         int cw=_phasePlaqueIcons.Width/3,ch=_phasePlaqueIcons.Height/3;
-        _spriteBatch.Draw(_phasePlaqueIcons,PhasePlaqueIconBounds,new Rectangle(icon%3*cw,icon/3*ch,cw,ch),Color.White);
+        var iconBounds=PhasePlaqueIconBounds;if(icon==1)iconBounds.Y-=10;
+        _spriteBatch.Draw(_phasePlaqueIcons,iconBounds,new Rectangle(icon%3*cw,icon/3*ch,cw,ch),Color.White);
         var ink=new Color(57,43,30);
         var title=PhasePlaqueTitleBounds;var subtitle=PhasePlaqueSubtitleBounds;
         float Fit(string text,Rectangle area,float maximum)=>Math.Min(maximum,(area.Width-8)/Math.Max(1,_font.MeasureString(text).X));

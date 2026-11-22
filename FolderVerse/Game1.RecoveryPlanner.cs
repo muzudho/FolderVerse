@@ -15,7 +15,7 @@ public partial class Game1
     private bool _recoveryGlobe;
     private WorldPreview _recoveryWorld;
     private const float RecoveryYaw=0,RecoveryPitch=0;
-    private static readonly Rectangle RecoveryGlobeToggle=new(1290,24,310,54),RecoveryFit=new(960,935,220,48),RecoveryChangeLocation=new(690,935,250,48);
+    private static readonly Rectangle RecoveryGlobeToggle=new(1290,84,310,48),RecoveryFit=new(960,935,220,48),RecoveryChangeLocation=new(690,935,250,48);
     private readonly List<long> _recoveryWorkers=new();
     private static readonly Rectangle RecoveryAdd=new(980,1000,420,60);
     private static readonly Rectangle RecoveryPanel=new(670,350,1230,570),RecoveryPocket=new(1460,930,200,54);
@@ -26,7 +26,7 @@ public partial class Game1
     private readonly HashSet<RecoveryTarget> _recoveryTargets=new();
     private readonly CubeNet _recoveryNet=new();
     private string _recoveryMessage="";
-    private static readonly Rectangle RecoveryBack=new(1660,24,220,54),RecoveryNext=new(1590,1000,290,60),RecoveryCancel=new(690,1000,270,60),RecoveryStatus=new(690,24,270,54),RecoveryMap=new(980,24,270,54);
+    private static readonly Rectangle RecoveryBack=new(1660,24,220,54),RecoveryNext=new(1590,1000,290,60),RecoveryCancel=new(690,1000,270,60),RecoveryStatus=new(1290,24,310,54),RecoveryMap=new(1620,84,260,48);
     private static Rectangle RecoveryCard(int i)=>new(690+i%4*295,355+i/4*185,280,175);
     private static Rectangle RecoveryCheck(int i,int y)=>new(690+i%3*390,y+i/3*65,370,54);
     private static string RecoveryShapeName(RecoveryShape shape)=>shape switch{RecoveryShape.Head=>"頭パーツ単品",RecoveryShape.Body=>"胴パーツ単品",RecoveryShape.Legs=>"脚パーツ単品",RecoveryShape.HeadBody=>"頭／胴一体型",RecoveryShape.BodyLegs=>"胴／脚一体型",RecoveryShape.Complete=>"完全体",RecoveryShape.Manufacturing=>"製造の仕掛品",RecoveryShape.Dismantling=>"解体の仕掛品",_=>"スクラップ"};
@@ -55,8 +55,8 @@ public partial class Game1
         }
         if(_recoveryStage is 0 or 6 && _recoveryLocation && RecoveryChangeLocation.Contains(_pointer)){_recoveryLocation=false;_recoveryPage=0;FitRecoveryMap();return;}
         if(RecoveryHasPages){
-            if(new Rectangle(1290,24,150,54).Contains(_pointer)){_recoveryPage=Math.Max(0,_recoveryPage-1);return;}
-            if(new Rectangle(1450,24,150,54).Contains(_pointer)){_recoveryPage++;return;}
+            if(new Rectangle(1290,84,150,48).Contains(_pointer)){_recoveryPage=Math.Max(0,_recoveryPage-1);return;}
+            if(new Rectangle(1450,84,150,48).Contains(_pointer)){_recoveryPage++;return;}
         }
         if(_recoveryStage==5){if(RecoveryNext.Contains(_pointer)){_recoveryStage=4;_recoveryPage=0;}return;}
         if(_recoveryStage==6){
@@ -73,7 +73,7 @@ public partial class Game1
             if(RecoveryAdd.Contains(_pointer)){_recoveryMessage="追加するロボットをクリックしてください";return;}
             if(RecoveryNext.Contains(_pointer)){if(_recoveryWorker<0){_recoveryMessage="回収へ向かう完全体を選んでください";return;}_recoveryStage=1;_recoveryQuestion=3;_recoveryPage=0;}
         }else if(_recoveryStage==1){
-            bool first=new Rectangle(780,205,430,54).Contains(_pointer),second=new Rectangle(1230,205,430,54).Contains(_pointer);
+            bool first=new Rectangle(780,239,430,54).Contains(_pointer),second=new Rectangle(1230,239,430,54).Contains(_pointer);
             if(_recoveryQuestion==0&&(first||second)){_recoveryFilter.Anything=second;_recoveryQuestion=second?4:1;return;}
             if(_recoveryQuestion is 1 or 2){
                 for(int i=0;i<9;i++)if(RecoveryCheck(i,410).Contains(_pointer)){if(_recoveryQuestion==1){var v=(RecoveryShape)i;if(!_recoveryFilter.Shapes.Remove(v))_recoveryFilter.Shapes.Add(v);}else{var v=(RobotMaterial)i;if(!_recoveryFilter.Materials.Remove(v))_recoveryFilter.Materials.Add(v);}return;}
@@ -169,18 +169,19 @@ public partial class Game1
         PortraitHudLayout.DrawBackground(_spriteBatch,_guideScenery);_ui.Box(PortraitHudLayout.MainPanel,new Color(16,35,47));
         EnsureGuidePortrait(_setup.EnsureGuides().Bodies[owner],owner);_spriteBatch.Draw(_guidePortrait,new Rectangle(-40,285,430,710),Color.White);
         PortraitHudLayout.DrawSplitter(_ui);
-        DrawSpeechBalloon(new(500,85,1380,240));
+        DrawPhasePlaqueLabel("廃品回収","回収計画",7);
+        DrawSpeechBalloon(new(500,149,1380,180));
         string[][] speech={new[]{"どの地点、またはポケットの","自国の完全体を向かわせますか？","素材・汚損で性能は変わりません。"},new[]{"何を探しに行きましょう？","一体型は単品の代わりにはなりません。","各欄の複数選択はOR、欄同士はANDです。"},new[]{"持ち帰りたい品を選んでください。","近い品から、辺数の少ない順に回ります。","到達不能品も先に試し、無理なら次へ。"},new[]{"出発前の最終確認です。","本人１枠＋荷物の数だけ、","ポケットを貸し出します。"},new[]{"回収班の現在の状況です。","出発後は自動で行動します。","帰還指示後は回収を再開しません。"}};
         if(_recoveryStage==0&&_recoveryLocation)speech[0]=new[]{"この格納庫から回収へ向かうロボットを選んでください。","複数選択できます。回収班は同時に最大６班です。","素材・汚損で性能は変わりません。"};
         if(_recoveryStage==3)speech[3]=new[]{"出発前の最終確認です。","回収員も荷物と一緒に受け取り先へ到着します。","ポケットは、回収員の人数＋荷物の数だけ貸し出します。"};
         if(_recoveryStage==6)speech[4]=new[]{"どこが廃品を欲しがっていますか？","受け取り先の地点を選び、格納庫を確認してください。","誰が取りに行くかは、このあとで決めます。"};
         if(_recoveryStage==0&&!_recoveryLocation)speech[0]=new[]{"どこのロボットが回収に行きますか？","出発地点、またはポケットを選んでください。","受け取り先とは別の地点でもかまいません。"};
-        if(_recoveryStage!=1)for(int i=0;i<3;i++)NewsLine(speech[Math.Min(4,_recoveryStage)][i],780,130+i*35,960,.4f,new Color(57,52,48));
+        if(_recoveryStage!=1)DrawSpeechParagraph(speech[Math.Min(4,_recoveryStage)],new Rectangle(780,180,840,108),false);
         RecoveryButton(RecoveryBack,"地図へ戻る");RecoveryButton(RecoveryStatus,"回収班の状況",_recoveryStage==4);
         if(RecoveryDraftActive)RecoveryButton(RecoveryCancel,"やっぱ止める");
         if(RecoveryMapVisible){RecoveryButton(RecoveryGlobeToggle,_recoveryGlobe?"展開図で見る":"地星儀で見る",enabled:!_setup.IsPrimaplana);RecoveryButton(RecoveryFit,"全体を表示");}
         if(_recoveryStage is 0 or 6 && _recoveryLocation)RecoveryButton(RecoveryChangeLocation,"別の地点を選ぶ");
-        if(RecoveryHasPages){RecoveryButton(new(1290,24,150,54),"前のページ");RecoveryButton(new(1450,24,150,54),"次のページ");}
+        if(RecoveryHasPages){RecoveryButton(new(1290,84,150,48),"前のページ");RecoveryButton(new(1450,84,150,48),"次のページ");}
 
         string next=_recoveryStage==3?"回収に行かせる":_recoveryStage==4?"新しい回収班":_recoveryStage==5?"状況一覧へ":"次へ";
         if((_recoveryStage is not (0 or 6)||_recoveryLocation)&&(_recoveryStage!=1||_recoveryQuestion is 1 or 2))_ui.StateButton(RecoveryNext,_recoveryStage==6?"この地点で受け取る":_recoveryStage==0?"決定":next,Accent,Muted,false,RecoveryNext.Contains(_pointer),attention:true,seconds:_animationTime,scale:.43f);
@@ -201,9 +202,9 @@ public partial class Game1
         }else if(_recoveryStage==1){
             string[] questions={"欲しいものは決まっていますか？","どんな形のものを探しますか？（複数選択）","何製のものを探しますか？（複数選択）","回収して受け取り先へ届けられる品だけを探しますか？","汚損した品も回収しますか？"};
 
-            _ui.Center(questions[_recoveryQuestion],new(780,140,880,45),.45f,new Color(57,52,48));
+            DrawSpeechParagraph(new[]{questions[_recoveryQuestion]},new Rectangle(780,174,880,45));
             if(_recoveryQuestion is 1 or 2){_ui.Text("同じ欄の複数選択はOR、形と素材はANDです。一体型は単品の代わりにはなりません。",new(690,660),.32f,Cream);for(int i=0;i<9;i++)RecoveryButton(RecoveryCheck(i,410),((_recoveryQuestion==1?_recoveryFilter.Shapes.Contains((RecoveryShape)i):_recoveryFilter.Materials.Contains((RobotMaterial)i))?"[x] ":"[ ] ")+(_recoveryQuestion==1?RecoveryShapeName((RecoveryShape)i):RobotMaterials.Label((RobotMaterial)i)),_recoveryQuestion==1?_recoveryFilter.Shapes.Contains((RecoveryShape)i):_recoveryFilter.Materials.Contains((RobotMaterial)i));}
-            else{string first=_recoveryQuestion==0?"欲しいものが決まっている":_recoveryQuestion==3?"回収・搬入できる品だけ":"全品状態良";string second=_recoveryQuestion==0?"なんでもいい":_recoveryQuestion==3?"到達できない品も含める":"汚損可（良品も含む）";RecoveryButton(new(780,205,430,54),first);RecoveryButton(new(1230,205,430,54),second);}
+            else{string first=_recoveryQuestion==0?"欲しいものが決まっている":_recoveryQuestion==3?"回収・搬入できる品だけ":"全品状態良";string second=_recoveryQuestion==0?"なんでもいい":_recoveryQuestion==3?"到達できない品も含める":"汚損可（良品も含む）";RecoveryButton(new(780,239,430,54),first);RecoveryButton(new(1230,239,430,54),second);}
         }else if(_recoveryStage is 2 or 3){
             var catalog=RecoveryCatalog;var chosen=_setup.Salvage.RecoveryChoices(_setup,_recoverySource,_recoveryFilter).Where(c=>_recoveryTargets.Contains(c.Target)).ToArray();
             if(_recoveryStage==2){RecoveryButton(RecoveryMap,_recoveryMap?"カタログから探す":"展開図で探す",_recoveryMap);RecoveryButton(new(690,930,220,48),"世界中の品",_recoveryScope<0);}

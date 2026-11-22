@@ -64,11 +64,11 @@ public partial class Game1
             int id=_statusGlobe?HitGlobeNode(p,_setup.Nodes.All.Select(n=>n.Id)):_net.HitNode(_setup,NetPanel,p,_setup.Nodes.All.Select(n=>n.Id));
             if(id>=0){_populationNode=id;PrepareTransportInstructions();_transportPage=0;_rateTarget=-1;return true;}
         }
-        return new Rectangle(54,150,850,825).Contains(p);
+        return WarInspectorLocalBounds.Contains(p);
     }
     private void DrawTransportOverviewPanel()
     {
-        _ui.Box(new(54,150,850,825),new Color(27,49,62));
+        _ui.Box(WarInspectorLocalBounds,new Color(27,49,62));
         _ui.Text("ロボット輸送長期計画",new(84,178),.8f,Cream);
 
         if(_populationNode<0){_ui.Text("地図から輸送元の地点を選択",new(84,270),.6f,Cream);return;}

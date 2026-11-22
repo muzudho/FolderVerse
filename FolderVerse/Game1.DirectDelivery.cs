@@ -14,7 +14,8 @@ public partial class Game1
     private readonly List<(Rectangle Bounds,int A,int B)> _directTrucks=new();
     private (int Side,long Robot,RobotParts Part)? _directDrag;
     private string _directMessage="";
-    private static readonly Rectangle DirectPairBack=new(932,110,56,48);
+    private static readonly Rectangle DirectPairUndoButton=new(36,94,380,44);
+    private static readonly Rectangle DirectPairBack=new(1830,60,56,48);
     private static Rectangle DirectCell(int side,int slot)=>new(40+side*1320+(slot%HangarSlotsPerPage)%3*174,300+(slot%HangarSlotsPerPage)/3*290,164,280);
     private static Rectangle DirectPart(int side,int slot,int row){var r=DirectCell(side,slot);return new(r.X+6,r.Y+8+row*60,90,58);}
     private void DrawDirectDeliveryTag(Rectangle part,string label,bool second=false){if(second)part.Offset(0,26);DrawHangarDeliveryTag(part,label,gap:2);}
@@ -99,7 +100,7 @@ public partial class Game1
         if(_directPairClosing || _directPairSlide<1)return;
         if(DirectHangarNavigation(mouse))return;
         if(DirectMaterialInput(mouse,click))return;
-        if(click && new Rectangle(770,62,380,44).Contains(_pointer)){UndoHangarPlan();_directMessage=_hangarMessage;return;}
+        if(click && DirectPairUndoButton.Contains(_pointer)){UndoHangarPlan();_directMessage=_hangarMessage;return;}
         if(click && !_directDrag.HasValue && DirectPageClick(_pointer))return;
         if(click && !_directDrag.HasValue && DirectPairCheckButton.Contains(_pointer)){ToggleDirectPairCheck();return;}
         if(click && !_directDrag.HasValue && DirectPairTruckClick(_pointer))return;
@@ -208,11 +209,11 @@ public partial class Game1
             _spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);
         }
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:Matrix.CreateTranslation(0,-300*(1-DirectPairEase),0)*transform);
-        _ui.Text("ロボットパーツ直送便",new(36,26),.85f,Cream);
-        _ui.Text("左右どちらからでも予約 / 配送フェーズで配送",new(36,76),.4f,Cream);
-        _ui.Button(new(770,62,380,44),"直前の予約を取り消す",Muted,.42f);
+        DrawPhasePlaqueLabel("直送便","ロボットパーツ",7);
+        _ui.Text("左右どちらからでも予約 / 配送フェーズで配送",new(36,48),.4f,Cream);
+        _ui.Button(DirectPairUndoButton,"直前の予約を取り消す",Muted,.42f);
         // Shared upper handle keeps closing controls away from the drag corridor.
-        _ui.Box(new(20,114,940,34),DirectSideColor(0));_ui.Box(new(960,114,940,34),Color.White);
+        _ui.Box(new(20,150,940,6),DirectSideColor(0));_ui.Box(new(960,150,940,6),Color.White);
         _ui.Button(DirectPairBack,"×",Muted,.8f);
         DrawDirectPairCheckButton();
         _spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);

@@ -92,7 +92,7 @@ public partial class Game1
         string[] names=_font.MeasureString(name).X*nameScale<=178?new[]{name}:new[]{name[..((name.Length+1)/2)],name[((name.Length+1)/2)..]};
         PortraitHudLayout.CenterLines(_ui,_font,names,PortraitHudLayout.NameText,nameScale,ink);
         DrawSpeechBalloon(new(500,176,1380,420));        var lines=_guideBriefing.Pages[_guidePage];
-        for(int i=0;i<lines.Length;i++)NewsLine(lines[i],830,251+i*43,850,.48f,ink);
+        DrawSpeechParagraph(lines,new Rectangle(830,251,850,180),false);
         bool last=_guidePage==_guideBriefing.Pages.Length-1;
         _ui.StateButton(GuideNext,GuideMessages.Text(last?"finish":"next"),Accent,Muted,false,GuideNext.Contains(_pointer),attention:true,seconds:_animationTime,scale:.46f);
         float light=.35f+.65f*(1+MathF.Sin(_animationTime*3))/2;

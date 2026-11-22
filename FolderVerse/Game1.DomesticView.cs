@@ -29,7 +29,7 @@ public partial class Game1
     private bool _nodeInspectorClosing;
     private bool InspectorVisible=>_folderTreeOpen || _reignView || _regionCell>=0 || _populationCell>=0 || _movementOpen || _transportOverview || _salvagePlan;
     private bool DomesticPanelOpen=>(InspectorVisible || StratagemPanelActive) && !_nodeInspectorClosing;
-    private bool CompactWarInspector=>_movementOpen && _warPlanning;
+    private bool CompactWarInspector=>_movementOpen || _transportOverview;
     private static readonly Rectangle WarInspectorLocalBounds=new(54,150,850,520);
     private int NodeInspectorOffset=>(int)MathF.Round(-960*(1-_domesticSlide)+(CompactWarInspector?-30:306)*_domesticSlide);
     private Rectangle InspectorScreenBounds(Rectangle bounds)

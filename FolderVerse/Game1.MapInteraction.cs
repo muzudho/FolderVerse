@@ -5,7 +5,7 @@ public partial class Game1
     private void UpdateMapInteractionState()
     {
         _net.HoverSuppressedNode=_movementOpen && !_warPlanning?(_setup.Nodes.Current(_setup.PlayerSlot)?.Id??-1):-1;
-        _net.RestrictNodeActions=_movementOpen && _warPlanning;_net.KeepFlagsEnabled=CompactWarInspector;
+        _net.RestrictNodeActions=_movementOpen && _warPlanning;_net.KeepFlagsEnabled=_movementOpen && _warPlanning;
         _net.FolderSearchFocus=FolderTreeFocus;
         if(_folderTreeOpen)_net.NodeFocus=FolderTreeFocus && _folderTreeKind==2?_folderTreeId:-1;
         _net.RegionFocusCell=RegionMapFocusCell;

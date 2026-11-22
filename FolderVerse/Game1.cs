@@ -49,7 +49,7 @@ public partial class Game1 : Game
     private Color SelectionInk=>UiPainter.ContrastInk(Accent);
     private Color ControlEdge=>DomesticTheme?Color.Lerp(Accent,Color.White,.45f):Color.White;
     private static readonly Rectangle StartButton=new(740,884,440,106),ActionButton=new(1360,750,400,90),RetryButton=new(1360,860,400,80),BackButton=new(100,960,320,65),PreviewArea=new(130,240,1120,680),WorldSeedButton=new(520,960,730,65);
-    private static readonly Rectangle CastPreview=new(312,292,1296,540),CastBack=new(54,1020,200,50),CastRetry=new(266,1020,240,50),CastAction=new(518,1020,480,50);
+    private static readonly Rectangle CastPreview=new(312,346,1296,498),CastBack=new(54,1020,200,50),CastRetry=new(266,1020,240,50),CastAction=new(518,1020,480,50);
     private static Rectangle SeedButton(int index)=>new(1010+index*286,1020,274,50);
     private bool IsCastScreen=>_screen>=Screen.CastRolling;
     private bool IsRolling=>_screen is Screen.Rolling or Screen.CastRolling or Screen.PlacementRolling;
@@ -520,16 +520,17 @@ public partial class Game1 : Game
         _ui.Button(BackButton,"タイトルへ戻る",Muted);
         _ui.Button(WorldSeedButton,"世界 SEED "+_setup.WorldSeed+" / 入力",Muted,0.6f);
     }
+    private static readonly Rectangle SelectionPortraitBounds=new(54,180,1806,832);
     private Rectangle PortraitCell(int slot)
     {
         if(_setup.ParticipantCount>20)
         {
             // Thirty portraits above and thirty below the globe preview.
-            int row=slot/15;return new(54+slot%15*120,row<2?112+row*90:832+(row-2)*90,120,90);
+            int row=slot/15;return new(54+slot%15*120,row<2?180+row*83:844+(row-2)*83,120,83);
         }
         int x,y;
         if(slot<7){x=slot;y=0;} else if(slot<10){x=6;y=slot-6;} else if(slot<17){x=16-slot;y=4;} else{x=0;y=20-slot;}
-        return new(54+x*258,112+y*180,258,180);
+        return new(54+x*258,180+y*166,258,166);
     }
     private void DrawCastUi()
     {
@@ -564,7 +565,7 @@ public partial class Game1 : Game
     {
         _setup.HumanPlayers.Clear();
         if(_setup.ComputerOnly){_setup.SelectPlayer(0);BeginLandConquest();return;}
-        _selectionTiles=CharacterSelectionLayout.Create(_setup.TerritoryCounts,_setup.ActiveCount);
+        _selectionTiles=CharacterSelectionLayout.Create(_setup.TerritoryCounts,_setup.ActiveCount).Select(t=>t with {Canvas=SelectionPortraitBounds}).ToArray();
         _screen=Screen.PlayerSelect;_dragging=false;_hoveredSlot=-1;_previewOwner=-1;
         _world.HighlightOwner(_setup,-1);
     }
@@ -612,10 +613,11 @@ public partial class Game1 : Game
     private void DrawSelectionUi()
     {
         _ui.Text($"世界征服者選択 / {_setup.HumanPlayers.Count+1}人目",new(54,22),.85f,Cream);
-        _ui.Text("領地の大きさで顔も変わる / クリックして自分を決めよう",new(730,40),0.58f,new Color(170,206,216));
+        _ui.Text("領地の大きさで顔も変わる",new(1260,44),.48f,new Color(170,206,216));
+        _ui.Text("クリックして自分を決めよう",new(1260,82),.48f,new Color(170,206,216));
         for(int y=0;y<CharacterSelectionLayout.Rows;y++)for(int x=0;x<CharacterSelectionLayout.Columns;x++)
         {
-            var cell=new CharacterTile(0,x,y,1).Bounds;
+            var cell=new CharacterTile(0,x,y,1){Canvas=SelectionPortraitBounds}.Bounds;
             _ui.Box(cell,(x/4+y/4)%2==0?new Color(27,51,64):new Color(24,45,58));
             _ui.Box(new(cell.X,cell.Y,cell.Width,y%4==0?2:1),y%4==0?new Color(62,85,96):new Color(41,65,76));
             _ui.Box(new(cell.X,cell.Y,x%4==0?2:1,cell.Height),x%4==0?new Color(62,85,96):new Color(41,65,76));

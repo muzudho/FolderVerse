@@ -11,7 +11,7 @@ public partial class Game1
     private bool _routesBeforeMovement;
     private int _selectedMoveNode=-1;
     private static readonly Rectangle MovementButton=new(282,912,190,52);
-    private static readonly Rectangle ConfirmMoveButton=new(570,914,274,48);
+    private static readonly Rectangle ConfirmMoveButton=new(570,592,274,48);
     private void OpenMovement()=>OpenMovementWithFit(true);
     private void OpenMovementWithFit(bool fit)
     {
@@ -83,17 +83,17 @@ public partial class Game1
         if(_warPlanning){DrawInvasionPanel();return;}
         int ruler=_setup.PlayerSlot;var current=_setup.Nodes.Current(ruler);
         _escort=Math.Min(_escort,AvailableEscort);
-        _ui.Box(new(54,150,850,825),new(27,49,62));
+        _ui.Box(WarInspectorLocalBounds,new(27,49,62));
         _ui.Text("征服者の移動",new(84,177),.9f,Cream);
         string city="現在地　"+(current==null?_setup.Routes.LocationLabel(ruler):_setup.Nodes.Label(current));
         _ui.Text(city,new(84,240),Math.Min(.6f,760/_font.MeasureString(city).X),Cream);
         _ui.Text("征服者とポケットのロボットが同行",new(84,289),.62f,Color.White);
 
 
-        _ui.Text("地図上の明るい地点を選んでください",new(84,470),.65f,Cream);
-        _ui.Text("他国の地点にも移動できます / ターン終了で実行",new(84,878),.49f,new(180,209,219));
+        _ui.Text("地図上の明るい地点を選んでください",new(84,370),.65f,Cream);
+        _ui.Text("他国の地点にも移動できます / ターン終了で実行",new(84,484),.49f,new(180,209,219));
         string status=_net.MovementTargets.Count==0?"交通路でつながる移動先がない":_selectedMoveNode<0?"点滅する地点をクリックして選択":$"選択：Point {_selectedMoveNode+1} / ターン終了で移動";
-        _ui.Text(status,new(84,926),Math.Min(.47f,465/_font.MeasureString(status).X),new(180,209,219));
+        _ui.Text(status,new(84,548),Math.Min(.47f,465/_font.MeasureString(status).X),new(180,209,219));
         _ui.Button(ConfirmMoveButton,"移動を予約",_selectedMoveNode>=0?Accent:Muted,.7f);
     }
 }

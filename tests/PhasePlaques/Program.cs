@@ -10,7 +10,7 @@ sealed class PlaqueProbe(string output):Game1
  SpriteBatch batch=null!;WorldSetup w=null!;int frame;
  object Get(string n)=>typeof(Game1).GetField(n,F)!.GetValue(this)!;
  void Set(string n,object v)=>typeof(Game1).GetField(n,F)!.SetValue(this,v);
- object Call(string n,params object[] a)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,a)!;
+ object Call(string n,params object[] a)=>typeof(Game1).GetMethod(n,F|BindingFlags.Static)!.Invoke(this,a)!;
  void Screen(string name)=>Set("_screen",Enum.Parse(typeof(Game1).GetField("_screen",F)!.FieldType,name));
  static void Check(bool b,string m){if(!b)throw new Exception(m);Console.WriteLine("PASS "+m);}
  protected override void LoadContent(){
@@ -20,6 +20,15 @@ sealed class PlaqueProbe(string output):Game1
   var fontContent=new ContentManager(Services,Environment.GetEnvironmentVariable("UI_FONT_ROOT")!);var font=fontContent.Load<SpriteFont>("UiFont");Set("_font",font);batch=(SpriteBatch)Get("_spriteBatch");Set("_ui",new UiPainter(batch,(Texture2D)Get("_pixel"),font));
   w=(WorldSetup)Get("_setup");w.SetParticipantCounts(1,1);w.SetWorld(42);w.SetCast(8);w.SetTerritoryRights(2);var planner=new ComputerLandPlanner(w);foreach(int r in w.LandOrder())w.ClaimLand(r,planner.Select(r,null).Cells);w.CompleteLand(3,25,25);w.HumanPlayers.Add(0);w.SelectTurnRuler(0);
   ((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);
+  var wrapped=(string[])Call("WrapSpeechLines",new[]{new string('あ',100)},500);
+  Check(wrapped.Length>1&&wrapped.All(l=>font.MeasureString(l).X*.48f<=500),"long speech wraps at fixed font size instead of shrinking");
+  var balloon=(Rectangle)Call("SizeSpeechBalloon",new Rectangle(500,172,1000,144),new[]{"１行目","２行目","３行目"});
+  Check(BalloonRenderer.TextArea(balloon).Height>=3*36,"broadcast grows to fit three common-size lines");
+  var folder=(Rectangle)typeof(Game1).GetField("FolderTreeButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  var directory=(Rectangle)typeof(Game1).GetField("ReservationDirectoryButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  Check(folder.X==360&&directory.X>folder.Right&&directory.Right<680,"folder X stays fixed and reservation button clears title plaque");
+  var controls=new[]{(Rectangle)typeof(Game1).GetField("SimpleDisplayButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!,(Rectangle)typeof(Game1).GetField("MapViewButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!,(Rectangle)Call("RouteLayerButton",6),(Rectangle)Call("RouteLayerButton",2),(Rectangle)Call("RouteLayerButton",3)};
+  Check(controls.SelectMany((b,i)=>controls.Skip(i+1).Select(c=>!b.Intersects(c))).All(ok=>ok)&&controls.All(b=>b.Left>=1260&&b.Right<=1858),"map control rows have no overlaps and share right-side alignment");
   CheckOpeningDaylight();
   foreach(string screen in new[]{"PlayerCount","ComputerPlayerCount","Rolling","Review","CastRolling","CastReview","PlacementRolling","PlacementReview","Ready","PlayerSelect","PlayerReady","LandConquest","Fortune","WorldStatus","Industry","Newspaper","Diplomacy","Transport","Battle","BattleResearch","LessonCatalog","OpeningBook","OpeningSpace","OpeningLottery","OpeningReview"}){
    Screen(screen);var value=typeof(Game1).GetProperty("CurrentPhasePlaque",F)!.GetValue(this);Check(value!=null,"phase mapped: "+screen);
@@ -85,12 +94,33 @@ sealed class PlaqueProbe(string output):Game1
   Check(body.Center.X==plaque.Center.X&&body.Top>=plaque.Bottom+24,"opening paragraph is centered below plaque with a clear gap");
   Screen("PlayerCount");Capture("01-player-count",()=>Call("DrawPlayerCount"));
   Screen("CastReview");Capture("02-cast",()=>Call("DrawCastUi"));
+  foreach(int count in new[]{20,60}){
+   var cast=new WorldSetup();cast.SetParticipantCounts(1,count-1);cast.SetWorld(42);cast.SetCast(8);cast.SetPlacement(1);Set("_setup",cast);Screen("PlacementReview");
+   var boxes=Enumerable.Range(0,count).Select(i=>(Rectangle)Call("PortraitCell",i)).ToArray();
+   Check(boxes.All(b=>b.Top>=180&&b.Bottom<=1010),"all cast portraits clear header and footer for "+count+" participants");
+   Check(boxes.SelectMany((b,i)=>boxes.Skip(i+1).Select(c=>!b.Intersects(c))).All(ok=>ok),"cast portraits never overlap for "+count+" participants");
+   Capture("02-placement-"+count,()=>{Call("DrawCastUi");Call("DrawCastPreviewInfo");});
+   Call("BeginSelection");var selection=(CharacterTile[])Get("_selectionTiles");
+   Check(selection.All(t=>t.Bounds.Top>=180&&t.Bounds.Bottom<=1012),"selection grid respects fixed plaque for "+count+" participants");
+   var candidate=selection.First(t=>t.Slot>=0);Check((int)Call("HitSelection",candidate.Bounds.Center)==candidate.Slot,"selection hit test uses relocated portrait bounds for "+count+" participants");
+   Capture("02-selection-"+count,()=>Call("DrawSelectionUi"));
+  }
+  Set("_setup",w);
   Screen("WorldStatus");Set("_guideWorld",w);Set("_guideRuler",0);Set("_guideBriefing",GuideNarration.Build(w,0,true));Capture("03-guide",()=>Call("DrawGuideScene"));Set("_guideBriefing",null!);
   Screen("Industry");w.Industry.Queue(1);Call("BeginIndustry");Set("_industryAge",100d);Set("_manufacturingActive",false);Capture("04-industry",()=>Call("DrawIndustry"));
   Set("_manufacturingActive",true);Capture("05-manufacturing",()=>Call("DrawManufacturing"));Set("_manufacturingActive",false);
   Screen("Diplomacy");Capture("06-diplomacy",()=>Call("DrawDiplomacy"));
   Screen("BattleResearch");Capture("07-research",()=>Call("DrawBattleResearch"));
   Screen("WorldStatus");Capture("08-domestic-header",()=>{Call("DrawDomesticPhaseHeading");Call("DrawStatusMenuCore");Call("DrawMapNavigationButtons");Call("DrawRouteLayerButtons");});
+  Set("_movementOpen",true);Set("_warPlanning",false);Set("_domesticSlide",1f);Capture("16-peace-movement",()=>Call("DrawInspector",(Action)(()=>Call("DrawMovementPanel"))));Set("_movementOpen",false);Set("_domesticSlide",0f);
+  ((int[])Get("_directNodes"))[0]=w.Nodes.Current(0).Id;((int[])Get("_directNodes"))[1]=w.Nodes.Current(0).Id;((CubeNet)Get("_directPairNet")).Home(w);Set("_directPairGlobe",false);Set("_directPairSlide",1f);Set("_directPairOpen",true);Capture("17-direct",()=>Call("DrawDirectPair"));Set("_longDeliveryMode",true);Capture("18-long-delivery",()=>Call("DrawLongPair"));Set("_longDeliveryMode",false);Set("_directPairOpen",false);
+  Set("_transportOverview",true);Set("_domesticSlide",1f);Set("_populationNode",w.Nodes.Current(0).Id);for(int i=0;i<16;i++)w.Robots.Transport.AddInstruction(w.Nodes.Current(0).Id,w.Nodes.Current(0).Owner,(w.Nodes.Current(0).Id+1)%w.Nodes.All.Length);
+  Check((int)typeof(Game1).GetProperty("TransportPageSize",F)!.GetValue(this)! ==2,"compact transport shows two instructions per page");
+  Check(Enumerable.Range(0,15).All(i=>((Rectangle)Call("TransportVariantButton",i)).Bottom<612),"all fifteen transport choices fit above modal close button");
+  Capture("19-transport-plan",()=>Call("DrawInspector",(Action)(()=>Call("DrawTransportOverviewPanel"))));Set("_transportEditNumber",w.Robots.Transport.Instructions(w.Nodes.Current(0).Id,w.Nodes.Current(0).Owner).First().Number);Set("_transportEditor",1);Capture("19-transport-parts",()=>Call("DrawInspector",(Action)(()=>Call("DrawTransportOverviewPanel"))));Set("_transportEditor",0);Set("_transportOverview",false);Set("_domesticSlide",0f);
+  Set("_recoveryOpen",true);Set("_recoveryStage",4);Capture("20-recovery",()=>Call("DrawRecoveryPlanner"));Set("_recoveryOpen",false);
+  Set("_tradePlannerOpen",true);Capture("21-trade",()=>Call("TradePlanner",true,false));Set("_tradePlannerOpen",false);
+  Set("_stratagemCancelledNotice",new[]{"城壁への救援 / 地点の用途・所有国・予約が変わりました"});Capture("22-stratagem-cancelled",()=>Call("DrawStratagemInterface"));Set("_pointer",new Point(1140,677));Check((bool)Call("StratagemInput",new Microsoft.Xna.Framework.Input.MouseState(),true,false,true,0d),"cancellation confirmation consumes the click");Check(((string[])Get("_stratagemCancelledNotice")).Length==0,"confirmation clears the one-time notice");Set("_pointer",new Point(-10,-10));
   Screen("LandConquest");Capture("15-background-logo",()=>Call("DrawPhaseBackdropLogo"));
   Screen("LessonCatalog");Capture("12-lesson-catalog",()=>Call("DrawLessonCatalog"));
   Screen("Hierarchy");Capture("13-hierarchy",()=>Call("DrawHierarchyUi"));
@@ -99,6 +129,10 @@ sealed class PlaqueProbe(string output):Game1
   Screen("WorldStatus");Set("_conquestOverviewTurn",-1);Call("BeginConquestOverview");Set("_conquestStage",4);Set("_conquestAge",0d);
   using(var broadcast=new RenderTarget2D(GraphicsDevice,1920,1080)){
    GraphicsDevice.SetRenderTarget(broadcast);Call("DrawConquestOverview",new Rectangle(0,0,1920,1080),Matrix.Identity,GraphicsDevice.Viewport);GraphicsDevice.SetRenderTarget(null);using var file=File.Create(Path.Combine(output,"11-conquest-broadcast.png"));broadcast.SaveAsPng(file,1920,1080);
+  }
+  Set("_conquestStage",3);
+  using(var intro=new RenderTarget2D(GraphicsDevice,1920,1080)){
+   GraphicsDevice.SetRenderTarget(intro);Call("DrawConquestOverview",new Rectangle(0,0,1920,1080),Matrix.Identity,GraphicsDevice.Viewport);GraphicsDevice.SetRenderTarget(null);using var file=File.Create(Path.Combine(output,"11-conquest-intro.png"));intro.SaveAsPng(file,1920,1080);
   }
   Set("_conquestOverview",false);
   // Exercise every localized main/sub label and every atlas cell at both common display sizes.

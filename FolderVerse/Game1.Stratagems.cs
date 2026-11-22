@@ -12,6 +12,8 @@ public partial class Game1
     private bool _stratagemManual,_stratagemPanning,_stratagemReservationsOpen;
     private int _stratagemSelected=-1,_stratagemHover=-1,_stratagemOffset,_stratagemPage,_stratagemGroup=-1;
     private string _stratagemMessage="";
+    private string[] _stratagemCancelledNotice=Array.Empty<string>();
+    private static readonly Rectangle StratagemNoticeContinue=new(610,650,340,54),StratagemNoticeBack=new(970,650,340,54);
     private StratagemMatch _stratagemPreview;
     private StratagemMatch[] _stratagemMatches=Array.Empty<StratagemMatch>();
     private double _stratagemRefresh;
@@ -61,6 +63,10 @@ public partial class Game1
     private int[] StratagemGroups=>SelectedStratagemMatches.Select(m=>m.Target).Distinct().ToArray();
     private bool StratagemInput(MouseState mouse,bool click,bool escape,bool active,double elapsed)
     {
+        if(_stratagemCancelledNotice.Length>0){
+            if(active && (escape || click && (StratagemNoticeBack.Contains(_pointer) || StratagemNoticeContinue.Contains(_pointer)))){bool end=!escape && StratagemNoticeContinue.Contains(_pointer);_stratagemCancelledNotice=Array.Empty<string>();_inputOutcome=end?"stratagem_cancellation_end_turn":"stratagem_cancellation_back";if(end)EndDomesticPhase();}
+            return true;
+        }
         if(!StratagemInterface){_stratagemSelected=-1;_stratagemController=-1;_stratagemPreview=null;return false;}
         _stratagemRefresh+=elapsed;
         if(_stratagemController!=_setup.TurnPlayer || _stratagemRefresh>.8)RefreshStratagems();
@@ -140,6 +146,15 @@ public partial class Game1
     }
     private void DrawStratagemInterface()
     {
+        if(_stratagemCancelledNotice.Length>0){
+            _ui.Box(new(0,0,1920,1080),new Color(0,0,0,150));
+            _ui.Box(new(500,340,920,400),new Color(246,232,201));
+            _ui.Center("計略は取り消しになりました",new(540,370,840,64),.7f,new Color(57,42,32));
+            _ui.Center("条件が変わったため、予約を取り消しました。",new(540,454,840,48),.48f,new Color(57,42,32));
+            _ui.Center(string.Join(" / ",_stratagemCancelledNotice.Select(n=>n.Split(" / ")[0]).Distinct()),new(540,518,840,60),.48f,new Color(57,42,32));
+            _ui.Button(StratagemNoticeContinue,"このままターン終了する",Accent,.48f);
+            _ui.Button(StratagemNoticeBack,"戻って続ける",Accent,.48f);return;
+        }
         if(!StratagemInterface || _stratagemTrayBlend<=0 || InspectorVisible || MapFooterAction>=0 || !MapMarkerMenuAvailable)return;
         var ink=new Color(57,42,32);
         if(_stratagemSelected>=0){

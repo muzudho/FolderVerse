@@ -34,7 +34,7 @@ public partial class Game1
     private const int TradeRows=11;
     private static readonly Rectangle TradeBack=new(1550,36,305,58),TradeSubmit=new(1430,950,420,70);
     private static readonly Rectangle TradeCancel=new(54,950,440,70),DiplomacyReject=new(1000,950,350,70);
-    private static Rectangle TradeRow(int column,int row)=>new(54+column*455,218+row*55,434,49);
+    private static Rectangle TradeRow(int column,int row)=>new(54+column*455,242+row*52,434,46);
     private static Rectangle TradePager(int column,bool next)=>new(54+column*455+(next?336:0),840,98,44);
     private TradePlan Trade=>_setup.Campaign.Trade;
 
@@ -80,8 +80,8 @@ public partial class Game1
         if(draw)
         {
             _ui.Box(new(0,0,1920,1080),new Color(16,35,47));
-            _ui.Text("取引",new(54,34),.94f,Cream);
-            _ui.Text("荷を１つずつ選びます。返事は次の全体ターンの外交フェーズで届きます。",new(54,115),.47f,Cream);
+            DrawPhasePlaqueLabel("取引","交渉の予約",8);
+            _ui.Text("荷を１つずつ選びます。返事は次の全体ターンの外交フェーズで届きます。",new(54,153),.47f,Cream);
             _ui.Button(TradeBack,"閉じる",Muted,.49f);
             _ui.Button(TradeSubmit,"取引を申し込む",ready?Accent:Muted,.51f);
             if(mine.Length>0)_ui.Button(TradeCancel,"最後の取引予約を取り消す",Muted,.42f);
@@ -119,7 +119,7 @@ public partial class Game1
             int page=_tradePages[column]=Math.Min(_tradePages[column],pages-1);
             if(draw)
             {
-                var heading=TradeRow(column,0);heading.Y=165;
+                var heading=TradeRow(column,0);heading.Y=198;
                 SalvageText(title,heading,.52f);
                 if(entries.Length==0)SalvageText("選べる項目がありません",TradeRow(column,0),.38f);
                 if(pages>1)

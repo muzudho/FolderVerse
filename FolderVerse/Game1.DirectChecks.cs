@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private readonly Dictionary<int,HashSet<(int A,int B)>> _directChecksByPlayer=new();
-    private static readonly Rectangle DirectPairCheckButton=new(996,110,48,48);
+    private static readonly Rectangle DirectPairCheckButton=new(1768,60,48,48);
     private static (int A,int B) DirectCheckKey(int a,int b)=>(Math.Min(a,b),Math.Max(a,b));
     private bool DirectPairChecked(int a,int b)
     {

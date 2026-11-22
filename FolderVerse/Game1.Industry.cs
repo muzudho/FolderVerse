@@ -99,11 +99,10 @@ public partial class Game1
             result==0?new[]{"工場はストップだー！","次こそ製造できますように！"}:
             _setup.Industry.Jackpot?new[]{"数年に一度の当たり年だあ！？","今だ、大チャーンス！"}:
             new[]{"さあ、工場を動かしましょう！"};
-        var speech=new Rectangle(500,176,900,320);
+        var speech=SizeSpeechBalloon(new Rectangle(500,176,900,320),lines);
         DrawSpeechBalloon(speech);
         var textArea=BalloonRenderer.TextArea(speech);
-        float scale=Math.Min(.68f,textArea.Width/Math.Max(1,System.Linq.Enumerable.Max(lines,l=>_font.MeasureString(l).X)));
-        PortraitHudLayout.CenterLines(_ui,_font,lines,textArea,scale,new Color(57,52,48));        float progress=(float)Math.Clamp((_industryAge-IndustryReadSeconds)/IndustrySpinSeconds,0,1);
+        DrawSpeechParagraph(lines,textArea);        float progress=(float)Math.Clamp((_industryAge-IndustryReadSeconds)/IndustrySpinSeconds,0,1);
         float angle=MathHelper.Lerp(_industryStartAngle,_industryStopAngle,1-MathF.Pow(1-progress,4));
         DrawAntiqueIndustryWheel(angle);
         if(stopped)DrawIndustryDuration(result,new(54,916,608,65),Cream,.65f,suffix:" 産業ターン");

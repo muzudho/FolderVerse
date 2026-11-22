@@ -153,7 +153,7 @@ public partial class Game1
     private void DrawLongPair()
     {
         SyncLongSlots();_deliveryTagHint="";_ui.Box(new(0,0,1920,1080),new Color(14,29,40));DrawDirectPairMap();
-        _ui.Text("ロボットパーツ長距離便",new(36,26),.85f,Cream);_ui.Button(DirectPairBack,"×",Muted,.55f);_ui.Center(_directMessage,new(40,76,1840,32),.4f,Cream);
+        DrawPhasePlaqueLabel("長距離便","ロボットパーツ",7);_ui.Button(DirectPairBack,"×",Muted,.55f);PortraitHudLayout.CenterLines(_ui,_font,_directMessage.Split(" / "),new Rectangle(36,48,600,84),.40f,Cream);
         if(!_longChoosingSource)DrawLongPane(0);DrawLongPane(1);
         if(_longOrdersOpen)DrawLongOrderList();
         _ui.Button(LongOrdersToggle,$"配送 {AllLongOrders.Length}件 / 完了・解除 {LongOrderResults.Length}件 / {(_longOrdersOpen?"地図に戻る":"一覧")}",Muted,.4f);
