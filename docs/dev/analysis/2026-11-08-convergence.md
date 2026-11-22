@@ -4566,3 +4566,9 @@ NAS delivery-battle-link-0016（期限11月19日）、固定3637照合・警告�
 
 
 2026-11-22 20:03 JST 19:54の同ID完全化検出を正負例で検証。固定006B・Materials、明示配置の前線0へメープル頭＋段ボール胴一体型、52からPP脚を対象ID2へ実配送。保存復元後、計画０／配送成功１・受取戦場停止０・取消０、CompletedArrivals実ID一致・混成素材維持・同観測の二重加算なし。18確認、製品Check/警告エラー０。NAS archives/convergence-analysis/frr-local-completion-controls-2026-11-22-2003。自然分布や征服比較ではなく測定器感度の診断。別ID組立・仕掛品など未対象、CPU未採用・製品変更なし。次は別自然SEEDで曝露と後続出撃・領土変化を追う。
+
+
+2026-11-22 20:22 JST 新規20261127/cast11/20CPU・Materials25/25・raw/relay/scrap有効・固定006B。32地域、初期容量530/在庫383/管理人152/原料6368、地点別とBaseIdはNAS初期記録。0→80未決着・収束未判定。相互直送／同ID前線完全化０だが、コールバック80回・前線部分品延べ457を観測。DirectDelivery注文０、PartPlanning予約107（役割等も含み内訳未分類）で、直送系だけの指標は新しい部品操作経路を落とす。全FRR０とはしない。NAS archives/convergence-analysis/frr-natural-third-world-2026-11-22-2022。元不変・製品Check/警告エラー０・製品変更なし。次はPlannedPartMove期待部位とLastResults/CompletedRobotsで107予約を分類、実更新と前線投入を追う。80は観測停止、400へ自動到達した扱いにしない。
+
+
+2026-11-22 20:32 JST 固定006B・20261127/cast11/20CPU自然Materials25/25を同初期から0→80再生。PartPlanning107件を実LastResultsで分類：Worker64/Warehouse27/Harvest16、全て同一地点内の役割予約・実施完了。部品移動／合流予約０。107件を前線更新の証拠とはしない。直送０・同ID完全化０再現、全FRR０とはしない（長距離・製造入荷等は未計測）。元保存不変・Check通過・警告エラー０・製品変更なし。NAS archives/convergence-analysis/frr-plan-classification-2026-11-22-2032。80未決着は観測停止・収束未判定。次は長距離／製造の実着荷IDで搬入分類。

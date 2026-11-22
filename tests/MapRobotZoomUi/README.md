@@ -1,0 +1,5 @@
+# 展開図のロボットズーム検証
+
+NAS出力を指定して実行する隔離描画プローブ。GameDll/RuntimeDirを渡してビルドし、GAME_RUNTIME/OLD_RUNTIME/PROBE_FONTとSDLのPATHを既存のDisplayBreakerUi同様に指定する。実ゲームや元セーブは読み込まない。
+
+地域の投影サイズ32/64/128pxでDrawMapObjectsを描画し、ロボット幅とクリック領域の追従、遠景簡略／近景詳細の切替、ヒット結果を確認。画像３枚を指定出力先に保存する。FPS性能比較ではない。

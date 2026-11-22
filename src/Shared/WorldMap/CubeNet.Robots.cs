@@ -66,11 +66,12 @@ public sealed partial class CubeNet
     }
     internal static int VisibleRobotCount(int total,float projectedUnit)=>
         Math.Min(total,projectedUnit<65?4:projectedUnit<120?8:projectedUnit<200?16:total);
-    private static Rectangle RobotOverflowBounds(Vector2 at)=>new((int)at.X-22,(int)at.Y-11,44,22);
-    private static void DrawRobotOverflow(UiPainter ui,Rectangle box,int count)
+    public static float MapRobotZoom(float projectedRegionSize)=>MathHelper.Clamp(projectedRegionSize/100f,.08f,3f);
+    private static Rectangle RobotOverflowBounds(Vector2 at,float zoom=1)=>new((int)(at.X-22*zoom),(int)(at.Y-11*zoom),Math.Max(1,(int)(44*zoom)),Math.Max(1,(int)(22*zoom)));
+    private static void DrawRobotOverflow(UiPainter ui,Rectangle box,int count,float zoom=1)
     {
         ui.Box(box,new Color(16,35,47,230));
-        ui.Center($"+{count}",box,.44f,new Color(255,229,159));
+        ui.Center($"+{count}",box,.44f*zoom,new Color(255,229,159));
     }
     private static int MapPartCount(RobotParts parts)=>
         ((parts&RobotParts.Head)!=0?1:0)+((parts&RobotParts.Body)!=0?1:0)+((parts&RobotParts.Legs)!=0?1:0);
@@ -90,7 +91,8 @@ public sealed partial class CubeNet
             var robots=groups.GetValueOrDefault(node.Id,new List<Robot>()).Where(r=>ShowOtherCountries || world.Relations.Controls(r.Owner)).OrderBy(r=>r.Id).ToArray();
             if(robots.Length==0)continue;
             var point=project(node);if(point==null)continue;
-            var at=point.Value;float zoom=1;
+            var at=point.Value;float zoom=avoidResources?MapRobotZoom(scale):1;
+            bool detailed=zoom>=.65f;
             int visible=VisibleRobotCount(robots.Length,scale);
             if(!clearances.TryGetValue(node.Cell,out var obstacles))
                 clearances[node.Cell]=obstacles=avoidResources?ResourceClearance(world,node.Cell):Array.Empty<(Vector3,float)>();
@@ -99,25 +101,25 @@ public sealed partial class CubeNet
             int nextSlot=0;
             Vector2 RobotPosition()
             {
-                if(obstacles.Length==0)return at+RobotSpiralSlot(nextSlot++,46);
-                var offset=ResourceSafeRobotSlot(cell,center,46/Math.Max(1,scale),18/Math.Max(1,scale),obstacles,ref nextSlot);
+                if(obstacles.Length==0)return at+RobotSpiralSlot(nextSlot++,46*zoom);
+                var offset=ResourceSafeRobotSlot(cell,center,46*zoom/Math.Max(1,scale),18*zoom/Math.Max(1,scale),obstacles,ref nextSlot);
                 return AnimatedSurfacePosition(node.Cell,center+cell.U*offset.X+cell.V*offset.Y,world,panel);
             }
             var cards=robots.Take(visible).Select((robot,i)=>{
                 var position=RobotPosition();
-                return AvoidWhirlpool(new Rectangle((int)(position.X-12*zoom),(int)(position.Y-MapPartCount(robot.Parts)*6*zoom),(int)(24*zoom),(int)(MapPartCount(robot.Parts)*12*zoom)));
+                return AvoidWhirlpool(new Rectangle((int)(position.X-12*zoom),(int)(position.Y-MapPartCount(robot.Parts)*6*zoom),Math.Max(1,(int)(24*zoom)),Math.Max(1,(int)(MapPartCount(robot.Parts)*12*zoom))));
             }).ToArray();
             int hidden=robots.Length-visible;
-            var overflow=hidden>0?AvoidWhirlpool(RobotOverflowBounds(RobotPosition())):Rectangle.Empty;
+            var overflow=hidden>0?AvoidWhirlpool(RobotOverflowBounds(RobotPosition(),zoom)):Rectangle.Empty;
             var bounds=cards.Aggregate(Rectangle.Union);
             if(hidden>0)bounds=Rectangle.Union(bounds,overflow);
             if(!MapViewport(panel).Intersects(bounds))continue;
             // Keep gaps between robots outside the hit area.
-            foreach(var card in cards){var hit=card;if(ShowRoutes && EmphasizedNode(node.Id)){hit.Y-=6;hit.Height+=6;}_robotBadges.Add(new(node.Functional?node.Id:node.FunctionHost,hit,true));}
+            foreach(var card in cards){var hit=card;if(ShowRoutes && EmphasizedNode(node.Id)){int hop=(int)(6*zoom);hit.Y-=hop;hit.Height+=hop;}_robotBadges.Add(new(node.Functional?node.Id:node.FunctionHost,hit,detailed));}
             for(int i=0;i<visible;i++)
             {
                 var robot=robots[i];var card=cards[i];
-                if(ShowRoutes && EmphasizedNode(node.Id))card.Offset(0,-(int)MapObjectHop(pulse,i));
+                if(ShowRoutes && EmphasizedNode(node.Id))card.Offset(0,-(int)(MapObjectHop(pulse,i)*zoom));
                 int row=0;
                 foreach(var part in new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs})
                 {
@@ -126,19 +128,19 @@ public sealed partial class CubeNet
                     var full=new Rectangle(card.X,card.Y+(int)((row*12-(part==RobotParts.Head?0:part==RobotParts.Body?12:24))*zoom),(int)(24*zoom),(int)(36*zoom));
                     DrawMapRobot(ui,full,world.OwnerColor(robot.Origin(part)),part,robot.IsDamaged(part),robot.IsCheap(part),DimNode(node.Id),
                         world.CountryPattern(robot.Origin(part)),WorldSetup.Colors[world.CountrySecondaryColor(robot.Origin(part))],robot.IsPremium(part),
-                        part==((robot.Parts&RobotParts.Body)!=0?RobotParts.Body:(robot.Parts&RobotParts.Head)!=0?RobotParts.Head:RobotParts.Legs)?world.CountryEmblem(robot.Origin(part)):0);
+                        part==((robot.Parts&RobotParts.Body)!=0?RobotParts.Body:(robot.Parts&RobotParts.Head)!=0?RobotParts.Head:RobotParts.Legs)?world.CountryEmblem(robot.Origin(part)):0,simplified:!detailed);
                     row++;
                 }
-                if(robot.ShoeOwner>=0)RobotWorkArt.DrawWindupKey(ui,card);
+                if(detailed && robot.ShoeOwner>=0)RobotWorkArt.DrawWindupKey(ui,card);
             }
             if(hidden>0 && MapViewport(panel).Intersects(overflow))
             {
-                DrawRobotOverflow(ui,overflow,hidden);
+                DrawRobotOverflow(ui,overflow,hidden,zoom);
                 _robotBadges.Add(new(node.Functional?node.Id:node.FunctionHost,overflow,true));
             }
         }
     }
-    public void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts,bool damaged=false,bool cheap=false,bool dim=false,int pattern=0,Color? secondary=null,bool premium=false,int emblem=0)
+    public void DrawMapRobot(UiPainter ui,Rectangle r,Color color,RobotParts parts,bool damaged=false,bool cheap=false,bool dim=false,int pattern=0,Color? secondary=null,bool premium=false,int emblem=0,bool simplified=false)
     {
         _mapRobotTexture ??= LoadMapRobot(ui.Batch.GraphicsDevice);
         var tint=Color.Lerp(Color.White,color,.48f);
@@ -149,7 +151,7 @@ public sealed partial class CubeNet
             int top=_mapRobotTexture.Height*part/3,bottom=_mapRobotTexture.Height*(part+1)/3;
             var source=new Rectangle(0,top,_mapRobotTexture.Width,bottom-top);
             int y=r.Y+r.Height*part/3,next=r.Y+r.Height*(part+1)/3;
-            if(!damaged && !cheap && !premium && pattern==0)ui.Batch.Draw(_mapRobotTexture,new Rectangle(r.X,y,r.Width,Math.Max(1,next-y)),source,tint);
+            if(simplified || (!damaged && !cheap && !premium && pattern==0))ui.Batch.Draw(_mapRobotTexture,new Rectangle(r.X,y,r.Width,Math.Max(1,next-y)),source,tint);
             else for(int row=y;row<next;row++)
             {
                 int sy=top+(row-y)*(bottom-top)/Math.Max(1,next-y);
@@ -167,7 +169,7 @@ public sealed partial class CubeNet
 
         }
         int emblemSide=Math.Max(1,r.Width/2),emblemTop=(parts&RobotParts.Body)!=0?r.Y+r.Height/3:(parts&RobotParts.Head)!=0?r.Y:r.Y+r.Height*2/3;
-        CountryEmblemArt.Draw(ui,new(r.Center.X-emblemSide/2,emblemTop,emblemSide,emblemSide),emblem,secondary??color,dim?FocusBrightness:1);
+        if(!simplified)CountryEmblemArt.Draw(ui,new(r.Center.X-emblemSide/2,emblemTop,emblemSide,emblemSide),emblem,secondary??color,dim?FocusBrightness:1);
     }
     private Texture2D _mapRobotTexture;
     public void DisposeRobotTexture(){DisposeIceTextures();_mapRobotTexture?.Dispose();_mapRobotTexture=null;_mapleMapArt?.Dispose();_mapleMapArt=null;}
