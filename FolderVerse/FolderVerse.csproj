@@ -33,6 +33,7 @@
     <MonoGameContentReference Include="Content/Content.mgcb" />
     <Compile Include="../src/Shared/Balloon/*.cs" LinkBase="Shared/Balloon" />
     <Compile Include="../src/Shared/Images/*.cs" LinkBase="Shared/Images" />
+    <Compile Include="../src/Shared/Transitions/*.cs" LinkBase="Shared/Transitions" />
     <Compile Include="../src/Shared/Layouts/*.cs" LinkBase="Shared/Layouts" />
     <Compile Include="../src/Shared/Hangar/*.cs" LinkBase="Shared/Hangar" />
     <Compile Include="../src/Shared/FaceChip/*.cs" LinkBase="Shared/FaceChip" />

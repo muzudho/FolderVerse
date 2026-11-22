@@ -11,7 +11,7 @@ public partial class Game1
     private Screen _paperReturnScreen=Screen.WorldStatus;
     private double _paperAge,_paperIdle;
     private const double PaperIdleSeconds=8;
-    private const double PaperReadingStart=3.2;
+    private const double PaperReadingStart=8.3;
     private SoundEffect _paperKnock;
     private static readonly Rectangle PaperPrevious=new(690,990,220,52),PaperNext=new(925,990,220,52),PaperDone=new(1415,990,440,52);
     private bool TryBeginTurnNewspaper()
@@ -28,6 +28,7 @@ public partial class Game1
     {
         double oldAge=_paperAge;_paperAge+=Math.Max(0,elapsed);_paperIdle+=Math.Max(0,_paperAge-PaperReadingStart)-Math.Max(0,oldAge-PaperReadingStart);
         if(oldAge<.45 && _paperAge>=.45)PlayToyPost();
+        UpdatePaperTileSound();
         if(click || enter || escape)_paperIdle=0;
         if(escape || enter || click && PaperDone.Contains(_pointer) || _paperIdle+1e-8>=PaperIdleSeconds){FinishTurnNewspaper();return;}
         if(!click)return;

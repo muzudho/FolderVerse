@@ -14,6 +14,7 @@ public partial class Game1
     private void BeginPaperScenes()
     {
         // Presentation randomness must not consume the simulation's random sequence.
+        ResetPaperTileSnapshots();_paperTilePattern=new FallingTilePattern(Random.Shared.Next());_paperLastTileBeat=-1;
         _paperMailboxKind=Random.Shared.Next(PaperMailboxKinds.Length);
         _paperBreakfast=Random.Shared.Next(2)==0;_paperCarrying=Random.Shared.Next(2)==0;
     }
@@ -30,10 +31,10 @@ public partial class Game1
         var image=PaperSceneArt(name);
         _spriteBatch.Draw(image,area,PortraitRenderer.FitSource(new(0,0,image.Width,image.Height),area),Color.White*alpha);
     }
-    private void DrawPaperScenes()
+    private void DrawPaperScenery(bool breakfast)
     {
         string kind=PaperMailboxKinds[_paperMailboxKind];
-        float inside=MathHelper.SmoothStep(0,1,(float)Math.Clamp((_paperAge-2.1)/.45,0,1));
+        float inside=breakfast?1:0;
         if(inside<1){
             DrawPaperSceneBackground("mailbox-"+kind,PortraitHudLayout.Background);
             float taken=(float)Math.Clamp((_paperAge-.65)/.25,0,1);
@@ -61,5 +62,5 @@ public partial class Game1
         }
         PortraitHudLayout.DrawSplitter(_ui);
     }
-    private void DisposePaperScenes(){foreach(var image in _paperSceneArt.Values)image.Dispose();_paperSceneArt.Clear();}
+    private void DisposePaperScenes(){ResetPaperTileSnapshots();_paperTileRenderer?.Dispose();_paperTileSound?.Dispose();foreach(var image in _paperSceneArt.Values)image.Dispose();_paperSceneArt.Clear();}
 }
