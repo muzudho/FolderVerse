@@ -18,6 +18,10 @@ public partial class Game1
     private object OperationState()=>new
     {
         screen=_screen.ToString(),phase=IsStatusScreen || _screen is Screen.Industry or Screen.Battle or Screen.Disposition or Screen.InactiveList or Screen.Hierarchy or Screen.Pocket or Screen.Transport or Screen.Ending?"Game":_screen==Screen.Title?"Title":"Setup",
+        folderTreeOpen=_folderTreeOpen,folderTreeKind=_folderTreeKind,folderTreeId=_folderTreeId,folderTreeOwner=_folderTreeOwner,folderScroll=_folderScroll,
+        folderRows=_inspectorFolderRows.Select(r=>new{r.Kind,r.Id,r.Depth,r.Owner,r.Label}).ToArray(),
+        expandedCountries=_expandedFolderCountries.OrderBy(i=>i).ToArray(),expandedRegions=_expandedFolderRegions.OrderBy(i=>i).ToArray(),
+        inspectorFoldersOpen=_inspectorFoldersOpen,inspectorClosing=_nodeInspectorClosing,inspectorOffset=NodeInspectorOffset,
         campaignPhase=_setup.Campaign.Phase.ToString(),industryTurn=_setup.Robots.IndustryTurn,industryResult=_setup.Industry.Result,industryPending=_setup.Industry.Pending,
         subordinateResults=_setup.Campaign.SubordinateResults.ToArray(),
         superiors=_setup.Relations.Superiors,

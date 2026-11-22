@@ -7,6 +7,7 @@ public partial class Game1
 {
     private LessonAward[] _lessonAwards=Array.Empty<LessonAward>();
     private bool[] _lessonPickups=Array.Empty<bool>();
+    private LessonAward[] _lessonRecipients=Array.Empty<LessonAward>();
     private bool LessonPickedUp=>_lessonPage<_lessonPickups.Length && _lessonPickups[_lessonPage];
     private int _lessonPage;
     private int _lessonCatalogPage;
@@ -27,7 +28,8 @@ public partial class Game1
     {
         StopBattleMusic();
         var seen=_setup.Lessons.Owned.Aggregate(BattleLesson.None,(a,b)=>a|b);
-        _lessonAwards=_setup.Lessons.Research();_lessonPickups=new bool[_lessonAwards.Length];
+        _lessonRecipients=_setup.Lessons.Research();
+        _lessonAwards=_lessonRecipients.GroupBy(a=>a.Lesson).Select(g=>g.First()).ToArray();_lessonPickups=new bool[_lessonAwards.Length];
         for(int i=0;i<_lessonAwards.Length;i++){var lesson=_lessonAwards[i].Lesson;_lessonPickups[i]=(seen&lesson)==0;seen|=lesson;}
         _lessonPage=0;_lessonAge=0;_screen=Screen.BattleResearch;
         if(_lessonAwards.Length==0 && _setup.TutorialStep==0)BeginIndustry();
@@ -36,8 +38,8 @@ public partial class Game1
     {
         _lessonAge+=elapsed;
         while(true){
-            double duration=_lessonAwards.Length==0?2:LessonPickedUp?7:.4;
-            bool skip=LessonPickedUp && proceed && _lessonAge>=1.8;
+            double duration=_lessonAwards.Length==0?2:LessonPickedUp?7:3;
+            bool skip=proceed && _lessonAge>=1.8;
             if(!skip && _lessonAge+1e-8<duration)return;
             _lessonAge=skip?0:Math.Max(0,_lessonAge-duration);proceed=false;
             if(++_lessonPage>=Math.Max(1,_lessonAwards.Length)){BeginIndustry();return;}
@@ -199,9 +201,18 @@ public partial class Game1
             float t=LessonPickedUp?MathHelper.SmoothStep(0,1,(float)Math.Clamp((_lessonAge-.35)/.8,0,1)):1;
             DrawLessonCard(award.Lesson,new(110,180+(int)((1-t)*70),760,710),true,t);
             _ui.Center(LessonPickedUp?"新しい戦訓カードを取得！":"戦訓カードを取得！",new(950,285,850,90),.95f,new(255,220,128));
-            LessonText(_setup.ConquerorNames[award.Owner],new(950,420,850,100),1.1f,_setup.OwnerColor(award.Owner));
-            _ui.Center("生き残ったロボットの経験を、国の戦訓へ",new(950,555,850,70),.56f,Cream);
-            _ui.Center($"{_lessonPage+1} / {_lessonAwards.Length}",new(950,710,850,60),.65f,Cream);
+            var owners=_lessonRecipients.Where(a=>a.Lesson==award.Lesson).Select(a=>a.Owner).Distinct().OrderBy(i=>i).ToArray();
+            if(owners.Length==0)owners=new[]{award.Owner};
+            _ui.Center($"今回取得した征服者 {owners.Length}人",new(950,355,850,42),.5f,Cream);
+            int side=owners.Length<=20?100:70,columns=850/(side+10);
+            int? hovered=null;
+            for(int i=0;i<owners.Length;i++){
+                var box=new Rectangle(950+i%columns*(side+10),410+i/columns*(side+10),side,side);
+                DrawConquerorSquareChip(owners[i],box,own:owners[i]==_setup.PlayerSlot);
+                if(box.Contains(_pointer))hovered=owners[i];
+            }
+            if(hovered is int ruler)_ui.Center($"#{ruler+1} / {_setup.ConquerorNames[ruler]}",new(950,890,850,38),.55f,Cream);
+            _ui.Center($"{_lessonPage+1} / {_lessonAwards.Length}",new(950,930,390,40),.5f,Cream);
         }
         _ui.Button(LessonContinue,"次へ / Enter",Accent,.65f);
     }

@@ -4,3 +4,5 @@
 地図と平和移動バスは回転あり、戦場のクイーンは判別用の静止表示。
 配置・紐・盤面からの座標変換・表示条件は各ビューに残す。
 原画の生成や加工は行わず、既存のPortraitRendererを使用する。
+
+角丸正方形のアイコンは、[ConquerorSquareChip](../ConquerorSquareChip/README.md) を参照。
