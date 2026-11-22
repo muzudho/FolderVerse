@@ -9,8 +9,8 @@ public partial class Game1
     private static readonly Rectangle MapViewButton=new(1674,146,184,48);
     private int _selectedMapCell=-1;
     private bool _simpleDisplayOpen;
-    private static readonly Rectangle SimpleDisplayButton=new(780,112,360,36);
-    private static Rectangle SimpleDisplayOption(int i)=>new(780,234+i*44,650,44);
+    private static readonly Rectangle SimpleDisplayButton=new(1260,76,360,36);
+    private static Rectangle SimpleDisplayOption(int i)=>new(1260,204+i*44,650,44);
     private bool _mapLayerListOpen;
     private bool _trafficLayerListOpen;
     private static readonly string[] MapLayerNames={"地形","国区画色分け"};
@@ -83,9 +83,9 @@ public partial class Game1
         if(_simpleDisplayOpen){
             _ui.Button(DisplayBreakerAutomaticRow,"",Muted,.4f);
             DrawBreakerCheck(DisplayBreakerAutomaticRow,_displayBreaker.Automatic);
-            _ui.Text("自動OFF / 目標18 FPS",new(822,158),.4f,Cream);
-            _ui.Box(new(780,190,650,44),new Color(23,43,56));
-            _ui.Text("表示項目",new(822,202),.38f,Cream);_ui.Text("CPU ms/frame",new(1170,202),.35f,Cream);
+            _ui.Text("自動OFF / 目標18 FPS",new(1302,128),.4f,Cream);
+            _ui.Box(new(1260,160,650,44),new Color(23,43,56));
+            _ui.Text("表示項目",new(1302,172),.38f,Cream);_ui.Text("CPU ms/frame",new(1650,172),.35f,Cream);
             for(int i=0;i<8;i++){
                 var r=SimpleDisplayOption(i);_ui.Button(r,"",Muted,.4f);DrawBreakerCheck(r,DisplayFeatureEnabled(i));
                 _ui.Text(DisplayFeatureNames[i],new(r.X+42,r.Y+12),.38f,Cream);
@@ -93,9 +93,9 @@ public partial class Game1
                 if(_displayBreaker.Tripped[i])timing+=" / 自動OFF";
                 _ui.Text(timing,new(r.X+380,r.Y+12),.32f,Cream);
             }
-            _ui.Box(new(780,586,650,70),new Color(23,43,56));
-            _ui.Text("旗の時間は旗全体。高低差は手動切替。",new(794,595),.31f,Cream);
-            _ui.Text(_breakerMessage.Length>0?_breakerMessage:"自動ではONに戻りません / 手動ON後10秒は保護",new(794,625),.30f,Cream);
+            _ui.Box(new(1260,556,650,70),new Color(23,43,56));
+            _ui.Text("旗の時間は旗全体。高低差は手動切替。",new(1274,565),.31f,Cream);
+            _ui.Text(_breakerMessage.Length>0?_breakerMessage:"自動ではONに戻りません / 手動ON後10秒は保護",new(1274,595),.30f,Cream);
         }
     }
     private void DrawSelectionIcon(Rectangle rect,bool node)

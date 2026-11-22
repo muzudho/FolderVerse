@@ -63,7 +63,7 @@ public partial class Game1
             int page=(int)(Math.Max(0,_conquestAge-(ConquestDetailedCard?ConquestStudioEnd:0))/3)%2;
             lines=System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Take(System.Linq.Enumerable.Skip(lines,page*3),3));
         }
-        var speech=new Rectangle(500,132,1000,180);DrawSpeechBalloon(speech);
+        var speech=new Rectangle(500,144,1000,168);DrawSpeechBalloon(speech);
         var area=BalloonRenderer.TextArea(speech);
         float scale=Math.Min(.55f,Math.Min(area.Width/Math.Max(1,System.Linq.Enumerable.Max(lines,l=>_font.MeasureString(l).X)),area.Height/(float)(lines.Length*_font.LineSpacing)));
         PortraitHudLayout.CenterLines(_ui,_font,lines,area,scale,ink);

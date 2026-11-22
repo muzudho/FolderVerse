@@ -28,8 +28,11 @@ sealed class PlaqueProbe(string output):Game1
   var title=(Rectangle)typeof(Game1).GetField("PhasePlaqueTitleBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
   var subtitle=(Rectangle)typeof(Game1).GetField("PhasePlaqueSubtitleBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
   var icon=(Rectangle)typeof(Game1).GetField("PhasePlaqueIconBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  Check(subtitle.Width<=240&&subtitle.Height>=34&&icon.Width>=140&&icon.Bottom>128,"subtitle is shorter and taller; illustration protrudes beyond frame");
+  var breaker=(Rectangle)typeof(Game1).GetField("SimpleDisplayButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+  Check(breaker.Left>=1240,"display controls clear the enlarged header");
   Check(title.Center.X==subtitle.Center.X&&icon.Width==icon.Height,"titles share their center and icon uses a square without stretching");
-  var bounds=(Rectangle)typeof(Game1).GetField("PhasePlaqueBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;Check(bounds.Center.X==960&&bounds.Top>=12&&bounds.Bottom<=112&&bounds.Right<1510,"header shares body center, has top margin and clears map controls");
+  var bounds=(Rectangle)typeof(Game1).GetField("PhasePlaqueBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;Check(bounds.Center.X==960&&bounds.Top>=12&&bounds.Bottom<=132&&bounds.Right<1510,"header shares body center and has generous height with top margin");
  }
  void CheckOpeningDaylight(){
   using var preview=new WorldPreview(GraphicsDevice);
