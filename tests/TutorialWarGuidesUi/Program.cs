@@ -57,7 +57,7 @@ sealed class WarGuideGame:Game1
      Call("HandleInput",new MouseState(x,y,0,state,0,0,0,0),new KeyboardState(),time,true);
    }
    // Keep one existing robot at home for the following pocket lesson.
-   int count=Math.Min(Math.Max(1,available.Length-1),18);
+   int count=Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_EMPTY_SOURCE")=="1"?Math.Min(available.Length,18):Math.Min(Math.Max(1,available.Length-1),18);
    for(int slot=0;slot<count;slot++)
     Pick(((Rectangle)bounds.Invoke(null,new object[]{slot})!).Center);
    Pick(done.Center);
@@ -162,6 +162,18 @@ sealed class WarGuideGame:Game1
    Click(((Rectangle)Call("PrimaryActionBounds",0)).Center);
    Check((bool)Get("_reignView"),"The country button opens its inspector");
    for(int step=0;step<4;step++)Send(default);
+   if(Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_EMPTY_SOURCE")=="1"){
+    Check(!(bool)Call("get_TutorialCanPocketRobot"),"All-sortie fixture reaches lesson with no selectable home robot");
+    var move=(Rectangle)typeof(Game1).GetField("MovementButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
+    var offset=new Point((int)Call("get_NodeInspectorOffset"),0);
+    var emptyMoveTarget=move;emptyMoveTarget.X+=offset.X;
+    AuditGlow("empty-source-movement",emptyMoveTarget);
+    Click(move.Center+offset);
+    Check((bool)Get("_movementOpen"),"Empty-source lesson opens normal movement selection");
+    Check(!w.TutorialPocketed && !w.TutorialCompletionShown,"Empty-source fallback does not fabricate pocket completion");
+    Console.WriteLine("PASS active empty-source lesson: normal movement entry, no stock injection");
+    Exit();return;
+   }
    var pocket=(Rectangle)typeof(Game1).GetField("PocketButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
    var pocketTarget=pocket;pocketTarget.X+=(int)Call("get_NodeInspectorOffset");AuditGlow("pocket-button",pocketTarget);
    Click(pocket.Center+new Point((int)Call("get_NodeInspectorOffset"),0));
