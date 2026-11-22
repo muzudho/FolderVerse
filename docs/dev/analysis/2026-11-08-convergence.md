@@ -4578,3 +4578,6 @@ NAS delivery-battle-link-0016（期限11月19日）、固定3637照合・警告�
 
 
 2026-11-22 21:29 JST 固定006B・20261127/cast11自然25/25・20CPUを0→80追跡。前線完全体搬入11件は実ID８体（再配送あり）。後続のdeferResolution出撃計画にID30/45/67の３体が登場、対応配送５件。14ログには同じ兵の配送履歴対応重複があり、実戦参加／勝利とは断定しない。80時点全８体は地点内で確認。入力不変・Check／警告エラー０、製品変更なし、収束未判定。NAS archives/convergence-analysis/frr-arrival-followup-2026-11-22-2129。次は計画と戦場Armyの実ID突合。搬入11を11体やFRR11としない。
+
+
+2026-11-22 21:43 JST 固定006B・20261127/cast11自然25/25・20CPUの搬入８実ID中６体を後続BattleState.Units.Robot.Idで実戦確認、延べ17遭遇記録。出撃計画だけの３体より多く、守備／迎撃等も含む可能性。ID30はOwner7＝Winner7の終了戦４件、ID45は引分退却もあり、個別兵の勝因や領土増の因果とはしない。２体は未確認。入力不変・Check／警告エラー０・製品変更なし、80未決着は収束未判定。NAS archives/convergence-analysis/frr-battle-participation-2026-11-22-2143。次は守備／進撃／迎撃と所有前後を分離。JSON kind/Kind集計は-AsHashtable必須。

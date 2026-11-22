@@ -138,7 +138,7 @@ public partial class Game1 : Game
         if(PerformanceUiInput(mouse,keyboard,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
-        if(IsStatusScreen && _recoveryOpen){if(active)RecoveryPlannerInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(IsStatusScreen && _recoveryOpen){if(active){RecoveryMapCamera(mouse);RecoveryPlannerInput(click,escape);}_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(!active || !IsStatusScreen || !_nodeAssemblyOpen || mouse.RightButton==ButtonState.Released)
             _hangarPanning=false;
         // Consume input before any controls behind the album get a chance to handle it.
