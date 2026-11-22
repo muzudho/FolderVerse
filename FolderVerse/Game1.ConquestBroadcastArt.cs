@@ -26,8 +26,8 @@ public partial class Game1
             return NodeSupervisors.For(node,_setup.Cells[node.Cell].Face) is 1 or 2?1:node.Terrain==TravelTerrain.Mountain?3:0;
         }
     }
-    private static readonly string[] BroadcastBoardNames={"board-plywood","board-electronic","board-cart","board-pipe"};
-    private static readonly Rectangle[] BroadcastBoardFaces={new(166,86,1201,650),new(240,150,1058,600),new(249,117,963,548),new(190,105,1104,625)};
+    private static readonly string[] BroadcastBoardNames={"board-plywood","board-electronic","board-cart","board-pipe","board-whiteboard"};
+    private static readonly Rectangle[] BroadcastBoardFaces={new(166,86,1201,650),new(240,150,1058,600),new(249,117,963,548),new(190,105,1104,625),new(145,65,1120,640)};
     private void DrawBroadcastBoard(int kind,Rectangle face)
     {
         var image=BroadcastArt(BroadcastBoardNames[kind]);var source=BroadcastBoardFaces[kind];

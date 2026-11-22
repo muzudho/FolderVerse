@@ -13,7 +13,7 @@ public partial class Game1
         var show=_conquestBroadcast;var node=show.Location>=0?_setup.Nodes.All[show.Location]:null;
         if(ConquestStudioCut){
             PortraitHudLayout.DrawMainBackground(_spriteBatch,BroadcastArt("annex"));
-            DrawBroadcastBoard(1,ConquestFormulaSpace);
+            DrawBroadcastBoard(4,ConquestFormulaSpace);
             _ui.Center("スタジオ別室 / 得点計算",new(1100,230,730,56),.57f,Cream);
             _ui.Box(new(870,850,150,70),new Color(202,165,99));
         }else if(node!=null){
