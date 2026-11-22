@@ -39,5 +39,5 @@ public partial class Game1
         _spriteBatch.Draw(image,new Rectangle(x,face.Y,width,face.Height),new Rectangle(0,source.Y,image.Width,source.Height),Color.White);
         _spriteBatch.Draw(image,new Rectangle(x,face.Bottom,width,bottom),new Rectangle(0,source.Bottom,image.Width,image.Height-source.Bottom),Color.White);
     }
-    private void DisposeBroadcastArt(){foreach(var art in _broadcastArt.Values)art.Dispose();_broadcastArt.Clear();}
+    private void DisposeBroadcastArt(){DisposeConquestFocus();foreach(var art in _broadcastArt.Values)art.Dispose();_broadcastArt.Clear();}
 }

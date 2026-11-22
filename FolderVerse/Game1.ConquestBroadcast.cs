@@ -10,13 +10,19 @@ public partial class Game1
     private static Rectangle ConquestRelationsButton=>new(1630,28,250,48);
     private void DrawConquestBroadcastBackground()
     {
-        var show=_conquestBroadcast;var node=show.Location>=0?_setup.Nodes.All[show.Location]:null;
         if(ConquestStudioCut){
             PortraitHudLayout.DrawMainBackground(_spriteBatch,BroadcastArt("annex"));
             DrawBroadcastBoard(4,ConquestFormulaSpace);
             _ui.Center("スタジオ別室 / 得点計算",new(1100,230,730,56),.57f,Cream);
             _ui.Box(new(870,850,150,70),new Color(202,165,99));
-        }else if(node!=null){
+        }else _spriteBatch.Draw(_conquestFocusedBackdrop,PortraitHudLayout.MainPanel,Color.White);
+        PortraitHudLayout.DrawBackground(_spriteBatch,BroadcastArt("studio"));
+        PortraitHudLayout.DrawSplitter(_ui);
+    }
+    private void DrawConquestLocationBackdrop(Node node)
+    {
+        var show=_conquestBroadcast;
+        if(node!=null){
             int kind=NodeSupervisors.For(node,_setup.Cells[node.Cell].Face);
             string key=NodeSupervisors.Kinds[kind];
             // Existing harbour and polar scenery is outdoors; the rest is indoor scenery.
@@ -27,8 +33,6 @@ public partial class Game1
             if(show.Outdoor && key!="harbor" && key!="polar")DrawConquestOutdoor(node);
             else PortraitHudLayout.DrawMainBackground(_spriteBatch,_conquestScenery);
         }else DrawConquestOutdoor(null);
-        PortraitHudLayout.DrawBackground(_spriteBatch,BroadcastArt("studio"));
-        PortraitHudLayout.DrawSplitter(_ui);
     }
     private void DrawConquestOutdoor(Node node)
     {

@@ -106,6 +106,7 @@ public partial class Game1
     }
     private void DrawConquestOverview(Rectangle canvas,Matrix transform,Viewport viewport){
         GraphicsDevice.Clear(new Color(34,56,67));
+        if(!_conquestRelations && !ConquestStudioCut)EnsureConquestFocusedBackdrop();
         _spriteBatch.Begin(transformMatrix:transform);
         if(_conquestRelations){DrawHierarchyUi();_spriteBatch.End();return;}
         DrawConquestBroadcastBackground();
