@@ -12,7 +12,7 @@ public partial class Game1
     private static readonly Rectangle NodeDisposalTile=new(480,210,190,40);
     private static readonly Rectangle NodeSalvageButton=new(790,252,HangarActionSize,HangarActionSize);
     private static readonly Rectangle NodeRecoveryPlanButton=new(586,300,184,34);
-    private const string NodeDisposalName="ロボット回収・廃棄計画";
+    private const string NodeDisposalName="ロボット廃棄計画";
     private Robot[] DisposalCandidates()
     {
         var workshop=_setup.Robots.Workshops[_populationNode];
@@ -28,8 +28,8 @@ public partial class Game1
     private bool NodeDisposalClick(Point pointer)
     {
         if(NodeDisposalTile.Contains(pointer)){_nodeDisposalOpen=false;return true;}
-        if(NodeSalvageButton.Contains(pointer)){if(DomesticOperationsAllowed)OpenSalvageCatalog(_populationNode);return true;}
-        if(NodeRecoveryPlanButton.Contains(pointer) && DomesticOperationsAllowed){OpenSalvagePlan(_populationNode);return true;}
+
+
         if(!DomesticOperationsAllowed || !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner))return true;
         if(_setup.Robots.ScrapRulesEnabled){ScrapDisposalClick(pointer);return true;}var robots=DisposalCandidates();
         for(int i=0;i<robots.Length;i++)
@@ -56,8 +56,8 @@ public partial class Game1
         bool manage=CanManageNodeFactory(node.Owner);
         var robots=manage?DisposalCandidates():Array.Empty<Robot>();
         _ui.Box(new(54,150,850,825),new(27,49,62));_ui.Box(new(54,150,850,6),_setup.OwnerColor(node.Owner));
-        DrawHangarAction(NodeSalvageButton,10,DomesticOperationsAllowed);
-        _ui.Button(NodeRecoveryPlanButton,"回収隊の計画",DomesticOperationsAllowed?Accent:Muted,.34f);
+
+
         int abandoned=_setup.Salvage.Items.Count(item=>item.Node==node.Id);
         _ui.Text($"放棄品 {abandoned} 件",new(84,318),.34f,Cream);
 

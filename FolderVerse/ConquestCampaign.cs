@@ -38,12 +38,14 @@ public sealed partial class ConquestCampaign
         ComputerLogistics.Plan(world,automaticAll);
         ComputerFunctionTransfers.Plan(world,automaticAll);
         ComputerTrade.Plan(world,automaticAll);
+        world.Salvage.PlanComputerExpeditions(world,automaticAll);
         if(deferDelivery?.Invoke()==true)return false;
         BeginDelivery(world);
         return true;
     }
     internal void BeginDelivery(WorldSetup world)
     {
+        world.Salvage.CommitExpeditions(world);
         world.Robots.ProcessFinalDisposal(world);world.Robots.Discarding.Resolve(world);CaptureSectorBaseline(world);
         LastCancelledWars.Clear();
         FunctionTransfers.Resolve(world);

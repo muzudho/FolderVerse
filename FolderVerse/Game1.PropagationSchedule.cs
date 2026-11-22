@@ -25,6 +25,7 @@ public partial class Game1
         foreach(var s in PropagationShipments)_propagationTravel.TryAdd((s.Source,s.Target),0);
         if(!DeliveryPlayback){
             foreach(var a in _setup.Salvage.Agents.Where(a=>a.PreviousNode!=a.Node && _setup.Relations.Controls(a.Owner)))_propagationTravel.TryAdd((a.PreviousNode,a.Node),0);
+            foreach(var m in _setup.Salvage.Missions.Where(m=>!m.Pending && m.PreviousNode!=m.Node && _setup.Relations.Controls(m.Owner)))_propagationTravel.TryAdd((m.PreviousNode,m.Node),0);
             foreach(var m in _setup.Campaign.RobotBattles.LastMarches)_propagationTravel.TryAdd((m.Source,m.Target),0);
         }
         PreparePropagationBatch();

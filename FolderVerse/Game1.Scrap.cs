@@ -55,7 +55,7 @@ public partial class Game1
         foreach(var order in stock.Discarding.Orders.Where(o=>o.Node==n.Id && !o.Raw)){
             _ui.Text($"カゴへ / ID {order.Id} / {PartsLabel(order.Parts)}",new(84,orderY),.34f,Cream);orderY+=28;
         }
-        DrawHangarAction(NodeSalvageButton,10,DomesticOperationsAllowed);
-        _ui.Button(NodeRecoveryPlanButton,"回収隊の計画",Accent,.34f);
+
+
     }
 }

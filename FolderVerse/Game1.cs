@@ -135,6 +135,7 @@ public partial class Game1 : Game
         _pointer=CanvasPoint(mouse);_ui.Pointer=_pointer;
         bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
+        if(IsStatusScreen && _recoveryOpen){if(active)RecoveryPlannerInput(click,escape);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(!active || !IsStatusScreen || !_nodeAssemblyOpen || mouse.RightButton==ButtonState.Released)
             _hangarPanning=false;
         // Consume input before any controls behind the album get a chance to handle it.
@@ -629,6 +630,7 @@ public partial class Game1 : Game
     }
     private void DrawStatusUi()
     {
+        if(_recoveryOpen){DrawRecoveryPlanner();return;}
         if(GuideVisible){DrawGuideScene();return;}
         // Settings use the normal full-canvas logo background without the map
         // or action buttons showing through the transparent content area.

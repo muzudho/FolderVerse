@@ -144,6 +144,9 @@ public static class AutoSaveStore
                     if(type==typeof(BattleState) && field.Name=="<PersuadedUnits>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
                     if(type==typeof(BattleUnitView) && field.Name=="<Robot>k__BackingField")continue;
                     // Defaults for fields introduced after older turn-boundary saves.
+                    if(type==typeof(SalvagePlan) && field.Name=="<Missions>k__BackingField"){field.SetValue(value,new List<RecoveryMission>());continue;}
+                    if(type==typeof(SalvagePlan) && field.Name=="ExpeditionsEnabled")continue;
+                    if(type==typeof(Robot) && field.Name=="<SalvageReserved>k__BackingField")continue;
                     if(type==typeof(Node) && field.Name=="FunctionUnits"){field.SetValue(value,1);continue;}
                     if(type==typeof(Node) && field.Name=="FunctionHost"){field.SetValue(value,-1);continue;}
                     if(type==typeof(Node) && field.Name=="IncomingFactories")continue;

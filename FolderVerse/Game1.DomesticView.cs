@@ -46,7 +46,7 @@ public partial class Game1
         CloseFunctionTransferMap();
         CloseFolderTreeState();
         CloseReservationDirectory();
-        _salvageMapTarget=-1;_salvageCatalogOpen=false;_mapOverlayMenu=false;_salvagePlan=false;_hangarAbandonMode=false;_salvageAbandonConfirmation=null;
+        _recoveryOpen=false;_salvageMapTarget=-1;_salvageCatalogOpen=false;_mapOverlayMenu=false;_salvagePlan=false;_hangarAbandonMode=false;_salvageAbandonConfirmation=null;
         if(_salvageRoutesBefore.HasValue){_net.ShowRoutes=_salvageRoutesBefore.Value;_salvageRoutesBefore=null;}
         _inspectorFoldersOpen=false;_strategyRuler=-1;_factionPickerOpen=false;
         _nodeOfficeOpen=false;

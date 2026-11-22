@@ -10,6 +10,7 @@ public sealed record RobotWorkshopEdit(int Node,long[] Ids,RobotParts? SplitPart
 public sealed record DefenseFlagReservation(int Commander,int Node,int FlagOwner);
 public sealed partial record Robot(long Id,int Owner,RobotParts Parts,RobotRole Role=RobotRole.Soldier,bool Disposal=false)
 {
+    public bool SalvageReserved {get;init;}
     public int? FunctionDisplayNode {get;init;}
     public bool InterceptOnly {get;init;}
     public bool DefenseOnly {get;init;}
@@ -23,7 +24,7 @@ public sealed partial record Robot(long Id,int Owner,RobotParts Parts,RobotRole 
     public long? LongDeliveryNumber {get;init;}
     public int? ReturnHomeCommander {get;init;}
     public string ReturnHomeStatus {get;init;}
-    public bool Stationed=>WarehouseKeeper || DefenseOnly || InterceptOnly || FactoryWorker || LongDeliveryNumber.HasValue || ReturnHomeCommander.HasValue;
+    public bool Stationed=>SalvageReserved || WarehouseKeeper || DefenseOnly || InterceptOnly || FactoryWorker || LongDeliveryNumber.HasValue || ReturnHomeCommander.HasValue;
     public RobotParts DamagedParts {get;init;}=0;
     public RobotParts CheapParts {get;init;}=0;
     public RobotParts PremiumParts {get;init;}=0;
@@ -172,6 +173,7 @@ public sealed class RobotStore
     public bool HasSpace=>Count<StorageLimit;
     internal Robot Depart(long id){var robot=Remove(id);_returnReservations.Add(id);return robot;}
     internal void ReleaseReturn(long id)=>_returnReservations.Remove(id);
+    internal void ReserveStorage(long token){if(!HasSpace)throw new InvalidOperationException("Pocket capacity is already in use.");_returnReservations.Add(token);}
     public void Add(Robot robot)
     {
         if(!robot.ValidIntegration)throw new InvalidOperationException("Invalid integrated parts.");

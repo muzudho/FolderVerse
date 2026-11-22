@@ -105,7 +105,7 @@ public sealed partial class RobotWorld
         =>!CanSetReservationCore(node,robot,kind,commander,false) && CanSetReservationCore(node,robot,kind,commander,true);
     private bool CanSetReservationCore(int node,Robot robot,HangarReservation kind,int? commander,bool ignoreTraining)
     {
-        if(node<0 || node>=Nodes.Length || robot==null)return false;
+        if(node<0 || node>=Nodes.Length || robot==null || robot.SalvageReserved)return false;
         if((robot.IsWorkpiece || robot.IsDismantling) && kind!=HangarReservation.Disposal)return false;
         int country=commander??robot.Owner;if(country<0 || country>=Training.Length)return false;
         var store=Nodes[node];

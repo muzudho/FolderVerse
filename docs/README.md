@@ -1,5 +1,7 @@
 # ドキュメント案内
 
+- [廃品回収：実物ロボットの予約、ポケット貸出と帰還](dev/salvage-expeditions.md)
+
 - [世界征服状況：朝の番組と局アナ](dev/conquest-broadcast.md)
 
 - [v0.14.0 リリースノート](dev/release-v0.14.0.md)

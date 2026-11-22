@@ -93,7 +93,7 @@ public partial class Game1
     private void DrawPrimaryActionButtons() => DrawTutorialChrome(()=>DrawPrimaryActionButtonsCore(),false);
     private void DrawPrimaryActionButtonsCore()
     {
-        string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収計画","地点の施設移転の予約","ロボットパーツ長距離便","取引","計略"};
+        string[] labels={"わたしの国","陣営のターン終了","開戦予約","ロボットパーツ直送便","ロボット輸送長期計画","廃品回収","地点の施設移転の予約","ロボットパーツ長距離便","取引","計略"};
         for(int i=0;i<PrimaryActionCount;i++){
             if(i==StratagemAction && !StratagemInterface || i!=1 && StratagemInterface && _stratagemTrayBlend>=.5f)continue;
             var r=PrimaryActionBounds(i);if(r.Top>=1080)continue;

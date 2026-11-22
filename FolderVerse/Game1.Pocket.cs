@@ -21,6 +21,7 @@ public partial class Game1
     private (int Side,Point Start,Point Origin)? _pocketPan;
     private string PocketRobotLockReason(Robot robot,bool fromNode)
     {
+        if(robot.SalvageReserved)return "廃品回収班の出発予約";
         if(!new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(robot.Parts&p)!=0 && robot.Origin(p)==_setup.PlayerSlot))return "自国のパーツがありません";
         int node=_setup.Nodes.Current(_setup.PlayerSlot).Id;var world=_setup.Robots;
         if(_setup.Campaign.RobotBattles.LockedNode(node))return "継戦中";
@@ -30,6 +31,7 @@ public partial class Game1
         if(edit!=null)return edit.SplitPart.HasValue?"分解予約":"組立予約";
         return world.CanTransferPocket(node,_setup.PlayerSlot,robot)?"":"作業中";
     }
+    private bool RecoveryLoanSlot(int side,int slot)=>side==0&&slot>=0&&_pocketSlots[0]!=null&&Enumerable.Range(0,_pocketSlots[0].Length).Where(i=>_pocketSlots[0][i]==null).TakeLast(_setup.Salvage.Missions.Where(m=>m.Owner==_setup.PlayerSlot&&!m.Finished).Sum(m=>m.LoanTokens.Count)).Contains(slot);
     private bool PocketRobotSelectable(Robot robot,bool fromNode)=>PocketRobotLockReason(robot,fromNode).Length==0;
     private void PocketOutline(Rectangle box,Color color,int width=3)
     {
@@ -112,6 +114,7 @@ public partial class Game1
             if(Vector2.DistanceSquared(drag.Start.ToVector2(),_pointer.ToVector2())<=36 || side<0)return;
             int slot=PocketHit(side);
             if(slot<0)return;
+            if(RecoveryLoanSlot(side,slot)){_pocketMessage="廃品回収班に貸出中です";return;}
             if(side==1 && PocketHangarHasMaterial(slot)){_pocketMessage="原材料のない空き枠を選んでください";return;}
             if(PocketOccupant(drag.Side,drag.Slot)?.Id!=_pocketRobot)return;
             if(side==drag.Side){
@@ -208,6 +211,7 @@ public partial class Game1
                 if(fromNode)DrawHangarBay(card,card.Contains(_pointer),robot==null && !PocketHangarHasMaterial(i) || robot!=null && PocketRobotSelectable(robot,true));
                 else _ui.Box(card,new(30,47,59));
                 if(robot==null){
+                    if(RecoveryLoanSlot(side,i)){_ui.Box(new(card.X+12,card.Y+35,card.Width-24,70),new Color(247,234,196));_ui.Center("貸出中",new(card.X+12,card.Y+42,card.Width-24,30),.5f,new Color(60,55,46));_ui.Center("廃品回収班予備",new(card.X+12,card.Y+77,card.Width-24,23),.28f,new Color(60,55,46));continue;}
                     if(fromNode)
                         foreach(var item in _pocketHangarMaterials.Where(p=>p.Key/3==i))
                             DrawMaplePackage(HangarCellRegion(card,50,18+item.Key%3*62,152,62*item.Value.Sections),item.Value,compact:true);
