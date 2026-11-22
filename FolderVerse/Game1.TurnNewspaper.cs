@@ -63,10 +63,9 @@ public partial class Game1
         var article=_turnPapers[_turnPaperIndex];var faces=CurrentPaperFaces;
         var countries=_turnPapers.Select(a=>a.Country).Distinct().ToArray();
         int face=Array.IndexOf(faces,_turnPaperIndex)+1;
-        _ui.Box(new(20,22,590,58),new Color(23,42,48)*.75f);
-        _ui.Text("新聞フェーズ / 朝刊",new(36,30),.65f,Cream);
-        _ui.Box(new(690,18,1170,48),new Color(23,42,48)*.75f);
-        NewsLine($"{TurnNewspaper.DayLabel(_setup.Population.Turn)} / {Array.IndexOf(countries,article.Country)+1} 紙目・全 {countries.Length} 紙 / {face}面",715,28,1120,.43f,Cream);
+
+        _ui.Box(new(1140,18,720,48),new Color(23,42,48)*.75f);
+        NewsLine($"{TurnNewspaper.DayLabel(_setup.Population.Turn)} / {Array.IndexOf(countries,article.Country)+1} 紙目・全 {countries.Length} 紙 / {face}面",1155,28,690,.36f,Cream);
         float t=MathHelper.SmoothStep(0,1,(float)Math.Clamp((_paperAge-(PaperReadingStart-.7))/.7,0,1));
         var sheet=new Rectangle((int)MathHelper.Lerp(1100,700,t),(int)MathHelper.Lerp(500,300,t),(int)MathHelper.Lerp(260,1150,t),(int)MathHelper.Lerp(120,545,t));
         if(t>0){

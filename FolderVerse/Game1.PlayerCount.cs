@@ -33,7 +33,7 @@ public partial class Game1
     }
     private void DrawPlayerCount()
     {
-        _ui.Text("＜大きなお子様＞の人数確認フェーズ",new(54,28),1f,Cream);
+
         if(!_openingActive && _setupHost!=null)_spriteBatch.Draw(_setupHost,new Rectangle(100,180,500,750),Color.White);
         _ui.Box(new(680,130,1180,230),Cream);
         _ui.Tile(new(675,240),new(45,45),MathHelper.PiOver4,Cream);
@@ -58,7 +58,7 @@ public partial class Game1
     }
     private void DrawComputerPlayerCount()
     {
-        _ui.Text("＜コンピュータープレイヤー＞の人数確認フェーズ",new(54,28),.85f,Cream);
+
         if(!_openingActive && _setupHost!=null)_spriteBatch.Draw(_setupHost,new Rectangle(100,180,500,750),Color.White);
         _ui.Box(new(680,130,1180,230),Cream);
         _ui.Tile(new(675,240),new(45,45),MathHelper.PiOver4,Cream);

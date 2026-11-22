@@ -120,11 +120,11 @@ public partial class Game1
             if(_conquestEntryFromIndustry){
                 var nextScreen=_screen;_screen=Screen.Industry;
                 _spriteBatch.Begin(transformMatrix:transform);
-                try{DrawIndustry();}finally{_spriteBatch.End();_screen=nextScreen;}
+                try{DrawIndustry();DrawPhasePlaque();}finally{_spriteBatch.End();_screen=nextScreen;}
             }
             return;
         }
-        if(_conquestStage>=7 && _screen==Screen.Newspaper){_spriteBatch.Begin(transformMatrix:transform);DrawTurnNewspaper();_spriteBatch.End();return;}
+        if(_conquestStage>=7 && _screen==Screen.Newspaper){_spriteBatch.Begin(transformMatrix:transform);DrawTurnNewspaper();DrawPhasePlaque();_spriteBatch.End();return;}
         GraphicsDevice.Clear(new Color(34,56,67));
         if(!_conquestRelations && !ConquestStudioCut)EnsureConquestFocusedBackdrop();
         _spriteBatch.Begin(transformMatrix:transform);
@@ -139,7 +139,7 @@ public partial class Game1
         _spriteBatch.Begin(transformMatrix:transform);
         if(ConquestStudioCut){DrawConquestTerritoryFlags();DrawConquestTally();}
         DrawConquestBroadcastHost();
-        _ui.Text("世界征服状況フェーズ / 朝の放送",new(30,24),.57f,Cream);
+        DrawPhasePlaqueLabel("世界征服状況","朝の放送",4);
         _ui.Box(new(1530,95,350,45),new Color(23,42,48)*.85f);_ui.Center($"{TurnNewspaper.DayLabel(_setup.Population.Turn)} / 全体ターン {_setup.Population.Turn}",new(1530,95,350,45),.38f,Cream);
         _ui.Button(ConquestRelationsButton,"所属関係図",Muted,.46f);
         _ui.Text("Enter / Esc : 朝刊へ",new(1230,1028),.35f,Cream);

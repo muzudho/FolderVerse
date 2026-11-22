@@ -221,7 +221,7 @@ public partial class Game1
         DrawDiplomacyRoom();
         _ui.Box(new(30,20,1860,100),new Color(16,35,47)*.78f);
         _ui.Box(new(30,878,1860,190),new Color(16,35,47)*.78f);
-        _ui.Text("外交フェーズ",new(54,34),.94f,Cream);
+
         _ui.Text(DueTrade==null?"時間が来ると内政フェーズへ進みます":"時間が来ると辞退して次へ進みます",new(54,898),.43f,Cream);
         DrawPhaseTimer(new(54,1040,1796,12),_diplomacyIdleAge,DiplomacyIdleSeconds);
         if(DueTrade is {} offer)

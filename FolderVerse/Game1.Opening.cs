@@ -351,7 +351,7 @@ public partial class Game1
                         objects:false,geographyOnly:true);
                     _ui.Button(OpeningInspectionToggle,_openingInspectionUnfolded?"組立 / 地星儀":"展開 / 展開図",Muted,.48f);
                 }
-                _ui.Center(_screen==Screen.OpeningReview?"この星で、すべての陣地を目指そう。":"星抽選フェーズ / どの星の物語にしますか？",new(180,65,1560,75),.8f,Cream);
+                _ui.Center(_screen==Screen.OpeningReview?"この星で、すべての陣地を目指そう。":"どの星の物語にしますか？",new(180,110,1560,60),.65f,Cream);
                 _ui.Center(_world.GlobeName+" / 世界 SEED "+_setup.WorldSeed,new(360,800,1200,60),.6f,Cream);
                 if(_setup.EquipmentMode==RobotEquipmentMode.Materials)
                     _ui.Center($"楓の埋蔵量　{_world.OpeningMapleLoads}荷",new(360,850,1200,28),.43f,new Color(255,185,113));
@@ -405,6 +405,7 @@ public partial class Game1
             }
             finally{GraphicsDevice.Viewport=viewport;planet.ManualOrientation=previousPose;}
         }
+        _spriteBatch.Begin(transformMatrix:transform);DrawPhasePlaque();_spriteBatch.End();
         if(_screenshots.CaptureAfterDraw(GraphicsDevice))StartScreenshotFeedback(time.TotalGameTime.TotalSeconds);
         DrawScreenshotFeedback(time.TotalGameTime.TotalSeconds);DrawFullscreenCursor();
     }

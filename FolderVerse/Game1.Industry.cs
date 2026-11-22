@@ -89,7 +89,7 @@ public partial class Game1
         if(_industryRoom==null){using var room=File.OpenRead(Path.Combine(AppContext.BaseDirectory,"Content","Images","Setup","industry-roulette-room-v001.png"));_industryRoom=Texture2D.FromStream(GraphicsDevice,room);}
         PortraitHudLayout.DrawBackground(_spriteBatch,_industryRoom);
         PortraitHudLayout.DrawSplitter(_ui);
-        _ui.Text("産業フェーズ",new(54,28),1.1f,Cream);
+
         if(!stopped && !ComputerExhibition)_ui.Button(IndustrySkip,"スキップ",Accent,.55f);
         var mob=_setupHost;
         if(stopped && result==0)mob=_industryPrayer??=LoadIndustryMob("prayer");
@@ -99,7 +99,7 @@ public partial class Game1
             result==0?new[]{"工場はストップだー！","次こそ製造できますように！"}:
             _setup.Industry.Jackpot?new[]{"数年に一度の当たり年だあ！？","今だ、大チャーンス！"}:
             new[]{"さあ、工場を動かしましょう！"};
-        var speech=new Rectangle(500,40,900,320);
+        var speech=new Rectangle(500,100,900,320);
         DrawSpeechBalloon(speech);
         var textArea=BalloonRenderer.TextArea(speech);
         float scale=Math.Min(.68f,textArea.Width/Math.Max(1,System.Linq.Enumerable.Max(lines,l=>_font.MeasureString(l).X)));

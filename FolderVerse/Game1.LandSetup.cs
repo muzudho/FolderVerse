@@ -154,7 +154,7 @@ public partial class Game1
         return inside;
     }    private void DrawLandSetupUi()
     {
-        _ui.Text(_screen==Screen.Fortune?"運否天賦フェーズ":"土地征服フェーズ",new(60,70),1.1f,Cream);
+
         if(_screen==Screen.Fortune){
             _ui.Text("ロボットと原材料の初期配置",new(75,175),.58f,Color.White);
             if(FortuneSettingsAvailable){

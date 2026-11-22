@@ -43,7 +43,7 @@ public partial class Game1
     private void DrawDomesticPhaseHeading()
     {
         CountryFlagArt.Draw(_ui,_setup,_setup.TurnPlayer,new(54,14,168,112));
-        _ui.Text(PlanningPhaseLabel,new(240,22),1.1f,Cream);
+
     }
     private void ResetInspector(){
         _warCancellationsOpen=false;
