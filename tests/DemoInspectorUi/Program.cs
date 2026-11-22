@@ -15,6 +15,7 @@ sealed class DemoInspectorChecks:Game1{
   ((WorldPreview)Get("_world")).ShowSetup(world,true);((CubeNet)Get("_net")).Home(world);
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_conquestOverview",false);Set("_conquestOverviewEnabled",false);Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);
   Call("ResetInspector");Check((int)Get("_inspectedNode")==-1,"Fixture starts with no inspected supervisor");
+  if(!PendingAudit && Environment.GetEnvironmentVariable("FOLDERVERSE_FACTORY_MODAL_INPUT")!="1")Set("_demoActive",true);
   Set("_demoMapVisits",1);Set("_demoDomesticStage",0);Set("_demoDomesticAge",0d);
   for(int attempt=0;attempt<4 && (int)Get("_populationNode")<0;attempt++)Call("UpdateDemoDomestic",1.8d);
   Call("UpdateDomesticSlide",1f);

@@ -127,7 +127,7 @@ public partial class Game1
         {
             int index=layout.Index;
             var row=_invasionSources[index];
-            if(row.Queen && InvasionQueenAt(layout.Bounds).Contains(p)){row.Selected=!row.Selected;ReserveInvasion(row);return true;}
+            if(row.Queen && InvasionQueenAt(layout.Bounds).Contains(p)){row.Selected=!row.Selected;if(_computerMarches==null)ReserveInvasion(row);return true;}
             var robots=InvasionPreviewRobots(row);var available=InvasionRobots(row);
             for(int slot=0;slot<robots.Length;slot++)if(InvasionCardAt(layout.Bounds,slot).Contains(p))
             {
