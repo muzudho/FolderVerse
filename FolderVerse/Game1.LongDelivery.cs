@@ -132,8 +132,6 @@ public partial class Game1
         _ui.Box(new(x,146,560,820),new Color(27,49,62));_ui.Box(new(x,146,560,6),color);
         _ui.Text(side==0?"長距離便 左インスペクター / 元地点":"長距離便 右インスペクター / 移動先",new(x+20,164),.46f,color);
         _ui.Center(_setup.Nodes.DisplayName(_setup.Nodes.All[node]),new(x+12,206,536,34),.34f,Cream);
-        _ui.Button(LongCancelButton(side),"キャンセル",Muted,.38f);_ui.Button(LongPageButton(side,-1),"前",Muted,.4f);_ui.Button(LongPageButton(side,1),"次",Muted,.4f);
-        _ui.Text($"格納庫 {store.Count}/{store.TotalCapacity}　{_directPages[side]+1}/{Math.Max(1,(_directSlots[side].Length+HangarSlotsPerPage-1)/HangarSlotsPerPage)}ページ",new(x+20,278),.28f,Cream);
         foreach(int slot in VisibleHangarSlots(_directSlots[side].Length,_directPages[side])){
             var cell=DirectCell(side,slot);var robot=store.Robots.FirstOrDefault(r=>r.Id==_directSlots[side][slot]);var incoming=LongIncoming(node,slot,robot);
             _ui.Box(cell,_directDrag.HasValue && side==1 && cell.Contains(_pointer)?new Color(65,100,115):new Color(18,35,46));
@@ -149,6 +147,8 @@ public partial class Game1
             }
             if(robot!=null)_ui.Center($"ID {robot.Id}",new(cell.X,cell.Bottom-32,cell.Width,26),.3f,Cream);
         }
+        _ui.Button(LongCancelButton(side),"キャンセル",Muted,.38f);_ui.Button(LongPageButton(side,-1),"前",Muted,.4f);_ui.Button(LongPageButton(side,1),"次",Muted,.4f);
+        _ui.Text($"格納庫 {store.Count}/{store.TotalCapacity}　{_directPages[side]+1}/{Math.Max(1,(_directSlots[side].Length+HangarSlotsPerPage-1)/HangarSlotsPerPage)}ページ",new(x+20,278),.28f,Cream);
     }
     private void DrawLongPair()
     {

@@ -216,12 +216,11 @@ public partial class Game1
                 }
                 bool selectable=PocketRobotSelectable(robot,fromNode),hover=selectable && card.Contains(_pointer),own=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.Any(p=>(robot.Parts&p)!=0 && robot.Origin(p)==player);
                 if(!fromNode)_ui.Box(card,hover?new Color(70,103,118):own?Muted:new Color(37,44,53));
-                int work=_setup.Robots.WorkCountry(node.Id,robot);var ownerColor=_setup.OwnerColor(work>=0?work:own?player:robot.Owner);_ui.Box(new(card.X+3,card.Y+3,card.Width-6,23),ownerColor);
-                _ui.Center(robot.WarehouseKeeper?"倉庫管理人":work>=0?$"仕事 #{work+1}":own?"自国パーツあり":"自国パーツなし",new(card.X+3,card.Y+3,card.Width-6,23),.30f,UiPainter.ContrastInk(ownerColor));
                 int height=Math.Min(160,card.Height-74),width=Math.Max(48,height*2/3);
                 var robotBounds=new Rectangle(card.Center.X-width/2,card.Y+27,width,height);
-                if(fromNode)DrawHangarRobot(robotBounds,robot,selectable?1:.38f);
-                else DrawRobotGlyphCore(robotBounds,robot,true,selectable?1:.38f,null,true);
+                DrawHangarRobot(robotBounds,robot,selectable?1:.38f);
+                int work=_setup.Robots.WorkCountry(node.Id,robot);var ownerColor=_setup.OwnerColor(work>=0?work:own?player:robot.Owner);_ui.Box(new(card.X+3,card.Y+3,card.Width-6,23),ownerColor);
+                _ui.Center(robot.WarehouseKeeper?"倉庫管理人":work>=0?$"仕事 #{work+1}":own?"自国パーツあり":"自国パーツなし",new(card.X+3,card.Y+3,card.Width-6,23),.30f,UiPainter.ContrastInk(ownerColor));
                 _ui.Center(PartsLabel(robot),new(card.X,card.Bottom-45,card.Width,24),System.Math.Min(.34f,(card.Width-8)/System.Math.Max(1,_font.MeasureString(PartsLabel(robot)).X)),selectable?Cream:Cream*.55f);
                 _ui.Center("ID "+robot.Id,new(card.X,card.Bottom-24,card.Width,18),.28f,Cream);
                 string reason=PocketRobotLockReason(robot,fromNode);

@@ -209,11 +209,8 @@ public partial class Game1
         var workshop=PlanningWorkshop(_populationNode);var store=PlanningStock.Nodes[HangarPlanningNode];
         var materials=AssemblyMaterials(store);
         _ui.Box(new(54,150,850,825),new(27,49,62));
-        _ui.Text($"格納庫 {store.Count}/{store.TotalCapacity}",new(84,256),.28f,Cream);
         var (mapleLabel,mergedMaple)=MapleArrivalLabel(HangarPlanningNode,store);
         string forecast=HangarPlanningNode==_populationNode?"入荷・施設移転・組替後の予定":"移転先での格納・組替予定";
-        _ui.Text(mapleLabel.Length>0?mapleLabel:forecast,new(232,256),.28f,Cream);DrawHangarUndo();
-
 
         bool manage=DomesticOperationsAllowed && CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner);
         bool hoveringPart=false;
@@ -297,7 +294,6 @@ public partial class Game1
                 if(Math.Min(DefenseShoeProgress(robot),WorkShoeProgress(robot))>.6f)DrawHangarReservationLabel(new(cell.X,cell.Y+208,cell.Width,24),robot,reservation);
             }else _ui.Center(partsName,new(cell.X,cell.Y+208,cell.Width,24),Math.Min(.4f,(cell.Width-8)/Math.Max(1,_font.MeasureString(partsName).X)),Cream);
             _ui.Center((robot.Id<0?"組替予定":"ID "+robot.Id)+(robot.DamagedParts!=0?" / 損傷":""),new(cell.X,cell.Y+236,90,22),.27f,Cream);
-            if(robot.CanFight)DrawEquipmentCounts(new(cell.X+92,cell.Y+235,cell.Width-96,22),robot.Equipment(robot.Owner,_setup.EquipmentMode),Cream);
             if(robot.ReturnHomeCommander.HasValue){
                 _ui.Box(new(cell.X+2,cell.Y+124,cell.Width-4,24),new Color(18,35,46));
                 _ui.Center(robot.ReturnHomeStatus??"国へ帰る予約",new(cell.X+3,cell.Y+124,cell.Width-6,26),.25f,Accent);
@@ -343,8 +339,6 @@ public partial class Game1
             if(workshop.AutoAssemblyDisabled)_ui.Center("✓",check,.35f,checkColor);
             _ui.Text("パーツ構成を自分で管理する",new(check.Right+8,HangarAutoCheck.Y+4),.36f,checkColor);
         }
-        DrawReturnHomeHangar();
-        DrawNodeTabs();DrawHangarPages();
         if(_hangarDrag.HasValue)
         {
             var robot=store.Robots.FirstOrDefault(r=>r.Id==_hangarDrag);if(robot!=null)
@@ -353,6 +347,12 @@ public partial class Game1
         else if(_mapleDrag is long mapleId && _mapleMoved && store.MaplePackages.FirstOrDefault(p=>p.Id==mapleId) is {} maple)
             DrawMaplePackage(new(_pointer.X-50,_pointer.Y-35,100,70),maple,compact:true);
         else DrawDeliveryTagHint(new(54,150,850,825));
+        // UI overlays are foreground even when a cap protrudes from the next row or a drag ghost.
+        DrawHangarEquipmentForeground(store);
+        _ui.Text($"格納庫 {store.Count}/{store.TotalCapacity}",new(84,256),.28f,Cream);
+        _ui.Text(mapleLabel.Length>0?mapleLabel:forecast,new(232,256),.28f,Cream);DrawHangarUndo();
+        DrawNodeTabs();DrawHangarPages();
+        DrawReturnHomeHangar();
         DrawMapleShippingPanel();
     }
     private void TrackWarehouseKeeperHover(Rectangle cell,Robot robot)

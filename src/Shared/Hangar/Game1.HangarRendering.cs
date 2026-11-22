@@ -33,7 +33,7 @@ public partial class Game1
     private void DrawHangarRobot(Rectangle bounds,Robot robot,float opacity=1,Func<RobotParts,float> partOpacity=null)
     {
         bool materials=_setup.EquipmentMode==RobotEquipmentMode.Materials;
-        DrawRobotGlyphCore(bounds,robot,true,opacity,partOpacity,showIntegratedMaterial:materials,allowCaptain:materials);
+        DrawRobotGlyphCore(bounds,robot,true,opacity,partOpacity,showIntegratedMaterial:materials,allowCaptain:materials,captainCapOverflow:true);
     }
 
 }

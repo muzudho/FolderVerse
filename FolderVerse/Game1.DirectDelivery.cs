@@ -153,7 +153,6 @@ public partial class Game1
             _ui.Text(label,new(x+20,208),Math.Min(.48f,520/Math.Max(1,_font.MeasureString(label).X)),Cream);
             string mark="目印："+NodeLandmarks.At(_setup,node).Description;
             _ui.Text(mark,new(x+20,241),Math.Min(.35f,520/Math.Max(1,_font.MeasureString(mark).X)),Cream);
-            _ui.Text($"予定の格納庫 {store.Count}/{store.TotalCapacity}",new(x+20,274),.32f,Cream);
             if(store.MapleUnits>0)_ui.Text($"楓の木 {store.MapleUnits}",new(x+20,888),.32f,Cream);
             var incomingMaterials=DirectIncomingMaterials(side);
             var storedMaterials=DirectStoredMaterials(side);
@@ -204,6 +203,7 @@ public partial class Game1
                     else if(robot.IntegratedParts!=0)_ui.Center(IntegratedLabel(robot.IntegratedParts),labelArea,Math.Min(.24f,cell.Width/680f),Cream);
                 }
             }
+            _ui.Text($"予定の格納庫 {store.Count}/{store.TotalCapacity}",new(x+20,274),.32f,Cream);
             DrawDirectPages(side);
             _spriteBatch.End();_spriteBatch.Begin(transformMatrix:transform);
         }

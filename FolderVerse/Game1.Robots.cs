@@ -15,7 +15,7 @@ public partial class Game1
     private void DrawRobotGlyph(Rectangle r,Robot robot,bool whiteOutline=false,float opacity=1,Func<RobotParts,float> partOpacity=null)
         => DrawRobotGlyphCore(r, robot, whiteOutline, opacity, partOpacity, showIntegratedMaterial: false);
 
-    private void DrawRobotGlyphCore(Rectangle r,Robot robot,bool whiteOutline,float opacity,Func<RobotParts,float> partOpacity,bool showIntegratedMaterial,bool allowCaptain=false)
+    private void DrawRobotGlyphCore(Rectangle r,Robot robot,bool whiteOutline,float opacity,Func<RobotParts,float> partOpacity,bool showIntegratedMaterial,bool allowCaptain=false,bool captainCapOverflow=false)
     {
         if(robot.RecoveredRaw!=null){DrawScrapArt(r,opacity);return;}if(robot.IsDismantling)opacity*=.6f; // Outline only the exterior, including for translucent reservations and delivery ghosts.
         var shapes=new System.Collections.Generic.List<(Rectangle Bounds,RobotParts Part,bool Face)>();
@@ -28,7 +28,10 @@ public partial class Game1
         var cap=artHead && robot.Role==RobotRole.Captain
             ?(_captainCapTexture??=LoadBattleToyTexture("captain-cap")):null;
         Rectangle capBounds=default;
-        if(cap!=null){
+        if(cap!=null && captainCapOverflow){
+            // Hangar hit regions stay fixed; only this decorative cap extends above them.
+            capBounds=HangarCaptainCapBounds(r);
+        }else if(cap!=null){
             int capHeight=r.Height/4;
             int capWidth=(r.Height-capHeight)*12/25;
             int overlap=Math.Max(1,r.Height/16);
