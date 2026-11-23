@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 public partial class Game1
 {
     private bool _reservationDirectory;
-    private (bool Symbols,bool Equator,bool Robots,bool Batteries,bool Countries,bool Routes,bool Others,bool GlobeCountries) _directoryBefore;
+    private (bool Symbols,bool Equator,bool Robots,bool Batteries,bool Countries,bool Routes,int HiddenFilters,bool GlobeCountries) _directoryBefore;
     private readonly List<(Rectangle Bounds,int Node)> _directoryHits=new();
     private static readonly Rectangle ReservationDirectoryButton=new(444,70,60,60),ReservationDirectoryClose=new(516,82,40,40);
     private static readonly Color[] DirectoryColors={new(187,43,48),new(174,218,76),new(39,128,69),new(193,145,12),new(135,218,242),new(174,180,187)};
@@ -37,17 +37,17 @@ public partial class Game1
     {
         if(_reservationDirectory)return;
         ResetInspector();_mapLayerListOpen=_trafficLayerListOpen=_mapDragListOpen=false;
-        _directoryBefore=(_net.ShowMapSymbols,_net.ShowEquator,_net.ShowRobots,_net.ShowBatteries,_net.ShowCountryColors,_net.ShowRoutes,_net.ShowOtherCountries,_world.CountryColors);
+        _directoryBefore=(_net.ShowMapSymbols,_net.ShowEquator,_net.ShowRobots,_net.ShowBatteries,_net.ShowCountryColors,_net.ShowRoutes,_net.HiddenMapFilters,_world.CountryColors);
         _reservationDirectory=_net.DirectoryOnly=true;
         _net.ShowMapSymbols=_net.ShowEquator=_net.ShowRobots=_net.ShowBatteries=_net.ShowCountryColors=_world.CountryColors=false;
-        _net.ShowRoutes=_net.ShowOtherCountries=true;
+        _net.ShowRoutes=true;_net.HiddenMapFilters=0;
         _net.ClearGlobeRobotBadges();_world.ShowSetup(_setup,true);
     }
     private void CloseReservationDirectory()
     {
         if(!_reservationDirectory)return;
         _reservationDirectory=_net.DirectoryOnly=false;_directoryHits.Clear();
-        (_net.ShowMapSymbols,_net.ShowEquator,_net.ShowRobots,_net.ShowBatteries,_net.ShowCountryColors,_net.ShowRoutes,_net.ShowOtherCountries,_world.CountryColors)=_directoryBefore;
+        (_net.ShowMapSymbols,_net.ShowEquator,_net.ShowRobots,_net.ShowBatteries,_net.ShowCountryColors,_net.ShowRoutes,_net.HiddenMapFilters,_world.CountryColors)=_directoryBefore;
         _world.ShowSetup(_setup,true);
     }
     private bool ReservationDirectoryInput(Point p,bool escape)

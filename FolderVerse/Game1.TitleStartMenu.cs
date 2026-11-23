@@ -52,25 +52,33 @@ public partial class Game1
             _ui.Center("PRESS ENTER",new(740,1000,440,40),.42f,new Color(26,55,80));return;
         }
         _ui.Box(new(0,0,1920,1080),Color.Black*.3f);
-        DrawRulebookPaper(TitleMenuPaper);
-        var heading=new Rectangle(790,336,340,34);
-        // Expand the printed strokes in every direction for an extra-bold heading.
-        for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
-            var impression=heading;impression.Offset(x,y);
-            _ui.Center("スタートメニュー",impression,.6f,RulebookRose);
-        }
+        DrawPopupHintPaper(TitleMenuPaper);
+        var teal=new Color(29,82,82);
+        var heading=new Rectangle(790,335,340,38);
+        _ui.Center("スタートメニュー",heading,.68f,teal);
         void Item(int slot,string text,bool enabled=true){
             var r=TitleMenuItem(slot);
-            bool highlighted=enabled && (r.Contains(_pointer) || _titleMenuKeyboardFocus && _titleMenuSelection==slot);
-            if(highlighted){_ui.Box(new(r.X,r.Bottom-5,r.Width,1),TitleMenuInk);_ui.Text("›",new(r.X-14,r.Y+12),.6f,TitleMenuInk);}
-            _ui.Center(text,r,System.Math.Min(.65f,r.Width/System.Math.Max(1,_font.MeasureString(text).X)),
-                enabled?TitleMenuInk:new Color(139,129,125));
+            bool highlighted=enabled && (_titleMenuKeyboardFocus?_titleMenuSelection==slot:r.Contains(_pointer));
+            if(enabled){
+                var shadow=r;shadow.Offset(0,4);
+                PrimaryRoundBox(shadow,new Color(98,72,44)*.45f,9);
+            }
+            PrimaryRoundBox(r,highlighted?new Color(190,135,57):enabled?teal:new Color(192,175,149),9);
+            var face=r;face.Inflate(-2,-2);
+            PrimaryRoundBox(face,highlighted?teal:enabled?new Color(255,246,221):new Color(232,218,195),7);
+            var ink=highlighted?new Color(255,246,221):enabled?teal:new Color(120,107,92);
+            _ui.Center(text,r,System.Math.Min(.65f,(r.Width-28)/System.Math.Max(1,_font.MeasureString(text).X)),ink);
         }
         Item(0,"遊び方");
         Item(1,"キャンペーンモード");
         Item(2,"続きから",_hasAutoSave);
         Item(3,"最初から");
         Item(4,"＜システムメニュー＞");
-        if(_autoSaveError.Length>0)_ui.Center(_autoSaveError,new(795,860,330,45),.26f,TitleMenuInk);
+        if(_autoSaveError.Length>0)
+        {
+            var notice=new Rectangle(795,855,330,28);
+            float scale=System.Math.Min(.28f,notice.Width/System.Math.Max(1,_font.MeasureString(_autoSaveError).X));
+            _ui.Center(_autoSaveError,notice,scale,TitleMenuInk);
+        }
     }
 }
