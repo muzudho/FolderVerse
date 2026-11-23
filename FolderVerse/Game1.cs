@@ -131,12 +131,12 @@ public partial class Game1 : Game
     }
     protected override void Update(GameTime gameTime){long start=System.Diagnostics.Stopwatch.GetTimestamp();try{UpdateScene(gameTime);}finally{_framePerformance.Update(System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds);}}
     private void UpdateScene(GameTime gameTime)
-    { _autoSaveNoticeSeconds=Math.Max(0,_autoSaveNoticeSeconds-gameTime.ElapsedGameTime.TotalSeconds);HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive);if(!_autoPaused){UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds);UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);}UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);UpdateIndustryMusic();UpdateEndingMusic(IsActive);base.Update(gameTime); }
+    { _autoSaveNoticeSeconds=Math.Max(0,_autoSaveNoticeSeconds-gameTime.ElapsedGameTime.TotalSeconds);HandleInput(Mouse.GetState(),Keyboard.GetState(),gameTime,IsActive && WindowsInputFocus.IsForeground);if(!_autoPaused){UpdateDispositionScene(gameTime.ElapsedGameTime.TotalSeconds);UpdateGlobeRock(gameTime.ElapsedGameTime.TotalSeconds);}UpdateBattleMusic(IsActive);UpdateTitleMusic(IsActive);UpdateIndustryMusic();UpdateEndingMusic(IsActive);base.Update(gameTime); }
     private void HandleInputCore(MouseState mouse,KeyboardState keyboard,GameTime gameTime,bool active)
     {
         _pointer=CanvasPoint(mouse);_ui.Pointer=_pointer;
         if(PerformanceUiInput(mouse,keyboard,active)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        bool click=active && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
+        bool click=active && CanvasBounds().Contains(new Point(mouse.X,mouse.Y)) && mouse.LeftButton==ButtonState.Pressed && _previousMouse.LeftButton==ButtonState.Released;
         bool escape=active && keyboard.IsKeyDown(Keys.Escape) && _previousKeyboard.IsKeyUp(Keys.Escape);
         if(IsStatusScreen && _recoveryOpen){if(active){RecoveryMapCamera(mouse);RecoveryPlannerInput(click,escape);}_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(!active || !IsStatusScreen || !_nodeAssemblyOpen || mouse.RightButton==ButtonState.Released)
