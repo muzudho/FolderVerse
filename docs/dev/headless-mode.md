@@ -1,4 +1,4 @@
-# 解析用ヘッドレスモード
+﻿# 解析用ヘッドレスモード
 
 `--headless` を付けると `Game1`、ウィンドウ、描画、音声を作らず、通常のモデルとCPU判断で新規９素材世界を進める。通常プレイ／自動操縦／エキシビジョンの演出には影響しない。
 
@@ -44,3 +44,10 @@ NASへのビルド中に接続が途切れたため、空き容量を確認し�
 - No current real-screen/headless comparison performed. Next isolated current-build comparison with explicit equal world/cast/rights/fortune/CPU/stock settings and phase-boundary snapshots; then identify first differing action before a product repair. Full state, winner/convergence, resume-versus-continuous and physical OS input remain unverified. No duplicate shared-UI run, commit/push/publication.
 
 - Improvement review 2026-11-22T21:26:55.601882+09:00 JST (start21:26), HEADb3a5cb5c unchanged. Prior079 second-turn discrepancy remains unresolved; latest audit has no current-HEAD runtime reproduction and explicit fortune-stock settings still need alignment before attribution. No speculative CPU/product change or old-binary rerun; no build/UI launch. Next bounded isolated current-source comparison with equal settings and first differing phase, then minimal repair if reproduced. Existing docs changes protected; review complete only, gameplay parity not validated, no commit/push/publication.
+
+
+## Audit 2026-11-23 current layout / HEAD8eb4b2e6
+
+- Current Headless build succeeded; isolated --compare-exhibition run started21:16:27 JST and ended21:18:07 JST, limit300s/99.98s/exit1, no timeout. Output: NAS tmp/delete-after-2026-11-23/tutorial-current/headless-exhibition-8eb4b2e6. Build/run logs copied with SHA256 verification to NAS archives/diagnostics/headless-layout-8eb4b2e6-2026-11-23. No product/test edits in this comparison.
+- Same world42/cast8/rights492471852/fortune Random123 and4CPU; current normal/headless defaults both25/25 (prior b3 default mismatch note is historical). Initial fortune and characters MATCH, initial stocks DIFFER. Both first/second post-industry turns: number/industry/conquest MATCH, owners/robot stock/ranking DIFFER. Earliest observed discrepancy is now initial stocks, before turn1; this is not proof of a CPU decision defect. Diagnostic rebind remains present.
+- Comparison completed with unresolved parity; inspect initial stock generation and exact settings before gameplay repair. Does not verify all phase boundaries, full state, resume parity, natural conquest, physical OS input or every layout. Existing user changes/saves protected; no commit/push/publication.

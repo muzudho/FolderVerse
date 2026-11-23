@@ -16,6 +16,11 @@ sealed class MenuGame:Game1{
  }
  void Click(int x,int y){Input(new(x,y));Input(new(x,y),ButtonState.Pressed);Input(new(x,y));}
  void Key(Keys key){Input(default,keys:new[]{key});Input(default);}
+ void CheckResumed(string message){
+  // Releasing the input may open the unread turn newspaper after a successful resume.
+  if(Get("_screen").ToString()=="Newspaper")Key(Keys.Escape);
+  Check(Get("_screen").ToString()=="WorldStatus" && (string)Get("_autoSaveError")=="" && ((WorldSetup)Get("_setup")).WorldSeed==123,message);
+ }
  string path=Path.Combine(AppContext.BaseDirectory,"menu-save-test","autosave.json.gz");int frame;
  readonly bool auditBook=Environment.GetEnvironmentVariable("FOLDERVERSE_TUTORIAL_BOOK_AUDIT")=="1";
  protected override void LoadContent(){
@@ -27,7 +32,12 @@ sealed class MenuGame:Game1{
   Click(960,617);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Unavailable Continue row is inert without save");
   Click(960,417);Check((bool)Get("_tutorialMenuOpen"),"How to Play opens tutorial guide");
   Check(!(bool)Call("UpdateDemo",11d,true,false,false,false,11d),"Tutorial guide pauses demo");
-  Click(1100,810);Check((bool)Get("_tutorialMenuOpen"),"Unimplemented planets are disabled");
+  var planetNames=(string[])typeof(Game1).GetField("TutorialPlanetNames",BindingFlags.NonPublic|BindingFlags.Static)!.GetValue(null)!;
+  for(int i=2;i<planetNames.Length;i++){
+   var card=(Rectangle)typeof(Game1).GetMethod("TutorialPlanetCard",BindingFlags.NonPublic|BindingFlags.Static)!.Invoke(null,new object[]{i})!;
+   Click(card.Center.X,card.Center.Y);Key(Keys.Enter);
+   Check((bool)Get("_tutorialMenuOpen") && Get("_screen").ToString()=="Title","Unimplemented planet remains disabled for click and Enter: "+planetNames[i]);
+  }
   Click(1012,477);Check(Get("_screen").ToString()=="OpeningBook","Second planet opens the tutorial storybook");
   Click(1675,55);var tutorial=(WorldSetup)Get("_setup");Check(tutorial.TutorialMapBeforeWar,"Skipping the storybook starts the integrated tutorial");
   Check(Get("_screen").ToString()=="WorldStatus" && tutorial.PlayerCount==1 && tutorial.HumanPlayers.SequenceEqual(new[]{0}) && tutorial.PlayerSlot==0,"Step one reaches domestic as No.1");
@@ -97,12 +107,14 @@ sealed class MenuGame:Game1{
   Check((string)nameMethod.Invoke(null,new object[]{"エミリア・アルメ"})! =="エミリア アルメ" && (string)nameMethod.Invoke(null,new object[]{"エミリア　 アルメ"})! =="エミリア アルメ","Medallion keeps full name with one separating space");
   var font=(SpriteFont)Get("_font");
   var layout=((string Glyph,Vector2 At,float Rotation,Vector2 Origin)[])Call("MedallionNameLayout",Vector2.Zero,"エミリア・アルメ");
-  Check(layout.All(l=>Math.Abs(l.At.Length()-132)<.001),"Medallion engraving radius moves outward by two pixels");
+  var radius=(float)typeof(Game1).GetField("MedallionNameRadius",BindingFlags.NonPublic|BindingFlags.Static)!.GetRawConstantValue()!;
+  var nameScale=(float)typeof(Game1).GetField("MedallionFontScale",BindingFlags.NonPublic|BindingFlags.Static)!.GetRawConstantValue()!;
+  Check(layout.All(l=>Math.Abs(l.At.Length()-radius)<.001),"Medallion engraving follows its current radius");
   for(int i=1;i<layout.Length;i++){
-   float bounds=(font.MeasureString(layout[i-1].Glyph).X+font.MeasureString(layout[i].Glyph).X)*(.36f*1.2f)/(2*132);
+   float bounds=(font.MeasureString(layout[i-1].Glyph).X+font.MeasureString(layout[i].Glyph).X)*nameScale/(2*radius);
    Check(Math.Abs(layout[i].Rotation-layout[i-1].Rotation-bounds-MathHelper.ToRadians(5))<.0001,"Every character has exactly five degrees of additional spacing");
   }
-  float firstEdge=layout[0].Rotation-font.MeasureString(layout[0].Glyph).X*(.36f*1.2f)/(2*132),lastEdge=layout[^1].Rotation+font.MeasureString(layout[^1].Glyph).X*(.36f*1.2f)/(2*132);
+  float firstEdge=layout[0].Rotation-font.MeasureString(layout[0].Glyph).X*nameScale/(2*radius),lastEdge=layout[^1].Rotation+font.MeasureString(layout[^1].Glyph).X*nameScale/(2*radius);
   Check(Math.Abs(firstEdge+lastEdge)<.0001,"Curved full name is centered at twelve o'clock");
   float band=(float)typeof(Game1).GetField("MedallionBandWidth",BindingFlags.NonPublic|BindingFlags.Static)!.GetRawConstantValue()!;
   Check(Math.Abs(band-26.4f)<.0001,"Engraving band is 1.2 times its previous width");
@@ -124,9 +136,9 @@ sealed class MenuGame:Game1{
   Click(960,930);Click(960,350);Check((bool)Get("_titleMenuOpen"),"Blank paper has no hidden close button");Key(Keys.Escape);
   Click(960,930);Click(960,717);Check(Get("_screen").ToString()=="OpeningBook","New Game opens the storybook");Click(1675,55);Check(Get("_screen").ToString()=="PlayerCount","New Game opens existing player-count flow");
   var w=(WorldSetup)Get("_setup");w.SetWorld(123);Check(w.TutorialStep==0,"Normal world clears tutorial restrictions");w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);((WorldPreview)Get("_world")).ShowSetup(w,true);((CubeNet)Get("_net")).Home(w);w.Industry.Queue(1);Call("BeginIndustry");Check(Get("_screen").ToString()=="Industry" && w.Industry.Pending,"Normal play retains industrial roulette");w.Industry.Reset();Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Call("AutoSaveDomestic");Call("ReturnToTitle");
-  Click(960,930);Check((int)Get("_titleMenuSelection")==2,"Continue is initial selection with save");Key(Keys.Down);Check((int)Get("_titleMenuSelection")==3,"Arrow key selects New Game");Key(Keys.Up);Check((int)Get("_titleMenuSelection")==2,"Arrow key returns to Continue");Input(new(960,717));Input(new(960,717),keys:new[]{Keys.Up});Input(new(960,717));Check((int)Get("_titleMenuSelection")==2,"Stationary mouse cannot override keyboard selection");Key(Keys.Enter);Check(Get("_screen").ToString()=="WorldStatus","Keyboard Continue restores game");Call("ReturnToTitle");
+  Click(960,930);Check((int)Get("_titleMenuSelection")==2,"Continue is initial selection with save");Key(Keys.Down);Check((int)Get("_titleMenuSelection")==3,"Arrow key selects New Game");Key(Keys.Up);Check((int)Get("_titleMenuSelection")==2,"Arrow key returns to Continue");Input(new(960,717));Input(new(960,717),keys:new[]{Keys.Up});Input(new(960,717));Check((int)Get("_titleMenuSelection")==2,"Stationary mouse cannot override keyboard selection");Key(Keys.Enter);CheckResumed("Keyboard Continue restores game");Call("ReturnToTitle");
   var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();
-  Click(960,930);Click(960,617);Check(Get("_screen").ToString()=="WorldStatus","Continue hit testing works at 960x540");Call("ReturnToTitle");
+  Click(960,930);Click(960,617);CheckResumed("Continue hit testing works at 960x540");Call("ReturnToTitle");
   graphics.PreferredBackBufferWidth=1920;graphics.PreferredBackBufferHeight=1080;graphics.ApplyChanges();
   var savedBytes=File.ReadAllBytes(path);File.WriteAllText(path,"broken");Click(960,930);Click(960,617);Check((bool)Get("_titleMenuOpen") && Get("_screen").ToString()=="Title","Resume failure retains usable paper menu");Click(960,717);Check(Get("_screen").ToString()=="OpeningBook","New Game opens the storybook");Click(1675,55);Check(Get("_screen").ToString()=="PlayerCount" && File.ReadAllText(path)=="broken","New Game remains available without deleting unreadable save");File.WriteAllBytes(path,savedBytes);Set("_autoSaveError","");Set("_screen",Enum.Parse(Get("_screen").GetType(),"Title"));Call("OpenTitleStartMenu");
   Console.WriteLine("PASS: Start modal, tutorial guide, four-soldier preset, saved factory restrictions, skipped tutorial industry, extra-bold deboss medallion names and war reservation counts, save-dependent Continue, New Game, keyboard navigation, text-only paper, Escape/outside, demo pause and small-window hit testing.");

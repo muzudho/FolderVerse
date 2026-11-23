@@ -86,17 +86,19 @@ sealed class DemoInspectorChecks:Game1{
   if(frame==7){Call("UpdateDemoDomestic",1.8d);Check((bool)Get("_reignView"),"Demo did not open my country before movement");Call("UpdateDomesticSlide",1f);}
   if(frame==8){
    var button=(Rectangle)typeof(Game1).GetField("MovementButton",F|BindingFlags.Static)!.GetValue(null)!;
+   var visibleMovement=(Rectangle)Call("InspectorScreenBounds",button);
    Call("UpdateDemoDomestic",1.8d);Check((bool)Get("_movementOpen") && !(bool)Get("_reignView"),"Demo did not open movement through the country inspector");
-   Check(((Rectangle)Call("InspectorScreenBounds",button)).Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Movement click misses visible button");
+   Check(visibleMovement.Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Movement click misses visible button");
   }
   if(frame==9){
    Console.WriteLine($"Demo movement follow-up: stage={Get("_demoDomesticStage")}, overview={Get("_transportOverview")}, movement={Get("_movementOpen")}");
    var destination=((CubeNet)Get("_net")).MovementTargets.First();
    Call("SelectMoveNode",destination);Set("_demoDomesticStage",15);Set("_demoDomesticAge",0d);
    int orders=world.Campaign.PlannedOrders.Count;
-   Call("UpdateDemoDomestic",1.8d);
    var confirm=(Rectangle)typeof(Game1).GetField("ConfirmMoveButton",F|BindingFlags.Static)!.GetValue(null)!;
-   Check(((Rectangle)Call("InspectorScreenBounds",confirm)).Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Demo movement confirmation misses visible button");
+   var visibleConfirm=(Rectangle)Call("InspectorScreenBounds",confirm);
+   Call("UpdateDemoDomestic",1.8d);
+   Check(visibleConfirm.Contains(((Vector2)Get("_demoClickPoint")).ToPoint()),"Demo movement confirmation misses visible button");
    Check(!(bool)Get("_movementOpen") && world.Campaign.PlannedOrders.Count==orders+1 && world.Campaign.PlannedOrders.Any(o=>o.Peaceful && o.TargetNode==destination),"Demo movement confirmation creates exactly one peaceful reservation");
    Call("ResetInspector");Set("_screen",Enum.Parse(Get("_screen").GetType(),"PlayerCount"));
    Set("_demoActive",true);Set("_demoIntro",false);Set("_demoStepAge",0d);Call("UpdateDemo",2.99d,true,false,false,false,100d);
