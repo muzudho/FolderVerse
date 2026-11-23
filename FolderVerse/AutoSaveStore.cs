@@ -91,7 +91,7 @@ public static class AutoSaveStore
             else foreach(var field in Fields(type)){
                 if(!entry.Fields.TryGetValue(field.Name,out int id)){
                     if(type==typeof(RobotPartPlanning) && field.Name=="<WorkpieceResumes>k__BackingField"){field.SetValue(value,new List<WorkpieceResumeOrder>());continue;}
-                    if(type==typeof(PlannedPartMove) && field.Name=="<CombineWorkpieces>k__BackingField")continue;
+                    if(type==typeof(PlannedPartMove) && field.Name is "<CombineWorkpieces>k__BackingField" or "<SwapWarehouseParts>k__BackingField")continue;
                     if(type==typeof(Robot) && new[]{"<HeadWork>k__BackingField","<BodyWork>k__BackingField","<LegsWork>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(RobotWorkshop) && new[]{"_activeWorkpiece","_interruptedWorkpieces","_workpieceOwner"}.Contains(field.Name))continue;
                     if(type==typeof(RobotWorkshop) && new[]{"_rawConsumed","<CompletedBatches>k__BackingField","<StartAfterWorker>k__BackingField","<StartAfterBatch>k__BackingField"}.Contains(field.Name))continue;

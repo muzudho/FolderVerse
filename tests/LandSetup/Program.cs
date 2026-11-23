@@ -75,7 +75,33 @@ void VerifyWarehouseMaterials()
     Check(store.Robots.Single(r=>r.WarehouseKeeper).Id==equal.Id,"An equal successor takes over at delivery");
     Check(w.Robots.PartPlanning.ReserveRole(w,site.Id,equal.Id,HangarReservation.WarehouseSwap,site.Owner,higher.Id),
         "A higher successor can be reserved");
-    Console.WriteLine("PASS: all nine warehouse materials, pooled thirds, flag penalties, legacy save migration and limited-capacity succession.");
+    var planner=w.Robots.PartPlanning;
+    Check(planner.Undo(site.Owner),"Undo the pending whole-robot exchange");
+    w.SelectPlayer(site.Owner);
+    w.Robots.Workshops[site.Id].AutoAssemblyDisabled=true;
+    Limit(30);
+    var tinHead=w.Robots.Create(site.Owner,RobotParts.Head) with {HeadMaterial=RobotMaterial.Tin};
+    Place(first,lower,tinHead);
+    long SwapHead(Robot donor)=>planner.Reserve(w,site.Id,site.Id,donor.Id,RobotParts.Head,first.Id,site.Owner);
+    var resolve=typeof(RobotPartPlanning).GetMethod("Resolve",Internal)!;
+    Check(SwapHead(lower)==first.Id,"Accept a part swap that leaves the whole-slot capacity unchanged");
+    resolve.Invoke(planner,new object[]{w});
+    Check(store.TotalCapacity==5 && store.Robots.Single(r=>r.Id==first.Id).HeadMaterial==RobotMaterial.Foam,
+        "The keeper remains in service after an equal-capacity swap");
+    Check(SwapHead(tinHead)==first.Id,"Reserve the tin head through assembly");
+    var preview=planner.Preview(w).Nodes[site.Id];
+    Check(preview.TotalCapacity==7 && store.TotalCapacity==5,"Preview shows the upgrade while actual stock waits for delivery");
+    var savedSwap=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
+    resolve.Invoke(savedSwap.Robots.PartPlanning,new object[]{savedSwap});
+    Check(savedSwap.Robots.Nodes[site.Id].TotalCapacity==7,"The pending part swap survives save and reload");
+    resolve.Invoke(planner,new object[]{w});
+    Check(store.TotalCapacity==7 && store.Robots.Single(r=>r.WarehouseKeeper).Id==first.Id &&
+        store.Robots.Single(r=>r.Id==tinHead.Id).HeadMaterial==RobotMaterial.Foam,
+        "Delivery retains the keeper and returns its old head to the donor slot");
+    bool rejected=false;
+    try{SwapHead(tinHead);}catch(InvalidOperationException){rejected=true;}
+    Check(rejected && planner.Orders.Count==0 && store.TotalCapacity==7,"Reject a swap that lowers capacity even with spare slots");
+    Console.WriteLine("PASS: warehouse materials, pooled thirds, flag penalties, legacy save migration, succession and assembly swaps.");
 }
 int baseline=ScatterCount(Scatter(100));
 int[] initialCapacities=null;

@@ -67,7 +67,7 @@ public partial class Game1
             enabled?Color.White:new Color(122,131,139));
         if(index==11){var badge=new Rectangle(bounds.Right-25,bounds.Bottom-25,23,23);_ui.Box(badge,new Color(65,81,98));_ui.Center("解",badge,.38f,Cream);}string label=HangarActionNames[index].Replace("予約","");
         if(bounds.Contains(_pointer))DrawRulebookHint(HangarActionNames[index],index switch {
-            0=>"光る頭・胴・脚をドラッグして、移動先の区画へ置いてください。",
+            0=>"光る頭・胴・脚をドラッグして、移動先の区画へ置いてください。\n倉庫管理人は、格納庫数が減らなければ同じ部位を交換できます。",
             1=>"光る完全体ロボットの格納庫をクリックして、製造作業員を予約・解除します。",
             2=>"光る完全体ロボットの格納庫をクリックして、採取作業員を予約・解除します。",
             11=>"光る完全体ロボットの格納庫をクリックして、解体作業員を予約・解除します。",

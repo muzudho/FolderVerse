@@ -6,6 +6,7 @@ using System.Linq;
 public sealed record PlannedPartMove(long Number,int Owner,int Source,int Target,long RobotId,RobotParts Parts,long? TargetRobotId,HangarReservation Role=HangarReservation.None)
 {
     public bool CombineWorkpieces {get;init;}
+    public bool SwapWarehouseParts {get;init;}
     public RobotParts ExpectedSource {get;init;}
     public RobotParts ExpectedTarget {get;init;}
     public bool PromoteCaptain {get;init;}
@@ -160,7 +161,8 @@ public sealed partial class RobotPartPlanning
         EnsureForecastRobot(world,id);if(targetId.HasValue)EnsureForecastRobot(world,targetId.Value);
         var copy=Preview(world).PlanningCopy();
         var inputs=copy.Nodes.SelectMany(s=>s.Robots).ToArray();
-        var order=new PlannedPartMove(_next,owner,source,target,id,parts,targetId){ExpectedSource=inputs.FirstOrDefault(r=>r.Id==id)?.Parts??0,ExpectedTarget=inputs.FirstOrDefault(r=>r.Id==targetId)?.Parts??0,CombineWorkpieces=combineWorkpieces};
+        var receiver=inputs.FirstOrDefault(r=>r.Id==targetId);
+        var order=new PlannedPartMove(_next,owner,source,target,id,parts,targetId){ExpectedSource=inputs.FirstOrDefault(r=>r.Id==id)?.Parts??0,ExpectedTarget=receiver?.Parts??0,CombineWorkpieces=combineWorkpieces,SwapWarehouseParts=receiver?.WarehouseKeeper==true};
         long result=Apply(world,copy,ProjectedLocalOrder(world,order),false);Orders.Add(order);_next++;return result;
         }catch{Orders.RemoveAll(o=>o.Number>=start);_next=start;Invalidate();throw;}
     }
@@ -206,6 +208,34 @@ public sealed partial class RobotPartPlanning
         robot.RecoveredRaw==null && robot.Parts==RobotParts.Complete && !robot.Stationed && !robot.Disposal &&
         !world.Robots.MarchReserved(node,robot) && !stock.ReservationBusy(node,robot.Id) &&
         stock.Nodes[node].WarehouseContributionThirds(robot)>=stock.Nodes[node].WarehouseContributionThirds(keeper);
+    internal static string CheckWarehousePartSwap(WorldSetup world,RobotWorld stock,int node,Robot donor,Robot keeper,
+        RobotParts parts,int owner,out Robot[] swapped)
+    {
+        swapped=null;
+        var store=stock.Nodes[node];
+        int siteOwner=world.Nodes.All[node].Owner,controller=world.ControllerOf(owner);
+        bool managesSite=siteOwner==owner || controller>=0 && controller==world.ControllerOf(siteOwner);
+        if(!store.UsesWarehouseMaterials || keeper?.WarehouseKeeper!=true || donor==null || donor.WarehouseKeeper ||
+            !managesSite || donor.IsWorkpiece || donor.RecoveredRaw!=null || donor.Disposal || donor.SalvageReserved ||
+            keeper.Parts!=RobotParts.Complete || keeper.IsWorkpiece || keeper.IsDismantling || keeper.Disposal ||
+            world.Campaign.RobotBattles.LockedNode(node) || !stock.CanEditReservedPart(node,donor,owner) ||
+            world.Robots.ReservationBusy(node,keeper.Id) || world.Robots.ReservationBusy(node,donor.Id) ||
+            world.Robots.MarchReserved(node,donor))
+            return "倉庫管理人と交換する部位を確認してください";
+
+        if(parts is not (RobotParts.Head or RobotParts.Body or RobotParts.Legs) && parts!=donor.IntegratedParts ||
+            parts==0 || !donor.CanSeparate(parts) || !keeper.CanSeparate(parts))
+            return "一体型の部位は分けて交換できません";
+
+        var nextKeeper=keeper.Merge(donor.Slice(parts),keeper.Owner);
+        var nextDonor=FreeRole(donor.Merge(keeper.Slice(parts),owner));
+        var next=store.Robots.Select(r=>r.Id==keeper.Id?nextKeeper:r.Id==donor.Id?nextDonor:r).ToArray();
+        if(store.CapacityFor(next)<store.TotalCapacity)return "格納庫数が減るため、交換できません";
+        if(!nextKeeper.HasAffiliatedParts)return "所属のあるパーツが１つ以上必要です";
+        if(!store.Fits(next,store.MaplePackages,store.ReservedReturns))return "入荷先の格納枠が不足しています";
+        swapped=next;
+        return null;
+    }
     private static long Apply(WorldSetup world,RobotWorld stock,PlannedPartMove order,bool checkRoute)
     {
         int source=Find(stock,order.RobotId),target=order.Target;
@@ -242,10 +272,18 @@ public sealed partial class RobotPartPlanning
         }
         var receiver=order.TargetRobotId.HasValue?stock.Nodes.SelectMany(s=>s.Robots).FirstOrDefault(r=>r.Id==order.TargetRobotId):null;
         if(receiver!=null && order.ExpectedTarget!=0 && receiver.Parts!=order.ExpectedTarget)throw new InvalidOperationException("組立先の前の予約が実施されていません");
-        if(receiver?.WarehouseKeeper==true)throw new InvalidOperationException("倉庫管理人は組み替えできません");
         int receiverNode=receiver==null?target:Find(stock,receiver.Id);
         if(order.TargetRobotId.HasValue && receiver==null)throw new InvalidOperationException("組立先のロボットがありません");
         if(receiver?.Id==robot.Id && source==target)return robot.Id;
+        if(order.SwapWarehouseParts){
+            if(order.Source!=target || source!=target || receiverNode!=target || order.CombineWorkpieces)
+                throw new InvalidOperationException("同じ格納庫で交換する部位を選んでください");
+            var error=CheckWarehousePartSwap(world,stock,target,robot,receiver,order.Parts,order.Owner,out var swapped);
+            if(error!=null)throw new InvalidOperationException(error);
+            stock.Nodes[target].Replace(swapped);
+            return receiver.Id;
+        }
+        if(receiver?.WarehouseKeeper==true)throw new InvalidOperationException("倉庫管理人は組み替えできません");
         bool Reachable(int from)=>from==target || world.Routes.Neighbors(world.Nodes.All[from]).Any(r=>world.Nodes.At(r.Target,r.Entry).Id==target) || FunctionalDeliveryRoutes.Connected(world,from,target);
         if(!Reachable(source) || !Reachable(receiverNode))throw new InvalidOperationException("同地点または隣接地点に入荷できません");
         if(checkRoute && (world.Campaign.RobotBattles.LockedNode(source) || world.Campaign.RobotBattles.LockedNode(target) || world.Campaign.RobotBattles.LockedEdge(source,target)))throw new InvalidOperationException("戦闘中のため入荷できません");

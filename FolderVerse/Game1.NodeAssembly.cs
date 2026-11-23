@@ -57,16 +57,21 @@ public partial class Game1
         if(!HangarAssemblyAvailable)return false;
         var dragging=_hangarDrag.HasValue?PlanningStock.Nodes[HangarPlanningNode].Robots.FirstOrDefault(r=>r.Id==_hangarDrag):null;
         part=dragging?.ConnectedParts(part)??target?.ConnectedParts(part)??part;
-        if(!DomesticOperationsAllowed || !CanOpenHangar || _setup.Campaign.RobotBattles.LockedNode(_populationNode) || target!=null && (!CanMoveHangarPart(target,part) || !target.CanSeparate(target.Parts&part) || (target.Parts&part)!=0 && (target.Parts&part)!=part))return false;
-        if(target!=null && (target.Parts&part)!=0 && !CanMoveHangarPart(target,part))return false;
+        if(!DomesticOperationsAllowed || !CanOpenHangar || _setup.Campaign.RobotBattles.LockedNode(_populationNode))return false;
+        if(target?.WarehouseKeeper==true)
+            return dragging!=null && part==_hangarPart && CanMoveHangarPart(dragging,part) &&
+                WarehousePartSwapError(dragging,target,part)==null;
+        if(target!=null && (!CanMoveHangarPart(target,part) || !target.CanSeparate(target.Parts&part) ||
+            (target.Parts&part)!=0 && (target.Parts&part)!=part))return false;
         if(_hangarDrag.HasValue)
         {
-            var source=PlanningStock.Nodes[HangarPlanningNode].Robots.FirstOrDefault(r=>r.Id==_hangarDrag);
-            if(source==null || !CanMoveHangarPart(source,_hangarPart) || part!=_hangarPart || target!=null && source.Disposal!=target.Disposal)return false;
-            if(target==null && source.Parts!=part && !PlanningStock.Nodes[HangarPlanningNode].HasSpace)return false;
+            if(dragging==null || !CanMoveHangarPart(dragging,_hangarPart) || part!=_hangarPart || target!=null && dragging.Disposal!=target.Disposal)return false;
+            if(target==null && dragging.Parts!=part && !PlanningStock.Nodes[HangarPlanningNode].HasSpace)return false;
         }
         return true;
     }
+    private string WarehousePartSwapError(Robot donor,Robot keeper,RobotParts parts)=>
+        RobotPartPlanning.CheckWarehousePartSwap(_setup,PlanningStock,HangarPlanningNode,donor,keeper,parts,_setup.PlayerSlot,out _);
     private void OpenNodeAssembly()
     {
         if(!InspectableNode(_populationNode))return;
@@ -177,8 +182,13 @@ public partial class Game1
         {
             var robot=store.Robots.Single(r=>r.Id==source);
             var target=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[destination]);
-            if(!CanMoveHangarPart(robot,_hangarPart) || target!=null && !CanMoveHangarPart(target,_hangarPart))throw new InvalidOperationException();
-            if(target!=null && (target.Parts&_hangarPart)!=0 && !CanMoveHangarPart(target,_hangarPart))throw new InvalidOperationException();
+            if(!CanMoveHangarPart(robot,_hangarPart))throw new InvalidOperationException();
+            if(target?.WarehouseKeeper==true)
+            {
+                var error=WarehousePartSwapError(robot,target,_hangarPart);
+                if(error!=null){_hangarMessage=error;return;}
+            }
+            else if(target!=null && !CanMoveHangarPart(target,_hangarPart))throw new InvalidOperationException();
             if(_computerAssemblyStock!=null)
             {
                 if(_computerAssemblyDrop is not { } step || step.RobotId!=source ||
