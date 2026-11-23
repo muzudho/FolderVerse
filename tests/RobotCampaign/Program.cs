@@ -10,6 +10,52 @@ WorldSetup World(int seed=0)
 }
 void Place(WorldSetup w,int owner,Node node){node.Owner=owner;w.ConquerorLocations[owner]=node.Cell;w.ConquerorPoints[owner]=node.Center;}
 void Add(WorldSetup w,Node node,int owner,int count){for(int i=0;i<count;i++)w.Robots.Nodes[node.Id].Add(w.Robots.Create(owner,RobotParts.Complete));}
+if(args.Contains("--queen-persuasion"))
+{
+    var fixture=World();
+    var campaign=fixture.Campaign.RobotBattles;
+    foreach(var node in fixture.Nodes.All.Where(n=>n.Owner==0))node.Owner=1;
+    fixture.Nodes.Recount();
+    int site=fixture.Nodes.All.First(n=>n.Functional).Id;
+    var encounter=new RobotEncounter{Kind=BattleKind.Edge,Source=site,Target=site,InterceptOwner=1};
+    var board=new BattleState(8152,new(){NoWillTurns=5000}){Kind=BattleKind.Edge};
+    encounter.Battles.Add(board);
+    campaign.Encounters.Add(encounter);
+    const System.Reflection.BindingFlags Private=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+    typeof(BattleState).GetProperty("CanPersuadeQueen",Private)!.SetValue(board,(Func<int,bool>)(ruler=>fixture.TerritoryCounts[ruler]==0));
+    for(int ruler=0;ruler<3;ruler++)
+    {
+        board.Armies.Add(new(){Owner=ruler,HomeNode=site,Side=ruler});
+        board.Units.Add(new(){Id=-ruler-1,Owner=ruler,Role=BattleRole.Queen,Position=new(5+ruler*2+(ruler==2?1:0),5),Daggers=0,Rifles=0});
+    }
+    var landlessQueen=board.Units[0];
+    var still=board.Units.ToDictionary(u=>u.Id,u=>new BattleAction(Point.Zero,u.Facing));
+    for(int attempt=0;attempt<3000 && landlessQueen.PersuadedByQueen==null;attempt++)BattleTurnResolver.Advance(board,still);
+    Check(landlessQueen.PersuadedByQueen==1 && board.Units.Skip(1).All(u=>u.PersuadedByQueen==null),"Only the nearby landless queen can be persuaded");
+    Check(board.Frames.Any(f=>f.Phase==BattlePhase.Persuade && f.Units.Any(u=>u.Id==landlessQueen.Id && !u.PersuadedByQueen.HasValue)) &&
+        board.Frames.Any(f=>f.Phase==BattlePhase.Converted && f.Units.Any(u=>u.Id==landlessQueen.Id && u.PersuadedByQueen==1)),
+        "Playback records the color change at the successful persuasion step");
+    Check(fixture.Relations.Superiors[0]==-1 && landlessQueen.Owner==0,"Battle allegiance does not settle the hierarchy early");
+
+    board.Units[2].Position=new(5,7);
+    for(int attempt=0;attempt<3000 && landlessQueen.PersuadedByQueen!=2;attempt++)BattleTurnResolver.Advance(board,still);
+    Check(landlessQueen.PersuadedByQueen==2 && board.Persuasions.Any(p=>p.Target==landlessQueen.Id && p.PreviousOwner==1 && p.Owner==2),
+        "A different queen can overwrite the earlier persuasion");
+    var saved=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(fixture));
+    var resumed=saved.Campaign.RobotBattles;
+    var resumedEncounter=resumed.Encounters.Single();
+    var resumedBoard=resumedEncounter.Battles.Single();
+    Check(resumedBoard.Units.Single(u=>u.Id==landlessQueen.Id).PersuadedByQueen==2,"Provisional allegiance survives save and resume");
+    resumedBoard.Finished=true;
+    typeof(RobotCampaign).GetMethod("Complete",Private)!.Invoke(resumed,new object[]{saved,resumedEncounter});
+    Check(saved.Relations.Superiors[0]==2,"Encounter completion applies the last persuasion");
+    foreach(var node in saved.Nodes.All.Where(n=>n.Owner==2))node.Owner=1;
+    saved.Nodes.Recount();
+    typeof(ConquerorRelations).GetMethod("SettleQueenPersuasions",Private)!.Invoke(saved.Relations,new object[]{saved,new Dictionary<int,int>{{2,0}}});
+    Check(saved.Relations.Superiors[0]==2 && saved.Relations.Superiors[2]==-1,"The final hierarchy cannot become circular");
+    Console.WriteLine("PASS: queen persuasion eligibility, playback, overwrite, save, settlement and cycle prevention.");
+    return;
+}
 if(args.Contains("--outpost"))
 {
     var fixture=World();

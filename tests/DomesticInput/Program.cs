@@ -23,6 +23,135 @@ sealed class InputGame:Game1{
   var setup=(WorldSetup)Get("_setup");setup.SetWorld(123);setup.SetCast(456);setup.SetPlacement(789);setup.SelectPlayer(0);
   var world=(WorldPreview)Get("_world");world.ShowSetup(setup,true);var net=(CubeNet)Get("_net");net.Home(setup);
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_statusGlobe",false);
+  if(Environment.GetCommandLineArgs().Contains("--route-dropdown"))
+  {
+   setup.EnsureGuides().LastTurns[setup.PlayerSlot]=setup.Population.Turn;
+   Set("_paperReadTurn",setup.Population.Turn);Set("_paperReadCountry",setup.PlayerSlot);
+   const BindingFlags Static=BindingFlags.Static|BindingFlags.NonPublic;
+   Rectangle Option(int index)=>(Rectangle)typeof(Game1).GetMethod("TrafficLayerOption",Static)!.Invoke(null,new object[]{index})!;
+   var toolbar=(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",Static)!.Invoke(null,new object[]{3})!;
+   Rectangle DisplayArea(string field)=>(Rectangle)typeof(Game1).GetField(field,Static)!.GetValue(null)!;
+   var breaker=DisplayArea("SimpleDisplayButton");
+   var filter=DisplayArea("DisplayFilterButton");
+   foreach(bool globe in new[]{false,true}){
+    Set("_statusGlobe",globe);net.ShowRoutes=false;
+    bool otherCountries=net.ShowOtherCountries;
+    Click(breaker.Center);
+    Check((bool)Get("_simpleDisplayOpen"),"Breaker icon opens the breaker menu");
+    Click(filter.Center);
+    Check((bool)Get("_displayFilterOpen") && !(bool)Get("_simpleDisplayOpen") &&
+        net.ShowOtherCountries==otherCountries,"Filter icon switches menus without toggling the filter");
+    Click(DisplayArea("DisplayOtherCountriesRow").Center);
+    Check(net.ShowOtherCountries!=otherCountries && (bool)Get("_displayFilterOpen") &&
+        world.ControlledCountryColors==!net.ShowOtherCountries,"Other Countries toggles in the open menu and updates the globe");
+    Click(DisplayArea("DisplayOtherCountriesRow").Center);
+    Click(filter.Center);
+    Check(net.ShowOtherCountries==otherCountries && !(bool)Get("_displayFilterOpen"),"Filter icon closes its menu");
+    var toy=(Rectangle)Prop("OrientationToyArea");
+    var handle=new Rectangle(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30);
+    var overlap=Rectangle.Intersect(handle,Option(1));
+    Check(!overlap.IsEmpty,"Node choice overlaps orientation drag handle");
+    Click(toolbar.Center);
+    Check((bool)Get("_trafficLayerListOpen"),$"Selection toolbar opens the dropdown (screen {Get("_screen")}, pointer {Get("_pointer")})");
+    Input(overlap.Center,ButtonState.Pressed);
+    Check(net.ShowRoutes && !(bool)Get("_orientationDragging") && !(bool)Get("_trafficLayerListOpen"),
+        "Overlapping node choice selects nodes without starting an orientation drag");
+    Input(overlap.Center);
+    var axisOverlap=(from axis in Enumerable.Range(0,3) from sign in new[]{-1,1}
+        let button=(Rectangle)Call("AxisButton",toy,axis,sign)
+        select Rectangle.Intersect(button,Option(0))).FirstOrDefault(r=>!r.IsEmpty);
+    Click(toolbar.Center);Click(axisOverlap.IsEmpty?Option(0).Center:axisOverlap.Center);
+    Check(!net.ShowRoutes && !(bool)Prop("OrientationRotating"),"Region choice selects regions without rotating");
+    Click(toolbar.Center);
+    Input(toy.Center,ButtonState.Pressed);
+    Check(!(bool)Get("_trafficLayerListOpen") && !(bool)Get("_orientationDragging"),
+        "Click outside dismisses the menu without passing through to the toy");
+    Input(toy.Center);
+    Input(toy.Center,ButtonState.Pressed);
+    Check((bool)Get("_orientationDragging"),"The toy is draggable again after dismissing the menu");
+    Input(toy.Center);
+    Click(toolbar.Center);Input(default,keys:new[]{Keys.Escape});Input(default);
+    Check(!(bool)Get("_trafficLayerListOpen") && Get("_screen").ToString()=="WorldStatus",
+        "Escape dismisses the menu without exiting the status screen");
+   }
+   var toggle=(Rectangle)typeof(Game1).GetField("MapViewButton",Static)!.GetValue(null)!;
+   var batch=(SpriteBatch)Get("_spriteBatch");
+   using var image=new RenderTarget2D(GraphicsDevice,1920,1080);
+   GraphicsDevice.SetRenderTarget(image);
+   batch.Begin();
+   Call("DrawDisplayControlButton",breaker,0,false);
+   Call("DrawDisplayControlButton",filter,1,true);
+   batch.End();
+   GraphicsDevice.SetRenderTarget(null);
+   var displayIcons=(Rectangle[])Get("_displayControlIconSources");
+   Check(displayIcons[0].Height>displayIcons[0].Width && displayIcons[1].Width>displayIcons[1].Height,
+       "The rendered toolbar uses a tall breaker and a wide binocular silhouette");
+   void CheckHint(Point hover,bool lower,bool toolbarHint)
+   {
+    Set("_pointer",hover);
+    GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(Color.Transparent);
+    batch.Begin();
+    if(toolbarHint)Call("DrawDisplayControlMenus");
+    else Call("DrawRulebookHint","他国","地図に表示する国を切り替えます。");
+    Call("DrawPopupHints");
+    batch.End();
+    GraphicsDevice.SetRenderTarget(null);
+    var sample=new Color[1];
+    byte BorderAlpha(int y)
+    {
+     image.GetData(0,new Rectangle(510,y,1,1),sample,0,1);
+     return sample[0].A;
+    }
+    Check((BorderAlpha(14)>0)==!lower && (BorderAlpha(922)>0)==lower,
+        "The popup uses the edge opposite the hovered control");
+   }
+   CheckHint(breaker.Center,true,true);
+   CheckHint(filter.Center,true,true);
+   CheckHint(new Point(960,900),false,false);
+   Set("_pointer",Point.Zero);
+   Rectangle HintBounds(string name,Rectangle paper)=>(Rectangle)typeof(Game1).GetMethod(name,Static)!.Invoke(null,new object[]{paper})!;
+   foreach(var paper in new[]{new Rectangle(16,16,1040,128),new Rectangle(16,16,804,244),new Rectangle(16,16,280,38)})
+   {
+    var stamps=HintBounds("PopupHintStampBounds",paper);
+    var content=HintBounds("PopupHintTextBounds",paper);
+    Check(paper.Contains(stamps) && paper.Contains(content) && content.Right<stamps.Left,
+        "Stamps stay inside the paper and clear of the text at every hint size");
+    GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(Color.Transparent);
+    batch.Begin();Call("DrawPopupHintPaper",paper);batch.End();
+    GraphicsDevice.SetRenderTarget(null);
+    var pixels=new Color[stamps.Width*stamps.Height];
+    image.GetData(0,stamps,pixels,0,pixels.Length);
+    Check(pixels.Any(color=>color.R-color.B<20) && pixels.Any(color=>color.R-color.B>30),
+        "The stamp area contains both blue-green ink and the underlying paper");
+   }
+   Color[] ButtonPixels()
+   {
+    GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(Color.Transparent);
+    batch.Begin();Call("DrawMapViewButton");batch.End();
+    GraphicsDevice.SetRenderTarget(null);
+    var pixels=new Color[toggle.Width*toggle.Height];
+    image.GetData(0,toggle,pixels,0,pixels.Length);
+    return pixels;
+   }
+   long Brightness(Color[] pixels,int half)
+   {
+    int center=toggle.Width*(1+half*2)/4;
+    return Enumerable.Range(4,toggle.Height-8).Sum(y=>Enumerable.Range(center-30,60)
+        .Sum(x=>{var color=pixels[y*toggle.Width+x];return (long)(color.R+color.G+color.B);}));
+   }
+   var globeSelected=ButtonPixels();
+   Click(new Point(toggle.Left+30,toggle.Center.Y));Input(default,dt:4);
+   Check(!(bool)Get("_statusGlobe"),"Map toggle still unfolds the globe");
+   var netSelected=ButtonPixels();
+   Check(Brightness(globeSelected,0)>Brightness(netSelected,0) &&
+        Brightness(netSelected,1)>Brightness(globeSelected,1),"Both icons switch between enabled and highlighted colors in place");
+   Click(new Point(toggle.Right-30,toggle.Center.Y));Input(default,dt:4);
+   Check((bool)Get("_statusGlobe"),"The same toolbar slot switches back to the globe");
+   Check(globeSelected.SequenceEqual(ButtonPixels()),"Switching back restores the original pair of colors");
+   Console.WriteLine("PASS: breaker and filter icon rendering and menus, Other Countries, dropdown hit priority on globe and net, and both map-view toggle states");
+   Exit();
+   return;
+  }
   int source=setup.Nodes.Current(0).Id;Open(source);Call("FocusCurrentNode");
   Click(new(540,770));
   Check((bool)Get("_transportDestinationPicking"),"Real input enters destination mode");

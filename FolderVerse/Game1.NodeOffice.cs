@@ -97,22 +97,25 @@ public partial class Game1
                 "陸と海の境目はこれだよ。メリットもデメリットも無いよ。","１全体ターンで格納庫に置いてあるスクラップを自動処分してくれるよ"
             };
             var reason=NodePurposeDisabledReason(node,purpose);
+            const int popupWidth=804;
+            int textWidth=PopupHintTextBounds(new Rectangle(0,0,popupWidth,130)).Width;
             var lines=new System.Collections.Generic.List<string>();
             void Wrap(string text){
                 string line="";
                 foreach(char c in text){
                     if(c=='\n'){lines.Add(line);line="";continue;}
-                    if(_font.MeasureString(line+c).X*.38f>730){lines.Add(line);line="";}
+                    if(_font.MeasureString(line+c).X*.38f>textWidth){lines.Add(line);line="";}
                     line+=c;
                 }
                 if(line.Length>0)lines.Add(line);
             }
             Wrap(hints[i]);
             if(reason!=null && reason!="工場だけを移転すると中継地点になります" && reason!="港は陸と海を結ぶ地点です")Wrap(reason);
-            var popup=new Rectangle(74,611,804,Math.Max(130,64+lines.Count*30));
-            popup.X+=NodeInspectorOffset;QueuePopupHint(()=>{DrawRulebookPaper(popup);
-            _ui.Text(label,new(popup.X+32,popup.Y+16),.44f,RulebookInk);
-            for(int row=0;row<lines.Count;row++)_ui.Text(lines[row],new(popup.X+32,popup.Y+56+row*30),.38f,RulebookInk);});
+            var popup=new Rectangle(74,611,popupWidth,Math.Max(130,64+lines.Count*30));
+            popup.X+=NodeInspectorOffset;popup=PlacePopupHint(popup);
+            QueuePopupHint(()=>{DrawPopupHintPaper(popup);
+            DrawPopupHintLine(label,popup,16,.44f);
+            for(int row=0;row<lines.Count;row++)DrawPopupHintLine(lines[row],popup,56+row*30,.38f);});
             break;
         }
     }

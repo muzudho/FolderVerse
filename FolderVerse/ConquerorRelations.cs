@@ -33,6 +33,43 @@ public sealed partial class ConquerorRelations
         for(int parent=superior;parent>=0;parent=Superiors[parent])if(parent==ruler)return false;
         Superiors[ruler]=superior;return true;
     }
+    internal void SettleQueenPersuasions(WorldSetup world,IReadOnlyDictionary<int,int> persuasions)
+    {
+        var landed=world.Nodes.All.Select(n=>n.Owner).ToHashSet();
+        var changes=persuasions.Where(p=>!landed.Contains(p.Key) &&
+            CanAct(p.Key) && CanAct(p.Value) && Superiors[p.Key]!=p.Value).ToDictionary(p=>p.Key,p=>p.Value);
+        var parents=(int[])Superiors.Clone();
+        foreach(var (ruler,superior) in changes)parents[ruler]=superior;
+
+        // Discard the new links in a cycle together, regardless of which queen acted first.
+        while(changes.Count>0)
+        {
+            var cyclic=new HashSet<int>();
+            foreach(int ruler in changes.Keys)
+            {
+                var path=new HashSet<int>();
+                int current=ruler;
+                while(current>=0 && path.Add(current))current=parents[current];
+                if(current<0)continue;
+                int member=current;
+                do
+                {
+                    if(changes.ContainsKey(member))cyclic.Add(member);
+                    member=parents[member];
+                }while(member!=current);
+            }
+            if(cyclic.Count==0)break;
+            foreach(int ruler in cyclic)
+            {
+                changes.Remove(ruler);
+                parents[ruler]=Superiors[ruler];
+            }
+        }
+
+        foreach(int ruler in changes.Keys)SetSuperior(ruler,-1);
+        foreach(var (ruler,superior) in changes)
+            if(SetSuperior(ruler,superior))Released[ruler]=false;
+    }
     public (int Ruler,int Depth)[] Forest(WorldSetup world)
     {
         var result=new List<(int,int)>();

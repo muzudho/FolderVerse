@@ -8,14 +8,14 @@ public sealed class GuideRoster
     public int WorldSeed,CastSeed;
     public string[] Names;
     public int[] Bodies,LastTurns;
-    public bool[] Introduced;
+    public bool[] Introduced, WasLandless;
     public static GuideRoster Create(WorldSetup world)
     {
         int seed=world.WorldSeed^world.CastSeed;
         var random=new SeedRandom(seed^0x47424F44);
         return new(){WorldSeed=world.WorldSeed,CastSeed=world.CastSeed,Names=GuideNames.Generate(world.ActiveCount,seed),
             Bodies=Enumerable.Range(0,world.ActiveCount).Select(_=>random.Next(4)).ToArray(),
-            LastTurns=Enumerable.Repeat(-1,world.ActiveCount).ToArray(),Introduced=new bool[world.ActiveCount]};
+            LastTurns=Enumerable.Repeat(-1,world.ActiveCount).ToArray(),Introduced=new bool[world.ActiveCount],WasLandless=new bool[world.ActiveCount]};
     }
 }
 public sealed partial class WorldSetup
@@ -25,6 +25,7 @@ public sealed partial class WorldSetup
     {
         if(Guides==null || Guides.WorldSeed!=WorldSeed || Guides.CastSeed!=CastSeed || Guides.Names?.Length!=ActiveCount)
             Guides=GuideRoster.Create(this);
+        Guides.WasLandless??=new bool[ActiveCount];
         return Guides;
     }
 }
@@ -46,6 +47,8 @@ public static class GuideNarration
         var pages=new List<string[]>();
         if(introduction){pages.Add(GuideMessages.Page("introduction",values));pages.Add(GuideMessages.Page("overview",values));pages.Add(GuideMessages.Page("safety",values));}
         else pages.Add(GuideMessages.Page("daily",values));
+        if(introduction || world.TerritoryCounts[ruler]==0 && world.Guides?.WasLandless?[ruler]!=true)
+            pages.Add(GuideMessages.Page("queenPersuasion",values));
         pages.Add(GuideMessages.Page("securePocket",values));
         pages.Add(GuideMessages.Page("securePocketCaution",values));
         pages.Add(GuideMessages.Page(node==null?"cards":"defense",values));

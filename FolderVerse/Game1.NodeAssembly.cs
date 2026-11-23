@@ -57,16 +57,21 @@ public partial class Game1
         if(!HangarAssemblyAvailable)return false;
         var dragging=_hangarDrag.HasValue?PlanningStock.Nodes[HangarPlanningNode].Robots.FirstOrDefault(r=>r.Id==_hangarDrag):null;
         part=dragging?.ConnectedParts(part)??target?.ConnectedParts(part)??part;
-        if(!DomesticOperationsAllowed || !CanOpenHangar || _setup.Campaign.RobotBattles.LockedNode(_populationNode) || target!=null && (!CanMoveHangarPart(target,part) || !target.CanSeparate(target.Parts&part) || (target.Parts&part)!=0 && (target.Parts&part)!=part))return false;
-        if(target!=null && (target.Parts&part)!=0 && !CanMoveHangarPart(target,part))return false;
+        if(!DomesticOperationsAllowed || !CanOpenHangar || _setup.Campaign.RobotBattles.LockedNode(_populationNode))return false;
+        if(target?.WarehouseKeeper==true)
+            return dragging!=null && part==_hangarPart && CanMoveHangarPart(dragging,part) &&
+                WarehousePartSwapError(dragging,target,part)==null;
+        if(target!=null && (!CanMoveHangarPart(target,part) || !target.CanSeparate(target.Parts&part) ||
+            (target.Parts&part)!=0 && (target.Parts&part)!=part))return false;
         if(_hangarDrag.HasValue)
         {
-            var source=PlanningStock.Nodes[HangarPlanningNode].Robots.FirstOrDefault(r=>r.Id==_hangarDrag);
-            if(source==null || !CanMoveHangarPart(source,_hangarPart) || part!=_hangarPart || target!=null && source.Disposal!=target.Disposal)return false;
-            if(target==null && source.Parts!=part && !PlanningStock.Nodes[HangarPlanningNode].HasSpace)return false;
+            if(dragging==null || !CanMoveHangarPart(dragging,_hangarPart) || part!=_hangarPart || target!=null && dragging.Disposal!=target.Disposal)return false;
+            if(target==null && dragging.Parts!=part && !PlanningStock.Nodes[HangarPlanningNode].HasSpace)return false;
         }
         return true;
     }
+    private string WarehousePartSwapError(Robot donor,Robot keeper,RobotParts parts)=>
+        RobotPartPlanning.CheckWarehousePartSwap(_setup,PlanningStock,HangarPlanningNode,donor,keeper,parts,_setup.PlayerSlot,out _);
     private void OpenNodeAssembly()
     {
         if(!InspectableNode(_populationNode))return;
@@ -134,11 +139,11 @@ public partial class Game1
                 var cell=AssemblyCell(slot);
                 if(_hangarReservation==HangarReservation.WarehouseSwap && cell.Contains(_pointer)){
                     if(robot.WarehouseKeeper && CanChooseWarehouseSwap(robot)){
-                        _warehouseSwapKeeper=robot.Id;_hangarMessage="後任の完全体ロボットを選んでください";
+                        _warehouseSwapKeeper=robot.Id;_hangarMessage="増加枠が同じか多い完全体を選んでください";
                     }else if(_warehouseSwapKeeper is long keeper && CanChooseWarehouseSwap(robot) &&
                         _setup.Robots.PartPlanning.ReserveRole(_setup,_populationNode,keeper,HangarReservation.WarehouseSwap,_setup.Nodes.All[_populationNode].Owner,robot.Id)){
                         _warehouseSwapKeeper=null;_hangarMessage="倉庫管理人の交代を予約しました";
-                    }else _hangarMessage=_warehouseSwapKeeper.HasValue?"後任に予約のない完全体を選んでください":"現在の倉庫管理人を選んでください";
+                    }else _hangarMessage=_warehouseSwapKeeper.HasValue?"増加枠が同じか多く、予約のない完全体を選んでください":"現在の倉庫管理人を選んでください";
                     return;
                 }
                 if(_hangarReservation!=HangarReservation.None && cell.Contains(_pointer)){
@@ -177,8 +182,13 @@ public partial class Game1
         {
             var robot=store.Robots.Single(r=>r.Id==source);
             var target=store.Robots.FirstOrDefault(r=>r.Id==_hangarSlots[destination]);
-            if(!CanMoveHangarPart(robot,_hangarPart) || target!=null && !CanMoveHangarPart(target,_hangarPart))throw new InvalidOperationException();
-            if(target!=null && (target.Parts&_hangarPart)!=0 && !CanMoveHangarPart(target,_hangarPart))throw new InvalidOperationException();
+            if(!CanMoveHangarPart(robot,_hangarPart))throw new InvalidOperationException();
+            if(target?.WarehouseKeeper==true)
+            {
+                var error=WarehousePartSwapError(robot,target,_hangarPart);
+                if(error!=null){_hangarMessage=error;return;}
+            }
+            else if(target!=null && !CanMoveHangarPart(target,_hangarPart))throw new InvalidOperationException();
             if(_computerAssemblyStock!=null)
             {
                 if(_computerAssemblyDrop is not { } step || step.RobotId!=source ||
@@ -389,11 +399,14 @@ public partial class Game1
     {
         if(_deliveryTagHint.Length==0)return;
         const float scale=.38f;
-        int width=(int)Math.Ceiling(_font.MeasureString(_deliveryTagHint).X*scale)+24;
+        int width=Math.Min(area.Width-16,(int)Math.Ceiling(_font.MeasureString(_deliveryTagHint).X*scale)+92);
         var box=new Rectangle(Math.Clamp(_pointer.X+18,area.Left+8,area.Right-width-8),Math.Clamp(_pointer.Y-48,area.Top+8,area.Bottom-46),width,38);
         if(!_directPairOpen)box.X+=NodeInspectorOffset;
-        string hint=_deliveryTagHint;QueuePopupHint(()=>{_ui.Box(box,Cream);_ui.Box(new(box.X+2,box.Y+2,box.Width-4,box.Height-4),new Color(16,32,43));
-        _ui.Text(hint,new(box.X+12,box.Y+9),scale,Cream);});
+        box=PlacePopupHint(box);
+        string hint=_deliveryTagHint;QueuePopupHint(()=>{
+            DrawPopupHintPaper(box);
+            DrawPopupHintLine(hint,box,9,scale);
+        });
     }
     private void DrawHangarDrag(Robot robot)
     {

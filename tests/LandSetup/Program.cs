@@ -22,6 +22,87 @@ WorldSetup Scatter(int percent,RobotEquipmentMode mode=RobotEquipmentMode.Legacy
     return w;
 }
 int ScatterCount(WorldSetup world)=>world.Robots.Nodes.Sum(s=>s.Robots.Count(r=>!r.FactoryWorker && !r.WarehouseKeeper));
+if(args.Contains("--warehouse-materials"))
+{
+    VerifyWarehouseMaterials();
+    return;
+}
+void VerifyWarehouseMaterials()
+{
+    const BindingFlags Internal=BindingFlags.Instance|BindingFlags.NonPublic;
+    var w=Scatter(0,RobotEquipmentMode.Materials,0);
+    var site=w.Nodes.All.First(n=>n.Functional && n.Owner>=0 && n.Purpose!=NodePurpose.Relay && n.InitialHangarLimit>1);
+    var store=w.Robots.Nodes[site.Id];
+    void Limit(int limit)=>typeof(RobotStore).GetMethod("SetWarehouseLimit",Internal)!.Invoke(store,new object[]{limit});
+    void Place(params Robot[] robots)=>typeof(RobotStore).GetMethod("Replace",Internal)!.Invoke(store,new object[]{robots});
+    Robot Create(RobotMaterial material,bool keeper=true)=>w.Robots.Create(site.Owner,RobotParts.Complete) with {
+        WarehouseKeeper=keeper,HeadMaterial=material,BodyMaterial=material,LegsMaterial=material};
+    Limit(30);
+    var materials=new[]{RobotMaterial.Paper,RobotMaterial.Foam,RobotMaterial.Cardboard,RobotMaterial.Polystyrene,
+        RobotMaterial.SoftVinyl,RobotMaterial.Polypropylene,RobotMaterial.Silicone,RobotMaterial.Maple,RobotMaterial.Tin};
+    for(int i=0;i<materials.Length;i++)
+    {
+        Place(Create(materials[i]));
+        Check(store.TotalCapacity==5+i,"Whole robot uses the sum of its three part bonuses: "+materials[i]);
+    }
+    var first=Create(RobotMaterial.Paper) with {HeadMaterial=RobotMaterial.Cardboard};
+    var second=Create(RobotMaterial.Paper) with {HeadMaterial=RobotMaterial.Cardboard};
+    Place(first,second);
+    Check(store.TotalCapacity==10,"Two thirds from each keeper round down only after summing");
+    var twoFlags=first with {BodyOrigin=(site.Owner+1)%w.ActiveCount};
+    var threeFlags=twoFlags with {LegsOrigin=(site.Owner+2)%w.ActiveCount};
+    Place(twoFlags,second);
+    Check(store.TotalCapacity==9,"A second flag subtracts one slot");
+    Place(threeFlags,second);
+    Check(store.TotalCapacity==8,"A third flag subtracts a second slot");
+    Place(first,second);
+    var oldSave=AutoSaveStore.Capture(w);
+    foreach(var obj in oldSave.Objects)if(obj.Fields!=null)obj.Fields.Remove("_materialWarehouseRules");
+    var restored=AutoSaveStore.Restore<WorldSetup>(oldSave);
+    Check(restored.Robots.Nodes[site.Id].TotalCapacity==10,"Existing saves infer the material rule from the equipment mode");
+
+    var lower=Create(RobotMaterial.Paper,false) with {HeadMaterial=RobotMaterial.Foam};
+    var equal=Create(RobotMaterial.Paper,false) with {BodyMaterial=RobotMaterial.Cardboard};
+    var higher=Create(RobotMaterial.Foam,false);
+    Place(first,lower,equal,higher);
+    Limit(5);
+    bool Swap(Robot robot)=>w.Robots.PartPlanning.ReserveRole(w,site.Id,first.Id,HangarReservation.WarehouseSwap,site.Owner,robot.Id);
+    Check(!Swap(lower) && w.Robots.PartPlanning.Orders.Count==0,"A lower successor is refused even at the same capped whole-slot capacity");
+    Check(Swap(equal),"An equal successor can be reserved");
+    Check(w.Robots.PartPlanning.Preview(w).Nodes[site.Id].Robots.Single(r=>r.WarehouseKeeper).Id==equal.Id,
+        "The projected hangar reflects the equal successor");
+    typeof(RobotPartPlanning).GetMethod("Resolve",Internal)!.Invoke(w.Robots.PartPlanning,new object[]{w});
+    Check(store.Robots.Single(r=>r.WarehouseKeeper).Id==equal.Id,"An equal successor takes over at delivery");
+    Check(w.Robots.PartPlanning.ReserveRole(w,site.Id,equal.Id,HangarReservation.WarehouseSwap,site.Owner,higher.Id),
+        "A higher successor can be reserved");
+    var planner=w.Robots.PartPlanning;
+    Check(planner.Undo(site.Owner),"Undo the pending whole-robot exchange");
+    w.SelectPlayer(site.Owner);
+    w.Robots.Workshops[site.Id].AutoAssemblyDisabled=true;
+    Limit(30);
+    var tinHead=w.Robots.Create(site.Owner,RobotParts.Head) with {HeadMaterial=RobotMaterial.Tin};
+    Place(first,lower,tinHead);
+    long SwapHead(Robot donor)=>planner.Reserve(w,site.Id,site.Id,donor.Id,RobotParts.Head,first.Id,site.Owner);
+    var resolve=typeof(RobotPartPlanning).GetMethod("Resolve",Internal)!;
+    Check(SwapHead(lower)==first.Id,"Accept a part swap that leaves the whole-slot capacity unchanged");
+    resolve.Invoke(planner,new object[]{w});
+    Check(store.TotalCapacity==5 && store.Robots.Single(r=>r.Id==first.Id).HeadMaterial==RobotMaterial.Foam,
+        "The keeper remains in service after an equal-capacity swap");
+    Check(SwapHead(tinHead)==first.Id,"Reserve the tin head through assembly");
+    var preview=planner.Preview(w).Nodes[site.Id];
+    Check(preview.TotalCapacity==7 && store.TotalCapacity==5,"Preview shows the upgrade while actual stock waits for delivery");
+    var savedSwap=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));
+    resolve.Invoke(savedSwap.Robots.PartPlanning,new object[]{savedSwap});
+    Check(savedSwap.Robots.Nodes[site.Id].TotalCapacity==7,"The pending part swap survives save and reload");
+    resolve.Invoke(planner,new object[]{w});
+    Check(store.TotalCapacity==7 && store.Robots.Single(r=>r.WarehouseKeeper).Id==first.Id &&
+        store.Robots.Single(r=>r.Id==tinHead.Id).HeadMaterial==RobotMaterial.Foam,
+        "Delivery retains the keeper and returns its old head to the donor slot");
+    bool rejected=false;
+    try{SwapHead(tinHead);}catch(InvalidOperationException){rejected=true;}
+    Check(rejected && planner.Orders.Count==0 && store.TotalCapacity==7,"Reject a swap that lowers capacity even with spare slots");
+    Console.WriteLine("PASS: warehouse materials, pooled thirds, flag penalties, legacy save migration, succession and assembly swaps.");
+}
 int baseline=ScatterCount(Scatter(100));
 int[] initialCapacities=null;
 foreach(int percent in new[]{0,25,100}){

@@ -91,7 +91,7 @@ public static class AutoSaveStore
             else foreach(var field in Fields(type)){
                 if(!entry.Fields.TryGetValue(field.Name,out int id)){
                     if(type==typeof(RobotPartPlanning) && field.Name=="<WorkpieceResumes>k__BackingField"){field.SetValue(value,new List<WorkpieceResumeOrder>());continue;}
-                    if(type==typeof(PlannedPartMove) && field.Name=="<CombineWorkpieces>k__BackingField")continue;
+                    if(type==typeof(PlannedPartMove) && field.Name is "<CombineWorkpieces>k__BackingField" or "<SwapWarehouseParts>k__BackingField")continue;
                     if(type==typeof(Robot) && new[]{"<HeadWork>k__BackingField","<BodyWork>k__BackingField","<LegsWork>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(RobotWorkshop) && new[]{"_activeWorkpiece","_interruptedWorkpieces","_workpieceOwner"}.Contains(field.Name))continue;
                     if(type==typeof(RobotWorkshop) && new[]{"_rawConsumed","<CompletedBatches>k__BackingField","<StartAfterWorker>k__BackingField","<StartAfterBatch>k__BackingField"}.Contains(field.Name))continue;
@@ -135,8 +135,11 @@ public static class AutoSaveStore
                     if(type==typeof(PlannedPartMove) && field.Name=="<WorkerLane>k__BackingField")continue;
                     if(type==typeof(WorldSetup) && field.Name=="<Salvage>k__BackingField"){field.SetValue(value,new SalvagePlan{LegacyPlacementPending=true});continue;}
                     if(type==typeof(BattleState) && field.Name=="Lessons"){field.SetValue(value,new BattleLesson[WorldSetup.CastCount]);continue;}
-                    if(type==typeof(BattleUnit) && field.Name is "WitnessedLessons" or "QueenFellToEnemy")continue;
+                    if(type==typeof(BattleUnit) && field.Name is "WitnessedLessons" or "QueenFellToEnemy" or "PersuadedByQueen")continue;
+                    if(type==typeof(GuideRoster) && field.Name=="WasLandless")continue;
+                    if(type==typeof(RobotEncounter) && field.Name=="QueenPersuasions")continue;
                     if(type==typeof(RobotCampaign) && field.Name=="_homeOwners"){field.SetValue(value,new Dictionary<long,int>());continue;}
+                    if(type==typeof(MapleShipment) && field.Name=="<Computer>k__BackingField")continue;
                     if(type==typeof(Robot) && (field.Name=="<LastBattlePersuasionTurn>k__BackingField" || field.Name=="<LastDomesticPersuasionTurn>k__BackingField")){field.SetValue(value,-1);continue;}
                     if(type==typeof(RobotWorld) && field.Name=="<DomesticPersuasionTurns>k__BackingField"){field.SetValue(value,new Dictionary<int,int>());continue;}
                     if(type==typeof(BattleState) && field.Name=="BoardSize"){field.SetValue(value,10);continue;}
@@ -149,7 +152,7 @@ public static class AutoSaveStore
                     if(type==typeof(BattleState) && field.Name=="GlobalTurn"){field.SetValue(value,0);continue;}
                     if(type==typeof(BattleState) && field.Name=="<PursuitHistory>k__BackingField"){field.SetValue(value,new List<string>());continue;}
                     if(type==typeof(BattleState) && field.Name=="<PersuadedUnits>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
-                    if(type==typeof(BattleUnitView) && field.Name=="<Robot>k__BackingField")continue;
+                    if(type==typeof(BattleUnitView) && field.Name is "<Robot>k__BackingField" or "<PersuadedByQueen>k__BackingField")continue;
                     // Defaults for fields introduced after older turn-boundary saves.
                     if(type==typeof(SalvagePlan) && field.Name=="<Missions>k__BackingField"){field.SetValue(value,new List<RecoveryMission>());continue;}
                     if(type==typeof(SalvagePlan) && field.Name=="ExpeditionsEnabled")continue;
@@ -159,6 +162,7 @@ public static class AutoSaveStore
                     if(type==typeof(Node) && field.Name=="FunctionHost"){field.SetValue(value,-1);continue;}
                     if(type==typeof(Node) && field.Name=="IncomingFactories")continue;
                     if(type==typeof(RobotStore) && field.Name=="_capacity")continue;
+                    if(type==typeof(RobotStore) && field.Name=="_materialWarehouseRules")continue;
                     if(type==typeof(Robot) && field.Name=="<FunctionDisplayNode>k__BackingField")continue;
                     if(type==typeof(RobotWorkshop) && new[]{"_disposalAnnexes","TransferredLineLimit","FunctionOriginNode"}.Contains(field.Name))continue;
                     if(type==typeof(ConquestCampaign) && field.Name=="<FunctionTransfers>k__BackingField"){field.SetValue(value,new NodeFunctionTransfers());continue;}
@@ -187,6 +191,8 @@ public static class AutoSaveStore
                     if(type==typeof(ConquestCampaign) && field.Name=="<Stratagems>k__BackingField"){field.SetValue(value,new StratagemPlans());continue;}
                     if(type==typeof(ConquestCampaign) && field.Name=="<Trade>k__BackingField"){field.SetValue(value,new TradePlan());continue;}
                     if(type==typeof(ConquestCampaign) && field.Name=="<AttackMemory>k__BackingField"){field.SetValue(value,new ComputerAttackMemory());continue;}
+                    if(type==typeof(ComputerAttackMemory) && field.Name=="<QueenFailures>k__BackingField"){field.SetValue(value,new List<ComputerQueenFailure>());continue;}
+                    if(type==typeof(ComputerAttackMemory) && field.Name=="<QueenSorties>k__BackingField"){field.SetValue(value,new List<March>());continue;}
                     if(type==typeof(TradePlan) && field.Name=="<Replies>k__BackingField"){field.SetValue(value,new List<TradeReply>());continue;}
                     if(type==typeof(RobotWorld) && field.Name=="<OffshoreRawSupplyEnabled>k__BackingField")continue;
                     if(type==typeof(RobotWorld) && field.Name=="<OffshoreUsesSeaAreaRule>k__BackingField")continue;
@@ -243,7 +249,11 @@ public static class AutoSaveStore
             }
         }
         for(int i=0;i<values.Length;i++)Populate(i);
-        foreach(var world in values.OfType<WorldSetup>())world.Robots.LongDelivery.RestoreLegacySlots(world.Robots);
+        foreach(var world in values.OfType<WorldSetup>())
+        {
+            foreach(var store in world.Robots.Nodes)store.SetWarehouseEquipmentMode(world.EquipmentMode);
+            world.Robots.LongDelivery.RestoreLegacySlots(world.Robots);
+        }
         return At(doc.Root) is T result?result:throw new InvalidDataException("Invalid autosave root.");
     }
     public static void Write(string path,object root){

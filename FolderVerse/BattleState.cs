@@ -11,7 +11,7 @@ public enum BattlePhase { Choose,Place,Rollback,Attack,Receive,Consume,Fall,Flag
 public enum BattleTerrain { Field,Sea,Fort,Mountain }
 public sealed record BattleAction(Point Step,BattleFacing Facing,BattleWeapon Weapon=BattleWeapon.None);
 public sealed record BattleEvent(int Turn,BattlePhase Phase,long Unit,string Detail);
-public sealed record BattleUnitView(long Id,int Owner,BattleRole Role,Point Position,BattleFacing Facing,int Daggers,int Rifles,int Shields,bool Fallen,bool Retreated,Robot Robot=null);
+public sealed record BattleUnitView(long Id,int Owner,BattleRole Role,Point Position,BattleFacing Facing,int Daggers,int Rifles,int Shields,bool Fallen,bool Retreated,Robot Robot=null,int? PersuadedByQueen=null);
 public sealed record BattleFrame(int Turn,BattlePhase Phase,BattleUnitView[] Units,bool FlagStanding,int LastFlagOwner,int FlagDefenseTurns=0,int FlagCaptureTurns=0,BattleFortification[] Fortifications=null,BattleReliefView[] Relief=null);
 public sealed record BattlePersuasion(int Turn,long Queen,long Target,int Owner,int PreviousOwner,Point From,Point To,bool Success);
 public sealed record BattleAttack(int Turn,long Attacker,long? Target,Point From,Point To,BattleWeapon Weapon);
@@ -35,6 +35,8 @@ public sealed class BattleUnit
     public int Daggers=3,Rifles=4,Shields=3;
     public bool Fallen,Retreated,Retreating;
     public bool QueenFellToEnemy;
+    public int? PersuadedByQueen;
+    public int BattleOwner=>PersuadedByQueen??Owner;
     public bool ResumeAfterRetreatOverlap;
     public BattleLesson WitnessedLessons;
     public bool Active=>!Fallen && !Retreated;
@@ -86,6 +88,8 @@ public sealed partial class BattleState
     public Dictionary<int,int> NewspaperRanks {get;}=new();
     public Func<int,int,bool> Allied {get;set;}=(a,b)=>a==b;
     internal Func<int,bool> IsFactionRoot {get;set;}
+    internal Func<int,bool> CanPersuadeQueen {get;set;}
+    internal bool AlliedUnits(BattleUnit a,BattleUnit b)=>Allied(a.BattleOwner,b.BattleOwner);
     public BattleState(int seed,BattleRules rules=null)
     {Rules=rules??new();if(Rules.FlagCaptureTurns<1 || Rules.FlagDefenseTurns<1 || Rules.NoWillTurns<1 || Rules.SegmentTurns<1 || Rules.PersuasionRadius<0 || Rules.PersuasionPercent<0 || Rules.PersuasionPercent>100)throw new ArgumentException("Invalid battle rules.");Random=new(seed);}
     public static Point Forward(BattleFacing facing)=>facing switch{BattleFacing.North=>new(0,-1),BattleFacing.East=>new(1,0),BattleFacing.South=>new(0,1),_=>new(-1,0)};
@@ -166,7 +170,7 @@ public sealed partial class BattleState
         Check();
     }
     public Point[] DefaultPattern(int side,int count)=>Region(side).Where(p=>side!=4 || p!=Flag).Take(count).ToArray();
-    public void Capture(BattlePhase phase)=>Frames.Add(new(Turn,phase,phase==BattlePhase.Result && Finished && Frames.LastOrDefault()?.Phase==BattlePhase.Retreat?Frames[^1].Units:Units.Select(u=>new BattleUnitView(u.Id,u.Owner,u.Role,u.Position,u.Facing,u.Daggers,u.Rifles,u.Shields,u.Fallen,u.Retreated,u.Robot)).ToArray(),FlagStanding,LastFlagOwner,FlagDefenseTurns,FlagCaptureTurns,Fortifications.ToArray(),Armies.SelectMany(a=>a.Waiting).Where(u=>u.Active && u.ArrivalTurn>Turn).GroupBy(u=>(u.Owner,u.ArrivalTurn)).Select(g=>new BattleReliefView(g.Key.Owner,g.Count(),g.Key.ArrivalTurn-Turn)).ToArray()));
+    public void Capture(BattlePhase phase)=>Frames.Add(new(Turn,phase,phase==BattlePhase.Result && Finished && Frames.LastOrDefault()?.Phase==BattlePhase.Retreat?Frames[^1].Units:Units.Select(u=>new BattleUnitView(u.Id,u.Owner,u.Role,u.Position,u.Facing,u.Daggers,u.Rifles,u.Shields,u.Fallen,u.Retreated,u.Robot,u.PersuadedByQueen)).ToArray(),FlagStanding,LastFlagOwner,FlagDefenseTurns,FlagCaptureTurns,Fortifications.ToArray(),Armies.SelectMany(a=>a.Waiting).Where(u=>u.Active && u.ArrivalTurn>Turn).GroupBy(u=>(u.Owner,u.ArrivalTurn)).Select(g=>new BattleReliefView(g.Key.Owner,g.Count(),g.Key.ArrivalTurn-Turn)).ToArray()));
     public void InheritHistory(IEnumerable<BattleState> previous)
     {
         var states=previous.OrderBy(b=>b.Id).ToArray();if(states.Length==0)return;

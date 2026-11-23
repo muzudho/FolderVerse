@@ -9,7 +9,6 @@ public partial class Game1
     private readonly bool[] _displayFeatureForcedOff=new bool[8];
     private void ApplyDisplayBreakerLatches(){for(int i=0;i<8;i++)if(_displayFeatureForcedOff[i]&&DisplayFeatureEnabled(i))SetDisplayFeature(i,false);}
     private static double DisplayClock=>System.Diagnostics.Stopwatch.GetTimestamp()/(double)System.Diagnostics.Stopwatch.Frequency;
-    private static readonly Rectangle DisplayBreakerAutomaticRow=new(1260,146,650,44);
     private static readonly string[] DisplayFeatureNames={"経番・緯番","赤道","配備ロボット","電池","煙","隣接オブジェクト","国旗のなびき","地形の高低差"};
     private bool DisplayFeatureEnabled(int i)=>i switch{0=>_net.ShowMapSymbols,1=>_net.ShowEquator,2=>_net.ShowRobots,3=>_net.ShowBatteries,4=>_net.ShowSmoke,5=>_net.ShowAdjacentObjects,6=>_net.AnimateFlags,_=>!WorldTerrain.FlattenRelief};
     private void SetDisplayFeature(int i,bool enabled){

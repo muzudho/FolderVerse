@@ -12,6 +12,20 @@ public static class RobotMaterials
 {
     internal static readonly RobotParts[] Parts = { RobotParts.Head, RobotParts.Body, RobotParts.Legs };
 
+    internal static int WarehouseThirds(RobotMaterial material) => material switch
+    {
+        RobotMaterial.Paper => 3,
+        RobotMaterial.Foam => 4,
+        RobotMaterial.Cardboard => 5,
+        RobotMaterial.Polystyrene => 6,
+        RobotMaterial.SoftVinyl => 7,
+        RobotMaterial.Polypropylene => 8,
+        RobotMaterial.Silicone => 9,
+        RobotMaterial.Maple => 10,
+        RobotMaterial.Tin => 11,
+        _ => throw new System.ArgumentOutOfRangeException(nameof(material))
+    };
+
     // Values are thirds of one use. Add the three parts before rounding down.
     internal static RobotEquipment Thirds(RobotMaterial material) => material switch
     {

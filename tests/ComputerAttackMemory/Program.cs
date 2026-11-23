@@ -42,6 +42,53 @@ typeof(ComputerAttackMemory).GetMethod("Adjust",F)!.Invoke(memory,new object[]{w
 var deferred=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(world));
 Check(deferred.Campaign.AttackMemory.PendingOrders.Count==1 &&
     deferred.Campaign.AttackMemory.PendingOrders[0].RobotIds.SequenceEqual(manual.RobotIds),"Deferred computer orders must survive save restore");
+memory.Reset();
+world.Robots.Initialize(world.Nodes.All.Length,world.ActiveCount);
+const int target=10;
+world.Nodes.All[target].Owner=-1;
+var queens=Enumerable.Range(0,4).Select(r=>new March(r,target,0,r,Queen:true,PocketOnly:true)).ToArray();
+var sorties=queens.ToList();
+var adjust=typeof(ComputerAttackMemory).GetMethod("Adjust",F)!;
+var observe=typeof(ComputerAttackMemory).GetMethod("Observe",F)!;
+adjust.Invoke(memory,new object[]{world,sorties,Array.Empty<March>()});
+Check(sorties.Count==4,"First sortie remains available to all four queens");
+var encounter=new RobotEncounter{Kind=BattleKind.Node,Source=target,Target=target};
+var board=new BattleState(42){Kind=BattleKind.Node,TargetNode=target};
+foreach(var queen in queens){
+    board.Armies.Add(new(){Owner=queen.Ruler,HomeNode=queen.SourceNode});
+    board.Units.Add(new(){Id=-(queen.Ruler+1),Owner=queen.Ruler,Role=BattleRole.Queen});
+}
+encounter.Battles.Add(board);
+world.Campaign.RobotBattles.Encounters.Add(encounter);
+observe.Invoke(memory,new object[]{world,sorties});
+Check(memory.QueenSorties.Count==4 && memory.QueenFailures.Count==0,"Ongoing battles stay tracked between campaign turns");
+adjust.Invoke(memory,new object[]{world,new List<March>(),Array.Empty<March>()});
+foreach(var unit in board.Units)unit.Retreated=true;
+board.Finished=encounter.Finished=true;
+observe.Invoke(memory,new object[]{world,Array.Empty<March>()});
+Check(memory.QueenFailures.Count==4 && memory.QueenSorties.Count==0,"All four returning queens remember their failed sortie");
+sorties=queens.ToList();
+adjust.Invoke(memory,new object[]{world,sorties,Array.Empty<March>()});
+Check(sorties.Count==0,"Unchanged sorties cannot repeat");
+var stronger=queens[0] with {Fighters=1};
+var peaceful=queens[1] with {Peaceful=true};
+sorties=new(){stronger,peaceful,queens[2]};
+adjust.Invoke(memory,new object[]{world,sorties,new[]{queens[2]}});
+Check(sorties.Count==3,"Reinforced, peaceful and manually submitted sorties remain available");
+var queenRestored=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(world));
+Check(queenRestored.Campaign.AttackMemory.QueenFailures.SequenceEqual(memory.QueenFailures),"Queen failure memory survives a save round trip");
+var legacy=AutoSaveStore.Capture(world);
+foreach(var entry in legacy.Objects.Where(e=>e.Type.StartsWith("FolderVerse.ComputerAttackMemory,"))){
+    entry.Fields.Remove("<QueenFailures>k__BackingField");
+    entry.Fields.Remove("<QueenSorties>k__BackingField");
+}
+var legacyMemory=AutoSaveStore.Restore<WorldSetup>(legacy).Campaign.AttackMemory;
+Check(legacyMemory.QueenFailures.Count==0 && legacyMemory.QueenSorties.Count==0,"Old saves get empty queen sortie memory");
+world.Nodes.All[target].Owner=4;
+sorties=queens.ToList();
+adjust.Invoke(memory,new object[]{world,sorties,Array.Empty<March>()});
+Check(sorties.Count==4 && memory.QueenFailures.Count==0,"Changed target ownership unlocks retries");
+Console.WriteLine("PASS queen sortie memory: four retreats, repeat suppression, changed conditions and save compatibility");
 world.Campaign.Reset();
 Check(memory.Failures.Count==0 && memory.PendingOrders.Count==0,"A new campaign must clear attack memory");
 Console.WriteLine("PASS attack memory: boundaries, separate sources, ownership/faction changes, save restore, missing-field compatibility, submitted-order protection, deferred orders, campaign reset.");

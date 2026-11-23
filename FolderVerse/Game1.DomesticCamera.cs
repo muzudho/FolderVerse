@@ -26,7 +26,7 @@ public partial class Game1{
  }
  private void RestorePlayerView(){
   _orientationAge=-1;_mapTransitionAge=-1;_dragging=_mapDragging=false;
-  _mapDragListOpen=_mapLayerListOpen=_trafficLayerListOpen=false;_net.ClearGlobeRobotBadges();
+  _mapDragListOpen=_mapLayerListOpen=_trafficLayerListOpen=_simpleDisplayOpen=_displayFilterOpen=false;_net.ClearGlobeRobotBadges();
   if(_domesticViews.TryGetValue(_setup.PlayerSlot,out var state)){
    _net.RestoreView(state.Net);_statusGlobe=state.Globe;_yaw=state.Yaw;_pitch=state.Pitch;
    _world.ManualOrientation=state.Orientation;_world.GlobeAnchor=state.Anchor;_world.GlobeZoom=state.Zoom;

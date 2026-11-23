@@ -39,7 +39,7 @@ public static partial class BattleTurnResolver
         battle.Events.Add(new(battle.Turn,BattlePhase.Place,0,"仮配置"));
         foreach(var u in units)u.Position=positions[u.Id];battle.Capture(BattlePhase.Place);
         foreach(var a in units)foreach(var b in units.Where(b=>b.Id>a.Id))
-            if(!a.Retreating && !b.Retreating && !battle.Allied(a.Owner,b.Owner) && positions[a.Id]==origin[b.Id] && positions[b.Id]==origin[a.Id]){blocked.Add(a.Id);blocked.Add(b.Id);}
+            if(!a.Retreating && !b.Retreating && !battle.AlliedUnits(a,b) && positions[a.Id]==origin[b.Id] && positions[b.Id]==origin[a.Id]){blocked.Add(a.Id);blocked.Add(b.Id);}
         while(true)
         {
             foreach(var id in blocked)positions[id]=origin[id];
@@ -53,7 +53,7 @@ public static partial class BattleTurnResolver
             battle.Events.Add(new(battle.Turn,blocked.Contains(u.Id)?BattlePhase.Rollback:BattlePhase.Place,u.Id,$"{u.Position.X},{u.Position.Y} / {u.Facing}"));
         }
         if(units.Any(a=>!a.Retreating && blocked.Contains(a.Id) && actions[a.Id].Step!=Point.Zero &&
-            units.Any(b=>b.Id>a.Id && !b.Retreating && blocked.Contains(b.Id) && actions[b.Id].Step!=Point.Zero && !battle.Allied(a.Owner,b.Owner) &&
+            units.Any(b=>b.Id>a.Id && !b.Retreating && blocked.Contains(b.Id) && actions[b.Id].Step!=Point.Zero && !battle.AlliedUnits(a,b) &&
                 BattleAi.Distance(origin[a.Id],origin[b.Id])==2 && (origin[a.Id].X==origin[b.Id].X || origin[a.Id].Y==origin[b.Id].Y) &&
                 origin[a.Id]+actions[a.Id].Step==origin[b.Id]+actions[b.Id].Step && !origin.Values.Contains(origin[a.Id]+actions[a.Id].Step) &&
                 battle.WalkableFor(origin[a.Id]+actions[a.Id].Step,a.Owner) && battle.WalkableFor(origin[b.Id]+actions[b.Id].Step,b.Owner))))
@@ -76,7 +76,7 @@ public static partial class BattleTurnResolver
                 var shooter=units.Single(u=>u.Id==id);if(!shooter.Active||actions[id].Weapon!=BattleWeapon.Rifle)continue;
                 bool invalid=!captain.Active||captain.Retreating||!BattleTactics.SeesFocus(battle,captain.Position,plan.Focus);
                 var target=AttackTarget(battle,units,shooter,BattleWeapon.Rifle,out _);
-                bool friendly=target!=null&&battle.Allied(shooter.Owner,target.Owner);
+                bool friendly=target!=null&&battle.AlliedUnits(shooter,target);
                 if(invalid||BattleLessons.Has(battle,shooter,BattleLesson.CrossfireSafety)&&friendly){
                     actions[id]=actions[id] with {Weapon=BattleWeapon.None};continue;
                 }
@@ -107,22 +107,22 @@ public static partial class BattleTurnResolver
                 continue;
             }
             if(weapon==BattleWeapon.Rifle && sideDaggerExposures.Contains((attacker.Id,target.Id)))BattleLessons.Witness(battle,BattleLesson.LeaveFiringLine);
-            if(battle.Allied(attacker.Owner,target.Owner))BattleLessons.Witness(battle,BattleLesson.FireDiscipline);
-            if(weapon==BattleWeapon.Rifle&&crossfireShooters.Contains(attacker.Id)&&battle.Allied(attacker.Owner,target.Owner))
+            if(battle.AlliedUnits(attacker,target))BattleLessons.Witness(battle,BattleLesson.FireDiscipline);
+            if(weapon==BattleWeapon.Rifle&&crossfireShooters.Contains(attacker.Id)&&battle.AlliedUnits(attacker,target))
                 BattleLessons.Witness(battle,BattleLesson.CrossfireSafety);
-            if(weapon==BattleWeapon.Dagger && actions[attacker.Id].Step==Point.Zero && battle.Allied(attacker.Owner,target.Owner) && origin[target.Id]!=target.Position &&
-                units.Any(enemy=>!battle.Allied(attacker.Owner,enemy.Owner) && origin[enemy.Id]==origin[attacker.Id]+step && enemy.Position!=origin[enemy.Id] &&
+            if(weapon==BattleWeapon.Dagger && actions[attacker.Id].Step==Point.Zero && battle.AlliedUnits(attacker,target) && origin[target.Id]!=target.Position &&
+                units.Any(enemy=>!battle.AlliedUnits(attacker,enemy) && origin[enemy.Id]==origin[attacker.Id]+step && enemy.Position!=origin[enemy.Id] &&
                     (enemy.Position.X-origin[enemy.Id].X)*step.X+(enemy.Position.Y-origin[enemy.Id].Y)*step.Y==0))
                 BattleLessons.Witness(battle,BattleLesson.WaitingDaggerSafety);
-            hits[target.Id].HostileHit|=!battle.Allied(attacker.Owner,target.Owner);
+            hits[target.Id].HostileHit|=!battle.AlliedUnits(attacker,target);
             if(weapon==BattleWeapon.Dagger)hits[attacker.Id].DaggerHit=true;
             var front=BattleState.Forward(target.Facing);var delta=attacker.Position-target.Position;bool frontal=front.X!=0?delta.Y==0 && Math.Sign(delta.X)==front.X:delta.X==0 && Math.Sign(delta.Y)==front.Y;
             if(weapon==BattleWeapon.Rifle && target.Retreating && delta.X*front.X+delta.Y*front.Y<0)hits[target.Id].RetreatBackShot=true;
-            if(weapon==BattleWeapon.Dagger && !frontal && !battle.Allied(attacker.Owner,target.Owner) && BattleLessons.CornerSideTrap(battle,target))BattleLessons.Witness(battle,BattleLesson.CornerEscape);
+            if(weapon==BattleWeapon.Dagger && !frontal && !battle.AlliedUnits(attacker,target) && BattleLessons.CornerSideTrap(battle,target))BattleLessons.Witness(battle,BattleLesson.CornerEscape);
             if(!frontal)hits[target.Id].Side++;
             else if(weapon==BattleWeapon.Dagger){if(actions[target.Id].Weapon!=BattleWeapon.Dagger)hits[target.Id].Dagger++;}
             else hits[target.Id].Rifle++;
-            if(!battle.Allied(attacker.Owner,target.Owner))willing.Add(attacker.Owner);
+            if(!battle.AlliedUnits(attacker,target))willing.Add(attacker.Owner);
             battle.Events.Add(new(battle.Turn,BattlePhase.Receive,target.Id,$"{weapon} ← {attacker.Id}"));
         }
         if(units.Any(u=>u.Active && u.Role!=BattleRole.Queen && !u.Retreating && u.Daggers==0 && u.Position==origin[u.Id] &&
@@ -225,36 +225,65 @@ public static partial class BattleTurnResolver
     }
     private static bool PersuasionTarget(BattleState battle,BattleUnit queen,BattleUnit unit) =>
         unit.Active && unit.Role!=BattleRole.Queen &&
-        (unit.Owner==queen.Owner?unit.Robot!=null:!battle.Allied(unit.Owner,queen.Owner)) &&
+        (unit.Owner==queen.BattleOwner?unit.Robot!=null:!battle.AlliedUnits(unit,queen)) &&
         (unit.Robot!=null?unit.Robot.LastBattlePersuasionTurn!=battle.GlobalTurn:!battle.PersuadedUnits.Contains(unit.Id)) &&
-        (unit.Robot?.PersuadableParts(queen.Owner)??RobotParts.Complete)!=0;
+        (unit.Robot?.PersuadableParts(queen.BattleOwner)??RobotParts.Complete)!=0;
+
+    internal const int QueenPersuasionPercent=1;
+
+    private static bool QueenTarget(BattleState battle,BattleUnit queen,BattleUnit target) =>
+        target.Active && target.Role==BattleRole.Queen && target.Id!=queen.Id &&
+        !battle.AlliedUnits(target,queen) && !battle.Allied(target.BattleOwner,queen.Owner) &&
+        battle.CanPersuadeQueen?.Invoke(target.Owner)==true;
 
     internal static bool HasPersuasionTarget(BattleState battle,BattleUnit queen) =>
-        battle.Units.Concat(battle.Armies.SelectMany(army=>battle.ReadyWaiting(army))).Any(unit=>PersuasionTarget(battle,queen,unit));
+        battle.Units.Concat(battle.Armies.SelectMany(army=>battle.ReadyWaiting(army)))
+            .Any(unit=>PersuasionTarget(battle,queen,unit) || QueenTarget(battle,queen,unit));
+
+    private static void PersuadeQueens(BattleState battle,BattleUnit[] queens)
+    {
+        // Choose from the affiliations at the start of the persuasion step.
+        var attempts=queens.Select(target=>(Target:target,Sources:queens.Where(queen=>QueenTarget(battle,queen,target) &&
+            Math.Abs(target.Position.X-queen.Position.X)+Math.Abs(target.Position.Y-queen.Position.Y)<=battle.Rules.PersuasionRadius).ToArray()))
+            .Where(attempt=>attempt.Sources.Length>0).ToArray();
+        foreach(var (target,sources) in attempts)
+        {
+            if(battle.Random.Next(100)>=QueenPersuasionPercent)continue;
+            var queen=sources.Length==1?sources[0]:sources[battle.Random.Next(sources.Length)];
+            battle.Persuasions.Add(new(battle.Turn,queen.Id,target.Id,queen.Owner,target.BattleOwner,queen.Position,target.Position,true));
+            target.PersuadedByQueen=queen.Owner;
+            battle.Events.Add(new(battle.Turn,BattlePhase.Converted,target.Id,"説得"));
+        }
+    }
 
     private static void Persuade(BattleState battle)
     {
-        foreach(var queen in battle.Units.Where(u=>u.Active && u.Role==BattleRole.Queen).OrderBy(u=>u.Id))
+        var queens=battle.Units.Where(u=>u.Active && u.Role==BattleRole.Queen).OrderBy(u=>u.Id).ToArray();
+        foreach(var queen in queens)
         {
+            int owner=queen.BattleOwner;
+            var army=battle.Armies.FirstOrDefault(a=>a.Owner==owner);
+            if(army==null)continue;
             foreach(var enemy in battle.Units.Where(u=>PersuasionTarget(battle,queen,u)).OrderBy(u=>u.Id).ToArray())
             {
                 if(Math.Abs(enemy.Position.X-queen.Position.X)+Math.Abs(enemy.Position.Y-queen.Position.Y)>battle.Rules.PersuasionRadius)continue;
-                bool own=enemy.Owner==queen.Owner;
-                var parts=enemy.Robot?.PersuadableParts(queen.Owner)??RobotParts.Complete;
+                bool own=enemy.Owner==owner;
+                var parts=enemy.Robot?.PersuadableParts(owner)??RobotParts.Complete;
                 bool success=battle.Random.Next(100)<battle.Rules.PersuasionPercent;
-                success&=own || battle.Units.Count(u=>u.Active && u.Owner==queen.Owner)<battle.Army(queen.Owner).Limit;
-                battle.Persuasions.Add(new(battle.Turn,queen.Id,enemy.Id,queen.Owner,enemy.Owner,queen.Position,enemy.Position,success));
+                success&=own || battle.Units.Count(u=>u.Active && u.Owner==owner)<army.Limit;
+                battle.Persuasions.Add(new(battle.Turn,queen.Id,enemy.Id,owner,enemy.Owner,queen.Position,enemy.Position,success));
                 battle.Events.Add(new(battle.Turn,BattlePhase.Persuade,queen.Id,"説得中"));
                 if(!success)continue;
                 if(own)parts=new[]{RobotParts.Head,RobotParts.Body,RobotParts.Legs}.First(p=>(parts&p)!=0);
-                enemy.Owner=queen.Owner;
-                if(enemy.Robot!=null)enemy.Robot=enemy.Robot.Persuaded(queen.Owner,parts,true) with {LastBattlePersuasionTurn=battle.GlobalTurn};
+                enemy.Owner=owner;
+                if(enemy.Robot!=null)enemy.Robot=enemy.Robot.Persuaded(owner,parts,true) with {LastBattlePersuasionTurn=battle.GlobalTurn};
                 battle.PersuadedUnits.Add(enemy.Id);
                 bool overlap=battle.Units.Any(u=>u.Active && u.Id!=enemy.Id && !u.Retreating && u.Position==enemy.Position);
                 enemy.Retreating=overlap;enemy.ResumeAfterRetreatOverlap=overlap;
                 battle.Events.Add(new(battle.Turn,BattlePhase.Converted,enemy.Id,"説得"));
             }
         }
+        PersuadeQueens(battle,queens);
     }
     public static void Finish(BattleState battle)
     {

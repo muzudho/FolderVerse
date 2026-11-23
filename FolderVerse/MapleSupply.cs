@@ -15,7 +15,10 @@ public sealed record MaplePackage(long Id,int Units)
     public const int Capacity=48;
     public int Sections=>Material==RawMaterial.Scrap?1:(Units+RobotWorld.MaplePackageSize-1)/RobotWorld.MaplePackageSize;
 }
-public sealed record MapleShipment(int Owner,int Source,int Target,long PackageId);
+public sealed record MapleShipment(int Owner,int Source,int Target,long PackageId)
+{
+    public bool Computer {get;init;}
+}
 
 public sealed partial class RobotWorld
 {
@@ -158,7 +161,8 @@ public sealed partial class RobotWorld
         if(!MapleSupplyEnabled || world.Campaign.Phase!=CampaignPhase.Domestic || source<0 || source>=Nodes.Length || target<0 || target>=Nodes.Length)return false;
         int owner=world.Nodes.All[source].Owner;
         var package=Nodes[source].MaplePackages.FirstOrDefault(p=>p.Id==packageId);
-        if(Discarding.Reserved(packageId) || !world.Relations.Controls(owner) || !CanDeliverMaple(world,owner,source,target) || package==null)return false;
+        if(Discarding.Reserved(packageId) || !world.Relations.Controls(owner) || !CanDeliverMaple(world,owner,source,target) || package==null ||
+            MapleShipments.Any(o=>o.PackageId==packageId && o.Computer))return false;
         if(package.Sections>1){
             var targetStore=Nodes[target].PlanningCopy();
             foreach(var order in MapleShipments.Where(o=>o.Target==target && o.PackageId!=packageId)){
@@ -183,6 +187,7 @@ public sealed partial class RobotWorld
         if(!MapleSupplyEnabled)return;
         foreach(var order in _mapleShipments.ToArray())
         {
+            if(order.Computer){AdvanceComputerRawShipment(world,order);continue;}
             var source=Nodes[order.Source];var target=Nodes[order.Target];
             var pack=source.MaplePackages.FirstOrDefault(p=>p.Id==order.PackageId);
             if(pack==null || world.Nodes.All[order.Source].Owner!=order.Owner){_mapleShipments.Remove(order);continue;}
@@ -199,7 +204,7 @@ public sealed partial class RobotWorld
         int blocked=0;
         // The hangar forecast already includes manufactured arrivals.
         int reserved=0;
-        foreach(var order in MapleShipments.Where(o=>o.Target==node)){
+        foreach(var order in MapleShipments.Where(o=>o.Target==node && (!o.Computer || CanDeliverMaple(world,o.Owner,o.Source,node)))){
             var package=Nodes[order.Source].MaplePackages.FirstOrDefault(p=>p.Id==order.PackageId);
             if(package==null || !CanDeliverMaple(world,order.Owner,order.Source,node) ||
                 !target.TryReceiveMaple(package,reserved,id=>MapleShipping(node,id)))blocked++;

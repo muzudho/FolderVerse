@@ -71,12 +71,11 @@ public partial class Game1
         if(_seedDialog.IsOpen)return "seed_dialog";
         if(!IsStatusScreen)return _screen.ToString();
         if(MapViewButton.Contains(point))return "toggle_globe_net";
+        if(SimpleDisplayButton.Contains(point))return "display_breaker_menu";
+        if(DisplayFilterButton.Contains(point))return "display_filter_menu";
+        if(_displayFilterOpen && DisplayOtherCountriesRow.Contains(point))return "toggle_other_countries";
         if(RouteLayerButton(2).Contains(point))return "toggle_grid_traffic";
-        if(RouteLayerButton(5).Contains(point))return "toggle_robots";
-        if(RouteLayerButton(6).Contains(point))return "toggle_other_countries";
-        if(RouteLayerButton(4).Contains(point))return "toggle_equator";
-        if(RouteLayerButton(0).Contains(point))return "toggle_map_symbols";
-        if(RouteLayerButton(1).Contains(point))return "toggle_batteries";
+        if(RouteLayerButton(3).Contains(point))return "map_selection_menu";
         if(MovementButton.Contains(point))return "movement";
         if(PocketButton.Contains(point))return "open_pocket";
         if(_movementOpen && !_warPlanning && ConfirmMoveButton.Contains(point))return "confirm_move";
