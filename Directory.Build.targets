@@ -1,7 +1,8 @@
 <Project>
-  <!-- The game and simulation probes that compile Game1 share the popup hints. -->
+  <!-- The game and simulation probes that compile Game1 share these UI components. -->
   <ItemGroup Condition="@(Compile->AnyHaveMetadataValue('Filename', 'Game1'))">
     <Compile Include="$(MSBuildThisFileDirectory)src/Shared/PopupHint/*.cs" LinkBase="Shared/PopupHint" />
+    <Compile Include="$(MSBuildThisFileDirectory)src/Shared/AxisBot/*.cs" LinkBase="Shared/AxisBot" />
   </ItemGroup>
   <!-- MonoGame's tool-restore Exec otherwise decodes UTF-8 dotnet messages using
        Visual Studio's OEM code page. Preserve the upstream restore/stamp flow,

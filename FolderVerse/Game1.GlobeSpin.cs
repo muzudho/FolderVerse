@@ -14,7 +14,7 @@ public partial class Game1
             return true;
         }
         if(!_globeSpinning)return false;
-        if(active && elapsed>0 && !OrientationRotating){
+        if(active && elapsed>0 && !AxisBotRotating){
             // Match Demo's 0.12 radians/second, preserving the current camera pose.
             var orientation=_world.ViewOrientation(_yaw,_pitch);
             _world.ManualOrientation=Quaternion.Normalize(Quaternion.CreateFromRotationMatrix(

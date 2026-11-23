@@ -50,14 +50,14 @@ sealed class ToyCheck:Game1
     protected override void Draw(GameTime time)
     {
         base.Draw(time);
-        var toy=(ToyOrientationRenderer)Get("_orientationToy");
+        var toy=(AxisBot)Get("_axisBot");
         var globeEffect=(BasicEffect)typeof(WorldPreview).GetField("_effect",Private)!.GetValue(world)!;
-        var toyEffect=(BasicEffect)typeof(ToyOrientationRenderer).GetField("_effect",Private)!.GetValue(toy)!;
+        var toyEffect=(BasicEffect)typeof(AxisBot).GetField("_effect",Private)!.GetValue(toy)!;
         Check(globeEffect.World==toyEffect.World,"Toy and globe orientation diverged");
         var p=GraphicsDevice.PresentationParameters;var pixels=new Color[p.BackBufferWidth*p.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
         if(frame is 0 or 2)
         {
-            var areas=((Rectangle Globe,Rectangle Toy,Rectangle Legend))typeof(Game1).GetMethod("OrientationAreas",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{new Rectangle(130,240,1120,680),false})!;
+            var areas=((Rectangle Globe,Rectangle Toy,Rectangle Legend))typeof(Game1).GetMethod("AxisBotLayout",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{new Rectangle(130,240,1120,680),false})!;
             var toyPixels=Enumerable.Range(areas.Toy.Top,areas.Toy.Height).SelectMany(y=>Enumerable.Range(areas.Toy.Left,areas.Toy.Width).Select(x=>pixels[y*p.BackBufferWidth+x])).ToArray();
             if(frame==0)front=toyPixels;else Check(!toyPixels.SequenceEqual(front),"Toy back view unchanged");
         }

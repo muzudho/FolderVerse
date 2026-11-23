@@ -37,20 +37,20 @@ sealed class ZoomChecks:Game1{
    if(zoom>=4)Check(extension>1000,"Zoomed land colors extend beyond the old rectangular viewport");
   }
   object Prop(string n)=>typeof(Game1).GetProperty(n,F)!.GetValue(this)!;
-  Check((bool)Prop("OrientationControlsVisible"),"Land conquest enables orientation controls");
-  var toy=(Rectangle)Prop("OrientationToyArea");
+  Check((bool)Prop("AxisBotControlsVisible"),"Land conquest enables orientation controls");
+  var toy=(Rectangle)Prop("AxisBotWindow");
   foreach(int axis in new[]{0,1,2})foreach(int sign in new[]{-1,1}){
    var from=Quaternion.CreateFromRotationMatrix(world.ViewOrientation((float)Get("_yawAngle"),(float)Get("_pitchAngle")));
-   var button=(Rectangle)typeof(Game1).GetMethod("AxisButton",F)!.Invoke(this,new object[]{toy,axis,sign})!;
+   var button=(Rectangle)typeof(Game1).GetMethod("AxisBotRotationButton",F)!.Invoke(this,new object[]{toy,axis,sign})!;
    Set("_pointer",button.Center);
    Call("UpdateLandSetup",0d,new MouseState(),true,true,false);
-   Check((bool)Prop("OrientationRotating"),"Land input starts axis rotation");
+   Check((bool)Prop("AxisBotRotating"),"Land input starts axis rotation");
    Call("UpdateLandSetup",.2d,new MouseState(),true,false,false);
    Call("UpdateLandSetup",.2d,new MouseState(),true,false,false);
    var to=world.ManualOrientation!.Value;float angle=2*MathF.Acos(Math.Clamp(MathF.Abs(Quaternion.Dot(from,to)),0,1));
    Check(MathF.Abs(angle-MathHelper.ToRadians(30))<.001,"Each land control rotates exactly 30 degrees");
   }
-  Set("_pointer",((Rectangle)Prop("OrientationResetButton")).Center);
+  Set("_pointer",((Rectangle)Prop("AxisBotResetButton")).Center);
   Call("UpdateLandSetup",0d,new MouseState(),true,true,false);
   Check(world.ManualOrientation==null && (float)Get("_yawAngle")==0 && (float)Get("_pitchAngle")==0,"Land reset returns to default orientation");
   Check(((System.Collections.ICollection)Get("_landOrder")).Count>0 && ((System.Collections.IEnumerable)Get("_landSelection")).Cast<int>().Count()==0,"Rotation controls do not select land");

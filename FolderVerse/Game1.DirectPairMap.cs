@@ -157,7 +157,7 @@ public partial class Game1
             _directPairWorld.SelectionSetup=_setup;
             _directPairWorld.HighlightTiles.Clear();_directPairWorld.HighlightTiles.UnionWith(_directPairNet.HighlightTiles);
             var viewport=GraphicsDevice.Viewport;
-            var globeViewport=OrientationViewport(panel,canvas);
+            var globeViewport=CanvasViewport(panel,canvas);
             GraphicsDevice.Viewport=globeViewport;
             _directPairWorld.Draw(_directPairYaw,_directPairPitch,_animationTime,false,true,deferAtmosphere:true);
             _directPairWorld.DrawRobotPins(_setup,_directPairNet,_directPairYaw,_directPairPitch,panel,_animationTime);

@@ -19,7 +19,7 @@ public partial class Game1
     private void UpdateDisplayBreaker(double now,double drawMs){
         double frameMs=_breakerPreviousFrame<0?drawMs:Math.Max(0,(now-_breakerPreviousFrame)*1000);_breakerPreviousFrame=now;
         var enabled=new bool[8];for(int i=0;i<8;i++)enabled[i]=DisplayFeatureEnabled(i);
-        bool eligible=_loggedActive!=false&&IsStatusScreen&&!_conquestOverview&&!GuideVisible&&!MapTransitionActive&&!OrientationRotating&&!_autoPaused;
+        bool eligible=_loggedActive!=false&&IsStatusScreen&&!_conquestOverview&&!GuideVisible&&!MapTransitionActive&&!AxisBotRotating&&!_autoPaused;
         if(_displayBreaker.Observe(now,Math.Max(drawMs,frameMs),enabled,RenderFeatureCost.Milliseconds,eligible) is int item){
             SetDisplayFeature(item,false);_breakerMessage=DisplayFeatureNames[item]+"を自動でOFFにしました";
             _operations.Write("display_breaker_tripped",new{item=DisplayFeatureNames[item],cpuMs=_displayBreaker.LastCost[item],budgetMs=DisplayBreaker.BudgetMilliseconds});

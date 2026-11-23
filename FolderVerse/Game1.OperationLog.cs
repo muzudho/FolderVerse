@@ -83,7 +83,7 @@ public partial class Game1
         if(MovementButton.Contains(point))return "movement";
         if(PocketButton.Contains(point))return "open_pocket";
         if(_movementOpen && !_warPlanning && ConfirmMoveButton.Contains(point))return "confirm_move";
-        if(OrientationResetButton.Contains(point))return "reset_orientation";
+        if(AxisBotResetButton.Contains(point))return "reset_orientation";
         if(PopulationTurnButton.Contains(point))return "next_turn";
         if(NetPanel.Contains(point))return _statusGlobe?"globe":"net";
         return "other";

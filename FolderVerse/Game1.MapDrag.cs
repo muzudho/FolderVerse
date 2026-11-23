@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -35,7 +35,7 @@ public partial class Game1
     {
         bool held=active && mouse.RightButton==ButtonState.Pressed;
         if(_operationSettingsOpen && !OperationSettingsBlocksMapDrag && held && _previousMouse.RightButton!=ButtonState.Pressed)_mapDragListOpen=false;
-        if(!held || MapTransitionActive || OrientationRotating || _net.IsAnimating || _mapDragListOpen || OperationSettingsBlocksMapDrag){_mapDragging=_dragging=false;return;}
+        if(!held || MapTransitionActive || AxisBotRotating || _net.IsAnimating || _mapDragListOpen || OperationSettingsBlocksMapDrag){_mapDragging=_dragging=false;return;}
         if(_previousMouse.RightButton!=ButtonState.Pressed && MapViewBounds.Contains(_pointer))_mapDragging=true;
         if(!_mapDragging || _previousMouse.RightButton!=ButtonState.Pressed)return;
         var old=CanvasPoint(_previousMouse);var delta=new Vector2(_pointer.X-old.X,_pointer.Y-old.Y);

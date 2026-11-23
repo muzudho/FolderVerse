@@ -23,7 +23,7 @@ public partial class Game1
     private bool UpdateDemoDomestic(double elapsed)
     {
         _demoStepAge=0;
-        if(MapTransitionActive || _net.IsAnimating || OrientationRotating)return true;
+        if(MapTransitionActive || _net.IsAnimating || AxisBotRotating)return true;
         // Finish the same inspector animation as a normal click before aiming at the next control.
         if(_nodeInspectorClosing || InspectorVisible && _domesticSlide<1)return true;
         // Alternate domestic work and war planning within the single planning phase.

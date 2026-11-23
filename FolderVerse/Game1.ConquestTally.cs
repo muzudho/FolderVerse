@@ -7,13 +7,12 @@ using Microsoft.Xna.Framework.Graphics;
 public partial class Game1
 {
     private SectorChangeArt _sectorChangeArt;
-    private static Rectangle ConquestRobotWindow=>new(478,145,76,76);
-    private void DrawConquestOrientation(Rectangle canvas,Matrix transform,Viewport viewport){
-        var toy=ConquestRobotWindow;int radius=toy.Width/2;
-        _spriteBatch.Begin(transformMatrix:transform);
-        for(int y=-radius;y<=radius;y++){int half=(int)MathF.Sqrt(radius*radius-y*y);_ui.Box(new(toy.Center.X-half,toy.Center.Y+y,half*2+1,1),new Color(26,51,65,235));}
-        _spriteBatch.End();GraphicsDevice.Viewport=OrientationViewport(new(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30),canvas);
-        _orientationToy.Draw((PlanetHeadSystem)_setup.PolarAxis,_conquestGlobe.ViewOrientation(0,0));GraphicsDevice.Viewport=viewport;
+    private static Rectangle ConquestAxisBotWindow=>new(478,145,76,76);
+    private void DrawConquestAxisBot(Rectangle canvas,Matrix transform,Viewport viewport){
+        var toy=ConquestAxisBotWindow;
+        var model=new Rectangle(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30);
+        DrawAxisBotBody(toy,model,canvas,transform,_conquestGlobe.ViewOrientation(0,0));
+        GraphicsDevice.Viewport=viewport;
     }
 
     private void DrawConquestTerritoryFlags(){

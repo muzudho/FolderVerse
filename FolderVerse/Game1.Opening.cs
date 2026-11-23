@@ -379,7 +379,7 @@ public partial class Game1
             DrawOpeningDimensions();
             _spriteBatch.End();
         }
-        if(_screen==Screen.OpeningReview)DrawOpeningInspectionToy(canvas,transform);
+        if(_screen==Screen.OpeningReview)DrawOpeningInspectionAxisBot(canvas,transform);
         void DrawPlanet(WorldPreview planet,double age,OpeningGlobeHandoff handoff)
         {
             if(handoff.Opacity<=0 && handoff.ModelOpacity<=0)return;

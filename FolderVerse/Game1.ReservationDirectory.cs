@@ -112,7 +112,7 @@ public partial class Game1
         _directoryHits.Clear();
         if(MapTransitionActive || _net.IsAnimating)return;
         var map=MapViewBounds;
-        var toy=OrientationToyArea;toy.Inflate(50,50);
+        var toy=AxisBotWindow;toy.Inflate(50,50);
         var covered=new[]{new Rectangle(985,142,900,100),new Rectangle(990,242,710,122),toy,new Rectangle(985,820,900,65),new Rectangle(1330,908,540,58)};
         var sites=_setup.Nodes.All.Select(n=>(Node:n,Counts:ReservationDirectoryCounts(n.Id),Status:DirectoryTurnStatus(n.Owner)))
             .OrderByDescending(s=>s.Counts.Any(n=>n>0)).ThenBy(s=>s.Node.Id);

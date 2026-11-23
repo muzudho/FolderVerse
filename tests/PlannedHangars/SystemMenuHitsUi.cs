@@ -16,7 +16,7 @@ sealed class SystemMenuHitsUi:Game1
     void Click(Point p){var c=(Rectangle)Call("CanvasBounds");foreach(var state in new[]{ButtonState.Released,ButtonState.Pressed,ButtonState.Released})Call("HandleInput",new MouseState(c.X+p.X*c.Width/1920,c.Y+p.Y*c.Height/1080,0,state,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero),true);}
     void Ready(){
         Set("_autoPlay",false);Set("_countrySettingsOpen",false);Set("_operationSettingsOpen",false);Set("_operationSettingsSlide",0f);Set("_statusMenuOpen",false);Set("_intakeLine",null!);
-        Call("CloseDirectDelivery");Call("CloseFunctionTransferMap");Call("ResetInspector");Set("_primaryActionSlide",0f);Set("_orientationAge",-1f);Set("_orientationDragging",false);
+        Call("CloseDirectDelivery");Call("CloseFunctionTransferMap");Call("ResetInspector");Set("_primaryActionSlide",0f);Set("_axisBotRotationAge",-1f);Set("_axisBotDragging",false);
         w.SetWorld(0);w.SetCast(123);w.SetPlacement(456);w.SelectPlayer(0);w.HumanPlayers.Add(0);Set("_conquestOverview",false);
         Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",0d);((CubeNet)Get("_net")).Home(w);((WorldPreview)Get("_world")).ShowSetup(w,true);
     }

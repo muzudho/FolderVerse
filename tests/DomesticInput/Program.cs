@@ -54,28 +54,28 @@ sealed class InputGame:Game1{
     }
     Click(filter.Center);
     Check(net.ShowOtherCountries==otherCountries && !(bool)Get("_displayFilterOpen"),"Filter icon closes its menu");
-    var toy=(Rectangle)Prop("OrientationToyArea");
+    var toy=(Rectangle)Prop("AxisBotWindow");
     var handle=new Rectangle(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30);
     var overlap=Rectangle.Intersect(handle,Option(1));
     Check(!overlap.IsEmpty,"Node choice overlaps orientation drag handle");
     Click(toolbar.Center);
     Check((bool)Get("_trafficLayerListOpen"),$"Selection toolbar opens the dropdown (screen {Get("_screen")}, pointer {Get("_pointer")})");
     Input(overlap.Center,ButtonState.Pressed);
-    Check(net.ShowRoutes && !(bool)Get("_orientationDragging") && !(bool)Get("_trafficLayerListOpen"),
+    Check(net.ShowRoutes && !(bool)Get("_axisBotDragging") && !(bool)Get("_trafficLayerListOpen"),
         "Overlapping node choice selects nodes without starting an orientation drag");
     Input(overlap.Center);
     var axisOverlap=(from axis in Enumerable.Range(0,3) from sign in new[]{-1,1}
-        let button=(Rectangle)Call("AxisButton",toy,axis,sign)
+        let button=(Rectangle)Call("AxisBotRotationButton",toy,axis,sign)
         select Rectangle.Intersect(button,Option(0))).FirstOrDefault(r=>!r.IsEmpty);
     Click(toolbar.Center);Click(axisOverlap.IsEmpty?Option(0).Center:axisOverlap.Center);
-    Check(!net.ShowRoutes && !(bool)Prop("OrientationRotating"),"Region choice selects regions without rotating");
+    Check(!net.ShowRoutes && !(bool)Prop("AxisBotRotating"),"Region choice selects regions without rotating");
     Click(toolbar.Center);
     Input(toy.Center,ButtonState.Pressed);
-    Check(!(bool)Get("_trafficLayerListOpen") && !(bool)Get("_orientationDragging"),
+    Check(!(bool)Get("_trafficLayerListOpen") && !(bool)Get("_axisBotDragging"),
         "Click outside dismisses the menu without passing through to the toy");
     Input(toy.Center);
     Input(toy.Center,ButtonState.Pressed);
-    Check((bool)Get("_orientationDragging"),"The toy is draggable again after dismissing the menu");
+    Check((bool)Get("_axisBotDragging"),"The toy is draggable again after dismissing the menu");
     Input(toy.Center);
     Click(toolbar.Center);Input(default,keys:new[]{Keys.Escape});Input(default);
     Check(!(bool)Get("_trafficLayerListOpen") && Get("_screen").ToString()=="WorldStatus",

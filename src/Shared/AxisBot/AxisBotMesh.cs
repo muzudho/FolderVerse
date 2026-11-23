@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-internal sealed class AnimalToyMesh
+internal sealed class AxisBotMesh
 {
     private static readonly Color Cream = new(255, 222, 173);
     private static readonly Color Teal = new(0, 137, 115);
@@ -15,7 +15,7 @@ internal sealed class AnimalToyMesh
 
     public static VertexPositionColorNormal[] Create(PlanetHeadSystem animal)
     {
-        var mesh = new AnimalToyMesh();
+        var mesh = new AxisBotMesh();
         switch (animal)
         {
             case PlanetHeadSystem.Fish: mesh.Fish(); break;

@@ -6,15 +6,18 @@ using Microsoft.Xna.Framework.Graphics;
 
 // The fish, monkey and dog point their heads along +X, +Y and +Z respectively.
 // Apply the globe pose to the whole toy while keeping the axis screws fixed.
-public sealed partial class ToyOrientationRenderer:IDisposable
+public sealed partial class AxisBot:IDisposable
 {
+    public const string EnglishName=nameof(AxisBot);
+    public const string JapaneseName="方向のロボット";
+
     private readonly GraphicsDevice _device;
     private readonly BasicEffect _effect;
     private readonly VertexBuffer[] _meshes=new VertexBuffer[3];
 
     private readonly VertexBuffer _screws;
     private readonly int _screwPrimitives;
-    public ToyOrientationRenderer(GraphicsDevice device)
+    public AxisBot(GraphicsDevice device)
     {
         _device=device;_effect=new BasicEffect(device){VertexColorEnabled=true};
         _effect.EnableDefaultLighting();_effect.AmbientLightColor=new Vector3(.48f);
@@ -22,7 +25,7 @@ public sealed partial class ToyOrientationRenderer:IDisposable
         var screws=BuildAxisScrews();_screws=new VertexBuffer(device,VertexPositionColorNormal.VertexDeclaration,screws.Length,BufferUsage.WriteOnly);_screws.SetData(screws);_screwPrimitives=screws.Length/3;
         foreach(var kind in Enum.GetValues<PlanetHeadSystem>())
         {
-            var vertices=AnimalToyMesh.Create(kind);
+            var vertices=AxisBotMesh.Create(kind);
             var mesh=new VertexBuffer(device,VertexPositionColorNormal.VertexDeclaration,vertices.Length,BufferUsage.WriteOnly);
             mesh.SetData(vertices);
             _meshes[(int)kind]=mesh;

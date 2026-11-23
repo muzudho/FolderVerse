@@ -248,10 +248,10 @@ sealed class WarGuideGame:Game1
     int hit=(bool)Get("_statusGlobe")?(int)Call("HitGlobeNode",point,net.MovementTargets):
      net.HitNode(w,(Rectangle)Call("get_NetPanel"),point,net.MovementTargets);
     if(hit!=id)continue;
-    if((bool)Call("get_OrientationControlsVisible")){
-     var toy=(Rectangle)Call("get_OrientationToyArea");
-     bool covered=toy.Contains(point) || ((Rectangle)Call("get_OrientationResetButton")).Contains(point);
-     for(int axis=(bool)Call("get_OrientationGlobe")?0:2;axis<3;axis++)foreach(int sign in new[]{-1,1})covered|=((Rectangle)Call("AxisButton",toy,axis,sign)).Contains(point);
+    if((bool)Call("get_AxisBotControlsVisible")){
+     var toy=(Rectangle)Call("get_AxisBotWindow");
+     bool covered=toy.Contains(point) || ((Rectangle)Call("get_AxisBotResetButton")).Contains(point);
+     for(int axis=(bool)Call("get_AxisBotUsesGlobe")?0:2;axis<3;axis++)foreach(int sign in new[]{-1,1})covered|=((Rectangle)Call("AxisBotRotationButton",toy,axis,sign)).Contains(point);
      if(covered){Console.WriteLine($"Skip covered candidate={id} point={point}");continue;}
     }
     candidate=id;mapPoint=point;break;
@@ -353,8 +353,8 @@ sealed class WarGuideGame:Game1
      Check(candidate>=0,"A second war target is visible");
      Console.WriteLine($"Second sortie target before combat: target={candidate} owner={w.Nodes.All[candidate].Owner}");
      void TraceSelection(string label){
-      var toy=(Rectangle)Call("get_OrientationToyArea");
-      Console.WriteLine($"Orientation {label}: visible={Call("get_OrientationControlsVisible")} toy={toy} toyHit={toy.Contains(mapPoint)} reset={Call("get_OrientationResetButton")} rotating={Call("get_OrientationRotating")} transitioning={Call("get_MapTransitionActive")}");
+      var toy=(Rectangle)Call("get_AxisBotWindow");
+      Console.WriteLine($"Orientation {label}: visible={Call("get_AxisBotControlsVisible")} toy={toy} toyHit={toy.Contains(mapPoint)} reset={Call("get_AxisBotResetButton")} rotating={Call("get_AxisBotRotating")} transitioning={Call("get_MapTransitionActive")}");
       Console.WriteLine($"Primary gate {label}: blocked={Call("TutorialPrimaryActionClick",mapPoint)} handle={Call("get_InspectorHandle")} handleHit={((Rectangle)Call("get_InspectorHandle")).Contains(mapPoint)}");
       for(int action=0;action<8;action++){var rect=(Rectangle)Call("PrimaryActionBounds",action);if(rect.Contains(mapPoint))Console.WriteLine($"Primary overlap action={action} rect={rect} tutorial={Call("TutorialPrimaryActionAllowed",action)} phase={Call("PhasePrimaryActionAllowed",action)}");}
       Console.WriteLine($"Dispatch {label}: pointer={Get("_pointer")} outcome={Get("_inputOutcome")} transport={Get("_transportOverview")} nodeTransport={Get("_nodeTransportOpen")} mapList={Get("_mapLayerListOpen")} trafficList={Get("_trafficLayerListOpen")} previousMouse={Get("_previousMouse")}");
