@@ -27,6 +27,13 @@ internal static class InitialHangarPlanning
         }
     }
 
+    internal static Robot CreateKeeper(WorldSetup world,int owner)
+    {
+        var robot=world.Robots.Create(owner,RobotParts.Complete) with {WarehouseKeeper=true};
+        return world.EquipmentMode==RobotEquipmentMode.Materials
+            ?robot with {HeadMaterial=RobotMaterial.Paper,BodyMaterial=RobotMaterial.Paper,LegsMaterial=RobotMaterial.Paper}:robot;
+    }
+
     internal static void FitKeepers(WorldSetup world,Node node)
     {
         var store=world.Robots.Nodes[node.Id];
@@ -45,7 +52,7 @@ internal static class InitialHangarPlanning
         var keepers=new System.Collections.Generic.List<Robot>();int remaining=bestSum;
         for(int i=0;i<bestCount;i++){
             int group=Math.Min(3,remaining-(bestCount-i-1));remaining-=group;
-            var r=world.Robots.Create(node.Owner,RobotParts.Complete) with{WarehouseKeeper=true,HeadOrigin=node.Owner,BodyOrigin=group>=2?node.Owner:-2,LegsOrigin=group>=3?node.Owner:-2};
+            var r=CreateKeeper(world,node.Owner) with{HeadOrigin=node.Owner,BodyOrigin=group>=2?node.Owner:-2,LegsOrigin=group>=3?node.Owner:-2};
             keepers.Add(r);
         }
         store.Replace(retained.Concat(keepers));

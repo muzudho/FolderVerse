@@ -201,9 +201,11 @@ public sealed partial class RobotPartPlanning
     }
     private static int Find(RobotWorld world,long id)=>Array.FindIndex(world.Nodes,s=>s.Robots.Any(r=>r.Id==id));
     private static Robot FreeRole(Robot r)=>r with {DefenseOnly=false,InterceptOnly=false,FactoryWorker=false,DefenseFlag=null};
-    internal static bool CanUseWarehouseSuccessor(WorldSetup world,RobotWorld stock,int node,Robot robot)=>
-        robot!=null && robot.HasAffiliatedParts && !robot.IsWorkpiece && !robot.IsDismantling && robot.RecoveredRaw==null && robot.Parts==RobotParts.Complete && !robot.Stationed && !robot.Disposal &&
-        !world.Robots.MarchReserved(node,robot) && !stock.ReservationBusy(node,robot.Id);
+    internal static bool CanUseWarehouseSuccessor(WorldSetup world,RobotWorld stock,int node,Robot keeper,Robot robot)=>
+        keeper?.WarehouseKeeper==true && robot!=null && robot.HasAffiliatedParts && !robot.IsWorkpiece && !robot.IsDismantling &&
+        robot.RecoveredRaw==null && robot.Parts==RobotParts.Complete && !robot.Stationed && !robot.Disposal &&
+        !world.Robots.MarchReserved(node,robot) && !stock.ReservationBusy(node,robot.Id) &&
+        stock.Nodes[node].WarehouseContributionThirds(robot)>=stock.Nodes[node].WarehouseContributionThirds(keeper);
     private static long Apply(WorldSetup world,RobotWorld stock,PlannedPartMove order,bool checkRoute)
     {
         int source=Find(stock,order.RobotId),target=order.Target;
@@ -214,8 +216,8 @@ public sealed partial class RobotPartPlanning
             var store=stock.Nodes[target];
             var successor=store.Robots.FirstOrDefault(r=>r.Id==order.TargetRobotId);
             if(world.Campaign.RobotBattles.LockedNode(target) || source!=target || !robot.WarehouseKeeper ||
-               !CanUseWarehouseSuccessor(world,stock,target,successor))
-                throw new InvalidOperationException("交代先に空いている完全体を選んでください");
+               !CanUseWarehouseSuccessor(world,stock,target,robot,successor))
+                throw new InvalidOperationException("交代先に増加枠が同じか多い完全体を選んでください");
             store.Replace(store.Robots.Select(r=>r.Id==robot.Id?r with {WarehouseKeeper=false}:
                 r.Id==successor.Id?r with {WarehouseKeeper=true}:r));
             return robot.Id;

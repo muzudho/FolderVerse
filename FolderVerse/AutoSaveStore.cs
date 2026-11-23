@@ -162,6 +162,7 @@ public static class AutoSaveStore
                     if(type==typeof(Node) && field.Name=="FunctionHost"){field.SetValue(value,-1);continue;}
                     if(type==typeof(Node) && field.Name=="IncomingFactories")continue;
                     if(type==typeof(RobotStore) && field.Name=="_capacity")continue;
+                    if(type==typeof(RobotStore) && field.Name=="_materialWarehouseRules")continue;
                     if(type==typeof(Robot) && field.Name=="<FunctionDisplayNode>k__BackingField")continue;
                     if(type==typeof(RobotWorkshop) && new[]{"_disposalAnnexes","TransferredLineLimit","FunctionOriginNode"}.Contains(field.Name))continue;
                     if(type==typeof(ConquestCampaign) && field.Name=="<FunctionTransfers>k__BackingField"){field.SetValue(value,new NodeFunctionTransfers());continue;}
@@ -248,7 +249,11 @@ public static class AutoSaveStore
             }
         }
         for(int i=0;i<values.Length;i++)Populate(i);
-        foreach(var world in values.OfType<WorldSetup>())world.Robots.LongDelivery.RestoreLegacySlots(world.Robots);
+        foreach(var world in values.OfType<WorldSetup>())
+        {
+            foreach(var store in world.Robots.Nodes)store.SetWarehouseEquipmentMode(world.EquipmentMode);
+            world.Robots.LongDelivery.RestoreLegacySlots(world.Robots);
+        }
         return At(doc.Root) is T result?result:throw new InvalidDataException("Invalid autosave root.");
     }
     public static void Write(string path,object root){

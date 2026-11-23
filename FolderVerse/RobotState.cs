@@ -126,9 +126,21 @@ public sealed class RobotStore
     private int? _capacity;
     private int? _warehouseLimit;
     private bool _logisticsRules,_relayWarehouse;
-    private bool _flagWarehouseRules;
+    private bool _flagWarehouseRules,_materialWarehouseRules;
     internal void EnableFlagWarehouseRules()=>_flagWarehouseRules=true;
-    internal int WarehouseContribution(Robot r)=>_flagWarehouseRules?(r.LargestFlagGroup==0?1:_relayWarehouse?1+2*r.LargestFlagGroup:1+r.LargestFlagGroup):WarehouseExpansion;
+    internal void SetWarehouseEquipmentMode(RobotEquipmentMode mode)=>_materialWarehouseRules=mode==RobotEquipmentMode.Materials;
+    internal bool UsesWarehouseMaterials=>_flagWarehouseRules && _materialWarehouseRules;
+    internal int WarehouseContributionThirds(Robot robot)
+    {
+        if(!_flagWarehouseRules)return WarehouseExpansion*3;
+        int flags=robot.LargestFlagGroup;
+        int thirds=3*(1+(_relayWarehouse?2:1)*flags);
+        if(!UsesWarehouseMaterials || flags==0 || robot.Parts!=RobotParts.Complete)return thirds;
+        // Paper preserves the original flag bonus. Better materials add to it in thirds.
+        return thirds+RobotMaterials.Parts.Sum(part=>RobotMaterials.WarehouseThirds(robot.Material(part))-3);
+    }
+    internal int DevelopedWarehouseCapacity(IEnumerable<Robot> robots,int limit)=>
+        Math.Min(limit,1+robots.Where(r=>r.WarehouseKeeper).Sum(WarehouseContributionThirds)/3);
     public int WarehouseExpansion=>_relayWarehouse?7:4;
     internal int WarehouseMaximum=>_logisticsRules && !_relayWarehouse?30:60;
     internal bool LogisticsRules=>_logisticsRules;
@@ -137,7 +149,7 @@ public sealed class RobotStore
     public int TotalCapacity=>CapacityFor(_robots);
     internal void SetWarehouseLimit(int limit)=>_warehouseLimit=limit;
     internal int CapacityFor(IEnumerable<Robot> robots)=>_warehouseLimit is int limit && _capacity!=0
-        ?Math.Min(limit,1+robots.Where(r=>r.WarehouseKeeper).Sum(WarehouseContribution)):_capacity??Capacity;
+        ?DevelopedWarehouseCapacity(robots,limit):_capacity??Capacity;
     internal bool Fits(IEnumerable<Robot> robots,IEnumerable<MaplePackage> packages,int reserved,int? capacity=null)
         =>OccupiedSlots(robots,packages)+reserved<=(capacity??CapacityFor(robots));
     internal void SetCapacity(int capacity){if(capacity<Count+ReservedReturns)throw new InvalidOperationException("Occupied hangar capacity.");_capacity=capacity;}
@@ -195,7 +207,7 @@ public sealed class RobotStore
     }
     internal RobotStore PlanningCopy()
     {
-        var result=new RobotStore{_capacity=_capacity,_warehouseLimit=_warehouseLimit,_logisticsRules=_logisticsRules,_relayWarehouse=_relayWarehouse,_flagWarehouseRules=_flagWarehouseRules,ScrapNode=ScrapNode,ScrapTurn=ScrapTurn};foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);result._maplePackages=_maplePackages;return result;
+        var result=new RobotStore{_capacity=_capacity,_warehouseLimit=_warehouseLimit,_logisticsRules=_logisticsRules,_relayWarehouse=_relayWarehouse,_flagWarehouseRules=_flagWarehouseRules,_materialWarehouseRules=_materialWarehouseRules,ScrapNode=ScrapNode,ScrapTurn=ScrapTurn};foreach(long id in _returnReservations)result._returnReservations.Add(id);result.Replace(Robots);result._maplePackages=_maplePackages;return result;
     }
     internal void SetMaplePackages(MaplePackage[] packages)=>_maplePackages=packages;
     internal bool TryReceiveMaple(MaplePackage package,int reserved,Func<long,bool> shipping)

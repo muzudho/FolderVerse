@@ -59,7 +59,8 @@ public sealed class NodeFunctionTransfers
             var stores=incoming.Select(n=>w.Robots.Nodes[n]).ToArray();
             var robots=stores.SelectMany(s=>s.Robots).Concat(Orders.Where(o=>o.FactoryOnly && o.Source!=source && o.Target==target)
                 .SelectMany(o=>w.Robots.Nodes[o.Source].Robots.Where(r=>r.FactoryWorker))).ToArray();
-            int developed=Math.Min(Math.Min(w.Robots.Nodes[target].WarehouseMaximum,MergedWarehouseLimit(stores)),1+robots.Where(r=>r.WarehouseKeeper).Sum(w.Robots.Nodes[target].WarehouseContribution));
+            var targetStore=w.Robots.Nodes[target];
+            int developed=targetStore.DevelopedWarehouseCapacity(robots,Math.Min(targetStore.WarehouseMaximum,MergedWarehouseLimit(stores)));
             if(!w.Robots.Nodes[target].Fits(robots,stores.SelectMany(s=>s.MaplePackages),
                0,developed))return false;
         }

@@ -134,11 +134,11 @@ public partial class Game1
                 var cell=AssemblyCell(slot);
                 if(_hangarReservation==HangarReservation.WarehouseSwap && cell.Contains(_pointer)){
                     if(robot.WarehouseKeeper && CanChooseWarehouseSwap(robot)){
-                        _warehouseSwapKeeper=robot.Id;_hangarMessage="後任の完全体ロボットを選んでください";
+                        _warehouseSwapKeeper=robot.Id;_hangarMessage="増加枠が同じか多い完全体を選んでください";
                     }else if(_warehouseSwapKeeper is long keeper && CanChooseWarehouseSwap(robot) &&
                         _setup.Robots.PartPlanning.ReserveRole(_setup,_populationNode,keeper,HangarReservation.WarehouseSwap,_setup.Nodes.All[_populationNode].Owner,robot.Id)){
                         _warehouseSwapKeeper=null;_hangarMessage="倉庫管理人の交代を予約しました";
-                    }else _hangarMessage=_warehouseSwapKeeper.HasValue?"後任に予約のない完全体を選んでください":"現在の倉庫管理人を選んでください";
+                    }else _hangarMessage=_warehouseSwapKeeper.HasValue?"増加枠が同じか多く、予約のない完全体を選んでください":"現在の倉庫管理人を選んでください";
                     return;
                 }
                 if(_hangarReservation!=HangarReservation.None && cell.Contains(_pointer)){

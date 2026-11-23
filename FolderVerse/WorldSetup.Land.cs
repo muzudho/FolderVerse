@@ -64,7 +64,7 @@ public sealed partial class WorldSetup
                 var store=Robots.Nodes[node.Id];
                 if(TutorialStep==0 && !Routes.NearWhirlpool(node) &&
                    new SeedRandom(unchecked(fortuneSeed^(node.Id+1)*104729)).Next(100)<(node.Terrain==TravelTerrain.Mountain?70:92))
-                    store.Add(Robots.Create(node.Owner,RobotParts.Complete) with {WarehouseKeeper=true});
+                    store.Add(InitialHangarPlanning.CreateKeeper(this,node.Owner));
                 int vacant=store.StorageLimit-store.Count;
                 int workers=TutorialStep==0?Math.Min(workshop.BaseLineCount,Math.Max(0,vacant-2)):0;
                 var harvestMaterial=RobotWorld.RawMaterials.FirstOrDefault(material=>Robots.RawDeposit(node.Id,material)>0);

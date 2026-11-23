@@ -28,9 +28,16 @@ public partial class Game1
         (_setup.Robots.CanMoveDismantling(_populationNode,robot,parts) || !Enumerable.Range(0,3).Select(HangarPart).Any(part=>(parts&part)!=0 && _setup.Robots.PartLocked(_populationNode,robot,part))) &&
         (parts!=robot.Parts || !_setup.Robots.DirectDelivery.Orders.Any(o=>o.Target==_populationNode && o.TargetRobotId==robot.Id));
 
-    private bool CanChooseWarehouseSwap(Robot robot)=>robot!=null && DomesticOperationsAllowed &&
-        CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) && !_setup.Campaign.RobotBattles.LockedNode(_populationNode) &&
-        (robot.WarehouseKeeper || _warehouseSwapKeeper.HasValue && RobotPartPlanning.CanUseWarehouseSuccessor(_setup,PlanningStock,HangarPlanningNode,robot));
+    private bool CanChooseWarehouseSwap(Robot robot)
+    {
+        if(robot==null || !DomesticOperationsAllowed || !CanManageNodeFactory(_setup.Nodes.All[_populationNode].Owner) ||
+           _setup.Campaign.RobotBattles.LockedNode(_populationNode))return false;
+        if(robot.WarehouseKeeper)return true;
+        if(_warehouseSwapKeeper is not long id)return false;
+        var stock=PlanningStock;
+        var keeper=stock.Nodes[HangarPlanningNode].Robots.FirstOrDefault(r=>r.Id==id);
+        return RobotPartPlanning.CanUseWarehouseSuccessor(_setup,stock,HangarPlanningNode,keeper,robot);
+    }
 
     private static readonly Rectangle DismantlerButton=HangarActionBounds(11); private void DrawHangarActions(bool manage,bool assemblyMode)
     {
@@ -64,7 +71,7 @@ public partial class Game1
             1=>"光る完全体ロボットの格納庫をクリックして、製造作業員を予約・解除します。",
             2=>"光る完全体ロボットの格納庫をクリックして、採取作業員を予約・解除します。",
             11=>"光る完全体ロボットの格納庫をクリックして、解体作業員を予約・解除します。",
-            8=>"現在の倉庫管理人、交代する完全体ロボットの順に、光る格納庫をクリックしてください。",
+            8=>"現在の倉庫管理人を選び、増加枠が同じか多い完全体を選んでください。",
             9=>"光る個体や部位を選んで、カゴへ廃棄します。",
             _=>"光るロボットの格納庫をクリックしてください。同じ予約を選ぶと解除できます。"
         });
