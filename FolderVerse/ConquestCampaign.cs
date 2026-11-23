@@ -33,6 +33,7 @@ public sealed partial class ConquestCampaign
         _domesticSubmitted.Clear();
         if(party.Length>0)world.SelectTurnRuler(party[0]);
         ComputerIntakePlanning.Plan(world,automaticAll);
+        ComputerRawLogistics.Plan(world,automaticAll);
         ComputerNodePurposes.Plan(world,automaticAll);
         ComputerStratagems.Plan(world,automaticAll);
         ComputerLogistics.Plan(world,automaticAll);

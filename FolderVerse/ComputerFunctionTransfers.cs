@@ -16,6 +16,7 @@ public static class ComputerFunctionTransfers
             bool Busy(int id)=>ComputerStratagems.ProtectedSite(world,id) || world.Campaign.FunctionTransfers.Orders.Any(o=>o.Source==id || o.Target==id) ||
                 world.Robots.PartPlanning.WorkpieceResumes.Any(o=>o.Node==id) || world.Robots.PartPlanning.Orders.Any(o=>o.Source==id || o.Target==id) ||
                 world.Robots.DirectDelivery.Orders.Any(o=>o.Source==id || o.Target==id) ||
+                world.Robots.MapleShipments.Any(o=>o.Computer && (o.Source==id || o.Target==id)) ||
                 world.Robots.LongDelivery.Orders.Any(o=>o.Source==id || o.Target==id || o.Node==id) ||
                 world.Robots.PendingEdits.Any(o=>o.Node==id) ||
                 world.Campaign.PlannedOrders.Any(o=>o.SourceNode==id || o.TargetNode==id);

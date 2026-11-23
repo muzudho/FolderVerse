@@ -23,6 +23,73 @@ sealed class InputGame:Game1{
   var setup=(WorldSetup)Get("_setup");setup.SetWorld(123);setup.SetCast(456);setup.SetPlacement(789);setup.SelectPlayer(0);
   var world=(WorldPreview)Get("_world");world.ShowSetup(setup,true);var net=(CubeNet)Get("_net");net.Home(setup);
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));Set("_statusGlobe",false);
+  if(Environment.GetCommandLineArgs().Contains("--route-dropdown"))
+  {
+   setup.EnsureGuides().LastTurns[setup.PlayerSlot]=setup.Population.Turn;
+   Set("_paperReadTurn",setup.Population.Turn);Set("_paperReadCountry",setup.PlayerSlot);
+   const BindingFlags Static=BindingFlags.Static|BindingFlags.NonPublic;
+   Rectangle Option(int index)=>(Rectangle)typeof(Game1).GetMethod("TrafficLayerOption",Static)!.Invoke(null,new object[]{index})!;
+   var toolbar=(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",Static)!.Invoke(null,new object[]{3})!;
+   foreach(bool globe in new[]{false,true}){
+    Set("_statusGlobe",globe);net.ShowRoutes=false;
+    var toy=(Rectangle)Prop("OrientationToyArea");
+    var handle=new Rectangle(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30);
+    var overlap=Rectangle.Intersect(handle,Option(1));
+    Check(!overlap.IsEmpty,"Node choice overlaps orientation drag handle");
+    Click(toolbar.Center);
+    Check((bool)Get("_trafficLayerListOpen"),$"Selection toolbar opens the dropdown (screen {Get("_screen")}, pointer {Get("_pointer")})");
+    Input(overlap.Center,ButtonState.Pressed);
+    Check(net.ShowRoutes && !(bool)Get("_orientationDragging") && !(bool)Get("_trafficLayerListOpen"),
+        "Overlapping node choice selects nodes without starting an orientation drag");
+    Input(overlap.Center);
+    var axisOverlap=(from axis in Enumerable.Range(0,3) from sign in new[]{-1,1}
+        let button=(Rectangle)Call("AxisButton",toy,axis,sign)
+        select Rectangle.Intersect(button,Option(0))).FirstOrDefault(r=>!r.IsEmpty);
+    Click(toolbar.Center);Click(axisOverlap.IsEmpty?Option(0).Center:axisOverlap.Center);
+    Check(!net.ShowRoutes && !(bool)Prop("OrientationRotating"),"Region choice selects regions without rotating");
+    Click(toolbar.Center);
+    Input(toy.Center,ButtonState.Pressed);
+    Check(!(bool)Get("_trafficLayerListOpen") && !(bool)Get("_orientationDragging"),
+        "Click outside dismisses the menu without passing through to the toy");
+    Input(toy.Center);
+    Input(toy.Center,ButtonState.Pressed);
+    Check((bool)Get("_orientationDragging"),"The toy is draggable again after dismissing the menu");
+    Input(toy.Center);
+    Click(toolbar.Center);Input(default,keys:new[]{Keys.Escape});Input(default);
+    Check(!(bool)Get("_trafficLayerListOpen") && Get("_screen").ToString()=="WorldStatus",
+        "Escape dismisses the menu without exiting the status screen");
+   }
+   var toggle=(Rectangle)typeof(Game1).GetField("MapViewButton",Static)!.GetValue(null)!;
+   var batch=(SpriteBatch)Get("_spriteBatch");
+   using var image=new RenderTarget2D(GraphicsDevice,1920,1080);
+   Color[] ButtonPixels()
+   {
+    GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(Color.Transparent);
+    batch.Begin();Call("DrawMapViewButton");batch.End();
+    GraphicsDevice.SetRenderTarget(null);
+    var pixels=new Color[toggle.Width*toggle.Height];
+    image.GetData(0,toggle,pixels,0,pixels.Length);
+    return pixels;
+   }
+   long Brightness(Color[] pixels,int half)
+   {
+    int center=toggle.Width*(1+half*2)/4;
+    return Enumerable.Range(4,toggle.Height-8).Sum(y=>Enumerable.Range(center-30,60)
+        .Sum(x=>{var color=pixels[y*toggle.Width+x];return (long)(color.R+color.G+color.B);}));
+   }
+   var globeSelected=ButtonPixels();
+   Click(new Point(toggle.Left+30,toggle.Center.Y));Input(default,dt:4);
+   Check(!(bool)Get("_statusGlobe"),"Map toggle still unfolds the globe");
+   var netSelected=ButtonPixels();
+   Check(Brightness(globeSelected,0)>Brightness(netSelected,0) &&
+        Brightness(netSelected,1)>Brightness(globeSelected,1),"Both icons switch between enabled and highlighted colors in place");
+   Click(new Point(toggle.Right-30,toggle.Center.Y));Input(default,dt:4);
+   Check((bool)Get("_statusGlobe"),"The same toolbar slot switches back to the globe");
+   Check(globeSelected.SequenceEqual(ButtonPixels()),"Switching back restores the original pair of colors");
+   Console.WriteLine("PASS: dropdown hit priority on globe and net, restored orientation drag, and both icon toggle states");
+   Exit();
+   return;
+  }
   int source=setup.Nodes.Current(0).Id;Open(source);Call("FocusCurrentNode");
   Click(new(540,770));
   Check((bool)Get("_transportDestinationPicking"),"Real input enters destination mode");

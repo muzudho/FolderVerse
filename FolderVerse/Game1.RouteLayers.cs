@@ -1,5 +1,6 @@
 namespace FolderVerse;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 public partial class Game1
 {
@@ -7,6 +8,8 @@ public partial class Game1
     private bool MapOverlayAvailable(int index)=>!MapTransitionActive && !OrientationRotating && !_net.IsAnimating && (index!=0 || _statusGlobe);
 
     private static readonly Rectangle MapViewButton=new(1572,86,286,48);
+    private Texture2D _mapViewToggleArt;
+    private readonly Rectangle[] _mapViewToggleIcons=new Rectangle[4];
     private int _selectedMapCell=-1;
     private bool _simpleDisplayOpen;
     private static readonly Rectangle SimpleDisplayButton=new(1260,86,300,48);
@@ -17,6 +20,15 @@ public partial class Game1
     private static readonly string[] TrafficLayerNames={"地域を選択","地点を選択"};
     private static Rectangle MapLayerOption(int i)=>new(1384,202+i*52,220,52);
     private static Rectangle TrafficLayerOption(int i)=>new(1616,202+i*52,242,52);
+
+    private bool RouteLayerMenuInput(bool active,bool click,bool escape)
+    {
+        if(!_simpleDisplayOpen && !_mapLayerListOpen && !_trafficLayerListOpen)return false;
+        if(active && escape)_simpleDisplayOpen=_mapLayerListOpen=_trafficLayerListOpen=false;
+        else if(active && click)RouteLayerClick(_pointer);
+        return true;
+    }
+
     private bool RouteLayerClick(Point pointer)
     {
         if(_simpleDisplayOpen){
@@ -27,8 +39,6 @@ public partial class Game1
             }
             _simpleDisplayOpen=false;return true;
         }
-        if(SimpleDisplayButton.Contains(pointer)){_simpleDisplayOpen=true;_mapLayerListOpen=_trafficLayerListOpen=false;return true;}
-        if(FolderTreeToolbarClick(pointer))return true;
         if(_mapLayerListOpen || _trafficLayerListOpen)
         {
             bool traffic=_trafficLayerListOpen;_mapLayerListOpen=_trafficLayerListOpen=false;
@@ -40,6 +50,8 @@ public partial class Game1
             }
             return true;
         }
+        if(SimpleDisplayButton.Contains(pointer)){_simpleDisplayOpen=true;return true;}
+        if(FolderTreeToolbarClick(pointer))return true;
         if(!_setup.IsPrimaplana && MapViewButton.Contains(pointer)){StartMapTransition();_inputOutcome="view_transition_started";_dragging=_mapDragging=false;return true;}
         for(int i=0;i<7;i++)if((i is 2 or 3 or 6) && RouteLayerButton(i).Contains(pointer))
         {
@@ -74,9 +86,36 @@ public partial class Game1
         int mode=_net.ShowCountryColors?1:0,traffic=_net.ShowRoutes?1:0;
         _ui.Button(RouteLayerButton(2),MapLayerNames[mode]+"  v",Accent,.42f);
         DrawSelectionIcon(RouteLayerButton(3),traffic==1);
-        if(!_setup.IsPrimaplana)_ui.Button(MapViewButton,_statusGlobe?"展開図":"組立",MapTransitionActive?Muted:Accent,.6f);
+        if(!_setup.IsPrimaplana)DrawMapViewButton();
         if(_mapLayerListOpen)for(int i=0;i<2;i++)_ui.Button(MapLayerOption(i),MapLayerNames[i],i==mode?Accent:Muted,.52f);
         if(_trafficLayerListOpen)for(int i=0;i<2;i++){var r=TrafficLayerOption(i);_ui.Button(r,"",i==traffic?Accent:Muted,.52f);DrawSelectionGlyph(r.X+30,r.Center.Y,i==1,i==traffic?SelectionInk:UiPainter.ContrastInk(Muted));_ui.Text(TrafficLayerNames[i],new(r.X+62,r.Y+15),.4f,i==traffic?SelectionInk:UiPainter.ContrastInk(Muted));}
+    }
+    private void DrawMapViewButton()
+    {
+        var button=MapViewButton;
+        if(_mapViewToggleArt==null)
+        {
+            _mapViewToggleArt=LoadUiTexture("map-view-toggle-icons-v001.png");
+            int width=_mapViewToggleArt.Width/2,height=_mapViewToggleArt.Height/2;
+            for(int i=0;i<_mapViewToggleIcons.Length;i++)
+                _mapViewToggleIcons[i]=UiArtInkBounds(_mapViewToggleArt,new(i%2*width,i/2*height,width,height));
+        }
+        DrawPrimaryActionSurface(button,MapTransitionActive?Muted:Accent);
+        var track=new Rectangle(button.X+6,button.Y+4,button.Width-12,button.Height-8);
+        PrimaryRoundBox(track,new Color(14,35,47),8);
+        int selected=_statusGlobe?0:1;
+        for(int view=0;view<2;view++)
+        {
+            var slot=new Rectangle(track.X+view*track.Width/2,track.Y,track.Width/2,track.Height);
+            bool highlighted=view==selected;
+            if(highlighted)PrimaryRoundBox(new(slot.X+2,slot.Y+1,slot.Width-4,slot.Height-2),new Color(29,70,86),7);
+            // Atlas columns are globe and net. The second row is the highlighted pair.
+            var source=_mapViewToggleIcons[view+(highlighted?2:0)];
+            const int iconHeight=36;
+            int iconWidth=source.Width*iconHeight/source.Height;
+            var icon=new Rectangle(slot.Center.X-iconWidth/2,slot.Center.Y-iconHeight/2,iconWidth,iconHeight);
+            _spriteBatch.Draw(_mapViewToggleArt,icon,source,Color.White);
+        }
     }
     private void DrawSimpleDisplayMenu()
     {

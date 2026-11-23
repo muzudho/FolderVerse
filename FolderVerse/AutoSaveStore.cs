@@ -139,6 +139,7 @@ public static class AutoSaveStore
                     if(type==typeof(GuideRoster) && field.Name=="WasLandless")continue;
                     if(type==typeof(RobotEncounter) && field.Name=="QueenPersuasions")continue;
                     if(type==typeof(RobotCampaign) && field.Name=="_homeOwners"){field.SetValue(value,new Dictionary<long,int>());continue;}
+                    if(type==typeof(MapleShipment) && field.Name=="<Computer>k__BackingField")continue;
                     if(type==typeof(Robot) && (field.Name=="<LastBattlePersuasionTurn>k__BackingField" || field.Name=="<LastDomesticPersuasionTurn>k__BackingField")){field.SetValue(value,-1);continue;}
                     if(type==typeof(RobotWorld) && field.Name=="<DomesticPersuasionTurns>k__BackingField"){field.SetValue(value,new Dictionary<int,int>());continue;}
                     if(type==typeof(BattleState) && field.Name=="BoardSize"){field.SetValue(value,10);continue;}
