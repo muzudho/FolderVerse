@@ -1,4 +1,4 @@
-# 解析用ヘッドレスモード
+﻿# 解析用ヘッドレスモード
 
 `--headless` を付けると `Game1`、ウィンドウ、描画、音声を作らず、通常のモデルとCPU判断で新規９素材世界を進める。通常プレイ／自動操縦／エキシビジョンの演出には影響しない。
 
@@ -44,3 +44,17 @@ NASへのビルド中に接続が途切れたため、空き容量を確認し�
 - No current real-screen/headless comparison performed. Next isolated current-build comparison with explicit equal world/cast/rights/fortune/CPU/stock settings and phase-boundary snapshots; then identify first differing action before a product repair. Full state, winner/convergence, resume-versus-continuous and physical OS input remain unverified. No duplicate shared-UI run, commit/push/publication.
 
 - Improvement review 2026-11-22T21:26:55.601882+09:00 JST (start21:26), HEADb3a5cb5c unchanged. Prior079 second-turn discrepancy remains unresolved; latest audit has no current-HEAD runtime reproduction and explicit fortune-stock settings still need alignment before attribution. No speculative CPU/product change or old-binary rerun; no build/UI launch. Next bounded isolated current-source comparison with equal settings and first differing phase, then minimal repair if reproduced. Existing docs changes protected; review complete only, gameplay parity not validated, no commit/push/publication.
+
+
+## Audit 2026-11-23 current layout / HEAD8eb4b2e6
+
+- Current Headless build succeeded; isolated --compare-exhibition run started21:16:27 JST and ended21:18:07 JST, limit300s/99.98s/exit1, no timeout. Output: NAS tmp/delete-after-2026-11-23/tutorial-current/headless-exhibition-8eb4b2e6. Build/run logs copied with SHA256 verification to NAS archives/diagnostics/headless-layout-8eb4b2e6-2026-11-23. No product/test edits in this comparison.
+- Same world42/cast8/rights492471852/fortune Random123 and4CPU; field initializers both25/25, but effective preview settings differ (correction below). Initial fortune and characters MATCH, initial stocks DIFFER. Both first/second post-industry turns: number/industry/conquest MATCH, owners/robot stock/ranking DIFFER. Earliest observed discrepancy is now initial stocks, before turn1; this is not proof of a CPU decision defect. Diagnostic rebind remains present.
+- Comparison completed with unresolved parity; inspect initial stock generation and exact settings before gameplay repair. Does not verify all phase boundaries, full state, resume parity, natural conquest, physical OS input or every layout. Existing user changes/saves protected; no commit/push/publication.
+
+
+## Improvement reproduction 2026-11-23T21:37:37.613078+09:00 JST
+
+- HEAD83d5835b after user merge. Build tests/Headless with NAS tutorial-current/entry-layout artifacts, UseAppHost=false/UseSharedCompilation=false/-m:1/-v:minimal: PID11516 21:34:23-21:35:01 limit600/37.95s exit0/warnings0/errors0. Run Headless.dll --compare-exhibition isolated headless-exhibition-83d5835b/null audio: PID36248 start21:35:23 limit300/exit1/noTIMEOUT; end/duration in headless-83-run.log, sessions1484/1281 collected. Initial fortune/characters MATCH, stocks DIFFER; both turns number/industry/conquest MATCH, owners/robot stock/ranking DIFFER.
+- Comparison precondition mismatch found: EnsureFortuneStockPreview computes robot share from FixedRobotUnits plus up to12.5 percent, raw share from additional amount, then RebuildInitialStock. HeadlessRunner instead passes defaults25/25 to CompleteLand. Equal field initializers do NOT imply equal effective stock policies. This corrects earlier8eb note; later differences cannot yet be attributed to CPU behavior. Merge also changes keeper material/capacity.
+- No game/test edit. Next align effective initial-stock policies and assert parameters/state before phase comparison. Full state/resume/winner/physical input unverified. Logs archived with hashes at NAS archives/diagnostics/headless-layout-83d5835b-2026-11-23; temporary output retainedNov23. No commit/push/publication.
