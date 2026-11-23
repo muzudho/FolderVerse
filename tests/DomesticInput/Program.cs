@@ -86,6 +86,29 @@ sealed class InputGame:Game1{
    var displayIcons=(Rectangle[])Get("_displayControlIconSources");
    Check(displayIcons[0].Height>displayIcons[0].Width && displayIcons[1].Width>displayIcons[1].Height,
        "The rendered toolbar uses a tall breaker and a wide binocular silhouette");
+   void CheckHint(Point hover,bool lower,bool toolbarHint)
+   {
+    Set("_pointer",hover);
+    GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(Color.Transparent);
+    batch.Begin();
+    if(toolbarHint)Call("DrawDisplayControlMenus");
+    else Call("DrawRulebookHint","他国","地図に表示する国を切り替えます。");
+    Call("DrawPopupHints");
+    batch.End();
+    GraphicsDevice.SetRenderTarget(null);
+    var sample=new Color[1];
+    byte BorderAlpha(int y)
+    {
+     image.GetData(0,new Rectangle(510,y,1,1),sample,0,1);
+     return sample[0].A;
+    }
+    Check((BorderAlpha(14)>0)==!lower && (BorderAlpha(922)>0)==lower,
+        "The popup uses the edge opposite the hovered control");
+   }
+   CheckHint(breaker.Center,true,true);
+   CheckHint(filter.Center,true,true);
+   CheckHint(new Point(960,900),false,false);
+   Set("_pointer",Point.Zero);
    Color[] ButtonPixels()
    {
     GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(Color.Transparent);
