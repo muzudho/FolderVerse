@@ -187,6 +187,8 @@ public static class AutoSaveStore
                     if(type==typeof(ConquestCampaign) && field.Name=="<Stratagems>k__BackingField"){field.SetValue(value,new StratagemPlans());continue;}
                     if(type==typeof(ConquestCampaign) && field.Name=="<Trade>k__BackingField"){field.SetValue(value,new TradePlan());continue;}
                     if(type==typeof(ConquestCampaign) && field.Name=="<AttackMemory>k__BackingField"){field.SetValue(value,new ComputerAttackMemory());continue;}
+                    if(type==typeof(ComputerAttackMemory) && field.Name=="<QueenFailures>k__BackingField"){field.SetValue(value,new List<ComputerQueenFailure>());continue;}
+                    if(type==typeof(ComputerAttackMemory) && field.Name=="<QueenSorties>k__BackingField"){field.SetValue(value,new List<March>());continue;}
                     if(type==typeof(TradePlan) && field.Name=="<Replies>k__BackingField"){field.SetValue(value,new List<TradeReply>());continue;}
                     if(type==typeof(RobotWorld) && field.Name=="<OffshoreRawSupplyEnabled>k__BackingField")continue;
                     if(type==typeof(RobotWorld) && field.Name=="<OffshoreUsesSeaAreaRule>k__BackingField")continue;

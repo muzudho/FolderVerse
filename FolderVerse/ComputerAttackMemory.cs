@@ -5,12 +5,26 @@ using System.Linq;
 
 public sealed record ComputerAttackFailure(int Ruler,int Source,int Target,int Force,int Turn,int TargetOwner,int TargetRoot);
 
+public sealed record ComputerQueenFailure(int Ruler,int Source,int Target,long Escorts,int TargetOwner,int TargetRoot,int Defenders);
+
 // Reconsider failed computer sorties without changing battle rules or learned tactics.
 public sealed class ComputerAttackMemory
 {
     public const int RetentionTurns=5;
     public List<ComputerAttackFailure> Failures {get;}=new();
     public List<March> PendingOrders {get;}=new();
+
+    public List<ComputerQueenFailure> QueenFailures {get;}=new();
+    public List<March> QueenSorties {get;}=new();
+
+    internal bool CanRetryQueen(WorldSetup world,int ruler,int source,int target,long escorts) =>
+        !QueenFailures.Any(f=>f.Ruler==ruler && f.Source==source && f.Target==target &&
+            escorts<=f.Escorts && QueenFailureStillApplies(world,f));
+
+    private static bool QueenFailureStillApplies(WorldSetup world,ComputerQueenFailure failure) =>
+        world.Nodes.All[failure.Target].Owner==failure.TargetOwner &&
+        (failure.TargetOwner<0 || world.Relations.Root(failure.TargetOwner)==failure.TargetRoot) &&
+        world.Campaign.RobotBattles.DefendingRobots(world,failure.Ruler,failure.Target)>=failure.Defenders;
 
     private static (int Ruler,int Source,int Target) Key(WorldSetup world,March order)=>
         (order.Ruler,order.SourceNode>=0?order.SourceNode:world.Nodes.Current(order.Ruler)?.Id??-1,order.TargetNode);
@@ -21,6 +35,17 @@ public sealed class ComputerAttackMemory
         var protectedKeys=submitted.Select(o=>Key(world,o)).ToHashSet();
         bool Eligible(March o)=>!o.Queen && !o.PocketOnly && !o.Peaceful && o.SourceNode>=0 &&
             o.RobotIds!=null && !protectedKeys.Contains(Key(world,o));
+        QueenFailures.RemoveAll(f=>!QueenFailureStillApplies(world,f));
+        for(int i=orders.Count-1;i>=0;i--){
+            var order=orders[i];
+            if(!order.Queen || order.Peaceful || protectedKeys.Contains(Key(world,order)))continue;
+            var key=Key(world,order);
+            if(!CanRetryQueen(world,key.Ruler,key.Source,key.Target,order.Fighters)){
+                orders.RemoveAt(i);
+                continue;
+            }
+            QueenSorties.Add(order with {SourceNode=key.Source});
+        }
         int turn=world.Population.Turn+1;
         for(int i=orders.Count-1;i>=0;i--){
             var order=orders[i];if(!Eligible(order))continue;
@@ -57,6 +82,38 @@ public sealed class ComputerAttackMemory
                 Record(world,order.Ruler,order.SourceNode,order.TargetNode,(int)order.Fighters,world.Population.Turn);
         }
         PendingOrders.Clear();
+        ObserveQueenSorties(world);
+    }
+
+    private void ObserveQueenSorties(WorldSetup world)
+    {
+        for(int i=QueenSorties.Count-1;i>=0;i--){
+            var order=QueenSorties[i];
+            var battles=world.Campaign.RobotBattles.Encounters
+                .Where(e=>e.Kind==BattleKind.Node && e.Target==order.TargetNode)
+                .SelectMany(e=>e.Battles)
+                .Where(b=>b.Armies.Any(a=>a.Owner==order.Ruler && a.HomeNode==order.SourceNode) &&
+                    b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting)).Any(u=>u.Role==BattleRole.Queen && u.Owner==order.Ruler))
+                .ToArray();
+            var failed=battles.Any(b=>b.Finished &&
+                (b.Winner<0 || b.FlagDefenseTurns>=b.Rules.FlagDefenseTurns && !world.Relations.Allied(b.Winner,order.Ruler)) &&
+                b.Units.Any(u=>u.Role==BattleRole.Queen && u.Owner==order.Ruler && !u.Fallen && (u.Retreated || u.Retreating)));
+            if(failed){
+                int owner=world.Nodes.All[order.TargetNode].Owner;
+                if(owner<0 || !world.Relations.Allied(owner,order.Ruler)){
+                    QueenFailures.RemoveAll(f=>f.Ruler==order.Ruler && f.Source==order.SourceNode && f.Target==order.TargetNode);
+                    QueenFailures.Add(new(order.Ruler,order.SourceNode,order.TargetNode,order.Fighters,owner,
+                        owner<0?-1:world.Relations.Root(owner),world.Campaign.RobotBattles.DefendingRobots(world,order.Ruler,order.TargetNode)));
+                }
+            }
+            else if(battles.Any(b=>!b.Finished) || world.Campaign.RobotBattles.Encounters.Any(e=>
+                !e.Finished && e.Kind==BattleKind.Edge &&
+                ((e.Source==order.SourceNode && e.Target==order.TargetNode) ||
+                 (e.Target==order.SourceNode && e.Source==order.TargetNode)) &&
+                e.Battles.SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting)))
+                    .Any(u=>u.Role==BattleRole.Queen && u.Owner==order.Ruler && u.Active)))continue;
+            QueenSorties.RemoveAt(i);
+        }
     }
 
     internal ComputerAttackFailure Recent(WorldSetup world,int ruler,int source,int target,int turn)
@@ -83,5 +140,5 @@ public sealed class ComputerAttackMemory
         Failures.Add(failure);
     }
 
-    public void Reset(){Failures.Clear();PendingOrders.Clear();}
+    public void Reset(){Failures.Clear();PendingOrders.Clear();QueenFailures.Clear();QueenSorties.Clear();}
 }

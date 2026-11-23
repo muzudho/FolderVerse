@@ -60,14 +60,16 @@ public static class ComputerJointAttacks
                 .ToDictionary(o=>o,o=>Prefer(o,battle.SelectableRobots(w,o,w.Nodes.Current(o)!.Id,true).Where(r=>!used.Contains(r.Id))));
             var escortTargets=escorts.Where(p=>p.Value.Length>0).SelectMany(p=>battle.AttackTargets(w,p.Key,w.Nodes.Current(p.Key)!.Id)).Distinct()
                 .Where(t=>w.Nodes.All[t].Owner>=0 && !w.Relations.Allied(faction.Key,w.Nodes.All[t].Owner) && !battle.LockedNode(t) && !orders.Any(o=>o.TargetNode==t && family.Contains(o.Ruler)))
-                .Select(t=>new{Target=t,Members=escorts.Where(p=>p.Value.Length>0 && battle.CanSortie(w,p.Key,t)).Select(p=>p.Key).ToArray(),Defense=battle.DefendingRobots(w,faction.Key,t)})
+                .Select(t=>new{Target=t,Members=escorts.Where(p=>p.Value.Length>0 && battle.CanSortie(w,p.Key,t) && w.Campaign.AttackMemory.CanRetryQueen(w,p.Key,w.Nodes.Current(p.Key)!.Id,t,p.Value.Length)).Select(p=>p.Key).ToArray(),Defense=battle.DefendingRobots(w,faction.Key,t)})
                 .OrderBy(t=>t.Defense).ThenByDescending(t=>DevelopmentValue(t.Target)).ThenBy(t=>t.Target).ToArray();
             foreach(var target in escortTargets){
                 var members=target.Members.Where(o=>!orders.Any(m=>m.Ruler==o && m.Queen)).OrderByDescending(o=>escorts[o].Length).ThenBy(o=>o).ToArray();
                 int needed=Math.Max(target.Defense+Math.Max(1,(target.Defense+2)/3),FailedForce(target.Target)+1);
                 if(members.Length<2 || members.Sum(o=>escorts[o].Length)<needed)continue;
                 foreach(int owner in members){
-                    var robots=escorts[owner].Take(needed).ToArray();if(robots.Length==0)continue;
+                    var robots=escorts[owner].Take(needed).ToArray();
+                    if(!w.Campaign.AttackMemory.CanRetryQueen(w,owner,w.Nodes.Current(owner)!.Id,target.Target,robots.Length))robots=escorts[owner];
+                    if(robots.Length==0)continue;
                     orders.Add(new(owner,target.Target,robots.Length,w.Nodes.Current(owner)!.Id,Queen:true,PocketOnly:true,RobotIds:robots.Select(r=>r.Id).ToArray()));
                     foreach(var robot in robots)used.Add(robot.Id);needed-=robots.Length;if(needed<=0)break;
                 }
@@ -79,7 +81,7 @@ public static class ComputerJointAttacks
                 .ThenByDescending(DevelopmentValue).ThenBy(t=>t).ToArray();
             foreach(int target in mixedTargets){
                 var ground=sources.Where(p=>!busy.Contains(p.Key) && p.Value.Length>0 && battle.CanAttackFrom(w,w.Nodes.All[p.Key].Owner,p.Key,target)).OrderByDescending(p=>p.Value.Length).ThenBy(p=>p.Key).ToArray();
-                var members=escorts.Where(p=>p.Value.Length>0 && !orders.Any(o=>o.Ruler==p.Key && o.Queen) && battle.CanSortie(w,p.Key,target)).OrderByDescending(p=>p.Value.Length).ThenBy(p=>p.Key).ToArray();
+                var members=escorts.Where(p=>p.Value.Length>0 && !orders.Any(o=>o.Ruler==p.Key && o.Queen) && battle.CanSortie(w,p.Key,target) && w.Campaign.AttackMemory.CanRetryQueen(w,p.Key,w.Nodes.Current(p.Key)!.Id,target,p.Value.Length)).OrderByDescending(p=>p.Value.Length).ThenBy(p=>p.Key).ToArray();
                 int defense=battle.DefendingRobots(w,faction.Key,target),needed=Math.Max(defense+Math.Max(1,(defense+2)/3),FailedForce(target)+1);
                 int g=ground.Sum(p=>p.Value.Length),pocket=members.Sum(p=>p.Value.Length);
                 if(g==0 || pocket==0 || g>=needed || pocket>=needed || g+pocket<needed)continue;
@@ -89,7 +91,9 @@ public static class ComputerJointAttacks
                     busy.Add(source.Key);foreach(var robot in robots)used.Add(robot.Id);needed-=robots.Length;
                 }
                 foreach(var member in members){
-                    var robots=member.Value.Take(needed).ToArray();if(robots.Length==0)continue;
+                    var robots=member.Value.Take(needed).ToArray();
+                    if(!w.Campaign.AttackMemory.CanRetryQueen(w,member.Key,w.Nodes.Current(member.Key)!.Id,target,robots.Length))robots=member.Value;
+                    if(robots.Length==0)continue;
                     orders.Add(new(member.Key,target,robots.Length,w.Nodes.Current(member.Key)!.Id,Queen:true,PocketOnly:true,RobotIds:robots.Select(r=>r.Id).ToArray()));
                     foreach(var robot in robots)used.Add(robot.Id);needed-=robots.Length;if(needed<=0)break;
                 }
@@ -104,10 +108,10 @@ public static class ComputerJointAttacks
                 if(orders.Any(o=>o.Ruler==owner && o.Queen))continue;var home=w.Nodes.Current(owner);if(home==null || battle.LockedNode(home.Id))continue;
                 var choices=battle.MarchTargets(w,home.Id).Where(t=>battle.CanMarch(w,owner,t)).ToArray();
                 var retinue=Prefer(owner,battle.SelectableRobots(w,owner,home.Id,true).Where(r=>!used.Contains(r.Id)));
-                int hostile=choices.Where(t=>w.Nodes.All[t].Owner>=0 && w.Relations.Root(w.Nodes.All[t].Owner)!=faction.Key && battle.DefendingRobots(w,owner,t)<retinue.Length && retinue.Length>FailedForce(t))
+                int hostile=choices.Where(t=>w.Nodes.All[t].Owner>=0 && w.Relations.Root(w.Nodes.All[t].Owner)!=faction.Key && battle.DefendingRobots(w,owner,t)<retinue.Length && retinue.Length>FailedForce(t) && w.Campaign.AttackMemory.CanRetryQueen(w,owner,home.Id,t,retinue.Length))
                     .OrderBy(t=>battle.DefendingRobots(w,owner,t)).ThenByDescending(DevelopmentValue).ThenBy(t=>t).FirstOrDefault(-1);
                 if(hostile>=0){orders.Add(new(owner,hostile,retinue.Length,home.Id,Queen:true,PocketOnly:true,RobotIds:retinue.Select(r=>r.Id).ToArray()));continue;}
-                int neutral=choices.Where(t=>w.Nodes.All[t].Owner<0).OrderByDescending(DevelopmentValue).ThenBy(t=>t).FirstOrDefault(-1);
+                int neutral=choices.Where(t=>w.Nodes.All[t].Owner<0 && w.Campaign.AttackMemory.CanRetryQueen(w,owner,home.Id,t,0)).OrderByDescending(DevelopmentValue).ThenBy(t=>t).FirstOrDefault(-1);
                 if(neutral>=0){orders.Add(new(owner,neutral,0));continue;}
                 int move=choices.Where(t=>w.Nodes.All[t].Owner>=0 && w.Relations.Root(w.Nodes.All[t].Owner)==faction.Key && distance.GetValueOrDefault(t,int.MaxValue)<distance.GetValueOrDefault(home.Id,int.MaxValue))
                     .OrderBy(t=>distance[t]).ThenBy(t=>t).FirstOrDefault(-1);
