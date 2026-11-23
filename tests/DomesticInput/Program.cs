@@ -30,8 +30,23 @@ sealed class InputGame:Game1{
    const BindingFlags Static=BindingFlags.Static|BindingFlags.NonPublic;
    Rectangle Option(int index)=>(Rectangle)typeof(Game1).GetMethod("TrafficLayerOption",Static)!.Invoke(null,new object[]{index})!;
    var toolbar=(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",Static)!.Invoke(null,new object[]{3})!;
+   Rectangle DisplayArea(string field)=>(Rectangle)typeof(Game1).GetField(field,Static)!.GetValue(null)!;
+   var breaker=DisplayArea("SimpleDisplayButton");
+   var filter=DisplayArea("DisplayFilterButton");
    foreach(bool globe in new[]{false,true}){
     Set("_statusGlobe",globe);net.ShowRoutes=false;
+    bool otherCountries=net.ShowOtherCountries;
+    Click(breaker.Center);
+    Check((bool)Get("_simpleDisplayOpen"),"Breaker icon opens the breaker menu");
+    Click(filter.Center);
+    Check((bool)Get("_displayFilterOpen") && !(bool)Get("_simpleDisplayOpen") &&
+        net.ShowOtherCountries==otherCountries,"Filter icon switches menus without toggling the filter");
+    Click(DisplayArea("DisplayOtherCountriesRow").Center);
+    Check(net.ShowOtherCountries!=otherCountries && (bool)Get("_displayFilterOpen") &&
+        world.ControlledCountryColors==!net.ShowOtherCountries,"Other Countries toggles in the open menu and updates the globe");
+    Click(DisplayArea("DisplayOtherCountriesRow").Center);
+    Click(filter.Center);
+    Check(net.ShowOtherCountries==otherCountries && !(bool)Get("_displayFilterOpen"),"Filter icon closes its menu");
     var toy=(Rectangle)Prop("OrientationToyArea");
     var handle=new Rectangle(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30);
     var overlap=Rectangle.Intersect(handle,Option(1));
@@ -62,6 +77,15 @@ sealed class InputGame:Game1{
    var toggle=(Rectangle)typeof(Game1).GetField("MapViewButton",Static)!.GetValue(null)!;
    var batch=(SpriteBatch)Get("_spriteBatch");
    using var image=new RenderTarget2D(GraphicsDevice,1920,1080);
+   GraphicsDevice.SetRenderTarget(image);
+   batch.Begin();
+   Call("DrawDisplayControlButton",breaker,0,false);
+   Call("DrawDisplayControlButton",filter,1,true);
+   batch.End();
+   GraphicsDevice.SetRenderTarget(null);
+   var displayIcons=(Rectangle[])Get("_displayControlIconSources");
+   Check(displayIcons[0].Height>displayIcons[0].Width && displayIcons[1].Width>displayIcons[1].Height,
+       "The rendered toolbar uses a tall breaker and a wide binocular silhouette");
    Color[] ButtonPixels()
    {
     GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(Color.Transparent);
@@ -86,7 +110,7 @@ sealed class InputGame:Game1{
    Click(new Point(toggle.Right-30,toggle.Center.Y));Input(default,dt:4);
    Check((bool)Get("_statusGlobe"),"The same toolbar slot switches back to the globe");
    Check(globeSelected.SequenceEqual(ButtonPixels()),"Switching back restores the original pair of colors");
-   Console.WriteLine("PASS: dropdown hit priority on globe and net, restored orientation drag, and both icon toggle states");
+   Console.WriteLine("PASS: breaker and filter icon rendering and menus, Other Countries, dropdown hit priority on globe and net, and both map-view toggle states");
    Exit();
    return;
   }

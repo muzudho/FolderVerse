@@ -807,7 +807,7 @@ public partial class Game1 : Game
         DrawFolderTree();DrawInspectorFolders();
         DrawFactionPicker();
         DrawAbandonConfirmation();
-        DrawSimpleDisplayMenu();
+        DrawDisplayControlMenus();
         DrawGuide();
 
     }

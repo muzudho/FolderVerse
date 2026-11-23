@@ -4,33 +4,43 @@ using Microsoft.Xna.Framework.Graphics;
 
 public partial class Game1
 {
-    private static Rectangle RouteLayerButton(int index)=>index switch {6=>new(1260,146,112,44),2=>new(1384,146,220,44),3=>new(1616,146,242,44),_=>new(1260,86,300,48)};
-    private bool MapOverlayAvailable(int index)=>!MapTransitionActive && !OrientationRotating && !_net.IsAnimating && (index!=0 || _statusGlobe);
+    private static Rectangle RouteLayerButton(int index)=>index==2?new(1260,146,344,44):new(1616,146,242,44);
 
     private static readonly Rectangle MapViewButton=new(1572,86,286,48);
     private Texture2D _mapViewToggleArt;
     private readonly Rectangle[] _mapViewToggleIcons=new Rectangle[4];
     private int _selectedMapCell=-1;
     private bool _simpleDisplayOpen;
-    private static readonly Rectangle SimpleDisplayButton=new(1260,86,300,48);
-    private static Rectangle SimpleDisplayOption(int i)=>new(1260,234+i*44,650,44);
+    private bool _displayFilterOpen;
+    private static readonly Rectangle SimpleDisplayButton=new(1260,86,144,48),DisplayFilterButton=new(1416,86,144,48);
+    private static readonly Rectangle DisplayBreakerAutomaticRow=new(1260,246,650,44),DisplayOtherCountriesRow=new(1416,246,220,44);
+    private static Rectangle SimpleDisplayOption(int i)=>new(1260,334+i*44,650,44);
+    private Texture2D _displayControlIcons;
+    private readonly Rectangle[] _displayControlIconSources=new Rectangle[2];
     private bool _mapLayerListOpen;
     private bool _trafficLayerListOpen;
     private static readonly string[] MapLayerNames={"地形","国区画色分け"};
     private static readonly string[] TrafficLayerNames={"地域を選択","地点を選択"};
-    private static Rectangle MapLayerOption(int i)=>new(1384,202+i*52,220,52);
+    private static Rectangle MapLayerOption(int i)=>new(1260,202+i*52,344,52);
     private static Rectangle TrafficLayerOption(int i)=>new(1616,202+i*52,242,52);
 
     private bool RouteLayerMenuInput(bool active,bool click,bool escape)
     {
-        if(!_simpleDisplayOpen && !_mapLayerListOpen && !_trafficLayerListOpen)return false;
-        if(active && escape)_simpleDisplayOpen=_mapLayerListOpen=_trafficLayerListOpen=false;
+        if(!_simpleDisplayOpen && !_displayFilterOpen && !_mapLayerListOpen && !_trafficLayerListOpen)return false;
+        if(active && escape)_simpleDisplayOpen=_displayFilterOpen=_mapLayerListOpen=_trafficLayerListOpen=false;
         else if(active && click)RouteLayerClick(_pointer);
         return true;
     }
 
     private bool RouteLayerClick(Point pointer)
     {
+        if(SimpleDisplayButton.Contains(pointer) || DisplayFilterButton.Contains(pointer)){
+            bool breaker=SimpleDisplayButton.Contains(pointer);
+            _simpleDisplayOpen=breaker && !_simpleDisplayOpen;
+            _displayFilterOpen=!breaker && !_displayFilterOpen;
+            _mapLayerListOpen=_trafficLayerListOpen=false;
+            return true;
+        }
         if(_simpleDisplayOpen){
             if(DisplayBreakerAutomaticRow.Contains(pointer)){_displayBreaker.Automatic=!_displayBreaker.Automatic;return true;}
             for(int i=0;i<8;i++)if(SimpleDisplayOption(i).Contains(pointer)){
@@ -38,6 +48,14 @@ public partial class Game1
                 _displayBreaker.Manual(i,enabled,DisplayClock);return true;
             }
             _simpleDisplayOpen=false;return true;
+        }
+        if(_displayFilterOpen){
+            if(DisplayOtherCountriesRow.Contains(pointer)){
+                _net.ShowOtherCountries=!_net.ShowOtherCountries;
+                _net.ControlledCountryColors=_world.ControlledCountryColors=!_net.ShowOtherCountries;
+                _world.ShowSetup(_setup,true);_net.ClearGlobeRobotBadges();
+            }else _displayFilterOpen=false;
+            return true;
         }
         if(_mapLayerListOpen || _trafficLayerListOpen)
         {
@@ -50,45 +68,41 @@ public partial class Game1
             }
             return true;
         }
-        if(SimpleDisplayButton.Contains(pointer)){_simpleDisplayOpen=true;return true;}
         if(FolderTreeToolbarClick(pointer))return true;
         if(!_setup.IsPrimaplana && MapViewButton.Contains(pointer)){StartMapTransition();_inputOutcome="view_transition_started";_dragging=_mapDragging=false;return true;}
-        for(int i=0;i<7;i++)if((i is 2 or 3 or 6) && RouteLayerButton(i).Contains(pointer))
-        {
-            CloseReservationDirectory();
-            if((i==0 || i==4) && !MapOverlayAvailable(i))return true;
-            if(i==5){_net.ShowRobots=!_net.ShowRobots;_net.ClearGlobeRobotBadges();}
-            if(i==6){_net.ShowOtherCountries=!_net.ShowOtherCountries;_net.ControlledCountryColors=_world.ControlledCountryColors=!_net.ShowOtherCountries;_world.ShowSetup(_setup,true);_net.ClearGlobeRobotBadges();}
-            if(i==4)_net.ShowEquator=!_net.ShowEquator;
-            if(i==0)_net.ShowMapSymbols=!_net.ShowMapSymbols;
-            if(i==1)_net.ShowBatteries=!_net.ShowBatteries;
-            if(i==2)_mapLayerListOpen=true;
-            if(i==3)_trafficLayerListOpen=true;
-            return true;
-        }
-        return false;
+        _mapLayerListOpen=RouteLayerButton(2).Contains(pointer);
+        _trafficLayerListOpen=RouteLayerButton(3).Contains(pointer);
+        if(!_mapLayerListOpen && !_trafficLayerListOpen)return false;
+        CloseReservationDirectory();return true;
     }
     private void DrawRouteLayerButtons() => DrawTutorialChrome(()=>DrawRouteLayerButtonsCore(),true);
     private void DrawRouteLayerButtonsCore()
     {
         DrawFolderTreeButton();DrawReservationDirectoryButton();
-        string[] names={"緯番・経番","電池","赤道","ロボット","他国"};bool[] enabled={_net.ShowMapSymbols,_net.ShowBatteries,_net.ShowEquator,_net.ShowRobots,_net.ShowOtherCountries};int[] indices={0,1,4,5,6};
-        for(int i=4;i<5;i++){
-            if(_setup.IsPrimaplana && indices[i] is 0 or 4)continue;
-            var r=RouteLayerButton(indices[i]);bool available=indices[i] is 1 or 5 or 6 || MapOverlayAvailable(indices[i]);
-            var color=available?Accent:new Color(75,78,83);
-            _ui.Button(r,"",color,.5f);
-            PortraitHudLayout.CenterLines(_ui,_font,new[]{names[i]},new Rectangle(r.X+28,r.Y,r.Width-30,r.Height),.42f,available?UiPainter.ContrastInk(color):new Color(155,158,163));
-            _ui.Box(new(r.X+9,r.Center.Y-6,12,12),new Color(23,30,36));
-            _ui.Box(new(r.X+11,r.Center.Y-4,8,8),!available?new Color(105,108,113):enabled[i]?new Color(114,255,143):new Color(38,65,30));
-        }
-        _ui.Button(SimpleDisplayButton,"表示ブレーカー  v",Accent,.48f);
+        DrawDisplayControlButton(SimpleDisplayButton,0,_simpleDisplayOpen);
+        DrawDisplayControlButton(DisplayFilterButton,1,_displayFilterOpen);
         int mode=_net.ShowCountryColors?1:0,traffic=_net.ShowRoutes?1:0;
         _ui.Button(RouteLayerButton(2),MapLayerNames[mode]+"  v",Accent,.42f);
         DrawSelectionIcon(RouteLayerButton(3),traffic==1);
         if(!_setup.IsPrimaplana)DrawMapViewButton();
         if(_mapLayerListOpen)for(int i=0;i<2;i++)_ui.Button(MapLayerOption(i),MapLayerNames[i],i==mode?Accent:Muted,.52f);
         if(_trafficLayerListOpen)for(int i=0;i<2;i++){var r=TrafficLayerOption(i);_ui.Button(r,"",i==traffic?Accent:Muted,.52f);DrawSelectionGlyph(r.X+30,r.Center.Y,i==1,i==traffic?SelectionInk:UiPainter.ContrastInk(Muted));_ui.Text(TrafficLayerNames[i],new(r.X+62,r.Y+15),.4f,i==traffic?SelectionInk:UiPainter.ContrastInk(Muted));}
+    }
+    private void DrawDisplayControlButton(Rectangle button,int index,bool open)
+    {
+        if(_displayControlIcons==null){
+            _displayControlIcons=LoadUiTexture("map-display-controls-v001.png");
+            int half=_displayControlIcons.Width/2;
+            for(int i=0;i<_displayControlIconSources.Length;i++)
+                _displayControlIconSources[i]=UiArtInkBounds(_displayControlIcons,new(i*half,0,half,_displayControlIcons.Height));
+        }
+        DrawPrimaryActionSurface(button,Accent);
+        var track=new Rectangle(button.X+6,button.Y+4,button.Width-12,button.Height-8);
+        PrimaryRoundBox(track,open || button.Contains(_pointer)?new Color(29,70,86):new Color(14,35,47),8);
+        var source=_displayControlIconSources[index];
+        int width=source.Width*36/source.Height;
+        _spriteBatch.Draw(_displayControlIcons,new Rectangle(button.Center.X-width/2-8,button.Center.Y-18,width,36),source,Color.White);
+        for(int i=0;i<6;i++)_ui.Box(new(button.Right-30+i,button.Center.Y-2+i,11-i*2,1),Cream);
     }
     private void DrawMapViewButton()
     {
@@ -117,14 +131,16 @@ public partial class Game1
             _spriteBatch.Draw(_mapViewToggleArt,icon,source,Color.White);
         }
     }
-    private void DrawSimpleDisplayMenu()
+    private void DrawDisplayControlMenus()
     {
         if(_simpleDisplayOpen){
+            _ui.Box(new(1260,202,650,44),new Color(23,43,56));
+            _ui.Center("表示ブレーカー",new(1260,202,650,44),.46f,Cream);
             _ui.Button(DisplayBreakerAutomaticRow,"",Muted,.4f);
             DrawBreakerCheck(DisplayBreakerAutomaticRow,_displayBreaker.Automatic);
-            _ui.Text("自動OFF / 目標18 FPS",new(1302,158),.4f,Cream);
-            _ui.Box(new(1260,190,650,44),new Color(23,43,56));
-            _ui.Text("表示項目",new(1302,202),.38f,Cream);_ui.Text("CPU ms/frame",new(1650,202),.35f,Cream);
+            _ui.Text("自動OFF / 目標18 FPS",new(1302,258),.4f,Cream);
+            _ui.Box(new(1260,290,650,44),new Color(23,43,56));
+            _ui.Text("表示項目",new(1302,302),.38f,Cream);_ui.Text("CPU ms/frame",new(1650,302),.35f,Cream);
             for(int i=0;i<8;i++){
                 var r=SimpleDisplayOption(i);_ui.Button(r,"",Muted,.4f);DrawBreakerCheck(r,DisplayFeatureEnabled(i));
                 _ui.Text(DisplayFeatureNames[i],new(r.X+42,r.Y+12),.38f,Cream);
@@ -132,9 +148,20 @@ public partial class Game1
                 if(_displayBreaker.Tripped[i])timing+=" / 自動OFF";
                 _ui.Text(timing,new(r.X+380,r.Y+12),.32f,Cream);
             }
-            _ui.Box(new(1260,586,650,70),new Color(23,43,56));
-            _ui.Text("旗の時間は旗全体。高低差は手動切替。",new(1274,595),.31f,Cream);
-            _ui.Text(_breakerMessage.Length>0?_breakerMessage:"自動ではONに戻りません / 手動ON後10秒は保護",new(1274,625),.30f,Cream);
+            _ui.Box(new(1260,686,650,70),new Color(23,43,56));
+            _ui.Text("旗の時間は旗全体。高低差は手動切替。",new(1274,695),.31f,Cream);
+            _ui.Text(_breakerMessage.Length>0?_breakerMessage:"自動ではONに戻りません / 手動ON後10秒は保護",new(1274,725),.30f,Cream);
+        }else if(_displayFilterOpen){
+            var row=DisplayOtherCountriesRow;
+            var header=new Rectangle(row.X,row.Y-44,row.Width,44);
+            _ui.Box(header,new Color(23,43,56));
+            _ui.Center("表示フィルター",header,.46f,Cream);
+            _ui.Button(row,"",Muted,.4f);
+            DrawBreakerCheck(row,_net.ShowOtherCountries);
+            _ui.Text("他国",new(row.X+42,row.Y+12),.4f,Cream);
+        }else if(!_mapLayerListOpen && !_trafficLayerListOpen && !_mapOverlayMenu && !GuideVisible){
+            if(SimpleDisplayButton.Contains(_pointer))DrawRulebookHint("表示ブレーカー","地図の描画項目と自動OFFを設定します。");
+            else if(DisplayFilterButton.Contains(_pointer))DrawRulebookHint("表示フィルター","地図に表示する国を切り替えます。");
         }
     }
     private void DrawSelectionIcon(Rectangle rect,bool node)
