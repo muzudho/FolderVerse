@@ -7,6 +7,7 @@ using System.IO;
 public partial class Game1
 {
     private readonly Texture2D[] _queenTextures = new Texture2D[3];
+    private readonly Texture2D[] _queenNeutralTextures = new Texture2D[3];
     private RobotHeadTexture _sideHead, _sideTorso, _sideLegs;
     private RobotHeadTexture _rearHead, _rearTorso, _rearLegs;
     private RobotHeadTexture _cardboardSideHead, _cardboardRearHead;
@@ -19,7 +20,7 @@ public partial class Game1
     private Texture2D _rearCaptainCap, _sideCaptainCap;
     private Texture2D _soldierCapTexture, _captainCapTexture, _toyRifleTexture;
 
-    private bool DrawQueenArt(Rectangle area, BattleFacing facing, int owner, float opacity)
+    private bool DrawQueenArt(Rectangle area, BattleFacing facing, int owner, float opacity, bool persuaded=false)
     {
         var (textureIndex, view) = facing switch
         {
@@ -27,15 +28,16 @@ public partial class Game1
             BattleFacing.South => (1, "front"),
             _ => (2, "side")
         };
-        ref var texture = ref _queenTextures[textureIndex];
-        texture ??= LoadBattleToyTexture($"queen-{view}");
+        ref var texture = ref (persuaded ? ref _queenNeutralTextures[textureIndex] : ref _queenTextures[textureIndex]);
+        texture ??= LoadBattleToyTexture($"queen-{view}", grayscale: persuaded);
         if (texture == null)
             return false;
 
         int width = Math.Max(1, area.Height * texture.Width / texture.Height);
         var flip = facing == BattleFacing.West ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+        var tint = persuaded ? Color.Lerp(_setup.OwnerColor(owner), Color.White, .18f) : Color.White;
         _spriteBatch.Draw(texture, new Rectangle(area.Center.X - width / 2, area.Y, width, area.Height),
-            null, Color.White * opacity, 0, Vector2.Zero, flip, 0);
+            null, tint * opacity, 0, Vector2.Zero, flip, 0);
         int flagWidth = area.Width / 3;
         int flagHeight = flagWidth * 2 / 3;
         CountryFlagArt.Draw(_ui, _setup, owner,
@@ -43,7 +45,7 @@ public partial class Game1
         return true;
     }
 
-    private Texture2D LoadBattleToyTexture(string name)
+    private Texture2D LoadBattleToyTexture(string name, bool grayscale=false)
     {
         string path = Path.Combine(AppContext.BaseDirectory, "Content", "Images", "Robots", $"{name}-v001.png");
         if (!File.Exists(path))
@@ -55,7 +57,12 @@ public partial class Game1
         for (int index = 0; index < pixels.Length; index++)
         {
             var pixel = pixels[index];
-            pixels[index] = Color.FromNonPremultiplied(pixel.R, pixel.G, pixel.B, pixel.A);
+            if (grayscale)
+            {
+                int shade = (54 * pixel.R + 183 * pixel.G + 19 * pixel.B) / 256;
+                pixels[index] = Color.FromNonPremultiplied(shade, shade, shade, pixel.A);
+            }
+            else pixels[index] = Color.FromNonPremultiplied(pixel.R, pixel.G, pixel.B, pixel.A);
         }
         var uploaded = new Texture2D(GraphicsDevice, source.Width, source.Height);
         try { uploaded.SetData(pixels); }
@@ -389,6 +396,9 @@ public partial class Game1
         foreach (var texture in _queenTextures)
             texture?.Dispose();
         Array.Clear(_queenTextures);
+        foreach (var texture in _queenNeutralTextures)
+            texture?.Dispose();
+        Array.Clear(_queenNeutralTextures);
         _soldierCapTexture?.Dispose();
         _captainCapTexture?.Dispose();
         _toyRifleTexture?.Dispose();

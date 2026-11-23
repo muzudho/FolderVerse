@@ -244,14 +244,15 @@ public partial class Game1
             if(physical!=null && BattleIntroActive)
                 DrawBattleRobotParts(r, physical, unit.Owner, opacity);
             float pieceOpacity=opacity*(physical==null?1:BattlePieceOpacity);
-            bool queenArt = unit.Role == BattleRole.Queen && DrawQueenArt(r, unit.Facing, unit.Owner, pieceOpacity);
+            int pieceOwner=unit.PersuadedByQueen??unit.Owner;
+            bool queenArt = unit.Role == BattleRole.Queen && DrawQueenArt(r, unit.Facing, pieceOwner, pieceOpacity, unit.PersuadedByQueen.HasValue);
             bool soldierArt = pieceOpacity > 0 &&
                 DrawBattleSoldierArt(r, physical, unit.Role, unit.Facing, unit.Rifles > 0, pieceOpacity);
             if (!queenArt && !soldierArt)
             foreach(var patch in BattlePieceArt.Pieces[BattlePieceArt.Index(unit.Role,unit.Facing)])
             {
                 var b=patch.Bounds;
-                var color=patch.Ink switch{0=>_setup.OwnerColor(unit.Owner),1=>new Color(255,222,180),2=>new Color(19,25,34),3=>new Color(255,224,115),4=>new Color(116,62,38),_=>new Color(249,135,149)};
+                var color=patch.Ink switch{0=>_setup.OwnerColor(pieceOwner),1=>new Color(255,222,180),2=>new Color(19,25,34),3=>new Color(255,224,115),4=>new Color(116,62,38),_=>new Color(249,135,149)};
                 var area=new Rectangle(r.X+b.X*r.Width/32,r.Y+b.Y*r.Height/48,Math.Max(1,b.Width*r.Width/32),Math.Max(1,b.Height*r.Height/48));
                 var part=b.Y<26?RobotParts.Head:b.Y<37?RobotParts.Body:RobotParts.Legs;
                 int partTop=part==RobotParts.Head?0:part==RobotParts.Body?26:37,partBottom=part==RobotParts.Head?26:part==RobotParts.Body?37:48;
@@ -380,11 +381,11 @@ public partial class Game1
         if(battle.Kind==BattleKind.Node && !battle.SplitBoard)DrawBattleFlagCountdown(battle,frame);
         else if(recent!=null)BattleInfo($"ID {recent.Unit} / {recent.Detail}",794,.42f);
         if(battle.Kind==BattleKind.Node && !battle.SplitBoard){
-            BattleInfo(frame.Units.Any(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated)?$"説得：上下左右{battle.Rules.PersuasionRadius}マス以内 / {battle.Rules.PersuasionPercent}％ / 壁越し有効":battle.CompactFronts?"扉：各軍の増援・退却口 / 国旗：守備軍の出入口":"足元は左から盾・短剣・弾の残数",872,.4f);
+            BattleInfo(frame.Units.Any(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated)?$"説得：上下左右{battle.Rules.PersuasionRadius}マス以内 / ロボット{battle.Rules.PersuasionPercent}％・領土０のクイーン{BattleTurnResolver.QueenPersuasionPercent}％":battle.CompactFronts?"扉：各軍の増援・退却口 / 国旗：守備軍の出入口":"足元は左から盾・短剣・弾の残数",872,.4f);
         }
         else if(frame.Units.Any(u=>u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated))
         {
-            BattleInfo($"説得：上下左右に{battle.Rules.PersuasionRadius}マス以内 / １体ごと{battle.Rules.PersuasionPercent}％",833,.44f);
+            BattleInfo($"説得：上下左右に{battle.Rules.PersuasionRadius}マス以内 / ロボット{battle.Rules.PersuasionPercent}％・領土０のクイーン{BattleTurnResolver.QueenPersuasionPercent}％",833,.44f);
             BattleInfo("距離による低下なし・壁越しも有効 / 説得中は範囲を色枠で表示",872,.4f);
         }
         else

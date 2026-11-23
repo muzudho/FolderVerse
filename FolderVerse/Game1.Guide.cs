@@ -76,6 +76,7 @@ public partial class Game1
     private void FinishGuide()
     {
         var roster=_setup.EnsureGuides();roster.Introduced[_guideRuler]=true;roster.LastTurns[_guideRuler]=_setup.Population.Turn;
+        roster.WasLandless[_guideRuler]=_setup.TerritoryCounts[_guideRuler]==0;
         _guideBriefing=null;
     }
     private void DrawGuide()

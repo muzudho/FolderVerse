@@ -14,7 +14,7 @@ public static partial class BattleAi
         var action=ChooseCore(battle,unit);
         if(!unit.Retreating && unit.Role==BattleRole.Soldier && action.Weapon==BattleWeapon.None &&
             !(BattleLessons.EnduranceGuard(battle,unit) && BattleLessons.Has(battle,unit,BattleLesson.DefenseEndurance))){
-            var enemy=battle.Units.Where(u=>u.Active && !battle.Allied(u.Owner,unit.Owner)).OrderBy(u=>Distance(u.Position,unit.Position)).ThenBy(u=>u.Id).FirstOrDefault();
+            var enemy=battle.Units.Where(u=>u.Active && !battle.AlliedUnits(u,unit)).OrderBy(u=>Distance(u.Position,unit.Position)).ThenBy(u=>u.Id).FirstOrDefault();
             if(enemy!=null){
                 var delta=unit.Position-enemy.Position;int distance=Distance(unit.Position,enemy.Position);
                 // A rifle has no adjacent shot. Create a firing interval rather
@@ -42,7 +42,7 @@ public static partial class BattleAi
     }
     private static BattleAction ChooseCore(BattleState battle,BattleUnit unit)
     {
-        var enemies=battle.Units.Where(u=>u.Active && !battle.Allied(u.Owner,unit.Owner)).OrderBy(u=>Distance(u.Position,unit.Position)).ThenBy(u=>u.Id).ToArray();
+        var enemies=battle.Units.Where(u=>u.Active && !battle.AlliedUnits(u,unit)).OrderBy(u=>Distance(u.Position,unit.Position)).ThenBy(u=>u.Id).ToArray();
         var army=battle.Army(unit.Owner);var enemy=enemies.FirstOrDefault();
         if(army.Wanderer && army.WandererPolicy==WandererPolicy.Persuade && !army.Withdrawing)
         {
@@ -158,7 +158,7 @@ public static partial class BattleAi
                 if(battle.GateAt(next) is {} gate && !battle.Allied(unit.Owner,gate.Owner))attacks=gate.Health;
                 if(state.Ammo+attacks>budget)continue;
                 bool occupied=battle.Units.Any(u=>u.Active && !u.Retreating && u.Id!=unit.Id && u.Position==next);
-                bool enemyGoal=next==target && battle.Units.Any(u=>u.Active && u.Position==target && !battle.Allied(u.Owner,unit.Owner));
+                bool enemyGoal=next==target && battle.Units.Any(u=>u.Active && u.Position==target && !battle.AlliedUnits(u,unit));
                 bool exit=next==target && !battle.Contains(target) && unit.Retreating;
                 if(!exit && (!battle.Walkable(next) || attacks==0 && !battle.WalkableFor(next,unit.Owner) || occupied && !unit.Retreating && !enemyGoal))continue;
                 if(avoidCorners && battle.Contains(next)){

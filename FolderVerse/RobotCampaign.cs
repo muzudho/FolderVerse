@@ -13,6 +13,7 @@ public sealed class RobotEncounter
     public int InterceptOwner=-1;
     public Dictionary<int,int> MarchDestinations;
     public bool Finished;
+    public Dictionary<int,int> QueenPersuasions;
     public HashSet<int> WithdrawalOwners {get;}=new();
     public HashSet<long> IncomingWinners {get;}=new();
     public HashSet<long> ReturnedWanderers {get;}=new();
@@ -49,12 +50,17 @@ public sealed partial class RobotCampaign
     {
         var node=world.Nodes.Current(ruler);return node==null || LockedNode(node.Id)?0:world.Robots.Nodes[node.Id].Robots.Count(r=>r.Owner==ruler && world.Robots.Training[ruler].Eligible(r) && !r.Stationed && world.Robots.DirectDelivery.LockedParts(node.Id,r.Id)==0 && !world.Robots.Workshops[node.Id].IsDisposing(r.Id) && !world.Robots.PendingEdits.Any(e=>e.Ids.Contains(r.Id)));
     }
+    private bool QueenInBattle(int ruler,RobotEncounter joining=null)=>Encounters.Where(e=>!e.Finished).Any(e=>
+        e.QueenPersuasions?.ContainsKey(ruler)==true || e.Battles.SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting)))
+            .Any(u=>u.Owner==ruler && u.Role==BattleRole.Queen &&
+                (e==joining || u.Active || u.Retreated && u.PersuadedByQueen.HasValue)));
+
     public bool CanMarch(WorldSetup world,int ruler,int target)=>CanDeploy(world,ruler,target,false);
     public bool CanSortie(WorldSetup world,int ruler,int target)=>CanDeploy(world,ruler,target,true);
     private bool CanDeploy(WorldSetup world,int ruler,int target,bool localAttack)
     {
         var node=world.Nodes.Current(ruler);
-        bool deployed=Encounters.Where(e=>!e.Finished).SelectMany(e=>e.Battles).SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Any(u=>u.Owner==ruler && u.Role==BattleRole.Queen && !u.Fallen && !u.Retreated);
+        bool deployed=QueenInBattle(ruler);
         bool atEnemy=node!=null && node.Id==target && node.Owner>=0 && !world.Relations.Allied(ruler,node.Owner);
         return node!=null && target>=0 && target<world.Nodes.All.Length && world.Nodes.All[target].Functional && !deployed && !LockedNode(node.Id) &&
             (localAttack && atEnemy || (localAttack?AttackTargets(world,ruler,node.Id):MarchTargets(world,node.Id)).Contains(target));
@@ -247,7 +253,7 @@ public sealed partial class RobotCampaign
     private RobotEncounter CreateEncounter(WorldSetup world,BattleKind kind,int source,int target,int defender,
         (int Owner,int Home,List<Robot> Robots,bool Queen)[] armies,IReadOnlyDictionary<int,int> approaches=null)
     {
-        if(kind==BattleKind.Node && defender>=0 && world.Nodes.Current(defender)?.Id==target && !armies.Any(a=>a.Owner==defender && a.Queen) && !Encounters.Where(e=>!e.Finished).SelectMany(e=>e.Battles).SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Any(u=>u.Owner==defender && u.Role==BattleRole.Queen && u.Active)){
+        if(kind==BattleKind.Node && defender>=0 && world.Nodes.Current(defender)?.Id==target && !armies.Any(a=>a.Owner==defender && a.Queen) && !QueenInBattle(defender)){
             int index=Array.FindIndex(armies,a=>a.Owner==defender);
             if(index>=0){var army=armies[index];army.Queen=true;foreach(var robot in world.Robots.Retinues[defender].Robots.Where(world.Robots.Training[defender].Eligible).ToArray()){Depart(world,target,robot,true);army.Robots.Add(robot);}armies[index]=army;}
         }
@@ -291,7 +297,7 @@ public sealed partial class RobotCampaign
         foreach(int owner in Enumerable.Range(0,world.ActiveCount))
         {
             if(!world.Relations.CanAct(owner) || world.TerritoryCounts[owner]!=0 || world.Nodes.Current(owner)?.Id!=encounter.Target ||
-                Encounters.Where(e=>!e.Finished).Any(e=>e.Battles.SelectMany(b=>b.Units.Concat(b.Armies.SelectMany(a=>a.Waiting))).Any(u=>u.Owner==owner && u.Role==BattleRole.Queen && (e==encounter || u.Active))))continue;
+                QueenInBattle(owner,encounter))continue;
             var robots=world.Robots.Retinues[owner].Robots.Where(world.Robots.Training[owner].Eligible).ToList();
             foreach(var robot in robots)Depart(world,encounter.Target,robot,true);
             AddReinforcement(world,encounter,owner,encounter.Target,robots,true);
@@ -308,9 +314,14 @@ public sealed partial class RobotCampaign
         // A partial board cannot decide ownership of a node shared by other boards.
         foreach(var state in encounter.Battles){state.SplitBoard=true;state.Kind=BattleKind.Edge;state.Defender=-1;}
     }
+    private static Func<int,bool> QueenPersuasionEligibility(WorldSetup world)
+    {
+        var landed=world.Nodes.All.Select(n=>n.Owner).ToHashSet();
+        return ruler=>!landed.Contains(ruler);
+    }
     private BattleState NewState(WorldSetup world,RobotEncounter e)
     {
-        var state=new BattleState(world.PlacementSeed^e.Id^_nextBattle,Rules){Id=_nextBattle++,GlobalTurn=world.Population.Turn,Kind=e.Kind,SourceNode=e.Source,TargetNode=e.Target,Defender=e.Defender,Allied=world.Relations.Allied,IsFactionRoot=world.Relations.CanWinConquest,EquipmentMode=world.EquipmentMode};
+        var state=new BattleState(world.PlacementSeed^e.Id^_nextBattle,Rules){Id=_nextBattle++,GlobalTurn=world.Population.Turn,CanPersuadeQueen=QueenPersuasionEligibility(world),Kind=e.Kind,SourceNode=e.Source,TargetNode=e.Target,Defender=e.Defender,Allied=world.Relations.Allied,IsFactionRoot=world.Relations.CanWinConquest,EquipmentMode=world.EquipmentMode};
         state.Lessons=(BattleLesson[])world.Lessons.Owned.Clone();
         for(int owner=0;owner<world.ActiveCount;owner++)state.AmbushEnabled[owner]=BattleTactics.UsesAmbush(world.Looks[owner].BaseId);
         for(int owner=0;owner<world.ActiveCount;owner++)state.CrossfireEnabled[owner]=BattleTactics.UsesCrossfire(world.Looks[owner].BaseId);
@@ -346,7 +357,8 @@ public sealed partial class RobotCampaign
     }
     private void RunSegment(WorldSetup world,RobotEncounter e)
     {
-        foreach(var state in e.Battles){state.IsFactionRoot=world.Relations.CanWinConquest;state.Lessons=(BattleLesson[])world.Lessons.Owned.Clone();if(state.GlobalTurn!=world.Population.Turn)state.PersuadedUnits.Clear();state.GlobalTurn=world.Population.Turn;state.Events.Clear();state.Frames.Clear();state.Attacks.Clear();state.GateHits.Clear();state.Persuasions.Clear();}
+        var canPersuadeQueen=QueenPersuasionEligibility(world);
+        foreach(var state in e.Battles){state.IsFactionRoot=world.Relations.CanWinConquest;state.CanPersuadeQueen=canPersuadeQueen;state.Lessons=(BattleLesson[])world.Lessons.Owned.Clone();if(state.GlobalTurn!=world.Population.Turn)state.PersuadedUnits.Clear();state.GlobalTurn=world.Population.Turn;state.Events.Clear();state.Frames.Clear();state.Attacks.Clear();state.GateHits.Clear();state.Persuasions.Clear();}
         foreach(var state in e.Battles)foreach(var army in state.Armies.Where(a=>e.WithdrawalOwners.Contains(a.Owner))){
             army.Withdrawing=true;
             foreach(var unit in state.Units.Where(u=>u.Owner==army.Owner && u.Active))unit.Retreating=true;
@@ -431,6 +443,7 @@ public sealed partial class RobotCampaign
         if(e.Kind==BattleKind.Node && winner>=0 && world.Nodes.All[e.Target].Functional)
         foreach(int ruler in Enumerable.Range(0,world.ActiveCount))
             if(world.Nodes.Current(ruler).Id==e.Target && !world.Relations.Allied(ruler,winner))world.Relations.Capture(world,ruler,winner,e.Target);
+        if(e.QueenPersuasions!=null)world.Relations.SettleQueenPersuasions(world,e.QueenPersuasions);
         // Interception buys time: either winner returns home; a later turn is needed to enter the node.
         if(e.Kind==BattleKind.Edge && e.InterceptOwner>=0)return;
         if(e.Kind==BattleKind.Edge && winner>=0)
@@ -485,6 +498,8 @@ public sealed partial class RobotCampaign
             if(unit.Role==BattleRole.Queen)
             {
                 if(unit.Fallen){int victor=e.LostHomes.GetValueOrDefault(unit.Owner,state.Winner);if(victor>=0)world.Relations.Capture(world,unit.Owner,victor,e.Target,unit.QueenFellToEnemy);continue;}
+                if(unit.PersuadedByQueen is int persuader)
+                    (e.QueenPersuasions??=new())[unit.Owner]=persuader;
                 if(unit.Retreated && (unit.WitnessedLessons & BattleLesson.QueenWithoutTargets)!=0)
                     world.Lessons.QueueResearch(unit.Owner,BattleLesson.QueenWithoutTargets);
                 int location=e.Kind==BattleKind.Node && world.Nodes.All[e.Target].Functional && state.Winner>=0 && world.Relations.Allied(unit.Owner,state.Winner)?e.Target:home;
