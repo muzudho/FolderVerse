@@ -109,6 +109,21 @@ sealed class InputGame:Game1{
    CheckHint(filter.Center,true,true);
    CheckHint(new Point(960,900),false,false);
    Set("_pointer",Point.Zero);
+   Rectangle HintBounds(string name,Rectangle paper)=>(Rectangle)typeof(Game1).GetMethod(name,Static)!.Invoke(null,new object[]{paper})!;
+   foreach(var paper in new[]{new Rectangle(16,16,1040,128),new Rectangle(16,16,804,244),new Rectangle(16,16,280,38)})
+   {
+    var stamps=HintBounds("PopupHintStampBounds",paper);
+    var content=HintBounds("PopupHintTextBounds",paper);
+    Check(paper.Contains(stamps) && paper.Contains(content) && content.Right<stamps.Left,
+        "Stamps stay inside the paper and clear of the text at every hint size");
+    GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(Color.Transparent);
+    batch.Begin();Call("DrawPopupHintPaper",paper);batch.End();
+    GraphicsDevice.SetRenderTarget(null);
+    var pixels=new Color[stamps.Width*stamps.Height];
+    image.GetData(0,stamps,pixels,0,pixels.Length);
+    Check(pixels.Any(color=>color.R-color.B<20) && pixels.Any(color=>color.R-color.B>30),
+        "The stamp area contains both blue-green ink and the underlying paper");
+   }
    Color[] ButtonPixels()
    {
     GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(Color.Transparent);
