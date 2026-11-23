@@ -1,4 +1,4 @@
-﻿namespace FolderVerse;
+namespace FolderVerse;
 using Microsoft.Xna.Framework;
 public partial class Game1
 {
@@ -15,7 +15,7 @@ public partial class Game1
     {
         if(!TutorialMapCourse || _setup.TutorialMapBeforeWar && _setup.TutorialMapStage>=6)return false;
         if(_tutorialAttackGuide || _tutorialMessagesOpen || _autoPlay || _demoActive || !IsStatusScreen || _conquestOverview || _homePersuasionActive ||
-            MapTransitionActive || OrientationRotating || _orientationDragging || _net.IsAnimating || _lastCutInPhase!="内政フェーズ" || now-_cutInStarted<PhaseCutInSeconds)return true;
+            MapTransitionActive || AxisBotRotating || _axisBotDragging || _net.IsAnimating || _lastCutInPhase!="内政フェーズ" || now-_cutInStarted<PhaseCutInSeconds)return true;
         int before=_setup.TutorialMapStage;
         if(before==0 && !_statusGlobe)_setup.TutorialMapStage=1;
         else if(before==1 && (_setup.TutorialMapRotations&7)==7)_setup.TutorialMapStage=2;
@@ -37,9 +37,9 @@ public partial class Game1
     private const int TutorialGlobeRotationMask=127<<4,TutorialGlobeSlide=1<<11;
     private static int TutorialThreeNotice(int stage,int rotations)=>stage==2 && (rotations&8)==0?16:1<<(stage>=4?stage+1:stage);
     private void RecordTutorialGlobeRotation(int button)
-    {if(TutorialMapCourse && _setup.TutorialMapStage==4 && OrientationGlobe && !_tutorialAttackGuide)_setup.TutorialMapRotations|=button;}
+    {if(TutorialMapCourse && _setup.TutorialMapStage==4 && AxisBotUsesGlobe && !_tutorialAttackGuide)_setup.TutorialMapRotations|=button;}
     private void RecordTutorialMapRotation(int button)
-    {if(TutorialMapCourse && _setup.TutorialMapStage==1 && !OrientationGlobe)_setup.TutorialMapRotations|=button;}
+    {if(TutorialMapCourse && _setup.TutorialMapStage==1 && !AxisBotUsesGlobe)_setup.TutorialMapRotations|=button;}
     private void RecordTutorialMapEdge()
     {if(TutorialMapCourse && _setup.TutorialMapStage==2 && (_setup.TutorialMapRotations&8)!=0)_setup.TutorialMapEdgeChanged=true;}
 }

@@ -22,7 +22,6 @@ public partial class Game1 : Game
     private UiPainter _ui;
     private ToyCounterRenderer _counter;
     private WorldPreview _world;
-    private ToyOrientationRenderer _orientationToy;
     private Screen _screen;
     private MouseState _previousMouse;
     private KeyboardState _previousKeyboard;
@@ -101,7 +100,7 @@ public partial class Game1 : Game
         _pixel=new Texture2D(GraphicsDevice,1,1); _pixel.SetData(new[]{Color.White});
         _counter=new ToyCounterRenderer(Content.Load<SpriteFont>(Fonts.Counter),_pixel);
         _ui=new UiPainter(_spriteBatch,_pixel,_font){AdaptiveText=()=>DomesticTheme,ButtonOffsetY=TutorialButtonOffset}; _world=new WorldPreview(GraphicsDevice);
-        _orientationToy=new ToyOrientationRenderer(GraphicsDevice);
+        _axisBot=new AxisBot(GraphicsDevice);
         LoadScreenshotFeedback();LoadCutInMobs();LoadSetupHost();LoadTutorialHost();CheckAutoSave();LoadTutorialAchievements();LoadTitleStartAssets();
     }
     private Rectangle CanvasBounds()
@@ -109,6 +108,9 @@ public partial class Game1 : Game
         var v=GraphicsDevice.Viewport; float s=Math.Min(v.Width/1920f,v.Height/1080f);
         int w=(int)(1920*s),h=(int)(1080*s); return new((v.Width-w)/2,(v.Height-h)/2,w,h);
     }
+    private static Viewport CanvasViewport(Rectangle area,Rectangle canvas)=>new(
+        canvas.X+(int)(area.X*canvas.Width/1920f),canvas.Y+(int)(area.Y*canvas.Height/1080f),
+        Math.Max(1,(int)(area.Width*canvas.Width/1920f)),Math.Max(1,(int)(area.Height*canvas.Height/1080f)));
     private Point CanvasPoint(MouseState mouse)
     {
         var b=CanvasBounds(); if(b.Width==0 || b.Height==0)return new(-1,-1);
@@ -268,10 +270,10 @@ public partial class Game1 : Game
         {if(active && click && EndingReturn.Contains(_pointer))FinishEndingToTitle();else if(active && click && EndingResume.Contains(_pointer) && (EndingReturnsToGame || _endingAge+elapsed<EndingSeconds))ResumeFromEnding();else UpdateEnding(elapsed,active && (escape || enter));_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(IsStatusScreen && RouteLayerMenuInput(active,click,escape)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(StratagemInput(mouse,click,escape,active,elapsed)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(DragOrientationRobot(mouse,active,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        bool rotating=OrientationRotating;UpdateOrientationRotation((float)elapsed);
+        if(DragAxisBot(mouse,active,click)){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        bool rotating=AxisBotRotating;UpdateAxisBotRotation((float)elapsed);
         if(rotating){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
-        if(OrientationControlsVisible && !_seedDialog.IsOpen && active && click && OrientationControlClick(_pointer)){if(AutomaticOrientation)AdvanceAutomaticOrientation((float)elapsed);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
+        if(AxisBotControlsVisible && !_seedDialog.IsOpen && active && click && AxisBotControlClick(_pointer)){if(AxisBotAutomaticRotation)AdvanceAxisBotAutomaticRotation((float)elapsed);_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         bool transitioning=MapTransitionActive;UpdateMapTransition((float)elapsed);
         if(transitioning){_previousMouse=mouse;_previousKeyboard=keyboard;return;}
         if(UpdateGlobeSpin((float)elapsed,active,click))
@@ -388,7 +390,7 @@ public partial class Game1 : Game
                 bool action=click && (TransportOverviewClick(_pointer) || RouteLayerClick(_pointer) || BatteryClick(_pointer) || MovementClick(_pointer,keyboard) || NodeDialogClick(_pointer,keyboard));
                 if(!action && click && NetButton(2).Contains(_pointer))FocusStatusGlobe();
                 else if(!action && click && NetButton(3).Contains(_pointer))FocusInspectorLocation();
-                else if(!action && click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
+                else if(!action && click && AxisBotResetButton.Contains(_pointer))ResetStatusOrientation();
                 DragStatusMap(mouse,active);
                 GlobeCellClick(mouse,click,active,action);
             }
@@ -412,7 +414,7 @@ public partial class Game1 : Game
             else if(click && NetButton(2).Contains(_pointer))FocusCurrentNode();
             else if(click && NetButton(3).Contains(_pointer))FocusInspectorLocation();
             else if(!_setup.IsPrimaplana && click && NetButton(4).Contains(_pointer))_net.SetCenter(_setup,_setup.Cells[_setup.TerritoryCounts[_setup.PlayerSlot]>0?_setup.Capitals[_setup.PlayerSlot]:_setup.ConquerorLocations[_setup.PlayerSlot]].Face);
-            else if(click && OrientationResetButton.Contains(_pointer))ResetStatusOrientation();
+            else if(click && AxisBotResetButton.Contains(_pointer))ResetStatusOrientation();
             else if(click && !pan && !_net.IsAnimating && _net.ClickEdge()){RecordTutorialMapEdge();}
             else if(click && !pan && !_movementOpen && !_net.IsAnimating && (_statusCell>=0 || _net.ShowRoutes))
             {
@@ -440,7 +442,7 @@ public partial class Game1 : Game
             if(IsSelectionScreen)
             {
                 Rotate(mouse,click,active,SelectionGlobe);
-                if(!_dragging)AdvanceAutomaticOrientation((float)elapsed);
+                if(!_dragging)AdvanceAxisBotAutomaticRotation((float)elapsed);
                 if(_hoveredSlot>=0)_previewOwner=_hoveredSlot;
                 _world.HighlightOwner(_setup,_screen==Screen.PlayerReady?_setup.PlayerSlot:_previewOwner);
             }
@@ -494,7 +496,7 @@ public partial class Game1 : Game
                 else SetPlacementSeed(_random.Next());
             }
         }
-        if(IsRolling || (IsCastScreen && !IsStatusScreen && !_dragging))AdvanceAutomaticOrientation((float)elapsed);
+        if(IsRolling || (IsCastScreen && !IsStatusScreen && !_dragging))AdvanceAxisBotAutomaticRotation((float)elapsed);
     }
     private void Rotate(MouseState mouse,bool click,bool active,Rectangle area)
     {
@@ -711,8 +713,8 @@ public partial class Game1 : Game
         else if(_statusGlobe)
         {
             var viewport=GraphicsDevice.Viewport;
-            var areas=OrientationAreas(NetPanel,false);
-            var globeViewport=OrientationViewport(areas.Globe,canvas);
+            var areas=AxisBotLayout(NetPanel,false);
+            var globeViewport=CanvasViewport(areas.Globe,canvas);
             GraphicsDevice.Viewport=globeViewport;
             _net.RegionFocusCell=_world.RegionFocusCell=RegionMapFocusCell;
             _net.SelectedCell=_world.SelectedCell=_transportOverview || _net.ShowRoutes?-1:_selectedMapCell;
@@ -752,7 +754,7 @@ public partial class Game1 : Game
         _spriteBatch.Begin(transformMatrix:transform);
         if(!_reservationDirectory){DrawRegionOffice();DrawSalvageMap();}
         _spriteBatch.End();
-        if(!MapTransitionActive && !_setup.IsPrimaplana)DrawOrientationOverlay(MapViewBounds,canvas,transform);
+        if(!MapTransitionActive && !_setup.IsPrimaplana)DrawAxisBotOverlay(MapViewBounds,canvas,transform);
         if(factoryMapStart!=0)_factoryMapDrawMs=System.Diagnostics.Stopwatch.GetElapsedTime(factoryMapStart).TotalMilliseconds;
         GraphicsDevice.ScissorRectangle=oldScissor;_spriteBatch.Begin(transformMatrix:transform);
         if(!_reservationDirectory){
@@ -921,10 +923,10 @@ public partial class Game1 : Game
             {
             var globe=SelectionGlobe;
             var area=IsSelectionScreen?new Rectangle(globe.X+8,globe.Y+8,globe.Width-16,globe.Height-48):IsCastScreen?CastPreview:PreviewArea;
-            var areas=OrientationAreas(area,IsCastScreen && !IsSelectionScreen);
-            GraphicsDevice.Viewport=OrientationViewport(areas.Globe,canvas);
+            var areas=AxisBotLayout(area,IsCastScreen && !IsSelectionScreen);
+            GraphicsDevice.Viewport=CanvasViewport(areas.Globe,canvas);
             _world.Draw(_yaw,_pitch,_animationTime); GraphicsDevice.Viewport=viewport;
-            DrawOrientationOverlay(areas.Globe,canvas,transform);
+            DrawAxisBotOverlay(areas.Globe,canvas,transform);
             if(IsCastScreen && !IsSelectionScreen) { _spriteBatch.Begin(transformMatrix:transform); DrawCastPreviewInfo(); _spriteBatch.End(); }
             if(IsSelectionScreen && _hoveredSlot>=0){_spriteBatch.Begin(transformMatrix:transform);DrawSelectionTile(_selectionTiles[_hoveredSlot],true);_spriteBatch.End();}
             }
@@ -988,7 +990,7 @@ public partial class Game1 : Game
         LogDisplayedScreen();
         base.Draw(gameTime);
     }
-    protected override void UnloadContent(){_mapViewToggleArt?.Dispose();_mapViewToggleArt=null;DisposePhasePlaques();DisposeSouvenirMedallions();_spaceBackdrop?.Dispose();_spaceBackdrop=null;_diplomacyRoom?.Dispose();_paperKnock?.Dispose();_recoveryWorld?.Dispose();_recoveryWorld=null;_primaryActionArt?.Dispose();_primaryActionArt=null;_guideActionArt?.Dispose();_guideActionArt=null;_hangarActionArt?.Dispose();_hangarActionArt=null;DisposeIndustryWheel();_openingReadingTable?.Dispose();_openingReadingTable=null;foreach(var art in _maplePackageArt)art?.Dispose();Array.Clear(_maplePackageArt);_sectorChangeArt?.Dispose();_sectorChangeArt=null;DisposeBattleToyArt();_robotHeadTextures?.Dispose();_robotHeadTextures=null;_robotTorsoTextures?.Dispose();_robotTorsoTextures=null;_robotLegTextures?.Dispose();_robotLegTextures=null;_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeGuide();DisposeTutorialPlanets();FinishConquestOverview();DisposeBroadcastArt();_conquestScenery?.Dispose();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposePaperScenes();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_shipmentChime?.Dispose();_seaWave?.Dispose();_orientationToy?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
+    protected override void UnloadContent(){_mapViewToggleArt?.Dispose();_mapViewToggleArt=null;DisposePhasePlaques();DisposeSouvenirMedallions();_spaceBackdrop?.Dispose();_spaceBackdrop=null;_diplomacyRoom?.Dispose();_paperKnock?.Dispose();_recoveryWorld?.Dispose();_recoveryWorld=null;_primaryActionArt?.Dispose();_primaryActionArt=null;_guideActionArt?.Dispose();_guideActionArt=null;_hangarActionArt?.Dispose();_hangarActionArt=null;DisposeIndustryWheel();_openingReadingTable?.Dispose();_openingReadingTable=null;foreach(var art in _maplePackageArt)art?.Dispose();Array.Clear(_maplePackageArt);_sectorChangeArt?.Dispose();_sectorChangeArt=null;DisposeBattleToyArt();_robotHeadTextures?.Dispose();_robotHeadTextures=null;_robotTorsoTextures?.Dispose();_robotTorsoTextures=null;_robotLegTextures?.Dispose();_robotLegTextures=null;_rulebookTexture?.Dispose();_net.DisposeRobotTexture();_directPairNet.DisposeRobotTexture();foreach(var icon in _ratePieIcons.Values)icon.Dispose();_ratePieIcons.Clear();DisposeCutInMobs();DisposeGuide();DisposeTutorialPlanets();FinishConquestOverview();DisposeBroadcastArt();_conquestScenery?.Dispose();_conquestGlobe?.Dispose();_curtainSound?.Dispose();_tutorialHost?.Dispose();foreach(var ring in _medallionRings.Values)ring.Dispose();_medallionRings.Clear();DisposeMedallionLetters();foreach(var textures in _supervisorTextures.Values){textures.Base.Dispose();textures.Clothes.Dispose();}_supervisorTextures.Clear();_newspaperRustle?.Dispose();DisposePaperScenes();DisposeNewspaperToyPatterns();_newspaperToys?.Dispose();_newspaperExtraToys?.Dispose();DisposeNewspaperMastheads();_newspaperPortraits?.Dispose();_mapEffect?.Dispose();_mapCrack?.Dispose();DisposeScreenshotFeedback();_shipmentChime?.Dispose();_seaWave?.Dispose();_axisBot?.Dispose();_directPairWorld?.Dispose();_world?.Dispose();_pixel?.Dispose();_spriteBatch?.Dispose();base.UnloadContent();}
     protected override void Dispose(bool disposing)
     {
         if(disposing){SaveBgmSettings();StopBattleMusic();StopIndustryMusic();StopEndingMusic();DisposeTitleMusic();}

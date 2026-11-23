@@ -21,13 +21,13 @@ public partial class Game1
         if(TutorialMapCourse && _setup.TutorialMapStage<6){
             int stage=_setup.TutorialMapStage,bits=_setup.TutorialMapRotations;
             if(stage is 0 or 3)return new[]{MapViewButton};
-            if(stage is 2 or 5)return stage==2 && (bits&8)!=0?Array.Empty<Rectangle>():new[]{OrientationToyArea};
+            if(stage is 2 or 5)return stage==2 && (bits&8)!=0?Array.Empty<Rectangle>():new[]{AxisBotWindow};
             var targets=new List<Rectangle>();
             for(int axis=stage==1?2:0;axis<3;axis++)foreach(int sign in new[]{-1,1}){
                 int bit=stage==1?(sign>0?1:4):1<<(4+axis*2+(sign>0?1:0));
-                if((bits&bit)==0)targets.Add(AxisButton(OrientationToyArea,axis,sign));
+                if((bits&bit)==0)targets.Add(AxisBotRotationButton(AxisBotWindow,axis,sign));
             }
-            if((bits&(stage==1?2:1<<10))==0)targets.Add(OrientationResetButton);
+            if((bits&(stage==1?2:1<<10))==0)targets.Add(AxisBotResetButton);
             return targets;
         }
         bool attack=_setup.IsPrimaplana || TutorialAttackRequired || _setup.TutorialMapBeforeWar && _setup.TutorialCompletionShown;

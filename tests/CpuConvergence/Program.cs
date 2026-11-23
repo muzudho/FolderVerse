@@ -33,6 +33,36 @@ if(args.Contains("--cpu-warehouse"))
         store.Robots.Count(r=>r.WarehouseKeeper)==2,"CPU appoints a second keeper at the full expandable site");
     Console.WriteLine("PASS: CPU expands a full site while respecting manual control, the last fighter and warehouse ceilings.");
 
+    var materialWorld=Fixture();
+    materialWorld.EquipmentMode=RobotEquipmentMode.Materials;
+    var materialStock=materialWorld.Robots;
+    materialStock.ConfigureFactories(materialWorld);
+    int materialNode=materialWorld.Nodes.All.First(n=>n.Functional && n.Owner==0 && n.Purpose!=NodePurpose.Relay).Id;
+    var materialStore=materialStock.Nodes[materialNode];
+    typeof(RobotStore).GetMethod("EnableFlagWarehouseRules",BindingFlags.Instance|BindingFlags.NonPublic)!
+        .Invoke(materialStore,null);
+    setLimit.Invoke(materialStore,new object[]{15});
+    materialStock.Workshops[materialNode].Automation=NodeAutomation.Gentle;
+    var paperKeeper=materialStock.Create(0,RobotParts.Complete) with {
+        WarehouseKeeper=true,HeadMaterial=RobotMaterial.Paper,BodyMaterial=RobotMaterial.Paper,LegsMaterial=RobotMaterial.Paper};
+    var lastFighter=materialStock.Create(0,RobotParts.Complete) with {HeadMaterial=RobotMaterial.Tin};
+    var betterHead=materialStock.Create(0,RobotParts.Head) with {HeadMaterial=RobotMaterial.Cardboard};
+    var betterBody=materialStock.Create(0,RobotParts.Body) with {BodyMaterial=RobotMaterial.Foam};
+    foreach(var robot in new[]{paperKeeper,lastFighter,betterHead,betterBody})materialStore.Add(robot);
+    int beforeUpgrade=materialStore.TotalCapacity;
+    var resolveParts=typeof(RobotPartPlanning).GetMethod("Resolve",BindingFlags.Instance|BindingFlags.NonPublic)!;
+    foreach(var donor in new[]{betterHead,betterBody}){
+        ComputerLogistics.Plan(materialWorld,true);
+        var upgrade=materialStock.PartPlanning.Orders.Single(o=>o.SwapWarehouseParts);
+        Check(upgrade.RobotId==donor.Id && upgrade.TargetRobotId==paperKeeper.Id,
+            "CPU upgrades the existing keeper from spare parts and preserves the last fighter");
+        resolveParts.Invoke(materialStock.PartPlanning,new object[]{materialWorld});
+    }
+    Check(materialStore.TotalCapacity==beforeUpgrade+1 &&
+        materialStore.Robots.Single(r=>r.Id==lastFighter.Id)==lastFighter,
+        "CPU converts the accumulated fractional material upgrades into one free slot");
+    Console.WriteLine("PASS: CPU uses spare materials to upgrade a keeper and gain space without consuming its last fighter.");
+
     var attackWorld=Fixture();
     var battle=attackWorld.Campaign.RobotBattles;
     var approaches=attackWorld.Nodes.All.Where(n=>n.Functional)

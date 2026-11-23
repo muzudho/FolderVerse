@@ -197,7 +197,7 @@ public static class AutoSaveStore
                     if(type==typeof(RobotWorld) && field.Name=="<OffshoreRawSupplyEnabled>k__BackingField")continue;
                     if(type==typeof(RobotWorld) && field.Name=="<OffshoreUsesSeaAreaRule>k__BackingField")continue;
                     if(type==typeof(RobotWorld) && field.Name=="<Reservations>k__BackingField")continue;
-                    if(type.Name=="DomesticViewState" && new[]{"<GlobePan>k__BackingField","<GlobeDragSlide>k__BackingField","<NetDragRotate>k__BackingField"}.Contains(field.Name))continue;
+                    if(type.Name=="DomesticViewState" && new[]{"<GlobePan>k__BackingField","<GlobeDragSlide>k__BackingField","<NetDragRotate>k__BackingField","<HiddenMapFilters>k__BackingField"}.Contains(field.Name))continue;
                     if(type==typeof(RobotEncounter) && field.Name=="<ReturnedWanderers>k__BackingField"){field.SetValue(value,new HashSet<long>());continue;}
                     if(type==typeof(WorldSetup) && field.Name=="AllowDuplicateCharacters")continue;
                     if(type==typeof(WorldSetup) && field.Name=="WandererPolicies"){field.SetValue(value,new WandererPolicy[WorldSetup.CastCount]);continue;}

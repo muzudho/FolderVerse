@@ -133,7 +133,7 @@ public partial class Game1
         if(!ConquestStudioCut)DrawConquestMosaic();
         _spriteBatch.End();
         if(ConquestStudioCut){
-            GraphicsDevice.Viewport=OrientationViewport(ConquestGlobeArea,canvas);
+            GraphicsDevice.Viewport=CanvasViewport(ConquestGlobeArea,canvas);
             _conquestGlobe.Draw(0,0,0,false,true);GraphicsDevice.Viewport=viewport;
         }
         _spriteBatch.Begin(transformMatrix:transform);

@@ -38,7 +38,7 @@ public partial class Game1
         continuedBattles=_setup.Campaign.RobotBattles.Encounters.Where(e=>!e.Finished).Select(e=>new{e.Id,e.Source,e.Target,e.Kind,turns=e.Battles.Select(b=>b.Turn).ToArray()}).ToArray(),
         nodeAssemblyOpen=_nodeAssemblyOpen,hangarDrag=_hangarDrag,hangarPart=(int)_hangarPart,hangarSlots=_hangarSlots,hangarMessage=_hangarMessage,nodeDisposalOpen=_nodeDisposalOpen,nodeDisposalMessage=_nodeDisposalMessage,nodeTransportOpen=_nodeTransportOpen,transportOverview=_transportOverview,transportEditor=_transportEditor,transportNewInstruction=_transportNewInstruction,transportInstructionPage=_transportPage,transportInstruction=_transportEditNumber,transportDestinationPicking=_transportDestinationPicking,nodeTransportMessage=_nodeTransportMessage,nodeFactoryOpen=_nodeFactoryOpen,factoryPart=(int)(_populationNode>=0?_setup.Robots.Workshops[_populationNode].Product:RobotParts.Head),factoryMessage=_factoryMessage,
         overlay=_seedDialog.IsOpen?"SeedDialog":_movementOpen?"Movement":_populationCell>=0?(_nodeAssemblyOpen?"RobotAssembly":_nodeDisposalOpen?"RobotDisposal":_nodeTransportOpen?"RobotTransport":_nodeFactoryOpen?"RobotFactory":"NodeDialog"):"None",
-        view=_statusGlobe?"Globe":"Net",layer=_net.ShowRoutes?"Traffic":"Grid",mapSymbols=_net.ShowMapSymbols,equator=_net.ShowEquator,robots=_net.ShowRobots,otherCountries=_net.ShowOtherCountries,batteries=_net.ShowBatteries,
+        view=_statusGlobe?"Globe":"Net",layer=_net.ShowRoutes?"Traffic":"Grid",mapSymbols=_net.ShowMapSymbols,equator=_net.ShowEquator,robots=_net.ShowRobots,otherCountries=_net.ShowOtherCountries,hiddenMapFilters=DomesticHiddenMapFilters,batteries=_net.ShowBatteries,
         worldSeed=_setup.WorldSeed,castSeed=_setup.CastSeed,placementSeed=_setup.PlacementSeed,
         turn=_setup.Population.Turn,player=_setup.PlayerSlot,turnPlayer=_setup.TurnPlayer,factionPicker=_factionPickerOpen,selectedMoveNode=_selectedMoveNode,escort=_escort,
         currentNode=_setup.PlayerSlot>=0 && _setup.PlayerSlot<_setup.ConquerorLocations.Length && _setup.PlayerSlot<_setup.ConquerorPoints.Length && _setup.Nodes.All.Length>0?_setup.Nodes.Current(_setup.PlayerSlot)?.Id:null,
@@ -73,13 +73,17 @@ public partial class Game1
         if(MapViewButton.Contains(point))return "toggle_globe_net";
         if(SimpleDisplayButton.Contains(point))return "display_breaker_menu";
         if(DisplayFilterButton.Contains(point))return "display_filter_menu";
-        if(_displayFilterOpen && DisplayOtherCountriesRow.Contains(point))return "toggle_other_countries";
+        if(_displayFilterOpen){
+            if(DisplayFilterReset.Contains(point))return "display_filter_reset";
+            for(int i=0;i<DisplayFilterLabels.Length;i++)if(DisplayFilterRow(i).Contains(point))
+                return i==2?"toggle_other_countries":$"display_filter_{i}";
+        }
         if(RouteLayerButton(2).Contains(point))return "toggle_grid_traffic";
         if(RouteLayerButton(3).Contains(point))return "map_selection_menu";
         if(MovementButton.Contains(point))return "movement";
         if(PocketButton.Contains(point))return "open_pocket";
         if(_movementOpen && !_warPlanning && ConfirmMoveButton.Contains(point))return "confirm_move";
-        if(OrientationResetButton.Contains(point))return "reset_orientation";
+        if(AxisBotResetButton.Contains(point))return "reset_orientation";
         if(PopulationTurnButton.Contains(point))return "next_turn";
         if(NetPanel.Contains(point))return _statusGlobe?"globe":"net";
         return "other";

@@ -9,7 +9,7 @@ public partial class Game1
     private static readonly Rectangle OpeningInspectionMap=new(170,180,1260,595);
     private static readonly Rectangle OpeningInspectionGlobe=new(480,210,960,565);
     private static readonly Rectangle OpeningInspectionToggle=new(1510,695,320,54);
-    private static readonly Rectangle OpeningInspectionToy=new(1557,437,226,226);
+    private static readonly Rectangle OpeningInspectionAxisBot=new(1557,437,226,226);
     private readonly CubeNet _openingInspectionNet=new()
     {
         ShowRoutes=false,ShowCountryColors=false,DirectoryOnly=true
@@ -53,7 +53,7 @@ public partial class Game1
         var viewport=GraphicsDevice.Viewport;
         var scissor=GraphicsDevice.ScissorRectangle;
         GraphicsDevice.Viewport=new Viewport(canvas);
-        GraphicsDevice.ScissorRectangle=OrientationViewport(OpeningInspectionMap,canvas).Bounds;
+        GraphicsDevice.ScissorRectangle=CanvasViewport(OpeningInspectionMap,canvas).Bounds;
         try{DrawMapHinges(_openingInspectionNet,OpeningInspectionMap,OpeningInspectionGlobe);}
         finally
         {
@@ -62,15 +62,15 @@ public partial class Game1
         }
     }
 
-    private void DrawOpeningInspectionToy(Rectangle canvas,Matrix transform)
+    private void DrawOpeningInspectionAxisBot(Rectangle canvas,Matrix transform)
     {
-        var toy=OpeningInspectionToy;
+        var toy=OpeningInspectionAxisBot;
         var model=new Rectangle(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-34);
         var pose=_openingInspectionUnfolded?_openingInspectionNet.BellyOrientation:
             Matrix.CreateFromQuaternion(_openingReviewPose)*_world.GlobeRock;
-        DrawOrientationToyBody(toy,model,canvas,transform,pose);
+        DrawAxisBotBody(toy,model,canvas,transform,pose);
         _spriteBatch.Begin(transformMatrix:transform);
-        DrawOrientationLegend(toy,new Rectangle(toy.X,toy.Bottom-26,toy.Width,26));
+        DrawAxisBotLegend(new Rectangle(toy.X,toy.Bottom-26,toy.Width,26));
         _spriteBatch.End();
     }
 }

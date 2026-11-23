@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-public sealed partial class ToyOrientationRenderer
+public sealed partial class AxisBot
 {
     public static Color AxisColor(int axis)=>axis switch{0=>new(244,91,91),1=>new(89,216,126),2=>new(95,156,255),_=>throw new ArgumentOutOfRangeException(nameof(axis))};
     public static Vector3 AxisDirection(int axis)=>axis switch{0=>Vector3.UnitX,1=>Vector3.UnitY,2=>Vector3.UnitZ,_=>throw new ArgumentOutOfRangeException(nameof(axis))};

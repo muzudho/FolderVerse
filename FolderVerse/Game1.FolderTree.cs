@@ -10,14 +10,14 @@ public partial class Game1
     private bool _folderTreeOpen;
     private int _folderTreeKind=-1,_folderTreeId=-1,_folderTreeOwner=-1;
     private readonly HashSet<int> _expandedFolderCountries=new();
-    private (bool Routes,bool Others,bool Controlled,bool WorldControlled)? _folderTreeLayers;
+    private (bool Routes,int HiddenFilters,bool Controlled,bool WorldControlled)? _folderTreeLayers;
     private static readonly Rectangle FolderTreeButton=new(360,70,60,60);
     private bool FolderTreeFocus=>_folderTreeOpen && !_nodeInspectorClosing && _folderTreeKind>=0;
     private int FolderTreeLocationNode=>_folderTreeKind==2?_folderTreeId:_setup.Nodes.All.FirstOrDefault(n=>_folderTreeKind==1?n.Cell==_folderTreeId:n.Owner==_folderTreeOwner)?.Id??-1;
     private void CloseFolderTreeState()
     {
         if(_folderTreeLayers is {} layers){
-            _net.ShowRoutes=layers.Routes;_net.ShowOtherCountries=layers.Others;
+            _net.ShowRoutes=layers.Routes;_net.HiddenMapFilters=layers.HiddenFilters;
             _net.ControlledCountryColors=layers.Controlled;_world.ControlledCountryColors=layers.WorldControlled;
             _folderTreeLayers=null;_world.ShowSetup(_setup,true);
         }
@@ -31,8 +31,8 @@ public partial class Game1
     private void OpenFolderTree()
     {
         ResetInspector();_folderTreeOpen=true;_folderScroll=0;_mapDragListOpen=_mapLayerListOpen=_trafficLayerListOpen=false;
-        _folderTreeLayers=(_net.ShowRoutes,_net.ShowOtherCountries,_net.ControlledCountryColors,_world.ControlledCountryColors);
-        _net.ShowRoutes=_net.ShowOtherCountries=true;_net.ControlledCountryColors=_world.ControlledCountryColors=false;
+        _folderTreeLayers=(_net.ShowRoutes,_net.HiddenMapFilters,_net.ControlledCountryColors,_world.ControlledCountryColors);
+        _net.ShowRoutes=true;_net.HiddenMapFilters=0;_net.ControlledCountryColors=_world.ControlledCountryColors=false;
         _world.ShowSetup(_setup,true);
         var seen=new HashSet<int>();
         for(int ruler=_setup.PlayerSlot;ruler>=0 && seen.Add(ruler);ruler=_setup.Relations.Superiors[ruler])_expandedFolderCountries.Add(ruler);

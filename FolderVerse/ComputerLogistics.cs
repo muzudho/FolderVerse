@@ -64,6 +64,9 @@ public static class ComputerLogistics
                 }
                 if(exchanged)break;
             }
+            foreach(var node in nodes)
+                if(!Busy(node.Id))PlanWarehouse(w,owner,node.Id);
+
             int shipped=0;
             foreach(var node in nodes.OrderByDescending(n=>stock.Nodes[n.Id].Count/(double)Math.Max(1,stock.Nodes[n.Id].StorageLimit)).ThenBy(n=>n.Id)){
                 int source=node.Id;var store=stock.Nodes[source];var shop=stock.Workshops[source];
@@ -108,21 +111,67 @@ public static class ComputerLogistics
                     catch(InvalidOperationException){continue;}
                 }
             }
-            foreach(var node in nodes){
-                int id=node.Id;
-                var store=stock.Nodes[id];
-                var shop=stock.Workshops[id];
-                if(Busy(id) || shop.Automation==NodeAutomation.Manual || store.WarehouseLimit is not int limit ||
-                    store.TotalCapacity>=limit || store.Count<store.StorageLimit)continue;
-                var ready=battles.SelectableRobots(w,owner,id,false).Select(r=>r.Id).ToHashSet();
-                var keeper=store.Robots.Where(r=>!r.WarehouseKeeper && !r.FactoryWorker && !r.DefenseOnly && !r.InterceptOnly &&
-                        (ready.Count>1 || !ready.Contains(r.Id)) && !stock.AssemblyLocked(id,r) &&
-                        stock.CanSetReservation(id,r,HangarReservation.Warehouse,owner))
-                    .OrderBy(r=>ready.Contains(r.Id)).ThenBy(r=>r.Equipment(owner,w.EquipmentMode).Total).ThenBy(r=>r.Id)
-                    .FirstOrDefault();
-                if(keeper!=null)stock.PartPlanning.ReserveRole(w,id,keeper.Id,HangarReservation.Warehouse,owner);
+        }
+    }
+
+    private static void PlanWarehouse(WorldSetup world,int owner,int node)
+    {
+        var stock=world.Robots;
+        var store=stock.Nodes[node];
+        if(stock.Workshops[node].Automation==NodeAutomation.Manual || store.WarehouseLimit is not int limit ||
+            store.TotalCapacity>=limit)return;
+
+        var ready=world.Campaign.RobotBattles.SelectableRobots(world,owner,node,false).Select(r=>r.Id).ToHashSet();
+        var available=store.Robots.Where(r=>!r.Stationed && !r.Disposal && !stock.AssemblyLocked(node,r))
+            .OrderBy(r=>r.Id).ToArray();
+        if(store.UsesWarehouseMaterials && ImproveWarehouseKeeper(world,owner,node,available.Where(r=>!ready.Contains(r.Id))))
+            return;
+        if(store.HasSpace)return;
+
+        var candidate=available.Where(r=>(ready.Count>1 || !ready.Contains(r.Id)) &&
+                stock.CanSetReservation(node,r,HangarReservation.Warehouse,owner))
+            .OrderBy(r=>ready.Contains(r.Id))
+            .ThenByDescending(r=>store.UsesWarehouseMaterials?store.WarehouseContributionThirds(r):0)
+            .ThenBy(r=>r.Equipment(owner,world.EquipmentMode).Total)
+            .FirstOrDefault();
+        if(candidate!=null)stock.PartPlanning.ReserveRole(world,node,candidate.Id,HangarReservation.Warehouse,owner);
+    }
+
+    private static bool ImproveWarehouseKeeper(WorldSetup world,int owner,int node,IEnumerable<Robot> available)
+    {
+        var stock=world.Robots;
+        var store=stock.Nodes[node];
+        var donors=available.ToArray();
+        var upgrades=new List<(int Gain,Robot Keeper,Robot Donor,RobotParts Parts)>();
+        foreach(var keeper in store.Robots.Where(r=>r.WarehouseKeeper).OrderBy(r=>r.Id)){
+            if(stock.ReservationBusy(node,keeper.Id))continue;
+            int current=store.WarehouseContributionThirds(keeper);
+            foreach(var donor in donors){
+                if(RobotPartPlanning.CanUseWarehouseSuccessor(world,stock,node,keeper,donor)){
+                    int gain=store.WarehouseContributionThirds(donor)-current;
+                    if(gain>0)upgrades.Add((gain,keeper,donor,0));
+                }
+                foreach(var parts in RobotMaterials.Parts.Where(p=>(donor.Parts&p)!=0).Select(donor.ConnectedParts).Distinct()){
+                    if(RobotPartPlanning.CheckWarehousePartSwap(world,stock,node,donor,keeper,parts,owner,out var swapped)!=null)
+                        continue;
+                    int gain=store.WarehouseContributionThirds(swapped.Single(r=>r.Id==keeper.Id))-current;
+                    if(gain>0)upgrades.Add((gain,keeper,donor,parts));
+                }
             }
         }
+        // A fractional gain can cross a whole-slot boundary after a later upgrade.
+        foreach(var upgrade in upgrades.OrderByDescending(u=>u.Gain)){
+            if(upgrade.Parts==0){
+                if(stock.PartPlanning.ReserveRole(world,node,upgrade.Keeper.Id,HangarReservation.WarehouseSwap,owner,upgrade.Donor.Id))
+                    return true;
+                continue;
+            }
+            try{
+                stock.PartPlanning.ReserveComputerWarehouseParts(world,node,upgrade.Donor,upgrade.Keeper,upgrade.Parts,owner);
+                return true;
+            }catch(InvalidOperationException){continue;}
+        }
+        return false;
     }
 
     private static void ReviewUnstartedDeliveries(WorldSetup world, HashSet<int> manual, bool automaticAll)

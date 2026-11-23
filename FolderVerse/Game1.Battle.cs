@@ -87,7 +87,7 @@ public partial class Game1
         var battle=_battleWaves[_battleWave][_battleFocus];
         var normal=_setup.Cells[_setup.Nodes.All[battle.TargetNode].Cell].Normal;
         float yaw=-MathF.Atan2(normal.X,normal.Z)+(float)Math.Sin(_animationTime*.6f)*.2f,pitch=MathF.Asin(normal.Y);
-        var viewport=GraphicsDevice.Viewport;GraphicsDevice.Viewport=OrientationViewport(area,canvas);
+        var viewport=GraphicsDevice.Viewport;GraphicsDevice.Viewport=CanvasViewport(area,canvas);
         _world.Draw(yaw,pitch,_animationTime,false);GraphicsDevice.Viewport=viewport;
         _spriteBatch.Begin(transformMatrix:transform);
         _ui.Center(_world.GlobeName+" / 戦場",new(tile.X,tile.Y,tile.Width,32),.48f,Cream);

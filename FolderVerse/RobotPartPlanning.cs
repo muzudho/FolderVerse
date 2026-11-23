@@ -155,6 +155,16 @@ public sealed partial class RobotPartPlanning
     public long Reserve(WorldSetup world,int source,int target,long id,RobotParts parts,long? targetId,int owner,bool combineWorkpieces=false)
     {
         if(!world.Relations.Controls(owner))throw new InvalidOperationException("操作できる国ではありません");
+        return ReservePartMove(world,source,target,id,parts,targetId,owner,combineWorkpieces);
+    }
+    internal void ReserveComputerWarehouseParts(WorldSetup world,int node,Robot donor,Robot keeper,RobotParts parts,int owner)
+    {
+        if(world.Nodes.All[node].Owner!=owner || !keeper.WarehouseKeeper)
+            throw new InvalidOperationException("倉庫管理人と交換する部位を確認してください");
+        ReservePartMove(world,node,node,donor.Id,parts,keeper.Id,owner,false,warehouseOnly:true);
+    }
+    private long ReservePartMove(WorldSetup world,int source,int target,long id,RobotParts parts,long? targetId,int owner,bool combineWorkpieces,bool warehouseOnly=false)
+    {
         if(targetId==id)return id;
         long start=_next;
         try{
@@ -162,6 +172,8 @@ public sealed partial class RobotPartPlanning
         var copy=Preview(world).PlanningCopy();
         var inputs=copy.Nodes.SelectMany(s=>s.Robots).ToArray();
         var receiver=inputs.FirstOrDefault(r=>r.Id==targetId);
+        if(warehouseOnly && receiver?.WarehouseKeeper!=true)
+            throw new InvalidOperationException("倉庫管理人と交換する部位を確認してください");
         var order=new PlannedPartMove(_next,owner,source,target,id,parts,targetId){ExpectedSource=inputs.FirstOrDefault(r=>r.Id==id)?.Parts??0,ExpectedTarget=receiver?.Parts??0,CombineWorkpieces=combineWorkpieces,SwapWarehouseParts=receiver?.WarehouseKeeper==true};
         long result=Apply(world,copy,ProjectedLocalOrder(world,order),false);Orders.Add(order);_next++;return result;
         }catch{Orders.RemoveAll(o=>o.Number>=start);_next=start;Invalidate();throw;}

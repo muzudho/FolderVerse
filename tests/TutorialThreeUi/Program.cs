@@ -86,16 +86,16 @@ sealed class MapLessonGame:Game1
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime time){
   if(frame==1){Dismiss();var button=(Rectangle)typeof(Game1).GetField("MapViewButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;Check((bool)Call("RouteLayerClick",button.Center),"Actual unfold button handles click");Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==0,"Unfold animation must finish first");Call("UpdateMapTransition",10f);Guide(9);Check(!(bool)Get("_statusGlobe"),"Unfold yields net");}
-  if(frame==2){Dismiss();var toy=(Rectangle)Prop("OrientationToyArea");var plus=(Rectangle)Call("AxisButton",toy,2,1);Call("OrientationControlClick",plus.Center);Call("UpdateOrientationRotation",.5f);Check(w.TutorialMapRotations==1 && Math.Abs(net.ScreenAngle-MathHelper.ToRadians(30))<.001,"Plus rotates net and records one distinct button");Call("UpdateTutorialStartGuide",100d);Check(!(bool)Get("_tutorialAttackGuide") && w.TutorialMapStage==1,"One button cannot finish rotation lesson");var zero=(Rectangle)Prop("OrientationResetButton");Call("OrientationControlClick",zero.Center);Check(w.TutorialMapRotations==3 && net.ScreenAngle==0,"Zero resets rotation and records second button");var minus=(Rectangle)Call("AxisButton",toy,2,-1);Call("OrientationControlClick",minus.Center);Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==1,"Rotation must finish before next guide");Call("UpdateOrientationRotation",.5f);Guide(12);Check(w.TutorialMapRotations==7,"All three buttons required");}
+  if(frame==2){Dismiss();var toy=(Rectangle)Prop("AxisBotWindow");var plus=(Rectangle)Call("AxisBotRotationButton",toy,2,1);Call("AxisBotControlClick",plus.Center);Call("UpdateAxisBotRotation",.5f);Check(w.TutorialMapRotations==1 && Math.Abs(net.ScreenAngle-MathHelper.ToRadians(30))<.001,"Plus rotates net and records one distinct button");Call("UpdateTutorialStartGuide",100d);Check(!(bool)Get("_tutorialAttackGuide") && w.TutorialMapStage==1,"One button cannot finish rotation lesson");var zero=(Rectangle)Prop("AxisBotResetButton");Call("AxisBotControlClick",zero.Center);Check(w.TutorialMapRotations==3 && net.ScreenAngle==0,"Zero resets rotation and records second button");var minus=(Rectangle)Call("AxisBotRotationButton",toy,2,-1);Call("AxisBotControlClick",minus.Center);Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==1,"Rotation must finish before next guide");Call("UpdateAxisBotRotation",.5f);Guide(12);Check(w.TutorialMapRotations==7,"All three buttons required");}
   if(frame==3){
    string path=Path.Combine(AppContext.BaseDirectory,"tutorial-three-test-save.gz");Set("_autoSavePath",path);Set("_autoSaveEnabled",true);Set("_lastAutoSaveTurn",-1);Call("AutoSaveDomestic");Call("ReturnToTitle");Check((bool)Call("ResumeAutoSave"),"Actual autosave resumes step three");Set("_autoSaveEnabled",false);File.Delete(path);w=(WorldSetup)Get("_setup");net=(CubeNet)Get("_net");Check(w.PolarAxis==(Journey?1:0) && w.TutorialMapBeforeWar==Journey && w.TutorialMapStage==2 && w.TutorialMapRotations==7,"Resume retains poles, stage and all three buttons");Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",90d);Set("_conquestOverview",false);Guide(12);Dismiss();
    Call("UpdateTutorialStartGuide",100d);Check(!(bool)Get("_tutorialAttackGuide"),"Dismissing slide guide does not finish the lesson");
-   var toy=(Rectangle)Prop("OrientationToyArea");var start=new Point(toy.Center.X,toy.Center.Y-10);
+   var toy=(Rectangle)Prop("AxisBotWindow");var start=new Point(toy.Center.X,toy.Center.Y-10);
    Set("_pointer",start);var held=new MouseState(start.X,start.Y,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
-   Call("DragOrientationRobot",held,true,true);Check(w.TutorialMapRotations==7,"Click alone does not finish slide lesson");
-   Set("_previousMouse",held);Set("_pointer",new Point(start.X+40,start.Y+15));Call("DragOrientationRobot",held,true,false);
+   Call("DragAxisBot",held,true,true);Check(w.TutorialMapRotations==7,"Click alone does not finish slide lesson");
+   Set("_previousMouse",held);Set("_pointer",new Point(start.X+40,start.Y+15));Call("DragAxisBot",held,true,false);
    Call("UpdateTutorialStartGuide",100d);Check(!(bool)Get("_tutorialAttackGuide") && (w.TutorialMapRotations&8)==0,"Dragging keeps lesson incomplete until release");
-   Call("DragOrientationRobot",new MouseState(),true,false);Guide(10);Dismiss();
+   Call("DragAxisBot",new MouseState(),true,false);Guide(10);Dismiss();
    var slideCopy=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));Check((slideCopy.TutorialMapRotations&8)!=0,"Slide progress survives save");
    Call("ResetInspector");Set("_domesticSlide",0f);var panel=(Rectangle)Prop("NetPanel");net.FitAll(panel,.85f);net.ScreenAngle=0;bool clicked=false;
    foreach(var face in net.Faces.ToArray())foreach(int side in Enumerable.Range(0,4)){
@@ -108,20 +108,20 @@ sealed class MapLessonGame:Game1
   }
   if(frame==4){Dismiss();var button=(Rectangle)typeof(Game1).GetField("MapViewButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;Call("RouteLayerClick",button.Center);Call("UpdateMapTransition",10f);Guide(13);Check((bool)Get("_statusGlobe") && w.TutorialMapStage==4 && !w.TutorialCompletionShown,"Assembly starts globe rotation lesson before completion");}
   if(frame==5){
-   Dismiss();var toy=(Rectangle)Prop("OrientationToyArea");
+   Dismiss();var toy=(Rectangle)Prop("AxisBotWindow");
    for(int axis=0;axis<3;axis++)foreach(int sign in new[]{-1,1}){
-    var button=(Rectangle)Call("AxisButton",toy,axis,sign);Check((bool)Call("OrientationControlClick",button.Center),"Globe axis button accepts click");
-    Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==4,"Globe rotation animation finishes before advancing");Call("UpdateOrientationRotation",.5f);
+    var button=(Rectangle)Call("AxisBotRotationButton",toy,axis,sign);Check((bool)Call("AxisBotControlClick",button.Center),"Globe axis button accepts click");
+    Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==4,"Globe rotation animation finishes before advancing");Call("UpdateAxisBotRotation",.5f);
    }
    Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==4 && !(bool)Get("_tutorialAttackGuide"),"Six axis buttons still require reset button");
-   var zero=(Rectangle)Prop("OrientationResetButton");Call("OrientationControlClick",zero.Center);Guide(14);Check(w.TutorialMapStage==5 && !w.TutorialCompletionShown,"Seven distinct buttons unlock globe slide");
+   var zero=(Rectangle)Prop("AxisBotResetButton");Call("AxisBotControlClick",zero.Center);Guide(14);Check(w.TutorialMapStage==5 && !w.TutorialCompletionShown,"Seven distinct buttons unlock globe slide");
    var progress=new WorldSetup();progress.PrepareTutorialStepThree(123,456,789);progress.TutorialMapStage=w.TutorialMapStage;progress.TutorialMapRotations=w.TutorialMapRotations;progress.TutorialMapNotices=w.TutorialMapNotices;var copy=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(progress));Check(copy.TutorialMapRotations==w.TutorialMapRotations && copy.TutorialMapStage==5 && copy.TutorialMapNotices==w.TutorialMapNotices,"Globe rotation progress survives saves");
   }
   if(frame==6){
-   Dismiss();var toy=(Rectangle)Prop("OrientationToyArea");var start=toy.Center;var held=new MouseState(start.X,start.Y,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
-   Set("_pointer",start);Call("DragOrientationRobot",held,true,true);Call("DragOrientationRobot",new MouseState(),true,false);Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==5,"Click without dragging does not finish globe slide");
-   Set("_pointer",start);Call("DragOrientationRobot",held,true,true);Set("_previousMouse",held);Set("_pointer",new Point(start.X+40,start.Y+20));Call("DragOrientationRobot",held,true,false);
-   Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==5,"Slide waits for release");Call("DragOrientationRobot",new MouseState(),true,false);Guide(Journey?16:15);Check(w.TutorialMapStage==6 && w.TutorialCompletionShown==!Journey,"Globe drag release unlocks appropriate completion guide");
+   Dismiss();var toy=(Rectangle)Prop("AxisBotWindow");var start=toy.Center;var held=new MouseState(start.X,start.Y,0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released);
+   Set("_pointer",start);Call("DragAxisBot",held,true,true);Call("DragAxisBot",new MouseState(),true,false);Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==5,"Click without dragging does not finish globe slide");
+   Set("_pointer",start);Call("DragAxisBot",held,true,true);Set("_previousMouse",held);Set("_pointer",new Point(start.X+40,start.Y+20));Call("DragAxisBot",held,true,false);
+   Call("UpdateTutorialStartGuide",100d);Check(w.TutorialMapStage==5,"Slide waits for release");Call("DragAxisBot",new MouseState(),true,false);Guide(Journey?16:15);Check(w.TutorialMapStage==6 && w.TutorialCompletionShown==!Journey,"Globe drag release unlocks appropriate completion guide");
   }
   if(frame==7){Dismiss();Call("UpdateTutorialStartGuide",100d);Check(!(bool)Get("_tutorialAttackGuide"),"Completion guide is shown once");int turn=w.Population.Turn;var screen=Get("_screen");
    for(int i=0;i<PrimaryCount;i++){

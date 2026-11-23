@@ -21,15 +21,18 @@ sealed class PaperChecks:Game1{
   if(frame==1){Set("_hasAutoSave",false);var g=(GraphicsDeviceManager)Get("_graphics");g.PreferredBackBufferWidth=960;g.PreferredBackBufferHeight=540;g.ApplyChanges();}
   base.Draw(t);
   var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
-  Check(pixels.Count(c=>c==new Color(230,230,216))>1000,"Paper panel is visible at both window sizes");
-  Check(pixels.Any(c=>c==new Color(67,57,43)),"Single-ink text is visible");
+  Check(pixels.Count(c=>c==new Color(255,246,221))>1000,"Enabled cream buttons are visible at both window sizes");
+  if(frame==0)Check(pixels.Count(c=>c==new Color(29,82,82))>5000,"Keyboard selection fills its whole button in teal");
+  else Check(pixels.Count(c=>c==new Color(232,218,195))>1000,"Unavailable Continue uses a flat muted fill");
   using(var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight)){
    tex.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"paper-menu-{frame}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);
   }
   if(frame++==1){
    Set("_pointer",new Point(960,617));Call("TitleStartMenuInput",true,false,false,new KeyboardState(),true);
-   Check(Get("_screen").ToString()=="PlayerCount","New game remains clickable");
-   Console.WriteLine("PASS: rulebook paper and single ink at full and half size, keyboard navigation and New Game.");Exit();
+   Check(Get("_screen").ToString()=="Title","Unavailable Continue remains inert");
+   Set("_pointer",new Point(960,717));Call("TitleStartMenuInput",true,false,false,new KeyboardState(),true);
+   Check(Get("_screen").ToString()=="OpeningBook","New game remains clickable");
+   Console.WriteLine("PASS: menu buttons at full and half size, keyboard selection, unavailable Continue and New Game.");Exit();
   }
  }
 }

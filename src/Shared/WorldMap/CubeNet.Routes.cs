@@ -23,7 +23,18 @@ public sealed partial class CubeNet
     public bool ShowMapSymbols {get;set;}=true;
     public bool ShowEquator {get;set;}=true;
     public bool ShowRobots {get;set;}=true;
-    public bool ShowOtherCountries {get;set;}=true;
+    public int HiddenMapFilters {get;set;}
+    public bool ShowOtherCountries
+    {
+        get=>MapFilterEnabled(2);
+        set=>SetMapFilter(2,value);
+    }
+    internal bool MapFilterEnabled(int index)=>(HiddenMapFilters&(1<<index))==0;
+    internal void SetMapFilter(int index,bool enabled)
+    {
+        if(enabled)HiddenMapFilters&=~(1<<index);
+        else HiddenMapFilters|=1<<index;
+    }
     public bool ShowBatteries {get;set;}=true;
     public bool ShowCountryColors {get;set;}
     public bool ControlledCountryColors {get;set;}
@@ -46,7 +57,29 @@ public sealed partial class CubeNet
     public int HoverSuppressedNode {get;set;}=-1;
     public HashSet<int> VisibleOperationBatteries {get;set;}
     public bool RevealMovementTargets {get;set;}
-    public bool NodeVisible(WorldSetup world,Node node)=>(VisibleOperationNodes==null || VisibleOperationNodes.Contains(node.Id)) && (ShowOtherCountries || DisplayedNodeOwner(node)<0 || world.Relations.Controls(DisplayedNodeOwner(node)) || RevealMovementTargets && MovementTargets.Contains(node.Id));
+    private static int MapOwnerGroup(WorldSetup world,int owner)
+    {
+        int player=world.PlayerSlot;
+        if(owner<0 || owner>=world.ActiveCount || player<0)return 2;
+        if(owner==player)return 0;
+        var parents=world.Relations.Superiors;
+        for(int i=0;i<parents.Length && owner>=0;i++,owner=parents[owner])
+            if(owner==player)return 1;
+        return 2;
+    }
+    public bool NodeVisible(WorldSetup world,Node node)=>
+        (VisibleOperationNodes==null || VisibleOperationNodes.Contains(node.Id)) &&
+        (HiddenMapFilters==0 || MapFilterEnabled(MapOwnerGroup(world,DisplayedNodeOwner(node))) ||
+         RevealMovementTargets && MovementTargets.Contains(node.Id));
+
+    internal bool MapEdgeVisible(WorldSetup world,Node a,Node b)
+    {
+        if(HiddenMapFilters>>3==0 || a==null || b==null || a.Id==b.Id)return true;
+        int start=MapOwnerGroup(world,DisplayedNodeOwner(a)),end=MapOwnerGroup(world,DisplayedNodeOwner(b));
+        int low=Math.Min(start,end),high=Math.Max(start,end);
+        int row=low switch { 0=>3+high,1=>5+high,_=>8 };
+        return MapFilterEnabled(row);
+    }
     public bool EmphasizedNode(int id)=>false; // Hover is a HUD ring, never a change in object geometry.
     public HashSet<int> MovementTargets {get;}=new();
     public HashSet<int> ActionTargetNodes {get;}=new();
@@ -111,6 +144,8 @@ public sealed partial class CubeNet
             var offset=world.Terrain;
             foreach(var route in world.Routes.DisplayPaths(cell).Concat(active))
             {
+                if(HiddenMapFilters>>3!=0 && route.Path.Length>0 &&
+                    !MapEdgeVisible(world,world.Nodes.At(cell,route.Path[0]),world.Nodes.At(route.Target,route.Entry)))continue;
                 if (!DirectoryOnly && _scenicRoutes != null &&
                     _scenicRoutes.TryDraw(route,pulse,DrawScenicDash,out var vehicle))
                 {

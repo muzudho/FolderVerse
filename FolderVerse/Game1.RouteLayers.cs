@@ -13,7 +13,16 @@ public partial class Game1
     private bool _simpleDisplayOpen;
     private bool _displayFilterOpen;
     private static readonly Rectangle SimpleDisplayButton=new(1260,86,144,48),DisplayFilterButton=new(1416,86,144,48);
-    private static readonly Rectangle DisplayBreakerAutomaticRow=new(1260,246,650,44),DisplayOtherCountriesRow=new(1416,246,220,44);
+    private static readonly Rectangle DisplayBreakerAutomaticRow=new(1260,246,650,44);
+    private static readonly Rectangle DisplayFilterHeader=new(1416,202,470,44);
+    private static readonly Rectangle DisplayFilterReset=new(1416,692,470,44);
+    private static readonly string[] DisplayFilterLabels={
+        "自国の地点","手下の地点","他国の地点",
+        "自国と自国の地点間の辺","自国と手下の地点間の辺","自国と他国の地点間の辺",
+        "手下と手下の地点間の辺","手下と他国の地点間の辺","他国と他国の地点間の辺"
+    };
+    private static Rectangle DisplayFilterRow(int index)=>new(DisplayFilterHeader.X,DisplayFilterHeader.Bottom+index*44+(index>=3?36:0),DisplayFilterHeader.Width,44);
+    private int DomesticHiddenMapFilters=>_folderTreeLayers?.HiddenFilters??(_reservationDirectory?_directoryBefore.HiddenFilters:_net.HiddenMapFilters);
     private static Rectangle SimpleDisplayOption(int i)=>new(1260,334+i*44,650,44);
     private Texture2D _displayControlIcons;
     private readonly Rectangle[] _displayControlIconSources=new Rectangle[2];
@@ -39,6 +48,7 @@ public partial class Game1
             _simpleDisplayOpen=breaker && !_simpleDisplayOpen;
             _displayFilterOpen=!breaker && !_displayFilterOpen;
             _mapLayerListOpen=_trafficLayerListOpen=false;
+            if(_displayFilterOpen){CloseFolderTreeState();CloseReservationDirectory();}
             return true;
         }
         if(_simpleDisplayOpen){
@@ -50,11 +60,15 @@ public partial class Game1
             _simpleDisplayOpen=false;return true;
         }
         if(_displayFilterOpen){
-            if(DisplayOtherCountriesRow.Contains(pointer)){
-                _net.ShowOtherCountries=!_net.ShowOtherCountries;
-                _net.ControlledCountryColors=_world.ControlledCountryColors=!_net.ShowOtherCountries;
-                _world.ShowSetup(_setup,true);_net.ClearGlobeRobotBadges();
-            }else _displayFilterOpen=false;
+            for(int i=0;i<DisplayFilterLabels.Length;i++)if(DisplayFilterRow(i).Contains(pointer)){
+                _net.SetMapFilter(i,!_net.MapFilterEnabled(i));
+                RefreshDisplayFilters();
+                return true;
+            }
+            if(DisplayFilterReset.Contains(pointer)){
+                _net.HiddenMapFilters=0;
+                RefreshDisplayFilters();
+            }else if(!DisplayFilterHeader.Contains(pointer) && !DisplayFilterEdgeHeading.Contains(pointer))_displayFilterOpen=false;
             return true;
         }
         if(_mapLayerListOpen || _trafficLayerListOpen)
@@ -74,6 +88,17 @@ public partial class Game1
         _trafficLayerListOpen=RouteLayerButton(3).Contains(pointer);
         if(!_mapLayerListOpen && !_trafficLayerListOpen)return false;
         CloseReservationDirectory();return true;
+    }
+    private void RefreshDisplayFilters()
+    {
+        bool controlledOnly=!_net.ShowOtherCountries;
+        _net.ControlledCountryColors=controlledOnly;
+        if(_world.ControlledCountryColors!=controlledOnly){
+            _world.ControlledCountryColors=controlledOnly;
+            _world.ShowSetup(_setup,true);
+        }
+        _net.HoveredNode=-1;
+        _net.ClearGlobeRobotBadges();
     }
     private void DrawRouteLayerButtons() => DrawTutorialChrome(()=>DrawRouteLayerButtonsCore(),true);
     private void DrawRouteLayerButtonsCore()
@@ -96,13 +121,17 @@ public partial class Game1
             for(int i=0;i<_displayControlIconSources.Length;i++)
                 _displayControlIconSources[i]=UiArtInkBounds(_displayControlIcons,new(i*half,0,half,_displayControlIcons.Height));
         }
-        DrawPrimaryActionSurface(button,Accent);
+        bool filtered=index==1 && DomesticHiddenMapFilters!=0;
+        bool flash=filtered && (int)(_animationTime*2)%2==0;
+        DrawPrimaryActionSurface(button,flash?new Color(255,194,73):Accent);
         var track=new Rectangle(button.X+6,button.Y+4,button.Width-12,button.Height-8);
-        PrimaryRoundBox(track,open || button.Contains(_pointer)?new Color(29,70,86):new Color(14,35,47),8);
+        var trackColor=flash?new Color(80,56,22):open || button.Contains(_pointer)?new Color(29,70,86):new Color(14,35,47);
+        PrimaryRoundBox(track,trackColor,8);
         var source=_displayControlIconSources[index];
         int width=source.Width*36/source.Height;
         _spriteBatch.Draw(_displayControlIcons,new Rectangle(button.Center.X-width/2-8,button.Center.Y-18,width,36),source,Color.White);
         for(int i=0;i<6;i++)_ui.Box(new(button.Right-30+i,button.Center.Y-2+i,11-i*2,1),Cream);
+        if(filtered)PrimaryRoundBox(new(button.X+13,button.Y+10,8,8),new Color(255,194,73),4);
     }
     private void DrawMapViewButton()
     {
@@ -152,18 +181,24 @@ public partial class Game1
             _ui.Text("旗の時間は旗全体。高低差は手動切替。",new(1274,695),.31f,Cream);
             _ui.Text(_breakerMessage.Length>0?_breakerMessage:"自動ではONに戻りません / 手動ON後10秒は保護",new(1274,725),.30f,Cream);
         }else if(_displayFilterOpen){
-            var row=DisplayOtherCountriesRow;
-            var header=new Rectangle(row.X,row.Y-44,row.Width,44);
+            var header=DisplayFilterHeader;
             _ui.Box(header,new Color(23,43,56));
             _ui.Center("表示フィルター",header,.46f,Cream);
-            _ui.Button(row,"",Muted,.4f);
-            DrawBreakerCheck(row,_net.ShowOtherCountries);
-            _ui.Text("他国",new(row.X+42,row.Y+12),.4f,Cream);
+            _ui.Box(DisplayFilterEdgeHeading,new Color(23,43,56));
+            _ui.Center("地点間の辺",DisplayFilterEdgeHeading,.39f,Cream);
+            for(int i=0;i<DisplayFilterLabels.Length;i++){
+                var row=DisplayFilterRow(i);
+                _ui.Button(row,"",Muted,.4f);
+                DrawBreakerCheck(row,_net.MapFilterEnabled(i));
+                _ui.Text(DisplayFilterLabels[i],new(row.X+42,row.Y+12),.4f,Cream);
+            }
+            _ui.Button(DisplayFilterReset,"すべて表示",_net.HiddenMapFilters!=0?Accent:Muted,.4f);
         }else if(!_mapLayerListOpen && !_trafficLayerListOpen && !_mapOverlayMenu && !GuideVisible){
             if(SimpleDisplayButton.Contains(_pointer))DrawRulebookHint("表示ブレーカー","地図の描画項目と自動OFFを設定します。");
-            else if(DisplayFilterButton.Contains(_pointer))DrawRulebookHint("表示フィルター","地図に表示する国を切り替えます。");
+            else if(DisplayFilterButton.Contains(_pointer))DrawRulebookHint("表示フィルター","地点と地点間の辺の表示を切り替えます。未所属は他国に含めます。");
         }
     }
+    private static Rectangle DisplayFilterEdgeHeading=>new(DisplayFilterHeader.X,DisplayFilterRow(2).Bottom,DisplayFilterHeader.Width,36);
     private void DrawSelectionIcon(Rectangle rect,bool node)
     {
         _ui.Button(rect,"",Accent,.52f);

@@ -29,7 +29,7 @@ public partial class Game1
         OpenNodeInspector(id);OpenNodeOffice();
         // The guide replaces the map; reveal the office with its final camera already in place.
         _domesticSlide=1;_inspectorCenterPending=false;_inspectorCenterAge=-1;
-        _orientationAge=_mapTransitionAge=-1;_globeSpinning=false;
+        _axisBotRotationAge=_mapTransitionAge=-1;_globeSpinning=false;
         var node=_setup.Nodes.All[id];var cell=_setup.Cells[node.Cell];
         var point=_setup.Routes.Position(node.Cell,node.Center);
         _net.ShowRoutes=true;_globeSelectedNode=id;
@@ -117,7 +117,7 @@ public partial class Game1
         _spriteBatch.End();
         float zoom=_world.GlobeZoom;var anchor=_world.GlobeAnchor;var pan=_world.GlobePan;
         try{
-            GraphicsDevice.Viewport=OrientationViewport(PortraitHudLayout.MainPanel,canvas);
+            GraphicsDevice.Viewport=CanvasViewport(PortraitHudLayout.MainPanel,canvas);
             // An overview camera, independent from the domestic inspector's zoom/pan.
             _world.GlobeZoom=.72f;_world.GlobeAnchor=null;_world.GlobePan=new Vector2(0,.06f);
             _world.SelectionSetup=_setup;_world.DaylightWorld=_setup;

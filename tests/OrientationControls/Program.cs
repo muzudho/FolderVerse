@@ -1,17 +1,65 @@
-﻿using FolderVerse;
+using FolderVerse;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
 using var game=new RotationGame();game.Run();
 sealed class RotationGame:Game1{
- const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;
+ const BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic,S=BindingFlags.Static|BindingFlags.NonPublic;
  object Get(string n)=>typeof(Game1).GetField(n,F)!.GetValue(this)!;
  object Prop(string n)=>typeof(Game1).GetProperty(n,F)!.GetValue(this)!;
  void Set(string n,object v)=>typeof(Game1).GetField(n,F)!.SetValue(this,v);
  object Call(string n,params object[] args)=>typeof(Game1).GetMethod(n,F)!.Invoke(this,args)!;
+ Rectangle ToolbarButton(string name)=>(Rectangle)typeof(Game1).GetField(name,S)!.GetValue(null)!;
+ Rectangle ToolbarRow(string name,int index)=>(Rectangle)typeof(Game1).GetMethod(name,S)!.Invoke(null,new object[]{index})!;
+ void ToggleDisplayOption(bool filter,int index)
+ {
+  var button=ToolbarButton(filter?"DisplayFilterButton":"SimpleDisplayButton").Center;
+  Call("RouteLayerClick",button);
+  Call("RouteLayerClick",ToolbarRow(filter?"DisplayFilterRow":"SimpleDisplayOption",index).Center);
+  Call("RouteLayerClick",button);
+ }
  void Check(bool ok,string message){if(!ok)throw new Exception(message);}
  WorldSetup w=null!;CubeNet net=null!;WorldPreview world=null!;int frame;
  readonly bool spiralOnly=Environment.GetCommandLineArgs().Contains("--robot-spiral");
+ readonly bool axisBotOnly=Environment.GetCommandLineArgs().Contains("--axis-bot");
+ void CheckAxisBot()
+ {
+  Check(AxisBot.EnglishName=="AxisBot" && AxisBot.JapaneseName=="方向のロボット","Both display names are defined on AxisBot");
+  Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
+  foreach(bool globe in new[]{true,false}){
+   Set("_statusGlobe",globe);
+   world.ManualOrientation=Quaternion.Identity;
+   net.ScreenAngle=0;
+   var window=(Rectangle)Prop("AxisBotWindow");
+   var reset=(Rectangle)Prop("AxisBotResetButton");
+   var settings=(Rectangle)Prop("AxisBotSettingsButton");
+   Check(window.Width==window.Height && !window.Intersects(reset) && settings.Left>window.Right,
+       "Each round window leaves space for reset and mouse settings");
+   var plus=(Rectangle)Call("AxisBotRotationButton",window,globe?0:2,1);
+   Check((bool)Call("AxisBotControlClick",plus.Center),"AxisBot rotation arm consumes clicks");
+   Call("UpdateAxisBotRotation",.4f);
+   Check(globe?Math.Abs(world.ManualOrientation!.Value.X)>.1f:Math.Abs(net.ScreenAngle-MathHelper.ToRadians(30))<.001f,
+       "AxisBot rotates the globe on X or rotates the net in its plane");
+   Check((bool)Call("AxisBotControlClick",reset.Center),"AxisBot reset consumes clicks in each view");
+   var start=window.Center;
+   var canvas=(Rectangle)Call("CanvasBounds");
+   Microsoft.Xna.Framework.Input.MouseState Mouse(Point at,bool held)=>new(
+       canvas.X+at.X*canvas.Width/1920,canvas.Y+at.Y*canvas.Height/1080,0,
+       held?Microsoft.Xna.Framework.Input.ButtonState.Pressed:Microsoft.Xna.Framework.Input.ButtonState.Released,0,0,0,0);
+   var startMouse=Mouse(start,true);
+   var beforeGlobe=world.GlobePan;
+   var beforeNet=net.Pan;
+   Set("_pointer",start);
+   Check((bool)Call("DragAxisBot",startMouse,true,true),"Center starts a drag");
+   Set("_previousMouse",startMouse);
+   Set("_pointer",start+new Point(42,18));
+   Call("DragAxisBot",Mouse(start+new Point(42,18),true),true,false);
+   Check(globe?world.GlobePan!=beforeGlobe:net.Pan!=beforeNet,"AxisBot drag pans the displayed map");
+   Call("DragAxisBot",Mouse(start,false),true,false);
+   Check(!(bool)Get("_axisBotDragging") && (Vector2)Get("_axisBotDragOffset")==Vector2.Zero,"Release restores the center handle");
+  }
+  Console.WriteLine("PASS: AxisBot names, round window, rotation, reset and dragging in both views.");
+ }
  void CheckRobotSpiral()
  {
   var slots=Enumerable.Range(0,60).Select(i=>CubeNet.RobotSpiralSlot(i,46)).ToArray();
@@ -29,10 +77,10 @@ sealed class RotationGame:Game1{
   using var target=new RenderTarget2D(GraphicsDevice,panel.Width,panel.Height,false,SurfaceFormat.Color,DepthFormat.Depth24);
   GraphicsDevice.SetRenderTarget(target);
   var drawLayer=typeof(CubeNet).GetMethod("DrawRobotLayer",F)!;
-  batch.Begin();drawLayer.Invoke(net,new object[]{ui,w,panel,(Func<Node,Vector2?>)(n=>n==node?panel.Center.ToVector2():null),30f,0f});batch.End();
+  batch.Begin();drawLayer.Invoke(net,new object[]{ui,w,panel,(Func<Node,Vector2?>)(n=>n==node?panel.Center.ToVector2():null),30f,0f,false});batch.End();
   var flat=net.RobotBadges.ToArray();
   Check(flat.Length==5 && net.HitRobotBadge(flat[^1].Bounds.Center)==node.Id,"Flat overview shows four robots and a clickable remainder");
-  batch.Begin();drawLayer.Invoke(net,new object[]{ui,w,panel,(Func<Node,Vector2?>)(n=>n==node?panel.Center.ToVector2():null),250f,0f});batch.End();
+  batch.Begin();drawLayer.Invoke(net,new object[]{ui,w,panel,(Func<Node,Vector2?>)(n=>n==node?panel.Center.ToVector2():null),250f,0f,false});batch.End();
   Check(net.RobotBadges.Count==60 && net.RobotBadges.Take(4).SequenceEqual(flat.Take(4)),
       "Zooming in reveals the full spiral without moving the inner robots");
   world.ManualOrientation=Quaternion.Identity;world.GlobeZoom=.4f;
@@ -48,16 +96,17 @@ sealed class RotationGame:Game1{
  }
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();
-  if(spiralOnly){
+  if(spiralOnly || axisBotOnly){
    w=(WorldSetup)Get("_setup");w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);
    world=(WorldPreview)Get("_world");world.ShowSetup(w,true);net=(CubeNet)Get("_net");net.Home(w);
-   CheckRobotSpiral();return;
+   if(spiralOnly)CheckRobotSpiral();else CheckAxisBot();
+   return;
   }
   for(int axis=0;axis<3;axis++){
-   var direction=ToyOrientationRenderer.AxisDirection(axis);var screw=ToyOrientationRenderer.ScrewCenter(axis);
+   var direction=AxisBot.AxisDirection(axis);var screw=AxisBot.ScrewCenter(axis);
    Check(Vector3.Dot(screw,direction)<-2 && Vector3.Cross(screw,direction).LengthSquared()<.00001f,"Each screw is separated along its negative axis");
-   var tint=ToyOrientationRenderer.AxisColor(axis);Check(axis==0?tint.R>tint.G && tint.R>tint.B:axis==1?tint.G>tint.R && tint.G>tint.B:tint.B>tint.R && tint.B>tint.G,"Axis screw colors follow RGB");
-   Check(tint==((Color[])typeof(Game1).GetField("AxisColors",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!)[axis],"Screws and rotation controls share their colors");
+   var tint=AxisBot.AxisColor(axis);Check(axis==0?tint.R>tint.G && tint.R>tint.B:axis==1?tint.G>tint.R && tint.G>tint.B:tint.B>tint.R && tint.B>tint.G,"Axis screw colors follow RGB");
+   Check(tint==((Color[])typeof(Game1).GetField("AxisBotColors",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!)[axis],"Screws and rotation controls share their colors");
   }
   w=(WorldSetup)Get("_setup");w.SetWorld(123);w.SetCast(456);w.SetPlacement(789);w.SelectPlayer(0);
   world=(WorldPreview)Get("_world");world.ShowSetup(w,true);net=(CubeNet)Get("_net");net.Home(w);
@@ -67,7 +116,7 @@ sealed class RotationGame:Game1{
   world.GlobeRock=rockB;Check(world.DisplayOrientation(0,0)==world.ViewOrientation(0,0)*rockB && world.ManualOrientation==baseOrientation,"Cradle does not overwrite saved manual orientation");world.GlobeRock=Matrix.Identity;
   var occupied=w.Nodes.All.Where(n=>w.Robots.Nodes[n.Id].Robots.Count>0).Take(2).Select(n=>n.Id).ToArray();
   using(var target=new RenderTarget2D(GraphicsDevice,256,256,false,SurfaceFormat.Color,DepthFormat.Depth24)){
-   var renderer=(ToyOrientationRenderer)Get("_orientationToy");
+   var renderer=(AxisBot)Get("_axisBot");
    var previous=GraphicsDevice.GetRenderTargets();
    var images=new List<Color[]>();
    var background=new Color(19,38,51);
@@ -86,7 +135,7 @@ sealed class RotationGame:Game1{
    var previous=GraphicsDevice.GetRenderTargets();GraphicsDevice.SetRenderTarget(target);var batch=(SpriteBatch)Get("_spriteBatch");
    var drawLayer=typeof(CubeNet).GetMethod("DrawRobotLayer",BindingFlags.NonPublic|BindingFlags.Instance)!;
    foreach(var robotAt in new[]{new Vector2(300,300),new Vector2(300,104)}){
-    batch.Begin();drawLayer.Invoke(net,new object[]{Get("_ui"),w,new Rectangle(100,100,400,400),(Func<Node,Vector2?>)(n=>occupied.Contains(n.Id)?robotAt:null),1f,0f});batch.End();
+     batch.Begin();drawLayer.Invoke(net,new object[]{Get("_ui"),w,new Rectangle(100,100,400,400),(Func<Node,Vector2?>)(n=>occupied.Contains(n.Id)?robotAt:null),1f,0f,false});batch.End();
     Check(net.RobotBadges.Select(b=>b.Node).Distinct().Count()==2,"Overlapping robot groups and partially clipped edge groups both remain visible");
    }
    GraphicsDevice.SetRenderTargets(previous);net.ClearGlobeRobotBadges();
@@ -99,12 +148,12 @@ sealed class RotationGame:Game1{
   Check(world.GlobeRock!=Matrix.Identity && world.ManualOrientation==cameraBeforeRock,"Idle globe rocks without modifying the user's camera");
   Check(world.ProjectVisible(position,w.Cells[node.Cell].Normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),panel,out var rockedAt) && (int)Call("HitGlobeNode",rockedAt.ToPoint(),new[]{node.Id})==node.Id,"Rocked globe's projected nodes remain clickable");
   Set("_statusGlobe",false);Call("UpdateGlobeRock",.1d);Check(world.GlobeRock==Matrix.Identity,"Rocking stops in unfolded view");Set("_statusGlobe",true);
-  var toy=((ValueTuple<Rectangle,Rectangle,Rectangle>)typeof(Game1).GetMethod("OrientationAreas",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{panel,false})!).Item2;
+  var toy=((ValueTuple<Rectangle,Rectangle,Rectangle>)typeof(Game1).GetMethod("AxisBotLayout",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{panel,false})!).Item2;
   foreach(int axis in new[]{0,1,2})foreach(int sign in new[]{-1,1}){
    var from=Quaternion.CreateFromRotationMatrix(world.ViewOrientation((float)Get("_yawAngle"),(float)Get("_pitchAngle")));
-   var button=(Rectangle)Call("AxisButton",toy,axis,sign);Check((bool)Call("OrientationControlClick",button.Center),"Axis click consumed");
-   Call("UpdateOrientationRotation",.2f);var half=world.ManualOrientation!.Value;Check(Math.Abs(Quaternion.Dot(from,half))<.999f,"Rotation animates");
-   Call("UpdateOrientationRotation",.2f);var end=world.ManualOrientation!.Value;float angle=2*MathF.Acos(Math.Clamp(Math.Abs(Quaternion.Dot(from,end)),0,1));
+   var button=(Rectangle)Call("AxisBotRotationButton",toy,axis,sign);Check((bool)Call("AxisBotControlClick",button.Center),"Axis click consumed");
+   Call("UpdateAxisBotRotation",.2f);var half=world.ManualOrientation!.Value;Check(Math.Abs(Quaternion.Dot(from,half))<.999f,"Rotation animates");
+   Call("UpdateAxisBotRotation",.2f);var end=world.ManualOrientation!.Value;float angle=2*MathF.Acos(Math.Clamp(Math.Abs(Quaternion.Dot(from,end)),0,1));
    Check(Math.Abs(angle-MathHelper.ToRadians(30))<.001f,"Exactly 30 degrees on each axis and sign");
   }
   Set("_statusGlobe",false);
@@ -127,7 +176,7 @@ sealed class RotationGame:Game1{
   }
   Check(movingBelly>0,"Attachment tests exercise rotating belly faces");net.RestoreView(originalNet);
   for(int i=0;i<12;i++){
-   Call("OrientationControlClick",((Rectangle)Call("AxisButton",toy,2,1)).Center);Call("UpdateOrientationRotation",.4f);
+   Call("AxisBotControlClick",((Rectangle)Call("AxisBotRotationButton",toy,2,1)).Center);Call("UpdateAxisBotRotation",.4f);
    var point=net.NodePosition(w,node,panel);Check(net.HitNode(w,panel,point.ToPoint())==node.Id,"Rotated node hit");
    Check(net.Hit(w,panel,point.ToPoint())==node.Cell,"Rotated cell hit");
    Check(net.MicroPoint(w,node.Cell,panel,point.ToPoint())==node.Center,"Rotated microcell hit");
@@ -137,63 +186,63 @@ sealed class RotationGame:Game1{
   Set("_statusGlobe",true);Call("FocusStatusGlobe");
   foreach(var screen in new[]{"Rolling","CastRolling","PlacementRolling"}){
    Set("_screen",Enum.Parse(Get("_screen").GetType(),screen));
-   Check(!(bool)Prop("OrientationControlsVisible"),"Slot previews hide orientation controls");
-   var previewToy=(Rectangle)Prop("OrientationToyArea");var previewOrientation=world.ManualOrientation;
+   Check(!(bool)Prop("AxisBotControlsVisible"),"Slot previews hide orientation controls");
+   var previewToy=(Rectangle)Prop("AxisBotWindow");var previewOrientation=world.ManualOrientation;
    foreach(int axis in new[]{0,1,2})foreach(int sign in new[]{-1,1})
-    Check(!(bool)Call("OrientationControlClick",((Rectangle)Call("AxisButton",previewToy,axis,sign)).Center),"Hidden axis buttons ignore clicks");
-   Check(!(bool)Call("OrientationControlClick",((Rectangle)Prop("OrientationResetButton")).Center) && world.ManualOrientation==previewOrientation,"Hidden reset ignores clicks");
+    Check(!(bool)Call("AxisBotControlClick",((Rectangle)Call("AxisBotRotationButton",previewToy,axis,sign)).Center),"Hidden axis buttons ignore clicks");
+   Check(!(bool)Call("AxisBotControlClick",((Rectangle)Prop("AxisBotResetButton")).Center) && world.ManualOrientation==previewOrientation,"Hidden reset ignores clicks");
   }
   foreach(var screen in new[]{"Review","CastReview","PlacementReview","WorldStatus"}){
    Set("_screen",Enum.Parse(Get("_screen").GetType(),screen));
-   Check((bool)Prop("OrientationControlsVisible"),"Controls return after the slot stops");
+   Check((bool)Prop("AxisBotControlsVisible"),"Controls return after the slot stops");
   }
   foreach(int sign in new[]{-1,1}){
    Set("_screen",Enum.Parse(Get("_screen").GetType(),"CastReview"));Set("_yawAngle",0f);Set("_pitchAngle",0f);world.ManualOrientation=null;
-   var autoToy=(Rectangle)Prop("OrientationToyArea");
-   Check((bool)Call("OrientationControlClick",((Rectangle)Call("AxisButton",autoToy,1,sign)).Center),"Automatic speed button consumed");
-   Check(!(bool)Prop("OrientationRotating"),"Automatic rotation continues instead of pausing");
+   var autoToy=(Rectangle)Prop("AxisBotWindow");
+   Check((bool)Call("AxisBotControlClick",((Rectangle)Call("AxisBotRotationButton",autoToy,1,sign)).Center),"Automatic speed button consumed");
+   Check(!(bool)Prop("AxisBotRotating"),"Automatic rotation continues instead of pausing");
    float previous=0;
    for(int i=0;i<40;i++){
-    Call("AdvanceAutomaticOrientation",.1f);var matrix=world.ViewOrientation(0,0);float yaw=MathF.Atan2(-matrix.M13,matrix.M11);
+    Call("AdvanceAxisBotAutomaticRotation",.1f);var matrix=world.ViewOrientation(0,0);float yaw=MathF.Atan2(-matrix.M13,matrix.M11);
     float speed=(yaw-previous)/.1f;Check(sign>0?speed>=.2999f:speed>0 && speed<=.3001f,"Smooth acceleration/deceleration preserves direction");previous=yaw;
    }
    Check(Math.Abs(previous-(1.2f+sign*MathHelper.ToRadians(30)))<.0001f,"Speed pulse adds/subtracts exactly 30 degrees");
-   Call("AdvanceAutomaticOrientation",1f);var final=world.ViewOrientation(0,0);float finalYaw=MathF.Atan2(-final.M13,final.M11);
+   Call("AdvanceAxisBotAutomaticRotation",1f);var final=world.ViewOrientation(0,0);float finalYaw=MathF.Atan2(-final.M13,final.M11);
    Check(Math.Abs((finalYaw-previous)-.3f)<.0001f,"Normal speed resumes");
   }
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
-  var reset=(Rectangle)Prop("OrientationResetButton");Check(reset.Size==new Point(84,28) && reset.Top>((Rectangle)Prop("OrientationToyArea")).Bottom,"Small reset below circle");
-  Call("OrientationControlClick",reset.Center);Check(world.ViewOrientation(0,0)==Matrix.Identity,"Compact reset restores orientation");
+  var reset=(Rectangle)Prop("AxisBotResetButton");Check(reset.Size==new Point(84,28) && reset.Top>((Rectangle)Prop("AxisBotWindow")).Bottom,"Small reset below circle");
+  Call("AxisBotControlClick",reset.Center);Check(world.ViewOrientation(0,0)==Matrix.Identity,"Compact reset restores orientation");
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"CastReview"));Set("_yawAngle",0f);Set("_pitchAngle",0f);world.ManualOrientation=null;
-  var queueToy=(Rectangle)Prop("OrientationToyArea");var queuedButton=(Rectangle)Call("AxisButton",queueToy,1,1);
-  Call("OrientationControlClick",queuedButton.Center);Call("OrientationControlClick",queuedButton.Center);
-  for(int i=0;i<70;i++)Call("AdvanceAutomaticOrientation",.1f);
+  var queueToy=(Rectangle)Prop("AxisBotWindow");var queuedButton=(Rectangle)Call("AxisBotRotationButton",queueToy,1,1);
+  Call("AxisBotControlClick",queuedButton.Center);Call("AxisBotControlClick",queuedButton.Center);
+  for(int i=0;i<70;i++)Call("AdvanceAxisBotAutomaticRotation",.1f);
   Check(Math.Abs(Quaternion.Dot(world.ManualOrientation!.Value,Quaternion.CreateFromAxisAngle(Vector3.UnitY,2.1f+MathHelper.ToRadians(60))))>.99999f,"Two clicks queue two complete 30-degree pulses");
   Set("_screen",Enum.Parse(Get("_screen").GetType(),"WorldStatus"));
-  var xPlus=(Rectangle)Call("AxisButton",(Rectangle)Prop("OrientationToyArea"),0,1);var xMinus=(Rectangle)Call("AxisButton",(Rectangle)Prop("OrientationToyArea"),0,-1);Check(xPlus.Y>xMinus.Y,"Only X button positions swapped");
-  Rectangle Layer(int i)=>(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{i})!;
-  Call("RouteLayerClick",Layer(5).Center);Check(!net.ShowRobots,"Robot display off");Call("RouteLayerClick",Layer(5).Center);Check(net.ShowRobots,"Robot display on");
-  Call("RouteLayerClick",Layer(6).Center);Check(!net.ShowOtherCountries && net.ControlledCountryColors && world.ControlledCountryColors,"Other country toggle controls both color renderers");
+  var xPlus=(Rectangle)Call("AxisBotRotationButton",(Rectangle)Prop("AxisBotWindow"),0,1);var xMinus=(Rectangle)Call("AxisBotRotationButton",(Rectangle)Prop("AxisBotWindow"),0,-1);Check(xPlus.Y>xMinus.Y,"Only X button positions swapped");
+  ToggleDisplayOption(false,2);Check(!net.ShowRobots,"Robot display off");ToggleDisplayOption(false,2);Check(net.ShowRobots,"Robot display on");
+  ToggleDisplayOption(true,2);Check(!net.ShowOtherCountries && net.ControlledCountryColors && world.ControlledCountryColors,"Other country toggle controls both color renderers");
   var visiblePanel=(Rectangle)Prop("NetPanel");
   foreach(var post in w.Nodes.All.Where(n=>n.Owner>=0 && !w.Relations.Controls(n.Owner))){
    Check(!net.NodeVisible(w,post),"Foreign node hidden");var hiddenAt=net.NodePosition(w,post,visiblePanel);
    if(visiblePanel.Contains(hiddenAt.ToPoint()))Check(net.HitNode(w,visiblePanel,hiddenAt.ToPoint(),new[]{post.Id})==-1,"Foreign node cannot be clicked in net");
    if(world.ProjectVisible(w.Routes.Position(post.Cell,post.Center),w.Cells[post.Cell].Normal,(float)Get("_yawAngle"),(float)Get("_pitchAngle"),visiblePanel,out var globeAt))Check((int)Call("HitGlobeNode",globeAt.ToPoint(),new[]{post.Id})==-1,"Foreign node cannot be clicked on globe");
   }
-  Check(w.Nodes.All.Where(n=>n.Owner<0 || w.Relations.Controls(n.Owner)).All(n=>net.NodeVisible(w,n)),"Own, subordinate and unowned nodes stay visible");
+  Check(w.Nodes.All.Where(n=>w.Relations.Controls(n.Owner)).All(n=>net.NodeVisible(w,n)),"Own and subordinate nodes stay visible");
 
   foreach(var c in w.Cells){int owner=w.Nodes.FullOwner(c.Id);if(owner>=0 && !w.Relations.Controls(owner))Check(net.TerrainColor(w,c.Id,.6f)==WorldTerrain.ColorAt(.6f,c.Normal),"Foreign color hidden");}
-  Call("RouteLayerClick",Layer(6).Center);Check(net.ShowOtherCountries && !net.ControlledCountryColors && !world.ControlledCountryColors,"Foreign colors restored");
+  ToggleDisplayOption(true,2);Check(net.ShowOtherCountries && !net.ControlledCountryColors && !world.ControlledCountryColors,"Foreign colors restored");
   net.ShowMapSymbols=net.ShowEquator=true;
-  Call("RouteLayerClick",Layer(0).Center);Check(!net.ShowMapSymbols && net.ShowEquator,"Coordinates independent from equator");
-  Call("RouteLayerClick",Layer(4).Center);Check(!net.ShowMapSymbols && !net.ShowEquator,"Equator independent from coordinates");
+  ToggleDisplayOption(false,0);Check(!net.ShowMapSymbols && net.ShowEquator,"Coordinates independent from equator");
+  ToggleDisplayOption(false,1);Check(!net.ShowMapSymbols && !net.ShowEquator,"Equator independent from coordinates");
   Set("_statusGlobe",false);net.ShowMapSymbols=true;
-  Check(!(bool)Call("MapOverlayAvailable",0),"Net coordinate toggle disabled");Call("RouteLayerClick",Layer(0).Center);Check(net.ShowMapSymbols,"Disabled click preserves coordinate setting");
-  var netReset=(Rectangle)Prop("OrientationResetButton");var netToy=(Rectangle)Prop("OrientationToyArea");
+  ToggleDisplayOption(false,0);Check(!net.ShowMapSymbols,"The breaker controls coordinates in net view");
+  ToggleDisplayOption(false,0);
+  var netReset=(Rectangle)Prop("AxisBotResetButton");var netToy=(Rectangle)Prop("AxisBotWindow");
   Check(netReset.Width==28 && netReset.Center.X==netToy.Center.X && netReset.Bottom<netToy.Top,"Net zero at 12 o'clock outside circle");
-  var before=net.CaptureView();net.ScreenAngle=.5f;Call("OrientationControlClick",netReset.Center);
+  var before=net.CaptureView();net.ScreenAngle=.5f;Call("AxisBotControlClick",netReset.Center);
   Check(net.ScreenAngle==0 && net.Faces.SequenceEqual(before.Faces) && net.Pan==before.Pan && net.Zoom==before.Zoom,"Net zero preserves layout and camera");
-  foreach(int sign in new[]{-1,1})Check(Vector2.Distance(((Rectangle)Call("AxisButton",netToy,2,sign)).Center.ToVector2(),netToy.Center.ToVector2())>netToy.Width/2+20,"Net buttons outside circle");
+  foreach(int sign in new[]{-1,1})Check(Vector2.Distance(((Rectangle)Call("AxisBotRotationButton",netToy,2,sign)).Center.ToVector2(),netToy.Center.ToVector2())>netToy.Width/2+20,"Net buttons outside circle");
   Set("_statusGlobe",true);net.ShowEquator=true;Call("FocusStatusGlobe");
   Check(!(bool)Prop("MapDragSlide"),"Globe defaults to rotation");
   var dragButton=(Rectangle)typeof(Game1).GetField("MapDragButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
@@ -219,27 +268,27 @@ sealed class RotationGame:Game1{
   Console.WriteLine("PASS: independent right-drag defaults, all four drag modes, projected translation and clickable slid nodes.");
   foreach(bool globe in new[]{true,false}){
    Set("_statusGlobe",globe);net.ScreenAngle=.6f;
-   var handle=(Rectangle)Prop("OrientationToyArea");var start=handle.Center;
+   var handle=(Rectangle)Prop("AxisBotWindow");var start=handle.Center;
    var pan=world.GlobePan;var rotation=world.ManualOrientation;var angle=net.ScreenAngle;
    var nodeAt=net.NodePosition(w,node,panel);
    Microsoft.Xna.Framework.Input.MouseState Mouse(Point at,bool held)=>new(at.X,at.Y,0,held?Microsoft.Xna.Framework.Input.ButtonState.Pressed:Microsoft.Xna.Framework.Input.ButtonState.Released,0,0,0,0);
-   Set("_pointer",start);Check((bool)Call("DragOrientationRobot",Mouse(start,true),true,true),"Robot captures left press");
+   Set("_pointer",start);Check((bool)Call("DragAxisBot",Mouse(start,true),true,true),"Robot captures left press");
    var end=start+new Point(42,18);Set("_previousMouse",Mouse(start,true));Set("_pointer",end);
-   Check((bool)Call("DragOrientationRobot",Mouse(end,true),true,false),"Robot captures motion");
+   Check((bool)Call("DragAxisBot",Mouse(end,true),true,false),"Robot captures motion");
    Check(globe?Vector2.Distance(world.GlobePan-pan,new Vector2(42f/panel.Width,18f/panel.Height))<.001f:Vector2.Distance(net.NodePosition(w,node,panel)-nodeAt,new(42,18))<.01f,"Robot slide follows screen delta in both views");
    Check(world.ManualOrientation==rotation && net.ScreenAngle==angle,"Robot drag preserves rotation");
-   Check((Vector2)Get("_orientationDragOffset")!=Vector2.Zero,"Robot visibly follows drag");
+   Check((Vector2)Get("_axisBotDragOffset")!=Vector2.Zero,"Robot visibly follows drag");
    var globePan=world.GlobePan;var netPan=net.Pan;
-   Call("DragOrientationRobot",Mouse(end,false),true,false);
-   Check((Vector2)Get("_orientationDragOffset")==Vector2.Zero && !(bool)Get("_orientationDragging") && world.GlobePan==globePan && net.Pan==netPan,"Release returns only robot to center");
+   Call("DragAxisBot",Mouse(end,false),true,false);
+   Check((Vector2)Get("_axisBotDragOffset")==Vector2.Zero && !(bool)Get("_axisBotDragging") && world.GlobePan==globePan && net.Pan==netPan,"Release returns only robot to center");
   }
   Set("_statusGlobe",true);Call("FocusStatusGlobe");net.ScreenAngle=0;net.ResetView();
-  Console.WriteLine("PASS: direction robot left drag pans both views, preserves rotation and springs back without moving the map.");
+  Console.WriteLine("PASS: AxisBot left drag pans both views, preserves rotation and springs back without moving the map.");
 
  }
  protected override void Update(GameTime t){}
  protected override void Draw(GameTime t){
-  if(spiralOnly){Exit();return;}
+  if(spiralOnly || axisBotOnly){Exit();return;}
   var batch=(SpriteBatch)Get("_spriteBatch");
   if(frame==0){Set("_operationSettingsOpen",true);Set("_operationSettingsSlide",1f);Set("_mapDragListOpen",true);}
   if(frame==1){Set("_statusGlobe",false);Set("_mapDragListOpen",true);}
@@ -251,7 +300,7 @@ sealed class RotationGame:Game1{
   if(frame>=17){
    Set("_mapTransitionAge",-1f);Set("_screen",Enum.Parse(Get("_screen").GetType(),frame==17?"Rolling":frame==18?"CastReview":"WorldStatus"));
    if(frame>=19){Set("_lastCutInPhase","内政フェーズ");Set("_cutInStarted",-10d);Set("_statusGlobe",frame>=21);net.ShowMapSymbols=frame!=21;net.ShowEquator=frame is 19 or 21;}
-   if(frame>=23){Set("_statusGlobe",frame>=25);net.ShowRobots=frame is 24 or 26;if(frame==24)net.ScreenAngle=MathHelper.Pi;if(frame==26){var other=(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{6})!;Call("RouteLayerClick",other.Center);}}
+   if(frame>=23){Set("_statusGlobe",frame>=25);net.ShowRobots=frame is 24 or 26;if(frame==24)net.ScreenAngle=MathHelper.Pi;if(frame==26)ToggleDisplayOption(true,2);}
    world.GlobeRock=frame is 21 or 22?Game1.GlobeCradle((frame-21)*4):Matrix.Identity;
    base.Draw(t);
   }
@@ -259,13 +308,7 @@ sealed class RotationGame:Game1{
   var pp=GraphicsDevice.PresentationParameters;var pixels=new Color[pp.BackBufferWidth*pp.BackBufferHeight];GraphicsDevice.GetBackBufferData(pixels);
   using var tex=new Texture2D(GraphicsDevice,pp.BackBufferWidth,pp.BackBufferHeight);tex.SetData(pixels);using var file=File.Create(Path.Combine(AppContext.BaseDirectory,$"rotation-{frame}.png"));tex.SaveAsPng(file,tex.Width,tex.Height);
   if(frame==16)Check(pixels.Count(c=>c==new Color(115,119,125))>100,"Back faces render in solid gray");
-  if(frame>=19){
-   Rectangle Layer(int i)=>(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{i})!;
-   Color Lamp(int i){var r=Layer(i);int x=(r.X+12)*pp.BackBufferWidth/1920,y=(r.Y+21)*pp.BackBufferHeight/1080;return pixels[y*pp.BackBufferWidth+x];}
-   Check(Lamp(0)==(!(bool)Get("_statusGlobe")?new Color(105,108,113):net.ShowMapSymbols?new Color(114,255,143):new Color(38,65,48)),"Coordinates lamp distinguishes disabled/on/off");
-   Check(Lamp(4)==(net.ShowEquator?new Color(114,255,143):new Color(38,65,48)),"Equator lamp independent");
-   Check(pixels.Any(c=>c==CubeNet.EquatorColor)==net.ShowEquator,"Equator renders independently from coordinates");
-  }
+  if(frame>=19)Check(pixels.Any(c=>c==CubeNet.EquatorColor)==net.ShowEquator,"Equator renders independently from coordinates");
   if(frame>=23)Check(net.ShowRobots || net.RobotBadges.Count==0,"Hidden robots leave no hit areas in either view");
   if(frame is 24 or 26)foreach(var badge in net.RobotBadges){Check(badge.Detailed,"Both maps use the detailed robot display");int expected=net.RobotBadges.Last(b=>b.Bounds.Contains(badge.Bounds.Center)).Node;Check(net.HitRobotBadge(badge.Bounds.Center)==expected,"Upright overlapping robot badges select the topmost group in screen coordinates on both maps");}
   if(frame==26)foreach(var badge in net.RobotBadges)Check(w.Robots.Nodes[badge.Node].Robots.Any(r=>w.Relations.Controls(r.Owner)),"Other-country toggle filters robot badges");

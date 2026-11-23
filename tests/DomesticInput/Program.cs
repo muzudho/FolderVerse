@@ -31,6 +31,7 @@ sealed class InputGame:Game1{
    Rectangle Option(int index)=>(Rectangle)typeof(Game1).GetMethod("TrafficLayerOption",Static)!.Invoke(null,new object[]{index})!;
    var toolbar=(Rectangle)typeof(Game1).GetMethod("RouteLayerButton",Static)!.Invoke(null,new object[]{3})!;
    Rectangle DisplayArea(string field)=>(Rectangle)typeof(Game1).GetField(field,Static)!.GetValue(null)!;
+   Rectangle FilterRow(int index)=>(Rectangle)typeof(Game1).GetMethod("DisplayFilterRow",Static)!.Invoke(null,new object[]{index})!;
    var breaker=DisplayArea("SimpleDisplayButton");
    var filter=DisplayArea("DisplayFilterButton");
    foreach(bool globe in new[]{false,true}){
@@ -41,40 +42,87 @@ sealed class InputGame:Game1{
     Click(filter.Center);
     Check((bool)Get("_displayFilterOpen") && !(bool)Get("_simpleDisplayOpen") &&
         net.ShowOtherCountries==otherCountries,"Filter icon switches menus without toggling the filter");
-    Click(DisplayArea("DisplayOtherCountriesRow").Center);
+    Click(FilterRow(2).Center);
     Check(net.ShowOtherCountries!=otherCountries && (bool)Get("_displayFilterOpen") &&
         world.ControlledCountryColors==!net.ShowOtherCountries,"Other Countries toggles in the open menu and updates the globe");
-    Click(DisplayArea("DisplayOtherCountriesRow").Center);
+    Click(FilterRow(2).Center);
+    for(int i=0;i<9;i++){
+     Click(FilterRow(i).Center);
+     Check(net.HiddenMapFilters==1<<i,"Each filter changes only its own checkbox");
+     Click(DisplayArea("DisplayFilterReset").Center);
+     Check(net.HiddenMapFilters==0,"Show All clears the filter");
+    }
     Click(filter.Center);
     Check(net.ShowOtherCountries==otherCountries && !(bool)Get("_displayFilterOpen"),"Filter icon closes its menu");
-    var toy=(Rectangle)Prop("OrientationToyArea");
+    var toy=(Rectangle)Prop("AxisBotWindow");
     var handle=new Rectangle(toy.X+16,toy.Y+4,toy.Width-32,toy.Height-30);
     var overlap=Rectangle.Intersect(handle,Option(1));
     Check(!overlap.IsEmpty,"Node choice overlaps orientation drag handle");
     Click(toolbar.Center);
     Check((bool)Get("_trafficLayerListOpen"),$"Selection toolbar opens the dropdown (screen {Get("_screen")}, pointer {Get("_pointer")})");
     Input(overlap.Center,ButtonState.Pressed);
-    Check(net.ShowRoutes && !(bool)Get("_orientationDragging") && !(bool)Get("_trafficLayerListOpen"),
+    Check(net.ShowRoutes && !(bool)Get("_axisBotDragging") && !(bool)Get("_trafficLayerListOpen"),
         "Overlapping node choice selects nodes without starting an orientation drag");
     Input(overlap.Center);
     var axisOverlap=(from axis in Enumerable.Range(0,3) from sign in new[]{-1,1}
-        let button=(Rectangle)Call("AxisButton",toy,axis,sign)
+        let button=(Rectangle)Call("AxisBotRotationButton",toy,axis,sign)
         select Rectangle.Intersect(button,Option(0))).FirstOrDefault(r=>!r.IsEmpty);
     Click(toolbar.Center);Click(axisOverlap.IsEmpty?Option(0).Center:axisOverlap.Center);
-    Check(!net.ShowRoutes && !(bool)Prop("OrientationRotating"),"Region choice selects regions without rotating");
+    Check(!net.ShowRoutes && !(bool)Prop("AxisBotRotating"),"Region choice selects regions without rotating");
     Click(toolbar.Center);
     Input(toy.Center,ButtonState.Pressed);
-    Check(!(bool)Get("_trafficLayerListOpen") && !(bool)Get("_orientationDragging"),
+    Check(!(bool)Get("_trafficLayerListOpen") && !(bool)Get("_axisBotDragging"),
         "Click outside dismisses the menu without passing through to the toy");
     Input(toy.Center);
     Input(toy.Center,ButtonState.Pressed);
-    Check((bool)Get("_orientationDragging"),"The toy is draggable again after dismissing the menu");
+    Check((bool)Get("_axisBotDragging"),"The toy is draggable again after dismissing the menu");
     Input(toy.Center);
     Click(toolbar.Center);Input(default,keys:new[]{Keys.Escape});Input(default);
     Check(!(bool)Get("_trafficLayerListOpen") && Get("_screen").ToString()=="WorldStatus",
         "Escape dismisses the menu without exiting the status screen");
    }
    var toggle=(Rectangle)typeof(Game1).GetField("MapViewButton",Static)!.GetValue(null)!;
+   var own=setup.Nodes.All.First(n=>n.Owner==setup.PlayerSlot);
+   var subject=setup.Nodes.All.First(n=>n.Owner>=0 && n.Owner!=setup.PlayerSlot);
+   var other=setup.Nodes.All.First(n=>n.Owner>=0 && n.Owner!=setup.PlayerSlot && n.Owner!=subject.Owner);
+   setup.Relations.SetSuperior(subject.Owner,setup.PlayerSlot);
+   var groups=new[]{own,subject,other};
+   for(int i=0;i<groups.Length;i++){
+    net.HiddenMapFilters=1<<i;
+    Check(groups.Select(n=>net.NodeVisible(setup,n)).SequenceEqual(Enumerable.Range(0,3).Select(j=>j!=i)),
+        "Node visibility distinguishes the current country, its subjects and foreign countries");
+   }
+   var edgeVisible=typeof(CubeNet).GetMethod("MapEdgeVisible",F)!;
+   int row=3;
+   for(int a=0;a<groups.Length;a++)
+   for(int b=a;b<groups.Length;b++,row++){
+    var start=groups[a];
+    var end=new Node{Id=setup.Nodes.All.Length,Owner=groups[b].Owner};
+    bool Visible(Node x,Node y)=>(bool)edgeVisible.Invoke(net,new object[]{setup,x,y})!;
+    net.HiddenMapFilters=1<<row;
+    Check(!Visible(start,end) && !Visible(end,start) && groups.All(n=>net.NodeVisible(setup,n)),
+        "Either orientation of the matching edge is hidden independently of its endpoints");
+    net.HiddenMapFilters=1<<a;
+    Check(Visible(start,end),"Hiding a node does not also hide the independently enabled edge");
+   }
+   setup.Relations.SetSuperior(subject.Owner,-1);
+   net.HiddenMapFilters=(1<<2)|(1<<7);
+   Check(!net.NodeVisible(setup,new Node{Id=other.Id,Owner=-1}),"Unowned locations use the foreign filter");
+   net.RevealMovementTargets=true;net.MovementTargets.Add(other.Id);
+   Check(net.NodeVisible(setup,other),"A required movement target remains visible");
+   net.RevealMovementTargets=false;net.MovementTargets.Clear();
+   Call("SaveDomesticCamera");
+   var settings=Get("_domesticViews");
+   var savedSettings=AutoSaveStore.Capture(settings);
+   var loadSettings=typeof(AutoSaveStore).GetMethod("Restore")!.MakeGenericMethod(settings.GetType());
+   var reloaded=(System.Collections.IDictionary)loadSettings.Invoke(null,new object[]{savedSettings})!;
+   ((System.Collections.IDictionary)settings)[setup.PlayerSlot]=reloaded[setup.PlayerSlot];
+   net.HiddenMapFilters=0;
+   Call("RestorePlayerView");
+   Check(net.HiddenMapFilters==((1<<2)|(1<<7)),"Node and edge filters survive saving and restoring the domestic view");
+   net.HiddenMapFilters=0;
+   Call("RefreshDisplayFilters");
+   Set("_statusGlobe",true);
    var batch=(SpriteBatch)Get("_spriteBatch");
    using var image=new RenderTarget2D(GraphicsDevice,1920,1080);
    GraphicsDevice.SetRenderTarget(image);
@@ -86,6 +134,20 @@ sealed class InputGame:Game1{
    var displayIcons=(Rectangle[])Get("_displayControlIconSources");
    Check(displayIcons[0].Height>displayIcons[0].Width && displayIcons[1].Width>displayIcons[1].Height,
        "The rendered toolbar uses a tall breaker and a wide binocular silhouette");
+   Color[] FilterPixels(float time)
+   {
+    Set("_animationTime",time);
+    GraphicsDevice.SetRenderTarget(image);GraphicsDevice.Clear(Color.Transparent);
+    batch.Begin();Call("DrawDisplayControlButton",filter,1,false);batch.End();
+    GraphicsDevice.SetRenderTarget(null);
+    var pixels=new Color[filter.Width*filter.Height];
+    image.GetData(0,filter,pixels,0,pixels.Length);
+    return pixels;
+   }
+   Check(FilterPixels(0).SequenceEqual(FilterPixels(.6f)),"The default filter button stays steady");
+   net.HiddenMapFilters=1<<7;
+   Check(!FilterPixels(0).SequenceEqual(FilterPixels(.6f)),"An edge filter makes the button flash");
+   net.HiddenMapFilters=0;
    void CheckHint(Point hover,bool lower,bool toolbarHint)
    {
     Set("_pointer",hover);
@@ -148,7 +210,7 @@ sealed class InputGame:Game1{
    Click(new Point(toggle.Right-30,toggle.Center.Y));Input(default,dt:4);
    Check((bool)Get("_statusGlobe"),"The same toolbar slot switches back to the globe");
    Check(globeSelected.SequenceEqual(ButtonPixels()),"Switching back restores the original pair of colors");
-   Console.WriteLine("PASS: breaker and filter icon rendering and menus, Other Countries, dropdown hit priority on globe and net, and both map-view toggle states");
+   Console.WriteLine("PASS: nine independent display filters, save restoration, flashing, dropdown hit priority and both map-view toggle states");
    Exit();
    return;
   }

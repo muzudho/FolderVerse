@@ -68,8 +68,7 @@ public partial class Game1
         if(_globeCellDragged || _net.ShowRoutes)return;
         OpenRegionInspector(selected);_inputOutcome="globe_cell_inspected";
     }
-    private Rectangle StatusGlobeArea=>OrientationAreas(NetPanel,false).Globe;
-    private Rectangle OrientationResetButton=>OrientationGlobe?new(OrientationToyArea.Center.X-42,OrientationToyArea.Bottom+12,84,28):new(OrientationToyArea.Center.X-14,OrientationToyArea.Center.Y-OrientationToyArea.Width/2-37,28,28);
+    private Rectangle StatusGlobeArea=>AxisBotLayout(NetPanel,false).Globe;
     private void ResetStatusOrientation()
     {
         _yaw=_pitch=0;_net.ScreenAngle=0;_dragging=false;_net.SetCenter(_setup,4);

@@ -12,7 +12,7 @@ public partial class Game1
     {
         get
         {
-            var toy=OrientationAreas(LandControlsArea,false).Toy;
+            var toy=AxisBotLayout(LandControlsArea,false).Toy;
             return new(toy.Right-364,toy.Bottom+100,420,296);
         }
     }
@@ -106,9 +106,9 @@ public partial class Game1
             _landSelection.Clear();_landSelection.UnionWith(AutomaticLand(LandRuler));ConfirmLand();
         }
         if(_screen!=Screen.LandConquest)return;
-        bool rotating=OrientationRotating;UpdateOrientationRotation((float)elapsed);
+        bool rotating=AxisBotRotating;UpdateAxisBotRotation((float)elapsed);
         if(rotating)return;
-        if(active && click && OrientationControlClick(_pointer)){_landDrag=null;return;}
+        if(active && click && AxisBotControlClick(_pointer)){_landDrag=null;return;}
         if(!LandHumanTurn || _demoActive)
         {
             if(_automaticLand.Length==0)
@@ -176,7 +176,7 @@ public partial class Game1
     {
         bool selectingLand=_screen==Screen.LandConquest;
         var globeArea=selectingLand?LandGlobeArea:LandControlsArea;
-        var frame=OrientationViewport(globeArea,canvas);
+        var frame=CanvasViewport(globeArea,canvas);
         GraphicsDevice.Viewport=new Viewport(canvas);
         var selectedCells=selectingLand && _landSelection.Count>0 ? _landSelection.Select(id=>_setup.Cells[id]) : null;
         _world.Draw(_yaw,_pitch,_animationTime,false,true,new Rectangle(frame.X,frame.Y,frame.Width,frame.Height),selectedCells);
@@ -202,7 +202,7 @@ public partial class Game1
         _spriteBatch.End();
         if(selectingLand)
         {
-            DrawOrientationOverlay(LandControlsArea,canvas,transform);
+            DrawAxisBotOverlay(LandControlsArea,canvas,transform);
             _spriteBatch.Begin(transformMatrix:transform);
             DrawLandGuide();
             _spriteBatch.End();

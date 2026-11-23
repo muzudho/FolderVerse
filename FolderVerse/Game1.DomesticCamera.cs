@@ -5,16 +5,17 @@ public partial class Game1{
  private sealed record DomesticViewState(CubeNetViewState Net,bool Globe,float Yaw,float Pitch,
   Quaternion? Orientation,Vector3? Anchor,float Zoom,int GlobeNode,int MapCell,int StatusCell,
   bool Symbols,bool Equator,bool Robots,bool OtherCountries,bool Batteries,bool Routes,bool CountryColors,
-  Vector2 GlobePan=default,bool GlobeDragSlide=false,bool NetDragRotate=false);
+  Vector2 GlobePan=default,bool GlobeDragSlide=false,bool NetDragRotate=false,int HiddenMapFilters=0);
  // Runtime preferences belong to each controlled ruler, including separately controlled subordinates.
  private readonly Dictionary<int,DomesticViewState> _domesticViews=new();
  private void SaveDomesticCamera(){
   _net.CancelAnimation();
   bool routes=_movementOpen?_routesBeforeMovement:_transportOverview?_transportRoutesBefore:_net.ShowRoutes;
+  int hiddenFilters=DomesticHiddenMapFilters;
   _domesticViews[_setup.PlayerSlot]=new(_net.CaptureView(),_statusGlobe,_yaw,_pitch,
    _world.ManualOrientation,_world.GlobeAnchor,_world.GlobeZoom,_globeSelectedNode,_selectedMapCell,_statusCell,
-   _net.ShowMapSymbols,_net.ShowEquator,_net.ShowRobots,_net.ShowOtherCountries,_net.ShowBatteries,routes,_net.ShowCountryColors,
-   _world.GlobePan,_globeDragSlide,_netDragRotate);
+   _net.ShowMapSymbols,_net.ShowEquator,_net.ShowRobots,(hiddenFilters&(1<<2))==0,_net.ShowBatteries,routes,_net.ShowCountryColors,
+   _world.GlobePan,_globeDragSlide,_netDragRotate,hiddenFilters);
  }
  private void RestoreDomesticCamera(){
   ResetInspector();_domesticSlide=0;RestorePlayerView();
@@ -25,7 +26,7 @@ public partial class Game1{
   }
  }
  private void RestorePlayerView(){
-  _orientationAge=-1;_mapTransitionAge=-1;_dragging=_mapDragging=false;
+  _axisBotRotationAge=-1;_mapTransitionAge=-1;_dragging=_mapDragging=false;
   _mapDragListOpen=_mapLayerListOpen=_trafficLayerListOpen=_simpleDisplayOpen=_displayFilterOpen=false;_net.ClearGlobeRobotBadges();
   if(_domesticViews.TryGetValue(_setup.PlayerSlot,out var state)){
    _net.RestoreView(state.Net);_statusGlobe=state.Globe;_yaw=state.Yaw;_pitch=state.Pitch;
@@ -33,14 +34,15 @@ public partial class Game1{
    _world.GlobePan=state.GlobePan;_globeDragSlide=state.GlobeDragSlide;_netDragRotate=state.NetDragRotate;
    _globeSelectedNode=state.GlobeNode;_selectedMapCell=state.MapCell;_statusCell=state.StatusCell;
    _net.ShowMapSymbols=state.Symbols;_net.ShowEquator=state.Equator;_net.ShowRobots=state.Robots;
-   _net.ShowOtherCountries=state.OtherCountries;_net.ShowBatteries=state.Batteries;_net.ShowRoutes=state.Routes;
+   _net.HiddenMapFilters=state.HiddenMapFilters;_net.ShowOtherCountries=state.OtherCountries;_net.ShowBatteries=state.Batteries;_net.ShowRoutes=state.Routes;
    _net.ShowCountryColors=state.CountryColors;
   }else{
    _net.CancelAnimation();_net.Home(_setup);_net.ResetView();_statusGlobe=true;
    _world.ManualOrientation=null;_world.GlobeZoom=1;_world.GlobeAnchor=null;
    _world.GlobePan=Vector2.Zero;_globeDragSlide=_netDragRotate=false;
    _selectedMapCell=_statusCell=-1;
-   _net.ShowMapSymbols=_net.ShowEquator=_net.ShowRobots=_net.ShowOtherCountries=_net.ShowBatteries=_net.ShowRoutes=true;
+   _net.HiddenMapFilters=0;
+   _net.ShowMapSymbols=_net.ShowEquator=_net.ShowRobots=_net.ShowBatteries=_net.ShowRoutes=true;
    _net.ShowCountryColors=false;FocusCurrentNode();FocusStatusGlobe();
   }
   if(_setup.IsPrimaplana){_statusGlobe=false;_net.Home(_setup);}

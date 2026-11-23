@@ -61,11 +61,11 @@ public partial class Game1
             _recoveryWorld.SelectionSetup=_setup;_recoveryWorld.DaylightWorld=_setup;
             _recoveryWorld.DawnMeridian=WorldDayCycle.DawnPhase(_setup,_setup.PlayerSlot);
             _recoveryWorld.HighlightTiles.Clear();_recoveryWorld.HighlightTiles.UnionWith(_recoveryNet.HighlightTiles);
-            var viewport=GraphicsDevice.Viewport;GraphicsDevice.Viewport=OrientationViewport(RecoveryPanel,canvas);
+            var viewport=GraphicsDevice.Viewport;GraphicsDevice.Viewport=CanvasViewport(RecoveryPanel,canvas);
             _recoveryWorld.Draw(RecoveryYaw,RecoveryPitch,_animationTime,false,true,deferAtmosphere:true,clip:GraphicsDevice.ScissorRectangle);GraphicsDevice.Viewport=viewport;
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
             _recoveryNet.DrawGlobeLayers(_ui,_setup,_recoveryWorld,RecoveryPanel,RecoveryYaw,RecoveryPitch,_animationTime);_spriteBatch.End();
-            GraphicsDevice.Viewport=OrientationViewport(RecoveryPanel,canvas);_recoveryWorld.DrawAtmosphere(_animationTime);GraphicsDevice.Viewport=viewport;
+            GraphicsDevice.Viewport=CanvasViewport(RecoveryPanel,canvas);_recoveryWorld.DrawAtmosphere(_animationTime);GraphicsDevice.Viewport=viewport;
             _spriteBatch.Begin(transformMatrix:transform,rasterizerState:clip);
             _recoveryNet.DrawGlobeHud(_ui,_setup,_recoveryWorld,RecoveryPanel,RecoveryYaw,RecoveryPitch,_animationTime);_spriteBatch.End();
         }else{
