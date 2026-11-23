@@ -14,6 +14,7 @@
 
 - [世界征服状況：朝の番組と局アナ](dev/conquest-broadcast.md)
 
+- [v0.16.0 リリースノート](dev/release-v0.16.0.md)
 - [v0.15.0 リリースノート](dev/release-v0.15.0.md)
 - [v0.14.0 リリースノート](dev/release-v0.14.0.md)
 - [v0.13.0 リリースノート](dev/release-v0.13.0.md)
@@ -31,7 +32,7 @@
 
 [リポジトリーのトップ](../README.md)
 
-遊ぶ・調べる場合は、[v0.15.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.15.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
+遊ぶ・調べる場合は、[v0.16.0 Pre-release](https://github.com/muzudho/FolderVerse/releases/tag/v0.16.0)をダウンロードできます。[起動手順](user/README.md)を参照してください。
 
 | 読みたい内容 | 入口 |
 | --- | --- |
