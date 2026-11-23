@@ -39,6 +39,8 @@ if(args.Contains("--cpu-warehouse"))
     materialStock.ConfigureFactories(materialWorld);
     int materialNode=materialWorld.Nodes.All.First(n=>n.Functional && n.Owner==0 && n.Purpose!=NodePurpose.Relay).Id;
     var materialStore=materialStock.Nodes[materialNode];
+    typeof(RobotStore).GetMethod("EnableFlagWarehouseRules",BindingFlags.Instance|BindingFlags.NonPublic)!
+        .Invoke(materialStore,null);
     setLimit.Invoke(materialStore,new object[]{15});
     materialStock.Workshops[materialNode].Automation=NodeAutomation.Gentle;
     var paperKeeper=materialStock.Create(0,RobotParts.Complete) with {
