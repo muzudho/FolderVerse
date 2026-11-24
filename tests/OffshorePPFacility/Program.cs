@@ -14,7 +14,8 @@ foreach(var cell in w.Cells)foreach(var site in (Array)resource.Invoke(null,new 
 Check(sites.Count>0,"new world contains offshore recycling opportunities");
 Console.WriteLine("DEPOSITS "+JsonSerializer.Serialize(w.Nodes.All.Select(n=>new{n.Id,pp=w.Robots.RawDeposit(n.Id,RawMaterial.PP)})));
 int source=sites.First(s=>FunctionalDeliveryRoutes.Targets(w,s.Node).Any()).Node;var r=w.Robots;w.Nodes.All[source].Owner=0;w.Nodes.All[source].Purpose=NodePurpose.General;
-typeof(RobotStore).GetMethod("Replace",F)!.Invoke(r.Nodes[source],new object[]{Array.Empty<Robot>()});typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(r.Nodes[source],new object[]{Array.Empty<MaplePackage>()});typeof(RobotStore).GetMethod("SetWarehouseLimit",F)!.Invoke(r.Nodes[source],new object[]{60});typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(r.Nodes[source],new object[]{12});
+// Remove packages before keepers so the material warehouse invariant stays valid.
+typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(r.Nodes[source],new object[]{Array.Empty<MaplePackage>()});typeof(RobotStore).GetMethod("Replace",F)!.Invoke(r.Nodes[source],new object[]{Array.Empty<Robot>()});typeof(RobotStore).GetMethod("SetWarehouseLimit",F)!.Invoke(r.Nodes[source],new object[]{60});typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(r.Nodes[source],new object[]{12});
 for(int i=0;i<2;i++)r.Nodes[source].Add(r.Create(0,RobotParts.Complete) with{WarehouseKeeper=true});
 typeof(RobotWorkshop).GetMethod("RemoveProductionLines",F)!.Invoke(r.Workshops[source],null);r.Workshops[source].LimitLines(3);var worker=r.Create(0,RobotParts.Complete);r.Nodes[source].Add(worker);
 Check(r.PartPlanning.ReserveRole(w,source,worker.Id,HangarReservation.Harvest,0),"reserve real marine harvest worker");typeof(RobotPartPlanning).GetMethod("Resolve",F)!.Invoke(r.PartPlanning,new object[]{w});
@@ -53,7 +54,7 @@ w=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));r=w.Robots;r.Confi
  var delivery=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));delivery.Relations.Leader=0;
  int destination=delivery.Routes.Neighbors(delivery.Nodes.All[source]).Select(route=>delivery.Nodes.At(route.Target,route.Entry)).First(n=>n.Functional).Id;delivery.Nodes.All[destination].Owner=0;delivery.Nodes.All[destination].Purpose=NodePurpose.General;
  var stock=delivery.Robots;var store=stock.Nodes[destination];
- typeof(RobotStore).GetMethod("Replace",F)!.Invoke(store,new object[]{Array.Empty<Robot>()});typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(store,new object[]{Array.Empty<MaplePackage>()});typeof(RobotStore).GetMethod("SetWarehouseLimit",F)!.Invoke(store,new object[]{60});typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(store,new object[]{12});
+ typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(store,new object[]{Array.Empty<MaplePackage>()});typeof(RobotStore).GetMethod("Replace",F)!.Invoke(store,new object[]{Array.Empty<Robot>()});typeof(RobotStore).GetMethod("SetWarehouseLimit",F)!.Invoke(store,new object[]{60});typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(store,new object[]{12});
  for(int i=0;i<2;i++)store.Add(stock.Create(0,RobotParts.Complete) with{WarehouseKeeper=true});
  typeof(RobotWorkshop).GetMethod("RemoveProductionLines",F)!.Invoke(stock.Workshops[destination],null);stock.Workshops[destination].LimitLines(3);
  var maker=stock.Create(0,RobotParts.Complete);store.Add(maker);
@@ -74,7 +75,7 @@ var product=r.ProductionIntakes.Single().Product;Check(product.HeadMaterial==Rob
 {
  var redirected=AutoSaveStore.Restore<WorldSetup>(AutoSaveStore.Capture(w));var stock=redirected.Robots;redirected.Relations.Leader=0;
  int destination=redirected.Routes.Neighbors(redirected.Nodes.All[source]).Select(route=>redirected.Nodes.At(route.Target,route.Entry)).First(n=>n.Functional).Id;redirected.Nodes.All[destination].Owner=0;
- var targetStore=stock.Nodes[destination];typeof(RobotStore).GetMethod("Replace",F)!.Invoke(targetStore,new object[]{Array.Empty<Robot>()});typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(targetStore,new object[]{Array.Empty<MaplePackage>()});typeof(RobotStore).GetMethod("SetWarehouseLimit",F)!.Invoke(targetStore,new object[]{60});typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(targetStore,new object[]{12});
+ var targetStore=stock.Nodes[destination];typeof(RobotStore).GetMethod("SetMaplePackages",F)!.Invoke(targetStore,new object[]{Array.Empty<MaplePackage>()});typeof(RobotStore).GetMethod("Replace",F)!.Invoke(targetStore,new object[]{Array.Empty<Robot>()});typeof(RobotStore).GetMethod("SetWarehouseLimit",F)!.Invoke(targetStore,new object[]{60});typeof(RobotStore).GetMethod("SetCapacity",F)!.Invoke(targetStore,new object[]{12});
  for(int i=0;i<2;i++)targetStore.Add(stock.Create(0,RobotParts.Complete) with{WarehouseKeeper=true});
  var intake=stock.ProductionIntakes.Single();stock.SetIntakeTarget(intake.Line,destination);
  Check(stock.ToggleReservation(source,worker.Id,HangarReservation.Worker,0)&&!stock.Workshops[source].ProductionLines.Any(),"release source manufacturer after redirecting completed product");

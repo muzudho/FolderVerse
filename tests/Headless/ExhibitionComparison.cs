@@ -31,18 +31,6 @@ sealed class ExhibitionComparison(string outputDirectory) : Game1
         var fortuneSeed = new Random(123).Next();
         Set("_random", new Random(123));
         JsonElement initial = default;
-        for (int turn = 1; turn <= Turns; turn++)
-        {
-            string directory = Path.Combine(outputDirectory, $"headless-{turn}");
-            var log = new StringWriter();
-            if (HeadlessRunner.Run(["--headless", "--seed", "42", "--cast-seed", "8",
-                "--rights-seed", "492471852", "--fortune-seed", fortuneSeed.ToString(),
-                "--players", "4", "--max-turns", turn.ToString(), "--output", directory], log) != 0)
-                throw new InvalidOperationException("Headless run failed.");
-            expected[turn - 1] = AutoSaveStore.Read<WorldSetup>(Path.Combine(directory, "world.fvs"));
-            using var start = JsonDocument.Parse(log.ToString().Split('\n')[0]);
-            initial = start.RootElement.Clone();
-        }
 
         world = (WorldSetup)Get("_setup");
         world.SetParticipantCounts(0, 4);
@@ -55,6 +43,24 @@ sealed class ExhibitionComparison(string outputDirectory) : Game1
         Call("UpdateLandSetup", 5d, new MouseState(), true, false, true);
         world = (WorldSetup)Get("_setup"); // Fortune confirmation may replace the preview world.
         if (CurrentScreen != "WorldStatus") throw new InvalidOperationException("Exhibition setup did not reach WorldStatus.");
+        var settings = world.InitialStock.Settings;
+        if (settings.Uniform || settings.DistributionSeed != (fortuneSeed ^ 0x494E4954))
+            throw new InvalidOperationException("Exhibition stock distribution cannot be represented by headless options.");
+        Console.WriteLine($"Initial stock policy: robots={settings.RobotPercent} raw={settings.RawPercent} distribution={settings.DistributionSeed} uniform={settings.Uniform}");
+        for (int turn = 1; turn <= Turns; turn++)
+        {
+            string directory = Path.Combine(outputDirectory, $"headless-{turn}");
+            var log = new StringWriter();
+            if (HeadlessRunner.Run(["--headless", "--seed", "42", "--cast-seed", "8",
+                "--rights-seed", "492471852", "--fortune-seed", fortuneSeed.ToString(),
+                "--players", "4", "--robot-scatter", settings.RobotPercent.ToString(),
+                "--raw-stock", settings.RawPercent.ToString(), "--max-turns", turn.ToString(), "--output", directory], log) != 0)
+                throw new InvalidOperationException("Headless run failed.");
+            expected[turn - 1] = AutoSaveStore.Read<WorldSetup>(Path.Combine(directory, "world.fvs"));
+            using var start = JsonDocument.Parse(log.ToString().Split('\n')[0]);
+            initial = start.RootElement.Clone();
+        }
+
         Compare("initial fortune seed", initial.GetProperty("fortuneSeed").GetInt32(), world.FortuneSeed);
         Compare("initial characters", initial.GetProperty("characters").Deserialize<int[]>(), world.Looks.Take(4).Select(l => l.BaseId));
         Compare("initial stocks", initial.GetProperty("initial"),

@@ -129,7 +129,9 @@ sealed class MapLessonGame:Game1
     var r=(Rectangle)Call("PrimaryActionBounds",i);var canvas=(Rectangle)Call("CanvasBounds");var at=r.Center;
     Set("_previousMouse",new MouseState());Call("HandleInputCore",new MouseState(canvas.X+(int)Math.Round(at.X*canvas.Width/1920d),canvas.Y+(int)Math.Round(at.Y*canvas.Height/1080d),0,ButtonState.Pressed,ButtonState.Released,ButtonState.Released,ButtonState.Released,ButtonState.Released),new KeyboardState(),new GameTime(TimeSpan.FromSeconds(100),TimeSpan.Zero),true);
     Check(w.Population.Turn==turn && Get("_screen").Equals(screen) && !(bool)Prop("InspectorVisible") && !(bool)Get("_directMap") && !(bool)Get("_salvagePlan"),"Disabled primary action "+i+" does not change game state");
+    if(i<(int)Prop("AvailablePrimaryActionCount"))
     Check((bool)Call("MapOverlayClick",at,false) && (bool)Call("DomesticViewClick",at),"Both primary input routes consume disabled button "+i);
+    else Check(!(bool)Call("TutorialPrimaryActionClick",at),"Hidden primary action is outside tutorial input routes "+i);
    }
    var review=(Rectangle)Prop("TutorialReviewButton");Set("_pointer",review.Center);Call("TutorialMessageInput",true,false);Check((bool)Get("_tutorialMessagesOpen") && (int)Get("_tutorialMessageSelection")== (Journey?16:15),"Step three review highlights the latest completion guide");}
   if(frame==8){Call("TutorialMessageInput",false,true);Set("_pointer",((Rectangle)Call("PrimaryActionBounds",2)).Center);}
