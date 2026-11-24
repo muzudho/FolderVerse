@@ -12,6 +12,7 @@ public partial class Game1
     private int _selectedMapCell=-1;
     private bool _simpleDisplayOpen;
     private bool _displayFilterOpen;
+    private const int DefaultDomesticHiddenMapFilters=1<<8; // Other-country to other-country edges.
     private static readonly Rectangle SimpleDisplayButton=new(1260,86,144,48),DisplayFilterButton=new(1416,86,144,48);
     private static readonly Rectangle DisplayBreakerAutomaticRow=new(1260,246,650,44);
     private static readonly Rectangle DisplayFilterHeader=new(1416,202,470,44);
@@ -66,7 +67,7 @@ public partial class Game1
                 return true;
             }
             if(DisplayFilterReset.Contains(pointer)){
-                _net.HiddenMapFilters=0;
+                _net.HiddenMapFilters=DefaultDomesticHiddenMapFilters;
                 RefreshDisplayFilters();
             }else if(!DisplayFilterHeader.Contains(pointer) && !DisplayFilterEdgeHeading.Contains(pointer))_displayFilterOpen=false;
             return true;
@@ -121,7 +122,7 @@ public partial class Game1
             for(int i=0;i<_displayControlIconSources.Length;i++)
                 _displayControlIconSources[i]=UiArtInkBounds(_displayControlIcons,new(i*half,0,half,_displayControlIcons.Height));
         }
-        bool filtered=index==1 && DomesticHiddenMapFilters!=0;
+        bool filtered=index==1 && DomesticHiddenMapFilters!=DefaultDomesticHiddenMapFilters;
         bool flash=filtered && (int)(_animationTime*2)%2==0;
         DrawPrimaryActionSurface(button,flash?new Color(255,194,73):Accent);
         var track=new Rectangle(button.X+6,button.Y+4,button.Width-12,button.Height-8);
@@ -192,10 +193,10 @@ public partial class Game1
                 DrawBreakerCheck(row,_net.MapFilterEnabled(i));
                 _ui.Text(DisplayFilterLabels[i],new(row.X+42,row.Y+12),.4f,Cream);
             }
-            _ui.Button(DisplayFilterReset,"すべて表示",_net.HiddenMapFilters!=0?Accent:Muted,.4f);
+            _ui.Button(DisplayFilterReset,"初期設定に戻す",_net.HiddenMapFilters!=DefaultDomesticHiddenMapFilters?Accent:Muted,.4f);
         }else if(!_mapLayerListOpen && !_trafficLayerListOpen && !_mapOverlayMenu && !GuideVisible){
             if(SimpleDisplayButton.Contains(_pointer))DrawRulebookHint("表示ブレーカー","地図の描画項目と自動OFFを設定します。");
-            else if(DisplayFilterButton.Contains(_pointer))DrawRulebookHint("表示フィルター","地点と地点間の辺の表示を切り替えます。未所属は他国に含めます。");
+            else if(DisplayFilterButton.Contains(_pointer))DrawRulebookHint("表示フィルター","地点と地点間の辺の表示を切り替えます。他国同士の辺は初期設定で非表示です。未所属は他国に含めます。");
         }
     }
     private static Rectangle DisplayFilterEdgeHeading=>new(DisplayFilterHeader.X,DisplayFilterRow(2).Bottom,DisplayFilterHeader.Width,36);
