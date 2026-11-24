@@ -172,7 +172,7 @@ public sealed partial class CubeNet
                 for(int i=1;i<curve.Length;i++)
                 {
                     var a=project(curve[i-1]);var b=project(curve[i]);var delta=b-a;
-                    if(danger){DrawDangerRoad(ui,a,b,ref dangerPhase);continue;}
+                    if(danger){DrawDangerRoad(ui,a,b,ref dangerPhase,globeRibbon);continue;}
                     float height=offset.Elevation((curve[i-1]+curve[i])/2);
                     if (ribbons != null)
                     {

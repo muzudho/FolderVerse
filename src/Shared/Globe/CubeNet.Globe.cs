@@ -40,7 +40,7 @@ public sealed partial class CubeNet
                     {
                         float t=i/12f;
                         var next=ProjectBridge(Vector3.Lerp(Vector3.Lerp(a,crown,t),Vector3.Lerp(crown,b,t),t));
-                        if(danger)DrawDangerRoad(ui,previous,next,ref dangerPhase); else if(!dashed || (i-1)/2%2==0)DrawBridgeSegment(previous,next,sea,dashed,tint);
+                        if(danger)DrawDangerRoad(ui,previous,next,ref dangerPhase,true); else if(!dashed || (i-1)/2%2==0)DrawBridgeSegment(previous,next,sea,dashed,tint);
                         previous=next;
                     }
                     Vector2 ProjectBridge(Vector3 p)
