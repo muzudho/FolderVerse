@@ -11,6 +11,7 @@
 - [パフォーマンス表示：FPS・処理時間の読み方](dev/performance-overlay.md)
 
 - [廃品回収：実物ロボットの予約、ポケット貸出と帰還](dev/salvage-expeditions.md)
+- [ロボットの帰国先：自国地点とクイーンのポケット](dev/return-home.md)
 
 - [世界征服状況：朝の番組と局アナ](dev/conquest-broadcast.md)
 
