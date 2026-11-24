@@ -22,7 +22,7 @@ public sealed partial class CubeNet
                 return result;
             }
             DrawCellRoutes(ui,setup,cell.Id,Project,pulse,drawNodes:false,globeRibbon:true,
-                joinPortal:(portal,dashed,tint)=>
+                joinPortal:(portal,dashed,danger,tint)=>
                 {
                     var other=setup.Cells[portal.Target];
                     if(!globe.ProjectVisible(other.Center,other.Normal,yaw,pitch,panel,out _))return;
@@ -35,12 +35,12 @@ public sealed partial class CubeNet
                     // The route lifts away from the corner before touching the opposite face.
                     var crown=edge+(cell.Normal+other.Normal)*(.035f+Math.Max(Vector3.Distance(a,edge),Vector3.Distance(b,edge)));
                     var sea=portal.Terrain==TravelTerrain.Sea;
-                    var previous=ProjectBridge(a);
+                    var previous=ProjectBridge(a);float dangerPhase=0;
                     for(int i=1;i<=12;i++)
                     {
                         float t=i/12f;
                         var next=ProjectBridge(Vector3.Lerp(Vector3.Lerp(a,crown,t),Vector3.Lerp(crown,b,t),t));
-                        if(!dashed || (i-1)/2%2==0)DrawBridgeSegment(previous,next,sea,dashed,tint);
+                        if(danger)DrawDangerRoad(ui,previous,next,ref dangerPhase); else if(!dashed || (i-1)/2%2==0)DrawBridgeSegment(previous,next,sea,dashed,tint);
                         previous=next;
                     }
                     Vector2 ProjectBridge(Vector3 p)

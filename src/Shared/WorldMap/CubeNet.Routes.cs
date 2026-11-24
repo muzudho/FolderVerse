@@ -30,6 +30,16 @@ public sealed partial class CubeNet
         set=>SetMapFilter(2,value);
     }
     internal bool MapFilterEnabled(int index)=>(HiddenMapFilters&(1<<index))==0;
+    internal bool MapFilterDanger(int index)=>(HiddenMapFilters&(1<<(16+index)))!=0;
+    internal int MapFilterMode(int index)=>!MapFilterEnabled(index)?2:MapFilterDanger(index)?1:0;
+    internal void CycleMapFilter(int index)
+    {
+        if(index!=5 && index!=7){SetMapFilter(index,!MapFilterEnabled(index));return;}
+        int next=(MapFilterMode(index)+1)%3;
+        HiddenMapFilters&=~((1<<index)|(1<<(16+index)));
+        if(next==1)HiddenMapFilters|=1<<(16+index);
+        if(next==2)HiddenMapFilters|=1<<index;
+    }
     internal void SetMapFilter(int index,bool enabled)
     {
         if(enabled)HiddenMapFilters&=~(1<<index);
@@ -72,14 +82,16 @@ public sealed partial class CubeNet
         (HiddenMapFilters==0 || MapFilterEnabled(MapOwnerGroup(world,DisplayedNodeOwner(node))) ||
          RevealMovementTargets && MovementTargets.Contains(node.Id));
 
-    internal bool MapEdgeVisible(WorldSetup world,Node a,Node b)
+    private int MapEdgeRow(WorldSetup world,Node a,Node b)
     {
-        if(HiddenMapFilters>>3==0 || a==null || b==null || a.Id==b.Id)return true;
+        if(a==null || b==null || a.Id==b.Id)return -1;
         int start=MapOwnerGroup(world,DisplayedNodeOwner(a)),end=MapOwnerGroup(world,DisplayedNodeOwner(b));
         int low=Math.Min(start,end),high=Math.Max(start,end);
         int row=low switch { 0=>3+high,1=>5+high,_=>8 };
-        return MapFilterEnabled(row);
+        return row;
     }
+    internal bool MapEdgeVisible(WorldSetup world,Node a,Node b){int row=MapEdgeRow(world,a,b);return row<0 || MapFilterEnabled(row);}
+    internal bool MapEdgeDanger(WorldSetup world,Node a,Node b){int row=MapEdgeRow(world,a,b);return row>=0 && MapFilterEnabled(row) && MapFilterDanger(row);}
     public bool EmphasizedNode(int id)=>false; // Hover is a HUD ring, never a change in object geometry.
     public HashSet<int> MovementTargets {get;}=new();
     public HashSet<int> ActionTargetNodes {get;}=new();
@@ -125,7 +137,7 @@ public sealed partial class CubeNet
         var physical=surface.Normal*normalDistance+face.Right*p.X-face.Up*p.Y;
         return new(Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.U)*10),0,9),Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.V)*10),0,9));
     }
-    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null,bool globeRibbon=false,Action<RoutePortal,bool,Func<Color,Vector2,Color>> joinPortal=null)
+    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null,bool globeRibbon=false,Action<RoutePortal,bool,bool,Func<Color,Vector2,Color>> joinPortal=null)
     {
         Color SearchTint(Color color,Vector2 at)=>color;
         foreach(var peak in world.Routes.Peaks(cell))
@@ -146,18 +158,21 @@ public sealed partial class CubeNet
             {
                 if(HiddenMapFilters>>3!=0 && route.Path.Length>0 &&
                     !MapEdgeVisible(world,world.Nodes.At(cell,route.Path[0]),world.Nodes.At(route.Target,route.Entry)))continue;
-                if (!DirectoryOnly && _scenicRoutes != null &&
+                bool danger=route.Path.Length>0 && MapEdgeDanger(world,world.Nodes.At(cell,route.Path[0]),world.Nodes.At(route.Target,route.Entry));
+                if (!danger && !DirectoryOnly && _scenicRoutes != null &&
                     _scenicRoutes.TryDraw(route,pulse,DrawScenicDash,out var vehicle))
                 {
                     if (vehicle is { } toy) vehicles.Add(toy);
-                    if(route.Portal!=null)joinPortal?.Invoke(route.Portal,true,SearchTint);
+                    if(route.Portal!=null)joinPortal?.Invoke(route.Portal,true,false,SearchTint);
                     continue;
                 }
                 var curve=world.Routes.Curve(cell,route);
-                if(curve.Length>0 && route.Portal!=null)joinPortal?.Invoke(route.Portal,false,SearchTint);
+                if(curve.Length>0 && route.Portal!=null)joinPortal?.Invoke(route.Portal,false,danger,SearchTint);
+                float dangerPhase=0;
                 for(int i=1;i<curve.Length;i++)
                 {
                     var a=project(curve[i-1]);var b=project(curve[i]);var delta=b-a;
+                    if(danger){DrawDangerRoad(ui,a,b,ref dangerPhase);continue;}
                     float height=offset.Elevation((curve[i-1]+curve[i])/2);
                     if (ribbons != null)
                     {
