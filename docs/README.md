@@ -12,6 +12,7 @@
 
 - [廃品回収：実物ロボットの予約、ポケット貸出と帰還](dev/salvage-expeditions.md)
 - [ロボットの帰国先：自国地点とクイーンのポケット](dev/return-home.md)
+- [CPUによる他国ロボットの１部位交換・戦力化](dev/computer-robot-reassembly.md)
 
 - [世界征服状況：朝の番組と局アナ](dev/conquest-broadcast.md)
 

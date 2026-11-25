@@ -36,6 +36,7 @@ public sealed partial class ConquestCampaign
         ComputerRawLogistics.Plan(world,automaticAll);
         ComputerNodePurposes.Plan(world,automaticAll);
         ComputerStratagems.Plan(world,automaticAll);
+        ComputerRobotReassembly.Plan(world,automaticAll);
         ComputerLogistics.Plan(world,automaticAll);
         ComputerFunctionTransfers.Plan(world,automaticAll);
         ComputerTrade.Plan(world,automaticAll);
