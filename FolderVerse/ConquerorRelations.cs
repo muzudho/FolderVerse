@@ -14,13 +14,14 @@ public sealed partial class ConquerorRelations
     public bool[] Powered {get;}=Enumerable.Repeat(true,Capacity).ToArray();
     public bool[] Released {get;}=new bool[Capacity];
     public int[] EliminationOrders {get;}=new int[Capacity];
+    public int[] BatteryRemovedBy {get;}=Enumerable.Repeat(-1,Capacity).ToArray();
     private int _nextEliminationOrder=1;
     public List<Captive> Pending {get;}=new();
     public string Message {get;private set;}="";
     public void Reset()
     {
         Leader=-1;Pending.Clear();MercyOffers.Clear();MercyResults.Clear();Array.Clear(EliminationOrders);_nextEliminationOrder=1;Message="";
-        for(int i=0;i<Capacity;i++){Superiors[i]=-1;Powered[i]=true;Released[i]=false;}
+        for(int i=0;i<Capacity;i++){Superiors[i]=-1;Powered[i]=true;Released[i]=false;BatteryRemovedBy[i]=-1;}
     }
     public int Root(int ruler)
     {
@@ -160,6 +161,7 @@ public sealed partial class ConquerorRelations
             int former=Superiors[ruler];
             for(int child=0;child<Capacity;child++)if(Superiors[child]==ruler)SetSuperior(child,former);
             SetSuperior(ruler,-1);Powered[ruler]=false;Released[ruler]=true;EliminationOrders[ruler]=_nextEliminationOrder++;
+            BatteryRemovedBy[ruler]=captive.Victor;
             foreach(var node in world.Nodes.All.Where(n=>n.Owner==ruler))
             {world.Robots.ReleaseDefenseFlag(node.Id,node.Owner);node.Owner=-1;Array.Clear(node.Population.Migration);}
             world.Nodes.Recount();Message="電池を引き抜いた / 領地は未征服";

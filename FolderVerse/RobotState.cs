@@ -24,7 +24,7 @@ public sealed partial record Robot(long Id,int Owner,RobotParts Parts,RobotRole 
     public long? LongDeliveryNumber {get;init;}
     public int? ReturnHomeCommander {get;init;}
     public string ReturnHomeStatus {get;init;}
-    public bool Stationed=>SalvageReserved || WarehouseKeeper || DefenseOnly || InterceptOnly || FactoryWorker || LongDeliveryNumber.HasValue || ReturnHomeCommander.HasValue;
+    public bool Stationed=>SalvageReserved || WarehouseKeeper || DefenseOnly || InterceptOnly || FactoryWorker || LongDeliveryNumber.HasValue;
     public RobotParts DamagedParts {get;init;}=0;
     public RobotParts CheapParts {get;init;}=0;
     public RobotParts PremiumParts {get;init;}=0;
@@ -49,7 +49,7 @@ public sealed partial record Robot(long Id,int Owner,RobotParts Parts,RobotRole 
     public Robot Slice(RobotParts selected)
     {
         if(selected==0 || !CanSeparate(selected))throw new InvalidOperationException("Integrated parts cannot be separated.");
-        return Materialize() with {Parts=selected,DamagedParts=DamagedParts&selected,CheapParts=CheapParts&selected&~PremiumParts,PremiumParts=PremiumParts&selected,IntegratedParts=IntegratedParts&selected,DefenseFlag=selected==RobotParts.Complete?DefenseFlag:null,
+        return Materialize() with {ReturnHomeCommander=null,ReturnHomeStatus=null,Parts=selected,DamagedParts=DamagedParts&selected,CheapParts=CheapParts&selected&~PremiumParts,PremiumParts=PremiumParts&selected,IntegratedParts=IntegratedParts&selected,DefenseFlag=selected==RobotParts.Complete?DefenseFlag:null,
             HeadMaterial=(selected&RobotParts.Head)!=0?HeadMaterial:default,
             BodyMaterial=(selected&RobotParts.Body)!=0?BodyMaterial:default,
             LegsMaterial=(selected&RobotParts.Legs)!=0?LegsMaterial:default,
@@ -118,7 +118,7 @@ public sealed partial record Robot(long Id,int Owner,RobotParts Parts,RobotRole 
         if(!result.ValidIntegration)throw new InvalidOperationException("Incompatible integrated parts.");
         return result with {Owner=result.AssemblyCredit(owner)>0?owner:Owner};
     }
-    public bool CanFight=>RecoveredRaw==null && !IsWorkpiece && !IsDismantling && !WarehouseKeeper && !LongDeliveryNumber.HasValue && !ReturnHomeCommander.HasValue && Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
+    public bool CanFight=>RecoveredRaw==null && !IsWorkpiece && !IsDismantling && !WarehouseKeeper && !LongDeliveryNumber.HasValue && Parts==RobotParts.Complete && !Disposal && AssemblyCredit(Owner)>0;
 }
 public sealed class RobotStore
 {

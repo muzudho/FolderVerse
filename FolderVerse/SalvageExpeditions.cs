@@ -92,7 +92,7 @@ public sealed partial class SalvagePlan
         if(worker==null||!EligibleWorker(w,owner,source,pocket,worker))throw new InvalidOperationException("予約のない自国の完全体を選んでください");
         var bag=w.Robots.Retinues[owner];if(Missions.Count(m=>m.Owner==owner&&!m.Finished)>=6||1+selected.Length>bag.StorageLimit-bag.Count+(pocket?1:0))throw new InvalidOperationException("ポケットに本人と荷物の貸出枠が足りません");
         var mission=new RecoveryMission{Id=_next++,Owner=owner,Source=source,Node=source,PreviousNode=source,Pocket=pocket,DeliveryNode=deliveryNode,Worker=worker,Targets=selected.ToList()};
-        store.Replace(store.Robots.Select(r=>r.Id==workerId?r with{SalvageReserved=true}:r));Missions.Add(mission);RefreshLoans(w,mission);return mission;
+        store.Replace(store.Robots.Select(r=>r.Id==workerId?r with{ReturnHomeCommander=null,ReturnHomeStatus=null,SalvageReserved=true}:r));Missions.Add(mission);RefreshLoans(w,mission);return mission;
     }
     private void RefreshLoans(WorldSetup w,RecoveryMission m)
     {

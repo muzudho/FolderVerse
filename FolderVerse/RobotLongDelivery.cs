@@ -73,7 +73,7 @@ public sealed class RobotLongDelivery
         if(!receiver.HasValue && !Orders.Any(o=>o.Target==target && !o.Receiver.HasValue && o.TargetSlot==targetSlot))_slotArrivals.Remove((target,targetSlot,robot.Owner));
         var order=new LongPartOrder(_next++,commander,source,target,id,parts,receiver){
             Node=source,CargoId=id,TargetSlot=targetSlot,Origin=authority?LongDeliveryOrigin.Manual:LongDeliveryOrigin.Computer};
-        Orders.Add(order);world.Nodes[source].Replace(world.Nodes[source].Robots.Select(r=>r.Id==id?r with {LongDeliveryNumber=r.LongDeliveryNumber??order.Number}:r));world.PartPlanning.Invalidate();return order;
+        Orders.Add(order);world.Nodes[source].Replace(world.Nodes[source].Robots.Select(r=>r.Id==id?r with {ReturnHomeCommander=null,ReturnHomeStatus=null,LongDeliveryNumber=r.LongDeliveryNumber??order.Number}:r));world.PartPlanning.Invalidate();return order;
     }
     public bool Cancel(RobotWorld world,long number,string reason="予約を取り消しました")
     {

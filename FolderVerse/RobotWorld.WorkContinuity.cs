@@ -19,7 +19,7 @@ public sealed partial class RobotWorld
         var candidate=WithoutRole(robot).Materialize() with {Owner=country};
         return robot.FactoryWorker?Training[country].WorkerEligible(candidate):Training[country].Eligible(candidate);
     }
-    private static Robot Barefoot(Robot robot)=>robot with {DefenseOnly=false,DefenseFlag=null,InterceptOnly=false,FactoryWorker=false};
+    private static Robot Barefoot(Robot robot)=>robot with {ReturnHomeCommander=null,ReturnHomeStatus=null,DefenseOnly=false,DefenseFlag=null,InterceptOnly=false,FactoryWorker=false};
     public Robot ValidateWorkReservation(Robot robot)
     {
         if(!robot.DefenseOnly && robot.DefenseFlag!=null)robot=robot with {DefenseFlag=null};
@@ -66,7 +66,7 @@ public sealed partial class RobotWorld
     private bool PhysicalEditBusy(int node,Robot robot)=>node<0 || node>=Nodes.Length || Reservations?.RobotBattles.LockedNode(node)==true || Workshops[node].IsDisposing(robot.Id) || PendingEdits.Any(e=>e.Ids.Contains(robot.Id)) || _arrivalLocked?.Invoke(robot.Id)==true;
     public bool CanEditReservedPart(int node,Robot robot,int country)
     {
-        if(robot.IsDismantling || robot.WarehouseKeeper || robot.LongDeliveryNumber.HasValue || robot.ReturnHomeCommander.HasValue || PhysicalEditBusy(node,robot))return false;
+        if(robot.IsDismantling || robot.WarehouseKeeper || robot.LongDeliveryNumber.HasValue || PhysicalEditBusy(node,robot))return false;
         int work=WorkCountry(node,robot);return work<0 || work==country;
     }
     private Robot AfterPartEdit(int node,Robot before,Robot after,bool swap)

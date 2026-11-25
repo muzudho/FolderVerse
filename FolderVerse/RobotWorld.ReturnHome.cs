@@ -3,12 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public sealed record ReturningRobot(Robot Robot,int Node,int Country,int Source,int Commander,string Status="帰国中");
+public sealed record ReturningRobot(Robot Robot,int Node,int Country,int Source,int Commander,string Status="帰国中")
+{
+    public int? ReservedNode {get;init;}
+    public bool ReservedPocket {get;init;}
+}
 public sealed partial class RobotWorld
 {
     public List<ReturningRobot> ReturningRobots {get;}=new();
-    public const string NoHomeCountry="帰る国がもうありません。";
+    public const string NoHomeCountry="帰国先が不明のため待機しています。";
     private static readonly RobotParts[] HomeParts={RobotParts.Head,RobotParts.Body,RobotParts.Legs};
+    private sealed record ReturnDestination(int Country,int Node,bool Pocket,int Distance,int Next);
     public bool CanReturnHome(WorldSetup world,int node,Robot robot,int commander)=>CanReturnHomeCore(world,node,robot,commander,true);
     private bool CanReturnHomeCore(WorldSetup world,int node,Robot robot,int commander,bool authority)
         =>node>=0 && node<Nodes.Length && robot!=null && commander>=0 && commander<world.ActiveCount &&
@@ -25,27 +30,37 @@ public sealed partial class RobotWorld
             PartPlanning.Invalidate();message="国へ帰らせる予約を取り消しました";return true;
         }
         if(!CanReturnHome(world,node,robot,commander)){message="自国パーツを含まない、完全体を選んでください。ほかの予約中は使えません。";return false;}
-        string status=HomeCountries(world,robot).Length==0?NoHomeCountry:"国へ帰る予約";
+        string status=HomeCountries(world,robot).Length==0?NoHomeCountry:"帰国予約 / 通常予約の後で空き枠を確保";
         Nodes[node].Replace(Nodes[node].Robots.Select(r=>r.Id==id?r with {ReturnHomeCommander=commander,ReturnHomeStatus=status}:r));
         PartPlanning.Invalidate();message=status;return true;
     }
     internal bool ReserveComputerReturnHome(WorldSetup world,int node,Robot robot,int owner)
     {
         if(!CanReturnHomeCore(world,node,robot,owner,false) || HomeCountries(world,robot).Length==0)return false;
-        Nodes[node].Replace(Nodes[node].Robots.Select(r=>r.Id==robot.Id?r with {ReturnHomeCommander=owner,ReturnHomeStatus="国へ帰る予約"}:r));PartPlanning.Invalidate();return true;
+        Nodes[node].Replace(Nodes[node].Robots.Select(r=>r.Id==robot.Id?r with {ReturnHomeCommander=owner,ReturnHomeStatus="帰国予約 / 空き枠の確保待ち"}:r));PartPlanning.Invalidate();return true;
+    }
+    private static int ReturnCountry(WorldSetup world,int country)
+    {
+        var seen=new HashSet<int>();
+        while(country>=0 && country<world.ActiveCount && seen.Add(country)){
+            if(world.Relations.Powered[country])return country;
+            var history=world.Relations.BatteryRemovedBy;
+            country=history!=null && country<history.Length?history[country]:-1;
+        }
+        return -1;
     }
     private static int[] HomeCountries(WorldSetup world,Robot robot)
     {
-        var groups=HomeParts.Select(robot.Origin).Where(c=>c>=0 && c<world.ActiveCount && world.Relations.Powered[c] &&
-            (HasHomeSite(world,c) || world.Nodes.Current(c)!=null)).GroupBy(c=>c).ToArray();
-        return groups.Length==0?Array.Empty<int>():groups.Where(g=>g.Count()==groups.Max(g=>g.Count())).Select(g=>g.Key).OrderBy(c=>c).ToArray();
+        var groups=HomeParts.Select(robot.Origin).Where(c=>c>=0 && c<world.ActiveCount).GroupBy(c=>c).ToArray();
+        foreach(var tier in groups.GroupBy(g=>g.Count()).OrderByDescending(g=>g.Key)){
+            var countries=tier.Select(g=>ReturnCountry(world,g.Key)).Where(c=>c>=0).Distinct().OrderBy(c=>c).ToArray();
+            if(countries.Length>0)return countries;
+        }
+        // Missing elimination history is not permission to give the robot to an arbitrary country.
+        return groups.Length>0?Array.Empty<int>():Enumerable.Range(0,world.ActiveCount).Where(c=>world.Relations.Powered[c]).ToArray();
     }
     private static bool HasHomeSite(WorldSetup world,int country)=>world.Nodes.All.Any(n=>n.Functional && n.Owner==country);
-    // A country without a site still has a home while its queen remains.
-    private static bool HomeAt(WorldSetup world,int country,int node)=>HasHomeSite(world,country)
-        ?world.Nodes.All[node].Functional && world.Nodes.All[node].Owner==country
-        :world.Relations.Powered[country] && world.Nodes.Current(country)?.Id==node;
-    // Unlike ordinary delivery, repatriation may pass through foreign territory.
+    // Repatriation may pass through foreign territory, but never through an active battle.
     private static int[] HomeNeighbors(WorldSetup world,int source)
     {
         var seen=new HashSet<int>{source};var queue=new Queue<int>();var result=new HashSet<int>();queue.Enqueue(source);
@@ -57,60 +72,88 @@ public sealed partial class RobotWorld
         }
         return result.OrderBy(n=>n).ToArray();
     }
-    private static (int Country,int Next)? HomeStep(WorldSetup world,int start,int[] countries,long id)
+    private static ReturnDestination[] HomeDestinations(WorldSetup world,int start,int[] countries)
     {
-        if(countries.Length==0)return null;
-        var homesAt=world.Nodes.All.Where(n=>n.Functional && countries.Contains(n.Owner))
-            .Select(n=>(Country:n.Owner,Node:n.Id)).Concat(countries.Where(c=>!HasHomeSite(world,c))
-                .Select(c=>(Country:c,Node:world.Nodes.Current(c)?.Id??-1)))
-            .Where(h=>h.Node>=0).ToLookup(h=>h.Node,h=>h.Country);
-        var seen=new HashSet<int>{start};var queue=new Queue<(int Node,int First,int Distance)>();queue.Enqueue((start,start,0));
-        var choices=new List<(int Country,int Next)>();int best=int.MaxValue;
-        while(queue.TryDequeue(out var at)){
-            if(at.Distance>best)break;
-            var homes=homesAt[at.Node].ToArray();
-            if(homes.Length>0){best=at.Distance;choices.AddRange(homes.Select(c=>(c,at.First)));continue;}
-            if(at.Distance>=best)continue;
-            foreach(int next in HomeNeighbors(world,at.Node))if(seen.Add(next))queue.Enqueue((next,at.Distance==0?next:at.First,at.Distance+1));
+        var distance=new Dictionary<int,int>{{start,0}};var first=new Dictionary<int,int>{{start,start}};
+        var queue=new Queue<int>();queue.Enqueue(start);
+        while(queue.TryDequeue(out int at))foreach(int next in HomeNeighbors(world,at))if(distance.TryAdd(next,distance[at]+1)){
+            first[next]=at==start?next:first[at];queue.Enqueue(next);
         }
-        var options=choices.GroupBy(c=>c.Country).Select(g=>g.First()).OrderBy(c=>c.Country).ToArray();
-        return options.Length==0?null:options[new SeedRandom(unchecked((int)id^world.PlacementSeed^world.Population.Turn)).Next(options.Length)];
+        var choices=new List<ReturnDestination>();
+        foreach(int country in countries){
+            var sites=world.Nodes.All.Where(n=>n.Functional && n.Owner==country).ToArray();
+            foreach(var node in sites)if(distance.TryGetValue(node.Id,out int d) && !world.Campaign.RobotBattles.LockedNode(node.Id))choices.Add(new(country,node.Id,false,d,first[node.Id]));
+            if(sites.Length==0 && world.Nodes.Current(country) is {} queen && distance.TryGetValue(queen.Id,out int qd) && !world.Campaign.RobotBattles.LockedNode(queen.Id))choices.Add(new(country,queen.Id,true,qd,first[queen.Id]));
+        }
+        return choices.OrderBy(c=>c.Pocket).ThenBy(c=>c.Distance).ThenBy(c=>c.Country).ThenBy(c=>c.Node).ToArray();
+    }
+    private RobotStore ReturnStore(ReturnDestination target)=>target.Pocket?Retinues[target.Country]:Nodes[target.Node];
+    private RobotStore ReservedReturnStore(ReturningRobot journey)=>journey.ReservedPocket?Retinues[journey.Country]:Nodes[journey.ReservedNode.Value];
+    private bool HomeSpace(ReturnDestination target)
+    {
+        var store=ReturnStore(target);
+        if(target.Pocket)return store.HasSpace;
+        // Normal incoming work keeps priority even if its delivery is currently blocked.
+        int incoming=MapleReservedSlots(target.Node)+MapleShipments.Count(o=>o.Target==target.Node)+
+            LongDelivery.Orders.Where(o=>o.Target==target.Node && !o.Receiver.HasValue).Select(o=>o.TargetSlot).Distinct().Count()+
+            DirectDelivery.Orders.Where(o=>o.Target==target.Node && !o.TargetRobotId.HasValue).Select(o=>o.RobotId).Distinct().Count();
+        return store.Count+incoming<store.StorageLimit;
+    }
+    private ReturningRobot ReserveHome(ReturningRobot journey,ReturnDestination target)
+    {
+        bool same=journey.ReservedNode.HasValue && journey.Country==target.Country && journey.ReservedPocket==target.Pocket && (target.Pocket || journey.ReservedNode==target.Node);
+        if(!same){
+            if(!HomeSpace(target))return null;
+            ReturnStore(target).ReserveStorage(journey.Robot.Id);
+            if(journey.ReservedNode.HasValue)ReservedReturnStore(journey).ReleaseReturn(journey.Robot.Id);
+        }
+        return journey with {Country=target.Country,ReservedNode=target.Node,ReservedPocket=target.Pocket};
     }
     internal void AdvanceReturnHome(WorldSetup world)
     {
         var moved=new List<(RobotShipment Shipment,int Owner)>();
-        // Existing travellers move first. New departures get exactly one hop too.
+        // Runs after ordinary delivery/part/production reservations. Only departures take new residual capacity.
         foreach(var journey in ReturningRobots.ToArray()){
             ReturningRobots.Remove(journey);MoveHome(world,journey,moved);
         }
-        for(int node=0;node<Nodes.Length;node++)foreach(var robot in Nodes[node].Robots.Where(r=>r.ReturnHomeCommander.HasValue).ToArray()){
+        for(int node=0;node<Nodes.Length;node++)foreach(var robot in Nodes[node].Robots.Where(r=>r.ReturnHomeCommander.HasValue).OrderBy(r=>r.Id).ToArray()){
+            if(robot.Stationed || robot.Disposal || AssemblyLocked(node,robot)){
+                Nodes[node].Replace(Nodes[node].Robots.Select(r=>r.Id==robot.Id?r with {ReturnHomeCommander=null,ReturnHomeStatus=null}:r));continue;
+            }
             if(world.Campaign.RobotBattles.LockedNode(node))continue;
-            int commander=robot.ReturnHomeCommander.Value;
-            var candidates=HomeCountries(world,robot);
-            var step=HomeStep(world,node,candidates,robot.Id);
-            if(step==null){
-                string status=candidates.Length==0?NoHomeCountry:"帰国経路が通れないため待機しています。";
+            var countries=HomeCountries(world,robot);var choices=HomeDestinations(world,node,countries);
+            var target=choices.FirstOrDefault(t=>(!t.Pocket && t.Node==node) || HomeSpace(t));
+            if(target==null){
+                string status=countries.Length==0?NoHomeCountry:choices.Length==0?"帰国経路が通れないため出発待ち":"帰国先が満杯のため元の格納庫で出発待ち";
                 Nodes[node].Replace(Nodes[node].Robots.Select(r=>r.Id==robot.Id?r with {ReturnHomeStatus=status}:r));continue;
             }
-            Nodes[node].Remove(robot.Id);
-            MoveHome(world,new(robot.Materialize(),node,step.Value.Country,node,commander),moved);
+            if(!target.Pocket && target.Node==node){
+                Nodes[node].Replace(Nodes[node].Robots.Select(r=>r.Id==robot.Id?r with {Owner=target.Country,ReturnHomeCommander=null,ReturnHomeStatus=null,FunctionDisplayNode=null}:r));continue;
+            }
+            var departure=ReserveHome(new(robot.Materialize(),node,target.Country,node,robot.ReturnHomeCommander.Value),target);
+            if(departure==null)continue;
+            try{Nodes[node].Remove(robot.Id);}catch{ReservedReturnStore(departure).ReleaseReturn(robot.Id);throw;}
+            MoveHome(world,departure,moved);
         }
         Transport.AppendPlannedTransfers(moved);PartPlanning.Invalidate();Check();
     }
     private void MoveHome(WorldSetup world,ReturningRobot journey,List<(RobotShipment Shipment,int Owner)> moved)
     {
         if(world.Campaign.RobotBattles.LockedNode(journey.Node)){ReturningRobots.Add(journey with {Status="経路上の戦闘が終わるまで待機"});return;}
-        var countries=HomeCountries(world,journey.Robot);
-        int[] targets=countries.Contains(journey.Country)?new[]{journey.Country}:countries;
-        var step=HomeStep(world,journey.Node,targets,journey.Robot.Id);
-        if(step==null){ReturningRobots.Add(journey with {Status=targets.Length==0?NoHomeCountry:"帰国経路が通れないため待機しています。"});return;}
-        int next=step.Value.Next,country=step.Value.Country;
-        if(next!=journey.Node)moved.Add((new RobotShipment(journey.Node,next,journey.Robot.Id,journey.Robot.Parts){Visual=journey.Robot},country));
-        bool home=HomeAt(world,country,next),pocket=!HasHomeSite(world,country);
-        var destination=pocket?Retinues[country]:Nodes[next];
-        if(home && destination.HasSpace && !world.Campaign.RobotBattles.LockedNode(next)){
-            destination.Add(journey.Robot with {Owner=country,ReturnHomeCommander=null,ReturnHomeStatus=null,FunctionDisplayNode=null});return;
+        int country=ReturnCountry(world,journey.Country);
+        var choices=HomeDestinations(world,journey.Node,country>=0?new[]{country}:Array.Empty<int>());
+        // Keep an already protected site when it is still a valid home; moving queens retain the same pocket reservation.
+        var target=choices.FirstOrDefault(t=>journey.ReservedNode.HasValue && t.Country==journey.Country && t.Pocket==journey.ReservedPocket && (t.Pocket || t.Node==journey.ReservedNode))??choices.FirstOrDefault(HomeSpace);
+        if(target==null){ReturningRobots.Add(journey with {Status=country<0?NoHomeCountry:"帰国先の変更待ち / 到着枠は保護中"});return;}
+        var reserved=ReserveHome(journey,target);
+        if(reserved==null){ReturningRobots.Add(journey with {Status="帰国先の空き待ち / 到着枠は保護中"});return;}
+        int next=target.Next;
+        if(next!=journey.Node)moved.Add((new RobotShipment(journey.Node,next,journey.Robot.Id,journey.Robot.Parts){Visual=journey.Robot},target.Country));
+        if(next==target.Node){
+            var store=ReservedReturnStore(reserved);
+            store.ReleaseReturn(journey.Robot.Id);
+            store.Add(journey.Robot with {Owner=target.Country,ReturnHomeCommander=null,ReturnHomeStatus=null,FunctionDisplayNode=null});return;
         }
-        ReturningRobots.Add(journey with {Node=next,Country=country,Status=home?(pocket?"帰国先のポケットが満杯のため到着待ち":"帰国先の格納庫が満杯のため到着待ち"):(pocket?"クイーンのポケットへ帰国中":"帰国中")});
+        ReturningRobots.Add(reserved with {Node=next,Status=target.Pocket?"クイーンのポケットへ帰国中 / 到着枠保護":"帰国中 / 到着枠保護"});
     }
 }
