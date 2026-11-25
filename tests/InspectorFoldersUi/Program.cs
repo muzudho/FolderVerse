@@ -111,7 +111,7 @@ sealed class FolderChecks:Game1{
    w.Nodes.All[node].FunctionUnits=0;Call("BuildFolderTree");
    landJunction=w.Nodes.All.First(n=>n.Id!=node && n.Cell==w.Nodes.All[node].Cell && w.Routes.Land(n.Cell,n.Center)).Id;
    w.Nodes.All[landJunction].FunctionUnits=0;Call("BuildFolderTree");
-   Check(Rows().Any(r=>r.Kind==2 && r.Id==node && r.Label.StartsWith("無機能地点：")),"Nonfunctional points remain searchable and are explicitly labeled");
+   Check(Rows().Any(r=>r.Kind==2 && r.Id==node && r.Label.StartsWith("民間開放地点：")),"Nonfunctional points remain searchable and are explicitly labeled");
    TreeSelect(2,node);var net=(CubeNet)Get("_net");var world=(WorldPreview)Get("_world");var site=w.Nodes.All[node];
    Check(net.NodeFocus==node && (bool)Get("_folderTreeOpen") && (int)Get("_populationNode")==-1,"Point selection keeps the tree open rather than replacing it with Office");
    Check(world.ProjectVisible(w.Routes.Position(site.Cell,site.Center),w.Cells[site.Cell].Normal,(float)Prop("_yaw"),(float)Prop("_pitch"),(Rectangle)Prop("StatusGlobeArea"),out var at) && ((Rectangle)Prop("MapViewBounds")).Contains(at.ToPoint()),"Hidden globe point is brought into view");

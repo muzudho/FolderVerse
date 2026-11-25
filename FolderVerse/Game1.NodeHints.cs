@@ -23,8 +23,8 @@ public partial class Game1
         if(!_net.ShowRoutes)return; int id=_statusGlobe?HitGlobeNode(_pointer):_net.HitNode(_setup,NetPanel,_pointer);if(id<0 || !_net.NodeVisible(_setup,_setup.Nodes.All[id]))return;
         var node=_setup.Nodes.All[id];string name=_setup.Nodes.Label(node);
         if(!node.Functional){DrawRulebookHint(name,node.FunctionHost>=0
-            ?"民間施設がある無機能地点 / 施設移転先："+_setup.Nodes.DisplayName(_setup.Nodes.All[node.FunctionHost])
-            :"無機能地点 / 操作先：なし");return;}
+            ?"民間施設がある民間開放地点 / 施設移転先："+_setup.Nodes.DisplayName(_setup.Nodes.All[node.FunctionHost])
+            :"民間開放地点 / 操作先：なし");return;}
         if(_setup.Campaign.OwnershipChanged(node)){
             int before=_setup.Campaign.PreviousNodeOwners[id];
             name+=" / 直前ターン："+(before<0?"無所属":$"国＃{before+1}")+" → "+(node.Owner<0?"無所属":$"国＃{node.Owner+1}");
