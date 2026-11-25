@@ -93,7 +93,9 @@ public sealed partial class CubeNet
     internal bool MapEdgeVisible(WorldSetup world,Node a,Node b){int row=MapEdgeRow(world,a,b);return row<0 || MapFilterEnabled(row);}
     internal bool MapEdgeDanger(WorldSetup world,Node a,Node b){int row=MapEdgeRow(world,a,b);return row>=0 && row!=8 && MapFilterEnabled(row) && MapFilterDanger(row);}
     internal bool MapEdgeDark(WorldSetup world,Node a,Node b)=>MapEdgeRow(world,a,b)==8 && MapFilterMode(8)==1;
-    internal static Color DarkRoadColor(bool sea)=>sea?new Color(57,76,91):new Color(103,97,61);
+    private const float DarkRoadOpacity=.5f;
+    private static Color DarkRoadBaseColor(bool sea)=>sea?new Color(57,76,91):new Color(103,97,61);
+    internal static Color DarkRoadColor(bool sea)=>DarkRoadBaseColor(sea)*DarkRoadOpacity;
     public bool EmphasizedNode(int id)=>false; // Hover is a HUD ring, never a change in object geometry.
     public HashSet<int> MovementTargets {get;}=new();
     public HashSet<int> ActionTargetNodes {get;}=new();
@@ -185,7 +187,7 @@ public sealed partial class CubeNet
                         continue;
                     }
                     var color=height<.52f?new Color(111,228,255):height>=WorldTerrain.MountainHeight?new Color(255,163,70):new Color(255,230,140);
-                    ui.Tile((a+b)/2,new Vector2(delta.Length()+1,4),MathF.Atan2(delta.Y,delta.X),SearchTint(new Color(13,36,44),(a+b)/2));
+                    ui.Tile((a+b)/2,new Vector2(delta.Length()+1,4),MathF.Atan2(delta.Y,delta.X),SearchTint(new Color(13,36,44)*(dark?DarkRoadOpacity:1f),(a+b)/2));
                     ui.Tile((a+b)/2,new Vector2(delta.Length()+1,2),MathF.Atan2(delta.Y,delta.X),SearchTint(dark?DarkRoadColor(height<.52f):color,(a+b)/2));
                 }
             }
@@ -194,7 +196,7 @@ public sealed partial class CubeNet
                 // Draw all sides before the top so adjoining segments form one ribbon.
                 foreach (var r in ribbons)
                     ui.Tile(r.Center+new Vector2(0,2),new(r.Length,7),r.Angle,
-                        SearchTint(r.Dark ? Color.Lerp(DarkRoadColor(r.Sea),Color.Black,.25f) : r.Sea ? new Color(39,107,137) : new Color(145,99,33),r.Center));
+                        SearchTint(r.Dark ? Color.Lerp(DarkRoadBaseColor(r.Sea),Color.Black,.25f)*DarkRoadOpacity : r.Sea ? new Color(39,107,137) : new Color(145,99,33),r.Center));
                 foreach (var r in ribbons)
                     ui.Tile(r.Center,new(r.Length,6),r.Angle,
                         SearchTint(r.Dark ? DarkRoadColor(r.Sea) : r.Sea ? new Color(108,213,245) : new Color(255,216,99),r.Center));
