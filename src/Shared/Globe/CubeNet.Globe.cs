@@ -22,7 +22,7 @@ public sealed partial class CubeNet
                 return result;
             }
             DrawCellRoutes(ui,setup,cell.Id,Project,pulse,drawNodes:false,globeRibbon:true,
-                joinPortal:(portal,dashed,danger,tint)=>
+                joinPortal:(portal,dashed,danger,dark,tint)=>
                 {
                     var other=setup.Cells[portal.Target];
                     if(!globe.ProjectVisible(other.Center,other.Normal,yaw,pitch,panel,out _))return;
@@ -40,7 +40,7 @@ public sealed partial class CubeNet
                     {
                         float t=i/12f;
                         var next=ProjectBridge(Vector3.Lerp(Vector3.Lerp(a,crown,t),Vector3.Lerp(crown,b,t),t));
-                        if(danger)DrawDangerRoad(ui,previous,next,ref dangerPhase,true); else if(!dashed || (i-1)/2%2==0)DrawBridgeSegment(previous,next,sea,dashed,tint);
+                        if(danger)DrawDangerRoad(ui,previous,next,ref dangerPhase,true); else if(!dashed || (i-1)/2%2==0)DrawBridgeSegment(previous,next,sea,dashed,dark,tint);
                         previous=next;
                     }
                     Vector2 ProjectBridge(Vector3 p)
@@ -51,13 +51,13 @@ public sealed partial class CubeNet
                 });
         }
 
-        void DrawBridgeSegment(Vector2 a,Vector2 b,bool sea,bool dashed,Func<Color,Vector2,Color> tint)
+        void DrawBridgeSegment(Vector2 a,Vector2 b,bool sea,bool dashed,bool dark,Func<Color,Vector2,Color> tint)
         {
             var delta=b-a;
             if(delta.LengthSquared()<.001f)return;
             var center=(a+b)/2;
             float angle=MathF.Atan2(delta.Y,delta.X);
-            ui.Tile(center+new Vector2(0,2),new Vector2(delta.Length()+2,dashed?4:7),angle,
+            if(!dark)ui.Tile(center+new Vector2(0,2),new Vector2(delta.Length()+2,dashed?4:7),angle,
                 tint(sea?new Color(39,107,137):new Color(145,99,33),center));
             ui.Tile(center,new Vector2(delta.Length()+2,dashed?3:6),angle,
                 tint(sea?new Color(108,213,245):new Color(255,216,99),center));
