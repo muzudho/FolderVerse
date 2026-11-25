@@ -4,6 +4,11 @@ using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
+/// <summary>
+///     <pre>
+///         シーンのネームプレート
+///     </pre>
+/// </summary>
 public partial class Game1
 {
     private Texture2D _phasePlaqueFrame,_phasePlaqueIcons,_phasePlaqueSubtitle;
