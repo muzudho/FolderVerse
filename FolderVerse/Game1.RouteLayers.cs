@@ -12,7 +12,7 @@ public partial class Game1
     private int _selectedMapCell=-1;
     private bool _simpleDisplayOpen;
     private bool _displayFilterOpen;
-    private const int DefaultDomesticHiddenMapFilters=(1<<8)|(1<<21)|(1<<23); // Hidden foreign edges; danger style for own/subordinate borders.
+    private const int DefaultDomesticHiddenMapFilters=(1<<24)|(1<<21)|(1<<23); // Dark foreign edges; danger style for own/subordinate borders.
     private static readonly Rectangle SimpleDisplayButton=new(1260,86,144,48),DisplayFilterButton=new(1416,86,144,48);
     private static readonly Rectangle DisplayBreakerAutomaticRow=new(1260,246,650,44);
     private static readonly Rectangle DisplayFilterHeader=new(1416,202,470,44);
@@ -191,14 +191,14 @@ public partial class Game1
                 var row=DisplayFilterRow(i);
                 _ui.Button(row,"",Muted,.4f);
                 DrawBreakerCheck(row,_net.MapFilterEnabled(i));
-                bool modes=i==5 || i==7;
+                bool modes=i==5 || i==7 || i==8;
                 _ui.Text(DisplayFilterLabels[i],new(row.X+42,row.Y+12),modes?.32f:.4f,Cream);
-                if(modes)_ui.Text(_net.MapFilterMode(i) switch {1=>"危険表示",2=>"非表示",_=>"表示"},new(row.Right-85,row.Y+12),.31f,Cream);
+                if(modes)_ui.Text(_net.MapFilterMode(i) switch {1=>i==8?"暗黒表示":"危険表示",2=>"非表示",_=>"表示"},new(row.Right-85,row.Y+12),.31f,Cream);
             }
             _ui.Button(DisplayFilterReset,"初期設定に戻す",_net.HiddenMapFilters!=DefaultDomesticHiddenMapFilters?Accent:Muted,.4f);
         }else if(!_mapLayerListOpen && !_trafficLayerListOpen && !_mapOverlayMenu && !GuideVisible){
             if(SimpleDisplayButton.Contains(_pointer))DrawRulebookHint("表示ブレーカー","地図の描画項目と自動OFFを設定します。");
-            else if(DisplayFilterButton.Contains(_pointer))DrawRulebookHint("表示フィルター","地点と地点間の辺の表示を切り替えます。初期設定では他国同士の辺は非表示、自国・手下と他国を結ぶ辺は危険表示です。未所属は他国に含めます。");
+            else if(DisplayFilterButton.Contains(_pointer))DrawRulebookHint("表示フィルター","地点と地点間の辺の表示を切り替えます。初期設定では他国同士の辺は暗黒表示、自国・手下と他国を結ぶ辺は危険表示です。未所属は他国に含めます。");
         }
     }
     private static Rectangle DisplayFilterEdgeHeading=>new(DisplayFilterHeader.X,DisplayFilterRow(2).Bottom,DisplayFilterHeader.Width,36);
