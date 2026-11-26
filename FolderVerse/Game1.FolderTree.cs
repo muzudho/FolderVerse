@@ -54,7 +54,7 @@ public partial class Game1
                 _inspectorFolderRows.Add((1,cell.Id,depth,owner,"地域："+WorldCoordinates.Label(_setup,cell.Id)));
                 if(!_expandedFolderRegions.Contains(cell.Id))continue;
                 foreach(var node in _setup.Nodes.InCell(cell.Id).Where(n=>n.Owner==owner))
-                    _inspectorFolderRows.Add((2,node.Id,depth+1,owner,(node.Functional?"地点：":"無機能地点：")+_setup.Nodes.DisplayName(node)));
+                    _inspectorFolderRows.Add((2,node.Id,depth+1,owner,(node.Functional?"地点：":"民間開放地点：")+_setup.Nodes.DisplayName(node)));
             }
         }
         void Country(int owner,int depth,bool visible){

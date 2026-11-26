@@ -4,6 +4,11 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
+/// <summary>
+///     <pre>
+///         ［横が２：１の比率のレイアウト］の左側の、［縦長のHUD］のレイアウトを提供するクラスです。
+///     </pre>
+/// </summary>
 public static class PortraitHudLayout
 {
     public static readonly Rectangle Background=new(0,0,640,1080);

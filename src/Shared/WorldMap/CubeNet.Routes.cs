@@ -30,6 +30,16 @@ public sealed partial class CubeNet
         set=>SetMapFilter(2,value);
     }
     internal bool MapFilterEnabled(int index)=>(HiddenMapFilters&(1<<index))==0;
+    internal bool MapFilterDanger(int index)=>(HiddenMapFilters&(1<<(16+index)))!=0;
+    internal int MapFilterMode(int index)=>!MapFilterEnabled(index)?2:MapFilterDanger(index)?1:0;
+    internal void CycleMapFilter(int index)
+    {
+        if(index!=5 && index!=7 && index!=8){SetMapFilter(index,!MapFilterEnabled(index));return;}
+        int next=(MapFilterMode(index)+1)%3;
+        HiddenMapFilters&=~((1<<index)|(1<<(16+index)));
+        if(next==1)HiddenMapFilters|=1<<(16+index);
+        if(next==2)HiddenMapFilters|=1<<index;
+    }
     internal void SetMapFilter(int index,bool enabled)
     {
         if(enabled)HiddenMapFilters&=~(1<<index);
@@ -72,13 +82,26 @@ public sealed partial class CubeNet
         (HiddenMapFilters==0 || MapFilterEnabled(MapOwnerGroup(world,DisplayedNodeOwner(node))) ||
          RevealMovementTargets && MovementTargets.Contains(node.Id));
 
-    internal bool MapEdgeVisible(WorldSetup world,Node a,Node b)
+    private int MapEdgeRow(WorldSetup world,Node a,Node b)
     {
-        if(HiddenMapFilters>>3==0 || a==null || b==null || a.Id==b.Id)return true;
+        if(a==null || b==null || a.Id==b.Id)return -1;
         int start=MapOwnerGroup(world,DisplayedNodeOwner(a)),end=MapOwnerGroup(world,DisplayedNodeOwner(b));
         int low=Math.Min(start,end),high=Math.Max(start,end);
         int row=low switch { 0=>3+high,1=>5+high,_=>8 };
-        return MapFilterEnabled(row);
+        return row;
+    }
+    internal bool MapEdgeVisible(WorldSetup world,Node a,Node b){int row=MapEdgeRow(world,a,b);return row<0 || MapFilterEnabled(row);}
+    internal bool MapEdgeDanger(WorldSetup world,Node a,Node b){int row=MapEdgeRow(world,a,b);return row>=0 && row!=8 && MapFilterEnabled(row) && MapFilterDanger(row);}
+    internal bool MapEdgeDark(WorldSetup world,Node a,Node b)=>MapEdgeRow(world,a,b)==8 && MapFilterMode(8)==1;
+    private static Color DarkRoadBaseColor(bool sea)=>sea?new Color(57,76,91):new Color(103,97,61);
+    // Opaque, surface-matched ink prevents overlapping route segments from accumulating opacity.
+    private Color DarkRoadSurfaceColor(WorldSetup world,int cell,Vector3 point)
+    {
+        var surface=world.Cells[cell];
+        int x=Math.Clamp((int)(Vector3.Dot(point-surface.Origin,surface.U)*TerrainRoutes.Detail),0,TerrainRoutes.Detail-1);
+        int y=Math.Clamp((int)(Vector3.Dot(point-surface.Origin,surface.V)*TerrainRoutes.Detail),0,TerrainRoutes.Detail-1);
+        float height=world.Terrain.Elevation(point);
+        return Color.Lerp(TerrainColor(world,cell,height,x,y),DarkRoadBaseColor(height<.52f),.3f);
     }
     public bool EmphasizedNode(int id)=>false; // Hover is a HUD ring, never a change in object geometry.
     public HashSet<int> MovementTargets {get;}=new();
@@ -125,7 +148,7 @@ public sealed partial class CubeNet
         var physical=surface.Normal*normalDistance+face.Right*p.X-face.Up*p.Y;
         return new(Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.U)*10),0,9),Math.Clamp((int)MathF.Floor(Vector3.Dot(physical-surface.Origin,surface.V)*10),0,9));
     }
-    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null,bool globeRibbon=false,Action<RoutePortal,bool,Func<Color,Vector2,Color>> joinPortal=null)
+    private void DrawCellRoutes(UiPainter ui,WorldSetup world,int cell,Func<Vector3,Vector2> project,float pulse,bool drawNodes=true,Func<Vector2,Vector2> focusPoint=null,bool globeRibbon=false,Action<RoutePortal,bool,bool,bool,Func<Color,Vector2,Color>> joinPortal=null)
     {
         Color SearchTint(Color color,Vector2 at)=>color;
         foreach(var peak in world.Routes.Peaks(cell))
@@ -139,46 +162,51 @@ public sealed partial class CubeNet
             var active=world.ConquerorLocations.Select((c,r)=>(Cell:c,Ruler:r)).Where(p=>p.Cell==cell)
                 .Where(p=>world.Nodes.Current(p.Ruler)?.Center!=world.ConquerorPoints[p.Ruler])
                 .SelectMany(p=>Enumerable.Range(0,4).Select(d=>world.Routes.ForRuler(p.Ruler,d))).Where(r=>r!=null);
-            var ribbons = globeRibbon ? new List<(Vector2 Center, float Length, float Angle, bool Sea)>() : null;
+            var ribbons = globeRibbon ? new List<(Vector2 Center, float Length, float Angle, bool Sea, bool Dark, Color Ink)>() : null;
             var vehicles = new List<ScenicRoutes.Vehicle>();
             var offset=world.Terrain;
             foreach(var route in world.Routes.DisplayPaths(cell).Concat(active))
             {
                 if(HiddenMapFilters>>3!=0 && route.Path.Length>0 &&
                     !MapEdgeVisible(world,world.Nodes.At(cell,route.Path[0]),world.Nodes.At(route.Target,route.Entry)))continue;
-                if (!DirectoryOnly && _scenicRoutes != null &&
+                bool dark=route.Path.Length>0 && MapEdgeDark(world,world.Nodes.At(cell,route.Path[0]),world.Nodes.At(route.Target,route.Entry));
+                Color RouteTint(Color ink,Vector2 at)=>dark?DarkRoadSurfaceColor(world,cell,route.Portal.Position):SearchTint(ink,at);
+                bool danger=route.Path.Length>0 && MapEdgeDanger(world,world.Nodes.At(cell,route.Path[0]),world.Nodes.At(route.Target,route.Entry));
+                if (!danger && !dark && !DirectoryOnly && _scenicRoutes != null &&
                     _scenicRoutes.TryDraw(route,pulse,DrawScenicDash,out var vehicle))
                 {
                     if (vehicle is { } toy) vehicles.Add(toy);
-                    if(route.Portal!=null)joinPortal?.Invoke(route.Portal,true,SearchTint);
+                    if(route.Portal!=null)joinPortal?.Invoke(route.Portal,true,false,false,SearchTint);
                     continue;
                 }
                 var curve=world.Routes.Curve(cell,route);
-                if(curve.Length>0 && route.Portal!=null)joinPortal?.Invoke(route.Portal,false,SearchTint);
+                if(curve.Length>0 && route.Portal!=null)joinPortal?.Invoke(route.Portal,false,danger,dark,RouteTint);
+                float dangerPhase=0;
                 for(int i=1;i<curve.Length;i++)
                 {
                     var a=project(curve[i-1]);var b=project(curve[i]);var delta=b-a;
+                    if(danger){DrawDangerRoad(ui,a,b,ref dangerPhase,globeRibbon);continue;}
                     float height=offset.Elevation((curve[i-1]+curve[i])/2);
                     if (ribbons != null)
                     {
                         if (delta.LengthSquared() > .001f)
-                            ribbons.Add(((a+b)/2, delta.Length()+2, MathF.Atan2(delta.Y,delta.X), height<.52f));
+                            ribbons.Add(((a+b)/2, delta.Length()+2, MathF.Atan2(delta.Y,delta.X), height<.52f,dark,dark?DarkRoadSurfaceColor(world,cell,(curve[i-1]+curve[i])/2):Color.Transparent));
                         continue;
                     }
                     var color=height<.52f?new Color(111,228,255):height>=WorldTerrain.MountainHeight?new Color(255,163,70):new Color(255,230,140);
-                    ui.Tile((a+b)/2,new Vector2(delta.Length()+1,4),MathF.Atan2(delta.Y,delta.X),SearchTint(new Color(13,36,44),(a+b)/2));
-                    ui.Tile((a+b)/2,new Vector2(delta.Length()+1,2),MathF.Atan2(delta.Y,delta.X),SearchTint(color,(a+b)/2));
+                    if(!dark)ui.Tile((a+b)/2,new Vector2(delta.Length()+1,4),MathF.Atan2(delta.Y,delta.X),SearchTint(new Color(13,36,44),(a+b)/2));
+                    ui.Tile((a+b)/2,new Vector2(delta.Length()+1,2),MathF.Atan2(delta.Y,delta.X),SearchTint(dark?DarkRoadSurfaceColor(world,cell,(curve[i-1]+curve[i])/2):color,(a+b)/2));
                 }
             }
             if (ribbons != null)
             {
                 // Draw all sides before the top so adjoining segments form one ribbon.
-                foreach (var r in ribbons)
+                foreach (var r in ribbons.Where(r=>!r.Dark))
                     ui.Tile(r.Center+new Vector2(0,2),new(r.Length,7),r.Angle,
                         SearchTint(r.Sea ? new Color(39,107,137) : new Color(145,99,33),r.Center));
                 foreach (var r in ribbons)
                     ui.Tile(r.Center,new(r.Length,6),r.Angle,
-                        SearchTint(r.Sea ? new Color(108,213,245) : new Color(255,216,99),r.Center));
+                        SearchTint(r.Dark ? r.Ink : r.Sea ? new Color(108,213,245) : new Color(255,216,99),r.Center));
             }
             foreach (var vehicle in vehicles)
                 DrawScenicVehicle(ui,world.Cells[cell],vehicle,project,globeRibbon,

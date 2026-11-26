@@ -5,7 +5,7 @@ public partial class Game1{
  private sealed record DomesticViewState(CubeNetViewState Net,bool Globe,float Yaw,float Pitch,
   Quaternion? Orientation,Vector3? Anchor,float Zoom,int GlobeNode,int MapCell,int StatusCell,
   bool Symbols,bool Equator,bool Robots,bool OtherCountries,bool Batteries,bool Routes,bool CountryColors,
-  Vector2 GlobePan=default,bool GlobeDragSlide=false,bool NetDragRotate=false,int HiddenMapFilters=0);
+  Vector2 GlobePan=default,bool GlobeDragSlide=false,bool NetDragRotate=false,int HiddenMapFilters=DefaultDomesticHiddenMapFilters);
  // Runtime preferences belong to each controlled ruler, including separately controlled subordinates.
  private readonly Dictionary<int,DomesticViewState> _domesticViews=new();
  private void SaveDomesticCamera(){
@@ -41,7 +41,7 @@ public partial class Game1{
    _world.ManualOrientation=null;_world.GlobeZoom=1;_world.GlobeAnchor=null;
    _world.GlobePan=Vector2.Zero;_globeDragSlide=_netDragRotate=false;
    _selectedMapCell=_statusCell=-1;
-   _net.HiddenMapFilters=0;
+   _net.HiddenMapFilters=DefaultDomesticHiddenMapFilters;
    _net.ShowMapSymbols=_net.ShowEquator=_net.ShowRobots=_net.ShowBatteries=_net.ShowRoutes=true;
    _net.ShowCountryColors=false;FocusCurrentNode();FocusStatusGlobe();
   }

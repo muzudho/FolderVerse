@@ -1,5 +1,7 @@
 # ドキュメント案内
 
+- [ピックアップ・ゲーム：20全体ターンごとの地図とセーブをHTMLで見返す](dev/analysis/pickup-games.md)
+
 - [フェーズ看板：右ペーン共通の玩具プレートと差し替えサブ札](設計/フェーズ看板.md)
 
 - [征服者の記念メダル：表裏・順位別の金属・内政開始の回転](設計/征服者の記念メダル.md)
@@ -11,6 +13,8 @@
 - [パフォーマンス表示：FPS・処理時間の読み方](dev/performance-overlay.md)
 
 - [廃品回収：実物ロボットの予約、ポケット貸出と帰還](dev/salvage-expeditions.md)
+- [ロボットの帰国先：自国地点とクイーンのポケット](dev/return-home.md)
+- [CPUによる他国ロボットの１部位交換・戦力化](dev/computer-robot-reassembly.md)
 
 - [世界征服状況：朝の番組と局アナ](dev/conquest-broadcast.md)
 
@@ -21,6 +25,7 @@
 
 - [最終処分場・解体・スクラップ](設計/最終処分場とスクラップ.md) / [実装と検証](dev/final-disposal.md)
 - [FRR：戦力更新力の解析方針](dev/analysis/force-renewal-rate.md)
+- [軍用地点の集約と施設移転の評価](dev/analysis/functional-node-consolidation.md)
 
 - [海上プラスチック再生採取場：PP採取と描画](dev/recycled-pp-facility.md)
 
@@ -46,7 +51,7 @@
 - [2026年10月の開発日誌](dev/log/2026/10.md)
 - [2026年11月の開発日誌](dev/log/2026/11.md)
 - [実装計画](dev/plan/)
-- [個人用の設定と仕様](【むずでょ個人用】/)：利用者が管理する原本。
+- [個人用の設定と仕様](owner-muzudho/)：利用者が管理する原本。
 - [征服者作成用画像の採用記録](../art-source/portraits/conqueror-balanced/README.md)
 
 - [内政地図ビュー](ref/内政地図ビュー.md) / [実装記録](dev/内政地図ビュー.md)

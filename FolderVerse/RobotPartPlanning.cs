@@ -163,6 +163,18 @@ public sealed partial class RobotPartPlanning
             throw new InvalidOperationException("倉庫管理人と交換する部位を確認してください");
         ReservePartMove(world,node,node,donor.Id,parts,keeper.Id,owner,false,warehouseOnly:true);
     }
+    internal void ReserveComputerReassembly(WorldSetup world,int node,Robot donor,Robot receiver,RobotParts part,int owner)
+    {
+        if(world.Campaign.Phase!=CampaignPhase.Domestic || world.Nodes.All[node].Owner!=owner ||
+            donor.Owner!=owner || receiver.Owner==owner || receiver.Parts!=RobotParts.Complete ||
+            !RobotMaterials.Parts.Contains(part) || donor.Affiliation(part)!=owner ||
+            !donor.CanSeparate(part) || !receiver.CanSeparate(part) ||
+            new[]{donor,receiver}.Any(r=>!world.Robots.Nodes[node].Robots.Contains(r) || r.Stationed ||
+                r.IsWorkpiece || r.IsDismantling || r.Disposal || world.Robots.AssemblyLocked(node,r) ||
+                world.Robots.ReservationBusy(node,r.Id)))
+            throw new InvalidOperationException("戦力化のために交換できる部位ではありません");
+        ReservePartMove(world,node,node,donor.Id,part,receiver.Id,owner,false);
+    }
     private long ReservePartMove(WorldSetup world,int source,int target,long id,RobotParts parts,long? targetId,int owner,bool combineWorkpieces,bool warehouseOnly=false)
     {
         if(targetId==id)return id;
