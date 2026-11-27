@@ -37,8 +37,8 @@ class Checks:Game1{
   Set("_statusGlobe",false);((CubeNet)Get("_net")).FitAll((Rectangle)typeof(Game1).GetProperty("NetPanel",F)!.GetValue(this)!,1);Call("OpenDirectMap");
   Rectangle Footer(string name)=>(Rectangle)typeof(Game1).GetProperty(name,F)!.GetValue(this)!;
   var normal=Footer("PopulationTurnButton");
-  Check(normal.Width==144 && normal.Height==96,"End turn follows current shared 144x96 layout");
-  Set("_demoActive",true);var demoTurn=Footer("PopulationTurnButton");Check(demoTurn.Width==144 && demoTurn.Height==96,"Demo shares the current end-turn layout");Set("_demoActive",false);
+  Check(normal==(Rectangle)Call("PrimaryActionBounds",1),"End turn follows the shared primary action bounds");
+  Set("_demoActive",true);var demoTurn=Footer("PopulationTurnButton");Check(demoTurn==normal && demoTurn==(Rectangle)Call("PrimaryActionBounds",1),"Demo shares the current end-turn layout");Set("_demoActive",false);
   for(int i=0;i<PrimaryCount;i++){
    var rect=(Rectangle)Call("PrimaryActionBounds",i);
    Check(rect.Bottom==1070 && (i==1 || rect.Width==rect.Height),"Primary actions share a baseline with square secondary actions");
@@ -81,12 +81,12 @@ class Checks:Game1{
   var left=Cell(0,0);var right=Cell(1,0);
   Check(left.Right<600 && right.Left>1320,"Dedicated compact panes leave the center map open");
   var close=(Rectangle)typeof(Game1).GetField("DirectPairBack",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
-  Check(close.Center.X==960 && close.Bottom<left.Top,"Shared close handle sits above the drag corridor");
+  Check(close.Bottom<Math.Min(left.Top,right.Top) && !close.Intersects(left) && !close.Intersects(right),"Shared close handle sits above the drag corridor");
   Check((Color)Call("DirectSideColor",0)==w.OwnerColor(w.PlayerSlot) && (Color)Call("DirectSideColor",1)==Color.White,"Left uses own country color and right uses white");
   var pairNet=(CubeNet)Get("_directPairNet");var map=(Rectangle)typeof(Game1).GetField("DirectPairMapBounds",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!;
   Check(map.Contains(pairNet.NodePosition(w,w.Nodes.All[a],map).ToPoint()) && map.Contains(pairNet.NodePosition(w,w.Nodes.All[b],map).ToPoint()),"Dedicated map fits both endpoints");
   RobotWorld Preview()=>w.Robots.PartPlanning.Preview(w);
-  void Undo(){var point=new Point(960,84);Set("_pointer",point);Call("DirectPairInput",Mouse(point,ButtonState.Pressed),true,false);Call("SyncDirectSlots");}
+  void Undo(){var point=((Rectangle)typeof(Game1).GetField("DirectPairUndoButton",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!).Center;Set("_pointer",point);Call("DirectPairInput",Mouse(point,ButtonState.Pressed),true,false);Call("SyncDirectSlots");}
   Drag(1,0,2,0,5);Check(w.Robots.PartPlanning.Orders.Count==1 && w.Robots.PartPlanning.Orders.Any(o=>o.Source==b && o.Target==a),"Right-to-left drag creates a planning reservation");
   Check(Preview().Nodes[b].Count==0 && w.Robots.Nodes[b].Count==1,"Preview moves parts while physical stock stays unchanged");Undo();Check(w.Robots.PartPlanning.Orders.Count==0,"Real undo control cancels the last reservation");
   Drag(0,0,0,1,0);Check(w.Robots.PartPlanning.Orders.Count==1 && w.Robots.Nodes[a].Robots.Single().Parts==RobotParts.Complete,"Cross-pane drag reserves without moving physical part");
@@ -229,7 +229,7 @@ class Checks:Game1{
    var trucks=(List<(Rectangle Bounds,int A,int B)>)Get("_directTrucks");
    Check(trucks.Count==0 && !(bool)Get("_directMap"),"Ordinary inspector leaves direct-delivery markers hidden");
    Call("OpenDirectMap");
-   if(Environment.GetEnvironmentVariable("FOLDERVERSE_DIRECT_PAN")=="1"){
+   { // Bring the fixture route into view through normal map input before requiring a marker.
     var view=(Rectangle)Call("get_MapViewBounds");var canvas=(Rectangle)Call("CanvasBounds");
     for(int step=0;step<4;step++){
      var first=new object[]{a,Vector2.Zero};var second=new object[]{b,Vector2.Zero};

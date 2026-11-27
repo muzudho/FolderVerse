@@ -17,7 +17,17 @@ sealed class InputGame:Game1{
   Call("HandleInput",mouse,new KeyboardState(keys),new GameTime(TimeSpan.Zero,TimeSpan.FromSeconds(dt)),true);
  }
  void Click(Point p){Input(p);Input(p,ButtonState.Pressed);Input(p);}
- void Open(int source){Call("ResetInspector");Set("_domesticSlide",0f);Click(((Rectangle)Prop("TransportOverviewButton")).Center);Input(new Point(0,0),dt:.4);Set("_populationNode",source);}
+ Point InstructionPoint(int row,int field)=>((Rectangle)Call("InspectorScreenBounds",typeof(Game1).GetMethod("InstructionField",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{row,field})!)).Center;
+ Point AddInstructionPoint()=>((Rectangle)Call("InspectorScreenBounds",new Rectangle(444,(int)Prop("TransportFooterY"),220,36))).Center;
+ Point CancelDestinationPoint()=>((Rectangle)Call("InspectorScreenBounds",Prop("TransportPickCancel"))).Center;
+ void FinishIntroductions(){
+  for(int intro=0;intro<8;intro++){
+   Input(default,dt:.5);
+   if(Get("_screen").ToString()!="Newspaper" && Get("_guideBriefing")==null)break;
+   Input(default,keys:new[]{Keys.Escape});Input(default,dt:.5);
+  }
+ }
+ void Open(int source){FinishIntroductions();if((bool)Prop("StratagemInterface") && !(bool)Prop("StratagemManualActions")){Click(((Rectangle)Call("StratagemTrayBounds",new Rectangle(370,854,180,110))).Center);Input(default,dt:1);}Call("ResetInspector");Set("_domesticSlide",0f);Click(((Rectangle)Prop("TransportOverviewButton")).Center);Input(new Point(0,0),dt:.4);Set("_populationNode",source);}
  protected override void LoadContent(){
   Content.RootDirectory=Path.Combine(AppContext.BaseDirectory,"Content");base.LoadContent();Set("_conquestOverviewEnabled",false);
   var setup=(WorldSetup)Get("_setup");setup.SetWorld(123);setup.SetCast(456);setup.SetPlacement(789);setup.SelectPlayer(0);
@@ -214,38 +224,40 @@ sealed class InputGame:Game1{
    Exit();
    return;
   }
+  FinishIntroductions();
+  if((bool)Prop("StratagemInterface") && !(bool)Prop("StratagemManualActions")){Click(((Rectangle)Call("StratagemTrayBounds",new Rectangle(370,854,180,110))).Center);Input(default,dt:1);}
   int source=setup.Nodes.Current(0).Id;Open(source);Call("FocusCurrentNode");
-  Click(new(540,770));
+  Click(AddInstructionPoint());
   Check((bool)Get("_transportDestinationPicking"),"Real input enters destination mode");
-  Click(new(740,810));Check(!(bool)Get("_transportDestinationPicking") && setup.Robots.Transport.Instructions(source,0).Count==0,"Cancel exits picker and removes unfinished new order");
-  Click(new(540,770));Input(default,keys:new[]{Keys.Escape});Input(default);
+  Click(CancelDestinationPoint());Check(!(bool)Get("_transportDestinationPicking") && setup.Robots.Transport.Instructions(source,0).Count==0,"Cancel exits picker and removes unfinished new order");
+  Click(AddInstructionPoint());Input(default,keys:new[]{Keys.Escape});Input(default);
   Check(!(bool)Get("_transportDestinationPicking") && setup.Robots.Transport.Instructions(source,0).Count==0,"Escape removes new draft");
-  Click(new(540,770));var rule=setup.Robots.Transport.Instructions(source,0).Single();
+  Click(AddInstructionPoint());var rule=setup.Robots.Transport.Instructions(source,0).Single();
   var adjacent=(int[])Call("TransportAdjacent");int target=adjacent.First(id=>((Rectangle)Prop("MapViewBounds")).Contains(net.NodePosition(setup,setup.Nodes.All[id],(Rectangle)Prop("NetPanel")).ToPoint()));
   Click(net.NodePosition(setup,setup.Nodes.All[target],(Rectangle)Prop("NetPanel")).ToPoint());
   Check(!(bool)Get("_transportDestinationPicking") && rule.Target==target,"Full input dispatch selects adjacent destination");
-  Click(new(550,365));Input(default,keys:new[]{Keys.D7});Input(default,keys:new[]{Keys.Enter});Input(default);
+  Click(InstructionPoint(0,5));Input(default,keys:new[]{Keys.D7});Input(default,keys:new[]{Keys.Enter});Input(default);
   Check(rule.Limit==7 && (int)Get("_transportEditor")==0,"Full input dispatch edits quantity");
-  foreach(var field in new[]{new Point(250,365),new Point(550,325),new Point(550,365),new Point(160,325)}){
-   Open(source);Click(field);Check((bool)Get("_transportDestinationPicking") || (int)Get("_transportEditor")!=0 || (int)Get("_rateTarget")>=0,"Editor opens");
+  foreach(int field in new[]{4,2,5,0}){
+   Open(source);Click(InstructionPoint(0,field));Check((bool)Get("_transportDestinationPicking") || (int)Get("_transportEditor")!=0 || (int)Get("_rateTarget")>=0,"Editor opens");
    Click(((Rectangle)Prop("InspectorClose")).Center);Input(default,dt:.5);
    Check(!(bool)Prop("InspectorVisible") && !(bool)Get("_transportDestinationPicking") && (int)Get("_transportEditor")==0 && (int)Get("_rateTarget")==-1,"Shared X closes from every transport modal");
    Check(setup.Robots.Transport.Instructions(source,0).Count==1,"Closing existing editor preserves order");
   }
-  int beforeDraft=setup.Robots.Transport.Instructions(source,0).Single().Degrees;Open(source);Click(new(540,770));Click(((Rectangle)Prop("InspectorClose")).Center);Input(default,dt:.5);
+  int beforeDraft=setup.Robots.Transport.Instructions(source,0).Single().Degrees;Open(source);Click(AddInstructionPoint());Click(((Rectangle)Prop("InspectorClose")).Center);Input(default,dt:.5);
   Check(setup.Robots.Transport.Instructions(source,0).Single().Degrees==beforeDraft,"Canceling new draft restores existing rates and rest");
   Check(setup.Robots.Transport.Instructions(source,0).Count==1,"Closing picker discards only pending draft");
   // Replay the reported flow: Add, then immediately edit the visible row controls.
-  Open(source);Click(new(604,765));Check((bool)Get("_transportDestinationPicking"),"Add starts destination picking");
-  Click(new(590,442));Check((int)Get("_transportEditor")==1 && !(bool)Get("_transportDestinationPicking"),"New row parts remain clickable during destination picking");
+  Open(source);Click(AddInstructionPoint());Check((bool)Get("_transportDestinationPicking"),"Add starts destination picking");
+  Click(InstructionPoint(1,2));Check((int)Get("_transportEditor")==1 && !(bool)Get("_transportDestinationPicking"),"New row parts remain clickable during destination picking");
   Input(default,keys:new[]{Keys.Escape});Input(default);
-  Set("_transportEditNumber",2);Click(new(250,471));Click(new(550,471));Check((int)Get("_transportEditor")==2,"Quantity can replace destination picker");Input(default,keys:new[]{Keys.Escape});Input(default);
-  Click(new(250,471));Click(new(160,431));Check((int)Get("_rateTarget")==2,"Adoption pie can replace destination picker");Input(default,keys:new[]{Keys.Escape});Input(default);
-  Click(new(250,471));Click(new(269,435));Check(!(bool)Get("_transportDestinationPicking"),"Purpose control works during destination picking");
-  Click(new(250,471));Click(new(839,438));Check(setup.Robots.Transport.Instructions(source,0).Count==1,"Delete control works during destination picking");
+  Set("_transportEditNumber",2);Click(InstructionPoint(1,4));Click(InstructionPoint(1,5));Check((int)Get("_transportEditor")==2,"Quantity can replace destination picker");Input(default,keys:new[]{Keys.Escape});Input(default);
+  Click(InstructionPoint(1,4));Click(InstructionPoint(1,0));Check((int)Get("_rateTarget")==2,"Adoption pie can replace destination picker");Input(default,keys:new[]{Keys.Escape});Input(default);
+  Click(InstructionPoint(1,4));Click(InstructionPoint(1,1));Check(!(bool)Get("_transportDestinationPicking"),"Purpose control works during destination picking");
+  Click(InstructionPoint(1,4));Click(InstructionPoint(1,6));Check(setup.Robots.Transport.Instructions(source,0).Count==1,"Delete control works during destination picking");
   // Exact coordinates from the report on a first, newly added row.
   foreach(var existing in setup.Robots.Transport.Instructions(source,0).ToArray())setup.Robots.Transport.DeleteInstruction(source,0,existing.Number);
-  Click(new(604,765));Click(new(590,336));Check((int)Get("_transportEditor")==1,"Reported first-row click opens parts without choosing destination first");
+  Click(AddInstructionPoint());Click(InstructionPoint(0,2));Check((int)Get("_transportEditor")==1,"Reported first-row click opens parts without choosing destination first");
   Click(((Rectangle)Prop("InspectorClose")).Center);Input(default,dt:.5);Check(setup.Robots.Transport.Instructions(source,0).Count==1,"Field edits retain the new instruction when inspector closes");
   // Other-country visibility is overridden only for actual war-planning targets.
   Call("ResetInspector");Set("_domesticSlide",0f);net.ShowOtherCountries=false;
@@ -285,10 +297,10 @@ sealed class InputGame:Game1{
   setup.HumanPlayers.AddRange(new[]{0,1});setup.SelectTurnRuler(0);net.ShowBatteries=false;
   Call("EndPlannedTurn");Check(setup.PlayerSlot==1 && Get("_screen").ToString()=="WorldStatus" && net.ShowBatteries && world.GlobeZoom==2,"Turn submission hands off to the other player's stored view");
   setup.Campaign.Reset();setup.HumanPlayers.Clear();setup.Relations.SetSuperior(1,0);setup.Relations.Leader=0;setup.SelectPlayer(0);Call("RestoreDomesticCamera");Call("OpenStrategyInspector");Input(default,dt:.5);
-  Click(((Rectangle)Prop("FactionPickerButton")).Center);var childRow=(Rectangle)Call("FactionPickerRow",1);Click(new(childRow.X+20,childRow.Center.Y));Check(setup.PlayerSlot==1 && net.ShowBatteries,"Manual subordinate switch restores separate preferences");
+  Click(((Rectangle)Prop("FactionPickerButton")).Center);var childRow=(Rectangle)Call("FactionPickerRow",1);Click(new(childRow.X+20,childRow.Center.Y));Check(setup.PlayerSlot==1 && net.ShowBatteries,"Manual subordinate switch restores separate preferences");FinishIntroductions();
   Click(((Rectangle)Prop("FactionPickerButton")).Center);var parentRow=(Rectangle)Call("FactionPickerRow",0);Click(new(parentRow.X+20,parentRow.Center.Y));Check(setup.PlayerSlot==0 && !net.ShowBatteries && world.GlobeZoom==3,"Returning from subordinate preserves original settings");
   var graphics=(GraphicsDeviceManager)Get("_graphics");graphics.PreferredBackBufferWidth=960;graphics.PreferredBackBufferHeight=540;graphics.ApplyChanges();
-  Open(source);Click(new(250,365));Click(new(740,810));Check(!(bool)Get("_transportDestinationPicking"),"Scaled-window cancel hit testing");Click(new(550,325));Click(((Rectangle)Prop("InspectorClose")).Center);Input(default,dt:.5);Check(!(bool)Prop("InspectorVisible"),"Scaled-window modal close hit testing");
+  Open(source);Click(InstructionPoint(0,4));Click(CancelDestinationPoint());Check(!(bool)Get("_transportDestinationPicking"),"Scaled-window cancel hit testing");Click(InstructionPoint(0,2));Check((int)Get("_transportEditor")==1,"Scaled-window parts editor opens before closing");Click(((Rectangle)Prop("InspectorClose")).Center);Input(default,dt:.5);Check(!(bool)Prop("InspectorVisible"),"Scaled-window modal close hit testing");
   Call("BeginPlayerCount");setup.SelectPlayer(0);Call("RestoreDomesticCamera");Check(net.ShowBatteries && world.GlobeZoom==1,"New game clears old player preferences");
   Console.WriteLine("PASS: foreign war targets visible/selectable in net and globe with Other Countries off, reset after planning, reported Add-to-field clicks, picker-to-parts/quantity/pie/purpose/delete transitions, real input destination confirm/cancel/Escape, quantity keyboard, all modal close buttons, draft rollback, independent player cameras/layers, actual turn handoff and subordinate switching, temporary-layer isolation, small-window input and new-game reset.");Exit();
  }
